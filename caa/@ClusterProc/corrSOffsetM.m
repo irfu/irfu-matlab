@@ -32,20 +32,7 @@ if exist('./mEDSI.mat','file')
 		warning('caa:noData','no diE{cl_id}p1234 data in mEDSI')
 	end
 	if exist(av_ssub('diEs?p34',cl_id),'var')
-		eval(av_ssub('load mEDSI D?p12p34',cl_id))
-		if exist(av_ssub('D?p12p34',cl_id),'var')
-			eval(av_ssub('Del=D?p12p34;',cl_id))
-		else
-			disp('Cannot load D#p12p34. Probably we have only one probe pair')
-			Del=0;
-		end
-		if isreal(Del)
-			eval(av_ssub('diEs=diEs?p34;',cl_id))
-		else
-			disp('correcting p34')
-			Del = imag(Del);
-			eval(av_ssub('diEs=diEs?p34-ones(length(diEs?p34),1)*Del;',cl_id))
-		end
+		c_eval('diEs=diEs?p34(:,1:4);',cl_id)
 
 		% Load offsets
 		offset = [0+0i 1];
