@@ -212,7 +212,7 @@ while(q ~= 'q')
 		disp('  r - read from disk')
 		if have_hres, disp('  f - show/hide full resolution data'), end
 		disp('  q - quit')
-		disp('  q - help (this message)')
+		disp('  h - help (this message)')
 	case 'f'
 		if strcmp(var_list(1:7),'diE_tmp')
 			%do not plot high resolution data
