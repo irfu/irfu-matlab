@@ -8,8 +8,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	quantity - one of the following:
 %
 %	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
-%		also creates delta offsets Dp12p34x and Dp12p34y
+%		also creates delta offsets D{cl_id}p12p34x and D{cl_id}p12p34y
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
+%		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %
 %	options - one of the following:
 %	not yet implemented
@@ -73,7 +74,7 @@ if strcmp(quantity,'dies')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% aux data - Phase, etc.
+% die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'die')
 	save_file = './mEDSI.mat';
@@ -134,7 +135,11 @@ elseif strcmp(quantity,'die')
 
 end %main QUANTITY
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% END OF DATA MANIPULATIONS
 % saving
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % If flag_save is set, save variables to specified file
 if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
 	if exist(save_file,'file')
