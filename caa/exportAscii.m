@@ -3,6 +3,7 @@ function exportAscii(var,vs)
 % exportAscii(var,var_name_s)
 %
 % Information written into comment is based on var_name_s string
+% File  {var_name_s}.dat is saved into current directory
 %
 % Example:
 %	exportAscii(diE3p1234,'diE3p1234')
@@ -89,7 +90,7 @@ for i=1:n_data
 end
 
 fid = fopen([vs '.dat'],'w');
-fprintf(fid,['%% file created on ' date ' \n%%\n']);
+fprintf(fid,['%% this file was created on ' date ' \n%%\n']);
 fprintf(fid,['%% SC:        Cluster ' cl_id ' \n']);
 fprintf(fid,['%% Intrument: ' inst ' \n']);
 fprintf(fid,['%% Signal:    ' sig ' \n']);
