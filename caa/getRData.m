@@ -7,7 +7,7 @@ function getRData(sp,st,dt,sc_list,cdb)
 % dt - length of time interval in sec
 % sc_list - list of SC [optional]
 % cdb - CLusterDB object [optional] 
-%	// default: ClusterDB('ice:10|disco:10','/data/cluster')
+%	// default: ClusterDB('disco:10|disco:20','/data/cluster')
 % 
 % Example:
 % getRData('/home/yuri/caa-data/20020304', ...
@@ -22,7 +22,7 @@ function getRData(sp,st,dt,sc_list,cdb)
 error(nargchk(3,5,nargin))
 
 if nargin<4, sc_list=1:4; end
-if nargin<5, cdb = ClusterDB('ice:10|disco:10','/data/cluster',sp); end
+if nargin<5, cdb = ClusterDB('disco:10|disco:20','/data/cluster',sp); end
 
 vars = {'e','p','a','sax','whip','b','edi','ncis','vcis','vce','bfgm'};
 
