@@ -89,6 +89,7 @@ for i_event=1:size(events,1),
     end
   end
     if debug, disp(['sc_mode=' sc_mode]);end
+
   for i_data=1:length(data_list),
     switch data_list{i_data}
     case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
@@ -113,7 +114,7 @@ for i_event=1:size(events,1),
     case 'FGM',
       file_prefix='F';
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
-      [B1,B2,B3,B4]=c_get_bfgm(tim_interval);
+      [B1,B2,B3,B4]=c_get_bfgm(time_interval);
       for ic=1:4,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
       save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
