@@ -6,7 +6,7 @@
   </head>
   <body>
   <h1>CAA-Matlab description</h1>
-  <small>$Revision$  $Date$</small>
+  <small>$Id$</small>
   <hr>
   <h2>Contents</h2>
   <ul>
@@ -183,14 +183,12 @@ the time interval if the spacecraft potential changes.
 
 <pre>
 >> corrSOffsetM(ClusterProc(sp),1)
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[0.00 1.00 ]>1 1
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.00 1.00 ]>1.1 1
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.10 1.00 ]>1.2 1
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.20 1.00 ]>1.3 1
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.00 ]>1.3 1.2
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.20 ]>s
+Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[0.00 0.00 1.00 ]>1 0 1
+Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.00 ]>1.3 0 1
+Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.00 ]>1.3 0 1.2
+Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.20 ]>s
 Ddsi1, Damp1 -> ./mEDSI.mat
-Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.20 ]>q
+Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.20 ]>q
 </pre>
 
 <p>Plot summary information. This step will compute Ez from E.B=0 for times when 
