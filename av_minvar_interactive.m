@@ -9,8 +9,9 @@ function status = av_minvar_interacitve(x,column)
 % ud.v - eigenvectors (ud.v(1,:), ..), also ud.v1, ud.v2. ud.v3
 %  ud.Xminvar - data in minimum variance coordinates
 %
-
-persistent ud tlim;
+global ud
+persistent tlim;
+%persistent ud tlim;
 
 
 if      nargin < 1, help av_minvar_interactive;return;
@@ -28,7 +29,7 @@ switch action,
 case 'initialize'
     % X is used for minimum variance estimates
     tlim = [];
-    evalin('caller','clear ud; global ud;');
+    evalin('base','clear ud; global ud;');
     
     if min(column)==1, time_vector=1:size(x,1);
     elseif min(column)>1, time_vector=x(:,1);
