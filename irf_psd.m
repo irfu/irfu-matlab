@@ -77,6 +77,9 @@ if Fs==2, % test sampling frequency in case Fs not given
     else
         ii_start=1;
     end
+else
+	% seems the sampling frequency was given
+	ii_start=2;
 end
 for ii=ii_start:size(xx,2) % cycle over the columns of x
     x=xx(:,ii);
