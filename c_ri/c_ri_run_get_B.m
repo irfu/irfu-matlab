@@ -76,11 +76,11 @@ while feof(fp) == 0
       if s_row == -1 | e_row == -1
         p_mp = -1;
       else
-        p_mp = passing_MP(s_row:e_row,:),
+        p_mp = passing_MP(s_row:e_row,:);
       end
 
     end
-
+    p_mp,
     if p_mp(1,1) ~= -1
       c_ri_get_many_B(p_mp,path_output);
     end
