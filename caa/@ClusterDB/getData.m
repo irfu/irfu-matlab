@@ -474,7 +474,7 @@ elseif strcmp(quantity,'vce')
 		data = []; cd(old_pwd); return
 	end
 	if ~exist('./mBPP.mat','file')
-		irf_log('load','Please run ''n'' first (mBPP missing)')
+		irf_log('load','Please run ''b'' first (mBPP missing)')
 		data = []; cd(old_pwd); return
 	end
 
