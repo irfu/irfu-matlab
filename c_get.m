@@ -580,16 +580,16 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
  elseif strcmp(q,'r') | strcmp(q,'v'),
    save_file='./mR.mat';save_list=[];
-    for ic=sc_list, 
-      disp(['...R' num2str(ic) '--> mR.mat']);
-      disp(['...V' num2str(ic) '--> mR.mat']);
+   for ic=sc_list,
+     disp(['...R' num2str(ic) '--> mR.mat']);
      [tr,data_r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
-     [tv,data_v] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
      eval(irf_ssub('R?=[double(tr) double(data_r)''];',ic));
+     disp(['...V' num2str(ic) '--> mR.mat']);
+     [tv,data_v] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
      eval(irf_ssub('V?=[double(tv) double(data_v)''];',ic));
-     clear tr,tv,data_r,data_v;
+     clear tr tv data_r data_v;
      save_list=[save_list irf_ssub(' R? V? ', ic)];
-    end
+   end
 
  elseif strcmp(q,'vc'),
     for ic=sc_list,
