@@ -53,7 +53,7 @@ flag_date=1;   % default is to add date labels
 
   for j=1:length(h)
       axes( h(j) );xlabel('');
-      ax   = axis;
+      ax   = axis;axis(axis);
       tint = ax(1:2) + t_start_epoch;
       res  = timeaxis(tint);
       set( h(j), 'XTick', res{1} - t_start_epoch );
@@ -63,48 +63,39 @@ flag_date=1;   % default is to add date labels
          set( h(j), 'XTickLabel','');
       end
 
-      if nargin > 2
-         axes( h(j) );
-         ax   = axis;
-         tint = ax(1:2) + t_start_epoch;
-         res  = timeaxis(tint);
-         set( h(j), 'XTick', res{1} - t_start_epoch );
-         if j == length(h)
-            set( h(j), 'XTickLabel', res{2} );
-         else
-            set( h(j), 'XTickLabel','');
-         end
+      if nargin > 2  % xlabels should be added
+          set( h(j), 'XTickLabel','');
+          lab    = res{2};
+          xcoord = res{1};
+          for ii = 1:size(res{1},2)
+              if ~strcmp(lab(ii),' ')
+                  ax = axis;
+                  mm = av_interp( xlabels, xcoord(ii) + t_start_epoch );
+                  for jj = 1:length(mm)
+                      if jj==1, % the first line is time
+                          string      = lab(ii);
+                      else, % other lines are xlabels
+                          string      = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
+                      end
+                      outhandle   = text( xcoord(ii), ax(3), string );
+                      set( outhandle, 'HorizontalAlignment', 'center', ...
+                          'VerticalAlignment', 'top', 'FontSize', 10);
+                  end
+              end
+          end
 
-         lab    = res{2};
-         xcoord = res{1};
-         for ii = 1:size(res{1},2)
-             if ~strcmp(lab(ii),' ')
-                ax = axis;
-                mm = av_interp( xlabels, xcoord(ii) + t_start_epoch );
-                string_init = ' \newline';
-                for jj = 2:length(mm)
-                    string      = [string_init num2str(mm(jj),3)];
-                    string_init = [string_init ' \newline'];
-                    outhandle   = text( xcoord(ii), ax(3), string );
-                    set( outhandle, 'HorizontalAlignment', 'center', ...
-                         'VerticalAlignment', 'top', 'FontSize', 10);
-                end
-             end
-         end
-
-         % Add titles
-         string_init = ' \newline';
-         outhandle = text( ax(1), ax(3), 'UT' );
-         set( outhandle, 'HorizontalAlignment', 'right', ...
-              'VerticalAlignment', 'top', 'FontSize', 10);
-         for jj = 1:size(xlabeltitle,2)
-             string      = [string_init xlabeltitle{jj}];
-             string_init = [string_init ' \newline'];
-             outhandle = text( ax(1), ax(3), string );
-             set( outhandle, 'HorizontalAlignment', 'right', ...
+          % Add titles
+          string = 'UT';
+          for jj = 0:size(xlabeltitle,2),
+              if jj>0,
+                  flag_date=0; % if more than one line in xlabels, remove date
+                  string      = [repmat(' \newline',1,jj) xlabeltitle{jj}];
+              end
+              outhandle = text( ax(1), ax(3), string );
+              set( outhandle, 'HorizontalAlignment', 'right', ...
                   'VerticalAlignment', 'top', 'FontSize', 10);
-         end
-     end
+          end
+      end
   end
 
   start_time = fromepoch( ax(1) + t_start_epoch );
