@@ -94,6 +94,12 @@ TIME_RESOLUTION = num2str(TIME_RESOLUTION);
 
 % Do magic on E-field
 if strcmp(caa_vs,'E')
+	% We check if this full res E is from coming from two probe pairs
+	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234'))
+		c_log('save','This is not a full E, we skip it.')
+		return
+	end
+	
 	Dxy_s =  irf_ssub('Ddsi?',cl_id);
 	Dx_s =  irf_ssub('real(Ddsi?)',cl_id);
 	Dy_s =  irf_ssub('imag(Ddsi?)',cl_id);
@@ -108,17 +114,17 @@ if strcmp(caa_vs,'E')
 	end
 
 	data = caa_corof_dsi(data,Dx,Dy,Da);
-	dsc.com = {sprintf('DSI offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da)};
+	dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da);
+	dsc.com = [dsc.com '. Probes: ' dsc.sen];
 	
-	dsc.fro = {'Coordinate_System'};
+	%dsc.fro = {'Coordinate_System'};
 	dsc.frv = {'Observatory'};
 	if v_size>1
 		for j=2:v_size
-			dsc.fro = [dsc.fro {''}]; 
+			%dsc.fro = [dsc.fro {''}]; 
 			dsc.frv = [dsc.frv {''}];
 		end
 	end
-	dsc.com = [dsc.com, {['probes: ' dsc.sen]}];
 	
 	% Remove Ez, which is zero
 	if lev==3, data = data(:,[1:3 5]);
@@ -139,8 +145,8 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	dsc.si_conv = {''};
 	dsc.field_name = {['Potential difference measured between the probes '...
 		dsc.sen(1) ' and ' dsc.sen(2)]};
-	dsc.ent = {'Probe'};
-	dsc.prop = {'Potential'};
+	dsc.ent = {'Instrument'};
+	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
 end
 
@@ -189,7 +195,6 @@ fprintf(fid,'START_META     =   GENERATION_DATE\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
 fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
 fprintf(fid,'END_META       =   GENERATION_DATE\n');
-pmeta(fid,'PRODUCT_CAVEATS',dsc.com)
 
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'!                   Variables                         !\n');
@@ -221,13 +226,13 @@ for j=1:v_size
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
 	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
 	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
+	if ~isempty(dsc.com) & j==1
+		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
+	end
 	if ~strcmp(dsc.cs{j},'na')
 		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
 	end
-	if isfield(dsc,'fro') & isfield(dsc,'frv')
-		if ~isempty(dsc.fro{j})
-			fprintf(fid,['  FRAME_ORIGIN      = "' dsc.fro{j} '"\n']);
-		end
+	if isfield(dsc,'frv')
 		if ~isempty(dsc.frv{j})
 			fprintf(fid,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
 		end
