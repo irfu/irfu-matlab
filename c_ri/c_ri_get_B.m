@@ -92,7 +92,8 @@ FGMPATH = '/share/fgm_cal';
 if ~strcmp(h(1:end-1),'sanna.irfu.se')
 	FGMPATH = ['/net/sanna/export' FGMPATH];
 end
-if exist([FGMPATH '/tmp_att']), unix(['rm ' FGMPATH '/tmp_att']);end
+
+if exist([FGMPATH '/tmp_att'],'file'), disp('removing tmp_att'); unix(['rm ' FGMPATH '/tmp_att']); end
 
 if nargout,  % return B
     to_file=tempname;

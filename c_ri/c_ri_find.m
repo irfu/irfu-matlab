@@ -114,9 +114,11 @@ end
 if flag_continue,
   if exist('time_interval_start'),
     i_start=time_interval_start;
+    disp(['Sarting at ' num2str(i_start) '. time interval']);
   end
   if exist('MP_interval_start'),
     j_start=MP_interval_start;
+    disp(['Sarting at ' num2str(j_start) '. MP crossing interval']);
   end
 end
 
@@ -160,7 +162,7 @@ for i = i_start:i_end
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       if ~isempty(B1)>0,
         c_eval('try Binterp?=av_interp(B?,B1); catch Binterp?=[]; end;',2:4);
-        if isnumeric(Binterp2) & isnumeric(Binterp3) & isnumeric(Binterp4),
+        if ~isempty(Binterp2) & ~isempty(Binterp3) & ~isempty(Binterp4),
           [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
           if ~isempty(angles_tmp),
             [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles_tmp,ampl_tmp, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
