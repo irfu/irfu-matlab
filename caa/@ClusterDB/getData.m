@@ -26,13 +26,13 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// spin axis vector [GSE] 
 %	a   : A{cl_id} -> mA	// SC phase
 %	r   : R{cl_id} -> mR	// SC position
-%	v   : V{cl_id} -> mR	// SC velocity
+%	v   : V{cl_id}, diV{cl_id} -> mR	// SC velocity
 %
 %	//// Other instruments ////
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
 %	bfgm: B{cl_id},diB{cl_id}	->mB	// B FGM** [GSE+DSI]
 %		** contact Stephan Buchert
-%	edi : EDI{cl_id},diEDI{cl_id}	->mEDI	// E EDI PP [GSE+DSI] 
+%	edi : iEDI{cl_id},idiEDI{cl_id}	->mEDI	// E EDI PP (inert frame) [GSE+DSI] 
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
@@ -314,6 +314,12 @@ elseif strcmp(quantity,'v')
 	if ~isempty(data)
 		c_eval('V?=[double(t) double(data'')];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' V? ''];',cl_id);
+		% transform vector data to DSI
+		if c_load('SAX?',cl_id)
+			c_eval('diV?=c_gse2dsi(V?,SAX?);save_list=[save_list '' diV?''];',cl_id);
+		else
+			c_log('load','must fetch spin axis orientation (option ''sax'')')
+		end
 	else
 		c_log('dsrc',av_ssub('No data for V?',cl_id))
 	end
@@ -349,6 +355,7 @@ elseif strcmp(quantity,'bfgm')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcmp(quantity,'ncis')
 
+	inertial_f = 0;
 	r.qua = {quantity};
 	switch(quantity)
 	case 'b'
@@ -357,6 +364,7 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcm
 	case 'edi'
 		r.ins = 'EDI';
 		r.var = {r.ins};
+		inertial_f = 1; % EDI pp is in the inertial frame
 	case 'vcis'
 		r.ins = 'CIS';
 		r.qua = {'vcis_p', 'vcis_h'}; % CODIF and HIA 
@@ -375,15 +383,22 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcm
 		% first try ISDAT (fast) then files
 		dat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,r.qua{i});
 		if ~isempty(dat)
-			eval(av_ssub([r.var{i} '?=dat;save_list=[save_list '' ' r.var{i} '?''];'],cl_id));
+			if inertial_f
+				c_eval(['i' r.var{i} '?=dat;save_list=[save_list '' i' r.var{i} '?''];'],cl_id);
+			else
+				c_eval([r.var{i} '?=dat;save_list=[save_list '' ' r.var{i} '?''];'],cl_id);
+			end
 
 			% transform vector data to DSI
 			if size(dat,2)>2 
-				if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
-				if ~exist(av_ssub('SAX?',cl_id),'var')
-					c_log('load','must fetch spin axis orientation (option ''sax'')')
+				if c_load('SAX?',cl_id)
+					if inertial_f
+						c_eval(['idi' r.var{i} '?=c_gse2dsi(dat,SAX?);save_list=[save_list '' idi' r.var{i} '?''];'],cl_id);
+					else
+						c_eval(['di' r.var{i} '?=c_gse2dsi(dat,SAX?);save_list=[save_list '' di' r.var{i} '?''];'],cl_id);
+					end
 				else
-					eval(av_ssub(['di' r.var{i} '?=c_gse2dsc(' r.var{i} '?,SAX?);di' r.var{i} '?(:,3:4)=-di' r.var{i} '?(:,3:4);save_list=[save_list '' di' r.var{i} '?''];'],cl_id));
+					c_log('load','must fetch spin axis orientation (option ''sax'')')
 				end
 			end
 			clear dat
