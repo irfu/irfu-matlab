@@ -1,7 +1,15 @@
-function summaryPlot(cp,cl_id,cs)
-% summaryPlot make a summary plot
-% summaryPlot(cp,cl_id,cs) make a summary plot
+function out=summaryPlot(cp,cl_id,cs)
+% summaryPlot make EFW summary plot
+% h = summaryPlot(cp,cl_id,cs)
+% Input:
+% cp - ClusterProc object
+% cl_id - SC#
 % cs is a coordinate system : 'dsi' [default] of 'gse'
+% Output:
+% h - axes handles // can be omitted
+%
+% Example:
+% summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'gse')
 %
 % $Revision$  $Date$
 
@@ -18,13 +26,13 @@ end
 
 % load data
 if strcmp(cs,'dsi') 
-	q_list = {'P?','diE?','diVs?'};
-	l_list = {'SC pot [-V]','E DSI [mV/m]','V DSI [km/s]'};
+	q_list = {'P?','diE?','diEs?','diVs?'};
+	l_list = {'SC pot [-V]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
-	q_list = {'P?','E?','Vs?'};
-	l_list = {'SC pot [-V]','E GSE [mV/m]','V GSE [km/s]'};
+	q_list = {'P?','E?','Es?','Vs?'};
+	l_list = {'SC pot [-V]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
 end
-f_list = {'mP','mEdB','mEdB'};
+f_list = {'mP','mEdB','mEdB','mEdB'};
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
@@ -69,7 +77,8 @@ for k=1:n_plots
 	h{k} = subplot(n_plots,1,k);
 	av_tplot(data{k});
 	ylabel(labels{k})
-	if k==1, title(['Cluster ' num2str(cl_id,'%1d')]), end
+	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
+	if k<n_plots, xlabel(''), end		
 end
 
 addPlotInfo
@@ -78,3 +87,5 @@ for k=n_plots:-1:1
 	axes(h{k})
 	if min(size(data{k}))>2, legend('X','Y','Z'), end
 end
+
+if nargout>0, out=h;,end
