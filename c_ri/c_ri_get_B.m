@@ -94,9 +94,14 @@ if nargout,  % return B
   unix(['/bin/sh -c ''' unix_command '''']);
   to_file_attr=dir(to_file);
   if to_file_attr.bytes>0,
-    fvs = fgmvec_stream(to_file);tavail(fvs,[])
-    dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
-    B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
+    fvs = fgmvec_stream(to_file);
+    ta=tavail(fvs);
+    if min(ta)>0,
+      dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
+      B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
+    else
+      B=[-1 NaN NaN NaN];
+    end
     close(fvs);
   else
     disp('Zero size FGM data file!');
