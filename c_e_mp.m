@@ -30,7 +30,7 @@ if nargin==1 | isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
 if nargin == 3;  sc_list=e; end
 if nargin<3, sc_list=1:4; end
 if nargin<=3,
-  for ic=sc_list,eval(av_ssub('load mEDSI diEp1234?;die?=av_t_lim(diEp1234?,tint);clear diEp1234?;disp(''..diEp1234?'');',ic)),end
+  for ic=sc_list,eval(av_ssub('load mEDSI diE?p1234;die?=av_t_lim(diE?p1234,tint);clear diEp?1234;disp(''..diE?p1234'');',ic)),end
   for ic=sc_list,eval(av_ssub('load mB diB?;dib?=av_t_lim(diB?,tint);clear diB?;disp(''..diB?'')',ic)),end
 end
 if nargin == 4,  sc_list=1;die1=e;dib1=b; end
