@@ -86,8 +86,12 @@ if ~exist('diVCEp','var') | ~exist('diVCEh','var')
 else
 	for i=1:length(var)
 		if exist(var{i},'var')
-			var_list = [var_list ',' var{i}];
-			var_list1 = [var_list1 ',' var{i}];
+			eval(['ll=length(find(~isnan(' var{i} '(:,2:end))));'])
+			if ll>0
+				var_list = [var_list ',' var{i}];
+				var_list1 = [var_list1 ',' var{i}];
+			end
+			clear ll
 		end
 	end
 end
