@@ -79,7 +79,20 @@ if strcmp(quantity,'dies')
 	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
 		eval(av_ssub(['m12=mean(diEs?p12);m34=mean(diEs?p34);'],cl_id))
 		Del = m12(2:3) - m34(2:3);
-		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', Del(1), Del(2)))
+		% we suppose that smaller field is more realistic
+		% and will correct the largest signal
+		% real offset is applied to p12, imaginary to p34
+		if abs(m34)>abs(m12), Del = Del*j; end
+		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
+		abs(Del(1)), abs(Del(2))))
+		if real(Del)
+			disp('correcting p12')
+			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs2p12),1)*Del;',cl_id));
+		else
+			disp('correcting p34')	
+			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs2p34),1)*Del;',cl_id));
+		end
+		clear m12 m34 Del
 		eval(av_ssub('D?p12p34=Del;',cl_id))
 		eval(av_ssub(['save_list=[save_list '' D?p12p34 ''];'],cl_id));
 	end
@@ -155,7 +168,18 @@ elseif strcmp(quantity,'die')
 		eval(av_ssub('load mEDSI D?p12p34;',cl_id));
 	end
 	if exist(av_ssub('D?p12p34',cl_id))
-		eval(av_ssub('coef(1,3)=D?p12p34(1)-D?p12p34(2)*j;',cl_id));
+		eval(av_ssub('Del=D?p12p34;',cl_id))
+		if real(Del)
+			disp('correcting p12')
+			i_c = 1;	
+		else
+			disp('correcting p34')
+			Del = imag(Del);
+			i_c = 2;
+		end
+		eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*j;',cl_id));
+		clear Del
+			
 	else, disp('no Delta offsets found in mEDSI, not doing correction...')
 	end
 
@@ -166,8 +190,9 @@ elseif strcmp(quantity,'die')
 	eval(av_ssub('diE?p1234(:,3)=-diE?p1234(:,3);',cl_id));
 	eval(av_ssub(['save_list=[save_list '' diE?p1234 ''];'],cl_id));
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END OF DATA MANIPULATIONS
 % saving
@@ -175,6 +200,7 @@ end %main QUANTITY
 
 % If flag_save is set, save variables to specified file
 if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
+	disp([save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
 	else
