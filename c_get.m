@@ -3,7 +3,7 @@
 % export to ASCII files
 % uses ISGETDATALITE
 %
-% $Revision$  $Date$
+% $Id$
 
 csds_dir='/data/cluster/CSDS/';
 
@@ -36,8 +36,9 @@ mmm =  ...
         'dve1 spin fits dvE1p12..dvE4p34 -> mE ';
 	'de (dve+vsxBPP) dE1..dE4 -> mE        ';
 	'deo dEo1..dEo4 Eo.B=0                 ';
-	'es  E ->ascii E?                      ';
-	'ps  P ->ascii P?                      ';
+	'ea,esa (s-fit)  E ->ascii E?          ';
+	'va,vsa (s-fit)  ExB ->ascii VExB?     ';
+	'pa  P ->ascii P?                      ';
 ];
 disp('-------------- Get Cluster II data ----------------');
 disp(mmm); % show onces menu
@@ -388,30 +389,74 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      fclose(fid);
    end
 
- elseif strcmp(q,'ea'), % create E ascii files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% E ASCII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ elseif strcmp(q,'ea')|strcmp(q,'esa') % create E ascii files
+	 if strcmp(q,'ea'), s = ''; else, s = 's'; end
   for ic=sc_list,
-     % E_GSE file creation
-     %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
-     %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_E_GSE_sc' num2str(ic) '.dat'];
-     eval(av_ssub('if ~exist(''E?'') & exist(''mEdB.mat'',''file''), load mEdB E? ang_limit;disp(''Loading E?, ang_limit from mEdB'');end',ic));
+     eval(av_ssub(['if ~exist(''E' s '?'') & exist(''mEdB.mat'',''file''), load mEdB E' s '? ang_limit?;disp(''Loading E' s '?, ang_limit? from mEdB'');end'],ic));
      eval(av_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading ooffset values from mEDSI.mat'');end',ic));
-     eval(av_ssub('if ~exist(''diE?'')& exist(''mEdB.mat'',''file''), load mEdB diE? ang_limit;disp(''Loading diE?, ang_limit from mEdB'');end',ic));
-     eval(av_ssub('offset_comment=[''Offsets => Damp='' num2str(Damp?) '', Da?p12='' num2str(Da?p12) '', Da?p34='' num2str(Da?p34) '', D?p12p34='' num2str(D?p12p34) ''\n''];',ic)); 
-     if eval(av_ssub('exist(''E?'')',ic)),
-       eval(av_ssub('number_of_points=size(E?,1);',ic));
-       disp(['E' num2str(ic) ' --> E' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       E_add_comment=[offset_comment '\n ang_limit=' num2str(ang_limit) '\n'];
-       E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \n with respect to the spin plane that is larger than ang_limit'];
-       eval(av_ssub(['exportAscii(E?,''E?'',''' E_add_comment ''');'],ic));
+     eval(av_ssub(['if ~exist(''diE' s '?'')& exist(''mEdB.mat'',''file''), load mEdB diE' s '? ang_limit?;disp(''Loading diE' s '?, ang_limit? from mEdB'');end'],ic));
+	offset_comment = 'Offsets => '; 
+	if exist(av_ssub('Damp?',ic))
+     	eval(av_ssub('offset_comment=[offset_comment '' Damp='' num2str(Damp?)];',ic)); 
+	end
+	if exist(av_ssub('Da?p12',ic))
+     	eval(av_ssub('offset_comment=[offset_comment '' Dap12='' num2str(Da?p12)];',ic)); 
+	end
+	if exist(av_ssub('Da?p34',ic))
+     	eval(av_ssub('offset_comment=[offset_comment '' Dap34='' num2str(Da?p34)];',ic)); 
+	end
+	if exist(av_ssub('D?p12p34',ic))
+     	eval(av_ssub('offset_comment=[offset_comment '' Dp12p34='' num2str(D?p12p34)];',ic)); 
+	end
+	if exist(av_ssub('Ddsi?',ic))
+     	eval(av_ssub('offset_comment=[offset_comment '' Ddsi(x,y)=('' num2str(real(Ddsi?)) '','' num2str(imag(Ddsi?)) '')''];',ic)); 
+	end
+    offset_comment=[offset_comment '\n']; 
+     eval(av_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
+     if eval(av_ssub(['exist(''E' s '?'')'],ic)),
+       eval(av_ssub(['number_of_points=size(E' s '?,1);'],ic));
+       disp(['E' s num2str(ic) ' --> E' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+       E_add_comment=[offset_comment '\nang_limit=' ang_limit_s '\n'];
+       E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
+       eval(av_ssub(['exportAscii(E' s '?,''E' s '?'',''' E_add_comment ''');'],ic));
      end
-     if eval(av_ssub('exist(''diE?'')',ic)),
-       eval(av_ssub('number_of_points=size(diE?,1);',ic));
-       disp(['diE' num2str(ic) ' --> diE' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       diE_add_comment=[offset_comment '\n ang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an angle with respect to the spin plane that is larger than ang_limit'];
-       eval(av_ssub(['exportAscii(diE?,''diE?'',''' diE_add_comment ''');'],ic));
+     if eval(av_ssub(['exist(''diE' s '?'')'],ic)),
+       eval(av_ssub(['number_of_points=size(diE' s '?,1);'],ic));
+       disp(['diE' s num2str(ic) ' --> diE' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+       diE_add_comment=[offset_comment '\nang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
+       eval(av_ssub(['exportAscii(diE' s '?,''diE' s '?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
    end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% V=ExB ASCII
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ elseif strcmp(q,'va')|strcmp(q,'vsa') 
+	if strcmp(q,'va'), s = ''; else, s = 's'; end
+	for ic=sc_list,
+     eval(av_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));
+     eval(av_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
+     if eval(av_ssub(['exist(''VExB' s '?'')'],ic)),
+       eval(av_ssub(['number_of_points=size(VExB' s '?,1);'],ic));
+       disp(['VExB' s num2str(ic) ' --> VExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+       E_add_comment=['\nang_limit=' ang_limit_s '\n'];
+       E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
+       eval(av_ssub(['exportAscii(VExB' s '?,''VExB' s '?'',''' E_add_comment ''');'],ic));
+     end
+     if eval(av_ssub(['exist(''diVExB' s '?'')'],ic)),
+       eval(av_ssub(['number_of_points=size(diVExB' s '?,1);'],ic));
+       disp(['diVExB' s num2str(ic) ' --> diVExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+       diE_add_comment=['\nang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
+       eval(av_ssub(['exportAscii(diVExB' s '?,''diVExB' s '?'',''' diE_add_comment ''');'],ic));
+     end
+     clear E_add_comment diE_add_comment number_of_points;
+   end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EDI
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'edi'),
   save_file='./mEDI.mat';
     for ic=sc_list,
@@ -482,7 +527,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else eval(['save mP ' save_list]); end
   save_list = '';
 
- elseif strcmp(q,'ps'), % create V_sc n ascii files
+ elseif strcmp(q,'pa'), % create V_sc n ascii files
   for ic=sc_list,
      % Vsc_N file creation
      %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
