@@ -160,9 +160,9 @@ for i = 1:i_end
   if run_steps(3) == 1
     disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-    sort_events=1;
+    sort_events=1;keyboard;
     while sort_events
-      dt_events=diff(time_of_events(:,1)); % find distance between events
+      dt_events=diff(time_of_events(:,1),1,1); % find distance between events
       ind=find(dt_events<period/2); % find which events are closer than period/2 
       if isempty(ind), sort_events=0;end
       time_of_events(ind(1),:)=[]; 
@@ -171,6 +171,7 @@ for i = 1:i_end
   
   %step 4
   if run_steps(4) == 1
+    disp('==============  Getting data for events ====================');
     c_ri_get_event_data(time_interval,time_of_events(:,1),path_E, {'EFW_E','EFW_P'}, period);
     per = period(i);
     c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
