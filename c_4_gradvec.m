@@ -1,4 +1,4 @@
-function [div,grad]=c_4_gradvec(r1,r2,r3,r4)
+function [varargout]=c_4_gradvec(r1,r2,r3,r4)
 %c_4_gradVec  Calculate spatial gradient tensor of vector (div and curl as special cases)
 %  [gradvec]=c_4_gradvec(r1,r2,r3,r4)  calculate spatial gradient tensor of vector
 %  the gradient is in the same units as r
@@ -31,10 +31,12 @@ Rinv=c_4_R(dR1,dR2,dR3,dR4,-1);                                     % inverse of
 gradVec=S*Rinv;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
-if nargout==0&nargout==1,
-   div=gradVec;
+
+if nargout==0|nargout==1,
+varargout(1)={gradVec};
 elseif nargout == 2,
        div=trace(gradVec);
        curl=[gradVec(2,3)-gradVec(3,2) -gradVec(1,3)+gradVec(3,1) gradVec(1,2)-gradVec(2,1)];
+       varargout(1)={div};
+       varargout(2)={curl};
 end
-
