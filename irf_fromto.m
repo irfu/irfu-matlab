@@ -2,13 +2,26 @@ function ui_fromto(fromto)
 % UI_FROMTO - callback for the buttons in the time selection window
 %   fromto - action to do
 
-global SUBPLOT_HANDLES
+ud = get(gcbf, 'userdata'); % get userdata of time manager window
 
-ud = get(gcbf, 'userdata');
+ud_fig=get(ud.figure,'userdata'); % get userdata of figures windows
+
+% check if t_start_epoch is necessary
+if isfield(ud_fig,'t_start_epoch')
+  t_start_epoch=ud.t_start_epoch;
+else
+  t_start_epoch=0;
+end
+
+if isfield(ud_fig,'subplot_handles') % check the handles to subplots
+  SUBPLOT_HANDLES=ud_fig.subplot_handles;
+else
+  SUBPLOT_HANDLES=get(ud.figure,'Children'); % assume that subplots are the only children of figure
+end
 
 switch fromto
   case 'cancel'
-    ud.cancel = 1; set(gcbf, 'userdata', ud), uiresume;
+    uiresume;
   case 'ok'
     uiresume;
   case 'ax'
@@ -16,89 +29,69 @@ switch fromto
     p = get(gca, 'currentpoint');
     if ud.from
       tlim(1) = max(ud.tlim(1), p(1));
-      set(ud.lnh, 'xdata', tlim);
+      if tlim(1)>tlim(2), tlim(2)=tlim(1);end % start time should be smaller or equal than end time
+      update_fromto(ud,tlim);
       set(gcbf, 'pointer', 'right');
-      strfrom=datestr(datenum(fromepoch(tlim(1))), 0);
-      set(ud.fromh, 'string', strfrom);
       set(ud.helph, 'string', 'Click on axis selects ''To'' time');
       ext = get(ud.helph, 'extent');
       set(ud.helph, 'position', [395-ext(3) 55 ext(3:4)]);
       ud.from = 0;
     else
       tlim(2) = min(ud.tlim(2), p(1));
-      set(ud.lnh, 'xdata', tlim);
+      if tlim(2)<tlim(1), tlim(1)=tlim(2);end % start time should be smaller or equal than end time
+      update_fromto(ud,tlim);
       set(gcbf, 'pointer', 'left');
-      strto=datestr(datenum(fromepoch(tlim(2))), 0);
-      set(ud.toh, 'string', strto);
       set(ud.helph, 'string', 'Click on axis selects ''From'' time');
       ext = get(ud.helph, 'extent');
       set(ud.helph, 'position', [5 55 ext(3:4)]);
       ud.from = 1;
     end
-    set(gcbf, 'userdata', ud);
   case 'from'
-    tlim(1) = toepoch(datevec(strrep(get(ud.fromh, 'string'),'_',' ')));
-    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
-    tlim(2)=tlim(1)+step;
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
+    [tlim step]= get_fromto(ud);
+    if tlim(1) > tlim(2)
+      tlim(2)=tlim(1)+step;
+    else
+      tlim(2)=tlim(1)+step;
+    end
+    update_fromto(ud,tlim);
   case 'to'
-    tlim = get(ud.lnh, 'xdata');
-    tlim(2) = toepoch(datevec(strrep(get(ud.toh, 'string'),'_',' ')));
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.step, 'string', datestr(diff(tlim)/86400 ,13));
+    [tlim step]= get_fromto(ud);
+    if tlim(2)< tlim(1) % end time smaller than start time
+      tlim(1)=tlim(2);
+      step=0;
+    else
+        step=diff(tlim);
+    end
+    update_fromto(ud,tlim);
   case 'step'
-    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
-    tlim = get(ud.lnh, 'xdata');
-    tlim(2) = tlim(1)+step;
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
+    [tlim step]=get_fromto(ud);
+    tlim = tlim+step;
   case 'update'
-    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
-    tlim = get(ud.lnh, 'xdata');
+    [tlim step]=get_fromto(ud);
     av_zoom(tlim,'x',SUBPLOT_HANDLES);
     add_timeaxis(SUBPLOT_HANDLES);
   case 'prev'
-    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
-    tlim = get(ud.lnh, 'xdata');
+    [tlim step]=get_fromto(ud);
     tlim = tlim-step;
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.fromh, 'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'));
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
-    av_zoom(tlim,'x',SUBPLOT_HANDLES);
-    add_timeaxis(SUBPLOT_HANDLES);
+    update_fromto(ud,tlim)
+    irf_fromto('update')
   case 'next'
-    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
-    tlim = get(ud.lnh, 'xdata');
+    [tlim step]=get_fromto(ud);
     tlim = tlim+step;
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.fromh, 'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'));
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
-    av_zoom(tlim,'x',SUBPLOT_HANDLES);
-    add_timeaxis(SUBPLOT_HANDLES);
+    update_fromto(ud,tlim)
+    irf_fromto('update')
   case 'all_interval'
-    hh=SUBPLOT_HANDLES(1,1);  % use the first subplot to estimate available time interval
-    xl=get(hh,'XLim');
-    hc=get(hh,'Children');
-    xd=get(hc(1),'XData');
-    avail=[min([xl xd]) max([xl xd])];
+    hc=get(SUBPLOT_HANDLES(1,1),'Children'); % use the first subplot to estimate available time interval
+    xd=get(hc(1),'XData');minx=min(xd);maxx=max(xd);clear xd;
+    if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
+    avail=[minx maxx]+t_start_epoch;
     tlim=avail;step=diff(tlim);
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.fromh, 'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'));
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
-    set(ud.step, 'string', datestr(diff(tlim)/86400 ,13));
-    av_zoom(tlim,'x',SUBPLOT_HANDLES);
-    add_timeaxis(SUBPLOT_HANDLES);
+    update_fromto(ud,tlim);
+    irf_fromto('update')
   case 'zoom_to_1'
-    hh=SUBPLOT_HANDLES(1,1);  % use the first subplot to estimate available time interval
-    xl=get(hh,'XLim');
-    tlim=[xl(1) xl(2)];step=diff(tlim);
-    set(ud.lnh, 'xdata', tlim);
-    set(ud.fromh, 'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'));
-    set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
-    set(ud.step, 'string', datestr(diff(tlim)/86400 ,13));
-    av_zoom(tlim,'x',SUBPLOT_HANDLES);
-    add_timeaxis(SUBPLOT_HANDLES);
+    xl=get(SUBPLOT_HANDLES(1,1),'XLim'); % use the first subplot to estimate available time interval
+    tlim=[xl(1) xl(2)]+t_start_epoch;step=diff(tlim);
+    update_fromto(ud,tlim);
   case 'autoY'
     for h=SUBPLOT_HANDLES,
       set(h,'YLimMode','auto');
@@ -127,5 +120,35 @@ switch fromto
       set(ud.helph, 'position', [5 55 ext(3:4)]);
       ud.from = 1;
     end
-    set(gcbf, 'userdata', ud);
+end
+set(gcbf, 'userdata', ud);
+
+if ud.autoY==1,
+  for h=SUBPLOT_HANDLES,
+    set(h,'YLimMode','auto');
+  end
+end
+
+end
+
+function update_fromto(ud,tlim)
+% update input strings
+t_from_str=epoch2iso(tlim(1));
+t_from_str=[t_from_str(1:findstr(t_from_str,'T')-1) '_' t_from_str(findstr(t_from_str,'T')+1:end-3)];
+t_to_str=epoch2iso(tlim(2));
+t_to_str=[t_to_str(1:findstr(t_to_str,'T')-1) '_' t_to_str(findstr(t_to_str,'T')+1:end-3)];
+set(ud.fromh, 'string', t_from_str);
+set(ud.toh, 'string', t_to_str);
+set(ud.step, 'string', regexp(epoch2iso(diff(tlim)),'\d+:\d+:\d+\.\d{4}','match'));
+% update the red line showing the data interval
+set(ud.lnh, 'xdata', tlim);
+
+end
+
+function [tlim step]=get_fromto(ud)
+xx=get(ud.fromh, 'string');tstr=[strrep(xx,'_','T') 'Z'];
+tlim(1) = iso2epoch(tstr);
+xx=get(ud.toh, 'string');tstr=[strrep(xx,'_','T') 'Z'];
+tlim(2) = iso2epoch(tstr);
+step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
 end

@@ -3,12 +3,12 @@ function status = irf_tm(h)
 %   h is the array with all subplot graphics handles
 %
 
-global SUBPLOT_HANDLES; SUBPLOT_HANDLES=h;
+if nargin == 0, h=gca; end
+
 tlim = [];
 
-if nargin<1,  h = gca;  end
-
-% use the first subplot to estimate available time interval
+% use the first subplot to estimate available time interval, also check the
+% user_data.t_start_epoch of the figure
   hh=h(1,1);  
   xl=get(hh,'XLim');
   hc=get(hh,'Children');
@@ -16,11 +16,22 @@ if nargin<1,  h = gca;  end
   avail=[min([xl xd]) max([xl xd])];
   presel=xl;
   
+  % read t_start_epoch from figures userdata field and update time
+  % intervals
+  user_data=get(gcf,'userdata');
+  if isfield(user_data,'t_start_epoch')
+      avail=avail+user_data.t_start_epoch;
+      presel=presel+user_data.t_start_epoch;
+  end
+
   dt = 0.02*diff(avail);
   xlim = [avail(1)-dt avail(2)+dt];
   ttics = timeaxis(xlim);
 
 % initialize dgud variable that has all the properties of time manager
+dgud=get(gcf,'userdata'); % take existing values in user_data and add necessary
+dgud.figure=get(h(1),'parent'); % add the number of figure which is controled by irf_tm
+dgud.autoY=1; % default is always automatically fix Y component
 dgud.tlim = avail;
 dgud.from = 1;
 dgud.cancel = 0;
@@ -74,7 +85,7 @@ ext1 = get(uch1, 'extent');
 set(uch1, 'position', [5 ysize-100 ext1(3:4)]);
 x0 = 5 + ext1(3);
 dgud.fromh = uicontrol('style', 'edit', ...
-      'string', strrep(datestr(datenum(fromepoch(presel(1))), 0),' ','_'), ...
+      'string', epoch2iso(presel(1)), ...
     'callback', 'irf_fromto(''from'')', ...
     'backgroundcolor','white');
 ext2 = get(dgud.fromh, 'extent');
@@ -90,7 +101,7 @@ set(dgud.step, 'position', [x0+ext2(3)+extstep(3)+55 ysize-100 ext2(3) ext(4)]);
 
 uch1 = uicontrol('style', 'text', 'string', 'To:');
 dgud.toh = uicontrol('style', 'edit', ...
-    'string', datestr(datenum(fromepoch(presel(2))), 0), ...
+    'string', epoch2iso(presel(2)), ...
     'callback', 'irf_fromto(''to'')','backgroundcolor','white');
 set(uch1, 'position', [ext1(1) 30 ext1(3:4)]);
 set(dgud.toh, 'position', [x0 30 ext2(3)+50 ext(4)]);
@@ -135,16 +146,5 @@ ext2 = get(uch2, 'extent');
 set(uch2, 'position', [290 5 ext2(3:4)]);
 
 set(dgh, 'userdata', dgud);
-
-%uiwait;
-
-dgud = get(dgh, 'userdata');
-if ~dgud.cancel
-  tlim = [datenum(get(dgud.fromh, 'string')) ...
-	  datenum(get(dgud.toh, 'string'))];
-end
-set(0, 'currentfigure', storecf);
-
-return
 
 %close(dgh);
