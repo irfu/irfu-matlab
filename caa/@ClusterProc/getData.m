@@ -28,7 +28,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	options - one of the following:
 %	nosave : do no save on disk
 %	leavewhip : do not remove time intervals with Whisper pulses
-%	usesavedoff : use saved offsets instead of recalculating everything
+%	notusesavedoff : recalculating everything instead of using saved offsets
 %
 %
 % $Id$
@@ -57,8 +57,8 @@ while have_options
         flag_save = 0;
 	case 'leavewhip'
 		flag_rmwhip = 0;
-	case 'usesavedoff'
-		flag_usesavedoff = 1;
+	case 'notusesavedoff'
+		flag_usesavedoff = 0;
 	case 'ang_limit'
 		if length(args)>1
 			if isnumeric(args{2})
@@ -125,9 +125,7 @@ if strcmp(quantity,'dies')
 				end
 			end
 			
-			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
-			sp = sp(:,1:4);
-			sp(:,4) = 0*sp(:,4); % Z component
+			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2),0);
 			
 			% remove point with zero time
 			ind = find(sp(:,1)>0);
@@ -135,12 +133,27 @@ if strcmp(quantity,'dies')
 				c_log('proc',[num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
 				sp = sp(ind,:);
 			end
-
+			
+			adc_off = sp(:,[1 4]);
+			% remove points with sdev>.4
+			ii = find(sp(:,6)>.4);
+			if length(ii)/size(sp,1)>.05,
+				c_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins removed for ADC offsets']);
+			end
+			adc_off(ii,2) = 0;
+			adc_off = wAverage(adc_off,1/4);
+			ii = find(adc_off(:,2)==0);
+			adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
+			
+			sp = sp(:,1:4);
+			sp(:,4) = 0*sp(:,4); % Z component
+			
 			% remove spins with bad spin fit (obtained E > 10000 mV/m)
 			ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
 			if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
-			eval(av_ssub(['diEs?p' ps '=sp;'],cl_id)); clear tt aa sp
-			eval(av_ssub(['save_list=[save_list '' diEs?p' ps ' ''];'],cl_id));
+			eval(av_ssub(['diEs?p' ps '=sp;Dadc?p' ps '=adc_off;'],cl_id)); 
+			clear tt aa sp adc_off
+			eval(av_ssub(['save_list=[save_list ''diEs?p' ps ' Dadc?p' ps ' ''];'],cl_id));
 		else
 			c_log('load',sprintf('No p%d data for sc%d',pl(k),cl_id))
 		end
@@ -170,7 +183,7 @@ if strcmp(quantity,'dies')
 		end
 		clear m12 m34 Del
 
-		eval(av_ssub(['save_list=[save_list '' D?p12p34 ''];'],cl_id));
+		eval(av_ssub(['save_list=[save_list ''D?p12p34 ''];'],cl_id));
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -212,10 +225,15 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
 				% correct ADC offset
 				if exist('./mEDSI.mat','file')
-					eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
+					eval(av_ssub(['load mEDSI Da?p' ps ' Dadc?p' ps],cl_id))
 				end
-				if exist(av_ssub(['Da?p' ps],cl_id),'var')
-					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
+				if exist(av_ssub(['Dadc?p' ps],cl_id),'var')
+					c_eval(['c_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
+					c_eval(['tmp_adc = av_interp(Dadc?p' ps ',Ep' ps ');'],cl_id)
+					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
+					clear tmp_adc
+				elseif exist(av_ssub(['Da?p' ps],cl_id),'var')
+					c_eval(['c_log(''calb'',sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
 					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
 				else
 					c_log('calb','ADC offset not corrected')
@@ -223,9 +241,14 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 			else
 				% correct ADC offset
 				if flag_usesavedoff & exist('./mEDSI.mat','file')
-					eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
+					eval(av_ssub(['load mEDSI Da?p' ps ' Dadc?p' ps],cl_id))
 				end
-				if exist(av_ssub(['Da?p' ps],cl_id),'var')
+				if exist(av_ssub(['Dadc?p' ps],cl_id),'var')
+					c_eval(['c_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
+					c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = av_interp(Dadc?p' ps ',Ep' ps ');'],cl_id)
+					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
+					clear tmp_adc
+				elseif exist(av_ssub(['Da?p' ps],cl_id),'var')
 					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
 					c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
 				else
