@@ -13,7 +13,7 @@ function corrSOffsetM(cp,cl_id)
 %  D#p12p34  - difference in sunward offset between different probe pairs
 %              first value gives offset difference in X- and second in Y-direction
 % Example:
-% corrSOffset(ClusterProc('/home/yuri/caa-data/20020304'),1)
+% corrSOffsetM(ClusterProc('/home/yuri/caa-data/20020304'),1)
 %
 % $Id$
 
@@ -46,6 +46,21 @@ if exist('./mEDSI.mat','file')
 			Del = imag(Del);
 			eval(av_ssub('diEs=diEs?p34-ones(length(diEs?p34),1)*Del;',cl_id))
 		end
+
+		% LOad offsets
+		offset = [0+0i 1];
+		eval(av_ssub('load mEDSI Ddsi? Damp?',cl_id))
+		if exist(av_ssub('Ddsi?',cl_id),'var')
+			eval(av_ssub('offset(1)=Ddsi?;clear Ddsi?',cl_id))
+			disp(sprintf('loading DSI offset from file Ddsi=%.2f %.2f*i',...
+			real(offset(1)),imag(offset(1))))
+		end
+		if exist(av_ssub('Damp?',cl_id),'var')
+			eval(av_ssub('offset(2)=Damp?;clear Damp?',cl_id))
+			disp(sprintf('loading amplitude correction from file Damp=%.2f',...
+			offset(2)))
+		end
+
 	else
 		error('caa:noData','no diEs{cl_id}p34 data in mEDSI')
 	end
@@ -92,7 +107,6 @@ else
 	var_list1 = [var_list1 ',diEDI'];
 end
 
-offset = [0+0i 1];
 diE_tmp = diE;
 diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
 diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
@@ -115,8 +129,19 @@ eval(['legend(' leg ')'])
 q='0';
 while(q ~= 'q')
   flag_replot=0;
-	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
+	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
 	switch(q)
+	case 'h'
+		if strcmp(var_list(1:7),'diE_tmp')
+			%do not plot high resolution data
+			var_list = var_list(9:end);
+			leg = leg(12:end);
+		else
+			%plot high resolution data
+			var_list = ['diE_tmp,' var_list];
+			leg = ['''diEp1234'',' leg];
+		end
+  		flag_replot=1;
 	case 'r'
 		disp(sprintf('Reading Ddsi%d, Damp%d <- ./mEDSI.mat',cl_id,cl_id))
 		eval(av_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
