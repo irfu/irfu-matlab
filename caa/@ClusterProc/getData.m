@@ -7,9 +7,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
+%	dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %		also creates delta offsets D{cl_id}p12p34.
-%		If the offset is real then it must be applied to p12,
+%		If the offset is real then it must be applied to p12/32,
 %		if imaginary - to p34
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
@@ -121,16 +121,18 @@ if strcmp(quantity,'dies')
 		c_log('load',...
 			av_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 	end
-	if ~(c_load('wE?p12',cl_id) | c_load('wE?p34',cl_id)) 
+	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
 		c_log('load',...
-			av_ssub(['No wE?p12 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')'],cl_id))
+			av_ssub(['No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')'],cl_id))
 		data = []; return
 	end
 
-	pl=[12,34];
+	p12 = 12;
+	pl=[12,32,34];
 	for k=1:length(pl)
 		ps = num2str(pl(k));
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
+			if pl(k)==32, p12 = 32; end
 			c_eval(['tt=wE?p' ps ';aa=A?;'],cl_id)
 			c_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
@@ -179,11 +181,12 @@ if strcmp(quantity,'dies')
 	end
 
 	% Delta offsets
-	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
+	if (exist(av_ssub('diEs?p12',cl_id),'var') | ...
+	exist(av_ssub('diEs?p32',cl_id),'var')) & exist(av_ssub('diEs?p34',cl_id),'var')
 		
 		% To compute delta offsets we remove points which are > 2*sdev
 		% as this must de a stable quantity
-		eval(av_ssub(['df=diEs?p12(:,2:3)-diEs?p34(:,2:3);'],cl_id))
+		eval(av_ssub(['df=diEs?p!(:,2:3)-diEs?p34(:,2:3);'],cl_id,p12))
 		sdev = std(df);
 		comp_s = 'xy';
 		for comp = 1:2
@@ -204,8 +207,8 @@ if strcmp(quantity,'dies')
 		eval(av_ssub('D?p12p34=Del;',cl_id))
 
 		if real(Del)
-			c_log('calb','correcting p12')
-			c_eval('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(size(diEs?p12,1),1)*Del;',cl_id);
+			c_log('calb',av_ssub('correcting p?',p12))
+			eval(av_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
 		else
 			c_log('calb','correcting p34')
 			Del = imag(Del);
@@ -240,19 +243,21 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		data = []; return
 	end
 	if do_burst, c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
-	else, c_eval(['load mER ' var_name '12 ' var_name '34;'],cl_id);
+	else, c_eval(['load mER ' var_name '12 ' var_name '32 ' var_name '34;'],cl_id);
 	end
 	
 	% calibration coefficients // see c_despin
 	coef=[[1 0 0];[1 0 0]];
 
-	pl=[12,34];
+	pl=[12,32,34];
 	full_e = [];
 	n_sig = 0;
+	p12 = 12;
 	
 	for k=1:length(pl)
 		ps = num2str(pl(k));
 		if exist(av_ssub([var_name ps],cl_id),'var')
+			if pl(k)==32, p12 = 32; end
 			n_sig = n_sig + 1;
 			if do_burst
 				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);

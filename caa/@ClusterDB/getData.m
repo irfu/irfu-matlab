@@ -149,7 +149,11 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 			param='180Hz';
 		end
 	end
-	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	if (start_time>toepoch([2003 9 29 0 31 0])) & (cl_id==1|cl_id==3)
+		% FSW 2.4 Use P32 on SC1 and SC3
+		pl={'32','34'};
+		c_log('dsrc',sprintf('            !Use p32 for sc%d',cl_id));
+	elseif (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		% p1 problems on SC1 and SC3
 		pl={'34'};
 		c_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));

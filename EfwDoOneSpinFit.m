@@ -5,7 +5,7 @@ function spinfit = EfwDoOneSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %   cover exactly one spin. 
 %
 % Input:
-%  pair - probe pair used (12, 34)
+%  pair - probe pair used (12, 32, 34)
 %  fout - minimum fraction of fit standard deviation that defines an outlier 
 %         (zero means no removal of outliers)
 %  maxit - maximum number of iterations (zero means infinity)
@@ -55,6 +55,8 @@ ph = polyval(pol,te);
 pair_ok = 1;
 if pair == 12
   ph = ph + 3*pi/4;
+elseif pair == 32
+  ph = ph + pi/2;
 elseif pair == 34
   ph = ph + pi/4;
 else

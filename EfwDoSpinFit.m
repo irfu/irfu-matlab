@@ -3,7 +3,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %   of EFW data frome given probe pair at 4 second resolution.
 %
 % Input:
-%  pair - probe pair used (12, 34)
+%  pair - probe pair used (12, 32, 34)
 %  fout - minimum fraction of fit standard deviation that defines an outlier 
 %         (zero means no removal of outliers). Has no effect if METHOD=1
 %  maxit - maximum number of iterations (zero means infinity)
@@ -60,6 +60,10 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
+error(nargchk(8,9,nargin))
+
+if pair~=12 & pair~=32 & pair~=34, error('PAIR must be one of: 12, 32, 34'), end
+
 % Set default method to BHN
 if nargin < 9, method = 1; end
 
@@ -108,8 +112,9 @@ if method ==1
 	pha = unwrap(pi*pha/180);
 	% Find phase of given pair:
 	if pair == 12, pha = pha + 3*pi/4;
+	elseif pair == 32, pha = pha + pi/2;
 	elseif pair == 34, pha = pha + pi/4;
-	else, error('probe pair must be one of 12 or 34')
+	else, error('probe pair must be one of 12, 32 or 34')
 	end
 end
 
@@ -135,7 +140,7 @@ for i=1:n
 			spinfit(i-n_gap,1) = tsfit;
 		else
 			% Use Matlab version by AIE
-			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
+			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind),...
 				data(eind),tp(pind),ph(pind));
 		end
 	else, n_gap = n_gap + 1;
