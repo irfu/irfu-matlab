@@ -120,7 +120,7 @@ if strcmp(action,'initialize'),
   
 elseif strcmp(action,'time'),
   t=iso2epoch(get(timeHndl, 'string'));
-  phase=av_interp([a(:,1) unwrap(a(:,2)/180*pi)],t);
+  phase=irf_resamp([a(:,1) unwrap(a(:,2)/180*pi)],t);
   phase(1)=[];phase=mod(phase*180/pi,360); % take away time column
   set(phaseHndl,'string',num2str(phase));
   c_pl_sc_orient('plot');
@@ -149,25 +149,25 @@ elseif strcmp(action,'plot'),
   rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0];
 
   for ip=1:4,c_eval('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip),end
-  bfield=av_interp(b,t);
-  bxs=av_norm(av_cross(bfield,[0 0 0 1]));
-  bxsxb=av_norm(av_cross(bxs,bfield)); % (bxs)xb
-  bn=av_norm(bfield);
+  bfield=irf_resamp(b,t);
+  bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
+  bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
+  bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;
 
   if flag_v1==1,
-    vn1_gse=[bn(1,1) av_norm(v1)];
+    vn1_gse=[bn(1,1) irf_norm(v1)];
     vn1_ds=c_gse2dsc(vn1_gse,ic);
     vn1_elevation=-asin(vn1_ds(4))*180/pi;
   end
   if flag_v2==1,
-    vn2_gse=[bn(1,1) av_norm(v2)];
+    vn2_gse=[bn(1,1) irf_norm(v2)];
     vn2_ds=c_gse2dsc(vn2_gse,ic);
     vn2_elevation=-asin(vn2_ds(4))*180/pi;
   end
 
-  for ip=1:4,c_eval('rp?_b=[av_dot(rp?,bxs,1) av_dot(rp?,bxsxb,1) av_dot(rp?,bn,1)];',ip),end
+  for ip=1:4,c_eval('rp?_b=[irf_dot(rp?,bxs,1) irf_dot(rp?,bxsxb,1) irf_dot(rp?,bn,1)];',ip),end
 
   aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
 
@@ -258,7 +258,7 @@ ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]); set(ht,'interpret
 xp=0;yp=.9;dyp=-0.1;
 yp=yp+dyp;
 %if flag_v==1, % add v velocity
-%  vstr=[' V=' num2str(av_abs(v,1),3) ' [' num2str(av_norm(v),' %5.2f') '] km/s. '];
+%  vstr=[' V=' num2str(av_abs(v,1),3) ' [' num2str(irf_norm(v),' %5.2f') '] km/s. '];
 %  text(xp,yp,vstr);
 %  yp=yp+dyp;
 %end
