@@ -99,7 +99,7 @@ c_log('save',['Storage directory is ' cp.sp])
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 
-	if ~(c_load(av_ssub('wE?p12',cl_id)) & c_load(av_ssub('wE?p12',cl_id)) & ...
+	if ~(c_load(av_ssub('wE?p12',cl_id)) & c_load(av_ssub('wE?p34',cl_id)) & ...
 	c_load(av_ssub('A?',cl_id)))
 		c_log('load','Please load raw data (mER) and phase (mA)')
 		data = [];
@@ -159,16 +159,27 @@ if strcmp(quantity,'dies')
 
 	% delta offsets
 	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
-		eval(av_ssub(['m12=mean(diEs?p12);m34=mean(diEs?p34);'],cl_id))
-		Del = m12(2:3) - m34(2:3);
-
+		
+		% To compute delta offsets we remove points which are > 2*sdev
+		% as this must de a stable quantity
+		eval(av_ssub(['df=diEs?p12(:,2:3)-diEs?p34(:,2:3);'],cl_id))
+		sdev = std(df);
+		comp_s = 'xy';
+		for comp = 1:2
+			ii = find(abs(df(:,comp)-mean(df(:,comp))) > 2*sdev(comp)); 
+			c_log('calb',sprintf('%d points are removed for delta_%s',...
+				length(ii),comp_s(comp)))
+			ddd = df(:,comp); ddd(ii) = [];
+			Del(comp) = mean(ddd);
+		end
+		
 		c_log('calb',sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
-		abs(Del(1)), abs(Del(2))))
+			abs(Del(1)), abs(Del(2))))
 
 		% we suppose that smaller field is more realistic
 		% and will correct the largest signal
 		% real offset is applied to p12, imaginary to p34
-		if abs(m34)>abs(m12), Del = -Del*j; end
+		if Del(1)>0, Del = -Del*j; end
 		eval(av_ssub('D?p12p34=Del;',cl_id))
 
 		if real(Del)
