@@ -10,6 +10,10 @@ function Ne = Upot2Ne( Upot );
 %   the Swedish Institute of Space Physics, Uppsala division, 2002.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
+mfilename,'c_efw_scp2ne')
+
 % CLUSTER SC potential and Ne based on Andris 
 % Harri Laakso WHISPER data comparison.
 % 2002.06.13

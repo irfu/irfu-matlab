@@ -7,6 +7,11 @@ function [z]=av_interp(x,y,method)
 %
 % See also: INTERP1
 %
+
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
+mfilename,'irf_resamp')
+
 if nargin < 3, method='linear';end
 if nargin<2;  disp('Not enough arguments. See usage:');help av_interp;      return;end
 
