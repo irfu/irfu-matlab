@@ -46,7 +46,7 @@ case 'slat'
 	r.sen	= r.var;
 case 'slong'
 	r.file	= 'SP/AUX/CL_SP_AUX_';
-	r.var	= ['sc_at' cl_id_s '_long'];
+	r.var	= ['sc_at' cl_id_s '_long__CL_SP_AUX'];
 	r.pr	= 'CSDS_SP';
 	r.mem	= 'CL';
 	r.inst  = 'AUX';
