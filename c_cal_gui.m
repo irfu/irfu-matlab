@@ -170,17 +170,12 @@ case 'init'
 		hnd.BPPData = [hnd.BPPData {BPP}];
 		clear BFGM BPP
 		
-		% Load offsets
+		% Load Delta offsets
 		old_pwd = pwd; cd(sp);
 		clear Delta_off;
 		
-		warning off
-		c_eval('load mEDSI D?p12p34',cl_id)
-		warning on
-		
-		if exist(irf_ssub('D?p12p34',cl_id),'var')
-			c_eval('Delta_off=D?p12p34;clear D?p12p34',cl_id)
-		else
+		[ok, Delta_off] = c_load('D?p12p34',cl_id);
+		if ~ok
 			irf_log('load',...
 			sprintf('No D%dp12p34. Probably we have only one probe pair.',cl_id))
 			Delta_off = 0;
@@ -328,17 +323,13 @@ case 'init'
 		old_pwd = pwd; cd(sp);
 		offset = [1+0i 1];
 		
-		warning off
-		c_eval('load -mat mEDSI Ddsi? Damp?',cl_id)
-		warning on
-		
-		if exist(irf_ssub('Ddsi?',cl_id),'var')
+		if c_load('Ddsi?',cl_id)
 			c_eval('offset(1)=Ddsi?;clear Ddsi?',cl_id)
 			irf_log('load',...
 			sprintf('EFW xy offset Ddsi%d = %.2f %.2f*i',...
 			cl_id,real(offset(1)),imag(offset(1))))
 		end
-		if exist(irf_ssub('Damp?',cl_id),'var')
+		if c_load('Damp?',cl_id);
 			c_eval('offset(2)=Damp?;clear Damp?',cl_id)
 			irf_log('load',...
 			sprintf('EFW amplitude corr Damp%d = %.2f',cl_id,offset(2)))
