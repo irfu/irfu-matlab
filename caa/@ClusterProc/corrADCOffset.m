@@ -1,7 +1,7 @@
 function [new_data,offset] = corrADCOffset(cp,data)
-%corrADCOffset tokenize the string
-%   [new_data,offset] = corrADCOffset(data) corrects an ADC offset 
-%	in p12 and p34 fignals by removing average
+%corrADCOffset correct the ADC offset
+%   [new_data,offset] = corrADCOffset(data) corrects the ADC offset 
+%	in p12 and p34 fignals by removing the average
 %
 %   $Revision$  $Date$
 %
