@@ -1,4 +1,4 @@
-function file_path_and_name = create_file(time,mode,cl_nr) 
+function file_path_and_name = create_file(time,mode,cl_nr)
 %
 %Input:
 % time -time in epoch
@@ -40,7 +40,8 @@ output_path = sprintf('');
 output_p_f = sprintf('%s%s',output_path,output_file);
 
 %the call to the unix function ddsls for the burstmode
-unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
+%unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
+unix_command = sprintf('/home/scb/fgm/ddsls %s >%s',p_f,output_p_f);
 unix(unix_command);
 
 file_path_and_name = output_p_f;

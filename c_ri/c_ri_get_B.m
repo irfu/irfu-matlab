@@ -1,4 +1,4 @@
-function c_ri_get_B(from,to,cl_nr,mode,path_output) 
+function c_ri_get_B(from,to,cl_nr,mode,path_output)
 %
 %Input:
 % from -time in epoch
@@ -25,13 +25,13 @@ function c_ri_get_B(from,to,cl_nr,mode,path_output)
 % fgmvec
 % 
 %Work method:
-% Download B-data with "ddscut" from /data/cluster/DDS/filename 
+% Download B-data with "ddscut" from /data/cluster/DDS/filename
 % (ex filename: 020302*fY.XX  where Y = (b/n) XX =(01/02/03/04)
 % and saves it in a temporary file. Then the data is unpacked, calibrate and save in a format
 % which matlab can read using "fmgtel - fgmcal -fgmhrt-fgmvec"
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -61,7 +61,8 @@ tfn = sprintf('tB_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,tfn);
 
 %cuts out the time intervall and creates a temporary file
-unix_command = sprintf('/home/scb/fgm/bin86/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
+%unix_command = sprintf('/home/scb/fgm/bin86/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
+unix_command = sprintf('/home/scb/fgm/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
 unix(unix_command);
 
 d_source = to_file;
