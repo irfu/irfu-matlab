@@ -225,17 +225,22 @@ if strcmp(quantity,'dies')
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
 		sdev = std(df);
-		comp_s = 'xy';
+		iia = [];
 		for comp = 1:2
 			ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
-			irf_log('calb',sprintf('%d points are removed for delta_%s',...
-				length(ii),comp_s(comp)))
-			ddd = df(:,comp); ddd(ii) = [];
+			iia = [iia; ii];
+		end
+		iia = sortrows(iia(:));
+		iia(find(diff(iia)==0)) = [];
+		irf_log('calb',sprintf('%d points are removed for delta offsets',...
+				length(iia)))
+		for comp = 1:2
+			ddd = df(:,comp); ddd(iia) = [];
 			Del(comp) = mean(ddd);
 		end
-		
+			
 		irf_log('calb',sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
-			abs(Del(1)), abs(Del(2))))
+			Del(1), Del(2)))
 
 		% Check for unreallistically large Del. 
 		% If it is larger than deltaof_max, we set it to zero and 
@@ -256,8 +261,7 @@ if strcmp(quantity,'dies')
 				eval(irf_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
 			else
 				irf_log('calb','correcting p34')
-				Del = imag(Del);
-				c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*Del;',cl_id);
+				c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*imag(Del);',cl_id);
 			end
 		end
 		
@@ -417,7 +421,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				Del = imag(Del);
 				i_c = 2;
 			end
-			eval(irf_ssub('coef(i_c,3)=Del(1)-Del(2)*1j;',cl_id));
+			coef(i_c,3) = Del(1) -Del(2)*1j;
 			clear Del
 	
 		else, irf_log('calb','no Delta offsets found in mEDSI, not doing correction...')
