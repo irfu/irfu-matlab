@@ -1,5 +1,5 @@
 function [varargout]=c_get_bfgm(tint,sc_list)
-%function [B1,B2,B3,B4]=c_get_bfgm(tint)
+%function [B1,B2,B3,B4]=c_get_bfgm(tint,sc_list)
 %
 % tint given in isdat_epoch
 % sc_list .. vector of satellite unmbers for which to dowload data, default sc_list=1:4
