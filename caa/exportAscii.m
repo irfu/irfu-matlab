@@ -114,7 +114,7 @@ end
 
 for i=1:n_data
 	var_length_eight=strvcat(var_labels{i},'        ');
-	var_unit_length_eight=strvcat(['[' var_unit{i} ']'],'        ');
+	var_unit_length_eight=strvcat(['[' var_units{i} ']'],'        ');
   var_s = [var_s var_length_eight ];
 	var_unit = [var_unit var_unit_length_eight];
 	mask = [mask '%8.3f '];
