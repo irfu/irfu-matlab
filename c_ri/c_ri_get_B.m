@@ -87,13 +87,14 @@ unix(unix_command);
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
-%disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_nr) ]);
+disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_nr) ]);
 
 FGMPATH = '/share/fgm_cal';
 [s,h] = unix('hostname');
-if ~strcmp(h(1:end-1),'sanna.irfu.se')
+if ~strcmp(h(2:end-1),'sanna.irfu.se')
 	FGMPATH = ['/net/sanna/export' FGMPATH];
 end
+if ~exist(FGMPATH,'dir'),error('FGMPATH does not exist'),end
 
 if exist([FGMPATH '/tmp_att'],'file'), disp('removing tmp_att'); unix(['rm ' FGMPATH '/tmp_att']); end
 
