@@ -1,5 +1,5 @@
 function [slope,cc]=irf_walen2(v,b,n,tpar,tperp,vht,tint);
-%IRF_WALEN2 make the Walen test and estimate its goodness
+%IRF_WALEN2   Walen test and estimate its goodness
 %
 % [slope,cc]=irf_walen2(v,b,n,tpar,tperp,vht,tint)
 %
@@ -35,14 +35,14 @@ end
 strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
 disp(strint);
 %display HT velocity
-%strvht=['V_{HT}=' num2str(av_abs(vht,1),3) ' [ ' num2str(av_norm(vht),' %5.2f') '] km/s GSE'];
+%strvht=['V_{HT}=' num2str(av_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
 %disp(strvht);
 
 
 %define common time interval for input vectors
-n=av_t_lim(n,tint);
+n=irf_tlim(n,tint);
 
-av_tplot(n)
+irf_plot(n)
 
 %interpolate b,n,tpat,tperp to v
 
@@ -74,8 +74,8 @@ valfv(:,1)=n(:,1);
 %valfv(:,2:4)=22*b(:,2:4)./ sqrt(n(:,2:4));
 valfv(:,2:4)=22*b(:,2:4).*sqrt( 1 - alpha(:,2:4) )./ sqrt( n(:,2:4));
 
-av_tplot(valfv)
-av_tplot({alpha,n,valfv})
+irf_plot(valfv)
+irf_plot({alpha,n,valfv})
 
 
 %no anisotropy
@@ -118,7 +118,7 @@ plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtrans
 
 axis equal;grid on;
 
-ht=av_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
+ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
 
 title(['Walen test']);
 xlabel('V_{A} [km/s] GSE');ylabel('V-V_{HT} [km/s] GSE')
