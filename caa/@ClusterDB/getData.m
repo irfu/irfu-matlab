@@ -95,8 +95,12 @@ if strcmp(quantity,'e')
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	[t,data] = ISGet(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase');
-	eval(av_ssub('A?=[double(t) double(data)];',cl_id)); clear t data;
-	eval(av_ssub('save_list=[save_list '' A? ''];',cl_id));
+	if ~isempty(data)
+		eval(av_ssub('A?=[double(t) double(data)];',cl_id)); clear t data;
+		eval(av_ssub('save_list=[save_list '' A? ''];',cl_id));
+	else
+		warning(av_ssub('No data for A?',cl_id))
+	end
 end %main QUANTITY
 
 % saving
