@@ -16,7 +16,11 @@ old_pwd = pwd;
 cd(sp);
 
 %try to load from file
-if exist([d.file '.mat'],'file'), eval(['load -mat ' d.file ' ' vs]), end
+if exist([d.file '.mat'],'file')
+	warning off
+	eval(['load -mat ' d.file ' ' vs])
+	warning on
+end
 
 %try to load with getData
 if ~exist(vs,'var')
@@ -37,7 +41,7 @@ if ~exist(vs,'var')
 			%try again to load from file
 			if exist([d.file '.mat'],'file'), c_eval(['load -mat ' d.file ' ' vs]), end
 		else
-			c_log('load','DB is not specified in the input. Will do nothing.')
+			c_log('load','DB is not specified. Will do nothing.')
 		end
 	end
 end
