@@ -24,9 +24,23 @@ if nargin==1, vs=inputname(1); end
 if nargin<1, help exportAscii;return; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if regexp(vs,'^P[1-4]$')==1
+
+	cl_id = vs(2);
+	inst = 'EFW';
+	sig = 'E';
+	sen = '1234';
+	frame = 'SC';
+	var_labels = {['P' sen]};
+ 	var_units =  {'-V'};
+	com = 'this signal is averaged from all probes available at the time';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if regexp(vs,'wE[1-4]p(12|34)')==1
+elseif regexp(vs,'wE[1-4]p(12|34)')==1
 
 	cl_id = vs(3);
 	inst = 'EFW';
