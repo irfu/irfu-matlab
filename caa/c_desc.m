@@ -102,6 +102,9 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Probe #' v.sen ' potential']};
+	v.ent = {'Spacecraft'};
+	v.prop = {'Potential'};
+	v.fluc = {'Waveform'};
 	v.com = '';
 	v.file = 'mP';
 	v.quant = 'p';
@@ -135,10 +138,10 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.data = 1;
 	v.cl_id = vs(3);
 	v.inst = 'EFW';
-	v.frame = 'sc';
+	v.frame = 'na';
 	v.sig = 'E';
 	v.sen = vs(5:6);
-	v.cs = {'na'};
+	v.cs = {'SC'};
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V/m'};
@@ -147,6 +150,9 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.labels = v.name;
 	v.label_1 = {};
 	v.field_name = {'probe potential difference'};
+	v.ent = {'Electric_field'};
+	v.prop = {'Vector'};
+	v.fluc = {'Waveform'};
 	v.com = '';
 	v.file = 'mER';
 	v.quant = 'e';

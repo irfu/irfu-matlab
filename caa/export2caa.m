@@ -10,32 +10,42 @@ function export2caa(lev,caa_vs,cl_id,DATA_VERSION,sp)
 if nargin<5, sp='.'; end
 if nargin<4, DATA_VERSION = '01'; end
 if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
-if lev<=1 | lev>3, error('LEV must be 2 or 3'), end
+if lev<1 | lev>3, error('LEV must be 1,2 or 3'), end
 
-switch caa_vs
-case 'P'
-	if lev==1, error('LEV must be 2 or 3'), end
-	if lev==2
-		vs = av_ssub('P?',cl_id);
+if lev==1
+	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
+		id = str2num(caa_vs(2:end));
+		if id <=4, vs = av_ssub('P10Hz?p!',cl_id,id);
+		else, vs = av_ssub('wE?p!',cl_id,id);
+		end
 		v_size = 1;
-	else
-		vs = av_ssub('Ps?',cl_id);
-		v_size = 1;
+	else, error('Nust be P(1|2|3|4|12|32|34)')
 	end
-case 'E'
-	if lev==1, error('LEV must be 2 or 3'), end
-	if lev==2
-		vs = av_ssub('diE?p1234',cl_id);
-		v_size = 1;
-	elseif lev==3
-		vs = av_ssub('diEs?p34',cl_id);
-		v_size = 2;
-	else
-		disp('not implemented')
+else
+	switch caa_vs
+	case 'P'
+		if lev==2
+			vs = av_ssub('P?',cl_id);
+			v_size = 1;
+		else
+			vs = av_ssub('Ps?',cl_id);
+			v_size = 1;
+		end
+	case 'E'
+		if lev==2
+			vs = av_ssub('diE?p1234',cl_id);
+			v_size = 1;
+		elseif lev==3
+			vs = av_ssub('diEs?p34',cl_id);
+			v_size = 2;
+		else
+			disp('not implemented'), return
+		end
+	case 'EF'
+		disp('not implemented'), return
+	otherwise
+		error('unknown variable')
 	end
-case 'EF'
-otherwise
-	error('unknown variable')
 end
 
 EOR_MARKER = '$';
