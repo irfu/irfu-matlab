@@ -155,4 +155,4 @@ if method==1
         spinfit(:,4) = x(:,1);
 end
 
-disp(sprintf('%d spins processed, %d gaps found',n,n_gap))
+c_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))

@@ -61,19 +61,19 @@ while have_options
 		switch(args{1})
 		case 'sp'
 			if ischar(args{2}), sp = args{2};
-			else, warning('caa:wrongArgType','sp must be string')
+			else, c_log('fcal','wrongArgType : sp must be string')
 			end
 		case 'dp'
 			if ischar(args{2}), dp = args{2};
-			else, warning('caa:wrongArgType','dp must be string')
+			else, c_log('fcal','wrongArgType : dp must be string')
 			end
 		case 'db'
 			if ischar(args{2}), db = args{2};
-			else, warning('caa:wrongArgType','db must be string')
+			else, c_log('fcal','wrongArgType : db must be string')
 			end
 		case 'sc_list'
 			if isnumeric(args{2}), sc_list = args{2};
-			else, warning('caa:wrongArgType','sc_list must be numeric')
+			else, c_log('fcal','wrongArgType : sc_list must be numeric')
 			end
 		case 'vars'
 			if ischar(args{2})
@@ -81,23 +81,23 @@ while have_options
 				p = tokenize(args{2},'|');
 				for i=1:length(p), vars(length(vars)+1) = p(i); end
 			elseif iscell(args{2}), vars = args{2};
-			else, warning('caa:wrongArgType','vars must be eather string or cell array')
+			else, c_log('fcal','wrongArgType : vars must be eather string or cell array')
 			end
 		case 'extrav'
 			if ischar(args{2})
 				p = tokenize(args{2},'|');
 				for i=1:length(p), vars(length(vars)+1) = p(i); end
 			elseif iscell(args{2}), vars = [vars args{2}];
-			else, warning('caa:wrongArgType','extrav must be eather string or cell array')
+			else, c_log('fcal','wrongArgType : extrav must be eather string or cell array')
 			end
 		case 'cdb'
 			if (isa(args{2},'ClusterDB')), cdb = args{2};
-			else, warning('caa:wrongArgType','cdb must be a ClusterDB object')
+			else, c_log('fcal','wrongArgType : cdb must be a ClusterDB object')
 			end
 		case 'noproc'
 			varsProc = '';	l = 1;
 		otherwise
-        	disp(['Option ''' args{i} '''not recognized'])
+        	c_log('fcal',['Option ''' args{i} '''not recognized'])
     	end
 		if length(args) > l, args = args(l+1:end);
 		else break

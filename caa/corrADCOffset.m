@@ -13,14 +13,14 @@ function [new_data,offset] = corrADCOffset(data,start_time,dt,whip)
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 
 if data(end,1)-data(1,1)<60 %interval is shorter then 1 min
-	warning('Time interval too short, processing may give strange results...')
+	c_log('proc','Time interval too short, processing may give strange results...')
 end
 
 new_data = data;
 if nargin==3 | nargin==4
 	test_data = av_t_lim(data,start_time + [0 dt]);
 	if isempty(test_data)
-		warning('ADC offset: defaulting to the whole data interval')
+		c_log('proc','ADC offset: defaulting to the whole data interval')
 		test_data = data;
 	end
 else
@@ -29,7 +29,7 @@ end
 
 if nargin==2, whip = start_time; end
 if nargin==2 | nargin==4
-	disp('ADC offset: not using times with Whisper pulses')
+	c_log('proc','ADC offset: not using times with Whisper pulses')
 	test_data = blankTimes(test_data, whip); 
 end
 

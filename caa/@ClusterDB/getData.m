@@ -71,7 +71,7 @@ for i=1:length(varargin)
 	case 'nosave'
 		flag_save = 0;
 	otherwise
-		disp(['Option ''' varargin{i} '''not recognized'])
+		c_log('fcal',['Option ''' varargin{i} '''not recognized'])
 	end
 end
 
@@ -85,12 +85,13 @@ old_pwd = pwd;
 %Create the storage directory if it does not exist
 if ~exist(cdb.sp, 'dir')
 	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
-	if SUCCESS, warning(['Created storage directory ' cdb.sp])
+	if SUCCESS, c_log('save',['Created storage directory ' cdb.sp])
 	else, error(MESSAGE)
 	end
 end
 
 cd(cdb.sp) %enter the storage directory
+c_log('save',['Storage directory is ' cdb.sp])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
@@ -151,11 +152,11 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		% p1 problems on SC1 and SC3
 		pl={'34'};
-		disp(sprintf('            !Only p34 exists for sc%d',cl_id));
+		c_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
 	else, pl={'12','34'};
 	end
 	for i=1:length(pl)
-		disp(['EFW...sc' num2str(cl_id) '...Ep' pl{i} ' ' param ' filter']);
+		c_log('dsrc',['EFW...sc' num2str(cl_id) '...Ep' pl{i} ' ' param ' filter']);
 		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' pl{i}], param, tmmode);
 		if ~isempty(data)
@@ -169,18 +170,18 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 				if exist(burst_f_name,'file')
 					db = Mat_DbOpen(cdb.db);
 					err_t = t(1) - checkbursttime(db,burst_f_name);
-					warning(['burst start time was corrected by ' num2str(err_t) ' sec'])
+					c_log('dsrc',['burst start time was corrected by ' num2str(err_t) ' sec'])
 					Mat_DbClose(db);
 					t = t - err_t;
 				else
-					warning('burst start time was not corrected')
+					c_log('dsrc','burst start time was not corrected')
 				end
 			end
 					
 			c_eval([var_name  pl{i} '=[t data];'],cl_id); clear t data;
 			c_eval(['save_list=[save_list '' ' var_name pl{i} ' ''];'],cl_id);
 		else
-			warning('caa:noData',av_ssub(['No data for ' var_name pl{i}],cl_id))
+			c_log('dsrc',av_ssub(['No data for ' var_name pl{i}],cl_id))
 		end
 	end
 
@@ -200,7 +201,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		param={'10Hz'}; tmmode='lx';
 	end
 	for j=1:length(param), for probe=1:4;
-    	disp(['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
+    	c_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
 		if ~isempty(data)
@@ -214,11 +215,11 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 				if exist(burst_f_name,'file')
 					db = Mat_DbOpen(cdb.db);
 					err_t = t(1) - checkbursttime(db,burst_f_name);
-					warning(['burst start time was corrected by ' num2str(err_t) ' sec'])
+					c_log('dsrc',['burst start time was corrected by ' num2str(err_t) ' sec'])
 					Mat_DbClose(db);
 					t = t - err_t;
 				else
-					warning('burst start time was not corrected')
+					c_log('dsrc','burst start time was not corrected')
 				end
 			end
 			eval(av_ssub(['p!=[t data];save_list=[save_list '' P' param{j} '?p!''];P' param{j} '?p!=p!;'],cl_id,probe)); clear t data
@@ -278,7 +279,7 @@ elseif strcmp(quantity,'a')
 		c_eval('A?=[double(t) double(data)];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' A? ''];',cl_id);
 	else
-		warning('caa:noData',av_ssub('No data for A?',cl_id))
+		c_log('dsrc',av_ssub('No data for A?',cl_id))
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -291,7 +292,7 @@ elseif strcmp(quantity,'r')
 		c_eval('R?=[double(t) double(data'')];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' R? ''];',cl_id);
 	else
-		warning('caa:noData',av_ssub('No data for R?',cl_id))
+		c_log('dsrc',av_ssub('No data for R?',cl_id))
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -304,7 +305,7 @@ elseif strcmp(quantity,'v')
 		c_eval('V?=[double(t) double(data'')];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' V? ''];',cl_id);
 	else
-		warning('caa:noData',av_ssub('No data for V?',cl_id))
+		c_log('dsrc',av_ssub('No data for V?',cl_id))
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -323,14 +324,14 @@ elseif strcmp(quantity,'bfgm')
 		if size(dat,2)>2 
 			if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
 			if ~exist(av_ssub('SAX?',cl_id),'var')
-				warning('must fetch spin axis orientation (option ''sax'')')
+				c_log('load','must fetch spin axis orientation (option ''sax'')')
 			else
 				c_eval('diB?=c_gse2dsi(B?,SAX?);save_list=[save_list '' diB?''];',cl_id);
 			end
 		end
 		clear dat
 	else
-		warning('caa:noData','No data')
+		c_log('dsrc','No data')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -370,14 +371,14 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcm
 			if size(dat,2)>2 
 				if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
 				if ~exist(av_ssub('SAX?',cl_id),'var')
-					warning('must fetch spin axis orientation (option ''sax'')')
+					c_log('load','must fetch spin axis orientation (option ''sax'')')
 				else
 					eval(av_ssub(['di' r.var{i} '?=c_gse2dsc(' r.var{i} '?,SAX?);di' r.var{i} '?(:,3:4)=-di' r.var{i} '?(:,3:4);save_list=[save_list '' di' r.var{i} '?''];'],cl_id));
 				end
 			end
 			clear dat
 		else
-			warning('caa:noData','No data')
+			c_log('dsrc','No data')
 		end
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -405,12 +406,12 @@ elseif strcmp(quantity,'vce')
 
 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
 	if ~exist('./mCIS.mat','file')
-		warning('Please run ''vcis'' first (mCIS missing)')
+		c_log('load','Please run ''vcis'' first (mCIS missing)')
 		data = [];
 		return
 	end
 	if ~exist('./mBPP.mat','file')
-		warning('Please run ''n'' first (mBPP missing)')
+		c_log('load','Please run ''n'' first (mBPP missing)')
 		data = [];
 		return
 	end
@@ -427,7 +428,7 @@ elseif strcmp(quantity,'vce')
 			evxb=av_t_appl(av_cross(v,b),'*(-1e-3)');
 			eval(av_ssub([varo{i} '?=evxb;save_list=[save_list '' ' varo{i} '?'']; clear evxb'],cl_id));
 			if ~exist(av_ssub('SAX?',cl_id),'var')
-				warning('must fetch spin axis orientation (option ''sax'')')
+				c_log('load','must fetch spin axis orientation (option ''sax'')')
 			else
 				eval(av_ssub(['di' varo{i} '?=c_gse2dsc(' varo{i} '?,SAX?);di' varo{i} '?(:,3:4)=-di' varo{i} '?(:,3:4);save_list=[save_list '' di' varo{i} '?''];'],cl_id));
 			end
@@ -448,7 +449,7 @@ elseif strcmp(quantity,'whip')
 		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
 	else
-		warning('caa:noData','No data')
+		c_log('dsrc','No data')
 	end
 	clear t_s t_e fdm_r ii
 
@@ -470,7 +471,7 @@ end %main QUANTITY
 % saving
 % If flag_save is set, save variables to specified file
 if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
-	disp([save_list ' -> ' save_file])
+	c_log('save',[save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
 	else
