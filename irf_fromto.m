@@ -108,7 +108,7 @@ switch fromto
     i_select=get(ud.ylab,'Value');
     strings=get(ud.ylab,'String');
     label_and_legend=tokenize(strings{i_select},';');
-    label=label_and_lgend{1};
+    label=label_and_legend{1};
     if strcmp(label,'enter'); label=input('Input Y label>','s');end
     axes(ud.h(h_select));
     ylabel(label,'verticalalignment','bottom');
