@@ -1,16 +1,20 @@
 function out=c_pl_tx(varargin)
-%C_PL_TX    Plot data from all four Cluster spacecraft in the same plot with right Cluster colors
-%   c=c_pl_tx(x1,x2,x3,x4,[column,t_unit_in_original_units,t_origo_in_original_units])
-%   c=c_pl_tx(x1,x2,x3,x4,[column,1,[dt1 dt2 dt3 dt4]])
-%   c=c_pl_tx(x1,x2,x3,x4,[column,t_unit_in_original_units,t_origo_in_original_units])
-%   c=c_pl_tx('x?',column,1,[dt1 dt2 dt3 dt4])
-%   plot all 4 cluster values, time is in the first column, <column> gives which column to plot
-%   if column is vector then create subplots so that in each subplot is corresponding column
+%C_PL_TX   plot data from all four Cluster spacecraft in the same plot
+%
+% c=c_pl_tx(x1,x2,x3,x4,[column,t_unit_in_original_units,t_origo_in_original_units])
+% c=c_pl_tx(x1,x2,x3,x4,[column,1,[dt1 dt2 dt3 dt4]])
+% c=c_pl_tx(x1,x2,x3,x4,[column,t_unit_in_original_units,...
+%   t_origo_in_original_units])
+% c=c_pl_tx('x?',column,1,[dt1 dt2 dt3 dt4])
+%   plot all 4 cluster values, time is in the first column, 
+%   <column> gives which column to plot
+%   if column is vector then create subplots so that in each 
+%   subplot is corresponding column
 %
 %   Example:
 %      c_pl_tx('av_abs(B?)') - will plot 3 components + magnitude of B1:4.
 %
-%   $Id$
+% $Id$
 
 error(nargchk(1,8,nargin))
 
@@ -19,8 +23,8 @@ args = varargin;
 if isstr(args{1})
 	% We have 4 arguments
 	for cl_id=1:4
-		ttt = evalin('caller',av_ssub(args{1},cl_id),'[]'); 
-		eval(av_ssub('x? =ttt;',cl_id)); clear ttt
+		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]'); 
+		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
 	end
 	if length(args) > 1, args = args(2:end); 
 	else, args = ''; end
@@ -67,7 +71,7 @@ if length(column) == 1,
 	cls='krgb';
 	pl = '';
 	for jj=1:4
-		if eval(av_ssub('~isempty(x?)',jj))
+		if eval(irf_ssub('~isempty(x?)',jj))
 			c_eval(['s_s=''(x?(:,1)-ts?)/tu,x?(:,column),''''' cls(jj) ''''''';'],jj);
 			if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
 			clear s_s
@@ -79,11 +83,11 @@ if length(column) == 1,
 else
 	clf;
 	for j=1:length(column),
-		c(j)=av_subplot(length(column),1,-j);
+		c(j)=irf_subplot(length(column),1,-j);
 		cls='krgb';
 		pl = '';
 		for jj=1:4
-			if eval(av_ssub('~isempty(x?)',jj))
+			if eval(irf_ssub('~isempty(x?)',jj))
 				c_eval(['s_s=''(x?(:,1)-ts?)/tu,x?(:,column(j)),''''' cls(jj) ''''''';'],jj);
 				if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
 				clear s_s
@@ -95,7 +99,7 @@ else
 	end
 end
 
-if x1(1,1) > 9e8,  add_timeaxis(c);av_figmenu; end
+if x1(1,1) > 9e8,  add_timeaxis(c);irf_figmenu; end
 
 if nargout > 0, out = c; end
 
