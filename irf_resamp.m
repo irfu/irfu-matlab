@@ -29,13 +29,15 @@ end
 ndata = length(t);
 
 
-if size(x,1) == 1,            % ??????? what this loop does?
+if size(x,1) == 1,            % if X has only one point, this is a trivial
+                              % case and we return directly
   out = [t (t*0+1)*x(:,2:end)];
   return
 end
 
 if strcmp(flag_do,'check'), % check if interpolation or average
-  if ndata>1, % if more than one output time check sampling frequencies to decide interpolation/average
+  if ndata>1, % if more than one output time check sampling frequencies 
+              % to decide interpolation/average
     sfy = ndata/(t(end) - t(1)); % guess samplings frequency y
     if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
       flag_do='average';
@@ -45,7 +47,6 @@ if strcmp(flag_do,'check'), % check if interpolation or average
   else
     flag_do='interpolation';  % if one output time then do interpolation
   end
-
 end
 
 if strcmp(flag_do,'average'),
