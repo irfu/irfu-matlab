@@ -13,7 +13,7 @@ function out=summaryPlot(cp,cl_id,cs,st,dt)
 % Example:
 % summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'gse')
 %
-% $Revision$  $Date$
+% $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
 error(nargchk(2,5,nargin))
@@ -28,10 +28,10 @@ end
 
 % load data
 if strcmp(cs,'dsi') 
-	q_list = {'P?','diE?','diEs?','diVs?'};
+	q_list = {'P?','diE?','diEs?','diVExBs?'};
 	l_list = {'SC pot [-V]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
-	q_list = {'P?','E?','Es?','Vs?'};
+	q_list = {'P?','E?','Es?','VExBs?'};
 	l_list = {'SC pot [-V]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
 end
 f_list = {'mP','mEdB','mEdB','mEdB'};
