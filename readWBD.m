@@ -24,7 +24,7 @@ cl_id_s = num2str(cl_id);
 
 [s,m] = unix('uname');
 
-R_WBD_WF = ['/data/cluster/WBD/bin/' m(1:end-1) '/r_wbd_wf'];
+R_WBD_WF = ['/data/cluster/WBD/bin/' m(2:end-1) '/r_wbd_wf'];
 tmp_file = tempname;
 
 ts_s = c_epoch2str(start_time);
