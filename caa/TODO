@@ -1,0 +1,2 @@
+1. fix EfwDoSpinFit to use only spins when > 90% of data is present
+2. fix ADC offset correction not to use data with WHISPER active on
