@@ -24,7 +24,7 @@ error(nargchk(3,5,nargin))
 if nargin<4, sc_list=1:4; end
 if nargin<5, cdb = ClusterDB('ice:10|disco:10','/data/cluster',sp); end
 
-vars = {'e','p','a','sax','whip','b','edi','ncis','vcis','vce'};
+vars = {'e','p','a','sax','whip','b','edi','ncis','vcis','vce','bfgm'};
 
 for cl_id=sc_list
 	for k=1:length(vars)

@@ -17,6 +17,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// spin axis vector [GSE] 
 %	a   : A{cl_id} -> mA	// phase
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
+%	bfgm: B{cl_id},diB{cl_id}	->mB	// B FGM** [GSE+DSI]
+%		** contact Stephan Buchert
 %	edi : EDI{cl_id},diEDI{cl_id}	->mEDI	// E EDI PP [GSE+DSI] 
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
@@ -75,7 +77,7 @@ if strcmp(quantity,'e')
 	clear tm mTMode1 mTMode2 mTMode3 mTMode4
 	if exist('./mTMode.mat','file'), load mTMode, end
 	if exist(av_ssub('mTMode?',cl_id),'var')
-		eval(av_ssub('tm=mTMode?;',cl_id))
+		c_eval('tm=mTMode?;',cl_id)
 	end
 	if ~exist('tm','var')
 		[t,data] = ISGet(cdb.db,start_time,dt,cl_id,'efw','FDM');
@@ -85,7 +87,7 @@ if strcmp(quantity,'e')
 		if tm~=tm(1)*ones(size(tm))
 			warning('tape mode changes during the selected time inteval')
 		end
-		eval(av_ssub('mTMode?=tm;',cl_id))
+		c_eval('mTMode?=tm;',cl_id)
 		if exist('./mTMode.mat','file')
 			eval(av_ssub('save -append mTMode mTMode?;',cl_id))
 		else, eval(av_ssub('save mTMode mTMode?;',cl_id))
@@ -155,11 +157,38 @@ elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	[t,data] = ISGet(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase');
 	if ~isempty(data)
-		eval(av_ssub('A?=[double(t) double(data)];',cl_id)); clear t data;
-		eval(av_ssub('save_list=[save_list '' A? ''];',cl_id));
+		c_eval('A?=[double(t) double(data)];',cl_id); clear t data;
+		c_eval('save_list=[save_list '' A? ''];',cl_id);
 	else
 		warning('caa:noData',av_ssub('No data for A?',cl_id))
 	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% B FGM - full res
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'bfgm')
+	disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
+
+	save_file = './mB.mat';
+	
+	dat = c_get_bfgm(start_time + [0 dt],cl_id);
+	if ~isempty(dat)
+		c_eval('B?=dat;save_list=[save_list '' B?''];',cl_id);
+
+		% transform vector data to DSI
+		if size(dat,2)>2 
+			if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+			if ~exist(av_ssub('SAX?',cl_id),'var')
+				warning('must fetch spin axis orientation (option ''sax'')')
+			else
+				c_eval('diB?=c_gse2dsi(B?,SAX?);save_list=[save_list '' diB?''];',cl_id);
+			end
+		end
+		clear dat
+	else
+		warning('caa:noData','No data')
+	end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
