@@ -6,7 +6,7 @@ function h=summarySPlot(sp,flag)
 % Input:
 % sp -storage path (data directory)
 %
-% $Revision$  $Date$
+% $Id$
 %
 % See also ClusterProc/summaryPlot, summaryRPlot
 
@@ -40,9 +40,9 @@ axes(h(5))
 c_pl_tx(NVps1,NVps2,NVps3,NVps4,2);
 set(gca,'XLim',[st se])
 set(gca,'XTickLabel',[]),xlabel('')
-set(gca,'YScale','log')
-%set(gca,'YLim',.99*get(gca,'YLim'))
-set(gca,'YTick',[.01 .1 1 10])
+%set(gca,'YScale','log')
+set(gca,'YLim',.99*get(gca,'YLim'))
+%set(gca,'YTick',[.01 .1 1 10])
 ylabel('n [cm^{-3}]')
 
 for j=1:2
