@@ -1,5 +1,5 @@
-function plotExy(varargin)
-% plotExy(e1,e2,e3...) plots Ex and Ey on two panels.
+function out=plotExy(varargin)
+% h=plotExy(e1,e2,e3...) plots Ex and Ey on two panels.
 % supports multiple data inputs
 %
 % $Revision$  $Date$
@@ -35,3 +35,5 @@ end
 addPlotInfo
 axes(p2)
 axes(p1)
+
+if nargout>0, h{1} = p1; h{2} = p2; end
