@@ -71,7 +71,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   elseif strcmp(q,'a'),
     save_file='./mA.mat';save_list='';
-    for ic=sc_list, disp(c_eval('...A?...Atwo?..',ic));
+    for ic=sc_list, c_eval('disp(''...A?...Atwo?..'');',ic);
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
      eval(av_ssub('A?=[double(t) double(data)];',ic));%clear t data;
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase2', ' ', ' ', ' ');
