@@ -20,14 +20,19 @@ function getRData(st,dt,varargin)
 %   supplied as a string separated by '|' or as a cell array;
 %   // default: {'e','p','a','sax','r','v','whip','b','edi', ...
 %   'ncis','vcis','vce','bfgm'}
-%   // + {'dies','die'} which are always added if 'noproc' is not specified.
-% 'noproc' - do not run ClusterProc/getData for {'dies','die'};
+%   // + {'dies','die','brs','br'} which are always added. Use 'noproc' 
+%   to skip them.
+% 'noproc' - do not run ClusterProc/getData for {'dies','die','brs','br'};
 % 'extrav' - extra variables in addition to default;
 % 'cdb' - ClusterDB object;
 % 
-% Example:
+% Examples:
 % getRData(toepoch([2002 03 04 10 00 00]),30*60,...
 % 'sp','/home/yuri/caa-data/20020304')
+%   % load all data to /home/yuri/caa-data/20020304
+% getRData(toepoch([2002 03 04 10 00 00]),30*60,...
+% 'sp','/home/yuri/caa-data/20020304','vars',{'e','p'})
+%   % load only 'e' and 'p'
 %
 % $Id$
 %
@@ -48,7 +53,7 @@ db = 'disco:10|disco:20';
 dp = '/data/cluster';
 cdb = '';
 vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','vce','bfgm'};
-varsProc = {'dies','die'};
+varsProc = {'dies','die','brs','br'};
 
 if have_options
 	if isnumeric(args{1}), 
