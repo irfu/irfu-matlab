@@ -183,8 +183,8 @@ end
 
 addPlotInfo
 av_figmenu
-eval(['legend(h(1),' leg ')'])
 for j=1:length(t0)+2, axes(h(j)), end
+eval(['legend(h(1),' leg ')'])
 zoom on
 
 q='0';
@@ -267,8 +267,8 @@ while(q ~= 'q')
  
     	title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 		addPlotInfo
-		eval(['legend(h(1),' leg ')'])
 		for j=1:length(t0)+2, axes(h(j)), end
+		eval(['legend(h(1),' leg ')'])
 		zoom on
 		flag_replot=0;
 	end
