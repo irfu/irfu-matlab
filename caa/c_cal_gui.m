@@ -158,6 +158,12 @@ case 'init'
 				c_eval('BFGM=diBPP?;clear diBPP?',cl_id)
 			end
 		end
+		% Load resampled FGM data
+		[ok,Br] = c_load('diBr?',cl_id);
+		if ok, c_log('load',av_ssub('loaded  diBr?',cl_id)), end
+		[ok,Brs] = c_load('diBrs?',cl_id);
+		if ok, c_log('load',av_ssub('loaded  diBrs?',cl_id)), end
+		
 		hnd.BData = [hnd.BData {BFGM}];
 		hnd.BPPData = [hnd.BPPData {BPP}];
 		clear BFGM BPP
@@ -272,7 +278,25 @@ case 'init'
 						hnd.old_ActiveVar = ''; 
 					end
 					eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
-					if d < 4
+					
+					% Assign magnetic field to the variable
+					% For EFW we use already resampled filed
+					% for the others we resample.
+					data.B = [];
+					if d==1
+						if strcmp(vs(1:4),'diEs')
+							if ~isempty(Brs)
+								c_log('proc',av_ssub('using Brs?',cl_id))
+								data.B = Brs;
+							end
+						else
+							if ~isempty(Br)
+								c_log('proc',av_ssub('using Br?',cl_id))
+								data.B = Br;
+							end
+						end
+					end
+					if d < 4 & isempty(data.B)
 						% E and V data
 						% Resample B
 						if ~isempty(hnd.BData{cl_id})
@@ -287,12 +311,17 @@ case 'init'
 								cl_id)
 						else, data.B = [];
 						end
+					end
+					
+					% Assing AUX flag
+					if d < 4
 						data.aux = 0;
 						ncdata = ncdata + 1;
 					else
 						% AUX data
 						data.aux = 1;
 					end
+					
 					hnd.Data = [hnd.Data, {data}];
 					eval(['clear ' vs])
 					
