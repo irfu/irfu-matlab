@@ -19,7 +19,7 @@ fwrite(fp,pr_r);
 
 for k = 1:f_count
   dstr = R_datestring2(p_m(k,1:6));
-  pr_r = sprintf('%s %5.0f %4.0f %4.0f    %s\n',dstr,p_m(k,7:10));
+  pr_r = sprintf('%s %5.0f %4.0f %4.0f %2.0f \n',dstr,p_m(k,7:10));
   fwrite(fp,pr_r);
 end
 
@@ -33,7 +33,7 @@ for g =1:f_count
   
   [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
   c_eval('try B?=av_abs(B?);catch B?=[NaN NaN NaN NaN NaN];end');
-  c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',s_t,10,?,''tm'');');
+  c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',t,20,?,''tm'');');
   str_scmode='sc mode (';
   c_eval('if tm?==1, str_scmode=[str_scmode '' b'']; elseif tm?==0, str_scmode=[str_scmode '' n'']; else str_scmode=[str_scmode '' NaN''];end');
   str_scmode=[str_scmode ')'];
