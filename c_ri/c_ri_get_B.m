@@ -100,7 +100,7 @@ if nargout,  % return B
     close(fvs);
   else
     disp('Zero size FGM data file!');
-    B=[];
+    B=[-1 NaN NaN NaN];
   end
   unix(['rm ' to_file]);
 else

@@ -135,6 +135,7 @@ for i = 1:i_end
   
   %step 1
   if run_steps(1) == 1
+    disp('==============  Finding MP crossings ====================');
     [passing_MP,dist_t]=c_ri_auto_event_search(st,et,d2MP,psw);
     disp('Predicted MP crossings');
     for j=1:size(passing_MP,1)
@@ -144,6 +145,7 @@ for i = 1:i_end
   
   %step 2
   if run_steps(2) == 1
+    disp('==============  Finding angles for MP crossings ====================');
     for j=1:size(passing_MP,1)
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       c_eval('Binterp?=av_interp(B?,B1);',2:4);
@@ -153,6 +155,7 @@ for i = 1:i_end
   
   %step 3
   if run_steps(3) == 1
+    disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
     sort_events=1;
     while sort_events
