@@ -32,7 +32,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %
 % This function chops up the time series in four second
 % intervals, each of which are analysed by c_efw_onesfit.
-% Spins with less then 75% of data are disregarded.
+% Spins with less then 90% of data are disregarded.
 %
 % Example: (assuming valid db exist, see isGetDataLite)
 % To plot spinfits of data from probe pair 34 (obtained during
