@@ -6,7 +6,7 @@ function out = epoch2iso(t,fmt)
 % as described in the CEF data file syntax
 % http://www.space-plasma.qmul.ac.uk/csds/welcome.html
 %
-% t_iso_s = iso2epoch(t_epoch,[fmt])
+% t_iso_s = epoch2iso(t_epoch,[fmt])
 %   fmt - 0: long (default), 1: short
 %
 %   See also EPOCH2DATE, ISO2EPOCH, TOEPOCH, FROMEPOCH

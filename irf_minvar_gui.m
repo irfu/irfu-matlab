@@ -18,7 +18,7 @@ global ud
 persistent tlim message;
 %persistent ud tlim;
 
-if isempty(message), 
+if isempty(message), % run only the first time during the session
     message='You can anytime access all the results from the variable "ud".';
     disp(message);
 end
@@ -102,8 +102,10 @@ switch action,
 
     case 'ax'
         tlim = get(ud.mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
-        p = get(gca, 'currentpoint');
-        tlim_interval=get(gca,'xlim');
+        uf=get(gcf,'userdata');
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        p = get(gca, 'currentpoint')+t0;
+        tlim_interval=get(gca,'xlim')+t0;
         if ud.from
             tlim(1) = max(tlim_interval(1), p(1));
             tlim(2) = max(p(1),tlim(2));
@@ -117,10 +119,8 @@ switch action,
             set(ud.fromtext,'backgroundcolor','r');
             ud.from = 1;
         end
-        strfrom=datestr(datenum(fromepoch(tlim(1))), 0);
-        set(ud.fromh, 'string', strfrom);
-        strto=datestr(datenum(fromepoch(tlim(2))), 0);
-        set(ud.toh, 'string', strto);
+        set(ud.fromh, 'string', epoch2iso(tlim(1)));
+        set(ud.toh, 'string', epoch2iso(tlim(2)));
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
         irf_minvar_gui('update_mva_axis');
     case 'from'
