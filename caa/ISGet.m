@@ -38,7 +38,7 @@ for i=1:length(p)
     else % assume db_s is databse handler
       dbase=db_s;
     end
-		disp(lasterr)
+		c_log('dsrc',lasterr)
 
 		[t, d] = isGetDataLite(dbase, st, dt, ...
 		'Cluster',num2str(cli),ins,sig,sen,cha,par);
@@ -50,7 +50,7 @@ for i=1:length(p)
 		if ~isempty(d), return, end
 
 	catch
-		warning('ISDAT:getData',...
+		c_log('dsrc',...
 		'Error getting data from ISDAT server %s: %s', p{i},lasterr)
 		t = []; d = [];
 	end

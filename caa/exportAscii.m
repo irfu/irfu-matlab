@@ -220,7 +220,7 @@ elseif regexp(vs,'dump')
   fclose(fid);
   return
 else
-	disp('Wariable name not recognized, will do nothing.')
+	c_log('fcal','Wariable name not recognized, will do nothing.')
 	return
 end
 
