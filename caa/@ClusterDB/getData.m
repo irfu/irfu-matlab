@@ -285,6 +285,19 @@ elseif strcmp(quantity,'r')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% aux data - Velocity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'v')
+	save_file = './mR.mat';
+	[t,data] = ISGet(cdb.db, start_time, dt, cl_id, 'ephemeris', 'velocity');
+	if ~isempty(data)
+		c_eval('V?=[double(t) double(data'')];',cl_id); clear t data;
+		c_eval('save_list=[save_list '' V? ''];',cl_id);
+	else
+		warning('caa:noData',av_ssub('No data for V?',cl_id))
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B FGM - full res
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'bfgm')
