@@ -131,7 +131,7 @@ for i=1:length(p)
 
 
 	if useISDAT
-		warning('caa:dataSource','Using ISDAT')
+		%warning('caa:dataSource','Using ISDAT')
 		lasterr('')
 		try
 			dbase = Mat_DbOpen(p{i});
