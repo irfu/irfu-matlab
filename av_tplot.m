@@ -76,7 +76,7 @@ end
   end
 
 % execute av_figmenu if there is no such menu
-user_data=get(gcf,'userdata'),
+user_data=get(gcf,'userdata');
 if isstruct(user_data)
   if isfield(user_data,'av_figmenu')
   else 
