@@ -16,7 +16,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          sfit_ver - 0 (AIE c_efw_onesfit), 1 (BHN c_efw_c_efw_c_efw_spinfit_mx)
 %          // default is to use the one specified in c_efw_sfit
 %          probe_p - probe pair to use 12 or 34 [default 34]
-%   die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
+%   die : diE{cl_id}p1234 -> mEDSIf // despun full res E [DSI]
 %          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %   idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
 %          Transform from SC to inertial frame
@@ -58,7 +58,7 @@ end
 
 % default options
 flag_save = 1;
-flag_usesavedoff = 0;
+flag_usesavedoff = 1;
 flag_edb = 1;
 sfit_ver = -1;
 
@@ -277,7 +277,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
                 var_name = 'wbE?p';
 		var1_name = 'dibE?p1234';
 	else
-		save_file = './mEDSI.mat';
+		save_file = './mEDSIf.mat';
                 var_name = 'wE?p';
 		var1_name = 'diE?p1234';
 	end
@@ -310,9 +310,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 			if do_burst
 				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
 				% correct ADC offset
-				if exist('./mEDSI.mat','file')
-					eval(irf_ssub(['load mEDSI Da?p' ps ' Dadc?p' ps],cl_id))
-				end
+				c_load(['Dadc?p' ps],cl_id)
+				c_load(['Da?p' ps],cl_id)
 				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
 					c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
 					c_eval(['tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
@@ -326,18 +325,19 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				end
 			else
 				% correct ADC offset
-				if flag_usesavedoff & exist('./mEDSI.mat','file')
-					eval(irf_ssub(['load mEDSI Da?p' ps ' Dadc?p' ps],cl_id))
+				if flag_usesavedoff
+					if c_load(['Dadc?p' ps],cl_id)
+						c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
+						c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
+						c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
+						clear tmp_adc
+					elseif c_load(['Da?p' ps],cl_id)
+						c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
+						c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
+					else, flag_usesavedoff = 0;
+					end
 				end
-				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
-					c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
-					c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
-					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
-					clear tmp_adc
-				elseif exist(irf_ssub(['Da?p' ps],cl_id),'var')
-					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
-					c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
-				else
+				if ~flag_usesavedoff
 					if flag_rmwhip
 						if exist('./mFDM.mat','file')
 							c_eval('load mFDM WHIP?',cl_id)
@@ -407,10 +407,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 
 	if ~do_burst
 		% load Delta offsets D?p12p34
-		if exist('./mEDSI.mat','file')
-			eval(irf_ssub('load mEDSI D?p12p34;',cl_id));
-		end
-		if exist(irf_ssub('D?p12p34',cl_id))
+		if c_load('D?p12p34',cl_id)
 			eval(irf_ssub('Del=D?p12p34;',cl_id))
 			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
 				irf_log('calb',['correcting p' num2str(p12)])
@@ -441,7 +438,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 	save_file = './mEIDSI.mat';
-
+	
 	if strcmp(quantity,'idie')
 		var_s = {'diE?p1234'}; e_opt = 'die';
 		var_b = 'diBr?'; b_opt ='br';
@@ -487,7 +484,7 @@ elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 	end
 	if ~isempty(err_s)
 		irf_log('load',...
-			irf_ssub(['No ' err_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+			irf_ssub(['No ' err_s ' in mEDSI(f). Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
 		data = []; cd(old_pwd); return
 	end
 
@@ -543,26 +540,19 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 		end
 	end
 	
-	Dxy_s =  irf_ssub('Ddsi?',cl_id);
-	Dx_s =  irf_ssub('real(Ddsi?)',cl_id);
-	Dy_s =  irf_ssub('imag(Ddsi?)',cl_id);
-	Da_s =  irf_ssub('Damp?',cl_id);
-
-	eval(['load mEDSI ' var_s ' ' Dxy_s ' ' Da_s])
-	if exist(var_s,'var'), eval(['diE=' var_s ';'])
-	else
+	[ok,diE] = c_load(var_s);
+	if ~ok
+		dsc = c_desc(var_s);
 		irf_log('load',...
-			irf_ssub(['No ' var_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+			irf_ssub(['No ' var_s ' in ' dsc.file '. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
 		data = []; cd(old_pwd); return
 	end
-	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
-	else, irf_log('calb','using Dx=1,Dy=0'), Dx = 1; Dy=0;
-	end
-	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
-	else, disp('using Da=1'), Da = 1;
-	end
+	[ok,Dxy] = c_load('Ddsi?',cl_id);
+	if ~ok, Dxy = 1 + 0i; end
+	[ok,Da] = c_load('Damp?',cl_id);
+	if ~ok, Da = 1; end
 
-	diE = caa_corof_dsi(diE,Dx,Dy,Da);
+	diE = caa_corof_dsi(diE,Dxy,Da);
 
 	irf_log('proc',['using angle limit of ' num2str(ang_limit) ' degrees'])
 	[diE,angle]=irf_edb(diE,diB,ang_limit);
