@@ -181,7 +181,7 @@ for i = 1:i_end
   if run_steps(4) == 1
     if run_steps(3) == 0; load mMP;load mAngles;load mEvents; end
     disp('==============  Getting data for events ====================');
-    c_ri_event_picture(time_of_events,period,angles,ampl,path_out)
+    c_ri_event_picture(time_of_events,period,angles,ampl,p_E)
   end
   
 end
