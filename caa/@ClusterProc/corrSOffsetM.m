@@ -186,6 +186,7 @@ axes(h(2))
 axes(h(1))
 legend
 zoom on
+av_figmenu
 
 q='0';
 while(q ~= 'q')
