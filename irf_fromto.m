@@ -13,6 +13,12 @@ else
   t_start_epoch=0;
 end
 
+% check if autoY field exists, if not put it to 1
+if ~isfield(ud_fig,'autoY'),
+    ud_fig.autoY=1;set(ud.figure,'userdata',ud_fig);
+end
+
+    
 if isfield(ud_fig,'subplot_handles') % check the handles to subplots
   SUBPLOT_HANDLES=ud_fig.subplot_handles;
 else
@@ -142,7 +148,6 @@ set(ud.toh, 'string', t_to_str);
 set(ud.step, 'string', regexp(epoch2iso(diff(tlim)),'\d+:\d+:\d+\.\d{4}','match'));
 % update the red line showing the data interval
 set(ud.lnh, 'xdata', tlim);
-
 end
 
 function [tlim step]=get_fromto(ud)
