@@ -109,7 +109,7 @@ save_list = '';
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
-c_log('save',['Storage directory is ' cp.sp])
+if cp.sp~='.', c_log('save',['Storage directory is ' cp.sp]), end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dies - spin fiting of Electric field
@@ -708,7 +708,7 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 			if .99*cover_pp > cover
 				B_tmp = BPP_tmp;
 				Binfo = 'PP';
-				c_log('proc','Use B PP for calcularion of Br')
+				c_log('proc','Using B PP to calculate Br')
 			else, c_log('proc',sprintf('Use B has %2.2f%% coverage',cover*100))
 			end
 		end
