@@ -1,3 +1,7 @@
-1. use correctly averaged 4 sec B.
-2. Need to save the info about which B was used
-3. Need to save the info about which probe pairs were used for P1234 and Es
+1. Use correctly averaged 4 sec B.
+2. Need to save the info about which B was used.
+3. Need to save the info about which probe pairs were used for P1234 and Es.
+4. Need to substract VxB:
+	a) for EDI PP which is in the inertial frame;
+	b) for EFW, make new files mEIEdB and probably mEIDSI.
+5. Load EDI quality factor.
