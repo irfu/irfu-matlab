@@ -135,7 +135,7 @@ for i = 1:i_end
 
   %step one
   if run_steps(1) == 1
-  c_ri_auto_event_search(st,et,d2MP,psw,p_MP);
+  [passing_MP,dist_t]=c_ri_auto_event_search(st,et,d2MP,psw);
   end
 
   %step two
