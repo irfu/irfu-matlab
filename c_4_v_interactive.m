@@ -7,6 +7,7 @@ persistent ud
 tlim = [];
 
 if       (nargin==1 & isstr(x1)), action=x1;disp(['action=' action]);
+elseif   (nargin ==4), disp('Using second column');column=2;action='initialize';
 elseif   (nargin == 5)                   , action='initialize';
 else      help c_4_v_interactive
 end
