@@ -5,6 +5,8 @@
 %
 % $Revision$  $Date$
 
+csds_dir='/data/cluster/CSDS/';
+
 if exist('sc_list') == 0, sc_list=1:4;end % default values
 
 mmm =  ...
@@ -52,6 +54,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   db = Mat_DbOpen(DATABASE);
   variable='start_time_s';default='1999 01 01 00 00 00';question='Start time [%]>';av_ask
   start_time=eval(['[' start_time_s ']']);
+  start_date_str=strrep(datestr(start_time,29),'-','');
   variable='Dt';default=60;question='How many seconds of data [%]>';av_ask
   tint_epoch=toepoch(start_time)+[0 Dt];
  elseif strcmp(q,'2'),
@@ -71,12 +74,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
      [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
      [tilat,ilat] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'inv_lat', ' ', ' ', ' ');
+%      eval(av_ssub('[lat,long]=av_read_cdf([csds_dir ''SP/AUX/*'' start_date_str ''*''],{''sc_at?_lat__CL_SP_AUX'',''sc_at?_long__CL_SP_AUX''});spinaxis_latlong?=[lat long(:,2)];',ic));
      [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
      [tlong, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');
      [tr,r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
      [tv,v] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
      eval(av_ssub('',ic));clear t data;
-     eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];spinaxis_latlong?=[double(tlat) double(lat) double(long)];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v tlat lat long;
+     eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v;
+     eval(av_ssub('spinaxis_latlong?=[double(tlat) double(lat) double(long)];',ic)); clear tlat lat long;
      eval(av_ssub('if exist(''./mEPH.mat''),save mEPH LT? MLT? L? ILAT? spinaxis_latlong? -append; else, save mEPH LT? MLT? L? ILAT? spinaxis_latlong?;end',ic));
      eval(av_ssub('tt=R?(1,1);dR?=c_gse2dsc(R?,[tt ic]);',ic));  % despinned coordinates
      eval(av_ssub('if exist(''./mR.mat''),save mR R? dR? -append; else, save mR R? dR? ;end',ic));
@@ -98,10 +103,12 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
 
  elseif q == 'b',
+    save_file='./mBPP.mat';
     for ic=sc_list, disp(['CSDS...BPP' num2str(ic)]);
-      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'FGM', ['B_xyz_gse__C' num2str(ic) '_PP_FGM'], ' ', ' ',' ');
-      eval(av_ssub('BPP?=[double(t) double(data)''];',ic));clear t,data;
-     eval(av_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
+      eval(av_ssub('BPP?=av_read_cdf([csds_dir ''PP/FGM/C?/C?_PP_FGM_'' start_date_str ''*''],''B_xyz_gse__C?_PP_FGM'');BPP?=av_t_lim(BPP?,tint_epoch);save_list=[save_list '' BPP?''];',ic));
+%      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'FGM', ['B_xyz_gse__C' num2str(ic) '_PP_FGM'], ' ', ' ',' ');
+%      eval(av_ssub('BPP?=[double(t) double(data)''];',ic));clear t,data;
+%     eval(av_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
     end
 
  elseif strcmp(q,'db'),
@@ -153,19 +160,6 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    eval(av_ssub('load mA.mat A?;',ic));
    eval(av_ssub('dBS?=c_despin(wBS?,A?);save -append mBS dBS?;',ic));
   end
-
- elseif strcmp(q,'bfgm'),
-    disp('High time resolution FGM from isdat');
-    for ic=sc_list,
-     disp(['...Bprim' num2str(ic) ', Bsec' num2str(ic)]);
-     [t, data] = isGetDataLite( db, start_time, Dt, 'Cluster', num2str(ic), 'fgm', 'Bprim' , ' ', ' ',' ');
-     eval(av_ssub('Bprim?=[double(t) double(real(data))''];',ic));clear t,data;
-     eval(av_ssub('if size(Bprim?), save_list=[save_list '' Bprim? '']; end; ',ic));
-     [t, data] = isGetDataLite( db, start_time, Dt, 'Cluster', num2str(ic), 'fgm', 'Bsec' , ' ', ' ',' ');
-     eval(av_ssub('Bsec?=[double(t) double(real(data))''];',ic));clear t,data;
-     eval(av_ssub('if size(Bsec?), save_list=[save_list '' Bsec? '']; end; ',ic));
-    end
-    if exist('./mB.mat'), eval(['save -append mB ' save_list]); else, eval(['save mB ' save_list]);end
 
  elseif q == 'e',
   mode=av_q('Sampling 1)hx 2)lx ? If different give as vector. [%]','mode',1);
