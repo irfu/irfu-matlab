@@ -110,8 +110,8 @@ if strcmp(caa_vs,'E')
 	data = caa_corof_dsi(data,Dx,Dy,Da);
 	dsc.com = {sprintf('DSI offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da)};
 	
-	dsc.fro = {'COORDINATE_SYSTEM'};
-	dsc.frv = {'OBSERVATORY'};
+	dsc.fro = {'Coordinate_System'};
+	dsc.frv = {'Observatory'};
 	if v_size>1
 		for j=2:v_size
 			dsc.fro = [dsc.fro {''}]; 
@@ -124,6 +124,24 @@ if strcmp(caa_vs,'E')
 	if lev==3, data = data(:,[1:3 5]);
 	else, data = data(:,1:3);
 	end
+elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
+	% convert mV/m back to V
+	id = str2num(caa_vs(2:end));
+	
+	dsc.units = {'V'};
+	
+	if id==32, data(:,2) = data(:,2)*.0622;
+	else, data(:,2) = data(:,2)*.088;
+	end
+	
+	dsc.cs = {'na'};
+ 	dsc.units =  {'V'};
+	dsc.si_conv = {''};
+	dsc.field_name = {['Potential difference measured between the probes '...
+		dsc.sen(1) ' and ' dsc.sen(2)]};
+	dsc.ent = {'Probe'};
+	dsc.prop = {'Potential'};
+	dsc.fluc = {'Waveform'};
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -142,12 +160,15 @@ fprintf(fid,'!--------------------------------------------------------|\n');
 fprintf(fid,['FILE_NAME = "' file_name ext_s '"\n']);
 fprintf(fid,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
 fprintf(fid,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
-fprintf(fid,'include = "efw_glob.ceh"\n');
-%pmeta(fid,'FILE_NAME',[file_name ext_s])
-pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
+fprintf(fid,'include = "CL_CH_MISSION.ceh"\n');
+fprintf(fid,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
+fprintf(fid,'include = "CL_CH_EFW_EXP.ceh"\n');
+pmeta(fid,'FILE_TYPE','cef')
+pmeta(fid,'DATA_TYPE','CP')
+%pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
 pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
 pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
-pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS__',cl_id)
+pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id)
 pmeta(fid,'DATASET_ID',DATASET_ID,cl_id)
 pmeta(fid,'DATASET_TITLE',dsc.field_name)
 pmeta(fid,'DATASET_DESCRIPTION',...
@@ -159,16 +180,16 @@ pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
 pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
 pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
-%fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
-%fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
-%fprintf(fid,...
-%['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
-%fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
-%fprintf(fid,'START_META     =   GENERATION_DATE\n');
-%fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
-%fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
-%fprintf(fid,'END_META       =   GENERATION_DATE\n');
-pmeta(fid,'CAVEATS',dsc.com)
+fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
+fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
+fprintf(fid,...
+['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
+fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
+fprintf(fid,'START_META     =   GENERATION_DATE\n');
+fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
+fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
+fprintf(fid,'END_META       =   GENERATION_DATE\n');
+pmeta(fid,'PRODUCT_CAVEATS',dsc.com)
 
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'!                   Variables                         !\n');
@@ -183,10 +204,10 @@ fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
 
 for j=1:v_size
 	fprintf(fid,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
-	if dsc.size(j) > 1
-		fprintf(fid,'  SIZES             = %d\n',dsc.size(j));
-	end
+	fprintf(fid,'  PARAMETER_TYPE    = "Data"\n');
+	fprintf(fid,'  SIZES             = %d\n',dsc.size(j));
 	fprintf(fid,'  VALUE_TYPE        = FLOAT\n');
+	fprintf(fid,'  MEASUREMENT_TYPE  = "Electric_Field"\n');
 	fprintf(fid,['  ENTITY            = "' dsc.ent{j} '"\n']);
 	fprintf(fid,['  PROPERTY          = "' dsc.prop{j} '"\n']);
 	if ~isempty(dsc.fluc{j})
@@ -199,6 +220,7 @@ for j=1:v_size
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
 	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
+	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
 	if ~strcmp(dsc.cs{j},'na')
 		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
 	end
@@ -237,7 +259,8 @@ end
 for j=1:length(data(:,1))
 	fprintf(fid,time_s(j,:));
 	fprintf(fid,[mask ' ' EOR_MARKER '\n'],data(j,2:end)');
-end
+end 
+
 
 fclose(fid);
 cd(old_pwd)
