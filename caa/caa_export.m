@@ -132,7 +132,7 @@ ext_s = '.cef';
 % We have special names for CAA
 DATASET_ID = irf_ssub(['C?_CP_EFW_L' num2str(lev) '_' caa_vs],cl_id);
 file_name = ...
-	[DATASET_ID '_' irf_fname(data([1 end],1),2) '_V' DATA_VERSION];
+	[DATASET_ID '__' irf_fname(data([1 end],1),2) '_V' DATA_VERSION];
 fid = fopen([file_name ext_s],'w');
 
 fprintf(fid,'!-------------------- CEF ASCII FILE --------------------|\n');
@@ -157,7 +157,7 @@ pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
-pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs '__'],cl_id)
+pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
 pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
 %fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
 %fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
