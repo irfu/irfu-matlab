@@ -364,7 +364,11 @@ case 'init'
 		'String','Lock','Enable','off',...
 		'Callback','c_cal_gui(''update_DZcheckbox'')','Tag','DZcheckbox');
 
-
+	hnd.EVbutton = uicontrol(h0,'Style','togglebutton',...
+		'Units','normalized','Position',[pxa+wa+dya*2+.015 .01 wp .05],...
+		'String','V, ExB',...
+		'Callback','c_cal_gui(''update_EVbutton'')','Tag','EVbutton');
+	
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
 	
@@ -439,7 +443,7 @@ case 'replot'
 	
 	% Plotting 
 	for j=1:length(d_ii)
-		%disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
+		disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
 		
 		% Process only visible data
 		if ~hnd.Data{d_ii(j)}.visible, continue, end
@@ -481,7 +485,7 @@ case 'replot'
 				((hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'EFW')) | ...
 				(~hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'CIS')))
 				
-				%disp('replot: recalculating plot data')
+				disp('replot: recalculating plot data')
 				hnd.Data{d_ii(j)}.p_data =...
 					get_plot_data(hnd.Data{d_ii(j)}, hnd);
 			end
@@ -516,6 +520,7 @@ case 'replot'
 	hnd.off_updated = 0;
 
 	av_zoom(hnd.tlim,'x',h);
+	set(h,'YLimMode','auto')
 	guidata(h0,hnd);
 	c_cal_gui('update_legend')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -534,7 +539,10 @@ case 'replot_all'
 		hnd.AUXList = {};
 		
 		% Plot
-		for j=1:length(hnd.Data), hnd.last = L_add(hnd.last,hnd.Data{j}.name); end
+		for j=1:length(hnd.Data)
+			hnd.last = L_add(hnd.last,hnd.Data{j}.name);
+			hnd.Data{j}.p_data = [];
+		end
 		guidata(h0,hnd);
 		c_cal_gui('replot')
 		hnd = guidata(h0);
@@ -671,6 +679,23 @@ case 'update_off'
 		% We calibrate V
 		
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_EVbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'update_EVbutton'
+	hnd = guidata(h0);
+
+	% Clear last for security
+	hnd.last = [];
+	if get(hnd.EVbutton,'Value')==1
+		% Go to V mode
+		hnd.mode = 0;
+	else
+		% Return to E mode
+		hnd.mode = 1;
+	end
+	guidata(h0,hnd);
+	c_cal_gui('replot_all')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_Dslider
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -984,7 +1009,7 @@ if data.visible
 		% E->V if in V mode
 		if ~hnd.mode
 			if ~isempty(data.B)
-				p_data = av_e_vxb(p_data,hnd.Data{j}.B,-1);
+				p_data = av_e_vxb(p_data,data.B,-1);
 			else
 				data.visible = 0; 
 				p_data = [];
