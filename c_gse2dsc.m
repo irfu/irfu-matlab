@@ -48,15 +48,15 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
      ic = spin_axis(2);
      clear spin_axis;
      if exist('./maux.mat');
-         c_log('load','Loading maux.mat file');
+         irf_log('load','Loading maux.mat file');
          try c_eval('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic);
-         catch c_log('load','Loading maux.mat file failed'); flag_read_isdat=1;
+         catch irf_log('load','Loading maux.mat file failed'); flag_read_isdat=1;
          end
          if flag_read_isdat==0, % if reading maux file suceeded
              tmin = lat(1,1);
              tmax = lat(end,1);
              if (t > tmin) | (t < tmax)
-                 eval( av_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
+                 eval( irf_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
                  latlong   = av_interp([lat long(:,2)],t);
              end
          else  % maux file from the wrong day
@@ -73,9 +73,9 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
          switch prod(size(cdf_files))
              case 1
                  cdf_file=cdf_files.name;
-                 c_log('load',['converting CDF file ' cdf_file ' -> maux.mat']);
+                 irf_log('load',['converting CDF file ' cdf_file ' -> maux.mat']);
                  cdf2mat(cdf_file,'maux.mat');
-                 c_log('load',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
+                 irf_log('load',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
                  c_eval('lat=av_read_cdf(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
                  c_eval('long=av_read_cdf(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
                  if (t > lat(1,1)) & (t < lat(end,1)),
@@ -91,16 +91,16 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
                  c_eval('spin_axis=SAX?;',ic);
                  flag_read_isdat=0;
              catch
-                 c_log('proc','no SAX variable in mEPH, tryinig to read isdat');
+                 irf_log('proc','no SAX variable in mEPH, tryinig to read isdat');
              end
          end
      end
      if flag_read_isdat,  % load from isdat satellite ephemeris
-      c_log('proc','loading spin axis orientation from isdat database');
+      irf_log('proc','loading spin axis orientation from isdat database');
        start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
         if flag_db==0, % open ISDAT database disco:10
-          c_log('proc','Starting connection to disco:10');
+          irf_log('proc','Starting connection to disco:10');
           db = Mat_DbOpen('disco:10');
         end
         [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
@@ -110,7 +110,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
         else,
           latlong=xxx(1,:);
         end
-        c_log('proc',['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]);
+        irf_log('proc',['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]);
         if flag_db==0,
           Mat_DbClose(db);
         end
@@ -145,7 +145,7 @@ if direction == 1   % GSE -> DSC
  out=M*inp';
  out=out';
  if length(out(:,1))==1
-  c_log('proc',sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3)));
+  irf_log('proc',sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3)));
  end
 elseif direction == 2 % GSE -> DSI
  out=M*inp';
@@ -153,13 +153,13 @@ elseif direction == 2 % GSE -> DSI
  out(:,2)=-out(:,2);
  out(:,3)=-out(:,3);
  if length(out(:,1))==1
-  c_log('proc',sprintf('x,y,z = %g, %g, %g [DSI]',out(1), out(2),out(3)));
+  irf_log('proc',sprintf('x,y,z = %g, %g, %g [DSI]',out(1), out(2),out(3)));
  end
 elseif direction==-1  % DSC -> GSE
  out=Minv*inp';
  out=out';
  if length(out(:,1))==1
-  c_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
+  irf_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
  end
 elseif direction==-2   % DSI -> GSE
  inp(:,2)=-inp(:,2);
@@ -167,7 +167,7 @@ elseif direction==-2   % DSI -> GSE
  out=Minv*inp';
  out=out';
  if length(out(:,1))==1
-  c_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
+  irf_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
  end
 else
  disp('No coordinate transformation done!')
