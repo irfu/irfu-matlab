@@ -1,4 +1,4 @@
-function a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
+ffunction a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
 %function a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
 %
 % fast solution to plot B overview for the events 
@@ -29,84 +29,80 @@ for g =1:f_count
   t = f_events(g,1);
   s_t = fromepoch(t)-per;
   e_t = fromepoch(t)+per; 
-
+  
   [B1,B2,B3,B4]=c_get_bfgm([s_t e_t]);
   c_eval('B?=av_abs(B?);');
-      fg = figure;
-      %plots B1
-      subplot(6,1,1);
-      hold on
-      av_tplot(B1);
-      set(gca,'xlim',t+[-per per]);
-      plot(t,0,'xk')
-      ylabel('B1, nT')
-      add_timeaxis
-      legend('Bx','By','Bz')
-      hold off
-      
-      subplot(6,1,2)
-      hold on
-      c_pl_tx(B1,B2,B3,B4,5);
-      set(gca,'xlim',t+[-per per]);
-      plot(t,0,'xk')
-      ylabel('|B|, nT')
-      add_timeaxis
-      legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-      hold off
-      
-      %plots Bx for all clusters
-      subplot(6,1,3)
-      hold on
-      c_pl_tx(B1,B2,B3,B4,2);
-      set(gca,'xlim',t+[-per per]);
-      plot(t,0,'xk')
-      ylabel('Bx, nT')
-      add_timeaxis
-      legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-      hold off
-      
-      %plots By for all clusters
-      subplot(6,1,4)
-      hold on
-      c_pl_tx(B1,B2,B3,B4,3);
-      set(gca,'xlim',t+[-per per]);
-      plot(t,0,'xk')
-      ylabel('By, nT')
-      add_timeaxis
-      legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-      hold off
-      
-      %plots Bz for all clusters
-      subplot(6,1,5)
-      hold on
-      c_pl_tx(B1,B2,B3,B4,4);
-      set(gca,'xlim',t+[-per per]);
-      plot(t,0,'xk')
-      ylabel('Bz, nT')
-      add_timeaxis
-      legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-      hold off
-      
-      
-      %plotting data
-      load .c_ri_parameters
-      
+  fg = figure;
+  %plots B1
+  subplot(6,1,1);
+  hold on
+  av_tplot(B1);
+  set(gca,'xlim',t+[-per per]);
+  plot(t,0,'xk')
+  ylabel('B1, nT')
+  add_timeaxis
+  legend('Bx','By','Bz')
+  hold off
   
-      subplot(6,1,6)
-
-      %right side 
-      text(2.5,3,['angles: ' int2str(angles(g,2:7)) ' degrees']);
-      text(2.5,4.5,['|B|: ' int2str(ampl(g,:)) ' nT']);
-      axis([1,4,1,6])
-      axis off
-      
-      p_and_f_picture = sprintf('%sF_%s',p_up,c_ri_datestring_file(fromepoch(t)));
-      print( fg, '-djpeg', p_and_f_picture);
-      disp(['saving: ' p_and_f_picture]);
-      close(fg)
-    end
-    
-  end
-  fclose(fp);
+  subplot(6,1,2)
+  hold on
+  c_pl_tx(B1,B2,B3,B4,5);
+  set(gca,'xlim',t+[-per per]);
+  plot(t,0,'xk')
+  ylabel('|B|, nT')
+  add_timeaxis
+  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
+  hold off
+  
+  %plots Bx for all clusters
+  subplot(6,1,3)
+  hold on
+  c_pl_tx(B1,B2,B3,B4,2);
+  set(gca,'xlim',t+[-per per]);
+  plot(t,0,'xk')
+  ylabel('Bx, nT')
+  add_timeaxis
+  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
+  hold off
+  
+  %plots By for all clusters
+  subplot(6,1,4)
+  hold on
+  c_pl_tx(B1,B2,B3,B4,3);
+  set(gca,'xlim',t+[-per per]);
+  plot(t,0,'xk')
+  ylabel('By, nT')
+  add_timeaxis
+  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
+  hold off
+  
+  %plots Bz for all clusters
+  subplot(6,1,5)
+  hold on
+  c_pl_tx(B1,B2,B3,B4,4);
+  set(gca,'xlim',t+[-per per]);
+  plot(t,0,'xk')
+  ylabel('Bz, nT')
+  add_timeaxis
+  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
+  hold off
+  
+  
+  %plotting data
+  load .c_ri_parameters
+  
+  
+  subplot(6,1,6)
+  
+  %right side 
+  text(2.5,3,['angles: ' int2str(angles(g,2:7)) ' degrees']);
+  text(2.5,4.5,['|B|: ' int2str(ampl(g,:)) ' nT']);
+  axis([1,4,1,6])
+  axis off
+  
+  p_and_f_picture = sprintf('%sF_%s',p_up,c_ri_datestring_file(fromepoch(t)));
+  print( fg, '-djpeg', p_and_f_picture);
+  disp(['saving: ' p_and_f_picture]);
+  close(fg)
 end
 
