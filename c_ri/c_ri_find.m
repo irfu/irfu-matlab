@@ -151,14 +151,16 @@ for i = 1:i_end
     angles=[];ampl=[];
     for j=1:size(passing_MP,1)
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
-      c_eval('Binterp?=av_interp(B?,B1);',2:4);
-      [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
-      angles=[angles;angles_tmp];
-      ampl=[ampl;ampl_tmp];
+      if ~isempty(B1)>0,
+        c_eval('Binterp?=av_interp(B?,B1);',2:4);
+        [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
+        angles=[angles;angles_tmp];
+        ampl=[ampl;ampl_tmp];
+      end
     end
     save mAngles angles ampl
   end
-
+  
   %step 3
   if run_steps(3) == 1
     if run_steps(2) == 0; load mMP;load mAngles; end
@@ -181,7 +183,7 @@ for i = 1:i_end
   if run_steps(4) == 1
     if run_steps(3) == 0; load mMP;load mAngles;load mEvents; end
     disp('==============  Getting data for events ====================');
-    c_ri_event_picture(time_of_events,period,angles,ampl,p_E)
+    c_ri_event_picture(time_of_events,period,angles,ampl,p_R)
   end
   
 end
