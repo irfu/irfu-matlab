@@ -12,11 +12,18 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 %	dt - time interval in sec
 %	cl_id - SC#
 %	quantity - one of the following:
-%		'b' : B FGM CSDS PP
+%	CSDS PP:
+%		'b' : B FGM
+%		'edi' : E EDI
+%		'ncis_p' : N CIS CODIF
+%		'ncis_h' : N CIS HIA
+%		'vcis_p' : V CIS CODIF
+%		'vcis_h' : V CIS HIA
+%	CSDS SP:
 %		'slat' : spin axis latitude
 %		'slong' : spin axis longitude
 %
-% $Revision$  $Date$
+% $Id$
 %
 % see also C_GET, TOEPOCH
 
@@ -47,6 +54,14 @@ case 'edi'
 	r.mem	= ['C' cl_id_s];
 	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
 	r.sen	= r.var;
+case 'ncis_p'
+	r.inst  = 'CIS';
+	r.var	= ['N_p__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
+case 'ncis_h'
+	r.inst  = 'CIS';
+	r.var	= ['N_HIA__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
 case 'vcis_p'
 	r.inst  = 'CIS';
 	r.var	= ['V_p_xyz_gse__C' cl_id_s '_PP_' r.inst];
@@ -82,6 +97,19 @@ case 'slong'
 	r.sen	= r.var;
 otherwise
 	error('caa:noSuchQuantity','Quantity ''%s'' is not recongized',quantity)
+end
+
+% variables
+if strcmp(r.pr,'CSDS_SP') 
+	r.mem	= 'CL';
+	r.file	= ['SP/AUX/CL_SP_' r.inst '_'];
+	r.sen	= r.var;
+elseif strcmp(r.pr,'CSDS_PP')
+	r.mem	= ['C' cl_id_s];
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
+	r.sen	= r.var;
+else
+	error('caa:noSuchQuantity','Project ''%s'' is not recongized',r.pr)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
