@@ -23,7 +23,7 @@ if isempty(message),
     disp(message);
 end
 
-if      nargin < 1, help irf_minvar_interactive;return;
+if      nargin < 1, help irf_minvar_gui;return;
 elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
 elseif  isnumeric(x),
     if size(x,2)<3, disp('Vector has too few components');return;end
@@ -55,11 +55,11 @@ switch action,
         dgh=figure;clf;irf_figmenu;
         h(1)=subplot(4,1,1);
         irf_plot(X);axis tight;
-        set(dgh,    'windowbuttondownfcn', 'irf_minvar_interactive(''ax'')');zoom off;
-        irf_pl_info(['av\_minvar\_interactive() ' datestr(now)]); % add information to the plot
+        set(dgh,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
+        irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
         ax=axis;grid on;
-        ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_interactive(''ax'')');
+        ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
 
         h(2)=subplot(4,1,2);
         irf_plot(X);axis tight; 
@@ -75,14 +75,14 @@ switch action,
         ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
         ud.fromh = uicontrol('style', 'edit', ...
             'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'), ...
-            'callback', 'irf_minvar_interactive(''from'')', ...
+            'callback', 'irf_minvar_gui(''from'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
 
         yp=0.15;
         ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
         ud.toh=uicontrol('style', 'edit', ...
             'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'), ...
-            'callback', 'irf_minvar_interactive(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
+            'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 
 
         xp=0.1;yp=0.1;
@@ -92,12 +92,12 @@ switch action,
             'callback', 'c_4_v_update(''dt'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
 
-        uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_interactive(''mva'')');
+        uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_gui(''mva'')');
 
         subplot(4,2,8);axis off;
         ud.result_text=text(0,0.8,'result');
 
-        irf_minvar_interactive('from');
+        irf_minvar_gui('from');
         fix_legends;
 
     case 'ax'
@@ -122,12 +122,12 @@ switch action,
         strto=datestr(datenum(fromepoch(tlim(2))), 0);
         set(ud.toh, 'string', strto);
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
-        irf_minvar_interactive('update_mva_axis');
+        irf_minvar_gui('update_mva_axis');
     case 'from'
         tlim(1) = toepoch(datevec(strrep(get(ud.fromh, 'string'),'_',' ')));
         tlim(2) = toepoch(datevec(strrep(get(ud.toh, 'string'),'_',' ')));
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
-        irf_minvar_interactive('update_mva_axis');
+        irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
         if tlim==ud.tlim_mva, % plot first time after 'mva'
             axes(ud.h(2));
@@ -152,7 +152,7 @@ switch action,
         if (tlim(1)<ud.tlim_mva(1) | tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
             axes(ud.h(2));set(ud.h(2),'layer','top');
             ax=axis;grid on;
-            ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_interactive(''ax'')');
+            ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
         end
         fix_legends;
     case 'mva'
@@ -168,7 +168,7 @@ switch action,
         v3_str=['v3=[' num2str(v(3,:),'%6.2f') '] \newline'];
         v_str=[v1_str v2_str v3_str];
         set(ud.result_text,'string',[l_str lratio_str v_str],'verticalalignment','top');
-        irf_minvar_interactive('update_mva_axis');
+        irf_minvar_gui('update_mva_axis');
 end
 
 end
