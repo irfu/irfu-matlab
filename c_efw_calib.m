@@ -259,7 +259,7 @@ coef3=[[1,0.2, 1.3-0.4-0.05i];[1,-0.2, 1.3+0i]]; % sc/3
 coef4=[[1,0.2, 0.9+.8+0i];[1,-0.5, 0.9+0i]]; % sc/4
 end
 
-% 2 Mar 2001, MP-Xing, L,M,L,L-mode
+% 2 Mar 2002, MP-Xing, L,M,L,L-mode
 if isdat_epoch > toepoch([2002 3 2 00 00 00]),
 info='EFW calibration coefficients from 2002-03-02';
 coef1=[[1,0, 1.3-0.05i];[1,-0.1, 1.3+0i]]; % sc/1
