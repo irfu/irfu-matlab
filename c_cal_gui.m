@@ -236,7 +236,8 @@ case 'init'
 					eval(['data.data =' vs ';'])
 					data.p_data = [];
 					if ((strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'12') | strcmp(dsc.sen,'32'))& ...
-						strcmp(dsc.sig,'E')) | strcmp(dsc.sen,'COD')
+						strcmp(dsc.sig,'E')) | strcmp(dsc.sen,'COD') | ...
+						strcmp(dsc.sig,'N') | strcmp(dsc.sig,'Np')
 						data.visible = 0;
 					else
 						data.visible = 1;
