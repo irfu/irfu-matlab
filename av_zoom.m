@@ -36,7 +36,7 @@ for h=axis_handles
 		if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10)
 			add_timeaxis(h,t_ref);
 			if h~=axis_handles(end)
-				xlabel(h,'')
+				xlabel('')
 				set(h,'XTickLabel','')
 			end
 		end
@@ -46,3 +46,4 @@ for h=axis_handles
 		set(h,'Xlim',[ax(1:2)]);
 	end
 end
+
