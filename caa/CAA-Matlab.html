@@ -56,9 +56,13 @@ We want to look at data from all 4 Cluster sc for 2001-10-01 during period
 </p>
 
 <p>
-First we create a directory to store data<br>
-<tt>mkdir /home/yuri/caa-data/20011001_1310</tt><br>
+First we create a directory to store data and set <tt>sp</tt> to it.
 </p>
+<pre>
+>> mkdir /home/yuri/caa-data/20011001_1310
+>> sp = '/home/yuri/caa-data/20011001_1310';
+</pre>
+
 <p>
 Define start epoch and interval length
 </p>
@@ -72,18 +76,76 @@ st =
 >> dt=160*60;
 </pre>
 <p>
-Next we get all possible data (EFW + FGM,CIS,EDI PP) on disk.
+Next we get all possible data (EFW + FGM,CIS,EDI PP) on disk and despin it.
 </p>
 
 <pre>
+>> getRData(sp,st,dt)
+
+...
+
+EFW...sc4...Ep12 10Hz filter
+EFW...sc4...Ep34 10Hz filter
+ wE4p12  wE4p34  -> ./mER.mat
+EFW...sc4...probe1->P10Hz4p1
+EFW...sc4...probe2->P10Hz4p2
+EFW...sc4...probe3->P10Hz4p3
+EFW...sc4...probe4->P10Hz4p4
+ P10Hz4p1 P10Hz4p2 P10Hz4p3 P10Hz4p4 P10Hz4  P4 NVps4 -> ./mP.mat
+ A4  -> ./mA.mat
+ SAX4 -> ./mEPH.mat
+ BPP4 diBPP4 -> ./mBPP.mat
+/data/cluster/CSDS/PP/EDI/C4/C4_PP_EDI_20011001*
+cdf file: /data/cluster/CSDS/PP/EDI/C4/C4_PP_EDI_20011001_V01.CDF
+/data/cluster/CSDS/PP/CIS/C4/C4_PP_CIS_20011001*
+cdf file: /data/cluster/CSDS/PP/CIS/C4/C4_PP_CIS_20011001_V03.CDF
+ VCp4 diVCp4 VCh4 diVCh4 -> ./mCIS.mat
+ VCEp4 diVCEp4 VCEh4 diVCEh4 -> ./mCIS.mat
+
+ ...
+
+Spin fit wE4p12 -> diEs4p12
+2399 spins processed, 0 gaps found
+Spin fit wE4p34 -> diEs4p34
+2399 spins processed, 0 gaps found
+delta offsets are: 0.74 [x] 0.03 [y]
+correcting p12
+ diEs4p12  diEs4p34  D4p12p34  -> ./mEDSI.mat
+Da4dp12 : 0.52
+Da4dp34 : 0.12
+correcting p12
+rotation period=4.0116 s
+ Da4p12  Da4p34  diE4p1234  -> ./mEDSI.mat
 </pre>
 
-<p>Calibrate sunward offset and amplitude factors</p>
+<p>
+Calibrate sunward offset and amplitude factors. 
+It is better to start from the spacecraft for which you have CIS and EDI data.
+The osstest are usually similar for all SC (not always).
+First correct the sunward field Ex, and then the amplitude. It is better to use
+calm regions or places where the DC electric field changes sign. 
+Note, it may be difficult to get a value of sunward offset which will fit all
+the time interval if the spacecraft potential changes.
+</p>
 
 <pre>
+>> corrSOffsetM(ClusterProc(sp),1)
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[0.00 1.00 ]>1 1
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.00 1.00 ]>1.1 1
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.10 1.00 ]>1.2 1
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.20 1.00 ]>1.3 1
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.00 ]>1.3 1.2
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.20 ]>s
+Ddsi1, Damp1 -> ./mEDSI.mat
+Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[1.30 1.20 ]>q
 </pre>
 
-<p>Plot summary information</p>
+<p>Plot summary information. This step will compute Ez from E.B=0 for times when 
+magnetic field is more the 15 degrees from the spin plane, and then compute ExB.</p>
+
+<pre>
+>> doSPlot(sp)
+</pre>
 
 <pre>
 </pre>  
