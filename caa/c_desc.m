@@ -93,10 +93,32 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.size = 1;
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
-	v.field_name = {['Probe #' sen ' potential']};
+	v.field_name = {['Probe #' v.sen ' potential']};
 	v.com = '';
 	v.file = 'mP';
 	v.quant = 'p';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P - individual probes from internal burst
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^P32kHz[1-4]p[1-4]$')==1
+	v.data = 1;
+	v.cl_id = vs(7);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'P';
+	v.sen = vs(9);
+	v.cs = {'na'};
+	v.rep = {'scalar'};
+ 	v.units =  {'V'};
+	v.si_conv = {''};
+	v.size = 1;
+	v.name = {['P' v.sen]};
+	v.labels = v.name;
+	v.field_name = {['Probe #' v.sen ' potential']};
+	v.com = '';
+	v.file = 'mEFWburst';
+	v.quant = 'pburst';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
