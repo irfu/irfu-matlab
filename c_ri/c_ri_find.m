@@ -140,6 +140,7 @@ for i = i_start:i_end
     disp('==============  Finding MP crossings ====================');
     [passing_MP,dist_t]=c_ri_auto_event_search(st,et,d2MP,psw);
     disp('Predicted MP crossings');
+    if passing_MP == 0, passing_MP=[];dist_t=[]; end % does not finds predicted MP crossings
     for j=1:size(passing_MP,1)
       disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
     end
@@ -156,9 +157,9 @@ for i = i_start:i_end
       try save -append '.c_ri_parameters.mat' MP_interval_start;
       catch disp('Could not save MP_interval_start');
       end
-      disp('いいいいいいいいいいいいいいいいいいいいいいいいいいいいいい');
+      disp('????????????????????????????????????????????????????????????');
       disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
-      disp('いいいいいいいいいいいいいいいいいいいいいいいいいいいいいい');
+      disp('????????????????????????????????????????????????????????????');
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       if ~isempty(B1)>0,
         c_eval('try Binterp?=av_interp(B?,B1); catch Binterp?=[]; end;',2:4);
@@ -180,7 +181,6 @@ for i = i_start:i_end
                 end
               end
             end
-            disp(['Alltogether found ' num2str(size(time_of_events,1)) ' events.']);
             events=[events;time_of_events];
             angles=[angles;angles_out];
             amplitude=[amplitude;ampl_out];
@@ -189,11 +189,12 @@ for i = i_start:i_end
       end
     end
     save mEvents events angles amplitude;
+    disp(['Alltogether found ' num2str(size(events,1)) ' events.']);
   end    
   %step 3
   if run_steps(3) == 1
     if run_steps(2) == 0; load mMP;load mEvents; end
-    disp('==============  Getting data for events ====================');
+    disp('==============  Plotting data for events ====================');
     if exist('events'),
       if ~isempty(events),
         c_ri_event_picture(events,period,angles,amplitude,p_R)

@@ -34,15 +34,15 @@ for g =1:f_count
   [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
   c_eval('try B?=av_abs(B?);catch B?=[NaN NaN NaN NaN NaN];end');
   %c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',s_t,10,?,''tm'');');
-  %title_str=['sc mode (0-normal, 1-burst): ' num2str([tm1 tm2 tm3 tm4])];
-  title_str=[' angles: ' int2str(angles(g,2:7)) ' degrees'];
+  % title_str=['sc mode (0-normal, 1-burst): ' num2str([tm1 tm2 tm3 tm4])];
+  title_str=[ ' angles: ' int2str(angles(g,2:7)) ' degrees'];
   title_str=[title_str '|B|: ' int2str(ampl(g,:)) ' nT'];
 
   fg = figure('visible','off');
   set(gcf,'Units','centimeters')
   set(gcf,'Position',[1 1 15 20])
   %plots B1
-  h(1)=av_subplot(6,1,-1);
+  h(1)=av_subplot(6,1,-1);st=[2002 04 16 00 14 19]
   av_tplot(B1);
   ylabel('B1, nT')
   title(title_str);
@@ -75,7 +75,7 @@ for g =1:f_count
   av_pl_mark(t + [-.1 .1],h,'y');
   av_zoom(t+[-per per],'x',h);
   add_timeaxis(h);
-%  legend
+%  legendst=[2002 04 16 00 14 19]
   
   %plotting data
   load '.c_ri_parameters.mat'
