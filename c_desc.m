@@ -353,9 +353,9 @@ elseif regexp(vs,'^NVps[1-4]$')==1
 	v.quant = 'p';	
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% phase
+% phase and phase_2
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^A[1-4]$')
+elseif regexp(vs,'^A(two)?[1-4]$')
 	v.data = 1;
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
@@ -366,8 +366,13 @@ elseif regexp(vs,'^A[1-4]$')
 	v.units =  {'deg'};
 	v.si_conv = {'1>degree'};
 	v.size = [1];
-	v.name = {'A'};
-	v.labels = {'Phase'};
+	if strcmp(vs(2),'t')
+		v.name = {'Atwo'};
+		v.labels = {'Phase_2'};
+	else
+		v.name = {'A'};
+		v.labels = {'Phase'};
+	end
 	v.label_1 = {''};
 	v.field_name = {'Spacecraft phase'};
 	v.com = '';
