@@ -62,7 +62,7 @@ if nargin == 4,
  switch flag,
  case 'print',
    for j=1:i_fig-1,
-     figure(i_fig);i_fig
+     figure(j);
      panel_str='';
      for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
