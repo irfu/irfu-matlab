@@ -14,7 +14,7 @@ function [Wpe,Wce,Wuh,Wpp,Wcp,WpO,WcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,
 %
 % $Id$
 
-% Copyright 1997-2004 Yuri Khotyaintsev
+% Copyright 1997-2005 Yuri Khotyaintsev
 
 if nargin < 6
 	noshow = 0;
@@ -41,6 +41,7 @@ Wpp = Wpp*1e3;
 Wcp = Wce/Mp_Me;
 WpO = WpO*1e3;
 WcO = Wce/Mp_Me/16;
+Wlh = sqrt((Wpp^2)*Wce^2/(Wce^2+Wpe^2)+Wcp^2);
 
 Roe = Vte/Wce*1e3; % in meters
 Rop = Vtp/Wcp*1e3; % in meters
@@ -54,8 +55,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % frequencies
 
-freq = [Wpe Wce Wuh Wpp Wcp WpO WcO];
-freqs = {'W_pe'; 'W_ce'; 'W_uh'; 'W_pp'; 'W_cp'; 'W_pO'; 'W_cO'};
+freq = [Wpe Wce Wuh Wlh Wpp Wcp WpO WcO];
+freqs = {'F_pe'; 'F_ce'; 'F_uh'; 'F_lh'; 'F_pp'; 'F_cp'; 'F_pO'; 'F_cO'};
 disp(sprintf('\nPlasma frequencies\n'))
 for ii = 1:length(freq)
 	val = freq(ii);
