@@ -98,9 +98,7 @@ elseif strcmp(q,'eph')
 elseif q=='r' | q=='v' | q=='a' | strcmp(q,'whip') | q=='e' | q == 'b' | ...
 	strcmp(q,'bfgm') | q=='p' | strcmp(q,'pburst') | strcmp(q,'eburst') | ...
 	strcmp(q,'ncis') | strcmp(q,'vcis') | strcmp(q,'vce') | strcmp(q,'wbdwf')
-	for j=1:length(var_list)
-		for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
-	end
+	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI Inertial
