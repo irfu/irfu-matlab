@@ -27,7 +27,7 @@ dgud.cancel = 0;
 dgud.h=h;
 
 screensize = get(0, 'screensize');
-xsize = 400;
+xsize = 460;
 ysize = 150;
 left = 0.5*screensize(3)-xsize/2;
 bottom = 0.5*screensize(4)-ysize/2;
@@ -67,7 +67,7 @@ uch = uicontrol('style', 'pushbutton', ...
     'string', 'toggle', ...
     'callback', 'irf_fromto(''toggle'')');
 ext = get(uch, 'extent');
-set(uch, 'position', [200-ext(3)/2 ysize-78 ext(3:4)]);
+set(uch, 'position', [250-ext(3)/2 ysize-78 ext(3:4)]);
 
 uch1 = uicontrol('style', 'text', 'string', 'From:');
 ext1 = get(uch1, 'extent');
