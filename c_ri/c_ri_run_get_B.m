@@ -46,7 +46,7 @@ s_t_e = toepoch(s_t);
 e_t_e = toepoch(e_t);
 
 %writing the ls-command to a file, which can be opened by matlab
-ls_out = sprintf('%sls_list.txt',path_output),
+ls_out = sprintf('%sls_list.txt',path_output);
 unix_command = sprintf('ls %sMP_*.* >%s' , path_input, ls_out );
 unix(unix_command);
 
@@ -61,7 +61,7 @@ while feof(fp) == 0
     %assigns to value to passing_MP
     load(f_line);
   end
-  keyboard
+
   if passing_MP ~= 0
 
     if s_t == 0 & e_t == 0

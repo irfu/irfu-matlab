@@ -46,9 +46,9 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % File types:
 % Files with MP-crossings
 % MP_20010201_00:00:00_to_20010708_00:00:00.mat
-% 
+%
 % Files with B-data in ascii format one for each satellite.
-% "b" means burst mode and "n" means normal mode 
+% "b" means burst mode and "n" means normal mode
 % Ba_010613_F125419_T125434_b.01
 % Ba_010613_F125419_T125434_b.02
 % Ba_010613_F125419_T125434_b.03
@@ -57,7 +57,7 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % Files where the B-data from the cluster satellites are in one file
 % and are matlab compatible.
 % Bm_020620_F052501_T052506_b.mat
-% 
+%
 % Files where the B-data have been preprocessed into
 % matrixes with the same timeline and the same size
 % Bp_020302_F030001_T040720_b.ma_020302_F030001_T040720_b.mat
@@ -70,7 +70,7 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 %
 % Result file, the processed events written to file
 % R_F20020302t030000_T20020302t040000.txt
-% 
+%
 % Figure files of the processed events
 % F_20020302t033512.jpg
 %
@@ -79,7 +79,7 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % for this period. Then the angles are calculated and if the angles and the
 % amplitude are larger than a certian threshold. This time is classed as
 % an event. The events are reduced by classing two events as the same events
-% if the timedifferance is less than period. 
+% if the timedifferance is less than period.
 %
 %Using:
 % c_ri_auto_event_search
@@ -94,67 +94,72 @@ function c_ri_run_all(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, p
 % Calls the functions one at the time for each timeintervall
 %
 %Error:
-% There are serveral calls to unix using ls and the ouput is written to file. 
+% There are serveral calls to unix using ls and the ouput is written to file.
 % (This file is not removed) and end up in the output file. This system can cause
 % an error if ls produces no result. Then no file will be written and the error will
 % say that it could not find the file. Or there might be a problem if the cataloge
-% contains to many files. 
+% contains to many files.
 %
 % The filtering alogoithm can cause caining, meaing that several different events will
 % be classed as one event if the time period is to large.
-% 
-% This program produces lots of files, the reson this files are keept is to be able to 
+%
+% This program produces lots of files, the reson this files are keept is to be able to
 % only do one step.
 %
 % To change download source for binare data.
 % The function "c_ri_run_get_B" load the binary data from "/data/cluster/DDS/" this can be changed
 % in the function "create_file" and "c_ri_get_B".
 %
+% To work properly following shell variables should be defined 
+% export FGMPATH=/share/isdat_files/cal/fgm
+% export SATTPATH=/data/cluster/DDS
+% export ORBITPATH=/data/cluster/DDS
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 %
-% See also c_ri.m 
+% See also c_ri.m
 %
 
 %--------------------- the beginning --------------------------
 if  nargin == 0
-%This is where you write the matrix with the timeintervalls
-st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
-et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
-min_angle(1:2) = [150 170];
-min_ampl(1:2) = 5;
-period(1:2) = 3;
-d2MP = 3;
-psw =2;
-run_steps(1:7) = [1 1 1 1 1 1 1];
+  %This is where you write the matrix with the timeintervalls
+  st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
+  et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
+  min_angle(1:2) = [150 170];
+  min_ampl(1:2) = 5;
+  period(1:2) = 3;
+  d2MP = 3;
+  psw =2;
+  run_steps(1:7) = [1 1 1 1 1 1 1];
 end
 
 if  nargin == 1
-%This is where you write the matrix with the timeintervalls
-st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
-et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
-min_angle(1:2) = [150 170];
-min_ampl(1:2) = 5;
-period(1:2) = 3;
-d2MP = 3;
-psw =2;
+  %This is where you write the matrix with the timeintervalls
+  st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
+  et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
+  min_angle(1:2) = [150 170];
+  min_ampl(1:2) = 5;
+  period(1:2) = 3;
+  d2MP = 3;
+  psw =2;
 end
 
 
 if nargin == 3
-[r , c] = size(st_m);
-min_angle(1:r) = 150;
-min_ampl(1:r) = 5;
-period(1:r) = 3;
-d2MP = 3;
-psw =2;
+  [r , c] = size(st_m);
+  min_angle(1:r) = 150;
+  min_ampl(1:r) = 5;
+  period(1:r) = 3;
+  d2MP = 3;
+  psw =2;
 end
 
 if nargin == 6
-[r , c] = size(st_m);
-d2MP = 3;
-psw =2;
+  [r , c] = size(st_m);
+  d2MP = 3;
+  psw =2;
 end
 
 if exist('.c_ri_parameters.mat'),
