@@ -13,11 +13,13 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	e   : wE{cl_id}p12,34 -> mER
 %			// electric fields (HX)
 %	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	
-%			// sc potential (LX)
+%			// probe potential (LX)
 %
 %	//// EFW internal burst////
-%	eburst: wbE{cl_id}p12,34 -> mER
+%	eburst: wbE{cl_id}p12,34 -> mEFWburst
 %			// electric fields 8kHz
+%	pburst: P{4kHz,32kHz}{cl_id}p{1:4}, wbE{cl_id}p12,34 -> mEFWburst	
+%			// probe potentials (4kHz,32kHz), and electric fields
 %
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
@@ -175,32 +177,86 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % p - SC potential
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'p')
-	save_file = './mP.mat';
-	param='10Hz'; tmmode='lx';
-	for probe=1:4;
-    	disp(['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param num2str(cl_id) 'p' num2str(probe)]);
+elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
+	
+	if strcmp(quantity,'pburst'), do_burst = 1; else do_burst = 0; end
+	if do_burst 
+		save_file = './mEFWburst.mat';
+		tmmode='burst';
+		param={'4kHz','32kHz'};
+		var_name = 'wbE?p';
+	else
+		save_file = './mP.mat';
+		param={'10Hz'}; tmmode='lx';
+	end
+	for j=1:length(param), for probe=1:4;
+    	disp(['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
-		'efw', 'E', ['p' num2str(probe)],param, tmmode);
+		'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
 		if ~isempty(data)
-			eval(av_ssub(['p!=[double(t) double(real(data))];save_list=[save_list '' P' param '?p!''];P' param '?p!=p!;'],cl_id,probe)); clear t data
+			data = double(real(data));
+			t = double(t);
+			
+			if do_burst
+				% correct start time of the burst
+				burst_f_name = av_ssub([makeFName(t(1),1) 'we.0?'],cl_id);
+				burst_f_name = [cdb.dp '/burst/' burst_f_name];
+				if exist(burst_f_name,'file')
+					db = Mat_DbOpen(cdb.db);
+					err_t = t(1) - checkbursttime(db,burst_f_name);
+					warning(['burst start time was corrected by ' num2str(err_t) ' sec'])
+					Mat_DbClose(db);
+					t = t - err_t;
+				else
+					warning('burst start time was not corrected')
+				end
+			end
+			eval(av_ssub(['p!=[t data];save_list=[save_list '' P' param{j} '?p!''];P' param{j} '?p!=p!;'],cl_id,probe)); clear t data
 		else
 			eval(['p' num2str(probe) '=[];'])
 		end
-    end
+    end, end
+	
     clear p
-	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&cl_id~=2,  % sc2 has often problems with p3
-    	p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
-    elseif size(p1)==size(p2)&size(p1)~=[0 0]
-    	p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
-    elseif size(p3)==size(p4)&cl_id~=2
-    	p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
-    else,
-    	p=p4;
-    end
-    eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],cl_id));
-	eval(av_ssub('P?=p;NVps?=c_n_Vps(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? NVps?''];',cl_id))
-	clear p
+	if do_burst
+		% make electric field
+		for j=1:length(param)
+			for probe=[1 3]
+				if exist(av_ssub(['P' param{j} '?p!'],cl_id,probe),'var') & ...
+				exist(av_ssub(['P' param{j} '?p!'],cl_id,probe+1),'var')
+					eval(av_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' param{j} '?p$(:,2)-P' param{j} '?p!(:,2))*1.25;'],cl_id,probe,probe+1));
+					vn = [var_name num2str(probe) num2str(probe+1)];
+					if exist(av_ssub(vn,cl_id),'var')
+						c_eval(['tmpE=' vn ';'],cl_id)
+						if tmpE(1,1) > E(1,1)
+							tmpE(:,end+1:end+size(E,1)) = E;
+							E = tmpE;
+						else
+							E(:,end+1:end+size(tmpE,1)) = tmpE;
+						end
+						clear tmpE
+					end
+					c_eval([vn '=E;save_list=[save_list '' ' vn  ' ''];'],cl_id);
+					clear E
+				end
+			end
+		end
+	else
+		if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&cl_id~=2,  % sc2 has often problems with p3
+		p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+		elseif size(p1)==size(p2)&size(p1)~=[0 0]
+				p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
+		elseif size(p3)==size(p4)&cl_id~=2
+			p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
+		else,
+			p=p4;
+		end
+		
+		c_eval(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],cl_id);
+		c_eval('P?=p;NVps?=c_n_Vps(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? NVps?''];',cl_id)
+		clear p
+	end
+	clear p1 p2 p3 p4
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
