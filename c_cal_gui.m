@@ -287,15 +287,20 @@ case 'init'
 					if d < 4 & isempty(data.B)
 						% E and V data
 						% Resample B
-						if ~isempty(hnd.BData{cl_id})
+						if ~isempty(Brs)
+							irf_log('proc','interpolating Brs')
+							c_eval(...
+								['data.B = irf_resamp(Brs,' vs ');'],...
+								cl_id)
+						elseif ~isempty(hnd.BPPData{cl_id})
+							irf_log('proc','interpolating B PP')
+							c_eval(...
+								['data.B = irf_resamp(hnd.BPPData{cl_id},' vs ');'],...
+								cl_id)
+						elseif ~isempty(hnd.BData{cl_id})
 							irf_log('proc','resampling B GFM')
 							c_eval(...
 								['data.B = irf_resamp(hnd.BData{cl_id},' vs ');'],...
-								cl_id)
-						elseif ~isempty(hnd.BPPData{cl_id})
-							irf_log('proc','resampling B PP')
-							c_eval(...
-								['data.B = irf_resamp(hnd.BPPData{cl_id},' vs ');'],...
 								cl_id)
 						else, data.B = [];
 						end
