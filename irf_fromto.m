@@ -38,7 +38,7 @@ switch fromto
     set(gcbf, 'userdata', ud);
   case 'from'
     tlim(1) = toepoch(datevec(strrep(get(ud.fromh, 'string'),'_',' ')));
-    step = datenum(get(ud.step, 'string'))*86400;
+    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
     tlim(2)=tlim(1)+step;
     set(ud.lnh, 'xdata', tlim);
     set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
@@ -48,18 +48,18 @@ switch fromto
     set(ud.lnh, 'xdata', tlim);
     set(ud.step, 'string', datestr(diff(tlim)/86400 ,13));
   case 'step'
-    step = datenum(get(ud.step, 'string'))*86400;
+    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
     tlim = get(ud.lnh, 'xdata');
     tlim(2) = tlim(1)+step;
     set(ud.lnh, 'xdata', tlim);
     set(ud.toh, 'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'));
   case 'update'
-    step = datenum(get(ud.step, 'string'))*86400;
+    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
     tlim = get(ud.lnh, 'xdata');
     av_zoom(tlim,'x',SUBPLOT_HANDLES);
     add_timeaxis(SUBPLOT_HANDLES);
   case 'prev'
-    step = datenum(get(ud.step, 'string'))*86400;
+    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
     tlim = get(ud.lnh, 'xdata');
     tlim = tlim-step;
     set(ud.lnh, 'xdata', tlim);
@@ -68,7 +68,7 @@ switch fromto
     av_zoom(tlim,'x',SUBPLOT_HANDLES);
     add_timeaxis(SUBPLOT_HANDLES);
   case 'next'
-    step = datenum(get(ud.step, 'string'))*86400;
+    step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
     tlim = get(ud.lnh, 'xdata');
     tlim = tlim+step;
     set(ud.lnh, 'xdata', tlim);
