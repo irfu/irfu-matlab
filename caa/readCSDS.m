@@ -139,7 +139,7 @@ for i=1:length(p)
 	else
 		warning('caa:dataSource','Using FILE')
 		disp([p{i} '/CSDS/' r.file start_date_s '*']);
-		data = av_read_cdf([p{i} '/CSDS/' r.file start_date_s '*'], r.var);
+		data = av_read_cdf([p{i} '/CSDS/' r.file start_date_s '*'], r.var,'latest');
 		if ~isempty(data)
 			data = av_t_lim(data,start_time + [0 dt]);
 			return
