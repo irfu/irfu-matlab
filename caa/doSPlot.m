@@ -31,7 +31,7 @@ if nargin<2, sc_list=1:4; end
 cp=ClusterProc(sp);
 
 vars = {'dies','die'};
-for cl_id=1:4
+for cl_id=sc_list
 	getData(cp,cl_id,'edbs','ang_blank','ang_limit',15);
 	getData(cp,cl_id,'edb','ang_blank','ang_limit',15);
 	getData(cp,cl_id,'vedbs');
