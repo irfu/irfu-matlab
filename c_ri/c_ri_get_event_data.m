@@ -2,7 +2,7 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list, dt_interval)
 %
 %Input:
-%   time_interval - [start_time end_time] in isdat_epoch 
+%   time_interval - [start_time end_time] in isdat_epoch
 %   path_Events - where to look for Events files (files start with "E_")
 %   path_Out    - where to write the data, ends with '/'
 %   data_list   - structure with values of which data to load, e.g. {'EFW_E','EFW_P'}
@@ -14,21 +14,21 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %   Loads the specified data for each event in the given time interval
 %
 %Using:
-%   
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 % eventsw   - 1 event per row, 3 columns [start_time end_time s/c_mode(1-burst, 0-normal)]
 %
-%Written by Andris Vaivads Sep 2003
-global AV_DEBUG
-if isempty(AV_DEBUG), debug=0;else debug=AV_DEBUG; end
+%Written by Andris Vaivads Sep 2003 - 
+
+global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else debug=AV_DEBUG; end
 
 %--------------------- the beginning --------------------------
 sc_list=1:4; % get data for all 4 s/c
-isdat_database='disco:10'; % 
+isdat_database='disco:10'; %
 db = Mat_DbOpen(isdat_database);
 
 if nargin==0, help c_ri_get_event_data; return; end
@@ -36,7 +36,7 @@ if nargin==1, path_Events=[pwd filesep];path_Out=[pwd  filesep];data_list={'EFW_
 if nargin==2, path_Out=[pwd  filesep];data_list={'EFW_P'};dt_interval=5;end
 if nargin==3, data_list={'EFW_P'};dt_interval=5;end
 if nargin==4, dt_interval=5;end
-default_cases={'EPH'};
+default_cases={'EPH','FGM'};
 data_list=[default_cases data_list ]; % ephemeris should be first
 
 dir_list=dir([path_Events 'E_' '*.mat']);
@@ -81,7 +81,7 @@ for i_event=1:size(events,1),
   time_interval=[start_time_epoch end_time_epoch];
   Dt        =end_time_epoch-start_time_epoch;
   if debug, disp([num2str(i_event) '.event, ' R_datestring(start_time) ', dt=' num2str(Dt) 's.']);end
-% sc_mode estimate fast solution 
+% sc_mode estimate fast solution
   for i_a=1:size(A_list,1),
     a_file=A_list(i_a).name;
     if c_ri_timestr_within_intervall(a_file,start_time,end_time) == 1,
@@ -91,12 +91,12 @@ for i_event=1:size(events,1),
     if debug, disp(['sc_mode=' sc_mode]);end
   for i_data=1:length(data_list),
     switch data_list{i_data}
-    case 'EPH' % get ephemeris R,V,A,ILAT,MLT,satellite axis orientation
+    case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
       file_prefix='F';
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
-      for ic=sc_list, 
+      for ic=sc_list,
         if debug, disp(['Loading ephemeris s/c' num2str(ic)]);end
-        [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' '); 
+        [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
         [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
         [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
         [tilat,ilat] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'inv_lat', ' ', ' ', ' ');if debug,disp('LT,MLT,L shell,ILAT...ready!');end
@@ -105,33 +105,38 @@ for i_event=1:size(events,1),
         [tA,A] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');if debug,disp('Position R, velocity V, Phase A ...ready!');end
         eval(av_ssub('A?=[double(tA) double(A)];',ic));
         eval(av_ssub('LT?=[double(tlt) double(lt)];MLT?=[double(tmlt) double(mlt)];L?=[double(tL) double(Lshell)];ILAT?=[double(tilat) double(ilat)];R?=[double(tr) double(r)''];V?=[double(tv) double(v)''];',ic));clear tlt tmlt tL tilat lt mlt Lshell ilat tr r tv v;
-        if exist(file_name,'file'), flag_append='-append';
-        else flag_append='';
-        end
+        if exist(file_name,'file'), flag_append='-append';else flag_append='';end
         stric=num2str(ic);
         save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
       end
-      
+
+    case 'FGM',
+      file_prefix='F';
+      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
+      [B1,B2,B3,B4]=c_get_bfgm(tim_interval);
+      for ic=1:4,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
+      if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+      save(file_name,'B1','B2','B3,'B4','dB1','dB2','dB3,'dB4',flag_append);
+
     case 'EFW_P',
       file_prefix='F';
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
       EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
       P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
-      if exist(file_name,'file'), 
-        save(file_name,'P1','P2','P3','P4','-append');
-      else,
-        save(file_name,'P1','P2','P3','P4');
-      end
-      
+      if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+      save(file_name,'P1','P2','P3','P4',flag_append);
+
     case 'EFW_E',
       file_prefix='F';
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
-      EFW_E=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'wE');
-      wE1=EFW_E{1};wE2=EFW_E{2};wE3=EFW_E{3};wE4=EFW_E{4};
-      if exist(file_name,'file'), 
-        save(file_name,['wE' num2str(ic)],'-append');
-      else,
-        save(file_name,['wE' num2str(ic)]);
+      deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
+      for ic=sc_list,
+        eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
+        eval(av_ssub('dE?=c_despin(wE?,?,''wec'')',ic)),
+        eval(av_ssub('deg=20;[dEo?,d?]=av_ed(dE?,dB?,deg);Eo?=c_gse2dsc(dEo?,[dEo?(1,1) ?],-1);indzero=find(abs(d?)<deg);Eo?(indzero,4)=0;',ic));
+        eval(av_ssub('ExB?=av_e_vxb(Eo?,B?,-1);',ic));
+        if exist(file_name,'file'), flag_append='-append';else flag_append='';end
+        eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''Eo?'',''ExB?'',flag_append);;',ic));
       end
     end
   end

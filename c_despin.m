@@ -14,7 +14,8 @@ function e = c_despin(es,phase,coef)
 %        A_12 = Real (relative amplitude error)
 %        E_offs_12_s = Real (p12 boom offset)
 %        E_offs_12_xy = Complex (real part tells E offset in DSC_X and imaginary in DSC_Y)
-%
+% flag - 'wec' or 'sat'
+% 
 % !Phase is calculated as a linear fit to the data, to make it fast and simple
 % In some case with many and large data gaps this can fail.
 %
