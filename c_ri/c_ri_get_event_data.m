@@ -82,13 +82,15 @@ for i_event=1:size(events,1),
   Dt        =end_time_epoch-start_time_epoch;
   if debug, disp([num2str(i_event) '.event, ' R_datestring(start_time) ', dt=' num2str(Dt) 's.']);end
 % sc_mode estimate fast solution
+  sc_mode=[];
   for i_a=1:size(A_list,1),
     a_file=A_list(i_a).name;
     if c_ri_timestr_within_intervall(a_file,start_time,end_time) == 1,
       sc_mode=a_file(length(a_file)-4);
     end
   end
-    if debug, disp(['sc_mode=' sc_mode]);end
+  if isempty(sc_mode), disp('do not know which mode satellites are running, assuming normal!');sc_mode='n';end
+  if debug, disp(['sc_mode=' sc_mode]);end
 
   for i_data=1:length(data_list),
     switch data_list{i_data}
