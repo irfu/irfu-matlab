@@ -1,6 +1,6 @@
 function data = getData(cp,cl_id,quantity,varargin)
-%GETDATA(cdb) produce Cluster level 0 data from the raw data
-% data = getData(cdb,cl_id,quantity,options)
+%GETDATA(cp) produce Cluster level 0 data from the raw data
+% data = getData(cp,cl_id,quantity,options)
 %
 % Input:
 %	cp - ClusterProc object
@@ -27,7 +27,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	nosave : do no save on disk
 %	usesavedoff : use saved offsets instead of recalculate everything
 %
-% $Revision$  $Date$
+%
+% $Id$
 %
 % see also C_GET
 
