@@ -2,6 +2,7 @@ function e = c_despin(es,phase,coef,flag)
 % function e = c_despin(es,phase)
 % function e = c_despin(es,phase,coef)
 % function e = c_despin(es,phase,spacecraft_number)
+% function e = c_despin(es,phase,spacecraft_number,flag)
 % function e = c_despin(es,phase,flag)
 % function e = c_despin(es,spacecraft_number)
 % function e = c_despin(es,spacecraft_number,flag)
@@ -38,7 +39,7 @@ if nargin == 2,
  ref_frame='wec';
 end
 
-if nargin == 3,
+if nargin > 3,
   if isnumeric(coef),
     ref_frame='wec';
    if size(coef,1) == 1,
@@ -46,6 +47,10 @@ if nargin == 3,
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     clear coef;
     eval(av_ssub('coef=c?;',ic));
+    if nargin ==4 & strcmp(flag,'efw_offs'),
+      coef(1,2)=mean(es(:,3));
+      coef(2,2)=mean(es(:,2));
+    end
    end
   elseif strcmp(coef,'sat'),
     ref_frame='sat';
@@ -78,7 +83,7 @@ if prod(size(phase))==1, % load phase from isdat database
   phase=[double(phase_t) double(phase_data)]; clear phase_t phase_data;
   Mat_DbClose(db);
 end
-                           
+
 switch ref_frame
 case 'wec'
   phi_12=3*pi/4;phi_34=pi/4; % angles when phase =0
