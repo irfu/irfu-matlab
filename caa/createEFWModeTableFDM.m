@@ -1,8 +1,10 @@
 function [t_start_save,t_stop_save,fdm_save]=createEFWModeTableFDM(db_s,start_epoch,delta_t,cli,var_list_s)
 %createEFWModeTableFDM reads EFW FDM and extracts diffs
-% createEFWModeTableFDM(db_s,start_epoch,dt,cl_id,var_list_s)
+% [t_start_save,t_stop_save,fdm_save]=
+% 	createEFWModeTableFDM(db_s,start_epoch,dt,cl_id,var_list_s)
 %
-% var list is in form 'px|r|ss'
+% db_s	ISDAT database string ('disco:10')
+% var_list_s is in form 'px|r|ss'
 % where:
 % px	Burst playback
 % bbb	Burst internal state
@@ -44,6 +46,7 @@ t_fdm_last = [];
 fdm_last = [];
 
 prev_ok = 0; % indicate if last time interval contained data
+no_data = 1; % indicate if last time interval contained no data
 t_end_last_interv = []; % end of last time interval;
 
 var_list = tokenize(var_list_s,'|');
@@ -85,7 +88,7 @@ while t_cur < stop_epoch
 		
 		clear s_pbbbxrwc s_ssqiiiii s_mmmmeeee
 		
-		if isempty(fdm_last) % if we just started or last interval had no data
+		if no_data % if we just started or last interval had no data
 			t_fdm_last = t_fdm(1);
 			for j=1:length(var_list)
 				if strcmp(var_list(j),'px')
@@ -99,11 +102,12 @@ while t_cur < stop_epoch
 				elseif strcmp(var_list(j),'e')
 					fdm_last_e = fdm_e(1,:);
 				elseif strcmp(var_list(j),'tm')
-					fdm_last_tm = fdm_tm(1);
+					fdm_last_tm = fdm_tm(1)
 				else
 					error('unknown variable')
 				end
 			end
+			no_data = 0;
 		end
 		
 		for j=1:length(var_list)
@@ -154,6 +158,8 @@ while t_cur < stop_epoch
 		end
 	
 	else % no data
+
+		no_data = 1;
 		
 		s = fromepoch(t_cur - dt);
 		disp(sprintf('No data at %d-%d-%d %d:%d:%2.3f',...
@@ -179,7 +185,7 @@ while t_cur < stop_epoch
 				s(1),s(2),s(3),s(4),s(5),s(6),e(1),e(2),e(3),e(4),e(5),e(6)))
 			end
 			
-			fdm_last = [];
+			%fdm_last = [];
 			for j=1:length(var_list)
 				eval(['fdm_last_' var_list{j} '=[];']);
 			end
@@ -190,6 +196,7 @@ end
 
 if prev_ok %last interval was also good
 if (t_fdm_last < t_fdm(end))
+	l = length(t_start_save);
 	
 	% save the good interval		
 	t_start_save(l+1) = t_fdm_last;
