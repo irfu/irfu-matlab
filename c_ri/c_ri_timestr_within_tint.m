@@ -41,14 +41,14 @@ t_t=toepoch([str2num(ts(end-18+[0:3])) str2num(ts(end-14+[0:1])) ...
              str2num(ts(end-12+[0:1])) str2num(ts(end-9+[0:1])) ...
              str2num(ts(end-7+[0:1])) str2num(ts(end-5+[0:1]))]) ;
 
-
-if st_e <= t_t & f_t <= et_e
- within = 1;
-else
- within = 0;
-end
-
-if nargin == 1, % return time interval
+switch nargin,
+case 1, % return time interval
  within =[f_t t_t];
+case 2, % return flag if time string is within specified time interval
+  if st_e <= t_t & f_t <= et_e
+   within = 1;
+  else
+   within = 0;
+  end
 end
 

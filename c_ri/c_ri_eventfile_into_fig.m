@@ -33,8 +33,8 @@ for i_file=1:size(file_list,1),
         h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);
         eval(eval(['plot_command.' panels{i_panel}]));
      end
-     av_zoom(tint_plot,'x',h(i_fig));
-     add_timeaxis(h(i_fig));
+     av_zoom(tint_plot,'x',h(i_fig,:));
+     add_timeaxis(h(i_fig,:));
      i_fig=i_fig+1;
   end
 end
