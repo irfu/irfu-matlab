@@ -13,6 +13,8 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 %	cl_id - SC#
 %	quantity - one of the following:
 %		'b' : B FGM CSDS PP
+%		'slat' : spin axis latitude
+%		'slong' : spin axis longitude
 %
 % $Revision$  $Date$
 %
@@ -35,6 +37,20 @@ case 'b'
 	r.mem	= ['C' cl_id_s];
 	r.inst  = 'FGM';
 	r.sen	= ['B_xyz_gse__C' cl_id_s '_PP_FGM'];
+case 'slat'
+	r.file	= 'SP/AUX/CL_SP_AUX_';
+	r.var	= ['sc_at' cl_id_s '_lat__CL_SP_AUX'];
+	r.pr	= 'CSDS_SP';
+	r.mem	= 'CL';
+	r.inst  = 'AUX';
+	r.sen	= r.var;
+case 'slong'
+	r.file	= 'SP/AUX/CL_SP_AUX_';
+	r.var	= ['sc_at' cl_id_s '_long'];
+	r.pr	= 'CSDS_SP';
+	r.mem	= 'CL';
+	r.inst  = 'AUX';
+	r.sen	= r.var;
 otherwise
 	error('caa:noSuchQuantity','Quantity ''%s'' is not recongized',quantity)
 end
@@ -79,7 +95,12 @@ for i=1:length(p)
 			clear dbase
 
 			if ~isempty(dat)
-				data = [double(t) double(dat)'];
+				% if dat has more the one column, we need to transpose it
+				sz = size(dat);
+				i_s = find(sz~=length(t));
+				if sz(i_s)>1, dat = dat'; end
+
+				data = [double(t) double(dat)];
 				return
 			else
 				% warning('caa:noData','No data')
