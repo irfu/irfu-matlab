@@ -166,7 +166,7 @@ if strcmp(quantity,'dies')
 			ii = find(adc_off(:,2)==0);
 			adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
 			
-			sp = sp(:,1:4);
+			sp = sp(:,[1:4 6]);
 			sp(:,4) = 0*sp(:,4); % Z component
 			
 			% remove spins with bad spin fit (obtained E > 10000 mV/m)
