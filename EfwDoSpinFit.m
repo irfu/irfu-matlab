@@ -59,9 +59,13 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
-if nargin < 9, method = 0;
-else, method = 1; %use MEX
-end
+if nargin < 9, method = 0; end
+if method==1
+	if exist('spinfit_mx')~=3
+		method = 0;
+		disp('cannot find mex file, defaulting to Matlab code.')
+	end
+end	
 
 % Turn off warnings for badly conditioned polynomial:
 warning off;
@@ -87,6 +91,23 @@ N_EMPTY = .75;
 
 n_gap = 0;
 
+if method ==1
+	fnterms = 3;
+	te = torow(te);
+	data = torow(data);
+	spinfit(:,[5 8]) = -1;
+
+	tpha = tocolumn(tp);
+	pha = tocolumn(ph);
+	% Calcluate phase (in rad) at EFW sample times:
+	pha = unwrap(pi*pha/180);
+	% Find phase of given pair:
+	if pair == 12, pha = pha + 3*pi/4;
+	elseif pair == 34, pha = pha + pi/4;
+	else, error('probe pair must be one of 12 or 34')
+	end
+end
+
 % Do it:
 for i=1:n
 	t0 = tstart + (i-1)*4;
@@ -102,34 +123,21 @@ for i=1:n
 			%we use Fortran version of spin fit
 			fnterms = 3;
 			[bad,x,sigma,iter,lim] = spinfit_mx(fnterms,maxit,2*pi/4,...
-				torow(te(eind)),torow(data(eind)));
+				te(eind),data(eind));
 			
-			tsfit = mean(te(eind));
-			%correct phase
-			tpha = tocolumn(tp(pind));
-			pha = tocolumn(ph(pind));
-			% Calcluate phase (in rad) at EFW sample times:
-			pha = unwrap(pi*pha/180);
-			pol = polyfit(tpha,pha,1);
-			pha = polyval(pol,tsfit);
-
-			% Find phase of given pair:
-			if pair == 12, pha = pha + 3*pi/4;
-			elseif pair == 34, pha = pha + pi/4;
-			else, error('probe pair must be one of 12 or 34')
-			end
+			tsfit = mean(te(eind));	
+			pol = polyfit(tpha(pind),pha(pind),1);
+			phi = polyval(pol,tsfit);
 			theta = atan2(x(3),x(2));
 			rho = sqrt(x(2)^2 + x(3)^2);
 
 			spinfit(i-n_gap,1) = tsfit;
-			spinfit(i-n_gap,2) = -rho*cos(pha + theta);
-			spinfit(i-n_gap,3) = rho*sin(pha + theta); 
+			spinfit(i-n_gap,2) = -rho*cos(phi + theta);
+			spinfit(i-n_gap,3) = rho*sin(phi + theta); 
 			% - Because s/c is spinning upside down
 			spinfit(i-n_gap,4) = x(1);
-			spinfit(i-n_gap,5) = -1;
 			spinfit(i-n_gap,6) = sigma;
 			spinfit(i-n_gap,7) = iter;
-			spinfit(i-n_gap,8) = -1;
 		else
 			%we use Matlab version by AIE
 			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
