@@ -193,6 +193,12 @@ for j=1:v_size
 		fprintf(fid,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
 	end
 	fprintf(fid,['  CATDESC           = "' dsc.field_name{j} '"\n']);
+	fprintf(fid,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
+	if ~isempty(dsc.si_conv{j})
+		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
+	end
+	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
+	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
 	if ~strcmp(dsc.cs{j},'na')
 		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
 	end
@@ -204,15 +210,11 @@ for j=1:v_size
 			fprintf(fid,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
 		end
 	end
-	if ~isempty(dsc.si_conv{j})
-		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
-	end
-	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
-	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
-	fprintf(fid,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
 	if dsc.size(j) > 1
+		fprintf(fid,['  REPRESENTATION_1  = ' dsc.rep_1{j} '\n']);
 		fprintf(fid,['  LABEL_1           = ' dsc.label_1{j} '\n']);
 	end
+	fprintf(fid,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
 	fprintf(fid,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
 	fprintf(fid,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
 end
