@@ -21,7 +21,8 @@ btot = av_abs(b0,1);
 
 ii = find(btot<1e-3);
 if length(ii)>0, btot(ii) = ones(size(ii))*1e-3; end
-normb=[b0(:,1) b0(:,2)./btot b0(:,3)./btot b0(:,4)./btot]; 
+normb = [b0(:,1) b0(:,2)./btot b0(:,3)./btot b0(:,4)./btot]; 
+normb = av_interp(normb,a);
 
 apar = av_dot(normb,a);
 aperp = a;
