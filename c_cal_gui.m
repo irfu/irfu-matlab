@@ -485,7 +485,9 @@ case 'init'
 		'Callback','c_cal_gui(''show_raw'')',...
 		'Accelerator','d');
 	hnd.menu_show_spect = uimenu(hnd.menu_tools,'Label','&Spectrum',...
-		'Callback','c_cal_gui(''show_spect'')');
+		'Callback','c_cal_gui(''show_spect'')',...
+		'Accelerator','f',...
+		'Enable','on');
 	hnd.menu_cut_int = uimenu(hnd.menu_tools,'Label','&Cut the interval',...
 		'Callback','c_cal_gui(''cut_int'')',...
 		'Accelerator','k',...
@@ -519,6 +521,7 @@ case 'ch_active_var'
 			set(hnd.DXedit,'Enable','on')
 			set(hnd.DYslider,'Enable','on')
 			set(hnd.DYedit,'Enable','on')
+			set(hnd.menu_show_spect,'Enable','on')
 		else % Display V, offsets in CIS
 			d_m = 1; vs = 'V'; vsz = 'Vz';
 			if strcmp(hnd.Data{j}.sen,'HIA')
@@ -529,6 +532,7 @@ case 'ch_active_var'
 			set(hnd.DXedit,'Enable','off')
 			set(hnd.DYslider,'Enable','off')
 			set(hnd.DYedit,'Enable','off')
+			set(hnd.menu_show_spect,'Enable','off')
 		end
 	end
 	set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
@@ -1457,7 +1461,11 @@ case 'show_spect'
 	
 	j = D_findByName(hnd.Data,hnd.ActiveVar);
 
-	if ~strcmp(hnd.Data{j}.type,'E'), disp('no need for cis'), return, end
+	if ~strcmp(hnd.Data{j}.type,'E')
+		disp('should not see this: no need for cis')
+		return, 
+	end
+	
 	if strcmp(hnd.Data{j}.sen,'1234'), E_tmp = hnd.Data{j};
 	else
 		ii = D_findByName(hnd.Data,irf_ssub('diE?p1234',hnd.Data{j}.cl_id));
