@@ -1,5 +1,5 @@
 function addPlotInfo
-% addPlotInfo add a string "created dd-mm-yy by user@host"
+% addPlotInfo add a string "created dd-mm-yy by \n user@host"
 %
 % $Revision$  $Date$
 
@@ -10,7 +10,7 @@ h1 = axes('Units','normalized', ...
 	'Tag','BackgroundAxes');
 [s,u] = unix('whoami');
 [s,h] = unix('hostname');
-u=u(1:end-1);h=h(1:end-1);
+u=u(1:end-1);h=h(2:end-1);
 created_string = [ 'Created ' date ' by ' u '@' h];
 h1 = text('Units','normalized', ...
 	'FontSize',6, ...
