@@ -149,11 +149,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
  elseif strcmp(q,'bfgm'),
   disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
-  for ic=sc_list,
-    eval(av_ssub('B?=c_get_bfgm(tint_epoch,ic);',ic));
-  end
-  eval(['save mB ' save_list]);
   save_list = '';
+  c_eval('B?=c_get_bfgm(tint_epoch,?);save_list=[save_list '' B? ''];',sc_list);
+  c_eval('dB?=c_gse2dsc(B?,[B?(1,1) ?]);save_list=[save_list '' dB? ''];',sc_list);
+  eval(['save mB ' save_list]);
 
  elseif strcmp(q,'dbf'),
   for ic=sc_list,
