@@ -34,6 +34,7 @@ if regexp(vs,'wE[1-4]p(12|34)')==1
 	sen = vs(4:6);
 	frame = 'SC';
 	var_labels = {['E' sen]};
+  var_units =  {'mV/m'};
 
 	% remove averages
 	cp = ClusterProc('./');
@@ -50,6 +51,7 @@ elseif regexp(vs,'diEs[1-4]p(12|34)')==1
 	sen = ['spin fits ' vs(6:8)];
 	frame = 'DSI,  Ez==0 : not measured';
 	var_labels = {'Ex','Ey','Ez'};
+  var_units =  {'mV/m','mV/m','mV/m'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
@@ -62,6 +64,7 @@ elseif regexp(vs,'diE[1-4]p1234')==1
 	sen = vs(5:9);
 	frame = 'DSI,  Ez==0 : not measured';
 	var_labels = {'Ex','Ey','Ez'};
+  var_units =  {'mV/m','mV/m','mV/m'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E with assumption E.B = 0
@@ -116,7 +119,24 @@ elseif regexp(vs,'A[1-4]')
 	sen = '';
 	frame = 'SC';
 	var_labels = {'phase'};
+  var_units =  {'deg'};
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dump without headers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'dump')
+
+  fid = fopen([inputname(1) '.dat'],'w');
+  for j=1:size(vs,2),
+    if vs(j,1)>5e8 % assume first column time in isdat epoch
+      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %6.4f ',fromepoch(vs(j,1)));
+      fprintf(fid,[d num2str(vs(j,2:end))]);
+    else
+      fprintf(fid,[d num2str(vs(j,2:end))]);
+    end
+  end
+  fclose(fid);
+  return
 else
 	warning('Wariable name not recognized, will do nothing.')
 	return
