@@ -1,5 +1,5 @@
 function status = c_4_v_int(x1,x2,x3,x4,column)
-% C_4_V_INT interactively estimate the discontinuity velocity for Cluster
+% C_4_V_INT interactive discontinuity analyzer for Cluster
 %  status = c_4_v_int(x1,x2,x3,x4,column)
 %  status = c_4_v_int('B?',column)   use variables B1,B2,B3,B4 from base workspace
 %  status = c_4_v_int('B?')          use column 2
