@@ -283,7 +283,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
          p=p4;
     end
     eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],ic));
-    if ((mm==1) | (mm==11)); eval(av_ssub('P?=p;NVps?=[p(:,1) c_n_Vsc(-p(:,2))];save_list=[save_list '' P? NVps?''];',ic));end
+    if ((mm==1) | (mm==11)); eval(av_ssub('P?=p;NVps?=c_n_Vps(p)];save_list=[save_list '' P? NVps?''];',ic));end
     if (mm == 4),
       dtburst=input(['s/c' num2str(ic) ', time shift to obtain correct time (get from Anders Tjulin) =']);
       dtburst=double(dtburst);
