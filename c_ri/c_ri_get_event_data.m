@@ -116,7 +116,7 @@ for i_event=1:size(events,1),
       [B1,B2,B3,B4]=c_get_bfgm(tim_interval);
       for ic=1:4,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
-      save(file_name,'B1','B2','B3,'B4','dB1','dB2','dB3','dB4',flag_append);
+      save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
 
     case 'EFW_P',
       file_prefix='F';
