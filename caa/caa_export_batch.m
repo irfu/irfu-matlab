@@ -1,11 +1,13 @@
 function caa_export_batch(sc_list)
 %CAA_EXPORT_BATCH run CAA_EXPORT in a batch script
 %
-% caa_export_batch(sc_list)
+% caa_export_batch([sc_list])
 %
 % $Id$
 
 % Copyright 2004,2005 Yuri Khotyaintsev
+
+if nargin<1, sc_list=1:4; end
 
 l1 = {'P1','P2','P3','P4','P12','P32','P34'};
 l2 = {'P','E'};
