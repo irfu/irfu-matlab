@@ -69,7 +69,7 @@ switch action,
     xl=get(hh,'XLim');yl=get(hh,'YLim');
     hc=get(hh,'Children');
     dt=eval(['[' get(ud.dt,'string') ']']);
-    t=xl(1)+dt;
+    t=0.5*(xl(1)+xl(2))+dt;
     v=c_v(t);
     tstr=['[' num2str(dt,'%7.2f') '] s'];
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),2) ']'];
@@ -89,10 +89,14 @@ switch action,
     xl=get(hh,'XLim');yl=get(hh,'YLim');
     hc=get(hh,'Children');
     v=eval(['[' get(ud.v,'string') ']']),
-    t=xl(1);
-    dt=c_v([xl(1) v]);
+    t=0.5*(xl(1)+xl(2));
+    dt=c_v([t v]);
     tstr=['[' num2str(dt,'%7.2f') ']'];
-    vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%7.2f') ']'];
+    if norm(v) > 0,
+      vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%7.2f') ']'];
+    else
+      vstr='0*[0 0 0]';
+    end
     set(ud.dt,'string',tstr);
     axes(ud.h(2));
     if eval(get(ud.filter,'string'))<1,
