@@ -30,13 +30,12 @@ for g =1:f_count
   s_t = fromepoch(t);
   e_t = fromepoch(t); 
   
-  [B1,B2,B3,B4]=c_get_bfgm(t+[-per per]);
+  [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
   c_eval('B?=av_abs(B?);');
   fg = figure;
   %plots B1
-  subplot(6,1,1);
-  hold on
-  av_tplot(B1);
+  h(1)=av_subplot(6,1,-1);
+  av_tplot(B1);hold on;
   set(gca,'xlim',t+[-per per]);
   plot(t,0,'xk')
   ylabel('B1, nT')
@@ -44,20 +43,17 @@ for g =1:f_count
   legend('Bx','By','Bz')
   hold off
   
-  subplot(6,1,2)
-  hold on
-  c_pl_tx(B1,B2,B3,B4,5);
+  h(2)=av_subplot(6,1,-2);
+  c_pl_tx(B1,B2,B3,B4,5);hold on;
   set(gca,'xlim',t+[-per per]);
   plot(t,0,'xk')
   ylabel('|B|, nT')
   add_timeaxis
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-  hold off
   
   %plots Bx for all clusters
-  subplot(6,1,3)
-  hold on
-  c_pl_tx(B1,B2,B3,B4,2);
+  h(3)=av_subplot(6,1,-3);
+  c_pl_tx(B1,B2,B3,B4,2);hold on;
   set(gca,'xlim',t+[-per per]);
   plot(t,0,'xk')
   ylabel('Bx, nT')
@@ -89,7 +85,7 @@ for g =1:f_count
   
   
   %plotting data
-  load .c_ri_parameters
+  load '.c_ri_parameters.mat'
   
   
   subplot(6,1,6)
