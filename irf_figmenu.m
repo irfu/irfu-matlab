@@ -6,7 +6,7 @@ function s=irf_figmenu(action)
 if nargin < 1, action = 'initialize'; end
 
 if strcmp(action,'initialize'),
-  hfigmenu=uimenu('Label','&av');
+  hfigmenu=uimenu('Label','&irf');
   uimenu(hfigmenu,'Label','&Update time axis','Callback','add_timeaxis(gca,''date'')','Accelerator','t')
   uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
   uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
