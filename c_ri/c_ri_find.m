@@ -181,7 +181,7 @@ for i = 1:i_end
   if run_steps(4) == 1
     if run_steps(3) == 0; load mEvents; end
     disp('==============  Getting data for events ====================');
-    c_ri_get_event_data([],time_of_events(:,1),path_E, {'EFW_E','EFW_P'}, period);
+    c_ri_get_event_data([],time_of_events(:,1),p_E, {'EFW_E','EFW_P'}, period);
     per = period(i);
     c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
   end

@@ -7,13 +7,14 @@ function h = c_ri_eventfile_into_fig(time_interval,path_events,panels,flags,dt)
 % time_interval - isdat_epoch [start_time end_time]
 % path_events - path where event files are located, ex './'
 % panels - structure with list of panels to plot, ex. {'Bx','By','B','B1','Ex','Vps'}
-% flags - 'print' print the result to file
+% flags - 'jpg'   print results to jpg-files
+%       - 'print' print results to ps-file
 %       - 'base' execute in MATLAB base workspace (access to all your variables)
 %       - can be combined, ex. flags={'print','base'}
 % 
 %Output:
 %  h - handle to figures
-flag_print=0;flag_base=0;
+flag_print=0;flag_base=0;flag_jpg=0;
 global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
 if nargin<3,help c_ri_eventfile_into_fig;return;end
 if nargin<4,flags='';end
@@ -83,41 +84,47 @@ plot_command=struct(...
   'ExBlmn3' ,'av_tplot(av_abs(ExBlmn3));ylabel(''ExB [km/s] LMN, sc3'');legend(''L'',''M'',''N'');', ...
   'ExBlmn4' ,'av_tplot(av_abs(ExBlmn4));ylabel(''ExB [km/s] LMN, sc4'');legend(''L'',''M'',''N'');', ...
   'test','test' ...
-);
+  );
 
 file_list=dir([path_events '*F*t*T*t*.mat']);
 for i_file=1:size(file_list,1),
   if c_ri_timestr_within_tint(file_list(i_file).name,time_interval),
-     tint_plot=c_ri_timestr_within_tint(file_list(i_file).name);
-     if debug, disp(['Using file: ' file_list(i_file).name]);end
-     for j=1:n_panels,plot_comms{j}=eval(['plot_command.' panels{j}]);end
-     load_comm=['load(''' path_events file_list(i_file).name ''');'];
-     fig_comm=['i_fig=' num2str(i_fig) '; n_panels=' num2str(n_panels) '; figure(i_fig); i_panel=1;clear h;'];
-     loop_comm=['for i_panel=1:n_panels,h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end'];
-     if flag_base,
-       assignin('base','plot_comms',plot_comms);
-       evalin('base',load_comm);
-       evalin('base',fig_comm);
-       evalin('base',loop_comm);
-       h=evalin('base','h;');
-     else,
-       eval(load_comm);
-       eval(fig_comm);
-       eval(loop_comm);
-     end
-     av_zoom(tint_plot,'x',h(i_fig,:));
-     add_timeaxis(h(i_fig,:));
-     legend;
-     i_fig=i_fig+1;
+    tint_plot=c_ri_timestr_within_tint(file_list(i_file).name);
+    if debug, disp(['Using file: ' file_list(i_file).name]);end
+    for j=1:n_panels,plot_comms{j}=eval(['plot_command.' panels{j}]);end
+    load_comm=['load(''' path_events file_list(i_file).name ''');'];
+    fig_comm=['i_fig=' num2str(i_fig) '; n_panels=' num2str(n_panels) '; figure(i_fig); i_panel=1;clear h;'];
+    loop_comm=['for i_panel=1:n_panels,h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end'];
+    if flag_base,
+      assignin('base','plot_comms',plot_comms);
+      evalin('base',load_comm);
+      evalin('base',fig_comm);
+      evalin('base',loop_comm);
+      h=evalin('base','h;');
+    else,
+      eval(load_comm);
+      eval(fig_comm);
+      eval(loop_comm);
+    end
+    av_zoom(tint_plot,'x',h(i_fig,:));
+    add_timeaxis(h(i_fig,:));
+    legend;
+    i_fig=i_fig+1;
   end
 end
 
-if flag_print,
-   for j=1:i_fig-1,
-     figure(j);
-     panel_str='';
-     for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
-     print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
-     orient tall;print('-dpsc2',print_file_name);
-   end
+if flag_print | flag_jpg,
+  for j=1:i_fig-1,
+    figure(j);
+    panel_str='';
+    for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
+    orient tall;
+    if flag_print,
+      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
+      print('-dpsc2',print_file_name);
+    elseif flag_jpg,
+      print_file_name=[file_list(i_file).name '_' panel_str '.jpg'];
+      print('-djpg',print_file_name);
+    end
+  end
 end

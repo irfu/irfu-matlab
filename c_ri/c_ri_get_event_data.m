@@ -31,14 +31,13 @@ if nargin==4, dt_interval=5;end
 default_cases={'EPH','FGM'};
 data_list=[default_cases data_list ]; % ephemeris should be first
 
-start_time=time_interval(1);
-end_time=time_interval(2);
-
-event_time_intervals=[]; % three columns [start_time end_time mode]; mode=0(normal), 1(burst)
-next_event_row=1;
 
 % construct time intervals to download, time intervals are in whole seconds
 if isstr(path_Events)
+  start_time=time_interval(1);
+  end_time=time_interval(2);
+  event_time_intervals=[]; % three columns [start_time end_time mode]; mode=0(normal), 1(burst)
+  next_event_row=1;
   dir_list=dir([path_Events 'E_' '*.mat']);
   A_list=dir([path_Events 'A/Ap_*.mat']);
   for i_Event_file=1:size(dir_list,1),
@@ -52,7 +51,7 @@ if isstr(path_Events)
     end
   end
 elseif isnumeric(path_Events)
-  event_time_intervals=[floor(path_Events(:)-dt) ceil(path_Events(:)+dt)];
+  event_time_intervals=[floor(path_Events(:)-dt_interval) ceil(path_Events(:)+dt_interval)];
 else
   error(' events not defined properly');
 end

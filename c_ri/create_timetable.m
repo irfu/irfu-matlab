@@ -33,5 +33,5 @@ file_p_n_n = create_file(from,'n',1);
 timetable_b = get_timetable(from,to,file_p_n_b);
 timetable_n = get_timetable(from,to,file_p_n_n);
 
-%unix_com = sprintf('rm %s %s', file_p_n_b ,file_p_n_n);
-%unix(unix_com);
+unix_com = sprintf('rm %s %s', file_p_n_b ,file_p_n_n);
+unix(unix_com);
