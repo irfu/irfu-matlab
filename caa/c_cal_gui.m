@@ -307,8 +307,30 @@ case 'init'
 		hnd.EFWoffset_save = hnd.EFWoffset;
 		
 		% Load CIS offsets, must be only in Z.
-		offset = [0+0i 0];
+		c_eval('load mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
+		if exist(av_ssub('DHdsi?',cl_id),'var')
+			c_eval('offset(1)=DHdsi?;clear DHdsi?',cl_id)
+			c_log('load',...
+			sprintf('loading HIA offset from file DHdsi=%.2f %.2f*i',...
+			real(offset(1)),imag(offset(1))))
+		end
+		if exist(av_ssub('DHz?',cl_id),'var')
+			c_eval('offset(2)=DHz?;clear DHz?',cl_id)
+			c_log('load',...
+			sprintf('loading HIA Z from file DHz=%.2f',offset(2)))
+		end
 		hnd.CISHoffset = [hnd.CISHoffset {offset}];
+		if exist(av_ssub('DCdsi?',cl_id),'var')
+			c_eval('offset(1)=DCdsi?;clear DCdsi?',cl_id)
+			c_log('load',...
+			sprintf('loading CODIF offset from file DHdsi=%.2f %.2f*i',...
+			real(offset(1)),imag(offset(1))))
+		end
+		if exist(av_ssub('DCz?',cl_id),'var')
+			c_eval('offset(2)=DCz?;clear DCz?',cl_id)
+			c_log('load',...
+			sprintf('loading CODIF Z from file DCz=%.2f',offset(2)))
+		end
 		hnd.CISCoffset = [hnd.CISCoffset {offset}];
 		
 		hnd.CISHoffset_save = hnd.CISHoffset;
@@ -791,6 +813,39 @@ case 'update_EVbutton'
 	%}
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% press_SAVEbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'press_SAVEbutton'
+	hnd = guidata(h0);
+	
+	k = D_findByName(hnd.Data,hnd.ActiveVar);
+	cl_id = hnd.Data{k}.cl_id;
+	
+	if strcmp(hnd.Data{k}.inst,'EFW') & strcmp(hnd.Data{k}.type,'E')
+		f_name = './mEDSI.mat';
+		c_eval('Ddsi?=hnd.off(1);Damp?=hnd.off(2);')
+		hnd.EFWoffset_save{cl_id} = hnd.off;
+		var_s = 'Ddsi? Damp?';
+	elseif strcmp(hnd.Data{k}.inst,'CIS')
+		f_name = './mCIS.mat';
+		if strcmp(hnd.Data{k}.sen,'HIA')
+			c_eval('DHdsi?=hnd.off(1);DHz?=hnd.off(2);')
+			hnd.CISHoffset_save{cl_id} = hnd.off;
+			var_s = 'DHdsi? DHz?';
+		else
+			c_eval('DCdsi?=hnd.off(1);DCz?=hnd.off(2);')
+			hnd.CISHoffset_save{cl_id} = hnd.off;
+			var_s = 'DCdsi? DCz?';
+		end
+	else
+		disp(['Cannot save ' hnd.Data{k}.name])
+		return
+	end
+	c_eval(['save ' f_name ' ' var_s ' -mat -append'],cl_id)
+	set(hnd.SAVEbutton,'Enable','off');
+	set(hnd.RESETbutton,'Enable','off');
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % press_RESETbutton
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
