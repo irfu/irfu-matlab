@@ -69,7 +69,7 @@ d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
 %get_fgm = sprintf('/home/scb/fgm/bin86/fgmtel %s | /home/scb/fgm/bin86/fgmcal | /home/scb/fgm/bin86/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin86/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
-get_fgm = sprintf('/home/scb/fgm/fgmtel %s | /home/scb/fgm/fgmcal | /home/scb/fgm/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
+get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /home/scb/fgm/bin/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
 disp(['saved to file ' to_file])
 
 %download an unpack the downloaded data
