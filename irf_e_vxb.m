@@ -22,7 +22,7 @@ if (nargin ==3) & (flag == -1),
   if debug == 1, disp('interpolating b to e');end
   bb=c_resamp(b,e);b=bb;clear bb; 
  end
- v=av_mult_vector_scalar(irf_cross(e,b),[b(:,1) irf_abs(b,1)],-2);
+ v=irf_vec_x_scal(irf_cross(e,b),[b(:,1) irf_abs(b,1)],-2);
  v=irf_tappl(v,'*1e3');
  E=v;
 else,
