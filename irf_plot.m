@@ -199,18 +199,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     tt=y(1,1);
 end
 
-% execute irf_figmenu if there is no such menu
-user_data=get(gcf,'userdata');
-if isstruct(user_data)
-    if isfield(user_data,'irf_figmenu')
-    else
-        irf_figmenu;user_data.irf_figmenu=1;
-    end
-else
-    irf_figmenu;user_data.irf_figmenu=1;
-end
-set(gcf,'userdata',user_data);
-
+irf_figmenu;
 
 % add t_start_epoch, used by add_timeaxis and subplot handles
 user_data=get(gcf,'userdata');
