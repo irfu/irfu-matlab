@@ -67,16 +67,21 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   variable='sc_list';default=[1:4];question='Spacecraft list [%]>'; av_ask;
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Ephemeris
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'a'),
+% Phase
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  elseif strcmp(q,'a'),
+    save_file='./mA.mat';save_list='';
     for ic=sc_list, disp(['...A' num2str(ic)]);
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
      eval(av_ssub('A?=[double(t) double(data)];',ic));%clear t data;
-     if flag_save==1, eval(av_ssub('if exist(''./mA.mat''),save mA A? -append; else, save mA A?;end',ic));end
+     c_eval('save_list=[save_list '' A? ''];',ic);
+     %if flag_save==1, eval(av_ssub('if exist(''./mA.mat''),save mA A? -append; else, save mA A?;end',ic));end
     end
-    save_list = '';
+%    save_list = '';
 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ephemeris
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'eph'),
     for ic=sc_list, disp(['...ephemeris' num2str(ic) '...LT,MLT,ILAT,L->mEPH...R->mR...V->mV']);
      [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
