@@ -108,6 +108,7 @@ case 'init'
 	end
 	h0 = figure(main_fig_id);
 	clf
+	set(main_fig_id,'Name', 'CLUSTER CAL GUI')
 	
 	hnd = guihandles(h0);
 	
@@ -1409,6 +1410,7 @@ case 'show_raw'
 	end
 	fig = figure(raw_fig_id);
 	clf
+	set(raw_fig_id,'Name', 'RAW DATA')
 	if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
 	
 	if strcmp(hnd.Data{j}.type,'E')
@@ -1501,6 +1503,7 @@ case 'show_spect'
 	end
 	fig = figure(spect_fig_id);
 	clf
+	set(spect_fig_id,'Name', 'SPECTRUM')
 	if isempty(pos_old), set(fig,'Position', pos_spect_fig(hnd.scrn_size,:)), end
 	
 	if strcmp(hnd.Data{j}.sen,'1234'), E_tmp = hnd.Data{j};
