@@ -216,20 +216,6 @@ case 'init'
 					if hnd.tlim(2) < tlxxx(2), hnd.tlim(2) = tlxxx(2); end
 					clear tlxxx
 					
-					% Correct delta offset for Es?p12 and Es?p34
-					if ~isempty(Delta_off)
-						if isreal(Delta_off) & strcmp(vs,av_ssub('diEs?p12',cl_id))
-							c_log('calb','correcting delta offset in p12')
-							c_eval(...
-							'diEs?p12(:,1:4)=diEs?p12(:,1:4)-ones(length(diEs?p12),1)*[0 Delta_off 0];',...
-							cl_id)
-						elseif ~isreal(Delta_off) & strcmp(vs,av_ssub('diEs?p34',cl_id))
-							c_log('calb','correcting delta offset in p34')
-							c_eval(...
-							'diEs?p34(:,1:4)=diEs?p34(:,1:4)-ones(length(diEs?p34),1)*[0 imag(Delta_off) 0];',...
-							cl_id)
-						end
-					end
 					eval(['data.data =' vs ';'])
 					data.p_data = [];
 					if ((strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'12') | strcmp(dsc.sen,'32'))& ...
