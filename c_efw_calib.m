@@ -250,6 +250,15 @@ coef3=[[1,0, 1.3-0.4-0.05i];[1,-0.4, 1.3+0i]]; % sc/3
 coef4=[[1,0.5, 0.9+.8+0i];[1,-0.6, 0.9+0i]]; % sc/4
 end
 
+% 20 Feb 2002, MP, L,M,L,L-mode
+if isdat_epoch > toepoch([2002 02 20 00 00 00]),
+info='EFW calibration coefficients from 2002-02-20';
+coef1=[[1,0, 1.3-0.05i];[1,0.3, 1.3+0i]]; % sc/1
+coef2=[[1,-0.3, 1.4-0.1i];[1,1.3, 1.4+0.3+0i]]; % sc/2
+coef3=[[1,0, 1.3-0.4-0.05i];[1,-0.4, 1.3+0i]]; % sc/3
+coef4=[[1,0.5, 0.9+.8+0i];[1,-0.6, 0.9+0i]]; % sc/4
+end
+
 % 2 Mar 2001, MP-Xing, L,M,L,L-mode
 if isdat_epoch > toepoch([2002 3 2 00 00 00]),
 info='EFW calibration coefficients from 2002-03-02';
