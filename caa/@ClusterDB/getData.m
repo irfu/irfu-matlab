@@ -9,7 +9,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	e   : wE{cl_id}p12,34 -> mER			// electric fields
+%	e   : wE{cl_id}p12,34 -> mER			// electric fields HX
+%	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	// sc potential LX
 %	a   : A{cl_id} -> mA					// phase
 %	b   : BPP{cl_id},diBPP{cl_id} ->mBPP	// B FGM PP [GSE+DSI] 
 %	edi : EDI{cl_id},diEDI{cl_id} ->mEDI	// E EDI PP [GSE+DSI] 
@@ -108,6 +109,36 @@ if strcmp(quantity,'e')
 		eval(av_ssub(['wE?p'  pl{i} '=[t data];'],cl_id)); clear t data;
 		eval(av_ssub(['save_list=[save_list '' wE?p' pl{i} ' ''];'],cl_id));
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% p - SC potential
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'p')
+	save_file = './mP.mat';
+	param='10Hz'; tmmode='lx';
+	for probe=1:4;
+    	disp(['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param num2str(cl_id) 'p' num2str(probe)]);
+		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
+		'efw', 'E', ['p' num2str(probe)],param, tmmode);
+		if ~isempty(data)
+			eval(av_ssub(['p!=[double(t) double(real(data))];save_list=[save_list '' P' param '?p!''];P' param '?p!=p!;'],cl_id,probe)); clear t data
+		else
+			eval(['p' num2str(probe) '=[];'])
+		end
+    end
+    clear p
+	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&cl_id~=2,  % sc2 has often problems with p3
+    	p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+    elseif size(p1)==size(p2)&size(p1)~=[0 0]
+    	p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
+    elseif size(p3)==size(p4)&cl_id~=2
+    	p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
+    else,
+    	p=p4;
+    end
+    eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],cl_id));
+	eval(av_ssub('P?=p;NVps?=c_n_Vps(p);save_list=[save_list '' P? NVps?''];',cl_id))
+	clear p
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
