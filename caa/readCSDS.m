@@ -1,12 +1,22 @@
 function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 %readCSDS read CSDS data from ISDAT or disk
 %
+% data = readCSDS(data_path,start_time,dt,cl_id,quantity)
+%
+% Input:
+%	data_path - eather directory containing CSDS subdirectory with data, or 
+%	ISDAT database string host:NN
+%	start_epoch - start time (isdat epoch)
+%	dt - time interval in sec
+%	cl_id - SC#
+%	quantity - one of the following:
+%		'b' : B FGM CSDS PP
+%
 % $Revision$  $Date$
 %
 % see also C_GET, TOEPOCH
 
 % Copyright 2004 Yuri Khotyaintsev
-% Parts of the code are (c) Andris Vaivads
 
 error(nargchk(5,5,nargin))
 
