@@ -114,7 +114,7 @@ if exist('./mP.mat','file')
 	var_list0 = 'P';
 end
 if exist('./mBPP.mat','file')
-	c_eval('load mBPP diBPP?; diB=av_abs(diBPP?); clear diBPP?', cl_id)
+	c_eval('load mBPP diBPP?; diB=irf_abs(diBPP?); clear diBPP?', cl_id)
 	var_list0 = [var_list0 ',diB'];
 end
 

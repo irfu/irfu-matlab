@@ -94,7 +94,7 @@ for k=1:length(q_list)
 		end
 		n_plots = n_plots + 1;
 		if k==2 % B-field
-			c_eval(['data{n_plots}=av_abs(' q_list{k} '(:,1:4));'],cl_id)
+			c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
 			labels{n_plots} = l_list{k};
 		elseif k==3 % E-field
 			c_eval(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id) 
