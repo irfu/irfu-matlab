@@ -53,7 +53,8 @@ db = 'disco:10|disco:20';
 dp = '/data/cluster';
 cdb = '';
 vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','vce','bfgm'};
-varsProc = {'dies','die','brs','br','edi'};
+varsProc = '';
+doproc = 1;
 
 if have_options
 	if isnumeric(args{1}), 
@@ -108,7 +109,7 @@ while have_options
 			else, c_log('fcal','wrongArgType : cdb must be a ClusterDB object')
 			end
 		case 'noproc'
-			varsProc = '';	l = 1;
+			doproc = 0; l = 1;
 		otherwise
         	c_log('fcal',['Option ''' args{1} '''not recognized'])
     	end
@@ -128,9 +129,14 @@ if ~isempty(vars)
 			getData(cdb,st,dt,cl_id,vars{k});
 		end
 	end
+	if doproc
+		if L_find(vars,'e'), varsProc = [varsProc {'dies','die'}]; end
+		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
+		if L_find(vars,'edi'), varsProc = [varsProc {'edi'}]; end
+	end
 end
 
-if ~isempty(varsProc)
+if ~isempty(varsProc) & doproc
 	cp=ClusterProc(sp);
 	for cl_id=sc_list
 		for k=1:length(varsProc)
@@ -139,3 +145,18 @@ if ~isempty(varsProc)
 	end
 end
 
+function ii = L_find(list,s_list)
+ii = [];
+if isempty(list), return, end
+if isstr(s_list)
+	% fast search
+	for j=1:length(list)
+		if strcmp(list{j},s_list), ii = j; return, end
+	end
+else
+	for k=1:length(s_list)
+		for j=1:length(list)
+			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end
+		end
+	end
+end
