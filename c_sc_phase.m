@@ -10,6 +10,8 @@ function phase_out = c_sc_phase(t,phase_2)
 % phase - column vector [t phase]
 %
 
+if nargin < 2, help c_sc_phase;return;end
+
 t=t(:); % t should be column vector
 
 if prod(size(phase_2))==1, % phase_2 is sc number, download phase_2 from isdat 
