@@ -96,7 +96,7 @@ for i_event=1:size(events,1),
     switch data_list{i_data}
     case 'EPH' % get ephemeris R,V,A,ILAT,MLT, + (not implemented but necessary) satellite axis orientation
       file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
+      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       for ic=sc_list,
         if debug, disp(['Loading ephemeris s/c' num2str(ic)]);end
         [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
@@ -116,7 +116,7 @@ for i_event=1:size(events,1),
 
     case 'FGM',
       file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
+      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       [B1,B2,B3,B4]=c_get_bfgm(time_interval);
       for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
@@ -125,7 +125,7 @@ for i_event=1:size(events,1),
 
     case 'EFW_P',
       file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
+      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
       P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
@@ -133,7 +133,7 @@ for i_event=1:size(events,1),
 
     case 'EFW_E',
       file_prefix='F';
-      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
+      file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time)) '.mat'];
       deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
       for ic=sc_list,
         eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
