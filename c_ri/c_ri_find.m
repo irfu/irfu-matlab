@@ -164,8 +164,11 @@ for i = 1:i_end
     while sort_events
       dt_events=diff(time_of_events(:,1),1,1); % find distance between events
       ind=find(dt_events<period/2); % find which events are closer than period/2 
-      if isempty(ind), sort_events=0;end
-      time_of_events(ind(1),:)=[]; 
+      if isempty(ind), 
+        sort_events=0;
+      else  
+        time_of_events(ind(1),:)=[]; 
+      end
     end
   end
   
