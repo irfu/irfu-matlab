@@ -19,7 +19,8 @@ case 'P'
 		vs = av_ssub('P?',cl_id);
 		v_size = 1;
 	else
-		disp('not implemented')
+		vs = av_ssub('Ps?',cl_id);
+		v_size = 1;
 	end
 case 'E'
 	if lev==1, error('LEV must be 2 or 3'), end
@@ -38,7 +39,7 @@ otherwise
 end
 
 EOR_MARKER = '$';
-FILL_VAL = '-1.0E30';
+FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
 
 old_pwd = pwd;
@@ -197,7 +198,7 @@ for j=1:v_size
 		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
-	fprintf(fid,['  FILLVAL           = "' FILL_VAL '"\n']);
+	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
 	fprintf(fid,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
 	if dsc.size(j) > 1
 		fprintf(fid,['  LABEL_1           = ' dsc.label_1{j} '\n']);
@@ -218,7 +219,7 @@ mask = '';
 for j=1:n_data
 	mask = [mask ', %8.3f'];
 	ii = find(isnan(data(:,j+1)));
-	if ~isempty(ii), data(ii,j+1) = str2num(FILL_VAL); end
+	if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
 end
 
 for j=1:length(data(:,1))

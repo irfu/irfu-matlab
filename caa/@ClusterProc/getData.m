@@ -26,6 +26,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit
 %		probe_p - probe pair to use 12 or 34 [default 34]
+%	P[s]{cl_id} -> mP	// P spin resolution
 %	edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %	br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -740,6 +741,47 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 		eval(av_ssub(['di' var_b '=c_gse2dsi(Br,SAX?); di' var_b '_info=Binfo;save_list=[save_list ''di' var_b ' '' '' di' var_b '_info '' ];'],cl_id));
 	else
 		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
+	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P resampled
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'ps')
+	save_file = './mP.mat';
+	
+	[ok,P_tmp] = c_load('P?',cl_id);
+	if ~ok
+		c_log('load',sprintf('No P? in mP. Use getData(CDB,...,cl_id,''p'')',cl_id))
+		data = [];
+		return
+	end
+	
+	t0 = '';
+	% Try to use time from spin fit
+	% TODO: This code can be made smarter.
+	[ok,Es_tmp] = c_load('diEs?p34',cl_id);
+	if ok
+		ii = find(abs(Es_tmp(:,1)-P_tmp(1,1))<2.1);
+		if ~isempty(ii)
+			c_log('proc',av_ssub('using timeline of diEs?p34',cl_id))
+			t0 = Es_tmp(ii,1);
+		end
+	end
+	clear Es_tmp
+	
+	if isempty(t0)
+		c_log('proc','using new timeline')
+		t0 = P_tmp(1,1) + 2; 
+	end
+	
+	n = floor((P_tmp(end,1)-t0)/4) + 1;
+	tvec = t0 + ( (1:n) -1)*4;
+	
+	P_tmp = c_resamp(P_tmp,tvec'); clear tvec
+	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
+	
+	[ok,P_info] = c_load('P?_info',cl_id);
+	if ok
+		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

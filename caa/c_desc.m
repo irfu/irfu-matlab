@@ -44,11 +44,13 @@ vvs = 'XXXXXXXXXX';
 vvs(1:length(vs)) = vs;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% P 
+% P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if regexp(vs,'^P[1-4]$')==1
+if regexp(vs,'^P(s)?[1-4]$')==1
 	v.data = 1;
-	v.cl_id = vs(2);
+	if vs(2)=='s', v.cl_id = vs(3);
+	else, v.cl_id = vs(2);
+	end
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'P';
@@ -68,14 +70,20 @@ if regexp(vs,'^P[1-4]$')==1
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
 	v.file = 'mP';
-	v.quant = 'p';
-elseif regexp(vs,'^P[1-4]_info$')==1
+	if vs(2)=='s', v.quant = 'ps';
+	else, v.quant = 'p';
+	end
+elseif regexp(vs,'^P(s)?[1-4]_info$')==1
 	v.data = 0;
-	v.cl_id = vs(2);
+	if vs(2)=='s', v.cl_id = vs(3);
+	else, v.cl_id = vs(2);
+	end
 	v.inst = 'EFW';
 	v.com = 'Spacecraft potential INFO';
 	v.file = 'mP';
-	v.quant = 'p';
+	if vs(2)=='s', v.quant = 'ps';
+	else, v.quant = 'p';
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P - individual probes 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
