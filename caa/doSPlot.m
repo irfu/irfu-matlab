@@ -8,6 +8,7 @@ function doSPlot(varargin)
 %      'noproc' - do not recalculate anything
 %      'sp' - storage directory; // default: '.'
 %      'sc_list' - list of SC;   // default: 1:4
+%      'ang_limit' - angle limit for E.B=0 (help @ClusterProc/getData)
 %      ++ options to summaryPlot (see help summary plot)
 %
 % It is necessary to obtain the Sunward offset and amplitude factor
@@ -34,7 +35,7 @@ function doSPlot(varargin)
 %   %correct the S-offset and amplitude
 %   c_cal_gui
 %   %do plots
-%   doSPlot('sp',sp,'sc_list',sc_list)
+%   doSPlot('sp',sp,'sc_list',sc_list,'ang_limit',10)
 %   % zoom in (1 min after ST, 20 sec interval) with full B FGM
 %   doSPlot('noproc','sp',sp,'sc_list',sc_list,'st',st+60,'dt',20,'fullb')
 %
@@ -48,6 +49,7 @@ do_proc = 1;
 sp = '.';
 sc_list = 1:4;
 splot_options = '';
+ang_lim = 15;
 	
 if nargin>0, have_options = 1; args = varargin;
 else, have_options = 0; args = '';
@@ -64,6 +66,10 @@ while have_options
 		case 'sc_list'
 			if isnumeric(args{2}), sc_list = args{2};
 			else, c_log('fcal','wrongArgType : sc_list must be numeric')
+			end
+		case 'ang_limit'
+			if isnumeric(args{2}), ang_limit = args{2};
+			else, c_log('fcal','wrongArgType : ang_limit must be numeric')
 			end
 		case 'noproc'
 			do_proc = 0; l=1;
@@ -83,8 +89,8 @@ cp=ClusterProc(sp);
 vars = {'dies','die'};
 for cl_id=sc_list
 	if do_proc
-		getData(cp,cl_id,'edbs','ang_blank','ang_limit',15);
-		getData(cp,cl_id,'edb','ang_blank','ang_limit',15);
+		getData(cp,cl_id,'edbs','ang_blank','ang_limit',ang_limit);
+		getData(cp,cl_id,'edb','ang_blank','ang_limit',ang_limit);
 		getData(cp,cl_id,'vedbs');
 	end
 
