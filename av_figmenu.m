@@ -1,8 +1,7 @@
 function s=av_figmenu(action)
 % add to the current figure a menu with some useful commands
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_figmenu')
 
 if nargin < 1, action = 'initialize'; end
