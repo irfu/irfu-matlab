@@ -259,6 +259,14 @@ coef3=[[1,0.5, 1.3-0.4-0.05i];[1,0.35, 1.3+0i]]; % sc/3
 coef4=[[1,0.3, 0.9+.8+0i];[1,-1, 0.9+0i]]; % sc/4
 end
 
+% 4 Mar 2002, MP-Xing, L,M,L,L-mode
+if isdat_epoch > toepoch([2002 3 4 00 00 00]),
+info='EFW calibration coefficients from 2002-03-04';
+coef1=[[1,0, 1.3-0.05i];[1,0.4, 1.3+0i]]; % sc/1
+coef2=[[1,-0.3, 1.2-0.1i];[1,1.2, 1.2+0.3+0i]]; % sc/2
+coef3=[[1,0, 1.3-0.4-0.05i];[1,-.3, 1.3+0i]]; % sc/3
+coef4=[[1,0.4, 0.9+.8+0i];[1,-.4, 0.9+0i]]; % sc/4
+end
 
 % 6 Mar 2002, magnetopause in M-mode
 if isdat_epoch > toepoch([2002 03 6 00 00 00]),
