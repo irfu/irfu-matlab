@@ -91,7 +91,7 @@ end
 if nargout,  % return B
   to_file=tempname;
   unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
-  unix(['/bin/sh -c ''' unix_command '''']);
+  unix(['/bin/sh -c ''' unix_command '''']);keyboard
   fvs = fgmvec_stream(to_file);
   ta=tavail(fvs);
   if diff(ta)>0, % end time should be larger than start time
