@@ -1,4 +1,5 @@
 function [y] = c_gse2dsc( x, spin_axis, direction, db )
+% C_GSE2DSC  Convert vector between GSE and DSC reference systems.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  Usage:
