@@ -1,4 +1,5 @@
-function c_ri_get_B(from,to,cl_nr,mode,path_output)
+function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
+% function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
 %
 %Input:
 % from -time in epoch
@@ -7,9 +8,11 @@ function c_ri_get_B(from,to,cl_nr,mode,path_output)
 % mode - 'b' or 'n', burst or normal
 %
 %Output:
-% saved to file:
-% path_output
-% filename ex: Ba_020302_F030100_T070301_b.01, (where the a stands for ascii)
+% if no output argument then
+%   saved to file:
+%   path_output
+%   filename ex: Ba_020302_F030100_T070301_b.01, (where the a stands for ascii)
+% if output argument then return column vector B [isdat_time Bx By Bz]
 %
 %Descrition of the function:
 % Download B-data from /data/cluster/DDS/filename1
@@ -70,13 +73,29 @@ fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
 %get_fgm = sprintf('/home/scb/fgm/bin86/fgmtel %s | /home/scb/fgm/bin86/fgmcal | /home/scb/fgm/bin86/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin86/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
 get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /home/scb/fgm/bin/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
-disp(['saved to file ' to_file])
 
-%download an unpack the downloaded data
-unix_command = sprintf('%s',get_fgm);
-unix(unix_command);
+if nargout,  % return B
+  to_file='/tmp/sckmvnskjaqwedasdawd';
+  get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /home/scb/fgm/bin/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
+  unix(get_fgm);
+  fp = fopen(to_file);
+  [S,count] = fscanf(fp,'%4d%1s%2d%1s%2d%1s%2d%1s%2d%1s%6f%2s%f%f%f',[15,inf]);
+  fclose(fp);
+  unix(['rm ' to_file]);
+  [r_s, c_s] = size(S);
+  if r_s == 15,
+    temp_B = S([1 3 5 7 9 11 13 14 15],:)';
+    B = [toepoch(temp_B(:,1:6)) temp_B(:,7:9)];
+  else,
+    B=[-1 0 0 0];      % no data
+  end
+else
+  %download an unpack the downloaded data
+  unix_command = sprintf('%s',get_fgm);
+  unix(unix_command);
+  disp(['saved to file ' to_file])
 
-%removes the temporary file
-unix_command =sprintf('rm %s',d_source);
-unix(unix_command);
-
+  %removes the temporary file
+  unix_command =sprintf('rm %s',d_source);
+  unix(unix_command);
+end
