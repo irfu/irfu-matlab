@@ -72,6 +72,10 @@ elseif regexp(action,'^update_D[X-Z]checkbox$')
 		comp = 0;
 	end
 	action = 'update_Dcheckbox';
+elseif regexp(action,'^click_[W-Z]axes$')
+	curr_ax = action(7);
+	if curr_ax=='W', curr_ax = 'AUX'; end
+	action = 'click_axes';
 end
 
 switch action
@@ -116,6 +120,8 @@ case 'init'
 	hnd.off = [0+0i 0];
 	hnd.ang_limit = 15; % 15 degrees.
 	hnd.tlim = [0 0];
+	hnd.ts_marker = [];
+	hnd.te_marker = [];
 	hnd.c_visible = [1 1 1 1]; % all sc are visible by default
 	no_active = 1;
 	ncdata = 0; % number of non-AUX variables
@@ -353,10 +359,14 @@ case 'init'
 	if ~ncdata, error('No usefull data loaded'), end
 	
 	% Create Data Axes
-	hnd.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
-	hnd.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
-	hnd.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes');
-	hnd.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes');
+	hnd.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes',...
+		'ButtonDownFcn','c_cal_gui(''click_Xaxes'')');
+	hnd.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes',...
+		'ButtonDownFcn','c_cal_gui(''click_Yaxes'')');
+	hnd.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes',...
+		'ButtonDownFcn','c_cal_gui(''click_Zaxes'')');
+	hnd.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes',...
+		'ButtonDownFcn','c_cal_gui(''click_Waxes'')');
 	
 	% Create Legend Axes
 	hnd.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
@@ -431,13 +441,28 @@ case 'init'
 		'String','V, ExB',...
 		'Callback','c_cal_gui(''update_EVbutton'')','Tag','EVbutton');
 	
+	% Menu
+	hnd.menu_time = uimenu(h0,'Label','&Time');
+	hnd.menu_zoom_in = uimenu(hnd.menu_time,'Label','&Zoom in',...
+		'Callback','c_cal_gui(''zoom_in'')',...
+		'Accelerator','t',...
+		'Enable','off');
+	hnd.menu_zoom_un = uimenu(hnd.menu_time,'Label','&Undo zoom',...
+		'Callback','c_cal_gui(''zoom_un'')',...
+		'Accelerator','z',...
+		'Enable','off');
+	hnd.menu_zoom_rs = uimenu(hnd.menu_time,'Label','&Reset',...
+		'Callback','c_cal_gui(''zoom_rs'')',...
+		'Accelerator','r',...
+		'Enable','off');
+		
 	guidata(h0,hnd);
+	
 	c_cal_gui('replot_all')
 	
-	% Take care of active variable
-	% Give the new data 4*width and active color
+	% Take care of the active variable
 	c_cal_gui('ch_active_var')
-	av_figmenu
+		
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ch_active_var
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -585,8 +610,22 @@ case 'replot'
 	hnd.last = [];
 	hnd.off_updated = 0;
 
-	av_zoom(hnd.tlim,'x',h);
+	av_zoom(hnd.tlim(end,:),'x',h);
+	
+	% Hide the markers so thet they will not contribute YLim
+	ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
+	te_tmp = hide_t_marker(hnd,hnd.te_marker);
+	
 	set(h,'YLimMode','auto')
+	
+	% Show the markers back
+	if ~isempty(ts_tmp.t)
+		hnd.ts_marker = replot_t_marker(hnd,ts_tmp);
+	end
+	if ~isempty(te_tmp.t)
+		hnd.te_marker = replot_t_marker(hnd,te_tmp);
+	end
+	
 	guidata(h0,hnd);
 	c_cal_gui('update_legend')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -626,7 +665,7 @@ case 'replot_all'
 		axes(h(4)); add_timeaxis; grid on
 		
 		% Time span
-		av_zoom(hnd.tlim,'x',h);
+		av_zoom(hnd.tlim(end,:),'x',h);
 		
 		guidata(h0,hnd);
 	else
@@ -1071,7 +1110,23 @@ case 'update_DATAcheckbox'
 		% Hide the varible
 		j = D_findByName(hnd.Data,vs);
 		hnd.Data{j}.visible = 0;
+		
+		% Hide the markers so thet they will not contribute YLim
+		ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
+		te_tmp = hide_t_marker(hnd,hnd.te_marker);
+		
+		% Delete the variable
 		delete(hnd.Data{j}.ploth)
+		h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+		set(h,'YLimMode','auto')
+		
+		% Show the markers back
+		if ~isempty(ts_tmp.t)
+			hnd.ts_marker = replot_t_marker(hnd,ts_tmp);
+		end
+		if ~isempty(te_tmp.t)
+			hnd.te_marker = replot_t_marker(hnd,te_tmp);
+		end
 
 		% Check if we need to hide C# checkBox
 		cl_id = hnd.Data{j}.cl_id;
@@ -1143,8 +1198,183 @@ case 'update_DATAradiobutton'
 		% Show it back
 		eval(['set(hnd.DATA' vs 'radiobutton,''Value'',1)'])
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% click_axes
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'click_axes'
+	hnd = guidata(h0);
+	
+	replot_ts_marker = 0;
+	replot_te_marker = 0;
+	
+	t = get(eval(['hnd.' curr_ax 'axes']),'CurrentPoint');
+	t = t(1);
+	
+	% If we press the left mouse button we modify TS_MARKER
+	% If we press the right mouse button of Control-click
+	% we modify TE_MARKER
+	% Otherwise re return
+	if strcmp(get(h0,'SelectionType'),'normal')
+		hnd.ts_marker.t = t;
+		replot_ts_marker = 1;
+	
+		% We check the TS_MARKER should always precede TE_MARKER
+		if ~isempty(hnd.te_marker)
+			if hnd.ts_marker.t > hnd.te_marker.t
+				hnd.ts_marker.t = hnd.te_marker.t;
+			end
+		end
+	elseif strcmp(get(h0,'SelectionType'),'alt')
+		hnd.te_marker.t = t;
+		replot_te_marker = 1;
+	
+		% We check the TS_MARKER should always precede TE_MARKER
+		if ~isempty(hnd.ts_marker)
+			if hnd.ts_marker.t > hnd.te_marker.t
+				hnd.te_marker.t = hnd.ts_marker.t;
+			end
+		end
+	else, return
+	end
+	
+	if replot_ts_marker
+		hnd.ts_marker = replot_t_marker(hnd,hnd.ts_marker);
+	elseif replot_te_marker
+		hnd.te_marker = replot_t_marker(hnd,hnd.te_marker);
+	end
+
+	% Enable menu
+	if ~isempty(hnd.ts_marker) & ~isempty(hnd.te_marker)
+		set(hnd.menu_zoom_in,'Enable','on')
+	end
+	
+	guidata(h0,hnd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% zoom_in
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'zoom_in'
+	hnd = guidata(h0);
+	
+	% Check if we really have update tlim
+	% This check is probably unnecessary
+	if hnd.ts_marker.t==hnd.tlim(end,1) & hnd.te_marker.t==hnd.tlim(end,2)
+		return
+	end
+	
+	hnd.tlim(end+1,:) = [hnd.ts_marker.t hnd.te_marker.t];
+	hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
+	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
+	
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+	av_zoom(hnd.tlim(end,:),'x',h);
+	set(h,'YLimMode','auto')
+	
+	% Enable/disable menus
+	set(hnd.menu_zoom_in,'Enable','off')
+	set(hnd.menu_zoom_un,'Enable','on')
+	set(hnd.menu_zoom_rs,'Enable','on')
+	
+	guidata(h0,hnd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% zoom_un
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'zoom_un'
+	hnd = guidata(h0);
+	
+	% Check if we really can undo
+	% This check is probably unnecessary
+	if size(hnd.tlim,1)<=1
+		disp('Cannot undo. Already at the the original time span.')
+		return
+	end
+	
+	hnd.tlim(end,:) = [];
+	hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
+	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
+	
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+	av_zoom(hnd.tlim(end,:),'x',h);
+	set(h,'YLimMode','auto')
+	
+	% Enable/disable menus
+	set(hnd.menu_zoom_in,'Enable','off')
+	if size(hnd.tlim,1)==1
+		set(hnd.menu_zoom_un,'Enable','off')
+		set(hnd.menu_zoom_rs,'Enable','off')
+	end
+	
+	guidata(h0,hnd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% zoom_un
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'zoom_rs'
+	hnd = guidata(h0);
+	
+	% Check if we really can undo
+	% This check is probably unnecessary
+	if size(hnd.tlim,1)<=1
+		disp('Cannot reset. Already at the the original time span.')
+		return
+	end
+	
+	hnd.tlim(2:end,:) = [];
+	hide_t_marker(hnd,hnd.ts_marker); hnd.ts_marker = [];
+	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
+	
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+	av_zoom(hnd.tlim(end,:),'x',h);
+	set(h,'YLimMode','auto')
+	
+	% Enable/disable menus
+	set(hnd.menu_zoom_in,'Enable','off')
+	set(hnd.menu_zoom_un,'Enable','off')
+	set(hnd.menu_zoom_rs,'Enable','off')
+	
+	guidata(h0,hnd);
 otherwise 
 	disp('wrong action')
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+%                        H E L P   F U N C T I O N S
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function replot_t_marker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function newmarker = hide_t_marker(hnd,marker)
+newmarker.t = [];
+if ~isempty(marker)
+	newmarker.t = marker.t;
+	% Hide the marker if marker.h exists
+	if isfield(marker,'h')
+		lasterr('')
+		try
+			for j=4:-1:1, delete(marker.h(j)),end
+		end
+	end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function replot_t_marker
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function newmarker = replot_t_marker(hnd,marker)
+h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+
+% Try to hide the marker
+newmarker = hide_t_marker(hnd,marker);
+
+for j=1:length(h)
+	yy = get(h(j),'YLim');
+	hold(h(j),'on')
+	newmarker.h(j) = plot(h(j),[newmarker.t newmarker.t],yy,...
+	'LineWidth',1,'Color','red');
+	hold(h(j),'off')
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
