@@ -80,6 +80,7 @@ unix(unix_command);
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
+disp(['Reading ' to_file]);
 
 FGMPATH = '/share/fgm_cal';
 [s,h] = unix('hostname');
