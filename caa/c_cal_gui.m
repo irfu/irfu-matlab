@@ -105,6 +105,9 @@ case 'init'
 	hnd.EFWoffset = {};
 	hnd.CISHoffset = {};
 	hnd.CISCoffset = {};
+	hnd.EFWoffset_save = {};
+	hnd.CISHoffset_save = {};
+	hnd.CISCoffset_save = {};
 	hnd.mode = 1; % 0 is for V, 1 is for E.
 	% hnd.last
 	% empty means replotting all, 
@@ -301,11 +304,15 @@ case 'init'
 		end
 		cd(old_pwd)
 		hnd.EFWoffset = [hnd.EFWoffset {offset}];
+		hnd.EFWoffset_save = hnd.EFWoffset;
 		
 		% Load CIS offsets, must be only in Z.
 		offset = [0+0i 0];
 		hnd.CISHoffset = [hnd.CISHoffset {offset}];
 		hnd.CISCoffset = [hnd.CISCoffset {offset}];
+		
+		hnd.CISHoffset_save = hnd.CISHoffset;
+		hnd.CISCoffset_save = hnd.CISCoffset;
 		
 		hnd.off_updated = 1;
 	end
@@ -370,19 +377,19 @@ case 'init'
 	hnd.SaveALLbutton = uicontrol(h0,'Style','pushbutton',...
 		'Units','normalized','Position',[pxa+wa+dya*2+.015 .01 wp hbut],...
 		'String','Save all',...
-		'Callback','c_cal_gui(''update_SaveALLbutton'')','Tag','SaveALLbutton');
+		'Callback','c_cal_gui(''press_SaveALLbutton'')','Tag','SaveALLbutton');
 	hnd.SAVEbutton = uicontrol(h0,'Style','pushbutton',...
 		'Units','normalized',...
 		'Position',[pxa+wa+dya*2+.015+.55*wp pya+(ha+dya)*1-.01-hbut 0.45*wp hbut],...
 		'String','Save',...
-		'Callback','c_cal_gui(''update_SAVEbutton'')','Tag','SAVEbutton');
+		'Callback','c_cal_gui(''press_SAVEbutton'')','Tag','SAVEbutton');
 	hnd.RESETbutton = uicontrol(h0,'Style','pushbutton',...
 		'Units','normalized',...
 		'Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1-.01-hbut 0.45*wp hbut],...
 		'String','Reset',...
-		'Callback','c_cal_gui(''update_RESETbutton'')','Tag','RESETbutton');
+		'Callback','c_cal_gui(''press_RESETbutton'')','Tag','RESETbutton');
 		
-	% Disable buttons which are not implemented
+	% Disable buttons 
 	set(hnd.SaveALLbutton,'Enable','off');
 	set(hnd.SAVEbutton,'Enable','off');
 	set(hnd.RESETbutton,'Enable','off');
@@ -669,6 +676,7 @@ case 'update_off'
 	hnd = guidata(h0);
 	
 	k = D_findByName(hnd.Data,hnd.ActiveVar);
+	enable_but = 0;
 	
 	if strcmp(hnd.Data{k}.type,'E')
 		% We calibrate E
@@ -677,6 +685,10 @@ case 'update_off'
 		if ~strcmp(hnd.Data{k}.inst,'EFW')
 			disp('update_off: we are doing something wrong with INST')
 			return
+		end
+		
+		if any(hnd.EFWoffset_save{hnd.Data{k}.cl_id}-hnd.off)
+			enable_but = 1;
 		end
 		
 		% See if offsets were really changed and replot everything
@@ -708,7 +720,14 @@ case 'update_off'
 		% See if offsets were really changed and replot everything
 		if strcmp(hnd.Data{k}.sen,'HIA')
 			d_off = hnd.CISHoffset{hnd.Data{k}.cl_id};
-		else, d_off = hnd.CISCoffset{hnd.Data{k}.cl_id};
+			if any(hnd.CISHoffset_save{hnd.Data{k}.cl_id}-hnd.off)
+				enable_but = 1;
+			end
+		else
+			d_off = hnd.CISCoffset{hnd.Data{k}.cl_id};
+			if any(hnd.CISCoffset_save{hnd.Data{k}.cl_id}-hnd.off)
+				enable_but = 1;
+			end
 		end
 		if any(d_off - hnd.off)
 			if strcmp(hnd.Data{k}.sen,'HIA')
@@ -737,6 +756,15 @@ case 'update_off'
 			c_cal_gui('replot')
 		end
 	end
+	if enable_but
+		set(hnd.SAVEbutton,'Enable','on');
+		set(hnd.RESETbutton,'Enable','on');
+		set(hnd.SaveALLbutton,'Enable','on');
+	else
+		set(hnd.SAVEbutton,'Enable','off');
+		set(hnd.RESETbutton,'Enable','off');
+		set(hnd.SaveALLbutton,'Enable','off');
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_EVbutton
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -763,6 +791,38 @@ case 'update_EVbutton'
 	%}
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% press_RESETbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'press_RESETbutton'
+	hnd = guidata(h0);
+	
+	k = D_findByName(hnd.Data,hnd.ActiveVar);
+	if strcmp(hnd.Data{k}.type,'E')
+		hnd.off = hnd.EFWoffset_save{hnd.Data{k}.cl_id};
+	elseif strcmp(hnd.Data{k}.type,'V')
+		if strcmp(hnd.Data{k}.sen,'HIA')
+			hnd.off = hnd.CISHoffset_save{hnd.Data{k}.cl_id};
+		else, hnd.off = hnd.CISCoffset_save{hnd.Data{k}.cl_id};
+		end
+	else,disp('Oj! Something is rong with data.type')
+	end
+	comp_s = 'XYZ';
+	for comp=1:3
+		switch comp
+		case 1
+			val = real(hnd.off(1));
+		case 2
+			val = imag(hnd.off(1));
+		case 3
+			val = hnd.off(2);
+		end
+		set(eval(['hnd.D' comp_s(comp) 'edit']),'String',num2str(val));
+		set(eval(['hnd.D' comp_s(comp) 'slider']),'String',num2str(val));
+	end
+	
+	guidata(h0,hnd);
+	c_cal_gui('update_off')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_Dslider
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
