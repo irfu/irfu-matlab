@@ -47,8 +47,11 @@ if isstr(args{1})
 				def_ct.ang_lim = 10;	% algle limit for E.B=0
 				def_ct.rm_whip = 1;		% remove times with WHI pulses
 				def_ct.probe_p = 34;	% default probe pair to use
-				def_ct.deltaof_max = 2; % delta offsets we remove points which 
-										% are > deltaof_max*sdev
+				def_ct.deltaof_max = 1.5;	
+										% maximum reasonable value of deltaof
+				def_ct.deltaof_sdev_max = 2; 
+										% delta offsets we remove points which 
+										% are > deltaof_sdev_max*sdev
 				c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
