@@ -30,8 +30,9 @@ end
 if strcmp(action,'initialize'),
   initLflag=0;
   if   exist('mB.mat'), load mB B3; B=B3;
-  else                  disp('No magnetic field data available, reading from DDS');B=c_get_bfgm(time+[0 1]);
+  else                  disp('No magnetic field data available, reading from DDS');B=c_get_bfgm(time+[0 1],3);
   end
+
   if nargin<1, help c_pl_sc_configuration_LMN;return;                                      end
   if nargin==1, n=[0 0 1]; b=av_interp(B,time); l=b(1,[2 3 4]);                                                                    end
   if nargin==2, n=R1;      b=av_interp(B,time); l=b(1,[2 3 4]);                                   end
@@ -52,6 +53,14 @@ if strcmp(action,'initialize'),
     if   exist('mR.mat'), load mR R1 R2 R3 R4;for ic=1:4,eval(av_ssub('r?=R?;clear R?;',ic)),end
     else                  disp('No position data available');return;
     end
+  end
+  if nargin==5,
+    r1=R1;r2=R2;r3=R3;r4=R4;
+    l=[1 0 0];n=[0 0 1];
+  end
+  if nargin==6,
+    r1=R1;r2=R2;r3=R3;r4=R4;
+    n=L;l=B(1,[2 3 4])
   end
   t=time;
 
