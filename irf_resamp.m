@@ -17,18 +17,23 @@ function out = irf_resamp(x,y,method)
 error(nargchk(2,3,nargin))
 
 % guess the sampling frequency
-if min(size(y))==1, t = y(:); 
-else, t = y(:,1); t = t(:);
+if min(size(y))==1, t = y(:); % y is only time 
+else, t = y(:,1); t = t(:);   % first column of y is time
 end
 
-if size(x,1) == 1,
+if size(x,1) == 1,            % ??????? what this loop does? 
 	out = [t (t*0+1)*x(:,2:end)];
 	return
 end
 		
-ndata = length(t);
+ndata = length(t); 
 
-sfy = ndata/(t(end) - t(1));
+if ndata>1, 
+  sfy = ndata/(t(end) - t(1)); % guess samplings frequency y
+else
+  sfy=Inf;                     % if one output time then do interpolation
+end
+
 if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 	% we average
 	out = zeros(ndata,size(x,2));
