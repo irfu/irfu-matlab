@@ -66,7 +66,7 @@ start_time = start_time_m(start_time_intervalls, :);
 end_time = end_time_m(start_time_intervalls, :);
 
 
-db = Mat_DbOpen('unix:99');
+db = Mat_DbOpen('disco:20');
 
 [pos_time, dur_time] = isGetContentLite(db,'Cluster','3','ephemeris','position',' ', ' ', ' ');
 

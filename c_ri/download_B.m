@@ -38,7 +38,7 @@ load(filename)
 end
 
 %loads the B-content for satellite 1:4
-db = Mat_DbOpen('unix:99');
+db = Mat_DbOpen('disco:20');
 [B_time1, dur_time1] = isGetContentLite(db, 'Cluster', '1', 'fgm', 'Bprim', ' ', ' ', ' ');
 [B_time2, dur_time2] = isGetContentLite(db, 'Cluster', '2', 'fgm', 'Bprim', ' ', ' ', ' ');
 [B_time3, dur_time3] = isGetContentLite(db, 'Cluster', '3', 'fgm', 'Bprim', ' ', ' ', ' ');

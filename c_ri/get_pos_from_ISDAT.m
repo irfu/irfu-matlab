@@ -27,7 +27,7 @@ function P_GSE = get_pos_from_ISDAT(spacecraft,start_time, Dt)
 
 %--------------------- the beginning --------------------------
 clear P_GSE;
-db = Mat_DbOpen('unix:99');
+db = Mat_DbOpen('disco:20');
 
 [tp, p_gse] = isGetDataLite(db, start_time, Dt, 'Cluster', num2str(spacecraft),'ephemeris', 'position', ' ', ' ', ' ');
 Mat_DbClose(db);

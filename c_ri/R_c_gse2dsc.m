@@ -75,7 +75,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
        Dt=600; % 10 min, in file they are saved with 1 min resolution
         if flag_db==0, % open ISDAT database disco:10
           if debug_flag, disp('Starting connection to disco:10');end
-          db = Mat_DbOpen('unix:99');
+          db = Mat_DbOpen('disco:20');
         end
         [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
         [tlong, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');
