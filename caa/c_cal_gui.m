@@ -103,7 +103,7 @@ case 'init'
 	
 	% Load data
 	
-	c_Edata = {'diE?p1234','diEs?p12','diEs?p34'};
+	c_Edata = {'diE?p1234','diEs?p12','diEs?p32','diEs?p34'};
 	c_Ddata = {'diEDI?'};
 	c_Vdata = {'diVCp?','diVCh?'};
 	c_AUXdata = {'P?','NCp?','NCh?'};
@@ -232,7 +232,7 @@ case 'init'
 					end
 					eval(['data.data =' vs ';'])
 					data.p_data = [];
-					if ((strcmp(dsc.sen,'all') | strcmp(dsc.sen,'p12'))& ...
+					if ((strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'12') | strcmp(dsc.sen,'32'))& ...
 						strcmp(dsc.sig,'E')) | strcmp(dsc.sen,'COD')
 						data.visible = 0;
 					else
@@ -1434,11 +1434,13 @@ colrs = [0 0 0; 1 0 0; 0 .5 0; 0 0 1]; % black, red, dark green, blue
 switch inst
 case 'EFW'
 	switch sen
-	case 'all'
+	case '1234'
 		out = '-';
-	case 'p12'
+	case '12'
 		out = '--';
-	case 'p34'
+	case '32'
+		out = '--';
+	case '34'
 		out = '-.';	
 	otherwise
 		disp('unknown sensor')
