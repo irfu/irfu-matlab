@@ -121,7 +121,6 @@ Swbx=fft(b(:,2));Swby=fft(b(:,3));Swbz=fft(b(:,4));
 
 %% Get the correct frequencies for the wavelet transform
   newfreq=w0./a; 
-  newfreqmat=w0/a(ind_a);
 
   %% Loop through all frequencies 
 
@@ -150,6 +149,7 @@ for ind_a=1:length(a),
   Spar=Sx.*bn(:,2)+Sy.*bn(:,3)+Sz.*bn(:,4);
   
   %% Calculate the power spectrum
+  newfreqmat=w0/a(ind_a);
   
   %  power=(2*pi)*conj(W).*W./newfreqmat;
   powerEx=2*pi*(Wex.*conj(Wex))./newfreqmat;
