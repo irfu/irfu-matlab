@@ -25,13 +25,15 @@ plot_command=struct(...
 file_list=dir([path_events '*F*t*T*t*.mat']);
 for i_file=1:size(file_list,1),
   if c_ri_timestr_within_tint(file_list(i_file).name,time_interval),
+     tint_plot=c_ri_timestr_within_tint(file_list(i_file).name);
      if debug, disp(['Using file: ' file_list(i_file).name]);end
      load([path_events file_list(i_file).name]);
      figure(i_fig);i_panel=1;
      for i_panel=1:n_panels,
-        h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);i_panel=i_panel+1;
+        h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);
         eval(eval(['plot_command.' panels{i_panel}]));
      end
+     av_zoom(tint_plot,'x',h(i_fig));
      add_timeaxis(h(i_fig));
      i_fig=i_fig+1;
   end

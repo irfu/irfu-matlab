@@ -26,10 +26,11 @@ function within = c_ri_timestr_within_tint(time_str,time_interval)
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
+ts=time_str;
+
 if nargin ==2,
   st_e = time_interval(1);
   et_e = time_interval(2);
-  ts=time_str;
 end
 
 f_t=toepoch([str2num(ts(end-35+[0:3])) str2num(ts(end-31+[0:1])) ...
