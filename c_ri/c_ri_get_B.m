@@ -77,10 +77,10 @@ to_file = sprintf('%s%s',path_output,tfn);
 unix_command = sprintf('%s -b %d -e %d %s > %s',ddscut,from,to,d_source,to_file);
 unix(unix_command);
 fvs = fgmvec_stream(to_file);
-ta=tavail(fvs)
+ta=tavail(fvs);
 if min(ta)<0,
-  disp('problems with reading FGM B field');
-  B=[-1 NaN NaN NaN];
+  disp(['problems with time in FGM B data -> ' to_file ]);
+  B=[];
   return
 end
 
@@ -108,12 +108,12 @@ if nargout,  % return B
       dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
       B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
     else
-      B=[-1 NaN NaN NaN];
+      B=[];
     end
     close(fvs);
   else
     disp('Zero size FGM data file!');
-    B=[-1 NaN NaN NaN];
+    B=[];
   end
   unix(['rm ' to_file]);
 else

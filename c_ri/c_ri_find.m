@@ -165,25 +165,29 @@ for i = 1:i_end
   if run_steps(3) == 1
     if run_steps(2) == 0; load mMP;load mAngles; end
     disp('==============  Finding events ====================');
-    time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-    sort_events=1;
-    while sort_events
-      dt_events=diff(time_of_events(:,1),1,1); % find distance between events
-      ind=find(dt_events<period/2); % find which events are closer than period/2 
-      if isempty(ind), 
-        sort_events=0;
-      else  
-        time_of_events(ind(1),:)=[]; 
+    if ~isempty(angles),
+      time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
+      sort_events=1;
+      while sort_events
+        dt_events=diff(time_of_events(:,1),1,1); % find distance between events
+        ind=find(dt_events<period/2); % find which events are closer than period/2 
+        if isempty(ind), 
+          sort_events=0;
+        else  
+          time_of_events(ind(1),:)=[]; 
+        end
       end
+      save mEvents time_of_events;
     end
-    save mEvents time_of_events;
   end
   
   %step 4
   if run_steps(4) == 1
     if run_steps(3) == 0; load mMP;load mAngles;load mEvents; end
     disp('==============  Getting data for events ====================');
-    c_ri_event_picture(time_of_events,period,angles,ampl,p_R)
+    if ~isempty(time_of_events),
+      c_ri_event_picture(time_of_events,period,angles,ampl,p_R)
+    end
   end
   
 end

@@ -14,7 +14,7 @@ for j=1:length(sc_list),
     [b_s, col] = size(b_table);
     for k = 1:b_s
       B=c_ri_get_B( b_table(k,1), b_table(k,2), ic, 'b');
-      if B(1,1)>0,
+      if ~isempty(B),
         eval(av_ssub('B?=[B?;B];',ic));
       end
     end
@@ -24,7 +24,7 @@ for j=1:length(sc_list),
     [n_s, col] = size(n_table);
     for i = 1:2:n_s
       B=c_ri_get_B( n_table(i,1), n_table(i,2), ic, 'n');
-      if B(1,1)>0,
+      if ~isempty(B),
         eval(av_ssub('B?=[B?;B];',ic));
       end
     end
