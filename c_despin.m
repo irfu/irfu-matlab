@@ -1,7 +1,9 @@
 function e = c_despin(es,phase,coef)
+% function e = c_despin(es,phase)
 % function e = c_despin(es,phase,coef)
 % function e = c_despin(es,phase,spacecraft_number)
 % function e = c_despin(es,phase,flag)
+% function e = c_despin(es,spacecraft_number)
 % function e = c_despin(es,spacecraft_number,flag)
 %                   get time from es and use corresponding calibration coef
 % e =[t Ex_DSC Ey_DSC Ez_DSC] - electric field in despinned satellite reference frame;
@@ -14,8 +16,10 @@ function e = c_despin(es,phase,coef)
 %        A_12 = Real (relative amplitude error)
 %        E_offs_12_s = Real (p12 boom offset)
 %        E_offs_12_xy = Complex (real part tells E offset in DSC_X and imaginary in DSC_Y)
-% flag - 'wec' or 'sat'
-% 
+% flag - 'efw'    despin from WEC ref frame + use the closest callibration
+%        'staff' or 'wec' despin from WEC
+%        'sat' despin from SR
+%
 % !Phase is calculated as a linear fit to the data, to make it fast and simple
 % In some case with many and large data gaps this can fail.
 %
@@ -27,6 +31,7 @@ function e = c_despin(es,phase,coef)
 %  = total field (complex, real along DSC_X and imaginary along DSC_Y)
 %
 t=es(:,1);
+if prod(size(phase))==1, ic=phase;end  % if only one number then it is sc number
 if nargin == 2,
  coef=[[1 0 0];[1 0 0]];
  ref_frame='wec';
@@ -44,6 +49,16 @@ if nargin == 3,
   elseif strcmp(coef,'sat'),
     ref_frame='sat';
     coef=[[1 0 0];[1 0 0]];
+  elseif strcmp(coef,'wec'),
+    ref_frame='wec';
+    coef=[[1 0 0];[1 0 0]];
+  elseif strcmp(coef,'efw'),
+    ref_frame='wec';
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    eval(av_ssub('coef=c?;',ic));
+  elseif strcmp(coef,'staff'),
+    ref_frame='wec';
+    coef=[[1 0 0];[1 0 0]];
   end
 end
 
@@ -56,7 +71,7 @@ if prod(size(phase))==1, % load phase from isdat database
   phase=[double(phase_t) double(phase_data)]; clear phase_t phase_data;
   Mat_DbClose(db);
 end
-
+                           
 switch ref_frame
 case 'wec'
   phi_12=3*pi/4;phi_34=pi/4; % angles when phase =0

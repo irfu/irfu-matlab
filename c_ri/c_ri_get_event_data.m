@@ -135,7 +135,7 @@ for i_event=1:size(events,1),
       deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
       for ic=sc_list,
         eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
-        eval(av_ssub('dE?=c_despin(wE?,?,''wec'')',ic)),
+        eval(av_ssub('dE?=c_despin(wE?,?,''efw'')',ic)),
         eval(av_ssub('deg=20;[dEo?,d?]=av_ed(dE?,dB?,deg);Eo?=c_gse2dsc(dEo?,[dEo?(1,1) ?],-1);indzero=find(abs(d?)<deg);Eo?(indzero,4)=0;',ic));
         eval(av_ssub('ExB?=av_e_vxb(Eo?,B?,-1);',ic));
         if exist(file_name,'file'), flag_append='-append';else flag_append='';end
