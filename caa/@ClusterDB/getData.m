@@ -171,6 +171,7 @@ end %main QUANTITY
 % saving
 % If flag_save is set, save variables to specified file
 if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
+	disp([save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
 	else
@@ -179,12 +180,16 @@ if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
 end
 
 % prepare the output
-if nargout > 0 & ~isempty(save_list)
-	sl = tokenize(save_list);
-	out_data = {sl};
-	for i=1:length(sl)
-		eval(['out_data{i+1}=' sl{i} ';'])
+if nargout > 0 
+	if ~isempty(save_list)
+		sl = tokenize(save_list);
+		out_data = {sl};
+		for i=1:length(sl)
+			eval(['out_data{i+1}=' sl{i} ';'])
+		end
 	end
+else
+	clear out_data
 end
 
 cd(old_pwd)
