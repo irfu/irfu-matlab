@@ -71,13 +71,13 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   elseif strcmp(q,'a'),
     save_file='./mA.mat';save_list='';
-    for ic=sc_list, disp(['...A' num2str(ic)]);
+    for ic=sc_list, disp(c_eval('...A?...Atwo?..',ic));
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
      eval(av_ssub('A?=[double(t) double(data)];',ic));%clear t data;
-     c_eval('save_list=[save_list '' A? ''];',ic);
-     %if flag_save==1, eval(av_ssub('if exist(''./mA.mat''),save mA A? -append; else, save mA A?;end',ic));end
+     [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase2', ' ', ' ', ' ');
+     eval(av_ssub('Atwo?=[double(t) double(data)];',ic));%clear t data;
+     c_eval('save_list=[save_list '' A? Atwo? ''];',ic);
     end
-%    save_list = '';
 
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Ephemeris
