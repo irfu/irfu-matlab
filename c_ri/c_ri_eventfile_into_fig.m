@@ -15,6 +15,7 @@ global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
 
 n_panels=size(panels,2);  if debug, disp(['Figure with ' num2str(n_panels) ' panels.']);end
 i_fig=1;
+
 plot_command=struct(...
   'Vps' ,'c_pl_tx(P1,P2,P3,P4,2);ylabel(''V_{ps} [V]'');', ...
   'Bx','c_pl_tx(B1,B2,B3,B4,2);ylabel(''B_X [nT] GSE'');', ...
@@ -61,7 +62,7 @@ if nargin == 4,
  switch flag,
  case 'print',
    for j=1:i_fig-1,
-     figure(i_fig);
+     figure(i_fig);i_fig
      panel_str='';
      for jj=1:n_panels, panel_str=[panel_str '_' panels{jj}];end
      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
