@@ -1,6 +1,6 @@
 function [z]=av_dot(x,y,flag)
 %AV_DOT calculate dot product between vectors in 3D space
-% [z]=AV_DOT(x,y,flag) calculate dot product of vectors x and y having 3 components
+% [z]=AV_DOT(x,y,flag) calculate dot product of  vectors x and y having 3 components
 %
 % x,y,z  are column vectors  [time],x,y,z,[r]
 %
