@@ -64,12 +64,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
 q=input('input>','s');if isempty(q),q='0';end
 save_list='';save_file='';
-if q == 'q', return,
-elseif q == '0'| q=='h', disp(mmm);
-elseif q == 's',
-	if flag_save==1,flag_save=0;disp('not saving variables');
-	else, flag_save=1;disp('saving variables to mfiles');
-	end
+if strcmp(q,'q'), return,
+elseif q == '0' | strcmp(q,'h'), disp(mmm);
 elseif q == '1',
 	DATABASE = irf_ask('Database as string [%]>','DATABASE','disco:10');
 	data_dir = irf_ask('Data path [%]>','data_dir','/data/cluster/');
@@ -95,9 +91,11 @@ elseif strcmp(q,'eph')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ClusterDB/getData quantities
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif q=='r' | q=='v' | q=='a' | strcmp(q,'whip') | q=='e' | q == 'b' | ...
+elseif strcmp(q,'r') | strcmp(q,'v') | strcmp(q,'a') | strcmp(q,'whip') | ...
+	strcmp(q,'e') | strcmp(q,'b') | ...
 	strcmp(q,'bfgm') | q=='p' | strcmp(q,'pburst') | strcmp(q,'eburst') | ...
-	strcmp(q,'ncis') | strcmp(q,'vcis') | strcmp(q,'vce') | strcmp(q,'wbdwf')
+	strcmp(q,'ncis') | strcmp(q,'vcis') | strcmp(q,'vce') | strcmp(q,'wbdwf') | ...
+	strcmp(q,'sax')
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
