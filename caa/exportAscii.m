@@ -20,7 +20,7 @@ function exportAscii(var,vs,com)
 % Copyright 2004 Yuri Khotyaintsev
 
 if nargin<3, com='';end
-if nargin==1, vs=inputname(var); end
+if nargin==1, vs=inputname(1); end
 if nargin<1, help exportAscii;return; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
