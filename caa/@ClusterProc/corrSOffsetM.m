@@ -25,7 +25,13 @@ if exist('./mEDSI.mat','file')
 		error('caa:noData','no diE{cl_id}p1234 data in mEDSI')
 	end
 	if exist(av_ssub('diEs?p34',cl_id),'var')
-		eval(av_ssub('load mEDSI D?p12p34; Del=D?p12p34;',cl_id))
+		eval(av_ssub('load mEDSI D?p12p34',cl_id))
+		if exist(av_ssub('D?p12p34',cl_id),'var')
+			eval(av_ssub('Del=D?p12p34;',cl_id))
+		else
+			disp('Cannot load D#p12p34. Probably we have only one probe pair')	
+			Del=0;
+		end
 		if isreal(Del) 
 			eval(av_ssub('diEs=diEs?p34;',cl_id))
 		else
@@ -92,7 +98,7 @@ clf
 t = tokenize(var_list1,',');
 leg = ['''' t{1} ''''];
 for i=2:length(t), leg = [leg ',''' t{i} '''']; end
-eval(['plotExy(' var_list ')'])
+eval(['plotExy(' var_list ');zoom on'])
 title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
 eval(['legend(' leg ')'])
 
@@ -122,7 +128,7 @@ while(q ~= 'q')
 			diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*offset(2);
 			figure(17)
 			clf
-			eval(['plotExy(' var_list ')'])
+			eval(['plotExy(' var_list ');zoom on'])
 			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
 			eval(['legend(' leg ')'])
 		else
