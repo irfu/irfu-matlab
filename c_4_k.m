@@ -1,6 +1,7 @@
 function [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)
-%c_4_k  Calculate reciprocal vectors in barycentric coordinates
-%  [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)  calculates reciprocal vectors in barycentric coordinates
+%C_4_K calculate reciprocal vectors in barycentric coordinates
+%
+%  [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)
 %  r1..r4 are row vectors with the satellite positions,
 %  if r1..r4 have more than 3 columns then only columns 2-4 are used,
 %  column 1 is assumed to be time and it is added as column 1 to k1..k4
@@ -12,6 +13,7 @@ function [k1,k2,k3,k4]=c_4_k(r1,r2,r3,r4)
 %  If r is in [km] and you want k in [1/m] then you have to divide
 %  the obtained values of k by 10^3
 %
+% $Id$
 
 %  Reference: ISSI book 14.7
 %  k4=cross(r12,r13)/(dot(r14,cross(r12,r13))   r12=r2-r1;

@@ -1,5 +1,5 @@
 function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
-%c_4_j  Calculate gradient using 4 spacecraft technique
+%C_4_GRAD calculate gradient using 4 spacecraft technique
 %  [grad_b,[b]]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4)  
 %  [grad_b,[b]]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,'grad')  
 %  [curl_b,[b]]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,'curl')
@@ -29,9 +29,10 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %
 %  Reference: ISSI book  Eq. 14.16, 14.17
 %
+% $Id$
 
 %%%%%%%%%%%%%%%%%%  Check input parameters %%%%%%%%%%%%%%
-  if nargin<8;    c_log('fcal','Too few input parameters. See usage:');help c_4_grad;     return;end
+  if nargin<8;    irf_log('fcal','Too few input parameters. See usage:');help c_4_grad;     return;end
   if nargin==9,
     if ischar(option),
       flag_option=option;
@@ -48,7 +49,7 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
   elseif size(b1,2)>=4, % input is vector using only columns 2,3,4
     input_is='vector';
   else 
-    c_log('fcal','error: wrong input vector');
+    irf_log('fcal','error: wrong input vector');
   end
 
 %%%%%%%%%%%%%%%% Estimate first reciprical coordinates %%%%%%%%%%%%%%
@@ -56,7 +57,7 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
   % because usually r1..r4 is of less time resolution, it is more
   % computer friendly first calculate k1..k4 and only after interpolate
   % and not the other way around
-  for ic=1:4,eval(av_ssub('R?=av_interp(r?,r1,''spline'');',ic)),end
+  for ic=1:4,eval(irf_ssub('R?=av_interp(r?,r1,''spline'');',ic)),end
   [k1,k2,k3,k4]=c_4_k(R1,R2,R3,R4);
 
 %%%%%%%%%%%%%%%% Do interpolation to b1 time series %%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +86,7 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
       %end
       %grad_b={B1(:,1) grad_b_temp};
     else
-      c_log('fcal','error: input vector is neither scalar or vector');
+      irf_log('fcal','error: input vector is neither scalar or vector');
       return
     end
   end
@@ -112,7 +113,7 @@ switch flag_option
       grad_b=curv; % grad_b is output variable 
     end
   otherwise
-    c_log('fcal','warning: unknown input option');
+    irf_log('fcal','warning: unknown input option');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
