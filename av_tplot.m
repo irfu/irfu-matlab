@@ -1,11 +1,17 @@
 function c=av_tplot(x,option,varargin);
 % function c=av_tplot(x,option,varargin);
 % function c=av_tplot(x,'subplot') to plot in separate subplots all x values
-% function c=av_tplot(x,'yy',factor_to_multiply) add second axis on right
-% function c=av_tplot({x, y, z},[dt1 dt2 ..]) 1st subplot with x, 2nd with y etc. Subtract time shifts if given
-% function c=av_tplot({x, y, z},[dt1 dt2 ...],'comp') 1.subplot is x(:,2),y(:,2)... 2nd subplot is x(:,3) y(:,3 .. etc.
+% function c=av_tplot(x,'','yy',factor_to_multiply) add second axis on right
+% function c=av_tplot({x, y, z},'','dt',[dt1 dt2 ..]) 1st subplot with x, 2nd with y etc. Subtract time shifts if given
+% function c=av_tplot({x, y, z},'comp','dt',[dt1 dt2 ...]) 1.subplot is x(:,2),y(:,2)... 2nd subplot is x(:,3) y(:,3 .. etc.
 % function c=av_tplot({p1, p2, p3, p4 ...},[dt1 dt2 dt3 dt4 ...]) to plot subplots with x y z in them with given time shifts
-% function c=av_tplot(x,1,0,varargin) to pass different options to plot routines within av_tplot
+% function c=av_tplot(x,'',varargin) to pass different options to plot routines within av_tplot
+%
+% varargin is pairs 
+%   option, value
+% where option can be any option for plot routine or any of the below
+%  'dt' - specify time shifts value=[dt1, dt2, dt3, dt4, ...]
+%  'yy' - add second axis on right, value=factor_to_multiply
 %
 % Examples:
 %   av_tplot(B1) - plot variable B1 (all components), assuming that the first column is time
@@ -17,36 +23,45 @@ function c=av_tplot(x,option,varargin);
 %                       put labels according to c_desc
 %   av_tplot({B1,B2},'comp') - plot in 1. subplot B1_X and B2_X, in second
 %                              subplot B1_Y and B2_Y etc . 
-%   av_tplot({B1,B2},[dt1 dt2]) - separate subplots with B1 and B2, but in
+%   av_tplot({B1,B2},'','dt',[dt1 dt2]) - separate subplots with B1 and B2, but in
 %                                 addition B1 and B2 time axis are shifted by dt1 and dt2 correspondingly
 
 
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array
-
-persistent flag_display_new_features
-if now<datenum(2004,12,07) & isempty(flag_display_new_features)
-    disp('********************************************************************');
-    disp('new features, e.g. try >av_tplot(''B?'') or av_tplot(''B1 R2'');');
-    disp('everything you find in c_desc works in av_tplot, even if not loaded!');
-    disp('***************** this message only until 2004-12-07 **********************');
-    flag_display_new_features=1;
-end
+%              3 - components of vectors in separate panels
 
 ylabels{1}='';
 flag_subplot=0;
-flag_yy=0;
-if nargin >=2, inp2=option;end
+if nargin >2, option='';end
 
-if ((nargin >= 2) & isstr(option)),
-    q=option;
-    if strcmp(q,'subplot'),
-        if isnumeric(x),flag_subplot=1;end    % plot separate subplots for all x components
-    elseif strcmp(q,'yy'),
-        if isnumeric(x),flag_yy=1;end    % add second yy axis
-        if nargin > 2, scaleyy=varargin{1}; varargin{1}=[]; else scaleyy=1;end
+
+% default values that can be override by options
+dt=0;
+flag_yy=0;scaleyy=1;
+
+ind_varargin_clean=[]; % which indexes to remove after checking varargin
+for j=1:2: length(varargin)>1,
+    switch varargin{j},
+        case 'dt'
+            dt=varargin{j+1};
+        case 'yy'
+            flag_yy=1;
+            scaleyy=varargin{j+2};
+        otherwise
     end
+    ind_varargin_clean=[ind_varargin_clean j j+1];
+end
+varargin(ind_varargin_clean)=[];
+
+switch option
+    case ''
+    case 'subplot'
+        if isnumeric(x),flag_subplot=1;end    % plot separate subplots for all x components
+    case 'comp'
+    otherwise
+        error('option not allowed');
 end
 
 if ischar(x), % try to get variable labels etc.
@@ -85,29 +100,16 @@ if iscell(x), % plot several variables
     if size(ylabels,2)<size(x,2), % no ylabels are given
         for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
     end
-    if nargin == 1,
-        flag='subplot';
-        dt(1:size(x,2))=0;
-    elseif nargin == 2,
-        if ischar(option),
-            flag=option;
-            dt(1:size(x,2))=0;
-        else
-            dt=0;
-            flag='subplot';
-        end
-    elseif nargin>=3,
-        dt=0;
-        flag=option;
-    end
-    switch flag
+    switch option
+        case ''
+            option='subplot';
+            flag_subplot=2;
         case 'comp'
             flag_subplot=3;
         case 'subplot'
             flag_subplot=2;
-        otherwise
-            error('input not allowed');
     end
+    if dt==0, dt(1:size(x,2))=0; end
 else
     try
         var_desc=c_desc(inputname(1));
@@ -152,7 +154,7 @@ elseif flag_subplot==1, % separate subplot for each component
     for ipl=1:npl,
         c(ipl)=subplot(npl,1,ipl);
         i=ipl+1;
-        plot((x(:,1)-ts),x(:,i));grid on;
+        plot((x(:,1)-ts),x(:,i),varargin{:});grid on;
     end
     tt=x(1,1);
     
@@ -177,10 +179,11 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     npl=size(x{1},2)-1;
     for ipl=1:npl,
         c(ipl)=av_subplot(npl,1,-ipl);
-        line_colors={'b','g','r','c','m','y','k'};
+%        line_colors={'b','g','r','c','m','y','k'};
+         line_colors=get(gca,'ColorOrder');
         for j=1:size(x,2),
             y=x{j};
-            plot((y(:,1)-ts-dt(j)),y(:,ipl+1),varargin{:},line_colors{j});grid on;hold on;
+            plot((y(:,1)-ts-dt(j)),y(:,ipl+1),'color',line_colors(j,:),varargin{:});grid on;hold on;
         end
     end
     tt=y(1,1);
@@ -197,6 +200,7 @@ else
     av_figmenu;user_data.av_figmenu=1;
 end
 set(gcf,'userdata',user_data);
+
 
 % add t_start_epoch, used by add_timeaxis and subplot handles
 user_data=get(gcf,'userdata');
