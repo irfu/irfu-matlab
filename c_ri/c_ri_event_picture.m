@@ -27,10 +27,10 @@ fclose(fp);
 
 for g =1:f_count
   t = f_events(g,1);
-  s_t = fromepoch(t)-per;
-  e_t = fromepoch(t)+per; 
+  s_t = fromepoch(t);
+  e_t = fromepoch(t); 
   
-  [B1,B2,B3,B4]=c_get_bfgm([s_t e_t]);keyboard;
+  [B1,B2,B3,B4]=c_get_bfgm(t+[-per per]);
   c_eval('B?=av_abs(B?);');
   fg = figure;
   %plots B1
