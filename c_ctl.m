@@ -2,10 +2,13 @@ function out=c_ctl(varargin)
 %C_CTL Cluster control
 %
 % c_ctl('init',[dir])
+% c_ctl('get',cl_id,ctl_name)
+% c_ctl(cl_id,ctl_name) % equvalent to get
 % c_ctl('list',[sc_list])
 % c_ctl('load_ns_ops',[dir])
 % c_ctl('save',[dir])
 % c_ctl('set',[sc_list],ctl_name,ctl_val)
+% c_ctl(sc_list,ctl_name,value,[ctl_name1,value1...]) % equvalent to set
 % 
 % $Id$
 
@@ -63,6 +66,8 @@ if isstr(args{1})
 				disp(['C' num2str(cl_id) '->' c ':'])
 				eval(['disp(c_ct{cl_id}.' c ');'])
 			end
+		else
+			error(['unknown ctl: ' c])
 		end
 
 	elseif strcmp(args{1},'load_ns_ops')
@@ -102,6 +107,7 @@ if isstr(args{1})
 				end
 			end
 		end
+		
 	elseif strcmp(args{1},'save')
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
@@ -119,8 +125,9 @@ if isstr(args{1})
 			disp('Saving mcctl.mat')
 			save -MAT mcctl.mat c_ct
 		end
+		
 	elseif strcmp(args{1},'set')
-		if nargin<3, error('set: must be c_ctl(''set'',''ct_name'',value))'), end
+		if nargin<3, error('set: must be c_ctl(''set'',''ctl_name'',value))'), end
 		if isnumeric(args{2})
 			sc_list = args{2};
 			c = args{3};
@@ -130,38 +137,39 @@ if isstr(args{1})
 			c = args{2};
 			c_val = args{3};
 		end
+		if ~isstr(c), error('ctl_name must be a string'), end
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
 		for cl_id=sc_list
-			eval(['c_ct{cl_id}.' c '=c_val;'])
+			try
+				eval(['c_ct{cl_id}.' c '=c_val;'])
+			catch
+				disp(lasterr)
+				error('bad option')
+			end	
 			disp(['C' num2str(cl_id) '->' c ':'])
 			eval(['disp(c_ct{cl_id}.' c ');'])
 		end
+		
 	else
 		error('Invalid argument')
 	end
 elseif isnumeric(args{1})
 	sc_list = args{1};
-	if nargin>1, have_options = 1; args = args(2:end);
-	else, have_options = 0; args = '';
-	end
 	
-	global c_ct
-	if isempty(c_ct), c_ctl('init'), end
+	if nargin>2, have_options = 1; args = args(2:end);
+	elseif nargin==2
+		have_options = 0;
+		if nargout>0, out=c_ctl('get',sc_list,args{2});
+		else, c_ctl('get',sc_list,args{2});
+		end
+	else, have_options = 0;
+	end
 	
 	while have_options
 		if length(args)>1
 			if isstr(args{1})
-				try
-					for j=sc_list
-						%disp(j)
-						%disp(['c_ct{j}.' args{1} '=args{2};'])
-						eval(['c_ct{j}.' args{1} '=args{2};'])
-					end
-				catch
-					disp(lasterr)
-					error('bad option')
-				end
+				c_ctl('set',sc_list,args{1},args{2})
 			else
 				error('option must be a string')
 			end
@@ -171,7 +179,7 @@ elseif isnumeric(args{1})
 			else break
 			end
 		else
-			disp('Usage: c_ctl(sc_list,''ctl'',value)')
+			disp('Usage: c_ctl(sc_list,''ctl_name'',value)')
 			break
 		end
 	end
