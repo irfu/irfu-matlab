@@ -6,6 +6,9 @@ function c=av_tplot(x,t_unit_in_original_units,t_origo_in_original_units,varargi
 % function c=av_tplot({p1 p2 p3 p4 ...},[dt1 dt2 dt3 dt4 ...]) to plot subplots with x y z in them with given time shifts
 % function c=av_tplot(x,1,0,varargin) to pass different options to plot routines within av_tplot
 
+% flag_subplot 0 - one plot
+%              1 - separate subplots for every component
+%              2 - separate subplots for all variables in the cell array
 flag_subplot=0;flag_yy=0;
 if ((nargin >= 2) & isstr(t_unit_in_original_units)),
  q=t_unit_in_original_units;t_unit_in_original_units=1;
@@ -71,4 +74,16 @@ end
     else, add_timeaxis(c);
     end
   end
+
+% execute av_figmenu if there is no such menu
+user_data=get(gcf,'userdata'),
+if isstruct(user_data)
+  if isfield(user_data,'av_figmenu')
+  else 
+    av_figmenu;user_data.av_figmenu=1;
+  end
+else
+  av_figmenu;user_data.av_figmenu=1;
+end
+set(gcf,'userdata',user_data);
 

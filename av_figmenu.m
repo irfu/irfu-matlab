@@ -9,6 +9,7 @@ if strcmp(action,'initialize'),
   uimenu(hfigmenu,'Label','&irf_tm','Callback','av_figmenu(''irf_tm'')','Accelerator','i')
   uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
   uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
+  user_data=get(gcf,'userdata'); user_data.av_figmenu=1; set(gcf,'userdata',user_data);
 
 elseif strcmp(action,'irf_tm'),
   h=findobj(gcf,'type','axes');
