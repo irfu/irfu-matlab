@@ -55,16 +55,16 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     else, flag_save=1;disp('saving variables to mfiles');
     end
  elseif q == '1',
-  variable='DATABASE';default='disco:10';question='Give database as string [%]>';av_ask
+  DATABASE = av_q('Give database as string [%]>','DATABASE','disco:10');
   db = Mat_DbOpen(DATABASE);
-  variable='start_time_s';default='1999 01 01 00 00 00';question='Start time [%]>';av_ask
+  start_time_s = av_q('Start time [%]>','start_time_s','2001 02 01 00 00 00');
   start_time=eval(['[' start_time_s ']']);
   start_date_str=strrep(datestr(start_time,29),'-','');
-  variable='Dt';default=60;question='How many seconds of data [%]>';av_ask
+  Dt = av_q('How many seconds of data [%]>','Dt',60);
   tint_epoch=toepoch(start_time)+[0 Dt];
  elseif strcmp(q,'2'),
   % define sc_list
-  variable='sc_list';default=[1:4];question='Spacecraft list [%]>'; av_ask;
+  sc_list = av_q('Spacecraft list [%]>','sc_list',1:4);
   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Phase
@@ -512,7 +512,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 % P
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif q == 'p',
-  variable='mode';default=1;question='Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]';av_ask;
+  mode = av_q('Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]','mode',1);
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 		if (mm == 1), param='10Hz'; tmmode='lx';
