@@ -475,9 +475,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      % Vsc_N file creation
      %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
      %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_Vps_N_sc' num2str(ic) '.dat'];
-     number_of_points=eval(av_ssub('size(NVps?,1);',ic));
-     disp(['NVps' num2str(ic) ' --> NVps' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-     eval(av_ssub('exportAscii(NVps?);',ic));
+     eval(av_ssub('if exist(''NVps?''), number_of_points=size(NVps?,1);else load mP NVps?;end',ic));
+     if eval(av_ssub('exist(''NVps?''),ic)),
+       disp(['NVps' num2str(ic) ' --> NVps' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+       eval(av_ssub('exportAscii(NVps?);',ic));
+     end  
    end
 
  elseif q == 'r',
