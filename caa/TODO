@@ -1,2 +1,3 @@
-1. fix EfwDoSpinFit to use only spins when > 90% of data is present
-2. fix ADC offset correction not to use data with WHISPER active on
+1. use correctly averaged 4 sec B.
+2. Need to save the info about which B was used
+3. Need to save the info about which probe pairs were used for P1234 and Es
