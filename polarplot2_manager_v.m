@@ -42,19 +42,35 @@ if flag_calculate_v==1,
   freqgood2=freqgood2(:);  phgood2=phgood2(:);
   ind2=find(freqgood2 < fmin | freqgood2 > fmax);
   freqgood2(ind2)=[];phgood2(ind2)=[];
-
+  
   if flag_fitzero == 1,    % least square fit
-    [vphase1, flag_lsqr_1]=lsqr(freqgood1,phgood1,[],20);
-    [vphase2, flag_lsqr_2]=lsqr(freqgood2,phgood2,[],20);
+    if size(phgood1), 
+      [vphase1, flag_lsqr_1]=lsqr(freqgood1,phgood1,[],20);
+    else
+      vphase1=NaN;
+    end
+    if size(phgood2), 
+      [vphase2, flag_lsqr_2]=lsqr(freqgood2,phgood2,[],20);
+    else
+      vphase2=NaN;
+    end
     line1y=[fmin*vphase1 fmax*vphase1];
     line2y=[fmin*vphase2 fmax*vphase2];
   elseif flag_fitzero == 0, % polynomial fit
-    p=polyfit(freqgood1,phgood1,1);
-    vphase1=p(1);
-    line1y=[polyval(p,fmin) polyval(p,fmax)];
-    p=polyfit(freqgood2,phgood2,1);
-    vphase2=p(1);
-    line2y=[polyval(p,fmin) polyval(p,fmax)];
+    if size(phgood1), 
+      p=polyfit(freqgood1,phgood1,1);
+      vphase1=p(1);
+      line1y=[polyval(p,fmin) polyval(p,fmax)];
+    else
+      vphase1=NaN;line1y=[NaN NaN];
+    end
+    if size(phgood1), 
+      p=polyfit(freqgood2,phgood2,1);
+      vphase2=p(1);
+      line2y=[polyval(p,fmin) polyval(p,fmax)];
+    else
+      vphase2=NaN;line2y=[NaN NaN];
+    end
   end
   set(ud.fitline1,'xdata',[fmin fmax],'ydata',line1y);
   set(ud.fitline2,'xdata',[fmin fmax],'ydata',line2y);
@@ -66,25 +82,3 @@ if flag_calculate_v==1,
 end
 % update the minvar plot
 flag_calculate_v=0;
-return
-X=av_t_lim(ud.X,tlim);
-clear ud.Xminvar;
-[ud.Xminvar, l, v]=av_minvar(X);
-ud.l=l;ud.v=v;ud.v1=v(1,:);ud.v2=v(2,:);ud.v3=v(3,:);
-axes(ud.h(2));
-av_tplot([ud.Xminvar X(:,5)]);
-axis tight;add_timeaxis(ud.h(2),'date');
-legend('max','mean','min','abs');
-axes(ud.h(3));
-plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
-axis tight;axis equal; ax=axis;grid on;
-axes(ud.h(4))
-plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('mean');ylabel('max');
-axis equal; grid on;
-l_str=['L1=' num2str(l(1),3) ' L2=' num2str(l(2),3) ' L3=' num2str(l(3),3) '\newline'];
-v1_str=['v1=[' num2str(v(1,:),'%6.2f') '] \newline'];
-v2_str=['v2=[' num2str(v(2,:),'%6.2f') '] \newline'];
-v3_str=['v3=[' num2str(v(3,:),'%6.2f') '] \newline'];
-v_str=[v1_str v2_str v3_str];
-set(ud.result_text,'string',[l_str v_str],'verticalalignment','top');
-

@@ -62,20 +62,21 @@ if flag_new_figure==1,
  h2(4)=subplot(4,1,4);axis off;
 
   dgud.h2=h2;
-  dgud.fmint=uicontrol('style', 'text', 'string', 'fmin [Hz]','position', [2 1 3 .5],'units','centimeters');
-  dgud.fminh = uicontrol('style', 'edit', 'string','0','position', [5 1 3 .5],'callback', 'polarplot2_manager_v(''recalculate'')', 'units','centimeters');
-  dgud.fmax=uicontrol('style', 'text', 'string', 'fmax [Hz]','position', [2 1.5 3 .5],'units','centimeters');
-  dgud.fmaxh = uicontrol('style', 'edit', 'string', '0','position', [5 1.5 3 .5], 'units','centimeters', 'callback','polarplot2_manager_v(''recalculate'')');
-  dgud.fplmin=uicontrol('style', 'text', 'string', 'fplot min [Hz]','position', [2 2 3 .5],'units','centimeters');
-  dgud.fplminh = uicontrol('style', 'edit', 'string', num2str(freq_lim(1)),'position', [5 2 3 .5],'callback', 'polarplot2_manager_v(''fpl'')', 'units','centimeters');
-  dgud.fplmax=uicontrol('style', 'text', 'string', 'fplot max [Hz]','position', [2 2.5 3 .5],'units','centimeters');
-  dgud.fplmaxh = uicontrol('style', 'edit', 'string', num2str(freq_lim(2)),'position', [5 2.5 3 .5], 'units','centimeters','callback', 'polarplot2_manager_v(''fpl'')');
+  ysc=1.5;% scaling for y separation between text information on screen
+  dgud.fmint=uicontrol('style', 'text', 'string', 'fmin  [Hz]','units','centimeters','position', [2 ysc*1 3 ysc*.5]);
+  dgud.fminh = uicontrol('style', 'edit', 'string','0', 'units','centimeters','position', [5 ysc*1 3 ysc*.5],'callback', 'polarplot2_manager_v(''recalculate'')');
+  dgud.fmax=uicontrol('style', 'text', 'string', 'fmax [Hz]','units','centimeters','position', [2 ysc*1.5 3 ysc*.5]);
+  dgud.fmaxh = uicontrol('style', 'edit', 'string', '0', 'units','centimeters','position', [5 ysc*1.5 3 ysc*.5], 'callback','polarplot2_manager_v(''recalculate'')');
+  dgud.fplmin=uicontrol('style', 'text', 'string', 'fplot min [Hz]','units','centimeters','position', [2 ysc*2 3 ysc*.5]);
+  dgud.fplminh = uicontrol('style', 'edit', 'string', num2str(freq_lim(1)),'units','centimeters','position', [5 ysc*2 3 ysc*.5],'callback', 'polarplot2_manager_v(''fpl'')');
+  dgud.fplmax=uicontrol('style', 'text', 'string', 'fplot max [Hz]', 'units','centimeters','position', [2 ysc*2.5 3 ysc*.5]);
+  dgud.fplmaxh = uicontrol('style', 'edit', 'string', num2str(freq_lim(2)), 'units','centimeters','position', [5 ysc*2.5 3 ysc*.5],'callback', 'polarplot2_manager_v(''fpl'')');
   
-  dgud.vfitzero=uicontrol('style', 'checkbox', 'string', 'go through zero','position', [9 2.5 3 .5],'units','centimeters','callback', 'polarplot2_manager_v(''recalculate'')');
-  dgud.sampling_distance=uicontrol('style', 'text', 'string', 'distance in phys.un.','position', [9 2 3 .5],'units','centimeters');
-  dgud.sampling_distance_h=uicontrol('style', 'edit', 'string', '0.044','position', [12 2 1 .5],'units','centimeters','callback', 'polarplot2_manager_v(''recalculate'')');
-  dgud.vphase1=uicontrol('style', 'text', 'string', '','position', [9 1.5 6 .5],'units','centimeters');
-  dgud.vphase2=uicontrol('style', 'edit', 'string', '','position', [9 1   6 .5],'units','centimeters');
+  dgud.vfitzero=uicontrol('style', 'checkbox', 'string', 'go through zero', 'units','centimeters','position', [9 ysc*2.5 3 ysc*.5],'callback', 'polarplot2_manager_v(''recalculate'')');
+  dgud.sampling_distance=uicontrol('style', 'text', 'string', 'distance in phys.un.', 'units','centimeters','position', [9 ysc*2 5 ysc*.5]);
+  dgud.sampling_distance_h=uicontrol('style', 'edit', 'string', '0.044','units','centimeters','position', [14 ysc*2 3 ysc*.5],'callback', 'polarplot2_manager_v(''recalculate'')');
+  dgud.vphase1=uicontrol('style', 'text', 'string', '','units','centimeters','position', [9 ysc*1.5 8 ysc*.5]);
+  dgud.vphase2=uicontrol('style', 'text', 'string', '','units','centimeters','position', [9 ysc*1   8 ysc*.5]);
 end
 
 dgud.fitline1=hl1;

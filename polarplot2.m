@@ -19,7 +19,7 @@ clear polarplot2_manager
 % steplength = size of each FFT
 % avnumber   = number of spectra to average over
 % threshold  = degree of polarization above which we consider the
-%              signal to be polarized.
+%              signal to be polarized (values between 0 and 1).
 % plotflag   = set equal to 1 if we want the phase difference
 %              and the coherence, instead of the usual output.
 % distance   = distance between signals
