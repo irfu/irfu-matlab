@@ -83,7 +83,7 @@ switch action,
         yp=0.15;
         ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
         ud.toh=uicontrol('style', 'edit', ...
-            'string', epoch2iso(tlim(2)), ...
+            'string', epoch2iso(tlim(2),1), ...
             'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 
 
@@ -121,9 +121,9 @@ switch action,
             set(ud.fromtext,'backgroundcolor','r');
             ud.from = 1;
         end
-        set(ud.fromh, 'string', epoch2iso(tlim(1)));
-        set(ud.toh, 'string', epoch2iso(tlim(2)));
-        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
+        set(ud.fromh, 'string', epoch2iso(tlim(1),1));
+        set(ud.toh, 'string', epoch2iso(tlim(2),1));
+        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
         irf_minvar_gui('update_mva_axis');
     case 'from'
         tlim(1) = iso2epoch(get(ud.fromh,'string'));
