@@ -64,25 +64,25 @@ case 'initialize'
     ud.h=h;
     
     xp=0.2;yp=0.2;
-    ud.fromtext=uicontrol('style', 'text', 'string', 'From:', 'position', [xp yp 0.1 0.04],'units','normalized','backgroundcolor','red');
+    ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
     ud.fromh = uicontrol('style', 'edit', ...
         'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'), ...
         'callback', 'av_minvar_interactive(''from'')', ...
-        'backgroundcolor','white','position', [xp+0.11 yp 0.25 0.05],'units','normalized');
-    
+        'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
+
     yp=0.15;
-    ud.totext=uicontrol('style', 'text', 'string', 'To:', 'position', [xp yp 0.1 0.04],'units','normalized','backgroundcolor','white');
+    ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
     ud.toh=uicontrol('style', 'edit', ...
         'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'), ...
-        'callback', 'av_minvar_interactive(''from'')','backgroundcolor','white', 'position', [xp+0.11 yp 0.25 0.05],'units','normalized');
-    
-    
+        'callback', 'av_minvar_interactive(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
+
+
     xp=0.1;yp=0.1;
-    uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','position', [xp yp 0.2 0.04],'units','normalized','backgroundcolor','white');
+    uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
     ud.filter = uicontrol('style', 'edit', ...
         'string', '1', ...
         'callback', 'c_4_v_update(''dt'')', ...
-        'backgroundcolor','white','position', [xp+0.21 yp 0.1 0.05],'units','normalized');
+        'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
     
     uimenu('label','&Recalculate','accelerator','r','callback','av_minvar_interactive(''mva'')');
     
