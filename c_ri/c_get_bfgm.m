@@ -12,7 +12,7 @@ for ic=sc_list,
   if b_table ~= 0
     [b_s, col] = size(b_table);
     for k = 1:b_s
-      B=c_ri_get_B( b_table(k,1), b_table(k,2), ic, 'b',path_output);
+      B=c_ri_get_B( b_table(k,1), b_table(k,2), ic, 'b');
       if B(1,1)>0,
         eval(av_ssub('B?=[B?;B];',ic));
       end
@@ -22,7 +22,7 @@ for ic=sc_list,
   if n_table ~= 0
     [n_s, col] = size(n_table);
     for i = 1:2:n_s
-      B=c_ri_get_B( n_table(i,1), n_table(i,2), cl_nr, 'n',path_output);
+      B=c_ri_get_B( n_table(i,1), n_table(i,2), cl_nr, 'n');
       if B(1,1)>0,
         eval(av_ssub('B?=[B?;B];',ic));
       end
