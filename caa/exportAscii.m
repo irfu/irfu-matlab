@@ -72,10 +72,10 @@ elseif regexp(vs,'diE[1-4]')==1
 	inst = 'EFW';
 	sig = 'E';
 	sen = 'p1234';
-	frame = 'DSI,  Ez not measured, Ez calculated from E.B=0';
+	frame = 'DSI,  approximately the same as GSE';
 	var_labels = {'Ex','Ey','Ez','(B,spin)'};
   var_units =  {'mV/m','mV/m','mV/m','deg'};
-  com = 'Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
+  com = 'Ez is not measured but calculated from E.B=0\nEz is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
