@@ -854,7 +854,7 @@ case 'press_SAVEbutton'
 			var_s = 'DHdsi? DHz?';
 		else
 			c_eval('DCdsi?=hnd.off(1);DCz?=hnd.off(2);')
-			hnd.CISHoffset_save(cl_id,:) = hnd.off;
+			hnd.CISCoffset_save(cl_id,:) = hnd.off;
 			var_s = 'DCdsi? DCz?';
 		end
 	else
@@ -862,7 +862,7 @@ case 'press_SAVEbutton'
 		return
 	end
 	c_eval(['save ' f_name ' ' var_s ' -mat -append'],cl_id)
-	c_log('save',[var_s ' -> ' f_name])
+	c_log('save',av_ssub([var_s ' -> ' f_name],cl_id))
 	guidata(h0,hnd);
 	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
