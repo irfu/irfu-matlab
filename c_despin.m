@@ -47,7 +47,7 @@ if nargin > 3,
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     clear coef;
     eval(av_ssub('coef=c?;',ic));
-    if nargin ==4 & strcmp(flag,'efw_offs'),
+    if nargin == 4 & strcmp(flag,'efw_offs'),
       coef(1,2)=mean(es(:,3));
       coef(2,2)=mean(es(:,2));
     end

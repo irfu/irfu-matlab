@@ -198,11 +198,20 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   if exist('./mE.mat'), eval(['save -append mE  ' save_list]); else, eval(['save mE  ' save_list]);end
 
  elseif strcmp(q,'dve'),
+  q_efw_offset=av_q('How to treat offsets? 1)do nothing, 2) nearest callibration, 3) subtract probe signal mean and use nearest sunward offsets. [%]>','q_efw_offset',2);
   for ic=sc_list,
    eval(av_ssub('load mE wE?;tt=wE?(1,1);',ic));
    eval(av_ssub('load mA.mat A?;',ic));
    [coef1,coef2,coef3,coef4]=c_efw_calib(tt); % the time stamp of the first sample defines calibration
-   eval(av_ssub('dvE?=c_despin(wE?,A?,coef?);',ic));
+   if q_efw_offset==1,
+     eval(av_ssub('dvE?=c_despin(wE?,A?);',ic));
+   elseif q_efw_offset==2,
+     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?);',ic));
+   elseif q_efw_offset==3,
+     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?,''efw_offs'');',ic));
+   else, disp('wrong offest option, using option 2.');
+     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?);',ic));
+   end
    eval(av_ssub('save_list=[save_list '' dvE? ''];',ic));
   end
   eval(['save -append mE  ' save_list]);
