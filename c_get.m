@@ -11,13 +11,14 @@ mmm =  ...
 	'1  time interval                      ';
 	'2  sc list [1:4]                      ';
 	'a  load phase A1..A4 into mA          ';
-	'e  load E1...E4 into mE               ';
+	'e  load wE1...wE4 -> mE               ';
 	'eph load ephemeris,r,v,dr,dv          ';
-	'b  load BPP1...BPP4 into mBPP         ';
+	'b  load BPP1...BPP4 -> mBPP           ';
 	'bf load Hres FGM B1...B4 -> mB        ';
+%	'bfgm from DDS  FGM B1...B4 -> mB      ';
 	'bs load BS1...BS4 into mBS            ';
 	'p  potential P1..P4 -> mP             ';
-	's  with/ without saving               ';
+%	's  with/ without saving               ';
 	'vc CIS VCp?,VCh?,dVCp?,dVCh?-> mCIS   ';
 	'vce CIS E VCE1..&dVCE1..-> mCIS       ';
 	'x  free format load                   ';
@@ -26,7 +27,7 @@ mmm =  ...
 	'dbf despinned dB1... -> mB            ';
 	'dbs despinned dBS1..dBS4 -> mBS       ';
 	'dve despinned dvE1..dvE4 -> mE        ';
-	'de (de+vsxBPP) dE1..dE4 -> mE         ';
+	'de (dve+vsxBPP) dE1..dE4 -> mE        ';
 	'deo dEo1..dEo4 Eo.B=0                 ';
 	'es  E ->ascii E?                      ';
 	'ps  P ->ascii P?                      ';
@@ -117,6 +118,12 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     disp(['fgm_t_interval=' fgm_t_interval]);
     dat=get(fvs,'data','b',fgm_t_interval);
     eval(av_ssub('B?=[rem(dat.time,1)*3600*24+toepoch(start_time.*[1 1 1 0 0 0]) dat.b];save_list=[save_list '' B? ''];',ic));
+  end
+  eval(['save mB ' save_list]);
+
+ elseif strcmp(q,'bfgm'),
+  for ic=sc_list,
+    eval(av_ssub('B?=c_get_bfgm(start_time+[0 Dt],sc_list);',ic));
   end
   eval(['save mB ' save_list]);
 
