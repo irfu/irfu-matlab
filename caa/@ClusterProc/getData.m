@@ -110,7 +110,16 @@ if strcmp(quantity,'dies')
 			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
 			sp = sp(:,1:4);
 			sp(:,4) = 0*sp(:,4); % Z component
-			ind=find(abs(sp(:,3))>1e4);sp(ind,:)=[]; % remove spins with bad spin fit (obtained E > 10000 mV/m)
+			
+			% remove point with zero time
+			ind = find(sp(:,1)>0);
+			if length(ind)<length(sp(:,1))
+				disp([num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
+				sp = sp(ind,:);
+			end
+
+			% remove spins with bad spin fit (obtained E > 10000 mV/m)
+			ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
 			if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
 			eval(av_ssub(['diEs?p' ps '=sp;'],cl_id)); clear tt aa sp
 			eval(av_ssub(['save_list=[save_list '' diEs?p' ps ' ''];'],cl_id));
@@ -191,8 +200,11 @@ elseif strcmp(quantity,'die')
 	if n_sig==2
 		if abs(length(Ep12)-length(Ep34))>0
 			% different timelines. Need to correct
+			disp('using common timeline')
 			[ii12,ii34] = findCommInd(Ep12,Ep34);
+			disp(['Ep12 ' num2str(length(Ep12)) '->' num2str(length(ii12)) ' data points'])
 			Ep12 = Ep12(ii12,:);
+			disp(['Ep34 ' num2str(length(Ep34)) '->' num2str(length(ii34)) ' data points'])
 			Ep34 = Ep34(ii34,:);
 		end
 		% use WEC coordinate system E=[t,0,p34,p12]
