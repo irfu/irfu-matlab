@@ -16,6 +16,14 @@ if nargin, action = varargin{1};
 else, action = 'init';
 end
 
+if regexp(action,'^update_DATA.+radiobutton$')
+	vs = action(12:end-11);
+	action = 'update_DATAradiobutton';
+elseif regexp(action,'^update_DATA.+checkbox$')
+	vs = action(12:end-8);
+	action = 'update_DATAcheckbox';
+end
+
 switch action
 case 'init'
 	%create figure
@@ -264,8 +272,13 @@ case 'init'
 case 'replot_all'
 	%plot data
 	handles = guidata(h0);
+	handles.DataList = {};
+	handles.DataLegList = {};
+	handles.AUXList = {};
+	handles.AUXLegList = {};
 	if ~length(handles.Data), error('no data to calibrate'),end
 	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
+	for ax=1:3, cla(h(ax)), end
 	for j=1:length(handles.Data)
 		data = handles.Data{j};
 		if data.visible
@@ -291,16 +304,28 @@ case 'replot_all'
 			switch data.type
 			case 'E'
 				if any(p_data(:,4))==0,
-					[p_data,angle]=av_ed(p_data,data.B,handles.ang_limit);
-					ii = find(abs(angle) < handles.ang_limit);
-					if length(ii) > 1, p_data(ii,4) = p_data(ii,4)*NaN; end
+					if ~isempty(data.B)
+						[p_data,angle]=av_ed(p_data,data.B,handles.ang_limit);
+						ii = find(abs(angle) < handles.ang_limit);
+						if length(ii) > 1, p_data(ii,4) = p_data(ii,4)*NaN; end
+					end
 				end
 				if ~handles.mode
-					p_data = av_e_vxb(p_data,data.B,-1);
+					if ~isempty(data.B)
+						p_data = av_e_vxb(p_data,data.B,-1);
+					else
+						handles.Data{j}.visible = 0;
+						continue
+					end
 				end
 			case 'V'
 				if handles.mode
-					p_data = av_t_appl(av_cross(p_data,data.B),'*(-1e-3)');
+					if ~isempty(data.B)
+						p_data = av_t_appl(av_cross(p_data,data.B),'*(-1e-3)');
+					else
+						handles.Data{j}.visible = 0;
+						continue
+					end
 				end
 			otherwise
 				disp('Unknown type.')
@@ -310,7 +335,7 @@ case 'replot_all'
 			for ax=1:3
                 %disp([epoch2iso(p_data(1,1)) ' ' data.name])
 				hold(h(ax),'on')
-				handles.Data{j}.ploth = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
+				handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
 					p_style(data.cl_id, data.inst, data.sen));
 				hold(h(ax),'off')
 			end
@@ -387,6 +412,48 @@ case 'update_DXcheckbox'
 		set(handles.DXedit,'Enable','on','BackgroundColor',active_color)
 		set(handles.DXslider,'Enable','on')
 		set(handles.DXslider,'Value',str2double(get(handles.DXedit,'String')))
+	end
+case 'update_DATAcheckbox'
+	handles = guidata(h0);
+	if get(eval(['handles.DATA' vs 'checkbox']),'Value')==1
+		%need to plot the varible
+		f_ok = 0;
+		for j=1:length(handles.Data)
+			if strcmp(handles.Data{j}.name,vs)
+				f_ok = 1;
+				handles.Data{j}.visible = 1;
+			end
+		end
+		if ~f_ok
+			for j=1:length(handles.AUXData)
+				if strcmp(handles.AUXData{j}.name,vs)
+					f_ok = 1;
+					handles.AUXData{j}.visible = 1;
+				end
+			end
+		end
+		guidata(h0,handles);
+		c_cal_gui('replot_all')
+	else
+		%need to hide the varible
+		f_ok = 0;
+		for j=1:length(handles.Data)
+			if strcmp(handles.Data{j}.name,vs)
+				f_ok = 1;
+				handles.Data{j}.visible = 0;
+				delete(handles.Data{j}.ploth)
+			end
+		end
+		if ~f_ok
+			for j=1:length(handles.AUXData)
+				if strcmp(handles.AUXData{j}.name,vs)
+					f_ok = 1;
+					handles.AUXData{j}.visible = 0;
+					delete(handles.AUXData{j}.ploth)
+				end
+			end
+		end
+		guidata(h0,handles);
 	end
 otherwise 
 	disp('wrong action')
