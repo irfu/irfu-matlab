@@ -108,8 +108,7 @@ t = tokenize(var_list1,',');
 leg = ['''' t{1} ''''];
 for i=2:length(t), leg = [leg ',''' t{i} '''']; end
 eval(['plotExy(' var_list ');zoom on'])
-title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,
-real(offset(1)),imag(offset(1)),offset(2)))
+title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 eval(['legend(' leg ')'])
 
 q='0';
