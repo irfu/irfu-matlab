@@ -26,7 +26,7 @@ function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
 % fgmcal
 % fgmhrt
 % fgmvec
-% 
+%
 %Work method:
 % Download B-data with "ddscut" from /data/cluster/DDS/filename
 % (ex filename: 020302*fY.XX  where Y = (b/n) XX =(01/02/03/04)
@@ -76,19 +76,13 @@ get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /hom
 
 if nargout,  % return B
   to_file='/tmp/sckmvnskjaqwedasdawd';
-  get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /home/scb/fgm/bin/fgmhrt -a %s%s*ga.0%d |/home/scb/fgm/bin/fgmvec > %s ',d_source,d_path,d_s,cl_nr,to_file);
+  get_fgm = sprintf('/home/scb/fgm/bin/fgmtel %s | /home/scb/fgm/bin/fgmcal | /home/scb/fgm/bin/fgmhrt -a %s%s*ga.0%d  > %s ',d_source,d_path,d_s,cl_nr,to_file);
   unix(get_fgm);
-  fp = fopen(to_file);
-  [S,count] = fscanf(fp,'%4d%1s%2d%1s%2d%1s%2d%1s%2d%1s%6f%2s%f%f%f',[15,inf]);
-  fclose(fp);
+  fvs = fgmvec_stream(to_file);
+  dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
+  close(fvs);
   unix(['rm ' to_file]);
-  [r_s, c_s] = size(S);
-  if r_s == 15,
-    temp_B = S([1 3 5 7 9 11 13 14 15],:)';
-    B = [toepoch(temp_B(:,1:6)) temp_B(:,7:9)];
-  else,
-    B=[-1 0 0 0];      % no data
-  end
+  B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
 else
   %download an unpack the downloaded data
   unix_command = sprintf('%s',get_fgm);
