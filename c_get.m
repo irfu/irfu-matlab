@@ -74,7 +74,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     for ic=sc_list, c_eval('disp(''...A?...Atwo?..'');',ic);
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
      eval(av_ssub('A?=[double(t) double(data)];',ic));%clear t data;
-     [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase2', ' ', ' ', ' ');
+     [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase_2', ' ', ' ', ' ');
      eval(av_ssub('Atwo?=[double(t) double(data)];',ic));%clear t data;
      c_eval('save_list=[save_list '' A? Atwo? ''];',ic);
     end
