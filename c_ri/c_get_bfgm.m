@@ -7,7 +7,7 @@ if nargin ==1, sc_list=1:4;end
 
 for ic=sc_list,eval(av_ssub('B?=[];',ic)),end
 for j=1:length(sc_list),
-  ic=sc_list(j),
+  ic=sc_list(j);
   [b_table, n_table] = create_timetable(tint(1),tint(2),ic);
 
   if b_table ~= 0
