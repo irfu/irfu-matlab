@@ -144,7 +144,7 @@ switch action,
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);
             clear ud.Xminvar;
-            ud.Xminvar=av_newxyz(X,ud.v1,ud.v2,ud.v3);
+            ud.Xminvar=irf_newxyz(X,ud.v1,ud.v2,ud.v3);
             axes(ud.h(2));
             irf_plot(ud.Xminvar);
             axis tight;add_timeaxis(ud.h(2),'date');

@@ -196,7 +196,7 @@ elseif strcmp(action,'plot'),
 
   for ic=1:4,eval(irf_ssub('rr?=av_interp(r?,t);',ic)),end
   R=(rr1+rr2+rr3+rr4)/4;
-  for ic=1:4,eval(irf_ssub('dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);drlnm?=av_newxyz(dr?,l,n,m);x?=drlnm?;',ic)),end
+  for ic=1:4,eval(irf_ssub('dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);drlnm?=irf_newxyz(dr?,l,n,m);x?=drlnm?;',ic)),end
   drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
 
 	%%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
