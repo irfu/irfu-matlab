@@ -39,25 +39,25 @@ switch action,
   ud.data={x1 x2 x3 x4 column};
 
   xp=0.05;yp=0.25;
-  uch1 = uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','position', [xp yp 0.15 0.03],'units','normalized');
+  uch1 = uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
   ud.dt = uicontrol('style', 'edit', ...
         'string', '[0 0 0 0]', ...
       'callback', 'c_4_v_interactive(''dt'')', ...
-      'backgroundcolor','white','position', [xp+0.15 yp 0.29 0.05],'units','normalized');
+      'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 
   xp=0.05;yp=0.2;
   uch1 = uicontrol('style', 'text', 'string', '[vx vy vz] GSE km/s =','position', [xp yp 0.15 0.03],'units','normalized');
   ud.v = uicontrol('style', 'edit', ...
         'string', '1*[0 0 0]', ...
       'callback', 'c_4_v_interactive(''v'')', ...
-      'backgroundcolor','white','position', [xp+0.15 yp 0.29 0.05],'units','normalized');
+      'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 
   xp=0.05;yp=0.15;
-  uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','position', [xp yp 0.15 0.03],'units','normalized');
+  uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
   ud.filter = uicontrol('style', 'edit', ...
         'string', '1', ...
       'callback', 'c_4_v_interactive(''dt'')', ...
-      'backgroundcolor','white','position', [xp+0.15 yp 0.1 0.05],'units','normalized');
+      'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
 
   uimenu('label','Auto &YLim','accelerator','y','callback','c_4_v_interactive(''autoY'')');
   uimenu('label','&Distance','accelerator','d','callback','c_4_v_interactive(''distance'')');
