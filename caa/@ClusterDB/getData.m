@@ -200,7 +200,16 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		save_file = './mP.mat';
 		param={'10Hz'}; tmmode='lx';
 	end
-	for j=1:length(param), for probe=1:4;
+	
+	probe_list = 1:4;
+	
+	% Check for p1 problems on SC1 and SC3
+	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+		probe_list = 2:4;
+		c_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+	end
+	
+	for j=1:length(param), for probe=probe_list;
     	c_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
