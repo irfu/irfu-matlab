@@ -1,4 +1,4 @@
-function data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
+function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %GETDATA(cdb) get Cluster data from the database or disk
 % data = getData(cdb,start_epoch,dt,cl_id,quantity,options)
 %
@@ -11,6 +11,8 @@ function data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 %	e : wE{cl_id}p12, wE{cl_id}p34 -> mER // electric fields
 %	a : A{cl_id} -> mA // phase
+%	b : B FGM PP [GSE] 
+%	dib : B FGM PP [DSI] 
 %
 %	options - one of the following:
 %	not yet implemented
@@ -25,7 +27,11 @@ function data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 error(nargchk(5,15,nargin))
 if nargin > 5, property_argin = varargin; end
 
+out_data = '';
+
 flag_save = 1; % change this!
+
+start_date_str = strrep(datestr(fromepoch(start_time),29),'-','');
 
 save_file = '';
 save_list = '';
@@ -101,6 +107,41 @@ elseif strcmp(quantity,'a')
 	else
 		warning(av_ssub('No data for A?',cl_id))
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% b - B FGM PP [GSE] 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'b')
+	save_file='./mBPP.mat';
+
+	% first try ISDAT (fast) then files
+	dat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,'b');
+	if ~isempty(dat)
+		eval(av_ssub('BPP?=dat;save_list=[save_list '' BPP?''];',cl_id));
+		clear dat
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% b - B FGM PP [DSI] 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'dib')
+	save_file='./mBPP.mat';
+	if ~exist(save_file,'file')
+		warning('must fetch B GSE PP first (option ''b'')')
+		return
+	end
+
+	% reset errors, otherwise try/catch fails
+	lasterr('')
+	try
+		dbase = Mat_DbOpen(cdb.db);
+		disp(lasterr)
+		eval(av_ssub('load mBPP BPP?;diBPP?=c_gse2dsc(BPP?,[BPP?(1,1) cl_id],1,dbase);disp(size(diBPP?));diBPP?(:,3:4)=-diBPP?(:,3:4);save_list=[save_list '' diBPP?''];',cl_id));
+		if exist('dbase'), Mat_DbClose(dbase); end
+	catch
+		disp(sprintf('Error getting data from ISDAT server %s: %s',...
+		cdb.db,lasterr))
+	end
+else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
 
 % saving
@@ -116,9 +157,9 @@ end
 % prepare the output
 if nargout > 0 & ~isempty(save_list)
 	sl = tokenize(save_list);
-	data = {sl};
+	out_data = {sl};
 	for i=1:length(sl)
-		eval(['data{i+1}={' char(sl{i}) '};'])
+		eval(['out_data{i+1}=' sl{i} ';'])
 	end
 end
 
@@ -135,19 +176,25 @@ if nargin < 9, par = ' '; end
 if nargin < 8, cha = ' '; end
 if nargin < 7, sen = ' '; end
 
-% reset errors, otherwise try/catch fails
-lasterr('')
-try
-	dbase = Mat_DbOpen(db_s);
-	disp(lasterr)
+p = tokenize(db_s,'|');
 
-	[t, d] = isGetDataLite(dbase, st, dt, ...
-	'Cluster',num2str(cli),ins,sig,sen,cha,par);
+for i=1:length(p)
+	% reset errors, otherwise try/catch fails
+	lasterr('')
+	try
+		dbase = Mat_DbOpen(p{i});
+		disp(lasterr)
 
-	if exist('dbase'), Mat_DbClose(dbase); end
+		[t, d] = isGetDataLite(dbase, st, dt, ...
+		'Cluster',num2str(cli),ins,sig,sen,cha,par);
 
-catch
-	disp(sprintf('Error getting data from ISDAT server %s: %s',...
-	db_s,lasterr))
-	t = []; d = [];
+		if exist('dbase'), Mat_DbClose(dbase), clear dbase, end
+
+		if ~isempty(d), return, end
+
+	catch
+		warning('ISDAT:getData',...
+		'Error getting data from ISDAT server %s: %s', p{i},lasterr)
+		t = []; d = [];
+	end
 end
