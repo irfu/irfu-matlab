@@ -116,27 +116,27 @@ end
 % searches for events for the specified time
 for i = i_start:i_end
 
-if start_time_e > toepoch(pos_time(i,:))
-s_time = start_time;
-else
-s_time = pos_time(i,:);
-end
+ if start_time_e > toepoch(pos_time(i,:))
+  s_time = start_time;
+ else
+  s_time = pos_time(i,:);
+ end
 
-if end_time_e < toepoch(pos_time(i,:))+dur_time(i)
-dur_t = end_time_e - start_time_e;
-else
-dur_t = dur_time(i);
-end
+ if end_time_e < toepoch(pos_time(i,:))+dur_time(i)
+  dur_t = end_time_e - start_time_e;
+ else
+  dur_t = dur_time(i);
+ end
 
-disp(['processing: ' R_datestring(pos_time(i,:)) ' with length ' num2str(dur_time(i)/3600) ' hr'])
-tpm = -1;
-d_temp = 0;
-[tpm, d_temp] = search_events(s_time,dur_t,dist2MP,p_solarwind);
+ disp(['processing: ' R_datestring(pos_time(i,:)) ' with length ' num2str(dur_time(i)/3600) ' hr'])
+ tpm = -1;
+ d_temp = 0;
+ [tpm, d_temp] = search_events(s_time,dur_t,dist2MP,p_solarwind);
 
-if tpm ~= -1
-passing_MP = add_A2M(passing_MP,tpm);
-dist_t = add_A2M(dist_t, d_temp);
-end
+ if tpm ~= -1
+  passing_MP = add_A2M(passing_MP,tpm);
+  dist_t = add_A2M(dist_t, d_temp);
+ end
 
 end
 
