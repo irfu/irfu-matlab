@@ -16,7 +16,7 @@ function out = epoch2iso(t)
 % We need to do all this because DATESTR rounds seconds
 d = fromepoch(t);
 
-for j=2:5, s1(j-1) = {add_zero(d(:,j),num2str(d(:,j)))}; end
+for j=2:5, s1(j-1) = {add_zero(d(:,j),num2str(d(:,j),'%d'))}; end
 
 % Take care about seconds separately
 s2 = add_zero(d(:,6),num2str(d(:,6),'%6f'));
@@ -31,6 +31,7 @@ out = [num2str(d(:,1)) sdash s1{1} sdash s1{2} sT s1{3} scol s1{4} scol s2 sZ];
 % Help function to insert zeros for numbers containing only one digit 
 function out = add_zero(d,s)
 out = s;
+
 ii = find(d<10);
 if ~isempty(ii)
 	ss = s(ii,1);
@@ -39,6 +40,6 @@ if ~isempty(ii)
 		% Add to all lines
 		out = [ss s];
 	else
-		out(ii,:) = [ss s(ii,2:end)];
+		out(ii,:) = [ss s(ii,1:end-1)];
 	end
 end
