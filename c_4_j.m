@@ -1,10 +1,13 @@
 function [j,divB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
-%C_4_J calculate current from using 4 spacecraft technique
+%C_4_J  Calculate current from using 4 spacecraft technique
 %
-%  [j,divB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
-%  estimates also divergence B as the error estimate
+%  [j,divB] = c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
+%  [j,divB] = c_4_j('R?','B?')
+%  Estimate also divergence B as the error estimate
 %
-%  [j]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)  Calculates only current
+%  j = c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)  
+%  j = c_4_j('R?','B?')
+%  Calculate only current
 %
 %  r1..r4 are row vectors
 %         column 1     is time
@@ -24,7 +27,22 @@ function [j,divB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %
 % $Id$
 
-if nargin<8;    disp('Too few parameters. See usage:');help c_4_j;     return;end
+if nargin~=8 & nargin~=2
+	disp('Too few parameters. See usage:');
+	help c_4_j;     
+	return
+end
+if nargin==2
+	rs = r1;
+	bs = r2;
+	for cl_id=1:4
+		ttt = evalin('caller',irf_ssub(rs,cl_id)); 
+		eval(irf_ssub('r? =ttt;',cl_id)); clear ttt
+		ttt = evalin('caller',irf_ssub(bs,cl_id)); 
+		eval(irf_ssub('b? =ttt;',cl_id)); clear ttt
+	end
+	clear bs rs
+end
 
 %%%%%%%%%%%%%%%% Estimate first reciprical coordinates %%%%%%%%%%%%%%
 %
