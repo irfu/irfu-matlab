@@ -13,7 +13,7 @@ function getRData(sp,st,dt,sc_list,cdb)
 % getRData('/home/yuri/caa-data/20020304', ...
 %	toepoch([2002 03 04 10 00 00]),30*60)
 %
-% $Revision$  $Date$
+% $Id$
 %
 % See also ClusterDB/getData, ClusterProc/getData
 
@@ -24,7 +24,7 @@ error(nargchk(3,5,nargin))
 if nargin<4, sc_list=1:4; end
 if nargin<5, cdb = ClusterDB('ice:10|disco:10','/data/cluster',sp); end
 
-vars = {'e','p','a','sax','b','edi','vcis','vce'};
+vars = {'e','p','a','sax','b','edi','ncis','vcis','vce'};
 
 for cl_id=sc_list
 	for k=1:length(vars)
