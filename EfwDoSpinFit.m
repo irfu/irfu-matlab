@@ -1,4 +1,4 @@
-function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
+function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 % EfwDoSpinFit -- will produce spin fit data values (ex, ey)
 %   of EFW data frome given probe pair at 4 second resolution.
 %
@@ -14,6 +14,8 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %  tp - Ephemeris time in seconds (isGetDataLite time)
 %  ph - Ephemeris phase in degr (sun angle for s/c Y axis), should 
 %      correspond to tp 
+%  method - 0: EfwDoOneSpinFit (default, Matlab routine by AIE), 
+%           1: spinfit_mx MEX file, Fortran source obtained from PAL, KTH.
 %
 % Output:
 %  spinfit = [ts,ex,ey,offset,sdev0,sdev,iter,nout]
@@ -55,7 +57,11 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % $Id$
 %
-% Anders.Eriksson@irfu.se, 13 December 2002
+% Original version by Anders.Eriksson@irfu.se, 13 December 2002
+
+if nargin < 9, method = 0;
+else, method = 1; %use MEX
+end
 
 % Turn off warnings for badly conditioned polynomial:
 warning off;
@@ -83,19 +89,54 @@ n_gap = 0;
 
 % Do it:
 for i=1:n
-  t0 = tstart + (i-1)*4;
-  eind = find((te >= t0) & (te < t0+4));
-  pind = find((tp >= t0) & (tp < t0+4));
+	t0 = tstart + (i-1)*4;
+	eind = find((te >= t0) & (te < t0+4));
+	pind = find((tp >= t0) & (tp < t0+4));
 
-  % check for data gaps inside one spin.
-  if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
+	% check for data gaps inside one spin.
+	if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
 	  
-  % wee need to check if we have any data to fit.
-  if ~isempty(eind) & ~isempty(pind) 
-  	 spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
-                                   data(eind),tp(pind),ph(pind));
-  else, n_gap = n_gap + 1;
-  end 
+	% wee need to check if we have any data to fit.
+	if ~isempty(eind) & ~isempty(pind)
+		if exist('spinfit_mx')==3 & method==1
+			%we use Fortran version of spin fit
+			fnterms = 3;
+			[bad,x,sigma,iter,lim] = spinfit_mx(fnterms,maxit,2*pi/4,...
+				torow(te(eind)),torow(data(eind)));
+			
+			tsfit = mean(te(eind));
+			%correct phase
+			tpha = tocolumn(tp(pind));
+			pha = tocolumn(ph(pind));
+			% Calcluate phase (in rad) at EFW sample times:
+			pha = unwrap(pi*pha/180);
+			pol = polyfit(tpha,pha,1);
+			pha = polyval(pol,tsfit);
+
+			% Find phase of given pair:
+			if pair == 12, pha = pha + 3*pi/4;
+			elseif pair == 34, pha = pha + pi/4;
+			else, error('probe pair must be one of 12 or 34')
+			end
+			theta = atan2(x(3),x(2));
+			rho = sqrt(x(2)^2 + x(3)^2);
+
+			spinfit(i-n_gap,1) = tsfit;
+			spinfit(i-n_gap,2) = -rho*cos(pha + theta);
+			spinfit(i-n_gap,3) = rho*sin(pha + theta); 
+			% - Because s/c is spinning upside down
+			spinfit(i-n_gap,4) = x(1);
+			spinfit(i-n_gap,5) = -1;
+			spinfit(i-n_gap,6) = sigma;
+			spinfit(i-n_gap,7) = iter;
+			spinfit(i-n_gap,8) = -1;
+		else
+			%we use Matlab version by AIE
+			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
+				data(eind),tp(pind),ph(pind));
+		end
+	else, n_gap = n_gap + 1;
+	end 
 end  
 spinfit = spinfit(1:n - n_gap, :);
 disp(sprintf('%d spins processed, %d gaps found',n,n_gap))
