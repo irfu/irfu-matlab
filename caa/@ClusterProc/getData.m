@@ -43,17 +43,22 @@ flag_usesavedoff = 0;
 flag_edb = 1;
 ang_limit = 10;
 
-for i=1:length(varargin)
-    switch(varargin{i})
+if length(varargin)>0, have_options = 1;
+else, have_options = 0;
+end
+
+while have_options
+	l = 1;
+    switch(varargin{1})
     case 'nosave'
         flag_save = 0;
 	case 'usesavedoff'
 		flag_usesavedoff = 1;
 	case 'ang_limit'
-		if i~=length(varargin)
-			if isnumeric(varargin{i+1})
-				ang_limit = varargin{i+1};
-				i = i + 1;
+		if length(varargin)>1
+			if isnumeric(varargin{2})
+				ang_limit = varargin{2};
+				l = 2;
 			else
 				warning('caa:wrongArgType','ang_limit must be numeric')
 			end
@@ -70,6 +75,9 @@ for i=1:length(varargin)
     otherwise
         disp(['Option ''' varargin{i} '''not recognized'])
     end
+	if length(varargin) > l, varargin = varargin{l+1:end};
+	else break
+	end
 end
 
 
@@ -95,18 +103,18 @@ if strcmp(quantity,'dies')
 	eval(av_ssub('load mA A?;',cl_id));
 	
 	pl=[12,34];
-	for i=1:length(pl)
-		ps = num2str(pl(i));
+	for k=1:length(pl)
+		ps = num2str(pl(k));
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
 			eval(av_ssub(['tt=wE?p' ps ';aa=A?;'],cl_id))
-			disp(sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(i),cl_id,pl(i)))
-			sp = EfwDoSpinFit(pl(i),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+			disp(sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
+			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
 			sp = sp(:,1:4);
 			sp(:,4) = 0*sp(:,4); % Z component
 			eval(av_ssub(['diEs?p' ps '=sp;'],cl_id)); clear tt aa sp
 			eval(av_ssub(['save_list=[save_list '' diEs?p' ps ' ''];'],cl_id));
 		else
-			disp(sprintf('No p%d data for sc%d',pl(i),cl_id))
+			disp(sprintf('No p%d data for sc%d',pl(k),cl_id))
 		end
 	end
 
@@ -156,8 +164,8 @@ elseif strcmp(quantity,'die')
 	pl=[12,34];
 	full_e = [];
 	n_sig = 0;
-	for i=1:length(pl)
-		ps = num2str(pl(i));
+	for k=1:length(pl)
+		ps = num2str(pl(k));
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
 			n_sig = n_sig + 1;
 			% correct ADC offset
@@ -376,8 +384,8 @@ if nargout > 0
 	else
 		sl = tokenize(save_list);
 		data = {sl};
-		for i=1:length(sl)
-			eval(['data{i+1}=' sl{i} ';'])
+		for k=1:length(sl)
+			eval(['data{k+1}=' sl{k} ';'])
 		end
 	end
 end
