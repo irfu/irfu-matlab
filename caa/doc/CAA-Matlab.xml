@@ -58,7 +58,7 @@ st =
 Next, we get all possible data (EFW + FGM,CIS,EDI PP, ephemeris) on disk 
 and perform spin fits and despining.
 <screen>
->> getRData(st,dt,'sp',sp)
+>> c_get_batch(st,dt,'sp',sp)
 [2004-09-08 16:39:51][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
 [2004-09-08 16:39:56][getData : dsrc] EFW...sc1...Ep12 10Hz filter
 [2004-09-08 16:39:57][getData : dsrc] EFW...sc1...Ep34 10Hz filter
@@ -86,7 +86,7 @@ Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
 Warning: Reason given by server: no data
 Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
 Warning: Reason given by server: no data
-[2004-09-08 16:40:10][readCSDS : dsrc] Using FILE
+[2004-09-08 16:40:10][c_csds_read : dsrc] Using FILE
 /data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001*
 C1_PP_EDI_20011001_V01.CDF
 C1_PP_EDI_20011001_V02.CDF
@@ -104,31 +104,31 @@ cdf file: /data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001_V02.CDF
 [2004-09-08 16:45:45][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
 [2004-09-08 16:45:45][getData : proc] Spin fit wE4p12 -> diEs4p12
 [2004-09-08 16:45:45][getData : proc] not using times with Whisper pulses
-[2004-09-08 16:46:23][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:46:23][c_efw_sfit : proc] 2399 spins processed, 184 gaps found
 [2004-09-08 16:46:23][getData : proc] Spin fit wE4p34 -> diEs4p34
 [2004-09-08 16:46:23][getData : proc] not using times with Whisper pulses
-[2004-09-08 16:47:00][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:47:00][c_efw_sfit : proc] 2399 spins processed, 184 gaps found
 [2004-09-08 16:47:00][getData : calb] delta offsets are: 0.75 [x] 0.03 [y]
 [2004-09-08 16:47:00][getData : calb] correcting p12
 [2004-09-08 16:47:00][getData : save]  diEs4p12  diEs4p34  D4p12p34  -> ./mEDSI.mat
 [2004-09-08 16:47:00][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
-[2004-09-08 16:47:00][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:00][caa_corof_adc : proc] ADC offset: not using times with Whisper pulses
 [2004-09-08 16:47:01][getData : calb] Da4dp12 : 0.52
-[2004-09-08 16:47:01][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:01][caa_corof_adc : proc] ADC offset: not using times with Whisper pulses
 [2004-09-08 16:47:02][getData : calb] Da4dp34 : 0.12
 [2004-09-08 16:47:02][getData : calb] correcting p12
-[2004-09-08 16:47:02][c_despin : proc] rotation period=4.0116 s
+[2004-09-08 16:47:02][c_efw_despin : proc] rotation period=4.0116 s
 [2004-09-08 16:47:03][getData : save]  Da4p12  Da4p34 diE4p1234 -> ./mEDSI.mat
 </screen>
 </para>
 
 <para>
 If you think it is too much debugging information on the screen,please look at 
-help <function>c_log</function>. 
+help <function>irf_log</function>. 
 For example you can limit the output only to database, calibration and 
 processing messages. To do so run
 <screen>
->> c_log('log_lev',2+16+32)
+>> irf_log('log_lev',2+16+32)
 </screen>
 </para>
 
@@ -166,7 +166,7 @@ E.B=0 for times when
 magnetic field is more the 15 degrees from the spin plain, 
 and then compute ExB. We do it only for SC 1.
 <screen>
->> doSPlot(sp,1)
+>> c_pl_summary(sp,1)
 [2004-09-08 16:55:22][proc] using p34
 [2004-09-08 16:55:22][proc] using angle limit of 15 degrees
 [2004-09-08 16:55:22][proc] setting points &lt; ang_limit to NaN
@@ -974,7 +974,7 @@ See help for <function>c_load</function>
 <itemizedlist spacing="compact" mark='opencircle'>
 <listitem>
 <para>
-<function>av_tplot</function> for general plotting;
+<function>irf_plot</function> for general plotting;
 </para>
 </listitem>
 <listitem>
