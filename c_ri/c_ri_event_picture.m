@@ -1,4 +1,4 @@
-ffunction a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
+function a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
 %function a = c_ri_event_picture(time_of_events,dt,angles,ampl,path_out)
 %
 % fast solution to plot B overview for the events 

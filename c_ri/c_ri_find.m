@@ -161,7 +161,7 @@ for i = 1:i_end
 
   %step 3
   if run_steps(3) == 1
-    if run_steps(2) == 0; load mMP mAngles; end
+    if run_steps(2) == 0; load mMP;load mAngles; end
     disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
     sort_events=1;
@@ -179,7 +179,7 @@ for i = 1:i_end
   
   %step 4
   if run_steps(4) == 1
-    if run_steps(3) == 0; load mMP Angles mEvents; end
+    if run_steps(3) == 0; load mMP;load mAngles;load mEvents; end
     disp('==============  Getting data for events ====================');
     c_ri_event_picture(time_of_events,period,angles,ampl,path_out)
   end
