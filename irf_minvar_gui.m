@@ -61,7 +61,7 @@ switch action,
         irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
         ax=axis;grid on;
-        ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
+        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1]);
 
         h(2)=subplot(4,1,2);
         irf_plot(X);axis tight; 
@@ -103,7 +103,7 @@ switch action,
         fix_legends;
 
     case 'ax'
-        tlim = get(ud.mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
+        tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
         uf=get(gcf,'userdata');
         if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
         p = get(gca, 'currentpoint')+t0;
@@ -123,12 +123,12 @@ switch action,
         end
         set(ud.fromh, 'string', epoch2iso(tlim(1)));
         set(ud.toh, 'string', epoch2iso(tlim(2)));
-        set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
+        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
         irf_minvar_gui('update_mva_axis');
     case 'from'
         tlim(1) = iso2epoch(get(ud.fromh,'string'));
         tlim(2) = iso2epoch(get(ud.toh,'string'));
-        set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
+        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
         irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
         if tlim==ud.tlim_mva, % plot first time after 'mva'
