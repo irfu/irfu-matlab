@@ -396,7 +396,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(av_ssub('if ~exist(''E?'') & exist(''mEdB.mat'',''file''), load mEdB E? ang_limit;disp(''Loading E?, ang_limit from mEdB'');end',ic));
      eval(av_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading ooffset values from mEDSI.mat'');end',ic));
      eval(av_ssub('if ~exist(''diE?'')& exist(''mEdB.mat'',''file''), load mEdB diE? ang_limit;disp(''Loading diE?, ang_limit from mEdB'');end',ic));
-     eval(av_ssub('offset_comment=[''Damp='' num2str(Damp?) '', Da?p12='' num2str(Da?p12) '', Da?p34='' num2str(Da?p34) '', D?p12p34='' num2str(D?p12p34) ''\n'']',ic)); 
+     eval(av_ssub('offset_comment=[''Offsets => Damp='' num2str(Damp?) '', Da?p12='' num2str(Da?p12) '', Da?p34='' num2str(Da?p34) '', D?p12p34='' num2str(D?p12p34) ''\n''];',ic)); 
      if eval(av_ssub('exist(''E?'')',ic)),
        eval(av_ssub('number_of_points=size(E?,1);',ic));
        disp(['E' num2str(ic) ' --> E' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
