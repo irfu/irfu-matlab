@@ -14,7 +14,7 @@ nd = length(varargin);
 for i=1:nd
 	e = varargin{i};
 	axes(p1)
-	plot(e(:,1),e(:,2),getLineStyle(i-1));
+	plot(e(:,1),e(:,2),irf_lstyle(i-1));
 	if i==1, hold on, end
 	if i==nd
 		hold off
@@ -23,7 +23,7 @@ for i=1:nd
 		ylabel('Ex [mV/m]')
 	end
 	axes(p2)
-	plot(e(:,1),e(:,3),getLineStyle(i-1));
+	plot(e(:,1),e(:,3),irf_lstyle(i-1));
 	if i==1, hold on, end
 	if i==nd
 		hold off
@@ -32,7 +32,7 @@ for i=1:nd
 		ylabel('Ey [mV/m]')
 	end
 end
-addPlotInfo
+irf_pl_add_info
 axes(p2)
 axes(p1)
 

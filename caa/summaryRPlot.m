@@ -20,20 +20,20 @@ function summaryRPlot(cl_id,sp,st,dt,flag)
 
 if nargin<5, flag=0; end
 
-eval(av_ssub('load mP P?;P=P?;',cl_id))
+eval(irf_ssub('load mP P?;P=P?;',cl_id))
 if flag
-	eval(av_ssub('load mEDSI diE?p1234 diEs?p34 Ddsi?;E=diE?p1234;Es=diEs?p34;Dx=Ddsi?;',cl_id))
+	eval(irf_ssub('load mEDSI diE?p1234 diEs?p34 Ddsi?;E=diE?p1234;Es=diEs?p34;Dx=Ddsi?;',cl_id))
 	E(:,2) = E(:,2) - Dx;
 	Es(:,2) = Es(:,2) - Dx;
 	n_plots = 3;
 else
-	eval(av_ssub('load mEDSI diEs?p34 Ddsi?;Es=diEs?p34;Dx=Ddsi?;',cl_id))
+	eval(irf_ssub('load mEDSI diEs?p34 Ddsi?;Es=diEs?p34;Dx=Ddsi?;',cl_id))
 	Es(:,2) = Es(:,2) - Dx;
 	n_plots = 2;
 end
 
 subplot(n_plots,1,1)
-av_tplot(P);
+irf_plot(P);
 ylabel('SC pot [-V]')
 title(['EFW, Cluster ' num2str(cl_id,'%1d')]),
 set(gca,'XLim',st+[0 dt])
@@ -41,7 +41,7 @@ xlabel('')
 
 if flag
 	subplot(n_plots,1,2)
-	av_tplot(E);
+	irf_plot(E);
 	ylabel('E DSI [mV/m]')
 	xlabel('')
 	set(gca,'XLim',st+[0 dt])
@@ -49,9 +49,9 @@ if flag
 end
 
 subplot(n_plots,1,n_plots)
-av_tplot(Es);
+irf_plot(Es);
 ylabel('E DSI [mV/m]')
 set(gca,'XLim',st+[0 dt])
 legend('X','Y','Z')
 
-addPlotInfo
+irf_pl_add_info

@@ -5,7 +5,7 @@ function [varargout]=c_get_bfgm(tint,sc_list)
 % sc_list .. vector of satellite numbers for which to dowload data, default sc_list=1:4
 if nargin ==1, sc_list=1:4; end
 
-for ic=sc_list,eval(av_ssub('B?=[];',ic)),end
+for ic=sc_list,eval(irf_ssub('B?=[];',ic)),end
 for j=1:length(sc_list),
   ic=sc_list(j);
   [b_table, n_table] = create_timetable(tint(1),tint(2),ic);
@@ -15,7 +15,7 @@ for j=1:length(sc_list),
     for k = 1:b_s
       B=c_ri_get_B( b_table(k,1), b_table(k,2), ic, 'b');
       if ~isempty(B),
-        eval(av_ssub('B?=[B?;B];',ic));
+        eval(irf_ssub('B?=[B?;B];',ic));
       end
     end
   end
@@ -25,9 +25,9 @@ for j=1:length(sc_list),
     for i = 1:2:n_s
       B=c_ri_get_B( n_table(i,1), n_table(i,2), ic, 'n');
       if ~isempty(B),
-        eval(av_ssub('B?=[B?;B];',ic));
+        eval(irf_ssub('B?=[B?;B];',ic));
       end
     end
   end
-  eval(av_ssub('varargout(j) = {B?};',ic));
+  eval(irf_ssub('varargout(j) = {B?};',ic));
 end

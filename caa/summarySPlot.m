@@ -54,7 +54,7 @@ for j=1:2
 	set(gca,'YLim',.99*get(gca,'YLim'))
 end
 
-addPlotInfo
+irf_pl_add_info
 for j=1:7, axes(h(j)), end
 
 if nargout < 1, clear h, end
