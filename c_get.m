@@ -16,7 +16,7 @@ mmm =  ...
 	'2  sc list [1:4]                      ';
 	'a  load phase A1..A4     -> mA        ';
 	'e  load wE1...wE4        -> mE        ';
-        'e1  load wE1p12...wE4p34 -> mE        ';
+  'e1  load wE1p12...wE4p34 -> mE        ';
 	'eph load ephemeris,r,v,dr,dv          ';
 	'b  load BPP1...BPP4 -> mBPP           ';
 	'bf load Hres FGM B1...B4 -> mB        ';
@@ -394,18 +394,20 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
      %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_E_GSE_sc' num2str(ic) '.dat'];
      eval(av_ssub('if ~exist(''E?'') & exist(''mEdB.mat'',''file''), load mEdB E? ang_limit;disp(''Loading E?, ang_limit from mEdB'');end',ic));
+     eval(av_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading ooffset values from mEDSI.mat'');end',ic));
      eval(av_ssub('if ~exist(''diE?'')& exist(''mEdB.mat'',''file''), load mEdB diE? ang_limit;disp(''Loading diE?, ang_limit from mEdB'');end',ic));
+     eval(av_ssub('offset_comment=[''Damp='' num2str(Damp?) '', Da?p12='' num2str(Da?p12) '', Da?p34='' num2str(Da?p34) '', Da?p12p34='' num2str(Da?p12p34) ''\n''',ic)); 
      if eval(av_ssub('exist(''E?'')',ic)),
        eval(av_ssub('number_of_points=size(E?,1);',ic));
        disp(['E' num2str(ic) ' --> E' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       E_add_comment=['ang_limit=' num2str(ang_limit) '\n'];
+       E_add_comment=[offset_comment '\n ang_limit=' num2str(ang_limit) '\n'];
        E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \n with respect to the spin plane that is larger than ang_limit'];
        eval(av_ssub(['exportAscii(E?,''E?'',''' E_add_comment ''');'],ic));
      end
      if eval(av_ssub('exist(''diE?'')',ic)),
        eval(av_ssub('number_of_points=size(diE?,1);',ic));
        disp(['diE' num2str(ic) ' --> diE' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       diE_add_comment=['ang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an angle with respect to the spin plane that is larger than ang_limit'];
+       diE_add_comment=[offset_comment '\n ang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an angle with respect to the spin plane that is larger than ang_limit'];
        eval(av_ssub(['exportAscii(diE?,''E?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
