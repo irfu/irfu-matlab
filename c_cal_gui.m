@@ -30,6 +30,11 @@ MMZ = [-200 200; .5 2.];
 main_fig_id = 23;
 raw_fig_id = 24;
 spect_fig_id = 25;
+% positions for 1024x768, 1600x1200
+pos_main_fig   = [[  2  40 990 640];[   2 159 990 945]];
+pos_raw_fig    = [[994 160 560 420];[1002 160 560 420]];
+pos_spect_fig  = [[464 282 560 420];[1002 655 560 420]];
+
 if nargin, action = varargin{1};
 else, action = 'init';
 end
@@ -103,8 +108,17 @@ case 'init'
 	end
 	h0 = figure(main_fig_id);
 	clf
-	if isempty(pos_old), set(h0,'Position', [25 40 990 640]), end
+	
 	hnd = guihandles(h0);
+	
+	% Save the screen size
+	sc_s = get(0,'ScreenSize');
+	if sc_s(3)==1600 & sc_s(4)==1200, hnd.scrn_size = 2;
+	else, hnd.scrn_size = 1;
+	end
+	
+	if isempty(pos_old), set(h0,'Position', pos_main_fig(hnd.scrn_size,:)), end
+	
 	hnd.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
 	set(hnd.DATApanel,'Title','Data')
 	
@@ -1387,7 +1401,16 @@ case 'show_raw'
 	hnd = guidata(h0);
 	
 	j = D_findByName(hnd.Data,hnd.ActiveVar);
-
+	
+	% Create figure
+	if find(get(0,'children')==raw_fig_id)
+		pos_old = get(raw_fig_id,'Position');
+	else, pos_old = [];
+	end
+	fig = figure(raw_fig_id);
+	clf
+	if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
+	
 	if strcmp(hnd.Data{j}.type,'E')
 		d_tmp = {};
 		leg_tmp = {};
@@ -1470,6 +1493,15 @@ case 'show_spect'
 		disp('should not see this: no need for cis')
 		return, 
 	end
+	
+	% Create figure
+	if find(get(0,'children')==spect_fig_id)
+		pos_old = get(spect_fig_id,'Position');
+	else, pos_old = [];
+	end
+	fig = figure(spect_fig_id);
+	clf
+	if isempty(pos_old), set(fig,'Position', pos_spect_fig(hnd.scrn_size,:)), end
 	
 	if strcmp(hnd.Data{j}.sen,'1234'), E_tmp = hnd.Data{j};
 	else
