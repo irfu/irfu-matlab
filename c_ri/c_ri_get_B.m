@@ -98,6 +98,10 @@ if ~exist(FGMPATH,'dir'),error('FGMPATH does not exist'),end
 
 if exist([FGMPATH '/tmp_att'],'file'), disp('removing tmp_att'); unix(['rm ' FGMPATH '/tmp_att']); end
 
+% this will give a possibility to check whether we can write to FGMPATH
+[s,w] = unix(['touch ' FGMPATH '/tmp_att']);
+if s~=0, error(w), end
+
 if nargout,  % return B
     to_file=tempname;
     unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
