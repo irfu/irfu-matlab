@@ -91,30 +91,52 @@ elseif strcmp(quantity,'die')
 	
 	pl=[12,34];
 	full_e = [];
+	n_sig = 0;
 	for i=1:length(pl)
 		ps = num2str(pl(i));
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
-			eval(av_ssub(['tt=wE?p' ps ';'],cl_id))
-			if isempty(full_e)
-				full_e = zeros(length(tt),4);
-				full_e(:,1) = tt(:,1);
-			end
+			n_sig = n_sig + 1;
 			% correct ADC offset
-			[tt,offset] = corrADCOffset(cp,tt);
-			% use WEC coordinate system E=[t,0,p34,p12]
-			if pl(i)==12, full_e(:,4) = tt(:,2);
-			else, full_e(:,3) = tt(:,2);
-			end
-			coef(i,2) = offset;
-			eval(av_ssub(['Da?p' ps '=offset;'],cl_id))
+			eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
+			eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))	
 			eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
-			clear tt offset
 		end
 	end
-	if isempty(full_e) 
+	if n_sig==0
 		warning('No raw data found in mER')
 		data = [];
 		return
+	end
+	if n_sig==2
+		if abs(length(Ep12)-length(Ep34))>0
+			% different timelines. Need to correct
+			[ii12,ii34] = findCommInd(Ep12,Ep34);
+			Ep12 = Ep12(ii12,:);
+			Ep34 = Ep34(ii34,:);
+		end
+		% use WEC coordinate system E=[t,0,p34,p12]
+		full_e = zeros(length(Ep12),4);
+		%keyboard
+		full_e(:,[1,4]) = Ep12;
+		full_e(:,3) = Ep34(:,2);
+		clear Ep12 Ep34
+	else	
+		if exist(Ep12,'var')
+			pp = 12;
+			EE = Ep12;
+			clear Ep12
+		else
+			pp = 34;
+			EE = Ep34
+			clear Ep34
+		end
+		% use WEC coordinate system E=[t,0,p34,p12]
+		full_e = zeros(length(EE),4);
+		full_e(:,1) = EE(:,1:2);
+		if pp==12, full_e(:,4) = EE(:,2);
+		else, full_e(:,3) = EE(:,2);
+		end
+		clear EE pp
 	end
 	
 	% load Delta offsets D?p12p34
@@ -122,7 +144,7 @@ elseif strcmp(quantity,'die')
 		eval(av_ssub('load mEDSI D?p12p34;',cl_id));
 	end
 	if exist(av_ssub('D?p12p34',cl_id))
-		eval(av_ssub('coef(1,3)=D?p12p34(1)+i*D?p12p34(2);',cl_id));
+		eval(av_ssub('coef(1,3)=D?p12p34(1)-D?p12p34(2)*j;',cl_id));
 	else, disp('no Delta offsets found in mEDSI, not doing correction...')
 	end
 
@@ -150,14 +172,16 @@ if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
 end
 
 % prepare the output
-if nargout > 0 & ~isempty(save_list)
-	sl = tokenize(save_list);
-	data = {sl};
-	for i=1:length(sl)
-		eval(['data{i+1}={' char(sl{i}) '};'])
+if nargout > 0 
+	if isempty(save_list)
+		data = [];
+	else
+		sl = tokenize(save_list);
+		data = {sl};
+		for i=1:length(sl)
+			eval(['data{i+1}={' char(sl{i}) '};'])
+		end
 	end
-else
-	data = [];
 end
 
 cd(old_pwd)
