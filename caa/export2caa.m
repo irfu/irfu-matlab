@@ -22,6 +22,16 @@ case 'P'
 		disp('not implemented')
 	end
 case 'E'
+	if lev==1, error('LEV must be 2 or 3'), end
+	if lev==2
+		vs = av_ssub('diE?p1234',cl_id);
+		v_size = 1;
+	elseif lev==3
+		vs = av_ssub('diEs?p34',cl_id);
+		v_size = 2;
+	else
+		disp('not implemented')
+	end
 case 'EF'
 otherwise
 	error('unknown variable')
@@ -71,6 +81,41 @@ end
 
 TIME_RESOLUTION = num2str(TIME_RESOLUTION);
 
+% Do magic on E-field
+if strcmp(caa_vs,'E')
+	Dxy_s =  av_ssub('Ddsi?',cl_id);
+	Dx_s =  av_ssub('real(Ddsi?)',cl_id);
+	Dy_s =  av_ssub('imag(Ddsi?)',cl_id);
+	Da_s =  av_ssub('Damp?',cl_id);
+
+	eval(['load mEDSI ' Dxy_s ' ' Da_s])
+	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
+	else, c_log('calb','using Dx=1,Dy=0'), Dx = 1; Dy=0;
+	end
+	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
+	else, disp('using Da=1'), Da = 1;
+	end
+
+	data = corrDSIOffsets(data,Dx,Dy,Da);
+	dsc.com = {sprintf('DSI offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da)};
+	
+	dsc.fro = {'COORDINATE_SYSTEM'};
+	dsc.frv = {'OBSERVATORY'};
+	if v_size>1
+		for j=2:v_size
+			dsc.fro = [dsc.fro {''}]; 
+			dsc.frv = [dsc.frv {''}];
+		end
+	end
+	dsc.com = [dsc.com, {['probes: ' dsc.sen]}];
+	
+	% Remove Ez, which is zero
+	if lev==3, data = data(:,[1:3 5]);
+	else, data = data(:,1:3);
+	end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
 ext_s = '.cef';
 % We have special names for CAA
@@ -87,7 +132,7 @@ fprintf(fid,['FILE_NAME = "' file_name ext_s '"\n']);
 fprintf(fid,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
 fprintf(fid,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
 fprintf(fid,'include = "efw_glob.ceh"\n');
-pmeta(fid,'FILE_NAME',[file_name ext_s])
+%pmeta(fid,'FILE_NAME',[file_name ext_s])
 pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
 pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
 pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
@@ -103,15 +148,15 @@ pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
 pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs '__'],cl_id)
 pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
-fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
-fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
-fprintf(fid,...
-['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
-fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
-fprintf(fid,'START_META     =   GENERATION_DATE\n');
-fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
-fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
-fprintf(fid,'END_META       =   GENERATION_DATE\n');
+%fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
+%fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
+%fprintf(fid,...
+%['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
+%fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
+%fprintf(fid,'START_META     =   GENERATION_DATE\n');
+%fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
+%fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
+%fprintf(fid,'END_META       =   GENERATION_DATE\n');
 pmeta(fid,'CAVEATS',dsc.com)
 
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
@@ -125,37 +170,45 @@ fprintf(fid,'  LABLAXIS        = "UT"\n');
 fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
 fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
 
-for j=1:length(v_size)
-	fprintf(fid,['START_VARIABLE    = ' dsc.name{j} '__' DATASET_ID '\n']);
-	if v_size(j) > 1
-		fprintf(fid,'  SIZES           = %d\n',var_size(j));
+for j=1:v_size
+	fprintf(fid,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
+	if dsc.size(j) > 1
+		fprintf(fid,'  SIZES             = %d\n',dsc.size(j));
 	end
-	fprintf(fid,'  VALUE_TYPE      = FLOAT\n');
-	fprintf(fid,['  ENTITY          = "' dsc.ent{j} '"\n']);
-	fprintf(fid,['  PROPERTY        = "' dsc.prop{j} '"\n']);
+	fprintf(fid,'  VALUE_TYPE        = FLOAT\n');
+	fprintf(fid,['  ENTITY            = "' dsc.ent{j} '"\n']);
+	fprintf(fid,['  PROPERTY          = "' dsc.prop{j} '"\n']);
 	if ~isempty(dsc.fluc{j})
-		fprintf(fid,['  FLUCTUATIONS    = "' dsc.fluc{j} '"\n']);
+		fprintf(fid,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
 	end
-	fprintf(fid,['  FIELDNAM        = "' dsc.field_name{j} '"\n']);
+	fprintf(fid,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
 	if ~strcmp(dsc.cs{j},'na')
-		fprintf(fid,['  REFERENCE_FRAME = "' dsc.cs{j} '"\n']); 
+		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
+	end
+	if isfield(dsc,'fro') & isfield(dsc,'frv')
+		if ~isempty(dsc.fro{j})
+			fprintf(fid,['  FRAME_ORIGIN      = "' dsc.fro{j} '"\n']);
+		end
+		if ~isempty(dsc.frv{j})
+			fprintf(fid,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
+		end
 	end
 	if ~isempty(dsc.si_conv{j})
-		fprintf(fid,['  SI_CONVERSION   = "' dsc.si_conv{j} '"\n']);
+		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
 	end
-	fprintf(fid,['  UNITS           = "' dsc.units{j} '"\n']);
-	fprintf(fid,['  FILLVAL         = "' FILL_VAL '"\n']);
-	fprintf(fid,['  LABLAXIS        = "' dsc.labels{j} '"\n']);
-	if v_size(j) > 1
-		fprintf(fid,['  LABEL_1         = ' dsc.label_1{j} '\n']);
+	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
+	fprintf(fid,['  FILLVAL           = "' FILL_VAL '"\n']);
+	fprintf(fid,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
+	if dsc.size(j) > 1
+		fprintf(fid,['  LABEL_1           = ' dsc.label_1{j} '\n']);
 	end
-	fprintf(fid,['  DEPEND_0        = time_tags__' DATASET_ID '\n']);
-	fprintf(fid,['END_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
+	fprintf(fid,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
+	fprintf(fid,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
 end
 
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'!                       Data                          !\n');
-fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n');
+fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'DATA_UNTIL = EOF\n');
 
 time_s = epoch2iso(data(:,1));
