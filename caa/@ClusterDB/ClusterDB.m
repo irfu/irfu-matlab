@@ -3,7 +3,8 @@ function cdb = ClusterDB(varargin)
 % cdb = ClusterDB(isdat_db_s, data_path_s, storage_path_s)
 %
 % Input:
-%	isdat_db_s - ISDAT database, default: 'localhost:10'
+%	isdat_db_s - ISDAT database strings separated by '|', 
+%		default: 'localhost:10'
 %	data_path_s - path to Cluster data, default: '/data/cluster'
 %	storage_path_s - where to save the data, default: './'
 %
@@ -31,6 +32,16 @@ case 1
 		cdb.db = varargin{1};
 		cdb.dp = '/data/cluster';
 		cdb.sp = '.';
+		cdb = class(cdb,'ClusterDB');
+	else
+		error('Wrong argument type')
+	end 
+case 2
+	if ischar(varargin{1}) & ischar(varargin{2})
+		cdb.db = varargin{1};
+		cdb.dp = varargin{2};
+		cdb.sp = '.';
+		cdb = class(cdb,'ClusterDB');
 	else
 		error('Wrong argument type')
 	end 
