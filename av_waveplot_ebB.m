@@ -41,7 +41,7 @@ if nargin == 4,
   freq_int=[parameters(2) parameters(3)];
   freq_number=parameters(4);
   Morlet_width=parameters(5);
-  q_detrend=parameters(6);
+  q_detrend=parameters(6);if q_detrend==1, q_detrend='y';end
   colorbar_scale=parameters(7);
   plot_type=parameters(8);
   panel=parameters(9);
@@ -172,9 +172,13 @@ disp('av_waveplot_ebB ... calculate all spectra ....');
   power2E=powerE;
   power2B=powerB;
   for j=1:anumber;
-    power2E(1:censur(j),j)=NaN;power2E(size(e,1)-censur(j):size(e,1),j)=NaN;
-    power2B(1:censur(j),j)=NaN;power2B(size(e,1)-censur(j):size(e,1),j)=NaN;
-    Spar(1:censur(j),j)=NaN;Spar(size(e,1)-censur(j):size(e,1),j)=NaN;
+    censur_indexes=[1:min(censur(j),size(e,1)) max(1,size(e,1)-censur(j)):size(e,1)];
+    power2E(censur_indexes,j)=NaN;
+    power2B(censur_indexes,j)=NaN;
+    Spar(censur_indexes,j)=NaN;
+%    power2E(1:censur(j),j)=NaN;power2E(size(e,1)-censur(j):size(e,1),j)=NaN;
+%    power2B(1:censur(j),j)=NaN;power2B(size(e,1)-censur(j):size(e,1),j)=NaN;
+%    Spar(1:censur(j),j)=NaN;Spar(size(e,1)-censur(j):size(e,1),j)=NaN;
   end
 
 if q_spectra_width,
