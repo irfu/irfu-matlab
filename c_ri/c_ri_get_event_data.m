@@ -1,4 +1,5 @@
 function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list, dt_interval)
+%function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list, dt_interval)
 %
 %Input:
 %   time_interval - [start_time end_time] in isdat_epoch 
