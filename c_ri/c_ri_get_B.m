@@ -25,6 +25,8 @@ function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
 % and saves it in a temporary file. Then the data is unpacked, calibrate and save in a format
 % which matlab can read using "fmgtel - fgmcal -fgmhrt-fgmvec"
 %
+% $Id$
+
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
