@@ -61,7 +61,7 @@ switch action,
         irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
         ax=axis;grid on;
-        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1]);
+        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y');
 
         h(2)=subplot(4,1,2);
         irf_plot(X);axis tight; 
