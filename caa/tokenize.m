@@ -21,7 +21,7 @@ end
 
 ind=strfind(str,delimiter); % find all start indexes of delimeter
 s_ind=[1 ind+length(delimiter)]; s_ind(end)=[]; % start indexes
-e_ind=ind-1;                                    % end indexes
+e_ind=[ind-1 length(str)];                      % end indexes
 
 i_string=1;
 for j=1:length(s_ind),
