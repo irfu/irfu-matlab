@@ -225,5 +225,8 @@ if length(var_list)>1
 		eval(['fdm_save{j}=fdm_save_' var_list{j} ';']);
 	end
 else
-	eval(['fdm_save=fdm_save_' var_list{j} ';']);
+	if exist(['fdm_save_' var_list{1}],'var')
+		eval(['fdm_save=fdm_save_' var_list{1} ';']);
+	else, fdm_save = [];
+	end
 end
