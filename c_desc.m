@@ -106,7 +106,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = '';
-	v.file = 'mP';
+	v.file = 'mPR';
 	v.quant = 'p';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

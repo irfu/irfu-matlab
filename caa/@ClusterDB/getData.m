@@ -12,7 +12,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	//// EFW ////
 %	e   : wE{cl_id}p12,34 -> mER
 %			// electric fields (HX)
-%	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	
+%	p   : P{cl_id} -> mPR	
 %			// probe potential (LX)
 %
 %	//// EFW internal burst////
@@ -204,7 +204,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		param={'4kHz','32kHz'};
 		var_name = 'wbE?p';
 	else
-		save_file = './mP.mat';
+		save_file = './mPR.mat';
 		param={'10Hz'}; tmmode='lx';
 	end
 	
@@ -269,25 +269,6 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 				end
 			end
 		end
-	else
-		if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&cl_id~=2,  % sc2 has often problems with p3
-			p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
-			Pinfo.probe = 1234;
-		elseif size(p1)==size(p2) & size(p1)~=[0 0]
-			p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
-			Pinfo.probe = 12;
-		elseif size(p3)==size(p4) & size(p3)~=[0 0] & cl_id~=2
-			p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
-			Pinfo.probe = 34;
-		elseif size(p4)~=[0 0]
-			p = p4;
-			Pinfo.probe = 4;
-		else, irf_log('dsrc','No data'), cd(old_pwd); return
-		end
-		
-		c_eval(['P' param{1} '?=p;save_list=[save_list '' P' param{1} '? ''];'],cl_id);
-		c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
-		clear p
 	end
 	clear p1 p2 p3 p4
 

@@ -30,6 +30,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_blank - put Ez to NaN for points below ang_limit [default]
 %          ang_fill - fill points below ang_limit with 1e27
 %          ang_ez0 - use Ez=0 for points below ang_limit
+%   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
@@ -693,6 +694,7 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	else
 		irf_log('load',irf_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B resampled to E and Es
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -788,6 +790,34 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 	else
 		irf_log('load',irf_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P resampled
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'p')
+	save_file = './mP.mat';
+	
+	c_eval(['p?=c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');'])
+	
+	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
+		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+		Pinfo.probe = 1234;
+	elseif size(p1)==size(p2) & size(p1)~=[0 0]
+		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
+		Pinfo.probe = 12;
+	elseif size(p3)==size(p4) & size(p3)~=[0 0] & cl_id~=2
+		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
+		Pinfo.probe = 34;
+	elseif size(p4)~=[0 0]
+		p = p4;
+		Pinfo.probe = 4;
+	else, irf_log('dsrc','No data'), cd(old_pwd); return
+	end
+	
+	c_eval('P10Hz?=p;save_list=[save_list '' P10Hz? ''];',cl_id);
+	c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
+	clear p p1 p2 p3 p4
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P resampled
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
