@@ -989,6 +989,13 @@ case 'update_Ccheckbox'
 	ii = D_findByCLID(hnd.Data,cl_id);
 	if isempty(ii), return, end
 	
+	% Check if we try to hide the active variable
+	if ~isempty(D_findByName(hnd.Data(ii),hnd.ActiveVar))
+		set(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value',1)
+		disp([action ': cannot hide the active variable'])
+		return
+	end
+	
 	if get(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value')==1
 		% Show
 		for j=1:length(ii)
