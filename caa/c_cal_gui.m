@@ -11,11 +11,12 @@ persistent h0;
 sp = '.';
 
 % plotting constants
-inactive_color = [0.831373 0.815686 0.784314]; %gray
-active_color = [1 1 1]; %white
+inactive_color = [0.831373 0.815686 0.784314]; % Gray
+active_color = [1 1 1]; % White
 active_p_color = 'magenta';
-pxa = .07+.12; pya = .1; wa = .47; ha = .215; dya = .01; % positions
-
+pxa = .07+.12; pya = .1; wa = .47; ha = .215; dya = .01; % Positions
+MM = [-100 100; -5 5]; % Min and max value for sliders
+MMZ = [-200 200; .5 2.];
 if nargin, action = varargin{1};
 else, action = 'init';
 end
@@ -208,15 +209,15 @@ case 'init'
 					else
 						data.visible = 1;
 					end
-					if (strcmp(dsc.inst,'EFW') & strcmp(dsc.sig,'E'))|...
-						(strcmp(dsc.inst,'CIS') & (strcmp(dsc.sig,'V')|...
-						strcmp(dsc.sen,'Vp'))), data.editable = 1;
-					else, data.editable = 0;
-					end
 					if strcmp(dsc.sig,'E'), data.type = 'E';
 					elseif strcmp(dsc.sig,'V') | strcmp(dsc.sig,'Vp')
 						data.type = 'V';
 					else, data.type = 'A';
+					end
+					if (strcmp(dsc.inst,'EFW') & strcmp(data.type,'E'))|...
+						(strcmp(dsc.inst,'CIS') & (strcmp(data.type,'V')))
+						data.editable = 1;
+					else, data.editable = 0;
 					end
 					if d==1|d==3
 						hhd = uicontrol(hnd.DATApanel,'Style','radiobutton',...
@@ -225,9 +226,11 @@ case 'init'
 							'String','',...
 							'Callback',['c_cal_gui(''update_DATA' vs 'radiobutton'')'],...
 							'Tag',['DATA' vs 'radiobutton']);
+						%{ 
 						if strcmp(dsc.sig,'V')|strcmp(dsc.sig,'Vp')
 							set(hhd,'Enable','off')
-						end
+						end 
+						%}
 						hnd.DATArbList = [hnd.DATArbList {vs}];
 						eval(['hnd.DATA' vs 'radiobutton=hhd;clear hhd'])
 					end
@@ -327,12 +330,12 @@ case 'init'
 	hnd.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
 	hnd.DYpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*2 wp ha]);
 	hnd.DZpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1 wp ha]);
-	set(hnd.DXpanel,'Title','dX')
-	set(hnd.DYpanel,'Title','dY')
-	set(hnd.DZpanel,'Title','dZ')
+	set(hnd.DXpanel,'Title','dEX','TitlePosition','centertop')
+	set(hnd.DYpanel,'Title','dEY','TitlePosition','centertop')
+	set(hnd.DZpanel,'Title','dAMP','TitlePosition','centertop')
 	hnd.DXslider = uicontrol(hnd.DXpanel,'Style','slider',...
 		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
-		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DXslider'')');
+		'Min',MM(2,1),'Max',MM(2,2),'Value',0,'Callback','c_cal_gui(''update_DXslider'')');
 	hnd.DXedit = uicontrol(hnd.DXpanel,'Style','edit',...
 		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
 		'String','0.0','BackgroundColor',active_color,...
@@ -343,7 +346,7 @@ case 'init'
 		'Callback','c_cal_gui(''update_DXcheckbox'')','Tag','DXcheckbox');
 	hnd.DYslider = uicontrol(hnd.DYpanel,'Style','slider',...
 		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
-		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DYslider'')');
+		'Min',MM(2,1),'Max',MM(2,2),'Value',0,'Callback','c_cal_gui(''update_DYslider'')');
 	hnd.DYedit = uicontrol(hnd.DYpanel,'Style','edit',...
 		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
 		'String','0.0','BackgroundColor',active_color,...
@@ -354,7 +357,7 @@ case 'init'
 		'Callback','c_cal_gui(''update_DYcheckbox'')','Tag','DYcheckbox');
 	hnd.DZslider = uicontrol(hnd.DZpanel,'Style','slider',...
 		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
-		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DZslider'')');
+		'Min',MMZ(2,1),'Max',MMZ(2,2),'Value',0,'Callback','c_cal_gui(''update_DZslider'')');
 	hnd.DZedit = uicontrol(hnd.DZpanel,'Style','edit',...
 		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
 		'String','0.0','BackgroundColor',active_color,...
@@ -383,35 +386,41 @@ case 'ch_active_var'
 	hnd = guidata(h0);
 	if isempty(hnd.old_ActiveVar)
 		% Initialize
+		d_m = 2; vs = 'E'; vsz = 'AMP';
 		j = D_findByName(hnd.Data,hnd.ActiveVar);
 		hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
-		set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
-		set(hnd.DXslider,'Value',real(hnd.off(1)))
-		set(hnd.DYedit,'String',num2str(imag(hnd.off(1))))
-		set(hnd.DYslider,'Value',imag(hnd.off(1)))
-		set(hnd.DZedit,'String',num2str(hnd.off(2)))
-		set(hnd.DZslider,'Value',hnd.off(2),'Max',2.0,'Min',.5)
-		set(hnd.DZpanel,'Title','dAMP')
 	else
 		j = D_findByName(hnd.Data,hnd.ActiveVar);
 		old_j = D_findByName(hnd.Data,hnd.old_ActiveVar);
-		% Reload offsets if cl_id was changed
-		if hnd.Data{j}.cl_id~=hnd.Data{old_j}.cl_id
-			if hnd.mode
-				hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
-				set(hnd.DZpanel,'Title','dAMP')
-			else
-				% Display V, offsets in CIS
-				set(hnd.DZpanel,'Title','dZ')
+
+		if strcmp(hnd.Data{j}.type,'E')
+			d_m = 2; vs = 'E'; vsz = 'AMP';
+			hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
+			set(hnd.DXslider,'Enable','on')
+			set(hnd.DXedit,'Enable','on')
+			set(hnd.DYslider,'Enable','on')
+			set(hnd.DYedit,'Enable','on')
+		else % Display V, offsets in CIS
+			d_m = 1; vs = 'V'; vsz = 'Vz';
+			if strcmp(hnd.Data{j}.sen,'HIA')
+				hnd.off = hnd.CISHoffset{hnd.Data{j}.cl_id};
+			else, hnd.off = hnd.CISCoffset{hnd.Data{j}.cl_id};
 			end
-			set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
-			set(hnd.DXslider,'Value',real(hnd.off(1)))
-			set(hnd.DYedit,'String',num2str(imag(hnd.off(1))))
-			set(hnd.DYslider,'Value',imag(hnd.off(1)))
-			set(hnd.DZedit,'String',num2str(hnd.off(2)))
-			set(hnd.DZslider,'Value',hnd.off(2))
+			set(hnd.DXslider,'Enable','off')
+			set(hnd.DXedit,'Enable','off')
+			set(hnd.DYslider,'Enable','off')
+			set(hnd.DYedit,'Enable','off')
 		end
 	end
+	set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
+	set(hnd.DXslider,'Min',MM(d_m,1),'Max',MM(d_m,2),'Value',real(hnd.off(1)))
+	set(hnd.DXpanel,'Title',[num2str(MM(d_m,1)) ' < d' vs 'x < ' num2str(MM(d_m,2))])
+	set(hnd.DYedit,'String',num2str(imag(hnd.off(1))))
+	set(hnd.DYslider,'Min',MM(d_m,1),'Max',MM(d_m,2),'Value',imag(hnd.off(1)))
+	set(hnd.DYpanel,'Title',[num2str(MM(d_m,1)) ' < d' vs 'y < ' num2str(MM(d_m,2))])
+	set(hnd.DZedit,'String',num2str(hnd.off(2)))
+	set(hnd.DZslider,'Min',MMZ(d_m,1),'Max',MMZ(d_m,2),'Value',hnd.off(2))
+	set(hnd.DZpanel,'Title',[num2str(MMZ(d_m,1)) ' < d' vsz ' < ' num2str(MMZ(d_m,2))])
 	guidata(h0,hnd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fix_plot_pos
@@ -443,7 +452,7 @@ case 'replot'
 	
 	% Plotting 
 	for j=1:length(d_ii)
-		disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
+		%disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
 		
 		% Process only visible data
 		if ~hnd.Data{d_ii(j)}.visible, continue, end
@@ -481,11 +490,8 @@ case 'replot'
 			end
 			
 			% Update p_data only if calibrations were changed
-			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.off_updated &...
-				((hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'EFW')) | ...
-				(~hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'CIS')))
-				
-				disp('replot: recalculating plot data')
+			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.off_updated
+				%disp('replot: recalculating plot data')
 				hnd.Data{d_ii(j)}.p_data =...
 					get_plot_data(hnd.Data{d_ii(j)}, hnd);
 			end
@@ -549,11 +555,11 @@ case 'replot_all'
 		
 		% Axes labels
 		labs = ['x' 'y' 'z'];
-		if hnd.mode, u_s = 'E'; u_u = 'mV/m';
-		else, u_s = 'V'; u_u = 'km/s';
+		if hnd.mode, u_s = 'E'; u_u = 'mV/m'; cmp = '';
+		else, u_s = 'V'; u_u = 'km/s'; cmp = '\perp ';
 		end
 		for ax=1:3
-			ylabel(h(ax),[u_s '_' labs(ax) ' [' u_u ']'])
+			ylabel(h(ax),[u_s '_{' cmp labs(ax) '} [' u_u ']'])
 			grid(h(ax),'on')
 		end
 		ylabel(h(4),'AUX')
@@ -642,10 +648,11 @@ case 'update_legend'
 case 'update_off'
 	hnd = guidata(h0);
 	
-	if hnd.mode
+	k = D_findByName(hnd.Data,hnd.ActiveVar);
+	
+	if strcmp(hnd.Data{k}.type,'E')
 		% We calibrate E
 		
-		k = D_findByName(hnd.Data,hnd.ActiveVar);
 		% Sanity check
 		if ~strcmp(hnd.Data{k}.inst,'EFW')
 			disp('update_off: we are doing something wrong with INST')
@@ -678,6 +685,37 @@ case 'update_off'
 	else
 		% We calibrate V
 		
+		% See if offsets were really changed and replot everything
+		if strcmp(hnd.Data{k}.sen,'HIA')
+			d_off = hnd.CISHoffset{hnd.Data{k}.cl_id};
+		else, d_off = hnd.CISCoffset{hnd.Data{k}.cl_id};
+		end
+		if any(d_off - hnd.off)
+			if strcmp(hnd.Data{k}.sen,'HIA')
+				hnd.CISHoffset{hnd.Data{k}.cl_id} = hnd.off;
+			else, hnd.CISCoffset{hnd.Data{k}.cl_id} = hnd.off;
+			end
+			%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
+			hnd.off_updated = 1;
+			
+			% Create list of variables which need to be replotted
+			ii = D_findByCLID(hnd.Data,hnd.Data{k}.cl_id);
+			up_list = {};
+			for j=1:length(ii)
+				if strcmp(hnd.Data{ii(j)}.type,'V') & ...
+					strcmp(hnd.Data{ii(j)}.sen,hnd.Data{k}.sen)
+					up_list = L_add(up_list,hnd.Data{ii(j)}.name);
+				end
+			end
+			% Sanity check
+			if isempty(up_list)
+				disp('update_off: we are doing something wrong with UP_LIST')
+				return
+			end
+			hnd.last = up_list;
+			guidata(h0,hnd);
+			c_cal_gui('replot')
+		end
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_EVbutton
@@ -694,6 +732,15 @@ case 'update_EVbutton'
 		% Return to E mode
 		hnd.mode = 1;
 	end
+	%{ 
+	for j=1:length(hnd.DATArbList)
+		hxxx = eval(['hnd.DATA' hnd.DATArbList{j} 'radiobutton']);
+		if strcmp(get(hxxx,'Enable'),'off')
+			set(hxxx,'Enable','on');
+		else, set(hxxx,'Enable','off');
+		end
+	end 
+	%}
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -978,14 +1025,14 @@ if data.visible
 			p_data = corrDSIOffsets(p_data,...
 				real(ofs(1)),imag(ofs(1)),ofs(2));
 		case 'V'
-			if strcmp(data.sen,'COD')
-				offset = hnd.CISCoffset{data.cl_id};
-			elseif strcmp(data.sen,'HIA')
-				offset = hnd.CISHoffset{data.cl_id};
-			else, offset = [0+0i 0];
+			if strcmp(data.sen,'HIA')
+				ofs = hnd.CISHoffset{data.cl_id};
+			else, ofs = hnd.CISCoffset{data.cl_id};
 			end
-			p_data = corr_v_velocity(p_data,...
-				hnd.EFWoffset{data.cl_id});
+			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
+			p_data = corr_v_velocity(p_data,ofs);
+			[xxx,p_data]=decomposeParPerp(data.B,p_data);
+			clear xxx
 		otherwise
 			c_log('proc','Unknown data type.')
 		end
