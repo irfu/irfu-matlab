@@ -50,7 +50,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   variable='start_time_s';default='1999 01 01 00 00 00';question='Start time [%]>';av_ask
   start_time=eval(['[' start_time_s ']']);
   variable='Dt';default=60;question='How many seconds of data [%]>';av_ask
-
+  tint_epoch=toepoch(start_time)+[0 Dt];
  elseif strcmp(q,'2'),
   % define sc_list
   variable='sc_list';default=[1:4];question='Spacecraft list [%]>'; av_ask;
@@ -123,7 +123,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
  elseif strcmp(q,'bfgm'),
   for ic=sc_list,
-    eval(av_ssub('B?=c_get_bfgm(start_time+[0 Dt],sc_list);',ic));
+    eval(av_ssub('B?=c_get_bfgm(tint_epoch,sc_list);',ic));
   end
   eval(['save mB ' save_list]);
 
