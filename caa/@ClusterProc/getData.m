@@ -110,7 +110,7 @@ if strcmp(quantity,'dies')
 			sp = sp(:,1:4);
 			sp(:,4) = 0*sp(:,4); % Z component
 			ind=find(abs(sp(:,3))>1e4);sp(ind,:)=[]; % remove spins with bad spin fit (obtained E > 10000 mV/m)
-			if ind, disp([num2str(length(ind)) ' spinds removed due to E>10000 mV/m']);end
+			if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
 			eval(av_ssub(['diEs?p' ps '=sp;'],cl_id)); clear tt aa sp
 			eval(av_ssub(['save_list=[save_list '' diEs?p' ps ' ''];'],cl_id));
 		else
