@@ -23,7 +23,7 @@ if q_flag == 2,
   title_lmn=['N-along vn, L-closest to [' num2str(L_dir,'%7.2f')  '], M=NxL'];
 end
 
-if nargin<1, disp('Not enough arguments. See usage:');help c_e_mp;return; end
+if nargin<1, disp('Not enough arguments. See usage:');help c_ev_mp;return; end
 
 if length(vngse) == 3, vngse=[tint(1) vngse];end
 

@@ -46,6 +46,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
   if size(spin_axis,2) == 2
      t  = spin_axis(1);
      ic = spin_axis(2);
+     clear spin_axis;
      if exist('./maux.mat');
          c_log('load','Loading maux.mat file');
          try c_eval('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic);
@@ -65,10 +66,10 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
              flag_read_isdat=1;
          end
      else,
-	 flag_read_isdat=1;
+         flag_read_isdat=1;
      end
      if flag_read_isdat,  % try if there is SP CDF file, otherwise continue to isdat
-      cdf_files=dir(['CL_SP_AUX_' epoch2yyyymmdd(t) '*']);
+         cdf_files=dir(['CL_SP_AUX_' epoch2yyyymmdd(t) '*']);
          switch prod(size(cdf_files))
              case 1
                  cdf_file=cdf_files.name;
@@ -83,7 +84,18 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
                  end
          end
      end
-     if flag_read_isdat==1,  % load from isdat satellite ephemeris
+     if flag_read_isdat,  % try if there are SAX variables in mEPH
+         if exist('./mEPH.mat','file'),
+             try
+                 c_eval('load mEPH SAX?',ic);
+                 c_eval('spin_axis=SAX?;',ic);
+                 flag_read_isdat=0;
+             catch
+                 c_log('proc','no SAX variable in mEPH, tryinig to read isdat');
+             end
+         end
+     end
+     if flag_read_isdat,  % load from isdat satellite ephemeris
       c_log('proc','loading spin axis orientation from isdat database');
        start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
@@ -103,8 +115,10 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
           Mat_DbClose(db);
         end
      end
-     [xspin,yspin,zspin]=sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
-     spin_axis=[xspin yspin zspin];
+     if ~exist('spin_axis','var'),
+         [xspin,yspin,zspin]=sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
+         spin_axis=[xspin yspin zspin];
+     end
   end
 
 spin_axis=spin_axis/norm(spin_axis);
