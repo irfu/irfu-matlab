@@ -1,4 +1,5 @@
 function varargout = c_cal_gui(varargin)
+% EFW calibration GUI
 %
 % $Id$
 
@@ -11,7 +12,7 @@ sp = '.';
 
 inactive_color = [0.831373 0.815686 0.784314]; %gray
 active_color = [1 1 1]; %white
-pxa = .07; pya = .1; wa = .55; ha = .215; dya = .01; % positions
+pxa = .07+.12; pya = .1; wa = .47; ha = .215; dya = .01; % positions
 
 if nargin, action = varargin{1};
 else, action = 'init';
@@ -48,15 +49,17 @@ case 'init'
 	handles.AUXData = {};
 	handles.DataList = {};
 	handles.DataLegList = {};
+	handles.DataPStyle = {};
 	handles.AUXList = {};
 	handles.AUXLegList = {};
+	handles.AUXPStyle = {};
 	handles.BPPData = {};
 	handles.BData = {};
 	handles.EFWoffset = {};
 	handles.CISHoffset = {};
 	handles.CISCoffset = {};
 	handles.mode = 1; % 0 is for V, 1 is for E.
-	handles.last = 0; % O means replotting all, 1 only the last field in a queue 
+	handles.last = 0; % 0 means replotting all, 1 only the last field in a queue 
 	handles.ang_limit = 15; % 15 degrees.
 	handles.tlim = [0 0];
 	no_active = 1;
@@ -86,13 +89,14 @@ case 'init'
 		end
 		handles.BData = [handles.BData {BFGM}];
 		handles.BPPData = [handles.BPPData {BPP}];
+		clear BFGM BPP
 		
 		% load offsets
 		old_pwd = pwd; cd(sp);
 		clear Delta_off;
 		c_eval('load mEDSI D?p12p34',cl_id)
 		if exist(av_ssub('D?p12p34',cl_id),'var')
-			c_eval('Delta_off=D?p12p34;',cl_id)
+			c_eval('Delta_off=D?p12p34;clear D?p12p34',cl_id)
 		else
 			c_log('load',...
 			'Cannot load D#p12p34. Probably we have only one probe pair')
@@ -245,12 +249,18 @@ case 'init'
 	% check if we have any data apart from AUX
 	if ~ncdata, error('No usefull data loaded'), end
 	
-	%create Axes
+	%create Data Axes
 	handles.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
 	handles.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
 	handles.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes');
 	handles.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes');
 	
+	%create Legend Axes
+	handles.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
+		'Visible','off','XTick',[],'YTick',[]);
+	handles.ALaxes = axes('Position',[.01 pya .12 ha ],...
+		'Visible','off','XTick',[],'YTick',[]);
+		
 	%create Calibrators
 	wp = .15;
 	handles.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
@@ -287,8 +297,10 @@ case 'replot_all'
 		% Update all records
 		handles.DataList = {};
 		handles.DataLegList = {};
+		handles.DataPStyle = {};
 		handles.AUXList = {};
 		handles.AUXLegList = {};
+		handles.AUXPStyle = {};
 		for ax=1:3, cla(h(ax)), end
 		for j=1:length(handles.Data)
 			% Plotting 
@@ -296,10 +308,11 @@ case 'replot_all'
 				p_data = handles.Data{j}.data;
 				handles.AUXList = [handles.AUXList {handles.Data{j}.name}];
 				handles.AUXLegList = [handles.AUXLegList {handles.Data{j}.label}];
+				pl_st = p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen);
+				handles.AUXPStyle = [handles.AUXPStyle {pl_st}];
 				hold(h(4),'on')
-				handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),...
-					p_style(handles.Data{j}.cl_id, handles.Data{j}.inst, ...
-					handles.Data{j}.sen));
+				handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),pl_st);
 				hold(h(4),'off')
 			else
 				[p_data, ch, newdata] = get_plot_data(handles.Data{j}, handles);
@@ -308,13 +321,15 @@ case 'replot_all'
 				
 				handles.DataList = [handles.DataList {handles.Data{j}.name}];
 				handles.DataLegList = [handles.DataLegList {handles.Data{j}.label}];
+				pl_st = p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen);
+				handles.DataPStyle = [handles.DataPStyle {pl_st}];
 				
 				for ax=1:3
 					%disp([epoch2iso(p_data(1,1)) ' ' data.name])
 					hold(h(ax),'on')
-					handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
-						p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
-						handles.Data{j}.sen));
+					handles.Data{j}.ploth(ax) = plot(h(ax),...
+					p_data(:,1),p_data(:,1+ax),pl_st);
 					hold(h(ax),'off')
 				end
 			end
@@ -334,7 +349,7 @@ case 'replot_all'
 			grid(h(ax),'on')
 		end
 		ylabel(h(4),'AUX')
-		axis(h(4)); add_timeaxis; grid on
+		axes(h(4)); add_timeaxis; grid on
 	else
 		% Update only the last record in DataLegList
 		% we set handles.last to name of the variable we need to add
@@ -356,10 +371,11 @@ case 'replot_all'
 			p_data = handles.Data{j}.data;
 			handles.AUXList = [handles.AUXList {handles.Data{j}.name}];
 			handles.AUXLegList = [handles.AUXLegList {handles.Data{j}.label}];
+			pl_st = p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen);
+			handles.AUXPStyle = [handles.AUXPStyle {pl_st}];
 			hold(h(4),'on')
-			handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),...
-				p_style(handles.Data{j}.cl_id, handles.Data{j}.inst, ...
-				handles.Data{j}.sen));
+			handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),pl_st);
 			hold(h(4),'off')
 		else
 			[p_data, ch, newdata] = get_plot_data(handles.Data{j}, handles);
@@ -367,13 +383,15 @@ case 'replot_all'
 			if ~isempty(p_data)
 				handles.DataList = [handles.DataList {handles.Data{j}.name}];
 				handles.DataLegList = [handles.DataLegList {handles.Data{j}.label}];
+				pl_st = p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen);
+				handles.DataPStyle = [handles.DataPStyle {pl_st}];
 				
 				for ax=1:3
 					%disp([epoch2iso(p_data(1,1)) ' ' data.name])
 					hold(h(ax),'on')
-					handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
-						p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
-						handles.Data{j}.sen));
+					handles.Data{j}.ploth(ax) = plot(h(ax),...
+						p_data(:,1),p_data(:,1+ax),pl_st);
 					hold(h(ax),'off')
 				end
 			end
@@ -381,7 +399,8 @@ case 'replot_all'
 		handles.last = 0;
 	end
 
-	av_zoom(handles.tlim + [0 (handles.tlim(2)-handles.tlim(1))/4],'x',h);
+	%av_zoom(handles.tlim + [0 (handles.tlim(2)-handles.tlim(1))/4],'x',h);
+	av_zoom(handles.tlim,'x',h);
 	guidata(h0,handles);
 	c_cal_gui('update_legend')
 	%fix positions
@@ -393,34 +412,53 @@ case 'replot_all'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_legend'
 	handles = guidata(h0);
-	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
 	if isempty(handles.DataLegList)
-		for ax=1:3, legend(h(ax),'off'), end
+		set(handles.DLaxes,'Visible','off')
+		legend(handles.DLaxes,'off')
 	else
+		cla(handles.DLaxes)
+		set(handles.DLaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
+		%make fake plots
+		for j=1:length(handles.DataPStyle)
+			hold(handles.DLaxes,'on')
+			plot(handles.DLaxes,1,1,handles.DataPStyle{j},'Visible','off')
+			hold(handles.DLaxes,'off')
+		end
+		%make legend
 		l_s = ['''' handles.DataLegList{1} ''''];
 		if length(handles.DataLegList)>1
 			for j=2:length(handles.DataLegList)
 				l_s = [l_s ',''' handles.DataLegList{j} ''''];
 			end
 		end
-		for ax=1:3
-			eval(['hxxx=legend(h(ax),' l_s ');'])
-			set(hxxx,'FontSize',7);
-			legend(h(ax),'boxoff')
-		end
+		eval(['hxxx=legend(handles.DLaxes,' l_s ');'])
+		set(hxxx,'FontSize',7);
+		legend(handles.DLaxes,'boxoff')
+		set(handles.DLaxes,'Visible','off')
 	end
 	if isempty(handles.AUXLegList)
-		legend(h(4),'off')
+		set(handles.ALaxes,'Visible','off')
+		legend(handles.ALaxes,'off')
 	else
+		cla(handles.ALaxes)
+		set(handles.ALaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
+		%make fake plots
+		for j=1:length(handles.AUXPStyle)
+			hold(handles.ALaxes,'on')
+			plot(handles.ALaxes,1,1,handles.AUXPStyle{j},'Visible','off')
+			hold(handles.ALaxes,'off')
+		end
+		%make legend
 		l_s = ['''' handles.AUXLegList{1} ''''];
 		if length(handles.AUXLegList)>1
 			for j=2:length(handles.AUXLegList)
 				l_s = [l_s ',''' handles.AUXLegList{j} ''''];
 			end
 		end
-		eval(['hxxx=legend(h(4),' l_s ');'])
+		eval(['hxxx=legend(handles.ALaxes,' l_s ');'])
 		set(hxxx,'FontSize',7);
-		legend(h(4),'boxoff')
+		legend(handles.ALaxes,'boxoff')
+		set(handles.ALaxes,'Visible','off')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DXslider
@@ -491,6 +529,7 @@ case 'update_DATAcheckbox'
 				f_ok = 1;
 				handles.DataList(j) = [];
 				handles.DataLegList(j) = [];
+				handles.DataPStyle(j) = [];
 				break
 			end
 		end
@@ -500,6 +539,7 @@ case 'update_DATAcheckbox'
 					f_ok = 1;
 					handles.AUXList(j) = [];
 					handles.AUXLegList(j) = [];
+					handles.AUXPStyle(j) = [];
 					break
 				end
 			end
