@@ -31,58 +31,42 @@ for g =1:f_count
   e_t = fromepoch(t); 
   
   [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
-  c_eval('B?=av_abs(B?);');whos B1 B2 B3 B4
+  c_eval('B?=av_abs(B?);');
   fg = figure;
   %plots B1
   h(1)=av_subplot(6,1,-1);
-  av_tplot(B1);hold on;
-  set(gca,'xlim',t+[-per per]);
-  plot(t,0,'xk')
+  av_tplot(B1);
   ylabel('B1, nT')
-  add_timeaxis
   legend('Bx','By','Bz')
-  hold off
   
   h(2)=av_subplot(6,1,-2);
   c_pl_tx(B1,B2,B3,B4,5);hold on;
   set(gca,'xlim',t+[-per per]);
-  plot(t,0,'xk')
   ylabel('|B|, nT')
-  add_timeaxis
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
   
   %plots Bx for all clusters
   h(3)=av_subplot(6,1,-3);
-  c_pl_tx(B1,B2,B3,B4,2);hold on;
-  set(gca,'xlim',t+[-per per]);
-  plot(t,0,'xk')
+  c_pl_tx(B1,B2,B3,B4,2);
   ylabel('Bx, nT')
-  add_timeaxis
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-  hold off
   
-  %plots By for all clusters
-  subplot(6,1,4)
-  hold on
+  %plots Bx for all clusters
+  h(4)=av_subplot(6,1,-4);
   c_pl_tx(B1,B2,B3,B4,3);
-  set(gca,'xlim',t+[-per per]);
-  plot(t,0,'xk')
   ylabel('By, nT')
-  add_timeaxis
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-  hold off
   
-  %plots Bz for all clusters
-  subplot(6,1,5)
-  hold on
+  %plots Bx for all clusters
+  h(5)=av_subplot(6,1,-5);
   c_pl_tx(B1,B2,B3,B4,4);
-  set(gca,'xlim',t+[-per per]);
-  plot(t,0,'xk')
   ylabel('Bz, nT')
-  add_timeaxis
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-  hold off
-  
+
+  av_pl_mark(t + [-.1 .1],h,'y');
+  av_zoom(t+[-per per],'x',h);
+  add_timeaxis(h);
+  legend
   
   %plotting data
   load '.c_ri_parameters.mat'
