@@ -1,5 +1,5 @@
 function [ed,d]=irf_edb(e,b,angle_lim)
-%IRF_EDB   Computer Ez under assumption E.B=0
+%IRF_EDB   Compute Ez under assumption E.B=0
 %
 % [ed,d]=irf_edb(e,b,angle_lim)
 % ed - E field with assumption E.B=0
@@ -7,8 +7,8 @@ function [ed,d]=irf_edb(e,b,angle_lim)
 %  
 %  e - [Ex Ey] or [t Ex Ey] or [t Ex Ey Ez] (Ez whatever)
 %  b - [Bx By Bz] or [t Bx By Bz]
-%  angle_lim - B angle with respec to the spin plane should be at least angle_lim degrees
-%             otherwise Ez is put to 0
+%  angle_lim - B angle with respect to the spin plane should be at least 
+%              angle_lim degrees otherwise Ez is set to 0.
 %
 % $Id$
 
