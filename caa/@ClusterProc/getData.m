@@ -43,7 +43,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		withwhip : do not remove time intervals with Whisper pulses
 %		notusesavedoff : recalculating everything instead of using saved offsets
 %
-% See also C_GET
+% See also C_GET, C_CTL
 %
 % $Id$
 
@@ -59,11 +59,16 @@ end
 flag_save = 1;
 flag_usesavedoff = 0;
 flag_edb = 1;
-flag_rmwhip = 1; 
-ang_limit = 10;
-probe_p = 34;
 sfit_ver = -1;
 
+flag_rmwhip = c_ctl(cl_id,'rm_whip');
+if isempty(flag_rmwhip), flag_rmwhip = 1; end 
+ang_limit = c_ctl(cl_id,'ang_lim');
+if isempty(ang_limit), ang_limit = 10; end
+probe_p = c_ctl(cl_id,'probe_p');
+if isempty(probe_p), probe_p = 34; end
+deltaof_max = c_ctl(cl_id, 'deltaof_max');
+if isempty(deltaof_max), deltaof_max = 2; end
 while have_options
 	l = 1;
 	switch(args{1})
@@ -208,13 +213,13 @@ if strcmp(quantity,'dies')
 	if (exist(irf_ssub('diEs?p12',cl_id),'var') | ...
 	exist(irf_ssub('diEs?p32',cl_id),'var')) & exist(irf_ssub('diEs?p34',cl_id),'var')
 		
-		% To compute delta offsets we remove points which are > 2*sdev
+		% To compute delta offsets we remove points which are > deltaof_max*sdev
 		% as this must de a stable quantity
 		eval(irf_ssub(['df=diEs?p!(:,2:3)-diEs?p34(:,2:3);'],cl_id,p12))
 		sdev = std(df);
 		comp_s = 'xy';
 		for comp = 1:2
-			ii = find(abs(df(:,comp)-mean(df(:,comp))) > 2*sdev(comp)); 
+			ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_max*sdev(comp)); 
 			irf_log('calb',sprintf('%d points are removed for delta_%s',...
 				length(ii),comp_s(comp)))
 			ddd = df(:,comp); ddd(ii) = [];
