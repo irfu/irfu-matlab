@@ -206,6 +206,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	% Check for p1 problems on SC1 and SC3
 	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		probe_list = 2:4;
+		p1 = [];
 		c_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 	end
 	
