@@ -35,7 +35,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(3,15,nargin))
-if nargin > 3, property_argin = varargin; end
+if nargin > 3, have_options = 1; args = varargin;
+else, have_options = 0;
+end
 
 % default options
 flag_save = 1;
@@ -43,21 +45,17 @@ flag_usesavedoff = 0;
 flag_edb = 1;
 ang_limit = 10;
 
-if length(varargin)>0, have_options = 1;
-else, have_options = 0;
-end
-
 while have_options
 	l = 1;
-    switch(varargin{1})
+    switch(args{1})
     case 'nosave'
         flag_save = 0;
 	case 'usesavedoff'
 		flag_usesavedoff = 1;
 	case 'ang_limit'
-		if length(varargin)>1
-			if isnumeric(varargin{2})
-				ang_limit = varargin{2};
+		if length(args)>1
+			if isnumeric(args{2})
+				ang_limit = args{2};
 				l = 2;
 			else
 				warning('caa:wrongArgType','ang_limit must be numeric')
@@ -73,9 +71,9 @@ while have_options
 	case 'ang_ez0'
 	   flag_edb = 0;	% use Ez=0 for points below ang_limit 
     otherwise
-        disp(['Option ''' varargin{i} '''not recognized'])
+        disp(['Option ''' args{i} '''not recognized'])
     end
-	if length(varargin) > l, varargin = varargin{l+1:end};
+	if length(args) > l, args = args(l+1:end);
 	else break
 	end
 end
