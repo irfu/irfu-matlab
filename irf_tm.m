@@ -14,7 +14,10 @@ tlim = [];
   hh=h(1,1);  
   xl=get(hh,'XLim');
   hc=get(hh,'Children');
-  xd=get(hc(end),'XData');
+  for last=length(hc):-1:1
+  	if strcmp(get(hc(last),'Type'),'axes'), break, end
+  end
+  xd=get(hc(last),'XData');
   avail=[min([xl xd]) max([xl xd])];
   presel=xl;
   
