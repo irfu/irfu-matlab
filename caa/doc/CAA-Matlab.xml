@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY matl "MATLAB">
+<!ENTITY is "ISDAT">
+]>
+<book>
+<bookinfo>
+	<title>EFW-CAA &matl; Documentation</title>
+	<releaseinfo role="CVS">$Id$</releaseinfo>
+	<author>
+		<firstname>Yuri</firstname><surname>Khotyaintsev</surname>
+		<affiliation><orgname>IRF, Uppsala</orgname><address><email>yuri@irfu.se</email></address></affiliation>
+	</author>
+	<copyright><year>2004</year><holder>Yuri Khotyaintsev</holder></copyright>
+</bookinfo>
+<preface><title>Preface</title>
+<para>This document is intended... The latest version of this document
+is located on the 
+<ulink url="http://www.cluster.irfu.se/intra/CAA-Matlab.html">
+<citetitle>EFW-&matl; homepage</citetitle>
+</ulink>.
+</para>
+</preface>
+
+<chapter id="fast-howto">
+<title>Fast HOWTO</title>
+
+<para>
+Our goal of this HOWTO is to have a look at data from all 4 Cluster sc 
+for 2001-10-01 during period 13:10 - 15:50 UT. Before starting please check that
+you have everything listed in the <link linkend="requirements">Requirements</link>
+section.
+</para>
+
+<para>
+First we define a directory where we want to store the data and set 
+variable <varname>sp</varname> to it.
+<screen>
+&gt;&gt; sp = '/home/yuri/caa-data/20011001_1310';
+</screen>
+</para>
+
+<para>
+Define start epoch and interval length
+<screen>
+&gt;&gt; st=toepoch([2001 10 01 13 10 00])
+
+st =
+
+   1.0019e+09
+   
+&gt;&gt; dt=160*60;
+</screen>
+</para>
+
+<para>
+Next, we get all possible data (EFW + FGM,CIS,EDI PP, ephemeris) on disk 
+and perform spin fits and despining.
+<screen>
+>> getRData(st,dt,'sp',sp)
+[2004-09-08 16:39:51][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:39:56][getData : dsrc] EFW...sc1...Ep12 10Hz filter
+[2004-09-08 16:39:57][getData : dsrc] EFW...sc1...Ep34 10Hz filter
+[2004-09-08 16:39:58][getData : save]  wE1p12  wE1p34  -> ./mER.mat
+[2004-09-08 16:39:59][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:39:59][getData : dsrc] EFW...sc1...probe1->P10Hz1p1
+[2004-09-08 16:39:59][getData : dsrc] EFW...sc1...probe2->P10Hz1p2
+[2004-09-08 16:40:00][getData : dsrc] EFW...sc1...probe3->P10Hz1p3
+[2004-09-08 16:40:00][getData : dsrc] EFW...sc1...probe4->P10Hz1p4
+[2004-09-08 16:40:01][getData : save]  P10Hz1p1 P10Hz1p2 P10Hz1p3 P10Hz1p4 P10Hz1  P1 NVps1 -> ./mP.mat
+[2004-09-08 16:40:02][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  A1  -> ./mA.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  SAX1 -> ./mEPH.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  R1  -> ./mR.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:04][getData : save]  V1  -> ./mR.mat
+[2004-09-08 16:40:04][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:08][getData : save]  WHIP1  -> ./mFDM.mat
+[2004-09-08 16:40:08][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:08][getData : save]  BPP1 diBPP1 -> ./mBPP.mat
+[2004-09-08 16:40:08][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
+Warning: Reason given by server: no data
+Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
+Warning: Reason given by server: no data
+[2004-09-08 16:40:10][readCSDS : dsrc] Using FILE
+/data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001*
+C1_PP_EDI_20011001_V01.CDF
+C1_PP_EDI_20011001_V02.CDF
+cdf file: /data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001_V02.CDF
+[2004-09-08 16:40:12][getData : dsrc] No data
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:12][getData : save]  NCp1 NCh1 -> ./mCIS.mat
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:12][getData : save]  VCp1 diVCp1 VCh1 diVCh1 -> ./mCIS.mat
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:13][getData : save]  VCEp1 diVCEp1 VCEh1 diVCEh1 -> ./mCIS.mat
+
+...
+
+[2004-09-08 16:45:45][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:45:45][getData : proc] Spin fit wE4p12 -> diEs4p12
+[2004-09-08 16:45:45][getData : proc] not using times with Whisper pulses
+[2004-09-08 16:46:23][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:46:23][getData : proc] Spin fit wE4p34 -> diEs4p34
+[2004-09-08 16:46:23][getData : proc] not using times with Whisper pulses
+[2004-09-08 16:47:00][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:47:00][getData : calb] delta offsets are: 0.75 [x] 0.03 [y]
+[2004-09-08 16:47:00][getData : calb] correcting p12
+[2004-09-08 16:47:00][getData : save]  diEs4p12  diEs4p34  D4p12p34  -> ./mEDSI.mat
+[2004-09-08 16:47:00][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:47:00][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:01][getData : calb] Da4dp12 : 0.52
+[2004-09-08 16:47:01][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:02][getData : calb] Da4dp34 : 0.12
+[2004-09-08 16:47:02][getData : calb] correcting p12
+[2004-09-08 16:47:02][c_despin : proc] rotation period=4.0116 s
+[2004-09-08 16:47:03][getData : save]  Da4p12  Da4p34 diE4p1234 -> ./mEDSI.mat
+</screen>
+</para>
+
+<para>
+If you think it is too much debugging information on the screen,please look at 
+help <function>c_log</function>. 
+For example you can limit the output only to database, calibration and 
+processing messages. To do so run
+<screen>
+>> c_log('log_lev',2+16+32)
+</screen>
+</para>
+
+<para>
+Now calibrate sunward/duskward offset and amplitude correction factors. 
+It is better to start from the spacecraft for which you have CIS and EDI data.
+The offsets are usually similar for all SC (not always).
+First correct the sunward field E<subscript>x</subscript>, and then the amplitude. 
+It is better to use
+calm regions or places where the DC electric field changes sign. 
+Note, it may be difficult to get a value of sunward offset which will fit all
+the time interval if the spacecraft potential changes.
+<screen>
+>> corrSOffsetM(ClusterProc(sp),1)
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[0.00 0.00 1.00 ]>h
+Usage:
+  give 3 numders for offsets in Ex, Ey and amplitude
+  correction or one of the following commands:
+  s - save calibration parameters
+  r - read from disk
+  f - show/hide full resolution data
+  q - quit
+  h - help (this message)
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[0.00 0.00 1.00 ]>1 0 1
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.00 0.00 1.00 ]>1.1 0 1
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.10 0.00 1.00 ]>s
+Ddsi1, Damp1 -> ./mEDSI.mat
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.10 0.00 1.00 ]>q
+</screen>
+</para>
+
+<para>
+Plot summary information. This step will compute E<subscript>z</subscript> from 
+E.B=0 for times when 
+magnetic field is more the 15 degrees from the spin plain, 
+and then compute ExB. We do it only for SC 1.
+<screen>
+>> doSPlot(sp,1)
+[2004-09-08 16:55:22][proc] using p34
+[2004-09-08 16:55:22][proc] using angle limit of 15 degrees
+[2004-09-08 16:55:22][proc] setting points &lt; ang_limit to NaN
+[2004-09-08 16:55:26][proc] using angle limit of 15 degrees
+[2004-09-08 16:55:27][proc] setting points &lt; ang_limit to NaN
+</screen>
+</para>
+
+<para>
+Now you should get four plots with data for all Cluster SC, and all the processed 
+data is saved in a directory <filename>/home/yuri/caa-data/20011001_1310</filename>.
+</para>
+
+</chapter>
+
+<chapter id="requirements">
+<title>Requirements</title>
+<para>
+This chapter describes general requirements for running EFW-CAA software
+</para>
+
+<section id="req-data">
+<title>Data</title>
+<para>
+You nees access to &is; server with EFW and CSDS (optional) modules. 
+Alternatively, or as a backup solution, you may read CSDS data directly from 
+CDF files.
+</para>
+</section>
+
+<section id="req-matl">
+<title>&matl;</title>
+<para>
+You will need &matl; 7.0 (R14) for the softare described here to work
+</para>
+</section>
+
+<section id="req-ismatl">
+<title>&is;-&matl; interface</title>
+<para>
+You need an up-to-date &is;-&matl; interface from CVS. For instructions on 
+using CVS for getting ISDAT see 
+<ulink url="http://www.space.irfu.se/isdat/using/HOWTO/using_CVS.html">
+<citetitle>ISDAT CVS HOWTO</citetitle>
+</ulink>
+</para>
+</section>
+</chapter>
+
+<chapter id="conventions">
+<title>Conventions</title>
+<section>
+<title>Introduction</title>
+<para>
+This section describes general conventions concerning variable and file names,
+time units, coordinate systems abd reference frames.
+</para>
+</section>
+
+<section id="conv-vars">
+<title>Variables</title>
+
+<para>Timeseries data is stored in form of matrixes containing several columns: 
+first column (<varname>variab(:,1)</varname>) contains 
+<link linkend="conv-t">time</link>, the rest of the columns
+contain components of a vector and/or additional data. 
+For example <varname>diE2</varname> (size 12000x5) contains 5 columns: 
+time, X, Y, Z, and angle between SC spin plain and B. 
+<varname>NVps2</varname> (size 12000x5) contains 3 columns: 
+time, density estimate, and spacecraft potential.
+</para>
+
+<para>
+Almost all information about data quantity is contained in its name. One can 
+use function <function>c_desc</function>. For more details see 
+<xref linkend="doing-desc"/>.
+For example <varname>idiE2p1234</varname> tells you that
+the variable is in the <link linkend="conv-rf">inertial</link> reference frame 
+(<emphasis>i</emphasis> prefix), <link linkend="conv-cs">DSI</link> coordinate 
+system (<emphasis>di</emphasis> prefix), contains full resolution E from SC 2 
+combined from probe pairs 12 and 34.
+</para>
+
+<para>
+All variables are summarize in the following tables:
+<xref linkend="vars-efw"/>, <xref linkend="vars-aux"/>,
+<xref linkend="vars-fgm"/>, <xref linkend="vars-csds"/>.
+</para>
+
+<table id="vars-efw" frame='all'><title>EFW variables</title>
+<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<colspec colname='files'/>
+<thead>
+<row>
+  <entry align='center'>Variable name</entry>
+  <entry align='center'>Description</entry>
+  <entry align='center'>Files</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry namest="name" nameend="files" align='center'>EFW - Potentials</entry>
+</row>
+<row>
+	<entry>
+		P{<link linkend="conv-vars-filter_id">filter_id</link>}Hz{<link linkend="conv-vars-sc_id">cl_id</link>}p{<link linkend="conv-vars-probe_id">probe_id</link>}
+	</entry>
+	<entry>Measured probe potential</entry>
+	<entry morerows='2' valign='middle'>mP</entry>
+</row>
+<row>
+	<entry>P{<link linkend="conv-vars-sc_id">cl_id</link>}</entry>
+	<entry>
+		<link linkend="proc-p">Averaged probe potential</link>, 
+		or spacecraft potential.
+	</entry>
+</row>
+<row>
+	<entry>NVps{<link linkend="conv-vars-sc_id">cl_id</link>}</entry>
+	<entry>
+		<link linkend="proc-den">Plasma density estimate</link>
+	</entry>
+</row>
+<row>
+	<entry namest="name" nameend="files" align='center'>EFW - Electric field</entry>
+</row>
+<row>
+	<entry>
+		wE{<link linkend="conv-vars-sc_id">cl_id</link>}p{<link linkend="conv-vars-probep_id">probep_id</link>}
+	</entry>
+	<entry>
+		Potential difference between the probes defined by <emphasis>PROBEP_ID</emphasis>
+	</entry>
+	<entry>mER</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-rf">i</link>)<link linkend="conv-vars-cs">di</link>Es{<link linkend="conv-vars-sc_id">cl_id</link>}p{<link linkend="conv-vars-probep_id">probep_id</link>}
+	</entry>
+	<entry>
+		Electric field obtained by 
+		<link linkend="proc-sfit">spin fit</link> of <emphasis>PROBEP_ID</emphasis>.
+		E<subscript>z</subscript>=0
+		<footnote id="Ez" label="Ez">
+			<para>
+				As EFW measures only in the spacecraft spin plain, only
+				E<subscript>x</subscript> and E<subscript>y</subscript> 
+				<link linkend="conv-cs">DSI</link>
+				are measured directly, but not E<subscript>z</subscript>. Instead,
+				it can be calculated using <link linkend="proc-ez">E*B=0 condition</link>.
+			</para>
+		</footnote>
+	</entry>
+	<entry morerows='5' valign='middle'>mDSI,mIDSI</entry>
+</row>
+<row>
+  <entry>
+		(<link linkend="conv-vars-rf">i</link>)<link linkend="conv-vars-cs">di</link>E{<link linkend="conv-vars-sc_id">cl_id</link>}p1234
+	</entry>
+  <entry>
+		Full resolution electric field. 
+		<link linkend="proc-despin">Despun</link> measurement from all four probes,
+		<footnote label="missing probe">
+			<para> In some cases, when one of the probes is not operational,
+			this quantity is produced only from one probe pair, and thus 
+			<emphasis>must be used with caution</emphasis>.
+			</para>
+		</footnote>
+		E<subscript>z</subscript>=0<footnoteref linkend='Ez'/>
+	</entry>
+</row>
+<row>
+	<entry>
+		Dadc{<link linkend="conv-vars-sc_id">cl_id</link>}p{<link linkend="conv-vars-probep_id">probep_id</link>}
+	</entry>
+	<entry>
+		ADC offset obtained by 
+		<link linkend="proc-sfit">spin fit</link> of <emphasis>PROBEP_ID</emphasis>.
+	</entry>
+</row>
+<row>
+	<entry>
+		D{<link linkend="conv-vars-sc_id">cl_id</link>}p12p34
+	</entry>
+	<entry>
+		Delta offset, difference between spin fits of pp 12 and 34
+		<footnote label="comlex delta">
+			<para>Real offset is applied to p12, imaginary to p34.</para>
+		</footnote>
+	</entry>
+</row>
+<row>
+	<entry>
+		Damp{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		Amplitude correction factor
+	</entry>
+</row>
+<row>
+	<entry>
+		Ddsi{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		DSI (sunward and duskwand) offsets = dE<subscript>x</subscript> 
+		+ <emphasis>i</emphasis>dE<subscript>y</subscript>
+	</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-rf">i</link>)(<link linkend="conv-vars-cs">di</link>)Es{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		Spin resolution electric field calculated from diEs{cl_id}p12 or 
+		diEs{cl_id}p34 using <link linkend="proc-ez">E*B=0 condition</link>.
+	</entry>
+	<entry morerows='4' valign='middle'>mEdB,mEdBI</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-rf">i</link>)(<link linkend="conv-vars-cs">di</link>)E{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		Full resolution electric field calculated from diE{cl_id}p1234 
+		using <link linkend="proc-ez">E*B=0 condition</link>
+	</entry>
+</row>
+<row>
+	<entry>
+		ang_limit{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		Limit on angle between the SC spin plabe and B used for 
+		<link linkend="proc-ez">E*B=0 condition</link>
+	</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)VExBs{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		Spin resolution convection velocity (ExB) calculated from diEs{cl_id}
+	</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para id="conv-vars-sc_id">
+<emphasis>CL_ID</emphasis> is a spacecraft ID ranging from 1 to 4.
+</para>
+
+<para id="conv-vars-probe_id">
+<emphasis>PROBE_ID</emphasis> is a probe ID ranging from 1 to 4.
+</para>
+
+<para id="conv-vars-probep_id">
+<emphasis>PROBEP_ID</emphasis> is a probe pair ID. It may take one of the following
+values: 12, 34.
+</para>
+
+<para id="conv-vars-filter_id">
+<emphasis>FILTER_ID</emphasis> is a filter ID. It may take one of the following
+values: 10, 180.
+</para>
+
+<para id="conv-vars-rf">
+Prefix <emphasis>i</emphasis> denotes the <link linkend="conv-rf">inertial</link> 
+reference frame. If ommited, the <link linkend="conv-rf">spacecraft</link>
+reference frame is used.
+</para>
+
+<para id="conv-vars-cs">
+Prefix <emphasis>di</emphasis> denotes <link linkend="conv-cs">DSI</link> 
+coordinate system. If ommited, <link linkend="conv-cs">GSE</link>
+system is used.
+</para>
+
+<table id="vars-aux" frame='all'><title>Auxiliary variables</title>
+<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<colspec colname='files'/>
+<thead>
+<row>
+  <entry align='center'>Variable name</entry>
+  <entry align='center'>Description</entry>
+  <entry align='center'>Files</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry>
+		A{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		SC spin phase, used for 
+		<link linkend="proc-despin">despin</link> and
+		<link linkend="proc-sfit">spin fit</link>
+	</entry>
+	<entry>mA</entry>
+</row>
+<row>
+	<entry>
+		SAX{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>
+		SC spin axis orientation in GSE, used for 
+		<link linkend="proc-coord">coordinate transformations</link>
+	</entry>
+	<entry>mEPH</entry>
+</row>
+<row>
+	<entry>R{<link linkend="conv-vars-sc_id">cl_id</link>}</entry>
+	<entry>SC position in GSE</entry>
+	<entry morerows="1">mR</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)V{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>SC velocity</entry>
+</row>
+<row>
+	<entry>mTMode{<link linkend="conv-vars-sc_id">cl_id</link>}</entry>
+	<entry>Normal/Burst mode indicator: 0 - NM, 1 - BM1</entry>
+	<entry>mTMode</entry>
+</row>
+<row>
+	<entry>WHIP{<link linkend="conv-vars-sc_id">cl_id</link>}</entry>
+	<entry>
+		Intervals when whisper active is present. Used in
+		<link linkend="proc-sfit">spin fit</link>
+	</entry>
+	<entry>mFDM</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<table id="vars-fgm" frame='all'><title>FGM variables</title>
+<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<colspec colname='files'/>
+<thead>
+<row>
+  <entry align='center'>Variable name</entry>
+  <entry align='center'>Description</entry>
+  <entry align='center'>Files</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry namest="name" nameend="files" align='center'>FGM - CSDS PP</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)BPP{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>B, primary parameter data</entry>
+	<entry>mBPP</entry>
+</row>
+<row>
+	<entry namest="name" nameend="files" align='center'>FGM - Full resolution</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)B{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>B, full resolution data</entry>
+	<entry>mB</entry>
+</row>
+<row>
+	<entry namest="name" nameend="files" align='center'>FGM - resampled data</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)Brs{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>B, resampled to the timeline of EFW spin fit data</entry>
+	<entry morerows="1">mBr</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)Br{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>B, resampled to the timeline of EFW full resolution data</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<table id="vars-csds" frame='all'><title>CSDS PP variables</title>
+<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<colspec colname='files'/>
+<thead>
+<row>
+  <entry align='center'>Variable name</entry>
+  <entry align='center'>Description</entry>
+  <entry align='center'>Files</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry namest="name" nameend="files" align='center'>EDI - CSDS PP</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-rf">i</link>)(<link linkend="conv-vars-cs">di</link>)EDI{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Electric field, EDI primary parameter data</entry>
+	<entry>mEDI</entry>
+</row>
+<row>
+	<entry namest="name" nameend="files" align='center'>CIS - CSDS PP</entry>
+</row>
+<row>
+	<entry>
+		NCh{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Ion density, HIA</entry>
+	<entry morerows="5">mCIS</entry>
+</row>
+<row>
+	<entry>
+		NCp{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Proton density, CODIF</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)VCh{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Ion flow velocity, HIA</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)VCp{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Proton flow velocity, CODIF</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)VCEh{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Electric field, computed from VCh{cl_id}</entry>
+</row>
+<row>
+	<entry>
+		(<link linkend="conv-vars-cs">di</link>)VCEp{<link linkend="conv-vars-sc_id">cl_id</link>}
+	</entry>
+	<entry>Electric field, computed from VCp{cl_id}</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+</section>
+
+<section id="conv-files">
+<title>Files</title>
+
+<para>All data is stored in &matl;'s MAT format. The files have extension
+<filename>.mat</filename>:
+<screen>
+>> ls *.mat
+
+ans =
+
+mA.mat      mBr.mat     mEDSI.mat   mEdB.mat    mR.mat      
+mB.mat      mCIS.mat    mEPH.mat    mFDM.mat    mTMode.mat  
+mBPP.mat    mEDI.mat    mER.mat     mP.mat  
+
+</screen>
+</para>
+
+<para>File descriptions and variables contained in each of the files are 
+summarized in <xref linkend="tab-files"/></para>
+
+<table id="tab-files" frame='all'><title>Files</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<colspec colname='vars'/>
+<thead>
+<row>
+  <entry align='center'>Filename</entry>
+  <entry align='center'>Description</entry>
+	<entry align='center'>Variables</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry><filename>mA</filename></entry>
+	<entry>SC spin phase</entry> 
+	<entry><varname>A{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mB</filename></entry>
+	<entry>FGM full resolution data</entry> 
+	<entry><varname>(di)B{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mBPP</filename></entry>
+	<entry>FGM PP data</entry> 
+	<entry><varname>(di)BPP{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mBr</filename></entry>
+	<entry>Resampled FGM data</entry> 
+	<entry>
+		<varname>(di)Brs{cl_id}</varname>, <varname>(di)Br{cl_id}</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mCIS</filename></entry>
+	<entry>CIS PP data</entry> 
+	<entry>
+		<varname>NC{h|p}{cl_id}</varname>, <varname>(di)VC{h|p}{cl_id}</varname>, 
+		<varname>(di)VCE{h|p}{cl_id}</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mEDI</filename></entry>
+	<entry>EDI PP data</entry> 
+	<entry><varname>(i)(di)EDI{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mEDSI</filename></entry>
+	<entry>EFW DSI data and offsets</entry> 
+	<entry>
+		<varname>diEs{cl_id}p{probep_id}</varname>,
+		<varname>diE{cl_id}p1234</varname>,
+		<varname>Dadc{cl_id}p{probep_id}</varname>,
+		<varname>D{cl_id}p12p34</varname>,
+		<varname>Damp{cl_id}</varname>,
+		<varname>Ddsi{cl_id}</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mER</filename></entry>
+	<entry>EFW raw E data</entry> 
+	<entry><varname>wE{cl_id}p{probep_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mEdB</filename></entry>
+	<entry>
+		EFW E data, full vector (using <link linkend="proc-ez">E*B=0 condition</link>)
+		in GSE and DSI
+	</entry> 
+	<entry>
+		<varname>(di)Es{cl_id}</varname>, <varname>(di)E{cl_id}</varname>,
+		<varname>ang_limit{cl_id}</varname>, <varname>(di)VExBs{cl_id}</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mEdBI</filename></entry>
+	<entry>
+		EFW E data, full vector (using <link linkend="proc-ez">E*B=0 condition</link>)
+		in GSE and DSI and inertial reference frame
+	</entry> 
+	<entry>same as in <filename>mEdB</filename>, but with prefix <emphasis>i</emphasis></entry>
+</row>
+<row>
+	<entry><filename>mEPH</filename></entry>
+	<entry>Spin axis data</entry> 
+	<entry><varname>SAX{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mFDM</filename></entry>
+	<entry>EFW FDM data</entry> 
+	<entry><varname>WHIP{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mEIDSI</filename></entry>
+	<entry>EFW DSI data in the inertial reference frame</entry> 
+	<entry>
+		<varname>idiEs{cl_id}p{probep_id}</varname>,
+		<varname>idiE{cl_id}p1234</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mP</filename></entry>
+	<entry>EFW potentials data</entry> 
+	<entry>
+		<varname>P{filter_id}Hz{cl_id}p{probe_id}</varname>,
+		<varname>P{cl_id}</varname>, <varname>NVps{cl_id}</varname>
+	</entry>
+</row>
+<row>
+	<entry><filename>mR</filename></entry>
+	<entry>SC position and velocity data</entry> 
+	<entry><varname>R{cl_id}</varname>, <varname>(di)V{cl_id}</varname></entry>
+</row>
+<row>
+	<entry><filename>mR</filename></entry>
+	<entry>SC Mode data</entry> 
+	<entry><varname>mTMode{cl_id}</varname></entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+</section>
+
+<section id="conv-t"><title>Time</title>
+
+<para>
+We use time in &is; epoch, which is given as seconds since the epoch 1 Jan 1970.
+</para>
+<para>
+Another widely used format is ISO time. It is given as a string has with format 
+<varname>yyyy-mm-ddTHH:MM:ss.wwwwwwZ</varname>, as described in the 
+<ulink url="http://www.space-plasma.qmul.ac.uk/csds/welcome.html">
+CEF data file syntax</ulink>.
+</para>
+<para>
+For more information about how to operate different time formats see 
+<xref linkend="doing-t"/>.
+</para>
+</section>
+
+<section id="conv-cs">
+<title>Coordinate systems</title>
+<para>
+We use two main coordinate systems <emphasis>GSE</emphasis> and 
+<emphasis>DSI</emphasis> (despun inverted), which differ 
+only by several degrees.
+<emphasis>DSI</emphasis> is a natural reference frame for EFW 
+(<emphasis>DSI</emphasis> XY plane is defined by SC spin 
+plain), and thus, all the computations are performed in <emphasis>DSI</emphasis>
+and then transformed into <emphasis>GSE</emphasis>.
+</para>
+<para>Prefix <emphasis>di</emphasis> in front of a variable name is used to 
+indicate <emphasis>DSI</emphasis> coordinate system. No prefix indicates
+<emphasis>GSE</emphasis>.
+</para>
+</section>
+
+<section id="conv-rf">
+<title>Reference frames</title>
+<para>All measurements are performed initially in the <emphasis>SC</emphasis>
+(spacecraft) frame. Thus measured velocities and electric fileds contain a 
+contribution caused by satellite motion.</para>
+
+<para>
+To transform a quantity into <emphasis>inertial</emphasis> reference frame
+we subtract the contribution caused by satellite motion: 
+V<subscript>i</subscript> = V - V<subscript>sc</subscript>,
+E<subscript>i</subscript> = E - V<subscript>sc</subscript>xB/B<superscript>2</superscript>.
+</para>
+
+<para>
+Prefix <emphasis>i</emphasis> in front of a variable is used to indicate
+<emphasis>inertial</emphasis> reference frame. No prefix indicates
+<emphasis>SC</emphasis> frame.
+</para>
+</section>
+</chapter>
+
+<chapter id="howto">
+<title>How to do things</title>
+
+<section>
+<title>Introduction</title>
+<para>
+This section describe common operations one needs to perform on data.
+</para>
+</section>
+
+<section id="doing-t">
+<title>Working with time</title>
+<para>
+See help for <function>c_desc</function>
+</para>
+</section>
+
+<section id="doing-rr">
+<title>Loading raw data from &is; or CSDS CDF files</title>
+<para>
+See help for <function>ClusterDB/getData</function>
+</para>
+</section>
+
+<section id="doing-desc">
+<title>Working with variables</title>
+<para>
+See help for <function>c_desc</function>
+</para>
+</section>
+
+<section id="loading">
+<title>Loading data saved on disk</title>
+<para>
+See help for <function>c_load</function>
+</para>
+</section>
+
+<section id="plotting">
+<title>Basic plotting</title>
+<itemizedlist spacing="compact" mark='opencircle'>
+<listitem>
+<para>
+<function>av_tplot</function> for general plotting;
+</para>
+</listitem>
+<listitem>
+<para>
+<function>c_pl_tx</function> for general plotting of four SC data.;
+</para>
+</listitem>
+<listitem>
+<para>
+<function>summaryRPlot</function> simple summary of EFW;
+</para>
+</listitem>
+<listitem>
+<para>
+<function>ClusterProc/summaryPlot</function> more advanced summary plot 
+including ExB.
+</para>
+</listitem>
+</itemizedlist>
+</section>
+  
+<section id="bas-calibration">
+<title>Basic calibration</title>
+<para>
+Basic calibrations such as ADC offset and p12-p34 differences are done 
+automatically by <function>ClusterProc/getData</function>.
+</para>
+</section>
+
+<section id="sfit">
+<title>Spin fitting and despin</title>
+<para>
+See help for <function>ClusterProc/getData</function>
+</para>
+</section>
+
+<section id="adv-calibration">
+<title>Advanced calibration</title>
+<para>
+See help for <function>ClusterProc/corrSOffsetM</function>
+</para>
+</section>
+
+</chapter>
+<chapter id="processing">
+<title>How to do things</title>
+<section id="proc-intro">
+<title>Introduction</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-p">
+<title>Potentials</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-den">
+<title>Density from SC potential</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-coord">
+<title>Coordinate transformations</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-sfit">
+<title>Spin fit</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-despin">
+<title>Despin</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+
+<section id="proc-ez">
+<title>Density from SC potential</title>
+<para>
+This section describes internals of the processing algoritms used.
+</para>
+</section>
+</chapter>
+</book>
