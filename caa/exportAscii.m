@@ -23,6 +23,7 @@ if nargin==1, vs=inputname(1); end
 if nargin<1, help exportAscii;return; end
 
 com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
+com = '';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P 
@@ -49,7 +50,7 @@ elseif regexp(vs,'^wE[1-4]p(12|34)')==1
 	sen = vs(4:6);
 	frame = 'SC';
 	var_labels = {['E' sen]};
-  var_units =  {'mV/m'};
+	var_units =  {'mV/m'};
 
 	% remove averages
 	cp = ClusterProc('./');
@@ -66,7 +67,7 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 	sen = ['spin fits ' vs(6:8)];
 	frame = 'DSI,  Ez==0 : not measured';
 	var_labels = {'Ex','Ey','Ez'};
-  var_units =  {'mV/m','mV/m','mV/m'};
+	var_units =  {'mV/m','mV/m','mV/m'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
@@ -79,7 +80,7 @@ elseif regexp(vs,'^diE[1-4]p1234')==1
 	sen = vs(5:9);
 	frame = 'DSI,  Ez==0 : not measured';
 	var_labels = {'Ex','Ey','Ez'};
-  var_units =  {'mV/m','mV/m','mV/m'};
+	var_units =  {'mV/m','mV/m','mV/m'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E with assumption E.B = 0
@@ -140,8 +141,8 @@ elseif regexp(vs,'^NVps[1-4]')==1
 	sen = 'p1234';
 	frame = '';
 	var_labels = {'NVps','Vps'};
-  var_units =  {'cc','V'};
-  com = 'probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density';
+	var_units =  {'cc','V'};
+	com = 'probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
@@ -154,7 +155,45 @@ elseif regexp(vs,'^A[1-4]')
 	sen = '';
 	frame = 'SC';
 	var_labels = {'phase'};
-  var_units =  {'deg'};
+	var_units =  {'deg'};
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CIS V PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^NC(h|p)[1-4]')
+
+	cl_id = vs(4);
+	inst = 'CIS PP';
+	if vs(3)=='h'
+		sig = 'N';
+		sen = 'HIA';
+	else
+		sig = 'Np';
+		sen = 'CODIF';
+	end
+	frame = '';
+	var_labels = {'N'};
+	var_units =  {'cc'};
+	com = 'This data is CSDS PP';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CIS N PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^VC(h|p)[1-4]')
+
+	cl_id = vs(4);
+	inst = 'CIS PP';
+	if vs(3)=='h'
+		sig = 'V';
+		sen = 'HIA';
+	else
+		sig = 'Vp';
+		sen = 'CODIF';
+	end
+	frame = 'GSE';
+	var_labels = {'Vx','Vy','Vz'};
+	var_units =  {'km/s','km/s','km/s'};
+	com = 'This data is CSDS PP';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dump without headers
@@ -199,7 +238,7 @@ for i=1:n_data
 end
 
 fid = fopen([vs '.dat'],'w');
-fprintf(fid,['%% this file was created on ' date ' \n%%\n']);
+fprintf(fid,['%% this file was created on ' datestr(now) ' \n%%\n']);
 fprintf(fid,['%% SC:        Cluster ' cl_id ' \n']);
 fprintf(fid,['%% Intrument: ' inst ' \n']);
 fprintf(fid,['%% Signal:    ' sig ' \n']);
