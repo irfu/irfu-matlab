@@ -16,6 +16,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
+%	usesavedoff : use saved offsets instead of recalculate everything
 %
 % $Revision$  $Date$
 %
@@ -29,11 +30,14 @@ if nargin > 3, property_argin = varargin; end
 
 % default options
 flag_save = 1;
+flag_usesavedoff = 0;
 
 for i=1:length(varargin)
     switch(varargin{i})
     case 'nosave'
         flag_save = 0;
+	case 'usesavedoff'
+		flag_usesavedoff = 1;
     otherwise
         disp(['Option ''' varargin{i} '''not recognized'])
     end
@@ -128,9 +132,17 @@ elseif strcmp(quantity,'die')
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
 			n_sig = n_sig + 1;
 			% correct ADC offset
-			eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
-			eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))	
-			eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
+			if flag_usesavedoff & exist('./mEDSI.mat','file')
+			   	eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
+			end	
+			if exist(av_ssub(['Da?p' ps],cl_id),'var')
+				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))	
+				eval(av_ssub(['Ep' ps '=wE?p' ps '-Da?p' ps ';'],cl_id))
+			else
+				eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
+				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))	
+				eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
+			end
 		end
 	end
 	if n_sig==0
