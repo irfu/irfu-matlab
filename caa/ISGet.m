@@ -38,7 +38,7 @@ for i=1:length(p)
     else % assume db_s is databse handler
       dbase=db_s;
     end
-		c_log('dsrc',lasterr)
+	if ~isempty(lasterr), c_log('dsrc',lasterr), end
 
 		[t, d] = isGetDataLite(dbase, st, dt, ...
 		'Cluster',num2str(cli),ins,sig,sen,cha,par);
