@@ -29,7 +29,7 @@ if exist('./mEDSI.mat','file')
 	if exist(av_ssub('diE?p1234',cl_id),'var')
 		eval(av_ssub('diE=diE?p1234;',cl_id))
 	else
-		error('caa:noData','no diE{cl_id}p1234 data in mEDSI')
+		warning('caa:noData','no diE{cl_id}p1234 data in mEDSI')
 	end
 	if exist(av_ssub('diEs?p34',cl_id),'var')
 		eval(av_ssub('load mEDSI D?p12p34',cl_id))
@@ -107,8 +107,10 @@ end
 if ~exist('diEDI','var')
 	warning('caa:noData','no EDI data loaded')
 else
-	var_list = [var_list ',diEDI'];
-	var_list1 = [var_list1 ',diEDI'];
+	if length(find(~isnan(diEDI(:,2:end))))>0
+		var_list = [var_list ',diEDI'];
+		var_list1 = [var_list1 ',diEDI'];
+	end
 end
 
 diE_tmp = diE;
