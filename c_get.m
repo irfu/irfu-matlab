@@ -508,7 +508,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 % P
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif q == 'p',
-  variable='mode';default=1;question='Sampling 1)lx, 2)hx, 3)32kHz_any? If different give as vector. [%]';av_ask;
+  variable='mode';default=1;question='Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]';av_ask;
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 		if (mm == 1), param='10Hz'; tmmode='lx';
@@ -528,7 +528,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			if tm==3, param='180Hz'; tmmode='hx';
 			else, param='10Hz'; tmmode='lx'; end
 			clear tm
-		elseif (mm == 3), param='32kHz';tmmode='any';end;
+		elseif (mm == 3), param='4kHz';tmmode='any';
+		elseif (mm == 4), param='32kHz';tmmode='any';end;
 
     for probe=1:4;
       disp(['EFW...sc' num2str(ic) '...probe' num2str(probe) '->P' param num2str(ic) 'p' num2str(probe)]);
@@ -551,11 +552,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
     eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],ic));
     if ((mm==1) | (mm==11)); eval(av_ssub('P?=p;NVps?=c_n_Vps(p);save_list=[save_list '' P? NVps?''];',ic));end
-    if (mm == 4),
+    if (mm == 3) | (mm == 4)
       dtburst=input(['s/c' num2str(ic) ', time shift to obtain correct time (get from Anders Tjulin) =']);
       dtburst=double(dtburst);
-      for probe=1:4,eval(av_ssub('P32kHz?p!(:,1)=P32kHz?p!(:,1)+dtburst;',ic,probe));end
-      eval(av_ssub('P32kHz?(:,1)=P32kHz?(:,1)+dtburst;',ic));
+      for probe=1:4,eval(av_ssub(['P' param '?p!(:,1)=P' param '?p!(:,1)+dtburst;'],ic,probe));end
+      c_eval(['P' param '?(:,1)=P' param '?(:,1)+dtburst;'],ic);
     end
   end
   if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else eval(['save mP ' save_list]); end
