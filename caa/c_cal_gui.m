@@ -56,9 +56,11 @@ case 'init'
 	handles.CISHoffset = {};
 	handles.CISCoffset = {};
 	handles.mode = 1; % 0 is for V, 1 is for E.
+	handles.last = 0; % O means replotting all, 1 only the last field in a queue 
 	handles.ang_limit = 15; % 15 degrees.
 	handles.tlim = [0 0];
 	no_active = 1;
+	ncdata = 0; % number of non-AUX variables
 	
 	for cl_id=1:4
 		s = av_ssub('C?',cl_id);
@@ -198,12 +200,13 @@ case 'init'
 								cl_id)
 						else, data.B = [];
 						end
-						handles.Data = [handles.Data, {data}];
+						data.aux = 0;
+						ncdata = ncdata + 1;
 					else
 						%AUX data
-						cur_aux = 1;
-						handles.AUXData = [handles.AUXData, {data}];
+						data.aux = 1;
 					end
+					handles.Data = [handles.Data, {data}];
 					eval(['clear ' vs])
 				else
 					c_log('load',['cannot load ' vs])
@@ -239,6 +242,9 @@ case 'init'
 		handles.CISHoffset = [handles.CISCoffset {offset}];
 	end
 	
+	% check if we have any data apart from AUX
+	if ~ncdata, error('No usefull data loaded'), end
+	
 	%create Axes
 	handles.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
 	handles.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
@@ -269,126 +275,157 @@ case 'init'
 	guidata(h0,handles);
 	c_cal_gui('replot_all')
 	av_figmenu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% replot_all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot_all'
 	%plot data
 	handles = guidata(h0);
-	handles.DataList = {};
-	handles.DataLegList = {};
-	handles.AUXList = {};
-	handles.AUXLegList = {};
-	if ~length(handles.Data), error('no data to calibrate'),end
 	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
-	for ax=1:3, cla(h(ax)), end
-	for j=1:length(handles.Data)
-		data = handles.Data{j};
-		if data.visible
-			p_data = data.data;
-			if data.editable 
-				switch data.type
-				case 'E'
-					ofs = handles.EFWoffset{data.cl_id};
-					p_data = corrDSIOffsets(p_data,real(ofs(1)),imag(ofs(1)),ofs(2));
-				case 'V'
-					if strcmp(data.sen,'COD')
-						offset = handles.CISCoffset{data.cl_id};
-					elseif strcmp(data.sen,'HIA')
-						offset = handles.CISHoffset{data.cl_id};
-					else, offset = [0 0 0];
-					end
-					p_data = corr_v_velocity(p_data,handles.EFWoffset{data.cl_id});
-				otherwise
-					disp('Unknown type.')
+	if ~length(handles.Data), error('no data to calibrate'),end
+	if ~handles.last
+		% Update all records
+		handles.DataList = {};
+		handles.DataLegList = {};
+		handles.AUXList = {};
+		handles.AUXLegList = {};
+		for ax=1:3, cla(h(ax)), end
+		for j=1:length(handles.Data)
+			% Plotting 
+			if handles.Data{j}.aux & handles.Data{j}.visible
+				p_data = handles.Data{j}.data;
+				handles.AUXList = [handles.AUXList {handles.Data{j}.name}];
+				handles.AUXLegList = [handles.AUXLegList {handles.Data{j}.label}];
+				hold(h(4),'on')
+				handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),...
+					p_style(handles.Data{j}.cl_id, handles.Data{j}.inst, ...
+					handles.Data{j}.sen));
+				hold(h(4),'off')
+			else
+				[p_data, ch, newdata] = get_plot_data(handles.Data{j}, handles);
+				if ch, handles.Data{j} = newdata; end
+				if isempty(p_data), continue, end
+				
+				handles.DataList = [handles.DataList {handles.Data{j}.name}];
+				handles.DataLegList = [handles.DataLegList {handles.Data{j}.label}];
+				
+				for ax=1:3
+					%disp([epoch2iso(p_data(1,1)) ' ' data.name])
+					hold(h(ax),'on')
+					handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
+						p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen));
+					hold(h(ax),'off')
 				end
-			end
-			% calculate Ez, convert V->E and V->E
-			switch data.type
-			case 'E'
-				if any(p_data(:,4))==0,
-					if ~isempty(data.B)
-						[p_data,angle]=av_ed(p_data,data.B,handles.ang_limit);
-						ii = find(abs(angle) < handles.ang_limit);
-						if length(ii) > 1, p_data(ii,4) = p_data(ii,4)*NaN; end
-					end
-				end
-				if ~handles.mode
-					if ~isempty(data.B)
-						p_data = av_e_vxb(p_data,data.B,-1);
-					else
-						handles.Data{j}.visible = 0;
-						continue
-					end
-				end
-			case 'V'
-				if handles.mode
-					if ~isempty(data.B)
-						p_data = av_t_appl(av_cross(p_data,data.B),'*(-1e-3)');
-					else
-						handles.Data{j}.visible = 0;
-						continue
-					end
-				end
-			otherwise
-				disp('Unknown type.')
-			end
-			handles.DataList = [handles.DataList {data.name}];
-			handles.DataLegList = [handles.DataLegList {data.label}];
-			for ax=1:3
-                %disp([epoch2iso(p_data(1,1)) ' ' data.name])
-				hold(h(ax),'on')
-				handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
-					p_style(data.cl_id, data.inst, data.sen));
-				hold(h(ax),'off')
 			end
 		end
-	end
-	labs = ['x' 'y' 'z'];
-	if handles.mode
-		u_s = 'E';
-		u_u = 'mV/m';
+		
+		% labels
+		labs = ['x' 'y' 'z'];
+		if handles.mode
+			u_s = 'E';
+			u_u = 'mV/m';
+		else
+			u_s = 'V';
+			u_u = 'km/s';
+		end
+		for ax=1:3
+			ylabel(h(ax),[u_s '_' labs(ax) ' [' u_u ']'])
+			grid(h(ax),'on')
+		end
+		ylabel(h(4),'AUX')
+		axis(h(4)); add_timeaxis; grid on
 	else
-		u_s = 'V';
-		u_u = 'km/s';
-	end
-	l_s = ['''' handles.DataLegList{1} ''''];
-	if length(handles.DataLegList)>1
-		for j=2:length(handles.DataLegList)
-			l_s = [l_s ',''' handles.DataLegList{j} ''''];
+		% Update only the last record in DataLegList
+		% we set handles.last to name of the variable we need to add
+		j = [];
+		for kk=1:length(handles.Data)
+			if strcmp(handles.Data{kk}.name,handles.last)
+				j = kk;
+				break
+			end
 		end
-	end
-	for ax=1:3
-		ylabel(h(ax),[u_s '_' labs(ax) ' [' u_u ']'])
-		grid(h(ax),'on')
-		eval(['hxxx=legend(h(ax),' l_s ',''Location'',''NorthEastOutside'');'])
-		set(hxxx,'FontSize',7);
-	end
-	for j=1:length(handles.AUXData)
-		data = handles.AUXData{j};
-		if data.visible
-			p_data = data.data;
-			handles.AUXList = [handles.AUXList {data.name}];
-			handles.AUXLegList = [handles.AUXLegList {data.label}];
+		
+		% sanity check
+		if isempty(j)
+			error(['cannot find ' handles.last ' in the data list'])
+		end
+		
+		% Plotting 
+		if handles.Data{j}.aux
+			p_data = handles.Data{j}.data;
+			handles.AUXList = [handles.AUXList {handles.Data{j}.name}];
+			handles.AUXLegList = [handles.AUXLegList {handles.Data{j}.label}];
 			hold(h(4),'on')
-			handles.AUXData{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),...
-				p_style(data.cl_id, data.inst, data.sen));
+			handles.Data{j}.ploth = plot(h(4),p_data(:,1),p_data(:,2),...
+				p_style(handles.Data{j}.cl_id, handles.Data{j}.inst, ...
+				handles.Data{j}.sen));
 			hold(h(4),'off')
+		else
+			[p_data, ch, newdata] = get_plot_data(handles.Data{j}, handles);
+			if ch, handles.Data{j} = newdata; end
+			if ~isempty(p_data)
+				handles.DataList = [handles.DataList {handles.Data{j}.name}];
+				handles.DataLegList = [handles.DataLegList {handles.Data{j}.label}];
+				
+				for ax=1:3
+					%disp([epoch2iso(p_data(1,1)) ' ' data.name])
+					hold(h(ax),'on')
+					handles.Data{j}.ploth(ax) = plot(h(ax),p_data(:,1),p_data(:,1+ax),...
+						p_style(handles.Data{j}.cl_id, handles.Data{j}.inst,...
+						handles.Data{j}.sen));
+					hold(h(ax),'off')
+				end
+			end
 		end
+		handles.last = 0;
 	end
-	l_s = ['''' handles.AUXLegList{1} ''''];
-	if length(handles.AUXLegList)>1
-		for j=2:length(handles.AUXLegList)
-			l_s = [l_s ',''' handles.AUXLegList{j} ''''];
-		end
-	end
-	eval(['hxxx=legend(h(4),' l_s ',''Location'',''NorthEastOutside'');'])
-	set(hxxx,'FontSize',7);
-	ylabel(h(4),'AUX')
-	axis(h(4)); add_timeaxis; grid on
+	
 	av_zoom(handles.tlim,'x',h);
 	guidata(h0,handles);
+	c_cal_gui('update_legend')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_legend
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'update_legend'
+	handles = guidata(h0);
+	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
+	if isempty(handles.DataLegList)
+		for ax=1:3, legend(h(ax),'off'), end
+	else
+		l_s = ['''' handles.DataLegList{1} ''''];
+		if length(handles.DataLegList)>1
+			for j=2:length(handles.DataLegList)
+				l_s = [l_s ',''' handles.DataLegList{j} ''''];
+			end
+		end
+		for ax=1:3
+			eval(['hxxx=legend(h(ax),' l_s ',''Location'',''NorthEastOutside'');'])
+			set(hxxx,'FontSize',7);
+		end
+	end
+	if isempty(handles.AUXLegList)
+		legend(h(4),'off')
+	else
+		l_s = ['''' handles.AUXLegList{1} ''''];
+		if length(handles.AUXLegList)>1
+			for j=2:length(handles.AUXLegList)
+				l_s = [l_s ',''' handles.AUXLegList{j} ''''];
+			end
+		end
+		eval(['hxxx=legend(h(4),' l_s ',''Location'',''NorthEastOutside'');'])
+		set(hxxx,'FontSize',7);
+	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_DXslider
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXslider'
 	handles = guidata(h0);
 	set(handles.DXedit,'String',...
     num2str(get(handles.DXslider,'Value')));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_DXedit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXedit'
 	handles = guidata(h0);
 	val = str2double(get(handles.DXedit,'String'));
@@ -401,6 +438,9 @@ case 'update_DXedit'
 		% Increment the error count, and display it
 		set(handles.DXedit,'String','You have entered an invalid entry ');
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_DXcheckbox
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXcheckbox'
 	handles = guidata(h0);
 	if get(handles.DXcheckbox,'Value')==1
@@ -413,58 +453,70 @@ case 'update_DXcheckbox'
 		set(handles.DXslider,'Enable','on')
 		set(handles.DXslider,'Value',str2double(get(handles.DXedit,'String')))
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_DATAcheckbox
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DATAcheckbox'
 	handles = guidata(h0);
 	if get(eval(['handles.DATA' vs 'checkbox']),'Value')==1
 		%need to plot the varible
-		f_ok = 0;
 		for j=1:length(handles.Data)
 			if strcmp(handles.Data{j}.name,vs)
-				f_ok = 1;
 				handles.Data{j}.visible = 1;
+				break
 			end
 		end
-		if ~f_ok
-			for j=1:length(handles.AUXData)
-				if strcmp(handles.AUXData{j}.name,vs)
-					f_ok = 1;
-					handles.AUXData{j}.visible = 1;
-				end
-			end
-		end
+		handles.last = vs;
 		guidata(h0,handles);
 		c_cal_gui('replot_all')
 	else
 		%need to hide the varible
-		f_ok = 0;
 		for j=1:length(handles.Data)
 			if strcmp(handles.Data{j}.name,vs)
-				f_ok = 1;
 				handles.Data{j}.visible = 0;
 				delete(handles.Data{j}.ploth)
+				break
+			end
+		end
+		% remove from the plotting lists
+		f_ok = 0;
+		for j=1:length(handles.DataList)
+			if strcmp(handles.DataList{j},vs)
+				f_ok = 1;
+				handles.DataList(j) = [];
+				handles.DataLegList(j) = [];
+				break
 			end
 		end
 		if ~f_ok
-			for j=1:length(handles.AUXData)
-				if strcmp(handles.AUXData{j}.name,vs)
+			for j=1:length(handles.AUXList)
+				if strcmp(handles.AUXList{j},vs)
 					f_ok = 1;
-					handles.AUXData{j}.visible = 0;
-					delete(handles.AUXData{j}.ploth)
+					handles.AUXList(j) = [];
+					handles.AUXLegList(j) = [];
+					break
 				end
 			end
 		end
 		guidata(h0,handles);
+		c_cal_gui('update_legend')
 	end
 otherwise 
 	disp('wrong action')
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function corr_v_velocity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out = corr_v_velocity(v,offset)
 out = data;
 out(:,2) = v(:,2) - offset(1);
 out(:,3) = v(:,3) - offset(2);
 out(:,4) = v(:,4) - offset(3);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function p_style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out = p_style(cl_id, inst, sen)
 out = '';
 colrs = ['k','r','g','b'];
@@ -495,3 +547,81 @@ otherwise
 	disp('unknown instrument')
 end
 out = [out colrs(cl_id)];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function get_plot_data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [p_data, ch, newdata] = get_plot_data(data, handles)
+% correct offsets, compute Ez, compute ExB (VxB).
+
+p_data = [];
+ch = 0;
+newdata = data;
+
+if data.visible
+	p_data = data.data;
+	
+	%correct offsets
+	if data.editable 
+		switch data.type
+		case 'E'
+			ofs = handles.EFWoffset{data.cl_id};
+			p_data = corrDSIOffsets(p_data,...
+				real(ofs(1)),imag(ofs(1)),ofs(2));
+		case 'V'
+			if strcmp(data.sen,'COD')
+				offset = handles.CISCoffset{data.cl_id};
+			elseif strcmp(data.sen,'HIA')
+				offset = handles.CISHoffset{data.cl_id};
+			else, offset = [0 0 0];
+			end
+			p_data = corr_v_velocity(p_data,...
+				handles.EFWoffset{data.cl_id});
+		otherwise
+			c_log('proc','Unknown data type.')
+		end
+	end
+	
+	% calculate Ez, convert V->E and V->E
+	switch data.type
+	case 'E'
+		if any(p_data(:,4))==0,
+			if isempty(data.B)
+				c_log('proc','B is empty. No Ez')
+			else
+				[p_data,angle] = av_ed(p_data,...
+					data.B,handles.ang_limit);
+				ii = find(abs(angle) < handles.ang_limit);
+				if length(ii) > 1
+					p_data(ii,4) = p_data(ii,4)*NaN; 
+				end
+			end
+		end
+		% E->V if in V mode
+		if ~handles.mode
+			if ~isempty(data.B)
+				p_data = av_e_vxb(p_data,handles.Data{j}.B,-1);
+			else
+				data.visible = 0; 
+				p_data = [];
+				ch = 1;
+				c_log('proc','B is empty. No ExB')
+			end
+		end
+	case 'V'
+		% V->E if in E mode
+		if handles.mode
+			if ~isempty(data.B)
+				p_data = av_t_appl(...
+					av_cross(p_data,data.B),'*(-1e-3)');
+			else
+				data.visible = 0;
+				p_data = [];
+				ch = 1;
+				c_log('proc','B is empty. No VxB')
+			end
+		end
+	otherwise
+		% AUX data, do nothing
+	end
+end
