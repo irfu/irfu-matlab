@@ -44,26 +44,39 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
      t  = spin_axis(1);
      ic = spin_axis(2);
      if exist('./maux.mat');
-      if debug_flag, disp('Using maux.mat file');end
-        load maux Epoch__CL_SP_AUX;
-        tlat   = (Epoch__CL_SP_AUX-62167219200000)/1000;   % isdat time
-        clear Epoch__CL_SP_AUX;
-        x1=fromepoch(tlat(1,1));x2=fromepoch(t);
-        if x1(1:3) == x2(1:3),  % maux file is from the right day
-          tmin = tlat(1);
-          tmax = tlat(end);
-          if (t > tmin) | (t < tmax)
-            eval( av_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
-            latlong   = av_interp([tlat lat long],t);
-          end
-        else  % maux file from the wrong day
-          disp('c_gse2dsc() OBS!!!  maux.mat from the wrong date');
-          disp('                    get the right one or delete the existing one');
-          disp('            I am getting attitude data from isdat instead');
-          flag_read_isdat=1;
-        end
-     else
-      flag_read_isdat=1;
+         c_log('load','Loading maux.mat file');
+         try c_eval('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic);
+         catch c_log('load','Loading maux.mat file failed'); flag_read_isdat=1;
+         end
+         if flag_read_isdat==0, % if reading maux file suceeded
+             tmin = lat(1,1);
+             tmax = lat(end,1);
+             if (t > tmin) | (t < tmax)
+                 eval( av_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
+                 latlong   = av_interp([lat long(:,2)],t);
+             end
+         else  % maux file from the wrong day
+             disp('c_gse2dsc() OBS!!!  maux.mat from the wrong date');
+             disp('                    get the right one or delete the existing one');
+             disp('            I am getting attitude data from isdat instead');
+             flag_read_isdat=1;
+         end
+     end
+     if flag_read_isdat,  % try if there is SP CDF file, otherwise continue to isdat
+      cdf_files=dir(['CL_SP_AUX_' epoch2yyyymmdd(t) '*']);
+         switch prod(size(cdf_files))
+             case 1
+                 cdf_file=cdf_files.name;
+                 c_log('load',['converting CDF file ' cdf_file ' -> maux.mat']);
+                 cdf2mat(cdf_file,'maux.mat');
+                 c_log('load',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
+                 c_eval('lat=av_read_cdf(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
+                 c_eval('long=av_read_cdf(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
+                 if (t > lat(1,1)) & (t < lat(end,1)),
+                     flag_read_isdat=0;
+                     latlong   = av_interp([lat long(:,2)],t);
+                 end
+         end
      end
      if flag_read_isdat==1,  % load from isdat satellite ephemeris
       if debug_flag, disp('loading spin axis orientation from isdat database');end
