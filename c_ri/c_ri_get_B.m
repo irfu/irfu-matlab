@@ -80,7 +80,7 @@ unix(unix_command);
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
-disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' cl_nr ' -> ' to_file]);
+disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' cl_nr ]);
 
 FGMPATH = '/share/fgm_cal';
 [s,h] = unix('hostname');
@@ -91,14 +91,14 @@ end
 if nargout,  % return B
   to_file=tempname;
   unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
-  unix(['/bin/sh -c ''' unix_command '''']);keyboard
-  fvs = fgmvec_stream(to_file);
-  ta=tavail(fvs);
-  if diff(ta)>0, % end time should be larger than start time
+  unix(['/bin/sh -c ''' unix_command '''']);
+  to_file_attr=dir(to_file);
+  if to_file_attr.bytes>0,
+    fvs = fgmvec_stream(to_file);
     dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
     B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
-  end 
-  close(fvs);
+    close(fvs);
+  end
   unix(['rm ' to_file]);
 else
   %download an unpack the downloaded data
