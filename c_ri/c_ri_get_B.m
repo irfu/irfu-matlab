@@ -100,3 +100,4 @@ else
   unix_command =sprintf('rm %s',d_source);
   unix(unix_command);
 end
+unix('rm /data/cluster/cal/fgm/tmp_att');
