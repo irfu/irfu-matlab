@@ -111,15 +111,17 @@ for i_event=1:size(events,1),
         if exist(file_name,'file'), flag_append='-append';else flag_append='';end
         stric=num2str(ic);
         save(file_name,['A' stric],['L' stric],['LT' stric],['MLT' stric],['ILAT' stric],['R' stric],['V' stric],flag_append);
+          if debug, disp(['saving ephemeris for sc' num2str(ic)]);end
       end
 
     case 'FGM',
       file_prefix='F';
       file_name=[path_Out file_prefix deblank(R_datestring(start_time)) '_T' deblank(R_datestring(end_time))];
       [B1,B2,B3,B4]=c_get_bfgm(time_interval);
-      for ic=1:4,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
+      for ic=sc_list,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
       save(file_name,'B1','B2','B3','B4','dB1','dB2','dB3','dB4',flag_append);
+          if debug, disp(['saving B1 B2 B3 B4']);end
 
     case 'EFW_P',
       file_prefix='F';
@@ -127,7 +129,7 @@ for i_event=1:size(events,1),
       EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
       P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
-      save(file_name,'P1','P2','P3','P4',flag_append);
+      save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp('saving P1,P2,P3,P4');end
 
     case 'EFW_E',
       file_prefix='F';
@@ -139,7 +141,8 @@ for i_event=1:size(events,1),
         eval(av_ssub('deg=20;[dEo?,d?]=av_ed(dE?,dB?,deg);Eo?=c_gse2dsc(dEo?,[dEo?(1,1) ?],-1);indzero=find(abs(d?)<deg);Eo?(indzero,4)=0;',ic));
         eval(av_ssub('ExB?=av_e_vxb(Eo?,B?,-1);',ic));
         if exist(file_name,'file'), flag_append='-append';else flag_append='';end
-        eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''Eo?'',''ExB?'',flag_append);;',ic));
+        eval(av_ssub('save(file_name,''wE?'',''dE?'',''d?'',''Eo?'',''ExB?'',flag_append);',ic));
+          if debug, disp(['saving wE dE d Eo ExB for sc' num2str(ic)]);end
       end
     end
   end
