@@ -393,8 +393,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      % E_GSE file creation
      %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
      %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_E_GSE_sc' num2str(ic) '.dat'];
-     eval(av_ssub('if ~exist(''E?''), load mEdB E? ang_limit;disp(''Loading E?, ang_limit from mEdB'');end',ic));
-     eval(av_ssub('if ~exist(''diE?''), load mEdB diE? ang_limit;disp(''Loading diE?, ang_limit from mEdB'');end',ic));
+     eval(av_ssub('if ~exist(''E?'') & exist(''mEdB.mat'',''file''), load mEdB E? ang_limit;disp(''Loading E?, ang_limit from mEdB'');end',ic));
+     eval(av_ssub('if ~exist(''diE?'')& exist(''mEdB.mat'',''file''), load mEdB diE? ang_limit;disp(''Loading diE?, ang_limit from mEdB'');end',ic));
      if eval(av_ssub('exist(''E?'')',ic)),
        eval(av_ssub('number_of_points=size(E?,1);',ic));
        disp(['E' num2str(ic) ' --> E' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
