@@ -135,18 +135,26 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(i)?diE[1-4]p1234$')==1
-	if vvs(1)=='i', 
-		vvs = vvs(2:end);
-		v.frame = 'inertial'; 
-		v.file = 'mEIDSI';
-		v.quant = 'idie';
-	else
-		v.frame = 'sc';
-		v.file = 'mEDSI';
-		v.quant = 'die';
-	end
-	v.cl_id = vvs(4);
+elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
+    switch vvs(1:findstr(vvs,'E')-1) % characters before 'E'
+        case 'di'
+            v.frame = 'sc';
+            v.file = 'mEDSI';
+            v.quant = 'die';
+        case 'idi',
+            v.frame = 'inertial';
+            v.file = 'mEIDSI';
+            v.quant = 'idie';
+        case 'dib' % internal burst mode E field
+            v.frame = 'sc';
+            v.file = 'mEFWburst';
+            v.quant = 'dibe';
+        case 'idib' % internal burst mode E field
+            v.frame = 'inertial';
+            v.file = 'mEFWburst';
+            v.quant = 'idibe';
+    end
+	v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
 	v.inst = 'EFW';
 	v.sig = 'E';
 	v.sen = 'all';
@@ -315,7 +323,7 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
 	v.frame = 'sc';
-	v.sig = 'Attitude';
+	v.sig = 'Velocity';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di'), v.cs = {'vector>dsi_xyz'};
 	else, v.cs = {'vector>gse_xyz'};
@@ -330,6 +338,29 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.com = '';
 	v.file = 'mR';
 	v.quant = 'v';
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% spacecraft position
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^(di)?R[1-4]$')
+	v.cl_id = vs(end);
+	v.inst = 'Ephemeris';
+	v.frame = 'sc';
+	v.sig = 'Position';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di'), v.cs = {'vector>dsi_xyz'};
+	else, v.cs = {'vector>gse_xyz'};
+	end
+	v.units =  {'km'};
+	v.si_conv = {'1e3>m'};
+	v.size = [3];
+	v.name = {'R'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.field_name = {'Spacecraft position'};
+	v.com = '';
+	v.file = 'mR';
+	v.quant = 'r';
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS N PP
