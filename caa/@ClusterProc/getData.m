@@ -13,12 +13,13 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		if imaginary - to p34 
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
-%	edbs, edb : diE[s]{cl_id} -> mEdB // calculate Ez from E.B=0
+%	edbs, edb : E[s]{cl_id}, diE[s]{cl_id} -> mEdB // Ez from E.B=0 [DSI+GSE]
 %		has the following options:
 %		ang_limit - minimum angle(B,spin plane) [default 10 deg]
 %		ang_blank - remove points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit 
+%	vedbs, vedb : V[s]{cl_id}, diV[s]{cl_id} -> mEdB // ExB=0 [DSI+GSE]
 %
 %	Example usage: getData(cp,4,'edbs','ang_fill','ang_limit',20)
 %
@@ -238,7 +239,7 @@ elseif strcmp(quantity,'die')
 	eval(av_ssub(['save_list=[save_list '' diE?p1234 ''];'],cl_id));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% edb - E.B=0
+% edb,edbs - E.B=0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	save_file = './mEdB.mat';
@@ -253,18 +254,18 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	
 	if strcmp(quantity,'edb')
 		var_s = av_ssub('diE?p1234',cl_id); 
-		varo_s = av_ssub('diE?',cl_id); 
+		varo_s = av_ssub('E?',cl_id); 
 	else
 		disp('using p34')
 		var_s = av_ssub('diEs?p34',cl_id); 
-		varo_s = av_ssub('diEs?',cl_id); 
+		varo_s = av_ssub('Es?',cl_id); 
 	end
 
 	Dx_s =  av_ssub('Ddsi?',cl_id);
 	Da_s =  av_ssub('Damp?',cl_id);
 
 	eval(['load mEDSI ' var_s ' ' Dx_s ' ' Da_s])
-	if exist(var_s,'var'), eval(['E=' var_s ';'])
+	if exist(var_s,'var'), eval(['diE=' var_s ';'])
 	else
 		warning('caa:noData','Please despin E (no diE in mEDSI)')
 		data = [];
@@ -277,28 +278,78 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	else, disp('using Da=0'), Da = 0;
 	end
 	
-	E = corrDSIOffsets(E,Dx,0,Da);
+	diE = corrDSIOffsets(diE,Dx,0,Da);
 	
 	disp(['using angle limit of ' num2str(ang_limit) ' degrees'])
-	[E,angle]=av_ed(E,diB,ang_limit);
-	E(:,5) = angle; clear angle
+	[diE,angle]=av_ed(diE,diB,ang_limit);
+	diE(:,5) = angle; clear angle
 
-	ii = find(abs(E(:,5)) < ang_limit);
+	ii = find(abs(diE(:,5)) < ang_limit);
 	if length(ii) > 1
 		switch(flag_edb)
 		case 0 % Ez=0, do nothing
 			disp('using Ez=0')
 		case 1 % remove points
 			disp('settiong points < ang_limit to NaN')
-			E(ii,4) = E(ii,4)*NaN;   
+			diE(ii,4) = diE(ii,4)*NaN;   
 		case 2 % fill with fill_val
 			disp('settiong points < ang_limit to 1e27')
-			E(ii,4) = ones(size(E(ii,4)))*fill_val;   
+			diE(ii,4) = ones(size(diE(ii,4)))*fill_val;   
 		end
 	end
 
-	eval([varo_s '=E;']); clear E
-	save_list=[save_list '''' varo_s ''''];
+	% DSI->GSE
+ 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+	if ~exist(av_ssub('SAX?',cl_id),'var')
+		warning('must fetch spin axis orientation (option ''sax'')')
+	else
+		eval(av_ssub([varo_s '=c_gse2dsc(diE(:,1:4),SAX?,-1);' varo_s '(:,3:4)=-' varo_s '(:,3:4);' varo_s '(:,5)=diE(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id));
+	end
+
+	eval(['di' varo_s '=diE;']); clear diE
+	save_list=[save_list 'di' varo_s ' '];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Vedb,Vedbs - E.B=0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
+	save_file = './mEdB.mat';
+
+	if ~(exist('./mEdB.mat','file') & exist('./mBPP.mat','file'))
+		warning('caa:noSuchFile','Please calculate Ez (mEdB)')
+		data = [];
+		return
+	end
+
+	eval(av_ssub('load mBPP diBPP?;',cl_id));
+
+	if strcmp(quantity,'vedb')
+		var_s = av_ssub('diE?',cl_id); 
+		varo_s = av_ssub('V?',cl_id); 
+	else
+		var_s = av_ssub('Es?',cl_id); 
+		varo_s = av_ssub('Vs?',cl_id); 
+	end
+
+	eval(['load mEdB ' var_s])
+	if exist(var_s,'var')
+		eval(av_ssub(['di' varo_s '=av_e_vxb(' var_s '(:,1:4),diBPP?,-1);'],cl_id))
+		eval(['di' varo_s '(:,5)=' var_s '(:,5);'])
+	else
+		warning('caa:noData','Please calculate Ez (no diE in mEDSI)')
+		data = [];
+		return
+	end
+
+	save_list=[save_list 'di' varo_s ' '];
+
+	% DSI->GSE
+ 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+	if ~exist(av_ssub('SAX?',cl_id),'var')
+		warning('must fetch spin axis orientation (option ''sax'')')
+	else
+		eval(av_ssub([varo_s '=c_gse2dsc(di' varo_s '(:,1:4),SAX?,-1);' varo_s '(:,3:4)=-' varo_s '(:,3:4);' varo_s '(:,5)=di' varo_s '(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id));
+	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
