@@ -64,16 +64,19 @@ if regexp(vs,'^P(s)?[1-4]$')==1
 	v.si_conv = {''};
 	v.size = 1;
 	v.name = {'Spacecraft_potential'};
-	v.labels = {'P'};
-	v.field_name = {'Spacecraft potential'};
+	v.labels = {'-Sc pot'};
+	if vs(2)=='s'
+		v.quant = 'ps';
+		v.field_name = {'Spacecraft potential (spin resolution)'};
+	else
+		v.quant = 'p';
+		v.field_name = {'Spacecraft potential'};
+	end
 	v.ent = {'Instrument'};
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
 	v.file = 'mP';
-	if vs(2)=='s', v.quant = 'ps';
-	else, v.quant = 'p';
-	end
 	v.lev = 1;
 elseif regexp(vs,'^P(s)?[1-4]_info$')==1
 	v.data = 0;
@@ -190,7 +193,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.label_1 = {'"x", "y"',''};
     v.col_labels = {{'x','y','z'},''};
     v.rep_1 = {'"x", "y"',''};
-	v.field_name = {'Electric field','Standard deviation'};
+	v.field_name = {'Electric field (spin resolution)','Standard deviation'};
 	v.ent = {'Electric_Field','Electric_Field'};
 	v.prop = {'Vector','Vector'};
 	v.fluc = {'Waveform','Fluctuation_Level'};

@@ -16,6 +16,8 @@ if nargin<4, DATA_VERSION = '01'; end
 if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 | lev>3, error('LEV must be 1,2 or 3'), end
 
+DATASET_DESCRIPTION_PREFIX = '';
+
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
 		id = str2num(caa_vs(2:end));
@@ -35,6 +37,7 @@ else
 			vs = irf_ssub('Ps?',cl_id);
 			v_size = 1;
 		end
+		DATASET_DESCRIPTION_PREFIX = 'negative of the ';
 	case 'E'
 		if lev==2
 			vs = irf_ssub('diE?p1234',cl_id);
@@ -94,8 +97,6 @@ else,
 	error('cannot determine time resolution')
 end
 
-TIME_RESOLUTION = num2str(TIME_RESOLUTION);
-
 % Do magic on E-field
 if strcmp(caa_vs,'E')
 	% We check if this full res E is from coming from two probe pairs
@@ -147,7 +148,7 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	dsc.cs = {'na'};
  	dsc.units =  {'V'};
 	dsc.si_conv = {''};
-	dsc.field_name = {['Potential difference measured between the probes '...
+	dsc.field_name = {['Potential difference measured between probes '...
 		dsc.sen(1) ' and ' dsc.sen(2)]};
 	dsc.ent = {'Instrument'};
 	dsc.prop = {'Probe_Potential'};
@@ -180,14 +181,15 @@ pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
 pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
 pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id)
 pmeta(fid,'DATASET_ID',DATASET_ID,cl_id)
-pmeta(fid,'DATASET_TITLE',dsc.field_name)
+pmeta(fid,'DATASET_TITLE',dsc.field_name{1})
 pmeta(fid,'DATASET_DESCRIPTION',...
-	{['This dataset contains measurements of the ' dsc.field_name{1}],... 
+	{'This dataset contains measurements of the', ...
+	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
 	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)})
 pmeta(fid,'DATASET_VERSION',EFW_DATASET_VERSION)
-pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
-pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
-pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'TIME_RESOLUTION',num2str(TIME_RESOLUTION))
+pmeta(fid,'MIN_TIME_RESOLUTION',num2str(TIME_RESOLUTION))
+pmeta(fid,'MAX_TIME_RESOLUTION',num2str(TIME_RESOLUTION))
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
 pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
 pmeta(fid,'LOGICAL_FILE_ID',file_name)
@@ -207,8 +209,9 @@ fprintf(fid,'!                   Variables                         !\n');
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
 fprintf(fid,'  VALUE_TYPE      = ISO_TIME\n');
-fprintf(fid,['  DELTA_PLUS      = ' TIME_RESOLUTION '\n']);
-fprintf(fid,['  DELTA_MINUS     = ' TIME_RESOLUTION '\n']);
+fprintf(fid,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
+fprintf(fid,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
+fprintf(fid,['  FILLVAL         = "9999-12-31T23:59:59Z"\n']);
 fprintf(fid,'  LABLAXIS        = "UT"\n');
 fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
 fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
