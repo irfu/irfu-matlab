@@ -13,7 +13,7 @@ function getRData(st,dt,varargin)
 % 'dp' - storage directory;
 %   // default: '/data/cluster'
 % 'db' - ISDAT database;
-%   // default: 'disco:10|disco:20'
+%   // default: 'disco:10'
 % 'sc_list' - list of SC;
 %   // default: 1:4
 % 'vars' - variables to get data for (see help ClusterDB/getData)
@@ -49,7 +49,7 @@ else, have_options = 0;
 end
 
 sp = '.';
-db = 'disco:10|disco:20';
+db = 'disco:10';
 dp = '/data/cluster';
 cdb = '';
 vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','vce','bfgm'};
