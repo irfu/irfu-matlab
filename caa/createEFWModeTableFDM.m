@@ -161,9 +161,10 @@ while t_cur < stop_epoch
 
 		no_data = 1;
 		
-		s = fromepoch(t_cur - dt);
-		disp(sprintf('No data at %d-%d-%d %d:%d:%2.3f',...
-		s(1),s(2),s(3),s(4),s(5),s(6)))
+		%s = fromepoch(t_cur - dt);
+		%disp(sprintf('No data at %d-%d-%d %d:%d:%2.3f',...
+		%s(1),s(2),s(3),s(4),s(5),s(6)))
+		c_log('dsrc',['No data at ' datestr(epoch2date(t_cur - dt),31)])
 		
 		if prev_ok
 			l = length(t_start_save);
