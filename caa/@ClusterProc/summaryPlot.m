@@ -1,38 +1,81 @@
-function out=summaryPlot(cp,cl_id,cs,st,dt)
+function out=summaryPlot(cp,cl_id,varargin)
 % summaryPlot make EFW summary plot
 %
-% h = summaryPlot(cp,cl_id,[cs],[st,dt])
+% h = summaryPlot(cp,cl_id,[options])
 %
 % Input:
 %   cp - ClusterProc object
 %   cl_id - SC#
-%   cs is a coordinate system : 'dsi' [default] of 'gse'
-%   st, dt - start time and interval length [optional]
+%   Options: go in pair 'option', value
+%    'cs' - coordinate system : 'dsi' [default] of 'gse'
+%    'st', 'dt' - start time (ISDAT epoch) and interval length (sec)
+%    'fullb' - use full resolution B FGM
 % 
 % Output:
 %   h - axes handles // can be omitted
 %
 % Example:
-%   summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'gse')
+%   summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'cs','gse')
+%   summaryPlot(ClusterProc('.'),2,'st',toepoch([2004 1 4 12 47 0]),'dt',60,'fullb')
 %
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
-error(nargchk(2,5,nargin))
+error(nargchk(2,9,nargin))
 
-if nargin<3, cs = 'dsi'; end
-
-if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
-	c_log('fcal','unknown CS. defaulting to DSI')
-	cs= 'dsi';
+if nargin>2, have_options = 1; args = varargin;
+else, have_options = 0;
 end
+
+% Default values
+cs = 'dsi';
+st = 0;
+dt = 0;
+have_tint = 0;
+use_fullb = 'rs';
+
+while have_options
+	l = 2;
+	if length(args)>=1
+		switch(args{1})
+		case 'cs'
+			if ischar(args{2}), 
+				cs = args{2};
+				if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
+					c_log('fcal','unknown CS. defaulting to DSI')
+					cs = 'dsi';
+				end
+			else, c_log('fcal','wrongArgType : CS must be a string')
+			end
+		case 'st'
+			if isnumeric(args{2}), st = args{2};
+			else, c_log('fcal','wrongArgType : ST must be numeric')
+			end
+		case 'dt'
+			if isnumeric(args{2}), dt = args{2};
+			else, c_log('fcal','wrongArgType : DT must be numeric')
+			end
+		case 'fullb'
+			use_fullb = '';	l = 1;
+		otherwise
+        	c_log('fcal',['Option ''' args{1} '''not recognized'])
+    	end
+		if length(args) > l, args = args(l+1:end);
+		else break
+		end
+	else
+		error('caa:wrongArgType','use getRData(..,''option'',''value'')')
+	end
+end
+
+if st & dt, have_tint = 1; end
 
 % Define variables we want to plot
 if strcmp(cs,'dsi') 
-	q_list = {'P?','diBrs?','diE?','diEs?','diVExBs?'};
+	q_list = {'P?',['diB' use_fullb '?'],'diE?','diEs?','diVExBs?'};
 	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
-	q_list = {'P?','Brs?','E?','Es?','VExBs?'};
+	q_list = {'P?',['B' use_fullb '?'],'E?','Es?','VExBs?'};
 	l_list = {'SC pot [-V]','B GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
 end
 
@@ -74,16 +117,16 @@ cd(old_pwd)
 if n_plots==0, return, end % Nothing to plot
 
 % Define time limits
-if nargin<4,
+if have_tint
+	t_st = st;
+	t_end = st + dt;
+else
 	t_st = 1e32;
 	t_end = 0;
 	for k=1:n_plots
 		t_st = min(t_st,data{k}(1,1));
 		t_end = max(t_end,data{k}(end,1));
 	end
-else
-	t_st = st;
-	t_end = st + dt;
 end
 
 % Plotting
