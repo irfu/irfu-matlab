@@ -47,9 +47,17 @@ case 'edi'
 	r.mem	= ['C' cl_id_s];
 	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
 	r.sen	= r.var;
-case 'vcis'
+case 'vcis_p'
 	r.inst  = 'CIS';
 	r.var	= ['V_p_xyz_gse__C' cl_id_s '_PP_' r.inst];
+	% no changes here
+	r.pr	= 'CSDS_PP';
+	r.mem	= ['C' cl_id_s];
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
+	r.sen	= r.var;
+case 'vcis_h'
+	r.inst  = 'CIS';
+	r.var	= ['V_HIA_xyz_gse__C' cl_id_s '_PP_' r.inst];
 	% no changes here
 	r.pr	= 'CSDS_PP';
 	r.mem	= ['C' cl_id_s];
