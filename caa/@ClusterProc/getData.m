@@ -13,7 +13,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		if imaginary - to p34
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
-% idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
+%	idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
 %   Transform from SC to inertial frame
 %	dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
 %		ADC offsets are NOT corrected
@@ -25,9 +25,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_blank - put Ez to NaN for points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit
-% 	probe_p - probe pair to use 12 or 34 [default 34]
-% edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
-% br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
+%		probe_p - probe pair to use 12 or 34 [default 34]
+%	edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
+%	br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
 % Example: 
@@ -205,11 +205,11 @@ if strcmp(quantity,'dies')
 
 		if real(Del)
 			c_log('calb','correcting p12')
-			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs?p12),1)*Del;',cl_id));
+			c_eval('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(size(diEs?p12,1),1)*Del;',cl_id);
 		else
 			c_log('calb','correcting p34')
 			Del = imag(Del);
-			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs?p34),1)*Del;',cl_id));
+			c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*Del;',cl_id);
 		end
 		clear m12 m34 Del
 
