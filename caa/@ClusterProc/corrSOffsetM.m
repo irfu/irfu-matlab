@@ -82,7 +82,7 @@ var = {'diVCEp', 'diVCEh'};
 if exist('./mCIS.mat','file')
 	CIS=load('mCIS');
 	for i=1:length(var)
-		eval(av_ssub(['if isfield(CIS,''' var{i} '?''); ' var{i} '=CIS.' var{i} '?; end; clear ' var{i} '?'], cl_id));
+		c_eval(['if isfield(CIS,''' var{i} '?''); ' var{i} '=CIS.' var{i} '?; end; clear ' var{i} '?'], cl_id)
 	end
 	clear CIS
 end
@@ -109,6 +109,7 @@ if exist('./mEDI.mat','file')
 	eval(av_ssub(['if isfield(EDI,''' var '?''); ' var '=EDI.' var '?; end; clear ' var '?'], cl_id));
 	clear EDI
 end
+
 if ~exist('diEDI','var')
 	warning('caa:noData','no EDI data loaded')
 else
@@ -116,6 +117,16 @@ else
 		var_list = [var_list ',diEDI'];
 		var_list1 = [var_list1 ',diEDI'];
 	end
+end
+
+var_list0 = [];
+if exist('./mP.mat','file')
+	c_eval('load mP P?; P=P?; clear P?', cl_id)
+	var_list0 = 'P';
+end
+if exist('./mBPP.mat','file')
+	c_eval('load mBPP diBPP?; diB=av_abs(diBPP?); clear diBPP?', cl_id)
+	var_list0 = [var_list0 ',diB'];
 end
 
 diE_tmp = diE;
@@ -133,9 +144,48 @@ clf
 t = tokenize(var_list1,',');
 leg = ['''' t{1} ''''];
 for i=2:length(t), leg = [leg ',''' t{i} '''']; end
-eval(['plotExy(' var_list ');zoom on'])
+	
+t0 = tokenize(var_list0,',');
+t1 = tokenize(var_list,','); dvar = t1{1};
+
+dummy = dvar;
+for j=2:2+length(t0), dummy = [dummy ',' dvar]; end
+eval(['h=av_tplot({' dummy '});'])
+
+%Ex,Ey
+for co=1:2
+	dummy = [t1{1} '(:,1),' t1{1} '(:,' num2str(co+1) ')'];
+	if length(t1)>1
+		for j=2:length(t1)
+			dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
+		end
+	end
+
+	axes(h(co))
+	eval(['plot(' dummy ');'])
+	add_timeaxis
+	grid
+	set(gca,'XTickLabel',[])
+	if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
+	xlabel('')
+	zoom on
+end
+
+axes(h(1))
 title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 eval(['legend(' leg ')'])
+
+% AUX information
+for j=1:length(t0)
+	axes(h(2+j))
+	eval(['av_tplot(' t0{j} '); ylabel(''' t0{j} ''')'])
+end
+
+addPlotInfo
+axes(h(2))
+axes(h(1))
+legend
+zoom on
 
 q='0';
 while(q ~= 'q')
@@ -188,12 +238,37 @@ while(q ~= 'q')
     diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
     diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
     diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
+	
     figure(17)
-    clf
-    eval(['plotExy(' var_list ');zoom on'])
+	t1 = tokenize(var_list,',');
+	%Ex,Ey
+	for co=1:2
+		dummy = [t1{1} '(:,1),' t1{1} '(:,' num2str(co+1) ')'];
+		if length(t1)>1
+			for j=2:length(t1)
+				dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
+			end
+		end
+
+		axes(h(co))
+		eval(['plot(' dummy ');'])
+		add_timeaxis
+		grid
+		set(gca,'XTickLabel',[])
+		if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
+		xlabel('')
+		zoom on
+	end
+
+	axes(h(1))
+ 
     title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
-%			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
 		eval(['legend(' leg ')'])
+		addPlotInfo
+		axes(h(2))
+		axes(h(1))
+		legend
+		zoom on
 		flag_replot=0;
 	end
 end
