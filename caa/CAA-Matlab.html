@@ -20,6 +20,7 @@
   </li>
   <li> <a href="#conv">Conventions</a> 
   <ul>
+    <li><a href="#conv_file">Files</a></li>
     <LI><a href="#conv_var">Variables</a></LI>
     <li><a href="#conv_t">Time</a></li>
   </ul>
@@ -40,12 +41,62 @@
   
   <h2><a name="req">Requirements</a></h2>
   <h3><a name="req_da">Data </a></h3>
-  <h3><a name="req_is">ISDAT</a></h3>
+  <p>You nees access to ISDAT server with EFW and CSDS (optional) modules. 
+  Alternatively, or as a backup solution, you may read CSDS data directly from 
+  CDF files.
+  </p>
+  
+  <h3><a name="req_is">ISDAT-Matlab</a></h3>
+  <p>You need an up-to-date ISDAT_Matlab interface from CVS. For instructions on 
+  using CVS for getting ISDAT see 
+  </p>
+  <a href="http://www.space.irfu.se/isdat/using/HOWTO/using_CVS.html">ISDAT CVS HOWTO</a>.
+  
   <h3><a name="req_ma">Matlab</a></h3>
+  <p>You need Marlab R13 to read CDF files.
+  </p>
   
   <h2><a name="conv">Conventions</a></h2>
+  
+  <h3><a name="conv_file">Files</a></h3>
+  
+  <p>All data is stored in Matlab's MAT files.</p>
+  
+<pre>
+  >> ls *.mat
+
+ans =
+
+mA.mat          mEDSI.mat       mEdB.mat
+mBPP.mat        mEPH.mat        mP.mat
+mCIS.mat        mER.mat         mTMode.mat
+
+</pre>
+
+  <p>These files contain:</p>
+  <ul>
+    <li><tt>mA</tt> phase</li>
+    <li><tt>mBPP</tt> B FGM PP (CSDS)</li>
+    <li><tt>mCIS</tt> CIS PP (CSDS)</li>
+    <li><tt>mEDSI</tt> EFW measured field and offsets in DSI, 
+    prior to any assumtions about Ez</li>
+    <li><tt>mEPH</tt> ephemeris</li>
+    <li><tt>mER</tt> raw EFW data</li>
+    <li><tt>mEdB</tt> EFW data with Ez computed from E.B=0</li>
+    <li><tt>mP</tt> sc ponential</li>
+    <li><tt>mTMode</tt> EFW telemetry mode</li>
+  </ul>
+  
   <h3><a name="conv_var">Variables</a></h3>
+  
+  <p>Almost all information about data quantity can be obtained from its name. 
+  For example <tt>diE2p1234</tt> contains full resolution E from SC 2 in 
+  DSI coordinate system. The signal is combined from probe pairs 12 and 34.
+  <tt>diEs4p34</tt> contains spin resolution E from SC 4 and probe pair 34.</p>
+  
   <h3><a name="conv_t">Time</a></h3>
+  <p>We use time in ISDAT epoch, see <tt>help fromepoch, toepoch</tt>
+  </p>
   
   <h2><a name="do">Doing things</a></h2>
   <h3><a name="do_es">Easy start</a></h3>
@@ -147,13 +198,30 @@ magnetic field is more the 15 degrees from the spin plane, and then compute ExB.
 >> doSPlot(sp)
 </pre>
 
+<p>Now you should get four plots with data for all Cluster SC, and all the processed 
+data is saved in a directory <tt>/home/yuri/caa-data/20011001_1310</tt>.
+</p>
+
 <pre>
 </pre>  
   <h3><a name="do_re">Reading raw data</a></h3>
-  <h3><a name="do_bp">Basic plotting</a></h3>
-  <h3><a name="do_bc">Basic calibration</a></h3>
-  <h3><a name="do_sf">Spin fitting and despin</a></h3>
-  <h3><a name="do_ac">Advanced calibration</a></h3>
+  <p>see <tt>help ClusterDB/getData</tt></p>
   
+  <h3><a name="do_bp">Basic plotting</a></h3>
+  <ul>
+  <LI><tt>av_tplot</tt> for general plotting</LI>
+  <li><tt>summaryRPlot</tt> simple summary of EFW</li>
+  <li><tt>ClusterProc/summaryPlot</tt> more advanced summary plot including ExB</li>
+  </ul>
+  
+  <h3><a name="do_bc">Basic calibration</a></h3>
+  <p>Basic calibrations such as ADC offset and p12-p34 differences are done 
+  automatically by <tt>ClusterProc/getData</tt></p>
+  
+  <h3><a name="do_sf">Spin fitting and despin</a></h3>
+  <p>see <tt>help ClusterProc/getData</tt></p>
+  
+  <h3><a name="do_ac">Advanced calibration</a></h3>
+  <p>see <tt>help ClusterProc/corrSOffsetM</tt></p>
   </body>
 </html>
