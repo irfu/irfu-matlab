@@ -19,7 +19,7 @@ if lev==1
 		else, vs = av_ssub('wE?p!',cl_id,id);
 		end
 		v_size = 1;
-	else, error('Nust be P(1|2|3|4|12|32|34)')
+	else, error('Must be P(1|2|3|4|12|32|34)')
 	end
 else
 	switch caa_vs
@@ -192,7 +192,7 @@ for j=1:v_size
 	if ~isempty(dsc.fluc{j})
 		fprintf(fid,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
 	end
-	fprintf(fid,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
+	fprintf(fid,['  CATDESC           = "' dsc.field_name{j} '"\n']);
 	if ~strcmp(dsc.cs{j},'na')
 		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
 	end
