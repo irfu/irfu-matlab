@@ -1,4 +1,4 @@
-function doSPlot(sp,sc_list,options)
+function doSPlot(varargin)
 %doSPlot make EFW summary plots
 % doSPlot([sp],[sc_list],[options])
 % Input:
@@ -6,9 +6,12 @@ function doSPlot(sp,sc_list,options)
 %   sc_list - list of SC [default 1:4]
 %   options :
 %      'noproc' - do not recalculate anything
+%      'sp' - storage directory; // default: '.'
+%      'sc_list' - list of SC;   // default: 1:4
+%      ++ options to summaryPlot (see help summary plot)
 %
 % It is necessary to obtain the Sunward offset and amplitude factor
-% before running this routine (use ClusterProc/corrSOffsetM)
+% before running this routine (use c_cal_gui)
 %
 % Examples:
 %   doSPlot
@@ -18,17 +21,22 @@ function doSPlot(sp,sc_list,options)
 %   doSPlot('noproc')
 %   % same as above, but without reprocessing
 %
-%   doSPlot([2 4],'noproc')
-%   % make plots for SC 2 and 4 without reprocessing
+%   doSPlot('noproc','sc_list',[2 4],'fullb')
+%   % make plots for SC 2 and 4 without reprocessing. 
+%   % 'fullb' is passed to summaryPlot
 %
 %   sc_list = 2:4;
 %   sp = '/home/yuri/caa-data/20020304';
+%   st = toepoch([2002 03 04 10 00 00]);
+%   dt = 30*60;
 %   %load the necessary data
-%   getRData(sp,toepoch([2002 03 04 10 00 00]),30*60,sc_list);
+%   getRData(st,dt,sc_list,'sp',sp);
 %   %correct the S-offset and amplitude
-%   for i=sc_list, corrSOffsetM(ClusterProc(sp),i), end
+%   c_cal_gui
 %   %do plots
-%   doSPlot(sp,sc_list)
+%   doSPlot('sp',sp,'sc_list',sc_list)
+%   % zoom in (1 min after ST, 20 sec interval) with full B FGM
+%   doSPlot('noproc','sp',sp,'sc_list',sc_list,'st',st+60,'dt',20,'fullb')
 %
 % $Revision$  $Date$
 %
@@ -37,31 +45,37 @@ function doSPlot(sp,sc_list,options)
 % Copyright 2004 Yuri Khotyaintsev
 
 do_proc = 1;
-error(nargchk(0,2,nargin))
-switch nargin
-case 0
-	sp = '.';
-	sc_list = 1:4;
-case 1
-	if isstr(sp), 
-		if strcmp(sp,'noproc')
-			sp = '.';
-			do_proc = 0; 
+sp = '.';
+sc_list = 1:4;
+splot_options = '';
+	
+if nargin>0, have_options = 1; args = varargin;
+else, have_options = 0; args = '';
+end
+
+while have_options
+	l = 2;
+	if length(args)>0
+		switch(args{1})
+		case 'sp'
+			if ischar(args{2}), sp = args{2};
+			else, c_log('fcal','wrongArgType : sp must be string')
+			end
+		case 'sc_list'
+			if isnumeric(args{2}), sc_list = args{2};
+			else, c_log('fcal','wrongArgType : sc_list must be numeric')
+			end
+		case 'noproc'
+			do_proc = 0; l=1;
+		otherwise
+			break
+    	end
+		if length(args) >= l
+			args = args(l+1:end);
+			if length(args) == 0, break, end
+		else break
 		end
-		sc_list = 1:4;
-	elseif isnumeric(sp)
-		sc_list = sp; 
-		sp = '.';
-	else, error('Input must be eather a storage path or sc_list (1:4)')
 	end
-case 2
-	if isnumeric(sp)
-		if strcmp(sc_list,'noproc'), do_proc = 0; end
-		sc_list = sp; 
-		sp = '.';
-	end
-case 3
-	if strcmp(options,'noproc'), do_proc = 0; end
 end
 
 cp=ClusterProc(sp);
@@ -74,6 +88,7 @@ for cl_id=sc_list
 		getData(cp,cl_id,'vedbs');
 	end
 
-	figure(cl_id)
-	summaryPlot(cp,cl_id,'dsi')
+	figure(cl_id), clf, orient tall
+	splot_options = [{cp} {cl_id} args];
+	summaryPlot(splot_options{:})
 end
