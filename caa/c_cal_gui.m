@@ -12,6 +12,7 @@ sp = '.';
 
 inactive_color = [0.831373 0.815686 0.784314]; %gray
 active_color = [1 1 1]; %white
+active_p_color = 'magenta';
 pxa = .07+.12; pya = .1; wa = .47; ha = .215; dya = .01; % positions
 
 if nargin, action = varargin{1};
@@ -30,6 +31,9 @@ elseif regexp(action,'^update_C[1-4]checkbox$')
 end
 
 switch action
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% init
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'init'
 	% Create figure
 	h0 = figure(23);
@@ -51,6 +55,7 @@ case 'init'
 	hnd.Data = {};
 	hnd.DataList = {};
 	hnd.AUXList = {};
+	hnd.DATArbList = {};
 	hnd.BPPData = {};
 	hnd.BData = {};
 	hnd.EFWoffset = {};
@@ -178,6 +183,7 @@ case 'init'
 						if strcmp(dsc.sig,'V')|strcmp(dsc.sig,'Vp')
 							set(hhd,'Enable','off')
 						end
+						hnd.DATArbList = [hnd.DATArbList {vs}];
 						eval(['hnd.DATA' vs 'radiobutton=hhd;clear hhd'])
 					end
 					hhd = uicontrol(hnd.DATApanel,'Style','checkbox',...
@@ -292,6 +298,16 @@ case 'init'
 
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
+	
+	% Give the new data 4*width and active color
+	hnd = guidata(h0);
+	j = D_findByName(hnd.Data,hnd.ActiveVar);
+	for k=1:length(hnd.Data{j}.ploth)
+		set(hnd.Data{j}.ploth(k),...
+			'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')*4,...
+			'Color',active_p_color)
+	end
+	
 	av_figmenu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fix_plot_pos
@@ -612,6 +628,55 @@ case 'update_DATAcheckbox'
 		
 		guidata(h0,hnd);
 		c_cal_gui('update_legend')
+	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_DATAradiobutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'update_DATAradiobutton'
+	hnd = guidata(h0);
+	if get(eval(['hnd.DATA' vs 'radiobutton,']),'Value')==1
+		vs_old = hnd.ActiveVar;
+		
+		j = D_findByName(hnd.Data,vs);
+		% Show the new data if not visible
+		if hnd.Data{j}.visible==0
+			%disp('update_DATAradiobutton: replot')
+			set(eval(['hnd.DATA' vs 'checkbox']),'Value',1)
+			c_cal_gui(['update_DATA' vs 'checkbox'])
+			hnd = guidata(h0);
+		end
+		
+		j = D_findByName(hnd.Data,vs);
+		% Give the new data 4*width and active color
+		if hnd.Data{j}.visible
+			for k=1:length(hnd.Data{j}.ploth)
+				set(hnd.Data{j}.ploth(k),...
+					'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')*4,...
+					'Color',active_p_color)
+			end
+			hnd.ActiveVar = vs;
+		else
+			return
+		end
+		
+		% Hide the old active rb
+		set(eval(['hnd.DATA' vs_old 'radiobutton,']),'Value',0)
+		
+		% Five the old data usual width and color
+		%disp(['old :' vs_old])
+		if ~isempty(vs_old)
+			j = D_findByName(hnd.Data,vs_old);
+			for k=1:length(hnd.Data{j}.ploth)
+				set(hnd.Data{j}.ploth(k),...
+					'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')/4,...
+					'Color',hnd.Data{j}.plot_color)
+			end
+		end
+		
+		guidata(h0,hnd);
+	else
+		% Show it back
+		eval(['set(hnd.DATA' vs 'radiobutton,''Value'',1)'])
 	end
 otherwise 
 	disp('wrong action')
