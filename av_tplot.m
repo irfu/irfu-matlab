@@ -19,6 +19,7 @@ if now<datenum(2004,12,07) & isempty(flag_display_new_features)
     flag_display_new_features=1;
 end
 
+ylabels{1}='';
 flag_subplot=0;
 flag_yy=0;
 if nargin >=2, inp2=t_unit_in_original_units;end
@@ -51,7 +52,7 @@ if ischar(x), % try to get variable labels etc.
             x{ii}=evalin('caller',var_names{ii});
         catch
             try % if there is none try to load variable
-                c_load(var_names{ii});eval(['x{ii}=' var_names{ii}]);
+                c_load(var_names{ii});eval(['x{ii}=' var_names{ii} ';']);
             catch % if nothing works give up
                 warning(['do not know where to get variable >' var_names{ii}]);
                 return;
@@ -67,7 +68,9 @@ if ischar(x), % try to get variable labels etc.
 end
 
 if iscell(x), % plot several variables
-    for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
+    if size(ylabels,2)<size(x,2), % no ylabels are given
+        for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
+    end
     if nargin == 1,
         flag='subplot';
         dt(1:size(x,2))=0;
