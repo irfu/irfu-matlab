@@ -1,5 +1,5 @@
 function c=irf_plot(x,plot_type,varargin);
-%IRF_PLOT   Flexible plotting routine of time series
+%IRF_PLOT   Flexible plotting routine for time series
 %
 % c=irf_plot(x,plot_type,varargin);
 % c=irf_plot(x,'subplot') to plot in separate subplots all x values
@@ -45,6 +45,8 @@ function c=irf_plot(x,plot_type,varargin);
 %   irf_plot({B1,B2},'','dt',[dt1 dt2]) - separate subplots with B1 and B2, 
 %                    but in addition B1 and B2 time axis are shifted by dt1 
 %                    and dt2 correspondingly
+%
+% See also C_PL_TX
 %
 % $Id$
 
@@ -192,16 +194,29 @@ elseif flag_subplot==1, % separate subplot for each component
 elseif flag_subplot==2, % separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
     qq=x{1};ts=qq(1,1);clear qq; if ts > 1e8, t_start_epoch=ts;else ts=0;t_start_epoch=0;end
-
+	
+	t_st = []; t_end = [];
+	
     npl=size(x,2);
-    for ipl=1:npl,
+    for ipl=1:npl
         c(ipl)=irf_subplot(npl,1,-ipl);
         y=x{ipl};
-        i=2:length(y(1,:));
-        plot((y(:,1)-ts-dt(ipl)),y(:,i),varargin{:});grid on;
+        t_tmp = (y(:,1)-ts-dt(ipl));
+		if isempty(t_st), t_st = t_tmp(1);
+		else, if t_tmp(1)<t_st, t_st = t_tmp(1); end
+		end
+		if isempty(t_end), t_end = t_tmp(end);
+		else, if t_tmp(end)>t_end, t_end = t_tmp(end); end
+		end
+        plot(t_tmp,y(:,2:end),varargin{:});grid on;
         ylabel(ylabels{ipl});
     end
-    tt=y(1,1);
+	
+	% Set common XLim
+	for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
+	clear t_st t_end
+    
+	tt=y(1,1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     %   t_start_epoch is saved in figures user_data variable
