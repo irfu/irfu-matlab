@@ -65,8 +65,8 @@ if regexp(vs,'^P(s)?[1-4]$')==1
 	v.name = {'Spacecraft_potential'};
 	v.labels = {'P'};
 	v.field_name = {'Spacecraft potential'};
-	v.ent = {'Spacecraft'};
-	v.prop = {'Potential'};
+	v.ent = {'Instrument'};
+	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
 	v.file = 'mP';
@@ -102,8 +102,8 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
-	v.ent = {'Probe'};
-	v.prop = {'Potential'};
+	v.ent = {'Instrument'};
+	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.file = 'mP';
@@ -190,7 +190,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.field_name = {'Electric field','Standard deviation'};
 	v.ent = {'Electric_Field','Electric_Field'};
 	v.prop = {'Vector','Vector'};
-	v.fluc = {'Waveform','Standard_deviation'};
+	v.fluc = {'Waveform','Fluctuation_Level'};
 	v.com = 'Ez=0 by definition (not measured).';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -219,6 +219,7 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
 	v.inst = 'EFW';
 	v.sig = 'E';
+	% TODO: we need to check here for p32-p34 - v.sen = '3234';
 	v.sen = '1234';
 	v.cs = {'ISR2'};
 	v.rep = {'xy'};
