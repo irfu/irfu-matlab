@@ -14,8 +14,9 @@ mmm =  ...
 %	'0  this menu                          ';
 	'1  time interval                      ';
 	'2  sc list [1:4]                      ';
-	'a  load phase A1..A4   -> mA          ';
-	'e  load wE1...wE4      -> mE          ';
+	'a  load phase A1..A4     -> mA        ';
+	'e  load wE1...wE4        -> mE        ';
+        'e1  load wE1p12...wE4p34 -> mE        ';
 	'eph load ephemeris,r,v,dr,dv          ';
 	'b  load BPP1...BPP4 -> mBPP           ';
 	'bf load Hres FGM B1...B4 -> mB        ';
@@ -32,6 +33,7 @@ mmm =  ...
 	'dbf despinned dB1... -> mB            ';
 	'dbs despinned dBS1..dBS4 -> mBS       ';
 	'dve despinned dvE1..dvE4 -> mE        ';
+        'dve1 spin fits dvE1p12..dvE4p34 -> mE ';
 	'de (dve+vsxBPP) dE1..dE4 -> mE        ';
 	'deo dEo1..dEo4 Eo.B=0                 ';
 	'es  E ->ascii E?                      ';
@@ -67,6 +69,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(av_ssub('A?=[double(t) double(data)];',ic));%clear t data;
      if flag_save==1, eval(av_ssub('if exist(''./mA.mat''),save mA A? -append; else, save mA A?;end',ic));end
     end
+    save_list = '';
 
  elseif strcmp(q,'eph'),
     for ic=sc_list, disp(['...ephemeris' num2str(ic) '...LT,MLT,ILAT,L->mEPH...R->mR...V->mV']);
@@ -88,6 +91,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(av_ssub('tt=V?(1,1);dV?=c_gse2dsc(V?,[tt ic]);',ic));  % despinned coordinates
      eval(av_ssub('if exist(''mV.mat''),save mV V? dV? -append; else, save mV V? dV? ;end',ic));
     end
+    save_list = '';
 
  elseif strcmp(q,'x'),
     var_name=input('matlab variable name =','s');
@@ -126,7 +130,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     dat=get(fvs,'data','b',fgm_t_interval);
     eval(av_ssub('B?=[rem(dat.time,1)*3600*24+toepoch(start_time.*[1 1 1 0 0 0]) dat.b];save_list=[save_list '' B? ''];',ic));
   end
-  eval(['save mB ' save_list]);
+  eval(['save mB ' save_list]); 
+  save_list = '';
 
  elseif strcmp(q,'bfgm'),
   disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
@@ -134,6 +139,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     eval(av_ssub('B?=c_get_bfgm(tint_epoch,ic);',ic));
   end
   eval(['save mB ' save_list]);
+  save_list = '';
 
  elseif strcmp(q,'dbf'),
   for ic=sc_list,
@@ -161,63 +167,138 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    eval(av_ssub('dBS?=c_despin(wBS?,A?);save -append mBS dBS?;',ic));
   end
 
- elseif q == 'e',
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% E p1234 or p12 & p34
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+ elseif strcmp(q,'e') | strcmp(q,'e1'),
+  save_file = './mE.mat';
   mode=av_q('Sampling 1)hx 2)lx ? If different give as vector. [%]','mode',1);
   for ic=sc_list,
    	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
-		if (mm == 2), param='10Hz';tmmode='lx';
-		elseif (mm == 1) 
-			%% Find TapeMode
-			% We read FDM from isdat and 5-th column contains the HX mode (undocumented)
-			% 0 - normal mode  (V12L,V34L)
-			% 1 - tape mode 1  (V12M,V34M)
-			% 2 - tape mode 2  (V12M,V34M,)
-			% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
-			%
-			clear tm mTMode1 mTMode2 mTMode3 mTMode4
-  			if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
-			if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
-			if ~exist('tm','var')
-				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
-				if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
-				if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
-				tm=tm(1);
-				eval(av_ssub('mTMode?=tm;',ic));
-				if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
-				else, eval(av_ssub('save mTMode mTMode?;',ic));	end
-			end
-			tmmode='hx';
-			if tm<1e-30, param='10Hz';	else, param='180Hz'; end
-			clear tm
-			tst = toepoch(start_time);
-			if tst>toepoch([2001 07 31 00 00 00])&tst<toepoch([2001 09 01 00 00 00]), 
-				% all sc run on 180Hz filter in august 2001
-				param='180Hz';	
-			elseif tst>toepoch([2001 07 31 00 00 00])&ic==2, % 10Hz filtef probelm on sc2
-				param='180Hz';
-			end
+	if (mm == 2), param='10Hz';tmmode='lx';
+	elseif (mm == 1) 
+		%% Find TapeMode
+		% We read FDM from isdat and 5-th column contains the HX mode (undocumented)
+		% 0 - normal mode  (V12L,V34L)
+		% 1 - tape mode 1  (V12M,V34M)
+		% 2 - tape mode 2  (V12M,V34M,)
+		% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
+		%
+		clear tm mTMode1 mTMode2 mTMode3 mTMode4
+  		if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
+		if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
+		if ~exist('tm','var')
+			[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
+			if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
+			if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
+			tm=tm(1);
+			eval(av_ssub('mTMode?=tm;',ic));
+			if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
+			else, eval(av_ssub('save mTMode mTMode?;',ic));	
+                        end
 		end
-    disp(['EFW...sc' num2str(ic) '...E ' param ' filter']);
-    if toepoch(start_time)>toepoch([2001 12 28 03 00 00])&ic==1, % probe 1 probelm on sc1
-       [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
-       data=double(real(data));
-       data=[data(:,1)*0 data(:,1) data(:,1)*0]';
-       disp('            !Only p34 exist for sc1');
-    elseif toepoch(start_time)>toepoch([2002 07 29 09 06 59 ])&ic==3, % probe 1 probelm on sc3
-       [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
-       data=double(real(data));
-       data=[data(:,1)*0 data(:,1) data(:,1)*0]';
-       disp('            !Only p34 exists for sc3');
+		tmmode='hx';
+		if tm<1e-30, param='10Hz';	else, param='180Hz'; end
+		clear tm
+		tst = toepoch(start_time);
+		if tst>toepoch([2001 07 31 00 00 00])&tst<toepoch([2001 09 01 00 00 00]), 
+			% all sc run on 180Hz filter in august 2001
+			param='180Hz';	
+		elseif tst>toepoch([2001 07 31 00 00 00])&ic==2, % 10Hz filtef probelm on sc2
+			param='180Hz';
+		end
+	end
+    
+    if (toepoch(start_time)>toepoch([2001 12 28 03 00 00])&ic==1) | (toepoch(start_time)>toepoch([2002 07 29 09 06 59 ])&ic==3),
+	p34_only = 1;
+       	disp(sprintf('            !Only p34 exists for sc%d',ic));
     else,
-          [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p1234', param, tmmode);
+	p34_only = 0;
     end
-    t_e=double(t);
-    eval(av_ssub('wE?=[t_e double(real(data))''];',ic));clear t t_e data;
-    eval(av_ssub('save_list=[save_list '' wE? ''];',ic));
+    
+    clear sensor;
+    if strcmp(q,'e')
+        disp(['EFW...sc' num2str(ic) '...E ' param ' filter']);
+    	if p34_only
+       	    [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
+       	    data = double(real(data));
+       	    data = [data(:,1)*0 data(:,1) data(:,1)*0]';
+        else,
+            [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p1234', param, tmmode);
+        end
+        t = double(t);
+        eval(av_ssub('wE?=[t data''];',ic)); clear t data;
+        eval(av_ssub('save_list=[save_list '' wE? ''];',ic));
+    else
+        % do separate probes
+        if ~p34_only
+            disp(['EFW...sc' num2str(ic) '...E p12 ' param ' filter']);
+            [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p12', param, tmmode);
+            data = double(real(data));
+            t = double(t);
+            eval(av_ssub('wE?p12=[t data];',ic)); clear t data;
+            eval(av_ssub('save_list=[save_list '' wE?p12 ''];',ic));
+        end
+        disp(['EFW...sc' num2str(ic) '...E p34 ' param ' filter']);
+        [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
+        data = double(real(data));
+        t = double(t);
+        eval(av_ssub('wE?p34=[t data];',ic)); clear t data;
+        eval(av_ssub('save_list=[save_list '' wE?p34 ''];',ic));
+    end
   end
-  if exist('./mE.mat'), eval(['save -append mE  ' save_list]); else, eval(['save mE  ' save_list]);end
+  %if exist('./mE.mat'), eval(['save -append mE  ' save_list]); else, eval(['save mE  ' save_list]);end
 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ % spinfits
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ elseif strcmp(q,'dve1'), 
+  save_file = './mE.mat';
+  for ic=sc_list,
+   eval(av_ssub('load mE wE?p12 wE?p34;',ic));
+   eval(av_ssub('load mA.mat A?;',ic));
+   
+   if exist(av_ssub('wE?p12',ic),'var')
+       eval(av_ssub('tt=wE?p12;aa=A?;',ic))
+       disp(sprintf('Spin fit wE%dp12 -> dvE%dp12 mean:%.2f',ic,ic,mean(tt(:,2))))
+       sp = EfwDoSpinFit(12,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+       sp = sp(:,1:4); 
+       sp(:,3) = -sp(:,3); % -> GSE
+       sp(:,4) = 0*sp(:,4);
+       o12(1) = mean(sp(:,2)); o12(2) = mean(sp(:,3));
+       eval(av_ssub('dvE?p12=sp;',ic))
+       eval(av_ssub('save_list=[save_list '' dvE?p12 ''];',ic));
+   else
+       disp(sprintf('No p12 data for sc%d',ic))
+   end
+   
+   if exist(av_ssub('wE?p34',ic),'var')
+       eval(av_ssub('tt=wE?p34;aa=A?;',ic))
+       disp(sprintf('Spin fit wE%dp34 -> dvE%dp34 mean:%.2f',ic,ic,mean(tt(:,2))))
+       sp = EfwDoSpinFit(34,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+       sp = sp(:,1:4); 
+       sp(:,3) = -sp(:,3); % -> GSE
+       sp(:,4) = 0*sp(:,4);
+       o34(1) = mean(sp(:,2)); o34(2) = mean(sp(:,3));
+       eval(av_ssub('dvE?p34=sp;',ic))
+       eval(av_ssub('save_list=[save_list '' dvE?p34 ''];',ic));
+   else
+       disp(sprintf('No p34 data for sc%d',ic))
+   end
+   
+   %display offsets
+   if exist(av_ssub('wE?p12',ic),'var') & exist(av_ssub('wE?p34',ic),'var')
+       disp(sprintf('[X Y] offsets <p12>-<p34> : [ %.2f %.2f ]', o12(1)-o34(1), o12(2)-o34(2)))
+   end
+ 
+  end
+  %eval(['save -append mE  ' save_list]);
+ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% despin E
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'dve'),
+  save_file = './mE.mat';
   q_efw_offset=av_q('How to treat offsets? \n  1) do nothing, \n  2) before despin subtract probe signal mean \n  3)  2 + use nearest sunward offsets,\n  4) nearest full hand-tuned callibration,\n[%]>','q_efw_offset',2);
   for ic=sc_list,
    eval(av_ssub('load mE wE?;tt=wE?(1,1);',ic));
@@ -232,7 +313,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    end
    eval(av_ssub('save_list=[save_list '' dvE? ''];',ic));
   end
-  eval(['save -append mE  ' save_list]);
+  %eval(['save -append mE  ' save_list]);
 
  elseif strcmp(q,'de'),
   for ic=sc_list,
@@ -257,6 +338,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    eval(av_ssub('save_list=[save_list '' dEo? d? Eo? Vo? ''];',ic));
   end
   eval(['save -append mE  ' save_list]);
+  save_list = '';
 
  elseif strcmp(q,'es'), % create E ascii files
 %  variable='qf';default=1;question='Create E1.dat ... E4.dat ascii files with 1) E_GSE B_angle 2) E_DS [%]>';av_ask
@@ -359,6 +441,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
   end
   if exist('./mP.mat'), eval(['save mP ' save_list ' -append']); else eval(['save mP ' save_list]); end
+  save_list = '';
 
  elseif strcmp(q,'ps'), % create V_sc n ascii files
   for ic=sc_list,
@@ -408,6 +491,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(av_ssub('if size(VCh?), dVCh?=c_gse2dsc(VCh?,[VCh?(1,1) ic]); save_list=[save_list '' VCh? dVCh? '']; end;',ic));
     end
     eval(['save mCIS ' save_list]);
+    save_list = '';
 
  elseif strcmp(q,'vce'),
   CIS=load('mCIS');
@@ -436,7 +520,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  end
  
 % If flag_save is set, save variables to specified file
- if flag_save==1 & length(save_file)>0,
+ if flag_save==1 & length(save_file)>0 & ~isempty(save_list),
   if exist(save_file,'file'), 
    eval(['save -append ' save_file ' ' save_list]); 
   else, 
