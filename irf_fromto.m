@@ -26,11 +26,11 @@ if isfield(ud_fig,'subplot_handles') % check the handles to subplots
 else
   SUBPLOT_HANDLES=get(ud.figure,'Children'); 
   % Do not assume that subplots are the only children of figure
+  ii = [];
   for j=1:length(SUBPLOT_HANDLES)
-  	if ~strcmp(get(SUBPLOT_HANDLES(j),'Type'),'axes')
-		SUBPLOT_HANDLES(j) = []; 
-	end
+  	if ~strcmp(get(SUBPLOT_HANDLES(j),'Type'),'axes'), ii = [ii j]; end
   end
+  if ~isempty(ii), SUBPLOT_HANDLES(ii) = []; clear ii, end
 end
 
 switch fromto
