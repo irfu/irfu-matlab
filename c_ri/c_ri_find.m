@@ -140,7 +140,7 @@ for i = 1:i_end
   
   %step 2
   if run_steps(2) == 1
-    for j=1:size(passing_MP,l)
+    for j=1:size(passing_MP,1)
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       c_eval('Binterp?=av_interp(B?,B1);',2:4);
       [angles, ampl] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);

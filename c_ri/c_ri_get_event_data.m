@@ -3,21 +3,13 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %
 %Input:
 %   time_interval - [start_time end_time] in isdat_epoch
-%   path_Events - where to look for Events files (files start with "E_")
+%   path_Events - where to look for Events files (files start with "E_"), alternative vector with times of efents in isdat epoch [t1 t2 t3 ..]
 %   path_Out    - where to write the data, ends with '/'
 %   data_list   - structure with values of which data to load, e.g. {'EFW_E','EFW_P'}
 %   dt_interval - download +- dt_interval seconds around event (default 5s)
-%Output:
-%   %NOT IMPLEMENTED flag = matrix with one row per event and one column for every data kind (1/0 for sucessfull download)
 %
 %Descrition of the function:
 %   Loads the specified data for each event in the given time interval
-%
-%Using:
-%
-%Work method:
-%
-%Error:
 %
 %Discription of variables:
 % eventsw   - 1 event per row, 3 columns [start_time end_time s/c_mode(1-burst, 0-normal)]
@@ -39,9 +31,6 @@ if nargin==4, dt_interval=5;end
 default_cases={'EPH','FGM'};
 data_list=[default_cases data_list ]; % ephemeris should be first
 
-dir_list=dir([path_Events 'E_' '*.mat']);
-A_list=dir([path_Events 'A/Ap_*.mat']);
-
 start_time=time_interval(1);
 end_time=time_interval(2);
 
@@ -49,16 +38,26 @@ event_time_intervals=[]; % three columns [start_time end_time mode]; mode=0(norm
 next_event_row=1;
 
 % construct time intervals to download, time intervals are in whole seconds
-for i_Event_file=1:size(dir_list,1),
-  event_file = dir_list(i_Event_file).name;
-  load([path_Events event_file]); % load time_of_events variable
-  flag_time_within_interval=sign((end_time-time_of_events(:,1)).*(time_of_events(:,1)-start_time));
-  ind_events=find(flag_time_within_interval == 1);
-  if ind_events,
-    found_events=[floor(time_of_events(ind_events,1)-dt_interval) ceil(time_of_events(ind_events,1)+dt_interval) time_of_events(ind_events,5)];
-    event_time_intervals(next_event_row+[0:size(found_events,1)-1],:)=found_events;
+if isstr(path_Events)
+  dir_list=dir([path_Events 'E_' '*.mat']);
+  A_list=dir([path_Events 'A/Ap_*.mat']);
+  for i_Event_file=1:size(dir_list,1),
+    event_file = dir_list(i_Event_file).name;
+    load([path_Events event_file]); % load time_of_events variable
+    flag_time_within_interval=sign((end_time-time_of_events(:,1)).*(time_of_events(:,1)-start_time));
+    ind_events=find(flag_time_within_interval == 1);
+    if ind_events,
+      found_events=[floor(time_of_events(ind_events,1)-dt_interval) ceil(time_of_events(ind_events,1)+dt_interval) time_of_events(ind_events,5)];
+      event_time_intervals(next_event_row+[0:size(found_events,1)-1],:)=found_events;
+    end
   end
+elseif isnumeric(path_Events)
+  event_time_intervals=[floor(path_Events(:)-dt) ceil(path_Events(:)+dt)];
+else
+  error(' events not defined properly');
 end
+
+
 disp(['Found ' num2str(size(event_time_intervals,1)) ' events.']);
 
 % clean up overlapping time intervals
