@@ -99,6 +99,7 @@ case 'init'
 	% Create figure
 	if find(get(0,'children')==main_fig_id)
 		pos_old = get(main_fig_id,'Position');
+	else, pos_old = [];
 	end
 	h0 = figure(main_fig_id);
 	clf
@@ -1379,38 +1380,58 @@ case 'show_raw'
 	j = D_findByName(hnd.Data,hnd.ActiveVar);
 
 	if strcmp(hnd.Data{j}.type,'E')
+		d_tmp = {};
+		leg_tmp = {};
+		dp_tmp = {};
+		dp_sid = [];
+		legp_tmp = {};
+		% Load E
 		if strcmp(hnd.Data{j}.sen,'1234')
-			d_tmp = {};
-			leg_tmp = {};
 			s = {'12','32','34'};
-			for sid = 1:3
-				[ok,E_tmp] = c_load(['wE?p' s{sid}],hnd.Data{j}.cl_id);
-				if ok
-					E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
-					d_tmp = [d_tmp {E_tmp}]; clear E_tmp
-					leg_tmp = [leg_tmp {irf_ssub(['wE?p' s{sid}],hnd.Data{j}.cl_id)}];
-				end
-			end
-			
-			if ~isempty(d_tmp)
-				figure(raw_fig_id), clf
-				irf_plot(d_tmp,'comp')
-				irf_zoom(hnd.tlim(end,:),'x',gca);
-				set(gca,'YLimMode','auto')
-				ylabel('E [mV/m]')
-				legend(leg_tmp{:})
-			end
-			clear d_tmp leg_tmp s sid ok
+			probes = 1:4;
 		else
-			[ok,E_tmp] = c_load(['wE?p' hnd.Data{j}.sen],hnd.Data{j}.cl_id);
-			if ~ok, return, end
-			E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
-			figure(raw_fig_id), clf
-			irf_plot(E_tmp); clear E_tmp
-			irf_zoom(hnd.tlim(end,:),'x',gca);
-			set(gca,'YLimMode','auto')
-			ylabel(irf_ssub(['wE?p' hnd.Data{j}.sen ' [mV/m]'],hnd.Data{j}.cl_id))
+			s = {num2str(hnd.Data{j}.sen)};
+			sss = num2str(hnd.Data{j}.sen);
+			probes = [str2num(sss(1)) str2num(sss(2))];
+			clear sss
 		end
+		for sid = 1:length(s)
+			[ok,E_tmp] = c_load(['wE?p' s{sid}],hnd.Data{j}.cl_id);
+			if ok
+				E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
+				d_tmp = [d_tmp {E_tmp}]; clear E_tmp
+				leg_tmp = [leg_tmp {irf_ssub(['wE?p' s{sid}],hnd.Data{j}.cl_id)}];
+			end
+		end
+		% Load P
+		for sid = probes
+			[ok,P_tmp] = c_load(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id);
+			if ok
+				P_tmp = irf_tlim(P_tmp,hnd.tlim(end,:));
+				dp_tmp = [dp_tmp {P_tmp}]; clear P_tmp
+				dp_sid = [dp_sid sid];
+				legp_tmp = [legp_tmp {irf_ssub(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id)}];
+			end
+		end
+		if isempty(d_tmp) & isempty(dp_tmp), return, end
+		figure(raw_fig_id), clf
+		if ~isempty(d_tmp)
+			h1 = irf_subplot(2,1,1);
+			irf_plot(d_tmp,'comp')
+			irf_zoom(hnd.tlim(end,:),'x',h1);
+			set(h1,'YLimMode','auto')
+			ylabel('E [mV/m]')
+			legend(leg_tmp{:},'Location','NorthEastOutside')
+		end
+		if ~isempty(dp_tmp)
+			h2 = irf_subplot(2,1,2);
+			irf_plot(dp_tmp,'comp')
+			irf_zoom(hnd.tlim(end,:),'x',h2);
+			set(h2,'YLimMode','auto')
+			ylabel(h2,'V [V]')
+			legend(h2,legp_tmp{:},'Location','NorthEastOutside')
+		end
+		clear d_tmp dp_tmp leg_tmp legp_tmp s sid dp_sid ok
 	else % Display V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
 		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
