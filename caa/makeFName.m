@@ -13,6 +13,10 @@ function out=makeFName(st,fmt)
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_fname')
 
 if nargin < 2, fmt = 0; end
 if fmt==2 & length(st)<=1, error('ST must have two elements for FORMAT=2'), end

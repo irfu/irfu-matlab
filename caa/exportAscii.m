@@ -23,6 +23,10 @@ function exportAscii(var,varargin)
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_export_ascii')
 
 if nargin<1, help exportAscii; return, end
 if nargin>2, have_options = 1; args = varargin;

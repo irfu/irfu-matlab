@@ -5,6 +5,10 @@ function out = wAverage(data,fsample)
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_waverage')
 
 if nargin<2
 	fsample = 1/(data(2,1)-data(1,1));

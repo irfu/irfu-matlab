@@ -16,6 +16,11 @@ function [t_start_save,t_stop_save,fdm_save]=createEFWModeTableFDM(db_s,start_ep
 % $Revision$  $Date$
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'caa_efw_mode_tab')
+
 DEBUG=0;
 
 dt_max = 60; % maximum interval is 1 min

@@ -7,6 +7,11 @@ function export2caa(lev,caa_vs,cl_id,DATA_VERSION,sp)
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'caa_export')
+
 if nargin<5, sp='.'; end
 if nargin<4, DATA_VERSION = '01'; end
 if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end

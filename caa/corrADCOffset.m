@@ -12,6 +12,11 @@ function [new_data,offset] = corrADCOffset(data,start_time,dt,whip)
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'caa_corof_adc')
+
 if data(end,1)-data(1,1)<60 %interval is shorter then 1 min
 	c_log('proc','Time interval too short, processing may give strange results...')
 end

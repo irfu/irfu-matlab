@@ -4,6 +4,10 @@ function res = rmDoubleIndex(ii)
 %
 % $Id$
 %
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_rm_double_idx')
 
 ii = ii(:);
 ii = sort(ii);

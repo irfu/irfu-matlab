@@ -16,6 +16,11 @@ function [t,d] = ISGet(db_s,st,dt,cli,ins,sig,sen,cha,par)
 % $Id$
 % see also isGetDataLite
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'caa_is_get')
+
 
 if nargin < 9, par = ' '; end
 if nargin < 8, cha = ' '; end
