@@ -25,7 +25,7 @@ tstr = str;
 while length(tstr) > 1
 	[token,reminder]=strtok(tstr, delimiter);
 	i = i + 1;
-	tokens{i} = {token};
+	tokens{i} = token;
 	if isempty(reminder)
 		% disp('break')
 		break;
