@@ -44,7 +44,7 @@ for g =1:f_count
   set(gca,'xlim',t+[-per per]);
   ylabel('|B|, nT')
   legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-  keyboard
+
   %plots Bx for all clusters
   h(3)=av_subplot(6,1,-3);
   c_pl_tx(B1,B2,B3,B4,2);

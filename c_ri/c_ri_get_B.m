@@ -76,6 +76,14 @@ to_file = sprintf('%s%s',path_output,tfn);
 %cuts out the time intervall and creates a temporary file
 unix_command = sprintf('%s -b %d -e %d %s > %s',ddscut,from,to,d_source,to_file);
 unix(unix_command);
+fvs = fgmvec_stream(to_file);
+ta=tavail(fvs)
+if min(ta)<0,
+  disp('problems with reading FGM B field');
+  B=[-1 NaN NaN NaN];
+  return
+end
+
 
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
