@@ -9,6 +9,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %		also creates delta offsets D{cl_id}p12p34x and D{cl_id}p12p34y
+%		If the offset is real then it must be applied to p12, 
+%		if imaginary - to p34 
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %
@@ -79,21 +81,26 @@ if strcmp(quantity,'dies')
 	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
 		eval(av_ssub(['m12=mean(diEs?p12);m34=mean(diEs?p34);'],cl_id))
 		Del = m12(2:3) - m34(2:3);
+		
+		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
+		abs(Del(1)), abs(Del(2))))
+		
 		% we suppose that smaller field is more realistic
 		% and will correct the largest signal
 		% real offset is applied to p12, imaginary to p34
-		if abs(m34)>abs(m12), Del = Del*j; end
-		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
-		abs(Del(1)), abs(Del(2))))
+		if abs(m34)>abs(m12), Del = -Del*j; end
+		eval(av_ssub('D?p12p34=Del;',cl_id))
+
 		if real(Del)
 			disp('correcting p12')
 			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs2p12),1)*Del;',cl_id));
 		else
 			disp('correcting p34')	
+			Del = imag(Del);
 			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs2p34),1)*Del;',cl_id));
 		end
 		clear m12 m34 Del
-		eval(av_ssub('D?p12p34=Del;',cl_id))
+
 		eval(av_ssub(['save_list=[save_list '' D?p12p34 ''];'],cl_id));
 	end
 
