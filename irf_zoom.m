@@ -26,12 +26,16 @@ if nargin<4,
 end
 
 if nargin < 3, axis_handles=gca;end
-if nargin == 3, ax=reshape(axis_handles,1,prod(size(axis_handles)));clear axis_handles;axis_handles=ax;end
+if nargin == 3, 
+  ax=reshape(axis_handles,1,prod(size(axis_handles)));
+  clear axis_handles;
+  axis_handles=ax;
+end
  
 if size(interval,2) ~= 2, disp('zooming interval in wrong format');return;end
 
-if strcmp(c,'x'), % simplified time zooming
-  if iscell(interval),  
+if strcmp(c,'x'), 
+  if iscell(interval),  % simplified time zooming
     ax=axis;
     if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10),
       int_min=fromepoch(ax(1)+t_ref);

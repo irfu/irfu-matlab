@@ -169,7 +169,7 @@ else % use polynomial fit
 % end
 end
 
-c_log('proc',strcat('rotation period=',num2str(2*pi/phc_coef(1)),' s'));
+irf_log('proc',strcat('rotation period=',num2str(2*pi/phc_coef(1)),' s'));
 
 % take away offsets in the satellite ref frame
 p12=p12-coef(1,2);

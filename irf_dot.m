@@ -33,7 +33,7 @@ if size(x,1) ~= size(y,1)
     qq=xx;qq(:,1)=yy(1,1);qq(:,2)=yy(1,2);qq(:,3)=yy(1,3);yy=qq;
   else
     irf_log('proc','interpolating y to x, assuming that first column is time');
-    qq=av_interp(y,x);yy=qq(:,[2 3 4]);
+    qq=irf_resamp(y,x);yy=qq(:,[2 3 4]);
   end
 end
 
