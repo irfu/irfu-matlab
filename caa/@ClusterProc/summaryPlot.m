@@ -64,7 +64,7 @@ while have_options
 		else break
 		end
 	else
-		error('caa:wrongArgType','use getRData(..,''option'',''value'')')
+		error('caa:wrongArgType','use summaryPlot(..,''option'',''value'')')
 	end
 end
 
@@ -89,6 +89,9 @@ labels = {};
 % Load data
 for k=1:length(q_list)
 	if c_load(q_list{k},cl_id)
+		if have_tint
+			c_eval([q_list{k} '=av_t_lim(' q_list{k} ',st+[0 dt]);'],cl_id)
+		end
 		n_plots = n_plots + 1;
 		if k==2 % B-field
 			c_eval(['data{n_plots}=av_abs(' q_list{k} '(:,1:4));'],cl_id)
