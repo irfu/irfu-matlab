@@ -140,15 +140,18 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.inst = 'EFW';
 	v.sig = 'E';
 	v.sen = vvs(7:8);
-	v.cs = {'DSI'};
-	v.rep = {'xy'};
- 	v.units =  {'mV/m'};
-	v.si_conv = {'1.0e-3>V/m'};
-	v.size = [2];
-	v.name = {['Es' v.sen]};
-	v.labels = v.name;
-	v.label_1 = {'"x", "y"'};
-	v.field_name = {'Electric field'};
+	v.cs = {'DSI','na'};
+	v.rep = {'xy',''};
+ 	v.units =  {'mV/m','unitless'};
+	v.si_conv = {'1.0e-3>V/m',''};
+	v.size = [2 1];
+	v.name = {'E_Vec_xy_SR2i', 'E_sigma'};
+	v.labels = {'E','sigma'};
+	v.label_1 = {'"x", "y"',''};
+	v.field_name = {'Electric field','Standard deviation'};
+	v.ent = {'Electric_field','Electric_field'};
+	v.prop = {'Vector','Vector'};
+	v.fluc = {'Waveform','Standard_deviation'};
 	v.com = 'Ez=0 by definition (not measured).';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -183,10 +186,13 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V/m'};
 	v.size = [2];
-	v.name = {['E' v.sen]};
-	v.labels = v.name;
+	v.name = {'E_Vec_xy_SR2i'};
+	v.labels = {'E'};
 	v.label_1 = {'"x", "y"'};
 	v.field_name = {'Electric field'};
+	v.ent = {'Electric_field'};
+	v.prop = {'Vector'};
+	v.fluc = {'Waveform'};
 	v.com = '';
 elseif regexp(vs,'^diE[1-4]p1234_info$')==1
 	v.data = 0;
