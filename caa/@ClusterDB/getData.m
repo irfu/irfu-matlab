@@ -9,12 +9,15 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	e   : wE{cl_id}p12,34 -> mER			// electric fields HX
-%	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	// sc potential LX
-%	a   : A{cl_id} -> mA					// phase
+%	e   : wE{cl_id}p12,34 -> mER
+%			// electric fields (HX)
+%	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	
+%			// sc potential (LX)
+%	sax : SAX{cl_id} ->mEPH
+%			// spin axis vector [GSE] 
+%	a   : A{cl_id} -> mA	// phase
 %	b   : BPP{cl_id},diBPP{cl_id} ->mBPP	// B FGM PP [GSE+DSI] 
 %	edi : EDI{cl_id},diEDI{cl_id} ->mEDI	// E EDI PP [GSE+DSI] 
-%	sax : SAX{cl_id} ->mEPH					// spin axis vector [GSE] 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
