@@ -30,33 +30,47 @@ cl_id_s = num2str(cl_id);
 % define request parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 switch (quantity)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CSDS PP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'b'
-	r.file	= ['PP/FGM/C' cl_id_s '/C' cl_id_s '_PP_FGM_'];
-	r.var	= ['B_xyz_gse__C' cl_id_s '_PP_FGM'];
+	r.inst  = 'FGM';
+	r.var	= ['B_xyz_gse__C' cl_id_s '_PP_' r.inst];
+	% no changes here
 	r.pr	= 'CSDS_PP';
 	r.mem	= ['C' cl_id_s];
-	r.inst  = 'FGM';
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
 	r.sen	= r.var;
 case 'edi'
-	r.file	= ['PP/EDI/C' cl_id_s '/C' cl_id_s '_PP_EDI_'];
-	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_EDI'];
+	r.inst  = 'EDI';
+	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_' r.inst];
+	% no changes here
 	r.pr	= 'CSDS_PP';
 	r.mem	= ['C' cl_id_s];
-	r.inst  = 'EDI';
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
 	r.sen	= r.var;
+case 'vcis'
+	r.inst  = 'CIS';
+	r.var	= ['V_p_xyz_gse__C' cl_id_s '_PP_' r.inst];
+	% no changes here
+	r.pr	= 'CSDS_PP';
+	r.mem	= ['C' cl_id_s];
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
+	r.sen	= r.var;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CSDS SP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'slat'
-	r.file	= 'SP/AUX/CL_SP_AUX_';
-	r.var	= ['sc_at' cl_id_s '_lat__CL_SP_AUX'];
+	r.inst  = 'AUX';
+	r.var	= ['sc_at' cl_id_s '_lat__CL_SP_' r.inst];
+	% no changes here
 	r.pr	= 'CSDS_SP';
 	r.mem	= 'CL';
-	r.inst  = 'AUX';
+	r.file	= ['SP/AUX/CL_SP_' r.inst '_'];
 	r.sen	= r.var;
 case 'slong'
-	r.file	= 'SP/AUX/CL_SP_AUX_';
-	r.var	= ['sc_at' cl_id_s '_long__CL_SP_AUX'];
+	r.inst  = 'AUX';
+	r.var	= ['sc_at' cl_id_s '_long__CL_SP_' r.inst];
+	% no changes here
 	r.pr	= 'CSDS_SP';
 	r.mem	= 'CL';
-	r.inst  = 'AUX';
+	r.file	= ['SP/AUX/CL_SP_' r.inst '_'];
 	r.sen	= r.var;
 otherwise
 	error('caa:noSuchQuantity','Quantity ''%s'' is not recongized',quantity)
