@@ -1,5 +1,15 @@
 function varargout = c_cal_gui(varargin)
-% EFW calibration GUI
+%C_CAL_GUI EFW calibration GUI
+%
+% This program will load EFW, CIS and EDI data for present in the
+% current directory and allow the user to interactively determine
+% offsets in EFW and CIS Vz.
+%
+% Example:
+%	cd /tmp/my_event/20020304_1000
+%	c_cal_gui
+%
+% See also CLUSTERPROC/CORRSOFFSETM
 %
 % $Id$
 

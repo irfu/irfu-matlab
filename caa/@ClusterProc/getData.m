@@ -23,17 +23,17 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_ez0 - use Ez=0 for points below ang_limit
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
-%	Example usage: getData(cp,4,'edbs','ang_fill','ang_limit',20)
+% Example: 
+%	getData(cp,4,'edbs','ang_fill','ang_limit',20)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
 %	leavewhip : do not remove time intervals with Whisper pulses
 %	notusesavedoff : recalculating everything instead of using saved offsets
 %
+% See also C_GET
 %
 % $Id$
-%
-% see also C_GET
 
 % Copyright 2004 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads

@@ -51,9 +51,9 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	2001-02-13 18:20:00, using ISDAT database disco:10 or 
 %	CDF files in /data/cluster.
 %
-% $Id$
+% See also C_GET, TOEPOCH
 %
-% see also C_GET, TOEPOCH
+% $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads

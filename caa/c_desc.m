@@ -1,6 +1,15 @@
 function varargout = c_desc(vs,varargin)
 %C_DESC provide a description of a Cluster variable
+% C_DESC(VS) prints out a descriptoon of variable VS
 %
+% DESC = C_DESC(VS) returns a descriptoon of variable VS as structure DESC.
+%
+% Input:
+%	VS - variable string
+%
+% Output:
+%	DESC - structure containing a description of variable VS. It has the 
+%	following fields:
 %	cl_id		%Clister ID
 %	inst		%Instrument
 %	frame		%Reference frame
@@ -16,6 +25,9 @@ function varargout = c_desc(vs,varargin)
 %	com			%Comment
 %	file		%Matlab file name (mXXX.mat)
 %	quant		%Quantity name to use with getData
+%
+% Example:
+%	desc = c_desc('diE2');
 %
 % $Id$
 

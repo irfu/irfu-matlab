@@ -1,7 +1,29 @@
 function res = c_load(vs,sp,st,dt,db,dp)
-%function c_load(vs,sp,st,dt,db,dp)
-%function c_load(vs,sp,st,dt,cdb)
-% return 1 if OK.
+%C_LOAD load cluster data
+% RESULT = C_LOAD(VS[,SP,START_TIME,DT,DB,DP])
+% RESULT = C_LOAD(VS[,SP,START_TIME,DT,CDB])
+%
+% C_LOAD(VS) will attempth to load a varible given by string VS from the 
+% current directory. If additional options are specified, it will attempt
+% the SP directory, and then will try to fetch data using ClusterDB/getData.
+%
+% Input:
+%	VS - variable string
+%	SP - storage directory [optional]
+%	START_TIME - ISDAT epoch [optional]
+%	DT - length of time interval in sec [optional]
+%	DB - ISDAT database [optional]
+%	DP - raw data storage directory (/data/cluster) [optional]
+%	CDB - ClusterDB object [optional]
+%
+% Output:
+%	RESULT - is 1 if the requested variable was loaded.
+%
+% Example:
+%	c_load('diE2') 
+%   % Loads variable diE2 from the current directory into workspace.
+%
+% See also C_DESC
 %
 % $Id$
 
