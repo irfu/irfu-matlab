@@ -1,0 +1,100 @@
+function time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,mode) 
+%
+%Input: 
+% angles -[time | ang1 -> ang6] and ampl[ampl1 -> ampl 4]
+% ampl -[ampl1 -> ample 4] 
+% min_angle -the minimum angle to be called a event
+% min_ampl -the minimum ampl to be called a event
+%
+%Output:
+% time_of_events - [time in epoch | angle | amplitude | amplitude | mode]
+%
+%Descrition of the function:
+% search angle and ampl for events. Saves the time, angle and ampl of the event
+%
+%Using:
+% ind2nr
+% 
+%Work method:
+%
+%Error:
+% if no events are found 0 is returned
+% 
+%Discription of variables:
+%
+%Written by Robert Isaksson in the summer of -03
+
+%--------------------- the beginning --------------------------
+%turning a zero into a zero-vector
+[r_ang, c_ang] = size(angles);
+if r_ang == 1 & c_ang == 1
+angles = [-1 0 0 0 0 0 0 0];
+disp('no data in the file')
+end
+
+[b_angle, b_angles_pos] = max(angles(:,2:7));
+[biggest_angle,biggest_angle_pos] = max(b_angle);
+ar_pos = b_angles_pos(biggest_angle_pos);
+tba = angles(ar_pos,1);
+tt = isnan(tba);
+if tt == 1 | tba == -1
+tba = 0;
+end
+
+[a1_p,a2_p] = ind2nr(biggest_angle_pos);
+a1 = ampl(ar_pos,a1_p);
+a1t = isnan(a1);
+if a1t == 1
+a1 = 0;
+end
+a2 = ampl(ar_pos,a2_p);
+a2t = isnan(a2);
+if a2t == 1
+a2 = 0;
+end
+
+ainfo = sprintf('max angle : %f, ampl1: %f ampl2: %f at time %s', biggest_angle,a1,a2,datestring(fromepoch(tba))); 
+disp(ainfo)
+[nr_angles, col] = size(angles);
+%starting with zero events
+b = 0;
+
+% going through all the positions
+for i = 1:nr_angles
+    %if one of the angles are bigger than threshold value
+	if (max(angles(i,2:7))) >= min_angle
+	%checking all the angles
+	  for k = 1:6
+	     ind = k;
+         ang = angles(i,k+1);
+	     % if angle is bigger than threshold
+         if ang >= min_angle
+		    %geting the postion of the B-vector amplitude
+           [nr_1, nr_2] = ind2nr(k);
+		   %if the amplitud is bigger than treshold
+	       if ampl(i,nr_1) >= min_ampl & ampl(i,nr_2) >= min_ampl
+		      %if it is the first event or a new time
+		      if b == 0 | time_of_events(b,1) ~= angles(i,1)
+			     b= b+1;
+		         time_of_events(b,1) = angles(i,1);
+		         time_of_events(b,2) = ang;
+				 time_of_events(b,3) = ampl(i,nr_1);
+				 time_of_events(b,4) = ampl(i,nr_2);
+				 time_of_events(b,5) = mode;
+			  %if not the first event and if there are more than one 
+			  %angle from the same time that are bigger than treshold, choice the largest
+			  elseif time_of_events(b,1) == angles(i,1) & ang > time_of_events(b,2)
+			     time_of_events(b,2) = ang;
+				 time_of_events(b,3) = max([ampl(i,nr_1) ampl(i,nr_2)]);
+			  end
+		   end
+        end
+      end
+	end
+end
+
+%no events found
+if b == 0
+time_of_events = 0;
+end
+
