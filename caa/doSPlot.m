@@ -43,13 +43,13 @@ function doSPlot(varargin)
 %
 % See also ClusterProc/summaryPlot, ClusterProc/getData
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004, 2005 Yuri Khotyaintsev
 
 do_proc = 1;
 sp = '.';
 sc_list = 1:4;
 splot_options = '';
-ang_lim = 15;
+ang_limit = 15;
 	
 if nargin>0, have_options = 1; args = varargin;
 else, have_options = 0; args = '';
