@@ -818,7 +818,7 @@ case 'press_RESETbutton'
 			val = hnd.off(2);
 		end
 		set(eval(['hnd.D' comp_s(comp) 'edit']),'String',num2str(val));
-		set(eval(['hnd.D' comp_s(comp) 'slider']),'String',num2str(val));
+		set(eval(['hnd.D' comp_s(comp) 'slider']),'Value',val);
 	end
 	
 	guidata(h0,hnd);
