@@ -10,6 +10,14 @@ function c=av_tplot(x,t_unit_in_original_units,t_origo_in_original_units,varargi
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array
+
+if now<datenum(2004,12,07)
+    disp('********************************************************************');
+    disp('new features, e.g. try >av_tplot(''B?'') or av_tplot(''B1 R2'');');
+    disp('everything you find in c_desc works in av_tplot, even if not loaded!');
+    disp('***************** this message only until 2004-12-07 **********************');
+end
+
 flag_subplot=0;
 flag_yy=0;
 if nargin >=2, inp2=t_unit_in_original_units;end
