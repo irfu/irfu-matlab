@@ -18,7 +18,7 @@ function startSAT=c_efw_burst_chkt(database,filename)
 
   % Extract the times from the burst data file
 
-  times=c_efw_get_bursthead(filename);
+  times=c_efw_burst_geth(filename);
   playbackEFW=times(1);
   playbackSAT=times(2);
   startEFW=times(3);
