@@ -33,11 +33,13 @@ for g =1:f_count
   
   [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
   c_eval('try B?=av_abs(B?);catch B?=[NaN NaN NaN NaN NaN];end');
-  %c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',s_t,10,?,''tm'');');
-  % title_str=['sc mode (0-normal, 1-burst): ' num2str([tm1 tm2 tm3 tm4])];
-  title_str=[ ' angles: ' int2str(angles(g,2:7)) ' degrees'];
+  c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',s_t,10,?,''tm'');');
+  str_scmode='sc mode (';
+  c_eval('if tm?==1, str_scmode=[str_scmode '' b'']; elseif tm?==0, str_scmode=[str_scmode '' n'']; else str_scmode=[str_scmode '' NaN''];end');
+  str_scmode=[str_scmode ')'];
+  title_str=[str_scmode ' angles: ' int2str(angles(g,2:7)) ' degrees'];
   title_str=[title_str '|B|: ' int2str(ampl(g,:)) ' nT'];
-
+ 
   fg = figure('visible','off');
   set(gcf,'Units','centimeters')
   set(gcf,'Position',[1 1 15 20])
@@ -93,6 +95,8 @@ for g =1:f_count
   unix(sprintf('(%s %s.eps)',eps2png,p_and_f_picture));
 
   disp(['saving: ' p_and_f_picture '.png']);
+  
+  ht=av_pl_info([datestr(now) '. ' p_and_f_picture '.png'] ,gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
   close(fg)
 end
 
