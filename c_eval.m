@@ -1,10 +1,11 @@
 function c_eval(ev_str,sc_list)
 %c_eval evaluate expression for list of spacecraft
-% c_eval(ev_str,sc_list)
+% c_eval(ev_str,[sc_list])
+%
 % Input:
 % ev_str - string to evaluate.
 % '?' sign in ev_str is replaced by SC number from sc_list
-% sc_list - list of SC [optional]
+% sc_list - list of SC [optional], 1:4 is assumed when not given
 % 
 % Example:
 % c_eval('R?=r?;C?=R?.^2;',2:4)
