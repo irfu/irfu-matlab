@@ -1,6 +1,6 @@
-function [r1, r2, r3, r4] = RandTetra(L, E, P)
+function [r1, r2, r3, r4] = c_umu_randtetra(L, E, P)
 %
-% [r1, r2, r3, r4] = RandTetra(L, E, P);
+% [r1, r2, r3, r4] = c_umu_randtetra(L, E, P);
 %
 % Calculates random SC positions with characteristic parameters L, E, P.
 % The origin of coordinates is at the centre of mass of the tetrahedron.
@@ -52,7 +52,7 @@ function [r1, r2, r3, r4] = RandTetra(L, E, P)
      theta = acos(rand(1,1));        % Random rotation
      phi = 2*pi*rand(1,1);
      psi = 2*pi*rand(1,1);
-     [R] = Rotmatr(theta, phi, psi);
+     [R] = c_umu_rotmatr(theta, phi, psi);
      r = R*r';
      r1 = r(:, 1)';
      r2 = r(:, 2)';

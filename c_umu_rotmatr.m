@@ -1,6 +1,6 @@
-function [R] = Rotmatr(alpha, beta, gamma)
+function [R] = c_umu_rotmatr(alpha, beta, gamma)
 
-% function [R] = Rotmatr(alpha, beta, gamma)
+% function [R] = c_umu_rotmatr(alpha, beta, gamma)
 % 
 %   (alpha, beta, gamma) are angles in radians.
 %
