@@ -1,6 +1,8 @@
 function ui_fromto(fromto)
 % UI_FROMTO - callback for the buttons in the time selection window
 %   fromto - action to do
+%
+% $Id$
 
 ud = get(gcbf, 'userdata'); % get userdata of time manager window
 
@@ -22,7 +24,13 @@ end
 if isfield(ud_fig,'subplot_handles') % check the handles to subplots
   SUBPLOT_HANDLES=ud_fig.subplot_handles;
 else
-  SUBPLOT_HANDLES=get(ud.figure,'Children'); % assume that subplots are the only children of figure
+  SUBPLOT_HANDLES=get(ud.figure,'Children'); 
+  % Do not assume that subplots are the only children of figure
+  for j=1:length(SUBPLOT_HANDLES)
+  	if ~strcmp(get(SUBPLOT_HANDLES(j),'Type'),'axes')
+		SUBPLOT_HANDLES(j) = []; 
+	end
+  end
 end
 
 switch fromto
