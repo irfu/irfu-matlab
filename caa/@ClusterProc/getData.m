@@ -640,7 +640,7 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 			return
 		end
 	else
-		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p34'};
+		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
 		[ok,E_tmp] = c_load(var_e{1},cl_id);
 		if ~ok
 			[ok,E_tmp] = c_load(var_e{2},cl_id);
@@ -652,29 +652,79 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 		end
 	end
 	
-	no_data = 1;
-	cs = {'di',''};
-	for c=1:2
-		% Load B
-		[ok,B_tmp] = c_load([cs{c} 'B?'],cl_id);
-		if ok, Binfo = 'FR'; no_data = 0;
+	% Load B GSE, as it is level 0 FGM data for us. 
+	B_tmp = c_load('B?',cl_id,'var');
+	
+	% Check for data coverage
+	% In the current approach we compute it from the sampling frequency of B.
+	dt = E_tmp(end,1) - E_tmp(1,1);
+	if ~isempty(B_tmp)
+		Binfo = 'FR';
+		bad_coverage = 0;
+		cover = 0;
+		B_tmp = av_t_lim(B_tmp,E_tmp(1,1) + [0 dt]);
+		if isempty(B_tmp), bad_coverage = 1;
 		else
-			[ok,B_tmp] = c_load([cs{c} 'BPP?'],cl_id);
-			if ok, Binfo = 'PP'; no_data = 0; c_log('proc','Using FGM PP data')
-			else
+			fgm_sf = 1/(B_tmp(2,1)-B_tmp(1,1));
+			del_f = 1.5;
+			if (fgm_sf > 22.5 - del_f) & (fgm_sf < 22.5 + del_f), fgm_sf = 22.5;
+			elseif (fgm_sf > 67.5 - del_f) & (fgm_sf < 67.5 + del_f), fgm_sf = 67.5;
+			else, c_log('proc','cannot guess sampling frequency for B')
+			end
+			cover = length(B_tmp(:,1))/(dt*fgm_sf);
+			% We allow for 10% of data gaps. (should we??)
+			if cover < .9, bad_coverage = 1; end
+		end
+	else, bad_coverage = 1; cover = 0;
+	end
+	
+	% Try to use BPP as a backup
+	if bad_coverage
+		BPP_tmp = c_load('BPP?',cl_id,'var');
+		if isempty(BPP_tmp)
+			% Use FR data if there is any (cover != 0)
+			if cover==0
 				c_log('load','Canot load B. Please load B FGM or B PP.')
 				data = [];
 				return
 			end
+		else
+			BPP_tmp = av_t_lim(BPP_tmp,E_tmp(1,1) + [0 dt]);
+			if isempty(BPP_tmp)
+				c_log('load','Canot find any usefull B data. Please load B FGM or B PP.')
+				data = [];
+				return
+			end
+	
+			fgm_sf = 1/(BPP_tmp(2,1)-BPP_tmp(1,1));
+			del_f = .1;
+			if (fgm_sf > .25 - del_f) & (fgm_sf < .25 + del_f), fgm_sf = .25;
+			else, c_log('proc','cannot guess sampling frequency for B PP')
+			end
+			cover_pp = length(BPP_tmp(:,1))/(dt*fgm_sf);
+			
+			% If there is more PP data, then use it.
+			% Take .99 to avoid marginal effects.
+			if .99*cover_pp > cover
+				B_tmp = BPP_tmp;
+				Binfo = 'PP';
+				c_log('proc','Use B PP for calcularion of Br')
+			else, c_log('proc',sprintf('Use B has %2.2f%% coverage',cover*100))
+			end
 		end
-		Br = c_resamp(B_tmp,E_tmp);
-		c_eval([cs{c} var_b '=Br;' cs{c} var_b 'info=Binfo;save_list=[save_list ''' cs{c} var_b ' '' '' ' cs{c} var_b 'info '' ];'],cl_id)
 	end
-	if no_data
-		c_log('load','Canot load any B data. Please load B FGM or B PP.')
-		data = [];
-		return
+	
+	% Resample the data
+	Br = c_resamp(B_tmp,E_tmp);
+	c_eval([ var_b '=Br;' var_b '_info=Binfo;save_list=[save_list ''' var_b ' '' '' ' var_b '_info '' ];'],cl_id)
+	
+	% DSI->GSE
+	if c_load('SAX?',cl_id)
+		eval(av_ssub(['di' var_b '=c_gse2dsi(Br,SAX?); di' var_b '_info=Binfo;save_list=[save_list ''di' var_b ' '' '' di' var_b '_info '' ];'],cl_id));
+	else
+		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
