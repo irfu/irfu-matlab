@@ -42,7 +42,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 % Example:
 %	data = getData(...
 %	ClusterDB('disco:10','/data/cluster','/tmp/my_event'),...
-%	toepoch([2001 02 13 18 20 00],120,3,'b');
+%	toepoch([2001 02 13 18 20 00]),120,3,'b');
 %
 %	This will fetch 120 sec of B FGM PP for Cluster 3 starting from 
 %	2001-02-13 18:20:00, using ISDAT database disco:10 or 
