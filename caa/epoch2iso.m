@@ -39,6 +39,6 @@ if ~isempty(ii)
 		% Add to all lines
 		out = [ss s];
 	else
-		out(ii,:) = [ss s(ii,1:end-1)];
+		out(ii,:) = [ss s(ii,2:end)];
 	end
 end
