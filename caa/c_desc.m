@@ -150,7 +150,7 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.labels = v.name;
 	v.label_1 = {};
 	v.field_name = {'probe potential difference'};
-	v.ent = {'Electric_field'};
+	v.ent = {'Electric field'};
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
 	v.com = '';
@@ -185,9 +185,9 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.labels = {'E','sigma'};
 	v.label_1 = {'"x", "y"',''};
 	v.field_name = {'Electric field','Standard deviation'};
-	v.ent = {'Electric_field','Electric_field'};
+	v.ent = {'Electric field','Electric field'};
 	v.prop = {'Vector','Vector'};
-	v.fluc = {'Waveform','Standard_deviation'};
+	v.fluc = {'Waveform','Standard deviation'};
 	v.com = 'Ez=0 by definition (not measured).';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -226,7 +226,7 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.labels = {'E'};
 	v.label_1 = {'"x", "y"'};
 	v.field_name = {'Electric field'};
-	v.ent = {'Electric_field'};
+	v.ent = {'Electric field'};
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
 	v.com = '';
