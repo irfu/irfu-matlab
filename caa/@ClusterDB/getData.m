@@ -9,10 +9,11 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	e : wE{cl_id}p12, wE{cl_id}p34 -> mER // electric fields
-%	a : A{cl_id} -> mA // phase
-%	b : B FGM PP [GSE] 
-%	dib : B FGM PP [DSI] 
+%	e   : wE{cl_id}p12,34 -> mER	// electric fields
+%	a   : A{cl_id} -> mA			// phase
+%	b   : BPP{cl_id} ->mBPP			// B FGM PP [GSE] 
+%	dib : diBPP{cl_id} ->mBPP		// B FGM PP [DSI] 
+%	sax : SAX{cl_id} ->mEPH			// spin axis vector [GSE] 
 %
 %	options - one of the following:
 %	not yet implemented
@@ -121,6 +122,23 @@ elseif strcmp(quantity,'b')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% sax - spin axis orientation [GSE] 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'sax')
+	save_file='./mEPH.mat';
+
+	% first try ISDAT (fast) then files
+	lat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
+	long = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
+	if ~isempty(lat) & ~isempty(long)
+		% take first point only. This is OK according to AV
+		[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
+		sax = [xspin yspin zspin];
+		eval(av_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
+		clear sax lat long xspin yspin zspin
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % b - B FGM PP [DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'dib')
@@ -129,18 +147,14 @@ elseif strcmp(quantity,'dib')
 		warning('must fetch B GSE PP first (option ''b'')')
 		return
 	end
-
-	% reset errors, otherwise try/catch fails
-	lasterr('')
-	try
-		dbase = Mat_DbOpen(cdb.db);
-		disp(lasterr)
-		eval(av_ssub('load mBPP BPP?;diBPP?=c_gse2dsc(BPP?,[BPP?(1,1) cl_id],1,dbase);disp(size(diBPP?));diBPP?(:,3:4)=-diBPP?(:,3:4);save_list=[save_list '' diBPP?''];',cl_id));
-		if exist('dbase'), Mat_DbClose(dbase); end
-	catch
-		disp(sprintf('Error getting data from ISDAT server %s: %s',...
-		cdb.db,lasterr))
+	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+	if ~exist(av_ssub('SAX?',cl_id),'var')
+		warning('must fetch spin axis orientation (option ''sax'')')
+		return
 	end
+
+	eval(av_ssub('load mBPP BPP?;diBPP?=c_gse2dsc(BPP?,SAX?);diBPP?(:,3:4)=-diBPP?(:,3:4);save_list=[save_list '' diBPP?''];',cl_id));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
 
