@@ -83,7 +83,7 @@ to_file = sprintf('%s%s',path_output,fn);
 
 FGMPATH = '/share/fgm_cal';
 [s,h] = unix('hostname');
-if ~strcmp(h,'sanna.irfu.se')
+if ~strcmp(h(1:end-1),'sanna.irfu.se')
 	FGMPATH = ['/net/sanna/export' FGMPATH];
 end
 
