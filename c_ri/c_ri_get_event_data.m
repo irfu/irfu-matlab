@@ -51,7 +51,7 @@ if isstr(path_Events)
     end
   end
 elseif isnumeric(path_Events)
-  event_time_intervals=[floor(path_Events(:)-dt_interval) ceil(path_Events(:)+dt_interval)];
+  event_time_intervals=[floor(path_Events(:)-dt) ceil(path_Events(:)+dt)];
 else
   error(' events not defined properly');
 end
