@@ -1,4 +1,4 @@
-function e = c_despin(es,phase,coef)
+function e = c_despin(es,phase,coef,flag)
 % function e = c_despin(es,phase)
 % function e = c_despin(es,phase,coef)
 % function e = c_despin(es,phase,spacecraft_number)
@@ -17,6 +17,7 @@ function e = c_despin(es,phase,coef)
 %        E_offs_12_s = Real (p12 boom offset)
 %        E_offs_12_xy = Complex (real part tells E offset in DSC_X and imaginary in DSC_Y)
 % flag - 'efw'    despin from WEC ref frame + use the closest callibration
+%        'efw_offs' despin from WEC, subtract mean value of probe signals to get rid of offsets, use nearest values for sunward offset
 %        'staff' or 'wec' despin from WEC
 %        'sat' despin from SR
 %
@@ -56,6 +57,12 @@ if nargin == 3,
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     eval(av_ssub('coef=c?;',ic));
+  elseif strcmp(coef,'efw_offs'),
+    ref_frame='wec';
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    eval(av_ssub('coef=c?;',ic));
+    coef(1,2)=mean(es(:,3));
+    coef(2,2)=mean(es(:,2));
   elseif strcmp(coef,'staff'),
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
