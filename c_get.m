@@ -1,7 +1,7 @@
 % get cluster sc data into matlab files,
 % despinn if necessary, uses the neareset calibration values
 % export to ASCII files
-% uses CAA_IS_GET.MDATALITE
+% uses isGetDataLite
 %
 % $Id$
 
