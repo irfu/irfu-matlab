@@ -41,7 +41,17 @@ output_p_f = sprintf('%s%s',output_path,output_file);
 
 %the call to the unix function ddsls for the burstmode
 %unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
-unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+%unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+%unix(unix_command);
+
+mext = mexext;
+if strcmp(mext,'mexglx') % running on x86
+	unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
+elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
+	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+else
+	error('Cannot determine operating system/platform.')
+end
 unix(unix_command);
 
 file_path_and_name = output_p_f;

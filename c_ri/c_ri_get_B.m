@@ -70,7 +70,7 @@ thhmmss = sprintf('T%s%s%s', thh_mm_ss(1:2) ,thh_mm_ss(4:5) ,thh_mm_ss(7:8));
 
 d_source = sprintf('%s%s*f%s.0%d',d_path,d_s,mode,cl_nr);
 tfn = sprintf('tB_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
-to_file = sprintf('%s%s',path_output,tfn);
+to_file = sprintf('%s%s',path_output,tfn); 
 
 
 %cuts out the time intervall and creates a temporary file
@@ -82,9 +82,9 @@ fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
 
 if nargout,  % return B
-  to_file='/tmp/sckmvnskjaqwedasdawd';
+  to_file=tempname;
   unix_command = [fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
-  unix(unix_command);
+   unix(unix_command);
   fvs = fgmvec_stream(to_file);
   dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
   close(fvs);
