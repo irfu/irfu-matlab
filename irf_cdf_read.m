@@ -52,7 +52,7 @@ if findstr(cdf_file,'*'), % use wilcard '*' expansion
   ff=dir(cdf_file);
   switch size(ff,1)
   case 0
-   c_log('load','No cdf files')
+   irf_log('load','No cdf files')
    if nargout>0,
     for i=1:nargout, varargout(i) = {[]}; end
    end
@@ -76,7 +76,7 @@ if findstr(cdf_file,'*'), % use wilcard '*' expansion
 end
 
 
-c_log('load',['cdf file: ' cdf_file]);
+irf_log('load',['cdf file: ' cdf_file]);
 
 cdf_file_info=cdfinfo(cdf_file);
 variable_names=cdf_file_info.Variables(:,1);
