@@ -73,7 +73,7 @@ warning off;
 % Chop up time interval:
 tstart = min(te);
 tend = max(te);
-n = floor((tend - tstart)/4);
+n = floor((tend - tstart)/4) + 1;
 spinfit = zeros(n,8);
 
 % guess the sampling frequency
@@ -125,7 +125,6 @@ for i=1:n
 			%we use Fortran version of spin fit
 			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
 				spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind),data(eind));
-			
 			tsfit = mean(te(eind));	
 			pol = polyfit(tpha(pind),pha(pind),1);
 			phi(i-n_gap) = polyval(pol,tsfit);
