@@ -4,6 +4,10 @@ function [coef1,coef2,coef3,coef4]=c_efw_calib(isdat_epoch);
 % c1..c4 - calibration coefficients [[A_12 E_offs_12_s E_offs_12_xy];[A_34 E_offs_34_s E_offs_34_xy]]
 % for calibration coefficient definition see C_DESPIN
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
+mfilename,'c_cal_gui')
+
 if size(isdat_epoch,2) == 6, isdat_epoch=toepoch(isdat_epoch);end % in case tiem given as tiem vector
 if isdat_epoch > toepoch([2000 01 01 00 00 00]),
 info='EFW calibration coefficients from 2000-01-01';

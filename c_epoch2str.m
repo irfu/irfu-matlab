@@ -8,6 +8,10 @@ function res=c_epoch2str(t)
 
 % Copyright 2004 Yuri Khotyaintsev
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
+mfilename,'epoch2iso')
+
 error(nargchk(1,1,nargin))
 
 s = fromepoch(t);
