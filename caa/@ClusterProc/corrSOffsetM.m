@@ -1,10 +1,16 @@
-function corrSOffset(cp,cl_id)
+function corrSOffsetM(cp,cl_id)
 %corrSOffset correct the Sunward offset and amplitude factor
 % do a manual correction of the offsets by comparison with 
 % CIS and EDI data (must be loaded)
 %
-% $Id$
+% corrSOffset(cp,cl_id)
+% cp - ClusterProc object
+% cl_id - SC#
 %
+% Example:
+% corrSOffset(ClusterProc('/home/yuri/caa-data/20020304'),1)
+%
+% $Id$
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 
