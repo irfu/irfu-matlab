@@ -69,8 +69,13 @@ else
 	error('caa:noSuchFile','no mEDSI file')
 end
 
-var_list = 'diE_tmp,diEs_tmp';
-var_list1 = 'diEp1234,diEsp34';
+if exist('diE','var')
+	var_list = 'diE_tmp,diEs_tmp';
+	var_list1 = 'diEp1234,diEsp34';
+else
+	var_list = 'diEs_tmp';
+	var_list1 = 'diEsp34';
+end
 
 % load CIS
 var = {'diVCEp', 'diVCEh'};
