@@ -2,12 +2,12 @@ function c_log(log_ids,log_msg,varargin)
 %C_LOG configurable logging routine
 %
 % c_log(log_ids,log_msg) - log a message LOG_MSG with id LOG_IDS.
-% The procedure will check if messages with LOG_IDS are intedned for logging
+% The procedure will check if messages with LOG_IDS are intended for logging
 % by current LOG_LEV (see below), and will be send to LOG_OUT (see below).
 %
 % Input:
 % log_id - one of:
-%   'fcal' - function calls. Additionaly adds function mane to the messagege.
+%   'fcal' - function calls. Additionally adds function name to the message.
 %   'dsrc' - data source (reading of row data from ISDAT and CDF files)
 %   'load' - loading of data from MAT files
 %   'save' - saving of data to MAT files
@@ -32,7 +32,7 @@ function c_log(log_ids,log_msg,varargin)
 % c_log('log_lev',32+16+4)
 %   //this allows logging of messages with LOG_IDS 'load','calb' and 'proc'
 %
-% c_log('log_out',path) - regirect output from screen (default) to file.
+% c_log('log_out',file) - redirect the output from screen (default) to FILE.
 % Default can be restored by running c_log('log_out','screen')
 % 
 % Example:
