@@ -5,7 +5,7 @@ function [output_string]=av_ssub(input_string,varargin)
 % [OUTPUT_STRING]=AV_SSUB(INPUT_STRING,NUM) change all appearence of '?' 
 % in INPUT_STRING to NUM. NUM is converted to string using NUM2STR function
 %
-% [OUTPUT_STRING]=AV_SSUB2(INPUT_STRING,NUM1,[NUM2],[NUM3])
+% [OUTPUT_STRING]=AV_SSUB(INPUT_STRING,NUM1,[NUM2],[NUM3])
 %  change all appearences of '?' to NUM1, '!' to NUM2, and '$' to NUM3
 %
 % Example: 
