@@ -12,7 +12,7 @@ function av_zoom(interval,c,axis_handles,t_ref)
 if nargin<4, t_ref=0;end
 if nargin < 3, axis_handles=gca;end
 if nargin == 3, ax=reshape(axis_handles,1,prod(size(axis_handles)));clear axis_handles;axis_handles=ax;end
-
+ 
 if size(interval,2) ~= 2, disp('zooming interval in wrong format');return;end
 
 if iscell(interval),
