@@ -209,6 +209,16 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 			n_sig = n_sig + 1;
 			if do_burst
 				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
+				% correct ADC offset
+				if exist('./mEDSI.mat','file')
+					eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
+				end
+				if exist(av_ssub(['Da?p' ps],cl_id),'var')
+					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
+					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
+				else
+					warning('ADC offset not corrected')
+				end
 			else
 				% correct ADC offset
 				if flag_usesavedoff & exist('./mEDSI.mat','file')
