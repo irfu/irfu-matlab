@@ -26,6 +26,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit
 % 	probe_p - probe pair to use 12 or 34 [default 34]
+% edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 % br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
@@ -530,6 +531,58 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	eval([ s 'di' varo_s '=diE;']); clear diE
 	eval(av_ssub('ang_limit?=ang_limit;',cl_id)) 
 	save_list=[save_list s 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% edi (sc)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'edi')
+	
+	save_file = './mEDI.mat';
+	
+	var_s = 'iEDI?'; e_opt = 'edi';
+	varo_s = 'EDI?';
+	
+	% Load BPP. We use BPP for EDI as it must be a rather approximation
+	[ok,B] = c_load('BPP?',cl_id);
+	if ~ok
+		[ok,B] = c_load('B?',cl_id);
+		if ~ok
+			c_log('load',...
+				av_ssub(['No B? and BPP?. Use getData(CDB,...,cl_id,''b'')'],cl_id))
+			data = []; return
+		end
+	end
+
+	% Load V if we need to do SC->Inertial transformation
+	[ok,V] = c_load('V?',cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
+		data = []; return
+	end
+
+	% Load E EDI (inertial)
+	[ok,E] = c_load(var_s,cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No ' var_s ' in mEDI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+		data = []; return
+	end
+
+	% SC -> Inertial
+	B = c_resamp(B,E);
+	evxb = av_t_appl(av_cross(B,c_resamp(V,B)),'*1e-3*(-1)');
+	E(:,2:4) = E(:,2:4) + evxb(:,2:4); clear evxb
+	
+ 	% GSE->DSI
+	if c_load('SAX?',cl_id)
+		c_eval(['di' varo_s '=c_gse2dsi(E(:,1:4),SAX?);save_list=[save_list '' di' varo_s ' ''];'],cl_id);
+	else
+		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
+	end
+
+	c_eval([varo_s '= E;'],cl_id); clear E
+	save_list=[save_list av_ssub(varo_s,cl_id) ' '];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Vedb,Vedbs = ExB with E.B=0
