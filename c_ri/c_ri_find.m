@@ -25,7 +25,8 @@ function [events_tint]=c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, peri
 % 		the steps are:
 %		1) calculating the MP-crossings
 %		2) obtaining angles for potential events and classing as events
-%   3) Filtering the events (reducing the numbers), get event data (not ready yet)
+%       3) Filtering the events (reducing the numbers),
+%       4) get event data (not ready yet)
 % 		   and turn the events into a ascii file and a jpeg figure
 %Output:
 %  save to mMP variables
@@ -115,7 +116,7 @@ if exist('.c_ri_parameters.mat','file'),
     catch disp('Parameter values could not be saved and therefore valid only for this run!');
     end
 else
-    try save c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
+    try save .c_ri_parameters.mat p_E p_R st_m et_m min_angle min_ampl period d2MP psw run_steps;
     catch disp('Parameter values could not be saved and therefore valid only for this run!');
     end
 end
@@ -202,18 +203,29 @@ for i = i_start:i_end
                 end
             end
         end
+        save mEvents events angles amplitude;
+        disp(['Alltogether found ' num2str(size(events,1)) ' events.']);
+    end
+    %step 3
+    if run_steps(3) == 1
+        disp('==============  STEP 3. Checking for additional constraints ====================');
+        try load mEvents events angles amplitude;
+        catch disp('there are no events in mEvents.mat file');
+        end
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %%%%%%%%%%%%% Any additional constraints should come here 
+        %%%%%%%%%%%%% Any additional constraints should come here
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%% Constraint on event being burst mode
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if flag_events_in_burst_mode==1,
-            ind_bad_events=[];
+            ind_bad_events=[];j_good=0;
             for j=1:size(events,1),
                 ttt=events(j,1);
-                c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',fromepoch(ttt),10,?,''tm'');');
+                c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',ttt,20,?,''tm'');');
                 if tm1==1 | tm2 == 1 | tm3 == 1 | tm4 ==1,
                     % do nothing
+                    c_log('dsrc',[num2str(j_good) '. event in burst mode. ' epoch2iso(ttt)]);
+                    j_good=j_good+1;
                 else,
                     ind_bad_events = [ind_bad_events;j];
                 end
@@ -221,6 +233,7 @@ for i = i_start:i_end
             events(ind_bad_events,:)=[];
             angles(ind_bad_events,:)=[];
             amplitude(ind_bad_events,:)=[];
+            clear j_good;
         end
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -228,10 +241,10 @@ for i = i_start:i_end
         save mEvents events angles amplitude;
         disp(['Alltogether found ' num2str(size(events,1)) ' events.']);
     end
-    %step 3
-    if run_steps(3) == 1
+    %step 4
+    if run_steps(4) == 1
         if run_steps(2) == 0; load mMP;load mEvents; end
-        disp('==============  STEP 3. Plotting data for events ====================');
+        disp('==============  STEP 4. Plotting data for events ====================');
         if exist('events'),
             if ~isempty(events),
                 c_ri_event_picture(events,period,angles,amplitude,p_R)
