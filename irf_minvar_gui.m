@@ -15,7 +15,7 @@ function status = irf_minvar_gui(x,column)
 % $Id$
 
 global ud
-persistent tlim message;
+persistent tlim message t0;
 %persistent ud tlim;
 
 if isempty(message), % run only the first time during the session
@@ -76,14 +76,14 @@ switch action,
         xp=0.2;yp=0.2;
         ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
         ud.fromh = uicontrol('style', 'edit', ...
-            'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'), ...
+            'string', epoch2iso(tlim(1),1), ...
             'callback', 'irf_minvar_gui(''from'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
 
         yp=0.15;
         ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
         ud.toh=uicontrol('style', 'edit', ...
-            'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'), ...
+            'string', epoch2iso(tlim(2)), ...
             'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 
 
@@ -126,9 +126,9 @@ switch action,
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
         irf_minvar_gui('update_mva_axis');
     case 'from'
-        tlim(1) = toepoch(datevec(strrep(get(ud.fromh, 'string'),'_',' ')));
-        tlim(2) = toepoch(datevec(strrep(get(ud.toh, 'string'),'_',' ')));
-        set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
+        tlim(1) = iso2epoch(ud.fromh);
+        tlim(2) = iso2epoch(ud.toh);
+        set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
         irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
         if tlim==ud.tlim_mva, % plot first time after 'mva'
