@@ -28,6 +28,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % This function chops up the time series in four second
 % intervals, each of which are analysed by EfwDoOneSpinFit.
+% Spins with less then 75% of data are disregarded.
 %
 % Example: (assuming valid db exist, see isGetDataLite)
 % To plot spinfits of data from probe pair 34 (obtained during
@@ -52,6 +53,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % See also: EfwDoOneSpinFit, isGetDataLite
 %
+% $Id$
 %
 % Anders.Eriksson@irfu.se, 13 December 2002
 
@@ -64,6 +66,19 @@ tend = max(te);
 n = floor((tend - tstart)/4);
 spinfit = zeros(n,8);
 
+% guess the sampling frequency
+sf = length(data)/(tend - tstart);
+
+if sf<1.3*25 & sf>.7*25, sf = 25;
+elseif sf<1.3*450 & sf>.7*450, sf = 450;
+else
+	disp('cannot guess sampling frequency')
+	sf = 0;
+end
+
+% N_EMPTY .75 means that we use only sping with more then 75% points.
+N_EMPTY = .75; 
+
 n_gap = 0;
 
 % Do it:
@@ -72,9 +87,10 @@ for i=1:n
   eind = find((te >= t0) & (te < t0+4));
   pind = find((tp >= t0) & (tp < t0+4));
 
+  % check for data gaps inside one spin.
+  if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
+	  
   % wee need to check if we have any data to fit.
-  % in principle it must be changes to something smarter, like
-  % that we have more then 50% points in one spin.
   if ~isempty(eind) & ~isempty(pind) 
   	 spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
                                    data(eind),tp(pind),ph(pind));
