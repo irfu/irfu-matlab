@@ -58,7 +58,9 @@ varsProc = {'dies','die','brs','br','edi'};
 if have_options
 	if isnumeric(args{1}), 
 		sc_list = args{1};
-		args = args(2:end);
+		if length(args)>1, args = args(2:end);
+		else, have_options = 0;
+		end
 	end
 end
 
