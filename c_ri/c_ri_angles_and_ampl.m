@@ -28,7 +28,7 @@ function [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
-warning off MATLAB:divideByZero
+warning off
 
 if B1(1,1) ~= 0 & B2(1,1) ~= 0 & B3(1,1) ~= 0 & B4(1,1) ~= 0  
 
@@ -76,3 +76,5 @@ B_n = B(:,2:4)./B_m;
 %only B-value, no time
 function B_dot = M_dot_N(M,N)
 B_dot = (dot(M', N'))';
+
+warning on

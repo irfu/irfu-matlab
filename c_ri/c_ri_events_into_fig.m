@@ -1,7 +1,8 @@
-function a = c_ri_events_into_fig(path_eve, file_events, per, p_up, path_Bp,p_MP,path_data)
-%function a = c_ri_events_into_fig(path_eve, file_events, per, p_up, path_Bp,p_MP,path_data)
+function a = c_ri_events_into_fig(time_interval,path_eve, file_events, per, p_up, path_Bp,p_MP,path_data)
+%function a = c_ri_events_into_fig(time_interval,path_eve, file_events, per, p_up, path_Bp,p_MP,path_data)
 %
 %Input:
+% time_interval - isdat_epoch [start_time end_time]
 % path_eve, file_events - path and name of file to be loaded
 %                    this file should contain:
 %                    [time in epoch | angle | amplitude | amplitude | mode]
@@ -21,9 +22,13 @@ function a = c_ri_events_into_fig(path_eve, file_events, per, p_up, path_Bp,p_MP
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
+global AV_DEBUG
+if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
+
 
 %--------------------- the beginning --------------------------
 load([path_eve file_events]);
+time_of_events=av_t_lim(time_of_events,time_interval);if debug, whos time_of_events;end
 nr_events = length(time_of_events(:,1));
 
 %builds the data points into events 
@@ -34,6 +39,7 @@ dt_ev = diff(time_of_events(:,1));
 %-----------------------------------
 % this section reduces the number of events
 %first point is always an event
+
 f_events = time_of_events(1,:);
 f_count = 1;
 for i = 1:i_end
@@ -48,6 +54,8 @@ for i = 1:i_end
   end
 end
 a=f_events;
+
+
 %-------------------------------------
 %writes an ascii file for the reduced number of points
 p_m = [fromepoch(f_events(:,1)) f_events(:,2:5)];
@@ -69,7 +77,7 @@ fclose(fp);
 %---------------------------------------
 % ls all MP_*.* files
 
-MP_files=dir([p_up 'MP_*.mat']);
+MP_files=dir([p_MP 'MP_*.mat']);
 
 for g =1:f_count
   t = f_events(g,1);
@@ -78,11 +86,10 @@ for g =1:f_count
   
   for i_MP_file=1:size(MP_files,1),
     file_name = MP_files(i_MP_file).name;
-    
-    if c_ri_timestr_within_intervall_MP(file_name,s_t,e_t) == 1
+    if c_ri_timestr_within_intervall_M(file_name,s_t,e_t) == 1,
       %load passing_MP,dist_t,dist2MP,p_solarwind
-      load([p_up file_name]);
-      
+      load([p_MP file_name]);
+      if debug, disp(['MP file: ' p_up file_name]);end
       %plotting data
       variable = who('dist_t');
       if isempty(variable)
@@ -96,40 +103,29 @@ for g =1:f_count
       end
     end
   end
-end
 
 %---------------------------------------
 % read data files - E field, P 
 
-data_files=dir([path_data 'F*T*.mat']);
-
-for g =1:f_count
-  t = f_events(g,1);
+  data_files=dir([path_data 'F*T*.mat']);
   for i_data_file=1:size(data_files,1),
 		    file_name = data_files(i_data_file).name;
     if c_ri_timestr_within_tint(file_name,[t t]) == 1
-      load([path_data file_name]);whos
+      load([path_data file_name]);
+      if debug, disp(['Data file: ' path_data file_name]);end
     end
   end
-end
-
 
 %---------------------------------------
 % ls all Bp_*.* files
-Bp_files=dir([path_Bp 'Bp_*.mat']);
-
-for g =1:f_count
-  t = f_events(g,1);
-  s_t = fromepoch(t);
-  e_t = fromepoch(t); 
-  
+  Bp_files=dir([path_Bp 'Bp_*.mat']);
   for i_Bp_file=1:size(Bp_files,1),
     file_name = Bp_files(i_Bp_file).name;
     
     if c_ri_timestr_within_intervall(file_name,s_t,e_t) == 1
       %load B1,B2,B3,B4
       load([path_Bp file_name]);
-      
+      if debug, disp(['Bp file: ' path_Bp file_name]);end
       mode = file_name(length(file_name)-4);
       
       m1 = time2row(t-5,B1);
@@ -188,7 +184,10 @@ h(ip)=av_subplot(np,1,-ip);ip=ip+1;
       plot(t,0,'xk');
       ylabel('Vps, [cc]')
       
-      
+av_zoom(t+[-5 5],'x',h);
+add_timeaxis(h);
+set(h,'YLimMode','auto');
+
       %plotting data
       variable = who('min_ampl');
       if isempty(variable)
@@ -241,7 +240,6 @@ h(ip)=subplot(np,1,ip);ip=ip+1;
       text(2.5,-1.5,['solarwind preasure: ' int2str(p_solarwind) ' nT']);
       axis([1,4,1,6])
       axis off
-      
       p_and_f_picture = [p_up 'BEP_' c_ri_datestring_file(fromepoch(t)) '.png'];
       print( gcf, '-dpng', p_and_f_picture);
       disp(['saving: ' p_and_f_picture]);

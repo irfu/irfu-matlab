@@ -1,6 +1,6 @@
 function within = c_ri_timestr_within_intervall_MP(time_str,s_t,e_t)
 %
-%within = c_ri_timestr_within_intervall(time_str,s_t,e_t)
+%within = c_ri_timestr_within_intervall_MP(time_str,s_t,e_t)
 %
 %Input:
 % time_str -timestring ex: "MP_20020302_03:03:01_to_20030302_03:03:06.mat"
