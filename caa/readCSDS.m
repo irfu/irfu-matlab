@@ -6,7 +6,8 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 % Input:
 %	data_path - ISDAT database strings and directories containing CSDS 
 %   subdirectory with data separated by '|'. These data sources are	being tried
-%	in the same order. A typical example would be: 'disco:10|/data/cluster'
+%	in the same order. A typical example would be: 
+%		'ice:10|disco:10|/data/cluster'
 %	start_epoch - start time (isdat epoch)
 %	dt - time interval in sec
 %	cl_id - SC#
