@@ -120,8 +120,8 @@ else
     end
 end
 
-if ~exist(p_E,'dir'), c_log('save',['creating p_E directory: ' p_E]); end
-if ~exist(p_R,'dir'), c_log('save',['creating p_E directory: ' p_R]); end
+if ~exist(p_E,'dir'), c_log('save',['creating p_E directory: ' p_E]); mkdir(p_E);  end
+if ~exist(p_R,'dir'), c_log('save',['creating p_E directory: ' p_R]); mkdir(p_R);  end
 
 [i_end,c] = size(st_m);
 
