@@ -47,7 +47,7 @@ if exist('./mEDSI.mat','file')
 			eval(av_ssub('diEs=diEs?p34-ones(length(diEs?p34),1)*Del;',cl_id))
 		end
 
-		% LOad offsets
+		% Load offsets
 		offset = [0+0i 1];
 		eval(av_ssub('load mEDSI Ddsi? Damp?',cl_id))
 		if exist(av_ssub('Ddsi?',cl_id),'var')
@@ -70,12 +70,14 @@ else
 end
 
 if exist('diE','var')
-	var_list = 'diE_tmp,diEs_tmp';
-	var_list1 = 'diEp1234,diEsp34';
-else
-	var_list = 'diEs_tmp';
-	var_list1 = 'diEsp34';
+	have_hres = 1;
+	% remove points larger then 1 V/m
+	for j=2:3, diE(find(abs(diE(:,j)) > 1000), j) = NaN; end
+else, have_hres = 0;
 end
+% we load full res data, but plot only spin.
+var_list = 'diEs_tmp';
+var_list1 = 'diEsp34';
 
 % load CIS
 var = {'diVCEp', 'diVCEh'};
@@ -148,6 +150,10 @@ for i=2:length(t), leg = [leg ',''' t{i} '''']; end
 t0 = tokenize(var_list0,',');
 t1 = tokenize(var_list,','); dvar = t1{1};
 
+for k=1:length(t1) 
+	for j=2:3, eval([ t1{k} '(find(abs(' t1{k} '(:,j)) > 1000), j) = NaN;']),end 
+end
+
 dummy = dvar;
 for j=2:2+length(t0), dummy = [dummy ',' dvar]; end
 eval(['h=av_tplot({' dummy '});'])
@@ -172,7 +178,9 @@ for co=1:2
 end
 
 axes(h(1))
-title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
+title(sprintf(...
+'Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',...
+cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 
 
 % AUX information
@@ -189,20 +197,36 @@ zoom on
 
 q='0';
 while(q ~= 'q')
-  flag_replot=0;
-	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
+	flag_replot=0;
+	q_s = 'Delta Ex,Ey [mV/m], amplitude factor (s,r,';
+	if have_hres, q_s = [q_s 'f,']; end
+	q_s = [q_s 'q,h-help)[%]>'];
+	q=av_q(q_s,'', ...
+		num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
 	switch(q)
 	case 'h'
+		disp('Usage:')
+		disp('  give 3 numders for offsets in Ex, Ey and amplitude')
+		disp('  correction or one of the following commands:')
+		disp('  s - save calibration parameters')
+		disp('  r - read from disk')
+		if have_hres, disp('  f - show/hide full resolution data'), end
+		disp('  q - quit')
+		disp('  q - help (this message)')
+	case 'f'
 		if strcmp(var_list(1:7),'diE_tmp')
 			%do not plot high resolution data
 			var_list = var_list(9:end);
 			leg = leg(12:end);
+			flag_replot=1;
 		else
-			%plot high resolution data
-			var_list = ['diE_tmp,' var_list];
-			leg = ['''diEp1234'',' leg];
+			%plot high resolution data if we have its
+			if have_hres
+				var_list = ['diE_tmp,' var_list];
+				leg = ['''diEp1234'',' leg];
+				flag_replot=1;
+			end
 		end
-  		flag_replot=1;
 	case 'r'
 		disp(sprintf('Reading Ddsi%d, Damp%d <- ./mEDSI.mat',cl_id,cl_id))
 		eval(av_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
@@ -218,14 +242,11 @@ while(q ~= 'q')
 		if ok
 			if length(o_tmp) > 2
 				offset(1) = o_tmp(1)+1i*o_tmp(2);
-        offset(2) = o_tmp(3);
-			elseif length(o_tmp) > 1
-				offset(1) = o_tmp(1)+1i*o_tmp(2);
-			else
-				offset(1) = o_tmp(1)+1i*imag(offset(1));
+				offset(2) = o_tmp(3);
+			elseif length(o_tmp) > 1, offset(1) = o_tmp(1)+1i*o_tmp(2);
+			else, offset(1) = o_tmp(1)+1i*imag(offset(1));
 			end
-		else
-			disp('invalid command')
+		else, disp('invalid command')
 		end
   	flag_replot=1;
 	end
@@ -250,21 +271,17 @@ while(q ~= 'q')
 					dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
 				end
         	end
-        
-			axes(h(co))
-        	cla(h(co))
+
+			axes(h(co)), cla(h(co))
 			ax_pos=get(h(co),'position');
 			eval(['plot(h(co),' dummy ');'])
 			set(h(co),'position',ax_pos);
 			add_timeaxis(h(co))
-			grid(h(co))
-			set(h(co),'XTickLabel',[])
+			grid(h(co)), set(h(co),'XTickLabel',[]), xlabel('')
 			if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
-			xlabel('')
 		end
 
 		axes(h(1))
- 
     	title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 		addPlotInfo
 		for j=1:length(t0)+2, axes(h(j)), end
@@ -273,3 +290,4 @@ while(q ~= 'q')
 		flag_replot=0;
 	end
 end
+
