@@ -13,6 +13,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		if imaginary - to p34
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+%	dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
+%		ADC offsets are NOT corrected
 %	edbs, edb : E[s]{cl_id}, diE[s]{cl_id} -> mEdB // Ez from E.B=0 [DSI+GSE]
 %		has the following options:
 %		ang_limit - minimum angle(B,spin plane) [default 10 deg]
@@ -173,45 +175,61 @@ if strcmp(quantity,'dies')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'die')
-	save_file = './mEDSI.mat';
+elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
+	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
+	if do_burst
+		save_file = './mEFWburst.mat';
+                var_name = 'wbE?p';
+		var1_name = 'dibE?p1234';
+	else
+		save_file = './mEDSI.mat';
+                var_name = 'wE?p';
+		var1_name = 'diE?p1234';
+	end
 
 	if ~(exist('./mA.mat','file') & exist('./mEDSI.mat','file'))
 		warning('Please compute spin averages (mER) and load phase (mA)')
 		data = [];
 		return
 	end
-	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
-
+	if do_burst, c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
+	else, c_eval(['load mER ' var_name '12 ' var_name '34;'],cl_id);
+	end
+	
 	% calibration coefficients // see c_despin
 	coef=[[1 0 0];[1 0 0]];
 
 	pl=[12,34];
 	full_e = [];
 	n_sig = 0;
+	
 	for k=1:length(pl)
 		ps = num2str(pl(k));
-		if exist(av_ssub(['wE?p' ps],cl_id),'var')
+		if exist(av_ssub([var_name ps],cl_id),'var')
 			n_sig = n_sig + 1;
-			% correct ADC offset
-			if flag_usesavedoff & exist('./mEDSI.mat','file')
-			   	eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
-			end
-			if exist(av_ssub(['Da?p' ps],cl_id),'var')
-				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))
-				eval(av_ssub(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id))    % ????????????????????????
+			if do_burst
+				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
 			else
-				if flag_rmwhip & exist('./mFDM.mat','file')
-					c_eval('load mFDM WHIP?',cl_id)
+				% correct ADC offset
+				if flag_usesavedoff & exist('./mEDSI.mat','file')
+					eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
 				end
-				if flag_rmwhip & exist(av_ssub('WHIP?',cl_id),'var')
-					%removing times with Whisper pulses
-					c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+				if exist(av_ssub(['Da?p' ps],cl_id),'var')
+					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
+					c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
 				else
-					c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ');'],cl_id)
+					if flag_rmwhip & exist('./mFDM.mat','file')
+						c_eval('load mFDM WHIP?',cl_id)
+					end
+					if flag_rmwhip & exist(av_ssub('WHIP?',cl_id),'var')
+						%removing times with Whisper pulses
+						c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+					else
+						c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ');'],cl_id)
+					end
+					c_eval(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
+					c_eval(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id);
 				end
-				c_eval(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
-				c_eval(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id);
 			end
 		end
 	end
@@ -255,32 +273,34 @@ elseif strcmp(quantity,'die')
 		clear EE pp
 	end
 
-	% load Delta offsets D?p12p34
-	if exist('./mEDSI.mat','file')
-		eval(av_ssub('load mEDSI D?p12p34;',cl_id));
-	end
-	if exist(av_ssub('D?p12p34',cl_id))
-		eval(av_ssub('Del=D?p12p34;',cl_id))
-		if real(Del)                               % ?????????????????????????
-			disp('correcting p12')
-			i_c = 1;
-		else
-			disp('correcting p34')
-			Del = imag(Del);
-			i_c = 2;
+	if ~do_burst
+		% load Delta offsets D?p12p34
+		if exist('./mEDSI.mat','file')
+			eval(av_ssub('load mEDSI D?p12p34;',cl_id));
 		end
-		eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*1j;',cl_id));
-		clear Del
-
-	else, disp('no Delta offsets found in mEDSI, not doing correction...')
+		if exist(av_ssub('D?p12p34',cl_id))
+			eval(av_ssub('Del=D?p12p34;',cl_id))
+			if real(Del)                               % ?????????????????????????
+				disp('correcting p12')
+				i_c = 1;
+			else
+				disp('correcting p34')
+				Del = imag(Del);
+				i_c = 2;
+			end
+			eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*1j;',cl_id));
+			clear Del
+	
+		else, disp('no Delta offsets found in mEDSI, not doing correction...')
+		end
 	end
 
 	% Do actual despin
-	eval(av_ssub('load mA A?;',cl_id));
-	eval(av_ssub('diE?p1234=c_despin(full_e,A?,coef);',cl_id));
+	c_eval('load mA A?;',cl_id);
+	c_eval([var1_name '=c_despin(full_e,A?,coef);'],cl_id);
 	% DS-> DSI
-	eval(av_ssub('diE?p1234(:,3)=-diE?p1234(:,3);',cl_id));
-	eval(av_ssub(['save_list=[save_list '' diE?p1234 ''];'],cl_id));
+	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
+	c_eval(['save_list=[save_list ''' var1_name '''];'],cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % edb,edbs - E.B=0
