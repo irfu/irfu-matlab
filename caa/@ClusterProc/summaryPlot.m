@@ -22,19 +22,19 @@ if nargin<3, cs = 'dsi'; %DSI
 end
 
 if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
-   disp('unknown CS. defaulting to DSI')
+	c_log('fcal','unknown CS. defaulting to DSI')
 	cs= 'dsi';
 end
 
 % load data
 if strcmp(cs,'dsi') 
-	q_list = {'P?','diBPP?','diE?','diEs?','diVExBs?'};
-	l_list = {'SC pot [-V]','B PP DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
+	q_list = {'P?','diBrs?','diE?','diEs?','diVExBs?'};
+	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
-	q_list = {'P?','BPP?','E?','Es?','VExBs?'};
-	l_list = {'SC pot [-V]','B PP GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
+	q_list = {'P?','Brs?','E?','Es?','VExBs?'};
+	l_list = {'SC pot [-V]','B GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
 end
-f_list = {'mP','mBPP','mEdB','mEdB','mEdB'};
+f_list = {'mP','mBr','mEdB','mEdB','mEdB'};
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
