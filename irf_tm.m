@@ -43,7 +43,7 @@ dgud.cancel = 0;
 dgud.h=h;
 
 screensize = get(0, 'screensize');
-xsize = 460;
+xsize = 510;
 ysize = 150;
 left = 0.5*screensize(3)-xsize/2;
 bottom = 0.5*screensize(4)-ysize/2;
