@@ -25,6 +25,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
+%	leavewhip : do not remove time intervals with Whisper pulses
 %	usesavedoff : use saved offsets instead of recalculate everything
 %
 %
@@ -44,6 +45,7 @@ end
 flag_save = 1;
 flag_usesavedoff = 0;
 flag_edb = 1;
+flag_rmwhip = 1; 
 ang_limit = 10;
 
 while have_options
@@ -51,6 +53,8 @@ while have_options
     switch(args{1})
     case 'nosave'
         flag_save = 0;
+	case 'leavewhip'
+		flag_rmwhip = 0;
 	case 'usesavedoff'
 		flag_usesavedoff = 1;
 	case 'ang_limit'
@@ -105,8 +109,19 @@ if strcmp(quantity,'dies')
 	for k=1:length(pl)
 		ps = num2str(pl(k));
 		if exist(av_ssub(['wE?p' ps],cl_id),'var')
-			eval(av_ssub(['tt=wE?p' ps ';aa=A?;'],cl_id))
+			c_eval(['tt=wE?p' ps ';aa=A?;'],cl_id)
 			disp(sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
+
+			if flag_rmwhip
+				if exist('./mFDM.mat','file')
+					c_eval('load mFDM WHIP?',cl_id)
+				end
+				if exist(av_ssub('WHIP?',cl_id),'var')
+					disp('not using times with Whisper pulses')
+					c_eval('tt=blankTimes(tt,WHIP? );clear WHIP?',cl_id)
+				end
+			end
+			
 			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
 			sp = sp(:,1:4);
 			sp(:,4) = 0*sp(:,4); % Z component
@@ -186,9 +201,17 @@ elseif strcmp(quantity,'die')
 				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))
 				eval(av_ssub(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id))    % ????????????????????????
 			else
-				eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
-				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))
-				eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
+				if flag_rmwhip & exist('./mFDM.mat','file')
+					c_eval('load mFDM WHIP?',cl_id)
+				end
+				if flag_rmwhip & exist(av_ssub('WHIP?',cl_id),'var')
+					%removing times with Whisper pulses
+					c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+				else
+					c_eval(['[Ep' ps ',Da?p' ps ']=corrADCOffset(wE?p' ps ');'],cl_id)
+				end
+				c_eval(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
+				c_eval(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id);
 			end
 		end
 	end

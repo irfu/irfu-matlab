@@ -21,6 +21,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
+%	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec 
 %
 %	options - one of the following:
 %	nosave : do no save on disk
@@ -255,6 +256,24 @@ elseif strcmp(quantity,'vce')
 			end
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% whip - Whisper present.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'whip')
+	save_file = './mFDM.mat';
+	[t_s,t_e,fdm_r]=createEFWModeTableFDM(cdb.db, start_time, dt, cl_id, 'r');
+	ii = find(fdm_r==1);
+	
+	if ~isempty(ii)
+		% add 1 sec from both sides
+		t_s = t_s(ii) - 1;
+		t_e = t_e(ii);
+		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
+		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
+	else
+		warning('caa:noData','No data')
+	end
+	clear t_s t_e fdm_r ii
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
@@ -286,36 +305,3 @@ end
 
 cd(old_pwd)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% help functions - ISGet
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [t,d] = ISGet(db_s,st,dt,cli,ins,sig,sen,cha,par)
-% Help wrapper around isGetDataLite
-% Last 3 input arguments can be skipped
-
-if nargin < 9, par = ' '; end
-if nargin < 8, cha = ' '; end
-if nargin < 7, sen = ' '; end
-
-p = tokenize(db_s,'|');
-
-for i=1:length(p)
-	% reset errors, otherwise try/catch fails
-	lasterr('')
-	try
-		dbase = Mat_DbOpen(p{i});
-		disp(lasterr)
-
-		[t, d] = isGetDataLite(dbase, st, dt, ...
-		'Cluster',num2str(cli),ins,sig,sen,cha,par);
-
-		if exist('dbase'), Mat_DbClose(dbase), clear dbase, end
-
-		if ~isempty(d), return, end
-
-	catch
-		warning('ISDAT:getData',...
-		'Error getting data from ISDAT server %s: %s', p{i},lasterr)
-		t = []; d = [];
-	end
-end
