@@ -129,7 +129,7 @@ for i_event=1:size(events,1),
       EFW_P=c_isdat_get_EFW(time_interval,[],[],sc_mode,1:4,db,'P');
       P1=EFW_P{1};P2=EFW_P{2};P3=EFW_P{3};P4=EFW_P{4};
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
-      save(file_name,'P1','P2','P3','P4',flag_append);        if debug, disp('saving P1,P2,P3,P4');end
+      save(file_name,'P1','P2','P3','P4',flag_append);        if debug, whos -file file_name;disp(['saving ' flag_append ' P1,P2,P3,P4']);end
 
     case 'EFW_E',
       file_prefix='F';
