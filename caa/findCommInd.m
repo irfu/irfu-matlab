@@ -10,7 +10,7 @@ function [ii1,ii2]=findCommInd(d1,d2)
 
 % Copyright 2004 Yuri Khotyaintsev
 
-DEBUG = 1;
+DEBUG = 0;
 
 ii1 = [];
 ii2 = [];
@@ -35,7 +35,7 @@ while 1
 		break 
 	end
 
-	ii = ii(1) % first point where times differ
+	ii = ii(1); % first point where times differ
 	if ii>1
 		% save the interval and shift
 		if DEBUG, disp('save interval and shift'), end
@@ -55,6 +55,9 @@ while 1
 				break
 			end
 			s1 = s1 + 1;
+			it = find(t2>=t1(s1));
+			s2 = it(1);
+			clear it
 		else
 			s2 = s2 + i_t0 - 1;
 		end
@@ -67,9 +70,13 @@ while 1
 				if DEBUG, disp('break at 3'), end
 				break
 			end
-			s1 = s2 + 1;
+			s2 = s2 + 1;
+			it = find(t1>=t2(s2));
+			s1 = it(1);
+			clear it
+		else
+			s1 = s1 + i_t0 - 1;
 		end
-		s1 = s1 + i_t0 - 1;
 	end
 	n_loop = n_loop + 1;
 	disp(sprintf('gap # %d',n_loop))
