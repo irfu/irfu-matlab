@@ -42,6 +42,7 @@ Wcp = Wce/Mp_Me;
 WpO = WpO*1e3;
 WcO = Wce/Mp_Me/16;
 
+Roe = Vte/Wce*1e3; % in meters
 Rop = Vtp/Wcp*1e3; % in meters
 RoO = VtO/WcO*1e3;
 Ros = Vts/Wcp*1e3;
@@ -99,8 +100,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scales
 
-l = [Le Li Rop RoO Ros];
-ls = {'L_e'; 'L_i'; 'Ro_p'; 'Ro_O'; 'Ro_s'};
+l = [Le Li Roe Rop RoO Ros];
+ls = {'L_e'; 'L_i'; 'Ro_e' ; 'Ro_p'; 'Ro_O'; 'Ro_s'};
 disp(sprintf('\nPlasma scales\n'))
 for ii = 1:length(l)
 	val = l(ii);
