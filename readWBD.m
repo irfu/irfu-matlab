@@ -33,7 +33,7 @@ te_s = c_epoch2str(start_time + dt);
 ux_cmd = [R_WBD_WF ' ' cl_id_s ' 0 0 ' ts_s ' ' te_s '>' tmp_file];
 [s,m] = unix(ux_cmd);
 if s~=0, error('Error running R_WBD_WF'), end
-disp(m)
+c_log('dsrc',m)
 
 fid=fopen(tmp_file);
 if fid==-1, error(['cannot read temporary file ' tmp_file]), end
@@ -45,4 +45,4 @@ unix(['rm ' tmp_file]);
 data = data';
 data(:,1) = data(:,1) + start_time;
 
-disp(['readWBD: ' num2str(size(data,1)) ' data points'])
+c_log('dsrc',['readWBD: ' num2str(size(data,1)) ' data points'])
