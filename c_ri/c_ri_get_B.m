@@ -98,6 +98,9 @@ if nargout,  % return B
     dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
     B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
     close(fvs);
+  else
+    disp('Zero size FGM data file!');
+    B=[];
   end
   unix(['rm ' to_file]);
 else
