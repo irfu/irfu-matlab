@@ -33,10 +33,10 @@ end
 
 if strcmp(flag,'v_from_t'),
   t_center=0.5*t(1)+0.5*t;
-  for ic=1:4,eval(irf_ssub('vsc?=irf_resamp(V?,t_center,''spline'');',ic));end
-  for ic=1:4,eval(irf_ssub('drsc?=irf_resamp(irf_add(1,R?,-1,R1),t(?),''spline'');',ic));end
-  for ic=1:4,eval(irf_ssub('dr?=drsc?+[0 (t(?)-t(1))*vsc?(1,2:4)];',ic));end
-  for ic=1:4,eval(irf_ssub('dt(?)=t(?)-t(1);sdt?=num2str(dt(?),3);',ic));end
+  c_eval('vsc?=irf_resamp(V?,t_center,''spline'');');
+  c_eval('drsc?=irf_resamp(irf_add(1,R?,-1,R1),t(?),''spline'');');
+  c_eval('dr?=drsc?+[0 (t(?)-t(1))*vsc?(1,2:4)];');
+  c_eval('dt(?)=t(?)-t(1);sdt?=num2str(dt(?),3);');
   D=[dr2(2:4);dr3(2:4);dr4(2:4)];
   T=[dt(2),dt(3), dt(4)]';
   m=D\T;
