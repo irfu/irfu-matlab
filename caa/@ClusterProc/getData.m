@@ -1,0 +1,158 @@
+function data = getData(cp,cl_id,quantity,varargin)
+%GETDATA(cdb) produce Cluster level 0 data from the raw data
+% data = getData(cdb,cl_id,quantity,options)
+%
+% Input:
+%	cp - ClusterProc object
+%	cl_id - SC#
+%	quantity - one of the following:
+%
+%	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
+%		also creates delta offsets Dp12p34x and Dp12p34y
+%	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
+%
+%	options - one of the following:
+%	not yet implemented
+%
+% $Revision$  $Date$
+%
+% see also C_GET
+
+% Copyright 2004 Yuri Khotyaintsev
+% Parts of the code are (c) Andris Vaivads
+
+error(nargchk(3,15,nargin))
+if nargin > 3, property_argin = varargin; end
+
+flag_save = 1; % change this!
+
+save_file = '';
+save_list = '';
+
+old_pwd = pwd;
+cd(cp.sp) %enter the storage directory
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dies - spin fiting of Electric field
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(quantity,'dies')
+	save_file = './mEDSI.mat';
+
+	if ~(exist('./mA.mat','file') & exist('./mER.mat','file'))
+		warning('Please load raw data (mER) and phase (mA)')
+		data = [];
+		return
+	end
+	
+	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
+	eval(av_ssub('load mA A?;',cl_id));
+	
+	pl=[12,34];
+	for i=1:length(pl)
+		ps = num2str(pl(i));
+		if exist(av_ssub(['wE?p' ps],cl_id),'var')
+			eval(av_ssub(['tt=wE?p' ps ';aa=A?;'],cl_id))
+			disp(sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(i),cl_id,pl(i)))
+			sp = EfwDoSpinFit(pl(i),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+			sp = sp(:,1:4);
+			sp(:,4) = 0*sp(:,4); % Z component
+			eval(av_ssub(['diEs?p' ps '=sp;'],cl_id)); clear tt aa sp
+			eval(av_ssub(['save_list=[save_list '' diEs?p' ps ' ''];'],cl_id));
+		else
+			disp(sprintf('No p%d data for sc%d',pl(i),cl_id))
+		end
+	end
+
+	% delta offsets
+	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
+		eval(av_ssub(['m12=mean(diEs?p12);m34=mean(diEs?p34);'],cl_id))
+		Del = m12(2:3) - m34(2:3);
+		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', Del(1), Del(2)))
+		eval(av_ssub('D?p12p34=Del;',cl_id))
+		eval(av_ssub(['save_list=[save_list '' D?p12p34 ''];'],cl_id));
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% aux data - Phase, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'die')
+	save_file = './mEDSI.mat';
+
+	if ~(exist('./mA.mat','file') &exist('./mA.mat','file') & exist('./mEDSI.mat','file'))
+		warning('Please compute spin averages (mER) and load phase (mA)')
+		data = [];
+		return
+	end
+	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
+
+	% calibration coefficients // see c_despin
+	coef=[[1 0 0];[1 0 0]];
+	
+	pl=[12,34];
+	full_e = [];
+	for i=1:length(pl)
+		ps = num2str(pl(i));
+		if exist(av_ssub(['wE?p' ps],cl_id),'var')
+			eval(av_ssub(['tt=wE?p' ps ';'],cl_id))
+			if isempty(full_e)
+				full_e = zeros(length(tt),4);
+				full_e(:,1) = tt(:,1);
+			end
+			% correct ADC offset
+			[tt,offset] = corrADCOffset(cp,tt);
+			% use WEC coordinate system E=[t,0,p34,p12]
+			if pl(i)==12, full_e(:,4) = tt(:,2);
+			else, full_e(:,3) = tt(:,2);
+			end
+			coef(i,2) = offset;
+			eval(av_ssub(['Da?p' ps '=offset;'],cl_id))
+			eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
+			clear tt offset
+		end
+	end
+	if isempty(full_e) 
+		warning('No raw data found in mER')
+		data = [];
+		return
+	end
+	
+	% load Delta offsets D?p12p34
+	if exist('./mEDSI.mat','file')
+		eval(av_ssub('load mEDSI D?p12p34;',cl_id));
+	end
+	if exist(av_ssub('D?p12p34',cl_id))
+		eval(av_ssub('coef(1,3)=D?p12p34(1)+i*D?p12p34(2);',cl_id));
+	else, disp('no Delta offsets found in mEDSI, not doing correction...')
+	end
+
+	% Do actual despin
+	eval(av_ssub('load mA A?;',cl_id));
+	eval(av_ssub('diE?p1234=c_despin(full_e,A?,coef);',cl_id));
+	% DS-> DSI
+	eval(av_ssub('diE?p1234(:,3)=-diE?p1234(:,3);',cl_id));
+	eval(av_ssub(['save_list=[save_list '' diE?p1234 ''];'],cl_id));
+
+end %main QUANTITY
+
+% saving
+% If flag_save is set, save variables to specified file
+if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
+	if exist(save_file,'file')
+		eval(['save -append ' save_file ' ' save_list]);
+	else
+		eval(['save ' save_file ' ' save_list]);
+	end
+end
+
+% prepare the output
+if nargout > 0 & ~isempty(save_list)
+	sl = tokenize(save_list);
+	data = {sl};
+	for i=1:length(sl)
+		eval(['data{i+1}={' char(sl{i}) '};'])
+	end
+else
+	data = [];
+end
+
+cd(old_pwd)
