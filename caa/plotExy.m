@@ -34,3 +34,5 @@ for i=1:nd
 	end
 end
 addPlotInfo
+axes(p2)
+axes(p1)
