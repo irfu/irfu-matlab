@@ -23,9 +23,11 @@ function c_get_batch(st,dt,varargin)
 %   'ncis','vcis','vce','bfgm'}
 %   // + {'dies','die','brs','br'} which are always added. Use 'noproc' 
 %   to skip them.
+% 'nosrc'  - do not run ClusterDB/getData;
 % 'noproc' - do not run ClusterProc/getData for {'dies','die','brs','br'};
 % 'extrav' - extra variables in addition to default;
 % 'cdb' - ClusterDB object;
+% ++ extra options to be passwed to ClusterProc/getData
 % 
 % Examples:
 % c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,...
@@ -34,6 +36,9 @@ function c_get_batch(st,dt,varargin)
 % c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,...
 % 'sp','/home/yuri/caa-data/20020304','vars',{'e','p'})
 %   % load only 'e' and 'p'
+% c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,...
+% 'sp','/home/yuri/caa-data/20020304','vars','e','nosrc','withwhip')
+%   % to recompute E and pass 'withwhip' to ClusterProc/getData
 %
 % See also ClusterDB/getData, ClusterProc/getData
 %
@@ -55,6 +60,8 @@ dp = '/data/cluster';
 cdb = '';
 vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','vce','bfgm'};
 varsProc = '';
+argsProc = '';
+dosrc = 1;
 doproc = 1;
 
 if have_options
@@ -109,10 +116,14 @@ while have_options
 			if (isa(args{2},'ClusterDB')), cdb = args{2};
 			else, irf_log('fcal','wrongArgType : cdb must be a ClusterDB object')
 			end
+		case 'nosrc'
+			dosrc = 0; l = 1;
 		case 'noproc'
 			doproc = 0; l = 1;
 		otherwise
-        	irf_log('fcal',['Option ''' args{1} '''not recognized'])
+        	irf_log('fcal',['Option ''' args{1} ''' not recognized. Pass the rest to getData'])
+			argsProc = args;
+			break
     	end
 		if length(args) > l, args = args(l+1:end);
 		else break
@@ -125,9 +136,9 @@ end
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
 if ~isempty(vars)
-	for cl_id=sc_list
-		for k=1:length(vars)
-			getData(cdb,st,dt,cl_id,vars{k});
+	if dosrc
+		for cl_id=sc_list
+			for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
 		end
 	end
 	if doproc
@@ -142,7 +153,8 @@ if ~isempty(varsProc) & doproc
 	cp=ClusterProc(sp);
 	for cl_id=sc_list
 		for k=1:length(varsProc)
-			getData(cp,cl_id,varsProc{k});
+			proc_options = [{cp} {cl_id} {varsProc{k}} argsProc];
+			getData(proc_options{:});
 		end
 	end
 end

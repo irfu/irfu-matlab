@@ -40,7 +40,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %	General options - one of the following:
 %		nosave : do no save on disk
-%		leavewhip : do not remove time intervals with Whisper pulses
+%		withwhip : do not remove time intervals with Whisper pulses
 %		notusesavedoff : recalculating everything instead of using saved offsets
 %
 % See also C_GET
@@ -69,7 +69,7 @@ while have_options
 	switch(args{1})
 	case 'nosave'
 		flag_save = 0;
-	case 'leavewhip'
+	case 'withwhip'
 		flag_rmwhip = 0;
 	case 'notusesavedoff'
 		flag_usesavedoff = 0;
