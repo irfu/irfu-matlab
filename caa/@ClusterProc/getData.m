@@ -216,7 +216,9 @@ if strcmp(quantity,'dies')
 		
 		% To compute delta offsets we remove points which are > deltaof_max*sdev
 		% as this must de a stable quantity
-		eval(irf_ssub(['df=diEs?p!(:,2:3)-diEs?p34(:,2:3);'],cl_id,p12))
+		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
+		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
+		clear ii1 ii2
 		sdev = std(df);
 		comp_s = 'xy';
 		for comp = 1:2
