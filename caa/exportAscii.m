@@ -127,12 +127,12 @@ elseif regexp(vs,'A[1-4]')
 elseif regexp(vs,'dump')
 
   fid = fopen([inputname(1) '.dat'],'w');
-  for j=1:size(vs,2),
-    if vs(j,1)>5e8 % assume first column time in isdat epoch
-      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %6.4f ',fromepoch(vs(j,1)));
-      fprintf(fid,[d num2str(vs(j,2:end))]);
+  for j=1:size(var,2),
+    if var(j,1)>5e8 % assume first column time in isdat epoch
+      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %6.4f ',fromepoch(var(j,1)));
+      fprintf(fid,[d num2str(var(j,2:end))]);
     else
-      fprintf(fid,[d num2str(vs(j,2:end))]);
+      fprintf(fid,[num2str(var(j,1:end))]);
     end
   end
   fclose(fid);
