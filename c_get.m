@@ -31,6 +31,7 @@ mmm =  ...
 	'---------------------------           ';
 	'db despinned dBPP1... -> mBPP         ';
 	'dbf despinned dB1... -> mB            ';
+	'dibf despinned diB1... -> mB          ';
 	'dbs despinned dBS1..dBS4 -> mBS       ';
 	'dve despinned dvE1..dvE4 -> mE        ';
         'dve1 spin fits dvE1p12..dvE4p34 -> mE ';
@@ -153,6 +154,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    eval(av_ssub('load mB B?;tt=B?(1,1);',ic));
    eval(av_ssub('dB?=c_gse2dsc(B?,[B?(1,1) ic]);',ic));
    eval(av_ssub('save -append mB dB?;',ic));
+  end
+
+ elseif strcmp(q,'dibf'),
+  for ic=sc_list,
+   eval(av_ssub('load mB B?;',ic));
+   eval(av_ssub('load mEPH SAX?;',ic));
+   eval(av_ssub('diB?=c_gse2dsi(B?,SAX?);',ic));
+   eval(av_ssub('save -append mB diB?;',ic));
   end
 
  elseif strcmp(q,'bs'),
