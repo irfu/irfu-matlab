@@ -11,6 +11,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		also creates delta offsets D{cl_id}p12p34.
 %		If the offset is real then it must be applied to p12/32,
 %		if imaginary - to p34
+%		has the following options:
+%		sfit_ver - 0 (AIE EfwDoOneSpinFit), 1 (BHN spinfit_mx)
+%		// default is to use the one specified in EfwDoSpinFit
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %	idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
@@ -58,6 +61,7 @@ flag_edb = 1;
 flag_rmwhip = 1; 
 ang_limit = 10;
 probe_p = 34;
+sfit_ver = -1;
 
 while have_options
 	l = 1;
@@ -95,6 +99,18 @@ while have_options
 			else, c_log('fcal,','wrongArgType : probe_p must be 12 or 34')
 			end
 		else, c_log('fcal,','wrongArgType : ang_limit value is missing')
+		end
+	case 'sfit_ver'
+		if length(args)>1
+			if isnumeric(args{2})
+				l = 2;
+				if	args{2}>=0 & args{2}<2
+					sfit_ver = args{2};
+				else, c_log('fcal,','wrongArgType : sfit_ver must be 0 or 1')
+				end
+			else, c_log('fcal,','wrongArgType : sfit_ver must be numeric')
+			end
+		else, c_log('fcal,','wrongArgType : sfit_ver value is missing')
 		end
 	otherwise
 		c_log('fcal,',['Option ''' args{i} '''not recognized'])
@@ -147,7 +163,13 @@ if strcmp(quantity,'dies')
 				end
 			end
 			
-			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+			if sfit_ver>=0
+				c_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
+				sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),...
+					aa(:,2),sfit_ver);
+			else
+				sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+			end
 			
 			% remove point with zero time
 			ind = find(sp(:,1)>0);
