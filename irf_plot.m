@@ -224,9 +224,12 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 
     npl=size(x{1},2)-1;
     for ipl=1:npl,
-        c(ipl)=irf_subplot(npl,1,-ipl);
-%        line_colors={'b','g','r','c','m','y','k'};
-         line_colors=get(gca,'ColorOrder');
+		% We make subplot only if wee need it
+		if npl==1, c(ipl) = gca;
+		else, c(ipl) = irf_subplot(npl,1,-ipl);
+		end
+%       line_colors={'b','g','r','c','m','y','k'};
+        line_colors=get(gca,'ColorOrder');
         for j=1:size(x,2),
             y=x{j};
             plot((y(:,1)-ts-dt(j)),y(:,ipl+1),'color',line_colors(j,:),varargin{:});grid on;hold on;
