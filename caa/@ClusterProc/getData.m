@@ -93,11 +93,11 @@ if strcmp(quantity,'dies')
 
 		if real(Del)
 			disp('correcting p12')
-			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs2p12),1)*Del;',cl_id));
+			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs?p12),1)*Del;',cl_id));
 		else
 			disp('correcting p34')	
 			Del = imag(Del);
-			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs2p34),1)*Del;',cl_id));
+			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs?p34),1)*Del;',cl_id));
 		end
 		clear m12 m34 Del
 
