@@ -1,8 +1,12 @@
 function res = c_load(vs,sp,st,dt,db,dp)
 %function c_load(vs,sp,st,dt,db,dp)
 %function c_load(vs,sp,st,dt,cdb)
-% return O if OK.
+% return 1 if OK.
+%
+% $Id$
 
+% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+%
 error(nargchk(1,5,nargin))
 
 d = c_desc(vs);
@@ -18,26 +22,32 @@ if exist([d.file '.mat'],'file'), eval(['load -mat ' d.file ' ' vs]), end
 if ~exist(vs,'var')
 	if strcmp(d.file,'mEdB')
 		getData(ClusterProc,d.cl_id,d.quant);
+		%try again to load from file
+		if exist([d.file '.mat'],'file'), c_eval(['load -mat ' d.file ' ' vs]), end
 	else
-		if (isa(db,'ClusterDB')) 
-			cdb = db; 
-			cdb = set(cdb,'sp',sp);
+		if nargin > 4
+			if (isa(db,'ClusterDB')) 
+				cdb = db; 
+				cdb = set(cdb,'sp',sp);
+			else
+				if nargin < 6, dp = '/data/cluster', end
+				cdb = ClusterDB(db,dp,sp);
+			end
+			getData(cdb,st,dt,d.cl_id,d.quant);
+			%try again to load from file
+			if exist([d.file '.mat'],'file'), c_eval(['load -mat ' d.file ' ' vs]), end
 		else
-			if nargin < 6, dp = '/data/cluster', end
-			cdb = ClusterDB(db,dp,sp);
+			c_log('load','DB is not specified in the input. Will do nothing.')
 		end
-		getData(cdb,st,dt,d.cl_id,d.quant);
 	end
-	%try again to load from file
-	if exist([d.file '.mat'],'file'), c_eval(['load -mat ' d.file ' ' vs]), end
 end
 
 %return the result
 if exist(vs,'var')
 	assignin('caller',vs,eval(vs));
-	if nargout>0, res = 0, end
+	if nargout>0, res = 1; end
 else
-	if nargout>0, res = 1, 
+	if nargout>0, res = 0; 
 	else, c_log('load',['cannot load ' vs])
 	end
 end
