@@ -187,7 +187,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			end
 			
 			tmmode='hx';
-			if tm==0, param='10Hz';	else, param='180Hz'; end
+			if tm<1e-30, param='10Hz';	else, param='180Hz'; end
 			clear tm
 			tst = toepoch(start_time);
 			if tst>toepoch([2001 07 31 00 00 00])&tst<toepoch([2001 09 01 00 00 00]), 
