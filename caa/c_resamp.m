@@ -13,15 +13,19 @@ function out = c_resamp(x,y,varargin)
 error(nargchk(2,2,nargin))
 
 % guess the sampling frequency
-ndata = length(y(:,1));
-sfy = ndata/(y(end,1) - y(1,1));
+if min(size(y))==1, t = y(:); 
+else, t = y(:,1); t = t(:);
+end
+
+ndata = length(t);
+sfy = ndata/(t(end) - t(1));
 if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 	% we average
 	out = zeros(ndata,size(x,2));
-	out(:,1) = y(:,1);
+	out(:,1) = t;
 	dt2 = .5/sfy; % half interval
 	for j=1:ndata
-		ii = find(x(:,1) <  y(j,1) + dt2 & x(:,1) >  y(j,1) - dt2);
+		ii = find(x(:,1) <  t(j) + dt2 & x(:,1) >  t(j) - dt2);
 		if isempty(ii), out(j,2:end) = NaN;
 		else, out(j,2:end) = mean(x(ii,2:end));
 		end
