@@ -114,8 +114,11 @@ eval(['legend(' leg ')'])
 
 q='0';
 while(q ~= 'q')
-	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
+	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
 	switch(q)
+	case 'r'
+		disp(sprintf('Reading Ddsi%d, Damp%d <- ./mEDSI.mat',cl_id,cl_id))
+		eval(av_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
 	case 's'
 		disp(sprintf('Ddsi%d, Damp%d -> ./mEDSI.mat',cl_id,cl_id))
 		eval(av_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi? Damp?',cl_id))
