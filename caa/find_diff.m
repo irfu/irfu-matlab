@@ -34,3 +34,12 @@ if a(2) > 1
 else
 	res = find(der == 1) + 1;
 end
+
+if dd(1)~=0
+	if isempty(res)
+		res = 1;
+	else
+		res(2:end+1) = res;
+		res(1) = 1;
+	end
+end
