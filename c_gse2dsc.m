@@ -17,7 +17,7 @@ function [y] = c_gse2dsc( x, spin_axis, direction, db )
 %        direction = 1 to convert from GSE into DSC (default).
 %                    -1 to convert from DSC into GSE.
 %                    2 convert from GSE to DSI
-%                    -2 convert from GSE to DSI
+%                    -2 convert from DSI to GSE
 %        sc        = spacecraft number.
 %        db        = isdat database pointer, that is db = Mat_DbOpen(DATABASE)
 %
