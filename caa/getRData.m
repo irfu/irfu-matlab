@@ -103,7 +103,7 @@ while have_options
 		case 'noproc'
 			varsProc = '';	l = 1;
 		otherwise
-        	c_log('fcal',['Option ''' args{i} '''not recognized'])
+        	c_log('fcal',['Option ''' args{1} '''not recognized'])
     	end
 		if length(args) > l, args = args(l+1:end);
 		else break
