@@ -357,7 +357,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 
 	diE = corrDSIOffsets(diE,Dx,Dy,Da);
 
-	disp(['using angle limit of ' num2str(ang_limit) ' degrees'])
+	c_log('proc',['using angle limit of ' num2str(ang_limit) ' degrees'])
 	[diE,angle]=av_ed(diE,diB,ang_limit);
 	diE(:,5) = angle; clear angle
 
