@@ -206,11 +206,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    if q_efw_offset==1,
      eval(av_ssub('dvE?=c_despin(wE?,A?);',ic));
    elseif q_efw_offset==2,
-     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?);',ic));
+     eval(av_ssub('dvE?=c_despin(wE?,A?,?);',ic));
    elseif q_efw_offset==3,
-     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?,''efw_offs'');',ic));
+     eval(av_ssub('dvE?=c_despin(wE?,A?,?,''efw_offs'');',ic));
    else, disp('wrong offest option, using option 2.');
-     eval(av_ssub('dvE?=c_despin(wE?,A?,coef?);',ic));
+     eval(av_ssub('dvE?=c_despin(wE?,A?,?);',ic));
    end
    eval(av_ssub('save_list=[save_list '' dvE? ''];',ic));
   end

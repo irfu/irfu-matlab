@@ -39,7 +39,7 @@ if nargin == 2,
  ref_frame='wec';
 end
 
-if nargin > 3,
+if nargin >= 3,
   if isnumeric(coef),
     ref_frame='wec';
    if size(coef,1) == 1,
