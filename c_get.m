@@ -88,7 +88,6 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
      [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
      [tilat,ilat] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'inv_lat', ' ', ' ', ' ');
-%      eval(irf_ssub('[lat,long]=av_read_cdf([csds_dir ''SP/AUX/*'' start_date_str ''*''],{''sc_at?_lat__CL_SP_AUX'',''sc_at?_long__CL_SP_AUX''});spinaxis_latlong?=[lat long(:,2)];',ic));
      [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
      [tlong, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');
      [tr,r] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
@@ -123,7 +122,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif q == 'b',
     save_file='./mBPP.mat';
     for ic=sc_list, disp(['CSDS...BPP' num2str(ic)]);
-      eval(irf_ssub('BPP?=av_read_cdf([csds_dir ''PP/FGM/C?/C?_PP_FGM_'' start_date_str ''*''],''B_xyz_gse__C?_PP_FGM'');BPP?=irf_tlim(BPP?,tint_epoch);save_list=[save_list '' BPP?''];',ic));
+      eval(irf_ssub('BPP?=irf_cdf_read([csds_dir ''PP/FGM/C?/C?_PP_FGM_'' start_date_str ''*''],''B_xyz_gse__C?_PP_FGM'');BPP?=irf_tlim(BPP?,tint_epoch);save_list=[save_list '' BPP?''];',ic));
 %      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'FGM', ['B_xyz_gse__C' num2str(ic) '_PP_FGM'], ' ', ' ',' ');
 %      eval(irf_ssub('BPP?=[double(t) double(data)''];',ic));clear t,data;
 %     eval(irf_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
@@ -342,7 +341,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'de'),
   for ic=sc_list,
    eval(irf_ssub('load mE dvE?;load mBPP dBPP?;load mV dV?; tt=dvE?(1,1);db=dBPP?; dv=dV?;clear dBPP? dV?;',ic));
-   evxb=av_interp(irf_tappl(av_cross(db,dv),'*1e-3*(-1)'),tt);
+   evxb=irf_resamp(irf_tappl(irf_cross(db,dv),'*1e-3*(-1)'),tt);
    eval(irf_ssub('dE?=irf_add(1,dvE?,-1,evxb);dE?(:,4)=0;',ic));
    eval(irf_ssub('save_list=[save_list '' dE? ''];',ic));
   end
@@ -357,11 +356,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   qb=input('To use FGM high res (1) or PP data (2) [1] >');if isempty(qb),qb=1;end;
   for ic=sc_list,
      eval(irf_ssub('load mE dE?;tt=dE?(1,1);',ic));
-   if qb ==1, eval(irf_ssub('load mB dB?; db=av_interp(dB?,dE?);clear dB?;',ic));
-   else, eval(irf_ssub('load mBPP dBPP?; db=av_interp(dBPP?,dE?);clear dBPP?;',ic));
+   if qb ==1, eval(irf_ssub('load mB dB?; db=irf_resamp(dB?,dE?);clear dB?;',ic));
+   else, eval(irf_ssub('load mBPP dBPP?; db=irf_resamp(dBPP?,dE?);clear dBPP?;',ic));
    end
    eval(irf_ssub('[dEo?,d?]=av_ed(dE?,db,deg);Eo?=c_gse2dsc(dEo?,[tt ?],-1);indzero=find(abs(d?)<10);Eo?(indzero,4)=0;',ic));
-   eval(irf_ssub('dVo?=av_e_vxb(dEo?,db,-1);Vo?=c_gse2dsc(dVo?,[tt ?],-1);',ic));
+   eval(irf_ssub('dVo?=irf_e_vxb(dEo?,db,-1);Vo?=c_gse2dsc(dVo?,[tt ?],-1);',ic));
    eval(irf_ssub('save_list=[save_list '' dEo? d? Eo? Vo? ''];',ic));
   end
   eval(['save -append mE  ' save_list]);
@@ -614,14 +613,14 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    %
     if min(size(vp)) ~= 0,
       disp(['...VCEp' num2str(ic)]);
-      evxb=irf_tappl(av_cross(vp,b),'*(-1e-3)');
+      evxb=irf_tappl(irf_cross(vp,b),'*(-1e-3)');
       eval(irf_ssub('VCEp?=evxb;save -append mCIS VCEp?;',ic));
       disp(['...dVCEp' num2str(ic)]);
       eval(irf_ssub('dVCEp?=c_gse2dsc(VCEp?,[VCEp?(1,1) ic]);save -append mCIS dVCEp?;',ic));
     end
     if min(size(vh)) ~= 0,
       disp(['...VCEh' num2str(ic)]);
-      evxb=irf_tappl(av_cross(vh,b),'*(-1e-3)');
+      evxb=irf_tappl(irf_cross(vh,b),'*(-1e-3)');
       eval(irf_ssub('VCEh?=evxb;save -append mCIS VCEh?;',ic));
       disp(['...dVCEh' num2str(ic)]);
       eval(irf_ssub('dVCEh?=c_gse2dsc(VCEh?,[VCEh?(1,1) ic]);save -append mCIS dVCEh?;',ic));

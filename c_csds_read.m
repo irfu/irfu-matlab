@@ -161,7 +161,7 @@ for i=1:length(p)
 	else
 		irf_log('dsrc','Using FILE')
 		disp([p{i} '/CSDS/' r.file start_date_s '*']);
-		data = av_read_cdf([p{i} '/CSDS/' r.file start_date_s '*'], r.var,'latest');
+		data = irf_cdf_read([p{i} '/CSDS/' r.file start_date_s '*'], r.var,'latest');
 		if ~isempty(data)
 			data = irf_tlim(data,start_time + [0 dt]);
 			return

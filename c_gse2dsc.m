@@ -57,7 +57,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
              tmax = lat(end,1);
              if (t > tmin) | (t < tmax)
                  eval( irf_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
-                 latlong   = av_interp([lat long(:,2)],t);
+                 latlong   = irf_resamp([lat long(:,2)],t);
              end
          else  % maux file from the wrong day
              disp('c_gse2dsc() OBS!!!  maux.mat from the wrong date');
@@ -76,11 +76,11 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
                  irf_log('load',['converting CDF file ' cdf_file ' -> maux.mat']);
                  cdf2mat(cdf_file,'maux.mat');
                  irf_log('load',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
-                 c_eval('lat=av_read_cdf(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
-                 c_eval('long=av_read_cdf(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
+                 c_eval('lat=irf_cdf_read(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
+                 c_eval('long=irf_cdf_read(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
                  if (t > lat(1,1)) & (t < lat(end,1)),
                      flag_read_isdat=0;
-                     latlong   = av_interp([lat long(:,2)],t);
+                     latlong   = irf_resamp([lat long(:,2)],t);
                  end
          end
      end
