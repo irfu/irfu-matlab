@@ -76,13 +76,7 @@ to_file = sprintf('%s%s',path_output,tfn);
 %cuts out the time intervall and creates a temporary file
 unix_command = sprintf('%s -b %d -e %d %s > %s',ddscut,from,to,d_source,to_file);
 unix(unix_command);
-fvs = fgmvec_stream(to_file);
-ta=tavail(fvs);
-if min(ta)<0,
-  disp(['problems with time in FGM B data -> ' to_file ]);
-  B=[];
-  return
-end
+
 
 
 d_source = to_file;
@@ -97,29 +91,30 @@ if ~strcmp(h(1:end-1),'sanna.irfu.se')
 end
 
 if nargout,  % return B
-  to_file=tempname;
-  unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
-  unix(['/bin/sh -c ''' unix_command '''']);
-  to_file_attr=dir(to_file);
-  if to_file_attr.bytes>0,
+    to_file=tempname;
+    unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
+    [stat, res] = unix(['/bin/sh -c ''' unix_command '''']);
+    if stat
+        warning(sprintf('error when running DP pipe:\n%s', unix_command));
+        if ~isempty(res)
+            warning(sprintf('output from %s:\n%s', unix_command, res));
+        end 
+        return;
+    end
     fvs = fgmvec_stream(to_file);
-    ta=tavail(fvs)
+    ta=tavail(fvs);
     if min(ta)>0,
-      dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
-      B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
+        dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
+        B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
     else
-      B=[];
+        B=[];
     end
     close(fvs);
-  else
-    disp('Zero size FGM data file!');
-    B=[];
-  end
-  unix(['rm ' to_file]);
+    unix(['rm ' to_file]);
 else
-  %download an unpack the downloaded data
-  unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' | ' fgmvec ' > ' to_file];
-  unix(['/bin/sh -c ''' unix_command '''']);
+    %download an unpack the downloaded data
+    unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' | ' fgmvec ' > ' to_file];
+    unix(['/bin/sh -c ''' unix_command '''']);
   disp(['saved to file ' to_file])
 
   %removes the temporary file
