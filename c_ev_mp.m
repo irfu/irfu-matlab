@@ -57,7 +57,7 @@ for ic=sc_list, % which satellite
   eb_lmn=av_c_mp(eb,be,vn,flag);
   ebv_lmn=av_c_mp(ebv,be,vn,flag);
   evxb_lmn=av_c_mp(evxb,be,vn,flag);
-  enml=ebv_lmn;
+  elmn=ebv_lmn;
   b_lmn=av_c_mp(be,be,vn,flag);
   v_lmn=av_c_mp(veb,be,vn,flag);
 
