@@ -11,6 +11,8 @@ function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 % For example if time on axis is in seconds from the beginning of 0300 UT
 % 01-Jan-2001, then use add_timeaxis(h, toepoch([2001 01 01 03 00 00])).
 %
+% if figures user_data.t_start_epoch is defined use that as t_start_epoch
+%
 % If xlabels are defined then adds x-tra labels in addition to time.
 % xlabels format is column vector [time lab1 lab2 ...] where lab1 are
 % numerical values and time is in isdat_epoch. Program then interpolates
@@ -36,10 +38,6 @@ flag_date=1;   % default is to add date labels
 %     flag_date = 1;
 %  end
 
-  if nargin < 2
-     t_start_epoch=0;
-  end
-
   if (nargin >= 2) & (ischar(t_start_epoch))
      if strcmp(t_start_epoch,'date')
         flag_date = 1;
@@ -48,7 +46,15 @@ flag_date=1;   % default is to add date labels
      elseif strcmp(t_start_epoch,'nolabels')
         flag_labels = 0;
      end
-     t_start_epoch = 0;
+  end
+
+  if ~exist('t_start_epoch') | ischar(t_start_epoch),
+    user_data=get(gcf,'userdata');
+    if isfield(user_data,'t_start_epoch')
+      t_start_epoch=user_data.t_start_epoch;
+    else
+      t_start_epoch=0;
+    end
   end
 
   for j=1:length(h)
