@@ -99,7 +99,7 @@ if strcmp(quantity,'dies')
 
 	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
 	eval(av_ssub('load mA A?;',cl_id));
-	
+
 	pl=[12,34];
 	for k=1:length(pl)
 		ps = num2str(pl(k));
@@ -120,10 +120,10 @@ if strcmp(quantity,'dies')
 	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
 		eval(av_ssub(['m12=mean(diEs?p12);m34=mean(diEs?p34);'],cl_id))
 		Del = m12(2:3) - m34(2:3);
-		
+
 		disp(sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
 		abs(Del(1)), abs(Del(2))))
-		
+
 		% we suppose that smaller field is more realistic
 		% and will correct the largest signal
 		% real offset is applied to p12, imaginary to p34
@@ -134,7 +134,7 @@ if strcmp(quantity,'dies')
 			disp('correcting p12')
 			eval(av_ssub('diEs?p12(:,2:3)=diEs?p12(:,2:3)-ones(length(diEs?p12),1)*Del;',cl_id));
 		else
-			disp('correcting p34')	
+			disp('correcting p34')
 			Del = imag(Del);
 			eval(av_ssub('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(length(diEs?p34),1)*Del;',cl_id));
 		end
@@ -158,7 +158,7 @@ elseif strcmp(quantity,'die')
 
 	% calibration coefficients // see c_despin
 	coef=[[1 0 0];[1 0 0]];
-	
+
 	pl=[12,34];
 	full_e = [];
 	n_sig = 0;
@@ -317,7 +317,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	end
 
 	eval(['di' varo_s '=diE;']); clear diE
-	save_list=[save_list 'di' varo_s ' '];
+	save_list=[save_list 'di' varo_s ' ang_limit '];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Vedb,Vedbs - E.B=0
