@@ -32,13 +32,25 @@ if regexp(vs,'^P[1-4]$')==1
 
 	cl_id = vs(2);
 	inst = 'EFW';
-	sig = 'E';
+	sig = 'P';
 	sen = '1234';
 	frame = 'SC';
 	var_labels = {['P' sen]};
  	var_units =  {'-V'};
 	com = 'this signal is averaged from all probes available at the time';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P - individual probes 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 
+	cl_id = vs(6);
+	inst = 'EFW';
+	sig = 'P';
+	sen = vs(8);
+	frame = 'SC';
+	var_labels = {['P' sen]};
+ 	var_units =  {'V'};
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,10 +63,6 @@ elseif regexp(vs,'^wE[1-4]p(12|34)')==1
 	frame = 'SC';
 	var_labels = {['E' sen]};
 	var_units =  {'mV/m'};
-
-	% remove averages
-	cp = ClusterProc('./');
-	var = corrADCOffset(cp,var);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
@@ -212,7 +220,7 @@ elseif regexp(vs,'dump')
   fclose(fid);
   return
 else
-	warning('Wariable name not recognized, will do nothing.')
+	disp('Wariable name not recognized, will do nothing.')
 	return
 end
 
