@@ -114,7 +114,7 @@ while t_cur < stop_epoch
 			eval(['ii{j} = find_diff(fdm_' var_list{j} ',fdm_last_' var_list{j} ');']);
 		end
 		
-		if isempty(ii)
+		if isempty(ii{:})
 			continue % no changes (should be a typical situation)
 		end
 		
