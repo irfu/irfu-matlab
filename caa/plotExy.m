@@ -7,7 +7,6 @@ function plotExy(varargin)
 % Copyright 2004 Yuri Khotyaintsev
 if nargin<1, error('Need input arguments'),end
 
-figure
 p1 = subplot(2,1,1);
 p2 = subplot(2,1,2);
 nd = length(varargin);
