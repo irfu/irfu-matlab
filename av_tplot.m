@@ -126,7 +126,14 @@ end
 
 if flag_subplot==0,  % one subplot
     %   t_start_epoch is saved in figures user_data variable
-    if x(1,1)> 1e8, ts=x(1,1);t_start_epoch=ts;else t_start_epoch=0;end
+    % check first if it exist otherwise assume zero
+    ud=get(gcf,'userdata');
+    if isfield(ud,'t_start_epoch'), 
+        t_start_epoch=ud.t_start_epoch;
+    else
+        t_start_epoch=0;
+    end
+    ts=t_start_epoch;
     
     i=2:length(x(1,:));
     if flag_yy == 0, h=plot((x(:,1)-ts),x(:,i),varargin{:});grid on;
@@ -193,8 +200,10 @@ set(gcf,'userdata',user_data);
 
 % add t_start_epoch, used by add_timeaxis and subplot handles
 user_data=get(gcf,'userdata');
-user_data.t_start_epoch=t_start_epoch;
-if flag_subplot>0, user_data.subplot_handles=c;end % add information about subplot handles to userdata of figure
+if flag_subplot>0, 
+    user_data.subplot_handles=c;
+    user_data.t_start_epoch=t_start_epoch;
+end % add information about subplot handles to userdata of figure
 set(gcf,'userdata',user_data);
 
 
