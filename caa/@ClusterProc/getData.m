@@ -300,10 +300,10 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		case 0 % Ez=0, do nothing
 			disp('using Ez=0')
 		case 1 % remove points
-			disp('settiong points < ang_limit to NaN')
+			disp('setting points < ang_limit to NaN')
 			diE(ii,4) = diE(ii,4)*NaN;
 		case 2 % fill with fill_val
-			disp('settiong points < ang_limit to 1e27')
+			disp('setting points < ang_limit to 1e27')
 			diE(ii,4) = ones(size(diE(ii,4)))*fill_val;
 		end
 	end
@@ -317,7 +317,8 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	end
 
 	eval(['di' varo_s '=diE;']); clear diE
-	save_list=[save_list 'di' varo_s ' ang_limit '];
+	eval(av_ssub('ang_limit?=ang_limit;',cl_id)) 
+	save_list=[save_list 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Vedb,Vedbs - E.B=0
