@@ -135,12 +135,12 @@ if strcmp(quantity,'dies')
 			end
 			
 			adc_off = sp(:,[1 4]);
-			% remove points with sdev>.4
-			ii = find(sp(:,6)>.4);
+			% warn about points with sdev>.8
+			ii = find(sp(:,6)>.8);
 			if length(ii)/size(sp,1)>.05,
-				c_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins removed for ADC offsets']);
+				c_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 			end
-			adc_off(ii,2) = 0;
+			%adc_off(ii,2) = 0;
 			adc_off = wAverage(adc_off,1/4);
 			ii = find(adc_off(:,2)==0);
 			adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
