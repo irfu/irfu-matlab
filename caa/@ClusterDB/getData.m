@@ -268,17 +268,22 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		end
 	else
 		if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&cl_id~=2,  % sc2 has often problems with p3
-		p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
-		elseif size(p1)==size(p2)&size(p1)~=[0 0]
-				p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
-		elseif size(p3)==size(p4)&cl_id~=2
-			p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
-		else,
-			p=p4;
+			p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+			Pinfo.probe = 1234;
+		elseif size(p1)==size(p2) & size(p1)~=[0 0]
+			p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
+			Pinfo.probe = 12;
+		elseif size(p3)==size(p4) & size(p3)~=[0 0] & cl_id~=2
+			p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
+			Pinfo.probe = 34;
+		elseif size(p4)~=[0 0]
+			p = p4;
+			Pinfo.probe = 4;
+		else, c_log('dsrc','No data'), return
 		end
 		
 		c_eval(['P' param{1} '?=p;save_list=[save_list '' P' param{1} '? ''];'],cl_id);
-		c_eval('P?=p;NVps?=c_n_Vps(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? NVps?''];',cl_id)
+		c_eval('P?=p;P?_info=Pinfo;NVps?=c_n_Vps(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
 		clear p
 	end
 	clear p1 p2 p3 p4
