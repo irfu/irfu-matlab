@@ -1,6 +1,7 @@
 function [events_tint]=c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, period, d2MP, psw)
 %
 % c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, period)
+% c_ri_find('continue') - continue from the last position
 %
 %Example
 % c_ri_find([1 1 1 1], [2002 02 03 0 0 0], [2002 07 08 0 0 0], 150, 5, 3, 3,2);
@@ -23,9 +24,8 @@ function [events_tint]=c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, peri
 %       if one element is zero then the step will be jumped
 % 		the steps are:
 %		1) calculating the MP-crossings
-%		2) obtaining angles for potential events
-%		3) Classing the angles as events
-%   4) Filtering the events (reducing the numbers), get event data (not ready yet)
+%		2) obtaining angles for potential events and classing as events
+%   3) Filtering the events (reducing the numbers), get event data (not ready yet)
 % 		   and turn the events into a ascii file and a jpeg figure
 %Output:
 %  save to mMP variables
@@ -50,56 +50,39 @@ function [events_tint]=c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, peri
 
 %--------------------- the beginning --------------------------
 if  nargin == 0
-  %This is where you write the matrix with the timeintervalls
-  st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
-  et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
-  min_angle(1:2) = [150 170];
-  min_ampl(1:2) = 5;
-  period(1:2) = 3;
-  d2MP = 3;
-  psw =2;
-  run_steps(1:4) = [1 1 1 1];
+   help c_ri_find;return;
 end
 
-if  nargin == 1
-  %This is where you write the matrix with the timeintervalls
-  st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
-  et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
-  min_angle(1:2) = [150 170];
-  min_ampl(1:2) = 5;
-  period(1:2) = 3;
-  d2MP = 3;
-  psw =2;
+flag_continue=0;
+if  nargin == 1 
+  if strcmp(run_steps,'continue')
+    disp('loading .c_ri_parameters');
+    load '.c_ri_parameters.mat'
+    flag_continue=1;
+  else
+    disp('Using default values');
+    %This is where you write the matrix with the timeintervalls
+    st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
+    et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
+    min_angle(1:2) = [150 170];
+    min_ampl(1:2) = 5;
+    period(1:2) = 3;
+    d2MP = 3;
+    psw =2;
+  end
 end
 
+if ~exist('st_m'), error('Start time not defined');end
+if ~exist('et_m'), error('End time not defined');end
+[r , c] = size(st_m);
+if ~exist('min_angle'), min_angle(1:r) = 150;disp(['min_angle not defined, using min_angle=' num2str(min_angle)]);end
+if ~exist('min_ampl'), min_ampl(1:r) = 5;disp(['min_ampl not defined, using min_ampl=' num2str(min_ampl)]);end
+if ~exist('period'), period(1:r) = 5;disp(['period not defined, using period=' num2str(period)]);end
+if ~exist('d2MP'), d2MP = 3;disp(['distance to MP not defined, using d2MP=' num2str(d2MP)]);end
+if ~exist('psw'), psw = 3;disp(['SW pressure not defined, using psw=' num2str(psw)]);end
 
-if nargin == 3
-  [r , c] = size(st_m);
-  min_angle(1:r) = 150;
-  min_ampl(1:r) = 5;
-  period(1:r) = 3;
-  d2MP = 3;
-  psw =2;
-end
-
-if nargin == 6
-  [r , c] = size(st_m);
-  d2MP = 3;
-  psw =2;
-end
-
-if exist('.c_ri_parameters.mat'),
-  load .c_ri_parameters.mat;
-else
-  %-----sets the paths ---------------------
-  % paths for saving data
-  % to use the current directory, path=[pwd '/'];
-  % Events are saved
-  p_E = './E/';
-  %The result in ascii files and jpeg pictures
-  p_R ='./R/';
-  %-----------------------------------------------
-end
+if ~exist('p_E'),  p_E = './E/'; end % path for events
+if ~exist('p_R'),  p_R = './R/'; end % path for results
 
 path_ok='disp([])';
 while ~strcmp(path_ok,'c'),
@@ -120,16 +103,33 @@ while ~strcmp(path_ok,'c'),
     catch disp('Paths changes valid only for this run!');
     end
   end
-  
 end
-try save -append .c_ri_parameters.mat p_E p_R;
+
+try save -append '.c_ri_parameters.mat' p_E p_R;
 catch disp('Input parameters not saved');
 end
 
-
 [i_end,c] = size(st_m);
 
-for i = 1:i_end
+if flag_continue,
+  if exist('time_interval_start'),
+    i_start=time_interval_start;
+  end
+  if exist('MP_interval_start'),
+    j_start=MP_interval_start;
+  end
+end
+
+if ~exist('i_start'),i_start=1;end
+if ~exist('j_start'),j_start=1;end
+
+for i = i_start:i_end
+  time_interval_start=i;
+  try save -append '.c_ri_parameters.mat' time_interval_start;
+  catch disp('Could not save time_interval_start');
+  end
+
+  disp([num2str(i) '. time interval. ' datestr(st_m(i,:),31) ' -- ' datestr(et_m(i,:),31)]);
   st = st_m(i,:);
   et = et_m(i,:);
   
@@ -147,48 +147,57 @@ for i = 1:i_end
   %step 2
   if run_steps(2) == 1
     if run_steps(1) == 0; load mMP; end
-    disp('==============  Finding angles for MP crossings ====================');
-    angles=[];ampl=[];
-    for j=1:size(passing_MP,1)
+    disp('==============  Finding angles that class as events for MP crossings ====================');
+    angles=[];amplitude=[];events=[];
+    for j=j_start:size(passing_MP,1)
+      MP_interval_start=j;
+      try save -append '.c_ri_parameters.mat' MP_interval_start;
+      catch disp('Could not save MP_interval_start');
+      end
+      disp('いいいいいいいいいいいいいいいいいいいいいいいいいいいいいい');
+      disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
+      disp('いいいいいいいいいいいいいいいいいいいいいいいいいいいいいい');
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       if ~isempty(B1)>0,
-        c_eval('Binterp?=av_interp(B?,B1);',2:4);
-        [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
-        angles=[angles;angles_tmp];
-        ampl=[ampl;ampl_tmp];
-      end
-    end
-    save mAngles angles ampl
-  end
-  
-  %step 3
-  if run_steps(3) == 1
-    if run_steps(2) == 0; load mMP;load mAngles; end
-    disp('==============  Finding events ====================');
-    if ~isempty(angles),
-      time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-      sort_events=1;
-      while sort_events
-        dt_events=diff(time_of_events(:,1),1,1); % find distance between events
-        ind=find(dt_events<period/2); % find which events are closer than period/2 
-        if isempty(ind), 
-          sort_events=0;
-        else  
-          time_of_events(ind(1),:)=[]; 
+        c_eval('try Binterp?=av_interp(B?,B1); catch Binterp?=[]; end;',2:4);
+        if isnumeric(Binterp2) & isnumeric(Binterp3) & isnumeric(Binterp4),
+          [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
+          if ~isempty(angles_tmp),
+            [time_of_events,angles_out,ampl_out] = class_angle_as_event(angles_tmp,ampl_tmp, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
+            if ~isempty(time_of_events), 
+              sort_events=1;
+              while sort_events
+                dt_events=diff(time_of_events(:,1),1,1); % find distance between events
+                ind=find(dt_events<period/2); % find which events are closer than period/2 
+                if isempty(ind), 
+                  sort_events=0;
+                else  
+                  time_of_events(ind(1),:)=[];
+                  angles_out(ind(1),:)=[];
+                  ampl_out(ind(1),:)=[]; 
+                end
+              end
+            end
+            disp(['Alltogether found ' num2str(size(time_of_events,1)) ' events.']);
+            events=[events;time_of_events];
+            angles=[angles;angles_out];
+            amplitude=[amplitude;ampl_out];
+          end
         end
       end
-      save mEvents time_of_events;
     end
-  end
-  
-  %step 4
-  if run_steps(4) == 1
-    if run_steps(3) == 0; load mMP;load mAngles;load mEvents; end
+    save mEvents events angles amplitude;
+  end    
+  %step 3
+  if run_steps(3) == 1
+    if run_steps(2) == 0; load mMP;load mEvents; end
     disp('==============  Getting data for events ====================');
-    if exist('time_of_events'),
-      if ~isempty(time_of_events),
-        c_ri_event_picture(time_of_events,period,angles,ampl,p_R)
+    if exist('events'),
+      if ~isempty(events),
+        c_ri_event_picture(events,period,angles,amplitude,p_R)
       end
     end
   end
+  j_start=1;
 end
+

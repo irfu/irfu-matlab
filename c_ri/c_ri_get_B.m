@@ -28,6 +28,7 @@ function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
+B=[]; % return nothing if no data available
 
 if nargin == 4
 path_output = [pwd '/'];
@@ -72,9 +73,11 @@ d_source = sprintf('%s%s*f%s.0%d',d_path,d_s,mode,cl_nr);
 tfn = sprintf('tB_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,tfn); 
 
-
+fromstr=sprintf('%04d-%02d-%02dT%02d:%02d:%02d.%03dZ',from_U(1),from_U(2),from_U(3),from_U(4),from_U(5),fix(from_U(6)),fix((from_U(6)-fix(from_U(6)))*100));
+tostr=sprintf('%04d-%02d-%02dT%02d:%02d:%02d.%03dZ',to_U(1),to_U(2),to_U(3),to_U(4),to_U(5),fix(to_U(6)),fix((to_U(6)-fix(to_U(6)))*100));
 %cuts out the time intervall and creates a temporary file
-unix_command = sprintf('%s -b %d -e %d %s > %s',ddscut,from,to,d_source,to_file);
+%disp(['ddscut ... ' fromstr ' -- ' tostr]);
+unix_command = sprintf('%s -b %s -e %s %s > %s',ddscut,fromstr,tostr,d_source,to_file);
 unix(unix_command);
 
 
@@ -82,7 +85,7 @@ unix(unix_command);
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
-disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_nr) ]);
+%disp(['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_nr) ]);
 
 FGMPATH = '/share/fgm_cal';
 [s,h] = unix('hostname');
@@ -101,13 +104,13 @@ if nargout,  % return B
         end 
         return;
     end
+    to_file_attr=dir(to_file);
+    if to_file_attr.bytes == 0, return;end
     fvs = fgmvec_stream(to_file);
-    ta=tavail(fvs);
+    ta=tavail(fvs); % debb=tavail(fvs,[]);disp(debb);clear debb;
     if min(ta)>0,
         dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
         B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
-    else
-        B=[];
     end
     close(fvs);
     unix(['rm ' to_file]);
@@ -117,8 +120,7 @@ else
     unix(['/bin/sh -c ''' unix_command '''']);
   disp(['saved to file ' to_file])
 
-  %removes the temporary file
-  unix_command =sprintf('rm %s',d_source);
-  unix(unix_command);
 end
+%removes the temporary files
+unix(['rm ' d_source]);
 unix(['rm ' FGMPATH '/tmp_att']);
