@@ -25,25 +25,25 @@ old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
 
 if exist('./mEDSI.mat','file')
-	eval(av_ssub('load mEDSI diE?p1234 diEs?p34;',cl_id))
-	if exist(av_ssub('diE?p1234',cl_id),'var')
-		eval(av_ssub('diE=diE?p1234;',cl_id))
+	eval(irf_ssub('load mEDSI diE?p1234 diEs?p34;',cl_id))
+	if exist(irf_ssub('diE?p1234',cl_id),'var')
+		eval(irf_ssub('diE=diE?p1234;',cl_id))
 	else
 		warning('caa:noData','no diE{cl_id}p1234 data in mEDSI')
 	end
-	if exist(av_ssub('diEs?p34',cl_id),'var')
+	if exist(irf_ssub('diEs?p34',cl_id),'var')
 		c_eval('diEs=diEs?p34(:,1:4);',cl_id)
 
 		% Load offsets
 		offset = [0+0i 1];
-		eval(av_ssub('load mEDSI Ddsi? Damp?',cl_id))
-		if exist(av_ssub('Ddsi?',cl_id),'var')
-			eval(av_ssub('offset(1)=Ddsi?;clear Ddsi?',cl_id))
+		eval(irf_ssub('load mEDSI Ddsi? Damp?',cl_id))
+		if exist(irf_ssub('Ddsi?',cl_id),'var')
+			eval(irf_ssub('offset(1)=Ddsi?;clear Ddsi?',cl_id))
 			disp(sprintf('loading DSI offset from file Ddsi=%.2f %.2f*i',...
 			real(offset(1)),imag(offset(1))))
 		end
-		if exist(av_ssub('Damp?',cl_id),'var')
-			eval(av_ssub('offset(2)=Damp?;clear Damp?',cl_id))
+		if exist(irf_ssub('Damp?',cl_id),'var')
+			eval(irf_ssub('offset(2)=Damp?;clear Damp?',cl_id))
 			disp(sprintf('loading amplitude correction from file Damp=%.2f',...
 			offset(2)))
 		end
@@ -95,7 +95,7 @@ clear var
 if exist('./mEDI.mat','file')
 	EDI=load('mEDI');
 	var = 'diEDI';
-	eval(av_ssub(['if isfield(EDI,''' var '?''); ' var '=EDI.' var '?; end; clear ' var '?'], cl_id));
+	eval(irf_ssub(['if isfield(EDI,''' var '?''); ' var '=EDI.' var '?; end; clear ' var '?'], cl_id));
 	clear EDI
 end
 
@@ -143,7 +143,7 @@ end
 
 dummy = dvar;
 for j=2:2+length(t0), dummy = [dummy ',' dvar]; end
-eval(['h=av_tplot({' dummy '});'])
+eval(['h=irf_plot({' dummy '});'])
 
 %Ex,Ey
 for co=1:2
@@ -173,11 +173,11 @@ cl_id,real(offset(1)),imag(offset(1)),offset(2)))
 % AUX information
 for j=1:length(t0)
 	axes(h(2+j))
-	eval(['av_tplot(' t0{j} '); ylabel(''' t0{j} ''')'])
+	eval(['irf_plot(' t0{j} '); ylabel(''' t0{j} ''')'])
 end
 
-addPlotInfo
-av_figmenu
+irf_pl_add_info
+irf_figmenu
 for j=1:length(t0)+2, axes(h(j)), end
 eval(['legend(h(1),' leg ')'])
 zoom on
@@ -188,7 +188,7 @@ while(q ~= 'q')
 	q_s = 'Delta Ex,Ey [mV/m], amplitude factor (s,r,';
 	if have_hres, q_s = [q_s 'f,']; end
 	q_s = [q_s 'q,h-help)[%]>'];
-	q=av_q(q_s,'', ...
+	q=irf_ask(q_s,'', ...
 		num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
 	switch(q)
 	case 'h'
@@ -216,11 +216,11 @@ while(q ~= 'q')
 		end
 	case 'r'
 		disp(sprintf('Reading Ddsi%d, Damp%d <- ./mEDSI.mat',cl_id,cl_id))
-		eval(av_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
+		eval(irf_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
 		flag_replot=1;
 	case 's'
 		disp(sprintf('Ddsi%d, Damp%d -> ./mEDSI.mat',cl_id,cl_id))
-		eval(av_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi? Damp?',cl_id))
+		eval(irf_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi? Damp?',cl_id))
 	case 'q'
 		cd(old_pwd)
 		return
@@ -270,7 +270,7 @@ while(q ~= 'q')
 
 		axes(h(1))
     	title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
-		addPlotInfo
+		irf_pl_add_info
 		for j=1:length(t0)+2, axes(h(j)), end
 		eval(['legend(h(1),' leg ')'])
 		zoom on

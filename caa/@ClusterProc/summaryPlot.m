@@ -42,23 +42,23 @@ while have_options
 			if ischar(args{2}), 
 				cs = args{2};
 				if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
-					c_log('fcal','unknown CS. defaulting to DSI')
+					irf_log('fcal','unknown CS. defaulting to DSI')
 					cs = 'dsi';
 				end
-			else, c_log('fcal','wrongArgType : CS must be a string')
+			else, irf_log('fcal','wrongArgType : CS must be a string')
 			end
 		case 'st'
 			if isnumeric(args{2}), st = args{2};
-			else, c_log('fcal','wrongArgType : ST must be numeric')
+			else, irf_log('fcal','wrongArgType : ST must be numeric')
 			end
 		case 'dt'
 			if isnumeric(args{2}), dt = args{2};
-			else, c_log('fcal','wrongArgType : DT must be numeric')
+			else, irf_log('fcal','wrongArgType : DT must be numeric')
 			end
 		case 'fullb'
 			use_fullb = '';	l = 1;
 		otherwise
-        	c_log('fcal',['Option ''' args{1} '''not recognized'])
+        	irf_log('fcal',['Option ''' args{1} '''not recognized'])
     	end
 		if length(args) > l, args = args(l+1:end);
 		else break
@@ -90,7 +90,7 @@ labels = {};
 for k=1:length(q_list)
 	if c_load(q_list{k},cl_id)
 		if have_tint
-			c_eval([q_list{k} '=av_t_lim(' q_list{k} ',st+[0 dt]);'],cl_id)
+			c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id)
 		end
 		n_plots = n_plots + 1;
 		if k==2 % B-field
@@ -138,20 +138,20 @@ orient tall
 
 dummy = 'data{1}';
 for k=2:n_plots, dummy = [dummy ',data{1}'];, end
-eval(['h = av_tplot({' dummy '});']) 
+eval(['h = irf_plot({' dummy '});']) 
 clear dummy
 
 for k=1:n_plots
 	axes(h(k))
-	av_tplot(data{k});
-	av_zoom([t_st t_end],'x',h(k))
+	irf_plot(data{k});
+	irf_zoom([t_st t_end],'x',h(k))
 	set(gca,'YLim',get(gca,'YLim')*.99)
 	ylabel(labels{k})
 	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[]), end		
 end
 
-addPlotInfo
+irf_pl_add_info
 
 for k=n_plots:-1:1
 	if min(size(data{k}))>2, legend(h(k),'X','Y','Z','Location','NorthEastOutside'), end
