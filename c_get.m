@@ -174,18 +174,18 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			% 2 - tape mode 2  (V12M,V34M,)
 			% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
 			%
+			clear tm mTMode1 mTMode2 mTMode3 mTMode4
   			if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
 			if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
 			if ~exist('tm','var')
 				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
-				if ~isempty(data), tm=data(5,:);, else, error('Cannot fetch FDM'), end
+				if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
 				if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
 				tm=tm(1);
 				eval(av_ssub('mTMode?=tm;',ic));
 				if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
 				else, eval(av_ssub('save mTMode mTMode?;',ic));	end
 			end
-			
 			tmmode='hx';
 			if tm<1e-30, param='10Hz';	else, param='180Hz'; end
 			clear tm
