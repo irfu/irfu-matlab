@@ -62,7 +62,7 @@ to_file = sprintf('%s%s',path_output,tfn);
 
 %cuts out the time intervall and creates a temporary file
 %unix_command = sprintf('/home/scb/fgm/bin86/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
-unix_command = sprintf('/home/scb/fgm/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
+unix_command = sprintf('/home/scb/fgm/bin/ddscut -b %d -e %d %s > %s',from,to,d_source,to_file);
 unix(unix_command);
 
 d_source = to_file;
