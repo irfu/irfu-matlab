@@ -142,8 +142,8 @@ switch action,
             plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
             axis equal; grid on;
         elseif (tlim(1)>=ud.tlim_mva(1) & tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
-            irf_zoom(tlim,'x',ud.h(2));
             tlim, diff(tlim),
+            irf_zoom(tlim,'x',ud.h(2));
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);
             clear ud.Xminvar;
