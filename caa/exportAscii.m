@@ -74,7 +74,7 @@ elseif regexp(vs,'E[1-4]')==1
 	sen = 'p1234';
 	frame = 'GSE,  Ez not measured, calculated from E.B=0';
 	var_labels = {'Ex','Ey','Ez','(B,spin)'};
-  var_units =  {'mV/m','mV/m','mV/m','deg');
+  var_units =  {'mV/m','mV/m','mV/m','deg'};
   com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
