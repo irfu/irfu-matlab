@@ -1,4 +1,4 @@
-function [y]=av_abs(x,flag)
+function [y]=irf_abs(x,flag)
 %IRF_ABS   Absolute value 
 %
 % [y]=irf_abs(x,flag)
