@@ -26,6 +26,37 @@ if ((nargin >= 2) & isstr(t_unit_in_original_units)),
  end
 end
 
+if ischar(x), % try to get variable labels etc. 
+    var_nam=tokenize(x); % white space separates variables
+    jj=1;
+    for ii=1:length(var_nam),
+        if regexp(var_nam{ii},'?'),
+            c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
+        else
+            var_names{jj}=var_nam{ii};jj=jj+1;
+        end
+    end
+    x={};
+    for ii=1:length(var_names)
+        try % try to get variable from calling workspace
+            x{ii}=evalin('caller',var_names{ii});
+        catch 
+            try % if there is none try to load variable
+                c_load(var_names{ii});eval(['x{ii}=' var_names{ii}]);
+            catch % if nothing works give up
+                warning(['do not know where to get variable >' var_names{ii}]);
+                return;
+            end
+        end
+        try 
+            var_desc=c_desc(var_names{ii});
+            ylabels{ii}=[var_desc.labels{1} '[' var_desc.units{1} '] sc' var_desc.cl_id];
+        catch
+            ylabels{ii}='';
+        end
+    end
+end
+
 if iscell(x), % plot several variables 
  if nargin == 1,
     flag='subplot';
@@ -72,6 +103,7 @@ if flag_subplot==0,
   if flag_yy == 0, h=plot((x(:,1)-ts)/tu,x(:,i),varargin{:});grid on;
   else, h=plotyy((x(:,1)-ts)/tu,x(:,i),(x(:,1)-ts)/tu,x(:,i).*scaleyy);grid on;
   end
+  ylabel(ylabels{1});
   c=get(h(1),'Parent');
   tt=x(1,1);
 elseif flag_subplot==1,
@@ -89,6 +121,7 @@ elseif flag_subplot==2,
     y=x{ipl};
     i=2:length(y(1,:));
     plot((y(:,1)-ts-dt(ipl))/tu,y(:,i),varargin{:});grid on;
+    ylabel(ylabels{ipl});
   end
   tt=y(1,1);
 elseif flag_subplot==3,  % components of vectors in separate panels
