@@ -185,7 +185,8 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.name = {'E_Vec_xy_ISR2', 'E_sigma'};
 	v.labels = {'E','St dev'};
 	v.label_1 = {'"x", "y"',''};
-	v.rep_1 = {'"x", "y"',''};
+    v.col_labels = {{'x','y','z'},''};
+    v.rep_1 = {'"x", "y"',''};
 	v.field_name = {'Electric field','Standard deviation'};
 	v.ent = {'Electric field','Electric field'};
 	v.prop = {'Vector','Vector'};
@@ -228,6 +229,7 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.labels = {'E'};
 	v.label_1 = {'"x", "y"'};
 	v.rep_1 = {'"x", "y"'};
+	v.col_labels = {{'x','y','z'}};
 	v.field_name = {'Electric field'};
 	v.ent = {'Electric field'};
 	v.prop = {'Vector'};
@@ -547,12 +549,12 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
 		vvs = vvs(3:end);
-		v.cs = {'vector>DSI_xyz','scalar>na'};
+		v.cs = {'ISR2'};
 	else
-		v.cs = {'vector>gse_xyz','scalar>na'};
+		v.cs = {'GSE'};
 	end
  	v.units =  {'nT'};
-	v.si_conv = {'1.0e-12>T'};
+	v.si_conv = {'1.0e-9>T'};
 	v.size = [3];
 	v.name = {'B'};
 	v.labels = v.name;
@@ -574,16 +576,17 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
 		vvs = vvs(3:end);
-		v.cs = {'vector>DSI_xyz','scalar>na'};
+		v.cs = {'ISR2'};
 	else
-		v.cs = {'vector>gse_xyz','scalar>na'};
+		v.cs = {'GSE'};
 	end
  	v.units =  {'nT'};
-	v.si_conv = {'1.0e-12>T'};
+	v.si_conv = {'1.0e-9>T'};
 	v.size = [3];
 	v.name = {'B'};
 	v.labels = v.name;
 	v.label_1 = {'"x", "y", "z"'};
+	v.col_labels = {{'x','y','z'}};
 	if regexp(vs,'^(di)?B(r|rs)[1-4]$')
 		v.file = 'mBr';
 		if regexp(vs,'^(di)?Brs[1-4]$')
