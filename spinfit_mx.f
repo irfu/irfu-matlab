@@ -28,7 +28,7 @@ C
 	integer nn, ier
 	integer pr_omega, pr_nterms, pr_itmax, pr_iter, pr_lim, pr_at, pr_az, pr_bad, pr_x, pr_sigma
 c output
-	real*8 x(maxterms_fit), sigma, ttt	
+	real*8 x(maxterms_fit), sigma, ttt
 	
 	intrinsic nint
 	
@@ -157,7 +157,7 @@ c by Yuri Khotyaintsev for g77 compiler
 c 1) replace structures
 c 2) use automatic array instead of pointers
 
-	subroutine sfit (fnterms,fitmax,fiter,flim,fomega,nn,at,az,bad,x,sigma,ier)
+	subroutine sfit (fnterms,fitmax,fiter,flim,fomega,nn,at,az,rbad,x,sigma,ier)
 
 c Function name: SFIT
 c
@@ -189,6 +189,7 @@ c input
 	real*8 at(nn),az(nn)
 c output
 	logical*1 bad(nn)
+	real*8 rbad(nn)
 	real*8 x(maxterms_fit),sigma
 	integer ier
 c local
@@ -318,8 +319,17 @@ C Subtract from normal equations
 	    const = const + dconst
 	  end if
 	end do
-
-999	return
+	
+999	do i = 1,nn
+		if (bad(i)) then
+			rbad(i) = 1.
+c			write(*,*) 'bad: ', i
+		else
+			rbad(i) = 0.
+		end if
+	end do
+	
+	return
 	end
 	
 c Module name: SOLVE
