@@ -99,7 +99,7 @@ c_log('save',['Storage directory is ' cp.sp])
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 
-	if ~(c_load(av_ssub('wE?p12',cl_id)) & c_load(av_ssub('wE?p34',cl_id)) & ...
+	if ~((c_load(av_ssub('wE?p12',cl_id)) | c_load(av_ssub('wE?p34',cl_id))) & ...
 	c_load(av_ssub('A?',cl_id)))
 		c_log('load','Please load raw data (mER) and phase (mA)')
 		data = [];
