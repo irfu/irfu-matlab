@@ -15,7 +15,7 @@ if nargin==2,p=1;end
 
 if size(x,1) ~= size(y,1),
  if debug ==1, disp('interpolating y to x, irf_vec_x_scal()');end
- y=av_interp(y,x);
+ y = irf_resamp(y,x);
 end
 
 z=x;

@@ -21,7 +21,13 @@ if min(size(y))==1, t = y(:);
 else, t = y(:,1); t = t(:);
 end
 
+if size(x,1) == 1,
+	out = [t (t*0+1)*x(:,2:end)];
+	return
+end
+		
 ndata = length(t);
+
 sfy = ndata/(t(end) - t(1));
 if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 	% we average
@@ -41,10 +47,5 @@ else
 	% If time series agree, no interpolation is necessary. 
 	if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end  
 	
-	if size(x,1) > 1,
-		out = [y(:,1) interp1(x(:,1),x(:,2:end),y(:,1),method,'extrap')];
-	else
-		warning('X has only one point')
-		out = [y(:,1) (y(:,1)*0+1)*x(:,2:end)];
-	end
+	out = [y(:,1) interp1(x(:,1),x(:,2:end),y(:,1),method,'extrap')];
 end
