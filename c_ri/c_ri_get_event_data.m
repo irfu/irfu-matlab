@@ -22,7 +22,7 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %Discription of variables:
 % eventsw   - 1 event per row, 3 columns [start_time end_time s/c_mode(1-burst, 0-normal)]
 %
-%Written by Andris Vaivads Sep 2003 - 
+%Written by Andris Vaivads Sep 2003 -
 
 global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else debug=AV_DEBUG; end
 
@@ -116,7 +116,7 @@ for i_event=1:size(events,1),
       [B1,B2,B3,B4]=c_get_bfgm(tim_interval);
       for ic=1:4,eval(av_ssub('dB?=c_gse2dsc(B?,?);',ic)),end
       if exist(file_name,'file'), flag_append='-append';else flag_append='';end
-      save(file_name,'B1','B2','B3,'B4','dB1','dB2','dB3,'dB4',flag_append);
+      save(file_name,'B1','B2','B3,'B4','dB1','dB2','dB3','dB4',flag_append);
 
     case 'EFW_P',
       file_prefix='F';
