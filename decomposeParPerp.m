@@ -1,9 +1,9 @@
-function [apar,aperp]=DecomposeParPerp(b0,a)
-% function [apar,aperp]=DecomposeParPerp(b0,a)
+function [apar,aperp]=decomposeParPerp(b0,a)
+% function [apar,aperp]=decomposeParPerp(b0,a)
 %
 %	Decomposes A to parallel and perpendicular to BO components
 %
-%	b0,a - martixes A=(t,Ax,Ay,Az)
+%	b0,a - martixes A=(t,Ax,Ay,Az) // AV Cluster format
 %
 % $Id$
 
@@ -22,7 +22,7 @@ btot = av_abs(b0,1);
 ii = find(btot<1e-3);
 if length(ii)>0, btot(ii) = ones(size(ii))*1e-3; end
 normb = [b0(:,1) b0(:,2)./btot b0(:,3)./btot b0(:,4)./btot]; 
-normb = av_interp(normb,a);
+normb = c_resamp(normb,a);
 
 apar = av_dot(normb,a);
 aperp = a;
