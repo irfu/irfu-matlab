@@ -1,18 +1,27 @@
-function exportAscii(var,vs)
+function exportAscii(var,vs,com)
 %exportAscii export variable into ascii file with comments
-% exportAscii(var,var_name_s)
+% exportAscii(var,var_name_s,comment)
+% exportAscii(var,var_name_s)             % no additional comment
+% exportAscii(var)                        % var_name_s is the same as the name of var
 %
-% Information written into comment is based on var_name_s string
+% Information written into the header of file is based on var_name_s string
+% If comment is given it is added to the header
+%
 % File  {var_name_s}.dat is saved into current directory
 %
 % Example:
-%	exportAscii(diE3p1234,'diE3p1234')
+%	exportAscii(diE3p1234)
+%	exportAscii(Etemp,'diE3p1234')
+%	exportAscii(Etemp,'diE3p1234','electric field is high pass filtered at 3Hz')
 %
 % $Revision$  $Date$
 %
 
 % Copyright 2004 Yuri Khotyaintsev
 
+if nargin<3, com='';end
+if nargin<2, vs=inputname(var); end
+if nargin<1, help exportAscii;return; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
@@ -55,6 +64,20 @@ elseif regexp(vs,'diE[1-4]p1234')==1
 	var_labels = {'Ex','Ey','Ez'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% full resolution E in GSE coordinates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'E[1-4]')==1
+
+	cl_id = vs(2);
+	inst = 'EFW';
+	sig = 'E';
+	sen = 'p1234';
+	frame = 'GSE,  Ez not measured, calculated from E.B=0';
+	var_labels = {'Ex','Ey','Ez','(B,spin)'};
+  var_units =  {'mV/m','mV/m','mV/m','deg');
+  com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'A[1-4]')
@@ -71,12 +94,17 @@ else
 	return
 end
 
-t0_s = datestr(datenum(fromepoch(var(1,1))));
-var(:,1) = var(:,1) - var(1,1); 
+t0=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);
+t0_s=datestr(datenum(fromepoch(t_ref)),0);
+var(:,1) = var(:,1) - t0;
+
+%t0_s = datestr(datenum(fromepoch(var(1,1))));
+%var(:,1) = var(:,1) - var(1,1);
 
 sz = size(var);
 n_data = sz(2) - 1; % number of data columns - time
-var_s = 'time [sec] ';
+var_s = 'time       ';
+var_unit = '[s]      ';
 mask = '%10.4f ';
 
 if		strcmp(sig,'E'),		units = 'mV/m';
@@ -85,7 +113,10 @@ else,	units = 'undef';
 end
 
 for i=1:n_data
-	var_s = [var_s var_labels{i} ' [' units '] '];
+	var_length_eight=strvcat(var_labels{i},'        ');
+	var_unit_length_eight=strvcat(['[' var_unit{i} ']'],'        ');
+  var_s = [var_s var_length_eight ];
+	var_unit = [var_unit var_unit_length_eight];
 	mask = [mask '%8.3f '];
 end
 
@@ -96,8 +127,10 @@ fprintf(fid,['%% Intrument: ' inst ' \n']);
 fprintf(fid,['%% Signal:    ' sig ' \n']);
 fprintf(fid,['%% Sensor:    ' sen ' \n']);
 fprintf(fid,['%% Coord Sys: ' frame ' \n%%\n']);
+fprintf(fid,['%% comment:   ' com ' \n%%\n']);
 fprintf(fid,['%% Time from: ' t0_s ' \n%%\n']);
 fprintf(fid,['%% ' var_s ' \n']);
+fprintf(fid,['%% ' var_unit ' \n']);
 fprintf(fid,[mask '\n'],var');
 fclose(fid);
 
