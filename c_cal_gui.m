@@ -97,9 +97,12 @@ switch action
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'init'
 	% Create figure
+	if find(get(0,'children')==main_fig_id)
+		pos_old = get(main_fig_id,'Position');
+	end
 	h0 = figure(main_fig_id);
 	clf
-	set(h0,'Position', [25 40 990 640])
+	if isempty(pos_old), set(h0,'Position', [25 40 990 640]), end
 	hnd = guihandles(h0);
 	hnd.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
 	set(hnd.DATApanel,'Title','Data')
