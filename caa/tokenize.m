@@ -22,7 +22,7 @@ end
 i = 0;
 tstr = str;
 
-while length(tstr) > 1
+while length(tstr) > 0
 	[token,reminder]=strtok(tstr, delimiter);
 	i = i + 1;
 	tokens{i} = token;
