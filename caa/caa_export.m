@@ -6,6 +6,10 @@ function caa_export(lev,caa_vs,cl_id,DATA_VERSION,sp)
 %
 % $Id$
 
+% This must be changed when we do any major changes to our processing software
+EFW_DATASET_VERSION = '1';
+QUALITY = '3'; % Good for publication, subject to PI approval
+
 % Copyright 2004 Yuri Khotyaintsev
 if nargin<5, sp='.'; end
 if nargin<4, DATA_VERSION = '01'; end
@@ -180,11 +184,13 @@ pmeta(fid,'DATASET_TITLE',dsc.field_name)
 pmeta(fid,'DATASET_DESCRIPTION',...
 	{['This dataset contains measurements of the ' dsc.field_name{1}],... 
 	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)})
+pmeta(fid,'DATASET_VERSION',EFW_DATASET_VERSION)
 pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
 pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
+pmeta(fid,'LOGICAL_FILE_ID',file_name)
 pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
 fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
@@ -225,6 +231,7 @@ for j=1:v_size
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
 	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
+	fprintf(fid,['  QUALITY           = "' QUALITY '"\n']);
 	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
 	if ~isempty(dsc.com) & j==1
 		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
