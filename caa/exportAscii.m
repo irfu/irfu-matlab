@@ -129,7 +129,7 @@ elseif regexp(vs,'dump')
   fid = fopen([inputname(1) '.dat'],'w');
   for j=1:size(var,2),
     if var(j,1)>5e8 % assume first column time in isdat epoch
-      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %6.4f ',fromepoch(var(j,1)));
+      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %7.4f ',fromepoch(var(j,1)));
       fprintf(fid,[d num2str(var(j,2:end)) '\n']);
     else
       fprintf(fid,[num2str(var(j,1:end)) '\n']);
