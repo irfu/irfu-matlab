@@ -36,7 +36,14 @@ case 'b'
 	r.pr	= 'CSDS_PP';
 	r.mem	= ['C' cl_id_s];
 	r.inst  = 'FGM';
-	r.sen	= ['B_xyz_gse__C' cl_id_s '_PP_FGM'];
+	r.sen	= r.var;
+case 'edi'
+	r.file	= ['PP/EDI/C' cl_id_s '/C' cl_id_s '_PP_EDI_'];
+	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_EDI'];
+	r.pr	= 'CSDS_PP';
+	r.mem	= ['C' cl_id_s];
+	r.inst  = 'EDI';
+	r.sen	= r.var;
 case 'slat'
 	r.file	= 'SP/AUX/CL_SP_AUX_';
 	r.var	= ['sc_at' cl_id_s '_lat__CL_SP_AUX'];
