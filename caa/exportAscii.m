@@ -92,6 +92,20 @@ elseif regexp(vs,'E[1-4]')==1
   com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% full resolution E in GSE coordinates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'NVps[1-4]')==1
+
+	cl_id = vs(5);
+	inst = 'EFW';
+	sig = 'P, probe to spacecraft potential';
+	sen = 'p1234';
+	frame = '';
+	var_labels = {'NVps','Vps'};
+  var_units =  {'cc','V'};
+  com = '%% probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n %%       It is NOT true density\n');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'A[1-4]')

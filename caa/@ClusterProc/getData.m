@@ -267,22 +267,20 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		varo_s = av_ssub('Es?',cl_id);
 	end
 
+	Dxy_s =  av_ssub('Ddsi?',cl_id);
 	Dx_s =  av_ssub('real(Ddsi?)',cl_id);
 	Dy_s =  av_ssub('imag(Ddsi?)',cl_id);
 	Da_s =  av_ssub('Damp?',cl_id);
 
-	eval(['load mEDSI ' var_s ' ' Dx_s ' ' Da_s])
+	eval(['load mEDSI ' var_s ' ' Dxy_s ' ' Da_s])
 	if exist(var_s,'var'), eval(['diE=' var_s ';'])
 	else
 		warning('caa:noData','Please despin E (no diE in mEDSI)')
 		data = [];
 		return
 	end
-	if exist(Dx_s,'var'), eval(['Dx=' Dx_s ';'])
-	else, disp('using Dx=0'), Dx = 0;
-	end
-	if exist(Dy_s,'var'), eval(['Dy=' Dy_s ';'])
-	else, disp('using Dy=0'), Dy = 0;
+	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
+	else, disp('using Dx,Dy=0'), Dx = 0; Dy=0;
 	end
 	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
 	else, disp('using Da=1'), Da = 1;
