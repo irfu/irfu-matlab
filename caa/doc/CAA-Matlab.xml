@@ -652,7 +652,7 @@ mBPP.mat    mEDI.mat    mER.mat     mP.mat
 summarized in <xref linkend="tab-files"/></para>
 
 <table id="tab-files" frame='all'><title>Files</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<tgroup cols='3' align='left' colsep='1' rowsep='1'>
 <colspec colname='name'/>
 <colspec colname='desc'/>
 <colspec colname='vars'/>
@@ -843,8 +843,108 @@ This section describe common operations one needs to perform on data.
 
 <section id="doing-t">
 <title>Working with time</title>
-<para>
-See help for <function>c_desc</function>
+
+<para>Time standarts are described in <xref linkend="conv-t"/>. Main functions 
+for working with time are described in <xref linkend="func-t"/>.</para>
+
+<table id="func-t" frame='all'><title>Functions for converting time</title>
+<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+<colspec colname='name'/>
+<colspec colname='desc'/>
+<thead>
+<row>
+  <entry align='center'>Function</entry>
+  <entry align='center'>Description</entry>
+</row>
+</thead>
+<tbody>
+<row>
+	<entry><function>toepoch</function></entry>
+	<entry>
+		converts <varname>[YYYY MM DD hh mm ss]</varname> to 
+		<link linkend="conv-t">&is; epoch</link>
+	</entry>
+</row>
+<row>
+<entry><function>iso2epoch</function></entry>
+<entry>
+	converts <link linkend="conv-t">ISO time</link> string to 
+	<link linkend="conv-t">&is; epoch</link>
+</entry>
+</row>
+<row>
+	<entry><function>fromepoch</function></entry>
+	<entry>
+		converts <link linkend="conv-t">&is; epoch</link> to
+		<varname>[YYYY MM DD hh mm ss]</varname>
+	</entry>
+</row>
+<row>
+	<entry><function>epoch2date</function></entry>
+	<entry>
+		converts <link linkend="conv-t">&is; epoch</link> to
+		&matl; <varname>date</varname>.
+	</entry>
+</row>
+<row>
+	<entry><function>epoch2iso</function></entry>
+	<entry>
+		converts <link linkend="conv-t">&is; epoch</link> to
+		<link linkend="conv-t">ISO time</link> string.
+	</entry>
+</row>
+</tbody>
+</tgroup>
+</table>
+
+<para>This is an example of how to use these functions. First we create
+a <link linkend="conv-t">&is; epoch</link> variable <varname>t</varname>. 
+Then we convert it to <link linkend="conv-t">ISO time</link> string 
+<varname>iso_ts</varname>, and back to <link linkend="conv-t">&is; epoch</link>.
+After this we demonstrate how <function>fromepoch</function> works. During the 
+last step we convert <varname>t</varname> to &matl; <varname>date</varname> 
+variable <varname>m_date</varname> and use standart function 
+<function>datestr</function> to display human readable time.
+<screen>
+>> t=toepoch([2002 11 1 0 0 59.999])
+
+t =
+
+  1.0361e+009
+
+>> iso_ts=epoch2iso(t)
+
+iso_ts =
+
+2002-11-01T00:00:59.999000Z
+
+>> t=iso2epoch(iso_ts)
+
+t =
+
+  1.0361e+009
+
+>> fromepoch(t)
+
+ans =
+
+  1.0e+003 *
+
+    2.0020    0.0110    0.0010         0         0    0.0600
+
+>> m_date=epoch2date(t)
+
+m_date =
+
+  7.3152e+005
+
+>> datestr(m_date)
+
+ans =
+
+01-Nov-2002 00:01:00
+
+</screen>
 </para>
 </section>
 
