@@ -5,8 +5,8 @@ function status = av_minvar_interacitve(x,column)
 %  COLUMN - which columns to use, if not given use 2,3,4
 %
 % You can access the results through variable 'ud' that is defined as global
-% ud.l - eigenvalues
-% ud.v - eigenvectors
+% ud.l - eigenvalues  ud.l(1), ud.l(2),ud.l(3)
+% ud.v - eigenvectors (ud.v(1,:), ..), also ud.v1, ud.v2. ud.v3
 %  ud.Xminvar - data in minimum variance coordinates
 %
 

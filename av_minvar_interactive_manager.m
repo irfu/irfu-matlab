@@ -134,12 +134,12 @@ axes(ud.h(2));
 av_tplot([ud.Xminvar X(:,5)]);
 set(ud.h(2),    'buttondownfcn', 'av_minvar_interactive_manager(''ax'')');
 axis tight;add_timeaxis(ud.h(2),'date');
-legend('max','mean','min','abs');
+legend('max','interm','min','abs');
 axes(ud.h(3));
 plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
 axis tight;axis equal; ax=axis;grid on;
 axes(ud.h(4))
-plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('mean');ylabel('max');
+plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
 axis equal; grid on;
 l_str=['L1=' num2str(l(1),3) ' L2=' num2str(l(2),3) ' L3=' num2str(l(3),3) '\newline'];
 lratio_str=['L1/L2=' num2str(l(1)/l(2),2) ' L2/L3=' num2str(l(2)/l(3),2) '\newline'];

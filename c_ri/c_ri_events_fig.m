@@ -8,9 +8,8 @@ function c_ri_events_fig(time_interval,p_data,p_MP,p_Bp,p_E,p_Out, period, fig_t
 %Descrition of the function:
 %
 %Using:
-% 
-global AV_DEBUG
-if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
+%
+global AV_DEBUG;if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
 
 event_files=dir([p_E 'E_' '*.mat']);
 

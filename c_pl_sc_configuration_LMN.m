@@ -47,7 +47,8 @@ if strcmp(action,'initialize'),
     end
   end
   if nargin==4,
-    l=R1;m=R2;n=R3;
+    l=R1;m=R2;n=R3;b=av_interp(B,time); 
+    initLflag=1;
   end
   if nargin<5,  % load position vectors if not given
     if   exist('mR.mat'), load mR R1 R2 R3 R4;for ic=1:4,eval(av_ssub('r?=R?;clear R?;',ic)),end
@@ -99,7 +100,7 @@ if strcmp(action,'initialize'),
   % The magnetic field or L entering
   labelStr=num2str(l);
   callbackStr='c_pl_sc_configuration_LMN(''plot'')';
-  Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.25 .2 .05],'string','L (or B) [GSE]','Callback',callbackStr)
+  Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.25 .2 .05],'string','L (or B) [GSE]','Callback',callbackStr);
   if initLflag==1, set(Lflag,'value',1);end
   LHndl=uicontrol( ...
         'Style','edit', ...

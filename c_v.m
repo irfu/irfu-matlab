@@ -27,7 +27,7 @@ end
 if exist('mV.mat'),
       load mV V1 V2 V3 V4;
   else,
-      disp('loading position from isdat');
+      disp('loading velocity from isdat');
       DATABASE='disco:10';db = Mat_DbOpen(DATABASE);
       for ic=sc_list, disp(['...V' num2str(ic)]);
        [t,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
