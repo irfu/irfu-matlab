@@ -1,30 +1,30 @@
-function c_ri_four_B_files_2_one(path_input, path_output , s_t, e_t) 
+function c_ri_four_B_files_2_one(path_input, path_output , s_t, e_t)
 %
-%Four_B_files_2_one(path_input, path_output, s_t, e_t)
+%c_ri_four_B_files_2_one(path_input, path_output, s_t, e_t)
 %
 %Input:
 % path_input -the path to the catalog where the files are. (include / in the end)
 %            ex "Ba_020605_F050939_T191504_n.04"
-% path_output -the path to where the outputfiles should be (include / in the end) 
+% path_output -the path to where the outputfiles should be (include / in the end)
 % s_t -start time ex [2002 03 02 0 0 0]
-% e_t -end time ex [2002 03 03 0 0 0] 
+% e_t -end time ex [2002 03 03 0 0 0]
 %
 %Output:
-% saves the files to path_output with the same filename exept for 
+% saves the files to path_output with the same filename exept for
 % the extension. (*.mat instead of *.01 *.02 *.03 *.04)
 %
 %Descrition of the function:
 % Compess 4 files, each file is the Ba-file form a cluster satellite, to
-% one file containing 
+% one file containing
 %
 %Using:
 % find_str
 % load_file
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
@@ -45,7 +45,7 @@ fp = fopen(ls_out, 'r');
 while feof(fp) == 0
 
 %find a filename with the end .01 to start with satellite 1
-%and the starttime is not the end time and that the file is 
+%and the starttime is not the end time and that the file is
 %within the intervall.
 correct_l = -1;
 temp_l = 0;
