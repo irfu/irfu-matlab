@@ -1,42 +1,192 @@
-function export2caa(sc_list,varargin)
-%export2caa export data into caa CEF files.
-% function export2caa(sc_list)
-% Input:
-%	sc_list - list of sc [optional], default 1:4
-%
-% We need to export the following data:
-% Level 1: wEp[cl_id][12,p34] (mER), P10Hz[cl_id]p[1-4] (mP)
-% Level 2: diE[cl_id]p1234 (mEDSI), P[cl_id] (mP)
-% Level 3: diEs[cl_id] (mEdB), diVExBs[cl_id] (mEdB), <P[cl_id]> NOT DONE
-%
-% $Id$
+function export2caa(lev,caa_vs,cl_id,DATA_VERSION,sp)
+%EXPORT2CAA export data to CAA CEF files
+% export2caa(lev,caa_vs,cl_id,DATA_VERSION,sp)
 %
 % See also exportAscii
+%
+% $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004 Yuri Khotyaintsev
+if nargin<5, sp='.'; end
+if nargin<4, DATA_VERSION = '01'; end
+if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
+if lev<=1 | lev>3, error('LEV must be 2 or 3'), end
 
-if nargin<1, sc_list = 1:4; end
-
-f_name = {'mER', 'mP', 'mEDSI', 'mEdB'};
-vars{1} = {'wE?p12', 'wE?p34'};
-vars{2} = {'P10Hz?p1', 'P10Hz?p2', 'P10Hz?p3', 'P10Hz?p4', 'P?'};
-vars{3} = {'diE?p1234'}; 
-vars{4} = {'diEs?', 'diVExBs?'};
-
-for cl_id=sc_list
-	for j = 1:length(f_name)
-		if exist([f_name{j} '.mat'],'file')
-			for k = 1:length(vars{j})
-				c_log('load',av_ssub([vars{j}{k} ' <- ' f_name{j}],...
-					cl_id))
-					c_eval(['load ' f_name{j} ' ' vars{j}{k}],cl_id)
-				if exist(av_ssub(vars{j}{k},cl_id),'var')
-					c_eval(['exportAscii(' vars{j}{k} ',''mode'',''caa'')'],cl_id)
-				else
-					c_log('load',av_ssub(['No ' vars{j}{k} ' in ' f_name{j}],...
-						cl_id))
-				end
-			end
-		end
+switch caa_vs
+case 'P'
+	if lev==1, error('LEV must be 2 or 3'), end
+	if lev==2
+		vs = av_ssub('P?',cl_id);
+		v_size = 1;
+	else
+		disp('not implemented')
 	end
+case 'E'
+case 'EF'
+otherwise
+	error('unknown variable')
 end
+
+EOR_MARKER = '$';
+FILL_VAL = '-1.0E30';
+PROCESSING_LEVEL='Calibrated';
+
+old_pwd = pwd;
+cd(sp)
+
+% Load data
+data = c_load(vs,'var');
+if isempty(data)
+	c_log('load', ['No ' vs])
+	cd(old_pwd)
+	return
+end
+d_info = [];
+try
+	d_info = c_load([vs '_info'],'var');
+end
+
+if isempty(d_info), dsc = c_desc(vs);
+else, dsc = c_desc(vs,d_info);
+end
+
+dt = data(2,1) - data(1,1);
+ddt = .05;
+dt_spin = 4;
+dt_lx = 1/5;
+dt_nm = 1/25;
+dt_bm1 = 1/450;
+
+if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
+	TIME_RESOLUTION = dt_spin;
+elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
+	TIME_RESOLUTION = dt_lx;
+elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
+	TIME_RESOLUTION = dt_nm;
+elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
+	TIME_RESOLUTION = dt_bm1;
+else,
+	error('cannot determine time resolution')
+end
+
+TIME_RESOLUTION = num2str(TIME_RESOLUTION);
+
+% Write to file
+ext_s = '.cef';
+% We have special names for CAA
+DATASET_ID = av_ssub(['C?_CP_EFW_L' num2str(lev) '_' caa_vs],cl_id);
+file_name = ...
+	[DATASET_ID '_' makeFName(data([1 end],1),2) '_V' DATA_VERSION];
+fid = fopen([file_name ext_s],'w');
+
+fprintf(fid,'!-------------------- CEF ASCII FILE --------------------|\n');
+nnow = now;
+fprintf(fid,['! created on ' datestr(nnow) '\n']);
+fprintf(fid,'!--------------------------------------------------------|\n');
+fprintf(fid,['FILE_NAME = "' file_name ext_s '"\n']);
+fprintf(fid,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
+fprintf(fid,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
+fprintf(fid,'include = "efw_glob.ceh"\n');
+pmeta(fid,'FILE_NAME',[file_name ext_s])
+pmeta(fid,'FILE_TYPE_VERSION','CEF-2.0')
+pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
+pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
+pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
+pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS__',cl_id)
+pmeta(fid,'DATASET_ID',DATASET_ID,cl_id)
+pmeta(fid,'DATASET_TITLE',dsc.field_name)
+pmeta(fid,'DATASET_DESCRIPTION',...
+	{['This dataset contains measurements of the ' dsc.field_name{1}],... 
+	av_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)})
+pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
+pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs '__'],cl_id)
+pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
+fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
+fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
+fprintf(fid,...
+['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
+fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
+fprintf(fid,'START_META     =   GENERATION_DATE\n');
+fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
+fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
+fprintf(fid,'END_META       =   GENERATION_DATE\n');
+pmeta(fid,'CAVEATS',dsc.com)
+
+fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+fprintf(fid,'!                   Variables                         !\n');
+fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+fprintf(fid,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
+fprintf(fid,'  VALUE_TYPE      = ISO_TIME\n');
+fprintf(fid,['  DELTA_PLUS      = ' TIME_RESOLUTION '\n']);
+fprintf(fid,['  DELTA_MINUS     = ' TIME_RESOLUTION '\n']);
+fprintf(fid,'  LABLAXIS        = "UT"\n');
+fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
+fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
+
+for j=1:length(v_size)
+	fprintf(fid,['START_VARIABLE    = ' dsc.name{j} '__' DATASET_ID '\n']);
+	if v_size(j) > 1
+		fprintf(fid,'  SIZES           = %d\n',var_size(j));
+	end
+	fprintf(fid,'  VALUE_TYPE      = FLOAT\n');
+	fprintf(fid,['  ENTITY          = "' dsc.ent{j} '"\n']);
+	fprintf(fid,['  PROPERTY        = "' dsc.prop{j} '"\n']);
+	if ~isempty(dsc.fluc{j})
+		fprintf(fid,['  FLUCTUATIONS    = "' dsc.fluc{j} '"\n']);
+	end
+	fprintf(fid,['  FIELDNAM        = "' dsc.field_name{j} '"\n']);
+	if ~strcmp(dsc.cs{j},'na')
+		fprintf(fid,['  REFERENCE_FRAME = "' dsc.cs{j} '"\n']); 
+	end
+	if ~isempty(dsc.si_conv{j})
+		fprintf(fid,['  SI_CONVERSION   = "' dsc.si_conv{j} '"\n']);
+	end
+	fprintf(fid,['  UNITS           = "' dsc.units{j} '"\n']);
+	fprintf(fid,['  FILLVAL         = "' FILL_VAL '"\n']);
+	fprintf(fid,['  LABLAXIS        = "' dsc.labels{j} '"\n']);
+	if v_size(j) > 1
+		fprintf(fid,['  LABEL_1         = ' dsc.label_1{j} '\n']);
+	end
+	fprintf(fid,['  DEPEND_0        = time_tags__' DATASET_ID '\n']);
+	fprintf(fid,['END_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
+end
+
+fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+fprintf(fid,'!                       Data                          !\n');
+fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n');
+fprintf(fid,'DATA_UNTIL = EOF\n');
+
+time_s = epoch2iso(data(:,1));
+sz = size(data);
+n_data = sz(2) - 1; % number of data columns - time
+mask = '';
+for j=1:n_data
+	mask = [mask ', %8.3f'];
+	ii = find(isnan(data(:,j+1)));
+	if ~isempty(ii), data(ii,j+1) = str2num(FILL_VAL); end
+end
+
+for j=1:length(data(:,1))
+	fprintf(fid,time_s(j,:));
+	fprintf(fid,[mask ' ' EOR_MARKER '\n'],data(j,2:end)');
+end
+
+fclose(fid);
+cd(old_pwd)
+
+function pmeta(fid,m_s,s,cl_id)
+% Print META
+
+fprintf(fid,['START_META     =   ' m_s '\n']);
+if iscell(s)
+	for j=1:length(s), fprintf(fid,['   ENTRY       =   "' s{j} '"\n']); end
+else
+	if nargin==4, ss = av_ssub(s,cl_id); 
+	else, ss = s;
+	end
+	fprintf(fid,['   ENTRY       =   "' ss '"\n']);
+end
+fprintf(fid,['END_META       =   ' m_s '\n']);
