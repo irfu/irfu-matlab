@@ -21,7 +21,7 @@ d = fromepoch(st(1));
 s{1} = num2str(d(1));
 
 for k=2:6
-	s{k} = num2str(round(d(k)));
+	s{k} = num2str(fix(d(k)));
 	if d(k)<10, s{k} = ['0' s{k}]; end
 end
 
