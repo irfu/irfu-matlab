@@ -37,8 +37,8 @@ if strcmp(action,'initialize'),
   end
 
   if nargin<1, help c_pl_sc_conf_lmn;return;                                      end
-  if nargin==1, n=[0 0 1]; b=av_interp(B,time); l=b(1,[2 3 4]);                                                                    end
-  if nargin==2, n=R1;      b=av_interp(B,time); l=b(1,[2 3 4]);                                   end
+  if nargin==1, n=[0 0 1]; b=irf_resamp(B,time); l=b(1,[2 3 4]);                                                                    end
+  if nargin==2, n=R1;      b=irf_resamp(B,time); l=b(1,[2 3 4]);                                   end
   if nargin==3,
     n=R1;
     if size(R2,1)>1, B=R2;
@@ -50,7 +50,7 @@ if strcmp(action,'initialize'),
     end
   end
   if nargin==4,
-    l=R1;m=R2;n=R3;b=av_interp(B,time); 
+    l=R1;m=R2;n=R3;b=irf_resamp(B,time); 
     initLflag=1;
   end
   if nargin<5,  % load position vectors if not given
@@ -176,7 +176,7 @@ elseif strcmp(action,'plot'),
 
   flag_L=get(Lflag, 'value');
   if flag_L==0,
-    b=av_interp(B,t); l=b(1,[2 3 4]);set(LHndl,'string',num2str(l));
+    b=irf_resamp(B,t); l=b(1,[2 3 4]);set(LHndl,'string',num2str(l));
   else
     l=eval(['[ ' get(LHndl,'string') ' ]']);
   end
@@ -194,7 +194,7 @@ elseif strcmp(action,'plot'),
     titlestr=LMN_Ltitle;
   end
 
-  for ic=1:4,eval(irf_ssub('rr?=av_interp(r?,t);',ic)),end
+  for ic=1:4,eval(irf_ssub('rr?=irf_resamp(r?,t);',ic)),end
   R=(rr1+rr2+rr3+rr4)/4;
   for ic=1:4,eval(irf_ssub('dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);drlnm?=irf_newxyz(dr?,l,n,m);x?=drlnm?;',ic)),end
   drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
@@ -216,7 +216,7 @@ elseif strcmp(action,'plot'),
 	axes(h(4));
     L_str=[' L=[' num2str(l,'%6.2f') ']'];
     if exist('b'),
-      L_str=[L_str ', angle between L and B is ' num2str(av_angle(l,b,1),2) ' deg'];
+      L_str=[L_str ', angle between L and B is ' num2str(irf_ang(l,b,1),2) ' deg'];
     end
     N_str=['\newline N=[' num2str(n,'%6.2f') ']'];
     M_str=['\newline M=[' num2str(m,'%6.2f') ']'];

@@ -31,12 +31,12 @@ if nargin<8;    disp('Too few parameters. See usage:');help c_4_j;     return;en
 % because usually r1..r4 is of less time resolution, it is more
 % computer friendly first calculate k1..k4 and only after interpolate
 % and not the other way around
-for ic=1:4,eval(irf_ssub('R?=av_interp(r?,r1,''spline'');',ic)),end
+for ic=1:4,eval(irf_ssub('R?=irf_resamp(r?,r1,''spline'');',ic)),end
 [k1,k2,k3,k4]=c_4_k(R1,R2,R3,R4);
 
 %%%%%%%%%%%%%%%% Do interpolation to b1 time series %%%%%%%%%%%%%%%%%%%%%%
-for ic=1:4,eval(irf_ssub('B?=av_interp(b?,b1);',ic)),end
-for ic=1:4,eval(irf_ssub('K?=av_interp(k?,b1);',ic)),end
+for ic=1:4,eval(irf_ssub('B?=irf_resamp(b?,b1);',ic)),end
+for ic=1:4,eval(irf_ssub('K?=irf_resamp(k?,b1);',ic)),end
 
 % initialize matrix j and divB with right time column
 j=B1(:,1:4);j(:,2:4)=0;
