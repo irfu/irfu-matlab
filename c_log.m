@@ -42,6 +42,11 @@ function c_log(log_ids,log_msg,varargin)
 
 % Copyright 2004 Yuri Khotyaintsev
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_log')
+
 error(nargchk(2,15,nargin))
 
 %if nargin>2, have_options = 1; args = varargin;

@@ -4,6 +4,11 @@ function [y]=av_norm(x)
 %  if 3 components then assumed [x1,x2,x3]
 %y returns normalized x 
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_norm')
+
 lx= size(x,2); % the number of vector components
 
 y=x;

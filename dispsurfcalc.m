@@ -16,6 +16,11 @@ function [wfinal,extraparam]=dispsurfcalc(kc_x_max,kc_z_max,m_i,wp_e)
 %
 %
 %  By Anders Tjulin, last update 25/3-2003.
+
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_disp_surf_calc')
   
   % First get rid of those annoying "division by zero"-warnings
     

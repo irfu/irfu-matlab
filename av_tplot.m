@@ -26,6 +26,10 @@ function c=av_tplot(x,option,varargin);
 %   av_tplot({B1,B2},'','dt',[dt1 dt2]) - separate subplots with B1 and B2, but in
 %                                 addition B1 and B2 time axis are shifted by dt1 and dt2 correspondingly
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_plot')
 
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component

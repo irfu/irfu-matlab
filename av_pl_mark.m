@@ -5,6 +5,12 @@ function outhandle=av_pl_mark(tlim,inhandle,color);
 % tlim - time interval to mark
 % inhandle - is the handle of axes
 % color - string specifying color
+
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_pl_mark')
+
 if nargin<1, help av_pl_mark;end
 if nargin == 1, inhandle=gca;end
 if nargin < 2, color='yellow';end

@@ -60,6 +60,11 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_efw_sfit')
+
 error(nargchk(8,9,nargin))
 
 if pair~=12 & pair~=32 & pair~=34, error('PAIR must be one of: 12, 32, 34'), end

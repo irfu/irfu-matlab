@@ -12,6 +12,11 @@ function [yo,zo,tilt]=gse2gsm(yr,day,sec,yi,zi,ig);
 %
 % $Id$
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_gse2gsm')
+
 %	calculate constants and dipole tilt angle
 fdoy=sec/86400;
 d=day+365.25*yr-0.75+fdoy;

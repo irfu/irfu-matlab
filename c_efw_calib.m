@@ -2,7 +2,7 @@ function [coef1,coef2,coef3,coef4]=c_efw_calib(isdat_epoch);
 %function [c1,c2,c3,c4]=c_efw_calib(isdat_epoch);
 % get calibration coefficients for time isdat_epoch (can also be in [yyyy mm dd hh mm ss] format)
 % c1..c4 - calibration coefficients [[A_12 E_offs_12_s E_offs_12_xy];[A_34 E_offs_34_s E_offs_34_xy]]
-% for calibration coefficient definition see C_DESPIN
+% for calibration coefficient definition see C_EFW_DESPIN
 
 warning('caa:cleanup',...
 'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...

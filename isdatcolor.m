@@ -9,6 +9,11 @@ function J = isdatcolor(m)
 %
 %   By Anders Tjulin (Last update 10/1-2003)
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_is_cmap')
+
   thecolors=[0,0,0;
 	     7,0,0;
 	     0,0,0;

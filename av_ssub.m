@@ -14,6 +14,11 @@ function [output_string]=av_ssub(input_string,varargin)
 %
 % $Id$
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_ssub')
+
 error(nargchk(2,4,nargin))
 
 output_string = input_string;

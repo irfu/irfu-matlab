@@ -12,6 +12,11 @@ function h=c_pl_sc_orientation(spacecraft,time,phase_time_series,magnetic_field,
 %   b  - magnetic field in despinned reference frame
 %   v  - velocity vector [vx vy vz] in GSE which will be marked in the plots, e.g. magnetopause velocity
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_pl_sc_orient')
+
 %   figuserdata=[h];
 eval_figuserdata='figuserdata={h};';
 

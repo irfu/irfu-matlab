@@ -11,6 +11,11 @@ function [z]=av_dot(x,y,flag_output)
 % if flag==1 then y returns only values of dot product without time axis
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_dot')
+
 z=x;
 
 if size(x,2) < 3, error('not enough components for x vector. av_dot()');

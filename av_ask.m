@@ -13,4 +13,4 @@ if exist(variable) & (isstr(default) == isstr(eval(variable)));
 else,
  qqwwqq=default;
 end;
-eval([variable '=av_q(question,''' variable ''',qqwwqq);']);
+eval([variable '=irf_ask(question,''' variable ''',qqwwqq);']);

@@ -16,6 +16,11 @@ function startSAT=checkbursttime(database,filename)
 %
 % By Anders Tjulin, last update 17/5-2004
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_efw_burst_chkt')
+
   % Extract the times from the burst data file
 
   times=getburstheader(filename);

@@ -5,7 +5,7 @@ function [z]=av_interp(x,y,method)
 %    z has y-time and x-column number
 %    method - method of interpolation 'spline', 'linear' etc. (default 'linear')
 %
-% See also: INTERP1
+% See also INTERP1
 %
 
 warning('caa:cleanup',...

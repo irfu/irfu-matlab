@@ -6,6 +6,11 @@ function y=av_q(question,variable_name_of_old_value, default_value);
 %   y=av_q('How much? [%]>','y',10)
 % see av_ask
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_ask')
+
 if nargin < 3, disp('ERROR using av_q');help av_q;return;end
 if nargin == 3, def=default_value;else def=[];end
 

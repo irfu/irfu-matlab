@@ -15,6 +15,11 @@ function h=c_pl_sc_configuration_LMN(time,R1,R2,R3,R4,L,M,N);
 %   l  - L
 %   m  - M
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_pl_sc_conf_lmn')
+
 %   figuserdata=[h];
 eval_figuserdata='figuserdata={h};';
 LMN_Ltitle='L along B, N closest to normal, M=LxN';

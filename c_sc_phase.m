@@ -10,6 +10,11 @@ function phase_out = c_sc_phase(t,phase_2)
 % phase - column vector [t phase]
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_phase')
+
 if nargin < 2, help c_sc_phase;return;end
 
 t=t(:); % t should be column vector

@@ -8,6 +8,11 @@ function [out,l,v]=av_minvar(inp)
 % v - column vector with corresponding eigenvectors
 % v(1,:) - first vector, ...
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_minvar')
+
 ooo=inp;
 qx = size(inp(1,:)); lx=qx(2); % the number of vector components
 if lx > 3, inp=inp(:,[2  3 4]);

@@ -15,6 +15,11 @@ function R=c_4_R(r1,r2,r3,r4,flag)
 %
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_4_r')
+
 if nargin<4;disp('See usage:');help c_4_R;return;end
 
 if nargin>4,

@@ -17,6 +17,11 @@ function OUT=getburstheader(filename)
 %
 % By Anders Tjulin, last update 4/9-2003
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_efw_burst_geth')
+
 
   %%% Get the data in the burstfile
 

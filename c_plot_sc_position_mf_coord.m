@@ -11,6 +11,10 @@ function h=c_plot_sc_position_mf_coord(t,R1,R2,R3,R4,Vref,Bref);
 % R1.. - s/c position (first column time, next columns x y z)
 % V    - s/c velocity (first column time, next columns vx vy vz)
 % B    - magnetic field (first column time, next columns Bx By Bz)
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_pl_sc_pos_mf')
 
 if nargin < 1, help c_plot_sc_position_mf_coord;return; end
 

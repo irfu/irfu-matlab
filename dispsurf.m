@@ -6,6 +6,10 @@
 % By Anders Tjulin. Last update 4/2-2003.
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_disp_surf')
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % First we set some default values

@@ -10,6 +10,11 @@ function status = av_minvar_interacitve(x,column)
 %  ud.Xminvar - data in minimum variance coordinates
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_minvar_gui')
+
 global ud
 persistent tlim message;
 %persistent ud tlim;

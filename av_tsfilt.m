@@ -19,6 +19,11 @@ function [out] = av_tsfilt(inp,fmin,fmax,Fs,order)
 %
 % Ex: def=av_tsfilt(de,0,.1,25,3); % lowpass filter E at .1Hz
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_filt')
+
 global AV_DEBUG; if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end
 
 if ((nargin < 4) | (isempty(Fs))), 

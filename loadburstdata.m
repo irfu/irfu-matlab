@@ -8,6 +8,11 @@ function OUT=loadburstdata(filename,cols)
 %  
 % By Anders Tjulin, last update 7/11-2002
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_efw_burt_load')
+
 if nargin<2
   cols=4;
 end

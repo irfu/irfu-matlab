@@ -20,6 +20,11 @@ function n=c_n_Vps(Vps,flag)
 %  Vps_ref  = [  2  3  5 8  10  15   25   35];
 %  Ne_ref   = [100 36 10 4 2.5 1.3 0.45 0.17];
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'c_efw_scp2ne')
+
 % CLUSTER SC potential and Ne based on Andris
 % Harri Laakso WHISPER data comparison.
 % 2002.06.13

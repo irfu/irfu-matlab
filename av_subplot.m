@@ -42,6 +42,11 @@ function theAxis = subplot(nrows, ncols, thisPlot)
 %   Copyright 1984-2000 The MathWorks, Inc. 
 %   $Revision$  $Date$
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
+...
+mfilename,'irf_subplot')
+
 % we will kill all overlapping axes siblings if we encounter the mnp
 % or m,n,p specifier (excluding '111').
 % But if we get the 'position' or H specifier, we won't check for and

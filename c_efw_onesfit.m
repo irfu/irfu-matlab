@@ -31,7 +31,7 @@ function spinfit = c_efw_onesfit(pair,fout,maxit,minpts,te,data,tp,ph)
 %  nout - number of outliers removed
 % If fit was unsuccesful, all output except iter is zero.
 %
-% See also: DoEfwSpinFit
+% See also C_EFW_SFIT
 %
 % $Id$
 

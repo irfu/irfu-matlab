@@ -55,7 +55,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  ylabel('E [mV/m]');
 %  title('Cluster SC4 EFW Spin Fits (Ex black, Ey red)')
 %
-% See also: c_efw_onesfit, isGetDataLite
+% See also C_EFW_ONESFIT, isGetDataLite
 %
 % $Id$
 
