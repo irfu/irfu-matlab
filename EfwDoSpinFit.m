@@ -5,7 +5,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 % Input:
 %  pair - probe pair used (12, 34)
 %  fout - minimum fraction of fit standard deviation that defines an outlier 
-%         (zero means no removal of outliers)
+%         (zero means no removal of outliers). Has no effect if METHOD=1
 %  maxit - maximum number of iterations (zero means infinity)
 %  minpts - minimum number of data points to perform fit
 %      (set to 5 if smaller number if given)
@@ -14,8 +14,8 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  tp - Ephemeris time in seconds (isGetDataLite time)
 %  ph - Ephemeris phase in degr (sun angle for s/c Y axis), should 
 %      correspond to tp 
-%  method - 0: EfwDoOneSpinFit (default, Matlab routine by AIE), 
-%           1: spinfit_mx MEX file, Fortran source obtained from PAL, KTH.
+%  method - 0: EfwDoOneSpinFit, Matlab routine by AIE
+%           1: spinfit_mx (default), BHN Fortran source obtained from KTH
 %
 % Output:
 %  spinfit = [ts,ex,ey,offset,sdev0,sdev,iter,nout]
@@ -23,7 +23,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  ex - E-field x-component in DSI coordinates (almost GSE)
 %  ey - E-field y-component in DSI coordinates (almost GSE)
 %  offset - mean value of input data
-%  sdev0 - standard deviation in first fit
+%  sdev0 - standard deviation in first fit. Has no meaning if METHOD=1
 %  sdev - standard deviation in final fit
 %  iter - number of iterations (one if OK at once)
 %  nout - number of outliers removed
@@ -56,10 +56,13 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 % See also: EfwDoOneSpinFit, isGetDataLite
 %
 % $Id$
+
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
-if nargin < 9, method = 0; end
+% Set default method to BHN
+if nargin < 9, method = 1; end
+
 if method==1
 	if exist('spinfit_mx')~=3
 		method = 0;
@@ -76,7 +79,7 @@ tend = max(te);
 n = floor((tend - tstart)/4) + 1;
 spinfit = zeros(n,8);
 
-% guess the sampling frequency
+% Guess the sampling frequency
 sf = length(data)/(tend - tstart);
 
 if sf<1.3*25 & sf>.7*25, sf = 25;
@@ -116,22 +119,22 @@ for i=1:n
 	eind = find((te >= t0) & (te < t0+4));
 	pind = find((tp >= t0) & (tp < t0+4));
 
-	% check for data gaps inside one spin.
+	% Check for data gaps inside one spin.
 	if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
 	  
-	% wee need to check if we have any data to fit.
+	% Need to check if we have any data to fit.
 	if ~isempty(eind) & ~isempty(pind)
 		if method==1
-			%we use Fortran version of spin fit
+			% Use Fortran version of spin fit
 			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
 				spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind),data(eind));
 			tsfit = mean(te(eind));	
 			pol = polyfit(tpha(pind),pha(pind),1);
 			phi(i-n_gap) = polyval(pol,tsfit);
-
+			spinfit(i-n_gap,8) = length(find(bad==1));
 			spinfit(i-n_gap,1) = tsfit;
 		else
-			%we use Matlab version by AIE
+			% Use Matlab version by AIE
 			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
 				data(eind),tp(pind),ph(pind));
 		end
@@ -147,7 +150,7 @@ if method==1
 		theta = atan2(x(:,3),x(:,2));
 		rho = sqrt(x(:,2).^2 + x(:,3).^2);
 		
-        %correct phase
+        % Correct phase
 		% - Because s/c is spinning upside down:
         spinfit(:,2) = -rho.*cos(phi + theta);
         spinfit(:,3) = rho.*sin(phi + theta);
