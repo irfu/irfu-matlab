@@ -98,7 +98,7 @@ diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
 diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
 diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
 diEs_tmp = diEs;
-ind=find(abs(diEs(:,2))>1e4));diEs_tmp(ind,:)=[]; % remove spinfits that has given large values
+ind=find(abs(diEs(:,2))>1e4);diEs_tmp(ind,:)=[]; % remove spinfits that has given large values
 diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
 diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
 diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
