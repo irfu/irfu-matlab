@@ -16,11 +16,11 @@ elseif strcmp(action,'irf_tm'),
   hmax=1;
   for ih=1:length(h),
     ax=get(h(ih),'position');
-    if ax(2)<hmax, hmax=ih; end
+    axy(ih)=ax(2);
   end
-  htemp=h(hmax);
-  h(hmax)=h(end);
-  h(end)=htemp;
-  irf_tm(h);
+  [xx,ind]=sort(axy);
+  ind=fliplr(ind);
+  hh=h(ind);
+  irf_tm(hh);
 end
 
