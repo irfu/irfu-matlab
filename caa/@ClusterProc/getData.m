@@ -281,7 +281,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	else, disp('using Dx=0'), Dx = 0;
 	end
 	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
-	else, disp('using Da=0'), Da = 0;
+	else, disp('using Da=1'), Da = 1;
 	end
 	
 	diE = corrDSIOffsets(diE,Dx,0,Da);
