@@ -1,0 +1,108 @@
+\documentclass[12pt] {article} 
+\setlength{\topmargin} {-2.0cm}
+\setlength{\oddsidemargin} {0.2 in}
+\setlength{\textheight} {9.5 in}
+\setlength{\textwidth} {5.8 in}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\pagestyle{plain}
+%\pagenumbering{arabic}
+\def\simbox#1#2{\lower4.pt\vbox{\baselineskip0pt \lineskip-4.pt
+   \ialign{$\mathsurround=0pt#1\hfil##\hfil$\crcr\raise5pt\hbox{$#2$}
+   \crcr\sim\crcr}}}
+\def\gtsim{\mathrel{\mathpalette\simbox >}}
+\def\bal{{\ifmmode \boldsymbol{\alpha} \else $\boldsymbol{\alpha}$\fi}}
+\def\bbe{{\ifmmode \boldsymbol{\beta } \else $\boldsymbol{\beta }$\fi}}
+\def\bga{{\ifmmode \boldsymbol{\gamma} \else
+   $\boldsymbol{\gamma}$\fi}}
+
+\begin{document}
+
+From given $L,\>E,\>\text{and\ } P$ we can determine the eigenvalues
+  $\lambda_1 = (L/2)^2$, $\lambda_2 = (L(1-E)/2)^2$, and
+  $\lambda_3 = (L(1-E)(1-P)/2)^2$. We must then find a solution to
+  the equations
+\begin{align}
+x_1 + x_2 + x_3 + x_4 &= 0& \\
+y_1 + y_2 + y_3 + y_4 &= 0& \\
+z_1 + z_2 + z_3 + z_4 &= 0& \\
+x_1^2 + x_2^2 + x_3^2 + x_4^2 &= \lambda_1 &\\
+y_1^2 + y_2^2 + y_3^2 + y_4^2 &= \lambda_2 &\\
+z_1^2 + z_2^2 + z_3^2 + z_4^2 &= \lambda_3 &\\
+x_1 y_1 + x_2 y_2 + x_3 y_3 + x_4 y_4 &= 0 &\\
+x_1 z_1 + x_2 z_2 + x_3 z_3 + x_4 z_4 &= 0 &\\
+y_1 z_1 + y_2 z_2 + y_3 z_3 + y_4 z_4 &= 0 &
+\end{align}
+
+Consider this as three four-vectors ${\bf x}= (x_1, x_2, x_3, x_4)$,
+${\bf y}= (y_1, y_2, y_3, y_4)$, and ${\bf z}= (z_1, z_2, z_3, z_4)$.
+The three first equations imply that the three vectors ${\bf x, \>y,
+  \>z}$ all lie in a 3-D subspace, orthogonal to the vector
+$(1,\>1,\>1,\>1)$. The next three equations define spheres in
+four-space, and the last three guarantee that the three vectors are
+orthogonal, that is ${\bf x\cdot y = x\cdot z = y \cdot z} = 0$.
+
+To simplify the algebra first rotate our coordinate system to align
+the fourth axis with the $(1,\>1,\>1,\>1)$ direction. In these
+coordinates the vectors are $\bal = \mathsf{M}\cdot{\bf x}$, $\bbe =
+\mathsf{M}\cdot{\bf y}$, and $\bga = \mathsf{M}\cdot{\bf z}$ where
+\begin{equation}
+\mathsf{M} = \frac{1}{2} \left(\begin{array}{crrr}
+1 & -1 & 1 & -1 \\
+1 & -1 &-1 &  1 \\
+1 &  1 &-1 & -1 \\
+1 &  1 & 1 &  1
+\end{array}\right)
+\end{equation}
+Notice that $\mathsf{M}\cdot\mathsf{M}^T = \mathsf{I}$, and $\|{\bf x}\| =
+\|\bal\|$, and so on. Equations (1--3) now imply $\alpha_4 =
+\beta_4 = \gamma_4 = 0$, and equations (4--6) become
+\begin{eqnarray}
+\alpha_1^2 + \alpha_2^2 + \alpha_3^2 = \lambda_1 \equiv U^2 \\
+\beta_1^2  + \beta_2^2  + \beta_3^2  = \lambda_2 \equiv v^2 \\
+\gamma^2_1 + \gamma^2_2 + \gamma^2_3 = \lambda_3 \equiv w^2
+\end{eqnarray}
+Finally, we notice that equations (7--9) transform into 
+\begin{eqnarray}
+\bal\cdot \bbe  = 0\\
+\bal\cdot \bga = 0\\
+\bbe\cdot \bga  = 0
+\end{eqnarray}
+
+We can now choose \bal\ as an arbitrary vector of the form
+\begin{eqnarray}
+\alpha_1 &=& u \>\sin\theta\>\cos\phi \\
+\alpha_2 &=& u \>\sin\theta\>\sin\phi \\
+\alpha_3 &=& u \>\cos\theta \\
+\alpha_4 &=& 0
+\end{eqnarray}
+A vector \bbe, perpendicular to \bal\ and of length $v$ is
+\begin{eqnarray}
+\beta_1 &=& v \>[\cos\theta\cos\phi\cos\psi - \sin\phi\sin\psi] \\
+\beta_2 &=& v \>[\cos\theta\sin\phi \cos\psi + \cos\phi\sin\psi] \\
+\beta_3 &=& -v \>\sin\theta \cos\psi \\
+\beta_4 &=& 0
+\end{eqnarray}
+and the orthogonal triplet is completed by \bga\ with components
+\begin{eqnarray}
+\gamma_1 &=& \pm w \>[\cos\theta\cos\phi\sin\psi + \sin\phi\cos\psi] \\
+\gamma_2 &=& \pm w \>[\cos\theta\sin\phi \sin\psi - \cos\phi\cos\psi] \\
+\gamma_3 &=& \mp w \>\sin\theta \sin\psi \\
+\gamma_4 &=& 0
+\end{eqnarray}
+A solution is then defined by an arbitrary triplet of angles $0 \leq
+\theta \leq \pi$, $0 \leq \phi \leq 2\pi$, and  $0 \leq \psi \leq
+2\pi$. Notice that to have a uniform coverage of the unit sphere,
+$\theta$ should be generated as $\theta = \arccos(\text{rand()})$.
+
+
+Finally, to get back to out original coordinates we invert the
+transforms as
+\begin{eqnarray}
+{\bf x} = \mathsf{M}^T \cdot \bal\\
+{\bf y} = \mathsf{M}^T \cdot \bbe\\
+{\bf z} = \mathsf{M}^T \cdot \bga
+\end{eqnarray}
+These coordinates should then be rotated by random angles.
+
+\end{document}
