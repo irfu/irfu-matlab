@@ -16,7 +16,11 @@ function varargout = c_desc(vs,varargin)
 %	com			%Comment
 %	file		%Matlab file name (mXXX.mat)
 %	quant		%Quantity name to use with getData
+%
+% $Id$
 
+% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+%
 error(nargchk(1,10,nargin))
 
 if ~isstr(vs), error('VS must be string'), end
@@ -28,18 +32,18 @@ vvs(1:length(vs)) = vs;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%if regexp(vs,'^P[1-4]$')==1
-if strcmp(vs,'P1')|strcmp(vs,'P2')|strcmp(vs,'P3')|strcmp(vs,'P4')
+if regexp(vs,'^P[1-4]$')==1
+%if strcmp(vs,'P1')|strcmp(vs,'P2')|strcmp(vs,'P3')|strcmp(vs,'P4')
 	v.cl_id = vs(2);
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'P';
-	v.sen = '1234';
+	v.sen = 'all';
 	v.cs = {'scalar>na'};
  	v.units =  {'V'};
 	v.si_conv = {''};
 	v.size = 1;
-	v.name = {['P_' v.sen]};
+	v.name = {'Spacecraft_potential'};
 	v.labels = {['P' v.sen]};
 	v.field_name = {'Averaged probe potential from all probes'};
 	v.com = 'this signal is averaged from all probes available at the time';
@@ -49,8 +53,8 @@ if strcmp(vs,'P1')|strcmp(vs,'P2')|strcmp(vs,'P3')|strcmp(vs,'P4')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P - individual probes 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
-elseif strcmp(vvs(1:4),'P10Hz')==1 & is14(vvs(5)) & vvs(6)=='p' & is14(vvs(7))
+elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
+%elseif strcmp(vvs(1:4),'P10Hz')==1 & is14(vvs(5)) & vvs(6)=='p' & is14(vvs(7))
 	v.cl_id = vs(6);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -60,8 +64,8 @@ elseif strcmp(vvs(1:4),'P10Hz')==1 & is14(vvs(5)) & vvs(6)=='p' & is14(vvs(7))
  	v.units =  {'V'};
 	v.si_conv = {''};
 	v.size = 1;
-	v.name = {['P_' v.sen]};
-	v.labels = {['P' v.sen]};
+	v.name = {['P' v.sen]};
+	v.labels = v.name;
 	v.field_name = {['Probe #' sen ' potential']};
 	v.com = '';
 	v.file = 'mP';
@@ -70,104 +74,77 @@ elseif strcmp(vvs(1:4),'P10Hz')==1 & is14(vvs(5)) & vvs(6)=='p' & is14(vvs(7))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^wE[1-4]p(12|34)')==1
-elseif strcmp(vvs(1:2),'wE') & is14(vvs(3)) & vvs(4)=='p' & ...
-(strcmp(vvs(5:6),'12') | strcmp(vvs(5:6),'34')) 
-	cl_id = vs(3);
-	inst = 'EFW';
-	sig = 'E';
-	sen = vs(4:6);
-	var_units =  {'mV/m'};
-	if CEF
-		var_size = 1;
-		var_name = {['E_' sen]};
-		field_name = {['Electric field']};
-		frame = {'component>sc_xy'};
-		switch sen
-		case 'p12'
-			comp_desc = {'x>WEC Z axis (12)'};
-		case 'p34'
-			comp_desc = {'y>WEC Y axis (34)'};
-		end
-		si_conv = {'1.0e-3>V/m'};
-		var_labels = {'E'};
-	else
-		frame = 'sc';
-		var_labels = {['E' sen]};
-	end
+elseif regexp(vs,'^wE[1-4]p(12|34)')==1
+%elseif strcmp(vvs(1:2),'wE') & is14(vvs(3)) & vvs(4)=='p' & ...
+%(strcmp(vvs(5:6),'12') | strcmp(vvs(5:6),'34')) 
+	v.cl_id = vs(3);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	v.sen = vs(4:6);
+	v.cs = {'scalar>na'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V/m'};
+	v.size = [1];
+	v.name = {['P' v.sen]};
+	v.labels = v.name;
+	v.label_1 = {};
+	v.field_name = {'probe potential difference'};
+	v.com = '';
+	v.file = 'mER';
+	v.quant = 'e';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
-elseif strcmp(vvs(1:4),'diEs') & is14(vvs(5)) & vvs(6)=='p' & ...
-(strcmp(vvs(7:8),'12') | strcmp(vvs(7:8),'34'))
-	cl_id = vs(5);
-	inst = 'EFW';
-	sig = 'E';
-	sen = vs(6:8);
-	if CEF
-		var_units =  {'mV/m'};
-		if CAA
-			% for CAA we save only Ex and Ey
-			var_size = 2;
-			var = var(1:3);
-			frame = {'vector>dsi_xy'};
-			var_label_1 = {'"x", "y"'};
-		else
-			var_size = 3;
-			frame = {'vector>dsi_xyz'};
-			var_label_1 = {'"x", "y", "z"'};
-		end
-		var_name = {['Es_' sen]};
-		field_name = {['Electric field (spin fit ' sen ')']};
-		si_conv = {'1.0e-3>V/m'};
-		var_labels = {'E'};
-	else
-		sen = ['spin fits ' sen];
-		frame = 'DSI,  Ez==0 : not measured';
-		var_labels = {'Ex','Ey','Ez'};
-		var_units =  {'mV/m','mV/m','mV/m'};
-	end
+elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
+%elseif strcmp(vvs(1:4),'diEs') & is14(vvs(5)) & vvs(6)=='p' & ...
+%(strcmp(vvs(7:8),'12') | strcmp(vvs(7:8),'34'))
+	v.cl_id = vs(5);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	v.sen = vs(6:8);
+	v.cs = {'vector>dsi_xy'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V/m'};
+	v.size = [2];
+	v.name = {['Es' v.sen]};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y"'};
+	v.field_name = {'Electric field'};
+	v.com = '';
+	v.file = 'mEDSI';
+	v.quant = 'dies';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^diE[1-4]p1234')==1
-elseif (length(vs)==9 & strcmp(vs(1:3),'diE') & strcmp(vvs(5:9),'p1234'))
-	cl_id = vs(4);
-	inst = 'EFW';
-	sig = 'E';
-	sen = vs(5:9);
-	if CEF
-		var_units =  {'mV/m'};
-		if CAA
-			% for CAA we save only Ex and Ey
-			var_size = 2;
-			var = var(:,1:3);
-			frame = {'vector>dsi_xy'};
-			var_label_1 = {'"x", "y"'};
-		else
-			var_size = 3;
-			frame = {'vector>dsi_xyz'};
-			var_label_1 = {'"x", "y", "z"'};
-		end
-		var_name = {['E' sen]};
-		field_name = {'Electric field'};
-		si_conv = {'1.0e-3>V/m'};
-		var_labels = {'E'};
-	else
-		frame = 'DSI,  Ez==0 : not measured';
-		var_labels = {'Ex','Ey','Ez'};
-		var_units =  {'mV/m','mV/m','mV/m'};
-	end
-
+elseif regexp(vs,'^diE[1-4]p1234')==1
+%elseif (length(vs)==9 & strcmp(vs(1:3),'diE') & strcmp(vvs(5:9),'p1234'))
+	v.cl_id = vs(4);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	v.sen = 'all';
+	v.cs = {'vector>dsi_xy'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V/m'};
+	v.size = [2];
+	v.name = {['E' v.sen]};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y"'};
+	v.field_name = {'Electric field'};
+	v.com = '';
+	v.file = 'mEDSI';
+	v.quant = 'die';
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
-elseif (length(vs)==4 & strcmp(vvs(1:3),'diE') & is14(vvs(4))) | ...
-(length(vs)==5 & strcmp(vvs(1:4),'diEs') & is14(vvs(5)))
+elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
+%elseif (length(vs)==4 & strcmp(vvs(1:3),'diE') & is14(vvs(4))) | ...
+%(length(vs)==5 & strcmp(vvs(1:4),'diEs') & is14(vvs(5)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -177,8 +154,8 @@ elseif (length(vs)==4 & strcmp(vvs(1:3),'diE') & is14(vvs(4))) | ...
  	v.units =  {'mV/m','deg'};
 	v.si_conv = {'1.0e-3>V/m','1>degree'};
 	v.size = [3 1];
-	v.name = {['E' v.sen], 'Theta'};
-	v.labels = {['P' v.sen], 'Theta'};
+	v.name = {'E', 'Theta'};
+	v.labels = v.name;
 	v.label_1 = {'"x", "y", "z"',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
@@ -188,9 +165,9 @@ elseif (length(vs)==4 & strcmp(vvs(1:3),'diE') & is14(vvs(4))) | ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
-elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
-(length(vs)==3 & strcmp(vvs(1:2),'Es') & is14(vvs(3)))
+elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
+%elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
+%(length(vs)==3 & strcmp(vvs(1:2),'Es') & is14(vvs(3)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -200,8 +177,8 @@ elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
  	v.units =  {'mV/m','deg'};
 	v.si_conv = {'1.0e-3>V/m','1>degree'};
 	v.size = [3 1];
-	v.name = {['E' v.sen], 'Theta'};
-	v.labels = {['P' v.sen], 'Theta'};
+	v.name = {'E', 'Theta'};
+	v.labels = v.name;
 	v.label_1 = {'"x", "y", "z"',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
@@ -211,10 +188,10 @@ elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])')==1
-elseif (((length(vs)==8 & vvs(7)=='s')|length(vs)==7) & ...
-strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
-(((length(vs)==6 & vvs(5)=='s')|length(vs)==5) & strcmp(vvs(1:4),'VExBs') & is14(vs(end)))
+elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])')==1
+%elseif (((length(vs)==8 & vvs(7)=='s')|length(vs)==7) & ...
+%strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
+%(((length(vs)==6 & vvs(5)=='s')|length(vs)==5) & strcmp(vvs(1:4),'VExBs') & is14(vs(end)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -230,8 +207,8 @@ strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
  	v.units =  {'km/s','deg'};
 	v.si_conv = {'1.0e3>m/s','1>degree'};
 	v.size = [3 1];
-	v.name = {['V' v.sen], 'Theta'};
-	v.labels = {'V', 'Theta'};
+	v.name = {'V', 'Theta'};
+	v.labels = v.name;
 	v.label_1 = {'"x", "y", "z"',''};
 	v.field_name = {'Convection velocity','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
@@ -243,13 +220,13 @@ strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^NVps[1-4]')==1
-elseif (length(vs)==5 & strcmp(vvs(1:4),'NVps') & is14(vvs(5)))
+elseif regexp(vs,'^NVps[1-4]')==1
+%elseif (length(vs)==5 & strcmp(vvs(1:4),'NVps') & is14(vvs(5)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'P';
-	v.sen = 'p1234';
+	v.sen = 'all';
 	v.cs = {'scalar>na','scalar>na'};
 	v.units =  {'cc','V'};
 	v.si_conv = {'1.0e-6>1/m^6',''};
@@ -265,8 +242,8 @@ elseif (length(vs)==5 & strcmp(vvs(1:4),'NVps') & is14(vvs(5)))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%elseif regexp(vs,'^A[1-4]')
-elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
+elseif regexp(vs,'^A[1-4]')
+%elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
 	v.frame = 'sc';
@@ -285,76 +262,138 @@ elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
 	v.quant = 'a';	
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CIS V PP
+% CIS N PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^NC(h|p)[1-4]')
 
-	if CAA
-		c_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
-		CAA = 0;
-	end
-	if CEF
-		c_log('fcal', ['CEF export is not (yet) supported for ' vs])
-		CEF = 0;
-	end
-	cl_id = vs(4);
-	inst = 'CIS PP';
-	if vs(3)=='h'
-		sig = 'N';
-		sen = 'HIA';
+	v.cl_id = vs(end);
+	v.inst = 'CIS';
+	v.frame = 'sc';
+	v.cs = {'scalar>na'};
+	if vvs(3)=='h'
+		v.sig = 'N';
+		v.sen = 'HIA';
+		v.field_name = {'Ion density'};
 	else
-		sig = 'Np';
-		sen = 'CODIF';
+		v.sig = 'Np';
+		v.sen = 'COD';
+		v.field_name = {'Proton density'};
 	end
-	frame = '';
-	var_labels = {'N'};
-	var_units =  {'cc'};
-	com = 'This data is CSDS PP';
-
+ 	v.units =  {'cc'};
+	v.si_conv = {'1.0e6>1/m^6'};
+	v.size = [1];
+	v.name = {'N'};
+	v.labels = v.name;
+	v.label_1 = {};
+	v.com = '';
+	v.file = 'mCIS';
+	v.quant = 'ncis';
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% CIS N PP
+% CIS V PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^VC(h|p)[1-4]')
-
-	if CAA
-		c_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
-		CAA = 0;
-	end
-	if CEF
-		c_log('fcal', ['CEF export is not (yet) supported for ' vs])
-		CEF = 0;
-	end
-	cl_id = vs(4);
-	inst = 'CIS PP';
-	if vs(3)=='h'
-		sig = 'V';
-		sen = 'HIA';
+elseif regexp(vs,'^diVC(h|p)[1-4]') | regexp(vs,'^VC(h|p)[1-4]')
+	v.cl_id = vs(end);
+	v.inst = 'CIS';
+	v.frame = 'sc';
+	if strcmp(vvs(1:2),'di')
+		vvs = vvs(3:end);
+		v.cs = {'vector>dsi_xyz','scalar>na'};
 	else
-		sig = 'Vp';
-		sen = 'CODIF';
+		v.cs = {'vector>gse_xyz','scalar>na'};
 	end
-	frame = 'GSE';
-	var_labels = {'Vx','Vy','Vz'};
-	var_units =  {'km/s','km/s','km/s'};
-	com = 'This data is CSDS PP';
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% dump without headers
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(vs,'dump')
-	if isempty(file_name), filename = inputname(1); end
-	fid = fopen([file_name '.dat'],'w');
-	for j=1:size(var,1)
-		if var(j,1)>5e8 % assume first column time in isdat epoch
-      d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %7.4f ',fromepoch(var(j,1)));
-	  		fprintf(fid,[d num2str(var(j,2:end)) '\n']);
-		else, fprintf(fid,[num2str(var(j,1:end)) '\n']);
-		end
+	if vvs(3)=='h'
+		v.sig = 'V';
+		v.sen = 'HIA';
+		v.field_name = {'Ion flow velocity'};
+	else
+		v.sig = 'Vp';
+		v.sen = 'COD';
+		v.field_name = {'Proton flow velocity'};
 	end
-	fclose(fid);
-	return
+ 	v.units =  {'km/s'};
+	v.si_conv = {'1.0e3>m/s'};
+	v.size = [3];
+	v.name = {'V'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.com = '';
+	v.file = 'mCIS';
+	v.quant = 'vcis';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EDI E PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]')
+	v.cl_id = vs(end);
+	v.inst = 'EDI';
+	v.frame = 'inertial';
+	v.sig = 'E';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di')
+		vvs = vvs(3:end);
+		v.cs = {'vector>dsi_xyz','scalar>na'};
+	else
+		v.cs = {'vector>gse_xyz','scalar>na'};
+	end
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V/m'};
+	v.size = [3];
+	v.name = {'E'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.field_name = {'Perpendicular Electric field'};
+	v.com = '';
+	v.file = 'mEDI';
+	v.quant = 'edi';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FGM B PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^diBPP[1-4]|BPP[1-4]')
+	v.cl_id = vs(end);
+	v.inst = 'FGM';
+	v.frame = 'sc';
+	v.sig = 'B';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di')
+		vvs = vvs(3:end);
+		v.cs = {'vector>dsi_xyz','scalar>na'};
+	else
+		v.cs = {'vector>gse_xyz','scalar>na'};
+	end
+ 	v.units =  {'nT'};
+	v.si_conv = {'1.0e-12>T'};
+	v.size = [3];
+	v.name = {'B'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.field_name = {'Magnetic field PP'};
+	v.com = '';
+	v.file = 'mBPP';
+	v.quant = 'b';
+elseif regexp(vs,'^diB[1-4]|B[1-4]')
+	v.cl_id = vs(end);
+	v.inst = 'FGM';
+	v.frame = 'sc';
+	v.sig = 'B';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di')
+		vvs = vvs(3:end);
+		v.cs = {'vector>dsi_xyz','scalar>na'};
+	else
+		v.cs = {'vector>gse_xyz','scalar>na'};
+	end
+ 	v.units =  {'nT'};
+	v.si_conv = {'1.0e-12>T'};
+	v.size = [3];
+	v.name = {'B'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.field_name = {'Magnetic field'};
+	v.com = '';
+	v.file = 'mB';
+	v.quant = 'bfgm';
 else
-	error('Wariable name not recognized')
+	error('Variable name not recognized')
 end
 
 if nargin>2, have_options = 1; args = varargin;
