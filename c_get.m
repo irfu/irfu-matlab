@@ -408,7 +408,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        eval(av_ssub('number_of_points=size(diE?,1);',ic));
        disp(['diE' num2str(ic) ' --> diE' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
        diE_add_comment=[offset_comment '\n ang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an angle with respect to the spin plane that is larger than ang_limit'];
-       eval(av_ssub(['exportAscii(diE?,''E?'',''' diE_add_comment ''');'],ic));
+       eval(av_ssub(['exportAscii(diE?,''diE?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
    end
