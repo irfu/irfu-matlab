@@ -33,6 +33,11 @@ function h=av_waveplot_ebB(e,b,B,parameters)
 % By Anders Tjulin (Last update 15/4-2003)
 %
 
+warning('caa:cleanup',...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
+mfilename,'irf_pl_ebs')
+
+
 % parameter definitions
 persistent freq_int freq_number Morlet_width q_colormap plot_type colorbar_scale panel q_detrend
 
