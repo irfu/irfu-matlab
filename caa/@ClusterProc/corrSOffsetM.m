@@ -60,7 +60,7 @@ end
 clear var
 
 % load EDI
-if exist('./mCIS.mat','file')
+if exist('./mEDI.mat','file')
 	EDI=load('mEDI');
 	var = 'diEDI';
 	eval(av_ssub(['if isfield(EDI,''' var '?''); ' var '=EDI.' var '?; end; clear ' var '?'], cl_id));
