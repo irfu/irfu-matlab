@@ -49,14 +49,14 @@ for ic=sc_list, % which satellite
   eval(irf_ssub('vn=c_gse2dsc(vngse,[tint(1) ic]);b=db?;e=de?;',ic));
   if q_flag == 2, flag=c_gse2dsc(L_dir,[tint(1) ic]);end
   bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-  be=av_interp(b,e);
+  be=irf_resamp(b,e);
   % make assumption that E.B=0
-  [eb,deg]=av_ed(e,be,10);
+  [eb,deg]=irf_edb(e,be,10);
   % estimate E in boundary system Ev=E+(v x B)
-  evxb=irf_tappl(av_cross(be,vn),'*1e-3*(-1)');
+  evxb=irf_tappl(irf_cross(be,vn),'*1e-3*(-1)');
   ebv=irf_add(1,eb,1,evxb);
   ev=irf_add(1,e,1,evxb);
-  veb=av_e_vxb(ebv,be,-1);
+  veb=irf_e_vxb(ebv,be,-1);
 
   %%%%%%%%%%%%%%%%%%%%%%%%   Convert to LMN %%%%%%%%%%%%%%%%%%%%%%%%
   [ev_lmn,L,M,N]=irf_eb_nrf(ev,be,vn,flag);

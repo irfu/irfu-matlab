@@ -43,11 +43,11 @@ if nargin == 5,  eval(irf_ssub('die?=irf_tlim(e,tint);dib?=irf_tlim(b,tint);',sc
 for ic=sc_list, % which satellite
 c_eval('vn=c_gse2dsc(vngse,[tint(1) ic],2);b=dib?;e=die?;',ic);
 bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-be=av_interp(b,e);
+be=irf_resamp(b,e);
 % make assumption that E.B=0
-[eb,deg]=av_ed(e,be,5);
+[eb,deg]=irf_edb(e,be,5);
 % estimate E in boundary system Ev=E+(v x B)
-evxb=irf_tappl(av_cross(be,vn),'*1e-3*(-1)');
+evxb=irf_tappl(irf_cross(be,vn),'*1e-3*(-1)');
 ebv=irf_add(1,eb,1,evxb);
 ev=irf_add(1,e,1,evxb);
 

@@ -457,7 +457,7 @@ elseif strcmp(quantity,'vce')
 	
 		eval(irf_ssub(['if isfield(CIS,''' var{i} '?''); v=CIS.' var{i} '?; else, v=[]; end; clear ' var{i}], cl_id));
 		if ~isempty(v)
-			evxb=irf_tappl(av_cross(v,b),'*(-1e-3)');
+			evxb=irf_tappl(irf_cross(v,b),'*(-1e-3)');
 			eval(irf_ssub([varo{i} '?=evxb;save_list=[save_list '' ' varo{i} '?'']; clear evxb'],cl_id));
 			if ~exist(irf_ssub('SAX?',cl_id),'var')
 				irf_log('load','must fetch spin axis orientation (option ''sax'')')

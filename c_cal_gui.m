@@ -1489,7 +1489,7 @@ if data.visible
 			if isempty(data.B)
 				irf_log('proc','B is empty. No Ez')
 			else
-				[p_data,angle] = av_ed(p_data,...
+				[p_data,angle] = irf_edb(p_data,...
 					data.B,hnd.ang_limit);
 				ii = find(abs(angle) < hnd.ang_limit);
 				if length(ii) > 1
@@ -1500,7 +1500,7 @@ if data.visible
 		% E->V if in V mode
 		if ~hnd.mode
 			if ~isempty(data.B)
-				p_data = av_e_vxb(p_data,data.B,-1);
+				p_data = irf_e_vxb(p_data,data.B,-1);
 			else
 				data.visible = 0; 
 				p_data = [];
@@ -1512,7 +1512,7 @@ if data.visible
 		if hnd.mode
 			if ~isempty(data.B)
 				p_data = irf_tappl(...
-					av_cross(p_data,data.B),'*(-1e-3)');
+					irf_cross(p_data,data.B),'*(-1e-3)');
 			else
 				data.visible = 0;
 				p_data = [];

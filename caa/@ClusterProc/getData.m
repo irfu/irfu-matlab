@@ -1,5 +1,6 @@
 function data = getData(cp,cl_id,quantity,varargin)
 %GETDATA(cp) produce Cluster level 2 and 3 data from the raw data
+%
 % data = getData(cp,cl_id,quantity,options)
 %
 % Input:
@@ -291,7 +292,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				end
 				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
 					c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
-					c_eval(['tmp_adc = av_interp(Dadc?p' ps ',Ep' ps ');'],cl_id)
+					c_eval(['tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
 					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
 					clear tmp_adc
 				elseif exist(irf_ssub(['Da?p' ps],cl_id),'var')
@@ -307,7 +308,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				end
 				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
 					c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
-					c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = av_interp(Dadc?p' ps ',Ep' ps ');'],cl_id)
+					c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
 					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
 					clear tmp_adc
 				elseif exist(irf_ssub(['Da?p' ps],cl_id),'var')
@@ -436,7 +437,7 @@ elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 		data = []; cd(old_pwd); return
 	end
 	
-	evxb = irf_tappl(av_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
+	evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
 	
 	err_s = '';
 	for k=1:length(var_s)
@@ -535,7 +536,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	diE = caa_corof_dsi(diE,Dx,Dy,Da);
 
 	irf_log('proc',['using angle limit of ' num2str(ang_limit) ' degrees'])
-	[diE,angle]=av_ed(diE,diB,ang_limit);
+	[diE,angle]=irf_edb(diE,diB,ang_limit);
 	diE(:,5) = angle; clear angle
 
 	ii = find(abs(diE(:,5)) < ang_limit);
@@ -554,7 +555,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 
 	% SC -> Inertial
 	if inert
-		evxb = irf_tappl(av_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
+		evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
 		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb
 		s = 'i';
 	else, s = '';
@@ -610,7 +611,7 @@ elseif strcmp(quantity,'edi')
 
 	% SC -> Inertial
 	B = irf_resamp(B,E);
-	evxb = irf_tappl(av_cross(B,irf_resamp(V,B)),'*1e-3*(-1)');
+	evxb = irf_tappl(irf_cross(B,irf_resamp(V,B)),'*1e-3*(-1)');
 	E(:,2:4) = E(:,2:4) + evxb(:,2:4); clear evxb
 	
  	% GSE->DSI
@@ -649,7 +650,7 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	
 	% Load data and calculate ExB
 	if c_load(var_s,cl_id)
-		c_eval(['di' varo_s '=av_e_vxb(' var_s '(:,1:4),diB,-1);di' varo_s '(:,5)=' var_s '(:,5);'],cl_id)
+		c_eval(['di' varo_s '=irf_e_vxb(' var_s '(:,1:4),diB,-1);di' varo_s '(:,5)=' var_s '(:,5);'],cl_id)
 	else
 		irf_log('load',...
 			irf_ssub(['No ' var_s ' in mEdB. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))

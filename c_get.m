@@ -359,7 +359,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    if qb ==1, eval(irf_ssub('load mB dB?; db=irf_resamp(dB?,dE?);clear dB?;',ic));
    else, eval(irf_ssub('load mBPP dBPP?; db=irf_resamp(dBPP?,dE?);clear dBPP?;',ic));
    end
-   eval(irf_ssub('[dEo?,d?]=av_ed(dE?,db,deg);Eo?=c_gse2dsc(dEo?,[tt ?],-1);indzero=find(abs(d?)<10);Eo?(indzero,4)=0;',ic));
+   eval(irf_ssub('[dEo?,d?]=irf_edb(dE?,db,deg);Eo?=c_gse2dsc(dEo?,[tt ?],-1);indzero=find(abs(d?)<10);Eo?(indzero,4)=0;',ic));
    eval(irf_ssub('dVo?=irf_e_vxb(dEo?,db,-1);Vo?=c_gse2dsc(dVo?,[tt ?],-1);',ic));
    eval(irf_ssub('save_list=[save_list '' dEo? d? Eo? Vo? ''];',ic));
   end
