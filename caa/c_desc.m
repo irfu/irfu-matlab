@@ -101,8 +101,8 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.size = 1;
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
-	v.field_name = {['Probe #' v.sen ' potential']};
-	v.ent = {'Spacecraft'};
+	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
+	v.ent = {'Probe'};
 	v.prop = {'Potential'};
 	v.fluc = {'Waveform'};
 	v.com = '';
@@ -126,7 +126,7 @@ elseif regexp(vs,'^P32kHz[1-4]p[1-4]$')==1
 	v.size = 1;
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
-	v.field_name = {['Probe #' v.sen ' potential']};
+	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
 	v.com = '';
 	v.file = 'mEFWburst';
 	v.quant = 'pburst';
@@ -149,9 +149,10 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.label_1 = {};
-	v.field_name = {'probe potential difference'};
+	v.field_name = {['Electric field component measured between the probes '...
+		v.sen(1) ' and ' v.sen(2)]};
 	v.ent = {'Electric field'};
-	v.prop = {'Vector'};
+	v.prop = {'Component'};
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.file = 'mER';
