@@ -23,11 +23,10 @@ else
 end
 
 % construct output time axis
-if min(size(y))==1, t = y(:); % y is only time
+if size(y,2)==1, t = y(:); % y is only time
 else, t = y(:,1); t = t(:);   % first column of y is time
 end
 ndata = length(t);
-
 
 if size(x,1) == 1,            % if X has only one point, this is a trivial
                               % case and we return directly
