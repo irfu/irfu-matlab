@@ -8,6 +8,8 @@ function getRData(st,dt,varargin)
 % Options: go in pair 'option', value
 % 'sp' - storage directory;
 %   // default: '.'
+% 'sdir' - main storage directory, storage directory is comstructed from SDIR 
+%   and start_time: SDIR/YYYYMMDD_hhmm;
 % 'dp' - storage directory;
 %   // default: '/data/cluster'
 % 'db' - ISDAT database;
@@ -62,6 +64,10 @@ while have_options
 		case 'sp'
 			if ischar(args{2}), sp = args{2};
 			else, c_log('fcal','wrongArgType : sp must be string')
+			end
+		case 'sdir'
+			if ischar(args{2}), sp = [args{2} '/' makeFName(st)];
+			else, c_log('fcal','wrongArgType : sdir must be string')
 			end
 		case 'dp'
 			if ischar(args{2}), dp = args{2};
