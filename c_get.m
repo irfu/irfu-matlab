@@ -2,6 +2,8 @@
 % despinn if necessary, uses the neareset calibration values
 % export to ASCII files
 % uses ISGETDATALITE
+%
+% $Revision$  $Date$
 
 if exist('sc_list') == 0, sc_list=1:4;end % default values
 
@@ -166,12 +168,41 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     if exist('./mB.mat'), eval(['save -append mB ' save_list]); else, eval(['save mB ' save_list]);end
 
  elseif q == 'e',
-  mode=av_q('Filter 1)10Hz_lx 2)180Hz 3)10Hz_hx? If different give as vector. [%]','mode',1);
+  mode=av_q('Sampling 1)hx 2)lx ? If different give as vector. [%]','mode',1);
   for ic=sc_list,
    	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
-		if (mm == 1), param='10Hz';tmmode='lx';end;
-		if (mm == 2), param='180Hz';tmmode='hx';end;
-		if (mm == 3), param='10Hz';tmmode='hx';end;
+		if (mm == 2), param='10Hz';tmmode='lx';
+		elseif (mm == 1) 
+			%% Find TapeMode
+			% We read FDM from isdat and 5-th column contains the HX mode (undocumented)
+			% 0 - normal mode  (V12L,V34L)
+			% 1 - tape mode 1  (V12M,V34M)
+			% 2 - tape mode 2  (V12M,V34M,)
+			% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
+			%
+  			if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
+			if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
+			if ~exist('tm','var')
+				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
+				if ~isempty(data), tm=data(5,:);, else, error('Cannot fetch FDM'), end
+				if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
+				tm=tm(1);
+				eval(av_ssub('mTMode?=tm;',ic));
+				if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
+				else, eval(av_ssub('save mTMode mTMode?;',ic));	end
+			end
+			
+			tmmode='hx';
+			if tm==0, param='10Hz';	else, param='180Hz'; end
+			clear tm
+			tst = toepoch(start_time);
+			if tst>toepoch([2001 07 31 00 00 00])&tst<toepoch([2001 09 01 00 00 00]), 
+				% all sc run on 180Hz filter in august 2001
+				param='180Hz';	
+			elseif tst>toepoch([2001 07 31 00 00 00])&ic==2, % 10Hz filtef probelm on sc2
+				param='180Hz';
+			end
+		end
     disp(['EFW...sc' num2str(ic) '...E ' param ' filter']);
     if toepoch(start_time)>toepoch([2001 12 28 03 00 00])&ic==1, % probe 1 probelm on sc1
        [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p34', param, tmmode);
@@ -287,13 +318,28 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
 
  elseif q == 'p',
-    variable='mode';default=1;question='Model 1)10Hz_lx, 2)180Hz_hx, 4)32kHz_any, 11)10Hz_hx? If different give as vector. [%]';av_ask;
+  variable='mode';default=1;question='Sampling 1)lx, 2)hx, 3)32kHz_any? If different give as vector. [%]';av_ask;
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
-		if (mm == 1), param='10Hz';tmmode='lx';end;
-		if (mm == 11), param='10Hz';tmmode='hx';end;
-		if (mm == 2), param='180Hz';tmmode='hx';end;
-		if (mm == 4), param='32kHz';tmmode='any';end;
+		if (mm == 1), param='10Hz'; tmmode='lx';
+		elseif (mm == 2), 
+			%% Find TapeMode
+  			if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
+			if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
+			if ~exist('tm','var')
+				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
+				if ~isempty(data), tm=data(5,:);, else, error('Cannot fetch FDM'), end
+				if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
+				tm=tm(1);
+				eval(av_ssub('mTMode?=tm;',ic));
+				if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
+				else, eval(av_ssub('save mTMode mTMode?;',ic));	end
+			end
+			if tm==3, param='180Hz'; tmmode='hx'; 
+			else, param='10Hz'; tmmode='lx'; end
+			clear tm
+		elseif (mm == 3), param='32kHz';tmmode='any';end;
+		
     for probe=1:4;
       disp(['EFW...sc' num2str(ic) '...probe' num2str(probe) '->P' param num2str(ic) 'p' num2str(probe)]);
       [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', ['p' num2str(probe)],param, tmmode);
