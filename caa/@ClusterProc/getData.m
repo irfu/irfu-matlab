@@ -4,44 +4,44 @@ function data = getData(cp,cl_id,quantity,varargin)
 % data = getData(cp,cl_id,quantity,options)
 %
 % Input:
-%	cp - ClusterProc object
-%	cl_id - SC#
-%	quantity - one of the following:
+%   cp - ClusterProc object
+%   cl_id - SC#
+%   quantity - one of the following:
 %
-%	dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
-%		also creates delta offsets D{cl_id}p12p34.
-%		If the offset is real then it must be applied to p12/32,
-%		if imaginary - to p34
-%		has the following options:
-%		sfit_ver - 0 (AIE c_efw_onesfit), 1 (BHN c_efw_c_efw_c_efw_spinfit_mx)
-%		// default is to use the one specified in c_efw_sfit
-%	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
-%		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
-%	idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
-%   Transform from SC to inertial frame
-%	dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
-%		ADC offsets are NOT corrected
-%	edbs,edb,iedb,iedbs : // Ez from E.B=0 [DSI+GSE]
+%   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
+%          also creates delta offsets D{cl_id}p12p34.
+%          If the offset is real then it must be applied to p12/32,
+%          if imaginary - to p34
+%          Has the following OPTIONS:
+%          sfit_ver - 0 (AIE c_efw_onesfit), 1 (BHN c_efw_c_efw_c_efw_spinfit_mx)
+%          // default is to use the one specified in c_efw_sfit
+%          probe_p - probe pair to use 12 or 34 [default 34]
+%   die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
+%          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+%   idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
+%          Transform from SC to inertial frame
+%   dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
+%          ADC offsets are NOT corrected
+%   edbs,edb,iedb,iedbs : // Ez from E.B=0 [DSI+GSE]
 %   E[s]{cl_id}, diE[s]{cl_id} -> mEdB    // SC frame
 %   iE[s]{cl_id}, idiE[s]{cl_id} -> mEdBI  // Inertial frame
-%		has the following options:
-%		ang_limit - minimum angle(B,spin plane) [default 10 deg]
-%		ang_blank - put Ez to NaN for points below ang_limit [default]
-%		ang_fill - fill points below ang_limit with 1e27
-%		ang_ez0 - use Ez=0 for points below ang_limit
-%		probe_p - probe pair to use 12 or 34 [default 34]
-%	P[s]{cl_id} -> mP	// P spin resolution
-%	edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
-%	br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
-%	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
+%          Has the following OPTIONS:
+%          ang_limit - minimum angle(B,spin plane) [default 10 deg]
+%          ang_blank - put Ez to NaN for points below ang_limit [default]
+%          ang_fill - fill points below ang_limit with 1e27
+%          ang_ez0 - use Ez=0 for points below ang_limit
+%   ps : Ps{cl_id} -> mP	// P spin resolution
+%   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
+%   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
+%   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
 % Example: 
-%		getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
+%       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
 %
-%	General options - one of the following:
-%		nosave : do no save on disk
-%		withwhip : do not remove time intervals with Whisper pulses
-%		notusesavedoff : recalculating everything instead of using saved offsets
+% General options - one of the following:
+%       nosave : do no save on disk
+%       withwhip : do not remove time intervals with Whisper pulses
+%       notusesavedoff : recalculating everything instead of using saved offsets
 %
 % See also C_GET, C_CTL
 %
@@ -146,7 +146,7 @@ if strcmp(quantity,'dies')
 	end
 	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
 		irf_log('load',...
-			irf_ssub(['No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')'],cl_id))
+			irf_ssub('No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
 
@@ -160,12 +160,13 @@ if strcmp(quantity,'dies')
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
 			if flag_rmwhip
-				if exist('./mFDM.mat','file')
-					c_eval('load mFDM WHIP?',cl_id)
-				end
+				if exist('./mFDM.mat','file'), c_eval('load mFDM WHIP?',cl_id), end
 				if exist(irf_ssub('WHIP?',cl_id),'var')
 					irf_log('proc','not using times with Whisper pulses')
 					c_eval('tt=caa_rm_blankt(tt,WHIP? );clear WHIP?',cl_id)
+				else
+					irf_log('load',...
+					irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
 				end
 			end
 			
@@ -327,6 +328,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 						%removing times with Whisper pulses
 						c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
 					else
+						irf_log('load',...
+						irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
 						c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
 					end
 					c_eval(['irf_log(''calb'',sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
