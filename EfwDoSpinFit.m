@@ -95,6 +95,8 @@ if method ==1
 	fnterms = 3;
 	te = torow(te);
 	data = torow(data);
+	x = zeros(n,9);
+	phi = zeros(n,1);
 	spinfit(:,[5 8]) = -1;
 
 	tpha = tocolumn(tp);
@@ -119,25 +121,16 @@ for i=1:n
 	  
 	% wee need to check if we have any data to fit.
 	if ~isempty(eind) & ~isempty(pind)
-		if exist('spinfit_mx')==3 & method==1
+		if method==1
 			%we use Fortran version of spin fit
-			fnterms = 3;
-			[bad,x,sigma,iter,lim] = spinfit_mx(fnterms,maxit,2*pi/4,...
-				te(eind),data(eind));
+			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
+				spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind),data(eind));
 			
 			tsfit = mean(te(eind));	
 			pol = polyfit(tpha(pind),pha(pind),1);
-			phi = polyval(pol,tsfit);
-			theta = atan2(x(3),x(2));
-			rho = sqrt(x(2)^2 + x(3)^2);
+			phi(i-n_gap) = polyval(pol,tsfit);
 
 			spinfit(i-n_gap,1) = tsfit;
-			spinfit(i-n_gap,2) = -rho*cos(phi + theta);
-			spinfit(i-n_gap,3) = rho*sin(phi + theta); 
-			% - Because s/c is spinning upside down
-			spinfit(i-n_gap,4) = x(1);
-			spinfit(i-n_gap,6) = sigma;
-			spinfit(i-n_gap,7) = iter;
 		else
 			%we use Matlab version by AIE
 			spinfit(i - n_gap,:) = EfwDoOneSpinFit(pair,fout,maxit,minpts,te(eind), ...
@@ -147,4 +140,19 @@ for i=1:n
 	end 
 end  
 spinfit = spinfit(1:n - n_gap, :);
+
+if method==1
+        x = x(1:n - n_gap, :);
+        phi = phi(1:n - n_gap);
+
+		theta = atan2(x(:,3),x(:,2));
+		rho = sqrt(x(:,2).^2 + x(:,3).^2);
+		
+        %correct phase
+		% - Because s/c is spinning upside down:
+        spinfit(:,2) = -rho.*cos(phi + theta);
+        spinfit(:,3) = rho.*sin(phi + theta);
+        spinfit(:,4) = x(:,1);
+end
+
 disp(sprintf('%d spins processed, %d gaps found',n,n_gap))
