@@ -224,7 +224,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 			for probe=[1 3]
 				if exist(av_ssub(['P' param{j} '?p!'],cl_id,probe),'var') & ...
 				exist(av_ssub(['P' param{j} '?p!'],cl_id,probe+1),'var')
-					eval(av_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' param{j} '?p$(:,2)-P' param{j} '?p!(:,2))*1.25;'],cl_id,probe,probe+1));
+					eval(av_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' param{j} '?p$(:,2)-P' param{j} '?p!(:,2))*12.5;'],cl_id,probe,probe+1));
 					vn = [var_name num2str(probe) num2str(probe+1)];
 					if exist(av_ssub(vn,cl_id),'var')
 						c_eval(['tmpE=' vn ';'],cl_id)
