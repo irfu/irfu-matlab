@@ -39,7 +39,7 @@ if flag_case == 'A',
   be=av_interp(b,e);
 
   nl=av_norm(be); % along the B
-  nn=av_norm(av_cross(be,av_cross(v,be))); % closest to given vn vector
+  nn=av_norm(av_cross(av_cross(be,v),be)); % closest to given vn vector
   nm=av_cross(nn,nl); % in (vn x b) direction
 
   % estimate e in new coordinates
