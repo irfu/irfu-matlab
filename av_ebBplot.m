@@ -64,7 +64,7 @@ elseif nargin == 3,
     plot_param=av_q(' s) Poyn flux \n e) E spectra \n b) B spectra \n eb) E/B spectra \n [%]>','plot_param','s');
   end
 else
-  help av_waveplot_ebB;return;
+  help av_ebBplot;return;
 end
 
 
@@ -72,7 +72,7 @@ end
   sampl_b=1/(b(2,1)-b(1,1));
   if     sampl_b > 1.5*sampl_e, e=av_interp(e,b); sampl=sampl_b; disp('av_ebBplot: interpolating e to b');
   elseif sampl_e > 1.5*sampl_b, b=av_interp(b,e); sampl=sampl_e; disp('av_ebBplot: interpolating b to e');
-  elseif sampl_e == sampl_b & size(e)==size(b),   sampl=sampl_e; 
+  elseif sampl_e == sampl_b & size(e)==size(b),   sampl=sampl_e;
   else   sampl=2*sampl_e; t=max(e(1,1),b(1,1)):1/sampl:min(e(end,1),b(end,1)); t=t'; e=av_interp(e,t); b=av_interp(b,t); disp('av_ebBplot: interpolating b and e to 2x e sampling');
   end
   %% Check the sampling rate
