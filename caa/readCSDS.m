@@ -5,8 +5,8 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 %
 % Input:
 %	data_path - ISDAT database strings and directories containing CSDS 
-%   subdirectory with data separated by '|'. These data sources are	being tried
-%	in the same order. A typical example would be: 
+%	subdirectory with data separated by '|'. These data sources are	
+%	being tried in the same order. A typical example would be: 
 %		'ice:10|disco:10|/data/cluster'
 %	start_epoch - start time (isdat epoch)
 %	dt - time interval in sec
@@ -15,9 +15,11 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 %	CSDS PP:
 %		'b' : B FGM
 %		'edi' : E EDI
-%		'ncis_p' : N CIS CODIF
+%		'ncis_p' : N CIS CODIF(p)
 %		'ncis_h' : N CIS HIA
-%		'vcis_p' : V CIS CODIF
+%		'tcis_ppar','tcis_pper' : T CIS CODIF(p) parallel, perpendicular
+%		'tcis_hpar','tcis_hper' : T CIS HIA parallel, perpendicular
+%		'vcis_p' : V CIS CODIF(p)
 %		'vcis_h' : V CIS HIA
 %	CSDS SP:
 %		'slat' : spin axis latitude
@@ -53,6 +55,22 @@ case 'ncis_p'
 case 'ncis_h'
 	r.inst  = 'CIS';
 	r.var	= ['N_HIA__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
+case 'tcis_ppar'
+	r.inst  = 'CIS';
+	r.var	= ['T_p_par__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
+case 'tcis_pper'
+	r.inst  = 'CIS';
+	r.var	= ['T_p_perp__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
+case 'tcis_hpar'
+	r.inst  = 'CIS';
+	r.var	= ['T_HIA_par__C' cl_id_s '_PP_' r.inst];
+	r.pr	= 'CSDS_PP';
+case 'tcis_hper'
+	r.inst  = 'CIS';
+	r.var	= ['T_HIA_perp__C' cl_id_s '_PP_' r.inst];
 	r.pr	= 'CSDS_PP';
 case 'vcis_p'
 	r.inst  = 'CIS';
