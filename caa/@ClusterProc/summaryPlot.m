@@ -10,6 +10,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 %    'cs' - coordinate system : 'dsi' [default] of 'gse'
 %    'st', 'dt' - start time (ISDAT epoch) and interval length (sec)
 %    'fullb' - use full resolution B FGM
+%    'leavewhip' - plot time intervals with Whisper pulses
 % 
 % Output:
 %   h - axes handles // can be omitted
@@ -33,6 +34,7 @@ st = 0;
 dt = 0;
 have_tint = 0;
 use_fullb = 'rs';
+flag_rmwhip = 1; 
 
 while have_options
 	l = 2;
@@ -57,6 +59,8 @@ while have_options
 			end
 		case 'fullb'
 			use_fullb = '';	l = 1;
+		case 'leavewhip'
+			flag_rmwhip = 0;
 		otherwise
         	irf_log('fcal',['Option ''' args{1} '''not recognized'])
     	end
@@ -86,18 +90,33 @@ n_plots = 0;
 data = {};
 labels = {};
 
+if flag_rmwhip
+	if exist('./mFDM.mat','file')
+		c_eval('load mFDM WHIP?',cl_id)
+	end
+	
+end
+
 % Load data
 for k=1:length(q_list)
 	if c_load(q_list{k},cl_id)
 		if have_tint
 			c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id)
 		end
+		
+		if flag_rmwhip & (k==1 | k==3)
+			if exist(irf_ssub('WHIP?',cl_id),'var')
+				irf_log('proc','not using times with Whisper pulses')
+				c_eval([q_list{k} '=caa_rm_blankt(' q_list{k}  ',WHIP? );'],cl_id)
+			end
+		end
+		
 		n_plots = n_plots + 1;
 		if k==2 % B-field
 			c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
 			labels{n_plots} = l_list{k};
 		elseif k==3 % E-field
-			c_eval(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id) 
+			c_eval(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id)
 			labels{n_plots} = l_list{k};
 			n_plots = n_plots + 1;
 			c_eval(['data{n_plots}=' q_list{k} '(:,[1 5]);'],cl_id) 
@@ -112,6 +131,7 @@ for k=1:length(q_list)
 			end
 			clear d_t
 		end
+		
 	end
 end
 
