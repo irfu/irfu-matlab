@@ -47,7 +47,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004,2005 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(3,15,nargin))

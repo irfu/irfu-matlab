@@ -12,6 +12,8 @@ function out=c_ctl(varargin)
 % 
 % $Id$
 
+% Copyright 2005 Yuri Khotyaintsev
+
 default_mcctl_path = '.';
 
 if nargin<1, c_ctl_usage, return, end
