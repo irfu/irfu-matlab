@@ -69,12 +69,21 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
     if strcmp(input_is,'scalar'),  % scalar field, gradient is vector
       grad_b=zeros(size(B1,1),4);grad_b(:,1)=b1(:,1);
       c_eval('grad_b(:,2:4)=grad_b(:,2:4)+K?(:,2:4).*repmat(B?(:,2),1,3);',ic); 
-    elseif strcmp(input_is,'vector'), % vector field, gradient is matrix
-      grad_b_temp=zeros(size(B1,1),3,3);
-      for j=1:size(B1,1)
-        grad_b_temp(j,:,:)=K1(j,2:4)'*B1(j,2:4)+K2(j,2:4)'*B2(j,2:4)+K3(j,2:4)'*B3(j,2:4)+K4(j,2:4)'*B4(j,2:4);
-      end
-      grad_b={B1(:,1) grad_b_temp};
+    elseif strcmp(input_is,'vector'), % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
+      grad_b=zeros(size(B1,1),1,10);grad_b(:,1)=b1(:,1);
+      grad_b(:,2)=K1(:,2).*B1(:,2)+K2(:,2).*B2(:,2)+K3(:,2).*B3(:,2)+K4(:,2).*B4(:,2);
+      grad_b(:,3)=K1(:,2).*B1(:,3)+K2(:,2).*B2(:,3)+K3(:,2).*B3(:,3)+K4(:,2).*B4(:,3);
+      grad_b(:,4)=K1(:,2).*B1(:,4)+K2(:,4).*B2(:,4)+K3(:,2).*B3(:,4)+K4(:,2).*B4(:,4);
+      grad_b(:,5)=K1(:,3).*B1(:,2)+K2(:,3).*B2(:,2)+K3(:,3).*B3(:,2)+K4(:,3).*B4(:,2);
+      grad_b(:,6)=K1(:,3).*B1(:,3)+K2(:,3).*B2(:,3)+K3(:,3).*B3(:,3)+K4(:,3).*B4(:,3);
+      grad_b(:,7)=K1(:,3).*B1(:,4)+K2(:,3).*B2(:,4)+K3(:,3).*B3(:,4)+K4(:,3).*B4(:,4);
+      grad_b(:,8)=K1(:,4).*B1(:,2)+K2(:,4).*B2(:,2)+K3(:,4).*B3(:,2)+K4(:,4).*B4(:,2);
+      grad_b(:,9)=K1(:,4).*B1(:,3)+K2(:,4).*B2(:,3)+K3(:,4).*B3(:,3)+K4(:,4).*B4(:,3);
+      grad_b(:,10)=K1(:,4).*B1(:,4)+K2(:,4).*B2(:,4)+K3(:,4).*B3(:,4)+K4(:,4).*B4(:,4);
+      %%for j=1:size(B1,1)
+        %grad_b_temp(j,:,:)=K1(j,2:4)'*B1(j,2:4)+K2(j,2:4)'*B2(j,2:4)+K3(j,2:4)'*B3(j,2:4)+K4(j,2:4)'*B4(j,2:4);
+      %end
+      %grad_b={B1(:,1) grad_b_temp};
     else
       c_log('fcal','error: input vector is neither scalar or vector');
       return
@@ -94,12 +103,13 @@ switch flag_option
       grad_b=zeros(size(B1,1),2);grad_b(:,1)=b1(:,1);
       c_eval('grad_b(:,2)=grad_b(:,2)+dot(K?(:,2:4),B?(:,2:4),2);'); 
     end
-  case 'curvature'
+  case 'curvature' % TODO: test that gives correct values
     if strcmp(input_is,'vector'),
-      grad_b=zeros(size(B1,1),4);grad_b(:,1)=b1(:,1);
-      for j=1:size(B1,1),
-        c_eval('grad_b(j,2:4)=grad_b(j,2:4)+B?(j,2:4)*grad_b_temp(j,:,:);'); 
-      end
+      curv=zeros(size(B1,1),4);curv(:,1)=b1(:,1);
+      curv(:,2)=dot(b(:,2:4),grad_b(:,[2 5 8]),2);
+      curv(:,3)=dot(b(:,2:4),grad_b(:,[3 6 9]),2);
+      curv(:,4)=dot(b(:,2:4),grad_b(:,[5 7 10]),2);
+      grad_b=curv;
     end
   otherwise
     c_log('fcal','warning: unknown input option');
