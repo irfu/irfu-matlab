@@ -28,9 +28,9 @@ for i_file=1:size(file_list,1),
      if debug, disp(['Using file: ' file_list(i_file).name]);end
      load([path_events file_list(i_file).name]);
      figure(i_fig);i_panel=1;
-     for i_panel=1:size(panels,1),
+     for i_panel=1:n_panels,
         h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);i_panel=i_panel+1;
-        eval(['plot_command.' panels{i_panel}]);
+        eval(eval(['plot_command.' panels{i_panel}]));
      end
      add_timeaxis(h(i_fig));
      i_fig=i_fig+1;
