@@ -99,14 +99,12 @@ c_log('save',['Storage directory is ' cp.sp])
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 
-	if ~(exist('./mA.mat','file') & exist('./mER.mat','file'))
+	if ~(c_load(av_ssub('wE?p12',cl_id)) & c_load(av_ssub('wE?p12',cl_id)) & ...
+	c_load(av_ssub('A?',cl_id)))
 		c_log('load','Please load raw data (mER) and phase (mA)')
 		data = [];
 		return
 	end
-
-	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
-	eval(av_ssub('load mA A?;',cl_id));
 
 	pl=[12,34];
 	for k=1:length(pl)
@@ -330,7 +328,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	end
 
 	% Do actual despin
-	c_eval('load mA A?;',cl_id);
+	c_eval('load -mat mA.mat A?;',cl_id);
 	c_eval([var1_name '=c_despin(full_e,A?,coef);'],cl_id);
 	% DS-> DSI
 	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
@@ -411,7 +409,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	save_list=[save_list 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Vedb,Vedbs - E.B=0
+% Vedb,Vedbs = ExB with E.B=0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	save_file = './mEdB.mat';
