@@ -34,7 +34,7 @@ function c=av_tplot(x,option,varargin);
 
 ylabels{1}='';
 flag_subplot=0;
-if nargin >2, option='';end
+if nargin==1, option='';end
 
 
 % default values that can be override by options
@@ -42,7 +42,7 @@ dt=0;
 flag_yy=0;scaleyy=1;
 
 ind_varargin_clean=[]; % which indexes to remove after checking varargin
-for j=1:2: length(varargin)>1,
+for j=1:2:length(varargin),
     switch varargin{j},
         case 'dt'
             dt=varargin{j+1};
