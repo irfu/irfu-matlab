@@ -19,12 +19,12 @@ plot_command=struct(...
   'B' ,'c_pl_tx(av_abs(B1),av_abs(B2),av_abs(B3),av_abs(B4),2);ylabel(''B [nT] GSE'');', ...
   'B1' ,'av_tplot(av_abs(B1));ylabel(''B [nT] GSE, sc1'');', ...
   'test','test' ...
-)
+);
 
 file_list=dir([path_events '*F*t*T*t*.mat']);
 for i_file=1:size(file_list,1),
   if c_ri_timestr_within_tint(file_list(i_file).name,time_interval),
-     load([path_events file_list(i_file)]);
+     load([path_events file_list(i_file).name]);
      figure(i_fig);i_panel=1;
      for i_panel=1:size(panels,1),
         h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);i_panel=i_panel+1;
