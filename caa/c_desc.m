@@ -86,7 +86,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^wE[1-4]p(12|34)')==1
+elseif regexp(vs,'^wE[1-4]p(12|34)$')==1
 %elseif strcmp(vvs(1:2),'wE') & is14(vvs(3)) & vvs(4)=='p' & ...
 %(strcmp(vvs(5:6),'12') | strcmp(vvs(5:6),'34')) 
 	v.cl_id = vs(3);
@@ -132,7 +132,7 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diE[1-4]p1234')==1
+elseif regexp(vs,'^diE[1-4]p1234$')==1
 %elseif (length(vs)==9 & strcmp(vs(1:3),'diE') & strcmp(vvs(5:9),'p1234'))
 	v.cl_id = vs(4);
 	v.inst = 'EFW';
@@ -177,7 +177,7 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
+elseif regexp(vs,'^(E[1-4]|Es[1-4])$')==1
 %elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
 %(length(vs)==3 & strcmp(vvs(1:2),'Es') & is14(vvs(3)))
 	v.cl_id = vs(end);
@@ -200,7 +200,7 @@ elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])')==1
+elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])$')==1
 %elseif (((length(vs)==8 & vvs(7)=='s')|length(vs)==7) & ...
 %strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
 %(((length(vs)==6 & vvs(5)=='s')|length(vs)==5) & strcmp(vvs(1:4),'VExBs') & is14(vs(end)))
@@ -232,7 +232,7 @@ elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^NVps[1-4]')==1
+elseif regexp(vs,'^NVps[1-4]$')==1
 %elseif (length(vs)==5 & strcmp(vvs(1:4),'NVps') & is14(vvs(5)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
@@ -254,8 +254,7 @@ elseif regexp(vs,'^NVps[1-4]')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^A[1-4]')
-%elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
+elseif regexp(vs,'^A[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
 	v.frame = 'sc';
@@ -271,12 +270,52 @@ elseif regexp(vs,'^A[1-4]')
 	v.field_name = {'Spacecraft phase'};
 	v.com = '';
 	v.file = 'mA';
-	v.quant = 'a';	
-
+	v.quant = 'a';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% spin axis orientation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^SAX[1-4]$')
+%elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
+	v.cl_id = vs(end);
+	v.inst = 'Ephemeris';
+	v.frame = 'sc';
+	v.sig = 'Attitude';
+	v.sen = '';
+	v.cs = {'vector>gse'};
+	v.units =  {''};
+	v.si_conv = {''};
+	v.size = [1];
+	v.name = {'SAX'};
+	v.labels = {'Spin axis'};
+	v.label_1 = {''};
+	v.field_name = {'Spacecraft spin axis'};
+	v.com = '';
+	v.file = 'mEPH';
+	v.quant = 'sax';	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% spacecraft velocity
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^V[1-4]$')
+	v.cl_id = vs(end);
+	v.inst = 'Ephemeris';
+	v.frame = 'sc';
+	v.sig = 'Attitude';
+	v.sen = '';
+	v.cs = {'vector>gse'};
+	v.units =  {'km/s'};
+	v.si_conv = {'1e3>m/s'};
+	v.size = [3];
+	v.name = {'V'};
+	v.labels = v.name;
+	v.label_1 = {'"x", "y", "z"'};
+	v.field_name = {'Spacecraft velocity'};
+	v.com = '';
+	v.file = 'mR';
+	v.quant = 'Vsc';	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS N PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^NC(h|p)[1-4]')
+elseif regexp(vs,'^NC(h|p)[1-4]$')
 
 	v.cl_id = vs(end);
 	v.inst = 'CIS';
@@ -304,7 +343,7 @@ elseif regexp(vs,'^NC(h|p)[1-4]')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS V PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diVC(h|p)[1-4]') | regexp(vs,'^VC(h|p)[1-4]')
+elseif regexp(vs,'^diVC(h|p)[1-4]$') | regexp(vs,'^VC(h|p)[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'CIS';
 	v.frame = 'sc';
@@ -335,7 +374,7 @@ elseif regexp(vs,'^diVC(h|p)[1-4]') | regexp(vs,'^VC(h|p)[1-4]')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI E PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]')
+elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'EDI';
 	v.frame = 'inertial';
@@ -360,7 +399,7 @@ elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FGM B PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diBPP[1-4]|BPP[1-4]')
+elseif regexp(vs,'^diBPP[1-4]|BPP[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'FGM';
 	v.frame = 'sc';
