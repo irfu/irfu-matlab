@@ -27,6 +27,8 @@ active_p_color = 'magenta';
 pxa = .07+.12; pya = .1; wa = .47; ha = .215; dya = .01; % Positions
 MM = [-100 100; -5 5]; % Min and max value for sliders
 MMZ = [-200 200; .5 2.];
+main_fig_id = 23;
+raw_fig_id = 24;
 if nargin, action = varargin{1};
 else, action = 'init';
 end
@@ -94,7 +96,7 @@ switch action
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'init'
 	% Create figure
-	h0 = figure(23);
+	h0 = figure(main_fig_id);
 	clf
 	set(h0,'Position', [25 40 990 640])
 	hnd = guihandles(h0);
@@ -480,6 +482,12 @@ case 'init'
 		'Callback','c_cal_gui(''zoom_rs'')',...
 		'Accelerator','r',...
 		'Enable','off');
+	
+	% Menu tools
+	hnd.menu_tools = uimenu(h0,'Label','&Tools');
+	hnd.menu_show_raw = uimenu(hnd.menu_tools,'Label','&Show raw data',...
+		'Callback','c_cal_gui(''show_raw'')',...
+		'Accelerator','d');
 		
 	guidata(h0,hnd);
 	
@@ -1356,6 +1364,60 @@ case 'zoom_rs'
 	set(hnd.menu_zoom_rs,'Enable','off')
 	
 	guidata(h0,hnd);
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% show_raw
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'show_raw'
+	hnd = guidata(h0);
+	
+	j = D_findByName(hnd.Data,hnd.ActiveVar);
+
+	if strcmp(hnd.Data{j}.type,'E')
+		if strcmp(hnd.Data{j}.sen,'1234')
+			d_tmp = {};
+			leg_tmp = {};
+			s = {'12','32','34'};
+			for sid = 1:3
+				[ok,E_tmp] = c_load(['wE?p' s{sid}],hnd.Data{j}.cl_id);
+				if ok
+					E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
+					d_tmp = [d_tmp {E_tmp}]; clear E_tmp
+					leg_tmp = [leg_tmp {irf_ssub(['wE?p' s{sid}],hnd.Data{j}.cl_id)}];
+				end
+			end
+			
+			if ~isempty(d_tmp)
+				figure(raw_fig_id), clf
+				irf_plot(d_tmp,'comp')
+				ylabel('E [mV/m]')
+				legend(leg_tmp{:})
+			end
+			clear d_tmp leg_tmp s sid ok
+		else
+			[ok,E_tmp] = c_load(['wE?p' hnd.Data{j}.sen],hnd.Data{j}.cl_id);
+			if ~ok, return, end
+			E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
+			figure(raw_fig_id), clf
+			irf_plot(E_tmp); clear E_tmp
+			ylabel(irf_ssub(['wE?p' hnd.Data{j}.sen ' [mV/m]'],hnd.Data{j}.cl_id))
+		end
+	else % Display V CIS
+		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
+		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
+		end
+		[ok,V_tmp] = c_load(v_s);
+		if ~ok, return, end
+		V_tmp = irf_tlim(V_tmp,hnd.tlim(end,:));
+		if ~isempty(V_tmp)
+			figure(raw_fig_id), clf
+			irf_plot(V_tmp)
+			ylabel([v_s ' GSE [km/s]'])
+			legend('Vx','Vy','Vz')
+		end
+		clear V_tmp ok v_s
+	end
+		
 otherwise 
 	disp('wrong action')
 end
