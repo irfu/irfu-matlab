@@ -28,7 +28,7 @@ C
 	integer nn, ier
 	integer pr_omega, pr_nterms, pr_itmax, pr_iter, pr_lim, pr_at, pr_az, pr_bad, pr_x, pr_sigma
 c output
-	real*8 x(maxterms_fit), sigma	
+	real*8 x(maxterms_fit), sigma, ttt	
 	
 	intrinsic nint
 	
@@ -128,13 +128,18 @@ c	end do
 	call mxCopyReal8ToPtr(x, pr_x, maxterms_fit)
 	
 	pr_sigma = mxGetPr(plhs(3))
-	call mxCopyReal8ToPtr(real(sigma), pr_sigma, 1)
+	call mxCopyReal8ToPtr(sigma, pr_sigma, 1)
+c	write(*,*) 'sigma: ', sigma
 	
 	pr_iter = mxGetPr(plhs(4))
-	call mxCopyReal8ToPtr(real(iter), pr_iter, 1)
+	ttt = real(iter)
+	call mxCopyReal8ToPtr(ttt, pr_iter, 1)
+c	write(*,*) 'iter: ', iter
 	
 	pr_lim = mxGetPr(plhs(5))
-	call mxCopyReal8ToPtr(real(lim), pr_lim, 1)
+	ttt = real(lim)
+	call mxCopyReal8ToPtr(ttt, pr_lim, 1)
+c	write(*,*) 'lim: ', lim
 	
 	return
 	end
