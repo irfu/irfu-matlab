@@ -1,39 +1,40 @@
-function varargout = c_desc(vs,varargin)
+function varargout = c_desc(vs)
 %C_DESC provide a description of a Cluster variable
-% C_DESC(VS) prints out a descriptoon of variable VS
+% C_DESC(V_S) prints out a descriptoon of variable VS
 %
-% DESC = C_DESC(VS) returns a descriptoon of variable VS as structure DESC.
+% DESC = C_DESC(V_S) returns a descriptoon of variable VS as structure DESC.
 %
 % Input:
-%	VS - variable string
+%	V_S - string defining a variable
 %
 % Output:
 %	DESC - structure containing a description of variable VS. It has the 
 %	following fields:
-%	cl_id		%Clister ID
-%	inst		%Instrument
-%	frame		%Reference frame
-%	sig			%Signal
-%	sen			%Sensor
-%	cs			%Coord
-% 	units		%Units
-%	si_conv		%SI conversion (CEF)
-%	size		%Data dimention (scalar=1)
-%	name		%Name of a CEF variable
-%	labels		%Label of a CEF variable
-%	field_name	%Description of a CEF variable
-%	com			%Comment
-%	file		%Matlab file name (mXXX.mat)
-%	quant		%Quantity name to use with getData
+%   cl_id		%Clister ID
+%   inst		%Instrument
+%   frame		%Reference frame
+%   sig			%Signal
+%   sen			%Sensor
+%   cs			%Coord
+%   units		%Units
+%   si_conv		%SI conversion (CEF)
+%   size		%Data dimention (scalar=1)
+%   name		%Name of a CEF variable
+%   labels		%Label of a CEF variable
+%   field_name	%Description of a CEF variable
+%   com			%Comment
+%   file		%Matlab file name (mXXX.mat)
+%   quant		%Quantity name to use with getData
 %
-% Example:
+% Examples:
+% c_desc('diE2')
 %	desc = c_desc('diE2');
 %
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
-%
-error(nargchk(1,10,nargin))
+
+error(nargchk(1,1,nargin))
 
 if ~isstr(vs), error('VS must be string'), end
 
@@ -41,11 +42,11 @@ com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane';
 
 vvs = 'XXXXXXXXXX';
 vvs(1:length(vs)) = vs;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if regexp(vs,'^P[1-4]$')==1
-%if strcmp(vs,'P1')|strcmp(vs,'P2')|strcmp(vs,'P3')|strcmp(vs,'P4')
 	v.cl_id = vs(2);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -66,7 +67,6 @@ if regexp(vs,'^P[1-4]$')==1
 % P - individual probes 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
-%elseif strcmp(vvs(1:4),'P10Hz')==1 & is14(vvs(5)) & vvs(6)=='p' & is14(vvs(7))
 	v.cl_id = vs(6);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -86,9 +86,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^wE[1-4]p(12|34)$')==1
-%elseif strcmp(vvs(1:2),'wE') & is14(vvs(3)) & vvs(4)=='p' & ...
-%(strcmp(vvs(5:6),'12') | strcmp(vvs(5:6),'34')) 
+elseif regexp(vs,'^wE[1-4]p(12|34)$') 
 	v.cl_id = vs(3);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -110,8 +108,6 @@ elseif regexp(vs,'^wE[1-4]p(12|34)$')==1
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
-%elseif strcmp(vvs(1:4),'diEs') & is14(vvs(5)) & vvs(6)=='p' & ...
-%(strcmp(vvs(7:8),'12') | strcmp(vvs(7:8),'34'))
 	v.cl_id = vs(5);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -133,7 +129,6 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^diE[1-4]p1234$')==1
-%elseif (length(vs)==9 & strcmp(vs(1:3),'diE') & strcmp(vvs(5:9),'p1234'))
 	v.cl_id = vs(4);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -154,9 +149,7 @@ elseif regexp(vs,'^diE[1-4]p1234$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
-%elseif (length(vs)==4 & strcmp(vvs(1:3),'diE') & is14(vvs(4))) | ...
-%(length(vs)==5 & strcmp(vvs(1:4),'diEs') & is14(vvs(5)))
+elseif regexp(vs,'^diE(s)?[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -177,9 +170,7 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(E[1-4]|Es[1-4])$')==1
-%elseif (length(vs)==2 & vvs(1)=='E' & is14(vvs(2))) | ...
-%(length(vs)==3 & strcmp(vvs(1:2),'Es') & is14(vvs(3)))
+elseif regexp(vs,'^E(s)?[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -200,10 +191,7 @@ elseif regexp(vs,'^(E[1-4]|Es[1-4])$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])$')==1
-%elseif (((length(vs)==8 & vvs(7)=='s')|length(vs)==7) & ...
-%strcmp(vvs(1:6),'diVExB') & is14(vs(end))) | ...
-%(((length(vs)==6 & vvs(5)=='s')|length(vs)==5) & strcmp(vvs(1:4),'VExBs') & is14(vs(end)))
+elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -233,7 +221,6 @@ elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])$')==1
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^NVps[1-4]$')==1
-%elseif (length(vs)==5 & strcmp(vvs(1:4),'NVps') & is14(vvs(5)))
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.frame = 'sc';
@@ -271,11 +258,11 @@ elseif regexp(vs,'^A[1-4]$')
 	v.com = '';
 	v.file = 'mA';
 	v.quant = 'a';
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin axis orientation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^SAX[1-4]$')
-%elseif length(vs)==2 & vs(1)=='A' & is14(vvs(2))
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
 	v.frame = 'sc';
@@ -292,6 +279,7 @@ elseif regexp(vs,'^SAX[1-4]$')
 	v.com = '';
 	v.file = 'mEPH';
 	v.quant = 'sax';	
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spacecraft velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -311,7 +299,8 @@ elseif regexp(vs,'^V[1-4]$')
 	v.field_name = {'Spacecraft velocity'};
 	v.com = '';
 	v.file = 'mR';
-	v.quant = 'Vsc';	
+	v.quant = 'Vsc';
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS N PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -343,7 +332,7 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS V PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diVC(h|p)[1-4]$') | regexp(vs,'^VC(h|p)[1-4]$')
+elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'CIS';
 	v.frame = 'sc';
@@ -371,6 +360,7 @@ elseif regexp(vs,'^diVC(h|p)[1-4]$') | regexp(vs,'^VC(h|p)[1-4]$')
 	v.com = '';
 	v.file = 'mCIS';
 	v.quant = 'vcis';
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI E PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -396,10 +386,11 @@ elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]$')
 	v.com = '';
 	v.file = 'mEDI';
 	v.quant = 'edi';
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FGM B PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diBPP[1-4]|BPP[1-4]$')
+elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'FGM';
 	v.frame = 'sc';
@@ -421,7 +412,11 @@ elseif regexp(vs,'^diBPP[1-4]|BPP[1-4]$')
 	v.com = '';
 	v.file = 'mBPP';
 	v.quant = 'b';
-elseif regexp(vs,'^diB[1-4]|B[1-4]')
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FGM B full resolution and resampled
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'FGM';
 	v.frame = 'sc';
@@ -439,10 +434,23 @@ elseif regexp(vs,'^diB[1-4]|B[1-4]')
 	v.name = {'B'};
 	v.labels = v.name;
 	v.label_1 = {'"x", "y", "z"'};
-	v.field_name = {'Magnetic field'};
-	v.com = '';
-	v.file = 'mB';
-	v.quant = 'bfgm';
+	if regexp(vs,'^(di)?B(r|rs)[1-4]$')
+		v.file = 'mBr';
+		if regexp(vs,'^(di)?Brs[1-4]$')
+			v.field_name = {'Magnetic field resampled to E (spin resolution)'};
+			v.com = 'Resampled to E (spin resolution)';
+			v.quant = 'brs';
+		else
+			v.field_name = {'Magnetic field resampled to E (full resolution)'};
+			v.com = 'Resampled to E (full resolution)';
+			v.quant = 'br';
+		end
+	else
+		v.field_name = {'Magnetic field'};
+		v.com = '';
+		v.file = 'mB';
+		v.quant = 'bfgm';
+	end
 else
 	error('Variable name not recognized')
 end
@@ -459,6 +467,8 @@ else
 		disp(['Signal      : ' v.sig ]);
 		disp(['Sensor      : ' v.sen ]);
 		disp(['Comment     : ' v.com ]);
+		disp(['File        : ' v.file ]);
+		disp(['getData quan: ' v.quant ]);
 		disp(['Size        : ' num2str(v.size) ]);
 		for j=1:length(v.size)
 			disp(['Var Name    : ' v.name{j} ]);
