@@ -9,17 +9,17 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %		also creates delta offsets D{cl_id}p12p34.
-%		If the offset is real then it must be applied to p12, 
-%		if imaginary - to p34 
-%	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
+%		If the offset is real then it must be applied to p12,
+%		if imaginary - to p34
+%	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %	edbs, edb : E[s]{cl_id}, diE[s]{cl_id} -> mEdB // Ez from E.B=0 [DSI+GSE]
 %		has the following options:
 %		ang_limit - minimum angle(B,spin plane) [default 10 deg]
 %		ang_blank - remove points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
-%		ang_ez0 - use Ez=0 for points below ang_limit 
-%	vedbs, vedb : V[s]{cl_id}, diV[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
+%		ang_ez0 - use Ez=0 for points below ang_limit
+%	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
 %	Example usage: getData(cp,4,'edbs','ang_fill','ang_limit',20)
 %
@@ -169,13 +169,13 @@ elseif strcmp(quantity,'die')
 			% correct ADC offset
 			if flag_usesavedoff & exist('./mEDSI.mat','file')
 			   	eval(av_ssub(['load mEDSI Da?p' ps ],cl_id))
-			end	
+			end
 			if exist(av_ssub(['Da?p' ps],cl_id),'var')
-				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))	
+				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))
 				eval(av_ssub(['Ep' ps '=wE?p' ps '-Da?p' ps ';'],cl_id))
 			else
 				eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
-				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))	
+				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))
 				eval(av_ssub(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id));
 			end
 		end
@@ -198,7 +198,7 @@ elseif strcmp(quantity,'die')
 		full_e(:,[1,4]) = Ep12;
 		full_e(:,3) = Ep34(:,2);
 		clear Ep12 Ep34
-	else	
+	else
 		if exist('Ep12','var')
 			pp = 12;
 			EE = Ep12;
@@ -216,7 +216,7 @@ elseif strcmp(quantity,'die')
 		end
 		clear EE pp
 	end
-	
+
 	% load Delta offsets D?p12p34
 	if exist('./mEDSI.mat','file')
 		eval(av_ssub('load mEDSI D?p12p34;',cl_id));
@@ -225,7 +225,7 @@ elseif strcmp(quantity,'die')
 		eval(av_ssub('Del=D?p12p34;',cl_id))
 		if real(Del)
 			disp('correcting p12')
-			i_c = 1;	
+			i_c = 1;
 		else
 			disp('correcting p34')
 			Del = imag(Del);
@@ -233,7 +233,7 @@ elseif strcmp(quantity,'die')
 		end
 		eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*j;',cl_id));
 		clear Del
-			
+
 	else, disp('no Delta offsets found in mEDSI, not doing correction...')
 	end
 
@@ -257,14 +257,14 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	end
 
 	eval(av_ssub('load mBPP diBPP?; diB=diBPP?;',cl_id));
-	
+
 	if strcmp(quantity,'edb')
-		var_s = av_ssub('diE?p1234',cl_id); 
-		varo_s = av_ssub('E?',cl_id); 
+		var_s = av_ssub('diE?p1234',cl_id);
+		varo_s = av_ssub('E?',cl_id);
 	else
 		disp('using p34')
-		var_s = av_ssub('diEs?p34',cl_id); 
-		varo_s = av_ssub('Es?',cl_id); 
+		var_s = av_ssub('diEs?p34',cl_id);
+		varo_s = av_ssub('Es?',cl_id);
 	end
 
 	Dx_s =  av_ssub('Ddsi?',cl_id);
@@ -283,9 +283,9 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
 	else, disp('using Da=1'), Da = 1;
 	end
-	
+
 	diE = corrDSIOffsets(diE,Dx,0,Da);
-	
+
 	disp(['using angle limit of ' num2str(ang_limit) ' degrees'])
 	[diE,angle]=av_ed(diE,diB,ang_limit);
 	diE(:,5) = angle; clear angle
@@ -297,10 +297,10 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 			disp('using Ez=0')
 		case 1 % remove points
 			disp('settiong points < ang_limit to NaN')
-			diE(ii,4) = diE(ii,4)*NaN;   
+			diE(ii,4) = diE(ii,4)*NaN;
 		case 2 % fill with fill_val
 			disp('settiong points < ang_limit to 1e27')
-			diE(ii,4) = ones(size(diE(ii,4)))*fill_val;   
+			diE(ii,4) = ones(size(diE(ii,4)))*fill_val;
 		end
 	end
 
@@ -330,11 +330,11 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	eval(av_ssub('load mBPP diBPP?;',cl_id));
 
 	if strcmp(quantity,'vedb')
-		var_s = av_ssub('diE?',cl_id); 
-		varo_s = av_ssub('V?',cl_id); 
+		var_s = av_ssub('diE?',cl_id);
+		varo_s = av_ssub('VExB?',cl_id);
 	else
-		var_s = av_ssub('diEs?',cl_id); 
-		varo_s = av_ssub('Vs?',cl_id); 
+		var_s = av_ssub('diEs?',cl_id);
+		varo_s = av_ssub('VExBs?',cl_id);
 	end
 
 	eval(['load mEdB ' var_s])
@@ -376,7 +376,7 @@ if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
 end
 
 % prepare the output
-if nargout > 0 
+if nargout > 0
 	if isempty(save_list)
 		data = [];
 	else
