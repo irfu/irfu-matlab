@@ -26,7 +26,7 @@ lb= size(b,2); %
 
 if size(b,1) ~= size(e,1),
  if (debug == 1), disp('E and B are not of the same length. Interpolating B.');end
- b=irf_resasmp(b,e);
+ b=irf_resamp(b,e);
 end
 
 
