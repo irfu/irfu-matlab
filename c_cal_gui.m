@@ -13,7 +13,7 @@ function varargout = c_cal_gui(varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
 %
 persistent h0;
 %disp(h0)
