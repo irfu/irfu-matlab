@@ -252,7 +252,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 			p=p4;
 		end
 		
-		c_eval(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],cl_id);
+		c_eval(['P' param{1} '?=p;save_list=[save_list '' P' param{1} '? ''];'],cl_id);
 		c_eval('P?=p;NVps?=c_n_Vps(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? NVps?''];',cl_id)
 		clear p
 	end
