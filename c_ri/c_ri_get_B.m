@@ -94,7 +94,7 @@ if nargout,  % return B
   unix(['/bin/sh -c ''' unix_command '''']);
   fvs = fgmvec_stream(to_file);
   ta=tavail(fvs);
-  if diff(ta)>0,
+  if diff(ta)>0, % end time should be larger than start time
     dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
     B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
   end 
