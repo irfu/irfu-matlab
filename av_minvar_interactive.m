@@ -10,74 +10,160 @@ function status = av_minvar_interacitve(x,column)
 %  ud.Xminvar - data in minimum variance coordinates
 %
 
-evalin('caller','clear ud; global ud;');
-if nargin < 1, help av_minvar_interactive;return; end
-if size(x,2)<3, disp('Vector has too few components');return;end
-if nargin < 2,
- if size(x,2)==3, column=[1 2 3];end
- if size(x,2)>3, column=[2 3 4];end
+persistent ud tlim;
+
+
+if      nargin < 1, help av_minvar_interactive;return;
+elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
+elseif  isnumeric(x), 
+    if size(x,2)<3, disp('Vector has too few components');return;end
+    if nargin < 2,
+        if size(x,2)==3, column=[1 2 3];end
+        if size(x,2)>3, column=[2 3 4];end
+    end
+    action='initialize';
 end
 
-% X is used for minimum variance estimates
+switch action,
+case 'initialize'
+    % X is used for minimum variance estimates
+    tlim = [];
+    evalin('caller','clear ud; global ud;');
+    
+    if min(column)==1, time_vector=1:size(x,1);
+    elseif min(column)>1, time_vector=x(:,1);
+    end
+    
+    X=[time_vector x(:,column)];X=av_abs(X);
+    ud={}; % structure to pass all information to manager function
+    ud.X=X;
+    ud.from = 1; % first click with mouse is 'from', second is 'to'
+    ud.cancel = 0;
+    tlim = [min(X(:,1)) max(X(:,1))];
+    ud.tlim_mva=tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
+    
+    dgh=figure;clf;av_figmenu;
+    h(1)=subplot(4,1,1);
+    av_tplot(X);axis tight;
+    set(h(1),    'buttondownfcn', 'av_minvar_interactive(''ax'')');zoom off;
+    av_pl_info(['av\_minvar\_interactive() ' datestr(now)]); % add information to the plot
+    set(h(1),'layer','top');
+    ax=axis;grid on;
+    legend('x','y','z','abs');
+    ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'av_minvar_interactive(''ax'')');
+    
+    h(2)=subplot(4,1,2);
+    av_tplot(X);axis tight; legend('x','y','z','abs');
+    set(h(2),    'buttondownfcn', 'av_minvar_interactive(''ax'')');zoom off;
 
-if min(column)==1, time_vector=1:size(x,1);
-elseif min(column)>1, time_vector=x(:,1);
+    h(3)=subplot(4,2,5);
+    
+    h(4)=subplot(4,2,6);
+    
+    ud.h=h;
+    
+    xp=0.2;yp=0.2;
+    ud.fromtext=uicontrol('style', 'text', 'string', 'From:', 'position', [xp yp 0.1 0.04],'units','normalized','backgroundcolor','red');
+    ud.fromh = uicontrol('style', 'edit', ...
+        'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'), ...
+        'callback', 'av_minvar_interactive(''from'')', ...
+        'backgroundcolor','white','position', [xp+0.11 yp 0.25 0.05],'units','normalized');
+    
+    yp=0.15;
+    ud.totext=uicontrol('style', 'text', 'string', 'To:', 'position', [xp yp 0.1 0.04],'units','normalized','backgroundcolor','white');
+    ud.toh=uicontrol('style', 'edit', ...
+        'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'), ...
+        'callback', 'av_minvar_interactive(''from'')','backgroundcolor','white', 'position', [xp+0.11 yp 0.25 0.05],'units','normalized');
+    
+    
+    xp=0.1;yp=0.1;
+    uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','position', [xp yp 0.2 0.04],'units','normalized','backgroundcolor','white');
+    ud.filter = uicontrol('style', 'edit', ...
+        'string', '1', ...
+        'callback', 'c_4_v_update(''dt'')', ...
+        'backgroundcolor','white','position', [xp+0.21 yp 0.1 0.05],'units','normalized');
+    
+    uimenu('label','&Recalculate','accelerator','r','callback','av_minvar_interactive(''mva'')');
+    
+    subplot(4,2,8);axis off;
+    ud.result_text=text(0,0.8,'result');
+    
+    av_minvar_interactive('from');
+    
+case 'ax'
+    tlim = get(ud.mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
+    p = get(gca, 'currentpoint');
+    tlim_interval=get(gca,'xlim');
+    if ud.from
+        tlim(1) = max(tlim_interval(1), p(1));
+        tlim(2) = max(p(1),tlim(2));
+        set(ud.fromtext,'backgroundcolor','w');
+        set(ud.totext,'backgroundcolor','r');
+        ud.from = 0;
+    else
+        tlim(2) = min(tlim_interval(2), p(1));
+        tlim(1) = min(tlim(1), p(1));
+        set(ud.totext,'backgroundcolor','w');
+        set(ud.fromtext,'backgroundcolor','r');
+        ud.from = 1;
+    end
+    strfrom=datestr(datenum(fromepoch(tlim(1))), 0);
+    set(ud.fromh, 'string', strfrom);
+    strto=datestr(datenum(fromepoch(tlim(2))), 0);
+    set(ud.toh, 'string', strto);
+    set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
+    av_minvar_interactive('update_mva_axis');    
+case 'from'
+    tlim(1) = toepoch(datevec(strrep(get(ud.fromh, 'string'),'_',' ')));
+    tlim(2) = toepoch(datevec(strrep(get(ud.toh, 'string'),'_',' ')));
+    set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
+    av_minvar_interactive('update_mva_axis');
+case 'update_mva_axis'
+    if tlim==ud.tlim_mva, % plot first time after 'mva'
+        axes(ud.h(2));
+        av_tplot(ud.Xminvar);
+        set(ud.h(2),    'buttondownfcn', 'av_minvar_interactive(''ax'')');
+        axis tight;add_timeaxis(ud.h(2),'date');
+        legend('max','interm','min','abs');
+        axes(ud.h(3));
+        plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
+        axis tight;axis equal; ax=axis;grid on;
+        axes(ud.h(4))
+        plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
+        axis equal; grid on;
+    elseif (tlim(1)>=ud.tlim_mva(1) & tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
+        av_zoom(tlim,'x',ud.h(2));legend;
+    else                   % zoom to interval outside mva
+        X=av_t_lim(ud.X,tlim);
+        clear ud.Xminvar;
+        ud.Xminvar=av_newxyz(X,ud.v1,ud.v2,ud.v3);
+        axes(ud.h(2));
+        av_tplot(ud.Xminvar);
+        set(ud.h(2),    'buttondownfcn', 'av_minvar_interactive(''ax'')');
+        axis tight;add_timeaxis(ud.h(2),'date');
+        legend('max','interm','min','abs');
+    end
+    if (tlim(1)<ud.tlim_mva(1) | tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
+        axes(ud.h(2));set(ud.h(2),'layer','top');
+        ax=axis;grid on;
+        ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'av_minvar_interactive(''ax'')');
+        legend('max','interm','min','abs');
+    end
+case 'mva'
+    ud.tlim_mva=tlim;
+    X=av_t_lim(ud.X,tlim);
+    clear ud.Xminvar;
+    [ud.Xminvar, l, v]=av_minvar(X);
+    ud.l=l;ud.v=v;ud.v1=v(1,:);ud.v2=v(2,:);ud.v3=v(3,:);
+    l_str=['L1=' num2str(l(1),3) ' L2=' num2str(l(2),3) ' L3=' num2str(l(3),3) '\newline'];
+    lratio_str=['L1/L2=' num2str(l(1)/l(2),2) ' L2/L3=' num2str(l(2)/l(3),2) '\newline'];
+    v1_str=['v1=[' num2str(v(1,:),'%6.2f') '] \newline'];
+    v2_str=['v2=[' num2str(v(2,:),'%6.2f') '] \newline'];
+    v3_str=['v3=[' num2str(v(3,:),'%6.2f') '] \newline'];
+    v_str=[v1_str v2_str v3_str];
+    set(ud.result_text,'string',[l_str lratio_str v_str],'verticalalignment','top');
+    av_minvar_interactive('update_mva_axis');
 end
 
-X=[time_vector x(:,column)];X=av_abs(X);
-dgud={}; % structure to pass all information to manager function
-dgud.X=X;
-dgud.from = 1; % first click with mouse is 'from', second is 'to'
-dgud.cancel = 0;
-tlim = [min(X(:,1)) max(X(:,1))];
-
-dgh=figure;clf;av_figmenu;
-h(1)=subplot(4,1,1);
-av_tplot(X);
-set(h(1),    'buttondownfcn', 'av_minvar_interactive_manager(''ax'')');zoom off;
-av_pl_info(['av\_minvar\_interactive() ' datestr(now)]); % add information to the plot
-set(h(1),'layer','top');
-ax=axis;grid on;
-legend('x','y','z','abs');
-dgud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'av_minvar_interactive_manager(''ax'')');
-
-h(2)=subplot(4,1,2);
-
-h(3)=subplot(4,2,5);
-
-h(4)=subplot(4,2,6);
-
-dgud.h=h;
-
-xp=0.2;yp=0.2;
-dgud.fromtext=uicontrol('style', 'text', 'string', 'From:', 'position', [xp yp 0.1 0.03],'units','normalized','backgroundcolor','red');
-dgud.fromh = uicontrol('style', 'edit', ...
-      'string', strrep(datestr(datenum(fromepoch(tlim(1))), 0),' ','_'), ...
-    'callback', 'av_minvar_interactive_manager(''from'')', ...
-    'backgroundcolor','white','position', [xp+0.11 yp 0.2 0.03],'units','normalized');
-
-yp=0.15;
-dgud.totext=uicontrol('style', 'text', 'string', 'To:', 'position', [xp yp 0.1 0.03],'units','normalized','backgroundcolor','white');
-dgud.toh=uicontrol('style', 'edit', ...
-    'string', strrep(datestr(datenum(fromepoch(tlim(2))), 0),' ','_'), ...
-    'callback', 'av_minvar_interactive_manager(''to'')','backgroundcolor','white', 'position', [xp+0.11 yp 0.2 0.03],'units','normalized');
-
-
-xp=0.15;yp=0.1;
-uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','position', [xp yp 0.15 0.03],'units','normalized','backgroundcolor','white');
-dgud.filter = uicontrol('style', 'edit', ...
-      'string', '1', ...
-    'callback', 'c_4_v_update(''dt'')', ...
-    'backgroundcolor','white','position', [xp+0.15 yp 0.1 0.03],'units','normalized');
-
-subplot(4,2,8);axis off;
-dgud.result_text=text(0,0.8,'result');
-
-set(dgh, 'userdata', dgud);
-
-gcbf=gca;
-av_minvar_interactive_manager('from');
-
-return
 
 
