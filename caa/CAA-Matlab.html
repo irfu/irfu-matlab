@@ -214,12 +214,20 @@ the time interval if the spacecraft potential changes.
 
 <pre>
 >> corrSOffsetM(ClusterProc(sp),1)
-Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[0.00 0.00 1.00 ]>1 0 1
-Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.00 ]>1.3 0 1
-Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.00 ]>1.3 0 1.2
-Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.20 ]>s
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[0.00 0.00 1.00 ]>h
+Usage:
+  give 3 numders for offsets in Ex, Ey and amplitude
+  correction or one of the following commands:
+  s - save calibration parameters
+  r - read from disk
+  f - show/hide full resolution data
+  q - quit
+  q - help (this message)
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[0.00 0.00 1.00 ]>1 0 1
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.00 0.00 1.00 ]>1.1 0 1
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.10 0.00 1.00 ]>s
 Ddsi1, Damp1 -> ./mEDSI.mat
-Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/hide high res)[1.30 0.00 1.20 ]>q
+Delta Ex,Ey [mV/m], amplitude factor (s,r,f,q,h-help)[1.10 0.00 1.00 ]>q
 </pre>
 
 <p>Plot summary information. This step will compute Ez from E.B=0 for times when 
