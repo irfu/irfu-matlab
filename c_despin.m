@@ -34,6 +34,8 @@ function e = c_despin(es,phase,coef,options)
 %  ---------------------- add both
 %  = total field (complex, real along DSC_X and imaginary along DSC_Y)
 %
+% $Id$
+
 t=es(:,1);
 if prod(size(phase))==1, ic=phase;end  % if only one number then it is sc number
 if nargin == 2,
