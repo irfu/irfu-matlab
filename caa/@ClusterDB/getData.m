@@ -15,11 +15,15 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	
 %			// sc potential (LX)
 %
+%	//// EFW internal burst////
+%	eburst: wbE{cl_id}p12,34 -> mER
+%			// electric fields 8kHz
+%
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
 %			// spin axis vector [GSE] 
 %	a   : A{cl_id} -> mA	// phase
-%	r	: R{cl_id} -> mR	// position
+%	r   : R{cl_id} -> mR	// position
 %
 %	//// Other instruments ////
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
@@ -28,7 +32,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	edi : EDI{cl_id},diEDI{cl_id}	->mEDI	// E EDI PP [GSE+DSI] 
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
-%	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
+%	vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %	wbdwf: wfWBD{cl_id} -> mWBD	// WBD waveforms E/B 
 %	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec 
 %
@@ -79,46 +83,58 @@ cd(cdb.sp) %enter the storage directory
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(quantity,'e')
-	save_file = './mER.mat';
-	tmmode='hx';
-	%% Find TapeMode
-	% We read FDM from isdat and 5-th column contains the HX mode
-	% (undocumented feature)
-	% 0 - normal mode  (V12L,V34L)
-	% 1 - tape mode 1  (V12M,V34M)
-	% 2 - tape mode 2  (V12M,V34M)
-	% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
-	clear tm mTMode1 mTMode2 mTMode3 mTMode4
-	if exist('./mTMode.mat','file'), load mTMode, end
-	if exist(av_ssub('mTMode?',cl_id),'var')
-		c_eval('tm=mTMode?;',cl_id)
-	end
-	if ~exist('tm','var')
-		[t,data] = ISGet(cdb.db,start_time,dt,cl_id,'efw','FDM');
-		if ~isempty(data), tm = data(5,:);
-		else, error('Cannot fetch FDM')
-		end	       
-		if tm~=tm(1)*ones(size(tm))
-			warning('tape mode changes during the selected time inteval')
+if strcmp(quantity,'e') | strcmp(quantity,'eburst')
+	
+	if strcmp(quantity,'eburst'), do_burst = 1; else do_burst = 0; end
+	if do_burst 
+		save_file = './mEFWburst.mat';
+		tmmode='burst';
+		param='8kHz';
+		var_name = 'wbE?p';
+	else 
+		save_file = './mER.mat';
+		tmmode='hx';
+		var_name = 'wE?p';
+	
+		%% Find TapeMode
+		% We read FDM from isdat and 5-th column contains the HX mode
+		% (undocumented feature)
+		% 0 - normal mode  (V12L,V34L)
+		% 1 - tape mode 1  (V12M,V34M)
+		% 2 - tape mode 2  (V12M,V34M)
+		% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
+		clear tm mTMode1 mTMode2 mTMode3 mTMode4
+		if exist('./mTMode.mat','file'), load mTMode, end
+		if exist(av_ssub('mTMode?',cl_id),'var')
+			c_eval('tm=mTMode?;',cl_id)
 		end
-		c_eval('mTMode?=tm;',cl_id)
-		if exist('./mTMode.mat','file')
-			eval(av_ssub('save -append mTMode mTMode?;',cl_id))
-		else, eval(av_ssub('save mTMode mTMode?;',cl_id))
+		if ~exist('tm','var')
+			[t,data] = ISGet(cdb.db,start_time,dt,cl_id,'efw','FDM');
+			if ~isempty(data), tm = data(5,:);
+			else, error('Cannot fetch FDM')
+			end	       
+			if tm~=tm(1)*ones(size(tm))
+				warning('tape mode changes during the selected time inteval')
+			end
+			c_eval('mTMode?=tm;',cl_id)
+			if exist('./mTMode.mat','file')
+				eval(av_ssub('save -append mTMode mTMode?;',cl_id))
+			else, eval(av_ssub('save mTMode mTMode?;',cl_id))
+			end
 		end
-	end
-	if tm<1e-30, param='10Hz'; else, param='180Hz'; end
-	clear tm
-	if start_time>toepoch([2001 07 31 00 00 00])&start_time<toepoch([2001 09 01 00 00 00])
-		% all sc run on 180Hz filter in august 2001
-		param='180Hz';
-	elseif start_time>toepoch([2001 09 15 04 30 00])& start_time<toepoch([2001 09 15 06 30 00])
-		% this needs to be investigated.... 
-		param='180Hz';
-	elseif start_time>toepoch([2001 07 31 00 00 00])&cl_id==2
-		% 10Hz filter problem on SC2
-		param='180Hz';
+		if tm<1e-30, param='10Hz'; else, param='180Hz'; end
+		clear tm
+	
+		if start_time>toepoch([2001 07 31 00 00 00])&start_time<toepoch([2001 09 01 00 00 00])
+			% all sc run on 180Hz filter in august 2001
+			param='180Hz';
+		elseif start_time>toepoch([2001 09 15 04 30 00])& start_time<toepoch([2001 09 15 06 30 00])
+			% this needs to be investigated.... 
+			param='180Hz';
+		elseif start_time>toepoch([2001 07 31 00 00 00])&cl_id==2
+			% 10Hz filter problem on SC2
+			param='180Hz';
+		end
 	end
 	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		% p1 problems on SC1 and SC3
@@ -130,11 +146,32 @@ if strcmp(quantity,'e')
 		disp(['EFW...sc' num2str(cl_id) '...Ep' pl{i} ' ' param ' filter']);
 		[t,data] = ISGet(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' pl{i}], param, tmmode);
-		data = double(real(data));
-		t = double(t);
-		eval(av_ssub(['wE?p'  pl{i} '=[t data];'],cl_id)); clear t data;
-		eval(av_ssub(['save_list=[save_list '' wE?p' pl{i} ' ''];'],cl_id));
+		if ~isempty(data)
+			data = double(real(data));
+			t = double(t);
+			
+			if do_burst
+				% correct start time of the burst
+				burst_f_name = av_ssub([makeFName(t(1),1) 'we.0?'],cl_id);
+				burst_f_name = [cdb.dp '/burst/' burst_f_name];
+				if exist(burst_f_name,'file')
+					db = Mat_DbOpen('disco:10');
+					err_t = t(1) - checkbursttime(db,burst_f_name);
+					warning(['burst start time was corrected by ' num2str(err_t) ' sec'])
+					Mat_DbClose(db);
+					t = t - err_t;
+				else
+					warning('burst start time was not corrected')
+				end
+			end
+					
+			c_eval([var_name  pl{i} '=[t data];'],cl_id); clear t data;
+			c_eval(['save_list=[save_list '' ' var_name pl{i} ' ''];'],cl_id);
+		else
+			warning('caa:noData',av_ssub(['No data for ' var_name],cl_id))
+		end
 	end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % p - SC potential
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
