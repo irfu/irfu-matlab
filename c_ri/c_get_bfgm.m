@@ -2,8 +2,8 @@ function [varargout]=c_get_bfgm(tint,sc_list)
 %function [B1,B2,B3,B4]=c_get_bfgm(tint,sc_list)
 %
 % tint given in isdat_epoch
-% sc_list .. vector of satellite unmbers for which to dowload data, default sc_list=1:4
-if nargin ==1, sc_list=1:4;end
+% sc_list .. vector of satellite numbers for which to dowload data, default sc_list=1:4
+if nargin ==1, sc_list=1:4; end
 
 for ic=sc_list,eval(av_ssub('B?=[];',ic)),end
 for j=1:length(sc_list),
