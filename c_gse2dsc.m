@@ -84,11 +84,11 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
          end
      end
      if flag_read_isdat==1,  % load from isdat satellite ephemeris
-      if debug_flag, disp('loading spin axis orientation from isdat database');end
+      c_log('proc','loading spin axis orientation from isdat database');
        start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
         if flag_db==0, % open ISDAT database disco:10
-          if debug_flag, disp('Starting connection to disco:10');end
+          c_log('proc','Starting connection to disco:10');
           db = Mat_DbOpen('disco:10');
         end
         [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
@@ -98,7 +98,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
         else,
           latlong=xxx(1,:);
         end
-        if debug_flag, disp(['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]); end
+        c_log('proc',['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]);
         if flag_db==0,
           Mat_DbClose(db);
         end
@@ -108,7 +108,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
   end
 
 spin_axis=spin_axis/norm(spin_axis);
-if debug_flag, disp('Spin axis orientation');spin_axis, end
+%if debug_flag, disp('Spin axis orientation');spin_axis, end
 
 lx=size(x,2);
 if lx > 3
