@@ -36,9 +36,10 @@ if exist('mV.mat'),
 end
 
 if strcmp(flag,'v_from_t'),
-  for ic=1:4,eval(av_ssub('vsc?=av_interp(V?,t,''spline'');',ic));end
+  t_center=0.5*t(1)+0.5*t;
+  for ic=1:4,eval(av_ssub('vsc?=av_interp(V?,t_center,''spline'');',ic));end
   for ic=1:4,eval(av_ssub('drsc?=av_interp(av_add(1,R?,-1,R1),t(?),''spline'');',ic));end
-  for ic=1:4,eval(av_ssub('dr?=drsc?+[0 (t(?)-t(1))*vsc?(:,2:4)];',ic));end
+  for ic=1:4,eval(av_ssub('dr?=drsc?+[0 (t(?)-t(1))*vsc?(1,2:4)];',ic));end
   for ic=1:4,eval(av_ssub('dt(?)=t(?)-t(1);sdt?=num2str(dt(?),3);',ic));end
   D=[dr2(2:4);dr3(2:4);dr4(2:4)];
   T=[dt(2),dt(3), dt(4)]';
@@ -52,10 +53,12 @@ if strcmp(flag,'v_from_t'),
   strv=['V=' num2str(av_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];
   disp(strdt);disp(strv);
 elseif strcmp(flag,'dt_from_v'),
-  for ic=1:4,eval(av_ssub('vsc?=av_interp(V?,t,''spline'');v?=av_add(1,v,-1,vsc?);',ic));end
+  t_center=0.5*t(1)+0.5*t;
+  for ic=1:4,eval(av_ssub('vsc?=av_interp(V?,t_center,''spline'');',ic));end
+  for ic=1:4,eval(av_ssub('v?=v(2:4)-dot(vsc?(2:4),v(2:4)).*v(2:4)./norm(v(2:4))^2;',ic));end
   for ic=1:4,eval(av_ssub('dr?=av_interp(av_add(1,R?,-1,R1),t,''spline'');',ic));end
-  for ic=1:4,eval(av_ssub('dt(?)=av_dot(v?,dr?,1)./av_abs(v?,1)^2;',ic));end
-
+  for ic=1:4,eval(av_ssub('dt(?)=av_dot(dr?,v?,1)./norm(v?)^2;',ic));end
+  
   % print result
   disp([ datestr(datenum(fromepoch(t(1))))])
   vn=av_norm(v);
