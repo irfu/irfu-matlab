@@ -4,23 +4,24 @@
 % uses ISGETDATALITE
 
 if exist('sc_list') == 0, sc_list=1:4;end % default values
-%eval('help c_get ');
+
 mmm =  ...
- ['q  end, quit                          ';
-	'0  this menu                          ';
+       ['q  end, quit                          ';
+%	'0  this menu                          ';
 	'1  time interval                      ';
 	'2  sc list [1:4]                      ';
-	'a  load phase A1..A4 into mA          ';
-	'e  load wE1...wE4 -> mE               ';
+	'a  load phase A1..A4   -> mA          ';
+	'e  load wE1...wE4      -> mE          ';
 	'eph load ephemeris,r,v,dr,dv          ';
 	'b  load BPP1...BPP4 -> mBPP           ';
 	'bf load Hres FGM B1...B4 -> mB        ';
 %	'bfgm from DDS  FGM B1...B4 -> mB      ';
-	'bs load BS1...BS4 into mBS            ';
+	'bs load BS1...BS4 ->   mBS            ';
 	'p  potential P1..P4 -> mP             ';
 %	's  with/ without saving               ';
 	'vc CIS VCp?,VCh?,dVCp?,dVCh?-> mCIS   ';
-	'vce CIS E VCE1..&dVCE1..-> mCIS       ';
+	'vce CIS E VCE1...dVCE1..-> mCIS       ';
+	'edi EDI E EDI1...dEDI1..-> mEDI       ';
 	'x  free format load                   ';
 	'---------------------------           ';
 	'db despinned dBPP1... -> mBPP         ';
@@ -37,7 +38,7 @@ disp(mmm); % show onces menu
 q='0';flag_save=1;
 while(q ~= 'q') % ====== MAIN LOOP =========
  q=input('input>','s');if isempty(q),q='0';end
- save_list='';
+ save_list='';save_file='';
  if q == 'q', return,
  elseif q == '0', disp(mmm);
  elseif q == 's',
@@ -95,12 +96,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
 
  elseif q == 'b',
-    yyyymmdd=[datestr(datenum(start_time),10) datestr(datenum(start_time),5) datestr(datenum(start_time),7) ];
     for ic=sc_list, disp(['CSDS...BPP' num2str(ic)]);
-      %eval(av_ssub(['data=cdfread(''/data/cluster/CSDS/PP/FGM/C?/C?_PP_FGM_' yyyymmdd '_V01.CDF'',{''Epoch__C?_PP_FGM'' ''B_xyz_gse__C?_PP_FGM''});'],ic));
-      %eval(av_ssub(['t=cdfread(''/data/cluster/CSDS/FGM/C?/C?_PP_FGM_' yyyymmdd '_V01.CDF'',{''Epoch__C?_PP_FGM''};'],ic));
-      %tei=toepoch(datevec(cdf2date(double(data{1}))));ind=find(tei>0);t=tei(ind);
-      %eval(av_ssub('b=double(data{2}); BPP?=[t b(ind,:)];',ic));clear t tei data b;
       [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'FGM', ['B_xyz_gse__C' num2str(ic) '_PP_FGM'], ' ', ' ',' ');
       eval(av_ssub('BPP?=[double(t) double(data)''];',ic));clear t,data;
      eval(av_ssub('if exist(''./mBPP.mat''),save mBPP BPP? -append; else, save mBPP BPP?;end',ic));
@@ -158,7 +154,6 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
  elseif strcmp(q,'bfgm'),
     disp('High time resolution FGM from isdat');
-    save_list='';
     for ic=sc_list,
      disp(['...Bprim' num2str(ic) ', Bsec' num2str(ic)]);
      [t, data] = isGetDataLite( db, start_time, Dt, 'Cluster', num2str(ic), 'fgm', 'Bprim' , ' ', ' ',' ');
@@ -275,8 +270,23 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      fclose(fid);
    end
 
+ elseif strcmp(q,'edi'),
+  save_file='./mEDI.mat';
+    for ic=sc_list, 
+      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'EDI', ['E_xyz_gse__C' num2str(ic) '_PP_EDI'], ' ', ' ',' ');
+      eval(av_ssub('EDI?=[double(t) double(data)''];',ic));clear t,data;
+      if eval(['min(size(EDI' num2str(ic) '))';])==0 % if there are no data
+       disp(['CSDS...EDI' num2str(ic) '... no data']);
+      else
+       eval(av_ssub('dEDI?=c_gse2dsc(EDI?,?);',ic));
+       [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'EDI', ['V_ed_xyz_gse__C' num2str(ic) '_PP_EDI'], ' ', ' ',' ');
+       eval(av_ssub('VEDI?=[double(t) double(data)''];',ic));clear t,data;
+       disp(av_ssub(['CSDS....EDI?,dEDI?,VEDI? -> ' save_file],ic));
+       save_list=[save_list av_ssub(' EDI? dEDI? VEDI? ',ic)];
+      end
+    end
+
  elseif q == 'p',
-    save_list = '';
     variable='mode';default=1;question='Model 1)10Hz_lx, 2)180Hz_hx, 4)32kHz_any, 11)10Hz_hx? If different give as vector. [%]';av_ask;
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
@@ -347,7 +357,6 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
 
  elseif strcmp(q,'vc'),
-    save_list='';
     for ic=sc_list,
      disp(['...VCp' num2str(ic) ', dVCp' num2str(ic)]);
      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'CIS', ['V_p_xyz_gse__C' num2str(ic) '_PP_CIS'], ' ', ' ',' ');
@@ -381,11 +390,22 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     end
   end
 
+% If line is not recognized evaluate it in matlab 
  else
   eval(q,'');
  end
-
+ 
+% If flag_save is set, save variables to specified file
+ if flag_save==1 & length(save_file)>0,
+  if exist(save_file,'file'), 
+   eval(['save -append ' save_file ' ' save_list]); 
+  else, 
+   eval(['save ' save_file ' ' save_list]);
+  end
+ end
+ 
 end
+
 if exist('db'), Mat_DbClose(db); end
 
 

@@ -43,7 +43,7 @@ for ic=sc_list, % which satellite
   eval(av_ssub('vn=c_gse2dsc(vngse,[tint(1) ic]);b=db?;e=de?;',ic));
   if q_flag == 2, flag=c_gse2dsc(L_dir,[tint(1) ic]);end
   bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-  be=av_interp(b,e);gb=c_gse2dsc(b,ic);
+  be=av_interp(b,e);
   % make assumption that E.B=0
   [eb,deg]=av_ed(e,be,10);
   % estimate E in boundary system Ev=E+(v x B)
@@ -103,7 +103,7 @@ for ic=sc_list, % which satellite
   else
     disp('No satellite potential data');
   end
-  av_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
+  av_pl_info([mfilename '  '  datestr(now)]); % add information to the plot
   
   h(ic,ipl)=av_subplot(npl,1,-ipl);ipl=ipl+1;
   av_tplot(b_lmn);grid on;axis tight;ylabel('B_{LMN} [nT]');
