@@ -31,14 +31,14 @@ while have_options
 		switch(args{1})
 		case 'sp'
 			if ischar(args{2}), sp = args{2};
-			else, warning('caa:wrongArgType','sp must be string')
+			else, c_log('fcal','wrong ArgType : sp must be string')
 			end
 		case 'suf'
 			if ischar(args{2}), suf = ['_' args{2}];
-			else, warning('caa:wrongArgType','suf must be string')
+			else, c_log('fcal','wrong ArgType : suf must be string')
 			end
 		otherwise
-        	disp(['Option ''' args{i} '''not recognized'])
+        	c_log('fcal',['Option ''' args{i} '''not recognized'])
     	end
 		if length(args) > l, args = args(l+1:end);
 		else break
@@ -54,7 +54,7 @@ cd(sp)
 for cl_id=sc_list
 	figure(cl_id)
 	fn = sprintf('EFW_C%d_%s%s',cl_id,makeFName(st),suf);
-	disp(['saving ' fn])
+	c_log('save',['saving ' fn])
 	print( gcf, '-dpsc2', fn) 
 	unix(['/usr/local/bin/ps2pdf13 ' fn '.ps']);
 end

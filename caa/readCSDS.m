@@ -124,19 +124,19 @@ for i=1:length(p)
 			% read from directory
 			useISDAT = 0;
 		else
-			warning('caa:noSuchDir','Directory %s does not exist',p{i})
+			c_log('dsrc',['Directory ' p{i} ' does not exist'])
 			continue
 		end
 	end
 
 
 	if useISDAT
-		%warning('caa:dataSource','Using ISDAT')
+		%c_log('dsrc',,'Using ISDAT')
 		lasterr('')
 		try
 			dbase = Mat_DbOpen(p{i});
 		catch
-			warning('ISDAT:dbOpen','Cannot open ISDAT database')
+			c_log('dsrc','Cannot open ISDAT database')
 			continue
 		end
 		if exist('dbase','var')
@@ -154,22 +154,22 @@ for i=1:length(p)
 				data = [double(t) double(dat)];
 				return
 			else
-				% warning('caa:noData','No data')
+				% c_log('dsrc','No data')
 			end
 		end
 
 	else
-		warning('caa:dataSource','Using FILE')
+		c_log('dsrc','Using FILE')
 		disp([p{i} '/CSDS/' r.file start_date_s '*']);
 		data = av_read_cdf([p{i} '/CSDS/' r.file start_date_s '*'], r.var,'latest');
 		if ~isempty(data)
 			data = av_t_lim(data,start_time + [0 dt]);
 			return
 		else 
-			% warning('caa:noData','No data')
+			% c_log('dsrc','No data')
 		end
 	end
 end
 
 % if we are here means there was no data
-warning('caa:noData','No data')
+c_log('dsrc','No data')
