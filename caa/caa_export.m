@@ -228,6 +228,8 @@ for j=1:v_size
 	fprintf(fid,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
 	if ~isempty(dsc.si_conv{j})
 		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
+	else
+		fprintf(fid,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
 	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
