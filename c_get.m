@@ -62,7 +62,10 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'2'),
   % define sc_list
   variable='sc_list';default=[1:4];question='Spacecraft list [%]>'; av_ask;
-
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Ephemeris
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'a'),
     for ic=sc_list, disp(['...A' num2str(ic)]);
      [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
@@ -106,6 +109,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval([varic '=[double(t) double(data)];']);
     end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Magnetic fields
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif q == 'b',
     save_file='./mBPP.mat';
     for ic=sc_list, disp(['CSDS...BPP' num2str(ic)]);
@@ -167,9 +173,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
    eval(av_ssub('dBS?=c_despin(wBS?,A?);save -append mBS dBS?;',ic));
   end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E p1234 or p12 & p34
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  
  elseif strcmp(q,'e') | strcmp(q,'e1'),
   save_file = './mE.mat';
   mode=av_q('Sampling 1)hx 2)lx ? If different give as vector. [%]','mode',1);
@@ -185,7 +191,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 		% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
 		%
 		clear tm mTMode1 mTMode2 mTMode3 mTMode4
-  		if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
+  		if exist('./mTMode.mat','file'), load mTMode; end
 		if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
 		if ~exist('tm','var')
 			[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
@@ -249,9 +255,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   end
   %if exist('./mE.mat'), eval(['save -append mE  ' save_list]); else, eval(['save mE  ' save_list]);end
 
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  % spinfits
- %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'dve1'), 
   save_file = './mE.mat';
   for ic=sc_list,
@@ -263,7 +269,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        disp(sprintf('Spin fit wE%dp12 -> dvE%dp12 mean:%.2f',ic,ic,mean(tt(:,2))))
        sp = EfwDoSpinFit(12,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
        sp = sp(:,1:4); 
-       sp(:,3) = -sp(:,3); % -> GSE
+       sp(:,3) = -sp(:,3); % DSI->DS
        sp(:,4) = 0*sp(:,4);
        o12(1) = mean(sp(:,2)); o12(2) = mean(sp(:,3));
        eval(av_ssub('dvE?p12=sp;',ic))
@@ -277,7 +283,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        disp(sprintf('Spin fit wE%dp34 -> dvE%dp34 mean:%.2f',ic,ic,mean(tt(:,2))))
        sp = EfwDoSpinFit(34,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
        sp = sp(:,1:4); 
-       sp(:,3) = -sp(:,3); % -> GSE
+       sp(:,3) = -sp(:,3); % DSI->DS 
        sp(:,4) = 0*sp(:,4);
        o34(1) = mean(sp(:,2)); o34(2) = mean(sp(:,3));
        eval(av_ssub('dvE?p34=sp;',ic))
@@ -294,9 +300,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   end
   %eval(['save -append mE  ' save_list]);
  
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despin E
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'dve'),
   save_file = './mE.mat';
   q_efw_offset=av_q('How to treat offsets? \n  1) do nothing, \n  2) before despin subtract probe signal mean \n  3)  2 + use nearest sunward offsets,\n  4) nearest full hand-tuned callibration,\n[%]>','q_efw_offset',2);
@@ -315,6 +321,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   end
   %eval(['save -append mE  ' save_list]);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dE 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'de'),
   for ic=sc_list,
    eval(av_ssub('load mE dvE?;load mBPP dBPP?;load mV dV?; tt=dvE?(1,1);db=dBPP?; dv=dV?;clear dBPP? dV?;',ic));
@@ -324,6 +333,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   end
   eval(['save -append mE  ' save_list]);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% deo 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'deo'),
   disp('Estimating dEo where dEo.B=0, Eo (GSE) and Vo=Eo/B')
   deg=input('B angle with respect to the spin plane should be at least x deg, x=');
