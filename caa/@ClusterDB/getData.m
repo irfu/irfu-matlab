@@ -9,11 +9,12 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	e   : wE{cl_id}p12,34 -> mER	// electric fields
-%	a   : A{cl_id} -> mA			// phase
-%	b   : BPP{cl_id} ->mBPP			// B FGM PP [GSE] 
-%	dib : diBPP{cl_id} ->mBPP		// B FGM PP [DSI] 
-%	sax : SAX{cl_id} ->mEPH			// spin axis vector [GSE] 
+%	e   : wE{cl_id}p12,34 -> mER			// electric fields
+%	a   : A{cl_id} -> mA					// phase
+%	b   : BPP{cl_id},diBPP{cl_id} ->mBPP	// B FGM PP [GSE+DSI] 
+%	edi : EDI{cl_id},diEDI{cl_id} ->mEDI	// E EDI PP [GSE+DSI] 
+%	sax : SAX{cl_id} ->mEPH					// spin axis vector [GSE] 
+%	vcis: CIS{cl_id},diCIS{cl_id} ->mCIS	// V CIS PP [GSE+DSI] 
 %
 %	options - one of the following:
 %	nosave : do no save on disk
@@ -116,21 +117,46 @@ elseif strcmp(quantity,'a')
 		eval(av_ssub('A?=[double(t) double(data)];',cl_id)); clear t data;
 		eval(av_ssub('save_list=[save_list '' A? ''];',cl_id));
 	else
-		warning(av_ssub('No data for A?',cl_id))
+		warning('caa:noData',av_ssub('No data for A?',cl_id))
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% b - B FGM PP [GSE] 
+% CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'b')
-	save_file='./mBPP.mat';
-
-	% first try ISDAT (fast) then files
-	dat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,'b');
-	if ~isempty(dat)
-		eval(av_ssub('BPP?=dat;save_list=[save_list '' BPP?''];',cl_id));
-		clear dat
+elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')
+	r.qua = {quantity};
+	switch(quantity)
+	case 'b'
+		r.ins = 'BPP';
+		r.var = {r.ins};
+	case 'edi'
+		r.ins = 'EDI';
+		r.var = {r.ins};
+	case 'vcis'
+		r.ins = 'CIS';
+		r.qua = {'vcis_p', 'vcis_h'}; % CODIF and HIA 
+		r.var = {'VCp', 'VCh'};
+	otherwise
+		error('Check variable list')
 	end
 
+	save_file = ['./m' r.ins '.mat'];
+
+	for i=1:length(r.qua)	
+		% first try ISDAT (fast) then files
+		dat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,r.qua{i});
+		if ~isempty(dat)
+			eval(av_ssub([r.var{i} '?=dat;save_list=[save_list '' ' r.var{i} '?''];'],cl_id));
+			if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+			if ~exist(av_ssub('SAX?',cl_id),'var')
+				warning('must fetch spin axis orientation (option ''sax'')')
+			else
+				eval(av_ssub(['di' r.var{i} '?=c_gse2dsc(' r.var{i} '?,SAX?);di' r.var{i} '?(:,3:4)=-di' r.var{i} '?(:,3:4);save_list=[save_list '' di' r.var{i} '?''];'],cl_id));
+			end
+			clear dat
+		else
+			warning('caa:noData','No data')
+		end
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sax - spin axis orientation [GSE] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -149,21 +175,42 @@ elseif strcmp(quantity,'sax')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% b - B FGM PP [DSI] 
+% vce - E CIS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'dib')
-	save_file='./mBPP.mat';
-	if ~exist(save_file,'file')
-		warning('must fetch B GSE PP first (option ''b'')')
+elseif strcmp(quantity,'vce')
+	save_file='./mCIS.mat';
+
+	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+	if ~exist('./mCIS.mat','file')
+		warning('Please run ''vcis'' first (mCIS missing)')
+		data = [];
 		return
 	end
-	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
-	if ~exist(av_ssub('SAX?',cl_id),'var')
-		warning('must fetch spin axis orientation (option ''sax'')')
+	if ~exist('./mBPP.mat','file')
+		warning('Please run ''n'' first (mBPP missing)')
+		data = [];
 		return
 	end
 
-	eval(av_ssub('load mBPP BPP?;diBPP?=c_gse2dsc(BPP?,SAX?);diBPP?(:,3:4)=-diBPP?(:,3:4);save_list=[save_list '' diBPP?''];',cl_id));
+	CIS=load('mCIS');
+	eval(av_ssub('load mBPP BPP?;b=BPP?; clear BPP?',cl_id))
+
+	var = {'VCp', 'VCh'};
+	varo = {'VCEp', 'VCEh'};
+	for i=1:length(var)
+	
+		eval(av_ssub(['if isfield(CIS,''' var{i} '?''); v=CIS.' var{i} '?; else, v=[]; end; clear ' var{i}], cl_id));
+		if ~isempty(v)
+			evxb=av_t_appl(av_cross(v,b),'*(-1e-3)');
+			eval(av_ssub([varo{i} '?=evxb;save_list=[save_list '' ' varo{i} '?'']; clear evxb'],cl_id));
+			if ~exist(av_ssub('SAX?',cl_id),'var')
+				warning('must fetch spin axis orientation (option ''sax'')')
+			else
+				eval(av_ssub(['di' varo{i} '?=c_gse2dsc(' varo{i} '?,SAX?);di' varo{i} '?(:,3:4)=-di' varo{i} '?(:,3:4);save_list=[save_list '' di' varo{i} '?''];'],cl_id));
+			end
+		end
+	end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
