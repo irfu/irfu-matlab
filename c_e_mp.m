@@ -30,16 +30,16 @@ if nargin==1 | isempty(tint),   load mE dE1;tint=[E(1,1) E(end,1)]; end
 if nargin == 3;  sc_list=e; end
 if nargin<3, sc_list=1:4; end
 if nargin<=3,
-  for ic=sc_list,eval(av_ssub('load mE dE?;de?=av_t_lim(dE?,tint);clear dE?;disp(''..dE?'');',ic)),end
-  for ic=sc_list,eval(av_ssub('load mB dB?;db?=av_t_lim(dB?,tint);clear dB?;disp(''..dB?'')',ic)),end
+  for ic=sc_list,eval(av_ssub('load mEDSI diE?;die?=av_t_lim(diE?,tint);clear diE?;disp(''..diE?'');',ic)),end
+  for ic=sc_list,eval(av_ssub('load mB diB?;dib?=av_t_lim(diB?,tint);clear diB?;disp(''..diB?'')',ic)),end
 end
-if nargin == 4,  sc_list=1;de1=e;db1=b; end
-if nargin == 5,  eval(av_ssub('de?=av_t_lim(e,tint);db?=av_t_lim(b,tint);',sc_list));  end
+if nargin == 4,  sc_list=1;die1=e;dib1=b; end
+if nargin == 5,  eval(av_ssub('die?=av_t_lim(e,tint);dib?=av_t_lim(b,tint);',sc_list));  end
 
 for ic=sc_list, % which satellite
-eval(av_ssub('vn=c_gse2dsc(vngse,[tint(1) ic]);b=db?;e=de?;',ic));
+c_eval('vn=c_gse2dsc(vngse,[tint(1) ic],2);b=dib?;e=die?;',ic);
 bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-be=av_interp(b,e);gb=c_gse2dsc(b,ic);
+be=av_interp(b,e);gb=c_gse2dsc(b,ic,2);
 % make assumption that E.B=0
 [eb,deg]=av_ed(e,be,5);
 % estimate E in boundary system Ev=E+(v x B)
