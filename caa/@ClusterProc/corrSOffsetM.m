@@ -132,12 +132,14 @@ while(q ~= 'q')
 			else
 				offset(1) = o_tmp(1)+1i*imag(offset(1));
 			end
-			diE_tmp = diE;
-			diE_tmp(:,2) = diE_tmp(:,2) - offset(1);
-			diE_tmp(:,2:3) = diE_tmp(:,2:3)*offset(2);
-			diEs_tmp = diEs;
-			diEs_tmp(:,2) = diEs_tmp(:,2) - offset(1);
-			diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*offset(2);
+      diE_tmp = diE;
+      diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
+      diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
+      diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
+      diEs_tmp = diEs;
+      diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
+      diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
+      diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
 			figure(17)
 			clf
 			eval(['plotExy(' var_list ');zoom on'])
