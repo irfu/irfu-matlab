@@ -493,7 +493,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'wbdwf')
 	save_file='./mWBD.mat';
 	for ic=sc_list
-		data = getData(ClusterDB,tst,dt,ic,'wbdwf','nosave');
+		data = getData(ClusterDB,toepoch(start_time),Dt,ic,'wbdwf','nosave');
 		if ~isempty(data)
 			c_eval('wfWBD?=data{2};',ic);
 			disp(av_ssub(['wfWBD? -> ' save_file],ic));
