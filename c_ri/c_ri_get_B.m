@@ -81,10 +81,16 @@ d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
 
+FGMPATH = '/share/fgm_cal';
+[s,h] = unix('hostname');
+if ~strcmp(h,'sanna.irfu.se')
+	FGMPATH = ['/net/sanna/export' FGMPATH];
+end
+
 if nargout,  % return B
   to_file=tempname;
-  unix_command = [fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
-   unix(unix_command);
+  unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' > ' to_file];
+  unix(['/bin/sh -c ''' unix_command '''']);
   fvs = fgmvec_stream(to_file);
   dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
   close(fvs);
@@ -92,12 +98,12 @@ if nargout,  % return B
   B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
 else
   %download an unpack the downloaded data
-  unix_command = [fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' | ' fgmvec ' > ' to_file];
-  unix(unix_command);
+  unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' | ' fgmvec ' > ' to_file];
+  unix(['/bin/sh -c ''' unix_command '''']);
   disp(['saved to file ' to_file])
 
   %removes the temporary file
   unix_command =sprintf('rm %s',d_source);
   unix(unix_command);
 end
-unix('rm /data/cluster/cal/fgm/tmp_att');
+unix(['rm ' FGMPATH '/tmp_att']);
