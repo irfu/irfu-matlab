@@ -33,7 +33,7 @@ if strcmp(action,'initialize'),
     else   disp('Using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
-  if nargin<3, eval(av_ssub('load -mat mA A?;phase_time_series=A?;clear A?',ic));          end
+  if nargin<3, eval(av_ssub('load mA.mat A?;phase_time_series=A?;clear A?',ic));          end
   if nargin<2, time=phase_time_series(1,1);                                                end
   t=time;a=phase_time_series;b=magnetic_field;
   if flag_v == 1, v=velocity; end

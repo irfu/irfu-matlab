@@ -223,9 +223,18 @@ coef3=[[1,0.7, 1.3-0.4-0.05i];[1,0.2, 1.3+0i]]; % sc/3
 coef4=[[1,0.35, 0.9+.8+0i];[1,-0.7, 0.9+0i]]; % sc/4
 end
 
-% 9 Sep 2001, neutral sheet crossing, L,M,L,L-mode
-if isdat_epoch > toepoch([2001 09 07 00 00 00]),
-info='EFW calibration coefficients from 2001-09-07';
+% 7 Sep 2001, neutral sheet crossing, M,M,M,M-mode
+if isdat_epoch > toepoch([2001 09 07 19 00 00]),
+info='EFW calibration coefficients from 2001-09-07 1900 UT';
+coef1=[[1,.2, 1.3-0.05i];[1,-0.7, 1.3+0i]]; % sc/1
+coef2=[[1,-0.3, 1.4-0.1i];[1,1.2, 1.4+0.3+0i]]; % sc/2
+coef3=[[1,.5, 1.3-0.4-0.05i];[1,0.2, 1.3+0i]]; % sc/3
+coef4=[[1,0.5, 0.9+.8+0i];[1,-1.0, 0.9+0i]]; % sc/4
+end
+
+% 7 Sep 2001, neutral sheet crossing, L,M,L,L-mode
+if isdat_epoch > toepoch([2001 09 07 21 00 00]),
+info='EFW calibration coefficients from 2001-09-07 2100 UT';
 coef1=[[1,-.4, 1.3-0.05i];[1,-0.2, 1.3+0i]]; % sc/1
 coef2=[[1,-0.2, 1.4-0.1i];[1,1.4, 1.4+0.3+0i]]; % sc/2
 coef3=[[1,-.2, 1.3-0.4-0.05i];[1,-0.2, 1.3+0i]]; % sc/3
@@ -241,7 +250,7 @@ coef3=[[1,0, 1.3-0.4-0.05i];[1,-0.4, 1.3+0i]]; % sc/3
 coef4=[[1,0.5, 0.9+.8+0i];[1,-0.6, 0.9+0i]]; % sc/4
 end
 
-% 2 Mar 2002, MP-Xing, L,M,L,L-mode
+% 2 Mar 2001, MP-Xing, L,M,L,L-mode
 if isdat_epoch > toepoch([2002 3 2 00 00 00]),
 info='EFW calibration coefficients from 2002-03-02';
 coef1=[[1,0, 1.3-0.05i];[1,-0.1, 1.3+0i]]; % sc/1
@@ -250,14 +259,6 @@ coef3=[[1,0.5, 1.3-0.4-0.05i];[1,0.35, 1.3+0i]]; % sc/3
 coef4=[[1,0.3, 0.9+.8+0i];[1,-1, 0.9+0i]]; % sc/4
 end
 
-% 4 Mar 2002, MP-Xing, L,M,L,L-mode
-if isdat_epoch > toepoch([2002 3 4 00 00 00]),
-info='EFW calibration coefficients from 2002-03-04';
-coef1=[[1,0, 1.3-0.05i];[1,-0.1, 1.3+0i]]; % sc/1
-coef2=[[1,-0.15, 1.4-0.1i];[1,1.1, 1.4+0.3+0i]]; % sc/2
-coef3=[[1,-.2, 1.3-0.4-0.05i];[1,-.35, 1.3+0i]]; % sc/3
-coef4=[[1,0.5, 0.9+.8+0i];[1,-.5, 0.9+0i]]; % sc/4
-end
 
 % 6 Mar 2002, magnetopause in M-mode
 if isdat_epoch > toepoch([2002 03 6 00 00 00]),

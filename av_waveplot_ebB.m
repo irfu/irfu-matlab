@@ -270,7 +270,7 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
     pcolor(t,newfreq,(sign(Spar_plot).*sqrt(abs(Spar_plot))).') % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    ht=text(0,0,'Poynt flux [\mu W/Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
+    ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
 
     cc = [-max(max(sqrt(abs(Spar)))) max(max(sqrt(abs(Spar))))];

@@ -2,7 +2,7 @@ function [z]=av_dot(x,y,flag)
 %AV_DOT calculate dot product between vectors
 % [z]=AV_DOT(x,y,flag) calculate dot product of vectors x and y
 %
-% x,y,z    are column vectors  [time],x,y,z,[r]
+% x,y,z  are column vectors  [time],x,y,z,[r]
 %
 % If x or y has only one row then this vector value is used
 % in dot product for all y(or x) data points.

@@ -28,6 +28,7 @@ function e = c_despin(es,phase,coef)
 t=es(:,1);
 if nargin == 2,
  coef=[[1 0 0];[1 0 0]];
+ ref_frame='wec';
 end
 
 if nargin == 3,
