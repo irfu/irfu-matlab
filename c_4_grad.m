@@ -109,7 +109,7 @@ switch flag_option
       curv(:,2)=dot(b(:,2:4),grad_b(:,[2 5 8]),2);
       curv(:,3)=dot(b(:,2:4),grad_b(:,[3 6 9]),2);
       curv(:,4)=dot(b(:,2:4),grad_b(:,[5 7 10]),2);
-      grad_b=curv;
+      grad_b=curv; % grad_b is output variable 
     end
   otherwise
     c_log('fcal','warning: unknown input option');
