@@ -123,7 +123,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 
  elseif strcmp(q,'bfgm'),
   for ic=sc_list,
-    eval(av_ssub('B?=c_get_bfgm(tint_epoch,sc_list);',ic));
+    eval(av_ssub('B?=c_get_bfgm(tint_epoch,ic);',ic));
   end
   eval(['save mB ' save_list]);
 
