@@ -90,7 +90,7 @@ if strcmp(action,'initialize'),
         'Callback',callbackStr);
   %====================================
   % The time entering
-  labelStr=[datestr(datenum(fromepoch(t))) '.' num2str(floor(mod(t,1)*100),'%.2d')];
+  labelStr=[epoch2iso(t)];
   callbackStr='c_pl_sc_orientation(''time'')';
   timeHndl=uicontrol( ...
         'Style','edit', ...
@@ -113,7 +113,7 @@ if strcmp(action,'initialize'),
   c_pl_sc_orientation('time');
   
 elseif strcmp(action,'time'),
-  t=toepoch(datevec(get(timeHndl, 'string')));
+  t=iso2epoch(get(timeHndl, 'string'));
   phase=av_interp([a(:,1) unwrap(a(:,2)/180*pi)],t);
   phase(1)=[];phase=mod(phase*180/pi,360); % take away time column
   set(phaseHndl,'string',num2str(phase));
