@@ -19,7 +19,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_blank - remove points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit 
-%	vedbs, vedb : V[s]{cl_id}, diV[s]{cl_id} -> mEdB // ExB=0 [DSI+GSE]
+%	vedbs, vedb : V[s]{cl_id}, diV[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
 %	Example usage: getData(cp,4,'edbs','ang_fill','ang_limit',20)
 %
