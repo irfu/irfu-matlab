@@ -64,7 +64,9 @@ case 2
 		mode_s = 'res';
 	elseif isstr(cl_id)
 		mode_s = cl_id;
-		if regexp(vs,'?'), cl_id = 1:4; end
+		if regexp(vs,'?'), cl_id = 1:4; 
+		else, cl_id = 1;
+		end
 	else, error('Second input argument must be eather a number 1..4 or a string.')
 	end
 case 1
