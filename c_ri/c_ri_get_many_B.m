@@ -1,4 +1,5 @@
-function c_ri_get_many_B(passing_MP,path_output) 
+function c_ri_get_many_B(passing_MP,path_output)
+%function c_ri_get_many_B(passing_MP,path_output)
 %
 %Input:
 % passing_MP -matrix where every row contains [entering MP | leaving MP]
