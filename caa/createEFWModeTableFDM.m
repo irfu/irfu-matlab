@@ -102,7 +102,7 @@ while t_cur < stop_epoch
 				elseif strcmp(var_list(j),'e')
 					fdm_last_e = fdm_e(1,:);
 				elseif strcmp(var_list(j),'tm')
-					fdm_last_tm = fdm_tm(1)
+					fdm_last_tm = fdm_tm(1);
 				else
 					error('unknown variable')
 				end
