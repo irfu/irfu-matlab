@@ -6,6 +6,8 @@ function av_zoom(interval,c,axis_handles,t_ref)
 %  left side of the date vectors can be skipped, then one uses the values from axis
 %  c='x' for x-axis, 'y' for y-axis
 %  t_ref is isdat_epoch of time=0 point
+%
+% $Id$
 
 if nargin<4, t_ref=0;end
 if nargin < 3, axis_handles=gca;end
@@ -25,17 +27,22 @@ if iscell(interval),
  end
 end
 
-for h=axis_handles,
- axes(h); ax=axis;
- if c=='x',
-   set(h,'Xlim',[interval]);
-   set(h,'Ylim',[ax(3:4)]);
-   set(h,'xtickmode','auto','xticklabelmode','auto');
-   if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10),add_timeaxis(h,t_ref);end
- end
- if c=='y',
-  set(h,'Ylim',[interval]);
-  set(h,'Xlim',[ax(1:2)]);
- end
-
+for h=axis_handles
+	axes(h); ax=axis;
+	if c=='x'
+		set(h,'Xlim',[interval]);
+		set(h,'Ylim',[ax(3:4)]);
+		set(h,'xtickmode','auto','xticklabelmode','auto');
+		if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10)
+			add_timeaxis(h,t_ref);
+			if h~=axis_handles(end)
+				xlabel(h,'')
+				set(h,'XTickLabel','')
+			end
+		end
+	end
+	if c=='y'
+		set(h,'Ylim',[interval]);
+		set(h,'Xlim',[ax(1:2)]);
+	end
 end
