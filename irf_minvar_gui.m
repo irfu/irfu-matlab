@@ -126,8 +126,8 @@ switch action,
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]);
         irf_minvar_gui('update_mva_axis');
     case 'from'
-        tlim(1) = iso2epoch(ud.fromh);
-        tlim(2) = iso2epoch(ud.toh);
+        tlim(1) = iso2epoch(get(ud.fromh,'string'));
+        tlim(2) = iso2epoch(get(ud.toh,'string'));
         set(ud.mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
         irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
