@@ -1,8 +1,7 @@
 <html>
   <head>
     <title>CAA-Matlab description</title>
-    <meta content="">
-    <style></style>
+    <meta content=""><style></style>
   </head>
   <body>
   <h1>CAA-Matlab description</h1>
@@ -129,50 +128,82 @@ st =
 >> dt=160*60;
 </pre>
 <p>
-Next we get all possible data (EFW + FGM,CIS,EDI PP) on disk and despin it.
-</p>
+      Next we get all possible data (EFW + FGM,CIS,EDI PP, ephemeris) on disk and despin it.
+    </p>
 
 <pre>
->> getRData(sp,st,dt)
+>> getRData(st,dt,'sp',sp)
+[2004-09-08 16:39:51][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:39:56][getData : dsrc] EFW...sc1...Ep12 10Hz filter
+[2004-09-08 16:39:57][getData : dsrc] EFW...sc1...Ep34 10Hz filter
+[2004-09-08 16:39:58][getData : save]  wE1p12  wE1p34  -> ./mER.mat
+[2004-09-08 16:39:59][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:39:59][getData : dsrc] EFW...sc1...probe1->P10Hz1p1
+[2004-09-08 16:39:59][getData : dsrc] EFW...sc1...probe2->P10Hz1p2
+[2004-09-08 16:40:00][getData : dsrc] EFW...sc1...probe3->P10Hz1p3
+[2004-09-08 16:40:00][getData : dsrc] EFW...sc1...probe4->P10Hz1p4
+[2004-09-08 16:40:01][getData : save]  P10Hz1p1 P10Hz1p2 P10Hz1p3 P10Hz1p4 P10Hz1  P1 NVps1 -> ./mP.mat
+[2004-09-08 16:40:02][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  A1  -> ./mA.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  SAX1 -> ./mEPH.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:03][getData : save]  R1  -> ./mR.mat
+[2004-09-08 16:40:03][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:04][getData : save]  V1  -> ./mR.mat
+[2004-09-08 16:40:04][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:08][getData : save]  WHIP1  -> ./mFDM.mat
+[2004-09-08 16:40:08][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:08][getData : save]  BPP1 diBPP1 -> ./mBPP.mat
+[2004-09-08 16:40:08][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
+Warning: Reason given by server: no data
+Warning: Mat_DbGetDataLite: Data request could not be fulfilled.
+Warning: Reason given by server: no data
+[2004-09-08 16:40:10][readCSDS : dsrc] Using FILE
+/data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001*
+C1_PP_EDI_20011001_V01.CDF
+C1_PP_EDI_20011001_V02.CDF
+cdf file: /data/cluster/CSDS/PP/EDI/C1/C1_PP_EDI_20011001_V02.CDF
+[2004-09-08 16:40:12][getData : dsrc] No data
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:12][getData : save]  NCp1 NCh1 -> ./mCIS.mat
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:12][getData : save]  VCp1 diVCp1 VCh1 diVCh1 -> ./mCIS.mat
+[2004-09-08 16:40:12][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:40:13][getData : save]  VCEp1 diVCEp1 VCEh1 diVCEh1 -> ./mCIS.mat
 
 ...
 
-EFW...sc4...Ep12 10Hz filter
-EFW...sc4...Ep34 10Hz filter
- wE4p12  wE4p34  -> ./mER.mat
-EFW...sc4...probe1->P10Hz4p1
-EFW...sc4...probe2->P10Hz4p2
-EFW...sc4...probe3->P10Hz4p3
-EFW...sc4...probe4->P10Hz4p4
- P10Hz4p1 P10Hz4p2 P10Hz4p3 P10Hz4p4 P10Hz4  P4 NVps4 -> ./mP.mat
- A4  -> ./mA.mat
- SAX4 -> ./mEPH.mat
- BPP4 diBPP4 -> ./mBPP.mat
-/data/cluster/CSDS/PP/EDI/C4/C4_PP_EDI_20011001*
-cdf file: /data/cluster/CSDS/PP/EDI/C4/C4_PP_EDI_20011001_V01.CDF
-/data/cluster/CSDS/PP/CIS/C4/C4_PP_CIS_20011001*
-cdf file: /data/cluster/CSDS/PP/CIS/C4/C4_PP_CIS_20011001_V03.CDF
- VCp4 diVCp4 VCh4 diVCh4 -> ./mCIS.mat
- VCEp4 diVCEp4 VCEh4 diVCEh4 -> ./mCIS.mat
+[2004-09-08 16:45:45][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:45:45][getData : proc] Spin fit wE4p12 -> diEs4p12
+[2004-09-08 16:45:45][getData : proc] not using times with Whisper pulses
+[2004-09-08 16:46:23][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:46:23][getData : proc] Spin fit wE4p34 -> diEs4p34
+[2004-09-08 16:46:23][getData : proc] not using times with Whisper pulses
+[2004-09-08 16:47:00][EfwDoSpinFit : proc] 2399 spins processed, 184 gaps found
+[2004-09-08 16:47:00][getData : calb] delta offsets are: 0.75 [x] 0.03 [y]
+[2004-09-08 16:47:00][getData : calb] correcting p12
+[2004-09-08 16:47:00][getData : save]  diEs4p12  diEs4p34  D4p12p34  -> ./mEDSI.mat
+[2004-09-08 16:47:00][getData : save] Storage directory is /home/yuri/caa-data/20011001_1310
+[2004-09-08 16:47:00][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:01][getData : calb] Da4dp12 : 0.52
+[2004-09-08 16:47:01][corrADCOffset : proc] ADC offset: not using times with Whisper pulses
+[2004-09-08 16:47:02][getData : calb] Da4dp34 : 0.12
+[2004-09-08 16:47:02][getData : calb] correcting p12
+[2004-09-08 16:47:02][c_despin : proc] rotation period=4.0116 s
+[2004-09-08 16:47:03][getData : save]  Da4p12  Da4p34 diE4p1234 -> ./mEDSI.mat
+</pre>
 
- ...
+<p>If you think it is too much debugging information on the screen,please look at <tt>help c_log</tt>. 
+For example you can limit the output only to database, calibration and processing messages. To do so run</p>
 
-Spin fit wE4p12 -> diEs4p12
-2399 spins processed, 0 gaps found
-Spin fit wE4p34 -> diEs4p34
-2399 spins processed, 0 gaps found
-delta offsets are: 0.74 [x] 0.03 [y]
-correcting p12
- diEs4p12  diEs4p34  D4p12p34  -> ./mEDSI.mat
-Da4dp12 : 0.52
-Da4dp34 : 0.12
-correcting p12
-rotation period=4.0116 s
- Da4p12  Da4p34  diE4p1234  -> ./mEDSI.mat
+<pre>
+>> c_log('log_lev',2+16+32)
 </pre>
 
 <p>
-Calibrate sunward offset and amplitude factors. 
+Now calibrate sunward/duskward offset and amplitude correction factors. 
 It is better to start from the spacecraft for which you have CIS and EDI data.
 The osstest are usually similar for all SC (not always).
 First correct the sunward field Ex, and then the amplitude. It is better to use
@@ -192,10 +223,15 @@ Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read,h-show/h
 </pre>
 
 <p>Plot summary information. This step will compute Ez from E.B=0 for times when 
-magnetic field is more the 15 degrees from the spin plane, and then compute ExB.</p>
+magnetic field is more the 15 degrees from the spin plane, and then compute ExB. We do it only for SC 1.</p>
 
 <pre>
->> doSPlot(sp)
+>> doSPlot(sp,1)
+[2004-09-08 16:55:22][proc] using p34
+[2004-09-08 16:55:22][proc] using angle limit of 15 degrees
+[2004-09-08 16:55:22][proc] setting points < ang_limit to NaN
+[2004-09-08 16:55:26][proc] using angle limit of 15 degrees
+[2004-09-08 16:55:27][proc] setting points < ang_limit to NaN
 </pre>
 
 <p>Now you should get four plots with data for all Cluster SC, and all the processed 
