@@ -66,8 +66,8 @@ if nargin >= 3,
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     eval(av_ssub('coef=c?;',ic));
-    coef(1,2)=mean(es(:,3));
-    coef(2,2)=mean(es(:,2));
+    coef(1,2)=mean(es(:,4));
+    coef(2,2)=mean(es(:,3));
   elseif strcmp(coef,'staff'),
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
