@@ -37,7 +37,9 @@ case 1 % Vps -> Ne
   
 case 2 % Ne -> Vps
   if flag == -1,
+    warning off
     n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)), 'linear', 'extrap' );  
+    warning on
   end
 end
 
