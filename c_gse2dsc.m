@@ -66,7 +66,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
      end
      if flag_read_isdat==1,  % load from isdat satellite ephemeris
       if debug_flag, disp('loading spin axis orientation from isdat database');end
-       start_time=fromepoch(x(1,1)); % time of the first point
+       start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
         if flag_db==0, % open ISDAT database disco:10
           if debug_flag, disp('Starting connection to disco:10');end
