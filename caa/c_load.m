@@ -37,7 +37,7 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 %	% Loads variable B2 from the current directory into variable B_tmp. 
 %	% ok is 1 if load was sucessfull. 
 %
-% See also C_DESC, AV_SSUB
+% See also C_DESC, IRF_SSUB
 %
 % $Id$
 
@@ -78,12 +78,12 @@ end
 
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
-else, c_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
+else, irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
 end
 
 kk = 1;
 for cli=cl_id
-	vs_tmp = av_ssub(vs,cli);
+	vs_tmp = irf_ssub(vs,cli);
 	d = c_desc(vs_tmp);
 	
 	% Try to load from file
@@ -126,7 +126,7 @@ for cli=cl_id
 			else, res(kk) = 0;
 			end
 		case 0
-			c_log('load',['cannot load ' vs_tmp])
+			irf_log('load',['cannot load ' vs_tmp])
 		end
 	end
 	kk = kk + 1;

@@ -32,13 +32,13 @@ else
   figure(hf);
 end
 
-if flag_new_figure==1, h2(1)=av_subplot(4,1,-1); end
+if flag_new_figure==1, h2(1)=irf_subplot(4,1,-1); end
 axes(h2(1));
 semilogy(freq,ss1,'k',freq,ss2,'b');set(gca,'xlim',freq_lim);grid on;
 ylabel('Power [(mV/m)^2/Hz]');
 title([datestr(datenum(fromepoch(p(1)+t0))) '.' num2str(mod(p(1)+t0,1)*100,2) ' Spectra']);
 
-if flag_new_figure==1, h2(2)=av_subplot(4,1,-2);end
+if flag_new_figure==1, h2(2)=irf_subplot(4,1,-2);end
 axes(h2(2));
 plot(freq,ch1,'k.',freq,ch2,'b.');axis([freq_lim 0 1]);axis manual;
 set(gca,'ytick',[0 threshold 1]);grid on;
@@ -48,7 +48,7 @@ ind_coh_bad1=find(ch1<=threshold);
 ind_coh_good2=find(ch2>threshold);
 ind_coh_bad2=find(ch2<=threshold);
 
-if flag_new_figure==1, h2(3)=av_subplot(4,1,-3);end
+if flag_new_figure==1, h2(3)=irf_subplot(4,1,-3);end
 axes(h2(3));cla;
 plot(freq(ind_coh_good1),ph1(ind_coh_good1),'k.',freq(ind_coh_bad1),ph1(ind_coh_bad1),'kx');
 hold on;grid on;

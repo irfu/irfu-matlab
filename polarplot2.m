@@ -144,18 +144,18 @@ clear polarplot2_manager
     temp2=find(coh2<threshold);phase_all2=phase2;phase2(temp2)=NaN;
 
     clf;
-    h(1)=av_subplot(5,1,-1);
+    h(1)=irf_subplot(5,1,-1);
     plot(t-t0,Ex1,t-t0,Ex2);colorbar;axpos=get(gca,'position');
     plot(t-t0,Ex1,t-t0,Ex2);set(gca,'position',axpos);
     grid on;hold on;
     xlabel('UT')
     ylabel('mV/m')
     title([' nfft=' num2str(steplength) ', av=' num2str(avnumber)] )
-    ht=av_pl_info(['polarplot2() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
+    ht=irf_pl_info(['polarplot2() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
     add_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
-    h(2)=av_subplot(5,1,-2);
+    h(2)=irf_subplot(5,1,-2);
     pcolor(T-t0,freq,log10(2*n*Imean1/sampl))
     shading flat
     colorbar('vert');
@@ -165,7 +165,7 @@ clear polarplot2_manager
 %    add_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
                   
-    h(3)=av_subplot(5,1,-3);
+    h(3)=irf_subplot(5,1,-3);
     pcolor(T-t0,freq,coh1)
     shading flat
     caxis([0,1])
@@ -176,7 +176,7 @@ clear polarplot2_manager
     add_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
-    h(4)=av_subplot(5,1,-4);
+    h(4)=irf_subplot(5,1,-4);
     hp=pcolor(T-t0,freq,phase1);
     shading flat
     caxis([-180,180])
@@ -188,7 +188,7 @@ clear polarplot2_manager
     %set(gca,'yscale','log')
     set(hp,    'buttondownfcn', 'polarplot2_manager(''ja'')');
 
-    h(5)=av_subplot(5,1,-5);
+    h(5)=irf_subplot(5,1,-5);
     hp=pcolor(T-t0,freq,phase2);
     shading flat
     caxis([-180,180])
@@ -250,7 +250,7 @@ clear polarplot2_manager
 %  suptitle([datestring(fromepoch(t0)) ', nfft=' num2str(steplength) ', av=' num2str(avnumber)] )
   warning on
 
-  av_zoom([0 t(end)-t(1)],'x',h);add_timeaxis(h,t0);
+  irf_zoom([0 t(end)-t(1)],'x',h);add_timeaxis(h,t0);
 global POLARPLOT_RESULTS
 POLARPLOT_RESULTS={t0, T-t0,freq,2*n*Imean1/sampl,coh1,phase_all1,2*n*Imean2/sampl,coh2,phase_all2,threshold};
 

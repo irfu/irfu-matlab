@@ -137,7 +137,7 @@ case 'init'
 	ncdata = 0; % number of non-AUX variables
 	
 	for cl_id=1:4
-		s = av_ssub('C?',cl_id);
+		s = irf_ssub('C?',cl_id);
 		pxd = .1; pyd = .95-(cl_id-1)*.24;
 		hhh = uicontrol(hnd.DATApanel,'Style','checkbox',...
 			'Units','normalized','Position',[pxd pyd 0.4 .05],...
@@ -149,20 +149,20 @@ case 'init'
 		% Load FGM data
 		clear BFGM BPP
 		BFGM = []; BPP = [];
-		if c_load(av_ssub('diB?',cl_id))
-			c_log('load',av_ssub('loaded  diB?',cl_id))
+		if c_load(irf_ssub('diB?',cl_id))
+			irf_log('load',irf_ssub('loaded  diB?',cl_id))
 			c_eval('BFGM=diB?;clear diB?',cl_id)
 		else
-			if c_load(av_ssub('diBPP?',cl_id))
-				c_log('load',av_ssub('loaded  diB?',cl_id))
+			if c_load(irf_ssub('diBPP?',cl_id))
+				irf_log('load',irf_ssub('loaded  diB?',cl_id))
 				c_eval('BFGM=diBPP?;clear diBPP?',cl_id)
 			end
 		end
 		% Load resampled FGM data
 		[ok,Br] = c_load('diBr?',cl_id);
-		if ok, c_log('load',av_ssub('loaded  diBr?',cl_id)), end
+		if ok, irf_log('load',irf_ssub('loaded  diBr?',cl_id)), end
 		[ok,Brs] = c_load('diBrs?',cl_id);
-		if ok, c_log('load',av_ssub('loaded  diBrs?',cl_id)), end
+		if ok, irf_log('load',irf_ssub('loaded  diBrs?',cl_id)), end
 		
 		hnd.BData = [hnd.BData {BFGM}];
 		hnd.BPPData = [hnd.BPPData {BPP}];
@@ -176,10 +176,10 @@ case 'init'
 		c_eval('load mEDSI D?p12p34',cl_id)
 		warning on
 		
-		if exist(av_ssub('D?p12p34',cl_id),'var')
+		if exist(irf_ssub('D?p12p34',cl_id),'var')
 			c_eval('Delta_off=D?p12p34;clear D?p12p34',cl_id)
 		else
-			c_log('load',...
+			irf_log('load',...
 			sprintf('No D%dp12p34. Probably we have only one probe pair.',cl_id))
 			Delta_off = 0;
 		end
@@ -188,12 +188,12 @@ case 'init'
 		% Load data
 		for d=1:4
 			for j=1:length(dd{d})
-				vs = av_ssub(dd{d}{j},cl_id);
+				vs = irf_ssub(dd{d}{j},cl_id);
 				if c_load(vs) 
 					ndata = ndata + 1;
-					c_log('load',['loaded ' vs])
+					irf_log('load',['loaded ' vs])
 					if eval(['any(any(isnan(' vs '(:,2:end))))']),
-						c_log('load',[vs ' contains no data'])
+						irf_log('load',[vs ' contains no data'])
 						continue
 					end
 					dsc = c_desc(vs);
@@ -272,12 +272,12 @@ case 'init'
 					if d==1
 						if strcmp(vs(1:4),'diEs')
 							if ~isempty(Brs)
-								c_log('proc',av_ssub('using Brs?',cl_id))
+								irf_log('proc',irf_ssub('using Brs?',cl_id))
 								data.B = Brs;
 							end
 						else
 							if ~isempty(Br)
-								c_log('proc',av_ssub('using Br?',cl_id))
+								irf_log('proc',irf_ssub('using Br?',cl_id))
 								data.B = Br;
 							end
 						end
@@ -286,14 +286,14 @@ case 'init'
 						% E and V data
 						% Resample B
 						if ~isempty(hnd.BData{cl_id})
-							c_log('proc','resampling B GFM')
+							irf_log('proc','resampling B GFM')
 							c_eval(...
-								['data.B = c_resamp(hnd.BData{cl_id},' vs ');'],...
+								['data.B = irf_resamp(hnd.BData{cl_id},' vs ');'],...
 								cl_id)
 						elseif ~isempty(hnd.BPPData{cl_id})
-							c_log('proc','resampling B PP')
+							irf_log('proc','resampling B PP')
 							c_eval(...
-								['data.B = c_resamp(hnd.BPPData{cl_id},' vs ');'],...
+								['data.B = irf_resamp(hnd.BPPData{cl_id},' vs ');'],...
 								cl_id)
 						else, data.B = [];
 						end
@@ -312,7 +312,7 @@ case 'init'
 					eval(['clear ' vs])
 					
 				else
-					c_log('load',['cannot load ' vs])
+					irf_log('load',['cannot load ' vs])
 				end
 			end
 		end
@@ -330,15 +330,15 @@ case 'init'
 		c_eval('load -mat mEDSI Ddsi? Damp?',cl_id)
 		warning on
 		
-		if exist(av_ssub('Ddsi?',cl_id),'var')
+		if exist(irf_ssub('Ddsi?',cl_id),'var')
 			c_eval('offset(1)=Ddsi?;clear Ddsi?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('EFW xy offset Ddsi%d = %.2f %.2f*i',...
 			cl_id,real(offset(1)),imag(offset(1))))
 		end
-		if exist(av_ssub('Damp?',cl_id),'var')
+		if exist(irf_ssub('Damp?',cl_id),'var')
 			c_eval('offset(2)=Damp?;clear Damp?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('EFW amplitude corr Damp%d = %.2f',cl_id,offset(2)))
 		end
 		cd(old_pwd)
@@ -349,27 +349,27 @@ case 'init'
 		c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
 		warning on
 		
-		if exist(av_ssub('DHdsi?',cl_id),'var')
+		if exist(irf_ssub('DHdsi?',cl_id),'var')
 			c_eval('offset(1)=DHdsi?;clear DHdsi?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('HIA xy offset DHdsi%d = %.2f %.2f*i',...
 			cl_id,real(offset(1)),imag(offset(1))))
 		end
-		if exist(av_ssub('DHz?',cl_id),'var')
+		if exist(irf_ssub('DHz?',cl_id),'var')
 			c_eval('offset(2)=DHz?;clear DHz?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('HIA z offset DHz%d = %.2f',cl_id,offset(2)))
 		end
 		hnd.CISHoffset(cl_id,:) = offset;
-		if exist(av_ssub('DCdsi?',cl_id),'var')
+		if exist(irf_ssub('DCdsi?',cl_id),'var')
 			c_eval('offset(1)=DCdsi?;clear DCdsi?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('CODIF xy offset DHdsi%d = %.2f %.2f*i',...
 			cl_id,real(offset(1)),imag(offset(1))))
 		end
-		if exist(av_ssub('DCz?',cl_id),'var')
+		if exist(irf_ssub('DCz?',cl_id),'var')
 			c_eval('offset(2)=DCz?;clear DCz?',cl_id)
-			c_log('load',...
+			irf_log('load',...
 			sprintf('CODIF z offset DCz%d = %.2f',cl_id,offset(2)))
 		end
 		hnd.CISCoffset(cl_id,:) = offset;
@@ -635,7 +635,7 @@ case 'replot'
 	hnd.last = [];
 	hnd.off_updated = 0;
 
-	av_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(hnd.tlim(end,:),'x',h);
 	
 	% Hide the markers so thet they will not contribute YLim
 	ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
@@ -690,7 +690,7 @@ case 'replot_all'
 		axes(h(4)); add_timeaxis; grid on
 		
 		% Time span
-		av_zoom(hnd.tlim(end,:),'x',h);
+		irf_zoom(hnd.tlim(end,:),'x',h);
 		
 		guidata(h0,hnd);
 	else
@@ -926,7 +926,7 @@ case 'press_SAVEbutton'
 		return
 	end
 	c_eval(['save ' f_name ' ' var_s ' -mat -append'],cl_id)
-	c_log('save',av_ssub([var_s ' -> ' f_name],cl_id))
+	irf_log('save',irf_ssub([var_s ' -> ' f_name],cl_id))
 	guidata(h0,hnd);
 	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -950,7 +950,7 @@ case 'press_SaveALLbutton'
 		
 		var_s = [s1 ' ' s2 ' ' s3 ' ' s4];
 		eval(['save ' f_name{j} ' ' var_s ' -mat -append'])
-		c_log('save',[var_s ' -> ' f_name{j}])
+		irf_log('save',[var_s ' -> ' f_name{j}])
 		eval(['clear ' var_s])
 	end
 	guidata(h0,hnd);
@@ -1291,7 +1291,7 @@ case 'zoom_in'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	av_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(hnd.tlim(end,:),'x',h);
 	set(h,'YLimMode','auto')
 	
 	% Enable/disable menus
@@ -1318,7 +1318,7 @@ case 'zoom_un'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	av_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(hnd.tlim(end,:),'x',h);
 	set(h,'YLimMode','auto')
 	
 	% Enable/disable menus
@@ -1347,7 +1347,7 @@ case 'zoom_rs'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	av_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(hnd.tlim(end,:),'x',h);
 	set(h,'YLimMode','auto')
 	
 	% Enable/disable menus
@@ -1466,7 +1466,7 @@ if data.visible
 		case 'E'
 			ofs = hnd.EFWoffset(data.cl_id,:);
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
-			p_data = corrDSIOffsets(p_data,...
+			p_data = caa_corof_dsi(p_data,...
 				real(ofs(1)),imag(ofs(1)),ofs(2));
 		case 'V'
 			if strcmp(data.sen,'HIA')
@@ -1475,10 +1475,10 @@ if data.visible
 			end
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
 			p_data = corr_v_velocity(p_data,ofs);
-			[xxx,p_data]=decomposeParPerp(data.B,p_data);
+			[xxx,p_data]=irf_dec_parperp(data.B,p_data);
 			clear xxx
 		otherwise
-			c_log('proc','Unknown data type.')
+			irf_log('proc','Unknown data type.')
 		end
 	end
 	
@@ -1487,7 +1487,7 @@ if data.visible
 	case 'E'
 		if any(p_data(:,4))==0,
 			if isempty(data.B)
-				c_log('proc','B is empty. No Ez')
+				irf_log('proc','B is empty. No Ez')
 			else
 				[p_data,angle] = av_ed(p_data,...
 					data.B,hnd.ang_limit);
@@ -1504,19 +1504,19 @@ if data.visible
 			else
 				data.visible = 0; 
 				p_data = [];
-				c_log('proc','B is empty. No ExB')
+				irf_log('proc','B is empty. No ExB')
 			end
 		end
 	case 'V'
 		% V->E if in E mode
 		if hnd.mode
 			if ~isempty(data.B)
-				p_data = av_t_appl(...
+				p_data = irf_tappl(...
 					av_cross(p_data,data.B),'*(-1e-3)');
 			else
 				data.visible = 0;
 				p_data = [];
-				c_log('proc','B is empty. No VxB')
+				irf_log('proc','B is empty. No VxB')
 			end
 		end
 	otherwise
