@@ -29,6 +29,7 @@ MM = [-100 100; -5 5]; % Min and max value for sliders
 MMZ = [-200 200; .5 2.];
 main_fig_id = 23;
 raw_fig_id = 24;
+spect_fig_id = 25;
 if nargin, action = varargin{1};
 else, action = 'init';
 end
@@ -479,6 +480,8 @@ case 'init'
 	hnd.menu_show_raw = uimenu(hnd.menu_tools,'Label','&Show raw data',...
 		'Callback','c_cal_gui(''show_raw'')',...
 		'Accelerator','d');
+	hnd.menu_show_spect = uimenu(hnd.menu_tools,'Label','&Spectrum',...
+		'Callback','c_cal_gui(''show_spect'')');
 	hnd.menu_cut_int = uimenu(hnd.menu_tools,'Label','&Cut the interval',...
 		'Callback','c_cal_gui(''cut_int'')',...
 		'Accelerator','k',...
@@ -1422,7 +1425,74 @@ case 'show_raw'
 		end
 		clear V_tmp ok v_s
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% show_spect
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'show_spect'
+	hnd = guidata(h0);
+	
+	j = D_findByName(hnd.Data,hnd.ActiveVar);
 
+	if ~strcmp(hnd.Data{j}.type,'E'), disp('no need for cis'), return, end
+	if strcmp(hnd.Data{j}.sen,'1234'), E_tmp = hnd.Data{j};
+	else
+		ii = D_findByName(hnd.Data,irf_ssub('diE?p1234',hnd.Data{j}.cl_id));
+		if ~isempty(ii)
+			E_tmp = hnd.Data{ii};
+		else
+			c_log('proc','cannot make spectra: no full res E loaded')
+			return
+		end
+	end
+	
+	ndata = length(E_tmp.data(:,1));
+	% Guess the sampling frequency
+	sf = ndata/(E_tmp.data(end,1) - E_tmp.data(1,1));
+	if sf<1.3*25 & sf>.7*25, sf = 25;
+	elseif sf<1.3*450 & sf>.7*450, sf = 450;
+	else
+		sf = [];
+	end
+	% Try a different approach
+	if isempty(sf)
+		sf = ndata/(E_tmp.data(2,1) - E_tmp.data(1,1));
+		if sf<1.3*25 & sf>.7*25, sf = 25;
+		elseif sf<1.3*450 & sf>.7*450, sf = 450;
+		else
+			irf_log('proc','cannot guess sampling frequency')
+			return
+		end
+	end
+	if sf==25, nfft = 512;
+	else, nfft = 4096;
+	end
+	
+	% Check if we have enough data
+	if ndata < nfft/2
+		irf_log('proc','cannot guess sampling frequency')
+		return
+	elseif length(E_tmp.data(:,1)) < nfft, nfft = nfft/2;
+	end
+	
+	% Compute FFT
+	[Px,Freqx] = irf_psd(E_tmp.data(:,[1 2]),nfft,sf);
+	[Py,Freqy] = irf_psd(E_tmp.data(:,[1 3]),nfft,sf);
+	
+	figure(spect_fig_id), clf
+	loglog(Freqx,Px,Freqy,Py)
+	set(gca,'Xlim',[.05 5]);
+	set(gca,'YLimMode','auto')
+	freqs = [.25 .5 1]; % harmonics of spin freq
+	dy = get(gca,'YLim');
+	hold on
+	for j=1:length(freqs)
+		plot(freqs(j)*[1 1],dy,'r')
+	end
+	hold off
+	ylabel('PSD [(mV/m)^2/Hz]')
+	title(...
+		sprintf('Spectrum of %s %d data points, nfft=%d',E_tmp.name,ndata,nfft))
+	legend('X DSI','Y DSI')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % cut_int
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
