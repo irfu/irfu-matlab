@@ -333,7 +333,7 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 		var_s = av_ssub('diE?',cl_id); 
 		varo_s = av_ssub('V?',cl_id); 
 	else
-		var_s = av_ssub('Es?',cl_id); 
+		var_s = av_ssub('diEs?',cl_id); 
 		varo_s = av_ssub('Vs?',cl_id); 
 	end
 
