@@ -1,9 +1,9 @@
 function y=av_q(question,variable_name_of_old_value, default_value);
 % function y=av_q(question,variable_name_of_old_value, default_value);
 % example:
-%   y=av_q('How many 1/0 %','y',0)
-%   y=av_q('Large ? [y]/n','y')
-%   y=av_q('How much? [%]',y_old_value)
+%   y=av_q('How many 1/0? [%]>','y',0)
+%   y=av_q('Large? yes/no [%]>','y','yes')
+%   y=av_q('How much? [%]>','y',10)
 % see av_ask
 
 if nargin < 3, disp('ERROR using av_q');help av_q;return;end
