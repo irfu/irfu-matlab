@@ -55,11 +55,13 @@ switch action,
         dgh=figure;clf;irf_figmenu;
         h(1)=subplot(4,1,1);
         irf_plot(X);axis tight;
+        uf=get(gcf,'userdata');
+        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
         set(dgh,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
         irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
         ax=axis;grid on;
-        ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
+        ud.mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
 
         h(2)=subplot(4,1,2);
         irf_plot(X);axis tight; 
