@@ -94,8 +94,8 @@ else
 	return
 end
 
-t0=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);
-t0_s=datestr(datenum(fromepoch(t_ref)),0);
+t0=toepoch(fromepoch(var(1,1)).*[1 1 1 0 0 0]);
+t0_s=datestr(datenum(fromepoch(t0)),0);
 var(:,1) = var(:,1) - t0;
 
 %t0_s = datestr(datenum(fromepoch(var(1,1))));
