@@ -1,7 +1,7 @@
-function c=irf_plot(x,option,varargin);
-%IRF_PLOT   Flexible plotting routine
+function c=irf_plot(x,plot_type,varargin);
+%IRF_PLOT   Flexible plotting routine of time series
 %
-% c=irf_plot(x,option,varargin);
+% c=irf_plot(x,plot_type,varargin);
 % c=irf_plot(x,'subplot') to plot in separate subplots all x values
 % c=irf_plot(x,'','yy',factor_to_multiply) add second axis on right
 % c=irf_plot({x, y, z},'','dt',[dt1 dt2 ..]) 1st subplot with x, 
@@ -13,12 +13,24 @@ function c=irf_plot(x,option,varargin);
 % c=irf_plot(x,'',varargin) to pass different options to plot routines 
 %   within irf_plot
 %
+% x - can be variable, cell array of variables or string with variable
+%     names, see examples
+% plot_type can be 
+%     'subplot' - separate subplot for each variable, or if only one
+%                 variable given then for each component
+%     'comp'    - separate subplot for each component of different variables
+%     ''        - (default) try to guess
+%     LineSpec  - see help plot. LineSpec examples 'k*', 'r', '--', etc 
+%
 % varargin is pairs 
 %   option, value
 % where option can be any option for plot routine or any of the below
 %  'dt' - specify time shifts value=[dt1, dt2, dt3, dt4, ...]
 %  'yy' - add second axis on right, value=factor_to_multiply
 %
+% irf_plot, to improve zooming, will sometimes set t_start_epoch within the
+% 'userdata' field of the figure and internally use it as origo but in most cases you should not care about this.
+% 
 % Examples:
 %   irf_plot(B1) - plot variable B1 (all components), assuming that the 
 %                    first column is time
@@ -44,7 +56,7 @@ function c=irf_plot(x,option,varargin);
 
 ylabels{1}='';
 flag_subplot=0;
-if nargin==1, option='';end
+if nargin==1, plot_type='';end
 
 
 % default values that can be override by options
@@ -65,13 +77,18 @@ for j=1:2:length(varargin),
 end
 varargin(ind_varargin_clean)=[];
 
-switch option
+switch plot_type
     case ''
     case 'subplot'
         if isnumeric(x),flag_subplot=1;end    % plot separate subplots for all x components
     case 'comp'
-    otherwise
-        error('option not allowed');
+  otherwise
+      if length(plot_type)<4 & isstr(plot_type),
+        irf_log('proc','assuming plot_type is LineSpec');
+        b=cell(1,length(varargin)+1);b{1}=plot_type;b(2:end)=varargin;varargin=b;
+      else
+        error('plot_type not recognized');
+      end
 end
 
 if ischar(x), % try to get variable labels etc.
@@ -110,9 +127,9 @@ if iscell(x), % plot several variables
     if size(ylabels,2)<size(x,2), % no ylabels are given
         for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
     end
-    switch option
+    switch plot_type
         case ''
-            option='subplot';
+            plot_type='subplot';
             flag_subplot=2;
         case 'comp'
             flag_subplot=3;
@@ -142,6 +159,10 @@ if flag_subplot==0,  % one subplot
     ud=get(gcf,'userdata');
     if isfield(ud,'t_start_epoch'), 
         t_start_epoch=ud.t_start_epoch;
+    elseif x(1,1)> 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+      t_start_epoch=x(1,1);
+      ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
+      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
     else
         t_start_epoch=0;
     end
@@ -217,3 +238,4 @@ if ((tt > 1e8) & (tt < 1e10))
     end
 end
 
+if nargout==0, clear c; end % do not give axis handle as answer if not asked for
