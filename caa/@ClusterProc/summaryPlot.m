@@ -1,10 +1,12 @@
-function out=summaryPlot(cp,cl_id,cs)
+function out=summaryPlot(cp,cl_id,cs,st,dt)
 % summaryPlot make EFW summary plot
-% h = summaryPlot(cp,cl_id,cs)
+% h = summaryPlot(cp,cl_id,[cs],[st,dt])
 % Input:
 % cp - ClusterProc object
 % cl_id - SC#
 % cs is a coordinate system : 'dsi' [default] of 'gse'
+% st, dt - start time and interval length [optional]
+% 
 % Output:
 % h - axes handles // can be omitted
 %
@@ -14,9 +16,9 @@ function out=summaryPlot(cp,cl_id,cs)
 % $Revision$  $Date$
 
 % Copyright 2004 Yuri Khotyaintsev
-error(nargchk(2,3,nargin))
+error(nargchk(2,5,nargin))
 
-if nargin < 3, cs = 'dsi'; %DSI
+if nargin<3, cs = 'dsi'; %DSI
 end
 
 if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
@@ -69,6 +71,19 @@ cd(old_pwd)
 
 if n_plots==0, return, end %nothing to plot
 
+% define time limits
+if nargin<4,
+	t_st = 1e32;
+	t_end = 0;
+	for k=1:n_plots
+		t_st = min(t_st,data{k}(1,1));
+		t_end = max(t_end,data{k}(end,1));
+	end
+else
+	t_st = st;
+	t_end = st + dt;
+end
+
 %Plotting
 clf
 orient tall
@@ -76,6 +91,7 @@ orient tall
 for k=1:n_plots
 	h{k} = subplot(n_plots,1,k);
 	av_tplot(data{k});
+	av_zoom([t_st t_end],'x',h{k})
 	ylabel(labels{k})
 	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
 	if k<n_plots, xlabel(''), end		
