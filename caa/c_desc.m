@@ -107,7 +107,7 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'E';
-	v.sen = vs(4:6);
+	v.sen = vs(5:6);
 	v.cs = {'na'};
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
@@ -139,7 +139,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.cl_id = vvs(5);
 	v.inst = 'EFW';
 	v.sig = 'E';
-	v.sen = vvs(6:8);
+	v.sen = vvs(7:8);
 	v.cs = {'DSI'};
 	v.rep = {'xy'};
  	v.units =  {'mV/m'};
