@@ -46,10 +46,10 @@ function OUT = R_datestring(date)
   end
   
   if date(6)<10
-    temp=num2str(floor(date(6)));
+    temp=num2str(round(date(6)));
     second=['0' temp];
   else
     second=num2str(round(date(6)));
   end
   
-  OUT=[year '' month '' day '_' hour ':' minute ':' second];
+  OUT=[year '' month '' day 't' hour '' minute '' second];
