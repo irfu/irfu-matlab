@@ -7,7 +7,7 @@ function outhandle=av_pl_mark(tlim,inhandle,color);
 % color - string specifying color
 if nargin<1, help av_pl_mark;end
 if nargin == 1, inhandle=gca;end
-if nargin == 2, color='yellow';end
+if nargin < 2, color='yellow';end
 
 tlim = reshape( tlim, 1, prod(size(tlim)) );
 h = reshape( inhandle, 1, prod(size(inhandle)) );
