@@ -22,12 +22,12 @@ else,
     disp('loading position from isdat');
     DATABASE='disco:10';db = Mat_DbOpen(DATABASE);
     for ic=sc_list, disp(['...R' num2str(ic)]);
-     [t,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
-     eval(irf_ssub('R?=[double(t) double(data)''];',ic));clear t data;
+     [tr,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
+     eval(irf_ssub('R?=[double(tr) double(data)''];',ic));clear tr data;
     end
 	for ic=sc_list, disp(['...V' num2str(ic)]);
-       [t,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
-       eval(irf_ssub('V?=[double(t) double(data)''];',ic));clear t data;
+       [tv,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
+       eval(irf_ssub('V?=[double(tv) double(data)''];',ic));clear tv data;
     end
 end
 
