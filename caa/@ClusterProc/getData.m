@@ -312,7 +312,12 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		return
 	end
 	if n_sig==2
-		if p12==32, Ep12 = Ep32; clear Ep32, end
+		if p12==32 
+			Ep12 = Ep32; clear Ep32
+			E_info.probe = '3234';
+		else
+			E_info.probe = '1234';
+		end
 		if abs(length(Ep12)-length(Ep34))>0
 			% different timelines. Need to correct
 			c_log('proc','using common timeline')
@@ -330,10 +335,12 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	else
 		if exist('Ep12','var')
 			pp = 12;
+			E_info.probe = '12';
 			EE = Ep12;
 			clear Ep12
 		else
 			pp = 34;
+			E_info.probe = '34';
 			EE = Ep34;
 			clear Ep34
 		end
@@ -366,6 +373,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	
 		else, c_log('calb','no Delta offsets found in mEDSI, not doing correction...')
 		end
+		c_eval([var1_name '_info=E_info;save_list=[save_list ''' var1_name '_info ''];'],cl_id);
 	end
 
 	% Do actual despin

@@ -188,7 +188,13 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.label_1 = {'"x", "y"'};
 	v.field_name = {'Electric field'};
 	v.com = '';
-	
+elseif regexp(vs,'^diE[1-4]p1234_info$')==1
+	v.data = 0;
+	v.cl_id = vs(4);
+	v.inst = 'EFW';
+	v.com = 'E full res INFO';
+	v.file = 'mEDSI';
+	v.quant = 'die';	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full/spin resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
