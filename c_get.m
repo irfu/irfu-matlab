@@ -451,12 +451,16 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     clear p;
     if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4)&size(p1)~=[0 0]&ic~=2,  % sc2 has often problems with p3
        p=[p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+       disp('Vps = (p1+p2+p3+p4)/4, satellite potential is average over 4 probes');
     elseif size(p1)==size(p2)&size(p1)~=[0 0],
        p=[p1(:,1) (p1(:,2)+p2(:,2))/2];
+       disp('Vps = (p1+p2)/2, satellite potential is average over probes 1 and 2');
     elseif size(p3)==size(p4)&ic~=2,
        p=[p3(:,1) (p3(:,2)+p4(:,2))/2];
+       disp('Vps = (p3+p4)/2, satellite potential is average over probes 3 and 4');
     else,
-         p=p4;
+       p=p4;
+       disp('Vps = p4, satellite potential is put to potential of probe 4');
     end
     eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],ic));
     if ((mm==1) | (mm==11)); eval(av_ssub('P?=p;NVps?=c_n_Vps(p);save_list=[save_list '' P? NVps?''];',ic));end
