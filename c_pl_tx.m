@@ -1,5 +1,5 @@
 function out=c_pl_tx(varargin)
-%C_PL_TX   plot data from all four Cluster spacecraft in the same plot
+%C_PL_TX   Plot data from all four Cluster spacecraft in the same plot
 %
 % c=c_pl_tx(x1,x2,x3,x4,[column,t_unit_in_original_units,t_origo_in_original_units])
 % c=c_pl_tx(x1,x2,x3,x4,[column,1,[dt1 dt2 dt3 dt4]])
@@ -13,6 +13,8 @@ function out=c_pl_tx(varargin)
 %
 %   Example:
 %      c_pl_tx('irf_abs(B?)') - will plot 3 components + magnitude of B1:4.
+%
+% See also IRF_PLOT
 %
 % $Id$
 
