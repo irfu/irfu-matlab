@@ -31,6 +31,8 @@ function spinfit = EfwDoOneSpinFit(pair,fout,maxit,minpts,te,data,tp,ph)
 %
 % See also: DoEfwSpinFit
 %
+% $Id$
+
 % Anders.Eriksson@irfu.se, 13 December 2002
 
 % Defaults:
@@ -76,13 +78,10 @@ if pair_ok
     else
       spfit = regress(data1, [cos(ph1) sin(ph1) ones(size(ph1))]);
       fit = spfit(1) * cos(ph1) + spfit(2) * sin(ph1) + spfit(3);
-      dif = data1 - fit;
+	  dif = data1 - fit;
+	  sdev = std(dif);
       nn = max(size(data1));
-      qsum = sum(dif.^2)/nn;
-      sdev = sqrt(qsum);
-      if iter == 1
-        sdev0 = sdev;
-      end
+      if iter == 1, sdev0 = sdev; end
       ind = find(abs(dif) > fout * sdev);  % Find outliers 
       if fout == 0 | maxit == 0 | isempty(ind) | iter >= maxit
         spinfit(1) = mean(te);
