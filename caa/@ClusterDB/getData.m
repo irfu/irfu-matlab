@@ -14,7 +14,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	b   : BPP{cl_id},diBPP{cl_id} ->mBPP	// B FGM PP [GSE+DSI] 
 %	edi : EDI{cl_id},diEDI{cl_id} ->mEDI	// E EDI PP [GSE+DSI] 
 %	sax : SAX{cl_id} ->mEPH					// spin axis vector [GSE] 
-%	vcis: CIS{cl_id},diCIS{cl_id} ->mCIS	// V CIS PP [GSE+DSI] 
+%	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
+%	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
 %	options - one of the following:
 %	nosave : do no save on disk
