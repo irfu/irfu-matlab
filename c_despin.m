@@ -17,8 +17,9 @@ function e = c_despin(es,phase,coef,flag)
 %        A_12 = Real (relative amplitude error)
 %        E_offs_12_s = Real (p12 boom offset)
 %        E_offs_12_xy = Complex (real part tells E offset in DSC_X and imaginary in DSC_Y)
-% flag - 'efw'    despin from WEC ref frame + use the closest callibration
-%        'efw_offs' despin from WEC, subtract mean value of probe signals to get rid of offsets, use nearest values for sunward offset
+% flag - 'efw'      despin from WEC ref frame + use the closest callibration [good for very short or handcalibrated time intervals]
+%        'efw_a'    despin from WEC, subtract mean value of probe signals to get rid of offsets
+%        'efw_b'    same as 'efw_a' + correct with nearest sunward offset
 %        'staff' or 'wec' despin from WEC
 %        'sat' despin from SR
 %
@@ -39,6 +40,10 @@ if nargin == 2,
  ref_frame='wec';
 end
 
+if size(es,2)==3, % if input is [t p12 p34] convert to [t 0 p34 p12]
+  es=es(:,[1 3 3 2]);es(:,2)=0;
+end
+
 if nargin >= 3,
   if isnumeric(coef),
     ref_frame='wec';
@@ -47,9 +52,15 @@ if nargin >= 3,
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     clear coef;
     eval(av_ssub('coef=c?;',ic));
-    if nargin == 4 & strcmp(flag,'efw_offs'),
-      coef(1,2)=mean(es(:,3));
-      coef(2,2)=mean(es(:,2));
+    if nargin == 4,
+      if strcmp(flag,'efw_b'),
+        coef(1,2)=mean(es(:,4));
+        coef(2,2)=mean(es(:,3));
+      elseif strcmp(flag,'efw_a'),
+        coef=[[1 0 0];[1 0 0]];
+        coef(1,2)=mean(es(:,4));
+        coef(2,2)=mean(es(:,3));
+      end
     end
    end
   elseif strcmp(coef,'sat'),
@@ -62,10 +73,15 @@ if nargin >= 3,
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     eval(av_ssub('coef=c?;',ic));
-  elseif strcmp(coef,'efw_offs'),
+  elseif strcmp(coef,'efw_b'),
     ref_frame='wec';
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     eval(av_ssub('coef=c?;',ic));
+    coef(1,2)=mean(es(:,4));
+    coef(2,2)=mean(es(:,3));
+  elseif strcmp(coef,'efw_a'),
+    ref_frame='wec';
+    coef=[[1 0 0];[1 0 0]];
     coef(1,2)=mean(es(:,4));
     coef(2,2)=mean(es(:,3));
   elseif strcmp(coef,'staff'),
@@ -87,18 +103,10 @@ end
 switch ref_frame
 case 'wec'
   phi_12=3*pi/4;phi_34=pi/4; % angles when phase =0
-  if size(es,2)==3,
-   p12=es(:,2);p34=es(:,3);
-  elseif size(es,2)==4
-   p12=es(:,4);p34=es(:,3);
-  end
+  p12=es(:,4);p34=es(:,3);
 case 'sat'
   phi_12=pi/2;phi_34=0; % angles when phase =0
-  if size(es,2)==3,
-   p12=es(:,2);p34=es(:,3);
-  elseif size(es,2)==4
-   p12=es(:,3);p34=es(:,2);
-  end
+  p12=es(:,3);p34=es(:,2);
 end
 
 %contPhase=unwrap(double(real(phaseVal))/180*pi);
@@ -140,11 +148,9 @@ dp34=coef(2,1)*dp34;
 % create the final field
 e=[t real(dp12+dp34) imag(dp12+dp34)];
 
-if size(es,2)==4,
-  switch ref_frame
-  case 'wec'
-   e(:,4)=es(:,2);
-  case 'sat'
-   e(:,4)=es(:,4);
-  end
+switch ref_frame
+case 'wec'
+  e(:,4)=es(:,2);
+case 'sat'
+  e(:,4)=es(:,4);
 end
