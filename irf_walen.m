@@ -35,7 +35,7 @@ end
 strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
 disp(strint);
 %display HT velocity
-%strvht=['V_{HT}=' num2str(av_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
+%strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
 %disp(strvht);
 
 
@@ -70,7 +70,7 @@ vtransf(:,1)=n(:,1);
 vtransf(:,2:4)=v(:,2:4)-repmat(vht,size(n,1),1);
 
 %alpha(:,1)=n(:,1);
-%b=av_abs(b);
+%b=irf_abs(b);
 %alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,5).^2);
 %alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,2).^2+b(:,3).^2+b(:,4).^2);
 %alpha(:,2)=0.0;

@@ -19,7 +19,7 @@ btot = zeros(ndata,1);
 apar = zeros(ndata,1);
 aperp = zeros(ndata,3);
 
-btot = av_abs(b0,1);
+btot = irf_abs(b0,1);
 
 ii = find(btot<1e-3);
 if length(ii)>0, btot(ii) = ones(size(ii))*1e-3; end

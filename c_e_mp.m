@@ -63,7 +63,7 @@ figure(ic);clf
 npl=7;ipl=1;
 h(ic,ipl)=av_subplot(npl,1,-ipl);ipl=ipl+1;
 if exist('mP.mat'), eval(av_ssub('load mP P?;p=av_t_lim(P?,tint);',ic));av_tplot(p);end
-title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(av_abs(vngse,1),3) ' [' num2str(av_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
+title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(av_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
 ylabel('Vps [V]');
 av_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
 

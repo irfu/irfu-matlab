@@ -12,7 +12,7 @@ function out=c_pl_tx(varargin)
 %   subplot is corresponding column
 %
 %   Example:
-%      c_pl_tx('av_abs(B?)') - will plot 3 components + magnitude of B1:4.
+%      c_pl_tx('irf_abs(B?)') - will plot 3 components + magnitude of B1:4.
 %
 % $Id$
 

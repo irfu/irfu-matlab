@@ -77,10 +77,10 @@ for j=2:4,c_eval(['B?(:,' num2str(j) ')=irf_lowpass(B?(:,' num2str(j) '),fcut,fh
 
 c_eval('[jpar,jperp]=irf_dec_parperp(B?,jj);',ref_sc)
 
-h = c_pl_tx('av_abs(B?)');
+h = c_pl_tx('irf_abs(B?)');
 
 axes(h(1))
-c_eval('irf_plot(av_abs(B?));',ref_sc)
+c_eval('irf_plot(irf_abs(B?));',ref_sc)
 ylabel(['C' num2str(ref_sc) ' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 
 axes(h(2))

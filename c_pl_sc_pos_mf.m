@@ -36,11 +36,11 @@ end
 %load mBmod BT89Kp11; Bref=av_interp(BT89Kp11,t);clear BT89Kp11;
 
 R=(r1+r2+r3+r4)/4;
-for ic=1:4,eval(irf_ssub('dr?=r?-R;dr?(1)=t;dr?=av_abs(dr?);',ic)),end
+for ic=1:4,eval(irf_ssub('dr?=r?-R;dr?(1)=t;dr?=irf_abs(dr?);',ic)),end
 drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
 %Vref_MF=av_mean(Vref,r3,Bref,'GSE');
 Vref_MF=av_mean(Vref,r3,Bref);
-Vscaling=.5*drref/av_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
+Vscaling=.5*drref/irf_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
 % for ic=1:4,eval(irf_ssub('dr_MF?=av_mean(dr?,r3,Bref,''GSE'');',ic)),end
 for ic=1:4,eval(irf_ssub('dr_MF?=av_mean(dr?,r3,Bref);',ic)),end
 
@@ -59,7 +59,7 @@ for ipl=1:npl,
   axis equal;grid on;
   line([0 Vscale(1)],[0 Vscale(2)],[0 Vscale(3)]);
 end
-axes(h(1));title(['v_{sc}=' num2str(av_abs(Vref_MF,1),3) ' km/s, blue line r=v*t, t=' num2str(Vscaling,3) 's.'])
+axes(h(1));title(['v_{sc}=' num2str(irf_abs(Vref_MF,1),3) ' km/s, blue line r=v*t, t=' num2str(Vscaling,3) 's.'])
 
 
 

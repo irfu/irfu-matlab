@@ -35,7 +35,7 @@ end
 strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
 disp(strint);
 %display HT velocity
-%strvht=['V_{HT}=' num2str(av_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
+%strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
 %disp(strvht);
 
 

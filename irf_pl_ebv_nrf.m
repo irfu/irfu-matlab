@@ -105,7 +105,7 @@ for ic=sc_list, % which satellite
     ntick=c_efw_scp2ne([0 ytick],-1);ntick=ntick(2:end);
     set(ax2,'YLim',ylim,'YTick',ytick);
     set(ax2,'YTickLabel',num2str(ntick',2));ylabel('V_{ps} [cm^{-3}]');
-    title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(av_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn '\newline' L_str ', ' M_str ', ' N_str '.']);
+    title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn '\newline' L_str ', ' M_str ', ' N_str '.']);
   else
     disp('No satellite potential data');
   end

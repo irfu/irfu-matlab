@@ -44,7 +44,7 @@ switch action,
         elseif min(column)>1, time_vector=x(:,1);
         end
 
-        X=[time_vector x(:,column)];X=av_abs(X);
+        X=[time_vector x(:,column)];X=irf_abs(X);
         ud={}; % structure to pass all information to manager function
         ud.X=X;
         ud.from = 1; % first click with mouse is 'from', second is 'to'

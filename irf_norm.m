@@ -22,5 +22,5 @@ elseif lx > 3
   n=zeros(size(x)-[0 1]);for ii=1:lx-1,n(:,ii)=norm;end
   y(:,2:lx)=x(:,2:lx)./n;
 else
-  disp('Not enough vector components in av_abs()')
+  disp('Not enough vector components in irf_norm()')
 end

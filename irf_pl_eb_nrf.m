@@ -62,7 +62,7 @@ figure(ic);clf
 npl=7;ipl=1;
 h(ic,ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
 if exist('mP.mat'), eval(irf_ssub('load mP P?;p=irf_tlim(P?,tint);',ic));irf_plot(p);end
-title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(av_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
+title(['sc ' num2str(ic) ' vn_{GSE}=' num2str(irf_abs(vngse,1),3) ' [' num2str(irf_norm(vngse(1,2:4)),2) '] km/s. ' title_lmn]);
 ylabel('Vps [V]');
 irf_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
 

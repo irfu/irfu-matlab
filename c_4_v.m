@@ -44,7 +44,7 @@ V=m/(m(1,1)^2+m(1,2)^2+m(1,3)^2);
 if nargout==0,
   disp([ datestr(datenum(fromepoch(t(1))))])
   v=V;vn=irf_norm(v);dt=t-t(1);
-  strv=['V=' num2str(av_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];
+  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];
   strdt=['dt=[' , num2str(dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
   disp(strv);  disp(strdt);
 end
