@@ -92,7 +92,7 @@ eval(['legend(' leg ')'])
 
 q='0';
 while(q ~= 'q')
-	variable='q';default=num2str(offset);question='Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[%]>';av_ask
+	q=av_q('Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[%]>','',num2str(offset,'%.2f '));
 	switch(q)
 	case 's'
 		disp(sprintf('Ddsi%d, Damp%d -> ./mEDSI.mat',cl_id,cl_id))
