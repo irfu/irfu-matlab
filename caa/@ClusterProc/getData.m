@@ -144,7 +144,7 @@ if strcmp(quantity,'dies')
 				end
 			end
 			
-			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2),0);
+			sp = EfwDoSpinFit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
 			
 			% remove point with zero time
 			ind = find(sp(:,1)>0);
