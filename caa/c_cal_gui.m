@@ -102,12 +102,12 @@ case 'init'
 	hnd.DATArbList = {};
 	hnd.BPPData = {};
 	hnd.BData = {};
-	hnd.EFWoffset = {};
-	hnd.CISHoffset = {};
-	hnd.CISCoffset = {};
-	hnd.EFWoffset_save = {};
-	hnd.CISHoffset_save = {};
-	hnd.CISCoffset_save = {};
+	hnd.EFWoffset = zeros(4,2);
+	hnd.CISHoffset = zeros(4,2);
+	hnd.CISCoffset = zeros(4,2);
+	hnd.EFWoffset_save = zeros(4,2);
+	hnd.CISHoffset_save = zeros(4,2);
+	hnd.CISCoffset_save = zeros(4,2);
 	hnd.mode = 1; % 0 is for V, 1 is for E.
 	% hnd.last
 	% empty means replotting all, 
@@ -149,12 +149,16 @@ case 'init'
 		% Load offsets
 		old_pwd = pwd; cd(sp);
 		clear Delta_off;
+		
+		warning off
 		c_eval('load mEDSI D?p12p34',cl_id)
+		warning on
+		
 		if exist(av_ssub('D?p12p34',cl_id),'var')
 			c_eval('Delta_off=D?p12p34;clear D?p12p34',cl_id)
 		else
 			c_log('load',...
-			'Cannot load D#p12p34. Probably we have only one probe pair')
+			sprintf('No D%dp12p34. Probably we have only one probe pair.',cl_id))
 			Delta_off = 0;
 		end
 		cd(old_pwd)
@@ -290,54 +294,60 @@ case 'init'
 		% Load EFW offsets
 		old_pwd = pwd; cd(sp);
 		offset = [1+0i 1];
-		c_eval('load mEDSI Ddsi? Damp?',cl_id)
+		
+		warning off
+		c_eval('load -mat mEDSI Ddsi? Damp?',cl_id)
+		warning on
+		
 		if exist(av_ssub('Ddsi?',cl_id),'var')
 			c_eval('offset(1)=Ddsi?;clear Ddsi?',cl_id)
 			c_log('load',...
-			sprintf('loading DSI offset from file Ddsi=%.2f %.2f*i',...
-			real(offset(1)),imag(offset(1))))
+			sprintf('EFW xy offset Ddsi%d = %.2f %.2f*i',...
+			cl_id,real(offset(1)),imag(offset(1))))
 		end
 		if exist(av_ssub('Damp?',cl_id),'var')
 			c_eval('offset(2)=Damp?;clear Damp?',cl_id)
 			c_log('load',...
-			sprintf('loading amplitude correction from file Damp=%.2f',offset(2)))
+			sprintf('EFW amplitude corr Damp%d = %.2f',cl_id,offset(2)))
 		end
 		cd(old_pwd)
-		hnd.EFWoffset = [hnd.EFWoffset {offset}];
-		hnd.EFWoffset_save = hnd.EFWoffset;
+		hnd.EFWoffset(cl_id,:) = offset;
 		
 		% Load CIS offsets, must be only in Z.
-		c_eval('load mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
+		warning off
+		c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
+		warning on
+		
 		if exist(av_ssub('DHdsi?',cl_id),'var')
 			c_eval('offset(1)=DHdsi?;clear DHdsi?',cl_id)
 			c_log('load',...
-			sprintf('loading HIA offset from file DHdsi=%.2f %.2f*i',...
-			real(offset(1)),imag(offset(1))))
+			sprintf('HIA xy offset DHdsi%d = %.2f %.2f*i',...
+			cl_id,real(offset(1)),imag(offset(1))))
 		end
 		if exist(av_ssub('DHz?',cl_id),'var')
 			c_eval('offset(2)=DHz?;clear DHz?',cl_id)
 			c_log('load',...
-			sprintf('loading HIA Z from file DHz=%.2f',offset(2)))
+			sprintf('HIA z offset DHz%d = %.2f',cl_id,offset(2)))
 		end
-		hnd.CISHoffset = [hnd.CISHoffset {offset}];
+		hnd.CISHoffset(cl_id,:) = offset;
 		if exist(av_ssub('DCdsi?',cl_id),'var')
 			c_eval('offset(1)=DCdsi?;clear DCdsi?',cl_id)
 			c_log('load',...
-			sprintf('loading CODIF offset from file DHdsi=%.2f %.2f*i',...
-			real(offset(1)),imag(offset(1))))
+			sprintf('CODIF xy offset DHdsi%d = %.2f %.2f*i',...
+			cl_id,real(offset(1)),imag(offset(1))))
 		end
 		if exist(av_ssub('DCz?',cl_id),'var')
 			c_eval('offset(2)=DCz?;clear DCz?',cl_id)
 			c_log('load',...
-			sprintf('loading CODIF Z from file DCz=%.2f',offset(2)))
+			sprintf('CODIF z offset DCz%d = %.2f',cl_id,offset(2)))
 		end
-		hnd.CISCoffset = [hnd.CISCoffset {offset}];
-		
-		hnd.CISHoffset_save = hnd.CISHoffset;
-		hnd.CISCoffset_save = hnd.CISCoffset;
-		
-		hnd.off_updated = 1;
+		hnd.CISCoffset(cl_id,:) = offset;
 	end
+	
+	hnd.EFWoffset_save = hnd.EFWoffset;
+	hnd.CISHoffset_save = hnd.CISHoffset;
+	hnd.CISCoffset_save = hnd.CISCoffset;
+	hnd.off_updated = 1;
 	
 	% Check if we have any data apart from AUX
 	if ~ncdata, error('No usefull data loaded'), end
@@ -437,14 +447,14 @@ case 'ch_active_var'
 		% Initialize
 		d_m = 2; vs = 'E'; vsz = 'AMP';
 		j = D_findByName(hnd.Data,hnd.ActiveVar);
-		hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
+		hnd.off = hnd.EFWoffset(hnd.Data{j}.cl_id,:);
 	else
 		j = D_findByName(hnd.Data,hnd.ActiveVar);
 		old_j = D_findByName(hnd.Data,hnd.old_ActiveVar);
 
 		if strcmp(hnd.Data{j}.type,'E')
 			d_m = 2; vs = 'E'; vsz = 'AMP';
-			hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
+			hnd.off = hnd.EFWoffset(hnd.Data{j}.cl_id,:);
 			set(hnd.DXslider,'Enable','on')
 			set(hnd.DXedit,'Enable','on')
 			set(hnd.DYslider,'Enable','on')
@@ -452,8 +462,8 @@ case 'ch_active_var'
 		else % Display V, offsets in CIS
 			d_m = 1; vs = 'V'; vsz = 'Vz';
 			if strcmp(hnd.Data{j}.sen,'HIA')
-				hnd.off = hnd.CISHoffset{hnd.Data{j}.cl_id};
-			else, hnd.off = hnd.CISCoffset{hnd.Data{j}.cl_id};
+				hnd.off = hnd.CISHoffset(hnd.Data{j}.cl_id,:);
+			else, hnd.off = hnd.CISCoffset(hnd.Data{j}.cl_id,:);
 			end
 			set(hnd.DXslider,'Enable','off')
 			set(hnd.DXedit,'Enable','off')
@@ -471,6 +481,7 @@ case 'ch_active_var'
 	set(hnd.DZslider,'Min',MMZ(d_m,1),'Max',MMZ(d_m,2),'Value',hnd.off(2))
 	set(hnd.DZpanel,'Title',[num2str(MMZ(d_m,1)) ' < d' vsz ' < ' num2str(MMZ(d_m,2))])
 	guidata(h0,hnd);
+	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fix_plot_pos
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -692,13 +703,40 @@ case 'update_legend'
 	guidata(h0,hnd);
 	c_cal_gui('fix_plot_pos')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_SAVEbuttons
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'update_SAVEbuttons'
+	hnd = guidata(h0);
+	ava = hnd.Data{D_findByName(hnd.Data,hnd.ActiveVar)};
+	cl_id = ava.cl_id;
+	
+	% See if we have offsets different from the saved ones and
+	% enable SAVE and RESET buttons
+	if strcmp(ava.type,'E'), off_s = hnd.EFWoffset_save(cl_id,:);
+	elseif strcmp(ava.type,'V') & strcmp(ava.sen,'HIA')
+		off_s = hnd.CISHoffset_save(cl_id,:);
+	elseif strcmp(ava.type,'V') & strcmp(ava.sen,'COD')
+		off_s = hnd.CISCoffset_save(cl_id,:);
+	else, disp([action ': must be something wrong']), off_s = [0 0];
+	end
+	hxx = [hnd.SAVEbutton hnd.RESETbutton hnd.SaveALLbutton];
+	if any(off_s-hnd.off), for j=1:3, set(hxx(j),'Enable','on'), end
+	else, for j=1:3, set(hxx(j),'Enable','off'), end
+	end
+	
+	% SaveALL button
+	if any(hnd.EFWoffset_save(:) - hnd.EFWoffset(:)) | ...
+		any(hnd.CISHoffset_save(:) - hnd.CISHoffset(:)) |...
+		any(hnd.CISCoffset_save(:) - hnd.CISCoffset(:))
+		set(hnd.SaveALLbutton,'Enable','on')
+	else, set(hnd.SaveALLbutton,'Enable','off')
+	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_off'
 	hnd = guidata(h0);
-	
 	k = D_findByName(hnd.Data,hnd.ActiveVar);
-	enable_but = 0;
 	
 	if strcmp(hnd.Data{k}.type,'E')
 		% We calibrate E
@@ -709,13 +747,9 @@ case 'update_off'
 			return
 		end
 		
-		if any(hnd.EFWoffset_save{hnd.Data{k}.cl_id}-hnd.off)
-			enable_but = 1;
-		end
-		
 		% See if offsets were really changed and replot everything
-		if any(hnd.EFWoffset{hnd.Data{k}.cl_id} - hnd.off)
-			hnd.EFWoffset{hnd.Data{k}.cl_id} = hnd.off;
+		if any(hnd.EFWoffset(hnd.Data{k}.cl_id,:) - hnd.off)
+			hnd.EFWoffset(hnd.Data{k}.cl_id,:) = hnd.off;
 			%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
 			hnd.off_updated = 1;
 			
@@ -741,20 +775,13 @@ case 'update_off'
 		
 		% See if offsets were really changed and replot everything
 		if strcmp(hnd.Data{k}.sen,'HIA')
-			d_off = hnd.CISHoffset{hnd.Data{k}.cl_id};
-			if any(hnd.CISHoffset_save{hnd.Data{k}.cl_id}-hnd.off)
-				enable_but = 1;
-			end
-		else
-			d_off = hnd.CISCoffset{hnd.Data{k}.cl_id};
-			if any(hnd.CISCoffset_save{hnd.Data{k}.cl_id}-hnd.off)
-				enable_but = 1;
-			end
+			d_off = hnd.CISHoffset(hnd.Data{k}.cl_id,:);
+		else, d_off = hnd.CISCoffset(hnd.Data{k}.cl_id,:);
 		end
 		if any(d_off - hnd.off)
 			if strcmp(hnd.Data{k}.sen,'HIA')
-				hnd.CISHoffset{hnd.Data{k}.cl_id} = hnd.off;
-			else, hnd.CISCoffset{hnd.Data{k}.cl_id} = hnd.off;
+				hnd.CISHoffset(hnd.Data{k}.cl_id,:) = hnd.off;
+			else, hnd.CISCoffset(hnd.Data{k}.cl_id,:) = hnd.off;
 			end
 			%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
 			hnd.off_updated = 1;
@@ -778,15 +805,7 @@ case 'update_off'
 			c_cal_gui('replot')
 		end
 	end
-	if enable_but
-		set(hnd.SAVEbutton,'Enable','on');
-		set(hnd.RESETbutton,'Enable','on');
-		set(hnd.SaveALLbutton,'Enable','on');
-	else
-		set(hnd.SAVEbutton,'Enable','off');
-		set(hnd.RESETbutton,'Enable','off');
-		set(hnd.SaveALLbutton,'Enable','off');
-	end
+	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_EVbutton
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -819,33 +838,59 @@ case 'update_EVbutton'
 case 'press_SAVEbutton'
 	hnd = guidata(h0);
 	
-	k = D_findByName(hnd.Data,hnd.ActiveVar);
-	cl_id = hnd.Data{k}.cl_id;
+	ava = hnd.Data{D_findByName(hnd.Data,hnd.ActiveVar)};
+	cl_id = ava.cl_id;
 	
-	if strcmp(hnd.Data{k}.inst,'EFW') & strcmp(hnd.Data{k}.type,'E')
+	if strcmp(ava.inst,'EFW') & strcmp(ava.type,'E')
 		f_name = './mEDSI.mat';
 		c_eval('Ddsi?=hnd.off(1);Damp?=hnd.off(2);')
-		hnd.EFWoffset_save{cl_id} = hnd.off;
+		hnd.EFWoffset_save(cl_id,:) = hnd.off;
 		var_s = 'Ddsi? Damp?';
-	elseif strcmp(hnd.Data{k}.inst,'CIS')
+	elseif strcmp(ava.inst,'CIS')
 		f_name = './mCIS.mat';
-		if strcmp(hnd.Data{k}.sen,'HIA')
+		if strcmp(ava.sen,'HIA')
 			c_eval('DHdsi?=hnd.off(1);DHz?=hnd.off(2);')
-			hnd.CISHoffset_save{cl_id} = hnd.off;
+			hnd.CISHoffset_save(cl_id,:) = hnd.off;
 			var_s = 'DHdsi? DHz?';
 		else
 			c_eval('DCdsi?=hnd.off(1);DCz?=hnd.off(2);')
-			hnd.CISHoffset_save{cl_id} = hnd.off;
+			hnd.CISHoffset_save(cl_id,:) = hnd.off;
 			var_s = 'DCdsi? DCz?';
 		end
 	else
-		disp(['Cannot save ' hnd.Data{k}.name])
+		disp(['Cannot save ' ava.name])
 		return
 	end
 	c_eval(['save ' f_name ' ' var_s ' -mat -append'],cl_id)
-	set(hnd.SAVEbutton,'Enable','off');
-	set(hnd.RESETbutton,'Enable','off');
-
+	c_log('save',[var_s ' -> ' f_name])
+	guidata(h0,hnd);
+	c_cal_gui('update_SAVEbuttons')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% press_SaveALLbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'press_SaveALLbutton'
+	hnd = guidata(h0);
+	
+	cl_id = 1:4;
+	
+	f_name = {'./mEDSI.mat' './mCIS.mat' './mCIS.mat'};
+	o_name = {'EFW' 'CISH' 'CISC'};
+	v1 = {'Ddsi?' 'DHdsi?' 'DCdsi?'};
+	v2 = {'Damp?' 'DHz?' 'DCz?'};
+	
+	for j=1:3
+		c_eval([v1{j} '=hnd.' o_name{j} 'offset(?,1);' ...
+			v2{j} '=hnd.' o_name{j} 'offset(?,2);'])
+		c_eval(['hnd.' o_name{j} 'offset_save(?,:)=hnd.' o_name{j} 'offset(?,:);'])
+		c_eval(['s?=[''' v1{j} ''' '' '' ''' v2{j} '''];']);
+		
+		var_s = [s1 ' ' s2 ' ' s3 ' ' s4];
+		eval(['save ' f_name{j} ' ' var_s ' -mat -append'])
+		c_log('save',[var_s ' -> ' f_name{j}])
+		eval(['clear ' var_s])
+	end
+	guidata(h0,hnd);
+	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % press_RESETbutton
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -854,11 +899,11 @@ case 'press_RESETbutton'
 	
 	k = D_findByName(hnd.Data,hnd.ActiveVar);
 	if strcmp(hnd.Data{k}.type,'E')
-		hnd.off = hnd.EFWoffset_save{hnd.Data{k}.cl_id};
+		hnd.off = hnd.EFWoffset_save(hnd.Data{k}.cl_id,:);
 	elseif strcmp(hnd.Data{k}.type,'V')
 		if strcmp(hnd.Data{k}.sen,'HIA')
-			hnd.off = hnd.CISHoffset_save{hnd.Data{k}.cl_id};
-		else, hnd.off = hnd.CISCoffset_save{hnd.Data{k}.cl_id};
+			hnd.off = hnd.CISHoffset_save(hnd.Data{k}.cl_id,:);
+		else, hnd.off = hnd.CISCoffset_save(hnd.Data{k}.cl_id,:);
 		end
 	else,disp('Oj! Something is rong with data.type')
 	end
@@ -1155,14 +1200,14 @@ if data.visible
 		%disp(['get_plot_data : correcting offsets in ' data.name])
 		switch data.type
 		case 'E'
-			ofs = hnd.EFWoffset{data.cl_id};
+			ofs = hnd.EFWoffset(data.cl_id,:);
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
 			p_data = corrDSIOffsets(p_data,...
 				real(ofs(1)),imag(ofs(1)),ofs(2));
 		case 'V'
 			if strcmp(data.sen,'HIA')
-				ofs = hnd.CISHoffset{data.cl_id};
-			else, ofs = hnd.CISCoffset{data.cl_id};
+				ofs = hnd.CISHoffset(data.cl_id,:);
+			else, ofs = hnd.CISCoffset(data.cl_id,:);
 			end
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
 			p_data = corr_v_velocity(p_data,ofs);
