@@ -141,10 +141,12 @@ for i = 1:i_end
     for j=1:size(passing_MP,1)
       disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
     end
+    save mMP passing_MP dist_t
   end
   
   %step 2
   if run_steps(2) == 1
+    if run_steps(1) == 0; load mMP; end
     disp('==============  Finding angles for MP crossings ====================');
     angles=[];ampl=[];
     for j=1:size(passing_MP,1)
@@ -154,13 +156,15 @@ for i = 1:i_end
       angles=[angles;angles_tmp];
       ampl=[ampl;ampl_tmp];
     end
+    save mAngles angles ampl
   end
-  
+
   %step 3
   if run_steps(3) == 1
+    if run_steps(2) == 0; load mAngles; end
     disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-    sort_events=1;keyboard;
+    sort_events=1;
     while sort_events
       dt_events=diff(time_of_events(:,1),1,1); % find distance between events
       ind=find(dt_events<period/2); % find which events are closer than period/2 
@@ -170,12 +174,14 @@ for i = 1:i_end
         time_of_events(ind(1),:)=[]; 
       end
     end
+    save mEvents time_of_events;
   end
   
   %step 4
   if run_steps(4) == 1
+    if run_steps(3) == 0; load mEvents; end
     disp('==============  Getting data for events ====================');
-    c_ri_get_event_data(time_interval,time_of_events(:,1),path_E, {'EFW_E','EFW_P'}, period);
+    c_ri_get_event_data([],time_of_events(:,1),path_E, {'EFW_E','EFW_P'}, period);
     per = period(i);
     c_ri_run_events_into_pictures(st,et,p_MP,p_Bp,p_E,p_R, per);
   end
