@@ -201,9 +201,10 @@ if strcmp(quantity,'dies')
 			abs(Del(1)), abs(Del(2))))
 
 		% We suppose that smaller field is more realistic
-		% and will correct the largest signal
-		% real offset is applied to p12, imaginary to p34
-		if Del(1)>0, Del = -Del*j; end
+		% and will correct the largest signal.
+		% If we have p32, we always correct it, not p34.
+		% Real offset is applied to p12, imaginary to p34.
+		if Del(1)>0 & p12==12, Del = -Del*j; end
 		eval(av_ssub('D?p12p34=Del;',cl_id))
 
 		if real(Del)
@@ -311,11 +312,12 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		return
 	end
 	if n_sig==2
+		if p12==32, Ep12 = Ep32; clear Ep32, end
 		if abs(length(Ep12)-length(Ep34))>0
 			% different timelines. Need to correct
 			c_log('proc','using common timeline')
 			[ii12,ii34] = findCommInd(Ep12,Ep34);
-			c_log('proc',['Ep12 ' num2str(length(Ep12)) '->' num2str(length(ii12)) ' data points'])
+			c_log('proc',['Ep' num2str(p12) ' ' num2str(length(Ep12)) '->' num2str(length(ii12)) ' data points'])
 			Ep12 = Ep12(ii12,:);
 			c_log('proc',['Ep34 ' num2str(length(Ep34)) '->' num2str(length(ii34)) ' data points'])
 			Ep34 = Ep34(ii34,:);
@@ -352,7 +354,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		if exist(av_ssub('D?p12p34',cl_id))
 			eval(av_ssub('Del=D?p12p34;',cl_id))
 			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
-				c_log('calb','correcting p12')
+				c_log('calb',['correcting p' num2str(p12)])
 				i_c = 1;
 			else
 				c_log('calb','correcting p34')
@@ -367,7 +369,9 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	end
 
 	% Do actual despin
-	c_eval([var1_name '=c_despin(full_e,A?,coef);'],cl_id);
+	if p12==32, c_eval([var1_name '=c_despin(full_e,A?,coef,''asym'');'],cl_id);
+	else, c_eval([var1_name '=c_despin(full_e,A?,coef);'],cl_id);
+	end
 	% DS-> DSI
 	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
 	c_eval(['save_list=[save_list ''' var1_name '''];'],cl_id);

@@ -1,27 +1,28 @@
-function e = c_despin(es,phase,coef,flag)
+function e = c_despin(es,phase,coef,options)
 % function e = c_despin(es,phase)
 % function e = c_despin(es,phase,coef)
 % function e = c_despin(es,phase,spacecraft_number)
-% function e = c_despin(es,phase,spacecraft_number,flag)
-% function e = c_despin(es,phase,flag)
+% function e = c_despin(es,phase,spacecraft_number,options)
+% function e = c_despin(es,phase,options)
 % function e = c_despin(es,spacecraft_number)
-% function e = c_despin(es,spacecraft_number,flag)
+% function e = c_despin(es,spacecraft_number,options)
 %                   get time from es and use corresponding calibration coef
 % e =[t Ex_DSC Ey_DSC Ez_DSC] - electric field in despinned satellite reference frame;
 % es=[t p12 p34] - electric field in satellite reference frame;
 % es=[t WEC_X WEC_Y WEC_Z] - vector in WEC coordinates
-% es=[t SAT_X SAT_Y SAT_Z] - vector in SAT coordinates if flag=='sat'
+% es=[t SAT_X SAT_Y SAT_Z] - vector in SAT coordinates if options=='sat'
 % phase = [t phase]
 % t - time
 % coef - calibration coefficients [[A_12 E_offs_12_s E_offs_12_xy];[A_34 E_offs_34_s E_offs_34_xy]]
 %        A_12 = Real (relative amplitude error)
 %        E_offs_12_s = Real (p12 boom offset)
 %        E_offs_12_xy = Complex (real part tells E offset in DSC_X and imaginary in DSC_Y)
-% flag - 'efw'      despin from WEC ref frame + use the closest callibration [good for very short or handcalibrated time intervals]
+% options - 'efw'      despin from WEC ref frame + use the closest callibration [good for very short or handcalibrated time intervals]
 %        'efw_a'    despin from WEC, subtract mean value of probe signals to get rid of offsets
 %        'efw_b'    same as 'efw_a' + correct with nearest sunward offset
 %        'staff' or 'wec' despin from WEC
-%        'sat' despin from SR
+%        'sat'      despin from SR
+%        'asym'     despin asymmetric probe configuration
 %
 % !Phase is calculated as a linear fit to the data, to make it fast and simple
 % In some case with many and large data gaps this can fail.
@@ -43,7 +44,11 @@ end
 if size(es,2)==3, % if input is [t p12 p34] convert to [t 0 p34 p12]
   es=es(:,[1 3 3 2]);es(:,2)=0;
 end
-
+use_asym = 0;
+if nargin == 4
+	if strcmp(options,'asym'), use_asym = 1; end
+end
+		
 if nargin >= 3,
   if isnumeric(coef),
     ref_frame='wec';
@@ -52,11 +57,11 @@ if nargin >= 3,
     [c1,c2,c3,c4]=c_efw_calib(es(1,1));
     clear coef;
     eval(av_ssub('coef=c?;',ic));
-    if nargin == 4,
-      if strcmp(flag,'efw_b'),
+    if nargin == 4
+      if strcmp(options,'efw_b'),
         coef(1,2)=mean(es(:,4));
         coef(2,2)=mean(es(:,3));
-      elseif strcmp(flag,'efw_a'),
+      elseif strcmp(options,'efw_a'),
         coef=[[1 0 0];[1 0 0]];
         coef(1,2)=mean(es(:,4));
         coef(2,2)=mean(es(:,3));
@@ -102,7 +107,9 @@ end
 
 switch ref_frame
 case 'wec'
-  phi_12=3*pi/4;phi_34=pi/4; % angles when phase =0
+  phi_12=3*pi/4;
+  phi_32=pi/2;
+  phi_34=pi/4; % angles when phase =0
   p12=es(:,4);p34=es(:,3);
 case 'sat'
   phi_12=pi/2;phi_34=0; % angles when phase =0
@@ -163,8 +170,14 @@ p12=p12-coef(1,2);
 p34=p34-coef(2,2);
 
 % take away dc offsets of the despinned ref frame
-p12=p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
 p34=p34-abs(coef(2,3))*cos(angle(coef(2,3))-phase-phi_34);
+if use_asym
+	keyboard
+	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_32);
+	p12 = 1.4142*p12 - p34;
+	disp('Using ASYMMETRIC probe conf')
+else, p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
+end
 
 % despin each component separately
 dp12=p12.*exp(1i*phase)*exp(1i*phi_12);
