@@ -141,7 +141,7 @@ if strcmp(quantity,'dies')
 	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
 		c_log('load',...
 			av_ssub(['No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 	p12 = 12;
@@ -264,7 +264,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	end
 	if ~exist('./mEDSI.mat','file')
 		c_log('load','Please compute spin averages (mEDSI)')
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 	if do_burst, c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
 	else, c_eval(['load mER ' var_name '12 ' var_name '32 ' var_name '34;'],cl_id);
@@ -331,8 +331,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	end
 	if n_sig==0
 		c_log('load','No raw data found in mER')
-		data = [];
-		return
+		data = []; cd(old_pwd); return
 	end
 	if n_sig==2
 		if p12==32 
@@ -427,14 +426,14 @@ elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 	if ~ok
 		c_log('load',...
 			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 	
 	[ok,diV] = c_load('diV?',cl_id);
 	if ~ok
 		c_log('load',...
 			av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 	
 	evxb = av_t_appl(av_cross(diB,c_resamp(diV,diB)),'*1e-3*(-1)');
@@ -459,7 +458,7 @@ elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 	if ~isempty(err_s)
 		c_log('load',...
 			av_ssub(['No ' err_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -501,7 +500,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	if ~ok
 		c_log('load',...
 			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 	% Load V if we need to do SC->Inertial transformation
@@ -510,7 +509,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 		if ~ok
 			c_log('load',...
 				av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
-			data = []; return
+			data = []; cd(old_pwd); return
 		end
 	end
 	
@@ -524,7 +523,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	else
 		c_log('load',...
 			av_ssub(['No ' var_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
 	else, c_log('calb','using Dx=1,Dy=0'), Dx = 1; Dy=0;
@@ -589,7 +588,7 @@ elseif strcmp(quantity,'edi')
 		if ~ok
 			c_log('load',...
 				av_ssub(['No B? and BPP?. Use getData(CDB,...,cl_id,''b'')'],cl_id))
-			data = []; return
+			data = []; cd(old_pwd); return
 		end
 	end
 
@@ -598,7 +597,7 @@ elseif strcmp(quantity,'edi')
 	if ~ok
 		c_log('load',...
 			av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 	% Load E EDI (inertial)
@@ -606,7 +605,7 @@ elseif strcmp(quantity,'edi')
 	if ~ok
 		c_log('load',...
 			av_ssub(['No ' var_s ' in mEDI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 	% SC -> Inertial
@@ -645,7 +644,7 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	if ~ok
 		c_log('load',...
 			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 	
 	% Load data and calculate ExB
@@ -654,7 +653,7 @@ elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	else
 		c_log('load',...
 			av_ssub(['No ' var_s ' in mEdB. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
-		data = []; return
+		data = []; cd(old_pwd); return
 	end
 
 	save_list=[save_list 'di' av_ssub(varo_s,cl_id) ' '];
@@ -676,8 +675,7 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 		[ok,E_tmp] = c_load('diE?p1234',cl_id);
 		if ~ok
 			c_log('load',sprintf('Canot load diE%dp1234. Please load it.',cl_id))
-			data = [];
-			return
+			data = []; cd(old_pwd); return
 		end
 	else
 		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
@@ -686,8 +684,7 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 			[ok,E_tmp] = c_load(var_e{2},cl_id);
 			if ~ok
 				c_log('load',sprintf('Canot load diEs%d(p12|p34). Please load it.',cl_id))
-				data = [];
-				return
+				data = []; cd(old_pwd); return
 			end
 		end
 	end
@@ -725,15 +722,13 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 			% Use FR data if there is any (cover != 0)
 			if cover==0
 				c_log('load','Canot load B. Please load B FGM or B PP.')
-				data = [];
-				return
+				data = []; cd(old_pwd); return
 			end
 		else
 			BPP_tmp = av_t_lim(BPP_tmp,E_tmp(1,1) + [0 dt]);
 			if isempty(BPP_tmp)
 				c_log('load','Canot find any usefull B data. Please load B FGM or B PP.')
-				data = [];
-				return
+				data = []; cd(old_pwd); return
 			end
 	
 			fgm_sf = 1/(BPP_tmp(2,1)-BPP_tmp(1,1));
@@ -773,8 +768,7 @@ elseif strcmp(quantity,'ps')
 	[ok,P_tmp] = c_load('P?',cl_id);
 	if ~ok
 		c_log('load',sprintf('No P? in mP. Use getData(CDB,...,cl_id,''p'')',cl_id))
-		data = [];
-		return
+		data = []; cd(old_pwd); return
 	end
 	
 	t0 = '';

@@ -279,7 +279,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		elseif size(p4)~=[0 0]
 			p = p4;
 			Pinfo.probe = 4;
-		else, c_log('dsrc','No data'), return
+		else, c_log('dsrc','No data'), cd(old_pwd); return
 		end
 		
 		c_eval(['P' param{1} '?=p;save_list=[save_list '' P' param{1} '? ''];'],cl_id);
@@ -441,13 +441,11 @@ elseif strcmp(quantity,'vce')
 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
 	if ~exist('./mCIS.mat','file')
 		c_log('load','Please run ''vcis'' first (mCIS missing)')
-		data = [];
-		return
+		data = []; cd(old_pwd); return
 	end
 	if ~exist('./mBPP.mat','file')
 		c_log('load','Please run ''n'' first (mBPP missing)')
-		data = [];
-		return
+		data = []; cd(old_pwd); return
 	end
 
 	CIS=load('mCIS');
