@@ -155,7 +155,7 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 				burst_f_name = av_ssub([makeFName(t(1),1) 'we.0?'],cl_id);
 				burst_f_name = [cdb.dp '/burst/' burst_f_name];
 				if exist(burst_f_name,'file')
-					db = Mat_DbOpen('disco:10');
+					db = Mat_DbOpen(cdb.db);
 					err_t = t(1) - checkbursttime(db,burst_f_name);
 					warning(['burst start time was corrected by ' num2str(err_t) ' sec'])
 					Mat_DbClose(db);
@@ -168,7 +168,7 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 			c_eval([var_name  pl{i} '=[t data];'],cl_id); clear t data;
 			c_eval(['save_list=[save_list '' ' var_name pl{i} ' ''];'],cl_id);
 		else
-			warning('caa:noData',av_ssub(['No data for ' var_name],cl_id))
+			warning('caa:noData',av_ssub(['No data for ' var_name pl{i}],cl_id))
 		end
 	end
 
