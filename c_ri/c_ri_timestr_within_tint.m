@@ -1,6 +1,7 @@
 function within = c_ri_timestr_within_tint(time_str,time_interval)
 %
 %within = c_ri_timestr_within_intervall(time_str,s_t,e_t)
+%time_interval = c_ri_timestr_within_intervall(time_str)
 %
 %Input:
 % time_str -timestring ex: "..x20020302x030301_x20030302x030306.mat"
@@ -9,24 +10,27 @@ function within = c_ri_timestr_within_tint(time_str,time_interval)
 %Output:
 % within -1 if there is a union of the two timeintervalls
 %        -0 of there is no union
+% time_interval - if only one input assume it is time string and return time interval in isdat epoch [t_start _end]
 %
 %Descrition of the function:'
 % Finds if the to intervalls intersects each other
 %
 %Using:
-% 
+%
 %Work method:
 %
 %Error:
-% 
+%
 %Discription of variables:
 %
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
-st_e = time_interval(1);
-et_e = time_interval(2);
-ts=time_str;
+if nargin ==2,
+  st_e = time_interval(1);
+  et_e = time_interval(2);
+  ts=time_str;
+end
 
 f_t=toepoch([str2num(ts(end-35+[0:3])) str2num(ts(end-31+[0:1])) ...
              str2num(ts(end-29+[0:1])) str2num(ts(end-26+[0:1])) ...
@@ -42,3 +46,8 @@ if st_e <= t_t & f_t <= et_e
 else
  within = 0;
 end
+
+if nargin == 1, % return time interval
+ within =[f_t t_t];
+end
+
