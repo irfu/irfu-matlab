@@ -14,8 +14,7 @@ function out=makeFName(st,fmt)
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_fname')
 
 if nargin < 2, fmt = 0; end

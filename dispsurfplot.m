@@ -17,8 +17,7 @@ function dispsurfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorchoice
 % By Anders Tjulin, last update 4/2-2003.
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_disp_surf_pl')
 
   % First clear the plot

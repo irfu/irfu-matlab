@@ -17,8 +17,7 @@ function data=readWBD(start_time,dt,cl_id)
 % see also C_GET
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_wbd_read')
 
 % Copyright 2004 Yuri Khotyaintsev

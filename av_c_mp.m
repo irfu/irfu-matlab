@@ -25,8 +25,7 @@ function [emp,nl,nm,nn]=av_c_mp(e,b,v,flag)
 %  v = [vx vy vz]
 %  xmp=[t xl xm xn]
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_eb_nrf')
 
 if nargin ==3, flag_case='A';end

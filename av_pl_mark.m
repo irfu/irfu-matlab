@@ -7,8 +7,7 @@ function outhandle=av_pl_mark(tlim,inhandle,color);
 % color - string specifying color
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_pl_mark')
 
 if nargin<1, help av_pl_mark;end

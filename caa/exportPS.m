@@ -17,8 +17,7 @@ function exportPS(st,sc_list,varargin)
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_export_ps')
 
 if nargin<2, sc_list = 1:4; end

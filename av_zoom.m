@@ -10,8 +10,7 @@ function av_zoom(interval,c,axis_handles,t_ref)
 % $Id$
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_zoom')
 
 flag_use_t_start_epoch=0; % if 1 use userdata.t_start_epoch as tref

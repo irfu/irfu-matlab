@@ -37,8 +37,7 @@ function e = c_despin(es,phase,coef,options)
 % $Id$
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_efw_despin')
 
 t=es(:,1);

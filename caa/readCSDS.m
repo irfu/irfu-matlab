@@ -31,8 +31,7 @@ function data=readCSDS(data_path,start_time,dt,cl_id,quantity)
 
 % Copyright 2004 Yuri Khotyaintsev
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_csds_read')
 
 error(nargchk(5,5,nargin))

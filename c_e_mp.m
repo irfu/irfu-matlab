@@ -14,8 +14,7 @@ function [elmn,h]=c_e_mp(vngse,tint,e,b,sc_list);
 % elmn = [t El Em En] field in NML reference frame
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_pl_eb_nrf')
 
 q_flag=av_q('LMN frame defined by \n 0) L || B and N closest to vn \n 1) N || vn (stationary frame), L along mean B \n 2) N||vn, L closest to the specified direction [%]>','q_flag',2);

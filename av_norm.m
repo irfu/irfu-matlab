@@ -5,8 +5,7 @@ function [y]=av_norm(x)
 %y returns normalized x 
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_norm')
 
 lx= size(x,2); % the number of vector components

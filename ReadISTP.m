@@ -18,8 +18,7 @@ function [time,data] = ReadISTP(filename)
 
 % Copyright Yuri Khotyaintsev, 2003
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_istp_read')
 
 [dt,info]=cdfread(filename);

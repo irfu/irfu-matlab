@@ -21,8 +21,7 @@ function n=c_n_Vps(Vps,flag)
 %  Ne_ref   = [100 36 10 4 2.5 1.3 0.45 0.17];
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_efw_scp2ne')
 
 % CLUSTER SC potential and Ne based on Andris

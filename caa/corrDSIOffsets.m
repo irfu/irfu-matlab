@@ -8,8 +8,7 @@ function new_data = corrDSIOffsets(data,Dx,Dy,Da)
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'caa_corof_dsi')
 
 

@@ -11,8 +11,7 @@ function status = av_minvar_interacitve(x,column)
 %
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_minvar_gui')
 
 global ud

@@ -14,8 +14,7 @@ function [elmn,h]=c_ev_mp(vngse,tint,e,b,sc_list);
 % elmn = [t El Em En] field in NML reference frame
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_pl_ebv_nrf')
 
 persistent q_flag  q_L_direction

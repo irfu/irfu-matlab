@@ -1,8 +1,7 @@
 function c_caa_export(sc_list)
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'caa_export_batch')
 
 l1 = {'P1','P2','P3','P4','P12','P32','P34'};

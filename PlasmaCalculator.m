@@ -12,8 +12,7 @@ function [Wpe,Wce,Wuh,Wpp,Wcp,WpO,WcO,Va,Vte,Le] = PlasmaCalculator(B,n,no,Te,Ti
 %
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_plasma_calc')
 
 if nargin < 6

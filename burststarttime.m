@@ -9,8 +9,7 @@ function OUT=burststarttime(filename)
 % By Anders Tjulin 13/8-2002
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_efw_burst_st')
 
 if nargin<1

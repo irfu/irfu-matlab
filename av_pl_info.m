@@ -8,8 +8,7 @@ function outhandle=av_pl_info(string,inhandle,position);
 %   ht=av_pl_info(['c_pl_sc_orientation() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_pl_info')
 
 if nargin == 1, inhandle=gca;position=[.02 1];end

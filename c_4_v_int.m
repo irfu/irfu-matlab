@@ -6,8 +6,7 @@ function status = c_4_v_int(x1,x2,x3,x4,column)
 %
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_4_v_gui')
 
 persistent ud ic var1 var2 var3 var4 var_col variable_str

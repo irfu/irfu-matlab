@@ -4,8 +4,7 @@ function [y]=av_add(c1,x1,c2,x2)
 % c1,c2 - scalars
 % x1,x2 - time series with column one being time
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_add')
 
 global AV_DEBUG; if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end

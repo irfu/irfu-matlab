@@ -14,8 +14,7 @@ function res = blankTimes(data,time_int)
 % Copyright 2004 Yuri Khotyaintsev
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'caa_rm_blankt')
 
 error(nargchk(2,2,nargin))

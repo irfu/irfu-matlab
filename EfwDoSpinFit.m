@@ -61,8 +61,7 @@ function spinfit = EfwDoSpinFit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_efw_sfit')
 
 error(nargchk(8,9,nargin))

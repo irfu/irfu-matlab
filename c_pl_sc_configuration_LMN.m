@@ -16,8 +16,7 @@ function h=c_pl_sc_configuration_LMN(time,R1,R2,R3,R4,L,M,N);
 %   m  - M
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'c_pl_sc_conf_lmn')
 
 %   figuserdata=[h];

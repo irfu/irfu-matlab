@@ -34,8 +34,7 @@ function h=av_ebBplot(e,b,B,parameters)
 %
 
 warning('caa:cleanup',...
-'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',
-...
+'Function %s is deprecated and will be removed on May 1, 2004.\nUse %s instead',...
 mfilename,'irf_pl_ebs')
 
 % parameter definitions
