@@ -86,13 +86,13 @@ elseif regexp(vs,'E[1-4]')==1
 	inst = 'EFW';
 	sig = 'E';
 	sen = 'p1234';
-	frame = 'GSE,  Ez not measured, calculated from E.B=0';
+	frame = 'GSE,  E along spin axis is not measured, but calculated from E.B=0';
 	var_labels = {'Ex','Ey','Ez','(B,spin)'};
   var_units =  {'mV/m','mV/m','mV/m','deg'};
   com = 'Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% full resolution E in GSE coordinates
+% full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'NVps[1-4]')==1
 
@@ -155,7 +155,13 @@ fprintf(fid,['%% Intrument: ' inst ' \n']);
 fprintf(fid,['%% Signal:    ' sig ' \n']);
 fprintf(fid,['%% Sensor:    ' sen ' \n']);
 fprintf(fid,['%% Coord Sys: ' frame ' \n%%\n']);
-fprintf(fid,['%% comment:   ' com ' \n%%' comment '\n%%\n']);
+fprintf(fid,['%% comment:   ' com ' \n%%\n']);
+if comment,
+  comm=tokenize(comment,'\n');
+  for j=1:size(comm,2),
+    fprintf(fid,['%%   ' comm{1,j} ' \n']);
+  end
+end
 fprintf(fid,['%% Time from: ' t0_s ' \n%%\n']);
 fprintf(fid,['%% ' var_s ' \n']);
 fprintf(fid,['%% ' var_unit ' \n']);

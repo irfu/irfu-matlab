@@ -4,11 +4,11 @@ function tokens = tokenize(str, delimiter)
 %   S delimited by "white space" characters.
 %
 %   TOKENIZE(S,D) returns a cellarray of tokens in the string
-%   S delimited by one of the characters in D.
+%   S delimited by string D.
 %
 %   $Revision$  $Date$
 %
-%   See also STRTOK
+%   See also STRTOK,STRFIND
 %
 % $Id$
 %
@@ -19,18 +19,16 @@ if nargin < 2
 	delimiter = ' ';
 end
 
-i = 0;
-tstr = str;
+ind=strfind(str,delimiter); % find all start indexes of delimeter
+s_ind=[1 ind+length(delimiter)]; s_ind(end)=[]; % start indexes
+e_ind=ind-1;                                    % end indexes
 
-while length(tstr) > 0
-	[token,reminder]=strtok(tstr, delimiter);
-	i = i + 1;
-	tokens{i} = token;
-	if isempty(reminder)
-		% disp('break')
-		break;
-	else
-		% disp(sprintf('%d: %s',i,token))
-		tstr = reminder(2:end);
-	end
+i_string=1;
+for j=1:length(s_ind),
+  str_val=str(s_ind(j):e_ind(j));
+  if str_val,
+    tokens{i_string}=str_val;
+    i_string=i_string+1;
+  end
 end
+

@@ -353,7 +353,6 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   save_list = '';
 
  elseif strcmp(q,'es'), % create E ascii files
-%  variable='qf';default=1;question='Create E1.dat ... E4.dat ascii files with 1) E_GSE B_angle 2) E_DS [%]>';av_ask
   for ic=sc_list,
      % E_GSE file creation
      eval(av_ssub('load mE Eo? d?;tt=Eo?(1,1);x=Eo?;x(:,end+1)=d?;',ic));
@@ -389,6 +388,22 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      fclose(fid);
    end
 
+ elseif strcmp(q,'ea'), % create E ascii files
+  for ic=sc_list,
+     % E_GSE file creation
+     eval(av_ssub('load mEdB ang_limit E? diE?;number_of_points=size(E?,1); ',ic));
+     %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
+     %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_E_GSE_sc' num2str(ic) '.dat'];
+     disp(['E' num2str(ic) ' --> E' num2str(ic) '.dat ' num2str(number_of_points) ' samples']);
+     E_add_comment=['ang_limit=' num2str(ang_limit) '\n'];
+     E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \n with respect to the spin plane that is larger than ang_limit'];
+     eval(av_ssub(['exportAscii(E?,''E?'',''' E_add_comment ''');'],ic));
+     % E_DS file creation
+     disp(['diE' num2str(ic) ' --> diE' num2str(ic) '.dat ' num2str(number_of_points) ' samples']);
+     diE_add_comment=['ang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an angle with respect to the spin plane that is larger than ang_limit'];
+     eval(av_ssub(['exportAscii(diE?,''E?'',''' diE_add_comment ''');'],ic));
+     clear E_add_comment diE_add_comment number_of_points;
+   end
  elseif strcmp(q,'edi'),
   save_file='./mEDI.mat';
     for ic=sc_list, 
@@ -410,7 +425,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 		if (mm == 1), param='10Hz'; tmmode='lx';
-		elseif (mm == 2), 
+		elseif (mm == 2),
 			%% Find TapeMode
   			if exist('./mTMode.mat','file'), eval(av_ssub('load mTMode;',ic)); end
 			if exist(av_ssub('mTMode?',ic),'var'), eval(av_ssub('tm=mTMode?;',ic)), end
@@ -423,11 +438,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 				if exist('./mTMode.mat','file'), eval(av_ssub('save -append mTMode mTMode?;',ic));
 				else, eval(av_ssub('save mTMode mTMode?;',ic));	end
 			end
-			if tm==3, param='180Hz'; tmmode='hx'; 
+			if tm==3, param='180Hz'; tmmode='hx';
 			else, param='10Hz'; tmmode='lx'; end
 			clear tm
 		elseif (mm == 3), param='32kHz';tmmode='any';end;
-		
+
     for probe=1:4;
       disp(['EFW...sc' num2str(ic) '...probe' num2str(probe) '->P' param num2str(ic) 'p' num2str(probe)]);
       [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', ['p' num2str(probe)],param, tmmode);
@@ -458,23 +473,11 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'ps'), % create V_sc n ascii files
   for ic=sc_list,
      % Vsc_N file creation
-     eval(av_ssub('tt=P?(1,1);x=P?;x(:,end+1)=c_n_Vps(P?(:,end));',ic));
-     t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
-     file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_Vps_N_sc' num2str(ic) '.dat'];
-     disp(['P' num2str(ic) ' --> ' file_name '  ' num2str(size(x,1)) ' samples']);
-     fid = fopen(file_name,'w');
-     fprintf(fid,'%% Vps - probe to spacecraft potential which is approximately \n');
-     fprintf(fid,'%%       the same as satellite potential with respect to plasma.\n');
-     fprintf(fid,'%% N   - density derived from the satellite potential based on \n');
-     fprintf(fid,'%%       empirical fit to Cluster data.\n');
-     fprintf(fid,'%%       It is NOT true density\n');
-     fprintf(fid,'%% Cluster %1d\n',ic);
-     fprintf(fid,['%% Time is in seconds from ' time_ref '\n'],ic);
-     fprintf(fid,['%%  time        Vps        N\n']);
-     fprintf(fid,['%%  (s)         (V)      (cm-3)\n']);
-     x(:,1)=x(:,1)-t_ref;x=x';
-     fprintf(fid,'%10.4f %8.2f %8.2f\n',x);
-     fclose(fid);
+     %t_ref=toepoch(fromepoch(tt).*[1 1 1 0 0 0]);time_ref=datestr(datenum(fromepoch(t_ref)),0);
+     %file_name=  [time_ref([8 9 10 11 3 4 5 6 3 1 2]) '_Vps_N_sc' num2str(ic) '.dat'];
+     number_of_points=eval(av_ssub('size(NVps?,1);',ic));
+     disp(['NVps' num2str(ic) ' --> NVps' num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+     eval(av_ssub('exportAscii(NVps?);',ic));
    end
 
  elseif q == 'r',

@@ -26,7 +26,7 @@ if nargin<5, cdb = ClusterDB('ice:10|disco:10','/data/cluster',sp); end
 
 vars = {'e','p','a','sax','b','edi','vcis','vce'};
 
-for cl_id=1:4
+for cl_id=sc_list
 	for k=1:length(vars)
 		getData(cdb,st,dt,cl_id,vars{k});
 	end
@@ -35,7 +35,7 @@ end
 cp=ClusterProc(sp);
 
 vars = {'dies','die'};
-for cl_id=1:4
+for cl_id=sc_list
 	for k=1:length(vars)
 		getData(cp,cl_id,vars{k});
 	end

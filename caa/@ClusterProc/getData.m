@@ -149,7 +149,7 @@ if strcmp(quantity,'dies')
 elseif strcmp(quantity,'die')
 	save_file = './mEDSI.mat';
 
-	if ~(exist('./mA.mat','file') &exist('./mA.mat','file') & exist('./mEDSI.mat','file'))
+	if ~(exist('./mA.mat','file') & exist('./mA.mat','file') & exist('./mEDSI.mat','file')) % ?????????????
 		warning('Please compute spin averages (mER) and load phase (mA)')
 		data = [];
 		return
@@ -172,7 +172,7 @@ elseif strcmp(quantity,'die')
 			end
 			if exist(av_ssub(['Da?p' ps],cl_id),'var')
 				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id))
-				eval(av_ssub(['Ep' ps '=wE?p' ps '-Da?p' ps ';'],cl_id))
+				eval(av_ssub(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id))    % ????????????????????????
 			else
 				eval(av_ssub(['[Ep' ps ',Da?p' ps ']=corrADCOffset(cp,wE?p' ps ');'],cl_id))
 				eval(av_ssub(['disp(sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id))
@@ -223,7 +223,7 @@ elseif strcmp(quantity,'die')
 	end
 	if exist(av_ssub('D?p12p34',cl_id))
 		eval(av_ssub('Del=D?p12p34;',cl_id))
-		if real(Del)
+		if real(Del)                               % ?????????????????????????
 			disp('correcting p12')
 			i_c = 1;
 		else
@@ -231,7 +231,7 @@ elseif strcmp(quantity,'die')
 			Del = imag(Del);
 			i_c = 2;
 		end
-		eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*j;',cl_id));
+		eval(av_ssub('coef(i_c,3)=Del(1)-Del(2)*1j;',cl_id));
 		clear Del
 
 	else, disp('no Delta offsets found in mEDSI, not doing correction...')
@@ -385,7 +385,7 @@ if nargout > 0
 		sl = tokenize(save_list);
 		data = {sl};
 		for k=1:length(sl)
-			eval(['data{k+1}=' sl{k} ';'])
+			if exist(sl{k}), eval(['data{k+1}=' sl{k} ';']); end
 		end
 	end
 end
