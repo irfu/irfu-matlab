@@ -65,7 +65,7 @@ if nargin == 4,
      panel_str='';
      for jj=1:n_panels, panel_str=[panel_str '_' panels{i_panel}];end
      print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
-     orient tall;print -dpsc2 print_file_name;
+     orient tall;print('-dpsc2',print_file_name);
    end
  end
 end
