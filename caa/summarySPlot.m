@@ -14,6 +14,9 @@ function h=summarySPlot(sp,flag)
 
 if nargin<2, flag=0; end
 
+old_pwd = pwd;
+cd(sp)
+
 load mP
 load mEDSI diEs1p34 diE2p1234 diEs3p34 diE4p1234
 load mB B1 B2 B3 B4
@@ -54,6 +57,9 @@ addPlotInfo
 for j=1:7, axes(h(j)), end
 
 if nargout < 1, clear h, end
+
+	
+cd(old_pwd)
 
 function res=n2c(n)
 switch n
