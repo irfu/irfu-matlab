@@ -28,7 +28,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	options - one of the following:
 %	nosave : do no save on disk
 %	leavewhip : do not remove time intervals with Whisper pulses
-%	usesavedoff : use saved offsets instead of recalculate everything
+%	usesavedoff : use saved offsets instead of recalculating everything
 %
 %
 % $Id$
