@@ -16,15 +16,16 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	sax : SAX{cl_id} ->mEPH
 %			// spin axis vector [GSE] 
 %	a   : A{cl_id} -> mA	// phase
-%	b   : BPP{cl_id},diBPP{cl_id} ->mBPP	// B FGM PP [GSE+DSI] 
-%	edi : EDI{cl_id},diEDI{cl_id} ->mEDI	// E EDI PP [GSE+DSI] 
+%	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
+%	edi : EDI{cl_id},diEDI{cl_id}	->mEDI	// E EDI PP [GSE+DSI] 
+%	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
 %	options - one of the following:
 %	nosave : do no save on disk
 %
-% $Revision$  $Date$
+% $Id$
 %
 % see also C_GET, TOEPOCH
 
@@ -157,7 +158,8 @@ elseif strcmp(quantity,'a')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')
+elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcmp(quantity,'ncis')
+
 	r.qua = {quantity};
 	switch(quantity)
 	case 'b'
@@ -170,6 +172,10 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')
 		r.ins = 'CIS';
 		r.qua = {'vcis_p', 'vcis_h'}; % CODIF and HIA 
 		r.var = {'VCp', 'VCh'};
+	case 'ncis'
+		r.ins = 'CIS';
+		r.qua = {'ncis_p', 'ncis_h'}; % CODIF and HIA 
+		r.var = {'NCp', 'NCh'};
 	otherwise
 		error('Check variable list')
 	end
@@ -181,11 +187,15 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')
 		dat = readCSDS([cdb.db '|' cdb.dp],start_time,dt,cl_id,r.qua{i});
 		if ~isempty(dat)
 			eval(av_ssub([r.var{i} '?=dat;save_list=[save_list '' ' r.var{i} '?''];'],cl_id));
-			if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
-			if ~exist(av_ssub('SAX?',cl_id),'var')
-				warning('must fetch spin axis orientation (option ''sax'')')
-			else
-				eval(av_ssub(['di' r.var{i} '?=c_gse2dsc(' r.var{i} '?,SAX?);di' r.var{i} '?(:,3:4)=-di' r.var{i} '?(:,3:4);save_list=[save_list '' di' r.var{i} '?''];'],cl_id));
+
+			% transform vector data to DSI
+			if size(dat,2)>2 
+				if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
+				if ~exist(av_ssub('SAX?',cl_id),'var')
+					warning('must fetch spin axis orientation (option ''sax'')')
+				else
+					eval(av_ssub(['di' r.var{i} '?=c_gse2dsc(' r.var{i} '?,SAX?);di' r.var{i} '?(:,3:4)=-di' r.var{i} '?(:,3:4);save_list=[save_list '' di' r.var{i} '?''];'],cl_id));
+				end
 			end
 			clear dat
 		else
