@@ -18,7 +18,7 @@ eval_figuserdata='figuserdata={h};';
 persistent t a b phase v ic phaseHndl timeHndl figNumber ...
             vec1Hndl vec2Hndl vec1flag vec2flag ...
             flag_v1 flag_v2 v1 v2;
-if       (nargin==1 & isstr(spacecraft)), action=spacecraft;disp(['action=' action]);
+if       (nargin==1 & isstr(spacecraft)), action=spacecraft;c_log('proc',['action=' action]);
 elseif   (nargin < 6)                   , action='initialize';
 end
 
@@ -30,7 +30,7 @@ if strcmp(action,'initialize'),
   if nargin<4,
     if     exist('mB.mat'),   eval(av_ssub('load mB dB?;magnetic_field=dB?;clear dB?',ic));
     elseif exist('mBPP.mat'), eval(av_ssub('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic));
-    else   disp('Using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
+    else   c_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
   if nargin<3, eval(av_ssub('load mA.mat A?;phase_time_series=A?;clear A?',ic));          end
@@ -59,7 +59,7 @@ if strcmp(action,'initialize'),
   % The vector 1 entering
   labelStr='0';
   callbackStr='c_pl_sc_orientation(''plot'')';
-  vec1flag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.2 .2 .05],'string','show vector 1 [GSE]','Callback',callbackStr)
+  vec1flag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.2 .2 .05],'string','show vector 1 [GSE]','Callback',callbackStr);
   vec1Hndl=uicontrol( ...
         'Style','edit', ...
         'Units','normalized', ...
@@ -70,7 +70,7 @@ if strcmp(action,'initialize'),
   % The vector 2 entering
   labelStr='0';
   callbackStr='c_pl_sc_orientation(''plot'')';
-  vec2flag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.25 .2 .05],'string','show vector 2 [GSE]','Callback',callbackStr)
+  vec2flag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.25 .2 .05],'string','show vector 2 [GSE]','Callback',callbackStr);
   vec2Hndl=uicontrol( ...
         'Style','edit', ...
         'Units','normalized', ...
