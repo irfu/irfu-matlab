@@ -1,5 +1,6 @@
 function c_eval(ev_str,sc_list)
-%c_eval evaluate expression for list of spacecraft
+%C_EVAL evaluate expression for list of spacecraft
+%
 % c_eval(ev_str,[sc_list])
 %
 % Input:
@@ -12,9 +13,9 @@ function c_eval(ev_str,sc_list)
 %
 % is the same as R2=r2;C2=R2.^2;R3=r3;C3=R3.^2;...
 %
-% $Id$
+% See also IRF_SSUB, EVALIN
 %
-% See also av_ssub, evalin
+% $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
 
@@ -22,4 +23,4 @@ error(nargchk(1,2,nargin))
 
 if nargin<2, sc_list=1:4; end
 
-for cl_id=sc_list, evalin('caller', av_ssub(ev_str, cl_id)), end
+for cl_id=sc_list, evalin('caller', irf_ssub(ev_str, cl_id)), end
