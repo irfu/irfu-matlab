@@ -95,8 +95,8 @@ while(q ~= 'q')
 	variable='q';default=num2str(offset);question='Give Ex offset [mV/m] and amplitude factor (s-save,q-quit)[%]>';av_ask
 	switch(q)
 	case 's'
-		disp(sprintf('Ddsi%d, Damp%d -> /mEDSI.mat',cl_id,cl_id))
-		eval(av_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi?',cl_id))
+		disp(sprintf('Ddsi%d, Damp%d -> ./mEDSI.mat',cl_id,cl_id))
+		eval(av_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi? Damp?',cl_id))
 	case 'q'
 		cd(old_pwd)
 		return
