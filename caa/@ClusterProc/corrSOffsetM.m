@@ -141,7 +141,8 @@ while(q ~= 'q')
 			figure(17)
 			clf
 			eval(['plotExy(' var_list ');zoom on'])
-			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
+      title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
+%			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
 			eval(['legend(' leg ')'])
 		else
 			disp('invalid command')
