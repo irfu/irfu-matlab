@@ -9,13 +9,19 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
+%	//// EFW ////
 %	e   : wE{cl_id}p12,34 -> mER
 %			// electric fields (HX)
 %	p   : P{cl_id},NVps{cl_id}, P10Hz{cl_id}p{1:4} -> mP	
 %			// sc potential (LX)
+%
+%	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
 %			// spin axis vector [GSE] 
 %	a   : A{cl_id} -> mA	// phase
+%	r	: R{cl_id} -> mR	// position
+%
+%	//// Other instruments ////
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
 %	bfgm: B{cl_id},diB{cl_id}	->mB	// B FGM** [GSE+DSI]
 %		** contact Stephan Buchert
@@ -28,6 +34,15 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
+%
+% Example:
+%	data = getData(...
+%	ClusterDB('disco:10','/data/cluster','/tmp/my_event'),...
+%	toepoch([2001 02 13 18 20 00],120,3,'b');
+%
+%	This will fetch 120 sec of B FGM PP for Cluster 3 starting from 
+%	2001-02-13 18:20:00, using ISDAT database disco:10 or 
+%	CDF files in /data/cluster.
 %
 % $Id$
 %
@@ -161,6 +176,19 @@ elseif strcmp(quantity,'a')
 		c_eval('save_list=[save_list '' A? ''];',cl_id);
 	else
 		warning('caa:noData',av_ssub('No data for A?',cl_id))
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% aux data - Position
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'r')
+	save_file = './mR.mat';
+	[t,data] = ISGet(cdb.db, start_time, dt, cl_id, 'ephemeris', 'position');
+	if ~isempty(data)
+		c_eval('R?=[double(t) double(data'')];',cl_id); clear t data;
+		c_eval('save_list=[save_list '' R? ''];',cl_id);
+	else
+		warning('caa:noData',av_ssub('No data for R?',cl_id))
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
