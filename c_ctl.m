@@ -39,9 +39,10 @@ if isstr(args{1})
 			if exist([default_mcctl_path '/mcctl.mat'])
 				eval(['load ' default_mcctl_path '/mcctl.mat'])
 			else
-				% init with defaults
+				% init 
+				% NOTE: this is the place to initialize defaults
 				def_ct.ns_ops = [];
-				def_ct.ang_lim = 15;
+				def_ct.ang_lim = 10;
 				def_ct.rm_whip = 1;
 				c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
@@ -57,7 +58,11 @@ if isstr(args{1})
 		c = args{3};
 		
 		global c_ct
-		if isempty(c_ct), disp('CTL is not initialized.'), return, end
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+		end
 		
 		if isfield(c_ct{cl_id},c)
 			if nargout>0
@@ -67,7 +72,8 @@ if isstr(args{1})
 				eval(['disp(c_ct{cl_id}.' c ');'])
 			end
 		else
-			error(['unknown ctl: ' c])
+			if nargout>0, out=[]; end
+			irf_log('fcal',['unknown ctl: ' c])
 		end
 
 	elseif strcmp(args{1},'load_ns_ops')
