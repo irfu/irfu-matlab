@@ -488,6 +488,10 @@ case 'init'
 	hnd.menu_show_raw = uimenu(hnd.menu_tools,'Label','&Show raw data',...
 		'Callback','c_cal_gui(''show_raw'')',...
 		'Accelerator','d');
+	hnd.menu_cut_int = uimenu(hnd.menu_tools,'Label','&Cut the interval',...
+		'Callback','c_cal_gui(''cut_int'')',...
+		'Accelerator','k',...
+		'Enable','off');
 		
 	guidata(h0,hnd);
 	
@@ -1279,6 +1283,7 @@ case 'click_axes'
 	% Enable menu
 	if ~isempty(hnd.ts_marker) & ~isempty(hnd.te_marker)
 		set(hnd.menu_zoom_in,'Enable','on')
+		set(hnd.menu_cut_int,'Enable','on')
 	end
 	
 	guidata(h0,hnd);
@@ -1304,6 +1309,7 @@ case 'zoom_in'
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
+	set(hnd.menu_cut_int,'Enable','off')
 	set(hnd.menu_zoom_un,'Enable','on')
 	set(hnd.menu_zoom_rs,'Enable','on')
 	
@@ -1331,6 +1337,7 @@ case 'zoom_un'
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
+	set(hnd.menu_cut_int,'Enable','off')
 	if size(hnd.tlim,1)==1
 		set(hnd.menu_zoom_un,'Enable','off')
 		set(hnd.menu_zoom_rs,'Enable','off')
@@ -1360,6 +1367,7 @@ case 'zoom_rs'
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
+	set(hnd.menu_cut_int,'Enable','off')
 	set(hnd.menu_zoom_un,'Enable','off')
 	set(hnd.menu_zoom_rs,'Enable','off')
 	
@@ -1390,6 +1398,8 @@ case 'show_raw'
 			if ~isempty(d_tmp)
 				figure(raw_fig_id), clf
 				irf_plot(d_tmp,'comp')
+				irf_zoom(hnd.tlim(end,:),'x',gca);
+				set(gca,'YLimMode','auto')
 				ylabel('E [mV/m]')
 				legend(leg_tmp{:})
 			end
@@ -1400,6 +1410,8 @@ case 'show_raw'
 			E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
 			figure(raw_fig_id), clf
 			irf_plot(E_tmp); clear E_tmp
+			irf_zoom(hnd.tlim(end,:),'x',gca);
+			set(gca,'YLimMode','auto')
 			ylabel(irf_ssub(['wE?p' hnd.Data{j}.sen ' [mV/m]'],hnd.Data{j}.cl_id))
 		end
 	else % Display V CIS
@@ -1413,16 +1425,106 @@ case 'show_raw'
 			figure(raw_fig_id), clf
 			irf_plot(V_tmp)
 			ylabel([v_s ' GSE [km/s]'])
+			irf_zoom(hnd.tlim(end,:),'x',gca);
+			set(gca,'YLimMode','auto')
 			legend('Vx','Vy','Vz')
 		end
 		clear V_tmp ok v_s
 	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% cut_int
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'cut_int'
+	hnd = guidata(h0);
+	
+	% Check if we really have update tlim
+	% This check is probably unnecessary
+	if hnd.ts_marker.t==hnd.tlim(end,1) & hnd.te_marker.t==hnd.tlim(end,2)
+		return
+	end
+	
+	tlim_tmp = [hnd.ts_marker.t hnd.te_marker.t];
+	j = D_findByName(hnd.Data,hnd.ActiveVar);
+	
+	btn = questdlg([hnd.ActiveVar ' : Remove ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec starting from ' epoch2iso(tlim_tmp(1))], ...
+		'Confirmation', ...
+		'Yes','No','No');
+	if strcmp(btn,'No'), return, end
+
+	if strcmp(hnd.Data{j}.type,'E')
+		if strcmp(hnd.Data{j}.sen,'1234'), var_list = {'wE?p12','wE?p32','wE?p34'};
+		else, var_list = {['wE?p' hnd.Data{j}.sen]};
+		end
 		
+		% Remove the desired interval from the raw data
+		n_ok = 0;
+		tint_tmp = [];
+		for vi = 1:length(var_list)
+			v_s = irf_ssub(var_list{vi},hnd.Data{j}.cl_id);
+			ok = c_load(v_s);
+			if ok
+				irf_log('proc',...
+					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1))])
+					
+				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
+				eval([v_s '(ii,:)=[];save mER ' v_s ' -append']);
+				if isempty(tint_tmp), eval(['tint_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
+				else
+					eval(['tint1_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
+					if tint1_tmp(1)<tint_tmp(1), tint_tmp(1) = tint1_tmp(1); end
+					if tint1_tmp(2)>tint_tmp(2), tint_tmp(2) = tint1_tmp(2); end
+					clear tint1_tmp
+				end
+				n_ok = n_ok + 1;
+			end
+		end
+		clear ii v_s
+		if n_ok<1, disp('was no raw data'), return, end
+		
+		% Reprocess the data using the updated raw data
+		c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
+				'vars','e','nosrc');
+				
+		n_ok = 0;
+		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234'};
+		for vi = 1:length(var_list)
+			v_s = irf_ssub(var_list{vi},hnd.Data{j}.cl_id);
+			jj = D_findByName(hnd.Data,v_s);
+			if ~isempty(jj)
+				ok = c_load(v_s);
+				if ok
+					eval(['hnd.Data{jj}.data=' v_s ';'])
+					n_ok = n_ok + 1;
+				else
+					irf_log('load',...
+						['Cannot load ' v_s '. Removing it from the list.']);
+					hnd.Data{jj} = [];
+				end
+			end
+		end
+		if n_ok<1
+			disp('could not load any updated data. this is strange')
+			return
+		end
+		
+	else % Display V CIS
+		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
+		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
+		end
+		[ok,V_tmp] = c_load(v_s);
+		disp('CIS')
+	end
+	
+	% Enable/disable menus
+	set(hnd.menu_cut_int,'Enable','off')
+	
+	guidata(h0,hnd);
+	
+	c_cal_gui('replot_all')
 otherwise 
 	disp('wrong action')
 end
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
