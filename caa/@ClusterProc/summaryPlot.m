@@ -55,7 +55,7 @@ for k=1:length(q_list)
 				labels{n_plots} = l_list{k};
 				n_plots = n_plots + 1;
 				eval(av_ssub(['data{n_plots}=' q_list{k} '(:,[1 5]);'],cl_id)) 
-				labels{n_plots} = '\alpha(B,spin) [deg]';
+				labels{n_plots} = '\theta (B,spin) [deg]';
 			else
 				eval(av_ssub(['d_t=' q_list{k} ';'],cl_id))
 				labels{n_plots} = l_list{k};
