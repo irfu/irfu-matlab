@@ -139,7 +139,7 @@ elseif strcmp(quantity,'p')
     	p=p4;
     end
     eval(av_ssub(['P' param '?=p;save_list=[save_list '' P' param '? ''];'],cl_id));
-	eval(av_ssub('P?=p;NVps?=c_n_Vps(p);save_list=[save_list '' P? NVps?''];',cl_id))
+	eval(av_ssub('P?=p;NVps?=c_n_Vps(p);Nvps?(:,end+1)=p(:,2); save_list=[save_list '' P? NVps?''];',cl_id))
 	clear p
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
