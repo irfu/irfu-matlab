@@ -96,7 +96,7 @@ if strcmp(quantity,'dies')
 		data = [];
 		return
 	end
-	
+
 	eval(av_ssub('load mER wE?p12 wE?p34;',cl_id));
 	eval(av_ssub('load mA A?;',cl_id));
 	
@@ -267,7 +267,8 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		varo_s = av_ssub('Es?',cl_id);
 	end
 
-	Dx_s =  av_ssub('Ddsi?',cl_id);
+	Dx_s =  av_ssub('real(Ddsi?)',cl_id);
+	Dy_s =  av_ssub('imag(Ddsi?)',cl_id);
 	Da_s =  av_ssub('Damp?',cl_id);
 
 	eval(['load mEDSI ' var_s ' ' Dx_s ' ' Da_s])
@@ -280,11 +281,14 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	if exist(Dx_s,'var'), eval(['Dx=' Dx_s ';'])
 	else, disp('using Dx=0'), Dx = 0;
 	end
+	if exist(Dy_s,'var'), eval(['Dy=' Dy_s ';'])
+	else, disp('using Dy=0'), Dy = 0;
+	end
 	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
 	else, disp('using Da=1'), Da = 1;
 	end
 
-	diE = corrDSIOffsets(diE,Dx,0,Da);
+	diE = corrDSIOffsets(diE,Dx,Dy,Da);
 
 	disp(['using angle limit of ' num2str(ang_limit) ' degrees'])
 	[diE,angle]=av_ed(diE,diB,ang_limit);
