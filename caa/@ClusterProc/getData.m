@@ -67,8 +67,10 @@ ang_limit = c_ctl(cl_id,'ang_lim');
 if isempty(ang_limit), ang_limit = 10; end
 probe_p = c_ctl(cl_id,'probe_p');
 if isempty(probe_p), probe_p = 34; end
+deltaof_sdev_max = c_ctl(cl_id, 'deltaof_sdev_max');
+if isempty(deltaof_sdev_max), deltaof_sdev_max = 2; end
 deltaof_max = c_ctl(cl_id, 'deltaof_max');
-if isempty(deltaof_max), deltaof_max = 2; end
+if isempty(deltaof_max), deltaof_max = 1.5; end
 while have_options
 	l = 1;
 	switch(args{1})
@@ -140,9 +142,9 @@ if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 	
-	if ~c_load('A?',cl_id)
+	if ~c_load('Atwo?',cl_id)
 		irf_log('load',...
-			irf_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+			irf_ssub('No Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 	end
 	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
 		irf_log('load',...
@@ -156,7 +158,7 @@ if strcmp(quantity,'dies')
 		ps = num2str(pl(k));
 		if exist(irf_ssub(['wE?p' ps],cl_id),'var')
 			if pl(k)==32, p12 = 32; end
-			c_eval(['tt=wE?p' ps ';aa=A?;'],cl_id)
+			c_eval(['tt=wE?p' ps ';'],cl_id)
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
 			if flag_rmwhip
@@ -169,6 +171,8 @@ if strcmp(quantity,'dies')
 					irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
 				end
 			end
+			
+			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
 			
 			if sfit_ver>=0
 				irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
@@ -214,7 +218,7 @@ if strcmp(quantity,'dies')
 	if (exist(irf_ssub('diEs?p12',cl_id),'var') | ...
 	exist(irf_ssub('diEs?p32',cl_id),'var')) & exist(irf_ssub('diEs?p34',cl_id),'var')
 		
-		% To compute delta offsets we remove points which are > deltaof_max*sdev
+		% To compute delta offsets we remove points which are > deltaof_sdev_max*sdev
 		% as this must de a stable quantity
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
@@ -222,7 +226,7 @@ if strcmp(quantity,'dies')
 		sdev = std(df);
 		comp_s = 'xy';
 		for comp = 1:2
-			ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_max*sdev(comp)); 
+			ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
 			irf_log('calb',sprintf('%d points are removed for delta_%s',...
 				length(ii),comp_s(comp)))
 			ddd = df(:,comp); ddd(ii) = [];
@@ -232,21 +236,31 @@ if strcmp(quantity,'dies')
 		irf_log('calb',sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
 			abs(Del(1)), abs(Del(2))))
 
-		% We suppose that smaller field is more realistic
-		% and will correct the largest signal.
-		% If we have p32, we always correct it, not p34.
-		% Real offset is applied to p12, imaginary to p34.
-		if Del(1)>0 & p12==12, Del = -Del*j; end
-		eval(irf_ssub('D?p12p34=Del;',cl_id))
-
-		if real(Del)
-			irf_log('calb',irf_ssub('correcting p?',p12))
-			eval(irf_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
+		% Check for unreallistically large Del. 
+		% If it is larger than deltaof_max, we set it to zero and 
+		% NOT doing any corrections.
+		if (Del(1)>deltaof_max) | (Del(2)>deltaof_max)
+			Del = [0 0];
+			irf_log('calb',...
+				irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
+				cl_id,deltaof_max))
 		else
-			irf_log('calb','correcting p34')
-			Del = imag(Del);
-			c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*Del;',cl_id);
+			% We suppose that smaller field is more realistic
+			% and will correct the largest signal.
+			% If we have p32, we always correct it, not p34.
+			% Real offset is applied to p12, imaginary to p34.
+			if Del(1)>0 & p12==12, Del = -Del*j; end
+			if real(Del)
+				irf_log('calb',irf_ssub('correcting p?',p12))
+				eval(irf_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
+			else
+				irf_log('calb','correcting p34')
+				Del = imag(Del);
+				c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*Del;',cl_id);
+			end
 		end
+		
+		eval(irf_ssub('D?p12p34=Del;',cl_id))
 		clear m12 m34 Del
 
 		eval(irf_ssub(['save_list=[save_list ''D?p12p34 ''];'],cl_id));
@@ -323,15 +337,19 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 					c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
 					c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
 				else
-					if flag_rmwhip & exist('./mFDM.mat','file')
-						c_eval('load mFDM WHIP?',cl_id)
-					end
-					if flag_rmwhip & exist(irf_ssub('WHIP?',cl_id),'var')
-						%removing times with Whisper pulses
-						c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+					if flag_rmwhip
+						if exist('./mFDM.mat','file')
+							c_eval('load mFDM WHIP?',cl_id)
+						end
+						if exist(irf_ssub('WHIP?',cl_id),'var')
+							%removing times with Whisper pulses
+							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+						else
+							irf_log('load',...
+							irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
+							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
+						end
 					else
-						irf_log('load',...
-						irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
 						c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
 					end
 					c_eval(['irf_log(''calb'',sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
