@@ -588,7 +588,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(irf_ssub('R?=[double(tr) double(data_r)''];',ic));
      eval(irf_ssub('V?=[double(tv) double(data_v)''];',ic));
      clear tr,tv,data_r,data_v;
-     save_list=[save_list irf_ssub(' R? V? ',, ic)];
+     save_list=[save_list irf_ssub(' R? V? ', ic)];
     end
 
  elseif strcmp(q,'vc'),
