@@ -31,7 +31,7 @@ end
 
 switch action
 case 'init'
-	%create figure
+	% Create figure
 	h0 = figure(23);
 	clf
 	set(h0,'Position', [25 40 990 640])
@@ -39,7 +39,7 @@ case 'init'
 	hnd.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
 	set(hnd.DATApanel,'Title','Data')
 	
-	%load data
+	% Load data
 	
 	c_Edata = {'diE?p1234','diEs?p12','diEs?p34'};
 	c_Ddata = {'diEDI?'};
@@ -93,7 +93,7 @@ case 'init'
 		hnd.BPPData = [hnd.BPPData {BPP}];
 		clear BFGM BPP
 		
-		% load offsets
+		% Load offsets
 		old_pwd = pwd; cd(sp);
 		clear Delta_off;
 		c_eval('load mEDSI D?p12p34',cl_id)
@@ -106,7 +106,7 @@ case 'init'
 		end
 		cd(old_pwd)
 		
-		% load data
+		% Load data
 		for d=1:4
 			for j=1:length(dd{d})
 				vs = av_ssub(dd{d}{j},cl_id);
@@ -125,9 +125,10 @@ case 'init'
 					data.label = [dsc.inst ' ' dsc.sig];
 					if dsc.sen, data.label = [data.label ' (' dsc.sen ')'];, end
 					data.sen = dsc.sen;
-					data.plot_style = p_style(data.cl_id, data.inst,data.sen);
+					[data.plot_style,data.plot_color] =...
+						p_style(data.cl_id, data.inst,data.sen);
 					
-					%tlim
+					% tlim
 					c_eval(['tlxxx(1) = ' vs '(1,1); tlxxx(2) = ' vs '(end,1);'],cl_id)
 					if ~hnd.tlim(1), hnd.tlim(1) = tlxxx(1);
 					elseif hnd.tlim(1) > tlxxx(1), hnd.tlim(1) = tlxxx(1); 
@@ -135,7 +136,7 @@ case 'init'
 					if hnd.tlim(2) < tlxxx(2), hnd.tlim(2) = tlxxx(2); end
 					clear tlxxx
 					
-					% correct delta offset for Es?p12 and Es?p34
+					% Correct delta offset for Es?p12 and Es?p34
 					if Delta_off
 						if isreal(Delta_off) & strcmp(vs,av_ssub('diEs?p12',cl_id))
 							c_log('calb','correcting delta offset in p12')
@@ -194,8 +195,8 @@ case 'init'
 					end
 					eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
 					if d < 4
-						%E and V data
-						% resample B
+						% E and V data
+						% Resample B
 						if ~isempty(hnd.BData{cl_id})
 							c_log('proc','resampling B GFM')
 							c_eval(...
@@ -211,7 +212,7 @@ case 'init'
 						data.aux = 0;
 						ncdata = ncdata + 1;
 					else
-						%AUX data
+						% AUX data
 						data.aux = 1;
 					end
 					hnd.Data = [hnd.Data, {data}];
@@ -246,7 +247,7 @@ case 'init'
 		cd(old_pwd)
 		hnd.EFWoffset = [hnd.EFWoffset {offset}];
 		
-		% load CIS offsets, must be only in Z.
+		% Load CIS offsets, must be only in Z.
 		offset = [0 0 0];
 		hnd.CISHoffset = [hnd.CISHoffset {offset}];
 		hnd.CISHoffset = [hnd.CISCoffset {offset}];
@@ -254,27 +255,26 @@ case 'init'
 		hnd.cal_updated = 1;
 	end
 	
-	% check if we have any data apart from AUX
+	% Check if we have any data apart from AUX
 	if ~ncdata, error('No usefull data loaded'), end
 	
-	%create Data Axes
+	% Create Data Axes
 	hnd.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
 	hnd.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
 	hnd.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes');
 	hnd.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes');
 	
-	%create Legend Axes
+	% Create Legend Axes
 	hnd.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
 		'Visible','off','XTick',[],'YTick',[]);
 	hnd.ALaxes = axes('Position',[.01 pya .12 ha ],...
 		'Visible','off','XTick',[],'YTick',[]);
 		
-	%create Calibrators
+	% Create Calibrators
 	wp = .15;
 	hnd.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
 	hnd.DYpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*2 wp ha]);
 	hnd.DZpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1 wp ha]);
-	%hnd.AUXpanel = uipanel('Position',[pxa+wa+dya*2 pya wp ha]);
 	set(hnd.DXpanel,'Title','dX')
 	set(hnd.DYpanel,'Title','dY')
 	set(hnd.DZpanel,'Title','dZ')
@@ -306,7 +306,7 @@ case 'fix_plot_pos'
 % replot
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot'
-	%plot data
+	% Plot data
 	hnd = guidata(h0);
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
 	if ~length(hnd.Data), error('no data to calibrate'),end
@@ -316,7 +316,7 @@ case 'replot'
 	% we set hnd.last to name of the variable we need to add
 	d_ii = D_findByNameList(hnd.Data,hnd.last);
 	
-	% sanity check
+	% Sanity check
 	if isempty(d_ii)
 		error(['cannot find variables in the data list'])
 	end
@@ -324,17 +324,22 @@ case 'replot'
 	% Plotting 
 	for j=1:length(d_ii)
 		%disp(['replot: plotting ' hnd.Data{d_ii(j)}.name])
+		
+		% Process only visible data
+		if ~hnd.Data{d_ii(j)}.visible, continue, end
+		
 		if hnd.Data{d_ii(j)}.aux
 			hnd.AUXList = L_add(hnd.AUXList,hnd.Data{d_ii(j)}.name);
 			
-			%Plotting
+			% Plotting
 			hold(h(4),'on')
 			hnd.Data{d_ii(j)}.ploth = plot(hnd.AUXaxes,...
 				hnd.Data{d_ii(j)}.data(:,1),hnd.Data{d_ii(j)}.data(:,2),...
-				hnd.Data{d_ii(j)}.plot_style);
+				hnd.Data{d_ii(j)}.plot_style,...
+				'Color',hnd.Data{d_ii(j)}.plot_color);
 			hold(h(4),'off')
 		else
-			% we update p_data only if calibrations were changed
+			% We update p_data only if calibrations were changed
 			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.cal_updated
 				%disp('replot: recalculating plot data')
 				hnd.Data{d_ii(j)}.p_data =...
@@ -343,13 +348,14 @@ case 'replot'
 			if ~isempty(hnd.Data{d_ii(j)}.p_data)
 				hnd.DataList = L_add(hnd.DataList,hnd.Data{d_ii(j)}.name);
 				
-				%Plotting
+				% Plotting
 				for ax=1:3
 					hold(h(ax),'on')
 					hnd.Data{d_ii(j)}.ploth(ax) = plot(h(ax),...
 						hnd.Data{d_ii(j)}.p_data(:,1),...
 						hnd.Data{d_ii(j)}.p_data(:,1+ax),...
-						hnd.Data{d_ii(j)}.plot_style);
+						hnd.Data{d_ii(j)}.plot_style,...
+						'Color',hnd.Data{d_ii(j)}.plot_color);
 					hold(h(ax),'off')
 				end
 			end
@@ -365,7 +371,7 @@ case 'replot'
 % replot_all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot_all'
-	%plot data
+	% Replot all data
 	hnd = guidata(h0);
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
 	if ~length(hnd.Data), error('no data to calibrate'),end
@@ -376,32 +382,11 @@ case 'replot_all'
 		hnd.DataList = {};
 		hnd.AUXList = {};
 		
-		for j=1:length(hnd.Data)
-			if hnd.Data{j}.aux & hnd.Data{j}.visible
-				hnd.AUXList = L_add(hnd.AUXList,hnd.Data{j}.name);
-				
-				% Plotting
-				hold(h(4),'on')
-				hnd.Data{j}.ploth = plot(h(4),hnd.Data{j}.data(:,1),...
-					hnd.Data{j}.data(:,2),hnd.Data{j}.plot_style);
-				hold(h(4),'off')
-			else
-				hnd.Data{j}.p_data = get_plot_data(hnd.Data{j}, hnd);
-				if isempty(hnd.Data{j}.p_data), continue, end
-				
-				hnd.DataList = L_add(hnd.DataList,hnd.Data{j}.name);
-				
-				% Plotting
-				for ax=1:3
-					hold(h(ax),'on')
-					hnd.Data{j}.ploth(ax) = plot(h(ax),...
-						hnd.Data{j}.p_data(:,1),...
-						hnd.Data{j}.p_data(:,1+ax),...
-						hnd.Data{j}.plot_style);
-					hold(h(ax),'off')
-				end
-			end
-		end
+		% Plot
+		for j=1:length(hnd.Data), hnd.last = L_add(hnd.last,hnd.Data{j}.name); end
+		guidata(h0,hnd);
+		c_cal_gui('replot')
+		hnd = guidata(h0);
 		
 		% Axes labels
 		labs = ['x' 'y' 'z'];
@@ -415,11 +400,12 @@ case 'replot_all'
 		ylabel(h(4),'AUX')
 		axes(h(4)); add_timeaxis; grid on
 		
+		% Time span
 		av_zoom(hnd.tlim,'x',h);
+		
 		guidata(h0,hnd);
-		c_cal_gui('update_legend')
 	else
-		% replotting not ALL (hnd.last is set)
+		% Replotting NOT ALL data (hnd.last is set)
 		c_cal_gui('replot')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -434,16 +420,18 @@ case 'update_legend'
 		cla(hnd.DLaxes)
 		set(hnd.DLaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
 		
-		%make fake plots
+		% Make fake plots
 		for j=1:length(hnd.DataList)
+			ii = D_findByName(hnd.Data,hnd.DataList{j});
 			hold(hnd.DLaxes,'on')
 			plot(hnd.DLaxes,1,1,...
-				hnd.Data{D_findByName(hnd.Data,hnd.DataList{j})}.plot_style,...
+				hnd.Data{ii}.plot_style,...
+				'Color',hnd.Data{ii}.plot_color,...
 				'Visible','off')
 			hold(hnd.DLaxes,'off')
 		end
 		
-		%make legend
+		% Make legend
 		ii = D_findByNameList(hnd.Data,hnd.DataList);
 		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
@@ -463,16 +451,18 @@ case 'update_legend'
 		cla(hnd.ALaxes)
 		set(hnd.ALaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
 		
-		%make fake plots
+		% Make fake plots
 		for j=1:length(hnd.AUXList)
+			ii = D_findByName(hnd.Data,hnd.AUXList{j});
 			hold(hnd.ALaxes,'on')
 			plot(hnd.ALaxes,1,1,...
-				hnd.Data{D_findByName(hnd.Data,hnd.AUXList{j})}.plot_style,...
+				hnd.Data{ii}.plot_style,...
+				'Color',hnd.Data{ii}.plot_color,...
 				'Visible','off')
 			hold(hnd.ALaxes,'off')
 		end
 		
-		%make legend
+		% Make legend
 		ii = D_findByNameList(hnd.Data,hnd.AUXList);
 		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
@@ -515,11 +505,11 @@ case 'update_DXedit'
 case 'update_DXcheckbox'
 	hnd = guidata(h0);
 	if get(hnd.DXcheckbox,'Value')==1
-		%Lock
+		% Lock
 		set(hnd.DXedit,'Enable','off','BackgroundColor',inactive_color)
 		set(hnd.DXslider,'Enable','off')
 	else
-		%Unclock
+		% Unclock
 		set(hnd.DXedit,'Enable','on','BackgroundColor',active_color)
 		set(hnd.DXslider,'Enable','on')
 		set(hnd.DXslider,'Value',str2double(get(hnd.DXedit,'String')))
@@ -533,7 +523,7 @@ case 'update_Ccheckbox'
 	if isempty(ii), return, end
 	
 	if get(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value')==1
-		%Show
+		% Show
 		for j=1:length(ii)
 			hnd.Data{ii(j)}.visible = 1;
 			set(eval(['hnd.DATA' hnd.Data{ii(j)}.name 'checkbox']),...
@@ -543,7 +533,7 @@ case 'update_Ccheckbox'
 		guidata(h0,hnd);
 		c_cal_gui('replot');
 	else
-		%Hide
+		% Hide
 		kk = [];
 		for j=1:length(ii)
 			if hnd.Data{ii(j)}.visible == 0, kk = [kk j]; end
@@ -582,7 +572,7 @@ case 'update_Ccheckbox'
 case 'update_DATAcheckbox'
 	hnd = guidata(h0);
 	if get(eval(['hnd.DATA' vs 'checkbox']),'Value')==1
-		% plot the varible
+		% Plot the varible
 		j = D_findByName(hnd.Data,vs);
 		%disp(['plotting ' hnd.Data{j}.name])
 		hnd.Data{j}.visible = 1;
@@ -590,18 +580,18 @@ case 'update_DATAcheckbox'
 		guidata(h0,hnd);
 		c_cal_gui('replot')
 		
-		% check if we need to show C# checkBox
+		% Check if we need to show C# checkBox
 		if get(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),'Value')==0
 			set(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),...
 				'Value',1)
 		end
 	else
-		% hide the varible
+		% Hide the varible
 		j = D_findByName(hnd.Data,vs);
 		hnd.Data{j}.visible = 0;
 		delete(hnd.Data{j}.ploth)
 
-		% check if we need to hide C# checkBox
+		% Check if we need to hide C# checkBox
 		cl_id = hnd.Data{j}.cl_id;
 		ii = D_findByCLID(hnd.Data,cl_id);
 		if isempty(ii), return, end
@@ -614,7 +604,7 @@ case 'update_DATAcheckbox'
 				'Value',0)
 		end
 		
-		% remove from the plotting lists	
+		% Remove from the plotting lists	
 		j = L_find(hnd.DataList,vs);
 		if ~isempty(j), hnd.DataList = L_rm_ii(hnd.DataList,j);
 		else, hnd.AUXList = L_rm(hnd.AUXList,vs);
@@ -639,9 +629,9 @@ out(:,4) = v(:,4) - offset(3);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function p_style
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function out = p_style(cl_id, inst, sen)
+function [out, color] = p_style(cl_id, inst, sen)
 out = '';
-colrs = ['k','r','g','b'];
+colrs = [0 0 0; 1 0 0; 0 .5 0; 0 0 1]; % black, red, dark green, blue
 switch inst
 case 'EFW'
 	switch sen
@@ -650,7 +640,7 @@ case 'EFW'
 	case 'p12'
 		out = '--';
 	case 'p34'
-		out = '--';	
+		out = '-.';	
 	otherwise
 		disp('unknown sensor')
 	end
@@ -668,7 +658,7 @@ case 'CIS'
 otherwise
 	disp('unknown instrument')
 end
-out = [out colrs(cl_id)];
+color = colrs(cl_id,:);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function get_plot_data
@@ -681,7 +671,7 @@ p_data = [];
 if data.visible
 	p_data = data.data;
 	
-	%correct offsets
+	% Correct offsets
 	if data.editable 
 		switch data.type
 		case 'E'
@@ -702,7 +692,7 @@ if data.visible
 		end
 	end
 	
-	% calculate Ez, convert V->E and V->E
+	% Calculate Ez, convert V->E and V->E
 	switch data.type
 	case 'E'
 		if any(p_data(:,4))==0,
