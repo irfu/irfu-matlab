@@ -8,17 +8,19 @@ tlim = [];
 
 if nargin<1,  h = gca;  end
 
-hh=h(1,1);  % use the first subplot to estimate available time interval
-xl=get(hh,'XLim');
-hc=get(hh,'Children');
-xd=get(hc(end),'XData');
-avail=[min([xl xd]) max([xl xd])];
-presel=xl;
+% use the first subplot to estimate available time interval
+  hh=h(1,1);  
+  xl=get(hh,'XLim');
+  hc=get(hh,'Children');
+  xd=get(hc(end),'XData');
+  avail=[min([xl xd]) max([xl xd])];
+  presel=xl;
+  
+  dt = 0.02*diff(avail);
+  xlim = [avail(1)-dt avail(2)+dt];
+  ttics = timeaxis(xlim);
 
-dt = 0.02*diff(avail);
-xlim = [avail(1)-dt avail(2)+dt];
-ttics = timeaxis(xlim);
-
+% initialize dgud variable that has all the properties of time manager
 dgud.tlim = avail;
 dgud.from = 1;
 dgud.cancel = 0;
