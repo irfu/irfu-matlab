@@ -28,7 +28,9 @@ if strcmp(action,'initialize'),
   if nargin<6, flag_v=1;                                                                   end
   if nargin<5, flag_v=0;                                                                   end
   if nargin<4,
-    if     exist('mB.mat'),   eval(av_ssub('load mB dB?;magnetic_field=dB?;clear dB?',ic));
+    if  exist('mB.mat'),  
+        ok=c_load('B?',ic);
+        if ok, c_eval('magnetic_field=c_gse2dsc(B?,?);clear B?',ic);end
     elseif exist('mBPP.mat'), eval(av_ssub('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic));
     else   c_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
@@ -95,7 +97,7 @@ if strcmp(action,'initialize'),
   timeHndl=uicontrol( ...
         'Style','edit', ...
         'Units','normalized', ...
-        'Position',[0.5 0.1 .2 .05], ...
+        'Position',[0.5 0.1 .3 .05], ...
         'String',labelStr, ...
         'Callback',callbackStr);
   %====================================
