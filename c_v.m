@@ -9,6 +9,8 @@ function v=c_v(t);
 % dt=[0 t2-t1 t3-t1 t4-t1];
 %
 
+sc_list=1:4;
+
 if t(2) > 1e8, flag='v_from_t'; else, flag='dt_from_v';v=t;t=v(1);end
 
 if exist('mR.mat'),
