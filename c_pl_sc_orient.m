@@ -1,12 +1,12 @@
 function h=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,velocity,action);
-% C_PL_SC_ORIENT   Plots the orientation of the EFW probes
+%C_PL_SC_ORIENT   Plots the orientation of the EFW probes
 %
-%   h = C_PL_SC_ORIENTATION;
-%   h = C_PL_SC_ORIENTATION(ic);
-%   h = C_PL_SC_ORIENTATION(ic,t);
-%   h = C_PL_SC_ORIENTATION(ic,t,a);
-%   h = C_PL_SC_ORIENTATION(ic,t,a,b);
-%   h = C_PL_SC_ORIENTATION(ic,t,a,b,v);
+%   h = C_PL_SC_ORIENT;
+%   h = C_PL_SC_ORIENT(ic);
+%   h = C_PL_SC_ORIENT(ic,t);
+%   h = C_PL_SC_ORIENT(ic,t,a);
+%   h = C_PL_SC_ORIENT(ic,t,a,b);
+%   h = C_PL_SC_ORIENT(ic,t,a,b,v);
 %   ic - spacecraft number
 %   t  - time in isdat epoch
 %   a  - time vector of the satellite phase in degrees
@@ -27,10 +27,10 @@ elseif   (nargin < 6)                   , action='initialize';
 end
 
 if strcmp(action,'initialize'),
-  if nargin<1, help c_pl_sc_orient;return;                                            end
+  if nargin<1, help c_pl_sc_orient; return, end
   ic=spacecraft;
-  if nargin<6, flag_v=1;                                                                   end
-  if nargin<5, flag_v=0;                                                                   end
+  if nargin<6, flag_v=1; end
+  if nargin<5, flag_v=0; end
   if nargin<4,
     if  exist('mB.mat'),  
         ok=c_load('B?',ic);
@@ -39,8 +39,8 @@ if strcmp(action,'initialize'),
     else   irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
-  if nargin<3, c_eval('load mA.mat A?;phase_time_series=A?;clear A?',ic);          end
-  if nargin<2, time=phase_time_series(1,1);                                                end
+  if nargin<3, phase_time_series=c_load('A?',ic,'var'); end
+  if nargin<2, time=phase_time_series(1,1); end
   t=time;a=phase_time_series;b=magnetic_field;
   if flag_v == 1, v=velocity; end
   % See if spacecraft orientation figures is open
