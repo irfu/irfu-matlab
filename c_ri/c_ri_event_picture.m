@@ -30,7 +30,7 @@ for g =1:f_count
   s_t = fromepoch(t);
   e_t = fromepoch(t); 
   
-  [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
+  [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);whos B1 B2 B3 B4;
   c_eval('B?=av_abs(B?);');
   fg = figure;
   %plots B1
