@@ -10,6 +10,7 @@ persistent h0;
 
 sp = '.';
 
+% plotting constants
 inactive_color = [0.831373 0.815686 0.784314]; %gray
 active_color = [1 1 1]; %white
 active_p_color = 'magenta';
@@ -28,6 +29,48 @@ elseif regexp(action,'^update_DATA.+checkbox$')
 elseif regexp(action,'^update_C[1-4]checkbox$')
 	cl_id = eval(action(9));
 	action = 'update_Ccheckbox';
+elseif regexp(action,'^update_D[X-Z]slider$')
+	comp_s = action(9);
+	switch comp_s
+	case 'X'
+		comp = 1;
+	case 'Y'
+		comp = 2;
+	case 'Z'
+		comp = 3;
+	otherwise
+		disp('strange component...')
+		comp = 0;
+	end
+	action = 'update_Dslider';
+elseif regexp(action,'^update_D[X-Z]edit$')
+	comp_s = action(9);
+	switch comp_s
+	case 'X'
+		comp = 1;
+	case 'Y'
+		comp = 2;
+	case 'Z'
+		comp = 3;
+	otherwise
+		disp('strange component...')
+		comp = 0;
+	end
+	action = 'update_Dedit';
+elseif regexp(action,'^update_D[X-Z]checkbox$')
+	comp_s = action(9);
+	switch comp_s
+	case 'X'
+		comp = 1;
+	case 'Y'
+		comp = 2;
+	case 'Z'
+		comp = 3;
+	otherwise
+		disp('strange component...')
+		comp = 0;
+	end
+	action = 'update_Dcheckbox';
 end
 
 switch action
@@ -66,6 +109,7 @@ case 'init'
 	% empty means replotting all, 
 	% otherwise contains a cell array of data in a plot queue 
 	hnd.last = [];
+	hnd.off = [0+0i 0];
 	hnd.ang_limit = 15; % 15 degrees.
 	hnd.tlim = [0 0];
 	hnd.c_visible = [1 1 1 1]; % all sc are visible by default
@@ -127,6 +171,7 @@ case 'init'
 					data.name = vs;
 					data.cl_id = str2num(dsc.cl_id);
 					data.inst = dsc.inst;
+					data.sig = dsc.sig;
 					data.label = [dsc.inst ' ' dsc.sig];
 					if dsc.sen, data.label = [data.label ' (' dsc.sen ')'];, end
 					data.sen = dsc.sen;
@@ -163,8 +208,8 @@ case 'init'
 					else
 						data.visible = 1;
 					end
-					if (strcmp(dsc.inst,'EFW') & strcmp(dsc.sen,'E'))|...
-						(strcmp(dsc.inst,'CIS') & (strcmp(dsc.sen,'V')|...
+					if (strcmp(dsc.inst,'EFW') & strcmp(dsc.sig,'E'))|...
+						(strcmp(dsc.inst,'CIS') & (strcmp(dsc.sig,'V')|...
 						strcmp(dsc.sen,'Vp'))), data.editable = 1;
 					else, data.editable = 0;
 					end
@@ -198,6 +243,7 @@ case 'init'
 						eval(['set(hnd.DATA' vs 'radiobutton,''Value'',1)'])
 						no_active = 0;
 						hnd.ActiveVar = vs;
+						hnd.old_ActiveVar = ''; 
 					end
 					eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
 					if d < 4
@@ -254,11 +300,11 @@ case 'init'
 		hnd.EFWoffset = [hnd.EFWoffset {offset}];
 		
 		% Load CIS offsets, must be only in Z.
-		offset = [0 0 0];
+		offset = [0+0i 0];
 		hnd.CISHoffset = [hnd.CISHoffset {offset}];
-		hnd.CISHoffset = [hnd.CISCoffset {offset}];
+		hnd.CISCoffset = [hnd.CISCoffset {offset}];
 		
-		hnd.cal_updated = 1;
+		hnd.off_updated = 1;
 	end
 	
 	% Check if we have any data apart from AUX
@@ -293,22 +339,76 @@ case 'init'
 		'Callback','c_cal_gui(''update_DXedit'')','Tag','DXedit');
 	hnd.DXcheckbox = uicontrol(hnd.DXpanel,'Style','checkbox',...
 		'Units','normalized','Position',[0.6 0.1 0.4 0.2],...
-		'String','Lock',...
+		'String','Lock','Enable','off',...
 		'Callback','c_cal_gui(''update_DXcheckbox'')','Tag','DXcheckbox');
+	hnd.DYslider = uicontrol(hnd.DYpanel,'Style','slider',...
+		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
+		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DYslider'')');
+	hnd.DYedit = uicontrol(hnd.DYpanel,'Style','edit',...
+		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
+		'String','0.0','BackgroundColor',active_color,...
+		'Callback','c_cal_gui(''update_DYedit'')','Tag','DYedit');
+	hnd.DYcheckbox = uicontrol(hnd.DYpanel,'Style','checkbox',...
+		'Units','normalized','Position',[0.6 0.1 0.4 0.2],...
+		'String','Lock','Enable','off',...
+		'Callback','c_cal_gui(''update_DYcheckbox'')','Tag','DYcheckbox');
+	hnd.DZslider = uicontrol(hnd.DZpanel,'Style','slider',...
+		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
+		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DZslider'')');
+	hnd.DZedit = uicontrol(hnd.DZpanel,'Style','edit',...
+		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
+		'String','0.0','BackgroundColor',active_color,...
+		'Callback','c_cal_gui(''update_DZedit'')','Tag','DZedit');
+	hnd.DZcheckbox = uicontrol(hnd.DZpanel,'Style','checkbox',...
+		'Units','normalized','Position',[0.6 0.1 0.4 0.2],...
+		'String','Lock','Enable','off',...
+		'Callback','c_cal_gui(''update_DZcheckbox'')','Tag','DZcheckbox');
+
 
 	guidata(h0,hnd);
 	c_cal_gui('replot_all')
 	
+	% Take care of active variable
 	% Give the new data 4*width and active color
-	hnd = guidata(h0);
-	j = D_findByName(hnd.Data,hnd.ActiveVar);
-	for k=1:length(hnd.Data{j}.ploth)
-		set(hnd.Data{j}.ploth(k),...
-			'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')*4,...
-			'Color',active_p_color)
-	end
-	
+	c_cal_gui('ch_active_var')
 	av_figmenu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ch_active_var
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'ch_active_var'
+	hnd = guidata(h0);
+	if isempty(hnd.old_ActiveVar)
+		% Initialize
+		j = D_findByName(hnd.Data,hnd.ActiveVar);
+		hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
+		set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
+		set(hnd.DXslider,'Value',real(hnd.off(1)))
+		set(hnd.DYedit,'String',num2str(imag(hnd.off(1))))
+		set(hnd.DYslider,'Value',imag(hnd.off(1)))
+		set(hnd.DZedit,'String',num2str(hnd.off(2)))
+		set(hnd.DZslider,'Value',hnd.off(2),'Max',2.0,'Min',.5)
+		set(hnd.DZpanel,'Title','dAMP')
+	else
+		j = D_findByName(hnd.Data,hnd.ActiveVar);
+		old_j = D_findByName(hnd.Data,hnd.old_ActiveVar);
+		% Reload offsets if cl_id was changed
+		if hnd.Data{j}.cl_id~=hnd.Data{old_j}.cl_id
+			if hnd.mode
+				hnd.off = hnd.EFWoffset{hnd.Data{j}.cl_id};
+				set(hnd.DZpanel,'Title','dAMP')
+			else
+				% Display V, offsets in CIS
+				set(hnd.DZpanel,'Title','dZ')
+			end
+			set(hnd.DXedit,'String',num2str(real(hnd.off(1))))
+			set(hnd.DXslider,'Value',real(hnd.off(1)))
+			set(hnd.DYedit,'String',num2str(imag(hnd.off(1))))
+			set(hnd.DYslider,'Value',imag(hnd.off(1)))
+			set(hnd.DZedit,'String',num2str(hnd.off(2)))
+			set(hnd.DZslider,'Value',hnd.off(2))
+		end
+	end
+	guidata(h0,hnd);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fix_plot_pos
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -339,13 +439,18 @@ case 'replot'
 	
 	% Plotting 
 	for j=1:length(d_ii)
-		%disp(['replot: plotting ' hnd.Data{d_ii(j)}.name])
+		%disp([action ': plotting ' hnd.Data{d_ii(j)}.name])
 		
 		% Process only visible data
 		if ~hnd.Data{d_ii(j)}.visible, continue, end
 		
 		if hnd.Data{d_ii(j)}.aux
-			hnd.AUXList = L_add(hnd.AUXList,hnd.Data{d_ii(j)}.name);
+			% Sanity check
+			if isempty(L_find(hnd.AUXList,hnd.Data{d_ii(j)}.name))
+				hnd.AUXList = L_add(hnd.AUXList,hnd.Data{d_ii(j)}.name);
+			else
+				disp([action ': ' hnd.Data{d_ii(j)}.name ' already in the list'])
+			end
 			
 			% Plotting
 			hold(h(4),'on')
@@ -355,8 +460,27 @@ case 'replot'
 				'Color',hnd.Data{d_ii(j)}.plot_color);
 			hold(h(4),'off')
 		else
-			% We update p_data only if calibrations were changed
-			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.cal_updated
+			% Remove the variable if it is already in the list
+			ii = L_find(hnd.DataList,hnd.Data{d_ii(j)}.name);
+			if ii
+				hnd.DataList = L_rm_ii(hnd.DataList,ii);
+				%disp([action ': removing ' hnd.Data{d_ii(j)}.name])
+				%xx = hnd.Data{d_ii(j)}.ploth;
+				%disp(sprintf('%s before: %f %f %f',hnd.Data{d_ii(j)}.name,xx(1),xx(2),xx(3)))
+				lasterr('')
+				try
+					delete(hnd.Data{d_ii(j)}.ploth)
+				catch
+					disp([action ': cannot remove ' hnd.Data{d_ii(j)}.name])
+					disp(lasterr)
+				end
+			end
+			
+			% Update p_data only if calibrations were changed
+			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.off_updated &...
+				((hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'EFW')) | ...
+				(~hnd.mode & strcmp(hnd.Data{d_ii(j)}.inst,'CIS')))
+				
 				%disp('replot: recalculating plot data')
 				hnd.Data{d_ii(j)}.p_data =...
 					get_plot_data(hnd.Data{d_ii(j)}, hnd);
@@ -372,13 +496,24 @@ case 'replot'
 						hnd.Data{d_ii(j)}.p_data(:,1+ax),...
 						hnd.Data{d_ii(j)}.plot_style,...
 						'Color',hnd.Data{d_ii(j)}.plot_color);
+						
+					% Take care of the active variable
+					if strcmp(hnd.Data{d_ii(j)}.name,hnd.ActiveVar)
+						set(hnd.Data{d_ii(j)}.ploth(ax),...
+							'LineWidth',get(hnd.Data{d_ii(j)}.ploth(ax),'LineWidth')*4,...
+							'Color',active_p_color)
+					end
 					hold(h(ax),'off')
 				end
+				%{ 
+				xx = hnd.Data{d_ii(j)}.ploth;
+				disp(sprintf('%s after: %f %f %f',hnd.Data{d_ii(j)}.name,xx(1),xx(2),xx(3)))
+				%}
 			end
 		end
 	end
 	hnd.last = [];
-	hnd.cal_updated = 0;
+	hnd.off_updated = 0;
 
 	av_zoom(hnd.tlim,'x',h);
 	guidata(h0,hnd);
@@ -494,31 +629,95 @@ case 'update_legend'
 	guidata(h0,hnd);
 	c_cal_gui('fix_plot_pos')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% update_DXslider
+% update_off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-case 'update_DXslider'
+case 'update_off'
 	hnd = guidata(h0);
-	set(hnd.DXedit,'String',...
-    num2str(get(hnd.DXslider,'Value')));
+	
+	if hnd.mode
+		% We calibrate E
+		
+		k = D_findByName(hnd.Data,hnd.ActiveVar);
+		% Sanity check
+		if ~strcmp(hnd.Data{k}.inst,'EFW')
+			disp('update_off: we are doing something wrong with INST')
+			return
+		end
+		
+		% See if offsets were really changed and replot everything
+		if any(hnd.EFWoffset{hnd.Data{k}.cl_id} - hnd.off)
+			hnd.EFWoffset{hnd.Data{k}.cl_id} = hnd.off;
+			%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
+			hnd.off_updated = 1;
+			
+			% Create list of variables which need to be replotted
+			ii = D_findByCLID(hnd.Data,hnd.Data{k}.cl_id);
+			up_list = {};
+			for j=1:length(ii)
+				if strcmp(hnd.Data{ii(j)}.inst,'EFW') & strcmp(hnd.Data{ii(j)}.sig,'E')
+					up_list = L_add(up_list,hnd.Data{ii(j)}.name);
+				end
+			end
+			% Sanity check
+			if isempty(up_list)
+				disp('update_off: we are doing something wrong with UP_LIST')
+				return
+			end
+			hnd.last = up_list;
+			guidata(h0,hnd);
+			c_cal_gui('replot')
+		end
+	else
+		% We calibrate V
+		
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% update_DXedit
+% update_Dslider
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-case 'update_DXedit'
+case 'update_Dslider'
 	hnd = guidata(h0);
-	val = str2double(get(hnd.DXedit,'String'));
+	val = get(eval(['hnd.D' comp_s 'slider']),'Value');
+	set(eval(['hnd.D' comp_s 'edit']),'String',num2str(val));
+	switch comp
+	case 1
+		hnd.off(1) = val + imag(hnd.off(1));
+	case 2
+		hnd.off(1) = i*val + real(hnd.off(1));
+	case 3
+		hnd.off(2) = val;
+	end
+	%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
+	guidata(h0,hnd);
+	c_cal_gui('update_off')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% update_Dedit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'update_Dedit'
+	hnd = guidata(h0);
+	val = str2double(get(eval(['hnd.D' comp_s 'edit']),'String'));
 	% Determine whether val is a number between 0 and 1
 	if isnumeric(val) & length(val)==1 & ...
-		val >= get(hnd.DXslider,'Min') & ...
-		val <= get(hnd.DXslider,'Max')
-		set(hnd.DXslider,'Value',val);
+		val >= get(eval(['hnd.D' comp_s 'slider']),'Min') & ...
+		val <= get(eval(['hnd.D' comp_s 'slider']),'Max')
+		set(eval(['hnd.D' comp_s 'slider']),'Value',val);
+		switch comp
+		case 1
+			hnd.off(1) = val + imag(hnd.off(1));
+		case 2
+			hnd.off(1) = i*val + real(hnd.off(1));
+		case 3
+			hnd.off(2) = val;
+		end
+		%disp(sprintf('%s : offsets %f %f %f',action,real(hnd.off(1)),imag(hnd.off(1)),hnd.off(2)))
+		guidata(h0,hnd);
+		c_cal_gui('update_off')
 	else
-		% Increment the error count, and display it
 		set(hnd.DXedit,'String','You have entered an invalid entry ');
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% update_DXcheckbox
+% update_Dcheckbox
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-case 'update_DXcheckbox'
+case 'update_Dcheckbox'
 	hnd = guidata(h0);
 	if get(hnd.DXcheckbox,'Value')==1
 		% Lock
@@ -595,6 +794,7 @@ case 'update_DATAcheckbox'
 		hnd.last = {vs};
 		guidata(h0,hnd);
 		c_cal_gui('replot')
+		hnd = guidata(h0);
 		
 		% Check if we need to show C# checkBox
 		if get(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),'Value')==0
@@ -602,6 +802,13 @@ case 'update_DATAcheckbox'
 				'Value',1)
 		end
 	else
+		% Check if we are hiding the active variable
+		if strcmp(hnd.ActiveVar,vs)
+			disp('you cannot hide the active variable')
+			set(eval(['hnd.DATA' vs 'checkbox']),'Value',1)
+			return
+		end
+		
 		% Hide the varible
 		j = D_findByName(hnd.Data,vs);
 		hnd.Data{j}.visible = 0;
@@ -655,6 +862,7 @@ case 'update_DATAradiobutton'
 					'Color',active_p_color)
 			end
 			hnd.ActiveVar = vs;
+			hnd.old_ActiveVar = vs_old;
 		else
 			return
 		end
@@ -662,18 +870,16 @@ case 'update_DATAradiobutton'
 		% Hide the old active rb
 		set(eval(['hnd.DATA' vs_old 'radiobutton,']),'Value',0)
 		
-		% Five the old data usual width and color
-		%disp(['old :' vs_old])
-		if ~isempty(vs_old)
-			j = D_findByName(hnd.Data,vs_old);
-			for k=1:length(hnd.Data{j}.ploth)
-				set(hnd.Data{j}.ploth(k),...
-					'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')/4,...
-					'Color',hnd.Data{j}.plot_color)
-			end
+		% Give the old data usual width and color
+		j = D_findByName(hnd.Data,vs_old);
+		for k=1:length(hnd.Data{j}.ploth)
+			set(hnd.Data{j}.ploth(k),...
+				'LineWidth',get(hnd.Data{j}.ploth(k),'LineWidth')/4,...
+				'Color',hnd.Data{j}.plot_color)
 		end
 		
 		guidata(h0,hnd);
+		c_cal_gui('ch_active_var')
 	else
 		% Show it back
 		eval(['set(hnd.DATA' vs 'radiobutton,''Value'',1)'])
@@ -686,10 +892,10 @@ end
 % function corr_v_velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out = corr_v_velocity(v,offset)
-out = data;
-out(:,2) = v(:,2) - offset(1);
-out(:,3) = v(:,3) - offset(2);
-out(:,4) = v(:,4) - offset(3);
+out = v;
+out(:,2) = v(:,2) - real(offset(1));
+out(:,3) = v(:,3) - imag(offset(1));
+out(:,4) = v(:,4) - offset(2);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function p_style
@@ -714,7 +920,7 @@ case 'EDI'
 case 'CIS'
 	switch sen
 	case 'HIA'
-		out = '-o';
+		out = '.-';
 	case 'COD'
 		out = '-+';
 	otherwise
@@ -735,12 +941,15 @@ p_data = [];
 
 if data.visible
 	p_data = data.data;
+	%disp(['get_plot_data : ' data.name])
 	
 	% Correct offsets
 	if data.editable 
+		%disp(['get_plot_data : correcting offsets in ' data.name])
 		switch data.type
 		case 'E'
 			ofs = hnd.EFWoffset{data.cl_id};
+			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
 			p_data = corrDSIOffsets(p_data,...
 				real(ofs(1)),imag(ofs(1)),ofs(2));
 		case 'V'
@@ -748,7 +957,7 @@ if data.visible
 				offset = hnd.CISCoffset{data.cl_id};
 			elseif strcmp(data.sen,'HIA')
 				offset = hnd.CISHoffset{data.cl_id};
-			else, offset = [0 0 0];
+			else, offset = [0+0i 0];
 			end
 			p_data = corr_v_velocity(p_data,...
 				hnd.EFWoffset{data.cl_id});
@@ -854,6 +1063,7 @@ newlist = [list {s}];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ii = L_find(list,s_list)
 ii = [];
+if isempty(list), return, end
 if isstr(s_list)
 	% fast search
 	for j=1:length(list)
