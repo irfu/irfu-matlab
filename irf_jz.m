@@ -18,7 +18,8 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 %       when medium velocity dominates the negative of medium velocity
 % B     [t Bx By Bz] - background magnetic field [nT]
 % dB    [t dBx dBy dBz] - disturbance magnetic field [nT] (if not given uses background)
-% n_av - how many points of B to average for current estimates
+% n_av - how many points of B to average for current estimates (in practice
+%        this is lowpass filter with filter frequency at Fs/2/n_av)
 %
 %        for case 'A' angle between current sheet and velocity should be at least deg_p degrees
 %       (in a plane perp to B) and v pitch angle should be at least deg_z,
@@ -33,8 +34,6 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 %         system is defined such that B is Z and V_perp is X
 %
 % $Id$
-
-global AV_DEBUG ; if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end
 
@@ -51,16 +50,9 @@ end
 
 
 if flag_average == 1,
-  n_av2=floor(n_av/2);
-  nn=floor((length(dB(:,1))-n_av)/n_av2)+1;
-  for j=1:nn,
-    ind=n_av2*(j-1)+[1:n_av];
-    dtB(j,1)=mean(dB(ind,1));
-    for jj=2:size(dB,2),
-      [p,s]=polyfit(dB(ind,1)-dB(ind(1),1),dB(ind,jj),1);
-      dtB(j,jj)=p(1);
-    end
-  end
+  dBf=irf_filt(dB,0,1/n_av,2,3);
+  tt=dBf(:,1);
+  [xx ,dtB]=gradient(dBf(:,2:end),tt,tt); dtB=[tt dtB];  
 else,
   tt=dB(:,1);
   % create dtB
@@ -88,7 +80,8 @@ case 'A'
   jz=[dtB(:,1) irf_abs(dtBnj,1)./vnj(:,2)/muo*1e-6];jz(indnan_z,2)=NaN;jz(indnan_p,2)=NaN;
   jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-6];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
 case 'B'
-  dt=dB(2,1)-dB(1,1);if debug == 1, disp(['fs=' num2str(1/dt,3) ' irf_jz()']);end
+  dt=dB(2,1)-dB(1,1);
+  irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
   vb=irf_resamp(v,dtB);
   jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
   j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-6')  ;
