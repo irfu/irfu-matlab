@@ -30,7 +30,9 @@ else
     c(j)=av_subplot(length(column),1,-j);
     plot((x1(:,1)-ts1)/tu,x1(:,column(j)),'k',(x2(:,1)-ts2)/tu,x2(:,column(j)),'r',(x3(:,1)-ts3)/tu,x3(:,column(j)),'g',(x4(:,1)-ts4)/tu,x4(:,column(j)),'b');
     grid on
-    add_timeaxis(c);
   end
 end
+
+if x1(1,1) > 9e8,  add_timeaxis(c); end
+
 
