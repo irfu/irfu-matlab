@@ -173,7 +173,7 @@ end
 
 axes(h(1))
 title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
-eval(['legend(' leg ')'])
+
 
 % AUX information
 for j=1:length(t0)
@@ -182,11 +182,9 @@ for j=1:length(t0)
 end
 
 addPlotInfo
-axes(h(2))
-axes(h(1))
-legend
 zoom on
 av_figmenu
+eval(['legend(h(1),' leg ')'])
 
 q='0';
 while(q ~= 'q')
@@ -231,44 +229,44 @@ while(q ~= 'q')
   	flag_replot=1;
 	end
 	if flag_replot,
-    diE_tmp = diE;
-    diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
-    diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
-    diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
-    diEs_tmp = diEs;
-    diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
-    diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
-    diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
+		diE_tmp = diE;
+    	diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
+    	diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
+    	diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
+    	diEs_tmp = diEs;
+    	diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
+    	diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
+    	diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
 	
-    figure(17)
-	t1 = tokenize(var_list,',');
-	%Ex,Ey
-	for co=1:2
-		dummy = [t1{1} '(:,1),' t1{1} '(:,' num2str(co+1) ')'];
-		if length(t1)>1
-			for j=2:length(t1)
-				dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
-			end
+    	figure(17)
+    	zoom off
+		t1 = tokenize(var_list,',');
+		%Ex,Ey
+		for co=1:2
+			dummy = [t1{1} '(:,1),' t1{1} '(:,' num2str(co+1) ')'];
+			if length(t1)>1
+				for j=2:length(t1)
+					dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
+				end
+        	end
+        
+			axes(h(co))
+        	cla(h(co))
+			ax_pos=get(h(co),'position');
+			eval(['plot(h(co),' dummy ');'])
+			set(h(co),'position',ax_pos);
+			add_timeaxis(h(co))
+			grid(h(co))
+			set(h(co),'XTickLabel',[])
+			if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
+			xlabel('')
 		end
 
-		axes(h(co))
-		eval(['plot(' dummy ');'])
-		add_timeaxis
-		grid
-		set(gca,'XTickLabel',[])
-		if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
-		xlabel('')
-		zoom on
-	end
-
-	axes(h(1))
- 
-    title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
-		eval(['legend(' leg ')'])
-		addPlotInfo
-		axes(h(2))
 		axes(h(1))
-		legend
+ 
+    	title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
+		addPlotInfo
+		eval(['legend(h(1),' leg ')'])
 		zoom on
 		flag_replot=0;
 	end
