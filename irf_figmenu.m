@@ -7,11 +7,14 @@ if nargin < 1, action = 'initialize'; end
 
 if strcmp(action,'initialize'),
 	% execute irf_figmenu if there is no such menu
-	need_init = 0;
-	user_data=get(gcf,'userdata');
-	if isstruct(user_data)
-		if ~isfield(user_data,'irf_figmenu'), need_init = 1; end
-	else, need_init = 1;
+	need_init = 1;
+	ch = get(gcf,'children');
+	if ~isempty(ch)
+		for j=1:length(ch)
+			if strcmp(get(ch(j),'Type'),'uimenu')
+				if strcmp(get(ch(j),'Label'),'&irf'), need_init = 0; break, end
+			end
+		end
 	end
 
 	if need_init
@@ -21,6 +24,7 @@ if strcmp(action,'initialize'),
 		uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
 		uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
 		uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
+		user_data = get(gcf,'userdata');
 		user_data.irf_figmenu=1;
 		set(gcf,'userdata',user_data);
 	end
