@@ -136,6 +136,10 @@ for i = 1:i_end
   %step 1
   if run_steps(1) == 1
     [passing_MP,dist_t]=c_ri_auto_event_search(st,et,d2MP,psw);
+    disp('Predicted MP crossings');
+    for j=1:size(passing_MP,1)
+      disp([num2str(j) '. ' datestr(epoch2date(passing_MP(j,1))) ' - ' datestr(epoch2date(passing_MP(j,2)))]);
+    end
   end
   
   %step 2
