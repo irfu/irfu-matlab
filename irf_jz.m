@@ -25,9 +25,9 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 %       (in a plane perp to B) and v pitch angle should be at least deg_z,
 %        otherwise current is set to NaN  [default 10 degrees]
 %
-% j  - current [uA/m2] total current vector.
-% jz - current [uA/m2] parallel to B, time from B, pozitive when jz along B
-% jp - current [uA/m2] perpendicular to B, time from B, pozitive when |B| increases along spacecraft trajectory
+% j  - current [A/m2] total current vector.
+% jz - current [A/m2] parallel to B, time from B, pozitive when jz along B
+% jp - current [A/m2] perpendicular to B, time from B, pozitive when |B| increases along spacecraft trajectory
 % nj - the vector direction of the current sheet
 % angle - azimuthal angle between current sheet and velocity component perpendicular to B
 %         angle is measured anticlockwise in XY plane from X axis
@@ -77,14 +77,14 @@ case 'A'
   absvp=irf_abs(vp,1); absvb=irf_abs(vb,1);absvnj=abs(vnj(:,2));
   indnan_z=find(absvp < absvb*sin(pi/180*deg_z));
   indnan_p=find(absvnj < absvp*sin(pi/180*deg_p));
-  jz=[dtB(:,1) irf_abs(dtBnj,1)./vnj(:,2)/muo*1e-6];jz(indnan_z,2)=NaN;jz(indnan_p,2)=NaN;
-  jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-6];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
+  jz=[dtB(:,1) irf_abs(dtBnj,1)./vnj(:,2)/muo*1e-12];jz(indnan_z,2)=NaN;jz(indnan_p,2)=NaN;
+  jp=[dtB(:,1) abs(dtBnb(:,2))./vnj(:,2)/muo*1e-12];jp(indnan_z,2)=NaN;jp(indnan_p,2)=NaN;
 case 'B'
   dt=dB(2,1)-dB(1,1);
   irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
   vb=irf_resamp(v,dtB);
   jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
-  j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-6')  ;
+  j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12')  ;
   jz=j;
 end
 
