@@ -110,25 +110,54 @@ case 'sat'
 end
 
 %contPhase=unwrap(double(real(phaseVal))/180*pi);
-ph=phase;ph(:,1)=ph(:,1)-phase(1,1);
+ph=phase;tref=phase(1,1);ph(:,1)=ph(:,1)-tref;
 phc=unwrap(ph(1:2,2)/180*pi);
 phc_coef=polyfit(ph(1:2,1),phc,1);
 for j=1:floor(log10(length(ph(:,1))))
  ii=10^j;
  dp=ph(ii,2)-mod(polyval(phc_coef,ph(ii,1))*180/pi,360);
  dpm=[dp dp-360 dp+360];in=find(abs(dpm)<180);
- dph=dp(in);
+ dph=dpm(in);
  phc_coef(1)=phc_coef(1)+dph*pi/180/ph(ii,1);
 end
-dphc=exp(1i*ph(:,2)/180*pi)-exp(1i*polyval(phc_coef,ph(:,1)));
-dd=dphc.*conj(dphc);
-err=sum(dd)/length(dd);
-if err>.001
- disp(strcat('Be careful, can be problems with despin, err=',num2str(err)))
+%dphc=exp(1i*ph(:,2)/180*pi)-exp(1i*polyval(phc_coef,ph(:,1)));
+%dd=dphc.*conj(dphc);
+%err=sum(dd)/length(dd);
+diffangle=mod(ph(:,2)-polyval(phc_coef,ph(:,1))*180/pi,360);
+diffangle=abs(diffangle);
+diffangle=min([diffangle';360-diffangle']);
+err_angle_mean=mean(diffangle);
+err_angle=std(diffangle);
+if err_angle>1 | err_angle_mean>1,
+  disp(['Using standard despinning! Polyn. fit despinning errors would be >1deg. err=' num2str(err_angle) 'deg.']);
+  unwrap_phase=phase;
+  if max(diff(phase(:,1)))>4,
+   disp('There are data gaps in the phase data.Despinned data can have problems near data gaps.');
+   for j=2:length(phase(:,1)),
+    ddphase=unwrap_phase(j,:)-unwrap_phase(j-1,:);
+    if ddphase(2)<0 | ddphase(1)>3.9 
+      unwrap_phase(j:end,2)=unwrap_phase(j:end,2)+360*round((ddphase(1)*360/4-ddphase(2))/360);
+    end
+   end
+  else % no data gaps in phase
+   for j=2:length(phase(:,1)),
+    ddphase=unwrap_phase(j,:)-unwrap_phase(j-1,:);
+    if ddphase(2)<0
+      unwrap_phase(j:end,2)=unwrap_phase(j:end,2)+360;
+    end
+   end
+  end
+  phase=interp1q(unwrap_phase(:,1),unwrap_phase(:,2),t)*pi/180;
+else % use polynomial fit
+% disp(['Despinning using polynomial fit. Average deviation ' num2str(err_angle_mean) 'deg. Standard deviation ' num2str(err_angle) ' deg.']);
+ phase=polyval(phc_coef,t-tref);
+% if err>.001
+%  disp(strcat('Be careful, can be problems with despin, err=',num2str(err)))
+% end
 end
+
 disp(strcat('rotation period=',num2str(2*pi/phc_coef(1)),' s'));
 
-phase=polyval(phc_coef,t-phase(1,1));
 % take away offsets in the satellite ref frame
 p12=p12-coef(1,2);
 p34=p34-coef(2,2);
