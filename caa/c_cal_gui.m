@@ -314,7 +314,7 @@ case 'replot'
 
 	% Update selected records in DataLegList
 	% we set handles.last to name of the variable we need to add
-	d_ii = DfindByNameList(handles.Data,handles.last);
+	d_ii = D_findByNameList(handles.Data,handles.last);
 	
 	% sanity check
 	if isempty(d_ii)
@@ -325,7 +325,7 @@ case 'replot'
 	for j=1:length(d_ii)
 		%disp(['replot: plotting ' handles.Data{d_ii(j)}.name])
 		if handles.Data{d_ii(j)}.aux
-			handles.AUXList = [handles.AUXList {handles.Data{d_ii(j)}.name}];
+			handles.AUXList = L_add(handles.AUXList,handles.Data{d_ii(j)}.name);
 			
 			%Plotting
 			hold(h(4),'on')
@@ -341,7 +341,7 @@ case 'replot'
 					get_plot_data(handles.Data{d_ii(j)}, handles);
 			end
 			if ~isempty(handles.Data{d_ii(j)}.p_data)
-				handles.DataList = [handles.DataList {handles.Data{d_ii(j)}.name}];
+				handles.DataList = L_add(handles.DataList,handles.Data{d_ii(j)}.name);
 				
 				%Plotting
 				for ax=1:3
@@ -378,7 +378,7 @@ case 'replot_all'
 		
 		for j=1:length(handles.Data)
 			if handles.Data{j}.aux & handles.Data{j}.visible
-				handles.AUXList = [handles.AUXList {handles.Data{j}.name}];
+				handles.AUXList = L_add(handles.AUXList,handles.Data{j}.name);
 				
 				% Plotting
 				hold(h(4),'on')
@@ -389,7 +389,7 @@ case 'replot_all'
 				handles.Data{j}.p_data = get_plot_data(handles.Data{j}, handles);
 				if isempty(handles.Data{j}.p_data), continue, end
 				
-				handles.DataList = [handles.DataList {handles.Data{j}.name}];
+				handles.DataList = L_add(handles.DataList,handles.Data{j}.name);
 				
 				% Plotting
 				for ax=1:3
@@ -438,13 +438,13 @@ case 'update_legend'
 		for j=1:length(handles.DataList)
 			hold(handles.DLaxes,'on')
 			plot(handles.DLaxes,1,1,...
-				handles.Data{DfindByName(handles.Data,handles.DataList{j})}.plot_style,...
+				handles.Data{D_findByName(handles.Data,handles.DataList{j})}.plot_style,...
 				'Visible','off')
 			hold(handles.DLaxes,'off')
 		end
 		
 		%make legend
-		ii = DfindByNameList(handles.Data,handles.DataList);
+		ii = D_findByNameList(handles.Data,handles.DataList);
 		l_s = ['''' handles.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
@@ -467,13 +467,13 @@ case 'update_legend'
 		for j=1:length(handles.AUXList)
 			hold(handles.ALaxes,'on')
 			plot(handles.ALaxes,1,1,...
-				handles.Data{DfindByName(handles.Data,handles.AUXList{j})}.plot_style,...
+				handles.Data{D_findByName(handles.Data,handles.AUXList{j})}.plot_style,...
 				'Visible','off')
 			hold(handles.ALaxes,'off')
 		end
 		
 		%make legend
-		ii = DfindByNameList(handles.Data,handles.AUXList);
+		ii = D_findByNameList(handles.Data,handles.AUXList);
 		l_s = ['''' handles.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
@@ -529,7 +529,7 @@ case 'update_DXcheckbox'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_Ccheckbox'
 	handles = guidata(h0);
-	ii = DfindByCLID(handles.Data,cl_id);
+	ii = D_findByCLID(handles.Data,cl_id);
 	if isempty(ii), return, end
 	
 	if get(eval(['handles.C' num2str(cl_id) 'checkbox']),'Value')==1
@@ -539,7 +539,7 @@ case 'update_Ccheckbox'
 			set(eval(['handles.DATA' handles.Data{ii(j)}.name 'checkbox']),...
 				'Value', 1);
 		end
-		handles.last = DlistNames(handles.Data,ii);
+		handles.last = D_listNames(handles.Data,ii);
 		guidata(h0,handles);
 		c_cal_gui('replot');
 	else
@@ -561,8 +561,8 @@ case 'update_Ccheckbox'
 		
 		% remove from the plotting lists
 		ii = cell(1,2);
-		ii{1} = DfindByNameList(handles.Data,handles.DataList);
-		ii{2} = DfindByNameList(handles.Data,handles.AUXList);
+		ii{1} = sort(D_findByNameList(handles.Data,handles.DataList));
+		ii{2} = sort(D_findByNameList(handles.Data,handles.AUXList));
 		for k=1:2
 			for j=length(ii{k}):-1:1
 				if handles.Data{ii{k}(j)}.cl_id == cl_id
@@ -582,8 +582,8 @@ case 'update_Ccheckbox'
 case 'update_DATAcheckbox'
 	handles = guidata(h0);
 	if get(eval(['handles.DATA' vs 'checkbox']),'Value')==1
-		%need to plot the varible
-		j = DfindByName(handles.Data,vs);
+		% plot the varible
+		j = D_findByName(handles.Data,vs);
 		%disp(['plotting ' handles.Data{j}.name])
 		handles.Data{j}.visible = 1;
 		handles.last = {vs};
@@ -596,14 +596,14 @@ case 'update_DATAcheckbox'
 				'Value',1)
 		end
 	else
-		%need to hide the varible
-		j = DfindByName(handles.Data,vs);
+		% hide the varible
+		j = D_findByName(handles.Data,vs);
 		handles.Data{j}.visible = 0;
 		delete(handles.Data{j}.ploth)
 
 		% check if we need to hide C# checkBox
 		cl_id = handles.Data{j}.cl_id;
-		ii = DfindByCLID(handles.Data,cl_id);
+		ii = D_findByCLID(handles.Data,cl_id);
 		if isempty(ii), return, end
 		hide_ok = 1;
 		for j=1:length(ii)
@@ -614,24 +614,12 @@ case 'update_DATAcheckbox'
 				'Value',0)
 		end
 		
-		% remove from the plotting lists
-		f_ok = 0;
-		for j=1:length(handles.DataList)
-			if strcmp(handles.DataList{j},vs)
-				f_ok = 1;
-				handles.DataList(j) = [];
-				break
-			end
+		% remove from the plotting lists	
+		j = L_find(handles.DataList,vs);
+		if ~isempty(j), handles.DataList = L_rm_ii(handles.DataList,j);
+		else, handles.AUXList = L_rm(handles.AUXList,vs);
 		end
-		if ~f_ok
-			for j=1:length(handles.AUXList)
-				if strcmp(handles.AUXList{j},vs)
-					f_ok = 1;
-					handles.AUXList(j) = [];
-					break
-				end
-			end
-		end
+		
 		guidata(h0,handles);
 		c_cal_gui('update_legend')
 	end
@@ -756,9 +744,9 @@ if data.visible
 	end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function DfindByName
+% function D_findByName
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data_i = DfindByName(data_list,name_s)
+function data_i = D_findByName(data_list,name_s)
 %data_list is a cell array
 %name_s is a string
 data_i = [];
@@ -769,20 +757,20 @@ for j=1:length(data_list)
 	end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function DfindByNameList
+% function D_findByNameList
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data_ii = DfindByNameList(data_list,name_list)
+function data_ii = D_findByNameList(data_list,name_list)
 %data_list is a cell array
 %name_list is a cell array of strings
 data_ii = [];
 for j=1:length(name_list)
-	data_rec = DfindByName(data_list,name_list{j});
+	data_rec = D_findByName(data_list,name_list{j});
 	if ~isempty(data_rec), data_ii = [data_ii data_rec]; end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function DfindByCLID
+% function D_findByCLID
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data_ii = DfindByCLID(data_list,cl_id)
+function data_ii = D_findByCLID(data_list,cl_id)
 %data_list is a cell array
 %cl_id is integer [1-4]
 data_ii = [];
@@ -792,12 +780,62 @@ for j=1:length(data_list)
 	end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function DlistNames
+% function D_listNames
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function list = DlistNames(data_list,ii)
+function list = D_listNames(data_list,ii)
 %data_list is a cell array
 %ii is index array
 list = cell(size(ii));
 for j=1:length(ii)
 	list{j} = data_list{ii(j)}.name;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function L_add
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function newlist = L_add(list,s)
+newlist = [list {s}];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function L_find
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ii = L_find(list,s_list)
+ii = [];
+if isstr(s_list)
+	% fast search
+	for j=1:length(list)
+		if strcmp(list{j},s_list), ii = j; return, end
+	end
+else
+	for k=1:length(s_list)
+		for j=1:length(list)
+			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end
+		end
+	end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function L_rm
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function newlist = L_rm(list,s_list)
+newlist = list;
+if isstr(s_list)
+	j = L_find(list,s_list);
+	if ~isempty(j)
+		newlist(j) = [];
+	end
+else
+	ii = L_find(list,s_list);
+	ii = sort(ii);
+	if ~isempty(ii)
+		for j=length(ii):-1:1, newlist(j) = []; end
+	end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function L_rm_ii
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function newlist = L_rm_ii(list,ii)
+newlist = list;
+if length(ii)==1
+	newlist(ii) = [];
+else
+	ii = sort(ii);
+	for j=length(ii):-1:1, newlist(j) = []; end
 end
