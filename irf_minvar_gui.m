@@ -106,6 +106,7 @@ switch action,
         tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
         uf=get(gcf,'userdata');
         if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        tlim=tlim+t0;
         p = get(gca, 'currentpoint')+t0;
         tlim_interval=get(gca,'xlim')+t0;
         if ud.from
@@ -142,7 +143,6 @@ switch action,
             plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
             axis equal; grid on;
         elseif (tlim(1)>=ud.tlim_mva(1) & tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
-            tlim, diff(tlim),
             irf_zoom(tlim,'x',ud.h(2));
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);

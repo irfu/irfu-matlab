@@ -52,6 +52,8 @@ if strcmp(c,'x'),
   end
 end
 
+if diff(interval)==0, interval(2)=interval(1)+1e-10; end % make interval finite if it is one point
+
 for h=axis_handles
 	axes(h); ax=axis;
 	if c=='x'
