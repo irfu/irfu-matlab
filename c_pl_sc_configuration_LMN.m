@@ -30,7 +30,7 @@ end
 if strcmp(action,'initialize'),
   initLflag=0;
   if   exist('mB.mat'), load mB B3; B=B3;
-  else                  disp('No magnetic field data available, reading from DDS');B=c_get_bfgm(time+[0 1],3);
+  else                  disp('No magnetic field data available, reading from DDS');B=c_get_bfgm(time+[0 1]);
   end
   if nargin<1, help c_pl_sc_configuration_LMN;return;                                      end
   if nargin==1, n=[0 0 1]; b=av_interp(B,time); l=b(1,[2 3 4]);                                                                    end
