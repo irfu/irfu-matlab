@@ -19,7 +19,7 @@ args = varargin;
 if isstr(args{1})
 	% We have 4 arguments
 	for cl_id=1:4
-		ttt = evalin('caller',av_ssub(args{1},cl_id)); 
+		ttt = evalin('caller',av_ssub(args{1},cl_id),'[]'); 
 		eval(av_ssub('x? =ttt;',cl_id)); clear ttt
 	end
 	if length(args) > 1, args = args(2:end); 
@@ -55,16 +55,34 @@ tu=t_unit_in_original_units;
 ts=t_origo_in_original_units;
 
 if length(column) == 1,
-  h=plot((x1(:,1)-ts1)/tu,x1(:,column),'k',(x2(:,1)-ts2)/tu,x2(:,column),'r',(x3(:,1)-ts3)/tu,x3(:,column),'g',(x4(:,1)-ts4)/tu,x4(:,column),'b');
-  c=get(h(1),'parent');
-  grid on
+	cls='krgb';
+	pl = '';
+	for jj=1:4
+		if eval(av_ssub('~isempty(x?)',jj))
+			c_eval(['s_s=''(x?(:,1)-ts?)/tu,x?(:,column),''''' cls(jj) ''''''';'],jj);
+			if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
+			clear s_s
+		end
+	end 
+	eval(['h=plot(' pl ');'])
+	c=get(h(1),'parent');
+	grid on
 else
-  clf;
-  for j=1:length(column),
-    c(j)=av_subplot(length(column),1,-j);
-    plot((x1(:,1)-ts1)/tu,x1(:,column(j)),'k',(x2(:,1)-ts2)/tu,x2(:,column(j)),'r',(x3(:,1)-ts3)/tu,x3(:,column(j)),'g',(x4(:,1)-ts4)/tu,x4(:,column(j)),'b');
-    grid on
-  end
+	clf;
+	for j=1:length(column),
+		c(j)=av_subplot(length(column),1,-j);
+		cls='krgb';
+		pl = '';
+		for jj=1:4
+			if eval(av_ssub('~isempty(x?)',jj))
+				c_eval(['s_s=''(x?(:,1)-ts?)/tu,x?(:,column(j)),''''' cls(jj) ''''''';'],jj);
+				if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
+				clear s_s
+			end
+		end 
+		eval(['plot(' pl ')'])
+		grid on
+	end
 end
 
 if x1(1,1) > 9e8,  add_timeaxis(c); end
