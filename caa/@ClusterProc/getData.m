@@ -16,7 +16,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	edbs, edb : E[s]{cl_id}, diE[s]{cl_id} -> mEdB // Ez from E.B=0 [DSI+GSE]
 %		has the following options:
 %		ang_limit - minimum angle(B,spin plane) [default 10 deg]
-%		ang_blank - remove points below ang_limit [default]
+%		ang_blank - put Ez to NaN for points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -69,7 +69,7 @@ while have_options
 	   flag_edb = 2;	% fill points below ang_limit with 1e27
 	   fill_val = 1e27;
 	case 'ang_ez0'
-	   flag_edb = 0;	% use Ez=0 for points below ang_limit 
+	   flag_edb = 0;	% use Ez=0 for points below ang_limit
     otherwise
         disp(['Option ''' args{i} '''not recognized'])
     end
