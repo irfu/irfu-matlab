@@ -9,7 +9,8 @@ function data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	cl_id - SC#
 %	quantity - one of the following:
 %
-%	e : wE1p12, wE1p34 -> mER
+%	e : wE{cl_id}p12, wE{cl_id}p34 -> mER // electric fields
+%	a : A{cl_id} -> mA // phase
 %
 %	options - one of the following:
 %	not yet implemented
@@ -88,7 +89,14 @@ if strcmp(quantity,'e')
 		eval(av_ssub(['wE?p'  pl{i} '=[t data];'],cl_id)); clear t data;
 		eval(av_ssub(['save_list=[save_list '' wE?p' pl{i} ' ''];'],cl_id));
 	end
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% aux data - Phase, etc.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'a')
+	save_file = './mA.mat';
+	[t,data] = ISGet(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase');
+	eval(av_ssub('A?=[double(t) double(data)];',cl_id)); clear t data;
+	eval(av_ssub('save_list=[save_list '' A? ''];',cl_id));
 end %main QUANTITY
 
 % saving
