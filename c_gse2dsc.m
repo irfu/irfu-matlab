@@ -61,6 +61,8 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
              disp('            I am getting attitude data from isdat instead');
              flag_read_isdat=1;
          end
+     else,
+	 flag_read_isdat=1;
      end
      if flag_read_isdat,  % try if there is SP CDF file, otherwise continue to isdat
       cdf_files=dir(['CL_SP_AUX_' epoch2yyyymmdd(t) '*']);
