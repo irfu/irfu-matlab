@@ -55,7 +55,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004,2005 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(5,15,nargin))
@@ -124,10 +124,13 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		if ~exist('tm','var')
 			[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM');
 			if ~isempty(data), tm = data(5,:);
-			else, error('Cannot fetch FDM')
+			else
+				irf_log('dsrc','Cannot fetch FDM')
+				cd(old_pwd)
+				return
 			end	       
 			if tm~=tm(1)*ones(size(tm))
-				warning('tape mode changes during the selected time inteval')
+				irf_log('dsrc','tape mode changes during the selected time inteval')
 			end
 			c_eval('mTMode?=tm;',cl_id)
 			if exist('./mTMode.mat','file')
@@ -300,6 +303,13 @@ elseif strcmp(quantity,'a')
 	else
 		irf_log('dsrc',irf_ssub('No data for A?',cl_id))
 	end
+	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase_2');
+	if ~isempty(data)
+		c_eval('Atwo?=[double(t) double(data)];',cl_id); clear t data;
+		c_eval('save_list=[save_list '' Atwo? ''];',cl_id);
+	else
+		irf_log('dsrc',irf_ssub('No data for Atwo?',cl_id))
+	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
@@ -332,7 +342,27 @@ elseif strcmp(quantity,'v')
 	else
 		irf_log('dsrc',irf_ssub('No data for V?',cl_id))
 	end
-
+%{ 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% magc - location in magnetic coordinates 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'magc')
+	save_file='./mEPH.mat';
+	
+	var_list = {'lt', 'mlt', 'l_shell','inv_lat'};
+	var_list_s = {'LT?', 'MLT?', 'L?','ILAT?'};
+	
+	for j=1:length(var_list)
+		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', var_list{j});
+		if ~isempty(data)
+			c_eval([var_list_s{j} '=[double(t) double(data'')];'],cl_id); 
+			clear t data;
+			c_eval(['save_list=[save_list '' ' var_list_s{j} ' ''];'],cl_id);
+		else
+			irf_log('dsrc',irf_ssub(['No data for ' var_list_s{j}],cl_id))
+		end
+	end
+%}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B FGM - full res
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
