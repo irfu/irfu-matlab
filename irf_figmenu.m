@@ -6,13 +6,24 @@ function s=irf_figmenu(action)
 if nargin < 1, action = 'initialize'; end
 
 if strcmp(action,'initialize'),
-  hfigmenu=uimenu('Label','&irf');
-  uimenu(hfigmenu,'Label','&Update time axis','Callback','add_timeaxis(gca,''date'')','Accelerator','t')
-  uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
-  uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
-  uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
-  uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
-  user_data=get(gcf,'userdata'); user_data.irf_figmenu=1; set(gcf,'userdata',user_data);
+	% execute irf_figmenu if there is no such menu
+	need_init = 0;
+	user_data=get(gcf,'userdata');
+	if isstruct(user_data)
+		if ~isfield(user_data,'irf_figmenu'), need_init = 1; end
+	else, need_init = 1;
+	end
+
+	if need_init
+		hfigmenu=uimenu('Label','&irf');
+		uimenu(hfigmenu,'Label','&Update time axis','Callback','add_timeaxis(gca,''date'')','Accelerator','t')
+		uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
+		uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
+		uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
+		uimenu(hfigmenu,'Label','&Pointer Arrow','Callback','set(gcbf,''pointer'',''arrow'')')
+		user_data.irf_figmenu=1;
+		set(gcf,'userdata',user_data);
+	end
 
 elseif strcmp(action,'irf_tm'),
   h=findobj(gcf,'type','axes');
