@@ -195,7 +195,7 @@ case 'init'
 					clear tlxxx
 					
 					% Correct delta offset for Es?p12 and Es?p34
-					if Delta_off
+					if ~isempty(Delta_off)
 						if isreal(Delta_off) & strcmp(vs,av_ssub('diEs?p12',cl_id))
 							c_log('calb','correcting delta offset in p12')
 							c_eval(...
