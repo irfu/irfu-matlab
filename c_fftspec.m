@@ -1,5 +1,6 @@
 function [timmin,freq,fftmat]= c_fftspec(data,nfft,overlap)
 %C_FFTSPEC computes fft periodogram
+%
 % [timmin,freq,fftmat]= c_fftspec(data,nfft,overlap)
 %
 % data - AV cluster format
