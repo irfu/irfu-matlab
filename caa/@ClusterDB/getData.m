@@ -24,8 +24,9 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
 %			// spin axis vector [GSE] 
-%	a   : A{cl_id} -> mA	// phase
-%	r   : R{cl_id} -> mR	// position
+%	a   : A{cl_id} -> mA	// SC phase
+%	r   : R{cl_id} -> mR	// SC position
+%	v   : V{cl_id} -> mR	// SC velocity
 %
 %	//// Other instruments ////
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
@@ -80,6 +81,15 @@ save_file = '';
 save_list = '';
 
 old_pwd = pwd;
+
+%Create the storage directory if it does not exist
+if ~exist(cdb.sp, 'dir')
+	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
+	if SUCCESS, warning(['Created storage directory ' cdb.sp])
+	else, error(MESSAGE)
+	end
+end
+
 cd(cdb.sp) %enter the storage directory
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
