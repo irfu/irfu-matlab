@@ -23,10 +23,10 @@ while flag,
   ind_zeros_t1=find(flag_t1 == 0);
   ind_zeros_t2=find(flag_t2 == 0);
   if ~isempty(ind_zeros_t1),
-   disp(['Throwing away t1(' num2str(ind_zeros_t1(:)') ')']);
+   irf_log('proc',['Throwing away t1(' num2str(ind_zeros_t1(:)') ')']);
    t1(ind_zeros_t1)=[];
   elseif ~isempty(ind_zeros_t2),
-   disp(['Throwing away t2(' num2str(ind_zeros_t2(:)') ')']);
+   irf_log('proc',['Throwing away t2(' num2str(ind_zeros_t2(:)') ')']);
    t2(ind_zeros_t2)=[];
   else
    flag=0;
