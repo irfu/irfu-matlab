@@ -42,8 +42,17 @@ end
 if length(args) < 2, t_unit_in_original_units=1;
 else, t_unit_in_original_units = args{2};
 end
-if length(args) < 3, t_origo_in_original_units=0;
-else, t_origo_in_original_units = args{3};
+
+if length(args) < 3,
+    % try to read t_start_epoch if exists
+    ud=get(gcf,'userdata');
+    if isfield(ud,'t_start_epoch'),
+        t_origo_in_original_units=ud.t_start_epoch;
+    else
+        t_origo_in_original_units=0;
+    end
+else, 
+    t_origo_in_original_units = args{3};
 end
 
 if (length(t_origo_in_original_units) == 4)
@@ -82,10 +91,11 @@ else
 		end 
 		eval(['plot(' pl ')'])
 		grid on
+        ud=get(gcf,'userdata');ud.subplot_handles=c;set(gcf,'userdata',ud);
 	end
 end
 
-if x1(1,1) > 9e8,  add_timeaxis(c); end
+if x1(1,1) > 9e8,  add_timeaxis(c);av_figmenu; end
 
 if nargout > 0, out = c; end
 
