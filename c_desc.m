@@ -151,7 +151,7 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.label_1 = {};
 	v.field_name = {['Electric field component measured between the probes '...
 		v.sen(1) ' and ' v.sen(2)]};
-	v.ent = {'Electric field'};
+	v.ent = {'Electric_Field'};
 	v.prop = {'Component'};
 	v.fluc = {'Waveform'};
 	v.com = '';
@@ -188,9 +188,9 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
     v.col_labels = {{'x','y','z'},''};
     v.rep_1 = {'"x", "y"',''};
 	v.field_name = {'Electric field','Standard deviation'};
-	v.ent = {'Electric field','Electric field'};
+	v.ent = {'Electric_Field','Electric_Field'};
 	v.prop = {'Vector','Vector'};
-	v.fluc = {'Waveform','Standard deviation'};
+	v.fluc = {'Waveform','Standard_deviation'};
 	v.com = 'Ez=0 by definition (not measured).';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -231,7 +231,7 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.field_name = {'Electric field'};
-	v.ent = {'Electric field'};
+	v.ent = {'Electric_Field'};
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
 	v.com = '';
