@@ -6,7 +6,13 @@ function res = timeaxis(limit)
 dtime = limit(2)-limit(1);
 
 % get the time difference between two ticks and the number of unlabeled ticks
-if dtime>3600*24*100
+if dtime>3600*24*500
+  dticv = 3600*24*100;
+  mtics = 2;
+elseif dtime>3600*24*200
+  dticv = 3600*24*50;
+  mtics = 5;
+elseif dtime>3600*24*100
   dticv = 3600*24*20;
   mtics = 4;
 elseif dtime>3600*24*50
