@@ -179,7 +179,7 @@ if nargout > 0
 		sl = tokenize(save_list);
 		data = {sl};
 		for i=1:length(sl)
-			eval(['data{i+1}={' char(sl{i}) '};'])
+			eval(['data{i+1}=' sl{i} ';'])
 		end
 	end
 end
