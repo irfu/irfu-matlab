@@ -396,7 +396,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 	 if strcmp(q,'ea'), s = ''; else, s = 's'; end
   for ic=sc_list,
      eval(av_ssub(['if ~exist(''E' s '?'') & exist(''mEdB.mat'',''file''), load mEdB E' s '? ang_limit?;disp(''Loading E' s '?, ang_limit? from mEdB'');end'],ic));
-     eval(av_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading ooffset values from mEDSI.mat'');end',ic));
+     eval(av_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading offset values from mEDSI.mat'');end',ic));
      eval(av_ssub(['if ~exist(''diE' s '?'')& exist(''mEdB.mat'',''file''), load mEdB diE' s '? ang_limit?;disp(''Loading diE' s '?, ang_limit? from mEdB'');end'],ic));
 	offset_comment = 'Offsets => '; 
 	if exist(av_ssub('Damp?',ic))
@@ -426,7 +426,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      if eval(av_ssub(['exist(''diE' s '?'')'],ic)),
        eval(av_ssub(['number_of_points=size(diE' s '?,1);'],ic));
        disp(['diE' s num2str(ic) ' --> diE' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       diE_add_comment=[offset_comment '\nang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
+       diE_add_comment=[offset_comment '\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
        eval(av_ssub(['exportAscii(diE' s '?,''diE' s '?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
@@ -437,6 +437,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'va')|strcmp(q,'vsa') 
 	if strcmp(q,'va'), s = ''; else, s = 's'; end
 	for ic=sc_list,
+		% GSE
      eval(av_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));
      eval(av_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
      if eval(av_ssub(['exist(''VExB' s '?'')'],ic)),
@@ -446,10 +447,13 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
        eval(av_ssub(['exportAscii(VExB' s '?,''VExB' s '?'',''' E_add_comment ''');'],ic));
      end
+	 % DSI
+     eval(av_ssub(['if ~exist(''diVExB' s '?'',''var'') & exist(''mEdB.mat'',''file''), load mEdB diVExB' s '? ang_limit?;disp(''Loading diVExB' s '?, ang_limit? from mEdB'');end'],ic));
+     eval(av_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
      if eval(av_ssub(['exist(''diVExB' s '?'')'],ic)),
        eval(av_ssub(['number_of_points=size(diVExB' s '?,1);'],ic));
        disp(['diVExB' s num2str(ic) ' --> diVExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       diE_add_comment=['\nang_limit=' num2str(ang_limit) '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
+       diE_add_comment=['\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
        eval(av_ssub(['exportAscii(diVExB' s '?,''diVExB' s '?'',''' diE_add_comment ''');'],ic));
      end
      clear E_add_comment diE_add_comment number_of_points;
@@ -473,6 +477,9 @@ while(q ~= 'q') % ====== MAIN LOOP =========
       end
     end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif q == 'p',
   variable='mode';default=1;question='Sampling 1)lx, 2)hx, 3)32kHz_any? If different give as vector. [%]';av_ask;
   for ic=sc_list,
