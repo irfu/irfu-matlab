@@ -63,6 +63,7 @@ if n_plots==0, return, end %nothing to plot
 
 %Plotting
 clf
+orient tall
 
 for k=1:n_plots
 	h{k} = subplot(n_plots,1,k);
