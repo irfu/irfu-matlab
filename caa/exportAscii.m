@@ -64,6 +64,20 @@ elseif regexp(vs,'diE[1-4]p1234')==1
 	var_labels = {'Ex','Ey','Ez'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% despun full resolution E with assumption E.B = 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'diE[1-4]')==1
+
+	cl_id = vs(4);
+	inst = 'EFW';
+	sig = 'E';
+	sen = 'p1234';
+	frame = 'DSI,  Ez not measured, Ez calculated from E.B=0';
+	var_labels = {'Ex','Ey','Ez','(B,spin)'};
+  var_units =  {'mV/m','mV/m','mV/m','deg'};
+  com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'E[1-4]')==1
@@ -103,8 +117,8 @@ var(:,1) = var(:,1) - t0;
 
 sz = size(var);
 n_data = sz(2) - 1; % number of data columns - time
-var_s = 'time       ';
-var_unit = '[s]      ';
+var_s =    'time       ';
+var_unit = '[s]        ';
 mask = '%10.4f ';
 
 if		strcmp(sig,'E'),		units = 'mV/m';
@@ -113,10 +127,10 @@ else,	units = 'undef';
 end
 
 for i=1:n_data
-	var_length_eight=strvcat(var_labels{i},'        ');
-	var_unit_length_eight=strvcat(['[' var_units{i} ']'],'        ');
-  var_s = [var_s var_length_eight(1,:) ];
-	var_unit = [var_unit var_unit_length_eight(1,:)];
+	var_length_nine=strvcat(var_labels{i},'         ');
+	var_unit_length_nine=strvcat(['[' var_units{i} ']'],'         ');
+  var_s = [var_s var_length_nine(1,:) ];
+	var_unit = [var_unit var_unit_length_nine(1,:)];
 	mask = [mask '%8.3f '];
 end
 
