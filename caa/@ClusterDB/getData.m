@@ -296,14 +296,16 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase');
+	
+	% We ask for 5 sec more from each side to avoid problemos with interpolation.
+	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, cl_id, 'ephemeris', 'phase');
 	if ~isempty(data)
 		c_eval('A?=[double(t) double(data)];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' A? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No data for A?',cl_id))
 	end
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', 'phase_2');
+	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, cl_id, 'ephemeris', 'phase_2');
 	if ~isempty(data)
 		c_eval('Atwo?=[double(t) double(data)];',cl_id); clear t data;
 		c_eval('save_list=[save_list '' Atwo? ''];',cl_id);
