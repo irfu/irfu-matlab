@@ -1,4 +1,4 @@
-function exportAscii(var,vs,com)
+function exportAscii(var,vs,comment)
 %exportAscii export variable into ascii file with comments
 % exportAscii(var,var_name_s,comment)
 % exportAscii(var,var_name_s)             % no additional comment
@@ -19,7 +19,7 @@ function exportAscii(var,vs,com)
 
 % Copyright 2004 Yuri Khotyaintsev
 
-if nargin<3, com='';end
+if nargin<3, comment='';end
 if nargin==1, vs=inputname(1); end
 if nargin<1, help exportAscii;return; end
 
@@ -103,7 +103,7 @@ elseif regexp(vs,'NVps[1-4]')==1
 	frame = '';
 	var_labels = {'NVps','Vps'};
   var_units =  {'cc','V'};
-  com = '%% probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n %%       It is NOT true density\n');
+  com = '%% probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density\n';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
@@ -155,7 +155,7 @@ fprintf(fid,['%% Intrument: ' inst ' \n']);
 fprintf(fid,['%% Signal:    ' sig ' \n']);
 fprintf(fid,['%% Sensor:    ' sen ' \n']);
 fprintf(fid,['%% Coord Sys: ' frame ' \n%%\n']);
-fprintf(fid,['%% comment:   ' com ' \n%%\n']);
+fprintf(fid,['%% comment:   ' com ' \n%%' comment '\n%%\n']);
 fprintf(fid,['%% Time from: ' t0_s ' \n%%\n']);
 fprintf(fid,['%% ' var_s ' \n']);
 fprintf(fid,['%% ' var_unit ' \n']);
