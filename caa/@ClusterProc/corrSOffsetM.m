@@ -114,11 +114,13 @@ eval(['legend(' leg ')'])
 
 q='0';
 while(q ~= 'q')
+  flag_replot=0;
 	q=av_q('Give Ex and Ey offset [mV/m] and amplitude factor (s-save,q-quit,r-read)[%]>','',num2str([real(offset(1)) imag(offset(1)) real(offset(2))],'%.2f '));
 	switch(q)
 	case 'r'
 		disp(sprintf('Reading Ddsi%d, Damp%d <- ./mEDSI.mat',cl_id,cl_id))
 		eval(av_ssub('load mEDSI  Ddsi? Damp?; if exist(''Ddsi?''), offset(1)=Ddsi?; offset(2)=Damp?; else, disp(''Cannot find callibrations''); offset=[0+0i 1]; end;',cl_id))
+		flag_replot=1;
 	case 's'
 		disp(sprintf('Ddsi%d, Damp%d -> ./mEDSI.mat',cl_id,cl_id))
 		eval(av_ssub('Ddsi?=offset(1); Damp?=offset(2);save -append mEDSI Ddsi? Damp?',cl_id))
@@ -136,22 +138,26 @@ while(q ~= 'q')
 			else
 				offset(1) = o_tmp(1)+1i*imag(offset(1));
 			end
-      diE_tmp = diE;
-      diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
-      diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
-      diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
-      diEs_tmp = diEs;
-      diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
-      diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
-      diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
-			figure(17)
-			clf
-			eval(['plotExy(' var_list ');zoom on'])
-      title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
-%			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
-			eval(['legend(' leg ')'])
 		else
 			disp('invalid command')
 		end
+  	flag_replot=1;
+	end
+	if flag_replot,
+    diE_tmp = diE;
+    diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
+    diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
+    diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
+    diEs_tmp = diEs;
+    diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
+    diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
+    diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
+    figure(17)
+    clf
+    eval(['plotExy(' var_list ');zoom on'])
+    title(sprintf('Cluster %d : offset X %.2f [mV/m], offset Y %.2f [mV/m], amplitude factor %.2f',cl_id,real(offset(1)),imag(offset(1)),offset(2)))
+%			title(sprintf('Cluster %d : offset %.2f [mV/m], amplitude factor %.2f',cl_id,offset(1),offset(2)))
+		eval(['legend(' leg ')'])
+		flag_replot=0;
 	end
 end
