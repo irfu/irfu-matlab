@@ -89,7 +89,7 @@ switch action,
     xl=get(hh,'XLim');yl=get(hh,'YLim');
     hc=get(hh,'Children');
     v=eval(['[' get(ud.v,'string') ']']),
-    t=xl(1)+dt;
+    t=xl(1);
     dt=c_v([xl(1) v]);
     tstr=['[' num2str(dt,'%7.2f') ']'];
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%7.2f') ']'];
