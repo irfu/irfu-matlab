@@ -107,12 +107,21 @@ elseif regexp(vs,'^wE[1-4]p(12|34)$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
-	v.cl_id = vs(5);
+elseif regexp(vs,'^(i)?diEs[1-4]p(12|34)')==1
+	if vvs(1)=='i', 
+		vvs = vvs(2:end);
+		v.frame = 'inertial'; 
+		v.file = 'mEIDSI';
+		v.quant = 'idies';
+	else
+		v.frame = 'sc';
+		v.file = 'mEDSI';
+		v.quant = 'dies';
+	end
+	v.cl_id = vvs(5);
 	v.inst = 'EFW';
-	v.frame = 'sc';
 	v.sig = 'E';
-	v.sen = vs(6:8);
+	v.sen = vvs(6:8);
 	v.cs = {'vector>dsi_xy'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V/m'};
@@ -122,16 +131,23 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 	v.label_1 = {'"x", "y"'};
 	v.field_name = {'Electric field'};
 	v.com = '';
-	v.file = 'mEDSI';
-	v.quant = 'dies';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diE[1-4]p1234$')==1
-	v.cl_id = vs(4);
+elseif regexp(vs,'^(i)?diE[1-4]p1234$')==1
+	if vvs(1)=='i', 
+		vvs = vvs(2:end);
+		v.frame = 'inertial'; 
+		v.file = 'mEIDSI';
+		v.quant = 'idie';
+	else
+		v.frame = 'sc';
+		v.file = 'mEDSI';
+		v.quant = 'die';
+	end
+	v.cl_id = vvs(4);
 	v.inst = 'EFW';
-	v.frame = 'sc';
 	v.sig = 'E';
 	v.sen = 'all';
 	v.cs = {'vector>dsi_xy'};
@@ -143,18 +159,25 @@ elseif regexp(vs,'^diE[1-4]p1234$')==1
 	v.label_1 = {'"x", "y"'};
 	v.field_name = {'Electric field'};
 	v.com = '';
-	v.file = 'mEDSI';
-	v.quant = 'die';
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% despun full resolution E with assumption E.B = 0
+% despun full/spin resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diE(s)?[1-4]$')
+elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
+	if vvs(1)=='i', 
+		vvs = vvs(2:end);
+		v.frame = 'inertial'; 
+		v.file = 'mEdBI';
+		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
+	else
+		v.frame = 'sc';
+		v.file = 'mEdB';
+		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
+	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
-	v.frame = 'sc';
 	v.sig = 'E';
-	if vs(4)=='s', v.sen = 's'; else, v.sen = ''; end
+	if vvs(4)=='s', v.sen = 's'; else, v.sen = ''; end
 	v.cs = {'vector>dsi_xyz','scalar>na'};
  	v.units =  {'mV/m','deg'};
 	v.si_conv = {'1.0e-3>V/m','1>degree'};
@@ -164,16 +187,23 @@ elseif regexp(vs,'^diE(s)?[1-4]$')
 	v.label_1 = {'"x", "y", "z"',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
-	v.file = 'mEdB';
-	if vs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% full resolution E in GSE coordinates
+% full/spin resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^E(s)?[1-4]$')
+elseif regexp(vs,'^(i)?E(s)?[1-4]$')
+	if vvs(1)=='i', 
+		vvs = vvs(2:end);
+		v.frame = 'inertial'; 
+		v.file = 'mEdBI';
+		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
+	else
+		v.frame = 'sc';
+		v.file = 'mEdB';
+		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
+	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
-	v.frame = 'sc';
 	v.sig = 'E';
 	if vs(2)=='s', v.sen = 's'; else, v.sen = ''; end
 	v.cs = {'vector>gse_xyz','scalar>na'};
@@ -185,8 +215,6 @@ elseif regexp(vs,'^E(s)?[1-4]$')
 	v.label_1 = {'"x", "y", "z"',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
-	v.file = 'mEdB';
-	if vs(2)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
@@ -283,13 +311,15 @@ elseif regexp(vs,'^SAX[1-4]$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spacecraft velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^V[1-4]$')
+elseif regexp(vs,'^(di)?V[1-4]$')
 	v.cl_id = vs(end);
 	v.inst = 'Ephemeris';
 	v.frame = 'sc';
 	v.sig = 'Attitude';
 	v.sen = '';
-	v.cs = {'vector>gse'};
+	if strcmp(vvs(1:2),'di'), v.cs = {'vector>dsi_xyz'};
+	else, v.cs = {'vector>gse_xyz'};
+	end
 	v.units =  {'km/s'};
 	v.si_conv = {'1e3>m/s'};
 	v.size = [3];
@@ -299,7 +329,7 @@ elseif regexp(vs,'^V[1-4]$')
 	v.field_name = {'Spacecraft velocity'};
 	v.com = '';
 	v.file = 'mR';
-	v.quant = 'Vsc';
+	v.quant = 'v';
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS N PP
@@ -364,10 +394,15 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI E PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diEDI[1-4]|EDI[1-4]$')
+elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
+	if vvs(1)=='i', 
+		vvs = vvs(2:end);
+		v.frame = 'inertial'; 
+	else, v.frame = 'sc';
+	end
+
 	v.cl_id = vs(end);
 	v.inst = 'EDI';
-	v.frame = 'inertial';
 	v.sig = 'E';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
@@ -468,7 +503,7 @@ else
 		disp(['Sensor      : ' v.sen ]);
 		disp(['Comment     : ' v.com ]);
 		disp(['File        : ' v.file ]);
-		disp(['getData quan: ' v.quant ]);
+		disp(['getData q   : ' v.quant ]);
 		disp(['Size        : ' num2str(v.size) ]);
 		for j=1:length(v.size)
 			disp(['Var Name    : ' v.name{j} ]);

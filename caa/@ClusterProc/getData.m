@@ -13,9 +13,13 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		if imaginary - to p34
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI]
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+% idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
+%   Transform from SC to inertial frame
 %	dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
 %		ADC offsets are NOT corrected
-%	edbs, edb : E[s]{cl_id}, diE[s]{cl_id} -> mEdB // Ez from E.B=0 [DSI+GSE]
+%	edbs,edb,iedb,iedbs : // Ez from E.B=0 [DSI+GSE]
+%   E[s]{cl_id}, diE[s]{cl_id} -> mEdB    // SC frame
+%   iE[s]{cl_id}, idiE[s]{cl_id} -> mEdBI  // Inertial frame
 %		has the following options:
 %		ang_limit - minimum angle(B,spin plane) [default 10 deg]
 %		ang_blank - put Ez to NaN for points below ang_limit [default]
@@ -361,14 +365,77 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	% DS-> DSI
 	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
 	c_eval(['save_list=[save_list ''' var1_name '''];'],cl_id);
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% idie, idies - DSI inertial
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
+	save_file = './mEIDSI.mat';
+
+	if strcmp(quantity,'idie')
+		var_s = {'diE?p1234'}; e_opt = 'die';
+		var_b = 'diBr?'; b_opt ='br';
+	else
+		e_opt = 'dies';
+		var_s = {'diEs?p12', 'diEs?p34'};
+		var_b = 'diBrs?'; b_opt ='brs';
+	end
+	
+	% Load resampled B
+	[ok,diB] = c_load(var_b,cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
+		data = []; return
+	end
+	
+	[ok,diV] = c_load('diV?',cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
+		data = []; return
+	end
+	
+	evxb = av_t_appl(av_cross(diB,c_resamp(diV,diB)),'*1e-3*(-1)');
+	
+	err_s = '';
+	for k=1:length(var_s)
+		[ok,diE] = c_load(var_s{k},cl_id);
+		if ~ok
+			if isempty(err_s), err_s = var_s{k};
+			else, err_s = [err_s ', ' var_s{k}];
+			end
+			continue 
+		end
+
+		enew = diE;
+		% We take only X and Y components. Z must remain zero.
+		enew(:,2:3) = diE(:,2:3) - evxb(:,2:3);
+		
+		c_eval(['i' var_s{k} '= enew; clear enew'],cl_id)
+		save_list=[save_list 'i' av_ssub(var_s{k},cl_id) ' '];
+	end
+	if ~isempty(err_s)
+		c_log('load',...
+			av_ssub(['No ' err_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+		data = []; return
+	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% edb,edbs - E.B=0
+% edb,edbs,iedb,iedbs - E.B=0 (sc,inertial)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
-	save_file = './mEdB.mat';
+elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
+	strcmp(quantity,'iedb') | strcmp(quantity,'iedbs')
 	
-	if strcmp(quantity,'edb')
+	if strcmp(quantity,'iedb') | strcmp(quantity,'iedbs'), inert = 1; 
+	else, inert = 0; 
+	end
+	
+	if inert, save_file = './mEdBI.mat';
+	else, save_file = './mEdB.mat';
+	end
+	
+	if strcmp(quantity,'edb') | strcmp(quantity,'iedb')
 		var_s = av_ssub('diE?p1234',cl_id); e_opt = 'die';
 		varo_s = av_ssub('E?',cl_id);
 		var_b = 'diBr?'; b_opt ='br';
@@ -396,6 +463,16 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		data = []; return
 	end
 
+	% Load V if we need to do SC->Inertial transformation
+	if inert
+		[ok,diV] = c_load('diV?',cl_id);
+		if ~ok
+			c_log('load',...
+				av_ssub(['No diV? in mR. Use getData(CDB,...,cl_id,''v'')'],cl_id))
+			data = []; return
+		end
+	end
+	
 	Dxy_s =  av_ssub('Ddsi?',cl_id);
 	Dx_s =  av_ssub('real(Ddsi?)',cl_id);
 	Dy_s =  av_ssub('imag(Ddsi?)',cl_id);
@@ -435,16 +512,24 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		end
 	end
 
+	% SC -> Inertial
+	if inert
+		evxb = av_t_appl(av_cross(diB,c_resamp(diV,diB)),'*1e-3*(-1)');
+		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb
+		s = 'i';
+	else, s = '';
+	end
+	
  	% DSI->GSE
 	if c_load('SAX?',cl_id)
-		c_eval([varo_s '=c_gse2dsi(diE(:,1:4),SAX?,-1);' varo_s '(:,5)=diE(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id);
+		c_eval([s varo_s '=c_gse2dsi(diE(:,1:4),SAX?,-1);' s varo_s '(:,5)=diE(:,5);save_list=[save_list ''' s varo_s ' ''];'],cl_id);
 	else
 		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
 
-	eval(['di' varo_s '=diE;']); clear diE
+	eval([ s 'di' varo_s '=diE;']); clear diE
 	eval(av_ssub('ang_limit?=ang_limit;',cl_id)) 
-	save_list=[save_list 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
+	save_list=[save_list s 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Vedb,Vedbs = ExB with E.B=0
