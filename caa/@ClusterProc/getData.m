@@ -199,18 +199,18 @@ elseif strcmp(quantity,'die')
 		full_e(:,3) = Ep34(:,2);
 		clear Ep12 Ep34
 	else	
-		if exist(Ep12,'var')
+		if exist('Ep12','var')
 			pp = 12;
 			EE = Ep12;
 			clear Ep12
 		else
 			pp = 34;
-			EE = Ep34
+			EE = Ep34;
 			clear Ep34
 		end
 		% use WEC coordinate system E=[t,0,p34,p12]
 		full_e = zeros(length(EE),4);
-		full_e(:,1) = EE(:,1:2);
+		full_e(:,1) = EE(:,1);
 		if pp==12, full_e(:,4) = EE(:,2);
 		else, full_e(:,3) = EE(:,2);
 		end
