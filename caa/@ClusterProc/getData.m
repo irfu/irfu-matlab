@@ -8,11 +8,19 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	quantity - one of the following:
 %
 %	dies : diEs{cl_id}p12, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
-%		also creates delta offsets D{cl_id}p12p34x and D{cl_id}p12p34y
+%		also creates delta offsets D{cl_id}p12p34.
 %		If the offset is real then it must be applied to p12, 
 %		if imaginary - to p34 
 %	die : diE{cl_id}p1234 -> mEDSI // despun full res E [DSI] 
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+%	edbs, edb : diE[s]{cl_id} -> mEdB // calculate Ez from E.B=0
+%		has the following options:
+%		ang_limit - minimum angle(B,spin plane) [default 10 deg]
+%		ang_blank - remove points below ang_limit [default]
+%		ang_fill - fill points below ang_limit with 1e27
+%		ang_ez0 - use Ez=0 for points below ang_limit 
+%
+%	Example usage: getData(cp,4,'edbs','ang_fill','ang_limit',20)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
@@ -31,6 +39,8 @@ if nargin > 3, property_argin = varargin; end
 % default options
 flag_save = 1;
 flag_usesavedoff = 0;
+flag_edb = 1;
+ang_limit = 10;
 
 for i=1:length(varargin)
     switch(varargin{i})
@@ -38,6 +48,24 @@ for i=1:length(varargin)
         flag_save = 0;
 	case 'usesavedoff'
 		flag_usesavedoff = 1;
+	case 'ang_limit'
+		if i~=length(varargin)
+			if isnumeric(varargin{i+1})
+				ang_limit = varargin{i+1};
+				i = i + 1;
+			else
+				warning('caa:wrongArgType','ang_limit must be numeric')
+			end
+		else
+			warning('caa:wrongArgType','ang_limit value is missing')
+		end
+	case 'ang_blank'
+	   flag_edb = 1;	% [default]
+	case 'ang_fill'
+	   flag_edb = 2;	% fill points below ang_limit with 1e27
+	   fill_val = 1e27;
+	case 'ang_ez0'
+	   flag_edb = 0;	% use Ez=0 for points below ang_limit 
     otherwise
         disp(['Option ''' varargin{i} '''not recognized'])
     end
@@ -208,6 +236,69 @@ elseif strcmp(quantity,'die')
 	% DS-> DSI
 	eval(av_ssub('diE?p1234(:,3)=-diE?p1234(:,3);',cl_id));
 	eval(av_ssub(['save_list=[save_list '' diE?p1234 ''];'],cl_id));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% edb - E.B=0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
+	save_file = './mEdB.mat';
+
+	if ~(exist('./mEDSI.mat','file') & exist('./mBPP.mat','file'))
+		warning('caa:noSuchFile','Please despin E (mEDSI) and load B PP (mBPP)')
+		data = [];
+		return
+	end
+
+	eval(av_ssub('load mBPP diBPP?; diB=diBPP?;',cl_id));
+	
+	if strcmp(quantity,'edb')
+		var_s = av_ssub('diE?p1234',cl_id); 
+		varo_s = av_ssub('diE?',cl_id); 
+	else
+		disp('using p34')
+		var_s = av_ssub('diEs?p34',cl_id); 
+		varo_s = av_ssub('diEs?',cl_id); 
+	end
+
+	Dx_s =  av_ssub('Ddsi?',cl_id);
+	Da_s =  av_ssub('Damp?',cl_id);
+
+	eval(['load mEDSI ' var_s ' ' Dx_s ' ' Da_s])
+	if exist(var_s,'var'), eval(['E=' var_s ';'])
+	else
+		warning('caa:noData','Please despin E (no diE in mEDSI)')
+		data = [];
+		return
+	end
+	if exist(Dx_s,'var'), eval(['Dx=' Dx_s ';'])
+	else, disp('using Dx=0'), Dx = 0;
+	end
+	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
+	else, disp('using Da=0'), Da = 0;
+	end
+	
+	E = corrDSIOffsets(E,Dx,0,Da);
+	
+	disp(['using angle limit of ' num2str(ang_limit) ' degrees'])
+	[E,angle]=av_ed(E,diB,ang_limit);
+	E(:,5) = angle; clear angle
+
+	ii = find(abs(E(:,5)) < ang_limit);
+	if length(ii) > 1
+		switch(flag_edb)
+		case 0 % Ez=0, do nothing
+			disp('using Ez=0')
+		case 1 % remove points
+			disp('settiong points < ang_limit to NaN')
+			E(ii,4) = E(ii,4)*NaN;   
+		case 2 % fill with fill_val
+			disp('settiong points < ang_limit to 1e27')
+			E(ii,4) = ones(size(E(ii,4)))*fill_val;   
+		end
+	end
+
+	eval([varo_s '=E;']); clear E
+	save_list=[save_list '''' varo_s ''''];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
