@@ -143,7 +143,7 @@ switch action,
             axis equal; grid on;
         elseif (tlim(1)>=ud.tlim_mva(1) & tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
             irf_zoom(tlim,'x',ud.h(2));
-            tlim, diff tlim,
+            tlim, diff(tlim),
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);
             clear ud.Xminvar;
