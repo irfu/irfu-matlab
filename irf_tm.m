@@ -2,6 +2,8 @@ function status = irf_tm(h)
 % IRF_TM  change the time intervals for plots with several subplots
 %   h is the array with all subplot graphics handles
 %
+% $Id$
+
 
 if nargin == 0, h=gca; end
 
