@@ -7,6 +7,8 @@ function res=irf_find_max(data, fla)
 %
 % $Id$
 
+% Part of the code was copied from /usr/local/matl7/toolbox/optim/findmax.m
+
 [n,m]=size(data);
 if m>2, error('input must be 1D: [time data]'),end
 
@@ -17,13 +19,7 @@ if fla, data = -data(:,2);
 else, data = data(:,2);
 end
 
-% Normalize t as described in help polyfit
-t0 = mean(t);
-t = t - t0;
-tint = std(t);
-t = t/tint;
-
-ii = find( (data>[data(1)-1;data((1:n-1)')]) & (data>=[data((2:n)');data(n)-1]) )
+ii = find( (data>[data(1)-1;data((1:n-1)')]) & (data>=[data((2:n)');data(n)-1]) );
 s = length(ii);
 res_m = zeros(s,1);
 res_t = zeros(s,1);
@@ -52,20 +48,32 @@ for i=1:s
 	end
 end
 
-res_t = res_t*tint + t0;
 if fla, res = [res_t -res_m];
 else, res = [res_t res_m];
 end
 
 function [tm, m] = quad_max(t,d)
+
+% Normalize t as described in help polyfit
+t0 = mean(t);
+tint = std(t);
+t = (t - t0)/tint;
+
 p = polyfit(t,d,2);
 tm = -p(2)/p(1)/2;
 m = p(1)*tm^2 + p(2)*tm + p(3);
+tm = tm*tint + t0;
 
 if tm<t(1) || tm>t(end), error('quad_max: max is outside the region'), end
-disp(['quad_max: ' num2str(tm) ' ' num2str(m)])
+%disp(['quad_max: ' num2str(tm) ' ' num2str(m)])
 
 function [tm, m] = cub_max(t,d)
+
+% Normalize t as described in help polyfit
+t0 = mean(t);
+tint = std(t);
+t = (t - t0)/tint;
+
 p = polyfit(t,d,3);
 d = 4*p(2)^2 - 4*3*p(1)*p(3);
 if d<0, error('no roots'), end
@@ -79,4 +87,5 @@ else
 end
 
 m = p(1)*tm^3 + p(2)*tm^2 + p(3)*tm + p(4);
-disp(['cub_max: ' num2str(tm) ' ' num2str(m)])
+tm = tm*tint + t0;
+%disp(['cub_max: ' num2str(tm) ' ' num2str(m)])
