@@ -284,7 +284,7 @@ C Compute sigma
 	      sigma = sigma + diff*diff  
 	    end if
 	  end do
-	  sigma = sqrt(sigma/(flim-fnterms))
+	  sigma = sqrt(sigma/float(flim-1))
 
 	  if (fiter .lt. fitmax) then
 	    ref = const*sigma
