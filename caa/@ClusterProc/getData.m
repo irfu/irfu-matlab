@@ -1,5 +1,5 @@
 function data = getData(cp,cl_id,quantity,varargin)
-%GETDATA(cp) produce Cluster level 0 data from the raw data
+%GETDATA(cp) produce Cluster level 2 and 3 data from the raw data
 % data = getData(cp,cl_id,quantity,options)
 %
 % Input:
@@ -21,15 +21,17 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		ang_blank - put Ez to NaN for points below ang_limit [default]
 %		ang_fill - fill points below ang_limit with 1e27
 %		ang_ez0 - use Ez=0 for points below ang_limit
+% 	probe_p - probe pair to use 12 or 34 [default 34]
+% br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %	vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %
 % Example: 
-%	getData(cp,4,'edbs','ang_fill','ang_limit',20)
+%		getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
 %
-%	options - one of the following:
-%	nosave : do no save on disk
-%	leavewhip : do not remove time intervals with Whisper pulses
-%	notusesavedoff : recalculating everything instead of using saved offsets
+%	General options - one of the following:
+%		nosave : do no save on disk
+%		leavewhip : do not remove time intervals with Whisper pulses
+%		notusesavedoff : recalculating everything instead of using saved offsets
 %
 % See also C_GET
 %
@@ -49,12 +51,13 @@ flag_usesavedoff = 0;
 flag_edb = 1;
 flag_rmwhip = 1; 
 ang_limit = 10;
+probe_p = 34;
 
 while have_options
 	l = 1;
-    switch(args{1})
-    case 'nosave'
-        flag_save = 0;
+	switch(args{1})
+	case 'nosave'
+		flag_save = 0;
 	case 'leavewhip'
 		flag_rmwhip = 0;
 	case 'notusesavedoff'
@@ -64,22 +67,32 @@ while have_options
 			if isnumeric(args{2})
 				ang_limit = args{2};
 				l = 2;
-			else
-				c_log('fcal,','wrongArgType : ang_limit must be numeric')
+			else, c_log('fcal,','wrongArgType : ang_limit must be numeric')
 			end
-		else
-			c_log('fcal,','wrongArgType : ang_limit value is missing')
+		else, c_log('fcal,','wrongArgType : ang_limit value is missing')
 		end
 	case 'ang_blank'
-	   flag_edb = 1;	% [default]
+		flag_edb = 1;	% [default]
 	case 'ang_fill'
-	   flag_edb = 2;	% fill points below ang_limit with 1e27
-	   fill_val = 1e27;
+		flag_edb = 2;	% fill points below ang_limit with 1e27
+		fill_val = 1e27;
 	case 'ang_ez0'
-	   flag_edb = 0;	% use Ez=0 for points below ang_limit
-    otherwise
-        c_log('fcal,',['Option ''' args{i} '''not recognized'])
-    end
+		flag_edb = 0;	% use Ez=0 for points below ang_limit
+	case 'probe_p'
+		if length(args)>1
+			if isnumeric(args{2})
+				probe_p_tmp = args{2};
+				l = 2;
+			else, probe_p_tmp = str2num(args{2});
+			end
+			if (probe_p_tmp==12 | probe_p_tmp==34), probe_p = probe_p_tmp;
+			else, c_log('fcal,','wrongArgType : probe_p must be 12 or 34')
+			end
+		else, c_log('fcal,','wrongArgType : ang_limit value is missing')
+		end
+	otherwise
+		c_log('fcal,',['Option ''' args{i} '''not recognized'])
+	end
 	if length(args) > l, args = args(l+1:end);
 	else break
 	end
@@ -98,12 +111,15 @@ c_log('save',['Storage directory is ' cp.sp])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
-
-	if ~((c_load(av_ssub('wE?p12',cl_id)) | c_load(av_ssub('wE?p34',cl_id))) & ...
-	c_load(av_ssub('A?',cl_id)))
-		c_log('load','Please load raw data (mER) and phase (mA)')
-		data = [];
-		return
+	
+	if ~c_load('A?',cl_id)
+		c_log('load',...
+			av_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+	end
+	if ~(c_load('wE?p12',cl_id) | c_load('wE?p34',cl_id)) 
+		c_log('load',...
+			av_ssub(['No wE?p12 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')'],cl_id))
+		data = []; return
 	end
 
 	pl=[12,34];
@@ -157,7 +173,7 @@ if strcmp(quantity,'dies')
 		end
 	end
 
-	% delta offsets
+	% Delta offsets
 	if exist(av_ssub('diEs?p12',cl_id),'var') & exist(av_ssub('diEs?p34',cl_id),'var')
 		
 		% To compute delta offsets we remove points which are > 2*sdev
@@ -176,7 +192,7 @@ if strcmp(quantity,'dies')
 		c_log('calb',sprintf('delta offsets are: %.2f [x] %.2f [y]', ...
 			abs(Del(1)), abs(Del(2))))
 
-		% we suppose that smaller field is more realistic
+		% We suppose that smaller field is more realistic
 		% and will correct the largest signal
 		% real offset is applied to p12, imaginary to p34
 		if Del(1)>0, Del = -Del*j; end
@@ -210,10 +226,13 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		var1_name = 'diE?p1234';
 	end
 
-	if ~(exist('./mA.mat','file') & exist('./mEDSI.mat','file'))
-		c_log('load','Please compute spin averages (mER) and load phase (mA)')
-		data = [];
-		return
+	if ~c_load('A?',cl_id)
+		c_log('load',...
+			av_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+	end
+	if ~exist('./mEDSI.mat','file')
+		c_log('load','Please compute spin averages (mEDSI)')
+		data = []; return
 	end
 	if do_burst, c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
 	else, c_eval(['load mER ' var_name '12 ' var_name '34;'],cl_id);
@@ -293,7 +312,6 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		end
 		% use WEC coordinate system E=[t,0,p34,p12]
 		full_e = zeros(length(Ep12),4);
-		%keyboard
 		full_e(:,[1,4]) = Ep12;
 		full_e(:,3) = Ep34(:,2);
 		clear Ep12 Ep34
@@ -323,7 +341,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		end
 		if exist(av_ssub('D?p12p34',cl_id))
 			eval(av_ssub('Del=D?p12p34;',cl_id))
-			if real(Del)                               % ?????????????????????????
+			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
 				c_log('calb','correcting p12')
 				i_c = 1;
 			else
@@ -339,7 +357,6 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	end
 
 	% Do actual despin
-	c_eval('load -mat mA.mat A?;',cl_id);
 	c_eval([var1_name '=c_despin(full_e,A?,coef);'],cl_id);
 	% DS-> DSI
 	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
@@ -350,22 +367,33 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	save_file = './mEdB.mat';
-
-	if ~(exist('./mEDSI.mat','file') & exist('./mBPP.mat','file'))
-		c_log('load','Please despin E (mEDSI) and load B PP (mBPP)')
-		data = [];
-		return
-	end
-
-	eval(av_ssub('load mBPP diBPP?; diB=diBPP?;',cl_id));
-
+	
 	if strcmp(quantity,'edb')
-		var_s = av_ssub('diE?p1234',cl_id);
+		var_s = av_ssub('diE?p1234',cl_id); e_opt = 'die';
 		varo_s = av_ssub('E?',cl_id);
+		var_b = 'diBr?'; b_opt ='br';
 	else
-		c_log('proc','using p34')
-		var_s = av_ssub('diEs?p34',cl_id);
+		e_opt = 'dies';
+		switch probe_p
+		case 12
+			c_log('proc','using p12')
+			var_s = av_ssub('diEs?p12',cl_id);
+		case 34
+			c_log('proc','using p34')
+			var_s = av_ssub('diEs?p34',cl_id);
+		otherwise
+			error(['Invalid probe pair ' num2str(probe_p)])
+		end
 		varo_s = av_ssub('Es?',cl_id);
+		var_b = 'diBrs?'; b_opt ='brs';
+	end
+	
+	% Load resampled B
+	[ok,diB] = c_load(var_b,cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
+		data = []; return
 	end
 
 	Dxy_s =  av_ssub('Ddsi?',cl_id);
@@ -376,12 +404,12 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 	eval(['load mEDSI ' var_s ' ' Dxy_s ' ' Da_s])
 	if exist(var_s,'var'), eval(['diE=' var_s ';'])
 	else
-		c_log('load','Please despin E (no diE in mEDSI)')
-		data = [];
-		return
+		c_log('load',...
+			av_ssub(['No ' var_s ' in mEDSI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+		data = []; return
 	end
 	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
-	else, c_log('calb','using Dx,Dy=0'), Dx = 0; Dy=0;
+	else, c_log('calb','using Dx=1,Dy=0'), Dx = 1; Dy=0;
 	end
 	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
 	else, disp('using Da=1'), Da = 1;
@@ -398,21 +426,20 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 		switch(flag_edb)
 		case 0 % Ez=0, do nothing
 			c_log('proc','using Ez=0')
-		case 1 % remove points
+		case 1 % Remove points
 			c_log('proc','setting points < ang_limit to NaN')
 			diE(ii,4) = diE(ii,4)*NaN;
-		case 2 % fill with fill_val
+		case 2 % Fill with fill_val
 			c_log('proc','setting points < ang_limit to 1e27')
 			diE(ii,4) = ones(size(diE(ii,4)))*fill_val;
 		end
 	end
 
-	% DSI->GSE
- 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
-	if ~exist(av_ssub('SAX?',cl_id),'var')
-		c_log('load','must fetch spin axis orientation (option ''sax'')')
+ 	% DSI->GSE
+	if c_load('SAX?',cl_id)
+		c_eval([varo_s '=c_gse2dsi(diE(:,1:4),SAX?,-1);' varo_s '(:,5)=diE(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id);
 	else
-		eval(av_ssub([varo_s '=c_gse2dsc(diE(:,1:4),SAX?,-1);' varo_s '(:,3:4)=-' varo_s '(:,3:4);' varo_s '(:,5)=diE(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id));
+		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
 
 	eval(['di' varo_s '=diE;']); clear diE
@@ -425,42 +452,91 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs')
 elseif strcmp(quantity,'vedb') | strcmp(quantity,'vedbs')
 	save_file = './mEdB.mat';
 
-	if ~(exist('./mEdB.mat','file') & exist('./mBPP.mat','file'))
-		c_log('load','Please calculate Ez (mEdB)')
-		data = [];
-		return
-	end
-
-	eval(av_ssub('load mBPP diBPP?;',cl_id));
-
 	if strcmp(quantity,'vedb')
-		var_s = av_ssub('diE?',cl_id);
-		varo_s = av_ssub('VExB?',cl_id);
+		var_s = 'diE?'; e_opt = 'edb';
+		varo_s = 'VExB?';
+		var_b = 'diBr?'; b_opt ='br';
 	else
-		var_s = av_ssub('diEs?',cl_id);
-		varo_s = av_ssub('VExBs?',cl_id);
+		var_s = 'diEs?'; e_opt = 'edbs';
+		varo_s = 'VExBs?';
+		var_b = 'diBrs?'; b_opt ='brs';
+	end
+	
+	% Load resampled B
+	[ok,diB] = c_load(var_b,cl_id);
+	if ~ok
+		c_log('load',...
+			av_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
+		data = []; return
+	end
+	
+	% Load data and calculate ExB
+	if c_load(var_s,cl_id)
+		c_eval(['di' varo_s '=av_e_vxb(' var_s '(:,1:4),diB,-1);di' varo_s '(:,5)=' var_s '(:,5);'],cl_id)
+	else
+		c_log('load',...
+			av_ssub(['No ' var_s ' in mEdB. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+		data = []; return
 	end
 
-	eval(['load mEdB ' var_s])
-	if exist(var_s,'var')
-		eval(av_ssub(['di' varo_s '=av_e_vxb(' var_s '(:,1:4),diBPP?,-1);'],cl_id))
-		eval(['di' varo_s '(:,5)=' var_s '(:,5);'])
-	else
-		c_log('load','Please calculate Ez (no diE in mEDSI)')
-		data = [];
-		return
-	end
-
-	save_list=[save_list 'di' varo_s ' '];
+	save_list=[save_list 'di' av_ssub(varo_s,cl_id) ' '];
 
 	% DSI->GSE
- 	if exist('./mEPH.mat','file'), eval(av_ssub('load mEPH SAX?',cl_id)), end
-	if ~exist(av_ssub('SAX?',cl_id),'var')
-		c_log('load','must fetch spin axis orientation (option ''sax'')')
+	if c_load('SAX?',cl_id)
+		eval(av_ssub([varo_s '=c_gse2dsi(di' varo_s '(:,1:4),SAX?,-1);' varo_s '(:,5)=di' varo_s '(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id));
 	else
-		eval(av_ssub([varo_s '=c_gse2dsc(di' varo_s '(:,1:4),SAX?,-1);' varo_s '(:,3:4)=-' varo_s '(:,3:4);' varo_s '(:,5)=di' varo_s '(:,5);save_list=[save_list ''' varo_s ' ''];'],cl_id));
+		c_log('load',av_ssub('No SAX? in mEPH. Use getData(CDB,...,cl_id,''sax'')',cl_id))
 	end
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% B resampled to E and Es
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
+	save_file = './mBr.mat';
+	
+	if strcmp(quantity,'br')
+		var_b = 'Br?';
+		[ok,E_tmp] = c_load('diE?p1234',cl_id);
+		if ~ok
+			c_log('load',sprintf('Canot load diE%dp1234. Please load it.',cl_id))
+			data = [];
+			return
+		end
+	else
+		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p34'};
+		[ok,E_tmp] = c_load(var_e{1},cl_id);
+		if ~ok
+			[ok,E_tmp] = c_load(var_e{2},cl_id);
+			if ~ok
+				c_log('load',sprintf('Canot load diEs%d(p12|p34). Please load it.',cl_id))
+				data = [];
+				return
+			end
+		end
+	end
+	
+	no_data = 1;
+	cs = {'di',''};
+	for c=1:2
+		% Load B
+		[ok,B_tmp] = c_load([cs{c} 'B?'],cl_id);
+		if ok, Binfo = 'FR'; no_data = 0;
+		else
+			[ok,B_tmp] = c_load([cs{c} 'BPP?'],cl_id);
+			if ok, Binfo = 'PP'; no_data = 0; c_log('proc','Using FGM PP data')
+			else
+				c_log('load','Canot load B. Please load B FGM or B PP.')
+				data = [];
+				return
+			end
+		end
+		Br = c_resamp(B_tmp,E_tmp);
+		c_eval([cs{c} var_b '=Br;' cs{c} var_b 'info=Binfo;save_list=[save_list ''' cs{c} var_b ' '' '' ' cs{c} var_b 'info '' ];'],cl_id)
+	end
+	if no_data
+		c_log('load','Canot load any B data. Please load B FGM or B PP.')
+		data = [];
+		return
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
