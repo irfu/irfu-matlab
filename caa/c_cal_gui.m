@@ -35,9 +35,9 @@ case 'init'
 	h0 = figure(23);
 	clf
 	set(h0,'Position', [25 40 990 640])
-	handles = guihandles(h0);
-	handles.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
-	set(handles.DATApanel,'Title','Data')
+	hnd = guihandles(h0);
+	hnd.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
+	set(hnd.DATApanel,'Title','Data')
 	
 	%load data
 	
@@ -47,32 +47,32 @@ case 'init'
 	c_AUXdata = {'P?','NCp?','NCh?'};
 	dd={c_Edata c_Ddata c_Vdata c_AUXdata};
 	%d_s = {'Edata', 'Ddata', 'Vdata', 'AUXdata'};
-	%for d=1:4, eval(['handles.' d_s{d} '= {};']),end
-	handles.Data = {};
-	handles.DataList = {};
-	handles.AUXList = {};
-	handles.BPPData = {};
-	handles.BData = {};
-	handles.EFWoffset = {};
-	handles.CISHoffset = {};
-	handles.CISCoffset = {};
-	handles.mode = 1; % 0 is for V, 1 is for E.
-	% handles.last
+	%for d=1:4, eval(['hnd.' d_s{d} '= {};']),end
+	hnd.Data = {};
+	hnd.DataList = {};
+	hnd.AUXList = {};
+	hnd.BPPData = {};
+	hnd.BData = {};
+	hnd.EFWoffset = {};
+	hnd.CISHoffset = {};
+	hnd.CISCoffset = {};
+	hnd.mode = 1; % 0 is for V, 1 is for E.
+	% hnd.last
 	% empty means replotting all, 
 	% otherwise contains a cell array of data in a plot queue 
-	handles.last = [];
-	handles.ang_limit = 15; % 15 degrees.
-	handles.tlim = [0 0];
-	handles.c_visible = [1 1 1 1]; % all sc are visible by default
+	hnd.last = [];
+	hnd.ang_limit = 15; % 15 degrees.
+	hnd.tlim = [0 0];
+	hnd.c_visible = [1 1 1 1]; % all sc are visible by default
 	no_active = 1;
 	ncdata = 0; % number of non-AUX variables
 	
 	for cl_id=1:4
 		s = av_ssub('C?',cl_id);
 		pxd = .1; pyd = .95-(cl_id-1)*.24;
-		hhh = uicontrol(handles.DATApanel,'Style','checkbox',...
+		hhh = uicontrol(hnd.DATApanel,'Style','checkbox',...
 			'Units','normalized','Position',[pxd pyd 0.4 .05],...
-			'String',s,'Value',handles.c_visible(cl_id),...
+			'String',s,'Value',hnd.c_visible(cl_id),...
 			'Callback',['c_cal_gui(''update_' s 'checkbox'')'],...
 			'Tag',[s 'checkbox']);
 		ndata = 0;
@@ -89,8 +89,8 @@ case 'init'
 				c_eval('BFGM=diBPP?;clear diBPP?',cl_id)
 			end
 		end
-		handles.BData = [handles.BData {BFGM}];
-		handles.BPPData = [handles.BPPData {BPP}];
+		hnd.BData = [hnd.BData {BFGM}];
+		hnd.BPPData = [hnd.BPPData {BPP}];
 		clear BFGM BPP
 		
 		% load offsets
@@ -129,10 +129,10 @@ case 'init'
 					
 					%tlim
 					c_eval(['tlxxx(1) = ' vs '(1,1); tlxxx(2) = ' vs '(end,1);'],cl_id)
-					if ~handles.tlim(1), handles.tlim(1) = tlxxx(1);
-					elseif handles.tlim(1) > tlxxx(1), handles.tlim(1) = tlxxx(1); 
+					if ~hnd.tlim(1), hnd.tlim(1) = tlxxx(1);
+					elseif hnd.tlim(1) > tlxxx(1), hnd.tlim(1) = tlxxx(1); 
 					end
-					if handles.tlim(2) < tlxxx(2), handles.tlim(2) = tlxxx(2); end
+					if hnd.tlim(2) < tlxxx(2), hnd.tlim(2) = tlxxx(2); end
 					clear tlxxx
 					
 					% correct delta offset for Es?p12 and Es?p34
@@ -168,7 +168,7 @@ case 'init'
 					else, data.type = 'A';
 					end
 					if d==1|d==3
-						hhd = uicontrol(handles.DATApanel,'Style','radiobutton',...
+						hhd = uicontrol(hnd.DATApanel,'Style','radiobutton',...
 							'Units','normalized',...
 							'Position',[pxd pyd-.02*ndata 0.1 .02],...
 							'String','',...
@@ -177,9 +177,9 @@ case 'init'
 						if strcmp(dsc.sig,'V')|strcmp(dsc.sig,'Vp')
 							set(hhd,'Enable','off')
 						end
-						eval(['handles.DATA' vs 'radiobutton=hhd;clear hhd'])
+						eval(['hnd.DATA' vs 'radiobutton=hhd;clear hhd'])
 					end
-					hhd = uicontrol(handles.DATApanel,'Style','checkbox',...
+					hhd = uicontrol(hnd.DATApanel,'Style','checkbox',...
 						'Units','normalized',...
 						'Position',[pxd+.1 pyd-.02*ndata 0.8 .02],...
 						'String',data.label,...
@@ -188,23 +188,23 @@ case 'init'
 					if data.visible, set(hhd,'Value',1), end
 					if no_active & data.visible & ...
 						strcmp(dsc.inst,'EFW') & strcmp(dsc.sig,'E')
-						eval(['set(handles.DATA' vs 'radiobutton,''Value'',1)'])
+						eval(['set(hnd.DATA' vs 'radiobutton,''Value'',1)'])
 						no_active = 0;
-						handles.ActiveVar = vs;
+						hnd.ActiveVar = vs;
 					end
-					eval(['handles.DATA' vs 'checkbox=hhd;clear hhd'])
+					eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
 					if d < 4
 						%E and V data
 						% resample B
-						if ~isempty(handles.BData{cl_id})
+						if ~isempty(hnd.BData{cl_id})
 							c_log('proc','resampling B GFM')
 							c_eval(...
-								['data.B = c_resamp(handles.BData{cl_id},' vs ');'],...
+								['data.B = c_resamp(hnd.BData{cl_id},' vs ');'],...
 								cl_id)
-						elseif ~isempty(handles.BPPData{cl_id})
+						elseif ~isempty(hnd.BPPData{cl_id})
 							c_log('proc','resampling B PP')
 							c_eval(...
-								['data.B = c_resamp(handles.BPPData{cl_id},' vs ');'],...
+								['data.B = c_resamp(hnd.BPPData{cl_id},' vs ');'],...
 								cl_id)
 						else, data.B = [];
 						end
@@ -214,7 +214,7 @@ case 'init'
 						%AUX data
 						data.aux = 1;
 					end
-					handles.Data = [handles.Data, {data}];
+					hnd.Data = [hnd.Data, {data}];
 					eval(['clear ' vs])
 					
 				else
@@ -224,9 +224,9 @@ case 'init'
 		end
 		if ndata==0
 			set(hhh,'Value',0,'Enable','off')
-			handles.c_visible(cl_id) = 0;
+			hnd.c_visible(cl_id) = 0;
 		end
-		eval(['handles.' s 'checkbox=hhh;clear hhh'])
+		eval(['hnd.' s 'checkbox=hhh;clear hhh'])
 		
 		% Load EFW offsets
 		old_pwd = pwd; cd(sp);
@@ -244,61 +244,61 @@ case 'init'
 			sprintf('loading amplitude correction from file Damp=%.2f',offset(2)))
 		end
 		cd(old_pwd)
-		handles.EFWoffset = [handles.EFWoffset {offset}];
+		hnd.EFWoffset = [hnd.EFWoffset {offset}];
 		
 		% load CIS offsets, must be only in Z.
 		offset = [0 0 0];
-		handles.CISHoffset = [handles.CISHoffset {offset}];
-		handles.CISHoffset = [handles.CISCoffset {offset}];
+		hnd.CISHoffset = [hnd.CISHoffset {offset}];
+		hnd.CISHoffset = [hnd.CISCoffset {offset}];
 		
-		handles.cal_updated = 1;
+		hnd.cal_updated = 1;
 	end
 	
 	% check if we have any data apart from AUX
 	if ~ncdata, error('No usefull data loaded'), end
 	
 	%create Data Axes
-	handles.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
-	handles.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
-	handles.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes');
-	handles.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes');
+	hnd.Xaxes = axes('Position',[pxa pya+(ha+dya)*3 wa ha],'Tag','Xaxes');
+	hnd.Yaxes = axes('Position',[pxa pya+(ha+dya)*2 wa ha],'Tag','Yaxes');
+	hnd.Zaxes = axes('Position',[pxa pya+(ha+dya)*1 wa ha],'Tag','Zaxes');
+	hnd.AUXaxes = axes('Position',[pxa pya wa ha],'Tag','AUXaxes');
 	
 	%create Legend Axes
-	handles.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
+	hnd.DLaxes = axes('Position',[.01 pya+(ha+dya) .12 ha+(ha+dya)*2 ],...
 		'Visible','off','XTick',[],'YTick',[]);
-	handles.ALaxes = axes('Position',[.01 pya .12 ha ],...
+	hnd.ALaxes = axes('Position',[.01 pya .12 ha ],...
 		'Visible','off','XTick',[],'YTick',[]);
 		
 	%create Calibrators
 	wp = .15;
-	handles.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
-	handles.DYpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*2 wp ha]);
-	handles.DZpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1 wp ha]);
-	%handles.AUXpanel = uipanel('Position',[pxa+wa+dya*2 pya wp ha]);
-	set(handles.DXpanel,'Title','dX')
-	set(handles.DYpanel,'Title','dY')
-	set(handles.DZpanel,'Title','dZ')
-	handles.DXslider = uicontrol(handles.DXpanel,'Style','slider',...
+	hnd.DXpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*3 wp ha]);
+	hnd.DYpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*2 wp ha]);
+	hnd.DZpanel = uipanel('Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1 wp ha]);
+	%hnd.AUXpanel = uipanel('Position',[pxa+wa+dya*2 pya wp ha]);
+	set(hnd.DXpanel,'Title','dX')
+	set(hnd.DYpanel,'Title','dY')
+	set(hnd.DZpanel,'Title','dZ')
+	hnd.DXslider = uicontrol(hnd.DXpanel,'Style','slider',...
 		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
 		'Max',5,'Min',-5,'Value',0,'Callback','c_cal_gui(''update_DXslider'')');
-	handles.DXedit = uicontrol(handles.DXpanel,'Style','edit',...
+	hnd.DXedit = uicontrol(hnd.DXpanel,'Style','edit',...
 		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
 		'String','0.0','BackgroundColor',active_color,...
 		'Callback','c_cal_gui(''update_DXedit'')','Tag','DXedit');
-	handles.DXcheckbox = uicontrol(handles.DXpanel,'Style','checkbox',...
+	hnd.DXcheckbox = uicontrol(hnd.DXpanel,'Style','checkbox',...
 		'Units','normalized','Position',[0.6 0.1 0.4 0.2],...
 		'String','Lock',...
 		'Callback','c_cal_gui(''update_DXcheckbox'')','Tag','DXcheckbox');
 
-	guidata(h0,handles);
+	guidata(h0,hnd);
 	c_cal_gui('replot_all')
 	av_figmenu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fix_plot_pos
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'fix_plot_pos'
-	handles = guidata(h0);
-	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
+	hnd = guidata(h0);
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
 	for ax=1:4
 		set(h(ax),'Position',[pxa pya+(ha+dya)*(4-ax) wa ha]);
 	end
@@ -307,14 +307,14 @@ case 'fix_plot_pos'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot'
 	%plot data
-	handles = guidata(h0);
-	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
-	if ~length(handles.Data), error('no data to calibrate'),end
-	if isempty(handles.last), disp('List empty, will do nothing'), return, end
+	hnd = guidata(h0);
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+	if ~length(hnd.Data), error('no data to calibrate'),end
+	if isempty(hnd.last), disp('List empty, will do nothing'), return, end
 
 	% Update selected records in DataLegList
-	% we set handles.last to name of the variable we need to add
-	d_ii = D_findByNameList(handles.Data,handles.last);
+	% we set hnd.last to name of the variable we need to add
+	d_ii = D_findByNameList(hnd.Data,hnd.last);
 	
 	% sanity check
 	if isempty(d_ii)
@@ -323,81 +323,81 @@ case 'replot'
 	
 	% Plotting 
 	for j=1:length(d_ii)
-		%disp(['replot: plotting ' handles.Data{d_ii(j)}.name])
-		if handles.Data{d_ii(j)}.aux
-			handles.AUXList = L_add(handles.AUXList,handles.Data{d_ii(j)}.name);
+		%disp(['replot: plotting ' hnd.Data{d_ii(j)}.name])
+		if hnd.Data{d_ii(j)}.aux
+			hnd.AUXList = L_add(hnd.AUXList,hnd.Data{d_ii(j)}.name);
 			
 			%Plotting
 			hold(h(4),'on')
-			handles.Data{d_ii(j)}.ploth = plot(handles.AUXaxes,...
-				handles.Data{d_ii(j)}.data(:,1),handles.Data{d_ii(j)}.data(:,2),...
-				handles.Data{d_ii(j)}.plot_style);
+			hnd.Data{d_ii(j)}.ploth = plot(hnd.AUXaxes,...
+				hnd.Data{d_ii(j)}.data(:,1),hnd.Data{d_ii(j)}.data(:,2),...
+				hnd.Data{d_ii(j)}.plot_style);
 			hold(h(4),'off')
 		else
 			% we update p_data only if calibrations were changed
-			if isempty(handles.Data{d_ii(j)}.p_data) | handles.cal_updated
+			if isempty(hnd.Data{d_ii(j)}.p_data) | hnd.cal_updated
 				%disp('replot: recalculating plot data')
-				handles.Data{d_ii(j)}.p_data =...
-					get_plot_data(handles.Data{d_ii(j)}, handles);
+				hnd.Data{d_ii(j)}.p_data =...
+					get_plot_data(hnd.Data{d_ii(j)}, hnd);
 			end
-			if ~isempty(handles.Data{d_ii(j)}.p_data)
-				handles.DataList = L_add(handles.DataList,handles.Data{d_ii(j)}.name);
+			if ~isempty(hnd.Data{d_ii(j)}.p_data)
+				hnd.DataList = L_add(hnd.DataList,hnd.Data{d_ii(j)}.name);
 				
 				%Plotting
 				for ax=1:3
 					hold(h(ax),'on')
-					handles.Data{d_ii(j)}.ploth(ax) = plot(h(ax),...
-						handles.Data{d_ii(j)}.p_data(:,1),...
-						handles.Data{d_ii(j)}.p_data(:,1+ax),...
-						handles.Data{d_ii(j)}.plot_style);
+					hnd.Data{d_ii(j)}.ploth(ax) = plot(h(ax),...
+						hnd.Data{d_ii(j)}.p_data(:,1),...
+						hnd.Data{d_ii(j)}.p_data(:,1+ax),...
+						hnd.Data{d_ii(j)}.plot_style);
 					hold(h(ax),'off')
 				end
 			end
 		end
 	end
-	handles.last = [];
-	handles.cal_updated = 0;
+	hnd.last = [];
+	hnd.cal_updated = 0;
 
-	av_zoom(handles.tlim,'x',h);
-	guidata(h0,handles);
+	av_zoom(hnd.tlim,'x',h);
+	guidata(h0,hnd);
 	c_cal_gui('update_legend')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % replot_all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot_all'
 	%plot data
-	handles = guidata(h0);
-	h = [handles.Xaxes handles.Yaxes handles.Zaxes handles.AUXaxes];
-	if ~length(handles.Data), error('no data to calibrate'),end
+	hnd = guidata(h0);
+	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
+	if ~length(hnd.Data), error('no data to calibrate'),end
 	
-	if isempty(handles.last)
+	if isempty(hnd.last)
 		% Clear everything
 		for ax=1:3, cla(h(ax)), end
-		handles.DataList = {};
-		handles.AUXList = {};
+		hnd.DataList = {};
+		hnd.AUXList = {};
 		
-		for j=1:length(handles.Data)
-			if handles.Data{j}.aux & handles.Data{j}.visible
-				handles.AUXList = L_add(handles.AUXList,handles.Data{j}.name);
+		for j=1:length(hnd.Data)
+			if hnd.Data{j}.aux & hnd.Data{j}.visible
+				hnd.AUXList = L_add(hnd.AUXList,hnd.Data{j}.name);
 				
 				% Plotting
 				hold(h(4),'on')
-				handles.Data{j}.ploth = plot(h(4),handles.Data{j}.data(:,1),...
-					handles.Data{j}.data(:,2),handles.Data{j}.plot_style);
+				hnd.Data{j}.ploth = plot(h(4),hnd.Data{j}.data(:,1),...
+					hnd.Data{j}.data(:,2),hnd.Data{j}.plot_style);
 				hold(h(4),'off')
 			else
-				handles.Data{j}.p_data = get_plot_data(handles.Data{j}, handles);
-				if isempty(handles.Data{j}.p_data), continue, end
+				hnd.Data{j}.p_data = get_plot_data(hnd.Data{j}, hnd);
+				if isempty(hnd.Data{j}.p_data), continue, end
 				
-				handles.DataList = L_add(handles.DataList,handles.Data{j}.name);
+				hnd.DataList = L_add(hnd.DataList,hnd.Data{j}.name);
 				
 				% Plotting
 				for ax=1:3
 					hold(h(ax),'on')
-					handles.Data{j}.ploth(ax) = plot(h(ax),...
-						handles.Data{j}.p_data(:,1),...
-						handles.Data{j}.p_data(:,1+ax),...
-						handles.Data{j}.plot_style);
+					hnd.Data{j}.ploth(ax) = plot(h(ax),...
+						hnd.Data{j}.p_data(:,1),...
+						hnd.Data{j}.p_data(:,1+ax),...
+						hnd.Data{j}.plot_style);
 					hold(h(ax),'off')
 				end
 			end
@@ -405,7 +405,7 @@ case 'replot_all'
 		
 		% Axes labels
 		labs = ['x' 'y' 'z'];
-		if handles.mode, u_s = 'E'; u_u = 'mV/m';
+		if hnd.mode, u_s = 'E'; u_u = 'mV/m';
 		else, u_s = 'V'; u_u = 'km/s';
 		end
 		for ax=1:3
@@ -415,212 +415,212 @@ case 'replot_all'
 		ylabel(h(4),'AUX')
 		axes(h(4)); add_timeaxis; grid on
 		
-		av_zoom(handles.tlim,'x',h);
-		guidata(h0,handles);
+		av_zoom(hnd.tlim,'x',h);
+		guidata(h0,hnd);
 		c_cal_gui('update_legend')
 	else
-		% replotting not ALL (handles.last is set)
+		% replotting not ALL (hnd.last is set)
 		c_cal_gui('replot')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_legend
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_legend'
-	handles = guidata(h0);
-	if isempty(handles.DataList)
-		set(handles.DLaxes,'Visible','off')
-		legend(handles.DLaxes,'off')
+	hnd = guidata(h0);
+	if isempty(hnd.DataList)
+		set(hnd.DLaxes,'Visible','off')
+		legend(hnd.DLaxes,'off')
 	else
-		cla(handles.DLaxes)
-		set(handles.DLaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
+		cla(hnd.DLaxes)
+		set(hnd.DLaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
 		
 		%make fake plots
-		for j=1:length(handles.DataList)
-			hold(handles.DLaxes,'on')
-			plot(handles.DLaxes,1,1,...
-				handles.Data{D_findByName(handles.Data,handles.DataList{j})}.plot_style,...
+		for j=1:length(hnd.DataList)
+			hold(hnd.DLaxes,'on')
+			plot(hnd.DLaxes,1,1,...
+				hnd.Data{D_findByName(hnd.Data,hnd.DataList{j})}.plot_style,...
 				'Visible','off')
-			hold(handles.DLaxes,'off')
+			hold(hnd.DLaxes,'off')
 		end
 		
 		%make legend
-		ii = D_findByNameList(handles.Data,handles.DataList);
-		l_s = ['''' handles.Data{ii(1)}.label ''''];
+		ii = D_findByNameList(hnd.Data,hnd.DataList);
+		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
-				l_s = [l_s ',''' handles.Data{ii(j)}.label ''''];
+				l_s = [l_s ',''' hnd.Data{ii(j)}.label ''''];
 			end
 		end
-		eval(['hxxx=legend(handles.DLaxes,' l_s ');'])
+		eval(['hxxx=legend(hnd.DLaxes,' l_s ');'])
 		set(hxxx,'FontSize',7);
-		legend(handles.DLaxes,'boxoff')
-		set(handles.DLaxes,'Visible','off')
+		legend(hnd.DLaxes,'boxoff')
+		set(hnd.DLaxes,'Visible','off')
 	end
-	if isempty(handles.AUXList)
-		set(handles.ALaxes,'Visible','off')
-		legend(handles.ALaxes,'off')
+	if isempty(hnd.AUXList)
+		set(hnd.ALaxes,'Visible','off')
+		legend(hnd.ALaxes,'off')
 	else
-		cla(handles.ALaxes)
-		set(handles.ALaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
+		cla(hnd.ALaxes)
+		set(hnd.ALaxes,'Visible','on','XTick',[],'YTick',[],'Box','on')
 		
 		%make fake plots
-		for j=1:length(handles.AUXList)
-			hold(handles.ALaxes,'on')
-			plot(handles.ALaxes,1,1,...
-				handles.Data{D_findByName(handles.Data,handles.AUXList{j})}.plot_style,...
+		for j=1:length(hnd.AUXList)
+			hold(hnd.ALaxes,'on')
+			plot(hnd.ALaxes,1,1,...
+				hnd.Data{D_findByName(hnd.Data,hnd.AUXList{j})}.plot_style,...
 				'Visible','off')
-			hold(handles.ALaxes,'off')
+			hold(hnd.ALaxes,'off')
 		end
 		
 		%make legend
-		ii = D_findByNameList(handles.Data,handles.AUXList);
-		l_s = ['''' handles.Data{ii(1)}.label ''''];
+		ii = D_findByNameList(hnd.Data,hnd.AUXList);
+		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
-				l_s = [l_s ',''' handles.Data{ii(j)}.label ''''];
+				l_s = [l_s ',''' hnd.Data{ii(j)}.label ''''];
 			end
 		end
-		eval(['hxxx=legend(handles.ALaxes,' l_s ');'])
+		eval(['hxxx=legend(hnd.ALaxes,' l_s ');'])
 		set(hxxx,'FontSize',7);
-		legend(handles.ALaxes,'boxoff')
-		set(handles.ALaxes,'Visible','off')
+		legend(hnd.ALaxes,'boxoff')
+		set(hnd.ALaxes,'Visible','off')
 	end
-	guidata(h0,handles);
+	guidata(h0,hnd);
 	c_cal_gui('fix_plot_pos')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DXslider
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXslider'
-	handles = guidata(h0);
-	set(handles.DXedit,'String',...
-    num2str(get(handles.DXslider,'Value')));
+	hnd = guidata(h0);
+	set(hnd.DXedit,'String',...
+    num2str(get(hnd.DXslider,'Value')));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DXedit
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXedit'
-	handles = guidata(h0);
-	val = str2double(get(handles.DXedit,'String'));
+	hnd = guidata(h0);
+	val = str2double(get(hnd.DXedit,'String'));
 	% Determine whether val is a number between 0 and 1
 	if isnumeric(val) & length(val)==1 & ...
-		val >= get(handles.DXslider,'Min') & ...
-		val <= get(handles.DXslider,'Max')
-		set(handles.DXslider,'Value',val);
+		val >= get(hnd.DXslider,'Min') & ...
+		val <= get(hnd.DXslider,'Max')
+		set(hnd.DXslider,'Value',val);
 	else
 		% Increment the error count, and display it
-		set(handles.DXedit,'String','You have entered an invalid entry ');
+		set(hnd.DXedit,'String','You have entered an invalid entry ');
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DXcheckbox
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DXcheckbox'
-	handles = guidata(h0);
-	if get(handles.DXcheckbox,'Value')==1
+	hnd = guidata(h0);
+	if get(hnd.DXcheckbox,'Value')==1
 		%Lock
-		set(handles.DXedit,'Enable','off','BackgroundColor',inactive_color)
-		set(handles.DXslider,'Enable','off')
+		set(hnd.DXedit,'Enable','off','BackgroundColor',inactive_color)
+		set(hnd.DXslider,'Enable','off')
 	else
 		%Unclock
-		set(handles.DXedit,'Enable','on','BackgroundColor',active_color)
-		set(handles.DXslider,'Enable','on')
-		set(handles.DXslider,'Value',str2double(get(handles.DXedit,'String')))
+		set(hnd.DXedit,'Enable','on','BackgroundColor',active_color)
+		set(hnd.DXslider,'Enable','on')
+		set(hnd.DXslider,'Value',str2double(get(hnd.DXedit,'String')))
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_Ccheckbox
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_Ccheckbox'
-	handles = guidata(h0);
-	ii = D_findByCLID(handles.Data,cl_id);
+	hnd = guidata(h0);
+	ii = D_findByCLID(hnd.Data,cl_id);
 	if isempty(ii), return, end
 	
-	if get(eval(['handles.C' num2str(cl_id) 'checkbox']),'Value')==1
+	if get(eval(['hnd.C' num2str(cl_id) 'checkbox']),'Value')==1
 		%Show
 		for j=1:length(ii)
-			handles.Data{ii(j)}.visible = 1;
-			set(eval(['handles.DATA' handles.Data{ii(j)}.name 'checkbox']),...
+			hnd.Data{ii(j)}.visible = 1;
+			set(eval(['hnd.DATA' hnd.Data{ii(j)}.name 'checkbox']),...
 				'Value', 1);
 		end
-		handles.last = D_listNames(handles.Data,ii);
-		guidata(h0,handles);
+		hnd.last = D_listNames(hnd.Data,ii);
+		guidata(h0,hnd);
 		c_cal_gui('replot');
 	else
 		%Hide
 		kk = [];
 		for j=1:length(ii)
-			if handles.Data{ii(j)}.visible == 0, kk = [kk j]; end
+			if hnd.Data{ii(j)}.visible == 0, kk = [kk j]; end
 		end
 		ii(kk) =[];
 		if isempty(ii), return, end
 		
 		for j=1:length(ii)
-			%disp(['hide ' handles.Data{ii(j)}.name])
-			delete(handles.Data{ii(j)}.ploth)
-			handles.Data{ii(j)}.visible = 0;
-			set(eval(['handles.DATA' handles.Data{ii(j)}.name 'checkbox']),...
+			%disp(['hide ' hnd.Data{ii(j)}.name])
+			delete(hnd.Data{ii(j)}.ploth)
+			hnd.Data{ii(j)}.visible = 0;
+			set(eval(['hnd.DATA' hnd.Data{ii(j)}.name 'checkbox']),...
 				'Value', 0);
 		end
 		
 		% remove from the plotting lists
 		ii = cell(1,2);
-		ii{1} = sort(D_findByNameList(handles.Data,handles.DataList));
-		ii{2} = sort(D_findByNameList(handles.Data,handles.AUXList));
+		ii{1} = sort(D_findByNameList(hnd.Data,hnd.DataList));
+		ii{2} = sort(D_findByNameList(hnd.Data,hnd.AUXList));
 		for k=1:2
 			for j=length(ii{k}):-1:1
-				if handles.Data{ii{k}(j)}.cl_id == cl_id
-					if k==1, handles.DataList(j) = [];
-					else, handles.AUXList(j) = [];
+				if hnd.Data{ii{k}(j)}.cl_id == cl_id
+					if k==1, hnd.DataList(j) = [];
+					else, hnd.AUXList(j) = [];
 					end
 				end
 			end
 		end
 		
-		guidata(h0,handles);
+		guidata(h0,hnd);
 		c_cal_gui('update_legend')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DATAcheckbox
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DATAcheckbox'
-	handles = guidata(h0);
-	if get(eval(['handles.DATA' vs 'checkbox']),'Value')==1
+	hnd = guidata(h0);
+	if get(eval(['hnd.DATA' vs 'checkbox']),'Value')==1
 		% plot the varible
-		j = D_findByName(handles.Data,vs);
-		%disp(['plotting ' handles.Data{j}.name])
-		handles.Data{j}.visible = 1;
-		handles.last = {vs};
-		guidata(h0,handles);
+		j = D_findByName(hnd.Data,vs);
+		%disp(['plotting ' hnd.Data{j}.name])
+		hnd.Data{j}.visible = 1;
+		hnd.last = {vs};
+		guidata(h0,hnd);
 		c_cal_gui('replot')
 		
 		% check if we need to show C# checkBox
-		if get(eval(['handles.C' num2str(handles.Data{j}.cl_id) 'checkbox']),'Value')==0
-			set(eval(['handles.C' num2str(handles.Data{j}.cl_id) 'checkbox']),...
+		if get(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),'Value')==0
+			set(eval(['hnd.C' num2str(hnd.Data{j}.cl_id) 'checkbox']),...
 				'Value',1)
 		end
 	else
 		% hide the varible
-		j = D_findByName(handles.Data,vs);
-		handles.Data{j}.visible = 0;
-		delete(handles.Data{j}.ploth)
+		j = D_findByName(hnd.Data,vs);
+		hnd.Data{j}.visible = 0;
+		delete(hnd.Data{j}.ploth)
 
 		% check if we need to hide C# checkBox
-		cl_id = handles.Data{j}.cl_id;
-		ii = D_findByCLID(handles.Data,cl_id);
+		cl_id = hnd.Data{j}.cl_id;
+		ii = D_findByCLID(hnd.Data,cl_id);
 		if isempty(ii), return, end
 		hide_ok = 1;
 		for j=1:length(ii)
-			if handles.Data{ii(j)}.visible == 1, hide_ok = 0; break, end
+			if hnd.Data{ii(j)}.visible == 1, hide_ok = 0; break, end
 		end
 		if hide_ok
-			set(eval(['handles.C' num2str(cl_id) 'checkbox']),...
+			set(eval(['hnd.C' num2str(cl_id) 'checkbox']),...
 				'Value',0)
 		end
 		
 		% remove from the plotting lists	
-		j = L_find(handles.DataList,vs);
-		if ~isempty(j), handles.DataList = L_rm_ii(handles.DataList,j);
-		else, handles.AUXList = L_rm(handles.AUXList,vs);
+		j = L_find(hnd.DataList,vs);
+		if ~isempty(j), hnd.DataList = L_rm_ii(hnd.DataList,j);
+		else, hnd.AUXList = L_rm(hnd.AUXList,vs);
 		end
 		
-		guidata(h0,handles);
+		guidata(h0,hnd);
 		c_cal_gui('update_legend')
 	end
 otherwise 
@@ -673,7 +673,7 @@ out = [out colrs(cl_id)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function get_plot_data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function p_data = get_plot_data(data, handles)
+function p_data = get_plot_data(data, hnd)
 % correct offsets, compute Ez, compute ExB (VxB).
 
 p_data = [];
@@ -685,18 +685,18 @@ if data.visible
 	if data.editable 
 		switch data.type
 		case 'E'
-			ofs = handles.EFWoffset{data.cl_id};
+			ofs = hnd.EFWoffset{data.cl_id};
 			p_data = corrDSIOffsets(p_data,...
 				real(ofs(1)),imag(ofs(1)),ofs(2));
 		case 'V'
 			if strcmp(data.sen,'COD')
-				offset = handles.CISCoffset{data.cl_id};
+				offset = hnd.CISCoffset{data.cl_id};
 			elseif strcmp(data.sen,'HIA')
-				offset = handles.CISHoffset{data.cl_id};
+				offset = hnd.CISHoffset{data.cl_id};
 			else, offset = [0 0 0];
 			end
 			p_data = corr_v_velocity(p_data,...
-				handles.EFWoffset{data.cl_id});
+				hnd.EFWoffset{data.cl_id});
 		otherwise
 			c_log('proc','Unknown data type.')
 		end
@@ -710,17 +710,17 @@ if data.visible
 				c_log('proc','B is empty. No Ez')
 			else
 				[p_data,angle] = av_ed(p_data,...
-					data.B,handles.ang_limit);
-				ii = find(abs(angle) < handles.ang_limit);
+					data.B,hnd.ang_limit);
+				ii = find(abs(angle) < hnd.ang_limit);
 				if length(ii) > 1
 					p_data(ii,4) = p_data(ii,4)*NaN; 
 				end
 			end
 		end
 		% E->V if in V mode
-		if ~handles.mode
+		if ~hnd.mode
 			if ~isempty(data.B)
-				p_data = av_e_vxb(p_data,handles.Data{j}.B,-1);
+				p_data = av_e_vxb(p_data,hnd.Data{j}.B,-1);
 			else
 				data.visible = 0; 
 				p_data = [];
@@ -729,7 +729,7 @@ if data.visible
 		end
 	case 'V'
 		% V->E if in E mode
-		if handles.mode
+		if hnd.mode
 			if ~isempty(data.B)
 				p_data = av_t_appl(...
 					av_cross(p_data,data.B),'*(-1e-3)');
