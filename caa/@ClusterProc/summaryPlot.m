@@ -1,32 +1,33 @@
 function out=summaryPlot(cp,cl_id,cs,st,dt)
 % summaryPlot make EFW summary plot
+%
 % h = summaryPlot(cp,cl_id,[cs],[st,dt])
+%
 % Input:
-% cp - ClusterProc object
-% cl_id - SC#
-% cs is a coordinate system : 'dsi' [default] of 'gse'
-% st, dt - start time and interval length [optional]
+%   cp - ClusterProc object
+%   cl_id - SC#
+%   cs is a coordinate system : 'dsi' [default] of 'gse'
+%   st, dt - start time and interval length [optional]
 % 
 % Output:
-% h - axes handles // can be omitted
+%   h - axes handles // can be omitted
 %
 % Example:
-% summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'gse')
+%   summaryPlot(ClusterProc('/home/yuri/caa-data/20020304'),1,'gse')
 %
 % $Id$
 
 % Copyright 2004 Yuri Khotyaintsev
 error(nargchk(2,5,nargin))
 
-if nargin<3, cs = 'dsi'; %DSI
-end
+if nargin<3, cs = 'dsi'; end
 
 if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
 	c_log('fcal','unknown CS. defaulting to DSI')
 	cs= 'dsi';
 end
 
-% load data
+% Define variables we want to plot
 if strcmp(cs,'dsi') 
 	q_list = {'P?','diBrs?','diE?','diEs?','diVExBs?'};
 	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
@@ -34,47 +35,45 @@ else
 	q_list = {'P?','Brs?','E?','Es?','VExBs?'};
 	l_list = {'SC pot [-V]','B GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
 end
-f_list = {'mP','mBr','mEdB','mEdB','mEdB'};
 
 old_pwd = pwd;
-cd(cp.sp) %enter the storage directory
+cd(cp.sp)
 
 n_plots = 0;
 data = {};
 labels = {};
+
+% Load data
 for k=1:length(q_list)
-	if exist(['./' f_list{k} '.mat'],'file')
-		eval(av_ssub(['load ' f_list{k} ' ' q_list{k}],cl_id))
-		if exist(av_ssub(q_list{k},cl_id))
+	if c_load(q_list{k},cl_id)
+		n_plots = n_plots + 1;
+		if k==2 % B-field
+			c_eval(['data{n_plots}=av_abs(' q_list{k} '(:,1:4));'],cl_id)
+			labels{n_plots} = l_list{k};
+		elseif k==3 % E-field
+			c_eval(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id) 
+			labels{n_plots} = l_list{k};
 			n_plots = n_plots + 1;
-			if k==2 % B-field
-				c_eval(['data{n_plots}=av_abs(' q_list{k} '(:,1:4));'],cl_id)
-				labels{n_plots} = l_list{k};
-			elseif k==3 % E-field
-				eval(av_ssub(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id)) 
-				labels{n_plots} = l_list{k};
-				n_plots = n_plots + 1;
-				eval(av_ssub(['data{n_plots}=' q_list{k} '(:,[1 5]);'],cl_id)) 
-				labels{n_plots} = '\theta (B,spin) [deg]';
-			else
-				eval(av_ssub(['d_t=' q_list{k} ';'],cl_id))
-				labels{n_plots} = l_list{k};
-				if min(size(d_t))> 4
-					data{n_plots} = d_t(:,1:4);
-				else	
-					data{n_plots} = d_t;
-				end
-				clear d_t
+			c_eval(['data{n_plots}=' q_list{k} '(:,[1 5]);'],cl_id) 
+			labels{n_plots} = '\theta (B,spin) [deg]';
+		else
+			c_eval(['d_t=' q_list{k} ';'],cl_id)
+			labels{n_plots} = l_list{k};
+			if min(size(d_t))> 4
+				data{n_plots} = d_t(:,1:4);
+			else	
+				data{n_plots} = d_t;
 			end
+			clear d_t
 		end
 	end
 end
 
 cd(old_pwd)
 
-if n_plots==0, return, end %nothing to plot
+if n_plots==0, return, end % Nothing to plot
 
-% define time limits
+% Define time limits
 if nargin<4,
 	t_st = 1e32;
 	t_end = 0;
@@ -87,7 +86,7 @@ else
 	t_end = st + dt;
 end
 
-%Plotting
+% Plotting
 clf
 orient tall
 
