@@ -1,6 +1,6 @@
 function [z]=av_dot(x,y,flag)
-%AV_DOT calculate dot product between vectors
-% [z]=AV_DOT(x,y,flag) calculate dot product of vectors x and y
+%AV_DOT calculate dot product between vectors in 3D space
+% [z]=AV_DOT(x,y,flag) calculate dot product of vectors x and y having 3 components
 %
 % x,y,z  are column vectors  [time],x,y,z,[r]
 %
@@ -11,18 +11,16 @@ function [z]=av_dot(x,y,flag)
 % if flag==1 then y returns only values of dot product without time axis
 %
 
-global AV_DEBUG ; if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end
-
 z=x;
 
-if size(x,2) < 3, disp('ERROR: not enough components for x vector. av_dot()');
+if size(x,2) < 3, error('not enough components for x vector. av_dot()');
 elseif size(x,2) == 3, xx=x;
 else, xx=x(:,2:4);
 end
 
 if size(y,2) > 3, yy=y(:,2:4);
 elseif size(y,2) == 3,  yy=y;
-else,  disp('eRROR: not enough components for y vector. av_dot()');
+else,  error('not enough components for y vector. av_dot()');
 end
 
 if size(x,1) ~= size(y,1)
@@ -31,7 +29,7 @@ if size(x,1) ~= size(y,1)
  elseif size(y,1) == 1
   qq=xx;qq(:,1)=yy(1,1);qq(:,2)=yy(1,2);qq(:,3)=yy(1,3);yy=qq;
  else
-  if debug ==1,disp('interpolating y to x, assuming first column time, av_dot()');end
+  c_log('proc','interpolating y to x, assuming that first column is time');end
   qq=av_interp(y,x);yy=qq(:,[2 3 4]);
  end
 end
@@ -40,10 +38,10 @@ end
 zout=[xx(:,1).*yy(:,1)+xx(:,2).*yy(:,2)+xx(:,3).*yy(:,3)];
 
 z(:,end)=[];z(:,end)=[];z(:,end)=zout;
-%if size(x,2) > 3 , z(:,[2])=zout; z(:,[3 4])=[];
-%else z=zout;
-%end
+if size(z,2)>2,  % if input is vector [t x y z r ...], result should be [t dotproduct]
+ z(:,2:end-1)=[];
+end
 
 % if flag=1 only abs(y) should be returned
-if (nargin == 3) & (flag == 1),z=z(:,end);  end
+if (flag == 1) & size(z,2)>1,z=z(:,end);  end
 
