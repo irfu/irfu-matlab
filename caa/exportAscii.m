@@ -75,7 +75,7 @@ elseif regexp(vs,'diE[1-4]')==1
 	frame = 'DSI,  Ez not measured, Ez calculated from E.B=0';
 	var_labels = {'Ex','Ey','Ez','(B,spin)'};
   var_units =  {'mV/m','mV/m','mV/m','deg'};
-  com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
+  com = 'Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
@@ -89,7 +89,7 @@ elseif regexp(vs,'E[1-4]')==1
 	frame = 'GSE,  Ez not measured, calculated from E.B=0';
 	var_labels = {'Ex','Ey','Ez','(B,spin)'};
   var_units =  {'mV/m','mV/m','mV/m','deg'};
-  com = '%% Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
+  com = 'Ez is not reliable when magnetic field B is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
@@ -103,7 +103,7 @@ elseif regexp(vs,'NVps[1-4]')==1
 	frame = '';
 	var_labels = {'NVps','Vps'};
   var_units =  {'cc','V'};
-  com = '%% probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density\n';
+  com = 'probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
