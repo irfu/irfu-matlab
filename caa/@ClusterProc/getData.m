@@ -151,7 +151,7 @@ if strcmp(quantity,'dies')
 elseif strcmp(quantity,'die')
 	save_file = './mEDSI.mat';
 
-	if ~(exist('./mA.mat','file') & exist('./mA.mat','file') & exist('./mEDSI.mat','file')) % ?????????????
+	if ~(exist('./mA.mat','file') & exist('./mEDSI.mat','file'))
 		warning('Please compute spin averages (mER) and load phase (mA)')
 		data = [];
 		return
