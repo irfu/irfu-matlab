@@ -14,7 +14,7 @@ if       (nargin<=2 & isstr(x1)), % either action as parameter or string variabl
     variable_str=x1;
     action='new_var';
   else
-    action=x1;disp(['action=' action]);
+    action=x1;
   end
 elseif   (nargin ==4), 
   disp('Using second column');
@@ -26,6 +26,7 @@ elseif   (nargin == 5),
 else      help c_4_v_int
 end
 
+disp(['action=' action]);
 switch action,
 case {'c1','c2','c3','c4','c5','c6'}
   var_col=str2num(action(2:end));
@@ -52,7 +53,27 @@ case 'new_var'
   if isempty(ud), 
     c_4_v_int('initialize');
   else
-    c_4_v_int('update_var_col'); 
+    if ishandle(ud.h(1)),
+      for j_col=2:size(var1,2)
+        if j_col<=length(ud.hcol),
+          if ishandle(ud.hcol(j_col)),
+            set(ud.hcol(j_col),'enable','on')
+          else
+            eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_int(''''c' num2str(j_col) ''''')'');'];
+            eval(eval_str);
+          end
+        else
+          eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_int(''''c' num2str(j_col) ''''')'');'];
+          eval(eval_str);
+        end
+        for j_col=(size(var1,2)+1):length(ud.hcol)
+          set(ud.hcol(j_col),'enable','off')
+        end
+      end
+      c_4_v_int('update_var_col'); 
+    else
+      c_4_v_int('initialize');
+    end
   end
 case 'initialize'
   dgh=figure;clf;av_figmenu;
@@ -106,7 +127,7 @@ case 'initialize'
   uimenu(ud.columns,'label','1 (time)');
   for j_col=2:size(var1,2)
     %    hcol(j_col)=uimenu(ud.columns,'label',num2str(j_col));
-    eval_str=['hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_int(''''c' num2str(j_col) ''''')'');'],
+    eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_int(''''c' num2str(j_col) ''''')'');'];
     eval(eval_str);
   end
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
