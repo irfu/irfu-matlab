@@ -39,7 +39,7 @@ if nargin == 5,  eval(av_ssub('die?=av_t_lim(e,tint);dib?=av_t_lim(b,tint);',sc_
 for ic=sc_list, % which satellite
 c_eval('vn=c_gse2dsc(vngse,[tint(1) ic],2);b=dib?;e=die?;',ic);
 bpol=av_car2pol(b);b_angle=[bpol(:,1) bpol(:,3)];
-be=av_interp(b,e);gb=c_gse2dsc(b,ic,2);
+be=av_interp(b,e);
 % make assumption that E.B=0
 [eb,deg]=av_ed(e,be,5);
 % estimate E in boundary system Ev=E+(v x B)
@@ -51,6 +51,7 @@ ev_lmn=av_c_mp(ev,be,vn,flag);
 eb_lmn=av_c_mp(eb,be,vn,flag);
 ebv_lmn=av_c_mp(ebv,be,vn,flag);
 evxb_lmn=av_c_mp(evxb,be,vn,flag);
+b_lmn=av_c_mp(b,be,vn,flag);
 enml=ebv_lmn;
 
 figure(ic);clf
@@ -64,11 +65,11 @@ av_pl_info(['c\_e\_mp() ' datestr(now)]); % add information to the plot
 av_zoom([-35 -2],'y');
 
 h(ic,ipl)=av_subplot(npl,1,-ipl);ipl=ipl+1;
-av_tplot(gb);grid on;hold on;
-ylabel('B_{GSE} [nT]');
+av_tplot(b_lmn);grid on;hold on;
+ylabel('B [nT] LMN');
 
 h(ic,ipl)=av_subplot(npl,1,-ipl);ipl=ipl+1;
-av_tplot(eb);grid on;av_zoom([-15 15],'y'); ylabel('E_{DS} [mV/m]');
+av_tplot(eb);grid on;av_zoom([-15 15],'y'); ylabel('E [mV/m] DSI');
 
 h(ic,ipl)=av_subplot(npl,1,-ipl);ipl=ipl+1;
 av_tplot(evxb_lmn);av_zoom([-10 10],'y');grid on; ylabel('Vn x B [mV/m]');
@@ -93,10 +94,10 @@ av_zoom([-30 30],'y',h(sc_list,2)); % B field
 av_zoom([-10 10],'y',h(sc_list,3:6)); % measured E field
 for ic=sc_list,
 add_timeaxis(h(ic,:));
-legend(h(ic,2),'Bx','By','Bz')
+legend(h(ic,2),'B_L','B_M','B_N')
 legend(h(ic,3),'Ex','Ey')
-legend(h(ic,4),'E_l','E_m','E_n');
-legend(h(ic,5),'E_l','E_m','E_n');
-legend(h(ic,6),'E_l','E_m','E_n');
+legend(h(ic,4),'E_L','E_M','E_N');
+legend(h(ic,5),'E_L','E_M','E_N');
+legend(h(ic,6),'E_L','E_M','E_N');
 end
 
