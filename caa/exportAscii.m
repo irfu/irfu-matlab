@@ -465,7 +465,7 @@ elseif strcmp(vs,'dump')
 	fclose(fid);
 	return
 else
-	c_log('fcal','Wariable name not recognized, will do nothing.')
+	c_log('fcal','Variable name not recognized, will do nothing.')
 	return
 end
 
