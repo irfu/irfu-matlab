@@ -109,9 +109,7 @@ end
 addPlotInfo
 
 for k=n_plots:-1:1
-	%axes(h{k})
-	axes(h(k))
-	if min(size(data{k}))>2, legend('X','Y','Z'), end
+	if min(size(data{k}))>2, legend(h(k),'X','Y','Z','Location','NorthEastOutside'), end
 end
 
 if nargout>0, out=h;,end
