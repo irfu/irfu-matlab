@@ -146,10 +146,13 @@ for i = 1:i_end
   %step 2
   if run_steps(2) == 1
     disp('==============  Finding angles for MP crossings ====================');
+    angles=[];ampl=[];
     for j=1:size(passing_MP,1)
       [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
       c_eval('Binterp?=av_interp(B?,B1);',2:4);
-      [angles, ampl] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
+      [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
+      angles=[angles;angles_tmp];
+      ampl=[ampl;ampl_tmp];
     end
   end
   
@@ -157,7 +160,7 @@ for i = 1:i_end
   if run_steps(3) == 1
     disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-    sort_events=1;
+    sort_events=1;keyboard;
     while sort_events
       dt_events=diff(time_of_events(:,1)); % find distance between events
       ind=find(dt_events<period/2); % find which events are closer than period/2 

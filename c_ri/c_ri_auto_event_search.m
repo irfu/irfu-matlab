@@ -143,8 +143,8 @@ for start_time_intervalls=1:nr_intervalls
  %if passing_MP ~= 0
  s_t = deblank(R_datestring(start_time));
  e_t = deblank(R_datestring(end_time));
- file_name = sprintf('MP_%s_to_%s',s_t,e_t)
- path_and_name = sprintf('%s%s',output_path, file_name)
+ file_name = sprintf('MP_%s_to_%s',s_t,e_t);
+ path_and_name = sprintf('%s%s',output_path, file_name);
  save(path_and_name, 'passing_MP', 'dist_t', 'dist2MP','p_solarwind')
  %end
 
