@@ -16,7 +16,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	sax : SAX{cl_id} ->mEPH			// spin axis vector [GSE] 
 %
 %	options - one of the following:
-%	not yet implemented
+%	nosave : do no save on disk
 %
 % $Revision$  $Date$
 %
@@ -30,7 +30,17 @@ if nargin > 5, property_argin = varargin; end
 
 out_data = '';
 
-flag_save = 1; % change this!
+% default options
+flag_save = 1;
+
+for i=1:length(varargin)
+	switch(varargin{i})
+	case 'nosave'
+		flag_save = 0;
+	otherwise
+		disp(['Option ''' varargin{i} '''not recognized'])
+	end
+end
 
 start_date_str = strrep(datestr(fromepoch(start_time),29),'-','');
 

@@ -13,7 +13,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %		also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %
 %	options - one of the following:
-%	not yet implemented
+%	nosave : do no save on disk
 %
 % $Revision$  $Date$
 %
@@ -25,7 +25,18 @@ function data = getData(cp,cl_id,quantity,varargin)
 error(nargchk(3,15,nargin))
 if nargin > 3, property_argin = varargin; end
 
-flag_save = 1; % change this!
+% default options
+flag_save = 1;
+
+for i=1:length(varargin)
+    switch(varargin{i})
+    case 'nosave'
+        flag_save = 0;
+    otherwise
+        disp(['Option ''' varargin{i} '''not recognized'])
+    end
+end
+
 
 save_file = '';
 save_list = '';
