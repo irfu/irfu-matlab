@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <title>CAA-Matlab description</title>
+    <meta content="">
+    <style></style>
+  </head>
+  <body>
+  <h1>CAA-Matlab description</h1>
+  <small>$Revision$  $Date$</small>
+  <hr>
+  <h2>Contents</h2>
+  <ul>
+  <li> <a href="#general">General concept</a> </li>
+  <li> <a href="#req">Requirements</a> 
+  <ul>
+    <LI><a href="#req_da">Data</a></LI>
+    <li><a href="#req_is">ISDAT</a></li>
+    <li><a href="#req_ma">Matlab</a></LI>
+  </ul>
+  </li>
+  <li> <a href="#conv">Conventions</a> 
+  <ul>
+    <LI><a href="#conv_var">Variables</a></LI>
+    <li><a href="#conv_t">Time</a></li>
+  </ul>
+  </li>
+  <li> <a href="#do">Doing things</a> 
+  <ul>
+    <li> <a href="#do_es">Easy start</a> </li>
+    <li> <a href="#do_re">Reading raw data</a> </li>
+    <li> <a href="#do_bp">Basic plotting</a> </li>
+    <li> <a href="#do_bc">Basic calibration</a> </li>
+    <li> <a href="#do_sf">Spin fitting and despin</a> </li>
+    <li> <a href="#do_ac">Advanced calibration</a> </li>
+  </ul>
+  </li>
+  </ul>
+  
+  <h2><a name="general">General concept</a></h2>
+  
+  <h2><a name="req">Requirements</a></h2>
+  <h3><a name="req_da">Data </a></h3>
+  <h3><a name="req_is">ISDAT</a></h3>
+  <h3><a name="req_ma">Matlab</a></h3>
+  
+  <h2><a name="conv">Conventions</a></h2>
+  <h3><a name="conv_var">Variables</a></h3>
+  <h3><a name="conv_t">Time</a></h3>
+  
+  <h2><a name="do">Doing things</a></h2>
+  <h3><a name="do_es">Easy start</a></h3>
+  
+<p>
+We want to look at data from all 4 Cluster sc for 2001-10-01 during period
+13:10 - 15:50 UT.
+</p>
+
+<p>
+First we create a directory to store data<br>
+<tt>mkdir /home/yuri/caa-data/20011001_1310</tt><br>
+</p>
+<p>
+Define start epoch and interval length
+</p>
+<pre>
+>> st=toepoch([2001 10 01 13 10 00])
+
+st =
+
+   1.0019e+09
+   
+>> dt=160*60;
+</pre>
+<p>
+Next we get all possible data (EFW + FGM,CIS,EDI PP) on disk.
+</p>
+
+<pre>
+</pre>
+
+<p>Calibrate sunward offset and amplitude factors</p>
+
+<pre>
+</pre>
+
+<p>Plot summary information</p>
+
+<pre>
+</pre>  
+  <h3><a name="do_re">Reading raw data</a></h3>
+  <h3><a name="do_bp">Basic plotting</a></h3>
+  <h3><a name="do_bc">Basic calibration</a></h3>
+  <h3><a name="do_sf">Spin fitting and despin</a></h3>
+  <h3><a name="do_ac">Advanced calibration</a></h3>
+  
+  </body>
+</html>
