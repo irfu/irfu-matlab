@@ -11,7 +11,7 @@ function h = c_ri_eventfile_into_fig(time_interval,path_events,panels)
 
 global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
 
-n_panels=size(panels,1);  if debug, disp(['Figure with ' num2str(n_panels) ' panels.']);end
+n_panels=size(panels,2);  if debug, disp(['Figure with ' num2str(n_panels) ' panels.']);end
 i_fig=1;
 plot_command=struct(...
   'Bx','c_pl_tx(B1,B2,B3,B4,2);ylabel(''B_X [nT] GSE'');', ...
