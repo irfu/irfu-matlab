@@ -160,7 +160,7 @@ for i = 1:i_end
   if run_steps(3) == 1
     disp('==============  Finding events ====================');
     time_of_events = class_angle_as_event(angles,ampl, min_angle, min_ampl,-1) ; % -1 is mode (no idea which)
-    sort_events=1;keyboard;
+    sort_events=1;
     while sort_events
       dt_events=diff(time_of_events(:,1)); % find distance between events
       ind=find(dt_events<period/2); % find which events are closer than period/2 
