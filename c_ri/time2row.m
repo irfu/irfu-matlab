@@ -25,24 +25,24 @@ function row = time2row(time,M,start_r)
 
 %--------------------- the beginning --------------------------
 if nargin ==2
-start_r = 1;
+  start_r = 1;
 end
 
 [r,c] = size(M);
 
 if start_r > r
-start_r = r;
+  start_r = r;
 end
 
 for i = start_r:r
-
-if M(i,1) >= time
-row = i;
-break
-end
-
-if i == r
-row = i,
-end
-
+  
+  if M(i,1) >= time
+    row = i;
+    break
+  end
+  
+  if i == r
+    row = i,
+  end
+  
 end
