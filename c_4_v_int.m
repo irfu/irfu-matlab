@@ -17,7 +17,7 @@ if       (nargin<=2 & isstr(x1)), % either action as parameter or string variabl
     action=x1;
   end
 elseif   (nargin ==4), 
-  disp('Using second column');
+  c_log('fcal','Using second column');
   var1=x1;var2=x2;var3=x3;var4=x4;var_col=2;
   action='initialize';
 elseif   (nargin == 5), 
@@ -26,7 +26,7 @@ elseif   (nargin == 5),
 else      help c_4_v_int
 end
 
-disp(['action=' action]);
+c_log('fcal',['action=' action]);
 switch action,
 case {'c1','c2','c3','c4','c5','c6'}
   var_col=str2num(action(2:end));
