@@ -53,7 +53,7 @@ db = 'disco:10|disco:20';
 dp = '/data/cluster';
 cdb = '';
 vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','vce','bfgm'};
-varsProc = {'dies','die','brs','br'};
+varsProc = {'dies','die','brs','br','edi'};
 
 if have_options
 	if isnumeric(args{1}), 
