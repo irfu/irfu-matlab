@@ -14,7 +14,10 @@ function [y] = c_gse2dsc( x, spin_axis, direction, db )
 %        if more than 3 columns then columns
 %                   inp(:,2) is X, inp(:,3) is Y ...
 %        spin_axis = vector in GSE or ISDAT epoch.
-%        direction = -1 to convert from DSC into GSE.
+%        direction = 1 to convert from GSE into DSC (default).
+%                    -1 to convert from DSC into GSE.
+%                    2 convert from GSE to DSI
+%                    -2 convert from GSE to DSI
 %        sc        = spacecraft number.
 %        db        = isdat database pointer, that is db = Mat_DbOpen(DATABASE)
 %
@@ -22,7 +25,7 @@ function [y] = c_gse2dsc( x, spin_axis, direction, db )
 %     choosen interval. Only values at start time point is used.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-debug_flag=0;
+
 flag_read_isdat=0;
 
 if nargin <  2, disp('Not enough arguments'); help c_gse2dsc; return; end
@@ -124,17 +127,33 @@ a=1/sqrt(Ry^2+Rz^2);
 M=[[a*(Ry^2+Rz^2) -a*Rx*Ry -a*Rx*Rz];[0 a*Rz	-a*Ry];[Rx	Ry	Rz]];
 Minv=inv(M);
 
-if direction == 1
+if direction == 1   % GSE -> DSC
  out=M*inp';
  out=out';
  if length(out(:,1))==1
-  if debug_flag == 1,sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3));end
+  c_log('proc',sprintf('x,y,z = %g, %g, %g [DSC]',out(1), out(2),out(3)));
  end
-elseif direction==-1
+elseif direction == 2 % GSE -> DSI
+ out=M*inp';
+ out=out';
+ out(:,2)=-out(:,2);
+ out(:,3)=-out(:,3);
+ if length(out(:,1))==1
+  c_log('proc',sprintf('x,y,z = %g, %g, %g [DSI]',out(1), out(2),out(3)));
+ end
+elseif direction==-1  % DSC -> GSE
  out=Minv*inp';
  out=out';
  if length(out(:,1))==1
-  if debug_flag == 1, sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3));end
+  c_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
+ end
+elseif direction==-2   % DSI -> GSE
+ inp(:,2)=-inp(:,2);
+ inp(:,3)=-inp(:,3);
+ out=Minv*inp';
+ out=out';
+ if length(out(:,1))==1
+  c_log('proc',sprintf('x,y,z = %g, %g, %g [GSE]',out(1), out(2),out(3)));
  end
 else
  disp('No coordinate transformation done!')
