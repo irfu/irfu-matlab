@@ -1,9 +1,15 @@
-function c_ctl(varargin)
+function out=c_ctl(varargin)
 %C_CTL Cluster control
 %
+% c_ctl('init',[dir])
+% c_ctl('list',[sc_list])
+% c_ctl('load_ns_ops',[dir])
+% c_ctl('save',[dir])
+% c_ctl('set',[sc_list],ctl_name,ctl_val)
+% 
 % $Id$
 
-default_mcctl_path = '';
+default_mcctl_path = '.';
 
 if nargin<1, c_ctl_usage, return, end
 args = varargin;
@@ -27,12 +33,13 @@ if isstr(args{1})
 			end
 		else
 			clear global c_ct; global c_ct
-			if exist([d '/mcctl.mat'])
+			if exist([default_mcctl_path '/mcctl.mat'])
 				eval(['load ' default_mcctl_path '/mcctl.mat'])
 			else
 				% init with defaults
 				def_ct.ns_ops = [];
 				def_ct.ang_lim = 15;
+				def_ct.rm_whip = 1;
 				c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
@@ -40,6 +47,24 @@ if isstr(args{1})
 				clear def_ct
 			end
 		end
+		
+	elseif strcmp(args{1},'get')
+		if nargin<3, error('get: must be c_ctl(''get'',cl_id,''ct_name''))'), end
+		cl_id = args{2};
+		c = args{3};
+		
+		global c_ct
+		if isempty(c_ct), disp('CTL is not initialized.'), return, end
+		
+		if isfield(c_ct{cl_id},c)
+			if nargout>0
+				eval(['out=c_ct{cl_id}.' c ';'])
+			else
+				disp(['C' num2str(cl_id) '->' c ':'])
+				eval(['disp(c_ct{cl_id}.' c ');'])
+			end
+		end
+
 	elseif strcmp(args{1},'load_ns_ops')
 		global c_ct
 		if isempty(c_ct), c_ctl('init'), end
@@ -61,7 +86,22 @@ if isstr(args{1})
 				disp(lasterr)
 			end
 		end
-		
+	
+	elseif strcmp(args{1},'list')
+		if nargin>=2, sc_list = args{2};
+		else, sc_list=1:4;
+		end
+		global c_ct
+		if isempty(c_ct), disp('CTL is not initialized.'), return, end
+		for cl_id=sc_list
+			c = fieldnames(c_ct{cl_id});
+			if length(c)>0
+				for j=1:length(c)
+					disp(['C' num2str(cl_id) '->' c{j} ':'])
+					eval(['disp(c_ct{cl_id}.' c{j} ');'])
+				end
+			end
+		end
 	elseif strcmp(args{1},'save')
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
@@ -78,6 +118,24 @@ if isstr(args{1})
 		else
 			disp('Saving mcctl.mat')
 			save -MAT mcctl.mat c_ct
+		end
+	elseif strcmp(args{1},'set')
+		if nargin<3, error('set: must be c_ctl(''set'',''ct_name'',value))'), end
+		if isnumeric(args{2})
+			sc_list = args{2};
+			c = args{3};
+			c_val = args{4};
+		else
+			sc_list = 1:4;
+			c = args{2};
+			c_val = args{3};
+		end
+		global c_ct
+		if isempty(c_ct), disp('CTL is not initialized.'), return, end
+		for cl_id=sc_list
+			eval(['c_ct{cl_id}.' c '=c_val;'])
+			disp(['C' num2str(cl_id) '->' c ':'])
+			eval(['disp(c_ct{cl_id}.' c ');'])
 		end
 	else
 		error('Invalid argument')
