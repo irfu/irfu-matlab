@@ -13,8 +13,8 @@ sc_list=1:4;
 
 if t(2) > 1e8, flag='v_from_t'; else, flag='dt_from_v';v=t;t=v(1);end
 
-if exist('mR.mat'),
-    load mR R1 R2 R3 R4;
+if exist('./mR.mat','file'),
+    load mR R1 R2 R3 R4 V1 V2 V3 V4;
 else,
     disp('loading position from isdat');
     DATABASE='disco:10';db = Mat_DbOpen(DATABASE);
@@ -22,17 +22,10 @@ else,
      [t,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
      eval(av_ssub('R?=[double(t) double(data)''];',ic));clear t data;
     end
-end
-
-if exist('mV.mat'),
-      load mV V1 V2 V3 V4;
-  else,
-      disp('loading velocity from isdat');
-      DATABASE='disco:10';db = Mat_DbOpen(DATABASE);
-      for ic=sc_list, disp(['...V' num2str(ic)]);
+	for ic=sc_list, disp(['...V' num2str(ic)]);
        [t,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
        eval(av_ssub('V?=[double(t) double(data)''];',ic));clear t data;
-      end
+    end
 end
 
 if strcmp(flag,'v_from_t'),
