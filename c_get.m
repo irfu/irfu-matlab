@@ -16,7 +16,7 @@ mmm =  ...
 	'2  sc list [1:4]                      ';
 	'a  load phase A1..A4     -> mA        ';
 	'e  load wE1...wE4        -> mE        ';
-  'e1  load wE1p12...wE4p34 -> mE        ';
+	'e1  load wE1p12...wE4p34 -> mE        ';
 	'eph load ephemeris,r,v,dr,dv          ';
 	'b  load BPP1...BPP4 -> mBPP           ';
 	'bf load Hres FGM B1...B4 -> mB        ';
@@ -27,6 +27,7 @@ mmm =  ...
 	'vc CIS VCp?,VCh?,dVCp?,dVCh?-> mCIS   ';
 	'vce CIS E VCE1...dVCE1..-> mCIS       ';
 	'edi EDI E EDI1...dEDI1..-> mEDI       ';
+	'wbdwf WBD E/B wfWBD..-> mWBD          ';
 	'x  free format load                   ';
 	'---------------------------           ';
 	'db despinned dBPP1... -> mBPP         ';
@@ -34,7 +35,7 @@ mmm =  ...
 	'dibf despinned diB1... -> mB          ';
 	'dbs despinned dBS1..dBS4 -> mBS       ';
 	'dve despinned dvE1..dvE4 -> mE        ';
-        'dve1 spin fits dvE1p12..dvE4p34 -> mE ';
+	'dve1 spin fits dvE1p12..dvE4p34 -> mE ';
 	'de (dve+vsxBPP) dE1..dE4 -> mE        ';
 	'deo dEo1..dEo4 Eo.B=0                 ';
 	'ea,esa (s-fit)  E ->ascii E?          ';
@@ -485,6 +486,23 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        save_list=[save_list av_ssub(' EDI? dEDI? VEDI? ',ic)];
       end
     end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WBD
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ elseif strcmp(q,'wbdwf')
+	save_file='./mWBD.mat';
+	for ic=sc_list
+		data = getData(ClusterDB,tst,dt,ic,'wbdwf','nosave');
+		if ~isempty(data)
+			c_eval('wfWBD?=data{2};',ic);
+			disp(av_ssub(['wfWBD? -> ' save_file],ic));
+			save_list=[save_list av_ssub(' wfWBD? ',ic)];
+		end
+		clear data
+	end
+	disp('!!! please check whether the data is E or B !!!')
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P

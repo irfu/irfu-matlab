@@ -21,6 +21,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	vce: VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
+%	wbdwf: wfWBD{cl_id} -> mWBD	// WBD waveforms E/B 
 %	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec 
 %
 %	options - one of the following:
@@ -278,6 +279,17 @@ elseif strcmp(quantity,'whip')
 	end
 	clear t_s t_e fdm_r ii
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% wbdwf - WBD waveforms.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'wbdwf')
+	save_file = './mWBD.mat';
+	try
+		wf = readWBD(start_time, dt, cl_id);
+		c_eval('wfWBD?=wf;',cl_id); 
+		c_eval('save_list=[save_list '' wfWBD? ''];',cl_id);
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
