@@ -11,6 +11,7 @@ sp = '.';
 
 inactive_color = [0.831373 0.815686 0.784314]; %gray
 active_color = [1 1 1]; %white
+pxa = .07; pya = .1; wa = .55; ha = .215; dya = .01; % positions
 
 if nargin, action = varargin{1};
 else, action = 'init';
@@ -31,7 +32,6 @@ case 'init'
 	clf
 	set(h0,'Position', [25 40 990 640])
 	handles = guihandles(h0);
-	pxa = .07; pya = .1; wa = .55; ha = .2; dya = .03;
 	handles.DATApanel = uipanel('Position',[.85 .01 .14 .98]);
 	set(handles.DATApanel,'Title','Data')
 	
@@ -380,10 +380,14 @@ case 'replot_all'
 		end
 		handles.last = 0;
 	end
-	
-	av_zoom(handles.tlim,'x',h);
+
+	av_zoom(handles.tlim + [0 (handles.tlim(2)-handles.tlim(1))/4],'x',h);
 	guidata(h0,handles);
 	c_cal_gui('update_legend')
+	%fix positions
+	for ax=1:4
+		set(h(ax),'Position',[pxa pya+(ha+dya)*(4-ax) wa ha]);
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_legend
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,8 +404,9 @@ case 'update_legend'
 			end
 		end
 		for ax=1:3
-			eval(['hxxx=legend(h(ax),' l_s ',''Location'',''NorthEastOutside'');'])
+			eval(['hxxx=legend(h(ax),' l_s ');'])
 			set(hxxx,'FontSize',7);
+			legend(h(ax),'boxoff')
 		end
 	end
 	if isempty(handles.AUXLegList)
@@ -413,8 +418,9 @@ case 'update_legend'
 				l_s = [l_s ',''' handles.AUXLegList{j} ''''];
 			end
 		end
-		eval(['hxxx=legend(h(4),' l_s ',''Location'',''NorthEastOutside'');'])
+		eval(['hxxx=legend(h(4),' l_s ');'])
 		set(hxxx,'FontSize',7);
+		legend(h(4),'boxoff')
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DXslider
