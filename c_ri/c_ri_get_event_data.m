@@ -8,7 +8,7 @@ function flag=c_ri_get_event_data(time_interval,path_Events,path_Out, data_list,
 %   data_list   - structure with values of which data to load, e.g. {'EFW_E','EFW_P'}
 %   dt_interval - download +- dt_interval seconds around event (default 5s)
 %Output:
-%   flag = matrix with one row per event and one column for every data kind (1/0 for sucessfull download)
+%   %NOT IMPLEMENTED flag = matrix with one row per event and one column for every data kind (1/0 for sucessfull download)
 %
 %Descrition of the function:
 %   Loads the specified data for each event in the given time interval
@@ -135,7 +135,7 @@ for i_event=1:size(events,1),
       deg=20; % the minimum elevation of B with respect to the spin plane when E.B=0 is used for spin axis E
       for ic=sc_list,
         eval(av_ssub('wE?=c_isdat_get_EFW(time_interval,[],[],sc_mode,?,db,''wE'');',ic));
-        eval(av_ssub('dE?=c_despin(wE?,?,''efw'')',ic)),
+        eval(av_ssub('dE?=c_despin(wE?,?,''efw'');',ic)),
         eval(av_ssub('deg=20;[dEo?,d?]=av_ed(dE?,dB?,deg);Eo?=c_gse2dsc(dEo?,[dEo?(1,1) ?],-1);indzero=find(abs(d?)<deg);Eo?(indzero,4)=0;',ic));
         eval(av_ssub('ExB?=av_e_vxb(Eo?,B?,-1);',ic));
         if exist(file_name,'file'), flag_append='-append';else flag_append='';end
@@ -144,5 +144,7 @@ for i_event=1:size(events,1),
     end
   end
 end
-
 Mat_DbClose(db);
+
+flag=0; % output not yet implemented
+
