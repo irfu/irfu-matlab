@@ -41,19 +41,11 @@ switch (quantity)
 case 'b'
 	r.inst  = 'FGM';
 	r.var	= ['B_xyz_gse__C' cl_id_s '_PP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_PP';
-	r.mem	= ['C' cl_id_s];
-	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
-	r.sen	= r.var;
 case 'edi'
 	r.inst  = 'EDI';
 	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_PP';
-	r.mem	= ['C' cl_id_s];
-	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
-	r.sen	= r.var;
 case 'ncis_p'
 	r.inst  = 'CIS';
 	r.var	= ['N_p__C' cl_id_s '_PP_' r.inst];
@@ -65,36 +57,20 @@ case 'ncis_h'
 case 'vcis_p'
 	r.inst  = 'CIS';
 	r.var	= ['V_p_xyz_gse__C' cl_id_s '_PP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_PP';
-	r.mem	= ['C' cl_id_s];
-	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
-	r.sen	= r.var;
 case 'vcis_h'
 	r.inst  = 'CIS';
 	r.var	= ['V_HIA_xyz_gse__C' cl_id_s '_PP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_PP';
-	r.mem	= ['C' cl_id_s];
-	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
-	r.sen	= r.var;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CSDS SP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'slat'
 	r.inst  = 'AUX';
 	r.var	= ['sc_at' cl_id_s '_lat__CL_SP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_SP';
-	r.mem	= 'CL';
-	r.file	= ['SP/AUX/CL_SP_' r.inst '_'];
-	r.sen	= r.var;
 case 'slong'
 	r.inst  = 'AUX';
 	r.var	= ['sc_at' cl_id_s '_long__CL_SP_' r.inst];
-	% no changes here
 	r.pr	= 'CSDS_SP';
-	r.mem	= 'CL';
-	r.file	= ['SP/AUX/CL_SP_' r.inst '_'];
-	r.sen	= r.var;
 otherwise
 	error('caa:noSuchQuantity','Quantity ''%s'' is not recongized',quantity)
 end
