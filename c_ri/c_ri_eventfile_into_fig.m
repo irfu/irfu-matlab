@@ -1,10 +1,12 @@
-function h = c_ri_eventfile_into_fig(time_interval,path_events,panels)
+function h = c_ri_eventfile_into_fig(time_interval,path_events,panels,flag)
+%function h = c_ri_eventfile_into_fig(time_interval,path_events,panels,flag)
 %function h = c_ri_eventfile_into_fig(time_interval,path_events,panels)
 %
 %Input:
 % time_interval - isdat_epoch [start_time end_time]
 % path_events - path where event files are located, ex './'
 % panels - structure with list of panels to plot, ex. {'Bx','By','B','B1','Ex','Vps'}
+% flag - 'print' print the result to file
 %
 %Output:
 %  h - handle to figures
@@ -55,4 +57,15 @@ for i_file=1:size(file_list,1),
   end
 end
 
-
+if nargin == 4,
+ switch flag,
+ case 'print',
+   for j=1:i_fig-1,
+     figure(i_fig);
+     panel_str='';
+     for jj=1:n_panels, panel_str=[panel_str '_' panels{i_panel}];end
+     print_file_name=[file_list(i_file).name '_' panel_str '.ps'];
+     orient tall;print -dpsc2 print_file_name;
+   end
+ end
+end
