@@ -37,7 +37,7 @@ if nargin==4, dt_interval=5;end
 default_cases={'EPH'};
 data_list=[default_cases data_list ]; % ephemeris should be first
 
-dir_list=dir([p_E 'E_' '*.mat'])
+dir_list=dir([path_Events 'E_' '*.mat'])
 
 start_time=time_interval(1);
 end_time=time_interval(2);
