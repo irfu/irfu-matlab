@@ -88,7 +88,6 @@ fprintf(fid,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
 fprintf(fid,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
 fprintf(fid,'include = "efw_glob.ceh"\n');
 pmeta(fid,'FILE_NAME',[file_name ext_s])
-pmeta(fid,'FILE_TYPE_VERSION','CEF-2.0')
 pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
 pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
 pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
