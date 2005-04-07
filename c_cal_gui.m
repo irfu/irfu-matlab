@@ -474,6 +474,14 @@ case 'init'
 		'Position',[pxa+wa+dya*2+.015 pya+(ha+dya)*1-.01-hbut 0.45*wp hbut],...
 		'String','Reset',...
 		'Callback','c_cal_gui(''press_RESETbutton'')','Tag','RESETbutton');
+	hnd.FWDbutton = uicontrol(h0,'Style','pushbutton',...
+		'Units','normalized','Position',[pxa+wa/2+.015 .01 .45*wp hbut*.7],...
+		'String','>>',...
+		'Callback','c_cal_gui(''press_FWDbutton'')','Tag','FWDbutton');
+	hnd.RWDbutton = uicontrol(h0,'Style','pushbutton',...
+		'Units','normalized','Position',[pxa+wa/2-.45*wp-.015 .01 .45*wp hbut*.7],...
+		'String','<<',...
+		'Callback','c_cal_gui(''press_RWDbutton'')','Tag','RWDbutton');
 		
 	% Disable buttons 
 	set(hnd.SaveALLbutton,'Enable','off');
@@ -1310,6 +1318,32 @@ case 'click_axes'
 	end
 	
 	guidata(h0,hnd);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% press_RWDbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'press_RWDbutton'
+	hnd = guidata(h0);
+	
+	dt_tmp = hnd.tlim(end,2) - hnd.tlim(end,1);
+	hnd.ts_marker.t = hnd.tlim(end,1) - dt_tmp;
+	hnd.te_marker.t = hnd.tlim(end,2) - dt_tmp;
+	clear dt_tmp
+	
+	guidata(h0,hnd);
+	c_cal_gui('zoom_in')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% press_FWDbutton
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'press_FWDbutton'
+	hnd = guidata(h0);
+	
+	dt_tmp = hnd.tlim(end,2) - hnd.tlim(end,1);
+	hnd.ts_marker.t = hnd.tlim(end,1) + dt_tmp;
+	hnd.te_marker.t = hnd.tlim(end,2) + dt_tmp;
+	clear dt_tmp
+	
+	guidata(h0,hnd);
+	c_cal_gui('zoom_in')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % zoom_in
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
