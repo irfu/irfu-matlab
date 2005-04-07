@@ -365,7 +365,9 @@ case 'init'
 		
 		% Load CIS offsets, must be only in Z.
 		warning off
-		c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
+		if exist('mCIS.mat','file')
+			c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
+		end
 		warning on
 		
 		if exist(irf_ssub('DHdsi?',cl_id),'var')
@@ -1642,7 +1644,7 @@ case 'cut_int'
 					
 				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
 				dsc = c_desc(v_s);
-				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append; clear v_s']);
+				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append']);
 				if isempty(tint_tmp), eval(['tint_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
 				else
 					eval(['tint1_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
@@ -1651,6 +1653,7 @@ case 'cut_int'
 					clear tint1_tmp
 				end
 				n_ok = n_ok + 1;
+				eval(['clear ' v_s]);
 			end
 		end
 		clear ii v_s
