@@ -1621,8 +1621,12 @@ case 'cut_int'
 	if strcmp(btn,'No'), return, end
 
 	if strcmp(hnd.Data{j}.type,'E')
-		if strcmp(hnd.Data{j}.sen,'1234'), var_list = {'wE?p12','wE?p32','wE?p34'};
-		else, var_list = {['wE?p' hnd.Data{j}.sen]};
+		if strcmp(hnd.Data{j}.sen,'1234')
+			var_list = {'wE?p12','wE?p32','wE?p34',...
+				'P10Hz?p1','P10Hz?p2','P10Hz?p3','P10Hz?p4'};
+		else
+			var_list = {['wE?p' hnd.Data{j}.sen],...
+				['P10Hz?p' hnd.Data{j}.sen(1)],['P10Hz?p' hnd.Data{j}.sen(2)]};
 		end
 		
 		% Remove the desired interval from the raw data
@@ -1636,7 +1640,8 @@ case 'cut_int'
 					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1))])
 					
 				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
-				eval([v_s '(ii,:)=[];save mER ' v_s ' -append']);
+				dsc = c_desc(v_s);
+				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append']);
 				if isempty(tint_tmp), eval(['tint_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
 				else
 					eval(['tint1_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
@@ -1652,10 +1657,10 @@ case 'cut_int'
 		
 		% Reprocess the data using the updated raw data
 		c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
-				'vars','e','nosrc');
+				'vars',{'e','p'},'nosrc');
 				
 		n_ok = 0;
-		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234'};
+		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234','P?'};
 		for vi = 1:length(var_list)
 			v_s = irf_ssub(var_list{vi},hnd.Data{j}.cl_id);
 			jj = D_findByName(hnd.Data,v_s);

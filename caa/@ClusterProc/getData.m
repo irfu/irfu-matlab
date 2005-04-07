@@ -152,13 +152,60 @@ if strcmp(quantity,'dies')
 			irf_ssub('No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
-
-	p12 = 12;
-	pl=[12,32,34];
+	
+	if exist(irf_ssub('wE?p32',cl_id),'var'), p12 = 32;
+	else, p12 = 12;
+	end
+	
+	% If we have different timelines for p1(3)2 and p34 we try to make 
+	% a common timeline, so thet the resulting spinfits will also have 
+	% the common timeline
+	if exist(irf_ssub(['wE?p' num2str(p12)],cl_id),'var') & exist(irf_ssub('wE?p34',cl_id),'var')
+		if eval(irf_ssub('length(wE?p!(:,1))==length(wE?p34(:,1))',cl_id,p12))
+			not_same = 0;
+			if eval(irf_ssub('length(find((wE?p!(:,1)-wE?p34(:,1))==0))',cl_id,p12))
+				not_same = 1;
+			end
+		else, not_same = 1;
+		end
+		if not_same
+			c_eval('ts = wE?p34(1,1); te = wE?p34(end,1);',cl_id);
+			c_eval(['ts1=wE?p' num2str(p12) '(1,1); te1=wE?p' num2str(p12) '(end,1);'],cl_id);
+			if ts>ts1, ts = ts1; end
+			if te<te1, te = te1; end
+			dt = double(te - ts); clear te ts1 te1
+			
+			% Guess the sampling frequency
+			c_eval('fsamp=c_efw_fsample(wE?p34(:,1));',cl_id);
+			if fsamp
+				irf_log('proc','Using new time line')
+				t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
+				t_new = t_new';
+				
+				d_new = zeros(length(t_new),2);
+				d_new(:,1) = ts + t_new;
+				d_new(:,2) = NaN;
+				
+				c_eval('ii = round((wE?p34(:,1)-ts)*fsamp+1);',cl_id)
+				if ii(end)>length(t_new), error('problemo with new time line'), end
+				c_eval('d_new(ii,2) = wE?p34(:,2); wE?p34 = d_new;',cl_id)
+				
+				d_new(:,2) = NaN;
+				
+				c_eval(['ii = round((wE?p' num2str(p12) '(:,1)-ts)*fsamp+1);'],cl_id)
+				if ii(end)>length(t_new), error('problemo with new time line'), end
+				c_eval(['d_new(ii,2) = wE?p' num2str(p12) '(:,2); wE?p' num2str(p12) ' = d_new;'],cl_id)
+				
+				clear t_new ts dt d_new ii
+			end
+		end
+		clear not_same
+	end
+	
+	pl=[p12,34];
 	for k=1:length(pl)
 		ps = num2str(pl(k));
 		if exist(irf_ssub(['wE?p' ps],cl_id),'var')
-			if pl(k)==32, p12 = 32; end
 			c_eval(['tt=wE?p' ps ';'],cl_id)
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
