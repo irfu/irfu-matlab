@@ -154,7 +154,6 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.size = [1];
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
-	v.label_1 = {};
 	v.field_name = {['Electric field component measured between the probes '...
 		v.sen(1) ' and ' v.sen(2)]};
 	v.ent = {'Electric_Field'};
@@ -190,7 +189,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.size = [2 1];
 	v.name = {'E_Vec_xy_ISR2', 'E_sigma'};
 	v.labels = {'E','St dev'};
-	v.label_1 = {'"x", "y"',''};
+	v.label_1 = {'"Ex", "Ey"',''};
     v.col_labels = {{'x','y','z'},''};
     v.rep_1 = {'"x", "y"',''};
 	v.field_name = {'Electric field (spin resolution)','Standard deviation'};
@@ -234,7 +233,7 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.size = [2];
 	v.name = {'E_Vec_xy_ISR2'};
 	v.labels = {'E'};
-	v.label_1 = {'"x", "y"'};
+	v.label_1 = {'"Ex", "Ey"'};
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.field_name = {'Electric field'};
@@ -345,7 +344,8 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.size = [3 1];
 	v.name = {'E', 'Theta'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"',''};
+	v.label_1 = {'"Ex", "Ey", "Ez"',''};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
 	v.lev = 1;
@@ -374,7 +374,8 @@ elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.size = [3 1];
 	v.name = {'E', 'Theta'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"',''};
+	v.label_1 = {'"Ex", "Ey", "Ez"',''};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
 	v.lev = 1;
@@ -400,7 +401,8 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.size = [3 1];
 	v.name = {'V', 'Theta'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"',''};
+	v.label_1 = {'"Vx", "Vy", "Vz"',''};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Convection velocity','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
 	v.file = 'mEdB';
@@ -422,9 +424,8 @@ elseif regexp(vs,'^NVps[1-4]$')==1
 	v.units =  {'cc','V'};
 	v.si_conv = {'1.0e-6>1/m^6',''};
 	v.size = [1 1];
-	v.name = {['V' v.sen], 'Theta'};
-	v.labels = {'V', 'Theta'};
-	v.label_1 = {'"x", "y", "z"',''};
+	v.name = {'Plasma density', 'Spacecraft potential'};
+	v.labels = {'Nscp', '-Sc pot'};
 	v.field_name = {'Plasma density','Spacecraft potential'};
 	v.com = 'density NVps is derived from Vps based on empirical fit. It is NOT a true density';
 	v.file = 'mP';
@@ -451,7 +452,6 @@ elseif regexp(vs,'^A(two)?[1-4]$')
 		v.name = {'A'};
 		v.labels = {'Phase'};
 	end
-	v.label_1 = {''};
 	v.field_name = {'Spacecraft phase'};
 	v.com = '';
 	v.file = 'mA';
@@ -473,7 +473,6 @@ elseif regexp(vs,'^SAX[1-4]$')
 	v.size = [1];
 	v.name = {'SAX'};
 	v.labels = {'Spin axis'};
-	v.label_1 = {''};
 	v.field_name = {'Spacecraft spin axis'};
 	v.com = '';
 	v.file = 'mEPH';
@@ -497,7 +496,8 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.size = [3];
 	v.name = {'V'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Vx", "Vy", "Vz"'};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Spacecraft velocity'};
 	v.com = '';
 	v.file = 'mR';
@@ -521,7 +521,8 @@ elseif regexp(vs,'^(di)?R[1-4]$')
 	v.size = [3];
 	v.name = {'R'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Rx", "Ry", "Rz"'};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Spacecraft position'};
 	v.com = '';
 	v.file = 'mR';
@@ -550,7 +551,6 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 	v.size = [1];
 	v.name = {'N'};
 	v.labels = v.name;
-	v.label_1 = {};
 	v.com = '';
 	v.file = 'mCIS';
 	v.quant = 'ncis';
@@ -583,7 +583,8 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 	v.size = [3];
 	v.name = {'V'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Vx", "Vy", "Vz"'};
+	v.col_labels = {{'x','y','z'},''};
 	v.com = '';
 	v.file = 'mCIS';
 	v.quant = 'vcis';
@@ -617,7 +618,8 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	v.size = [3];
 	v.name = {'E'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Ex", "Ey", "Ez"'};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Perpendicular Electric field'};
 	v.com = '';
 	v.file = 'mEDI';
@@ -643,7 +645,8 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.size = [3];
 	v.name = {'B'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Bx", "By", "Bz"'};
+	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Magnetic field PP'};
 	v.com = '';
 	v.file = 'mBPP';
@@ -670,7 +673,7 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	v.size = [3];
 	v.name = {'B'};
 	v.labels = v.name;
-	v.label_1 = {'"x", "y", "z"'};
+	v.label_1 = {'"Bx", "By", "Bz"'};
 	v.col_labels = {{'x','y','z'}};
 	if regexp(vs,'^(di)?B(r|rs)[1-4]$')
 		v.file = 'mBr';
