@@ -125,7 +125,11 @@ for i=1:n
 	t0 = tstart + (i-1)*4;
 	eind = find((te >= t0) & (te < t0+4));
 	pind = find((tp >= t0) & (tp < t0+4));
-
+	
+	% Clear NaNs
+	ii = find(isnan(data(eind)));
+	eind(ii) = [];
+	
 	% Check for data gaps inside one spin.
 	if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
 	  
