@@ -6,11 +6,12 @@ function caa_export(lev,caa_vs,cl_id,DATA_VERSION,sp)
 %
 % $Id$
 
+% Copyright 2004,2005 Yuri Khotyaintsev
+
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '1';
 QUALITY = '3'; % Good for publication, subject to PI approval
 
-% Copyright 2004 Yuri Khotyaintsev
 if nargin<5, sp='.'; end
 if nargin<4, DATA_VERSION = '01'; end
 if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
