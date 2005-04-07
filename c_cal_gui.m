@@ -573,6 +573,7 @@ case 'ch_active_var'
 	set(hnd.DZedit,'String',num2str(hnd.off(2)))
 	set(hnd.DZslider,'Min',MMZ(d_m,1),'Max',MMZ(d_m,2),'Value',hnd.off(2))
 	set(hnd.DZpanel,'Title',[num2str(MMZ(d_m,1)) ' < d' vsz ' < ' num2str(MMZ(d_m,2))])
+	
 	guidata(h0,hnd);
 	c_cal_gui('update_SAVEbuttons')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -707,7 +708,7 @@ case 'replot_all'
 	
 	if isempty(hnd.last)
 		% Clear everything
-		for ax=1:3, cla(h(ax)), end
+		for ax=1:4, cla(h(ax)), end
 		hnd.DataList = {};
 		hnd.AUXList = {};
 		
@@ -1641,7 +1642,7 @@ case 'cut_int'
 					
 				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
 				dsc = c_desc(v_s);
-				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append']);
+				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append; clear v_s']);
 				if isempty(tint_tmp), eval(['tint_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
 				else
 					eval(['tint1_tmp=[' v_s '(1,1) '  v_s '(end,1)];']);
@@ -1658,42 +1659,57 @@ case 'cut_int'
 		% Reprocess the data using the updated raw data
 		c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
 				'vars',{'e','p'},'nosrc');
-				
-		n_ok = 0;
+		% Variables which we need to reload
 		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234','P?'};
-		for vi = 1:length(var_list)
-			v_s = irf_ssub(var_list{vi},hnd.Data{j}.cl_id);
-			jj = D_findByName(hnd.Data,v_s);
-			if ~isempty(jj)
-				ok = c_load(v_s);
-				if ok
-					eval(['hnd.Data{jj}.data=' v_s ';'])
-					n_ok = n_ok + 1;
-				else
-					irf_log('load',...
-						['Cannot load ' v_s '. Removing it from the list.']);
-					hnd.Data{jj} = [];
-				end
-			end
-		end
-		if n_ok<1
-			disp('could not load any updated data. this is strange')
-			return
-		end
 		
-	else % Display V CIS
+	else % Cut V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
 		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
 		end
-		[ok,V_tmp] = c_load(v_s);
-		disp('CIS')
+		% Variables which we need to reload
+		var_list = {['di' v_s],v_s}; n_ok = 0;
+		for j=1:length(var_list)
+			v_s = var_list{j};
+			ok = c_load(v_s);
+			if ok
+				irf_log('proc',...
+					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1))])
+				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
+				dsc = c_desc(v_s);
+				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append; clear v_s']);
+				n_ok = n_ok + 1;
+			end
+		end
+		clear ii v_s
+		if n_ok<1, disp('was no raw data'), return, end
+		
+		% We need only diV*
+		var_list = {var_list{1}};
 	end
 	
-	% Enable/disable menus
-	set(hnd.menu_cut_int,'Enable','off')
+	% Reload updated variables
+	n_ok = 0;
+	for vi = 1:length(var_list)
+		v_s = irf_ssub(var_list{vi},hnd.Data{j}.cl_id);
+		jj = D_findByName(hnd.Data,v_s);
+		if ~isempty(jj)
+			ok = c_load(v_s);
+			if ok
+				eval(['hnd.Data{jj}.data=' v_s ';clear ' v_s])
+				n_ok = n_ok + 1;
+			else
+				irf_log('load',...
+					['Cannot load ' v_s '. Removing it from the list.']);
+				hnd.Data{jj} = [];
+			end
+		end
+	end
+	if n_ok<1
+		disp('could not load any updated data. this is strange')
+		return
+	end
 	
 	guidata(h0,hnd);
-	
 	c_cal_gui('replot_all')
 otherwise 
 	disp('wrong action')
