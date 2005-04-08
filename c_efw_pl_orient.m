@@ -120,7 +120,7 @@ if strcmp(action,'initialize'),
   
 elseif strcmp(action,'time'),
   t=iso2epoch(get(timeHndl, 'string'));
-  phase=av_interp([a(:,1) unwrap(a(:,2)/180*pi)],t);
+  phase=irf_resamp([a(:,1) unwrap(a(:,2)/180*pi)],t);
   phase(1)=[];phase=mod(phase*180/pi,360); % take away time column
   set(phaseHndl,'string',num2str(phase));
   c_efw_pl_orient('plot');
@@ -149,9 +149,9 @@ elseif strcmp(action,'plot'),
   rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0];
 
   for ip=1:4,eval(irf_ssub('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip)),end
-  bfield=av_interp(b,t);
-  bxs=irf_norm(av_cross(bfield,[0 0 0 1]));
-  bxsxb=irf_norm(av_cross(bxs,bfield)); % (bxs)xb
+  bfield=irf_resamp(b,t);
+  bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
+  bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
   bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;
