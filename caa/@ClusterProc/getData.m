@@ -163,7 +163,7 @@ if strcmp(quantity,'dies')
 	if exist(irf_ssub(['wE?p' num2str(p12)],cl_id),'var') & exist(irf_ssub('wE?p34',cl_id),'var')
 		if eval(irf_ssub('length(wE?p!(:,1))==length(wE?p34(:,1))',cl_id,p12))
 			not_same = 0;
-			if eval(irf_ssub('length(find((wE?p!(:,1)-wE?p34(:,1))==0))',cl_id,p12))
+			if eval(irf_ssub('length(find((wE?p!(:,1)-wE?p34(:,1))~=0))',cl_id,p12))
 				not_same = 1;
 			end
 		else, not_same = 1;
