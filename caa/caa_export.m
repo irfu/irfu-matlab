@@ -1,6 +1,6 @@
-function caa_export(lev,caa_vs,cl_id,DATA_VERSION,sp)
+function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp)
 %CAA_EXPORT export data to CAA CEF files
-% caa_export(lev,caa_vs,cl_id,DATA_VERSION,sp)
+% caa_export(lev,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp])
 %
 % See also c_export_ascii
 %
@@ -10,10 +10,10 @@ function caa_export(lev,caa_vs,cl_id,DATA_VERSION,sp)
 
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '1';
-QUALITY = '3'; % Good for publication, subject to PI approval
 
-if nargin<5, sp='.'; end
-if nargin<4, DATA_VERSION = '01'; end
+if nargin<6, sp='.'; end
+if nargin<5, DATA_VERSION = '01'; end
+if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
 if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 | lev>3, error('LEV must be 1,2 or 3'), end
 
@@ -237,7 +237,7 @@ for j=1:v_size
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
 	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
-	fprintf(fid,['  QUALITY           = "' QUALITY '"\n']);
+	fprintf(fid,['  QUALITY           = "' num2str(QUALITY) '"\n']);
 	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
 	if ~isempty(dsc.com) & j==1
 		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
