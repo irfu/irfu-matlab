@@ -146,6 +146,7 @@ if ~isempty(vars)
 		if L_find(vars,'p'), varsProc = [varsProc {'p','ps'}]; end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
 		if L_find(vars,'edi'), varsProc = [varsProc {'edi'}]; end
+		if L_find(vars,{'pburst','eburst'}), varsProc = [varsProc {'dieburst'}]; end
 	end
 end
 
