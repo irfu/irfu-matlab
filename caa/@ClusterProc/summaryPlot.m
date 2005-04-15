@@ -168,7 +168,13 @@ for k=1:n_plots
 	set(gca,'YLim',get(gca,'YLim')*.99)
 	ylabel(labels{k})
 	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
-	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[]), end		
+	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
+	else
+		% This magic is needed for correct location of panels on printouts
+		ttt = get(gca,'XTickLabel'); 
+		ttt(end) = {' '}; 
+		set(gca,'XTickLabel',ttt)
+	end		
 end
 
 irf_pl_add_info
