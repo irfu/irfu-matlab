@@ -456,25 +456,23 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 		clear EE pp
 	end
 
-	if ~do_burst
-		% load Delta offsets D?p12p34
-		if c_load('D?p12p34',cl_id)
-			eval(irf_ssub('Del=D?p12p34;',cl_id))
-			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
-				irf_log('calb',['correcting p' num2str(p12)])
-				i_c = 1;
-			else
-				irf_log('calb','correcting p34')
-				Del = imag(Del);
-				i_c = 2;
-			end
-			coef(i_c,3) = Del(1) -Del(2)*1j;
-			clear Del
-	
-		else, irf_log('calb','no Delta offsets found in mEDSI, not doing correction...')
+	% load Delta offsets D?p12p34
+	if c_load('D?p12p34',cl_id)
+		eval(irf_ssub('Del=D?p12p34;',cl_id))
+		if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
+			irf_log('calb',['correcting p' num2str(p12)])
+			i_c = 1;
+		else
+			irf_log('calb','correcting p34')
+			Del = imag(Del);
+			i_c = 2;
 		end
-		c_eval([var1_name '_info=E_info;save_list=[save_list ''' var1_name '_info ''];'],cl_id);
+		coef(i_c,3) = Del(1) -Del(2)*1j;
+		clear Del
+
+	else, irf_log('calb','no Delta offsets found in mEDSI, not doing correction...')
 	end
+	c_eval([var1_name '_info=E_info;save_list=[save_list ''' var1_name '_info ''];'],cl_id);
 
 	% Do actual despin
 	if p12==32, c_eval([var1_name '=c_efw_despin(full_e,A?,coef,''asym'');'],cl_id);
@@ -855,12 +853,12 @@ elseif strcmp(quantity,'p')
 	else, irf_log('dsrc','No data'), cd(old_pwd); return
 	end
 	
-	c_eval('P10Hz?=p;save_list=[save_list '' P10Hz? ''];',cl_id);
+	c_eval('P10Hz?=p;save_list=[save_list ''P10Hz? ''];',cl_id);
 	c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
 	clear p p1 p2 p3 p4
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% P resampled
+% P spinn resolution
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'ps')
 	save_file = './mP.mat';
