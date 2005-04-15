@@ -215,6 +215,10 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+	elseif start_time>toepoch([2001 07 31 00 00 00])&cl_id==2 & ~do_burst
+		probe_list = [1 2 4];
+		p3 = [];
+		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
 	end
 	
 	for j=1:length(param), for probe=probe_list;
@@ -239,7 +243,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 					irf_log('dsrc','burst start time was not corrected')
 				end
 			end
-			eval(irf_ssub(['p!=[t data];save_list=[save_list '' P' param{j} '?p!''];P' param{j} '?p!=p!;'],cl_id,probe)); clear t data
+			eval(irf_ssub(['p!=[t data];save_list=[save_list ''P' param{j} '?p! ''];P' param{j} '?p!=p!;'],cl_id,probe)); clear t data
 		else
 			eval(['p' num2str(probe) '=[];'])
 		end
@@ -264,7 +268,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 						end
 						clear tmpE
 					end
-					c_eval([vn '=E;save_list=[save_list '' ' vn  ' ''];'],cl_id);
+					c_eval([vn '=E;save_list=[save_list ''' vn  ' ''];'],cl_id);
 					clear E
 				end
 			end
