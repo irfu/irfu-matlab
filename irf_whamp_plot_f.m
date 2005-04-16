@@ -1,8 +1,8 @@
-function [h,varargout]=av_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption);
+function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption);
 % Usage:
-% [h,varargout]=av_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
-% [h,f,vp,vz]=av_whamp_plot_f(n,m,t,vd,d,a1,a2);
-% [h,f,vtot]=av_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
+% [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
+% [h,f,vp,vz]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2);
+% [h,f,vtot]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
 %
 % plot the distribution function, parameters as defined in whamp 
 % n,m,.. can be vectors (if more than one plasma component) 
@@ -19,13 +19,18 @@ function [h,varargout]=av_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption);
 %		vtot - nxm matrix where n-# of pitchangles, m-length of vtot [m/s].
 %		Etot - nxm matrix where n-# of pitchangles, m-length of vtot [eV].
 % Examples:
-%	av_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=av_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=av_whamp_plot_f([4e6 1 0.3 0.9 1 1 0]);
-%	[h,f,vtot]=av_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
-%	[h,f,Etot]=av_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
+%	irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=irf_whamp_plot_f([4e6 1 0.3 0.9 1 1 0]);
+%	[h,f,vtot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
+%	[h,f,Etot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
 %
-% Last change 050415
+% Last change 20050415
+
+%
+% short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual_v1.1.pdf
+% original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
+
 
 if nargin < 1 , 
   help av_whamp_plot_f;
