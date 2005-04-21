@@ -62,13 +62,9 @@ for h=axis_handles
 		set(h,'xtickmode','auto','xticklabelmode','auto');
 		if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10)
 			if flag_use_t_start_epoch, 
-        add_timeaxis(h);  % read informations about t_ref from userdata.t_start_epoch
-      else
-        add_timeaxis(h,t_ref);
-      end
-			if h~=axis_handles(end)
-				xlabel('')
-				set(h,'XTickLabel','')
+				add_timeaxis(h);  % read informations about t_ref from userdata.t_start_epoch
+			else
+				add_timeaxis(h,t_ref);
 			end
 		end
 	end
@@ -78,3 +74,13 @@ for h=axis_handles
 	end
 end
 
+% remove XTickLabel and XLabel from all panels but the last one
+if c=='x' & length(axis_handles)>1
+	p = cell2mat(get(axis_handles,'position'));
+	ii = find(p(:,2)>min(p(:,2)));
+	for h=1:length(ii)
+		axes(axis_handles(ii(h)))
+		xlabel('')
+		set(axis_handles(ii(h)),'XTickLabel','')
+	end
+end
