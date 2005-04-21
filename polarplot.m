@@ -119,7 +119,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert');
     ylabel('Hz')
     title('Power spectral density')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
 
     subplot(4,1,2)
@@ -129,7 +130,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Coherence')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
 
     subplot(4,1,3)
@@ -140,7 +142,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     ylabel('Hz')
     title('Phase difference')
     temp1=axis;
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
     
     subplot(4,1,4)
@@ -148,7 +151,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     xlabel('UT')
     ylabel('mV/m')
     title('Time series')
-    set(gca,'position',[0.13 0.11 0.6626 0.1642])
+    set(gca,'position',[0.13 0.11 0.7023 0.1642])
+	grid
     temp2=axis;
     axis([temp1(1:2),temp2(3:4)])
     add_timeaxis(gca,t0); set(gca,'tickdir','out');
@@ -165,7 +169,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert');
     ylabel('Hz')
     title('Spectral intensity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
 
     subplot(4,1,2)
@@ -175,7 +180,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Degree of polarisation')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
 
     subplot(4,1,3)
@@ -185,7 +191,8 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Ellipticity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+	xlabel('')
     %set(gca,'yscale','log')
 
     subplot(4,1,4)
