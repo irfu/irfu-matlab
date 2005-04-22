@@ -81,7 +81,7 @@ elseif isempty(column) & ~isempty(x3)
 elseif isempty(column) & ~isempty(x4)
 	column = size(x4,2);
 	if column > 2, column = 2:column; end
-else
+elseif isempty(column)
 	irf_log('fcal','all inputs are empty')
 	return
 end
