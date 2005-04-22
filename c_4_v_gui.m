@@ -139,7 +139,8 @@ case 'dt'
   xl=get(hh,'XLim');yl=get(hh,'YLim');
   hc=get(hh,'Children');
   dt=eval(['[' get(ud.dt,'string') ']']);
-  t=0.5*(xl(1)+xl(2))+dt;
+  udfig=get(gcf,'userdata');
+  t=0.5*(xl(1)+xl(2))+dt+udfig.t_start_epoch;
   v=c_v(t);
   tstr=['[' num2str(dt,'%7.2f') '] s'];
   vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),2) ']'];
