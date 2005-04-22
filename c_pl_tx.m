@@ -68,10 +68,22 @@ if length(args)>0
 		if isempty(args{1}), args = args(2:end); end
 	end
 end
-if isempty(column)
+if isempty(column) & ~isempty(x1)
 	% try to guess the size of the matrix
 	column = size(x1,2);
 	if column > 2, column = 2:column; end
+elseif isempty(column) & ~isempty(x2)
+	column = size(x2,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column) & ~isempty(x3)
+	column = size(x3,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column) & ~isempty(x4)
+	column = size(x4,2);
+	if column > 2, column = 2:column; end
+else
+	irf_log('fcal','all inputs are empty')
+	return
 end
 
 delta_t = [];
