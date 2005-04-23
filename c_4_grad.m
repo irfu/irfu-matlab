@@ -57,13 +57,13 @@ function [grad_b,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
   % because usually r1..r4 is of less time resolution, it is more
   % computer friendly first calculate k1..k4 and only after interpolate
   % and not the other way around
-  for ic=1:4,eval(irf_ssub('R?=av_interp(r?,r1,''spline'');',ic)),end
+  for ic=1:4,eval(irf_ssub('R?=irf_resamp(r?,r1,''spline'');',ic)),end
   [k1,k2,k3,k4]=c_4_k(R1,R2,R3,R4);
 
 %%%%%%%%%%%%%%%% Do interpolation to b1 time series %%%%%%%%%%%%%%%%%%%%%%
-  c_eval('B?=av_interp(b?,b1);');
+  c_eval('B?=irf_resamp(b?,b1);');
   b=0.25*B1+0.25*B2+0.25*B3+0.25*B4; % estimate mean value of vector or scalar
-  c_eval('K?=av_interp(k?,b1);');
+  c_eval('K?=irf_resamp(k?,b1);');
 
 %%%%%%%%%%%%%%%% Calculate gradient if necessary (grad,curvature) %%%%%%%%%%%%%%%%%%%%%%
   if strcmp(flag_option,'grad')|strcmp(flag_option,'curvature'),
@@ -110,16 +110,16 @@ switch flag_option
       curv(:,2)=dot(b(:,2:4),grad_b(:,[2 5 8]),2);
       curv(:,3)=dot(b(:,2:4),grad_b(:,[3 6 9]),2);
       curv(:,4)=dot(b(:,2:4),grad_b(:,[5 7 10]),2);
-      grad_b=curv; % grad_b is output variable 
+      clear grad_b;grad_b=curv; % grad_b is output variable 
     end
   otherwise
     irf_log('fcal','warning: unknown input option');
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
-  if nargout==0&size(B1,1)==1,
-         strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A '];
-         strdivB=['divB= ' num2str(divB(1,2),3) '] A '];
-         disp(strj);disp(strdivB);
-  end
+%  if nargout==0&size(B1,1)==1,
+%         strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A '];
+%         strdivB=['divB= ' num2str(divB(1,2),3) '] A '];
+%         disp(strj);disp(strdivB);
+%  end
 
