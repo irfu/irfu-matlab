@@ -1,13 +1,10 @@
-function [j,divB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
+function [j,divB,B,jxB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %C_4_J  Calculate current from using 4 spacecraft technique
+%  in addition one can obtain average magnetic field and jxB values
 %
-%  [j,divB] = c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
-%  [j,divB] = c_4_j('R?','B?')
+%  [j,divB,B,jxB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4)
+%  [j,divB,B,jxB] = c_4_j('R?','B?')
 %  Estimate also divergence B as the error estimate
-%
-%  j = c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)  
-%  j = c_4_j('R?','B?')
-%  Calculate only current
 %
 %  r1..r4 are row vectors
 %         column 1     is time
@@ -20,6 +17,8 @@ function [j,divB]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %         column 2-4   current, units A
 %  divB   column 1     time
 %         column 2     div(B)/mu0, units A
+%  B      - average magnetic field, sampled at b1 time steps [nT]
+%  jxB    - j x B force [T A]
 %
 %   See also C_4_K
 %
@@ -54,6 +53,7 @@ for ic=1:4,eval(irf_ssub('R?=irf_resamp(r?,r1,''spline'');',ic)),end
 
 %%%%%%%%%%%%%%%% Do interpolation to b1 time series %%%%%%%%%%%%%%%%%%%%%%
 for ic=1:4,eval(irf_ssub('B?=irf_resamp(b?,b1);',ic)),end
+B=0.25*B1+0.25*B2+0.25*B3+0.25*B4; % estimate mean value of B
 for ic=1:4,eval(irf_ssub('K?=irf_resamp(k?,b1);',ic)),end
 
 % initialize matrix j and divB with right time column
@@ -66,6 +66,7 @@ divB(:,2)=divB(:,2)/1.0e3*1e-9/(4*pi*1e-7); % to get right units
 
 for ic=1:4, eval(irf_ssub('j(:,2:4)=j(:,2:4)+cross(K?(:,2:4),B?(:,2:4),2);',ic));   end
 j(:,2:4)=j(:,2:4)/1.0e3*1e-9/(4*pi*1e-7);   % to get right units
+jxB=irf_tappl(irf_cross(j,B),'*1e-3');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
 if nargout==0&size(B1,1)==1,
