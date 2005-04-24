@@ -27,10 +27,13 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 
 % Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
 
-if nargin~=2 & nargin~=3 & nargin~=4 & nargin~=8 & nargin~=9 & nargin~=10
+if nargin==0, 
+  help c_pl_j;return;
+end
+ if nargin~=2 & nargin~=3 & nargin~=4 & nargin~=8 & nargin~=9 & nargin~=10
 	error('wrong number of input arguments')
 end
-
+ 
 args = varargin;
 
 if nargin < 6
@@ -73,14 +76,15 @@ c_eval('fhz?=50/(B?(51,1)-B?(1,1));')
 %irf_lowpass filter B
 for j=2:4,c_eval(['B?(:,' num2str(j) ')=irf_lowpass(B?(:,' num2str(j) '),fcut,fhz?);']),end
 
-[jj,divB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4);
+[jj,divB,B,jxB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4);
 
 c_eval('[jpar,jperp]=irf_dec_parperp(B?,jj);',ref_sc)
 
-h = c_pl_tx('irf_abs(B?)');
+
+h = irf_plot({B1,B1,B1,B1,B1,B1}); %c_pl_tx('irf_abs(B?)');
 
 axes(h(1))
-c_eval('irf_plot(irf_abs(B?));',ref_sc)
+c_eval('irf_plot(irf_abs(B));',ref_sc)
 ylabel(['C' num2str(ref_sc) ' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 
 axes(h(2))
@@ -92,12 +96,20 @@ irf_plot(jperp);
 ylabel('j_{\perp} GSE [A/m^2]')
 
 axes(h(4))
+irf_plot(jxB);
+ylabel('jxB [A/m^2 T]')
+
+axes(h(5))
+irf_plot(av_integrate(jxB));
+ylabel('\int jxB [A/m^2 T s]')
+
+axes(h(6))
 irf_plot(divB);
 ylabel('div(B) [A/m^2]')
 
-for j=1:4,set(h(j),'YLim',get(h(j),'YLim')*.99),end
+for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 
-for j=1:3,xlabel(h(j),''),set(h(j),'XTickLabel',''),end
+for j=1:5,xlabel(h(j),''),set(h(j),'XTickLabel',''),end
 
 legend(h(1),'x','y','z','tot','Location','NorthEastOutside')
 legend(h(3),'x','y','z','Location','NorthEastOutside')
