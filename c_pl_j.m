@@ -85,7 +85,7 @@ h = irf_plot({B1,B1,B1,B1,B1,B1}); %c_pl_tx('irf_abs(B?)');
 
 axes(h(1))
 c_eval('irf_plot(irf_abs(B));',ref_sc)
-ylabel(['C' num2str(ref_sc) ' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
+ylabel([' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 
 axes(h(2))
 irf_plot(jpar);
