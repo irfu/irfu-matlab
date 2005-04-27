@@ -14,7 +14,7 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption)
 %			1 - PSD vs E [eV]
 %
 % Output: 	h - handle to plot
-%		f - phase space density [s^3/m^3] corresponding to:
+%		f - phase space density [s^3/m^6] corresponding to:
 %		vp, vz - matrices for plotting countour plots
 %		vtot - nxm matrix where n-# of pitchangles, m-length of vtot [m/s].
 %		Etot - nxm matrix where n-# of pitchangles, m-length of vtot [eV].
@@ -26,7 +26,7 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption)
 %	[h,f,Etot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
 %
 % Last change 20050415
-
+%
 %
 % short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual_v1.1.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
