@@ -7,7 +7,7 @@ function status = c_4_v_gui(x1,x2,x3,x4,column)
 %
 % $Id$
 
-persistent ud ic var1 var2 var3 var4 var_col variable_str
+persistent ud ic var1 var2 var3 var4 var_col variable_str variable_label
 tlim = [];
 
 if       (nargin<=2 & isstr(x1)), % either action as parameter or string variable 
@@ -37,6 +37,7 @@ case 'update_var_col'
   axes(ud.h(1));
   xl=get(ud.h(1),'XLim');
   c_pl_tx(var1,var2,var3,var4,var_col);zoom on;
+  ylabel(variable_label);
   axis([xl(1) xl(2) 0 1]);
   set(ud.h(1),'YLimMode','auto');
   axes(ud.h(2));
@@ -52,8 +53,11 @@ case 'new_var'
   var3=evalin('base',irf_ssub(variable_str,3));
   var4=evalin('base',irf_ssub(variable_str,4));
   if var_col > size(var1,2), var_col=2;end % in case new variable has less columns
-  if isempty(ud), 
-    c_4_v_gui('initialize');
+  % construct variable label
+  dd=c_desc(irf_ssub(variable_str,1));
+  variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
+  if isempty(ud),
+      c_4_v_gui('initialize');
   else
     if ishandle(ud.h(1)),
       for j_col=2:size(var1,2)
@@ -82,9 +86,11 @@ case 'initialize'
   h(1)=subplot(3,1,1);
   c_pl_tx(var1,var2,var3,var4,var_col);zoom on;
   irf_pl_info(['c\_4\_v\_int() ' datestr(now)]); % add information to the plot
+  ylabel(variable_label)
   
   h(2)=subplot(3,1,2);
   c_pl_tx(var1,var2,var3,var4,var_col);
+  ylabel(variable_label)
   
   hh=h(1,1);  % use the first subplot to estimate available time interval
   xl=get(hh,'XLim');
@@ -110,7 +116,7 @@ case 'initialize'
   xp=0.05;yp=0.2;
   uch1 = uicontrol('style', 'text', 'string', '[vx vy vz] GSE km/s =','units','normalized','position', [xp yp 0.15 0.03]);
   ud.v = uicontrol('style', 'edit', ...
-    'string', '1*[0 0 0]', ...
+    'string', '0*[0 0 0]', ...
     'callback', 'c_4_v_gui(''v'')', ...
     'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
   
@@ -136,24 +142,30 @@ case 'initialize'
   
 case 'dt'
   hh=ud.h(1);  % use the first subplot to estimate available time interval
-  xl=get(hh,'XLim');yl=get(hh,'YLim');
+  udfig=get(gcf,'userdata');
+  xl=get(hh,'XLim')+udfig.t_start_epoch;
+  yl=get(hh,'YLim');
   hc=get(hh,'Children');
   dt=eval(['[' get(ud.dt,'string') ']']);
-  udfig=get(gcf,'userdata');
-  t=0.5*(xl(1)+xl(2))+dt+udfig.t_start_epoch;
-  v=c_v(t);
   tstr=['[' num2str(dt,'%7.2f') '] s'];
-  vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),2) ']'];
+  t=0.5*(xl(1)+xl(2))+dt;
+  if max(dt)==0, 
+    vstr='0 * [0 0 0]';
+  else
+    v=c_v(t);
+    vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),2) ']'];
+  end
   set(ud.v,'string',vstr);
   axes(ud.h(2));
   if eval(get(ud.filter,'string'))<1,
     x1=var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
-    for ic=1:4,eval(irf_ssub('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);',ic)),end
-    c_pl_tx(x1,x2,x3,x4,var_col,1,dt);
+    c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
+    c_pl_tx('x?',var_col,dt);
   else,
-    c_pl_tx(var1,var2,var3,var4,var_col,1,dt);
+    c_pl_tx('var?',var_col,dt);
   end
-  axis([xl yl]);add_timeaxis;
+  irf_zoom(xl,'x');irf_zoom(yl,'y');
+  add_timeaxis;
   text(.5,-.6,['dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s GSE'],'units','normalized');
 case 'v'
   hh=ud.h(1);  % use the first subplot to estimate available time interval
@@ -161,7 +173,11 @@ case 'v'
   hc=get(hh,'Children');
   v=eval(['[' get(ud.v,'string') ']']),
   t=0.5*(xl(1)+xl(2));
-  dt=c_v([t v]);
+  if max(v)==0, 
+    dt=[0 0 0 0];
+  else
+    dt=c_v([t v]);
+  end
   tstr=['[' num2str(dt,'%7.2f') ']'];
   if norm(v) > 0,
     vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%7.2f') ']'];
