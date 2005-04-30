@@ -54,8 +54,12 @@ case 'new_var'
   var4=evalin('base',irf_ssub(variable_str,4));
   if var_col > size(var1,2), var_col=2;end % in case new variable has less columns
   % construct variable label
-  dd=c_desc(irf_ssub(variable_str,1));
-  variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
+  try
+      dd=c_desc(irf_ssub(variable_str,1));
+      variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
+  catch
+      variable_label=variable_str;
+  end
   if isempty(ud),
       c_4_v_gui('initialize');
   else
