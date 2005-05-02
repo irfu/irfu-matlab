@@ -86,7 +86,11 @@ if isstr(args{1})
 
 	elseif strcmp(args{1},'load_ns_ops')
 		global c_ct
-		if isempty(c_ct), c_ctl('init'), end
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+		end
 		
 		if nargin>1, d = args{2};
 		else, d = '.';
@@ -100,6 +104,7 @@ if isstr(args{1})
 					
 					% remove lines with undefined dt
 					c_ct{j}.ns_ops(find(c_ct{j}.ns_ops(:,2)==-157),:) = [];
+				else, irf_log('load',['file ' f_name ' not found'])
 				end
 			catch
 				disp(lasterr)
