@@ -27,6 +27,15 @@ case 13
 case 14
 	r.s = 'no_p4';
 	r.l = 'No probe 4';
+case 112
+	r.s = 'no_p12';
+	r.l = 'No probe 12';
+case 123
+	r.s = 'no_p23';
+	r.l = 'No probe 23';
+case 134
+	r.s = 'no_p34';
+	r.l = 'No probe 34';
 case 255
 	r.s = 'no_10Hz_filt';
 	r.l = 'No 10Hz filter';
