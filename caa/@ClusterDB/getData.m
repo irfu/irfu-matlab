@@ -93,6 +93,65 @@ end
 cd(cdb.sp) %enter the storage directory
 irf_log('save',['Storage directory is ' cdb.sp])
 
+% Read list of nonstandard operations and see if we have one of those 
+% during the requested period
+if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(quantity,'pburst')
+	ns_ops = c_ctl('get',cl_id,'ns_ops');
+	if isempty(ns_ops)
+		c_ctl('load_ns_ops',[cdb.dp '/caa'])
+		ns_ops = c_ctl('get',cl_id,'ns_ops');
+	end
+	if ~isempty(ns_ops)
+		% remove records which cover permanent problems (as loss of 
+		% probes, filters, etc.) as these must be programmed separately
+		ii = find(ns_ops(:,2)==-1);
+		ns_ops(ii,:) = [];
+		
+		ii = find(ns_ops(:,1)<start_time+dt & ns_ops(:,1)>start_time);
+		if ~isempty(ii)
+			for j=1:length(ii)
+				if ns_ops(ii(j),4)<10
+					% no/bad data - truncate the period
+					irf_log('proc',...
+					['PROBLEM: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
+					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
+					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
+					irf_log('proc',...
+					['setting dt to ' num2str(ns_ops(ii(j),1)-start_time)])
+					dt = ns_ops(ii(j),1) - start_time;
+				else
+					irf_log('proc',...
+					['WARNING: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
+					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
+					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
+				end
+			end
+		end
+		% clear already processed records
+		ns_ops(ii,:) = [];
+		ii = find(ns_ops(:,1)+ns_ops(:,2)<start_time+dt & ns_ops(:,1)+ns_ops(:,2)>start_time);
+		if ~isempty(ii)
+			for j=1:length(ii)
+				if ns_ops(ii(j),4)<10
+					% no/bad data - truncate the period
+					irf_log('proc',...
+					['PROBLEM: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
+					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
+					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
+					irf_log('proc',...
+					['setting start_time to ' num2str(ns_ops(ii(j),1))])
+					start_time = ns_ops(ii(j),1);
+				else
+					irf_log('proc',...
+					['WARNING: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
+					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
+					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
+				end
+			end
+		end
+	end
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -162,6 +221,7 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
 	else, pl={'12','34'};
 	end
+	
 	for i=1:length(pl)
 		irf_log('dsrc',['EFW...sc' num2str(cl_id) '...Ep' pl{i} ' ' param ' filter']);
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
