@@ -76,10 +76,13 @@ end
 
   sampl_e=1/(e(2,1)-e(1,1));
   sampl_b=1/(b(2,1)-b(1,1));
-  if     sampl_b > 1.5*sampl_e, e=av_interp(e,b); sampl=sampl_b; disp('irf_pl_ebs: interpolating e to b');
-  elseif sampl_e > 1.5*sampl_b, b=av_interp(b,e); sampl=sampl_e; disp('irf_pl_ebs: interpolating b to e');
+  if     sampl_b > 1.5*sampl_e, e=irf_resamp(e,b); sampl=sampl_b; disp('irf_pl_ebs: interpolating e to b');
+  elseif sampl_e > 1.5*sampl_b, b=irf_resamp(b,e); sampl=sampl_e; disp('irf_pl_ebs: interpolating b to e');
   elseif sampl_e == sampl_b & size(e)==size(b),   sampl=sampl_e;
-  else   sampl=2*sampl_e; t=max(e(1,1),b(1,1)):1/sampl:min(e(end,1),b(end,1)); t=t'; e=av_interp(e,t); b=av_interp(b,t); disp('irf_pl_ebs: interpolating b and e to 2x e sampling');
+  else   sampl=2*sampl_e; 
+      t=max(e(1,1),b(1,1)):1/sampl:min(e(end,1),b(end,1)); t=t'; 
+      e=irf_resamp(e,t); b=irf_resamp(b,t); 
+      irf_log('proc','interpolating b and e to 2x e sampling');
   end
   %% Check the sampling rate
   disp(['Fs=' num2str(sampl) 'Fs_e=' num2str(sampl_e) 'Fs_b=' num2str(sampl_b)]);
@@ -93,7 +96,7 @@ end
   end
 
 %% the direction of background magnetic field
-bn=irf_norm(av_interp(B,e));
+bn=irf_norm(irf_resamp(B,e));
 t=e(:,1);
 
   %% Find the frequencies for an FFT of all data
@@ -224,7 +227,7 @@ if plot_type == 2,
   irf_plot(e);ylabel('E_{wave} [mV/m]');
 hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to get the same size as colorbar plots
 %  colorbar;
-%%%%%% E time series %%%%%%%%
+%%%%%% B time series %%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(b);ylabel('B_{wave} [nT]');
 hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to get the same size as colorbar plots
@@ -239,11 +242,12 @@ hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to
 end
 
 if plot_type == 1 | plot_type == 2 | plot_type == 0,
+   t_start_epoch=fix_start_epoch(t(1,1));
 %%%%%%%%% E spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'e')),
 %    pcolor(t-t0,newfreq,log10(abs(power2E.'))) % With edge effects removed
-    pcolor(t,newfreq,log10(abs(power2E_plot.'))) % With edge effects removed
+    pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
     ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -256,7 +260,7 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
 %%%%%%%%% B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'b')),
-    pcolor(t,newfreq,log10(abs(power2B_plot.'))) % With edge effects removed
+    pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
     ht=text(0,0,'B [nT^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -270,7 +274,7 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
 %%%%%%%%% S spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'s')),
-    pcolor(t,newfreq,(sign(Spar_plot).*sqrt(abs(Spar_plot))).') % With edge effects removed
+    pcolor(t-t_start_epoch,newfreq,(sign(Spar_plot).*sqrt(abs(Spar_plot))).') % With edge effects removed
     shading flat
     ylabel('f [Hz]')
     ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -284,7 +288,7 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
 %%%%%%%%% E/B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'eb')),
-    pcolor(t,newfreq,log10(abs(EtoB_plot.'))) % With edge effects removed
+    pcolor(t-t_start_epoch,newfreq,log10(abs(EtoB_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
     ht=text(0,0,'log10(E/B) [(1000 km/s)]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -293,9 +297,10 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
     colormap(xcm);colorbar
   end
 elseif plot_type == 3,
+   t_start_epoch=fix_start_epoch(t(1,1));
 %%%%%%%%% Ex spectra %%%%%%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t0,newfreq,log10(abs(powerEx.'))) % Without edge effects removed
+  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEx.'))) % Without edge effects removed
   shading flat
   ylabel('f [Hz]')
   ht=text(0,0,'Ex [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -303,7 +308,7 @@ elseif plot_type == 3,
   caxis([-5 2]);colorbar
 %%%%%%%%% Ey spectra %%%%%%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t0,newfreq,log10(abs(powerEy.'))) % Without edge effects removed
+  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEy.'))) % Without edge effects removed
   shading flat
   ylabel('f [Hz]')
   ht=text(0,0,'Ey [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -311,7 +316,7 @@ elseif plot_type == 3,
   caxis([-5 2]);colorbar
 %%%%%%%%% Ez spectra %%%%%%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t0,newfreq,log10(abs(powerEz.'))) % Without edge effects removed
+  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEz.'))) % Without edge effects removed
   shading flat
   ylabel('f [Hz]')
   ht=text(0,0,'Ez [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
@@ -319,14 +324,14 @@ elseif plot_type == 3,
   caxis([-5 2]);colorbar
 %%%%%%%%% E spectra %%%%%%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t0,newfreq,log10(abs(powerE.'))) % Without edge effects removed
+  pcolor(t-t_start_epoch,newfreq,log10(abs(powerE.'))) % Without edge effects removed
   shading flat
   ylabel('f [Hz]')
   ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
   set(gca,'yscale','log');set(gca,'tickdir','out');
   caxis([-5 2]);colorbar
 
-  add_timeaxis(h,t0);
+  add_timeaxis(h);
 end
 
 if plot_type ~=0,
@@ -336,4 +341,17 @@ if plot_type ~=0,
   irf_zoom([min(t) max(t)],'x',h);
   add_timeaxis(h)
 end
+end
 
+function ts=fix_start_epoch(t)
+    ud=get(gcf,'userdata');
+    if isfield(ud,'t_start_epoch'), 
+        t_start_epoch=ud.t_start_epoch;
+    elseif t(1,1) > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+      t_start_epoch=t(1,1);
+    else
+        t_start_epoch=0;
+    end
+      ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
+      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
+end
