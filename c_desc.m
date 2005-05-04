@@ -694,6 +694,35 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 		v.quant = 'bfgm';
 		v.lev = 0;
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ADDITIONAL HELP IN PLOTTING, NOT PARTICULAR TOCLUSTER 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(vs,'B') | strcmp(vs,'j') | strcmp(vs,'jz') | strcmp(vs,'jxB')
+	v.data = 1;
+	v.cl_id = '';
+	v.inst = NaN;
+	v.frame = NaN;
+    if strcmp(vs,'B')
+        v.units =  {'nT'};
+        v.name = {'B'};
+        v.labels = v.name;
+        v.label_1 = {'"Bx", "By", "Bz"'};
+    elseif strcmp(vs,'j')
+        v.units =  {'A/m^2'};
+        v.name = {'J'};
+        v.labels = v.name;
+        v.label_1 = {'"Jx", "Jy", "Jz"'};
+    elseif strcmp(vs,'jz')
+        v.units =  {'A/m^2'};
+        v.name = {'J_{||}'};
+        v.labels = v.name;
+        v.label_1 = {'"Jx", "Jy", "Jz"'};
+    elseif strcmp(vs,'jxB')
+        v.units =  {'T A'}; 
+        v.name = {'JxB'};
+        v.labels = v.name;
+        v.label_1 = {'"JxBx", "JxBy", "JxBz"'};
+    end
 else
 	error('Variable name not recognized')
 end
