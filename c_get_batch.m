@@ -9,7 +9,7 @@ function c_get_batch(st,dt,varargin)
 % Options: go in pair 'option', value
 % 'sp' - storage directory;
 %   // default: '.'
-% 'sdir' - main storage directory, storage directory is comstructed from SDIR 
+% 'sdir' - main storage directory, storage directory is constructed from SDIR 
 %   and start_time: SDIR/YYYYMMDD_hhmm;
 % 'dp' - storage directory;
 %   // default: '/data/cluster'
@@ -151,7 +151,7 @@ if ~isempty(vars)
 end
 
 if ~isempty(varsProc) & doproc
-	cp=ClusterProc(sp);
+	cp=ClusterProc(get(cdb,'sp'));
 	for cl_id=sc_list
 		for k=1:length(varsProc)
 			proc_options = [{cp} {cl_id} {varsProc{k}} argsProc];
