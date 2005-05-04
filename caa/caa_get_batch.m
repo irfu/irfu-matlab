@@ -10,12 +10,13 @@ function caa_get_batch(iso_t,dt,sdir)
 REQ_INT = 60; % intervals (sec) for which we request FDM
 DB_S = 'disco:10';
 DP_S = '/data/cluster';
+SPLIT_INT = 90*60;
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
 st = iso2epoch(iso_t);
 
-% first we check if we have any EFW HX data
+% First we check if we have any EFW HX data
 % and check for NM/BM1
 for cl_id=1:4
 	st_tmp = st;
@@ -59,6 +60,26 @@ if length(sc_list)>1
 	end
 end
 
+% Split long intervals into SPLIT_INT hour chunks
+j = 1;
+while 1
+	st_tmp = tm(j,1);
+	if j==size(tm,1), dt_tmp = st + dt - st_tmp;
+	else, dt_tmp = tm(j+1,1) - st_tmp;
+	end
+	if dt_tmp > SPLIT_INT*4/3
+		if j==size(tm,1)
+			tm(j+1,:) = [tm(j,1)+SPLIT_INT tm(j,2)];
+		else
+			tm(j+1:end+1,:) = [tm(j,1)+SPLIT_INT tm(j,2); tm(j+1:end,:)];
+		end
+	end
+	if j>=size(tm,1), break
+	else, j = j + 1;
+	end
+end
+
+% Save mTMode and run c_get_batch on each interval
 for j=1:size(tm,1)
 	st_tmp = tm(j,1);
 	sp = [sdir '/' irf_fname(st_tmp)];
