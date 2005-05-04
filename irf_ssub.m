@@ -2,7 +2,7 @@ function [output_string]=irf_ssub(input_string,varargin)
 %IRF_SSUB   Substitute strings 
 % 
 % Change all appearences of '?' and/or '!' and/or '$' in string 
-% to some number
+% to some number (numbers cacan be also strings)
 %
 % [OUTPUT_STRING]=IRF_SSUB(INPUT_STRING,NUM) change all appearence of '?' 
 % in INPUT_STRING to NUM. NUM is converted to string using NUM2STR function
@@ -22,5 +22,9 @@ output_string = input_string;
 symb = '?!$';
 
 for j=nargin-1:-1:1
-	output_string=strrep(output_string,symb(j),num2str(varargin{j}));
+    if isstr(varargin{j}),
+        output_string=strrep(output_string,symb(j),varargin{j});
+    else
+        output_string=strrep(output_string,symb(j),num2str(varargin{j}));
+    end
 end
