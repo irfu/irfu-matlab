@@ -1,13 +1,14 @@
-function plan = caa_pl_coverage(onoff,cover,tint)
+function [plan, plan_ind] = caa_pl_coverage(onoff,cover,tint)
 %CAA_PL_COVERAGE  pl on/off and coverage information
 %
-% caa_pl_coverage(onoff,cover)
+% [plan, plan_ind] = caa_pl_coverage(onoff,cover, tint)
 %
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 
-DT=20;
+DT=60;
+DT_RES=3*60; % time for instrument reset
 
 clf
 axes;
@@ -97,7 +98,8 @@ while cl_id<=4
 							cover_tmp{cli}(ii_tmp-1:ii_tmp,:) = [];
 						end
 					end
-					plan = [plan; [ts te]];
+					% We shift ts by 3 mins to account for instrument reset
+					plan = [plan; [ts+DT_RES te]];
 					disp(['saving ' epoch2iso(ts) ' - ' epoch2iso(te)])
 					disp(['1 clearing C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
 					% clear the intervals
@@ -117,6 +119,52 @@ while cl_id<=4
 	cover_tmp(cl_id) = {co};
 	cl_id = cl_id + 1;
 end
+cl_id = 1;
+plan_ind = [];
+while cl_id<=4
+	co = cover_tmp{cl_id};
+	if ~isempty(co)
+		for j=length(co(:,1)):-1:1
+			if find_close(co(j,1),co(j,3),cover_tmp,cl_id)
+				% We are really interested in the interval which follows this one
+				ts = co(j,1);
+				te = co(j,2);
+				sc_list = 1:4;
+				sc_list(find(sc_list==cl_id)) = [];
+				for cli=sc_list
+					co_tmp = cover_tmp{cli};
+					ii_tmp = find(co_tmp(:,3)==co(j,3));
+					co_tmp = co_tmp(ii_tmp,1:2);
+					ii_tmp = find(co_tmp(:,1)>ts-DT & co_tmp(:,1)<ts+DT);
+					if ~isempty(ii_tmp)
+						if co_tmp(ii_tmp,1)>ts, ts = co_tmp(ii_tmp,1); end
+						if co_tmp(ii_tmp,2)>te, te = co_tmp(ii_tmp,2); end
+						disp(['including C' num2str(cli) ' ' epoch2iso(co_tmp(ii_tmp,1)) ' - ' epoch2iso(co_tmp(ii_tmp,2))])
+						% clear the interval
+						ii_tmp = find(cover_tmp{cli}(:,1)==co_tmp(ii_tmp,1));
+						cover_tmp{cli}(ii_tmp,:) = [];
+					end
+				end
+				plan = [plan; [ts te]];
+				disp(['saving ' epoch2iso(ts) ' - ' epoch2iso(te)])
+			else
+				% we check if we are not already inside some common interval
+				ii = find(co(j,1)>plan(:,1)-DT_RES & co(j,1)<plan(:,2));
+				if isempty(ii)
+					plan_ind = [plan_ind; co(j,1:2) cl_id];
+					disp(['saving individual C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+				else
+					disp(['skipping C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+				end
+			end
+			disp(['5 clearing C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+			% clear the intervals
+			co(j,:) = [];
+		end
+		cover_tmp(cl_id) = {co};
+	end
+	cl_id = cl_id + 1;
+end
 
 if ~isempty(plan)
 	hold on
@@ -125,9 +173,21 @@ if ~isempty(plan)
 	end
 	hold off
 end
+if ~isempty(plan_ind)
+	hold on
+	for cl_id=1:4
+		ii = find(plan_ind(:,3)==cl_id);
+		if isempty(ii), continue, end
+		for j=1:length(ii)
+			irf_plot([[plan_ind(ii(j),1) plan_ind(ii(j),2)]; (5-cl_id)*[1 1]-.4]','k-x')
+		end
+	end
+	hold off
+end
+title('EFW data coverage and CAA planning')
 
 function res=find_close(ts,tmmode,cover,scn)
-	DT = 20; % 20 seconds
+	DT = 60; % 20 seconds
 	sc_list = 1:4;
 	sc_list(find(sc_list==scn)) = [];
 	res = 0;
@@ -139,7 +199,7 @@ function res=find_close(ts,tmmode,cover,scn)
 	end
 	
 function cover_new = throw_away(ts,tmmode,cover,scn)
-	DT = 20; % 20 seconds
+	DT = 60; % 20 seconds
 	sc_list = 1:4;
 	sc_list(find(sc_list==scn)) = [];
 	res = 0;
