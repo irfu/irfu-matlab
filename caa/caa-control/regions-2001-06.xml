@@ -7,7 +7,7 @@ $Id$
  -->
 
 <regions>
-	<title>2001-june</title>
+	<title>2001-06</title>
 	<region start="2001-06-01T09:00:00Z" desc="cusp"/>
 	<region start="2001-06-01T13:05:00Z" desc="mp"/>
 	<region start="2001-06-01T13:25:00Z" desc="sh"/>
