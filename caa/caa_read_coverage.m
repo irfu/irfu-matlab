@@ -29,3 +29,4 @@ for cli=1:4
 	 ii = find(cl_id_cov==cli);
 	 cover(cli) = {[ts(ii) te(ii) tmmode(ii)]};
 end
+cd(old_pwd)
