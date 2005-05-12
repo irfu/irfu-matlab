@@ -60,6 +60,7 @@ if ii(end)==length(region), regions = [t(ii(1:end-1)) t(ii(1:end-1)+1);t(end) te
 else, regions = [t(ii) t(ii+1)];
 end
 
+
 old_pwd = pwd;
 cd(outdir)
 
@@ -83,15 +84,66 @@ for part=1:6
 			job = [job; ints(i,1) ints(i,2)-ints(i,1)];
 		end
 	end
-	if isempty(job), continue, end
-	
-	fname = ['job-' tit '-p' num2str(part) '.dat'];
-	irf_log('save',['writing ' fname])
-	fid = fopen(fname,'w');
-	for j=1:length(job(:,1))
-		fprintf(fid,'%s %d\n',epoch2iso(job(j,1)),job(j,2));
+	if ~isempty(job)
+		fname = ['job-' tit '-p' num2str(part) '-' region_s];
+		irf_log('save',['writing ' fname])
+		fid = fopen([fname '.dat'],'w');
+		for j=1:length(job(:,1))
+			fprintf(fid,'%s %d\n',epoch2iso(job(j,1)),job(j,2));
+		end
+		fclose(fid);
+		
+		pl_cov(onoff,cover,[ts_tmp te_tmp])
+		hold on
+		for j=1:length(job(:,1))
+			irf_plot([ job(j,1)+[0 job(j,2)]; 4*[1 1]+.2]','k-x')
+		end
+		hold off
+		title(['EFW data coverage and CAA planning (' fname ')'])
+		print('-dpng',fname)
 	end
-	fclose(fid);
 end
 
 cd(old_pwd)
+
+function pl_cov(onoff,cover,tint)
+clf
+axes;
+set(gca,'YLim',[0 5]);
+hold on
+for cl_id=1:4
+	oo = onoff{cl_id};
+	co = cover{cl_id};
+	io = find(oo(:,1)>=tint(1) & oo(:,1)<=tint(2));
+	if isempty(io)
+		io = find(oo(:,1)<tint(1));
+		if isempty(io)
+			io = find(oo(:,1)>tint(2));
+			io = io(1);
+		else, io = io(end);
+		end
+	end
+	if oo(io(1),2)==0
+		if io(1)>1, io=[io(1)-1; io]; end
+	end
+	if oo(io(end),2)==1
+		if io(end)<length(oo(:,1)), io=[io; io(end)+1]; end
+	end
+	
+	ic = find(co(:,2)>=tint(1) & co(:,1)<=tint(2));
+
+	for j=1:2:length(io)-1
+		irf_plot([[oo(io(j),1) oo(io(j+1),1)]; (5-cl_id)*[1 1]]','g-x')
+	end
+	for j=1:length(ic)
+		if co(ic(j),3)==1
+			irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]','r-x')
+		else
+			irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]')
+		end
+	end
+	
+end
+hold off
+set(gca,'YTick',[1 2 3 4],'YTickLabel',['C4'; 'C3'; 'C2'; 'C1'])
+irf_zoom(tint,'x',gca)
