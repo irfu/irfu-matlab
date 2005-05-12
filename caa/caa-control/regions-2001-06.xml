@@ -1,19 +1,12 @@
 <?xml version="1.0"?>
-<!DOCTYPE table [
-	<!ELEMENT table (title,region+)>
-		<!ELEMENT title (#PCDATA)>
-		<!ELEMENT region (#PCDATA)>
-			<!ATTLIST region start NMTOKEN #REQUIRED>
-			<!ATTLIST region desc ( mp|sh|bs|sw|psh|psp|lo|cusp|nodata ) #REQUIRED>
-]>
+<!DOCTYPE regions SYSTEM "regions.dtd">
 
 <!-- 
 List of regions crossed by Cluster
-
 $Id$
  -->
 
-<table>
+<regions>
 	<title>2001-june</title>
 	<region start="2001-06-01T09:00:00Z" desc="cusp"/>
 	<region start="2001-06-01T13:05:00Z" desc="mp"/>
@@ -63,4 +56,4 @@ $Id$
 	<region start="2001-06-08T18:03:00Z" desc="mp"/>
 	<region start="2001-06-08T18:25:00Z" desc="sh"/>
 	<region start="2001-06-08T19:37:00Z" desc="nodata"/>
-</table>
+</regions>
