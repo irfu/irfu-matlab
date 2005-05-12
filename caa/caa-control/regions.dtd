@@ -1,0 +1,11 @@
+<!-- 
+Regions DTD
+
+$Id$
+ -->
+
+<!ELEMENT regions (title,region+)>
+		<!ELEMENT title (#PCDATA)>
+		<!ELEMENT region (#PCDATA)>
+			<!ATTLIST region start NMTOKEN #REQUIRED>
+			<!ATTLIST region desc ( mp|sh|bs|sw|psh|psp|lo|cusp|nodata|undef ) #REQUIRED>
