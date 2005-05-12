@@ -58,11 +58,11 @@ fprintf(fid,'<!DOCTYPE regions SYSTEM "http://www.space.irfu.se/regions.dtd">\n'
 fprintf(fid,'\n<!--\nList of regions crossed by Cluster for %s\n-->\n<regions>\n',tit);
 fprintf(fid,'<title>%s</title>\n',tit);
 if ts~=plan(1)
-	fprintf(fid,'<region start="%s" desc="nodata"/>\n',epoch2iso(ts));
+	fprintf(fid,'<region start="%s" desc="nodata"/>\n',epoch2iso(ts,1));
 end
 desc={'undef','nodata'};
 for j=1:length(plan)
-	fprintf(fid,'<region start="%s" desc="%s"/>\n',epoch2iso(plan(j)),...
+	fprintf(fid,'<region start="%s" desc="%s"/>\n',epoch2iso(plan(j),1),...
 		desc{(j/2==round(j/2))+1});
 end
 fprintf(fid,'</regions>\n',tit);
