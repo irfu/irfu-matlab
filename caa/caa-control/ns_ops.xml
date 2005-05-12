@@ -1,0 +1,1011 @@
+<?xml version="1.0"?>
+<!DOCTYPE table [
+	<!ELEMENT table (title,description,operation+)>
+		<!ELEMENT title (#PCDATA)>
+		<!ELEMENT description (#PCDATA)>
+		<!ELEMENT operation (desc,res*)>
+			<!ATTLIST operation start NMTOKEN #REQUIRED>
+			<!ATTLIST operation dt NMTOKEN #REQUIRED>
+			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|TBD ) #REQUIRED>
+			<!ATTLIST operation plan ( yes | no ) #REQUIRED>
+			<!ATTLIST operation c1 ( yes | no ) "no">
+			<!ATTLIST operation c2 ( yes | no ) "no">
+			<!ATTLIST operation c3 ( yes | no ) "no">
+			<!ATTLIST operation c4 ( yes | no ) "no">
+			<!ELEMENT desc (#PCDATA)>
+			<!ELEMENT res (link*)>
+			<!ELEMENT link (#PCDATA)>
+			<!ATTLIST link href CDATA #REQUIRED>
+]>
+
+<!-- 
+START   Start time of the anomaly, ISO time string
+DT      Length of the anomaly in sec. -1 means infinity. -157 means TDB.
+
+SDESC   Short description of the anomaly (problem code). Possible values:
+no_tm        No telemetry
+no_bm3       No BM3 telemetry
+bad_tm       Bad telemetry
+no_p[1-4]    No data on probes [1-4]
+no_10Hz_filt 10Hz filter is not operational
+no_spin_fits No on-board spin fits
+spec_bias    Special bias settings
+TDB          TBD
+
+$Id$
+ -->
+
+ <table>
+	<title>Cluster EFW Operations</title>
+	<description>
+		This list is intended to cover all non-standard operations of EFW, 
+		planned or accidental, from 2001-10-01.
+	</description>
+	<operation start="2001-07-25T00:06:45Z" dt="-1" c2="yes" plan="no" sdesc="no_10Hz_filt">
+		<desc>
+			The 10Hz filter on probe 3 failed at this time, and has 
+			never recovered.
+		</desc>
+	</operation>
+	<operation start="2001-10-01T07:30:00Z" dt="2100"
+			c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_spin_fits">
+		<desc>
+			Verify sweep interval settings. Will cause loss of spin fits for 25 minutes.
+			07:30 After reset at start of AI, do
+			not uplink spin patch or set burst. Start sweeps every 30 s (SC1), 1
+			min (SC2), 90 s (SC3), 2 min (SC4).
+			07:45 Setup burst (SWECJ349).
+			07:55 Spinfit patch (SWECJ354).
+			08:05 Test completed: change sweep interval to 30 mins on all. (SWECJ340 and 339).
+		</desc>
+		<res>
+			<link href="010913_aie_iw.txt">Ieuan</link>
+		</res>
+	</operation>
+	<operation start="2001-10-11T12:34:41Z" dt="1258" c1="yes" plan="no" sdesc="no_tm">
+		<desc>TM loss due to s/c anomaly</desc>
+		<res>
+			<link href="esoc011012.txt">ESOC 011012</link>
+			<link href="esoc011015.txt">ESOC 011015</link>
+		</res>
+	</operation>
+	<operation start="2001-10-15T00:55:00Z" dt="61680" c1="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 latched at -70 V</desc>
+		<res>
+			<link href="latch011015.txt">Anders 011015</link>
+		</res>
+	</operation>
+	<operation start="2001-10-17T05:48:43Z" dt="90" c1="yes" c2="yes" c3="yes" c4="yes"
+			plan="yes" sdesc="no_tm">
+		<desc>Time tagged burst operations
+with 2E+3B components at perigee. Loss of data for a little more than a
+minute expected.</desc>
+		<res>
+			<link href="011017_pior_burst.txt">Commented excerpt from PIOR</link>
+			<link href="010927_NCW.txt">Mail to Nicole and Milan</link>
+		</res>
+	</operation>
+	<operation start="2001-11-07T19:59:00Z" dt="2640" c3="yes" plan="yes" sdesc="no_tm">
+		<desc>SC3 system reboot. No data during this time.</desc>
+		<res>
+			<link href="esoc011107.txt">ESOC 011107</link>
+			<link href="esoc011108.txt">ESOC 011108</link>
+		</res>
+	</operation>
+	<operation start="2001-11-14T18:16:00Z" dt="26880" c1="yes" plan="no" sdesc="TBD">
+		<desc>Data loss due to ESA ground station problem</desc>
+		<res>
+			<link href="esoc011121.txt">ESOC 011121</link>
+		</res>
+	</operation>
+	
+	<operation start="2001-11-18T06:07:14Z" dt="39496" c2="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 latched at +68 V. Probe 1 problem cured by EFW reset.</desc>
+		<res>
+		<link href="pal011120.txt">Per-Arne 011120</link> 
+    <link href="aie011129.txt">Anders 011129</link>
+		</res>
+	</operation>
+	<operation start="2001-12-28T03:00:00Z" dt="-1" c1="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 effectively lost from this time.</desc>
+		<res>
+			<link href="pal020102b.txt">Per-Arne 020102</link> 
+      <link href="pal020104.txt">Per-Arne 020104</link>
+      <link href="ma020108.txt">Mats 020108</link>
+		</res>
+	</operation>
+	<operation start="2002-01-02T06:58:00Z" dt="17040" c2="yes" plan="no" sdesc="no_tm">
+		<desc>S/c problem caused data loss</desc>
+		<res>
+			<link href="esoc020108c.txt">ESOC 020108</link>
+		</res>
+	</operation>
+	<operation start="2002-01-02T13:43:00Z" dt="9480" c2="yes" plan="no" sdesc="no_tm">
+		<desc>S/c problem caused data loss</desc>
+		<res>
+			<link href="esoc020108c.txt">ESOC 020108</link>
+		</res>
+	</operation>
+	<operation start="2002-01-02T14:25:00Z" dt="4500" c1="yes" plan="no" sdesc="TBD">
+		<desc>Attempts to bring P1 back to working order</desc>
+		<res>
+			<link href="pal020102a.txt">Per-Arne 020102</link>
+		</res>
+	</operation>
+	<operation start="2002-01-07T17:36:00Z" dt="77760" c3="yes" plan="no" sdesc="no_tm">
+		<desc>
+			WEC latchup. All EFW data lost until 2002-01-08 15:12.
+			WEC restarted, EFW data regained
+		</desc>
+		<res>
+			<link href="ky020108.txt">Keith 020108</link>
+		</res>
+	</operation>
+	<operation start="2002-01-08T09:50:00Z" dt="-157" c1="yes" plan="no" sdesc="no_p2">
+		<desc>
+			P2 bias went to 0xB2 (-300 nA),
+			causing saturation at -68 V; later to 0 bias. Probable explanation is
+			timing conflict between regular sweep command and extra bias command
+			for probe 1.
+		</desc>
+		<res>
+			<link href="pal020109a.txt">Per-Arne 010209</link> 
+      <link href="pal020109b.txt">Per-Arne 010209</link>
+		</res>
+	</operation>
+	<operation start="2002-01-18T01:31:00Z" dt="39660" c1="yes" plan="no" sdesc="no_tm">
+		<desc>WEC data lost following DWP watchdog reset on SC1.</desc>
+		<res>
+			<link href="pal020118a.txt">Per-Arne 020118</link> 
+      <link href="ky020118a.txt">Keith 020118</link>
+		</res>
+	</operation>
+	<operation start="2002-02-15T18:55:00Z" dt="604800" c1="yes" plan="yes" sdesc="no_p2">
+	<desc>P2 in bias voltage (Langmuir) mode for a week from this time</desc>
+		<res>
+			<link href="aie020125b.txt">Anders 020125</link>
+		</res>
+	</operation>
+	<operation start="2002-02-17T21:45:00Z" dt="1500" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="spec_bias">
+		<desc>Bias current +16 nA during perigee passes.</desc>
+		<res>
+			<link href="aie020125b.txt">Anders 020125</link>
+		</res>
+	</operation>
+	<operation start="2002-02-17T22:00:00Z" dt="120" c3="yes" plan="yes" sdesc="spec_bias">
+		<desc>Test different bias currents at perigee eclipse.</desc>
+		<res>
+			<link href="aie020125b.txt">Anders 020125</link> 
+      <link href="aie020125a.txt">Anders 020125</link>
+		</res>
+	</operation>
+	<operation start="2002-02-20T06:43:00Z" dt="2100" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="spec_bias">
+		<desc>Bias current +16 nA during perigee passes.</desc>
+		<res>
+			<link href="aie020125b.txt">Anders 020125</link>
+		</res>
+	</operation>
+	<operation start="2002-02-22T15:43:00Z" dt="-157" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="spec_bias">
+		<desc>Bias current +16 nA during perigee passes.</desc>
+		<res>
+			<link href="aie020125b.txt">Anders 020125</link>
+		</res>
+	</operation>
+	<operation start="2002-03-20T09:59:00Z" dt="85440" c2="yes" plan="yes" sdesc="no_tm">
+		<desc>CTU switchover on SC2 caused loss of all science data.</desc>
+		<res>
+			<link href="ms020320.txt">ESOC 020320</link>
+			<link href="sm020321.txt">ESOC 020321</link>
+		</res>
+	</operation>
+	<operation start="2002-04-29T09:55:00Z" dt="772860" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>
+			WEC science telemetry bit error
+			capable of causing all sorts of problems: timing jumps, apparent
+			switches in EFW burst data, glitches.
+		</desc>
+		<res>
+			<link href="ky020612.txt">Keith 020612</link>
+		</res>
+	</operation>
+	<operation start="2002-05-08T08:31:00Z" dt="2460" c3="yes" plan="yes" sdesc="TBD">
+		<desc>WEC power cycled to clear up DWP memory latchup</desc>
+		<res>
+			<link href="ky020507a.txt">Keith 020507</link> 
+      <link href="sm020508a.txt">Silvano 020508</link>
+		</res>
+	</operation>
+	<operation start="2002-05-12T03:53:57Z" dt="1800" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="spec_bias">
+		<desc>Bias test, running -70 nA to all spheres</desc>
+		<res>
+			<link href="aie020423a.txt">Anders 020423</link>
+			<link href="aie020423b.txt">Anders 020423</link>
+		</res>
+	</operation>
+	<operation start="2002-05-26T10:27:00Z" dt="54180" c3="yes" plan="yes" sdesc="spec_bias">
+		<desc>
+			Corrupted WEC TM triggered s/c
+			to reset WEC 020526 10:27. EFW then operated with default settings
+			(e.g. non-ideal bias) until 020527 01:30.
+		</desc>
+		<res>
+			<link href="pal020527a.txt">Per-Arne 020527</link> 
+      <link href="sm020527a.txt">Silvano 020527</link>
+		</res>
+	</operation>
+	<operation start="2002-06-29T05:05:00Z" dt="180" c4="yes" plan="no" sdesc="no_tm">
+		<desc>EFW telemetry completely confused.</desc>
+		<res>
+			<link href="sm020704.txt">Silvano 020704</link> 
+      <link href="aie020704a.txt">Anders 020704</link>
+      <link href="ky020710a.txt">Keith 020710</link>
+		</res>
+	</operation>
+	<operation start="2002-07-29T09:06:59Z" dt="-1" c3="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 effectively lost from this time.</desc>
+		<res>
+			<link href="pal020806a.txt">Per-Arne 020806</link>
+		</res>
+	</operation>
+	<operation start="2002-08-06T18:20:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>
+			BM1 data intermittent (period about 20 s ???) due to wrong 
+			STAFF SA mode (TM overflow).
+		</desc>
+		<res>
+			<link href="ky020808a.txt">Keith 020808</link> 
+      <link href="pal020821a.txt">Per-Arne 020821</link>
+		</res>
+	</operation>
+	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="TBD">
+		<desc>
+			Latchup, SEU protection on ADC trigged, 
+			causing complete loss of data until power on/off cycle.
+		</desc>
+		<res><link href="pal020812a.txt">Per-Arne 020812</link>
+		</res>
+	</operation>
+	<operation start="2002-08-16T01:10:00Z" dt="51300" c3="yes" plan="no" sdesc="no_tm">
+		<desc>SC3 science and HK data lost due to s/c anomaly</desc>
+		<res>
+			<link href="sm020823a.txt">Silvano 020823</link>
+		</res>
+	</operation>
+	<operation start="2002-08-29T22:52:00Z" dt="59880" c2="yes" plan="no" sdesc="no_tm">
+		<desc>
+			SC2 reebooted by mistake at 22:5WEC not fully recovered until 
+			the end of a BM1 period at�2002-08-30 15:30.
+		</desc>
+		<res>
+			<link href="jv020830a.txt">ESOC 020830</link> 
+      <link href="sm020830a.txt">Silvano 020830</link>
+      <link href="ky020902a.txt">Keith 020902</link>
+		</res>
+	</operation>
+	<operation start="2002-08-30T03:30:00Z" dt="8400" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+	<operation start="2002-08-30T14:56:00Z" dt="19380" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+	<operation start="2002-08-30T21:08:00Z" dt="1920" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+<operation start="2002-08-30T23:00:00Z" dt="3600" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+	<operation start="2002-08-31T00:00:00Z" dt="7200" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+	<operation start="2002-08-31T00:02:12Z" dt="7680" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss for s/c reasons.</desc>
+		<res>
+			<link href="esoc020914a.txt">ESOC 020914</link>
+		</res>
+	</operation>
+	<operation start="2002-09-21T01:18:00Z" dt="11340" c1="yes" plan="no" sdesc="bad_tm">
+		<desc>
+			S/c problem caused loss of sun
+			reference pulse and thus scrambling of WEC data. The EFW onboard
+			spinfits should be crazy, as there is no sun pulse.
+		</desc>
+		<res>
+			<link href="sm020922a.txt">Silvano 020922</link>
+      <link href="ky020923a.txt">Keith 020923</link>
+		</res>
+	</operation>
+	<operation start="2002-10-02T00:49:00Z" dt="37080" c4="yes" plan="no" sdesc="no_tm">
+		<desc>
+			EFW data scrambled, though
+			analog signals to WHISPER and STAFF are all right. Presumably a
+			radiation induced SEU. 
+		</desc>
+		<res>
+			<link href="pal021002a.txt">Per-Arne 021002</link>
+      <link href="sm021004a.txt">Silvano 021004</link>
+      <link href="pal021006a.txt.txt">Per-Arne 021006</link>
+		</res>
+	</operation>
+	<operation start="2002-10-02T16:00:00Z" dt="34200" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Testing the FGM burst trig flag</desc>
+		<res>
+			<link href="aie020910a.txt">Anders 020910</link> 
+      <link href="aie020910b.txt">Anders 020910</link>
+			<link href="aie021104.txt">Anders 021104</link>
+		</res>
+	</operation>
+	<operation start="2002-10-05T02:30:00Z" dt="23400" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Testing the FGM burst trig flag</desc>
+		<res>
+			<link href="aie020910a.txt">Anders 020910</link> 
+      <link href="aie020910b.txt">Anders 020910</link>
+			<link href="aie021104.txt">Anders 021104</link>
+		</res>
+	</operation>
+	<operation start="2002-10-10T14:07:00Z" dt="77460" c3="yes" plan="no" sdesc="no_tm">
+		<desc>WEC turned off by SC after DWP voltage flag = 0xFF.</desc>
+		<res>
+			<link href="sm021011a.txt">Silvano 021011</link>
+			<link href="sm021011b.txt">Silvano 021011</link>
+		</res>
+	</operation>
+	<operation start="2002-10-20T00:52:28Z" dt="746" c3="yes" plan="no" sdesc="no_tm">
+		<desc>Ground station problems caused data loss.</desc>
+		<res>
+			<link href="esoc021022.txt">ESOC 021022</link>
+		</res>
+	</operation>
+	<operation start="2002-10-21T02:32:17Z" dt="4106" c3="yes" plan="no" sdesc="no_tm">
+		<desc>Ground station problems caused data loss.</desc>
+		<res>
+			<link href="esoc021022.txt">ESOC 021022</link>
+		</res>
+	</operation>
+	<operation start="2002-10-20T13:21:52Z" dt="75345" c4="yes" plan="no" sdesc="no_tm">
+		<desc>WEC turned off by s/c</desc>
+		<res>
+			<link href="sm021021a.txt">Silvano 021021</link>
+			<link href="ky021021a.txt">Keith 021021</link>
+			<link href="sm021021b.txt">Silvano 021021</link>
+			<link href="ky021021b.txt">Keith 021021</link>
+		</res>
+	</operation>
+	<operation start="2002-10-28T03:00:00Z" dt="-157" c2="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Two-minute bias current sweeps using internal burst at 450 S/s</desc>
+		<res>
+			<link href="aie021009a.txt">Anders 021009</link>
+			<link href="aie021009b.txt">Anders 021009</link>
+		</res>
+	</operation>
+	<operation start="2002-10-29T13:00:00Z" dt="-157"  c2="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Two-minute bias current sweeps using internal burst at 450 S/s</desc>
+		<res>
+			<link href="aie021009a.txt">Anders 021009</link>
+			<link href="aie021009b.txt">Anders 021009</link>
+		</res>
+	</operation>
+	<operation start="2002-11-01T21:23:00Z" dt="11820" c1="yes" c3="yes"  plan="no" sdesc="TBD">
+		<desc>
+			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
+			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
+			are bad. Science data are OK.
+    </desc>
+		<res>
+			<link href="aie021106a.txt">Anders 021106</link>
+		</res>
+	</operation>
+	<operation start="2002-11-02T01:33:00Z" dt="87060" c1="yes" c3="yes" plan="no" sdesc="TBD">
+  	<desc>
+			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
+			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
+			are bad. Science data are OK.
+		</desc>
+		<res>
+			<link href="aie021106a.txt">Anders 021106</link>
+		</res>
+	</operation>
+	<operation start="2002-11-03T13:34:00Z" dt="77580" c1="yes" plan="no" sdesc="no_tm">
+		<desc>WEC problems probably due to SEUs in DWP.</desc>
+    <res>
+			<link href="sm021104a.txt">Silvano 021104</link>
+			<link href="ky021105b.txt">Keith 021105</link>
+		</res>
+	</operation>
+	<operation start="2002-11-03T04:23:00Z" dt="109080" c3="yes" plan="no" sdesc="no_tm">
+	<desc>WEC problems probably due to SEUs in DWP.</desc>
+    <res>
+			<link href="sm021104a.txt">Silvano 021104</link>
+			<link href="ky021105b.txt">Keith 021105</link>
+		</res>
+	</operation>
+  <operation start="2002-11-05T08:27:00Z" dt="-157" c2="yes" plan="no" sdesc="TBD">
+		<desc>ADCE switchover on SC2.
+      </desc>
+		<res>
+			<link href="esoc021106a.txt">ESOC 021106</link>
+			<link href="ky021107.txt">Keith 021107</link>
+		</res>
+	</operation>
+	<operation start="2002-11-12T01:53:00Z" dt="840" c3="yes"  plan="no" sdesc="no_tm">
+		<desc>Spacecraft anomaly caused scrambled and lost science data.</desc>
+		<res>
+			<link href="ky021115a.txt">Keith 021115</link>
+			<link href="esoc021115a.txt">ESOC 021115</link>
+		</res>
+	</operation>
+	<operation start="2002-11-12T04:24:00Z" dt="28740" c3="yes"  plan="no" sdesc="no_tm">
+		<desc>Spacecraft anomaly caused scrambled and lost science data.</desc>
+		<res>
+			<link href="ky021115a.txt">Keith 021115</link>
+			<link href="esoc021115a.txt">ESOC 021115</link>
+		</res>
+	</operation>
+	<operation start="2002-11-22T02:19:00Z" dt="290880" c1="yes"  plan="no" sdesc="no_tm">
+		<desc>WEC data lost during this period.</desc>
+		<res>
+			<link href="sm021125a.txt">Silvano 021125</link>
+			<link href="ky021205.txt">Keith 021205</link>
+		</res>
+	</operation>
+	<operation start="2002-11-25T10:15:20Z" dt="545" c3="yes"  plan="no" sdesc="no_tm">
+		<desc>Data gap due to rain dance procedure.</desc>
+		<res>
+			<link href="esoc021126a.txt">ESOC 021126</link>
+		</res>
+	</operation>
+	<operation start="2002-11-28T16:10:00Z" dt="16200" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Partial BM1 loss.</desc>
+		<res>
+			<link href="ky030410d.txt">Keith 030410</link>
+			<link href="ky030406d.txt">Keith 030406</link>
+		</res>
+	</operation>
+	<operation start="2002-12-10T12:04:00Z" dt="6060" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>
+			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
+			Deployment worked, but P1 remains unfunctional on SC13.
+		</desc>
+		<res>
+			<link href="pal021210.txt">Per-Arne 021210</link>
+		</res>
+	</operation>
+	<operation start="2002-12-10T14:30:00Z" dt="4800" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>
+			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
+			Deployment worked, but P1 remains unfunctional on SC13.
+		</desc>
+		<res>
+			<link href="pal021210.txt">Per-Arne 021210</link>
+		</res>
+	</operation>
+	<operation start="2002-12-16T16:32:00Z" dt="45960" c4="yes" plan="no" sdesc="spec_bias">
+		<desc>WEC reset, followed by EFW in h/w default mode (bias -40 nA)</desc>
+		<res>
+			<link href="ky021218a.txt">Keith 021218</link>
+		</res>
+	</operation>
+	<operation start="2002-12-21T20:05:12Z" dt="12474" c2="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Guard 0 V on probes 3 and 4</desc>
+	</operation>
+	<operation start="2002-12-24T14:05:00Z" dt="16200" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Partial BM1 loss.</desc>
+		<res>
+			<link href="ky030410d.txt">Keith 030410</link>
+			<link href="ky030406d.txt">Keith 030406</link>
+		</res>
+	</operation>
+	<operation start="2003-01-06T08:02:00Z" dt="104400" c3="yes" plan="no" sdesc="no_tm">
+  	<desc>EFW in NULL mode, i.e. no telemetry, due to spurious command.</desc>
+		<res>
+			<link href="pal030107a.txt">Per-Arne 030107</link>
+			<link href="pal030108a.txt">Per-Arne 030108</link>
+		</res>
+	</operation>
+	<operation start="2003-01-23T08:13:07Z" dt="65644" c3="yes" plan="no" sdesc="no_tm">
+  	<desc>WEC off due to DWP problem.</desc>
+    <res>
+			<link href="pal030130a.txt">Per-Arne 030130</link>
+			<link href="ky030130a.txt">Keith 030130</link>
+		</res>
+	</operation>
+	<operation start="2003-01-24T12:50:36Z" dt="3606" c3="yes" plan="no" sdesc="TBD">
+		<desc>Uplink problem causing setup delay.</desc>
+		<res>
+			<link href="esoc030124a.txt">ESOC 030124</link>
+			<link href="ky030127a.txt">Keith 030127</link>
+		</res>
+	</operation>
+	<operation start="2003-01-24T18:54:00Z" dt="-157" c4="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switchoff, probably SEU in DWP
+      </desc>
+		<res>
+			<link href="esoc030125a.txt">ESOC 030125</link>
+			<link href="ky030127a.txt">Keith 030127</link>
+		</res>
+	</operation>
+	<operation start="2003-02-01T11:14:06Z" dt="-157" c3="yes" plan="no" sdesc="TBD">
+		<desc>Partial loss of BM3 dump.</desc>
+		<res>
+			<link href="ky030203.txt">Keith 030203</link>
+		</res>
+	</operation>
+	<operation start="2003-02-02T19:24:00Z" dt="2625060" c2="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Guard and puck variations.</desc>
+		<res>
+			<link href="aie030325c.txt">Anders 030325</link>
+		</res>
+	</operation>
+	<operation start="2003-02-05T22:06:00Z" dt="27060" c1="yes" plan="no" sdesc="no_tm">
+		<desc>WEC data loss.</desc>
+		<res>
+			<link href="esoc030211c.txt">ESOC 030211</link>
+			<link href="ky030210e.txt">Keith 030210</link>
+		</res>
+	</operation>
+	<operation start="2003-02-12T11:02:00Z" dt="10740" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="no_tm">
+		<desc>BM1 data chopped up.</desc>
+		<res>
+			<link href="ky030212a.txt">Keith 030212</link>
+			<link href="esoc030212a.txt">ESOC 030212</link>
+		</res>
+	</operation>
+	<operation start="2003-02-20T11:06:00Z" dt="1200" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss due to ground station problem.</desc>
+		<res>
+			<link href="esoc030227a.txt">ESOC 030227</link>
+		</res>
+	</operation>
+	<operation start="2003-02-24T07:51:00Z" dt="14340" c4="yes" plan="yes" sdesc="TBD">
+		<desc>3 x 450 samples/s: E-field V12M, Langmuir mode V3V4M</desc>
+	</operation>
+	<operation start="2003-02-24T07:51:00Z" dt="14400" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Data chopped up.</desc>
+	</operation>
+	<operation start="2003-03-13T07:56:00Z" dt="-157" c2="yes" plan="no" sdesc="TBD">
+		<desc>SC anomaly during upload.</desc>
+		<res>
+			<link href="esoc030314a.txt">ESOC 030314</link>
+		</res>
+	</operation>
+	<operation start="2003-03-19T15:31:36Z" dt="32258" c2="yes" plan="no" sdesc="no_tm">
+		<desc>Sync loss between EFW and DWP</desc>
+		<res>
+			<link href="ky030325a.txt">Keith 030325</link>
+		</res>
+	</operation>
+	<operation start="2003-03-19T20:12:00Z" dt="1500" c1="yes" plan="no" sdesc="no_tm">
+		<desc>Sampling error</desc>
+		<res>
+			<link href="pal030322b.txt">Per-Arne 030322</link>
+		</res>
+	</operation>
+	<operation start="2003-03-21T13:07:47Z" dt="192073" c1="yes" plan="no" sdesc="no_tm">
+		<desc>
+			EFW switched off by DWP watchdog. Data return before end of given interval,
+			but settings not fully restored until 030323 18:29.
+    </desc>
+		<res>
+			<link href="ky030324a.txt">Keith 030324</link>
+		</res>
+	</operation>
+	<operation start="2003-03-22T06:20:00Z" dt="14520" c4="yes" plan="no" sdesc="spec_bias">
+		<desc>Wrong bias current (+16 nA) due to missing commands at end of eclipse.</desc>
+		<res>
+			<link href="aie030409a.txt">Anders 030409</link>
+			<link href="jsoc030410a.txt">JSOC 030410</link>
+		</res>
+	</operation>
+	<operation start="2003-03-22T19:32:00Z" dt="54396" c1="yes" c3="yes" plan="yes" sdesc="TBD">
+		<desc>
+			Testing 16 bit sweeps and new WEC sequences. Test
+			should have run on SC13, but note problems on SC1 on line above. 
+    </desc>
+		<res>
+			<link href="aie030307a.txt">Anders 030307</link>
+		</res>
+	</operation>
+	<operation start="2003-03-27T03:54:36Z" dt="90084" c1="yes" c3="yes" plan="yes" sdesc="TBD">
+		<desc>
+			Testing flight software 2.4 and new WEC sequences (NM1/TM0 and BM1/TM1).
+			Partial BM1 data loss due to wrong correlator TM.
+    </desc>
+		<res>
+			<link href="aie030307a.txt">Anders 030307</link> 
+			<link href="ky030406d.txt">Keith 030406</link>
+		</res>
+	</operation>
+	<operation start="2003-04-08T01:30:00Z" dt="90060" c1="yes" c3="yes" plan="yes" sdesc="TBD">
+		<desc>
+			Testing flight software 2.4 and new WEC sequences (NM1/TM0, BM1/TM1 and
+			BM1/TM2). We have TM2 (22 kbit/s) for the last ten minutes of the BM1
+			interval. Functions used on each spacecraft in the different sampling
+			mode:
+			SC1:
+			�TM0: V23V34L �(0x9E)
+			�TM1: V23V34M �(0x9E) �
+			�TM2: V2V3V4M �(0x1E)
+			SC3:
+			�TM0: V2V34L � (0x94)
+			�TM1: V2V34M � (0x9F)
+			�TM2: V2V3V34M (0x1F)
+      </desc>
+	</operation>
+	<operation start="2003-05-05T08:51:00Z" dt="12660" c3="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switchoff</desc>
+		<res>
+			<link href="ky030505a.txt">Keith 030505</link>
+			<link href="esoc030505a.txt">ESOC 030505</link>
+		</res>
+	</operation>
+	<operation start="2003-06-11T03:35:00Z" dt="13920" c3="yes" plan="no" sdesc="no_tm">
+    <desc>Data gap due to ground station problem.</desc>
+		<res>
+			<link href="esoc030617a.txt">ESOC 030617</link>
+			<link href="esoc030704.txt">ESOC 030704</link>
+		</res>
+	</operation>
+	<operation start="2003-06-23T14:01:00Z" dt="37380" c4="yes" plan="no" sdesc="no_tm">
+		<desc>All probes saturated at -68 V</desc>
+		<res>
+			<link href="pal030721a.txt">Per-Arne 030721</link>
+		</res>
+	</operation>
+	<operation start="2003-06-24T19:35:00Z" dt="36180" c4="yes" plan="no" sdesc="no_tm">
+    <desc>Bad data (presumably DWP error)</desc>
+		<res>
+			<link href="pal030721a.txt">Per-Arne 030721</link>
+		</res>
+	</operation>
+	<operation start="2003-06-18T12:58:22Z" dt="598664" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="TBD">
+    <desc>
+			Last expected occurrence of small WEC TM overflow problem that 
+			has occurred now and then lately.
+    </desc>
+		<res>
+			<link href="ky030620a.htm">Keith 030620</link>
+		</res>
+	</operation>
+	<operation start="2003-07-01T12:39:30Z" dt="39030" c1="yes" plan="no" sdesc="no_tm">
+    <desc>All probes bad</desc>
+		<res>
+			<link href="pal030721a.txt">Per-Arne 030721</link>
+		</res>
+	</operation>
+	<operation start="2003-07-12T11:27:00Z" dt="540" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+    <desc>
+			Intermediate sweeps on P34, internal burst. (Original request in 
+			ref 1 for slow sweeps at perigee was for a time outside data 
+			acquisition and had to be replaced, see ref 2)
+    </desc>
+		<res>
+			<link href="aie030623a.txt">Anders 030623</link>
+			<link href="aie030626a.txt">Anders 030626</link>
+		</res>
+	</operation>
+	<operation start="2003-07-12T19:00:00Z" dt="120" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+    <desc>Intermediate sweeps on P34, internal burst.</desc>
+		<res>
+			<link href="aie030623a.txt">Anders 030623</link>
+			<link href="aie030626a.txt">Anders 030626</link>
+		</res>
+	</operation>
+	<operation start="2003-07-17T12:30:00Z" dt="300" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+    <desc>Slow sweeps on P34.</desc>
+		<res>
+			<link href="aie030623a.txt">Anders 030623</link>
+			<link href="aie030626a.txt">Anders 030626</link>
+		</res>
+	</operation>
+	<operation start="2003-07-25T05:07:00Z" dt="10200" c4="yes"  plan="no" sdesc="no_tm">
+		<desc>WEC off</desc>
+		<res>
+			<link href="pal030725a.txt">Per-Arne 030725</link>
+			<link href="esoc030725a.txt">ESOC 030725</link>
+		</res>
+	</operation>
+	<operation start="2003-07-29T07:00:00Z" dt="9720" c2="yes" plan="no" sdesc="bad_tm">
+		<desc>EFW bad data</desc>
+		<res>
+			<link href="pal030730a.txt">Per-Arne 030730</link>
+		</res>
+	</operation>
+	<operation start="2003-08-03T03:16:00Z" dt="114060" c1="yes" plan="no" sdesc="no_tm">
+    <desc>WEC off</desc>
+		<res>
+			<link href="esoc030804a.txt">ESOC 030804</link>
+			<link href="esoc030804b.txt">ESOC 030804</link>
+		</res>
+	</operation>
+	<operation start="2003-08-14T14:12:00Z" dt="33960" c1="yes" plan="no" sdesc="bad_tm">
+    <desc>EFW data gaps</desc>
+		<res>
+			<link href="pal030819a.txt">Per-Arne 030819</link>
+		</res>
+	</operation>
+	<operation start="2003-10-07T06:00:00Z" dt="2400" c2="yes" c4="yes" plan="yes" sdesc="TBD">
+    <desc>Slow sweeps on P34</desc>
+		<res>
+			<link href="aie030918.txt">Anders 030918</link>
+		</res>
+	</operation>
+	<operation start="2003-10-08T15:06:00Z" dt="2220" c4="yes" plan="no" sdesc="no_tm">
+    <desc>WEC power cycling for WHISPER problem.</desc>
+		<res>
+			<link href="esoc031008a.txt">ESOC 031008</link>
+		</res>
+	</operation>
+	<operation start="2003-10-09T04:52:00Z" dt="41340" c4="yes" plan="no" sdesc="no_tm">
+    <desc>WEC data gap due to DWP problem?</desc>
+		<res>
+			<link href="pal031015a.txt">Per-Arne 031015</link>
+			<link href="ky031015a.txt">Keith 031015</link>
+		</res>
+	</operation>
+	<operation start="2003-10-10T17:09:00Z" dt="2280" c2="yes" plan="no" sdesc="no_tm">
+    <desc>WEC power cycling for DWP latchup, curing a STAFF cal problem</desc>
+		<res>
+			<link href="ky031010a.txt">Keith 031010</link>
+			<link href="esoc031010.txt">ESOC 031010</link>
+		</res>
+	</operation>
+	<operation start="2003-10-28T15:21:00Z" dt="120" c3="yes" plan="no" sdesc="no_tm">
+		<desc>WEC problems due to proton event</desc>
+		<res>
+			<link href="esoc031029b.txt">ESOC 031029</link>
+			<link href="esoc031029c.txt">ESOC 031029</link>
+		</res>
+	</operation>
+	<operation start="2003-10-28T16:17:00Z" dt="22560" c4="yes" plan="no" sdesc="no_tm">
+    <desc>WEC problems due to proton event</desc>
+		<res>
+			<link href="esoc031029b.txt">ESOC 031029</link>
+			<link href="esoc031029c.txt">ESOC 031029</link>
+		</res>
+	</operation>
+	<operation start="2003-10-29T01:58:00Z" dt="46260" c1="yes" plan="no" sdesc="no_tm">
+    <desc>All Cluster data lost due to proton event impact on s/c systems</desc>
+		<res>
+			<link href="esoc031030a.txt">ESOC 031030</link>
+			<link href="AR_051_SSR_CTRL_Failure_sc1.pdf">AR-051 (pdf)</link>
+			<link href="esoc031029c.txt">ESOC 031029</link>
+		</res>
+	</operation>
+	<operation start="2003-10-29T08:30:00Z" dt="30720" c3="yes" plan="no" sdesc="bad_tm">
+    <desc>WEC and EFW problems during solar proton event</desc>
+		<res>
+			<link href="esoc031029a.txt">ESOC 030129</link>
+			<link href="pal031029a.txt">Per-Arne 031029</link>
+			<link href="esoc031029c.txt">ESOC 031029</link>
+		</res>
+	</operation>
+	<operation start="2003-10-30T17:27:00Z" dt="1680" c2="yes" plan="no" sdesc="no_tm">
+    <desc>WEC power cycling following solar proton event problems</desc>
+		<res>
+			<link href="esoc031030b.txt">ESOC 031030</link>
+			<link href="esoc031029c.txt">ESOC 031029</link>
+		</res>
+	</operation>
+	<operation start="2003-12-13T18:43:00Z" dt="12600" c2="yes" plan="yes" sdesc="spec_bias">
+		<desc>Bias test, P34 guard zero</desc>
+		<res>
+			<link href="aie031125a.txt">Anders 031125</link>
+			<link href="aie031125b.txt">Anders 031125</link>
+		</res>
+	</operation>
+	<operation start="2003-12-13T19:10:00Z" dt="7380" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+		<desc>Sweep interval 10 minutes</desc>
+		<res>
+			<link href="aie031125a.txt">Anders 031125</link>
+			<link href="aie031125b.txt">Anders 031125</link>
+		</res>
+	</operation>
+	<operation start="2003-12-14T00:08:00Z" dt="405120" c1="yes" plan="no" sdesc="bad_tm">
+    <desc>WBD problem turned WEC off. Several tests followed up to Dec 18.</desc>
+		<res>
+			<link href="esoc031214a.txt">ESOC 031214</link>
+			<link href="ky031215a.txt">Keith 031215</link>
+			<link href="esoc031215a.txt">ESOC 031215</link>
+			<link href="ky031215b.txt">Keith 031215</link>
+			<link href="esoc031216a.txt">ESOC 031216</link>
+			<link href="ky031219a.txt">Keith 031219</link>
+			<link href="jolene040129.txt">Jolene 040129</link>
+		</res>
+	</operation>
+	<operation start="2003-12-14T07:30:00Z" dt="56520" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+    <desc>
+			Sweep interval 30 minutes. Should
+			also have been on SC1, but the WBD problem stopped this.
+    </desc>
+		<res>
+			<link href="aie031125a.txt">Anders 031125</link>
+			<link href="aie031125b.txt">Anders 031125</link>
+		</res>
+	</operation>
+	<operation start="2003-12-16T03:30:00Z" dt="360" c3="yes" plan="yes" sdesc="TBD">
+		<desc>
+			Slow sweeps on P2. Should also have been on SC1, 
+			but the WBD problem stopped this.
+		</desc>
+	</operation>
+	<operation start="2004-01-08T03:05:00Z" dt="82085" c1="yes" c2="yes" c4="yes" plan="no" sdesc="no_tm">
+		<desc>DWP/WBD command problem</desc>
+		<res>
+			<link href="ky040109a.txt"> Keith 040109</link>
+			<link href="esoc040109a.txt">ESOC 040109</link>
+		</res>
+	</operation>
+	<operation start="2004-01-08T03:05:00Z" dt="37170" c3="yes" plan="no" sdesc="no_tm">
+		<desc>DWP/WBD command problem</desc>
+		<res>
+			<link href="ky040109a.txt"> Keith 040109</link>
+			<link href="esoc040109a.txt">ESOC 040109</link>
+		</res>
+	</operation>
+	<operation start="2004-01-09T01:42:00Z" dt="665" c3="yes" plan="no" sdesc="no_tm">
+		<desc>DWP/WBD command problem</desc>
+		<res>
+			<link href="ky040109a.txt"> Keith 040109</link>
+			<link href="esoc040109a.txt">ESOC 040109</link>
+		</res>
+	</operation>
+	<operation start="2004-01-29T22:06:00Z" dt="571140" c1="yes" plan="no" sdesc="no_tm">
+		<desc>EFW problem</desc>
+		<res>
+			<link href="pal040205a.txt">Per-Arne 040205</link>
+			<link href="ky040205a.html">Keith 040205</link>
+			<link href="esoc040205a.txt">ESOC 040205</link>
+			<link href="pal040205b.txt">Per-Arne 040205</link>
+		</res>
+	</operation>
+	<operation start="2004-05-14T17:18:00Z" dt="54360" c2="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switched off by s/c</desc>
+		<res><link href="esoc040515c.txt">ESOC 040515</link>
+		</res>
+	</operation>
+	<operation start="2004-06-11T01:05:30Z" dt="19500" c2="yes" plan="no" sdesc="no_tm">
+		<desc>WEC off</desc>
+		<res>
+			<link href="esoc040611f.txt">ESOC 040611</link>
+			<link href="ky040611f.txt">Keith 040611</link>
+		</res>
+	</operation>
+	<operation start="2004-06-13T21:53:30Z" dt="70950" c1="yes"  plan="no" sdesc="no_tm">
+		<desc>S/C problem: CTU switchover</desc>
+		<res>
+			<link href="esoc040614a.txt">ESOC 040614</link>
+			<link href="ky040614a.html">Keith 040614</link>
+			<link href="esoc040614c.txt">ESOC 040614</link>
+			<link href="ky040615a.txt">Keith 040615</link>
+			<link href="esoc040615a.txt">ESOC 040615</link>
+			<link href="esoc040616a.txt"> ESOC 040616</link>
+			<link href="esoc040616b.txt">Keith 040616</link>
+			<link href="esoc040616b.txt">ESOC 040616</link>
+			<link href="AR_054_CTU_SO_on_SC1.pdf">AR-054 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_tm">
+		<desc>Lunar eclipse</desc>
+		<res>
+			<link href="CL-OPS-RP-1005-OPS-OFC.pdf">ESOC report (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2004-07-03T03:14:00Z" dt="2340" c2="yes"  plan="no" sdesc="no_tm">
+		<desc>Data loss due to s/c problem</desc>
+		<res><link href="AR057_SSR_Record_Pointer_Corrupt_SC2.pdf">AR-057 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2004-07-09T05:10:00Z" dt="76500" c2="yes" plan="no" sdesc="bad_tm">
+		<desc>EFW hickups due to spurious commands</desc>
+		<res>
+			<link href="pal040709a.txt">Per-Arne 040709</link>
+			<link href="pal040710a.txt">Per-Arne 040710</link>
+		</res>
+	</operation>
+	
+	<operation start="2004-08-15T00:00:00Z" dt="65940" c3="yes"  plan="no" sdesc="no_tm">
+		<desc>EFW problem</desc>
+		<res>
+			<link href="pal040816a.txt">Per-Arne 040816</link>
+			<link href="pal040816b.txt">Per-Arne 040816</link>
+		</res>
+	</operation>
+	<operation start="2004-08-19T04:35:00Z" dt="31860" c3="yes"  plan="no" sdesc="no_tm">
+		<desc>WEC switched off by s/c</desc>
+		<res>
+			<link href="esoc040819a.txt">ESOC 040819</link>
+			<link href="esoc040819b.txt">ESOC 040819</link>
+		</res>
+	</operation>
+	<operation start="2004-08-21T12:35:00Z" dt="51600" c2="yes"  plan="no" sdesc="no_tm">
+		<desc>WEC switched off by s/c</desc>
+		<res>
+			<link href="esoc040823a.txt">ESOC 040823</link>
+			<link href="ky040831a.txt">Keith 040831</link>
+		</res>
+	</operation>
+	<operation start="2004-09-05T08:33:00Z" dt="68220" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_tm">
+		<desc>Payload off during long (apogee) eclipse</desc>
+	</operation>
+	<operation start="2004-09-07T16:23:00Z" dt="72630" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_tm">
+		<desc>Payload off during long (apogee) eclipse</desc>
+	</operation>
+	<operation start="2004-09-10T01:00:50Z" dt="71660" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_tm">
+		<desc>Payload off during long (apogee) eclipse</desc>
+	</operation>
+	<operation start="2004-09-16T19:54:00Z" dt="306480" c1="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switched off by s/c</desc>
+		<res><link href="esoc040920a.txt">ESOC 040920</link>
+		</res>
+	</operation>
+	<operation start="2004-09-18T16:10:45Z" dt="34225" c2="yes" plan="no" sdesc="no_tm">
+		<desc>Data lost due to s/c problem</desc>
+		<res>
+			<link href="esoc040920b.txt">ESOC 040920</link>
+			<link href="AR-061.pdf">AR-061 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2004-09-20T09:17:08Z" dt="113002" c1="yes"  plan="no" sdesc="no_tm">
+		<desc>WEC switched off by s/c</desc>
+		<res>
+			<link href="esoc040921a.txt">ESOC 040921</link>
+			<link href="esoc040921b.txt">ESOC 040921</link>
+			<link href="ky040921a.txt">Keith 040921</link>
+			<link href="pal040922a.txt">Per-Arne 040922</link>
+		</res>
+	</operation>
+	<operation start="2004-09-21T19:04:00Z" dt="17760" c4="yes"  plan="no" sdesc="bad_tm">
+		<desc>DWP problem?</desc>
+		<res>
+			<link href="esoc040922a.txt">ESOC 040922</link>
+			<link href="pal040922b.txt">Per-Arne 040922</link>
+		</res>
+	</operation>
+	<operation start="2004-10-18T17:00:00Z" dt="178832" c4="yes" plan="no" sdesc="no_tm">
+		<desc>S/c problem (CTU switchover)</desc>
+		<res>
+			<link href="esoc041020a.txt">ESOC 041020</link>
+			<link href="CLU_AR_062.pdf">AR-062 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2004-10-31T01:43:45Z" dt="220035" c3="yes" plan="no" sdesc="no_tm">
+		<desc>S/c problem (CTU switchover)</desc>
+		<res>
+			<link href="esoc041101a.txt">ESOC 041101</link>
+			<link href="CLU_AR_063.pdf">AR-063 (PDF)</link>
+			<link href="esoc041102a.txt">ESOC 041102</link>
+		</res>
+	</operation>
+	<operation start="2004-11-06T15:10:00Z" dt="171420" c3="yes" plan="no" sdesc="no_tm">
+		<desc>WEC off following spurious WBD command.</desc>
+		<res>
+			<link href="esoc041108a.txt">ESOC 041108</link>
+			<link href="ky041108a.txt">Keith 041108</link>
+			<link href="esoc041108b.txt">ESOC 041108</link>
+		</res>
+	</operation>
+	<operation dt="1" plan="no" sdesc="no_bm3" start="2004-11-27T23:53:00Z" c1="yes">
+		<desc>Burst dump lost due to dump made in BM1 rather than BM3.</desc>
+		<res>
+		<link href="ky041129a.txt">Keith 041129</link>
+		<link href="esoc041130a.txt">ESOC 041130</link>
+		</res>
+	</operation>
+	<operation dt="107400" plan="yes" sdesc="no_p23" start="2005-04-10T06:47:00Z" c1="yes" c3="yes">
+		<desc>P2 at 25 S/s rather than P23, for SC13 only</desc>
+	</operation>
+</table>
