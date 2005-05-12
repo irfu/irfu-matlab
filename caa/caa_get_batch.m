@@ -31,7 +31,7 @@ for cl_id=1:4
 		end
 		if isempty(tm) & ~isempty(tm_cur), tm = [st_tmp tm_cur]; end
 		if ~isempty(tm) & ~isempty(tm_cur)
-			if tm(end,2) ~=tm_cur, tm(end+1,:) = [st_tmp tm_cur]; end
+			if tm(end,2)~=tm_cur, tm(end+1,:) = [st_tmp tm_cur]; end
 		end
 		st_tmp = st_tmp + REQ_INT;
 	end

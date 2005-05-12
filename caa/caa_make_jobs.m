@@ -72,7 +72,7 @@ for part=1:6
 	end
 	ints = plan(find( plan(:,2)>=ts_tmp & plan(:,1)<=te_tmp),:);
 	if isempty(ints), continue, end
-	regs = plan(find( regions(:,2)>=ts_tmp & regions(:,1)<=te_tmp),:);
+	regs = regions(find( regions(:,2)>=ts_tmp & regions(:,1)<=te_tmp),:);
 	if isempty(ints), continue, end
 	
 	for j=1:length(regs(:,1))
@@ -83,13 +83,17 @@ for part=1:6
 			if ints(i,2)>regs(j,2), ints(i,2) = regs(j,2); end
 			job = [job; ints(i,1) ints(i,2)-ints(i,1)];
 		end
+		ii = (ints(:,1)>regs(j,1) & ints(:,2)>regs(j,2));
+		if ~isempty(ii)
+			job = [job; regs(j,1) regs(j,2)-regs(j,1)];
+		end
 	end
 	if ~isempty(job)
 		fname = ['job-' tit '-p' num2str(part) '-' region_s];
 		irf_log('save',['writing ' fname])
 		fid = fopen([fname '.dat'],'w');
 		for j=1:length(job(:,1))
-			fprintf(fid,'%s %d\n',epoch2iso(job(j,1)),job(j,2));
+			fprintf(fid,'%s %d\n',epoch2iso(job(j,1),1),job(j,2));
 		end
 		fclose(fid);
 		
