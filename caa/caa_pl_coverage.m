@@ -172,12 +172,15 @@ while cl_id<=4
 	cl_id = cl_id + 1;
 end
 
-if ~isempty(plan) & plotflag
-	hold on
-	for j=1:length(plan(:,1))
-		irf_plot([[plan(j,1) plan(j,2)]; 4*[1 1]+.2]','k-x')
+if ~isempty(plan)
+	plan = sortrows(plan,1);
+	if plotflag
+		hold on
+		for j=1:length(plan(:,1))
+			irf_plot([[plan(j,1) plan(j,2)]; 4*[1 1]+.2]','k-x')
+		end
+		hold off
 	end
-	hold off
 end
 if ~isempty(plan_ind)
 	plan_ind = sortrows(sortrows(plan_ind,1),3);
