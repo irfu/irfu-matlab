@@ -98,7 +98,9 @@ while cl_id<=4
 							% start as we are afraid to miss the reset
 							if co_tmp(ii_tmp,1)>ts, ts = co_tmp(ii_tmp,1); end
 							if co_tmp(ii_tmp,2)>te, te = co_tmp(ii_tmp,2); end
-							disp(['including C' num2str(cli) ' ' epoch2iso(co_tmp(ii_tmp,1)) ' - ' epoch2iso(co_tmp(ii_tmp,2))])
+							disp(['including  C' num2str(cli) ' ' ...
+								epoch2iso(co_tmp(ii_tmp,1),1) ' - ' ...
+								epoch2iso(co_tmp(ii_tmp,2),1)])
 							% clear the interval
 							ii_tmp = find(cover_tmp{cli}(:,1)==co_tmp(ii_tmp,1));
 							cover_tmp{cli}(ii_tmp-1:ii_tmp,:) = [];
@@ -106,18 +108,21 @@ while cl_id<=4
 					end
 					% We shift ts by 3 mins to account for instrument reset
 					plan = [plan; [ts+DT_RES te]];
-					disp(['saving ' epoch2iso(ts) ' - ' epoch2iso(te)])
-					disp(['1 clearing C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+					disp(['saving        ' epoch2iso(ts,1) ' - ' epoch2iso(te,1)])
+					disp(['clearing   C' num2str(cl_id) ' ' epoch2iso(co(j,1),1)...
+						' - ' epoch2iso(co(j,2),1)])
 					% clear the intervals
 					co(j:j+1,:) = [];
 				else
 					% this was the last interval, throw it away anyway
-					disp(['2 throwing away C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+					disp(['throwing a C' num2str(cl_id) ' ' ...
+						epoch2iso(co(j,1),1) ' - ' epoch2iso(co(j,2),1)])
 					cover_tmp = throw_away(co(j,1),1,cover_tmp,cl_id);
 					co(j,:) = [];
 				end
 			else
-				disp(['3 throwing away C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+				disp(['throwing a C' num2str(cl_id) ' ' epoch2iso(co(j,1),1)...
+				' - ' epoch2iso(co(j,2),1)])
 				co(j,:) = [];
 			end
 		end
@@ -145,25 +150,30 @@ while cl_id<=4
 					if ~isempty(ii_tmp)
 						if co_tmp(ii_tmp,1)<ts, ts = co_tmp(ii_tmp,1); end
 						if co_tmp(ii_tmp,2)>te, te = co_tmp(ii_tmp,2); end
-						disp(['including C' num2str(cli) ' ' epoch2iso(co_tmp(ii_tmp,1)) ' - ' epoch2iso(co_tmp(ii_tmp,2))])
+						disp(['including  C' num2str(cli) ' ' ...
+							epoch2iso(co_tmp(ii_tmp,1),1) ' - ' ...
+							epoch2iso(co_tmp(ii_tmp,2),1)])
 						% clear the interval
 						ii_tmp = find(cover_tmp{cli}(:,1)==co_tmp(ii_tmp,1));
 						cover_tmp{cli}(ii_tmp,:) = [];
 					end
 				end
 				plan = [plan; [ts te]];
-				disp(['saving ' epoch2iso(ts) ' - ' epoch2iso(te)])
+				disp(['saving        ' epoch2iso(ts,1) ' - ' epoch2iso(te,1)])
 			else
 				% we check if we are not already inside some common interval
 				ii = find(co(j,1)>plan(:,1)-DT_RES & co(j,1)<plan(:,2));
 				if isempty(ii)
 					plan_ind = [plan_ind; co(j,1:2) cl_id];
-					disp(['saving individual C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+					disp(['saving ind C' num2str(cl_id) ' '...
+						epoch2iso(co(j,1),1) ' - ' epoch2iso(co(j,2),1)])
 				else
-					disp(['skipping C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+					disp(['skipping   C' num2str(cl_id) ' ' epoch2iso(co(j,1),1)...
+						' - ' epoch2iso(co(j,2),1)])
 				end
 			end
-			disp(['5 clearing C' num2str(cl_id) ' ' epoch2iso(co(j,1)) ' - ' epoch2iso(co(j,2))])
+			disp(['clearing   C' num2str(cl_id) ' ' epoch2iso(co(j,1),1) ...
+				' - ' epoch2iso(co(j,2),1)])
 			% clear the intervals
 			co(j,:) = [];
 		end
@@ -190,30 +200,30 @@ if ~isempty(plan_ind)
 	for j=length(plan_ind(:,1)):-1:1
 		ii = find(plan_ind(j,1)>plan(:,1)-DT_RES & plan_ind(j,1)<plan(:,2));
 		if ~isempty(ii)
-			disp(['excluding C' num2str(cl_id) ...
-				' ' epoch2iso(plan_ind(j,1)) ' - ' epoch2iso(plan_ind(j,2))])
+			disp(['excluding  C' num2str(plan_ind(j,3)) ...
+				' ' epoch2iso(plan_ind(j,1),1) ' - ' epoch2iso(plan_ind(j,2),1)])
 			% we check if the interval ends inside the common interval, 
 			% otherwise we need to extend the the common interval
 			if plan_ind(j,2)>plan(ii,2)
 				if ii==length(plan(:,1))
 					% last common interval, we extend it
-					disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
-						epoch2iso(plan(ii,2)) ' by ' ...
+					disp(['extending   ' epoch2iso(plan(ii,1),1) ' - ' ...
+						epoch2iso(plan(ii,2),1) ' by ' ...
 						num2str(plan_ind(j,2)-plan(ii,2)) 'sec'])
 					plan(ii,2) = plan_ind(j,2);
 				else
 					if plan_ind(j,2)>plan(ii+1,1)
 						% ends in the next common interval
 						% set end to the beginning of the next interval -1sec
-						disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
-							epoch2iso(plan(ii,2)) ' by ' ...
+						disp(['extending   ' epoch2iso(plan(ii,1),1) ' - ' ...
+							epoch2iso(plan(ii,2),1) ' by ' ...
 							num2str(plan(ii+1,1)-plan(ii,2)-1) 'sec'])
 						plan(ii,2) = plan(ii+1,1) - 1;
 					else
 						% ends before the next interva
 						% just extend it
-						disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
-							epoch2iso(plan(ii,2)) ' by ' ...
+						disp(['extending   ' epoch2iso(plan(ii,1),1) ' - ' ...
+							epoch2iso(plan(ii,2),1) ' by ' ...
 							num2str(plan_ind(j,2)-plan(ii,2)) 'sec'])
 						plan(ii,2) = plan_ind(j,2);
 					end
@@ -260,7 +270,8 @@ function cover_new = throw_away(ts,tmmode,cover,scn)
 		co = cover{cli};
 		ii = find(co(:,1)>ts-DT & co(:,1)<ts+DT & co(:,3)==tmmode);
 		if ~isempty(ii)
-			disp(['4 throwing away C' num2str(cli) ' ' epoch2iso(co(ii,1)) ' - ' epoch2iso(co(ii,2))])
+			disp(['throwing a C' num2str(cli) ' ' epoch2iso(co(ii,1),1)...
+				' - ' epoch2iso(co(ii,2),1)])
 			co(ii,:) = [];
 		end
 		cover_new(cli) = {co};
