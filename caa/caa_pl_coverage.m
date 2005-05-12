@@ -90,6 +90,8 @@ while cl_id<=4
 						co_tmp = co_tmp(ii_tmp,1:2);
 						ii_tmp = find(co_tmp(:,1)>ts-DT & co_tmp(:,1)<ts+DT);
 						if ~isempty(ii_tmp)
+							% we take ts from the interval which has the latest 
+							% start as we are afraid to miss the reset
 							if co_tmp(ii_tmp,1)>ts, ts = co_tmp(ii_tmp,1); end
 							if co_tmp(ii_tmp,2)>te, te = co_tmp(ii_tmp,2); end
 							disp(['including C' num2str(cli) ' ' epoch2iso(co_tmp(ii_tmp,1)) ' - ' epoch2iso(co_tmp(ii_tmp,2))])
@@ -137,7 +139,7 @@ while cl_id<=4
 					co_tmp = co_tmp(ii_tmp,1:2);
 					ii_tmp = find(co_tmp(:,1)>ts-DT & co_tmp(:,1)<ts+DT);
 					if ~isempty(ii_tmp)
-						if co_tmp(ii_tmp,1)>ts, ts = co_tmp(ii_tmp,1); end
+						if co_tmp(ii_tmp,1)<ts, ts = co_tmp(ii_tmp,1); end
 						if co_tmp(ii_tmp,2)>te, te = co_tmp(ii_tmp,2); end
 						disp(['including C' num2str(cli) ' ' epoch2iso(co_tmp(ii_tmp,1)) ' - ' epoch2iso(co_tmp(ii_tmp,2))])
 						% clear the interval
@@ -174,6 +176,46 @@ if ~isempty(plan)
 	hold off
 end
 if ~isempty(plan_ind)
+	plan_ind = sortrows(sortrows(plan_ind,1),3);
+	
+	% remove individual intervals which are already a part of 
+	% one of the common intervals
+	for j=length(plan_ind(:,1)):-1:1
+		ii = find(plan_ind(j,1)>plan(:,1)-DT_RES & plan_ind(j,1)<plan(:,2));
+		if ~isempty(ii)
+			disp(['excluding C' num2str(cl_id) ...
+				' ' epoch2iso(plan_ind(j,1)) ' - ' epoch2iso(plan_ind(j,2))])
+			% we check if the interval ends inside the common interval, 
+			% otherwise we need to extend the the common interval
+			if plan_ind(j,2)>plan(ii,2)
+				if ii==length(plan(:,1))
+					% last common interval, we extend it
+					disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
+						epoch2iso(plan(ii,2)) ' by ' ...
+						num2str(plan_ind(j,2)-plan(ii,2)) 'sec'])
+					plan(ii,2) = plan_ind(j,2);
+				else
+					if plan_ind(j,2)>plan(ii+1,1)
+						% ends in the next common interval
+						% set end to the beginning of the next interval -1sec
+						disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
+							epoch2iso(plan(ii,2)) ' by ' ...
+							num2str(plan(ii+1,1)-plan(ii,2)-1) 'sec'])
+						plan(ii,2) = plan(ii+1,1) - 1;
+					else
+						% ends before the next interva
+						% just extend it
+						disp(['extending ' epoch2iso(plan(ii,1)) ' - ' ...
+							epoch2iso(plan(ii,2)) ' by ' ...
+							num2str(plan_ind(j,2)-plan(ii,2)) 'sec'])
+						plan(ii,2) = plan_ind(j,2);
+					end
+				end
+			end
+			plan_ind(j,:) = [];
+		end
+	end
+	
 	hold on
 	for cl_id=1:4
 		ii = find(plan_ind(:,3)==cl_id);
