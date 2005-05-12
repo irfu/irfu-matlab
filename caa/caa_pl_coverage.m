@@ -1,5 +1,5 @@
-function [plan, plan_ind] = caa_pl_coverage(onoff,cover,tint)
-%CAA_PL_COVERAGE  pl on/off and coverage information
+function [plan, plan_ind] = caa_pl_coverage(onoff,cover,tint,plotflag)
+%CAA_PL_COVERAGE  plot on/off and coverage information, make planning
 %
 % [plan, plan_ind] = caa_pl_coverage(onoff,cover, tint)
 %
@@ -10,46 +10,50 @@ function [plan, plan_ind] = caa_pl_coverage(onoff,cover,tint)
 DT=60;
 DT_RES=3*60; % time for instrument reset
 
-clf
-axes;
-set(gca,'YLim',[0 5]);
-hold on
-for cl_id=1:4
-	oo = onoff{cl_id};
-	co = cover{cl_id};
-	io = find(oo(:,1)>=tint(1) & oo(:,1)<=tint(2));
-	if isempty(io)
-		io = find(oo(:,1)<tint(1));
-		if isempty(io)
-			io = find(oo(:,1)>tint(2));
-			io = io(1);
-		else, io = io(end);
-		end
-	end
-	if oo(io(1),2)==0
-		if io(1)>1, io=[io(1)-1; io]; end
-	end
-	if oo(io(end),2)==1
-		if io(end)<length(oo(:,1)), io=[io; io(end)+1]; end
-	end
-	
-	ic = find(co(:,2)>=tint(1) & co(:,1)<=tint(2));
+if nargin<4, plotflag=1; end
 
-	for j=1:2:length(io)-1
-		irf_plot([[oo(io(j),1) oo(io(j+1),1)]; (5-cl_id)*[1 1]]','g-x')
-	end
-	for j=1:length(ic)
-		if co(ic(j),3)==1
-			irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]','r-x')
-		else
-			irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]')
+if plotflag
+	clf
+	axes;
+	set(gca,'YLim',[0 5]);
+	hold on
+	for cl_id=1:4
+		oo = onoff{cl_id};
+		co = cover{cl_id};
+		io = find(oo(:,1)>=tint(1) & oo(:,1)<=tint(2));
+		if isempty(io)
+			io = find(oo(:,1)<tint(1));
+			if isempty(io)
+				io = find(oo(:,1)>tint(2));
+				io = io(1);
+			else, io = io(end);
+			end
 		end
-	end
+		if oo(io(1),2)==0
+			if io(1)>1, io=[io(1)-1; io]; end
+		end
+		if oo(io(end),2)==1
+			if io(end)<length(oo(:,1)), io=[io; io(end)+1]; end
+		end
+		
+		ic = find(co(:,2)>=tint(1) & co(:,1)<=tint(2));
 	
+		for j=1:2:length(io)-1
+			irf_plot([[oo(io(j),1) oo(io(j+1),1)]; (5-cl_id)*[1 1]]','g-x')
+		end
+		for j=1:length(ic)
+			if co(ic(j),3)==1
+				irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]','r-x')
+			else
+				irf_plot([[co(ic(j),1) co(ic(j),2)]; (5-cl_id)*[1 1]-.2]')
+			end
+		end
+		
+	end
+	hold off
+	set(gca,'YTick',[1 2 3 4],'YTickLabel',['C4'; 'C3'; 'C2'; 'C1'])
+	irf_zoom(tint,'x',gca)
 end
-hold off
-set(gca,'YTick',[1 2 3 4],'YTickLabel',['C4'; 'C3'; 'C2'; 'C1'])
-irf_zoom(tint,'x',gca)
 
 if nargout<1, return, end
 % Planning intervals
@@ -168,7 +172,7 @@ while cl_id<=4
 	cl_id = cl_id + 1;
 end
 
-if ~isempty(plan)
+if ~isempty(plan) & plotflag
 	hold on
 	for j=1:length(plan(:,1))
 		irf_plot([[plan(j,1) plan(j,2)]; 4*[1 1]+.2]','k-x')
@@ -216,17 +220,20 @@ if ~isempty(plan_ind)
 		end
 	end
 	
-	hold on
-	for cl_id=1:4
-		ii = find(plan_ind(:,3)==cl_id);
-		if isempty(ii), continue, end
-		for j=1:length(ii)
-			irf_plot([[plan_ind(ii(j),1) plan_ind(ii(j),2)]; (5-cl_id)*[1 1]-.4]','k-x')
+	if plotflag
+		hold on
+		for cl_id=1:4
+			ii = find(plan_ind(:,3)==cl_id);
+			if isempty(ii), continue, end
+			for j=1:length(ii)
+				irf_plot([[plan_ind(ii(j),1) plan_ind(ii(j),2)]; (5-cl_id)*[1 1]-.4]','k-x')
+			end
 		end
+		hold off
 	end
-	hold off
 end
-title('EFW data coverage and CAA planning')
+
+if plotflag, title('EFW data coverage and CAA planning'), end
 
 function res=find_close(ts,tmmode,cover,scn)
 	DT = 60; % 20 seconds
