@@ -19,6 +19,7 @@ elseif strcmp(region_s,'psh'), rid = 5;
 elseif strcmp(region_s,'psp'), rid = 6;
 elseif strcmp(region_s,'lo'), rid = 7;
 elseif strcmp(region_s,'cusp'), rid = 8;
+elseif strcmp(region_s,'az'), rid = 9;
 elseif strcmp(region_s,'nodata'), rid = 0;
 elseif strcmp(region_s,'undef'), rid = 999;
 else, error('unkrovn region')

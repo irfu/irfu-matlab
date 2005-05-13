@@ -17,6 +17,7 @@ psh			5
 psp			6
 lo			7
 cusp		8
+az      9
 nodata		0
 undef		999
 
@@ -41,6 +42,7 @@ $Id$
 		<xsl:when test="@desc='psp'">6</xsl:when>
 		<xsl:when test="@desc='lo'">7</xsl:when>
 		<xsl:when test="@desc='cusp'">8</xsl:when>
+		<xsl:when test="@desc='az'">9</xsl:when>
 		<xsl:when test="@desc='undef'">999</xsl:when>
 		<xsl:otherwise>9999</xsl:otherwise>
 	</xsl:choose>
