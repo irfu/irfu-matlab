@@ -35,7 +35,6 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	edi : iEDI{cl_id},idiEDI{cl_id}	->mEDI	// E EDI PP (inert frame) [GSE+DSI] 
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
-%	vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %	wbdwf: wfWBD{cl_id} -> mWBD	// WBD waveforms E/B 
 %	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec 
 %
@@ -509,40 +508,7 @@ elseif strcmp(quantity,'sax')
 		clear sax lat long xspin yspin zspin
 	end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% vce - E CIS PP [GSE+DSI] 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'vce')
-	save_file='./mCIS.mat';
 
-	if exist('./mEPH.mat','file'), eval(irf_ssub('load mEPH SAX?',cl_id)), end
-	if ~exist('./mCIS.mat','file')
-		irf_log('load','Please run ''vcis'' first (mCIS missing)')
-		data = []; cd(old_pwd); return
-	end
-	if ~exist('./mBPP.mat','file')
-		irf_log('load','Please run ''b'' first (mBPP missing)')
-		data = []; cd(old_pwd); return
-	end
-
-	CIS=load('mCIS');
-	eval(irf_ssub('load mBPP BPP?;b=BPP?; clear BPP?',cl_id))
-
-	var = {'VCp', 'VCh'};
-	varo = {'VCEp', 'VCEh'};
-	for i=1:length(var)
-	
-		eval(irf_ssub(['if isfield(CIS,''' var{i} '?''); v=CIS.' var{i} '?; else, v=[]; end; clear ' var{i}], cl_id));
-		if ~isempty(v)
-			evxb=irf_tappl(irf_cross(v,b),'*(-1e-3)');
-			eval(irf_ssub([varo{i} '?=evxb;save_list=[save_list '' ' varo{i} '?'']; clear evxb'],cl_id));
-			if ~exist(irf_ssub('SAX?',cl_id),'var')
-				irf_log('load','must fetch spin axis orientation (option ''sax'')')
-			else
-				eval(irf_ssub(['di' varo{i} '?=c_gse2dsc(' varo{i} '?,SAX?);di' varo{i} '?(:,3:4)=-di' varo{i} '?(:,3:4);save_list=[save_list '' di' varo{i} '?''];'],cl_id));
-			end
-		end
-	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % whip - Whisper present.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

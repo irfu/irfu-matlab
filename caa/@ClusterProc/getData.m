@@ -35,6 +35,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
+%	vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
@@ -897,7 +898,48 @@ elseif strcmp(quantity,'ps')
 	if ok
 		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
 	end
-	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% vce - E CIS PP [GSE+DSI] 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'vce')
+	save_file='./mCIS.mat';
+
+	if exist('./mEPH.mat','file'), eval(irf_ssub('load mEPH SAX?',cl_id)), end
+	if ~exist('./mCIS.mat','file')
+		irf_log('load','Please run ''vcis'' first (mCIS missing)')
+		data = []; cd(old_pwd); return
+	end
+	if ~exist('./mBPP.mat','file')
+		irf_log('load','Please run ''b'' first (mBPP missing)')
+		data = []; cd(old_pwd); return
+	end
+
+	CIS = load('mCIS');
+	% Load BPP. We use BPP for EDI as it must be a rather approximation
+	[ok,B] = c_load('BPP?',cl_id);
+	if ~ok
+		[ok,B] = c_load('B?',cl_id);
+		if ~ok
+			irf_log('load',...
+				irf_ssub(['No B? and BPP?. Use getData(CDB,...,cl_id,''b'')'],cl_id))
+			data = []; cd(old_pwd); return
+		end
+	end
+
+	vars = {'VCp', 'VCh'};
+	varo = {'VCEp', 'VCEh'};
+	for va=1:length(vars)
+		eval(irf_ssub(['if isfield(CIS,''' vars{va} '?''); v=CIS.' vars{va} '?; else, v=[]; end; clear ' vars{va}], cl_id));
+		if ~isempty(v)
+			evxb=irf_tappl(irf_cross(v,B),'*(-1e-3)');
+			eval(irf_ssub([varo{va} '?=evxb;save_list=[save_list '' ' varo{va} '?'']; clear evxb'],cl_id));
+			if ~exist(irf_ssub('SAX?',cl_id),'var')
+				irf_log('load','must fetch spin axis orientation (option ''sax'')')
+			else
+				eval(irf_ssub(['di' varo{va} '?=c_gse2dsi(' varo{va} '?,SAX?);save_list=[save_list '' di' varo{va} '?''];'],cl_id));
+			end
+		end
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
