@@ -86,7 +86,7 @@ switch plot_type
     case 'comp'
   otherwise
       if length(plot_type)<4 & isstr(plot_type),
-        irf_log('proc','assuming plot_type is LineSpec');
+        %irf_log('proc','assuming plot_type is LineSpec');
         b=cell(1,length(varargin)+1);b{1}=plot_type;b(2:end)=varargin;varargin=b;
       else
         error('plot_type not recognized');
@@ -205,13 +205,18 @@ elseif flag_subplot==2, % separate subplot for each variable
 		if isempty(t_st), t_st = t_tmp(1);
 		else, if t_tmp(1)<t_st, t_st = t_tmp(1); end
 		end
-		if isempty(t_end), t_end = t_tmp(end);
-		else, if t_tmp(end)>t_end, t_end = t_tmp(end); end
+		if isempty(t_end)
+			tt = t_tmp(find(~isnan(t_tmp)));
+			t_end = tt(end);
+			clear tt
+		else
+			tt = t_tmp(find(~isnan(t_tmp)));
+			if tt(end)>t_end, t_end = tt(end); end
+			clear tt
 		end
         plot(t_tmp,y(:,2:end),varargin{:});grid on;
         ylabel(ylabels{ipl});
     end
-	
 	% Set common XLim
 	for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
 	clear t_st t_end
