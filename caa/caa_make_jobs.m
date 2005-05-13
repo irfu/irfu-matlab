@@ -105,6 +105,8 @@ for part=1:6
 		hold off
 		title(['EFW data coverage and CAA planning (' fname ')'])
 		print('-dpng',fname)
+		print( gcf, '-dpsc2', fname) 
+		unix(['/usr/local/bin/ps2pdf12 ' fname '.ps; rm -f ' fname '.ps']);
 	end
 end
 
