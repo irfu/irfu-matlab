@@ -1,7 +1,7 @@
-function c_export_ps(st,sc_list,varargin)
-%C_EXPORT_PS export figures 1:4 into PS and PDF
+function c_export_png(st,sc_list,varargin)
+%C_EXPORT_PNG export figures 1:4 into PNG
 %
-% function c_export_ps(st,[sc_list],[option,value])
+% function c_export_png(st,[sc_list],[option,value])
 % Input:
 %	st - isdat epoch, defines filename YYYYMMDD_HHMM
 %	if st is ommited, we try to guess it from usergdata of figure 1
@@ -11,9 +11,9 @@ function c_export_ps(st,sc_list,varargin)
 %	suf - suffix to add // file name becomes YY...HMM_SUF
 % 
 % Example:
-%	c_export_ps(toepoch([2002 03 04 10 00 00]),[2 4],'suf','zoom1')
+%	c_export_png(toepoch([2002 03 04 10 00 00]),[2 4],'suf','zoom1')
 %
-% See also C_EXPORT_PNG, IRF_FNAME
+% See also C_EXPORT_PS, IRF_FNAME 
 %
 % $Id$
 
@@ -63,8 +63,8 @@ for cl_id=sc_list
 	figure(cl_id)
 	fn = sprintf('EFW_C%d_%s%s',cl_id,irf_fname(st),suf);
 	irf_log('save',['saving ' fn])
-	print( gcf, '-dpsc2', fn) 
-	unix(['/usr/local/bin/ps2pdf12 ' fn '.ps']);
+	print( gcf, '-depsc2', fn) 
+	unix(['/usr/local/bin/eps2png ' fn '.eps; rm -f ' fn '.eps']);
 end
 
 cd(old_pwd)
