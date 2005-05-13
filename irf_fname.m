@@ -33,7 +33,7 @@ elseif fmt==1
 elseif fmt==2
 	d = fromepoch(st(end));
 	for k=4:6
-		se{k-3} = num2str(round(d(k)));
+		se{k-3} = num2str(fix(d(k)));
 		if d(k)<10, se{k-3} = ['0' se{k-3}]; end
 	end
 	out = [s{1} s{2} s{3} '_' s{4} s{5} s{6} '_' se{1} se{2} se{3}];
