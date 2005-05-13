@@ -76,19 +76,30 @@ for part=1:6
 	if isempty(ints), continue, end
 	
 	for j=1:length(regs(:,1))
-		ii = find( (ints(:,1)>=regs(j,1) &  ints(:,1)<=regs(j,2)) | ...
-			(ints(:,2)>=regs(j,1) & ints(:,2)<=regs(j,2)));
-		for i=ii
-			if ints(i,1)<regs(j,1), ints(i,1) = regs(j,1); end
-			if ints(i,2)>regs(j,2), ints(i,2) = regs(j,2); end
-			job = [job; ints(i,1) ints(i,2)-ints(i,1)];
+		ii = find( (ints(:,1)>=regs(j,1) & ints(:,1)<regs(j,2)) | ...
+			(ints(:,2)>regs(j,1) & ints(:,2)<=regs(j,2)));
+		if ~isempty(ii)
+			ii = torow(ii(:));
+			for i=ii
+				ts_t = ints(i,1);
+				te_t = ints(i,2);
+				if ints(i,1)<regs(j,1), ts_t = regs(j,1); end
+				if ints(i,2)>regs(j,2), te_t = regs(j,2); end
+				job = [job; ts_t te_t-ts_t];
+				disp(['1 adding ' epoch2iso(job(end,1),1) '-' ...
+					epoch2iso(job(end,1)+job(end,2),1)])
+			end
 		end
-		ii = (ints(:,1)>regs(j,1) & ints(:,2)>regs(j,2));
+		% intervals which cover the whole region
+		ii = find(ints(:,1)<regs(j,1) & ints(:,2)>regs(j,2));
 		if ~isempty(ii)
 			job = [job; regs(j,1) regs(j,2)-regs(j,1)];
+			disp(['2 adding ' epoch2iso(job(end,1),1) '-' ...
+				epoch2iso(job(end,1)+job(end,2),1)])
 		end
 	end
 	if ~isempty(job)
+		job = sortrows(job,1);
 		fname = ['job-' tit '-p' num2str(part) '-' region_s];
 		irf_log('save',['writing ' fname])
 		fid = fopen([fname '.dat'],'w');
