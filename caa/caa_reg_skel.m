@@ -31,10 +31,13 @@ if ~isempty(plan_ind) & ~isempty(plan)
 	plan = sortrows([plan; plan_ind(:,1:2)],1);
 end
 
-ii = find(plan(2:end,1)-plan(1:end-1,2)<DT);
-if ~isempty(ii)
-	plan(ii,2) = plan(ii+1,2);
-	plan(ii+1,:) = [];
+while 1
+	ii = find(plan(2:end,1)-plan(1:end-1,2)<DT);
+	if ~isempty(ii)
+		plan(ii(end),2) = plan(ii(end)+1,2);
+		plan(ii(end)+1,:) = [];
+	else, break
+	end
 end
 
 if plan(1,1)<ts+DT, plan(1,1) = ts; end
@@ -43,7 +46,6 @@ if plan(end,2)>te-DT, plan(end,2) = te; end
 if isempty(plan), disp('plan is empty'), return, end
 
 plan =  sortrows(reshape(plan,length(plan(:,1))*2,1),1);
-
 m_s = num2str(month);
 if length(m_s)<2, m_s =['0' m_s]; end
 tit = [num2str(year) '-' m_s];
