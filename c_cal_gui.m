@@ -1830,9 +1830,12 @@ if data.visible
 			else, ofs = hnd.CISCoffset(data.cl_id,:);
 			end
 			%disp(sprintf('offsets are: %f %f %f',real(ofs(1)),imag(ofs(1)),ofs(2)))
-			p_data = corr_v_velocity(p_data,ofs);
-			[xxx,p_data]=irf_dec_parperp(data.B,p_data);
-			clear xxx
+			if isempty(data.B), p_data = [];
+			else
+				p_data = corr_v_velocity(p_data,ofs);
+				[xxx,p_data]=irf_dec_parperp(data.B,p_data);
+				clear xxx
+			end
 		otherwise
 			irf_log('proc','Unknown data type.')
 		end
