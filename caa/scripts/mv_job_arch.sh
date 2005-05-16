@@ -54,5 +54,5 @@ do
 		rm -rf $out_dir/$event.bak
 	fi
 done
-rmdif $1
+rmdir $1
 echo done with job $1
