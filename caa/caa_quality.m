@@ -36,7 +36,7 @@ disp(['current dir is ' pwd])
 q='0';flag_save=1;
 while(q ~= 'q') % ====== MAIN LOOP =========
 
-	q = input('input command or data level 1..4/all(a)>','s');
+	q = input('input command or data level 1..3/all(a)>','s');
 	if isempty(q), q = '0'; end
 	if strcmp(q,'q'), return,
 	elseif q == '0' | strcmp(q,'h'), disp('commands:'), disp(mmm)
