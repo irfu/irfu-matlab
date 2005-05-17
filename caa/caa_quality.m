@@ -52,7 +52,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 		ok = 0;
 		while ~ok
 			sc_list = input('cl_id 1..4, all(a)>','s');
-			if strcmp(sc_list,'a') | strcmp(sc_list,'all')
+			if strcmp(sc_list,'a') | strcmp(sc_list,'all') | isempty(sc_list)
 				sc_list = 1:4;
 				ok = 1;
 			else
