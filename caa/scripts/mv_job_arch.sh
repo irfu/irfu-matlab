@@ -46,8 +46,8 @@ do
 		mv $out_dir/$event $out_dir/$event.bak
 		mkdir $out_dir/$event
 	fi
-	(cd $1/$event;rm -f *.ps *.pdf *.png mBr.mat mEDSIf.mat mEdB.mat)
-	mv $1/$event/*.mat $out_dir/$event
+	(cd $1/$event;rm -f *.ps *.pdf *.png mBr.mat mEDSIf.mat mEdB.mat tB_*.0*)
+	mv $1/$event/*.mat $1/$event/.version $out_dir/$event
 	rm -rf $1/$event
 	if [ -d $out_dir/$event.bak ]
 	then
