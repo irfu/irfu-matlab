@@ -202,18 +202,14 @@ elseif flag_subplot==2, % separate subplot for each variable
         c(ipl)=irf_subplot(npl,1,-ipl);
         y=x{ipl};
         t_tmp = (y(:,1)-ts-dt(ipl));
-		if isempty(t_st), t_st = t_tmp(1);
-		else, if t_tmp(1)<t_st, t_st = t_tmp(1); end
+		tt = t_tmp(find(~isnan(t_tmp)));
+		if isempty(t_st), t_st = tt(1);
+		else, if tt(1)<t_st, t_st = tt(1); end
 		end
-		if isempty(t_end)
-			tt = t_tmp(find(~isnan(t_tmp)));
-			t_end = tt(end);
-			clear tt
-		else
-			tt = t_tmp(find(~isnan(t_tmp)));
-			if tt(end)>t_end, t_end = tt(end); end
-			clear tt
+		if isempty(t_end), t_end = tt(end);
+		else, if tt(end)>t_end, t_end = tt(end); end
 		end
+		clear tt
         plot(t_tmp,y(:,2:end),varargin{:});grid on;
         ylabel(ylabels{ipl});
     end
