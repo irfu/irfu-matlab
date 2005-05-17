@@ -347,7 +347,8 @@ case 'init'
 		
 		% Load EFW offsets
 		old_pwd = pwd; cd(sp);
-		offset = [1+0i 1];
+		offset = c_ctl(cl_id,'dsiof');
+		if isempty(offset), offset = [1+0i 1]; end
 		
 		if c_load('Ddsi?',cl_id)
 			c_eval('offset(1)=Ddsi?;clear Ddsi?',cl_id)
