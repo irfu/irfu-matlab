@@ -210,6 +210,7 @@ if strcmp(quantity,'dies')
 			c_eval(['tt=wE?p' ps ';'],cl_id)
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
+			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
 			if flag_rmwhip
 				if exist('./mFDM.mat','file'), c_eval('load mFDM WHIP?',cl_id), end
 				if exist(irf_ssub('WHIP?',cl_id),'var')
@@ -220,8 +221,6 @@ if strcmp(quantity,'dies')
 					irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
 				end
 			end
-			
-			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
 			
 			if sfit_ver>=0
 				irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])

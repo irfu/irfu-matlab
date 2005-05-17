@@ -138,7 +138,7 @@ for i=1:n
 		if method==1
 			% Use Fortran version of spin fit
 			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
-				c_efw_spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind),data(eind));
+				c_efw_spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind)-te(eind(1)),data(eind));
 			tsfit = mean(te(eind));	
 			pol = polyfit(tpha(pind),pha(pind),1);
 			phi(i-n_gap) = polyval(pol,tsfit);
