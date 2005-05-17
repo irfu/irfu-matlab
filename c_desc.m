@@ -590,6 +590,40 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 	v.quant = 'vcis';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CIS VxB PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
+	v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'CIS';
+	v.frame = 'sc';
+	if strcmp(vvs(1:2),'di')
+		vvs = vvs(3:end);
+		v.cs = {'ISR2'};
+	else
+		v.cs = {'GSE'};
+	end
+	if vvs(3)=='h'
+		v.sig = 'V';
+		v.sen = 'HIA';
+		v.field_name = {'Ion VxB'};
+	else
+		v.sig = 'Vp';
+		v.sen = 'COD';
+		v.field_name = {'Proton VxB'};
+	end
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1'};
+	v.size = [3];
+	v.name = {'E'};
+	v.labels = v.name;
+	v.label_1 = {'"Ex", "Ey", "Ez"'};
+	v.col_labels = {{'x','y','z'},''};
+	v.com = '';
+	v.file = 'mCIS';
+	v.quant = 'vce';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EDI E PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
