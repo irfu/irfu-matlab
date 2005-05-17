@@ -44,7 +44,9 @@ else
 			vs = irf_ssub('diE?p1234',cl_id);
 			v_size = 1;
 		elseif lev==3
-			vs = irf_ssub('diEs?p34',cl_id);
+			sfit_probe = caa_sfit_probe(cl_id);
+			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+			irf_log('proc',sprintf('using p%d',sfit_probe))
 			v_size = 2;
 		else
 			disp('not implemented'), return
@@ -106,21 +108,23 @@ if strcmp(caa_vs,'E')
 		return
 	end
 	
-	Dxy_s =  irf_ssub('Ddsi?',cl_id);
-	Dx_s =  irf_ssub('real(Ddsi?)',cl_id);
-	Dy_s =  irf_ssub('imag(Ddsi?)',cl_id);
-	Da_s =  irf_ssub('Damp?',cl_id);
-
-	eval(['load mEDSI ' Dxy_s ' ' Da_s])
-	if exist(Dxy_s,'var'), eval(['Dx=real(' Dxy_s ');Dy=imag(' Dxy_s ');'])
-	else, irf_log('calb','using Dx=1,Dy=0'), Dx = 1; Dy=0;
+	dsiof = c_ctl(cl_id,'dsiof');
+	if isempty(dsiof), dsiof = [1+0i 1]; end
+	[ok,Dxy] = c_load('Ddsi?',cl_id);
+	if ok
+		Dx = real(Dxy);
+		Dy = imag(Dxy);
+	else
+		Dx = real(dsiof(1));
+		Dy = imag(dsiof(1));
 	end
-	if exist(Da_s,'var'), eval(['Da=' Da_s ';'])
-	else, disp('using Da=1'), Da = 1;
-	end
+	[ok,Da] = c_load('Damp?',cl_id);
+	if ~ok, Da = dsiof(2); end
+	clear dsiof Dxy
 
 	data = caa_corof_dsi(data,Dx,Dy,Da);
 	dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da);
+	irf_log('calb',dsc.com)
 	dsc.com = [dsc.com '. Probes: ' dsc.sen];
 	
 	%dsc.fro = {'Coordinate_System'};

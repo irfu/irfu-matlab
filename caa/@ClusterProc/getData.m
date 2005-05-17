@@ -67,8 +67,7 @@ flag_rmwhip = c_ctl(cl_id,'rm_whip');
 if isempty(flag_rmwhip), flag_rmwhip = 1; end 
 ang_limit = c_ctl(cl_id,'ang_lim');
 if isempty(ang_limit), ang_limit = 10; end
-probe_p = c_ctl(cl_id,'probe_p');
-if isempty(probe_p), probe_p = 34; end
+probe_p = caa_sfit_probe(cl_id);
 deltaof_sdev_max = c_ctl(cl_id, 'deltaof_sdev_max');
 if isempty(deltaof_sdev_max), deltaof_sdev_max = 2; end
 deltaof_max = c_ctl(cl_id, 'deltaof_max');
@@ -560,7 +559,10 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 		switch probe_p
 		case 12
 			irf_log('proc','using p12')
-			var_s = irf_ssub('diEs?p12',cl_id);
+			var_s = irf_ssub('diEs?p12',cl_id);   
+		case 32
+			irf_log('proc','using p32')
+			var_s = irf_ssub('diEs?p32',cl_id);
 		case 34
 			irf_log('proc','using p34')
 			var_s = irf_ssub('diEs?p34',cl_id);
@@ -596,10 +598,14 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 			irf_ssub(['No ' var_s ' in ' dsc.file '. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
 		data = []; cd(old_pwd); return
 	end
+	
+	dsiof = c_ctl(cl_id,'dsiof');
+	if isempty(dsiof), dsiof = [1+0i 1]; end
 	[ok,Dxy] = c_load('Ddsi?',cl_id);
-	if ~ok, Dxy = 1 + 0i; end
+	if ~ok, Dxy = dsiof(1); end
 	[ok,Da] = c_load('Damp?',cl_id);
-	if ~ok, Da = 1; end
+	if ~ok, Da = dsiof(2); end
+	clear dsiof
 
 	diE = caa_corof_dsi(diE,Dxy,Da);
 
