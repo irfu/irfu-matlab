@@ -139,7 +139,7 @@ for i=1:n
 			% Use Fortran version of spin fit
 			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
 				c_efw_spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind)-te(eind(1)),data(eind));
-			tsfit = mean(te(eind));	
+			tsfit = t0 + 2;	
 			pol = polyfit(tpha(pind),pha(pind),1);
 			phi(i-n_gap) = polyval(pol,tsfit);
 			spinfit(i-n_gap,8) = length(find(bad==1));
