@@ -1043,7 +1043,7 @@ case 'update_Dslider'
 	set(eval(['hnd.D' comp_s 'edit']),'String',num2str(val));
 	switch comp
 	case 1
-		hnd.off(1) = val + imag(hnd.off(1));
+		hnd.off(1) = val + i*imag(hnd.off(1));
 	case 2
 		hnd.off(1) = i*val + real(hnd.off(1));
 	case 3
@@ -1065,7 +1065,7 @@ case 'update_Dedit'
 		set(eval(['hnd.D' comp_s 'slider']),'Value',val);
 		switch comp
 		case 1
-			hnd.off(1) = val + imag(hnd.off(1));
+			hnd.off(1) = val + i*imag(hnd.off(1));
 		case 2
 			hnd.off(1) = i*val + real(hnd.off(1));
 		case 3
