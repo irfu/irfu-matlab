@@ -21,7 +21,7 @@ if nargin>1
 	end
 	c_eval('sfit_probe?=probe;',cl_id)
 	if exist('./mInfo.mat','file'), c_eval('save mInfo sfit_probe? -append',cl_id)
-	else, c_eval('save mInfo sfit_probe? -append',cl_id)
+	else, c_eval('save mInfo sfit_probe?',cl_id)
 	end
 	irf_log('save',irf_ssub('sfit_probe? -> mInfo.mat',cl_id))
 else
