@@ -5,7 +5,7 @@ function irf_pl_add_info
 
 % Copyright 2004 Yuri Khotyaintsev
 
-h0 = gca;
+h00 = gca;
 h1 = axes('Units','normalized', ...
 	'Position',[0 0 1 1], ...
 	'Visible','off', ...
@@ -34,4 +34,4 @@ for j=1:length(ch)
 		axes(ch(j))
 	end
 end 
-axes(h0)
+axes(h00)

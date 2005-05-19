@@ -16,12 +16,12 @@ function outhandle=irf_pl_info(string,inhandle,position);
 if nargin == 1, inhandle=gca;position=[.02 1];end
 if nargin == 2, position=[.02 1];end
 if inhandle ==0, % add to the whole figure if inhandle = 0
-    h0 = gca;
+    h00 = gca;
     h1 = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
         'Tag','BackgroundAxes', 'HitTest','off');
     outhandle = text('Units','normalized','FontSize',6,'HorizontalAlignment','left', ...
         'Position',[0.01 0.97], 'String', string, 'Tag','CreatedText');
-    axes(h0)
+    axes(h00)
 else% add to the given or current axis
     outhandle=text(0,0,string);
     axes(inhandle);
