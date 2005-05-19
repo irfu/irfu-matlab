@@ -154,21 +154,22 @@ end
 % (in practices it does not matter).
 %  
 
-
 if flag_subplot==0,  % one subplot
     %   t_start_epoch is saved in figures user_data variable
     % check first if it exist otherwise assume zero
     ud=get(gcf,'userdata');
+	ii = find(~isnan(x(:,1)));
     if isfield(ud,'t_start_epoch'), 
         t_start_epoch=ud.t_start_epoch;
-    elseif x(1,1)> 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-      t_start_epoch=x(1,1);
+    elseif x(ii(1),1)> 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+      t_start_epoch=x(ii(1),1);
       ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
-      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
+      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
     else
         t_start_epoch=0;
     end
     ts=t_start_epoch;
+	clear ii
     
     i=2:length(x(1,:));
     if flag_yy == 0, h=plot((x(:,1)-ts),x(:,i),varargin{:});grid on;
@@ -181,8 +182,10 @@ if flag_subplot==0,  % one subplot
     
 elseif flag_subplot==1, % separate subplot for each component 
     %   t_start_epoch is saved in figures user_data variable
-    if x(1,1)> 1e8, ts=x(1,1);t_start_epoch=ts;else t_start_epoch=0;end
-
+	ii = find(~isnan(x(:,1)));
+    if x(ii(1),1)> 1e8, ts = x(ii(1),1); t_start_epoch = ts; else t_start_epoch = 0; end
+	clear ii
+	
     npl=size(x,2)-1;
     for ipl=1:npl,
         c(ipl)=subplot(npl,1,ipl);
@@ -193,7 +196,9 @@ elseif flag_subplot==1, % separate subplot for each component
     
 elseif flag_subplot==2, % separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
-    qq=x{1};ts=qq(1,1);clear qq; if ts > 1e8, t_start_epoch=ts;else ts=0;t_start_epoch=0;end
+	ii = find(~isnan(x{1}(:,1)));
+	ts = x{1}(ii(1),1); clear ii
+    if ts > 1e8, t_start_epoch = ts; else ts = 0; t_start_epoch = 0; end
 	
 	t_st = []; t_end = [];
 	
@@ -221,7 +226,9 @@ elseif flag_subplot==2, % separate subplot for each variable
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     %   t_start_epoch is saved in figures user_data variable
-    qq=x{1};ts=qq(1,1);clear qq; if ts > 1e8, t_start_epoch=ts;else ts=0;t_start_epoch=0;end
+	ii = find(~isnan(x{1}(:,1)));
+	ts = x{1}(ii(1),1); clear ii
+    if ts > 1e8, t_start_epoch = ts; else ts = 0; t_start_epoch = 0; end
 
     npl=size(x{1},2)-1;
     for ipl=1:npl,
