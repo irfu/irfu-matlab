@@ -174,7 +174,15 @@ for k=1:n_plots
 		ttt = get(gca,'XTickLabel'); 
 		ttt(end) = {' '}; 
 		set(gca,'XTickLabel',ttt)
-	end		
+	end
+	if k==n_plots
+		YLIM = 990;
+		yl = get(gca,'YLim');
+		if yl(1)<-YLIM, yl(1) = -YLIM; end
+		if yl(2)>YLIM, yl(2) = YLIM; end
+		set(gca,'YLim',yl);
+		clear yl YLIM
+	end
 end
 
 irf_pl_add_info
