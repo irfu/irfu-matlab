@@ -54,7 +54,7 @@ if length(sc_list)>1
 		c_eval('tm_cur = tm?;',sc_list(j))
 		if ~tm==tm_cur
 			irf_log('dsrc',...
-				'TM intervals are diffetrent for diccerent SC. quitting')
+				'TM intervals are different for different SC. quitting')
 			return
 		end
 	end
@@ -64,14 +64,16 @@ end
 j = 1;
 while 1
 	st_tmp = tm(j,1);
+	tm_cur = tm(j,2);
 	if j==size(tm,1), dt_tmp = st + dt - st_tmp;
 	else, dt_tmp = tm(j+1,1) - st_tmp;
 	end
-	if dt_tmp > SPLIT_INT*4/3
+	% For BM1 we take SPLIT_INT/3 min intervals
+	if dt_tmp > SPLIT_INT*4/3*(1-tm_cur*2/3)
 		if j==size(tm,1)
-			tm(j+1,:) = [tm(j,1)+SPLIT_INT tm(j,2)];
+			tm(j+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2)];
 		else
-			tm(j+1:end+1,:) = [tm(j,1)+SPLIT_INT tm(j,2); tm(j+1:end,:)];
+			tm(j+1:end+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2); tm(j+1:end,:)];
 		end
 	end
 	if j>=size(tm,1), break
