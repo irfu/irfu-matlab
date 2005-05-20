@@ -76,7 +76,7 @@ if st & dt, have_tint = 1; end
 
 % Define variables we want to plot
 if strcmp(cs,'dsi') 
-	q_list = {'P?',['diB' use_fullb '?'],'diE?','diEs?','diVExBs?'};
+	q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','diEs?','diVExBs?'};
 	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
 	q_list = {'P?',['B' use_fullb '?'],'E?','Es?','VExBs?'};
@@ -116,11 +116,28 @@ for k=1:length(q_list)
 			c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
 			labels{n_plots} = l_list{k};
 		elseif k==3 % E-field
-			c_eval(['data{n_plots}=' q_list{k} '(:,1:4);'],cl_id)
+			if strcmp(cs,'dsi') 
+				% correct DSI offsets
+				dsiof = c_ctl(cl_id,'dsiof');
+				if isempty(dsiof), dsiof = [1+0i 1]; end
+				[ok,Dxy] = c_load('Ddsi?',cl_id);
+				if ~ok, Dxy = dsiof(1); end
+				[ok,Da] = c_load('Damp?',cl_id);
+				if ~ok, Da = dsiof(2); end
+				c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Dxy,Da);'],cl_id)
+				clear dsiof Dxy
+			end
+
+			c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id)
 			labels{n_plots} = l_list{k};
-			n_plots = n_plots + 1;
-			c_eval(['data{n_plots}=' q_list{k} '(:,[1 5]);'],cl_id) 
+		elseif k==4 % Es-field
+			c_eval(['d_t=' q_list{k} ';'],cl_id)
+			data{n_plots} = d_t(:,[1 5]); 
 			labels{n_plots} = '\theta (B,spin) [deg]';
+			n_plots = n_plots + 1;
+			data{n_plots} = d_t(:,1:4);
+			labels{n_plots} = l_list{k};
+			clear d_t
 		else
 			c_eval(['d_t=' q_list{k} ';'],cl_id)
 			labels{n_plots} = l_list{k};
