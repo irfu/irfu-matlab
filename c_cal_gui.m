@@ -1550,9 +1550,9 @@ case 'show_b'
 	clf
 	set(raw_fig_id,'Name', 'Magnetic field')
 	if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
-	irf_plot(irf_abs(hnd.Data{j}.B))
+	h1 = irf_plot(irf_abs(hnd.Data{j}.B));
+	irf_zoom(hnd.tlim(end,:),'x',h1);
 	ylabel(['B SC' num2str(hnd.Data{j}.cl_id) ' [nT]'])
-	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % show_spect
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
