@@ -516,6 +516,9 @@ case 'init'
 	hnd.menu_show_raw = uimenu(hnd.menu_tools,'Label','&Show raw data',...
 		'Callback','c_cal_gui(''show_raw'')',...
 		'Accelerator','d');
+	hnd.menu_show_b = uimenu(hnd.menu_tools,'Label','&Show B',...
+		'Callback','c_cal_gui(''show_b'')',...
+		'Accelerator','b');
 	hnd.menu_show_spect = uimenu(hnd.menu_tools,'Label','&Spectrum',...
 		'Callback','c_cal_gui(''show_spect'')',...
 		'Accelerator','f',...
@@ -1530,6 +1533,26 @@ case 'show_raw'
 		end
 		clear V_tmp ok v_s
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% show_b
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+case 'show_b'
+	hnd = guidata(h0);
+	
+	j = D_findByName(hnd.Data,hnd.ActiveVar);
+	
+	% Create figure
+	if find(get(0,'children')==raw_fig_id)
+		pos_old = get(raw_fig_id,'Position');
+	else, pos_old = [];
+	end
+	fig = figure(raw_fig_id);
+	clf
+	set(raw_fig_id,'Name', 'Magnetic field')
+	if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
+	irf_plot(irf_abs(hnd.Data{j}.B))
+	ylabel(['B SC' num2str(hnd.Data{j}.cl_id) ' [nT]'])
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % show_spect
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
