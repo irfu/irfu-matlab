@@ -140,7 +140,7 @@ diffangle=min([diffangle';360-diffangle']);
 err_angle_mean=mean(diffangle);
 err_angle=std(diffangle);
 if err_angle>1 | err_angle_mean>1,
-  disp(['Using standard despinning! Polyn. fit despinning errors would be >1deg. err=' num2str(err_angle) 'deg.']);
+  irf_log('proc',['Using standard despinning! Polyn. fit despinning errors would be >1deg. err=' num2str(err_angle) 'deg.']);
   unwrap_phase=phase;
   if max(diff(phase(:,1)))>4,
    disp('There are data gaps in the phase data.Despinned data can have problems near data gaps.');
