@@ -1,6 +1,6 @@
 function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp)
 %CAA_EXPORT export data to CAA CEF files
-% caa_export(lev,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp])
+% caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp])
 %
 % See also c_export_ascii
 %
@@ -81,23 +81,42 @@ if isempty(d_info), dsc = c_desc(vs);
 else, dsc = c_desc(vs,d_info);
 end
 
-dt = data(2,1) - data(1,1);
-ddt = .05;
 dt_spin = 4;
-dt_lx = 1/5;
-dt_nm = 1/25;
-dt_bm1 = 1/450;
-
-if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
+if lev==3
 	TIME_RESOLUTION = dt_spin;
-elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
-	TIME_RESOLUTION = dt_lx;
-elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
-	TIME_RESOLUTION = dt_nm;
-elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
-	TIME_RESOLUTION = dt_bm1;
-else,
-	error('cannot determine time resolution')
+else
+	dt = data(2,1) - data(1,1);
+	ddt = .05;
+	dt_lx = 1/5;
+	dt_nm = 1/25;
+	dt_bm1 = 1/450;
+	
+	if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
+		TIME_RESOLUTION = dt_spin;
+	elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
+		TIME_RESOLUTION = dt_lx;
+	elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
+		TIME_RESOLUTION = dt_nm;
+	elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
+		TIME_RESOLUTION = dt_bm1;
+	else
+		if length(data(:,1))>2,
+			dt = data(3,1) - data(2,1);
+			if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
+				TIME_RESOLUTION = dt_spin;
+			elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
+				TIME_RESOLUTION = dt_lx;
+			elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
+				TIME_RESOLUTION = dt_nm;
+			elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
+				TIME_RESOLUTION = dt_bm1;
+			else,
+				error('cannot determine time resolution')
+			end
+		else
+			error('cannot determine time resolution')
+		end
+	end
 end
 
 % Do magic on E-field
