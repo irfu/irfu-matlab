@@ -1656,12 +1656,21 @@ case 'cut_int'
 	if strcmp(btn,'No'), return, end
 
 	if strcmp(hnd.Data{j}.type,'E')
+		btn = questdlg('Remove corresponding single probe potentials?', ...
+			'Question', ...
+			'Yes','No','No');
+		rm_pot = 1;
+		if strcmp(btn,'No'), rm_pot = 0;, end
 		if strcmp(hnd.Data{j}.sen,'1234')
-			var_list = {'wE?p12','wE?p32','wE?p34',...
+			var_list = {'wE?p12','wE?p32','wE?p34'};
+			if rm_pot, var_list = {var_list{:}, ...
 				'P10Hz?p1','P10Hz?p2','P10Hz?p3','P10Hz?p4'};
+			end
 		else
-			var_list = {['wE?p' hnd.Data{j}.sen],...
+			var_list = {['wE?p' hnd.Data{j}.sen]};
+			if rm_pot, var_list = {var_list{:},...
 				['P10Hz?p' hnd.Data{j}.sen(1)],['P10Hz?p' hnd.Data{j}.sen(2)]};
+			end
 		end
 		
 		% Remove the desired interval from the raw data
@@ -1672,7 +1681,7 @@ case 'cut_int'
 			ok = c_load(v_s);
 			if ok
 				irf_log('proc',...
-					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1))])
+					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1),1)])
 					
 				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
 				dsc = c_desc(v_s);
@@ -1693,9 +1702,14 @@ case 'cut_int'
 		
 		% Reprocess the data using the updated raw data
 		c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
-				'vars',{'e','p'},'nosrc');
+				'vars','e','nosrc');
+		if rm_pot
+			c_get_batch(tint_tmp(1),tint_tmp(2)-tint_tmp(1),hnd.Data{j}.cl_id,...
+				'vars','p','nosrc');
+		end
 		% Variables which we need to reload
-		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234','P?'};
+		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234'};
+		if rm_pot, var_list = {var_list{:},'P?'}; end
 		
 	else % Cut V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
@@ -1708,7 +1722,7 @@ case 'cut_int'
 			ok = c_load(v_s);
 			if ok
 				irf_log('proc',...
-					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1))])
+					['cutting ' v_s ' ' num2str(tlim_tmp(2)-tlim_tmp(1)) 'sec from ' epoch2iso(tlim_tmp(1),1)])
 				eval(['ii=find(' v_s '(:,1)>tlim_tmp(1) & ' v_s '(:,1)<tlim_tmp(2));']);
 				dsc = c_desc(v_s);
 				eval([v_s '(ii,:)=[];save ' dsc.file ' ' v_s ' -append; clear v_s']);
