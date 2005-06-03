@@ -14,6 +14,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// electric fields (HX)
 %	p   : P{cl_id} -> mPR	
 %			// probe potential (LX)
+%	dsc	: DSC{cl_id} -> mFDM
+%			// EFW DSC
 %
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
@@ -250,7 +252,94 @@ if strcmp(quantity,'e') | strcmp(quantity,'eburst')
 			irf_log('dsrc',irf_ssub(['No data for ' var_name pl{i}],cl_id))
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dsc - EFW DSC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'dsc')
+	save_file = './mFDM.mat';
+	
+	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
+	if isempty(dsc)
+		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
+		return
+	end
+	% DSC fields we want to save
+	% 0:55 - format tables
+	% 64:68 - HX, LX format pointers
+	% 73 - executive version
+	% 78 - sc #
+	% 79 - trap_cointer
+	% 80:84 - clock
+	% 128:139 - bias, stub, guard settings
+	% 210:249 - sweep settings
+	dsc_is = [0:55 64:68 73 78 79 80:84 128:139 210:249] + 1;
+	dsc_i = [0:55 64:68 73 78 79 128:139] + 1;
+	
+	% storage variables
+	t_start_save = [];
+	t_stop_save = [];
+	dsc_save = [];
+	jump_flag = [];
+	n_good = 0;
+	n_jumpy = 0;
+	
+	% temporal variables
+	t_st = [];
+	t_end = [];
+	dsc_good = [];
+	
+	dsc_last = dsc(:,1); 
+	t_dsc_last = t(1); 
+	count_good = -1;
 
+	for i = 1:length(t)
+		if sum(abs( dsc(dsc_i,i) - dsc_last(dsc_i))) == 0
+			% the same as previous
+			count_good = count_good + 1;
+			if count_good == 1
+				t_st = t_dsc_last;
+				dsc_good = dsc_last;
+				%irf_log('dsrc',['Found good at ' epoch2iso(t_dsc_last,1)])
+			end
+			t_end = t(i);
+		else
+			% differ from previous
+			dsc_last = dsc(:,i);
+			l = length(jump_flag);
+			if count_good == 0
+				%the previous point was also different
+				t_start_save(l+1) = t(i);
+				%t_stop_save(l+1) = t(i);
+				dsc_save(:,l+1) = dsc(dsc_is,i);
+				jump_flag(l+1) = 1;
+				n_jumpy = n_jumpy + 1;
+			else
+				% save the good interval
+				t_start_save(l+1) = t_st;
+				%t_stop_save(l+1) = t_end;
+				dsc_save(:,l+1) = dsc_good(dsc_is);
+				jump_flag(l+1) = 0;
+				n_good = n_good + 1;
+				irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
+			end
+			count_good = 0;
+		end
+		t_dsc_last = t(i);
+	end
+
+	if count_good > 0 %last interval was also good
+		% save the good interval
+		t_start_save(end+1) = t_st;
+		%t_stop_save(end+1) = t_end;
+		dsc_save(:,end+1) = dsc_good(dsc_is);
+		n_good = n_good + 1;					
+		irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
+	end
+	
+	irf_log('dsrc',sprintf('\nFound total %d good and %d jumpy intervals',...
+		n_good, n_jumpy))
+	c_eval(['DSC?=[t_start_save dsc_save''];save_list=[save_list '' DSC? ''];'],cl_id);
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % p - SC potential
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
