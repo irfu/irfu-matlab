@@ -9,12 +9,12 @@ function [t_start_save,t_stop_save,fdm_save]=caa_efw_mode_tab(db_s,start_epoch,d
 % px	Burst playback
 % bbb	Burst internal state
 % r		Whisper pulses present
+% w		Sweep in progress
 % eeee	E/D mode
 % ss	Sampling mode
 % tm	Tape mode
 %
-% $Revision$  $Date$
-%
+% $Id$
 
 DEBUG=0;
 
@@ -79,6 +79,7 @@ while t_cur < stop_epoch
 		fdm_bbb(:,3) = str2num( s_pbbbxrwc(:,4) ); 
 		fdm_px(:,2) = str2num( s_pbbbxrwc(:,5) );
 		fdm_r = str2num( s_pbbbxrwc(:,6) );
+		fdm_w = str2num( s_pbbbxrwc(:,7) );
 		fdm_s = str2num( s_ssqiiiii(:,1) );
 		fdm_s(:,2) = str2num( s_ssqiiiii(:,2) );
 		fdm_e = str2num( s_mmmmeeee(:,5) );
@@ -97,6 +98,8 @@ while t_cur < stop_epoch
 					fdm_last_bbb = fdm_bbb(1,:);
 				elseif strcmp(var_list(j),'r')
 					fdm_last_r = fdm_r(1,:);
+				elseif strcmp(var_list(j),'w')
+					fdm_last_w = fdm_w(1,:);
 				elseif strcmp(var_list(j),'s')
 					fdm_last_s = fdm_s(1,:);
 				elseif strcmp(var_list(j),'e')
@@ -110,13 +113,14 @@ while t_cur < stop_epoch
 			no_data = 0;
 		end
 		
+		empty = 1;
 		for j=1:length(var_list)
 			eval(['ii{j} = irf_find_diff(fdm_' var_list{j} ',fdm_last_' var_list{j} ');']);
+			if empty & ~isempty(ii{j}), empty = 0; end 
 		end
 		
-		if isempty(ii{:})
-			continue % no changes (should be a typical situation)
-		end
+		% no changes (should be a typical situation)
+		if empty, continue, end
 		
 		ii_all = [];
 		for j=1:length(var_list)
