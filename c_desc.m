@@ -251,6 +251,28 @@ elseif regexp(vs,'^diE[1-4]p1234_info$')==1
 	v.quant = 'die';
 	v.lev = 1;	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% I bias
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^IBIAS[1-4]p[1-4]$')==1
+	v.data = 1;
+	v.cl_id = vs(6);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'BIAS';
+	v.sen = vs(end);
+	v.cs = {'na'};
+	v.rep = {'scalar'};
+ 	v.units =  {'nA'};
+	v.si_conv = {'1.0e-9>A'};
+	v.size = 1;
+	v.name = {['I-bias-p' v.sen]};
+	v.labels = v.name;
+	v.field_name = {['Probe ' v.sen ' bias current']};
+	v.com = '';
+	v.file = 'mFDM';
+	v.quant = 'ibias';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DSC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^DSC[1-4]$')==1
