@@ -29,7 +29,7 @@ if a(2) > 1
 	while 1
 		ii_tocorr = find(ii > n_data);
 		if isempty(ii_tocorr), break, end
-		ii((ii_tocorr)) = ii((ii_tocorr)) - n_data;
+		ii((ii_tocorr)) = ii((ii_tocorr)) - n_data +1;
 	end
 	res = irf_rm_double_idx(ii);
 else
