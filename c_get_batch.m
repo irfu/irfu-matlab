@@ -58,7 +58,7 @@ sp = '.';
 db = 'disco:10';
 dp = '/data/cluster';
 cdb = '';
-vars = {'e','p','a','sax','r','v','whip','b','edi','ncis','vcis','bfgm'};
+vars = {'fdm','ibias','e','p','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
 varsProc = '';
 argsProc = '';
 dosrc = 1;
@@ -142,6 +142,9 @@ if ~isempty(vars)
 		end
 	end
 	if doproc
+		if L_find(vars,'e') | L_find(vars,'p')
+			varsProc = [{'whip','sweep','bdump'} varsProc];
+		end
 		if L_find(vars,'e'), varsProc = [varsProc {'dies','die'}]; end
 		if L_find(vars,'p'), varsProc = [varsProc {'p','ps'}]; end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
