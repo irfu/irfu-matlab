@@ -213,15 +213,42 @@ if strcmp(quantity,'dies')
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
 			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
+			
+			% Remove whisper pulses
 			if flag_rmwhip
-				if exist('./mFDM.mat','file'), c_eval('load mFDM WHIP?',cl_id), end
-				if exist(irf_ssub('WHIP?',cl_id),'var')
-					irf_log('proc','not using times with Whisper pulses')
-					c_eval('tt=caa_rm_blankt(tt,WHIP? );clear WHIP?',cl_id)
+				[ok,whip] = c_load('WHIP?',cl_id);
+				if ok
+					irf_log('proc','blanking Whisper pulses')
+					tt = caa_rm_blankt(tt,whip);
+					clear whip
 				else
 					irf_log('load',...
-					irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
+						irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
 				end
+			end
+			
+			% Remove sweeps and burst dumps
+			[ok,sweep] = c_load('SWEEP?',cl_id);
+			if ok
+				if ~isempty(sweep)
+					irf_log('proc','blanking sweeps')
+					tt = caa_rm_blankt(tt,sweep);
+					clear sweep
+				end
+			else
+				irf_log('load',...
+					irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
+			end
+			[ok,bdump] = c_load('BDUMP?',cl_id);
+			if ok
+				if ~isempty(bdump)
+					irf_log('proc','blanking burst dumps')
+					tt = caa_rm_blankt(tt,bdump);
+					clear bdump
+				end
+			else
+				irf_log('load',...
+					irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
 			end
 			
 			if sfit_ver>=0
@@ -362,7 +389,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 			n_sig = n_sig + 1;
 			if do_burst
 				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
-				% correct ADC offset
+				% Correct ADC offset
 				c_load(['Dadc?p' ps],cl_id)
 				c_load(['Da?p' ps],cl_id)
 				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
@@ -377,7 +404,30 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 					irf_log('calb','ADC offset not corrected')
 				end
 			else
-				% correct ADC offset
+				% Remove sweeps and burst dumps
+				[ok,sweep] = c_load('SWEEP?',cl_id);
+				if ok
+					if ~isempty(sweep)
+						irf_log('proc','blanking sweeps')
+						c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sweep);'],cl_id)
+						clear sweep
+					end
+				else
+					irf_log('load',...
+						irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
+				end
+				[ok,bdump] = c_load('BDUMP?',cl_id);
+				if ok
+					if ~isempty(bdump)
+						irf_log('proc','blanking burst dumps')
+						c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bdump);'],cl_id)
+						clear bdump
+					end
+				else
+					irf_log('load',...
+						irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
+				end
+				% Correct ADC offset
 				if flag_usesavedoff
 					if c_load(['Dadc?p' ps],cl_id)
 						c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
@@ -392,15 +442,14 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				end
 				if ~flag_usesavedoff
 					if flag_rmwhip
-						if exist('./mFDM.mat','file')
-							c_eval('load mFDM WHIP?',cl_id)
-						end
-						if exist(irf_ssub('WHIP?',cl_id),'var')
-							%removing times with Whisper pulses
-							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',WHIP?);clear WHIP?'],cl_id)
+						[ok,whip] = c_load('WHIP?',cl_id);
+						if ok
+							% Removing times with Whisper pulses
+							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',whip);'],cl_id)
+							clear whip
 						else
 							irf_log('load',...
-							irf_ssub('No WHIP? in mFDM. Use getData(CDB,...,cl_id,''whip'')',cl_id))
+								irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
 							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
 						end
 					else
