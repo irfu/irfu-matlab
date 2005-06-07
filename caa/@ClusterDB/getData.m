@@ -40,7 +40,6 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	wbdwf: wfWBD{cl_id} -> mWBD	// WBD waveforms E/B 
-%	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec 
 %
 %	options - one of the following:
 %	nosave : do no save on disk
@@ -153,6 +152,12 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(qu
 			end
 		end
 	end
+end
+
+% We need to chech whether FDM was fetched, and wherether SWEEP and BDUMP 
+% are computed
+if strcmp(quantity,'e')|strcmp(quantity,'p')
+	
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -612,26 +617,6 @@ elseif strcmp(quantity,'sax')
 		eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
 		clear sax lat long xspin yspin zspin
 	end
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% whip - Whisper present.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'whip')
-	save_file = './mFDM.mat';
-	[t_s,t_e,fdm_r]=caa_efw_mode_tab(cdb.db, start_time, dt, cl_id, 'r');
-	ii = find(fdm_r==1);
-	
-	if ~isempty(ii)
-		% add 1 sec from both sides
-		t_s = t_s(ii) - 1;
-		t_e = t_e(ii);
-		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
-		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
-	else
-		irf_log('dsrc','No data')
-	end
-	clear t_s t_e fdm_r ii
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % wbdwf - WBD waveforms.

@@ -32,6 +32,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
+%	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec
+%	bdump: DBUMP{cl_id} -> mFDM	// Burst dump present
+%	sweep: SWEEP{cl_id} -> mFDM	// Sweep + dump present
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -646,6 +649,101 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	eval(irf_ssub('ang_limit?=ang_limit;',cl_id)) 
 	save_list=[save_list s 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% whip - Whisper present.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'whip')
+	save_file = './mFDM.mat';
+	
+	[ok,fdm] = c_load('FDM?',cl_id);
+	if ~ok
+		irf_log('load',...
+			irf_ssub(['No FDM?. Use getData(CDB,...,cl_id,''fdm'')'],cl_id))
+		data = []; cd(old_pwd); return
+	end
+	
+	[t_s,t_e,fdm_r] = caa_efw_mode_tab(fdm, 'r');
+	ii = find(fdm_r==1);
+	
+	if ~isempty(ii)
+		% add 1 sec from both sides
+		t_s = t_s(ii) - 1;
+		t_e = t_e(ii);
+		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
+		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
+	else
+		irf_log('dsrc','No data')
+		c_eval('WHIP?=[];save_list=[save_list '' WHIP? ''];',cl_id);
+	end
+	clear t_s t_e fdm_r ii fdm ok
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% bdump - Burst dump
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'bdump')
+	save_file = './mFDM.mat';
+	
+	[ok,fdm] = c_load('FDM?',cl_id);
+	if ~ok
+		irf_log('load',...
+			irf_ssub(['No FDM?. Use getData(CDB,...,cl_id,''fdm'')'],cl_id))
+		data = []; cd(old_pwd); return
+	end
+	
+	[t_s,t_e,fdm_px] = caa_efw_mode_tab(fdm, 'px');
+	ii = find(fdm_px(:,1)==1 & fdm_px(:,2)==0);
+	
+	if ~isempty(ii)
+		t_s = t_s(ii);
+		% We add one second to the end of the interval for safety
+		t_e = t_e(ii) +1;
+		c_eval('BDUMP?=[double(t_s)'' double(t_e)''];',cl_id); 
+		c_eval('save_list=[save_list '' BDUMP? ''];',cl_id);
+	else
+		irf_log('dsrc','No data')
+		c_eval('BDUMP?=[];save_list=[save_list '' BDUMP? ''];',cl_id);
+	end
+	clear t_s t_e fdm_px ii fdm ok
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% sweep - Sweep present
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'sweep')
+	save_file = './mFDM.mat';
+	
+	[ok,fdm] = c_load('FDM?',cl_id);
+	if ~ok
+		irf_log('load',...
+			irf_ssub(['No FDM?. Use getData(CDB,...,cl_id,''fdm'')'],cl_id))
+		data = []; cd(old_pwd); return
+	end
+	
+	[t_s,t_e,fdm_w] = caa_efw_mode_tab(fdm, 'w');
+	ii = find(fdm_w==1);
+
+	[t_s_px,t_e_px,fdm_px] = caa_efw_mode_tab(fdm, 'px');
+	ii_px = find(fdm_px(:,1)==1 & fdm_px(:,2)==1);
+	if ~isempty(ii) | ~isempty(ii_px)
+		bdump = zeros(length(ii),2);
+		for k=1:length(ii)
+			bdump(k,1) = t_s(ii(k));
+			% We look for dump of the sweep in the FDM which follows the wseep 
+			% or in the next one
+			jj = find(t_s_px>=t_e(ii(k)) & t_s_px<t_e(ii(k))+1.1);
+			% We add one second to the end of the interval for safety
+			if isempty(jj)
+				bdump(k,2) = t_e(ii(k)) +1;
+				irf_log('dsrc','no dump after sweep')
+			else, bdump(k,2) = t_e_px(jj) +1;
+			end
+		end 
+		c_eval('SWEEP?=bdump;save_list=[save_list '' SWEEP? ''];',cl_id);
+	else
+		irf_log('dsrc','No data')
+		c_eval('SWEEP?=[];save_list=[save_list '' SWEEP? ''];',cl_id);
+	end
+	clear t_s t_e fdm_px ii fdm ok
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % edi (sc)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
