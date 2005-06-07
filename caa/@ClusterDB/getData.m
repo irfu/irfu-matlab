@@ -18,11 +18,13 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// EFW DSC
 %	fdm	: FDM{cl_id} -> mFDM
 %			// EFW FDM
+%	ibias: IBIAS{cl_id}p{1..4} -> mFDM
+%			// EFW probe bias current
 %
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
 %			// electric fields 8kHz
-%	pburst: P{4kHz,32kHz}{cl_id}p{1:4}, wbE{cl_id}p12,34 -> mEFWburst	
+%	pburst: P{4kHz,32kHz}{cl_id}p{1..4}, wbE{cl_id}p12,34 -> mEFWburst	
 %			// probe potentials (4kHz,32kHz), and electric fields
 %
 %	//// Ephemeris ////
@@ -260,7 +262,34 @@ elseif strcmp(quantity,'fdm')
 		return
 	end
 	c_eval(['FDM?=[t data''];save_list=[save_list '' FDM? ''];'],cl_id);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ibias - EFW probe bias
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'ibias')
+	save_file = './mFDM.mat';
 	
+	probe_list = 1:4;
+	
+	% Check for p1 problems on SC1 and SC3
+	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+		probe_list = 2:4;
+		p1 = [];
+		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+	end
+	
+	for probe=probe_list;
+		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
+		'efw', 'E', ['p' num2str(probe)],'bias');
+		if ~isempty(data)
+			data = double(real(data));
+			t = double(t);
+			eval(irf_ssub(...
+				['p!=[t data];save_list=[save_list ''IBIAS?p! ''];IBIAS?p!=p!;'],...
+				cl_id,probe)) 
+			clear t data
+		end
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
