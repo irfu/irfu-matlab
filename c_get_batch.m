@@ -145,6 +145,7 @@ if ~isempty(vars)
 		if L_find(vars,'e') | L_find(vars,'p')
 			varsProc = [{'whip','sweep','bdump'} varsProc];
 		end
+		if L_find(vars,'ibias'), varsProc = [varsProc {'badbias'}]; end
 		if L_find(vars,'e'), varsProc = [varsProc {'dies','die'}]; end
 		if L_find(vars,'p'), varsProc = [varsProc {'p','ps'}]; end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end

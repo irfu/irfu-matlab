@@ -35,6 +35,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec
 %	bdump: DBUMP{cl_id} -> mFDM	// Burst dump present
 %	sweep: SWEEP{cl_id} -> mFDM	// Sweep + dump present
+%	badbias: BADBIAS{cl_id}p[1..4] -> mFDM	// Bad bias settings
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -213,6 +214,21 @@ if strcmp(quantity,'dies')
 			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
 
 			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
+			
+			% Remove bad bias
+			for kk = [num2str(ps(1)) num2str(ps(2))]
+				if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
+					c_load(irf_ssub('BADBIAS?p!',cl_id,kk))
+				end
+				if exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
+					eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,kk))
+					if ~isempty(bbias)
+						irf_log('proc',['blanking bad bias on P' num2str(kk)])
+						tt = caa_rm_blankt(tt,bbias);
+					end
+					clear bbias
+				end
+			end
 			
 			% Remove whisper pulses
 			if flag_rmwhip
@@ -404,6 +420,21 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 					irf_log('calb','ADC offset not corrected')
 				end
 			else
+				% Remove bad bias
+				for k = [num2str(ps(1)) num2str(ps(2))]
+					if ~exist(irf_ssub('BADBIAS?p!',cl_id,k),'var')
+						c_load(irf_ssub('BADBIAS?p!',cl_id,k))
+					end
+					if exist(irf_ssub('BADBIAS?p!',cl_id,k),'var')
+						eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,k))
+						if ~isempty(bbias)
+							irf_log('proc',['blanking bad bias on P' num2str(k)])
+							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bbias);'],cl_id)
+						end
+						clear bbias
+					end
+				end
+			
 				% Remove sweeps and burst dumps
 				[ok,sweep] = c_load('SWEEP?',cl_id);
 				if ok
@@ -427,6 +458,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 					irf_log('load',...
 						irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
 				end
+				
 				% Correct ADC offset
 				if flag_usesavedoff
 					if c_load(['Dadc?p' ps],cl_id)
@@ -794,6 +826,52 @@ elseif strcmp(quantity,'sweep')
 	clear t_s t_e fdm_px ii fdm ok
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% badbias - Bad bias settings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'badbias')
+	save_file = './mFDM.mat';
+	
+	DELTA_MINUS = 300;
+	DELTA_PLUS = 10;
+	GOOD_BIAS = -130;
+	
+	c_eval(['i_p? = c_load(''IBIAS' num2str(cl_id) 'p?'',''var'');']);
+	if isempty(i_p1) & isempty(i_p2) & isempty(i_p3) & isempty(i_p4)
+		irf_log('load',...
+			irf_ssub(['No IBIAS?p[1..4]. Use getData(CDB,...,cl_id,''ibias'')'],cl_id))
+		data = []; cd(old_pwd); return
+	end
+	for pro=1:4
+		c_eval('ibias=i_p?;',pro)
+		% Good & bad points
+		ii_bad = find(ibias(:,2)>GOOD_BIAS);
+		if isempty(ii_bad)
+			irf_log('dsrc','No data')
+			c_eval(['BADBIAS' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
+		else
+			ii_good = find(ibias(:,2)<=GOOD_BIAS);
+			if isempty(ii_good)
+				irf_log('dsrc','The whole interval has bad BIAS!!!')
+				c_eval(['BADBIAS' num2str(cl_id) ...
+				'p?=[double(ibias(1,1)-DELTA_MINUS)'' double(ibias(end,1)+DELTA_PLUS)''];'...
+				'save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
+			else
+				ibias(ii_good,2) = 1;
+				ibias(ii_bad,2) = 0;
+				ii = irf_find_diff(ibias(:,2));
+				if ibias(1,2)==0, ii = [1; ii]; end
+				if ibias(end,2)==0, ii = [ii; length(ibias(:,2))]; end
+				ii = reshape(ii,2,length(ii)/2);
+				res = [ibias(ii(1,:))-DELTA_MINUS; ibias(ii(2,:))+DELTA_PLUS]';
+				c_eval(['BADBIAS' num2str(cl_id) 'p?=res;'...
+				'save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
+				clear ii res
+			end
+		end
+	end
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % edi (sc)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'edi')
@@ -984,12 +1062,28 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% P resampled
+% P averaged from several probes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'p')
 	save_file = './mP.mat';
 	
 	c_eval(['p?=c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');'])
+	
+	% Remove bad bias
+	for kk = 1:4
+		if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
+			c_load(irf_ssub('BADBIAS?p!',cl_id,kk))
+		end
+		if exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
+			eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,kk))
+			if ~isempty(bbias)
+				irf_log('proc',['blanking bad bias on P' num2str(kk)])
+				c_eval('p? = caa_rm_blankt(p?,bbias);',kk)
+			end
+			clear bbias
+		end
+	end
+	clear BADBIAS*
 	
 	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
@@ -1021,6 +1115,8 @@ elseif strcmp(quantity,'ps')
 		irf_log('load',sprintf('No P? in mP. Use getData(CDB,...,cl_id,''p'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
+	
+	P_tmp = P_tmp(find(~isnan(P_tmp(:,2))),:);
 	
 	t0 = '';
 	% Try to use time from spin fit
