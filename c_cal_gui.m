@@ -1589,22 +1589,7 @@ case 'show_spect'
 	
 	ndata = length(E_tmp.data(:,1));
 	% Guess the sampling frequency
-	sf = ndata/(E_tmp.data(end,1) - E_tmp.data(1,1));
-	if sf<1.3*25 & sf>.7*25, sf = 25;
-	elseif sf<1.3*450 & sf>.7*450, sf = 450;
-	else
-		sf = [];
-	end
-	% Try a different approach
-	if isempty(sf)
-		sf = ndata/(E_tmp.data(2,1) - E_tmp.data(1,1));
-		if sf<1.3*25 & sf>.7*25, sf = 25;
-		elseif sf<1.3*450 & sf>.7*450, sf = 450;
-		else
-			irf_log('proc','cannot guess sampling frequency')
-			return
-		end
-	end
+	sf = c_efw_fsample(E_tmp.data(:,1));
 	if sf==25, nfft = 512;
 	else, nfft = 4096;
 	end

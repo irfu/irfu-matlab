@@ -86,14 +86,7 @@ n = floor((tend - tstart)/4) + 1;
 spinfit = zeros(n,8);
 
 % Guess the sampling frequency
-sf = length(data)/(tend - tstart);
-
-if sf<1.3*25 & sf>.7*25, sf = 25;
-elseif sf<1.3*450 & sf>.7*450, sf = 450;
-else
-	disp('cannot guess sampling frequency')
-	sf = 0;
-end
+sf = c_efw_fsample(te);
 
 % N_EMPTY .75 means that we use only sping with more then 75% points.
 N_EMPTY = .9; 
