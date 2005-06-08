@@ -427,15 +427,15 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.inst = 'EFW';
 	v.sig = 'E';
 	if vvs(4)=='s', v.sen = 's'; else, v.sen = ''; end
-	v.cs = {'ISR2', 'na'};
- 	v.units =  {'mV/m','deg'};
-	v.si_conv = {'1.0e-3>V m^-1','1>degree'};
-	v.size = [3 1];
-	v.name = {'E', 'Theta'};
+	v.cs = {'ISR2', 'na', 'na'};
+ 	v.units =  {'mV/m','deg','unitless'};
+	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
+	v.size = [3 1 1];
+	v.name = {'E','Theta','E_sigma'};
 	v.labels = v.name;
-	v.label_1 = {'"Ex", "Ey", "Ez"',''};
-	v.col_labels = {{'x','y','z'},''};
-	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
+	v.label_1 = {'"Ex", "Ey", "Ez"','',''};
+	v.col_labels = {{'x','y','z'},'',''};
+	v.field_name = {'Electric field','Elevation of B above the sc spin plane','Standard deviation'};
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -457,15 +457,15 @@ elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.inst = 'EFW';
 	v.sig = 'E';
 	if vs(2)=='s', v.sen = 's'; else, v.sen = ''; end
-	v.cs = {'GSE', 'na'};
- 	v.units =  {'mV/m','deg'};
-	v.si_conv = {'1.0e-3>V m^-1','1>degree'};
+	v.cs = {'GSE', 'na','na'};
+ 	v.units =  {'mV/m','deg','unitless'};
+	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
 	v.size = [3 1];
-	v.name = {'E', 'Theta'};
+	v.name = {'E','Theta','E_sigma'};
 	v.labels = v.name;
-	v.label_1 = {'"Ex", "Ey", "Ez"',''};
-	v.col_labels = {{'x','y','z'},''};
-	v.field_name = {'Electric field','Elevation of B above the sc spin plane'};
+	v.label_1 = {'"Ex", "Ey", "Ez"','',''};
+	v.col_labels = {{'x','y','z'},'',''};
+	v.field_name = {'Electric field','Elevation of B above the sc spin plane','Standard deviation'};
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

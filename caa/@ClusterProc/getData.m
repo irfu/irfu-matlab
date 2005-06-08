@@ -674,7 +674,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 			data = []; cd(old_pwd); return
 		end
 	end
-	
+
 	[ok,diE] = c_load(var_s);
 	if ~ok
 		dsc = c_desc(var_s);
@@ -682,6 +682,9 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 			irf_ssub(['No ' var_s ' in ' dsc.file '. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
 		data = []; cd(old_pwd); return
 	end
+	
+	% Save stand-dev in the 6-th column
+	if strcmp(quantity,'edbs') | strcmp(quantity,'iedbs'), diE(:,6) = diE(:,5); end
 	
 	dsiof = c_ctl(cl_id,'dsiof');
 	if isempty(dsiof), dsiof = [1+0i 1]; end
@@ -694,8 +697,8 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	diE = caa_corof_dsi(diE,Dxy,Da);
 
 	irf_log('proc',['using angle limit of ' num2str(ang_limit) ' degrees'])
-	[diE,angle]=irf_edb(diE,diB,ang_limit);
-	diE(:,5) = angle; clear angle
+	[diE,ang]=irf_edb(diE,diB,ang_limit);
+	diE(:,5) = ang; clear ang
 
 	ii = find(abs(diE(:,5)) < ang_limit);
 	if length(ii) > 1
