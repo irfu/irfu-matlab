@@ -201,7 +201,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
+elseif regexp(vs,'^(i)?di(b)?E(F)[1-4]p1234$')==1
 	v.data = 1;
     switch vvs(1:findstr(vvs,'E')-1) % characters before 'E'
         case 'di'
@@ -221,7 +221,18 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
             v.file = 'mEFWburst';
             v.quant = 'idibe';
     end
-	v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
+	if vvs(findstr(vvs,'E')+1)=='F'
+		v.cl_id = vvs(findstr(vvs,'E')+2);
+		v.name = {'EF_Vec_xy_ISR2'};
+		v.labels = {'EF'};
+		v.label_1 = {'"EFx", "EFy"'};
+		v.quant = 'dies';
+	else
+		v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
+		v.name = {'E_Vec_xy_ISR2'};
+		v.labels = {'E'};
+		v.label_1 = {'"Ex", "Ey"'};
+	end
 	v.inst = 'EFW';
 	v.sig = 'E';
 	% TODO: we need to check here for p32-p34 - v.sen = '3234';
@@ -231,9 +242,6 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
 	v.size = [2];
-	v.name = {'E_Vec_xy_ISR2'};
-	v.labels = {'E'};
-	v.label_1 = {'"Ex", "Ey"'};
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.field_name = {'Electric field'};
@@ -242,13 +250,19 @@ elseif regexp(vs,'^(i)?di(b)?E[1-4]p1234$')==1
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;
-elseif regexp(vs,'^diE[1-4]p1234_info$')==1
+elseif regexp(vs,'^diE(F)[1-4]p1234_info$')==1
 	v.data = 0;
-	v.cl_id = vs(4);
+	if vs(4)=='F'
+		v.cl_id = vs(5);
+		v.com = 'E filtered INFO';
+		v.quant = 'dief';
+	else
+		v.cl_id = vs(4);
+		v.com = 'E full res INFO';
+		v.quant = 'die';
+	end
 	v.inst = 'EFW';
-	v.com = 'E full res INFO';
 	v.file = 'mEDSIf';
-	v.quant = 'die';
 	v.lev = 1;	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % I bias

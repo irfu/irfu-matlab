@@ -366,23 +366,26 @@ if strcmp(quantity,'dies')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
+elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'dieburst')
 	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
+	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
 	if do_burst
 		save_file = './mEFWburst.mat';
-                var_name = 'wbE?p';
+		var_name = 'wbE?p';
 		var1_name = 'dibE?p1234';
 	else
 		save_file = './mEDSIf.mat';
-                var_name = 'wE?p';
-		var1_name = 'diE?p1234';
+        var_name = 'wE?p';
+		if do_filter, var1_name = 'diEF?p1234';
+		else, var1_name = 'diE?p1234';
+		end
 	end
 
 	if ~c_load('A?',cl_id)
 		irf_log('load',...
 			irf_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 	end
-	if ~exist('./mEDSI.mat','file')
+	if ~exist('./mEDSI.mat','file') & ~do_filter
 		irf_log('load','Please compute spin averages (mEDSI)')
 		data = []; cd(old_pwd); return
 	end
@@ -460,7 +463,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 				end
 				
 				% Correct ADC offset
-				if flag_usesavedoff
+				if flag_usesavedoff & ~do_filter
 					if c_load(['Dadc?p' ps],cl_id)
 						c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
 						c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
@@ -472,7 +475,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 					else, flag_usesavedoff = 0;
 					end
 				end
-				if ~flag_usesavedoff
+				if ~flag_usesavedoff | do_filter
 					if flag_rmwhip
 						[ok,whip] = c_load('WHIP?',cl_id);
 						if ok
@@ -561,6 +564,12 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dieburst')
 	if p12==32, c_eval([var1_name '=c_efw_despin(full_e,A?,coef,''asym'');'],cl_id);
 	else, c_eval([var1_name '=c_efw_despin(full_e,A?,coef);'],cl_id);
 	end
+	
+	% HP-Filter
+	if do_filter
+		c_eval([var1_name '(:,1:3)=caa_filter_e(' var1_name '(:,1:3));'],cl_id);
+	end
+	
 	% DS-> DSI
 	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
 	c_eval(['save_list=[save_list ''' var1_name '''];'],cl_id);
