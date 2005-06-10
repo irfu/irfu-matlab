@@ -1,8 +1,9 @@
 function res = caa_filter_e(data,wind)
-% CAA_FILTER_E  simple high pass filter
+% CAA_FILTER_E  simple high pass filter EFW E
 %
 % res = caa_filter_e(data,[window])
-%	window in seconds, delault 0.5 sec
+%	simple high pass filter, will removemoving average over WINDOW
+%	WINDOW in seconds, delault 0.5 sec
 %
 % $Id$
 
