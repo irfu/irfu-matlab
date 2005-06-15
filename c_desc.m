@@ -201,7 +201,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(i)?di(b)?E(F)[1-4]p1234$')==1
+elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.data = 1;
     switch vvs(1:findstr(vvs,'E')-1) % characters before 'E'
         case 'di'
