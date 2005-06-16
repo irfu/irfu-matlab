@@ -36,6 +36,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	bdump: DBUMP{cl_id} -> mFDM	// Burst dump present
 %	sweep: SWEEP{cl_id} -> mFDM	// Sweep + dump present
 %	badbias: BADBIAS{cl_id}p[1..4] -> mFDM	// Bad bias settings
+%	probesa: PROBESA{cl_id}p[1..4] -> mFDM	// Probe saturation
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -227,6 +228,21 @@ if strcmp(quantity,'dies')
 						tt = caa_rm_blankt(tt,bbias);
 					end
 					clear bbias
+				end
+			end
+			
+			% Remove probe saturation
+			for kk = [num2str(ps(1)) num2str(ps(2))]
+				if ~exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
+					c_load(irf_ssub('PROBESA?p!',cl_id,kk))
+				end
+				if exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
+					eval(irf_ssub('sa=PROBESA?p!;',cl_id,kk))
+					if ~isempty(sa)
+						irf_log('proc',['blanking saturated P' num2str(kk)])
+						tt = caa_rm_blankt(tt,sa);
+					end
+					clear sa
 				end
 			end
 			
@@ -437,7 +453,22 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 						clear bbias
 					end
 				end
-			
+				
+				% Remove probe saturation
+				for k = [num2str(ps(1)) num2str(ps(2))]
+					if ~exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
+						c_load(irf_ssub('PROBESA?p!',cl_id,k))
+					end
+					if exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
+						eval(irf_ssub('sa=PROBESA?p!;',cl_id,k))
+						if ~isempty(sa)
+							irf_log('proc',['blanking saturated P' num2str(k)])
+							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
+						end
+						clear sa
+					end
+				end
+				
 				% Remove sweeps and burst dumps
 				[ok,sweep] = c_load('SWEEP?',cl_id);
 				if ok
@@ -878,6 +909,52 @@ elseif strcmp(quantity,'badbias')
 				res = [ibias(ii(1,:))-DELTA_MINUS; ibias(ii(2,:))+DELTA_PLUS]';
 				c_eval(['BADBIAS' num2str(cl_id) 'p?=res;'...
 				'save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
+				clear ii res
+			end
+		end
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% probesa - Probe saturation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'probesa')
+	save_file = './mFDM.mat';
+	
+	SA_LEVEL = 66;
+	
+	c_eval(['p? = c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');']);
+	if isempty(p1) & isempty(p2) & isempty(p3) & isempty(p4)
+		irf_log('load',...
+			irf_ssub(['No P10Hz?p[1..4]. Use getData(CDB,...,cl_id,''p'')'],cl_id))
+		data = []; cd(old_pwd); return
+	end
+	for pro=1:4
+		c_eval('p=p?;',pro)
+		if isempty(p), continue, end
+		% Good & bad points
+		ii_bad = find(p(:,2)<-SA_LEVEL);
+		if isempty(ii_bad)
+			irf_log('dsrc','No data')
+			c_eval(['PROBESA' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+		else
+			ii_good = find(p(:,2)>=-SA_LEVEL);
+			if isempty(ii_good)
+				irf_log('dsrc',...
+					sprintf('Probe %d is saturated during the whole interval!!!',pro))
+				c_eval(['PROBESA' num2str(cl_id) ...
+				'p?=[double(p(1,1))'' double(p(end,1))''];'...
+				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			else
+				p(ii_good,2) = 1;
+				p(ii_bad,2) = 0;
+				ii = irf_find_diff(p(:,2));
+				if p(1,2)==0, ii = [1; ii]; end
+				if p(end,2)==0, ii = [ii; length(p(:,2))]; end
+				ii = reshape(ii,2,length(ii)/2);
+				res = [p(ii(1,:)); p(ii(2,:))]';
+				c_eval(['PROBESA' num2str(cl_id) 'p?=res;'...
+				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 				clear ii res
 			end
 		end
