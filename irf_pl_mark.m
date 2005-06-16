@@ -10,9 +10,13 @@ function outhandle=irf_pl_mark(tlim,inhandle,color);
 %
 % $Id$
 
-if nargin<1, help irf_pl_mark;end
+if nargin<1, help irf_pl_mark;return;end
 if nargin == 1, inhandle=gca;end
 if nargin < 2, color='yellow';end
+
+ud=get(gcf,'userdata');
+if isfield(ud,'t_start_epoch'),  tlim=tlim-ud.t_start_epoch;end
+  
 
 tlim = reshape( tlim, 1, prod(size(tlim)) );
 h = reshape( inhandle, 1, prod(size(inhandle)) );
