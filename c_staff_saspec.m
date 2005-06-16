@@ -60,9 +60,8 @@ set(gca,'tickdir','out')
 
 hh=get(c_bar,'ylabel');
 
-%Check if these are the correct units?! Does STAFF SA give values in V/m or mV/m?
 if l==3
-	set(hh,'string',['(nT)^2/Hz']);
+	set(hh,'string',['(pT)^2/Hz']);
 elseif l==2
 	set(hh,'string',['(mV/m)^2/Hz']);
 else
