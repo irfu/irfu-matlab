@@ -18,5 +18,5 @@ error(nargchk(2,2,nargin))
 res = data;
 
 for j=1:size(time_int,1)
-	res(find(data(:,1)>time_int(j,1) & data(:,1)<time_int(j,2)),2:end) = NaN;
+	res(find(data(:,1)>=time_int(j,1) & data(:,1)<=time_int(j,2)),2:end) = NaN;
 end

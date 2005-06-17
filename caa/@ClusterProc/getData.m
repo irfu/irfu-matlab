@@ -151,6 +151,7 @@ if strcmp(quantity,'dies')
 	if ~c_load('Atwo?',cl_id)
 		irf_log('load',...
 			irf_ssub('No Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+		data = []; cd(old_pwd); return
 	end
 	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
 		irf_log('load',...
@@ -400,6 +401,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 	if ~c_load('A?',cl_id)
 		irf_log('load',...
 			irf_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+		data = []; cd(old_pwd); return
 	end
 	if ~exist('./mEDSI.mat','file') & ~do_filter
 		irf_log('load','Please compute spin averages (mEDSI)')
@@ -921,7 +923,14 @@ elseif strcmp(quantity,'badbias')
 elseif strcmp(quantity,'probesa')
 	save_file = './mFDM.mat';
 	
+	% Saturation level nA
 	SA_LEVEL = 66;
+	% N_CONST sets the minimum number of points of constant potential
+	% which we consider bad
+	N_CONST = 4;
+	% Interval by which we extend saturation intervals from each side
+	% .65 is more that 3 points of P
+	DT_PLUMIN = .65;
 	
 	c_eval(['p? = c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');']);
 	if isempty(p1) & isempty(p2) & isempty(p3) & isempty(p4)
@@ -932,14 +941,14 @@ elseif strcmp(quantity,'probesa')
 	for pro=1:4
 		c_eval('p=p?;',pro)
 		if isempty(p), continue, end
-		% Good & bad points
-		ii_bad = find(p(:,2)<-SA_LEVEL);
+		% Bad points are points below SA_LEVEL, but also with positive pot
+		ii_bad = find(p(:,2)<-SA_LEVEL | p(:,2)>=0);
 		if isempty(ii_bad)
 			irf_log('dsrc','No data')
 			c_eval(['PROBESA' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 		else
-			ii_good = find(p(:,2)>=-SA_LEVEL);
+			ii_good = find(p(:,2)>=-SA_LEVEL & p(:,2)<0);
 			if isempty(ii_good)
 				irf_log('dsrc',...
 					sprintf('Probe %d is saturated during the whole interval!!!',pro))
@@ -947,13 +956,48 @@ elseif strcmp(quantity,'probesa')
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
 				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 			else
+				dd = diff(p(ii_good,2));
 				p(ii_good,2) = 1;
+				% check for constant P, means probe is in a strange state
+				ii = find(dd==0);
+				if length(ii)>1
+					% at least three consequetive points are the same
+					kk = find(ii(1:end-1)-ii(2:end)==-1);
+					if ~isempty(kk)
+						jj = 1;
+						while jj<=length(kk)
+							bad_i = find(ii-ii(kk(jj))-(1:length(ii))'+kk(jj)==0);
+							if length(bad_i)>N_CONST
+								p([ii_good(ii(bad_i)); ii_good(ii(bad_i(end)))+1],2) = 0;
+							end 
+							if isempty(bad_i), jj = jj + 1;
+							else
+								ll = find(kk>bad_i(end));
+								if isempty(ll), break
+								else, jj = ll(1);
+								end
+							end
+						end
+					end
+				end
 				p(ii_bad,2) = 0;
 				ii = irf_find_diff(p(:,2));
 				if p(1,2)==0, ii = [1; ii]; end
 				if p(end,2)==0, ii = [ii; length(p(:,2))]; end
 				ii = reshape(ii,2,length(ii)/2);
-				res = [p(ii(1,:)); p(ii(2,:))]';
+				% We add DT_PLUMIN sec on each side and check for overlapping intervals
+				res = [p(ii(1,:))-DT_PLUMIN; p(ii(2,:)-1)+DT_PLUMIN]';
+				if length(ii(1,:))>1
+					pos = 1;
+					while 1
+						if res(pos,2)+DT_PLUMIN>=res(pos+1,1)
+							res(pos,2) = res(pos+1,2);
+							res(pos+1,:) = [];
+						end
+						pos = pos + 1;
+						if pos>=size(res,1), break, end
+					end
+				end
 				c_eval(['PROBESA' num2str(cl_id) 'p?=res;'...
 				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 				clear ii res
