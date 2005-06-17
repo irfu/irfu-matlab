@@ -790,7 +790,7 @@ elseif strcmp(quantity,'whip')
 	ii = find(fdm_r==1);
 	
 	if ~isempty(ii)
-		% add 1 sec from both sides
+		% add 1 sec before
 		t_s = t_s(ii) - 1;
 		t_e = t_e(ii);
 		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
@@ -875,7 +875,7 @@ elseif strcmp(quantity,'badbias')
 	save_file = './mFDM.mat';
 	
 	DELTA_MINUS = 300;
-	DELTA_PLUS = 10;
+	DELTA_PLUS = 64;
 	GOOD_BIAS = -130;
 	
 	c_eval(['i_p? = c_load(''IBIAS' num2str(cl_id) 'p?'',''var'');']);
