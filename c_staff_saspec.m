@@ -25,10 +25,21 @@ end
 [k,l,m]=size(dat)
 if l==3
 	%we have B data
-	dataBx=dat(:,1,:);
-	dataBy=dat(:,2,:);
-	dataBz=dat(:,3,:);
-	dat=squeeze(dataBx)+squeeze(dataBy)+squeeze(dataBz);
+	%dataBx=dat(:,1,:);
+	%dataBy=dat(:,2,:);
+	%dataBz=dat(:,3,:);
+	indx=1:3:81;
+	indy=2:3:81;
+	indz=3:3:81;
+	for I=1:m
+		temp=dat(:,:,I);
+		tdata=[temp(:,1);temp(:,2);temp(:,3)];
+		dataBx(:,I)=tdata(indx);
+		dataBy(:,I)=tdata(indy);
+		dataBz(:,I)=tdata(indz);
+	end
+	%dat=squeeze(dataBx)+squeeze(dataBy)+squeeze(dataBz);
+	dat=dataBx+dataBy+dataBz;
 elseif l==2
 	odd=1:2:54;
 	even=2:2:54;
@@ -40,7 +51,8 @@ elseif l==2
 	end
 %	dataEx=dat(:,1,:);
 %	dataEy=dat(:,2,:);
-	dat=squeeze(dataEx)+squeeze(dataEy);
+	dat=dataEx+dataEy;
+	%dat=squeeze(dataEx)+squeeze(dataEy);
 else 
 	error('unknown format of data matrix')
 end
