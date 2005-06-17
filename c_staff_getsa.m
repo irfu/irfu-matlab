@@ -46,10 +46,10 @@ DB=Mat_DbOpen('disco:10');
 %dt=60;
 
 if EBflag==1 | EBflag==3
-	[timeB,dataB]=isGetDataLite(DB,time,dt,'Cluster','1','staff','B_SA','a_B','8-4096Hz','');
+	[timeB,dataB]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','B_SA','a_B','8-4096Hz','');
 end
 if EBflag==2 | EBflag==3
-[timeE,dataE]=isGetDataLite(DB,time,dt,'Cluster','1','staff','E_SA','a_E','8-4096Hz','');
+[timeE,dataE]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','E_SA','a_E','8-4096Hz','');
 end
 
 
