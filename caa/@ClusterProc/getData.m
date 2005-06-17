@@ -887,6 +887,7 @@ elseif strcmp(quantity,'badbias')
 	for pro=1:4
 		c_eval('ibias=i_p?;',pro)
 		% Good & bad points
+		if isempty(ibias), continue, end
 		ii_bad = find(ibias(:,2)>GOOD_BIAS);
 		if isempty(ii_bad)
 			irf_log('dsrc','No data')
