@@ -103,23 +103,26 @@ if ischar(x), % try to get variable labels etc.
             var_names{jj}=var_nam{ii};jj=jj+1;
         end
     end
-    x={};
+    x={};ix=1;
     for ii=1:length(var_names)
         try % try to get variable from calling workspace
-            x{ii}=evalin('caller',var_names{ii});
+            x{ix}=evalin('caller',var_names{ii});
         catch
             try % if there is none try to load variable
-                c_load(var_names{ii});eval(['x{ii}=' var_names{ii} ';']);
+                c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
             catch % if nothing works give up
-                warning(['do not know where to get variable >' var_names{ii}]);
-                return;
+                warning(['skipping, do not know where to get variable >' var_names{ii}]);
+%                return;
             end
         end
-        try
-            var_desc=c_desc(var_names{ii});
-            ylabels{ii}=[var_desc.labels{1} '[' var_desc.units{1} '] sc' var_desc.cl_id];
-        catch
-            ylabels{ii}='';
+        if length(x)==ix,
+          try
+              var_desc=c_desc(var_names{ii});
+              ylabels{ix}=[var_desc.labels{1} '[' var_desc.units{1} '] sc' var_desc.cl_id];
+          catch
+              ylabels{ix}='';
+          end
+          ix=ix+1;
         end
     end
 end
