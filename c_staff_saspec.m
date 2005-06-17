@@ -21,45 +21,47 @@ if nargin>2
 end
 
 
-%fix data since staff data comes in k x l x m matrices..
-[k,l,m]=size(dat)
-if l==3
-	%we have B data
-	%dataBx=dat(:,1,:);
-	%dataBy=dat(:,2,:);
-	%dataBz=dat(:,3,:);
-	indx=1:3:81;
-	indy=2:3:81;
-	indz=3:3:81;
-	for I=1:m
-		temp=dat(:,:,I);
-		tdata=[temp(:,1);temp(:,2);temp(:,3)];
-		dataBx(:,I)=tdata(indx);
-		dataBy(:,I)=tdata(indy);
-		dataBz(:,I)=tdata(indz);
-	end
-	%dat=squeeze(dataBx)+squeeze(dataBy)+squeeze(dataBz);
-	dat=dataBx+dataBy+dataBz;
-elseif l==2
-	odd=1:2:54;
-	even=2:2:54;
-	for I=1:m
-		temp=dat(:,:,I);
-		tdata=[temp(:,1);temp(:,2)];
-		dataEx(:,I)=tdata(odd);
-		dataEy(:,I)=tdata(even);		
-	end
-%	dataEx=dat(:,1,:);
-%	dataEy=dat(:,2,:);
-	dat=dataEx+dataEy;
-	%dat=squeeze(dataEx)+squeeze(dataEy);
-else 
+%%fix data since staff data comes in k x l x m matrices..
+%[k,l,m]=size(dat)
+%if l==3
+%	%we have B data
+%	indx=1:3:81;
+%	indy=2:3:81;
+%	indz=3:3:81;
+%	for I=1:m
+%		temp=dat(:,:,I);
+%		tdata=[temp(:,1);temp(:,2);temp(:,3)];
+%		dataBx(:,I)=tdata(indx);
+%		dataBy(:,I)=tdata(indy);
+%		dataBz(:,I)=tdata(indz);
+%	end
+%	dat=dataBx+dataBy+dataBz;
+%elseif l==2
+%	odd=1:2:54;
+%	even=2:2:54;
+%	for I=1:m
+%		temp=dat(:,:,I);
+%		tdata=[temp(:,1);temp(:,2)];
+%		dataEx(:,I)=tdata(odd);
+%		dataEy(:,I)=tdata(even);		
+%	end
+%	dat=dataEx+dataEy;
+%else 
+%	error('unknown format of data matrix')
+%end
+	
+[k,l,m]=size(dat);
+if k==3
+	dat=dat(1,:,:)+dat(2,:,:)+dat(3,:,:);
+elseif k==2
+	dat=dat(1,:,:)+dat(2,:,:);
+else
 	error('unknown format of data matrix')
 end
-	
-whos
 
+dat=squeeze(dat);
 	
+
 %Construct frequency axis, the values are from a iscmd query
 freq=[8.77    11.05   13.92   17.54   22.1    27.84   35.08   44.19   55.68   70.15   88.39   111.36  140.31  176.78  222.72  280.62  353.55  445.45  561.23  707.11  890.9   1122.46    1414.21 1781.8  2244.92 2828.43 3563.59];
 freq=freq/1E3;
