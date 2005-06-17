@@ -49,11 +49,56 @@ if EBflag==1 | EBflag==3
 	[timeB,dataB]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','B_SA','a_B','8-4096Hz','');
 end
 if EBflag==2 | EBflag==3
-[timeE,dataE]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','E_SA','a_E','8-4096Hz','');
+	[timeE,dataE]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','E_SA','a_E','8-4096Hz','');
 end
 
 
+%fix data since staff data comes in k x l x m matrices arranged in a strange way..
 
+if EBflag==1 | EBflag==3
+[k,l,m]=size(dataB);
+if l==3
+	%we have B data
+	%dataBx=dat(:,1,:);
+	%dataBy=dat(:,2,:);
+	%dataBz=dat(:,3,:);
+	indx=1:3:81;
+	indy=2:3:81;
+	indz=3:3:81;
+	for I=1:m
+		temp=dataB(:,:,I);
+		tdata=[temp(:,1);temp(:,2);temp(:,3)];
+		dataBx(:,I)=tdata(indx);
+		dataBy(:,I)=tdata(indy);
+		dataBz(:,I)=tdata(indz);
+	end
+	clear dataB
+	dataB=zeros(l,k,m);size(dataB)
+	dataB(1,:,:)=dataBx;
+	dataB(2,:,:)=dataBy;
+	dataB(3,:,:)=dataBz;
+	
+end
+end
+
+if EBflag==2 | EBflag==3
+[k,l,m]=size(dataE);
+	odd=1:2:54;
+	even=2:2:54;
+	for I=1:m
+		temp=dataE(:,:,I);
+		tdata=[temp(:,1);temp(:,2)];
+		dataEx(:,I)=tdata(odd);
+		dataEy(:,I)=tdata(even);		
+	end
+	clear dataE
+%	dat=dataEx+dataEy;
+	dataE=zeros(l,k,m);
+	dataE(1,:,:)=dataEx;
+	dataE(2,:,:)=dataEy;
+end
+
+whos
 
 %-------Output---------------------------
 if EBflag==1
