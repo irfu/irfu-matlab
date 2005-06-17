@@ -22,7 +22,7 @@ end
 
 
 %fix data since staff data comes in k x l x m matrices..
-[k,l,m]=size(dat);
+[k,l,m]=size(dat)
 if l==3
 	%we have B data
 	dataBx=dat(:,1,:);
@@ -30,15 +30,22 @@ if l==3
 	dataBz=dat(:,3,:);
 	dat=squeeze(dataBx)+squeeze(dataBy)+squeeze(dataBz);
 elseif l==2
-	%we have E data
-	dataEx=dat(:,1,:);
-	dataEy=dat(:,2,:);
+	odd=1:2:54;
+	even=2:2:54;
+	for I=1:m
+		temp=dat(:,:,I);
+		tdata=[temp(:,1);temp(:,2)];
+		dataEx(:,I)=tdata(odd);
+		dataEy(:,I)=tdata(even);		
+	end
+%	dataEx=dat(:,1,:);
+%	dataEy=dat(:,2,:);
 	dat=squeeze(dataEx)+squeeze(dataEy);
 else 
 	error('unknown format of data matrix')
 end
 	
-
+whos
 
 	
 %Construct frequency axis, the values are from a iscmd query
