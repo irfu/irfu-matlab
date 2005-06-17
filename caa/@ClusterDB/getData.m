@@ -344,7 +344,7 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		elseif start_time>toepoch([2001 09 15 04 30 00])& start_time<toepoch([2001 09 15 06 30 00])
 			% this needs to be investigated.... 
 			param='180Hz';
-		elseif start_time>toepoch([2001 07 31 00 00 00])&cl_id==2
+		elseif start_time>toepoch([2001 07 23 00 00 00])&cl_id==2
 			% 10Hz filter problem on SC2
 			param='180Hz';
 		end
@@ -413,7 +413,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
-	elseif start_time>toepoch([2001 07 31 00 00 00])&cl_id==2 & ~do_burst
+	elseif start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
 		probe_list = [1 2 4];
 		p3 = [];
 		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
