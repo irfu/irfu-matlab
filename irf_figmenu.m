@@ -34,11 +34,13 @@ elseif strcmp(action,'irf_tm'),
   hmax=1;
   for ih=1:length(h),
     ax=get(h(ih),'position');
-    axy(ih)=ax(2);
+    axy(ih)=ax(2);axx(ih)=ax(1);
   end
-  [xx,ind]=sort(axy);
+  ind_ax=find(axx<0.9); % find 
+  hax=h(ind_ax);
+  [xx,ind]=sort(axy(ind_ax));
   ind=fliplr(ind);
-  hh=h(ind);
+  hh=hax(ind);
   irf_tm(hh);
 end
 
