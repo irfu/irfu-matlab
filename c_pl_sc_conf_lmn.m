@@ -94,7 +94,7 @@ if strcmp(action,'initialize'),
   %====================================
   % The normal entering
   labelStr=num2str(n);
-  callbackStr='c_pl_sc_conf_lmn(''plot'')';
+  callbackStr='c_pl_sc_conf_lmn(''plot'');';
   uicontrol('style','text','units','normalized','Position',[0.5 0.2 .2 .05],'string','N, normal vector [GSE]','Callback',callbackStr)
   NHndl=uicontrol( ...
         'Style','edit', ...
@@ -105,7 +105,7 @@ if strcmp(action,'initialize'),
   %====================================
   % The magnetic field or L entering
   labelStr=num2str(l);
-  callbackStr='c_pl_sc_conf_lmn(''plot'')';
+  callbackStr='c_pl_sc_conf_lmn(''plot'');';
   Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.25 .2 .05],'string','L (or B) [GSE]','Callback',callbackStr);
   if initLflag==1, set(Lflag,'value',1);end
   LHndl=uicontrol( ...
@@ -117,7 +117,7 @@ if strcmp(action,'initialize'),
   %====================================
   % The time entering
   labelStr=[datestr(datenum(fromepoch(t))) '.' num2str(floor(mod(t,1)*100),'%.2d')];
-  callbackStr='c_pl_sc_conf_lmn(''plot'')';
+  callbackStr='c_pl_sc_conf_lmn(''plot'');';
   uicontrol('style','text','units','normalized','Position',[0.5 0.15 .2 .05],'string','Time')
   timeHndl=uicontrol( ...
         'Style','edit', ...
@@ -127,9 +127,9 @@ if strcmp(action,'initialize'),
         'Callback',callbackStr);
   %====================================
   % The definition of LMN coordinates
-  callbackStr='c_pl_sc_conf_lmn(''fixLMN_N'')';
+  callbackStr='c_pl_sc_conf_lmn(''fixLMN_N'');';
   LMN_Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.10 .3 .05],'string',LMN_Ltitle,'Callback',callbackStr);
-  callbackStr='c_pl_sc_conf_lmn(''fixLMN_L'')';
+  callbackStr='c_pl_sc_conf_lmn(''fixLMN_L'');';
   LMN_Nflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.05 .3 .05],'string',LMN_Ntitle,'Callback',callbackStr);
   set(LMN_Lflag,'value',1);
 
@@ -158,14 +158,14 @@ if strcmp(action,'initialize'),
     else
       set(LMN_Nflag,'value',1);
     end
-    c_pl_sc_conf_lmn('plot')
+    c_pl_sc_conf_lmn('plot');
  elseif strcmp(action,'fixLMN_L'),
     if get(LMN_Nflag,'value'),
       set(LMN_Lflag,'value',0);
     else
       set(LMN_Lflag,'value',1);
     end
-    c_pl_sc_conf_lmn('plot')
+    c_pl_sc_conf_lmn('plot');
 
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%% action plot %%%%%%%%%%%%%%%%%

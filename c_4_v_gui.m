@@ -37,9 +37,9 @@ case 'update_var_col'
   axes(ud.h(1));
   xl=get(ud.h(1),'XLim');
   c_pl_tx(var1,var2,var3,var4,var_col);zoom on;
-  ylabel(variable_label);
+  ylabel(var_label(variable_str,var_col));
   axis([xl(1) xl(2) 0 1]);
-  set(ud.h(1),'YLimMode','auto');
+  set(ud.h(1),'YLimMode','auto');add_timeaxis
   axes(ud.h(2));
   c_pl_tx(var1,var2,var3,var4,var_col);
   c_4_v_gui('dt');
@@ -48,18 +48,12 @@ case 'new_var_enter'
   variable_str=xx{1};
   c_4_v_gui('new_var'); 
 case 'new_var'
+  evalin('base',['if ~exist(''' irf_ssub(variable_str,1) '''), c_load(''' variable_str ''');end' ]);
   var1=evalin('base',irf_ssub(variable_str,1));
   var2=evalin('base',irf_ssub(variable_str,2));
   var3=evalin('base',irf_ssub(variable_str,3));
   var4=evalin('base',irf_ssub(variable_str,4));
   if var_col > size(var1,2), var_col=2;end % in case new variable has less columns
-  % construct variable label
-  try
-      dd=c_desc(irf_ssub(variable_str,1));
-      variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
-  catch
-      variable_label=variable_str;
-  end
   if isempty(ud),
       c_4_v_gui('initialize');
   else
@@ -90,11 +84,11 @@ case 'initialize'
   h(1)=subplot(3,1,1);
   c_pl_tx(var1,var2,var3,var4,var_col);zoom on;
   irf_pl_info(['c\_4\_v\_int() ' datestr(now)]); % add information to the plot
-  ylabel(variable_label)
+  ylabel(var_label(variable_str,var_col));
   
   h(2)=subplot(3,1,2);
   c_pl_tx(var1,var2,var3,var4,var_col);
-  ylabel(variable_label)
+  ylabel(var_label(variable_str,var_col));
   
   hh=h(1,1);  % use the first subplot to estimate available time interval
   xl=get(hh,'XLim');
@@ -264,4 +258,15 @@ case 'toggle'
   end
   set(gcbf, 'userdata', ud);
 end
+end
 
+function label=var_label(var_str,var_col)
+
+  try
+      dd=c_desc(irf_ssub(var_str,1));
+%      variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
+      label=[var_str '[' num2str(var_col) ']'];
+  catch
+      label=var_str;
+  end
+end
