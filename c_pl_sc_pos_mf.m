@@ -21,13 +21,13 @@ if nargin < 1, help c_pl_sc_pos_mf;return; end
 
 figure;clf
 if nargin == 1,
-  for ic=1:4,eval(irf_ssub('load mR R?; r?=av_interp(R?,t,''spline'');clear R?;',ic)),end
-  load mV V3;Vref=av_interp(V3,t);clear V3;
-  load mB B3;Bref=av_interp(B3,t);clear B3;
+  for ic=1:4,eval(irf_ssub('load mR R?; r?=irf_resamp(R?,t,''spline'');clear R?;',ic)),end
+  c_load('V3');Vref=irf_resamp(V3,t);clear V3;
+  c_load('B3');Bref=irf_resamp(B3,t);clear B3;
 elseif nargin==7,
-  for ic=1:4,eval(irf_ssub('r?=av_interp(R?,t,''spline'');clear R?;',ic)),end
-  Vref=av_interp(Vref,t);
-  Bref=av_interp(Bref,t);
+  c_eval('r?=av_interp(R?,t,''spline'');clear R?;')
+  Vref=irf_resamp(Vref,t);
+  Bref=irf_resamp(Bref,t);
 else
   help c_pl_sc_pos_mf;return;
 end
@@ -39,10 +39,10 @@ R=(r1+r2+r3+r4)/4;
 for ic=1:4,eval(irf_ssub('dr?=r?-R;dr?(1)=t;dr?=irf_abs(dr?);',ic)),end
 drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
 %Vref_MF=av_mean(Vref,r3,Bref,'GSE');
-Vref_MF=av_mean(Vref,r3,Bref);
+Vref_MF=irf_mean(Vref,r3,Bref);
 Vscaling=.5*drref/irf_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
 % for ic=1:4,eval(irf_ssub('dr_MF?=av_mean(dr?,r3,Bref,''GSE'');',ic)),end
-for ic=1:4,eval(irf_ssub('dr_MF?=av_mean(dr?,r3,Bref);',ic)),end
+for ic=1:4,eval(irf_ssub('dr_MF?=irf_mean(dr?,r3,Bref);',ic)),end
 
 view1=[90 90];
 view2=[90 0];
