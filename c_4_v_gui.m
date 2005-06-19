@@ -261,7 +261,6 @@ end
 end
 
 function label=var_label(var_str,var_col)
-
   try
       dd=c_desc(irf_ssub(var_str,1));
 %      variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
