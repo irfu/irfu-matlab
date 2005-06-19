@@ -79,7 +79,8 @@ switch fromto
     update_fromto(ud,tlim);
   case 'step'
     [tlim step]=get_fromto(ud);
-    tlim = tlim+step;
+    tlim(2) = tlim(1)+step;
+    update_fromto(ud,tlim);
   case 'update'
     [tlim step]=get_fromto(ud);
     irf_zoom(tlim,'x',SUBPLOT_HANDLES);
@@ -163,5 +164,7 @@ xx=get(ud.fromh, 'string');tstr=[strrep(xx,'_','T') 'Z'];
 tlim(1) = iso2epoch(tstr);
 xx=get(ud.toh, 'string');tstr=[strrep(xx,'_','T') 'Z'];
 tlim(2) = iso2epoch(tstr);
-step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
+xx=get(ud.step, 'string');
+step = 86400*(datenum(xx)-datenum('00:00:00'));
+%step = (datenum(get(ud.step, 'string'))-datenum('00:00:00'))*86400;
 end
