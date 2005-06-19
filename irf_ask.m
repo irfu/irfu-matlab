@@ -12,7 +12,7 @@ function y=irf_ask(question,variable_name_of_old_value, default_value);
 if nargin < 3, disp('ERROR using irf_ask');help irf_ask;return;end
 if nargin == 3, def=default_value;else def=[];end
 
-if evalin('caller',['exist(''' variable_name_of_old_value ''')']),
+if evalin('caller',['exist(''' variable_name_of_old_value ''')'])==1,
   defvalue=evalin('caller', [variable_name_of_old_value]);
 else
   defvalue=def;
