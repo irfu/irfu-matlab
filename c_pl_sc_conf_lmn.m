@@ -26,7 +26,7 @@ LMN_Ntitle='N along normal, L closest to B, M=LxN';
 persistent t b l m n B r1 r2 r3 r4 phaseHndl timeHndl figNumber ...
             resHndl NHndl LHndl Lflag LMN_Lflag LMN_Nflag ...
             flag_v1 flag_v2 v1 v2;
-if       (nargin==1 & isstr(time)), action=time;disp(['action=' action]);
+if       (nargin==1 & isstr(time)), action=time;irf_log('fcal',['action=' action]);
 elseif   (nargin < 9)                   , action='initialize';
 end
 
@@ -194,14 +194,14 @@ elseif strcmp(action,'plot'),
     titlestr=LMN_Ltitle;
   end
 
-  for ic=1:4,eval(irf_ssub('rr?=irf_resamp(r?,t);',ic)),end
+  c_eval('rr?=irf_resamp(r?,t);');
   R=(rr1+rr2+rr3+rr4)/4;
-  for ic=1:4,eval(irf_ssub('dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);drlnm?=irf_newxyz(dr?,l,n,m);x?=drlnm?;',ic)),end
+  c_eval('dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);drlnm?=irf_newxyz(dr?,l,n,m);x?=drlnm?;');
   drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
 
 	%%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
   axes(h(1));
-    plot(x1(3),x1(2),'ks', x2(3),x2(2),'rd', x3(3),x3(2),'go', x4(3),x4(2),'bv')
+    plot(x1(3),x1(2),'ks', x2(3),x2(2),'rd', x3(3),x3(2),'go', x4(3),x4(2),'bv');
     xlabel('N [km]');ylabel('L [km]');
     grid on;axis([-drref drref -drref drref]);
   axes(h(1));      title(titlestr);
