@@ -54,8 +54,11 @@ if strcmp(action,'initialize'),
     initLflag=1;
   end
   if nargin<5,  % load position vectors if not given
-    if   exist('mR.mat'), load mR R1 R2 R3 R4;for ic=1:4,eval(irf_ssub('r?=R?;clear R?;',ic)),end
-    else                  disp('No position data available');return;
+    ok=c_load('R?');
+    if  min(ok) == 1,
+      c_eval('r?=R?;clear R?;');
+    else
+      irf_log('fcal','No position data available');return;
     end
   end
   if nargin==5,
