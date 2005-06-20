@@ -191,7 +191,7 @@ This chapter describes general requirements for running EFW-CAA software
 <section id="req-data">
 <title>Data</title>
 <para>
-You nees access to &is; server with EFW and CSDS (optional) modules. 
+You need access to &is; server with EFW and CSDS (optional) modules. 
 Alternatively, or as a backup solution, you may read CSDS data directly from 
 CDF files.
 </para>
@@ -222,7 +222,7 @@ using CVS for getting ISDAT see
 <title>Introduction</title>
 <para>
 This section describes general conventions concerning variable and file names,
-time units, coordinate systems abd reference frames.
+time units, coordinate systems and reference frames.
 </para>
 </section>
 
