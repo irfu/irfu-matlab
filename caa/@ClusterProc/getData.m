@@ -1219,6 +1219,19 @@ elseif strcmp(quantity,'p')
 	end
 	clear BADBIAS*
 	
+	% Remove whisper pulses
+	if flag_rmwhip
+		[ok,whip] = c_load('WHIP?',cl_id);
+		if ok & ~isempty(whip)
+			irf_log('proc','blanking Whisper pulses')
+			c_eval('if ~isempty(p?),p?=caa_rm_blankt(p?,whip);end')
+			clear whip
+		else
+			irf_log('load',...
+				irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
+		end
+	end
+	
 	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
 		Pinfo.probe = 1234;
@@ -1246,7 +1259,7 @@ elseif strcmp(quantity,'ps')
 	
 	[ok,P_tmp] = c_load('P?',cl_id);
 	if ~ok
-		irf_log('load',sprintf('No P? in mP. Use getData(CDB,...,cl_id,''p'')',cl_id))
+		irf_log('load',sprintf('No P? in mP. Use getData(CP,...,cl_id,''p'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
 	
