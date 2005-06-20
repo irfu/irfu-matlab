@@ -419,6 +419,16 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 	n_sig = 0;
 	p12 = 12;
 	
+	% Load Whisper pulses
+	whip = [];
+	if flag_rmwhip
+		[ok,whip] = c_load('WHIP?',cl_id);
+		if ~ok
+			irf_log('load',...
+				irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
+		end
+	end
+	
 	for k=1:length(pl)
 		ps = num2str(pl(k));
 		if exist(irf_ssub([var_name ps],cl_id),'var')
@@ -495,6 +505,12 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 						irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
 				end
 				
+				% Remove Whisper pulses
+				if flag_rmwhip & ~isempty(whip)
+					irf_log('proc',['blanking Whisper pulses on p' ps])
+					c_eval(['if ~isempty(wE?p' ps '),wE?p' ps '=caa_rm_blankt(wE?p' ps ',whip);end'],cl_id)
+				end
+				
 				% Correct ADC offset
 				if flag_usesavedoff & ~do_filter
 					if c_load(['Dadc?p' ps],cl_id)
@@ -509,20 +525,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					end
 				end
 				if ~flag_usesavedoff | do_filter
-					if flag_rmwhip
-						[ok,whip] = c_load('WHIP?',cl_id);
-						if ok
-							% Removing times with Whisper pulses
-							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ',whip);'],cl_id)
-							clear whip
-						else
-							irf_log('load',...
-								irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
-							c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
-						end
-					else
-						c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
-					end
+					c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
 					c_eval(['irf_log(''calb'',sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
 					c_eval(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id);
 				end
@@ -1219,7 +1222,7 @@ elseif strcmp(quantity,'p')
 	end
 	clear BADBIAS*
 	
-	% Remove whisper pulses
+	% Remove Whisper pulses
 	if flag_rmwhip
 		[ok,whip] = c_load('WHIP?',cl_id);
 		if ok & ~isempty(whip)
