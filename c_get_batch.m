@@ -135,7 +135,9 @@ end
 
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
-if ~isempty(vars)
+if ~isempty(vars) & ~dosrc
+	varsProc = vars;
+elseif ~isempty(vars)
 	if dosrc
 		for cl_id=sc_list
 			for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
