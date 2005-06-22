@@ -26,7 +26,7 @@ for cl_id=1:4
 		if ~isempty(data), c_eval('tm_cur = data(5,1);',cl_id);
 		else
 			irf_log('dsrc',['Cannot fetch FDM for C' num2str(cl_id) ...
-				' at ' epoch2iso(st_tmp)])
+				' at ' epoch2iso(st_tmp,1)])
 			c_eval('tm_cur = [];',cl_id)
 		end
 		if isempty(tm) & ~isempty(tm_cur), tm = [st_tmp tm_cur]; end
