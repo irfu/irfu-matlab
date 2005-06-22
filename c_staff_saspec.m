@@ -69,7 +69,7 @@ freq=freq/1E3;
 %plot spectrogram
 t0=time(1,1);h=pcolor(time-t0,freq,log10(dat));
 
-%set(gca,'yscale','log') %messes up the y-axis values even if spaceing is fine..
+%set(gca,'yscale','log') %messes up the y-axis values even if spacing is fine..
 
 
 c_bar=colorbar;shading flat;add_timeaxis(gca,t0);
