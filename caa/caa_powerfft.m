@@ -1,7 +1,12 @@
-function [Pxx,F] = caa_powerfft(data,nfft,sfreq,overlap)
-%CAA_POWERFFT  compute fft
+function [outspecrec,outPxx,outF] = caa_powerfft(data,nfft,sfreq,overlap)
+%CAA_POWERFFT  compute power spectrum
 %
-% [Pxx,F] = caa_powerfft(data,nfft,sfreq,[overlap])
+% [t,power,f] = caa_powerfft(data,nfft,sfreq,[overlap])
+% [specrec] = caa_powerfft(data,nfft,sfreq,[overlap])
+%	SPECREC is a structure:
+%		SPECREC.T - time
+%		SPECREC.P - spectrum
+%		SPECREC.F - frequency
 %
 % See also FFT, CAA_SPECTROGRAM
 %
@@ -26,8 +31,9 @@ end
 if nfft/2==fix(nfft/2), nf = nfft/2;
 else, nf = nfft/2 + 1;
 end
-F = sfreq*((1:nf) -1)'/nfft;
-Pxx = zeros(nint,ncomp+1,nf);
+specrec.f = sfreq*((1:nf) -1)'/nfft;
+for jj=1:ncomp, specrec.p(jj) = {zeros(nint,nf)}; end
+specrec.t = zeros(nint,1);
 
 w = hanning(nfft);
 wnorm = sum(w.^2)/nfft;	% normalization factor from windowing
@@ -40,20 +46,27 @@ tcur = ts;
 nnorm = 2.0/nfft/sfreq/wnorm;
 
 for jj=1:nint
-	Pxx(jj,1,:) = tcur+(nfft-1)/sfreq*.5;
+	specrec.t(jj) = tcur+(nfft-1)/sfreq*.5;
 	X = order_data(irf_tlim(data,tcur, tcur+(nfft-1)/sfreq),nfft,sfreq,tcur);
-	if isempty(X), Pxx(jj,comp,:) = NaN;
+	if isempty(X), specrec.p{:}(jj,:) = NaN;
 	else
 		for comp=2:ncomp+1
 			if ~isempty(find(~isnan(X(:,comp))))
 				ff = fft(detrend(X(:,comp)) .* w,nfft);
 				pf = ff .*conj(ff) *nnorm;
-				Pxx(jj,comp,:) = pf(1:nf);
-			else, Pxx(jj,comp,:) = NaN;
+				specrec.p{comp-1}(jj,:) = pf(1:nf);
+			else, specrec.p{comp-1}(jj,:) = NaN;
 			end
 		end
 	end
 	tcur = tcur + (1-overlap*.01)*(nfft-1)/sfreq;
+end
+
+if nargout==1, outspecrec = specrec;
+else, 
+	outspecrec = specrec.t;
+	outPxx = specrec.p;
+	outF = specrec.f;
 end
 
 % Help function to clear datagaps
