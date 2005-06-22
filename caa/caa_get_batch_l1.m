@@ -108,8 +108,6 @@ for cli=sc_list
 			'vars','fdm|ibias|p|e|a','noproc')
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc')
-		
-		% Make summary plots
 	end
 	
 	% Save intervals
@@ -119,7 +117,4 @@ for cli=sc_list
 	end
 	irf_log('save',irf_ssub('INTERVALS? -> mINTER',cli))
 end
-
-% Help function which splits NM/BM1
-function out = make_int(tm)
 
