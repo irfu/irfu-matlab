@@ -264,6 +264,17 @@ elseif regexp(vs,'^diE(F)[1-4]p1234_info$')==1
 	v.inst = 'EFW';
 	v.file = 'mEDSIf';
 	v.lev = 1;	
+elseif regexp(vs,'^diESPEC[1-4]p1234$')==1
+	v.data = 0;
+	v.cl_id = vs(8);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	v.sen = '1234';
+	v.com = 'E-field spectrum';
+	v.file = 'mEDSIf';
+	v.lev = 1;
+	v.quant = 'dief';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % I bias
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
