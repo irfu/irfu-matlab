@@ -48,7 +48,7 @@ nnorm = 2.0/nfft/sfreq/wnorm;
 for jj=1:nint
 	specrec.t(jj) = tcur+(nfft-1)/sfreq*.5;
 	X = order_data(irf_tlim(data,tcur, tcur+(nfft-1)/sfreq),nfft,sfreq,tcur);
-	if isempty(X), specrec.p{:}(jj,:) = NaN;
+	if isempty(X), for comp=1:ncomp,specrec.p{comp}(jj,:) = NaN;end
 	else
 		for comp=2:ncomp+1
 			if ~isempty(find(~isnan(X(:,comp))))
