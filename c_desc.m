@@ -1,5 +1,6 @@
 function varargout = c_desc(vs,v_info)
 %C_DESC provide a description of a Cluster variable
+%
 % C_DESC(V_S) prints out a descriptoon of variable VS
 %
 % DESC = C_DESC(V_S) returns a descriptoon of variable VS as structure DESC.
@@ -33,7 +34,7 @@ function varargout = c_desc(vs,v_info)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(1,2,nargin))
 if ~isstr(vs), error('VS must be string'), end
