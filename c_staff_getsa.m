@@ -42,8 +42,6 @@ end
 DB=Mat_DbOpen('disco:10');
 
 
-%time=[2002 03 03 22 23 00];
-%dt=60;
 
 if EBflag==1 | EBflag==3
 	[timeB,dataB]=isGetDataLite(DB,time,dt,'Cluster',num2str(SC),'staff','B_SA','a_B','8-4096Hz','');
@@ -98,7 +96,6 @@ if EBflag==2 | EBflag==3
 	dataE(2,:,:)=dataEy;
 end
 
-whos
 
 %-------Output---------------------------
 if EBflag==1
