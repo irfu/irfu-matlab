@@ -97,6 +97,14 @@ end
 cd(cdb.sp) %enter the storage directory
 irf_log('save',['Storage directory is ' cdb.sp])
 
+% Create .interval
+if ~exist('./.interval','file')
+	[s,w] = unix(...
+		['echo "' epoch2iso(start_time) ' ' num2str(dt) '">.interval'],'-echo');
+	if s~=0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
+	irf_log('save','creating .interval')
+end
+
 % Read list of nonstandard operations and see if we have one of those 
 % during the requested period
 if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(quantity,'pburst')
