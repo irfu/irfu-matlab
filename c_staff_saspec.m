@@ -81,9 +81,9 @@ set(gca,'tickdir','out')
 
 hh=get(c_bar,'ylabel');
 
-if l==3
+if k==3
 	set(hh,'string',['(pT)^2/Hz']);
-elseif l==2
+elseif k==2
 	set(hh,'string',['(mV/m)^2/Hz']);
 else
 	set(hh,'string',['(X)^2/Hz']);

@@ -116,9 +116,9 @@ end
 
 if plotflag
 	if EBflag==1
-		c_staffsaspec(time,dataB);
+		c_staff_saspec(time,dataB);
 	elseif EBflag==2
-		c_staffsaspec(time,dataE);
+		c_staff_saspec(time,dataE);
 	else
 		error('no support for multiplot yet')
 	end
