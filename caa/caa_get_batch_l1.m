@@ -87,7 +87,7 @@ for cli=sc_list
 		else, j = j + 1;
 		end
 	end
-	
+	int_tmp = [];
 	for inter=1:size(tm,1)
 		t1 = tm(inter,1);
 		if inter==size(tm,1), dt1 = st +dt -t1;
@@ -98,6 +98,11 @@ for cli=sc_list
 		else, disp(['INTERVAL: ' epoch2iso(t1) ' - ' epoch2iso(t1+dt1)])
 		end
 		
+		% Keep track of intervals we process
+		if isempty(int_tmp), int_tmp = [t1 dt1];
+		else, int_tmp(end+1,:) = [t1 dt1];
+		end
+		
 		% Get data
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
@@ -106,6 +111,13 @@ for cli=sc_list
 		
 		% Make summary plots
 	end
+	
+	% Save intervals
+	c_eval('INTERVALS?=int_tmp;',cli)
+	if exist('./mINTER.mat','file'), c_eval('save mINTER INTERVALS? -append',cli)
+	else, c_eval('save mINTER INTERVALS?',cli)
+	end
+	irf_log('save',irf_ssub('INTERVALS? -> mINTER',cli))
 end
 
 % Help function which splits NM/BM1
