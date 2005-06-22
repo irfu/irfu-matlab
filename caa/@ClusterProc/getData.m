@@ -18,6 +18,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          probe_p - probe pair to use 12 or 34 [default 34]
 %   die : diE{cl_id}p1234 -> mEDSIf // despun full res E [DSI]
 %          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+%   dief: diEF{cl_id}p1234, diESPEC{cl_id}p1234 -> mEDSIf
+%          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
+%          // high-pass filtered full res E [DSI] + spectrum
 %   idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
 %          Transform from SC to inertial frame
 %   dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
@@ -597,18 +600,27 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 	c_eval([var1_name '_info=E_info;save_list=[save_list ''' var1_name '_info ''];'],cl_id);
 
 	% Do actual despin
-	if p12==32, c_eval([var1_name '=c_efw_despin(full_e,A?,coef,''asym'');'],cl_id);
-	else, c_eval([var1_name '=c_efw_despin(full_e,A?,coef);'],cl_id);
+	if p12==32, c_eval('full_e=c_efw_despin(full_e,A?,coef,''asym'');',cl_id);
+	else, c_eval('full_e=c_efw_despin(full_e,A?,coef);',cl_id);
 	end
 	
 	% HP-Filter
 	if do_filter
-		c_eval([var1_name '(:,1:3)=caa_filter_e(' var1_name '(:,1:3));'],cl_id);
+		% First we make a spectrum and save it.
+		sfreq = c_efw_fsample(full_e(:,1));
+		if sfreq == 25, nfft = 512;
+		else, nfft = 8192;
+		end
+		c_eval(...
+		'diESPEC?p1234=caa_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list ''diESPEC?p1234 ''];',cl_id);
+		% Than we filter
+		full_e(:,1:3)=caa_filter_e(full_e(:,1:3));
 	end
 	
 	% DS-> DSI
-	c_eval([var1_name '(:,3)=-' var1_name '(:,3);'],cl_id);
-	c_eval(['save_list=[save_list ''' var1_name '''];'],cl_id);
+	full_e(:,3)=-full_e(:,3);
+	
+	c_eval([var1_name '=full_e; save_list=[save_list ''' var1_name '''];'],cl_id);
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % idie, idies - DSI inertial
