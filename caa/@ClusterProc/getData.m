@@ -295,6 +295,12 @@ if strcmp(quantity,'dies')
 				sp = c_efw_sfit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
 			end
 			
+			% Check if we have any data left
+			if isempty(sp)
+				irf_log('load',sprintf('No p%d data left for sc%d',pl(k),cl_id))
+				continue
+			end
+			
 			% remove point with zero time
 			ind = find(sp(:,1)>0);
 			if length(ind)<length(sp(:,1))
