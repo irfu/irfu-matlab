@@ -45,13 +45,14 @@ for comp=1:min(length(h),ncomp)
 		t_start_epoch = 0;
 	end
 
-	axes(h(comp)); cla
+	axes(h(comp));
 	pcolor(specrec.t-t_start_epoch,specrec.f,log10(specrec.p{comp}'))
 	
 	colormap(cmap)
 	shading flat
-	colorbar('vert')
-	set(gca,'TickDir','out','YScale','log')
+%	colorbar('vert')
+%	set(gca,'TickDir','out','YScale','log')
+	set(gca,'TickDir','out')
 	ylabel('frequency [Hz]')
 	if comp==min(length(h),ncomp), add_timeaxis;
 	else, set(gca,'XTicklabel','')
