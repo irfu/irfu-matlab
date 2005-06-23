@@ -102,12 +102,13 @@ for cli=sc_list
 		if isempty(int_tmp), int_tmp = [t1 dt1];
 		else, int_tmp(end+1,:) = [t1 dt1];
 		end
-		
+		 
 		% Get data
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
-			'vars','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc')
+			'vars','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
+			
 	end
 	
 	if ~isempty(int_tmp)
@@ -122,3 +123,5 @@ for cli=sc_list
 	end
 end
 
+% Does this belong here?
+%caa_pl_summary_l1(iso_t,dt,maindir)
