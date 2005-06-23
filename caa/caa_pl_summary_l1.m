@@ -27,6 +27,11 @@ clf
 for pl=1:6
 	h(pl) = irf_subplot(6,1,-pl);
 end
+irf_zoom([0 5],'y',h(6))
+hold(h(6),'on')
+set(h(6),'YTick',1:4)
+ylabel(h(6),'SC')
+krgb = 'krgb';
 
 c_eval('p?=[];spec?=[];')
 for cli=1:4
@@ -44,9 +49,52 @@ for cli=1:4
 				cd([cdir '/' irf_fname(inter(jj,1))])
 				% Load P
 				p_tmp = c_load('P?',cli,'var');
-				if ~isempty(p_tmp), p = [p; p_tmp]; end
-				% Load spec
-				
+				if ~isempty(p_tmp)
+					% Remove Sweeps from plot, not from data
+					[ok,sweep] = c_load('SWEEP?',cli);
+					if ok
+						if ~isempty(sweep)
+							irf_log('proc','blanking sweeps')
+							p_tmp = caa_rm_blankt(p_tmp,sweep);
+							clear sweep
+						end
+					else
+						irf_log('load',...
+							irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
+					end
+					p = [p; p_tmp]; 
+				end
+				% Load spectrum
+				spec = c_load('diESPEC?p1234',cli,'var');
+				if ~isempty(spec)
+					axes(h(cli))
+					if jj>1, hold on, end
+					caa_spectrogram(h(cli),spec)
+					if jj==size(inter,1)
+						hold off
+						ylabel(sprintf('Ex C%d [(mV/m)^2/Hz]',cli))
+						caxis([-6 1])
+					end
+				end
+				% Load intervals & TM mode
+				[st_s,dt1] = caa_read_interval;
+				t1 = iso2epoch(st_s);
+				st_s = st_s([12:19]);
+				tm = c_load('mTMode?',cli,'var');
+				axes(h(6))
+				ud = get(gcf,'userdata');
+				if isfield(ud,'t_start_epoch'), 
+					t_start_epoch = ud.t_start_epoch;
+				else
+					% Set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+					t_start_epoch = t1;
+					ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+					irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+				end
+				pp = plot(t1-t_start_epoch + [0 dt1],[cli cli],krgb(cli));
+				set(pp,'Marker','+');
+				if tm,	set(pp,'LineWidth',3); end
+				text(t1-t_start_epoch+60,cli+0.2,st_s)
 				cd(old_pwd)
 			end
 			if ~isempty(p), c_eval('p?=p;',cli), end
@@ -55,8 +103,10 @@ for cli=1:4
 		end
 	end
 end
+hold(h(6),'off')
+grid(h(6),'on')
 
-% Plot everything
+% Plot the rest
 axes(h(1))
 title(['EFW L1 & Co summary for ' iso_t])
 axes(h(5))
@@ -64,3 +114,4 @@ c_pl_tx('p?')
 ylabel('P L2 [-V]')
 
 irf_zoom(st +[0 dt],'x',h)
+irf_zoom([0 12.5],'y',h(1:4))
