@@ -110,11 +110,15 @@ for cli=sc_list
 			'vars','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc')
 	end
 	
-	% Save intervals
-	c_eval('INTERVALS?=int_tmp;',cli)
-	if exist('./mINTER.mat','file'), c_eval('save mINTER INTERVALS? -append',cli)
-	else, c_eval('save mINTER INTERVALS?',cli)
+	if ~isempty(int_tmp)
+		% Save intervals
+		c_eval('INTERVALS?=int_tmp;',cli)
+		if exist([cdir '/mINTER.mat'],'file')
+			c_eval(['save ' cdir '/mINTER.mat INTERVALS? -append'],cli)
+		else
+			c_eval(['save ' cdir '/mINTER.mat INTERVALS?'],cli)
+		end
+		irf_log('save',irf_ssub('INTERVALS? -> mINTER',cli))
 	end
-	irf_log('save',irf_ssub('INTERVALS? -> mINTER',cli))
 end
 
