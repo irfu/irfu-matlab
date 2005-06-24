@@ -209,10 +209,12 @@ case 'init'
 				if c_load(vs) 
 					ndata = ndata + 1;
 					irf_log('load',['loaded ' vs])
+					%{ 
 					if eval(['any(any(isnan(' vs '(:,2:end))))']),
 						irf_log('load',[vs ' contains no data'])
 						continue
 					end
+					 %}
 					dsc = c_desc(vs);
 					clear data
 					data.name = vs;
