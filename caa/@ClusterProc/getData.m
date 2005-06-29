@@ -428,8 +428,21 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 		irf_log('load','Please compute spin averages (mEDSI)')
 		data = []; cd(old_pwd); return
 	end
-	if do_burst, c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
-	else, c_eval(['load mER ' var_name '12 ' var_name '32 ' var_name '34;'],cl_id);
+	
+	if do_burst
+		if exist('./mEFWburst.mat','file')
+			c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
+		else
+			irf_log('load','Cannot find mEFWburst.mat')
+			data = []; cd(old_pwd); return
+		end
+	else
+		if exist('./mER.mat','file')
+			c_eval(['load mER ' var_name '12 ' var_name '32 ' var_name '34;'],cl_id);
+		else
+			irf_log('load','Cannot find mER.mat')
+			data = []; cd(old_pwd); return
+		end
 	end
 	
 	% calibration coefficients // see c_efw_despin
