@@ -35,10 +35,15 @@ for cl_id=1:4
 		end
 		st_tmp = st_tmp + REQ_INT;
 	end
+	if ~isempty(tm)
 	% Throw away all modes>1
-	disp(sprintf('THROWING AWAY %d intervals',length(find(tm(:,2)>1))))
-	tm(find(tm(:,2)>1),:) = [];
-	c_eval('tm? = tm;')
+		ii_out = find(tm(:,2)>1);
+		if ~isempty(ii_out)
+			irf_log('proc',sprintf('THROWING AWAY %d intervals',length(ii_out)))
+			tm(ii_out,:) = [];
+		end
+	end
+	c_eval('tm? = tm;',cl_id)
 end
 clear tm tm_cur
 
