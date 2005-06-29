@@ -72,7 +72,6 @@ for cli=1:4
 					caa_spectrogram(h(cli),spec)
 					if jj==size(inter,1)
 						hold off
-						ylabel(sprintf('Ex C%d [(mV/m)^2/Hz]',cli))
 						caxis([-6 1])
 					end
 				end
@@ -102,6 +101,11 @@ for cli=1:4
 			irf_log('load', irf_ssub(['No INTERVALS? in ' cdir '/mINTER.mat'],cli))
 		end
 	end
+end
+
+for cli=1:4
+	axes(h(cli))
+	ylabel(sprintf('Ex C%d [(mV/m)^2/Hz]',cli))
 end
 hold(h(6),'off')
 grid(h(6),'on')
