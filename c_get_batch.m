@@ -23,6 +23,7 @@ function c_get_batch(st,dt,varargin)
 %   'ncis','vcis','vce','bfgm'}
 %   // + {'dies','die','brs','br'} which are always added. Use 'noproc' 
 %   to skip them.
+% 'varsproc' - variables to get data for (see help ClusterProc/getData)
 % 'nosrc'  - do not run ClusterDB/getData;
 % 'noproc' - do not run ClusterProc/getData for {'dies','die','brs','br'};
 % 'extrav' - extra variables in addition to default;
@@ -59,6 +60,7 @@ db = 'disco:10';
 dp = '/data/cluster';
 cdb = '';
 vars = {'fdm','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
+varsMan = 0;
 varsProc = '';
 argsProc = '';
 dosrc = 1;
@@ -105,6 +107,14 @@ while have_options
 			elseif iscell(args{2}), vars = args{2};
 			else, irf_log('fcal','wrongArgType : vars must be eather string or cell array')
 			end
+		case 'varsproc'
+			if ischar(args{2})
+				varsProc = {};
+				p = tokenize(args{2},'|');
+				for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end
+			elseif iscell(args{2}), varsProc = args{2};
+			else, irf_log('fcal','wrongArgType : varsproc must be eather string or cell array')
+			end
 		case 'extrav'
 			if ischar(args{2})
 				p = tokenize(args{2},'|');
@@ -141,7 +151,8 @@ if ~isempty(vars)
 			for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
 		end
 	end
-	if doproc
+	
+	if doproc & ~varsMan
 		if L_find(vars,{'e','p'})
 			varsProc = [{'whip','sweep','bdump'} varsProc];
 		end

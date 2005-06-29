@@ -112,7 +112,7 @@ for cli=sc_list
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
-			'vars','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
+			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
 			
 	end
 	
