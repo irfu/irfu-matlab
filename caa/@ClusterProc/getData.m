@@ -235,15 +235,27 @@ if strcmp(quantity,'dies')
 				end
 			end
 			
-			% Remove probe saturation
+			% Remove probe saturation electronics & low density
 			for kk = [num2str(ps(1)) num2str(ps(2))]
 				if ~exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
 					c_load(irf_ssub('PROBESA?p!',cl_id,kk))
 				end
+				if ~exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
+					c_load(irf_ssub('PROBELD?p!',cl_id,kk))
+				end
+				
 				if exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
 					eval(irf_ssub('sa=PROBESA?p!;',cl_id,kk))
 					if ~isempty(sa)
 						irf_log('proc',['blanking saturated P' num2str(kk)])
+						tt = caa_rm_blankt(tt,sa);
+					end
+					clear sa
+				end
+				if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
+					eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
+					if ~isempty(sa)
+						irf_log('proc',['blanking low den satur P' num2str(kk)])
 						tt = caa_rm_blankt(tt,sa);
 					end
 					clear sa
@@ -475,15 +487,27 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					end
 				end
 				
-				% Remove probe saturation
-				for k = [num2str(ps(1)) num2str(ps(2))]
-					if ~exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
-						c_load(irf_ssub('PROBESA?p!',cl_id,k))
+				% Remove probe saturation electronics & low density
+				for kk = [num2str(ps(1)) num2str(ps(2))]
+					if ~exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
+						c_load(irf_ssub('PROBESA?p!',cl_id,kk))
 					end
-					if exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
-						eval(irf_ssub('sa=PROBESA?p!;',cl_id,k))
+					if ~exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
+						c_load(irf_ssub('PROBELD?p!',cl_id,kk))
+					end
+					
+					if exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
+						eval(irf_ssub('sa=PROBESA?p!;',cl_id,kk))
 						if ~isempty(sa)
-							irf_log('proc',['blanking saturated P' num2str(k)])
+							irf_log('proc',['blanking saturated P' num2str(kk)])
+							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
+						end
+						clear sa
+					end
+					if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
+						eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
+						if ~isempty(sa)
+							irf_log('proc',['blanking low den satur P' num2str(kk)])
 							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
 						end
 						clear sa
@@ -949,9 +973,11 @@ elseif strcmp(quantity,'probesa')
 	% N_CONST sets the minimum number of points of constant potential
 	% which we consider bad
 	N_CONST = 4;
-	% Interval by which we extend saturation intervals from each side
-	% .65 is more that 3 points of P
-	DT_PLUMIN = .65;
+	% DT_PLUMIN is the interval by which we extend saturation 
+	% sintervals from each side
+	DT_PLUMIN = 4;
+	% Delta = .1 sec, half sampling interval for P.
+	DELTA = .1;
 	
 	c_eval(['p? = c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');']);
 	if isempty(p1) & isempty(p2) & isempty(p3) & isempty(p4)
@@ -962,67 +988,97 @@ elseif strcmp(quantity,'probesa')
 	for pro=1:4
 		c_eval('p=p?;',pro)
 		if isempty(p), continue, end
-		% Bad points are points below SA_LEVEL, but also with positive pot
-		ii_bad = find(p(:,2)<-SA_LEVEL | p(:,2)>=0);
+		
+		% Points below SA_LEVEL should be excluded from E, but not from
+		% P ans they atill contain valuable physical information.
+		% This is not the case with points with positive and/or 
+		% constant (stuck probe) potential.
+		
+		% Bad points are points below SA_LEVEL
+		ii_bad = find(p(:,2)<-SA_LEVEL);
+		ii_god = find(p(:,2)>=-SA_LEVEL);
+
 		if isempty(ii_bad)
-			irf_log('dsrc','No data')
-			c_eval(['PROBESA' num2str(cl_id) ...
-				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			c_eval(['PROBELD' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+		elseif isempty(ii_god)
+			c_eval(['PROBELD' num2str(cl_id) ...
+				'p?=[double(p(1,1))'' double(p(end,1))''];'...
+				'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+				p = [];
 		else
-			ii_good = find(p(:,2)>=-SA_LEVEL & p(:,2)<0);
-			if isempty(ii_good)
-				irf_log('dsrc',...
-					sprintf('Probe %d is saturated during the whole interval!!!',pro))
-				c_eval(['PROBESA' num2str(cl_id) ...
+			p_tmp = p;
+			p_tmp(ii_god,2) = 1;
+			p_tmp(ii_bad,2) = 0;
+			ii = irf_find_diff(p_tmp(:,2));
+			if p_tmp(1,2)==0, ii = [1; ii]; end
+			if p_tmp(end,2)==0, ii = [ii; length(p_tmp(:,2))]; end
+			ii = reshape(ii,2,length(ii)/2);
+			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]';
+			c_eval(['PROBELD' num2str(cl_id) 'p?=res;'...
+			'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+			clear res ii
+			
+			% Leave only good points for further exploration
+			p = p(ii_god,:);
+		end
+		clear ii_god ii_bad
+		
+		% Bad points are points with positive and/or constant potential
+		ii_bad = find(p(:,2)>=0);
+		ii_god = find(p(:,2)<0);
+		if isempty(ii_god)
+			c_eval(['PROBESA' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
 				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
-			else
-				dd = diff(p(ii_good,2));
-				p(ii_good,2) = 1;
-				% check for constant P, means probe is in a strange state
-				ii = find(dd==0);
-				if length(ii)>1
-					% at least three consequetive points are the same
-					kk = find(ii(1:end-1)-ii(2:end)==-1);
-					if ~isempty(kk)
-						jj = 1;
-						while jj<=length(kk)
-							bad_i = find(ii-ii(kk(jj))-(1:length(ii))'+kk(jj)==0);
-							if length(bad_i)>N_CONST
-								p([ii_good(ii(bad_i)); ii_good(ii(bad_i(end)))+1],2) = 0;
-							end 
-							if isempty(bad_i), jj = jj + 1;
-							else
-								ll = find(kk>bad_i(end));
-								if isempty(ll), break
-								else, jj = ll(1);
-								end
+		else
+			dd = diff(p(ii_god,2));
+			p(ii_god,2) = 1;
+			
+			% check for constant P, means probe is in a strange state
+			ii = find(dd==0);
+			if length(ii)>1
+				% at least three consequetive points are the same
+				kk = find(ii(1:end-1)-ii(2:end)==-1);
+				if ~isempty(kk)
+					jj = 1;
+					while jj<=length(kk)
+						bad_i = find(ii-ii(kk(jj))-(1:length(ii))'+kk(jj)==0);
+						if length(bad_i)>N_CONST
+							p([ii_god(ii(bad_i)); ii_god(ii(bad_i(end)))+1],2) = 0;
+						end 
+						if isempty(bad_i), jj = jj + 1;
+						else
+							ll = find(kk>bad_i(end));
+							if isempty(ll), break
+							else, jj = ll(1);
 							end
 						end
 					end
 				end
-				p(ii_bad,2) = 0;
-				ii = irf_find_diff(p(:,2));
-				if p(1,2)==0, ii = [1; ii]; end
-				if p(end,2)==0, ii = [ii; length(p(:,2))]; end
-				ii = reshape(ii,2,length(ii)/2);
-				% We add DT_PLUMIN sec on each side and check for overlapping intervals
-				res = [p(ii(1,:))-DT_PLUMIN; p(ii(2,:)-1)+DT_PLUMIN]';
-				if length(ii(1,:))>1
-					pos = 1;
-					while 1
-						if res(pos,2)+DT_PLUMIN>=res(pos+1,1)
-							res(pos,2) = res(pos+1,2);
-							res(pos+1,:) = [];
-						end
-						pos = pos + 1;
-						if pos>=size(res,1), break, end
-					end
-				end
-				c_eval(['PROBESA' num2str(cl_id) 'p?=res;'...
-				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
-				clear ii res
 			end
+			p(ii_bad,2) = 0;
+			ii = irf_find_diff(p(:,2));
+			if p(1,2)==0, ii = [1; ii]; end
+			if p(end,2)==0, ii = [ii; length(p(:,2))]; end
+			ii = reshape(ii,2,length(ii)/2);
+			
+			% We add DT_PLUMIN sec on each side and check for overlapping intervals
+			res = [p(ii(1,:))-DT_PLUMIN; p(ii(2,:)-1)+DT_PLUMIN]';
+			if length(ii(1,:))>1
+				pos = 1;
+				while 1
+					if res(pos,2)+DT_PLUMIN>=res(pos+1,1)
+						res(pos,2) = res(pos+1,2);
+						res(pos+1,:) = [];
+					end
+					pos = pos + 1;
+					if pos>=size(res,1), break, end
+				end
+			end
+			c_eval(['PROBESA' num2str(cl_id) 'p?=res;'...
+			'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			clear ii res
 		end
 	end
 	
@@ -1240,6 +1296,54 @@ elseif strcmp(quantity,'p')
 	end
 	clear BADBIAS*
 	
+	% Remove probe saturation
+	for k = 1:4
+		if ~isempty(eval(irf_ssub('p?',k)))
+			c_load(irf_ssub('PROBESA?p!',cl_id,k))
+			if exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
+				eval(irf_ssub('sa=PROBESA?p!;',cl_id,k))
+				if ~isempty(sa)
+					irf_log('proc',['blanking saturated P' num2str(k)])
+					% We remove saturations simultaneously on probes 1&2, 3&4
+					% so that the resulting timelines are similar
+					if k==1|k==2
+						if ~isempty(p1), p1 = caa_rm_blankt(p1,sa); end
+						if ~isempty(p2), p2 = caa_rm_blankt(p2,sa); end
+					else
+						if ~isempty(p3), p3 = caa_rm_blankt(p3,sa); end
+						if ~isempty(p4), p4 = caa_rm_blankt(p4,sa); end
+					end
+				end
+				clear sa
+			end
+		end
+	end
+	c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+	
+	% Remove sweeps and burst dumps
+	[ok,sweep] = c_load('SWEEP?',cl_id);
+	if ok
+		if ~isempty(sweep)
+			irf_log('proc','blanking sweeps')
+			c_eval('p?=caa_rm_blankt(p?,sweep);',cl_id)
+			clear sweep
+		end
+	else
+		irf_log('load',...
+			irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
+	end
+	[ok,bdump] = c_load('BDUMP?',cl_id);
+	if ok
+		if ~isempty(bdump)
+			irf_log('proc','blanking burst dumps')
+			c_eval('p?=caa_rm_blankt(p?,bdump);',cl_id)
+			clear bdump
+		end
+	else
+		irf_log('load',...
+			irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
+	end
+	
 	% Remove Whisper pulses
 	if flag_rmwhip
 		[ok,whip] = c_load('WHIP?',cl_id);
@@ -1256,12 +1360,12 @@ elseif strcmp(quantity,'p')
 	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
 		Pinfo.probe = 1234;
-	elseif size(p1)==size(p2) & size(p1)~=[0 0]
-		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
-		Pinfo.probe = 12;
 	elseif size(p3)==size(p4) & size(p3)~=[0 0] & cl_id~=2
 		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
 		Pinfo.probe = 34;
+	elseif size(p1)==size(p2) & size(p1)~=[0 0]
+		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
+		Pinfo.probe = 12
 	elseif size(p4)~=[0 0]
 		p = p4;
 		Pinfo.probe = 4;
