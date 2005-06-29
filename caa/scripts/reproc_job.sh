@@ -44,6 +44,6 @@ for event in $events
 do
 	echo Processing $event
 	export $matlab_setup
-	(cd $1/$event; echo "irf_log('log_out','$log_dir/reproc.log'); c_get_batch(0,0,'nosrc','vars','e'); exit" | $matlab_cmd > $log_dir/reproc_comm.log 2>&1)
+	(cd $1/$event; echo "irf_log('log_out','$log_dir/reproc.log'); c_get_batch(0,0,'nosrc','vars',{'e','b'}); exit" | $matlab_cmd > $log_dir/reproc_comm.log 2>&1)
 done
 echo done with job $1
