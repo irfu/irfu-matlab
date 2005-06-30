@@ -31,6 +31,7 @@ ncomp = size(data,2) - 1;
 if nint<1,
 	F = [];
 	Pxx = [];
+	outspecrec = [];
 	return
 end
 
