@@ -139,6 +139,7 @@ ylabel('P L2 [-V]')
 irf_zoom(st +[0 dt],'x',h)
 irf_zoom([0 12.5],'y',h(1:4))
 
+orient tall
 fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
 if savePS
 	irf_log('save',['saving ' fn '.[ps,pdf]'])

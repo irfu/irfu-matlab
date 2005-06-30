@@ -1019,8 +1019,10 @@ elseif strcmp(quantity,'probesa')
 		elseif isempty(ii_god)
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
-				'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-				p = [];
+				'PROBESA' num2str(cl_id) 'p?=[];'...
+				'save_list=[save_list '' PROBELD' num2str(cl_id) ...
+				'p? PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			p = [];
 		else
 			p_tmp = p;
 			p_tmp(ii_god,2) = 1;
@@ -1038,6 +1040,8 @@ elseif strcmp(quantity,'probesa')
 			p = p(ii_god,:);
 		end
 		clear ii_god ii_bad
+		
+		if isempty(p), continue, end
 		
 		% Bad points are points with positive and/or constant potential
 		ii_bad = find(p(:,2)>=0);
@@ -1380,7 +1384,7 @@ elseif strcmp(quantity,'p')
 		Pinfo.probe = 34;
 	elseif size(p1)==size(p2) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
-		Pinfo.probe = 12
+		Pinfo.probe = 12;
 	elseif size(p4)~=[0 0]
 		p = p4;
 		Pinfo.probe = 4;
