@@ -255,7 +255,8 @@ if strcmp(quantity,'dies')
 				if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
 					eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
 					if ~isempty(sa)
-						irf_log('proc',['blanking low den satur P' num2str(kk)])
+						irf_log('proc',...
+							['blanking low density saturation on P' num2str(kk)])
 						tt = caa_rm_blankt(tt,sa);
 					end
 					clear sa
@@ -520,7 +521,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
 						eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
 						if ~isempty(sa)
-							irf_log('proc',['blanking low den satur P' num2str(kk)])
+							irf_log('proc',...
+								['blanking low density saturation on P' num2str(kk)])
 							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
 						end
 						clear sa
