@@ -18,7 +18,13 @@ error(nargchk(3,4,nargin))
 if nargin<4, overlap = 0; end
 if overlap<0 | overlap>100, error('OVERLAP must be in a range 0..99'), end
 
-nint = fix(size(data,1)*(1+overlap*.01)/nfft);
+ii = find(~isnan(data(:,1)));
+if isempty(ii), error('time is NaN')
+else, ts = data(ii(1),1);
+end
+
+% Number of intervals must be computed from time
+nint = fix(((data(ii(end),1)-ts)*sfreq+1)*(1+overlap*.01)/nfft);
 ncomp = size(data,2) - 1;
 
 % Check if there is enough data
@@ -38,10 +44,6 @@ specrec.t = zeros(nint,1);
 w = hanning(nfft);
 wnorm = sum(w.^2)/nfft;	% normalization factor from windowing
 
-ii = find(~isnan(data(:,1)));
-if isempty(ii), error('time is NaN')
-else, ts = data(ii(1),1);
-end
 tcur = ts;
 nnorm = 2.0/nfft/sfreq/wnorm;
 
