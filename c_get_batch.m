@@ -59,8 +59,8 @@ sp = '.';
 db = 'disco:10';
 dp = '/data/cluster';
 cdb = '';
-vars = {'fdm','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
 varsMan = 0;
+vars = '';
 varsProc = '';
 argsProc = '';
 dosrc = 1;
@@ -145,6 +145,9 @@ end
 
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
+if isempty(vars) & isempty(varsProc)
+	vars = {'fdm','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
+end
 if ~isempty(vars)
 	if dosrc
 		for cl_id=sc_list
@@ -152,7 +155,7 @@ if ~isempty(vars)
 		end
 	end
 	
-	if doproc & ~varsMan
+	if doproc & isempty(varsProc)
 		if L_find(vars,{'e','p'})
 			varsProc = [{'whip','sweep','bdump'} varsProc];
 		end
