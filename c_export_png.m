@@ -64,7 +64,8 @@ for cl_id=sc_list
 	fn = sprintf('EFW_C%d_%s%s',cl_id,irf_fname(st),suf);
 	irf_log('save',['saving ' fn])
 	print( gcf, '-depsc2', fn) 
-	unix(['/usr/local/bin/eps2png ' fn '.eps; rm -f ' fn '.eps']);
+	[s,w] = unix(['/usr/local/bin/eps2png ' fn '.eps; rm -f ' fn '.eps']);
+	if s~=0, irf_log('save','problem with eps2png'), end
 end
 
 cd(old_pwd)
