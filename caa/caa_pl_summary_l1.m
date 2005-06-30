@@ -1,13 +1,32 @@
-function caa_pl_summary_l1(iso_t,dt,sdir)
+function caa_pl_summary_l1(iso_t,dt,sdir,options)
 %CAA_PL_SUMMARY_L1 CAA summary plot for L1 & L2 P data & EF
 %
-% caa_pl_summary_l1(iso_t,dt,sdir)
+% caa_pl_summary_l1(iso_t,dt,sdir,[options])
+%   options:
+%           saveps  - save PS and PDF
+%           savepng - save PNG
+%           save    - save PNG, PS and PDF
 %
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
+
+savePS = 0;
+savePNG = 0;
+if nargin>3
+	if strcmp(options,'save')
+		savePS = 1;
+		savePNG = 1;
+	elseif strcmp(options,'saveps')
+		savePS = 1;
+	elseif strcmp(options,'savepng')
+		savePNG = 1;
+	else
+		irf_log('fcal','unknown option')
+	end
+end
 
 old_pwd = pwd;
 st = iso2epoch(iso_t);
@@ -119,3 +138,17 @@ ylabel('P L2 [-V]')
 
 irf_zoom(st +[0 dt],'x',h)
 irf_zoom([0 12.5],'y',h(1:4))
+
+fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
+if savePS
+	irf_log('save',['saving ' fn '.[ps,pdf]'])
+	print( gcf, '-dpsc2', fn) 
+	[s,w] = unix(['/usr/local/bin/ps2pdf13 ' fn '.ps']);
+	if s~=0, irf_log('save','problem with ps2pdf'), end
+end
+if savePNG
+	irf_log('save',['saving ' fn '.png'])
+	print( gcf, '-depsc2', fn) 
+	[s,w] = unix(['/usr/local/bin/eps2png ' fn '.eps; rm -f ' fn '.eps']);
+	if s~=0, irf_log('save','problem with eps2png'), end
+end
