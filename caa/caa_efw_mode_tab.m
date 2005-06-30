@@ -76,51 +76,54 @@ if ~isempty(t_fdm);
 		end
 	end
 	
-	empty = 1;
-	for j=1:length(var_list)
-		eval(['ii{j} = irf_find_diff(fdm_' var_list{j} ',fdm_last_' var_list{j} ');']);
-		if empty & ~isempty(ii{j}), empty = 0; end 
-	end
-	
-	% no changes (should be a typical situation)
-	if ~empty
-		ii_all = [];
+	% If we have more than one point
+	if length(fdm(:,1))>1 
+		empty = 1;
 		for j=1:length(var_list)
-			if ~isempty(ii{j}) 
-				n = length(ii{j});
-				ii_all(end+1:end+n) = ii{j};
-			end
+			eval(['ii{j} = irf_find_diff(fdm_' var_list{j} ',fdm_last_' var_list{j} ');']);
+			if empty & ~isempty(ii{j}), empty = 0; end 
 		end
-		ii_all = irf_rm_double_idx(ii_all);
-		n_diff = length(ii_all);
 		
-		for jj = 1:n_diff
-			l = length(t_start_save);
-			
-			% save a good interval
-			t_start_save(l+1) = t_fdm_last;
-			% if the change happened exactly at the boundary between intervals
-			if ii_all(jj)-1 >= 1, t_stop_save(l+1) = t_fdm(ii_all(jj)-1);
-			else t_stop_save(l+1) = t_end_last_interv; 
-			end
-	
+		% no changes (should be a typical situation)
+		if ~empty
+			ii_all = [];
 			for j=1:length(var_list)
-				eval(['if length(fdm_last_' var_list{j} ')>1,fdm_save_' var_list{j} '(l+1,:)=fdm_last_' var_list{j} '; else, fdm_save_' var_list{j} '(l+1)=fdm_last_' var_list{j} '; end ']);
+				if ~isempty(ii{j}) 
+					n = length(ii{j});
+					ii_all(end+1:end+n) = ii{j};
+				end
 			end
-			n_good = n_good + 1;
+			ii_all = irf_rm_double_idx(ii_all);
+			n_diff = length(ii_all);
 			
-			t_fdm_last = t_fdm(ii_all(jj));
-			for j=1:length(var_list)
-				eval(['fdm_last_' var_list{j} '= fdm_' var_list{j} '(ii_all(jj),:);']); 
-			end
+			for jj = 1:n_diff
+				l = length(t_start_save);
 				
+				% save a good interval
+				t_start_save(l+1) = t_fdm_last;
+				% if the change happened exactly at the boundary between intervals
+				if ii_all(jj)-1 >= 1, t_stop_save(l+1) = t_fdm(ii_all(jj)-1);
+				else t_stop_save(l+1) = t_end_last_interv; 
+				end
+		
+				for j=1:length(var_list)
+					eval(['if length(fdm_last_' var_list{j} ')>1,fdm_save_' var_list{j} '(l+1,:)=fdm_last_' var_list{j} '; else, fdm_save_' var_list{j} '(l+1)=fdm_last_' var_list{j} '; end ']);
+				end
+				n_good = n_good + 1;
+				
+				t_fdm_last = t_fdm(ii_all(jj));
+				for j=1:length(var_list)
+					eval(['fdm_last_' var_list{j} '= fdm_' var_list{j} '(ii_all(jj),:);']); 
+				end
+					
+			end
 		end
 	end
 end
 	
 
 if prev_ok %last interval was also good
-if (t_fdm_last < t_fdm(end))
+if (t_fdm_last <= t_fdm(end))
 	l = length(t_start_save);
 	
 	% save the good interval		
