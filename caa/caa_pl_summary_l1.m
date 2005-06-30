@@ -111,7 +111,7 @@ for cli=1:4
 				end
 				pp = plot(t1-t_start_epoch + [0 dt1],[cli cli],krgb(cli));
 				set(pp,'Marker','+');
-				if tm,	set(pp,'LineWidth',3); end
+				if tm(1),	set(pp,'LineWidth',3); end
 				text(t1-t_start_epoch+60,cli+0.2,st_s)
 				cd(old_pwd)
 			end
