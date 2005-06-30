@@ -18,6 +18,7 @@ st = iso2epoch(iso_t);
 
 % First we check if we have any EFW HX data
 % and check for NM/BM1
+tm_prev = [];
 for cl_id=1:4
 	st_tmp = st;
 	tm = [];
@@ -31,9 +32,17 @@ for cl_id=1:4
 		end
 		if isempty(tm) & ~isempty(tm_cur), tm = [st_tmp tm_cur]; end
 		if ~isempty(tm) & ~isempty(tm_cur)
-			if tm(end,2)~=tm_cur, tm(end+1,:) = [st_tmp tm_cur]; end
+			if tm(end,2)~=tm_cur
+				if tm_prev==1 & tm_cur==0
+					tm_cur==1;
+					irf_log('proc','skipping one frame after BM1')
+				else
+					tm(end+1,:) = [st_tmp tm_cur];
+				end
+			end
 		end
 		st_tmp = st_tmp + REQ_INT;
+		tm_prev = tm_cur;
 	end
 	if ~isempty(tm)
 	% Throw away all modes>1
@@ -107,13 +116,13 @@ for cli=sc_list
 		if isempty(int_tmp), int_tmp = [t1 dt1];
 		else, int_tmp(end+1,:) = [t1 dt1];
 		end
-		 
+		
 		% Get data
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
-			
+
 	end
 	
 	if ~isempty(int_tmp)
