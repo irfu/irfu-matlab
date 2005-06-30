@@ -135,6 +135,11 @@ title(['EFW L1 & Co summary for ' iso_t])
 axes(h(5))
 c_pl_tx('p?')
 ylabel('P L2 [-V]')
+a = get(gca,'YLim');
+if a(1)<-70
+	a(1)=-70;
+	set(gca,'YLim',a);
+end
 
 irf_zoom(st +[0 dt],'x',h)
 irf_zoom([0 12.5],'y',h(1:4))
