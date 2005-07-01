@@ -115,13 +115,18 @@ DAYS=0
 HOURS=0
 while test $DAYS -lt $NDAYS
 do
+	DAY=$(($DD+$DAYS))
+	if test $DAY -lt 10
+	then
+		DAY="0$DAY"
+	fi
 	while test $HOURS -lt 24
 	do
 		if test $HOURS -lt 10
 		then
 			HOURS="0$HOURS"
 		fi
-		start_time=$YYYY-$MM-$DD'T'$HOURS':00:00.000Z'
+		start_time=$YYYY-$MM-$DAY'T'$HOURS':00:00.000Z'
 		dt="$INT_HOURS*60*60"
 		
 		if test "$data" = "yes"
@@ -130,18 +135,24 @@ do
 		fi
 		if test "$splot" = "yes"
 		then
-			cdir=$YYYY$MM$DD'_'$HOURS'00'
+			cdir=$YYYY$MM$DAY'_'$HOURS'00'
 			if test -d $out_dir/$cdir
 			then
-				do_one_splot $cdir
+				(cd $out_dir; do_one_splot $cdir)
 			else
 				echo Skipping $start_time
 			fi
 		fi
 
-		DAYS=$(($DAYS+1))
 		HOURS=$(($HOURS+$INT_HOURS))
 	done
+	DAYS=$(($DAYS+1))
 done
+
+if test "$splot" = "yes"
+then
+	echo Joining PDFs...
+	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__$YYYY$MM$DD.pdf EFW_SPLOT_L1__*.pdf )
+fi
 	
 echo done with job $JOBNAME
