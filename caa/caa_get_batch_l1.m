@@ -18,12 +18,11 @@ st = iso2epoch(iso_t);
 
 % First we check if we have any EFW HX data
 % and check for NM/BM1
-tm_prev = -2;
 count_skip = 0;
 MAX_SKIP = 2;
 for cl_id=1:4
 	st_tmp = st;
-	tm = [];
+	tm = []; tm_prev = [];
 	
 	while st_tmp<st+dt
 		
@@ -33,6 +32,12 @@ for cl_id=1:4
 			irf_log('dsrc',['No FDM for C' num2str(cl_id) ...
 				' at ' epoch2iso(st_tmp,1)])
 			tm_cur = -1;
+		end
+		
+		% First frame is directly good, probably we started in the middle of
+		% good interval
+		if isempty(tm_prev) & tm_cur>=0
+			tm(end+1,:) = [st_tmp tm_cur];
 		end
 		
 		if tm_prev~=tm_cur & tm_cur>=0
@@ -82,15 +87,15 @@ if ~exist(maindir, 'dir')
 	end
 end
 
-for cli=sc_list
-	cdir = [maindir '/C' num2str(cli)];
+for cl_id=sc_list
+	cdir = [maindir '/C' num2str(cl_id)];
 	if ~exist(cdir, 'dir')
 		[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdir);
 		if SUCCESS, irf_log('save',['Created storage directory ' cdir])
 		else, error(MESSAGE)
 		end
 	end
-	c_eval('tm=tm?;',cli);
+	c_eval('tm=tm?;',cl_id);
 	
 	% Split long intervals into SPLIT_INT hour chunks
 	j = 1;
@@ -130,22 +135,22 @@ for cli=sc_list
 		int_tmp(end+1,:) = [t1 dt1];
 		
 		% Get data
-		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
+		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
-		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
+		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
 			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
 		
 	end
 	
 	if ~isempty(int_tmp)
 		% Save intervals
-		c_eval('INTERVALS?=int_tmp;',cli)
+		c_eval('INTERVALS?=int_tmp;',cl_id)
 		if exist([cdir '/mINTER.mat'],'file')
-			c_eval(['save ' cdir '/mINTER.mat INTERVALS? -append'],cli)
+			c_eval(['save ' cdir '/mINTER.mat INTERVALS? -append'],cl_id)
 		else
-			c_eval(['save ' cdir '/mINTER.mat INTERVALS?'],cli)
+			c_eval(['save ' cdir '/mINTER.mat INTERVALS?'],cl_id)
 		end
-		irf_log('save',irf_ssub('INTERVALS? -> mINTER',cli))
+		irf_log('save',irf_ssub('INTERVALS? -> mINTER',cl_id))
 	end
 end
 
