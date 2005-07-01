@@ -18,37 +18,48 @@ st = iso2epoch(iso_t);
 
 % First we check if we have any EFW HX data
 % and check for NM/BM1
-tm_prev = [];
+tm_prev = -2;
+count_skip = 0;
+MAX_SKIP = 2;
 for cl_id=1:4
 	st_tmp = st;
 	tm = [];
+	
 	while st_tmp<st+dt
+		
 		[t,data] = caa_is_get(DB_S,st_tmp,REQ_INT,cl_id,'efw','FDM');
-		if ~isempty(data), c_eval('tm_cur = data(5,1);',cl_id);
+		if ~isempty(data), tm_cur = data(5,1);
 		else
-			irf_log('dsrc',['Cannot fetch FDM for C' num2str(cl_id) ...
+			irf_log('dsrc',['No FDM for C' num2str(cl_id) ...
 				' at ' epoch2iso(st_tmp,1)])
-			c_eval('tm_cur = [];',cl_id)
+			tm_cur = -1;
 		end
-		if isempty(tm) & ~isempty(tm_cur), tm = [st_tmp tm_cur]; end
-		if ~isempty(tm) & ~isempty(tm_cur)
-			if tm(end,2)~=tm_cur
-				if tm_prev==1 & tm_cur==0
-					tm_cur==1;
-					irf_log('proc','skipping one frame after BM1')
-				else
-					tm(end+1,:) = [st_tmp tm_cur];
-				end
+		
+		if tm_prev~=tm_cur & tm_cur>=0
+			% We skip MAX_SKIP frames of NM because it is folliwing 
+			% BM1 or data gap ant usually contains junk
+			if tm_cur==0 & count_skip<MAX_SKIP
+				tm_cur = -2;
+				count_skip = count_skip + 1;
+				irf_log('proc',['Skipping one NM frame for C' num2str(cl_id)...
+					' at ' epoch2iso(st_tmp,1)])
+			else
+				tm(end+1,:) = [st_tmp tm_cur];
+				count_skip = 0;
 			end
+		else, count_skip = 0;
 		end
+		
 		st_tmp = st_tmp + REQ_INT;
 		tm_prev = tm_cur;
 	end
-	if ~isempty(tm)
+	
 	% Throw away all modes>1
+	if ~isempty(tm)
 		ii_out = find(tm(:,2)>1);
 		if ~isempty(ii_out)
-			irf_log('proc',sprintf('THROWING AWAY %d intervals',length(ii_out)))
+			irf_log('proc',sprintf('Removing %d intervals TM>1 for C%d',...
+				length(ii_out),cl_id))
 			tm(ii_out,:) = [];
 		end
 	end
@@ -62,7 +73,7 @@ c_eval('if ~isempty(tm?), sc_list = [sc_list ?]; end')
 
 if isempty(sc_list), irf_log('dsrc','No data'), return, end
 
-%Create the storage directory if it does not exist
+% Create the storage directory if it does not exist
 maindir = [sdir '/' irf_fname(st)];
 if ~exist(maindir, 'dir')
 	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(maindir);
@@ -108,21 +119,22 @@ for cli=sc_list
 		else, dt1 = tm(inter+1,1) -t1;
 		end
 		if inter~=1 & inter~=size(tm,1) & dt1<500
-			disp(['SKIPPING: ' epoch2iso(t1) ' - ' epoch2iso(t1+dt1)])
-		else, disp(['INTERVAL: ' epoch2iso(t1) ' - ' epoch2iso(t1+dt1)])
+			irf_log('proc',['C' num2str(cl_id) ' skipping ' ...
+				epoch2iso(t1,1) ' - ' epoch2iso(t1+dt1,1)])
+		else
+			irf_log('proc',['C' num2str(cl_id) ' interval ' ...
+				epoch2iso(t1,1) ' - ' epoch2iso(t1+dt1,1)])
 		end
 		
 		% Keep track of intervals we process
-		if isempty(int_tmp), int_tmp = [t1 dt1];
-		else, int_tmp(end+1,:) = [t1 dt1];
-		end
+		int_tmp(end+1,:) = [t1 dt1];
 		
 		% Get data
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a','noproc')
 		c_get_batch(t1,dt1,'sc_list',cli,'sdir',cdir,...
 			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
-
+		
 	end
 	
 	if ~isempty(int_tmp)
@@ -137,5 +149,3 @@ for cli=sc_list
 	end
 end
 
-% Does this belong here?
-%caa_pl_summary_l1(iso_t,dt,maindir)
