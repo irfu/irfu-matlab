@@ -1,7 +1,13 @@
 #!/bin/sh
 #
 # Script for running c_get_batch_l1 using job_file as input.
-# Job file has two columns: start_time [ISO time] and dt [sec]
+#
+# Usage:_l1.sh  [options] YYYY MM DD [NDAYS]"
+#		-d | --data                 Process data [default]
+#		-nd | --no-data             Do not process data
+#		-sp | --splot               Make summary plots
+#		-h | --help | -help | '-?'  Display usage
+#		-v | --version              Display version
 #
 # (c) 2005, Yuri Khotyaintsev
 #
@@ -33,11 +39,13 @@ get_one_int()
 {
 	echo Processing $start_time dt=$dt sec ...
 	echo "irf_log('log_out','$log_dir/$start_time.log'); caa_get_batch_l1('$start_time',$dt,'$out_dir'); exit" | $MATLAB " -nodisplay" >> $log_dir/$start_time-get_data.log 2>&1	
+	if ! [ -z "`grep -i error $log_dir/$start_time-get_data.log`" ]; then echo -n " Error "; fi
 }
+
 do_one_splot()
 {
-	echo Summary plot $start_time dt=$dt sec ...
 	echo "irf_log('log_out','$log_dir/$start_time-splot.log'); caa_pl_summary_l1('$start_time',$dt,'$out_dir/$@','save'); exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
+	if ! [ -z "`grep -i error $log_dir/$start_time-get_data.log`" ]; then echo -n " Error "; fi
 }
 
 PROGRAM=`basename $0`
@@ -99,6 +107,9 @@ out_dir=/data/caa/raw/$JOBNAME
 log_dir=/data/caa/log-raw/$JOBNAME
 
 echo Starting job $JOBNAME 
+echo "Data  = $data"
+echo "SPlot = $splot" 
+
 if ! [ -d $out_dir ]
 then
 	echo creating out_dir: $out_dir
@@ -120,6 +131,9 @@ do
 	then
 		DAY="0$DAY"
 	fi
+
+	echo -n Processing $YYYY-$MM-$DAY ... 
+
 	while test $HOURS -lt 24
 	do
 		if test $HOURS -lt 10
@@ -128,6 +142,8 @@ do
 		fi
 		start_time=$YYYY-$MM-$DAY'T'$HOURS':00:00.000Z'
 		dt="$INT_HOURS*60*60"
+
+		echo -n " $HOURS"
 		
 		if test "$data" = "yes"
 		then
@@ -140,13 +156,15 @@ do
 			then
 				(cd $out_dir; do_one_splot $cdir)
 			else
-				echo Skipping $start_time
+				echo -n " Skipping $HOURS"
 			fi
 		fi
 
 		HOURS=$(($HOURS+$INT_HOURS))
 	done
+	echo " Done."
 	DAYS=$(($DAYS+1))
+	HOURS=0
 done
 
 if test "$splot" = "yes"
