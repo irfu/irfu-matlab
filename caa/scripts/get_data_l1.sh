@@ -37,15 +37,28 @@ version()
 
 get_one_int()
 {
-	echo Processing $start_time dt=$dt sec ...
-	echo "irf_log('log_out','$log_dir/$start_time.log'); caa_get_batch_l1('$start_time',$dt,'$out_dir'); exit" | $MATLAB " -nodisplay" >> $log_dir/$start_time-get_data.log 2>&1	
-	if ! [ -z "`grep -i error $log_dir/$start_time-get_data.log`" ]; then echo -n " Error "; fi
+	donef=$out_dir/${YYYY}${MM}${DAY}_${HOURS}00/.done_get_data_l1_data
+	rm -f $donef
+
+	echo "irf_log('log_out','$log_dir/$start_time.log');\
+ 	caa_get_batch_l1('$start_time',$dt,'$out_dir');\
+	[s,w] = unix('touch $donef');\
+ 	exit" | $MATLAB " -nodisplay" >> $log_dir/$start_time-get_data.log 2>&1	
+
+	if ! [ -f $donef ]; then echo -n " Error"; fi
 }
 
 do_one_splot()
 {
-	echo "irf_log('log_out','$log_dir/$start_time-splot.log'); caa_pl_summary_l1('$start_time',$dt,'$out_dir/$@','save'); exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
-	if ! [ -z "`grep -i error $log_dir/$start_time-get_data.log`" ]; then echo -n " Error "; fi
+	donef=$out_dir/${YYYY}${MM}${DAY}_${HOURS}00/.done_get_data_l1_splot
+	rm -f $donef
+
+	echo "irf_log('log_out','$log_dir/$start_time-splot.log');\
+ 	caa_pl_summary_l1('$start_time',$dt,'$out_dir/$@','save');\
+	[s,w] = unix('touch $donef');\
+ 	exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
+
+	if ! [ -f $donef ]; then echo -n " Error"; fi
 }
 
 PROGRAM=`basename $0`
@@ -132,7 +145,7 @@ do
 		DAY="0$DAY"
 	fi
 
-	echo -n Processing $YYYY-$MM-$DAY ... 
+	echo -n Processing ${YYYY}-${MM}-${DAY}... 
 
 	while test $HOURS -lt 24
 	do
@@ -140,37 +153,38 @@ do
 		then
 			HOURS="0$HOURS"
 		fi
+		echo -n " $HOURS"
+
 		start_time=$YYYY-$MM-$DAY'T'$HOURS':00:00.000Z'
 		dt="$INT_HOURS*60*60"
 
-		echo -n " $HOURS"
-		
 		if test "$data" = "yes"
 		then
 			get_one_int
 		fi
-		if test "$splot" = "yes"
+		if [ "$splot" = "yes" ]
 		then
 			cdir=$YYYY$MM$DAY'_'$HOURS'00'
-			if test -d $out_dir/$cdir
+			if [ -d $out_dir/$cdir ]
 			then
 				(cd $out_dir; do_one_splot $cdir)
 			else
-				echo -n " Skipping $HOURS"
+				echo -n " No data"
 			fi
 		fi
 
 		HOURS=$(($HOURS+$INT_HOURS))
 	done
 	echo " Done."
+
+	if [ "X$splot" = "Xyes"]
+	then
+		echo Joining PDFs...
+		(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAYS}.pdf EFW_SPLOT_L1__*.pdf )
+	fi
+
 	DAYS=$(($DAYS+1))
 	HOURS=0
 done
 
-if test "$splot" = "yes"
-then
-	echo Joining PDFs...
-	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__$YYYY$MM$DD.pdf EFW_SPLOT_L1__*.pdf )
-fi
-	
-echo done with job $JOBNAME
+echo Done with job $JOBNAME
