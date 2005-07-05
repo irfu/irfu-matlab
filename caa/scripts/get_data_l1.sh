@@ -6,6 +6,8 @@
 #		-d | --data                 Process data [default]
 #		-nd | --no-data             Do not process data
 #		-sp | --splot               Make summary plots
+#		-cpdf | --com-pdf | --common-pdf 
+#                               Create a common PDF for the whole job
 #		-h | --help | -help | '-?'  Display usage
 #		-v | --version              Display version
 #
@@ -172,9 +174,14 @@ do
 
 	if [ "X$splot" = "Xyes" ]
 	then
-		echo Joining PDFs...
-		(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAY}.pdf \
-		EFW_SPLOT_L1__${YYYY}${MM}${DAY}_*00.pdf )
+		echo -n Joining PDFs...
+		fmask=EFW_SPLOT_L1__${YYYY}${MM}${DAY}_*00.pdf
+		if ! [ -z "`find $out_dir -name $fmask`" ]
+		then
+			(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAY}.pdf $fmask |grep Finished)
+		else
+			echo No files.
+		fi
 	fi
   
 	DAYS=$(($DAYS+1))
@@ -183,9 +190,9 @@ done
 
 if [ "X$cpdf" = "Xyes" ]
 then
-	echo Joining PDFs...
-	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DD}_${YYYY}${MM}${DAY}.pdf \
-	EFW_SPLOT_L1__${YYYY}${MM}*_*00.pdf )
+	echo -n Joining PDFs...
+	fmask=EFW_SPLOT_L1__${YYYY}${MM}*_*00.pdf
+	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DD}_${YYYY}${MM}${DAY}.pdf $fmask |grep Finished) 
 fi
 
 echo Done with job $JOBNAME
