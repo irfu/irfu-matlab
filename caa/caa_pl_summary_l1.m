@@ -124,7 +124,7 @@ end
 
 for cli=1:4
 	axes(h(cli))
-	ylabel(sprintf('Ex C%d [(mV/m)^2/Hz]',cli))
+	ylabel(sprintf('Ex C%d freq [Hz]',cli))
 	set(gca,'YTick',[.25 .5 1 10],'YScale','log')
 	grid
 end
@@ -133,7 +133,8 @@ grid(h(6),'on')
 
 % Plot the rest
 axes(h(1))
-title(['EFW L1 & Co summary for ' iso_t])
+ds=irf_fname(st);
+title(['EFW EF and P L2 (' ds(1:8) '-' ds(10:13) ')'])
 axes(h(5))
 c_pl_tx('p?')
 ylabel('P L2 [-V]')
