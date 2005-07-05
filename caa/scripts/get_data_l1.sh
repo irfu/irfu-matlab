@@ -39,7 +39,8 @@ version()
 
 get_one_int()
 {
-	donef=$out_dir/${YYYY}${MM}${DAY}_${HOURS}00/.done_get_data_l1_data
+	cdir=${YYYY}${MM}${DAY}_${HOURS}00
+	donef=$out_dir/$cdir/.done_get_data_l1_data
 	rm -f $donef
 
 	echo "irf_log('log_out','$log_dir/$start_time.log');\
@@ -47,27 +48,39 @@ get_one_int()
 	[s,w] = unix('touch $donef');\
  	exit" | $MATLAB " -nodisplay" >> $log_dir/$start_time-get_data.log 2>&1	
 
-	if ! [ -f $donef ]; then echo -n " Error"; fi
+	#Empty dir means NO DATA
+	if [ -d $out_dir/$cdir ]
+	then
+		if ! [ -f $donef ]; then echo -n " Error"; fi
+	else
+		echo -n " No data"
+	fi
 }
 
 do_one_splot()
 {
-	donef=$out_dir/${YYYY}${MM}${DAY}_${HOURS}00/.done_get_data_l1_splot
-	rm -f $donef
+	cdir=${YYYY}${MM}${DAY}_${HOURS}00
+	if [ -d $out_dir/$cdir ]
+	then
+		donef=$out_dir/$cdir/.done_get_data_l1_splot
+		rm -f $donef
 
-	echo "irf_log('log_out','$log_dir/$start_time-splot.log');\
- 	caa_pl_summary_l1('$start_time',$dt,'$out_dir/$@','save');\
-	[s,w] = unix('touch $donef');\
- 	exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
+		echo "irf_log('log_out','$log_dir/$start_time-splot.log');\
+ 		caa_pl_summary_l1('$start_time',$dt,'$out_dir/$cdir','save');\
+		[s,w] = unix('touch $donef');\
+ 		exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
 
-	if ! [ -f $donef ]; then echo -n " Error"; fi
+		if ! [ -f $donef ]; then echo -n " Error"; fi
+	else
+		echo -n " No data"
+	fi
 }
 
 PROGRAM=`basename $0`
 VERSION=1.0
 MATLABSETUP='TMP=/tmp LD_LIBRARY_PATH=$IS_MAT_LIB:$LD_LIBRARY_PATH'
-#MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
-MATLAB=/bin/cat
+MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
+#MATLAB=/bin/cat
 INT_HOURS=3
 data=yes
 splot=no
@@ -152,21 +165,11 @@ do
 		if [ $HOURS -lt 10 ]; then HOURS="0${HOURS}";	fi
 		echo -n " $HOURS"
 
-		start_time=$YYYY-$MM-$DAY'T'$HOURS':00:00.000Z'
+		start_time=${YYYY}-${MM}-${DAY}T${HOURS}:00:00.000Z
 		dt="$INT_HOURS*60*60"
 
 		if [ "X$data" = "Xyes" ]; then get_one_int; fi
-
-		if [ "X$splot" = "Xyes" ]
-		then
-			cdir=$YYYY$MM$DAY'_'$HOURS'00'
-			if [ -d $out_dir/$cdir ]
-			then
-				(cd $out_dir; do_one_splot $cdir)
-			else
-				echo -n " No data"
-			fi
-		fi
+		if [ "X$splot" = "Xyes" ]; then (cd $out_dir; do_one_splot); fi
 
 		HOURS=$(($HOURS+$INT_HOURS))
 	done
