@@ -32,7 +32,7 @@ usage_and_exit()
 
 version()
 {
-	echo "$PROGRAM version $VERSION"
+	echo "$PROGRAM version $VERSION \$Rev:\$"
 }
 
 get_one_int()
@@ -64,12 +64,13 @@ do_one_splot()
 PROGRAM=`basename $0`
 VERSION=1.0
 MATLABSETUP='TMP=/tmp LD_LIBRARY_PATH=$IS_MAT_LIB:$LD_LIBRARY_PATH'
-MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
-#MATLAB=/bin/cat
+#MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
+MATLAB=/bin/cat
 INT_HOURS=3
 data=yes
 splot=no
-while test $# -gt 0
+cpdf=no
+while [ $# -gt 0 ]
 do
 	case $1 in
 		-d | --data )
@@ -83,6 +84,9 @@ do
 		;;
 		-sp | --splot )
 		splot=yes
+		;;
+		-cpdf | --com-pdf | --common-pdf )
+		cpdf=yes
 		;;
 		-v | --version )
 		version
@@ -98,12 +102,9 @@ do
 	shift
 done
 
-if test $# -lt 3
-then
-	usage_and_exit 1
-fi
+if [ $# -lt 3 ]; then usage_and_exit 1; fi
 
-if test -z $4
+if [ -z $4 ]
 then
 	NDAYS=1
 else
@@ -114,7 +115,7 @@ YYYY=$1
 MM=$2
 DD=$3
 
-JOBNAME="L1-$YYYY$MM$DD"
+JOBNAME="L1-${YYYY}${MM}${DD}"
 
 out_dir=/data/caa/raw/$JOBNAME
 log_dir=/data/caa/log-raw/$JOBNAME
@@ -137,32 +138,24 @@ fi
 export $MATLABSETUP
 DAYS=0
 HOURS=0
-while test $DAYS -lt $NDAYS
+while [ $DAYS -lt $NDAYS ]
 do
 	DAY=$(($DD+$DAYS))
-	if test $DAY -lt 10
-	then
-		DAY="0$DAY"
-	fi
+	if [ $DAY -lt 10 ]; then DAY="0$DAY"; fi
 
 	echo -n Processing ${YYYY}-${MM}-${DAY}... 
 
-	while test $HOURS -lt 24
+	while [ $HOURS -lt 24 ]
 	do
-		if test $HOURS -lt 10
-		then
-			HOURS="0$HOURS"
-		fi
+		if [ $HOURS -lt 10 ]; then HOURS="0${HOURS}";	fi
 		echo -n " $HOURS"
 
 		start_time=$YYYY-$MM-$DAY'T'$HOURS':00:00.000Z'
 		dt="$INT_HOURS*60*60"
 
-		if test "$data" = "yes"
-		then
-			get_one_int
-		fi
-		if [ "$splot" = "yes" ]
+		if [ "X$data" = "Xyes" ]; then get_one_int; fi
+
+		if [ "X$splot" = "Xyes" ]
 		then
 			cdir=$YYYY$MM$DAY'_'$HOURS'00'
 			if [ -d $out_dir/$cdir ]
@@ -177,14 +170,22 @@ do
 	done
 	echo " Done."
 
-	if [ "X$splot" = "Xyes"]
+	if [ "X$splot" = "Xyes" ]
 	then
 		echo Joining PDFs...
-		(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAYS}.pdf EFW_SPLOT_L1__*.pdf )
+		(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAY}.pdf \
+		EFW_SPLOT_L1__${YYYY}${MM}${DAY}_*00.pdf )
 	fi
-
+  
 	DAYS=$(($DAYS+1))
 	HOURS=0
 done
+
+if [ "X$cpdf" = "Xyes" ]
+then
+	echo Joining PDFs...
+	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DD}_${YYYY}${MM}${DAY}.pdf \
+	EFW_SPLOT_L1__${YYYY}${MM}*_*00.pdf )
+fi
 
 echo Done with job $JOBNAME
