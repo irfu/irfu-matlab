@@ -32,7 +32,7 @@ usage_and_exit()
 
 version()
 {
-	echo "$PROGRAM version $VERSION \$Rev:$"
+	echo "$PROGRAM version $VERSION \$Revision$"
 }
 
 get_one_int()
