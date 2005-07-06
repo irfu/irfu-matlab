@@ -5,6 +5,7 @@
 # Usage:_l1.sh  [options] YYYY MM DD [NDAYS]"
 #		-d | --data                 Process data [default]
 #		-nd | --no-data             Do not process data
+#		-sth | --start-hour HOUR    Process only one interval starting at HOUR
 #		-sp | --splot               Make summary plots
 #		-cpdf | --com-pdf | --common-pdf 
 #                               Create a common PDF for the whole job
@@ -23,7 +24,7 @@ error()
 
 usage()
 {
-	echo "Usage: $PROGRAM [-h] [-v] [-d|--data] [-nd|--no-data] [-sp|--splot] YYYY MM DD [NDAYS]"
+	echo "Usage: $PROGRAM [-h] [-v] [-d|--data] [-nd|--no-data] [-sp|--splot] [-sth HOUR] YYYY MM DD [NDAYS]"
 }
 
 usage_and_exit()
@@ -82,6 +83,8 @@ MATLABSETUP='TMP=/tmp LD_LIBRARY_PATH=$IS_MAT_LIB:$LD_LIBRARY_PATH'
 MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
 #MATLAB=/bin/cat
 INT_HOURS=3
+HOURS=0
+MAXHOURS=24
 data=yes
 splot=no
 cpdf=no
@@ -99,6 +102,10 @@ do
 		;;
 		-sp | --splot )
 		splot=yes
+		;;
+		-sth | --start-hour )
+		HOURS=$2
+		shift
 		;;
 		-cpdf | --com-pdf | --common-pdf )
 		cpdf=yes
@@ -124,6 +131,13 @@ then
 	NDAYS=1
 else
 	NDAYS=$4
+fi
+
+if [ $HOURS -gt 0 ]
+then
+	MAXHOURS=$(($HOURS+$INT_HOURS))
+	if [ $MAXHOURS -gt 24 ]; then MAXHOURS=24; fi
+	NDAYS=1 #process only one interval
 fi
 
 YYYY=$1
@@ -152,17 +166,16 @@ fi
 
 export $MATLABSETUP
 DAYS=0
-HOURS=0
 while [ $DAYS -lt $NDAYS ]
 do
 	DAY=$(($DD+$DAYS))
-	if [ $DAY -lt 10 ]; then DAY="0$DAY"; fi
+	if [ $DAY -lt 10 ] && [ ${#DAY} -lt 2 ]; then DAY="0$DAY"; fi
 
 	echo -n Processing ${YYYY}-${MM}-${DAY}... 
 
-	while [ $HOURS -lt 24 ]
+	while [ $HOURS -lt $MAXHOURS ]
 	do
-		if [ $HOURS -lt 10 ]; then HOURS="0${HOURS}";	fi
+		if [ $HOURS -lt 10 ] && [ ${#HOURS} -lt 2 ]; then HOURS="0${HOURS}";	fi
 		echo -n " $HOURS"
 
 		start_time=${YYYY}-${MM}-${DAY}T${HOURS}:00:00.000Z
