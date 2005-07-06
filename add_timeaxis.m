@@ -2,6 +2,7 @@ function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 % function add_timeaxis( h, t_start_epoch );
+% function add_timeaxis( h, 'usefig' );      % to use t_start_epoch from the figure
 % function add_timeaxis( h, 'date' );        % to add xlabel with date
 % function add_timeaxis( h, 'nodate' );      % do not add xlabel with date
 % function add_timeaxis( h, 'nolabels' );    % do not add any labels (only ticks)
@@ -16,7 +17,7 @@ function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 % If xlabels are defined then adds x-tra labels in addition to time.
 % xlabels format is column vector [time lab1 lab2 ...] where lab1 are
 % numerical values and time is in isdat_epoch. Program then interpolates
-% to the time of labels xlabeltitle = {'LAB1' 'LAB2' ..}; is the string
+% to the time of labels xlabeltitle = {'LAB1' 'LAB2' ..}; is the str
 % for labels.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,12 +32,7 @@ flag_date=1;   % default is to add date labels
   clear h;
   h = hh;
 
-
-%  if size(h,2) == 1
-%     flag_date = 0;
-%  else
-%     flag_date = 1;
-%  end
+  flag_usefig = 0;
 
   if (nargin >= 2) & (ischar(t_start_epoch))
      if strcmp(t_start_epoch,'date')
@@ -44,11 +40,13 @@ flag_date=1;   % default is to add date labels
      elseif strcmp(t_start_epoch,'nodate')
         flag_date = 0;
      elseif strcmp(t_start_epoch,'nolabels')
-        flag_labels = 0;
+        flag_labels = 0; 
+	 elseif strcmp(t_start_epoch,'usefig')
+        flag_usefig = 1;
      end
   end
 
-  if ~exist('t_start_epoch') | ischar(t_start_epoch),
+  if ~exist('t_start_epoch') | ischar(t_start_epoch) | flag_usefig
     user_data=get(gcf,'userdata');
     if isfield(user_data,'t_start_epoch')
       t_start_epoch=user_data.t_start_epoch;
@@ -76,14 +74,15 @@ flag_date=1;   % default is to add date labels
           for ii = 1:size(res{1},2)
               if ~strcmp(lab(ii),' ')
                   ax = axis;
-                  mm = av_interp( xlabels, xcoord(ii) + t_start_epoch );
+                  mm = irf_resamp( xlabels, xcoord(ii));
                   for jj = 1:length(mm)
                       if jj==1, % the first line is time
-                          string      = lab(ii);
+                          str = lab(ii);
                       else, % other lines are xlabels
-                          string      = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
+                          str = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
                       end
-                      outhandle   = text( xcoord(ii), ax(3), string );
+                      outhandle   = text(xcoord(ii)-t_start_epoch, ...
+					  	ax(3)-abs(ax(3)-ax(4))/100, str);
                       set( outhandle, 'HorizontalAlignment', 'center', ...
                           'VerticalAlignment', 'top', 'FontSize', 10);
                   end
@@ -91,13 +90,14 @@ flag_date=1;   % default is to add date labels
           end
 
           % Add titles
-          string = 'UT';
+          str = 'UT';
           for jj = 0:size(xlabeltitle,2),
               if jj>0,
                   flag_date=0; % if more than one line in xlabels, remove date
-                  string      = [repmat(' \newline',1,jj) xlabeltitle{jj}];
+                  str      = [repmat(' \newline',1,jj) xlabeltitle{jj}];
               end
-              outhandle = text( ax(1), ax(3), string );
+              outhandle = text( ax(1)-abs(ax(2)-ax(1))/20, ...
+			  	ax(3)-abs(ax(3)-ax(4))/100, str );
               set( outhandle, 'HorizontalAlignment', 'right', ...
                   'VerticalAlignment', 'top', 'FontSize', 10);
           end
