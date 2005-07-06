@@ -99,7 +99,7 @@ for cli=1:4
 					caa_spectrogram(h(cli),spec)
 					if jj==size(inter,1)
 						hold off
-						caxis([-6 1])
+						caxis([-4 1])
 					end
 				end
 				% Load intervals & TM mode
