@@ -51,6 +51,8 @@ hold(h(6),'on')
 set(h(6),'YTick',1:4)
 ylabel(h(6),'SC')
 krgb = 'krgb';
+r = [];
+ri = [];
 
 c_eval('p?=[];spec?=[];')
 for cli=1:4
@@ -66,6 +68,12 @@ for cli=1:4
 
 			for jj=1:size(inter,1)
 				cd([cdir '/' irf_fname(inter(jj,1))])
+				% Load R
+				if isempty(r) | ri==cli
+					r_tmp = c_load('R?',cli,'var');
+					if ~isempty(r_tmp), r = [r; r_tmp]; end
+					if isempty(ri), ri = cli; end
+				end
 				% Load P
 				p_tmp = c_load('P?',cli,'var');
 				if ~isempty(p_tmp)
@@ -133,8 +141,9 @@ grid(h(6),'on')
 
 % Plot the rest
 axes(h(1))
-ds=irf_fname(st);
-title(['EFW EF and P L2 (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'])
+ds = irf_fname(st);
+tit = ['EFW EF and P L2 (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
+title(tit)
 axes(h(5))
 c_pl_tx('p?')
 ylabel('P L2 [-V]')
@@ -146,6 +155,13 @@ end
 
 irf_zoom(st +[0 dt],'x',h)
 irf_zoom([0 12.5],'y',h(1:4))
+
+if ~isempty(r)
+	r = irf_abs(r);
+	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6300],...
+		{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
+	axes(h(1)), title([tit ', Position C' num2str(ri)])
+end
 
 orient tall
 fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
