@@ -158,7 +158,7 @@ irf_zoom([0 12.5],'y',h(1:4))
 
 if ~isempty(r)
 	r = irf_abs(r);
-	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6300],...
+	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6371.2],...
 		{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
 	axes(h(1)), title([tit ', Position C' num2str(ri)])
 end
