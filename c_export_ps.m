@@ -64,7 +64,7 @@ for cl_id=sc_list
 	fn = sprintf('EFW_C%d_%s%s',cl_id,irf_fname(st),suf);
 	irf_log('save',['saving ' fn])
 	print( gcf, '-dpsc2', fn) 
-	[s,w] = unix(['/usr/local/bin/ps2pdf13 ' fn '.ps']);
+	[s,w] = unix(['/usr/local/bin/ps2pdf12 ' fn '.ps']);
 	if s~=0, irf_log('save','problem with ps2pdf'), end
 end
 
