@@ -559,6 +559,11 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					c_eval(['if ~isempty(wE?p' ps '),wE?p' ps '=caa_rm_blankt(wE?p' ps ',whip);end'],cl_id)
 				end
 				
+				if eval(irf_ssub(['length(find(~isnan(wE?p' ps '(:,2))))'],cl_id))<2
+					irf_log('proc','No data after removals')
+					data = []; cd(old_pwd); return
+				end
+				
 				% Correct ADC offset
 				if flag_usesavedoff & ~do_filter
 					if c_load(['Dadc?p' ps],cl_id)
