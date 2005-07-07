@@ -35,5 +35,10 @@ end
 
 test_data = test_data(:,2);
 
-offset = mean(test_data(find(~isnan(test_data)))); clear test_data
-new_data(:,2) = data(:,2) - offset;
+ii = find(~isnan(test_data));
+if isempty(ii), offset = [];
+else, 
+	offset = mean(test_data(ii)); clear test_data
+	new_data(:,2) = data(:,2) - offset;
+end
+
