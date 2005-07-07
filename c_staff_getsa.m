@@ -35,7 +35,7 @@ if nargin<3
 	SC=1;		%so far only on spacecraft is downloaded
 end
 if nargin<1
-	help c_staffgetsa;
+	help c_staff_getsa;
 	return;
 end
 
