@@ -15,7 +15,6 @@ function h = c_ri_eventfile_into_fig(time_interval,path_events,panels,flags,dt)
 %Output:
 %  h - handle to figures
 flag_print=0;flag_base=0;flag_jpg=0;
-global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
 if nargin<3,help c_ri_eventfile_into_fig;return;end
 if nargin<4,flags='';end
 if nargin<5,dt=[0 0 0 0];end
@@ -94,7 +93,7 @@ for i_file=1:size(file_list,1),
     for j=1:n_panels,plot_comms{j}=eval(['plot_command.' panels{j}]);end
     load_comm=['load(''' path_events file_list(i_file).name ''');'];
     fig_comm=['i_fig=' num2str(i_fig) '; n_panels=' num2str(n_panels) '; figure(i_fig); i_panel=1;clear h;'];
-    loop_comm=['for i_panel=1:n_panels,h(i_fig,i_panel)=av_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end'];
+    loop_comm=['for i_panel=1:n_panels,h(i_fig,i_panel)=irf_subplot(n_panels,1,-i_panel);eval(plot_comms{i_panel});end'];
     if flag_base,
       assignin('base','plot_comms',plot_comms);
       evalin('base',load_comm);
@@ -106,7 +105,7 @@ for i_file=1:size(file_list,1),
       eval(fig_comm);
       eval(loop_comm);
     end
-    av_zoom(tint_plot,'x',h(i_fig,:));
+    irf_zoom(tint_plot,'x',h(i_fig,:));
     add_timeaxis(h(i_fig,:));
     legend;
     i_fig=i_fig+1;
