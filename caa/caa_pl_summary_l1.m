@@ -77,6 +77,7 @@ for cli=1:4
 				% Load P
 				p_tmp = c_load('P?',cli,'var');
 				if ~isempty(p_tmp)
+					%{
 					% Remove Sweeps from plot, not from data
 					[ok,sweep] = c_load('SWEEP?',cli);
 					if ok
@@ -87,8 +88,9 @@ for cli=1:4
 						end
 					else
 						irf_log('load',...
-							irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
+							irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cli))
 					end
+					%}
 					p = [p; p_tmp]; 
 				end
 				% Load spectrum
