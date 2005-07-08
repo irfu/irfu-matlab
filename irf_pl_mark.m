@@ -17,6 +17,7 @@ function [outhandle colr]=irf_pl_mark(tlim,inhandle,color);
 
 if nargin<1, help irf_pl_mark;return;end
 if nargin == 1, inhandle=gca;end
+if nargin>=2, if isempty(inhandle), inhandle=gca;end;end
 
 % transpose tlim if needed
 if size(tlim,1) == 2 && size(tlim,2) ~= 2, tlim=tlim';end; 
@@ -52,6 +53,9 @@ for j=1:length(h)
   ypoints(:,3:4) = ylim(2);
   zpoints = -1 * ones(size(ypoints,1),4); % to put patches under all plots
   hp(j)=patch(tpoints', ypoints', zpoints', color,'edgecolor','none');
+  fc=get(hp(j),'facecolor');
+  fc=[1 1 1]-([1 1 1]-fc)/3; % make facecolor lighter
+  set(hp(j),'facecolor',fc);
   set(h(j),'layer','top');
 end
 
