@@ -99,10 +99,6 @@ for cli=1:4
 					axes(h(cli))
 					if jj>1, hold on, end
 					caa_spectrogram(h(cli),spec)
-					if jj==size(inter,1)
-						hold off
-						caxis([-4 1])
-					end
 				end
 				% Load intervals & TM mode
 				[st_s,dt1] = caa_read_interval;
@@ -137,6 +133,8 @@ for cli=1:4
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
 	set(gca,'YTick',[.25 .5 1 10],'YScale','log')
 	grid
+	caxis([-4 1])
+	hold off
 end
 hold(h(6),'off')
 grid(h(6),'on')
@@ -144,7 +142,7 @@ grid(h(6),'on')
 % Plot the rest
 axes(h(1))
 ds = irf_fname(st);
-tit = ['EFW EF and P L2 (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
+tit = ['EFW E hp-filtered (>2Hz) and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
 title(tit)
 axes(h(5))
 c_pl_tx('p?')
@@ -162,7 +160,7 @@ if ~isempty(r)
 	r = irf_abs(r);
 	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6371.2],...
 		{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
-	axes(h(1)), title([tit ', Position C' num2str(ri)])
+	axes(h(1)), title([tit ', GSE Position C' num2str(ri)])
 end
 
 orient tall
