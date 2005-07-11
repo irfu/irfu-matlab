@@ -73,7 +73,7 @@ else,
 end
 
 % Help function to clear datagaps
-% We throw away intervals with less than 20% of data
+% We throw away intervals with less than 90% of data
 function out = order_data(in,ndata,sfreq,ts)
 	if isempty(in), out = []; return, end
 	ncomp = size(in,2);
@@ -83,7 +83,7 @@ function out = order_data(in,ndata,sfreq,ts)
 	out(ind,2:ncomp) = in(:,2:ncomp);
 	for comp=2:size(in,2)
 		ii = find(isnan(out(:,comp)));
-		if length(ii)>ndata*.2
+		if length(ii)>ndata*.1
 			out(:,comp) = NaN;
 		else
 			m = mean(out(find(~isnan(out(:,comp))),comp));
