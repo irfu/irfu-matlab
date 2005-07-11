@@ -130,7 +130,7 @@ while have_options
 		else, irf_log('fcal,','wrongArgType : sfit_ver value is missing')
 		end
 	otherwise
-		irf_log('fcal,',['Option ''' args{i} '''not recognized'])
+		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
 	else break
