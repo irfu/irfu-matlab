@@ -559,7 +559,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					c_eval(['if ~isempty(wE?p' ps '),wE?p' ps '=caa_rm_blankt(wE?p' ps ',whip);end'],cl_id)
 				end
 				
-				if eval(irf_ssub(['length(find(~isnan(wE?p' ps '(:,2))))'],cl_id))<2
+				% Check if we have at least 1 sec of data left
+				if eval(irf_ssub(['length(find(~isnan(wE?p' ps '(:,2))))'],cl_id))<25
 					irf_log('proc','No data after removals')
 					data = []; cd(old_pwd); return
 				end
@@ -664,7 +665,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 		c_eval(...
 		'diESPEC?p1234=caa_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list ''diESPEC?p1234 ''];',cl_id);
 		% Than we filter
-		full_e(:,1:3)=caa_filter_e(full_e(:,1:3));
+		full_e = caa_filter_e(full_e(:,1:3));
+		full_e(:,4) = 0;
 	end
 	
 	% DS-> DSI
