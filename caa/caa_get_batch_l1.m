@@ -1,11 +1,20 @@
-function caa_get_batch_l1(iso_t,dt,sdir)
+function caa_get_batch_l1(iso_t,dt,sdir,extravars)
 %CAA_GET_BATCH_L1 CAA wrapper for c_get_batch
 %
-% caa_get_batch_l1(iso_t,dt,sdir)
+% caa_get_batch_l1(iso_t,dt,sdir,[extravars])
+%
+% Input: iso_t - ISO epoch
+%           dt - length of time interval in sec
+%         sdir - directory to save the data   
+%    extravars - see help ClusterProc/getData, ex. 'dies|die'
 %
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
+
+if nargin < 4
+    extravars = 'dief';
+end
 
 REQ_INT = 60; % intervals (sec) for which we request FDM
 DB_S = 'disco:10';
@@ -138,8 +147,9 @@ for cl_id=sc_list
 		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
 			'vars','fdm|ibias|p|e|a|r','noproc')
 		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
-			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
-		
+			'varsproc',['whip|sweep|bdump|badbias|probesa|p|ps|' extravars],'nosrc') 
+	%		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
+%			'varsproc', extravars,'nosrc') 	
 	end
 	%{
 	if ~isempty(int_tmp)
