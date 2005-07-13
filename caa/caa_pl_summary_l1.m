@@ -59,72 +59,55 @@ for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
 	p = []; spec = [];
 	
-	if exist(cdir, 'dir') & exist([cdir '/mINTER.mat'], 'file')
-		% Load data
-		c_eval(['load ' cdir '/mINTER.mat INTERVALS?'],cli)
+	if exist(cdir, 'dir')
+		d = dir([cdir '/2*_*']);
+		if isempty(d), continue, end
 		
-		if exist(irf_ssub('INTERVALS?',cli),'var')
-			c_eval('inter=INTERVALS?;',cli)
-
-			for jj=1:size(inter,1)
-				cd([cdir '/' irf_fname(inter(jj,1))])
-				% Load R
-				if isempty(r) | ri==cli
-					r_tmp = c_load('R?',cli,'var');
-					if ~isempty(r_tmp), r = [r; r_tmp]; end
-					if isempty(ri), ri = cli; end
-				end
-				% Load P
-				p_tmp = c_load('P?',cli,'var');
-				if ~isempty(p_tmp)
-					%{
-					% Remove Sweeps from plot, not from data
-					[ok,sweep] = c_load('SWEEP?',cli);
-					if ok
-						if ~isempty(sweep)
-							irf_log('proc','blanking sweeps')
-							p_tmp = caa_rm_blankt(p_tmp,sweep);
-							clear sweep
-						end
-					else
-						irf_log('load',...
-							irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cli))
-					end
-					%}
-					p = [p; p_tmp]; 
-				end
-				% Load spectrum
-				spec = c_load('diESPEC?p1234',cli,'var');
-				if ~isempty(spec)
-					axes(h(cli))
-					if jj>1, hold on, end
-					caa_spectrogram(h(cli),spec)
-				end
-				% Load intervals & TM mode
-				[st_s,dt1] = caa_read_interval;
-				t1 = iso2epoch(st_s);
-				st_s = st_s([12:19]);
-				tm = c_load('mTMode?',cli,'var');
-				axes(h(6))
-				ud = get(gcf,'userdata');
-				if isfield(ud,'t_start_epoch'), 
-					t_start_epoch = ud.t_start_epoch;
-				else
-					% Set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-					t_start_epoch = t1;
-					ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-					irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
-				end
-				pp = plot(t1-t_start_epoch + [0 dt1],[cli cli],krgb(cli));
-				set(pp,'Marker','+');
-				if ~isempty(tm), if tm(1), set(pp,'LineWidth',3); end, end
-				text(t1-t_start_epoch+60,cli+0.2,st_s)
-				cd(old_pwd)
+		for jj=1:length(d)
+			curdir = [cdir '/' d(jj).name];
+			if ~(exist([curdir '/.interval'],'file') & ...
+				(exist([curdir '/mP.mat'],'file') | ...
+				exist([curdir '/mEDSIf.mat'],'file'))), continue, end
+				
+			cd(curdir)
+			% Load R
+			if isempty(r) | ri==cli
+				r_tmp = c_load('R?',cli,'var');
+				if ~isempty(r_tmp), r = [r; r_tmp]; end
+				if isempty(ri), ri = cli; end
 			end
-			if ~isempty(p), c_eval('p?=p;',cli), end
-		else
-			irf_log('load', irf_ssub(['No INTERVALS? in ' cdir '/mINTER.mat'],cli))
+			% Load P
+			p_tmp = c_load('P?',cli,'var');
+			if ~isempty(p_tmp), p = [p; p_tmp]; end
+			% Load spectrum
+			spec = c_load('diESPEC?p1234',cli,'var');
+			if ~isempty(spec)
+				axes(h(cli))
+				if jj>1, hold on, end
+				caa_spectrogram(h(cli),spec)
+			end
+			% Load intervals & TM mode
+			[st_s,dt1] = caa_read_interval;
+			t1 = iso2epoch(st_s);
+			st_s = st_s([12:19]);
+			tm = c_load('mTMode?',cli,'var');
+			axes(h(6))
+			ud = get(gcf,'userdata');
+			if isfield(ud,'t_start_epoch'), 
+				t_start_epoch = ud.t_start_epoch;
+			else
+				% Set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+				t_start_epoch = t1;
+				ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+				irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+			end
+			pp = plot(t1-t_start_epoch + [0 dt1],[cli cli],krgb(cli));
+			set(pp,'Marker','+');
+			if ~isempty(tm), if tm(1), set(pp,'LineWidth',3); end, end
+			text(t1-t_start_epoch+60,cli+0.2,st_s)
+			cd(old_pwd)
 		end
+		if ~isempty(p), c_eval('p?=p;',cli), end
 	end
 end
 
