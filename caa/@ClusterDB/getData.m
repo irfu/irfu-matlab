@@ -346,7 +346,10 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		if tm<1e-30, param='10Hz'; else, param='180Hz'; end
 		clear tm
 	
-		if start_time>toepoch([2001 07 31 00 12 29.5])&start_time<toepoch([2001 09 02 23 50 00])
+		if ((start_time>toepoch([2001 07 30 17 05 54.9]) & cl_id==1) | ...
+			(start_time>toepoch([2001 07 31 00 12 29.5]) & cl_id==3) | ...
+			(start_time>toepoch([2001 07 31 04 55 33.15]) & cl_id==4)) & ...
+			start_time<toepoch([2001 09 02 23 50 00])
 			% all sc run on 180Hz filter in august 2001
 			param='180Hz';
 		elseif start_time>toepoch([2001 09 10 04 21 57.6])& start_time<toepoch([2001 09 15 06 30 00])
