@@ -141,7 +141,7 @@ for cl_id=sc_list
 			'varsproc','whip|sweep|bdump|badbias|probesa|p|ps|dief','nosrc') 
 		
 	end
-	
+	%{
 	if ~isempty(int_tmp)
 		% Save intervals
 		c_eval('INTERVALS?=int_tmp;',cl_id)
@@ -152,5 +152,6 @@ for cl_id=sc_list
 		end
 		irf_log('save',irf_ssub('INTERVALS? -> mINTER',cl_id))
 	end
+	%}
 end
 
