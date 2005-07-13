@@ -718,7 +718,9 @@ elseif strcmp(quantity,'idie') | strcmp(quantity,'idies')
 
 		enew = diE;
 		% We take only X and Y components. Z must remain zero.
-		enew(:,2:3) = diE(:,2:3) - evxb(:,2:3);
+		etmp = irf_resamp(evxb(:,1:3),enew(:,1));
+		enew(:,2:3) = diE(:,2:3) - etmp(:,2:3);
+		clear etmp
 		
 		c_eval(['i' var_s{k} '= enew; clear enew'],cl_id)
 		save_list=[save_list 'i' irf_ssub(var_s{k},cl_id) ' '];
@@ -826,6 +828,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 	% SC -> Inertial
 	if inert
 		evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
+		evxb = irf_resamp(evxb,diE(:,1));
 		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb
 		s = 'i';
 	else, s = '';
