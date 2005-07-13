@@ -23,8 +23,8 @@ if inhandle ==0, % add to the whole figure if inhandle = 0
         'Position',[0.01 0.97], 'String', string, 'Tag','CreatedText');
     axes(h00)
 else% add to the given or current axis
-    outhandle=text(0,0,string);
     axes(inhandle);
+    outhandle=text(0,0,string);
     set(outhandle,'Units','normalized','Position',position, ...
         'HorizontalAlignment', 'left','VerticalAlignment', 'bottom','FontSize', 5);
 end
