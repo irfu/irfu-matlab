@@ -930,7 +930,7 @@ elseif strcmp(quantity,'sweep')
 			if isempty(jj)
 				bdump(k,2) = t_e(ii(k)) +1;
 				irf_log('dsrc','no dump after sweep')
-			else, bdump(k,2) = t_e_px(jj) +1;
+			else, bdump(k,2) = t_e_px(jj(end)) +1;
 			end
 		end 
 		c_eval('SWEEP?=bdump;save_list=[save_list '' SWEEP? ''];',cl_id);
