@@ -149,6 +149,12 @@ JOBNAME="L1-${YYYY}${MM}${DD}"
 out_dir=/data/caa/raw/$JOBNAME
 log_dir=/data/caa/log-raw/$JOBNAME
 
+if [ "X`hostname -s`" = "Xamanda" ]
+then
+	out_dir="/export${out_dir}"
+	log_dir="/export${log_dir}"
+fi
+
 echo Starting job $JOBNAME 
 echo "Data  = $data"
 echo "SPlot = $splot" 
