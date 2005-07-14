@@ -65,10 +65,14 @@ for cli=1:4
 		
 		for jj=1:length(d)
 			curdir = [cdir '/' d(jj).name];
+			%{
 			if ~(exist([curdir '/.interval'],'file') & ...
 				(exist([curdir '/mP.mat'],'file') | ...
 				exist([curdir '/mEDSIf.mat'],'file'))), continue, end
-				
+			%}
+			
+			if ~exist([curdir '/.interval'],'file'), continue, end
+			
 			cd(curdir)
 			% Load R
 			if isempty(r) | ri==cli
