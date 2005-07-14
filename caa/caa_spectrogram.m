@@ -18,6 +18,7 @@ elseif nargin==4, specrec.t = specrec; specrec.p = Pxx; specrec.f = F;
 end
 
 ndata = length(specrec.t);
+if ndata<1, if nargout>0, hout=h; end, return, end
 ncomp = length(specrec.p);
 nf = length(specrec.f);
 
@@ -46,6 +47,14 @@ for comp=1:min(length(h),ncomp)
 	end
 
 	axes(h(comp));
+	
+	% Special case when we have only one spectrum
+	% We duplicate it
+	if ndata==1
+		dt = .5/specrec.f(2);
+		specrec.t = [specrec.t-dt; specrec.t+dt];
+		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
+	end
 	pcolor(specrec.t-t_start_epoch,specrec.f,log10(specrec.p{comp}'))
 	
 	colormap(cmap)
