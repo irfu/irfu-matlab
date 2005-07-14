@@ -7,6 +7,7 @@
 #		-nd | --no-data             Do not process data
 #		-sth | --start-hour HOUR    Process only one interval starting at HOUR
 #		-sp | --splot               Make summary plots
+#		-fs | --full-scale           Plot full scale, not only 0..12.5 Hz
 #		-cpdf | --com-pdf | --common-pdf 
 #                               Create a common PDF for the whole job
 #		-de | --disp-err | --display-errors
@@ -78,9 +79,12 @@ do_one_splot()
 	then
 		donef=$out_dir/$cdir/.done_get_data_l1_splot
 		rm -f $donef
+		
+		xtraops=
+		[ "X$fullscale" = "Xyes" ] && xtraops=",'fullscale'"
 
 		echo "irf_log('log_out','$log_dir/$start_time-splot.log');\
- 		caa_pl_summary_l1('$start_time',$dt,'$out_dir/$cdir','save');\
+ 		caa_pl_summary_l1('$start_time',$dt,'$out_dir/$cdir','save'${xtraops});\
 		[s,w] = unix('touch $donef');\
  		exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
 
@@ -109,6 +113,7 @@ HOURS=0
 MAXHOURS=24
 data=yes
 splot=no
+fullscale=no
 cpdf=no
 disperr=no;
 dispdate=no;
@@ -126,6 +131,9 @@ do
 		;;
 		-sp | --splot )
 		splot=yes
+		;;
+		-fs | --full-scale )
+		fullscale=yes
 		;;
 		-sth | --start-hour )
 		HOURS=$2
@@ -186,9 +194,10 @@ then
 fi
 
 [ "X$dispdate" = "Xyes" ] && echo "Starting at `date`"
-echo "Job ID  $JOBNAME" 
-echo "Data    $data"
-echo "SPlot   $splot" 
+echo "Job ID      $JOBNAME" 
+echo "Get data    $data"
+echo "Summ plot   $splot" 
+[ "X$splot" = "Xyes" ] && echo "Full scale  $fullscale" 
 
 if ! [ -d $out_dir ]
 then
@@ -228,10 +237,12 @@ do
 	if [ "X$splot" = "Xyes" ]
 	then
 		echo -n Joining PDFs...
-		fmask=EFW_SPLOT_L1__${YYYY}${MM}${DAY}_*00.pdf
+		xtraops=
+		[ "X$fullscale" = "Xyes" ] && xtraops="FULL"
+		fmask=EFW_SPLOT_L1${xtraops}__${YYYY}${MM}${DAY}_*00.pdf
 		if ! [ -z "`find $out_dir -name $fmask`" ]
 		then
-			(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DAY}.pdf $fmask |grep Finished)
+			(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1${xtraops}__${YYYY}${MM}${DAY}.pdf $fmask |grep Finished)
 		else
 			echo No files.
 		fi
@@ -244,8 +255,10 @@ done
 if [ "X$cpdf" = "Xyes" ]
 then
 	echo -n Joining PDFs...
-	fmask=EFW_SPLOT_L1__${YYYY}${MM}*_*00.pdf
-	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1__${YYYY}${MM}${DD}_${YYYY}${MM}${DAY}.pdf $fmask |grep Finished) 
+	xtraops=
+	[ "X$fullscale" = "Xyes" ] && xtraops="FULL"
+	fmask=EFW_SPLOT_L1${xtraops}__${YYYY}${MM}*_*00.pdf
+	(cd $out_dir; pdfjoin --outfile EFW_SP_COMM_L1${xtraops}__${YYYY}${MM}${DD}_${YYYY}${MM}${DAY}.pdf $fmask |grep Finished) 
 fi
 
 echo Done with job $JOBNAME
