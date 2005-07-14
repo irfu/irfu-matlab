@@ -9,6 +9,10 @@
 #		-sp | --splot               Make summary plots
 #		-cpdf | --com-pdf | --common-pdf 
 #                               Create a common PDF for the whole job
+#		-de | --disp-err | --display-errors
+#                               Display error messages on the screen				
+#		-dd | --disp-date | --display-date
+#                               Display date/time for timing the production				
 #		-h | --help | -help | '-?'  Display usage
 #		-v | --version              Display version
 #
@@ -52,7 +56,16 @@ get_one_int()
 	#Empty dir means NO DATA
 	if [ -d $out_dir/$cdir ]
 	then
-		if ! [ -f $donef ]; then echo -n " Error"; fi
+		if ! [ -f $donef ]; then 
+			if [ "X$disperr" = "Xyes" ]
+			then
+				printf '\n-----------ERROR------------\n\n'
+				tail -22 ${log_dir}/${start_time}-get_data.log
+				printf '\n------------END-------------\n'
+			else
+				echo -n " Error"; 
+			fi
+		fi
 	else
 		echo -n " No data"
 	fi
@@ -71,7 +84,16 @@ do_one_splot()
 		[s,w] = unix('touch $donef');\
  		exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
 
-		if ! [ -f $donef ]; then echo -n " Error"; fi
+		if ! [ -f $donef ]; then 
+			if [ "X$disperr" = "Xyes" ]
+			then
+				printf '\n-----------ERROR------------\n\n'
+				tail -22 ${log_dir}/${start_time}-get_data.log
+				printf '\n------------END-------------\n'
+			else
+				echo -n " Error"; 
+			fi
+		fi
 	else
 		echo -n " No data"
 	fi
@@ -88,6 +110,8 @@ MAXHOURS=24
 data=yes
 splot=no
 cpdf=no
+disperr=no;
+dispdate=no;
 while [ $# -gt 0 ]
 do
 	case $1 in
@@ -109,6 +133,12 @@ do
 		;;
 		-cpdf | --com-pdf | --common-pdf )
 		cpdf=yes
+		;;
+		-de | --disp-err | --display-errors )
+		disperr=yes;
+		;;
+		-dd | --disp-date | --display-date )
+		dispdate=yes;
 		;;
 		-v | --version )
 		version
@@ -155,9 +185,10 @@ then
 	log_dir="/export${log_dir}"
 fi
 
-echo Starting job $JOBNAME 
-echo "Data  = $data"
-echo "SPlot = $splot" 
+[ "X$dispdate" = "Xyes" ] && echo "Starting at `date`"
+echo "Job ID  $JOBNAME" 
+echo "Data    $data"
+echo "SPlot   $splot" 
 
 if ! [ -d $out_dir ]
 then
@@ -218,3 +249,4 @@ then
 fi
 
 echo Done with job $JOBNAME
+[ "X$dispdate" = "Xyes" ] && echo "Finished at `date`"
