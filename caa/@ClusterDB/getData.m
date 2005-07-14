@@ -396,8 +396,11 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 					irf_log('dsrc','burst start time was not corrected')
 				end
 			end
-					
-			c_eval([var_name  pl{i} '=[t data];'],cl_id); clear t data;
+			
+			data = check_timeline([t data]);
+			c_eval([var_name  pl{i} '=data;'],cl_id); 
+			clear t data;
+			
 			c_eval(['save_list=[save_list '' ' var_name pl{i} ' ''];'],cl_id);
 		else
 			irf_log('dsrc',irf_ssub(['No data for ' var_name pl{i}],cl_id))
@@ -455,7 +458,10 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 					irf_log('dsrc','burst start time was not corrected')
 				end
 			end
-			eval(irf_ssub(['p!=[t data];save_list=[save_list ''P' param{j} '?p! ''];P' param{j} '?p!=p!;'],cl_id,probe)); clear t data
+			data = check_timeline([t data]);
+			eval(irf_ssub(['p!=data;save_list=[save_list ''P'...
+				param{j} '?p! ''];P' param{j} '?p!=p!;'],cl_id,probe)); 
+			clear t data
 		else
 			eval(['p' num2str(probe) '=[];'])
 		end
@@ -702,3 +708,21 @@ end
 
 cd(old_pwd)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function out=check_timeline(data)
+% This function is aimed at removing pieces of data
+% with wrong time, specifically when time jumps back 
+% 3-4 sec after EFW is on
+
+out = data;
+
+% Find jumps back larger than 1 sec.
+ii = find(diff(data(:,1))<-1);
+if isempty(ii), return, end
+
+dt = data(ii(end)) -  data(1);
+% If the interval is too big, it requires special attention
+if dt>30, error('BAD TIMELINE'),end
+
+irf_log('proc',sprintf('Throwing away %.2f sec of data with bad time',dt));
+out(1:ii(end),:) = [];
