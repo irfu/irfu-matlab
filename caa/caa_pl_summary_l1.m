@@ -1,11 +1,13 @@
-function caa_pl_summary_l1(iso_t,dt,sdir,options)
+function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %CAA_PL_SUMMARY_L1 CAA summary plot for L1 & L2 P data & EF
 %
 % caa_pl_summary_l1(iso_t,dt,sdir,[options])
 %   options:
-%           saveps  - save PS and PDF
-%           savepng - save PNG
-%           save    - save PNG, PS and PDF
+%           saveps    - save PS and PDF
+%           savepng   - save PNG
+%           save      - save PNG, PS and PDF
+%           nosave
+%           fullscale - use full scale (up to 180 Hz) on spectrograms
 %
 % $Id$
 
@@ -15,16 +17,31 @@ if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
 savePS = 0;
 savePNG = 0;
-if nargin>3
-	if strcmp(options,'save')
+fullscale = 0;
+
+if nargin > 3, have_options = 1; args = varargin;
+else, have_options = 0;
+end
+while have_options
+	l = 1;
+	switch(args{1})
+	case 'nosave'
+		savePS = 0;
+		savePNG = 0;
+	case 'save'
 		savePS = 1;
 		savePNG = 1;
-	elseif strcmp(options,'saveps')
+	case 'saveps'
 		savePS = 1;
-	elseif strcmp(options,'savepng')
+	case 'savepng'
 		savePNG = 1;
-	else
-		irf_log('fcal','unknown option')
+	case 'fullscale'
+		fullscale = 1;
+	otherwise
+		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
+	end
+	if length(args) > l, args = args(l+1:end);
+	else break
 	end
 end
 
@@ -53,6 +70,7 @@ ylabel(h(6),'SC')
 krgb = 'krgb';
 r = [];
 ri = [];
+fmax = 12.5;
 
 c_eval('p?=[];spec?=[];')
 for cli=1:4
@@ -89,6 +107,7 @@ for cli=1:4
 				axes(h(cli))
 				if jj>1, hold on, end
 				caa_spectrogram(h(cli),spec)
+				if spec.f(end)>fmax, fmax = spec.f(end); end
 			end
 			% Load intervals & TM mode
 			[st_s,dt1] = caa_read_interval;
@@ -115,10 +134,12 @@ for cli=1:4
 	end
 end
 
+ytick =  [.25 .5 1 10];
+if fullscale & fmax>100, ytick = [ytick 100];, end
 for cli=1:4
 	axes(h(cli))
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
-	set(gca,'YTick',[.25 .5 1 10],'YScale','log')
+	set(gca,'YTick',ytick,'YScale','log')
 	grid
 	caxis([-4 1])
 	hold off
@@ -141,7 +162,10 @@ if a(1)<-70
 end
 
 irf_zoom(st +[0 dt],'x',h)
-irf_zoom([0 12.5],'y',h(1:4))
+
+if fullscale, irf_zoom([0 fmax],'y',h(1:4))
+else, irf_zoom([0 12.5],'y',h(1:4))
+end
 
 if ~isempty(r)
 	r = irf_abs(r);
@@ -151,7 +175,9 @@ if ~isempty(r)
 end
 
 orient tall
-fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
+if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
+else,fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
+end
 if savePS
 	irf_log('save',['saving ' fn '.[ps,pdf]'])
 	print( gcf, '-dpsc2', fn) 
