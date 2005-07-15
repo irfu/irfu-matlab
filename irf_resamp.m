@@ -24,8 +24,8 @@ end
 
 % return in case no time axis
 if prod(size(y))==0,
-    out=[];
-return;
+    out=[];return;
+end
 
 % construct output time axis
 if size(y,2)==1, t = y(:); % y is only time
