@@ -22,6 +22,11 @@ else
   flag_do='check'; % if no method check if interpolate or average
 end
 
+% return in case no time axis
+if prod(size(y))==0,
+    out=[];
+return;
+
 % construct output time axis
 if size(y,2)==1, t = y(:); % y is only time
 else, t = y(:,1); t = t(:);   % first column of y is time
