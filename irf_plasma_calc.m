@@ -1,4 +1,4 @@
-function [Wpe,Wce,Wuh,Wpp,Wcp,WpO,WcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,noshow)
+function [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_inp,no_inp,Te_inp,Ti_inp,noshow)
 %IRF_PLASMA_CALC   Calculate basic plasma quantities
 %
 % irf_plasma_calc(B,n,no,Te,Ti)
@@ -18,17 +18,24 @@ function [Wpe,Wce,Wuh,Wpp,Wcp,WpO,WcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,
 %
 % $Id$
 
-% Copyright 1997-2005 Yuri Khotyaintsev
-if nargin == 0, % take input from terminal
-    B=irf_ask('Magnetic field in nT [%] >','B',10);
-    n=irf_ask('H+ desity in cc [%] >','n',1);
-    no=irf_ask('Oxygen density in percent [%] >','no',0);
-    Te=irf_ask('Electron  temperature in eV [%] >','Te',100);
-    Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000);
-end
+persistent B n no Te Ti
+
 if nargin < 6
     noshow = 0;
 end
+if nargin >= 1, B=B_inp; end
+if nargin >= 2, n=n_inp; end
+if nargin >= 3, no=no_inp; end
+if nargin >= 4, Te=Te_inp; end
+if nargin >= 5, To=To_inp; end
+
+% Copyright 1997-2005 Yuri Khotyaintsev
+if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
+if nargin < 2, n=irf_ask('H+ desity in cc [%] >','n',1);end
+if nargin < 3, no=irf_ask('Oxygen density in percent [%] >','no',0);end
+if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
+if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000);end
+
 %if time series are supplied then time series shoud be returned
 if size(B,2)>1, % we have time series of density
     t=B(:,1); % time axis
@@ -61,40 +68,56 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
     end
 end
 
-Mp_Me = 1836.15;
+Me=9.1094e-31; % electron mass
+Mp=1.6726e-27; % proton mass
+c=2.9979e8; % speed of light
+e=1.6022e-19; % elementary charge
+Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
-Wpe = 8.973*sqrt(n);
-Wce = 2.8e-2*B;
+% in formulas it is more convenient to use variables expresesd in SI units 
+B_SI=B*1e-9; % [T]
+
+Wpe = 8.973*sqrt(n)*1e3*2*pi; % rad/s
+Wce = e*B_SI/Me;   % rad/s
 Wpp = 8.973*sqrt(n*(1-no/100)/Mp_Me);
 WpO = 8.973*sqrt(n*(no/100)/Mp_Me/16);
 Va = 21.8*B./sqrt(n.*(1+15*no/100));
-Vte = 4.19*1e2*sqrt(Te);
-Vtp = 9.79*sqrt(Ti);
-Vts = 9.79*sqrt(Te);
-VtO = Vtp/4;
+%Vte = 4.19*1e2*sqrt(Te);
+Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s
+%Vtp = 9.79*sqrt(Ti);
+Vtp = c*sqrt(1-1/(Ti*e/(Mp*c^2)+1)^2);   % m/s
+Vts = 9.79*sqrt(Te);  % ? relativistic formula???
+%VtO = Vtp/4;
+VtO = c*sqrt(1-1/(Ti*e/(16*Mp*c^2)+1)^2);   % m/s
+gamma_e=1/sqrt(1-(Vte/c).^2);
+gamma_p=1/sqrt(1-(Vtp/c).^2);
+gamma_O=1/sqrt(1-(VtO/c).^2);
 Le = 5.3e3/sqrt(n);
 Li = 3e8/(2*pi*Wpp*1e3);
 
-Wpe = Wpe*1e3;
-Wce = Wce*1e3;
-Wuh = sqrt(Wce.^2+Wpe.^2);
-Wpp = Wpp*1e3;
-Wcp = Wce/Mp_Me;
-WpO = WpO*1e3;
-WcO = Wce/Mp_Me/16;
-Wlh = sqrt((Wpp.^2).*Wce.^2./(Wce.^2+Wpe.^2)+Wcp.^2);
+Fpe = Wpe/2/pi; % Hz
+Fce = Wce/2/pi;
+Fuh = sqrt(Fce.^2+Fpe.^2);
+Fpp = Wpp/2/pi;
+Fcp = Fce/Mp_Me;
+FpO = WpO/2/pi;
+FcO = Fce/Mp_Me/16;
+Flh = sqrt((Fpp.^2).*Fce.^2./(Fce.^2+Fpe.^2)+Fcp.^2);
 
-Roe = Vte./Wce*1e3; % in meters
-Rop = Vtp./Wcp*1e3; % in meters
-RoO = VtO./WcO*1e3;
-Ros = Vts./Wcp*1e3;
+Roe = Me*c/(e*B_SI)*sqrt(gamma_e.^2-1); % m, relativistically correct
+Rop = Mp*c/(e*B_SI)*sqrt(gamma_p.^2-1); % m, relativistically correct
+RoO = Mp*16*c/(e*B_SI)*sqrt(gamma_O.^2-1); % m, relativistically correct
+%Roe = Vte./Fce/2/pi; % m
+%Rop = Vtp./Fcp/2/pi; % m
+%RoO = VtO./FcO/2/pi; % m
+Ros = Vts./Fcp/2/pi; % m
 
 
 % variables to return in case time series input
 if strcmp(flag_time_series,'yes')
     var={...
-        {'Wpe','Hz'},{'Wce','Hz'}...
-        {'Wpp','Hz'},{'Wcp','Hz'}...
+        {'Fpe','Hz'},{'Fce','Hz'}...
+        {'Fpp','Hz'},{'Fcp','Hz'}...
         };
     for j=1:length(var),
         eval([var{j}{1} '= [t ' var{j}{1} '];']);
@@ -112,11 +135,18 @@ if noshow > 0
     return
 end
 
+disp('===============================================================')
+disp('IRFU plasma calculator, relativistic effects not fully included')
+disp('velocities, gyroradia are relativistically correct')
+disp('can somebody fix relativstically correct frequencies Fpe, Fce,.. ?')
+disp('===============================================================')
+disp(['B=' num2str(B) ' [nT]; n_H=' num2str(n) ' [cc]; n_O=' num2str(no) ' [cc]; ' ...
+  'T_e=' num2str(Te) ' [eV]; T_i=' num2str(Ti) ' [eV];']);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % frequencies
 
-freq = [Wpe Wce Wuh Wlh Wpp Wcp WpO WcO];
+freq = [Fpe Fce Fuh Flh Fpp Fcp FpO FcO];
 freqs = {'F_pe'; 'F_ce'; 'F_uh'; 'F_lh'; 'F_pp'; 'F_cp'; 'F_pO'; 'F_cO'};
 disp(sprintf('\nPlasma frequencies\n'))
 for ii = 1:length(freq)
@@ -143,7 +173,7 @@ end
 v = [Va Vte Vtp Vts VtO ];
 vs = {'V_a'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
 
-disp(sprintf('\nPlasma velcities\n'))
+disp(sprintf('\nPlasma velocities\n'))
 for ii = 1:length(v)
     val = v(ii);
     if val > 1e3
