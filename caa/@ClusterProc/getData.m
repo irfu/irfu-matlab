@@ -1434,7 +1434,11 @@ elseif strcmp(quantity,'ps')
 	
 	if isempty(t0)
 		irf_log('proc','using new timeline')
-		t0 = P_tmp(1,1) + 2; 
+		if isempty(P_tmp)
+		  t0=[];
+		else
+		  t0 = P_tmp(1,1) + 2; 
+		end
 	end
 	
 	n = floor((P_tmp(end,1)-t0)/4) + 1;
