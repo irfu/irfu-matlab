@@ -7,7 +7,7 @@
 #		-nd | --no-data             Do not process data
 #		-sth | --start-hour HOUR    Process only one interval starting at HOUR
 #		-sp | --splot               Make summary plots
-#		-fs | --full-scale           Plot full scale, not only 0..12.5 Hz
+#		-fs | --full-scale          Plot full scale, not only 0..12.5 Hz
 #		-cpdf | --com-pdf | --common-pdf 
 #                               Create a common PDF for the whole job
 #		-de | --disp-err | --display-errors
@@ -62,7 +62,7 @@ get_one_int()
 			then
 				printf '\n-----------ERROR------------\n\n'
 				tail -22 ${log_dir}/${start_time}-get_data.log
-				printf '\n------------END-------------\n'
+				printf '\n------------END-------------\n\n... '
 			else
 				echo -n " Error"; 
 			fi
@@ -93,7 +93,7 @@ do_one_splot()
 			then
 				printf '\n-----------ERROR------------\n\n'
 				tail -22 ${log_dir}/${start_time}-get_data.log
-				printf '\n------------END-------------\n'
+				printf '\n------------END-------------\n\n... '
 			else
 				echo -n " Error"; 
 			fi
