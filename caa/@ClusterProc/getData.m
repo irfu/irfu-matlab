@@ -1441,15 +1441,17 @@ elseif strcmp(quantity,'ps')
 		end
 	end
 	
-	n = floor((P_tmp(end,1)-t0)/4) + 1;
-	tvec = t0 + ( (1:n) -1)*4;
+	if ~isempty(P_tmp),
+	  n = floor((P_tmp(end,1)-t0)/4) + 1;
+	  tvec = t0 + ( (1:n) -1)*4;
 	
-	P_tmp = irf_resamp(P_tmp,tvec'); clear tvec
-	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
+      P_tmp = irf_resamp(P_tmp,tvec'); clear tvec
+	  c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
-	[ok,P_info] = c_load('P?_info',cl_id);
-	if ok
-		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
+	  [ok,P_info] = c_load('P?_info',cl_id);
+	  if ok
+	    c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
+	  end
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % vce - E CIS PP [GSE+DSI] 
