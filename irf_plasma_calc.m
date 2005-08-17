@@ -3,7 +3,7 @@ function [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_inp,n
 %
 % irf_plasma_calc(B,n,no,Te,Ti)
 %
-% [Wpe,Wce,Wuh,Wpp,Wcp,WpO,WcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,flag);
+% [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,flag);
 %
 %	B - magnetic field [nT]
 %	n - density [cm^-3]
