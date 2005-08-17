@@ -102,7 +102,7 @@ Fpp = Wpp/2/pi;
 Fcp = Fce/Mp_Me;
 FpO = WpO/2/pi;
 FcO = Fce/Mp_Me/16;
-Flh = sqrt((Fpp.^2).*Fce.^2./(Fce.^2+Fpe.^2)+Fcp.^2);
+Flh = sqrt(Fcp.*Fce./(1+Fce.^2/Fpe.^2)+Fcp.^2);
 
 Roe = Me*c/(e*B_SI)*sqrt(gamma_e.^2-1); % m, relativistically correct
 Rop = Mp*c/(e*B_SI)*sqrt(gamma_p.^2-1); % m, relativistically correct
