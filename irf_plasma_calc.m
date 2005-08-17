@@ -27,7 +27,7 @@ if nargin >= 1, B=B_inp; end
 if nargin >= 2, n=n_inp; end
 if nargin >= 3, no=no_inp; end
 if nargin >= 4, Te=Te_inp; end
-if nargin >= 5, To=Ti_inp; end % O+ temperature the same as for H+
+if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
 % Copyright 1997-2005 Yuri Khotyaintsev
 if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
