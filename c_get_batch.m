@@ -47,11 +47,21 @@ function c_get_batch(st,dt,varargin)
 
 % Copyright 2004 Yuri Khotyaintsev
 
-error(nargchk(2,15,nargin))
+persistent st_vector dt_sec;
+
+error(nargchk(0 ,15,nargin))
 
 sc_list = 1:4;
 
 if nargin>2, have_options = 1; args = varargin;
+elseif nargin==0,
+  have_options=0;
+  st_vector=irf_ask('Start time [%]>','st_vector',[2002 01 01 0 0 0]);
+  st=toepoch(st_vector);
+  dt_sec=irf_ask('Time interval in seconds [%]>','dt_sec',60);
+  dt=dt_sec;
+elseif nargin==1,
+  error('do not udnerstand what to do with the argument, see help');
 else, have_options = 0;
 end
 
