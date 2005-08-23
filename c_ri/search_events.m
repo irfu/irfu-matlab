@@ -69,7 +69,7 @@ for i = 1:nr_of_positions
 %the seconds of the day
 s = pos(i,1) - toepoch([start_time(1:3) 0 0 0]);
 xgsm = pos(i,2);
-[ygsm, zgsm]= gse2gsm(y,d,s,pos(i,3), pos(i,4),0);
+[ygsm, zgsm]= irf_gse2gsm(y,d,s,pos(i,3), pos(i,4),0);
 xgsm_re = xgsm/6378;
 ygsm_re = ygsm/6378;
 zgsm_re = zgsm/6378;
