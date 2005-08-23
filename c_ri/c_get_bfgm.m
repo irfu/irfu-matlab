@@ -29,5 +29,5 @@ for j=1:length(sc_list),
       end
     end
   end
-  eval(irf_ssub('varargout(j) = {B?};',ic));
+  eval(irf_ssub('varargout(j) = {sortrows(B?)};',ic));
 end
