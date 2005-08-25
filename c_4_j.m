@@ -65,8 +65,8 @@ for ic=1:4, eval(irf_ssub(  'divB(:,2)=divB(:,2)+dot(K?(:,2:4),B?(:,2:4),2);'  ,
 divB(:,2)=divB(:,2)/1.0e3*1e-9/(4*pi*1e-7); % to get right units
 
 for ic=1:4, eval(irf_ssub('j(:,2:4)=j(:,2:4)+cross(K?(:,2:4),B?(:,2:4),2);',ic));   end
-j(:,2:4)=j(:,2:4)/1.0e3*1e-9/(4*pi*1e-7);   % to get right units
-jxB=irf_tappl(irf_cross(j,B),'*1e-3');
+j(:,2:4)=j(:,2:4)/1.0e3*1e-9/(4*pi*1e-7);   % to get right units [A]
+jxB=irf_tappl(irf_cross(j,B),'*1e-9'); % to get units [T A]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
 if nargout==0&size(B1,1)==1,
