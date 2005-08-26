@@ -40,11 +40,11 @@ if (nargin ==4)
 end
 
 if flag_case == 'A',
-  be=av_interp(b,e);
+  be=irf_resamp(b,e);
 
   nl=irf_norm(be); % along the B
-  nn=irf_norm(av_cross(av_cross(be,v),be)); % closest to given vn vector
-  nm=av_cross(nn,nl); % in (vn x b) direction
+  nn=irf_norm(irf_cross(irf_cross(be,v),be)); % closest to given vn vector
+  nm=irf_cross(nn,nl); % in (vn x b) direction
 
   % estimate e in new coordinates
   en=irf_dot(e,nn,1);
