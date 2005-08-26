@@ -69,7 +69,7 @@ elseif nargin>=8
 	end
 	pitchangles=pitchangles*pi/180;
 	for I=1:length(pitchangles)
-		vpvec(I,:)=0:vt(1)/20:3*vt(1);
+		vpvec(I,:)=0:vt(1)/20:5*vt(1);
 		vzvec(I,:)=cos(pitchangles(I)).*vpvec(I,:);
 	end
 	vp=vpvec;
