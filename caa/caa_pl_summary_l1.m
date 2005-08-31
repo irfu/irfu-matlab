@@ -4,6 +4,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 % caa_pl_summary_l1(iso_t,dt,sdir,[options])
 %   options:
 %           saveps    - save PS and PDF
+%           savepng   - save JPG
 %           savepng   - save PNG
 %           save      - save PNG, PS and PDF
 %           nosave
@@ -17,6 +18,7 @@ if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
 savePS = 0;
 savePNG = 0;
+saveJPG = 0;
 fullscale = 0;
 
 if nargin > 3, have_options = 1; args = varargin;
@@ -35,6 +37,8 @@ while have_options
 		savePS = 1;
 	case 'savepng'
 		savePNG = 1;
+	case 'savejpg'
+		saveJPG = 1;
 	case 'fullscale'
 		fullscale = 1;
 	otherwise
@@ -65,12 +69,13 @@ for pl=1:6
 end
 irf_zoom([0 5],'y',h(6))
 hold(h(6),'on')
-set(h(6),'YTick',1:4)
-ylabel(h(6),'SC')
+set(h(6),'YTick',1:4,'YTickLabel',4:-1:1)
+ylabel(h(6),'proc intrerv/SC')
 krgb = 'krgb';
 r = [];
 ri = [];
 fmax = 12.5;
+cli_pos = [4 3 2 1];
 
 c_eval('p?=[];spec?=[];')
 for cli=1:4
@@ -124,10 +129,10 @@ for cli=1:4
 				ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
 				irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
 			end
-			pp = plot(t1-t_start_epoch + [0 dt1],[cli cli],krgb(cli));
+			pp = plot(t1-t_start_epoch + [0 dt1],[cli_pos(cli) cli_pos(cli)],krgb(cli));
 			set(pp,'Marker','+');
 			if ~isempty(tm), if tm(1), set(pp,'LineWidth',3); end, end
-			text(t1-t_start_epoch+60,cli+0.2,st_s)
+			text(t1-t_start_epoch+60,cli_pos(cli)+0.2,st_s)
 			cd(old_pwd)
 		end
 		if ~isempty(p), c_eval('p?=p;',cli), end
@@ -150,7 +155,7 @@ grid(h(6),'on')
 % Plot the rest
 axes(h(1))
 ds = irf_fname(st);
-tit = ['EFW E hp-filtered (>2Hz) and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
+tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
 title(tit)
 axes(h(5))
 c_pl_tx('p?')
@@ -187,6 +192,12 @@ end
 if savePNG
 	irf_log('save',['saving ' fn '.png'])
 	print( gcf, '-depsc2', fn) 
-	[s,w] = unix(['/usr/local/bin/eps2png ' fn '.eps; rm -f ' fn '.eps']);
+	[s,w] = unix(['/usr/local/bin/eps2png -res 150 ' fn '.eps; rm -f ' fn '.eps']);
+	if s~=0, irf_log('save','problem with eps2png'), end
+end
+if saveJPG
+	irf_log('save',['saving ' fn '.jpg'])
+	print( gcf, '-depsc2', fn) 
+	[s,w] = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fn '.eps; rm -f ' fn '.eps']);
 	if s~=0, irf_log('save','problem with eps2png'), end
 end
