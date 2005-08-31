@@ -227,12 +227,14 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 		v.name = {'EF_Vec_xy_ISR2'};
 		v.labels = {'EF'};
 		v.label_1 = {'"EFx", "EFy"'};
-		v.quant = 'dies';
+		v.field_name = {'Electric field (high-pass filtered)'};
+		v.quant = 'dief';
 	else
 		v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
 		v.name = {'E_Vec_xy_ISR2'};
 		v.labels = {'E'};
 		v.label_1 = {'"Ex", "Ey"'};
+		v.field_name = {'Electric field'};
 	end
 	v.inst = 'EFW';
 	v.sig = 'E';
@@ -245,7 +247,6 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.size = [2];
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
-	v.field_name = {'Electric field'};
 	v.ent = {'Electric_Field'};
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
