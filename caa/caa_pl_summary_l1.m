@@ -155,7 +155,8 @@ grid(h(6),'on')
 % Plot the rest
 axes(h(1))
 ds = irf_fname(st);
-tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':' ds(12:13) ')'];
+tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
+	ds(12:13) ', produced ' date ')'];
 title(tit)
 axes(h(5))
 c_pl_tx('p?')
