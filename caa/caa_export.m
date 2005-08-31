@@ -52,7 +52,8 @@ else
 			disp('not implemented'), return
 		end
 	case 'EF'
-		disp('not implemented'), return
+		vs = irf_ssub('diEF?p1234',cl_id);
+		v_size = 1;
 	otherwise
 		error('unknown variable')
 	end
@@ -159,6 +160,10 @@ if strcmp(caa_vs,'E')
 	if lev==3, data = data(:,[1:3 5]);
 	else, data = data(:,1:3);
 	end
+elseif strcmp(caa_vs,'EF')
+	dsc.frv = {'Observatory'};
+	% Remove Ez, which is zero
+	data = data(:,1:3);
 elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	% convert mV/m back to V
 	id = str2num(caa_vs(2:end));
