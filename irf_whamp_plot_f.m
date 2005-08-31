@@ -1,8 +1,8 @@
-function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption);
+function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option);
 % Usage:
 % [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
 % [h,f,vp,vz]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2);
-% [h,f,vtot]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
+% [h,f,vtot]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
 %
 % plot the distribution function, parameters as defined in whamp 
 % n,m,.. can be vectors (if more than one plasma component) 
@@ -12,6 +12,9 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption)
 % if pitchangles are given PSD vs velocity are plotted for the given angles.
 % plotoption (optional) 0 - PSD vs V [m/s]
 %			1 - PSD vs E [eV]
+% title_option: 1 - default title (info on plasma parameters)
+%               0 - no title
+%               string - string as title 
 %
 % Output: 	h - handle to plot
 %		f - phase space density [s^3/m^6] corresponding to:
@@ -30,6 +33,12 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption)
 %
 % short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual_v1.1.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
+
+Me=9.1094e-31; % electron mass
+Mp=1.6726e-27; % proton mass
+c=2.9979e8; % speed of light
+e=1.6022e-19; % elementary charge
+Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 
 if nargin < 1 , 
@@ -53,9 +62,9 @@ end
 
 if nargin<7 & nargin>1,return;end
 for j=1:length(n),
-  % estimate thermal velocity
-  if m(j)==0, mm=1;else mm=1836.1*m(j);end
-  vt(j)=sqrt(3.517388e14 * t(j)/mm);
+  % estimate thermal velocity in m/s
+  if m(j)==0, mm(j)=Me;else mm(j)=Mp*m(j);end
+  vt(j)=sqrt(2*e * 1000*t(j)/mm(j)); % [m/s] (t in keV therefore *1000)
 end
 
 if nargin<8
@@ -69,8 +78,9 @@ elseif nargin>=8
 	end
 	pitchangles=pitchangles*pi/180;
 	for I=1:length(pitchangles)
-		vpvec(I,:)=0:vt(1)/20:5*vt(1);
-		vzvec(I,:)=cos(pitchangles(I)).*vpvec(I,:);
+		vvec(I,:)=0:vt(1)/20:10*vt(1);
+		vpvec(I,:)=sin(pitchangles(I)).*vvec(I,:);
+		vzvec(I,:)=cos(pitchangles(I)).*vvec(I,:);
 	end
 	vp=vpvec;
 	vz=vzvec;
@@ -92,7 +102,7 @@ for j=1:length(n),
   else
     ea2=exp(-1*(vp.^2./a2(j)./vt(j)./vt(j)));
   end
-  if a1(j)==a2(j),
+  if a1(j)==a2(j) || d(j)==1,
     K=0;
   else
     K=(1-d(j))/(a1(j)-a2(j));
@@ -108,12 +118,12 @@ if nargin<8
 	h=contour3(vp,vz,log10(f),30);view(0,90);
 	axis equal;
 	grid on;
-	title(['vt(1)=' num2str(vt(1)) ', vd(1)=' num2str(vd(1)) ', d(1)=' num2str(d(1)) ', a1(1)=' num2str(a1(1)) ', a2(1)=' num2str(a2(1)) ]);
 	xlabel('Vperp');ylabel('Vpar');
 % added PSD vs vtot for pitchangles /DS
 elseif nargin>=8
 	vtot=sqrt(vp.^2+vz.^2);
-	Etot=1e3*1/3.517388e14*1*vtot.^2;	%normalized to first species, Etot[eV]
+%	Etot=1e3*1/3.517388e14*1*vtot.^2;	%normalized to first species, Etot[eV]
+	Etot=(1/e)*mm(j)/2*vtot.^2;	%normalized to first species, Etot[eV]
 	if plotoption==1
 		h=loglog(Etot',f');
 		grid on
@@ -122,13 +132,21 @@ elseif nargin>=8
 		h=plot(vtot',f');
 		xlabel('Vtot [m/s]')
 	end
-	title(['vt(1)=' num2str(vt(1)) ', vd(1)=' num2str(vd(1)) ', d(1)=' num2str(d(1)) ', a1(1)=' num2str(a1(1)) ', a2(1)=' num2str(a2(1)) ]);
 	ylabel('PSD [s^3/m^6]')
 	for I=1:length(pitchangles)
 		s=[num2str(180/pi*pitchangles(I))];
 		M(I)={s};
 	end
 	legend(M)
+end
+if exist('title_option'),
+  if ischar(title_option),
+    title(title_option);
+  elseif title_option==1,
+    title(['vt(1)=' num2str(vt(1)) ', vd(1)=' num2str(vd(1)) ', d(1)=' num2str(d(1)) ', a1(1)=' num2str(a1(1)) ', a2(1)=' num2str(a2(1)) ]);
+  end
+else
+  title(['vt(1)=' num2str(vt(1)) ', vd(1)=' num2str(vd(1)) ', d(1)=' num2str(d(1)) ', a1(1)=' num2str(a1(1)) ', a2(1)=' num2str(a2(1)) ]);
 end
 
 %added varoutput /DS
