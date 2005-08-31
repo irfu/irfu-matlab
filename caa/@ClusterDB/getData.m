@@ -348,11 +348,11 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 	
 		if (((start_time>toepoch([2001 07 30 17 05 54.9]) & cl_id==1) | ...
 			(start_time>toepoch([2001 07 31 00 12 29.5]) & cl_id==3)) & ...
-			start_time<toepoch([2001 09 02 23 50 00])) | ...
+			start_time<toepoch([2001 09 02 23 15 00])) | ...
 			(((start_time>toepoch([2001 07 31 04 55 33.15]) & ...
 			start_time<toepoch([2001 08 02 11 25 40])) | ...
 			(start_time>toepoch([2001 08 06 23 58 50.7]) & ...
-			start_time<toepoch([2001 09 02 23 50 00]))) & cl_id==4 )
+			start_time<toepoch([2001 09 02 23 15 00]))) & cl_id==4 )
 			% all sc run on 180Hz filter in august 2001 most of the time
 			param='180Hz';
 		elseif start_time>toepoch([2001 09 10 04 21 57.6])& start_time<toepoch([2001 09 15 06 30 00])
@@ -711,18 +711,28 @@ cd(old_pwd)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out=check_timeline(data)
 % This function is aimed at removing pieces of data
-% with wrong time, specifically when time jumps back 
-% 3-4 sec after EFW is on
+% with time jumping back
+% ISDAT BUG 11 http://squid.irfu.se/bugzilla/show_bug.cgi?id=11
 
 out = data;
 
-% Find jumps back larger than 1 sec.
-ii = find(diff(data(:,1))<-1);
-if isempty(ii), return, end
+% Find jumps back larger than BAD_DT sec.
+BAD_DT = 0.5;
+% Remove BAD_MARGIN from each side
+BAD_MARGIN = 10;
 
-dt = data(ii(end)) -  data(1);
-% If the interval is too big, it requires special attention
-if dt>30, error('BAD TIMELINE'),end
+while 1
+	ii = find(diff(out(:,1))<-BAD_DT);
+	if isempty(ii), return, end
+	
+	tbj = out(ii(1),1) + BAD_MARGIN;
+	taj = out(ii(1)+1,1) - BAD_MARGIN;
+	ii = find(out(:,1) > taj & out(:,1) < tbj);
+	
+	out(ii,:) = [];
+	irf_log('proc',...
+		sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
+		
+	if isempty(out), return, end % extra precaution to avoid a dead loop
+end
 
-irf_log('proc',sprintf('Throwing away %.2f sec of data with bad time',dt));
-out(1:ii(end),:) = [];
