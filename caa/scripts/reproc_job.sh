@@ -44,6 +44,39 @@ for event in $events
 do
 	echo Processing $event
 	export $matlab_setup
-	(cd $1/$event; echo "irf_log('log_out','$log_dir/reproc.log'); c_get_batch(0,0,'nosrc','vars',{'e','b'}); exit" | $matlab_cmd > $log_dir/reproc_comm.log 2>&1)
+	cluster="1\
+	2\
+	3\
+	4"
+	for cli in $cluster 
+	do
+		if [ -d "$1/$event/C$cli" ]
+		then
+			ints=`(cd $1/$event/C$cli;find . -depth 1 -type d -name 200\*_\*)`
+			for int in $ints
+			do
+				donef=".done_reproc"
+				rm -f "$1/$event/C$cli/$int/$donef"
+				
+				echo -n Processing "$1/$event/C$cli/$int"
+
+				(cd "$1/$event/C$cli/$int";\
+				echo "disp(sprintf('\nLOG %s : %s \n',datestr(now),pwd));\
+				irf_log('log_out','$log_dir/reproc.log');\
+	   		c_get_batch(0,0,'sc_list',$cli,'varsproc',{'dief'});\
+				[s,w] = unix('touch $donef');\
+				exit" | $matlab_cmd >> $log_dir/reproc_comm.log 2>&1)
+
+				if ! [ -f "$1/$event/C$cli/$int/$donef" ]; then
+					echo " Error!"
+					#printf '\n-----------ERROR------------\n\n'
+					#tail -22 ${log_dir}/reproc_comm.log
+					#printf '\n------------END-------------\n\n... '
+				else
+					echo " Done."
+				fi
+			done
+		fi
+	done
 done
 echo done with job $1
