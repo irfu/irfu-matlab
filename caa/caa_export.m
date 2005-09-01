@@ -183,6 +183,7 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
 end
+cd(old_pwd)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
@@ -307,10 +308,13 @@ for j=1:length(data(:,1))
 	fprintf(fid,[mask ' ' EOR_MARKER '\n'],data(j,2:end)');
 end 
 
-
 fclose(fid);
-cd(old_pwd)
 
+% Gzip the result
+[s,w] = unix(['/usr/bin/gzip ' file_name ext_s]);
+if s~=0, irf_log('save','problem gzipping file'), end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function pmeta(fid,m_s,s,cl_id)
 % Print META
 
