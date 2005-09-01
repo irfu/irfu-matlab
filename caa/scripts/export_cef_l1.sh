@@ -9,7 +9,7 @@
 
 if [ "X$1" = "X" ]
 then
-	echo "Usage: reproc_job_arch.sh job-id [out_dir]"
+	echo "Usage: export_cef_l1.sh job-id [out_dir]"
 	exit 1
 fi
 
