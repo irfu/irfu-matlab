@@ -6,6 +6,7 @@
 #		-d | --data                 Process data [default]
 #		-nd | --no-data             Do not process data
 #		-sth | --start-hour HOUR    Process only one interval starting at HOUR
+#		-j | --job-id ID            Give Job ID, otherwise computed from date
 #		-sp | --splot               Make summary plots
 #		-fs | --full-scale          Plot full scale, not only 0..12.5 Hz
 #		-cpdf | --com-pdf | --common-pdf 
@@ -13,7 +14,7 @@
 #		-de | --disp-err | --display-errors
 #                               Display error messages on the screen				
 #		-dd | --disp-date | --display-date
-#                               Display date/time for timing the production				
+#                               Display date/time for timing the production	
 #		-h | --help | -help | '-?'  Display usage
 #		-v | --version              Display version
 #
@@ -123,6 +124,10 @@ do
 		-d | --data )
 		data=yes
 		;;
+		-j | --job-id )
+		JOBNAME="$2"
+		shift
+		;;
 		-nd | --no-data )
 		data=no
 		;;
@@ -136,7 +141,7 @@ do
 		fullscale=yes
 		;;
 		-sth | --start-hour )
-		HOURS=$2
+		HOURS="$2"
 		shift
 		;;
 		-cpdf | --com-pdf | --common-pdf )
@@ -182,7 +187,7 @@ YYYY=$1
 MM=$2
 DD=$3
 
-JOBNAME="L1-${YYYY}${MM}${DD}"
+JOBNAME=${JOBNAME:-"L1-${YYYY}${MM}${DD}"}
 
 out_dir=/data/caa/raw/$JOBNAME
 log_dir=/data/caa/log-raw/$JOBNAME
