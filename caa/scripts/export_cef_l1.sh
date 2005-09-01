@@ -9,7 +9,7 @@
 
 if [ "X$1" = "X" ]
 then
-	echo Usage: reproc_job_arch.sh job-id
+	echo "Usage: reproc_job_arch.sh job-id [out_dir]"
 	exit 1
 fi
 
@@ -22,7 +22,12 @@ fi
 matlab_setup='TMP=/tmp LD_LIBRARY_PATH=$IS_MAT_LIB:$LD_LIBRARY_PATH'
 matlab_cmd='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm -nodisplay'
 
-OUTDIR=/tmp/q
+if [ "X$2" = "X" ]
+then 
+	OUTDIR=/tmp/q
+else
+	OUTDIR="$2"
+fi
 
 log_dir=/data/caa/log-raw/$1
 if ! [ -d $log_dir ]
