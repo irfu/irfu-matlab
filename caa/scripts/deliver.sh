@@ -6,7 +6,7 @@
 #
 # $Id$
 
-in_dir=/tmp/q1
+in_dir=/usr/ttt/q
 if ! [ -d $log_dir ]
 then
 	echo IN_DIR : $in_dir does not exist!
