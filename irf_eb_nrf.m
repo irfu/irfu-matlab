@@ -55,8 +55,8 @@ if flag_case == 'A',
     emp=e; emp(:,end-2)=el;emp(:,end-1)=em;emp(:,end)=en;
 elseif flag_case == 'B',
   nn=irf_norm(v);
-  nm=irf_norm(av_cross(nn,mean(b)));
-  nl=av_cross(nm,nn);
+  nm=irf_norm(irf_cross(nn,mean(b)));
+  nl=irf_cross(nm,nn);
 
   % estimate e in new coordinates
   en=irf_dot(e,nn,1);
