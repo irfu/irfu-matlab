@@ -32,9 +32,13 @@ if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 % Copyright 1997-2005 Yuri Khotyaintsev
 if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
 if nargin < 2, n=irf_ask('H+ desity in cc [%] >','n',1);end
-if nargin < 3, no=irf_ask('Oxygen density in percent [%] >','no',0);end
+if nargin < 3, no=irf_ask('Oxygen density in percent from H+ density [%] >','no',0);end
 if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
 if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
+
+np=n*1e6; % proton density m^-3
+no=no/100*np; % proton density m^-3
+n=np+no; % total plasma density  m^-3
 
 %if time series are supplied then time series shoud be returned
 if size(B,2)>1, % we have time series of density
@@ -72,16 +76,17 @@ Me=9.1094e-31; % electron mass
 Mp=1.6726e-27; % proton mass
 c=2.9979e8; % speed of light
 e=1.6022e-19; % elementary charge
+epso=8.8542e-12; % vacuum dielectric constant 
 Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 % in formulas it is more convenient to use variables expresesd in SI units 
 B_SI=B*1e-9; % [T]
 
-Wpe = 8.973*sqrt(n)*1e3*2*pi; % rad/s
+Wpe = sqrt(n*e^2/Me/epso); % rad/s
 Wce = e*B_SI/Me;   % rad/s
-Wpp = 8.973*sqrt(n*(1-no/100)/Mp_Me);
-WpO = 8.973*sqrt(n*(no/100)/Mp_Me/16);
-Va = 21.8*B./sqrt(n.*(1+15*no/100));
+Wpp = 8.973*sqrt(np/Mp_Me);
+WpO = 8.973*sqrt(no/Mp_Me/16);
+Va = 21.8*B./sqrt(np+16*no);
 %Vte = 4.19*1e2*sqrt(Te);
 Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s
 %Vtp = 9.79*sqrt(Ti);
@@ -176,15 +181,15 @@ vs = {'V_a'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
 disp(sprintf('\nPlasma velocities\n'))
 for ii = 1:length(v)
     val = v(ii);
-    if val > 1e3
+    if val > 1e6
         units = '[km/s 1e3]';
-        koef = 1e-3;
-    elseif val < 1e3 & val > 1
+        koef = 1e-6;
+    elseif val < 1e6 & val > 1e3
         units = '[km/s]';
-        koef = 1;
+        koef = 1e-3;
     else
         units = '[m/s]';
-        koef = 1e3;
+        koef = 1;
     end
     disp(sprintf('%s = %5.2f %s',vs{ii},val*koef, units))
 end
