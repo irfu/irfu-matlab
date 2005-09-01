@@ -110,8 +110,8 @@ MATLABSETUP='TMP=/tmp LD_LIBRARY_PATH=$IS_MAT_LIB:$LD_LIBRARY_PATH'
 MATLAB='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm'
 #MATLAB=/bin/cat
 INT_HOURS=3
-HOURS=0
 MAXHOURS=24
+HOURS=
 data=yes
 splot=no
 fullscale=no
@@ -169,18 +169,19 @@ done
 
 if [ $# -lt 3 ]; then usage_and_exit 1; fi
 
+if [ "X$HOURS" = "X" ]
+then
+	HOURS=0
+else
+	MAXHOURS=$(($HOURS+$INT_HOURS))
+	if [ $MAXHOURS -gt 24 ]; then MAXHOURS=24; fi
+fi
+
 if [ -z $4 ]
 then
 	NDAYS=1
 else
 	NDAYS=$4
-fi
-
-if [ $HOURS -gt 0 ]
-then
-	MAXHOURS=$(($HOURS+$INT_HOURS))
-	if [ $MAXHOURS -gt 24 ]; then MAXHOURS=24; fi
-	NDAYS=1 #process only one interval
 fi
 
 YYYY=$1
