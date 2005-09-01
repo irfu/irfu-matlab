@@ -7,6 +7,7 @@ function [y]=av_lmn(x,b,n,flag)
 % n - normal direction [nx ny nz]
 % flag - method of estimate, 'B' or 'N', see below
 % L,M,N - [Lx Ly Lz],[Mx ..],..
+%         if L,M,N are not orthogonal then L=(NxL)xN, M=LxN
 %
 % y - output vector in LMN coordinates [time y_L y_M y_N] or [y_L y_M y_N], depending on x
 %
