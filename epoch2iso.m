@@ -65,6 +65,7 @@ else
 		if j==length(mins), ii = find(t>=mins(j));
 		else, ii = find(t>=mins(j) & t<mins(j+1));
 		end;
+		if isempty(ii), continue, end
 		if j_start
 			for kk=j_start:5
 				for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
