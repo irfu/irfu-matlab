@@ -15,7 +15,7 @@ l1p = {'P1','P2','P3','P4'};
 l1e = {'P12','P32','P34'};
 
 if ~(exist('./mPR.mat','file') | exist('./mER.mat','file'))
-	c_log('load','no data'), return
+	irf_log('load','no data'), return
 end
 
 v = caa_read_version;
