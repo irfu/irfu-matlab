@@ -300,6 +300,28 @@ elseif regexp(vs,'^IBIAS[1-4]p[1-4]$')==1
 	v.quant = 'ibias';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% EFW time
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^EFWT[1-4]$')==1
+	v.data = 1;
+	v.cl_id = vs(5);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'DSC';
+	v.sen = '';
+	v.cs = {'na'};
+	v.rep = {'scalar'};
+ 	v.units =  {'s'};
+	v.si_conv = {'s>s'};
+	v.size = 1;
+	v.name = {'EFW clock'};
+	v.labels = v.name;
+	v.field_name = {'EFW clock'};
+	v.com = '';
+	v.file = 'mFDM';
+	v.quant = 'efwt';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DSC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^DSC[1-4]$')==1
@@ -374,6 +396,15 @@ elseif regexp(vs,'^BADBIAS[1-4]p[1-4]$')==1
 	v.sen = vs(end);
 	v.inst = 'EFW';
 	v.com = 'Bad bias current';
+	v.file = 'mFDM';
+	v.quant = 'badbias';
+	v.lev = 1;
+elseif regexp(vs,'^BADBIASRESET[1-4]$')==1
+	v.data = 0;
+	v.cl_id = vs(13);
+	v.sen = '';
+	v.inst = 'EFW';
+	v.com = 'Bad bias current due to EFW reset';
 	v.file = 'mFDM';
 	v.quant = 'badbias';
 	v.lev = 1;

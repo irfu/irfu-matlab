@@ -156,7 +156,7 @@ end
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
 if isempty(vars) & isempty(varsProc)
-	vars = {'fdm','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
+	vars = {'fdm','efwt','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
 end
 if ~isempty(vars)
 	if dosrc
@@ -169,7 +169,7 @@ if ~isempty(vars)
 		if L_find(vars,{'e','p'})
 			varsProc = [{'whip','sweep','bdump'} varsProc];
 		end
-		if L_find(vars,'ibias'), varsProc = [varsProc {'badbias'}]; end
+		if L_find(vars,{'ibias','efwt'}), varsProc = [varsProc {'badbias'}]; end
 		if L_find(vars,'p'), varsProc = [varsProc {'probesa','p','ps'}]; end
 		if L_find(vars,'e'), varsProc = [varsProc {'dies','die'}]; end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
