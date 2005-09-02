@@ -28,7 +28,8 @@ then
 fi
 
 cd $in_dir
-files=`ls *.cef.gz`
+#files=`ls *.cef.gz`
+files=`find . -depth 1 -name \*.cef.gz`
 if [ "X$files" = "X" ]
 then
 	echo no CEF.GZ files in $in_dir
@@ -38,10 +39,10 @@ fi
 for fname in $files
 do
 	fsize=`du -hs $fname`
-	echo -n "$fsize: d..."
-	echo "put $fname"| sftp -b - efw@caa1.estec.esa.int:/c/data-20/EFW/
+	echo -n "$fsize: delivering..."
+	scp $fname efw@caa1.estec.esa.int:/c/data-20/EFW/
 	echo "$fname  `LANG= date`">>${log_dir}/deliver.log
-	echo -n " m..."
+	echo -n " moving..."
 	mv $fname $out_dir
 	echo " Done."
 done
