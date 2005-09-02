@@ -24,7 +24,7 @@ matlab_cmd='/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw
 
 if [ "X$2" = "X" ]
 then 
-	OUTDIR=/tmp/q
+	OUTDIR=/usr/caa/q1
 else
 	OUTDIR="$2"
 fi
