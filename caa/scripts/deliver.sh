@@ -29,7 +29,7 @@ fi
 
 cd $in_dir
 #files=`ls *.cef.gz`
-files=`find . -depth 1 -name \*.cef.gz`
+files=`find . -depth 1 -name \*.cef.gz|sed -e 's=^[.]/=='`
 if [ "X$files" = "X" ]
 then
 	echo no CEF.GZ files in $in_dir
