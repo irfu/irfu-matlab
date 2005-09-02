@@ -968,7 +968,7 @@ elseif strcmp(quantity,'badbias')
 	% in 2-3 minutes following the reset
 	[ok,efwt] = c_load('EFWT?',cl_id);
 	if ok
-		ii = find(efwt(:,2)<100);
+		ii = find(efwt(:,2)<DELTA_PLUS);
 		if ~isempty(ii)
 			t0 = efwt(ii(1),1) - efwt(ii(1),2);
 			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
