@@ -17,7 +17,7 @@ if nargin < 4
 end
 
 REQ_INT = 60; % intervals (sec) for which we request FDM
-DB_S = 'disco:10';
+DB_S = 'disco:83';
 DP_S = '/data/cluster';
 SPLIT_INT = 90*60;
 
@@ -144,9 +144,9 @@ for cl_id=sc_list
 		int_tmp(end+1,:) = [t1 dt1];
 		
 		% Get data
-		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
+		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
 			'vars','fdm|efwt|ibias|p|e|a|r','noproc')
-		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
+		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
 			'varsproc',['whip|sweep|bdump|badbias|probesa|p|ps|' extravars],'nosrc') 	
 	end
 end
