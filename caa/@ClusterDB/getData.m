@@ -309,6 +309,11 @@ elseif strcmp(quantity,'efwt')
 	
 	% Read EFW clock to check for time since last reset
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
+	if isempty(data)
+		irf_log('dsrc','Cannot fetch DSC')
+		cd(old_pwd)
+		return
+	end
 	efwtime = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
 		data(84,:)*16777216 +data(85,:)*4294967296)/1000;
 	c_eval(['EFWT?=[t efwtime''];save_list=[save_list '' EFWT? ''];'],cl_id);
