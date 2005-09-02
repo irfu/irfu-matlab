@@ -18,6 +18,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// EFW DSC
 %	fdm	: FDM{cl_id} -> mFDM
 %			// EFW FDM
+%	efwt: EFWT{cl_id} -> mFDM
+%			// EFW internal clock from DSC
 %	ibias: IBIAS{cl_id}p{1..4} -> mFDM
 %			// EFW probe bias current
 %
@@ -272,7 +274,7 @@ elseif strcmp(quantity,'fdm')
 	c_eval(['FDM?=[t data''];save_list=[save_list '' FDM? ''];'],cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ibias - EFW probe bias
+% ibias - EFW probe bias current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'ibias')
 	save_file = './mFDM.mat';
@@ -280,7 +282,8 @@ elseif strcmp(quantity,'ibias')
 	probe_list = 1:4;
 	
 	% Check for p1 problems on SC1 and SC3
-	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
+		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
@@ -298,6 +301,19 @@ elseif strcmp(quantity,'ibias')
 			clear t data
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% efwt - EFW clock
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'efwt')
+	save_file = './mFDM.mat';
+	
+	% Read EFW clock to check for time since last reset
+	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
+	efwtime = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
+		data(84,:)*16777216 +data(85,:)*4294967296)/1000;
+	c_eval(['EFWT?=[t efwtime''];save_list=[save_list '' EFWT? ''];'],cl_id);
+	clear t data efwtime
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

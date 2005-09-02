@@ -38,7 +38,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec
 %	bdump: DBUMP{cl_id} -> mFDM	// Burst dump present
 %	sweep: SWEEP{cl_id} -> mFDM	// Sweep + dump present
-%	badbias: BADBIAS{cl_id}p[1..4] -> mFDM	// Bad bias settings
+%	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mFDM	
+%          // Bad bias settings
 %	probesa: PROBESA{cl_id}p[1..4] -> mFDM	// Probe saturation
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
@@ -220,7 +221,14 @@ if strcmp(quantity,'dies')
 
 			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
 			
-			% Remove bad bias
+			% Remove bad bias around EFW reset
+			[ok,bbias] = c_load('BADBIASRESET?',cl_id);
+			if ok
+				irf_log('proc','blanking bad bias due to EFW reset')
+				tt = caa_rm_blankt(tt,bbias);
+			end
+			clear ok bbias
+			% Remove bad bias from bias current indication
 			for kk = [num2str(ps(1)) num2str(ps(2))]
 				if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
 					c_load(irf_ssub('BADBIAS?p!',cl_id,kk))
@@ -486,7 +494,14 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 					irf_log('calb','ADC offset not corrected')
 				end
 			else
-				% Remove bad bias
+				% Remove bad bias around EFW reset
+				[ok,bbias] = c_load('BADBIASRESET?',cl_id);
+				if ok
+					irf_log('proc','blanking bad bias due to EFW reset')
+					c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bbias);'],cl_id)
+				end
+				clear ok bbias
+				% Remove bad bias from bias current indication
 				for k = [num2str(ps(1)) num2str(ps(2))]
 					if ~exist(irf_ssub('BADBIAS?p!',cl_id,k),'var')
 						c_load(irf_ssub('BADBIAS?p!',cl_id,k))
@@ -946,6 +961,24 @@ elseif strcmp(quantity,'sweep')
 elseif strcmp(quantity,'badbias')
 	save_file = './mFDM.mat';
 	
+	DELTA_MINUS = 60;
+	DELTA_PLUS = 3*60;
+	
+	% First we check for EFW resets which usually mean bas bias settings
+	% in 2-3 minutes following the reset
+	[ok,efwt] = c_load('EFWT?',cl_id);
+	if ok
+		ii = find(efwt(:,2)<100);
+		if ~isempty(ii)
+			t0 = efwt(ii(1),1) - efwt(ii(1),2);
+			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
+			c_eval(['BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];'...
+				'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
+		end
+	else, irf_log('dsrc','No EFWT')
+	end
+	clear ok efwt t0 ii
+	
 	DELTA_MINUS = 300;
 	DELTA_PLUS = 64;
 	GOOD_BIAS = -130;
@@ -1309,7 +1342,14 @@ elseif strcmp(quantity,'p')
 	
 	c_eval(['p?=c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');'])
 	
-	% Remove bad bias
+	% Remove bad bias around EFW reset
+	[ok,bbias] = c_load('BADBIASRESET?',cl_id);
+	if ok
+		irf_log('proc','blanking bad bias due to EFW reset')
+		c_eval('p? = caa_rm_blankt(p?,bbias);')
+	end
+	clear ok bbias
+	% Remove bad bias from bias current indication
 	for kk = 1:4
 		if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
 			c_load(irf_ssub('BADBIAS?p!',cl_id,kk))

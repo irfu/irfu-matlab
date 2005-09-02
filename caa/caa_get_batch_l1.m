@@ -145,23 +145,9 @@ for cl_id=sc_list
 		
 		% Get data
 		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
-			'vars','fdm|ibias|p|e|a|r','noproc')
+			'vars','fdm|efwt|ibias|p|e|a|r','noproc')
 		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
-			'varsproc',['whip|sweep|bdump|badbias|probesa|p|ps|' extravars],'nosrc') 
-	%		c_get_batch(t1,dt1,'sc_list',cl_id,'sdir',cdir,...
-%			'varsproc', extravars,'nosrc') 	
+			'varsproc',['whip|sweep|bdump|badbias|probesa|p|ps|' extravars],'nosrc') 	
 	end
-	%{
-	if ~isempty(int_tmp)
-		% Save intervals
-		c_eval('INTERVALS?=int_tmp;',cl_id)
-		if exist([cdir '/mINTER.mat'],'file')
-			c_eval(['save ' cdir '/mINTER.mat INTERVALS? -append'],cl_id)
-		else
-			c_eval(['save ' cdir '/mINTER.mat INTERVALS?'],cl_id)
-		end
-		irf_log('save',irf_ssub('INTERVALS? -> mINTER',cl_id))
-	end
-	%}
 end
 
