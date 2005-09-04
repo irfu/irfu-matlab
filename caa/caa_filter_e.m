@@ -13,6 +13,12 @@ if nargin<2, wind=.5; end
 
 ii = find( ~isnan(data(:,2)) );
 
+if length(data(ii,1))<=1
+	irf_log('proc','interval too short')
+	res=[]; 
+	return
+end
+
 sf = c_efw_fsample(data(ii,1));
 nw2 = ceil(sf*wind/2);
 
