@@ -20,8 +20,12 @@ else
 	sf = guess_fsample(1/(data(2) - data(1)));
 	if sf, return
 	elseif length(data)>2
-		sf = guess_fsample(1/(data(end) - data(end-1)));
-		if sf, return, end
+		sf = guess_fsample(1/(data(3) - data(2)));
+		if sf, return
+		else
+			sf = guess_fsample(1/(data(end) - data(end-1)));
+			if sf, return, end
+		end
 	end
 end
 
