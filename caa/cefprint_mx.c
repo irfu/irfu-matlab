@@ -1,7 +1,13 @@
 /* $Id$ */
 /*=================================================================
  * cefprint_mx.c 
+ * MEX function to write data part of CEF files 
+ * and GZIP the resulting file
+ * 
+ * Usage:
+ *   STATUS = cefprint_mx(FILENAME,DATA)
  *
+ *   STATUS = 0 means everything went OK
  *=============================================================*/
 #include "mex.h"
 #include <stdio.h>
@@ -30,14 +36,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[])
 {
 	char *f_name;
-	char tmp_s[BUFSIZ], tmp_s1[64], buf[BUFSIZ*64];
+	char tmp_s[BUFSIZ], tmp_s1[64], buf[BUFSIZ*64], unix_c[BUFSIZ];
 	double *data, *res;
 	int   buflen,status,t_mrows,t_ncols,d_mrows,d_ncols,i,j;
 	FILE *fp;
 	
 	/* check for proper number of arguments */
 	if(nrhs!=2) 
-		mexErrMsgTxt("Three inputs required.");
+		mexErrMsgTxt("Two inputs required.");
 	else if(nlhs > 2) 
 		mexErrMsgTxt("Too many output arguments.");
 	if(nlhs!=1)
@@ -97,6 +103,14 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			*res = 1;
 		}
 		fclose(fp);
+	}
+	
+	strcpy(unix_c,"/usr/bin/gzip ");
+	strcat(unix_c,f_name);
+	if ( system(unix_c) < 0)
+	{
+		mexWarnMsgTxt("Error gzipping output file");
+		*res = 1;
 	}
 	return;
 }
