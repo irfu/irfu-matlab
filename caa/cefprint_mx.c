@@ -105,6 +105,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		fclose(fp);
 	}
 	
+	/* remove old file if it is there */
+	strcpy(unix_c,"/bin/rm -f ");
+	strcat(unix_c,f_name);
+	strcat(unix_c,".gz");
+	system(unix_c);
+	
+	/* gzip the output */
 	strcpy(unix_c,"/usr/bin/gzip ");
 	strcat(unix_c,f_name);
 	if ( system(unix_c) < 0)
