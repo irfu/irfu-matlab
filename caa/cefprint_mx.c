@@ -57,12 +57,12 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	status = mxGetString(prhs[0], f_name, buflen);
 	if(status != 0) 
 		mexWarnMsgTxt("Not enough space. String is truncated.");
-	printf("Filename : %s\n",f_name);
+	/* printf("Filename : %s\n",f_name); */
     
 	/* data */
 	d_mrows = mxGetM(prhs[1]);
 	d_ncols = mxGetN(prhs[1]);
-	printf("Data     : %dx%d\n",d_mrows,d_ncols);
+	/* printf("Data     : %dx%d\n",d_mrows,d_ncols); */
 	if ( d_ncols < 2 )
 		mexErrMsgTxt("Input must have at least two columns.");
 	data = mxGetPr(prhs[1]);
@@ -90,7 +90,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 				sprintf(tmp_s1,", %8.3f",*(data +d_mrows*j +i));
 				strcat(tmp_s,tmp_s1);
 			}
-			if ( status=fprintf(fp,"%s\n",tmp_s) < 0 ) break;
+			if ( status=fprintf(fp,"%s $\n",tmp_s) < 0 ) break;
 		}
 		if ( status < 0 ){
 			mexWarnMsgTxt("Error writing to output file");
