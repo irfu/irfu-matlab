@@ -307,10 +307,6 @@ s = cefprint_mx([file_name ext_s],data);
 
 if s~=0, irf_log('save','problem writing to CEF file'), return, end
 
-% Gzip the result
-[s,w] = unix(['/usr/bin/gzip ' file_name ext_s]);
-if s~=0, irf_log('save','problem gzipping file'), end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function pmeta(fid,m_s,s,cl_id)
 % Print META
