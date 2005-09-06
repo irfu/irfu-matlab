@@ -31,8 +31,8 @@ void epoch2iso(double *epoch, char *str)
 void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[])
 {
-	char *f_name, *t_s;
-	char tmp_s[1024];
+	char *f_name;
+	char tmp_s[1024], tmp_s1[64];
 	double *data, *res;
 	int   buflen,status,t_mrows,t_ncols,d_mrows,d_ncols,i,j;
 	FILE *fp;
@@ -84,21 +84,16 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
 		for (i=0; i<d_mrows; i++){
 			epoch2iso(data+i, tmp_s);
-			
-			status = fprintf(fp,"%s, %8.3f",tmp_s,*(data +d_mrows +i));
-			if ( status <0 ) break;
+			sprintf(tmp_s,"%s, %8.3f",tmp_s,*(data +d_mrows +i));
 			
 			if ( d_ncols > 2)
 			for ( j=2; j<d_ncols; j++ ){
-				if ( j == d_ncols-1 )
-					status = fprintf(fp,", %8.3f $\n",*(data +d_mrows*j +i));
-				else
-					status = fprintf(fp,", %8.3f",*(data +d_mrows*j +i));
-				if ( status <0 ) break;
+				sprintf(tmp_s1,", %8.3f",*(data +d_mrows*j +i));
+				strcat(tmp_s,tmp_s1);
 			}
-			if ( status <0 ) break;
+			if ( status=fprintf(fp,"%s\n",tmp_s) < 0 ) break;
 		}
-		if ( status <0 ){
+		if ( status < 0 ){
 			mexWarnMsgTxt("Error writing to output file");
 			*res = 1;
 		}
