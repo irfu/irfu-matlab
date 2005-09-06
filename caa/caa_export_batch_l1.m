@@ -23,10 +23,11 @@ if isempty(v), v = 0; end
 v = v + 1;
 v_s = num2str(v);
 if v<10, v_s = ['0'  v_s]; end
-[s,w] = unix(...
-	['echo "' v_s ' ' epoch2iso(date2epoch(now),1) '">>.version'],'-echo');
-if s~=0, irf_log('save','problem updating version'),cd(old_pwd),return, end
-disp(['new version is : ' v_s])
+
+fid = fopen('./.version','a');
+if fid < 0, irf_log('save','problem updating version'),return, end
+fprintf(fid,'%s %s\n', v_s, epoch2iso(date2epoch(now),1));
+fclose(fid);
 
 sp = pwd;
 cd(out_path)
