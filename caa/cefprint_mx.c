@@ -9,8 +9,6 @@
 #include <time.h>
 #include <math.h>
 
-#define IsYMD_HMS_LEN 64
-
 /* converts ISDAT epoch to ISO time string */
 void epoch2iso(double *epoch, char *str)
 {
@@ -32,7 +30,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[])
 {
 	char *f_name;
-	char tmp_s[1024], tmp_s1[64];
+	char tmp_s[BUFSIZ], tmp_s1[64], buf[BUFSIZ*64];
 	double *data, *res;
 	int   buflen,status,t_mrows,t_ncols,d_mrows,d_ncols,i,j;
 	FILE *fp;
@@ -80,6 +78,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		mexWarnMsgTxt("Cannot open output file");
 		*res = 1;
 	} else {
+		setbuf(fp,buf);
 		status = 0;
 
 		for (i=0; i<d_mrows; i++){
