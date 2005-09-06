@@ -293,22 +293,19 @@ fprintf(fid,'!                       Data                          !\n');
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'DATA_UNTIL = EOF\n');
 
-time_s = epoch2iso(data(:,1));
 sz = size(data);
 n_data = sz(2) - 1; % number of data columns - time
-mask = '';
+
 for j=1:n_data
-	mask = [mask ', %8.3f'];
 	ii = find(isnan(data(:,j+1)));
 	if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
 end
 
-for j=1:length(data(:,1))
-	fprintf(fid,time_s(j,:));
-	fprintf(fid,[mask ' ' EOR_MARKER '\n'],data(j,2:end)');
-end 
-
 fclose(fid);
+
+s = cefprint_mx([file_name ext_s],data);
+
+if s~=0, irf_log('save','problem writing to CEF file'), return, end
 
 % Gzip the result
 [s,w] = unix(['/usr/bin/gzip ' file_name ext_s]);
