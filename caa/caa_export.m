@@ -251,7 +251,6 @@ for j=1:v_size
 	fprintf(fid,'  PARAMETER_TYPE    = "Data"\n');
 	fprintf(fid,'  SIZES             = %d\n',dsc.size(j));
 	fprintf(fid,'  VALUE_TYPE        = FLOAT\n');
-	fprintf(fid,'  MEASUREMENT_TYPE  = "Electric_Field"\n');
 	fprintf(fid,['  ENTITY            = "' dsc.ent{j} '"\n']);
 	fprintf(fid,['  PROPERTY          = "' dsc.prop{j} '"\n']);
 	if ~isempty(dsc.fluc{j})
