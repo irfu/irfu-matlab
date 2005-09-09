@@ -100,7 +100,7 @@ irf_plot(jxB);
 ylabel('jxB [A/m^2 T]')
 
 axes(h(5))
-irf_plot(av_integrate(jxB));
+irf_plot(irf_integrate(jxB));
 ylabel('\int jxB [A/m^2 T s]')
 
 axes(h(6))
