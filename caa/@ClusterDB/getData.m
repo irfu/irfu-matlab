@@ -41,7 +41,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	bfgm: B{cl_id},diB{cl_id}	->mB	// B FGM** [GSE+DSI]
 %		** contact Stephan Buchert
 %	edi : iEDI{cl_id},idiEDI{cl_id}	->mEDI	// E EDI PP (inert frame) [GSE+DSI] 
-%	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP 
+%	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP
+%	tcis: T(par,perp)C(p,h){cl_id}	->mCIS	// T CIS PP 
 %	vcis: VC(p,h){cl_id},diVC(p,h){cl_id}  ->mCIS	// V CIS PP [GSE+DSI] 
 %	wbdwf: wfWBD{cl_id} -> mWBD	// WBD waveforms E/B 
 %
@@ -618,7 +619,8 @@ elseif strcmp(quantity,'bfgm')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcmp(quantity,'ncis')
+elseif strcmp(quantity,'b') | strcmp(quantity,'edi') | ...
+	strcmp(quantity,'ncis') | strcmp(quantity,'tcis') | strcmp(quantity,'vcis')
 
 	inertial_f = 0;
 	r.qua = {quantity};
@@ -638,6 +640,10 @@ elseif strcmp(quantity,'b')|strcmp(quantity,'edi')|strcmp(quantity,'vcis')|strcm
 		r.ins = 'CIS';
 		r.qua = {'ncis_p', 'ncis_h'}; % CODIF and HIA 
 		r.var = {'NCp', 'NCh'};
+	case 'tcis'
+		r.ins = 'CIS';
+		r.qua = {'tcis_hpar','tcis_hper','tcis_ppar','tcis_pper'}; % CODIF and HIA 
+		r.var = {'TparCh', 'TperpCh','TparCp', 'TperpCp'};
 	otherwise
 		error('Check variable list')
 	end

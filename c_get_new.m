@@ -37,7 +37,8 @@ mmm =  ...
  	'bfgm     high-res B FGM B?, diB?                ';
 	'br       resample B to E Br?, diBr?             ';
 	'brs      resample B to Es Brs?, diBrs?          ';
-	'vcis     CIS density NC{p,h}?                   ';
+	'ncis     CIS density NC{p,h}?                   ';
+	'tcis     CIS temperature T{par,perp}C{p,h}?     ';
 	'vcis     CIS vel VC{p,h}?,diVC{p,h}?            ';
 	'vce      CIS VxB VCE{p,h}?, diVCE{p,h}?         ';
 	'iedi     EDI E inertial fr iEDI?, idiEDI?       ';
@@ -89,13 +90,22 @@ elseif strcmp(q,'eph')
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% P
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(q,'p')
+	for ic=sc_list
+		getData(cdb,tint_epoch(1),Dt,ic,q);
+		getData(ClusterProc(pwd),ic,q);
+	end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ClusterDB/getData quantities
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(q,'r') | strcmp(q,'v') | strcmp(q,'a') | strcmp(q,'whip') | ...
 	strcmp(q,'e') | strcmp(q,'b') | ...
 	strcmp(q,'bfgm') | q=='p' | strcmp(q,'pburst') | strcmp(q,'eburst') | ...
-	strcmp(q,'ncis') | strcmp(q,'vcis') | strcmp(q,'vce') | strcmp(q,'wbdwf') | ...
-	strcmp(q,'sax')
+	strcmp(q,'ncis') | strcmp(q,'tcis') | strcmp(q,'vcis') | ...
+	strcmp(q,'vce') | strcmp(q,'wbdwf') | strcmp(q,'sax')
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
