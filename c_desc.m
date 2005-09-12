@@ -738,6 +738,36 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 	v.quant = 'ncis';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% CIS T PP
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
+	v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'CIS';
+	v.frame = 'na';
+	v.cs = {'na'};
+	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular';
+	else, comp = 'par'; cf = 'Parallel';
+	end
+	if vvs(findstr(vvs,'C')+1)=='h' % characters after 'C'
+		v.sig = ['T_' comp];
+		v.sen = 'HIA';
+		v.field_name = {[cf ' ion temperature']};
+	else
+		v.sig = ['Tp_' comp];
+		v.sen = 'COD';
+		v.field_name = {[cf ' proton temperature']};
+	end
+ 	v.units =  {'mK'};
+	v.si_conv = {'1.0e6>K'};
+	v.size = [1];
+	v.name = {['T_' comp]};
+	v.labels = v.name;
+	v.com = '';
+	v.file = 'mCIS';
+	v.quant = 'tcis';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS V PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
