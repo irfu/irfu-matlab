@@ -16,10 +16,12 @@ if nargin < 4
     extravars = 'dief';
 end
 
-REQ_INT = 60; % intervals (sec) for which we request FDM
+REQ_INT = 60; % Intervals (sec) for which we request FDM
+SPLIT_INT = 90*60; % Typical interval length (sec)
+MAX_SKIP = 2; % Number of NM frames we skip after BM interval
+
 DB_S = 'disco:83';
 DP_S = '/data/cluster';
-SPLIT_INT = 90*60;
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
@@ -28,7 +30,6 @@ st = iso2epoch(iso_t);
 % First we check if we have any EFW HX data
 % and check for NM/BM1
 count_skip = 0;
-MAX_SKIP = 2;
 for cl_id=1:4
 	st_tmp = st;
 	tm = []; tm_prev = [];
@@ -51,7 +52,7 @@ for cl_id=1:4
 		
 		if tm_prev~=tm_cur & tm_cur>=0
 			% We skip MAX_SKIP frames of NM because it is folliwing 
-			% BM1 or data gap ant usually contains junk
+			% BM1 or data gap and usually contains junk
 			if tm_cur==0 & count_skip<MAX_SKIP
 				tm_cur = -2;
 				count_skip = count_skip + 1;
@@ -106,7 +107,7 @@ for cl_id=sc_list
 	end
 	c_eval('tm=tm?;',cl_id);
 	
-	% Split long intervals into SPLIT_INT hour chunks
+	% Split long intervals into SPLIT_INT chunks
 	j = 1;
 	while 1
 		st_tmp = tm(j,1);
@@ -114,7 +115,7 @@ for cl_id=sc_list
 		if j==size(tm,1), dt_tmp = st + dt - st_tmp;
 		else, dt_tmp = tm(j+1,1) - st_tmp;
 		end
-		% For BM1 we take SPLIT_INT/3 min intervals
+		% For BM1 we take SPLIT_INT/3 intervals
 		if dt_tmp > SPLIT_INT*4/3*(1-tm_cur*2/3)
 			if j==size(tm,1)
 				tm(j+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2)];
