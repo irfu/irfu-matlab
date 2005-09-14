@@ -1,7 +1,7 @@
 function [st,dt] = caa_read_interval(sp)
 %CAA_READ_INTERVAL  read caa file .interval
 %
-% [st,dt] = caa_read_interval([sp])
+% [iso_t,dt] = caa_read_interval([sp])
 %
 % $Id$
 
