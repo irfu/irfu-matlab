@@ -39,16 +39,16 @@ mv_one_c()
 {
 	cdir=${YYYY}${MM}${DD}_${HOURS}00
 	if [ ! -d "${problem_dir}/$JOBNAME/$cdir" ]; then mkdir -p ${problem_dir}/$JOBNAME/$cdir; fi
-	echo -n "Moving $cdir/C$cli to problems ... "
+	echo -n "Moving $JOBNAME/$cdir/C$cli to problems ... "
 	mv ${data_dir}/$JOBNAME/$cdir/C$cli ${problem_dir}/$JOBNAME/$cdir	
 	echo Done.
 }
 mv_all_c()
 {
 	cdir=${YYYY}${MM}${DD}_${HOURS}00
-	#if [ ! -d "${problem_dir}/$JOBNAME" ]; then mkdir -p ${problem_dir}/$JOBNAME; fi
-	echo -n "Moving $cdir to problems ... "
-	#mv ${data_dir}/$JOBNAME/$cdir ${problem_dir}/$JOBNAME	
+	if [ ! -d "${problem_dir}/$JOBNAME" ]; then mkdir -p ${problem_dir}/$JOBNAME; fi
+	echo -n "Moving $JOBNAME/$cdir to problems ... "
+	mv ${data_dir}/$JOBNAME/$cdir ${problem_dir}/$JOBNAME	
 	echo Done.
 }
 
@@ -95,6 +95,7 @@ done
 if [ $# -lt 4 ]; then usage_and_exit 1; fi
 
 if [ "X$JOBNAME" = "X" ]; then echo "-j JOBNAME is missing"; usage_and_exit 1; fi
+if [ ! -d "${data_dir}/$JOBNAME" ]; then error "Bad JOB-ID. ${data_dir}/$JOBNAME does not exist"; fi
 
 YYYY=$1
 MM=$2
