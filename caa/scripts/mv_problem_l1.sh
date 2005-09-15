@@ -104,7 +104,7 @@ shift;shift;shift
 
 while [ $# -gt 0 ]
 do
-	HOURS=$1
+	HOURS=`echo $1|tr -d ,`
 	shift
 	if [ "X$clist" = "X1234" ]
 	then
