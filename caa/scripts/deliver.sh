@@ -7,7 +7,7 @@
 # $Id$
 
 in_dir=/usr/caa/q
-if ! [ -d $log_dir ]
+if ! [ -d $in_dir ]
 then
 	echo IN_DIR : $in_dir does not exist!
 	exit 1
