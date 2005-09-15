@@ -36,8 +36,19 @@ then
 	exit 1
 fi
 
+count=0
 for fname in $files
 do
+	#Every 10 steps we pause for 5 sec in case we need to abort the operation
+	count=$(($count+1))
+	if [ $count = 10 ]
+	then
+		echo -n "Waiting 5 sec for ctrl-c... "
+		sleep 5
+		echo "Done."
+		count=0
+	fi
+
 	fsize=`du -hs $fname`
 	echo -n "$fsize: delivering..."
 	scp $fname efw@caa1.estec.esa.int:/c/data-20/EFW/
