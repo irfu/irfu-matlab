@@ -1,4 +1,4 @@
-function [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_inp,no_inp,Te_inp,Ti_inp,noshow)
+function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_inp,no_inp,Te_inp,Ti_inp,noshow)
 %IRF_PLASMA_CALC   Calculate basic plasma quantities
 %
 % irf_plasma_calc(B,n,no,Te,Ti)
@@ -77,6 +77,7 @@ Mp=1.6726e-27; % proton mass
 c=2.9979e8; % speed of light
 e=1.6022e-19; % elementary charge
 epso=8.8542e-12; % vacuum dielectric constant 
+mu0=4*pi*1e-7; % Mu_0
 Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 % in formulas it is more convenient to use variables expresesd in SI units 
@@ -84,21 +85,21 @@ B_SI=B*1e-9; % [T]
 
 Wpe = sqrt(n*e^2/Me/epso); % rad/s
 Wce = e*B_SI/Me;   % rad/s
-Wpp = 8.973*sqrt(np/Mp_Me);
-WpO = 8.973*sqrt(no/Mp_Me/16);
-Va = 21.8*B./sqrt(np+16*no);
+Wpp = sqrt(np*e^2/Mp/epso);
+WpO = sqrt(no*e^2/Mp/16/epso);
+Va = B_SI./sqrt(mu0*(np+16*no)*Mp);
 %Vte = 4.19*1e2*sqrt(Te);
 Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s
 %Vtp = 9.79*sqrt(Ti);
 Vtp = c*sqrt(1-1/(Ti*e/(Mp*c^2)+1)^2);   % m/s
-Vts = 9.79*sqrt(Te);  % ? relativistic formula???
+Vts = Vtp*sqrt(Te/Ti);  % ? relativistic formula???
 %VtO = Vtp/4;
 VtO = c*sqrt(1-1/(Ti*e/(16*Mp*c^2)+1)^2);   % m/s
 gamma_e=1/sqrt(1-(Vte/c).^2);
 gamma_p=1/sqrt(1-(Vtp/c).^2);
 gamma_O=1/sqrt(1-(VtO/c).^2);
-Le = 5.3e3/sqrt(n);
-Li = 3e8/(2*pi*Wpp*1e3);
+Le = c/Wpe;
+Li = c/Wpp;;
 
 Fpe = Wpe/2/pi; % Hz
 Fce = Wce/2/pi;
@@ -112,9 +113,6 @@ Flh = sqrt(Fcp.*Fce./(1+Fce.^2/Fpe.^2)+Fcp.^2);
 Roe = Me*c/(e*B_SI)*sqrt(gamma_e.^2-1); % m, relativistically correct
 Rop = Mp*c/(e*B_SI)*sqrt(gamma_p.^2-1); % m, relativistically correct
 RoO = Mp*16*c/(e*B_SI)*sqrt(gamma_O.^2-1); % m, relativistically correct
-%Roe = Vte./Fce/2/pi; % m
-%Rop = Vtp./Fcp/2/pi; % m
-%RoO = VtO./FcO/2/pi; % m
 Ros = Vts./Fcp/2/pi; % m
 
 
@@ -145,7 +143,7 @@ disp('IRFU plasma calculator, relativistic effects not fully included')
 disp('velocities, gyroradia are relativistically correct')
 disp('can somebody fix relativstically correct frequencies Fpe, Fce,.. ?')
 disp('===============================================================')
-disp(['B=' num2str(B) ' [nT]; n_H=' num2str(n) ' [cc]; n_O=' num2str(no) ' [cc]; ' ...
+disp(['B=' num2str(B) ' [nT]; n_H=' num2str(n*1e-6) ' [cc]; n_O=' num2str(no) ' [cc]; ' ...
   'T_e=' num2str(Te) ' [eV]; T_i=' num2str(Ti) ' [eV];']);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -173,7 +171,7 @@ for ii = 1:length(freq)
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% velosities
+% velocities
 
 v = [Va Vte Vtp Vts VtO ];
 vs = {'V_a'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
@@ -227,3 +225,5 @@ if beta < 10/Mp_Me
 else
     disp(sprintf('beta  = %1.5f',Vtp^2/Va^2))
 end
+
+if nargout>0, Fpe_out = Fpe; end
