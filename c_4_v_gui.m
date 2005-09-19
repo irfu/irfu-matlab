@@ -147,7 +147,7 @@ case 'dt'
   dt=eval(['[' get(ud.dt,'string') ']']);
   tstr=['[' num2str(dt,'%7.2f') '] s'];
   t=0.5*(xl(1)+xl(2))+dt;
-  if max(dt)==0, 
+  if max(abs(dt))==0
     vstr='0 * [0 0 0]';
   else
     v=c_v(t);
