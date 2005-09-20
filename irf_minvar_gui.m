@@ -91,7 +91,6 @@ switch action,
         uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
         ud.filter = uicontrol('style', 'edit', ...
             'string', '1', ...
-            'callback', 'c_4_v_update(''dt'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
 
         uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_gui(''mva'')');
@@ -160,7 +159,17 @@ switch action,
         fix_legends;
     case 'mva'
         ud.tlim_mva=tlim;
-        X=irf_tlim(ud.X,tlim);
+				X = ud.X;
+				if eval(get(ud.filter,'string'))<1
+					Fs = 1/(X(2,1)-X(1,1));
+					flim = Fs*eval(get(ud.filter,'string'));
+					X = irf_tlim(X, tlim + [-20/Fs 20/Fs]);
+					X = irf_filt(X,0,flim,Fs,5);
+				else
+					disp('f/Fs must be <1!!!')
+					set(ud.filter,'string','1')
+				end
+        X = irf_tlim(X,tlim);
         clear ud.Xminvar;
         [ud.Xminvar, l, v]=irf_minvar(X);
         ud.l=l;ud.v=v;ud.v1=v(1,:);ud.v2=v(2,:);ud.v3=v(3,:);
