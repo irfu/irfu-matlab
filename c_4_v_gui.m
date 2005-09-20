@@ -155,23 +155,23 @@ case 'dt'
   end
   set(ud.v,'string',vstr);
   axes(ud.h(2));
-  if eval(get(ud.filter,'string'))<1,
+  if eval(get(ud.filter,'string'))<1
     x1=var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
     c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
     c_pl_tx('x?',var_col,dt);
-  else,
-    c_pl_tx('var?',var_col,dt);
+  else, c_pl_tx('var?',var_col,dt);
   end
   irf_zoom(xl,'x');irf_zoom(yl,'y');
   add_timeaxis;
   text(.5,-.6,['dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s GSE'],'units','normalized');
 case 'v'
-  hh=ud.h(1);  % use the first subplot to estimate available time interval
-  xl=get(hh,'XLim');yl=get(hh,'YLim');
-  hc=get(hh,'Children');
-  v=eval(['[' get(ud.v,'string') ']']),
-  t=0.5*(xl(1)+xl(2));
-  if max(v)==0, 
+  hh = ud.h(1);  % use the first subplot to estimate available time interval
+	udf = get(gcf,'userdata');
+  xl = get(hh,'XLim'); yl = get(hh,'YLim');
+  hc = get(hh,'Children');
+  v = eval(['[' get(ud.v,'string') ']']),
+  t = udf.t_start_epoch +0.5*(xl(1) +xl(2));
+  if max(abs(v))==0
     dt=[0 0 0 0];
   else
     dt=c_v([t v]);
@@ -187,9 +187,9 @@ case 'v'
   if eval(get(ud.filter,'string'))<1,
     x1=var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
     for ic=1:4,eval(irf_ssub('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);',ic)),end
-    c_pl_tx(x1,x2,x3,x4,var_col,1,dt);
+    c_pl_tx(x1,x2,x3,x4,var_col,dt);
   else,
-    c_pl_tx(var1,var2,var3,var4,var_col,1,dt);
+    c_pl_tx(var1,var2,var3,var4,var_col,dt);
   end
   axis([xl yl]);add_timeaxis;
   text(.5,-.6,['dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s GSE'],'units','normalized');
