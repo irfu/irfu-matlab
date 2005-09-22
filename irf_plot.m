@@ -47,7 +47,7 @@ function c=irf_plot(x,varargin);
 
 ylabels{1}='';
 flag_subplot=0;
-
+have_options = 0;
 if nargin > 1, have_options = 1; args = varargin; end
 
 
