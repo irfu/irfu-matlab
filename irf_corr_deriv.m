@@ -23,10 +23,14 @@ k=1:2;
 
 c_eval('dx?=[x?(1:end-1,1)+0.5*diff(x?(:,1)) diff(x?(:,2))];',k)
 c_eval('ind_zeros?=find(sign(dx?(1:end-1,2).*dx?(2:end,2))<0);',k)
+c_eval('if ind_zeros?(1)==1, ind_zeros?(1)=[];end',k)
 c_eval('ind_zeros?_plus=find(dx?(ind_zeros?-1,2)-dx?(ind_zeros?,2)>0);',k)
 c_eval('ind_zeros?_minu=find(dx?(ind_zeros?-1,2)-dx?(ind_zeros?,2)<0);',k)
 c_eval('ind=ind_zeros?(ind_zeros?_plus);xx=dx?;t_zeros?_plus=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
 c_eval('ind=ind_zeros?(ind_zeros?_minu);xx=dx?;t_zeros?_minu=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
+
+%Remove repeating points
+c_eval('t_zeros?_plus(find(diff(t_zeros?_plus)==0)) = [];',k)
 
 % Define identical pairs of two time axis
 [t1_d_plus,t2_d_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus);
@@ -50,8 +54,8 @@ else
 	c_eval('ind_zeros?_minu=find(ddx?(ind_zeros?-1,2)-ddx?(ind_zeros?,2)<0);',k)
 	c_eval('ind=ind_zeros?(ind_zeros?_plus);xx=ddx?;t_zeros?_plus=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
 	c_eval('ind=ind_zeros?(ind_zeros?_minu);xx=ddx?;t_zeros?_minu=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
-end
-
+end 
+	
 % Define identical pairs of two time axis
 [t1_dd_plus,t2_dd_plus]=irf_find_closest(t_zeros1_plus,t_zeros2_plus);
 [t1_dd_minu,t2_dd_minu]=irf_find_closest(t_zeros1_minu,t_zeros2_minu); 
