@@ -1,32 +1,21 @@
-function c=irf_plot(x,plot_type,varargin);
+function c=irf_plot(x,varargin);
 %IRF_PLOT   Flexible plotting routine for time series
 %
-% c=irf_plot(x,plot_type,varargin);
-% c=irf_plot(x,'subplot') to plot in separate subplots all x values
-% c=irf_plot(x,'','yy',factor_to_multiply) add second axis on right
-% c=irf_plot({x, y, z},'','dt',[dt1 dt2 ..]) 1st subplot with x, 
-%   2nd with y etc. Subtract time shifts if given
-% c=irf_plot({x, y, z},'comp','dt',[dt1 dt2 ...]) 1.subplot is x(:,2),y(:,2)...
-%   2nd subplot is x(:,3) y(:,3 .. etc.
-% c=irf_plot({p1, p2, p3, p4 ...},[dt1 dt2 dt3 dt4 ...]) to plot subplots with 
-%   x y z in them with given time shifts
-% c=irf_plot(x,'',varargin) to pass different options to plot routines 
-%   within irf_plot
+% c=irf_plot(X,[arguments...]);
+%   X is one of:
+%      - matrix in AV Cluster format
+%      - cell array data, each of cells containing a matrix in AV Cluster
+%      format
+%      - string defining variable
 %
-% x - can be variable, cell array of variables or string with variable
-%     names, see examples
-% plot_type can be 
-%     'subplot' - separate subplot for each variable, or if only one
-%                 variable given then for each component
-%     'comp'    - separate subplot for each component of different variables
-%     ''        - (default) try to guess
-%     LineSpec  - see help plot. LineSpec examples 'k*', 'r', '--', etc 
-%
-% varargin is pairs 
-%   option, value
-% where option can be any option for plot routine or any of the below
-%  'dt' - specify time shifts value=[dt1, dt2, dt3, dt4, ...]
-%  'yy' - add second axis on right, value=factor_to_multiply
+%   arguments can be:
+%     'subplot' - plot all x values in separate subplots
+%     'comp'    - plot vector component in separate subplots
+%     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts
+%     ['yy',factor_to_multiply] - add second axis on right, miltiply by factor_to_multiply
+%     ['linestyle',LineStyle] - define line style. Simple LineStyle can be be
+%     given as last argument, 'linestyle' keyword is not necessary in this
+%     case. LineStyle can be given as cell array to specify style for different variables/subplots. 
 %
 % irf_plot, to improve zooming, will sometimes set t_start_epoch within the
 % 'userdata' field of the figure and internally use it as origo but in most cases you should not care about this.
@@ -41,12 +30,12 @@ function c=irf_plot(x,plot_type,varargin);
 %   irf_plot('B1 B2') - -"- but if B1,B2 do not exist try to load them and
 %                    put labels according to c_desc
 %   irf_plot({B1,B2},'comp') - plot in 1. subplot B1_X and B2_X, in second
-%                    subplot B1_Y and B2_Y etc . 
-%   irf_plot({B1,B2},'','dt',[dt1 dt2]) - separate subplots with B1 and B2, 
+%                    subplot B1_Y and B2_Y etc. 
+%   irf_plot({B1,B2},'dt',[dt1 dt2]) - separate subplots with B1 and B2, 
 %                    but in addition B1 and B2 time axis are shifted by dt1 
 %                    and dt2 correspondingly
 %
-% See also C_PL_TX
+% See also C_PL_TX, C_DESC
 %
 % $Id$
 
@@ -58,40 +47,57 @@ function c=irf_plot(x,plot_type,varargin);
 
 ylabels{1}='';
 flag_subplot=0;
-if nargin==1, plot_type='';end
+
+if nargin > 1, have_options = 1; args = varargin; end
 
 
 % default values that can be override by options
 dt=0;
 flag_yy=0;scaleyy=1;
+plot_type='';
+marker='-';
 
-ind_varargin_clean=[]; % which indexes to remove after checking varargin
-for j=1:2:length(varargin),
-    switch varargin{j},
-        case 'dt'
-            dt=varargin{j+1};
-        case 'yy'
-            flag_yy=1;
-            scaleyy=varargin{j+2};
-        otherwise
-    end
-    ind_varargin_clean=[ind_varargin_clean j j+1];
+while have_options
+	l = 1;
+	switch(args{1})
+	case 'subplot'
+		plot_type = 'subplot';
+	case 'comp'
+		plot_type = 'comp';
+	case 'dt'
+		if length(args)>1
+			if isnumeric(args{2})
+				dt = args{2};
+				l = 2;
+			else, irf_log('fcal,','wrongArgType : dt must be numeric')
+			end
+		else, irf_log('fcal,','wrongArgType : dt value is missing')
+		end
+	case 'yy'
+		if length(args)>1
+			if isnumeric(args{2})
+				flag_yy = 1;
+        scaleyy = varargin{j+2};
+				l = 2;
+			else, irf_log('fcal,','wrongArgType : yy must be numeric')
+			end
+		else, irf_log('fcal,','wrongArgType : yy value is missing')
+		end
+		case 'linestyle'
+			marker = args{2};
+			l = 2;
+	otherwise
+		irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
+		marker = args{1};
+		break
+	end
+	if length(args) > l, args = args(l+1:end);
+	else, args = {}; break
+	end
 end
-varargin(ind_varargin_clean)=[];
 
-switch plot_type
-    case ''
-    case 'subplot'
-        if isnumeric(x),flag_subplot=1;end    % plot separate subplots for all x components
-    case 'comp'
-  otherwise
-      if length(plot_type)<4 & isstr(plot_type),
-        %irf_log('proc','assuming plot_type is LineSpec');
-        b=cell(1,length(varargin)+1);b{1}=plot_type;b(2:end)=varargin;varargin=b;
-      else
-        error('plot_type not recognized');
-      end
-end
+% plot separate subplots for all x components
+if strcmp(plot_type,'subplot') & isnumeric(x),flag_subplot=1;end
 
 if ischar(x), % try to get variable labels etc.
     var_nam=tokenize(x); % white space separates variables
@@ -192,8 +198,16 @@ elseif flag_subplot==1, % separate subplot for each component
     npl=size(x,2)-1;
     for ipl=1:npl,
         c(ipl)=subplot(npl,1,ipl);
+				
+				if iscell(marker)
+					if length(marker)==npl, marker_cur = marker{ipl};
+					else, marker_cur = marker{1};
+					end
+				else, marker_cur = marker;
+				end
+				
         i=ipl+1;
-        plot((x(:,1)-ts),x(:,i),varargin{:});grid on;
+        plot((x(:,1)-ts),x(:,i),marker_cur);grid on;
     end
     tt=x(1,1);
     
@@ -218,7 +232,14 @@ elseif flag_subplot==2, % separate subplot for each variable
 		else, if tt(end)>t_end, t_end = tt(end); end
 		end
 		clear tt
-        plot(t_tmp,y(:,2:end),varargin{:});grid on;
+		
+		if iscell(marker)
+			if length(marker)==npl, marker_cur = marker{ipl};
+			else, marker_cur = marker{1};
+			end
+		else, marker_cur = marker;
+		end
+        plot(t_tmp,y(:,2:end),marker_cur);grid on;
         ylabel(ylabels{ipl});
     end
 	% Set common XLim
@@ -228,23 +249,33 @@ elseif flag_subplot==2, % separate subplot for each variable
 	tt=y(1,1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
-    %   t_start_epoch is saved in figures user_data variable
+  %t_start_epoch is saved in figures user_data variable
 	ii = find(~isnan(x{1}(:,1)));
 	ts = x{1}(ii(1),1); clear ii
     if ts > 1e8, t_start_epoch = ts; else ts = 0; t_start_epoch = 0; end
 
     npl=size(x{1},2)-1;
     for ipl=1:npl,
-		% We make subplot only if wee need it
-		if npl==1, c(ipl) = gca;
-		else, c(ipl) = irf_subplot(npl,1,-ipl);
-		end
-%       line_colors={'b','g','r','c','m','y','k'};
-        line_colors=get(gca,'ColorOrder');
-        for j=1:size(x,2),
-            y=x{j};
-            plot((y(:,1)-ts-dt(j)),y(:,ipl+1),'color',line_colors(j,:),varargin{:});grid on;hold on;
-        end
+				
+			% We make subplot only if wee need it
+			if npl==1, c(ipl) = gca;
+			else, c(ipl) = irf_subplot(npl,1,-ipl);
+			end
+				
+      line_colors=get(gca,'ColorOrder');
+      for jj=1:size(x,2)
+				
+				if iscell(marker)
+					if length(marker)==size(x,2), marker_cur = marker{jj};
+					else, marker_cur = marker{1};
+					end
+				else, marker_cur = marker;
+				end
+			
+        y=x{jj};
+				plot((y(:,1)-ts-dt(jj)), y(:,ipl+1), 'Color', line_colors(jj,:),'LineStyle', marker_cur)
+				grid on; hold on;
+      end
     end
     tt=y(1,1);
 end
