@@ -18,7 +18,7 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %
 % $Id$
 
-persistent B n no Te Ti
+persistent B np_cc no_rel Te Ti
 
 if nargin < 6
     noshow = 0;
@@ -31,13 +31,13 @@ if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
 % Copyright 1997-2005 Yuri Khotyaintsev
 if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
-if nargin < 2, n=irf_ask('H+ desity in cc [%] >','n',1);end
-if nargin < 3, no=irf_ask('Oxygen density in percent from H+ density [%] >','no',0);end
+if nargin < 2, np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);end
+if nargin < 3, no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);end
 if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
 if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
 
-np=n*1e6; % proton density m^-3
-no=no/100*np; % proton density m^-3
+np=np_cc*1e6; % proton density m^-3
+no=no_rel/100*np; % proton density m^-3
 n=np+no; % total plasma density  m^-3
 
 %if time series are supplied then time series shoud be returned
@@ -99,7 +99,9 @@ gamma_e=1/sqrt(1-(Vte/c).^2);
 gamma_p=1/sqrt(1-(Vtp/c).^2);
 gamma_O=1/sqrt(1-(VtO/c).^2);
 Le = c/Wpe;
-Li = c/Wpp;;
+Li = c/Wpp;
+Ld = Vte/Wpe ; % Debye length scale
+
 
 Fpe = Wpe/2/pi; % Hz
 Fce = Wce/2/pi;
@@ -195,8 +197,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scales
 
-l = [Le Li Roe Rop RoO Ros];
-ls = {'L_e'; 'L_i'; 'Ro_e' ; 'Ro_p'; 'Ro_O'; 'Ro_s'};
+l = [Le Li Ld Roe Rop RoO Ros];
+ls = {'L_e'; 'L_i'; 'L_d' ; 'Ro_e' ; 'Ro_p'; 'Ro_O'; 'Ro_s'};
 disp(sprintf('\nPlasma scales\n'))
 for ii = 1:length(l)
     val = l(ii);
