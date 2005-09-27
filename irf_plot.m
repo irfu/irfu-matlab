@@ -142,6 +142,7 @@ if iscell(x), % plot several variables
         case ''
             plot_type='subplot';
             flag_subplot=2;
+            if length(x)==1, x=x{1}; flag_subplot=0;end
         case 'comp'
             flag_subplot=3;
         case 'subplot'
