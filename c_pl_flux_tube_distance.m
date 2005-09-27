@@ -36,7 +36,7 @@ elseif nargin == 3
 	clear r_s b_s
 end
 
-if nargin<1, disp('See usage:');help c_pl_flux_tube_distance; end
+if nargin<1, disp('See usage:');help c_pl_flux_tube_distance; return; end
 if nargin==9 | nargin == 1,
   ind=1:n_skip:size(b1,1);
   b1=b1(ind,:);
