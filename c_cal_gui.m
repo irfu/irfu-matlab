@@ -1596,16 +1596,19 @@ case 'show_spect'
 	else, nfft = 4096;
 	end
 	
+	% Exclude NaNs
+	ii = find(~isnan(E_tmp.data(:,2)));
+	
 	% Check if we have enough data
-	if ndata < nfft/2
-		irf_log('proc','cannot guess sampling frequency')
+	if length(ii) < nfft/2
+		irf_log('proc','not enough points for FFT')
 		return
-	elseif length(E_tmp.data(:,1)) < nfft, nfft = nfft/2;
+	elseif length(ii) < nfft, nfft = nfft/2;
 	end
 	
 	% Compute FFT
-	[Px,Freqx] = irf_psd(E_tmp.data(:,[1 2]),nfft,sf);
-	[Py,Freqy] = irf_psd(E_tmp.data(:,[1 3]),nfft,sf);
+	[Px,Freqx] = irf_psd(E_tmp.data(ii,[1 2]),nfft,sf);
+	[Py,Freqy] = irf_psd(E_tmp.data(ii,[1 3]),nfft,sf);
 	
 	figure(spect_fig_id), clf
 	loglog(Freqx,Px,Freqy,Py)
