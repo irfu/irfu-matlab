@@ -26,7 +26,7 @@ if exist('./.interval','file')
 	end
 else
 	if nargout==0
-		disp('cannot find .version')
+		irf_log('load','cannot find .interval')
 	elseif nargout==1
 		st = '';
 	elseif nargout==2
