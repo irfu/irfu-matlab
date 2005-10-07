@@ -183,6 +183,16 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
 end
+
+[iso_ts,dtint] = caa_read_interval;
+if iesmpty(iso_ts)
+	t_int = data([1 end],1);
+else
+	t_int(1) = iso2epoch(iso_ts);
+	t_int(2) = t_int(1) + dtint;
+end
+clear iso_ts dtint
+
 cd(old_pwd)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,7 +201,7 @@ ext_s = '.cef';
 % We have special names for CAA
 DATASET_ID = irf_ssub(['C?_CP_EFW_L' num2str(lev) '_' caa_vs],cl_id);
 file_name = ...
-	[DATASET_ID '__' irf_fname(data([1 end],1),2) '_V' DATA_VERSION];
+	[DATASET_ID '__' irf_fname(t_int,2) '_V' DATA_VERSION];
 fid = fopen([file_name ext_s],'w');
 
 fprintf(fid,'!-------------------- CEF ASCII FILE --------------------|\n');
@@ -227,7 +237,7 @@ pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
 fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
 fprintf(fid,...
-['   ENTRY       =   "' epoch2iso(data(1,1)) '/' epoch2iso(data(end,1)) '"\n']);
+['   ENTRY       =   "' epoch2iso(t_int(1)) '/' epoch2iso(t_int(2)) '"\n']);
 fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
 fprintf(fid,'START_META     =   GENERATION_DATE\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
