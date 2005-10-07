@@ -2,14 +2,12 @@ function [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 %
 % [angles, ampl] = c_ri_angles_and_ampl(B1,B2,B3,B4)
 %
-%Input:
-% B1,B2,B3,B4 -[ time in epoch | Bx | By | Bz ]
+% Input: B1,B2,B3,B4 -[ time in epoch | Bx | By | Bz ]
 %
-%Output:
-% angles -[ time in epoch |c1-c2|c1-c3|c1-c4|c2-c3|c2-c4|c3-c4]
-%         this are the angles between the cluster satellites
-% ampl -[ampl c1 |ampl c2 |ampl c3 |ampl c4 ]
-%       the amplitude of the B-vectors
+% Output: angles -[ time in epoch |c1-c2|c1-c3|c1-c4|c2-c3|c2-c4|c3-c4]
+%                 this are the angles between the cluster satellites
+%         ampl   -[ampl c1 |ampl c2 |ampl c3 |ampl c4 ]
+%                  the amplitude of the B-vectors
 %
 %Descrition of the function:
 % calulates the angles between the cluster satellites and the amplitude

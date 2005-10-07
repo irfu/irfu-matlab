@@ -147,44 +147,46 @@ for g =1:f_count
       
 clf;clear h;
 np=8;ip=1;
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(B1_eve,B2_eve,B3_eve,B4_eve,2);
       hold on;
       plot(t,0,'xk');
       ylabel('Bx, nT')
       legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(B1_eve,B2_eve,B3_eve,B4_eve,3);
       hold on;
       plot(t,0,'xk');
       ylabel('By, nT')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(B1_eve,B2_eve,B3_eve,B4_eve,4);
       hold on;
       plot(t,0,'xk');
       ylabel('Bz, nT')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(av_abs(B1_eve),av_abs(B2_eve),av_abs(B3_eve),av_abs(B4_eve),5);
       hold on;
       plot(t,0,'xk');
       ylabel('|B|, nT')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(wE1,wE2,wE3,wE4,3);
       hold on;
       plot(t,0,'xk');
       ylabel('p34, mV/m')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(wE1,wE2,wE3,wE4,4);
       hold on;
       plot(t,0,'xk');
       ylabel('p12, mV/m')
-h(ip)=av_subplot(np,1,-ip);ip=ip+1;
+h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       c_pl_tx(P1,P2,P3,P4,3);
       hold on;
-      plot(t,0,'xk');
+      ud=get(gcf,'userdata');
+      if isfield(ud,'t_start_epoch'), 	ts=ud.t_start_epoch;else ts=0;end
+      plot(t-ts,0,'xk');
       ylabel('Vps, [cc]')
       
-av_zoom(t+[-5 5],'x',h);
+irf_zoom(t+[-5 5],'x',h);
 add_timeaxis(h);
 set(h,'YLimMode','auto');
 

@@ -32,9 +32,11 @@ for g =1:f_count
   disp([num2str(g) '.event. ' datestr(fromepoch(t),31)]);
   
   [B1,B2,B3,B4]=c_get_bfgm(t+ [-per per]);
-  c_eval('try B?=av_abs(B?);catch B?=[NaN NaN NaN NaN NaN];end');
-  c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',t,20,?,''tm'');');
+  c_eval('try B?=irf_abs(B?);catch B?=[NaN NaN NaN NaN NaN];end');
+ % c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',t,20,?,''tm'');');
+    c_eval('fs=1/(B?(2,1)-B?(1,1));if fs<30,tm?=0;else tm?=1;end');
   str_scmode='sc mode (';
+
   c_eval('if tm?==1, str_scmode=[str_scmode '' b'']; elseif tm?==0, str_scmode=[str_scmode '' n'']; else str_scmode=[str_scmode '' NaN''];end');
   str_scmode=[str_scmode ')'];
   title_str=[str_scmode ' angles: ' int2str(angles(g,2:7)) ' degrees'];
@@ -44,38 +46,38 @@ for g =1:f_count
   set(gcf,'Units','centimeters')
   set(gcf,'Position',[1 1 15 20])
   %plots B1
-  h(1)=av_subplot(6,1,-1);st=[2002 04 16 00 14 19]
-  av_tplot(B1);
+  h(1)=irf_subplot(6,1,-1);st=[2002 04 16 00 14 19]
+  irf_plot(B1);
   ylabel('B1, nT')
   title(title_str);
   %  legend('Bx','By','Bz')
   
-  h(2)=av_subplot(6,1,-2);
+  h(2)=irf_subplot(6,1,-2);
   c_pl_tx(B1,B2,B3,B4,5);hold on;
   set(gca,'xlim',t+[-per per]);
   ylabel('|B|, nT')
 %  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
 
   %plots Bx for all clusters
-  h(3)=av_subplot(6,1,-3);
+  h(3)=irf_subplot(6,1,-3);
   c_pl_tx(B1,B2,B3,B4,2);
   ylabel('Bx, nT')
 %  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
   
   %plots Bx for all clusters
-  h(4)=av_subplot(6,1,-4);
+  h(4)=irf_subplot(6,1,-4);
   c_pl_tx(B1,B2,B3,B4,3);
   ylabel('By, nT')
 %  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
   
   %plots Bx for all clusters
-  h(5)=av_subplot(6,1,-5);
+  h(5)=irf_subplot(6,1,-5);
   c_pl_tx(B1,B2,B3,B4,4);
   ylabel('Bz, nT')
 %  legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
 
-  av_pl_mark(t + [-.1 .1],h,'y');
-  av_zoom(t+[-per per],'x',h);
+  irf_pl_mark(t + [-.1 .1],h,'y');
+  irf_zoom(t+[-per per],'x',h);
   add_timeaxis(h);
 %  legendst=[2002 04 16 00 14 19]
   
@@ -96,7 +98,7 @@ for g =1:f_count
 
   disp(['saving: ' p_and_f_picture '.png']);
   
-  ht=av_pl_info([datestr(now) '. ' p_and_f_picture '.png'] ,gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
+  ht=irf_pl_info([datestr(now) '. ' p_and_f_picture '.png'] ,gca,[0,1 ]); set(ht,'interpreter','none','FontSize', 10);
   close(fg)
 end
 

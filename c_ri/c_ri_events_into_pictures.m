@@ -23,7 +23,7 @@ function a = c_ri_events_into_pictures(path_eve, file_events, per, p_up, path_Bp
 
 %--------------------- the beginning --------------------------
 p_and_f =sprintf('%s%s',path_eve,file_events);
-load(p_and_f);
+load(p_and_f)
 
 nr_events = length(time_of_events(:,1));
 
@@ -45,8 +45,7 @@ for i = 1:i_end
     f_events(f_count,:) = time_of_events(i+1,:);
     
     % if there is a new point with greater angle
-  elseif 
-    f_events(f_count,2) < time_of_events(i+1,2)
+  elseif f_events(f_count,2) < time_of_events(i+1,2)
     f_events(f_count,:) = time_of_events(i+1,:);
   end
 end
@@ -63,7 +62,7 @@ fwrite(fp,pr_r);
 
 for k = 1:f_count
   dstr = R_datestring2(p_m(k,1:6));
-  pr_r = sprintf('%s %5.0f %4.0f %4.0f    %s\n',dstr,p_m(k,7:10));
+  pr_r = sprintf('%s %5.0f %4.0f %4.0f    %s\n',dstr,p_m(k,7:9),char(p_m(k,10)));
   fwrite(fp,pr_r);
 end
 
@@ -93,7 +92,7 @@ for g =1:f_count
   while feof(fp) == 0
     file_name = fgetl(fp);
     
-    if c_ri_timestr_within_intervall_MP(file_name,s_t,e_t) == 1
+    if c_ss_timestr_within_intervall_MP(file_name,s_t,e_t) == 1
       %load passing_MP,dist_t,dist2MP,p_solarwind
       load(file_name);
       
@@ -159,13 +158,13 @@ for g =1:f_count
       B4_eve = c_ri_fill_datagaps(B4_eve);
       
       [angles, ampl] = c_ri_angles_and_ampl(B1_eve,B2_eve,B3_eve,B4_eve);
-      
+
       
       fg = figure;
       %plots B1
       subplot(6,1,1);
       hold on
-      av_tplot(B1_eve);
+      irf_plot(B1_eve);
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('B1, nT')
@@ -278,7 +277,6 @@ for g =1:f_count
       p_and_f_picture = sprintf('%sF_%s',p_up,c_ri_datestring_file(fromepoch(t)));
       print( fg, '-djpeg', p_and_f_picture);
       disp(['saving: ' p_and_f_picture]);
-      
       
       close(fg)
     end

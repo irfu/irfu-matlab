@@ -20,7 +20,7 @@ function [events_tint]=c_ri_find(run_steps,st_m, et_m, min_angle, min_ampl, peri
 % period - download data and plot time interval event+-period
 % d2MP -distance to MP, in Re
 % psw -solarwind preassure, in nPa
-% run_steps - [ 0 | 1 | 1 | 1 ]
+% run_steps - [ 0 | 1 | 1 | 1 ] or 'continue'
 %       if one element is zero then the step will be jumped
 % 		the steps are:
 %		1) calculating the MP-crossings
@@ -64,18 +64,18 @@ if  nargin == 1
         flag_continue=1;
     else
         if exist('.c_ri_parameters.mat','file');
-            c_log('load','loading path information from .c_ri_parameters.mat');
+            irf_log('load','loading path information from .c_ri_parameters.mat');
             load .c_ri_events p_E p_R
         end
         disp('Using default values');
-        %This is where you write the matrix with the timeintervalls
+        % This is where you write the matrix with the timeintervalls
         st_m =[2002 02 02 0 0 0; 2001 02 01 0 0 0];
         et_m =[2002 07 09 0 0 0; 2001 07 08 0 0 0];
         min_angle(1:2) = [150 170];
         min_ampl(1:2) = 5;
         period(1:2) = 3;
         d2MP = 3;
-        psw =2;
+        psw = 2;
     end
 end
 
@@ -84,9 +84,9 @@ if ~exist('et_m'), error('End time not defined');end
 [r , c] = size(st_m);
 if ~exist('min_angle'), min_angle(1:r) = 150;disp(['min_angle not defined, using min_angle=' num2str(min_angle)]);end
 if ~exist('min_ampl'), min_ampl(1:r) = 5;disp(['min_ampl not defined, using min_ampl=' num2str(min_ampl)]);end
-if ~exist('period'), period(1:r) = 5;disp(['period not defined, using period=' num2str(period)]);end
+if ~exist('period'), period(1:r) = 3;disp(['period not defined, using period=' num2str(period)]);end
 if ~exist('d2MP'), d2MP = 3;disp(['distance to MP not defined, using d2MP=' num2str(d2MP)]);end
-if ~exist('psw'), psw = 3;disp(['SW pressure not defined, using psw=' num2str(psw)]);end
+if ~exist('psw'), psw = 2;disp(['SW pressure not defined, using psw=' num2str(psw)]);end
 
 if ~exist('p_E'),  p_E = './E/'; end % path for events
 if ~exist('p_R'),  p_R = './R/'; end % path for results
@@ -97,7 +97,7 @@ while 1
     disp(['path   event list, figures > p_R  = ''' p_R ''';']);
     disp(['                       min_angle  = ''' num2str(min_angle) '''; % minimal shear angle in degrees']);
     disp(['                        min_ampl  = ''' num2str(min_ampl) '''; % minimujm amplitude of B in nT']);
-    disp(['                          period  = ''' num2str(min_angle) '''; % overlap period in seconds to be one event']);
+    disp(['                          period  = ''' num2str(period) '''; % overlap period in seconds to be one event']);
     disp(['                            d2MP  = ''' num2str(d2MP) '''; % distance to magnetopause RE']);
     disp(['                             psw  = ''' num2str(psw) '''; % solar wind pressure in nPa (2 is average) ']);
     if size(st_m,1) ==1,
@@ -121,8 +121,8 @@ else
     end
 end
 
-if ~exist(p_E,'dir'), c_log('save',['creating p_E directory: ' p_E]); mkdir(p_E);  end
-if ~exist(p_R,'dir'), c_log('save',['creating p_E directory: ' p_R]); mkdir(p_R);  end
+if ~exist(p_E,'dir'), irf_log('save',['creating p_E directory: ' p_E]); mkdir(p_E);  end
+if ~exist(p_R,'dir'), irf_log('save',['creating p_E directory: ' p_R]); mkdir(p_R);  end
 
 [i_end,c] = size(st_m);
 
@@ -177,7 +177,7 @@ for i = i_start:i_end
             disp('????????????????????????????????????????????????????????????');
             [B1,B2,B3,B4]=c_get_bfgm(passing_MP(j,:),1:4);
             if ~isempty(B1)>0,
-                c_eval('try Binterp?=av_interp(B?,B1); catch Binterp?=[]; end;',2:4);
+                c_eval('try Binterp?=irf_resamp(B?,B1); catch Binterp?=[]; end;',2:4);
                 if ~isempty(Binterp2) & ~isempty(Binterp3) & ~isempty(Binterp4),
                     [angles_tmp, ampl_tmp] = c_ri_angles_and_ampl(B1,Binterp2,Binterp3,Binterp4);
                     if ~isempty(angles_tmp),
@@ -221,7 +221,7 @@ for i = i_start:i_end
             ind_bad_events=[];j_good=0;
             for j=1:size(events,1),
                 ttt=events(j,1);
-                c_eval('[ts,te,tm?]=createEFWModeTableFDM(''disco:10'',ttt,20,?,''tm'');');
+                c_eval('[ts,te,tm?]=caa_efw_mode_tab(B?,''ss'')');
                 if tm1==1 | tm2 == 1 | tm3 == 1 | tm4 ==1,
                     % do nothing
                     c_log('dsrc',[num2str(j_good) '. event in burst mode. ' epoch2iso(ttt)]);

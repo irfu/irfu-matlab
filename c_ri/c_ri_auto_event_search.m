@@ -131,7 +131,7 @@ for start_time_intervalls=1:nr_intervalls
   disp(['processing: ' R_datestring(pos_time(i,:)) ' with length ' num2str(dur_time(i)/3600) ' hr'])
   tpm = -1;
   d_temp = 0;
-  [tpm, d_temp] = search_events(s_time,dur_t,dist2MP,p_solarwind);
+  [tpm, d_temp] = c_ss_search_events(s_time,dur_t,dist2MP,p_solarwind);
 
   if tpm ~= -1
    passing_MP = add_A2M(passing_MP,tpm);
