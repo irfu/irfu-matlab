@@ -185,7 +185,7 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 end
 
 [iso_ts,dtint] = caa_read_interval;
-if iesmpty(iso_ts)
+if isempty(iso_ts)
 	t_int = data([1 end],1);
 else
 	t_int(1) = iso2epoch(iso_ts);
