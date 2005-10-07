@@ -20,7 +20,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
 %   dief: diEF{cl_id}p1234, diESPEC{cl_id}p1234 -> mEDSIf
 %          also created ADC offsets Da{cl_id}p12 and Da{cl_id}p34
-%          // high-pass filtered full res E [DSI] + spectrum
+%          // high-pass filtered full res E [DSI]
+%   diespec: diESPEC{cl_id}p1234 -> mEDSI
+%          // spectrum of full res E [DSI] + 
 %   idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
 %          Transform from SC to inertial frame
 %   dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
@@ -413,7 +415,10 @@ if strcmp(quantity,'dies')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'dieburst')
+elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
+	strcmp(quantity,'diespec') | strcmp(quantity,'dieburst')
+	
+	do_burst = 0;
 	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
 	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
 	if do_burst
@@ -421,7 +426,9 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 		var_name = 'wbE?p';
 		var1_name = 'dibE?p1234';
 	else
-		save_file = './mEDSIf.mat';
+		if strcmp(quantity,'diespec'), save_file = './mEDSI.mat';
+		else, save_file = './mEDSIf.mat';
+		end
         var_name = 'wE?p';
 		if do_filter, var1_name = 'diEF?p1234';
 		else, var1_name = 'diE?p1234';
@@ -433,7 +440,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 			irf_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
-	if ~exist('./mEDSI.mat','file') & ~do_filter
+	if ~exist('./mEDSI.mat','file') & ~do_filter & ~strcmp(quantity,'diespec')
 		irf_log('load','Please compute spin averages (mEDSI)')
 		data = []; cd(old_pwd); return
 	end
@@ -670,24 +677,26 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | strcmp(quantity,'diebu
 	else, c_eval('full_e=c_efw_despin(full_e,A?,coef);',cl_id);
 	end
 	
-	% HP-Filter
-	if do_filter
-		% First we make a spectrum and save it.
+	if strcmp(quantity,'diespec')
+		%We make a spectrum and save it.
 		sfreq = c_efw_fsample(full_e(:,1));
 		if sfreq == 25, nfft = 512;
 		else, nfft = 8192;
 		end
 		c_eval(...
 		'diESPEC?p1234=caa_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list ''diESPEC?p1234 ''];',cl_id);
-		% Than we filter
-		full_e = caa_filter_e(full_e(:,1:3));
-		full_e(:,4) = 0;
+	else
+		% HP-Filter
+		if do_filter
+			full_e = caa_filter_e(full_e(:,1:3));
+			full_e(:,4) = 0;
+		end
+		
+		% DS-> DSI
+		full_e(:,3)=-full_e(:,3);
+		
+		c_eval([var1_name '=full_e; save_list=[save_list ''' var1_name '''];'],cl_id);
 	end
-	
-	% DS-> DSI
-	full_e(:,3)=-full_e(:,3);
-	
-	c_eval([var1_name '=full_e; save_list=[save_list ''' var1_name '''];'],cl_id);
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % idie, idies - DSI inertial
