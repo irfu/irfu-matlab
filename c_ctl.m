@@ -54,9 +54,12 @@ if isstr(args{1})
 										% are > deltaof_sdev_max*sdev
 				def_ct.dsiof = [1+0i 1.1];
 				
-				c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
+				
+				def_ct.dsiof = [.7+0i 1.1];
+				c_ct{1} = def_ct;
+				def_ct.dsiof = [1.3+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
 			end
