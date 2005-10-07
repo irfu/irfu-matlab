@@ -1,7 +1,8 @@
-function caa_get_batch_l1(iso_t,dt,sdir,extravars)
+function caa_get_batch_l1(iso_t,dt,sdir,sc_list,extravars)
 %CAA_GET_BATCH_L1 CAA wrapper for c_get_batch
 %
 % caa_get_batch_l1(iso_t,dt,sdir,[extravars])
+% caa_get_batch_l1(iso_t,dt,sdir,[sc_list],[extravars])
 %
 % Input: iso_t - ISO epoch
 %           dt - length of time interval in sec
@@ -12,9 +13,16 @@ function caa_get_batch_l1(iso_t,dt,sdir,extravars)
 
 % Copyright 2005 Yuri Khotyaintsev
 
+extravars_def = 'diespec|dief';
+
 if nargin < 4
-    extravars = 'dief';
+    extravars = extravars_def;
+	sc_list = 1:4;
+elseif nargin==4
+	if isnumeric(sc_list), extravars = extravars_def; 
+	else, extravars = sc_list; sc_list = 1:4; end
 end
+
 
 REQ_INT = 60; % Intervals (sec) for which we request FDM
 SPLIT_INT = 90*60; % Typical interval length (sec)
@@ -30,7 +38,7 @@ st = iso2epoch(iso_t);
 % First we check if we have any EFW HX data
 % and check for NM/BM1
 count_skip = 0;
-for cl_id=1:4
+for cl_id=sc_list
 	st_tmp = st;
 	tm = []; tm_prev = [];
 	
@@ -84,7 +92,7 @@ clear tm tm_cur
 
 % Make SC_LIST from SC for which TM is not empty 
 sc_list = [];
-c_eval('if ~isempty(tm?), sc_list = [sc_list ?]; end')
+c_eval('if exist(''tm?'',''var''),if ~isempty(tm?), sc_list = [sc_list ?]; end, end')
 
 if isempty(sc_list), irf_log('dsrc','No data'), return, end
 
