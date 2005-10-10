@@ -71,7 +71,7 @@ do
 				echo "disp(sprintf('\nLOG %s : %s \n',datestr(now),pwd));\
 				irf_log('log_out','$log_dir/reproc.log');\
 	   		caa_export_batch_l1($cli,'$OUTDIR');\
-				[s,w] = unix('touch $donef');\
+				fid=fopen('$donef','w');fprintf(fid,'%s',datestr(now));fclose(fid);\
 				exit" | $matlab_cmd >> $log_dir/export_comm.log 2>&1)
 
 				if ! [ -f "$1/$event/C$cli/$int/$donef" ]; then
