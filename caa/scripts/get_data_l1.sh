@@ -81,11 +81,11 @@ do_one_splot()
 		donef=$out_dir/$cdir/.done_get_data_l1_splot
 		rm -f $donef
 		
-		xtraops=
-		[ "X$fullscale" = "Xyes" ] && xtraops=",'fullscale'"
+		xtraops="'saveps'"
+		[ "X$fullscale" = "Xyes" ] && xtraops="'save','fullscale'"
 
 		echo "irf_log('log_out','$log_dir/$start_time-splot.log');\
- 		caa_pl_summary_l1('$start_time',$dt,'$out_dir/$cdir','save'${xtraops});\
+ 		caa_pl_summary_l1('$start_time',$dt,'$out_dir/$cdir',${xtraops});\
 		[s,w] = unix('touch $donef');\
  		exit" | $MATLAB ' -nosplash' >> $log_dir/$start_time-get_data.log 2>&1	
 
