@@ -40,9 +40,12 @@ if nargin==0,
       cdf_file=cdf_files.name;
       disp(['Using: ' cdf_file]);
     otherwise
-      dir('*.cdf');
+      D=dir('*.cdf');
+      for j=1:length(D),
+        disp([num2str(j) '. ' D(j).name]);
+      end
       disp('Choose cdf file');
-      cdf_file=input('Cdf_file? >','s');
+      cdf_file=irf_ask('Cdf_file? [%]>','cdf_file',1);
   end
 end
 
@@ -63,14 +66,14 @@ if findstr(cdf_file,'*'), % use wilcard '*' expansion
    cdf_names={};
    for j=1:size(ff,1),
     cdf_names{end+1}=ff(j).name;
-    disp(ff(j).name);
+    disp([num2str(j) '. ' ff(j).name]);
    end
    if flag_latest
       cdf_names_sort=sort(cdf_names);
       cdf_file=[cdf_directory cdf_names_sort{end}];
    else
-     cdf_file=input('cdf_file? >','s');
-     cdf_file=[cdf_directory cdf_file];
+     cdf_file_n=irf_ask('cdf_file? [%]>','cdf_file_n',1);
+     cdf_file=[cdf_directory ff(cdf_file_n).name];
    end
  end
 end
@@ -89,16 +92,37 @@ for j=1:size(variable_names,1),
 end
 
 if iscell(var_name),
-elseif ischar(var_name)
-  if strcmp(var_name,'*')
-    disp('=== Choose variable ===');
-    inf=cdfinfo(cdf_file);
-    for j=2:size(inf.Variables,1)
-      if inf.Variables{j,3}==inf.Variables{epoch_column,3}
-        disp(inf.Variables{j,1});
+elseif ischar(var_name) % one specifies the name of variable 
+  % get variable list that have associated time 
+  inf=cdfinfo(cdf_file); 
+  i_time_series_variable=0; % the counter of variables that depend on time
+  for j=2:size(inf.Variables,1)
+    if inf.Variables{j,3}==inf.Variables{epoch_column,3}
+      if isempty(findstr(inf.Variables{j,1},'Epoch')), % exclude epoch from variables
+        i_time_series_variable=i_time_series_variable+1;
+        time_series_variables{i_time_series_variable}=inf.Variables{j,1};
       end
     end
-    var_name=input('Variable? >','s');
+  end
+  % in case string is '*' show all possibilities and allow to choose
+  if strcmp(var_name,'*'),
+      disp('=== Choose variable ===');
+      disp('0) all variables');
+      for j=1:i_time_series_variable,
+        disp([num2str(j) ') ' time_series_variables{j}]);
+      end
+      var_item=irf_ask('Variable? [%]>','var_item',2);
+      if var_item==0, % read all
+        var_name='all';
+      else
+        var_name={''};
+        for j=1:length(var_item),
+          var_name(j)=time_series_variables(var_item(j));
+        end
+      end
+  end
+  if strcmp(var_name,'all'),
+    var_name=time_series_variables;
   end
 else
   disp('var_name should be string or cell array'); whos var_name;
