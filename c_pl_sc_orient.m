@@ -135,9 +135,9 @@ elseif strcmp(action,'plot'),
   h=figuserdata{1};
 
   flag_v1=get(vec1flag, 'value');
-  if flag_v1==1, v1=eval(get(vec1Hndl,'string'));if length(v1)==1, flag_v1=0;end;end
+  if flag_v1==1, v1=eval(['[' get(vec1Hndl,'string') ']']);if length(v1)==1, flag_v1=0;end;end
   flag_v2=get(vec2flag, 'value');
-  if flag_v2==1, v2=eval(get(vec2Hndl,'string'));if length(v2)==1, flag_v2=0;end;end
+  if flag_v2==1, v2=eval(['[' get(vec2Hndl,'string') ']']);if length(v2)==1, flag_v2=0;end;end
 
   phase_p1=phase/180*pi + 3*pi/4 ;
   phase_p3=phase_p1     - pi/2   ;
@@ -172,8 +172,8 @@ elseif strcmp(action,'plot'),
   aa=0:.1:2*pi;x_circle=cos(aa);y_circle=sin(aa);
 
   axes(h(1));cla
-  text(0,50,'sun','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
-  text(50,0,'dawn','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
+  text(0,50,'sun','verticalalignment','top','horizontalalignment','center','fontweight','demi');
+  text(50,0,'dawn','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
   patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
   patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
   bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
@@ -207,8 +207,8 @@ elseif strcmp(action,'plot'),
   end
 
   axes(h(3));cla
-  text(0,50,'Z_{GSE}','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
-  text(50,0,'-Y_{GSE}','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
+  text(0,50,'Z_{GSE}','verticalalignment','top','horizontalalignment','center','fontweight','demi');
+  text(50,0,'-Y_{GSE}','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
   patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
   patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
   bnproj=[0 0 bn_gse(3)/norm(bn_gse(3:4)) bn_gse(4)/norm(bn_gse(3:4))];
@@ -239,8 +239,8 @@ elseif strcmp(action,'plot'),
   end
 
   axes(h(2));cla
-  text(0,50,'(BxS)xS','verticalalignment','middle','horizontalalignment','center','fontweight','demi');
-  text(50,0,'BxS','rotation',90,'verticalalignment','middle','horizontalalignment','center','fontweight','demi');
+  text(0,50,'(BxS)xS','verticalalignment','top','horizontalalignment','center','fontweight','demi');
+  text(50,0,'BxS','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
   patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
   patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
   for aa=0:pi/12:pi/2,
