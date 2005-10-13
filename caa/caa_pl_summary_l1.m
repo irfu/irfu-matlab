@@ -10,6 +10,8 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %           nosave
 %           fullscale - use full scale (up to 180 Hz) on spectrograms
 %
+% In iso_t='-1' and dt=-1, they will be determined automatically
+%
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
@@ -20,6 +22,9 @@ savePS = 0;
 savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
+
+int_s=realmax;
+int_e=-1;
 
 if nargin > 3, have_options = 1; args = varargin;
 else, have_options = 0;
@@ -50,7 +55,6 @@ while have_options
 end
 
 old_pwd = pwd;
-st = iso2epoch(iso_t);
 
 % Save the screen size
 sc_s = get(0,'ScreenSize');
@@ -117,6 +121,8 @@ for cli=1:4
 			% Load intervals & TM mode
 			[st_s,dt1] = caa_read_interval;
 			t1 = iso2epoch(st_s);
+			if t1<int_s, int_s = t1; end
+			if t1+dt1>int_e, int_e = t1+dt1; end
 			st_s = st_s([12:19]);
 			tm = c_load('mTMode?',cli,'var');
 			axes(h(6))
@@ -139,6 +145,13 @@ for cli=1:4
 	end
 end
 
+if strcmp(iso_t,'-1') & dt==-1
+	st = int_s;
+	dt = int_e - int_s;
+else, st = iso2epoch(iso_t);
+end
+ds = irf_fname(st);
+
 ytick =  [.25 .5 1 10];
 if fullscale & fmax>100, ytick = [ytick 100];, end
 for cli=1:4
@@ -154,7 +167,6 @@ grid(h(6),'on')
 
 % Plot the rest
 axes(h(1))
-ds = irf_fname(st);
 tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
 	ds(12:13) ', produced ' date ')'];
 title(tit)
@@ -167,7 +179,7 @@ if a(1)<-70
 	set(gca,'YLim',a);
 end
 
-irf_zoom(st +[0 dt],'x',h)
+if dt>0, irf_zoom(st +[0 dt],'x',h), end
 
 if fullscale, irf_zoom([0 fmax],'y',h(1:4))
 else, irf_zoom([0 12.5],'y',h(1:4))
