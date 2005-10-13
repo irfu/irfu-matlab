@@ -1,13 +1,18 @@
-function caa_export_batch_l1(cl_id,out_path)
+function caa_export_batch_l1(cl_id,out_path,lev_list)
 %CAA_EXPORT_BATCH_L1 run CAA_EXPORT in a batch script
 %
-% caa_export_batch_l1(cl_id,[out_path])
+% caa_export_batch_l1(cl_id,[out_path],[lev_list])
 %
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
 
-if nargin<2, out_path='.'; end
+if nargin<2, out_path = '.'; lev_list = 1:3; 
+elseif nargin==2
+	if isnumeric(out_path), lev_list = out_path; out_path = '.';
+	else, lev_list = 1:3;
+	end
+end
 
 QUAL=3;
 
@@ -32,29 +37,54 @@ fclose(fid);
 sp = pwd;
 cd(out_path)
 
-% L1
-if exist([sp '/mPR.mat'],'file')
-	for k=1:length(l1p)
-		disp(['Level 1 : ' l1p{k}])
-		caa_export(1,l1p{k},cl_id,QUAL,v_s,sp) 
+ii = find(lev_list==1);
+if ~isempty(ii)
+	% L1
+	if exist([sp '/mPR.mat'],'file')
+		for k=1:length(l1p)
+			disp(['Level 1 : ' l1p{k}])
+			caa_export(1,l1p{k},cl_id,QUAL,v_s,sp) 
+		end
 	end
+	if exist([sp '/mER.mat'],'file')
+		for k=1:length(l1e)
+			disp(['Level 1 : ' l1e{k}])
+			caa_export(1,l1e{k},cl_id,QUAL,v_s,sp) 
+		end
+	end
+	lev_list(ii) = [];
 end
-if exist([sp '/mER.mat'],'file')
-	for k=1:length(l1e)
-		disp(['Level 1 : ' l1e{k}])
-		caa_export(1,l1e{k},cl_id,QUAL,v_s,sp) 
+if isempty(lev_list), cd(sp), return, end
+
+ii = find(lev_list==2);
+if ~isempty(ii)
+	lev = 2;
+	% EF
+	if exist([sp '/mEDSIf.mat'],'file')
+		disp(['Level ' num2str(lev) ' : EF'])
+		caa_export(lev,'EF',cl_id,QUAL,v_s,sp)
+		disp(['Level ' num2str(lev) ' : E'])
+		caa_export(lev,'E',cl_id,QUAL,v_s,sp)
 	end
+	if exist([sp '/mP.mat'],'file')
+		disp(['Level ' num2str(lev) ' : P'])
+		caa_export(lev,'P',cl_id,QUAL,v_s,sp)
+	end
+	lev_list(ii) = [];
 end
 
-% EF
-if exist([sp '/mEDSIf.mat'],'file')
-	disp('Level 2 : EF')
-	caa_export(2,'EF',cl_id,QUAL,v_s,sp)
-end
+if isempty(lev_list), cd(sp), return, end
 
-% P
-if exist([sp '/mP.mat'],'file')
-	for lev=2:3
+ii = find(lev_list==3);
+if ~isempty(ii)
+	lev = 3;
+	% E
+	if exist([sp '/mEDSI.mat'],'file')
+		disp(['Level ' num2str(lev) ' : E'])
+		caa_export(lev,'E',cl_id,QUAL,v_s,sp)
+	end
+	% P
+	if exist([sp '/mP.mat'],'file')
 		disp(['Level ' num2str(lev) ' : P'])
 		caa_export(lev,'P',cl_id,QUAL,v_s,sp)
 	end
