@@ -18,6 +18,12 @@ if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 | lev>3, error('LEV must be 1,2 or 3'), end
 
 DATASET_DESCRIPTION_PREFIX = '';
+EOR_MARKER = '$';
+FILL_VAL = -1.0E9;
+PROCESSING_LEVEL='Calibrated';
+
+old_pwd = pwd;
+cd(sp)
 
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
@@ -44,6 +50,7 @@ else
 			vs = irf_ssub('diE?p1234',cl_id);
 			v_size = 1;
 		elseif lev==3
+			pwd
 			sfit_probe = caa_sfit_probe(cl_id);
 			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 			irf_log('proc',sprintf('using p%d',sfit_probe))
@@ -58,13 +65,6 @@ else
 		error('unknown variable')
 	end
 end
-
-EOR_MARKER = '$';
-FILL_VAL = -1.0E9;
-PROCESSING_LEVEL='Calibrated';
-
-old_pwd = pwd;
-cd(sp)
 
 % Load data
 data = c_load(vs,'var');
