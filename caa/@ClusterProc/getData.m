@@ -1398,7 +1398,7 @@ elseif strcmp(quantity,'p')
 	end
 	c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 	
-	% Remove sweeps and burst dumps
+	% Remove sweeps
 	[ok,sweep] = c_load('SWEEP?',cl_id);
 	if ok
 		if ~isempty(sweep)
@@ -1409,17 +1409,6 @@ elseif strcmp(quantity,'p')
 	else
 		irf_log('load',...
 			irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
-	end
-	[ok,bdump] = c_load('BDUMP?',cl_id);
-	if ok
-		if ~isempty(bdump)
-			irf_log('proc','blanking burst dumps')
-			c_eval('p?=caa_rm_blankt(p?,bdump);',cl_id)
-			clear bdump
-		end
-	else
-		irf_log('load',...
-			irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
 	end
 	
 	% Remove Whisper pulses
