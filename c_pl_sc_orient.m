@@ -155,6 +155,8 @@ elseif strcmp(action,'plot'),
   bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;
+  angle_deg_p34_vs_b=acos([bn(2)*cos(phase_p4)+bn(3)*sin(phase_p4)])*180/pi; % acos(bx*rx+by*ry)
+  angle_deg_p12_vs_b=acos([bn(2)*cos(phase_p2)+bn(3)*sin(phase_p2)])*180/pi;
 
   if flag_v1==1,
     vn1_gse=[bn(1,1) irf_norm(v1)];
@@ -254,7 +256,10 @@ elseif strcmp(action,'plot'),
   end
 
 axes(h(4))
-ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
+cla
+ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none','fontsize',8);
+ht34=irf_pl_info(['angle beteen p34 (Ey WBD) and B ' num2str(angle_deg_p34_vs_b,'%3.1f') 'deg'],gca,[0,.9]); set(ht34,'interpreter','none','fontsize',8);
+ht12=irf_pl_info(['angle beteen p12 (Ez WBD) and B ' num2str(angle_deg_p12_vs_b,'%3.1f') 'deg'],gca,[0,.8]); set(ht12,'interpreter','none','fontsize',8);
 xp=0;yp=.9;dyp=-0.1;
 yp=yp+dyp;
 %if flag_v==1, % add v velocity
