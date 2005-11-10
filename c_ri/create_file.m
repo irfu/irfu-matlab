@@ -46,7 +46,7 @@ output_p_f = sprintf('%s%s',output_path,output_file);
 
 mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
-	unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
+	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
 	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
 else

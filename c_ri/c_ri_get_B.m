@@ -43,7 +43,7 @@ end
 % test the operating system we are running on
 mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
-	CMDPATH = '/home/scb/fgm/bin86/';
+	CMDPATH = '/home/scb/fgm/bin/';
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
 	CMDPATH = '/home/scb/fgm/bin/';
 else
