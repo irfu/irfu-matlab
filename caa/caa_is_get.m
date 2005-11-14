@@ -1,14 +1,14 @@
 function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 % CAA_IS_GET  get Cluster data from ISDAT database
 %
-% data = caa_is_get(db_s,st,dt,cl_id,ins,sig,[sen,cha,par])
+% [time,data] = caa_is_get(db_s,st,dt,cl_id,ins,sig,[sen,cha,par])
 %  get data from ISDAT database
 %
 % OUTPUT
 %  data  - data matrix in AV format,first column is time (epoch)
 % INPUT
 %  db_s  - string defining dbh data base
-%  st    - start time vector, e.g. [2002 2 6 0 0 0]
+%  st    - start time epoch, e.g. toepoch([2002 2 6 0 0 0])
 %  dt    - time interval in seconds
 %  cl_id - Cluster ID 1..4
 %  ins,sig,sen,cha,par - data request parameters
@@ -17,7 +17,8 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 % crash) program will sleep for some time and retry the request.
 %
 % Example: 
-%  [t,d] = caa_is_get('disco:10',[2002 2 6 0 0 0],100,4,'ephemeris','mlt');
+%  [t,d] = caa_is_get('disco:10',toepoch([2002 2 6 0 0 0]),100,...
+%          4,'ephemeris','mlt');
 %
 % See also isGetDataLite
 %
@@ -36,8 +37,8 @@ if nargin < 7, sen = ' '; end
 
 % Check imput
 if ~ischar(db_s), error('DB_S must be a string'), end
-if ~isnumeric(st) | length(st) ~= 6
-	error('ST must be a vector [YY MM DD hh mm ss.ss]')
+if ~isnumeric(st) | length(st) ~= 1
+	error('ST must be a double number')
 end
 if ~isnumeric(st), error('DT must be a number'), end
 if ~isnumeric(cli)| cli<0 | cli>4, error('CL_ID must be a number 1..4'), end
@@ -67,8 +68,16 @@ while nret<MAXNRET
 	pause(SLEEPINT)
 end
 
-if iserr>0, error('ISDAT:Mat_DbGetDataLite',['ISDAT : ' is_err2str(iserr)]), end
-if isempty(d), error('ISDAT:Mat_DbGetDataLite','empty return'), end
+if iserr==0 & ~isempty(d), return, end
+
+if is_nodata_err(iserr)
+	irf_log('dsrc',['ISDAT : ' is_err2str(iserr)])
+elseif isempty(d)
+	irf_log('dsrc','ISDAT : empty return')
+else
+	error('ISDAT:Mat_DbGetDataLite',['ISDAT : ' is_err2str(iserr)])
+end
+
 
 function res = is_err2str(err_id)
 % Help function to get error message from ISDAT error code
@@ -130,3 +139,8 @@ switch err_id
 	otherwise
 		res = 'unknown error'
 end
+
+function res = is_nodata_err(err_id)
+res = 0;
+% DbBAD_DROP, DbBAD_TIME and DbBAD_EOF are 'no data' errors
+if err_id==1 | err_id==2 | err_id==5, res = 1; end
