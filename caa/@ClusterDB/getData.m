@@ -293,9 +293,9 @@ elseif strcmp(quantity,'ibias')
 	for probe=probe_list;
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' num2str(probe)],'bias');
-		if ~isempty(data)
-			data = double(real(data));
-			t = double(t);
+		if isempty(data)
+			irf_log('dsrc',irf_ssub('No data for IBIAS?p!',cl_id,probe))
+		else
 			eval(irf_ssub(...
 				['p!=[t data];save_list=[save_list ''IBIAS?p! ''];IBIAS?p!=p!;'],...
 				cl_id,probe)) 
@@ -311,7 +311,7 @@ elseif strcmp(quantity,'efwt')
 	% Read EFW clock to check for time since last reset
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
 	if isempty(data)
-		irf_log('dsrc','Cannot fetch DSC')
+		irf_log('dsrc',irf_ssub('No data for EFWT?',cl_id))
 		cd(old_pwd)
 		return
 	end
