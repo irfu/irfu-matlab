@@ -36,7 +36,7 @@ elseif strcmp(action,'irf_tm'),
     ax=get(h(ih),'position');
     axy(ih)=ax(2);axx(ih)=ax(1);
   end
-  ind_ax=find(axx<0.9); % find 
+  ind_ax=find(axx<0.2); % find 
   hax=h(ind_ax);
   [xx,ind]=sort(axy(ind_ax));
   ind=fliplr(ind);

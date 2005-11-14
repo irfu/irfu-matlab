@@ -97,8 +97,16 @@ switch fromto
     irf_fromto('update')
   case 'all_interval'
     hc=get(SUBPLOT_HANDLES(1,1),'Children'); % use the first subplot to estimate available time interval
-    xd=get(hc(1),'XData');minx=min(xd);maxx=max(xd);clear xd;
-    if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
+    %xd=get(hc(1),'XData');minx=min(xd);maxx=max(xd);clear xd;
+    %if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
+    minx=[];maxx=[];
+    for ii=1:length(hc), 
+      if strcmp(get(hc(ii),'Type'),'axes') || strcmp(get(hc(ii),'Type'),'line')
+        minx=[minx min(get(hc(ii),'xdata'))];
+        maxx=[maxx max(get(hc(ii),'xdata'))];
+      end
+    end
+    minx=min(minx);maxx=max(maxx);
     avail=[minx maxx]+t_start_epoch;
     tlim=avail;step=diff(tlim);
     update_fromto(ud,tlim);

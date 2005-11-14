@@ -16,6 +16,7 @@ tlim = [];
   hc=get(hh,'Children');
   for last=length(hc):-1:1
   	if strcmp(get(hc(last),'Type'),'axes'), break, end
+  	if strcmp(get(hc(last),'Type'),'line'), break, end
   end
   xd=get(hc(last),'XData');
   avail=[min([xl xd(:)']) max([xl xd(:)'])];
