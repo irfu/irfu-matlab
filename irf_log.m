@@ -40,7 +40,7 @@ function irf_log(log_ids,log_msg,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004,2005 Yuri Khotyaintsev
 
 error(nargchk(2,15,nargin))
 
