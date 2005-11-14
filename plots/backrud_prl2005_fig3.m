@@ -118,15 +118,16 @@ vphi_bp=irf_dot(vphiDS,bp);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 figure;tref=0;
-h=irf_plot({n,n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
+h=irf_plot({irf_tlim(p1234,tint),n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
 ipanel=1;npanel=6;
 
 %%%%%% subplot 1 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
-ylabel('N_{Vps} [cm^{-3}]');
+grid on
+irf_zoom([-6.9999 -3.0001],'y');
+ylabel('V_{ps} [V]');
 title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
 irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to the plot
-grid on
 
 %%%%%% subplot 2 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
@@ -135,7 +136,8 @@ hold on
 irf_plot(efp,'r'); 
 grid on;
 ylabel('E_{f} [mV/m]');
-irf_zoom([-99.999 99.999],'y');
+irf_zoom([-149.999 149.999],'y');
+add_timeaxis(gca,'nolabels');
 legend('|| B','\perp B');
 
 
@@ -147,6 +149,7 @@ irf_plot(vphi_bp(:,1:2),'r*');
 grid on;
 irf_zoom([-0.0199 .0199],'y');
 ylabel('k/\omega [s/km]');
+add_timeaxis(gca,'nolabels');
 legend('|| B','\perp B');
 
 %%%%%% subplot 4 %%%%%%
@@ -154,13 +157,15 @@ axes(h(ipanel));ipanel=ipanel+1;
 irf_plot(k,'k*');
 irf_zoom([0 1.999],'y');
 grid on;
+add_timeaxis(gca,'nolabels');
 ylabel('\lambda^{-1} [1/km]')
 
 %%%%%% subplot 5 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
 irf_plot(nf)
-irf_zoom([-0.99 .99],'y');
+irf_zoom([-1.499 1.499],'y');
 grid on
+add_timeaxis(gca,'nolabels');
 ylabel('dn [cm^-3]');
 
 %%%%%% subplot 6 %%%%%%
