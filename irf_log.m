@@ -99,7 +99,11 @@ else
 end
 
 if log_ok
-	if log_fn, log_ids = [evalin('caller','mfilename') ' : ' log_ids]; end
+	if log_fn
+		[sta,curr] = dbstack;
+		log_ids = sprintf('%s(%d) : %s',sta(curr+1).name,sta(curr+1).line,log_ids);
+		clear sta curr
+	end
 	d_str = ['[' datestr(now,31) '][' log_ids '] ' log_msg];
 	
 	persistent d_out
