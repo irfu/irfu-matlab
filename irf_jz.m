@@ -33,6 +33,8 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 %         angle is measured anticlockwise in XY plane from X axis
 %         system is defined such that B is Z and V_perp is X
 %
+% See also C_PL_J, C_4_J
+%
 % $Id$
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end

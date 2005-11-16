@@ -21,7 +21,7 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 % Example:
 %   h = c_pl_j('R?','B?',1,5);
 %
-% see also C_4_J, IRF_DEC_PARPERP, IRF_LOWPASS
+% See also C_4_J, IRF_JZ, IRF_DEC_PARPERP, IRF_LOWPASS
 %
 % $Id$
 
