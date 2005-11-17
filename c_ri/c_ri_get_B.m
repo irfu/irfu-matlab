@@ -132,4 +132,3 @@ else
 end
 %removes the temporary files
 unix(['rm ' d_source]);
-if exist([FGMPATH '/tmp_att']), unix(['rm ' FGMPATH '/tmp_att']);end
