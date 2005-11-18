@@ -1,6 +1,6 @@
 function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
   
-%POLARPLOT Plot polarization parameters for a given signal
+%POLARPLOT  Plot polarization parameters for a given signal
 %
 % POLARPLOT(t,Ex,Ey,step,av,thresh,plotflag) plots the polarization
 % parameters for a given signal. The polarisation parameters are the
@@ -19,6 +19,10 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 % plotflag = set equal to 1 if we want the phase difference
 %            and the coherence, instead of the usual output.
 %
+% See also POLARPLOT2
+%
+% $Id$
+
 % By Anders Tjulin (Last update 23/10-2002)
 %  
 
@@ -207,5 +211,5 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     %set(gca,'yscale','log')
   end
 
-  suptitle(datestring(fromepoch(t0)))
+  suptitle(datestr(epoch2date(t0),31))
   warning on
