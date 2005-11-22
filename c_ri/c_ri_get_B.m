@@ -32,22 +32,16 @@ function B=c_ri_get_B(from,to,cl_nr,mode,path_output)
 %--------------------- the beginning --------------------------
 B=[]; % return nothing if no data available
 
-if nargin == 4
-path_output = [pwd '/'];
-end
+if nargin == 4, path_output = [pwd '/']; end
 
-if and(~strcmp(mode,'b'),~strcmp(mode,'n'))
-	error('MODE must be n or b')
-end
+if ~(strcmp(mode,'b') | strcmp(mode,'n')), error('MODE must be n or b'), end
 
 % test the operating system we are running on
 mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
 	CMDPATH = '/home/scb/fgm/bin/';
-elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
-	CMDPATH = '/home/scb/fgm/bin/';
 else
-	error('Cannot determine operating system/platform.')
+	error('Cannot find CMDPATH for the current operating system/platform.')
 end
 
 ddscut = [CMDPATH 'ddscut'];
@@ -77,30 +71,18 @@ to_file = sprintf('%s%s',path_output,tfn);
 
 fromstr=sprintf('%04d-%02d-%02dT%02d:%02d:%02d.%03dZ',from_U(1),from_U(2),from_U(3),from_U(4),from_U(5),fix(from_U(6)),fix((from_U(6)-fix(from_U(6)))*100));
 tostr=sprintf('%04d-%02d-%02dT%02d:%02d:%02d.%03dZ',to_U(1),to_U(2),to_U(3),to_U(4),to_U(5),fix(to_U(6)),fix((to_U(6)-fix(to_U(6)))*100));
-%cuts out the time intervall and creates a temporary file
-%disp(['ddscut ... ' fromstr ' -- ' tostr]);
+% cuts out the time intervall and creates a temporary file
+% disp(['ddscut ... ' fromstr ' -- ' tostr]);
 unix_command = sprintf('%s -b %s -e %s %s > %s',ddscut,fromstr,tostr,d_source,to_file);
-unix(unix_command);
-
-
+[s,h] = unix(unix_command);
 
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_nr');
 to_file = sprintf('%s%s',path_output,fn);
 irf_log('dsrc',['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_nr) ]);
 
-FGMPATH = '/share/fgm_cal';
-[s,h] = unix('hostname');
-if ~strcmp(h(2:end-1),'sanna.irfu.se')
-	FGMPATH = ['/net/sanna/export' FGMPATH];
-end
-if ~exist(FGMPATH,'dir'),error('FGMPATH does not exist'),end
-
-if exist([FGMPATH '/tmp_att'],'file'), disp('removing tmp_att'); unix(['rm ' FGMPATH '/tmp_att']); end
-
-% this will give a possibility to check whether we can write to FGMPATH
-[s,w] = unix(['touch ' FGMPATH '/tmp_att']);
-if s~=0, error(w), end
+FGMPATH = '/data/cluster/cal/fgm';
+if ~exist(FGMPATH,'dir'), error('FGMPATH does not exist'), end
 
 if nargout,  % return B
     to_file=tempname;
@@ -108,9 +90,7 @@ if nargout,  % return B
     [stat, res] = unix(['/bin/sh -c ''' unix_command '''']);
     if stat
         warning(sprintf('error when running DP pipe:\n%s', unix_command));
-        if ~isempty(res)
-            warning(sprintf('output from %s:\n%s', unix_command, res));
-        end 
+        if ~isempty(res), warning(sprintf('output from %s:\n%s', unix_command, res)); end 
         return;
     end
     to_file_attr=dir(to_file);
@@ -122,13 +102,17 @@ if nargout,  % return B
         B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
     end
     close(fvs);
-    unix(['rm ' to_file]);
+    [s,h] = unix(['rm ' to_file]);
+	if s~=0, warning(h), end 
 else
-    %download an unpack the downloaded data
+    % download an unpack the downloaded data
     unix_command = ['export FGMPATH; FGMPATH=' FGMPATH '; ' fgmtel ' ' d_source ' | ' fgmcal ' | ' fgmhrt ' -a ' d_path d_s '*ga.0' num2str(cl_nr) ' | ' fgmvec ' > ' to_file];
-    unix(['/bin/sh -c ''' unix_command '''']);
-  disp(['saved to file ' to_file])
-
+    [s,h] = unix(['/bin/sh -c ''' unix_command '''']);
+	if s~=0, warning(h), end 
+    disp(['saved to file ' to_file])
 end
-%removes the temporary files
-unix(['rm ' d_source]);
+
+% remove the temporary files
+[s,h] = unix(['rm ' d_source]);
+if s~=0, warning(h), end
+
