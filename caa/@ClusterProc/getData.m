@@ -946,7 +946,8 @@ elseif strcmp(quantity,'sweep')
 	if ~isempty(ii) | ~isempty(ii_px)
 		bdump = zeros(length(ii),2);
 		for k=1:length(ii)
-			bdump(k,1) = t_s(ii(k));
+			% We add one second at the start of the interval for safety
+			bdump(k,1) = t_s(ii(k)) -1;
 			% We look for dump of the sweep in the FDM which follows the wseep 
 			% or in the next one
 			jj = find(t_s_px>=t_e(ii(k)) & t_s_px<t_e(ii(k))+1.1);
