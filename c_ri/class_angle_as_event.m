@@ -64,39 +64,14 @@ disp(ainfo)
 %starting with zero events
 b = 0;
 
-% going through all the positions
-for i = 1:nr_angles
-  %if one of the angles are bigger than threshold value
-  if (max(angles(i,2:7))) >= min_angle
-    %checking all the angles
-    for k = 1:6
-      ind = k;
-      ang = angles(i,k+1);
-      % if angle is bigger than threshold
-      if ang >= min_angle
-        %geting the postion of the B-vector amplitude
-        [nr_1, nr_2] = ind2nr(k);
-        %if the amplitud is bigger than treshold
-        if ampl(i,nr_1) >= min_ampl & ampl(i,nr_2) >= min_ampl
-          %if it is the first event or a new time
-          if b == 0 | time_of_events(b,1) ~= angles(i,1)
-            b= b+1;
-            time_of_events(b,1) = angles(i,1);
-            time_of_events(b,2) = ang;
-            time_of_events(b,3) = ampl(i,nr_1);
-            time_of_events(b,4) = ampl(i,nr_2);
-            time_of_events(b,5) = mode;
-            angles_out(b,:)=angles(i,:);
-            ampl_out(b,:)=ampl(i,:);
-            %if not the first event and if there are more than one 
-            %angle from the same time that are bigger than treshold, choice the largest
-          elseif time_of_events(b,1) == angles(i,1) & ang > time_of_events(b,2)
-            time_of_events(b,2) = ang;
-            time_of_events(b,3) = max([ampl(i,nr_1) ampl(i,nr_2)]);
-          end
-        end
-      end
-    end
-  end
-end
+[ang_i, ang_j] = find(angles(:,2:7) >= min_angle);
+[ampl_i, ampl_j] = find(ampl(:,2:4) >= min_ampl);
+ii = intersect(ang_i,ampl_i);
+
+angles_out = angles(ii,:);
+ampl_out = ampl(ii,:);
+time_of_events = angles(ii,1);
+
+
+
 
