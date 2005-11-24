@@ -127,7 +127,7 @@ grid on
 irf_zoom([-6.9999 -3.0001],'y');
 ylabel('V_{ps} [V]');
 title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
-irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to the plot
+%irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to the plot
 
 %%%%%% subplot 2 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
@@ -166,7 +166,7 @@ irf_plot(nf)
 irf_zoom([-1.499 1.499],'y');
 grid on
 add_timeaxis(gca,'nolabels');
-ylabel('dn [cm^-3]');
+ylabel('dn [cm^{-3}]');
 
 %%%%%% subplot 6 %%%%%%
 axes(h(ipanel));ipanel=ipanel+1;
@@ -175,10 +175,16 @@ hold on;
 irf_plot(nfef_bp,'r');
 grid on
 irf_zoom([-99.9 99.9],'y');
-ylabel('dn dE [cc mV/m]')
+ylabel('dn dE [cm^{-3} mV/m]')
 legend('|| B','\perp B');
 
 irf_figmenu
 
 %irf_zoom(tint,'x',h)
+numb={'A','B','C','D','E','F','G','H','I'};
+for ip=1:ipanel-1,
+  axes(h(ip));
+  ht=irf_pl_info(numb{ip},gca,[0.02,.8]);
+  set(ht,'fontsize',12);
+end
 
