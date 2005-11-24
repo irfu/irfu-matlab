@@ -102,10 +102,10 @@ irf_log('save',['Storage directory is ' cdb.sp])
 
 % Create .interval
 if ~exist('./.interval','file')
-	[s,w] = unix(...
-		['echo "' epoch2iso(start_time) ' ' num2str(dt) '">.interval'],'-echo');
-	if s~=0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
-	irf_log('save','creating .interval')
+	fid = fopen('.interval','w')
+	if fid<0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
+	count = fprintf(fid,'%s %s',epoch2iso(start_time),num2str(dt));	fclose(fid);
+	if count<=0, irf_log('save','problem writing to .interval'),cd(old_pwd),return, end
 end
 
 % Read list of nonstandard operations and see if we have one of those 
