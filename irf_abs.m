@@ -10,6 +10,8 @@ function [y]=irf_abs(x,flag)
 %
 % $Id$
 
+if isempty(x), y=[];return;end % empty output for empty input
+
 xx= size(x); lx=xx(2); % the number of vector components
 
 y=[x x(:,1)*0];
