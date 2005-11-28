@@ -147,7 +147,7 @@ for i=1:n
 end  
 spinfit = spinfit(1:n - n_gap, :);
 
-if method==1
+if method==1 & ~isempty(spinfit)
         x = x(1:n - n_gap, :);
         phi = phi(1:n - n_gap);
 
