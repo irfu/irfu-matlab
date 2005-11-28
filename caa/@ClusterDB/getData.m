@@ -102,7 +102,7 @@ irf_log('save',['Storage directory is ' cdb.sp])
 
 % Create .interval
 if ~exist('./.interval','file')
-	fid = fopen('.interval','w')
+	fid = fopen('.interval','w');
 	if fid<0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
 	count = fprintf(fid,'%s %s',epoch2iso(start_time),num2str(dt));	fclose(fid);
 	if count<=0, irf_log('save','problem writing to .interval'),cd(old_pwd),return, end
