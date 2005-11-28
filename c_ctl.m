@@ -62,12 +62,19 @@ if isstr(args{1})
 				def_ct.dsiof = [1.3+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
+				
+				% cell number 5 has global settings
+				% this cell must be accessed as SC # 0
+				def_ct.isdat_db = 'disco:10';
+				def_ct.data_path = '/data/cluster';
+				def_ct.caa_mode = 0;
+				c_ct{5} = def_ct;
 			end
 		end
 		
 	elseif strcmp(args{1},'get')
 		if nargin<3, error('get: must be c_ctl(''get'',cl_id,''ct_name''))'), end
-		cl_id = args{2};
+		cl_id = args{2}; if cl_id==0, cl_id = 5; end
 		c = args{3};
 		
 		global c_ct
@@ -81,7 +88,9 @@ if isstr(args{1})
 			if nargout>0
 				eval(['out=c_ct{cl_id}.' c ';'])
 			else
-				disp(['C' num2str(cl_id) '->' c ':'])
+				if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
+				else, disp(['GLOBAL->' c ':'])
+				end
 				eval(['disp(c_ct{cl_id}.' c ');'])
 			end
 		else
@@ -117,8 +126,11 @@ if isstr(args{1})
 		end
 	
 	elseif strcmp(args{1},'list')
-		if nargin>=2, sc_list = args{2};
-		else, sc_list=1:4;
+		if nargin>=2 
+			sc_list = args{2};
+			ii = find(sc_list==5);
+			if ~isempty(ii), sc_list(ii) = 5; end
+		else, sc_list=1:5;
 		end
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
@@ -126,7 +138,9 @@ if isstr(args{1})
 			c = fieldnames(c_ct{cl_id});
 			if length(c)>0
 				for j=1:length(c)
-					disp(['C' num2str(cl_id) '->' c{j} ':'])
+					if cl_id < 5, disp(['C' num2str(cl_id) '->' c{j} ':'])
+					else, disp(['GLOBAL->' c{j} ':'])
+					end
 					eval(['disp(c_ct{cl_id}.' c{j} ');'])
 				end
 			end
@@ -154,6 +168,8 @@ if isstr(args{1})
 		if nargin<3, error('set: must be c_ctl(''set'',''ctl_name'',value))'), end
 		if isnumeric(args{2})
 			sc_list = args{2};
+			ii = find(sc_list==5);
+			if ~isempty(ii), sc_list(ii) = 5; end
 			c = args{3};
 			c_val = args{4};
 		else
@@ -180,6 +196,8 @@ if isstr(args{1})
 	end
 elseif isnumeric(args{1})
 	sc_list = args{1};
+	ii = find(sc_list==5);
+	if ~isempty(ii), sc_list(ii) = 5; end
 	
 	if nargin>2, have_options = 1; args = args(2:end);
 	elseif nargin==2
