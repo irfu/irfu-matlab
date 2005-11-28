@@ -28,7 +28,8 @@ REQ_INT = 60; % Intervals (sec) for which we request FDM
 SPLIT_INT = 90*60; % Typical interval length (sec)
 MAX_SKIP = 2; % Number of NM frames we skip after BM interval
 
-DB_S = 'disco:83';
+%TODO: These must be configurable via c_ctl
+DB_S = 'disco:10';
 DP_S = '/data/cluster';
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
