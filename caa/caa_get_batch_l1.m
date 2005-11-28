@@ -33,7 +33,11 @@ DP_S = '/data/cluster';
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
-st = iso2epoch(iso_t);
+if isnumeric(iso_t), st = iso_t;
+elseif isstr(iso_t), st = iso2epoch(iso_t);
+else
+	error('first argument must be eather ISO time tring of isdat epoch')
+end
 
 % First we check if we have any EFW HX data
 % and check for NM/BM1
