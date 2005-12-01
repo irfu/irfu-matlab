@@ -159,7 +159,7 @@ for cl_id=sc_list
 		
 		% Get data
 		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
-			'vars','fdm|efwt|ibias|p|e|a|r','noproc')
+			'vars','tmode|fdm|efwt|ibias|p|e|a|r','noproc')
 		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
 			'varsproc',['whip|sweep|bdump|badbias|probesa|p|ps|' extravars],'nosrc') 	
 	end
