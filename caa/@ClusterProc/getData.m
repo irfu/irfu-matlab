@@ -495,6 +495,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 				eval(irf_ssub('Da?p!=dadc;save_list=[save_list '' Da?p! ''];',cl_id,ps));
 			end
 			n_sig = n_sig + 1;
+			c_eval('e?=tt;',p)
 		end
 	end
 	
