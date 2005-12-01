@@ -204,18 +204,19 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 		% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
 		%
 		clear tm mTMode1 mTMode2 mTMode3 mTMode4
-  		if exist('./mTMode.mat','file'), load mTMode; end
-		if exist(irf_ssub('mTMode?',ic),'var'), eval(irf_ssub('tm=mTMode?;',ic)), end
-		if ~exist('tm','var')
+  		[ok,tm] = c_load('mTMode?',ic);
+		if ~ok
 			[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
 			if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
-			if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
-			tm=tm(1);
 			eval(irf_ssub('mTMode?=tm;',ic));
-			if exist('./mTMode.mat','file'), eval(irf_ssub('save -append mTMode mTMode?;',ic));
-			else, eval(irf_ssub('save mTMode mTMode?;',ic));	
-                        end
+			if exist('./mTMode.mat','file'), eval(irf_ssub('save -append mEFWR mTMode?;',ic));
+			else, eval(irf_ssub('save mEFWR mTMode?;',ic));	
+            end
 		end
+		if tm~=tm(1)*ones(size(tm))
+			warning('tape mode changes during the selected tile inteval')
+		end
+		tm=tm(1);
 		tmmode='hx';
 		if tm<1e-30, param='10Hz';	else, param='180Hz'; end
 		clear tm
@@ -510,23 +511,28 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 % P
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif q == 'p',
-  mode = irf_ask('Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]','mode',1);
+  mode = irf_ask(...
+  	'Sampling 1)lx, 2)hx, 3)4kHz_any, 4)32kHz_any? If different give as vector. [%]','mode',1);
   for ic=sc_list,
   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
 		if (mm == 1), param='10Hz'; tmmode='lx';
 		elseif (mm == 2),
 			%% Find TapeMode
-  			if exist('./mTMode.mat','file'), eval(irf_ssub('load mTMode;',ic)); end
-			if exist(irf_ssub('mTMode?',ic),'var'), eval(irf_ssub('tm=mTMode?;',ic)), end
-			if ~exist('tm','var')
-				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
-				if ~isempty(data), tm=data(5,:);, else, error('Cannot fetch FDM'), end
-				if tm~=tm(1)*ones(size(tm)),warning('tape mode changes during the selected tile inteval'), end
-				tm=tm(1);
+  			[ok,tm] = c_load('mTMode?',ic);
+			if ~ok
+				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', ...
+					num2str(ic),'efw','FDM');
+				if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
 				eval(irf_ssub('mTMode?=tm;',ic));
-				if exist('./mTMode.mat','file'), eval(irf_ssub('save -append mTMode mTMode?;',ic));
-				else, eval(irf_ssub('save mTMode mTMode?;',ic));	end
+				if exist('./mTMode.mat','file')
+					eval(irf_ssub('save -append mEFWR mTMode?;',ic));
+				else, eval(irf_ssub('save mEFWR mTMode?;',ic));	
+				end
 			end
+			if tm~=tm(1)*ones(size(tm))
+				warning('tape mode changes during the selected tile inteval')
+			end
+			tm=tm(1);
 			if tm==3, param='180Hz'; tmmode='hx';
 			else, param='10Hz'; tmmode='lx'; end
 			clear tm
