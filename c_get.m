@@ -163,8 +163,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
  elseif strcmp(q,'dibf'),
   for ic=sc_list,
    eval(irf_ssub('load mB B?;',ic));
-   eval(irf_ssub('load mEPH SAX?;',ic));
-   eval(irf_ssub('diB?=c_gse2dsi(B?,SAX?);',ic));
+   eval(irf_ssub('diB?=c_gse2dsc(B?,?,2);',ic));
    eval(irf_ssub('save -append mB diB?;',ic));
   end
 
