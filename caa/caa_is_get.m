@@ -61,6 +61,7 @@ while nret<MAXNRET
 	[t, d, iserr] = isGetDataLite(dbase, st, dt, ...
 		'Cluster',num2str(cli),ins,sig,sen,cha,par);
 	Mat_DbClose(dbase);
+	t = double(t); % TODO: check if this is needed
 	
 	% If we got DbBAD_INTERNAL we suppose it was cause by the server crash,
 	% so we sleep for SLEEPINT sec and try again
