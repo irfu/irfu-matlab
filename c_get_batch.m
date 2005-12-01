@@ -66,8 +66,8 @@ else, have_options = 0;
 end
 
 sp = '.';
-db = 'disco:10';
-dp = '/data/cluster';
+db = c_ctl(0,'isdat_db');
+dp = c_ctl(0,'data_path');
 cdb = '';
 varsMan = 0;
 vars = '';
@@ -156,7 +156,8 @@ end
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
 if isempty(vars) & isempty(varsProc)
-	vars = {'fdm','efwt','ibias','p','e','a','sax','r','v','b','edi','ncis','vcis','bfgm'};
+	vars = {'tmode','fdm','efwt','ibias','p','e','a','sax',...
+		'r','v','b','edi','ncis','vcis','bfgm'};
 end
 if ~isempty(vars)
 	if dosrc
