@@ -98,9 +98,9 @@ for j=1:size(tm,1)
 	
 	cd(sp)
 	for cl_id=sc_list
-		if exist('./mTMode.mat','file')
-			eval(irf_ssub('save -append mTMode mTMode?;',cl_id))
-		else, eval(irf_ssub('save mTMode mTMode?;',cl_id))
+		if exist('./mEFWR.mat','file')
+			eval(irf_ssub('save -append mEFWR mTMode?;',cl_id))
+		else, eval(irf_ssub('save mEFWR mTMode?;',cl_id))
 		end
 	end
 	cd(old_pwd)
