@@ -41,12 +41,14 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004, 2005 Yuri Khotyaintsev (yuri@irfu.se)
 %
 error(nargchk(1,3,nargin))
 if nargout==2 & nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
 end
+
+ERR_RET = -157e8;
 
 if ~isstr(vs), error('V_S must be a string'), end
 
@@ -76,6 +78,8 @@ case 1
 	end
 end
 
+CAA_MODE = c_ctl(0,'caa_mode');
+
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
 else, irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
@@ -90,6 +94,10 @@ for cli=cl_id
 	if exist([d.file '.mat'],'file')
 		warning off
 		eval(['load -mat ' d.file ' ' vs_tmp])
+		warning on
+	elseif CAA_MODE==0 & exist([d.file_old '.mat'],'file')
+		warning off
+		eval(['load -mat ' d.file_old ' ' vs_tmp])
 		warning on
 	end
 	
@@ -120,8 +128,8 @@ for cli=cl_id
 			end
 		case 1
 			if ret_var
-				if length(cl_id)>1, res(kk) = {[]};
-				else, res = [];
+				if length(cl_id)>1, res(kk) = {ERR_RET};
+				else, res = ERR_RET;
 				end
 			else, res(kk) = 0;
 			end
