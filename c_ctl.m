@@ -128,7 +128,7 @@ if isstr(args{1})
 	elseif strcmp(args{1},'list')
 		if nargin>=2 
 			sc_list = args{2};
-			ii = find(sc_list==5);
+			ii = find(sc_list==0);
 			if ~isempty(ii), sc_list(ii) = 5; end
 		else, sc_list=1:5;
 		end
@@ -168,7 +168,7 @@ if isstr(args{1})
 		if nargin<3, error('set: must be c_ctl(''set'',''ctl_name'',value))'), end
 		if isnumeric(args{2})
 			sc_list = args{2};
-			ii = find(sc_list==5);
+			ii = find(sc_list==0);
 			if ~isempty(ii), sc_list(ii) = 5; end
 			c = args{3};
 			c_val = args{4};
@@ -187,7 +187,9 @@ if isstr(args{1})
 				disp(lasterr)
 				error('bad option')
 			end	
-			disp(['C' num2str(cl_id) '->' c ':'])
+			if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
+			else, disp(['GLOBAL->' c ':'])
+			end
 			eval(['disp(c_ct{cl_id}.' c ');'])
 		end
 		
