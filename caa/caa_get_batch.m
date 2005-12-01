@@ -8,8 +8,8 @@ function caa_get_batch(iso_t,dt,sdir)
 % Copyright 2005 Yuri Khotyaintsev
 
 REQ_INT = 60; % intervals (sec) for which we request FDM
-DB_S = 'disco:10';
-DP_S = '/data/cluster';
+DB_S = c_ctl(0,'isdat_db');
+DP_S = c_ctl(0,'data_path');
 SPLIT_INT = 90*60;
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
