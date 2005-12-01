@@ -113,7 +113,7 @@ for i=1:length(param)
 			if ok
 				if ~isempty(sweep)
 					irf_log('proc','blanking sweeps')
-					tt = caa_rm_blankt(tt,sweep);
+					res = caa_rm_blankt(res,sweep);
 					clear sweep
 				end
 			else
@@ -128,7 +128,7 @@ for i=1:length(param)
 			if ok
 				if ~isempty(bdump)
 					irf_log('proc','blanking burst dumps')
-					tt = caa_rm_blankt(tt,bdump);
+					res = caa_rm_blankt(res,bdump);
 					clear bdump
 				end
 			else

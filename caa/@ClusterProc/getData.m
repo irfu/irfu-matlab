@@ -513,9 +513,9 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 			% Different timelines. Need to correct
 			irf_log('proc','making common timeline')
 			[ii12,ii34] = irf_find_comm_idx(e12,e34);
-			irf_log('proc',['Ep' num2str(p12) ' ' num2str(length(Ep12)) '->' num2str(length(ii12)) ' data points'])
+			irf_log('proc',['Ep' num2str(p12) ' ' num2str(length(e12)) '->' num2str(length(ii12)) ' data points'])
 			e12 = e12(ii12,:);
-			irf_log('proc',['Ep34 ' num2str(length(Ep34)) '->' num2str(length(ii34)) ' data points'])
+			irf_log('proc',['Ep34 ' num2str(length(e34)) '->' num2str(length(ii34)) ' data points'])
 			e34 = e34(ii34,:);
 		end
 		% Use WEC coordinate system E=[t,0,p34,p12]
