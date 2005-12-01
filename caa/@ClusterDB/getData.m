@@ -10,17 +10,19 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	quantity - one of the following:
 %
 %	//// EFW ////
-%	e   : wE{cl_id}p12,34 -> mER
+%	e    : wE{cl_id}p12,34 -> mER
 %			// electric fields (HX)
-%	p   : P{cl_id} -> mPR	
+%	p    : P{cl_id} -> mPR	
 %			// probe potential (LX)
-%	dsc	: DSC{cl_id} -> mFDM
+%	tmode: mTMode{cl_id} -> mEFWR
+%			// EFW tape mode
+%	dsc	 : DSC{cl_id} -> mEFWR
 %			// EFW DSC
-%	fdm	: FDM{cl_id} -> mFDM
+%	fdm  : FDM{cl_id} -> mEFWR
 %			// EFW FDM
-%	efwt: EFWT{cl_id} -> mFDM
+%	efwt : EFWT{cl_id} -> mEFWR
 %			// EFW internal clock from DSC
-%	ibias: IBIAS{cl_id}p{1..4} -> mFDM
+%	ibias: IBIAS{cl_id}p{1..4} -> mEFWR
 %			// EFW probe bias current
 %
 %	//// EFW internal burst////
@@ -110,14 +112,16 @@ end
 
 % Read list of nonstandard operations and see if we have one of those 
 % during the requested period
-if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(quantity,'pburst')
+if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
+	strcmp(quantity,'p')|strcmp(quantity,'pburst')
+	
 	ns_ops = c_ctl('get',cl_id,'ns_ops');
 	if isempty(ns_ops)
 		c_ctl('load_ns_ops',[cdb.dp '/caa'])
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	if ~isempty(ns_ops)
-		% remove records which cover permanent problems (as loss of 
+		% Remove records which cover permanent problems (as loss of 
 		% probes, filters, etc.) as these must be programmed separately
 		ii = find(ns_ops(:,2)==-1);
 		ns_ops(ii,:) = [];
@@ -144,7 +148,8 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(qu
 		end
 		% clear already processed records
 		ns_ops(ii,:) = [];
-		ii = find(ns_ops(:,1)+ns_ops(:,2)<start_time+dt & ns_ops(:,1)+ns_ops(:,2)>start_time);
+		ii = find(ns_ops(:,1)+ns_ops(:,2)<start_time+dt & ...
+			ns_ops(:,1)+ns_ops(:,2)>start_time);
 		if ~isempty(ii)
 			for j=1:length(ii)
 				if ns_ops(ii(j),4)<10
@@ -167,23 +172,18 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|strcmp(quantity,'p')|strcmp(qu
 	end
 end
 
-% We need to chech whether FDM was fetched, and wherether SWEEP and BDUMP 
-% are computed
-if strcmp(quantity,'e')|strcmp(quantity,'p')
-	
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dsc - EFW DSC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(quantity,'dsc')
-	save_file = './mFDM.mat';
+	save_file = './mEFWR.mat';
 	
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
 	if isempty(dsc)
 		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
-		return
+		data = []; cd(old_pwd), return
 	end
+	
 	% DSC fields we want to save
 	% 0:55 - format tables
 	% 64:68 - HX, LX format pointers
@@ -241,7 +241,8 @@ if strcmp(quantity,'dsc')
 				dsc_save(:,l+1) = dsc_good(dsc_is);
 				jump_flag(l+1) = 0;
 				n_good = n_good + 1;
-				irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
+				irf_log('dsrc',['Saving good from ' ...
+					epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
 			end
 			count_good = 0;
 		end
@@ -265,60 +266,92 @@ if strcmp(quantity,'dsc')
 % fdm - EFW FDM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'fdm')
-	save_file = './mFDM.mat';
+	save_file = './mEFWR.mat';
 	
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'FDM');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
-		return
+		data = []; cd(old_pwd), return
+	else, c_eval(['FDM?=[t data''];'],cl_id);
 	end
-	c_eval(['FDM?=[t data''];save_list=[save_list '' FDM? ''];'],cl_id);
+	
+	c_eval(['save_list=[save_list '' FDM? ''];'],cl_id);
+	clear t data
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ibias - EFW probe bias current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'ibias')
-	save_file = './mFDM.mat';
+	save_file = './mEFWR.mat';
 	
 	probe_list = 1:4;
+	p_ok = [];
 	
 	% Check for p1 problems on SC1 and SC3
 	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
 		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		probe_list = 2:4;
-		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 	end
 	
 	for probe=probe_list;
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
-		'efw', 'E', ['p' num2str(probe)],'bias');
+			'efw', 'E', ['p' num2str(probe)],'bias');
 		if isempty(data)
 			irf_log('dsrc',irf_ssub('No data for IBIAS?p!',cl_id,probe))
 		else
-			eval(irf_ssub(...
-				['p!=[t data];save_list=[save_list ''IBIAS?p! ''];IBIAS?p!=p!;'],...
-				cl_id,probe)) 
-			clear t data
+			eval(irf_ssub(['IBIAS?p!=[t data];'],cl_id,probe))
+			p_ok = [p_ok probe];
 		end
+		clear t data
 	end
+	
+	if isempty(p_ok), data = []; cd(old_pwd), return, end
+	for probe=p_ok;
+		eval(irf_ssub('save_list=[save_list ''IBIAS?p! ''];',cl_id,probe)) 
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % efwt - EFW clock
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'efwt')
-	save_file = './mFDM.mat';
+	save_file = './mEFWR.mat';
 	
 	% Read EFW clock to check for time since last reset
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for EFWT?',cl_id))
-		cd(old_pwd)
-		return
+		data = []; cd(old_pwd), return
 	end
 	efwtime = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
 		data(84,:)*16777216 +data(85,:)*4294967296)/1000;
-	c_eval(['EFWT?=[t efwtime''];save_list=[save_list '' EFWT? ''];'],cl_id);
+	
+	c_eval(['EFWT?=[t efwtime''];'...
+		'save_list=[save_list '' EFWT? ''];'],cl_id);
 	clear t data efwtime
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tmode - EFW tape mode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'tmode')
+	save_file = './mEFWR.mat';
+	
+	%% Find TapeMode
+	% We read FDM from isdat and 5-th column contains the HX mode
+	% (undocumented feature)
+	% 0 - normal mode  (V12L,V34L)
+	% 1 - tape mode 1  (V12M,V34M)
+	% 2 - tape mode 2  (V12M,V34M)
+	% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
+	[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM');
+	if isempty(data)
+		irf_log('dsrc',irf_ssub('No data for mTMode?',cl_id))
+		data = []; cd(old_pwd), return
+	end
+	
+	c_eval(['mTMode?=data(5,:);'...
+		'save_list=[save_list '' mTMode? ''];'],cl_id)
+	clear t data
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
@@ -327,7 +360,7 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 	
 	if strcmp(quantity,'eburst'), do_burst = 1; else do_burst = 0; end
 	if do_burst 
-		save_file = './mEFWburst.mat';
+		save_file = './mEFWburstR.mat';
 		tmmode='burst';
 		param='8kHz';
 		var_name = 'wbE?p';
@@ -335,39 +368,31 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		save_file = './mER.mat';
 		tmmode='hx';
 		var_name = 'wE?p';
-	
-		%% Find TapeMode
-		% We read FDM from isdat and 5-th column contains the HX mode
-		% (undocumented feature)
-		% 0 - normal mode  (V12L,V34L)
-		% 1 - tape mode 1  (V12M,V34M)
-		% 2 - tape mode 2  (V12M,V34M)
-		% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
-		clear tm mTMode1 mTMode2 mTMode3 mTMode4
-		if exist('./mTMode.mat','file'), load mTMode, end
-		if exist(irf_ssub('mTMode?',cl_id),'var')
-			c_eval('tm=mTMode?;',cl_id)
-		end
-		if ~exist('tm','var')
-			[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM');
-			if ~isempty(data), tm = data(5,:);
-			else
-				irf_log('dsrc','Cannot fetch FDM')
-				cd(old_pwd)
-				return
-			end	       
-			if tm~=tm(1)*ones(size(tm))
-				irf_log('dsrc','tape mode changes during the selected time inteval')
+		
+		[ok,tm] = c_load('mTMode?',cl_id);
+		if ~ok
+			tmode = getData(cdb,start_time,dt,cl_id,'tmode');
+			if isempty(tmode)
+				irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
+				data = []; cd(old_pwd), return
 			end
-			c_eval('mTMode?=tm;',cl_id)
-			if exist('./mTMode.mat','file')
-				eval(irf_ssub('save -append mTMode mTMode?;',cl_id))
-			else, eval(irf_ssub('save mTMode mTMode?;',cl_id))
-			end
+			tm = tmode{2};
+			clear tmode
 		end
+		if isempty(tm)
+			irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
+			data = []; cd(old_pwd), return
+		end
+			
+		if tm~=tm(1)*ones(size(tm))
+			irf_log('dsrc','tape mode changes during the selected time inteval')
+			irf_log('dsrc','data interval will be truncated')
+		end
+		tm = tm(1);
 		if tm<1e-30, param='10Hz'; else, param='180Hz'; end
 		clear tm
-	
+		
+		%%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
 		if (((start_time>toepoch([2001 07 30 17 05 54.9]) & cl_id==1) | ...
 			(start_time>toepoch([2001 07 31 00 12 29.5]) & cl_id==3)) & ...
 			start_time<toepoch([2001 09 02 23 15 00])) | ...
@@ -377,57 +402,70 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 			start_time<toepoch([2001 09 02 23 15 00]))) & cl_id==4 )
 			% all sc run on 180Hz filter in august 2001 most of the time
 			param='180Hz';
-		elseif start_time>toepoch([2001 09 10 04 21 57.6])& start_time<toepoch([2001 09 15 06 30 00])
+		elseif start_time>toepoch([2001 09 10 04 21 57.6])& ...
+			start_time<toepoch([2001 09 15 06 30 00])
 			% this needs to be investigated.... 
 			param='180Hz';
 		elseif start_time>toepoch([2001 07 23 00 00 00])&cl_id==2
 			% 10Hz filter problem on SC2
 			param='180Hz';
 		end
-	end
-	if (start_time>toepoch([2003 9 29 0 31 0])) & (cl_id==1|cl_id==3)
-		% FSW 2.4 Use P32 on SC1 and SC3
-		pl={'32','34'};
-		irf_log('dsrc',sprintf('            !Use p32 for sc%d',cl_id));
-	elseif (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
-		% p1 problems on SC1 and SC3
-		pl={'34'};
-		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
-	else, pl={'12','34'};
+		%%%%%%%%%%%%%%%%%%%%%%% END FILTER MAGIC %%%%%%%%%%%%%%%%%%%%
 	end
 	
-	for i=1:length(pl)
-		irf_log('dsrc',['EFW...sc' num2str(cl_id) '...Ep' pl{i} ' ' param ' filter']);
+	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
+	pl = [12,34];
+	if (start_time>toepoch([2003 9 29 0 31 0])) & (cl_id==1|cl_id==3)
+		% FSW 2.4 Use P32 on SC1 and SC3
+		pl=[32, 34];
+		irf_log('dsrc',sprintf('            !Using p32 for sc%d',cl_id));
+		
+	elseif (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
+		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+		% p1 problems on SC1 and SC3
+		pl=[34];
+		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
+	end
+	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
+	
+	p_ok = [];
+	for probe=pl
+		irf_log('dsrc',['EFW...sc' num2str(cl_id)...
+			'...Ep' num2str(probe) ' ' param ' filter']);
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
-		'efw', 'E', ['p' pl{i}], param, tmmode);
+			'efw', 'E', ['p' num2str(probe)], param, tmmode);
 		if ~isempty(data)
-			data = double(real(data));
-			t = double(t);
-			
+			% Correct start time of the burst
 			if do_burst
-				% correct start time of the burst
 				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
 				burst_f_name = [cdb.dp '/burst/' burst_f_name];
 				if exist(burst_f_name,'file')
 					db = Mat_DbOpen(cdb.db);
 					err_t = t(1) - c_efw_burst_chkt(db,burst_f_name);
-					irf_log('dsrc',['burst start time was corrected by ' num2str(err_t) ' sec'])
 					Mat_DbClose(db);
+					
 					t = t - err_t;
-				else
-					irf_log('dsrc','burst start time was not corrected')
+					irf_log('dsrc',...
+						['burst start time was corrected by ' num2str(err_t) ' sec'])
+				else, irf_log('dsrc','burst start time was not corrected')
 				end
 			end
 			
 			data = check_timeline([t data]);
-			c_eval([var_name  pl{i} '=data;'],cl_id); 
-			clear t data;
+			c_eval([var_name  num2str(probe) '=data;'],cl_id);
+			p_ok = [p_ok probe];
 			
-			c_eval(['save_list=[save_list '' ' var_name pl{i} ' ''];'],cl_id);
 		else
-			irf_log('dsrc',irf_ssub(['No data for ' var_name pl{i}],cl_id))
+			irf_log('dsrc',...
+				irf_ssub(['No data for ' var_name num2str(probe)],cl_id))
 		end
 	end
+	
+	if isempty(p_ok), data = []; cd(old_pwd), return, end
+	for probe=p_ok
+		c_eval(['save_list=[save_list '' ' var_name num2str(probe) '''];'],cl_id);
+	end
+	clear t data tm pl param
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % p - SC potential
@@ -436,7 +474,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	
 	if strcmp(quantity,'pburst'), do_burst = 1; else do_burst = 0; end
 	if do_burst 
-		save_file = './mEFWburst.mat';
+		save_file = './mEFWburstR.mat';
 		tmmode='burst';
 		param={'4kHz','32kHz'};
 		var_name = 'wbE?p';
@@ -447,56 +485,68 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	
 	probe_list = 1:4;
 	
+	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	% Check for p1 problems on SC1 and SC3
-	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | (start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
+		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
-	elseif start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
+	end
+	% 10Hz filter problem on C2 p3
+	% Any changes should also go to ClusterProc/getData/probesa
+	if start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
 		probe_list = [1 2 4];
 		p3 = [];
 		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
 	end
+	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
+	n_ok = 0;
 	for j=1:length(param), for probe=probe_list;
-    	irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe) '->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
+    	irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
+			'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
 		'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
 		if ~isempty(data)
-			data = double(real(data));
-			t = double(t);
-			
+			% Correct start time of the burst
 			if do_burst
-				% correct start time of the burst
 				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
 				burst_f_name = [cdb.dp '/burst/' burst_f_name];
 				if exist(burst_f_name,'file')
 					db = Mat_DbOpen(cdb.db);
 					err_t = t(1) - c_efw_burst_chkt(db,burst_f_name);
-					irf_log('dsrc',['burst start time was corrected by ' num2str(err_t) ' sec'])
+					irf_log('dsrc',['burst start time was corrected by ' ...
+						num2str(err_t) ' sec'])
 					Mat_DbClose(db);
 					t = t - err_t;
 				else
 					irf_log('dsrc','burst start time was not corrected')
 				end
 			end
+			
 			data = check_timeline([t data]);
-			eval(irf_ssub(['p!=data;save_list=[save_list ''P'...
-				param{j} '?p! ''];P' param{j} '?p!=p!;'],cl_id,probe)); 
-			clear t data
-		else
-			eval(['p' num2str(probe) '=[];'])
-		end
+			eval(irf_ssub(['P' param{j} '?p!=data;'...
+				'save_list=[save_list ''P' param{j} '?p! ''];'],cl_id,probe));
+			n_ok = n_ok + 1;
+			
+		else, irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
+		end 
+		clear t data
     end, end
 	
-    clear p
+    if ~n_ok, data = []; cd(old_pwd), return, end
+	
+	% Make electric field for the burst
+	% TODO: move to ClusterProc
 	if do_burst
-		% make electric field
 		for j=1:length(param)
 			for probe=[1 3]
 				if exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe),'var') & ...
 				exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe+1),'var')
-					eval(irf_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' param{j} '?p$(:,2)-P' param{j} '?p!(:,2))/.088;'],cl_id,probe,probe+1));
+					eval(irf_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' ...
+						param{j} '?p$(:,2)-P' param{j} '?p!(:,2))/.088;'],...
+						cl_id,probe,probe+1));
 					vn = [var_name num2str(probe) num2str(probe+1)];
 					if exist(irf_ssub(vn,cl_id),'var')
 						c_eval(['tmpE=' vn ';'],cl_id)
@@ -514,61 +564,86 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 			end
 		end
 	end
-	clear p1 p2 p3 p4
-
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	
-	% We ask for 5 sec more from each side to avoid problemos with interpolation.
-	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, cl_id, 'ephemeris', 'phase');
+	n_ok = 0;
+	
+	% We ask for 5 sec more from each side 
+	% to avoid problems with interpolation.
+	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, ...
+		cl_id, 'ephemeris', 'phase');
 	if ~isempty(data)
-		c_eval('A?=[double(t) double(data)];',cl_id); clear t data;
-		c_eval('save_list=[save_list '' A? ''];',cl_id);
-	else
-		irf_log('dsrc',irf_ssub('No data for A?',cl_id))
+		c_eval('A?=[t data];save_list=[save_list '' A? ''];',cl_id);
+		n_ok = n_ok + 1;
+	else, irf_log('dsrc',irf_ssub('No data for A?',cl_id))
 	end
-	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, cl_id, 'ephemeris', 'phase_2');
+	clear t data
+	
+	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, ...
+		cl_id, 'ephemeris', 'phase_2');
 	if ~isempty(data)
-		c_eval('Atwo?=[double(t) double(data)];',cl_id); clear t data;
-		c_eval('save_list=[save_list '' Atwo? ''];',cl_id);
+		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
+		n_ok = n_ok + 1;
 	else
+		c_eval('Atwo?=[];',cl_id);
 		irf_log('dsrc',irf_ssub('No data for Atwo?',cl_id))
 	end
-
+	clear t data
+	
+	if ~n_ok, data = []; cd(old_pwd), return, end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'r')
 	save_file = './mR.mat';
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', 'position');
-	if ~isempty(data)
-		c_eval('R?=[double(t) double(data'')];',cl_id); clear t data;
-		c_eval('save_list=[save_list '' R? ''];',cl_id);
+	
+	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
+		cl_id, 'ephemeris', 'position');
+	if ~isempty(data), c_eval('R?=[t data''];save_list=[save_list '' R? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No data for R?',cl_id))
+		data = []; cd(old_pwd), return
 	end
-
+	clear t data
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'v')
 	save_file = './mR.mat';
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'ephemeris', 'velocity');
-	if ~isempty(data)
-		c_eval('V?=[double(t) double(data'')];',cl_id); clear t data;
-		c_eval('save_list=[save_list '' V? ''];',cl_id);
-		% transform vector data to DSI
-		if c_load('SAX?',cl_id)
-			c_eval('diV?=c_gse2dsi(V?,SAX?);save_list=[save_list '' diV?''];',cl_id);
-		else
-			irf_log('load','must fetch spin axis orientation (option ''sax'')')
-		end
-	else
-		irf_log('dsrc',irf_ssub('No data for V?',cl_id))
+	
+	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
+		cl_id, 'ephemeris', 'velocity');
+	if isempty(data)
+		irf_log('dsrc',irf_ssub('No data for V?, diV?',cl_id))
+		data = []; cd(old_pwd), return
 	end
+	
+	c_eval('V?=[t data''];save_list=[save_list '' V? ''];',cl_id);
+	clear t data
+	
+	% Transform vector data to DSI
+	[ok,sax] = c_load('SAX?',cl_id);
+	if ~ok
+		tempv = getData(cdb,start_time,dt,cl_id,'sax');
+		if isempty(tempv)
+			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
+			sax = [];
+		else, sax = tempv{2};
+		end
+		clear tempv
+	end
+	if ~isempty(sax)
+		c_eval('diV?=c_gse2dsi(V?,sax);save_list=[save_list '' diV? ''];',cl_id);
+	else, irf_log('dsrc',irf_ssub('No data for diV?',cl_id))
+	end
+	
 %{ 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % magc - location in magnetic coordinates 
@@ -594,89 +669,119 @@ elseif strcmp(quantity,'magc')
 % B FGM - full res
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'bfgm')
-	disp('CONTACT STEPHAN BUCHERT!!!!!!!!!!!!!!!!!!!');
-
 	save_file = './mB.mat';
 	
 	dat = c_get_bfgm(start_time + [0 dt],cl_id);
-	if ~isempty(dat)
-		c_eval('B?=dat;save_list=[save_list '' B?''];',cl_id);
-
-		% transform vector data to DSI
-		if size(dat,2)>2 
-			if exist('./mEPH.mat','file'), eval(irf_ssub('load mEPH SAX?',cl_id)), end
-			if ~exist(irf_ssub('SAX?',cl_id),'var')
-				irf_log('load','must fetch spin axis orientation (option ''sax'')')
-			else
-				c_eval('diB?=c_gse2dsi(B?,SAX?);save_list=[save_list '' diB?''];',cl_id);
-			end
-		end
-		clear dat
-	else
-		irf_log('dsrc','No data')
+	
+	if isempty(dat)
+		irf_log('dsrc',irf_ssub('No data for B, diB?',cl_id))
+		data = []; cd(old_pwd), return
 	end
-
+	c_eval('B?=dat;save_list=[save_list '' B? ''];',cl_id);
+	clear dat
+	
+	% Transform vector data to DSI
+	[ok,sax] = c_load('SAX?',cl_id);
+	if ~ok
+		tempv = getData(cdb,start_time,dt,cl_id,'sax');
+		if isempty(tempv)
+			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
+			sax = [];
+		else, sax = tempv{2};
+		end
+		clear tempv
+	end
+	if ~isempty(sax)
+		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
+	else, irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'b') | strcmp(quantity,'edi') | ...
 	strcmp(quantity,'ncis') | strcmp(quantity,'tcis') | strcmp(quantity,'vcis')
-
-	inertial_f = 0;
+	
+	% TODO: add oxygen
+	
+	ipref = '';
 	r.qua = {quantity};
 	switch(quantity)
 	case 'b'
 		r.ins = 'BPP';
-		r.var = {r.ins};
+		r.var = {'BPP'};
+		r.qua = {'b'};
+
 	case 'edi'
-		r.ins = 'EDI';
-		r.var = {r.ins};
-		inertial_f = 1; % EDI pp is in the inertial frame
+		r.ins = 'EDIR';
+		r.var = {'EDI'};
+		ipref = 'i'; % EDI pp is in the inertial frame
+
 	case 'vcis'
-		r.ins = 'CIS';
+		r.ins = 'CISR';
 		r.qua = {'vcis_p', 'vcis_h'}; % CODIF and HIA 
 		r.var = {'VCp', 'VCh'};
+
 	case 'ncis'
-		r.ins = 'CIS';
+		r.ins = 'CISR';
 		r.qua = {'ncis_p', 'ncis_h'}; % CODIF and HIA 
 		r.var = {'NCp', 'NCh'};
+
 	case 'tcis'
-		r.ins = 'CIS';
+		r.ins = 'CISR';
 		r.qua = {'tcis_hpar','tcis_hper','tcis_ppar','tcis_pper'}; % CODIF and HIA 
 		r.var = {'TparCh', 'TperpCh','TparCp', 'TperpCp'};
+
 	otherwise
 		error('Check variable list')
 	end
 
 	save_file = ['./m' r.ins '.mat'];
-
+	
+	n_ok = 0;
+	sax_loaded = 0;
 	for i=1:length(r.qua)	
 		% first try ISDAT (fast) then files
 		dat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,r.qua{i});
-		if ~isempty(dat)
-			if inertial_f
-				c_eval(['i' r.var{i} '?=dat;save_list=[save_list '' i' r.var{i} '?''];'],cl_id);
-			else
-				c_eval([r.var{i} '?=dat;save_list=[save_list '' ' r.var{i} '?''];'],cl_id);
-			end
-
-			% transform vector data to DSI
-			if size(dat,2)>2 
-				if c_load('SAX?',cl_id)
-					if inertial_f
-						c_eval(['idi' r.var{i} '?=c_gse2dsi(dat,SAX?);save_list=[save_list '' idi' r.var{i} '?''];'],cl_id);
-					else
-						c_eval(['di' r.var{i} '?=c_gse2dsi(dat,SAX?);save_list=[save_list '' di' r.var{i} '?''];'],cl_id);
-					end
-				else
-					irf_log('load','must fetch spin axis orientation (option ''sax'')')
-				end
-			end
-			clear dat
-		else
-			irf_log('dsrc','No data')
+		if isempty(dat)
+			irf_log('dsrc',irf_ssub(...
+				['No data for ' ipref 'di' r.var{i} ', i' r.var{i} '?'],cl_id))
+			continue
 		end
+		n_ok = n_ok + 1;
+		c_eval([ipref r.var{i} '?=dat;'...
+			'save_list=[save_list '' ' ipref r.var{i} '?''];'],cl_id);
+
+		% Load SAX
+		if ~sax_loaded
+			sax_loaded = 1;
+			[ok,sax] = c_load('SAX?',cl_id);
+			if ~ok
+				tempv = getData(cdb,start_time,dt,cl_id,'sax');
+				if isempty(tempv)
+					irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
+					sax = [];
+				else, sax = tempv{2};
+				end
+				clear tempv
+			end
+		end
+		
+		% Transform vector data to DSI
+		if size(dat,2)>2
+			if ~isempty(sax)
+				c_eval([ipref 'di' r.var{i} '?=c_gse2dsi(dat,sax);'...
+					'save_list=[save_list '' ' ipref 'di' r.var{i} '?''];'],cl_id);
+			else
+				irf_log('dsrc',...
+					irf_ssub(['No data for ' ipref 'di' r.var{i} '?'],cl_id))
+			end
+		end
+		clear dat
 	end
+	
+	if ~n_ok, data = []; cd(old_pwd), return, end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sax - spin axis orientation [GSE] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -686,13 +791,18 @@ elseif strcmp(quantity,'sax')
 	% first try ISDAT (fast) then files
 	lat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
-	if ~isempty(lat) & ~isempty(long)
-		% take first point only. This is OK according to AV
-		[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
-		sax = [xspin yspin zspin];
-		eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
-		clear sax lat long xspin yspin zspin
+	
+	if isempty(lat) | isempty(long)
+		irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
+		data = []; cd(old_pwd), return
 	end
+	
+	% Take first point only. This is OK according to AV
+	[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
+	sax = [xspin yspin zspin];
+
+	eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
+	clear sax lat long xspin yspin zspin
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % wbdwf - WBD waveforms.

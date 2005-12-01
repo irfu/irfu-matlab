@@ -37,12 +37,12 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
-%	whip: WHIP{cl_id} -> mFDM	// Whisper pulses present +1 precceding sec
-%	bdump: DBUMP{cl_id} -> mFDM	// Burst dump present
-%	sweep: SWEEP{cl_id} -> mFDM	// Sweep + dump present
-%	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mFDM	
+%	whip: WHIP{cl_id} -> mEFW	// Whisper pulses present +1 precceding sec
+%	bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
+%	sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
+%	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
-%	probesa: PROBESA{cl_id}p[1..4] -> mFDM	// Probe saturation
+%	probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -73,6 +73,8 @@ flag_save = 1;
 flag_usesavedoff = 1;
 flag_edb = 1;
 sfit_ver = -1;
+
+CAA_MODE = c_ctl(0,'caa_mode');
 
 flag_rmwhip = c_ctl(cl_id,'rm_whip');
 if isempty(flag_rmwhip), flag_rmwhip = 1; end 
@@ -154,211 +156,163 @@ if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
 if strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 	
-	if ~c_load('Atwo?',cl_id)
+	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+	[ok,pha] = c_load('Atwo?',cl_id);
+	if ~ok | isempty(pha)
 		irf_log('load',...
-			irf_ssub('No Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
-		data = []; cd(old_pwd); return
-	end
-	if ~(c_load('wE?p12',cl_id) | c_load('wE?p32',cl_id) | c_load('wE?p34',cl_id)) 
-		irf_log('load',...
-			irf_ssub('No wE?p12/32 and/or wE?p34 in mER. Use getData(CDB,...,cl_id,''e'')',cl_id))
+			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
 	
-	if exist(irf_ssub('wE?p32',cl_id),'var'), p12 = 32;
-	else, p12 = 12;
+	p12 = 12; e12 = []; e34 =[];
+	pl = [12,32,34];
+	n_ok = 0;
+	for probe = pl
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+		if ~ok | isempty(da)
+			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+			continue
+		end
+		n_ok = n_ok + 1;
+		
+		if probe==32
+			p12 = 32;
+			e12 = da;
+		else, c_eval('e?=da;',probe)
+		end
+		clear ok da
 	end
+	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	% If we have different timelines for p1(3)2 and p34 we try to make 
 	% a common timeline, so thet the resulting spinfits will also have 
 	% the common timeline
-	if exist(irf_ssub(['wE?p' num2str(p12)],cl_id),'var') & exist(irf_ssub('wE?p34',cl_id),'var')
-		if eval(irf_ssub('length(wE?p!(:,1))==length(wE?p34(:,1))',cl_id,p12))
+	not_same = 0;
+	if n_ok==2
+		if length(e12(:,1))==length(e34(:,1))
 			not_same = 0;
-			if eval(irf_ssub('length(find((wE?p!(:,1)-wE?p34(:,1))~=0))',cl_id,p12))
-				not_same = 1;
-			end
+			% Check fo same length but different timelines
+			if length(find((e12(:,1)-e34(:,1))~=0)), not_same = 1; end
 		else, not_same = 1;
 		end
-		if not_same
-			c_eval('ts = wE?p34(1,1); te = wE?p34(end,1);',cl_id);
-			c_eval(['ts1=wE?p' num2str(p12) '(1,1); te1=wE?p' num2str(p12) '(end,1);'],cl_id);
-			if ts>ts1, ts = ts1; end
-			if te<te1, te = te1; end
-			dt = double(te - ts); clear te ts1 te1
-			
-			% Guess the sampling frequency
-			c_eval('fsamp=c_efw_fsample(wE?p34(:,1));',cl_id);
-			if fsamp
-				irf_log('proc','Using new time line')
-				t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
-				t_new = t_new';
-				
-				d_new = zeros(length(t_new),2);
-				d_new(:,1) = ts + t_new;
-				d_new(:,2) = NaN;
-				
-				c_eval('ii = round((wE?p34(:,1)-ts)*fsamp+1);',cl_id)
-				if ii(end)>length(t_new), error('problemo with new time line'), end
-				c_eval('d_new(ii,2) = wE?p34(:,2); wE?p34 = d_new;',cl_id)
-				
-				d_new(:,2) = NaN;
-				
-				c_eval(['ii = round((wE?p' num2str(p12) '(:,1)-ts)*fsamp+1);'],cl_id)
-				if ii(end)>length(t_new), error('problemo with new time line'), end
-				c_eval(['d_new(ii,2) = wE?p' num2str(p12) '(:,2); wE?p' num2str(p12) ' = d_new;'],cl_id)
-				
-				clear t_new ts dt d_new ii
-			end
-		end
-		clear not_same
 	end
-	
-	pl=[p12,34];
-	for k=1:length(pl)
-		ps = num2str(pl(k));
-		if exist(irf_ssub(['wE?p' ps],cl_id),'var')
-			c_eval(['tt=wE?p' ps ';'],cl_id)
-			irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',cl_id,pl(k),cl_id,pl(k)))
-
-			c_eval('aa=c_phase(tt(:,1),Atwo?);',cl_id)
+	if not_same & n_ok==2
+		ts = e34(1,1); te = e34(end,1);
+		ts1 = e12(1,1); te1 = e12(end,1);
+		if ts>ts1, ts = ts1; end
+		if te<te1, te = te1; end
+		dt = double(te - ts); clear te ts1 te1
+		
+		% Guess the sampling frequency
+		fsamp=c_efw_fsample(e34(:,1));
+		if fsamp
+			irf_log('proc','Using new time line for spinfits')
+			t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
+			t_new = t_new';
 			
-			% Remove bad bias around EFW reset
-			[ok,bbias] = c_load('BADBIASRESET?',cl_id);
-			if ok
-				irf_log('proc','blanking bad bias due to EFW reset')
-				tt = caa_rm_blankt(tt,bbias);
-			end
-			clear ok bbias
-			% Remove bad bias from bias current indication
-			for kk = [num2str(ps(1)) num2str(ps(2))]
-				if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
-					c_load(irf_ssub('BADBIAS?p!',cl_id,kk))
-				end
-				if exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
-					eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,kk))
-					if ~isempty(bbias)
-						irf_log('proc',['blanking bad bias on P' num2str(kk)])
-						tt = caa_rm_blankt(tt,bbias);
-					end
-					clear bbias
-				end
-			end
+			d_new = zeros(length(t_new),2);
+			d_new(:,1) = ts + t_new;
+			d_new(:,2) = NaN;
 			
-			% Remove probe saturation electronics & low density
-			for kk = [num2str(ps(1)) num2str(ps(2))]
-				if ~exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
-					c_load(irf_ssub('PROBESA?p!',cl_id,kk))
-				end
-				if ~exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
-					c_load(irf_ssub('PROBELD?p!',cl_id,kk))
-				end
-				
-				if exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
-					eval(irf_ssub('sa=PROBESA?p!;',cl_id,kk))
-					if ~isempty(sa)
-						irf_log('proc',['blanking saturated P' num2str(kk)])
-						tt = caa_rm_blankt(tt,sa);
-					end
-					clear sa
-				end
-				if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
-					eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
-					if ~isempty(sa)
-						irf_log('proc',...
-							['blanking low density saturation on P' num2str(kk)])
-						tt = caa_rm_blankt(tt,sa);
-					end
-					clear sa
-				end
-			end
+			ii = round((e34(:,1)-ts)*fsamp+1);
+			if ii(end)>length(t_new), error('problemo with new time line'), end
+			d_new(ii,2) = e34(:,2); e34 = d_new;
+			d_new(:,2) = NaN;
 			
-			% Remove whisper pulses
-			if flag_rmwhip
-				[ok,whip] = c_load('WHIP?',cl_id);
-				if ok
-					irf_log('proc','blanking Whisper pulses')
-					tt = caa_rm_blankt(tt,whip);
-					clear whip
-				else
-					irf_log('load',...
-						irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
-				end
-			end
+			ii = round((e12(:,1)-ts)*fsamp+1);
+			if ii(end)>length(t_new), error('problemo with new time line'), end
+			d_new(ii,2) = e12(:,2); e12 = d_new;
 			
-			% Remove sweeps and burst dumps
-			[ok,sweep] = c_load('SWEEP?',cl_id);
-			if ok
-				if ~isempty(sweep)
-					irf_log('proc','blanking sweeps')
-					tt = caa_rm_blankt(tt,sweep);
-					clear sweep
-				end
-			else
-				irf_log('load',...
-					irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
-			end
-			[ok,bdump] = c_load('BDUMP?',cl_id);
-			if ok
-				if ~isempty(bdump)
-					irf_log('proc','blanking burst dumps')
-					tt = caa_rm_blankt(tt,bdump);
-					clear bdump
-				end
-			else
-				irf_log('load',...
-					irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
-			end
-			
-			if sfit_ver>=0
-				irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
-				sp = c_efw_sfit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),...
-					aa(:,2),sfit_ver);
-			else
-				sp = c_efw_sfit(pl(k),3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
-			end
-			
-			% Check if we have any data left
-			if isempty(sp)
-				irf_log('load',sprintf('No p%d data left for sc%d',pl(k),cl_id))
-				continue
-			end
-			
-			% remove point with zero time
-			ind = find(sp(:,1)>0);
-			if length(ind)<length(sp(:,1))
-				irf_log('proc',[num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
-				sp = sp(ind,:);
-			end
-			
-			adc_off = sp(:,[1 4]);
-			% warn about points with sdev>.8
-			ii = find(sp(:,6)>.8);
-			if length(ii)/size(sp,1)>.05,
-				irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
-			end
-			%adc_off(ii,2) = 0;
-			adc_off = irf_waverage(adc_off,1/4);
-			ii = find(adc_off(:,2)==0);
-			adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
-			
-			sp = sp(:,[1:4 6]);
-			sp(:,4) = 0*sp(:,4); % Z component
-			
-			% remove spins with bad spin fit (obtained E > 10000 mV/m)
-			ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
-			if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
-			eval(irf_ssub(['diEs?p' ps '=sp;Dadc?p' ps '=adc_off;'],cl_id)); 
-			clear tt aa sp adc_off
-			eval(irf_ssub(['save_list=[save_list ''diEs?p' ps ' Dadc?p' ps ' ''];'],cl_id));
-		else
-			irf_log('load',sprintf('No p%d data for sc%d',pl(k),cl_id))
+			clear t_new ts dt d_new ii
 		end
+	end
+	clear not_same
+	
+	aa = [];
+	n_sig = 0;
+	for pr=[12,34]
+		
+		if pr==12
+			tt = e12;
+			probe = p12;
+		else
+			tt = e34;
+			probe = 34;
+		end
+		if isempty(tt)
+			irf_log('load',sprintf('No spinfits for C%d p%d',cl_id,probe))
+			continue
+		end
+		
+		irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',...
+			cl_id,probe,cl_id,probe))
+
+		if isempty(aa), aa = c_phase(tt(:,1),pha); end
+		
+		fsamp = c_efw_fsample(tt);
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		if flag_rmwhip, problems = [problems '|whip']; end
+		signal = tt;
+		remove_problems
+		tt = res;
+		clear res signal problems
+		
+		% Check if we have at least 1 spin of data left
+		if length(find(~isnan(tt(:,2)))) < 4*fsamp
+			irf_log('proc',irf_ssub('No p? data after removals',probe))
+			continue
+		end
+
+		
+		if sfit_ver>=0
+			irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
+			sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),...
+				aa(:,2),sfit_ver);
+		else
+			sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+		end
+		
+		% Check if we have any data left
+		if isempty(sp)
+			irf_log('load',sprintf('No data left after spinfit for C%d p%d',...
+				cl_id,probe))
+			continue
+		end
+		
+		% Remove point with zero time
+		ind = find(sp(:,1)>0);
+		if length(ind)<length(sp(:,1))
+			irf_log('proc',...
+				[num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
+			sp = sp(ind,:);
+		end
+		
+		% ADC offsets
+		adc_off = sp(:,[1 4]);
+		% Warn about points with sdev>.8
+		ii = find(sp(:,6)>.8);
+		if length(ii)/size(sp,1)>.05,
+			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
+		end
+		
+		adc_off = irf_waverage(adc_off,1/4);
+		ii = find(adc_off(:,2)==0);
+		adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
+		
+		sp = sp(:,[1:4 6]);
+		sp(:,4) = 0*sp(:,4); % Z component
+		
+		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
+		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
+		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
+		eval(irf_ssub('diEs?p!=sp;Dadc?p!=adc_off;',cl_id,probe)); 
+		eval(irf_ssub('save_list=[save_list ''diEs?p! Dadc?p! ''];',cl_id,probe));
+		n_sig = n_sig + 1;
+		clear tt sp adc_off
 	end
 
 	% Delta offsets
-	if (exist(irf_ssub('diEs?p12',cl_id),'var') | ...
-	exist(irf_ssub('diEs?p32',cl_id),'var')) & exist(irf_ssub('diEs?p34',cl_id),'var')
+	if n_sig==2
 		
 		% To compute delta offsets we remove points which are > deltaof_sdev_max*sdev
 		% as this must de a stable quantity
@@ -423,229 +377,189 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
 	if do_burst
 		save_file = './mEFWburst.mat';
-		var_name = 'wbE?p';
+		var_name = 'wbE?p!';
 		var1_name = 'dibE?p1234';
 	else
 		if strcmp(quantity,'diespec'), save_file = './mEDSI.mat';
 		else, save_file = './mEDSIf.mat';
 		end
-        var_name = 'wE?p';
+        var_name = 'wE?p!';
 		if do_filter, var1_name = 'diEF?p1234';
 		else, var1_name = 'diE?p1234';
 		end
 	end
 
-	if ~c_load('A?',cl_id)
+	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+	% Aux quantities: Dadc?
+	[ok,pha] = c_load('Atwo?',cl_id);
+	if ~ok | isempty(pha)
 		irf_log('load',...
-			irf_ssub('No A? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
-		data = []; cd(old_pwd); return
-	end
-	if ~exist('./mEDSI.mat','file') & ~do_filter & ~strcmp(quantity,'diespec')
-		irf_log('load','Please compute spin averages (mEDSI)')
+			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
 	
-	if do_burst
-		if exist('./mEFWburst.mat','file')
-			c_eval(['load mEFWburst ' var_name '12 ' var_name '34;'],cl_id);
-		else
-			irf_log('load','Cannot find mEFWburst.mat')
-			data = []; cd(old_pwd); return
+	p12 = 12; e12 = []; e34 =[];
+	pl = [12,32,34];
+	p_ok = [];
+	for probe = pl
+		[ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
+		if ~ok | isempty(da)
+			irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
+			continue
 		end
-	else
-		if exist('./mER.mat','file')
-			c_eval(['load mER ' var_name '12 ' var_name '32 ' var_name '34;'],cl_id);
+		
+		if probe==32
+			p12 = 32;
+			e12 = da;
+			p_ok = [p_ok 12];
 		else
-			irf_log('load','Cannot find mER.mat')
-			data = []; cd(old_pwd); return
+			c_eval('e?=da;',probe)
+			p_ok = [p_ok probe];
 		end
+		clear ok da
+	end
+	if ~length(p_ok), data = []; cd(old_pwd), return, end
+	
+	% Load ADC offsets
+	for probe = p_ok
+		if probe==12, ps=p12; else ps=probe; end
+		[ok,dadc] = c_load(irf_ssub('Dadc?p!',cl_id,ps));
+		if ~ok
+			if CAA_MODE, error(irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
+			irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps))
+		end
+		if isempty(dadc)
+			if CAA_MODE, error(irf_ssub('Empty Dadc?p!',cl_id,ps)), end
+			[ok,dadc] = c_load(irf_ssub('Da?p!',cl_id,ps));
+			if ~ok, irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
+		end
+		c_eval('dadc?=dadc;',probe)
+		clear ok dadc
 	end
 	
 	% calibration coefficients // see c_efw_despin
 	coef=[[1 0 0];[1 0 0]];
 
-	pl=[12,32,34];
 	full_e = [];
 	n_sig = 0;
-	p12 = 12;
-	
-	% Load Whisper pulses
-	whip = [];
-	if flag_rmwhip
-		[ok,whip] = c_load('WHIP?',cl_id);
-		if ~ok
-			irf_log('load',...
-				irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
+	for p = p_ok
+		if p==12
+			ps = p12; tt = e12; dadc = dadc12;
+		else 
+			ps = p; tt = e34; dadc = dadc34;
 		end
-	end
-	
-	for k=1:length(pl)
-		ps = num2str(pl(k));
-		if exist(irf_ssub([var_name ps],cl_id),'var')
-			if pl(k)==32, p12 = 32; end
-			n_sig = n_sig + 1;
-			if do_burst
-				c_eval(['Ep' ps '=' var_name ps ';'],cl_id);
+		if do_burst
+			% Correct ADC offset
+			if ~isempty(dadc)
+				irf_log('calb','using saved ADC offsets')
+				tmp_adc = irf_resamp(dadc,tt);
+				tt(:,2) = tt(:,2) - tmp_adc(:,2);
+				clear tmp_adc
+			else, irf_log('calb','ADC offset not corrected')
+			end
+			
+		else
+			fsamp = c_efw_fsample(tt);
+			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+			if flag_rmwhip, problems = [problems '|whip']; end
+			signal = tt;
+			probe = ps;
+			remove_problems
+			tt = res;
+			clear res signal problems probe
+		
+			% Check if we have at least 1 sec of data left
+			if length(find(~isnan(tt(:,2)))) < fsamp
+				irf_log('proc',irf_ssub('No p? data after removals',ps))
+				c_eval('e?=[]',p)
+				continue
+			end
+			
+			% Correct ADC offset
+			if flag_usesavedoff & ~do_filter
 				% Correct ADC offset
-				c_load(['Dadc?p' ps],cl_id)
-				c_load(['Da?p' ps],cl_id)
-				if exist(irf_ssub(['Dadc?p' ps],cl_id),'var')
-					c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
-					c_eval(['tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
-					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
+				if ~isempty(dadc)
+					irf_log('calb','using saved ADC offset')
+					tmp_adc = irf_resamp(dadc,tt);
+					tt(:,2) = tt(:,2) - tmp_adc(:,2);
 					clear tmp_adc
-				elseif exist(irf_ssub(['Da?p' ps],cl_id),'var')
-					c_eval(['irf_log(''calb'',sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
-					c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
 				else
-					irf_log('calb','ADC offset not corrected')
-				end
-			else
-				% Remove bad bias around EFW reset
-				[ok,bbias] = c_load('BADBIASRESET?',cl_id);
-				if ok
-					irf_log('proc','blanking bad bias due to EFW reset')
-					c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bbias);'],cl_id)
-				end
-				clear ok bbias
-				% Remove bad bias from bias current indication
-				for k = [num2str(ps(1)) num2str(ps(2))]
-					if ~exist(irf_ssub('BADBIAS?p!',cl_id,k),'var')
-						c_load(irf_ssub('BADBIAS?p!',cl_id,k))
-					end
-					if exist(irf_ssub('BADBIAS?p!',cl_id,k),'var')
-						eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,k))
-						if ~isempty(bbias)
-							irf_log('proc',['blanking bad bias on P' num2str(k)])
-							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bbias);'],cl_id)
-						end
-						clear bbias
-					end
-				end
-				
-				% Remove probe saturation electronics & low density
-				for kk = [num2str(ps(1)) num2str(ps(2))]
-					if ~exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
-						c_load(irf_ssub('PROBESA?p!',cl_id,kk))
-					end
-					if ~exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
-						c_load(irf_ssub('PROBELD?p!',cl_id,kk))
-					end
-					
-					if exist(irf_ssub('PROBESA?p!',cl_id,kk),'var')
-						eval(irf_ssub('sa=PROBESA?p!;',cl_id,kk))
-						if ~isempty(sa)
-							irf_log('proc',['blanking saturated P' num2str(kk)])
-							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
-						end
-						clear sa
-					end
-					if exist(irf_ssub('PROBELD?p!',cl_id,kk),'var')
-						eval(irf_ssub('sa=PROBELD?p!;',cl_id,kk))
-						if ~isempty(sa)
-							irf_log('proc',...
-								['blanking low density saturation on P' num2str(kk)])
-							c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sa);'],cl_id)
-						end
-						clear sa
-					end
-				end
-				
-				% Remove sweeps and burst dumps
-				[ok,sweep] = c_load('SWEEP?',cl_id);
-				if ok
-					if ~isempty(sweep)
-						irf_log('proc','blanking sweeps')
-						c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',sweep);'],cl_id)
-						clear sweep
-					end
-				else
-					irf_log('load',...
-						irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
-				end
-				[ok,bdump] = c_load('BDUMP?',cl_id);
-				if ok
-					if ~isempty(bdump)
-						irf_log('proc','blanking burst dumps')
-						c_eval(['wE?p' ps '=caa_rm_blankt(wE?p' ps ',bdump);'],cl_id)
-						clear bdump
-					end
-				else
-					irf_log('load',...
-						irf_ssub(['No BDUMP?. Use getData(CP,cl_id,''bdump'')'],cl_id))
-				end
-				
-				% Remove Whisper pulses
-				if flag_rmwhip & ~isempty(whip)
-					irf_log('proc',['blanking Whisper pulses on p' ps])
-					c_eval(['if ~isempty(wE?p' ps '),wE?p' ps '=caa_rm_blankt(wE?p' ps ',whip);end'],cl_id)
-				end
-				
-				% Check if we have at least 1 sec of data left
-				if eval(irf_ssub(['length(find(~isnan(wE?p' ps '(:,2))))'],cl_id))<25
-					irf_log('proc','No data after removals')
-					data = []; cd(old_pwd); return
-				end
-				
-				% Correct ADC offset
-				if flag_usesavedoff & ~do_filter
-					if c_load(['Dadc?p' ps],cl_id)
-						c_eval(['irf_log(''calb'',''using saved Dadc?p' ps ''')'],cl_id)
-						c_eval(['Ep' ps '=wE?p' ps '; tmp_adc = irf_resamp(Dadc?p' ps ',Ep' ps ');'],cl_id)
-						c_eval(['Ep' ps '(:,2)=Ep' ps '(:,2)-tmp_adc(:,2);'],cl_id)
-						clear tmp_adc
-					elseif c_load(['Da?p' ps],cl_id)
-						c_eval(['disp(sprintf(''Da?dp' ps ' (using saved) : %.2f'',Da?p' ps '))'],cl_id)
-						c_eval(['Ep' ps '=wE?p' ps '; Ep' ps '(:,2)=Ep' ps '(:,2)-Da?p' ps ';'],cl_id)
-					else, flag_usesavedoff = 0;
-					end
-				end
-				if ~flag_usesavedoff | do_filter
-					c_eval(['[Ep' ps ',Da?p' ps ']=caa_corof_adc(wE?p' ps ');'],cl_id)
-					c_eval(['irf_log(''calb'',sprintf(''Da?dp' ps ' : %.2f'',Da?p' ps '))'],cl_id)
-					c_eval(['save_list=[save_list '' Da?p' ps ' ''];'],cl_id);
+					irf_log('calb','saved ADC offset empty')
+					flag_usesavedoff = 0;
 				end
 			end
+			if ~flag_usesavedoff | do_filter
+				irf_log('calb','computing ADC offsets (simple averaging)')
+				[tt,dadc] = caa_corof_adc(tt);
+				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
+				eval(irf_ssub('Da?p!=dadc;save_list=[save_list '' Da?p! ''];',cl_id,ps));
+			end
+			n_sig = n_sig + 1;
 		end
 	end
+	
 	if n_sig==0
-		irf_log('load','No raw data found in mER')
+		irf_log('load','No raw data left for despin')
 		data = []; cd(old_pwd); return
 	end
+	
 	if n_sig==2
-		if p12==32 
-			Ep12 = Ep32; clear Ep32
+		if p12==32
 			E_info.probe = '3234';
 		else
 			E_info.probe = '1234';
 		end
-		if abs(length(Ep12)-length(Ep34))>0
-			% different timelines. Need to correct
-			irf_log('proc','using common timeline')
-			[ii12,ii34] = irf_find_comm_idx(Ep12,Ep34);
+		if abs(length(e12)-length(e34))>0
+			% Different timelines. Need to correct
+			irf_log('proc','making common timeline')
+			[ii12,ii34] = irf_find_comm_idx(e12,e34);
 			irf_log('proc',['Ep' num2str(p12) ' ' num2str(length(Ep12)) '->' num2str(length(ii12)) ' data points'])
-			Ep12 = Ep12(ii12,:);
+			e12 = e12(ii12,:);
 			irf_log('proc',['Ep34 ' num2str(length(Ep34)) '->' num2str(length(ii34)) ' data points'])
-			Ep34 = Ep34(ii34,:);
+			e34 = e34(ii34,:);
 		end
-		% use WEC coordinate system E=[t,0,p34,p12]
-		full_e = zeros(length(Ep12),4);
-		full_e(:,[1,4]) = Ep12;
-		full_e(:,3) = Ep34(:,2);
-		clear Ep12 Ep34
+		% Use WEC coordinate system E=[t,0,p34,p12]
+		full_e = zeros(length(e12),4);
+		full_e(:,[1,4]) = e12;
+		full_e(:,3) = e34(:,2);
+		clear e12 e34
+		
+		% Load Delta offsets D?p12p34
+		[ok,Del] = c_load('D?p12p34',cl_id);
+		if ~ok
+			if CAA_MODE, error(irf_ssub('Cannot load D?p12p34',cl_id,ps)), end
+			irf_log('load',irf_ssub('Cannot load D?p12p34',cl_id,ps))
+		end
+		if isempty(Del)
+			if CAA_MODE, error(irf_ssub('Empty D?p12p34',cl_id,ps)), end
+			irf_log('load',irf_ssub('Empty D?p12p34',cl_id,ps))
+		else
+			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
+				irf_log('calb',['correcting delta offset on p' num2str(p12)])
+				i_c = 1;
+			else
+				irf_log('calb','correcting delta offset on p34')
+				Del = imag(Del);
+				i_c = 2;
+			end
+			coef(i_c,3) = Del(1) -Del(2)*1j;
+			clear Del
+		end
 	else
-		if exist('Ep12','var')
+	
+		% We have one probe pair
+		if ~isempty(e12)
 			pp = 12;
-			E_info.probe = '12';
-			EE = Ep12;
-			clear Ep12
+			E_info.probe = num2str(p12);
+			EE = e12;
+			clear e12
 		else
 			pp = 34;
 			E_info.probe = '34';
-			EE = Ep34;
-			clear Ep34
+			EE = e34;
+			clear e34
 		end
-		% use WEC coordinate system E=[t,0,p34,p12]
+		% Use WEC coordinate system E=[t,0,p34,p12]
 		full_e = zeros(length(EE),4);
 		full_e(:,1) = EE(:,1);
 		if pp==12, full_e(:,4) = EE(:,2);
@@ -654,31 +568,16 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 		clear EE pp
 	end
 
-	% load Delta offsets D?p12p34
-	if c_load('D?p12p34',cl_id)
-		eval(irf_ssub('Del=D?p12p34;',cl_id))
-		if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
-			irf_log('calb',['correcting p' num2str(p12)])
-			i_c = 1;
-		else
-			irf_log('calb','correcting p34')
-			Del = imag(Del);
-			i_c = 2;
-		end
-		coef(i_c,3) = Del(1) -Del(2)*1j;
-		clear Del
-
-	else, irf_log('calb','no Delta offsets found in mEDSI, not doing correction...')
-	end
 	c_eval([var1_name '_info=E_info;save_list=[save_list ''' var1_name '_info ''];'],cl_id);
 
 	% Do actual despin
-	if p12==32, c_eval('full_e=c_efw_despin(full_e,A?,coef,''asym'');',cl_id);
-	else, c_eval('full_e=c_efw_despin(full_e,A?,coef);',cl_id);
+	aa = c_phase(full_e(:,1),pha);
+	if p12==32, full_e=c_efw_despin(full_e,aa,coef,'asym');
+	else, full_e=c_efw_despin(full_e,aa,coef);
 	end
 	
 	if strcmp(quantity,'diespec')
-		%We make a spectrum and save it.
+		% Make a spectrum and save it.
 		sfreq = c_efw_fsample(full_e(:,1));
 		if sfreq == 25, nfft = 512;
 		else, nfft = 8192;
@@ -873,7 +772,7 @@ elseif strcmp(quantity,'edb') | strcmp(quantity,'edbs') | ...
 % whip - Whisper present.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'whip')
-	save_file = './mFDM.mat';
+	save_file = './mEFW.mat';
 	
 	[ok,fdm] = c_load('FDM?',cl_id);
 	if ~ok
@@ -892,7 +791,7 @@ elseif strcmp(quantity,'whip')
 		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
 	else
-		irf_log('dsrc','No data')
+		irf_log('dsrc',irf_ssub('No active whisper on C?',cl_id))
 		c_eval('WHIP?=[];save_list=[save_list '' WHIP? ''];',cl_id);
 	end
 	clear t_s t_e fdm_r ii fdm ok
@@ -901,7 +800,7 @@ elseif strcmp(quantity,'whip')
 % bdump - Burst dump
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'bdump')
-	save_file = './mFDM.mat';
+	save_file = './mEFW.mat';
 	
 	[ok,fdm] = c_load('FDM?',cl_id);
 	if ~ok
@@ -920,7 +819,7 @@ elseif strcmp(quantity,'bdump')
 		c_eval('BDUMP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' BDUMP? ''];',cl_id);
 	else
-		irf_log('dsrc','No data')
+		irf_log('dsrc',irf_ssub('No burst dumps on C?',cl_id))
 		c_eval('BDUMP?=[];save_list=[save_list '' BDUMP? ''];',cl_id);
 	end
 	clear t_s t_e fdm_px ii fdm ok
@@ -929,7 +828,7 @@ elseif strcmp(quantity,'bdump')
 % sweep - Sweep present
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'sweep')
-	save_file = './mFDM.mat';
+	save_file = './mEFW.mat';
 	
 	[ok,fdm] = c_load('FDM?',cl_id);
 	if ~ok
@@ -960,7 +859,7 @@ elseif strcmp(quantity,'sweep')
 		end 
 		c_eval('SWEEP?=bdump;save_list=[save_list '' SWEEP? ''];',cl_id);
 	else
-		irf_log('dsrc','No data')
+		irf_log('dsrc',irf_ssub('No sweeps on C?',cl_id))
 		c_eval('SWEEP?=[];save_list=[save_list '' SWEEP? ''];',cl_id);
 	end
 	clear t_s t_e fdm_px ii fdm ok
@@ -969,7 +868,7 @@ elseif strcmp(quantity,'sweep')
 % badbias - Bad bias settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'badbias')
-	save_file = './mFDM.mat';
+	save_file = './mEFW.mat';
 	
 	DELTA_MINUS = 60;
 	DELTA_PLUS = 3*60;
@@ -978,14 +877,16 @@ elseif strcmp(quantity,'badbias')
 	% in 2-3 minutes following the reset
 	[ok,efwt] = c_load('EFWT?',cl_id);
 	if ok
+		c_eval(['BADBIASRESET?=[];'...
+			'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
+				
 		ii = find(efwt(:,2)<DELTA_PLUS);
 		if ~isempty(ii)
 			t0 = efwt(ii(1),1) - efwt(ii(1),2);
 			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
-			c_eval(['BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];'...
-				'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
+			c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
 		end
-	else, irf_log('dsrc','No EFWT')
+	else, irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
 	clear ok efwt t0 ii
 	
@@ -993,19 +894,22 @@ elseif strcmp(quantity,'badbias')
 	DELTA_PLUS = 64;
 	GOOD_BIAS = -130;
 	
-	c_eval(['i_p? = c_load(''IBIAS' num2str(cl_id) 'p?'',''var'');']);
-	if isempty(i_p1) & isempty(i_p2) & isempty(i_p3) & isempty(i_p4)
-		irf_log('load',...
-			irf_ssub(['No IBIAS?p[1..4]. Use getData(CDB,...,cl_id,''ibias'')'],cl_id))
-		data = []; cd(old_pwd); return
-	end
+	n_ok = 0;
 	for pro=1:4
-		c_eval('ibias=i_p?;',pro)
+		[ok,ibias] = c_load(irf_ssub('IBIAS?p!',cl_id,pro));
+		if ~ok
+			irf_log('load',	irf_ssub('Cannot load IBIAS?p!',cl_id,pro))
+			continue
+		end
+		if isempty(ibias)
+			irf_log('load',	irf_ssub('Empty IBIAS?p!',cl_id,pro))
+			continue
+		end
+		
 		% Good & bad points
-		if isempty(ibias), continue, end
 		ii_bad = find(ibias(:,2)>GOOD_BIAS);
 		if isempty(ii_bad)
-			irf_log('dsrc','No data')
+			irf_log('dsrc',irf_ssub('Bias current OK on C? p!',cl_id,pro))
 			c_eval(['BADBIAS' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
 		else
@@ -1034,7 +938,7 @@ elseif strcmp(quantity,'badbias')
 % probesa - Probe saturation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'probesa')
-	save_file = './mFDM.mat';
+	save_file = './mEFW.mat';
 	
 	% Saturation level nA
 	SA_LEVEL = 66;
@@ -1047,15 +951,37 @@ elseif strcmp(quantity,'probesa')
 	% Delta = .1 sec, half sampling interval for P.
 	DELTA = .1;
 	
-	c_eval(['p? = c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');']);
-	if isempty(p1) & isempty(p2) & isempty(p3) & isempty(p4)
-		irf_log('load',...
-			irf_ssub(['No P10Hz?p[1..4]. Use getData(CDB,...,cl_id,''p'')'],cl_id))
-		data = []; cd(old_pwd); return
+	start_time = [];
+	
+	%{ 
+	if start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
+		probe_list = [1 2 4];
+		p3 = [];
+		irf_log('dsrc',sprintf('Fake PROBESA/PROBELD on C%d',cl_id));
 	end
+	 %}
+	 
 	for pro=1:4
-		c_eval('p=p?;',pro)
-		if isempty(p), continue, end
+		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
+		if pro==3 & ~isempty(start_time) & ...
+			start_time>toepoch([2001 07 23 00 00 00]) & cl_id==2
+			irf_log('dsrc',...
+				irf_ssub('Using fake(empty) PROBESA?p!/PROBELD?p!',cl_id,pro));
+			c_eval(['PROBELD' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+			c_eval(['PROBESA' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			continue
+		end
+		if ~ok
+			irf_log('load',	irf_ssub('Cannot load P10Hz?p!',cl_id,pro))
+			continue
+		end
+		if isempty(p)
+			irf_log('load',	irf_ssub('Empty P10Hz?p!',cl_id,pro))
+			continue
+		elseif isempty(start_time), start_time = p(1,1);
+		end 
 		
 		% Points below SA_LEVEL should be excluded from E, but not from
 		% P ans they atill contain valuable physical information.
@@ -1350,80 +1276,60 @@ elseif strcmp(quantity,'br') | strcmp(quantity,'brs')
 elseif strcmp(quantity,'p')
 	save_file = './mP.mat';
 	
-	c_eval(['p?=c_load(''P10Hz' num2str(cl_id) 'p?'',''var'');'])
-	
-	% Remove bad bias around EFW reset
-	[ok,bbias] = c_load('BADBIASRESET?',cl_id);
-	if ok
-		irf_log('proc','blanking bad bias due to EFW reset')
-		c_eval('p? = caa_rm_blankt(p?,bbias);')
-	end
-	clear ok bbias
-	% Remove bad bias from bias current indication
-	for kk = 1:4
-		if ~exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
-			c_load(irf_ssub('BADBIAS?p!',cl_id,kk))
+	n_ok = 0;
+	for probe=1:4
+		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,probe));
+		c_eval('p?=p;',probe)
+		if ~ok | isempty(p)
+			irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,probe));
+			continue
 		end
-		if exist(irf_ssub('BADBIAS?p!',cl_id,kk),'var')
-			eval(irf_ssub('bbias=BADBIAS?p!;',cl_id,kk))
-			if ~isempty(bbias)
-				irf_log('proc',['blanking bad bias on P' num2str(kk)])
-				c_eval('p? = caa_rm_blankt(p?,bbias);',kk)
-			end
-			clear bbias
-		end
+		n_ok = n_ok + 1;
+		clear ok p
 	end
-	clear BADBIAS*
+	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	% Remove probe saturation
-	for k = 1:4
-		if ~isempty(eval(irf_ssub('p?',k)))
-			c_load(irf_ssub('PROBESA?p!',cl_id,k))
-			if exist(irf_ssub('PROBESA?p!',cl_id,k),'var')
-				eval(irf_ssub('sa=PROBESA?p!;',cl_id,k))
-				if ~isempty(sa)
-					irf_log('proc',['blanking saturated P' num2str(k)])
-					% We remove saturations simultaneously on probes 1&2, 3&4
-					% so that the resulting timelines are similar
-					if k==1|k==2
-						if ~isempty(p1), p1 = caa_rm_blankt(p1,sa); end
-						if ~isempty(p2), p2 = caa_rm_blankt(p2,sa); end
-					else
-						if ~isempty(p3), p3 = caa_rm_blankt(p3,sa); end
-						if ~isempty(p4), p4 = caa_rm_blankt(p4,sa); end
-					end
-				end
-				clear sa
+	% Do it simultaneously on probes 1&2, 3&4
+	% so that the resulting timelines are similar
+	for probe = 1:4
+		if eval(irf_ssub('~isempty(p?)',probe))
+			[ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
+			if ~ok
+				if CAA_MODE, error(irf_ssub('PROBESA?p!',cl_id,probe)), end
+				irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
+				continue
 			end
+			if ~isempty(sa)
+				irf_log('proc',['blanking saturated P' num2str(probe)])
+				if probe==1|probe==2
+					if ~isempty(p1), p1 = caa_rm_blankt(p1,sa); end
+					if ~isempty(p2), p2 = caa_rm_blankt(p2,sa); end
+				else
+					if ~isempty(p3), p3 = caa_rm_blankt(p3,sa); end
+					if ~isempty(p4), p4 = caa_rm_blankt(p4,sa); end
+				end
+			end
+			clear ok sa
 		end
 	end
 	c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 	
-	% Remove sweeps
-	[ok,sweep] = c_load('SWEEP?',cl_id);
-	if ok
-		if ~isempty(sweep)
-			irf_log('proc','blanking sweeps')
-			c_eval('p?=caa_rm_blankt(p?,sweep);',cl_id)
-			clear sweep
-		end
-	else
-		irf_log('load',...
-			irf_ssub(['No SWEEP?. Use getData(CP,cl_id,''sweep'')'],cl_id))
-	end
+	problems = 'reset|bbias|sweep';
+	if flag_rmwhip, problems = [problems '|whip']; end
 	
-	% Remove Whisper pulses
-	if flag_rmwhip
-		[ok,whip] = c_load('WHIP?',cl_id);
-		if ok & ~isempty(whip)
-			irf_log('proc','blanking Whisper pulses')
-			c_eval('if ~isempty(p?),p?=caa_rm_blankt(p?,whip);end')
-			clear whip
-		else
-			irf_log('load',...
-				irf_ssub('No WHIP? in mFDM. Use getData(CP,cl_id,''whip'')',cl_id))
+	n_ok = 0;
+	for probe=1:4
+		if eval(irf_ssub('~isempty(p?)',probe))
+			c_eval('signal=p?;',probe)
+			clear ok p
+			remove_problems
+			c_eval('p?=res;',probe)
+			n_ok = n_ok + 1;
 		end
 	end
+	clear res signal problems probe
+	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
@@ -1437,7 +1343,7 @@ elseif strcmp(quantity,'p')
 	elseif size(p4)~=[0 0]
 		p = p4;
 		Pinfo.probe = 4;
-	else, irf_log('dsrc','No data'), cd(old_pwd); return
+	else, irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
 	end
 	
 	c_eval('P10Hz?=p;save_list=[save_list ''P10Hz? ''];',cl_id);
@@ -1498,8 +1404,8 @@ elseif strcmp(quantity,'ps')
 elseif strcmp(quantity,'vce')
 	save_file='./mCIS.mat';
 
-	if exist('./mEPH.mat','file'), eval(irf_ssub('load mEPH SAX?',cl_id)), end
-	if ~exist('./mCIS.mat','file')
+	c_load('SAX?',cl_id)
+	if ~exist('./mCISR.mat','file')
 		irf_log('load','Please run ''vcis'' first (mCIS missing)')
 		data = []; cd(old_pwd); return
 	end
@@ -1508,7 +1414,7 @@ elseif strcmp(quantity,'vce')
 		data = []; cd(old_pwd); return
 	end
 
-	CIS = load('mCIS');
+	CIS = load('mCISR');
 	% Load BPP. We use BPP for EDI as it must be a rather approximation
 	[ok,B] = c_load('BPP?',cl_id);
 	if ~ok
