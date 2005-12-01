@@ -45,6 +45,8 @@ com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane';
 vvs = 'XXXXXXXXXX';
 vvs(1:length(vs)) = vs;
 
+v.file_old = ''; % compatibility mode for old files
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,7 +137,8 @@ elseif regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
 	v.com = '';
-	v.file = 'mEFWburst';
+	v.file = 'mEFWburstR';
+	v.file_old = 'mEFWburst';
 	v.quant = 'pburst';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -299,7 +302,8 @@ elseif regexp(vs,'^IBIAS[1-4]p[1-4]$')==1
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' bias current']};
 	v.com = '';
-	v.file = 'mFDM';
+	v.file = 'mEFWR';
+	v.file_old = 'mFDM';
 	v.quant = 'ibias';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -321,7 +325,8 @@ elseif regexp(vs,'^EFWT[1-4]$')==1
 	v.labels = v.name;
 	v.field_name = {'EFW clock'};
 	v.com = '';
-	v.file = 'mFDM';
+	v.file = 'mEFWR';
+	v.file_old = 'mFDM';
 	v.quant = 'efwt';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -332,7 +337,8 @@ elseif regexp(vs,'^DSC[1-4]$')==1
 	v.cl_id = vs(4);
 	v.inst = 'EFW';
 	v.com = 'DSC';
-	v.file = 'mFDM';
+	v.file = 'mEFWR';
+	v.file_old = 'mFDM';
 	v.quant = 'dsc';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -343,7 +349,8 @@ elseif regexp(vs,'^mTMode[1-4]$')==1
 	v.cl_id = vs(7);
 	v.inst = 'EFW';
 	v.com = 'MT Mode';
-	v.file = 'mTMode';
+	v.file = 'mEFWR';
+	v.file_old = 'mTMode';
 	v.quant = 'tmode';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -353,8 +360,8 @@ elseif regexp(vs,'^FDM[1-4]$')==1
 	v.data = 0;
 	v.cl_id = vs(4);
 	v.inst = 'EFW';
-	v.com = 'FDM';
-	v.file = 'mFDM';
+	v.file = 'mEFWR';
+	v.file_old = 'mFDM';
 	v.quant = 'fdm';
 	v.lev = 0;	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -365,7 +372,8 @@ elseif regexp(vs,'^WHIP[1-4]$')==1
 	v.cl_id = vs(5);
 	v.inst = 'EFW';
 	v.com = 'Whisper pulses';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'whip';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -376,7 +384,8 @@ elseif regexp(vs,'^SWEEP[1-4]$')==1
 	v.cl_id = vs(6);
 	v.inst = 'EFW';
 	v.com = 'Sweep';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'sweep';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -387,7 +396,8 @@ elseif regexp(vs,'^BDUMP[1-4]$')==1
 	v.cl_id = vs(6);
 	v.inst = 'EFW';
 	v.com = 'Burst dump';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'bdump';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -399,7 +409,8 @@ elseif regexp(vs,'^BADBIAS[1-4]p[1-4]$')==1
 	v.sen = vs(end);
 	v.inst = 'EFW';
 	v.com = 'Bad bias current';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'badbias';
 	v.lev = 1;
 elseif regexp(vs,'^BADBIASRESET[1-4]$')==1
@@ -408,11 +419,12 @@ elseif regexp(vs,'^BADBIASRESET[1-4]$')==1
 	v.sen = '';
 	v.inst = 'EFW';
 	v.com = 'Bad bias current due to EFW reset';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'badbias';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Probe saturation
+% Probe low density saturation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^PROBELD[1-4]p[1-4]$')==1
 	v.data = 0;
@@ -420,7 +432,8 @@ elseif regexp(vs,'^PROBELD[1-4]p[1-4]$')==1
 	v.sen = vs(end);
 	v.inst = 'EFW';
 	v.com = 'Low density saturation';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'probesa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -432,7 +445,8 @@ elseif regexp(vs,'^PROBESA[1-4]p[1-4]$')==1
 	v.sen = vs(end);
 	v.inst = 'EFW';
 	v.com = 'Probe saturation';
-	v.file = 'mFDM';
+	v.file = 'mEFW';
+	v.file_old = 'mFDM';
 	v.quant = 'probesa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -737,7 +751,8 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 	v.name = {'N'};
 	v.labels = v.name;
 	v.com = '';
-	v.file = 'mCIS';
+	v.file = 'mCISR';
+	v.file_old = 'mCIS';
 	v.quant = 'ncis';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -767,7 +782,8 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	v.name = {['T_' comp]};
 	v.labels = v.name;
 	v.com = '';
-	v.file = 'mCIS';
+	v.file = 'mCISR';
+	v.file_old = 'mCIS';
 	v.quant = 'tcis';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -801,7 +817,8 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 	v.label_1 = {'"Vx", "Vy", "Vz"'};
 	v.col_labels = {{'x','y','z'},''};
 	v.com = '';
-	v.file = 'mCIS';
+	v.file = 'mCISR';
+	v.file_old = 'mCIS';
 	v.quant = 'vcis';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -836,6 +853,7 @@ elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
 	v.col_labels = {{'x','y','z'},''};
 	v.com = '';
 	v.file = 'mCIS';
+	v.file_old = 'mCIS';
 	v.quant = 'vce';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -847,9 +865,11 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.lev = 0;
+		v.file = 'mEDIR';
 	else
 		v.frame = 'sc';
 		v.lev = 1;
+		v.file = 'mEDI';
 	end
 
 	v.cl_id = vs(end);
@@ -871,7 +891,7 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Perpendicular Electric field'};
 	v.com = '';
-	v.file = 'mEDI';
+	v.file_old = 'mEDI';
 	v.quant = 'edi';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FGM B PP
