@@ -178,7 +178,7 @@ p34=p34-abs(coef(2,3))*cos(angle(coef(2,3))-phase-phi_34);
 if use_asym
 	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_32);
 	p12 = 1.4142*p12 - p34;
-	disp('Using ASYMMETRIC probe conf')
+	irf_log('proc','Using ASYMMETRIC probe conf')
 else, p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
 end
 
