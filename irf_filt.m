@@ -9,7 +9,7 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 %              calculate frequency from the first time step
 %              assume that all time steps are the same length
 % fmin,fmax  - filter frequencies
-%              if fmin = 0 do irf_lowpass filter
+%              if fmin = 0 do lowpass filter
 %              if fmax = 0 do highpass filter
 % Fs         - sampling frequency if given as [] then Fs is 
 %              calculated from time series 
@@ -27,14 +27,12 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 %
 % $Id$
 
-global AV_DEBUG; if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end
-
 if ((nargin < 4) | (isempty(Fs))), 
  Fs=1/(inp(2,1)-inp(1,1));
- if debug == 1,disp(['Using sampling frequency ',num2str(Fs),' Hz']);end
+ irf_log('proc',['Using sampling frequency ',num2str(Fs),' Hz']);
 end % estimate sampling frequency
 if nargin > 4
-    if debug == 1,disp(sprintf('You have specified %d-th filter order (use uneven order)',order));end
+    irf_log('proc',['You have specified '  num2str(order) '-th filter order (use uneven order)']);
     n=order; % use this order for filters
 end
 fmin=fmin/(Fs/2);
@@ -46,14 +44,14 @@ if fmin==0
 	if nargin < 5 
         [n wn]=ellipord(fmax,fmax*fact,Rp,Rs);
     end
-	if debug == 1,disp(sprintf('using %d-th order irf_lowpass filter',n));  end
+	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B,A] = ellip(n,Rp,Rs,fmax);
 elseif fmax ==0
     if nargin < 5
         [n wn]=ellipord(fmin,fmin*1.1,Rp,Rs);
     end 
 	[B,A] = ellip(n,Rp,Rs,fmin,'high');
-	if debug == 1,disp(sprintf('using %d-th highpass order filter',n));end
+	irf_log('poc',['using ' num2str(n) '-th highpass order filter']);
 else
 	%[n wn]=ellipord(fmax,fmax*1.1,Rp,Rs);
 	%sprintf('using %d-th order ellip irf_lowpass filter',n)
@@ -61,14 +59,18 @@ else
 	if nargin < 5
     	[n wn]=ellipord(fmax,fmax*1.3,Rp,Rs);
 	end
-	if debug == 1, disp(sprintf('using %d-th order ellip irf_lowpass filter',n));end
+	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B1,A1] = ellip(n,Rp,Rs,fmax);
 	if nargin < 5
     	[n wn]=ellipord(fmin,fmin*.75,Rp,Rs);
 	end
-	if debug == 1,disp(sprintf('using	%d-th order ellip high pass filter',n));end
+	irf_log('proc',['using ' num2str(n) '-th order ellip high pass filter']);
 	[B2,A2] = ellip(n,Rp,Rs,fmin,'high');
 end
+
+% find NaN and put to zero (in output set back to NaN
+ind_NaN=find(isnan(inp)); 
+inp(ind_NaN)=0;
 
 [n m] = size(inp);
 ini=1; % from which column start filtering
@@ -85,4 +87,5 @@ else
 	out(:,i) = filtfilt(B,A,inp(:,i)); 
 	end
 end
+out(ind_NaN)=NaN;
 
