@@ -19,18 +19,22 @@ else
 end
 if isempty(defvalue), defvalue=default_value;end
 
-if isstr(default_value);
- question_to_ask=strrep(question,'%',defvalue);
- y=input(question_to_ask,'s');
- if isempty(y);y=defvalue;end
-else
- if length(defvalue)>0, s=num2str(defvalue(1));else s='';end
- for i=2:length(defvalue);s=[s ' ' num2str(defvalue(i))];end
- question_to_ask=strrep(question,'%',s);
- q=input(question_to_ask,'s');
- if isempty(q);
-  y=defvalue;
- else
-  eval(['y=[' q '];']);
- end
+ask_for_input=1; % flags whether input was ok (does not generate errors)
+while ask_for_input
+  ask_for_input=0; % if everything ok, do not ask for input anymore
+  if isstr(default_value);
+    question_to_ask=strrep(question,'%',defvalue);
+    y=input(question_to_ask,'s');
+    if isempty(y);y=defvalue;end
+  else
+    if length(defvalue)>0, s=num2str(defvalue(1));else s='';end
+    for i=2:length(defvalue);s=[s ' ' num2str(defvalue(i))];end
+    question_to_ask=strrep(question,'%',s);
+    q=input(question_to_ask,'s');
+    if isempty(q);
+      y=defvalue;
+    else
+      eval(['y=[' q '];']);
+    end
+  end
 end
