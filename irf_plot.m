@@ -11,7 +11,7 @@ function c=irf_plot(x,varargin);
 %   arguments can be:
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
-%     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts
+%     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
 %     ['yy',factor_to_multiply] - add second axis on right, miltiply by factor_to_multiply
 %     ['linestyle',LineStyle] - define line style. Simple LineStyle can be be
 %     given as last argument, 'linestyle' keyword is not necessary in this
@@ -48,7 +48,8 @@ function c=irf_plot(x,varargin);
 ylabels{1}='';
 flag_subplot=0;
 have_options = 0;
-if nargin > 1, have_options = 1; args = varargin; end
+args = varargin; 
+if nargin > 1, have_options = 1; end
 
 
 % default values that can be override by options
@@ -88,12 +89,14 @@ while have_options
 			l = 2;
 	otherwise
 		irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
-		marker = args{1};
-		break
-	end
-	if length(args) > l, args = args(l+1:end);
-	else, args = {}; break
-	end
+    marker = args{1};
+    args = args(2:end);
+    break
+  end
+  args = args(l+1:end);
+	if length(args) ==0, 
+    break; 
+  end
 end
 
 % plot separate subplots for all x components
@@ -165,26 +168,18 @@ end
 %  
 
 if flag_subplot==0,  % one subplot
-    %   t_start_epoch is saved in figures user_data variable
+    % t_start_epoch is saved in figures user_data variable
     % check first if it exist otherwise assume zero
-    ud=get(gcf,'userdata');
-	ii = find(~isnan(x(:,1)));
-    if isfield(ud,'t_start_epoch'), 
-        t_start_epoch=ud.t_start_epoch;
-    elseif x(ii(1),1)> 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-      t_start_epoch=x(ii(1),1);
-      ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
-      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
-    else
-        t_start_epoch=0;
-    end
-    ts=t_start_epoch;
-	clear ii
-    
+    ts = t_start_epoch(x(:,1));    
     i=2:length(x(1,:));
-    if flag_yy == 0, h=plot((x(:,1)-ts),x(:,i),varargin{:});grid on;
+    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,i),args{:});grid on;
     else, h=plotyy((x(:,1)-ts),x(:,i),(x(:,1)-ts),x(:,i).*scaleyy);grid on;
     end
+    
+    % put ylimits so that no labels are at the end (disturbing in
+    % multipanel plots)
+    set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+    
     ylabel(ylabels{1});
     c=get(h(1),'Parent');
     tt=x(1,1);
@@ -192,9 +187,7 @@ if flag_subplot==0,  % one subplot
     
 elseif flag_subplot==1, % separate subplot for each component 
     %   t_start_epoch is saved in figures user_data variable
-	ii = find(~isnan(x(:,1)));
-    if x(ii(1),1)> 1e8, ts = x(ii(1),1); t_start_epoch = ts; else t_start_epoch = 0; end
-	clear ii
+	  ts=t_start_epoch(x(:,1));
 	
     npl=size(x,2)-1;
     for ipl=1:npl,
@@ -206,17 +199,20 @@ elseif flag_subplot==1, % separate subplot for each component
 					end
 				else, marker_cur = marker;
 				end
-				
+        
         i=ipl+1;
-        plot((x(:,1)-ts),x(:,i),marker_cur);grid on;
+        plot((x(:,1)-ts-dt),x(:,i),marker_cur);grid on;
+        
+        % put ylimits so that no labels are at the end (disturbing in
+        % multipanel plots)
+        set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
     end
     tt=x(1,1);
     
 elseif flag_subplot==2, % separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
-	ii = find(~isnan(x{1}(:,1)));
-	ts = x{1}(ii(1),1); clear ii
-    if ts > 1e8, t_start_epoch = ts; else ts = 0; t_start_epoch = 0; end
+	ts=t_start_epoch(x{1}(:,1));
 	
 	t_st = []; t_end = [];
 	
@@ -240,20 +236,23 @@ elseif flag_subplot==2, % separate subplot for each variable
 			end
 		else, marker_cur = marker;
 		end
-        plot(t_tmp,y(:,2:end),marker_cur);grid on;
-        ylabel(ylabels{ipl});
+    plot(t_tmp,y(:,2:end),marker_cur);grid on;
+
+    % put ylimits so that no labels are at the end (disturbing in
+    % multipanel plots)
+    set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+    
+    ylabel(ylabels{ipl});
     end
-	% Set common XLim
-	for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
+    % Set common XLim
+    for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
 	clear t_st t_end
     
 	tt=y(1,1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
   %t_start_epoch is saved in figures user_data variable
-	ii = find(~isnan(x{1}(:,1)));
-	ts = x{1}(ii(1),1); clear ii
-    if ts > 1e8, t_start_epoch = ts; else ts = 0; t_start_epoch = 0; end
+	ts=t_start_epoch(x{1}(:,1));
 
     npl=size(x{1},2)-1;
     for ipl=1:npl,
@@ -277,6 +276,11 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 				plot((y(:,1)-ts-dt(jj)), y(:,ipl+1), 'Color', line_colors(jj,:),'LineStyle', marker_cur)
 				grid on; hold on;
       end
+
+      % put ylimits so that no labels are at the end (disturbing in
+      % multipanel plots)
+      set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
     end
     tt=y(1,1);
 end
@@ -287,7 +291,7 @@ irf_figmenu;
 user_data=get(gcf,'userdata');
 if flag_subplot>0, 
     user_data.subplot_handles=c;
-    user_data.t_start_epoch=t_start_epoch;
+%    user_data.t_start_epoch=t_start_epoch;
 end % add information about subplot handles to userdata of figure
 set(gcf,'userdata',user_data);
 
@@ -300,3 +304,36 @@ if ((tt > 1e8) & (tt < 1e10))
 end
 
 if nargout==0, clear c; end % do not give axis handle as answer if not asked for
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function t_start_epoch=t_start_epoch(t)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% gives back the value of t_start_epoch of the figure
+% if not  set, sets t_start_epoch of the figure
+ud=get(gcf,'userdata');
+ii = find(~isnan(t));
+if ii,
+  valid_time_stamp=t(ii(1));
+else
+  valid_time_stamp=[];
+end
+
+if isfield(ud,'t_start_epoch'),
+  t_start_epoch=ud.t_start_epoch;
+elseif valid_time_stamp,
+  if valid_time_stamp > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+    t_start_epoch=valid_time_stamp;
+    ud.t_start_epoch=t_start_epoch;
+    set(gcf,'userdata',ud);
+    irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+  else
+    t_start_epoch=0;
+  end
+else
+  t_start_epoch=0;
+end
+
+end
+
