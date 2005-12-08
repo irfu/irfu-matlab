@@ -26,12 +26,12 @@ function h=irf_pl_ebs(e,b,B,parameters)
 %           3) Poyn flux
 %           4) E/B spectra
 %
-% h=AV_WAVEPLOT_ebB(e,b,B,parameters)
-% h=AV_WAVEPLOT_ebB(e,b,B)   % specify manually parameters
+% h=IRF_PL_EBS(e,b,B,parameters)
+% h=IRF_PL_EBS(e,b,B)   % specify manually parameters
 % Returns in h handles to subplots
 %
 % Example:
-%    h=av_waveplot_ebB(e,b,B,[1000 2 180 50 5.36 1 1 2 0]);
+%    h=IRF_PL_EBS(e,b,B,[1000 2 180 50 5.36 1 1 2 0]);
 %
 % $Id$
 
@@ -40,8 +40,7 @@ function h=irf_pl_ebs(e,b,B,parameters)
 %
 
 % parameter definitions
-global AV_DEBUG; if isempty(AV_DEBUG), debug=0;else, debug=AV_DEBUG;end
-persistent freq_int freq_number Morlet_width q_colormap plot_type colorbar_scale panel q_detrend
+persistent freq_int freq_number Morlet_width q_colormap plot_type colorbar_scale panel q_detrend q_spectra_width
 
 if nargin == 4,
   q_spectra_width=parameters(1);
@@ -95,6 +94,12 @@ end
     b=b(1:end-1,:);
   end
 
+  % set to zero NaNs
+  ind_nan_e=find(isnan(e)); e(ind_nan_e)=0;
+  ind_nan_b=find(isnan(b)); b(ind_nan_b)=0;
+  ind_nan_B=find(isnan(B)); B(ind_nan_B)=0;
+  
+  
 %% the direction of background magnetic field
 bn=irf_norm(irf_resamp(B,e));
 t=e(:,1);
@@ -135,7 +140,7 @@ Swbx=fft(b(:,2));Swby=fft(b(:,3));Swbz=fft(b(:,4));
   %% Loop through all frequencies 
 
 for ind_a=1:length(a),
-  if debug, disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);end
+ % if debug, disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);end
   Wwex=sqrt(1).*Swex.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
   Wwey=sqrt(1).*Swey.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
   Wwez=sqrt(1).*Swez.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
@@ -225,24 +230,22 @@ if plot_type == 2,
 %%%%%% E time series %%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(e);ylabel('E_{wave} [mV/m]');
-hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to get the same size as colorbar plots
-%  colorbar;
+  set(gca,'tickdir','out');colorbar;hh=get(gca,'position');colorbar off;set(gca,'position',hh); set(gca,'tickdir','in'); % to get the same size as colorbar plots
 %%%%%% B time series %%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(b);ylabel('B_{wave} [nT]');
-hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to get the same size as colorbar plots
-%  colorbar;
-%%%%%% E time series %%%%%%%%
+  set(gca,'tickdir','out');colorbar;hh=get(gca,'position');colorbar off;set(gca,'position',hh); set(gca,'tickdir','in'); % to get the same size as colorbar plots
+%%%%%% Bo time series %%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   irf_plot(B);ylabel('B [nT]');
-hh=get(gca,'position');set(gca,'position',[hh(1) hh(2) hh(3)*.8550 hh(4)]); % to get the same size as colorbar plots
-%  colorbar;
+  set(gca,'tickdir','out');colorbar;hh=get(gca,'position');colorbar off;set(gca,'position',hh); set(gca,'tickdir','in'); % to get the same size as colorbar plots
+
   add_timeaxis(h(1:3),'nolabels');
   add_timeaxis(gca,'nodate');
 end
 
 if plot_type == 1 | plot_type == 2 | plot_type == 0,
-   t_start_epoch=fix_start_epoch(t(1,1));
+   t_start_epoch=t_start_epoch(t(1,1));
 %%%%%%%%% E spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'e')),
@@ -297,7 +300,7 @@ if plot_type == 1 | plot_type == 2 | plot_type == 0,
     colormap(xcm);colorbar
   end
 elseif plot_type == 3,
-   t_start_epoch=fix_start_epoch(t(1,1));
+   t_start_epoch=t_start_epoch(t(1,1));
 %%%%%%%%% Ex spectra %%%%%%%%%%%%
   h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
   pcolor(t-t_start_epoch,newfreq,log10(abs(powerEx.'))) % Without edge effects removed
@@ -343,15 +346,33 @@ if plot_type ~=0,
 end
 end
 
-function ts=fix_start_epoch(t)
-    ud=get(gcf,'userdata');
-    if isfield(ud,'t_start_epoch'), 
-        t_start_epoch=ud.t_start_epoch;
-    elseif t(1,1) > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-      t_start_epoch=t(1,1);
-    else
-        t_start_epoch=0;
-    end
-      ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
-      irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function t_start_epoch=t_start_epoch(t)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% gives back the value of t_start_epoch of the figure
+% if not  set, sets t_start_epoch of the figure
+ud=get(gcf,'userdata');
+ii = find(~isnan(t));
+if ii,
+  valid_time_stamp=t(ii(1));
+else
+  valid_time_stamp=[];
 end
+
+if isfield(ud,'t_start_epoch'),
+  t_start_epoch=ud.t_start_epoch;
+elseif valid_time_stamp,
+  if valid_time_stamp > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+    t_start_epoch=valid_time_stamp;
+    ud.t_start_epoch=t_start_epoch;
+    set(gcf,'userdata',ud);
+    irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+  else
+    t_start_epoch=0;
+  end
+else
+  t_start_epoch=0;
+end
+
+end
+
