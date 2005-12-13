@@ -13,7 +13,9 @@ function out=irf_fname(st,fmt)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
+
+error(nargchk(2,3,nargin))
 
 if nargin < 2, fmt = 0; end
 if fmt==2 & length(st)<=1, error('ST must have two elements for FORMAT=2'), end
