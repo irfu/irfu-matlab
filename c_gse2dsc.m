@@ -99,9 +99,10 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
       irf_log('proc','loading spin axis orientation from isdat database');
        start_time=t; % time of the first point
        Dt=600; % 10 min, in file they are saved with 1 min resolution
-        if flag_db==0, % open ISDAT database disco:10
-          irf_log('proc','Starting connection to disco:10');
-          db = Mat_DbOpen('disco:10');
+        if flag_db==0, % open ISDAT database
+					DB_S = c_ctl(0,'isdat_db');
+          irf_log('proc',['Starting connection to ' DB_S]);
+          db = Mat_DbOpen(DB_S);
         end
         [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
         [tlong, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');

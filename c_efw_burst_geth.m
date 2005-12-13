@@ -22,8 +22,8 @@ function OUT=c_efw_burst_geth(filename)
 
   % b-stands for big endian, which is the case if 
   % burst files are generated on SUN/Sparc.
-
-  fid = fopen(filename,'r','b');
+  %fid = fopen(filename,'r','b');
+  fid = fopen(filename,'r','l'); % l is for DB/amd64
   data1 = fread(fid,'uint');
   fclose(fid);
 

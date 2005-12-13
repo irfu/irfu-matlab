@@ -14,7 +14,7 @@ function c_get_batch(st,dt,varargin)
 % 'dp' - storage directory;
 %   // default: '/data/cluster'
 % 'db' - ISDAT database;
-%   // default: 'disco:10'
+%   // default: from c_ctl 
 % 'sc_list' - list of SC;
 %   // default: 1:4
 % 'vars' - variables to get data for (see help ClusterDB/getData)

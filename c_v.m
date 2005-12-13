@@ -20,7 +20,8 @@ if exist('./mR.mat','file'),
     load mR R1 R2 R3 R4 V1 V2 V3 V4;
 else,
     disp('loading position from isdat');
-    DATABASE='disco:10';db = Mat_DbOpen(DATABASE);
+		DB_S = c_ctl(0,'isdat_db');
+    db = Mat_DbOpen(DB_S);
     for ic=sc_list, disp(['...R' num2str(ic)]);
      [tr,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
      eval(irf_ssub('R?=[double(tr) double(data)''];',ic));clear tr data;
@@ -29,6 +30,7 @@ else,
        [tv,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
        eval(irf_ssub('V?=[double(tv) double(data)''];',ic));clear tv data;
     end
+		Mat_DbClose(db);
 end
 
 if strcmp(flag,'v_from_t'),

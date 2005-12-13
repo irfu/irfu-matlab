@@ -68,8 +68,10 @@ save_list='';save_file='';
 if strcmp(q,'q'), return,
 elseif q == '0' | strcmp(q,'h'), disp(mmm);
 elseif q == '1',
-	DATABASE = irf_ask('Database as string [%]>','DATABASE','disco:10');
-	data_dir = irf_ask('Data path [%]>','data_dir','/data/cluster/');
+	DB_S = c_ctl(0,'isdat_db');
+	DP_S = c_ctl(0,'data_path');
+	DATABASE = irf_ask('Database as string [%]>','DATABASE',DB_S);
+	data_dir = irf_ask('Data path [%]>','data_dir',DP_S);
 	cdb = ClusterDB(DATABASE,data_dir,pwd);
 	start_time_s = irf_ask('Start time [%]>','start_time_s','2001 02 01 00 00 00');
 	start_time = eval(['[' start_time_s ']']);

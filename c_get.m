@@ -5,7 +5,8 @@
 %
 % $Id$
 
-csds_dir='/data/cluster/CSDS/';
+DP_S = c_ctl(0,'data_path');
+csds_dir = [DP_S '/CSDS/'];
 
 if exist('sc_list') == 0, sc_list=1:4;end % default values
 
@@ -55,7 +56,8 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     else, flag_save=1;disp('saving variables to mfiles');
     end
  elseif q == '1',
-  DATABASE = irf_ask('Give database as string [%]>','DATABASE','disco:10');
+  DB_S = c_ctl(0,'isdat_db');
+  DATABASE = irf_ask('Give database as string [%]>','DATABASE',DB_S);
   db = Mat_DbOpen(DATABASE);
   start_time_s = irf_ask('Start time [%]>','start_time_s','2001 02 01 00 00 00');
   start_time=eval(['[' start_time_s ']']);

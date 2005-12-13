@@ -103,7 +103,8 @@ if prod(size(phase))==1, % load phase from isdat database
   ic=phase;phase=[];disp(['load phase for sc' num2str(ic)]);
   start_time=fromepoch(es(1,1)); % time of the first point
   Dt=es(end,1)-es(1,1)+1;
-  db = Mat_DbOpen('disco:10');
+  DB_S = c_ctl(0,'isdat_db');
+  db = Mat_DbOpen(DB_S);
   [phase_t,phase_data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'phase', ' ', ' ', ' ');
   phase=[double(phase_t) double(phase_data)]; clear phase_t phase_data;
   Mat_DbClose(db);
