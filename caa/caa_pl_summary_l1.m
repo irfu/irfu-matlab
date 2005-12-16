@@ -22,6 +22,7 @@ savePS = 0;
 savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
+offscreen = 0;
 
 int_s=realmax;
 int_e=-1;
@@ -46,6 +47,9 @@ while have_options
 		saveJPG = 1;
 	case 'fullscale'
 		fullscale = 1;
+	case 'offscreen'
+		offscreen = 1;
+		savePNG = 1;
 	otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
@@ -56,17 +60,24 @@ end
 
 old_pwd = pwd;
 
-% Save the screen size
-sc_s = get(0,'ScreenSize');
-if sc_s(3)==1600 & sc_s(4)==1200, scrn_size = 2;
-else, scrn_size = 1;
+if offscreen
+	figure;close;
+	figure('visible','off')
+	set(gca,'Units','centimeters')
+	set(gca,'Position',[2 1 10 10])
+else
+	% Save the screen size
+	sc_s = get(0,'ScreenSize');
+	if sc_s(3)==1600 & sc_s(4)==1200, scrn_size = 2;
+	else, scrn_size = 1;
+	end
+		
+	figure(75)
+	if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
+	else, set(gcf,'position',[691   159   909   916])
+	end
+	clf
 end
-	
-figure(75)
-if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else, set(gcf,'position',[691   159   909   916])
-end
-clf
 
 for pl=1:6
 	h(pl) = irf_subplot(6,1,-pl);
@@ -192,7 +203,8 @@ if ~isempty(r)
 	axes(h(1)), title([tit ', GSE Position C' num2str(ri)])
 end
 
-orient tall
+if ~offscreen, orient tall, end
+
 if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
 else,fn = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
 end

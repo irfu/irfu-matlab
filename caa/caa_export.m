@@ -67,18 +67,18 @@ else
 end
 
 % Load data
-data = c_load(vs,'var');
-if isempty(data)
+[ok,data] = c_load(vs);
+if ~ok | isempty(data)
 	irf_log('load', ['No ' vs])
 	cd(old_pwd)
 	return
 end
-d_info = [];
+d_info = []; ok = 0;
 try
-	d_info = c_load([vs '_info'],'var');
+	[ok, d_info] = c_load([vs '_info'],'var');
 end
 
-if isempty(d_info), dsc = c_desc(vs);
+if ~ok | isempty(d_info), dsc = c_desc(vs);
 else, dsc = c_desc(vs,d_info);
 end
 
@@ -86,37 +86,9 @@ dt_spin = 4;
 if lev==3
 	TIME_RESOLUTION = dt_spin;
 else
-	dt = data(2,1) - data(1,1);
-	ddt = .05;
-	dt_lx = 1/5;
-	dt_nm = 1/25;
-	dt_bm1 = 1/450;
-	
-	if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
-		TIME_RESOLUTION = dt_spin;
-	elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
-		TIME_RESOLUTION = dt_lx;
-	elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
-		TIME_RESOLUTION = dt_nm;
-	elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
-		TIME_RESOLUTION = dt_bm1;
-	else
-		if length(data(:,1))>2,
-			dt = data(3,1) - data(2,1);
-			if dt>(1-ddt)*dt_spin & dt<(1+ddt)*dt_spin
-				TIME_RESOLUTION = dt_spin;
-			elseif dt>(1-ddt)*dt_lx & dt<(1+ddt)*dt_lx
-				TIME_RESOLUTION = dt_lx;
-			elseif dt>(1-ddt)*dt_nm & dt<(1+ddt)*dt_nm
-				TIME_RESOLUTION = dt_nm;
-			elseif dt>(1-ddt)*dt_bm1 & dt<(1+ddt)*dt_bm1
-				TIME_RESOLUTION = dt_bm1;
-			else,
-				error('cannot determine time resolution')
-			end
-		else
-			error('cannot determine time resolution')
-		end
+	fs = c_efw_fsample(data);
+	if fs>0, TIME_RESOLUTION = 1/fs;
+	else, error('cannot determine time resolution')
 	end
 end
 
