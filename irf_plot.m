@@ -141,6 +141,9 @@ if iscell(x), % plot several variables
     if size(ylabels,2)<size(x,2), % no ylabels are given
         for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
     end
+	
+	if dt==0, dt(1:size(x,2))=0; end
+	
     switch plot_type
         case ''
             plot_type='subplot';
@@ -151,7 +154,6 @@ if iscell(x), % plot several variables
         case 'subplot'
             flag_subplot=2;
     end
-    if dt==0, dt(1:size(x,2))=0; end
 else
     try
         var_desc=c_desc(inputname(1));
@@ -171,9 +173,9 @@ if flag_subplot==0,  % one subplot
     % t_start_epoch is saved in figures user_data variable
     % check first if it exist otherwise assume zero
     ts = t_start_epoch(x(:,1));    
-    i=2:length(x(1,:));
-    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,i),args{:});grid on;
-    else, h=plotyy((x(:,1)-ts),x(:,i),(x(:,1)-ts),x(:,i).*scaleyy);grid on;
+    ii = 2:length(x(1,:));
+    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),args{:});grid on;
+    else, h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
     end
     
     % put ylimits so that no labels are at the end (disturbing in
@@ -183,7 +185,6 @@ if flag_subplot==0,  % one subplot
     ylabel(ylabels{1});
     c=get(h(1),'Parent');
     tt=x(1,1);
-    
     
 elseif flag_subplot==1, % separate subplot for each component 
     %   t_start_epoch is saved in figures user_data variable
