@@ -117,7 +117,7 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
 	
 	ns_ops = c_ctl('get',cl_id,'ns_ops');
 	if isempty(ns_ops)
-		c_ctl('load_ns_ops',[cdb.dp '/caa'])
+		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	if ~isempty(ns_ops)
