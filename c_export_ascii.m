@@ -263,6 +263,19 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% despun full resolution E with assumption E.B = 0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^diB[1-4]$')==1
+
+	cl_id = vs(end);
+	inst = 'FGM';
+	sig = 'B';
+	sen = '';
+	frame = 'DSI,  approximately the same as GSE';
+	var_labels = {'Bx','By','Bz'};
+	var_units =  {'nT','nT','nT'};
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
