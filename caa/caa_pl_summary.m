@@ -38,8 +38,10 @@ end
 c_pl_summary
 
 if do_export
-	c_export_ps
-	c_export_png
+	[st_s,dt1] = caa_read_interval;
+	t1 = iso2epoch(st_s);
+	c_export_ps(t1)
+	c_export_png(t1)
 end
 
 cd(old_pwd)
