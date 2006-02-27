@@ -104,15 +104,15 @@ for cli=1:4
 			% Load R
 			if isempty(r) | ri==cli
 				r_tmp = c_load('R?',cli,'var');
-				if ~isempty(r_tmp), r = [r; r_tmp]; end
+				if ~isempty(r_tmp) & r_tmp~=-157e8, r = [r; r_tmp]; end
 				if isempty(ri), ri = cli; end
 			end
 			% Load P
 			p_tmp = c_load('P?',cli,'var');
-			if ~isempty(p_tmp), p = [p; p_tmp]; end
+			if ~isempty(p_tmp) & p_tmp~=-157e8, p = [p; p_tmp]; end
 			% Load spectrum
 			spec = c_load('diESPEC?p1234',cli,'var');
-			if ~isempty(spec)
+			if ~isempty(spec) & isstruct(spec)
 				axes(h(cli))
 				if jj>1, hold on, end
 				caa_spectrogram(h(cli),spec)
