@@ -43,6 +43,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
 %	probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
+%	rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -1080,7 +1081,125 @@ elseif strcmp(quantity,'probesa')
 			clear ii res
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% rawspec - Spectrum of raw EFW signal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'rawspec')
+	save_file = './mEFW.mat';
 	
+	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+	[ok,pha] = c_load('Atwo?',cl_id);
+	if ~ok | isempty(pha)
+		irf_log('load',...
+			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+		data = []; cd(old_pwd); return
+	else
+		%Find zero phase
+		ii = find(pha(:,2)==0);
+		if isempty(ii)
+			irf_log('proc',...
+				irf_ssub('Cannot find zero phase in Atwo?',cl_id))
+			data = []; cd(old_pwd); return
+		end
+		tpha0 = pha(ii(1),1);
+	end
+	
+	p12 = 12; e12 = []; e34 =[];
+	pl = [12,32,34];
+	n_ok = 0;
+	for probe = pl
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+		if ~ok | isempty(da)
+			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+			continue
+		end
+		n_ok = n_ok + 1;
+		
+		if probe==32
+			p12 = 32;
+			e12 = da;
+		else, c_eval('e?=da;',probe)
+		end
+		clear ok da
+	end
+	if ~n_ok, data = []; cd(old_pwd), return, end
+	
+	for pr=[12,34]
+		
+		if pr==12
+			tt = e12;
+			probe = p12;
+		else
+			tt = e34;
+			probe = 34;
+		end
+		if isempty(tt)
+			irf_log('load',sprintf('No spinfits for C%d p%d',cl_id,probe))
+			continue
+		end
+		
+		irf_log('proc',sprintf('Raw spectrum wE%dp%d -> RSPEC%dp%d',...
+			cl_id,probe,cl_id,probe))
+		
+		fsamp = c_efw_fsample(tt);
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		if flag_rmwhip, problems = [problems '|whip']; end
+		signal = tt;
+		remove_problems
+		tt = res;
+		clear res signal problems
+		
+		% Check if we have at least 1 spin of data left
+		if length(find(~isnan(tt(:,2)))) < 4*fsamp
+			irf_log('proc',irf_ssub('No p? data after removals',probe))
+			continue
+		end
+		
+		% Time when a particular probe pair was directed towards the Sun
+		if probe == 12, tpha0probe = tpha0 - 3/2;
+		elseif probe == 32, tpha0probe = tpha0 - 1;
+		elseif probe == 34, tpha0probe = tpha0 - 1/2;
+		end
+		
+		tstart = tpha0probe + fix( (tt(1,1) - tpha0probe)/4 )*4;
+		tend = tstart + ceil( (tt(end,1) - tstart)/4 )*4;
+		n = floor((tend - tstart)/4) + 1;
+		rspec = zeros(n,7)*NaN;
+		
+		% N_EMPTY .75 means that we use only spins with more then 75% points.
+		N_EMPTY = .9;
+		n_gap = 0;
+		
+		% Do it:
+		for i=1:n
+			t0 = tstart + (i-1)*4;
+			rspec(i,1) = t0;
+			eind = find((tt(:,1) >= t0) & (tt(:,1) < t0+4));
+			
+			% Check for data gaps inside one spin.
+			if fsamp>0 & length(eind)<N_EMPTY*4*fsamp, eind = []; end
+			  
+			% Need to check if we have any data to fit.
+			if ~isempty(eind)
+				%Handle EFW data
+				IFFT_Difference = ifft( tt(eind,2) - mean(tt(eind,2)) );
+				
+				AmpSin = 2*imag(IFFT_Difference);
+				AmpCos = 2*real(IFFT_Difference);
+				
+				rspec(i,2) = AmpCos(1+1);
+				rspec(i,3) = AmpSin(1+1);
+				rspec(i,4) = AmpCos(3+1);
+				rspec(i,5) = AmpSin(3+1);
+				rspec(i,6) = AmpCos(5+1);
+				rspec(i,7) = AmpSin(5+1);
+			else, n_gap = n_gap + 1;
+			end
+		end
+		irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))
+		eval(irf_ssub('RSPEC?p!=rspec;save_list=[save_list ''RSPEC?p! ''];',cl_id,probe));
+	end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % edi (sc)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

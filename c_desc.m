@@ -168,6 +168,30 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.quant = 'e';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RSPEC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
+	v.data = 1;
+	v.cl_id = vs(6);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E-RSPEC';
+	v.sen = vs(8:9); 
+	v.cs = {'SR2', 'SR2','SR2'};
+ 	v.units =  {'mV/m','mV/m','mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','1.0e-3>V m^-1'};
+	v.size = [2 2 2];
+	v.name = {'E_rspec_1_omega', '3 omega', '5 omega'};
+	v.labels = v.name;
+	v.label_1 = {'"1w", "3w", "5w"',''};
+	v.col_labels = {{'x','y'},{'x','y'},{'x','y'}};
+	v.field_name = {'Raw electric field : 1 omega',...
+		'Raw electric field : 3 omega','Raw electric field : 5 omega'};
+	v.file = 'mEFW';
+	v.quant = 'rspec';
+	v.com = '';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
