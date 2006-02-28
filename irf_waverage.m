@@ -5,7 +5,7 @@ function out = irf_waverage(data,fsample)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004,2006 Yuri Khotyaintsev
 
 if nargin<2
 	fsample = 1/(data(2,1)-data(1,1));
@@ -13,17 +13,20 @@ if nargin<2
 end
 
 ndata = round((data(end,1)-data(1,1))*fsample);
+ncol = size(data,2);
 fsample = ndata/(data(end,1)-data(1,1));
 dt = 1/fsample;
 irf_log('proc',['Sampling period ' num2str(dt)])
 
-out = zeros(ndata+1,2);
+out = zeros(ndata+1,ncol);
 out(:,1) = linspace(data(1,1),data(end,1),ndata+1);
 ind = round((data(:,1)-data(1,1))/dt + 1);
-out(ind,2) = data(:,2);
-dtmp =  [0 0 0 out(:,2)' 0 0 0];
-for j=1:ndata+1
-	out(j,2) = w_ave(dtmp(j:j+6));
+out(ind,2:end) = data(:,2:end);
+for col=2:ncol
+	dtmp =  [0 0 0 out(:,col)' 0 0 0];
+	for j=1:ndata+1
+		out(j,col) = w_ave(dtmp(j:j+6));
+	end
 end
 
 function av = w_ave(x)
