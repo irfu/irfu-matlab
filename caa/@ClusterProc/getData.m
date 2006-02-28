@@ -1107,6 +1107,7 @@ elseif strcmp(quantity,'rawspec')
 	p12 = 12; e12 = []; e34 =[];
 	pl = [12,32,34];
 	n_ok = 0;
+	tpharef = [];
 	for probe = pl
 		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 		if ~ok | isempty(da)
@@ -1114,6 +1115,8 @@ elseif strcmp(quantity,'rawspec')
 			continue
 		end
 		n_ok = n_ok + 1;
+		
+		if size(da,1) > length(tpharef), tpharef = da(:,1); end
 		
 		if probe==32
 			p12 = 32;
@@ -1124,6 +1127,19 @@ elseif strcmp(quantity,'rawspec')
 	end
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
+	%Compute spin period
+	ph = c_phase(tpharef,pha); ph(:,1) = ph(:,1) - ph(1,1);
+	phc = unwrap( ph(1:2,2)/180*pi );
+	phc_coef = polyfit( ph(1:2,1),phc,1 );
+	for k=1:floor( log10(length(ph(:,1))) )
+		ii = 10^k;
+		dp = ph(ii,2) - mod( polyval(phc_coef,ph(ii,1))*180/pi,360 );
+		dpm = [dp dp-360 dp+360]; in = find( abs(dpm)<180 );
+		dph = dpm(in);
+		phc_coef(1) = phc_coef(1) + dph*pi/180/ph(ii,1);
+	end
+	spin_p = 2*pi/phc_coef(1);
+		
 	for pr=[12,34]
 		
 		if pr==12
@@ -1156,15 +1172,15 @@ elseif strcmp(quantity,'rawspec')
 		end
 		
 		% Time when a particular probe pair was directed towards the Sun
-		if probe == 12, tpha0probe = tpha0 - 3/2;
-		elseif probe == 32, tpha0probe = tpha0 - 1;
-		elseif probe == 34, tpha0probe = tpha0 - 1/2;
+		if probe == 12, tpha0probe = tpha0 - 3*spin_p/8;
+		elseif probe == 32, tpha0probe = tpha0 - spin_p/4;
+		elseif probe == 34, tpha0probe = tpha0 - spin_p/8;
 		end
 		
-		tstart = tpha0probe + fix( (tt(1,1) - tpha0probe)/4 )*4;
-		tend = tstart + ceil( (tt(end,1) - tstart)/4 )*4;
-		n = floor((tend - tstart)/4) + 1;
-		rspec = zeros(n,7)*NaN;
+		tstart = tpha0probe + fix( (tt(1,1) - tpha0probe)/spin_p )*spin_p;
+		tend = tstart + ceil( (tt(end,1) - tstart)/spin_p )*spin_p;
+		n = floor((tend - tstart)/spin_p) + 1;
+		rspec = zeros(n,11)*NaN;
 		
 		% N_EMPTY .75 means that we use only spins with more then 75% points.
 		N_EMPTY = .9;
@@ -1172,9 +1188,9 @@ elseif strcmp(quantity,'rawspec')
 		
 		% Do it:
 		for i=1:n
-			t0 = tstart + (i-1)*4;
+			t0 = tstart + (i-1)*spin_p;
 			rspec(i,1) = t0;
-			eind = find((tt(:,1) >= t0) & (tt(:,1) < t0+4));
+			eind = find((tt(:,1) >= t0) & (tt(:,1) < t0+spin_p));
 			
 			% Check for data gaps inside one spin.
 			if fsamp>0 & length(eind)<N_EMPTY*4*fsamp, eind = []; end
@@ -1187,12 +1203,16 @@ elseif strcmp(quantity,'rawspec')
 				AmpSin = 2*imag(IFFT_Difference);
 				AmpCos = 2*real(IFFT_Difference);
 				
-				rspec(i,2) = AmpCos(1+1);
-				rspec(i,3) = AmpSin(1+1);
-				rspec(i,4) = AmpCos(3+1);
-				rspec(i,5) = AmpSin(3+1);
-				rspec(i,6) = AmpCos(5+1);
-				rspec(i,7) = AmpSin(5+1);
+				rspec(i,2)  =  AmpCos(1+1);
+				rspec(i,3)  = -AmpSin(1+1);
+				rspec(i,4)  =  AmpCos(2+1);
+				rspec(i,5)  = -AmpSin(2+1);
+				rspec(i,6)  =  AmpCos(3+1);
+				rspec(i,7)  = -AmpSin(3+1);
+				rspec(i,8)  =  AmpCos(4+1);
+				rspec(i,9)  = -AmpSin(4+1);
+				rspec(i,10) =  AmpCos(5+1);
+				rspec(i,11) = -AmpSin(5+1);
 			else, n_gap = n_gap + 1;
 			end
 		end

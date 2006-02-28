@@ -177,18 +177,21 @@ elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
 	v.frame = 'sc';
 	v.sig = 'E-RSPEC';
 	v.sen = vs(8:9); 
-	v.cs = {'SR2', 'SR2','SR2'};
- 	v.units =  {'mV/m','mV/m','mV/m'};
-	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','1.0e-3>V m^-1'};
-	v.size = [2 2 2];
-	v.name = {'E_rspec_1_omega', '3 omega', '5 omega'};
+	v.cs = {'ISR2', 'ISR2','ISR2', 'ISR2','ISR2'};
+ 	v.units =  {'mV/m','mV/m','mV/m','mV/m','mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','1.0e-3>V m^-1',...
+		'1.0e-3>V m^-1','1.0e-3>V m^-1'};
+	v.size = [2 2 2 2 2];
+	v.name = {'ER_1omega','ER_2omega','ER_3omega','ER_4omega','ER_5omega'};
 	v.labels = v.name;
-	v.label_1 = {'"1w", "3w", "5w"',''};
-	v.col_labels = {{'x','y'},{'x','y'},{'x','y'}};
+	v.label_1 = {'"E1w_x", "E1w_y"','"E2w_x", "E2w_y"','"E3w_x", "E3w_y"',...
+		'"E4w_x", "E4w_y"','"E5w_x", "E5w_y"'};
+	v.col_labels = {{'x','y'},{'x','y'},{'x','y'},{'x','y'},{'x','y'}};
 	v.field_name = {'Raw electric field : 1 omega',...
-		'Raw electric field : 3 omega','Raw electric field : 5 omega'};
+		'Raw electric field : 2 omega','Raw electric field : 3 omega',...
+		'Raw electric field : 4 omega','Raw electric field : 5 omega'};
 	v.file = 'mEFW';
-	v.quant = 'rspec';
+	v.quant = 'rawspec';
 	v.com = '';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
