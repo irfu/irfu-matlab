@@ -88,7 +88,7 @@ spinfit = zeros(n,8);
 % Guess the sampling frequency
 sf = c_efw_fsample(te);
 
-% N_EMPTY .75 means that we use only sping with more then 75% points.
+% N_EMPTY .75 means that we use only spins with more then 75% points.
 N_EMPTY = .9; 
 
 n_gap = 0;
