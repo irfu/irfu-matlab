@@ -104,7 +104,7 @@ c_eval('K?=irf_resamp(k?,b1);');
 if strcmp(flag_option,'grad')|strcmp(flag_option,'curvature')|strcmp(flag_option,'bdivb'),
   if strcmp(input_is,'scalar'),  % scalar field, gradient is vector
     grad_b=zeros(size(B1,1),4);grad_b(:,1)=b1(:,1);
-    c_eval('grad_b(:,2:4)=grad_b(:,2:4)+K?(:,2:4).*repmat(B?(:,2),1,3);',ic);
+    c_eval('grad_b(:,2:4)=grad_b(:,2:4)+K?(:,2:4).*repmat(B?(:,2),1,3);');
     result=grad_b;
   elseif strcmp(input_is,'vector'), % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
     grad_b=zeros(size(B1,1),1,10);grad_b(:,1)=b1(:,1);
