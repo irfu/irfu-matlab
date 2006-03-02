@@ -1,4 +1,4 @@
-function xint=av_integrate(x,tref)
+function xint=irf_integrate(x,tref)
 %IRF_INTEGRATE  Integrate time series
 %
 % xint=irf_integrate(x,tref)
@@ -13,10 +13,13 @@ function xint=av_integrate(x,tref)
 
 dt=[0 ; diff(x(:,1))];
 time_step=min(diff(x(:,1)));
-data_gaps=find(diff(x(:,1))>3*time_step);
+data_gaps=find(dt>3*time_step);
 dt(data_gaps)=0;
 xint=x;
-xint(:,2:end)=cumsum(x(:,2:end).*repmat(dt,1,size(x,2)-1),1);
+for j=2:size(xint,2),
+  j_ok=find(~isnan(xint(:,j)));
+  xint(j_ok,j)=cumsum(x(j_ok,j).*dt(j_ok),1);
+end
 
 if nargin==2, % other origo for integration 
     if size(tref==6),
