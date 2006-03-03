@@ -51,7 +51,7 @@ elseif fmax ==0
         [n wn]=ellipord(fmin,fmin*1.1,Rp,Rs);
     end 
 	[B,A] = ellip(n,Rp,Rs,fmin,'high');
-	irf_log('poc',['using ' num2str(n) '-th highpass order filter']);
+	irf_log('proc',['using ' num2str(n) '-th highpass order filter']);
 else
 	%[n wn]=ellipord(fmax,fmax*1.1,Rp,Rs);
 	%sprintf('using %d-th order ellip irf_lowpass filter',n)
