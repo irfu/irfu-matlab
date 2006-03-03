@@ -1,4 +1,4 @@
-function xint=irf_integrate(x,tref)
+function xint=irf_integrate(x,tref,time_step)
 %IRF_INTEGRATE  Integrate time series
 %
 % xint=irf_integrate(x,tref)
@@ -8,11 +8,19 @@ function xint=irf_integrate(x,tref)
 %   x - time series  to integrate
 %   tref - optional, integration starting time (optional) 
 %        isdat epoch or [yyyy mm dd hh mm ss.ss]
+%   time_step - optional, all time_steps larger than 3*time_step are
+%   assumed data gaps, default is that time_step is the smallest value of
+%   all time_steps of the time series
 %
 % $Id$
 
 dt=[0 ; diff(x(:,1))];
-time_step=min(diff(x(:,1)));
+if nargin < 3, % estimate time step
+    time_steps=diff(x(:,1));
+    [time_step,ind_min]=min(time_steps);
+    time_steps(ind_min)=[]; % remove the smallest time steps in case some problems
+    time_step=min(time_steps);
+end
 data_gaps=find(dt>3*time_step);
 dt(data_gaps)=0;
 xint=x;
