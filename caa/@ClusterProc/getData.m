@@ -1139,6 +1139,11 @@ elseif strcmp(quantity,'rawspec')
 		phc_coef(1) = phc_coef(1) + dph*pi/180/ph(ii,1);
 	end
 	spin_p = 2*pi/phc_coef(1);
+	if spin_p > 4.4 | spin_p < 3.6
+		irf_log('proc','using spin period == 4 sec')
+		spin_p = 4.0;
+	else, irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
+	end
 		
 	for pr=[12,34]
 		
@@ -1180,6 +1185,7 @@ elseif strcmp(quantity,'rawspec')
 		tstart = tpha0probe + fix( (tt(1,1) - tpha0probe)/spin_p )*spin_p;
 		tend = tstart + ceil( (tt(end,1) - tstart)/spin_p )*spin_p;
 		n = floor((tend - tstart)/spin_p) + 1;
+		if n<0, error(['N is negative: ' num2str(n)]), end
 		rspec = zeros(n,11)*NaN;
 		
 		% N_EMPTY .75 means that we use only spins with more then 75% points.
