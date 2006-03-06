@@ -255,7 +255,7 @@ if savePS
 	[se,w] = unix(['/usr/local/bin/ps2pdf12 ' fne '.ps']);
 	if se~=0, irf_log('save',['problem with ps2pdf: ' w]), end
 	if s==0 & se==0
-		irf_log('save',['joining to ' fne '.[ps,pdf]'])
+		irf_log('save',['joining to ' fone '.pdf'])
 		[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
 		if s~=0, irf_log('save','problem with pdfjoin'), end
 	end
