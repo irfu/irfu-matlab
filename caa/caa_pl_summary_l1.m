@@ -251,9 +251,9 @@ if savePS
 	irf_log('save',['saving ' fne '.[ps,pdf]'])
 	print( 75, '-dpsc2', fn), print( 76, '-dpsc2', fne)
 	[s,w] = unix(['/usr/local/bin/ps2pdf12 ' fn '.ps']);
-	if s~=0, irf_log('save','problem with ps2pdf'), end
+	if s~=0, irf_log('save',['problem with ps2pdf: ' w]), end
 	[se,w] = unix(['/usr/local/bin/ps2pdf12 ' fne '.ps']);
-	if se~=0, irf_log('save','problem with ps2pdf'), end
+	if se~=0, irf_log('save',['problem with ps2pdf: ' w]), end
 	if s==0 & se==0
 		irf_log('save',['joining to ' fne '.[ps,pdf]'])
 		[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
