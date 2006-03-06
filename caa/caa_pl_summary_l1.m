@@ -211,7 +211,7 @@ end
 axes(he(1)), c_pl_tx('es?',2), ylabel('Ex [mV/m]'), axis tight
 axes(he(2)), c_pl_tx('es?',3), ylabel('Ey [mV/m]'), axis tight
 %Plot RSPEC
-c_eval('if ~isempty(rspec?),axes(he(2+?)),irf_plot(rspec?),ylabel(''Rspec C?''),axis tight,end')
+c_eval('if exist(''rspec?'',''var'') & ~isempty(rspec?),axes(he(2+?)),irf_plot(rspec?),ylabel(''Rspec C?''),axis tight,end')
 for axx=[h(5), he(7)]
 	axes(axx)
 	c_pl_tx('p?')
