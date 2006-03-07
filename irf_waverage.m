@@ -7,6 +7,11 @@ function out = irf_waverage(data,fsample)
 
 % Copyright 2004,2006 Yuri Khotyaintsev
 
+if size(data,1)<=1
+	irf_log('proc',['Not enough points (' num2str(size(data,1)) ') to average'])
+	out = data;
+	return
+end
 if nargin<2
 	fsample = 1/(data(2,1)-data(1,1));
 	irf_log('proc',['Sampling frequency ' num2str(fsample)])
