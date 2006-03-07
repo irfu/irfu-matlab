@@ -1128,7 +1128,12 @@ elseif strcmp(quantity,'rawspec')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	%Compute spin period
-	ph = c_phase(tpharef,pha); ph(:,1) = ph(:,1) - ph(1,1);
+	ph = c_phase(tpharef,pha); 
+	if isempty(ph)
+		irf_log('proc','Phase is empty')
+		data = []; cd(old_pwd), return
+	end
+	ph(:,1) = ph(:,1) - ph(1,1);
 	phc = unwrap( ph(1:2,2)/180*pi );
 	phc_coef = polyfit( ph(1:2,1),phc,1 );
 	for k=1:floor( log10(length(ph(:,1))) )
