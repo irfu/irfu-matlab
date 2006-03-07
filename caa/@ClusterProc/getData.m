@@ -295,7 +295,6 @@ if strcmp(quantity,'dies')
 		if length(ii)/size(sp,1)>.05,
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
-		
 		adc_off = irf_waverage(adc_off,1/4);
 		ii = find(adc_off(:,2)==0);
 		adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
@@ -320,16 +319,18 @@ if strcmp(quantity,'dies')
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
-		sdev = std(df);
 		iia = [];
-		for comp = 1:2
-			ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
-			iia = [iia; ii];
-		end
-		iia = sortrows(iia(:));
-		iia(find(diff(iia)==0)) = [];
-		irf_log('calb',sprintf('%d points are removed for delta offsets',...
+		if size(df,1)>2
+			sdev = std(df);
+			for comp = 1:2
+				ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
+				iia = [iia; ii];
+			end
+			iia = sortrows(iia(:));
+			iia(find(diff(iia)==0)) = [];
+			irf_log('calb',sprintf('%d points are removed for delta offsets',...
 				length(iia)))
+		end
 		for comp = 1:2
 			ddd = df(:,comp); ddd(iia) = [];
 			Del(comp) = mean(ddd);
