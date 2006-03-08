@@ -249,6 +249,10 @@ if strcmp(quantity,'dies')
 			cl_id,probe,cl_id,probe))
 
 		if isempty(aa), aa = c_phase(tt(:,1),pha); end
+		if isempty(aa)
+			irf_log('proc','Empty phase')
+			continue
+		end
 		
 		fsamp = c_efw_fsample(tt);
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
