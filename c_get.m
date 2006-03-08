@@ -85,7 +85,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 % Ephemeris
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  elseif strcmp(q,'eph'),
-    for ic=sc_list, disp(['...ephemeris' num2str(ic) '...LT,MLT,ILAT,L->mEPH...R->mR...V->mV']);
+    for ic=sc_list, disp(['...ephemeris' num2str(ic) '...LT,MLT,ILAT,L->mEPH...R->mR...V->mR']);
      [tlt,lt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'lt', ' ', ' ', ' ');
      [tmlt,mlt] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'mlt', ' ', ' ', ' ');
      [tL,Lshell] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'ephemeris', 'l_shell', ' ', ' ', ' ');
@@ -101,7 +101,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
      eval(irf_ssub('tt=R?(1,1);dR?=c_gse2dsc(R?,[tt ic]);',ic));  % despinned coordinates
      eval(irf_ssub('if exist(''./mR.mat''),save mR R? dR? -append; else, save mR R? dR? ;end',ic));
      eval(irf_ssub('tt=V?(1,1);dV?=c_gse2dsc(V?,[tt ic]);',ic));  % despinned coordinates
-     eval(irf_ssub('if exist(''mV.mat''),save mV V? dV? -append; else, save mV V? dV? ;end',ic));
+     eval(irf_ssub('if exist(''mR.mat''),save mR V? dV? -append; else, save mR V? dV? ;end',ic));
     end
     save_list = '';
 
