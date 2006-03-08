@@ -174,7 +174,7 @@ if flag_subplot==0,  % one subplot
     % check first if it exist otherwise assume zero
     ts = t_start_epoch(x(:,1));    
     ii = 2:length(x(1,:));
-    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),args{:});grid on;
+    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),marker);grid on;
     else, h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
     end
     
@@ -219,7 +219,8 @@ elseif flag_subplot==2, % separate subplot for each variable
 	
     npl=size(x,2);
     for ipl=1:npl
-        c(ipl)=irf_subplot(npl,1,-ipl);
+        c(ipl) = irf_subplot(npl,1,-ipl);
+		
         y=x{ipl};
         t_tmp = (y(:,1)-ts-dt(ipl));
 		tt = t_tmp(find(~isnan(t_tmp)));
