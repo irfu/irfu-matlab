@@ -152,8 +152,7 @@ for cli=1:4
 				rs(:,4) = sqrt(rspec_tmp(:,6).^2+rspec_tmp(:,7).^2);
 				rs(:,5) = sqrt(rspec_tmp(:,8).^2+rspec_tmp(:,9).^2);
 				rs(:,6) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
-				rs(:,7) = sqrt(rspec_tmp(:,2).^2+rspec_tmp(:,3).^2);
-				rs(:,8:end) = [];
+				rs(:,7:end) = [];
 				rspec = [rspec; rs];
 				clear rs rspec_tmp
 			end
