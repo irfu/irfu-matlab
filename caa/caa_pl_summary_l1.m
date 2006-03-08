@@ -145,7 +145,16 @@ for cli=1:4
 			
 			% Load RSPEC
 			rspec_tmp = c_load(['RSPEC?p' num2str(pp)],cli,'var');
-			if ~isempty(rspec_tmp) & rspec_tmp~=-157e8, rspec = [rspec; rspec_tmp]; end
+			if ~isempty(rspec_tmp) & rspec_tmp~=-157e8 
+				rs = rspec_tmp;
+				rs(:,4) = sqrt(rspec_tmp(:,4).^2+rspec_tmp(:,5).^2);
+				rs(:,5) = sqrt(rspec_tmp(:,6).^2+rspec_tmp(:,7).^2);
+				rs(:,6) = sqrt(rspec_tmp(:,8).^2+rspec_tmp(:,9).^2);
+				rs(:,7) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
+				rs(:,8:end) = [];
+				rspec = [rspec; rs];
+				clear rs rspec_tmp
+			end
 			
 			% Load intervals & TM mode
 			[st_s,dt1] = caa_read_interval;
