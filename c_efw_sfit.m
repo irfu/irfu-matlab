@@ -80,7 +80,8 @@ end
 warning off;
 
 % Chop up time interval
-% We always start at 0,4,8.. secs, so that we have the same timelines an all SC
+% We always start at 0,4,8.. secs, so that we have 
+% the same timelines an all SC at 2,6,10... sec
 tstart = fix(min(te)/4)*4;
 tend = max(te);
 n = floor((tend - tstart)/4) + 1;
