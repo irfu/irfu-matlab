@@ -79,8 +79,9 @@ end
 % Turn off warnings for badly conditioned polynomial:
 warning off;
 
-% Chop up time interval:
-tstart = min(te);
+% Chop up time interval
+% We always start at 0,4,8.. secs, so that we have the same timelines an all SC
+tstart = fix(min(te)/4)*4;
 tend = max(te);
 n = floor((tend - tstart)/4) + 1;
 spinfit = zeros(n,8);

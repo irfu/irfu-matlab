@@ -1507,7 +1507,7 @@ elseif strcmp(quantity,'p')
 	clear p p1 p2 p3 p4
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% P spinn resolution
+% P spin resolution
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'ps')
 	save_file = './mP.mat';
@@ -1517,31 +1517,11 @@ elseif strcmp(quantity,'ps')
 		irf_log('load',sprintf('No P? in mP. Use getData(CP,...,cl_id,''p'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
-	
 	P_tmp = P_tmp(find(~isnan(P_tmp(:,2))),:);
 	
-	t0 = '';
-	% Try to use time from spin fit
-	% TODO: This code can be made smarter.
-	[ok,Es_tmp] = c_load('diEs?p34',cl_id);
-	if ok
-		ii = find(abs(Es_tmp(:,1)-P_tmp(1,1))<2.1);
-		if ~isempty(ii)
-			irf_log('proc',irf_ssub('using timeline of diEs?p34',cl_id))
-			t0 = Es_tmp(ii,1);
-		end
-	end
-	clear Es_tmp
-	
-	if isempty(t0)
-		irf_log('proc','using new timeline')
-		if isempty(P_tmp)
-		  t0=[];
-		else
-		  t0 = P_tmp(1,1) + 2; 
-		end
-	end
-	
+	% We always start at 0,4,8.. secs, so that we have 
+	% the same timelines an all SC at 2,6,10... sec
+	t0 = fix(P_tmp(1,1)/4)*4 + 2;
 	if ~isempty(P_tmp),
 	  n = floor((P_tmp(end,1)-t0)/4) + 1;
 	  tvec = t0 + ( (1:n) -1)*4;
