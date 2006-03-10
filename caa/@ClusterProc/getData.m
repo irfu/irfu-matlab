@@ -482,7 +482,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 			end
 			
 			% Correct ADC offset
-			if flag_usesavedoff & ~do_filter
+			if flag_usesavedoff
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
@@ -494,7 +494,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 					flag_usesavedoff = 0;
 				end
 			end
-			if ~flag_usesavedoff | do_filter
+			if ~flag_usesavedoff
 				irf_log('calb','computing ADC offsets (simple averaging)')
 				[tt,dadc] = caa_corof_adc(tt);
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
