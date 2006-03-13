@@ -36,8 +36,10 @@ function sf = guess_fsample(f)
 K_PLUS = 1.1;
 K_MINUS = .9;
 
-if f<K_PLUS*25 & f>K_MINUS*25, sf = 25;          % NM
+if f<K_PLUS*5 & f>K_MINUS*5, sf = 5;          % LX
+elseif f<K_PLUS*25 & f>K_MINUS*25, sf = 25;      % NM
 elseif f<K_PLUS*450 & f>K_MINUS*450, sf = 450;   % BM1
+elseif f<K_PLUS*9000 & f>K_MINUS*9000, sf = 9000;% IB
 elseif f<K_PLUS*.25 & f>K_MINUS*.25, sf = .25;   % SPIN
 else, sf = 0;
 end
