@@ -1,16 +1,21 @@
-function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp)
-%CAA_EXPORT export data to CAA CEF files
-% caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp])
+function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
+%CAA_EXPORT  export data to CAA CEF files
 %
-% See also c_export_ascii
+% caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp,st,dt])
+%
+% CEF file is written to a current directory. Data is supposed to be also 
+% there, if SP is not specified.
+%
+% See also C_EXPORT_ASCII
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev
+% Copyright 2004-2006 Yuri Khotyaintsev
 
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '1';
 
+if nargin<8, st = []; dt=[]; end
 if nargin<6, sp='.'; end
 if nargin<5, DATA_VERSION = '01'; end
 if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
@@ -50,13 +55,12 @@ else
 			vs = irf_ssub('diE?p1234',cl_id);
 			v_size = 1;
 		elseif lev==3
-			pwd
 			sfit_probe = caa_sfit_probe(cl_id);
 			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 			irf_log('proc',sprintf('using p%d',sfit_probe))
 			v_size = 2;
 		else
-			disp('not implemented'), return
+			disp('not implemented'), cd(old_pwd), return
 		end
 	case 'EF'
 		vs = irf_ssub('diEF?p1234',cl_id);
@@ -92,62 +96,75 @@ else
 	end
 end
 
+% Make subinterval
+if ~isempty(st) & ~isempty(dt)
+	t_int = st + [0 dt];
+	irf_log('save', sprintf('Subinterval : %s -- %s for %s_L%d',...
+			epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), vs, lev))
+	data = irf_tlim(data,t_int);
+	if isempty(data)
+		irf_log('save', 'Saving empty subinterval')
+	end 
+else
+	[iso_ts,dtint] = caa_read_interval;
+	if isempty(iso_ts)
+		t_int = data([1 end],1);
+	else
+		t_int(1) = iso2epoch(iso_ts);
+		t_int(2) = t_int(1) + dtint;
+	end
+	clear iso_ts dtint
+end
+
 % Do magic on E-field
 if strcmp(caa_vs,'E')
 	% We check if this full res E is from coming from two probe pairs
-	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234'))
-		c_log('save','This is not a full E, we skip it.')
-		return
+	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234')) & QUALITY>1
+		c_log('save','This is not a full E, setting QUALITY=1!')
+		QUALITY = 1;
 	end
 	
-	dsiof = c_ctl(cl_id,'dsiof');
-	if isempty(dsiof), dsiof = [1+0i 1]; end
-	[ok,Dxy] = c_load('Ddsi?',cl_id);
-	if ok
-		Dx = real(Dxy);
-		Dy = imag(Dxy);
-	else
-		Dx = real(dsiof(1));
-		Dy = imag(dsiof(1));
-	end
-	[ok,Da] = c_load('Damp?',cl_id);
-	if ~ok, Da = dsiof(2); end
-	clear dsiof Dxy
-
-	data = caa_corof_dsi(data,Dx,Dy,Da);
-	dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',Dx,Dy,Da);
-	irf_log('calb',dsc.com)
-	dsc.com = [dsc.com '. Probes: ' dsc.sen];
-	
-	%dsc.fro = {'Coordinate_System'};
-	dsc.frv = {'Observatory'};
-	if v_size>1
-		for j=2:v_size
-			%dsc.fro = [dsc.fro {''}]; 
-			dsc.frv = [dsc.frv {''}];
+	if ~isempty(data)
+		dsiof = c_ctl(cl_id,'dsiof');
+		if isempty(dsiof), dsiof = [1+0i 1]; end
+		[ok,Ddsi] = c_load('Ddsi?',cl_id); if ~ok, Ddsi = dsiof(1); end
+		[ok,Damp] = c_load('Damp?',cl_id); if ~ok, Damp = dsiof(2); end
+		clear dsiof
+		
+		data = caa_corof_dsi(data,Ddsi,Damp);
+		dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+			real(Ddsi(1)),imag(Ddsi(1)),Damp);
+		irf_log('calb',dsc.com)
+		dsc.com = [dsc.com '. Probes: ' dsc.sen];
+		
+		% Remove Ez, which is zero
+		if lev==3, data = data(:,[1:3 5]);
+		else, data = data(:,1:3);
 		end
 	end
 	
-	% Remove Ez, which is zero
-	if lev==3, data = data(:,[1:3 5]);
-	else, data = data(:,1:3);
-	end
-elseif strcmp(caa_vs,'EF')
 	dsc.frv = {'Observatory'};
-	% Remove Ez, which is zero
-	data = data(:,1:3);
+	if v_size>1, for j=2:v_size, dsc.frv = [dsc.frv {''}]; end, end
+	
+elseif strcmp(caa_vs,'EF')
+	if ~isempty(data)
+		% Remove Ez, which is zero
+		data = data(:,1:3);
+	end
+	
+	dsc.frv = {'Observatory'};
+	
 elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
-	% convert mV/m back to V
-	id = str2num(caa_vs(2:end));
+	if ~isempty(data)
+		% convert mV/m back to V
+		if id==32, data(:,2) = data(:,2)*.0622;
+		else, data(:,2) = data(:,2)*.088;
+		end
+		id = str2num(caa_vs(2:end));
+	end
 	
 	dsc.units = {'V'};
-	
-	if id==32, data(:,2) = data(:,2)*.0622;
-	else, data(:,2) = data(:,2)*.088;
-	end
-	
 	dsc.cs = {'na'};
- 	dsc.units =  {'V'};
 	dsc.si_conv = {''};
 	dsc.field_name = {['Potential difference measured between probes '...
 		dsc.sen(1) ' and ' dsc.sen(2)]};
@@ -155,15 +172,6 @@ elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
 	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
 end
-
-[iso_ts,dtint] = caa_read_interval;
-if isempty(iso_ts)
-	t_int = data([1 end],1);
-else
-	t_int(1) = iso2epoch(iso_ts);
-	t_int(2) = t_int(1) + dtint;
-end
-clear iso_ts dtint
 
 cd(old_pwd)
 
@@ -274,19 +282,18 @@ fprintf(fid,'!                       Data                          !\n');
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 fprintf(fid,'DATA_UNTIL = EOF\n');
 
-sz = size(data);
-n_data = sz(2) - 1; % number of data columns - time
-
-for j=1:n_data
-	ii = find(isnan(data(:,j+1)));
-	if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
-end
-
 fclose(fid);
 
-s = cefprint_mx([file_name ext_s],data);
-
-if s~=0, irf_log('save','problem writing to CEF file'), return, end
+if ~isempty(data)
+	n_col = size(data,2) -1; % number of data columns - time
+	for j=1:n_col
+		ii = find(isnan(data(:,j+1)));
+		if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
+	end
+	
+	s = cefprint_mx([file_name ext_s],data);
+	if s~=0, irf_log('save','problem writing to CEF file'), return, end
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function pmeta(fid,m_s,s,cl_id)
