@@ -28,7 +28,8 @@ for j=1:length(m_vars)
 		vers_s = num2str(ints(ii,4));
 		if ints(ii,4)<10, vers_s = ['0' vers_s]; end
 		irf_log('save', sprintf('Export : %s -- %s %s_L%d V%s',...
-			epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), vs, lev, vers_s))
+			epoch2iso(ints(ii,1),1), epoch2iso(ints(ii,1)+ints(ii,2),1), ...
+			vs, lev, vers_s))
 		caa_export(lev,caa_vs,cl_id,ints(ii,3),vers_s,sp,ints(ii,1),ints(ii,2))
 	end
 end
