@@ -99,8 +99,8 @@ end
 % Make subinterval
 if ~isempty(st) & ~isempty(dt)
 	t_int = st + [0 dt];
-	irf_log('save', sprintf('Subinterval : %s -- %s for %s_L%d',...
-			epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), vs, lev))
+	irf_log('save', sprintf('%s : %s -- %s',...
+			vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
 	data = irf_tlim(data,t_int);
 	if isempty(data)
 		irf_log('save', 'Saving empty subinterval')
