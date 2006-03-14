@@ -196,7 +196,6 @@ fprintf(fid,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
 fprintf(fid,'include = "CL_CH_EFW_EXP.ceh"\n');
 pmeta(fid,'FILE_TYPE','cef')
 pmeta(fid,'DATA_TYPE','CP')
-%pmeta(fid,'OBSERVATORY','Cluster-?',cl_id)
 pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
 pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
 pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id)
@@ -207,9 +206,9 @@ pmeta(fid,'DATASET_DESCRIPTION',...
 	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
 	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)})
 pmeta(fid,'DATASET_VERSION',EFW_DATASET_VERSION)
-pmeta(fid,'TIME_RESOLUTION',num2str(TIME_RESOLUTION))
-pmeta(fid,'MIN_TIME_RESOLUTION',num2str(TIME_RESOLUTION))
-pmeta(fid,'MAX_TIME_RESOLUTION',num2str(TIME_RESOLUTION))
+pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
+pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
 pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
 pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
 pmeta(fid,'LOGICAL_FILE_ID',file_name)
@@ -217,11 +216,11 @@ pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
 fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
 fprintf(fid,...
-['   ENTRY       =   "' epoch2iso(t_int(1)) '/' epoch2iso(t_int(2)) '"\n']);
+['   ENTRY       =   ' epoch2iso(t_int(1)) '/' epoch2iso(t_int(2)) '\n']);
 fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
 fprintf(fid,'START_META     =   GENERATION_DATE\n');
 fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
-fprintf(fid,['   ENTRY       =   "' epoch2iso(date2epoch(nnow)) '"\n']);
+fprintf(fid,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 fprintf(fid,'END_META       =   GENERATION_DATE\n');
 
 fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
@@ -231,7 +230,7 @@ fprintf(fid,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
 fprintf(fid,'  VALUE_TYPE      = ISO_TIME\n');
 fprintf(fid,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
 fprintf(fid,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
-fprintf(fid,['  FILLVAL         = "9999-12-31T23:59:59Z"\n']);
+fprintf(fid,['  FILLVAL         = 9999-12-31T23:59:59Z\n']);
 fprintf(fid,'  LABLAXIS        = "UT"\n');
 fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
 fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
@@ -254,8 +253,8 @@ for j=1:v_size
 		fprintf(fid,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
 	end
 	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
-	fprintf(fid,['  FILLVAL           = "' num2str(FILL_VAL,'%8.3f') '"\n']);
-	fprintf(fid,['  QUALITY           = "' num2str(QUALITY) '"\n']);
+	fprintf(fid,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
+	fprintf(fid,['  QUALITY           = ' num2str(QUALITY) '\n']);
 	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
 	if ~isempty(dsc.com) & j==1
 		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
@@ -301,11 +300,15 @@ function pmeta(fid,m_s,s,cl_id)
 
 fprintf(fid,['START_META     =   ' m_s '\n']);
 if iscell(s)
-	for j=1:length(s), fprintf(fid,['   ENTRY       =   "' s{j} '"\n']); end
+	for j=1:length(s)
+		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else, q = '"'; ss = s{j};end
+		fprintf(fid,['   ENTRY       =   ' q ss q '\n']); 
+	end
 else
 	if nargin==4, ss = irf_ssub(s,cl_id); 
 	else, ss = s;
 	end
-	fprintf(fid,['   ENTRY       =   "' ss '"\n']);
+	if isnumeric(ss), q = ''; ss = num2str(ss); else, q = '"'; end
+	fprintf(fid,['   ENTRY       =   ' q ss q '\n']);
 end
 fprintf(fid,['END_META       =   ' m_s '\n']);
