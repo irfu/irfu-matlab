@@ -1514,25 +1514,27 @@ elseif strcmp(quantity,'ps')
 	
 	[ok,P_tmp] = c_load('P?',cl_id);
 	if ~ok
-		irf_log('load',sprintf('No P? in mP. Use getData(CP,...,cl_id,''p'')',cl_id))
+		irf_log('load',sprintf('No P%d in mP. Use getData(CP,...,cl_id,''p'')',cl_id))
 		data = []; cd(old_pwd); return
 	end
 	P_tmp = P_tmp(find(~isnan(P_tmp(:,2))),:);
+	if isempty(P_tmp)
+		irf_log('proc',sprintf('Empty P%d.',cl_id))
+		data = []; cd(old_pwd); return
+	end
 	
 	% We always start at 0,4,8.. secs, so that we have 
 	% the same timelines an all SC at 2,6,10... sec
-	if ~isempty(P_tmp),
-	  t0 = fix(P_tmp(1,1)/4)*4 + 2;
-	  n = floor((P_tmp(end,1)-t0)/4) + 1;
-	  tvec = t0 + ( (1:n) -1)*4;
+	t0 = fix(P_tmp(1,1)/4)*4 + 2;
+	n = floor((P_tmp(end,1)-t0)/4) + 1;
+	tvec = t0 + ( (1:n) -1)*4;
 	
-      P_tmp = irf_resamp(P_tmp,tvec'); clear tvec
-	  c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
+	P_tmp = irf_resamp(P_tmp,tvec'); clear tvec
+	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
-	  [ok,P_info] = c_load('P?_info',cl_id);
-	  if ok
-	    c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
-	  end
+	[ok,P_info] = c_load('P?_info',cl_id);
+	if ok
+		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % vce - E CIS PP [GSE+DSI] 
