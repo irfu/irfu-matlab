@@ -1521,8 +1521,8 @@ elseif strcmp(quantity,'ps')
 	
 	% We always start at 0,4,8.. secs, so that we have 
 	% the same timelines an all SC at 2,6,10... sec
-	t0 = fix(P_tmp(1,1)/4)*4 + 2;
 	if ~isempty(P_tmp),
+	  t0 = fix(P_tmp(1,1)/4)*4 + 2;
 	  n = floor((P_tmp(end,1)-t0)/4) + 1;
 	  tvec = t0 + ( (1:n) -1)*4;
 	
