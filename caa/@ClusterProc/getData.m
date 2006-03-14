@@ -43,7 +43,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
 %	probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
-%	rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal
+%	rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
@@ -61,7 +61,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev
+% Copyright 2004-2006 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(3,15,nargin))
