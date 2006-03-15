@@ -70,6 +70,13 @@ for cl_id=sc_list
 				count_skip = count_skip + 1;
 				irf_log('proc',['Skipping one NM frame for C' num2str(cl_id)...
 					' at ' epoch2iso(st_tmp,1)])
+			% We also skip one frame of BM1 because the instrument may still
+			% be in NM at the beginning of the frame
+			elseif tm_cur==1 & count_skip<1
+				tm_cur = -2;
+				count_skip = count_skip + 1;
+				irf_log('proc',['Skipping one BM1 frame for C' num2str(cl_id)...
+					' at ' epoch2iso(st_tmp,1)])
 			else
 				tm(end+1,:) = [st_tmp tm_cur];
 				count_skip = 0;
