@@ -323,6 +323,7 @@ if strcmp(quantity,'dies')
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
+		df(find(isnan(df))) = [];
 		iia = [];
 		if size(df,1)>2
 			sdev = std(df);
