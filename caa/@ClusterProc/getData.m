@@ -353,7 +353,7 @@ if strcmp(quantity,'dies')
 				irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
 				cl_id,deltaof_max))
 		else
-			% We suppose that smaller field is more realistic
+			% We suppose that larger field is more realistic
 			% and will correct the largest signal.
 			% If we have p32, we always correct it, not p34.
 			% Real offset is applied to p12, imaginary to p34.
