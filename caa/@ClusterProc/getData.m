@@ -431,14 +431,13 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 	for probe = p_ok
 		if probe==12, ps=p12; else ps=probe; end
 		[ok,dadc] = c_load(irf_ssub('Dadc?p!',cl_id,ps));
+		disp(dadc)
 		if ~ok
 			if CAA_MODE, error(irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
 			irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps))
 		end
 		if isempty(dadc)
 			if CAA_MODE, error(irf_ssub('Empty Dadc?p!',cl_id,ps)), end
-			[ok,dadc] = c_load(irf_ssub('Da?p!',cl_id,ps));
-			if ~ok, irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
 		end
 		c_eval('dadc?=dadc;',probe)
 		clear ok dadc
@@ -462,9 +461,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 				tmp_adc = irf_resamp(dadc,tt);
 				tt(:,2) = tt(:,2) - tmp_adc(:,2);
 				clear tmp_adc
-			else, irf_log('calb','ADC offset not corrected')
+			else, irf_log('calb','saved ADC offset empty')
 			end
-			
 		else
 			fsamp = c_efw_fsample(tt);
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
@@ -499,7 +497,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 				irf_log('calb','computing ADC offsets (simple averaging)')
 				[tt,dadc] = caa_corof_adc(tt);
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
-				eval(irf_ssub('Da?p!=dadc;save_list=[save_list '' Da?p! ''];',cl_id,ps));
+				eval(irf_ssub('Da?p!=dadc;',cl_id,ps));
 			end
 			n_sig = n_sig + 1;
 			c_eval('e?=tt;',p)
