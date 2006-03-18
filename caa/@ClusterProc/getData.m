@@ -256,7 +256,7 @@ if strcmp(quantity,'dies')
 		
 		fsamp = c_efw_fsample(tt);
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-		if flag_rmwhip, problems = [problems '|whip']; end
+		%if flag_rmwhip, problems = [problems '|whip']; end
 		signal = tt;
 		remove_problems
 		tt = res;
