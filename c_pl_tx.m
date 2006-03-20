@@ -156,9 +156,13 @@ if length(column) == 1,
 			clear s_s
 		end
 	end 
-	eval(['h=plot(' pl ');'])
-	c=get(h(1),'parent');
-	grid on
+	if ~isempty(pl)
+		eval(['h=plot(' pl ');'])
+		grid on
+		c=get(h(1),'parent');
+		add_timeaxis(c);
+		irf_figmenu;
+	end
 else
 	clf;
 	for j=1:length(column),
@@ -175,10 +179,8 @@ else
 		grid on
         ud=get(gcf,'userdata');ud.subplot_handles=c;set(gcf,'userdata',ud);
 	end
+	add_timeaxis(c);
+	irf_figmenu;
 end
 
-add_timeaxis(c);
-irf_figmenu;
-
 if nargout > 0, out = c; end
-
