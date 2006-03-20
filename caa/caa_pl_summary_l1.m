@@ -96,7 +96,7 @@ ri = [];
 fmax = 12.5;
 cli_pos = [4 3 2 1];
 
-c_eval('p?=[];spec?=[];')
+c_eval('p?=[];spec?=[];es?=[];rspec?=[];')
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
 	p = []; spec = []; es = []; rspec = [];
@@ -239,6 +239,7 @@ end
 
 if dt>0, irf_zoom(st +[0 dt],'x',h), end
 if dt>0, irf_zoom(st +[0 dt],'x',he), end
+
 if ~isempty(r)
 	r = irf_abs(r);
 	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6371.2],...
