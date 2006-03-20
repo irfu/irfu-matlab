@@ -574,9 +574,9 @@ elseif strcmp(quantity,'a')
 	
 	n_ok = 0;
 	
-	% We ask for 5 sec more from each side 
+	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
-	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, ...
+	[t,data] = caa_is_get(cdb.db, start_time-2, dt+4, ...
 		cl_id, 'ephemeris', 'phase');
 	if ~isempty(data)
 		c_eval('A?=[t data];save_list=[save_list '' A? ''];',cl_id);
