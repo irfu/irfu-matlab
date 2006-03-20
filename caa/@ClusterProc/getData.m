@@ -849,20 +849,31 @@ elseif strcmp(quantity,'sweep')
 	[t_s_px,t_e_px,fdm_px] = caa_efw_mode_tab(fdm, 'px');
 	ii_px = find(fdm_px(:,1)==1 & fdm_px(:,2)==1);
 	if ~isempty(ii) | ~isempty(ii_px)
-		bdump = zeros(length(ii),2);
-		for k=1:length(ii)
+		if isempty(ii)
+			% We hit sweep dump directly
+			irf_log('dsrc','found loonely sweep dump')
+			if length(ii_px)>1, irf_log('proc','WARNING: too many loonely sweep dumps'), end
+			bdump = zeros(1,2);
 			% We add one second at the start of the interval for safety
-			bdump(k,1) = t_s(ii(k)) -1;
-			% We look for dump of the sweep in the FDM which follows the wseep 
-			% or in the next one
-			jj = find(t_s_px>=t_e(ii(k)) & t_s_px<t_e(ii(k))+1.1);
+			bdump(1,1) = t_s_px(ii_px(1)) -1;
 			% We add one second to the end of the interval for safety
-			if isempty(jj)
-				bdump(k,2) = t_e(ii(k)) +1;
-				irf_log('dsrc','no dump after sweep')
-			else, bdump(k,2) = t_e_px(jj(end)) +1;
+			bdump(1,2) = t_e_px(ii_px(end)) +1;
+		else
+			bdump = zeros(length(ii),2);
+			for k=1:length(ii)
+				% We add one second at the start of the interval for safety
+				bdump(k,1) = t_s(ii(k)) -1;
+				% We look for dump of the sweep in the FDM which follows the sweep 
+				% or in the next one
+				jj = find(t_s_px>=t_e(ii(k)) & t_s_px<t_e(ii(k))+1.1);
+				% We add one second to the end of the interval for safety
+				if isempty(jj)
+					bdump(k,2) = t_e(ii(k)) +1;
+					irf_log('dsrc','no dump after sweep')
+				else, bdump(k,2) = t_e_px(jj(end)) +1;
+				end
 			end
-		end 
+		end
 		c_eval('SWEEP?=bdump;save_list=[save_list '' SWEEP? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No sweeps on C?',cl_id))
