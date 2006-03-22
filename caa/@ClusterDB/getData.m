@@ -111,7 +111,8 @@ if ~exist('./.interval','file')
 end
 
 % Read list of nonstandard operations and see if we have one of those 
-% during the requested period
+% during the requested period. Permanent problems (as loss of 
+% probes, filters, etc.) must be programmed separately
 if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
 	strcmp(quantity,'p')|strcmp(quantity,'pburst')
 	
@@ -121,55 +122,9 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	if ~isempty(ns_ops)
-		% Remove records which cover permanent problems (as loss of 
-		% probes, filters, etc.) as these must be programmed separately
-		ii = find(ns_ops(:,2)==-1);
-		ns_ops(ii,:) = [];
-		
-		ii = find(ns_ops(:,1)<start_time+dt & ns_ops(:,1)>start_time);
-		if ~isempty(ii)
-			for j=1:length(ii)
-				if ns_ops(ii(j),4)<10
-					% no/bad data - truncate the period
-					irf_log('proc',...
-					['PROBLEM: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
-					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
-					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
-					irf_log('proc',...
-					['setting dt to ' num2str(ns_ops(ii(j),1)-start_time)])
-					dt = ns_ops(ii(j),1) - start_time;
-				else
-					irf_log('proc',...
-					['WARNING: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
-					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
-					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
-				end
-			end
-		end
-		% clear already processed records
-		ns_ops(ii,:) = [];
-		ii = find(ns_ops(:,1)+ns_ops(:,2)<start_time+dt & ...
-			ns_ops(:,1)+ns_ops(:,2)>start_time);
-		if ~isempty(ii)
-			for j=1:length(ii)
-				if ns_ops(ii(j),4)<10
-					% no/bad data - truncate the period
-					irf_log('proc',...
-					['PROBLEM: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
-					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
-					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
-					irf_log('proc',...
-					['setting start_time to ' ...
-					epoch2iso( ns_ops(ii(j),1)+ns_ops(ii(j),2) ,1)])
-					start_time = ns_ops(ii(j),1) + ns_ops(ii(j),2);
-				else
-					irf_log('proc',...
-					['WARNING: ' caa_errid2str(ns_ops(ii(j),4)) ' from ' ...
-					epoch2iso(ns_ops(ii(j),1)) ' to ' ...
-					epoch2iso(ns_ops(ii(j),1)+ns_ops(ii(j),2))])
-				end
-			end
-		end
+		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops);
+		if isempty(start_time), data = []; cd(old_pwd), return, end
+	else, start_time_nsops = start_time; dt_nsops = dt;
 	end
 end
 
@@ -433,8 +388,17 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 	for probe=pl
 		irf_log('dsrc',['EFW...sc' num2str(cl_id)...
 			'...Ep' num2str(probe) ' ' param ' filter']);
-		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
-			'efw', 'E', ['p' num2str(probe)], param, tmmode);
+		t = [];	data = [];
+		for in=1:length(start_time_nsops)
+			if length(start_time_nsops)>1
+				irf_log('dsrc',...
+					sprintf('chunk #%d : %s %d sec',in,...
+						epoch2iso(start_time_nsops(in),1),dt_nsops(in)))
+			end
+			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
+				'efw', 'E', ['p' num2str(probe)], param, tmmode);
+			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
+		end
 		if ~isempty(data)
 			% Correct start time of the burst
 			if do_burst
