@@ -471,8 +471,18 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	for j=1:length(param), for probe=probe_list;
     	irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
 			'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
-		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
-		'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
+		t = [];	data = [];
+		for in=1:length(start_time_nsops)
+			if length(start_time_nsops)>1
+				irf_log('dsrc',...
+					sprintf('chunk #%d : %s %d sec',in,...
+						epoch2iso(start_time_nsops(in),1),dt_nsops(in)))
+			end
+			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
+				'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
+			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
+		end
+		
 		if ~isempty(data)
 			% Correct start time of the burst
 			if do_burst
