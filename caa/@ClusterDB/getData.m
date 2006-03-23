@@ -123,7 +123,11 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
 	end
 	if ~isempty(ns_ops)
 		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops);
-		if isempty(start_time), data = []; cd(old_pwd), return, end
+		if isempty(start_time_nsops)
+			irf_log('dsrc',sprintf('bad NS_OPS interval for C%d - %s',cl_id,quantity))
+			data = []; 
+			cd(old_pwd), return
+		end
 	else, start_time_nsops = start_time; dt_nsops = dt;
 	end
 end
