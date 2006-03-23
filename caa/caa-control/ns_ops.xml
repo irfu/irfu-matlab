@@ -253,6 +253,12 @@ minute expected.</desc>
 			<link href="pal020806a.txt">Per-Arne 020806</link>
 		</res>
 	</operation>
+	<operation start="2002-08-06T14:10:00Z" dt="1200" c2="yes" c3="yes" plan="yes" sdesc="bad_tm">
+		<desc>WBD noise test</desc>
+		<res>
+			<link href="pal060323a.txt">Per-Arne 060323</link>
+		</res>
+	</operation>
 	<operation start="2002-08-06T18:20:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>
 			BM1 data intermittent (period about 20 s ???) due to wrong 
