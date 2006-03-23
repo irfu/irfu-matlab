@@ -11,7 +11,7 @@ function caa_get_batch_l1(iso_t,dt,sdir,sc_list,extravars)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005, 2006 Yuri Khotyaintsev
 
 extravars_def = 'diespec|dief';
 
@@ -146,24 +146,43 @@ for cl_id=sc_list
 		else, j = j + 1;
 		end
 	end
-	int_tmp = [];
+	
+	% Read NS_OPS database
+	clear ns_ops
+	ns_ops = c_ctl('get',cl_id,'ns_ops');
+	if isempty(ns_ops)
+		c_ctl('load_ns_ops',[DP_S '/caa-control'])
+		ns_ops = c_ctl('get',cl_id,'ns_ops');
+	end
+	if isempty(ns_ops), error(['cannot get NS_OPS for C' num2str(cl_id)]), end
+	
 	for inter=1:size(tm,1)
 		t1 = tm(inter,1);
 		if inter==size(tm,1), dt1 = st +dt -t1;
 		else, dt1 = tm(inter+1,1) -t1;
 		end
-		if inter~=1 & inter~=size(tm,1) & dt1<500
+		
+		% Disregard bad NS_OPS intervals directly here
+		[st_nsops, dt_nsops] = caa_ns_ops_int(t1,dt1,ns_ops);
+		if isempty(st_nsops)
+			irf_log('proc','Bad interval according to NS_OPS')
 			irf_log('proc',['C' num2str(cl_id) ' skipping ' ...
-				epoch2iso(t1,1) ' - ' epoch2iso(t1+dt1,1)])
-		else
-			irf_log('proc',['C' num2str(cl_id) ' interval ' ...
-				epoch2iso(t1,1) ' - ' epoch2iso(t1+dt1,1)])
+				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
+			continue
 		end
 		
-		% Keep track of intervals we process
-		int_tmp(end+1,:) = [t1 dt1];
+		% Intervals shorter then 500 sec and which are not at the
+		% beginning of the entire interval are considered bad,
+		% as they are usually signatures of hacked data
+		if inter~=1 & inter~=size(tm,1) & dt1<500
+			irf_log('proc',['C' num2str(cl_id) ' skipping ' ...
+				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
+		else
+			irf_log('proc',['C' num2str(cl_id) ' interval ' ...
+				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
+		end
 		
-		% Get data
+		% Get the data
 		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
 			'vars','tmode|fdm|efwt|ibias|p|e|a|r','noproc')
 		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,...
