@@ -426,12 +426,11 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 		clear ok da
 	end
 	if ~length(p_ok), data = []; cd(old_pwd), return, end
-	
+
 	% Load ADC offsets
 	for probe = p_ok
 		if probe==12, ps=p12; else ps=probe; end
 		[ok,dadc] = c_load(irf_ssub('Dadc?p!',cl_id,ps));
-		disp(dadc)
 		if ~ok
 			if CAA_MODE, error(irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
 			irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps))
@@ -442,7 +441,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 		c_eval('dadc?=dadc;',probe)
 		clear ok dadc
 	end
-	
+
 	% calibration coefficients // see c_efw_despin
 	coef=[[1 0 0];[1 0 0]];
 
