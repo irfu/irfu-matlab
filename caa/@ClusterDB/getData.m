@@ -563,7 +563,7 @@ elseif strcmp(quantity,'a')
 	end
 	clear t data
 	
-	[t,data] = caa_is_get(cdb.db, start_time-5, dt+10, ...
+	[t,data] = caa_is_get(cdb.db, start_time-2, dt+4, ...
 		cl_id, 'ephemeris', 'phase_2');
 	if ~isempty(data)
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
