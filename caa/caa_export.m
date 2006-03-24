@@ -86,14 +86,16 @@ if ~ok | isempty(d_info), dsc = c_desc(vs);
 else, dsc = c_desc(vs,d_info);
 end
 
-dt_spin = 4;
 if lev==3
-	TIME_RESOLUTION = dt_spin;
-else
-	fs = c_efw_fsample(data);
-	if fs>0, TIME_RESOLUTION = 1/fs;
-	else, error('cannot determine time resolution')
-	end
+	TIME_RESOLUTION = 4;
+elseif (lev==1 & regexp(caa_vs,'^P(1|2|3|4)?$')) | (lev==2 & strcmp(caa_vs,'P'))
+	TIME_RESOLUTION = 1/5;
+elseif (lev==1 & regexp(caa_vs,'^P(12|32|34)?$')) | ...
+	(lev==2 & (strcmp(caa_vs,'E') | strcmp(caa_vs,'EF')))
+	
+	fs = c_efw_fsample(data,'hx');
+	if ~fs, error('cannot determine time resolution'), end
+	TIME_RESOLUTION = 1/fs;
 end
 
 % Make subinterval
