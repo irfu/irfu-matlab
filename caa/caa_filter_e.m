@@ -7,6 +7,8 @@ function res = caa_filter_e(data,wind)
 %
 % $Id$
 
+% Copyright 2005,2006 Yuri Khotyaintsev
+
 MAXDATA = 100000;
 
 if nargin<2, wind=.5; end
@@ -19,7 +21,8 @@ if length(data(ii,1))<=1
 	return
 end
 
-sf = c_efw_fsample(data(ii,1));
+sf = c_efw_fsample(data(ii,1),'hx');
+if ~sf, error('no sampling frequency'),end
 nw2 = ceil(sf*wind/2);
 
 % Order data
