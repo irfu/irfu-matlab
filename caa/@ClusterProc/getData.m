@@ -790,9 +790,21 @@ elseif strcmp(quantity,'whip')
 	ii = find(fdm_r==1);
 	
 	if ~isempty(ii)
-		% add 1 sec before
+		% Add 1 sec before
 		t_s = t_s(ii) - 1;
 		t_e = t_e(ii);
+		% Check for exceptionally long intervals with Whisper on.
+		% 20 sec is the max reasonable duration for Whisper according to PAL.
+		WHIMAX = 20;
+		ii = find(t_e-t_s>WHIMAX);
+		if ii
+			for in=ii
+				irf_log('dsrc', ['throwing away ' num2str(t_e(ii)-t_s(ii)) ...
+					' sec WHI pulse at ' epoch2iso(t_s(in),1)])
+			end
+			t_s(ii) = []; t_e(ii) = [];
+			if isempty(t_s), data = []; cd(old_pwd); return, end
+		end
 		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' WHIP? ''];',cl_id);
 	else
