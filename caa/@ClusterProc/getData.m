@@ -205,27 +205,27 @@ if strcmp(quantity,'dies')
 		dt = double(te - ts); clear te ts1 te1
 		
 		% Guess the sampling frequency
-		fsamp=c_efw_fsample(e34(:,1));
-		if fsamp
-			irf_log('proc','Using new time line for spinfits')
-			t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
-			t_new = t_new';
-			
-			d_new = zeros(length(t_new),2);
-			d_new(:,1) = ts + t_new;
-			d_new(:,2) = NaN;
-			
-			ii = round((e34(:,1)-ts)*fsamp+1);
-			if ii(end)>length(t_new), error('problemo with new time line'), end
-			d_new(ii,2) = e34(:,2); e34 = d_new;
-			d_new(:,2) = NaN;
-			
-			ii = round((e12(:,1)-ts)*fsamp+1);
-			if ii(end)>length(t_new), error('problemo with new time line'), end
-			d_new(ii,2) = e12(:,2); e12 = d_new;
-			
-			clear t_new ts dt d_new ii
-		end
+		fsamp = c_efw_fsample(e34(:,1),'hx');
+		if ~fsamp, error('no sampling frequency'),end
+		
+		irf_log('proc','Using new time line for spinfits')
+		t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
+		t_new = t_new';
+		
+		d_new = zeros(length(t_new),2);
+		d_new(:,1) = ts + t_new;
+		d_new(:,2) = NaN;
+		
+		ii = round((e34(:,1)-ts)*fsamp+1);
+		if ii(end)>length(t_new), error('problemo with new time line'), end
+		d_new(ii,2) = e34(:,2); e34 = d_new;
+		d_new(:,2) = NaN;
+		
+		ii = round((e12(:,1)-ts)*fsamp+1);
+		if ii(end)>length(t_new), error('problemo with new time line'), end
+		d_new(ii,2) = e12(:,2); e12 = d_new;
+		
+		clear t_new ts dt d_new ii
 	end
 	clear not_same
 	
@@ -254,7 +254,9 @@ if strcmp(quantity,'dies')
 			continue
 		end
 		
-		fsamp = c_efw_fsample(tt);
+		fsamp = c_efw_fsample(tt,'hx');
+		if ~fsamp, error('no sampling frequency'),end
+		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
 		%if flag_rmwhip, problems = [problems '|whip']; end
 		signal = tt;
@@ -463,7 +465,9 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 			else, irf_log('calb','saved ADC offset empty')
 			end
 		else
-			fsamp = c_efw_fsample(tt);
+			fsamp = c_efw_fsample(tt,'hx');
+			if ~fsamp, error('no sampling frequency'),end
+			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
 			if flag_rmwhip, problems = [problems '|whip']; end
 			signal = tt;
@@ -583,7 +587,8 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 	
 	if strcmp(quantity,'diespec')
 		% Make a spectrum and save it.
-		sfreq = c_efw_fsample(full_e(:,1));
+		sfreq = c_efw_fsample(full_e(:,1),'hx');
+		if ~sfreq, error('no sampling frequency'),end
 		if sfreq == 25, nfft = 512;
 		else, nfft = 8192;
 		end
@@ -1193,7 +1198,9 @@ elseif strcmp(quantity,'rawspec')
 		irf_log('proc',sprintf('Raw spectrum wE%dp%d -> RSPEC%dp%d',...
 			cl_id,probe,cl_id,probe))
 		
-		fsamp = c_efw_fsample(tt);
+		fsamp = c_efw_fsample(tt,'hx');
+		if ~fsamp, error('no sampling frequency'),end
+		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
 		if flag_rmwhip, problems = [problems '|whip']; end
 		signal = tt;
