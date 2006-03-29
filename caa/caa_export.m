@@ -122,7 +122,7 @@ end
 if strcmp(caa_vs,'E')
 	% We check if this full res E is from coming from two probe pairs
 	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234')) & QUALITY>1
-		c_log('save','This is not a full E, setting QUALITY=1!')
+		irf_log('save','This is not a full E, setting QUALITY=1!')
 		QUALITY = 1;
 	end
 	
@@ -149,6 +149,12 @@ if strcmp(caa_vs,'E')
 	if v_size>1, for j=2:v_size, dsc.frv = [dsc.frv {''}]; end, end
 	
 elseif strcmp(caa_vs,'EF')
+	% We check if this full res E is from coming from two probe pairs
+	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234')) & QUALITY>1
+		irf_log('save','This is not a full E, setting QUALITY=1!')
+		QUALITY = 1;
+	end
+	
 	if ~isempty(data)
 		% Remove Ez, which is zero
 		data = data(:,1:3);
