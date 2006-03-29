@@ -518,7 +518,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 		else
 			E_info.probe = '1234';
 		end
-		if abs(length(e12)-length(e34))>0
+		if size(e12,1)~=size(e34,1) | any(e12(:,1)-e34(:,1)~=0) 
 			% Different timelines. Need to correct
 			irf_log('proc','making common timeline')
 			[ii12,ii34] = irf_find_comm_idx(e12,e34);
@@ -1565,27 +1565,55 @@ elseif strcmp(quantity,'p')
 	clear res signal problems probe
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
+	% Check for problem with one probe pair
+	MAX_CUT = .1; 
+	if isempty(p1), l1=0; else, l1 = length(find(~isnan(p1(:,2)))); end
+	if isempty(p2), l2=0; else, l2 = length(find(~isnan(p2(:,2)))); end
+	if ~isempty(p1) & ~isempty(p2)
+		if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
+			if l1>l2, p2=[]; irf_log('proc','throwing away p2')
+			else, p1=[]; irf_log('proc','throwing away p1')
+			end
+		end
+	end
+	if isempty(p3), l3=0; else, l3 = length(find(~isnan(p3(:,2)))); end
+	if isempty(p4), l4=0; else, l4 = length(find(~isnan(p4(:,2)))); end
+	if ~isempty(p3) & ~isempty(p4)
+		if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
+			if l3>l4, p4=[]; irf_log('proc','throwing away p4') 
+			else, p3=[]; irf_log('proc','throwing away p3')
+			end
+		end
+	end
+	
 	if size(p1)==size(p2)&size(p1)==size(p3)&size(p1)==size(p4) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
 		Pinfo.probe = 1234;
-	elseif size(p3)==size(p4) & size(p3)~=[0 0] & cl_id~=2
+		irf_log('proc','computing from p1234')
+	elseif size(p3)==size(p4) & size(p3)~=[0 0] & ~(size(p1)==size(p2) & l1>l3)
 		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
 		Pinfo.probe = 34;
+		irf_log('proc','computing from p34')
 	elseif size(p1)==size(p2) & size(p1)~=[0 0]
 		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
 		Pinfo.probe = 12;
-	elseif size(p4)~=[0 0]
+		irf_log('proc','computing from p12')
+	elseif size(p4)~=[0 0] & l4>=max([l1 l2 l3])
 		p = p4;
 		Pinfo.probe = 4;
-	elseif size(p2)~=[0 0]
+		irf_log('proc','computing from p4')
+	elseif size(p2)~=[0 0] & l2>=max([l1 l3])
 		p = p2;
 		Pinfo.probe = 2;
-	elseif size(p3)~=[0 0] & cl_id~=2
+		irf_log('proc','computing from p2')
+	elseif size(p3)~=[0 0] & l3>=l1
 		p = p3;
 		Pinfo.probe = 3;
+		irf_log('proc','computing from p3')
 	elseif size(p1)~=[0 0]
 		p = p1;
 		Pinfo.probe = 1;
+		irf_log('proc','computing from p1')
 	else, irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
 	end
 	
