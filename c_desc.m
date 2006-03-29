@@ -268,8 +268,9 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	end
 	v.inst = 'EFW';
 	v.sig = 'E';
-	% TODO: we need to check here for p32-p34 - v.sen = '3234';
-	v.sen = '1234';
+	if ~isempty(v_info) & isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+	else, v.sen = '1234';
+	end
 	v.cs = {'ISR2'};
 	v.rep = {'xy'};
  	v.units =  {'mV/m'};
