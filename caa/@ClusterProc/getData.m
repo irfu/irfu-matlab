@@ -1577,6 +1577,15 @@ elseif strcmp(quantity,'p')
 	elseif size(p4)~=[0 0]
 		p = p4;
 		Pinfo.probe = 4;
+	elseif size(p2)~=[0 0]
+		p = p2;
+		Pinfo.probe = 2;
+	elseif size(p3)~=[0 0] & cl_id~=2
+		p = p3;
+		Pinfo.probe = 3;
+	elseif size(p1)~=[0 0]
+		p = p1;
+		Pinfo.probe = 1;
 	else, irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
 	end
 	
