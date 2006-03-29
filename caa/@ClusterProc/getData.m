@@ -923,6 +923,10 @@ elseif strcmp(quantity,'badbias')
 	end
 	clear ok efwt t0 ii
 	
+	% The reason we remove 300 seconds (DELTA_MINUS) of data before a bad
+	% bias is that we get rid of all the EFW resets in a clean way.
+	% The 64 seconds (DELTA_PLUS) afterwards is because we have trouble deciding
+	% the timing of the bias current, so we takek 2 x DSC interval.
 	DELTA_MINUS = 300;
 	DELTA_PLUS = 64;
 	GOOD_BIAS = -130;
@@ -959,7 +963,39 @@ elseif strcmp(quantity,'badbias')
 				if ibias(1,2)==0, ii = [1; ii]; end
 				if ibias(end,2)==0, ii = [ii; length(ibias(:,2))]; end
 				ii = reshape(ii,2,length(ii)/2);
-				res = [ibias(ii(1,:))-DELTA_MINUS; ibias(ii(2,:))+DELTA_PLUS]';
+				bb_st = ibias(ii(1,:));
+				bb_et = ibias(ii(2,:));
+				
+				% Take care of bias sweeps. Bias is bad buring a sweep, but
+				% the data will be removed as a sweep. Timing of bias current is
+				% not so good, so we cannot do anything with bias current itself.
+				% If we will not do this, we loose too much data due to 
+				% DELTA_MINUS+DELTA_PLUS 
+				[ok, sweep] = c_load('SWEEP?',cl_id);
+				if ok
+					if ~isempty(sweep)
+						for in=1:size(sweep,1)
+							% 40 sec is a number proposed by PAL to work around
+							% bad timing
+							ii = find(bb_st>sweep(in,1) & bb_st<sweep(in,2)+40);
+							if ii
+								irf_log('proc',['bad bias after sweep on p' ...
+									num2str(pro) ', throwing it away:'])
+								irf_log('proc',[epoch2iso(bb_st(ii),1) ' -- ' ...
+									epoch2iso(bb_et(ii),1)])
+								bb_st(ii) = [];
+								bb_et(ii) = [];
+							end
+						end
+					end
+				else
+					c_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
+				end
+				if isempty(bb_st)
+					irf_log('dsrc',irf_ssub('Bias current OK on C? p!',cl_id,pro))
+				end
+				
+				res = [bb_st-DELTA_MINUS; bb_et+DELTA_PLUS]';
 				c_eval(['BADBIAS' num2str(cl_id) 'p?=res;'...
 				'save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
 				clear ii res
@@ -986,14 +1022,6 @@ elseif strcmp(quantity,'probesa')
 	
 	start_time = [];
 	
-	%{ 
-	if start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
-		probe_list = [1 2 4];
-		p3 = [];
-		irf_log('dsrc',sprintf('Fake PROBESA/PROBELD on C%d',cl_id));
-	end
-	 %}
-	 
 	for pro=1:4
 		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
 		if pro==3 & ~isempty(start_time) & ...
@@ -1474,8 +1502,6 @@ elseif strcmp(quantity,'p')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	% Remove probe saturation
-	% Do it simultaneously on probes 1&2, 3&4
-	% so that the resulting timelines are similar
 	for probe = 1:4
 		if eval(irf_ssub('~isempty(p?)',probe))
 			[ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
@@ -1486,13 +1512,7 @@ elseif strcmp(quantity,'p')
 			end
 			if ~isempty(sa)
 				irf_log('proc',['blanking saturated P' num2str(probe)])
-				if probe==1|probe==2
-					if ~isempty(p1), p1 = caa_rm_blankt(p1,sa); end
-					if ~isempty(p2), p2 = caa_rm_blankt(p2,sa); end
-				else
-					if ~isempty(p3), p3 = caa_rm_blankt(p3,sa); end
-					if ~isempty(p4), p4 = caa_rm_blankt(p4,sa); end
-				end
+				c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
 			end
 			clear ok sa
 		end
