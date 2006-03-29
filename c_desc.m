@@ -282,7 +282,7 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;
-elseif regexp(vs,'^diE(F)[1-4]p1234_info$')==1
+elseif regexp(vs,'^diE(F)?[1-4]p1234_info$')==1
 	v.data = 0;
 	if vs(4)=='F'
 		v.cl_id = vs(5);
