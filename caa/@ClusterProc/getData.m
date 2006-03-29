@@ -980,11 +980,18 @@ elseif strcmp(quantity,'badbias')
 							ii = find(bb_st>sweep(in,1) & bb_st<sweep(in,2)+40);
 							if ii
 								irf_log('proc',['bad bias after sweep on p' ...
-									num2str(pro) ', throwing it away:'])
+									num2str(pro) ':'])
 								irf_log('proc',[epoch2iso(bb_st(ii),1) ' -- ' ...
 									epoch2iso(bb_et(ii),1)])
-								bb_st(ii) = [];
-								bb_et(ii) = [];
+								% Bad bias longer then 48 sec is not related to sweep.
+								% 48 = 32 + 32/2
+								if bb_et(ii) - bb_st(ii) >48
+									irf_log('proc','not related to sweep, leaving it')
+								else
+									irf_log('proc','throwing it away')
+									bb_st(ii) = [];
+									bb_et(ii) = [];
+								end
 							end
 						end
 					end
@@ -1047,7 +1054,7 @@ elseif strcmp(quantity,'probesa')
 		% Points below SA_LEVEL should be excluded from E, but not from
 		% P ans they atill contain valuable physical information.
 		% This is not the case with points with positive and/or 
-		% constant (stuck probe) potential.
+		% constant potential (latched probe).
 		
 		% Bad points are points below SA_LEVEL
 		ii_bad = find(p(:,2)<-SA_LEVEL);
