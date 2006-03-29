@@ -527,6 +527,29 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 			irf_log('proc',['Ep34 ' num2str(length(e34)) '->' num2str(length(ii34)) ' data points'])
 			e34 = e34(ii34,:);
 		end
+		
+		% Check for problem with one probe pair
+		ii12 = find(~isnan(e12(:,2)));
+		ii34 = find(~isnan(e34(:,2)));
+		fsamp = c_efw_fsample(e12,'hx');
+		% If the is 50% of data missing on one probe
+		if abs(length(ii12)-length(ii34))> .5*(e12(end,1)-e12(1,1))*fsamp
+			if length(ii12)>length(ii34)
+				ii = find(isnan(e34(:,2)) & ~isnan(e12(:,2)));
+				e34(ii,2) = 0;
+				E_info.probe = '12';
+				irf_log('proc',['p34: NaN->0 for ' num2str(length(ii)) ' points'])
+			else
+				ii = find(isnan(e12(:,2)) & ~isnan(e34(:,2)));
+				e12(ii,2) = 0;
+				irf_log('proc',['p' num2str(p12) ': NaN->0 for ' ...
+					num2str(length(ii)) ' points'])
+				E_info.probe = '34';
+			end
+			irf_log('proc','!!! REDUCED DATA QUALITY !!!')
+			irf_log('proc','using one probe pair some part of the interval')
+		end
+		
 		% Use WEC coordinate system E=[t,0,p34,p12]
 		full_e = zeros(length(e12),4);
 		full_e(:,[1,4]) = e12;
