@@ -288,13 +288,14 @@ elseif regexp(vs,'^diE(F)?[1-4]p1234_info$')==1
 		v.cl_id = vs(5);
 		v.com = 'E filtered INFO';
 		v.quant = 'dief';
+		v.file = 'mEDSIf';
 	else
 		v.cl_id = vs(4);
 		v.com = 'E full res INFO';
 		v.quant = 'die';
+		v.file = 'mEDSI';
 	end
 	v.inst = 'EFW';
-	v.file = 'mEDSIf';
 	v.lev = 1;	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E spectrum
