@@ -307,7 +307,9 @@ elseif regexp(vs,'^diESPEC[1-4]p1234$')==1
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'E';
-	v.sen = '1234';
+	if ~isempty(v_info) & isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+	else, v.sen = '1234';
+	end
 	v.com = 'E-field spectrum';
 	v.file = 'mEDSI';
 	v.lev = 1;
