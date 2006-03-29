@@ -79,5 +79,5 @@ while 1
 		end
 	end
 	n_loop = n_loop + 1;
-	disp(sprintf('gap # %d',n_loop))
+	irf_log('proc',sprintf('gap # %d',n_loop))
 end
