@@ -155,6 +155,22 @@ minute expected.</desc>
       <link href="pal020109b.txt">Per-Arne 010209</link>
 		</res>
 	</operation>
+	<operation start="2002-01-11T11:45:00Z" dt="230" c2="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
+	</operation>
+	<operation start="2002-01-11T14:30:00Z" dt="180" c3="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
+	</operation>
+	<operation start="2002-01-11T17:30:21Z" dt="8" c4="yes" plan="yes" sdesc="bad_tm">
+		<desc>Spin-up manoeuvre</desc>
+		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
+	</operation>
+	<operation start="2002-01-11T19:59:53Z" dt="11" c1="yes" plan="yes" sdesc="bad_tm">
+		<desc>Spin-up manoeuvre</desc>
+		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
+	</operation>
 	<operation start="2002-01-18T01:31:00Z" dt="39660" c1="yes" plan="no" sdesc="no_tm">
 		<desc>WEC data lost following DWP watchdog reset on SC1.</desc>
 		<res>
