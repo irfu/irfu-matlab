@@ -131,7 +131,7 @@ for cli=1:4
 			end
 			
 			% Load Es
-			pp = c_ctl('get',cli,'probe_p');
+			pp = caa_sfit_probe(cli);
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) & es_tmp~=-157e8
 				dsiof = c_ctl(cli,'dsiof');
