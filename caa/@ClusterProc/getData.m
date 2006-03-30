@@ -1249,7 +1249,7 @@ elseif strcmp(quantity,'rawspec')
 			probe = 34;
 		end
 		if isempty(tt)
-			irf_log('load',sprintf('No spinfits for C%d p%d',cl_id,probe))
+			irf_log('load',sprintf('No raw spectrum for C%d p%d',cl_id,probe))
 			continue
 		end
 		
