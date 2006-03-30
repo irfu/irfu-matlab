@@ -479,7 +479,7 @@ elseif strcmp(quantity,'die') | strcmp(quantity,'dief') | ...
 			% Check if we have at least 1 sec of data left
 			if length(find(~isnan(tt(:,2)))) < fsamp
 				irf_log('proc',irf_ssub('No p? data after removals',ps))
-				c_eval('e?=[]',p)
+				c_eval('e?=[];',p)
 				continue
 			end
 			
