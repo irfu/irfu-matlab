@@ -230,11 +230,11 @@ minute expected.</desc>
 			<link href="ky020612.txt">Keith 020612</link>
 		</res>
 	</operation>
-	<operation start="2002-05-08T08:31:00Z" dt="2460" c3="yes" plan="yes" sdesc="no_data">
+	<operation start="2002-05-08T08:31:00Z" dt="2280" c3="yes" plan="yes" sdesc="no_tm">
 		<desc>WEC power cycled to clear up DWP memory latchup</desc>
 		<res>
 			<link href="ky020507a.txt">Keith 020507</link> 
-      <link href="sm020508a.txt">Silvano 020508</link>
+			<link href="sm020508a.txt">Silvano 020508</link>
 		</res>
 	</operation>
 	<operation start="2002-05-12T03:53:57Z" dt="1800" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="spec_bias">
