@@ -216,6 +216,10 @@ minute expected.</desc>
 			<link href="sm020321.txt">ESOC 020321</link>
 		</res>
 	</operation>
+	<operation start="2002-04-16T09:00:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_tm">
+		<desc>Manoeuvre</desc>
+		<res><link href="pal060331a.txt">Per-Arne 060331</link></res>
+	</operation>
 	<operation start="2002-04-29T09:55:00Z" dt="772860" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>
 			WEC science telemetry bit error
