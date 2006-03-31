@@ -50,7 +50,7 @@ end
 
 % Problems starts before the interval and ends inside the interval
 while 1
-	ii = find( ns_ops(:,1)<st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
+	ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
 	if isempty(ii), break, end
 	if ns_ops(ii(1),4)<10
 		% no/bad data - truncate the interval
