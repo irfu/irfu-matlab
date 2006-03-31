@@ -217,10 +217,14 @@ minute expected.</desc>
 		</res>
 	</operation>
 	<operation start="2002-04-16T09:00:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_tm">
-		<desc>Manoeuvre</desc>
+		<desc>Attitude manoeuvre</desc>
 		<res><link href="pal060331a.txt">Per-Arne 060331</link></res>
 	</operation>
-	<operation start="2002-04-29T09:55:00Z" dt="772860" c3="yes" plan="no" sdesc="bad_tm">
+	<operation start="2002-04-16T13:00:00Z" dt="240" c4="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+		<res><link href="pal060331b.txt">Per-Arne 060331</link></res>
+	</operation>
+	<operation start="2002-04-29T09:55:00Z" dt="772560" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>
 			WEC science telemetry bit error
 			capable of causing all sorts of problems: timing jumps, apparent
