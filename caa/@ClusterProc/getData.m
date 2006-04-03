@@ -1019,7 +1019,7 @@ elseif strcmp(quantity,'badbias')
 						end
 					end
 				else
-					c_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
+					irf_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
 				end
 				if isempty(bb_st)
 					irf_log('dsrc',irf_ssub('Bias current OK on C? p!',cl_id,pro))
@@ -1053,7 +1053,7 @@ elseif strcmp(quantity,'probesa')
 	[ok, sweep] = c_load('SWEEP?',cl_id);
 	if ~ok
 		sweep = [];
-		c_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
+		irf_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
 	end
 	
 	start_time = [];
@@ -1162,12 +1162,12 @@ elseif strcmp(quantity,'probesa')
 	end
 	
 	for pro=1:4
-		c_eval(['p=p?;pld=PROBELD' num2str(cl_id) 'p?;'],pro)
+		c_eval('p=p?;',pro)
 		if isempty(p), continue, end
 		
 		% Leave only good points for further exploration
 		irf_log('proc',['blanking LD saturation on p' num2str(pro)])
-		p = caa_rm_blankt(p,pld);
+		c_eval(['p = caa_rm_blankt(p,PROBELD' num2str(cl_id) 'p?);'],pro)
 		p(find(isnan(p(:,2))),:) = [];
 		if isempty(p), continue, end
 		
