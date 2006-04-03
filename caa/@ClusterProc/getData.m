@@ -1050,6 +1050,12 @@ elseif strcmp(quantity,'probesa')
 	% Delta = .1 sec, half sampling interval for P.
 	DELTA = .1;
 	
+	[ok, sweep] = c_load('SWEEP?',cl_id);
+	if ~ok
+		sweep = [];
+		c_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
+	end
+	
 	start_time = [];
 	
 	for pro=1:4
@@ -1058,41 +1064,84 @@ elseif strcmp(quantity,'probesa')
 			start_time>toepoch([2001 07 23 00 00 00]) & cl_id==2
 			irf_log('dsrc',...
 				irf_ssub('Using fake(empty) PROBESA?p!/PROBELD?p!',cl_id,pro));
-			c_eval(['PROBELD' num2str(cl_id) ...
+			c_eval(['p?=[];PROBELD' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
 			c_eval(['PROBESA' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+			
 			continue
 		end
 		if ~ok
 			irf_log('load',	irf_ssub('Cannot load P10Hz?p!',cl_id,pro))
+			c_eval('p?=[];',pro)
 			continue
 		end
 		if isempty(p)
 			irf_log('load',	irf_ssub('Empty P10Hz?p!',cl_id,pro))
-			continue
 		elseif isempty(start_time), start_time = p(1,1);
-		end 
+		end
 		
-		% Points below SA_LEVEL should be excluded from E, but not from
-		% P ans they atill contain valuable physical information.
-		% This is not the case with points with positive and/or 
-		% constant potential (latched probe).
+		% Clean up after evil sweeps
+		if sweep
+			irf_log('proc',['blanking sweeps on p' num2str(pro)])
+			p = caa_rm_blankt(p,sweep);
+			p(find(isnan(p(:,2))),:) = [];
+		end
+			
+		c_eval('p?=p;',pro)
+	end
+	
+	% Points below SA_LEVEL should be excluded from E, but not from
+	% P ans they atill contain valuable physical information.
+	% This is not the case with points with positive and/or 
+	% constant potential (latched probe).
+	
+	% Bad points are points below SA_LEVEL
+	c_eval(['if isempty(p?),ii_bad?=[];ii_god?=[];else,'...
+		'ii_bad?=find(p?(:,2)<-SA_LEVEL); ii_god? = find(p?(:,2)>=-SA_LEVEL);end'])
 		
-		% Bad points are points below SA_LEVEL
-		ii_bad = find(p(:,2)<-SA_LEVEL);
-		ii_god = find(p(:,2)>=-SA_LEVEL);
-
+	for pro=1:4
+		c_eval('p=p?;ii_bad=ii_bad?;ii_god=ii_god?;',pro)
+		if isempty(p), continue, end
+		
 		if isempty(ii_bad)
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-		elseif isempty(ii_god)
+			continue
+		end
+		
+		% We check if there is a saturation at the same time for other probes
+		if pro==1,     oprop = [2 3 4];
+		elseif pro==2, oprop = [1 3 4];
+		elseif pro==3, oprop = [4 1 2];
+		elseif pro==4, oprop = [3 1 2];
+		end
+		
+		found = 0;
+		for opro = oprop
+			c_eval('op=p?;oii_bad=ii_bad?;oii_god=ii_god?;',opro)
+			if ~isempty(op)
+				if isempty(oii_bad), found = 1; break
+				else
+					[ii1,ii2] = irf_find_comm_idx(p(ii_bad,:),op(oii_bad,:));
+					if isempty(ii1), found = 1; break, end
+				end
+			end
+		end
+		if found
+			irf_log('proc',['found no corresponding saturation to p' ...
+				num2str(pro) ' on p' num2str(opro)])
+			c_eval(['PROBELD' num2str(cl_id) ...
+				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+			continue
+		end
+		
+		if isempty(ii_god)
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
 				'PROBESA' num2str(cl_id) 'p?=[];'...
 				'save_list=[save_list '' PROBELD' num2str(cl_id) ...
 				'p? PROBESA' num2str(cl_id) 'p? ''];'],pro);
-			p = [];
 		else
 			p_tmp = p;
 			p_tmp(ii_god,2) = 1;
@@ -1104,13 +1153,22 @@ elseif strcmp(quantity,'probesa')
 			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]';
 			c_eval(['PROBELD' num2str(cl_id) 'p?=res;'...
 			'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-			clear res ii
 			
-			% Leave only good points for further exploration
-			p = p(ii_god,:);
+			
+			clear res ii
 		end
-		clear ii_god ii_bad
+		c_eval('p?=p;',pro)
+		clear ii_god ii_bad p
+	end
+	
+	for pro=1:4
+		c_eval(['p=p?;pld=PROBELD' num2str(cl_id) 'p?;'],pro)
+		if isempty(p), continue, end
 		
+		% Leave only good points for further exploration
+		irf_log('proc',['blanking LD saturation on p' num2str(pro)])
+		p = caa_rm_blankt(p,pld);
+		p(find(isnan(p(:,2))),:) = [];
 		if isempty(p), continue, end
 		
 		% Bad points are points with positive and/or constant potential
@@ -1124,7 +1182,7 @@ elseif strcmp(quantity,'probesa')
 			dd = diff(p(ii_god,2));
 			p(ii_god,2) = 1;
 			
-			% check for constant P, means probe is in a strange state
+			% Check for constant P, means probe is in a strange state
 			ii = find(dd==0);
 			if length(ii)>1
 				% at least three consequetive points are the same
