@@ -1,6 +1,6 @@
 %script remove_problems
 %
-%Input: signal,probe,cl_id,problems)
+%Input: signal,probe,cl_id,problems
 %Output: res
 %
 % $Id$
