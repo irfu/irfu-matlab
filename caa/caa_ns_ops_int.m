@@ -55,7 +55,9 @@ while 1
 	if ns_ops(ii(1),4)<10
 		% no/bad data - truncate the interval
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
+		et = st + dt;
 		st = ns_ops(ii(1),1) + ns_ops(ii(1),2);
+		dt = et - st;
 		irf_log('proc',	['truncating interval: setting START_TIME to ' epoch2iso(st,1)])
 	else, irf_log('proc',prob_s(ns_ops(ii(1),:),1))
 	end
