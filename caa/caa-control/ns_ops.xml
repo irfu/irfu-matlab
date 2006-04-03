@@ -535,7 +535,7 @@ minute expected.</desc>
 			<link href="ky030406d.txt">Keith 030406</link>
 		</res>
 	</operation>
-	<operation start="2002-12-10T12:04:00Z" dt="6060" c1="yes" plan="yes" sdesc="bad_data">
+	<operation start="2002-12-10T12:04:00Z" dt="6420" c1="yes" plan="yes" sdesc="bad_tm">
 		<desc>
 			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
 			Deployment worked, but P1 remains unfunctional on SC13.
@@ -544,7 +544,7 @@ minute expected.</desc>
 			<link href="pal021210.txt">Per-Arne 021210</link>
 		</res>
 	</operation>
-	<operation start="2002-12-10T14:30:00Z" dt="4800" c3="yes" plan="yes" sdesc="bad_data">
+	<operation start="2002-12-10T14:30:00Z" dt="5160" c3="yes" plan="yes" sdesc="bad_tm">
 		<desc>
 			Attempting to get P1 back to life by deploying 16 both s/c cm more. 
 			Deployment worked, but P1 remains unfunctional on SC13.
@@ -633,7 +633,7 @@ minute expected.</desc>
 	<operation start="2003-02-24T07:51:00Z" dt="14340" c4="yes" plan="yes" sdesc="spec_bias">
 		<desc>3 x 450 samples/s: E-field V12M, Langmuir mode V3V4M</desc>
 	</operation>
-	<operation start="2003-02-24T07:51:00Z" dt="14400" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2003-02-24T07:51:00Z" dt="14400" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>Data chopped up.</desc>
 	</operation>
 	<operation start="2003-03-13T07:56:00Z" dt="-157" c2="yes" plan="no" sdesc="TBD">
