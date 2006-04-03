@@ -138,7 +138,9 @@ if isfield(ud,'t_start_epoch'),
 	t_start_epoch=ud.t_start_epoch;
 elseif x1(1,1)> 1e8 | x2(1,1)> 1e8 | x3(1,1)> 1e8 | x4(1,1)> 1e8, 
 	% set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-	t_start_epoch=min([x1(1,1) x2(1,1) x3(1,1) x4(1,1)]);
+	tt = [];
+	c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
+	t_start_epoch=min(tt); clear tt
 	ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
 	irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
 else
