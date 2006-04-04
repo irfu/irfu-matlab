@@ -553,6 +553,10 @@ minute expected.</desc>
 			<link href="pal021210.txt">Per-Arne 021210</link>
 		</res>
 	</operation>
+	<operation start="2002-12-11T02:02:06Z" dt="2" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad HX packet</desc>
+		<res><link href="pal060404.txt">Per-Arne 060404</link></res>
+	</operation>
 	<operation start="2002-12-16T16:32:00Z" dt="45960" c4="yes" plan="no" sdesc="spec_bias">
 		<desc>WEC reset, followed by EFW in h/w default mode (bias -40 nA)</desc>
 		<res>
