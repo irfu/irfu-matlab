@@ -493,6 +493,10 @@ minute expected.</desc>
 			<link href="ky021107.txt">Keith 021107</link>
 		</res>
 	</operation>
+	<operation start="2002-11-05T08:27:20" dt="820" c2="yes" plan="no" sdesc="TBD">
+		<desc>Uncontrolled manoeuvre</desc>
+		<res><link href="pal060331c.txt">Per-Arne 060331</link></res>
+	</operation>
 	<operation start="2002-11-12T01:53:00Z" dt="840" c3="yes"  plan="no" sdesc="no_tm">
 		<desc>Spacecraft anomaly caused scrambled and lost science data.</desc>
 		<res>
