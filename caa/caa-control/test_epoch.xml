@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<table>
+<operation start="2000-01-02T00:00:00Z" cst="946771200"/>
+<operation start="2000-10-10T14:30:22Z" cst="971188222"/>
+<operation start="2001-01-02T00:00:00Z" cst="978393600"/>
+<operation start="2002-01-02T00:00:00Z" cst="1009929600"/>
+<operation start="2002-12-10T14:30:00Z" cst="1039530600"/>
+<operation start="2003-01-02T00:00:00Z" cst="1041465600"/>
+<operation start="2003-01-06T08:02:00Z" cst="1041840120"/>
+<operation start="2004-01-02T00:00:00Z" cst="1073001600"/>
+<operation start="2004-11-06T15:10:00Z" cst="1099753800"/>
+<operation start="2005-01-02T00:00:00Z" cst="1104624000"/>
+<operation start="2006-01-02T00:00:00Z" cst="1136160000"/>
+<operation start="2007-01-02T00:00:00Z" cst="1167696000"/>
+</table>
