@@ -581,7 +581,7 @@ minute expected.</desc>
 			<link href="ky030406d.txt">Keith 030406</link>
 		</res>
 	</operation>
-	<operation start="2003-01-06T08:02:00Z" dt="104400" c3="yes" plan="no" sdesc="no_tm">
+	<operation start="2003-01-06T08:01:56" dt="104416" c3="yes" plan="no" sdesc="no_tm">
   	<desc>EFW in NULL mode, i.e. no telemetry, due to spurious command.</desc>
 		<res>
 			<link href="pal030107a.txt">Per-Arne 030107</link>
