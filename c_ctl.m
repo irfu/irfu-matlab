@@ -19,12 +19,12 @@ default_mcctl_path = '.';
 if nargin<1, c_ctl_usage, return, end
 args = varargin;
 
-if isstr(args{1})
+if ischar(args{1})
 	if strcmp(args{1},'init')
 		if nargin>=2
 			d = args{2};
 			if exist(d,'dir')
-				if exist([d '/mcctl.mat'])
+				if exist([d '/mcctl.mat'],'file')
 					clear global c_ct; global c_ct
 					eval(['load ' d '/mcctl.mat'])
 				else
@@ -38,7 +38,7 @@ if isstr(args{1})
 			end
 		else
 			clear global c_ct; global c_ct
-			if exist([default_mcctl_path '/mcctl.mat'])
+			if exist([default_mcctl_path '/mcctl.mat'],'file')
 				eval(['load ' default_mcctl_path '/mcctl.mat'])
 			else
 				% init 
@@ -89,7 +89,7 @@ if isstr(args{1})
 				eval(['out=c_ct{cl_id}.' c ';'])
 			else
 				if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
-				else, disp(['GLOBAL->' c ':'])
+                else disp(['GLOBAL->' c ':'])
 				end
 				eval(['disp(c_ct{cl_id}.' c ');'])
 			end
@@ -107,18 +107,18 @@ if isstr(args{1})
 		end
 		
 		if nargin>1, d = args{2};
-		else, d = '.';
+		else d = '.';
 		end
 		
 		for j=1:4
 			try 
 				f_name = [d '/ns_ops_c' num2str(j) '.dat'];
 				if exist(f_name,'file')
-					eval(['c_ct{j}.ns_ops=load(''' f_name ''',''-ascii'');'])
+					c_ct{j}.ns_ops = load(f_name,'-ascii');
 					
 					% remove lines with undefined dt
 					c_ct{j}.ns_ops(find(c_ct{j}.ns_ops(:,2)==-157),:) = [];
-				else, irf_log('load',['file ' f_name ' not found'])
+				else irf_log('load',['file ' f_name ' not found'])
 				end
 			catch
 				disp(lasterr)
@@ -130,7 +130,7 @@ if isstr(args{1})
 			sc_list = args{2};
 			ii = find(sc_list==0);
 			if ~isempty(ii), sc_list(ii) = 5; end
-		else, sc_list=1:5;
+		else sc_list=1:5;
 		end
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
@@ -139,7 +139,7 @@ if isstr(args{1})
 			if length(c)>0
 				for j=1:length(c)
 					if cl_id < 5, disp(['C' num2str(cl_id) '->' c{j} ':'])
-					else, disp(['GLOBAL->' c{j} ':'])
+					else disp(['GLOBAL->' c{j} ':'])
 					end
 					eval(['disp(c_ct{cl_id}.' c{j} ');'])
 				end
@@ -177,7 +177,7 @@ if isstr(args{1})
 			c = args{2};
 			c_val = args{3};
 		end
-		if ~isstr(c), error('ctl_name must be a string'), end
+		if ~ischar(c), error('ctl_name must be a string'), end
 		global c_ct
 		if isempty(c_ct), disp('CTL is not initialized.'), return, end
 		for cl_id=sc_list
@@ -188,7 +188,7 @@ if isstr(args{1})
 				error('bad option')
 			end	
 			if cl_id < 5, disp(['C' num2str(cl_id) '->' c ':'])
-			else, disp(['GLOBAL->' c ':'])
+			else disp(['GLOBAL->' c ':'])
 			end
 			eval(['disp(c_ct{cl_id}.' c ');'])
 		end
@@ -205,21 +205,21 @@ elseif isnumeric(args{1})
 	elseif nargin==2
 		have_options = 0;
 		if nargout>0, out=c_ctl('get',sc_list,args{2});
-		else, c_ctl('get',sc_list,args{2});
+		else c_ctl('get',sc_list,args{2});
 		end
-	else, have_options = 0;
+	else have_options = 0;
 	end
 	
 	while have_options
 		if length(args)>1
-			if isstr(args{1})
+			if ischar(args{1})
 				c_ctl('set',sc_list,args{1},args{2})
 			else
 				error('option must be a string')
 			end
 			if length(args) >= 2
 				args = args(3:end);
-				if length(args) == 0, break, end
+				if isempty(args), break, end
 			else break
 			end
 		else
