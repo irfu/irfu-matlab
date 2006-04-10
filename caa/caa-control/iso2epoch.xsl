@@ -26,18 +26,20 @@ $Id$
 			<xsl:otherwise>000031059090120151181212243273304334</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:variable name="dy" select="$y - 1970"/>
+	<xsl:variable name="dy" select="$y - 1969"/>
+	<!-- number of leap years -->
 	<xsl:variable name="nly">
 		<xsl:choose>
 			<xsl:when test="($dy mod 4) = 0">
-				<xsl:value-of select="($dy div 4) - 1"/>
+				<xsl:value-of select="($dy div 4)"/>
 			</xsl:when>
 			<xsl:otherwise>
 				<xsl:value-of select="floor($dy div 4)"/>
 			</xsl:otherwise>
 		</xsl:choose>
 	</xsl:variable>
-	<xsl:value-of select="($dy - $nly)*31536000 + $nly*31622400 + ((number(substring($daym,($m - 1)*3 + 1,3) + $d)*24 + $h)*60 + $min)*60 + $s"/>
 	
+	<xsl:value-of select="($dy - $nly - 1)*31536000 + $nly*31622400 + ((number(substring($daym,($m - 1)*3 + 1,3) + $d - 1)*24 + $h)*60 + $min)*60 + $s"/>
+
 </xsl:template>
 </xsl:stylesheet>
