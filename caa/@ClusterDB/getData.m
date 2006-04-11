@@ -316,7 +316,7 @@ elseif strcmp(quantity,'tmode')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % e - Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
+elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 	
 	if strcmp(quantity,'eburst'), do_burst = 1; else do_burst = 0; end
 	if do_burst 
@@ -344,7 +344,7 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 			data = []; cd(old_pwd), return
 		end
 			
-		if tm~=tm(1)*ones(size(tm))
+		if any(tm~=tm(1))
 			irf_log('dsrc','tape mode changes during the selected time inteval')
 			irf_log('dsrc','data interval will be truncated')
 		end
@@ -353,20 +353,20 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 		clear tm
 		
 		%%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
-		if (((start_time>toepoch([2001 07 30 17 05 54.9]) & cl_id==1) | ...
-			(start_time>toepoch([2001 07 31 00 12 29.5]) & cl_id==3)) & ...
-			start_time<toepoch([2001 09 02 23 15 00])) | ...
-			(((start_time>toepoch([2001 07 31 04 55 33.15]) & ...
-			start_time<toepoch([2001 08 02 11 25 40])) | ...
-			(start_time>toepoch([2001 08 06 23 58 50.7]) & ...
-			start_time<toepoch([2001 09 02 23 15 00]))) & cl_id==4 )
+		if (((start_time>toepoch([2001 07 30 17 05 54.9]) && cl_id==1) || ...
+			(start_time>toepoch([2001 07 31 00 12 29.5]) && cl_id==3)) && ...
+			start_time<toepoch([2001 09 02 23 15 00])) || ...
+			(((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
+			start_time<toepoch([2001 08 02 11 25 40])) || ...
+			(start_time>toepoch([2001 08 06 23 58 50.7]) && ...
+			start_time<toepoch([2001 09 02 23 15 00]))) && cl_id==4 )
 			% all sc run on 180Hz filter in august 2001 most of the time
 			param='180Hz';
-		elseif start_time>toepoch([2001 09 10 04 21 57.6])& ...
+		elseif start_time>toepoch([2001 09 10 04 21 57.6]) && ...
 			start_time<toepoch([2001 09 15 06 30 00])
 			% this needs to be investigated.... 
 			param='180Hz';
-		elseif start_time>toepoch([2001 07 23 00 00 00])&cl_id==2
+		elseif start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2
 			% 10Hz filter problem on SC2
 			param='180Hz';
 		end
@@ -375,13 +375,17 @@ elseif strcmp(quantity,'e') | strcmp(quantity,'eburst')
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	pl = [12,34];
-	if (start_time>toepoch([2003 9 29 0 31 0])) & (cl_id==1|cl_id==3)
-		% FSW 2.4 Use P32 on SC1 and SC3
+	if (cl_id==1 || cl_id==3) && (start_time>toepoch([2003 9 29 00 27 0]) || ...
+		(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 9 02 25 0])) ||...
+		(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 8 22 10 0])) )
+		
+		% FSW 2.4. Use P32 on SC1 and SC3
 		pl=[32, 34];
 		irf_log('dsrc',sprintf('            !Using p32 for sc%d',cl_id));
 		
-	elseif (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
-		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	elseif (start_time>toepoch([2001 12 28 03 00 00]) && cl_id==1) || ...
+		(start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3)
+		
 		% p1 problems on SC1 and SC3
 		pl=[34];
 		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
