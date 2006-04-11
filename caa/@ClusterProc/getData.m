@@ -1162,14 +1162,16 @@ elseif strcmp(quantity,'probesa')
 	end
 	
 	for pro=1:4
-		c_eval('p=p?;',pro)
+		c_eval(['p=p?;if ~isempty(p), ldsa = PROBELD' num2str(cl_id) 'p?; end'],pro)
 		if isempty(p), continue, end
 		
 		% Leave only good points for further exploration
-		irf_log('proc',['blanking LD saturation on p' num2str(pro)])
-		c_eval(['p = caa_rm_blankt(p,PROBELD' num2str(cl_id) 'p?);'],pro)
-		p(isnan(p(:,2)),:) = [];
-		if isempty(p), continue, end
+		if ~isempty(ldsa)
+			irf_log('proc',['blanking LD saturation on p' num2str(pro)])
+			p = caa_rm_blankt(p,ldsa);
+			p(isnan(p(:,2)),:) = [];
+			if isempty(p), continue, end
+		end
 		
 		% Bad points are points with positive and/or constant potential
 		ii_bad = find(p(:,2)>=0);
