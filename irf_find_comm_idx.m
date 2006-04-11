@@ -55,7 +55,15 @@ while 1
 				break
 			end
 			s1 = s1 + 1;
+			if s1>length(t1)
+				if DEBUG, disp('break at 21'), end
+				break
+			end
 			it = find(t2>=t1(s1));
+			if isempty(it)
+				if DEBUG, disp('break at 22'), end
+				break
+			end
 			s2 = it(1);
 			clear it
 		else
@@ -71,7 +79,15 @@ while 1
 				break
 			end
 			s2 = s2 + 1;
+			if s2>length(t2)
+				if DEBUG, disp('break at 31'), end
+				break
+			end
 			it = find(t1>=t2(s2));
+			if isempty(it)
+				if DEBUG, disp('break at 32'), end
+				break
+			end
 			s1 = it(1);
 			clear it
 		else
