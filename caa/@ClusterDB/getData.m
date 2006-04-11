@@ -84,8 +84,6 @@ for i=1:length(varargin)
 	end
 end
 
-start_date_str = strrep(datestr(fromepoch(start_time),29),'-','');
-
 save_file = '';
 save_list = '';
 
@@ -95,7 +93,7 @@ old_pwd = pwd;
 if ~exist(cdb.sp, 'dir')
 	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
 	if SUCCESS, irf_log('save',['Created storage directory ' cdb.sp])
-	else, error(MESSAGE)
+    else error(MESSAGE)
 	end
 end
 
@@ -113,8 +111,8 @@ end
 % Read list of nonstandard operations and see if we have one of those 
 % during the requested period. Permanent problems (as loss of 
 % probes, filters, etc.) must be programmed separately
-if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
-	strcmp(quantity,'p')|strcmp(quantity,'pburst')
+if strcmp(quantity,'e') || strcmp(quantity,'eburst') ||...
+	strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
 	ns_ops = c_ctl('get',cl_id,'ns_ops');
 	if isempty(ns_ops)
@@ -128,7 +126,7 @@ if strcmp(quantity,'e')|strcmp(quantity,'eburst')|...
 			data = []; 
 			cd(old_pwd), return
 		end
-	else, start_time_nsops = start_time; dt_nsops = dt;
+    else start_time_nsops = start_time; dt_nsops = dt;
 	end
 end
 
@@ -158,7 +156,6 @@ if strcmp(quantity,'dsc')
 	
 	% storage variables
 	t_start_save = [];
-	t_stop_save = [];
 	dsc_save = [];
 	jump_flag = [];
 	n_good = 0;
@@ -175,29 +172,26 @@ if strcmp(quantity,'dsc')
 
 	for i = 1:length(t)
 		if sum(abs( dsc(dsc_i,i) - dsc_last(dsc_i))) == 0
-			% the same as previous
+			% Same as previous
 			count_good = count_good + 1;
 			if count_good == 1
 				t_st = t_dsc_last;
 				dsc_good = dsc_last;
-				%irf_log('dsrc',['Found good at ' epoch2iso(t_dsc_last,1)])
 			end
 			t_end = t(i);
 		else
-			% differ from previous
+			% Differs from previous
 			dsc_last = dsc(:,i);
 			l = length(jump_flag);
 			if count_good == 0
-				%the previous point was also different
+				% The previous point was also different
 				t_start_save(l+1) = t(i);
-				%t_stop_save(l+1) = t(i);
 				dsc_save(:,l+1) = dsc(dsc_is,i);
 				jump_flag(l+1) = 1;
 				n_jumpy = n_jumpy + 1;
 			else
-				% save the good interval
+				% Save a good interval
 				t_start_save(l+1) = t_st;
-				%t_stop_save(l+1) = t_end;
 				dsc_save(:,l+1) = dsc_good(dsc_is);
 				jump_flag(l+1) = 0;
 				n_good = n_good + 1;
@@ -209,10 +203,9 @@ if strcmp(quantity,'dsc')
 		t_dsc_last = t(i);
 	end
 
-	if count_good > 0 %last interval was also good
-		% save the good interval
+	if count_good > 0 % The last interval was also good
+		% Save a good interval
 		t_start_save(end+1) = t_st;
-		%t_stop_save(end+1) = t_end;
 		dsc_save(:,end+1) = dsc_good(dsc_is);
 		n_good = n_good + 1;					
 		irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
@@ -220,7 +213,7 @@ if strcmp(quantity,'dsc')
 	
 	irf_log('dsrc',sprintf('\nFound total %d good and %d jumpy intervals',...
 		n_good, n_jumpy))
-	c_eval(['DSC?=[t_start_save dsc_save''];save_list=[save_list '' DSC? ''];'],cl_id);
+	c_eval('DSC?=[t_start_save dsc_save''];save_list=[save_list '' DSC? ''];',cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fdm - EFW FDM
@@ -232,10 +225,10 @@ elseif strcmp(quantity,'fdm')
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
 		data = []; cd(old_pwd), return
-	else, c_eval(['FDM?=[t data''];'],cl_id);
+    else c_eval('FDM?=[t data''];',cl_id);
 	end
 	
-	c_eval(['save_list=[save_list '' FDM? ''];'],cl_id);
+	c_eval('save_list=[save_list '' FDM? ''];',cl_id);
 	clear t data
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,8 +241,8 @@ elseif strcmp(quantity,'ibias')
 	p_ok = [];
 	
 	% Check for p1 problems on SC1 and SC3
-	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
-		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	if (start_time>toepoch([2001 12 28 03 00 00]) && cl_id==1) || ...
+		(start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3)
 		probe_list = 2:4;
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 	end
@@ -260,7 +253,7 @@ elseif strcmp(quantity,'ibias')
 		if isempty(data)
 			irf_log('dsrc',irf_ssub('No data for IBIAS?p!',cl_id,probe))
 		else
-			eval(irf_ssub(['IBIAS?p!=[t data];'],cl_id,probe))
+			eval(irf_ssub('IBIAS?p!=[t data];',cl_id,probe))
 			p_ok = [p_ok probe];
 		end
 		clear t data
@@ -349,24 +342,24 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 			irf_log('dsrc','data interval will be truncated')
 		end
 		tm = tm(1);
-		if tm<1e-30, param='10Hz'; else, param='180Hz'; end
+		if tm<1e-30, param='10Hz'; else param='180Hz'; end
 		clear tm
 		
 		%%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
-		if (((start_time>toepoch([2001 07 30 17 05 54.9]) && cl_id==1) || ...
-			(start_time>toepoch([2001 07 31 00 12 29.5]) && cl_id==3)) && ...
+		if (((cl_id==1 && start_time>toepoch([2001 07 30 17 05 54.9])) || ...
+			(cl_id==3 && start_time>toepoch([2001 07 31 00 12 29.5]))) && ...
 			start_time<toepoch([2001 09 02 23 15 00])) || ...
-			(((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
+			(cl_id==4 && ((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
 			start_time<toepoch([2001 08 02 11 25 40])) || ...
 			(start_time>toepoch([2001 08 06 23 58 50.7]) && ...
-			start_time<toepoch([2001 09 02 23 15 00]))) && cl_id==4 )
+			start_time<toepoch([2001 09 02 23 15 00]))))
 			% all sc run on 180Hz filter in august 2001 most of the time
 			param='180Hz';
 		elseif start_time>toepoch([2001 09 10 04 21 57.6]) && ...
 			start_time<toepoch([2001 09 15 06 30 00])
 			% this needs to be investigated.... 
 			param='180Hz';
-		elseif start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2
+		elseif cl_id==2 && start_time>toepoch([2001 07 23 00 00 00])
 			% 10Hz filter problem on SC2
 			param='180Hz';
 		end
@@ -380,14 +373,14 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 8 22 10 0])) )
 		
 		% FSW 2.4. Use P32 on SC1 and SC3
-		pl=[32, 34];
+		pl = [32, 34];
 		irf_log('dsrc',sprintf('            !Using p32 for sc%d',cl_id));
 		
-	elseif (start_time>toepoch([2001 12 28 03 00 00]) && cl_id==1) || ...
-		(start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3)
+	elseif (cl_id==1 && start_time>toepoch([2001 12 28 03 00 00])) || ...
+		(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59 ]))
 		
 		% p1 problems on SC1 and SC3
-		pl=[34];
+		pl = 34;
 		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
 	end
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
@@ -420,7 +413,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 					t = t - err_t;
 					irf_log('dsrc',...
 						['burst start time was corrected by ' num2str(err_t) ' sec'])
-				else, irf_log('dsrc','burst start time was not corrected')
+                else irf_log('dsrc','burst start time was not corrected')
 				end
 			end
 			
@@ -443,7 +436,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % p - SC potential
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
+elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
 	if strcmp(quantity,'pburst'), do_burst = 1; else do_burst = 0; end
 	if do_burst 
@@ -460,15 +453,15 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	% Check for p1 problems on SC1 and SC3
-	if (start_time>toepoch([2001 12 28 03 00 00])&cl_id==1) | ...
-		(start_time>toepoch([2002 07 29 09 06 59 ])&cl_id==3)
+	if (cl_id==1 && start_time>toepoch([2001 12 28 03 00 00])) || ...
+		(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59 ]))
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
 	end
 	% 10Hz filter problem on C2 p3
 	% Any changes should also go to ClusterProc/getData/probesa
-	if start_time>toepoch([2001 07 23 00 00 00])&cl_id==2 & ~do_burst
+	if cl_id==2 && start_time>toepoch([2001 07 23 00 00 00]) && ~do_burst
 		probe_list = [1 2 4];
 		p3 = [];
 		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
@@ -513,7 +506,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 				'save_list=[save_list ''P' param{j} '?p! ''];'],cl_id,probe));
 			n_ok = n_ok + 1;
 			
-		else, irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
+        else irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
 		end 
 		clear t data
     end, end
@@ -525,7 +518,7 @@ elseif strcmp(quantity,'p') | strcmp(quantity,'pburst')
 	if do_burst
 		for j=1:length(param)
 			for probe=[1 3]
-				if exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe),'var') & ...
+				if exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe),'var') && ...
 				exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe+1),'var')
 					eval(irf_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' ...
 						param{j} '?p$(:,2)-P' param{j} '?p!(:,2))/.088;'],...
@@ -563,7 +556,7 @@ elseif strcmp(quantity,'a')
 	if ~isempty(data)
 		c_eval('A?=[t data];save_list=[save_list '' A? ''];',cl_id);
 		n_ok = n_ok + 1;
-	else, irf_log('dsrc',irf_ssub('No data for A?',cl_id))
+    else irf_log('dsrc',irf_ssub('No data for A?',cl_id))
 	end
 	clear t data
 	
@@ -618,13 +611,13 @@ elseif strcmp(quantity,'v')
 		if isempty(tempv)
 			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 			sax = [];
-		else, sax = tempv{2};
+        else sax = tempv{2};
 		end
 		clear tempv
 	end
 	if ~isempty(sax)
 		c_eval('diV?=c_gse2dsi(V?,sax);save_list=[save_list '' diV? ''];',cl_id);
-	else, irf_log('dsrc',irf_ssub('No data for diV?',cl_id))
+    else irf_log('dsrc',irf_ssub('No data for diV?',cl_id))
 	end
 	
 %{ 
@@ -670,20 +663,20 @@ elseif strcmp(quantity,'bfgm')
 		if isempty(tempv)
 			irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 			sax = [];
-		else, sax = tempv{2};
+        else sax = tempv{2};
 		end
 		clear tempv
 	end
 	if ~isempty(sax)
 		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
-	else, irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
+    else irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'b') | strcmp(quantity,'edi') | ...
-	strcmp(quantity,'ncis') | strcmp(quantity,'tcis') | strcmp(quantity,'vcis')
+elseif strcmp(quantity,'b') || strcmp(quantity,'edi') || ...
+	strcmp(quantity,'ncis') || strcmp(quantity,'tcis') || strcmp(quantity,'vcis')
 	
 	% TODO: add oxygen
 	
@@ -744,7 +737,7 @@ elseif strcmp(quantity,'b') | strcmp(quantity,'edi') | ...
 				if isempty(tempv)
 					irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
 					sax = [];
-				else, sax = tempv{2};
+                else sax = tempv{2};
 				end
 				clear tempv
 			end
@@ -775,7 +768,7 @@ elseif strcmp(quantity,'sax')
 	lat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
 	
-	if isempty(lat) | isempty(long)
+	if isempty(lat) || isempty(long)
 		irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
 		data = []; cd(old_pwd), return
 	end
@@ -804,7 +797,7 @@ end %main QUANTITY
 
 % saving
 % If flag_save is set, save variables to specified file
-if flag_save==1 & length(save_file)>0 & ~isempty(save_list)
+if flag_save==1 && ~isempty(save_list) && length(save_file)>0
 	irf_log('save',[save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
@@ -846,10 +839,8 @@ while 1
 	if isempty(ii), return, end
 	
 	tbj = out(ii(1),1) + BAD_MARGIN;
-	taj = out(ii(1)+1,1) - BAD_MARGIN;
-	ii = find(out(:,1) > taj & out(:,1) < tbj);
-	
-	out(ii,:) = [];
+	taj = out(ii(1)+1,1) - BAD_MARGIN;	
+	out(out(:,1) > taj & out(:,1) < tbj,:) = [];
 	irf_log('proc',...
 		sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
 		
