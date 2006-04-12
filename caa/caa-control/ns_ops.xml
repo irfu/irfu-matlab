@@ -493,7 +493,7 @@ minute expected.</desc>
 			<link href="ky021107.txt">Keith 021107</link>
 		</res>
 	</operation>
-	<operation start="2002-11-05T08:27:20" dt="820" c2="yes" plan="no" sdesc="TBD">
+	<operation start="2002-11-05T08:27:20Z" dt="820" c2="yes" plan="no" sdesc="TBD">
 		<desc>Uncontrolled manoeuvre</desc>
 		<res><link href="pal060331c.txt">Per-Arne 060331</link></res>
 	</operation>
@@ -581,12 +581,24 @@ minute expected.</desc>
 			<link href="ky030406d.txt">Keith 030406</link>
 		</res>
 	</operation>
-	<operation start="2003-01-06T08:01:56" dt="104416" c3="yes" plan="no" sdesc="no_tm">
+	<operation start="2003-01-06T08:01:56Z" dt="104416" c3="yes" plan="no" sdesc="no_tm">
   	<desc>EFW in NULL mode, i.e. no telemetry, due to spurious command.</desc>
 		<res>
 			<link href="pal030107a.txt">Per-Arne 030107</link>
 			<link href="pal030108a.txt">Per-Arne 030108</link>
 		</res>
+	</operation>
+	<operation start="2003-01-15T12:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2003-01-15T13:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2003-01-15T17:00:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2003-01-15T18:00:00Z" dt="300" c3="yes" plan="yes" sdesc="bad_tm">
+		<desc>Attitude manoeuvre</desc>
 	</operation>
 	<operation start="2003-01-23T08:13:07Z" dt="65644" c3="yes" plan="no" sdesc="no_tm">
   	<desc>WEC off due to DWP problem.</desc>
@@ -603,12 +615,14 @@ minute expected.</desc>
 		</res>
 	</operation>
 	<operation start="2003-01-24T18:54:00Z" dt="-157" c4="yes" plan="no" sdesc="no_tm">
-		<desc>WEC switchoff, probably SEU in DWP
-      </desc>
+		<desc>WEC switchoff, probably SEU in DWP</desc>
 		<res>
 			<link href="esoc030125a.txt">ESOC 030125</link>
 			<link href="ky030127a.txt">Keith 030127</link>
 		</res>
+	</operation>
+	<operation start="2003-01-30T13:46:00Z" dt="4860" c2="yes" plan="no" sdesc="bad_tm">
+		<desc>DWP problem?</desc>
 	</operation>
 	<operation start="2003-02-01T11:14:06Z" dt="-157" c3="yes" plan="no" sdesc="TBD">
 		<desc>Partial loss of BM3 dump.</desc>
@@ -616,7 +630,13 @@ minute expected.</desc>
 			<link href="ky030203.txt">Keith 030203</link>
 		</res>
 	</operation>
-	<operation start="2003-02-02T19:24:00Z" dt="2625060" c2="yes" c4="yes" plan="yes" sdesc="spec_bias">
+	<operation start="2003-02-02T20:00:00Z" dt="85320" c2="yes" c4="yes" plan="yes" sdesc="no_p34">
+		<desc>Guard and puck variations.</desc>
+		<res>
+			<link href="aie030325c.txt">Anders 030325</link>
+		</res>
+	</operation>
+	<operation start="2003-02-03T20:30:00Z" dt="115500" c2="yes" c4="yes" plan="yes" sdesc="no_p34">
 		<desc>Guard and puck variations.</desc>
 		<res>
 			<link href="aie030325c.txt">Anders 030325</link>
@@ -648,22 +668,39 @@ minute expected.</desc>
 	<operation start="2003-02-24T07:51:00Z" dt="14400" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>Data chopped up.</desc>
 	</operation>
+	<operation start="2003-02-25T15:37:39Z" dt="2" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad HX telemetry packet.</desc>
+	</operation>
+	<operation start="2003-02-26T10:11:30Z" dt="600" c1="yes" plan="no" sdesc="bad_tm">
+		<desc>Very bad data, probably because of high density and too large bias current.</desc>
+	</operation>
+	<operation start="2003-03-07T23:30:56Z" dt="1200" c3="yes" plan="yes" sdesc="spec_bias">
+		<desc>Eclipse bias +16 nA was commanded 20 minutes too
+			early.</desc>
+	</operation>
 	<operation start="2003-03-13T07:56:00Z" dt="-157" c2="yes" plan="no" sdesc="TBD">
 		<desc>SC anomaly during upload.</desc>
 		<res>
 			<link href="esoc030314a.txt">ESOC 030314</link>
 		</res>
 	</operation>
+	<operation start="2003-03-14T07:53:14Z" dt="3" c3="yes" plan="no" sdesc="no_tm">
+		<desc>Single bad EFW TM packet.</desc>
+		<res>
+			<link href="pal060412a.txt">Per-Arne 060412</link>
+		</res>
+	</operation>
+	<operation start="2003-03-19T04:02:00Z" dt="59760" c1="yes" plan="no" sdesc="no_tm">
+		<desc>EFW in NULL sampling mode, possibly due to spurious command.</desc>
+		<res>
+			<link href="pal030322b.txt">Per-Arne 030322</link>
+			<link href="pal060412a.txt">Per-Arne 060412</link>
+		</res>
+	</operation>
 	<operation start="2003-03-19T15:31:36Z" dt="32258" c2="yes" plan="no" sdesc="no_tm">
 		<desc>Sync loss between EFW and DWP</desc>
 		<res>
 			<link href="ky030325a.txt">Keith 030325</link>
-		</res>
-	</operation>
-	<operation start="2003-03-19T20:12:00Z" dt="1500" c1="yes" plan="no" sdesc="no_tm">
-		<desc>Sampling error</desc>
-		<res>
-			<link href="pal030322b.txt">Per-Arne 030322</link>
 		</res>
 	</operation>
 	<operation start="2003-03-21T13:07:47Z" dt="192073" c1="yes" plan="no" sdesc="no_tm">
@@ -691,11 +728,20 @@ minute expected.</desc>
 			<link href="aie030307a.txt">Anders 030307</link>
 		</res>
 	</operation>
+	<operation start="2003-03-24T23:01:27Z" dt="85221" c2="yes" plan="no" sdesc="no_p1">
+		<desc>P1 first stuck at +70 V, then bad guard voltage causing
+			strange data from 00:07:01 until reset.
+    		</desc>
+		<res>
+			<link href="aie060412a.txt">Anders 060412</link>
+		</res>
+	</operation>
 	<operation start="2003-03-27T03:54:36Z" dt="90084" c1="yes" c3="yes" plan="yes" sdesc="TBD">
 		<desc>
 			Testing flight software 2.4 and new WEC sequences (NM1/TM0 and BM1/TM1).
 			</desc>
 		<res><link href="aie030307a.txt">Anders 030307</link></res>
+		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
 	<operation dt="14400" plan="no" sdesc="bad_tm" start="2003-03-27T05:12:00Z" c1="yes" c2="yes" c3="yes" c4="yes">
 		<desc>WEC macro problem caused loss of much BM1 data.</desc>
@@ -708,14 +754,30 @@ minute expected.</desc>
 			interval. Functions used on each spacecraft in the different sampling
 			mode:
 			SC1:
-			�TM0: V23V34L �(0x9E)
-			�TM1: V23V34M �(0x9E) �
-			�TM2: V2V3V4M �(0x1E)
+			TM0: V23V34L (0x9E)
+			TM1: V23V34M (0x9E) 
+			TM2: V2V3V4M (0x1E)
 			SC3:
-			�TM0: V2V34L � (0x94)
-			�TM1: V2V34M � (0x9F)
-			�TM2: V2V3V34M (0x1F)
+			TM0: V2V34L  (0x94)
+			TM1: V2V34M  (0x9F)
+			TM2: V2V3V34M (0x1F)
       </desc>
+		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
+	</operation>
+	<operation start="2003-04-25T07:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude maneouvre.</desc>
+	</operation>
+	<operation start="2003-04-25T08:30:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude maneouvre.</desc>
+	</operation>
+	<operation start="2003-04-25T10:00:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude maneouvre.</desc>
+	</operation>
+	<operation start="2003-04-25T12:00:00Z" dt="300" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude maneouvre.</desc>
+	</operation>
+	<operation start="2003-04-27T09:41:00Z" dt="16200" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>DWP buffer overflow.</desc>
 	</operation>
 	<operation start="2003-05-05T08:51:00Z" dt="12660" c3="yes" plan="no" sdesc="no_tm">
 		<desc>WEC switchoff</desc>
@@ -783,7 +845,7 @@ minute expected.</desc>
 			<link href="aie030626a.txt">Anders 030626</link>
 		</res>
 	</operation>
-	<operation start="2003-07-14T15:51:52" dt="18" c2="yes" plan="no" sdesc="no_tm">
+	<operation start="2003-07-14T15:51:52Z" dt="18" c2="yes" plan="no" sdesc="no_tm">
     <desc>DWP reset.</desc>
 		<res>
 			<link href="esoc030714f.txt">ESOC 030714</link>
@@ -841,6 +903,19 @@ minute expected.</desc>
 			<link href="esoc031010.txt">ESOC 031010</link>
 		</res>
 	</operation>
+	<operation dt="121795" plan="no" sdesc="spec_bias" start="2003-10-15T01:48:11Z" c2="yes">
+		<desc>WEC emergency mode due to DWP problem, causing 0 bias.</desc>
+		<res>
+		<link href="ky031016aa.html">Keith 031016</link>
+		</res>
+	</operation>
+	<operation dt="2071" plan="yes" sdesc="no_tm" start="2003-10-16T11:38:06Z" c2="yes">
+		<desc>WEC power cycle to clear up DWP problem.</desc>
+		<res>
+		<link href="esoc031016aa.txt">ESOC 031016</link>
+		<link href="ky031016aa.html">Keith 031016</link>
+		</res>
+	</operation>
 	<operation start="2003-10-28T15:21:00Z" dt="120" c3="yes" plan="no" sdesc="no_tm">
 		<desc>WEC problems due to proton event</desc>
 		<res>
@@ -892,7 +967,7 @@ minute expected.</desc>
 			<link href="aie031125b.txt">Anders 031125</link>
 		</res>
 	</operation>
-	<operation start="2003-12-14T00:08:00Z" dt="405120" c1="yes" plan="no" sdesc="bad_tm">
+	<operation start="2003-12-14T00:08:00Z" dt="405120" c3="yes" plan="no" sdesc="bad_tm">
     <desc>WBD problem turned WEC off. Several tests followed up to Dec 18.</desc>
 		<res>
 			<link href="esoc031214a.txt">ESOC 031214</link>
@@ -1157,6 +1232,12 @@ minute expected.</desc>
 		<link href="ky051219a.txt">Keith 051219</link>
 		</res>
 	</operation>
+	<operation dt="23130" plan="no" sdesc="no_tm" start="2006-01-08T07:05:02Z" c4="yes">
+		<desc>No EFW TM. DWP or EFW problem, not investigated.</desc>
+		<res>
+		<link href="esoc060112w.txt">ESOC 060112</link>
+		</res>
+	</operation>
 	<operation dt="2460" plan="yes" sdesc="spec_bias" start="2006-01-09T13:50:00Z" c4="yes">
 		<desc>Testing sweeps at different sweep rates</desc>
 		<res>
@@ -1185,6 +1266,92 @@ minute expected.</desc>
 		<desc>SC1 raindance procedure.</desc>
 		<res>
 		<link href="esoc060210.txt">ESOC 060210</link>
+		</res>
+	</operation>
+	<operation dt="151057" plan="no" sdesc="no_tm" start="2006-02-11T21:02:00Z" c1="yes">
+		<desc>WEC off due to DWP latchup.</desc>
+		<res>
+		<link href="esoc060213h.txt">ESOC 060213</link>
+		<link href="esoc060224w.txt">ESOC 060224</link>
+		</res>
+	</operation>
+	<operation dt="102" plan="no" sdesc="bad_tm" start="2006-02-14T07:12:32Z" c4="yes">
+		<desc>EFW bad data due to DWP problem (SEU).</desc>
+		<res>
+		<link href="ky060214s.txt">Keith 060214</link>
+		</res>
+	</operation>
+	<operation dt="3" plan="no" sdesc="bad_tm" start="2006-02-14T22:21:06Z" c4="yes">
+		<desc>One bad EFW packet, due to DWP problem (SEU).</desc>
+		<res>
+		<link href="ky060214s.txt">Keith 060214</link>
+		</res>
+	</operation>
+	<operation dt="60900" plan="no" sdesc="no_tm" start="2006-02-14T22:22:50Z" c4="yes">
+		<desc>EFW off due to DWP problem (SEU).</desc>
+		<res>
+		<link href="ky060214s.txt">Keith 060214</link>
+		</res>
+	</operation>
+	<operation dt="145" plan="no" sdesc="no_tm" start="2006-02-24T12:44:45Z" c3="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="ky060224aq.txt">ESOC Keith 060224</link>
+		<link href="esoc060302w.txt">ESOC 060302</link>
+		</res>
+	</operation>
+	<operation dt="21560" plan="no" sdesc="spec_bias" start="2006-02-24T12:47:10Z" c3="yes">
+		<desc>WEC emergency mode following DWP reset, -40 nA on all probes.</desc>
+		<res>
+		<link href="ky060224aq.txt">ESOC Keith 060224</link>
+		<link href="esoc060302w.txt">ESOC 060302</link>
+		</res>
+	</operation>
+	<operation dt="66660" plan="no" sdesc="no_tm" start="2006-03-04T17:36:00Z" c3="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="esoc060308w.txt">ESOC 060308</link>
+		</res>
+	</operation>
+	<operation dt="24900" plan="no" sdesc="no_tm" start="2006-03-14T05:44:37Z" c1="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="esoc060314ad.txt">ESOC 060314</link>
+		</res>
+	</operation>
+	<operation dt="88400" plan="no" sdesc="no_tm" start="2006-03-14T21:53:00Z" c4="yes">
+		<desc>Payload off following CTU switchover.</desc>
+		<res>
+		<link href="esoc060315w.txt">ESOC 060315</link>
+		<link href="esoc060315x.txt">ESOC 060315</link>
+		<link href="esoc060322w.txt">ESOC 060322</link>
+		</res>
+	</operation>
+	<operation dt="5040" plan="yes" sdesc="no_tm" start="2006-03-15T09:34:00Z" c4="yes">
+		<desc>RTU switchover recovery plan.</desc>
+		<res>
+		<link href="esoc060322w.txt">ESOC 060322</link>
+		</res>
+	</operation>
+	<operation dt="341168" plan="no" sdesc="no_tm" start="2006-03-24T15:38:52Z" c1="yes">
+		<desc>SC1 battery problem in short eclipse.</desc>
+		<res>
+		<link href="esoc060327qa.txt">ESOC 060327</link>
+		<link href="esoc060405a.txt">ESOC 060405</link>
+		<link href="CLU_AR-088.pdf">AR-088</link>
+		</res>
+	</operation>
+	<operation dt="167974" plan="no" sdesc="no_tm" start="2006-03-30T12:22:26Z" c4="yes">
+		<desc>WEC switched off by voltage monitoring.</desc>
+		<res>
+		<link href="esoc060403a.txt">ESOC 060403</link>
+		<link href="esoc060405a.txt">ESOC 060405</link>
+		</res>
+	</operation>
+	<operation dt="125340" plan="no" sdesc="no_tm" start="2006-04-02T04:40:00Z" c3="yes">
+		<desc>WEC switched off because of an uncommanded WBD on following a DWP watchdog reset.</desc>
+		<res>
+		<link href="esoc060405a.txt">ESOC 060405</link>
 		</res>
 	</operation>
 </table>
