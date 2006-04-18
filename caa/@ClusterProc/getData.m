@@ -1064,7 +1064,7 @@ elseif strcmp(quantity,'probesa')
 	
 	[iso_t,dt] = caa_read_interval;
 	start_time = iso2epoch(iso_t);
-	
+	c_eval('sa_int_p?=[];')
 	for pro=1:4
 		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
 		if pro==3 && ~isempty(start_time) && ...
@@ -1077,12 +1077,9 @@ elseif strcmp(quantity,'probesa')
 			end
 			
 			irf_log('dsrc',...
-				irf_ssub('Using fake(empty) PROBESA?p!/PROBELD?p!',cl_id,pro));
-			c_eval(['p?=[];PROBELD' num2str(cl_id) ...
+				irf_ssub('Using fake PROBELD?p!',cl_id,pro));
+			c_eval(['p?=[];sa_int_p?=sa_int;PROBELD' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-			c_eval(['PROBESA' num2str(cl_id) ...
-				'p?=sa_int;save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
-			
 			continue
 		end
 		if ~ok
@@ -1096,7 +1093,6 @@ elseif strcmp(quantity,'probesa')
 		end
 		
 		% Read in ns_ops
-		c_eval('sa_int_p?=[];',pro)
 		if ~isempty(ns_ops)
 			sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,['no_p' num2str(pro)]);
 			if ~isempty(sa_int)
@@ -1128,7 +1124,11 @@ elseif strcmp(quantity,'probesa')
 		
 	for pro=1:4
 		c_eval('p=p?;ii_bad=ii_bad?;ii_god=ii_god?;',pro)
-		if isempty(p), continue, end
+		if isempty(p)
+			c_eval(['if ~isempty(sa_int_p?),PROBESA' num2str(cl_id) 'p?=sa_int_p?;',...
+				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? '']; end'],pro);
+			continue
+		end
 		
 		if isempty(ii_bad)
 			c_eval(['PROBELD' num2str(cl_id) ...
