@@ -1056,18 +1056,32 @@ elseif strcmp(quantity,'probesa')
 		irf_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
 	end
 	
-	start_time = [];
+	ns_ops = c_ctl('get',cl_id,'ns_ops');
+	if isempty(ns_ops)
+		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
+		ns_ops = c_ctl('get',cl_id,'ns_ops');
+	end
+	
+	[iso_t,dt] = caa_read_interval;
+	start_time = iso2epoch(iso_t);
 	
 	for pro=1:4
 		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
 		if pro==3 && ~isempty(start_time) && ...
 			start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2
+			
+			sa_int = [];
+			if ~isempty(ns_ops)
+				sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,'no_p3');
+				if ~isempty(sa_int), irf_log('proc','Found no_p3 in NS_OPS'), end
+			end
+			
 			irf_log('dsrc',...
 				irf_ssub('Using fake(empty) PROBESA?p!/PROBELD?p!',cl_id,pro));
 			c_eval(['p?=[];PROBELD' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
 			c_eval(['PROBESA' num2str(cl_id) ...
-				'p?=[];save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
+				'p?=sa_int;save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 			
 			continue
 		end
@@ -1079,6 +1093,18 @@ elseif strcmp(quantity,'probesa')
 		if isempty(p)
 			irf_log('load',	irf_ssub('Empty P10Hz?p!',cl_id,pro))
 		elseif isempty(start_time), start_time = p(1,1);
+		end
+		
+		% Read in ns_ops
+		c_eval('sa_int_p?=[];',pro)
+		if ~isempty(ns_ops)
+			sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,['no_p' num2str(pro)]);
+			if ~isempty(sa_int)
+				irf_log('proc',['Found no_p' num2str(pro) ' in NS_OPS'])
+				c_eval('sa_int_p?=sa_int;',pro)
+				p = caa_rm_blankt(p,sa_int);
+				p(isnan(p(:,2)),:) = [];
+			end
 		end
 		
 		% Clean up after evil sweeps
@@ -1139,7 +1165,7 @@ elseif strcmp(quantity,'probesa')
 		if isempty(ii_god)
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
-				'PROBESA' num2str(cl_id) 'p?=[];'...
+				'PROBESA' num2str(cl_id) 'p?=sa_int_p?;'...
 				'save_list=[save_list '' PROBELD' num2str(cl_id) ...
 				'p? PROBESA' num2str(cl_id) 'p? ''];'],pro);
 		else
@@ -1153,7 +1179,6 @@ elseif strcmp(quantity,'probesa')
 			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]';
 			c_eval(['PROBELD' num2str(cl_id) 'p?=res;'...
 			'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-			
 			
 			clear res ii
 		end
@@ -1178,7 +1203,7 @@ elseif strcmp(quantity,'probesa')
 		ii_god = find(p(:,2)<0);
 		if isempty(ii_god)
 			c_eval(['PROBESA' num2str(cl_id) ...
-				'p?=[double(p(1,1))'' double(p(end,1))''];'...
+				'p?=[sa_int_p?; double(p(1,1))'' double(p(end,1))''];'...
 				'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 		else
 			dd = diff(p(ii_god,2));
@@ -1225,7 +1250,7 @@ elseif strcmp(quantity,'probesa')
 					if pos>=size(res,1), break, end
 				end
 			end
-			c_eval(['PROBESA' num2str(cl_id) 'p?=res;'...
+			c_eval(['PROBESA' num2str(cl_id) 'p?=[sa_int_p?; res];'...
 			'save_list=[save_list '' PROBESA' num2str(cl_id) 'p? ''];'],pro);
 			clear ii res
 		end
