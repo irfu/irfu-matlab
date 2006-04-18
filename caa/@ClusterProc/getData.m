@@ -1058,7 +1058,7 @@ elseif strcmp(quantity,'probesa')
 	
 	ns_ops = c_ctl('get',cl_id,'ns_ops');
 	if isempty(ns_ops)
-		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
+		c_ctl('load_ns_ops',[c_ctl('get',5,'data_path') '/caa-control'])
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	
