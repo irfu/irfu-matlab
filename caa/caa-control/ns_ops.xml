@@ -921,11 +921,14 @@ minute expected.</desc>
 			<link href="pal030819a.txt">Per-Arne 030819</link>
 		</res>
 	</operation>
-	<operation start="2003-08-20T07:50:11Z" dt="45600" c2="yes" plan="no" sdesc="bad_p1">
+	<operation start="2003-08-20T07:50:11Z" dt="45600" c2="yes" plan="no" sdesc="no_p1">
     <desc>P1 stuck at +68 V until 09:42:23, then bad guard until reset at 20:30.</desc>
 		<res>
 			<link href="pal060415ad.txt">Per-Arne 060415</link>
 		</res>
+	</operation>
+	<operation start="2003-08-26T17:11:29Z" dt="9916" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 goes positive after a sweep.</desc>
 	</operation>
 	<operation start="2003-10-07T06:00:00Z" dt="2400" c2="yes" c4="yes" plan="yes" sdesc="spec_bias">
     <desc>Slow sweeps on P34</desc>
