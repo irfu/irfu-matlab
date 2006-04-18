@@ -5,6 +5,8 @@ function dir_eval(eval_s,dirs)
 %    Run eval(EVAL_S) in all subdirectories of the curret directory or 
 %    in the ones specified by DIRS (cell array)
 %
+% See also EVAL, C_EVAL
+%
 % $Id$
 
 % Copyright 2006 Yuri Khotyaintsev
