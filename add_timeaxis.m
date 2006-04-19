@@ -1,5 +1,6 @@
 function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%ADD_TIMEAXIS  add time axis
+%
 % function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 % function add_timeaxis( h, t_start_epoch );
 % function add_timeaxis( h, 'usefig' );      % to use t_start_epoch from the figure
@@ -20,7 +21,7 @@ function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
 % to the time of labels xlabeltitle = {'LAB1' 'LAB2' ..}; is the str
 % for labels.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% $Id$
 
 flag_labels=1; % default is to add labels to the last axis handle, can be changed by 'nolabels' argument
 flag_date=1;   % default is to add date labels
@@ -40,7 +41,8 @@ flag_date=1;   % default is to add date labels
      elseif strcmp(t_start_epoch,'nodate')
         flag_date = 0;
      elseif strcmp(t_start_epoch,'nolabels')
-        flag_labels = 0; 
+        flag_labels = 0;
+        flag_date = 0;
 	 elseif strcmp(t_start_epoch,'usefig')
         flag_usefig = 1;
      end
@@ -106,13 +108,8 @@ flag_date=1;   % default is to add date labels
 
   start_time = fromepoch( ax(1) + t_start_epoch );
   time_label = datestr( datenum(start_time),1 );
-  %disp(time_label);
-  if flag_date == 1
-     xlabel(time_label);
-  end
-  if flag_labels == 0,
-    set(gca,'xticklabel',' ');
-  end
+  if flag_date == 1, xlabel(time_label);  end
+  if flag_labels == 0, set(gca,'XTickLabel',' '); end
   return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
