@@ -44,18 +44,18 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 % Copyright 2004, 2005 Yuri Khotyaintsev (yuri@irfu.se)
 %
 error(nargchk(1,3,nargin))
-if nargout==2 & nargin==3
+if nargout==2 && nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
 end
 
 ERR_RET = -157e8;
 
-if ~isstr(vs), error('V_S must be a string'), end
+if ~ischar(vs), error('V_S must be a string'), end
 
 switch nargin
 case 3
 	if ~isnumeric(cl_id), error('Second input argument must be a number 1..4'),end
-	if cl_id<0 | cl_id>4
+	if cl_id<0 || cl_id>4
 		error('CL_ID must be in a range 1..4')
 	end
 case 2
@@ -64,17 +64,17 @@ case 2
 			error('CL_ID must be in a range 1..4')
 		end
 		mode_s = 'res';
-	elseif isstr(cl_id)
+	elseif ischar(cl_id)
 		mode_s = cl_id;
 		if regexp(vs,'?'), cl_id = 1:4; 
-		else, cl_id = 1;
+        else cl_id = 1;
 		end
-	else, error('Second input argument must be eather a number 1..4 or a string.')
+    else error('Second input argument must be eather a number 1..4 or a string.')
 	end
 case 1
 	mode_s = 'res';
 	if regexp(vs,'?'), cl_id = 1:4;
-	else, cl_id = 1;
+    else cl_id = 1;
 	end
 end
 
@@ -82,7 +82,7 @@ CAA_MODE = c_ctl(0,'caa_mode');
 
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
-else, irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
+else irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
 end
 
 kk = 1;
@@ -107,14 +107,14 @@ for cli=cl_id
 		case 2
 			res(kk) = 1;
 			if length(cl_id)>1, v(kk) = {eval(vs_tmp)};
-			else, v = eval(vs_tmp);
+            else v = eval(vs_tmp);
 			end
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {eval(vs_tmp)};
-				else, res = eval(vs_tmp);
+                else res = eval(vs_tmp);
 				end
-			else, res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp));
+            else res(kk) = 1; assignin('caller',vs_tmp,eval(vs_tmp));
 			end
 		case 0
 			assignin('caller',vs_tmp,eval(vs_tmp));
@@ -124,14 +124,14 @@ for cli=cl_id
 		case 2
 			res(kk) = 0;
 			if length(cl_id)>1, v(kk) = {[]};
-			else, v = [];
+            else v = [];
 			end
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {ERR_RET};
-				else, res = ERR_RET;
+                else res = ERR_RET;
 				end
-			else, res(kk) = 0;
+            else res(kk) = 0;
 			end
 		case 0
 			irf_log('load',['cannot load ' vs_tmp])

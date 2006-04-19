@@ -22,7 +22,7 @@ output_string = input_string;
 symb = '?!$';
 
 for j=nargin-1:-1:1
-    if isstr(varargin{j}),
+    if ischar(varargin{j}),
         output_string=strrep(output_string,symb(j),varargin{j});
     else
         output_string=strrep(output_string,symb(j),num2str(varargin{j}));

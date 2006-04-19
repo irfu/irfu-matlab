@@ -91,7 +91,7 @@ otherwise
 	% if irf_log is called from the main env, then use curr,
 	% otherwise we are interested in callers name (curr+1)
 	if curr == length(sta), idx = curr;
-	else, idx = curr +1;
+    else idx = curr +1;
 	end
 	log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
 	disp(['unknown LOG_ID at ' log_ids])
@@ -122,7 +122,7 @@ if log_ok
 	persistent d_out_prev
 	global IRF_LOG_OUT
 	
-	if isempty(d_out) | ~strcmp(d_out_prev,IRF_LOG_OUT)
+	if isempty(d_out) || ~strcmp(d_out_prev,IRF_LOG_OUT)
 		d_out_prev = IRF_LOG_OUT;
 		d_out = 'screen';
 		if ~isempty(IRF_LOG_OUT) 
