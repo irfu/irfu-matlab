@@ -834,10 +834,11 @@ minute expected.</desc>
             <desc>Axial delta-v manoeuvre.</desc>
 	</operation>
 	<operation start="2003-07-01T12:39:30Z" dt="39030" c1="yes" plan="no" sdesc="no_tm">
-    <desc>All probes bad</desc>
-		<res>
-			<link href="pal030721a.txt">Per-Arne 030721</link>
-		</res>
+    	<desc>All probes bad</desc>
+		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
+	</operation>
+	<operation start="2003-07-07T23:41:52Z" dt="7620" c4="yes" plan="no" sdesc="no_p1">
+		<desc>Something strange happens to p1, it jumps by about +2 V.</desc>
 	</operation>
 	<operation start="2003-07-12T11:27:00Z" dt="780" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_tm">
     <desc>
