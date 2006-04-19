@@ -1,4 +1,4 @@
-function c=irf_plot(x,varargin);
+function c=irf_plot(x,varargin)
 %IRF_PLOT   Flexible plotting routine for time series
 %
 % c=irf_plot(X,[arguments...]);
@@ -70,9 +70,9 @@ while have_options
 			if isnumeric(args{2})
 				dt = args{2};
 				l = 2;
-			else, irf_log('fcal,','wrongArgType : dt must be numeric')
+            else irf_log('fcal,','wrongArgType : dt must be numeric')
 			end
-		else, irf_log('fcal,','wrongArgType : dt value is missing')
+        else irf_log('fcal,','wrongArgType : dt value is missing')
 		end
 	case 'yy'
 		if length(args)>1
@@ -80,27 +80,25 @@ while have_options
 				flag_yy = 1;
         scaleyy = varargin{j+2};
 				l = 2;
-			else, irf_log('fcal,','wrongArgType : yy must be numeric')
+            else irf_log('fcal,','wrongArgType : yy must be numeric')
 			end
-		else, irf_log('fcal,','wrongArgType : yy value is missing')
+        else irf_log('fcal,','wrongArgType : yy value is missing')
 		end
 		case 'linestyle'
 			marker = args{2};
 			l = 2;
 	otherwise
 		irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
-    marker = args{1};
-    args = args(2:end);
-    break
-  end
-  args = args(l+1:end);
-	if length(args) ==0, 
-    break; 
-  end
+		marker = args{1};
+		args = args(2:end);
+		break
+	end
+	args = args(l+1:end);
+	if isempty(args), break, end
 end
 
 % plot separate subplots for all x components
-if strcmp(plot_type,'subplot') & isnumeric(x),flag_subplot=1;end
+if strcmp(plot_type,'subplot') && isnumeric(x),flag_subplot=1;end
 
 if ischar(x), % try to get variable labels etc.
     var_nam=tokenize(x); % white space separates variables
@@ -120,7 +118,7 @@ if ischar(x), % try to get variable labels etc.
             try % if there is none try to load variable
                 c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
             catch % if nothing works give up
-                warning(['skipping, do not know where to get variable >' var_names{ii}]);
+                irf_log('load',['skipping, do not know where to get variable >' var_names{ii}]);
 %                return;
             end
         end
@@ -175,7 +173,7 @@ if flag_subplot==0,  % one subplot
     ts = t_start_epoch(x(:,1));    
     ii = 2:length(x(1,:));
     if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),marker);grid on;
-    else, h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
+    else h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
     end
     
     % put ylimits so that no labels are at the end (disturbing in
@@ -196,9 +194,9 @@ elseif flag_subplot==1, % separate subplot for each component
 				
 				if iscell(marker)
 					if length(marker)==npl, marker_cur = marker{ipl};
-					else, marker_cur = marker{1};
+                    else marker_cur = marker{1};
 					end
-				else, marker_cur = marker;
+                else marker_cur = marker;
 				end
         
         i=ipl+1;
@@ -223,20 +221,20 @@ elseif flag_subplot==2, % separate subplot for each variable
 		
         y=x{ipl};
         t_tmp = (y(:,1)-ts-dt(ipl));
-		tt = t_tmp(find(~isnan(t_tmp)));
+		tt = t_tmp(~isnan(t_tmp));
 		if isempty(t_st), t_st = tt(1);
-		else, if tt(1)<t_st, t_st = tt(1); end
+        else if tt(1)<t_st, t_st = tt(1); end
 		end
 		if isempty(t_end), t_end = tt(end);
-		else, if tt(end)>t_end, t_end = tt(end); end
+        else if tt(end)>t_end, t_end = tt(end); end
 		end
 		clear tt
 		
 		if iscell(marker)
 			if length(marker)==npl, marker_cur = marker{ipl};
-			else, marker_cur = marker{1};
+            else marker_cur = marker{1};
 			end
-		else, marker_cur = marker;
+        else marker_cur = marker;
 		end
     plot(t_tmp,y(:,2:end),marker_cur);grid on;
 
@@ -261,7 +259,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 				
 			% We make subplot only if wee need it
 			if npl==1, c(ipl) = gca;
-			else, c(ipl) = irf_subplot(npl,1,-ipl);
+            else c(ipl) = irf_subplot(npl,1,-ipl);
 			end
 				
       line_colors=get(gca,'ColorOrder');
@@ -269,9 +267,9 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 				
 				if iscell(marker)
 					if length(marker)==size(x,2), marker_cur = marker{jj};
-					else, marker_cur = marker{1};
+                    else marker_cur = marker{1};
 					end
-				else, marker_cur = marker;
+                else marker_cur = marker;
 				end
 			
         y=x{jj};
@@ -299,9 +297,9 @@ set(gcf,'userdata',user_data);
 
 
 % in case time is in isdat_epoch add time_axis 
-if ((tt > 1e8) & (tt < 1e10))
+if ((tt > 1e8) && (tt < 1e10))
     if flag_subplot == 0, add_timeaxis(gca);
-    else, add_timeaxis(c);
+    else add_timeaxis(c);
     end
 end
 
