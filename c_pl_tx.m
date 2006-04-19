@@ -34,25 +34,25 @@ error(nargchk(1,8,nargin))
 
 args = varargin;
 
-if isstr(args{1})
+if ischar(args{1})
 % We have 4 arguments
 	for cl_id=1:4
 		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]'); 
 		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
 	end
 	if length(args) > 1, args = args(2:end); 
-	else, args = ''; end
+    else args = ''; end
 else
 	if length(args)<4, error('use c_pl_tx(x1,x2,x3,x4) or c_pl_tx(''x?'')'), end
 	% We have x1,x2..x4
 	c_eval('x? = args{?};');
 	if length(args) > 4, args = args(5:end); 
-	else, args = ''; end
+    else args = ''; end
 end
 
 % Check for deprecated 1
 if length(args)>1
-	if length(args{2})==1 & args{2}==1
+	if length(args{2})==1 && args{2}==1
 		irf_log('fcal','this usage of c_pl_tx is deprecated. see help c_pl_tx')
 		args(2) = [];
 	end
@@ -63,22 +63,22 @@ if length(args)>0
 	if isnumeric(args{1})
 		column = args{1};
 		args = args(2:end);
-	elseif isstr(args{1})
+	elseif ischar(args{1})
 		% empty string means default matrix size
 		if isempty(args{1}), args = args(2:end); end
 	end
 end
-if isempty(column) & ~isempty(x1)
+if isempty(column) && ~isempty(x1)
 	% try to guess the size of the matrix
 	column = size(x1,2);
 	if column > 2, column = 2:column; end
-elseif isempty(column) & ~isempty(x2)
+elseif isempty(column) && ~isempty(x2)
 	column = size(x2,2);
 	if column > 2, column = 2:column; end
-elseif isempty(column) & ~isempty(x3)
+elseif isempty(column) && ~isempty(x3)
 	column = size(x3,2);
 	if column > 2, column = 2:column; end
-elseif isempty(column) & ~isempty(x4)
+elseif isempty(column) && ~isempty(x4)
 	column = size(x4,2);
 	if column > 2, column = 2:column; end
 elseif isempty(column)
@@ -90,26 +90,26 @@ delta_t = [];
 l_style = {};
 
 if length(args)>0, have_args = 1;
-else, have_args = 0;
+else have_args = 0;
 end
 
 while have_args
-	if isstr(args{1})
+	if ischar(args{1})
 		%linestyle
 		if isempty(l_style), c_eval('l_style(?)={args{1}};')
-		else, irf_log('fcal','L_STYLE is already set')
+        else irf_log('fcal','L_STYLE is already set')
 		end
 		args = args(2:end);
-	elseif iscell(args{1}) & length(args{1})==4
+	elseif iscell(args{1}) && length(args{1})==4
 		%individual linestyles for each sc
 		if isempty(l_style), l_style = args{1};
-		else, irf_log('fcal','L_STYLE is already set')
+        else irf_log('fcal','L_STYLE is already set')
 		end
 		args = args(2:end);
-	elseif isnumeric(args{1}) & length(args{1})==4
+	elseif isnumeric(args{1}) && length(args{1})==4
 		%dt
 		if isempty(delta_t), delta_t = args{1};
-		else, irf_log('fcal','DELTA_T is already set')
+        else irf_log('fcal','DELTA_T is already set')
 		end
 		args = args(2:end);
 	else
@@ -118,7 +118,7 @@ while have_args
 	end
 	
 	if length(args)>0, have_args = 1;
-	else, have_args = 0;
+    else have_args = 0;
 	end
 end
 
@@ -126,7 +126,7 @@ if isempty(delta_t), delta_t = [0 0 0 0]; end
 
 if isempty(l_style), l_style= {'k','r','g','b'};
 else
-	cls='krgb';
+	cls = 'krgb';
 	c_eval('l_style(?)={[cls(?) l_style{?}]};')
 	clear cls
 end
@@ -135,8 +135,8 @@ end
 % check first if it exist otherwise assume zero
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), 
-	t_start_epoch=ud.t_start_epoch;
-elseif x1(1,1)> 1e8 | x2(1,1)> 1e8 | x3(1,1)> 1e8 | x4(1,1)> 1e8, 
+	t_start_epoch = ud.t_start_epoch;
+elseif x1(1,1)>1e8 || x2(1,1)>1e8 || x3(1,1)>1e8 || x4(1,1)>1e8, 
 	% set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
 	tt = [];
 	c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
@@ -144,7 +144,7 @@ elseif x1(1,1)> 1e8 | x2(1,1)> 1e8 | x3(1,1)> 1e8 | x4(1,1)> 1e8,
 	ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
 	irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
 else
-	t_start_epoch=0;
+	t_start_epoch = 0;
 end
 
 c_eval('ts?=t_start_epoch+delta_t(?);')
@@ -154,7 +154,7 @@ if length(column) == 1,
 	for jj=1:4
 		if eval(irf_ssub('~isempty(x?)',jj))
 			c_eval(['s_s=''(x?(:,1)-ts?),x?(:,column),''''' l_style{jj} ''''''';'],jj);
-			if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
+			if isempty(pl), pl = s_s; else pl = [pl ',' s_s]; end
 			clear s_s
 		end
 	end 
@@ -173,7 +173,7 @@ else
 		for jj=1:4
 			if eval(irf_ssub('~isempty(x?)',jj))
 				c_eval(['s_s=''(x?(:,1)-ts?),x?(:,column(j)),''''' l_style{jj} ''''''';'],jj);
-				if isempty(pl), pl = s_s; else, pl = [pl ',' s_s]; end
+				if isempty(pl), pl = s_s; else pl = [pl ',' s_s]; end
 				clear s_s
 			end
 		end 
