@@ -64,13 +64,13 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 
 error(nargchk(8,9,nargin))
 
-if pair~=12 & pair~=32 & pair~=34, error('PAIR must be one of: 12, 32, 34'), end
+if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 
 % Set default method to BHN
 if nargin < 9, method = 1; end
 
 if method==1
-	if exist('c_efw_spinfit_mx')~=3
+	if exist('c_efw_spinfit_mx','file')~=3
 		method = 0;
 		disp('cannot find mex file, defaulting to Matlab code.')
 	end
@@ -111,7 +111,7 @@ if method ==1
 	if pair == 12, pha = pha + 3*pi/4;
 	elseif pair == 32, pha = pha + pi/2;
 	elseif pair == 34, pha = pha + pi/4;
-	else, error('probe pair must be one of 12, 32 or 34')
+    else error('probe pair must be one of 12, 32 or 34')
 	end
 end
 
@@ -122,14 +122,13 @@ for i=1:n
 	pind = find((tp >= t0) & (tp < t0+4));
 	
 	% Clear NaNs
-	ii = find(isnan(data(eind)));
-	eind(ii) = [];
+	eind(isnan(data(eind))) = [];
 	
 	% Check for data gaps inside one spin.
-	if sf>0 & length(eind)<N_EMPTY*4*sf, eind = []; end
+	if sf>0 && length(eind)<N_EMPTY*4*sf, eind = []; end
 	  
 	% Need to check if we have any data to fit.
-	if ~isempty(eind) & ~isempty(pind)
+	if ~isempty(eind) && ~isempty(pind)
 		if method==1
 			% Use Fortran version of spin fit
 			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
@@ -144,12 +143,12 @@ for i=1:n
 			spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(eind),...
 				data(eind),tp(pind),ph(pind));
 		end
-	else, n_gap = n_gap + 1;
+    else n_gap = n_gap + 1;
 	end 
 end  
 spinfit = spinfit(1:n - n_gap, :);
 
-if method==1 & ~isempty(spinfit)
+if method==1 && ~isempty(spinfit)
         x = x(1:n - n_gap, :);
         phi = phi(1:n - n_gap);
 
