@@ -27,9 +27,9 @@ end
 
 if nargin < 3, axis_handles=gca;end
 if nargin == 3, 
-  ax=reshape(axis_handles,1,prod(size(axis_handles)));
+  ax = reshape(axis_handles,1,numel(axis_handles));
   clear axis_handles;
-  axis_handles=ax;
+  axis_handles = ax;
 end
  
 if size(interval,2) ~= 2, disp('zooming interval in wrong format');return;end
@@ -37,7 +37,7 @@ if size(interval,2) ~= 2, disp('zooming interval in wrong format');return;end
 if strcmp(c,'x'), 
   if iscell(interval),  % simplified time zooming
     ax=axis;
-    if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10),
+    if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 ),
       int_min=fromepoch(ax(1)+t_ref);
       int_max=fromepoch(ax(2)+t_ref);
       int_min(7-size(interval{1},2):6)=interval{1};
@@ -55,12 +55,12 @@ end
 if diff(interval)==0, interval(2)=interval(1)+1e-10; end % make interval finite if it is one point
 
 for h=axis_handles
-	axes(h); ax=axis;
+	axes(h); ax = axis;
 	if c=='x'
-		set(h,'Xlim',[interval]);
-		set(h,'Ylim',[ax(3:4)]);
+		set(h,'Xlim',interval);
+		set(h,'Ylim',ax(3:4));
 		set(h,'xtickmode','auto','xticklabelmode','auto');
-		if (ax(1)+t_ref>1e8 & ax(1)+t_ref<1e10)
+		if (ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10)
 			if flag_use_t_start_epoch, 
 				add_timeaxis(h);  % read informations about t_ref from userdata.t_start_epoch
 			else
@@ -69,13 +69,13 @@ for h=axis_handles
 		end
 	end
 	if c=='y'
-		set(h,'Ylim',[interval]);
-		set(h,'Xlim',[ax(1:2)]);
+		set(h,'Ylim',interval);
+		set(h,'Xlim',ax(1:2));
 	end
 end
 
 % remove XTickLabel and XLabel from all panels but the last one
-if c=='x' & length(axis_handles)>1
+if c=='x' && length(axis_handles)>1
 	p = cell2mat(get(axis_handles,'position'));
 	ii = find(p(:,2)>min(p(:,2)));
 	for h=1:length(ii)
