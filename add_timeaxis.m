@@ -1,4 +1,4 @@
-function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
+function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
 % function add_timeaxis( h, t_start_epoch );
@@ -28,13 +28,13 @@ flag_date=1;   % default is to add date labels
      h = gca;
   end
 
-  hh = reshape( h, 1, prod(size(h)) );
+  hh = reshape( h, 1, numel(h) );
   clear h;
   h = hh;
 
   flag_usefig = 0;
 
-  if (nargin >= 2) & (ischar(t_start_epoch))
+  if (nargin >= 2) && (ischar(t_start_epoch))
      if strcmp(t_start_epoch,'date')
         flag_date = 1;
      elseif strcmp(t_start_epoch,'nodate')
@@ -46,12 +46,12 @@ flag_date=1;   % default is to add date labels
      end
   end
 
-  if ~exist('t_start_epoch') | ischar(t_start_epoch) | flag_usefig
-    user_data=get(gcf,'userdata');
+  if ~exist('t_start_epoch','var') || ischar(t_start_epoch) || flag_usefig
+    user_data = get(gcf,'userdata');
     if isfield(user_data,'t_start_epoch')
-      t_start_epoch=user_data.t_start_epoch;
+      t_start_epoch = user_data.t_start_epoch;
     else
-      t_start_epoch=0;
+      t_start_epoch = 0;
     end
   end
 
@@ -78,7 +78,7 @@ flag_date=1;   % default is to add date labels
                   for jj = 1:length(mm)
                       if jj==1, % the first line is time
                           str = lab(ii);
-                      else, % other lines are xlabels
+                      else % other lines are xlabels
                           str = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
                       end
                       outhandle   = text(xcoord(ii)-t_start_epoch, ...
