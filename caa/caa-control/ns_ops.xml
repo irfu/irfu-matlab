@@ -833,8 +833,12 @@ minute expected.</desc>
 	<operation start="2003-06-29T02:33:30Z" dt="60" c4="yes" plan="yes" sdesc="bad_data">
             <desc>Axial delta-v manoeuvre.</desc>
 	</operation>
-	<operation start="2003-07-01T12:39:30Z" dt="39030" c1="yes" plan="no" sdesc="no_tm">
+	<operation start="2003-07-01T12:39:29Z" dt="7562" c1="yes" plan="no" sdesc="bad_data">
     	<desc>All probes bad</desc>
+		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
+	</operation>
+	<operation start="2003-07-01T14:45:31Z" dt="117869" c1="yes" plan="no" sdesc="TBD">
+    	<desc>HXONLY</desc>
 		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
 	</operation>
 	<operation start="2003-07-07T23:41:52Z" dt="7620" c4="yes" plan="no" sdesc="no_p1">
