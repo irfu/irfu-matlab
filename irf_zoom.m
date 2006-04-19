@@ -54,33 +54,35 @@ end
 
 if diff(interval)==0, interval(2)=interval(1)+1e-10; end % make interval finite if it is one point
 
+% remove XTickLabel and XLabel from all panels but the last one
+if c=='x' && length(axis_handles)>1
+	p = cell2mat(get(axis_handles,'Position'));
+	pymin = min(p(:,2));
+end
+
 for h=axis_handles
 	axes(h); ax = axis;
 	if c=='x'
-		set(h,'Xlim',interval);
-		set(h,'Ylim',ax(3:4));
-		set(h,'xtickmode','auto','xticklabelmode','auto');
-		if (ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10)
-			if flag_use_t_start_epoch, 
-				add_timeaxis(h);  % read informations about t_ref from userdata.t_start_epoch
+		set(h,'XLim',interval);
+		set(h,'YLim',ax(3:4));
+		set(h,'XTickMode','auto','XTickLabelMode','auto');
+		if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
+			if flag_use_t_start_epoch % read informations about t_ref from userdata.t_start_epoch
+				p = get(h,'position');
+				if length(axis_handles)>1 && p(2)==pymin, add_timeaxis(h);
+				else add_timeaxis(h,'nolabels');
+				end
 			else
 				add_timeaxis(h,t_ref);
+				if length(axis_handles)>1
+					p = get(h,'position');
+					if p(2)>pymin, xlabel(h,''), set(h,'XTickLabel',''), end
+				end
 			end
 		end
 	end
 	if c=='y'
 		set(h,'Ylim',interval);
 		set(h,'Xlim',ax(1:2));
-	end
-end
-
-% remove XTickLabel and XLabel from all panels but the last one
-if c=='x' && length(axis_handles)>1
-	p = cell2mat(get(axis_handles,'position'));
-	ii = find(p(:,2)>min(p(:,2)));
-	for h=1:length(ii)
-		axes(axis_handles(ii(h)))
-		xlabel('')
-		set(axis_handles(ii(h)),'XTickLabel','')
 	end
 end
