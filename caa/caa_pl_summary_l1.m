@@ -27,7 +27,7 @@ int_s=realmax;
 int_e=-1;
 
 if nargin > 3, have_options = 1; args = varargin;
-else, have_options = 0;
+else have_options = 0;
 end
 while have_options
 	l = 1;
@@ -58,13 +58,13 @@ old_pwd = pwd;
 
 % Save the screen size
 sc_s = get(0,'ScreenSize');
-if sc_s(3)==1600 & sc_s(4)==1200, scrn_size = 2;
-else, scrn_size = 1;
+if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
+else scrn_size = 1;
 end
 	
 figure(75)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else, set(gcf,'position',[7   159   790   916])
+else set(gcf,'position',[7   159   790   916])
 end
 clf
 
@@ -78,7 +78,7 @@ ylabel(h(6),'proc intrerv/SC')
 
 figure(76)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else, set(gcf,'position',[807   159   790   916])
+else set(gcf,'position',[807   159   790   916])
 end
 clf
 
@@ -111,7 +111,7 @@ for cli=1:4
 			cd(curdir)
 			
 			% Load R
-			if isempty(r) | ri==cli
+			if isempty(r) || ri==cli
 				r_tmp = c_load('R?',cli,'var');
 				if ~isempty(r_tmp) & r_tmp~=-157e8, r = [r; r_tmp]; end
 				if isempty(ri), ri = cli; end
@@ -123,7 +123,7 @@ for cli=1:4
 			
 			% Load spectrum
 			spec = c_load('diESPEC?p1234',cli,'var');
-			if ~isempty(spec) & isstruct(spec)
+			if ~isempty(spec) && isstruct(spec)
 				axes(h(cli))
 				if jj>1, hold on, end
 				caa_spectrogram(h(cli),spec)
@@ -162,7 +162,7 @@ for cli=1:4
 			t1 = iso2epoch(st_s);
 			if t1<int_s, int_s = t1; end
 			if t1+dt1>int_e, int_e = t1+dt1; end
-			st_s = st_s([12:16]);
+			st_s = st_s(12:16);
 			tm = c_load('mTMode?',cli,'var');
 			for axx=[h(6), he(8)]
 				axes(axx)
@@ -188,15 +188,15 @@ for cli=1:4
 	end
 end
 
-if strcmp(iso_t,'-1') & dt==-1
+if strcmp(iso_t,'-1') && dt==-1
 	st = int_s;
 	dt = int_e - int_s;
-else, st = iso2epoch(iso_t);
+else st = iso2epoch(iso_t);
 end
 ds = irf_fname(st);
 
 ytick =  [.25 .5 1 10];
-if fullscale & fmax>100, ytick = [ytick 100];, end
+if fullscale && fmax>100, ytick = [ytick 100]; end
 for cli=1:4
 	axes(h(cli))
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
@@ -234,7 +234,7 @@ for axx=[h(5), he(7)]
 end
 
 if fullscale, irf_zoom([0 fmax],'y',h(1:4))
-else, irf_zoom([0 12.5],'y',h(1:4))
+else irf_zoom([0 12.5],'y',h(1:4))
 end
 
 if dt>0, irf_zoom(st +[0 dt],'x',h), end
@@ -252,7 +252,7 @@ end
 
 orient(75,'tall'), orient(76,'tall')
 if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
-else,fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
+else fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
 end
 fne = sprintf('EFW_SPLOT_L1ERSPEC__%s',irf_fname(st));
 fone = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
@@ -265,7 +265,7 @@ if savePS
 	if s~=0, irf_log('save',['problem with ps2pdf: ' w]), end
 	[se,w] = unix(['/usr/local/bin/ps2pdf12 ' fne '.ps']);
 	if se~=0, irf_log('save',['problem with ps2pdf: ' w]), end
-	if s==0 & se==0
+	if s==0 && se==0
 		irf_log('save',['joining to ' fone '.pdf'])
 		[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
 		if s~=0, irf_log('save','problem with pdfjoin'), end
