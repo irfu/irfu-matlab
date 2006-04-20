@@ -136,7 +136,8 @@ end
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), 
 	t_start_epoch = ud.t_start_epoch;
-elseif x1(1,1)>1e8 || x2(1,1)>1e8 || x3(1,1)>1e8 || x4(1,1)>1e8, 
+elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
+        (~isempty(x3) && x3(1,1)>1e8) || (~isempty(x4) && x4(1,1)>1e8)
 	% set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
 	tt = [];
 	c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
