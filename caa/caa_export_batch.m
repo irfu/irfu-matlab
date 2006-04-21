@@ -20,7 +20,7 @@ cd(outdir)
 
 for j=1:length(m_vars)
 	v = m_vars{j};
-	lev = str2num(v(2));
+	lev = str2double(v(2));
 	caa_vs = v(4:end);
 	
 	ints = m_vers{j}{:};

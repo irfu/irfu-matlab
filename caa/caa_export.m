@@ -19,8 +19,8 @@ if nargin<8, st = []; dt=[]; end
 if nargin<6, sp='.'; end
 if nargin<5, DATA_VERSION = '01'; end
 if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
-if cl_id<=0 | cl_id>4, error('CL_ID must be 1..4'), end
-if lev<1 | lev>3, error('LEV must be 1,2 or 3'), end
+if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
+if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
 DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
@@ -32,12 +32,12 @@ cd(sp)
 
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
-		id = str2num(caa_vs(2:end));
+		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
-		else, vs = irf_ssub('wE?p!',cl_id,id);
+        else vs = irf_ssub('wE?p!',cl_id,id);
 		end
 		v_size = 1;
-	else, error('Must be P(1|2|3|4|12|32|34)')
+    else error('Must be P(1|2|3|4|12|32|34)')
 	end
 else
 	switch caa_vs
@@ -72,7 +72,7 @@ end
 
 % Load data
 [ok,data] = c_load(vs);
-if ~ok | isempty(data)
+if ~ok || isempty(data)
 	irf_log('load', ['No ' vs])
 	cd(old_pwd)
 	return
@@ -82,16 +82,16 @@ try
 	[ok, d_info] = c_load([vs '_info'],'var');
 end
 
-if ~ok | isempty(d_info), dsc = c_desc(vs);
-else, dsc = c_desc(vs,d_info);
+if ~ok || isempty(d_info), dsc = c_desc(vs);
+else dsc = c_desc(vs,d_info);
 end
 
 if lev==3
 	TIME_RESOLUTION = 4;
-elseif (lev==1 & regexp(caa_vs,'^P(1|2|3|4)?$')) | (lev==2 & strcmp(caa_vs,'P'))
+elseif (lev==1 && regexp(caa_vs,'^P(1|2|3|4)?$')) || (lev==2 && strcmp(caa_vs,'P'))
 	TIME_RESOLUTION = 1/5;
-elseif (lev==1 & regexp(caa_vs,'^P(12|32|34)?$')) | ...
-	(lev==2 & (strcmp(caa_vs,'E') | strcmp(caa_vs,'EF')))
+elseif (lev==1 && regexp(caa_vs,'^P(12|32|34)?$')) || ...
+	(lev==2 && (strcmp(caa_vs,'E') || strcmp(caa_vs,'EF')))
 	
 	fs = c_efw_fsample(data,'hx');
 	if ~fs, error('cannot determine time resolution'), end
@@ -99,7 +99,7 @@ elseif (lev==1 & regexp(caa_vs,'^P(12|32|34)?$')) | ...
 end
 
 % Make subinterval
-if ~isempty(st) & ~isempty(dt)
+if ~isempty(st) && ~isempty(dt)
 	t_int = st + [0 dt];
 	irf_log('save', sprintf('%s : %s -- %s',...
 			vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
@@ -121,7 +121,7 @@ end
 % Do magic on E-field
 if strcmp(caa_vs,'E')
 	% We check if this full res E is from coming from two probe pairs
-	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234')) & QUALITY>1
+	if lev==2 && ~(strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'3234')) && QUALITY>1
 		irf_log('save','This is not a full E, setting QUALITY=1!')
 		QUALITY = 1;
 	end
@@ -141,7 +141,7 @@ if strcmp(caa_vs,'E')
 		
 		% Remove Ez, which is zero
 		if lev==3, data = data(:,[1:3 5]);
-		else, data = data(:,1:3);
+        else data = data(:,1:3);
 		end
 	end
 	
@@ -150,7 +150,7 @@ if strcmp(caa_vs,'E')
 	
 elseif strcmp(caa_vs,'EF')
 	% We check if this full res E is from coming from two probe pairs
-	if lev==2 & ~(strcmp(dsc.sen,'1234') | strcmp(dsc.sen,'3234')) & QUALITY>1
+	if lev==2 && ~(strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'3234')) && QUALITY>1
 		irf_log('save','This is not a full E, setting QUALITY=1!')
 		QUALITY = 1;
 	end
@@ -162,13 +162,13 @@ elseif strcmp(caa_vs,'EF')
 	
 	dsc.frv = {'Observatory'};
 	
-elseif lev==1 & regexp(caa_vs,'^P(12|32|34)?$')
+elseif lev==1 && regexp(caa_vs,'^P(12|32|34)?$')
 	if ~isempty(data)
 		% convert mV/m back to V
 		if id==32, data(:,2) = data(:,2)*.0622;
-		else, data(:,2) = data(:,2)*.088;
+        else data(:,2) = data(:,2)*.088;
 		end
-		id = str2num(caa_vs(2:end));
+		id = str2double(caa_vs(2:end));
 	end
 	
 	dsc.units = {'V'};
@@ -238,7 +238,7 @@ fprintf(fid,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
 fprintf(fid,'  VALUE_TYPE      = ISO_TIME\n');
 fprintf(fid,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
 fprintf(fid,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
-fprintf(fid,['  FILLVAL         = 9999-12-31T23:59:59Z\n']);
+fprintf(fid, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
 fprintf(fid,'  LABLAXIS        = "UT"\n');
 fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
 fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
@@ -264,7 +264,7 @@ for j=1:v_size
 	fprintf(fid,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
 	fprintf(fid,['  QUALITY           = ' num2str(QUALITY) '\n']);
 	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
-	if ~isempty(dsc.com) & j==1
+	if ~isempty(dsc.com) && j==1
 		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
 	end
 	if ~strcmp(dsc.cs{j},'na')
@@ -309,14 +309,14 @@ function pmeta(fid,m_s,s,cl_id)
 fprintf(fid,['START_META     =   ' m_s '\n']);
 if iscell(s)
 	for j=1:length(s)
-		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else, q = '"'; ss = s{j};end
+		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else q = '"'; ss = s{j};end
 		fprintf(fid,['   ENTRY       =   ' q ss q '\n']); 
 	end
 else
 	if nargin==4, ss = irf_ssub(s,cl_id); 
-	else, ss = s;
+    else ss = s;
 	end
-	if isnumeric(ss), q = ''; ss = num2str(ss); else, q = '"'; end
+	if isnumeric(ss), q = ''; ss = num2str(ss); else q = '"'; end
 	fprintf(fid,['   ENTRY       =   ' q ss q '\n']);
 end
 fprintf(fid,['END_META       =   ' m_s '\n']);
