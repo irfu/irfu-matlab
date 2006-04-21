@@ -127,8 +127,7 @@ while have_options
 		if length(args)>1
 			if isnumeric(args{2})
 				l = 2;
-				if	args{2}>=0 & args{2}<2
-					sfit_ver = args{2};
+				if	args{2}>=0 && args{2}<2, sfit_ver = args{2};
                 else irf_log('fcal,','wrongArgType : sfit_ver must be 0 or 1')
 				end
             else irf_log('fcal,','wrongArgType : sfit_ver must be numeric')
@@ -302,8 +301,7 @@ if strcmp(quantity,'dies')
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
 		adc_off = irf_waverage(adc_off,1/4);
-		ii = find(adc_off(:,2)==0);
-		adc_off(ii,2) = mean(adc_off(find(abs(adc_off(:,2))>0),2));
+		adc_off(adc_off(:,2)==0,2) = mean(adc_off(abs(adc_off(:,2))>0,2));
 		
 		sp = sp(:,[1:4 6]);
 		sp(:,4) = 0*sp(:,4); % Z component
@@ -390,11 +388,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		var1_name = 'dibE?p1234';
 	else
 		if strcmp(quantity,'diespec'), save_file = './mEDSI.mat';
-		else, save_file = './mEDSIf.mat';
+        else save_file = './mEDSIf.mat';
 		end
         var_name = 'wE?p!';
 		if do_filter, var1_name = 'diEF?p1234';
-		else, var1_name = 'diE?p1234';
+        else var1_name = 'diE?p1234';
 		end
 	end
 
@@ -909,7 +907,7 @@ elseif strcmp(quantity,'sweep')
 				if isempty(jj)
 					bdump(k,2) = t_e(ii(k)) +1;
 					irf_log('dsrc','no dump after sweep')
-				else, bdump(k,2) = t_e_px(jj(end)) +1;
+                else bdump(k,2) = t_e_px(jj(end)) +1;
 				end
 			end
 		end
@@ -1640,7 +1638,7 @@ elseif strcmp(quantity,'p')
 		c_eval('signal=p?;',probe)
 		if ~isempty(signal)
 			remove_problems
-			res(find(isnan(res(:,2))),:) = [];
+			res(isnan(res(:,2)),:) = [];
 			c_eval('p?=res;',probe)
 			n_ok = n_ok + 1;
 		end
@@ -1789,7 +1787,7 @@ elseif strcmp(quantity,'vce')
 		end
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-else, error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
+else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END OF DATA MANIPULATIONS
