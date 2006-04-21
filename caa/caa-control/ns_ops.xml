@@ -26,14 +26,18 @@ START   Start time of the anomaly, ISO time string
 DT      Length of the anomaly in sec. -1 means infinity. -157 means TDB.
 
 SDESC   Short description of the anomaly (problem code). Possible values:
-no_tm        No telemetry
+no_tm = no telemetry at all (WEC off, missing data, etc)
+bad_tm = digital problems, like chopped up data
+bad_data = data formats OK, but data is crap for analog reasons,
+       e.g. latched probes, strange guard voltage, hanging
+       sweeps
+spec_bias = commanded intervals with unusual bias, not accidents
+       setting guard to strange values etc which goes to bad_data
 no_bm3       No BM3 telemetry
-bad_tm       Bad telemetry
 no_p[1-4]    No data on probes [1-4]
 no_10Hz_filt 10Hz filter is not operational
 no_spin_fits No on-board spin fits
-spec_bias    Special bias settings
-TDB          TBD
+TBD          TBD
 
  -->
 
@@ -703,38 +707,30 @@ minute expected.</desc>
 			<link href="ky030325a.txt">Keith 030325</link>
 		</res>
 	</operation>
-	<operation start="2003-03-21T13:07:47Z" dt="192073" c1="yes" plan="no" sdesc="no_tm">
-		<desc>
-			EFW switched off by DWP watchdog. Data return before end of given interval,
-			but settings not fully restored until 030323 18:29.
-    </desc>
-		<res>
-			<link href="ky030324a.txt">Keith 030324</link>
-		</res>
+	<operation start="2003-03-21T13:07:47Z" dt="169393" c1="yes" plan="no" sdesc="no_tm">
+		<desc>EFW switched off by DWP watchdog.</desc>
+		<res><link href="ky030324a.txt">Keith 030324</link></res>
 	</operation>
 	<operation start="2003-03-22T06:20:00Z" dt="14520" c4="yes" plan="no" sdesc="spec_bias">
-		<desc>Wrong bias current (+16 nA) due to missing commands at end of eclipse.</desc>
+		<desc>Wrong bias current (+16 nA) due to erroneous
+			eclipse commanding by JSOC.</desc>
 		<res>
 			<link href="aie030409a.txt">Anders 030409</link>
 			<link href="jsoc030410a.txt">JSOC 030410</link>
 		</res>
 	</operation>
 	<operation start="2003-03-22T19:32:00Z" dt="54396" c1="yes" c3="yes" plan="yes" sdesc="TBD">
-		<desc>
-			Testing 16 bit sweeps and new WEC sequences. Test
-			should have run on SC13, but note problems on SC1 on line above. 
-    </desc>
-		<res>
-			<link href="aie030307a.txt">Anders 030307</link>
-		</res>
+		<desc>Testing 16 bit sweeps and new WEC sequences. Test
+		should have run on SC13, but note problems on SC1 on line above.</desc>
+		<res><link href="aie030307a.txt">Anders 030307</link></res>
+	</operation>
+	<operation start="2003-03-22T23:59:00Z" dt="38520" c4="yes" plan="no" sdesc="TBD">
+		<desc>EFW in HXONLY mode (by spurious command?). In addition, the HX data for 23:59 - 02:06 are bad because of a bad burst dump.</desc>
 	</operation>
 	<operation start="2003-03-24T23:01:27Z" dt="85221" c2="yes" plan="no" sdesc="no_p1">
 		<desc>P1 first stuck at +70 V, then bad guard voltage causing
-			strange data from 00:07:01 until reset.
-    		</desc>
-		<res>
-			<link href="aie060412a.txt">Anders 060412</link>
-		</res>
+			strange data from 00:07:01 until reset.</desc>
+		<res><link href="aie060412a.txt">Anders 060412</link></res>
 	</operation>
 	<operation start="2003-03-27T03:54:36Z" dt="90084" c1="yes" c3="yes" plan="yes" sdesc="TBD">
 		<desc>
@@ -743,9 +739,12 @@ minute expected.</desc>
 		<res><link href="aie030307a.txt">Anders 030307</link></res>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
-	<operation dt="14400" plan="no" sdesc="bad_tm" start="2003-03-27T05:12:00Z" c1="yes" c2="yes" c3="yes" c4="yes">
+	<operation start="2003-03-27T05:12:00Z" dt="14400" plan="no" sdesc="bad_tm" c1="yes" c2="yes" c3="yes" c4="yes">
 		<desc>WEC macro problem caused loss of much BM1 data.</desc>
 		<res><link href="ky030406d.txt">Keith 030406</link></res>
+	</operation>
+	<operation start="2003-04-05T02:50:00Z" dt="48420" c3="yes" plan="no" sdesc="TBD">
+		<desc>EFW in HXONLY mode (by spurious command?). In addition, HX data are bad 02:50-04:57 because of a bad burst dump.</desc>
 	</operation>
 	<operation start="2003-04-08T01:30:00Z" dt="90060" c1="yes" c3="yes" plan="yes" sdesc="TBD">
 		<desc>
@@ -763,6 +762,12 @@ minute expected.</desc>
 			TM2: V2V3V34M (0x1F)
       </desc>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
+	</operation>
+	<operation start="2003-04-10T06:26:00Z" dt="180" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2003-04-10T06:49:00Z" dt="120" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2003-04-25T07:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre.</desc>
@@ -792,6 +797,21 @@ minute expected.</desc>
 			<link href="esoc030505a.txt">ESOC 030505</link>
 			<link href="pal060412xc.txt">Per-Arne 060402</link>
 		</res>
+	</operation>
+	<operation start="2003-06-04T03:25:54Z" dt="2086" c3="yes" plan="yes" sdesc="bad_data">
+            <desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2003-06-06T09:25:00Z" dt="7200" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+            <desc>DWP buffer overflow during BM1.</desc>
+	</operation>
+	<operation start="2003-06-09T04:00:00Z" dt="130" c4="yes" plan="yes" sdesc="bad_data">
+            <desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2003-06-09T04:30:00Z" dt="150" c2="yes" plan="yes" sdesc="bad_data">
+            <desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2003-06-09T06:00:00Z" dt="170" c3="yes" plan="yes" sdesc="bad_data">
+            <desc>Attitude manoeuvre.</desc>
 	</operation>
 	<operation start="2003-06-11T03:35:00Z" dt="13920" c3="yes" plan="no" sdesc="no_tm">
     <desc>Data gap due to ground station problem.</desc>
@@ -833,11 +853,7 @@ minute expected.</desc>
 	<operation start="2003-06-29T02:33:30Z" dt="60" c4="yes" plan="yes" sdesc="bad_data">
             <desc>Axial delta-v manoeuvre.</desc>
 	</operation>
-	<operation start="2003-07-01T12:39:29Z" dt="7562" c1="yes" plan="no" sdesc="bad_data">
-    	<desc>All probes bad</desc>
-		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
-	</operation>
-	<operation start="2003-07-01T14:45:31Z" dt="117869" c1="yes" plan="no" sdesc="TBD">
+	<operation start="2003-07-01T12:39:29Z" dt="125431" c1="yes" plan="no" sdesc="TDB">
     	<desc>HXONLY</desc>
 		<res><link href="pal030721a.txt">Per-Arne 030721</link></res>
 	</operation>
@@ -934,6 +950,12 @@ minute expected.</desc>
 	</operation>
 	<operation start="2003-08-26T17:11:29Z" dt="9916" c2="yes" plan="no" sdesc="no_p3">
 		<desc>P3 goes positive after a sweep.</desc>
+	</operation>
+	<operation start="2003-09-26T18:15:00Z" dt="290" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2003-09-26T19:10:00Z" dt="290" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
 	</operation>
 	<operation start="2003-10-07T06:00:00Z" dt="2400" c2="yes" c4="yes" plan="yes" sdesc="spec_bias">
     <desc>Slow sweeps on P34</desc>
