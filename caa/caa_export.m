@@ -88,11 +88,11 @@ end
 
 if lev==3
 	TIME_RESOLUTION = 4;
-elseif (lev==1 && regexp(caa_vs,'^P(1|2|3|4)?$')) || (lev==2 && strcmp(caa_vs,'P'))
+elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(1|2|3|4)?$'))) || ...
+		(lev==2 && strcmp(caa_vs,'P'))
 	TIME_RESOLUTION = 1/5;
-elseif (lev==1 && regexp(caa_vs,'^P(12|32|34)?$')) || ...
-	(lev==2 && (strcmp(caa_vs,'E') || strcmp(caa_vs,'EF')))
-	
+elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$'))) || ...
+		(lev==2 && (strcmp(caa_vs,'E') || strcmp(caa_vs,'EF')))
 	fs = c_efw_fsample(data,'hx');
 	if ~fs, error('cannot determine time resolution'), end
 	TIME_RESOLUTION = 1/fs;
@@ -162,7 +162,7 @@ elseif strcmp(caa_vs,'EF')
 	
 	dsc.frv = {'Observatory'};
 	
-elseif lev==1 && regexp(caa_vs,'^P(12|32|34)?$')
+elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$'))
 	if ~isempty(data)
 		% convert mV/m back to V
 		if id==32, data(:,2) = data(:,2)*.0622;
