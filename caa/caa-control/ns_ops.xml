@@ -983,6 +983,9 @@ minute expected.</desc>
 			<link href="esoc031010.txt">ESOC 031010</link>
 		</res>
 	</operation>
+	<operation start="2003-10-13T22:15:18Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet.</desc>
+	</operation>
 	<operation dt="121795" plan="no" sdesc="spec_bias" start="2003-10-15T01:48:11Z" c2="yes">
 		<desc>WEC emergency mode due to DWP problem, causing 0 bias.</desc>
 		<res>
@@ -1074,6 +1077,9 @@ minute expected.</desc>
 			Slow sweeps on P2. Should also have been on SC1, 
 			but the WBD problem stopped this.
 		</desc>
+	</operation>
+	<operation start="2003-12-21T06:52:34Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet.</desc>
 	</operation>
 	<operation start="2004-01-07T15:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
@@ -1523,6 +1529,12 @@ minute expected.</desc>
 		<desc>WEC switched off because of an uncommanded WBD on following a DWP watchdog reset.</desc>
 		<res>
 		<link href="esoc060405a.txt">ESOC 060405</link>
+		</res>
+	</operation>
+	<operation dt="75581" plan="no" sdesc="no_tm" start="2006-04-20T14:34:19Z" c2="yes">
+		<desc>DWP problem finally cured by WEC power cycle. Problem may have started earlier than stated here, and also end somewhat earlier (or possibly later).</desc>
+		<res>
+		<link href="esoc060421a.txt">ESOC 060421</link>
 		</res>
 	</operation>
 </table>
