@@ -211,7 +211,8 @@ elseif flag_subplot==1, % separate subplot for each component
     
 elseif flag_subplot==2, % separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
-	ts=t_start_epoch(x{1}(:,1));
+	if isempty(x), return, end
+	ts = t_start_epoch(x{1}(:,1));
 	
 	t_st = []; t_end = [];
 	
