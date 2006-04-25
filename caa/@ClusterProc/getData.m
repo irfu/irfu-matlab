@@ -520,18 +520,47 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			% Different timelines. Need to correct
 			irf_log('proc','making common timeline')
 			[ii12,ii34] = irf_find_comm_idx(e12,e34);
-			irf_log('proc',['Ep' num2str(p12) ' ' num2str(length(e12)) '->' num2str(length(ii12)) ' data points'])
-			e12 = e12(ii12,:);
-			irf_log('proc',['Ep34 ' num2str(length(e34)) '->' num2str(length(ii34)) ' data points'])
-			e34 = e34(ii34,:);
+			
+			% If more than 50% of data missing on one probe
+			% we base timeline on the probe pair which has more data
+			if length(ii12) < .5*max(size(e12,1),size(e34,1))
+				if size(e12,1)>size(e34,1)
+					irf_log('proc',['Setting Ep34 to 0, except for '...
+						num2str(length(ii12)) ' data points'])
+					e34_tmp = e12;
+					e34_tmp(~isnan(e12(:,2)),2) = 0;
+					e34_tmp(ii12,2) = e34(ii34);
+					e34 = e34_tmp;
+					clear e34_tmp
+				else
+					irf_log('proc',['Setting Ep' num2str(p12)...
+						' to 0, except for ' num2str(length(ii12)) ' data points'])
+					e12_tmp = e34;
+					e12_tmp(~isnan(e34(:,2)),2) = 0;
+					e12_tmp(ii34,2) = e12(ii12);
+					e12 = e12_tmp;
+					clear e12_tmp
+				end
+				irf_log('proc','!!! REDUCED DATA QUALITY !!!')
+				irf_log('proc','using one probe pair some part of the interval')
+			else
+				irf_log('proc',['Ep' num2str(p12) ' ' num2str(length(e12)) '->'...
+					num2str(length(ii12)) ' data points'])
+				e12 = e12(ii12,:);
+				irf_log('proc',['Ep34 ' num2str(length(e34)) '->'...
+					num2str(length(ii34)) ' data points'])
+				e34 = e34(ii34,:);
+			end
 		end
 		
 		% Check for problem with one probe pair
 		ii12 = find(~isnan(e12(:,2)));
 		ii34 = find(~isnan(e34(:,2)));
 		fsamp = c_efw_fsample(e12,'hx');
-		% If the is 50% of data missing on one probe
-		if abs(length(ii12)-length(ii34))> .5*(e12(end,1)-e12(1,1))*fsamp
+		% If more than 50% of data missing on one probe
+		% we base timeline on the probe pair which has more data
+		if abs(length(ii12)-length(ii34)) >...
+				.5*( max(e12(end,1),e34(end,1)) - min(e12(1,1),e34(1,1)) )*fsamp
 			if length(ii12)>length(ii34)
 				ii = find(isnan(e34(:,2)) & ~isnan(e12(:,2)));
 				e34(ii,2) = 0;
