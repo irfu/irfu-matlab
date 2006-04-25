@@ -23,8 +23,8 @@ savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
 
-int_s=realmax;
-int_e=-1;
+int_s = realmax;
+int_e = -1;
 
 if nargin > 3, have_options = 1; args = varargin;
 else have_options = 0;
@@ -61,45 +61,15 @@ sc_s = get(0,'ScreenSize');
 if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
 else scrn_size = 1;
 end
-	
-figure(75)
-if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else set(gcf,'position',[7   159   790   916])
-end
-clf
 
-for pl=1:6
-	h(pl) = irf_subplot(6,1,-pl);
-end
-irf_zoom([0 5],'y',h(6))
-hold(h(6),'on')
-set(h(6),'YTick',1:4,'YTickLabel',4:-1:1)
-ylabel(h(6),'proc intrerv/SC')
-
-figure(76)
-if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
-else set(gcf,'position',[807   159   790   916])
-end
-clf
-
-for pl=1:8
-	he(pl) = irf_subplot(8,1,-pl);
-end
-irf_zoom([0 5],'y',he(8))
-hold(he(8),'on')
-set(he(8),'YTick',1:4,'YTickLabel',4:-1:1)
-ylabel(he(8),'proc intrerv/SC')
-
-krgb = 'krgb';
+% Load data
 r = [];
 ri = [];
 fmax = 12.5;
-cli_pos = [4 3 2 1];
-
-c_eval('p?=[];spec?=[];es?=[];rspec?=[];')
+c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};')
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
-	p = []; spec = []; es = []; rspec = [];
+	p = []; spec = {}; es = []; rspec = []; in = [];
 	
 	if exist(cdir, 'dir')
 		d = dir([cdir '/2*_*']);
@@ -113,39 +83,41 @@ for cli=1:4
 			% Load R
 			if isempty(r) || ri==cli
 				r_tmp = c_load('R?',cli,'var');
-				if ~isempty(r_tmp) & r_tmp~=-157e8, r = [r; r_tmp]; end
+				if ~isempty(r_tmp) && r_tmp(1,1)~=-157e8, r = [r; r_tmp]; end
 				if isempty(ri), ri = cli; end
 			end
+			clear r_tmp
 			
 			% Load P
 			p_tmp = c_load('P?',cli,'var');
-			if ~isempty(p_tmp) & p_tmp~=-157e8, p = [p; p_tmp]; end
+			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
+			clear p_tmp
 			
 			% Load spectrum
-			spec = c_load('diESPEC?p1234',cli,'var');
-			if ~isempty(spec) && isstruct(spec)
-				axes(h(cli))
-				if jj>1, hold on, end
-				caa_spectrogram(h(cli),spec)
-				if spec.f(end)>fmax, fmax = spec.f(end); end
+			spec_tmp = c_load('diESPEC?p1234',cli,'var');
+			if ~isempty(spec_tmp) && isstruct(spec_tmp)
+				spec = [spec; {spec_tmp}];
+				if spec_tmp.f(end)>fmax, fmax = spec_tmp.f(end); end
 			end
+			clear spec_tmp
 			
 			% Load Es
 			pp = caa_sfit_probe(cli);
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
-			if ~isempty(es_tmp) & es_tmp~=-157e8
+			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
 				dsiof = c_ctl(cli,'dsiof');
 				if isempty(dsiof), dsiof = [1+0i 1]; end
 				[ok,Ddsi] = c_load('Ddsi?',cli); if ~ok, Ddsi = dsiof(1); end
 				[ok,Damp] = c_load('Damp?',cli); if ~ok, Damp = dsiof(2); end
 				clear dsiof
 				es_tmp = caa_corof_dsi(es_tmp,Ddsi,Damp);
-				es = [es; es_tmp]; 
+				es = [es; es_tmp];
 			end
+			clear es_tmp
 			
 			% Load RSPEC
 			rspec_tmp = c_load(['RSPEC?p' num2str(pp)],cli,'var');
-			if ~isempty(rspec_tmp) & rspec_tmp~=-157e8 
+			if ~isempty(rspec_tmp) && rspec_tmp(1,1)~=-157e8 
 				rs = rspec_tmp;
 				rs(:,2) = sqrt(rspec_tmp(:,2).^2+rspec_tmp(:,3).^2);
 				rs(:,3) = sqrt(rspec_tmp(:,4).^2+rspec_tmp(:,5).^2);
@@ -154,37 +126,31 @@ for cli=1:4
 				rs(:,6) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
 				rs(:,7:end) = [];
 				rspec = [rspec; rs];
-				clear rs rspec_tmp
+				clear rs
 			end
+			clear rspec_tmp
 			
 			% Load intervals & TM mode
 			[st_s,dt1] = caa_read_interval;
 			t1 = iso2epoch(st_s);
 			if t1<int_s, int_s = t1; end
 			if t1+dt1>int_e, int_e = t1+dt1; end
-			st_s = st_s(12:16);
+			in_tmp.interv = [t1 dt1];
+			in_tmp.st_s = st_s(12:16);
 			tm = c_load('mTMode?',cli,'var');
-			for axx=[h(6), he(8)]
-				axes(axx)
-				ud = get(gcf,'userdata');
-				if isfield(ud,'t_start_epoch'), 
-					t_start_epoch = ud.t_start_epoch;
-				else
-					% Set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-					t_start_epoch = t1;
-					ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-					irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
-				end
-				pp = plot(t1-t_start_epoch + [0 dt1],[cli_pos(cli) cli_pos(cli)],krgb(cli));
-				set(pp,'Marker','+');
-				if ~isempty(tm) & tm~=-157e8, if tm(1), set(pp,'LineWidth',3); end, end
-				text(t1-t_start_epoch+60,cli_pos(cli)+0.2,st_s)
+			if ~isempty(tm) && tm(1,1)~=-157e8
+				if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end 
 			end
+			in = [in; {in_tmp}];
+			clear in_tmp
+			
 			cd(old_pwd)
 		end
-		if ~isempty(p), c_eval('p?=p;',cli), end
-		if ~isempty(es), c_eval('es?=es;',cli), end
-		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end
+		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
+		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
+		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
+		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
+		if ~isempty(in), c_eval('in?=in;',cli), end, clear in
 	end
 end
 
@@ -194,61 +160,102 @@ if strcmp(iso_t,'-1') && dt==-1
 else st = iso2epoch(iso_t);
 end
 ds = irf_fname(st);
+tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
+	ds(12:13) ', produced ' date ')'];
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Spectrum figure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure(75)
+if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
+else set(gcf,'position',[7   159   790   916])
+end
+clf
+
+h = 1:6;
+for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
 
 ytick =  [.25 .5 1 10];
 if fullscale && fmax>100, ytick = [ytick 100]; end
 for cli=1:4
 	axes(h(cli))
+	hold on
+	c_eval('spec=spec?;',cli)
+	if ~isempty(spec), for k=1:length(spec)
+		caa_spectrogram(h(cli),spec{k})
+	end, end
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
 	set(gca,'YTick',ytick,'YScale','log')
 	grid
 	caxis([-4 1])
 	hold off
-end
-hold(h(6),'off')
-grid(h(6),'on')
-hold(he(8),'off')
-grid(he(8),'on')
-
-% Plot the rest
-tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
-	ds(12:13) ', produced ' date ')'];
-for axx=[h(1), he(1)]
-	axes(axx)
-	title(tit)
-end
-%Plot E
-axes(he(1)), c_pl_tx('es?',2), ylabel('Ex [mV/m]'), axis tight
-axes(he(2)), c_pl_tx('es?',3), ylabel('Ey [mV/m]'), axis tight
-%Plot RSPEC
-c_eval('if exist(''rspec?'',''var'') & ~isempty(rspec?),axes(he(2+?)),irf_plot(rspec?),ylabel(''Rspec C?''),axis tight,end')
-for axx=[h(5), he(7)]
-	axes(axx)
-	c_pl_tx('p?')
-	ylabel('P L2 [-V]')
-	a = get(gca,'YLim');
-	if a(1)<-70
-		a(1)=-70;
-		set(gca,'YLim',a);
+	if fullscale, set(h(cli),'YLim',[0 fmax])
+	else set(h(cli),'YLim',[0 12.5])
 	end
+	if cli==1
+		if isempty(r), title(h(1),tit)
+		else title(h(1),[tit ', GSE Position C' num2str(ri)])
+		end
+	end
+	if dt>0, irf_zoom(st +[0 dt],'x',h(cli)), end
 end
 
-if fullscale, irf_zoom([0 fmax],'y',h(1:4))
-else irf_zoom([0 12.5],'y',h(1:4))
+% Plot P
+axes(h(5))
+c_pl_tx('p?')
+ylabel('P L2 [-V]')
+a = get(gca,'YLim');
+if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
+irf_zoom(st +[0 dt],'x',h(5))
+
+if dt>0 
+	plot_intervals(h(6),{in1,in2,in3,in4},st)
+	irf_zoom(st +[0 dt],'x',h(6))
+	if ~isempty(r), add_position(h(6),r), end
 end
 
-if dt>0, irf_zoom(st +[0 dt],'x',h), end
-if dt>0, irf_zoom(st +[0 dt],'x',he), end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% E-field figure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-if ~isempty(r)
-	r = irf_abs(r);
-	add_timeaxis(h(6),'usefig',[r(:,1) r(:,2:end)/6371.2],...
-		{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
-	add_timeaxis(he(8),'usefig',[r(:,1) r(:,2:end)/6371.2],...
-		{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
-	axes(h(1)), title([tit ', GSE Position C' num2str(ri)])
-	axes(he(1)), title([tit ', GSE Position C' num2str(ri)])
+
+figure(76)
+if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
+else set(gcf,'position',[807   159   790   916])
 end
+clf
+
+he = 1:8;
+for pl=1:8,	he(pl) = irf_subplot(8,1,-pl); end
+
+% Plot E
+axes(he(1)), c_pl_tx('es?',2), ylabel('Ex [mV/m]'), axis tight
+if isempty(r), title(he(1),tit)
+else title(he(1),[tit ', GSE Position C' num2str(ri)])
+end
+
+axes(he(2)), c_pl_tx('es?',3), ylabel('Ey [mV/m]'), axis tight
+
+% Plot RSPEC
+c_eval('axes(he(2+?)),if exist(''rspec?'',''var'') && ~isempty(rspec?),irf_plot(rspec?),axis tight,end, ylabel(''Rspec C?''), grid on')
+
+% Plot P
+axes(he(7))
+c_pl_tx('p?')
+ylabel('P L2 [-V]')
+a = get(gca,'YLim');
+if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
+
+if dt>0 
+	plot_intervals(he(8),{in1,in2,in3,in4},st)
+	irf_zoom(st +[0 dt],'x',he)
+	if ~isempty(r), add_position(he(8),r), end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Export figures
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 orient(75,'tall'), orient(76,'tall')
 if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
@@ -289,3 +296,48 @@ if saveJPG
 	[s,w] = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fne '.eps; rm -f ' fne '.eps']);
 	if s~=0, irf_log('save','problem with eps2png'), end
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Help functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function add_position(h,r)
+% Add position labels
+r = irf_abs(r);
+add_timeaxis(h,'usefig',[r(:,1) r(:,2:end)/6371.2],...
+	{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
+
+function plot_intervals(h,ints,st)
+% Plot intervals
+
+krgb = 'krgb';
+cli_pos = [4 3 2 1];
+
+axes(h)
+ud = get(gcf,'userdata');
+if isfield(ud,'t_start_epoch'), 
+	t_start_epoch = ud.t_start_epoch;
+else
+	% Set start_epoch if time is in isdat epoch, 
+	% warn about changing t_start_epoch
+	t_start_epoch = st;
+	ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+	irf_log('proc',['user_data.t_start_epoch is set to '...
+		epoch2iso(t_start_epoch,1)]);
+end
+
+hold(h,'on')
+for cli=1:4
+	in = ints{cli};
+	if ~isempty(in), for k=1:length(in)
+		in_tmp = in{k};
+		pp = plot(in_tmp.interv(1)-t_start_epoch + [0 in_tmp.interv(2)],...
+			[cli_pos(cli) cli_pos(cli)],krgb(cli));
+		set(pp,'Marker','+');
+		if in_tmp.tm, set(pp,'LineWidth',3); end
+		text(in_tmp.interv(1)-t_start_epoch+60,cli_pos(cli)+0.2,in_tmp.st_s)
+	end, end
+end
+hold(h,'off')
+set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
+ylabel(h,'proc intrerv/SC')
+grid(h,'on')
