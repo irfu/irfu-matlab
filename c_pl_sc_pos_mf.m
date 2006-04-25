@@ -25,7 +25,7 @@ if nargin == 1,
   c_load('V3');Vref=irf_resamp(V3,t);clear V3;
   c_load('B3');Bref=irf_resamp(B3,t);clear B3;
 elseif nargin==7,
-  c_eval('r?=av_interp(R?,t,''spline'');clear R?;')
+  c_eval('r?=irf_resamp(R?,t,''spline'');clear R?;')
   Vref=irf_resamp(Vref,t);
   Bref=irf_resamp(Bref,t);
 else
@@ -33,7 +33,7 @@ else
 end
 
 %t=toepoch([2001 04 28 19 15 00]);
-%load mBmod BT89Kp11; Bref=av_interp(BT89Kp11,t);clear BT89Kp11;
+%load mBmod BT89Kp11; Bref=irf_resamp(BT89Kp11,t);clear BT89Kp11;
 
 R=(r1+r2+r3+r4)/4;
 for ic=1:4,eval(irf_ssub('dr?=r?-R;dr?(1)=t;dr?=irf_abs(dr?);',ic)),end
