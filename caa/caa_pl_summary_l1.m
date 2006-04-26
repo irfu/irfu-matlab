@@ -139,7 +139,8 @@ for cli=1:4
 			in_tmp.st_s = st_s(12:16);
 			tm = c_load('mTMode?',cli,'var');
 			if ~isempty(tm) && tm(1,1)~=-157e8
-				if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end 
+				if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
+			else in_tmp.tm = -1;
 			end
 			in = [in; {in_tmp}];
 			clear in_tmp
@@ -333,7 +334,9 @@ for cli=1:4
 		pp = plot(in_tmp.interv(1)-t_start_epoch + [0 in_tmp.interv(2)],...
 			[cli_pos(cli) cli_pos(cli)],krgb(cli));
 		set(pp,'Marker','+');
-		if in_tmp.tm, set(pp,'LineWidth',3); end
+		if in_tmp.tm==1, set(pp,'LineWidth',3)
+		elseif in_tmp.tm==-1, set(pp,'LineStyle','--')
+		end
 		text(in_tmp.interv(1)-t_start_epoch+60,cli_pos(cli)+0.2,in_tmp.st_s)
 	end, end
 end
