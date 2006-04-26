@@ -29,8 +29,7 @@ SDESC   Short description of the anomaly (problem code). Possible values:
 no_tm = no telemetry at all (WEC off, missing data, etc)
 bad_tm = digital problems, like chopped up data
 bad_data = data formats OK, but data is crap for analog reasons,
-       e.g. latched probes, strange guard voltage, hanging
-       sweeps
+       e.g. latched probes, strange guard voltage, hanging sweeps
 spec_bias = commanded intervals with unusual bias, not accidents
        setting guard to strange values etc which goes to bad_data
 no_bm3       No BM3 telemetry
@@ -992,12 +991,18 @@ minute expected.</desc>
 		<link href="ky031016aa.html">Keith 031016</link>
 		</res>
 	</operation>
-	<operation dt="2071" plan="yes" sdesc="no_tm" start="2003-10-16T11:38:06Z" c2="yes">
+	<operation start="2003-10-16T11:38:06Z" c2="yes" dt="2071" plan="yes" sdesc="no_tm">
 		<desc>WEC power cycle to clear up DWP problem.</desc>
 		<res>
 		<link href="esoc031016aa.txt">ESOC 031016</link>
 		<link href="ky031016aa.html">Keith 031016</link>
 		</res>
+	</operation>
+	<operation start="2003-10-21T15:29:00Z" dt="71520" c4="yes" plan="no" sdesc="no_tm">
+		<desc>NULL mode.</desc>
+	</operation>
+	<operation start="2003-10-27T01:56:05Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet.</desc>
 	</operation>
 	<operation start="2003-10-28T15:21:00Z" dt="120" c3="yes" plan="no" sdesc="no_tm">
 		<desc>WEC problems due to proton event</desc>
@@ -1036,6 +1041,21 @@ minute expected.</desc>
 			<link href="esoc031029c.txt">ESOC 031029</link>
 		</res>
 	</operation>
+	<operation start="2003-11-12T13:57:00Z" dt="37440" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous reset.</desc>
+	</operation>
+	<operation start="2003-11-27T10:26:00Z" dt="30960" c1="yes" plan="no" sdesc="no_p3">
+		<desc>Probe 3 stuck at around -10 V (just like probe 1). 
+			It is interesting that the problem went away at the
+			first Whisper sounding in BM (the Whisper soundings in NM did
+			not help)! Both p3, p34 and p32 are affected.</desc>
+	</operation>
+	<operation start="2003-12-11T20:55:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Buffer overflow in DWP during BM.</desc>
+	</operation>
+	<operation start="2003-12-13T04:50:00Z" dt="62640" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset.</desc>
+	</operation>
 	<operation start="2003-12-13T18:43:00Z" dt="12600" c2="yes" plan="yes" sdesc="spec_bias">
 		<desc>Bias test, P34 guard zero</desc>
 		<res>
@@ -1050,7 +1070,7 @@ minute expected.</desc>
 			<link href="aie031125b.txt">Anders 031125</link>
 		</res>
 	</operation>
-	<operation start="2003-12-14T00:08:00Z" dt="405120" c3="yes" plan="no" sdesc="bad_tm">
+	<operation start="2003-12-14T00:08:00Z" dt="220620" c3="yes" plan="no" sdesc="no_tm">
     <desc>WBD problem turned WEC off. Several tests followed up to Dec 18.</desc>
 		<res>
 			<link href="esoc031214a.txt">ESOC 031214</link>
@@ -1065,7 +1085,7 @@ minute expected.</desc>
 	<operation start="2003-12-14T07:30:00Z" dt="56520" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
     <desc>
 			Sweep interval 30 minutes. Should
-			also have been on SC1, but the WBD problem stopped this.
+			have run also on SC3, but the WBD problem stopped this.
     </desc>
 		<res>
 			<link href="aie031125a.txt">Anders 031125</link>
@@ -1074,7 +1094,7 @@ minute expected.</desc>
 	</operation>
 	<operation start="2003-12-16T03:30:00Z" dt="360" c3="yes" plan="yes" sdesc="spec_bias">
 		<desc>
-			Slow sweeps on P2. Should also have been on SC1, 
+			Slow sweeps on P2. Should have run also on SC3, 
 			but the WBD problem stopped this.
 		</desc>
 	</operation>
@@ -1118,7 +1138,7 @@ minute expected.</desc>
 			<link href="esoc040109a.txt">ESOC 040109</link>
 		</res>
 	</operation>
-	<operation start="2004-01-29T22:06:00Z" dt="571140" c1="yes" plan="no" sdesc="no_tm">
+	<operation start="2004-01-29T22:06:00Z" dt="571140" c1="yes" plan="no" sdesc="bad_tm">
 		<desc>EFW problem</desc>
 		<res>
 			<link href="pal040205a.txt">Per-Arne 040205</link>
@@ -1173,7 +1193,7 @@ minute expected.</desc>
 			<link href="AR_054_CTU_SO_on_SC1.pdf">AR-054 (pdf)</link>
 		</res>
 	</operation>
-	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Lunar eclipse</desc>
 		<res>
 			<link href="CL-OPS-RP-1005-OPS-OFC.pdf">ESOC report (pdf)</link>
@@ -1192,7 +1212,7 @@ minute expected.</desc>
 		</res>
 	</operation>
 	
-	<operation start="2004-08-15T00:00:00Z" dt="65940" c3="yes"  plan="no" sdesc="no_tm">
+	<operation start="2004-08-15T00:00:00Z" dt="65940" c3="yes"  plan="no" sdesc="bad_tm">
 		<desc>EFW problem</desc>
 		<res>
 			<link href="pal040816a.txt">Per-Arne 040816</link>
@@ -1223,8 +1243,8 @@ minute expected.</desc>
 	<operation start="2004-09-10T01:00:50Z" dt="71660" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_tm">
 		<desc>Payload off during long (apogee) eclipse</desc>
 	</operation>
-	<operation start="2004-09-16T19:54:08Z" dt="10470" c1="yes" plan="no" sdesc="no_tm">
-		<desc>EFW data lost, presumably DWP problem.</desc>
+	<operation start="2004-09-16T19:54:08Z" dt="183270" c1="yes" plan="no" sdesc="no_tm">
+		<desc>EFW data lost for almost 51 h, presumably DWP problem.</desc>
 		<res>
 		<link href="esoc040923wb.txt">ESOC 040923</link>
 		<link href="aie060413aa.txt">Anders 060413</link>
@@ -1246,7 +1266,7 @@ minute expected.</desc>
 		</res>
 	</operation>
 	<operation start="2004-09-18T23:14:44Z" dt="35139" c1="yes" plan="no" sdesc="no_tm">
-		<desc>EFW data lost, presumably DWP problem.</desc>
+		<desc>EFW data lost or bad, presumably DWP problem.</desc>
 		<res>
 		<link href="esoc040923wb.txt">ESOC 040923</link>
 		<link href="aie060413aa.txt">Anders 060413</link>
