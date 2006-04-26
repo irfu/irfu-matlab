@@ -36,7 +36,7 @@ ns_ops(ii,:) = [];
 while 1
 	ii = find( ns_ops(:,1)<st+dt & ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)>=st+dt);
 	if isempty(ii), break, end
-	if ns_ops(ii(1),4)<10 && ns_ops(ii(j),4)>0
+	if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
 		% no/bad data - truncate the interval
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
 		dt = ns_ops(ii(1),1) - st;
@@ -51,7 +51,7 @@ end
 while 1
 	ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
 	if isempty(ii), break, end
-	if ns_ops(ii(1),4)<10 && ns_ops(ii(j),4)>0
+	if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
 		% no/bad data - truncate the interval
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
 		et = st + dt;
@@ -72,7 +72,7 @@ while found
 	for in=1:length(st_out)
 		ii = find( ns_ops(:,1)>st_out(in) & ns_ops(:,1)+ns_ops(:,2)<st_out(in)+dt_out(in));
 		if ~isempty(ii)
-			if ns_ops(ii(1),4)<10 && ns_ops(ii(j),4)>0
+			if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
 				% no/bad data - truncate the interval
 				irf_log('proc',prob_s(ns_ops(ii(1),:)))
 				st = st_out(in);
