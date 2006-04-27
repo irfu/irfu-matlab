@@ -56,4 +56,4 @@ end
 ii = find( ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)<st+dt );
 if isempty(ii), return, end
 
-ints_out = [ints_out; st ns_ops(ii(:),1)+ns_ops(ii(:),2)];
+ints_out = [ints_out; ns_ops(ii(:),1) ns_ops(ii(:),1)+ns_ops(ii(:),2)];
