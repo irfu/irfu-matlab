@@ -27,6 +27,9 @@ case 13
 case 14
 	r.s = 'no_p4';
 	r.l = 'No probe 4';
+case 14
+	r.s = 'hxonly';
+	r.l = 'HXONLY sampling mode';
 case 112
 	r.s = 'no_p12';
 	r.l = 'No probe 12';

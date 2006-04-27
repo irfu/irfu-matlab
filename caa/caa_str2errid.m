@@ -13,6 +13,7 @@ case 'no_p1', res = 11;
 case 'no_p2', res = 12;
 case 'no_p3', res = 13;
 case 'no_p4', res = 14;
+case 'hxonly', res = 15;
 case 'no_p12', res = 112;
 case 'no_p23', res = 123;
 case 'no_p34', res = 134;
