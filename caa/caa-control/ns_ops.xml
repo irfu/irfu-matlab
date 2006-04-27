@@ -6,7 +6,7 @@
 		<!ELEMENT operation (desc,res*)>
 			<!ATTLIST operation start NMTOKEN #REQUIRED>
 			<!ATTLIST operation dt NMTOKEN #REQUIRED>
-			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|TBD ) #REQUIRED>
+			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|hxonly|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|TBD ) #REQUIRED>
 			<!ATTLIST operation plan ( yes | no ) #REQUIRED>
 			<!ATTLIST operation c1 ( yes | no ) "no">
 			<!ATTLIST operation c2 ( yes | no ) "no">
@@ -34,6 +34,7 @@ spec_bias = commanded intervals with unusual bias, not accidents
        setting guard to strange values etc which goes to bad_data
 no_bm3       No BM3 telemetry
 no_p[1-4]    No data on probes [1-4]
+hxonly       HXONLY sampling mode
 no_10Hz_filt 10Hz filter is not operational
 no_spin_fits No on-board spin fits
 TBD          TBD
@@ -1146,6 +1147,12 @@ minute expected.</desc>
 			<link href="pal040205b.txt">Per-Arne 040205</link>
 			<link href="esoc040205a.txt">ESOC 040205</link>
 		</res>
+	</operation>
+	<operation start="2004-02-05T13:23:00Z" dt="79860" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>NULL sampling mode</desc>
+	</operation>
+	<operation start="2004-02-15T21:27:00Z" dt="20940" c3="yes" plan="no" sdesc="hxonly">
+		<desc>HXONLY sampling mode</desc>
 	</operation>
 	<operation dt="72000" plan="no" sdesc="no_tm" start="2004-02-27T14:00:00Z" c3="yes">
 		<desc>WEC off by onboard monitoring</desc>
