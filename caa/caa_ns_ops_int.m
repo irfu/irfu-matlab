@@ -1,4 +1,4 @@
-function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops)
+function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops,errlist)
 %CAA_NS_OPS_INT  split/truncate interval according to EFW NS_OPS
 %
 % [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops)
@@ -11,6 +11,8 @@ function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops)
 
 if isempty(ns_ops), error('Empty NS_OPS'), end
 
+if nargin<4, errlist = []; end
+
 % Remove records which cover permanent problems (as loss of 
 % probes, filters, etc.) as these must be programmed separately
 ns_ops(ns_ops(:,2)==-1,:) = [];
@@ -19,7 +21,7 @@ ns_ops(ns_ops(:,2)==-1,:) = [];
 ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>=st+dt );
 if ~isempty(ii)
 	for j=1:length(ii)
-		if ns_ops(ii(j),4)<10 && ns_ops(ii(j),4)>0
+		if match_err(ns_ops(ii(j),4),errlist)
 			% no/bad data - remove the interval
 			irf_log('proc',prob_s(ns_ops(ii(j),:)))
 			irf_log('proc',	'blanking the whole interval')
@@ -36,7 +38,7 @@ ns_ops(ii,:) = [];
 while 1
 	ii = find( ns_ops(:,1)<st+dt & ns_ops(:,1)>st & ns_ops(:,1)+ns_ops(:,2)>=st+dt);
 	if isempty(ii), break, end
-	if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
+	if match_err(ns_ops(ii(1),4),errlist)
 		% no/bad data - truncate the interval
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
 		dt = ns_ops(ii(1),1) - st;
@@ -51,7 +53,7 @@ end
 while 1
 	ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<=st+dt);
 	if isempty(ii), break, end
-	if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
+	if match_err(ns_ops(ii(1),4),errlist)
 		% no/bad data - truncate the interval
 		irf_log('proc',prob_s(ns_ops(ii(1),:)))
 		et = st + dt;
@@ -72,7 +74,7 @@ while found
 	for in=1:length(st_out)
 		ii = find( ns_ops(:,1)>st_out(in) & ns_ops(:,1)+ns_ops(:,2)<st_out(in)+dt_out(in));
 		if ~isempty(ii)
-			if ns_ops(ii(1),4)<10 && ns_ops(ii(1),4)>0
+			if match_err(ns_ops(ii(1),4),errlist)
 				% no/bad data - truncate the interval
 				irf_log('proc',prob_s(ns_ops(ii(1),:)))
 				st = st_out(in);
@@ -102,6 +104,10 @@ while found
 	end
 	if ~found, break, end
 end
+
+function res = match_err(opcode,errlist)
+% See if OPCODE matches error condition
+res = (opcode<10 && opcode>0) || (~isempty(errlist) && any(opcode==errlist))
 
 function ss = prob_s(ns_ops_rec,warn)
 if nargin<2, warn=0; end
