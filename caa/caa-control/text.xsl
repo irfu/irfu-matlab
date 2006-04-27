@@ -13,6 +13,7 @@ no_tm			0
 bad_tm			1
 bad_data		2
 no_p[1-4]		1[1-4]
+hxonly			15
 no_10Hz_filt	255
 no_spin_fits	260
 spec_bias		261
@@ -61,6 +62,7 @@ $Id$
 		<xsl:when test="@sdesc='no_p2'">12</xsl:when>
 		<xsl:when test="@sdesc='no_p3'">13</xsl:when>
 		<xsl:when test="@sdesc='no_p4'">14</xsl:when>
+		<xsl:when test="@sdesc='hxonly'">15</xsl:when>
 		<xsl:when test="@sdesc='no_p12'">112</xsl:when>
 		<xsl:when test="@sdesc='no_p23'">123</xsl:when>
 		<xsl:when test="@sdesc='no_p34'">134</xsl:when>
