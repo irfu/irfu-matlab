@@ -200,6 +200,7 @@ for cli=1:4
 		end
 	end
 	if dt>0, irf_zoom(st +[0 dt],'x',h(cli)), end
+	set(gca,'XTickLabel',[])
 end
 
 % Plot P
