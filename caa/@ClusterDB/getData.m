@@ -120,7 +120,11 @@ if strcmp(quantity,'e') || strcmp(quantity,'eburst') ||...
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	if ~isempty(ns_ops)
-		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops);
+		if strcmp(quantity,'p') || strcmp(quantity,'pburst')
+			errlist = caa_str2errid('hxonly');
+		else errlist = [];
+		end
+		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops,errlist);
 		if isempty(start_time_nsops)
 			irf_log('dsrc',sprintf('bad NS_OPS interval for C%d - %s',cl_id,quantity))
 			data = []; 
