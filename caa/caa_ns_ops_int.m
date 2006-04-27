@@ -11,7 +11,7 @@ function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops,errlist)
 
 if isempty(ns_ops), error('Empty NS_OPS'), end
 
-if nargin<4, errlist = []; end
+if nargin<3, errlist = []; end
 
 % Remove records which cover permanent problems (as loss of 
 % probes, filters, etc.) as these must be programmed separately
