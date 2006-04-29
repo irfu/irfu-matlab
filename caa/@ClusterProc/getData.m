@@ -1068,6 +1068,7 @@ elseif strcmp(quantity,'probesa')
 	
 	% Saturation level nA
 	SA_LEVEL = 66;
+	SA_LEV_POS = .5; % +0.5 V
 	% N_CONST sets the minimum number of points of constant potential
 	% which we consider bad
 	N_CONST = 4;
@@ -1226,8 +1227,8 @@ elseif strcmp(quantity,'probesa')
 		end
 		
 		% Bad points are points with positive and/or constant potential
-		ii_bad = find(p(:,2)>=0);
-		ii_god = find(p(:,2)<0);
+		ii_bad = find( p(:,2) >=SA_LEV_POS );
+		ii_god = find( p(:,2) < SA_LEV_POS );
 		if isempty(ii_god)
 			c_eval(['PROBESA' num2str(cl_id) ...
 				'p?=[sa_int_p?; double(p(1,1))'' double(p(end,1))''];'...
