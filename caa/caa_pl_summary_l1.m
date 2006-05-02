@@ -177,6 +177,8 @@ clf
 h = 1:6;
 for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
 
+figure_start_epoch(st);
+
 ytick =  [.25 .5 1 10];
 if fullscale && fmax>100, ytick = [ytick 100]; end
 for cli=1:4
@@ -230,6 +232,8 @@ clf
 
 he = 1:8;
 for pl=1:8,	he(pl) = irf_subplot(8,1,-pl); end
+
+figure_start_epoch(st);
 
 % Plot E
 axes(he(1)), c_pl_tx('es?',2), ylabel('Ex [mV/m]'), axis tight
@@ -315,17 +319,7 @@ krgb = 'krgb';
 cli_pos = [4 3 2 1];
 
 axes(h)
-ud = get(gcf,'userdata');
-if isfield(ud,'t_start_epoch'), 
-	t_start_epoch = ud.t_start_epoch;
-else
-	% Set start_epoch if time is in isdat epoch, 
-	% warn about changing t_start_epoch
-	t_start_epoch = st;
-	ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-	irf_log('proc',['user_data.t_start_epoch is set to '...
-		epoch2iso(t_start_epoch,1)]);
-end
+t_start_epoch = figure_start_epoch(st);
 
 hold(h,'on')
 for cli=1:4
@@ -345,3 +339,15 @@ hold(h,'off')
 set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
 ylabel(h,'proc intrerv/SC')
 grid(h,'on')
+
+function t_start_epoch = figure_start_epoch(st)
+ud = get(gcf,'userdata');
+if isfield(ud,'t_start_epoch'), 
+	t_start_epoch = ud.t_start_epoch;
+else
+	t_start_epoch = st;
+	ud.t_start_epoch = t_start_epoch;
+	set(gcf,'userdata',ud);
+	irf_log('proc',['user_data.t_start_epoch is set to '...
+		epoch2iso(t_start_epoch,1)]);
+end
