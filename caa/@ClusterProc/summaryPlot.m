@@ -25,7 +25,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 error(nargchk(2,9,nargin))
 
 if nargin>2, have_options = 1; args = varargin;
-else, have_options = 0;
+else have_options = 0;
 end
 
 % Default values
@@ -43,19 +43,19 @@ while have_options
 		case 'cs'
 			if ischar(args{2}), 
 				cs = args{2};
-				if ~strcmp(cs,'dsi') & ~strcmp(cs,'gse')
+				if ~strcmp(cs,'dsi') && ~strcmp(cs,'gse')
 					irf_log('fcal','unknown CS. defaulting to DSI')
 					cs = 'dsi';
 				end
-			else, irf_log('fcal','wrongArgType : CS must be a string')
+            else irf_log('fcal','wrongArgType : CS must be a string')
 			end
 		case 'st'
 			if isnumeric(args{2}), st = args{2};
-			else, irf_log('fcal','wrongArgType : ST must be numeric')
+            else irf_log('fcal','wrongArgType : ST must be numeric')
 			end
 		case 'dt'
 			if isnumeric(args{2}), dt = args{2};
-			else, irf_log('fcal','wrongArgType : DT must be numeric')
+            else irf_log('fcal','wrongArgType : DT must be numeric')
 			end
 		case 'fullb'
 			use_fullb = '';	l = 1;
@@ -72,7 +72,7 @@ while have_options
 	end
 end
 
-if st & dt, have_tint = 1; end
+if st && dt, have_tint = 1; end
 
 % Define variables we want to plot
 if strcmp(cs,'dsi') 
@@ -104,7 +104,7 @@ for k=1:length(q_list)
 			c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id)
 		end
 		
-		if flag_rmwhip & (k==1 | k==3)
+		if flag_rmwhip && (k==1 || k==3)
 			if exist(irf_ssub('WHIP?',cl_id),'var')
 				irf_log('proc','not using times with Whisper pulses')
 				c_eval([q_list{k} '=caa_rm_blankt(' q_list{k}  ',WHIP? );'],cl_id)
@@ -174,7 +174,7 @@ clf
 orient tall
 
 dummy = 'data{1}';
-for k=2:n_plots, dummy = [dummy ',data{1}'];, end
+for k=2:n_plots, dummy = [dummy ',data{1}']; end
 eval(['h = irf_plot({' dummy '});']) 
 clear dummy
 
@@ -186,7 +186,8 @@ for k=1:n_plots
 	ylabel(labels{k})
 	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
-	else
+    else
+        add_timeaxis;
 		% This magic is needed for correct location of panels on printouts
 		ttt = get(gca,'XTickLabel'); 
 		ttt(end) = {' '}; 
@@ -208,4 +209,4 @@ for k=n_plots:-1:1
 	if min(size(data{k}))>2, legend(h(k),'X','Y','Z','Location','NorthEastOutside'), end
 end
 
-if nargout>0, out=h;,end
+if nargout>0, out=h; end
