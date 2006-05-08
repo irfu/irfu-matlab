@@ -1154,11 +1154,15 @@ minute expected.</desc>
 	<operation start="2004-02-15T21:27:00Z" dt="20940" c3="yes" plan="no" sdesc="hxonly">
 		<desc>HXONLY sampling mode</desc>
 	</operation>
-	<operation dt="72000" plan="no" sdesc="no_tm" start="2004-02-27T14:00:00Z" c3="yes">
+	<operation start="2004-02-26T07:32:00Z" dt="197940" c1="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad EFW data. It is not clear what happened to EFW,
+			but all quantities are stuck at fixed values.</desc>
+	</operation>
+	<operation dt="72780" plan="no" sdesc="no_tm" start="2004-02-27T14:00:00Z" c3="yes">
 		<desc>WEC off by onboard monitoring</desc>
 		<res> <link href="ky040228a.txt">Keith 040228</link></res>
 	</operation>
-	<operation dt="113400" plan="no" sdesc="no_tm" start="2004-03-14T08:15:00Z" c1="yes">
+	<operation dt="112800" plan="no" sdesc="no_tm" start="2004-03-14T08:18:00Z" c1="yes">
 		<desc>EFW/DWP communication problem</desc>
 		<res>
 		<link href="pal040315a.txt">Per-Arne 040315</link>
@@ -1167,17 +1171,114 @@ minute expected.</desc>
 		<link href="ky040315b.txt">Keith 040315</link>
 		</res>
 	</operation>
-	<operation dt="2588" plan="no" sdesc="no_tm" start="2004-04-23T10:39:29Z" c4="yes">
+	<operation start="2004-03-26T16:21:00Z" dt="77940" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
+	</operation>
+	<operation start="2004-03-29T00:24:12Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2004-04-05T22:34:00Z" dt="9060" c2="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential
+		but not quite stuck</desc>
+	</operation>
+	<operation start="2004-04-08T06:58:32Z" dt="960" c4="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 suddenly goes positive (saturated) and then comes back but
+		still stays bad at positive values until it is restored by
+		a bias sweep.</desc>
+	</operation>
+	<operation start="2004-04-11T00:45:26Z" dt="876" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Whisper continuously active</desc>
+	</operation>
+	<operation start="2004-04-12T20:40:05Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2004-04-23T10:39:29Z" dt="2588" c4="yes" plan="no" sdesc="no_tm">
 		<desc>WEC power cycle to clear up DWP problem.</desc>
 		<res> <link href="esoc040503.txt">ESOC 040503</link></res>
+	</operation>
+	<operation start="2004-05-02T03:30:00Z" dt="5340" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-02T03:48:00Z" dt="4740" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-04T06:20:00Z" dt="254400" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Shadow pulses in data due to Solar
+			Aspect Angle (SAA) less than 93.2 degrees</desc>
+	</operation>
+	<operation start="2004-05-04T06:20:00Z" dt="276000" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Shadow pulses in data due to Solar
+			Aspect Angle (SAA) less than 93.2 degrees</desc>
+	</operation>
+	<operation start="2004-05-07T05:00:00Z" dt="320" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-07T06:00:00Z" dt="305" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-07T10:00:00Z" dt="340" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-07T11:00:00Z" dt="355" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
 	</operation>
 	<operation start="2004-05-14T17:18:00Z" dt="54360" c2="yes" plan="no" sdesc="no_tm">
 		<desc>WEC switched off by s/c</desc>
 		<res><link href="esoc040515c.txt">ESOC 040515</link> </res>
 	</operation>
+	<operation start="2004-05-18T10:00:00Z" dt="15600" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2004-05-19T06:00:00Z" dt="30" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-19T07:00:00Z" dt="40" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-19T09:00:00Z" dt="45" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-19T10:00:00Z" dt="70" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
 	<operation start="2004-05-19T13:49:16Z" dt="155001" c4="yes" plan="no" sdesc="no_tm">
 		<desc>WEC switched off by s/c</desc>
 		<res><link href="esoc040527w.txt">ESOC 040527</link> </res>
+	</operation>
+	<operation start="2004-05-20T01:45:00Z" dt="30120" c1="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad data. It looks like we have a lot
+		of digital bit errors in the telemetry, which causes spikes
+		in the measured data but also timing errors. It is probably
+		an internal DWP problem, since it is cleared by the "stop
+		macro" command at 10:07.</desc>
+	</operation>
+	<operation start="2004-05-21T05:00:00Z" dt="60" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-down manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-21T06:00:00Z" dt="20" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-down manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-21T08:30:00Z" dt="20" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-up manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-21T09:30:00Z" dt="20" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-down manoeuvre</desc>
+	</operation>
+	<operation start="2004-05-21T09:34:00Z" dt="37020" c1="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential but
+		not quite stuck, problem was cleared by EFW reset</desc>
+	</operation>
+	<operation start="2004-05-29T09:35:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad WEC data due to DWP buffer overflow in BM</desc>
+	</operation>
+	<operation start="2004-05-30T03:46:30Z" dt="180" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre</desc>
+	</operation>
+	<operation start="2004-06-05T20:59:00Z" dt="124200" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
+	</operation>
+	<operation start="2004-06-07T09:16:55Z" dt="10" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial trim manoeuvre</desc>
 	</operation>
 	<operation start="2004-06-11T01:05:30Z" dt="19500" c2="yes" plan="no" sdesc="no_tm">
 		<desc>WEC off</desc>
@@ -1200,25 +1301,53 @@ minute expected.</desc>
 			<link href="AR_054_CTU_SO_on_SC1.pdf">AR-054 (pdf)</link>
 		</res>
 	</operation>
-	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="bad_data">
+	<operation start="2004-06-14T00:16:00Z" dt="47940" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2004-06-14T00:19:00Z" dt="43980" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2004-06-14T02:37:00Z" dt="18360" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
 		<desc>Lunar eclipse</desc>
 		<res>
 			<link href="CL-OPS-RP-1005-OPS-OFC.pdf">ESOC report (pdf)</link>
 		</res>
+	</operation>
+	<operation start="2004-06-21T14:01:36Z" dt="3" c4="yes"  plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
 	</operation>
 	<operation start="2004-07-03T03:14:00Z" dt="2340" c2="yes"  plan="no" sdesc="no_tm">
 		<desc>Data loss due to s/c problem</desc>
 		<res><link href="AR057_SSR_Record_Pointer_Corrupt_SC2.pdf">AR-057 (pdf)</link>
 		</res>
 	</operation>
-	<operation start="2004-07-09T05:10:00Z" dt="76500" c2="yes" plan="no" sdesc="bad_tm">
-		<desc>EFW hickups due to spurious commands</desc>
+	<operation start="2004-07-09T10:35:00Z" dt="56400" c2="yes" plan="no" sdesc="hxonly">
+		<desc>HXONLY sampling mode</desc>
 		<res>
 			<link href="pal040709a.txt">Per-Arne 040709</link>
 			<link href="pal040710a.txt">Per-Arne 040710</link>
 		</res>
 	</operation>
-	
+	<operation start="2004-07-19T22:59:44Z" dt="3" c4="yes"  plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>	
+	<operation start="2004-07-21T01:07:00Z" dt="26760" c4="yes"  plan="no" sdesc="bad_tm">
+		<desc>NULL sampling mode</desc>
+	</operation>	
+	<operation start="2004-07-21T19:20:04Z" dt="3" c1="yes"  plan="no" sdesc="bad_tm">
+		<desc>Single bad TM packet</desc>
+	</operation>	
+	<operation start="2004-07-26T05:12:00Z" dt="8280" c2="yes"  plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential but
+		not quite stuck, problem was cleared by sweep</desc>
+	</operation>	
+	<operation start="2004-07-28T11:19:00Z" dt="9060" c2="yes"  plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential but
+		not quite stuck, problem was cleared by sweep</desc>
+	</operation>	
 	<operation start="2004-08-15T00:00:00Z" dt="65940" c3="yes"  plan="no" sdesc="bad_tm">
 		<desc>EFW problem</desc>
 		<res>
@@ -1250,7 +1379,7 @@ minute expected.</desc>
 	<operation start="2004-09-10T01:00:50Z" dt="71660" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="no_tm">
 		<desc>Payload off during long (apogee) eclipse</desc>
 	</operation>
-	<operation start="2004-09-16T19:54:08Z" dt="183270" c1="yes" plan="no" sdesc="no_tm">
+	<operation start="2004-09-16T19:54:08Z" dt="183078" c1="yes" plan="no" sdesc="no_tm">
 		<desc>EFW data lost for almost 51 h, presumably DWP problem.</desc>
 		<res>
 		<link href="esoc040923wb.txt">ESOC 040923</link>
@@ -1264,6 +1393,9 @@ minute expected.</desc>
 		<link href="aie060413aa.txt">Anders 060413</link>
 		</res>
 	</operation>
+	<operation start="2004-09-17T16:29:40Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad TM packet</desc>
+	</operation>
 	<operation start="2004-09-18T16:10:45Z" dt="34225" c2="yes" plan="no" sdesc="no_tm">
 		<desc>Data lost due to s/c problem</desc>
 		<res>
@@ -1272,23 +1404,24 @@ minute expected.</desc>
 		        <link href="esoc040923wb.txt">ESOC 040923</link>
 		</res>
 	</operation>
-	<operation start="2004-09-18T23:14:44Z" dt="35139" c1="yes" plan="no" sdesc="no_tm">
-		<desc>EFW data lost or bad, presumably DWP problem.</desc>
+	<operation start="2004-09-18T22:45:26Z" dt="1758" c1="yes" plan="no" sdesc="TBD">
+		<desc>FSW 2.1 run instead of 2.4</desc>
+	</operation>
+	<operation start="2004-09-18T23:14:44Z" dt="121242" c1="yes" plan="no" sdesc="no_tm">
+		<desc>EFW data lost or bad, presumably DWP problem</desc>
 		<res>
 		<link href="esoc040923wb.txt">ESOC 040923</link>
 		<link href="aie060413aa.txt">Anders 060413</link>
 		</res>
 	</operation>
-	<operation start="2004-09-19T22:14:17Z" dt="39923" c3="yes" plan="no" sdesc="bad_tm">
-		<desc>EFW data locked at strange values: presumably EFW
-		internal problem, as data returns when EFW starts dumping
-                the burst memory.</desc>
+	<operation start="2004-09-19T22:14:00Z" dt="39960" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>NULL sampling mode</desc>
 		<res>
 		<link href="esoc040923wb.txt">ESOC 040923</link>
 		<link href="aie060413aa.txt">Anders 060413</link>
 		</res>
 	</operation>
-	<operation start="2004-09-20T09:17:08Z" dt="113002" c1="yes"  plan="no" sdesc="no_tm">
+	<operation start="2004-09-20T09:17:08Z" dt="112697" c1="yes"  plan="no" sdesc="no_tm">
 		<desc>WEC switched off by s/c</desc>
 		<res>
 			<link href="esoc040921a.txt">ESOC 040921</link>
