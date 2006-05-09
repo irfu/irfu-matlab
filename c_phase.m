@@ -25,7 +25,7 @@ tt = t(t>=phase_2(1,1) & t<=phase_2(end,1));
 if isempty(tt), return, end
 
 while size(phase_2,1)>2
-	ii = find(diff(phase_2(:,1))>4.1);
+	ii = find(diff(phase_2(:,1))>4.2);
 	if isempty(ii)
 		kk = find(tt>=phase_2(1,1) & tt<=phase_2(end,1));
 		if ~isempty(kk)
