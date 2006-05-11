@@ -58,7 +58,7 @@ for cl_id=sc_list
 			tm(end+1,:) = [st_tmp tm_cur];
 		end
 		
-		if tm_prev~=tm_cur && tm_cur>=0
+		if ~isempty(tm_prev) && tm_prev~=tm_cur && tm_cur>=0
 			% We skip MAX_SKIP frames of NM because it is folliwing 
 			% BM1 or data gap and usually contains junk
 			if tm_cur==0 && count_skip<MAX_SKIP
@@ -155,7 +155,7 @@ for cl_id=sc_list
 		% beginning of the entire interval are considered bad,
 		% as they are usually signatures of hacked data
 		if inter~=1 && inter~=size(tm,1) && dt1<300
-			irf_log('proc',['C' num2str(cl_id) ' skipping ' ...
+			irf_log('proc',['C' num2str(cl_id) ' skipping short int ' ...
 				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
 			continue
 		else
