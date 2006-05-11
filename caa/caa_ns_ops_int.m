@@ -11,7 +11,7 @@ function [st_out,dt_out] = caa_ns_ops_int(st,dt,ns_ops,errlist)
 
 if isempty(ns_ops), error('Empty NS_OPS'), end
 
-if nargin<3, errlist = []; end
+if nargin<4, errlist = []; end
 
 % Remove records which cover permanent problems (as loss of 
 % probes, filters, etc.) as these must be programmed separately
@@ -107,7 +107,7 @@ end
 
 function res = match_err(opcode,errlist)
 % See if OPCODE matches error condition
-res = (opcode<10 && opcode>0) || (~isempty(errlist) && any(opcode==errlist))
+res = (opcode<10 && opcode>0) || (~isempty(errlist) && any(opcode==errlist));
 
 function ss = prob_s(ns_ops_rec,warn)
 if nargin<2, warn=0; end
