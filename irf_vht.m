@@ -46,7 +46,7 @@ disp(strvht);
 % Calculate the goodness of the Hofmann Teller frame 
 % 
 
-eht=av_e_vxb([0 vht],b); 
+eht=irf_e_vxb([0 vht],b); 
 if flag == 2,
   ep=[e(:,2);e(:,3)];
   ehtp=[eht(:,2);eht(:,3)];
