@@ -64,7 +64,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev
+% Copyright 2004-2006 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(5,15,nargin))

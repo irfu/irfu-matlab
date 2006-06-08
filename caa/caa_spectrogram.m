@@ -8,7 +8,7 @@ function hout = caa_spectrogram(h,specrec,Pxx,F)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005,2006 Yuri Khotyaintsev
 
 error(nargchk(1,4,nargin))
 
