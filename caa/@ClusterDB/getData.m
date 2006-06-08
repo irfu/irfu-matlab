@@ -281,8 +281,8 @@ elseif strcmp(quantity,'efwt')
 		if ~isempty(data)
 			efwtime_tmp = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
 				data(84,:)*16777216 +data(85,:)*4294967296)/1000;
-			efwtime = [efwtime efwtime_tmp'];
-			t = [t t_tmp];
+			efwtime = [efwtime efwtime_tmp];
+			t = [t t_tmp'];
 		end
 	end
 	
