@@ -20,7 +20,6 @@ end
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 ncomp = length(specrec.p);
-nf = length(specrec.f);
 
 load caa/cmap.mat
 
@@ -29,11 +28,13 @@ if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end,
 % If H is specified, but is shorter than NCOMP, we plot just first 
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
+	%{
 	mm = min(min(specrec.p{comp}));
 	for jj=1:ndata
 		specrec.p{comp}(jj,find(isnan(specrec.p{comp}(jj,:)))) = mm;
 	end
-	ud=get(gcf,'userdata');
+	%}
+    ud=get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
 	if isfield(ud,'t_start_epoch'), 
 		t_start_epoch = ud.t_start_epoch;
@@ -64,7 +65,7 @@ for comp=1:min(length(h),ncomp)
 	set(gca,'TickDir','out')
 	ylabel('frequency [Hz]')
 	if comp==min(length(h),ncomp), add_timeaxis;
-	else, set(gca,'XTicklabel','')
+	else set(gca,'XTicklabel','')
 	end
 end
 
