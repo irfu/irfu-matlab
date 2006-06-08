@@ -275,15 +275,22 @@ elseif strcmp(quantity,'efwt')
 	save_file = './mEFWR.mat';
 	
 	% Read EFW clock to check for time since last reset
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
-	if isempty(data)
+	t = []; data = []; efwtime = [];
+	for st_tmp = start_time-16:32:start_time+dt+16
+		[t_tmp,data] = caa_is_get(cdb.db, st_tmp, 32, cl_id, 'efw', 'DSC');
+		if ~isempty(data)
+			efwtime_tmp = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
+				data(84,:)*16777216 +data(85,:)*4294967296)/1000;
+			efwtime = [efwtime efwtime_tmp'];
+			t = [t t_tmp];
+		end
+	end
+	
+	if isempty(efwtime)
 		irf_log('dsrc',irf_ssub('No data for EFWT?',cl_id))
 		data = []; cd(old_pwd), return
 	end
-	efwtime = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
-		data(84,:)*16777216 +data(85,:)*4294967296)/1000;
-	
-	c_eval(['EFWT?=[t efwtime''];'...
+	c_eval(['EFWT?=[t; efwtime]'';'...
 		'save_list=[save_list '' EFWT? ''];'],cl_id);
 	clear t data efwtime
 	
