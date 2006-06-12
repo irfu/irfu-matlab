@@ -1676,7 +1676,7 @@ minute expected.</desc>
 	<operation start="2005-03-25T21:14:53Z" dt="8" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad TM due to unknown reasons</desc>
 	</operation>
-	<operation start="2005-04-03T17:10:00Z" dt="9780" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-04-03T17:10:00Z" dt="18720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-04-04T01:57:00Z" dt="9300" c3="yes" plan="no" sdesc="bad_tm">
