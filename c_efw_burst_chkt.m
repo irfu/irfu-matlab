@@ -35,7 +35,7 @@ function startSAT=c_efw_burst_chkt(database,filename)
 
   % Get EFW time as function of satellite time
   
-  spacecraft=filename(end);
+  spacecraft = str2num(filename(end));
   [sctime,temp]=caa_is_get(database,startdate, ...
 			    duration,spacecraft,'efw','DSC');
   efwtime=(temp(81,:)+temp(82,:)*256+temp(83,:)*65536+ temp(84,:)* ...
