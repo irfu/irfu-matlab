@@ -418,9 +418,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
 				burst_f_name = [cdb.dp '/burst/' burst_f_name];
 				if exist(burst_f_name,'file')
-					db = Mat_DbOpen(cdb.db);
-					err_t = t(1) - c_efw_burst_chkt(db,burst_f_name);
-					Mat_DbClose(db);
+					err_t = t(1) - c_efw_burst_chkt(cdb.db,burst_f_name);
 					
 					t = t - err_t;
 					irf_log('dsrc',...
