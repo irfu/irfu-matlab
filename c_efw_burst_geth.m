@@ -27,7 +27,7 @@ function OUT=c_efw_burst_geth(filename)
   data1 = fread(fid,'uint');
   fclose(fid);
 
-  fid = fopen(filename,'r','b');
+  fid = fopen(filename,'r','l');
   data2 = fread(fid,'uchar');
   fclose(fid);
   
