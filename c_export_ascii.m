@@ -192,7 +192,7 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diE[1-4]p1234')==1
+elseif regexp(vs,'^di[b]E[1-4]p1234')==1
 
 	cl_id = vs(4);
 	inst = 'EFW';
@@ -511,7 +511,7 @@ else
 	var(:,1) = var(:,1) - t0;
 	var_s =    'time       ';
 	var_unit = '[s]        ';
-	mask = '%10.4f ';
+	mask = '%11.5f ';
 	for j=1:n_data
 		var_length_nine=strvcat(var_labels{j},'         ');
 		var_unit_length_nine=strvcat(['[' var_units{j} ']'],'         ');
