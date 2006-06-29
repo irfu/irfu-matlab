@@ -144,6 +144,32 @@ elseif regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^wbE[1-4]p(12|32|34)$')
+	v.data = 1;
+	v.cl_id = vs(3);
+	v.inst = 'EFW';
+	v.frame = 'na';
+	v.sig = 'E';
+	v.sen = vs(5:6);
+	v.cs = {'SC'};
+	v.rep = {'scalar'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1'};
+	v.size = [1];
+	v.name = {['P' v.sen]};
+	v.labels = v.name;
+	v.field_name = {['Electric field component measured between the probes '...
+		v.sen(1) ' and ' v.sen(2)]};
+	v.ent = {'Electric_Field'};
+	v.prop = {'Component'};
+	v.fluc = {'Waveform'};
+	v.com = '';
+	v.file = 'mEFWburstR';
+	v.quant = 'e';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% raw E p12 and p34
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.data = 1;
 	v.cl_id = vs(3);

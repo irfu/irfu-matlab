@@ -460,8 +460,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				tmp_adc = irf_resamp(dadc,tt);
 				tt(:,2) = tt(:,2) - tmp_adc(:,2);
 				clear tmp_adc
-            else irf_log('calb','saved ADC offset empty')
+            		else irf_log('calb','saved ADC offset empty')
 			end
+			n_sig = n_sig + 1;
+			c_eval('e?=tt;',p)
+	
 		else
 			fsamp = c_efw_fsample(tt,'hx');
 			if ~fsamp, error('no sampling frequency'),end
