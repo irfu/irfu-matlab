@@ -224,8 +224,8 @@ elseif strcmp(action,'plot'),
     N_str=['\newline N=[' num2str(n,'%6.2f') ']'];
     M_str=['\newline M=[' num2str(m,'%6.2f') ']'];
     set(resHndl,'string',[L_str N_str M_str],'verticalalignment','top');
-
-
+  
+  c_eval('disp([''sc? R LNM = ('' num2str(x?(2:4),''%.2f '') '') km'']);')
 else
   disp(sprintf( ...
      'c_pl_sc_conf_lmn: action string ''%s'' not recognized, no action taken.',action))
