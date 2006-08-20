@@ -1,0 +1,113 @@
+function [j_thermal] = lp_thermal_current( p_type, N, T, m, V, Z, U, A )
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function [j_thermal] = lp_thermal_current( p_type, N, T, m, V, Z, U, A )
+%
+%   Matlab function that calculates the thermal probe current to/from 
+%   a cylindrical or spherical body, e.g. a Langmuir probe or the a
+%   spherical (cylindrical) S/C.
+%
+%   Input parameters:  N,T,m,Z    =  #density[m^-3], temperature[K], mass[kg]
+%                                    and charge [+/-] of current carrying
+%                                    species.
+%                      V          =  velocity of the body with respect
+%                                    to the plasma [m/s].
+%                      U          =  body potential [V]
+%                      A          =  area of body [m^2]
+%                      p_type       = spherical   (1) or 
+%                                   cylindrical (2).
+%
+%                      (all scalars, U may be a vector)
+%
+%   Created by Jan-Erik Wahlund, Cornell University, October-1994.
+%   Modified for use with isdat_2.6, J-E. Wahlund, IRF-Uppsala, 1999.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% Check # input/output parameters.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  error(nargchk(8,8,nargin))
+  error(nargchk(1,1,nargout))
+
+
+% Globals.
+%%%%%%%%%%
+  NaturalConstants;
+
+
+% Initialize.
+%%%%%%%%%%%%%
+  U            = U(:);
+  U_pts        = length( U );
+  j_thermal    = zeros( U_pts, 1 );
+
+
+% Is the body moving with a velocity, V, with 
+% respect to the plasma ?
+% Criteria set such that it is considered 
+% important if V > 0.1 * V_th.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  if V < 0.1 * sqrt(kb*T/m)
+
+     % Ratio of potential to thermal energy.
+     X = ( qe / (kb*T) ) .* U;
+
+     % Total current to/from body.
+     Ip = A*N*qe*sqrt( T*kb/(2.0*pi*m) );
+
+  else
+     X = ( qe / (m*V^2/2 + kb*T) ) .* U;
+     Ip = A*N*qe*sqrt( V^2/16 + T*kb/(2.0*pi*m) );
+  end
+
+
+% Spherical body case.
+%%%%%%%%%%%%%%%%%%%%%%
+  if p_type == 1,
+
+        pos_ind = find( U >= 0 );
+        neg_ind = find( U < 0 );
+
+        if Z > 0,
+           j_thermal(pos_ind) = Ip .* exp(-X(pos_ind));
+           j_thermal(neg_ind) = Ip .* (1-X(neg_ind));
+        elseif Z < 0,
+           j_thermal(pos_ind) = Ip .* (1+X(pos_ind));
+           j_thermal(neg_ind) = Ip .* exp(X(neg_ind));
+        end
+
+
+% Cylindrical body case.
+%%%%%%%%%%%%%%%%%%%%%%%%
+  elseif p_type == 2,
+
+     pos_ind = find( U >= 0 );
+     neg_ind = find( U < 0 );
+
+     sq         = zeros( U_pts, 1 );
+     erfv       = zeros( U_pts, 1 );
+
+     sq(neg_ind) = sqrt( abs(-X(neg_ind)) );
+     sq(pos_ind) = sqrt( abs(+X(pos_ind)) );
+     erfv = erf( sq );
+
+     if Z > 0,
+        j_thermal(pos_ind) = Ip .* exp(-X(pos_ind));
+        j_thermal(neg_ind) = Ip .* ( (2/sqrt(pi)) .* sq(neg_ind) ...
+                             + exp(-X(neg_ind)) .* (1.0 - erfv(neg_ind)) );
+     elseif Z < 0,
+        j_thermal(neg_ind) = Ip .* exp(X(neg_ind));
+        j_thermal(pos_ind) = Ip .* ( (2.0/sqrt(pi)) .* sq(pos_ind) ...
+	                     + exp(+X(pos_ind)) .* (1.0 - erfv(pos_ind)) );
+     end
+
+  else
+     'This probe type is not supported yet !'
+  end
+
+  return
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
