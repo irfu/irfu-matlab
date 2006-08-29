@@ -16,7 +16,7 @@ function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun )
 % Check # input/output parameters.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   error(nargchk(3,3,nargin))
-  error(nargchk(1,1,nargout))
+%  error(nargchk(1,1,nargout))
 
 % Globals.
 %%%%%%%%%%
