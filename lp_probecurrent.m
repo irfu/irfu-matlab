@@ -1,3 +1,5 @@
+function J_probe=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
+    m_amu1, m_amu2,m2_fraction,Ne,Ti_eV,Te_eV,V_SC)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lp_probe_current
 %
@@ -11,9 +13,25 @@
 %   Modified for use in isdat_2.6, J-E. Wahlund, IRF-Uppsala, 1999.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%  probe_type - spherical(1) or cylindrical (2).
+%  XA    - cross section area
+%  Ap    - probe area
+%  U_probe  - probe potential 
+%  R_sun - distance from sun in AU
+%  UV_factor - default is 1
+%  m_amu1 - mass of 1st ion species in proton masses
+%  m_amu2 - mass of 2nd ion species in proton masses
+%  m2_fraction -  relative number density of 2nd species (0-1)
+%  Ne - electron density [m-3]
+%  Ti_eV - ion temperature in eV
+%  Te_eV - electron temperature in eV
+%  V_SC - probe velocity with respect to media m/s
 % Initialize.
 %%%%%%%%%%%%%
+NaturalConstants
+Ti=Ti_eV*qe/kb;
+Te=Te_eV*qe/kb;
+
   U_pts  = length( U_probe );
 
   J_the      = zeros(U_pts, 1);
@@ -58,7 +76,7 @@
   J_thi1 = lp_thermal_current( probe_type, Ni1, Ti, mi1, V_SC, Z, U_probe, Ap );
 
 
-% Ion thermal current. (O+)
+% Ion thermal current. (O+ or He++ or ..)
 %%%%%%%%%%%%%%%%%%%%%%
   Z      = +1;
   mi2    = m_amu2 * mH;
@@ -79,3 +97,4 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+return
