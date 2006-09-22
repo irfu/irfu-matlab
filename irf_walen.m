@@ -33,36 +33,23 @@ end
 
 %display time interval
 strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
-disp(strint);
 %display HT velocity
 %strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
 %disp(strvht);
 
-
-
-
 %define common time interval for input vectors
-
-n=irf_tlim(n,tint);
-
-
-
-
-
+n = irf_tlim(n,tint);
 
 %interpolate b,n,tpat,tperp to v
-
-v=av_interp(v,n);
+v = irf_resamp(v,n);
 %tpar=av_interp(tpar,n);
 %tperp=av_interp(tperp,n);
-b=av_interp(b,n);
+b = irf_resamp(b,n);
 %irf_plot({n,v,b,tpar,tperp})
 %
-n= [n repmat(n(:,2),1,2)];
+n = [n repmat(n(:,2),1,2)];
 %tpar= [tpar repmat(tpar(:,2),1,2)];
 %tperp= [tperp repmat(tperp(:,2),1,2)];
-
-
 
 
 %calculate velocity in HT frame, Alfven velocity and pressure anisotropy
@@ -87,18 +74,12 @@ valfv(:,2:4)=22*b(:,2:4)./ sqrt(n(:,2:4));
 %valfv(:,2:4)=valfv(:,2:4).*sqrt( 1 - alpha(:,2:4))
 
 
-
-
 %diff(:,1)=n(:,1);
 %diff(:,2:4)=valfv1(:,2:4)-valfv(:,2:4);
 %irf_plot({vtransf,valfv})
 
-
-
 %no anisotropy
 %valfv(:,2:4)=22*b(:,2:4)./ sqrt( n(:,2:4));
-
-
 
 
 %calculate the correlation coefficient between all three components of
@@ -117,30 +98,32 @@ vtransftot=vtransf3(:);
 valfvtot=valfv3(:);
 
 
-
-
-
-
-
 corr=corrcoef(vtransftot,valfvtot);
-
 cc=corr(1,2);
 [p,s]=polyfit(valfvtot,vtransftot,1);
 
 
 
 slope=p(1);
-disp(['Offset: ' num2str(p(2))])
+if nargout>0
+    disp(strint);
+    disp(['Offset: ' num2str(p(2))])
+    return
+end
 
+plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtransf(:,4),'r.');
+axis equal;grid on;
+ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
 
+title(['Walen test ' strint])
+xlabel('V_{A} [km/s] GSE');ylabel('V-V_{HT} [km/s] GSE')
+legend('x','y','z');
 
-%plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtransf(:,4),'r.');
-
-%axis equal;grid on;
-
-%ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
-
-%title(['Walen test']);
-%xlabel('V_{A} [km/s] GSE');ylabel('V-V_{HT} [km/s] GSE')
-%legend('x','y','z');
-
+xx=get(gca,'XLim');
+yy=get(gca,'YLim');
+dx=(xx(2)-xx(1))/10;
+dy=(yy(2)-yy(1))/10;
+text(xx(1)+dx,yy(1)+2*dy,  [' slope: ' num2str(slope,'%1.2f')])
+text(xx(1)+dx,yy(1)+1.5*dy,['    cc: ' num2str(cc,'%1.2f')])
+text(xx(1)+dx,yy(1)+dy,    ['offset: ' num2str(p(2),'%1.2f')])
+text(xx(1)+dx,yy(1)+.5*dy, ['   vht: [' num2str(vht) '] km/s GSE'])
