@@ -205,8 +205,19 @@ end
 
 irf_pl_add_info
 
+lyy = 0;
 for k=n_plots:-1:1
-	if min(size(data{k}))>2, legend(h(k),'X','Y','Z','Location','NorthEastOutside'), end
+	if min(size(data{k}))>2
+        legend(h(k),'X','Y','Z','Location','NorthEastOutside')
+        if lyy==0, pos = get(h(k),'Position'); lyy = pos(3); clear pos, end
+    end
+end
+
+if lyy
+    for k=n_plots:-1:1
+        pos = get(h(k),'Position'); 
+        set(h(k),'Position', [pos(1) pos(2) lyy pos(4)])
+    end
 end
 
 if nargout>0, out=h; end
