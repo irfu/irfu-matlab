@@ -4,7 +4,7 @@ function hout = caa_spectrogram(h,specrec,Pxx,F)
 % [h] = caa_spectrogram([h],specrec)
 % [h] = caa_spectrogram([h],t,Pxx,F)
 %
-% See also CAA_SPECTROGRAM
+% See also CAA_POWERFFT
 %
 % $Id$
 
