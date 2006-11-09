@@ -374,7 +374,7 @@ if strcmp(quantity,'dies')
 	elseif n_sig==1
 		% If we have only p12, we should use it for sfits&co
 		if exist(irf_ssub('diEs?p!',cl_id,p12), 'var')
-			irf_log('calb',irf_ssub('Will use p? for spinfits',p12))
+			irf_log('calb',irf_ssub('Will use p? for spin res data',p12))
 			caa_sfit_probe(cl_id,p12);
 		end
 		
