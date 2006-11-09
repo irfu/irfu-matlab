@@ -371,6 +371,17 @@ if strcmp(quantity,'dies')
 		clear m12 m34 Del
 
 		eval(irf_ssub('save_list=[save_list ''D?p12p34 ''];',cl_id));
+	elseif n_sig==1
+		% If we have only p12, we should use it for sfits&co
+		if exist(irf_ssub('diEs?p!',cl_id,p12), 'var')
+			irf_log('calb',irf_ssub('Will use p? for spinfits',p12))
+			caa_sfit_probe(cl_id,p12);
+		end
+		
+		% This check must be removed
+		if exist(irf_ssub('diEs?p34',cl_id), 'var')
+			error('should not see this')
+		end
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
