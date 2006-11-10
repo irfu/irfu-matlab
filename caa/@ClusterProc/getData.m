@@ -376,12 +376,7 @@ if strcmp(quantity,'dies')
 		if exist(irf_ssub('diEs?p!',cl_id,p12), 'var')
 			irf_log('calb',irf_ssub('Will use p? for spin res data',p12))
 			caa_sfit_probe(cl_id,p12);
-		end
-		
-		% This check must be removed
-		if exist(irf_ssub('diEs?p34',cl_id), 'var')
-			error('should not see this')
-		end
+        end
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
