@@ -5,13 +5,13 @@ function [y] = c_gse2dsi( x, spin_axis, direction )
 %  function [out] = c_gse2dsi( inp, spin_axis, [direction])
 %
 %     Convert vector from GSE into DSI reference system.
-%     DSI stands for DeSpun Inverted.
+%     DSI stands for DeSpun Inverted (AKA ISR2 in the CAA)
 %        inp, out - vectors with 3 components,
 %                   inp(:,1) is X,  inp(:,2) is Y ...
 %        if more than 3 columns then columns
 %                   inp(:,2) is X, inp(:,3) is Y ...
-%        spin_axis = vector in GSE or ISDAT epoch.
-%        direction = -1 to convert from DSI into GSE.
+%        spin_axis = vector in GSE
+%        direction = -1 to convert from DSI into GSE
 %
 %     Assume the spin orientation does not change significantly during the
 %     choosen interval. Only values at start time point is used.
