@@ -42,7 +42,7 @@ Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 
 if nargin < 1 , 
-  help av_whamp_plot_f;
+  help irf_whamp_plot_f;
   return
 end
 if nargin == 1,
