@@ -47,18 +47,18 @@ if nargin==2
 	clear bs rs
 end
 
-% Estimate divB/mu0. unit is A
+% Estimate divB/mu0. unit is A/m2
 [divB,B]=c_4_grad('r?','b?','div');
 divB=irf_tappl(divB,'/1.0e3*1e-9/(4*pi*1e-7)'); % to get right units why 
 
-% estimate current j [A]
+% estimate current j [A/m2]
 curl_B=c_4_grad('r?','b?','curl');
-j=irf_tappl(curl_B,'/1.0e3*1e-9/(4*pi*1e-7)');   % to get right units [A]
+j=irf_tappl(curl_B,'/1.0e3*1e-9/(4*pi*1e-7)');   % to get right units [A/m2]
 
-% estimate jxB force [T A]
-jxB=irf_tappl(irf_cross(j,B),'*1e-9'); % to get units [T A]
+% estimate jxB force [T A/m2]
+jxB=irf_tappl(irf_cross(j,B),'*1e-9'); % to get units [T A/m2]
 
-% estimate divTshear = (1/muo) (B*div)B [T A]
+% estimate divTshear = (1/muo) (B*div)B [T A/m2]
 BdivB=c_4_grad('r?','b?','bdivb');
 divTshear=irf_tappl(BdivB,'/1e3*1e-9*1e-9/(4*pi*1e-7)');
 
