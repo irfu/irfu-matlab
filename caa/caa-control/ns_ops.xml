@@ -45,8 +45,114 @@ TBD          TBD
 	<title>Cluster EFW Operations</title>
 	<description>
 		This list is intended to cover all non-standard operations of EFW, 
-		planned or accidental, from 2001-10-01.
+		planned or accidental, from 2001-02-01.
 	</description>
+	<operation start="2001-02-23T05:18:00Z" dt="11700" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-02-23T05:27:00Z" dt="11160" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-02-25T23:26:00Z" dt="2640" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Bad timing of eclipse bias current change.</desc>
+	</operation>
+	<operation start="2001-02-26T06:10:00Z" dt="12960" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-05T02:42:00Z" dt="2520" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Eclipse.</desc>
+	</operation>
+	<operation start="2001-03-09T20:58:00Z" dt="2340" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Eclipse.</desc>
+	</operation>
+	<operation start="2001-03-12T12:16:00Z" dt="9240" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-16T11:59:00Z" dt="14160" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-16T11:59:00Z" dt="18540" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-17T09:20:00Z" dt="13260" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-19T00:18:00Z" dt="10920" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-22T02:48:00Z" dt="3120" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-22T03:40:00Z" dt="99660" c2="yes" plan="no" sdesc="no_tm">
+		<desc>Miscommanded burst caused NULL sampling mode.</desc>
+		<res>
+		<link href="aie010322ax.txt">Anders 010322</link>
+		<link href="esoc010323ad.txt">Anders 010323</link>
+		</res>
+	</operation>
+	<operation start="2001-03-22T03:40:00Z" dt="10260" c1="yes" plan="no" sdesc="no_tm">
+		<desc>Miscommanded burst caused NULL sampling mode.</desc>
+		<res>
+		<link href="aie010322ax.txt">Anders 010322</link>
+		<link href="esoc010323ad.txt">Anders 010323</link>
+		</res>
+	</operation>
+	<operation start="2001-03-22T03:40:00Z" dt="113460" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Miscommanded burst caused NULL sampling mode.</desc>
+		<res>
+		<link href="aie010322ax.txt">Anders 010322</link>
+		<link href="esoc010323ad.txt">Anders 010323</link>
+		</res>
+	</operation>
+	<operation start="2001-03-22T03:40:00Z" dt="118740" c3="yes" plan="no" sdesc="no_tm">
+		<desc>Miscommanded burst caused NULL sampling mode.</desc>
+		<res>
+		<link href="aie010322ax.txt">Anders 010322</link>
+		<link href="esoc010323ad.txt">Anders 010323</link>
+		</res>
+	</operation>
+	<operation start="2001-03-23T20:06:00Z" dt="6240" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-03-31T06:35:00Z" dt="1380" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2001-05-10T18:04:20Z" dt="70" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-13T11:13:00Z" dt="4020" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-13T14:28:00Z" dt="2220" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-16T22:46:00Z" dt="1680" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-17T12:56:00Z" dt="360" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-17T17:27:00Z" dt="2100" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-21T23:51:00Z" dt="180" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-05-25T02:11:30Z" dt="80" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial delta-v manoeuvre.</desc>
+	</operation>
+	<operation start="2001-07-15T22:59:00Z" dt="357360" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Numerous problems as explained in resource e-mail.</desc>
+	</operation>
+	<operation start="2001-07-16T21:45:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2001-07-17T01:00:00Z" dt="240" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2001-07-17T07:15:00Z" dt="260" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
 	<operation start="2001-07-25T00:06:45Z" dt="-1" c2="yes" plan="no" sdesc="no_10Hz_filt">
 		<desc>
 			The 10Hz filter on probe 3 failed at this time, and has 
@@ -159,19 +265,19 @@ minute expected.</desc>
       <link href="pal020109b.txt">Per-Arne 010209</link>
 		</res>
 	</operation>
-	<operation start="2002-01-11T11:45:00Z" dt="230" c2="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-01-11T11:45:00Z" dt="230" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
 	</operation>
-	<operation start="2002-01-11T14:30:00Z" dt="180" c3="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-01-11T14:30:00Z" dt="180" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
 	</operation>
-	<operation start="2002-01-11T17:30:21Z" dt="8" c4="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-01-11T17:30:21Z" dt="8" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Spin-up manoeuvre</desc>
 		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
 	</operation>
-	<operation start="2002-01-11T19:59:53Z" dt="11" c1="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-01-11T19:59:53Z" dt="11" c1="yes" plan="yes" sdesc="bad_data">
 		<desc>Spin-up manoeuvre</desc>
 		<res><link href="pal060330.txt">Per-Arne 060330</link></res>
 	</operation>
@@ -220,11 +326,11 @@ minute expected.</desc>
 			<link href="sm020321.txt">ESOC 020321</link>
 		</res>
 	</operation>
-	<operation start="2002-04-16T09:00:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-04-16T09:00:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 		<res><link href="pal060331a.txt">Per-Arne 060331</link></res>
 	</operation>
-	<operation start="2002-04-16T13:00:00Z" dt="240" c4="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-04-16T13:00:00Z" dt="240" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 		<res><link href="pal060331b.txt">Per-Arne 060331</link></res>
 	</operation>
@@ -267,7 +373,7 @@ minute expected.</desc>
 		<desc>Single bad EFW TM packet</desc>
 		<res><link href="pal060322a.txt">Per-Arne 060322</link></res>
 	</operation>
-	<operation dt="3120" plan="no" sdesc="bad_tm" start="2002-06-19T09:42:00Z" c3="yes">
+	<operation dt="3120" plan="no" sdesc="bad_data" start="2002-06-19T09:42:00Z" c3="yes">
 		<desc>Spacecraft manoeuvre contaminates data.</desc>
 	</operation>
 	<operation start="2002-06-29T05:05:00Z" dt="180" c4="yes" plan="no" sdesc="no_tm">
@@ -404,13 +510,13 @@ minute expected.</desc>
 			<link href="aie021104.txt">Anders 021104</link>
 		</res>
 	</operation>
-	<operation start="2002-10-07T19:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-10-07T19:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
-	<operation start="2002-10-07T20:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-10-07T20:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
-	<operation start="2002-10-07T22:45:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2002-10-07T22:45:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
 	<operation start="2002-10-10T14:07:00Z" dt="77460" c3="yes" plan="no" sdesc="no_tm">
@@ -592,16 +698,16 @@ minute expected.</desc>
 			<link href="pal030108a.txt">Per-Arne 030108</link>
 		</res>
 	</operation>
-	<operation start="2003-01-15T12:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2003-01-15T12:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
-	<operation start="2003-01-15T13:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2003-01-15T13:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
-	<operation start="2003-01-15T17:00:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2003-01-15T17:00:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
-	<operation start="2003-01-15T18:00:00Z" dt="300" c3="yes" plan="yes" sdesc="bad_tm">
+	<operation start="2003-01-15T18:00:00Z" dt="300" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre</desc>
 	</operation>
 	<operation start="2003-01-23T08:13:07Z" dt="65644" c3="yes" plan="no" sdesc="no_tm">
@@ -1035,6 +1141,12 @@ minute expected.</desc>
 			<link href="esoc031029c.txt">ESOC 031029</link>
 		</res>
 	</operation>
+	<operation start="2003-10-29T16:57:00Z" dt="10320" c3="yes" plan="no" sdesc="TBD">
+    <desc>No V32 available as FSW 2.4 appears not to have loaded properly.</desc>
+		<res>
+			<link href="yk060424df.txt">Yuri 060424</link>
+		</res>
+	</operation>
 	<operation start="2003-10-30T17:27:00Z" dt="1680" c2="yes" plan="no" sdesc="no_tm">
     <desc>WEC power cycling following solar proton event problems</desc>
 		<res>
@@ -1153,6 +1265,9 @@ minute expected.</desc>
 	</operation>
 	<operation start="2004-02-15T21:27:00Z" dt="20940" c3="yes" plan="no" sdesc="hxonly">
 		<desc>HXONLY sampling mode</desc>
+		<res>
+			<link href="pal060427gj.txt">Per-Arne 060427</link>
+		</res>
 	</operation>
 	<operation start="2004-02-26T07:32:00Z" dt="197940" c1="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad EFW data. It is not clear what happened to EFW,
@@ -1607,13 +1722,25 @@ minute expected.</desc>
 		<desc>NULL sampling mode</desc>
 	</operation>
 	<operation start="2005-01-20T07:11:00Z" dt="29820" c3="yes" plan="no" sdesc="no_tm">
-		<desc>No EFW data, reason unknown</desc>
+		<desc>No EFW data</desc>
+		<res>
+                <link href="pal050121aa.html">Per-Arne 050121</link>
+                <link href="esoc050121aa.html">ESOC 050121</link>
+                </res>
 	</operation>
 	<operation start="2005-01-20T15:28:00Z" dt="73920" c3="yes" plan="no" sdesc="bad_data">
 		<desc>Bad data, all probes latched at -68 V</desc>
+		<res>
+                <link href="pal050121aa.html">Per-Arne 050121</link>
+                <link href="esoc050121aa.html">ESOC 050121</link>
+                </res>
 	</operation>
 	<operation start="2005-01-22T21:35:00Z" dt="11160" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad WEC telemetry</desc>
+		<res>
+                <link href="pal050121aa.html">Per-Arne 050121</link>
+                <link href="esoc050121aa.html">ESOC 050121</link>
+                </res>
 	</operation>
 	<operation start="2005-01-27T20:35:00Z" dt="13980" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
 		<desc>Very bad data due to high density</desc>
@@ -1691,38 +1818,294 @@ minute expected.</desc>
 	<operation start="2005-04-10T06:47:00Z" c1="yes" c3="yes" dt="107400" plan="yes" sdesc="no_p23">
 		<desc>P2 at 25 S/s rather than P23, for SC13 only</desc>
 	</operation>
-	<operation dt="7200" plan="no" sdesc="bad_tm" start="2005-06-15T09:08:00Z" c4="yes">
-		<desc>WEC overflow due to wrong correlator mode</desc>
+	<operation start="2005-04-11T12:38:00Z" dt="15060" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-04-16T08:50:00Z" dt="9000" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad data due to DWP buffer overflow in BM</desc>
+	</operation>
+	<operation start="2005-04-21T12:41:00Z" dt="2640" c2="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switched off by onboard monitoring</desc>
 		<res>
-		<link href="esoc050617a.txt">ESOC 050617</link>
+		<link href="esoc050421ad.html">ESOC 050421</link>
 		</res>
 	</operation>
-	<operation dt="20683" plan="no" sdesc="no_tm" start="2005-09-07T15:01:44Z" c4="yes">
+	<operation start="2005-04-29T19:31:00Z" dt="8760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-05-05T10:00:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad data due to DWP buffer overflow in BM</desc>
+	</operation>
+	<operation start="2005-05-07T18:28:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-05-10T11:05:00Z" dt="5400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad data due to DWP buffer overflow in BM</desc>
+	</operation>
+	<operation start="2005-05-11T22:43:40Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2005-05-17T01:08:00Z" dt="7500" c2="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential but not
+			quite stuck, problem was cleared by sweep</desc>
+	</operation>
+	<operation start="2005-05-17T01:14:00Z" dt="7140" c4="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 at large positive potential but not
+			quite stuck, problem was cleared by sweep</desc>
+	</operation>
+	<operation start="2005-05-17T16:16:00Z" dt="51060" c2="yes" plan="no" sdesc="no_tm">
+		<desc>WEC switched off by onboard monitoring</desc>
+		<res>
+		<link href="esoc050518ad.html">ESOC 050518</link>
+		</res>
+	</operation>
+	<operation start="2005-05-23T10:33:00Z" dt="22260" c3="yes" plan="no" sdesc="hxonly">
+		<desc>HXONLY sampling mode</desc>
+	</operation>
+	<operation start="2005-05-23T16:44:00Z" dt="19740" c3="yes" plan="no" sdesc="bad_data">
+		<desc>HXONLY sampling modeand bad data due to low density</desc>
+	</operation>
+	<operation start="2005-05-23T22:13:00Z" dt="21600" c3="yes" plan="no" sdesc="hxonly">
+		<desc>HXONLY sampling mode</desc>
+	</operation>
+	<operation start="2005-05-27T01:42:00Z" dt="123780" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-06-01T03:59:00Z" dt="2880" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-01T07:46:00Z" dt="2940" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-08T04:16:00Z" dt="7680" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Radial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-11T15:50:00Z" dt="87600" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Apparent DWP buffer overflow</desc>
+	</operation>
+	<operation start="2005-06-12T07:26:00Z" dt="31560" c1="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 incorrectly set to E-field mode with zero bias (used wrong 
+			sequence SWECJ305 after interval of no data taking) and stuck 
+			at -68 V</desc>
+	</operation>
+	<operation start="2005-06-12T07:47:00Z" dt="34140" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-06-14T00:35:00Z" dt="368700" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Shadow pulses in data due to Solar
+		Aspect Angle (SAA) less than 93.2 degrees</desc>
+	</operation>
+	<operation start="2005-06-15T09:08:00Z" dt="9000" c4="yes" plan="no" sdesc="bad_tm">
+		<desc>WEC overflow due to wrong correlator mode</desc>
+		<res><link href="esoc050617a.txt">ESOC 050617</link></res>
+	</operation>
+	<operation start="2005-06-17T07:42:00Z" dt="9360" c3="yes" plan="no" sdesc="no_tm">
+		<desc>No EFW data due to DWP problem?</desc>
+	</operation>
+	<operation start="2005-06-18T07:00:00Z" dt="60" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-18T08:00:00Z" dt="300" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-20T06:00:00Z" dt="20" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-up manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-20T09:00:00Z" dt="30" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Spin-up manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-22T18:18:00Z" dt="63720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-06-24T20:24:00Z" dt="1080" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-29T14:56:30Z" dt="30" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-30T07:01:35Z" dt="5" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial manoeuvre</desc>
+	</operation>
+	<operation start="2005-06-30T09:46:20Z" dt="90" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Radial manoeuvre</desc>
+	</operation>
+	<operation start="2005-07-06T18:10:00Z" dt="10" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-07-06T21:35:00Z" dt="30" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Axial manoeuvre</desc>
+	</operation>
+	<operation start="2005-07-10T11:12:00Z" dt="2760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-07-24T00:22:00Z" dt="71520" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset.</desc>
+	</operation>
+	<operation start="2005-07-24T20:14:00Z" dt="17940" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss due to SC CTU switchover at 2005-07-26 07:01.</desc>
+		<res>
+		<link href="esoc050726ae.html">ESOC 050726</link>
+		<link href="esoc050726af.html">ESOC 050726</link>
+		<link href="pal050726ae.html">Per-Arne 050726</link>
+		<link href="AR-C70.pdf">AR-70 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2005-07-25T01:13:00Z" dt="6300" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset.</desc>
+	</operation>
+	<operation start="2005-07-25T02:58:00Z" dt="93360" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss due to SC CTU switchover at 2005-07-26 07:01.</desc>
+		<res>
+		<link href="esoc050726ae.html">ESOC 050726</link>
+		<link href="esoc050726af.html">ESOC 050726</link>
+		<link href="pal050726ae.tml">Per-Arne 050726</link>
+		<link href="AR-C70.pdf">AR-70 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2005-07-26T07:01:00Z" dt="27600" c4="yes" plan="no" sdesc="no_tm">
+		<desc>Data loss due to SC CTU switchover at 2005-07-26 07:01.</desc>
+		<res>
+		<link href="esoc050726ae.html">ESOC 050726</link>
+		<link href="esoc050726af.html">ESOC 050726</link>
+		<link href="pal050726ae.tml">Per-Arne 050726</link>
+		<link href="AR-C70.pdf">AR-70 (pdf)</link>
+		</res>
+	</operation>
+	<operation start="2005-08-10T12:42:00Z" dt="16380" c4="yes" plan="yes" sdesc="no_tm">
+		<desc>S/c test (CTU-B)</desc>
+		<res>
+		<link href="esoc050805an.html">ESOC 050805</link>
+		<link href="esoc050811ao.html">ESOC 050811</link>
+		</res>
+	</operation>
+	<operation start="2005-08-10T18:30:00Z" dt="1200" c3="yes" plan="yes" sdesc="no_tm">
+		<desc>WEC power cycle follwoing DWP latchup.</desc>
+		<res>
+		<link href="ky050808ba.txt">Keith 050805</link>
+		</res>
+	</operation>
+	<operation start="2005-08-19T16:45:00Z" dt="46980" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
+	</operation>
+	<operation start="2005-09-07T15:01:44Z" dt="20683" c4="yes" plan="no" sdesc="no_tm">
 		<desc>No HK data due to s/c problem. No science data due to (planned) eclipse ops</desc>
 		<res>
 		<link href="esoc050921a.txt">ESOC 050921</link>
 		<link href="CLU_AR-073.pdf">AR-73</link>
 		</res>
 	</operation>
-	<operation dt="136050" plan="no" sdesc="no_tm" start="2005-09-14T17:55:18Z" c3="yes">
+	<operation start="2005-09-14T13:04:00Z" dt="4140" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Bias = +4 nA in penumbra eclipse</desc>
+	</operation>
+	<operation start="2005-09-14T13:17:00Z" dt="4080" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Bias = +4 nA in penumbra eclipse</desc>
+	</operation>
+	<operation start="2005-09-14T17:55:18Z" dt="136050" c3="yes" plan="no" sdesc="no_tm">
 		<desc>WEC off following spurious WBD command</desc>
-		<res>
-		<link href="ky050916a.txt">Keith 050916</link>
-		</res>
+		<res><link href="ky050916a.txt">Keith 050916</link></res>
 	</operation>
-	<operation dt="7920" plan="no" sdesc="no_tm" start="2005-09-16T01:35:54Z" c4="yes">
+	<operation start="2005-09-16T01:35:54Z" dt="7920" c4="yes" plan="no" sdesc="no_tm">
 		<desc>Data overwritten onboard</desc>
-		<res>
-		<link href="esoc050920a.txt">ESOC 050920</link>
-		</res>
+		<res><link href="esoc050920a.txt">ESOC 050920</link></res>
 	</operation>
-	<operation dt="163800" plan="no" sdesc="bad_tm" start="2005-10-31T13:38:00Z" c4="yes">
+	<operation start="2005-09-16T13:10:00Z" dt="12240" c4="yes" plan="no" sdesc="no_p2">
+		<desc>Probe 2 stuck at -68 V, problem was cleared by sweep</desc>
+	</operation>
+	<operation start="2005-09-27T21:00:00Z" dt="5580" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-09-27T20:47:00Z" dt="3360" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-09-27T23:48:00Z" dt="3660" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-09-28T00:02:00Z" dt="3480" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-10-01T03:31:00Z" dt="151140" c2="yes" plan="no" sdesc="bad_data">
+		<desc>WEC problem, switched off by onboard monitoring at 
+			2005-10-01 05:49</desc>
+		<res><link href="esoc051003gw.txt">ESOC 051003</link></res>
+	</operation>
+	<operation start="2005-10-05T19:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2005-10-05T20:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2005-10-05T23:30:00Z" dt="300" c1="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2005-10-06T00:30:00Z" dt="320" c3="yes" plan="yes" sdesc="bad_data">
+		<desc>Attitude manoeuvre.</desc>
+	</operation>
+	<operation start="2005-10-07T08:27:00Z" dt="11880" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2005-10-07T08:27:00Z" dt="14040" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2005-10-07T09:18:00Z" dt="5820" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2005-10-07T09:19:00Z" dt="5520" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density.</desc>
+	</operation>
+	<operation start="2005-10-31T02:58:00Z" dt="31980" c2="yes" plan="no" sdesc="TBD">
+		<desc>DWP buffer overflow</desc>
+		<res><link href="esoc051031az.html">ESOC 051031</link></res>
+	</operation>
+	<operation start="2005-10-31T13:38:00Z" dt="163800" c4="yes" plan="no" sdesc="TBD">
 		<desc>DWP latchup, eventually cleared up by WEC power cycle</desc>
+		<res><link href="esoc051102a.txt">ESOC 051102</link></res>
+	</operation>
+	<operation start="2005-11-09T05:36:00Z" dt="25080" c1="yes" plan="no" sdesc="bad_tm">
+		<desc>Apparent DWP buffer overflow</desc>
+	</operation>
+	<operation start="2005-11-11T00:20:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-18T05:50:00Z" dt="70500" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-18T06:30:00Z" dt="69900" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-18T06:30:00Z" dt="81900" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-18T09:55:00Z" dt="57600" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-19T10:15:52Z" dt="10" c2="yes" plan="yes" sdesc="bad_data">
+		<desc>Phasing manoeuvre</desc>
+	</operation>
+	<operation start="2005-11-28T09:03:00Z" dt="37440" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-28T09:03:00Z" dt="39480" c1="yes" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-28T09:03:00Z" dt="43020" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-11-29T13:26:00Z" dt="17160" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset, cured by WEC power cycling</desc>
 		<res>
-		<link href="esoc051102a.txt">ESOC 051102</link>
+		<link href="ky051129aj.html">Keith 051129</link>
 		</res>
 	</operation>
-	<operation dt="191820" plan="no" sdesc="no_tm" start="2005-12-07T11:58:00Z" c1="yes">
+	<operation start="2005-11-29T23:54:00Z" dt="16320" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
+	</operation>
+	<operation start="2005-11-30T14:38:00Z" dt="91920" c1="yes" plan="no" sdesc="bad_data">
+		<desc>DWP problem followed by WEC off by onboard monitoring</desc>
+		<res>
+		<link href="esoc051201aj.html">ESOC 051201</link>
+		</res>
+	</operation>
+	<operation start="2005-12-07T11:58:00Z" dt="191820" c1="yes" plan="no" sdesc="bad_tm">
 		<desc>Instrument hangup</desc>
 		<res>
 		<link href="pal051209a.txt">Per-Arne 051209</link>
@@ -1730,32 +2113,81 @@ minute expected.</desc>
 		<link href="ky051214a.txt">Keith 051214</link>
 		</res>
 	</operation>
-	<operation dt="1500" plan="yes" sdesc="spec_bias" start="2005-12-13T05:25:00Z" c1="yes" c3="yes">
-		<desc>Slow sweeps on P2 SC13 in plasmasphere/plasmapause</desc>
+	<operation start="2005-12-08T13:17:00Z" dt="7560" c4="yes" plan="no" sdesc="no_p1">
+		<desc>Probe 1 positive, starts slightly positive
+			and gradually increases to +68 V, problem cleared by sweep</desc>
+	</operation>
+	<operation start="2005-12-09T06:22:00Z" dt="94080" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-09T17:15:00Z" dt="54900" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-13T05:25:00Z" dt="1500" c1="yes" c3="yes" plan="yes" sdesc="spec_bias">
+		<desc>Slow sweeps on P2 SC13 in plasmasphere/plasmapause.
+			Sampled V2 and V34 2005-12-12 01:30 - 2005-12-13 09:32.</desc>
 		<res>
 		<link href="aie051117a.txt">Anders 051117</link>
 		<link href="swp_jan2006.html">Anders 051214</link>
 		</res>
 	</operation>
-	<operation dt="124720" plan="no" sdesc="bad_tm" start="2005-12-17T09:46:57Z" c3="yes">
-		<desc>DWP latchup, partial TM loss and erroneous EFW power status</desc>
-		<res>
-		<link href="ky051219a.txt">Keith 051219</link>
-		</res>
+	<operation start="2005-12-13T07:13:00Z" dt="8340" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
 	</operation>
-	<operation dt="23130" plan="no" sdesc="no_tm" start="2006-01-08T07:05:02Z" c4="yes">
+	<operation start="2005-12-16T02:11:38Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2005-12-16T05:10:00Z" dt="133800" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-16T05:10:00Z" dt="130680" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-16T05:10:00Z" dt="103020" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-16T05:10:00Z" dt="140700" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-17T09:47:00Z" dt="124260" c3="yes" plan="no" sdesc="bad_data">
+		<desc>Bad data after spontaneous EFW reset</desc>
+		<res><link href="ky051219a.txt">Keith 051219</link></res>
+	</operation>
+	<operation start="2005-12-18T11:50:00Z" dt="18600" c2="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-18T14:14:00Z" dt="18180" c1="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-18T14:14:00Z" dt="18060" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-19T00:32:00Z" dt="14880" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-19T10:36:38Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2005-12-23T02:55:22Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Single bad HX packet</desc>
+	</operation>
+	<operation start="2005-12-24T06:40:00Z" dt="52800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Intermittently very bad data due to high density</desc>
+	</operation>
+	<operation start="2005-12-26T21:25:00Z" dt="29100" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+		<desc>Very bad data due to high density</desc>
+	</operation>
+	<operation start="2006-01-08T07:05:02Z" dt="23130" c4="yes" plan="no" sdesc="no_tm">
 		<desc>No EFW TM. DWP or EFW problem, not investigated.</desc>
-		<res>
-		<link href="esoc060112w.txt">ESOC 060112</link>
-		</res>
+		<res><link href="esoc060112w.txt">ESOC 060112</link></res>
 	</operation>
-	<operation dt="2460" plan="yes" sdesc="spec_bias" start="2006-01-09T13:50:00Z" c4="yes">
+	<operation start="2006-01-09T13:50:00Z" dt="2460" c4="yes" plan="yes" sdesc="spec_bias">
 		<desc>Testing sweeps at different sweep rates</desc>
 		<res>
 		<link href="swp_jan2006.html">Anders 051214</link>
 		</res>
 	</operation>
-	<operation dt="1800" plan="yes" sdesc="spec_bias" start="2006-01-10T19:00:00Z" c3="yes">
+	<operation start="2006-01-10T19:00:00Z" dt="1800" c3="yes" plan="yes" sdesc="spec_bias">
 		<desc>Testing coarse sweeps in plasmasphere</desc>
 		<res>
 		<link href="swp_jan2006.html">Anders 051214</link>
@@ -1852,6 +2284,38 @@ minute expected.</desc>
 		<link href="esoc060322w.txt">ESOC 060322</link>
 		</res>
 	</operation>
+	<operation dt="60" plan="no" sdesc="TBD" start="2006-03-16T14:18:41Z" c3="yes">
+		<desc>Battery gas release.</desc>
+		<res>
+		<link href="pal060330aw.eml">Per-Arne 060330</link>
+		<link href="pal060330b.txt">Per-Arne 060330</link>
+		<link href="esoc060330a.txt">ESOC 060330</link>
+		<link href="rapid060330a.eml">Pat Daly 060330</link>
+		<link href="esoc060330b.eml">ESOC 060330</link>
+		<link href="pal060330c.eml">Per-Arne 060330</link>
+		<link href="cis060330a.eml">Iannis 060330</link>
+		<link href="rapid060331a.eml">Pat Daly 060331</link>
+		<link href="pal060331d.txt">Per-Arne 060331</link>
+		<link href="whi060407.eml">Patrick Canu 060407</link>
+		<link href="cis060411a.eml">Iannis 060411</link>
+		</res>
+	</operation>
+	<operation dt="60" plan="no" sdesc="TBD" start="2006-03-20T00:04:08Z" c1="yes">
+		<desc>Battery gas release.</desc>
+		<res>
+		<link href="pal060330aw.eml">Per-Arne 060330</link>
+		<link href="pal060330b.txt">Per-Arne 060330</link>
+		<link href="esoc060330a.txt">ESOC 060330</link>
+		<link href="rapid060330a.eml">Pat Daly 060330</link>
+		<link href="esoc060330b.eml">ESOC 060330</link>
+		<link href="pal060330c.eml">Per-Arne 060330</link>
+		<link href="cis060330a.eml">Iannis 060330</link>
+		<link href="rapid060331a.eml">Pat Daly 060331</link>
+		<link href="pal060331d.txt">Per-Arne 060331</link>
+		<link href="whi060407.eml">Patrick Canu 060407</link>
+		<link href="cis060411a.eml">Iannis 060411</link>
+		</res>
+	</operation>
 	<operation dt="341168" plan="no" sdesc="no_tm" start="2006-03-24T15:38:52Z" c1="yes">
 		<desc>SC1 battery problem in short eclipse.</desc>
 		<res>
@@ -1868,9 +2332,10 @@ minute expected.</desc>
 		</res>
 	</operation>
 	<operation dt="125340" plan="no" sdesc="no_tm" start="2006-04-02T04:40:00Z" c3="yes">
-		<desc>WEC switched off because of an uncommanded WBD on following a DWP watchdog reset.</desc>
+		<desc>WEC switched off because of an uncommanded WBD on following a DWP watchdog reset. During the off period, a spacecraft SSR controller failure occured and was cured.</desc>
 		<res>
 		<link href="esoc060405a.txt">ESOC 060405</link>
+		<link href="CLU_AR-089.pdf">AR-089 (pdf)</link>
 		</res>
 	</operation>
 	<operation dt="75581" plan="no" sdesc="no_tm" start="2006-04-20T14:34:19Z" c2="yes">
@@ -1890,5 +2355,212 @@ minute expected.</desc>
 		<res>
 		<link href="pal060514a.txt">Per-Arne 060514</link>
 		</res>
+	</operation>
+	<operation start="2006-05-24T12:08:20Z" dt="4140" plan="no" sdesc="bad_tm" c2="yes">
+		<desc>Data gaps following DWP reset, cured by WEC power cycle.</desc>
+		<res>
+		<link href="esoc060101nm.txt">ESOC 060601</link>
+		</res>
+	</operation>
+	<operation dt="132060" plan="no" sdesc="bad_tm" start="2006-06-07T03:21:00Z" c3="yes">
+		<desc>EFW digital problems.</desc>
+		<res>
+		<link href="pal060608a.txt">Per-Arne 060608</link>
+		</res>
+	</operation>
+	<operation dt="1680" plan="yes" sdesc="no_tm" start="2006-06-08T16:02:00Z" c3="yes">
+		<desc>WEC power cycle.</desc>
+		<res>
+		<link href="pal060609c.txt">Per-Arne 060609</link>
+		</res>
+	</operation>
+	<operation dt="84553" plan="no" sdesc="no_tm" start="2006-06-12T10:03:24Z" c4="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="esoc060613a.txt">ESOC 060613</link>
+		</res>
+	</operation>
+	<operation dt="32520" plan="no" sdesc="no_tm" start="2006-07-05T15:08:00Z" c3="yes">
+		<desc>No TM  -- DWP commanding problem?</desc>
+		<res>
+		<link href="esoc060725a.txt">ESOC 060725</link>
+		</res>
+	</operation>
+	<operation dt="5760" plan="no" sdesc="bad_tm" start="2006-07-09T07:41:00Z" c1="yes">
+		<desc>Bad DWP, EFW and STAFF-SA TLM received on SC1 on DOY 190 from 07.41 to 09.17 following watchdog reset.</desc>
+		<res>
+		<link href="esoc060725a.txt">ESOC 060725</link>
+		</res>
+	</operation>
+	<operation dt="3000" plan="no" sdesc="no_tm" start="2006-07-21T06:32:00Z" c1="yes">
+		<desc>WEC power cycle following DWP memory latchup.</desc>
+		<res>
+		<link href="esoc060725a.txt">ESOC 060725</link>
+		</res>
+	</operation>
+	<operation dt="86400" plan="no" sdesc="no_tm" start="2006-07-31T07:09:00Z" c1="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="esoc060801a.txt">ESOC 060801</link>
+		</res>
+	</operation>
+	<operation dt="2460" plan="no" sdesc="no_tm" start="2006-08-15T02:31:00Z" c4="yes">
+		<desc>WEC off (presumably by DWP voltage monitoring).</desc>
+		<res>
+		<link href="esoc060815a.txt">ESOC 060815</link>
+		</res>
+	</operation>
+	<operation dt="5400" plan="yes" sdesc="no_p23" start="2006-08-22T09:15:00Z" c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="7200" plan="no" sdesc="no_tm" start="2006-08-25T05:11:00Z" c1="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="esoc060825a.txt">ESOC 060825</link>
+		<link href="ky060825a.txt">Keith 060825</link>
+		</res>
+	</operation>
+	<operation dt="230400" plan="no" sdesc="no_tm" start="2006-08-27T20:55:00Z" c3="yes">
+		<desc>WEC off by DWP voltage monitoring, combined with 
+	DWP memory latchup.</desc>
+		<res>
+		<link href="esoc060829a.txt">ESOC 060829</link>
+		<link href="esoc060830a.txt">ESOC 060830</link>
+		</res>
+	</operation>
+	<operation start="2006-08-30T12:24:54Z" dt="43200" plan="no" sdesc="no_tm" c3="yes">
+		<desc>WEC power cycle to clear DWP memory latchup.</desc>
+		<res>
+		<link href="esoc060915aa.txt">ESOC 060915</link>
+		</res>
+	</operation>
+	<operation dt="6000" plan="yes" sdesc="no_p23" start="2006-09-05T15:35:00Z" c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="46800" plan="yes" sdesc="no_tm" start="2006-09-08T17:00:00Z" c2="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="81000" plan="yes" sdesc="no_tm" start="2006-09-10T17:00:00Z" c2="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="68400" plan="yes" sdesc="no_tm" start="2006-09-10T19:00:00Z" c3="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="63000" plan="yes" sdesc="no_tm" start="2006-09-10T21:00:00Z" c4="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="8700" plan="yes" sdesc="no_p23" start="2006-09-12T16:50:00Z" c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-13T00:00:00Z" c3="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-13T02:00:00Z" c2="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-13T02:00:00Z" c4="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-15T09:00:00Z" c3="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-15T10:30:00Z" c4="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="477000" plan="yes" sdesc="no_tm" start="2006-09-15T13:30:00Z" c1="yes">
+		<desc>SC1 payload turned off for 5.5 days with long eclipses, because
+			of bad battery status.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="16200" plan="yes" sdesc="no_tm" start="2006-09-15T19:30:00Z" c2="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="7560" plan="yes" sdesc="no_p23" start="2006-09-17T12:44:00Z"  c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="28800" plan="yes" sdesc="no_tm" start="2006-09-18T00:00:00Z" c3="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation dt="28800" plan="yes" sdesc="no_tm" start="2006-09-18T01:30:00Z" c4="yes">
+		<desc>Payload off in long eclipse.</desc>
+		<res>
+		<link href="esoc060718pdf.pdf">ESOC 060718</link>
+		</res>
+	</operation>
+	<operation sdesc="bad_tm" start="2006-09-19T23:06:18Z" dt="31342" plan="no" c3="yes">
+		<desc>Bad EFW data (looks like digital problem).</desc>
+		<res>
+		<link href="esoc060927aa.txt">ESOC 060927</link>
+		</res>
+	</operation>
+	<operation dt="9000" plan="yes" sdesc="no_p23" start="2006-09-27T03:30:00Z"  c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="142320" plan="no" sdesc="no_tm" start="2006-10-03T09:05:00Z" c1="yes">
+		<desc>WEC off by DWP voltage monitoring.</desc>
+		<res>
+		<link href="pal061005a.txt">Per-Arne 061005</link>
+		<link href="esoc061005a.txt">ESOC 061005</link>
+		</res>
+	</operation>
+	<operation dt="10800" plan="yes" sdesc="no_p23" start="2006-10-08T22:05:00Z"  c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation sdesc="no_tm" start="2006-10-12T16:55:58Z" dt="101069" plan="no" c2="yes">
+		<desc>No EFW TM from 16:55:58; all WEC off by DWP voltage
+	monitoring from 20:56. Some details in mail from Keith, apparently
+	with some confusion of times and s/c number.</desc>
+		<res>
+		<link href="ky061013a.txt">Keith 061013</link>
+		<link href="esoc061031a.txt">ESOC 061031</link>
+		</res>
+	</operation>
+	<operation dt="5400" plan="yes" sdesc="no_p23" start="2006-10-23T06:10:00Z"  c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
+	</operation>
+	<operation dt="90066" plan="yes" sdesc="no_p23" start="2006-11-11T12:00:00Z"  c3="yes">
+		<desc>Probe 2 in Langmuir mode at -40 V for continuous measurement of photosaturation
+			current. Sweep interval 30 minutes.</desc>
+		<res>
+		<link href="aie061020a.txt">Anders 061020</link>
+		</res>
+	</operation>
+	<operation dt="2460" plan="yes" sdesc="no_p23" start="2006-11-16T01:35:00Z"  c1="yes" c3="yes">
+		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 </table>
