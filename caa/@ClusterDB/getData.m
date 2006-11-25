@@ -28,8 +28,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
 %			// electric fields 8kHz
-%	pburst: P{4kHz,32kHz}{cl_id}p{1..4}, wbE{cl_id}p12,34 -> mEFWburst	
-%			// probe potentials (4kHz,32kHz), and electric fields
+%	pburst: P{180Hz,4kHz,32kHz}{cl_id}p{1..4}, wbE{cl_id}p12,34 -> mEFWburst	
+%			// probe potentials (180Hz,4kHz,32kHz), and electric fields
 %
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
@@ -452,7 +452,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	if do_burst 
 		save_file = './mEFWburstR.mat';
 		tmmode='burst';
-		param={'4kHz','32kHz'};
+		param={'180Hz','4kHz','32kHz'};
 		var_name = 'wbE?p';
 	else
 		save_file = './mPR.mat';
