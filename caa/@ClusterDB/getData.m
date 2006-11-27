@@ -365,6 +365,13 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
             % Request interval overlaps with the time when the 10Hz filter
             % got broken on SC2. We truncate the request.
             dt = toepoch([2001 07 23 13 54 17]) - start_time;
+            for in=1:length(start_time_nsops)
+                if start_time_nsops(in)<toepoch([2001 07 23 13 54 18]) && ...
+                    start_time_nsops(in)+dt_nsops(in)>toepoch([2001 07 23 13 54 18])
+                    dt_nsops(in) = toepoch([2001 07 23 13 54 17]) ...
+                        - start_time_nsops(in);
+                end
+            end
             irf_log('proc', ...
                 '10Hz filter got broken inside the requested interval')
             irf_log('proc',	['truncating interval: setting DT to ' num2str(dt)])
