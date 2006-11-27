@@ -357,7 +357,18 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		clear tm
 		
 		%%%%%%%%%%%%%%%%%%%%%%%%% FILTER MAGIC %%%%%%%%%%%%%%%%%%%%%%
-		if (((cl_id==1 && start_time>toepoch([2001 07 30 17 05 54.9])) || ...
+		if cl_id==2 && start_time>toepoch([2001 07 23 13 54 18])
+			% 10Hz filter problem on SC2
+			param='180Hz';
+        elseif cl_id==2 && start_time<toepoch([2001 07 23 13 54 18]) && ...
+            start_time+dt>toepoch([2001 07 23 13 54 18])
+            % Request interval overlaps with the time when the 10Hz filter
+            % got broken on SC2. We truncate the request.
+            dt = toepoch([2001 07 23 13 54 17]) - start_time;
+            irf_log('proc', ...
+                '10Hz filter got broken inside the requested interval')
+            irf_log('proc',	['truncating interval: setting DT to ' num2str(dt)])
+        elseif (((cl_id==1 && start_time>toepoch([2001 07 30 17 05 54.9])) || ...
 			(cl_id==3 && start_time>toepoch([2001 07 31 00 12 29.5]))) && ...
 			start_time<toepoch([2001 09 02 23 15 00])) || ...
 			(cl_id==4 && ((start_time>toepoch([2001 07 31 04 55 33.15]) && ...
@@ -369,9 +380,6 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		elseif start_time>toepoch([2001 09 10 04 21 57.6]) && ...
 			start_time<toepoch([2001 09 15 06 30 00])
 			% this needs to be investigated.... 
-			param='180Hz';
-		elseif cl_id==2 && start_time>toepoch([2001 07 23 00 00 00])
-			% 10Hz filter problem on SC2
 			param='180Hz';
 		end
 		%%%%%%%%%%%%%%%%%%%%%%% END FILTER MAGIC %%%%%%%%%%%%%%%%%%%%
@@ -471,7 +479,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	end
 	% 10Hz filter problem on C2 p3
 	% Any changes should also go to ClusterProc/getData/probesa
-	if cl_id==2 && start_time>toepoch([2001 07 23 00 00 00]) && ~do_burst
+	if cl_id==2 && start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
 		probe_list = [1 2 4];
 		p3 = [];
 		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
