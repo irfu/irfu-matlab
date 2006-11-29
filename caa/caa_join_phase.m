@@ -14,12 +14,12 @@ st = iso2epoch(iso_t);
 
 irf_log('proc',['interval: ' epoch2iso(st,1) ' -- ' epoch2iso(st+dt,1) ])
 
-A_old = c_load('A?',cl_id,'var');
-Atwo_old = c_load('Atwo?',cl_id,'var');
+[AOK,A_old] = c_load('A?',cl_id);
+[AtwoOK,Atwo_old] = c_load('Atwo?',cl_id);
 
 if isnumeric(gap)
-    if isempty(Atwo_old), old_end = st;
-    else old_end = Atwo_old(end,1);
+    if AtwoOK, old_end = Atwo_old(end,1);
+    else old_end = st;
     end
     st_refetch = old_end + gap;
 elseif ischar(gap), st_refetch = iso2epoch(gap);
@@ -35,10 +35,10 @@ getData(ClusterDB,st_refetch,st+dt - st_refetch,cl_id,'a')
 
 
 
-A = c_load('A?',cl_id,'var');
-Atwo = c_load('Atwo?',cl_id,'var');
+[AOK,A] = c_load('A?',cl_id);
+[AtwoOK,Atwo] = c_load('Atwo?',cl_id);
 
-if isempty(Atwo), irf_log('load','refetch failed'), return, end
+if ~AtwoOK, irf_log('load','refetch failed'), return, end
 
 if ~isempty(A_old), A =[A_old; A]; end
 if ~isempty(Atwo_old), Atwo =[Atwo_old; Atwo]; end
