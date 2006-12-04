@@ -401,14 +401,31 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		
 		% FSW 2.4. Use P32 on SC1 and SC3
 		pl = [32, 34];
-		irf_log('dsrc',sprintf('            !Using p32 for sc%d',cl_id));
+		irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
 		
 	elseif (cl_id==1 && start_time>toepoch([2001 12 28 03 00 00])) || ...
 		(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59 ]))
 		
 		% p1 problems on SC1 and SC3
 		pl = 34;
-		irf_log('dsrc',sprintf('            !Only p34 exists for sc%d',cl_id));
+		irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+    elseif ( cl_id == 1 && ...
+            ( (start_time>=toepoch([2001 0412 03 00 00]) && start_time<toepoch([2001 0412 06 00 00])) || ...
+            (  start_time>=toepoch([2001 0414 06 00 00]) && start_time<toepoch([2001 0416 15 00 00])) || ...
+            (  start_time>=toepoch([2001 0418 03 00 00]) && start_time<toepoch([2001 0420 09 00 00])) || ...
+            (  start_time>=toepoch([2001 0421 21 00 00]) && start_time<toepoch([2001 0422 03 00 00])) || ...
+            (  start_time>=toepoch([2001 0423 09 00 00]) && start_time<toepoch([2001 0423 15 00 00])) ) ) || ...
+            (cl_id==2 && ...
+            ( (start_time>=toepoch([2001 04 09 21 00 00]) && start_time<toepoch([2001 04 10 06 00 00])) || ...
+            (  start_time>=toepoch([2001 04 10 09 00 00]) && start_time<toepoch([2001 04 19 15 00 00])) || ...
+            (  start_time>=toepoch([2001 04 20 03 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) || ...
+            (  start_time>=toepoch([2001 04 24 00 00 00]) && start_time<toepoch([2001 04 24 15 00 00])) ) )
+        % The bias current is a bit too large 
+        % on p3 and p4 on C1&2 in April 2001. 
+        % Ignore p3, p4 and p34 and only use p1, p2 and p12.
+        % Use only complete 3-hour intervals to keep it simple.
+        pl = 12;
+        irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
 	end
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
@@ -477,19 +494,36 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	probe_list = 1:4;
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
-	% Check for p1 problems on SC1 and SC3
 	if (cl_id==1 && start_time>toepoch([2001 12 28 03 00 00])) || ...
 		(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59 ]))
+        % p1 problems on SC1 and SC3
 		probe_list = 2:4;
 		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
-	end
-	% 10Hz filter problem on C2 p3
-	% Any changes should also go to ClusterProc/getData/probesa
-	if cl_id==2 && start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
+    elseif cl_id==2 && start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
+        % 10Hz filter problem on C2 p3
+        % Any changes should also go to ClusterProc/getData/probesa
 		probe_list = [1 2 4];
 		p3 = [];
-		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id));
+		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id))
+    elseif ( cl_id == 1 && ...
+            ( (start_time>=toepoch([2001 0412 03 00 00]) && start_time<toepoch([2001 0412 06 00 00])) || ...
+            (  start_time>=toepoch([2001 0414 06 00 00]) && start_time<toepoch([2001 0416 15 00 00])) || ...
+            (  start_time>=toepoch([2001 0418 03 00 00]) && start_time<toepoch([2001 0420 09 00 00])) || ...
+            (  start_time>=toepoch([2001 0421 21 00 00]) && start_time<toepoch([2001 0422 03 00 00])) || ...
+            (  start_time>=toepoch([2001 0423 09 00 00]) && start_time<toepoch([2001 0423 15 00 00])) ) ) || ...
+            (cl_id==2 && ...
+            ( (start_time>=toepoch([2001 04 09 21 00 00]) && start_time<toepoch([2001 04 10 06 00 00])) || ...
+            (  start_time>=toepoch([2001 04 10 09 00 00]) && start_time<toepoch([2001 04 19 15 00 00])) || ...
+            (  start_time>=toepoch([2001 04 20 03 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) || ...
+            (  start_time>=toepoch([2001 04 24 00 00 00]) && start_time<toepoch([2001 04 24 15 00 00])) ) )
+        % The bias current is a bit too large 
+        % on p3 and p4 on C1&2 in April 2001. 
+        % Ignore p3, p4 and p34 and only use p1, p2 and p12.
+        % Use only complete 3-hour intervals to keep it simple.
+        probe_list = [1 2];
+        p3 = []; p4 = [];
+        irf_log('dsrc',sprintf('Too high bias current on p3, 4 on sc%d',cl_id));
 	end
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
