@@ -23,11 +23,11 @@ function c_export_ascii(var,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004-2006 Yuri Khotyaintsev
 
 if nargin<1, help c_export_ascii; return, end
 if nargin>2, have_options = 1; args = varargin;
-else, have_options = 0;
+else have_options = 0;
 end
 
 CEF = 0;
@@ -42,15 +42,15 @@ while have_options
 		switch(args{1})
 		case 'var_name'
 			if ischar(args{2}), vs = args{2};
-			else, irf_log('fcal','wrong ArgType : var_name must be string')
+            else irf_log('fcal','wrong ArgType : var_name must be string')
 			end
 		case 'comm'
 			if ischar(args{2}), comment = args{2};
-			else, irf_log('fcal','wrong ArgType : comm must be string')
+            else irf_log('fcal','wrong ArgType : comm must be string')
 			end
 		case 'f_name'
 			if ischar(args{2}), file_name = args{2};
-			else, irf_log('fcal','wrong ArgType : f_name must be string')
+            else irf_log('fcal','wrong ArgType : f_name must be string')
 			end
 		case 'mode'
 			if ischar(args{2}), 
@@ -68,7 +68,7 @@ while have_options
 						'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 					irf_log('fcal','Using default mode : ''plain''');
 				end
-			else, irf_log('fcal',...
+            else irf_log('fcal',...
 				'wrong ArgType : mode must be one of : ''plain'', ''cef'' or ''caa''')
 			end
 		otherwise
@@ -141,7 +141,7 @@ elseif regexp(vs,'^wE[1-4]p(12|34)')==1
 	if CEF
 		var_size = 1;
 		var_name = {['E_' sen]};
-		field_name = {['Electric field']};
+		field_name = {'Electric field'};
 		frame = {'component>sc_xy'};
 		switch sen
 		case 'p12'
@@ -192,12 +192,14 @@ elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^di[b]?E[1-4]p1234')==1
+elseif regexp(vs,'^di(b)?E[1-4]p1234')==1
 
-	cl_id = vs(4);
-	inst = 'EFW';
-	sig = 'E';
-	sen = vs(5:9);
+    desc = c_desc(vs);
+	cl_id = desc.cl_id;
+	inst = desc.inst;
+	sig = desc.sig;
+	sen = desc.sen;
+    
 	if CEF
 		var_units =  {'mV/m'};
 		if CAA
@@ -230,7 +232,7 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 	inst = 'EFW';
 	sig = 'E';
 	if CEF
-		if vs(4)=='s', sen = 's'; else, sen = ''; end
+		if vs(4)=='s', sen = 's'; else sen = ''; end
 		var_units =  {'mV/m'};
 		var_name = {['E' sen]};
 		field_name = {'Electric field'};
@@ -254,7 +256,7 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 		end
 	else
 		if vs(4)=='s', sen = 'spin fit';
-		else, sen = 'p1234';
+        else sen = 'p1234';
 		end
 		frame = 'DSI,  approximately the same as GSE';
 		var_labels = {'Ex','Ey','Ez','(B,spin)'};
@@ -288,7 +290,7 @@ elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
 	inst = 'EFW';
 	sig = 'E';
 	if CEF
-		if vs(2)=='s', sen = 's'; else, sen = ''; end
+		if vs(2)=='s', sen = 's'; else sen = ''; end
 		var_units =  {'mV/m'};
 		var_name = {['E' sen]};
 		field_name = {'Electric field'};
@@ -312,7 +314,7 @@ elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
 		end
 	else
 		if vs(2)=='s', sen = 'spin fit';
-		else, sen = 'p1234';
+        else sen = 'p1234';
 		end
 		frame = 'GSE';
 		var_labels = {'Ex','Ey','Ez','(B,spin)'};
@@ -369,24 +371,17 @@ elseif regexp(vs,'^(diVExBs[1-4]|VExBs[1-4])')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^NVps[1-4]')==1
+elseif regexp(vs,'^(b)?NVps[1-4]')==1
 	
-	if CAA
-		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
-		CAA = 0;
-	end
-	if CEF
-		irf_log('fcal', ['CEF export is not (yet) supported for ' vs])
-		CEF = 0;
-	end
-	cl_id = vs(5);
-	inst = 'EFW';
-	sig = 'P, probe to spacecraft potential';
-	sen = 'p1234';
-	frame = '';
-	var_labels = {'NVps','Vps'};
-	var_units =  {'cc','V'};
-	com = 'probe to spacecraft potential Vps is approximately \n%% the same as satellite potential with respect to plasma.\n%% density NVps is derived from Vps based on empirical fit \n%% It is NOT true density';
+	desc = c_desc(vs);
+	cl_id = desc.cl_id;
+	inst = desc.inst;
+	sig = desc.sig;
+	sen = desc.sen;
+	frame = desc.frame;
+	var_labels = desc.labels;
+	var_units =  desc.units;
+	com = desc.com;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
@@ -473,7 +468,7 @@ elseif strcmp(vs,'dump')
 		if var(j,1)>5e8 % assume first column time in isdat epoch
       d=sprintf('%4.0f %2.0f %2.0f %2.0f %2.0f %7.4f ',fromepoch(var(j,1)));
 	  		fprintf(fid,[d num2str(var(j,2:end)) '\n']);
-		else, fprintf(fid,[num2str(var(j,1:end)) '\n']);
+        else fprintf(fid,[num2str(var(j,1:end)) '\n']);
 		end
 	end
 	fclose(fid);
@@ -493,7 +488,7 @@ if CEF
 	s_fr = '';
 	ee = .05;
 	for j=1:length(s_f)
-		if (1/dt > s_f(j)*(1-ee)) & (1/dt < s_f(j)*(1+ee))
+		if (1/dt > s_f(j)*(1-ee)) && (1/dt < s_f(j)*(1+ee))
 			s_fr = s_f(j);
 			break
 		end
@@ -509,9 +504,9 @@ else
 	t0=toepoch(fromepoch(var(1,1)).*[1 1 1 0 0 0]);
 	t0_s=datestr(datenum(fromepoch(t0)),0);
 	var(:,1) = var(:,1) - t0;
-	var_s =    'time       ';
-	var_unit = '[s]        ';
-	mask = '%11.5f ';
+	var_s =    'time        ';
+	var_unit = '[s]         ';
+	mask = '%11.6f ';
 	for j=1:n_data
 		var_length_nine=strvcat(var_labels{j},'         ');
 		var_unit_length_nine=strvcat(['[' var_units{j} ']'],'         ');
@@ -522,12 +517,12 @@ else
 end
 
 % construct filename
-if CEF, ext_s = '.cef'; else, ext_s = '.dat'; end
+if CEF, ext_s = '.cef'; else ext_s = '.dat'; end
 if isempty(file_name)
 	if CAA % we have special names for CAA
 		file_name = ...
 		['C' num2str(cl_id) '_CAA_EFW_' var_name{1} '_' irf_fname(var(1,1)) '_V' DATA_VERSION];
-	else, file_name = vs;
+    else file_name = vs;
 	end
 end
 fid = fopen([file_name ext_s],'w');
