@@ -34,10 +34,10 @@ function varargout = c_desc(vs,v_info)
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004-2006 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(1,2,nargin))
-if ~isstr(vs), error('VS must be string'), end
+if ~isstr(vs), error('VS must be a string'), end
 if nargin<2, v_info = []; end
 
 com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane';
