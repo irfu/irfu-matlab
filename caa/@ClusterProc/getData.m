@@ -25,8 +25,10 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          // spectrum of full res E [DSI] + 
 %   idies, idie : idiEs{cl_id}p12, idiEs{cl_id}p34, idiE{cl_id}p1234 -> mEIDSI
 %          Transform from SC to inertial frame
-%   dieburst : dibE{cl_id}p1234 -> mEFWburst // despun ib(8kHz) E [DSI]
-%          ADC offsets are NOT corrected
+%   dieburst : dibE{cl_id}p1234 -> mEFWburst // despun i-burst E [DSI]
+%   pburst : bP{cl_id}, bP{cl_id}_info, bNVps{cl_id}, P{freq}Hz{cl_id} -> mEFWburst 
+%          // i-burst P averaged from several probes
+% 
 %   edbs,edb,iedb,iedbs : // Ez from E.B=0 [DSI+GSE]
 %   E[s]{cl_id}, diE[s]{cl_id} -> mEdB    // SC frame
 %   iE[s]{cl_id}, idiE[s]{cl_id} -> mEdBI  // Inertial frame
@@ -409,28 +411,96 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		irf_log('load',...
 			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 		data = []; cd(old_pwd); return
-	end
+    end
 	
-	p12 = 12; e12 = []; e34 =[];
-	pl = [12,32,34];
-	p_ok = [];
-	for probe = pl
-		[ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
-		if ~ok || isempty(da)
-			irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
-			continue
-		end
-		
-		if probe==32
-			p12 = 32;
-			e12 = da;
-			p_ok = [p_ok 12];
-		else
-			c_eval('e?=da;',probe)
-			p_ok = [p_ok probe];
-		end
-		clear ok da
-	end
+    % Make electric field for the burst
+	if do_burst
+        p12 = 12; e12 = []; e34 =[];
+        param={'180Hz','4kHz','32kHz'};
+        p_ok = [];
+        loaded = 0;
+		for k=1:length(param)
+			for probe=[2 4]
+                [ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
+                if ok
+                    loaded = 1;
+                    p_sep = .088;
+                    if probe==2
+                        [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
+                        if ~ok
+                            [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+                            p_sep = .066;
+                            p12 = 32;
+                        end
+                        if ~ok
+                            irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+                            continue
+                        end
+                        
+                        e12(:,1) = p2(:,1);
+                        e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                        p_ok = [p_ok 12];
+                        eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+                    else
+                        [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+                        if ~ok
+                            irf_log('load', irf_ssub(['No P' param{k} '?p3'],cl_id));
+                            continue
+                        end
+                        
+                        e34(:,1) = p2(:,1);
+                        e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                        p_ok = [p_ok 34];
+                    end
+                else
+                    irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
+                end
+            end
+            if loaded, break, end
+        end
+        if ~loaded
+            pl = [12,32,34];
+            p_ok = [];
+            for probe = pl
+                [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
+                if ~ok || isempty(da)
+                    irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
+                    continue
+                end
+
+                if probe==32
+                    p12 = 32;
+                    e12 = da;
+                    p_ok = [p_ok 12];
+                else
+                    c_eval('e?=da;',probe)
+                    p_ok = [p_ok probe];
+                end
+                clear ok da
+            end
+        end     
+    else
+        p12 = 12; e12 = []; e34 =[];
+        pl = [12,32,34];
+        p_ok = [];
+        for probe = pl
+            [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
+            if ~ok || isempty(da)
+                irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
+                continue
+            end
+
+            if probe==32
+                p12 = 32;
+                e12 = da;
+                p_ok = [p_ok 12];
+            else
+                c_eval('e?=da;',probe)
+                p_ok = [p_ok probe];
+            end
+            clear ok da
+        end
+    end
 	if ~length(p_ok), data = []; cd(old_pwd), return, end
 
 	% Load ADC offsets
@@ -565,7 +635,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		% Check for problem with one probe pair
 		ii12 = find(~isnan(e12(:,2)));
 		ii34 = find(~isnan(e34(:,2)));
-		fsamp = c_efw_fsample(e12,'hx');
+        if do_burst, fsamp = c_efw_fsample(e12,'ib');
+        else fsamp = c_efw_fsample(e12,'hx');
+        end
 		% If more than 50% of data missing on one probe
 		% we base timeline on the probe pair which has more data
 		if abs(length(ii12)-length(ii34)) >...
@@ -1637,85 +1709,103 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P averaged from several probes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'p')
-	save_file = './mP.mat';
+elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
+    if strcmp(quantity,'pburst')
+        save_file = './mEFWburst.mat';
+        do_burst = 1;
+    else
+        do_burst = 0;
+        save_file = './mP.mat';
+    end
+    
 	n_ok = 0;
-	for probe=1:4
-		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,probe));
-		c_eval('p?=p;',probe)
-		if ~ok || isempty(p)
-			irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,probe));
-			continue
-		end
-		n_ok = n_ok + 1;
-		clear ok p
-	end
+    if do_burst, param={'180Hz','4kHz','32kHz'};
+    else param={'10Hz'};
+    end
+        
+    loaded = 0;
+    for k=1:length(param)
+        for probe=1:4
+            [ok,p] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
+            if ~loaded && ok, loaded=1; loaded_param = param{k}; end
+            c_eval('p?=p;',probe)
+            if ~ok || isempty(p)
+                irf_log('load', irf_ssub(['No/empty P' param{k} '?p!'],cl_id,probe));
+                continue
+            end
+            n_ok = n_ok + 1;
+            clear ok p
+        end
+        if loaded, break, end
+    end
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
-	% Remove probe saturation
-	for probe = 1:4
-		if eval(irf_ssub('~isempty(p?)',probe))
-			[ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
-			if ~ok
-				if CAA_MODE, error(irf_ssub('PROBESA?p!',cl_id,probe)), end
-				irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
-				continue
-			end
-			if ~isempty(sa)
-				irf_log('proc',['blanking saturated P' num2str(probe)])
-				c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
-			end
-			clear ok sa
-		end
-	end
-	c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
-	
-	problems = 'reset|bbias|sweep';
-	n_ok = 0;
-	for probe=1:4
-		c_eval('signal=p?;',probe)
-		if ~isempty(signal)
-			remove_problems
-			res(isnan(res(:,2)),:) = [];
-			c_eval('p?=res;',probe)
-			n_ok = n_ok + 1;
-		end
-	end
-	clear res signal problems probe
-	if ~n_ok, data = []; cd(old_pwd), return, end
-	
-	if flag_rmwhip
-		problems = 'whip';
-		for probe=1:4
-		c_eval('signal=p?;',probe)
-		if ~isempty(signal)
-			remove_problems
-			c_eval('p?=res;',probe)
-		end
-	end
-	end
-	
-	% Check for problem with one probe pair
-	MAX_CUT = .1; 
-	if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end
-	if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end
-	if ~isempty(p1) && ~isempty(p2)
-		if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
-			if l1>l2, p2=[]; irf_log('proc','throwing away p2')
-            else p1=[]; irf_log('proc','throwing away p1')
-			end
-		end
-	end
-	if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end
-	if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end
-	if ~isempty(p3) && ~isempty(p4)
-		if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
-			if l3>l4, p4=[]; irf_log('proc','throwing away p4') 
-            else p3=[]; irf_log('proc','throwing away p3')
-			end
-		end
-	end
+    if ~do_burst
+        % Remove probe saturation
+        for probe = 1:4
+            if eval(irf_ssub('~isempty(p?)',probe))
+                [ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
+                if ~ok
+                    if CAA_MODE, error(irf_ssub('PROBESA?p!',cl_id,probe)), end
+                    irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
+                    continue
+                end
+                if ~isempty(sa)
+                    irf_log('proc',['blanking saturated P' num2str(probe)])
+                    c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
+                end
+                clear ok sa
+            end
+        end
+        c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+
+        problems = 'reset|bbias|sweep';
+        n_ok = 0;
+        for probe=1:4
+            c_eval('signal=p?;',probe)
+            if ~isempty(signal)
+                remove_problems
+                res(isnan(res(:,2)),:) = [];
+                c_eval('p?=res;',probe)
+                n_ok = n_ok + 1;
+            end
+        end
+        clear res signal problems probe
+        if ~n_ok, data = []; cd(old_pwd), return, end
+
+        if flag_rmwhip
+            problems = 'whip';
+            for probe=1:4
+            c_eval('signal=p?;',probe)
+            if ~isempty(signal)
+                remove_problems
+                c_eval('p?=res;',probe)
+            end
+        end
+        end
+
+        % Check for problem with one probe pair
+        MAX_CUT = .1; 
+        if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end
+        if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end
+        if ~isempty(p1) && ~isempty(p2)
+            if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
+                if l1>l2, p2=[]; irf_log('proc','throwing away p2')
+                else p1=[]; irf_log('proc','throwing away p1')
+                end
+            end
+        end
+        if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end
+        if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end
+        if ~isempty(p3) && ~isempty(p4)
+            if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
+                if l3>l4, p4=[]; irf_log('proc','throwing away p4') 
+                else p3=[]; irf_log('proc','throwing away p3')
+                end
+            end
+        end
+    end
 	
 	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
             all(size(p1)==size(p4) )
@@ -1749,8 +1839,12 @@ elseif strcmp(quantity,'p')
     else irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
 	end
 	
-	c_eval('P10Hz?=p;save_list=[save_list ''P10Hz? ''];',cl_id);
-	c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
+	c_eval(['P' loaded_param '?=p;save_list=[save_list ''P' loaded_param '? ''];'],cl_id);
+    if do_burst
+        c_eval('bP?=p;bP?_info=Pinfo;bNVps?=c_efw_scp2ne(p);bNVps?(:,end+1)=p(:,2); save_list=[save_list '' bP? bP?_info bNVps?''];',cl_id)
+    else
+        c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
+    end
 	clear p p1 p2 p3 p4
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

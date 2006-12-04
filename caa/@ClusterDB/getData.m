@@ -28,8 +28,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
 %			// electric fields 8kHz
-%	pburst: P{180Hz,4kHz,32kHz}{cl_id}p{1..4}, wbE{cl_id}p12,34 -> mEFWburst	
-%			// probe potentials (180Hz,4kHz,32kHz), and electric fields
+%	pburst: P{180Hz,4kHz,32kHz}{cl_id}p{1..4} -> mEFWburstR	
+%			// probe potentials (180Hz,4kHz,32kHz)
 %
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
@@ -569,34 +569,6 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     end, end
 	
     if ~n_ok, data = []; cd(old_pwd), return, end
-	
-	% Make electric field for the burst
-	% TODO: move to ClusterProc
-	if do_burst
-		for j=1:length(param)
-			for probe=[1 3]
-				if exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe),'var') && ...
-				exist(irf_ssub(['P' param{j} '?p!'],cl_id,probe+1),'var')
-					eval(irf_ssub(['E(:,1)=P' param{j} '?p$(:,1);E(:,2)=(P' ...
-						param{j} '?p$(:,2)-P' param{j} '?p!(:,2))/.088;'],...
-						cl_id,probe,probe+1));
-					vn = [var_name num2str(probe) num2str(probe+1)];
-					if exist(irf_ssub(vn,cl_id),'var')
-						c_eval(['tmpE=' vn ';'],cl_id)
-						if tmpE(1,1) > E(1,1)
-							tmpE(:,end+1:end+size(E,1)) = E;
-							E = tmpE;
-						else
-							E(:,end+1:end+size(tmpE,1)) = tmpE;
-						end
-						clear tmpE
-					end
-					c_eval([vn '=E;save_list=[save_list ''' vn  ' ''];'],cl_id);
-					clear E
-				end
-			end
-		end
-	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
