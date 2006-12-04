@@ -20,7 +20,7 @@ if length(data)<=1
 end
 
 if nargin <2, mode='any'; end
-if ~(strcmp(mode,'any') | strcmp(mode,'lx') | strcmp(mode,'hx') | strcmp(mode,'ib'))
+if ~(strcmp(mode,'any') || strcmp(mode,'lx') || strcmp(mode,'hx') || strcmp(mode,'ib'))
 	error('bad value for MODE')
 end
 
@@ -46,16 +46,16 @@ function sf = guess_fsample(f,mode)
 K_PLUS = 1.1;
 K_MINUS = .9;
 
-if f<K_PLUS*5 & f>K_MINUS*5 & (strcmp(mode,'any')|strcmp(mode,'lx'))
+if f<K_PLUS*5 && f>K_MINUS*5 && (strcmp(mode,'any') || strcmp(mode,'lx'))
 	sf = 5;     % LX
-elseif f<K_PLUS*25 & f>K_MINUS*25 & (strcmp(mode,'any')|strcmp(mode,'hx'))
+elseif f<K_PLUS*25 && f>K_MINUS*25 && (strcmp(mode,'any') || strcmp(mode,'hx'))
 	sf = 25;    % NM
-elseif f<K_PLUS*450 & f>K_MINUS*450 & (strcmp(mode,'any')|strcmp(mode,'hx')|strcmp(mode,'ib'))
+elseif f<K_PLUS*450 && f>K_MINUS*450 && (strcmp(mode,'any') || strcmp(mode,'hx') || strcmp(mode,'ib'))
 	sf = 450;   % BM1/IB
-elseif f<K_PLUS*4500 & f>K_MINUS*4500 & (strcmp(mode,'any')|strcmp(mode,'ib'))
+elseif f<K_PLUS*4500 && f>K_MINUS*4500 && (strcmp(mode,'any') || strcmp(mode,'ib'))
 	sf = 4500;  % IB
-elseif f<K_PLUS*9000 & f>K_MINUS*9000 & (strcmp(mode,'any')|strcmp(mode,'ib'))
+elseif f<K_PLUS*9000 && f>K_MINUS*9000 && (strcmp(mode,'any') || strcmp(mode,'ib'))
 	sf = 9000;  % IB
-elseif f<K_PLUS*.25 & f>K_MINUS*.25 & strcmp(mode,'any'), sf = .25;   % SPIN
-else, sf = 0;
+elseif f<K_PLUS*.25 && f>K_MINUS*.25 && strcmp(mode,'any'), sf = .25;   % SPIN
+else sf = 0;
 end

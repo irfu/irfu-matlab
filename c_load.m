@@ -41,8 +41,8 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 %
 % $Id$
 
-% Copyright 2004, 2005 Yuri Khotyaintsev (yuri@irfu.se)
-%
+% Copyright 2004-2006 Yuri Khotyaintsev (yuri@irfu.se)
+
 error(nargchk(1,3,nargin))
 if nargout==2 && nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
@@ -60,7 +60,7 @@ case 3
 	end
 case 2
 	if isnumeric(cl_id)
-		if any(find(cl_id<0)) | any(find(cl_id>4))
+		if any(find(cl_id<0)) || any(find(cl_id>4))
 			error('CL_ID must be in a range 1..4')
 		end
 		mode_s = 'res';
@@ -95,7 +95,7 @@ for cli=cl_id
 		warning off
 		eval(['load -mat ' d.file ' ' vs_tmp])
 		warning on
-	elseif CAA_MODE==0 & exist([d.file_old '.mat'],'file')
+	elseif CAA_MODE==0 && exist([d.file_old '.mat'],'file')
 		warning off
 		eval(['load -mat ' d.file_old ' ' vs_tmp])
 		warning on
