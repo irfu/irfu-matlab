@@ -37,7 +37,7 @@ function varargout = c_desc(vs,v_info)
 % Copyright 2004-2006 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(1,2,nargin))
-if ~isstr(vs), error('VS must be a string'), end
+if ~ischar(vs), error('VS must be a string'), end
 if nargin<2, v_info = []; end
 
 com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane';
@@ -50,16 +50,16 @@ v.file_old = ''; % compatibility mode for old files
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if regexp(vs,'^P(s)?[1-4]$')==1
+if regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.data = 1;
-	if vs(2)=='s', v.cl_id = vs(3);
-	else, v.cl_id = vs(2);
+	if vs(2)=='s' || vs(1)=='b' , v.cl_id = vs(3);
+    else v.cl_id = vs(2);
 	end
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'P';
-	if ~isempty(v_info) & isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-	else, v.sen = '1234';
+	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+    else v.sen = '1234';
 	end 
 	v.cs = {'na'};
 	v.rep = {'scalar'};
@@ -71,6 +71,9 @@ if regexp(vs,'^P(s)?[1-4]$')==1
 	if vs(2)=='s'
 		v.quant = 'ps';
 		v.field_name = {'Spacecraft potential (spin resolution)'};
+    elseif vs(1)=='b'
+		v.quant = 'pburst';
+		v.field_name = {'Spacecraft potential (internal burst)'};
 	else
 		v.quant = 'p';
 		v.field_name = {'Spacecraft potential'};
@@ -79,18 +82,26 @@ if regexp(vs,'^P(s)?[1-4]$')==1
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
-	v.file = 'mP';
+	if vs(1)=='b', v.file = 'mEFWburst';
+    else v.file = 'mP';
+    end
 	v.lev = 1;
-elseif regexp(vs,'^P(s)?[1-4]_info$')==1
+elseif regexp(vs,'^(b)?P(s)?[1-4]_info$')==1
 	v.data = 0;
-	if vs(2)=='s', v.cl_id = vs(3);
-	else, v.cl_id = vs(2);
+	if vs(2)=='s' || vs(1)=='b', v.cl_id = vs(3);
+    else v.cl_id = vs(2);
 	end
 	v.inst = 'EFW';
 	v.com = 'Spacecraft potential INFO';
-	v.file = 'mP';
-	if vs(2)=='s', v.quant = 'ps';
-	else, v.quant = 'p';
+	if vs(1)=='b', v.file = 'mEFWburst';
+    else v.file = 'mP';
+    end
+	if vs(2)=='s'
+		v.quant = 'ps';
+    elseif vs(1)=='b'
+		v.quant = 'pburst';
+	else
+		v.quant = 'p';
 	end
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -121,7 +132,8 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P - individual probes from internal burst
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1
+elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
+        any(regexp(vs,'^P180Hz[1-4]p[1-4]$')==1)
 	v.data = 1;
 	v.cl_id = vs(end-2);
 	v.inst = 'EFW';
@@ -155,7 +167,7 @@ elseif regexp(vs,'^wbE[1-4]p(12|32|34)$')
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [1];
+	v.size = 1;
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Electric field component measured between the probes '...
@@ -181,7 +193,7 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [1];
+	v.size = 1;
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Electric field component measured between the probes '...
@@ -294,14 +306,14 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	end
 	v.inst = 'EFW';
 	v.sig = 'E';
-	if ~isempty(v_info) & isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-	else, v.sen = '1234';
+	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+    else v.sen = '1234';
 	end
 	v.cs = {'ISR2'};
 	v.rep = {'xy'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [2];
+	v.size = 2;
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.ent = {'Electric_Field'};
@@ -309,14 +321,19 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;
-elseif regexp(vs,'^diE(F)?[1-4]p1234_info$')==1
+elseif regexp(vs,'^di(b)?E(F)?[1-4]p1234_info$')==1
 	v.data = 0;
 	if vs(4)=='F'
 		v.cl_id = vs(5);
 		v.com = 'E filtered INFO';
 		v.quant = 'dief';
 		v.file = 'mEDSIf';
-	else
+    elseif vs(3)=='b'
+        v.cl_id = vs(3);
+		v.com = 'E internal burst INFO';
+		v.quant = 'dieburst';
+		v.file = 'mEFWburst';
+    else
 		v.cl_id = vs(4);
 		v.com = 'E full res INFO';
 		v.quant = 'die';
@@ -333,8 +350,8 @@ elseif regexp(vs,'^diESPEC[1-4]p1234$')==1
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'E';
-	if ~isempty(v_info) & isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
-	else, v.sen = '1234';
+	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+    else v.sen = '1234';
 	end
 	v.com = 'E-field spectrum';
 	v.file = 'mEDSI';
@@ -533,7 +550,7 @@ elseif regexp(vs,'^Dadc[1-4]p(12|32|34)$')==1
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [1];
+	v.size = 1;
 	v.name = {['Dadc-p' v.sen]};
 	v.labels = v.name;
 	v.field_name = {'ADC offset'};
@@ -584,16 +601,16 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
-		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
+		if vvs(4)=='s', v.quant = 'iedbs'; else v.quant = 'iedb'; end
 	else
 		v.frame = 'sc';
 		v.file = 'mEdB';
-		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
+		if vvs(4)=='s', v.quant = 'edbs'; else v.quant = 'edb'; end
 	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.sig = 'E';
-	if vvs(4)=='s', v.sen = 's'; else, v.sen = ''; end
+	if vvs(4)=='s', v.sen = 's'; else v.sen = ''; end
 	v.cs = {'ISR2', 'na', 'na'};
  	v.units =  {'mV/m','deg','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
@@ -614,16 +631,16 @@ elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 		vvs = vvs(2:end);
 		v.frame = 'inertial'; 
 		v.file = 'mEdBI';
-		if vvs(4)=='s', v.quant = 'iedbs'; else, v.quant = 'iedb'; end
+		if vvs(4)=='s', v.quant = 'iedbs'; else v.quant = 'iedb'; end
 	else
 		v.frame = 'sc';
 		v.file = 'mEdB';
-		if vvs(4)=='s', v.quant = 'edbs'; else, v.quant = 'edb'; end
+		if vvs(4)=='s', v.quant = 'edbs'; else v.quant = 'edb'; end
 	end
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
 	v.sig = 'E';
-	if vs(2)=='s', v.sen = 's'; else, v.sen = ''; end
+	if vs(2)=='s', v.sen = 's'; else v.sen = ''; end
 	v.cs = {'GSE', 'na','na'};
  	v.units =  {'mV/m','deg','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1','1>degree','1>unitless'};
@@ -644,8 +661,8 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.inst = 'EFW';
 	v.frame = 'sc';
 	v.sig = 'V=ExB';
-	if vvs(5)=='s' | vvs(7)=='s', v.sen = 's';
-	else, v.sen = ''; 
+	if vvs(5)=='s' || vvs(7)=='s', v.sen = 's';
+    else v.sen = ''; 
 	end
 	if strcmp(vvs(1:2),'di')
 		v.cs = {'ISR2', 'na'};
@@ -662,14 +679,14 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.field_name = {'Convection velocity','Elevation of B above the sc spin plane'};
 	v.com = com_Ez;
 	v.file = 'mEdB';
-	if vvs(5)=='s' | vvs(7)=='s', v.quant = 'vedbs';
-	else, v.quant = 'vedb';
+	if vvs(5)=='s' || vvs(7)=='s', v.quant = 'vedbs';
+    else v.quant = 'vedb';
 	end
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^NVps[1-4]$')==1
+elseif regexp(vs,'^(b)?NVps[1-4]$')==1
 	v.data = 1;
 	v.cl_id = vs(end);
 	v.inst = 'EFW';
@@ -680,12 +697,20 @@ elseif regexp(vs,'^NVps[1-4]$')==1
 	v.units =  {'cc','V'};
 	v.si_conv = {'1.0e-6>1/m^6',''};
 	v.size = [1 1];
-	v.name = {'Plasma density', 'Spacecraft potential'};
-	v.labels = {'Nscp', '-Sc pot'};
-	v.field_name = {'Plasma density','Spacecraft potential'};
-	v.com = 'density NVps is derived from Vps based on empirical fit. It is NOT a true density';
-	v.file = 'mP';
-	v.quant = 'p';	
+    if vs(1)=='b'
+        v.field_name = {'Plasma density (internal burst)',...
+            'Spacecraft potential (internal burst)'};
+        v.file = 'mEFWburst';
+        v.quant = 'pburst';
+    else
+        v.field_name = {'Plasma density', 'Spacecraft potential'};
+        v.file = 'mP';
+        v.quant = 'p';
+    end
+    
+    v.labels = {'Nscp', '-Sc pot'};
+	v.name = {'Plasma density','Spacecraft potential'};
+    v.com = 'density NVps is derived from Vps based on empirical fit. It is NOT a true density';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase and phase_2
@@ -700,7 +725,7 @@ elseif regexp(vs,'^A(two)?[1-4]$')
 	v.cs = {'na'};
 	v.units =  {'deg'};
 	v.si_conv = {'1>degree'};
-	v.size = [1];
+	v.size = 1;
 	if strcmp(vs(2),'t')
 		v.name = {'Atwo'};
 		v.labels = {'Phase_2'};
@@ -726,7 +751,7 @@ elseif regexp(vs,'^SAX[1-4]$')
 	v.cs = {'GSE'};
 	v.units =  {''};
 	v.si_conv = {''};
-	v.size = [1];
+	v.size = 1;
 	v.name = {'SAX'};
 	v.labels = {'Spin axis'};
 	v.field_name = {'Spacecraft spin axis'};
@@ -745,11 +770,11 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.sig = 'Velocity';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di'), v.cs = {'ISR2'};
-	else, v.cs = {'GSE'};
+    else v.cs = {'GSE'};
 	end
 	v.units =  {'km/s'};
 	v.si_conv = {'1e3>m/s'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'V'};
 	v.labels = v.name;
 	v.label_1 = {'"Vx", "Vy", "Vz"'};
@@ -770,11 +795,11 @@ elseif regexp(vs,'^(di)?R[1-4]$')
 	v.sig = 'Position';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di'), v.cs = {'ISR2'};
-	else, v.cs = {'GSE'};
+    else v.cs = {'GSE'};
 	end
 	v.units =  {'km'};
 	v.si_conv = {'1e3>m'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'R'};
 	v.labels = v.name;
 	v.label_1 = {'"Rx", "Ry", "Rz"'};
@@ -804,7 +829,7 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 	end
  	v.units =  {'cc'};
 	v.si_conv = {'1.0e6>1/m^6'};
-	v.size = [1];
+	v.size = 1;
 	v.name = {'N'};
 	v.labels = v.name;
 	v.com = '';
@@ -822,7 +847,7 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	v.frame = 'na';
 	v.cs = {'na'};
 	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular';
-	else, comp = 'par'; cf = 'Parallel';
+    else comp = 'par'; cf = 'Parallel';
 	end
 	if vvs(findstr(vvs,'C')+1)=='h' % characters after 'C'
 		v.sig = ['T_' comp];
@@ -835,7 +860,7 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	end
  	v.units =  {'mK'};
 	v.si_conv = {'1.0e6>K'};
-	v.size = [1];
+	v.size = 1;
 	v.name = {['T_' comp]};
 	v.labels = v.name;
 	v.com = '';
@@ -868,7 +893,7 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 	end
  	v.units =  {'km/s'};
 	v.si_conv = {'1.0e3>m/s'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'V'};
 	v.labels = v.name;
 	v.label_1 = {'"Vx", "Vy", "Vz"'};
@@ -903,7 +928,7 @@ elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
 	end
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'E'};
 	v.labels = v.name;
 	v.label_1 = {'"Ex", "Ey", "Ez"'};
@@ -941,7 +966,7 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	end
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'E'};
 	v.labels = v.name;
 	v.label_1 = {'"Ex", "Ey", "Ez"'};
@@ -968,7 +993,7 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	end
  	v.units =  {'nT'};
 	v.si_conv = {'1.0e-9>T'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'B'};
 	v.labels = v.name;
 	v.label_1 = {'"Bx", "By", "Bz"'};
@@ -996,7 +1021,7 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	end
  	v.units =  {'nT'};
 	v.si_conv = {'1.0e-9>T'};
-	v.size = [3];
+	v.size = 3;
 	v.name = {'B'};
 	v.labels = v.name;
 	v.label_1 = {'"Bx", "By", "Bz"'};
@@ -1021,9 +1046,9 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 		v.lev = 0;
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% ADDITIONAL HELP IN PLOTTING, NOT PARTICULAR TOCLUSTER 
+% ADDITIONAL HELP IN PLOTTING, NOT SPECIFIC TO CLUSTER 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(vs,'B') | strcmp(vs,'j') | strcmp(vs,'jz') | strcmp(vs,'jxB')
+elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')
 	v.data = 1;
 	v.cl_id = '';
 	v.inst = NaN;
@@ -1071,7 +1096,7 @@ else
 		if v.lev<2
 			disp(['getData q   : ' v.quant ]);
 			if v.lev, disp('getData cl  : ClusterProc');
-			else, disp('getData cl  : ClusterDB');
+            else disp('getData cl  : ClusterDB');
 			end
 		else
 			disp('getData     : manual processing');
@@ -1095,4 +1120,4 @@ end
 function r = is14(s)
 
 r = 0;
-if s=='1' | s=='2' | s=='3' | s=='4', r = 1; end
+if s=='1' || s=='2' || s=='3' || s=='4', r = 1; end
