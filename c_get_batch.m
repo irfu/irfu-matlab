@@ -19,7 +19,8 @@ function c_get_batch(st,dt,varargin)
 %   // default: 1:4
 % 'vars' - variables to get data for (see help ClusterDB/getData)
 %   supplied as a string separated by '|' or as a cell array;
-%   // default: {'e','p','a','sax','r','v','whip','b','edi', ...
+%   // default: {'tmode','fdm','efwt','ibias','p','e','a','sax',...
+%   'r','v','b','edi','ncis','vcis','bfgm'}
 %   'ncis','vcis','vce','bfgm'}
 %   // + {'dies','die','brs','br'} which are always added. Use 'noproc' 
 %   to skip them.
@@ -45,7 +46,7 @@ function c_get_batch(st,dt,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004-2006 Yuri Khotyaintsev
 
 persistent st_vector dt_sec;
 
@@ -62,7 +63,7 @@ elseif nargin==0,
   dt=dt_sec;
 elseif nargin==1,
   error('do not udnerstand what to do with the argument, see help');
-else, have_options = 0;
+else have_options = 0;
 end
 
 sp = '.';
@@ -80,7 +81,7 @@ if have_options
 	if isnumeric(args{1}), 
 		sc_list = args{1};
 		if length(args)>1, args = args(2:end);
-		else, have_options = 0;
+        else have_options = 0;
 		end
 	end
 end
@@ -91,23 +92,23 @@ while have_options
 		switch(args{1})
 		case 'sp'
 			if ischar(args{2}), sp = args{2};
-			else, irf_log('fcal','wrongArgType : sp must be string')
+            else irf_log('fcal','wrongArgType : sp must be string')
 			end
 		case 'sdir'
 			if ischar(args{2}), sp = [args{2} '/' irf_fname(st)];
-			else, irf_log('fcal','wrongArgType : sdir must be string')
+            else irf_log('fcal','wrongArgType : sdir must be string')
 			end
 		case 'dp'
 			if ischar(args{2}), dp = args{2};
-			else, irf_log('fcal','wrongArgType : dp must be string')
+            else irf_log('fcal','wrongArgType : dp must be string')
 			end
 		case 'db'
 			if ischar(args{2}), db = args{2};
-			else, irf_log('fcal','wrongArgType : db must be string')
+            else irf_log('fcal','wrongArgType : db must be string')
 			end
 		case 'sc_list'
 			if isnumeric(args{2}), sc_list = args{2};
-			else, irf_log('fcal','wrongArgType : sc_list must be numeric')
+            else irf_log('fcal','wrongArgType : sc_list must be numeric')
 			end
 		case 'vars'
 			if ischar(args{2})
@@ -115,7 +116,7 @@ while have_options
 				p = tokenize(args{2},'|');
 				for i=1:length(p), vars(length(vars)+1) = p(i); end
 			elseif iscell(args{2}), vars = args{2};
-			else, irf_log('fcal','wrongArgType : vars must be eather string or cell array')
+            else irf_log('fcal','wrongArgType : vars must be eather string or cell array')
 			end
 		case 'varsproc'
 			if ischar(args{2})
@@ -123,18 +124,18 @@ while have_options
 				p = tokenize(args{2},'|');
 				for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end
 			elseif iscell(args{2}), varsProc = args{2};
-			else, irf_log('fcal','wrongArgType : varsproc must be eather string or cell array')
+            else irf_log('fcal','wrongArgType : varsproc must be eather string or cell array')
 			end
 		case 'extrav'
 			if ischar(args{2})
 				p = tokenize(args{2},'|');
 				for i=1:length(p), vars(length(vars)+1) = p(i); end
 			elseif iscell(args{2}), vars = [vars args{2}];
-			else, irf_log('fcal','wrongArgType : extrav must be eather string or cell array')
+            else irf_log('fcal','wrongArgType : extrav must be eather string or cell array')
 			end
 		case 'cdb'
 			if (isa(args{2},'ClusterDB')), cdb = args{2};
-			else, irf_log('fcal','wrongArgType : cdb must be a ClusterDB object')
+            else irf_log('fcal','wrongArgType : cdb must be a ClusterDB object')
 			end
 		case 'nosrc'
 			dosrc = 0; l = 1;
@@ -155,7 +156,7 @@ end
 
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
-if isempty(vars) & isempty(varsProc)
+if isempty(vars) && isempty(varsProc)
 	vars = {'tmode','fdm','efwt','ibias','p','e','a','sax',...
 		'r','v','b','edi','ncis','vcis','bfgm'};
 end
@@ -166,7 +167,7 @@ if ~isempty(vars)
 		end
 	end
 	
-	if doproc & isempty(varsProc)
+	if doproc && isempty(varsProc)
 		if L_find(vars,{'e','p'})
 			varsProc = [{'whip','sweep','bdump'} varsProc];
 		end
@@ -180,7 +181,7 @@ if ~isempty(vars)
 	end
 end
 
-if ~isempty(varsProc) & doproc
+if ~isempty(varsProc) && doproc
 	cp=ClusterProc(get(cdb,'sp'));
 	for cl_id=sc_list
 		for k=1:length(varsProc)
@@ -193,7 +194,7 @@ end
 function ii = L_find(list,s_list)
 ii = [];
 if isempty(list), return, end
-if isstr(s_list)
+if ischar(s_list)
 	% fast search
 	for j=1:length(list)
 		if strcmp(list{j},s_list), ii = j; return, end
