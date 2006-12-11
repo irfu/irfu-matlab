@@ -47,9 +47,9 @@ irf_log('proc',['X>0, R>7R_E: ' epoch2iso(start_time,1) ' -- ' ...
 
 % Fetch ACE data
 ISTP_PATH = '/data/istp';
-ace_B = irf_istp_get(ISTP_PATH, start_time -60*60, dt +120*60, 'ace', 'b');
-ace_V = irf_istp_get(ISTP_PATH, start_time -60*60, dt +120*60, 'ace', 'v');
-ace_N = irf_istp_get(ISTP_PATH, start_time -60*60, dt +120*60, 'ace', 'n');
+ace_B = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'b');
+ace_V = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'v');
+ace_N = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'n');
 
 % Create new timeline with 30 min step
 st_a = fromepoch(start_time);
@@ -62,31 +62,50 @@ irf_log('proc',['subint: ' epoch2iso(start_time,1) ' -- ' ...
 %v_ttt = []; b_ttt = []; n_ttt = [];
 r_prev = [];
 for t=st:1800:st+dt
-	%irf_log('proc',['time: ' epoch2iso(t,1)])
+	irf_log('proc',['time: ' epoch2iso(t,1)])
 	
 	% ACE time shift
-	if isempty(ace_V), ace_dt = ACE_DT_DEF;
+	if isempty(ace_V), dt_ace = ACE_DT_DEF;
 	else
 		v_tmp = linear_solve(ace_V, t, ACE_DT_DEF);
 		%irf_log('proc',['ace_v_tmp: ' num2str(round(v_tmp)) ' km/s'])
-		dt_ace = ACE_X_POS/v_tmp;
+		if isnan(v_tmp)
+			dt_ace = ACE_DT_DEF;
+			irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
+		else dt_ace = ACE_X_POS/v_tmp;
+		end
 	end
 	%irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
 	
 	if isempty(ace_V), vx_tmp = ACE_VX_DEF;
-	else vx_tmp = linear_solve(ace_V, t, dt_ace);
+	else
+		vx_tmp = linear_solve(ace_V, t, dt_ace);
+		if isnan(vx_tmp)
+			irf_log('proc',['ace_vx: NaN at ' epoch2iso(t,1)])
+			vx_tmp = ACE_VX_DEF;
+		end
 	end
 	%irf_log('proc',['ace_vx_tmp: ' num2str(vx_tmp,'%.2f') ' km/s'])
 	%v_ttt = [v_ttt; t-dt_ace vx_tmp];
 	
 	if isempty(ace_V), n_tmp = ACE_N_DEF;
-	else n_tmp = linear_solve(ace_N, t, dt_ace);
+	else
+		n_tmp = linear_solve(ace_N, t, dt_ace);
+		if isnan(n_tmp)
+			irf_log('proc',['ace_n : NaN at ' epoch2iso(t,1)])
+			n_tmp = ACE_N_DEF;
+		end
 	end
 	%irf_log('proc',['ace_nn_tmp: ' num2str(n_tmp,'%.2f') ' cc'])
 	%n_ttt = [n_ttt; t-dt_ace n_tmp];
 	
 	if isempty(ace_V), bz_tmp = ACE_BZ_DEF;
-	else bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
+	else
+		bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
+		if isnan(bz_tmp)
+			irf_log('proc',['ace_bz: NaN at ' epoch2iso(t,1)])
+			bz_tmp = ACE_BZ_DEF;
+		end
 	end
 	%irf_log('proc',['ace_vx_tmp: ' num2str(bz_tmp,'%.2f') ' nT'])
 	%b_ttt = [b_ttt; t-dt_ace bz_tmp];
