@@ -94,9 +94,9 @@ for k=1:length(st)
 	data_tmp = irf_cdf_read([data_path '/' sc_id '/' data_subdir '/' file_mask '*'], ...
 			var_s,'latest');
 	
-	if data_tmp
+	if ~isempty(data_tmp)
 		if dt(k)~=86400, data_tmp = irf_tlim(data_tmp,st(k) + [0 dt(k)]); end
-		if data, data = [data; data_tmp];
+		if ~isempty(data), data = [data; data_tmp];
 		else data = data_tmp;
 		end
 	end
