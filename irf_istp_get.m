@@ -101,4 +101,4 @@ for k=1:length(st)
 		end
 	end
 end
-if ~data, irf_log('dsrc','No data'), end
+if isempty(data), irf_log('dsrc','No data'), end
