@@ -52,7 +52,7 @@ for o = 1:length(ORB);
     irf_log('proc',['Mp OUT: ' epoch2iso(mp_out,1)...
             ' IN:' epoch2iso(mp_in,1)])
 	
-	figure
+	figure(162), clf
     set(gcf,'Position',[520   224   787   876])
     pp = 0;
 	for cl_id = 1:4
@@ -93,7 +93,7 @@ for o = 1:length(ORB);
         if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
     end
     orient tall
-	fn = sprintf('C_MP_%s',irf_fname(st));
+	fn = sprintf('C_MP_%s',irf_fname(ORB(o,1)));
 	irf_log('save',['saving ' fn])
 	print( gcf, '-dpdf', fn)
 end
