@@ -42,7 +42,7 @@ for t=t0:SPLIT_INT*3600:t1
 	good_dir = {};
 	for j=1:length(d)
 		if ~d(j).isdir, continue, end
-		if is_valid_dirname(d(j).name), good_dir = {good_dir{:} d(j).name}; end
+		if caa_is_valid_dirname(d(j).name), good_dir = {good_dir{:} d(j).name}; end
 	end
 	if isempty(good_dir), continue, end
 	
