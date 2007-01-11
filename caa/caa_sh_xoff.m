@@ -118,13 +118,13 @@ if ~isempty(E3) && ~isempty(CE3)
         if on, hold on, end
         irf_plot(dEx,'g')
         dEx3 = mean(dEx(:,2));
-    end
-    if isempty(Eref)
-        Eref = E3(:,1:2);
-        Eref(:,2) = Eref(:,2) - dEx3;
-    else
-        Eref(:,2) = (Eref(:,2) + E3(:,2) - dEx3)/2;
-        irf_log('proc','using two signals')
+        if isempty(Eref)
+            Eref = E3(:,1:2);
+            Eref(:,2) = Eref(:,2) - dEx3;
+        else
+            Eref(:,2) = (Eref(:,2) + E3(:,2) - dEx3)/2;
+            irf_log('proc','using two signals')
+        end
     end
 end
 
