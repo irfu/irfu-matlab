@@ -13,7 +13,8 @@ function out = epoch2iso(t,fmt)
 %
 % $Id$
 
-% Copyright 2004, 2005 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
+
 if nargin<2, fmt = 0; end
 
 if length(t)<5
@@ -63,7 +64,7 @@ else
 	
 	for j=1:length(mins)
 		if j==length(mins), ii = find(t>=mins(j));
-		else, ii = find(t>=mins(j) & t<mins(j+1));
+        else ii = find(t>=mins(j) & t<mins(j+1));
 		end;
 		if isempty(ii), continue, end
 		if j_start
