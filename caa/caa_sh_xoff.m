@@ -106,9 +106,9 @@ if ~isempty(E1) && ~isempty(CE1)
         dEx(:,2) = E1(ii,2) - CE1(ii,2);
         irf_plot(dEx,'k'), on = 1;
         dEx1 = mean(dEx(:,2));
+        Eref = E1(:,1:2);
+        Eref(:,2) = Eref(:,2) - dEx1;
     end
-    Eref = E1(:,1:2);
-    Eref(:,2) = Eref(:,2) - dEx1;
 end
 if ~isempty(E3) && ~isempty(CE3)
     ii = find( abs(CE3(:,3)-E3(:,3)) < DEY );
