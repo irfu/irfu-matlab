@@ -1,4 +1,4 @@
-function caa_sh_xoff(st,dt)
+function [dE1,dE2,dE3,dE4] = caa_sh_xoff(st,dt)
 %CAA_SH_XOFF  sunward offset in the magnetosheath/sw
 %
 % caa_sh_xoff(st,dt)
@@ -11,8 +11,10 @@ function caa_sh_xoff(st,dt)
 
 % Copyright 2007 Yuri Khotyaintsev
 
-STEP = 600;
-DEY = 0.5; % good Ey correspondence in mV/m
+STEP = 600; % Averaging window
+DEY = 0.5;  % Good Ey correspondence in mV/m
+
+dE1 = NaN; dE2 = NaN; dE3 = NaN; dE4 = NaN;
 
 dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
@@ -101,27 +103,27 @@ if ~isempty(E1) && ~isempty(CE1)
     ii = find( abs(CE1(:,3)-E1(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E1(ii,1:2);
-        dEx(:,2) = CE1(ii,2)-E1(ii,2);
+        dEx(:,2) = E1(ii,2) - CE1(ii,2);
         irf_plot(dEx,'k'), on = 1;
         dEx1 = mean(dEx(:,2));
     end
     Eref = E1(:,1:2);
-    Eref(:,2) = Eref(:,2) + dEx1;
+    Eref(:,2) = Eref(:,2) - dEx1;
 end
 if ~isempty(E3) && ~isempty(CE3)
     ii = find( abs(CE3(:,3)-E3(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E3(ii,1:2);
-        dEx(:,2) = CE3(ii,2)-E3(ii,2);
+        dEx(:,2) = E3(ii,2) - CE3(ii,2);
         if on, hold on, end
         irf_plot(dEx,'g')
         dEx3 = mean(dEx(:,2));
     end
     if isempty(Eref)
         Eref = E3(:,1:2);
-        Eref(:,2) = Eref(:,2) + dEx3;
+        Eref(:,2) = Eref(:,2) - dEx3;
     else
-        Eref(:,2) = (Eref(:,2) + E3(:,2))/2;
+        Eref(:,2) = (Eref(:,2) + E3(:,2) - dEx3)/2;
         irf_log('proc','using two signals')
     end
 end
@@ -174,3 +176,5 @@ if ~isempty(Eref)
 end
 title(leg), ylabel('Ex [mV/m]')
 irf_zoom(st+[0 dt],'x',h)
+
+if nargout<=1, dE1 = [dE1 dE2 dE3 dE4]; end
