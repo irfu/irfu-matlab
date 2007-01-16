@@ -6,6 +6,9 @@ function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % CEF file is written to a current directory. Data is supposed to be also 
 % there, if SP is not specified.
 %
+% QUALITY - number 0..4 (3 is good for publication, subject to PI approval)
+% DATA_VERSION - string, for example '01'
+%
 % See also C_EXPORT_ASCII
 %
 % $Id$
