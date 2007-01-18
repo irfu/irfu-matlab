@@ -1,9 +1,11 @@
 function [res_l, res_s] = caa_errid2str(id)
-%CAA_ERRID2STR convert error ID to string
+%CAA_ERRID2STR  convert ns_ops error ID to string
 %
 % [res_l, res_s] = caa_errid2str(id)
 %
 % $Id$
+
+% Copyright 2006-2007 Yuri Khotyaintsev
 
 switch id
 case 0
