@@ -69,8 +69,9 @@ else
 	E( E(:,2)==value ,2:end) = NaN;
 	
 	ttt = E(:,2);
+	ii = find(isnan(ttt));
 	ttt(~isnan(ttt)) = 1;
-	ttt(isnan(ttt)) = 0;
+	ttt(ii) = 0;
 	ii = irf_find_diff(ttt);
 	
 	if isempty(ii) && ttt(1)==0
