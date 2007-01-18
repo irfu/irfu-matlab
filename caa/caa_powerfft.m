@@ -12,15 +12,15 @@ function [outspecrec,outPxx,outF] = caa_powerfft(data,nfft,sfreq,overlap)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 error(nargchk(3,4,nargin))
 if nargin<4, overlap = 0; end
-if overlap<0 | overlap>100, error('OVERLAP must be in a range 0..99'), end
+if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
 ii = find(~isnan(data(:,1)));
 if isempty(ii), error('time is NaN')
-else, ts = data(ii(1),1);
+else ts = data(ii(1),1);
 end
 
 % Number of intervals must be computed from time
@@ -29,14 +29,14 @@ ncomp = size(data,2) - 1;
 
 % Check if there is enough data
 if nint<1,
-	F = [];
-	Pxx = [];
+	outF = [];
+	outPxx = [];
 	outspecrec = [];
 	return
 end
 
 if nfft/2==fix(nfft/2), nf = nfft/2;
-else, nf = nfft/2 + 1;
+else nf = nfft/2 + 1;
 end
 specrec.f = sfreq*((1:nf) -1)'/nfft;
 for jj=1:ncomp, specrec.p(jj) = {zeros(nint,nf)}; end
@@ -54,11 +54,11 @@ for jj=1:nint
 	if isempty(X), for comp=1:ncomp,specrec.p{comp}(jj,:) = NaN;end
 	else
 		for comp=2:ncomp+1
-			if ~isempty(find(~isnan(X(:,comp))))
+			if ~isempty(~isnan(X(:,comp)))
 				ff = fft(detrend(X(:,comp)) .* w,nfft);
 				pf = ff .*conj(ff) *nnorm;
 				specrec.p{comp-1}(jj,:) = pf(1:nf);
-			else, specrec.p{comp-1}(jj,:) = NaN;
+			else specrec.p{comp-1}(jj,:) = NaN;
 			end
 		end
 	end
@@ -66,7 +66,7 @@ for jj=1:nint
 end
 
 if nargout==1, outspecrec = specrec;
-else, 
+else
 	outspecrec = specrec.t;
 	outPxx = specrec.p;
 	outF = specrec.f;
@@ -86,7 +86,7 @@ function out = order_data(in,ndata,sfreq,ts)
 		if length(ii)>ndata*.1
 			out(:,comp) = NaN;
 		else
-			m = mean(out(find(~isnan(out(:,comp))),comp));
+			m = mean(out(~isnan(out(:,comp)),comp));
 			out(ii,comp) = m;
 		end
 	end
