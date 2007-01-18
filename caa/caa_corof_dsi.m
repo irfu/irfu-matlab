@@ -1,15 +1,16 @@
 function new_data = caa_corof_dsi(data,Dx,Dy,Da)
-%CAA_COROF_DSI correct offsets in DSI
+%CAA_COROF_DSI  correct offsets in DSI(ISR2)
 %
 % new_data = caa_corof_dsi(data,Dx,Dy,Da)
 % new_data = caa_corof_dsi(data,Ddsi,Damp)
-% Ddsi is complex: Dx = real(Ddsi), Dy = imag(Ddsi)
+%   Ddsi is complex: Dx = real(Ddsi), Dy = imag(Ddsi)
+%
 % The followig computation is performed:
 % newdata = Da*(data_x-Dx, data_y-Dy)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
 
 if nargin ==3,
 	Da = Dy;
