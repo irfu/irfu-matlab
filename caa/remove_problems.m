@@ -1,27 +1,27 @@
 %script remove_problems
 %
-%Input: signal,probe,cl_id,problems
-%Output: res
+% Input: signal,probe,cl_id,problems
+% Output: res
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 if ~exist('CAA_MODE','var'), CAA_MODE = c_ctl(0,'caa_mode'); end
 
 res = signal;
 if probe>10
 	switch probe
-		case 12
-			p_list = [1,2];
-		case 32
-			p_list = [3,2];
-		case 34
-			p_list = [3,4];
-		otherwise
-			error('Unknown probe')
+	case 12
+		p_list = [1,2];
+	case 32
+		p_list = [3,2];
+	case 34
+		p_list = [3,4];
+	otherwise
+		error('Unknown probe')
     end
-elseif probe>0 & probe <=4, p_list = probe;
+elseif probe>0 && probe <=4, p_list = probe;
 else
 	error('Unknown probe')
 end

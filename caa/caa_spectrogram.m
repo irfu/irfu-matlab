@@ -8,7 +8,7 @@ function hout = caa_spectrogram(h,specrec,Pxx,F)
 %
 % $Id$
 
-% Copyright 2005,2006 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 error(nargchk(1,4,nargin))
 
@@ -30,7 +30,7 @@ if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end,
 for comp=1:min(length(h),ncomp)
 	
 	for jj=1:ndata
-		specrec.p{comp}(jj,find(isnan(specrec.p{comp}(jj,:)))) = 1e-15;
+		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
 	end
 	
     ud=get(gcf,'userdata');

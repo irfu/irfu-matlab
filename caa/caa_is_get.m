@@ -24,6 +24,8 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 %
 % $Id$
 
+% Copyright 2004-2007 Yuri Khotyaintsev
+
 % TODO: we may try to open persistent connection when ISDAT will get stable
 % TODO: can be use Mat_DbErrorString
 
@@ -37,11 +39,11 @@ if nargin < 7, sen = ' '; end
 
 % Check imput
 if ~ischar(db_s), error('DB_S must be a string'), end
-if ~isnumeric(st) | length(st) ~= 1
+if ~isnumeric(st) || length(st) ~= 1
 	error('ST must be a double number')
 end
 if ~isnumeric(st), error('DT must be a number'), end
-if ~isnumeric(cli)| cli<0 | cli>4, error('CL_ID must be a number 1..4'), end
+if ~isnumeric(cli) || cli<0 || cli>4, error('CL_ID must be a number 1..4'), end
 if ~ischar(sig), error('SIG must be a string'), end
 if ~ischar(sen), error('SEN must be a string'), end
 if ~ischar(cha), error('CHA must be a string'), end
@@ -69,7 +71,7 @@ while nret<MAXNRET
 	pause(SLEEPINT)
 end
 
-if iserr==0 & ~isempty(d), return, end
+if iserr==0 && ~isempty(d), return, end
 
 if is_nodata_err(iserr)
 	irf_log('dsrc',['ISDAT : ' is_err2str(iserr)])
@@ -138,10 +140,10 @@ switch err_id
 	case 29 % DbBAD_FILE
 		res = 'file system error, (missing file or wrong permissions).';
 	otherwise
-		res = 'unknown error'
+		res = 'unknown error';
 end
 
 function res = is_nodata_err(err_id)
 res = 0;
 % DbBAD_DROP, DbBAD_TIME and DbBAD_EOF are 'no data' errors
-if err_id==1 | err_id==2 | err_id==5, res = 1; end
+if err_id==1 || err_id==2 || err_id==5, res = 1; end

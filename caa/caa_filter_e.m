@@ -7,7 +7,7 @@ function res = caa_filter_e(data,wind)
 %
 % $Id$
 
-% Copyright 2005,2006 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 MAXDATA = 100000;
 
@@ -36,7 +36,7 @@ ind = round((data(:,1)-data(1,1))*sf+1);
 if 0
 	E = ones(ndata,nkomp)*value;
 	E(ind,:) = data(:,2:end);
-	E(find(E(:,1)==value),:) = NaN;
+	E( E(:,1)==value ,:) = NaN;
 
 	ttt = ones(nw2,nkomp)*NaN;
 	E_tmp = [ttt; E; ttt];
@@ -44,7 +44,7 @@ if 0
 	
 	n_start = 1;
 	if ndata>MAXDATA; n_end = MAXDATA;
-	else, n_end = ndata;
+	else n_end = ndata;
 	end
 	
 	EE = zeros(n_end,2*nw2+1);
@@ -66,15 +66,14 @@ else
 	E = ones(ndata,nkomp+1)*value;
 	E(:,1) = linspace(data(1,1),data(1,1)+(ndata-1)/sf,ndata)';
 	E(ind,2:end) = data(:,2:end);
-	E(find(E(:,2)==value),2:end) = NaN;
+	E( E(:,2)==value ,2:end) = NaN;
 	
 	ttt = E(:,2);
-	ii = find(isnan(ttt));
 	ttt(~isnan(ttt)) = 1;
-	ttt(ii) = 0;
+	ttt(isnan(ttt)) = 0;
 	ii = irf_find_diff(ttt);
 	
-	if isempty(ii) & ttt(1)==0
+	if isempty(ii) && ttt(1)==0
 		irf_log('proc','data is NaN')
 		res = [];
 		return

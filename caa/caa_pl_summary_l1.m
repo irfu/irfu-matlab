@@ -1,5 +1,5 @@
 function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
-%CAA_PL_SUMMARY_L1 CAA summary plot for L1 & L2 P data & EF
+%CAA_PL_SUMMARY_L1  CAA summary plot for L1 & L2 P data & EF
 %
 % caa_pl_summary_l1(iso_t,dt,sdir,[options])
 %   options:
@@ -14,7 +14,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
@@ -185,9 +185,9 @@ for cli=1:4
 	axes(h(cli))
 	hold on
 	c_eval('spec=spec?;',cli)
-	if ~isempty(spec), for k=1:length(spec)
-		caa_spectrogram(h(cli),spec{k})
-	end, end
+	if ~isempty(spec)
+		for k=1:length(spec), caa_spectrogram(h(cli),spec{k}), end
+	end
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
 	set(gca,'YTick',ytick,'YScale','log')
 	grid
