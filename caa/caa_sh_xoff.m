@@ -1,11 +1,11 @@
-function [dE1,dE2,dE3,dE4] = caa_sh_xoff(st,dt)
-%CAA_SH_XOFF  sunward offset in the magnetosheath/sw
+function [dE, dAmp] = caa_sh_xoff(st,dt)
+%CAA_SH_XOFF  sunward offset and amplitude correction in the sh/sw
 %
 % caa_sh_xoff(st,dt)
 %
 % Study sunward offset (X GSE) by comparing EFW data with CIS HIA
 %
-% See also CAA_SH_PLAN
+% See also CAA_SH_PLAN, CAA_COROF_DSI
 %
 % $Id$
 
@@ -15,6 +15,7 @@ STEP = 600; % Averaging window
 DEY = 0.5;  % Good Ey correspondence in mV/m
 
 dE1 = NaN; dE2 = NaN; dE3 = NaN; dE4 = NaN;
+dAmp1 = NaN; dAmp2 = NaN; dAmp3 = NaN; dAmp4 = NaN;
 
 dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
@@ -68,7 +69,7 @@ else E4 = [];
 end
 
 tt = [1.0097e+09 1 ;1.0097e+09+1 1 ;];
-h = irf_plot({tt,tt,tt,tt,tt});
+h = irf_plot({tt,tt,tt,tt,tt,tt});
 
 on = 0;
 for co=1:2
@@ -103,26 +104,31 @@ if ~isempty(E1) && ~isempty(CE1)
     ii = find( abs(CE1(:,3)-E1(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E1(ii,1:2);
-        dEx(:,2) = E1(ii,2) - CE1(ii,2);
+		dAmp = find_damp(E1(ii,3), CE1(ii,3));
+        dEx(:,2) = dAmp*E1(ii,2) - CE1(ii,2);
         irf_plot(dEx,'k'), on = 1;
         dEx1 = mean(dEx(:,2));
-        Eref = E1(:,1:2);
-        Eref(:,2) = Eref(:,2) - dEx1;
+        Eref = E1(:,1:3);
+        Eref(:,2) = dAmp*Eref(:,2) - dEx1;
+		Eref(:,3) = dAmp*Eref(:,3);
     end
 end
 if ~isempty(E3) && ~isempty(CE3)
     ii = find( abs(CE3(:,3)-E3(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E3(ii,1:2);
-        dEx(:,2) = E3(ii,2) - CE3(ii,2);
+		dAmp = find_damp(E3(ii,3), CE3(ii,3));
+        dEx(:,2) = dAmp*E3(ii,2) - CE3(ii,2);
         if on, hold on, end
         irf_plot(dEx,'g')
         dEx3 = mean(dEx(:,2));
         if isempty(Eref)
-            Eref = E3(:,1:2);
-            Eref(:,2) = Eref(:,2) - dEx3;
+            Eref = E3(:,1:3);
+            Eref(:,2) = dAmp*Eref(:,2) - dEx3;
+			Eref(:,3) = dAmp*Eref(:,3);
         else
-            Eref(:,2) = (Eref(:,2) + E3(:,2) - dEx3)/2;
+            Eref(:,2) = ( Eref(:,2) + dAmp*E3(:,2) - dEx3 )/2;
+			Eref(:,3) = ( Eref(:,3) + dAmp*E3(:,3) )/2;
             irf_log('proc','using two signals')
         end
     end
@@ -133,48 +139,87 @@ set(gca,'YLimMode','auto', 'XLimMode','auto','XTickLabel','')
 xlabel('')
 ylabel('dEx [mV/m]')
 
-axes(h(4)), cla
-c_pl_tx('Ps?')
-set(gca,'XTickLabel','')
-xlabel('')
-ylabel('Sc pot [-V]')
-
-axes(h(5)), cla
 if ~isempty(Eref)
-    irf_plot(Eref,'o'), hold on
-    leg = '';
+    axes(h(5)), cla, irf_plot(Eref(:,[1 2]),'o'), hold on
+	axes(h(6)), cla, irf_plot(Eref(:,[1 3]),'o'), hold on
+    legx = ''; legy = '';
     if ~isempty(E1)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E1(:,2)) );
-        dE1 = mean(E1(ii,2)-Eref(ii,2)); 
-        irf_plot([E1(:,1) E1(:,2)-dE1],'k')
-        leg = num2str(dE1,'dEx1 = %.2f');
+		if ~isempty(ii)
+			dAmp1 = find_damp(E1(ii,3), Eref(ii,3));
+			dE1 = mean(dAmp1*E1(ii,2)-Eref(ii,2))/dAmp1;
+			axes(h(5)), irf_plot([E1(:,1) dAmp1*E1(:,2)-dE1],'k')
+			axes(h(6)), irf_plot([E1(:,1) dAmp1*E1(:,3)],'k')
+			legx = num2str(dE1,'dEx1 = %.2f');
+			legy = num2str(dAmp1,'dAm1 = %.2f');
+		end
     end
     if ~isempty(E2)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E2(:,2)) );
-        dE2 = mean(E2(ii,2)-Eref(ii,2)); 
-        irf_plot([E2(:,1) E2(:,2)-dE2],'r')
-        l = num2str(dE2,'dEx2 = %.2f');
-        if isempty(leg), leg = l; else leg = [leg ', ' l]; end
+		if ~isempty(ii)
+			dAmp2 = find_damp(E2(ii,3), Eref(ii,3));
+			dE2 = mean(dAmp2*E2(ii,2)-Eref(ii,2))/dAmp2;
+			axes(h(5)), irf_plot([E2(:,1) dAmp2*E2(:,2)-dE2],'r')
+			axes(h(6)), irf_plot([E2(:,1) dAmp2*E2(:,3)],'r')
+			l = num2str(dE2,'dEx2 = %.2f');
+			if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+			l = num2str(dAmp2,'dAm2 = %.2f');
+			if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+		end
     end
     if ~isempty(E3)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E3(:,2)) );
-        dE3 = mean(E3(ii,2)-Eref(ii,2)); 
-        irf_plot([E3(:,1) E3(:,2)-dE3],'g')
-        l = num2str(dE3,'dEx3 = %.2f');
-        if isempty(leg), leg = l; else leg = [leg ', ' l]; end
+		if ~isempty(ii)
+			dAmp3 = find_damp(E3(ii,3), Eref(ii,3));
+			dE3 = mean(dAmp3*E3(ii,2)-Eref(ii,2))/dAmp3; 
+			axes(h(5)), irf_plot([E3(:,1) dAmp3*E3(:,2)-dE3],'g')
+			axes(h(6)), irf_plot([E3(:,1) dAmp3*E3(:,3)],'g')
+			l = num2str(dE3,'dEx3 = %.2f');
+			if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+			l = num2str(dAmp3,'dAm3 = %.2f');
+			if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+		end
     end
     if ~isempty(E4)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E4(:,2)) );
-        dE4 = mean(E4(ii,2)-Eref(ii,2)); 
-        irf_plot([E4(:,1) E4(:,2)-dE4],'b')
-        l = num2str(dE4,'dEx4 = %.2f');
-        if isempty(leg), leg = l; else leg = [leg ', ' l]; end
+		if ~isempty(ii)
+			dAmp4 = find_damp(E4(ii,3), Eref(ii,3));
+			dE4 = mean(E4(ii,2)-Eref(ii,2));
+			axes(h(5)), irf_plot([E4(:,1) dAmp4*E4(:,2)-dE4],'b')
+			axes(h(6)), irf_plot([E4(:,1) dAmp4*E4(:,3)],'b')
+			l = num2str(dE4,'dEx4 = %.2f');
+			if isempty(legx), legx = l; else legx = [legx ', ' l]; end
+			l = num2str(dAmp4,'dAm4 = %.2f');
+			if isempty(legy), legy = l; else legy = [legy ', ' l]; end
+		end
     end
-    if ~isempty(CE1), irf_plot(CE1(:, [1 2]),'k+'), end
-    if ~isempty(CE3), irf_plot(CE3(:, [1 2]),'g+'), end
+    if ~isempty(CE1)
+		axes(h(5)), irf_plot(CE1(:, [1 2]),'k+')
+		axes(h(6)), irf_plot(CE1(:, [1 3]),'k+')
+	end
+    if ~isempty(CE3)
+		axes(h(5)), irf_plot(CE3(:, [1 2]),'g+')
+		axes(h(6)), irf_plot(CE3(:, [1 3]),'g+')
+	end
     hold off
 end
-title(leg), ylabel('Ex [mV/m]')
+title(h(5),legx), ylabel(h(5),'Ex [mV/m]')
+title(h(6),legy), ylabel(h(6),'Ey [mV/m]')
+
+axes(h(4)), cla
+c_pl_tx('Ps?')
+ylabel('Sc pot [-V]')
+
 irf_zoom(st+[0 dt],'x',h)
 
-if nargout<=1, dE1 = [dE1 dE2 dE3 dE4]; end
+dE = [dE1 dE2 dE3 dE4];
+dAmp = [dAmp1 dAmp2 dAmp3 dAmp4]
+
+function res = find_damp(Ey,CEy)
+% find amlitude correction factor by searching for 
+% minimum( std( ECISy -dAMP*Ey ) )
+
+damp = 1:0.025:1.4;
+dstd = damp;
+for i=1:length(damp), dstd(i)=std(CEy - damp(i)*Ey); end
+res = damp(dstd==min(dstd));
