@@ -1,9 +1,10 @@
-function [dE, dAmp] = caa_sh_xoff(st,dt)
+function [dE, dAmp, weight] = caa_sh_xoff(st,dt)
 %CAA_SH_XOFF  sunward offset and amplitude correction in the sh/sw
 %
-% caa_sh_xoff(st,dt)
+% [dE, dAmp, weight] = caa_sh_xoff(st,dt)
 %
-% Study sunward offset (X GSE) by comparing EFW data with CIS HIA
+% Study sunward offset (X GSE) and amplitude correction
+% factor by comparing EFW data with CIS HIA
 %
 % See also CAA_SH_PLAN, CAA_COROF_DSI
 %
@@ -16,6 +17,7 @@ DEY = 0.5;  % Good Ey correspondence in mV/m
 
 dE1 = NaN; dE2 = NaN; dE3 = NaN; dE4 = NaN;
 dAmp1 = NaN; dAmp2 = NaN; dAmp3 = NaN; dAmp4 = NaN;
+weight = 0;
 
 dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
@@ -140,6 +142,7 @@ xlabel('')
 ylabel('dEx [mV/m]')
 
 if ~isempty(Eref)
+	weight = length(find(~isnan(Eref(:,2))))/(dt/STEP+1);
     axes(h(5)), cla, irf_plot(Eref(:,[1 2]),'o'), hold on
 	axes(h(6)), cla, irf_plot(Eref(:,[1 3]),'o'), hold on
     legx = ''; legy = '';
@@ -193,11 +196,11 @@ if ~isempty(Eref)
 			if isempty(legy), legy = l; else legy = [legy ', ' l]; end
 		end
     end
-    if ~isempty(CE1)
+	if ~isempty(CE1)
 		axes(h(5)), irf_plot(CE1(:, [1 2]),'k+')
 		axes(h(6)), irf_plot(CE1(:, [1 3]),'k+')
 	end
-    if ~isempty(CE3)
+	if ~isempty(CE3)
 		axes(h(5)), irf_plot(CE3(:, [1 2]),'g+')
 		axes(h(6)), irf_plot(CE3(:, [1 3]),'g+')
 	end
@@ -209,11 +212,15 @@ title(h(6),legy), ylabel(h(6),'Ey [mV/m]')
 axes(h(4)), cla
 c_pl_tx('Ps?')
 ylabel('Sc pot [-V]')
+if ~isempty(Eref)
+	title(sprintf('%d reference points (%d%% data coverage)',...
+		length(find(~isnan(Eref(:,2)))), round(weight*100)))
+end
 
 irf_zoom(st+[0 dt],'x',h)
 
 dE = [dE1 dE2 dE3 dE4];
-dAmp = [dAmp1 dAmp2 dAmp3 dAmp4]
+dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
 
 function res = find_damp(Ey,CEy)
 % find amlitude correction factor by searching for 
