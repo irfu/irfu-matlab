@@ -1,9 +1,11 @@
-function data = c_efw_swwake(e,pair,phase_2,plotflag)
-%C_EFW_SWWAKE  Correct EFW for wake in the solar wind
+function [data, n_corrected] = c_efw_swwake(e,pair,phase_2,plotflag)
+%C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% data = c_efw_swwake(e,pair,pha)
+% [data, n_spins_corrected] = c_efw_swwake(e,pair,phase_2 [,plotflag])
 %
 % Wakes are identified by max derivative
+%
+% plotflag=0, no plotting of debug 
 %
 % $Id$
 
@@ -17,6 +19,8 @@ if nargin==4
 	end
 else plotflag = 0;
 end
+
+n_corrected = 0;
 
 if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
@@ -33,16 +37,26 @@ data = e;
 
 i0 = find(phase_2(:,2)==0);
 if isempty(i0), irf_log('proc','empty phase'), return, end
-if i0(end) == size(phase_2,1), i0=i0(1:end-1); end %last point has phase 0
 if length(i0)<5, irf_log('proc','not enough spins for correction'), return, end
 
+% Hack to add phase=360 at the end and phase=0 at the start of the interval
+% in order to try to correct these incomplete spins
+if phase_2(end,2)~=360 && ...
+		phase_2(i0(end),1)-phase_2(i0(end-1),1)<MAX_SPIN_PERIOD
+	phase_2 = [phase_2; phase_2(i0(end),1)*2-phase_2(i0(end-1),1) 0];
+end
+if phase_2(1,2)~=0 && phase_2(i0(2),1)-phase_2(i0(1),1)<MAX_SPIN_PERIOD
+	phase_2 = [phase_2(i0(1),1)*2-phase_2(i0(2),1) 0; phase_2];
+	i0 = find(phase_2(:,2)==0);
+end
+
+n_spins = length(i0);
 NPOINTS = 361;
 tt = zeros(NPOINTS,length(i0));
 ttime = tt;
 sf = c_efw_fsample(e,'hx');
 iok = [];
-n_spins = length(i0);
-n_corrected = 0;
+
 for in = 1:n_spins
 	ts = phase_2(i0(in),1);
 	i360 = find( phase_2(:,1)>ts & phase_2(:,1)<ts+MAX_SPIN_PERIOD & ...
@@ -71,11 +85,17 @@ for in = 1:n_spins
 			else dtmp = c_resamp(e(eind,:), ttime(:,in), 'spline');
 			end
 			tt(:,in) = dtmp(:,2);
-			if in>=5 && ~any(isnan(tt(1,in - (1:4) )))
-				if isempty(iok), iok = in-2;
-				else iok(end+1) = in-2;
-				end
-			end
+		end
+		
+		% Identify spins for which we attempt to correct wake
+		if (in>=6 && sum(isnan(tt(1,in - (0:1:5) )))<=1)
+			% We allow max one data gap within 6 spins
+			iok = [iok in-3];
+		end
+		if (in==n_spins || n_spins==5) && ~any(isnan(tt(1,in - (1:4) )))
+			% Special case when we have only 5 spins or
+			% it is the last spin we are working with
+			iok = [iok in-2];
 		end
 	end
 end
@@ -89,7 +109,20 @@ i1 = [];
 
 for in = iok
 	ts = ttime(1,in);
-	av12 = mean(tt(:, in + (-2:1:2) ),2);
+	if in==n_spins-2
+		% Last interval
+		idx = -2:1:2;
+	else
+		% Check for a data gap
+		nans = isnan(tt(1,in + (-2:1:3) ));
+		if any(nans)
+			idx = 1:6;
+			idx = idx(xor(idx,nans)) -3;
+		else idx = -2:1:2;
+		end
+	end
+	
+	av12 = mean(tt(:, in + (idx) ),2);
 
 	% Identify wakes by max derivative
 	d12 = diff(diff(av12));
@@ -99,7 +132,7 @@ for in = iok
 	end
 	d12 = w_ave(d12);
 	
-	% if i1 is coming not from the previous spin
+	% If i1 is coming not from the previous spin
 	if isempty(i1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
 		i1 = 1:1:361;
 	end
@@ -171,8 +204,15 @@ for in = iok
 	if in==iok(1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
 		% If the previous spin was not corrected
 		% we correct it here
-		cox = - (1:2);
-		n_corrected = n_corrected + 2;
+		if in==iok(1) && in>3
+			% We try to correct the spin at the start of the entire 
+			% intrval which usually has a data gap 
+			cox = - (1:3);
+			n_corrected = n_corrected + 3;
+		else
+			cox = - (1:2);
+			n_corrected = n_corrected + 2;
+		end
 	end
 	if in==iok(end) || (in~=iok(end) && in+1~=iok(find(iok==in)+1))
 		if ~isempty(cox)
@@ -180,8 +220,15 @@ for in = iok
 		else
 			irf_log('proc',['stop   interval at ' epoch2iso(ts,1)])
 		end
-		cox = [cox 1:2];
-		n_corrected = n_corrected + 2;
+		if in==iok(end) && n_spins-in>=3
+			% We try to correct the spin at the end of the entire 
+			% intrval which usually has a data gap 
+			cox = [cox 1:3];
+			n_corrected = n_corrected + 3;
+		else
+			cox = [cox 1:2];
+			n_corrected = n_corrected + 2;
+		end
 	elseif ~isempty(cox)
 		irf_log('proc',['start  interval at ' epoch2iso(ts,1)])
 	end
@@ -209,7 +256,7 @@ irf_log('proc',['corrected ' num2str(n_corrected) ' out of ' ...
 	num2str(n_spins) ' spins'])
 
 function av = w_ave(x)
-%weinghted average
+% Weinghted average
 NPOINTS = 361;
 m = [.07 .15 .18 .2 .18 .15 .07]';
 av = zeros(size(x));
