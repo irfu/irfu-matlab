@@ -6,6 +6,7 @@ function [data, n_corrected,wakeamp] = c_efw_swwake(e,pair,phase_2,plotflag)
 % Input:
 %   e        - raw EFW data (wE?p12/34)
 %   pair     - probe pair (12/34/32)
+%   phase_2  - Phase 2
 %   plotflag - 0 no plotting of debug 
 %
 % Output:
