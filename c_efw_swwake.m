@@ -41,7 +41,7 @@ sf = c_efw_fsample(e,'hx');
 iok = [];
 n_spins = length(i0);
 n_corrected = 0;
-for in = 1:length(i0)
+for in = 1:n_spins
 	ts = phase_2(i0(in),1);
 	i360 = find( phase_2(:,1)>ts & phase_2(:,1)<ts+MAX_SPIN_PERIOD & ...
 		phase_2(:,2)==360);
@@ -87,8 +87,6 @@ i1 = [];
 
 for in = iok
 	ts = ttime(1,in);
-	irf_log('proc',['we are at ' epoch2iso(ts)])
-	
 	av12 = mean(tt(:, in + (-2:1:2) ),2);
 
 	% Identify wakes by max derivative. Should really add last part to
@@ -129,7 +127,7 @@ for in = iok
 	cdav = cdav - mean(cdav);
 	ccdav = cumsum(cdav);
 	if max(abs(ccdav))< WAKE_MIN_AMPLITUDE
-		irf_log('proc','wake is too small')
+		irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		i1 = [];
 		continue
 	end
@@ -156,12 +154,6 @@ for in = iok
 		plot(ttime(:,in)-ts, wake)
 		ylabel('Wake [mV/m]');
 		add_timeaxis(gca,ts);
-
-		%subplot(4,1,4)
-		%plot(ttime(:,in)-ts, tt(:,in), 'g',...
-		%	ttime(:,in)-ts, tt(:,in)-wake,'r');
-		%ylabel(['E' num2str(pair) ' [mV/m]']);
-		%add_timeaxis(gca,ts);
 	end
 	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
@@ -185,15 +177,22 @@ for in = iok
 		n_corrected = n_corrected + 2;
 	end
 	if in==iok(end) || (in~=iok(end) && in+1~=iok(find(iok==in)+1))
+		if ~isempty(cox)
+			irf_log('proc',['single interval at ' epoch2iso(ts,1)])
+		else
+			irf_log('proc',['stop   interval at ' epoch2iso(ts,1)])
+		end
 		cox = [cox 1:2];
 		n_corrected = n_corrected + 2;
+	elseif ~isempty(cox)
+		irf_log('proc',['start  interval at ' epoch2iso(ts,1)])
 	end
 	if ~isempty(cox)
 		for cx = cox
 			ind = find(e(:,1)>=ttime(1,in+cx) & e(:,1)<ttime(end,in+cx));
 			wake_e = c_resamp([ttime(:,in+cx) wake], e(ind,1));
 			data(ind,2) = data(ind,2) - wake_e(:,2);
-			irf_log('proc',['correcting spin: ' num2str(cx)])
+			%irf_log('proc',['correcting spin: ' num2str(cx)])
 			if plotflag
 				hold on
 				irf_plot({e(ind,:),data(ind,:)},'comp')
@@ -208,7 +207,8 @@ for in = iok
 	
 end
 
-
+irf_log('proc',['corrected ' num2str(n_corrected) ' out of ' ...
+	num2str(n_spins) ' spins'])
 
 function av = w_ave(x)
 %weinghted average
