@@ -5,7 +5,7 @@ function out = irf_waverage(data,fsample)
 %
 % $Id$
 
-% Copyright 2004,2006 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
 
 if size(data,1)<=1
 	irf_log('proc',['Not enough points (' num2str(size(data,1)) ') to average'])
@@ -37,7 +37,7 @@ end
 function av = w_ave(x)
 %m = [.1 .25 .3 .25 .1];
 m = [.07 .15 .18 .2 .18 .15 .07];
-cor = sum(m(find(x==0))); % find missing points==0
+cor = sum(m(x==0)); % find missing points==0
 if cor==1, av = 0;
-else, av = sum(x.*m)/(1-cor);
+else av = sum(x.*m)/(1-cor);
 end
