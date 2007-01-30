@@ -3,6 +3,8 @@ function data = c_efw_swwake(e,pair,phase_2,plotflag)
 %
 % data = c_efw_swwake(e,pair,pha)
 %
+% Wakes are identified by max derivative
+%
 % $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
@@ -89,17 +91,13 @@ for in = iok
 	ts = ttime(1,in);
 	av12 = mean(tt(:, in + (-2:1:2) ),2);
 
-	% Identify wakes by max derivative. Should really add last part to
-	% first in order to catch case when max is at start/end - TBD.
+	% Identify wakes by max derivative
 	d12 = diff(diff(av12));
 	d12 = [d12(1); d12; d12(end)];
 	if plotflag
 		d12_tmp = d12; % save for plotting
 	end
 	d12 = w_ave(d12);
-	
-	%ind1 = find(d12 == max(d12))+1;
-	%ind2 = find(d12 == min(d12))+1;
 	
 	% if i1 is coming not from the previous spin
 	if isempty(i1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
