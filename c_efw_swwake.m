@@ -123,7 +123,7 @@ for in = iok
 		end
 	end
 	
-	av12 = mean(tt(:, in + (idx) ),2);
+	av12 = sum(tt(:, in + (idx) ).*([.1 .25 .3 .25 .1]'*ones(1,NPOINTS))',2);
 	
 	% Identify wakes by max second derivative
 	d12 = [av12(1)-av12(end); diff(av12)];
@@ -202,23 +202,29 @@ for in = iok
 	if plotflag
 		clf
 		subplot(4,1,1)
-		plot(ttime(:,in)-ts, tt(:, in + (-2:1:2) ), 'g',...
+		ts = ttime(1,in);
+		te = ttime(end,in);
+		plot(ttime(:,in)-ts, tt(:, in), 'b',...
+			ttime(:,in)-ts, tt(:, in + ([-2 -1 1 2]) ), 'g',...
 			ttime(:,in)-ts, av12, 'k',...
 			ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
 			ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
 			ttime(:,in)-ts, av12-wake,'r');
 		ylabel('E12 [mV/m]');
 		add_timeaxis(gca,ts); xlabel('');
-
+		set(gca,'XLim',[0 te-ts])
+		
 		subplot(4,1,2)
 		plot(ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
 		ylabel(['D2(E' num2str(pair) ') [mV/m]']);
 		add_timeaxis(gca,ts); xlabel('');
+		set(gca,'XLim',[0 te-ts])
 
 		subplot(4,1,3)
 		plot(ttime(:,in)-ts, wake)
 		ylabel('Wake [mV/m]');
 		add_timeaxis(gca,ts);
+		set(gca,'XLim',[0 te-ts])
 	end
 	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
@@ -228,10 +234,9 @@ for in = iok
 	
 	if plotflag
 		subplot(4,1,4)
-		ts = ttime(1,in);
-		te = ttime(end,in);
 		irf_plot({e(ind,:),data(ind,:)},'comp')
 		ylabel(['E' num2str(pair) ' [mV/m]']);
+		irf_zoom([ts te],'x',gca)
 	end
 	
 	cox = [];
