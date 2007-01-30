@@ -123,13 +123,12 @@ for in = iok
 	end
 	
 	av12 = mean(tt(:, in + (idx) ),2);
+	
+	
 
-	% Identify wakes by max derivative
-	d12 = diff(diff(av12));
-	d12 = [d12(1); d12; d12(end)];
-	if plotflag
-		d12_tmp = d12; % save for plotting
-	end
+	% Identify wakes by max second derivative
+	d12 = [av12(1)-av12(end); diff(av12)];
+	d12 = [d12(1)-d12(end); diff(d12)];
 	d12 = w_ave(d12);
 	
 	% If i1 is coming not from the previous spin
@@ -139,19 +138,20 @@ for in = iok
 	
 	% We expect for the second maximum to be 180 degrees from the first
 	if max(d12(i1))>abs(min(d12(i1)))
-		ind1 = find(d12 == max(d12(i1)))+1;
-		i1 = mod( ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180,...
+		ind1 = find(d12 == max(d12(i1))) -1;
+		i1 = mod( (ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180) -1,...
 			NPOINTS) +1;
-		ind2 = find(d12 == min(d12( i1 )))+1;
+		ind2 = find(d12 == min(d12( i1 ))) -1;
 	else
-		ind1 = find(d12 == min(d12(i1)))+1;
-		i1 = mod( ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180,...
+		ind1 = find(d12 == min(d12(i1))) -1;
+		i1 = mod( (ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180) -1,...
 			NPOINTS) +1;
-		ind2 = find(d12 == max(d12( i1 )))+1;
+		ind2 = find(d12 == max(d12( i1 ))) -1;
 	end
 	
-	i1 = mod( ind1-WAKE_MAX_HALFWIDTH:ind1+WAKE_MAX_HALFWIDTH , NPOINTS) +1;
-	i2 = mod( ind2-WAKE_MAX_HALFWIDTH:ind2+WAKE_MAX_HALFWIDTH , NPOINTS) +1;
+	wake_width = fix(WAKE_MAX_HALFWIDTH/2);
+	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
+	i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
 	
 	dav = (d12(i1)-d12(i2))/2;
 	cdav = cumsum(dav);
@@ -162,16 +162,46 @@ for in = iok
 		i1 = [];
 		continue
 	end
-	wake = zeros(size(av12));
-	wake(mod(i1,NPOINTS) +1) = ccdav;
-	wake(mod(i2,NPOINTS) +1) = -ccdav;
+	wake = zeros(NPOINTS,1);
+	wake( mod(i1-2,NPOINTS) +1 ) = ccdav;
+	wake( mod(i2-2,NPOINTS) +1 ) = -ccdav;
+	
+	av12_corr = av12 - wake;
+	x = fft(av12_corr);
+	x(3:359) = 0;
+	av12_corr = av12 -ifft(x,'symmetric');
+	
+	d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
+	d12 = [d12(1)-d12(end); diff(d12)];
+	if plotflag
+		d12_tmp = d12; % save for plotting
+	end
+	d12 = w_ave(d12);
+	
+	wake_width = WAKE_MAX_HALFWIDTH;
+	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
+	i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
+	
+	dav = (d12(i1)-d12(i2))/2;
+	cdav = cumsum(dav);
+	cdav = cdav - mean(cdav);
+	ccdav = cumsum(cdav);
+	if max(abs(ccdav))< WAKE_MIN_AMPLITUDE
+		irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+		i1 = [];
+		continue
+	end
+	wake = zeros(NPOINTS,1);
+	wake( mod(i1-2,NPOINTS) +1 ) = ccdav;
+	wake( mod(i2-2,NPOINTS) +1 ) = -ccdav;
 	
 	if plotflag
+		clf
 		subplot(4,1,1)
 		plot(ttime(:,in)-ts, tt(:, in + (-2:1:2) ), 'g',...
 			ttime(:,in)-ts, av12, 'k',...
-			ttime(ind1+1,in)*[1 1]-ts, [-2 2], 'r',...
-			ttime(ind2+1,in)*[1 1]-ts, [-2 2], 'r',...
+			ttime(ind1,in)*[1 1]-ts, [-2 2], 'r',...
+			ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
 			ttime(:,in)-ts, av12-wake,'r');
 		ylabel('E12 [mV/m]');
 		add_timeaxis(gca,ts); xlabel('');
@@ -235,17 +265,19 @@ for in = iok
 	if ~isempty(cox)
 		for cx = cox
 			ind = find(e(:,1)>=ttime(1,in+cx) & e(:,1)<ttime(end,in+cx));
-			wake_e = c_resamp([ttime(:,in+cx) wake], e(ind,1));
-			data(ind,2) = data(ind,2) - wake_e(:,2);
-			%irf_log('proc',['correcting spin: ' num2str(cx)])
-			if plotflag
-				hold on
-				irf_plot({e(ind,:),data(ind,:)},'comp')
-				ylabel(['E' num2str(pair) ' [mV/m]']);
-				hold off
-				if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end
-				if ttime(end,in+cx)>te, te = ttime(end,in+cx); end
-				irf_zoom([ts te],'x',gca)
+			if ~isempty(ind)
+				wake_e = c_resamp([ttime(:,in+cx) wake], e(ind,1));
+				data(ind,2) = data(ind,2) - wake_e(:,2);
+				%irf_log('proc',['correcting spin: ' num2str(cx)])
+				if plotflag
+					hold on
+					irf_plot({e(ind,:),data(ind,:)},'comp')
+					ylabel(['E' num2str(pair) ' [mV/m]']);
+					hold off
+					if ttime(1,in+cx)<ts, ts = ttime(1,in+cx); end
+					if ttime(end,in+cx)>te, te = ttime(end,in+cx); end
+					irf_zoom([ts te],'x',gca)
+				end
 			end
 		end
 	end
