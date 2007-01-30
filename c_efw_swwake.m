@@ -1,4 +1,4 @@
-function [data, n_corrected] = c_efw_swwake(e,pair,phase_2,plotflag)
+function [data, n_corrected,wakeamp] = c_efw_swwake(e,pair,phase_2,plotflag)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
 % [data, n_spins_corrected] = c_efw_swwake(e,pair,phase_2 [,plotflag])
@@ -31,7 +31,7 @@ if pair==32, error('PAIR 32 is not implemented yet'), end
 N_EMPTY = .9; 
 MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_HALFWIDTH = 45; % degrees
-WAKE_MIN_AMPLITUDE = 0.1; % mV/m
+WAKE_MIN_AMPLITUDE = 0.7; % mV/m
 
 data = e;
 
@@ -52,7 +52,8 @@ end
 
 n_spins = length(i0);
 NPOINTS = 361;
-tt = zeros(NPOINTS,length(i0));
+tt = zeros(NPOINTS,n_spins);
+wakeamp = zeros(n_spins, 2)*NaN;
 ttime = tt;
 sf = c_efw_fsample(e,'hx');
 iok = [];
@@ -124,12 +125,10 @@ for in = iok
 	
 	av12 = mean(tt(:, in + (idx) ),2);
 	
-	
-
 	% Identify wakes by max second derivative
 	d12 = [av12(1)-av12(end); diff(av12)];
 	d12 = [d12(1)-d12(end); diff(d12)];
-	d12 = w_ave(d12);
+	d12 = w_ave(d12,7);
 	
 	% If i1 is coming not from the previous spin
 	if isempty(i1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
@@ -157,14 +156,16 @@ for in = iok
 	cdav = cumsum(dav);
 	cdav = cdav - mean(cdav);
 	ccdav = cumsum(cdav);
-	if max(abs(ccdav))< WAKE_MIN_AMPLITUDE
-		irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+	wakeamp(in,1) = ts;
+	wakeamp(in,2) = max(abs(ccdav));
+	if wakeamp(in,2)< WAKE_MIN_AMPLITUDE
+		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		i1 = [];
 		continue
 	end
 	wake = zeros(NPOINTS,1);
-	wake( mod(i1-2,NPOINTS) +1 ) = ccdav;
-	wake( mod(i2-2,NPOINTS) +1 ) = -ccdav;
+	wake( i1 ) = ccdav;
+	wake( i2 ) = -ccdav;
 	
 	av12_corr = av12 - wake;
 	x = fft(av12_corr);
@@ -176,24 +177,27 @@ for in = iok
 	if plotflag
 		d12_tmp = d12; % save for plotting
 	end
-	d12 = w_ave(d12);
+	d12 = w_ave(d12,5);
 	
 	wake_width = WAKE_MAX_HALFWIDTH;
 	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
 	i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
 	
-	dav = (d12(i1)-d12(i2))/2;
-	cdav = cumsum(dav);
+	%dav = (d12(i1)-d12(i2))/2;
+	cdav = cumsum(d12(i1));
 	cdav = cdav - mean(cdav);
-	ccdav = cumsum(cdav);
-	if max(abs(ccdav))< WAKE_MIN_AMPLITUDE
-		irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+	ccdav1 = cumsum(cdav);
+	cdav = cumsum(d12(i2));
+	cdav = cdav - mean(cdav);
+	ccdav2 = cumsum(cdav);
+	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
+		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		i1 = [];
 		continue
 	end
 	wake = zeros(NPOINTS,1);
-	wake( mod(i1-2,NPOINTS) +1 ) = ccdav;
-	wake( mod(i2-2,NPOINTS) +1 ) = -ccdav;
+	wake( i1 ) = ccdav1;
+	wake( i2 ) = ccdav2;
 	
 	if plotflag
 		clf
@@ -287,14 +291,23 @@ end
 irf_log('proc',['corrected ' num2str(n_corrected) ' out of ' ...
 	num2str(n_spins) ' spins'])
 
-function av = w_ave(x)
-% Weinghted average
+function av = w_ave(x,np)
+% Weighted average
 NPOINTS = 361;
-m = [.07 .15 .18 .2 .18 .15 .07]';
+if nargin<2, np=5; end
 av = zeros(size(x));
+if np==7
+	m = [.07 .15 .18 .2 .18 .15 .07]';
+	idx = -3:1:3;
+else
+	m = [.1 .25 .3 .25 .1]';
+	idx = -2:1:2;
+end
+MIDX = max(idx);
+
 for j=1:length(x)
-	ii = j + (-3:1:3);
-	if j<=3, ii(ii<1) = ii(ii<1) +NPOINTS; end
-	if j>length(x)-3, ii(ii>NPOINTS) = ii(ii>NPOINTS) -NPOINTS; end
+	ii = j + (idx);
+	if j<=MIDX, ii(ii<1) = ii(ii<1) +NPOINTS; end
+	if j>length(x)-MIDX, ii(ii>NPOINTS) = ii(ii>NPOINTS) -NPOINTS; end
 	av(j) = sum(x(ii).*m);
 end
