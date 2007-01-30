@@ -1,15 +1,30 @@
 function [data, n_corrected,wakeamp] = c_efw_swwake(e,pair,phase_2,plotflag)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% [data, n_spins_corrected] = c_efw_swwake(e,pair,phase_2 [,plotflag])
+% [data, n_spins_corrected,w_amp] = c_efw_swwake(e,pair,phase_2 [,plotflag])
 %
-% Wakes are identified by max derivative
+% Input:
+%   e        - raw EFW data (wE?p12/34)
+%   pair     - probe pair (12/34/32)
+%   plotflag - 0 no plotting of debug 
 %
-% plotflag=0, no plotting of debug 
+% Output:
+%   data - corrected data
+%   
+% Wakes are identified by max derivative. First we find a narrow proxy
+% wake, correct for it and find a proxy DC field (ground tone). Then
+% we subtract the ground tone from the original data and find a final
+% fit for the wake. The procedure is performed on five spins, with the
+% resulting fit being applied to the spin in the middle.
+%
+% This program was written in order to improve quality of the EFW data
+% in the solar wind for the CAA.
 %
 % $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
+% Original idea by Anders Eriksson.
+% Many useful suggestion by Per-Arne Lindqvist.
 
 error(nargchk(3,4,nargin))
 if nargin==4
@@ -122,12 +137,15 @@ for in = iok
 		else idx = -2:1:2;
 		end
 	end
-	
+
+	% Spin in the middle has maximum weigth
 	av12 = sum(tt(:, in + (idx) ).*([.1 .25 .3 .25 .1]'*ones(1,NPOINTS))',2);
-	
+
+	% First find a proxy wake fit	
 	% Identify wakes by max second derivative
 	d12 = [av12(1)-av12(end); diff(av12)];
 	d12 = [d12(1)-d12(end); diff(d12)];
+	% Average with 7 points to minimize danger of detecting a wrong maximum
 	d12 = w_ave(d12,7);
 	
 	% If i1 is coming not from the previous spin
@@ -147,11 +165,13 @@ for in = iok
 			NPOINTS) +1;
 		ind2 = find(d12 == max(d12( i1 ))) -1;
 	end
-	
+
+	% The proxy wake is naroow (1/2 of the final fit)	
 	wake_width = fix(WAKE_MAX_HALFWIDTH/2);
 	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
 	i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
-	
+
+	% The proxy wake is symmetric	
 	dav = (d12(i1)-d12(i2))/2;
 	cdav = cumsum(dav);
 	cdav = cdav - mean(cdav);
@@ -166,24 +186,28 @@ for in = iok
 	wake = zeros(NPOINTS,1);
 	wake( i1 ) = ccdav;
 	wake( i2 ) = -ccdav;
-	
+
+	% Correct for the proxy wake	
 	av12_corr = av12 - wake;
+	% Find the ground tone and remove it from the data
 	x = fft(av12_corr);
 	x(3:359) = 0;
 	av12_corr = av12 -ifft(x,'symmetric');
-	
+
+	% Now find the final fit	
 	d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
 	d12 = [d12(1)-d12(end); diff(d12)];
 	if plotflag
 		d12_tmp = d12; % save for plotting
 	end
+	% Average with only 5 points to get a more fne fit
 	d12 = w_ave(d12,5);
 	
 	wake_width = WAKE_MAX_HALFWIDTH;
 	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
 	i2 = mod( (ind2-wake_width:ind2+wake_width) -1, NPOINTS) +1;
 	
-	%dav = (d12(i1)-d12(i2))/2;
+	% Allow the final fit to be asymmetric
 	cdav = cumsum(d12(i1));
 	cdav = cdav - mean(cdav);
 	ccdav1 = cumsum(cdav);
@@ -226,7 +250,8 @@ for in = iok
 		add_timeaxis(gca,ts);
 		set(gca,'XLim',[0 te-ts])
 	end
-	
+
+	% Correct the spin in the middle	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
 	wake_e = c_resamp([ttime(:,in) wake], e(ind,1));
 	data(ind,2) = data(ind,2) - wake_e(:,2);
@@ -238,7 +263,8 @@ for in = iok
 		ylabel(['E' num2str(pair) ' [mV/m]']);
 		irf_zoom([ts te],'x',gca)
 	end
-	
+
+	% Correct edge spins	
 	cox = [];
 	if in==iok(1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
 		% If the previous spin was not corrected
