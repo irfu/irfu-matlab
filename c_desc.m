@@ -34,7 +34,7 @@ function varargout = c_desc(vs,v_info)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(1,2,nargin))
 if ~ischar(vs), error('VS must be a string'), end
@@ -83,8 +83,8 @@ if regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.fluc = {'Waveform'};
 	v.com = ['this signal is averaged from probes ' v.sen];
 	if vs(1)=='b', v.file = 'mEFWburst';
-    else v.file = 'mP';
-    end
+	else v.file = 'mP';
+	end
 	v.lev = 1;
 elseif regexp(vs,'^(b)?P(s)?[1-4]_info$')==1
 	v.data = 0;
@@ -94,8 +94,8 @@ elseif regexp(vs,'^(b)?P(s)?[1-4]_info$')==1
 	v.inst = 'EFW';
 	v.com = 'Spacecraft potential INFO';
 	if vs(1)=='b', v.file = 'mEFWburst';
-    else v.file = 'mP';
-    end
+	else v.file = 'mP';
+	end
 	if vs(2)=='s'
 		v.quant = 'ps';
     elseif vs(1)=='b'
@@ -959,7 +959,6 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	v.sig = 'E';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
-		vvs = vvs(3:end);
 		v.cs = {'ISR2'};
 	else
 		v.cs = {'GSE'};
@@ -986,7 +985,6 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.sig = 'B';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
-		vvs = vvs(3:end);
 		v.cs = {'ISR2'};
 	else
 		v.cs = {'GSE'};
@@ -1014,7 +1012,6 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	v.sig = 'B';
 	v.sen = '';
 	if strcmp(vvs(1:2),'di')
-		vvs = vvs(3:end);
 		v.cs = {'ISR2'};
 	else
 		v.cs = {'GSE'};
@@ -1078,46 +1075,38 @@ else
 	error('Variable name not recognized')
 end
 
-if nargin>2, have_options = 1; args = varargin;
-% construct the output
-else 
-	if nargout==1, varargout = {v};
+% Construct the output
+if nargout==1, varargout = {v};
+else
+	% Just print out everthing
+	disp(['SC#         : ' v.cl_id ]);
+	disp(['Instrument  : ' v.inst ]);
+	if v.data
+		disp(['Ref Frame   : ' v.frame ]);
+		disp(['Signal      : ' v.sig ]);
+		disp(['Sensor      : ' v.sen ]);
+	end
+	disp(['Comment     : ' v.com ]);
+	disp(['File        : ' v.file ]);
+	if v.lev<2
+		disp(['getData q   : ' v.quant ]);
+		if v.lev, disp('getData cl  : ClusterProc');
+		else disp('getData cl  : ClusterDB');
+		end
 	else
-		%just print out everthing
-		disp(['SC#         : ' v.cl_id ]);
-		disp(['Instrument  : ' v.inst ]);
-		if v.data
-			disp(['Ref Frame   : ' v.frame ]);
-			disp(['Signal      : ' v.sig ]);
-			disp(['Sensor      : ' v.sen ]);
-		end
-		disp(['Comment     : ' v.com ]);
-		disp(['File        : ' v.file ]);
-		if v.lev<2
-			disp(['getData q   : ' v.quant ]);
-			if v.lev, disp('getData cl  : ClusterProc');
-            else disp('getData cl  : ClusterDB');
-			end
-		else
-			disp('getData     : manual processing');
-		end
-		
-		if v.data
-			disp(['Size        : ' num2str(v.size) ]);
-			for j=1:length(v.size)
-				disp(['Var Name    : ' v.name{j} ]);
-				disp(['  Labels    : ' v.labels{j} ]);
-				disp(['  Field     : ' v.field_name{j} ]);
-				disp(['  Coord Sys : ' v.cs{j} ]);
-				if isfield(v,'rep'), disp(['  Represent : ' v.rep{j} ]); end
-				disp(['  Units     : ' v.units{j} ]);
-				disp(['  SI conv   : ' v.si_conv{j} ]);
-			end
+		disp('getData     : manual processing');
+	end
+
+	if v.data
+		disp(['Size        : ' num2str(v.size) ]);
+		for j=1:length(v.size)
+			disp(['Var Name    : ' v.name{j} ]);
+			disp(['  Labels    : ' v.labels{j} ]);
+			disp(['  Field     : ' v.field_name{j} ]);
+			disp(['  Coord Sys : ' v.cs{j} ]);
+			if isfield(v,'rep'), disp(['  Represent : ' v.rep{j} ]); end
+			disp(['  Units     : ' v.units{j} ]);
+			disp(['  SI conv   : ' v.si_conv{j} ]);
 		end
 	end
 end
-
-function r = is14(s)
-
-r = 0;
-if s=='1' || s=='2' || s=='3' || s=='4', r = 1; end
