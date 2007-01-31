@@ -109,7 +109,7 @@ for in = 1:n_spins
 			% We allow max one data gap within 6 spins
 			iok = [iok in-3];
 		end
-		if (in==n_spins || n_spins==5) && ~any(isnan(tt(1,in - (1:4) )))
+		if (in==n_spins || n_spins==5) && ~any(isnan(tt(1,in - (0:1:4) )))
 			% Special case when we have only 5 spins or
 			% it is the last spin we are working with
 			iok = [iok in-2];
