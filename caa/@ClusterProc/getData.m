@@ -8,6 +8,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   cl_id - SC#
 %   quantity - one of the following:
 %
+%   ec :   wcE{cl_id}p12/32, wcE{cl_id}p34 -> mERC // correct raw data 
+%          correct_sw_wake - correct wakes in the Solar Wind
 %   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %          also creates delta offsets D{cl_id}p12p34.
 %          If the offset is real then it must be applied to p12/32,
@@ -63,7 +65,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
 % Parts of the code are (c) Andris Vaivads
 
 error(nargchk(3,15,nargin))
@@ -76,6 +78,7 @@ flag_save = 1;
 flag_usesavedoff = 1;
 flag_edb = 1;
 sfit_ver = -1;
+correct_sw_wake = 0;
 
 CAA_MODE = c_ctl(0,'caa_mode');
 
@@ -136,6 +139,8 @@ while have_options
 			end
         else irf_log('fcal,','wrongArgType : sfit_ver value is missing')
 		end
+	case 'correct_sw_wake'
+		correct_sw_wake = 1;
 	otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
@@ -153,9 +158,57 @@ cd(cp.sp) %enter the storage directory
 if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ec - correct raw Electric field
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(quantity,'ec')
+	save_file = './mERC.mat';
+	
+	if ~any([correct_sw_wake]) % List all possible methods here
+		irf_log('proc','no cleaning method defined')
+		data = []; cd(old_pwd), return
+	end
+	
+	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+	[ok,pha] = c_load('Atwo?',cl_id);
+	if ~ok || isempty(pha)
+		irf_log('load',...
+			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+		data = []; cd(old_pwd); return
+	end
+	
+	n_ok = 0;
+	for probe = [12 32 34]
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+		if ~ok || isempty(da)
+			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+			continue
+		end
+		n_ok = n_ok + 1;
+		
+		modified = 0;
+		if correct_sw_wake
+			irf_log('proc',...
+				sprintf('correcting solar wind wake on p%d',probe))
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha);
+			eval(irf_ssub(...
+				'WAKE?p!=wake_dsc;save_list=[save_list ''WAKE?p! ''];',...
+				cl_id,probe));
+			if n_corrected>0, modified = 1; end
+			clear n_corrected wake_dsc
+		end
+		
+		if modified
+			eval(irf_ssub('wcE?p!=da;save_list=[save_list ''wcE?p! ''];',...
+				cl_id,probe));
+		end
+		clear ok da
+	end
+	if ~n_ok, data = []; cd(old_pwd), return, end
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dies - spin fiting of Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(quantity,'dies')
+elseif strcmp(quantity,'dies')
 	save_file = './mEDSI.mat';
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
@@ -167,13 +220,22 @@ if strcmp(quantity,'dies')
 	end
 	
 	p12 = 12; e12 = []; e34 =[];
-	pl = [12,32,34];
 	n_ok = 0;
-	for probe = pl
-		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+	corrected_raw_data_p12 = 1;
+	corrected_raw_data_p34 = 1;
+	for probe = [12,32,34]
+		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
 			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
-			continue
+			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+			if ~ok || isempty(da)
+				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+				continue
+			end
+			irf_log('load','using raw (not corrected) data')
+			if probe==34, corrected_raw_data_p34 = 0;
+			else corrected_raw_data_p12 = 0;
+			end
 		end
 		n_ok = n_ok + 1;
 		
@@ -187,7 +249,7 @@ if strcmp(quantity,'dies')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	% If we have different timelines for p1(3)2 and p34 we try to make 
-	% a common timeline, so thet the resulting spinfits will also have 
+	% a common timeline, so that the resulting spinfits will also have 
 	% the common timeline
 	not_same = 0;
 	if n_ok==2
@@ -237,9 +299,11 @@ if strcmp(quantity,'dies')
 		if pr==12
 			tt = e12;
 			probe = p12;
+			corrected_raw_data = corrected_raw_data_p12;
 		else
 			tt = e34;
 			probe = 34;
+			corrected_raw_data = corrected_raw_data_p34;
 		end
 		if isempty(tt)
 			irf_log('load',sprintf('No spinfits for C%d p%d',cl_id,probe))
@@ -392,13 +456,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
 	if do_burst
 		save_file = './mEFWburst.mat';
-		var_name = 'wbE?p!';
 		var1_name = 'dibE?p1234';
 	else
 		if strcmp(quantity,'diespec'), save_file = './mEDSI.mat';
         else save_file = './mEDSIf.mat';
 		end
-        var_name = 'wE?p!';
 		if do_filter, var1_name = 'diEF?p1234';
         else var1_name = 'diE?p1234';
 		end
@@ -415,6 +477,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	
     % Make electric field for the burst
 	if do_burst
+		var_name = 'wbE?p!';
         p12 = 12; e12 = []; e34 =[];
         param={'180Hz','4kHz','32kHz'};
         p_ok = [];
@@ -459,9 +522,8 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
             if loaded, break, end
         end
         if ~loaded
-            pl = [12,32,34];
             p_ok = [];
-            for probe = pl
+            for probe = [12 32 34]
                 [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
                 if ~ok || isempty(da)
                     irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
@@ -479,16 +541,20 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                 clear ok da
             end
         end     
-    else
+	else % Not burst
         p12 = 12; e12 = []; e34 =[];
-        pl = [12,32,34];
         p_ok = [];
-        for probe = pl
-            [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
-            if ~ok || isempty(da)
-                irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
-                continue
-            end
+        for probe = [12 32 34]
+            [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
+			if ~ok || isempty(da)
+				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+				if ~ok || isempty(da)
+					irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+					continue
+				end
+				irf_log('load','using raw (not corrected) data')
+			end
 
             if probe==32
                 p12 = 32;
