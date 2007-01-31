@@ -181,8 +181,10 @@ if flag_subplot==0,  % one subplot
     set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
     
     ylabel(ylabels{1});
-    c=get(h(1),'Parent');
-    tt=x(1,1);
+    c = get(h(1),'Parent');
+	
+    tt = x(~isnan(x(:,1)),1);
+	tt = tt(1);
     
 elseif flag_subplot==1, % separate subplot for each component 
     %   t_start_epoch is saved in figures user_data variable
@@ -206,8 +208,10 @@ elseif flag_subplot==1, % separate subplot for each component
         % multipanel plots)
         set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
 
-    end
-    tt=x(1,1);
+	end
+	
+    tt = x(~isnan(x(:,1)),1);
+	tt = tt(1);
     
 elseif flag_subplot==2, % separate subplot for each variable
     %   t_start_epoch is saved in figures user_data variable
@@ -249,7 +253,8 @@ elseif flag_subplot==2, % separate subplot for each variable
     for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
 	clear t_st t_end
     
-	tt=y(1,1);
+	tt = y(~isnan(y(:,1)),1);
+	tt = tt(1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
   %t_start_epoch is saved in figures user_data variable
@@ -283,7 +288,8 @@ elseif flag_subplot==3,  % components of vectors in separate panels
       set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
 
     end
-    tt=y(1,1);
+    tt = y(~isnan(y(:,1)),1);
+	tt = tt(1);
 end
 
 irf_figmenu;
