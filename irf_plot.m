@@ -177,7 +177,7 @@ if flag_subplot==0,  % one subplot
     % multipanel plots)
     set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
     
-	if ~isempty(var_desc)
+	if ~isempty(var_desc{1})
 		for v = 1:length(var_desc{1}.size)
 			lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
 				'] sc' var_desc{1}.cl_id];
