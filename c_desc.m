@@ -197,6 +197,29 @@ elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
 		v.quant = 'e';
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Wake description
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^WAKE[1-4]p(12|32|34)$')==1
+	v.data = 1;
+	v.cl_id = vs(5);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'WAKE';
+	v.sen = vs(end-1:end);
+	v.cs = {'ISR2','na','na'};
+	v.rep = {'scalar','scalar','scalar'};
+ 	v.units =  {'deg','mV/m','deg'};
+	v.si_conv = {'1>degree','1.0e-3>V m^-1','1>degree'};
+	v.size = [1 1 1];
+	v.name = {['Wake-p' v.sen ' location'], ['Wake-p' v.sen ' amp'],...
+		['Wake-p' v.sen ' h-width']};
+	v.labels = v.name;
+	v.field_name = {'Wake location','Wake amplitude','Wake half-width'};
+	v.com = '';
+	v.file = 'mERC';
+	v.quant = 'ec';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RSPEC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
@@ -246,7 +269,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.rep = {'xy',''};
  	v.units =  {'mV/m','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1',''};
-	v.size = [2 1];
+	v.size = [3 1];
 	v.name = {'E_Vec_xy_ISR2', 'E_sigma'};
 	v.labels = {'E','St dev'};
 	v.label_1 = {'"Ex", "Ey"',''};
@@ -304,7 +327,7 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.rep = {'xy'};
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = 2;
+	v.size = 3;
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.ent = {'Electric_Field'};
