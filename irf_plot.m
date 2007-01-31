@@ -119,25 +119,23 @@ if ischar(x), % try to get variable labels etc.
                 c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
             catch % if nothing works give up
                 irf_log('load',['skipping, do not know where to get variable >' var_names{ii}]);
-%                return;
             end
         end
         if length(x)==ix,
           try
-              var_desc=c_desc(var_names{ii});
-              ylabels{ix}=[var_desc.labels{1} '[' var_desc.units{1} '] sc' var_desc.cl_id];
+              var_desc{ix} = c_desc(var_names{ii});
           catch
-              ylabels{ix}='';
+              var_desc{ix} = {};
           end
-          ix=ix+1;
+          ix = ix+1;
         end
     end
 end
 
 
 if iscell(x), % plot several variables
-    if size(ylabels,2)<size(x,2), % no ylabels are given
-        for ii=1:length(x);ylabels{ii}='';end % no way to now the name of variables
+    if size(var_desc,2)<size(x,2), % no ylabels are given
+        for ii=1:length(x);var_desc{ii}={};end % no way to now the name of variables
     end
 	
 	if dt==0, dt(1:size(x,2))=0; end
@@ -154,10 +152,9 @@ if iscell(x), % plot several variables
     end
 else
     try
-        var_desc=c_desc(inputname(1));
-        ylabels{1}=[var_desc.labels{1} '[' var_desc.units{1} '] sc' var_desc.cl_id];
+        var_desc{1} = c_desc(inputname(1));
     catch
-        ylabels{1}='';
+        var_desc{1} = {};
     end
 end
 
@@ -180,115 +177,144 @@ if flag_subplot==0,  % one subplot
     % multipanel plots)
     set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
     
-    ylabel(ylabels{1});
+	if ~isempty(var_desc)
+		for v = 1:length(var_desc{1}.size)
+			lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+				'] sc' var_desc{1}.cl_id];
+		end
+		ylabel(lab);
+	end
+
     c = get(h(1),'Parent');
 	
     tt = x(~isnan(x(:,1)),1);
 	tt = tt(1);
     
 elseif flag_subplot==1, % separate subplot for each component 
-    %   t_start_epoch is saved in figures user_data variable
-	  ts=t_start_epoch(x(:,1));
-	
-    npl=size(x,2)-1;
-    for ipl=1:npl,
-        c(ipl)=subplot(npl,1,ipl);
-				
-				if iscell(marker)
-					if length(marker)==npl, marker_cur = marker{ipl};
-                    else marker_cur = marker{1};
-					end
-                else marker_cur = marker;
-				end
-        
-        i=ipl+1;
-        plot((x(:,1)-ts-dt),x(:,i),marker_cur);grid on;
-        
-        % put ylimits so that no labels are at the end (disturbing in
-        % multipanel plots)
-        set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+	%   t_start_epoch is saved in figures user_data variable
+	ts=t_start_epoch(x(:,1));
+	npl=size(x,2)-1;
+	for ipl=1:npl
+		c(ipl)=subplot(npl,1,ipl);
 
+		if iscell(marker)
+			if length(marker)==npl, marker_cur = marker{ipl};
+			else marker_cur = marker{1};
+			end
+		else marker_cur = marker;
+		end
+
+		plot((x(:,1)-ts-dt),x(:,ipl+1),marker_cur); grid on;
+
+		% put ylimits so that no labels are at the end (disturbing in
+		% multipanel plots)
+		set(gca,'YLim', ...
+			mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
+		
+		if ~isempty(var_desc)
+			scu = cumsum(var_desc{1}.size);
+			isz = find(scu==min(scu(ipl<=scu)));
+			sz = var_desc{1}.size(isz); % Size of a data vector
+			if sz == 1 % Scalar data
+				lab = [var_desc{1}.labels{isz} ' [' var_desc{1}.units{isz} ...
+					'] sc' var_desc{1}.cl_id];
+			else % Vector data
+				% Vector component
+				if isz==1, comp = ipl;
+				else comp = ipl-scu(isz-1);
+				end
+				lab = [var_desc{1}.labels{isz} ...
+					'_{' var_desc{1}.col_labels{isz}{comp}...
+					'} [' var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
+			end
+			ylabel(lab);
+		end
 	end
-	
-    tt = x(~isnan(x(:,1)),1);
+
+	tt = x(~isnan(x(:,1)),1);
 	tt = tt(1);
     
 elseif flag_subplot==2, % separate subplot for each variable
-    %   t_start_epoch is saved in figures user_data variable
+	%   t_start_epoch is saved in figures user_data variable
 	if isempty(x), return, end
 	ts = t_start_epoch(x{1}(:,1));
-	
+
 	t_st = []; t_end = [];
-	
-    npl=size(x,2);
-    for ipl=1:npl
-        c(ipl) = irf_subplot(npl,1,-ipl);
-		
-        y=x{ipl};
-        t_tmp = (y(:,1)-ts-dt(ipl));
+
+	npl=size(x,2);
+	for ipl=1:npl
+		c(ipl) = irf_subplot(npl,1,-ipl);
+
+		y=x{ipl};
+		t_tmp = (y(:,1)-ts-dt(ipl));
 		tt = t_tmp(~isnan(t_tmp));
 		if isempty(t_st), t_st = tt(1);
-        else if tt(1)<t_st, t_st = tt(1); end
+		else if tt(1)<t_st, t_st = tt(1); end
 		end
 		if isempty(t_end), t_end = tt(end);
-        else if tt(end)>t_end, t_end = tt(end); end
+		else if tt(end)>t_end, t_end = tt(end); end
 		end
 		clear tt
-		
+
 		if iscell(marker)
 			if length(marker)==npl, marker_cur = marker{ipl};
-            else marker_cur = marker{1};
+			else marker_cur = marker{1};
 			end
-        else marker_cur = marker;
+		else marker_cur = marker;
 		end
-    plot(t_tmp,y(:,2:end),marker_cur);grid on;
+		plot(t_tmp,y(:,2:end),marker_cur);grid on;
 
-    % put ylimits so that no labels are at the end (disturbing in
-    % multipanel plots)
-    set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
-    
-    ylabel(ylabels{ipl});
-    end
-    % Set common XLim
-    for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
+		% put ylimits so that no labels are at the end (disturbing in
+		% multipanel plots)
+		set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
+		if ~isempty(var_desc) && ~isempty(var_desc{ipl})
+			for v = 1:length(var_desc{ipl}.size)
+				lab{v} = [var_desc{ipl}.labels{v} '[' ...
+					var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
+			end
+			ylabel(lab);
+		end
+	end
+	% Set common XLim
+	for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
 	clear t_st t_end
-    
+
 	tt = y(~isnan(y(:,1)),1);
 	tt = tt(1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
-  %t_start_epoch is saved in figures user_data variable
+	%t_start_epoch is saved in figures user_data variable
 	ts=t_start_epoch(x{1}(:,1));
 
-    npl=size(x{1},2)-1;
-    for ipl=1:npl,
-				
-			% We make subplot only if wee need it
-			if npl==1, c(ipl) = gca;
-            else c(ipl) = irf_subplot(npl,1,-ipl);
-			end
-				
-      line_colors=get(gca,'ColorOrder');
-      for jj=1:size(x,2)
-				
-				if iscell(marker)
-					if length(marker)==size(x,2), marker_cur = marker{jj};
-                    else marker_cur = marker{1};
-					end
-                else marker_cur = marker;
+	npl=size(x{1},2)-1;
+	for ipl=1:npl,
+
+		% We make subplot only if wee need it
+		if npl==1, c(ipl) = gca;
+		else c(ipl) = irf_subplot(npl,1,-ipl);
+		end
+
+		line_colors=get(gca,'ColorOrder');
+		for jj=1:size(x,2)
+			if iscell(marker)
+				if length(marker)==size(x,2), marker_cur = marker{jj};
+				else marker_cur = marker{1};
 				end
-			
-        y=x{jj};
-				plot((y(:,1)-ts-dt(jj)), y(:,ipl+1), 'Color', line_colors(jj,:),'LineStyle', marker_cur)
-				grid on; hold on;
-      end
+			else marker_cur = marker;
+			end
 
-      % put ylimits so that no labels are at the end (disturbing in
-      % multipanel plots)
-      set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+			y=x{jj};
+			plot((y(:,1)-ts-dt(jj)), y(:,ipl+1), 'Color', line_colors(jj,:),'LineStyle', marker_cur)
+			grid on; hold on;
+		end
 
-    end
-    tt = y(~isnan(y(:,1)),1);
+		% put ylimits so that no labels are at the end (disturbing in
+		% multipanel plots)
+		set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
+	end
+	tt = y(~isnan(y(:,1)),1);
 	tt = tt(1);
 end
 
