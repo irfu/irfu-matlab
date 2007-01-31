@@ -1,7 +1,7 @@
-function [data, n_corrected,wakeamp] = c_efw_swwake(e,pair,phase_2,plotflag)
+function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,plotflag)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% [data, n_spins_corrected,w_amp] = c_efw_swwake(e,pair,phase_2 [,plotflag])
+% [data, n_spins_corrected,w_dsc] = c_efw_swwake(e,pair,phase_2 [,plotflag])
 %
 % Input:
 %   e        - raw EFW data (wE?p12/34)
@@ -69,7 +69,7 @@ end
 n_spins = length(i0);
 NPOINTS = 361;
 tt = zeros(NPOINTS,n_spins);
-wakeamp = zeros(n_spins, 2)*NaN;
+wakedesc = zeros(n_spins*2, 4)*NaN;
 ttime = tt;
 sf = c_efw_fsample(e,'hx');
 iok = [];
@@ -177,13 +177,23 @@ for in = iok
 	cdav = cumsum(dav);
 	cdav = cdav - mean(cdav);
 	ccdav = cumsum(cdav);
-	wakeamp(in,1) = ts;
-	wakeamp(in,2) = max(abs(ccdav));
-	if wakeamp(in,2)< WAKE_MIN_AMPLITUDE
+	
+	% Save wake description
+	fw = (mod(ind2,NPOINTS)+1<mod(ind1,NPOINTS)+1);
+	wakedesc(in*2-1+fw,1) = ttime(mod(ind1,NPOINTS)+1,in);
+	wakedesc(in*2-1+fw,2) = ind1;
+	wakedesc(in*2-fw,1) = ttime(mod(ind2,NPOINTS)+1,in);
+	wakedesc(in*2-fw,2) = ind2;
+	wakedesc([in*2-1 in*2],3) = max(abs(ccdav));
+	% Wake half-width
+	ii = find(abs(ccdav)<max(abs(ccdav))/2);
+	wakedesc([in*2-1 in*2],4) = min(ii(ii>23))-max(ii(ii<23));
+	if wakedesc(in*2,3)< WAKE_MIN_AMPLITUDE
 		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		i1 = [];
 		continue
 	end
+	
 	wake = zeros(NPOINTS,1);
 	wake( i1 ) = ccdav;
 	wake( i2 ) = -ccdav;
@@ -215,11 +225,24 @@ for in = iok
 	cdav = cumsum(d12(i2));
 	cdav = cdav - mean(cdav);
 	ccdav2 = cumsum(cdav);
+	
+	% Save wake description
+	wakedesc(in*2-1+fw,3) = max(abs(ccdav1));
+	% Wake half-width
+	ii = find(abs(ccdav1)<max(abs(ccdav1))/2);
+	wakedesc(in*2-1+fw,4) = min(ii(ii>45))-max(ii(ii<45));
+	wakedesc(in*2-fw,3) = max(abs(ccdav2));
+	% Wake half-width
+	ii = find(abs(ccdav2)<max(abs(ccdav2))/2);
+	wakedesc(in*2-fw,4) = min(ii(ii>45))-max(ii(ii<45));
+	clear ii
+	
 	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
 		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		i1 = [];
 		continue
 	end
+	
 	wake = zeros(NPOINTS,1);
 	wake( i1 ) = ccdav1;
 	wake( i2 ) = ccdav2;
@@ -319,6 +342,9 @@ for in = iok
 	end
 	
 end
+
+% Save wake position only inside 0-180 degrees
+wakedesc(wakedesc(:,2)>180,2) = wakedesc(wakedesc(:,2)>180,2)-180;
 
 irf_log('proc',['corrected ' num2str(n_corrected) ' out of ' ...
 	num2str(n_spins) ' spins'])
