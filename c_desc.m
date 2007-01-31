@@ -1,12 +1,15 @@
 function varargout = c_desc(vs,v_info)
-%C_DESC provide a description of a Cluster variable
+%C_DESC  Provide a description of a Cluster variable
 %
-% C_DESC(V_S) prints out a descriptoon of variable VS
+% C_DESC(V_S [,V_S_INFO]) 
+%        prints out a descriptoon of variable VS
 %
-% DESC = C_DESC(V_S) returns a descriptoon of variable VS as structure DESC.
+% DESC = C_DESC(V_S [,V_S_INFO]) 
+%        returns a descriptoon of variable VS as structure DESC.
 %
 % Input:
-%	V_S - string defining a variable
+%	V_S      - string defining a variable
+%   V_S_INFO - infor structure for the variable
 %
 % Output:
 %	DESC - structure containing a description of variable VS. It has the 
@@ -154,15 +157,14 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 	v.quant = 'pburst';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% raw E p12 and p34
+% raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^wbE[1-4]p(12|32|34)$')
+elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
 	v.data = 1;
-	v.cl_id = vs(3);
 	v.inst = 'EFW';
 	v.frame = 'na';
 	v.sig = 'E';
-	v.sen = vs(5:6);
+	v.sen = vs(end-1:end);
 	v.cs = {'SC'};
 	v.rep = {'scalar'};
  	v.units =  {'mV/m'};
@@ -175,36 +177,25 @@ elseif regexp(vs,'^wbE[1-4]p(12|32|34)$')
 	v.ent = {'Electric_Field'};
 	v.prop = {'Component'};
 	v.fluc = {'Waveform'};
-	v.com = '';
-	v.file = 'mEFWburstR';
-	v.quant = 'e';
-	v.lev = 0;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% raw E p12 and p34
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^wE[1-4]p(12|32|34)$')
-	v.data = 1;
-	v.cl_id = vs(3);
-	v.inst = 'EFW';
-	v.frame = 'na';
-	v.sig = 'E';
-	v.sen = vs(5:6);
-	v.cs = {'SC'};
-	v.rep = {'scalar'};
- 	v.units =  {'mV/m'};
-	v.si_conv = {'1.0e-3>V m^-1'};
-	v.size = 1;
-	v.name = {['P' v.sen]};
-	v.labels = v.name;
-	v.field_name = {['Electric field component measured between the probes '...
-		v.sen(1) ' and ' v.sen(2)]};
-	v.ent = {'Electric_Field'};
-	v.prop = {'Component'};
-	v.fluc = {'Waveform'};
-	v.com = '';
-	v.file = 'mER';
-	v.quant = 'e';
-	v.lev = 0;
+	if vs(2)=='E'
+		v.cl_id = vs(3);
+		v.file = 'mER';
+		v.com = '';
+		v.lev = 0;
+		v.quant = 'e';
+	elseif vs(2)=='c'
+		v.cl_id = vs(4);
+		v.file = 'mERC';
+		v.com = 'This data is not original raw data. It has been cleaned.';
+		v.lev = 1;
+		v.quant = 'ec';
+	else
+		v.cl_id = vs(4);
+		v.file = 'mEFWburstR';
+		v.com = 'This data is from EFW internal burst.';
+		v.lev = 0;
+		v.quant = 'e';
+	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RSPEC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
