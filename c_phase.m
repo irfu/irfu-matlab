@@ -1,5 +1,5 @@
 function phase_out = c_phase(t,phase_2)
-%C_PHASE spacecraft phase for give time vector
+%C_PHASE  Find spacecraft phase for given time vector
 %
 % phase_out = c_phase(t,phase_2)
 %
@@ -16,6 +16,8 @@ error(nargchk(2,2,nargin))
 if size(t,1)>1 && size(t,2)>1, error('t must be a vector'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
 
+MAX_SPIN_PERIOD = 4.3;
+
 t=t(:); % t should be column vector
 phase_out = [];
 
@@ -25,7 +27,7 @@ tt = t(t>=phase_2(1,1) & t<=phase_2(end,1));
 if isempty(tt), return, end
 
 while size(phase_2,1)>2
-	ii = find(diff(phase_2(:,1))>4.3);
+	ii = find(diff(phase_2(:,1))>MAX_SPIN_PERIOD);
 	if isempty(ii)
 		kk = find(tt>=phase_2(1,1) & tt<=phase_2(end,1));
 		if ~isempty(kk)
