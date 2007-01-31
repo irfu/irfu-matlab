@@ -45,7 +45,7 @@ function c=irf_plot(x,varargin)
 %              2 - separate subplots for all variables in the cell array
 %              3 - components of vectors in separate panels
 
-ylabels{1}='';
+var_desc{1}='';
 flag_subplot=0;
 have_options = 0;
 args = varargin; 
