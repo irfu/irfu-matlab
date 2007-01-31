@@ -1,5 +1,5 @@
 function out = irf_waverage(data,fsample)
-%IRF_WAVERAGE  Compute weinghted average
+%IRF_WAVERAGE  Compute weighted average
 %
 % out=irf_waverage(var,fsample)
 %
