@@ -13,10 +13,10 @@ function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
 
 % This must be changed when we do any major changes to our processing software
-EFW_DATASET_VERSION = '1';
+EFW_DATASET_VERSION = '2';
 
 if nargin<8, st = []; dt=[]; end
 if nargin<6, sp='.'; end
@@ -83,6 +83,8 @@ end
 d_info = []; ok = 0;
 try
 	[ok, d_info] = c_load([vs '_info'],'var');
+catch
+	d_info = []; ok = 0;
 end
 
 if ~ok || isempty(d_info), dsc = c_desc(vs);
@@ -123,6 +125,10 @@ end
 
 % Do magic on E-field
 if strcmp(caa_vs,'E')
+	
+	% We export only X and Y, no need to export zeroes in Ez.
+	dsc.size(1) = 2;
+	
 	% We check if this full res E is from coming from two probe pairs
 	if lev==2 && ~(strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'3234')) && QUALITY>1
 		irf_log('save','This is not a full E, setting QUALITY=1!')
