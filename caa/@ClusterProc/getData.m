@@ -41,17 +41,17 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
-%	whip: WHIP{cl_id} -> mEFW	// Whisper pulses present +1 precceding sec
-%	bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
-%	sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
-%	badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
+%   whip: WHIP{cl_id} -> mEFW	// Whisper pulses present +1 precceding sec
+%   bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
+%   sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
+%   badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
-%	probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
-%	rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
+%   probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
+%   rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
-%	vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
+%   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
@@ -310,8 +310,11 @@ elseif strcmp(quantity,'dies')
 			continue
 		end
 		
-		irf_log('proc',sprintf('Spin fit wE%dp%d -> diEs%dp%d',...
-			cl_id,probe,cl_id,probe))
+		if corrected_raw_data, ss = 'c';
+		else ss = '';
+		end
+		irf_log('proc',sprintf('Spin fit w%sE%dp%d -> diEs%dp%d',...
+			ss,cl_id,probe,cl_id,probe))
 
 		if isempty(aa), aa = c_phase(tt(:,1),pha); end
 		if isempty(aa)
@@ -1454,14 +1457,23 @@ elseif strcmp(quantity,'rawspec')
 	end
 	
 	p12 = 12; e12 = []; e34 =[];
-	pl = [12,32,34];
 	n_ok = 0;
 	tpharef = [];
-	for probe = pl
-		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+	corrected_raw_data_p12 = 1;
+	corrected_raw_data_p34 = 1;
+	for probe = [12 32 34]
+		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
 			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
-			continue
+			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+			if ~ok || isempty(da)
+				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+				continue
+			end
+			irf_log('load','using raw (not corrected) data')
+			if probe==34, corrected_raw_data_p34 = 0;
+			else corrected_raw_data_p12 = 0;
+			end
 		end
 		n_ok = n_ok + 1;
 		
@@ -1504,17 +1516,22 @@ elseif strcmp(quantity,'rawspec')
 		if pr==12
 			tt = e12;
 			probe = p12;
+			corrected_raw_data = corrected_raw_data_p12;
 		else
 			tt = e34;
 			probe = 34;
+			corrected_raw_data = corrected_raw_data_p34;
 		end
 		if isempty(tt)
 			irf_log('load',sprintf('No raw spectrum for C%d p%d',cl_id,probe))
 			continue
 		end
 		
-		irf_log('proc',sprintf('Raw spectrum wE%dp%d -> RSPEC%dp%d',...
-			cl_id,probe,cl_id,probe))
+		if corrected_raw_data, ss = 'c';
+		else ss = '';
+		end
+		irf_log('proc',sprintf('Raw spectrum w%sE%dp%d -> RSPEC%dp%d',...
+			ss,cl_id,probe,cl_id,probe))
 		
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
