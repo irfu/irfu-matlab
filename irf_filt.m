@@ -32,7 +32,7 @@ if ((nargin < 4) | (isempty(Fs))),
  irf_log('proc',['Using sampling frequency ',num2str(Fs),' Hz']);
 end % estimate sampling frequency
 if nargin > 4
-    irf_log('proc',['You have specified '  num2str(order) '-th filter order (use uneven order)']);
+    %irf_log('proc',['You have specified '  num2str(order) '-th filter order (use uneven order)']);
     n=order; % use this order for filters
 end
 fmin=fmin/(Fs/2);
@@ -51,7 +51,7 @@ elseif fmax ==0
         [n wn]=ellipord(fmin,fmin*1.1,Rp,Rs);
     end 
 	[B,A] = ellip(n,Rp,Rs,fmin,'high');
-	irf_log('proc',['using ' num2str(n) '-th highpass order filter']);
+	%irf_log('proc',['using ' num2str(n) '-th highpass order filter']);
 else
 	%[n wn]=ellipord(fmax,fmax*1.1,Rp,Rs);
 	%sprintf('using %d-th order ellip irf_lowpass filter',n)
