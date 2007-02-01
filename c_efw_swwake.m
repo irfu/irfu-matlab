@@ -101,6 +101,9 @@ for in = 1:n_spins
 			if sf==450, dtmp = c_resamp(e(eind,:), ttime(:,in));
 			else dtmp = c_resamp(e(eind,:), ttime(:,in), 'spline');
 			end
+			% Fill small gaps (at edges only?) with zeroes
+			% This has a minor influence on the correction procedure
+			dtmp(isnan(dtmp(:,2)),2) = 0;
 			tt(:,in) = dtmp(:,2);
 		end
 		
