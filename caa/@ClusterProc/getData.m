@@ -226,7 +226,7 @@ elseif strcmp(quantity,'dies')
 	for probe = [12,32,34]
 		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
-			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+			irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 			if ~ok || isempty(da)
 				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
@@ -550,7 +550,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         for probe = [12 32 34]
             [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 			if ~ok || isempty(da)
-				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+				irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 				if ~ok || isempty(da)
 					irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
