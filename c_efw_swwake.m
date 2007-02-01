@@ -83,8 +83,8 @@ for in = 1:n_spins
 		te = ts + 4.0;
 		empty = 1;
 	else
-		if length(i360)~=1, error('bogus phase'), end
-		te = phase_2(i360,1);
+		if length(i360)~=1, irf_log('proc',['bogus phase at ' epoch2iso(ts,1)]), end
+		te = phase_2(i360(end),1);
 		empty = 0;
 	end
 	
