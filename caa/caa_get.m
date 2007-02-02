@@ -1,7 +1,7 @@
 function data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
 %CAA_GET  read data from caa Matlab files
 %
-% data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
+% data = caa_get(start_t,dt/stop_t,cl_id,var_name,ops_s)
 %
 % $Id$
 
@@ -18,10 +18,7 @@ end
 
 SPLIT_INT = 3; % 3 hour subintervals
 
-if isnumeric(iso_t), st = iso_t;
-elseif ischar(iso_t), st = iso2epoch(iso_t); 
-else error('ST muste be eather ISDAT epoch or ISO string')
-end
+[st,dt] = irf_stdt(iso_t,dt);
 
 t = fromepoch(st);
 t0 = toepoch([t(1) t(2) t(3) fix(t(4)/SPLIT_INT)*SPLIT_INT 0 0]);
