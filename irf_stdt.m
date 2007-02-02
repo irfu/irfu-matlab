@@ -5,6 +5,10 @@ function [st,dt] = irf_stdt(st_in,dt_in)
 % [st,dt] = irf_stdt(start_t,stop_t)
 % [st,dt] = irf_stdt(iso_start_t,iso_stop_t)
 %
+%    Parse input parameters to produce interval start and length
+%
+% See also ISO2EPOCH
+%
 % $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
