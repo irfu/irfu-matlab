@@ -6,12 +6,15 @@ function res = caa_fill_gaps(data,te)
 %
 % $Id$
 
-% Copyright 2006 Yuri Khotyaintsev
-
-fs = c_efw_fsample(data);
-if fs<=0, error('cannot determine sampling frequency'), end
+% Copyright 2006-2007 Yuri Khotyaintsev
 
 res = data;
+
+fs = c_efw_fsample(data);
+if fs<=0
+	irf_log('proc','cannot fill gaps (no sampling frequency)')
+	return
+end
 
 ngap = fix((te -data(end,1))*fs);
 if ngap>0
