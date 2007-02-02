@@ -74,6 +74,9 @@ for j = ii;
 	cd(mode_list(j).dir);
 	[ok, tt] = c_load(var_name,cl_id);
 	if ~ok || isempty(tt), continue, end
+	% Remove NaN times
+	% TODO: times must never be NaN.
+	tt(isnan(tt(:,1)),:) = []; if isempty(tt), continue, end
 	if isempty(data), data = tt;
     else data = caa_append_data(data,tt);
 	end
