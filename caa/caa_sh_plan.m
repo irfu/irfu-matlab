@@ -99,14 +99,28 @@ for cl_id = 1:4
 	else eval([ 'MP=' v_s ';'])
 	end
 	
+	v_s = sprintf('MPauseY%d',yyyy);
+	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
+	if ~exist(v_s,'var'), MP3h = [];
+	else eval([ 'MP3h=' v_s ';'])
+	end
+	
 	figure(cl_id), clf
 	for o=1:length(ORB)
 		irf_plot([ORB(o,1) ORB(o,1)+ORB(o,2); 0 ORB(o,2)/3600]'), hold on
+		if ~isempty(MP3h)
+			ii = find(MP3h(:,1)>=ORB(o,1) & MP3h(:,1)<=ORB(o,1)+ORB(o,2));
+			if ~isempty(MP3h(ii,:))
+				irf_plot([MP3h(ii,:);  (MP3h(ii,:)-ORB(o,1))/3600]','gx-')
+			end
+		end
 		ii = find(MP(:,1)>=ORB(o,1) & MP(:,1)<=ORB(o,1)+ORB(o,2));
-        if ~isempty(MP(ii,:))
+		if ~isempty(MP(ii,:))
 			irf_plot([MP(ii,:);  (MP(ii,:)-ORB(o,1))/3600]','ro-')
 		end
 	end
-	
+	irf_zoom([toepoch([yyyy 1 1 0 0 0]) toepoch([yyyy+1 1 1 0 0 0])],'x')
+	ylabel('time [hours] from perigy')
+	title(sprintf('Cluster %d',cl_id))
 	clear MP
 end
