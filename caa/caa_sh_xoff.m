@@ -1,10 +1,14 @@
-function [dE, dAmp, weight] = caa_sh_xoff(st,dt)
+function [dE, dAmp, weight] = caa_sh_xoff(st,dt,flag_amp)
 %CAA_SH_XOFF  sunward offset and amplitude correction in the sh/sw
 %
-% [dE, dAmp, weight] = caa_sh_xoff(st,dt)
+% [dE, dAmp, weight] = caa_sh_xoff(st,dt [,flag_amp])
+% [dE, dAmp, weight] = caa_sh_xoff(iso_st,iso_et [,flag_amp])
 %
 % Study sunward offset (X GSE) and amplitude correction
 % factor by comparing EFW data with CIS HIA
+%
+% if FLAG_AMP is zero (default), use default amplitude correction
+% factor = 1.1
 %
 % See also CAA_SH_PLAN, CAA_COROF_DSI
 %
@@ -14,10 +18,17 @@ function [dE, dAmp, weight] = caa_sh_xoff(st,dt)
 
 STEP = 600; % Averaging window
 DEY = 0.5;  % Good Ey correspondence in mV/m
+DAMP_DEF = 1.1; % Default amplitude correction factor
 
 dE1 = NaN; dE2 = NaN; dE3 = NaN; dE4 = NaN;
 dAmp1 = NaN; dAmp2 = NaN; dAmp3 = NaN; dAmp4 = NaN;
 weight = 0;
+
+if nargin<3, flag_amp = 0; end
+if flag_amp~=0, flag_amp = 1; end
+
+if ischar(st), st = iso2epoch(st); end
+if ischar(dt), dt = iso2epoch(dt) -st; end
 
 dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
@@ -106,7 +117,9 @@ if ~isempty(E1) && ~isempty(CE1)
     ii = find( abs(CE1(:,3)-E1(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E1(ii,1:2);
-		dAmp = find_damp(E1(ii,3), CE1(ii,3));
+		if flag_amp, dAmp = find_damp(E1(ii,3), CE1(ii,3));
+		else dAmp = DAMP_DEF;
+		end
         dEx(:,2) = dAmp*E1(ii,2) - CE1(ii,2);
         irf_plot(dEx,'k'), on = 1;
         dEx1 = mean(dEx(:,2));
@@ -119,7 +132,9 @@ if ~isempty(E3) && ~isempty(CE3)
     ii = find( abs(CE3(:,3)-E3(:,3)) < DEY );
     if ~isempty(ii)
         dEx = E3(ii,1:2);
-		dAmp = find_damp(E3(ii,3), CE3(ii,3));
+		if flag_amp, dAmp = find_damp(E3(ii,3), CE3(ii,3));
+		else dAmp = DAMP_DEF;
+		end
         dEx(:,2) = dAmp*E3(ii,2) - CE3(ii,2);
         if on, hold on, end
         irf_plot(dEx,'g')
@@ -149,7 +164,9 @@ if ~isempty(Eref)
     if ~isempty(E1)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E1(:,2)) );
 		if ~isempty(ii)
-			dAmp1 = find_damp(E1(ii,3), Eref(ii,3));
+			if flag_amp, dAmp1 = find_damp(E1(ii,3), Eref(ii,3));
+			else dAmp1 = DAMP_DEF;
+			end
 			dE1 = mean(dAmp1*E1(ii,2)-Eref(ii,2))/dAmp1;
 			axes(h(5)), irf_plot([E1(:,1) dAmp1*E1(:,2)-dE1],'k')
 			axes(h(6)), irf_plot([E1(:,1) dAmp1*E1(:,3)],'k')
@@ -160,7 +177,9 @@ if ~isempty(Eref)
     if ~isempty(E2)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E2(:,2)) );
 		if ~isempty(ii)
-			dAmp2 = find_damp(E2(ii,3), Eref(ii,3));
+			if flag_amp, dAmp2 = find_damp(E2(ii,3), Eref(ii,3));
+			else dAmp2 = DAMP_DEF;
+			end
 			dE2 = mean(dAmp2*E2(ii,2)-Eref(ii,2))/dAmp2;
 			axes(h(5)), irf_plot([E2(:,1) dAmp2*E2(:,2)-dE2],'r')
 			axes(h(6)), irf_plot([E2(:,1) dAmp2*E2(:,3)],'r')
@@ -173,7 +192,9 @@ if ~isempty(Eref)
     if ~isempty(E3)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E3(:,2)) );
 		if ~isempty(ii)
-			dAmp3 = find_damp(E3(ii,3), Eref(ii,3));
+			if flag_amp, dAmp3 = find_damp(E3(ii,3), Eref(ii,3));
+			else dAmp3 = DAMP_DEF;
+			end
 			dE3 = mean(dAmp3*E3(ii,2)-Eref(ii,2))/dAmp3; 
 			axes(h(5)), irf_plot([E3(:,1) dAmp3*E3(:,2)-dE3],'g')
 			axes(h(6)), irf_plot([E3(:,1) dAmp3*E3(:,3)],'g')
@@ -186,7 +207,9 @@ if ~isempty(Eref)
     if ~isempty(E4)
         ii = find( ~isnan(Eref(:,2)) & ~isnan(E4(:,2)) );
 		if ~isempty(ii)
-			dAmp4 = find_damp(E4(ii,3), Eref(ii,3));
+			if flag_amp, dAmp4 = find_damp(E4(ii,3), Eref(ii,3));
+			else dAmp4 = DAMP_DEF;
+			end
 			dE4 = mean(E4(ii,2)-Eref(ii,2));
 			axes(h(5)), irf_plot([E4(:,1) dAmp4*E4(:,2)-dE4],'b')
 			axes(h(6)), irf_plot([E4(:,1) dAmp4*E4(:,3)],'b')
@@ -207,7 +230,7 @@ if ~isempty(Eref)
     hold off
 end
 title(h(5),legx), ylabel(h(5),'Ex [mV/m]')
-title(h(6),legy), ylabel(h(6),'Ey [mV/m]')
+if flag_amp, title(h(6),legy), end, ylabel(h(6),'Ey [mV/m]')
 
 axes(h(4)), cla
 c_pl_tx('Ps?')
