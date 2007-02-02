@@ -185,6 +185,20 @@ if strcmp(quantity,'ec')
 		end
 		n_ok = n_ok + 1;
 		
+		fsamp = c_efw_fsample(da(:,1),'hx');
+		
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		signal = da;
+		remove_problems
+		da = res;
+		clear res signal problems
+		
+		% Check if we have at least 1 spin of data left
+		if length(find(~isnan(da(:,2)))) < 4*fsamp
+			irf_log('proc',irf_ssub('No p? data after removals',probe))
+			continue
+		end
+		
 		modified = 0;
 		if correct_sw_wake
 			irf_log('proc',...
