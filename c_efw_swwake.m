@@ -92,7 +92,7 @@ for in = 1:n_spins
 	if empty, tt(:,in) = NaN;
 	else
 		eind = find((e(:,1) > ts-0.15) & (e(:,1) < te+0.15));
-		eind(isnan(e(eind))) = [];
+		eind(isnan(e(eind,2))) = [];
 		% Check for data gaps inside one spin.
 		if sf>0 && length(eind)<N_EMPTY*MAX_SPIN_PERIOD*sf
 			irf_log('proc',['data gap at ' epoch2iso(ts,1)])
@@ -237,6 +237,8 @@ for in = iok
 	wakedesc(in*2-fw,3) = max(abs(ccdav2));
 	% Wake half-width
 	ii = find(abs(ccdav2)<max(abs(ccdav2))/2);
+	%disp(ii)
+	%if in==244,keyboard,end
 	wakedesc(in*2-fw,4) = min(ii(ii>45))-max(ii(ii<45));
 	clear ii
 	
