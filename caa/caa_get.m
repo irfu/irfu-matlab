@@ -5,7 +5,7 @@ function data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
 %
 % $Id$
 
-% Copyright 2005, 2006 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 DP = '/data/caa/l1';
 data = [];
