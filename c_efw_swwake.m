@@ -1,7 +1,7 @@
-function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,plotflag)
+function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotflag)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% [data, n_spins_corrected,w_dsc] = c_efw_swwake(e,pair,phase_2 [,plotflag])
+% [data, n_spins_corrected,w_dsc] = c_efw_swwake(e,pair,phase_2,[whip,plotflag])
 %
 % Input:
 %   e        - raw EFW data (wE?p12/34)
@@ -27,14 +27,9 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,plotflag)
 % Original idea by Anders Eriksson.
 % Many useful suggestion by Per-Arne Lindqvist.
 
-error(nargchk(3,4,nargin))
-if nargin==4
-	if isnumeric(plotflag)
-		if plotflag~=0, plotflag = 1; end
-	else plotflag = 1;
-	end
-else plotflag = 0;
-end
+error(nargchk(3,5,nargin))
+if nargin<5, plotflag = 0; end
+if nargin<4, whip = []; end
 
 n_corrected = 0;
 
@@ -47,10 +42,16 @@ if pair==32, error('PAIR 32 is not implemented yet'), end
 N_EMPTY = .9; 
 MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_HALFWIDTH = 45; % degrees
+WAKE_MIN_HALFWIDTH = 12;  % degrees
 WAKE_MIN_AMPLITUDE = 0.7; % mV/m
 plot_step = 1;
 plot_i = 0;
 data = e;
+data_corr = e;
+if ~isempty(whip)
+	irf_log('proc','blanking Whisper pulses')
+	data_corr = caa_rm_blankt(e,whip);
+end
 
 i0 = find(phase_2(:,2)==0);
 if isempty(i0), irf_log('proc','empty phase'), return, end
@@ -92,20 +93,44 @@ for in = 1:n_spins
 	ttime(:,in) = (ts + (0:1:360) *(te-ts)/360.0)';
 	if empty, tt(:,in) = NaN;
 	else
-		eind = find((e(:,1) > ts-0.15) & (e(:,1) < te+0.15));
-		eind(isnan(e(eind,2))) = [];
+		MARG = 0.05;
+		eind = find((data_corr(:,1) > ts-MARG) & (data_corr(:,1) < te+MARG));
+		eind(isnan(data_corr(eind,2))) = [];
 		% Check for data gaps inside one spin.
-		if sf>0 && length(eind)<N_EMPTY*MAX_SPIN_PERIOD*sf
+		if sf>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sf
 			irf_log('proc',['data gap at ' epoch2iso(ts,1)])
 			tt(:,in) = NaN;
 		else 
-			if sf==450, dtmp = c_resamp(e(eind,:), ttime(:,in));
-			else dtmp = c_resamp(e(eind,:), ttime(:,in), 'spline');
+			if sf==450, dtmp = c_resamp(data_corr(eind,:), ttime(:,in));
+			else
+				ddt = 1/sf;
+				dtmp = data_corr(eind,:);
+				% We linearly extrapolate missing data at at edges
+				if dtmp(1,1)>=ts+ddt
+					% We miss points at the beginning of the spin
+					nm = ceil( (dtmp(1,1)-ts)/ddt );
+					t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
+					data_temp = c_resamp(dtmp,[t_temp'; dtmp(1:2,1)],...
+						'linear');
+					dtmp = [data_temp(1:end-2,:); dtmp];
+					clear nm t_temp data_temp
+				end
+				if dtmp(end,1)<=te-ddt
+					% We miss points at the end of the spin
+					nm = ceil( (te-dtmp(end,1))/ddt );
+					t_temp = dtmp(end,1) + (1:nm)*ddt;
+					data_temp = c_resamp(dtmp,...
+						[dtmp(end-1:end,1); t_temp'], 'linear');
+					dtmp = [dtmp; data_temp(3:end,:)];
+					clear nm t_temp data_temp
+				end
+				dtmp = c_resamp(dtmp, ttime(:,in), 'spline');
 			end
 			% Fill small gaps (at edges only?) with zeroes
 			% This has a minor influence on the correction procedure
 			dtmp(isnan(dtmp(:,2)),2) = 0;
 			tt(:,in) = dtmp(:,2);
+			clear dtmp
 		end
 		
 		% Identify spins for which we attempt to correct wake
@@ -120,6 +145,8 @@ for in = 1:n_spins
 		end
 	end
 end
+
+clear data_corr
 
 if isempty(iok)
 	irf_log('proc','not enough spins for correction')
@@ -161,24 +188,22 @@ for in = iok
 	% Average with 7 points to minimize danger of detecting a wrong maximum
 	d12 = w_ave(d12,7);
 	
-	% If i1 is coming not from the previous spin
-	if isempty(i1) || (in~=iok(1) && in-1~=iok(find(iok==in)-1))
-		i1 = 1:1:361;
-	end
-	
-	% We expect for the second maximum to be 180 degrees from the first
-	if max(d12(i1))>abs(min(d12(i1)))
-		ind1 = find(d12 == max(d12(i1))) -1;
-		i1 = mod( (ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180) -1,...
-			NPOINTS) +1;
-		ind2 = find(d12 == min(d12( i1 ))) -1;
-	else
-		ind1 = find(d12 == min(d12(i1))) -1;
-		i1 = mod( (ind1-WAKE_MAX_HALFWIDTH+180:ind1+WAKE_MAX_HALFWIDTH+180) -1,...
-			NPOINTS) +1;
-		ind2 = find(d12 == max(d12( i1 ))) -1;
+	% Fix wake position
+	if pair==12
+		i1 = (40:70) +1; % Get degrees 55 +-15
+	elseif pair==34
+		i1 = (40:70) +1 +90; % Get degrees 145 +-15
 	end
 
+	ind1 = find(d12 == min(d12(i1))) -1;
+	ind2 = find(d12 == max(d12(i1+180))) -1;
+	if abs(ind2-ind1-180)>5
+		irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
+			' deg at ' epoch2iso(ts,1)])
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
+	end
+	
 	% The proxy wake is naroow (1/2 of the final fit)	
 	wake_width = fix(WAKE_MAX_HALFWIDTH/2);
 	i1 = mod( (ind1-wake_width:ind1+wake_width) -1, NPOINTS) +1;
@@ -202,7 +227,7 @@ for in = iok
 	wakedesc([in*2-1 in*2],4) = min(ii(ii>23))-max(ii(ii<23));
 	if wakedesc(in*2,3)< WAKE_MIN_AMPLITUDE
 		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
-		i1 = [];
+		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	
@@ -253,13 +278,18 @@ for in = iok
 	
 	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
 		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
-		i1 = [];
+		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
 		irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
-		%i1 = [];
-		%continue
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
+	end
+	if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
+		irf_log('proc',['wake is too narrow at ' epoch2iso(ts,1)])
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
 	end
 	
 	wake = zeros(NPOINTS,1);
@@ -313,8 +343,8 @@ for in = iok
 		% If the previous spin was not corrected
 		% we correct it here
 		if in==iok(1) && in>3
-			% We try to correct the spin at the start of the entire 
-			% intrval which usually has a data gap 
+			% We try to correct the spin before the start of the  
+			% interval which has a data gap 
 			cox = - (1:3);
 			n_corrected = n_corrected + 3;
 		else
@@ -328,7 +358,7 @@ for in = iok
 		else
 			irf_log('proc',['stop   interval at ' epoch2iso(ts,1)])
 		end
-		if in==iok(end) && n_spins-in>=3
+		if n_spins-in>=3
 			% We try to correct the spin at the end of the entire 
 			% intrval which usually has a data gap 
 			cox = [cox 1:3];
@@ -359,7 +389,7 @@ for in = iok
 			end
 		end
 	end
-	if plotflag_now
+	if plotflag_now && in~=iok(end)
 		plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
 		if plot_step==0, plotflag = 0;
 		elseif plot_step<0, return
@@ -369,6 +399,7 @@ end
 
 % Save wake position only inside 0-180 degrees
 wakedesc(wakedesc(:,2)>180,2) = wakedesc(wakedesc(:,2)>180,2)-180;
+wakedesc(isnan(wakedesc(:,1)),:) = [];
 
 irf_log('proc',['corrected ' num2str(n_corrected) ' out of ' ...
 	num2str(n_spins) ' spins'])
@@ -396,7 +427,7 @@ end
 
 function res = isGoodShape(s)
 % check for shape of the wake fit
-RATIO = 0.2;
+RATIO = 0.3;
 res = 1;
 if max(s)~=max(abs(s)), s = -s; end
 maxmax = max(s);
