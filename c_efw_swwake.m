@@ -98,7 +98,7 @@ for in = 1:n_spins
 		eind(isnan(data_corr(eind,2))) = [];
 		% Check for data gaps inside one spin.
 		if sf>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sf
-			irf_log('proc',['data gap at ' epoch2iso(ts,1)])
+			%irf_log('proc',['data gap at ' epoch2iso(ts,1)])
 			tt(:,in) = NaN;
 		else 
 			if sf==450, dtmp = c_resamp(data_corr(eind,:), ttime(:,in));
@@ -198,8 +198,8 @@ for in = iok
 	ind1 = find(d12 == min(d12(i1))) -1;
 	ind2 = find(d12 == max(d12(i1+180))) -1;
 	if abs(ind2-ind1-180)>5
-		irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
-			' deg at ' epoch2iso(ts,1)])
+		%irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
+		%	' deg at ' epoch2iso(ts,1)])
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -282,7 +282,7 @@ for in = iok
 		continue
 	end
 	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
-		irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+		%irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
