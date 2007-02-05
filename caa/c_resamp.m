@@ -10,14 +10,13 @@ function out = c_resamp(x,y,method)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
-%
+% Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(2,3,nargin))
 
 % guess the sampling frequency
 if min(size(y))==1, t = y(:); 
-else, t = y(:,1); t = t(:);
+else t = y(:,1); t = t(:);
 end
 
 ndata = length(t);
@@ -30,7 +29,7 @@ if length(x(:,1))/(x(end,1) - x(1,1)) > 2*sfy
 	for j=1:ndata
 		ii = find(x(:,1) <  t(j) + dt2 & x(:,1) >  t(j) - dt2);
 		if isempty(ii), out(j,2:end) = NaN;
-		else, out(j,2:end) = mean(x(ii,2:end));
+		else out(j,2:end) = mean(x(ii,2:end));
 		end
 	end
 else
@@ -43,7 +42,7 @@ else
 	if size(x,1) > 1,
 		out = [y(:,1) interp1(x(:,1),x(:,2:end),y(:,1),method,'extrap')];
 	else
-		warning('X has only one point')
+		warning('irf:c_resamp','X has only one point')
 		out = [y(:,1) (y(:,1)*0+1)*x(:,2:end)];
 	end
 end
