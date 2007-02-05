@@ -199,11 +199,21 @@ if strcmp(quantity,'ec')
 			continue
 		end
 		
+		% Load Whisper
+		whip = [];
+		if cl_id==2 || fsamp==450
+			[ok,whip] = c_load('WHIP?',cl_id);
+			if ~ok
+				irf_log('load',	irf_ssub('Cannot load WHIP?',cl_id))
+			end
+			clear ok
+		end
+		
 		modified = 0;
 		if correct_sw_wake
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
-			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha);
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip);
 			eval(irf_ssub(...
 				'WAKE?p!=wake_dsc;save_list=[save_list ''WAKE?p! ''];',...
 				cl_id,probe));
