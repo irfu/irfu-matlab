@@ -48,7 +48,8 @@ N_EMPTY = .9;
 MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_HALFWIDTH = 45; % degrees
 WAKE_MIN_AMPLITUDE = 0.7; % mV/m
-
+plot_step = 1;
+plot_i = 0;
 data = e;
 
 i0 = find(phase_2(:,2)==0);
@@ -97,7 +98,7 @@ for in = 1:n_spins
 		if sf>0 && length(eind)<N_EMPTY*MAX_SPIN_PERIOD*sf
 			irf_log('proc',['data gap at ' epoch2iso(ts,1)])
 			tt(:,in) = NaN;
-		else
+		else 
 			if sf==450, dtmp = c_resamp(e(eind,:), ttime(:,in));
 			else dtmp = c_resamp(e(eind,:), ttime(:,in), 'spline');
 			end
@@ -128,6 +129,14 @@ end
 i1 = [];
 
 for in = iok
+	% Do we need to plot the current interval?
+	if plotflag, plot_i = plot_i + 1; end
+	if plotflag && plot_i == plot_step
+		plotflag_now = 1;
+		plot_i = 0;
+	else plotflag_now = 0;
+	end
+	
 	ts = ttime(1,in);
 	if in==n_spins-2
 		% Last interval
@@ -211,7 +220,7 @@ for in = iok
 	% Now find the final fit	
 	d12 = [av12_corr(1)-av12_corr(end); diff(av12_corr)];
 	d12 = [d12(1)-d12(end); diff(d12)];
-	if plotflag
+	if plotflag_now
 		d12_tmp = d12; % save for plotting
 	end
 	% Average with only 5 points to get a more fne fit
@@ -252,7 +261,7 @@ for in = iok
 	wake( i1 ) = ccdav1;
 	wake( i2 ) = ccdav2;
 	
-	if plotflag
+	if plotflag_now
 		clf
 		subplot(4,1,1)
 		ts = ttime(1,in);
@@ -286,7 +295,7 @@ for in = iok
 	data(ind,2) = data(ind,2) - wake_e(:,2);
 	n_corrected = n_corrected + 1;
 	
-	if plotflag
+	if plotflag_now
 		subplot(4,1,4)
 		irf_plot({e(ind,:),data(ind,:)},'comp')
 		ylabel(['E' num2str(pair) ' [mV/m]']);
@@ -333,7 +342,7 @@ for in = iok
 				wake_e = c_resamp([ttime(:,in+cx) wake], e(ind,1));
 				data(ind,2) = data(ind,2) - wake_e(:,2);
 				%irf_log('proc',['correcting spin: ' num2str(cx)])
-				if plotflag
+				if plotflag_now
 					hold on
 					irf_plot({e(ind,:),data(ind,:)},'comp')
 					ylabel(['E' num2str(pair) ' [mV/m]']);
@@ -345,7 +354,12 @@ for in = iok
 			end
 		end
 	end
-	
+	if plotflag_now
+		plot_step = irf_ask('Step? (0-continue, -1 return) [%]>','plot_step',1);
+		if plot_step==0, plotflag = 0;
+		elseif plot_step<0, return
+		end
+	end
 end
 
 % Save wake position only inside 0-180 degrees
