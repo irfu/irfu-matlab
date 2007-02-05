@@ -256,6 +256,11 @@ for in = iok
 		i1 = [];
 		continue
 	end
+	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
+		irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+		%i1 = [];
+		%continue
+	end
 	
 	wake = zeros(NPOINTS,1);
 	wake( i1 ) = ccdav1;
@@ -288,7 +293,7 @@ for in = iok
 		add_timeaxis(gca,ts);
 		set(gca,'XLim',[0 te-ts])
 	end
-
+	
 	% Correct the spin in the middle	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
 	wake_e = c_resamp([ttime(:,in) wake], e(ind,1));
@@ -387,4 +392,33 @@ for j=1:length(x)
 	if j<=MIDX, ii(ii<1) = ii(ii<1) +NPOINTS; end
 	if j>length(x)-MIDX, ii(ii>NPOINTS) = ii(ii>NPOINTS) -NPOINTS; end
 	av(j) = sum(x(ii).*m);
+end
+
+function res = isGoodShape(s)
+% check for shape of the wake fit
+RATIO = 0.2;
+res = 1;
+if max(s)~=max(abs(s)), s = -s; end
+maxmax = max(s);
+d1 = diff(s);
+imax = find((d1(1:end-1).*d1(2:end))<0)+1;
+
+if length(imax)==1
+	if s(imax)==maxmax, return
+	else
+		% Signal has a minumum
+		irf_log('proc','Signal has a minumum instead of a maximum')
+		res = 0; return
+	end
+elseif isempty(imax)
+	% Signal is monotonic
+	irf_log('proc','Signal is monotonic')
+	res = 0; return
+end
+maxima = abs(s(imax));
+smax = max( maxima(maxima < maxmax) );
+if smax>maxmax*RATIO,
+	res = 0; 
+	irf_log('proc',...
+		sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))
 end
