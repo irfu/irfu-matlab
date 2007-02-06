@@ -69,10 +69,10 @@ end
 r = [];
 ri = [];
 fmax = 12.5;
-c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};')
+c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];')
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
-	p = []; spec = {}; es = []; rspec = []; in = [];
+	p = []; spec = {}; es = []; rspec = []; in = {}; wamp = [];
 	
 	if exist(cdir, 'dir')
 		d = dir([cdir '/2*_*']);
@@ -96,6 +96,14 @@ for cli=1:4
 			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
 			clear p_tmp
 			
+			% Load WAKE amplitude
+			pp = caa_sfit_probe(cli);
+			wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
+			if ~isempty(wamp_tmp) && wamp_tmp(1,1)~=-157e8
+				wamp = [wamp; wamp_tmp(:,[1 3])];
+			end
+			clear wamp_tmp
+			
 			% Load spectrum
 			spec_tmp = c_load('diESPEC?p1234',cli,'var');
 			if ~isempty(spec_tmp) && isstruct(spec_tmp)
@@ -105,7 +113,6 @@ for cli=1:4
 			clear spec_tmp
 			
 			% Load Es
-			pp = caa_sfit_probe(cli);
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
 				dsiof = c_ctl(cli,'dsiof');
@@ -151,6 +158,7 @@ for cli=1:4
 			cd(old_pwd)
 		end
 		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
+		if ~isempty(wamp), c_eval('wamp?=wamp;',cli), end, clear wamp
 		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
 		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
@@ -251,10 +259,15 @@ c_eval('axes(he(2+?)),if exist(''rspec?'',''var'') && ~isempty(rspec?),irf_plot(
 
 % Plot P
 axes(he(7))
-c_pl_tx('p?')
-ylabel('P L2 [-V]')
-a = get(gca,'YLim');
-if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
+if ~isempty(wamp1) || ~isempty(wamp2)|| ~isempty(wamp3)|| ~isempty(wamp4)
+	c_pl_tx('wamp?')
+	ylabel('Wake [mV/m]')
+else
+	c_pl_tx('p?')
+	ylabel('P L2 [-V]')
+	a = get(gca,'YLim');
+	if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
+end
 
 if dt>0 
 	plot_intervals(he(8),{in1,in2,in3,in4},st)
