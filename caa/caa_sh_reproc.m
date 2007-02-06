@@ -39,11 +39,11 @@ for d=1:length(dirs)
 
 
 			irf_log('proc',[ '-- GETTING -- : ' curr_d]);
+			if exist('./mERC.mat','file') || exist('./mEDSI.mat','file')
+				!rm -f mERC.mat mEDSI.mat mEDSIf.mat
+			end
 			getData(ClusterProc(pwd),cl_id,'ec','correct_sw_wake')
 			getData(ClusterProc(pwd),cl_id,'rawspec')
-			%if exist('./mEDSI.mat','file')
-			%	![ -f mEDSI.mat ] && mv mEDSI.mat mEDSI.mat_old && [ -f mEDSIf.mat ] && mv mEDSIf.mat mEDSIf.mat_old
-			%end
 			getData(ClusterProc(pwd),cl_id,'dies')
 			getData(ClusterProc(pwd),cl_id,'diespec')
 			getData(ClusterProc(pwd),cl_id,'dief')
