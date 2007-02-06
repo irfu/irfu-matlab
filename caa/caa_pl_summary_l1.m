@@ -3,7 +3,8 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %
 % caa_pl_summary_l1(iso_t,dt,sdir,[options])
 %   options:
-%           saveps    - save PS and PDF
+%           savepdf   - save PDF
+%           saveps    - same as 'savepdf' (deprecated)
 %           savepng   - save JPG
 %           savepng   - save PNG
 %           save      - save PNG, PS and PDF
@@ -18,7 +19,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
-savePS = 0;
+savePDF = 0;
 savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
@@ -33,13 +34,15 @@ while have_options
 	l = 1;
 	switch(args{1})
 	case 'nosave'
-		savePS = 0;
+		savePDF = 0;
 		savePNG = 0;
 	case 'save'
-		savePS = 1;
+		savePDF = 1;
 		savePNG = 1;
 	case 'saveps'
-		savePS = 1;
+		savePDF = 1;
+	case 'savepdf'
+		savePDF = 1;
 	case 'savepng'
 		savePNG = 1;
 	case 'savejpg'
@@ -155,7 +158,7 @@ for cli=1:4
 	end
 end
 
-if strcmp(iso_t,'-1') && dt==-1
+if ( strcmp(iso_t,'-1') || iso_t==-1 ) && dt==-1
 	st = int_s;
 	dt = int_e - int_s;
 else st = iso2epoch(iso_t);
@@ -270,19 +273,13 @@ end
 fne = sprintf('EFW_SPLOT_L1ERSPEC__%s',irf_fname(st));
 fone = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
 
-if savePS
-	irf_log('save',['saving ' fn '.[ps,pdf]'])
-	irf_log('save',['saving ' fne '.[ps,pdf]'])
-	print( 75, '-dpsc2', fn), print( 76, '-dpsc2', fne)
-	[s,w] = unix(['/usr/local/bin/ps2pdf12 ' fn '.ps']);
-	if s~=0, irf_log('save',['problem with ps2pdf: ' w]), end
-	[se,w] = unix(['/usr/local/bin/ps2pdf12 ' fne '.ps']);
-	if se~=0, irf_log('save',['problem with ps2pdf: ' w]), end
-	if s==0 && se==0
-		irf_log('save',['joining to ' fone '.pdf'])
-		[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
-		if s~=0, irf_log('save','problem with pdfjoin'), end
-	end
+if savePDF
+	irf_log('save',['saving ' fn '.pdf'])
+	irf_log('save',['saving ' fne '.pdf'])
+	print( 75, '-dpdf', fn), print( 76, '-dpdf', fne)
+	irf_log('save',['joining to ' fone '.pdf'])
+	[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
+	if s~=0, irf_log('save','problem with pdfjoin'), end
 end
 if savePNG
 	irf_log('save',['saving ' fn '.png'])
