@@ -224,12 +224,15 @@ for in = iok
 	wakedesc([in*2-1 in*2],3) = max(abs(ccdav));
 	% Wake half-width
 	ii = find(abs(ccdav)<max(abs(ccdav))/2);
-	wakedesc([in*2-1 in*2],4) = min(ii(ii>23))-max(ii(ii<23));
-	if wakedesc(in*2,3)< WAKE_MIN_AMPLITUDE
+	%disp(in)
+	%if in==975, keyboard, end
+	wampl = min(ii(ii>23))-max(ii(ii<23));
+	if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
 		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
+	wakedesc([in*2-1 in*2],4) = wampl;
 	
 	wake = zeros(NPOINTS,1);
 	wake( i1 ) = ccdav;
@@ -263,6 +266,17 @@ for in = iok
 	cdav = cdav - mean(cdav);
 	ccdav2 = cumsum(cdav);
 	
+	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
+		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
+	end
+	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
+		%irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
+	end
+	
 	% Save wake description
 	wakedesc(in*2-1+fw,3) = max(abs(ccdav1));
 	% Wake half-width
@@ -276,16 +290,6 @@ for in = iok
 	wakedesc(in*2-fw,4) = min(ii(ii>45))-max(ii(ii<45));
 	clear ii
 	
-	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
-		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
-		wakedesc([in*2-1 in*2],:) = NaN;
-		continue
-	end
-	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
-		%irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
-		wakedesc([in*2-1 in*2],:) = NaN;
-		continue
-	end
 	if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
 		irf_log('proc',['wake is too narrow at ' epoch2iso(ts,1)])
 		wakedesc([in*2-1 in*2],:) = NaN;
