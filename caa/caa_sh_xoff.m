@@ -27,8 +27,7 @@ weight = 0;
 if nargin<3, flag_amp = 0; end
 if flag_amp~=0, flag_amp = 1; end
 
-if ischar(st), st = iso2epoch(st); end
-if ischar(dt), dt = iso2epoch(dt) -st; end
+[st,dt] = irf_stdt(st,dt);
 
 dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
@@ -241,6 +240,7 @@ if ~isempty(Eref)
 end
 
 irf_zoom(st+[0 dt],'x',h)
+axes(h(6)), add_timeaxis
 
 dE = [dE1 dE2 dE3 dE4];
 dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];
