@@ -42,8 +42,9 @@ if pair==32, error('PAIR 32 is not implemented yet'), end
 N_EMPTY = .9; 
 MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_HALFWIDTH = 45; % degrees
-WAKE_MIN_HALFWIDTH = 12;  % degrees
-WAKE_MIN_AMPLITUDE = 0.7; % mV/m
+WAKE_MIN_HALFWIDTH = 11;  % degrees
+WAKE_MIN_AMPLITUDE = 0.4; % mV/m
+WAKE_MAX_AMPLITUDE = 6; % mV/m
 plot_step = 1;
 plot_i = 0;
 data = e;
@@ -190,9 +191,9 @@ for in = iok
 	
 	% Fix wake position
 	if pair==12
-		i1 = (40:70) +1; % Get degrees 55 +-15
+		i1 = (35:65) +1; % Get degrees 50 +-15
 	elseif pair==34
-		i1 = (40:70) +1 +90; % Get degrees 145 +-15
+		i1 = (35:65) +1 +90; % Get degrees 140 +-15
 	end
 
 	ind1 = find(d12 == min(d12(i1))) -1;
@@ -228,7 +229,7 @@ for in = iok
 	%if in==975, keyboard, end
 	wampl = min(ii(ii>23))-max(ii(ii<23));
 	if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
-		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+		%irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)])
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -266,8 +267,11 @@ for in = iok
 	cdav = cdav - mean(cdav);
 	ccdav2 = cumsum(cdav);
 	
-	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE
-		%irf_log('proc',['wake is too small at ' epoch2iso(ts,1)])
+	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
+			max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
+		%irf_log('proc',...
+		%	sprintf('wake too small/big(%.2f mV/m) at %s',...
+		%	max(max(abs(ccdav1)),max(abs(ccdav2))), epoch2iso(ts,1)))
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -358,9 +362,9 @@ for in = iok
 	end
 	if in==iok(end) || (in~=iok(end) && in+1~=iok(find(iok==in)+1))
 		if ~isempty(cox)
-			irf_log('proc',['single interval at ' epoch2iso(ts,1)])
+			irf_log('proc',['single at ' epoch2iso(ts,1)])
 		else
-			irf_log('proc',['stop   interval at ' epoch2iso(ts,1)])
+			irf_log('proc',['stop   at ' epoch2iso(ts,1)])
 		end
 		if n_spins-in>=3
 			% We try to correct the spin at the end of the entire 
@@ -372,7 +376,7 @@ for in = iok
 			n_corrected = n_corrected + 2;
 		end
 	elseif ~isempty(cox)
-		irf_log('proc',['start  interval at ' epoch2iso(ts,1)])
+		irf_log('proc',['start  at ' epoch2iso(ts,1)])
 	end
 	if ~isempty(cox)
 		for cx = cox
@@ -442,18 +446,18 @@ if length(imax)==1
 	if s(imax)==maxmax, return
 	else
 		% Signal has a minumum
-		irf_log('proc','Signal has a minumum instead of a maximum')
+		%irf_log('proc','Signal has a minumum instead of a maximum')
 		res = 0; return
 	end
 elseif isempty(imax)
 	% Signal is monotonic
-	irf_log('proc','Signal is monotonic')
+	%irf_log('proc','Signal is monotonic')
 	res = 0; return
 end
 maxima = abs(s(imax));
 smax = max( maxima(maxima < maxmax) );
 if smax>maxmax*RATIO,
 	res = 0; 
-	irf_log('proc',...
-		sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))
+	%irf_log('proc',...
+	%	sprintf('BAD FIT: second max is %0.2f of the main max',smax/maxmax))
 end
