@@ -351,7 +351,7 @@ elseif regexp(vs,'^di(b)?E(F)?[1-4]p1234_info$')==1
 		v.cl_id = vs(4);
 		v.com = 'E full res INFO';
 		v.quant = 'die';
-		v.file = 'mEDSI';
+		v.file = 'mEDSIf';
 	end
 	v.inst = 'EFW';
 	v.lev = 1;	
