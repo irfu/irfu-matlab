@@ -177,7 +177,7 @@ if strcmp(quantity,'ec')
 	end
 	
 	n_ok = 0;
-	for probe = [12 32 34]
+	for probe = [12 34] % probe = [12 32 34]
 		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 		if ~ok || isempty(da)
 			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
