@@ -295,7 +295,9 @@ for in = iok
 	clear ii
 	
 	if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
-		irf_log('proc',['wake is too narrow at ' epoch2iso(ts,1)])
+		irf_log('proc',sprintf('wake is too narrow (%d deg) at %s',...
+			min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4)),...
+			epoch2iso(ts,1)))
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -334,15 +336,17 @@ for in = iok
 	
 	% Correct the spin in the middle	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
-	wake_e = c_resamp([ttime(:,in) wake], e(ind,1));
-	data(ind,2) = data(ind,2) - wake_e(:,2);
-	n_corrected = n_corrected + 1;
-	
-	if plotflag_now
-		subplot(4,1,4)
-		irf_plot({e(ind,:),data(ind,:)},'comp')
-		ylabel(['E' num2str(pair) ' [mV/m]']);
-		irf_zoom([ts te],'x',gca)
+	if ~isempty(ind)
+		wake_e = c_resamp([ttime(:,in) wake], e(ind,1));
+		data(ind,2) = data(ind,2) - wake_e(:,2);
+		n_corrected = n_corrected + 1;
+
+		if plotflag_now
+			subplot(4,1,4)
+			irf_plot({e(ind,:),data(ind,:)},'comp')
+			ylabel(['E' num2str(pair) ' [mV/m]']);
+			irf_zoom([ts te],'x',gca)
+		end
 	end
 
 	% Correct edge spins	
