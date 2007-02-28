@@ -42,12 +42,12 @@ for d=1:length(dirs)
 			if exist('./mERC.mat','file') || exist('./mEDSI.mat','file')
 				!rm -f mERC.mat mEDSI.mat mEDSIf.mat
 			end
-			getData(ClusterProc(pwd),cl_id,'ec','correct_sw_wake')
-			getData(ClusterProc(pwd),cl_id,'rawspec')
-			getData(ClusterProc(pwd),cl_id,'dies')
-			getData(ClusterProc(pwd),cl_id,'diespec')
-			getData(ClusterProc(pwd),cl_id,'dief')
-			getData(ClusterProc(pwd),cl_id,'die')
+			getData(ClusterProc(pwd),cl_id,'ec','correct_sw_wake');
+			getData(ClusterProc(pwd),cl_id,'rawspec');
+			getData(ClusterProc(pwd),cl_id,'dies');
+			getData(ClusterProc(pwd),cl_id,'diespec');
+			getData(ClusterProc(pwd),cl_id,'dief');
+			getData(ClusterProc(pwd),cl_id,'die');
 			
 			% Create .caa_sh_interval
 			fid = fopen('.caa_sh_interval','w');
