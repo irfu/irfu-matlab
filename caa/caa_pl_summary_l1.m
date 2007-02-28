@@ -166,7 +166,7 @@ for cli=1:4
 	end
 end
 
-if ( strcmp(iso_t,'-1') || iso_t==-1 ) && dt==-1
+if ( strcmp(iso_t,'-1') || (isnumeric(iso_t) && iso_t==-1) ) && dt==-1
 	st = int_s;
 	dt = int_e - int_s;
 else st = iso2epoch(iso_t);
