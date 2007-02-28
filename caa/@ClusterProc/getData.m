@@ -183,7 +183,6 @@ if strcmp(quantity,'ec')
 			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
 			continue
 		end
-		n_ok = n_ok + 1;
 		
 		fsamp = c_efw_fsample(da(:,1),'hx');
 		
@@ -214,16 +213,20 @@ if strcmp(quantity,'ec')
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
 			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip);
-			eval(irf_ssub(...
-				'WAKE?p!=wake_dsc;save_list=[save_list ''WAKE?p! ''];',...
-				cl_id,probe));
-			if n_corrected>0, modified = 1; end
+			
+			if n_corrected>0
+				eval(irf_ssub(...
+					'WAKE?p!=wake_dsc;save_list=[save_list ''WAKE?p! ''];',...
+					cl_id,probe));
+				modified = 1; 
+			end
 			clear n_corrected wake_dsc
 		end
 		
 		if modified
 			eval(irf_ssub('wcE?p!=da;save_list=[save_list ''wcE?p! ''];',...
 				cl_id,probe));
+			n_ok = n_ok + 1;
 		end
 		clear ok da
 	end
