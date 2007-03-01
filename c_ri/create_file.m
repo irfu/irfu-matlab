@@ -10,6 +10,8 @@ function file_path_and_name = create_file(time,mode,cl_nr)
 %Descrition of the function:
 % Creates a header file fot the day of "time" and saves it the disk
 %
+% $Id$
+
 %Using:
 % 
 %Work method:
@@ -47,6 +49,8 @@ output_p_f = sprintf('%s%s',output_path,output_file);
 mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
 	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+elseif strcmp(mext,'mexa64')
+    error('Amd64 is not supported. Ask Stephan Buchert to make a Linux/Amd64 binary of ddsls')
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
 	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
 else
