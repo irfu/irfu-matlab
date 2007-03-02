@@ -1,32 +1,33 @@
-function timetable = get_timetable(from,to,p_f) 
+function timetable = get_timetable(from,to,p_f)
+%GET_TIMETABLE  read data from a table file
 %
-%Input:
-% p_f - the path and filename to the file with time of beginnings and end.
+% timetable = get_timetable(from,to,p_f)
 %
-%Output:
-% timetable - [start_time | end_time]
+%	Finds a row starting with B and saves the time in start.
+%	finds a row starting with E and saves the time in end.
 %
-%Descrition of the function:
-% Finds a row starting with B and saves the time in start.
-% finds a row starting with E and saves the time in end.
+% Input:
+%	from, to - time in epoch
+%	p_f - path+filename of the file with time of beginnings and end.
 %
-%Using:
-% 
-%Work method:
+% Output:
+%	timetable - [start_time | end_time]
 %
-%Error:
-% timetable will be 0 if no timetable is found
-% 
-%Discription of variables:
+% See also CREATE_FILE, CREATE_TIMETABLE
 %
+% $Id$
+
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
+error(nargchk(3,3,nargin))
+if ~(isnumeric(from) && from >0), error('FROM must be epoch'), end
+if ~(isnumeric(to) && to>from), error('TO must be larger then FROM'), end
+if ~ischar(p_f), error('P_F must be a file path'), end
 
 fp = fopen(p_f);
 timetable = 0;
 
-i = 0;
 while feof(fp) == 0
     line = fgetl(fp);
     if(line(1) == 'B')
@@ -63,7 +64,7 @@ time = toepoch(time_UT);
 
 function timetable = addTime2Table(timetable,from,to,s_time, e_time)
 
-if to >= s_time & e_time >= from
+if to >= s_time && e_time >= from
 s_t = max([from s_time]);
 e_t = min([to e_time]);
 

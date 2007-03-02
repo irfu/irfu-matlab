@@ -1,28 +1,25 @@
-function file_path_and_name = create_file(time,mode,cl_nr)
+function output_file = create_file(time,cl_id,mode)
+%CREATE_FILE  create a header file for FGM
 %
-%Input:
-% time -time in epoch
-% mode -b/n, means burst or normal
+% output_file = create_file(time,cl_id,mode)
 %
-%Output:
-% file_path_and_name -where the file was saved
+%	Create a header file fot the day of "time" and saves it the disk
 %
-%Descrition of the function:
-% Creates a header file fot the day of "time" and saves it the disk
+% Input:
+%	time -time in epoch
+%	mode -b/n, means burst or normal
 %
 % $Id$
 
-%Using:
-% 
-%Work method:
-%
-%Error:
-% 
-%Discription of variables:
-%
 %Written by Robert Isaksson in the summer of -03
 
-%--------------------- the beginning --------------------------
+error(nargchk(3,3,nargin))
+
+if ~(isnumeric(time) && time>0), error('TIME must be epoch'), end
+if ~(isnumeric(cl_id) && any(cl_id==(1:4))), error('CL_ID must be 1..4'), end
+if ~(ischar(mode) && (strcmp(mode,'b') || strcmp(mode,'n')))
+    error('MODE must be n or b')
+end
 
 time_u = fromepoch(time);
 
@@ -33,29 +30,20 @@ d = datestr(time_u,7);
 path = sprintf('/data/cluster/DDS/');
 
 %the filename 
-filename = sprintf('%s%s%s*f%s.0%d',y,m,d,mode,cl_nr);
+filename = sprintf('%s%s%s*f%s.0%d',y,m,d,mode,cl_id);
 p_f = sprintf('%s%s',path,filename);
 
-%the output file 
-output_file = sprintf('t_%s%s%sf%s.0%d',y,m,d,mode,cl_nr);
-output_path = sprintf('');
-output_p_f = sprintf('%s%s',output_path,output_file);
-
-%the call to the unix function ddsls for the burstmode
-%unix_command = sprintf('/home/scb/fgm/bin86/ddsls %s >%s',p_f,output_p_f);
-%unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
-%unix(unix_command);
+output_file = sprintf('t_%s%s%sf%s.0%d',y,m,d,mode,cl_id);
 
 mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
-	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_file);
 elseif strcmp(mext,'mexa64')
-    error('Amd64 is not supported. Ask Stephan Buchert to make a Linux/Amd64 binary of ddsls')
+    unix_command = sprintf('/home/scb/fgm/bin64/ddsls %s >%s',p_f,output_file);
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
-	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_p_f);
+    error('SPARC is not supported at the moment.')
 else
 	error('Cannot determine operating system/platform.')
 end
-unix(unix_command);
-
-file_path_and_name = output_p_f;
+[s,h] = unix(unix_command);
+if s~=0, warning('IRFU:unix','output from %s:\n%s', unix_command, h), end

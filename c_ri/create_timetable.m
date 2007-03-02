@@ -1,37 +1,37 @@
-function [timetable_b, timetable_n] = create_timetable(from,to,cl_nr) 
+function [timetable_b, timetable_n] = create_timetable(from,to,cl_id)
+%CREATE_TIMETABLE  create a list of FGM data available
 %
-%Input:
-% from -time in epoch
-% to -time in epoch
-% from and to must be within the same day
-% cl_nr -which cluster satellite
+% [timetable_b, timetable_n] = create_timetable(from,to,cl_id)
 %
-%Output:
-% timetable - [from | to | mode] , where mode (b/n), burst or normal
-% for which times there are data
+%     Create a chronoligically ordered list of times
+%     for which FGM data is available
 %
-%Descrition of the function:
-% This function creates a timetable for which times the are 
-% data possible to download. And it is in cronological order.
+% Input:
+%     from, to - time in epoch
+%     cl_id -which cluster satellite
+%         NOTE: from and to must be within the same day
 %
-%Using:
-% create_file
-% get_timetable
+% Output:
+%     timetable - [from | to | mode] , where mode (b/n): burst or normal       
+%
+% See also CREATE_FILE, GET_TIMETABLE
 % 
-%Work method:
-%
-%Error:
-% 
-%Discription of variables:
-%
+% $Id$
+
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
-file_p_n_b = create_file(from,'b',1);
-file_p_n_n = create_file(from,'n',1);
+error(nargchk(3,3,nargin))
+if ~(isnumeric(from) && from >0), error('FROM must be epoch'), end
+if ~(isnumeric(to) && to>from), error('TO must be larger then FROM'), end
+if ~(isnumeric(cl_id) && any(cl_id==(1:4))), error('CL_ID must be 1..4'), end
+
+file_p_n_b = create_file(from,cl_id,'b');
+file_p_n_n = create_file(from,cl_id,'n');
 
 timetable_b = get_timetable(from,to,file_p_n_b);
 timetable_n = get_timetable(from,to,file_p_n_n);
 
-unix_com = sprintf('rm %s %s', file_p_n_b ,file_p_n_n);
-unix(unix_com);
+unix_command = sprintf('rm %s %s', file_p_n_b ,file_p_n_n);
+[s,h] = unix(unix_command);
+if s~=0, warning('IRFU:unix','output from %s:\n%s', unix_command, h), end
