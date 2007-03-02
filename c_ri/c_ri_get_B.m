@@ -52,7 +52,7 @@ mext = mexext;
 if strcmp(mext,'mexglx') % running on x86
 	CMDPATH = '/home/scb/fgm/bin/';
 elseif strcmp(mext,'mexa64') % running on amd64
-	CMDPATH = '/home/scb/fgm/bin64/';
+	CMDPATH = '/home/yuri/fgm_amd64/bin/';
 else
 	error('Cannot find CMDPATH for the current operating system/platform.')
 end
