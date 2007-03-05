@@ -84,10 +84,9 @@ if pair_ok
       fit = spfit(1) * cos(ph1) + spfit(2) * sin(ph1) + spfit(3);
 	  dif = data1 - fit;
 	  sdev = std(dif);
-      nn = max(size(data1));
       if iter == 1, sdev0 = sdev; end
       ind = find(abs(dif) > fout * sdev);  % Find outliers 
-      if fout == 0 | maxit == 0 | isempty(ind) | iter >= maxit
+      if fout == 0 || maxit == 0 || isempty(ind) || iter >= maxit
         spinfit(1) = mean(te);
         spinfit(2) = spfit(1);
         spinfit(3) = -spfit(2);  % Because s/c is spinning upside down
