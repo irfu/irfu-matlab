@@ -113,78 +113,69 @@ if method ==1
 	fnterms = 3;
 	te = torow(te);
 	data = torow(data);
-	x = zeros(n,9);
-	phi = zeros(n,1);
 	spinfit(:,[5 8]) = -1;
-	
-	tpha = tocolumn(tp);
-	pha = tocolumn(ph);
-	% Calcluate phase (in rad) at EFW sample times:
-	pha = unwrap(pi*pha/180);
-	% Find phase of given pair:
-	if pair == 12, pha = pha + 3*pi/4;
-	elseif pair == 32, pha = pha + pi/2;
-	elseif pair == 34, pha = pha + pi/4;
-    else error('probe pair must be one of 12, 32 or 34')
-	end
+end	
+tpha = tocolumn(tp);
+pha = tocolumn(ph);
+% Calcluate phase (in rad) at EFW sample times:
+pha = unwrap(pi*pha/180);
+% Find phase of given pair:
+if pair == 12, pha = pha + 3*pi/4;
+elseif pair == 32, pha = pha + pi/2;
+elseif pair == 34, pha = pha + pi/4;
+else error('probe pair must be one of 12, 32 or 34')
 end
 
-% Do it:
-for i=1:n
-	tsfit = tstart + (i-1)*4 +2;
-	ind = find((te >= tsfit-2) & (te < tsfit+2));
-	
-	% Check for data gaps inside one spin.
-	if sf>0 && length(ind)<N_EMPTY*MAX_SPIN_PERIOD*sf
-		n_gap = n_gap + 1;
-		continue
-	end
-	
-	% Compute spin period
-	pol = polyfit(tpha(ind),pha(ind),1);
-	spinp = 2*pi/pol(1);
-	if spinp > MAX_SPIN_PERIOD || spinp < MIN_SPIN_PERIOD
-		irf_log('proc',sprintf('bad spin period %.4f s',spinp));
-		n_gap = n_gap + 1;
-		continue
-	end
-	
-	ind = find( ( te >= tsfit-spinp/2.0 ) & ( te < tsfit+spinp/2.0 ) );
-	% Clear NaNs
-	ind(isnan(data(ind))) = [];
-	
-	% Check for data gaps inside one spin.
-	if sf>0 && length(ind)<N_EMPTY*sf*spinp, continue, end
-	  
-	if method==1
-		% Use Fortran version of spin fit
-		[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
-			c_efw_spinfit_mx(fnterms,maxit,2*pi/spinp,...
-			te(ind)-tsfit-spinp/2.0,data(ind));
 
-		phi(i-n_gap) = polyval(pol,tsfit);
-		spinfit(i-n_gap,8) = length(find(bad==1));
-		spinfit(i-n_gap,1) = tsfit;
-	else
+% Do it:
+if method==1
+	ind = find(~isnan(data));
+	pha = torow(pha(ind));
+	[ts,sfit,sdev,iter,nout] = ...
+		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,fnterms,...
+		te(ind),data(ind),pha);
+
+	ind = find( sdev~=-159e7 );
+	n_gap = length(sdev) -length(ind);
+	spinfit(1:n - n_gap,1) = ts(ind);		% time
+	spinfit(1:n - n_gap,2) = sfit(2,ind);	% Ex
+	spinfit(1:n - n_gap,3) = -sfit(3,ind);	% Ey, - Because s/c is spinning upside down
+	spinfit(1:n - n_gap,4) = sfit(1,ind);
+	spinfit(1:n - n_gap,5) = sdev(ind);
+	spinfit(1:n - n_gap,6) = sdev(ind);
+	spinfit(1:n - n_gap,7) = iter(ind);
+	spinfit(1:n - n_gap,8) = nout(ind);
+else
+	for i=1:n
+		tsfit = tstart + (i-1)*4 +2;
+		ind = find( ( te >= tsfit-2 ) & ( te < tsfit+2 ) );
+
+		% Check for data gaps inside one spin.
+		if sf>0 && length(ind)<N_EMPTY*MAX_SPIN_PERIOD*sf
+			n_gap = n_gap + 1;
+			continue
+		end
+
+		% Compute spin period
+		pol = polyfit(tpha(ind),pha(ind),1);
+		spinp = 2*pi/pol(1);
+		if spinp > MAX_SPIN_PERIOD || spinp < MIN_SPIN_PERIOD
+			irf_log('proc',sprintf('bad spin period %.4f s',spinp));
+			n_gap = n_gap + 1;
+			continue
+		end
+
+		% Clear NaNs
+		ind(isnan(data(ind))) = [];
+
+		% Check for data gaps inside one spin.
+		if sf>0 && length(ind)<N_EMPTY*sf*4, continue, end
+
 		% Use Matlab version by AIE
 		spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(ind),...
 			data(ind),te(ind),ph(ind));
 	end
-end  
-spinfit = spinfit(1:n - n_gap, :);
-
-if method==1 && ~isempty(spinfit)
-        x = x(1:n - n_gap, :);
-        phi = phi(1:n - n_gap);
-
-		theta = atan2(x(:,3),x(:,2));
-		rho = sqrt(x(:,2).^2 + x(:,3).^2);
-		
-        % Correct phase
-		% - Because s/c is spinning upside down:
-        spinfit(:,2) = -rho.*cos(phi + theta);
-        spinfit(:,3) = rho.*sin(phi + theta);
-        spinfit(:,4) = x(:,1);
+	spinfit = spinfit(1:n - n_gap, :);
 end
 
 irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))

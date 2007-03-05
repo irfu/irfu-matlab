@@ -10,16 +10,27 @@ c $Id$
 c
 #include "fintrf.h"
 #define MAXTERMS_FIT 9
+#define NaN -159e7
+#ifndef mwsize
+# define mwsize integer*4
+#endif
 
 
 	subroutine mexFunction(nlhs, plhs, nrhs, prhs)
 	
-c	[bad,x,sigma,iter,lim] = spinfit(fnterms,fitmax,fomega,at,az);
+	implicit none
+c	[ts,sfit,sdev,iter,nout] = ...
+c                  c_efw_spinfit_mx(maxit,minpts,nterms,te,data,pha);
+c
+c maxit  - maximum number of iterations (zero means infinity)
+c minpts - minimum fraction of spin to perform fit (1=all points)
+c nterms - number of terms to fit
+c t0     - start of the first spin
+c te     - EFW time in seconds (epoch)
+c data   - EFW data from pair in mV/m, should correspond to te
+c pha    - phase of the current boom pair in radians, should correspond to te
+
 	
-C-----------------------------------------------------------------------
-C     (pointer) Replace integer by integer*8 on the DEC Alpha
-C     64-bit platform
-C
 	mwpointer plhs(*), prhs(*)
 C-----------------------------------------------------------------------
 C
@@ -28,130 +39,239 @@ C
 	mwpointer mxGetPr, mxCreateDoubleMatrix
 	mwsize mxGetM, mxGetN
 	mwsize m, n, size
-	real*8 omega
+	
+	mwpointer pr_tmp, pr_te, pr_data, pr_pha
+	integer maxit, minpts, nterms
+c local
 	real*8 tvar
-	integer nterms,itmax,iter,lim
-	integer nn, ier
-	mwpointer pr_omega, pr_nterms, pr_itmax, pr_iter, pr_lim, pr_at, pr_az, pr_bad, pr_x, pr_sigma
-c output
-	real*8 x(MAXTERMS_FIT), sigma, ttt
+	integer ndata, tstart, nspins
+	mwpointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
 	
 	intrinsic nint
 	
+c	write(*,*) 'starting ...'
+
 c
 c check for proper number of arguments
 c
-	if (nrhs .ne. 5) then
-		call mexErrMsgTxt('spinfit requires five input arguments')
+	if (nrhs .ne. 6) then
+		call mexErrMsgTxt('c_efw_spinfit_mx requires six input arguments')
 	elseif (nlhs .gt. 5) then
-		call mexErrMsgTxt('yprime requires five output argument')
+		call mexErrMsgTxt('c_efw_spinfit_mx requires five output argument')
 	endif
 
-c	nterms	
+c	maxit		argument #1
 	m = mxGetM(prhs(1))
 	n = mxGetN(prhs(1))
 	size = m*n
 	if (size .ne. 1) then
-		call mexErrMsgTxt('nterms must be scalar')
+		call mexErrMsgTxt('MAXIT must be scalar')
 	endif
-	
-c	write(*,*) 'Starting...'
-	pr_nterms = mxGetPr(prhs(1))
-	call mxCopyPtrToReal8(pr_nterms, tvar, 1)
-	nterms = nint(tvar)
-	
-c	write(*,*) 'nterms: ',nterms
-	
-c	itmax	
-	m = mxGetM(prhs(2))
-	n = mxGetN(prhs(2))
-	size = m*n
-	if (size .ne. 1) then
-		call mexErrMsgTxt('itmax must be scalar')
+	pr_tmp = mxGetPr(prhs(1))
+	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
+	maxit = nint(tvar)
+	if (maxit .lt. 1) then
+		call mexErrMsgTxt('MAXIT must be a positive nonzero number')
 	endif
-	
-	pr_itmax = mxGetPr(prhs(2))
-	call mxCopyPtrToReal8(pr_itmax, tvar, 1)
-	itmax = nint(tvar)	
-c	write(*,*) 'itmax: ',itmax
-	
-c	omega	
+c	write(*,*) 'maxit: ',maxit
+
+c	nterms		argument #3
 	m = mxGetM(prhs(3))
 	n = mxGetN(prhs(3))
 	size = m*n
 	if (size .ne. 1) then
-		call mexErrMsgTxt('omega must be scalar')
+		call mexErrMsgTxt('NTERMS must be scalar')
 	endif
+	pr_tmp = mxGetPr(prhs(3))
+	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
+	nterms = nint(tvar)
+	if (nterms .le. 1 .or. nterms .gt. MAXTERMS_FIT .or.
+	1	mod(nterms,2) .eq. 0) then
+		call mexErrMsgTxt('NTERMS must be one of 3,5,7,9')
+	endif
+c	write(*,*) 'nterms: ',nterms
+
+c	minpts		argument #2
+	m = mxGetM(prhs(2))
+	n = mxGetN(prhs(2))
+	size = m*n
+	if (size .ne. 1) then
+		call mexErrMsgTxt('MINPTS must be scalar')
+	endif
+	pr_tmp = mxGetPr(prhs(2))
+	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
+	minpts = nint(tvar)
+	if (minpts .le. nterms) then
+		call mexErrMsgTxt('MINPTS must be larger than NTERMS')
+	endif
+c	write(*,*) 'minpts: ',minpts
 	
-	pr_omega = mxGetPr(prhs(3))
-	call mxCopyPtrToReal8(pr_omega, omega, 1)	
-
-c	write(*,*) 'omega: ', omega
-
-c	time
-	pr_at = mxGetPr(prhs(4))
+c	te		argument #4
 	m = mxGetM(prhs(4))
-	n = mxGetN(prhs(4))
+	ndata = mxGetN(prhs(4))
 	if (m .ne. 1) then
-		call mexErrMsgTxt('t must be n x 1 vector')
+		call mexErrMsgTxt('TE must be n x 1 vector')
 	endif
+	pr_te = mxGetPr(prhs(4))
 	
-	nn = n;
-	
-c	write(*,*) 'nn: ', nn
-
-c	e-field
+c	e-field		argument #5
 	m = mxGetM(prhs(5))
 	n = mxGetN(prhs(5))
 	if (m .ne. 1) then
-		call mexErrMsgTxt('e must be n x 1 vector')
+		call mexErrMsgTxt('DATA must be n x 1 vector')
+	endif
+	pr_data = mxGetPr(prhs(5))
+	if (n .ne. ndata) then
+		call mexErrMsgTxt('TE and DATA must be of the same length')
 	endif
 	
-	if (n .ne. nn) then
-		call mexErrMsgTxt('t and e must be of the same length')
+c	phase		argument #6
+	m = mxGetM(prhs(6))
+	n = mxGetN(prhs(6))
+	if (m .ne. 1) then
+		call mexErrMsgTxt('phase must be n x 1 vector')
+	endif
+	pr_pha = mxGetPr(prhs(6))
+	if (n .ne. ndata) then
+		call mexErrMsgTxt('TE and PHA must be of the same length')
 	endif
 	
-	pr_az = mxGetPr(prhs(5))
-	
+c	compute number of spins
+	call getTStartNSpins(%val(pr_te),ndata,tstart,nspins)
+c	write(*,*) 'nspins: ', nspins
+c	write(*,*) 'tstart: ', tstart
 c	write(*,*) 'All inputs are ready.'
+
+c
+c prepare output
+c
+
+	plhs(1) = mxCreateDoubleMatrix(1,nspins,0)
+	plhs(2) = mxCreateDoubleMatrix(nterms,nspins,0)
+	plhs(3) = mxCreateDoubleMatrix(1,nspins,0)
+	plhs(4) = mxCreateDoubleMatrix(1,nspins,0)
+	plhs(5) = mxCreateDoubleMatrix(1,nspins,0)
 	
-	plhs(1) = mxCreateDoubleMatrix(1,nn,0)
-	pr_bad = mxGetPr(plhs(1))
-	
-	plhs(2) = mxCreateDoubleMatrix(1,MAXTERMS_FIT,0)
-	plhs(3) = mxCreateDoubleMatrix(1,1,0)
-	plhs(4) = mxCreateDoubleMatrix(1,1,0)
-	plhs(5) = mxCreateDoubleMatrix(1,1,0)
-	
+	pr_ts = mxGetPr(plhs(1))
+	pr_sfit = mxGetPr(plhs(2))
+	pr_sdev  = mxGetPr(plhs(3))
+	pr_iter = mxGetPr(plhs(4))
+	pr_nout = mxGetPr(plhs(5))
 c	write(*,*) 'Ready to go.'
 
-	call sfit(nterms,itmax,iter,lim,omega,nn,%val(pr_at),%val(pr_az),%val(pr_bad),x,sigma,ier)
+	call spinfit( maxit,minpts,nterms,tstart,nspins,ndata,%val(pr_te),%val(pr_data),
+	1	%val(pr_pha),%val(pr_ts),%val(pr_sfit),%val(pr_sdev),%val(pr_iter),%val(pr_nout))
 	
-	pr_x = mxGetPr(plhs(2))
-c10	format(F6.4)
-c 	do i = 1,nterms
-c		write(*,10) x(i)
-c	end do
-	call mxCopyReal8ToPtr(x, pr_x, MAXTERMS_FIT)
-	
-	pr_sigma = mxGetPr(plhs(3))
-	call mxCopyReal8ToPtr(sigma, pr_sigma, 1)
-c	write(*,*) 'sigma: ', sigma
-	
-	pr_iter = mxGetPr(plhs(4))
-	ttt = real(iter)
-	call mxCopyReal8ToPtr(ttt, pr_iter, 1)
-c	write(*,*) 'iter: ', iter
-	
-	pr_lim = mxGetPr(plhs(5))
-	ttt = real(lim)
-	call mxCopyReal8ToPtr(ttt, pr_lim, 1)
-c	write(*,*) 'lim: ', lim
+c	write(*,*) 'returning...'
 	
 	return
 	end
 
+c
+c Compure number of spins
+c
+	subroutine getTStartNSpins(te,ndata,tstart,nspins)
+	implicit none
+c in
+	integer ndata
+	real*8 te(ndata)
+c out
+	integer nspins, tstart
+	
+c	write(*,*) 'te(1):', te(1)
+c	write(*,*) 'te(end):', te(ndata)
+	
+	tstart = te(1)/4
+	tstart = tstart*4
+c	write(*,*) 'tstart:', tstart
+	nspins = (te(ndata) - tstart)/4 + 1
+	
+	return
+	end
 
+c
+c call onesfit for every spin
+c
+	subroutine spinfit(maxit,minpts,nterms,t0,nspins,ndata,te,az,pha,ts,sfit,sdev,iter,nout)
+	implicit none
+c in
+	integer maxit, minpts, nterms, t0, nspins, ndata
+	real*8 te(ndata), az(ndata), pha(ndata)
+c out
+	real*8 ts(nspins), sfit (nterms,nspins), sdev(nspins), iter(nspins), nout(nspins)
+c local
+	integer idx, nn, i, j, idxs, idxe, ierr, niter, nbad, lim, spinstart
+	real*8 x(MAXTERMS_FIT), sigma
+	real*8 dt
+	
+	idx = 0
+
+c initialize arrays
+c	write(*,*) 'spinfit: init arrays'
+	do i = 1, nspins
+c		ts(i) =  t0 +(i-1)*4.0 +2.0
+		dt = (i-1)*4.0 +2.0
+		ts(i) = (i-1)*4.0 +2.0 + dble(t0)
+c		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
+	end do
+	do i = 1, nspins
+		do j = 1, nterms
+			sfit(i,j) = NaN
+		end do
+	end do
+	do i = 1, nspins
+		sdev(i) = NaN
+	end do
+	do i = 1, nspins
+		iter(i) = NaN
+	end do
+	do i = 1, nspins
+		nout(i) = NaN
+	end do
+	
+	do i=1, nspins
+c		write(*,*) 'spin: ',i
+		spinstart =  t0 +(i-1)*4
+		idxs = 0
+		idxe = 0
+		
+		do while (idxe .eq. 0)
+			idx = idx + 1
+
+c			first point alredy more then one spin later then the first one
+			if (idxs .eq. 0 .and. te(idx) .ge. spinstart+4) goto 88
+			
+			if (idxs .eq. 0 .and. te(idx) .ge. spinstart) idxs = idx
+c			write(*,*) 'left to the end: ',spinstart+4-te(idx)
+			if (idx .eq. ndata .or. te(idx+1) .ge. spinstart+4) idxe = idx
+		end do
+		
+c		check number of data points
+		nn = idxe-idxs+1
+c		write(*,*) 'got: ',nn,' min:',minpts
+		if ( nn .gt. minpts) then
+c			write(*,*) 'start: ',idxs,' stop:',idxe
+			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),
+			1	nbad,x,sigma,ierr)
+			if (ierr .eq. 0) then
+c			write(*,*) '         spin: ok'
+				do j=1, nterms
+					sfit(j,i) = x(j)
+c					write(*,*) 'x(j):',x(j)
+				end do
+				sdev(i) = sigma
+				iter(i) = real(niter)
+				nout(i) = nbad
+			endif
+		endif
+88		;
+c		write(*,*) 'done spin'
+	end do
+	
+c	write(*,*) 'spinfit: done.'
+	return
+	end
+	
 c Module name: SFIT
 c
 c By:
@@ -164,20 +284,20 @@ c by Yuri Khotyaintsev for g77 compiler
 c 1) replace structures
 c 2) use automatic array instead of pointers
 
-	subroutine sfit (fnterms,fitmax,fiter,flim,fomega,nn,at,az,rbad,x,sigma,ier)
+	subroutine onesfit (fnterms,fitmax,fiter,flim,nn,apha,az,nbad,x,sigma,ier)
 
 c Function name: SFIT
 c
 c Description:
-c Fit x(1)+x(2)*cos(omega*t)+x(3)*sin(omega*t)
-c         +x(4)*cos(2*omega*t)+x(5)*sin(2*omega*t)+... to data
+c Fit x(1)+x(2)*cos(pha)+x(3)*sin(pha)
+c         +x(4)*cos(2*pha)+x(5)*sin(2*pha)+... to data
 c
 c Constraints:
 c
 c Interface:
 c fit - structure containing fitting control
 c nn - number of data points
-c at - array of times
+c apha - array of phases
 c az - array of data
 c bad - array indicating bad points
 c x - array for resulting coefficients from fit
@@ -192,15 +312,15 @@ c input
 	real*8 fomega
 	integer fnterms,fitmax,fiter,flim
 	integer nn
-	real*8 at(nn),az(nn)
+	real*8 apha(nn),az(nn)
 c output
 	logical*1 bad(nn)
-	real*8 rbad(nn)
+c	real*8 rbad(nn)
 	real*8 x(MAXTERMS_FIT),sigma
-	integer ier
+	integer ier, nbad
 c local
 	real*8 omega
-	real*8 arg,t,y
+	real*8 arg,pha,y
 	real*8 s(MAXTERMS_FIT,MAXTERMS_FIT+1),w(MAXTERMS_FIT+1),
 	1	q(MAXTERMS_FIT,MAXTERMS_FIT+1)
 	real*8 diff,ref,const
@@ -212,16 +332,20 @@ c local
 	real*8 const0,dconst
 	data const0/1.4/,dconst/0.4/
                   
-
+	nbad = 0
 	ier = -1
 	if (nn .lt. fnterms+1) goto 999
 	if (fnterms .gt. MAXTERMS_FIT .or.
 	1	mod(fnterms,2) .eq. 0) goto 999
-	omega = fomega
-	
-c 20	format(F6.4,' ',F6.4)
-c 	do i = 1,nn
-c		write(*,20) at(i), az(i)
+
+c	write(*,*) 'onesfit E:'
+c10	format(F6.4)
+c	do i = 1,nn
+c		write(*,10) az(i)
+c	end do
+c	write(*,*) 'onesfit PHA:'
+c	do i = 1,nn
+c		write(*,*) apha(i)
 c	end do
 
 C Build normal equations system
@@ -234,7 +358,7 @@ C Add to normal equations
 	w(1) = 1
 	do i = 1,nn                  
 	  do row = 2,fnterms,2
-	    arg = omega * float(row/2) * at(i)
+	    arg = float(row/2) * apha(i)
 	    w(row) = cos(arg)
 	    w(row+1) = sin(arg)
 	  end do
@@ -274,10 +398,10 @@ C Compute sigma
 	  sigma = 0.0
 	  do i = 1,nn
 	    if (.not. bad(i)) then
-	      t = at(i)
+	      pha = apha(i)
 	      w(1) = 1
 	      do row = 2,fnterms,2
-	        arg = omega * float(row/2) * t
+	        arg = float(row/2) * pha
 	        w(row) = cos(arg)
 	        w(row+1) = sin(arg)
 	      end do
@@ -300,10 +424,10 @@ C Search bad points
 	      if (.not. bad(i)) then
 	        if (abs(adiff(i)) .gt. ref) then
 C Subtract from normal equations
-	          t = at(i)
+	          pha = apha(i)
 	          w(1) = 1
 	          do row = 2,fnterms,2
-	            arg = omega * float(row/2) * t
+	            arg = float(row/2) * pha
 	            w(row) = cos(arg)
 	            w(row+1) = sin(arg)
 	          end do
@@ -328,10 +452,11 @@ C Subtract from normal equations
 	
 999	do i = 1,nn
 		if (bad(i)) then
-			rbad(i) = 1.
+			nbad = nbad +1
+c			rbad(i) = 1.
 c			write(*,*) 'bad: ', i
-		else
-			rbad(i) = 0.
+c		else
+c			rbad(i) = 0.
 		end if
 	end do
 	
