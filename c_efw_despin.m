@@ -39,7 +39,7 @@ function e = c_efw_despin(es,phase,coef,options)
 % $Id$
 
 t=es(:,1);
-if prod(size(phase))==1, ic=phase;end  % if only one number then it is sc number
+if numel(phase)==1, ic=phase;end  % if only one number then it is sc number
 if nargin == 2,
  coef=[[1 0 0];[1 0 0]];
  ref_frame='wec';
@@ -99,7 +99,7 @@ if nargin >= 3,
   end
 end
 
-if prod(size(phase))==1, % load phase from isdat database
+if numel(phase)==1, % load phase from isdat database
   ic=phase;phase=[];disp(['load phase for sc' num2str(ic)]);
   start_time=fromepoch(es(1,1)); % time of the first point
   Dt=es(end,1)-es(1,1)+1;
@@ -140,14 +140,14 @@ diffangle=abs(diffangle);
 diffangle=min([diffangle';360-diffangle']);
 err_angle_mean=mean(diffangle);
 err_angle=std(diffangle);
-if err_angle>1 | err_angle_mean>1,
+if err_angle>1 || err_angle_mean>1,
   irf_log('proc',['Using standard despinning! Polyn. fit despinning errors would be >1deg. err=' num2str(err_angle) 'deg.']);
   unwrap_phase=phase;
   if max(diff(phase(:,1)))>4,
    disp('There are data gaps in the phase data.Despinned data can have problems near data gaps.');
    for j=2:length(phase(:,1)),
     ddphase=unwrap_phase(j,:)-unwrap_phase(j-1,:);
-    if ddphase(2)<0 | ddphase(1)>3.9 
+    if ddphase(2)<0 || ddphase(1)>3.9 
       unwrap_phase(j:end,2)=unwrap_phase(j:end,2)+360*round((ddphase(1)*360/4-ddphase(2))/360);
     end
    end
@@ -180,7 +180,7 @@ if use_asym
 	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_32);
 	p12 = 1.4142*p12 - p34;
 	irf_log('proc','Using ASYMMETRIC probe conf')
-else, p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
+else p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
 end
 
 % despin each component separately
