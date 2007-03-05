@@ -66,6 +66,13 @@ error(nargchk(8,9,nargin))
 
 if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 
+if ~isequal(size(te),size(data))
+    error('TE and DATA vectors must be the same size.')
+end
+if ~isequal(size(tp),size(ph))
+    error('TP and PH vectors must be the same size.')
+end
+
 % Set default method to BHN
 if nargin < 9, method = 1; end
 
@@ -91,18 +98,25 @@ spinfit = zeros(n,8);
 sf = c_efw_fsample(te);
 
 % N_EMPTY .75 means that we use only spins with more then 75% points.
-N_EMPTY = .9; 
+N_EMPTY = .9;
+MAX_SPIN_PERIOD = 4.3;
+MIN_SPIN_PERIOD = 3.7;
 
 n_gap = 0;
 
 if method ==1
+	if any(te~=tp)
+		%TODO: use c_phase here
+		error('TE and TP must be the same')
+	end
+	
 	fnterms = 3;
 	te = torow(te);
 	data = torow(data);
 	x = zeros(n,9);
 	phi = zeros(n,1);
 	spinfit(:,[5 8]) = -1;
-
+	
 	tpha = tocolumn(tp);
 	pha = tocolumn(ph);
 	% Calcluate phase (in rad) at EFW sample times:
@@ -117,34 +131,45 @@ end
 
 % Do it:
 for i=1:n
-	t0 = tstart + (i-1)*4;
-	eind = find((te >= t0) & (te < t0+4));
-	pind = find((tp >= t0) & (tp < t0+4));
-	
-	% Clear NaNs
-	eind(isnan(data(eind))) = [];
+	tsfit = tstart + (i-1)*4 +2;
+	ind = find((te >= tsfit-2) & (te < tsfit+2));
 	
 	% Check for data gaps inside one spin.
-	if sf>0 && length(eind)<N_EMPTY*4*sf, eind = []; end
+	if sf>0 && length(ind)<N_EMPTY*MAX_SPIN_PERIOD*sf
+		n_gap = n_gap + 1;
+		continue
+	end
+	
+	% Compute spin period
+	pol = polyfit(tpha(ind),pha(ind),1);
+	spinp = 2*pi/pol(1);
+	if spinp > MAX_SPIN_PERIOD || spinp < MIN_SPIN_PERIOD
+		irf_log('proc',sprintf('bad spin period %.4f s',spinp));
+		n_gap = n_gap + 1;
+		continue
+	end
+	
+	ind = find( ( te >= tsfit-spinp/2.0 ) & ( te < tsfit+spinp/2.0 ) );
+	% Clear NaNs
+	ind(isnan(data(ind))) = [];
+	
+	% Check for data gaps inside one spin.
+	if sf>0 && length(ind)<N_EMPTY*sf*spinp, continue, end
 	  
-	% Need to check if we have any data to fit.
-	if ~isempty(eind) && ~isempty(pind)
-		if method==1
-			% Use Fortran version of spin fit
-			[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
-				c_efw_spinfit_mx(fnterms,maxit,2*pi/4.0,te(eind)-t0,data(eind));
-			tsfit = t0 + 2;	
-			pol = polyfit(tpha(pind),pha(pind),1);
-			phi(i-n_gap) = polyval(pol,tsfit);
-			spinfit(i-n_gap,8) = length(find(bad==1));
-			spinfit(i-n_gap,1) = tsfit;
-		else
-			% Use Matlab version by AIE
-			spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(eind),...
-				data(eind),tp(pind),ph(pind));
-		end
-    else n_gap = n_gap + 1;
-	end 
+	if method==1
+		% Use Fortran version of spin fit
+		[bad,x(i-n_gap,:),spinfit(i-n_gap,6),spinfit(i-n_gap,7),lim] = ...
+			c_efw_spinfit_mx(fnterms,maxit,2*pi/spinp,...
+			te(ind)-tsfit-spinp/2.0,data(ind));
+
+		phi(i-n_gap) = polyval(pol,tsfit);
+		spinfit(i-n_gap,8) = length(find(bad==1));
+		spinfit(i-n_gap,1) = tsfit;
+	else
+		% Use Matlab version by AIE
+		spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(ind),...
+			data(ind),te(ind),ph(ind));
+	end
 end  
 spinfit = spinfit(1:n - n_gap, :);
 
