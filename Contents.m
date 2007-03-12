@@ -46,10 +46,13 @@
 %   irf_zoom        - zoom in
 %
 % Cluster
+%   c_4_v_gui       - timing analysis 
 %   c_get_batch     - get data from all s/c
 %   c_load          - load data
 %   c_pl_summary    - Make EFW summary plots
 %
+%   c_4_grad        - calculate linear gradient operators using 4 spacecraft technique
+%   c_4_j           - Calculate current from using 4 spacecraft technique
 %   c_efw_scp2ne    - calculates the plasma density (Ne) for given EFW sc potential
 %   c_eval          - evaluate expression for list of spacecraft
 %   c_gse2dsi       - Convert vector from GSE to DSI reference system
@@ -60,3 +63,4 @@
 %   
 % Different
 %   irf_ssub         - substitute ? ! and $ in string to number or variable
+%   irf_whamp_plot_f - plot the distribution function, parameters as defined in WHAMP
