@@ -1,4 +1,4 @@
-%  ++++ IRFU main matlab routines ++++
+% IRFU Matlab routines
 %
 % Time operations
 %   toepoch         - convert a [YYYY MM DD hh mm ss] time specification to seconds since 1970
@@ -47,8 +47,8 @@
 %
 % Cluster
 %   c_4_v_gui       - timing analysis 
-%   c_get_batch     - get data from all s/c
-%   c_load          - load data
+%   c_get_batch     - get Cluster data from ISDAT/CDF/DDS
+%   c_load          - load data from MAT files
 %   c_pl_summary    - Make EFW summary plots
 %
 %   c_4_grad        - calculate linear gradient operators using 4 spacecraft technique
@@ -61,6 +61,9 @@
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
 %   
-% Different
+% Miscellaneous
 %   irf_ssub         - substitute ? ! and $ in string to number or variable
 %   irf_whamp_plot_f - plot the distribution function, parameters as defined in WHAMP
+
+%
+% $Id$
