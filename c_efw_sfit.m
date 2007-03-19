@@ -91,8 +91,6 @@ warning off;
 % the same timelines an all SC at 2,6,10... sec
 tstart = fix(min(te)/4)*4;
 tend = max(te);
-n = floor((tend - tstart)/4) + 1;
-spinfit = zeros(n,8);
 
 % Guess the sampling frequency
 sf = c_efw_fsample(te);
@@ -113,7 +111,6 @@ if method ==1
 	fnterms = 3;
 	te = torow(te);
 	data = torow(data);
-	spinfit(:,[5 8]) = -1;
 end	
 tpha = tocolumn(tp);
 pha = tocolumn(ph);
@@ -137,15 +134,19 @@ if method==1
 
 	ind = find( sdev~=-159e7 );
 	n_gap = length(sdev) -length(ind);
-	spinfit(1:n - n_gap,1) = ts(ind);		% time
-	spinfit(1:n - n_gap,2) = sfit(2,ind);	% Ex
-	spinfit(1:n - n_gap,3) = -sfit(3,ind);	% Ey, - Because s/c is spinning upside down
-	spinfit(1:n - n_gap,4) = sfit(1,ind);
-	spinfit(1:n - n_gap,5) = sdev(ind);
-	spinfit(1:n - n_gap,6) = sdev(ind);
-	spinfit(1:n - n_gap,7) = iter(ind);
-	spinfit(1:n - n_gap,8) = nout(ind);
+	n = length(ind);
+	spinfit = zeros(n,8);
+	spinfit(:,1) = ts(ind);		% time
+	spinfit(:,2) = sfit(2,ind);	% Ex
+	spinfit(:,3) = -sfit(3,ind);	% Ey, - Because s/c is spinning upside down
+	spinfit(:,4) = sfit(1,ind);
+	spinfit(:,5) = sdev(ind);
+	spinfit(:,6) = sdev(ind);
+	spinfit(:,7) = iter(ind);
+	spinfit(:,8) = nout(ind);
 else
+	n = floor((tend - tstart)/4) + 1;
+	spinfit = zeros(n,8);
 	for i=1:n
 		tsfit = tstart + (i-1)*4 +2;
 		ind = find( ( te >= tsfit-2 ) & ( te < tsfit+2 ) );
