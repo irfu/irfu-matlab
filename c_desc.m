@@ -1057,6 +1057,27 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 		v.lev = 0;
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% spin axis orientation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^WHINAT[1-4]$')
+	v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'Whisper';
+	v.frame = 'sc';
+	v.sig = 'natural';
+	v.sen = '';
+	v.cs = {'sc'};
+	v.units =  {'(V/m)^2/Hz'};
+	v.si_conv = {''};
+	v.size = 494;
+	v.name = {'E'};
+	v.labels = {'E'};
+	v.field_name = {'E'};
+	v.com = '';
+	v.file = 'mWHI';
+	v.quant = 'whinat';	
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ADDITIONAL HELP IN PLOTTING, NOT SPECIFIC TO CLUSTER 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')
