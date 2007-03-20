@@ -1062,9 +1062,17 @@ elseif strcmp(quantity,'bdump')
 	ii = find(fdm_px(:,1)==1 & fdm_px(:,2)==0);
 	
 	if ~isempty(ii)
-		t_s = t_s(ii);
+		t_s = t_s(ii); t_e = t_e(ii);
+		
+		% If the gap between the two burst dumps is shorter the 2 seconds,
+		% we consider it to be one interval
+		for ii=1:length(t_s)-1
+			if t_s(ii+1)-t_e(ii)<2.1, t_s(ii+1)=NaN; t_e(ii)=NaN; end
+		end
+		t_s(isnan(t_s)) = []; t_e(isnan(t_e)) = [];
+		
 		% We add one second to the end of the interval for safety
-		t_e = t_e(ii) +1;
+		t_e = t_e +1;
 		c_eval('BDUMP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' BDUMP? ''];',cl_id);
 	else
