@@ -68,14 +68,17 @@ for comp=1:min(length(h),ncomp)
 		specrec.t = [specrec.t-dt; specrec.t+dt];
 		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
 	end
-	pcolor(specrec.t-t_start_epoch,specrec.f,log10(specrec.p{comp}'))
+	if max(specrec.f) > 2000, hz = 1e-3; hzl = 'k';
+	else hz = 1; hzl = '';
+	end
+	pcolor(specrec.t-t_start_epoch,specrec.f*hz,log10(specrec.p{comp}'))
 	
 	colormap(cmap)
 	shading flat
 %	colorbar('vert')
 %	set(gca,'TickDir','out','YScale','log')
 	set(gca,'TickDir','out')
-	ylabel('frequency [Hz]')
+	ylabel(['frequency [' hzl 'Hz]'])
 	if comp==min(length(h),ncomp), add_timeaxis;
 	else set(gca,'XTicklabel','')
 	end
