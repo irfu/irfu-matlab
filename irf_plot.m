@@ -165,33 +165,52 @@ end
 %  
 
 if flag_subplot==0,  % one subplot
-    % t_start_epoch is saved in figures user_data variable
-    % check first if it exist otherwise assume zero
-    ts = t_start_epoch(x(:,1));    
-    ii = 2:length(x(1,:));
-    if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),marker);grid on;
-    else h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
-    end
-    
-    % put ylimits so that no labels are at the end (disturbing in
-    % multipanel plots)
-    set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
-    
-	if ~isempty(var_desc{1})
-		for v = 1:length(var_desc{1}.size)
-			lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-				'] sc' var_desc{1}.cl_id];
+	if isstruct(x)
+		% plot a spectrogram
+		ts = t_start_epoch(x.t);
+		
+		caa_spectrogram(x);
+		hcbar = colorbar;
+		if ~isempty(var_desc{1})
+			for v = 1:length(var_desc{1}.size)
+				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+					'] sc' var_desc{1}.cl_id];
+			end
+			ylabel(hcbar, lab);
 		end
-		ylabel(lab);
-	end
+		
+		tt = x.t(~isnan(x.t),1);
+		tt = tt(1);
+	else
+		% t_start_epoch is saved in figures user_data variable
+		% check first if it exist otherwise assume zero
+		ts = t_start_epoch(x(:,1));
+		ii = 2:length(x(1,:));
+		if flag_yy == 0, h=plot((x(:,1)-ts-dt),x(:,ii),marker);grid on;
+		else h=plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);grid on;
+		end
 
-    c = get(h(1),'Parent');
-	
-    tt = x(~isnan(x(:,1)),1);
-	tt = tt(1);
+		% put ylimits so that no labels are at the end (disturbing in
+		% multipanel plots)
+		set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
+		if ~isempty(var_desc{1})
+			for v = 1:length(var_desc{1}.size)
+				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+					'] sc' var_desc{1}.cl_id];
+			end
+			ylabel(lab);
+		end
+
+		c = get(h(1),'Parent');
+
+		tt = x(~isnan(x(:,1)),1);
+		tt = tt(1);
+	end
     
 elseif flag_subplot==1, % separate subplot for each component 
 	%   t_start_epoch is saved in figures user_data variable
+	if isstruct(x), error('cannot plot spectra in COMP mode'), end
 	ts=t_start_epoch(x(:,1));
 	npl=size(x,2)-1;
 	for ipl=1:npl
@@ -237,16 +256,21 @@ elseif flag_subplot==1, % separate subplot for each component
 elseif flag_subplot==2, % separate subplot for each variable
 	%   t_start_epoch is saved in figures user_data variable
 	if isempty(x), return, end
-	ts = t_start_epoch(x{1}(:,1));
+	if isstruct(x{1}), ts = t_start_epoch(x{1}.t);
+	else ts = t_start_epoch(x{1}(:,1));
+	end
 
 	t_st = []; t_end = [];
+	xlen = [];
 
 	npl=size(x,2);
 	for ipl=1:npl
 		c(ipl) = irf_subplot(npl,1,-ipl);
 
 		y=x{ipl};
-		t_tmp = (y(:,1)-ts-dt(ipl));
+		if isstruct(y), t_tmp = (y.t-double(ts)-double(dt(ipl)));
+		else t_tmp = (y(:,1)-double(ts)-double(dt(ipl)));
+		end
 		tt = t_tmp(~isnan(t_tmp));
 		if isempty(t_st), t_st = tt(1);
 		else if tt(1)<t_st, t_st = tt(1); end
@@ -256,34 +280,60 @@ elseif flag_subplot==2, % separate subplot for each variable
 		end
 		clear tt
 
-		if iscell(marker)
-			if length(marker)==npl, marker_cur = marker{ipl};
-			else marker_cur = marker{1};
+		if isstruct(y)
+			caa_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+			hcbar = colorbar;
+			if ~isempty(var_desc{ipl})
+				for v = 1:length(var_desc{ipl}.size)
+					lab{v} = [var_desc{ipl}.labels{v} '[' var_desc{ipl}.units{v} ...
+						'] sc' var_desc{ipl}.cl_id];
+				end
+				ylabel(hcbar, lab);
+				disp(lab)
 			end
-		else marker_cur = marker;
-		end
-		plot(t_tmp,y(:,2:end),marker_cur);grid on;
-
-		% put ylimits so that no labels are at the end (disturbing in
-		% multipanel plots)
-		set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
-
-		if ~isempty(var_desc) && ~isempty(var_desc{ipl})
-			for v = 1:length(var_desc{ipl}.size)
-				lab{v} = [var_desc{ipl}.labels{v} '[' ...
-					var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
+			tt = y.t(~isnan(y.t),1);
+			% save palel width to resize the rest of the panels accordingly
+			if isempty(xlen)
+				xlen = get(c(ipl),'Position');
+				xlen = xlen(3);
 			end
-			ylabel(lab);
+		else
+			if iscell(marker)
+				if length(marker)==npl, marker_cur = marker{ipl};
+				else marker_cur = marker{1};
+				end
+			else marker_cur = marker;
+			end
+			plot(t_tmp,y(:,2:end),marker_cur);grid on;
+
+			% put ylimits so that no labels are at the end (disturbing in
+			% multipanel plots)
+			set(gca,'ylim',mean(get(gca,'ylim'))+diff(get(gca,'ylim'))*[-.499999 .499999])
+
+			if ~isempty(var_desc) && ~isempty(var_desc{ipl})
+				for v = 1:length(var_desc{ipl}.size)
+					lab{v} = [var_desc{ipl}.labels{v} '[' ...
+						var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
+				end
+				ylabel(lab);
+			end
+			tt = y(~isnan(y(:,1)),1);
 		end
 	end
 	% Set common XLim
-	for ipl=1:npl, set(c(ipl),'XLim',[t_st t_end]), end
+	for ipl=1:npl
+		set(c(ipl),'XLim',[t_st t_end])
+		if ~isempty(xlen)
+			p = get(c(ipl),'Position');
+			set(c(ipl),'Position',[p(1) p(2) xlen p(4)])
+		end
+	end
 	clear t_st t_end
 
-	tt = y(~isnan(y(:,1)),1);
 	tt = tt(1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
+	if isstruct(x), error('cannot plot spectra in COMP mode'), end
 	%t_start_epoch is saved in figures user_data variable
 	ts=t_start_epoch(x{1}(:,1));
 
