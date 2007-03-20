@@ -13,6 +13,8 @@ function hout = caa_spectrogram(h,t,Pxx,F)
 error(nargchk(1,4,nargin))
 
 if nargin==1, specrec = h; h = [];
+elseif nargin==2
+	specrec = t;
 elseif nargin==3
 	if size(t,2) == length(h), t = t'; end
 	if iscell(t), specrec.p = t;
