@@ -14,7 +14,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  te - EFW time in seconds (isGetDataLite time)
 %  data - EFW data from pair in mV/m, should correspond to te
 %  tp - Ephemeris time in seconds (isGetDataLite time)
-%  ph - Ephemeris phase in degr (sun angle for s/c Y axis), should 
+%  ph - Ephemeris phase_2 in degr (sun angle for s/c Y axis), should 
 %      correspond to tp 
 %  method - 0: c_efw_onesfit, Matlab routine by AIE
 %           1: c_efw_spinfit_mx (default), BHN Fortran source obtained from KTH
@@ -44,7 +44,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  [t34,e34] = isGetDataLite(db, [2002 12 24 14 00 00], 600, ...
 %  'Cluster', '4', 'efw','E','p34','10Hz','hx');  
 %  [tpha,pha] = isGetDataLite(db, [2002 12 24 14 00 00], 600, ...
-%  'Cluster', '4', 'ephemeris','phase','','','');  
+%  'Cluster', '4', 'ephemeris','phase_2','','','');  
 %  sp34 = c_efw_sfit(34,3,10,20,t34,e34,tpha,pha);
 %  t0 = toepoch([2002 12 24 14 00 00]);
 %  t = sp34(:,1) - t0;
@@ -55,7 +55,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  ylabel('E [mV/m]');
 %  title('Cluster SC4 EFW Spin Fits (Ex black, Ey red)')
 %
-% See also C_EFW_ONESFIT, isGetDataLite
+% See also C_PHASE, C_EFW_ONESFIT, isGetDataLite
 %
 % $Id$
 
@@ -73,6 +73,26 @@ if ~isequal(size(tp),size(ph))
     error('TP and PH vectors must be the same size.')
 end
 
+% Check if the phase is good
+[ie,ip] = irf_find_comm_idx(te,tp);
+if isempty(ie) || isempty(ip)
+	% Try to compute phase
+	irf_log('proc','computing phase with c_phase')
+	aa = c_phase(te,[tp ph]);
+	[ie,ip] = irf_find_comm_idx(te,aa(:,1));
+	if isempty(ie) || isempty(ip)
+		irf_log('proc','phase/E is empty')
+		spinfit = [];
+		return
+	else
+		tp = aa(:,1);
+		ph = aa(:,2);
+	end
+end
+te = te(ie); data = data(ie);
+tp = tp(ip); ph = ph(ip);
+clear ie ip
+
 % Set default method to BHN
 if nargin < 9, method = 1; end
 
@@ -83,35 +103,15 @@ if method==1
 	end
 end	
 
-% Turn off warnings for badly conditioned polynomial:
-warning off;
-
-% Chop up time interval
-% We always start at 0,4,8.. secs, so that we have 
-% the same timelines an all SC at 2,6,10... sec
-tstart = fix(min(te)/4)*4;
-tend = max(te);
-
-% Guess the sampling frequency
-sf = c_efw_fsample(te);
-
 % N_EMPTY .75 means that we use only spins with more then 75% points.
 N_EMPTY = .9;
 MAX_SPIN_PERIOD = 4.3;
 MIN_SPIN_PERIOD = 3.7;
 
-n_gap = 0;
+% Guess the sampling frequency
+sf = c_efw_fsample(te,'hx');
+if sf == 0, error('cannot guess the sampling frequency'), end
 
-if method ==1
-	if any(te~=tp)
-		%TODO: use c_phase here
-		error('TE and TP must be the same')
-	end
-	
-	fnterms = 3;
-	te = torow(te);
-	data = torow(data);
-end	
 tpha = tocolumn(tp);
 pha = tocolumn(ph);
 % Calcluate phase (in rad) at EFW sample times:
@@ -126,6 +126,9 @@ end
 
 % Do it:
 if method==1
+	te = torow(te);
+	data = torow(data);
+	fnterms = 3;
 	ind = find(~isnan(data));
 	pha = torow(pha(ind));
 	[ts,sfit,sdev,iter,nout] = ...
@@ -144,9 +147,21 @@ if method==1
 	spinfit(:,6) = sdev(ind);
 	spinfit(:,7) = iter(ind);
 	spinfit(:,8) = nout(ind);
+	n = n + n_gap;
 else
+	% Turn off warnings for badly conditioned polynomial:
+	warning('OFF','MATLAB:polyfit:RepeatedPointsOrRescale');
+	
+	% Chop up time interval
+	% We always start at 0,4,8.. secs, so that we have
+	% the same timelines an all SC at 2,6,10... sec
+	tstart = fix(min(te)/4)*4;
+	tend = max(te);
+
 	n = floor((tend - tstart)/4) + 1;
 	spinfit = zeros(n,8);
+	
+	n_gap = 0;
 	for i=1:n
 		tsfit = tstart + (i-1)*4 +2;
 		ind = find( ( te >= tsfit-2 ) & ( te < tsfit+2 ) );
@@ -175,8 +190,11 @@ else
 		% Use Matlab version by AIE
 		spinfit(i - n_gap,:) = c_efw_onesfit(pair,fout,maxit,minpts,te(ind),...
 			data(ind),te(ind),ph(ind));
+		spinfit(i - n_gap, 1) = tsfit;
 	end
 	spinfit = spinfit(1:n - n_gap, :);
+	
+	warning('ON','MATLAB:polyfit:RepeatedPointsOrRescale');
 end
 
 irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))
