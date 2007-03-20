@@ -1,4 +1,4 @@
-function hout = caa_spectrogram(h,specrec,Pxx,F)
+function hout = caa_spectrogram(h,t,Pxx,F)
 %CAA_SPECTROGRAM  plot power spectrum
 %
 % [h] = caa_spectrogram([h],specrec)
@@ -13,8 +13,21 @@ function hout = caa_spectrogram(h,specrec,Pxx,F)
 error(nargchk(1,4,nargin))
 
 if nargin==1, specrec = h; h = [];
-elseif nargin==3, specrec.p = specrec; specrec.f = Pxx; specrec.t = h; h = [];
-elseif nargin==4, specrec.t = specrec; specrec.p = Pxx; specrec.f = F; 
+elseif nargin==3
+	if size(t,2) == length(h), t = t'; end
+	if iscell(t), specrec.p = t;
+	else specrec.p = {t};
+	end
+	specrec.f = Pxx; 
+	specrec.t = h; 
+	h = [];
+elseif	nargin==4
+	specrec.t = t;
+	if size(Pxx,2) == length(t), Pxx = Pxx'; end
+	if iscell(Pxx),specrec.p = Pxx;
+	else specrec.p = {Pxx};
+	end
+	specrec.f = F;
 end
 
 ndata = length(specrec.t);
