@@ -138,19 +138,21 @@ if method==1
 	[ts,sfit,sdev,iter,nout] = ...
 		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,3,...
 		te(ind),data(ind),pha);
-		disp(length(ts))
 	ind = find( sdev~=-159e7 );
 	n_gap = length(sdev) -length(ind);
 	n = length(ind);
-	spinfit = zeros(n,8);
-	spinfit(:,1) = ts(ind);		% time
-	spinfit(:,2) = sfit(2,ind);	% Ex
-	spinfit(:,3) = -sfit(3,ind);	% Ey, - Because s/c is spinning upside down
-	spinfit(:,4) = sfit(1,ind);
-	spinfit(:,5) = sdev(ind);
-	spinfit(:,6) = sdev(ind);
-	spinfit(:,7) = iter(ind);
-	spinfit(:,8) = nout(ind);
+	if n == 0, spinfit = [];
+	else
+		spinfit = zeros(n,8);
+		spinfit(:,1) = ts(ind);		% time
+		spinfit(:,2) = sfit(2,ind);	% Ex
+		spinfit(:,3) = -sfit(3,ind);% Ey, - Because s/c is spinning upside down
+		spinfit(:,4) = sfit(1,ind);
+		spinfit(:,5) = sdev(ind);
+		spinfit(:,6) = sdev(ind);
+		spinfit(:,7) = iter(ind);
+		spinfit(:,8) = nout(ind);
+	end
 	n = n + n_gap;
 else
 	% Turn off warnings for badly conditioned polynomial:
