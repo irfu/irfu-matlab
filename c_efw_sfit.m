@@ -128,13 +128,17 @@ end
 if method==1
 	te = torow(te);
 	data = torow(data);
-	fnterms = 3;
 	ind = find(~isnan(data));
+	% Check if we have at least one spin of data
+	if length(ind)<N_EMPTY*4*sf
+		irf_log('fcal','not enough data points for spinfit');
+		spinfit = []; return
+	end
 	pha = torow(pha(ind));
 	[ts,sfit,sdev,iter,nout] = ...
-		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,fnterms,...
+		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,3,...
 		te(ind),data(ind),pha);
-
+		disp(length(ts))
 	ind = find( sdev~=-159e7 );
 	n_gap = length(sdev) -length(ind);
 	n = length(ind);
