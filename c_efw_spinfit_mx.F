@@ -44,7 +44,8 @@ C
 	integer maxit, minpts, nterms
 c local
 	real*8 tvar
-	integer ndata, tstart, nspins
+	integer ndata, nspins
+	integer*8 tstart
 	mwpointer pr_ts, pr_sfit, pr_sdev, pr_iter, pr_nout
 	
 	intrinsic nint
@@ -176,7 +177,8 @@ c in
 	integer ndata
 	real*8 te(ndata)
 c out
-	integer nspins, tstart
+	integer nspins
+	integer*8 tstart
 	
 c	write(*,*) 'te(1):', te(1)
 c	write(*,*) 'te(end):', te(ndata)
@@ -195,7 +197,8 @@ c
 	subroutine spinfit(maxit,minpts,nterms,t0,nspins,ndata,te,az,pha,ts,sfit,sdev,iter,nout)
 	implicit none
 c in
-	integer maxit, minpts, nterms, t0, nspins, ndata
+	integer maxit, minpts, nterms, nspins, ndata
+	integer*8 t0
 	real*8 te(ndata), az(ndata), pha(ndata)
 c out
 	real*8 ts(nspins), sfit (nterms,nspins), sdev(nspins), iter(nspins), nout(nspins)
@@ -203,8 +206,6 @@ c local
 	integer idx, nn, i, j, idxs, idxe, ierr, niter, nbad, lim, spinstart
 	real*8 x(MAXTERMS_FIT), sigma
 	real*8 dt
-	
-	idx = 0
 
 c initialize arrays
 c	write(*,*) 'spinfit: init arrays'
@@ -229,6 +230,10 @@ c		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
 		nout(i) = NaN
 	end do
 	
+c	check if we have at least one spin of data
+	if (ndata .lt. minpts) return
+	
+	idx = 1
 	do i=1, nspins
 c		write(*,*) 'spin: ',i
 		spinstart =  t0 +(i-1)*4
@@ -236,14 +241,16 @@ c		write(*,*) 'spin: ',i
 		idxe = 0
 		
 		do while (idxe .eq. 0)
-			idx = idx + 1
+c			write(*,*) 'spin: ',i,' idx:',idx,' left: ',spinstart+4-te(idx)
 
 c			first point alredy more then one spin later then the first one
-			if (idxs .eq. 0 .and. te(idx) .ge. spinstart+4) goto 88
-			
-			if (idxs .eq. 0 .and. te(idx) .ge. spinstart) idxs = idx
-c			write(*,*) 'left to the end: ',spinstart+4-te(idx)
-			if (idx .eq. ndata .or. te(idx+1) .ge. spinstart+4) idxe = idx
+			if ( (idxs .eq. 0) .and. (te(idx) .ge. (spinstart+4) ) ) then
+				idxe = -1
+			else
+				if (idxs .eq. 0 .and. te(idx) .ge. spinstart) idxs = idx
+				if (idx .eq. ndata .or. te(idx+1) .ge. spinstart+4) idxe = idx
+				idx = idx + 1
+			endif
 		end do
 		
 c		check number of data points
@@ -264,11 +271,8 @@ c					write(*,*) 'x(j):',x(j)
 				nout(i) = nbad
 			endif
 		endif
-88		;
-c		write(*,*) 'done spin'
 	end do
 	
-c	write(*,*) 'spinfit: done.'
 	return
 	end
 	
