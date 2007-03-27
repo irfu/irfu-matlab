@@ -1,14 +1,25 @@
-/* $Id$ */
-/*=================================================================
- * cefprint_mx.c 
- * MEX function to write data part of CEF files 
- * and GZIP the resulting file
+/*
+ *  $Id$
+ *
+ * ----------------------------------------------------------------------------
+ * "THE BEER-WARE LICENSE" (Revision 42):
+ * <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+ * can do whatever you want with this stuff. If we meet some day, and you think
+ * this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+ * ----------------------------------------------------------------------------
+ *
+ * 
+ * MEX function to write data part of CEF files and GZIP the resulting file.
+ * CEF header is written fromMatlab by caa_export.m
  * 
  * Usage:
  *   STATUS = cefprint_mx(FILENAME,DATA)
  *
  *   STATUS = 0 means everything went OK
- *=============================================================*/
+ *   STATUS = 1 means error on the data writing stange
+ *   STATUS = 2 means error on the compression stange
+ */
+
 #include "mex.h"
 #include <stdio.h>
 #include <string.h>
@@ -80,7 +91,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	res = mxGetPr(plhs[0]);
 	*res = 0;
 	
-	if ((fp = fopen(f_name,"a")) == NULL) {
+	/* first remove the old file if it is there */
+	strcpy(unix_c,"/bin/rm -f ");
+	strcat(unix_c,f_name);
+	strcat(unix_c,".gz");
+	system(unix_c);
+	
+	if ( (fp = fopen(f_name,"a")) == NULL ) {
 		mexWarnMsgTxt("Cannot open output file");
 		*res = 1;
 	} else {
@@ -92,11 +109,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			sprintf(tmp_s,"%s, %8.3f",tmp_s,*(data +d_mrows +i));
 			
 			if ( d_ncols > 2)
-			for ( j=2; j<d_ncols; j++ ){
-				sprintf(tmp_s1,", %8.3f",*(data +d_mrows*j +i));
-				strcat(tmp_s,tmp_s1);
-			}
-			if ( status=fprintf(fp,"%s $\n",tmp_s) < 0 ) break;
+				for ( j=2; j<d_ncols; j++ ){
+					sprintf(tmp_s1,", %8.3f",*(data +d_mrows*j +i));
+					strcat(tmp_s,tmp_s1);
+				}
+
+			if ( (status = fprintf(fp,"%s $\n",tmp_s)) < 0 )
+				break;
 		}
 		if ( status < 0 ){
 			mexWarnMsgTxt("Error writing to output file");
@@ -104,12 +123,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		}
 		fclose(fp);
 	}
-	
-	/* remove old file if it is there */
-	strcpy(unix_c,"/bin/rm -f ");
-	strcat(unix_c,f_name);
-	strcat(unix_c,".gz");
-	system(unix_c);
+	if (*res)
+		return;
 	
 	/* gzip the output */
 	strcpy(unix_c,"/usr/bin/gzip ");
@@ -117,7 +132,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 	if ( system(unix_c) < 0)
 	{
 		mexWarnMsgTxt("Error gzipping output file");
-		*res = 1;
+		*res = 2;
+
+		/* remove the corrupt .gz file if it is there */
+		strcpy(unix_c,"/bin/rm -f ");
+		strcat(unix_c,f_name);
+		strcat(unix_c,".gz");
+		system(unix_c);
 	}
 	return;
 }
