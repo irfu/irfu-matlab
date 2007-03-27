@@ -9,7 +9,7 @@ function caa_export_batch(cl_id,outdir,m_vars,m_vers)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
 
 if length(m_vars) ~= length(m_vars)
 	error('M_VARS and M_VERS must have the same number of elements')
@@ -30,7 +30,9 @@ for j=1:length(m_vars)
 		irf_log('save', sprintf('Export : %s -- %s %s V%s Q=%d',...
 			epoch2iso(ints(ii,1),1), epoch2iso(ints(ii,1)+ints(ii,2),1), ...
 			v, vers_s,ints(ii,3)))
-		caa_export(lev,caa_vs,cl_id,ints(ii,3),vers_s,sp,ints(ii,1),ints(ii,2))
+		if caa_export(lev,caa_vs,cl_id,ints(ii,3),vers_s,sp,ints(ii,1),ints(ii,2)) > 0
+			error('caa_export returned error')
+		end
 	end
 end
 

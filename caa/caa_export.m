@@ -1,7 +1,7 @@
-function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
+function status = caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %CAA_EXPORT  export data to CAA CEF files
 %
-% caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp,st,dt])
+% STATUS = caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp,st,dt])
 %
 % CEF file is written to a current directory. Data is supposed to be also 
 % there, if SP is not specified.
@@ -9,18 +9,22 @@ function caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % QUALITY - number 0..4 (3 is good for publication, subject to PI approval)
 % DATA_VERSION - string, for example '01'
 %
+% STATUS = 0 means everything went OK
+%
 % See also C_EXPORT_ASCII
 %
 % $Id$
 
 % Copyright 2004-2007 Yuri Khotyaintsev
 
+status = 0;
+
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '2';
 
 if nargin<8, st = []; dt=[]; end
 if nargin<6, sp='.'; end
-if nargin<5, DATA_VERSION = '01'; end
+if nargin<5, DATA_VERSION = '02'; end
 if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
@@ -93,14 +97,20 @@ end
 
 if lev==3
 	TIME_RESOLUTION = 4;
-elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(1|2|3|4)?$'))) || ...
+	MIN_TIME_RESOLUTION = TIME_RESOLUTION;
+	MAX_TIME_RESOLUTION = TIME_RESOLUTION;
+elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(1|2|3|4)?$','once'))) || ...
 		(lev==2 && strcmp(caa_vs,'P'))
 	TIME_RESOLUTION = 1/5;
-elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$'))) || ...
+	MIN_TIME_RESOLUTION = TIME_RESOLUTION;
+	MAX_TIME_RESOLUTION = TIME_RESOLUTION;
+elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))) || ...
 		(lev==2 && (strcmp(caa_vs,'E') || strcmp(caa_vs,'EF')))
 	fs = c_efw_fsample(data,'hx');
 	if ~fs, error('cannot determine time resolution'), end
 	TIME_RESOLUTION = 1/fs;
+	MIN_TIME_RESOLUTION = 1/25;
+	MAX_TIME_RESOLUTION = 1/450;
 end
 
 % Make subinterval
@@ -171,13 +181,12 @@ elseif strcmp(caa_vs,'EF')
 	
 	dsc.frv = {'Observatory'};
 	
-elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$'))
+elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	if ~isempty(data)
 		% convert mV/m back to V
 		if id==32, data(:,2) = data(:,2)*.0622;
         else data(:,2) = data(:,2)*.088;
 		end
-		id = str2double(caa_vs(2:end));
 	end
 	
 	dsc.units = {'V'};
@@ -199,106 +208,116 @@ ext_s = '.cef';
 DATASET_ID = irf_ssub(['C?_CP_EFW_L' num2str(lev) '_' caa_vs],cl_id);
 file_name = ...
 	[DATASET_ID '__' irf_fname(t_int,2) '_V' DATA_VERSION];
-fid = fopen([file_name ext_s],'w');
 
-fprintf(fid,'!-------------------- CEF ASCII FILE --------------------|\n');
+buf = '';
+
+buf = sprintf('%s%s',buf,'!-------------------- CEF ASCII FILE --------------------|\n');
 nnow = now;
-fprintf(fid,['! created on ' datestr(nnow) '\n']);
-fprintf(fid,'!--------------------------------------------------------|\n');
-fprintf(fid,['FILE_NAME = "' file_name ext_s '"\n']);
-fprintf(fid,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
-fprintf(fid,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
-fprintf(fid,'include = "CL_CH_MISSION.ceh"\n');
-fprintf(fid,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
-fprintf(fid,'include = "CL_CH_EFW_EXP.ceh"\n');
-pmeta(fid,'FILE_TYPE','cef')
-pmeta(fid,'DATA_TYPE','CP')
-pmeta(fid,'INSTRUMENT_NAME','EFW?',cl_id)
-pmeta(fid,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id)
-pmeta(fid,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id)
-pmeta(fid,'DATASET_ID',DATASET_ID,cl_id)
-pmeta(fid,'DATASET_TITLE',dsc.field_name{1})
-pmeta(fid,'DATASET_DESCRIPTION',...
+buf = sprintf('%s%s',buf,['! created on ' datestr(nnow) '\n']);
+buf = sprintf('%s%s',buf,'!--------------------------------------------------------|\n');
+buf = sprintf('%s%s',buf,['FILE_NAME = "' file_name ext_s '"\n']);
+buf = sprintf('%s%s',buf,'FILE_FORMAT_VERSION = "CEF-2.0"\n');
+buf = sprintf('%s%s',buf,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
+buf = sprintf('%s%s',buf,'include = "CL_CH_MISSION.ceh"\n');
+buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
+buf = sprintf('%s%s',buf,'include = "CL_CH_EFW_EXP.ceh"\n');
+buf = pmeta(buf,'FILE_TYPE','cef');
+buf = pmeta(buf,'DATA_TYPE','CP');
+buf = pmeta(buf,'INSTRUMENT_NAME','EFW?',cl_id);
+buf = pmeta(buf,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id);
+buf = pmeta(buf,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id);
+buf = pmeta(buf,'DATASET_ID',DATASET_ID,cl_id);
+buf = pmeta(buf,'DATASET_TITLE',dsc.field_name{1});
+buf = pmeta(buf,'DATASET_DESCRIPTION',...
 	{'This dataset contains measurements of the', ...
 	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
-	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)})
-pmeta(fid,'DATASET_VERSION',EFW_DATASET_VERSION)
-pmeta(fid,'TIME_RESOLUTION',TIME_RESOLUTION)
-pmeta(fid,'MIN_TIME_RESOLUTION',TIME_RESOLUTION)
-pmeta(fid,'MAX_TIME_RESOLUTION',TIME_RESOLUTION)
-pmeta(fid,'PROCESSING_LEVEL',PROCESSING_LEVEL)
-pmeta(fid,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id)
-pmeta(fid,'LOGICAL_FILE_ID',file_name)
-pmeta(fid,'VERSION_NUMBER',DATA_VERSION)
-fprintf(fid,'START_META     =   FILE_TIME_SPAN\n');
-fprintf(fid,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
-fprintf(fid,...
+	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)});
+buf = pmeta(buf,'DATASET_VERSION',EFW_DATASET_VERSION);
+buf = pmeta(buf,'TIME_RESOLUTION',TIME_RESOLUTION);
+buf = pmeta(buf,'MIN_TIME_RESOLUTION',MIN_TIME_RESOLUTION);
+buf = pmeta(buf,'MAX_TIME_RESOLUTION',MAX_TIME_RESOLUTION);
+buf = pmeta(buf,'PROCESSING_LEVEL',PROCESSING_LEVEL);
+buf = pmeta(buf,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id);
+buf = pmeta(buf,'LOGICAL_FILE_ID',file_name);
+buf = pmeta(buf,'VERSION_NUMBER',DATA_VERSION);
+buf = sprintf('%s%s',buf,'START_META     =   FILE_TIME_SPAN\n');
+buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME_RANGE\n');
+buf = sprintf('%s%s',buf,...
 ['   ENTRY       =   ' epoch2iso(t_int(1)) '/' epoch2iso(t_int(2)) '\n']);
-fprintf(fid,'END_META       =   FILE_TIME_SPAN\n');
-fprintf(fid,'START_META     =   GENERATION_DATE\n');
-fprintf(fid,'   VALUE_TYPE  =   ISO_TIME\n');
-fprintf(fid,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
-fprintf(fid,'END_META       =   GENERATION_DATE\n');
+buf = sprintf('%s%s',buf,'END_META       =   FILE_TIME_SPAN\n');
+buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
+buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
+buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
+buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
 
-fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-fprintf(fid,'!                   Variables                         !\n');
-fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-fprintf(fid,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
-fprintf(fid,'  VALUE_TYPE      = ISO_TIME\n');
-fprintf(fid,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
-fprintf(fid,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
-fprintf(fid, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
-fprintf(fid,'  LABLAXIS        = "UT"\n');
-fprintf(fid,'  FIELDNAM        = "Universal Time"\n');
-fprintf(fid,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
+buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+buf = sprintf('%s%s',buf,'!                   Variables                         !\n');
+buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+buf = sprintf('%s%s',buf,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
+buf = sprintf('%s%s',buf,'  VALUE_TYPE      = ISO_TIME\n');
+buf = sprintf('%s%s',buf,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
+buf = sprintf('%s%s',buf,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
+buf = sprintf('%s%s',buf, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
+buf = sprintf('%s%s',buf,'  LABLAXIS        = "UT"\n');
+buf = sprintf('%s%s',buf,'  FIELDNAM        = "Universal Time"\n');
+buf = sprintf('%s%s',buf,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
 
 for j=1:v_size
-	fprintf(fid,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
-	fprintf(fid,'  PARAMETER_TYPE    = "Data"\n');
-	fprintf(fid,'  SIZES             = %d\n',dsc.size(j));
-	fprintf(fid,'  VALUE_TYPE        = FLOAT\n');
-	fprintf(fid,['  ENTITY            = "' dsc.ent{j} '"\n']);
-	fprintf(fid,['  PROPERTY          = "' dsc.prop{j} '"\n']);
+	buf = sprintf('%s%s',buf,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
+	buf = sprintf('%s%s',buf,'  PARAMETER_TYPE    = "Data"\n');
+	buf = sprintf('%s%s',buf,['  SIZES             = ' num2str(dsc.size(j)) '\n']);
+	buf = sprintf('%s%s',buf,'  VALUE_TYPE        = FLOAT\n');
+	buf = sprintf('%s%s',buf,['  ENTITY            = "' dsc.ent{j} '"\n']);
+	buf = sprintf('%s%s',buf,['  PROPERTY          = "' dsc.prop{j} '"\n']);
 	if ~isempty(dsc.fluc{j})
-		fprintf(fid,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
+		buf = sprintf('%s%s',buf,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
 	end
-	fprintf(fid,['  CATDESC           = "' dsc.field_name{j} '"\n']);
-	fprintf(fid,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
+	buf = sprintf('%s%s',buf,['  CATDESC           = "' dsc.field_name{j} '"\n']);
+	buf = sprintf('%s%s',buf,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
 	if ~isempty(dsc.si_conv{j})
-		fprintf(fid,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
+		buf = sprintf('%s%s',buf,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
 	else
-		fprintf(fid,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
+		buf = sprintf('%s%s',buf,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
 	end
-	fprintf(fid,['  UNITS             = "' dsc.units{j} '"\n']);
-	fprintf(fid,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
-	fprintf(fid,['  QUALITY           = ' num2str(QUALITY) '\n']);
-	fprintf(fid,'  SIGNIFICANT_DIGITS= 6 \n');
+	buf = sprintf('%s%s',buf,['  UNITS             = "' dsc.units{j} '"\n']);
+	buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
+	buf = sprintf('%s%s',buf,['  QUALITY           = ' num2str(QUALITY) '\n']);
+	buf = sprintf('%s%s',buf,'  SIGNIFICANT_DIGITS= 6 \n');
 	if ~isempty(dsc.com) && j==1
-		fprintf(fid,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
+		buf = sprintf('%s%s',buf,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
 	end
 	if ~strcmp(dsc.cs{j},'na')
-		fprintf(fid,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
+		buf = sprintf('%s%s',buf,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
 	end
 	if isfield(dsc,'frv')
 		if ~isempty(dsc.frv{j})
-			fprintf(fid,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
+			buf = sprintf('%s%s',buf,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
 		end
 	end
 	if dsc.size(j) > 1
-		fprintf(fid,['  REPRESENTATION_1  = ' dsc.rep_1{j} '\n']);
-		fprintf(fid,['  LABEL_1           = ' dsc.label_1{j} '\n']);
+		buf = sprintf('%s%s',buf,['  REPRESENTATION_1  = ' dsc.rep_1{j} '\n']);
+		buf = sprintf('%s%s',buf,['  LABEL_1           = ' dsc.label_1{j} '\n']);
 	end
-	fprintf(fid,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
-	fprintf(fid,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
-	fprintf(fid,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
+	buf = sprintf('%s%s',buf,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
+	buf = sprintf('%s%s',buf,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
+	buf = sprintf('%s%s',buf,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
 end
 
-fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-fprintf(fid,'!                       Data                          !\n');
-fprintf(fid,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-fprintf(fid,'DATA_UNTIL = EOF\n');
+buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+buf = sprintf('%s%s',buf,'!                       Data                          !\n');
+buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+buf = sprintf('%s%s',buf,'DATA_UNTIL = EOF\n');
 
+[fid,msg] = fopen([file_name ext_s],'w');
+if fid < 0
+	irf_log('save',['problem opening CEF file: ' msg])
+	status = 1;
+	return
+end
+
+sta = fprintf(fid,buf);
 fclose(fid);
+if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
 
 if ~isempty(data)
 	n_col = size(data,2) -1; % number of data columns - time
@@ -308,24 +327,32 @@ if ~isempty(data)
 	end
 	
 	s = cefprint_mx([file_name ext_s],data);
-	if s~=0, irf_log('save','problem writing to CEF file'), return, end
+	if s~=0
+		if s==1, msg = 'problem writing CEF data';
+		elseif s==2, msg = 'problem compressing CEF';
+		else msg = 'unknown error';
+		end
+		irf_log('save',msg)
+		status = 1;
+		return
+	end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function pmeta(fid,m_s,s,cl_id)
+function obuf = pmeta(buf,m_s,s,cl_id)
 % Print META
 
-fprintf(fid,['START_META     =   ' m_s '\n']);
+obuf = sprintf('%s%s',buf,['START_META     =   ' m_s '\n']);
 if iscell(s)
 	for j=1:length(s)
 		if isnumeric(s{j}), q = ''; ss = num2str(s{j}); else q = '"'; ss = s{j};end
-		fprintf(fid,['   ENTRY       =   ' q ss q '\n']); 
+		obuf = sprintf('%s%s',obuf,['   ENTRY       =   ' q ss q '\n']); 
 	end
 else
 	if nargin==4, ss = irf_ssub(s,cl_id); 
     else ss = s;
 	end
 	if isnumeric(ss), q = ''; ss = num2str(ss); else q = '"'; end
-	fprintf(fid,['   ENTRY       =   ' q ss q '\n']);
+	obuf = sprintf('%s%s',obuf,['   ENTRY       =   ' q ss q '\n']);
 end
-fprintf(fid,['END_META       =   ' m_s '\n']);
+obuf = sprintf('%s%s',obuf,['END_META       =   ' m_s '\n']);
