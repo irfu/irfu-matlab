@@ -23,6 +23,9 @@ if ngap>0
 	tt = tt(2:end,:);
 	tt(:,2:end) = NaN;
 	res = [res; tt];
-	irf_log('proc',...
-	sprintf('filling %d gaps at %s',ngap,epoch2iso(data(end,1),1)))
+	% Do not report 1 point gaps
+	if ngap>1
+		irf_log('proc',...
+			sprintf('filling %d gaps at %s',ngap,epoch2iso(data(end,1),1)))
+	end
 end
