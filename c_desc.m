@@ -73,7 +73,7 @@ if regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.labels = {'-Sc pot'};
 	if vs(2)=='s'
 		v.quant = 'ps';
-		v.field_name = {'Spacecraft potential (spin resolution)'};
+		v.field_name = {'Spacecraft potential (4 sec resolution)'};
     elseif vs(1)=='b'
 		v.quant = 'pburst';
 		v.field_name = {'Spacecraft potential (internal burst)'};
@@ -275,7 +275,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	v.label_1 = {'"Ex", "Ey"',''};
     v.col_labels = {{'x','y','z'},''};
     v.rep_1 = {'"x", "y"',''};
-	v.field_name = {'Electric field (spin resolution)','Standard deviation'};
+	v.field_name = {'Electric field (4 sec resolution)','Standard deviation'};
 	v.ent = {'Electric_Field','Electric_Field'};
 	v.prop = {'Vector','Vector'};
 	v.fluc = {'Waveform','Fluctuation_Level'};
@@ -607,7 +607,7 @@ elseif regexp(vs,'^Damp[1-4]$')==1
 	v.quant = '';
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% despun full/spin resolution E with assumption E.B = 0
+% despun full/4 sec resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.data = 1;
@@ -637,7 +637,7 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% full/spin resolution E in GSE coordinates
+% full/4 sec resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.data = 1;
@@ -1040,8 +1040,8 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	if regexp(vs,'^(di)?B(r|rs)[1-4]$')
 		v.file = 'mBr';
 		if regexp(vs,'^(di)?Brs[1-4]$')
-			v.field_name = {'Magnetic field resampled to E (spin resolution)'};
-			v.com = 'Resampled to E (spin resolution)';
+			v.field_name = {'Magnetic field resampled to E (4 sec resolution)'};
+			v.com = 'Resampled to E (4 sec resolution)';
 			v.quant = 'brs';
 		else
 			v.field_name = {'Magnetic field resampled to E (full resolution)'};
