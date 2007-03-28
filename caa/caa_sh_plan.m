@@ -32,7 +32,7 @@ for cl_id = 1:4
 			if isempty(data), error('cannot fetch position'), end
 
 			R_tmp = irf_abs(data{2});
-			R = [R; R_tmp(:,[1 5])];
+			R = [R; R_tmp];
 			clear R_tmp
 		end
 		
@@ -47,11 +47,11 @@ for cl_id = 1:4
 	v_s = sprintf('ORB%dY%d',cl_id,yyyy);
 	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
 	if ~exist(v_s,'var')
-		dR = diff(R(:,2))./diff(R(:,1));
+		dR = diff(R(:,5))./diff(R(:,1));
 		ii = find(dR(1:end-1,1).*dR(2:end,1)<0) +1; %shift to hit the extremum
 		ORB = []; t_prev = [];
 		for o=1:length(ii)
-			if R(ii(o)+1,2)>R(ii(o),2)
+			if R(ii(o)+1,5)>R(ii(o),5)
 				%Perigy
 				if isempty(ORB) && ~isempty(t_prev)
 					ORB = [2*t_prev-R(ii(o),1) R(ii(o),1)-t_prev];
@@ -74,14 +74,13 @@ for cl_id = 1:4
 		end
 	else eval([ 'ORB=' v_s ';'])
 	end
-	clear R
 	
 	v_s = sprintf('MP%dY%d',cl_id,yyyy);
 	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
 	if ~exist(v_s,'var')
 		MP = [];
 		for o=1:length(ORB)
-			[t_out, t_in] = caa_find_mp(ORB(o,1),ORB(o,2),cl_id);
+			[t_out, t_in] = caa_find_mp(ORB(o,1),ORB(o,2),cl_id, R);
 			if ~isempty(t_out) && ~isempty(t_in)
 				if isempty(MP), MP = [t_out, t_in];
 				else MP = [MP; [t_out, t_in]];
@@ -122,5 +121,5 @@ for cl_id = 1:4
 	irf_zoom([toepoch([yyyy 1 1 0 0 0]) toepoch([yyyy+1 1 1 0 0 0])],'x')
 	ylabel('time [hours] from perigy')
 	title(sprintf('Cluster %d',cl_id))
-	clear MP
+	clear MP R
 end

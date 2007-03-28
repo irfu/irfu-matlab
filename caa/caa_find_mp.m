@@ -1,4 +1,4 @@
-function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id)
+function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin)
 %CAA_FIND_MP  find model magnetopause crossings
 %
 % [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id)
@@ -15,6 +15,8 @@ if dt>toepoch([1996 01 01 00 00 00])
 	dt = dt - start_time;
 end
 
+if nargin < 4, Rin = []; end
+
 t_mp_out = []; t_mp_in = [];
 
 R_E = 6378;
@@ -27,10 +29,16 @@ ACE_BZ_DEF = 0;			% Default IMF Bz
 irf_log('proc',['orbit : ' epoch2iso(start_time,1) ' -- ' ...
 		epoch2iso(start_time+dt,1)])
 
-data = getData(ClusterDB, start_time, dt, cl_id, 'r', 'nosave');
-if isempty(data), error('cannot fetch position'), end
-
-R = data{2};
+if isempty(Rin)
+	data = getData(ClusterDB, start_time, dt, cl_id, 'r', 'nosave');
+	if isempty(data), error('cannot fetch position'), end
+	R = data{2};
+	clear data
+else
+	R = irf_tlim(Rin, start_time + [0 dt]);
+	if isempty(R), error('empty position'), end
+end
+	
 R = R(R(:,1)>0,:); % we probably cross the MP only for positive X
 R = R(irf_abs(R,1)>7*R_E,:); % we probably cross the MP only R > 7 R_E
 
@@ -88,7 +96,7 @@ for t=st:1800:st+dt
 	%irf_log('proc',['ace_vx_tmp: ' num2str(vx_tmp,'%.2f') ' km/s'])
 	%v_ttt = [v_ttt; t-dt_ace vx_tmp];
 	
-	if isempty(ace_V), n_tmp = ACE_N_DEF;
+	if isempty(ace_N), n_tmp = ACE_N_DEF;
 	else
 		n_tmp = linear_solve(ace_N, t, dt_ace);
 		if isnan(n_tmp)
@@ -99,7 +107,7 @@ for t=st:1800:st+dt
 	%irf_log('proc',['ace_nn_tmp: ' num2str(n_tmp,'%.2f') ' cc'])
 	%n_ttt = [n_ttt; t-dt_ace n_tmp];
 	
-	if isempty(ace_V), bz_tmp = ACE_BZ_DEF;
+	if isempty(ace_B), bz_tmp = ACE_BZ_DEF;
 	else
 		bz_tmp = linear_solve(ace_B(:,[1 4]), t, dt_ace);
 		if isnan(bz_tmp)
@@ -111,6 +119,11 @@ for t=st:1800:st+dt
 	%b_ttt = [b_ttt; t-dt_ace bz_tmp];
 	
 	r_tmp = linear_solve(R, t, 0);
+	if isnan(r_tmp)
+		irf_log('proc',['R : NaN at ' epoch2iso(t,1)])
+		continue
+	end
+			
 	r_gsm = irf_gse2gsm([t r_tmp]);
 	r_gsm(2:4) = r_gsm(2:4)/R_E;
 	r_mp = irf_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2)); 
@@ -138,7 +151,11 @@ function y = linear_solve(f, t, delta_t)
 t = t -delta_t;
 p1 = f( (f(:,1) > t -3600) & (f(:,1) <= t), : ); % data has 1 hour resolutuion
 p2 = f( (f(:,1) < t +3600) & (f(:,1) > t), : );
-if isempty(p1) && isempty(p2), error('bizzare no data'), end
+if isempty(p1) && isempty(p2)
+	% We have a data gap
+	y = NaN;
+	return
+end
 if ~isempty(p1), p1 = p1(1,:); end
 if ~isempty(p2)
 	p2 = p2(end,:);
