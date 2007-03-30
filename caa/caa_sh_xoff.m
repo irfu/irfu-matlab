@@ -227,9 +227,9 @@ if ~isempty(Eref)
 		axes(h(6)), irf_plot(CE3(:, [1 3]),'g+')
 	end
     hold off
+	title(h(5),legx), ylabel(h(5),'Ex [mV/m]')
+	if flag_amp, title(h(6),legy), end, ylabel(h(6),'Ey [mV/m]')
 end
-title(h(5),legx), ylabel(h(5),'Ex [mV/m]')
-if flag_amp, title(h(6),legy), end, ylabel(h(6),'Ey [mV/m]')
 
 axes(h(4)), cla
 c_pl_tx('Ps?')
