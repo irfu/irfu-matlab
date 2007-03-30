@@ -12,7 +12,7 @@ function out = irf_resamp(x,y,method)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004, 2007 Yuri Khotyaintsev (yuri@irfu.se)
 %
 
 error(nargchk(2,3,nargin))
@@ -22,14 +22,14 @@ else
   flag_do='check'; % if no method check if interpolate or average
 end
 
-% return in case no time axis
-if prod(size(y))==0,
+% return in case inputs are empty
+if numel(x)==0 || numel(y)==0
     out=[];return;
 end
 
 % construct output time axis
 if size(y,2)==1, t = y(:); % y is only time
-else, t = y(:,1); t = t(:);   % first column of y is time
+else t = y(:,1); t = t(:);   % first column of y is time
 end
 ndata = length(t);
 
@@ -60,7 +60,7 @@ if strcmp(flag_do,'average'),
   for j=1:ndata
     ii = find(x(:,1) <  t(j) + dt2 & x(:,1) >  t(j) - dt2);
     if isempty(ii), out(j,2:end) = NaN;
-    else, out(j,2:end) = mean(x(ii,2:end));
+	else out(j,2:end) = mean(x(ii,2:end));
     end
   end
 elseif strcmp(flag_do,'interpolation'),
