@@ -54,13 +54,13 @@ if ischar(args{1})
 										% are > deltaof_sdev_max*sdev
 				
 				% DSI offsets 
-				def_ct.dsiof = [.33+0i 1.1];
+				def_ct.dsiof = [.15+0i 1.1];
 				c_ct{1} = def_ct;
-				def_ct.dsiof = [.69+0i 1.1];
+				def_ct.dsiof = [.53+0i 1.1];
 				c_ct{2} = def_ct;
-				def_ct.dsiof = [.73+0i 1.1];
+				def_ct.dsiof = [.47+0i 1.1];
 				c_ct{3} = def_ct;
-				def_ct.dsiof = [.92+0i 1.1];
+				def_ct.dsiof = [.71+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
 				
