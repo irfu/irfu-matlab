@@ -53,14 +53,18 @@ if ischar(args{1})
 										% delta offsets we remove points which 
 										% are > deltaof_sdev_max*sdev
 				
-				% DSI offsets 
-				def_ct.dsiof = [.15+0i 1.1];
+				% DSI offsets
+				% Values used:
+				% 2002 : .33 .69 .73 .92
+				% 2003 : .15 .53 .47 .71
+				% 2004 01-04 : .23 .72 .50 .92
+				def_ct.dsiof = [.23+0i 1.1];
 				c_ct{1} = def_ct;
-				def_ct.dsiof = [.53+0i 1.1];
+				def_ct.dsiof = [.72+0i 1.1];
 				c_ct{2} = def_ct;
-				def_ct.dsiof = [.47+0i 1.1];
+				def_ct.dsiof = [.55+0i 1.1];
 				c_ct{3} = def_ct;
-				def_ct.dsiof = [.71+0i 1.1];
+				def_ct.dsiof = [.92+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
 				
