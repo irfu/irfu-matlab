@@ -58,14 +58,15 @@ if ischar(args{1})
 				% 2002 :              .33 .69 .73 .92
 				% 2003 :              .15 .53 .47 .71
 				% 2004 01 -- 04 :     .23 .72 .50 .92
-				% 2004 05 -- 2005 05 :.35 .78 .41 .72
+				% 2004 05 -- 06 :     .35 .78 .41 .72
+				% 2004 11 -- 12 :     .35 .78 .51 .62
 				def_ct.dsiof = [.35+0i 1.1];
 				c_ct{1} = def_ct;
 				def_ct.dsiof = [.78+0i 1.1];
 				c_ct{2} = def_ct;
-				def_ct.dsiof = [.41+0i 1.1];
+				def_ct.dsiof = [.51+0i 1.1];
 				c_ct{3} = def_ct;
-				def_ct.dsiof = [.72+0i 1.1];
+				def_ct.dsiof = [.62+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
 				
