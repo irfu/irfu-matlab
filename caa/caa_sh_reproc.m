@@ -46,7 +46,6 @@ for d=1:length(dirs)
 			getData(ClusterProc(pwd),cl_id,'rawspec');
 			getData(ClusterProc(pwd),cl_id,'dies');
 			getData(ClusterProc(pwd),cl_id,'diespec');
-			getData(ClusterProc(pwd),cl_id,'dief');
 			getData(ClusterProc(pwd),cl_id,'die');
 			
 			% Create .caa_sh_interval
