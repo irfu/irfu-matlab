@@ -22,8 +22,8 @@ for d=1:length(dirs)
 		if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
         
 		irf_log('proc',[ '-- GETTING -- : ' curr_d]);
-		if exist('./mERC.mat','file') || exist('./mEDSI.mat','file')
-			!rm -f mERC.mat mEDSI.mat mEDSIf.mat
+		if exist('./mEDSIf.mat','file') || exist('./mEDSI.mat','file')
+			!rm -f mEDSI.mat mEDSIf.mat
 		end
 		getData(ClusterProc(pwd),cl_id,'dies');
 		getData(ClusterProc(pwd),cl_id,'diespec');
