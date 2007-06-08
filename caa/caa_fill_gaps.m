@@ -10,6 +10,11 @@ function res = caa_fill_gaps(data,te)
 
 res = data;
 
+if size(data,1)<2
+	irf_log('proc','cannot fill gaps (not enough samples)')
+	return
+end
+
 fs = c_efw_fsample(data);
 if fs<=0
 	irf_log('proc','cannot fill gaps (no sampling frequency)')
