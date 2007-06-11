@@ -51,9 +51,9 @@ flag_date=1;   % default is to add date labels
   if ~exist('t_start_epoch','var') || ischar(t_start_epoch) || flag_usefig
     user_data = get(gcf,'userdata');
     if isfield(user_data,'t_start_epoch')
-      t_start_epoch = user_data.t_start_epoch;
+      t_start_epoch = double(user_data.t_start_epoch);
     else
-      t_start_epoch = 0;
+      t_start_epoch = double(0);
     end
   end
 
