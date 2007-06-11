@@ -1,13 +1,31 @@
-function caa_sh_pl_xoff(dE, dAmp, dt_int, weight)
+function caa_sh_pl_xoff(dE, dAmp, dt_int, weight, tint)
 %CAA_SH_PL_XOFF  visualize offset study results
 %
-% caa_sh_pl_xoff(dE, dAmp, dt_int, weight)
+% caa_sh_pl_xoff(dE, dAmp, dt_int, weight,[tint])
 %
 % See also CAA_SH_XOFF_BATCH
 %
 % $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
+
+error(nargchk(4,5,nargin))
+
+if nargin==5
+	if ~all( size([1 2]) == [1 2] )
+		error('TINT must be [START_EPO STOP_EPO]')
+	end
+	if tint(2) <= tint(1)
+		error('TINT must be [START_EPO STOP_EPO], STOP_EPO>START_EPO')
+	end
+	ii = find( dE(:,1)>=tint(1) & dE(:,1)<tint(2) );
+	dE = dE(ii,:);
+	dAmp = dAmp(ii,:);
+	dt_int = dt_int(ii,:);
+	weight = weight(ii,:);
+end
+
+for cli=1:4, dE(abs(dE(:,cli+1)) > 5, cli+1) = NaN; end
 
 clrs='krgb';
 figure(77), clf
