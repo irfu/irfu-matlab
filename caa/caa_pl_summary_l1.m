@@ -10,6 +10,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %           save      - save PNG, PS and PDF
 %           nosave
 %           fullscale - use full scale (up to 180 Hz) on spectrograms
+%           nospec    - do not plot spectrum
 %
 % In iso_t='-1' and dt=-1, they will be determined automatically
 %
@@ -23,6 +24,7 @@ savePDF = 0;
 savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
+plotspec = 1;
 
 int_s = realmax;
 int_e = -1;
@@ -49,6 +51,8 @@ while have_options
 		saveJPG = 1;
 	case 'fullscale'
 		fullscale = 1;
+	case 'nospec'
+		plotspec = 0;
 	otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
@@ -179,6 +183,8 @@ tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
 % Spectrum figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+if plotspec
+
 figure(75)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
 else set(gcf,'position',[7   159   790   916])
@@ -230,6 +236,10 @@ if dt>0
 	if ~isempty(r), add_position(h(6),r), end
 end
 
+orient(75,'tall')
+
+end % if plotspec
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E-field figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -275,11 +285,12 @@ if dt>0
 	if ~isempty(r), add_position(he(8),r), end
 end
 
+orient(76,'tall')
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Export figures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-orient(75,'tall'), orient(76,'tall')
 if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
 else fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
 end
