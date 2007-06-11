@@ -6,7 +6,9 @@ function res = caa_fill_gaps(data,te)
 %
 % $Id$
 
-% Copyright 2006-2007 Yuri Khotyaintsev
+% Copyright 2006,2007 Yuri Khotyaintsev
+
+error(nargchk(2,2,nargin))
 
 res = data;
 

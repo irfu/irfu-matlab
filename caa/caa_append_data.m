@@ -8,7 +8,9 @@ function res = caa_append_data(data,app)
 %
 % $Id$
 
-% Copyright 2006 Yuri Khotyaintsev
+% Copyright 2006,2007 Yuri Khotyaintsev
+
+error(nargchk(2,2,nargin))
 
 if size(data,2) ~= size(app,2), error('data has a different dimension'), end
 
