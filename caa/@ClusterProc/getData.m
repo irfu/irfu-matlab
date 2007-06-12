@@ -411,7 +411,7 @@ elseif strcmp(quantity,'dies')
 		clear tt sp adc_off
 	end
 
-	% Delta offsets
+	% Delta offsets (offsets between E DSI obtained from p12/32 and p34)
 	if n_sig==2
 		
 		% To compute delta offsets we remove points which are > deltaof_sdev_max*sdev
@@ -432,6 +432,7 @@ elseif strcmp(quantity,'dies')
 			irf_log('calb',sprintf('%d points are removed for delta offsets',...
 				length(iia)))
 		end
+		Del = [0 0];
 		for comp = 1:2
 			ddd = df(:,comp); ddd(iia) = [];
 			Del(comp) = mean(ddd);
@@ -443,24 +444,15 @@ elseif strcmp(quantity,'dies')
 		% Check for unreallistically large Del. 
 		% If it is larger than deltaof_max, we set it to zero and 
 		% NOT doing any corrections.
-		if (Del(1)>deltaof_max) || (Del(2)>deltaof_max)
-			Del = [0 0];
+		if ( abs(Del(1)) > deltaof_max ) || ( abs(Del(2)) > deltaof_max )
 			irf_log('calb',...
 				irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
 				cl_id,deltaof_max))
 		else
-			% We suppose that larger field is more realistic
-			% and will correct the largest signal.
-			% If we have p32, we always correct it, not p34.
-			% Real offset is applied to p12, imaginary to p34.
-			if Del(1)>0 && p12==12, Del = -Del*j; end
-			if real(Del)
-				irf_log('calb',irf_ssub('correcting p?',p12))
-				eval(irf_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
-			else
-				irf_log('calb','correcting p34')
-				c_eval('diEs?p34(:,2:3)=diEs?p34(:,2:3)-ones(size(diEs?p34,1),1)*imag(Del);',cl_id);
-			end
+			% Always correct p12/p32.
+			% Deprecated behavior: real offset is applied to p12, imaginary to p34.
+			irf_log('calb',irf_ssub('correcting p?',p12))
+			eval(irf_ssub('diEs?p!(:,2:3)=diEs?p!(:,2:3)-ones(size(diEs?p!,1),1)*Del;',cl_id,p12));
 		end
 		
 		eval(irf_ssub('D?p12p34=Del;',cl_id))
@@ -472,7 +464,7 @@ elseif strcmp(quantity,'dies')
 		if exist(irf_ssub('diEs?p!',cl_id,p12), 'var')
 			irf_log('calb',irf_ssub('Will use p? for spin res data',p12))
 			caa_sfit_probe(cl_id,p12);
-        end
+		end
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -481,7 +473,6 @@ elseif strcmp(quantity,'dies')
 elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	strcmp(quantity,'diespec') || strcmp(quantity,'dieburst')
 	
-	do_burst = 0;
 	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
 	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
 	if do_burst
@@ -503,79 +494,79 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		irf_log('load',...
 			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
 		data = []; cd(old_pwd); return
-    end
+	end
 	
     % Make electric field for the burst
 	if do_burst
 		var_name = 'wbE?p!';
-        p12 = 12; e12 = []; e34 =[];
-        param={'180Hz','4kHz','32kHz'};
-        p_ok = [];
-        loaded = 0;
+		p12 = 12; e12 = []; e34 =[];
+		param={'180Hz','4kHz','32kHz'};
+		p_ok = [];
+		loaded = 0;
 		for k=1:length(param)
 			for probe=[2 4]
-                [ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
-                if ok
-                    loaded = 1;
-                    p_sep = .088;
-                    if probe==2
-                        [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
-                        if ~ok
-                            [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
-                            p_sep = .066;
-                            p12 = 32;
-                        end
-                        if ~ok
-                            irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
-                            continue
-                        end
-                        
-                        e12(:,1) = p2(:,1);
-                        e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-                        p_ok = [p_ok 12];
-                        eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
-                    else
-                        [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
-                        if ~ok
-                            irf_log('load', irf_ssub(['No P' param{k} '?p3'],cl_id));
-                            continue
-                        end
-                        
-                        e34(:,1) = p2(:,1);
-                        e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-                        p_ok = [p_ok 34];
-                    end
-                else
-                    irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
-                end
-            end
-            if loaded, break, end
-        end
-        if ~loaded
-            p_ok = [];
-            for probe = [12 32 34]
-                [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
-                if ~ok || isempty(da)
-                    irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
-                    continue
-                end
+				[ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
+				if ok
+					loaded = 1;
+					p_sep = .088;
+					if probe==2
+						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
+						if ~ok
+							[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+							p_sep = .066;
+							p12 = 32;
+						end
+						if ~ok
+							irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+							continue
+						end
 
-                if probe==32
-                    p12 = 32;
-                    e12 = da;
-                    p_ok = [p_ok 12];
-                else
-                    c_eval('e?=da;',probe)
-                    p_ok = [p_ok probe];
-                end
-                clear ok da
-            end
-        end     
+						e12(:,1) = p2(:,1);
+						e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+						p_ok = [p_ok 12];
+						eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+					else
+						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+						if ~ok
+							irf_log('load', irf_ssub(['No P' param{k} '?p3'],cl_id));
+							continue
+						end
+
+						e34(:,1) = p2(:,1);
+						e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+						p_ok = [p_ok 34];
+					end
+				else
+					irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
+				end
+			end
+			if loaded, break, end
+		end
+		if ~loaded
+			p_ok = [];
+			for probe = [12 32 34]
+				[ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
+				if ~ok || isempty(da)
+					irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
+					continue
+				end
+
+				if probe==32
+					p12 = 32;
+					e12 = da;
+					p_ok = [p_ok 12];
+				else
+					c_eval('e?=da;',probe)
+					p_ok = [p_ok probe];
+				end
+				clear ok da
+			end
+		end
 	else % Not burst
-        p12 = 12; e12 = []; e34 =[];
-        p_ok = [];
-        for probe = [12 32 34]
-            [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
+		p12 = 12; e12 = []; e34 =[];
+		p_ok = [];
+		for probe = [12 32 34]
+			[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 			if ~ok || isempty(da)
 				irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
@@ -586,17 +577,17 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				irf_log('load','using raw (not corrected) data')
 			end
 
-            if probe==32
-                p12 = 32;
-                e12 = da;
-                p_ok = [p_ok 12];
-            else
-                c_eval('e?=da;',probe)
-                p_ok = [p_ok probe];
-            end
-            clear ok da
-        end
-    end
+			if probe==32
+				p12 = 32;
+				e12 = da;
+				p_ok = [p_ok 12];
+			else
+				c_eval('e?=da;',probe)
+				p_ok = [p_ok probe];
+			end
+			clear ok da
+		end
+	end
 	if ~length(p_ok), data = []; cd(old_pwd), return, end
 
 	% Load ADC offsets
@@ -762,24 +753,31 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		
 		% Load Delta offsets D?p12p34
 		[ok,Del] = c_load('D?p12p34',cl_id);
-		if ~ok
-			if CAA_MODE, error(irf_ssub('Cannot load D?p12p34',cl_id,ps)), end
-			irf_log('load',irf_ssub('Cannot load D?p12p34',cl_id,ps))
-		end
-		if isempty(Del)
-			if CAA_MODE, error(irf_ssub('Empty D?p12p34',cl_id,ps)), end
-			irf_log('load',irf_ssub('Empty D?p12p34',cl_id,ps))
+		if ~ok || isempty(Del)
+			irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id,ps))
 		else
-			if real(Del) % Real del means we must correct p12. real(Del)==imag(Del)
+			
+			if isreal(Del)
+				% Real Del means we must correct p12/p32.
 				irf_log('calb',['correcting delta offset on p' num2str(p12)])
 				i_c = 1;
 			else
+				% Correcting p34 is now DEPRECATED
 				irf_log('calb','correcting delta offset on p34')
 				Del = imag(Del);
 				i_c = 2;
 			end
 			coef(i_c,3) = Del(1) -Del(2)*1j;
 			clear Del
+			
+	
+% 			irf_log('calb',['correcting delta offset on p' num2str(p12)])
+% 
+% 			% Correcting p34 is now DEPRECATED [~isreal(Del)]
+% 			if ~isreal(Del), Del = -imag(Del); end
+% 			coef(1,3) = Del(1) -Del(2)*1j;
+
+		
 		end
 	else
 	
