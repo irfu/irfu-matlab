@@ -956,14 +956,25 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	if strcmp(quantity,'edbs') || strcmp(quantity,'iedbs'), diE(:,6) = diE(:,5); end
 	
 	dsiof = c_ctl(cl_id,'dsiof');
-	if isempty(dsiof), dsiof = [1+0i 1]; end
-	[ok,Dxy] = c_load('Ddsi?',cl_id);
-	if ~ok, Dxy = dsiof(1); end
-	[ok,Da] = c_load('Damp?',cl_id);
-	if ~ok, Da = dsiof(2); end
+	if isempty(dsiof)
+		st = diE(~isnan(diE(:,1)),1);
+		if ~isempty(st), st = st(1); else st = 0; end
+		[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id); clear st
+
+		[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+		[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+
+		if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+		else irf_log('calb','Using default DSI offsets')
+		end
+		clear dsiof_def dam_def
+	else
+		Ddsi = dsiof(1); Damp = dsiof(2);
+		irf_log('calb','Using user specified DSI offsets')
+	end
 	clear dsiof
 
-	diE = caa_corof_dsi(diE,Dxy,Da);
+	diE = caa_corof_dsi(diE,Ddsi,Damp); clear Ddsi Damp
 
 	irf_log('proc',['using angle limit of ' num2str(ang_limit) ' degrees'])
 	[diE,ang]=irf_edb(diE,diB,ang_limit);

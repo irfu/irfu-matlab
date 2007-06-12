@@ -13,7 +13,7 @@ function varargout = c_cal_gui(varargin)
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
 %
 persistent h0;
 %disp(h0)
@@ -350,19 +350,22 @@ case 'init'
 		% Load EFW offsets
 		old_pwd = pwd; cd(sp);
 		offset = c_ctl(cl_id,'dsiof');
-		if isempty(offset), offset = [1+0i 1]; end
 		
-		if c_load('Ddsi?',cl_id)
-			c_eval('offset(1)=Ddsi?;clear Ddsi?',cl_id)
-			irf_log('load',...
-			sprintf('EFW xy offset Ddsi%d = %.2f %.2f*i',...
-			cl_id,real(offset(1)),imag(offset(1))))
+		if isempty(offset)
+			[dsiof_def, dam_def] = c_efw_dsi_off(hnd.tlim(1),cl_id);
+			offset(1) = dsiof_def; offset(2) = dam_def;
+
+			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ok1, offset(1) = Ddsi; end
+			[ok2,Damp] = c_load('Damp?',cl_id); if ok2, offset(2) = Damp; end
+
+			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+			else irf_log('calb','Using default DSI offsets')
+			end
+			clear dsiof_def dam_def Ddsi Damp
+		else
+			irf_log('calb','Using user specified DSI offsets')
 		end
-		if c_load('Damp?',cl_id);
-			c_eval('offset(2)=Damp?;clear Damp?',cl_id)
-			irf_log('load',...
-			sprintf('EFW amplitude corr Damp%d = %.2f',cl_id,offset(2)))
-		end
+		
 		cd(old_pwd)
 		hnd.EFWoffset(cl_id,:) = offset;
 		
@@ -373,6 +376,7 @@ case 'init'
 		end
 		warning on
 		
+		offset = [0 0];
 		if exist(irf_ssub('DHdsi?',cl_id),'var')
 			c_eval('offset(1)=DHdsi?;clear DHdsi?',cl_id)
 			irf_log('load',...
@@ -1496,7 +1500,7 @@ case 'show_raw'
 				legp_tmp = [legp_tmp {irf_ssub(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id)}];
 			end
 		end
-		if isempty(d_tmp) & isempty(dp_tmp), return, end
+		if isempty(d_tmp) && isempty(dp_tmp), return, end
 		figure(raw_fig_id), clf
 		if ~isempty(d_tmp)
 			h1 = irf_subplot(2,1,1);
@@ -1568,7 +1572,7 @@ case 'show_spect'
 	% Create figure
 	if find(get(0,'children')==spect_fig_id)
 		pos_old = get(spect_fig_id,'Position');
-	else, pos_old = [];
+	else pos_old = [];
 	end
 	fig = figure(spect_fig_id);
 	clf
@@ -1590,7 +1594,7 @@ case 'show_spect'
 	% Guess the sampling frequency
 	sf = c_efw_fsample(E_tmp.data(:,1));
 	if sf==25, nfft = 512;
-	else, nfft = 4096;
+	else nfft = 4096;
 	end
 	
 	% Exclude NaNs
@@ -1701,7 +1705,7 @@ case 'cut_int'
 		
 	else % Cut V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
-		else, v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
+		else v_s = irf_ssub('VCp?',hnd.Data{j}.cl_id);
 		end
 		% Variables which we need to reload
 		var_list = {['di' v_s],v_s}; n_ok = 0;

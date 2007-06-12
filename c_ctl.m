@@ -53,23 +53,12 @@ if ischar(args{1})
 										% delta offsets we remove points which 
 										% are > deltaof_sdev_max*sdev
 				
-				% DSI offsets
-				% Values used:
-				% 2001 06 -- 07 :       .31      .60 .52  .64
-				% 2001 11 -- 12 :       .47      .82 .89 1.04
-				% 2002 :                .33      .69 .73  .92
-				% 2003 :                .15      .53 .47  .71
-				% 2004 01 -- 04 :       .23      .72 .50  .92
-				% 2004 05 -- 06 :       .35      .78 .41  .72
-				% 2004 11 -- 2005 02 :  .35      .78 .51  .62
-				% 2005 03 -- 2005 07 :  .35+0.2i .78 .51  .62
-				def_ct.dsiof = [.31+0i 1.1];
+				% DSI offsets are moved to c_efw_dsi_off
+				% use c_ctl only if you want to override the default value
+				def_ct.dsiof = [];
 				c_ct{1} = def_ct;
-				def_ct.dsiof = [.60+0i 1.1];
 				c_ct{2} = def_ct;
-				def_ct.dsiof = [.52+0i 1.1];
 				c_ct{3} = def_ct;
-				def_ct.dsiof = [.64+0i 1.1];
 				c_ct{4} = def_ct;
 				clear def_ct
 				

@@ -16,7 +16,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev (yuri@irfu.se)
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
@@ -74,9 +74,49 @@ r = [];
 ri = [];
 fmax = 12.5;
 c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];')
+
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
-	p = []; spec = {}; es = []; rspec = []; in = {}; wamp = [];
+	in = {};
+	
+	if ~exist(cdir, 'dir'), continue, end
+	d = dir([cdir '/2*_*']);
+	if isempty(d), continue, end
+
+	for jj=1:length(d)
+		curdir = [cdir '/' d(jj).name];
+		if ~exist([curdir '/.interval'],'file'), continue, end
+		cd(curdir)
+
+		% Load intervals & TM mode
+		[st_s,dt1] = caa_read_interval;
+		t1 = iso2epoch(st_s);
+		if t1<int_s, int_s = t1; end
+		if t1+dt1>int_e, int_e = t1+dt1; end
+		in_tmp.interv = [t1 dt1];
+		in_tmp.st_s = st_s(12:16);
+		tm = c_load('mTMode?',cli,'var');
+		if ~isempty(tm) && tm(1,1)~=-157e8
+			if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
+		else in_tmp.tm = -1;
+		end
+		in = [in; {in_tmp}];
+		clear in_tmp
+
+		cd(old_pwd)
+	end
+	if ~isempty(in), c_eval('in?=in;',cli), end, clear in
+end
+
+if ( strcmp(iso_t,'-1') || (isnumeric(iso_t) && iso_t==-1) ) && dt==-1
+	st = int_s;
+	dt = int_e - int_s;
+else st = iso2epoch(iso_t);
+end
+	
+for cli=1:4
+	cdir = [sdir '/C' num2str(cli)];
+	p = []; spec = {}; es = []; rspec = []; wamp = [];
 	
 	if exist(cdir, 'dir')
 		d = dir([cdir '/2*_*']);
@@ -119,12 +159,25 @@ for cli=1:4
 			% Load Es
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
+				
 				dsiof = c_ctl(cli,'dsiof');
-				if isempty(dsiof), dsiof = [1+0i 1]; end
-				[ok,Ddsi] = c_load('Ddsi?',cli); if ~ok, Ddsi = dsiof(1); end
-				[ok,Damp] = c_load('Damp?',cli); if ~ok, Damp = dsiof(2); end
+				if isempty(dsiof)
+					[dsiof_def, dam_def] = c_efw_dsi_off(st,cli);
+
+					[ok1,Ddsi] = c_load('Ddsi?',cli); if ~ok1, Ddsi = dsiof_def; end
+					[ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
+
+					if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+					else irf_log('calb','Using default DSI offsets')
+					end
+					clear dsiof_def dam_def
+				else
+					Ddsi = dsiof(1); Damp = dsiof(2);
+					irf_log('calb','Using user specified DSI offsets')
+				end
 				clear dsiof
-				es_tmp = caa_corof_dsi(es_tmp,Ddsi,Damp);
+				
+				es_tmp = caa_corof_dsi(es_tmp,Ddsi,Damp); clear Ddsi Damp
 				es = [es; es_tmp];
 			end
 			clear es_tmp
@@ -144,21 +197,6 @@ for cli=1:4
 			end
 			clear rspec_tmp
 			
-			% Load intervals & TM mode
-			[st_s,dt1] = caa_read_interval;
-			t1 = iso2epoch(st_s);
-			if t1<int_s, int_s = t1; end
-			if t1+dt1>int_e, int_e = t1+dt1; end
-			in_tmp.interv = [t1 dt1];
-			in_tmp.st_s = st_s(12:16);
-			tm = c_load('mTMode?',cli,'var');
-			if ~isempty(tm) && tm(1,1)~=-157e8
-				if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
-			else in_tmp.tm = -1;
-			end
-			in = [in; {in_tmp}];
-			clear in_tmp
-			
 			cd(old_pwd)
 		end
 		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
@@ -166,15 +204,9 @@ for cli=1:4
 		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
 		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
-		if ~isempty(in), c_eval('in?=in;',cli), end, clear in
 	end
 end
 
-if ( strcmp(iso_t,'-1') || (isnumeric(iso_t) && iso_t==-1) ) && dt==-1
-	st = int_s;
-	dt = int_e - int_s;
-else st = iso2epoch(iso_t);
-end
 ds = irf_fname(st);
 tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
 	ds(12:13) ', produced ' date ')'];

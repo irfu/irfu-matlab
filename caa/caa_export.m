@@ -147,14 +147,25 @@ if strcmp(caa_vs,'E')
 	
 	if ~isempty(data)
 		dsiof = c_ctl(cl_id,'dsiof');
-		if isempty(dsiof), dsiof = [1+0i 1]; end
-		[ok,Ddsi] = c_load('Ddsi?',cl_id); if ~ok, Ddsi = dsiof(1); end
-		[ok,Damp] = c_load('Damp?',cl_id); if ~ok, Damp = dsiof(2); end
+		if isempty(dsiof)
+			[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id);
+
+			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+			
+			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+			else irf_log('calb','Using default DSI offsets')
+			end 
+			clear dsiof_def dam_def
+		else
+			Ddsi = dsiof(1); Damp = dsiof(2);
+			irf_log('calb','Using user specified DSI offsets')
+		end
 		clear dsiof
 		
 		data = caa_corof_dsi(data,Ddsi,Damp);
 		dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-			real(Ddsi(1)),imag(Ddsi(1)),Damp);
+			real(Ddsi(1)),imag(Ddsi(1)),Damp); clear Ddsi Damp
 		irf_log('calb',dsc.com)
 		dsc.com = [dsc.com '. Probes: ' dsc.sen];
 		

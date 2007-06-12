@@ -21,7 +21,8 @@ function out=summaryPlot(cp,cl_id,varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
+
 error(nargchk(2,9,nargin))
 
 if nargin>2, have_options = 1; args = varargin;
@@ -119,13 +120,31 @@ for k=1:length(q_list)
 			if strcmp(cs,'dsi') 
 				% correct DSI offsets
 				dsiof = c_ctl(cl_id,'dsiof');
-				if isempty(dsiof), dsiof = [1+0i 1]; end
-				[ok,Dxy] = c_load('Ddsi?',cl_id);
-				if ~ok, Dxy = dsiof(1); end
-				[ok,Da] = c_load('Damp?',cl_id);
-				if ~ok, Da = dsiof(2); end
-				c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Dxy,Da);'],cl_id)
-				clear dsiof Dxy
+				if isempty(dsiof)
+					if ~have_tint
+						c_eval(['st=' q_list{k} '(:,1);'],cl_id)
+						st = st(~isnan(st));
+						if isempty(st), st = 0;
+						else st = st(1);
+						end
+					end
+					
+					[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
+
+					[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+					[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+
+					if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+					else irf_log('calb','Using default DSI offsets')
+					end
+					clear dsiof_def dam_def
+				else
+					Ddsi = dsiof(1); Damp = dsiof(2);
+					irf_log('calb','Using user specified DSI offsets')
+				end
+				clear dsiof
+				c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
+				clear Ddsi Damp
 			end
 
 			c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id)
@@ -208,9 +227,9 @@ irf_pl_add_info
 lyy = 0;
 for k=n_plots:-1:1
 	if min(size(data{k}))>2
-        legend(h(k),'X','Y','Z','Location','NorthEastOutside')
-        if lyy==0, pos = get(h(k),'Position'); lyy = pos(3); clear pos, end
-    end
+		legend(h(k),'X','Y','Z','Location','NorthEastOutside')
+		if lyy==0, pos = get(h(k),'Position'); lyy = pos(3); clear pos, end
+	end
 end
 
 if lyy
