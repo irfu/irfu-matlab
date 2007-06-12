@@ -164,6 +164,20 @@ if strcmp(caa_vs,'E')
 		end
 	end
 	
+	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
+	if ~isreal(Del)
+		Del = imag(Del);
+		% offset is applied to p34
+		if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
+		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+			dsc.com, '34', Del(1), Del(2));
+	else
+		% offset is applied to p12/32
+		if strcmp(dsc.sen,'34'), Del = [0 0]; end
+		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+			dsc.com, dsc.sen(1:2), Del(1), Del(2));
+	end
+	
 	dsc.frv = {'Observatory'};
 	if v_size>1, for j=2:v_size, dsc.frv = [dsc.frv {''}]; end, end
 	
