@@ -1,7 +1,7 @@
-function res = nv2press(n,v2)
-%NV2PRESS  Calculate plasma dynamic pressure
+function res = nv2p(n,v2)
+%NV2P  Calculate plasma dynamic pressure
 %
-% res = nv2press(n,v2)
+% res = nv2p(n,v2)
 %
 % Calculate plasma dynamic pressure in nPa
 % n in 1/cc
