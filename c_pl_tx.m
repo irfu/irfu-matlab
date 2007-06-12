@@ -95,19 +95,19 @@ end
 
 while have_args
 	if ischar(args{1})
-		%linestyle
+		% Linestyle
 		if isempty(l_style), c_eval('l_style(?)={args{1}};')
         else irf_log('fcal','L_STYLE is already set')
 		end
 		args = args(2:end);
 	elseif iscell(args{1}) && length(args{1})==4
-		%individual linestyles for each sc
+		% Individual linestyles for each sc
 		if isempty(l_style), l_style = args{1};
         else irf_log('fcal','L_STYLE is already set')
 		end
 		args = args(2:end);
 	elseif isnumeric(args{1}) && length(args{1})==4
-		%dt
+		% Dt
 		if isempty(delta_t), delta_t = args{1};
         else irf_log('fcal','DELTA_T is already set')
 		end
@@ -135,22 +135,24 @@ end
 % check first if it exist otherwise assume zero
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), 
-	t_start_epoch = ud.t_start_epoch;
+	t_start_epoch = double(ud.t_start_epoch);
 elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
         (~isempty(x3) && x3(1,1)>1e8) || (~isempty(x4) && x4(1,1)>1e8)
-	% set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
+	% Set start_epoch if time is in isdat epoch, 
+	% warn about changing t_start_epoch
 	tt = [];
 	c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
-	t_start_epoch=min(tt); clear tt
-	ud.t_start_epoch=t_start_epoch;set(gcf,'userdata',ud);
-	irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch)]);
+	t_start_epoch = double(min(tt)); clear tt
+	ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+	irf_log('proc',['user_data.t_start_epoch is set to ' ...
+		epoch2iso(t_start_epoch)]);
 else
-	t_start_epoch = 0;
+	t_start_epoch = double(0);
 end
 
 c_eval('ts?=t_start_epoch+delta_t(?);')
 
-if length(column) == 1,
+if length(column) == 1
 	pl = '';
 	for jj=1:4
 		if eval(irf_ssub('~isempty(x?)',jj))
@@ -162,13 +164,14 @@ if length(column) == 1,
 	if ~isempty(pl)
 		eval(['h=plot(' pl ');'])
 		grid on
-		c=get(h(1),'parent');
+		c = get(h(1),'parent');
 		add_timeaxis(c);
 		irf_figmenu;
 	end
 else
-	clf;
-	for j=1:length(column),
+	clf
+	c = zeros(1,length(column));
+	for j=1:length(column)
 		c(j)=irf_subplot(length(column),1,-j);
 		pl = '';
 		for jj=1:4
@@ -180,7 +183,8 @@ else
 		end 
 		eval(['plot(' pl ')'])
 		grid on
-        ud=get(gcf,'userdata');ud.subplot_handles=c;set(gcf,'userdata',ud);
+		
+        ud = get(gcf,'userdata'); ud.subplot_handles = c; set(gcf,'userdata',ud);
 	end
 	add_timeaxis(c);
 	irf_figmenu;
