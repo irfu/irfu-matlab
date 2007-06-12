@@ -101,19 +101,19 @@ end
 if strcmp(plot_type,'subplot') && isnumeric(x),flag_subplot=1;end
 
 if ischar(x), % try to get variable labels etc.
-    var_nam=tokenize(x); % white space separates variables
-    jj=1;
+    var_nam = tokenize(x); % white space separates variables
+    jj = 1;
     for ii=1:length(var_nam),
         if regexp(var_nam{ii},'?'),
             c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
         else
-            var_names{jj}=var_nam{ii};jj=jj+1;
+            var_names{jj} = var_nam{ii}; jj=jj+1;
         end
     end
-    x={};ix=1;
+    x = {}; ix = 1;
     for ii=1:length(var_names)
         try % try to get variable from calling workspace
-            x{ix}=evalin('caller',var_names{ii});
+            x{ix} = evalin('caller',var_names{ii});
         catch
             try % if there is none try to load variable
                 c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
@@ -127,22 +127,22 @@ if ischar(x), % try to get variable labels etc.
           catch
               var_desc{ix} = {};
           end
-          ix = ix+1;
+          ix = ix +1;
         end
     end
 end
 
 
 if iscell(x), % plot several variables
-    if size(var_desc,2)<size(x,2), % no ylabels are given
-        for ii=1:length(x);var_desc{ii}={};end % no way to now the name of variables
-    end
+	
+	% No ylabels are given
+	% But no way to now the name of variables
+    if size(var_desc,2)<size(x,2), var_desc = cell(1,length(x)); end
 	
 	if dt==0, dt(1:size(x,2))=0; end
 	
     switch plot_type
         case ''
-            plot_type='subplot';
             flag_subplot=2;
             if length(x)==1, x=x{1}; flag_subplot=0;end
         case 'comp'
@@ -167,8 +167,6 @@ end
 if flag_subplot==0,  % one subplot
 	if isstruct(x)
 		% plot a spectrogram
-		ts = t_start_epoch(x.t);
-		
 		caa_spectrogram(x);
 		hcbar = colorbar;
 		if ~isempty(var_desc{1})
@@ -211,10 +209,11 @@ if flag_subplot==0,  % one subplot
 elseif flag_subplot==1, % separate subplot for each component 
 	%   t_start_epoch is saved in figures user_data variable
 	if isstruct(x), error('cannot plot spectra in COMP mode'), end
-	ts=t_start_epoch(x(:,1));
-	npl=size(x,2)-1;
+	ts = t_start_epoch(x(:,1));
+	npl = size(x,2) -1;
+	c = zeros(1,npl);
 	for ipl=1:npl
-		c(ipl)=subplot(npl,1,ipl);
+		c(ipl) = subplot(npl,1,ipl);
 
 		if iscell(marker)
 			if length(marker)==npl, marker_cur = marker{ipl};
@@ -263,7 +262,8 @@ elseif flag_subplot==2, % separate subplot for each variable
 	t_st = []; t_end = [];
 	xlen = [];
 
-	npl=size(x,2);
+	npl = size(x,2);
+	c = zeros(1,npl);
 	for ipl=1:npl
 		c(ipl) = irf_subplot(npl,1,-ipl);
 
@@ -335,9 +335,10 @@ elseif flag_subplot==2, % separate subplot for each variable
 elseif flag_subplot==3,  % components of vectors in separate panels
 	if isstruct(x), error('cannot plot spectra in COMP mode'), end
 	%t_start_epoch is saved in figures user_data variable
-	ts=t_start_epoch(x{1}(:,1));
+	ts = t_start_epoch(x{1}(:,1));
 
 	npl=size(x{1},2)-1;
+	c = zeros(1,npl);
 	for ipl=1:npl,
 
 		% We make subplot only if wee need it
@@ -391,31 +392,30 @@ if nargout==0, clear c; end % do not give axis handle as answer if not asked for
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function t_start_epoch=t_start_epoch(t)
+function t_st_e = t_start_epoch(t)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % gives back the value of t_start_epoch of the figure
 % if not  set, sets t_start_epoch of the figure
-ud=get(gcf,'userdata');
+ud = get(gcf,'userdata');
 ii = find(~isnan(t));
-if ii,
-  valid_time_stamp=t(ii(1));
-else
-  valid_time_stamp=[];
-end
+if ~isempty(ii), valid_time_stamp = t(ii(1)); else valid_time_stamp = []; end
 
-if isfield(ud,'t_start_epoch'),
-  t_start_epoch=ud.t_start_epoch;
-elseif valid_time_stamp,
-  if valid_time_stamp > 1e8, % set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-    t_start_epoch=valid_time_stamp;
-    ud.t_start_epoch=t_start_epoch;
-    set(gcf,'userdata',ud);
-    irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
-  else
-    t_start_epoch=0;
-  end
+if isfield(ud,'t_start_epoch')
+	t_st_e = double(ud.t_start_epoch);
+elseif ~isempty(valid_time_stamp)
+	if valid_time_stamp > 1e8
+		% Set start_epoch if time is in isdat epoch
+		% Warn about changing t_start_epoch
+		t_st_e = double(valid_time_stamp);
+		ud.t_start_epoch = t_st_e;
+		set(gcf,'userdata',ud);
+		irf_log('proc',['user_data.t_start_epoch is set to ' ...
+			epoch2iso(t_st_e,1)]);
+	else
+		t_st_e = double(0);
+	end
 else
-  t_start_epoch=0;
+	t_st_e = double(0);
 end
 
 end
