@@ -8,13 +8,15 @@ function new_data = caa_corof_dsi(data,Dx,Dy,Da)
 % The followig computation is performed:
 % newdata = Da*(data_x-Dx, data_y-Dy)
 %
+% See also C_EFW_DSI_OFF
+%
 % $Id$
 
 % Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
 
 error(nargchk(3,4,nargin))
 
-if nargin ==3,
+if nargin ==3
 	Da = Dy;
 	Dy = imag(Dx);
 	Dx = real(Dx);
