@@ -32,6 +32,9 @@ elseif	nargin==4
 	specrec.f = F;
 end
 
+specrec.t = double(specrec.t);
+specrec.f = double(specrec.f);
+
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 ncomp = length(specrec.p);
@@ -48,17 +51,18 @@ for comp=1:min(length(h),ncomp)
 		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
 	end
 	
-    ud=get(gcf,'userdata');
+    ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
 	if isfield(ud,'t_start_epoch'), 
-		t_start_epoch = ud.t_start_epoch;
+		t_start_epoch = double(ud.t_start_epoch);
 	elseif specrec.t(ii(1))> 1e8, 
-		% Set start_epoch if time is in isdat epoch, warn about changing t_start_epoch
-		t_start_epoch = specrec.t(ii(1));
+		% Set start_epoch if time is in isdat epoch
+		% Warn about changing t_start_epoch
+		t_start_epoch = double(specrec.t(ii(1)));
 		ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
 		irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
 	else
-		t_start_epoch = 0;
+		t_start_epoch = double(0);
 	end
 
 	axes(h(comp));
@@ -66,14 +70,15 @@ for comp=1:min(length(h),ncomp)
 	% Special case when we have only one spectrum
 	% We duplicate it
 	if ndata==1
-		dt = .5/specrec.f(2);
+		dt = double(.5/specrec.f(2));
 		specrec.t = [specrec.t-dt; specrec.t+dt];
 		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
 	end
-	if max(specrec.f) > 2000, hz = 1e-3; hzl = 'k';
-	else hz = 1; hzl = '';
+	if max(specrec.f) > 2000, hz = double(1e-3); hzl = 'k';
+	else hz = double(1); hzl = '';
 	end
-	pcolor(specrec.t-t_start_epoch,specrec.f*hz,log10(specrec.p{comp}'))
+	pcolor(double(specrec.t-t_start_epoch),double(specrec.f*hz),...
+		double(log10(specrec.p{comp}')))
 	
 	colormap(cmap)
 	shading flat
