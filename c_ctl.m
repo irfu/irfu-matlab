@@ -46,7 +46,7 @@ if ischar(args{1})
 				def_ct.ns_ops = [];
 				def_ct.ang_lim = 10;	% algle limit for E.B=0
 				def_ct.rm_whip = 1;		% remove times with WHI pulses
-				def_ct.probe_p = 34;	% default probe pair to use
+				def_ct.probe_p = 12;	% default probe pair to use
 				def_ct.deltaof_max = 1.5;	
 										% maximum reasonable value of deltaof
 				def_ct.deltaof_sdev_max = 2; 
