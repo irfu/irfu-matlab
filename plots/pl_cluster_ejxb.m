@@ -1,5 +1,5 @@
-function [Blnm1,h]=p1052_ar(tint,Vmp,L,Nsign,flagEdotB);
-% function [Blnm]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flagEdotB);
+function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flagEdotB)
+% function [Blnm]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flagEdotB)
 %
 % Magnetic field in LMN
 % electric field in comparisoin to jxB
@@ -76,7 +76,7 @@ if flag_EdotB==1,
   c_eval('dEn?=irf_dot(dvE?,dN?);dEm?=irf_dot(dvE?,dM?);');
 end
 
-c_eval('[j?]=irf_jz(v,B?);jz?=irf_dot(j?,irf_norm(B?));jtot?=irf_abs(j?,1);jperp?=jz?;jperp?(:,2)=sqrt(jtot?.^2-jz?(:,2).^2);n?=c_efw_scp2ne_20040104(P?);');
+c_eval('[j?]=irf_jz(v,B?);jz?=irf_dot(j?,irf_norm(B?));jtot?=irf_abs(j?,1);jperp?=jz?;jperp?(:,2)=sqrt(jtot?.^2-jz?(:,2).^2);n?=c_efw_scp2ne(P?);');
 
 c_eval('ejb?=irf_vec_x_scal(irf_tappl(irf_cross(j?,B?),''*1e-9*1e3''),irf_tappl(n?,''*1.6e-19*1e6''),-1);'); % j=[A],B=[nT],n=[cc],E=[mV/m]
 c_eval('dejb?=c_gse2dsc(ejb?,?,2);');
@@ -93,7 +93,7 @@ Ti2=300;  %FTE
 % Remove bad points due to spin
 for ax=3:4
 	if ax==3, tx = toepoch([2004 1 4 12 47 7.2]);
-	else, tx = toepoch([2004 1 4 12 47 7.6]);
+	else tx = toepoch([2004 1 4 12 47 7.6]);
 	end
 	c_eval('ii=find(n?(:,1)>tx & n?(:,1)<tx+.6);n?(ii,:)=[];',ax)
 end
