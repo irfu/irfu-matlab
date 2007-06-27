@@ -167,13 +167,14 @@ for cli=1:4
 					[ok1,Ddsi] = c_load('Ddsi?',cli); if ~ok1, Ddsi = dsiof_def; end
 					[ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
 
-					if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-					else irf_log('calb','Using default DSI offsets')
+					if ok1 || ok2, irf_log('calb',...
+							['Saved DSI offsets on C' num2str(cl_id)])
+					%else irf_log('calb','Using default DSI offsets')
 					end
 					clear dsiof_def dam_def
 				else
 					Ddsi = dsiof(1); Damp = dsiof(2);
-					irf_log('calb','Using user specified DSI offsets')
+					irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
 				end
 				clear dsiof
 				
@@ -377,7 +378,8 @@ t_start_epoch = figure_start_epoch(st);
 hold(h,'on')
 for cli=1:4
 	in = ints{cli};
-	if ~isempty(in), for k=1:length(in)
+	if isempty(in), continue, end 
+	for k=1:length(in)
 		in_tmp = in{k};
 		pp = plot(in_tmp.interv(1)-t_start_epoch + [0 in_tmp.interv(2)],...
 			[cli_pos(cli) cli_pos(cli)],krgb(cli));
@@ -386,7 +388,7 @@ for cli=1:4
 		elseif in_tmp.tm==-1, set(pp,'LineStyle','--')
 		end
 		text(in_tmp.interv(1)-t_start_epoch+60,cli_pos(cli)+0.2,in_tmp.st_s)
-	end, end
+	end
 end
 hold(h,'off')
 set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
