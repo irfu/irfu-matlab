@@ -61,7 +61,7 @@ marker = '-';
 
 while have_options
 	l = 1;
-	switch(args{1})
+	switch(lower(args{1}))
 		case 'subplot'
 			plot_type = 'subplot';
 		case 'comp'
