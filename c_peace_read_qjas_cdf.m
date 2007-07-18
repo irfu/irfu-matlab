@@ -39,8 +39,9 @@ dt = double(cell2mat(dt));
 
 % PSD
 psdcell = cdfread(fname,'Variable','psd');
+ndata = length(psdcell);
 [n,m] = size(psdcell{1});
-psd = zeros(length(psdcell),n,m);
+psd = zeros(ndata,n,m);
 for i=1:ndata, psd(i,:,:) = double(psdcell{i}); end
 clear psdcell
 
