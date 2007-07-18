@@ -31,8 +31,7 @@ t = cdfread(fname,'Variable','timetags');
 temp = struct([t{:,1}]);
 t = double([temp.date]);
 t = (t(:)-62167219200000)/1000;
-
-ndata = length(t);
+clear temp
 
 % Time deltas
 dt = cdfread('qjas_data.cdf','Variable','timetags_delta');
@@ -41,7 +40,7 @@ dt = double(cell2mat(dt));
 % PSD
 psdcell = cdfread(fname,'Variable','psd');
 [n,m] = size(psdcell{1});
-psd = zeros(ndata,n,m);
+psd = zeros(length(psdcell),n,m);
 for i=1:ndata, psd(i,:,:) = double(psdcell{i}); end
 clear psdcell
 
