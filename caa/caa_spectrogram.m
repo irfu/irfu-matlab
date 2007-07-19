@@ -73,22 +73,39 @@ for comp=1:min(length(h),ncomp)
 		dt = double(.5/specrec.f(2));
 		specrec.t = [specrec.t-dt; specrec.t+dt];
 		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
-	end
-	if max(specrec.f) > 2000, hz = double(1e-3); hzl = 'k';
-	else hz = double(1); hzl = '';
-	end
-	pcolor(double(specrec.t-t_start_epoch),double(specrec.f*hz),...
+    end
+    if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
+        if max(specrec.f) > 2000, % check whether to use kHz 
+            specrec.f=specrec.f*double(1e-3);
+            specrec.f_unit='kHz';
+        else,
+            specrec.f_unit='Hz';
+        end
+        if ~isfield(specrec,'f_label')
+            specrec.f_label=['frequency [' specrec.f_unit ']'];
+        end
+    end
+    
+	pcolor(double(specrec.t-t_start_epoch),double(specrec.f),...
 		double(log10(specrec.p{comp}')))
 	
 	colormap(cmap)
-	shading flat
-%	colorbar('vert')
-%	set(gca,'TickDir','out','YScale','log')
-	set(gca,'TickDir','out')
-	ylabel(['frequency [' hzl 'Hz]'])
-	if comp==min(length(h),ncomp), add_timeaxis;
-	else set(gca,'XTicklabel','')
-	end
+    shading flat
+    %	colorbar('vert')
+    %	set(gca,'TickDir','out','YScale','log')
+    set(gca,'TickDir','out')
+    %check ylabel
+    if ~isfield(specrec,'f_label')
+        if ~isfield(specrec,'f_unit'),
+            specrec.f_unit='a.u.';
+        end
+        specrec.f_label=['[' specrec.f_unit ']'];
+    end
+    ylabel(specrec.f_label)
+
+    if comp==min(length(h),ncomp), add_timeaxis;
+    else set(gca,'XTicklabel','')
+    end
 end
 
 if nargout>0, hout=h; end
