@@ -26,6 +26,9 @@ function res = c_peace_read_qjas_cdf(fname)
 if ~exist(fname,'file'), error(['file ' fname ' does not exist']), end
 
 t = cdfread(fname,'Variable','timetags');
+file_info=cdfinfo(fname);
+psd_unit = file_info.VariableAttributes.UNITS{3,2};
+level_unit = file_info.VariableAttributes.UNITS{8,2};
 
 % Convert time to isdat epoch
 temp = struct([t{:,1}]);
@@ -85,4 +88,5 @@ theta_delta = double(theta_delta(1,:)');
 res = struct('t', t, 'dt', dt, 'psd', psd,...
 	'phi', phi, 'phi_delta', phi_delta,...
 	'level', level, 'level_delta', level_delta,...
-	'theta', theta, 'theta_delta', theta_delta);
+	'theta', theta, 'theta_delta', theta_delta,...
+    'psd_unit',psd_unit,'level_unit',level_unit);
