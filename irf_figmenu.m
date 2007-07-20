@@ -30,7 +30,7 @@ if strcmp(action,'initialize'),
 	end
 
 elseif strcmp(action,'irf_tm'),
-  h=findobj(gcf,'type','axes');
+  h=findobj(gcf,'type','axes','-not','tag','Colorbar');
   hmax=1;
   for ih=1:length(h),
     ax=get(h(ih),'position');
@@ -41,6 +41,9 @@ elseif strcmp(action,'irf_tm'),
   [xx,ind]=sort(axy(ind_ax));
   ind=fliplr(ind);
   hh=hax(ind);
+		user_data = get(gcf,'userdata');
+		user_data.subplot_handles=hh;
+		set(gcf,'userdata',user_data);
   irf_tm(hh);
 end
 
