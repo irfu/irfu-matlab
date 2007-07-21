@@ -33,12 +33,16 @@ level_unit = file_info.VariableAttributes.UNITS{8,2};
 % Convert time to isdat epoch
 temp = struct([t{:,1}]);
 t = double([temp.date]);
-t = (t(:)-62167219200000)/1000;
+t=t(:);
+ind_bad_data=find(t<=0);
+t = (t-62167219200000)/1000;
+t(ind_bad_data)=[];
 clear temp
 
 % Time deltas
 dt = cdfread('qjas_data.cdf','Variable','timetags_delta');
 dt = double(cell2mat(dt));
+dt(ind_bad_data)=[];
 
 % PSD
 psdcell = cdfread(fname,'Variable','psd');
@@ -46,6 +50,7 @@ ndata = length(psdcell);
 [n,m] = size(psdcell{1});
 psd = zeros(ndata,n,m);
 for i=1:ndata, psd(i,:,:) = double(psdcell{i}); end
+psd(ind_bad_data,:,:)=[];
 clear psdcell
 
 % Energy levels
@@ -66,9 +71,11 @@ level_delta = double(level_delta(1,:)');
 % Phi (??)
 phi = cdfread(fname,'Variable','phi');
 phi = double(cell2mat(phi));
+phi(ind_bad_data)=[];
 
 phi_delta = cdfread(fname,'Variable','phi_delta');
 phi_delta = double(cell2mat(phi_delta));
+phi_delta(ind_bad_data)=[];
 
 % Theta
 theta = cdfread(fname,'Variable','theta');

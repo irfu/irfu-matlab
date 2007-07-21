@@ -7,17 +7,7 @@ if nargin < 1, action = 'initialize'; end
 
 if strcmp(action,'initialize'),
 	% execute irf_figmenu if there is no such menu
-	need_init = 1;
-	ch = get(gcf,'children');
-	if ~isempty(ch)
-		for j=1:length(ch)
-			if strcmp(get(ch(j),'Type'),'uimenu')
-				if strcmp(get(ch(j),'Label'),'&irf'), need_init = 0; break, end
-			end
-		end
-	end
-
-	if need_init
+    if isempty(findobj(gcf,'type','uimenu','label','&irf'))
 		hfigmenu=uimenu('Label','&irf');
 		uimenu(hfigmenu,'Label','&Update time axis','Callback','add_timeaxis(gca,''date'')','Accelerator','t')
 		uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
@@ -28,22 +18,10 @@ if strcmp(action,'initialize'),
 		user_data.irf_figmenu=1;
 		set(gcf,'userdata',user_data);
 	end
-
 elseif strcmp(action,'irf_tm'),
-  h=findobj(gcf,'type','axes','-not','tag','Colorbar');
-  hmax=1;
-  for ih=1:length(h),
-    ax=get(h(ih),'position');
-    axy(ih)=ax(2);axx(ih)=ax(1);
-  end
-  ind_ax=find(axx<0.2); % find 
-  hax=h(ind_ax);
-  [xx,ind]=sort(axy(ind_ax));
-  ind=fliplr(ind);
-  hh=hax(ind);
-		user_data = get(gcf,'userdata');
-		user_data.subplot_handles=hh;
-		set(gcf,'userdata',user_data);
-  irf_tm(hh);
+    user_data = get(gcf,'userdata');
+    user_data.subplot_handles=irf_plot_get_subplot_handles;
+    set(gcf,'userdata',user_data);
+    irf_tm(user_data.subplot_handles);
 end
 

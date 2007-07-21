@@ -34,7 +34,7 @@ spec.f_unit=peace.level_unit;
 spec.f_label=['Energy [' spec.f_unit ']'];
 spec.p={zeros(size(peace.psd,1),size(peace.psd,3))};spec.p{2}=spec.p{1};spec.p{3}=spec.p{1};
 spec.p_unit=peace.psd_unit;
-spec.p_label={['psd par [' spec.p_unit ']'], ['psd perp [' spec.p_unit ']'],['psd antipar [' spec.p_unit ']']};
+spec.p_label={['psd par \newline [' spec.p_unit ']'], ['psd perp \newline [' spec.p_unit ']'],['psd antipar \newline [' spec.p_unit ']']};
 
 % constract measured pitch angle matrix (pitch angle for every time and energy)
 theta=peace.theta;
