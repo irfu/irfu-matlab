@@ -52,6 +52,7 @@ for jj=1:nsubplots,
         hspec=caa_spectrogram(h(jj),peace_spec_comp);
         set(hspec,'xtick',[]);
         set(hspec,'Yscale','log');
+        set(gca,'ytick',[10 100 1000 10000])
         if jj==1,
             hc=colorbar;cax=caxis; % all panels have common colorbar axis
         else
