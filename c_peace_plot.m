@@ -47,8 +47,8 @@ for jj=1:nsubplots,
         set(htmp,'ylim',[0 180],'ytick',[0 30 60 90 120 150 180])
     else,
         peace_spec_comp=peace_spec;
-        peace_psec_comp.p=peace_spec.p(i_spectra(jj));
-        peace_psec_comp.p_label=peace_spec.p_label(i_spectra(jj));
+        peace_spec_comp.p=peace_spec.p(i_spectra(jj));
+        peace_spec_comp.p_label=peace_spec.p_label(i_spectra(jj));
         hspec=caa_spectrogram(h(jj),peace_spec_comp);
         set(hspec,'xtick',[]);
         set(hspec,'Yscale','log');
