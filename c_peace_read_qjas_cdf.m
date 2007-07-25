@@ -40,7 +40,7 @@ t(ind_bad_data)=[];
 clear temp
 
 % Time deltas
-dt = cdfread('qjas_data.cdf','Variable','timetags_delta');
+dt = cdfread(fname,'Variable','timetags_delta');
 dt = double(cell2mat(dt));
 dt(ind_bad_data)=[];
 
