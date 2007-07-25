@@ -3,10 +3,10 @@ function irf_pl_add_info
 %
 % $Revision$  $Date$
 
-% Copyright 2004 Yuri Khotyaintsev
+% Copyright 2004-2007 Yuri Khotyaintsev
 
 h00 = gca;
-h1 = axes('Units','normalized', ...
+axes('Units','normalized', ...
 	'Position',[0 0 1 1], ...
 	'Visible','off', ...
 	'Tag','BackgroundAxes', ...
@@ -15,7 +15,8 @@ h1 = axes('Units','normalized', ...
 if isunix
 	[s,u] = unix('whoami');
 	[s,h] = unix('hostname');
-	u=u(1:end-1);h=h(2:end-1);
+	u = clean_unix(u);
+	h = clean_unix(h);
 	created_string = [ created_string ' by ' u '@' h];
 end
 h1 = text('Units','normalized', ...
@@ -32,6 +33,17 @@ for j=1:length(ch)
 	lasterr('')
 	try
 		axes(ch(j))
+	catch
+		% Do nothing
 	end
 end 
 axes(h00)
+end
+
+function s = clean_unix(s)
+% Help function to remove unwanted symbols before and after the string 
+if isempty(s), return, end
+if ~isletter(s(1)), s = s(2:end); end
+if isempty(s), return, end
+if ~isletter(s(end)), s = s(1:end-1); end
+end
