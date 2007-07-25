@@ -1,7 +1,7 @@
 function irf_pl_add_info
 %IRF_PL_ADD_INFO add a string "created dd-mm-yy by \n user@host"
 %
-% $Revision$  $Date$
+% $Id$
 
 % Copyright 2004-2007 Yuri Khotyaintsev
 
