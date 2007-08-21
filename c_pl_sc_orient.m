@@ -22,7 +22,7 @@ eval_figuserdata='figuserdata={h};';
 persistent t a b phase v ic phaseHndl timeHndl figNumber ...
             vec1Hndl vec2Hndl vec1flag vec2flag ...
             flag_v1 flag_v2 v1 v2;
-if       (nargin==1 & isstr(spacecraft)), action=spacecraft;irf_log('proc',['action=' action]);
+if       (nargin==1 && ischar(spacecraft)), action=spacecraft;irf_log('proc',['action=' action]);
 elseif   (nargin < 6)                   , action='initialize';
 end
 
@@ -32,10 +32,10 @@ if strcmp(action,'initialize'),
   if nargin<6, flag_v=1; end
   if nargin<5, flag_v=0; end
   if nargin<4,
-    if  exist('mB.mat'),  
+    if  exist('mB.mat','file'),  
         ok=c_load('B?',ic);
         if ok, c_eval('magnetic_field=c_gse2dsc(B?,?);clear B?',ic);end
-    elseif exist('mBPP.mat'), c_eval('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic);
+    elseif exist('mBPP.mat','file'), c_eval('load mBPP dBPP?;magnetic_field=dBPP?;clear dBPP?',ic);
     else   irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
@@ -96,7 +96,7 @@ if strcmp(action,'initialize'),
         'Callback',callbackStr);
   %====================================
   % The time entering
-  labelStr=[epoch2iso(t)];
+  labelStr=epoch2iso(t);
   callbackStr='c_pl_sc_orient(''time'')';
   timeHndl=uicontrol( ...
         'Style','edit', ...
@@ -126,7 +126,7 @@ elseif strcmp(action,'time'),
   c_pl_sc_orient('plot');
 
 elseif strcmp(action,'phase'),
-  phase=str2num(get(phaseHndl, 'string'));
+  phase=str2double(get(phaseHndl, 'string'));
   c_pl_sc_orient('plot');
 
 
@@ -143,11 +143,22 @@ elseif strcmp(action,'plot'),
   phase_p3=phase_p1     - pi/2   ;
   phase_p2=phase_p1     + pi     ;
   phase_p4=phase_p1     + pi/2 ;
+  phase_heea=phase/180*pi-(30)/180*pi;
+  phase_leea=phase_heea+pi;
+  phase_rapid=phase/180*pi + 60.167/180*pi; % rapid phase   
+  phase_sunsensor=phase/180*pi + 26.367/180*pi; % the location o fsun sensor
+  
   rp1=[44*cos(phase_p1) 44*sin(phase_p1) 0]; % in DS reference frame
   rp2=[44*cos(phase_p2) 44*sin(phase_p2) 0];
   rp3=[44*cos(phase_p3) 44*sin(phase_p3) 0];
   rp4=[44*cos(phase_p4) 44*sin(phase_p4) 0];
-
+  dphi=5/180*pi; % the half size of heea leea rapid azimuthal sectors that are plotted 
+  sec_length=15; % the length of plotted sectors (the length of efw booms is 44)
+  rheea=sec_length*[cos(phase_heea) sin(phase_heea);cos(phase_heea-dphi) sin(phase_heea-dphi);cos(phase_heea+dphi) sin(phase_heea+dphi)];
+  rleea=sec_length*[cos(phase_leea) sin(phase_leea);cos(phase_leea-dphi) sin(phase_leea-dphi);cos(phase_leea+dphi) sin(phase_leea+dphi)];
+  rrapid=sec_length*[cos(phase_rapid) sin(phase_rapid);cos(phase_rapid-dphi) sin(phase_rapid-dphi);cos(phase_rapid+dphi) sin(phase_rapid+dphi)];
+  rsunsensor=sec_length*[cos(phase_sunsensor) sin(phase_sunsensor)];
+  
   for ip=1:4,c_eval('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip),end
   bfield=irf_resamp(b,t);
   bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
@@ -155,8 +166,8 @@ elseif strcmp(action,'plot'),
   bn=irf_norm(bfield);
   bn_gse=c_gse2dsc(bn,ic,-1);
   b_elevation=-asin(bn(4))*180/pi;
-  angle_deg_p34_vs_b=acos([bn(2)*cos(phase_p4)+bn(3)*sin(phase_p4)])*180/pi; % acos(bx*rx+by*ry)
-  angle_deg_p12_vs_b=acos([bn(2)*cos(phase_p2)+bn(3)*sin(phase_p2)])*180/pi;
+  angle_deg_p34_vs_b=acos(bn(2)*cos(phase_p4)+bn(3)*sin(phase_p4))*180/pi; % acos(bx*rx+by*ry)
+  angle_deg_p12_vs_b=acos(bn(2)*cos(phase_p2)+bn(3)*sin(phase_p2))*180/pi;
 
   if flag_v1==1,
     vn1_gse=[bn(1,1) irf_norm(v1)];
@@ -178,6 +189,15 @@ elseif strcmp(action,'plot'),
   text(50,0,'dawn','rotation',90,'verticalalignment','bottom','horizontalalignment','center','fontweight','demi');
   patch(x_circle*1.5,y_circle*1.5,x_circle*0+1);hold on; % plot spacecraft
   patch(x_circle*1.5,y_circle*1.5,x_circle*0-1);         % plot spacecraft
+  patch([0 rheea(2,2) rheea(3,2)], [0 rheea(2,1) rheea(3,1)],'b'); % heea
+  patch([0 rleea(2,2) rleea(3,2)], [0 rleea(2,1) rleea(3,1)],'g'); % leea
+  patch([0 rrapid(2,2) rrapid(3,2)], [0 rrapid(2,1) rrapid(3,1)],'k'); % rapid
+  line([0 rsunsensor(2)],[0 rsunsensor(1)],[0 0],'Color','y','LineWidth',2); % sun sensor direction
+  text(50,50,'Sun sensor','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','y');
+  text(50,45,'LEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','g');
+  text(50,40,'HEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','b');
+  text(50,35,'Rapid','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','k');
+  
   bnproj=[0 bn(2)/norm(bn(2:3)) bn(3)/norm(bn(2:3))];
   hl=line([0 bnproj(3)*25],[0 bnproj(2)*25]);set(hl,'color','red','linewidth',.4);       % B direction
   hl=line([0 bn(3)*25],[0 bn(2)*25]);set(hl,'color','red','linewidth',2);       % B direction
