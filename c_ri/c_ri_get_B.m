@@ -41,7 +41,7 @@ B=[]; % return nothing if no data available
 if nargin == 4, path_output = [pwd '/']; end
 
 if ~(isnumeric(from) && from >0), error('FROM must be epoch'), end
-if ~(isnumeric(to) && to>from), error('TO must be larger then FROM'), end
+if ~(isnumeric(to) && to>=from), error('TO must be larger or equal to FROM'), end
 if ~(isnumeric(cl_id) && any(cl_id==(1:4))), error('CL_ID must be 1..4'), end
 if ~(ischar(mode) && (strcmp(mode,'b') || strcmp(mode,'n')))
     error('MODE must be n or b')
