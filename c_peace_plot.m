@@ -1,7 +1,7 @@
-function hout = c_peace_plot(hin,peace_spec,peace_pa,i_spectra)
+function h = c_peace_plot(hin,peace_spec,peace_pa,i_spectra)
 %C_PEACE_PLOT  plot standard PEACE spectrograms (parallel, perp, antiparallel, ..)
 %
-% h = c_peace_plot(peace_spec,peace_pa)
+% h = c_peace_plot(peace_spec,peace_pa,i_spectra)
 %
 % Input: 
 %     peace_spec: PEACE spectrograms

@@ -29,6 +29,7 @@ function [spec,pa] = c_peace_spectra(peace)
 
 % construct the zero result
 spec.t=peace.t;
+spec.dt=peace.dt;
 spec.f=peace.level;
 spec.f_unit=peace.level_unit;
 spec.f_label=['Energy [' spec.f_unit ']'];

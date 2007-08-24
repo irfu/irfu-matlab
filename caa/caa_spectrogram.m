@@ -1,5 +1,5 @@
 function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
-%CAA_SPECTROGRAM  plot power spectrum
+%CAA_SPECTROGRAM  plot power spectrum in logarithimic scale
 %
 % [h] = caa_spectrogram([h],specrec)
 % [h] = caa_spectrogram([h],t,Pxx,[F],[dt],[dF])
@@ -20,9 +20,14 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 
 error(nargchk(1,6,nargin))
 
-if nargin==1, specrec = h; h = [];
+if nargin==1, 
+    specrec = h; h = [];
+    if ~isfield(specrec,'dt'), specrec.dt=[];end
+    if ~isfield(specrec,'dF'), specrec.dF=[];end
 elseif nargin==2 % caa_spectrogram(h,t)
 	specrec = t;
+    if ~isfield(specrec,'dt'), specrec.dt=[];end
+    if ~isfield(specrec,'dF'), specrec.dF=[];end
 elseif nargin==3 % caa_spectrogram(t,Pxx,F)
 	if size(t,2) == length(h), t = t'; end
 	if iscell(t), specrec.p = t;
@@ -130,10 +135,10 @@ for comp=1:min(length(h),ncomp)
         pcolor(double(specrec.t-t_start_epoch),double(specrec.f),...
             double(log10(specrec.p{comp}')))
     else 
-        tt=[specrec.t specrec.t];
+        tt=[specrec.t(:); specrec.t(:)];
         jj=1:length(specrec.t);
-        tt(jj*2-1)=specrec.t-specrec.dt;
-        tt(jj*2)=specrec.t+specrec.dt;
+        tt(jj*2-1)=specrec.t(:)-specrec.dt(:);
+        tt(jj*2)=specrec.t(:)+specrec.dt(:);
         pp=[specrec.p{comp};specrec.p{comp}];
         pp(jj*2-1,:)=specrec.p{comp};
         pp(jj*2,:)=NaN;
