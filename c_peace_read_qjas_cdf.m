@@ -1,4 +1,4 @@
-function res = c_peace_read_qjas_cdf(fname)
+function peace = c_peace_read_qjas_cdf(fname)
 %C_PEACE_READ_QJAS_CDF  read QJAS CDF files 
 %
 % data = c_peace_read_qjas_cdf(fname)
@@ -16,7 +16,7 @@ function res = c_peace_read_qjas_cdf(fname)
 %          theta: Peace Polar Flow Angle
 %    theta_delta: 
 %
-%    See also IRF_CDF_READ, CDFREAD
+%    See also IRF_CDF_READ, CDFREAD, C_PEACE_SPECTRA
 %
 % $Id$
 
@@ -92,7 +92,7 @@ if any(any(diff(theta_delta)))
 end
 theta_delta = double(theta_delta(1,:)');
 
-res = struct('t', t, 'dt', dt, 'psd', psd,...
+peace = struct('t', t, 'dt', dt, 'psd', psd,...
 	'phi', phi, 'phi_delta', phi_delta,...
 	'level', level, 'level_delta', level_delta,...
 	'theta', theta, 'theta_delta', theta_delta,...
