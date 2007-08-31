@@ -131,19 +131,34 @@ for comp=1:min(length(h),ncomp)
         end
     end
     
-    if isempty(specrec.dt) % if time steps are not given
-        pcolor(double(specrec.t-t_start_epoch),double(specrec.f),...
-            double(log10(specrec.p{comp}')))
-    else 
-        tt=[specrec.t(:); specrec.t(:)];
-        jj=1:length(specrec.t);
-        tt(jj*2-1)=specrec.t(:)-specrec.dt(:);
-        tt(jj*2)=specrec.t(:)+specrec.dt(:);
-        pp=[specrec.p{comp};specrec.p{comp}];
-        pp(jj*2-1,:)=specrec.p{comp};
-        pp(jj*2,:)=NaN;
-        pcolor(double(tt-t_start_epoch),double(specrec.f),double(log10(pp')))
+    ff=double(specrec.f(:));
+    tt=double(specrec.t(:));
+    pp=specrec.p{comp};
+    if ~isempty(specrec.df) % if frequency steps are given
+        df=double(specrec.df(:));
+        fnew=[ff; ff];
+        jj=1:length(ff);
+        fnew(jj*2-1)=ff-df;
+        fnew(jj*2)=ff+df;
+        ff=fnew;
+        ppnew=[pp pp];
+        ppnew(:,jj*2-1)=pp;
+        ppnew(:,jj*2)=NaN;
+        pp=ppnew;
     end
+    if ~isempty(specrec.dt) % if time steps are not given
+        dt=double(specrec.dt(:));
+        ttnew=[tt; tt];
+        jj=1:length(tt);
+        ttnew(jj*2-1)=tt-dt;
+        ttnew(jj*2)=tt+dt;
+        tt=ttnew;
+        ppnew=[pp;pp];
+        ppnew(jj*2-1,:)=pp;
+        ppnew(jj*2,:)=NaN;
+        pp=ppnew;
+    end
+    pcolor(double(tt-t_start_epoch),ff,double(log10(pp')))
     
 	colormap(cmap)
     shading flat
