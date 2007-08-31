@@ -2,7 +2,7 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %CAA_SPECTROGRAM  plot power spectrum in logarithimic scale
 %
 % [h] = caa_spectrogram([h],specrec)
-% [h] = caa_spectrogram([h],t,Pxx,[F],[dt],[dF])
+% [h] = caa_spectrogram([h],t,Pxx,[f],[dt],[df])
 %
 % Input:
 %    specrec - structure including spectra
@@ -10,7 +10,7 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.f - frequency vector 
 %              specrec.p - spectral density matrix (size(t)xsize(f))
 %              specrec.dt - vector of dt interval for every t point (can be ommitted)
-%              specrec.dF - vector of dF interval for every frequency f point (can be ommitted)
+%              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
 %
 % See also CAA_POWERFFT
 %
@@ -23,11 +23,11 @@ error(nargchk(1,6,nargin))
 if nargin==1, 
     specrec = h; h = [];
     if ~isfield(specrec,'dt'), specrec.dt=[];end
-    if ~isfield(specrec,'dF'), specrec.dF=[];end
+    if ~isfield(specrec,'df'), specrec.df=[];end
 elseif nargin==2 % caa_spectrogram(h,t)
 	specrec = t;
     if ~isfield(specrec,'dt'), specrec.dt=[];end
-    if ~isfield(specrec,'dF'), specrec.dF=[];end
+    if ~isfield(specrec,'df'), specrec.df=[];end
 elseif nargin==3 % caa_spectrogram(t,Pxx,F)
 	if size(t,2) == length(h), t = t'; end
 	if iscell(t), specrec.p = t;
@@ -40,7 +40,7 @@ elseif nargin==3 % caa_spectrogram(t,Pxx,F)
     else
         specrec.dt=[]; % will be calculated later
     end
-    specrec.dF=[];
+    specrec.df=[];
 	h = [];
 elseif	nargin==4 % caa_spectrogram(h,t,Pxx,F)
 	specrec.t = t;
@@ -54,7 +54,7 @@ elseif	nargin==4 % caa_spectrogram(h,t,Pxx,F)
     else
         specrec.dt=[]; % will be calculated later
     end
-    specrec.dF=[];
+    specrec.df=[];
 elseif	nargin==5 % caa_spectrogram(h,t,Pxx,F,dt)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
@@ -63,7 +63,7 @@ elseif	nargin==5 % caa_spectrogram(h,t,Pxx,F,dt)
 	end
 	specrec.f = F;
 	specrec.dt = dt;
-    specrec.dF=[];
+    specrec.df=[];
 elseif	nargin==6 % caa_spectrogram(h,t,Pxx,F,dt,df)
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
@@ -72,13 +72,13 @@ elseif	nargin==6 % caa_spectrogram(h,t,Pxx,F,dt,df)
 	end
 	specrec.f = F;
 	specrec.dt = dt;
-	specrec.dF = dF;
+	specrec.df = dF;
 end
 
 specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
 specrec.dt = double(specrec.dt);
-specrec.dF = double(specrec.dF);
+specrec.df = double(specrec.df);
 
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
@@ -113,17 +113,17 @@ for comp=1:min(length(h),ncomp)
 	axes(h(comp));
 	
 	% Special case when we have only one spectrum
-	% We duplicate it
-	if ndata==1
-		specrec.dt = double(.5/specrec.f(2));
-%		specrec.t = [specrec.t-dt; specrec.t+dt];
-%		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
+    % We duplicate it
+    if ndata==1
+        specrec.dt = double(.5/specrec.f(2));
+        %		specrec.t = [specrec.t-dt; specrec.t+dt];
+        %		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
     end
     if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
-        if max(specrec.f) > 2000, % check whether to use kHz 
+        if max(specrec.f) > 2000, % check whether to use kHz
             specrec.f=specrec.f*double(1e-3);
             specrec.f_unit='kHz';
-        else,
+        else
             specrec.f_unit='Hz';
         end
         if ~isfield(specrec,'f_label')
