@@ -27,8 +27,6 @@ function [spec_pa,spec_en] = c_peace_spectra(peace)
 % $Id$
 
 % construct the zero result
-<<<<<<< c_peace_spectra.m
-
 % constructing spectrograms for given pitch angle and all energies
 spec_pa.t=peace.t;
 spec_pa.dt=peace.dt;
@@ -38,16 +36,6 @@ spec_pa.f_label=['Energy [' spec_pa.f_unit ']'];
 spec_pa.p={zeros(size(peace.psd,1),size(peace.psd,3))};spec_pa.p{2}=spec_pa.p{1};spec_pa.p{3}=spec_pa.p{1};
 spec_pa.p_unit=peace.psd_unit;
 spec_pa.p_label={['psd par \newline [' spec_pa.p_unit ']'], ['psd perp \newline [' spec_pa.p_unit ']'],['psd antipar \newline [' spec_pa.p_unit ']']};
-=======
-spec.t=peace.t;
-spec.dt=peace.dt;
-spec.f=peace.level;
-spec.f_unit=peace.level_unit;
-spec.f_label=['Energy [' spec.f_unit ']'];
-spec.p={zeros(size(peace.psd,1),size(peace.psd,3))};spec.p{2}=spec.p{1};spec.p{3}=spec.p{1};
-spec.p_unit=peace.psd_unit;
-spec.p_label={['psd par \newline [' spec.p_unit ']'], ['psd perp \newline [' spec.p_unit ']'],['psd antipar \newline [' spec.p_unit ']']};
->>>>>>> 1.4
 
 % constract measured pitch angle matrix (pitch angle for every time and energy)
 theta=peace.theta;

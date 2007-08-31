@@ -1,8 +1,4 @@
-<<<<<<< c_peace_plot.m
 function h = c_peace_plot(hin,peace_spec,i_spectra)
-=======
-function h = c_peace_plot(hin,peace_spec,peace_pa,i_spectra)
->>>>>>> 1.5
 %C_PEACE_PLOT  plot standard PEACE spectrograms (parallel, perp, antiparallel, ..)
 %
 % h = c_peace_plot(peace_spec,peace_pa,i_spectra)
