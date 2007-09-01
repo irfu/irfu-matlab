@@ -9,7 +9,7 @@ function [out,l,v]=irf_minvar(inp)
 % v - column vector with corresponding eigenvectors
 % v(1,:) - first vector, ...
 %
-% See also IRF_MINVAR_GUI
+% See also IRF_MINVAR_GUI, IRF_MINVAR_NESTED, IRF_MINVAR_NESTED_GUI
 %
 % $Id$
 
