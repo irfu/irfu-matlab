@@ -1,11 +1,7 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
 % NaturalConstants
-%
 %   Some constants of nature is practical to have as globals.
-%
 %   Created by Jan-Erik Wahlund, Cornell University, October-94.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
 %  qe    = 1.60219e-19;
 %  kb    = 1.3807e-23;
 %  mH    = 1.67265e-27;
@@ -15,10 +11,8 @@
 %
 %  c_light = 3e8;
 %  R_Earth = 6370e3; 
-
-% First some true constants.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  global qe kb mH me eps0 mu0 c_light R_Earth
+ 
+ global qe kb mH me eps0 mu0 c_light R_Earth
 
   qe    = 1.60219e-19;
   kb    = 1.3807e-23;
@@ -30,4 +24,3 @@
   c_light = 3e8;
   R_Earth = 6370e3; 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

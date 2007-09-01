@@ -1,14 +1,13 @@
 function vht=irf_vht(e,b,flag)
-% function vht=irf_vht(e,b,flag)
-%
-% vht=irf_vht(e,b,flag)
-%[vht,eht]=irf_vht(e,b,flag)
-% estimate velocity of the deHoffman-Teller frame 
-% from the velocity estimate the electric field eht=-vhtxb
+% [vht,eht]=irf_vht(e,b,flag)
+%  estimate velocity of the deHoffman-Teller frame 
+%  from the velocity estimate the electric field eht=-vhtxb
 % 
 % if flag==2 use version where E=(Ex,Ey,<Not used>) is assumed
 % otherwise assumeE=E(Ex,Ey,Ez)
-% e [mV/m] b[nT] vht [km/s]
+% Assumed units: e [mV/m] b[nT] vht [km/s]
+%
+% See also IRF_VHT_PLOT
 %
 % $Id$
 
