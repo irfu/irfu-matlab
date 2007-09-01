@@ -16,7 +16,7 @@ function [slope,cc]=irf_walen(v,b,n,vht,tint);
 % OUTPUT
 % [slope, cc] - slope and correlation coefficient of the Walen plot 
 %
-% See also IRF_WALEN2
+% See also IRF_WALEN2, IRF_VHT
 %
 % $Id$
 

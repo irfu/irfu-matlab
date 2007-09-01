@@ -11,7 +11,7 @@ function data=c_wbd_read(start_time,dt,cl_id)
 %	cl_id - SC#
 %
 % Output:
-%	data - Cluster AV format [t_epoch data()]
+%	data - Cluster IRFU format [t_epoch data()]
 %
 % see also C_GET
 %

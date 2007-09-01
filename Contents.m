@@ -18,8 +18,7 @@
 %   irf_dot         - Calculate dot product between vectors 
 %   irf_filt        - filter time series
 %   irf_integrate   - time integral
-%   irf_minvar      - minimum variance analysis
-%   irf_minvar_gui  - interactive minimum variance analysis
+%   irf_minvar ...  - minimum variance analysis routines
 %   irf_newxyz      - rotate vector into new coordinate system
 %   irf_norm        - Normalize vector
 %   irf_resamp      - Resample time series to the time line of another times series
@@ -34,8 +33,10 @@
 %   irf_jz          - Estimate the current given velocity and magnetic field
 %   irf_mean        - put time series into mean field coordinates
 %   irf_plasma_calc - Calculate basic plasma quantities
+%   irf_shue_mp     - estimate distance to model magnetopause (Shue)
 %   irf_vht         - estimate velocity of the deHoffman-Teller frame
 %   lp_...          - Langmuir probe specific routines 
+%   NaturalConstants- some natural constants defining as globals
 %
 % Plotting
 %   irf_figmenu     - Add to the current figure a menu with some useful commands
@@ -60,6 +61,10 @@
 %   c_pl_sc_conf_lmn - Plot the configuration of CLuster in LMN (or arbitrary) coordinates
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
+%
+%   c_peace_plot .. - plot PEACE data (also reading and spectra routines)
+%   c_staff_getsa   - read STAFF data
+%   c_wbd_read      - read Wideband data
 %   
 % Miscellaneous
 %   irf_ssub         - substitute ? ! and $ in string to number or variable

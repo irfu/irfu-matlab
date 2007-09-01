@@ -22,7 +22,7 @@ function [spec_pa,spec_en] = c_peace_spectra(peace)
 %             pa: cell array with pitch angles at which measurements were taken (can be
 %        important for e.g. 'parallel' option)
 %
-%    See also C_PEACE_READ_QJAS_CDF
+%    See also C_PEACE_READ_QJAS_CDF, C_PEACE_PLOT
 %
 % $Id$
 
