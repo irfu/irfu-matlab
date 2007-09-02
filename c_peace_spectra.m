@@ -1,16 +1,10 @@
 function [spec_pa,spec_en] = c_peace_spectra(peace)
-%C_PEACE_SPECTRA  construct different spectra (parallel, perp, antiparallel, ..)
-%
-% spec = c_peace_spectra(peace)
-%
-% Read PEACE structure obtained from C_PEACE_READ_QJAS_CDF
+%C_PEACE_SPECTRA  construct PEACE spectra from PEACE structure data
+% 
+% [spec_pa,spec_en] = c_peace_spectra(peace)
 %
 % Input: 
 %     peace: PEACE structure obtained from C_PEACE_READ_QJAS_CDF
-%    option:
-%      'parallel' - get pitch angles closest to parallel
-%  'antiparallel' - get pitch angles closest to parallel
-%          'perp' - get pitch angles closest to parallel
 %
 % Output: 
 %      spec_pa: Data structure with the following fields
@@ -19,8 +13,7 @@ function [spec_pa,spec_en] = c_peace_spectra(peace)
 %        f_label: energy label
 %              p: cell array with spectra (1-parallel, 2-perp, 3-antipar}
 %        p_label: cell arrray with spectra label
-%             pa: cell array with pitch angles at which measurements were taken (can be
-%        important for e.g. 'parallel' option)
+%             pa: cell array with pitch angles at which measurements were
 %
 %    See also C_PEACE_READ_QJAS_CDF, C_PEACE_PLOT
 %
