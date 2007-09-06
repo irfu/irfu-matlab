@@ -98,30 +98,8 @@ fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_id');
 to_file = sprintf('%s%s',path_output,fn);
 irf_log('dsrc',['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_id) ]);
 
-<<<<<<< c_ri_get_B.m
-% [s,fgm_dir]=system('echo $FGMPATH');fgm_dir=fgm_dir(2:end-1); % use this
-% when problems with a common FGMPATH that works on all machines is solved
-%if exist(fgm_dir,'dir'),
-%  FGMPATH=fgm_dir;
-% end
-[s,h] = unix('hostname');
-if strcmp(h(2:end-1),'sanna.irfu.se')
-  FGMPATH='/share/fgm_cal';
-else
-  FGMPATH = ['/net/sanna/export/share/fgm_cal'];
-end
-
-if ~exist(FGMPATH,'dir'),error('FGMPATH does not exist'),end
-
-if exist([FGMPATH '/tmp_att'],'file'), disp('removing tmp_att'); unix(['rm ' FGMPATH '/tmp_att']); end
-
-% this will give a possibility to check whether we can write to FGMPATH
-[s,w] = unix(['touch ' FGMPATH '/tmp_att']);
-if s~=0, error(w), end
-=======
 FGMPATH = '/data/cluster/cal/fgm';
 if ~exist(FGMPATH,'dir'), error('FGMPATH does not exist'), end
->>>>>>> 1.40
 
 if nargout,  % return B
     to_file=tempname;
