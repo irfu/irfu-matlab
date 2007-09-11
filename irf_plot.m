@@ -327,7 +327,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
 					lab{v} = [var_desc{ipl}.labels{v} '[' ...
 						var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
 				end
-				ylabel(lab);
+				ylabel(lab); clear lab
 			end
 			tt = y(~isnan(y(:,1)),1);
 		end
