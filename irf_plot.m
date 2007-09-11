@@ -365,12 +365,15 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 				end
 			else marker_cur = marker;
 			end
-
-			y = x{jj};
-			plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),...
-				'Color', line_colors(jj,:),'LineStyle', marker_cur)
-			grid on; hold on;
+			
+			if size(x{jj},2)>=ipl+1
+				y = x{jj};
+				plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),...
+					'Color', line_colors(jj,:),'LineStyle', marker_cur)
+				hold on;
+			end
 		end
+		grid on;
 
 		% Put YLimits so that no labels are at the end (disturbing in
 		% multipanel plots)
