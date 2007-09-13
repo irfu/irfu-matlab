@@ -131,12 +131,12 @@ for comp=1:min(length(h),ncomp)
         end
     end
     
-    ff=double(specrec.f(:));
+    if min(size(specrec.f))==1, ff=double(specrec.f(:))';end % if f vector make it row vector
     tt=double(specrec.t(:));
     pp=specrec.p{comp};
     if ~isempty(specrec.df) % if frequency steps are given
-        df=double(specrec.df(:));
-        fnew=[ff; ff];
+        if min(size(specrec.df))==1, df=double(specrec.df(:))';end % if df vector make it row vector
+        fnew=[ff ff];
         jj=1:length(ff);
         fnew(jj*2-1)=ff-df;
         fnew(jj*2)=ff+df;
