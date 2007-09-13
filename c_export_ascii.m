@@ -265,17 +265,27 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% despun full resolution E with assumption E.B = 0
+% B from FGM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diB[1-4]$')==1
+elseif regexp(vs,'^(di)?B(r)?[1-4]$')==1
 
+	if CAA
+		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
+		CAA = 0;
+	end
+	
 	cl_id = vs(end);
 	inst = 'FGM';
 	sig = 'B';
 	sen = '';
-	frame = 'DSI,  approximately the same as GSE';
+	if strcmp(vs(1:2),'di'), frame = 'DSI,  approximately the same as GSE';
+	else frame = 'GSE';
+	end
 	var_labels = {'Bx','By','Bz'};
 	var_units =  {'nT','nT','nT'};
+	if vs(2)=='r' || (length(vs)>3 && vs(4)=='r')
+		com = 'B data is interpolated to E';
+	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
