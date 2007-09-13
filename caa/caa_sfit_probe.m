@@ -10,7 +10,7 @@ function p_res = caa_sfit_probe(cl_id,probe)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% Copyright 2005-2007 Yuri Khotyaintsev
 
 error(nargchk(1,2,nargin))
 if cl_id<1 || cl_id>4, error('CL_ID must be 1..4'), end
