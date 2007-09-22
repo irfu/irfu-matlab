@@ -79,7 +79,7 @@ specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
 specrec.dt = double(specrec.dt);
 specrec.df = double(specrec.df);
-
+  
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 ncomp = length(specrec.p);
@@ -130,17 +130,21 @@ for comp=1:min(length(h),ncomp)
             specrec.f_label=['frequency [' specrec.f_unit ']'];
         end
     end
-    
-    if min(size(specrec.f))==1, ff=double(specrec.f(:))';end % if f vector make it row vector
+
+    if min(size(specrec.f))==1, ff=double(specrec.f(:))';
+    else
+    ff=double(specrec.f);
+    end % if f vector make it row vector
     tt=double(specrec.t(:));
     pp=specrec.p{comp};
     if ~isempty(specrec.df) % if frequency steps are given
         if min(size(specrec.df))==1, df=double(specrec.df(:))';end % if df vector make it row vector
         fnew=[ff ff];
-        jj=1:length(ff);
-        fnew(jj*2-1)=ff-df;
-        fnew(jj*2)=ff+df;
+        jj=1:size(ff,2);
+        fnew(:,jj*2-1)=ff-df;
+        fnew(:,jj*2)=ff+df;
         ff=fnew;
+        jj=1:size(pp,2);
         ppnew=[pp pp];
         ppnew(:,jj*2-1)=pp;
         ppnew(:,jj*2)=NaN;
@@ -158,8 +162,13 @@ for comp=1:min(length(h),ncomp)
         ppnew(jj*2,:)=NaN;
         pp=ppnew;
     end
+
+    if min(size(ff))==1, % frequency is vector
     pcolor(double(tt-t_start_epoch),ff,double(log10(pp')))
-    
+    else % frequency is matrix
+     ttt=repmat(tt,1,size(ff,2));
+     pcolor(double(ttt-t_start_epoch),ff,double(log10(pp)))
+    end   
 	colormap(cmap)
     shading flat
     %	colorbar('vert')
