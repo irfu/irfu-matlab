@@ -7,6 +7,8 @@ function pitch_angles=c_rapid_sector_pitch_angle(diB,ic)
 % 
 % pitch_anglse - matrix with 10 columns. 1 column time and others are pitch angles for sectors 1..9
 
+error(nargchk(0,6,nargin))
+if nargin==0, help c_rapid_sector_pitch_angle;return;end
 
 t=diB(:,1);
 
@@ -19,10 +21,10 @@ phase_rapid=phase/180*pi + 60.167/180*pi; % rapid phase
 polar_angles=[170:-20:10]*pi/180;
 sector_numbers=1:9;
 
-c_eval('sector_?_dsi=[t sin(polar_angles(?))*cos(phase_rapid) sin(polar_angles(?))*sin(phase_rapid) cos(polar_angles(?)*ones(size(t)))];',1:9);
+c_eval('sector_?_dsi=[t sin(polar_angles(?))*cos(phase_rapid) -sin(polar_angles(?))*sin(phase_rapid) cos(polar_angles(?)*ones(size(t)))];',1:9);
 c_eval('sector_?_dsi=irf_resamp(sector_?_dsi,diB);',1:9);
 c_eval('sector_?_pitch_angle=irf_ang(sector_?_dsi,diB,1);',1:9)
 
 pitch_angles=sector_1_pitch_angle;
-c_eval('pitch_angles=[pitch_angles sector_?_pitch_angle(:,2)];',2:9);
+c_eval('pitch_angles=[pitch_angles 180-sector_?_pitch_angle(:,2)];',2:9);
 

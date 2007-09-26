@@ -13,13 +13,15 @@ function [spec_pa,spec_en] = c_peace_spectra(peace)
 %        f_label: energy label
 %              p: cell array with spectra (1-parallel, 2-perp, 3-antipar}
 %        p_label: cell arrray with spectra label
-%             pa: cell array with pitch angles at which measurements were
+%             pa: cell array with pitch angles at which measurements were taken (can be
+%        important for e.g. 'parallel' option)
 %
 %    See also C_PEACE_READ_QJAS_CDF, C_PEACE_PLOT
 %
 % $Id$
 
 % construct the zero result
+
 % constructing spectrograms for given pitch angle and all energies
 spec_pa.t=peace.t;
 spec_pa.dt=peace.dt;
