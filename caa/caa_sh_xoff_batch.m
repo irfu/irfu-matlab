@@ -10,7 +10,7 @@ function [dE_out,dAmp_out,dt_int,weight] = caa_sh_xoff_batch(st,dt,flag_amp)
 % if FLAG_AMP is zero (default), use default amplitude correction
 % factor = 1.1
 %
-% See also CAA_SH_XOFF, CAA_SH_PLAN, CAA_COROF_DSI
+% See also CAA_SH_XOFF, CAA_SH_PLAN, CAA_COROF_DSI, CAA_SH_PL_XOFF
 %
 % $Id$
 
