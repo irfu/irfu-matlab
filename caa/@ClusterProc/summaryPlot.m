@@ -25,7 +25,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 
 % Copyright 2004-2007 Yuri Khotyaintsev
 
-error(nargchk(2,9,nargin))
+error(nargchk(2,10,nargin))
 
 if nargin>2, have_options = 1; args = varargin;
 else have_options = 0;
@@ -65,11 +65,11 @@ while have_options
 			case 'fullb'
 				use_fullb = '';	l = 1;
 			case 'leavewhip'
-				flag_rmwhip = 0;
+				flag_rmwhip = 0; l = 1;
 			case 'ib'
-				flag_ib = 1;
+				flag_ib = 1; l = 1;
 			case 'wo_r'
-				flag_r = 0;
+				flag_r = 0; l = 1;
 			otherwise
 				irf_log('fcal',['Option ''' args{1} '''not recognized'])
 		end
@@ -81,15 +81,25 @@ while have_options
 	end
 end
 
+if flag_ib && ~strcmp(cs,'dsi')
+	irf_log('func','IB can only be used in DSI. Defaulting to DSI')
+	cs = 'dsi';
+end
+
 if st && dt, have_tint = 1; end
 
 % Define variables we want to plot
-if strcmp(cs,'dsi') 
-	q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','diEs?','diVExBs?'};
+if flag_ib
+	q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','dibE?p1234','diVExBs?'};
 	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
 else
-	q_list = {'P?',['B' use_fullb '?'],'E?','Es?','VExBs?'};
-	l_list = {'SC pot [-V]','B GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
+	if strcmp(cs,'dsi')
+		q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','diEs?','diVExBs?'};
+		l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
+	else
+		q_list = {'P?',['B' use_fullb '?'],'E?','Es?','VExBs?'};
+		l_list = {'SC pot [-V]','B GSE [nT]','E GSE [mV/m]','E GSE [mV/m]','V=ExB GSE [km/s]'};
+	end
 end
 
 old_pwd = pwd;
@@ -116,60 +126,101 @@ for k=1:length(q_list)
 		end
 		
 		n_plots = n_plots + 1;
-		if k==2 % B-field
-			c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
-			labels{n_plots} = l_list{k};
-		elseif k==3 % E-field
-			if strcmp(cs,'dsi') 
-				% correct DSI offsets
-				dsiof = c_ctl(cl_id,'dsiof');
-				if isempty(dsiof)
-					if ~have_tint
-						c_eval(['st=' q_list{k} '(:,1);'],cl_id)
-						st = st(~isnan(st));
-						if isempty(st), st = 0;
-						else st = st(1);
-						end
+		
+		switch k
+			case 1 % P
+				d_t = [];
+				c_eval(['d_t=' q_list{k} ';'],cl_id)
+				labels{n_plots} = l_list{k};
+				if flag_ib
+					[ok,P_ib] = c_load('bP?',cl_id);
+					if ok
+						data{n_plots} = {d_t, P_ib};
+					else
+						data{n_plots} = d_t;
 					end
-					
-					[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
-
-					[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
-					[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-
-					if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-					else irf_log('calb','Using default DSI offsets')
-					end
-					clear dsiof_def dam_def
+					clear ok P_ib
 				else
-					Ddsi = dsiof(1); Damp = dsiof(2);
-					irf_log('calb','Using user specified DSI offsets')
+					data{n_plots} = d_t;
 				end
-				clear dsiof
-				c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
-				clear Ddsi Damp
-			end
 
-			c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id)
-			labels{n_plots} = l_list{k};
-		elseif k==4 % Es-field
-			c_eval(['d_t=' q_list{k} ';'],cl_id)
-			data{n_plots} = d_t(:,[1 5]); 
-			labels{n_plots} = '\theta (B,spin) [deg]';
-			n_plots = n_plots + 1;
-			data{n_plots} = d_t(:,1:4);
-			labels{n_plots} = l_list{k};
-			clear d_t
-		else
-			d_t = [];
-			c_eval(['d_t=' q_list{k} ';'],cl_id)
-			labels{n_plots} = l_list{k};
-			if min(size(d_t))> 4
-				data{n_plots} = d_t(:,1:4);
-			else	
-				data{n_plots} = d_t;
-			end
-			clear d_t
+			case 2 % B-field
+				c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
+				labels{n_plots} = l_list{k};
+				elev_ang = [data{n_plots}(:,1) atan2(data{n_plots}(:,4),...
+					sqrt(data{n_plots}(:,2).^2+data{n_plots}(:,3).^2))*180/pi];
+				
+			case 3 % E-field
+				if strcmp(cs,'dsi')
+					% correct DSI offsets
+					dsiof = c_ctl(cl_id,'dsiof');
+					if isempty(dsiof)
+						if ~have_tint
+							c_eval(['st=' q_list{k} '(:,1);'],cl_id)
+							st = st(~isnan(st));
+							if isempty(st), st = 0;
+							else st = st(1);
+							end
+						end
+
+						[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
+
+						[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+						[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+
+						if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+						else irf_log('calb','Using default DSI offsets')
+						end
+						clear dsiof_def dam_def
+					else
+						Ddsi = dsiof(1); Damp = dsiof(2);
+						irf_log('calb','Using user specified DSI offsets')
+					end
+					clear dsiof
+					c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
+				end
+
+				c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id)
+				labels{n_plots} = l_list{k};
+				
+			case 4 % Es-field /IB
+				c_eval(['d_t=' q_list{k} ';'],cl_id)
+				if flag_ib
+					E_hx = data{n_plots-1};
+					E_ib = [];
+					c_eval(['E_ib=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
+					data{n_plots-1} = {E_hx(:,[1 2]), E_ib(:,[1 2])};
+					data{n_plots}   = {E_hx(:,[1 3]), E_ib(:,[1 3])};
+					labels{n_plots-1} = 'Ex DSI [mV/m]';
+					labels{n_plots}   = 'Ey DSI [mV/m]';
+					if exist('elev_ang','var')
+						n_plots = n_plots + 1;
+						data{n_plots} = elev_ang;
+						labels{n_plots} = '\theta (B,spin) [deg]';
+					end
+					clear E_hx E_ib elev_ang
+				else
+					if exist('elev_ang','var')
+						data{n_plots} = elev_ang;
+					else
+						data{n_plots} = d_t(:,[1 5]);
+					end
+					labels{n_plots} = '\theta (B,spin) [deg]';
+					n_plots = n_plots + 1;
+					data{n_plots} = d_t(:,1:4);
+					labels{n_plots} = l_list{k};
+				end
+				clear d_t Ddsi Damp
+			otherwise
+				d_t = [];
+				c_eval(['d_t=' q_list{k} ';'],cl_id)
+				labels{n_plots} = l_list{k};
+				if min(size(d_t))> 4
+					data{n_plots} = d_t(:,1:4);
+				else
+					data{n_plots} = d_t;
+				end
+				clear d_t
 		end
 		
 	end
@@ -187,8 +238,15 @@ else
 	t_st = 1e32;
 	t_end = 0;
 	for k=1:n_plots
-		t_st = min(t_st,data{k}(1,1));
-		t_end = max(t_end,data{k}(end,1));
+		if iscell(data{k})
+			for col=1:length(data{k})
+				t_st = min(t_st,data{k}{col}(1,1));
+				t_end = max(t_end,data{k}{col}(end,1));
+			end
+		else
+			t_st = min(t_st,data{k}(1,1));
+			t_end = max(t_end,data{k}(end,1));
+		end
 	end
 end
 
@@ -196,19 +254,26 @@ end
 clf
 orient tall
 
-dummy = 'data{1}';
-for k=2:n_plots, dummy = [dummy ',data{1}']; end
-eval(['h = irf_plot({' dummy '});']) 
-clear dummy
+if iscell(data{1}), dummyel = data{1}{1};
+else dummyel = data{1};
+end
+dummy = cell(1,n_plots);
+for k=1:n_plots, dummy(k) = {dummyel}; end
+h = irf_plot(dummy); 
+clear dummy dummyel
 
 for k=1:n_plots
 	axes(h(k))
-	irf_plot(data{k})
+	irf_plot(data{k},'comp')
 	axis tight
 	irf_zoom([t_st t_end],'x',h(k))
 	set(gca,'YLim',get(gca,'YLim')*1.05)
 	ylabel(labels{k})
-	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
+	if k==1
+		st_s = epoch2iso(t_st);
+		title(['EFW, Cluster ' num2str(cl_id,'%1d') '  (' st_s(1:10) ')'])
+		clear st_s
+	end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
     else
         add_timeaxis;
@@ -232,10 +297,15 @@ irf_pl_add_info
 lyy = 0;
 for k=n_plots:-1:1
 	ncol = size(data{k},2) -1;
+	if iscell(data{k}), ncol = ncol +1; end
 	if ncol>1
 		switch ncol
 			case 2
-				legend(h(k),'X','Y','Location','NorthEastOutside')
+				if flag_ib
+					legend(h(k),'nm','IB','Location','NorthEastOutside')
+				else
+					legend(h(k),'X','Y','Location','NorthEastOutside')
+				end
 			case 3
 				legend(h(k),'X','Y','Z','Location','NorthEastOutside')
 			case 4
