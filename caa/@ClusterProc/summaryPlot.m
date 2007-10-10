@@ -41,30 +41,30 @@ while have_options
 	l = 2;
 	if length(args)>=1
 		switch(args{1})
-		case 'cs'
-			if ischar(args{2}), 
-				cs = args{2};
-				if ~strcmp(cs,'dsi') && ~strcmp(cs,'gse')
-					irf_log('fcal','unknown CS. defaulting to DSI')
-					cs = 'dsi';
+			case 'cs'
+				if ischar(args{2}),
+					cs = args{2};
+					if ~strcmp(cs,'dsi') && ~strcmp(cs,'gse')
+						irf_log('fcal','unknown CS. defaulting to DSI')
+						cs = 'dsi';
+					end
+				else irf_log('fcal','wrongArgType : CS must be a string')
 				end
-            else irf_log('fcal','wrongArgType : CS must be a string')
-			end
-		case 'st'
-			if isnumeric(args{2}), st = args{2};
-            else irf_log('fcal','wrongArgType : ST must be numeric')
-			end
-		case 'dt'
-			if isnumeric(args{2}), dt = args{2};
-            else irf_log('fcal','wrongArgType : DT must be numeric')
-			end
-		case 'fullb'
-			use_fullb = '';	l = 1;
-		case 'leavewhip'
-			flag_rmwhip = 0;
-		otherwise
-        	irf_log('fcal',['Option ''' args{1} '''not recognized'])
-    	end
+			case 'st'
+				if isnumeric(args{2}), st = args{2};
+				else irf_log('fcal','wrongArgType : ST must be numeric')
+				end
+			case 'dt'
+				if isnumeric(args{2}), dt = args{2};
+				else irf_log('fcal','wrongArgType : DT must be numeric')
+				end
+			case 'fullb'
+				use_fullb = '';	l = 1;
+			case 'leavewhip'
+				flag_rmwhip = 0;
+			otherwise
+				irf_log('fcal',['Option ''' args{1} '''not recognized'])
+		end
 		if length(args) > l, args = args(l+1:end);
 		else break
 		end
@@ -158,6 +158,7 @@ for k=1:length(q_list)
 			labels{n_plots} = l_list{k};
 			clear d_t
 		else
+			d_t = [];
 			c_eval(['d_t=' q_list{k} ';'],cl_id)
 			labels{n_plots} = l_list{k};
 			if min(size(d_t))> 4
