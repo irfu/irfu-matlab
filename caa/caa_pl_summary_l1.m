@@ -360,12 +360,6 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Help functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function add_position(h,r)
-% Add position labels
-r = irf_abs(r);
-add_timeaxis(h,'usefig',[r(:,1) r(:,2:end)/6371.2],...
-	{'X [Re]','Y [Re]','Z [Re]','R [Re]'})
-
 function plot_intervals(h,ints,st)
 % Plot intervals
 
