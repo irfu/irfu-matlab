@@ -229,7 +229,7 @@ elseif strcmp(quantity,'fdm')
 	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'FDM');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
     else c_eval('FDM?=[t data''];',cl_id);
 	end
 	
@@ -264,7 +264,7 @@ elseif strcmp(quantity,'ibias')
 		clear t data
 	end
 	
-	if isempty(p_ok), data = []; cd(old_pwd), return, end
+	if isempty(p_ok), out_data = []; cd(old_pwd), return, end
 	for probe=p_ok;
 		eval(irf_ssub('save_list=[save_list ''IBIAS?p! ''];',cl_id,probe)) 
 	end
@@ -289,7 +289,7 @@ elseif strcmp(quantity,'efwt')
 	
 	if isempty(efwtime)
 		irf_log('dsrc',irf_ssub('No data for EFWT?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	c_eval(['EFWT?=[t; efwtime]'';'...
 		'save_list=[save_list '' EFWT? ''];'],cl_id);
@@ -311,7 +311,7 @@ elseif strcmp(quantity,'tmode')
 	[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for mTMode?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	
 	c_eval(['mTMode?=data(5,:);'...
@@ -339,14 +339,14 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 			tmode = getData(cdb,start_time,dt,cl_id,'tmode');
 			if isempty(tmode)
 				irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
-				data = []; cd(old_pwd), return
+				out_data = []; cd(old_pwd), return
 			end
 			tm = tmode{2};
 			clear tmode
 		end
 		if isempty(tm)
 			irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
-			data = []; cd(old_pwd), return
+			out_data = []; cd(old_pwd), return
 		end
 			
 		if any(tm~=tm(1))
@@ -470,7 +470,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		end
 	end
 	
-	if isempty(p_ok), data = []; cd(old_pwd), return, end
+	if isempty(p_ok), out_data = []; cd(old_pwd), return, end
 	for probe=p_ok
 		c_eval(['save_list=[save_list '' ' var_name num2str(probe) '''];'],cl_id);
 	end
@@ -569,7 +569,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		clear t data
     end, end
 	
-    if ~n_ok, data = []; cd(old_pwd), return, end
+    if ~n_ok, out_data = []; cd(old_pwd), return, end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Phase, etc.
@@ -601,7 +601,7 @@ elseif strcmp(quantity,'a')
 	end
 	clear t data
 	
-	if ~n_ok, data = []; cd(old_pwd), return, end
+	if ~n_ok, out_data = []; cd(old_pwd), return, end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
@@ -614,7 +614,7 @@ elseif strcmp(quantity,'r')
 	if ~isempty(data), c_eval('R?=[t data''];save_list=[save_list '' R? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No data for R?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	clear t data
 	
@@ -628,7 +628,7 @@ elseif strcmp(quantity,'v')
 		cl_id, 'ephemeris', 'velocity');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for V?, diV?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	
 	c_eval('V?=[t data''];save_list=[save_list '' V? ''];',cl_id);
@@ -681,7 +681,7 @@ elseif strcmp(quantity,'bfgm')
 	
 	if isempty(dat)
 		irf_log('dsrc',irf_ssub('No data for B, diB?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	c_eval('B?=dat;save_list=[save_list '' B? ''];',cl_id);
 	clear dat
@@ -749,7 +749,7 @@ elseif strcmp(quantity,'b') || strcmp(quantity,'edi') || ...
 	for i=1:length(r.qua)	
 		% first try ISDAT (fast) then files
 		dat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,r.qua{i});
-		if isempty(dat)
+		if isempty(dat) || ~any(any(~isnan(dat(:,2:end))))
 			irf_log('dsrc',irf_ssub(...
 				['No data for ' ipref 'di' r.var{i} ', i' r.var{i} '?'],cl_id))
 			continue
@@ -786,7 +786,7 @@ elseif strcmp(quantity,'b') || strcmp(quantity,'edi') || ...
 		clear dat
 	end
 	
-	if ~n_ok, data = []; cd(old_pwd), return, end
+	if ~n_ok, out_data = []; cd(old_pwd), return, end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % sax - spin axis orientation [GSE] 
@@ -800,7 +800,7 @@ elseif strcmp(quantity,'sax')
 	
 	if isempty(lat) || isempty(long)
 		irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	
 	% Take first point only. This is OK according to AV
@@ -819,6 +819,8 @@ elseif strcmp(quantity,'wbdwf')
 		wf = c_wbd_read(start_time, dt, cl_id);
 		c_eval('wfWBD?=wf;',cl_id); 
 		c_eval('save_list=[save_list '' wfWBD? ''];',cl_id);
+	catch
+		out_data = [];
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % whinat - WHISPER natural
@@ -830,7 +832,7 @@ elseif strcmp(quantity,'whinat')
 		cl_id, 'whisper', 'natural');
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for WHINAT?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	
 	specrec.f = [1302.08	1464.84	1627.6	1790.36	1953.12	2115.89	2278.65	2441.41	2604.17	2766.93	2929.69	3092.45	3255.21	3417.97	3580.73	3743.49	3906.25	4069.01	4231.77	4394.53	4557.29	4720.05	4882.81	5045.57	5208.33	5371.09	5533.85	5696.61	5859.38	6022.14	6184.9	6347.66	6510.42	6673.18	6835.94	6998.7	7161.46	7324.22	7486.98	7649.74	7812.5	7975.26	8138.02	8300.78	8463.54	8626.3	8789.06	8951.82	9114.58	9277.34	9440.1	9602.86	9765.62	9928.39	10091.1	10253.9	10416.7	10579.4	10742.2	10904.9	11067.7	11230.5	11393.2	11556	11718.8	11881.5	12044.3	12207	12369.8	12532.6	12695.3	12858.1	13020.8	13183.6	13346.4	13509.1	13671.9	13834.6	13997.4	14160.2	14322.9	14485.7	14648.4	14811.2	14974	15136.7	15299.5	15462.2	15625	15787.8	15950.5	16113.3	16276	16438.8	16601.6	16764.3	16927.1	17089.8	17252.6	17415.4	17578.1	17740.9	17903.6	18066.4	18229.2	18391.9	18554.7	18717.4	18880.2	19043	19205.7	19368.5	19531.2	19694	19856.8	20019.5	20182.3	20345.1	20507.8	20670.6	20833.3	20996.1	21158.9	21321.6	21484.4	21647.1	21809.9	21972.7	22135.4	22298.2	22460.9	22623.7	22786.5	22949.2	23112	23274.7	23437.5	23600.3	23763	23925.8	24088.5	24251.3	24414.1	24576.8	24739.6	24902.3	25065.1	25227.9	25390.6	25553.4	25716.1	25878.9	26041.7	26204.4	26367.2	26529.9	26692.7	26855.5	27018.2	27181	27343.8	27506.5	27669.3	27832	27994.8	28157.6	28320.3	28483.1	28645.8	28808.6	28971.4	29134.1	29296.9	29459.6	29622.4	29785.2	29947.9	30110.7	30273.4	30436.2	30599	30761.7	30924.5	31087.2	31250	31412.8	31575.5	31738.3	31901	32063.8	32226.6	32389.3	32552.1	32714.8	32877.6	33040.4	33203.1	33365.9	33528.6	33691.4	33854.2	34016.9	34179.7	34342.4	34505.2	34668	34830.7	34993.5	35156.2	35319	35481.8	35644.5	35807.3	35970.1	36132.8	36295.6	36458.3	36621.1	36783.9	36946.6	37109.4	37272.1	37434.9	37597.7	37760.4	37923.2	38085.9	38248.7	38411.5	38574.2	38737	38899.7	39062.5	39225.3	39388	39550.8	39713.5	39876.3	40039.1	40201.8	40364.6	40527.3	40690.1	40852.9	41015.6	41178.4	41341.1	41503.9	41666.7	41829.4	41992.2	42154.9	42317.7	42480.5	42643.2	42806	42968.8	43131.5	43294.3	43457	43619.8	43782.6	43945.3	44108.1	44270.8	44433.6	44596.4	44759.1	44921.9	45084.6	45247.4	45410.2	45572.9	45735.7	45898.4	46061.2	46224	46386.7	46549.5	46712.2	46875	47037.8	47200.5	47363.3	47526	47688.8	47851.6	48014.3	48177.1	48339.8	48502.6	48665.4	48828.1	48990.9	49153.6	49316.4	49479.2	49641.9	49804.7	49967.4	50130.2	50293	50455.7	50618.5	50781.2	50944	51106.8	51269.5	51432.3	51595.1	51757.8	51920.6	52083.3	52246.1	52408.9	52571.6	52734.4	52897.1	53059.9	53222.7	53385.4	53548.2	53710.9	53873.7	54036.5	54199.2	54362	54524.7	54687.5	54850.3	55013	55175.8	55338.5	55501.3	55664.1	55826.8	55989.6	56152.3	56315.1	56477.9	56640.6	56803.4	56966.1	57128.9	57291.7	57454.4	57617.2	57779.9	57942.7	58105.5	58268.2	58431	58593.8	58756.5	58919.3	59082	59244.8	59407.6	59570.3	59733.1	59895.8	60058.6	60221.4	60384.1	60546.9	60709.6	60872.4	61035.2	61197.9	61360.7	61523.4	61686.2	61849	62011.7	62174.5	62337.2	62500	62662.8	62825.5	62988.3	63151	63313.8	63476.6	63639.3	63802.1	63964.8	64127.6	64290.4	64453.1	64615.9	64778.6	64941.4	65104.2	65266.9	65429.7	65592.4	65755.2	65918	66080.7	66243.5	66406.2	66569	66731.8	66894.5	67057.3	67220.1	67382.8	67545.6	67708.3	67871.1	68033.9	68196.6	68359.4	68522.1	68684.9	68847.7	69010.4	69173.2	69335.9	69498.7	69661.5	69824.2	69987	70149.7	70312.5	70475.3	70638	70800.8	70963.5	71126.3	71289.1	71451.8	71614.6	71777.3	71940.1	72102.9	72265.6	72428.4	72591.1	72753.9	72916.7	73079.4	73242.2	73404.9	73567.7	73730.5	73893.2	74056	74218.8	74381.5	74544.3	74707	74869.8	75032.6	75195.3	75358.1	75520.8	75683.6	75846.4	76009.1	76171.9	76334.6	76497.4	76660.2	76822.9	76985.7	77148.4	77311.2	77474	77636.7	77799.5	77962.2	78125	78287.8	78450.5	78613.3	78776	78938.8	79101.6	79264.3	79427.1	79589.8	79752.6	79915.4	80078.1	80240.9	80403.6	80566.4	80729.2	80891.9	81054.7	81217.4	81380.2	81543];
