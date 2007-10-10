@@ -1147,6 +1147,8 @@ elseif strcmp(quantity,'sweep')
 elseif strcmp(quantity,'badbias')
 	save_file = './mEFW.mat';
 	
+	GOOD_BIAS = -130;
+	
 	DELTA_MINUS = 60;
 	DELTA_PLUS = 3*60;
 	
@@ -1163,9 +1165,13 @@ elseif strcmp(quantity,'badbias')
 			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
 			c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
 		end
+
+		% 2006-06-16 23:30 bias current was lowered to 100 nA
+		if efwt(1,1)>iso2epoch('2006-06-16T00:00:00Z'), GOOD_BIAS = -95; end
+		
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
-	clear ok efwt t0 ii
+	clear ok t0 efwt ii
 	
 	% The reason we remove 300 seconds (DELTA_MINUS) of data before a bad
 	% bias is that we get rid of all the EFW resets in a clean way.
@@ -1173,7 +1179,7 @@ elseif strcmp(quantity,'badbias')
 	% the timing of the bias current, so we takek 2 x DSC interval.
 	DELTA_MINUS = 300;
 	DELTA_PLUS = 64;
-	GOOD_BIAS = -130;
+	
 	
 	n_ok = 0;
 	for pro=1:4
