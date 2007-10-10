@@ -7,10 +7,11 @@ function out=summaryPlot(cp,cl_id,varargin)
 %   cp - ClusterProc object
 %   cl_id - SC#
 %   Options: go in pair 'option', value
-%    'cs' - coordinate system : 'dsi' [default] of 'gse'
-%    'st', 'dt' - start time (ISDAT epoch) and interval length (sec)
-%    'fullb' - use full resolution B FGM
+%    'cs'        - coordinate system : 'dsi' [default] of 'gse'
+%    'st', 'dt'  - start time (ISDAT epoch) and interval length (sec)
+%    'fullb'     - use full resolution B FGM
 %    'leavewhip' - plot time intervals with Whisper pulses
+%    'ib'        - Internal Burst format
 % 
 % Output:
 %   h - axes handles // can be omitted
@@ -91,12 +92,7 @@ n_plots = 0;
 data = {};
 labels = {};
 
-if flag_rmwhip
-	if exist('./mFDM.mat','file')
-		c_eval('load mFDM WHIP?',cl_id)
-	end
-	
-end
+if flag_rmwhip, c_load('WHIP?',cl_id), end
 
 % Load data
 for k=1:length(q_list)
@@ -200,9 +196,10 @@ clear dummy
 
 for k=1:n_plots
 	axes(h(k))
-	irf_plot(data{k});
+	irf_plot(data{k})
+	axis tight
 	irf_zoom([t_st t_end],'x',h(k))
-	set(gca,'YLim',get(gca,'YLim')*.99)
+	set(gca,'YLim',get(gca,'YLim')*1.05)
 	ylabel(labels{k})
 	if k==1, title(['EFW, Cluster ' num2str(cl_id,'%1d')]), end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
@@ -227,11 +224,22 @@ irf_pl_add_info
 
 lyy = 0;
 for k=n_plots:-1:1
-	if min(size(data{k}))>2
-		legend(h(k),'X','Y','Z','Location','NorthEastOutside')
+	ncol = size(data{k},2) -1;
+	if ncol>1
+		switch ncol
+			case 2
+				legend(h(k),'X','Y','Location','NorthEastOutside')
+			case 3
+				legend(h(k),'X','Y','Z','Location','NorthEastOutside')
+			case 4
+				legend(h(k),'X','Y','Z','tot','Location','NorthEastOutside')	
+			otherwise
+				error('too many columns')
+		end
 		if lyy==0, pos = get(h(k),'Position'); lyy = pos(3); clear pos, end
 	end
 end
+clear ncol
 
 if lyy
     for k=n_plots:-1:1
