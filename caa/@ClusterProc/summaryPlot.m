@@ -12,6 +12,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 %    'fullb'     - use full resolution B FGM
 %    'leavewhip' - plot time intervals with Whisper pulses
 %    'ib'        - Internal Burst format
+%    'wo_r'      - Do not add position labels
 % 
 % Output:
 %   h - axes handles // can be omitted
@@ -36,7 +37,9 @@ st = 0;
 dt = 0;
 have_tint = 0;
 use_fullb = 'rs';
-flag_rmwhip = 1; 
+flag_rmwhip = 1;
+flag_ib = 0;
+flag_r = 1;
 
 while have_options
 	l = 2;
@@ -63,6 +66,10 @@ while have_options
 				use_fullb = '';	l = 1;
 			case 'leavewhip'
 				flag_rmwhip = 0;
+			case 'ib'
+				flag_ib = 1;
+			case 'wo_r'
+				flag_r = 0;
 			otherwise
 				irf_log('fcal',['Option ''' args{1} '''not recognized'])
 		end
@@ -246,6 +253,11 @@ if lyy
         pos = get(h(k),'Position'); 
         set(h(k),'Position', [pos(1) pos(2) lyy pos(4)])
     end
+end
+
+if flag_r
+	[ok,r] = c_load('R?',cl_id);
+	if ok, add_position(h(n_plots),r), end
 end
 
 if nargout>0, out=h; end
