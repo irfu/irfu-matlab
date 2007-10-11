@@ -9,7 +9,7 @@ function varargout = c_cal_gui(varargin)
 %	cd /tmp/my_event/20020304_1000
 %	c_cal_gui
 %
-% See also CLUSTERPROC/CORRSOFFSETM
+% See also ClusterProc/corrSOffsetM
 %
 % $Id$
 

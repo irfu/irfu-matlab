@@ -15,9 +15,11 @@ function corrSOffsetM(cp,cl_id)
 % Example:
 % corrSOffsetM(ClusterProc('/home/yuri/caa-data/20020304'),1)
 %
+%  See also: C_CAL_GUI
+%
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% Copyright 2004,2007 Yuri Khotyaintsev (yuri@irfu.se)
 %
 
 
