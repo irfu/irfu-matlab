@@ -24,43 +24,45 @@ function corrSOffsetM(cp,cl_id)
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
 
-if exist('./mEDSI.mat','file')
-	eval(irf_ssub('load mEDSI diE?p1234 diEs?p34;',cl_id))
-	if exist(irf_ssub('diE?p1234',cl_id),'var')
-		eval(irf_ssub('diE=diE?p1234;',cl_id))
-	else
-		warning('caa:noData','no diE{cl_id}p1234 data in mEDSI')
-	end
-	if exist(irf_ssub('diEs?p34',cl_id),'var')
-		c_eval('diEs=diEs?p34(:,1:4);',cl_id)
 
-		% Load offsets
-		offset = [0+0i 1];
-		eval(irf_ssub('load mEDSI Ddsi? Damp?',cl_id))
-		if exist(irf_ssub('Ddsi?',cl_id),'var')
-			eval(irf_ssub('offset(1)=Ddsi?;clear Ddsi?',cl_id))
-			disp(sprintf('loading DSI offset from file Ddsi=%.2f %.2f*i',...
-			real(offset(1)),imag(offset(1))))
-		end
-		if exist(irf_ssub('Damp?',cl_id),'var')
-			eval(irf_ssub('offset(2)=Damp?;clear Damp?',cl_id))
-			disp(sprintf('loading amplitude correction from file Damp=%.2f',...
-			offset(2)))
-		end
+[ok, diE] = c_load('diE?p1234',cl_id);
+if ~ok, irf_log('load','no diE{cl_id}p1234 data')
+end
+[ok, diEs] = c_load('diEs?p34',cl_id);
+if ok
+	% Load offsets
+	dsiof = c_ctl(cl_id,'dsiof');
+	if isempty(dsiof)
+		[dsiof_def, dam_def] = c_efw_dsi_off(diEs(1,1),cl_id);
 
+		[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+		[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+
+		if ok1 || ok2, irf_log('calb',...
+				['Saved DSI offsets on C' num2str(cl_id)])
+			%else irf_log('calb','Using default DSI offsets')
+		end
+		clear dsiof_def dam_def
 	else
-		error('caa:noData','no diEs{cl_id}p34 data in mEDSI')
+		Ddsi = dsiof(1); Damp = dsiof(2);
+		irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
 	end
+	clear dsiof
+
+	offset(1) = Ddsi; clear Ddsi
+	irf_log('proc',sprintf('Ddsi=%.2f', offset(1)))
+	offset(2) = Damp; clear Damp
+	irf_log('proc',sprintf('Damp=%.2f', offset(2)))
+
 else
-	cd(old_pwd)
-	error('caa:noSuchFile','no mEDSI file')
+	error('caa:noData','no diEs{cl_id}p34 data in mEDSI')
 end
 
 if exist('diE','var')
 	have_hres = 1;
 	% remove points larger then 1 V/m
-	for j=2:3, diE(find(abs(diE(:,j)) > 1000), j) = NaN; end
-else, have_hres = 0;
+	for j=2:3, diE(abs(diE(:,j)) > 1000, j) = NaN; end
+else have_hres = 0;
 end
 % we load full res data, but plot only spin.
 var_list = 'diEs_tmp';
@@ -69,13 +71,13 @@ var_list1 = 'diEsp34';
 % load CIS
 var = {'diVCEp', 'diVCEh'};
 if exist('./mCIS.mat','file')
-	CIS=load('mCIS');
+	CIS = load('mCIS');
 	for i=1:length(var)
 		c_eval(['if isfield(CIS,''' var{i} '?''); ' var{i} '=CIS.' var{i} '?; end; clear ' var{i} '?'], cl_id)
 	end
 	clear CIS
 end
-if ~exist('diVCEp','var') | ~exist('diVCEh','var')
+if ~exist('diVCEp','var') || ~exist('diVCEh','var')
 	warning('caa:noData','no CIS data loaded')
 else
 	for i=1:length(var)
@@ -93,7 +95,7 @@ clear var
 
 % load EDI
 if exist('./mEDI.mat','file')
-	EDI=load('mEDI');
+	EDI = load('mEDI');
 	var = 'diEDI';
 	eval(irf_ssub(['if isfield(EDI,''' var '?''); ' var '=EDI.' var '?; end; clear ' var '?'], cl_id));
 	clear EDI
@@ -102,7 +104,7 @@ end
 if ~exist('diEDI','var')
 	warning('caa:noData','no EDI data loaded')
 else
-	if length(find(~isnan(diEDI(:,2:end))))>0
+	if any(~isnan(diEDI(:,2:end)))
 		var_list = [var_list ',diEDI'];
 		var_list1 = [var_list1 ',diEDI'];
 	end
@@ -123,7 +125,7 @@ diE_tmp(:,2) = diE_tmp(:,2) - real(offset(1));
 diE_tmp(:,3) = diE_tmp(:,3) - imag(offset(1));
 diE_tmp(:,2:3) = diE_tmp(:,2:3)*real(offset(2));
 diEs_tmp = diEs;
-ind=find(abs(diEs(:,2))>1e4);diEs_tmp(ind,:)=[]; % remove spinfits that has given large values
+diEs_tmp(abs(diEs(:,2))>1e4,:) = []; % remove spinfits that has given large values
 diEs_tmp(:,2) = diEs_tmp(:,2) - real(offset(1));
 diEs_tmp(:,3) = diEs_tmp(:,3) - imag(offset(1));
 diEs_tmp(:,2:3) = diEs_tmp(:,2:3)*real(offset(2));
@@ -159,7 +161,7 @@ for co=1:2
 	add_timeaxis
 	grid
 	set(gca,'XTickLabel',[])
-	if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
+	if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
 	xlabel('')
 	zoom on
 end
@@ -231,9 +233,9 @@ while(q ~= 'q')
 				offset(1) = o_tmp(1)+1i*o_tmp(2);
 				offset(2) = o_tmp(3);
 			elseif length(o_tmp) > 1, offset(1) = o_tmp(1)+1i*o_tmp(2);
-			else, offset(1) = o_tmp(1)+1i*imag(offset(1));
+			else offset(1) = o_tmp(1)+1i*imag(offset(1));
 			end
-		else, disp('invalid command')
+		else disp('invalid command')
 		end
   	flag_replot=1;
 	end
@@ -257,7 +259,7 @@ while(q ~= 'q')
 				for j=2:length(t1)
 					dummy = [dummy ',' t1{j} '(:,1),' t1{j} '(:,' num2str(co+1) ')'];
 				end
-        	end
+			end
 
 			axes(h(co)), cla(h(co))
 			ax_pos=get(h(co),'position');
@@ -265,7 +267,7 @@ while(q ~= 'q')
 			set(h(co),'position',ax_pos);
 			add_timeaxis(h(co))
 			grid(h(co)), set(h(co),'XTickLabel',[]), xlabel('')
-			if co==1, ylabel('E_x DSI'), else, ylabel('E_y DSI'), end
+			if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
 		end
 
 		axes(h(1))
