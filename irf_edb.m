@@ -52,7 +52,7 @@ end
 d=atan2(bd(:,3),sqrt(bd(:,1).^2+bd(:,2).^2))*180/pi;
 ind=find(abs(d)>angle_lim);
 
-if ~(size(ind)==[0 0])
+if ~isempty(ind)
 ed(ind,3)=-(ed(ind,1).*bd(ind,1)+ed(ind,2).*bd(ind,2))./bd(ind,3);
 end
 
