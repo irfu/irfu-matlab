@@ -31,11 +31,11 @@ function startSAT=c_efw_burst_chkt(database,filename)
 
   % Choose time interval to be longer than the short time used before
   
-  duration=4*shorttime;
+  duration=5*shorttime;
 
   % Get EFW time as function of satellite time
   
-  spacecraft = str2num(filename(end));
+  spacecraft = str2double(filename(end));
   [sctime,temp]=caa_is_get(database,startdate, ...
 			    duration,spacecraft,'efw','DSC');
   efwtime=(temp(81,:)+temp(82,:)*256+temp(83,:)*65536+ temp(84,:)* ...
@@ -45,8 +45,12 @@ function startSAT=c_efw_burst_chkt(database,filename)
   
   tempindex=find((efwtime-startEFW)>0);
 
+  if isempty(tempindex)
+	  irf_log('proc','Cannot get EFW time for IB. Will extrapolate.')
+	  tempindex = length(efwtime);
+  end
   % Interpolate to get the exact start time
   
   startSAT=sctime(tempindex(1))+(startEFW-efwtime(tempindex(1)))* ...
-	 (sctime(tempindex(1))-sctime(tempindex(1)-1))/ ...
-	 (efwtime(tempindex(1))-efwtime(tempindex(1)-1));
+	  (sctime(tempindex(1))-sctime(tempindex(1)-1))/ ...
+	  (efwtime(tempindex(1))-efwtime(tempindex(1)-1));
