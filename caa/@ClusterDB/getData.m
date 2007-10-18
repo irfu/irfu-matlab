@@ -90,23 +90,25 @@ save_list = '';
 
 old_pwd = pwd;
 
-%Create the storage directory if it does not exist
-if ~exist(cdb.sp, 'dir')
-	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
-	if SUCCESS, irf_log('save',['Created storage directory ' cdb.sp])
-    else error(MESSAGE)
-	end
-end
+if flag_save,
+    %Create the storage directory if it does not exist
+    if ~exist(cdb.sp, 'dir')
+        [SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
+        if SUCCESS, irf_log('save',['Created storage directory ' cdb.sp])
+        else error(MESSAGE)
+        end
+    end
 
-cd(cdb.sp) %enter the storage directory
-irf_log('save',['Storage directory is ' cdb.sp])
+    cd(cdb.sp) %enter the storage directory
+    irf_log('save',['Storage directory is ' cdb.sp])
 
-% Create .interval
-if ~exist('./.interval','file')
-	fid = fopen('.interval','w');
-	if fid<0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
-	count = fprintf(fid,'%s %s',epoch2iso(start_time),num2str(dt));	fclose(fid);
-	if count<=0, irf_log('save','problem writing to .interval'),cd(old_pwd),return, end
+    % Create .interval
+    if ~exist('./.interval','file')
+        fid = fopen('.interval','w');
+        if fid<0, irf_log('save','problem creating .interval'),cd(old_pwd),return, end
+        count = fprintf(fid,'%s %s',epoch2iso(start_time),num2str(dt));	fclose(fid);
+        if count<=0, irf_log('save','problem writing to .interval'),cd(old_pwd),return, end
+    end
 end
 
 % Read list of nonstandard operations and see if we have one of those 
