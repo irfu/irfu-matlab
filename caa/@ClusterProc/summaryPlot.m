@@ -188,7 +188,34 @@ for k=1:length(q_list)
 				if flag_ib
 					E_hx = data{n_plots-1};
 					E_ib = [];
-					c_eval(['E_ib=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
+					c_eval(['E_ib=' q_list{k} ';'],cl_id)
+					% correct DSI offsets
+					dsiof = c_ctl(cl_id,'dsiof');
+					if isempty(dsiof)
+						if ~have_tint
+							st = E_ib(:,1);
+							st = st(~isnan(st));
+							if isempty(st), st = 0;
+							else st = st(1);
+							end
+						end
+
+						[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
+
+						[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+						[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+
+						if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
+						else irf_log('calb','Using default DSI offsets')
+						end
+						clear dsiof_def dam_def
+					else
+						Ddsi = dsiof(1); Damp = dsiof(2);
+						irf_log('calb','Using user specified DSI offsets')
+					end
+					clear dsiof
+					E_ib=caa_corof_dsi(E_ib,Ddsi,Damp);
+					
 					data{n_plots-1} = {E_hx(:,[1 2]), E_ib(:,[1 2])};
 					data{n_plots}   = {E_hx(:,[1 3]), E_ib(:,[1 3])};
 					labels{n_plots-1} = 'Ex DSI [mV/m]';
@@ -225,8 +252,6 @@ for k=1:length(q_list)
 		
 	end
 end
-
-cd(old_pwd)
 
 if n_plots==0, return, end % Nothing to plot
 
@@ -267,7 +292,9 @@ for k=1:n_plots
 	irf_plot(data{k},'comp')
 	axis tight
 	irf_zoom([t_st t_end],'x',h(k))
-	set(gca,'YLim',get(gca,'YLim')*1.05)
+	YL = get(gca,'YLim'); DYL = (YL(2) -YL(1))*0.05;
+	set(gca,'YLim',YL +[-DYL DYL])
+	clear YL DYL
 	ylabel(labels{k})
 	if k==1
 		st_s = epoch2iso(t_st);
@@ -329,5 +356,7 @@ if flag_r
 	[ok,r] = c_load('R?',cl_id);
 	if ok, add_position(h(n_plots),r), end
 end
+
+cd(old_pwd)
 
 if nargout>0, out=h; end
