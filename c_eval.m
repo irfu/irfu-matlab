@@ -35,14 +35,17 @@ elseif nargin==2,
 end
 
 if findstr(ev_str,'?'),
-    if findstr(ev_str,'!'),
-        for num1=sc_list_1, 
-            for num2=sc_list_2,
-                evalin('caller', irf_ssub(ev_str, num1,num2)), 
-            end
-        end
-    else,
-        for cl_id=sc_list_1, evalin('caller', irf_ssub(ev_str, cl_id)), end
-    end
+	if findstr(ev_str,'!'),
+		for num1=sc_list_1,
+			for num2=sc_list_2,
+				evalin('caller', irf_ssub(ev_str, num1,num2)),
+			end
+		end
+	else
+		for cl_id=sc_list_1, evalin('caller', irf_ssub(ev_str, cl_id)), end
+	end
+else
+	irf_log('fcal','nothing to substitute');
+	evalin('caller', ev_str)
 end
 
