@@ -79,16 +79,22 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 	end
 end
 
-if strcmp(flag_do,'average'),
-  out = zeros(ndata,size(x,2));
-  out(:,1) = t;
-  dt2 = .5/sfy; % Half interval
-  for j=1:ndata
-    ii = find(x(:,1) <  t(j) + dt2 & x(:,1) >  t(j) - dt2);
-    if isempty(ii), out(j,2:end) = NaN;
-	else out(j,2:end) = mean(x(ii,2:end));
-    end
-  end
+if strcmp(flag_do,'average')
+	dt2 = .5/sfy; % Half interval
+	if exist('irf_average_mx','file')~=3
+		irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
+
+		out = zeros(ndata,size(x,2));
+		out(:,1) = t;
+		for j=1:ndata
+			ii = find(x(:,1) <  t(j) + dt2 & x(:,1) >  t(j) - dt2);
+			if isempty(ii), out(j,2:end) = NaN;
+			else out(j,2:end) = mean(x(ii,2:end));
+			end
+		end
+	else
+		out = irf_average_mx(x,t,dt2);
+	end
 elseif strcmp(flag_do,'interpolation'),
   if nargin < 3, method = 'linear'; end
 
