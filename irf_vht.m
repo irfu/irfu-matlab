@@ -11,7 +11,7 @@ function vht=irf_vht(e,b,flag)
 %
 % $Id$
 
-if nargin==0, help av_vht;return;end
+if nargin==0, help irf_vht;return;end
 if nargin<3, flag=1;end
 
 if size(e,1) ~= size(b,1), b=irf_resamp(b,e);end
