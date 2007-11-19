@@ -18,8 +18,12 @@ old_pwd = pwd;
 cd(sp)
 
 load mP
-load mEDSI diEs1p34 diE2p1234 diEs3p34 diE4p1234
-load mB B1 B2 B3 B4
+c_load('diEs1p34');
+c_load('diE2p1234');
+c_load('diEs3p34');
+c_load('diE4p1234');
+c_load('B?');
+
 
 tt = diEs1p34(:,1)*ones(1,8);
 
@@ -29,7 +33,7 @@ se=max(B1(end,1),B2(end,1));
 
 for j=1:4
 	axes(h(j))
-	c_pl_tx(av_abs(B1),av_abs(B2),av_abs(B3),av_abs(B4),1+j);
+	c_pl_tx(irf_abs(B1),irf_abs(B2),irf_abs(B3),irf_abs(B4),1+j);
 	ylabel(['B' n2c(j) ' [nT]'])
 	set(gca,'XLim',[st se])
 	set(gca,'XTickLabel',[]),xlabel('')

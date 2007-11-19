@@ -88,6 +88,7 @@ Wce = e*B_SI/Me;   % rad/s
 Wpp = sqrt(np*e^2/Mp/epso);
 WpO = sqrt(no*e^2/Mp/16/epso);
 Va = B_SI./sqrt(mu0*(np+16*no)*Mp);
+Vae = B_SI./sqrt(mu0*n*Me);
 %Vte = 4.19*1e2*sqrt(Te);
 Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s
 %Vtp = 9.79*sqrt(Ti);
@@ -176,8 +177,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % velocities
 
-v = [Va Vte Vtp Vts VtO ];
-vs = {'V_a'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
+v = [Va Vae Vte Vtp Vts VtO ];
+vs = {'V_a'; 'V_ae'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
 
 disp(sprintf('\nPlasma velocities\n'))
 for ii = 1:length(v)

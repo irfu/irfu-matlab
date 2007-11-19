@@ -1,5 +1,7 @@
 function J_probe=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
     m_amu1, m_amu2,m2_fraction,Ne,Ti_eV,Te_eV,V_SC)
+% J_probe=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
+%    m_amu1, m_amu2,m2_fraction,Ne,Ti_eV,Te_eV,V_SC)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % lp_probe_current
 %
