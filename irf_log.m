@@ -1,4 +1,4 @@
-function irf_log(log_ids,log_msg,varargin)
+function irf_log(log_ids,log_msg)
 %IRF_LOG   Configurable logging routine
 %
 % irf_log(log_ids,log_msg) - log a message LOG_MSG with id LOG_IDS.
@@ -40,30 +40,14 @@ function irf_log(log_ids,log_msg,varargin)
 %
 % $Id$
 
-% Copyright 2004,2005 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(2,15,nargin))
-
-%if nargin>2, have_options = 1; args = varargin;
-%else, have_options = 0;
-%end
-%
-%while have_options
-%	l = 2;
-%	if length(args)>=1
-%		switch(args{1})
-%		case 'sp'
-%		
-%		otherwise
-%        	disp(['Option ''' args{i} '''not recognized'])
-%    	end
-%		if length(args) > l, args = args(l+1:end);
-%		else break
-%		end
-%	else
-%		error('caa:wrongArgType','use c_get_batch(..,''option'',''value'')')
-%	end
-%end
 
 switch(log_ids)
 case 'log_lev'
@@ -111,7 +95,7 @@ if log_ok
 		% if irf_log is called from the main env, then use curr,
 		% otherwise we are interested in callers name (curr+1)
 		if curr == length(sta), idx = curr;
-		else, idx = curr +1;
+		else idx = curr +1;
 		end
 		log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
 		clear sta curr
