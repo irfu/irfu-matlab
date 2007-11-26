@@ -22,5 +22,9 @@
   mu0   = 4*pi*1e-7;
 
   c_light = 3e8;
+  
+  AU = 1.496e11;
   R_Earth = 6370e3; 
+  R_Sun = 6.96e8;
+  
 
