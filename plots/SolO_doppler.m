@@ -1,7 +1,7 @@
 % plot figure showing typical temporal and spatial scales and doppler
 % shifts for solar orbiter plasma conditions
 
-NaturalConstants
+%NaturalConstants
 
 f_range=[0.1 1e6]; % frequencies in Hz
 l_range=[1 1e6]; % wave length in m 
