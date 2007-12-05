@@ -21,6 +21,13 @@
 #include <limits.h>
 #include "mex.h"
 
+/*
+ * This typedef is needed for MATLAB < 7.3
+ */
+#ifndef MWSIZE_MAX
+typedef int mwSize;
+#endif
+
 void mexFunction(
 		 int nlhs,       mxArray *plhs[],
                  int nrhs, const mxArray *prhs[]
