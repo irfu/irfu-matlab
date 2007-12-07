@@ -127,7 +127,7 @@ void mexFunction(
 			{
 				if ( mxIsNaN(data[cur+comp*ndata]) )
 				{
-					res[i+comp*ntref] = NaN;
+					mean = NaN;
 					nav = 0;
 					break;
 				}
@@ -142,7 +142,7 @@ void mexFunction(
 				mean = mean/(double)nav;
 			
 			/*
-			printf("interval(%d) mean : %f\n",i,mean);
+			printf("interval(%d) mean : %f, nav : %d\n",i,mean,nav);
 			 */
 			
 			if ( cur>stop )
