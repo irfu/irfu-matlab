@@ -8,9 +8,10 @@
  *
  * irf_average_mx.c  MEX function to do averages
  *
- * RES = IRF_AVERAGE_MX(X, Y, DT2);
+ * RES = IRF_AVERAGE_MX(X, Y, DT2, THRESH);
  *
- * Resample X to timeline of Y, using half-window of DT2
+ * Resample X to timeline of Y, using half-window of DT2.
+ * Points above STD*THRESH are excluded. THRESH=0 turns off this option.
  *
  * Compile with:
  *   mex -v irf_average_mx.c CFLAGS='$CFLAGS -O2 -mtune=opteron -funroll-loops'
@@ -20,6 +21,7 @@
 
 #include <limits.h>
 #include "mex.h"
+#include <math.h>
 
 /*
  * This typedef is needed for MATLAB < 7.3
@@ -34,13 +36,13 @@ void mexFunction(
 		 )
 {
     mwSize ndata, ncomp, ntref, i, comp, start = 0, stop = 0;
-    double *data, *tref, *res, dt2;
+    double *data, *tref, *res, dt2, thresh;
 	double NaN = mxGetNaN();
     
     
     /* Check for proper number of input and output arguments */    
-    if ( nrhs != 3 )
-		mexErrMsgTxt("Three input arguments required.");
+    if ( nrhs != 4 )
+		mexErrMsgTxt("Four input arguments required.");
 
     if ( nlhs > 1 )
 		mexErrMsgTxt("Too many output arguments.");
@@ -66,6 +68,9 @@ void mexFunction(
 	
 	if(mxIsEmpty(prhs[2]))
 		mexErrMsgTxt("Third input argument is empty");
+	
+	if(mxIsEmpty(prhs[3]))
+		mexErrMsgTxt("Forth input argument is empty");
 
     data = mxGetPr(prhs[0]);
     ndata = mxGetM(prhs[0]);
@@ -73,6 +78,9 @@ void mexFunction(
 	tref = mxGetPr(prhs[1]);
 	ntref = mxGetM(prhs[1]);
 	dt2 = mxGetScalar(prhs[2]);
+	thresh = mxGetScalar(prhs[3]);
+	if ( thresh < 0 )
+		mexErrMsgTxt("Forth input argument must be positive");
 	
     /* Create output array */
     plhs[0] = mxCreateDoubleMatrix(ntref,ncomp,0);
@@ -93,7 +101,7 @@ void mexFunction(
 	{
 		/* check if we have been through all the data 
 		 * or that the data starts after the current interval */
-		while ( (start<ndata) && (data[start] < res[i] - dt2) ) 
+		while ( (start<ndata) && (data[start] <= res[i] - dt2) ) 
 			start++;
 		
 		/*
@@ -114,6 +122,7 @@ void mexFunction(
 		for (comp=1; comp<ncomp; comp++)
 		{
 			mwSize cur = start, nav = 0;
+			double mean = 0.0;
 			while ( (data[cur] <= res[i] + dt2) && (cur < ndata) )
 			{
 				if ( mxIsNaN(data[cur+comp*ndata]) )
@@ -124,16 +133,54 @@ void mexFunction(
 				}
 				else
 				{
-					res[i+comp*ntref] += data[cur+comp*ndata];
+					mean += data[cur+comp*ndata];
 					nav++;
 				}
 				cur++;
 			}
 			if ( nav )
-				res[i+comp*ntref] = res[i+comp*ntref]/(double)nav;
+				mean = mean/(double)nav;
+			
+			/*
+			printf("interval(%d) mean : %f\n",i,mean);
+			 */
 			
 			if ( cur>stop )
 				stop = cur;
+			
+			/* compute std() */
+			if ( nav && thresh)
+			{
+				double std = 0;
+				for ( cur = start; cur < stop; cur++ )
+					std += (data[cur+comp*ndata] - mean)*
+					(data[cur+comp*ndata] - mean);
+				std = sqrt(std / (double)(stop-start-1));
+				
+				/*
+				printf("interval(%d) std : %f\n",i,std);
+				 */
+				
+				/* compute new average for pints < thresh*sdev */
+				nav = 0;
+				for ( cur = start; cur < stop; cur++ )
+					if ( fabs( data[cur+comp*ndata] - mean ) <= thresh*std )
+					{
+						res[i+comp*ntref] += data[cur+comp*ndata];
+						nav++;
+					}
+				
+				/*
+				printf("interval(%d) : disregarding %d 0f %d points\n",i,				 
+					stop-start-nav,stop-start);
+				 */
+				if ( nav )
+					res[i+comp*ntref] = res[i+comp*ntref]/(double)nav;
+				else
+					res[i+comp*ntref] = NaN;
+			}
+			else
+				res[i+comp*ntref] = mean;
 		}
 		start = stop;
 		
