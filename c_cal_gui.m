@@ -228,7 +228,7 @@ case 'init'
 						p_style(data.cl_id, data.inst,data.sen);
 					
 					% tlim
-					c_eval(['tlxxx(1) = ' vs '(1,1); tlxxx(2) = ' vs '(end,1);'],cl_id)
+					eval(['tlxxx(1) = ' vs '(1,1); tlxxx(2) = ' vs '(end,1);'])
 					if ~hnd.tlim(1), hnd.tlim(1) = tlxxx(1);
 					elseif hnd.tlim(1) > tlxxx(1), hnd.tlim(1) = tlxxx(1); 
 					end
