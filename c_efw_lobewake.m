@@ -37,6 +37,7 @@ h(3) = irf_subplot(nplots,1,-3);
 irf_plot(diE(:,[1 3]));
 set(gca,'YLim',[-9 9])
 ylabel('Ey [mV/m]')
+h(4) = irf_subplot(nplots,1,-4);
 
 TAV = 60;
 
@@ -45,6 +46,7 @@ t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
 if ok
+	diEDI = diEDI(~isnan(diEDI(:,2)),:);
 	diEDIr = irf_resamp(diEDI,t,'fsample',1/TAV,'thresh',1.3);
 	axes(h(2)), hold on
 	irf_plot(diEDIr(:,[1 2]),'k.');
@@ -52,7 +54,7 @@ if ok
 	irf_plot(diEDIr(:,[1 3]),'k.');
 	diEDIr = diEDIr(:,1:3);
 	diEDIr(:,2:3) = diEr(:,2:3) - diEDIr(:,2:3);
-	h(4) = irf_subplot(nplots,1,-4);
+	axes(h(4))
 	irf_plot(diEDIr)
 	ylabel('E diff [mV/m]')
 end
@@ -79,10 +81,12 @@ Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
 wind = ind(abs(Epar(ind)) > EPAR_LIM |...
 	abs(Epar(ind))./Eperp(ind) > EPAR_EPERP_RATIO_LIM);
 
-axes(h(2)), hold on
-irf_plot(diEr(wind,[1 2]),'r.');
-axes(h(3)), hold on
-irf_plot(diEr(wind,[1 3]),'r.');
+if ~isempty(wind)
+	axes(h(2)), hold on
+	irf_plot(diEr(wind,[1 2]),'g.');
+	axes(h(3)), hold on
+	irf_plot(diEr(wind,[1 3]),'g.');
+end
 
 % Look for strong apparent Ez if B field is above 15 deg of spin plane:
 ind = find( abs(bele) >= ANG_LIM );
@@ -90,10 +94,12 @@ Ez = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
 ind = ind(abs(Ez(ind)) > EZ_LIM &...
 	abs(Ez(ind))./Eperp(ind) > EZ_EPERP_RATIO_LIM);
 
-axes(h(2)), hold on
-irf_plot(diEr(ind,[1 2]),'g.');
-axes(h(3)), hold on
-irf_plot(diEr(ind,[1 3]),'g.');
+if ~isempty(ind)
+	axes(h(2)), hold on
+	irf_plot(diEr(ind,[1 2]),'r.');
+	axes(h(3)), hold on
+	irf_plot(diEr(ind,[1 3]),'r.');
+end
 
 wind = sort([wind; ind]);
 
@@ -107,3 +113,6 @@ irf_plot(diE(:,1:3))
 ylabel('E cor [mV/m]')
 
 irf_zoom([t(1)-TAV/2 t(end)+TAV/2],'x',h)
+
+[ok,r] = c_load('R?',cl_id);
+if ok, add_position(h(6),r), end
