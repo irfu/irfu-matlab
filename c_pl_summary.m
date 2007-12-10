@@ -44,7 +44,12 @@ function c_pl_summary(varargin)
 %
 % $Revision$  $Date$
 
-% Copyright 2004, 2005 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 do_proc = 1;
 sp = '.';
