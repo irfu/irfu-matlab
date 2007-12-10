@@ -28,7 +28,8 @@ h = 1:nplots;
 h(1) = irf_subplot(nplots,1,-1);
 irf_plot(Ps);
 ylabel('Sc pot [-V]')
-title(['Cluster ' num2str(cl_id)])
+st_iso = epoch2iso(diE(end,1));
+title(['Cluster ' num2str(cl_id) ', ' st_iso(1:10)])
 h(2) = irf_subplot(nplots,1,-2);
 irf_plot(diE(:,[1 2]));
 set(gca,'YLim',[-9 9])
@@ -39,7 +40,7 @@ set(gca,'YLim',[-9 9])
 ylabel('Ey [mV/m]')
 h(4) = irf_subplot(nplots,1,-4);
 
-TAV = 60;
+TAV = 60; % 1 minute window
 
 ndata = ceil((diE(end,1) - diE(1,1))/TAV);
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
@@ -67,8 +68,8 @@ irf_plot([diEr(:,1) bele]);
 ylabel('\theta [deg]')
 
 ANG_LIM = 15;
-EPAR_LIM = 2;
-EZ_LIM = 2;
+EPAR_LIM = 1; % 1 mV/m
+EZ_LIM = 2;   % 2 mV/m
 EPAR_EPERP_RATIO_LIM = .2;
 EZ_EPERP_RATIO_LIM = 2;
 
@@ -78,8 +79,8 @@ Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
 Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
-wind = ind(abs(Epar(ind)) > EPAR_LIM |...
-	abs(Epar(ind))./Eperp(ind) > EPAR_EPERP_RATIO_LIM);
+wind = ind(abs(Epar(ind)) > EPAR_LIM &...
+	abs(Epar(ind)./Eperp(ind)) > EPAR_EPERP_RATIO_LIM);
 
 if ~isempty(wind)
 	axes(h(2)), hold on
