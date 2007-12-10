@@ -557,7 +557,7 @@ elseif regexp(vs,'^Dadc[1-4]p(12|32|34)$')==1
 	v.cl_id = vs(5);
 	v.sen = vvs(7:8);
 	v.inst = 'EFW';
-	v.com = 'ADC offset';
+	v.com = 'raw signal DC offset';
 	v.file = 'mEDSI';
 	v.quant = 'dies';
 	v.cs = {'na'};
@@ -565,11 +565,11 @@ elseif regexp(vs,'^Dadc[1-4]p(12|32|34)$')==1
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
 	v.size = 1;
-	v.name = {['Dadc-p' v.sen]};
+	v.name = {'dER_Mag'};
 	v.labels = v.name;
-	v.field_name = {'ADC offset'};
-	v.ent = {'Instrument'};
-	v.prop = {'ADC_Offset'};
+	v.field_name = {'raw signal DC offset'};
+	v.ent = {'Electric_Field'};
+	v.prop = {'Magnitude'};
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;	
@@ -582,7 +582,10 @@ elseif regexp(vs,'^D[1-4]p12p34$')==1
 	v.inst = 'EFW';
 	v.com = 'Delta offset';
 	v.file = 'mEDSI';
+	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1'};
 	v.quant = 'dies';
+	v.size = 2;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % DSI offsets
