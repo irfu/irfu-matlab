@@ -15,7 +15,12 @@ function status = caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 status = 0;
 
@@ -69,8 +74,10 @@ else
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
-	case 'EF'
-		vs = irf_ssub('diEF?p1234',cl_id);
+	case 'DER'
+		sfit_probe = caa_sfit_probe(cl_id);
+		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
+		irf_log('proc',sprintf('using p%d',sfit_probe))
 		v_size = 1;
 	otherwise
 		error('unknown variable')
