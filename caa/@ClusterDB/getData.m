@@ -65,8 +65,12 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
-% Parts of the code are (c) Andris Vaivads
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(5,15,nargin))
 if nargin > 5, property_argin = varargin; end
