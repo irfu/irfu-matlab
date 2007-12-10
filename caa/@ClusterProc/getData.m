@@ -624,10 +624,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			% Correct ADC offset
 			if ~isempty(dadc)
 				irf_log('calb','using saved ADC offsets')
-				tmp_adc = irf_resamp(dadc,tt);
+				tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
 				tt(:,2) = tt(:,2) - tmp_adc(:,2);
 				clear tmp_adc
-            		else irf_log('calb','saved ADC offset empty')
+			else irf_log('calb','saved ADC offset empty')
 			end
 			n_sig = n_sig + 1;
 			c_eval('e?=tt;',p)
@@ -656,7 +656,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
-					tmp_adc = irf_resamp(dadc,tt);
+					tmp_adc = irf_resamp(dadc,tt,'fsample',fsamp);
 					tt(:,2) = tt(:,2) - tmp_adc(:,2);
 					clear tmp_adc
 				else
@@ -880,7 +880,7 @@ elseif strcmp(quantity,'idie') || strcmp(quantity,'idies')
 
 		enew = diE;
 		% We take only X and Y components. Z must remain zero.
-		etmp = irf_resamp(evxb(:,1:3),enew(:,1));
+		etmp = irf_resamp(evxb(:,1:3),enew(:,1),'fsample',c_efw_fsample(enew));
 		enew(:,2:3) = diE(:,2:3) - etmp(:,2:3);
 		clear etmp
 		
@@ -1834,7 +1834,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	end
 	
 	% Resample the data
-	Br = irf_resamp(B_tmp,E_tmp);
+	Br = irf_resamp(B_tmp,E_tmp,'fsample',c_efw_fsample(E_tmp));
 	c_eval([ var_b '=Br;' var_b '_info=Binfo;save_list=[save_list ''' var_b ' '' '' ' var_b '_info '' ];'],cl_id)
 	
 	% DSI->GSE
@@ -2008,7 +2008,7 @@ elseif strcmp(quantity,'ps')
 	n = floor((P_tmp(end,1)-t0)/4) + 1;
 	tvec = t0 + ( (1:n) -1)*4;
 	
-	P_tmp = irf_resamp(P_tmp,tvec'); clear tvec
+	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
 	[ok,P_info] = c_load('P?_info',cl_id);
