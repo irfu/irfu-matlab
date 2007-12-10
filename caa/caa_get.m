@@ -5,7 +5,12 @@ function data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 DP = '/data/caa/l1';
 data = [];
@@ -66,7 +71,7 @@ end
 if isempty(mode_list), cd(old_pwd), return, end
 
 % Concatenate intervals
-[tt,ii] = sort([mode_list.st]);
+[starts,ii] = sort([mode_list.st]);
 for j = ii;
 	cd(mode_list(j).dir);
 	[ok, tt] = c_load(var_name,cl_id);
@@ -74,6 +79,11 @@ for j = ii;
 	% Remove NaN times
 	% TODO: times must never be NaN.
 	tt(isnan(tt(:,1)),:) = []; if isempty(tt), continue, end
+	
+	% Append time to variables which does not have it
+	% 946684800 = toepoch([2000 01 01 00 00 00])
+	if tt(1,1) < 946684800, tt = [starts(j) tt]; end
+	
 	if isempty(data), data = tt;
     else data = caa_append_data(data,tt);
 	end
