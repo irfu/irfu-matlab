@@ -65,8 +65,12 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
-% Parts of the code are (c) Andris Vaivads
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(3,15,nargin))
 if nargin > 3, have_options = 1; args = varargin;
@@ -1268,7 +1272,8 @@ elseif strcmp(quantity,'probesa')
 	
 	% Saturation level nA
 	SA_LEVEL = 66;
-	SA_LEV_POS = .5; % +0.5 V
+	SA_LEV_POS = 0; % 0.0 V
+	
 	% N_CONST sets the minimum number of points of constant potential
 	% which we consider bad
 	N_CONST = 4;
@@ -1906,39 +1911,39 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         end
         clear res signal problems probe
         if ~n_ok, data = []; cd(old_pwd), return, end
+	end
+	
+	if flag_rmwhip
+		problems = 'whip';
+		for probe=1:4
+			c_eval('signal=p?;',probe)
+			if ~isempty(signal)
+				remove_problems
+				c_eval('p?=res;',probe)
+			end
+		end
+	end
 
-        if flag_rmwhip
-            problems = 'whip';
-            for probe=1:4
-            c_eval('signal=p?;',probe)
-            if ~isempty(signal)
-                remove_problems
-                c_eval('p?=res;',probe)
-            end
-        end
-        end
-
-        % Check for problem with one probe pair
-        MAX_CUT = .1; 
-        if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end
-        if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end
-        if ~isempty(p1) && ~isempty(p2)
-            if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
-                if l1>l2, p2=[]; irf_log('proc','throwing away p2')
-                else p1=[]; irf_log('proc','throwing away p1')
-                end
-            end
-        end
-        if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end
-        if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end
-        if ~isempty(p3) && ~isempty(p4)
-            if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
-                if l3>l4, p4=[]; irf_log('proc','throwing away p4') 
-                else p3=[]; irf_log('proc','throwing away p3')
-                end
-            end
-        end
-    end
+	% Check for problem with one probe pair
+	MAX_CUT = .1;
+	if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end
+	if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end
+	if ~isempty(p1) && ~isempty(p2)
+		if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
+			if l1>l2, p2=[]; irf_log('proc','throwing away p2')
+			else p1=[]; irf_log('proc','throwing away p1')
+			end
+		end
+	end
+	if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end
+	if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end
+	if ~isempty(p3) && ~isempty(p4)
+		if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
+			if l3>l4, p4=[]; irf_log('proc','throwing away p4')
+			else p3=[]; irf_log('proc','throwing away p3')
+			end
+		end
+	end
 	
 	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
             all(size(p1)==size(p4) )
