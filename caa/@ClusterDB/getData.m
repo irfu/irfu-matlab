@@ -73,7 +73,6 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 % ----------------------------------------------------------------------------
 
 error(nargchk(5,15,nargin))
-if nargin > 5, property_argin = varargin; end
 
 out_data = '';
 
@@ -97,7 +96,7 @@ old_pwd = pwd;
 if flag_save,
     %Create the storage directory if it does not exist
     if ~exist(cdb.sp, 'dir')
-        [SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdb.sp);
+        [SUCCESS,MESSAGE] = mkdir(cdb.sp);
         if SUCCESS, irf_log('save',['Created storage directory ' cdb.sp])
         else error(MESSAGE)
         end
@@ -134,7 +133,7 @@ if strcmp(quantity,'e') || strcmp(quantity,'eburst') ||...
 		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops,errlist);
 		if isempty(start_time_nsops)
 			irf_log('dsrc',sprintf('bad NS_OPS interval for C%d - %s',cl_id,quantity))
-			data = []; 
+			out_data = []; 
 			cd(old_pwd), return
 		end
     else start_time_nsops = start_time; dt_nsops = dt;
@@ -150,7 +149,7 @@ if strcmp(quantity,'dsc')
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
 	if isempty(dsc)
 		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
-		data = []; cd(old_pwd), return
+		out_data = []; cd(old_pwd), return
 	end
 	
 	% DSC fields we want to save
@@ -282,7 +281,7 @@ elseif strcmp(quantity,'efwt')
 	save_file = './mEFWR.mat';
 	
 	% Read EFW clock to check for time since last reset
-	t = []; data = []; efwtime = [];
+	t = []; out_data = []; efwtime = [];
 	for st_tmp = start_time-16:32:start_time+dt+16
 		[t_tmp,data] = caa_is_get(cdb.db, st_tmp, 32, cl_id, 'efw', 'DSC');
 		if ~isempty(data)
