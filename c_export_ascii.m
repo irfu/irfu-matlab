@@ -23,7 +23,12 @@ function c_export_ascii(var,varargin)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if nargin<1, help c_export_ascii; return, end
 if nargin>2, have_options = 1; args = varargin;
@@ -469,10 +474,23 @@ elseif regexp(vs,'^VC(h|p)[1-4]')
 	com = 'This data is CSDS PP';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% R
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^R?[1-4]$')==1
+	
+	cl_id = vs(end);
+	inst = 'EPHEMERIS';
+	sig = 'R';
+	sen = '';
+	frame = 'GSE';
+	var_labels = {'Rx','Ry','Rz'};
+	var_units =  {'km','km','km'};
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dump without headers
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(vs,'dump')
-	if isempty(file_name), filename = inputname(1); end
+	if isempty(file_name), file_name = inputname(1); end
 	fid = fopen([file_name '.dat'],'w');
 	for j=1:size(var,1)
 		if var(j,1)>5e8 % assume first column time in isdat epoch
