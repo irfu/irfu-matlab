@@ -552,10 +552,15 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
 				burst_f_name = [cdb.dp '/burst/' burst_f_name];
 				if exist(burst_f_name,'file')
-					err_t = t(1) - c_efw_burst_chkt(cdb.db,burst_f_name);
-					irf_log('dsrc',['burst start time was corrected by ' ...
-						num2str(err_t) ' sec'])
-					t = t - err_t;
+					start_satt = c_efw_burst_chkt(cdb.db,burst_f_name);
+					if isempty(start_satt)
+						irf_log('dsrc','burst start time was not corrected')
+					else
+						err_t = t(1) - start_satt;
+						irf_log('dsrc',['burst start time was corrected by ' ...
+							num2str(err_t) ' sec'])
+						t = t - err_t;
+					end
 				else
 					irf_log('dsrc','burst start time was not corrected')
 				end
