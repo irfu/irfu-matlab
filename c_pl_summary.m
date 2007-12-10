@@ -49,37 +49,36 @@ function c_pl_summary(varargin)
 do_proc = 1;
 sp = '.';
 sc_list = 1:4;
-splot_options = '';
 ang_limit = 15;
 	
 if nargin>0, have_options = 1; args = varargin;
-else, have_options = 0; args = '';
+else have_options = 0; args = '';
 end
 
 while have_options
 	l = 2;
 	if length(args)>0
 		switch(args{1})
-		case 'sp'
-			if ischar(args{2}), sp = args{2};
-			else, irf_log('fcal','wrongArgType : sp must be string')
-			end
-		case 'sc_list'
-			if isnumeric(args{2}), sc_list = args{2};
-			else, irf_log('fcal','wrongArgType : sc_list must be numeric')
-			end
-		case 'ang_limit'
-			if isnumeric(args{2}), ang_limit = args{2};
-			else, irf_log('fcal','wrongArgType : ang_limit must be numeric')
-			end
-		case 'noproc'
-			do_proc = 0; l=1;
-		otherwise
-			break
-    	end
+			case 'sp'
+				if ischar(args{2}), sp = args{2};
+				else irf_log('fcal','wrongArgType : sp must be string')
+				end
+			case 'sc_list'
+				if isnumeric(args{2}), sc_list = args{2};
+				else irf_log('fcal','wrongArgType : sc_list must be numeric')
+				end
+			case 'ang_limit'
+				if isnumeric(args{2}), ang_limit = args{2};
+				else irf_log('fcal','wrongArgType : ang_limit must be numeric')
+				end
+			case 'noproc'
+				do_proc = 0; l=1;
+			otherwise
+				break
+		end
 		if length(args) >= l
 			args = args(l+1:end);
-			if length(args) == 0, break, end
+			if isempty(args), break, end
 		else break
 		end
 	end
@@ -87,7 +86,6 @@ end
 
 cp=ClusterProc(sp);
 
-vars = {'dies','die'};
 for cl_id=sc_list
 	if do_proc
 		getData(cp,cl_id,'edbs','ang_blank','ang_limit',ang_limit);
