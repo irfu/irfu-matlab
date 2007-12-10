@@ -113,7 +113,7 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 					cur = cur + 1;
 				end
 				if not_found
-					sfy = fsy1;
+					sfy = sfy1;
 					irf_log('proc',	sprintf(...
 						'Cannot guess sampling frequency. Tried %d times',MAXTRY));
 				end
