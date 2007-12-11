@@ -12,6 +12,16 @@ function c_efw_lobewake(cl_id)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+% Control parameters
+TAV = 60; % 1 minute window
+ANG_LIM = 15;
+EPAR_LIM = 1; % 1 mV/m
+EZ_LIM = 2;   % 2 mV/m
+EPAR_EPERP_RATIO_LIM = .2;
+EZ_EPERP_RATIO_LIM = 3;
+SCPOT_LIM = -6; % Limit for spacecraft potential
+
+% Load data
 pp = caa_sfit_probe(cl_id);
 [ok,diE] = c_load(sprintf('diEs%dp%d',cl_id,pp));
 if ~ok, error('cannot load E'), end
@@ -22,6 +32,15 @@ diE = caa_corof_dsi(diE,Ddsi,Damp);
 if ~ok, error('cannot load B'), end
 [ok,Ps] = c_load('Ps?',cl_id);
 [ok,diEDI] = c_load('diEDI?',cl_id);
+
+ndata = ceil((diE(end,1) - diE(1,1))/TAV);
+t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
+
+diEr = irf_resamp(diE,t,'fsample',1/TAV);
+Psr = irf_resamp(Ps,t,'fsample',1/TAV);
+diBr = irf_resamp(diB,t,'fsample',1/TAV);
+bele = (180/pi)*asin(...
+	diBr(:,4)./sqrt(diBr(:,2).^2 + diBr(:,3).^2 + diBr(:,4).^2) );
 
 nplots = 6;
 h = 1:nplots;
@@ -39,13 +58,6 @@ irf_plot(diE(:,[1 3]));
 set(gca,'YLim',[-9 9])
 ylabel('Ey [mV/m]')
 h(4) = irf_subplot(nplots,1,-4);
-
-TAV = 60; % 1 minute window
-
-ndata = ceil((diE(end,1) - diE(1,1))/TAV);
-t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
-
-diEr = irf_resamp(diE,t,'fsample',1/TAV);
 if ok
 	diEDI = diEDI(~isnan(diEDI(:,2)),:);
 	diEDIr = irf_resamp(diEDI,t,'fsample',1/TAV,'thresh',1.3);
@@ -59,22 +71,12 @@ if ok
 	irf_plot(diEDIr)
 	ylabel('E diff [mV/m]')
 end
-
-diBr = irf_resamp(diB,t,'fsample',1/TAV);
-bele = (180/pi)*asin(...
-	diBr(:,4)./sqrt(diBr(:,2).^2 + diBr(:,3).^2 + diBr(:,4).^2) );
 h(5) = irf_subplot(nplots,1,-5);
 irf_plot([diEr(:,1) bele]);
 ylabel('\theta [deg]')
 
-ANG_LIM = 15;
-EPAR_LIM = 1; % 1 mV/m
-EZ_LIM = 2;   % 2 mV/m
-EPAR_EPERP_RATIO_LIM = .2;
-EZ_EPERP_RATIO_LIM = 2;
-
 % Look for strong apparent Epar if B field is within 15 deg of spin plane:
-ind = find( abs(bele) < ANG_LIM );
+ind = find( abs(bele) < ANG_LIM & Psr(:,2) < SCPOT_LIM);
 Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
 Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
@@ -90,7 +92,7 @@ if ~isempty(wind)
 end
 
 % Look for strong apparent Ez if B field is above 15 deg of spin plane:
-ind = find( abs(bele) >= ANG_LIM );
+ind = find( abs(bele) >= ANG_LIM & Psr(:,2) < SCPOT_LIM);
 Ez = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
 ind = ind(abs(Ez(ind)) > EZ_LIM &...
 	abs(Ez(ind))./Eperp(ind) > EZ_EPERP_RATIO_LIM);
@@ -103,7 +105,6 @@ if ~isempty(ind)
 end
 
 wind = sort([wind; ind]);
-
 for j=wind'
 	%diE( diE(:,1)>=t(j)-TAV/2 & diE(:,1)<=t(j)+TAV/2, 2:end) = NaN;
 	diE( diE(:,1)>=t(j)-TAV & diE(:,1)<=t(j)+TAV, 2:end) = NaN;
