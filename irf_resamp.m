@@ -4,11 +4,13 @@ function out = irf_resamp(x,y,varargin)
 % if sampling of X is more than two times higher than Y, we average X,
 % otherwise we interpolate X.
 %
-% out = irf_resamp(X,Y,[METHOD],['fsample',FSAMPLE],['thresh',THRESH])
+% out = irf_resamp(X,Y,[METHOD],['fsample',FSAMPLE],['window',WIN],
+%                      ['thresh',THRESH])
 % method - method of interpolation 'spline', 'linear' etc. (default 'linear')
 %          if method is given the interpolate independant of sampling
-% fsample - sampling frequency of the Y signal
 % thresh - points above STD*THRESH are disregarded for averaging
+% fsample - sampling frequency of the Y signal, 1/window
+% window - length of the averaging window, 1/fsample
 %
 % See also INTERP1
 %
@@ -49,14 +51,29 @@ while have_options
 				end
 			else irf_log('fcal,','wrongArgType : METHOD value is missing')
 			end
-		case 'fsample'
+		case {'fs','fsample'}
 			if length(args)>1
+				if ~isempty(sfy)
+					error('FSAMPLE/WINDOW already specified')
+				end
 				if isnumeric(args{2})
 					sfy = args{2};
 					l = 2;
 				else irf_log('fcal,','wrongArgType : FSAMPLE must be numeric')
 				end
 			else irf_log('fcal,','wrongArgType : FSAMPLE value is missing')
+			end
+		case {'win','window'}
+			if length(args)>1
+				if ~isempty(sfy)
+					error('FSAMPLE/WINDOW already specified')
+				end
+				if isnumeric(args{2})
+					sfy = 1/args{2};
+					l = 2;
+				else irf_log('fcal,','wrongArgType : WINDOW must be numeric')
+				end
+			else irf_log('fcal,','wrongArgType : WINDOW value is missing')
 			end
 		case {'thresh','threshold'}
 			if length(args)>1
