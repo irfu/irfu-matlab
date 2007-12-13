@@ -38,6 +38,7 @@ void mexFunction(
     mwSize ndata, ncomp, ntref, i, comp, start = 0, stop = 0;
     double *data, *tref, *res, dt2, thresh;
 	double NaN = mxGetNaN();
+	mwSize *starts;
     
     
     /* Check for proper number of input and output arguments */    
@@ -88,6 +89,9 @@ void mexFunction(
     for (i=0; i < ntref; i++)
 		res[i] = tref[i];
 	
+	if ( (starts = mxMalloc(ntref*sizeof(mwSize))) == NULL )
+		mexErrMsgTxt("mxMalloc() failed");
+	
 	/* check is there is a total interval mismatch */
 	if ( (data[0] > res[ntref-1] + dt2) || (data[ndata-1] <= res[0] - dt2) )
 	{
@@ -97,6 +101,7 @@ void mexFunction(
 		return;
 	}
 	
+	/* first find starts for all intervals */
 	for (i=0; i < ntref; i++)
 	{
 		/* check if we have been through all the data 
@@ -110,6 +115,14 @@ void mexFunction(
 		 */
 		
 		if ( (start==ndata) || (data[start] > res[i] + dt2) )
+			starts[i] = -1; /* no data */
+		else
+			starts[i] = start;
+	}
+	
+	for (i=0; i < ntref; i++)
+	{	
+		if ( starts[i]<0 )
 		{
 			for (comp=1; comp<ncomp; comp++) 
 				res[i+comp*ntref] = NaN;
@@ -121,7 +134,7 @@ void mexFunction(
 		
 		for (comp=1; comp<ncomp; comp++)
 		{
-			mwSize cur = start, nav = 0;
+			mwSize cur = starts[i], nav = 0;
 			double mean = 0.0;
 			while ( (data[cur] <= res[i] + dt2) && (cur < ndata) )
 			{
@@ -152,10 +165,10 @@ void mexFunction(
 			if ( nav && thresh)
 			{
 				double std = 0;
-				for ( cur = start; cur < stop; cur++ )
+				for ( cur = starts[i]; cur < stop; cur++ )
 					std += (data[cur+comp*ndata] - mean)*
 					(data[cur+comp*ndata] - mean);
-				std = sqrt(std / (double)(stop-start-1));
+				std = sqrt(std / (double)(stop-starts[i]-1));
 				
 				/*
 				printf("interval(%d) std : %f\n",i,std);
@@ -163,7 +176,7 @@ void mexFunction(
 				
 				/* compute new average for pints < thresh*sdev */
 				nav = 0;
-				for ( cur = start; cur < stop; cur++ )
+				for ( cur = starts[i]; cur < stop; cur++ )
 					if ( fabs( data[cur+comp*ndata] - mean ) <= thresh*std )
 					{
 						res[i+comp*ntref] += data[cur+comp*ndata];
@@ -172,7 +185,7 @@ void mexFunction(
 				
 				/*
 				printf("interval(%d) : disregarding %d 0f %d points\n",i,				 
-					stop-start-nav,stop-start);
+					stop-starts[i]-nav,stop-start);
 				 */
 				if ( nav )
 					res[i+comp*ntref] = res[i+comp*ntref]/(double)nav;
@@ -181,8 +194,6 @@ void mexFunction(
 			}
 			else
 				res[i+comp*ntref] = mean;
-		}
-		start = stop;
-		
+		}		
 	}
 }
