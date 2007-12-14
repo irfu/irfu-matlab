@@ -15,6 +15,12 @@ function caa_comp_efw_edi_corr(cl_id)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+
+% Control parameters
+DE_LIM = .5;      % Limit on deviation from corrotation in mV/m
+SCPOT_LIM = -1.5; % Limit for spacecraft potential
+TAV = 60;         % Step in sec, average 10xTAV
+
 getData(ClusterProc,cl_id,'edbs')
 getData(ClusterProc,cl_id,'iedbs')
 
@@ -70,23 +76,25 @@ title(h(1),['Cluster ' num2str(cl_id), 'DSI SC-frame'])
 irf_zoom([diBr(1,1) diBr(end,1)],'x',h)
 orient tall
 
-DE_LIM = .5; % mV/m
-TAV = 60; % step in sec, average 10xTAV
 ndata = ceil((diEs(end,1) - diEs(1,1))/TAV);
 t = diEs(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
 diEr = irf_resamp(diEs,t,'fsample',.1/TAV);
 diECr = irf_resamp(diECorr,t,'fsample',.1/TAV);
+Pr = irf_resamp(P(~isnan(P(:,2)),:),t,'fsample',1/TAV);
 
-idx = find( sqrt( (diEr(:,2) - diECr(:,2)).^2 +...
-	(diEr(:,3) - diECr(:,3)).^2 ) > DE_LIM );
+dE = sqrt( (diEr(:,2) - diECr(:,2)).^2 + (diEr(:,3) - diECr(:,3)).^2 );
+idx = find( Pr(:,2) > SCPOT_LIM & dE > DE_LIM );
+clear diEr diECr Pr
+
 if ~isempty(idx)
+	irf_log('proc',sprintf('max diff from corrotation is %.2f mV/m',max(dE)))
 	for j=idx'
 		diEs( diEs(:,1)>=t(j)-TAV/2 & diEs(:,1)<=t(j)+TAV/2, 2:end) = NaN;
 	end
 	for ax=1:2
 		axes(h(ax)); hold on
-		irf_plot(diEs(:,[1 (ax+1)]),'k');
+		irf_plot(diEs(:,[1 (ax+1)]),'g.');
 		hold off
 	end
 	set(gca,'XTickLabel',[])
