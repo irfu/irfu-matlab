@@ -13,13 +13,16 @@ function c_efw_lobewake(cl_id)
 % ----------------------------------------------------------------------------
 
 % Control parameters
-TAV = 60; % 1 minute window
+TAV = 60; % window in sec
 ANG_LIM = 15;
-EPAR_LIM = 1; % 1 mV/m
-EZ_LIM = 2;   % 2 mV/m
+EPAR_LIM = 1;          % limit on E|| in mV/m
+EPERP_LIM = 1.5;       % limit on full Eperp (E*B=0) in mV/m
+EDEV_LIM = .8;         % limit on s-dev of E
+EZ_LIM = 1.0;          % limit on Ez in mV/m
 EPAR_EPERP_RATIO_LIM = .2;
-EZ_EPERP_RATIO_LIM = 3;
-SCPOT_LIM = -6; % Limit for spacecraft potential
+EPERP_RATIO_LIM = 1.8; % Ratio between full Eperp (E*B=0) and 
+                       % E along the projecttion of B to spin plane
+SCPOT_LIM = -5; % Limit for spacecraft potential
 
 % Load data
 pp = caa_sfit_probe(cl_id);
@@ -81,7 +84,7 @@ Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
 Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
-wind = ind(abs(Epar(ind)) > EPAR_LIM &...
+wind = ind(abs(Epar(ind)) > EPAR_LIM & abs(Eperp(ind)) > EPERP_LIM &...
 	abs(Epar(ind)./Eperp(ind)) > EPAR_EPERP_RATIO_LIM);
 
 if ~isempty(wind)
@@ -93,9 +96,10 @@ end
 
 % Look for strong apparent Ez if B field is above 15 deg of spin plane:
 ind = find( abs(bele) >= ANG_LIM & Psr(:,2) < SCPOT_LIM);
-Ez = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
-ind = ind(abs(Ez(ind)) > EZ_LIM &...
-	abs(Ez(ind))./Eperp(ind) > EZ_EPERP_RATIO_LIM);
+diEr(:,4) = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
+diEr = irf_abs(diEr); % diEr(:,6) now contains abs(E)
+ind = ind(abs(diEr(ind,4)) > EZ_LIM & diEr(ind,6) > EPERP_LIM &...
+	diEr(ind,6)./Eperp(ind) > EPERP_RATIO_LIM & diEr(ind,5) < EDEV_LIM);
 
 if ~isempty(ind)
 	axes(h(2)), hold on
