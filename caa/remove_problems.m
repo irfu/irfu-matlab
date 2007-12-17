@@ -1,26 +1,33 @@
-%script remove_problems
+% script REMOVE_PROBLEMS
+%
+% Remove problems from data
 %
 % Input: signal,probe,cl_id,problems
 % Output: res
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if ~exist('CAA_MODE','var'), CAA_MODE = c_ctl(0,'caa_mode'); end
 
 res = signal;
 if probe>10
 	switch probe
-	case 12
-		p_list = [1,2];
-	case 32
-		p_list = [3,2];
-	case 34
-		p_list = [3,4];
-	otherwise
-		error('Unknown probe')
-    end
+		case 12
+			p_list = [1,2];
+		case 32
+			p_list = [3,2];
+		case 34
+			p_list = [3,4];
+		otherwise
+			error('Unknown probe')
+	end
 elseif probe>0 && probe <=4, p_list = probe;
 else
 	error('Unknown probe')
@@ -30,7 +37,7 @@ param = tokenize(problems,'|');
 for i=1:length(param)
 
 	switch lower(param{i})
-		case 'reset' 
+		case 'reset'
 			% Remove bad bias around EFW reset
 			[ok,bbias] = c_load('BADBIASRESET?',cl_id);
 			if ok
@@ -43,8 +50,8 @@ for i=1:length(param)
 				irf_log('load',irf_ssub('Cannot load BADBIASRESET?',cl_id))
 			end
 			clear ok bbias
-			
-		case 'bbias' 
+
+		case 'bbias'
 			% Remove bad bias from bias current indication
 			for kk = p_list
 				[ok,bbias] = c_load(irf_ssub('BADBIAS?p!',cl_id,kk));
@@ -59,8 +66,8 @@ for i=1:length(param)
 				end
 				clear ok bbias
 			end
-			
-		case 'probesa' 
+
+		case 'probesa'
 			% Remove probe saturation
 			for kk = p_list
 				[ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,kk));
@@ -75,8 +82,8 @@ for i=1:length(param)
 				end
 				clear ok sa
 			end
-			
-		case 'probeld' 
+
+		case 'probeld'
 			% Remove probe saturation due to low density
 			for kk = p_list
 				[ok, sa] = c_load(irf_ssub('PROBELD?p!',cl_id,kk));
@@ -92,8 +99,8 @@ for i=1:length(param)
 				end
 				clear ok sa
 			end
-			
-		case 'whip' 
+
+		case 'whip'
 			% Remove whisper pulses
 			[ok,whip] = c_load('WHIP?',cl_id);
 			if ok
@@ -106,8 +113,8 @@ for i=1:length(param)
 				irf_log('load',	irf_ssub('Cannot load WHIP?',cl_id))
 			end
 			clear ok whip
-			
-		case 'sweep' 
+
+		case 'sweep'
 			% Remove sweeps
 			[ok,sweep] = c_load('SWEEP?',cl_id);
 			if ok
@@ -118,11 +125,11 @@ for i=1:length(param)
 				end
 			else
 				if CAA_MODE, error(irf_ssub('Cannot load SWEEP?',cl_id)), end
-				irf_log('load', irf_ssub(['Cannot load SWEEP?'],cl_id))
+				irf_log('load', irf_ssub('Cannot load SWEEP?',cl_id))
 			end
 			clear ok sweep
-			
-		case 'bdump' 
+
+		case 'bdump'
 			% Remove burst dumps
 			[ok,bdump] = c_load('BDUMP?',cl_id);
 			if ok
@@ -133,11 +140,11 @@ for i=1:length(param)
 				end
 			else
 				if CAA_MODE, error(irf_ssub('Cannot load BDUMP?',cl_id)), end
-				irf_log('load', irf_ssub(['Cannot load BDUMP?'],cl_id))
+				irf_log('load', irf_ssub('Cannot load BDUMP?',cl_id))
 			end
 			clear ok bdump
-			
+
 		otherwise
 			error('Unknown parameter')
-    end
+	end
 end
