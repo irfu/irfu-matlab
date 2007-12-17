@@ -17,9 +17,10 @@ function caa_comp_efw_edi_corr(cl_id)
 
 
 % Control parameters
-DE_LIM = .5;      % Limit on deviation from corrotation in mV/m
+DE_LIM = 1;       % Limit on deviation from corrotation in mV/m
 SCPOT_LIM = -1.5; % Limit for spacecraft potential
-TAV = 60;         % Step in sec, average 10xTAV
+TAV = 60;         % Step in sec
+WIN = 10;         % Averaging window WIN*TAV
 
 getData(ClusterProc,cl_id,'edbs')
 getData(ClusterProc,cl_id,'iedbs')
@@ -90,7 +91,8 @@ clear diEr diECr Pr
 if ~isempty(idx)
 	irf_log('proc',sprintf('max diff from corrotation is %.2f mV/m',max(dE)))
 	for j=idx'
-		diEs( diEs(:,1)>=t(j)-TAV/2 & diEs(:,1)<=t(j)+TAV/2, 2:end) = NaN;
+		diEs( diEs(:,1)>=t(j)-WIN*TAV/2 & diEs(:,1)<=t(j)+WIN*TAV/2,...
+			2:end ) = NaN;
 	end
 	for ax=1:2
 		axes(h(ax)); hold on
