@@ -1,4 +1,4 @@
-function [res,v] = c_load(vs,cl_id,mode_s)
+function [res,v,msg] = c_load(vs,cl_id,mode_s)
 %C_LOAD load cluster data
 %
 % C_LOAD(V_S) will attempth to load a varible given by string VS from a MAT
@@ -6,9 +6,10 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 %
 % C_LOAD(V_S,SC_LIST) will replace '?' in VS by SC_LIST and perform load.
 %
-% [RES,VAR] = C_LOAD(V_S,[SC_LIST]) in case of success returns RES=1 and
+% [RES,VAR,MSG] = C_LOAD(V_S,[SC_LIST]) in case of success returns RES=1 and
 %	loaded variable in VAR. Otherwise RES=0 and VAR=[]. If SC_LIST has more
-%	than one entry, RES will be an array and VAR a cell array
+%	than one entry, RES will be an array and VAR a cell array. 
+%	MSG contains an error message
 %
 % RES = C_LOAD(V_S[,SC_LIST,MODE_S]) returns variable in RES if MODE_S 
 %	is set to 'var';
@@ -41,7 +42,12 @@ function [res,v] = c_load(vs,cl_id,mode_s)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev (yuri@irfu.se)
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(1,3,nargin))
 if nargout==2 && nargin==3
@@ -104,11 +110,12 @@ for cli=cl_id
 	% Return the result
 	if exist(vs_tmp,'var')
 		switch nargout
-		case 2
+		case {2,3}
 			res(kk) = 1;
 			if length(cl_id)>1, v(kk) = {eval(vs_tmp)};
             else v = eval(vs_tmp);
 			end
+			msg = ['sucessfully loaded ' vs_tmp];
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {eval(vs_tmp)};
@@ -121,11 +128,16 @@ for cli=cl_id
 		end
 	else
 		switch nargout
-		case 2
+		case {2,3}
 			res(kk) = 0;
 			if length(cl_id)>1, v(kk) = {[]};
             else v = [];
 			end
+			if d.lev, OBJ = 'ClusterProc';
+			else OBJ = 'ClusterDB';
+			end
+			msg = ['No ' vs_tmp ' in ' d.file '. Use getData(' OBJ...
+				',...,cl_id,''' d.quant ''')'];
 		case 1
 			if ret_var
 				if length(cl_id)>1, res(kk) = {ERR_RET};
