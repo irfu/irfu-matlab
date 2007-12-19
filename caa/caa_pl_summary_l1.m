@@ -16,7 +16,12 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev (yuri@irfu.se)
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
@@ -334,27 +339,42 @@ if savePDF
 	irf_log('save',['saving ' fn '.pdf'])
 	irf_log('save',['saving ' fne '.pdf'])
 	print( 75, '-dpdf', fn), print( 76, '-dpdf', fne)
-	irf_log('save',['joining to ' fone '.pdf'])
-	[s,w] = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
-	if s~=0, irf_log('save','problem with pdfjoin'), end
+	if exist('/usr/local/bin/pdfjoin','file')
+		irf_log('save',['joining to ' fone '.pdf'])
+		s = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
+		if s~=0, irf_log('save','problem with pdfjoin'), end
+	else
+		irf_log('proc',...
+			'cannot join PDFs: /usr/local/bin/pdfjoin does not exist')
+	end
 end
 if savePNG
-	irf_log('save',['saving ' fn '.png'])
-	irf_log('save',['saving ' fne '.png'])
-	print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
-	[s,w] = unix(['/usr/local/bin/eps2png -res 150 ' fn '.eps; rm -f ' fn '.eps']);
-	if s~=0, irf_log('save','problem with eps2png'), end
-	[s,w] = unix(['/usr/local/bin/eps2png -res 150 ' fne '.eps; rm -f ' fne '.eps']);
-	if s~=0, irf_log('save','problem with eps2png'), end
+	if exist('/usr/local/bin/eps2png','file')
+		irf_log('save',['saving ' fn '.png'])
+		irf_log('save',['saving ' fne '.png'])
+		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
+		s = unix(['/usr/local/bin/eps2png -res 150 ' fn '.eps; rm -f ' fn '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+		s = unix(['/usr/local/bin/eps2png -res 150 ' fne '.eps; rm -f ' fne '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+	else
+		irf_log('proc',...
+			'cannot save JPG: /usr/local/bin/eps2png does not exist')
+	end
 end
 if saveJPG
-	irf_log('save',['saving ' fn '.jpg'])
-	irf_log('save',['saving ' fne '.jpg'])
-	print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
-	[s,w] = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fn '.eps; rm -f ' fn '.eps']);
-	if s~=0, irf_log('save','problem with eps2png'), end
-	[s,w] = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fne '.eps; rm -f ' fne '.eps']);
-	if s~=0, irf_log('save','problem with eps2png'), end
+	if exist('/usr/local/bin/eps2png','file')
+		irf_log('save',['saving ' fn '.jpg'])
+		irf_log('save',['saving ' fne '.jpg'])
+		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
+		s = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fn '.eps; rm -f ' fn '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+		s = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fne '.eps; rm -f ' fne '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+	else
+		irf_log('proc',...
+			'cannot save JPG: /usr/local/bin/eps2png does not exist')
+	end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
