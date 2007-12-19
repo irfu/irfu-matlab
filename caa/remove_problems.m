@@ -14,8 +14,6 @@
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if ~exist('CAA_MODE','var'), CAA_MODE = c_ctl(0,'caa_mode'); end
-
 res = signal;
 if probe>10
 	switch probe
@@ -39,30 +37,26 @@ for i=1:length(param)
 	switch lower(param{i})
 		case 'reset'
 			% Remove bad bias around EFW reset
-			[ok,bbias] = c_load('BADBIASRESET?',cl_id);
+			[ok,bbias,msg] = c_load('BADBIASRESET?',cl_id);
 			if ok
 				if ~isempty(bbias)
 					irf_log('proc','blanking bad bias due to EFW reset')
 					res = caa_rm_blankt(res,bbias);
 				end
-			else
-				if CAA_MODE, error(irf_ssub('Cannot load BADBIASRESET?',cl_id)), end
-				irf_log('load',irf_ssub('Cannot load BADBIASRESET?',cl_id))
+			else irf_log('load',msg)
 			end
 			clear ok bbias
 
 		case 'bbias'
 			% Remove bad bias from bias current indication
 			for kk = p_list
-				[ok,bbias] = c_load(irf_ssub('BADBIAS?p!',cl_id,kk));
+				[ok,bbias,msg] = c_load(irf_ssub('BADBIAS?p!',cl_id,kk));
 				if ok
 					if ~isempty(bbias)
 						irf_log('proc',['blanking bad bias on P' num2str(kk)])
 						res = caa_rm_blankt(res,bbias);
 					end
-				else
-					if CAA_MODE, error(irf_ssub('Cannot load BADBIAS?p!',cl_id,kk)), end
-					irf_log('load',irf_ssub('Cannot load BADBIAS?p!',cl_id,kk))
+				else irf_log('load',msg)
 				end
 				clear ok bbias
 			end
@@ -70,15 +64,13 @@ for i=1:length(param)
 		case 'probesa'
 			% Remove probe saturation
 			for kk = p_list
-				[ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,kk));
+				[ok,sa,msg] = c_load(irf_ssub('PROBESA?p!',cl_id,kk));
 				if ok
 					if ~isempty(sa)
 						irf_log('proc',['blanking saturated P' num2str(kk)])
 						res = caa_rm_blankt(res,sa);
 					end
-				else
-					if CAA_MODE, error(irf_ssub('Cannot load PROBESA?p!',cl_id,kk)), end
-					irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,kk))
+				else irf_log('load',msg)
 				end
 				clear ok sa
 			end
@@ -86,61 +78,66 @@ for i=1:length(param)
 		case 'probeld'
 			% Remove probe saturation due to low density
 			for kk = p_list
-				[ok, sa] = c_load(irf_ssub('PROBELD?p!',cl_id,kk));
+				[ok,sa,msg] = c_load(irf_ssub('PROBELD?p!',cl_id,kk));
 				if ok
 					if ~isempty(sa)
 						irf_log('proc',...
 							['blanking low density saturation on P' num2str(kk)])
 						res = caa_rm_blankt(res,sa);
 					end
-				else
-					if CAA_MODE, error(irf_ssub('Cannot load PROBELD?p!',cl_id,kk)), end
-					irf_log('load',irf_ssub('Cannot load PROBELD?p!',cl_id,kk))
+				else irf_log('load',msg)
 				end
 				clear ok sa
 			end
 
 		case 'whip'
 			% Remove whisper pulses
-			[ok,whip] = c_load('WHIP?',cl_id);
+			[ok,whip,msg] = c_load('WHIP?',cl_id);
 			if ok
 				if ~isempty(whip)
 					irf_log('proc','blanking Whisper pulses')
 					res = caa_rm_blankt(res,whip);
 				end
-			else
-				if CAA_MODE, error(irf_ssub('Cannot load WHIP?',cl_id)), end
-				irf_log('load',	irf_ssub('Cannot load WHIP?',cl_id))
+			else irf_log('load',msg)
 			end
 			clear ok whip
 
 		case 'sweep'
 			% Remove sweeps
-			[ok,sweep] = c_load('SWEEP?',cl_id);
+			[ok,sweep,msg] = c_load('SWEEP?',cl_id);
 			if ok
 				if ~isempty(sweep)
 					irf_log('proc','blanking sweeps')
 					res = caa_rm_blankt(res,sweep);
 					clear sweep
 				end
-			else
-				if CAA_MODE, error(irf_ssub('Cannot load SWEEP?',cl_id)), end
-				irf_log('load', irf_ssub('Cannot load SWEEP?',cl_id))
+			else irf_log('load',msg)
 			end
 			clear ok sweep
 
 		case 'bdump'
 			% Remove burst dumps
-			[ok,bdump] = c_load('BDUMP?',cl_id);
+			[ok,bdump,msg] = c_load('BDUMP?',cl_id);
 			if ok
 				if ~isempty(bdump)
 					irf_log('proc','blanking burst dumps')
 					res = caa_rm_blankt(res,bdump);
 					clear bdump
 				end
-			else
-				if CAA_MODE, error(irf_ssub('Cannot load BDUMP?',cl_id)), end
-				irf_log('load', irf_ssub('Cannot load BDUMP?',cl_id))
+			else irf_log('load',msg)
+			end
+			clear ok bdump
+			
+		case 'wake'
+			% Remove wakes
+			[ok,wake,msg] = c_load(irf_ssub('PSWAKE?p!',cl_id,probe));
+			if ok
+				if ~isempty(wake)
+					irf_log('proc','blanking plasmaspheric wakes')
+					res = caa_rm_blankt(res,wake);
+					clear bdump
+				end
+			else irf_log('load',msg)
 			end
 			clear ok bdump
 
