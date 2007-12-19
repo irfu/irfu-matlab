@@ -45,7 +45,7 @@ for i=1:length(param)
 				end
 			else irf_log('load',msg)
 			end
-			clear ok bbias
+			clear ok bbias msg
 
 		case 'bbias'
 			% Remove bad bias from bias current indication
@@ -58,7 +58,7 @@ for i=1:length(param)
 					end
 				else irf_log('load',msg)
 				end
-				clear ok bbias
+				clear ok bbias msg
 			end
 
 		case 'probesa'
@@ -72,7 +72,7 @@ for i=1:length(param)
 					end
 				else irf_log('load',msg)
 				end
-				clear ok sa
+				clear ok sa msg
 			end
 
 		case 'probeld'
@@ -87,7 +87,7 @@ for i=1:length(param)
 					end
 				else irf_log('load',msg)
 				end
-				clear ok sa
+				clear ok sa msg
 			end
 
 		case 'whip'
@@ -100,7 +100,7 @@ for i=1:length(param)
 				end
 			else irf_log('load',msg)
 			end
-			clear ok whip
+			clear ok whip msg
 
 		case 'sweep'
 			% Remove sweeps
@@ -113,7 +113,7 @@ for i=1:length(param)
 				end
 			else irf_log('load',msg)
 			end
-			clear ok sweep
+			clear ok sweep msg
 
 		case 'bdump'
 			% Remove burst dumps
@@ -126,7 +126,7 @@ for i=1:length(param)
 				end
 			else irf_log('load',msg)
 			end
-			clear ok bdump
+			clear ok bdump msg
 			
 		case 'wake'
 			% Remove wakes
@@ -135,11 +135,22 @@ for i=1:length(param)
 				if ~isempty(wake)
 					irf_log('proc','blanking plasmaspheric wakes')
 					res = caa_rm_blankt(res,wake);
-					clear bdump
+					clear wake
 				end
 			else irf_log('load',msg)
 			end
-			clear ok bdump
+			clear ok wake msg
+			
+			[ok,wake,msg] = c_load(irf_ssub('LOWAKE?p!',cl_id,probe));
+			if ok
+				if ~isempty(wake)
+					irf_log('proc','blanking lobe wakes')
+					res = caa_rm_blankt(res,wake);
+					clear wake
+				end
+			else irf_log('load',msg)
+			end
+			clear ok wake msg
 
 		otherwise
 			error('Unknown parameter')
