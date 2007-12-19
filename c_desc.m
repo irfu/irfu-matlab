@@ -225,6 +225,28 @@ elseif regexp(vs,'^WAKE[1-4]p(12|32|34)$')==1
 	v.quant = 'ec';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plasmaspheric Wake
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^PSWAKE[1-4]p(12|32|34)$')==1
+	v.data = 1;
+	v.cl_id = vs(7);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'WAKE';
+	v.sen = vs(end-1:end);
+	v.cs = {'na'};
+	v.rep = {'scalar'};
+ 	v.units =  {'sec'};
+	v.si_conv = {'1>sec'};
+	v.size = 1;
+	v.name = {['Wake-p' v.sen ' stop']};
+	v.labels = v.name;
+	v.field_name = {'Wake stop'};
+	v.com = '';
+	v.file = 'mEFW';
+	v.quant = 'wake';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RSPEC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
