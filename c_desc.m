@@ -225,9 +225,9 @@ elseif regexp(vs,'^WAKE[1-4]p(12|32|34)$')==1
 	v.quant = 'ec';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plasmaspheric Wake
+% Plasmaspheric/Lobe Wake
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^PSWAKE[1-4]p(12|32|34)$')==1
+elseif regexp(vs,'^(PS|LO)WAKE[1-4]p(12|32|34)$')==1
 	v.data = 1;
 	v.cl_id = vs(7);
 	v.inst = 'EFW';
@@ -239,8 +239,11 @@ elseif regexp(vs,'^PSWAKE[1-4]p(12|32|34)$')==1
  	v.units =  {'sec'};
 	v.si_conv = {'1>sec'};
 	v.size = 1;
-	v.name = {['Wake-p' v.sen ' stop']};
-	v.labels = v.name;
+	if vs(1)=='P', reg = 'Plasmaspheric';
+	else reg = 'Lobe';
+	end
+	v.name = {[reg ' wake-p' v.sen]};
+	v.labels = {['Wake-p' v.sen ' stop']};
 	v.field_name = {'Wake stop'};
 	v.com = '';
 	v.file = 'mEFW';

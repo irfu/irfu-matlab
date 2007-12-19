@@ -1680,10 +1680,10 @@ elseif strcmp(quantity,'wake')
 	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id);
 	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
 
-	wake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV); %#ok<NASGU>
-	
+	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV); %#ok<NASGU>
+	lowake = c_efw_lobewake(cl_id,diEs,diBrs,Ps); %#ok<NASGU>
 	eval(irf_ssub(...
-		'PSWAKE?p!=wake;save_list=[save_list ''PSWAKE?p! ''];',...
+		'PSWAKE?p!=pswake;LOWAKE?p!=lowake;save_list=[save_list ''PSWAKE?p! LOWAKE?p!''];',...
 		cl_id,probe_p));
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
