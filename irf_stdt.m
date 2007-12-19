@@ -1,5 +1,5 @@
 function [st,dt] = irf_stdt(st_in,dt_in)
-%CAA_STDT  parse input start and stop times
+%IRF_STDT  parse input start and stop times
 %
 % [st,dt] = irf_stdt(start_t,dt)
 % [st,dt] = irf_stdt(start_t,stop_t)
@@ -11,7 +11,12 @@ function [st,dt] = irf_stdt(st_in,dt_in)
 %
 % $Id$
 
-% Copyright 2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(2,2,nargin))
 error(nargoutchk(2,2,nargout))
