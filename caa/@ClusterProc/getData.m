@@ -167,7 +167,7 @@ if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
 if strcmp(quantity,'ec')
 	save_file = './mERC.mat';
 	
-	if ~any([correct_sw_wake]) % List all possible methods here
+	if ~any([correct_sw_wake]) %#ok<NBRAK> % List all possible methods here
 		irf_log('proc','no cleaning method defined')
 		data = []; cd(old_pwd), return
 	end
@@ -1655,6 +1655,37 @@ elseif strcmp(quantity,'rawspec')
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% wake (wakes in lobe and plasmasphere)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'wake')
+	save_file = './mEFW.mat';
+	
+	var_s = sprintf('diEs%dp%d',cl_id, probe_p);
+	[ok,diEs,msg] = c_load(var_s);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	[ok,diBrs,msg] = c_load('diBrs?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	[ok,Ps,msg] = c_load('Ps?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	[ok,R,msg] = c_load('R?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	[ok,SAX,msg] = c_load('SAX?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	[ok,diV,msg] = c_load('diV?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
+	wake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV); %#ok<NASGU>
+	
+	eval(irf_ssub(...
+		'PSWAKE?p!=wake;save_list=[save_list ''PSWAKE?p! ''];',...
+		cl_id,probe_p));
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % edi (sc)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'edi')
@@ -1675,6 +1706,7 @@ elseif strcmp(quantity,'edi')
 		end
 	end
 
+	% XXX: must be diV
 	% Load V if we need to do SC->Inertial transformation
 	[ok,V] = c_load('V?',cl_id);
 	if ~ok
@@ -2008,10 +2040,10 @@ elseif strcmp(quantity,'ps')
 	n = floor((P_tmp(end,1)-t0)/4) + 1;
 	tvec = t0 + ( (1:n) -1)*4;
 	
-	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec
+	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec %#ok<NASGU>
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
-	[ok,P_info] = c_load('P?_info',cl_id);
+	[ok,P_info] = c_load('P?_info',cl_id); %#ok<NASGU>
 	if ok
 		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
 	end
