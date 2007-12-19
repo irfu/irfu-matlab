@@ -84,8 +84,6 @@ case 1
 	end
 end
 
-CAA_MODE = c_ctl(0,'caa_mode');
-
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
 else irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
@@ -98,13 +96,13 @@ for cli=cl_id
 	
 	% Try to load from file
 	if exist([d.file '.mat'],'file')
-		warning off
+		warning off %#ok<WNOFF>
 		eval(['load -mat ' d.file ' ' vs_tmp])
-		warning on
-	elseif CAA_MODE==0 && exist([d.file_old '.mat'],'file')
-		warning off
+		warning on %#ok<WNON>
+	elseif exist([d.file_old '.mat'],'file')
+		warning off %#ok<WNOFF>
 		eval(['load -mat ' d.file_old ' ' vs_tmp])
-		warning on
+		warning on %#ok<WNON>
 	end
 	
 	% Return the result
