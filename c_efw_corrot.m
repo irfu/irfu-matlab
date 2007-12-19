@@ -88,7 +88,8 @@ if ~isempty(idx)
 		end
 	end
 else
-	irf_log('proc','data is good')
+	irf_log('proc','no plasmaspheric wakes')
+	res = [];
 end
 
 if nargout>1, ecorr = diECorr; end
