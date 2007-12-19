@@ -1679,6 +1679,10 @@ elseif strcmp(quantity,'wake')
 	[ok,diV,msg] = c_load('diV?',cl_id);
 	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	
+	% Correct for DSI offsets
+	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id);
+	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
+
 	wake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV); %#ok<NASGU>
 	
 	eval(irf_ssub(...
