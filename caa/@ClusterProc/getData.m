@@ -154,7 +154,6 @@ while have_options
 end
 
 
-save_file = '';
 save_list = '';
 
 old_pwd = pwd;
@@ -190,10 +189,10 @@ if strcmp(quantity,'ec')
 		
 		fsamp = c_efw_fsample(da(:,1),'hx');
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-		signal = da;
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
+		signal = da; %#ok<NASGU>
 		remove_problems
-		da = res;
+		da = res; %#ok<NODEF>
 		clear res signal problems
 		
 		% Check if we have at least 1 spin of data left
@@ -216,7 +215,7 @@ if strcmp(quantity,'ec')
 		if correct_sw_wake
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
-			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip);
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip); %#ok<NASGU,ASGLU>
 			
 			if n_corrected>0
 				eval(irf_ssub(...
@@ -356,11 +355,11 @@ elseif strcmp(quantity,'dies')
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
 		%if flag_rmwhip, problems = [problems '|whip']; end
-		signal = tt;
+		signal = tt; %#ok<NASGU>
 		remove_problems
-		tt = res;
+		tt = res; %#ok<NODEF>
 		clear res signal problems
 		
 		% Check if we have at least 1 spin of data left
@@ -401,13 +400,13 @@ elseif strcmp(quantity,'dies')
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
 		adc_off = irf_waverage(adc_off,1/4);
-		adc_off(adc_off(:,2)==0,2) = mean(adc_off(abs(adc_off(:,2))>0,2));
+		adc_off(adc_off(:,2)==0,2) = mean(adc_off(abs(adc_off(:,2))>0,2)); %#ok<NASGU>
 		
 		sp = sp(:,[1:4 6]);
 		sp(:,4) = 0*sp(:,4); % Z component
 		
 		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
-		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
+		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = []; %#ok<NASGU>
 		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
 		eval(irf_ssub('diEs?p!=sp;Dadc?p!=adc_off;',cl_id,probe)); 
 		eval(irf_ssub('save_list=[save_list ''diEs?p! Dadc?p! ''];',cl_id,probe));
@@ -423,7 +422,7 @@ elseif strcmp(quantity,'dies')
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
-		df(isnan(df)) = [];
+		df(isnan(df)) = []; %#ok<NODEF>
 		iia = [];
 		if size(df,1)>2
 			sdev = std(df);
@@ -527,7 +526,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 						e12(:,1) = p2(:,1);
 						e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-						p_ok = [p_ok 12];
+						p_ok = [p_ok 12]; %#ok<AGROW>
 						eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
 					else
 						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
@@ -538,7 +537,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 						e34(:,1) = p2(:,1);
 						e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-						p_ok = [p_ok 34];
+						p_ok = [p_ok 34]; %#ok<AGROW>
 					end
 				else
 					irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
@@ -558,10 +557,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				if probe==32
 					p12 = 32;
 					e12 = da;
-					p_ok = [p_ok 12];
+					p_ok = [p_ok 12]; %#ok<AGROW>
 				else
 					c_eval('e?=da;',probe)
-					p_ok = [p_ok probe];
+					p_ok = [p_ok probe]; %#ok<AGROW>
 				end
 				clear ok da
 			end
@@ -584,10 +583,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if probe==32
 				p12 = 32;
 				e12 = da;
-				p_ok = [p_ok 12];
+				p_ok = [p_ok 12]; %#ok<AGROW>
 			else
 				c_eval('e?=da;',probe)
-				p_ok = [p_ok probe];
+				p_ok = [p_ok probe]; %#ok<AGROW>
 			end
 			clear ok da
 		end
@@ -612,7 +611,6 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	% calibration coefficients // see c_efw_despin
 	coef=[[1 0 0];[1 0 0]];
 
-	full_e = [];
 	n_sig = 0;
 	for p = p_ok
 		if p==12
@@ -625,7 +623,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~isempty(dadc)
 				irf_log('calb','using saved ADC offsets')
 				tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
-				tt(:,2) = tt(:,2) - tmp_adc(:,2);
+				tt(:,2) = tt(:,2) - tmp_adc(:,2); %#ok<NASGU>
 				clear tmp_adc
 			else irf_log('calb','saved ADC offset empty')
 			end
@@ -637,11 +635,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~fsamp, error('no sampling frequency'),end
 			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-			if flag_rmwhip, problems = [problems '|whip']; end
-			signal = tt;
-			probe = ps;
+			if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
+			signal = tt; %#ok<NASGU>
+			probe = ps; %#ok<NASGU>
 			remove_problems
-			tt = res;
+			tt = res; %#ok<NODEF>
 			clear res signal problems probe
 		
 			% Check if we have at least 1 sec of data left
@@ -666,7 +664,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			end
 			if ~flag_usesavedoff
 				irf_log('calb','computing ADC offsets (simple averaging)')
-				[tt,dadc] = caa_corof_adc(tt);
+				[tt,dadc] = caa_corof_adc(tt); %#ok<ASGLU>
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
 				eval(irf_ssub('Da?p!=dadc;',cl_id,ps));
 			end
@@ -818,8 +816,8 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		% Make a spectrum and save it.
 		sfreq = c_efw_fsample(full_e(:,1),'hx');
 		if ~sfreq, error('no sampling frequency'),end
-		if sfreq == 25, nfft = 512;
-        else nfft = 8192;
+		if sfreq == 25, nfft = 512; %#ok<NASGU>
+        else nfft = 8192; %#ok<NASGU>
 		end
 		c_eval(...
 		'diESPEC?p1234=caa_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list ''diESPEC?p1234 ''];',cl_id);
@@ -831,7 +829,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		end
 		
 		% DS-> DSI
-		full_e(:,3)=-full_e(:,3);
+		full_e(:,3)=-full_e(:,3); %#ok<NASGU>
 		
 		c_eval([var1_name '=full_e; save_list=[save_list ''' var1_name '''];'],cl_id);
 	end
@@ -873,7 +871,7 @@ elseif strcmp(quantity,'idie') || strcmp(quantity,'idies')
 		[ok,diE] = c_load(var_s{k},cl_id);
 		if ~ok
 			if isempty(err_s), err_s = var_s{k};
-            else err_s = [err_s ', ' var_s{k}];
+            else err_s = [err_s ', ' var_s{k}]; %#ok<AGROW>
 			end
 			continue 
 		end
@@ -881,11 +879,11 @@ elseif strcmp(quantity,'idie') || strcmp(quantity,'idies')
 		enew = diE;
 		% We take only X and Y components. Z must remain zero.
 		etmp = irf_resamp(evxb(:,1:3),enew(:,1),'fsample',c_efw_fsample(enew));
-		enew(:,2:3) = diE(:,2:3) - etmp(:,2:3);
+		enew(:,2:3) = diE(:,2:3) - etmp(:,2:3); %#ok<NASGU>
 		clear etmp
 		
 		c_eval(['i' var_s{k} '= enew; clear enew'],cl_id)
-		save_list=[save_list 'i' irf_ssub(var_s{k},cl_id) ' '];
+		save_list=[save_list 'i' irf_ssub(var_s{k},cl_id) ' ']; %#ok<AGROW>
 	end
 	if ~isempty(err_s)
 		irf_log('load',...
@@ -1002,7 +1000,7 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	if inert
 		evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
 		evxb = irf_resamp(evxb,diE(:,1));
-		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb
+		diE(:,2:4) = diE(:,2:4) - evxb(:,2:4); clear evxb %#ok<NASGU>
 		s = 'i';
     else s = '';
 	end
@@ -1047,7 +1045,7 @@ elseif strcmp(quantity,'whip')
 				irf_log('dsrc', ['throwing away ' num2str(t_e(ii)-t_s(ii)) ...
 					' sec WHI pulse at ' epoch2iso(t_s(in),1)])
 			end
-			t_s(ii) = []; t_e(ii) = [];
+			t_s(ii) = []; t_e(ii) = []; %#ok<NASGU>
 			if isempty(t_s), data = []; cd(old_pwd); return, end
 		end
 		c_eval('WHIP?=[double(t_s)'' double(t_e)''];',cl_id); 
@@ -1082,10 +1080,10 @@ elseif strcmp(quantity,'bdump')
 		for ii=1:length(t_s)-1
 			if t_s(ii+1)-t_e(ii)<2.1, t_s(ii+1)=NaN; t_e(ii)=NaN; end
 		end
-		t_s(isnan(t_s)) = []; t_e(isnan(t_e)) = [];
+		t_s(isnan(t_s)) = []; t_e(isnan(t_e)) = []; %#ok<NASGU>
 		
 		% We add one second to the end of the interval for safety
-		t_e = t_e +1;
+		t_e = t_e +1; %#ok<NASGU>
 		c_eval('BDUMP?=[double(t_s)'' double(t_e)''];',cl_id); 
 		c_eval('save_list=[save_list '' BDUMP? ''];',cl_id);
 	else
@@ -1121,7 +1119,7 @@ elseif strcmp(quantity,'sweep')
 			% We add one second at the start of the interval for safety
 			bdump(1,1) = t_s_px(ii_px(1)) -1;
 			% We add one second to the end of the interval for safety
-			bdump(1,2) = t_e_px(ii_px(end)) +1;
+			bdump(1,2) = t_e_px(ii_px(end)) +1; %#ok<NASGU>
 		else
 			bdump = zeros(length(ii),2);
 			for k=1:length(ii)
@@ -1153,7 +1151,7 @@ elseif strcmp(quantity,'badbias')
 	
 	GOOD_BIAS = -130;
 	
-	DELTA_MINUS = 60;
+	DELTA_MINUS = 60; %#ok<NASGU>
 	DELTA_PLUS = 3*60;
 	
 	% First we check for EFW resets which usually mean bas bias settings
@@ -1184,8 +1182,6 @@ elseif strcmp(quantity,'badbias')
 	DELTA_MINUS = 300;
 	DELTA_PLUS = 64;
 	
-	
-	n_ok = 0;
 	for pro=1:4
 		[ok,ibias] = c_load(irf_ssub('IBIAS?p!',cl_id,pro));
 		if ~ok
@@ -1256,7 +1252,7 @@ elseif strcmp(quantity,'badbias')
 					irf_log('dsrc',irf_ssub('Bias current OK on C? p!',cl_id,pro))
 				end
 				
-				res = [bb_st-DELTA_MINUS; bb_et+DELTA_PLUS]';
+				res = [bb_st-DELTA_MINUS; bb_et+DELTA_PLUS]'; %#ok<NASGU>
 				c_eval(['BADBIAS' num2str(cl_id) 'p?=res;'...
 				'save_list=[save_list '' BADBIAS' num2str(cl_id) 'p? ''];'],pro);
 				clear ii res
@@ -1271,7 +1267,7 @@ elseif strcmp(quantity,'probesa')
 	save_file = './mEFW.mat';
 	
 	% Saturation level nA
-	SA_LEVEL = 66;
+	SA_LEVEL = 66; %#ok<NASGU>
 	SA_LEV_POS = 0; % 0.0 V
 	
 	% N_CONST sets the minimum number of points of constant potential
@@ -1303,7 +1299,7 @@ elseif strcmp(quantity,'probesa')
 		if pro==3 && ~isempty(start_time) && ...
 			start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2
 			
-			sa_int = [];
+			sa_int = []; %#ok<NASGU>
 			if ~isempty(ns_ops)
 				sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,'no_p3');
 				if ~isempty(sa_int), irf_log('proc','Found no_p3 in NS_OPS'), end
@@ -1363,7 +1359,7 @@ elseif strcmp(quantity,'probesa')
 			continue
 		end
 		
-		if isempty(ii_bad)
+		if isempty(ii_bad) %#ok<NODEF>
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
 			continue
@@ -1378,11 +1374,12 @@ elseif strcmp(quantity,'probesa')
 		
 		found = 0;
 		for opro = oprop
+			op = []; % silence M-lint
 			c_eval('op=p?;oii_bad=ii_bad?;oii_god=ii_god?;',opro)
 			if ~isempty(op)
 				if isempty(oii_bad), found = 1; break
 				else
-					[ii1,ii2] = irf_find_comm_idx(p(ii_bad,:),op(oii_bad,:));
+					ii1 = irf_find_comm_idx(p(ii_bad,:),op(oii_bad,:));
 					if isempty(ii1), found = 1; break, end
 				end
 			end
@@ -1395,7 +1392,7 @@ elseif strcmp(quantity,'probesa')
 			continue
 		end
 		
-		if isempty(ii_god)
+		if isempty(ii_god) %#ok<NODEF>
 			c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
 				'PROBESA' num2str(cl_id) 'p?=sa_int_p?;'...
@@ -1409,7 +1406,7 @@ elseif strcmp(quantity,'probesa')
 			if p_tmp(1,2)==0, ii = [1; ii]; end
 			if p_tmp(end,2)==0, ii = [ii; length(p_tmp(:,2))]; end
 			ii = reshape(ii,2,length(ii)/2);
-			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]';
+			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]'; %#ok<NASGU>
 			c_eval(['PROBELD' num2str(cl_id) 'p?=res;'...
 			'save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
 			
@@ -1464,7 +1461,7 @@ elseif strcmp(quantity,'probesa')
 					end
 				end
 			end
-			p(ii_bad,2) = 0;
+			p(ii_bad,2) = 0; %#ok<FNDSB>
 			ii = irf_find_diff(p(:,2));
 			if p(1,2)==0, ii = [1; ii]; end
 			if p(end,2)==0, ii = [ii; length(p(:,2))]; end
@@ -1592,10 +1589,10 @@ elseif strcmp(quantity,'rawspec')
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-		if flag_rmwhip, problems = [problems '|whip']; end
-		signal = tt;
+		if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
+		signal = tt; %#ok<NASGU>
 		remove_problems
-		tt = res;
+		tt = res; %#ok<NODEF>
 		clear res signal problems
 		
 		% Check if we have at least 1 spin of data left
@@ -1696,7 +1693,7 @@ elseif strcmp(quantity,'edi')
 	
 	save_file = './mEDI.mat';
 	
-	var_s = 'iEDI?'; e_opt = 'edi';
+	var_s = 'iEDI?';
 	varo_s = 'EDI?';
 	
 	% Load BPP. We use BPP for EDI as it must be a rather approximation
@@ -1710,27 +1707,18 @@ elseif strcmp(quantity,'edi')
 		end
 	end
 
-	% XXX: must be diV
 	% Load V if we need to do SC->Inertial transformation
-	[ok,V] = c_load('V?',cl_id);
-	if ~ok
-		irf_log('load',...
-			irf_ssub('No diV? in mR. Use getData(CDB,...,cl_id,''v'')',cl_id))
-		data = []; cd(old_pwd); return
-	end
+	[ok,V,msg] = c_load('V?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 
 	% Load E EDI (inertial)
-	[ok,E] = c_load(var_s,cl_id);
-	if ~ok
-		irf_log('load',...
-			irf_ssub(['No ' var_s ' in mEDI. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
-		data = []; cd(old_pwd); return
-	end
-
+	[ok,E,msg] = c_load(var_s,cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
 	% SC -> Inertial
 	B = irf_resamp(B,E);
 	evxb = irf_tappl(irf_cross(B,irf_resamp(V,B)),'*1e-3*(-1)');
-	E(:,2:4) = E(:,2:4) + evxb(:,2:4); clear evxb
+	E(:,2:4) = E(:,2:4) + evxb(:,2:4); clear evxb %#ok<NASGU>
 	
  	% GSE->DSI
 	if c_load('SAX?',cl_id)
@@ -1751,20 +1739,16 @@ elseif strcmp(quantity,'vedb') || strcmp(quantity,'vedbs')
 	if strcmp(quantity,'vedb')
 		var_s = 'diE?'; e_opt = 'edb';
 		varo_s = 'VExB?';
-		var_b = 'diBr?'; b_opt ='br';
+		var_b = 'diBr?';
 	else
 		var_s = 'diEs?'; e_opt = 'edbs';
 		varo_s = 'VExBs?';
-		var_b = 'diBrs?'; b_opt ='brs';
+		var_b = 'diBrs?';
 	end
 	
 	% Load resampled B
-	[ok,diB] = c_load(var_b,cl_id);
-	if ~ok
-		irf_log('load',...
-			irf_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
-		data = []; cd(old_pwd); return
-	end
+	[ok,diB,msg] = c_load(var_b,cl_id); %#ok<ASGLU>
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	
 	% Load data and calculate ExB
 	if c_load(var_s,cl_id)
@@ -1792,11 +1776,8 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	
 	if strcmp(quantity,'br')
 		var_b = 'Br?';
-		[ok,E_tmp] = c_load('diE?p1234',cl_id);
-		if ~ok
-			irf_log('load',sprintf('Canot load diE%dp1234. Please load it.',cl_id))
-			data = []; cd(old_pwd); return
-		end
+		[ok,E_tmp,msg] = c_load('diE?p1234',cl_id);
+		if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	else
 		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
 		[ok,E_tmp] = c_load(var_e{1},cl_id);
@@ -1816,7 +1797,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	% In the current approach we compute it from the sampling frequency of B.
 	dt = E_tmp(end,1) - E_tmp(1,1);
 	if ~isempty(B_tmp)
-		Binfo = 'FR';
+		Binfo = 'FR'; %#ok<NASGU>
 		bad_coverage = 0;
 		cover = 0;
 		B_tmp = irf_tlim(B_tmp,E_tmp(1,1) + [0 dt]);
@@ -1862,7 +1843,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			% Take .99 to avoid marginal effects.
 			if .99*cover_pp > cover
 				B_tmp = BPP_tmp;
-				Binfo = 'PP';
+				Binfo = 'PP'; %#ok<NASGU>
 				irf_log('proc','Using B PP to calculate Br')
             else irf_log('proc',sprintf('Use B has %2.2f%% coverage',cover*100))
 			end
@@ -1870,7 +1851,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	end
 	
 	% Resample the data
-	Br = irf_resamp(B_tmp,E_tmp,'fsample',c_efw_fsample(E_tmp));
+	Br = irf_resamp(B_tmp,E_tmp,'fsample',c_efw_fsample(E_tmp)); %#ok<NASGU>
 	c_eval([ var_b '=Br;' var_b '_info=Binfo;save_list=[save_list ''' var_b ' '' '' ' var_b '_info '' ];'],cl_id)
 	
 	% DSI->GSE
@@ -1915,42 +1896,41 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     end
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
-    if ~do_burst
-        % Remove probe saturation
-        for probe = 1:4
-            if eval(irf_ssub('~isempty(p?)',probe))
-                [ok, sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
-                if ~ok
-                    if CAA_MODE, error(irf_ssub('PROBESA?p!',cl_id,probe)), end
-                    irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
-                    continue
-                end
-                if ~isempty(sa)
-                    irf_log('proc',['blanking saturated P' num2str(probe)])
-                    c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
-                end
-                clear ok sa
-            end
-        end
-        c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+	if ~do_burst
+		% Remove probe saturation
+		for probe = 1:4
+			if eval(irf_ssub('~isempty(p?)',probe))
+				[ok,sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
+				if ~ok
+					irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
+					continue
+				end
+				if ~isempty(sa)
+					irf_log('proc',['blanking saturated P' num2str(probe)])
+					c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
+				end
+				clear ok sa
+			end
+		end
+		c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 
-        problems = 'reset|bbias|sweep';
-        n_ok = 0;
-        for probe=1:4
-            c_eval('signal=p?;',probe)
-            if ~isempty(signal)
-                remove_problems
-                res(isnan(res(:,2)),:) = [];
-                c_eval('p?=res;',probe)
-                n_ok = n_ok + 1;
-            end
-        end
-        clear res signal problems probe
-        if ~n_ok, data = []; cd(old_pwd), return, end
+		problems = 'reset|bbias|sweep'; %#ok<NASGU>
+		n_ok = 0;
+		for probe=1:4
+			c_eval('signal=p?;',probe)
+			if ~isempty(signal) %#ok<NODEF>
+				remove_problems
+				res(isnan(res(:,2)),:) = []; %#ok<AGROW>
+				c_eval('p?=res;',probe)
+				n_ok = n_ok + 1;
+			end
+		end
+		clear res signal problems probe
+		if ~n_ok, data = []; cd(old_pwd), return, end
 	end
 	
 	if flag_rmwhip
-		problems = 'whip';
+		problems = 'whip'; %#ok<NASGU>
 		for probe=1:4
 			c_eval('signal=p?;',probe)
 			if ~isempty(signal)
@@ -1962,8 +1942,8 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 
 	% Check for problem with one probe pair
 	MAX_CUT = .1;
-	if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end
-	if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end
+	if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end %#ok<NODEF>
+	if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end %#ok<NODEF>
 	if ~isempty(p1) && ~isempty(p2)
 		if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
 			if l1>l2, p2=[]; irf_log('proc','throwing away p2')
@@ -1971,8 +1951,8 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 			end
 		end
 	end
-	if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end
-	if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end
+	if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end %#ok<NODEF>
+	if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end %#ok<NODEF>
 	if ~isempty(p3) && ~isempty(p4)
 		if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
 			if l3>l4, p4=[]; irf_log('proc','throwing away p4')
@@ -1983,31 +1963,31 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
 	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
             all(size(p1)==size(p4) )
-		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
+		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4]; %#ok<NASGU>
 		Pinfo.probe = 1234;
 		irf_log('proc','computing from p1234')
 	elseif ~isempty(p3) && all(size(p3)==size(p4)) && ~(all(size(p1)==size(p2)) && l1>l3)
-		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
+		p = [p3(:,1) (p3(:,2)+p4(:,2))/2]; %#ok<NASGU>
 		Pinfo.probe = 34;
 		irf_log('proc','computing from p34')
 	elseif ~isempty(p1) && all(size(p1)==size(p2))
-		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
+		p = [p1(:,1) (p1(:,2)+p2(:,2))/2]; %#ok<NASGU>
 		Pinfo.probe = 12;
 		irf_log('proc','computing from p12')
 	elseif ~isempty(p4) && l4>=max([l1 l2 l3])
-		p = p4;
+		p = p4; %#ok<NASGU>
 		Pinfo.probe = 4;
 		irf_log('proc','computing from p4')
 	elseif ~isempty(p2) && l2>=max([l1 l3])
-		p = p2;
+		p = p2; %#ok<NASGU>
 		Pinfo.probe = 2;
 		irf_log('proc','computing from p2')
 	elseif ~isempty(p3) && l3>=l1
-		p = p3;
+		p = p3; %#ok<NASGU>
 		Pinfo.probe = 3;
 		irf_log('proc','computing from p3')
 	elseif ~isempty(p1)
-		p = p1;
+		p = p1; %#ok<NASGU>
 		Pinfo.probe = 1;
 		irf_log('proc','computing from p1')
     else irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
@@ -2027,11 +2007,9 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 elseif strcmp(quantity,'ps')
 	save_file = './mP.mat';
 	
-	[ok,P_tmp] = c_load('P?',cl_id);
-	if ~ok
-		irf_log('load',sprintf('No P%d in mP. Use getData(CP,...,cl_id,''p'')',cl_id))
-		data = []; cd(old_pwd); return
-	end
+	[ok,P_tmp,msg] = c_load('P?',cl_id);
+	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+	
 	P_tmp = P_tmp(~isnan(P_tmp(:,2)),:);
 	if isempty(P_tmp)
 		irf_log('proc',sprintf('Empty P%d.',cl_id))
@@ -2067,7 +2045,7 @@ elseif strcmp(quantity,'vce')
 		data = []; cd(old_pwd); return
 	end
 
-	CIS = load('mCISR');
+	CIS = load('mCISR'); %#ok<NASGU>
 	% Load BPP. We use BPP for EDI as it must be a rather approximation
 	[ok,B] = c_load('BPP?',cl_id);
 	if ~ok
@@ -2084,7 +2062,7 @@ elseif strcmp(quantity,'vce')
 	for va=1:length(vars)
 		eval(irf_ssub(['if isfield(CIS,''' vars{va} '?''); v=CIS.' vars{va} '?; else, v=[]; end; clear ' vars{va}], cl_id));
 		if ~isempty(v)
-			evxb=irf_tappl(irf_cross(v,B),'*(-1e-3)');
+			evxb=irf_tappl(irf_cross(v,B),'*(-1e-3)'); %#ok<NASGU>
 			eval(irf_ssub([varo{va} '?=evxb;save_list=[save_list '' ' varo{va} '?'']; clear evxb'],cl_id));
 			if ~exist(irf_ssub('SAX?',cl_id),'var')
 				irf_log('load','must fetch spin axis orientation (option ''sax'')')
