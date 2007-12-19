@@ -1,10 +1,10 @@
 function c_get_batch(st,dt,varargin)
 %C_GET_BATCH prepare data from all SC: do all steps until spinfits and despin
 %
-% c_get_batch(start_time,dt,[sc_list],[options ...])
+% c_get_batch(start_time,dt/stop_time,[sc_list],[options ...])
 % Input:
-% start_time - ISDAT epoch
-% dt - length of time interval in sec
+% start_time - ISDAT epoch/ISO time string
+% dt/stop_time - length of time interval in sec
 % sc_list - list of SC [optional]
 % Options: go in pair 'option', value
 % 'sp' - storage directory;
@@ -46,7 +46,12 @@ function c_get_batch(st,dt,varargin)
 %
 % $Id$
 
-% Copyright 2004-2006 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 persistent st_vector dt_sec;
 
@@ -70,12 +75,13 @@ sp = '.';
 db = c_ctl(0,'isdat_db');
 dp = c_ctl(0,'data_path');
 cdb = '';
-varsMan = 0;
 vars = '';
 varsProc = '';
 argsProc = '';
 dosrc = 1;
 doproc = 1;
+
+[st,dt] = irf_stdt(st,dt);
 
 if have_options
 	if isnumeric(args{1}), 
@@ -90,62 +96,70 @@ while have_options
 	l = 2;
 	if length(args)>=1
 		switch(args{1})
-		case 'sp'
-			if ischar(args{2}), sp = args{2};
-            else irf_log('fcal','wrongArgType : sp must be string')
-			end
-		case 'sdir'
-			if ischar(args{2}), sp = [args{2} '/' irf_fname(st)];
-            else irf_log('fcal','wrongArgType : sdir must be string')
-			end
-		case 'dp'
-			if ischar(args{2}), dp = args{2};
-            else irf_log('fcal','wrongArgType : dp must be string')
-			end
-		case 'db'
-			if ischar(args{2}), db = args{2};
-            else irf_log('fcal','wrongArgType : db must be string')
-			end
-		case 'sc_list'
-			if isnumeric(args{2}), sc_list = args{2};
-            else irf_log('fcal','wrongArgType : sc_list must be numeric')
-			end
-		case 'vars'
-			if ischar(args{2})
-				vars = {};
-				p = tokenize(args{2},'|');
-				for i=1:length(p), vars(length(vars)+1) = p(i); end
-			elseif iscell(args{2}), vars = args{2};
-            else irf_log('fcal','wrongArgType : vars must be eather string or cell array')
-			end
-		case 'varsproc'
-			if ischar(args{2})
-				varsProc = {};
-				p = tokenize(args{2},'|');
-				for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end
-			elseif iscell(args{2}), varsProc = args{2};
-            else irf_log('fcal','wrongArgType : varsproc must be eather string or cell array')
-			end
-		case 'extrav'
-			if ischar(args{2})
-				p = tokenize(args{2},'|');
-				for i=1:length(p), vars(length(vars)+1) = p(i); end
-			elseif iscell(args{2}), vars = [vars args{2}];
-            else irf_log('fcal','wrongArgType : extrav must be eather string or cell array')
-			end
-		case 'cdb'
-			if (isa(args{2},'ClusterDB')), cdb = args{2};
-            else irf_log('fcal','wrongArgType : cdb must be a ClusterDB object')
-			end
-		case 'nosrc'
-			dosrc = 0; l = 1;
-		case 'noproc'
-			doproc = 0; l = 1;
-		otherwise
-        	irf_log('fcal',['Option ''' args{1} ''' not recognized. Pass the rest to getData'])
-			argsProc = args;
-			break
-    	end
+			case 'sp'
+				if ischar(args{2}), sp = args{2};
+				else irf_log('fcal','SP must be string')
+				end
+			case 'sdir'
+				if ischar(args{2}), sp = [args{2} '/' irf_fname(st)];
+				else irf_log('fcal','SDIR must be string')
+				end
+			case 'dp'
+				if ischar(args{2}), dp = args{2};
+				else irf_log('fcal','DP must be string')
+				end
+			case 'db'
+				if ischar(args{2}), db = args{2};
+				else irf_log('fcal','DB must be string')
+				end
+			case 'sc_list'
+				if isnumeric(args{2}), sc_list = args{2};
+				else irf_log('fcal','SC_LIST must be numeric')
+				end
+			case 'vars'
+				if ischar(args{2})
+					vars = {};
+					p = tokenize(args{2},'|');
+					for i=1:length(p), vars(length(vars)+1) = p(i); end
+				elseif iscell(args{2}), vars = args{2};
+				else
+					irf_log('fcal','VARS must be eather string or cell array')
+				end
+			case 'varsproc'
+				if ischar(args{2})
+					varsProc = {};
+					p = tokenize(args{2},'|');
+					for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end
+				elseif iscell(args{2}), varsProc = args{2};
+				else
+					irf_log('fcal',...
+						'VARSPROC must be eather string or cell array')
+				end
+			case 'extrav'
+				if ischar(args{2})
+					p = tokenize(args{2},'|');
+					for i=1:length(p), vars(length(vars)+1) = p(i); end
+				elseif iscell(args{2}), vars = [vars args{2}]; %#ok<AGROW>
+				else
+					irf_log('fcal',...
+						'EXTRAV must be eather string or cell array')
+				end
+			case 'cdb'
+				if (isa(args{2},'ClusterDB')), cdb = args{2};
+				else
+					irf_log('fcal','CDB must be a ClusterDB object')
+				end
+			case 'nosrc'
+				dosrc = 0; l = 1;
+			case 'noproc'
+				doproc = 0; l = 1;
+			otherwise
+				irf_log('fcal',...
+					['Option ''' args{1}...
+					''' not recognized. Pass the rest to getData'])
+				argsProc = args;
+				break
+		end
 		if length(args) > l, args = args(l+1:end);
 		else break
 		end
@@ -202,7 +216,7 @@ if ischar(s_list)
 else
 	for k=1:length(s_list)
 		for j=1:length(list)
-			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end
+			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end %#ok<AGROW>
 		end
 	end
 end
