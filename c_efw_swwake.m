@@ -23,7 +23,13 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 %
 % $Id$
 
-% Copyright 2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
 % Original idea by Anders Eriksson.
 % Many useful suggestion by Per-Arne Lindqvist.
 
