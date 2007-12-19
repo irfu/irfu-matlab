@@ -44,7 +44,7 @@ MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_HALFWIDTH = 45; % degrees
 WAKE_MIN_HALFWIDTH = 11;  % degrees
 WAKE_MIN_AMPLITUDE = 0.4; % mV/m
-WAKE_MAX_AMPLITUDE = 6; % mV/m
+WAKE_MAX_AMPLITUDE = 7; % mV/m
 plot_step = 1;
 plot_i = 0;
 data = e;
@@ -191,9 +191,9 @@ for in = iok
 	
 	% Fix wake position
 	if pair==12
-		i1 = (35:65) +1; % Get degrees 50 +-15
+		i1 = (30:65) +1; % Get degrees 50 (-20,+15)
 	elseif pair==34
-		i1 = (35:65) +1 +90; % Get degrees 140 +-15
+		i1 = (30:65) +1 +90; % Get degrees 140 (-20,+15)
 	end
 
 	ind1 = find(d12 == min(d12(i1))) -1;
@@ -284,15 +284,17 @@ for in = iok
 	% Save wake description
 	wakedesc(in*2-1+fw,3) = max(abs(ccdav1));
 	% Wake half-width
-	ii = find(abs(ccdav1)<max(abs(ccdav1))/2);
-	wakedesc(in*2-1+fw,4) = min(ii(ii>45))-max(ii(ii<45));
+	ii =    find( abs(ccdav1) <  max(abs(ccdav1))/2 );
+	iimax = find( abs(ccdav1) == max(abs(ccdav1))   );
+	wakedesc(in*2-1+fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
 	wakedesc(in*2-fw,3) = max(abs(ccdav2));
 	% Wake half-width
-	ii = find(abs(ccdav2)<max(abs(ccdav2))/2);
+	ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
+	iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
 	%disp(ii)
 	%if in==244,keyboard,end
-	wakedesc(in*2-fw,4) = min(ii(ii>45))-max(ii(ii<45));
-	clear ii
+	wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
+	clear ii iimax
 	
 	if min(wakedesc(in*2-fw,4),wakedesc(in*2-1+fw,4))< WAKE_MIN_HALFWIDTH
 		irf_log('proc',sprintf('wake is too narrow (%d deg) at %s',...
