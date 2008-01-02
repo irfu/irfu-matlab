@@ -78,7 +78,7 @@ end
 r = [];
 ri = [];
 fmax = 12.5;
-c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];')
+c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake?=[];')
 
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
@@ -122,6 +122,7 @@ end
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
 	p = []; spec = {}; es = []; rspec = []; wamp = [];
+	pswake = []; lowake = [];
 	
 	if exist(cdir, 'dir')
 		d = dir([cdir '/2*_*']);
@@ -145,13 +146,25 @@ for cli=1:4
 			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
 			clear p_tmp
 			
-			% Load WAKE amplitude
+			% Load SW WAKE amplitude
 			pp = caa_sfit_probe(cli);
 			wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
 			if ~isempty(wamp_tmp) && wamp_tmp(1,1)~=-157e8
 				wamp = [wamp; wamp_tmp(:,[1 3])];
 			end
 			clear wamp_tmp
+			
+			% Load PS/LO WAKEs
+			pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
+			if ~isempty(pswake_tmp) && pswake_tmp(1,1)~=-157e8
+				pswake = [pswake; pswake_tmp];
+			end
+			clear pswake_tmp
+			lowake_tmp = c_load(['LOWAKE?p' num2str(pp)],cli,'var');
+			if ~isempty(lowake_tmp) && lowake_tmp(1,1)~=-157e8
+				lowake = [lowake; lowake_tmp];
+			end
+			clear lowake_tmp
 			
 			% Load spectrum
 			spec_tmp = c_load('diESPEC?p1234',cli,'var');
@@ -207,6 +220,17 @@ for cli=1:4
 		end
 		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
 		if ~isempty(wamp), c_eval('wamp?=wamp;',cli), end, clear wamp
+		if ~isempty(pswake)
+			c_eval('pswake?=pswake;',cli)
+			if ~isempty(es), es = caa_rm_blankt(es,pswake); end
+		end
+		clear pswake
+		if ~isempty(lowake)
+			c_eval('lowake?=lowake;',cli)
+			if ~isempty(es), es = caa_rm_blankt(es,lowake); end
+		end
+		clear lowake
+		
 		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
 		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
@@ -303,7 +327,7 @@ end
 axes(he(2)), c_pl_tx('es?',3), ylabel('Ey [mV/m]'), axis tight
 
 % Plot RSPEC
-c_eval('axes(he(2+?)),if exist(''rspec?'',''var'') && ~isempty(rspec?),irf_plot(rspec?),axis tight,end, ylabel(''Rspec C?''), grid on')
+c_eval('axes(he(2+?)),if ~isempty(rspec?),irf_plot(rspec?), if ~isempty(lowake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),lowake?,1),''rO''),end,if ~isempty(pswake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),pswake?,1),''gd''),end,axis tight,end, ylabel(''Rspec C?''), grid on, hold off')
 
 % Plot P
 axes(he(7))
