@@ -48,6 +48,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          // Bad bias settings
 %   probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
 %   rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
+%   wake : PSWAKE{cl_id}p{12/34}, LOWAKE{cl_id}p{12/34} -> mEFW // wakes
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
