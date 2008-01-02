@@ -61,7 +61,6 @@ function res = kepler (e, m)
 % e eccentricity
 % m mean anomaly in degrees
 
-int   i;
 rm = m * pi/180; % in radians
 k = rm;
 for i = 1:10, k = rm + e * sin (k); end
