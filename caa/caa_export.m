@@ -152,6 +152,15 @@ if strcmp(caa_vs,'E')
 		QUALITY = 1;
 	end
 	
+	% Remove wakes
+	problems = 'wake'; %#ok<NASGU>
+	signal = data; %#ok<NASGU>
+	probe = sfit_probe; %#ok<NASGU>
+	remove_problems
+	data = res; %#ok<NODEF>
+	clear res signal problems
+	
+	% Correct offsets
 	if ~isempty(data)
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
