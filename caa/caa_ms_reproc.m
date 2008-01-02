@@ -31,8 +31,16 @@ for d=1:length(dirs)
 		if exist('./mERC.mat','file') || exist('./mEDSI.mat','file')
 			!rm -f mERC.mat mEDSI.mat mEDSIf.mat
 		end
+		
 		getData(ClusterProc(pwd),cl_id,'dies');
 		getData(ClusterProc(pwd),cl_id,'diespec');
+		
+		[iso_t,dt] = caa_read_interval;
+		st = iso2epoch(iso_t);
+		getData(ClusterDB,st,dt,cl_id,'v');
+		getData(ClusterDB,st,dt,cl_id,'bfgm');
+		getData(ClusterDB,st,dt,cl_id,'b');
+		getData(ClusterProc(pwd),cl_id,'brs');
 		getData(ClusterProc(pwd),cl_id,'wake');
 
 		% Create .caa_ms_interval
