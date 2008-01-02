@@ -44,7 +44,7 @@ ndata = ceil((diE(end,1) - diE(1,1))/TAV);
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
-Psr = irf_resamp(Ps,t,'fsample',1/TAV);
+Psr = irf_resamp(Ps(~isnan(Ps(:,2)),:),t,'fsample',1/TAV);
 diBr = irf_resamp(diB,t,'fsample',1/TAV);
 bele = (180/pi)*asin(...
 	diBr(:,4)./sqrt(diBr(:,2).^2 + diBr(:,3).^2 + diBr(:,4).^2) );
@@ -101,10 +101,12 @@ end
 
 % Look for strong apparent Ez if B field is above 15 deg of spin plane:
 ind = find( abs(bele) >= ANG_LIM & Psr(:,2) < SCPOT_LIM);
-diEr(:,4) = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
-diEr = irf_abs(diEr); % diEr(:,6) now contains abs(E)
-ind = ind(abs(diEr(ind,4)) > EZ_LIM & diEr(ind,6) > EPERP_LIM &...
-	diEr(ind,6)./Eperp(ind) > EPERP_RATIO_LIM & diEr(ind,5) < EDEV_LIM);
+if ~isempty(ind)
+	diEr(:,4) = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
+	diEr = irf_abs(diEr); % diEr(:,6) now contains abs(E)
+	ind = ind(abs(diEr(ind,4)) > EZ_LIM & diEr(ind,6) > EPERP_LIM &...
+		diEr(ind,6)./Eperp(ind) > EPERP_RATIO_LIM & diEr(ind,5) < EDEV_LIM);
+end
 
 if DOPLOT && ~isempty(ind)
 	axes(h(2)), hold on
