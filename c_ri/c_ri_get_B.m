@@ -96,7 +96,7 @@ if s~=0, warning('IRFU:unix','output from %s:\n%s', unix_command, h), end
 d_source = to_file;
 fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_id');
 to_file = sprintf('%s%s',path_output,fn);
-irf_log('dsrc',['Reading FGM. ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_id) ]);
+irf_log('dsrc',['Reading FGM ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_id) ]);
 
 FGMPATH = '/data/cluster/cal/fgm';
 if ~exist(FGMPATH,'dir'), error('FGMPATH does not exist'), end
@@ -114,9 +114,15 @@ if nargout,  % return B
     if to_file_attr.bytes == 0, return;end
     fvs = fgmvec_stream(to_file);
     ta=tavail(fvs); % debb=tavail(fvs,[]);disp(debb);clear debb;
-    if min(ta)>0,
-        dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
-        B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0]) dat.b];
+    if min(ta)>0
+		try
+			dat = get(fvs, 'data', 'b', ['T00:00:00Z' 'T24:00:00Z']);
+			B=[rem(dat.time,1)*3600*24+toepoch(fromepoch(from).*[1 1 1 0 0 0])...
+				dat.b];
+		catch
+			% get() can produce error
+			irf_log('dsrc','FGM Error')
+		end
     end
     close(fvs);
     [s,h] = unix(['rm ' to_file]);
