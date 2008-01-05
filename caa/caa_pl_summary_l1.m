@@ -78,7 +78,7 @@ end
 r = [];
 ri = [];
 fmax = 12.5;
-c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake?=[];')
+c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake?=[];edi?=[];')
 
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
@@ -118,11 +118,12 @@ if ( strcmp(iso_t,'-1') || (isnumeric(iso_t) && iso_t==-1) ) && dt==-1
 	dt = int_e - int_s;
 else st = iso2epoch(iso_t);
 end
-	
+
+dEx = cell(4,1);
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
 	p = []; spec = {}; es = []; rspec = []; wamp = [];
-	pswake = []; lowake = [];
+	pswake = []; lowake = []; edi = [];
 	
 	if exist(cdir, 'dir')
 		d = dir([cdir '/2*_*']);
@@ -140,6 +141,13 @@ for cli=1:4
 				if isempty(ri), ri = cli; end
 			end
 			clear r_tmp
+			
+			% Load EDI
+			edi_tmp = c_load('diEDI?',cli,'var');
+			if ~isempty(edi_tmp) && edi_tmp(1,1)~=-157e8
+				edi = [edi; edi_tmp];
+			end
+			clear edi_tmp
 			
 			% Load P
 			p_tmp = c_load('P?',cli,'var');
@@ -181,12 +189,19 @@ for cli=1:4
 				dsiof = c_ctl(cli,'dsiof');
 				if isempty(dsiof)
 					[dsiof_def, dam_def] = c_efw_dsi_off(st,cli);
-
-					[ok1,Ddsi] = c_load('Ddsi?',cli); if ~ok1, Ddsi = dsiof_def; end
+					
+					[ok1,Ddsi] = c_load('DdsiX?',cli);
+					if ~ok1
+						[ok1,Ddsi] = c_load('Ddsi?',cli);
+						if ~ok1, Ddsi = dsiof_def; end
+					else
+						iso_t = caa_read_interval;
+						dEx(cli)={[dEx{cli}, {[iso2epoch(iso_t) real(Ddsi)]}]};
+					end
 					[ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
 
 					if ok1 || ok2, irf_log('calb',...
-							['Saved DSI offsets on C' num2str(cl_id)])
+							['Saved DSI offsets on C' num2str(cli)])
 					%else irf_log('calb','Using default DSI offsets')
 					end
 					clear dsiof_def dam_def
@@ -218,6 +233,7 @@ for cli=1:4
 			
 			cd(old_pwd)
 		end
+		if ~isempty(edi), c_eval('edi?=edi;',cli), end, clear edi
 		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
 		if ~isempty(wamp), c_eval('wamp?=wamp;',cli), end, clear wamp
 		if ~isempty(pswake)
@@ -306,6 +322,15 @@ end % if plotspec
 % E-field figure
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Resample EDI
+if dt>0
+	TAV = 180;
+	ndata = ceil(dt/TAV);
+	t = st + (1:ndata)*TAV - TAV/2; t = t'; %#ok<NASGU>
+	c_eval('if ~isempty(edi?), edi?=irf_resamp(edi?,t,''fsample'',1/TAV,''thresh'',1.3); end')
+end
+% Limit EDI
+c_eval('if ~isempty(edi?) && ~isempty(es?) && any(~isnan(es?(:,2))), for c=2:3, edi?( edi?(:,c)>max(es?(~isnan(es?(:,c)),c)) & edi?(:,c)<min(es?(~isnan(es?(:,c)),c)), c) = NaN; end, end')
 
 figure(76)
 if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
@@ -319,15 +344,30 @@ for pl=1:8,	he(pl) = irf_subplot(8,1,-pl); end
 figure_start_epoch(st);
 
 % Plot E
-axes(he(1)), c_pl_tx('es?',2), ylabel('Ex [mV/m]'), axis tight
+axes(he(1)), c_pl_tx('edi?',2,'.'), hold on
+c_pl_tx('es?',2), hold off, ylabel('Ex [mV/m]'), axis tight
 if isempty(r), title(he(1),tit)
 else title(he(1),[tit ', GSE Position C' num2str(ri)])
 end
 
-axes(he(2)), c_pl_tx('es?',3), ylabel('Ey [mV/m]'), axis tight
+axes(he(2)), c_pl_tx('edi?',3,'.'), hold on
+c_pl_tx('es?',3), hold off, ylabel('Ey [mV/m]'), axis tight
 
 % Plot RSPEC
 c_eval('axes(he(2+?)),if ~isempty(rspec?),irf_plot(rspec?), if ~isempty(lowake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),lowake?,1),''rO''),end,if ~isempty(pswake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),pswake?,1),''gd''),end,axis tight,end, ylabel(''Rspec C?''), grid on, hold off')
+
+t_start_epoch = figure_start_epoch(st);
+for cli=1:4
+	if ~isempty(dEx{cli})
+		axes(he(2+cli));
+		yy=get(gca,'YLim');
+		yy=yy(1)+0.7*(yy(2)-yy(1));
+		for in=1:length(dEx{cli})
+			text(dEx{cli}{in}(1) - t_start_epoch, yy, ...
+				sprintf('%.2f',dEx{cli}{in}(2)),'color','g')
+		end
+	end
+end
 
 % Plot P
 axes(he(7))
