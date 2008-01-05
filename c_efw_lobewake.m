@@ -1,7 +1,7 @@
-function res = c_efw_lobewake(cl_id,diE,diB,Ps)
+function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI)
 %C_EFW_LOBEWAKE  detect lobe wakes
 %
-% wake = c_efw_lobewake(cl_id,[diEs,diBrs,Ps])
+% wake = c_efw_lobewake(cl_id,[diEs,diBrs,Ps,R,diEDI])
 %
 % $Id$
 
@@ -13,42 +13,107 @@ function res = c_efw_lobewake(cl_id,diE,diB,Ps)
 % ----------------------------------------------------------------------------
 
 % Control parameters
-TAV = 60; % window in sec
+TAV = 60;              % averaging window in sec
 ANG_LIM = 15;
-EPAR_LIM = 1;          % limit on E|| in mV/m
+EPAR_LIM = 1.0;        % limit on E|| in mV/m
 EPERP_LIM = 1.5;       % limit on full Eperp (E*B=0) in mV/m
 EDEV_LIM = .8;         % limit on s-dev of E
-EZ_LIM = 1.0;          % limit on Ez in mV/m
+EZ_LIM = 1;            % limit on Ez in mV/m
 EPAR_EPERP_RATIO_LIM = .2;
 EPERP_RATIO_LIM = 1.8; % Ratio between full Eperp (E*B=0) and 
                        % E along the projecttion of B to spin plane
-SCPOT_LIM = -5; % Limit for spacecraft potential
+SCPOT_LIM = -6;        % Limit for spacecraft potential
+DEX_MIN = 0.0;         % minimum reasonable dEx
+DEX_MAX = 2.0;         % maximum reasonable dEx
+EDI_COVERAGE_MIN = 0.5;% minimum EDI coverage
 
-DOPLOT = 0;
+if ischar(diE) && strcmp(diE,'plot'), DOPLOT = 1;
+else DOPLOT = 0;
+end
 
 % Load data
 probe_p = caa_sfit_probe(cl_id);
-if nargin==1
+if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
 	[ok,diE] = c_load(sprintf('diEs%dp%d',cl_id,probe_p));
 	if ~ok, error('cannot load E'), end
-
+	[Ddsi,Damp] = c_efw_dsi_off(diE(1,1),cl_id);
+	diE = caa_corof_dsi(diE,Ddsi,Damp);
+	clear Ddsi Damp
 	[ok,diB] = c_load('diBrs?',cl_id);
 	if ~ok, error('cannot load B'), end
 	[ok,Ps] = c_load('Ps?',cl_id);
 	if ~ok, error('cannot load P'), end
 	[ok,diEDI] = c_load('diEDI?',cl_id);
 	if ~ok, disp('cannot load EDI'), end
+	[ok,R] = c_load('R?',cl_id);
+	if ~ok, disp('cannot load R'), end
 end
 
 ndata = ceil((diE(end,1) - diE(1,1))/TAV);
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
+
+diEDIr = [];
+if exist('diEDI','var') && ~isempty(diEDI)
+	diEDI = diEDI(~isnan(diEDI(:,2)),:);
+	if size(diEDI(:,2),1) > EDI_COVERAGE_MIN*size(diE,1)
+		diEDIr = irf_resamp(diEDI,t,'fsample',1/TAV,'thresh',1.3);
+	else
+		irf_log('dsrc','bad EDI coverage')
+	end
+end
+
+% Try to empirically correct the sunward offset
+dEx = [];
+if ~isempty(diEDIr)
+	ii = find( ~isnan(diEr(:,5)) & (diEr(:,5) < EDEV_LIM) & ...
+		~isnan(diEDIr(:,2)));
+	if length(ii)>2
+		dEx = mean(diEr(ii,2) - diEDIr(ii,2));
+		irf_log('proc',sprintf('x-tra (EDI) dEx : %.2f mV/m',dEx))
+	end
+end
+if ~isempty(dEx) && ( dEx < DEX_MIN || dEx > DEX_MAX )
+	irf_log('proc','not using x-tra dEx')
+	dEx = [];
+end
+% Alternatively we can try zero Ex condition
+% Probably this can be applied only in the far tail where one expects
+% zero Ex
+if isempty(dEx) && ~isempty(R)
+	Rr = irf_resamp(R,t,'fsample',1/TAV); Rr = irf_abs(Rr);
+	% Look for negative X and distances > than 5 RE, RE = 6378 km
+	ii = find( Rr(:,2) < 0 & Rr(:,5) > 5*6378 );
+	%ii = 1:length(diEr(:,1));
+	if ~isempty(ii)
+		dEx = mean( diEr(~isnan(diEr(ii,2)),2) );
+		s = std( diEr(~isnan(diEr(ii,2)),2) );
+		if s>0
+			dEx = mean( diEr( diEr(ii,2)>dEx-s & diEr(ii,2)<dEx+s ,2) );
+		end
+		irf_log('proc',sprintf('x-tra (Ex=0) dEx : %.2f mV/m',dEx))
+	end
+end
+if ~isempty(dEx)
+	if dEx > DEX_MIN && dEx < DEX_MAX
+		irf_log('proc','correcting x-tra dEx')
+		diEr(:,2) = diEr(:,2) - dEx;
+		diE(:,2) = diE(:,2) - dEx;
+	else
+		irf_log('proc','not using x-tra dEx')
+		dEx = [];
+	end
+end
+
+%TODO: the offset needs to be reverified after we found the wakes
+		
 Psr = irf_resamp(Ps(~isnan(Ps(:,2)),:),t,'fsample',1/TAV);
 diBr = irf_resamp(diB,t,'fsample',1/TAV);
 bele = (180/pi)*asin(...
 	diBr(:,4)./sqrt(diBr(:,2).^2 + diBr(:,3).^2 + diBr(:,4).^2) );
 if DOPLOT
+	clf
 	nplots = 6;
 	h = 1:nplots;
 	h(1) = irf_subplot(nplots,1,-1);
@@ -65,9 +130,7 @@ if DOPLOT
 	set(gca,'YLim',[-9 9])
 	ylabel('Ey [mV/m]')
 	h(4) = irf_subplot(nplots,1,-4);
-	if ok
-		diEDI = diEDI(~isnan(diEDI(:,2)),:);
-		diEDIr = irf_resamp(diEDI,t,'fsample',1/TAV,'thresh',1.3);
+	if exist('diEDI','var') && ~isempty(diEDIr)
 		axes(h(2)), hold on
 		irf_plot(diEDIr(:,[1 2]),'k.');
 		axes(h(3)), hold on
@@ -89,7 +152,7 @@ Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
 Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
 	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
-wind = ind(abs(Epar(ind)) > EPAR_LIM & abs(Eperp(ind)) > EPERP_LIM &...
+wind = ind(abs(Epar(ind)) > EPAR_LIM &...
 	abs(Epar(ind)./Eperp(ind)) > EPAR_EPERP_RATIO_LIM);
 
 if DOPLOT && ~isempty(wind)

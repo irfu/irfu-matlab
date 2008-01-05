@@ -1677,12 +1677,21 @@ elseif strcmp(quantity,'wake')
 	[ok,diV,msg] = c_load('diV?',cl_id);
 	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	
+	[ok,diEDI,msg] = c_load('diEDI?',cl_id);
+	if ~ok, irf_log('load',msg), diEDI = []; end
+	
 	% Correct for DSI offsets
 	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id);
 	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
 
-	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV); %#ok<NASGU>
-	lowake = c_efw_lobewake(cl_id,diEs,diBrs,Ps); %#ok<NASGU>
+	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV);
+	diEs = caa_rm_blankt(diEs,pswake);
+	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI); %#ok<ASGLU>
+	if ~isempty(dEx)
+		cmd = 'DdsiX?=Ddsi+dEx;save mXTRA DdsiX?';
+		if exist('./mXTRA.mat','file'), cmd = [cmd ' -append']; end
+		c_eval(cmd,cl_id), clear cmd
+	end
 	eval(irf_ssub(...
 		'PSWAKE?p!=pswake;LOWAKE?p!=lowake;save_list=[save_list ''PSWAKE?p! LOWAKE?p!''];',...
 		cl_id,probe_p));
