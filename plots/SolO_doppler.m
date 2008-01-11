@@ -3,8 +3,8 @@
 
 %NaturalConstants
 
-f_range=[0.1 1e6]; % frequencies in Hz
-l_range=[1 1e6]; % wave length in m 
+f_range=[1e-2 1e6]; % frequencies in Hz
+l_range=[1e-1 1e8]; % wave length in m 
 l_inv_range=fliplr(1./l_range); % inverse wave length
 l_deb_range=[2 10]; l_inv_deb_range=fliplr(1./l_deb_range);
 l_erho_range=[100 500]; l_inv_erho_range=fliplr(1./l_erho_range);
