@@ -63,7 +63,7 @@ for t=t0:SPLIT_INT*3600:t1
 		ttt.mode = tm(1);
 		ttt.dir = subdir;
 		if isempty(mode_list), mode_list = ttt;
-        else mode_list(end+1) = ttt;
+        else mode_list(end+1) = ttt; %#ok<AGROW>
 		end
 	end
 	clear good_dir
@@ -82,7 +82,7 @@ for j = ii;
 	
 	% Append time to variables which does not have it
 	% 946684800 = toepoch([2000 01 01 00 00 00])
-	if tt(1,1) < 946684800, tt = [starts(j) tt]; end
+	if tt(1,1) < 946684800, tt = [starts(j) tt]; end %#ok<AGROW>
 	
 	if isempty(data), data = tt;
     else data = caa_append_data(data,tt);
