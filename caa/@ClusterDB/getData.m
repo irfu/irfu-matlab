@@ -88,7 +88,6 @@ for i=1:length(varargin)
 	end
 end
 
-save_file = '';
 save_list = '';
 
 old_pwd = pwd;
@@ -215,8 +214,8 @@ if strcmp(quantity,'dsc')
 
 	if count_good > 0 % The last interval was also good
 		% Save a good interval
-		t_start_save(end+1) = t_st;
-		dsc_save(:,end+1) = dsc_good(dsc_is);
+		t_start_save(end+1) = t_st; %#ok<NASGU>
+		dsc_save(:,end+1) = dsc_good(dsc_is); %#ok<NASGU>
 		n_good = n_good + 1;					
 		irf_log('dsrc',['Saving good from ' epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
 	end
@@ -231,7 +230,7 @@ if strcmp(quantity,'dsc')
 elseif strcmp(quantity,'fdm')
 	save_file = './mEFWR.mat';
 	
-	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'FDM');
+	[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'FDM'); %#ok<ASGLU>
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for FDM?',cl_id))
 		out_data = []; cd(old_pwd), return
@@ -259,12 +258,12 @@ elseif strcmp(quantity,'ibias')
 	
 	for probe=probe_list;
 		[t,data] = caa_is_get(cdb.db, start_time, dt, cl_id, ...
-			'efw', 'E', ['p' num2str(probe)],'bias');
+			'efw', 'E', ['p' num2str(probe)],'bias'); %#ok<ASGLU>
 		if isempty(data)
 			irf_log('dsrc',irf_ssub('No data for IBIAS?p!',cl_id,probe))
 		else
 			eval(irf_ssub('IBIAS?p!=[t data];',cl_id,probe))
-			p_ok = [p_ok probe];
+			p_ok = [p_ok probe]; %#ok<AGROW>
 		end
 		clear t data
 	end
@@ -287,8 +286,8 @@ elseif strcmp(quantity,'efwt')
 		if ~isempty(data)
 			efwtime_tmp = (data(81,:) +data(82,:)*256 +data(83,:)*65536 + ...
 				data(84,:)*16777216 +data(85,:)*4294967296)/1000;
-			efwtime = [efwtime efwtime_tmp];
-			t = [t t_tmp'];
+			efwtime = [efwtime efwtime_tmp]; %#ok<AGROW>
+			t = [t t_tmp']; %#ok<AGROW>
 		end
 	end
 	
@@ -313,7 +312,7 @@ elseif strcmp(quantity,'tmode')
 	% 1 - tape mode 1  (V12M,V34M)
 	% 2 - tape mode 2  (V12M,V34M)
 	% 3 - tape mode 3  (V1M,V2M,V3M,V4M)
-	[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM');
+	[t,data] = caa_is_get(cdb.db,start_time,dt,cl_id,'efw','FDM'); %#ok<ASGLU>
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for mTMode?',cl_id))
 		out_data = []; cd(old_pwd), return
@@ -453,8 +452,8 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		if ~isempty(data)
 			% Correct start time of the burst
 			if do_burst
-				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
-				burst_f_name = [cdb.dp '/burst/' burst_f_name];
+				burst_f_name = [cdb.dp '/burst/'...
+					irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id)];
 				if exist(burst_f_name,'file')
 					err_t = t(1) - c_efw_burst_chkt(cdb.db,burst_f_name);
 					
@@ -465,9 +464,9 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 				end
 			end
 			
-			data = check_timeline([t data]);
+			data = check_timeline([t data]); %#ok<NASGU>
 			c_eval([var_name  num2str(probe) '=data;'],cl_id);
-			p_ok = [p_ok probe];
+			p_ok = [p_ok probe]; %#ok<AGROW>
 			
 		else
 			irf_log('dsrc',...
@@ -491,7 +490,6 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		save_file = './mEFWburstR.mat';
 		tmmode='burst';
 		param={'180Hz','4kHz','32kHz'};
-		var_name = 'wbE?p';
 	else
 		save_file = './mPR.mat';
 		param={'10Hz'}; tmmode='lx';
@@ -504,13 +502,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59 ]))
         % p1 problems on SC1 and SC3
 		probe_list = 2:4;
-		p1 = [];
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
     elseif cl_id==2 && start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
         % 10Hz filter problem on C2 p3
         % Any changes should also go to ClusterProc/getData/probesa
 		probe_list = [1 2 4];
-		p3 = [];
 		irf_log('dsrc',sprintf('10Hz filter problem on sc%d',cl_id))
     elseif ( cl_id == 1 && ...
             ( (start_time>=toepoch([2001 04 12 03 00 00]) && start_time<toepoch([2001 04 12 06 00 00])) || ...
@@ -528,56 +524,57 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         % Ignore p3, p4 and p34 and only use p1, p2 and p12.
         % Use only complete 3-hour intervals to keep it simple.
         probe_list = [1 2];
-        p3 = []; p4 = [];
         irf_log('dsrc',sprintf('Too high bias current on p3, 4 on sc%d',cl_id));
 	end
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
 	n_ok = 0;
-	for j=1:length(param), for probe=probe_list;
-    	irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
-			'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
-		t = [];	data = [];
-		for in=1:length(start_time_nsops)
-			if length(start_time_nsops)>1
-				irf_log('dsrc',...
-					sprintf('chunk #%d : %s %d sec',in,...
+	for j=1:length(param)
+		for probe=probe_list;
+			irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
+				'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
+			t = [];	data = [];
+			for in=1:length(start_time_nsops)
+				if length(start_time_nsops)>1
+					irf_log('dsrc',...
+						sprintf('chunk #%d : %s %d sec',in,...
 						epoch2iso(start_time_nsops(in),1),dt_nsops(in)))
-			end
-			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
-				'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
-			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
-		end
-		
-		if ~isempty(data)
-			% Correct start time of the burst
-			if do_burst
-				burst_f_name = irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id);
-				burst_f_name = [cdb.dp '/burst/' burst_f_name];
-				if exist(burst_f_name,'file')
-					start_satt = c_efw_burst_chkt(cdb.db,burst_f_name);
-					if isempty(start_satt)
-						irf_log('dsrc','burst start time was not corrected')
-					else
-						err_t = t(1) - start_satt;
-						irf_log('dsrc',['burst start time was corrected by ' ...
-							num2str(err_t) ' sec'])
-						t = t - err_t;
-					end
-				else
-					irf_log('dsrc','burst start time was not corrected')
 				end
+				[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
+					'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
+				t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
 			end
-			
-			data = check_timeline([t data]);
-			eval(irf_ssub(['P' param{j} '?p!=data;'...
-				'save_list=[save_list ''P' param{j} '?p! ''];'],cl_id,probe));
-			n_ok = n_ok + 1;
-			
-        else irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
-		end 
-		clear t data
-    end, end
+
+			if ~isempty(data)
+				% Correct start time of the burst
+				if do_burst
+					burst_f_name = [cdb.dp '/burst/'...
+						irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id)];
+					if exist(burst_f_name,'file')
+						start_satt = c_efw_burst_chkt(cdb.db,burst_f_name);
+						if isempty(start_satt)
+							irf_log('dsrc','burst start time was not corrected')
+						else
+							err_t = t(1) - start_satt;
+							irf_log('dsrc',['burst start time was corrected by ' ...
+								num2str(err_t) ' sec'])
+							t = t - err_t;
+						end
+					else
+						irf_log('dsrc','burst start time was not corrected')
+					end
+				end
+
+				data = check_timeline([t data]); %#ok<NASGU>
+				eval(irf_ssub(['P' param{j} '?p!=data;'...
+					'save_list=[save_list ''P' param{j} '?p! ''];'],cl_id,probe));
+				n_ok = n_ok + 1;
+
+			else irf_log('dsrc', irf_ssub(['No data for P' param{j} '?p!'],cl_id,probe));
+			end
+			clear t data
+		end
+	end
 	
     if ~n_ok, out_data = []; cd(old_pwd), return, end
 	
@@ -592,7 +589,7 @@ elseif strcmp(quantity,'a')
 	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
 	[t,data] = caa_is_get(cdb.db, start_time-2, dt+4, ...
-		cl_id, 'ephemeris', 'phase');
+		cl_id, 'ephemeris', 'phase'); %#ok<ASGLU>
 	if ~isempty(data)
 		c_eval('A?=[t data];save_list=[save_list '' A? ''];',cl_id);
 		n_ok = n_ok + 1;
@@ -601,7 +598,7 @@ elseif strcmp(quantity,'a')
 	clear t data
 	
 	[t,data] = caa_is_get(cdb.db, start_time-2, dt+4, ...
-		cl_id, 'ephemeris', 'phase_2');
+		cl_id, 'ephemeris', 'phase_2'); %#ok<ASGLU>
 	if ~isempty(data)
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
 		n_ok = n_ok + 1;
@@ -620,8 +617,9 @@ elseif strcmp(quantity,'r')
 	save_file = './mR.mat';
 	
 	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
-		cl_id, 'ephemeris', 'position');
-	if ~isempty(data), c_eval('R?=[t data''];save_list=[save_list '' R? ''];',cl_id);
+		cl_id, 'ephemeris', 'position'); %#ok<ASGLU>
+	if ~isempty(data)
+		c_eval('R?=[t data''];save_list=[save_list '' R? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No data for R?',cl_id))
 		out_data = []; cd(old_pwd), return
@@ -635,7 +633,7 @@ elseif strcmp(quantity,'v')
 	save_file = './mR.mat';
 	
 	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
-		cl_id, 'ephemeris', 'velocity');
+		cl_id, 'ephemeris', 'velocity'); %#ok<ASGLU>
 	if isempty(data)
 		irf_log('dsrc',irf_ssub('No data for V?, diV?',cl_id))
 		out_data = []; cd(old_pwd), return
@@ -815,7 +813,7 @@ elseif strcmp(quantity,'sax')
 	
 	% Take first point only. This is OK according to AV
 	[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
-	sax = [xspin yspin zspin];
+	sax = [xspin yspin zspin]; %#ok<NASGU>
 
 	eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
 	clear sax lat long xspin yspin zspin
@@ -826,9 +824,8 @@ elseif strcmp(quantity,'sax')
 elseif strcmp(quantity,'wbdwf')
 	save_file = './mWBD.mat';
 	try
-		wf = c_wbd_read(start_time, dt, cl_id);
-		c_eval('wfWBD?=wf;',cl_id); 
-		c_eval('save_list=[save_list '' wfWBD? ''];',cl_id);
+		wf = c_wbd_read(start_time, dt, cl_id);  %#ok<NASGU>
+		c_eval('wfWBD?=wf; save_list=[save_list '' wfWBD? ''];',cl_id);
 	catch
 		out_data = [];
 	end
