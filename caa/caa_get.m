@@ -16,9 +16,17 @@ DP = '/data/caa/l1';
 data = [];
 
 NEED_SAME_TM = 0;
+DO_MEAN = 0;
 
 if nargin > 4
-	if strcmp(ops_s, 'need_same_tm'), NEED_SAME_TM = 1; end
+	switch ops_s
+		case 'need_same_tm'
+			NEED_SAME_TM = 1;
+		case 'mean'
+			DO_MEAN = 1;
+		otherwise
+			irf_log('fcal','unknown option')
+	end
 end
 
 SPLIT_INT = 3; % 3 hour subintervals
@@ -72,6 +80,7 @@ if isempty(mode_list), cd(old_pwd), return, end
 
 % Concatenate intervals
 [starts,ii] = sort([mode_list.st]);
+dts = [mode_list.dt]; dts = dts(ii);
 for j = ii;
 	cd(mode_list(j).dir);
 	[ok, tt] = c_load(var_name,cl_id);
@@ -82,7 +91,16 @@ for j = ii;
 	
 	% Append time to variables which does not have it
 	% 946684800 = toepoch([2000 01 01 00 00 00])
-	if tt(1,1) < 946684800, tt = [starts(j) tt]; end %#ok<AGROW>
+	if tt(1,1) < 946684800
+		if size(tt,1)==1, tt = [starts(j)+dts(j)/2.0 tt]; %#ok<AGROW>
+		else error('loaded bogus data')
+		end
+	elseif DO_MEAN
+		mm = mean(tt(~isnan(tt(:,2)),2:end));
+		if any(~isnan(mm)), tt = [starts(j)+dts(j)/2.0 mm];
+		else continue
+		end
+	end	
 	
 	if isempty(data), data = tt;
     else data = caa_append_data(data,tt);
