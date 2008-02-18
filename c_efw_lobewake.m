@@ -36,13 +36,13 @@ probe_p = caa_sfit_probe(cl_id);
 if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
 	[ok,diE] = c_load(sprintf('diEs%dp%d',cl_id,probe_p));
 	if ~ok, error('cannot load E'), end
-	[Ddsi,Damp] = c_efw_dsi_off(diE(1,1),cl_id);
+	[ok,Ps] = c_load('Ps?',cl_id);
+	if ~ok, error('cannot load P'), end
+	[Ddsi,Damp] = c_efw_dsi_off(diE(1,1),cl_id,Ps);
 	diE = caa_corof_dsi(diE,Ddsi,Damp);
 	clear Ddsi Damp
 	[ok,diB] = c_load('diBrs?',cl_id);
 	if ~ok, error('cannot load B'), end
-	[ok,Ps] = c_load('Ps?',cl_id);
-	if ~ok, error('cannot load P'), end
 	[ok,diEDI] = c_load('diEDI?',cl_id);
 	if ~ok, disp('cannot load EDI'), end
 	[ok,R] = c_load('R?',cl_id);

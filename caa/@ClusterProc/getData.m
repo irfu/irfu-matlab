@@ -907,11 +907,10 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	end
 	
 	if strcmp(quantity,'edb') || strcmp(quantity,'iedb')
-		var_s = irf_ssub('diE?p1234',cl_id); e_opt = 'die';
+		var_s = irf_ssub('diE?p1234',cl_id);
 		varo_s = irf_ssub('E?',cl_id);
-		var_b = 'diBr?'; b_opt ='br';
+		var_b = 'diBr?';
 	else
-		e_opt = 'dies';
 		switch probe_p
 		case 12
 			irf_log('proc','using p12')
@@ -926,32 +925,28 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 			error(['Invalid probe pair ' num2str(probe_p)])
 		end
 		varo_s = irf_ssub('Es?',cl_id);
-		var_b = 'diBrs?'; b_opt ='brs';
+		var_b = 'diBrs?';
 	end
 	
 	% Load resampled B
-	[ok,diB] = c_load(var_b,cl_id);
+	[ok,diB,msg] = c_load(var_b,cl_id);
 	if ~ok
-		irf_log('load',...
-			irf_ssub(['No ' var_b ' in mBr. Use getData(CP,cl_id,''' b_opt ''')'],cl_id))
+		irf_log('load',msg)
 		data = []; cd(old_pwd); return
 	end
 
 	% Load V if we need to do SC->Inertial transformation
 	if inert
-		[ok,diV] = c_load('diV?',cl_id);
+		[ok,diV,msg] = c_load('diV?',cl_id);
 		if ~ok
-			irf_log('load',...
-				irf_ssub('No diV? in mR. Use getData(CDB,...,cl_id,''v'')',cl_id))
+			irf_log('load',msg)
 			data = []; cd(old_pwd); return
 		end
 	end
 
-	[ok,diE] = c_load(var_s);
+	[ok,diE,msg] = c_load(var_s);
 	if ~ok
-		dsc = c_desc(var_s);
-		irf_log('load',...
-			irf_ssub(['No ' var_s ' in ' dsc.file '. Use getData(CP,cl_id,''' e_opt ''')'],cl_id))
+		irf_log('load',msg)
 		data = []; cd(old_pwd); return
 	end
 	
@@ -962,7 +957,10 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	if isempty(dsiof)
 		st = diE(~isnan(diE(:,1)),1);
 		if ~isempty(st), st = st(1); else st = 0; end
-		[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id); clear st
+		
+		[ok,Ps,msg] = c_load('Ps?',cl_id);
+		if ~ok, irf_log('load',msg), end
+		[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id,Ps); clear st
 
 		[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
 		[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
@@ -1681,14 +1679,14 @@ elseif strcmp(quantity,'wake')
 	if ~ok, irf_log('load',msg), diEDI = []; end
 	
 	% Correct for DSI offsets
-	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id);
+	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id,Ps);
 	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
 
 	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV);
 	diEs = caa_rm_blankt(diEs,pswake);
 	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI); %#ok<ASGLU>
 	if ~isempty(dEx)
-		cmd = 'DdsiX?=Ddsi+dEx;save mXTRA DdsiX?';
+		cmd = 'if length(Ddsi)==1,DdsiX?=Ddsi+dEx;else DdsiX?=Ddsi;DdsiX?(:,2)=DdsiX?(:,2)+dEx; end; save mXTRA DdsiX?';
 		if exist('./mXTRA.mat','file'), cmd = [cmd ' -append']; end
 		c_eval(cmd,cl_id), clear cmd
 	end

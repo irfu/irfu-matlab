@@ -11,6 +11,7 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 %           nosave
 %           fullscale - use full scale (up to 180 Hz) on spectrograms
 %           nospec    - do not plot spectrum
+%           usextra   - use and plot DdsiX offsets
 %
 % In iso_t='-1' and dt=-1, they will be determined automatically
 %
@@ -23,6 +24,8 @@ function caa_pl_summary_l1(iso_t,dt,sdir,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+if nargin==0, sdir = pwd; iso_t = -1; dt = -1; end
+
 if ~exist(sdir,'dir'), error(['directory ' sdir ' does not exist']), end
 
 savePDF = 0;
@@ -30,6 +33,7 @@ savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
 plotspec = 1;
+usextra = 0;
 
 int_s = realmax;
 int_e = -1;
@@ -40,26 +44,28 @@ end
 while have_options
 	l = 1;
 	switch(args{1})
-	case 'nosave'
-		savePDF = 0;
-		savePNG = 0;
-	case 'save'
-		savePDF = 1;
-		savePNG = 1;
-	case 'saveps'
-		savePDF = 1;
-	case 'savepdf'
-		savePDF = 1;
-	case 'savepng'
-		savePNG = 1;
-	case 'savejpg'
-		saveJPG = 1;
-	case 'fullscale'
-		fullscale = 1;
-	case 'nospec'
-		plotspec = 0;
-	otherwise
-		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
+		case 'nosave'
+			savePDF = 0;
+			savePNG = 0;
+		case 'save'
+			savePDF = 1;
+			savePNG = 1;
+		case 'saveps'
+			savePDF = 1;
+		case 'savepdf'
+			savePDF = 1;
+		case 'savepng'
+			savePNG = 1;
+		case 'savejpg'
+			saveJPG = 1;
+		case 'fullscale'
+			fullscale = 1;
+		case 'nospec'
+			plotspec = 0;
+		case 'usextra'
+			usextra = 1;
+		otherwise
+			irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
 	else break
@@ -188,15 +194,23 @@ for cli=1:4
 				
 				dsiof = c_ctl(cli,'dsiof');
 				if isempty(dsiof)
-					[dsiof_def, dam_def] = c_efw_dsi_off(st,cli);
+					[ok,Ps,msg] = c_load('Ps?',cli,'var');
+					if ~ok, irf_log('load',msg), end
+					[dsiof_def, dam_def] = c_efw_dsi_off(st,cli,Ps);
+					clear ok Ps msg
 					
-					[ok1,Ddsi] = c_load('DdsiX?',cli);
-					if ~ok1
+					if usextra % Xtra offset
+						[ok1,Ddsi] = c_load('DdsiX?',cli);
+						if ~ok1
+							[ok1,Ddsi] = c_load('Ddsi?',cli);
+							if ~ok1, Ddsi = dsiof_def; end
+						else
+							iso_t = caa_read_interval;
+							dEx(cli)={[dEx{cli}, {[iso2epoch(iso_t) real(Ddsi)]}]};
+						end
+					else
 						[ok1,Ddsi] = c_load('Ddsi?',cli);
 						if ~ok1, Ddsi = dsiof_def; end
-					else
-						iso_t = caa_read_interval;
-						dEx(cli)={[dEx{cli}, {[iso2epoch(iso_t) real(Ddsi)]}]};
 					end
 					[ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
 

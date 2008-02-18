@@ -23,7 +23,12 @@ function out=summaryPlot(cp,cl_id,varargin)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(2,10,nargin))
 
@@ -162,8 +167,10 @@ for k=1:length(q_list)
 							else st = st(1);
 							end
 						end
-
-						[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id);
+						
+						[ok,Ps,msg] = c_load('Ps?',cl_id);
+						if ~ok, irf_log('load',msg), end
+						[dsiof_def, dam_def] = c_efw_dsi_off(st,cl_id,Ps);
 
 						[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
 						[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
