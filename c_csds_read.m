@@ -116,7 +116,7 @@ p = tokenize(data_path,'|');
 
 for i=1:length(p)
 
-	if ~isempty(regexp(p{i},':\d{1,2}\>'))
+	if ~isempty(regexp(p{i},':\d{1,2}\>','once'))
 		% use ISDAT
 		useISDAT = 1;
 	else
