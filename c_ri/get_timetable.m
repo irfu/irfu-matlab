@@ -30,12 +30,18 @@ timetable = 0;
 
 while feof(fp) == 0
     line = fgetl(fp);
-    if(line(1) == 'B')
+	if isempty(line)
+		disp('empty line')
+		continue
+	end
+    switch line(1)
+	case 'B'
 		s_time = line2time(line);
-    end
-    if(line(1) == 'E')
+	case 'E'
         e_time = line2time(line);
 		timetable = addTime2Table(timetable,from,to,s_time,e_time);
+	otherwise
+		%disp('FGM get_timetable: bogus line')
     end
 end
 fclose(fp);
