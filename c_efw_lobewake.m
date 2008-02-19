@@ -1,7 +1,7 @@
-function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI)
+function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI,ecorr)
 %C_EFW_LOBEWAKE  detect lobe wakes
 %
-% wake = c_efw_lobewake(cl_id,[diEs,diBrs,Ps,R,diEDI])
+% wake = c_efw_lobewake(cl_id,[diEs,diBrs,Ps,R,diEDI, e_corr_flag])
 %
 % $Id$
 
@@ -34,6 +34,7 @@ end
 % Load data
 probe_p = caa_sfit_probe(cl_id);
 if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
+	ecorr = 0;
 	[ok,diE] = c_load(sprintf('diEs%dp%d',cl_id,probe_p));
 	if ~ok, error('cannot load E'), end
 	[ok,Ps] = c_load('Ps?',cl_id);
@@ -47,6 +48,16 @@ if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
 	if ~ok, disp('cannot load EDI'), end
 	[ok,R] = c_load('R?',cl_id);
 	if ~ok, disp('cannot load R'), end
+elseif nargin<7, ecorr = 0;
+end
+
+% In the electric is already corrected, adjust ranges for the offset
+if ecorr > 0
+	DE_RANGE = (DEX_MAX-DEX_MIN)/2.0;
+	% XXX: we do not change this is to help situations with ASPOC on
+	%DEX_MAX = DEX_MAX - DE_RANGE;
+	DEX_MIN = DEX_MIN - DE_RANGE;
+	clear DE_RANGE
 end
 
 ndata = ceil((diE(end,1) - diE(1,1))/TAV);

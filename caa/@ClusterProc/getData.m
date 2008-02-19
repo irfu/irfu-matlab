@@ -1684,7 +1684,7 @@ elseif strcmp(quantity,'wake')
 
 	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV);
 	diEs = caa_rm_blankt(diEs,pswake);
-	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI); %#ok<ASGLU>
+	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI,1); %#ok<ASGLU>
 	if ~isempty(dEx)
 		cmd = 'if length(Ddsi)==1,DdsiX?=Ddsi+dEx;else DdsiX?=Ddsi;DdsiX?(:,2)=DdsiX?(:,2)+dEx; end; save mXTRA DdsiX?';
 		if exist('./mXTRA.mat','file'), cmd = [cmd ' -append']; end
