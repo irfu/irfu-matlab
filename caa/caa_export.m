@@ -66,6 +66,7 @@ else
 		if lev==2
 			vs = irf_ssub('diE?p1234',cl_id);
 			v_size = 1;
+			sfit_probe = caa_sfit_probe(cl_id);
 		elseif lev==3
 			sfit_probe = caa_sfit_probe(cl_id);
 			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
