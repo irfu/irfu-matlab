@@ -59,7 +59,7 @@ if isempty(ii), return, end
 if     t>=toepoch([2005 01 01 00 0 0]), Ddsi = [ 1.26  2.34 1.81  1.37 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ 1.35  2.06 1.45  1.15 ];
 elseif t>=toepoch([2003 01 01 00 0 0]), Ddsi = [ 1.42  2.18 1.64  1.43 ];
-elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  1.29 ];
+elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
 else
 	Ddsi = DdsiSW;
 end
