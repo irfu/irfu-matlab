@@ -51,8 +51,9 @@ if nargin == 2 || isempty(Ps), return, end
 ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
 ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
 Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
-ii = find(Psr(:,2) < SC_POT_LIM);
+if isempty(Psr), return, end
 
+ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
