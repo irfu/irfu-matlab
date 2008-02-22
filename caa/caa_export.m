@@ -164,7 +164,9 @@ if strcmp(caa_vs,'E')
 	if ~isempty(data)
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
-			[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id);
+			[ok,Ps,msg] = c_load('Ps?',cl_id);
+			if ~ok, irf_log('load',msg), end
+			[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
 
 			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
 			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
@@ -178,10 +180,21 @@ if strcmp(caa_vs,'E')
 			irf_log('calb','Using user specified DSI offsets')
 		end
 		clear dsiof
-		
+	
 		data = caa_corof_dsi(data,Ddsi,Damp);
-		dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-			real(Ddsi(1)),imag(Ddsi(1)),Damp); clear Ddsi Damp
+		
+		if length(Ddsi) == 1
+			dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+				real(Ddsi(1)),imag(Ddsi(1)),Damp);
+		else
+			dsc.com = 'ISR2 offsets';
+			for in = 1:size(Ddsi,1)
+				dsc.com = [dsc.com sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
+					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
+			end
+			dsc.com = [dsc.com sprintf(' dAmp=%1.2f',Damp)];
+		end
+		clear Ddsi Damp
 		irf_log('calb',dsc.com)
 		dsc.com = [dsc.com '. Probes: ' dsc.sen];
 		
