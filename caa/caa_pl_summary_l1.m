@@ -341,7 +341,7 @@ if dt>0
 	TAV = 180;
 	ndata = ceil(dt/TAV);
 	t = st + (1:ndata)*TAV - TAV/2; t = t'; %#ok<NASGU>
-	c_eval('if ~isempty(edi?), edi?=irf_resamp(edi?,t,''fsample'',1/TAV,''thresh'',1.3); end')
+	c_eval('if ~isempty(edi?), edi?_tmp=irf_resamp(edi?,t,''fsample'',1/TAV,''thresh'',1.3); if size(edi?,1)>1,edi?=irf_tlim(edi?_tmp,[edi?(1,1) edi?(end,1)]); else edi?=edi?_tmp; end, clear edi?_tmp, end')
 end
 % Limit EDI
 c_eval('if ~isempty(edi?) && ~isempty(es?) && any(~isnan(es?(:,2))), for c=2:3, edi?( edi?(:,c)>max(es?(~isnan(es?(:,c)),c)) & edi?(:,c)<min(es?(~isnan(es?(:,c)),c)), c) = NaN; end, end')
