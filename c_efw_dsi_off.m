@@ -23,19 +23,21 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2005 07 01 00 0 0]), Ddsi = [ .31      .60 .52  .64 ];
-elseif t>=toepoch([2005 03 01 00 0 0]), Ddsi = [ .35+0.2i .78 .51  .62 ];
-elseif t>=toepoch([2004 11 01 00 0 0]), Ddsi = [ .35      .78 .51  .62 ];
-elseif t>=toepoch([2004 05 01 00 0 0]), Ddsi = [ .35      .78 .41  .72 ];
-elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ .23      .72 .50  .92 ];
-elseif t>=toepoch([2002 12 02 00 0 0]), Ddsi = [ .15      .53 .47  .71 ];
-elseif t>=toepoch([2002 05 02 00 0 0]), Ddsi = [ .33      .69 .73  .33 ];
-elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ .33      .69 .73  .92 ];
-elseif t>=toepoch([2001 07 01 00 0 0]), Ddsi = [ .47      .82 .89 1.04 ];
-elseif t>=toepoch([2001 06 01 00 0 0]), Ddsi = [ .31      .60 .52  .64 ];
-elseif t>=toepoch([2001 05 25 00 0 0]), Ddsi = [ .31     1.35 .52 1.55 ];
-elseif t>=toepoch([2001 04 25 00 0 0]), Ddsi = [ .31      .60 .52  .64 ];
-elseif t>=toepoch([2001 02 01 00 0 0]), Ddsi = [ .48      .77 .44 1.11 ];
+if     t>=toepoch([2005 07 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
+elseif t>=toepoch([2005 03 01 00 00 0]), Ddsi = [ .35+0.2i .78 .51  .62 ];
+elseif t>=toepoch([2004 11 01 00 00 0]), Ddsi = [ .35      .78 .51  .62 ];
+elseif t>=toepoch([2004 05 01 00 00 0]), Ddsi = [ .35      .78 .41  .72 ];
+elseif t>=toepoch([2004 01 01 00 00 0]), Ddsi = [ .23      .72 .50  .92 ];
+elseif t>=toepoch([2003 07 02 23 30 0]), Ddsi = [ .15      .53 .47  .71 ];
+elseif t>=toepoch([2003 07 01 12 40 0]), Ddsi = [1.42      .53 .47  .71 ]; % HXONLY on C1 in the magnetosphere
+elseif t>=toepoch([2002 12 02 00 00 0]), Ddsi = [ .15      .53 .47  .71 ];
+elseif t>=toepoch([2002 05 02 00 00 0]), Ddsi = [ .33      .69 .73  .33 ];
+elseif t>=toepoch([2002 01 01 00 00 0]), Ddsi = [ .33      .69 .73  .92 ];
+elseif t>=toepoch([2001 07 01 00 00 0]), Ddsi = [ .47      .82 .89 1.04 ];
+elseif t>=toepoch([2001 06 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
+elseif t>=toepoch([2001 05 25 00 00 0]), Ddsi = [ .31     1.35 .52 1.55 ];
+elseif t>=toepoch([2001 04 25 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
+elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
 else
 	Ddsi = [ 0 0 0 0];
 end
