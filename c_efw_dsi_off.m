@@ -28,7 +28,7 @@ elseif t>=toepoch([2005 03 01 00 0 0]), Ddsi = [ .35+0.2i .78 .51  .62 ];
 elseif t>=toepoch([2004 11 01 00 0 0]), Ddsi = [ .35      .78 .51  .62 ];
 elseif t>=toepoch([2004 05 01 00 0 0]), Ddsi = [ .35      .78 .41  .72 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ .23      .72 .50  .92 ];
-elseif t>=toepoch([2003 01 01 00 0 0]), Ddsi = [ .15      .53 .47  .71 ];
+elseif t>=toepoch([2002 12 02 00 0 0]), Ddsi = [ .15      .53 .47  .71 ];
 elseif t>=toepoch([2002 05 02 00 0 0]), Ddsi = [ .33      .69 .73  .33 ];
 elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ .33      .69 .73  .92 ];
 elseif t>=toepoch([2001 07 01 00 0 0]), Ddsi = [ .47      .82 .89 1.04 ];
@@ -61,6 +61,7 @@ if isempty(ii), return, end
 if     t>=toepoch([2005 01 01 00 0 0]), Ddsi = [ 1.26  2.34 1.81  1.37 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ 1.35  2.06 1.45  1.15 ];
 elseif t>=toepoch([2003 01 01 00 0 0]), Ddsi = [ 1.42  2.18 1.64  1.43 ];
+elseif t>=toepoch([2002 12 02 00 0 0]), Ddsi = [ 1.42  1.98 1.64  2.00 ];
 elseif t>=toepoch([2002 05 02 00 0 0]), Ddsi = [ 1.33  1.98 1.66  1.30 ];
 elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
 else
