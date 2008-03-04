@@ -1,7 +1,10 @@
 function caa_update_deltaoff(d,cl_id)
 %CAA_UPDATE_DELTAOFF  update delta offsets database
 %
-% caa_update_deltaoff(DeltaOff,cl_id)
+% CAA_UPDATE_DELTAOFF(DELTAOFF,CL_ID)
+%
+% Update database delta offsets for CL_ID by collted data DELTAOFF.
+% The database is stored in caa/deltaoff.mat
 %
 % See also CAA_COROF_DELTA, ClusterProc/getData
 % 
