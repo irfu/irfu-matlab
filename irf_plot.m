@@ -89,7 +89,7 @@ while have_options
 			marker = args{2};
 			l = 2;
 		otherwise
-			irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
+			%irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
 			marker = args{1};
 			args = args(2:end);
 			break
