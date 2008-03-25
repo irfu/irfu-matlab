@@ -3,9 +3,9 @@ function dof = c_efw_delta_off(data,cl_id)
 %
 % delta_off = c_efw_delta_off(t,cl_id)
 %
-% Return precomputed delta offsets
+% Return precomputed delta (p12 vs p34) offsets
 %
-% See also CAA_UPDATE_DELTAOFF
+% See also CAA_COROF_DELTA, CAA_UPDATE_DELTAOFF
 %
 % $Id$
 
