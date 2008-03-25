@@ -192,6 +192,20 @@ for cli=1:4
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
 				
+				% Delta offsets
+				Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
+				if ~isempty(Del_caa)
+					[ok,Delauto] = c_load('D?p12p34',cli);
+					if ~ok || isempty(Delauto)
+						irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cli))
+					else
+						es_tmp = caa_corof_delta(es_tmp,pp,Delauto,'undo');
+						es_tmp = caa_corof_delta(es_tmp,pp,Del_caa,'apply');
+					end
+				end
+				
+				
+				% DSI offsets
 				dsiof = c_ctl(cli,'dsiof');
 				if isempty(dsiof)
 					[ok,Ps,msg] = c_load('Ps?',cli,'var');

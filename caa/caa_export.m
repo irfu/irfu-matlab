@@ -25,7 +25,7 @@ function status = caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 status = 0;
 
 % This must be changed when we do any major changes to our processing software
-EFW_DATASET_VERSION = '2';
+EFW_DATASET_VERSION = '3';
 
 if nargin<8, st = []; dt=[]; end
 if nargin<6, sp='.'; end
@@ -163,6 +163,22 @@ if strcmp(caa_vs,'E')
 	
 	% Correct offsets
 	if ~isempty(data)
+		
+		if lev==3
+			% Delta offsets: remove automatic and apply CAA
+			Del_caa = c_efw_delta_off(data(1,1),cl_id);
+			if ~isempty(Del_caa)
+				[ok,Delauto] = c_load('D?p12p34',cl_id);
+				if ~ok || isempty(Delauto)
+					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+				else
+					data = caa_corof_delta(data,sfit_probe,Delauto,'undo');
+					data = caa_corof_delta(data,sfit_probe,Del_caa,'apply');
+				end
+			end
+		end
+		
+		% Dsi offsets
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
 			[ok,Ps,msg] = c_load('Ps?',cl_id);

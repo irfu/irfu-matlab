@@ -60,7 +60,11 @@ function data = getData(cp,cl_id,quantity,varargin)
 % General options - one of the following:
 %       nosave : do no save on disk
 %       withwhip : do not remove time intervals with Whisper pulses
-%       notusesavedoff : recalculating everything instead of using saved offsets
+%       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
+%           compute the offset (affects 'die')
+%       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
+%           e.g. compute the offset from spinfits and use it afterwards 
+%           (affects 'dies','die')
 %
 % See also C_GET, C_CTL
 %
@@ -80,7 +84,8 @@ end
 
 % default options
 flag_save = 1;
-flag_usesavedoff = 1;
+flag_usesaved_adc_off = 1;
+flag_usecaa_del_off = 1;
 flag_edb = 1;
 sfit_ver = -1;
 correct_sw_wake = 0;
@@ -102,9 +107,11 @@ while have_options
 	case 'nosave'
 		flag_save = 0;
 	case 'withwhip'
-		flag_rmwhip = 0;
-	case 'notusesavedoff'
-		flag_usesavedoff = 0;
+		flag_rmwhip = 0;no_caa_delta
+	case 'no_caa_delta'
+		flag_usecaa_del_off = 0;
+	case 'no_saved_adc'
+		flag_usesaved_adc_off = 0;
 	case 'ang_limit'
 		if length(args)>1
 			if isnumeric(args{2})
@@ -651,7 +658,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			end
 			
 			% Correct ADC offset
-			if flag_usesavedoff
+			if flag_usesaved_adc_off
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
@@ -660,10 +667,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					clear tmp_adc
 				else
 					irf_log('calb','saved ADC offset empty')
-					flag_usesavedoff = 0;
+					flag_usesaved_adc_off = 0;
 				end
 			end
-			if ~flag_usesavedoff
+			if ~flag_usesaved_adc_off
 				irf_log('calb','computing ADC offsets (simple averaging)')
 				[tt,dadc] = caa_corof_adc(tt); %#ok<ASGLU>
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
@@ -755,33 +762,42 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		clear e12 e34
 		
 		% Load Delta offsets D?p12p34
-		[ok,Del] = c_load('D?p12p34',cl_id);
-		if ~ok || isempty(Del)
-			irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id,ps))
-		else
-			
-			if isreal(Del)
-				% Real Del means we must correct p12/p32.
-				irf_log('calb',['correcting delta offset on p' num2str(p12)])
-				i_c = 1;
-			else
-				% Correcting p34 is now DEPRECATED
-				irf_log('calb','correcting delta offset on p34')
-				Del = imag(Del);
-				i_c = 2;
-			end
-			coef(i_c,3) = Del(1) -Del(2)*1j;
-			clear Del
-			
-	
-% 			irf_log('calb',['correcting delta offset on p' num2str(p12)])
-% 
-% 			% Correcting p34 is now DEPRECATED [~isreal(Del)]
-% 			if ~isreal(Del), Del = -imag(Del); end
-% 			coef(1,3) = Del(1) -Del(2)*1j;
-
-		
+		if flag_usecaa_del_off
+			Del = c_efw_delta_off(full_e(1,1),cl_id);
 		end
+		if isempty(Del)
+			% Try saved offsets
+			[ok,Del] = c_load('D?p12p34',cl_id);
+			if ~ok || isempty(Del)
+				irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+			end
+			E_info.deltaoffauto = 1;
+		else
+			E_info.deltaoffauto = 0;
+		end
+		E_info.deltaoff = Del;
+		
+		if ~isempty(Del)
+			if (E_info.deltaoffauto), dos = 'auto'; else dos='caa'; end
+			for comp=1:2
+				if comp==1, x='x'; else x='y'; end
+				if isreal(Del(comp))
+					% Real Del means we must correct p12/p32.
+					irf_log('calb',['correcting E' x ' delta offset(' dos ') on p' num2str(p12)])
+					i_c = 1; % p12
+				else
+					% Correcting p34 is generally DEPRECATED, but can be used
+					% when necessary (see c_efw_delta_off)
+					irf_log('calb',['correcting E' x ' delta offset(' dos ') on p34'])
+					Del = imag(Del);
+					i_c = 2; % p34
+				end
+				if comp==1, coef(i_c,3) = coef(i_c,3) + Del(1);
+				else        coef(i_c,3) = coef(i_c,3) - Del(2)*1j;
+				end
+			end
+		end
+		clear Del
 	else
 	
 		% We have one probe pair
@@ -950,7 +966,21 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		data = []; cd(old_pwd); return
 	end
 	
-	% Save stand-dev in the 6-th column
+	if flag_usecaa_del_off && ( strcmp(quantity,'edbs') || strcmp(quantity,'iedbs') )
+		% Delta offsets: remove automatic and apply CAA
+		Del_caa = c_efw_delta_off(diE(1,1),cl_id);
+		if ~isempty(Del_caa)
+			[ok,Delauto] = c_load('D?p12p34',cl_id);
+			if ~ok || isempty(Delauto)
+				irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+			else
+				diE = caa_corof_delta(diE,probe_p,Delauto,'undo');
+				diE = caa_corof_delta(diE,probe_p,Del_caa,'apply');
+			end
+		end
+	end
+	
+	% Save stand-deviation in the 6-th column
 	if strcmp(quantity,'edbs') || strcmp(quantity,'iedbs'), diE(:,6) = diE(:,5); end
 	
 	dsiof = c_ctl(cl_id,'dsiof');
