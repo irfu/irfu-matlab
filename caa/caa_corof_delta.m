@@ -1,7 +1,16 @@
 function data = caa_corof_delta(data,probe_p,dof,action)
-%CAA_COROF_DELTA correct delta offsets
+%CAA_COROF_DELTA  correct delta offsets
 %
-% new_data = caa_corof_delta(data,deltaoff)
+% NEW_DATA = CAA_COROF_DELTA(DATA,PROBE_P,DELTAOFF,[ACTION])
+%
+% Correct/remove delta (p12 vs p34) offset DELTAOFF on DATA from probe 
+% pair PROBE_P.
+%
+% ACTION: 
+%     'apply' - apply the offset (default)
+%     'undo' - remove already applied offset
+%
+% See also C_EFW_DELTA_OFF
 %
 % $Id$
 
@@ -13,7 +22,7 @@ function data = caa_corof_delta(data,probe_p,dof,action)
 % ----------------------------------------------------------------------------
 
 if probe_p~=12 && probe_p~=32 && probe_p~=34
-	error('bag value for PROBE_P')
+	error('bad value for PROBE_P')
 end
 
 if probe_p==34 && isreal(dof), return, end
@@ -26,15 +35,18 @@ else
 		elseif strcmp(action,'undo'), action = -1;
 		end
 	elseif action~=1 || action~=-1
-		error('bag value for ACTION')
+		error('bad value for ACTION')
 	end
 end
 
-% Real offset is applied to p12/32, imaginary to p34.
+% Real offset is applied to p12/32,  imaginary to p34.
 for comp=1:2
 	if (isreal(dof(comp)) && probe_p~=34) || (~isreal(dof(comp)) && probe_p==34)
 		if ~isreal(dof(comp)), dof(comp) = imag(dof(comp)); end
-		data(:,comp) = data(:,comp) - action*dof(comp);
+		data(:,comp+1) = data(:,comp+1) - action*dof(comp);
+		if action==1, do='applying'; else do='removing'; end
+		if comp==1, x='x'; else x='y'; end
+		irf_log('proc',sprintf('%s %.2f mV/m delta E%s on p%d',do,dof(comp),x,probe_p))
 	end
 end
 
