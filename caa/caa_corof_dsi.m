@@ -1,4 +1,4 @@
-function new_data = caa_corof_dsi(data,Dx,Dy,Da)
+function data = caa_corof_dsi(data,Dx,Dy,Da)
 %CAA_COROF_DSI  correct offsets in DSI(ISR2)
 %
 % new_data = caa_corof_dsi(data,Dx,Dy,Da)
@@ -29,7 +29,7 @@ if length(Dx) == 1
 		Dy = imag(Dx);
 		Dx = real(Dx);
 	end
-	new_data = corr_local(data,Dx,Dy,Da);
+	data = corr_local(data,Dx,Dy,Da);
 	return
 end
 
@@ -41,17 +41,19 @@ elseif any(size(Dx)~=size(Dy))
 	error('Dx and Dy must be of the same size')
 end
 
-new_data = data;
-for in=1:size(Dx,1)
-	if in ==1, ii = find( data(:,1)<Dx(2,1) );
-	elseif in == size(Dx,1), ii = find( data(:,1)>=Dx(end,1) );
-	else ii = find( data(:,1)<Dx(in+1,1) & data(:,1)>=Dx(in,1) );
+if size(Dx,1)==1
+	data = corr_local(data,Dx(2),Dy(2),Da);
+else
+	for in=1:size(Dx,1)
+		if in ==1, ii = find( data(:,1)<Dx(2,1) );
+		elseif in == size(Dx,1), ii = find( data(:,1)>=Dx(end,1) );
+		else ii = find( data(:,1)<Dx(in+1,1) & data(:,1)>=Dx(in,1) );
+		end
+		data(ii,:) = corr_local(data(ii,:),Dx(in,2),Dy(in,2),Da);
 	end
-	new_data(ii,:) = corr_local(data(ii,:),Dx(in,2),Dy(in,2),Da);
 end
 
-function new_data = corr_local(data,Dx,Dy,Da)
-new_data = data;
-new_data(:,2) = data(:,2) - Dx;
-new_data(:,3) = data(:,3) - Dy;
-new_data(:,2:3) = Da*new_data(:,2:3);
+function data = corr_local(data,Dx,Dy,Da)
+data(:,2) = data(:,2) - Dx;
+data(:,3) = data(:,3) - Dy;
+data(:,2:3) = Da*data(:,2:3);
