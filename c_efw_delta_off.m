@@ -41,7 +41,7 @@ if length(data(:,1))==1
 		irf_log('proc','Delta off from the next interval')
 	elseif any(isnan(da(ii1,2:3))) && any(isnan(da(ii2,2:3)))
 		dof = [];
-		irf_log('proc','No Delta offsets at this time')
+		irf_log('proc',sprintf('C%d: no Delta offsets',cl_id))
 	else
 		da = da(~isnan(da(:,2)),:);
 		dof = interp1(da(:,1),da(:,2:3),t,'spline');
