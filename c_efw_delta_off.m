@@ -35,10 +35,10 @@ if length(data(:,1))==1
 	ii1 = ii1(1); ii2 = ii2(end);
 	if any(isnan(da(ii1,2:3))) && ~any(isnan(da(ii2,2:3)))
 		dof = da(ii2,2:3);
-		irf_log('proc','Delta off from the previous interval')
+		irf_log('proc',sprintf('C%d: delta off from the previous interval',cl_id))
 	elseif ~any(isnan(da(ii1,2:3))) && any(isnan(da(ii2,2:3)))
 		dof = da(ii1,2:3);
-		irf_log('proc','Delta off from the next interval')
+		irf_log('proc',sprintf('C%d: delta off from the next interval',cl_id))
 	elseif any(isnan(da(ii1,2:3))) && any(isnan(da(ii2,2:3)))
 		dof = [];
 		irf_log('proc',sprintf('C%d: no Delta offsets',cl_id))
