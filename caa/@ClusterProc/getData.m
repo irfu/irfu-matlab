@@ -783,12 +783,12 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				if comp==1, x='x'; else x='y'; end
 				if isreal(Del(comp))
 					% Real Del means we must correct p12/p32.
-					irf_log('calb',['correcting E' x ' delta offset(' dos ') on p' num2str(p12)])
+					irf_log('calb',['corr E' x ' delta offset(' dos ') on p' num2str(p12)])
 					i_c = 1; % p12
 				else
 					% Correcting p34 is generally DEPRECATED, but can be used
 					% when necessary (see c_efw_delta_off)
-					irf_log('calb',['correcting E' x ' delta offset(' dos ') on p34'])
+					irf_log('calb',['corr E' x ' delta offset(' dos ') on p34'])
 					Del = imag(Del);
 					i_c = 2; % p34
 				end
