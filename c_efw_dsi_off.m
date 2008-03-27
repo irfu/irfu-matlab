@@ -26,7 +26,8 @@ Damp = 1.1*ones(1,4);
 if     t>=toepoch([2005 07 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
 elseif t>=toepoch([2005 03 01 00 00 0]), Ddsi = [ .35+0.2i .78 .51  .62 ];
 elseif t>=toepoch([2004 11 01 00 00 0]), Ddsi = [ .35      .78 .51  .62 ];
-elseif t>=toepoch([2004 05 01 00 00 0]), Ddsi = [ .35      .78 .41  .72 ];
+elseif t>=toepoch([2004 06 01 00 00 0]), Ddsi = [ .35      .78 .41  .42 ];
+elseif t>=toepoch([2004 05 01 00 00 0]), Ddsi = [ .65      .95 .41  .42 ]; % manually checked
 elseif t>=toepoch([2004 01 01 00 00 0]), Ddsi = [ .23      .72 .50  .42 ];
 elseif t>=toepoch([2003 07 02 23 30 0]), Ddsi = [ .15      .53 .47  .71 ];
 elseif t>=toepoch([2003 07 01 12 40 0]), Ddsi = [1.42      .53 .47  .71 ]; % HXONLY on C1 in the magnetosphere
