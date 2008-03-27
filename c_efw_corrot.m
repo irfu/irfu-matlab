@@ -5,6 +5,8 @@ function [res, ecorr] = c_efw_corrot(cl_id,diEs,diBr,P,R,SAX,diV)
 % 
 % Compare E-fileds measured by EFW with CORROTATION E-filed.
 %
+% See also: CAA_COMP_EFW_EDI_CORR
+%
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -26,6 +28,10 @@ if nargin==1
 	diEs = c_load('diEs?',cl_id,'var');
 	if diEs(1,1) == -157e8, error('No E-field'), end
 	diBr = c_load('diBr?',cl_id,'var');
+	if diBr(1,1) == -157e8
+		diBr = c_load('diBrs?',cl_id,'var');
+		if diBr(1,1) == -157e8, error('No B-field'), end
+	end
 	P = c_load('P?',cl_id,'var');
 	R = c_load('R?',cl_id,'var');
 	SAX = c_load('SAX?',cl_id,'var');

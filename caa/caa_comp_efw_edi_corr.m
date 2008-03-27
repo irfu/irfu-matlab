@@ -4,7 +4,9 @@ function caa_comp_efw_edi_corr(cl_id)
 % CAA_COMP_EFW_EDI_CORR(CL_ID)
 % 
 % Compare E-fileds measured by  EFW and EDI with 
-% CORROTATION E-filed.
+% CO-ROTATION E-filed.
+%
+% See also: C_EFW_CORROT
 %
 % $Id$
 
@@ -29,6 +31,10 @@ diEs = c_load('diEs?',cl_id,'var');
 if diEs(1,1) == -157e8, error('No E-field'), end
 diEDI = c_load('diEDI?',cl_id,'var');
 diBr = c_load('diBr?',cl_id,'var');
+if diBr(1,1) == -157e8
+	diBr = c_load('diBrs?',cl_id,'var');
+	if diBr(1,1) == -157e8, error('No B-field'), end
+end
 P = c_load('P?',cl_id,'var');
 R = c_load('R?',cl_id,'var');
 SAX = c_load('SAX?',cl_id,'var');
