@@ -294,7 +294,7 @@ elseif strcmp(quantity,'dies')
 		if length(e12(:,1))==length(e34(:,1))
 			not_same = 0;
 			% Check fo same length but different timelines
-			if length(find((e12(:,1)-e34(:,1))~=0)), not_same = 1; end
+			if any( (e12(:,1)-e34(:,1))~=0 ), not_same = 1; end
         else not_same = 1;
 		end
 	end
@@ -436,7 +436,7 @@ elseif strcmp(quantity,'dies')
 			sdev = std(df);
 			for comp = 1:2
 				ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
-				iia = [iia; ii];
+				iia = [iia; ii]; %#ok<AGROW>
 			end
 			iia = sortrows(iia(:));
 			iia(diff(iia)==0) = [];
@@ -599,7 +599,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			clear ok da
 		end
 	end
-	if ~length(p_ok), data = []; cd(old_pwd), return, end
+	if isempty(p_ok), data = []; cd(old_pwd), return, end
 
 	% Load ADC offsets
 	for probe = p_ok
@@ -1239,8 +1239,8 @@ elseif strcmp(quantity,'badbias')
 				ibias(ii_good,2) = 1;
 				ibias(ii_bad,2) = 0;
 				ii = irf_find_diff(ibias(:,2));
-				if ibias(1,2)==0, ii = [1; ii]; end
-				if ibias(end,2)==0, ii = [ii; length(ibias(:,2))]; end
+				if ibias(1,2)==0, ii = [1; ii]; end %#ok<AGROW>
+				if ibias(end,2)==0, ii = [ii; length(ibias(:,2))]; end %#ok<AGROW>
 				ii = reshape(ii,2,length(ii)/2);
 				bb_st = ibias(ii(1,:));
 				bb_et = ibias(ii(2,:));
@@ -1432,8 +1432,8 @@ elseif strcmp(quantity,'probesa')
 			p_tmp(ii_god,2) = 1;
 			p_tmp(ii_bad,2) = 0;
 			ii = irf_find_diff(p_tmp(:,2));
-			if p_tmp(1,2)==0, ii = [1; ii]; end
-			if p_tmp(end,2)==0, ii = [ii; length(p_tmp(:,2))]; end
+			if p_tmp(1,2)==0, ii = [1; ii]; end %#ok<AGROW>
+			if p_tmp(end,2)==0, ii = [ii; length(p_tmp(:,2))]; end %#ok<AGROW>
 			ii = reshape(ii,2,length(ii)/2);
 			res = [p_tmp(ii(1,:))-DELTA; p_tmp(ii(2,:))+DELTA]'; %#ok<NASGU>
 			c_eval(['PROBELD' num2str(cl_id) 'p?=res;'...
@@ -1492,8 +1492,8 @@ elseif strcmp(quantity,'probesa')
 			end
 			p(ii_bad,2) = 0; %#ok<FNDSB>
 			ii = irf_find_diff(p(:,2));
-			if p(1,2)==0, ii = [1; ii]; end
-			if p(end,2)==0, ii = [ii; length(p(:,2))]; end
+			if p(1,2)==0, ii = [1; ii]; end %#ok<AGROW>
+			if p(end,2)==0, ii = [ii; length(p(:,2))]; end %#ok<AGROW>
 			ii = reshape(ii,2,length(ii)/2);
 			
 			% We add DT_PLUMIN sec on each side and check for overlapping intervals
@@ -2118,7 +2118,7 @@ end %main QUANTITY
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % If flag_save is set, save variables to specified file
-if flag_save==1 && length(save_file)>0 && ~isempty(save_list)
+if flag_save==1 && ~isempty(save_file) && ~isempty(save_list)
 	irf_log('save',[save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
