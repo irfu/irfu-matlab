@@ -83,7 +83,11 @@ void mexFunction(
 	if ( thresh < 0 )
 		mexErrMsgTxt("Forth input argument must be positive");
 	
-    /* Create output array */
+	/* check is there is a total interval mismatch */
+	if ( (data[0] > tref[ntref-1] + dt2) || (data[ndata-1] <= tref[0] - dt2) )
+		mexErrMsgTxt("interval mismatch\n");
+	
+	/* Create output array */
     plhs[0] = mxCreateDoubleMatrix(ntref,ncomp,0);
     res = mxGetPr(plhs[0]);
     for (i=0; i < ntref; i++)
@@ -91,15 +95,6 @@ void mexFunction(
 	
 	if ( (starts = mxMalloc(ntref*sizeof(mwSize))) == NULL )
 		mexErrMsgTxt("mxMalloc() failed");
-	
-	/* check is there is a total interval mismatch */
-	if ( (data[0] > res[ntref-1] + dt2) || (data[ndata-1] <= res[0] - dt2) )
-	{
-		mexWarnMsgTxt("interval mismatch\n");
-		for (i=0; i<ndata*ncomp; i++) 
-			res[i] = NaN;
-		return;
-	}
 	
 	/* first find starts for all intervals */
 	for (i=0; i < ntref; i++)

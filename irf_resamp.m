@@ -181,7 +181,12 @@ if strcmp(flag_do,'average')
 			end
 		end
 	else
-		out = irf_average_mx(x,t,dt2,thresh);
+		if ( (x(1,1) > t(end) + dt2) || (x(end,1) <= t(1) - dt2) )
+			irf_log('proc','interval mismatch')
+			out = [];
+		else
+			out = irf_average_mx(x,t,dt2,thresh);
+		end
 	end
 elseif strcmp(flag_do,'interpolation'),
   if nargin < 3, method = 'linear'; end
