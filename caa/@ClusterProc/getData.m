@@ -1816,6 +1816,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 		var_b = 'Br?';
 		[ok,E_tmp,msg] = c_load('diE?p1234',cl_id);
 		if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+		e_sf = c_efw_fsample(E_tmp,'hx');
 	else
 		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
 		[ok,E_tmp] = c_load(var_e{1},cl_id);
@@ -1826,6 +1827,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 				data = []; cd(old_pwd); return
 			end
 		end
+		e_sf = .25;
 	end
 	
 	% Load B GSE, as it is level 0 FGM data for us. 
@@ -1838,7 +1840,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 		Binfo = 'FR'; %#ok<NASGU>
 		bad_coverage = 0;
 		cover = 0;
-		B_tmp = irf_tlim(B_tmp,E_tmp(1,1) + [0 dt]);
+		B_tmp = irf_tlim(B_tmp,E_tmp(1,1) + [-.5/e_sf (dt+.5/e_sf)]);
 		if isempty(B_tmp), bad_coverage = 1;
 		else
 			fgm_sf = 1/(B_tmp(2,1)-B_tmp(1,1));
@@ -1847,7 +1849,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			elseif (fgm_sf > 67.5 - del_f) && (fgm_sf < 67.5 + del_f), fgm_sf = 67.5;
             else irf_log('proc','cannot guess sampling frequency for B')
 			end
-			cover = length(B_tmp(:,1))/(dt*fgm_sf);
+			cover = length(B_tmp(:,1))/((dt+1/e_sf)*fgm_sf);
 			% We allow for 10% of data gaps. (should we??)
 			if cover < .9, bad_coverage = 1; end
 		end
@@ -1864,7 +1866,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 				data = []; cd(old_pwd); return
 			end
 		else
-			BPP_tmp = irf_tlim(BPP_tmp,E_tmp(1,1) + [0 dt]);
+			BPP_tmp = irf_tlim(BPP_tmp,E_tmp(1,1) + [-.5/e_sf (dt+.5/e_sf)]);
 			if isempty(BPP_tmp)
 				irf_log('load','Canot find any usefull B data. Please load B FGM or B PP.')
 				data = []; cd(old_pwd); return
@@ -1875,7 +1877,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			if (fgm_sf > .25 - del_f) && (fgm_sf < .25 + del_f), fgm_sf = .25;
             else irf_log('proc','cannot guess sampling frequency for B PP')
 			end
-			cover_pp = length(BPP_tmp(:,1))/(dt*fgm_sf);
+			cover_pp = length(BPP_tmp(:,1))/((dt+1/e_sf)*fgm_sf);
 			
 			% If there is more PP data, then use it.
 			% Take .99 to avoid marginal effects.
@@ -1889,7 +1891,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	end
 	
 	% Resample the data
-	Br = irf_resamp(B_tmp,E_tmp,'fsample',c_efw_fsample(E_tmp)); %#ok<NASGU>
+	Br = irf_resamp(B_tmp,E_tmp,'fsample',e_sf); %#ok<NASGU>
 	c_eval([ var_b '=Br;' var_b '_info=Binfo;save_list=[save_list ''' var_b ' '' '' ' var_b '_info '' ];'],cl_id)
 	
 	% DSI->GSE
