@@ -662,7 +662,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
-					tmp_adc = irf_resamp(dadc,tt,'fsample',fsamp);
+					if size(dadc,1)==1, tmp_adc = dadc;
+					else tmp_adc = irf_resamp(dadc,tt,'fsample',fsamp);
+					end
 					tt(:,2) = tt(:,2) - tmp_adc(:,2);
 					clear tmp_adc
 				else
