@@ -213,7 +213,7 @@ elseif ~isempty(wind)
 	if ~isempty(wind)
 		for j=wind'
 			if res(end,2)>=t(j)-DT2*2, res(end,2) = t(j) + DT2; % throw away one good point in between bad (DT2*2)
-			else res = [res; t(j)-DT2 t(j)+DT2];
+			else res = [res; t(j)-DT2 t(j)+DT2]; %#ok<AGROW>
 			end
 		end
 	end
