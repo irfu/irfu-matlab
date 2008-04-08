@@ -1,7 +1,17 @@
 function [res,dEx] = c_efw_lobewake(cl_id,diE,diB,Ps,R,diEDI,ecorr)
 %C_EFW_LOBEWAKE  detect lobe wakes
 %
-% wake = c_efw_lobewake(cl_id,[diEs,diBrs,Ps,R,diEDI, e_corr_flag])
+% [wake,dEx] = C_EFW_LOBEWAKE(cl_id,[diEs,diBrs,Ps,R,diEDI, e_corr_flag])
+%
+% Detect wakes using conditions on large parallel and penrpendicular
+% electric fields. X-tra Ex offset offset dEx) is computed from difference
+% between EFW and EDI/Ex=0.
+%
+% e_corr_flag = 1, use dEx(X-tra offset) when detecting wakes
+%
+% C_EFW_LOBEWAKE(cl_id,'plot')
+% 
+% Do a plot illustrating wake detection
 %
 % $Id$
 
@@ -61,6 +71,11 @@ if ecorr > 0
 end
 
 ndata = ceil((diE(end,1) - diE(1,1))/TAV);
+if ndata==0
+	irf_log('proc','not enough data to compute wakes')
+	res = []; dEx = [];
+	return
+end
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
