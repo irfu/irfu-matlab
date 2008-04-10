@@ -107,7 +107,7 @@ while have_options
 	case 'nosave'
 		flag_save = 0;
 	case 'withwhip'
-		flag_rmwhip = 0;no_caa_delta
+		flag_rmwhip = 0;
 	case 'no_caa_delta'
 		flag_usecaa_del_off = 0;
 	case 'no_saved_adc'
