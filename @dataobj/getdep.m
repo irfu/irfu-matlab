@@ -38,7 +38,7 @@ if nvars>0
 				field = sprintf('DEPEND_%d',d);
 				tt = findva(dobj,field,v1_s);
 				if ~isempty(tt)
-					if found, error('found bot LABEL_X and DEPEND_X'), end
+					if found, error('found both LABEL_X and DEPEND_X'), end
 					disp([field ' : ' tt])
 					dep_x(d,:) = {tt,field};
 					found_any = 1;
@@ -56,7 +56,11 @@ if nvars>0
 					end
 					if isempty(tvar), error('No DEPEND_O for a T variable'), end
 				end
-				res = struct('DEPEND_O',tvar.data,'DEPEND_X',{dep_x});
+				if found_any
+					res = struct('DEPEND_O',tvar.data,'DEPEND_X',{dep_x});
+				else
+					res = struct('DEPEND_O',tvar.data,'DEPEND_X',[]);
+				end
 			else
 				if found_any, res = struct('DEPEND_X',{dep_x});
 				else res = struct('DEPEND_X',[]);
