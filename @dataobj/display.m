@@ -1,5 +1,10 @@
-function display(dobj)
+function display(dobj,mode)
 % DISPLAY(dobj) Display a dataobj object
+%
+% DISPLAY(dobj,[mode])
+%
+% mode : 'full'  - list everything
+%        'short' - only data varibles
 %
 % $Revision$  $Date$
 
@@ -10,6 +15,17 @@ function display(dobj)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+if nargin < 2, m = 0;
+else
+	switch lower(mode)
+		case {'f','full'}
+			m = 1;
+		case {'s','short'}
+			m = 0;
+		otherwise
+			error('invalid value for MODE')
+	end
+end
 
 disp(' ')
 disp(['dataobj object created : ' dobj.FileModDate])
@@ -18,8 +34,9 @@ disp('Variables:')
 nvars = size(dobj.vars,1);
 if nvars>0
 	for v=1:nvars
+		if m == 0 && strcmpi(dobj.data.(dobj.vars{v,1}).type,'char'), continue, end
 		disp([dobj.vars{v,1} ' : ' dobj.data.(dobj.vars{v,1}).type ' : '...
-			num2str(dobj.data.(dobj.vars{v,1}).nrec)])
+			num2str(dobj.data.(dobj.vars{v,1}).nrec) ' recs' ])
 	end
 else
 	disp('empty')
