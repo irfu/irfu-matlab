@@ -18,15 +18,20 @@ data = getv(dobj,var_s);
 dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
 units = getunits(dobj,var_s);
-lablaxis = getlablaxis(dobj,var_s);
+fieldnam = findva(dobj,'FIELDNAM',var_s);
+%lablaxis = getlablaxis(dobj,var_s);
 cs = getcs(dobj,var_s);
 if ~isempty(cs), cs = [' ' cs]; end
 fillv = getfillval(dobj,var_s);
 data.data(data.data==fillv) = NaN;
 
-use_comp = 1;
-if nargin == 2, use_comp = 0; ax = [];
+
+if nargin == 2, comp = []; ax = [];
 elseif nargin == 3, ax = []; 
+end
+
+if isempty(comp), use_comp = 0;
+else use_comp = 1;
 end
 
 if dim == 1
@@ -37,9 +42,7 @@ if dim == 1
 	end
 end
 
-if dim == 0
-		error('cannot be plotted')
-elseif dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		
 		plot_data = double(data.data)';
 		if use_comp, plot_data = plot_data(:,comp); end
@@ -72,15 +75,19 @@ elseif dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%%%%%%%%%
 					reclen=size(dep_x.data,2)/length(dep.DEPEND_O);
 					if use_comp, lab_1 = ['(' dep_x.data(comp,1:reclen) ')'];
 					else
-						legend({dep_x.data(:,1:reclen)})
+						legend({dep_x.data(:,1:reclen)}, 'location','NorthWest')
+						legend('boxoff')
 					end
 				else
 					error('BAD type for DEPEND_X')
 				end
 			end
 		end
+		ylabel(sprintf('%s%s [%s]', fieldnam, lab_1, units))
 		
-		ylabel(sprintf('%s%s%s [%s]', lablaxis, lab_1, cs, units))
+		add_text(h,[dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
+			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' ...
+			fieldnam ' [' shorten_cs(cs) ']'])
 		
 else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	if dim == 2
@@ -101,4 +108,16 @@ end
 		
 if nargout > 0, res = h; end
 
+function add_text(h,txt)
+
+ylim = get(h,'YLim');
+xlim = get(h,'XLim');
+text(xlim(2) - range(xlim)*.05, ylim(2) - range(ylim)*.05, [' ' txt],...
+	'HorizontalAlignment','right')
+
+function cs = shorten_cs(cs)
+
+while cs(1) == ' ', cs(1) = []; end
+	
+if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
 
