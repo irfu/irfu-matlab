@@ -14,6 +14,12 @@ error(nargchk(2,2,nargin))
 
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 
+% Take care of long variables (>63 symbols)
+if length(var_s)>63
+	var_s = [var_s(1:60) '...' var_s(end)];
+	disp('trying truncated variable name')
+end
+
 nvars = size(dobj.vars,1);
 if nvars>0
 	for v=1:nvars
