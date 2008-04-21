@@ -164,10 +164,10 @@ for comp=1:min(length(h),ncomp)
     end
 
     if min(size(ff))==1, % frequency is vector
-    pcolor(double(tt-t_start_epoch),ff,double(log10(pp')))
+    pcolor(double(tt-t_start_epoch),ff,log10(double(pp')))
     else % frequency is matrix
      ttt=repmat(tt,1,size(ff,2));
-     pcolor(double(ttt-t_start_epoch),ff,double(log10(pp)))
+     pcolor(double(ttt-t_start_epoch),ff,log10(double(pp)))
     end   
 	colormap(cmap)
     shading flat
