@@ -93,6 +93,7 @@ irf_plot({[EVXB_PEA_xyz_ISR2(:,1) EVXB_PEA_xyz_ISR2(:,2:3)-E_Vec_xy_ISR2_rPEA(:,
 hold off
 ylabel(h(3),'diff [mV/m]')
 legend(h(3),'x','y')
+legend(h(3),'boxoff')
 
 h(4) = irf_subplot(4,1,-4);
 irf_plot(ScPot)
