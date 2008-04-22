@@ -85,9 +85,10 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 		end
 		ylabel(sprintf('%s%s [%s]', fieldnam, lab_1, units))
 		
-		add_text(h,[dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
-			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' ...
-			fieldnam ' [' shorten_cs(cs) ']'])
+		text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
+			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+		if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
+		add_text(h,text_s);
 		
 else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	if dim == 2
