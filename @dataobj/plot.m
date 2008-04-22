@@ -1,7 +1,7 @@
 function res = plot(dobj,var_s,comp,ax)
 %PLOT(dobj, var_s)  plot a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

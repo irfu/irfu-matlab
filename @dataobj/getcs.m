@@ -1,7 +1,7 @@
 function res = getcs(dobj,var_s)
 %GETCS(dobj, var_s)  get coordinate system of a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

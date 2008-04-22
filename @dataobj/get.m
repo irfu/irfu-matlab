@@ -1,7 +1,7 @@
 function res = get(dobj,var_s)
 %GET(dobj, var_s)  get VariableAttributes, GlobalAttributes or a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

@@ -6,7 +6,7 @@ function display(dobj,mode)
 % mode : 'full'  - list everything
 %        'short' - only data varibles
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

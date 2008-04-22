@@ -1,7 +1,7 @@
 function res = getunits(dobj,var_s)
 %GETUNITS(dobj, var_s)  get units for a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

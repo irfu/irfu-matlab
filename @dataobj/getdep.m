@@ -1,7 +1,7 @@
 function res = getdep(dobj,var_s)
 %GETDEP(dobj, var_s)  get dependencies for a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

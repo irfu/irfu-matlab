@@ -2,7 +2,7 @@
 %Downloaded zip file must be unpacked, and script must be run 
 %from a CAA_Download_YYYYMMDD_hhmm directory.
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

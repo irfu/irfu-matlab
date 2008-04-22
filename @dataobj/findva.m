@@ -1,7 +1,7 @@
 function res = findva(dobj,field,var_s)
 %FINDVA(dobj, var_s) find attribute for a variable in a list
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

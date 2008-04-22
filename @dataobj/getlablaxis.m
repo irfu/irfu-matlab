@@ -1,7 +1,7 @@
-function res = getlabaxis(dobj,var_s)
+function res = getlablaxis(dobj,var_s)
 %GETLABAXIS(dobj, var_s)  get axis label for a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

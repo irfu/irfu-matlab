@@ -1,7 +1,7 @@
 function res = getv(dobj,var_s)
 %GETV(dobj, var_s)  get a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
