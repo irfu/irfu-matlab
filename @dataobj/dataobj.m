@@ -25,11 +25,44 @@ switch nargin
 		% if single argument of class ClusterDB, return it
 		if (isa(varargin{1},'dataobj'))
 			dobj = varargin{1};
+			
 		elseif ischar(varargin{1})
-			if ~exist(varargin{1},'file')
+			
+			if findstr(varargin{1},'*')
+				cdf_files = dir(varargin{1});
+					
+				switch numel(cdf_files)
+					case 0
+						disp('no cdf files specified');return
+					case 1
+						cdf_file = cdf_files.name;
+						disp(['Using: ' cdf_file]);
+					otherwise
+						% remove '.' and '..' from the list
+						j = 1;
+						while j<=numel(cdf_files)
+							if strcmp(cdf_files(j).name,'.') || ...
+									strcmp(cdf_files(j).name,'..')
+								cdf_files(j) = [];
+							else j = j + 1;
+							end
+						end
+						for j=1:numel(cdf_files),
+							disp([num2str(j) '. ' cdf_files(j).name]);
+						end
+						disp('Choose cdf file');
+						j = irf_ask('Cdf_file? [%]>','cdf_file',1);
+						cdf_file = cdf_files(j).name;
+				end
+				clear cdf_files
+			else cdf_file = varargin{1};
+			end
+			
+			if ~exist(cdf_file,'file')
 				error(['file ' varargin{1} ' does not exist'])
 			end
-			[data,info] = cdfread(varargin{1});
+			
+			[data,info] = cdfread(cdf_file);
 			dobj.FileModDate = info.FileModDate;
 			dobj.VariableAttributes = info.VariableAttributes;
 			dobj.GlobalAttributes = info.GlobalAttributes;
