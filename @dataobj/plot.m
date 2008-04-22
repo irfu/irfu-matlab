@@ -117,6 +117,9 @@ text(xlim(2) - range(xlim)*.05, ylim(2) - range(ylim)*.05, [' ' txt],...
 
 function cs = shorten_cs(cs)
 
+if isempty(cs), return, end
+
+% Remove leading spaces
 while cs(1) == ' ', cs(1) = []; end
 	
 if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
