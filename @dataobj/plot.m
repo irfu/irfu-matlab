@@ -1,5 +1,5 @@
 function res = plot(dobj,var_s,comp,ax)
-% plot(dobj, var_s) Plot a variable
+%PLOT(dobj, var_s)  plot a variable
 %
 % $Revision$  $Date$
 

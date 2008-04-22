@@ -1,5 +1,5 @@
 function display(dobj,mode)
-% DISPLAY(dobj) Display a dataobj object
+%DISPLAY(dobj)  display a DATAOBJ object
 %
 % DISPLAY(dobj,[mode])
 %

@@ -1,5 +1,5 @@
 function res = getunits(dobj,var_s)
-% GETUNITS(dobj, var_s) Get units for a variable
+%GETUNITS(dobj, var_s)  get units for a variable
 %
 % $Revision$  $Date$
 

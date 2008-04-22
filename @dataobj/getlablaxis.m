@@ -1,5 +1,5 @@
 function res = getlabaxis(dobj,var_s)
-% GETLABAXIS(dobj, var_s) Get axis label for a variable
+%GETLABAXIS(dobj, var_s)  get axis label for a variable
 %
 % $Revision$  $Date$
 

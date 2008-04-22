@@ -1,7 +1,9 @@
 function dobj = dataobj(varargin)
-%DATAOBJ  constructor function for dataobj object
+%DATAOBJ  constructor function for DATAOBJ object
 %
-% DATAOBJ properties: 
+% DATAOBJ(FILENAME)
+%    Construct dataobj form file FILENAME. FILENAME can also contain
+%    wildcards ('*').
 %
 % $Id$
 
@@ -33,10 +35,9 @@ switch nargin
 					
 				switch numel(cdf_files)
 					case 0
-						disp('no cdf files specified');return
+						error('no cdf files specified')
 					case 1
 						cdf_file = cdf_files.name;
-						disp(['Using: ' cdf_file]);
 					otherwise
 						% remove '.' and '..' from the list
 						j = 1;
@@ -59,7 +60,7 @@ switch nargin
 			end
 			
 			if ~exist(cdf_file,'file')
-				error(['file ' varargin{1} ' does not exist'])
+				error(['file ' cdf_file ' does not exist'])
 			end
 			
 			[data,info] = cdfread(cdf_file);

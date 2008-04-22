@@ -1,5 +1,5 @@
 function res = getv(dobj,var_s)
-% GETV(dobj, var_s) Get a variable
+%GETV(dobj, var_s)  get a variable
 %
 % $Revision$  $Date$
 

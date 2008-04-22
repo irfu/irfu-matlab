@@ -1,7 +1,7 @@
-function res = getlabaxis(dobj,var_s)
-% GETLABAXIS(dobj, var_s) Get axis label for a variable
+function res = getfillval(dobj,var_s)
+%GETFILLVAL(dobj, var_s)  get FILLVALUE for a variable
 %
-% $Revision$  $Date$
+% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

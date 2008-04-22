@@ -1,5 +1,5 @@
-function res = getlabaxis(dobj,var_s)
-% GETLABAXIS(dobj, var_s) Get axis label for a variable
+function res = getcs(dobj,var_s)
+%GETCS(dobj, var_s)  get coordinate system of a variable
 %
 % $Revision$  $Date$
 

@@ -1,5 +1,5 @@
 function res = getmat(dobj,var_s)
-% GETMAT(dobj, var_s) Get a variable in the Cluster AV format
+%GETMAT(dobj, var_s)  get a variable in the Cluster AV format
 %
 % $Revision$  $Date$
 

@@ -1,5 +1,5 @@
 function res = getdep(dobj,var_s)
-% GETDEP(dobj, var_s) Get variables on whcih VAR_S depends
+%GETDEP(dobj, var_s)  get dependencies for a variable
 %
 % $Revision$  $Date$
 

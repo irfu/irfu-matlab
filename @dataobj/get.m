@@ -1,5 +1,5 @@
 function res = get(dobj,var_s)
-% GETV(dobj, var_s) Get a variable
+%GET(dobj, var_s)  get VariableAttributes, GlobalAttributes or a variable
 %
 % $Revision$  $Date$
 
@@ -15,10 +15,10 @@ error(nargchk(nargin,2,2))
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 		
 switch var_s
-	case 'VariableAttributes'
+	case {'va','VariableAttributes'}
 		res = dobj.VariableAttributes;
-	case 'GlobalAttributes'
-		dobj.GlobalAttributes
+	case {'ga','GlobalAttributes'}
+		res = dobj.GlobalAttributes;
 	otherwise
-		error(['cannot get : ' var_s])
+		res = getv(dobj,var_s);
 end
