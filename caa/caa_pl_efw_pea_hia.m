@@ -34,7 +34,7 @@ B_vec_xyz_gse = getmat(fgm, irf_ssub('B_vec_xyz_gse__C?_CP_FGM_SPIN',cl_id) );
 B_vec_xyz_ISR2 = c_gse2dsi(B_vec_xyz_gse,SAX);
 
 %% PEA
-pea = my_load(cl_id,'C?_CP_PEA_MOMENTS')
+pea = my_load(cl_id,'C?_CP_PEA_MOMENTS');
 T_PEA_PAR = getmat(pea, ...
 	irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
 T_PEA_units = getunits(pea, ...
@@ -67,17 +67,28 @@ EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)
 E_Vec_xy_ISR2_rPEA = irf_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2(:,1));
 E_Vec_xy_ISR2_rHIA = irf_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2(:,1));
 
+diff_HIA = EVXB_HIA_xyz_ISR2(:,1:3);
+diff_HIA(:,2:3) = EVXB_HIA_xyz_ISR2(:,2:3) - E_Vec_xy_ISR2_rHIA(:,2:3);
+
+diff_PEA = EVXB_PEA_xyz_ISR2(:,1:3);
+diff_PEA(:,2:3) = EVXB_PEA_xyz_ISR2(:,2:3) - E_Vec_xy_ISR2_rPEA(:,2:3);
+
 
 %% Plotting
 
 figure(111), clf
 
-h=1:4;
+NPLOTS = 5;
+DY = .05;
+h=1:NPLOTS;
 
 for comp=1:2
-	h(comp) = irf_subplot(4,1,-comp);
+	h(comp) = irf_subplot(NPLOTS,1,-comp);
 	irf_plot({E_Vec_xy_ISR2(:,[1 (comp+1)]),EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
 		EVXB_HIA_xyz_ISR2(:,[1 (comp+1)])},'comp')
+	r = range(E_Vec_xy_ISR2(:,comp+1));
+	set(h(comp),'YLim',...
+		[min(E_Vec_xy_ISR2(:,comp+1))-DY*r max(E_Vec_xy_ISR2(:,comp+1))+DY*r])
 end
 
 ylabel(h(1),'Ex [mV/m]')
@@ -86,26 +97,28 @@ legend(h(1),'EFW','PEA','HIA')
 legend(h(1),'boxoff')
 title(h(1),irf_ssub('Cluster ?',cl_id))
 
-h(3) = irf_subplot(4,1,-3);
-irf_plot({[EVXB_HIA_xyz_ISR2(:,1) EVXB_HIA_xyz_ISR2(:,2:3)-E_Vec_xy_ISR2_rHIA(:,2:3)]})
-hold on
-irf_plot({[EVXB_PEA_xyz_ISR2(:,1) EVXB_PEA_xyz_ISR2(:,2:3)-E_Vec_xy_ISR2_rPEA(:,2:3)]},'*')
-hold off
-ylabel(h(3),'diff [mV/m]')
-legend(h(3),'x','y')
-legend(h(3),'boxoff')
+comp_s='xy';
+for comp=1:2
+	h(comp+2) = irf_subplot(NPLOTS,1,-2-comp);
+	irf_plot([diff_HIA(:,1) sign(diff_HIA(:,comp+1)).*log(abs(diff_HIA(:,comp+1)))])
+	hold on
+	irf_plot([diff_PEA(:,1) sign(diff_PEA(:,comp+1)).*log(abs(diff_PEA(:,comp+1)))],'g*')
+	hold off
+	ylabel(h(comp+2),['log (\Delta E' comp_s(comp) ') [mV/m]'])
+	set(h(comp+2),'YLim',[-4.9 4.9])
+end
 
-h(4) = irf_subplot(4,1,-4);
+h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
 irf_plot(ScPot)
-set(h(4),'YColor','b')
+set(h(NPLOTS),'YColor','b')
 ylabel('ScPot [-V]')
 
 ts = t_start_epoch(tint(1));
-for pl=1:4
+for pl=1:NPLOTS
 	set(h(pl),'XLim',tint - ts);
 end
 
-ax2 = axes('Position',get(h(4),'Position'),...
+ax2 = axes('Position',get(h(NPLOTS),'Position'),...
 	'XAxisLocation','top',...
 	'YAxisLocation','right',...
 	'Color','none',...
@@ -117,6 +130,7 @@ if ~isempty(T_PEA_PERP)
 	line(T_PEA_PERP(:,1)-ts,T_PEA_PERP(:,2),...
 		'Color','r','Marker','+','Parent',ax2);
 end
+set(ax2,'XLim',tint - ts);
 ylabel(['Te [' T_PEA_units ']'])
 orient tall
   
