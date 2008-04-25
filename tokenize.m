@@ -24,16 +24,17 @@ if nargin < 2
 	delimiter = ' ';
 end
 
-ind=strfind(str,delimiter); % find all start indexes of delimeter
-s_ind=[1 ind+length(delimiter)]; % start indexes
-e_ind=[ind-1 length(str)];       % end indexes
+ind = strfind(str,delimiter); % find all start indexes of delimeter
+s_ind = [1 ind+length(delimiter)]; % start indexes
+e_ind = [ind-1 length(str)];       % end indexes
 
-i_string=1;
+tokens = {};
+i_string = 1;
 for j=1:length(s_ind),
-  str_val=str(s_ind(j):e_ind(j));
-  if str_val,
-    tokens{i_string}=str_val;
-    i_string=i_string+1;
+  str_val = str(s_ind(j):e_ind(j));
+  if str_val
+    tokens{i_string} = str_val;
+    i_string = i_string + 1;
   end
 end
 
