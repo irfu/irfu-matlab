@@ -17,7 +17,7 @@ if ~ischar(var_s), error('VAR_S must be a stirng'), end
 nvars = size(dobj.vars,1);
 if nvars>0
 	for v=1:nvars
-		if strcmpi(dobj.vars{v,1},var_s)
+		if strcmpi(dobj.vars{v,1},var_s) || strcmpi(dobj.vars{v,2},var_s)
 			v1_s = dobj.vars{v,2};
 			maxdep = length(dobj.data.(dobj.vars{v,1}).variance(3:end));
 				
