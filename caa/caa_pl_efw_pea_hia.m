@@ -100,19 +100,24 @@ B_vec_xyz_ISR2 = c_gse2dsi(B_vec_xyz_gse,SAX);
 
 %% EDI
 if flag_edi
-	edi = my_load(cl_id,'C?_CP_EDI_MP');
-	iEDI_Vec_xyz_gse = getmat(edi,irf_ssub('E_xyz_gse__C?_CP_EDI_MP',cl_id) );
+	try
+		edi = my_load(cl_id,'C?_CP_EDI_MP');
+		iEDI_Vec_xyz_gse = getmat(edi,irf_ssub('E_xyz_gse__C?_CP_EDI_MP',cl_id) );
 
-	B_EDI = irf_resamp(B_vec_xyz_gse,iEDI_Vec_xyz_gse);
-	evxb = irf_tappl(irf_cross(B_EDI,irf_resamp(V,B_EDI)),'*1e-3*(-1)');
+		B_EDI = irf_resamp(B_vec_xyz_gse,iEDI_Vec_xyz_gse);
+		evxb = irf_tappl(irf_cross(B_EDI,irf_resamp(V,B_EDI)),'*1e-3*(-1)');
 
-	EDI_Vec_xyz_gse = iEDI_Vec_xyz_gse;
-	EDI_Vec_xyz_gse(:,2:4) = EDI_Vec_xyz_gse(:,2:4) + evxb(:,2:4); %#ok<NASGU>
-	clear evxb
+		EDI_Vec_xyz_gse = iEDI_Vec_xyz_gse;
+		EDI_Vec_xyz_gse(:,2:4) = EDI_Vec_xyz_gse(:,2:4) + evxb(:,2:4); %#ok<NASGU>
+		clear evxb
 
-	EDI_Vec_xyz_ISR2 = c_gse2dsi(EDI_Vec_xyz_gse,SAX);
-	
-	diff_EDIr = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
+		EDI_Vec_xyz_ISR2 = c_gse2dsi(EDI_Vec_xyz_gse,SAX);
+
+		diff_EDIr = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
+	catch
+		flag_edi = 0;
+		disp('cannot load EDI')
+	end
 end
 
 %% PEA
@@ -145,12 +150,27 @@ end
 
 %% CIS-HIA
 if flag_hia
-	cis_hia = my_load(cl_id,'C?_PP_CIS');
-	V_HIA_xyz_gse = getmat(cis_hia, irf_ssub('V_HIA_xyz_gse__C?_PP_CIS',cl_id) );
-	V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
-	EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
+	try
+		cis_hia = my_load(cl_id,'C?_PP_CIS');
+		V_HIA_xyz_gse = getmat(cis_hia, irf_ssub('V_HIA_xyz_gse__C?_PP_CIS',cl_id) );
+		V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
+		EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
-	diff_HIAr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
+		diff_HIAr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
+	catch
+		flag_edi = 0;
+		disp('cannot load HIA')
+	end
+end
+
+%% CIS-HIA
+if flag_cod
+	cis_codif = my_load(cl_id,'C?_CP_CIS-CODIF_HS_H1_MOMENTS');
+	V_COD_xyz_gse = getmat(cis_codif, irf_ssub('velocity__C?_CP_CIS-CODIF_HS_H1_MOMENTS',cl_id) );
+	V_COD_xyz_ISR2 = c_gse2dsi(V_COD_xyz_gse,SAX);
+	EVXB_COD_xyz_ISR2 = irf_tappl(irf_cross(V_COD_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
+
+	diff_CODr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_COD_xyz_ISR2, t);
 end
 
 
@@ -179,8 +199,8 @@ for comp=1:2
 		leg = {leg{:} 'HIA'};
 	end
  	if flag_cod
-% 		irf_plot(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),'m')
-% 		leg = {leg{:} 'COD'};
+ 		irf_plot(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),'m')
+ 		leg = {leg{:} 'COD'};
  	end
 	if flag_edi
 		irf_plot(EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),'k.')
@@ -200,6 +220,7 @@ for comp=1:2
 	h(comp+2) = irf_subplot(NPLOTS,1,-2-comp);
 	hold on	
 	if flag_hia, irf_plot(diff_HIAr(:,[1 comp+1])), end
+	if flag_cod, irf_plot(diff_CODr(:,[1 comp+1]),'m'), end
 	if flag_pea, irf_plot(diff_PEAr(:,[1 comp+1]),'g*'), end
 	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), end
 	hold off
