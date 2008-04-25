@@ -64,15 +64,30 @@ V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
 EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
 %% Computation
+
+STEP = 60;
+dt = ceil(range(tint)/STEP)*STEP;
+t = tint(1):STEP:tint(1)+dt;
+t = t';
+
 E_Vec_xy_ISR2_rPEA = irf_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2(:,1));
 E_Vec_xy_ISR2_rHIA = irf_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2(:,1));
 
 diff_HIA = EVXB_HIA_xyz_ISR2(:,1:3);
 diff_HIA(:,2:3) = EVXB_HIA_xyz_ISR2(:,2:3) - E_Vec_xy_ISR2_rHIA(:,2:3);
+diff_HIA(:,2:3) = diff_HIA(:,2:3)*10;
+
+diff_HIAr = irf_resamp(diff_HIA(~isnan(diff_HIA(:,2)),:),t);
+for comp=1:2, diff_HIAr(abs(diff_HIAr(:,comp+1))<1,comp+1) = 1; end
+diff_HIAr(:,2:3) = log10(abs(diff_HIAr(:,2:3))) - 1;
 
 diff_PEA = EVXB_PEA_xyz_ISR2(:,1:3);
 diff_PEA(:,2:3) = EVXB_PEA_xyz_ISR2(:,2:3) - E_Vec_xy_ISR2_rPEA(:,2:3);
+diff_PEA(:,2:3) = diff_PEA(:,2:3)*10;
 
+diff_PEAr = irf_resamp(diff_PEA(~isnan(diff_PEA(:,2)),:),t);
+for comp=1:2, diff_PEAr(abs(diff_PEAr(:,comp+1))<1,comp+1) = 1; end
+diff_PEAr(:,2:3) = log10(abs(diff_PEAr(:,2:3))) - 1;
 
 %% Plotting
 
@@ -100,12 +115,12 @@ title(h(1),irf_ssub('Cluster ?',cl_id))
 comp_s='xy';
 for comp=1:2
 	h(comp+2) = irf_subplot(NPLOTS,1,-2-comp);
-	irf_plot([diff_HIA(:,1) sign(diff_HIA(:,comp+1)).*log(abs(diff_HIA(:,comp+1)))])
+	irf_plot(diff_HIAr(:,[1 comp+1]))
 	hold on
-	irf_plot([diff_PEA(:,1) sign(diff_PEA(:,comp+1)).*log(abs(diff_PEA(:,comp+1)))],'g*')
+	irf_plot(diff_PEAr(:,[1 comp+1]),'g*')
 	hold off
 	ylabel(h(comp+2),['log (\Delta E' comp_s(comp) ') [mV/m]'])
-	set(h(comp+2),'YLim',[-4.9 4.9])
+	set(h(comp+2),'YLim',[-1 2.9])
 end
 
 h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
