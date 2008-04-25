@@ -1,4 +1,4 @@
-function caa_pl_efw_pea_hia(cl_id,vars)
+function caa_pl_efw_pea_hia(cl_id,vars,plot_range)
 %CAA_PL_EFW_PEA_HIA  compare E from EFW, PEACE and CIS_HIA
 %
 % CAA_PL_EFW_PEA_HIA(CL_ID,[VARS])
@@ -25,6 +25,8 @@ flag_cod = 0;
 if nargin==1
 	vars = 'edi|hia|cod|pea';
 end
+
+if nargin < 3, plot_range = 0; end
 
 toks = tokenize(vars,'|');
 if isempty(toks), error('No variables specified to compare with'), end
@@ -191,21 +193,56 @@ for comp=1:2
 	leg = {'EFW'};
 	hold on
 	if flag_pea
-		irf_plot(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),'r')
+		if plot_range
+			IDX_ST_PEA = 4;
+			irf_plot(get_mm_resamp('min',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
+				t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'r')
+		else
+			irf_plot(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),'r')
+		end
 		leg = {leg{:} 'PEA'}; 
 	end
 	if flag_hia
-		irf_plot(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),'g')
+		if plot_range
+			irf_plot(get_mm_resamp('min',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'g')
+		else
+			irf_plot(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),'g')
+		end
 		leg = {leg{:} 'HIA'};
 	end
  	if flag_cod
- 		irf_plot(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),'m')
+		if plot_range
+			irf_plot(get_mm_resamp('min',EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t),'m')
+		else 
+			irf_plot(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),'m')
+		end
  		leg = {leg{:} 'COD'};
  	end
 	if flag_edi
-		irf_plot(EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),'k.')
+		if plot_range
+			irf_plot(get_mm_resamp('min',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
+		else
+			irf_plot(EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),'k.')
+		end
 		leg = {leg{:} 'EDI'};
 	end
+	
+	if plot_range
+		if flag_pea
+			irf_plot(get_mm_resamp('max',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
+			t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'r')
+		end
+		if flag_hia
+			irf_plot(get_mm_resamp('max',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'g')
+		end
+		if flag_cod
+			irf_plot(get_mm_resamp('max',EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t),'m')
+		end
+		if flag_edi
+			irf_plot(get_mm_resamp('max',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
+		end
+	end
+				
 	hold off	
 end
 
@@ -303,6 +340,7 @@ else
 	t_st_e = double(0);
 end
 
+%% Help function get_diff_resamp
 function res = get_diff_resamp(E_EFW,E_OTH,TREF)
 
 E_EFW_rOTH = irf_resamp(E_EFW, E_OTH(:,1));
@@ -314,3 +352,25 @@ diff_OTH(:,2:3) = diff_OTH(:,2:3)*10;
 res = irf_resamp(diff_OTH(~isnan(diff_OTH(:,2)),:),TREF);
 for comp=1:2, res(abs(res(:,comp+1))<1,comp+1) = 1; end
 res(:,2:3) = log10(abs(res(:,2:3))) - 1;
+
+%% Help function get_mm_resamp
+function res = get_mm_resamp(op,E,TREF)
+
+res = zeros(length(TREF),size(E,2));
+res(:,1) = TREF;
+res(:,2:end) = NaN;
+
+STEP2 = (TREF(2) - TREF(1))/2;
+
+for i=1:length(TREF)
+ 	switch lower(op)
+ 		case 'min'
+ 			tmp = min(E( E(:,1)>=TREF(i)-STEP2 & E(:,1)<TREF(i)+STEP2 , 2:end));
+		case 'max'
+			tmp = max(E( E(:,1)>=TREF(i)-STEP2 & E(:,1)<TREF(i)+STEP2 , 2:end));
+		otherwise
+			error('unknown operation')
+	end
+	if ~isempty(tmp), res(i,2:end) = tmp; end
+end
+res = res(~isnan(res(:,2)),:);
