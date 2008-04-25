@@ -11,6 +11,9 @@ function res = getmat(dobj,var_s)
 % ----------------------------------------------------------------------------
 
 data = getv(dobj,var_s);
+fillv = getfillval(dobj,var_s);
+data.data(data.data==fillv) = NaN;
+
 dep = getdep(dobj,var_s);
 
 plot_data = double(data.data)';
