@@ -154,6 +154,11 @@ end
 
 %% PEA
 pea = my_load(cl_id,'C?_CP_PEA_MOMENTS');
+if isempty(pea)
+	T_PEA_PAR = [];
+	T_PEA_PERP = [];
+	flag_pea = 0;
+else
 T_PEA_PAR = getmat(pea, ...
 	irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
 T_PEA_units = getunits(pea, ...
@@ -170,6 +175,7 @@ catch
 		disp('no luck here as well')
 		T_PEA_PERP = [];
 	end
+end
 end
 
 if flag_pea
@@ -324,7 +330,7 @@ for comp=1:NCOMP
 			plot_area(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
 				t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA)),[.788 1 .708])
 		else
-			irf_plot(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),'r')
+			irf_plot(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),'g')
 		end
 		leg = {leg{:} 'PEA'}; 
 	end
@@ -334,7 +340,7 @@ for comp=1:NCOMP
 		elseif plot_range_hia==2
 			plot_area(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t,[1 .619 .564])
 		else
-			irf_plot(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),'g')
+			irf_plot(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),'r')
 		end
 		leg = {leg{:} 'HIA'};
 	end
@@ -424,6 +430,7 @@ add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
 
 if ~isempty(R), add_position(h(NPLOTS),R), end
 
+if ~isempty(T_PEA_PAR) || ~isempty(T_PEA_PERP)
 ax2 = axes('Position',get(h(NPLOTS),'Position'),...
 	'XAxisLocation','top',...
 	'YAxisLocation','right',...
@@ -438,6 +445,7 @@ if ~isempty(T_PEA_PERP)
 end
 set(ax2,'XLim',tint - ts);
 ylabel(['Te [' T_PEA_units ']'])
+end
 
 orient tall
   
