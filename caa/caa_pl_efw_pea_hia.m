@@ -328,7 +328,7 @@ for comp=1:2
 	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), end
 	hold off
 	ylabel(h(OFF+comp),['log (\DeltaE' comp_s(comp) ')'])
-	set(h(OFF+comp),'YLim',[-1 1.99])
+	set(h(OFF+comp),'YLim',[-1 1.99],'Box','on')
 end
 
 h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
@@ -340,7 +340,7 @@ ts = t_start_epoch(tint(1));
 for pl=3:NPLOTS
 	set(h(pl),'XLim',tint - ts);
 end
-ts_s = epoch2iso(ts);
+ts_s = epoch2iso(tint(1));
 add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
 
 if ~isempty(R), add_position(h(NPLOTS),R), end
