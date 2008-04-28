@@ -192,6 +192,10 @@ if flag_hia
 		V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
 		EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
+		[apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_HIA_xyz_ISR2); %#ok<ASGLU>
+		EVXB_HIA_xyz_ISR2(:,4) = aperp(:,4);
+		clear apar aperp
+
 		[diff_HIAr,E_Vec_xy_ISR2_rHIA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
 	catch
 		flag_edi = 0;
@@ -207,6 +211,10 @@ if flag_cod
 		V_COD_xyz_ISR2 = c_gse2dsi(V_COD_xyz_gse,SAX);
 		EVXB_COD_xyz_ISR2 = irf_tappl(irf_cross(V_COD_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
+		[apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_COD_xyz_ISR2); %#ok<ASGLU>
+		EVXB_COD_xyz_ISR2(:,4) = aperp(:,4);
+		clear apar aperp
+		
 		[diff_CODr,E_Vec_xy_ISR2_rCOD] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_COD_xyz_ISR2, t);
 	catch
 		flag_cod = 0;
