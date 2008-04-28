@@ -116,7 +116,7 @@ if flag_edi
 
 		EDI_Vec_xyz_ISR2 = c_gse2dsi(EDI_Vec_xyz_gse,SAX);
 
-		diff_EDIr = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
+		[diff_EDIr,E_Vec_xy_ISR2_rEDI] = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
 	catch
 		flag_edi = 0;
 		disp('cannot load EDI')
@@ -124,31 +124,31 @@ if flag_edi
 end
 
 %% PEA
-if flag_pea
-	pea = my_load(cl_id,'C?_CP_PEA_MOMENTS');
-	T_PEA_PAR = getmat(pea, ...
-		irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
-	T_PEA_units = getunits(pea, ...
-		irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
+pea = my_load(cl_id,'C?_CP_PEA_MOMENTS');
+T_PEA_PAR = getmat(pea, ...
+	irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
+T_PEA_units = getunits(pea, ...
+	irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
+try
+	T_PEA_PERP = getmat(pea, ...
+		irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?_CP_PEA_',cl_id) );
+catch
+	disp('trying alternative for Te_perp')
 	try
 		T_PEA_PERP = getmat(pea, ...
-			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?_CP_PEA_',cl_id) );
+			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?__MOMENTS',cl_id) );
 	catch
-		disp('trying alternative for Te_perp')
-		try
-			T_PEA_PERP = getmat(pea, ...
-				irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?__MOMENTS',cl_id) );
-		catch
-			disp('no luck here as well')
-			T_PEA_PERP = [];
-		end
+		disp('no luck here as well')
+		T_PEA_PERP = [];
 	end
+end
 
+if flag_pea
 	V_PEA_xyz_gse = getmat(pea, irf_ssub('Data_Velocity_GSE__C?_CP_PEA_MOMENTS',cl_id) );
 	V_PEA_xyz_ISR2 = c_gse2dsi(V_PEA_xyz_gse,SAX);
 	EVXB_PEA_xyz_ISR2 = irf_tappl(irf_cross(V_PEA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
-	diff_PEAr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2, t);
+	[diff_PEAr,E_Vec_xy_ISR2_rPEA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2, t);
 end
 
 %% CIS-HIA
@@ -159,21 +159,26 @@ if flag_hia
 		V_HIA_xyz_ISR2 = c_gse2dsi(V_HIA_xyz_gse,SAX);
 		EVXB_HIA_xyz_ISR2 = irf_tappl(irf_cross(V_HIA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
-		diff_HIAr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
+		[diff_HIAr,E_Vec_xy_ISR2_rHIA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
 	catch
 		flag_edi = 0;
 		disp('cannot load HIA')
 	end
 end
 
-%% CIS-HIA
+%% CIS-CODIF
 if flag_cod
-	cis_codif = my_load(cl_id,'C?_CP_CIS-CODIF_HS_H1_MOMENTS');
-	V_COD_xyz_gse = getmat(cis_codif, irf_ssub('velocity__C?_CP_CIS-CODIF_HS_H1_MOMENTS',cl_id) );
-	V_COD_xyz_ISR2 = c_gse2dsi(V_COD_xyz_gse,SAX);
-	EVXB_COD_xyz_ISR2 = irf_tappl(irf_cross(V_COD_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
+	try
+		cis_codif = my_load(cl_id,'C?_CP_CIS-CODIF_HS_H1_MOMENTS');
+		V_COD_xyz_gse = getmat(cis_codif, irf_ssub('velocity__C?_CP_CIS-CODIF_HS_H1_MOMENTS',cl_id) );
+		V_COD_xyz_ISR2 = c_gse2dsi(V_COD_xyz_gse,SAX);
+		EVXB_COD_xyz_ISR2 = irf_tappl(irf_cross(V_COD_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
-	diff_CODr = get_diff_resamp(E_Vec_xy_ISR2, EVXB_COD_xyz_ISR2, t);
+		[diff_CODr,E_Vec_xy_ISR2_rCOD] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_COD_xyz_ISR2, t);
+	catch
+		flag_cod = 0;
+		disp('cannot load COD')
+	end		
 end
 
 
@@ -181,16 +186,75 @@ end
 
 figure(111), clf
 
-NPLOTS = 5;
+NPLOTS = 7;
 DY = .05;
-h=1:NPLOTS;
+h=3:NPLOTS;
 
+NVARS = 0;
+if flag_pea, NVARS = NVARS + 1; end
+if flag_hia, NVARS = NVARS + 1; end
+if flag_cod, NVARS = NVARS + 1; end
+if flag_edi, NVARS = NVARS + 1; end
+
+if NVARS==0, error('No data to compare with'), end
+
+hh = zeros(NVARS,2);
+pl = 0;
 for comp=1:2
-	h(comp) = irf_subplot(NPLOTS,1,-comp);
+	for cvar=1:NVARS
+		pl = pl + 1;
+		hh(cvar,comp) = irf_subplot(NPLOTS,NVARS,-pl);
+	end
+end
+
+pl = 1;
+if flag_edi
+	for comp=1:2
+		plot(hh(pl,comp),...
+			E_Vec_xy_ISR2_rEDI(:,comp+1),EDI_Vec_xyz_ISR2(:,comp+1),'.')
+	end
+	title(hh(pl,1),'EDI')
+	pl = pl + 1;
+end
+if flag_hia
+	for comp=1:2
+		plot(hh(pl,comp),...
+			E_Vec_xy_ISR2_rHIA(:,comp+1),EVXB_HIA_xyz_ISR2(:,comp+1),'.')
+	end
+	title(hh(pl,1),'HIA')
+	pl = pl + 1;
+end
+if flag_cod
+	for comp=1:2
+		plot(hh(pl,comp),...
+			E_Vec_xy_ISR2_rCOD(:,comp+1),EVXB_COD_xyz_ISR2(:,comp+1),'.')
+	end
+	title(hh(pl,1),'COD')
+	pl = pl + 1;
+end
+if flag_pea
+	for comp=1:2
+		plot(hh(pl,comp),...
+			E_Vec_xy_ISR2_rPEA(:,comp+1),EVXB_PEA_xyz_ISR2(:,comp+1),'.')
+	end
+	title(hh(pl,1),'PEA')
+end
+
+set(hh(:,1),'XAxisLocation','top');
+set(hh(:,2),'XTickLabel',[]);
+ylabel(hh(1,1),'Ex [mV/m]')
+ylabel(hh(1,2),'Ey [mV/m]')
+r = max(range(E_Vec_xy_ISR2(:,2)),range(E_Vec_xy_ISR2(:,3)));
+YLim = [min(min(E_Vec_xy_ISR2(:,2:3)))-DY*r max(max(E_Vec_xy_ISR2(:,2:3)))+DY*r];
+clear r
+set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
+%set(hh,'DataAspectRatioMode','manual') % Makes axes square
+
+OFF = 2;
+for comp=1:2
+	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
 	irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
-	r = range(E_Vec_xy_ISR2(:,comp+1));
-	set(h(comp),'YLim',...
-		[min(E_Vec_xy_ISR2(:,comp+1))-DY*r max(E_Vec_xy_ISR2(:,comp+1))+DY*r])
+	set(h(OFF+comp),'YLim',YLim)
 	leg = {'EFW'};
 	hold on
 	if flag_pea
@@ -247,23 +311,24 @@ for comp=1:2
 	hold off	
 end
 
-ylabel(h(1),'Ex [mV/m]')
-ylabel(h(2),'Ey [mV/m]')
-legend(h(1),leg)
-legend(h(1),'boxoff')
-title(h(1),irf_ssub('Cluster ? (position GSE)',cl_id))
+ylabel(h(OFF+1),'Ex [mV/m]')
+ylabel(h(OFF+2),'Ey [mV/m]')
+legend(h(OFF+1),leg)
+legend(h(OFF+1),'boxoff')
+
+OFF = 4;
 
 comp_s='xy';
 for comp=1:2
-	h(comp+2) = irf_subplot(NPLOTS,1,-2-comp);
+	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
 	hold on	
 	if flag_hia, irf_plot(diff_HIAr(:,[1 comp+1])), end
 	if flag_cod, irf_plot(diff_CODr(:,[1 comp+1]),'m'), end
 	if flag_pea, irf_plot(diff_PEAr(:,[1 comp+1]),'g*'), end
 	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), end
 	hold off
-	ylabel(h(comp+2),['log (\Delta E' comp_s(comp) ') [mV/m]'])
-	set(h(comp+2),'YLim',[-1 2.9])
+	ylabel(h(OFF+comp),['log (\DeltaE' comp_s(comp) ')'])
+	set(h(OFF+comp),'YLim',[-1 1.99])
 end
 
 h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
@@ -272,9 +337,11 @@ set(h(NPLOTS),'YColor','b')
 ylabel('ScPot [-V]')
 
 ts = t_start_epoch(tint(1));
-for pl=1:NPLOTS
+for pl=3:NPLOTS
 	set(h(pl),'XLim',tint - ts);
 end
+ts_s = epoch2iso(ts);
+add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
 
 if ~isempty(R), add_position(h(NPLOTS),R), end
 
@@ -302,15 +369,18 @@ function dobj = my_load(cl_id,prod)
 
 old_pwd = pwd;
 d_s = irf_ssub(prod,cl_id);
-if ~exist(d_s,'dir'), error([d_s ' : no such directory']), end
-
-disp(['loading ' d_s]);
-try
-	cd(d_s)
-	dobj = dataobj('*.cdf');
-catch
-	disp(['error loading ' d_s ' : no CDF files']);
+if ~exist(d_s,'dir')
+	disp(['error loading ' d_s ' : no such directory']);
 	dobj = [];
+else
+	disp(['loading ' d_s]);
+	try
+		cd(d_s)
+		dobj = dataobj('*.cdf');
+	catch
+		disp(['error loading ' d_s ' : no CDF files']);
+		dobj = [];
+	end
 end
 cd(old_pwd)
 
@@ -344,7 +414,7 @@ end
 
 %% Help function get_diff_resamp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function res = get_diff_resamp(E_EFW,E_OTH,TREF)
+function [res,E_EFW_rOTH] = get_diff_resamp(E_EFW,E_OTH,TREF)
 
 E_EFW_rOTH = irf_resamp(E_EFW, E_OTH(:,1));
 
@@ -378,3 +448,12 @@ for i=1:length(TREF)
 	if ~isempty(tmp), res(i,2:end) = tmp; end
 end
 res = res(~isnan(res(:,2)),:);
+
+%% Help function add_text
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function add_text(h,txt)
+
+ylim = get(h,'YLim');
+xlim = get(h,'XLim');
+text(xlim(1) + range(xlim)*.5, ylim(2) - range(ylim)*.15, [' ' txt],...
+        'FontWeight','bold','HorizontalAlignment','center')
