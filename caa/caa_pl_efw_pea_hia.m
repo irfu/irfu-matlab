@@ -296,6 +296,15 @@ r = range(E_Vec_xy_ISR2(:,4));
 YLimVZ = [min(E_Vec_xy_ISR2(:,4))-DY*r max(E_Vec_xy_ISR2(:,4))+DY*r];
 clear r
 set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
+% Add a reference line
+for comp=1:2
+	for cvar=1:NVARS
+		axes(hh(cvar,comp))
+		hold on
+		plot(YLim,YLim,'r')
+		hold off
+	end
+end
 %set(hh,'DataAspectRatioMode','manual') % Makes axes square
 
 OFF = 2;
