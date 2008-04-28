@@ -1,13 +1,15 @@
-function caa_pl_efw_pea_hia(cl_id,vars,plot_range)
+function caa_pl_efw_pea_hia(cl_id,vars,plot_range,plot_vz)
 %CAA_PL_EFW_PEA_HIA  compare E from EFW, PEACE and CIS_HIA
 %
-% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS,PLOT_RANGE])
+% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS,PLOT_RANGE,PLOT_VZ])
 %
-% VARS: istrument names separated by '|'
+% VARS : instrument names (edi,pea,hia,cod) separated by '|'
 %
-% PLOT_RANGE: 0 - line plot, 1 - min and max averages, 2 - fill area
+% PLOT_RANGE : 0 - line plot, 1 - min and max averages, 2 - fill area
 % between min and max. Can be set as one number for all VARS of for each
 % variable separately
+%
+% PLOT_VZ : 0 - turn off plotting of Vz
 %
 % Example:
 %     caa_pl_efw_pea_hia(1,'edi|pea|cod','022')
@@ -20,6 +22,10 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+
+if nargin < 4 || plot_vz ~=0
+	plot_vz = 1;
+end
 
 flag_edi = 0;
 flag_pea = 0;
@@ -115,6 +121,10 @@ if isempty(fgm), return, end
 B_vec_xyz_gse = getmat(fgm, irf_ssub('B_vec_xyz_gse__C?_CP_FGM_SPIN',cl_id) );
 B_vec_xyz_ISR2 = c_gse2dsi(B_vec_xyz_gse,SAX);
 
+ttt = irf_e_vxb([E_Vec_xy_ISR2 E_Vec_xy_ISR2(:,1)*0],B_vec_xyz_ISR2,-1);
+E_Vec_xy_ISR2(:,4) = ttt(:,4); % Vz in 3rd column
+clear ttt
+
 %% EDI
 if flag_edi
 	try
@@ -129,7 +139,12 @@ if flag_edi
 		clear evxb
 
 		EDI_Vec_xyz_ISR2 = c_gse2dsi(EDI_Vec_xyz_gse,SAX);
-
+		
+		% Vz in 3rd column
+		ttt = irf_e_vxb(EDI_Vec_xyz_ISR2,B_vec_xyz_ISR2,-1);
+		EDI_Vec_xyz_ISR2(:,4) = ttt(:,4); 
+		clear ttt
+		
 		[diff_EDIr,E_Vec_xy_ISR2_rEDI] = get_diff_resamp(E_Vec_xy_ISR2, EDI_Vec_xyz_ISR2, t);
 	catch
 		flag_edi = 0;
@@ -162,6 +177,10 @@ if flag_pea
 	V_PEA_xyz_ISR2 = c_gse2dsi(V_PEA_xyz_gse,SAX);
 	EVXB_PEA_xyz_ISR2 = irf_tappl(irf_cross(V_PEA_xyz_ISR2,B_vec_xyz_ISR2),'*(-1e-3)');
 
+	[apar,aperp] = irf_dec_parperp(B_vec_xyz_ISR2,V_PEA_xyz_ISR2); %#ok<ASGLU>
+	EVXB_PEA_xyz_ISR2(:,4) = aperp(:,4);
+	clear apar aperp
+	
 	[diff_PEAr,E_Vec_xy_ISR2_rPEA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_PEA_xyz_ISR2, t);
 end
 
@@ -199,8 +218,13 @@ end
 %% Plotting
 
 figure(111), clf
-
-NPLOTS = 7;
+if plot_vz
+	NPLOTS = 9;
+	NCOMP = 3;
+else
+	NPLOTS = 7;
+	NCOMP = 2;
+end
 DY = .05;
 h=3:NPLOTS;
 
@@ -260,13 +284,15 @@ ylabel(hh(1,1),'Ex [mV/m]')
 ylabel(hh(1,2),'Ey [mV/m]')
 r = max(range(E_Vec_xy_ISR2(:,2)),range(E_Vec_xy_ISR2(:,3)));
 YLim = [min(min(E_Vec_xy_ISR2(:,2:3)))-DY*r max(max(E_Vec_xy_ISR2(:,2:3)))+DY*r];
+r = range(E_Vec_xy_ISR2(:,4));
+YLimVZ = [min(E_Vec_xy_ISR2(:,4))-DY*r max(E_Vec_xy_ISR2(:,4))+DY*r];
 clear r
 set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
 %set(hh,'DataAspectRatioMode','manual') % Makes axes square
 
 OFF = 2;
 ts = [];
-for comp=1:2
+for comp=1:NCOMP
 	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
 	hold on
 	
@@ -335,19 +361,23 @@ for comp=1:2
 	
 	hold off
 	
-	set(h(OFF+comp),'YLim',YLim)
+	if comp<=2, set(h(OFF+comp),'YLim',YLim)
+	else set(h(OFF+comp),'YLim',YLimVZ)
+	end
 	if isempty(ts), ts = t_start_epoch(tint(1)); end
 end
 
 ylabel(h(OFF+1),'Ex [mV/m]')
 ylabel(h(OFF+2),'Ey [mV/m]')
+if plot_vz, ylabel(h(OFF+3),'Vz_{\perp} [km/s]'), end
 legend(h(OFF+1),leg)
 legend(h(OFF+1),'boxoff')
 
-OFF = 4;
+if plot_vz, OFF=5; else OFF = 4; end
 
-comp_s='xy';
-for comp=1:2
+comp_s='xyz';
+comp_v='EEV';
+for comp=1:NCOMP
 	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
 	hold on
 	leg = {};
@@ -356,8 +386,10 @@ for comp=1:2
 	if flag_pea, irf_plot(diff_PEAr(:,[1 comp+1]),'g*'), leg = {leg{:} 'PEA'}; end
 	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), leg = {leg{:} 'EDI'}; end
 	hold off
-	ylabel(h(OFF+comp),['log (\DeltaE' comp_s(comp) ')'])
-	set(h(OFF+comp),'YLim',[-1 1.99],'Box','on')
+	ylabel(h(OFF+comp),['log (\Delta' comp_v(comp) comp_s(comp) ')'])
+	if comp<=2, set(h(OFF+comp),'YLim',[-1 1.99],'Box','on')
+	else set(h(OFF+comp),'YLim',[-1 2.99],'Box','on')
+	end
 	legend(h(OFF+comp),leg)
 	legend(h(OFF+comp),'boxoff')
 end
@@ -446,15 +478,17 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [res,E_EFW_rOTH] = get_diff_resamp(E_EFW,E_OTH,TREF)
 
+MC = 4;
+
 E_EFW_rOTH = irf_resamp(E_EFW, E_OTH(:,1));
 
-diff_OTH = E_OTH(:,1:3);
-diff_OTH(:,2:3) = E_OTH(:,2:3) - E_EFW_rOTH(:,2:3);
-diff_OTH(:,2:3) = diff_OTH(:,2:3)*10;
+diff_OTH = E_OTH(:,1:MC);
+diff_OTH(:,2:MC) = E_OTH(:,2:MC) - E_EFW_rOTH(:,2:MC);
+diff_OTH(:,2:MC) = diff_OTH(:,2:MC)*10;
 
 res = irf_resamp(diff_OTH(~isnan(diff_OTH(:,2)),:),TREF);
-for comp=1:2, res(abs(res(:,comp+1))<1,comp+1) = 1; end
-res(:,2:3) = log10(abs(res(:,2:3))) - 1;
+for comp=1:(MC-1), res(abs(res(:,comp+1))<1,comp+1) = 1; end
+res(:,2:MC) = log10(abs(res(:,2:MC))) - 1;
 
 %% Help function get_mm_resamp
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
