@@ -249,7 +249,7 @@ pl = 0;
 for comp=1:2
 	for cvar=1:NVARS
 		pl = pl + 1;
-		hh(cvar,comp) = irf_subplot(NPLOTS,NVARS,-pl);
+		hh(cvar,comp) = irf_subplot(NPLOTS,4,-pl-(comp-1)*(4-NVARS));
 	end
 end
 
