@@ -1,12 +1,16 @@
 function caa_pl_efw_pea_hia(cl_id,vars,plot_range)
 %CAA_PL_EFW_PEA_HIA  compare E from EFW, PEACE and CIS_HIA
 %
-% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS])
+% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS,PLOT_RANGE])
 %
 % VARS: istrument names separated by '|'
 %
+% PLOT_RANGE: 0 - line plot, 1 - min and max averages, 2 - fill area
+% between min and max. Can be set as one number for all VARS of for each
+% variable separately
+%
 % Example:
-%     caa_pl_efw_pea_hia(1,'edi|pea|cod')
+%     caa_pl_efw_pea_hia(1,'edi|pea|cod','022')
 %
 % $Id$
 
@@ -22,6 +26,11 @@ flag_pea = 0;
 flag_hia = 0;
 flag_cod = 0;
 
+plot_range_edi = 0;
+plot_range_hia = 0;
+plot_range_pea = 0;
+plot_range_cod = 0;
+
 if nargin==1
 	vars = 'edi|hia|cod|pea';
 end
@@ -34,12 +43,16 @@ for i=1:length(toks)
 	switch lower(toks{i})
 		case {'cod','codif'}
 			flag_cod = 1;
+			plot_range_cod = get_plot_range(plot_range,i);
 		case 'edi'
 			flag_edi = 1;
+			plot_range_edi = get_plot_range(plot_range,i);
 		case 'hia'
 			flag_hia = 1;
+			plot_range_hia = get_plot_range(plot_range,i);
 		case {'pea','peace'}
 			flag_pea = 1;
+			plot_range_pea = get_plot_range(plot_range,i);
 		otherwise
 			disp(['unknown variable : ' toks{i}])
 	end
@@ -98,6 +111,7 @@ end
 
 %% FGM
 fgm = my_load(cl_id,'C?_CP_FGM_SPIN');
+if isempty(fgm), return, end
 B_vec_xyz_gse = getmat(fgm, irf_ssub('B_vec_xyz_gse__C?_CP_FGM_SPIN',cl_id) );
 B_vec_xyz_ISR2 = c_gse2dsi(B_vec_xyz_gse,SAX);
 
@@ -251,64 +265,78 @@ set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
 %set(hh,'DataAspectRatioMode','manual') % Makes axes square
 
 OFF = 2;
+ts = [];
 for comp=1:2
 	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
-	irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
-	set(h(OFF+comp),'YLim',YLim)
-	leg = {'EFW'};
 	hold on
+	
+	leg = {};
 	if flag_pea
-		if plot_range
+		if plot_range_pea==1
 			IDX_ST_PEA = 4;
 			irf_plot(get_mm_resamp('min',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
-				t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'r')
+				t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'g')
+		elseif plot_range_pea==2
+			IDX_ST_PEA = 8;
+			plot_area(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
+				t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA)),[.788 1 .708])
 		else
 			irf_plot(EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),'r')
 		end
 		leg = {leg{:} 'PEA'}; 
 	end
 	if flag_hia
-		if plot_range
-			irf_plot(get_mm_resamp('min',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'g')
+		if plot_range_hia==1
+			irf_plot(get_mm_resamp('min',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'r')
+		elseif plot_range_hia==2
+			plot_area(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t,[1 .619 .564])
 		else
 			irf_plot(EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),'g')
 		end
 		leg = {leg{:} 'HIA'};
 	end
  	if flag_cod
-		if plot_range
+		if plot_range_cod==1
 			irf_plot(get_mm_resamp('min',EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t),'m')
+		elseif plot_range_cod==2
+			plot_area(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t,[1 .913 .947])
 		else 
 			irf_plot(EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),'m')
 		end
  		leg = {leg{:} 'COD'};
  	end
 	if flag_edi
-		if plot_range
+		if plot_range_edi==1
 			irf_plot(get_mm_resamp('min',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
+		elseif plot_range_edi==2
+			plot_area(EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t,[.8 .8 .8])
 		else
 			irf_plot(EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),'k.')
 		end
 		leg = {leg{:} 'EDI'};
 	end
 	
-	if plot_range
-		if flag_pea
-			irf_plot(get_mm_resamp('max',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
+	irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
+	leg = {leg{:} 'EFW'};
+	
+	if flag_pea && plot_range_pea==1
+		irf_plot(get_mm_resamp('max',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
 			t(1:IDX_ST_PEA:fix(length(t)/IDX_ST_PEA*IDX_ST_PEA))),'r')
-		end
-		if flag_hia
-			irf_plot(get_mm_resamp('max',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'g')
-		end
-		if flag_cod
-			irf_plot(get_mm_resamp('max',EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t),'m')
-		end
-		if flag_edi
-			irf_plot(get_mm_resamp('max',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
-		end
 	end
-				
-	hold off	
+	if flag_hia && plot_range_hia==1
+		irf_plot(get_mm_resamp('max',EVXB_HIA_xyz_ISR2(:,[1 (comp+1)]),t),'g')
+	end
+	if flag_cod && plot_range_cod==1
+		irf_plot(get_mm_resamp('max',EVXB_COD_xyz_ISR2(:,[1 (comp+1)]),t),'m')
+	end
+	if flag_edi && plot_range_edi==1
+		irf_plot(get_mm_resamp('max',EDI_Vec_xyz_ISR2(:,[1 (comp+1)]),t),'k')
+	end
+	
+	hold off
+	
+	set(h(OFF+comp),'YLim',YLim)
+	if isempty(ts), ts = t_start_epoch(tint(1)); end
 end
 
 ylabel(h(OFF+1),'Ex [mV/m]')
@@ -321,14 +349,17 @@ OFF = 4;
 comp_s='xy';
 for comp=1:2
 	h(OFF+comp) = irf_subplot(NPLOTS,1,-OFF-comp);
-	hold on	
-	if flag_hia, irf_plot(diff_HIAr(:,[1 comp+1])), end
-	if flag_cod, irf_plot(diff_CODr(:,[1 comp+1]),'m'), end
-	if flag_pea, irf_plot(diff_PEAr(:,[1 comp+1]),'g*'), end
-	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), end
+	hold on
+	leg = {};
+	if flag_hia, irf_plot(diff_HIAr(:,[1 comp+1])), leg = {leg{:} 'HIA'}; end
+	if flag_cod, irf_plot(diff_CODr(:,[1 comp+1]),'m'), leg = {leg{:} 'COD'}; end
+	if flag_pea, irf_plot(diff_PEAr(:,[1 comp+1]),'g*'), leg = {leg{:} 'PEA'}; end
+	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), leg = {leg{:} 'EDI'}; end
 	hold off
 	ylabel(h(OFF+comp),['log (\DeltaE' comp_s(comp) ')'])
 	set(h(OFF+comp),'YLim',[-1 1.99],'Box','on')
+	legend(h(OFF+comp),leg)
+	legend(h(OFF+comp),'boxoff')
 end
 
 h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
@@ -336,7 +367,6 @@ irf_plot(ScPot)
 set(h(NPLOTS),'YColor','b')
 ylabel('ScPot [-V]')
 
-ts = t_start_epoch(tint(1));
 for pl=3:NPLOTS
 	set(h(pl),'XLim',tint - ts);
 end
@@ -449,6 +479,19 @@ for i=1:length(TREF)
 end
 res = res(~isnan(res(:,2)),:);
 
+%% Help function plot_area
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function plot_area(E,TREF,COL)
+
+top = get_mm_resamp('max',E,TREF);
+bot = get_mm_resamp('min',E,TREF);
+data = [top; flipud(bot)];
+
+ts = t_start_epoch(TREF(1));
+data(:,1) = data(:,1) - ts;
+hh = fill(data(:,1),data(:,2),COL);
+set(hh,'EdgeColor',COL)
+
 %% Help function add_text
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function add_text(h,txt)
@@ -457,3 +500,30 @@ ylim = get(h,'YLim');
 xlim = get(h,'XLim');
 text(xlim(1) + range(xlim)*.5, ylim(2) - range(ylim)*.15, [' ' txt],...
         'FontWeight','bold','HorizontalAlignment','center')
+	
+%% Help function add_text
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function res = get_plot_range(plot_range,i)
+
+if ischar(plot_range)
+	if length(plot_range)>1
+		res = str2double(plot_range(i));
+	else
+		res = str2double(plot_range);
+	end
+elseif iscell(plot_range)
+	res = plot_range{i};
+elseif isnumeric(plot_range)
+	if length(plot_range)>1
+		res = plot_range(i);
+	else
+		res = plot_range;
+	end
+else
+	error('bad format for PLOT_RANGE')
+end
+
+if (res~=0) && (res~=1) && (res~=2)
+	error('bad value for PLOT_RANGE at position %d: %d',i,res)
+end
+
