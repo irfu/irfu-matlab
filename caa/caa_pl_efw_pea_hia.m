@@ -48,6 +48,7 @@ end
 
 %% EFW
 efw = my_load(cl_id,'C?_CP_EFW_L3_E');
+if isempty(efw), return, end
 E_Vec_xy_ISR2 = getmat(efw, irf_ssub('E_Vec_xy_ISR2__C?_CP_EFW_L3_E',cl_id) );
 tint = [E_Vec_xy_ISR2(1,1) E_Vec_xy_ISR2(end,1)];
 efwp = my_load(cl_id,'C?_CP_EFW_L3_P');
@@ -296,6 +297,7 @@ orient tall
   
 
 %% Help function my_load
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function dobj = my_load(cl_id,prod)
 
 old_pwd = pwd;
@@ -307,7 +309,7 @@ try
 	cd(d_s)
 	dobj = dataobj('*.cdf');
 catch
-	disp(['error loading ' d_s]);
+	disp(['error loading ' d_s ' : no CDF files']);
 	dobj = [];
 end
 cd(old_pwd)
@@ -341,6 +343,7 @@ else
 end
 
 %% Help function get_diff_resamp
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function res = get_diff_resamp(E_EFW,E_OTH,TREF)
 
 E_EFW_rOTH = irf_resamp(E_EFW, E_OTH(:,1));
@@ -354,6 +357,7 @@ for comp=1:2, res(abs(res(:,comp+1))<1,comp+1) = 1; end
 res(:,2:3) = log10(abs(res(:,2:3))) - 1;
 
 %% Help function get_mm_resamp
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function res = get_mm_resamp(op,E,TREF)
 
 res = zeros(length(TREF),size(E,2));
