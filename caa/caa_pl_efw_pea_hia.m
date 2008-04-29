@@ -242,7 +242,7 @@ end
 DY = .05;
 h=3:NPLOTS;
 
-% Scatter plots
+%% Scatter plots
 NVARS = 0;
 if flag_pea, NVARS = NVARS + 1; end
 if flag_hia, NVARS = NVARS + 1; end
@@ -314,7 +314,7 @@ for comp=1:2
 end
 %set(hh,'DataAspectRatioMode','manual') % Makes axes square
 
-% Ex, Ey, Vz
+%% Ex, Ey, Vz
 OFF = 2;
 ts = [];
 for comp=1:NCOMP
@@ -398,7 +398,7 @@ if plot_vz, ylabel(h(OFF+3),'Vz_{\perp} [km/s]'), end
 legend(h(OFF+1),leg)
 legend(h(OFF+1),'boxoff')
 
-% Diffs
+%% Diffs
 if plot_vz, OFF=5; else OFF = 4; end
 
 comp_s='xyz';
@@ -420,7 +420,7 @@ for comp=1:NCOMP
 	legend(h(OFF+comp),'boxoff')
 end
 
-% The last panel showing SC potential
+%% The last panel showing SC potential
 h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
 irf_plot(ScPot)
 set(h(NPLOTS),'YColor','b')
@@ -434,7 +434,7 @@ add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
 
 if ~isempty(R), add_position(h(NPLOTS),R), end
 
-% Extra panel with electron temperatures on top of the SC potential
+%% Extra panel with electron temperatures on top of the SC potential
 if ~isempty(T_PEA_PAR) || ~isempty(T_PEA_PERP)
 	ax2 = axes('Position',get(h(NPLOTS),'Position'),...
 		'XAxisLocation','top',...
