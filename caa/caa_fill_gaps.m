@@ -1,4 +1,4 @@
-function res = caa_fill_gaps(data,te)
+function data = caa_fill_gaps(data,te)
 %CAA_FILL_GAPS(data,te)  fill gaps in the of a dataset
 %
 % res = caa_fill_gaps(data,te)
@@ -6,11 +6,14 @@ function res = caa_fill_gaps(data,te)
 %
 % $Id$
 
-% Copyright 2006,2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(2,2,nargin))
-
-res = data;
 
 if size(data,1)<2
 	irf_log('proc','cannot fill gaps (not enough samples)')
@@ -23,13 +26,13 @@ if fs<=0
 	return
 end
 
-ngap = fix((te -data(end,1))*fs);
+ngap = fix( (te -data(end,1))*fs - 1);
 if ngap>0
 	tt = zeros(ngap+1,size(data,2));
 	tt(:,1) = linspace(data(end,1),data(end,1)+ngap/fs,ngap+1);
 	tt = tt(2:end,:);
 	tt(:,2:end) = NaN;
-	res = [res; tt];
+	data = [data; tt];
 	% Do not report 1 point gaps
 	if ngap>1
 		irf_log('proc',...
