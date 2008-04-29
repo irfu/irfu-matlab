@@ -417,6 +417,8 @@ for comp=1:NCOMP
 	else set(h(OFF+comp),'YLim',YLimVZ)
 	end
 	if isempty(ts), ts = t_start_epoch(tint(1)); end
+	
+	set(h(OFF+comp),'XLim',tint_pl - ts);
 end
 
 ylabel(h(OFF+1),'Ex [mV/m]')
@@ -445,6 +447,7 @@ for comp=1:NCOMP
 	end
 	legend(h(OFF+comp),leg)
 	legend(h(OFF+comp),'boxoff')
+	set(h(OFF+comp),'XLim',tint_pl - ts);
 end
 
 %% The last panel showing SC potential
@@ -452,10 +455,8 @@ h(NPLOTS) = irf_subplot(NPLOTS,1,-NPLOTS);
 irf_plot(ScPot)
 set(h(NPLOTS),'YColor','b')
 ylabel('ScPot [-V]')
+set(h(NPLOTS),'XLim',tint_pl - ts);
 
-for pl=3:NPLOTS
-	set(h(pl),'XLim',tint_pl - ts);
-end
 ts_s = epoch2iso(tint(1));
 add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
 
