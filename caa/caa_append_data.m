@@ -19,9 +19,11 @@ error(nargchk(2,2,nargin))
 
 if size(data,2) ~= size(app,2), error('data has a different dimension'), end
 
-ii = find(app(:,1)>data(end,1));
-if isempty(ii), return, end
-app = app(ii,:);
+if app(1) <= data(end,1)
+	ii = find(app(:,1)>data(end,1));
+	if isempty(ii), return, end
+	app = app(ii,:);
+end
 
 % Fill the gap between the datasets
 data = caa_fill_gaps(data,app(1,1));
