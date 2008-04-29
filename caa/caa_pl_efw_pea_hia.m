@@ -29,6 +29,7 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 
 plot_vz = 1;
 no_ylim = 0;
+flag_efw_irf = 0;
 flag_edi = 0;
 flag_pea = 0;
 flag_hia = 0;
@@ -53,6 +54,8 @@ while have_options
 			plot_vz = 0;
 		case 'noylim'
 			no_ylim = 1;
+		case 'efwirf'
+			flag_efw_irf = 1;
 		case 'st'
 			st = args{2};
 			l = 2;
@@ -102,6 +105,17 @@ if ~isempty(st) && ~isempty(dt)
 	tint_pl = st + [0 dt];
 	clear st dt
 else tint_pl = tint;
+end
+
+if flag_efw_irf
+	sfit_probe = caa_sfit_probe(cl_id);
+	vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+	irf_log('proc',sprintf('using p%d',sfit_probe))
+	ttt = caa_get(tint(1),range(tint),cl_id,vs);
+	[Ddsi, Damp] = c_efw_dsi_off(tint(1),cl_id,ScPot);
+	ttt = caa_corof_dsi(ttt,Ddsi,Damp);
+	E_Vec_xy_ISR2 = ttt(:,1:3);
+	clear ttt vs sfit_probe Ddsi Damp
 end
 
 %% New time
@@ -428,7 +442,9 @@ for comp=1:NCOMP
 	end
 	
 	irf_plot(E_Vec_xy_ISR2(:,[1 (comp+1)]))
-	leg = {leg{:} 'EFW'};
+	if flag_efw_irf, leg = {leg{:} 'EFW-IRF'};
+	else leg = {leg{:} 'EFW'};
+	end
 	
 	if flag_pea && plot_range_pea==1
 		irf_plot(get_mm_resamp('max',EVXB_PEA_xyz_ISR2(:,[1 (comp+1)]),...
