@@ -1,7 +1,7 @@
-function caa_pl_efw_pea_hia(cl_id,vars,plot_range,plot_vz)
+function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 %CAA_PL_EFW_PEA_HIA  compare E from EFW, PEACE and CIS_HIA
 %
-% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS,PLOT_RANGE,PLOT_VZ])
+% CAA_PL_EFW_PEA_HIA(CL_ID,[VARS,PLOT_RANGE,OPTIONS])
 %
 % VARS : instrument names (edi,pea,hia,cod) separated by '|'
 %
@@ -9,10 +9,13 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,plot_vz)
 % between min and max. Can be set as one number for all VARS of for each
 % variable separately
 %
-% PLOT_VZ : 0 - turn off plotting of Vz
+% OPTIONS : 
+%         'novz' - turn off plotting of Vz
+%         'st','dt' - specity time interval for the plot
 %
 % Example:
-%     caa_pl_efw_pea_hia(1,'edi|pea|cod','022')
+%     caa_pl_efw_pea_hia(1,'edi|pea|cod','022',...
+%         'st','2003-11-01T00:10:00Z','dt',3600,'novz'))
 %
 % $Id$
 
@@ -23,25 +26,42 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,plot_vz)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if nargin < 4 || plot_vz ~=0
-	plot_vz = 1;
-end
-
+plot_vz = 1;
 flag_edi = 0;
 flag_pea = 0;
 flag_hia = 0;
 flag_cod = 0;
-
 plot_range_edi = 0;
 plot_range_hia = 0;
 plot_range_pea = 0;
 plot_range_cod = 0;
-
 if nargin==1
 	vars = 'edi|hia|cod|pea';
 end
-
 if nargin < 3, plot_range = 0; end
+st = []; dt =[];
+
+if nargin > 3, have_options = 1; args = varargin;
+else have_options = 0;
+end
+while have_options
+	l = 1;
+	switch lower(args{1})
+		case 'novz'
+			plot_vz = 0;
+		case 'st'
+			st = args{2};
+			l = 2;
+		case 'dt'
+			dt = args{2};
+			l = 2;
+		otherwise
+			irf_log('fcal,',['Option ''' args{1} '''not recognized'])
+	end
+	if length(args) > l, args = args(l+1:end);
+	else break
+	end
+end
 
 toks = tokenize(vars,'|');
 if isempty(toks), error('No variables specified to compare with'), end
@@ -69,9 +89,16 @@ end
 efw = my_load(cl_id,'C?_CP_EFW_L3_E');
 if isempty(efw), return, end
 E_Vec_xy_ISR2 = getmat(efw, irf_ssub('E_Vec_xy_ISR2__C?_CP_EFW_L3_E',cl_id) );
-tint = [E_Vec_xy_ISR2(1,1) E_Vec_xy_ISR2(end,1)];
 efwp = my_load(cl_id,'C?_CP_EFW_L3_P');
 ScPot = getmat(efwp, irf_ssub('Spacecraft_potential__C?_CP_EFW_L3_P',cl_id) );
+
+tint = [E_Vec_xy_ISR2(1,1) E_Vec_xy_ISR2(end,1)];
+if ~isempty(st) && ~isempty(dt) 
+	[st,dt] = irf_stdt(st,dt);
+	tint_pl = st + [0 dt];
+	clear st dt
+else tint_pl = tint;
+end
 
 %% New time
 STEP = 60;
@@ -427,7 +454,7 @@ set(h(NPLOTS),'YColor','b')
 ylabel('ScPot [-V]')
 
 for pl=3:NPLOTS
-	set(h(pl),'XLim',tint - ts);
+	set(h(pl),'XLim',tint_pl - ts);
 end
 ts_s = epoch2iso(tint(1));
 add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
@@ -448,7 +475,7 @@ if ~isempty(T_PEA_PAR) || ~isempty(T_PEA_PERP)
 		line(T_PEA_PERP(:,1)-ts,T_PEA_PERP(:,2),...
 			'Color','r','Marker','+','Parent',ax2);
 	end
-	set(ax2,'XLim',tint - ts);
+	set(ax2,'XLim',tint_pl - ts);
 	ylabel(['Te [' T_PEA_units ']'])
 end
 
