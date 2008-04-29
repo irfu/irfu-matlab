@@ -1,4 +1,4 @@
-function res = caa_append_data(data,app)
+function data = caa_append_data(data,app)
 %CAA_APPEND_DATA  concatenate two datasets
 %
 % res = caa_append_data(data,app)
@@ -8,19 +8,22 @@ function res = caa_append_data(data,app)
 %
 % $Id$
 
-% Copyright 2006,2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(2,2,nargin))
 
 if size(data,2) ~= size(app,2), error('data has a different dimension'), end
-
-res = data;
 
 ii = find(app(:,1)>data(end,1));
 if isempty(ii), return, end
 app = app(ii,:);
 
 % Fill the gap between the datasets
-res = caa_fill_gaps(res,app(1,1));
+data = caa_fill_gaps(data,app(1,1));
 
-res = [res; app];
+data = [data; app];
