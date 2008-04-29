@@ -467,7 +467,7 @@ for comp=1:NCOMP
 	end
 	if isempty(ts), ts = t_start_epoch(tint(1)); end
 	
-	set(h(OFF+comp),'XLim',tint_pl - ts);
+	set(h(OFF+comp),'XLim',tint_pl - ts,'XTickLabel',[],'Box','on');
 end
 
 ylabel(h(OFF+1),'Ex [mV/m]')
@@ -491,8 +491,8 @@ for comp=1:NCOMP
 	if flag_edi, irf_plot(diff_EDIr(:,[1 comp+1]),'k.'), leg = {leg{:} 'EDI'}; end
 	hold off
 	ylabel(h(OFF+comp),['log (\Delta' comp_v(comp) comp_s(comp) ')'])
-	if comp<=2, set(h(OFF+comp),'YLim',[-1 1.99],'Box','on')
-	else set(h(OFF+comp),'YLim',[-1 2.99],'Box','on')
+	if comp<=2, set(h(OFF+comp),'YLim',[-1 1.99],'XTickLabel',[],'Box','on')
+	else set(h(OFF+comp),'YLim',[-1 2.99],'XTickLabel',[],'Box','on')
 	end
 	legend(h(OFF+comp),leg)
 	legend(h(OFF+comp),'boxoff')
