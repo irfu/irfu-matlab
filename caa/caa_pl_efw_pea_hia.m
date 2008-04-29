@@ -235,7 +235,7 @@ if flag_hia
 
 		[diff_HIAr,E_Vec_xy_ISR2_rHIA] = get_diff_resamp(E_Vec_xy_ISR2, EVXB_HIA_xyz_ISR2, t);
 	catch
-		flag_edi = 0;
+		flag_hia = 0;
 		disp('cannot load HIA')
 	end
 end
