@@ -189,6 +189,7 @@ if isempty(pea)
 	T_PEA_PAR = [];
 	T_PEA_PERP = [];
 	flag_pea = 0;
+	disp('cannot load PEA')
 else
 	T_PEA_PAR = getmat(pea, ...
 		irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
