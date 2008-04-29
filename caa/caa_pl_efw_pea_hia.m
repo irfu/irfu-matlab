@@ -11,6 +11,7 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 %
 % OPTIONS : 
 %         'novz' - turn off plotting of Vz
+%         'noylim' - do not adjust YLim according to ST and DT
 %         'st','dt' - specity time interval for the plot
 %
 % Example:
@@ -27,6 +28,7 @@ function caa_pl_efw_pea_hia(cl_id,vars,plot_range,varargin)
 % ----------------------------------------------------------------------------
 
 plot_vz = 1;
+no_ylim = 0;
 flag_edi = 0;
 flag_pea = 0;
 flag_hia = 0;
@@ -49,6 +51,8 @@ while have_options
 	switch lower(args{1})
 		case 'novz'
 			plot_vz = 0;
+		case 'noylim'
+			no_ylim = 1;
 		case 'st'
 			st = args{2};
 			l = 2;
@@ -289,33 +293,57 @@ end
 
 pl = 1;
 if flag_edi
-	for comp=1:2
-		plot(hh(pl,comp),...
-			E_Vec_xy_ISR2_rEDI(:,comp+1),EDI_Vec_xyz_ISR2(:,comp+1),'.')
+	ii = find( E_Vec_xy_ISR2_rEDI(:,1)>=tint_pl(1) & ...
+		E_Vec_xy_ISR2_rEDI(:,1)<tint_pl(2) );
+	if isempty(ii)
+		disp('no EDI data left for the scatter plot')
+	else
+		for comp=1:2
+			plot(hh(pl,comp),E_Vec_xy_ISR2_rEDI(ii,comp+1),...
+				EDI_Vec_xyz_ISR2(ii,comp+1),'.')
+		end
 	end
 	title(hh(pl,1),'EDI')
 	pl = pl + 1;
 end
 if flag_hia
-	for comp=1:2
-		plot(hh(pl,comp),...
-			E_Vec_xy_ISR2_rHIA(:,comp+1),EVXB_HIA_xyz_ISR2(:,comp+1),'.')
+	ii = find( E_Vec_xy_ISR2_rHIA(:,1)>=tint_pl(1) & ...
+		E_Vec_xy_ISR2_rHIA(:,1)<tint_pl(2) );
+	if isempty(ii)
+		disp('no HIA data left for the scatter plot')
+	else
+		for comp=1:2
+			plot(hh(pl,comp),E_Vec_xy_ISR2_rHIA(ii,comp+1),...
+				EVXB_HIA_xyz_ISR2(ii,comp+1),'.')
+		end
 	end
 	title(hh(pl,1),'HIA')
 	pl = pl + 1;
 end
 if flag_cod
-	for comp=1:2
-		plot(hh(pl,comp),...
-			E_Vec_xy_ISR2_rCOD(:,comp+1),EVXB_COD_xyz_ISR2(:,comp+1),'.')
+	ii = find( E_Vec_xy_ISR2_rCOD(:,1)>=tint_pl(1) & ...
+		E_Vec_xy_ISR2_rCOD(:,1)<tint_pl(2) );
+	if isempty(ii)
+		disp('no COD data left for the scatter plot')
+	else
+		for comp=1:2
+			plot(hh(pl,comp),...
+				E_Vec_xy_ISR2_rCOD(ii,comp+1),EVXB_COD_xyz_ISR2(ii,comp+1),'.')
+		end
 	end
 	title(hh(pl,1),'COD')
 	pl = pl + 1;
 end
 if flag_pea
-	for comp=1:2
-		plot(hh(pl,comp),...
-			E_Vec_xy_ISR2_rPEA(:,comp+1),EVXB_PEA_xyz_ISR2(:,comp+1),'.')
+	ii = find( E_Vec_xy_ISR2_rPEA(:,1)>=tint_pl(1) & ...
+		E_Vec_xy_ISR2_rPEA(:,1)<tint_pl(2) );
+	if isempty(ii)
+		disp('no PEA data left for the scatter plot')
+	else
+		for comp=1:2
+			plot(hh(pl,comp),E_Vec_xy_ISR2_rPEA(ii,comp+1),...
+				EVXB_PEA_xyz_ISR2(ii,comp+1),'.')
+		end
 	end
 	title(hh(pl,1),'PEA')
 end
@@ -324,11 +352,15 @@ set(hh(:,1),'XAxisLocation','top');
 set(hh(:,2),'XTickLabel',[]);
 ylabel(hh(1,1),'Ex [mV/m]')
 ylabel(hh(1,2),'Ey [mV/m]')
-r = max(range(E_Vec_xy_ISR2(:,2)),range(E_Vec_xy_ISR2(:,3)));
-YLim = [min(min(E_Vec_xy_ISR2(:,2:3)))-DY*r max(max(E_Vec_xy_ISR2(:,2:3)))+DY*r];
-r = range(E_Vec_xy_ISR2(:,4));
-YLimVZ = [min(E_Vec_xy_ISR2(:,4))-DY*r max(E_Vec_xy_ISR2(:,4))+DY*r];
-clear r
+if no_ylim, ii = 1:length(E_Vec_xy_ISR2(:,1));
+else
+	ii = find( E_Vec_xy_ISR2(:,1)>=tint_pl(1) & E_Vec_xy_ISR2(:,1)<tint_pl(2) );
+end
+r = max(range(E_Vec_xy_ISR2(ii,2)),range(E_Vec_xy_ISR2(ii,3)));
+YLim = [min(min(E_Vec_xy_ISR2(ii,2:3)))-DY*r max(max(E_Vec_xy_ISR2(ii,2:3)))+DY*r];
+r = range(E_Vec_xy_ISR2(ii,4));
+YLimVZ = [min(E_Vec_xy_ISR2(ii,4))-DY*r max(E_Vec_xy_ISR2(ii,4))+DY*r];
+clear r ii
 set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
 % Add a reference line
 for comp=1:2
