@@ -34,6 +34,7 @@ flag_edi = 0;
 flag_pea = 0;
 flag_hia = 0;
 flag_cod = 0;
+flag_pos = 1;
 plot_range_edi = 0;
 plot_range_hia = 0;
 plot_range_pea = 0;
@@ -54,6 +55,8 @@ while have_options
 			plot_vz = 0;
 		case 'noylim'
 			no_ylim = 1;
+		case 'nopos'
+			flag_pos = 0;
 		case 'efwirf'
 			flag_efw_irf = 1;
 		case 'st'
@@ -111,7 +114,7 @@ if flag_efw_irf
 	sfit_probe = caa_sfit_probe(cl_id);
 	vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 	irf_log('proc',sprintf('using p%d',sfit_probe))
-	ttt = caa_get(tint(1),range(tint),cl_id,vs);
+	ttt = caa_get(tint(1),dt,cl_id,vs);
 	[Ddsi, Damp] = c_efw_dsi_off(tint(1),cl_id,ScPot);
 	ttt = caa_corof_dsi(ttt,Ddsi,Damp);
 	E_Vec_xy_ISR2 = ttt(:,1:3);
@@ -120,14 +123,15 @@ end
 
 %% New time
 STEP = 60;
-dt = ceil(range(tint)/STEP)*STEP;
+dt = ceil((tint(2)-tint(1))/STEP)*STEP;
 t = tint(1):STEP:tint(1)+dt;
 t = t';
+dt = tint(2)-tint(1);
 
 %% SAX
 [ok,SAX] = c_load('SAX?',cl_id);
 if ~ok
-	getData(ClusterDB,tint(1),range(tint),cl_id,'sax')
+	getData(ClusterDB,tint(1),dt,cl_id,'sax')
 	[ok,SAX] = c_load('SAX?',cl_id);
 	if ~ok
 		error('cannot load SAX')
@@ -138,7 +142,7 @@ clear ok
 %% R
 [ok,R] = c_load('R?',cl_id);
 if ~ok
-	getData(ClusterDB,tint(1),range(tint),cl_id,'r')
+	getData(ClusterDB,tint(1),dt,cl_id,'r')
 	[ok,R] = c_load('R?',cl_id);
 	if ~ok
 		disp('cannot load R')
@@ -151,7 +155,7 @@ clear ok
 if flag_edi
 	[ok,V] = c_load('V?',cl_id);
 	if ~ok
-		getData(ClusterDB,tint(1),range(tint),cl_id,'v')
+		getData(ClusterDB,tint(1),dt,cl_id,'v')
 		[ok,V] = c_load('V?',cl_id);
 		if ~ok
 			error('cannot load V')
@@ -371,9 +375,9 @@ if no_ylim, ii = 1:length(E_Vec_xy_ISR2(:,1));
 else
 	ii = find( E_Vec_xy_ISR2(:,1)>=tint_pl(1) & E_Vec_xy_ISR2(:,1)<tint_pl(2) );
 end
-r = max(range(E_Vec_xy_ISR2(ii,2)),range(E_Vec_xy_ISR2(ii,3)));
+r = max(my_range(E_Vec_xy_ISR2(ii,2)),my_range(E_Vec_xy_ISR2(ii,3)));
 YLim = [min(min(E_Vec_xy_ISR2(ii,2:3)))-DY*r max(max(E_Vec_xy_ISR2(ii,2:3)))+DY*r];
-r = range(E_Vec_xy_ISR2(ii,4));
+r = my_range(E_Vec_xy_ISR2(ii,4));
 YLimVZ = [min(E_Vec_xy_ISR2(ii,4))-DY*r max(E_Vec_xy_ISR2(ii,4))+DY*r];
 clear r ii
 set(hh,'XLim',YLim,'YLim',YLim,'XGrid','on','YGrid','on')
@@ -507,9 +511,13 @@ ylabel('ScPot [-V]')
 set(h(NPLOTS),'XLim',tint_pl - ts);
 
 ts_s = epoch2iso(tint(1));
-add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
+if flag_pos
+	add_text(h(NPLOTS),sprintf('Cluster %d %s (position GSE)',cl_id,ts_s(1:10)))
+else
+	add_text(h(NPLOTS),sprintf('Cluster %d',cl_id))
+end
 
-if ~isempty(R), add_position(h(NPLOTS),R), end
+if flag_pos && ~isempty(R), add_position(h(NPLOTS),R), end
 
 %% Extra panel with electron temperatures on top of the SC potential
 if ~isempty(T_PEA_PAR) || ~isempty(T_PEA_PERP)
@@ -639,10 +647,10 @@ function add_text(h,txt)
 
 ylim = get(h,'YLim');
 xlim = get(h,'XLim');
-text(xlim(1) + range(xlim)*.5, ylim(2) - range(ylim)*.15, [' ' txt],...
+text(xlim(1) + my_range(xlim)*.5, ylim(2) - my_range(ylim)*.15, [' ' txt],...
         'FontWeight','bold','HorizontalAlignment','center')
 	
-%% Help function add_text
+%% Help function get_plot_range
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function res = get_plot_range(plot_range,i)
 
@@ -668,3 +676,16 @@ if (res~=0) && (res~=1) && (res~=2)
 	error('bad value for PLOT_RANGE at position %d: %d',i,res)
 end
 
+%% Help function my_range
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function res = my_range(v)
+
+vv = v(~isnan(v));
+
+if isempty(vv)
+	disp('my_range: all NaNs')
+	res = NaN;
+	return
+end
+
+res = max(vv) - min(vv);
