@@ -162,7 +162,7 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 	v.quant = 'pburst';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% raw and corrected E p12 and p34
+%% Raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
 	v.data = 1;
@@ -277,7 +277,7 @@ elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
 	v.com = '';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% spin fits E p12 and p34
+%% Spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.data = 1;
@@ -312,7 +312,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.com = 'Ez=0 by definition (not measured).';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% despun full resolution E
+%% Despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.data = 1;
@@ -639,9 +639,12 @@ elseif regexp(vs,'^DdsiX[1-4]$')==1
 	v.data = 0;
 	v.cl_id = vs(5);
 	v.inst = 'EFW';
-	v.com = 'X-TRADSI offsets';
+	v.com = 'X-TRA DSI offsets';
+	v.size = 1;
+	v.labels = {'dE'};
+	v.units = {'mV/m'};
 	v.file = 'mXTRA';
-	v.quant = '';
+	v.quant = 'wake';
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Amplitude correction factor
@@ -655,7 +658,7 @@ elseif regexp(vs,'^Damp[1-4]$')==1
 	v.quant = '';
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% despun full/4 sec resolution E with assumption E.B = 0
+%% Despun full/4 sec resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.data = 1;
@@ -685,7 +688,7 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% full/4 sec resolution E in GSE coordinates
+%% Full/4 sec resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.data = 1;
@@ -746,7 +749,7 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	end
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% full resolution satellite potential and derived density
+%% Full resolution spacecraft potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(b)?NVps[1-4]$')==1
 	v.data = 1;
@@ -801,7 +804,7 @@ elseif regexp(vs,'^A(two)?[1-4]$')
 	v.quant = 'a';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% spin axis orientation
+%% Spin axis orientation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^SAX[1-4]$')
 	v.data = 1;
@@ -822,7 +825,7 @@ elseif regexp(vs,'^SAX[1-4]$')
 	v.quant = 'sax';	
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% spacecraft velocity
+%% Spacecraft velocity
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(di)?V[1-4]$')
 	v.data = 1;
@@ -847,7 +850,7 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.quant = 'v';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% spacecraft position
+%% Spacecraft position
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(di)?R[1-4]$')
 	v.data = 1;
@@ -1105,7 +1108,7 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 		v.lev = 0;
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% spin axis orientation
+%% Spin axis orientation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^WHINAT[1-4]$')
 	v.data = 1;
