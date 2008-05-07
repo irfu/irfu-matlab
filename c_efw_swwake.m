@@ -108,7 +108,7 @@ for in = 1:n_spins
 			%irf_log('proc',['data gap at ' epoch2iso(ts,1)])
 			tt(:,in) = NaN;
 		else 
-			if sf==450, dtmp = c_resamp(data_corr(eind,:), ttime(:,in));
+			if sf==450, dtmp = irf_resamp(data_corr(eind,:), ttime(:,in));
 			else
 				ddt = 1/sf;
 				dtmp = data_corr(eind,:);
@@ -117,7 +117,7 @@ for in = 1:n_spins
 					% We miss points at the beginning of the spin
 					nm = ceil( (dtmp(1,1)-ts)/ddt );
 					t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
-					data_temp = c_resamp(dtmp,[t_temp'; dtmp(1:2,1)],...
+					data_temp = irf_resamp(dtmp,[t_temp'; dtmp(1:2,1)],...
 						'linear');
 					dtmp = [data_temp(1:end-2,:); dtmp];
 					clear nm t_temp data_temp
@@ -126,12 +126,12 @@ for in = 1:n_spins
 					% We miss points at the end of the spin
 					nm = ceil( (te-dtmp(end,1))/ddt );
 					t_temp = dtmp(end,1) + (1:nm)*ddt;
-					data_temp = c_resamp(dtmp,...
+					data_temp = irf_resamp(dtmp,...
 						[dtmp(end-1:end,1); t_temp'], 'linear');
 					dtmp = [dtmp; data_temp(3:end,:)];
 					clear nm t_temp data_temp
 				end
-				dtmp = c_resamp(dtmp, ttime(:,in), 'spline');
+				dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
 			end
 			% Fill small gaps (at edges only?) with zeroes
 			% This has a minor influence on the correction procedure
@@ -143,12 +143,12 @@ for in = 1:n_spins
 		% Identify spins for which we attempt to correct wake
 		if (in>=6 && sum(isnan(tt(1,in - (0:1:5) )))<=1)
 			% We allow max one data gap within 6 spins
-			iok = [iok in-3];
+			iok = [iok in-3]; %#ok<AGROW>
 		end
 		if (in==n_spins || n_spins==5) && ~any(isnan(tt(1,in - (0:1:4) )))
 			% Special case when we have only 5 spins or
 			% it is the last spin we are working with
-			iok = [iok in-2];
+			iok = [iok in-2]; %#ok<AGROW>
 		end
 	end
 end
@@ -345,7 +345,7 @@ for in = iok
 	% Correct the spin in the middle	
 	ind = find(e(:,1)>=ttime(1,in) & e(:,1)<ttime(end,in));
 	if ~isempty(ind)
-		wake_e = c_resamp([ttime(:,in) wake], e(ind,1));
+		wake_e = irf_resamp([ttime(:,in) wake], e(ind,1));
 		data(ind,2) = data(ind,2) - wake_e(:,2);
 		n_corrected = n_corrected + 1;
 
@@ -381,10 +381,10 @@ for in = iok
 		if n_spins-in>=3
 			% We try to correct the spin at the end of the entire 
 			% intrval which usually has a data gap 
-			cox = [cox 1:3];
+			cox = [cox 1:3]; %#ok<AGROW>
 			n_corrected = n_corrected + 3;
 		else
-			cox = [cox 1:2];
+			cox = [cox 1:2]; %#ok<AGROW>
 			n_corrected = n_corrected + 2;
 		end
 	elseif ~isempty(cox)
@@ -394,7 +394,7 @@ for in = iok
 		for cx = cox
 			ind = find(e(:,1)>=ttime(1,in+cx) & e(:,1)<ttime(end,in+cx));
 			if ~isempty(ind)
-				wake_e = c_resamp([ttime(:,in+cx) wake], e(ind,1));
+				wake_e = irf_resamp([ttime(:,in+cx) wake], e(ind,1));
 				data(ind,2) = data(ind,2) - wake_e(:,2);
 				%irf_log('proc',['correcting spin: ' num2str(cx)])
 				if plotflag_now
