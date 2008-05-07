@@ -5,7 +5,12 @@ function caa_get_edi(fname)
 %
 % $Id$
 
-% Copyright 2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 old_pwd = pwd;
 BASE_DIR = '/data/caa/l1';
@@ -15,6 +20,9 @@ if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
 
 for d=1:length(dirs)
 	curr_d = dirs{d};
+	if strncmp(BASE_DIR,curr_d,length(BASE_DIR))
+		curr_d = curr_d(length(BASE_DIR)+1 : end);
+	end
 	cd( [BASE_DIR '/' curr_d])
 	
 	if ~exist('./mEDI.mat','file')
@@ -27,10 +35,10 @@ for d=1:length(dirs)
           irf_log('proc',[ '-- GETTING -- : ' curr_d]);
 	  outd = getData(ClusterDB,st,dt,cl_id,'edi');
 	  if ~isempty(outd)
-	    getData(ClusterDB,st,dt,cl_id,'v')
-            getData(ClusterDB,st,dt,cl_id,'b')
-	    getData(ClusterDB,st,dt,cl_id,'bfgm')
-            getData(ClusterProc(pwd),cl_id,'edi')
+		  getData(ClusterDB,st,dt,cl_id,'v')
+		  getData(ClusterDB,st,dt,cl_id,'b')
+		  getData(ClusterDB,st,dt,cl_id,'bfgm')
+		  getData(ClusterProc(pwd),cl_id,'edi')
 	  else
 	    irf_log('load','-- NO EDI DATA --');
 	  end
