@@ -38,8 +38,8 @@ for i=1:length(yy)
 	
 	pdf = pdf/sum(x);
 	
-	im=find(pdf==max(pdf));
-	ii=im-3:im+3;
+	im = find( pdf==max(pdf), 1, 'last');
+	ii = im-3:im+3;
 	cf = fit(d(ii)'+STEP/2,(pdf(ii))','gauss1');
 	cf = coeffvalues(cf);
 	
