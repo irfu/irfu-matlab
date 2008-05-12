@@ -89,6 +89,18 @@ for j = ii;
 	% TODO: times must never be NaN.
 	tt(isnan(tt(:,1)),:) = []; if isempty(tt), continue, end
 	
+	% Uncorrect delta offsets. This is black magic...
+	if regexp(var_name,'^diEs([1-4]|?)p(12|32|34)$')==1
+		% Delta offsets
+		pp = str2double(var_name(end-1:end));
+		[ok,Delauto] = c_load('D?p12p34',cl_id);
+		if ~ok || isempty(Delauto)
+			irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+		else
+			tt = caa_corof_delta(tt,pp,Delauto,'undo');
+		end
+	end
+	
 	% Append time to variables which does not have it
 	% 946684800 = toepoch([2000 01 01 00 00 00])
 	if tt(1,1) < 946684800

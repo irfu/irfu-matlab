@@ -33,18 +33,28 @@ dt = ceil(dt/STEP)*STEP;
 t = st:STEP:st+dt;
 t = t';
 
-Ps1 = caa_get(st,dt,1,'Ps?');
-Ps2 = caa_get(st,dt,2,'Ps?');
-Ps3 = caa_get(st,dt,3,'Ps?');
-Ps4 = caa_get(st,dt,4,'Ps?');
+E1 = []; E2 = []; E3 = []; E4 = [];
 
-diEs1 = caa_get(st,dt,1,'diEs?p34');
-if ~isempty(diEs1)
-    diEs1(isnan(diEs1(:,2)),:)=[];
-    E1=irf_resamp(diEs1,t);
-else E1 = [];
+Ps1 = caa_get(st,dt,1,'Ps?'); %#ok<NASGU>
+Ps2 = caa_get(st,dt,2,'Ps?'); %#ok<NASGU>
+Ps3 = caa_get(st,dt,3,'Ps?'); %#ok<NASGU>
+Ps4 = caa_get(st,dt,4,'Ps?'); %#ok<NASGU>
+
+
+for cli=1:4
+	es_tmp = caa_get(st,dt,cli,'diEs?p34');
+	if ~isempty(es_tmp)
+		% Delta offsets
+		Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
+		if ~isempty(Del_caa)
+			es_tmp = caa_corof_delta(es_tmp,34,Del_caa,'apply');
+		end
+	else es_tmp = [];
+	end
+	es_tmp = irf_resamp(es_tmp,t); %#ok<NASGU>
+	c_eval('E?=es_tmp;',cli)
 end
-
+		
 diVCEh1 = caa_get(st,dt,1,'diVCEh?');
 if ~isempty(diVCEh1)
     diVCEh1(isnan(diVCEh1(:,2)),:)=[];
@@ -52,32 +62,11 @@ if ~isempty(diVCEh1)
 else CE1 = [];
 end
 
-diEs2 = caa_get(st,dt,2,'diEs?p34');
-if ~isempty(diEs2)
-    diEs2(isnan(diEs2(:,2)),:)=[];
-    E2 = irf_resamp(diEs2,t);
-else E2 = [];
-end
-
-diEs3 = caa_get(st,dt,3,'diEs?p34');
-if ~isempty(diEs3)
-    diEs3(isnan(diEs3(:,2)),:)=[];
-    E3 = irf_resamp(diEs3,t);
-else E3 = [];
-end
-
 diVCEh3 = caa_get(st,dt,3,'diVCEh?');
 if ~isempty(diVCEh3)
     diVCEh3(isnan(diVCEh3(:,2)),:)=[];
     CE3=irf_resamp(diVCEh3,t);
 else CE3 = [];
-end
-
-diEs4 = caa_get(st,dt,4,'diEs?p34');
-if ~isempty(diEs4)
-    diEs4(isnan(diEs4(:,2)),:)=[];
-    E4 = irf_resamp(diEs4,t);
-else E4 = [];
 end
 
 tt = [1.0097e+09 1 ;1.0097e+09+1 1 ;];
