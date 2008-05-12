@@ -22,7 +22,7 @@ end
 
 fs = c_efw_fsample(data);
 if fs<=0
-	irf_log('proc','cannot fill gaps (no sampling frequency)')
+	irf_log('proc','cannot fill gaps')
 	return
 end
 
