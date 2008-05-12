@@ -38,7 +38,10 @@ elseif t>=toepoch([2001 07 01 00 00 0]), Ddsi = [ .47      .82 .89 1.04 ];
 elseif t>=toepoch([2001 06 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
 elseif t>=toepoch([2001 05 25 00 00 0]), Ddsi = [ .31     1.35 .52 1.55 ];
 elseif t>=toepoch([2001 04 25 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
-elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
+elseif t>=toepoch([2001 03 01 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
+elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77  .44  .1  ]; % Special puck ?
+elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
+elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ]; % Special puck ?
 else
 	Ddsi = [ 0 0 0 0];
 end
@@ -67,6 +70,8 @@ elseif t>=toepoch([2003 01 01 00 0 0]), Ddsi = [ 1.42  2.18 1.64  1.43 ];
 elseif t>=toepoch([2002 12 02 00 0 0]), Ddsi = [ 1.42  1.98 1.64  2.00 ];
 elseif t>=toepoch([2002 05 02 00 0 0]), Ddsi = [ 1.33  1.98 1.66  1.30 ];
 elseif t>=toepoch([2002 01 01 00 0 0]), Ddsi = [ 1.33  1.98 1.66  2.00 ];
+elseif t>=toepoch([2001 06 01 00 0 0]), Ddsi = [ 1.26  1.74 1.54  1.06 ];
+elseif t>=toepoch([2001 02 01 00 0 0]), Ddsi = [ 1.21  1.92 1.25  1.02 ];
 else
 	Ddsi = DdsiSW;
 end
