@@ -15,6 +15,7 @@ if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
 
 for d=1:length(dirs)
 	s = dirs{d};
+	if length(s)>12 && strcmp(BASE_DIR,s(1:12)), s = s(14:end); end
 	caa_pl_summary_l1(...
 		sprintf('%s-%s-%sT%s:00:00Z',s(1:4),s(10:11),s(12:13),s(15:16)),...
 		3*3600,	[BASE_DIR '/' s],'saveps')
