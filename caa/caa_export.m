@@ -183,7 +183,11 @@ if strcmp(caa_vs,'E')
 		if isempty(dsiof)
 			[ok,Ps,msg] = c_load('Ps?',cl_id);
 			if ~ok, irf_log('load',msg), end
-			[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
+			if caa_is_sh_interval
+				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,[]);
+			else
+				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
+			end
 
 			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
 			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
