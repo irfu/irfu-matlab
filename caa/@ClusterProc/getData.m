@@ -575,9 +575,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		end
 	else % Not burst
 		p12 = 12; e12 = []; e34 =[];
-		p_ok = [];
+		p_ok = []; p12_ok = 0;
 		for probe = [12 32 34]
+			if probe == 32 && p12_ok, continue, end
 			[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
+			
 			if ~ok || isempty(da)
 				irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
@@ -588,6 +590,8 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				irf_log('load','using raw (not corrected) data')
 			end
 
+			if ok && probe == 12, p12_ok = 1; end
+			
 			if probe==32
 				p12 = 32;
 				e12 = da;
@@ -600,6 +604,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		end
 	end
 	if isempty(p_ok), data = []; cd(old_pwd), return, end
+	clear p12_ok
 
 	% Load ADC offsets
 	for probe = p_ok
