@@ -1,7 +1,10 @@
 function caa_sp_batch(fname)
 %CAA_SP_BATCH  produce summary plots
 %
-% caa_sp_batch(fname)
+% CAA_SP_BATCH(FNAME)
+%       Produce summary plots for dirs listed in FNAME
+%
+% See also: CAA_PL_SUMMARY_L1
 %
 % $Id$
 
