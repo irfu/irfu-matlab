@@ -210,7 +210,11 @@ for cli=1:4
 				if isempty(dsiof)
 					[ok,Ps,msg] = c_load('Ps?',cli,'var');
 					if ~ok, irf_log('load',msg), end
-					[dsiof_def, dam_def] = c_efw_dsi_off(es_tmp(1,1),cli,Ps);
+					if caa_is_sh_interval
+						[dsiof_def, dam_def] = c_efw_dsi_off(es_tmp(1,1),cli,[]);
+					else
+						[dsiof_def, dam_def] = c_efw_dsi_off(es_tmp(1,1),cli,Ps);
+					end
 					clear ok Ps msg
 					
 					if usextra % Xtra offset
