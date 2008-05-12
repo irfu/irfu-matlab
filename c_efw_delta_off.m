@@ -30,8 +30,8 @@ end
 
 if length(data(:,1))==1
 	t = data(1,1);
-	ii1 = find( da(:,1) >= t );
-	ii2 = find( da(:,1) < t );
+	ii1 = find( da(:,1) >= t-DT );
+	ii2 = find( da(:,1) < t+DT );
 	ii1 = ii1(1); ii2 = ii2(end);
 	if any(isnan(da(ii1,2:3))) && ~any(isnan(da(ii2,2:3)))
 		dof = da(ii2,2:3);
