@@ -38,10 +38,10 @@ elseif t>=toepoch([2001 07 01 00 00 0]), Ddsi = [ .47      .82 .89 1.04 ];
 elseif t>=toepoch([2001 06 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
 elseif t>=toepoch([2001 05 25 00 00 0]), Ddsi = [ .31     1.35 .52 1.55 ];
 elseif t>=toepoch([2001 04 25 00 00 0]), Ddsi = [ .31      .60 .52  .64 ];
-elseif t>=toepoch([2001 03 01 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
-elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77  .44  .1  ]; % Special puck ?
-elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ];
-elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ]; % Special puck ?
+elseif t>=toepoch([2001 03 01 00 00 0]), Ddsi = [ .69     1.36 .68  .34 ];
+elseif t>=toepoch([2001 02 02 15 00 0]), Ddsi = [ .55      .77 .44  .1  ]; 
+elseif t>=toepoch([2001 02 02 00 00 0]), Ddsi = [ .48      .77 .44 1.11 ]; % Special puck/guard ?
+elseif t>=toepoch([2001 02 01 00 00 0]), Ddsi = [ .55      .8  .4   .1  ];
 else
 	Ddsi = [ 0 0 0 0];
 end
