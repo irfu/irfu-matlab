@@ -62,8 +62,8 @@ jxB=irf_tappl(irf_cross(j,B),'*1e-9'); % to get units [T A/m2]
 BdivB=c_4_grad('r?','b?','bdivb');
 divTshear=irf_tappl(BdivB,'/1e3*1e-9*1e-9/(4*pi*1e-7)');
 
-% estimate divPb = (1/muo) grad (B^2/2) = jxB-divTshear
-divPb=irf_add(1,jxB,-1,divTshear);
+% estimate divPb = (1/muo) grad (B^2/2) = divTshear-jxB
+divPb=irf_add(-1,jxB,1,divTshear);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
