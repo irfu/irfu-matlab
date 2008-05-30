@@ -108,7 +108,7 @@ if ischar(x), % Try to get variable labels etc.
         if regexp(var_nam{ii},'?'),
             c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
         else
-            var_names{jj} = var_nam{ii}; jj=jj+1;
+            var_names{jj} = var_nam{ii}; jj=jj+1; %#ok<AGROW>
         end
     end
     x = {}; ix = 1;
@@ -126,9 +126,9 @@ if ischar(x), % Try to get variable labels etc.
         end
         if length(x)==ix,
           try
-              var_desc{ix} = c_desc(var_names{ii});
+              var_desc{ix} = c_desc(var_names{ii}); %#ok<AGROW>
           catch
-              var_desc{ix} = {};
+              var_desc{ix} = {}; %#ok<AGROW>
           end
           ix = ix +1;
         end
