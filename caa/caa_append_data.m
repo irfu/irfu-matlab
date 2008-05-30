@@ -19,13 +19,40 @@ error(nargchk(2,2,nargin))
 
 if size(data,2) ~= size(app,2), error('data has a different dimension'), end
 
-if app(1) <= data(end,1)
-	ii = find(app(:,1)>data(end,1));
-	if isempty(ii), return, end
-	app = app(ii,:);
+if isstruct(data)
+	if ~isstruct(app), error('APP must be also a struct, as DATA'), end
+	if ~isfield(data,'t'), error('struct DATA must have field ''t'''), end
+	t = data.t;
+	tapp = app.t;
+else
+	t = data(:,1);
+	tapp = app(:,1);
 end
 
-% Fill the gap between the datasets
-data = caa_fill_gaps(data,app(1,1));
+if tapp(1) <= t(end)
+	app = irf_tlim(app,tapp(1),t(end),1);
+	if isempty(app), return, end
+end
 
-data = [data; app];
+if isstruct(data)
+	fn = fieldnames(data);
+	ndata = length(t);
+	for fi=1:length(fn)
+		if iscell(data.(fn{fi}))
+			for i = 1:length(data.(fn{fi}))
+				if size(data.(fn{fi}){i},1) == ndata
+					data.(fn{fi}){i} = [data.(fn{fi}){i}; app.(fn{fi}){i}];
+				end
+			end
+		else
+			if size(data.(fn{fi}),1) == ndata
+				data.(fn{fi}) = [data.(fn{fi}); app.(fn{fi})];
+			end
+		end
+	end
+else
+	% Fill the gap between the datasets
+	data = caa_fill_gaps(data,app(1,1));
+
+	data = [data; app];
+end
