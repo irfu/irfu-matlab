@@ -1869,13 +1869,13 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 		if isempty(BPP_tmp)
 			% Use FR data if there is any (cover != 0)
 			if cover==0
-				irf_log('load','Canot load B. Please load B FGM or B PP.')
+				irf_log('load','Cannot load B. Please load B FGM or B PP.')
 				data = []; cd(old_pwd); return
 			end
 		else
 			BPP_tmp = irf_tlim(BPP_tmp,E_tmp(1,1) + [-.5/e_sf (dt+.5/e_sf)]);
 			if isempty(BPP_tmp)
-				irf_log('load','Canot find any usefull B data. Please load B FGM or B PP.')
+				irf_log('load','Cannot find any usefull B data. Please load B FGM or B PP.')
 				data = []; cd(old_pwd); return
 			end
 	
