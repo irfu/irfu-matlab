@@ -42,6 +42,7 @@ for d=1:length(dirs)
 		getData(ClusterDB,st,dt,cl_id,'b');
 		getData(ClusterDB,st,dt,cl_id,'edi');
 		getData(ClusterProc(pwd),cl_id,'brs');
+		getData(ClusterProc(pwd),cl_id,'edi');
 		getData(ClusterProc(pwd),cl_id,'wake');
 
 		% Create .caa_ms_interval
