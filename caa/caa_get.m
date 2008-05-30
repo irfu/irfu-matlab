@@ -37,6 +37,7 @@ t = fromepoch(st);
 t0 = toepoch([t(1) t(2) t(3) fix(t(4)/SPLIT_INT)*SPLIT_INT 0 0]);
 t = fromepoch(st+dt);
 t1 = toepoch([t(1) t(2) t(3) fix(t(4)/SPLIT_INT)*SPLIT_INT 0 0]);
+if t1>=st+dt, t1 = t1 - SPLIT_INT*3600; end
 
 old_pwd = pwd;
 mode_list = [];
@@ -60,9 +61,12 @@ for t=t0:SPLIT_INT*3600:t1
 		subdir = [main_int '/' good_dir{j}];
 		cd(subdir)
 		[st_t,dt_tmp] = caa_read_interval();
+		if isempty(st_t), continue, end
+		st_tmp = iso2epoch(st_t);
+		if (st_tmp+dt_tmp <= st) || (st_tmp >= st+dt), continue, end % subinterval starts before/after the interval
 		[ok,tm] = c_load('mTMode?',cl_id);
-		if isempty(st_t) || ~ok, continue, end
-		ttt.st = iso2epoch(st_t);
+		if ~ok, continue, end
+		ttt.st = st_tmp;
 		ttt.dt = dt_tmp;
 
 		if NEED_SAME_TM && tm~=tm(1)*ones(size(tm))
@@ -87,7 +91,8 @@ for j = ii;
 	if ~ok || isempty(tt), continue, end
 	% Remove NaN times
 	% TODO: times must never be NaN.
-	tt(isnan(tt(:,1)),:) = []; if isempty(tt), continue, end
+	if ~isstruct(tt), tt(isnan(tt(:,1)),:) = []; end
+	if isempty(tt), continue, end
 	
 	% Uncorrect delta offsets. This is black magic...
 	if regexp(var_name,'^diEs([1-4]|?)p(12|32|34)$')==1
@@ -103,7 +108,7 @@ for j = ii;
 	
 	% Append time to variables which does not have it
 	% 946684800 = toepoch([2000 01 01 00 00 00])
-	if tt(1,1) < 946684800
+	if ~isstruct(tt) && ( tt(1,1) < 946684800 )
 		if size(tt,1)==1, tt = [starts(j)+dts(j)/2.0 tt]; %#ok<AGROW>
 		else error('loaded bogus data')
 		end
