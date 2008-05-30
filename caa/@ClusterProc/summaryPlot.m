@@ -295,6 +295,7 @@ h = irf_plot(dummy);
 clear dummy dummyel
 
 for k=1:n_plots
+	if isempty(data{k}), continue, end
 	axes(h(k))
 	irf_plot(data{k},'comp')
 	axis tight

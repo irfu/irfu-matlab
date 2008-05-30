@@ -12,7 +12,7 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %	Ti - ion temperature [eV]
 % flag - 1: do not display the output
 % flag - string : return only specified output
-%        string canbe 'Fpe','Fce','Wuh',etc.
+%        string can be 'Fpe','Fce','Wuh',etc.
 %
 % returned variables are in SI units, frequencies in Hz, lengths in m
 %
