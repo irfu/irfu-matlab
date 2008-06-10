@@ -12,17 +12,14 @@ function h=c_pl_sc_conf_xyz(time,coord_sys);
 %   figuserdata=[h];
 eval_figuserdata='figuserdata={h};';
 
-persistent t b l m n B r1 r2 r3 r4 phaseHndl timeHndl figNumber ...
-            resHndl NHndl LHndl Lflag LMN_Lflag LMN_Nflag ...
-            coord_label;
-if       (nargin==1 & isstr(time)), action=time;irf_log('fcal',['action=' action]);
+persistent t r1 r2 r3 r4 figNumber coord_label;
+if       (nargin==1 && ischar(time)), action=time;irf_log('fcal',['action=' action]);
 elseif   (nargin < 9)                   , action='initialize';
 end
 
 if strcmp(action,'initialize'),
-  initLflag=0;
   if nargin<1, help c_pl_sc_conf_xyz;return;end
-  if nargin==1, coord_label='GSE';else, coord_label=coord_sys;end
+  if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
   ok=c_load('R?');
   if  min(ok) == 1,
       c_eval('r?=R?;clear R?;');
@@ -93,7 +90,7 @@ elseif strcmp(action,'plot'),
     xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
     grid on;
     set(gca,'xdir','reverse')
-    
+    set(gca,'ydir','reverse')
   axes(h(5));
     plot(x1(3),x1(2),'ks', x2(3),x2(2),'rd', x3(3),x3(2),'go', x4(3),x4(2),'bv');
     xlabel(['X [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
@@ -109,7 +106,7 @@ elseif strcmp(action,'plot'),
     xlabel(['X [km] ' coord_label]);ylabel(['Y [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
     set(gca,'xdir','reverse')    
-
+    set(gca,'ydir','reverse')
 else
   disp(sprintf( ...
      'c_pl_sc_conf_lmn: action string ''%s'' not recognized, no action taken.',action))
