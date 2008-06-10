@@ -91,18 +91,19 @@ elseif strcmp(action,'plot'),
     grid on;
     set(gca,'xdir','reverse')
     set(gca,'ydir','reverse')
+    
   axes(h(5));
-    plot(x1(3),x1(2),'ks', x2(3),x2(2),'rd', x3(3),x3(2),'go', x4(3),x4(2),'bv');
+    plot(x1(2),x1(4),'ks', x2(2),x2(4),'rd', x3(2),x3(4),'go', x4(2),x4(4),'bv');
     xlabel(['X [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
     set(gca,'xdir','reverse')
 %  axes(h(1));      title(titlestr);
   axes(h(6));
-    plot(x1(4),x1(2),'ks', x2(4),x2(2),'rd', x3(4),x3(2),'go', x4(4),x4(2),'bv')
+    plot(x1(3),x1(4),'ks', x2(3),x2(4),'rd', x3(3),x3(4),'go', x4(3),x4(4),'bv')
     xlabel(['Y [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
   axes(h(7));
-    plot(x1(3),x1(4),'ks', x2(3),x2(4),'rd', x3(3),x3(4),'go', x4(3),x4(4),'bv')
+    plot(x1(2),x1(3),'ks', x2(2),x2(3),'rd', x3(2),x3(3),'go', x4(2),x4(3),'bv')
     xlabel(['X [km] ' coord_label]);ylabel(['Y [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
     set(gca,'xdir','reverse')    
