@@ -29,7 +29,12 @@ function data=c_csds_read(data_path,start_time,dt,cl_id,quantity)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(5,5,nargin))
 
@@ -146,10 +151,9 @@ for i=1:length(p)
 			clear dbase
 
 			if ~isempty(dat)
-				% if dat has more the one column, we need to transpose it
+				% If dat has more the one column, we need to transpose it
 				sz = size(dat);
-				i_s = find(sz~=length(t));
-				if sz(i_s)>1, dat = dat'; end
+				if sz( sz~=length(t) ) > 1, dat = dat'; end
 
 				data = [double(t) double(dat)];
 				return
