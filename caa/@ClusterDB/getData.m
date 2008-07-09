@@ -841,8 +841,18 @@ elseif strcmp(quantity,'sax')
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
 	
 	if isempty(lat) || isempty(long)
-		irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
-		out_data = []; cd(old_pwd), return
+		% Try ISDAT which does not handle data gaps
+		[t,data] = caa_is_get(cdb.db, start_time, dt, ...
+			cl_id, 'ephemeris', 'sax_lat'); %#ok<ASGLU>
+		lat = [t data];
+		[t,data] = caa_is_get(cdb.db, start_time, dt, ...
+			cl_id, 'ephemeris', 'sax_long'); %#ok<ASGLU>
+		long = [t data];
+
+		if isempty(lat) || isempty(long)
+			irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
+			out_data = []; cd(old_pwd), return
+		end
 	end
 	
 	% Take first point only. This is OK according to AV
