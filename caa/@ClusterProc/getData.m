@@ -59,6 +59,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 % General options - one of the following:
 %       nosave : do no save on disk
+%       rmwake : remove wakes
 %       withwhip : do not remove time intervals with Whisper pulses
 %       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
 %           compute the offset (affects 'die')
@@ -87,6 +88,7 @@ flag_save = 1;
 flag_usesaved_adc_off = 1;
 flag_usecaa_del_off = 1;
 flag_edb = 1;
+flag_rmwake = 0;
 sfit_ver = -1;
 correct_sw_wake = 0;
 
@@ -108,6 +110,8 @@ while have_options
 		flag_save = 0;
 	case 'withwhip'
 		flag_rmwhip = 0;
+	case 'rmwake'
+		flag_rmwake = 1;
 	case 'no_caa_delta'
 		flag_usecaa_del_off = 0;
 	case 'no_saved_adc'
@@ -989,6 +993,16 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	
 	% Save stand-deviation in the 6-th column
 	if strcmp(quantity,'edbs') || strcmp(quantity,'iedbs'), diE(:,6) = diE(:,5); end
+	
+	% Remove wakes
+	if flag_rmwake
+		problems = 'wake'; %#ok<NASGU>
+		signal = diE; %#ok<NASGU>
+		probe = probe_p; %#ok<NASGU>
+		remove_problems
+		diE = res; %#ok<NODEF>
+		clear res signal problems probe
+	end
 	
 	dsiof = c_ctl(cl_id,'dsiof');
 	if isempty(dsiof)
