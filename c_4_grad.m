@@ -7,6 +7,8 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %  [curv_b,[b]]=c_4_grad('r?','b?','curvature')
 %  [div_T,[b]]=c_4_grad('r?','b?','divT')
 %  [b_div_b,[b]]=c_4_grad('r?','b?','bdivb')
+%  [drift_grad,[b]]=c_4_grad('r?','b?','drift_grad')
+%  [drift_curl,[b]]=c_4_grad('r?','b?','drift_curl')
 %
 %  r1..r4 are row vectors
 %         column 1     is time
@@ -37,6 +39,8 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %         div_T is row vector and defined for b being vector
 %         column 1     time
 %         column 2-4   div_T
+%  drift_grad gradient drift of 1eV positively charged particle in [m/s]
+%  drift_curv curvature drift of 1eV positively charged particle in [m/s]
 %
 %   See also C_4_K
 %
@@ -46,7 +50,7 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 
 %%%%%%%%%%%%%%%%%%  Check input parameters %%%%%%%%%%%%%%
 
-if nargin~=9 & nargin~=8 & nargin~=3 & nargin~=2
+if nargin~=9 && nargin~=8 && nargin~=3 && nargin~=2
 	disp('Wrong number of input parameters. See usage:');
 	help c_4_grad;     
 	return
@@ -66,7 +70,7 @@ else
   warning('c_4_grad','Too many input parameters.'); return;
 end
 
-if nargin==2 | nargin==3, % input is in form 'R?' and 'B?' 
+if nargin==2 || nargin==3, % input is in form 'R?' and 'B?' 
 	rs = r1;
 	bs = r2;
 	for cl_id=1:4
@@ -92,7 +96,7 @@ end
 % because usually r1..r4 is of less time resolution, it is more
 % computer friendly first calculate k1..k4 and only after interpolate
 % and not the other way around
-for ic=1:4,eval(irf_ssub('R?=irf_resamp(r?,r1,''spline'');',ic)),end
+c_eval('R?=irf_resamp(r?,r1,''spline'');')
 [k1,k2,k3,k4]=c_4_k(R1,R2,R3,R4);
 
 %%%%%%%%%%%%%%%% Do interpolation to b1 time series %%%%%%%%%%%%%%%%%%%%%%
@@ -101,7 +105,7 @@ b=0.25*B1+0.25*B2+0.25*B3+0.25*B4; % estimate mean value of vector or scalar
 c_eval('K?=irf_resamp(k?,b1);');
 
 %%%%%%%%%%%%%%%% Calculate gradient if necessary (grad,curvature) %%%%%%%%%%%%%%%%%%%%%%
-if strcmp(flag_option,'grad')|strcmp(flag_option,'curvature')|strcmp(flag_option,'bdivb'),
+if strcmp(flag_option,'grad')||strcmp(flag_option,'curvature')||strcmp(flag_option,'bdivb'),
   if strcmp(input_is,'scalar'),  % scalar field, gradient is vector
     grad_b=zeros(size(B1,1),4);grad_b(:,1)=b1(:,1);
     c_eval('grad_b(:,2:4)=grad_b(:,2:4)+K?(:,2:4).*repmat(B?(:,2),1,3);');
@@ -162,6 +166,16 @@ switch flag_option
     c_eval('bhat?=irf_norm(b?);');
     curvature=c_4_grad('r?','bhat?','bdivb');
     result=curvature;
+  case 'drift_grad' % TODO: test that gives correct values
+    c_eval('babs?=[b?(:,1) irf_abs(b?,1)];');
+    gradB=c_4_grad('r?','babs?','grad');
+    result=irf_tappl(irf_vec_x_scal(irf_cross(b,gradB),[b(:,1) irf_abs(b,1)],-3),'*1e9/1e3');
+  case 'drift_curv' % TODO: test that gives correct values
+      % curvature drift v=W[eV]/(B^2)* (Bvec x div_par bhat) assuming
+      % B[nT],r[km] (*1e9 because of nT and /1e3 because grad in km)
+    c_eval('bhat?=irf_norm(b?);');
+    curvature=c_4_grad('r?','bhat?','bdivb');
+    result=irf_tappl(irf_vec_x_scal(irf_cross(b,curvature),[b(:,1) irf_abs(b,1)],-2),'*2*1e9/1e3');
   case 'div_T' % TODO: test that gives correct values
     if strcmp(input_is,'vector'),
       div_T=irf_add(1,irf_vec_x_scal(b,div_b),1,irf_cross(curl_b,b));
