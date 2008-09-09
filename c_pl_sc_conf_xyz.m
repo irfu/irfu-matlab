@@ -43,9 +43,9 @@ if strcmp(action,'initialize'),
   end
   set(figNumber,'Position',[10 10 600 1000])
 
-  h(1)=subplot(4,2,1);axis([-19.99 9.99 -14.99 14.99]);hold on;
+  h(1)=subplot(4,2,1);axis([-19.99 14.99 -14.99 14.99]);hold on;
   h(2)=subplot(4,2,2);axis([-19.99 19.99 -19.99 19.99]);hold on;
-  h(3)=subplot(4,2,3);axis([-19.99 9.99 -19.99 19.99]);hold on;
+  h(3)=subplot(4,2,3);axis([-19.99 14.99 -19.99 19.99]);hold on;
   h(4)=subplot(4,2,4);axis off;
   h(5)=subplot(4,2,5);axis([-50 50 -50 50]);
   h(6)=subplot(4,2,6);axis([-50 50 -50 50]);
