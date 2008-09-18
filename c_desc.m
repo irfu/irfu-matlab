@@ -14,7 +14,7 @@ function varargout = c_desc(vs,v_info)
 % Output:
 %	DESC - structure containing a description of variable VS. It has the 
 %	following fields:
-%   cl_id		%Clister ID
+%   cl_id		%Cluster ID
 %   inst		%Instrument
 %   frame		%Reference frame
 %   sig			%Signal
@@ -26,6 +26,9 @@ function varargout = c_desc(vs,v_info)
 %   name		%Name of a CEF variable
 %   labels		%Label of a CEF variable
 %   field_name	%Description of a CEF variable
+%   ptype       %Parameter type of a CEF variable
+%   valtype     %Value type of a CEF variable
+%   sigdig      %Significant digits of a CEF variable
 %   com			%Comment
 %   file		%Matlab file name (mXXX.mat)
 %   quant		%Quantity name to use with getData
@@ -86,6 +89,9 @@ if regexp(vs,'^(b)?P(s)?[1-4]$')==1
 		v.quant = 'p';
 		v.field_name = {'Spacecraft potential'};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.ent = {'Instrument'};
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
@@ -130,6 +136,9 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.ent = {'Instrument'};
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
@@ -156,6 +165,9 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 	v.name = {['P' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' to spacecraft potential']};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mEFWburstR';
 	v.file_old = 'mEFWburst';
@@ -179,6 +191,9 @@ elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
 	v.labels = v.name;
 	v.field_name = {['Electric field component measured between the probes '...
 		v.sen(1) ' and ' v.sen(2)]};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.ent = {'Electric_Field'};
 	v.prop = {'Component'};
 	v.fluc = {'Waveform'};
@@ -220,6 +235,9 @@ elseif regexp(vs,'^WAKE[1-4]p(12|32|34)$')==1
 		['Wake-p' v.sen ' h-width']};
 	v.labels = v.name;
 	v.field_name = {'Wake location','Wake amplitude','Wake half-width'};
+    v.ptype = {'Data','Data','Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT'};
+    v.sigdig = [6 6 6];
 	v.com = '';
 	v.file = 'mERC';
 	v.quant = 'ec';
@@ -245,6 +263,9 @@ elseif regexp(vs,'^(PS|LO)WAKE[1-4]p(12|32|34)$')==1
 	v.name = {[reg ' wake-p' v.sen]};
 	v.labels = {['Wake-p' v.sen ' stop']};
 	v.field_name = {'Wake stop'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mEFW';
 	v.quant = 'wake';
@@ -272,6 +293,9 @@ elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
 	v.field_name = {'Raw electric field : 1 omega',...
 		'Raw electric field : 2 omega','Raw electric field : 3 omega',...
 		'Raw electric field : 4 omega','Raw electric field : 5 omega'};
+    v.ptype = {'Data','Data','Data','Data','Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT'};
+    v.sigdig = [6 6 6 6 6];
 	v.file = 'mEFW';
 	v.quant = 'rawspec';
 	v.com = '';
@@ -281,9 +305,9 @@ elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.data = 1;
-	if vvs(1)=='i', 
+	if vvs(1)=='i',
 		vvs = vvs(2:end);
-		v.frame = 'inertial'; 
+		v.frame = 'inertial';
 		v.file = 'mEIDSI';
 		v.quant = 'idies';
 	else
@@ -295,20 +319,26 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.inst = 'EFW';
 	v.sig = 'E';
 	v.sen = vvs(7:8);
-	v.cs = {'ISR2','na'};
-	v.rep = {'xy',''};
- 	v.units =  {'mV/m','unitless'};
-	v.si_conv = {'1.0e-3>V m^-1',''};
-	v.size = [3 1];
-	v.name = {'E_Vec_xy_ISR2', 'E_sigma'};
-	v.labels = {'E','St dev'};
-	v.label_1 = {'"Ex", "Ey"',''};
-    v.col_labels = {{'x','y','z'},''};
-    v.rep_1 = {'"x", "y"',''};
-	v.field_name = {'Electric field (4 sec resolution)','Standard deviation'};
-	v.ent = {'Electric_Field','Electric_Field'};
-	v.prop = {'Vector','Vector'};
-	v.fluc = {'Waveform','Fluctuation_Level'};
+	v.cs = {'ISR2','na','na','na'};
+	v.rep = {'xy','','',''};
+	v.units =  {'mV/m','mV/m','unitless','unitless'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','',''};
+	v.size = [3 1 1 1];
+	v.name = {'E_Vec_xy_ISR2', 'E_sigma','E_bitmask','E_quality'};
+	v.labels = {'E','St dev','Bitmask','Quality'};
+	v.label_1 = {'"Ex", "Ey"','','',''};
+	v.col_labels = {{'x','y','z'},'','',''};
+	v.rep_1 = {'"x", "y"','','',''};
+	v.field_name = {'Electric field (4 sec resolution)',...
+		'Electric field standard deviation',...
+		'Electric field measurement quality bitmask',...
+		'Electric field measurement quality flag (9=best)'};
+	v.ptype = {'Data','Data','Support_Data','Support_Data'};
+	v.valtype = {'FLOAT','FLOAT','INT','INT'};
+	v.sigdig = [6 6 5 1];
+	v.ent = {'Electric_Field','Electric_Field','Electric_Field','Electric_Field'};
+	v.prop = {'Vector','Vector','Status','Status'};
+	v.fluc = {'Waveform','Fluctuation_Level','',''};
 	v.com = 'Ez=0 by definition (not measured).';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -348,6 +378,9 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 		v.label_1 = {'"Ex", "Ey"'};
 		v.field_name = {'Electric field'};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.inst = 'EFW';
 	v.sig = 'E';
 	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
@@ -423,6 +456,9 @@ elseif regexp(vs,'^IBIAS[1-4]p[1-4]$')==1
 	v.name = {['I-bias-p' v.sen]};
 	v.labels = v.name;
 	v.field_name = {['Probe ' v.sen ' bias current']};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mEFWR';
 	v.file_old = 'mFDM';
@@ -446,6 +482,9 @@ elseif regexp(vs,'^EFWT[1-4]$')==1
 	v.name = {'EFW clock'};
 	v.labels = v.name;
 	v.field_name = {'EFW clock'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mEFWR';
 	v.file_old = 'mFDM';
@@ -602,6 +641,9 @@ elseif regexp(vs,'^Dadc[1-4]p(12|32|34)$')==1
 	v.name = {'dER_Mag'};
 	v.labels = v.name;
 	v.field_name = {'raw signal DC offset'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.ent = {'Electric_Field'};
 	v.prop = {'Magnitude'};
 	v.fluc = {'Waveform'};
@@ -685,6 +727,9 @@ elseif regexp(vs,'^(i)?diE(s)?[1-4]$')
 	v.label_1 = {'"Ex", "Ey", "Ez"','',''};
 	v.col_labels = {{'x','y','z'},'',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane','Standard deviation'};
+    v.ptype = {'Data','Data','Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT'};
+    v.sigdig = [6 6 6];
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -715,6 +760,9 @@ elseif regexp(vs,'^(i)?E(s)?[1-4]$')
 	v.label_1 = {'"Ex", "Ey", "Ez"','',''};
 	v.col_labels = {{'x','y','z'},'',''};
 	v.field_name = {'Electric field','Elevation of B above the sc spin plane','Standard deviation'};
+    v.ptype = {'Data','Data','Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT'};
+    v.sigdig = [6 6 6];
 	v.com = com_Ez;
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -742,6 +790,9 @@ elseif regexp(vs,'^(di)?VExB(s)?[1-4]$')
 	v.label_1 = {'"Vx", "Vy", "Vz"',''};
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Convection velocity','Elevation of B above the sc spin plane'};
+    v.ptype = {'Data','Data'};
+    v.valtype = {'FLOAT','FLOAT'};
+    v.sigdig = [6 6];
 	v.com = com_Ez;
 	v.file = 'mEdB';
 	if vvs(5)=='s' || vvs(7)=='s', v.quant = 'vedbs';
@@ -772,7 +823,9 @@ elseif regexp(vs,'^(b)?NVps[1-4]$')==1
         v.file = 'mP';
         v.quant = 'p';
     end
-    
+    v.ptype = {'Data','Data'};
+    v.valtype = {'FLOAT','FLOAT'};
+    v.sigdig = [6 6];    
     v.labels = {'Nscp', '-Sc pot'};
 	v.name = {'Plasma density','Spacecraft potential'};
     v.com = 'density NVps is derived from Vps based on empirical fit. It is NOT a true density';
@@ -799,6 +852,9 @@ elseif regexp(vs,'^A(two)?[1-4]$')
 		v.labels = {'Phase'};
 	end
 	v.field_name = {'Spacecraft phase'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mA';
 	v.quant = 'a';
@@ -820,6 +876,9 @@ elseif regexp(vs,'^SAX[1-4]$')
 	v.name = {'SAX'};
 	v.labels = {'Spin axis'};
 	v.field_name = {'Spacecraft spin axis'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mEPH';
 	v.quant = 'sax';	
@@ -845,6 +904,9 @@ elseif regexp(vs,'^(di)?V[1-4]$')
 	v.label_1 = {'"Vx", "Vy", "Vz"'};
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Spacecraft velocity'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mR';
 	v.quant = 'v';
@@ -870,6 +932,9 @@ elseif regexp(vs,'^(di)?R[1-4]$')
 	v.label_1 = {'"Rx", "Ry", "Rz"'};
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Spacecraft position'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mR';
 	v.quant = 'r';
@@ -892,6 +957,9 @@ elseif regexp(vs,'^NC(h|p)[1-4]$')
 		v.sen = 'COD';
 		v.field_name = {'Proton density'};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
  	v.units =  {'cc'};
 	v.si_conv = {'1.0e6>1/m^6'};
 	v.size = 1;
@@ -923,6 +991,9 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 		v.sen = 'COD';
 		v.field_name = {[cf ' proton temperature']};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
  	v.units =  {'mK'};
 	v.si_conv = {'1.0e6>K'};
 	v.size = 1;
@@ -956,6 +1027,9 @@ elseif regexp(vs,'^(di)?VC(h|p)[1-4]$')
 		v.sen = 'COD';
 		v.field_name = {'Proton flow velocity'};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
  	v.units =  {'km/s'};
 	v.si_conv = {'1.0e3>m/s'};
 	v.size = 3;
@@ -991,6 +1065,9 @@ elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
 		v.sen = 'COD';
 		v.field_name = {'Proton VxB'};
 	end
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
 	v.size = 3;
@@ -1036,6 +1113,9 @@ elseif regexp(vs,'^(i)?(di)?EDI[1-4]$')
 	v.label_1 = {'"Ex", "Ey", "Ez"'};
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Perpendicular Electric field'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file_old = 'mEDI';
 	v.quant = 'edi';
@@ -1062,6 +1142,9 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.label_1 = {'"Bx", "By", "Bz"'};
 	v.col_labels = {{'x','y','z'},''};
 	v.field_name = {'Magnetic field PP'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mBPP';
 	v.quant = 'b';
@@ -1088,6 +1171,9 @@ elseif regexp(vs,'^(di)?B(r|rs)?[1-4]$')
 	v.labels = v.name;
 	v.label_1 = {'"Bx", "By", "Bz"'};
 	v.col_labels = {{'x','y','z'}};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	if regexp(vs,'^(di)?B(r|rs)[1-4]$')
 		v.file = 'mBr';
 		if regexp(vs,'^(di)?Brs[1-4]$')
@@ -1124,6 +1210,9 @@ elseif regexp(vs,'^WHINAT[1-4]$')
 	v.name = {'E'};
 	v.labels = {'E'};
 	v.field_name = {'E'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
 	v.com = '';
 	v.file = 'mWHI';
 	v.quant = 'whinat';	
