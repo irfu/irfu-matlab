@@ -140,7 +140,7 @@ else
 	end
 	clear iso_ts dtint
 end
-disp('caa_vs'), keyboard
+
 % Do magic on E-field
 if strcmp(caa_vs,'E')
 	
