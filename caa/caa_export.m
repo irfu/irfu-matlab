@@ -71,7 +71,7 @@ else
 			sfit_probe = caa_sfit_probe(cl_id);
 			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 			irf_log('proc',sprintf('using p%d',sfit_probe))
-			v_size = 2;
+			v_size = 4;    % Previously 2. (ML)
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -140,7 +140,7 @@ else
 	end
 	clear iso_ts dtint
 end
-
+disp('caa_vs'), keyboard
 % Do magic on E-field
 if strcmp(caa_vs,'E')
 	
@@ -153,13 +153,22 @@ if strcmp(caa_vs,'E')
 		QUALITY = 1;
 	end
 	
+	% Extend data array to accept bitmask and quality flag (2 columns at the end)
+	data = [data zeros(size(data, 1), 2)];
+   data(:, end) = 9;    % Default quality column to best quality, i.e. good data/no problems.
+   quality_column = size(data, 2);
+   bitmask_column = quality_column - 1;
+   disp('Data array extended!')
+	
 	% Remove wakes
-	problems = 'wake'; %#ok<NASGU>
-	signal = data; %#ok<NASGU>
-	probe = sfit_probe; %#ok<NASGU>
-	remove_problems
-	data = res; %#ok<NODEF>
-	clear res signal problems
+	%problems = 'wake'; %#ok<NASGU>
+	%signal = data; %#ok<NASGU>
+	%probe = sfit_probe; %#ok<NASGU>
+	%remove_problems
+	%data = res; %#ok<NODEF>
+	%clear res signal problems
+	
+	data = caa_identify_problems(data, sfit_probe, cl_id, bitmask_column, quality_column);
 	
 	% Correct offsets
 	if ~isempty(data)
@@ -204,40 +213,48 @@ if strcmp(caa_vs,'E')
 	
 		data = caa_corof_dsi(data,Ddsi,Damp);
 		
-		if length(Ddsi) == 1
-			dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-				real(Ddsi(1)),imag(Ddsi(1)),Damp);
-		else
-			dsc.com = 'ISR2 offsets';
-			for in = 1:size(Ddsi,1)
-				dsc.com = [dsc.com sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
-					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
-			end
-			dsc.com = [dsc.com sprintf(' dAmp=%1.2f',Damp)];
-		end
+		%if length(Ddsi) == 1
+		%	dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+		%		real(Ddsi(1)),imag(Ddsi(1)),Damp);
+		%else
+		%	dsc.com = 'ISR2 offsets';
+		%	for in = 1:size(Ddsi,1)
+		%		dsc.com = [dsc.com sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
+		%			epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
+		%	end
+		%	dsc.com = [dsc.com sprintf(' dAmp=%1.2f',Damp)];
+		%end
 		clear Ddsi Damp
-		irf_log('calb',dsc.com)
+		
+		dsc.com = 'For offsets see DER dataset for this interval';
 		dsc.com = [dsc.com '. Probes: ' dsc.sen];
+		irf_log('calb',dsc.com)
 		
 		% Remove Ez, which is zero
-		if lev==3, data = data(:,[1:3 5]);
-        else data = data(:,1:3);
+		%if lev==3, keyboard, data = data(:,[1:3 5]);
+      %  else data = data(:,1:3);
+		%end
+		if lev==3
+		   data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
+      else
+         data = data(:, [1:3 6:end]);     % Remove columns 4 and 5. (Ez data and ???)
 		end
+		
 	end
 	
 	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
-	if ~isreal(Del)
-		Del = imag(Del);
-		% offset is applied to p34
-		if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
-		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-			dsc.com, '34', Del(1), Del(2));
-	else
-		% offset is applied to p12/32
-		if strcmp(dsc.sen,'34'), Del = [0 0]; end
-		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-			dsc.com, dsc.sen(1:2), Del(1), Del(2));
-	end
+%	if ~isreal(Del)
+%		Del = imag(Del);
+%		% offset is applied to p34
+%		if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
+%		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+%			dsc.com, '34', Del(1), Del(2));
+%	else
+%		% offset is applied to p12/32
+%		if strcmp(dsc.sen,'34'), Del = [0 0]; end
+%		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+%			dsc.com, dsc.sen(1:2), Del(1), Del(2));
+%	end
 	
 	dsc.frv = {'Observatory'};
 	if v_size>1, for j=2:v_size, dsc.frv = [dsc.frv {''}]; end, end
@@ -339,9 +356,11 @@ buf = sprintf('%s%s',buf,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n'])
 
 for j=1:v_size
 	buf = sprintf('%s%s',buf,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
-	buf = sprintf('%s%s',buf,'  PARAMETER_TYPE    = "Data"\n');
+	%buf = sprintf('%s%s',buf,'  PARAMETER_TYPE    = "Data"\n');
+	buf = sprintf('%s%s',buf,['  PARAMETER_TYPE    = "' dsc.ptype{j} '"\n']);
 	buf = sprintf('%s%s',buf,['  SIZES             = ' num2str(dsc.size(j)) '\n']);
-	buf = sprintf('%s%s',buf,'  VALUE_TYPE        = FLOAT\n');
+	%buf = sprintf('%s%s',buf,'  VALUE_TYPE        = FLOAT\n');
+	buf = sprintf('%s%s',buf,['  VALUE_TYPE        = ' dsc.valtype{j} '\n']);
 	buf = sprintf('%s%s',buf,['  ENTITY            = "' dsc.ent{j} '"\n']);
 	buf = sprintf('%s%s',buf,['  PROPERTY          = "' dsc.prop{j} '"\n']);
 	if ~isempty(dsc.fluc{j})
@@ -355,9 +374,15 @@ for j=1:v_size
 		buf = sprintf('%s%s',buf,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
 	end
 	buf = sprintf('%s%s',buf,['  UNITS             = "' dsc.units{j} '"\n']);
-	buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
+	%buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
+	if strcmp(dsc.valtype{j},'FLOAT')
+      buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
+   else
+      buf = sprintf('%s%s',buf,'  FILLVAL           = 0\n');
+   end
 	buf = sprintf('%s%s',buf,['  QUALITY           = ' num2str(QUALITY) '\n']);
-	buf = sprintf('%s%s',buf,'  SIGNIFICANT_DIGITS= 6 \n');
+%	buf = sprintf('%s%s',buf,'  SIGNIFICANT_DIGITS= 6 \n');
+   buf = sprintf('%s%s',buf,['  SIGNIFICANT_DIGITS= ' num2str(dsc.sigdig(j)) '\n']);
 	if ~isempty(dsc.com) && j==1
 		buf = sprintf('%s%s',buf,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
 	end
@@ -401,7 +426,20 @@ if ~isempty(data)
 		if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
 	end
 	
-	s = cefprint_mx([file_name ext_s],data);
+	% build up formatting string
+    format=repmat('%8.3f',n_col,1);
+    i=1;
+    for j=1:v_size
+        if strcmp(dsc.valtype{j},'FLOAT')==0
+            fcode=['%' num2str(dsc.sigdig(j)+1,'%1.0f')  '.0f'];
+            format(i:i+dsc.size(j)-1,:) = repmat(fcode,dsc.size(j),1);
+        end
+        i=i+dsc.size(j);
+    end
+    format=ctranspose(format);
+	
+%	s = cefprint_mx([file_name ext_s],data);
+   s = cefprint_mx([file_name ext_s],data, format);
 	if s~=0
 		if s==1, msg = 'problem writing CEF data';
 		elseif s==2, msg = 'problem compressing CEF';
