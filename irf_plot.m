@@ -197,7 +197,7 @@ if flag_subplot==0,  % One subplot
 		set(gca,'YLim',...
 			mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
 
-		if ~isempty(var_desc{1})
+		if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
 			lab = cell(1,length(var_desc{1}.size));
 			for v = 1:length(var_desc{1}.size)
 				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
@@ -237,7 +237,7 @@ elseif flag_subplot==1, % Separate subplot for each component
 		set(gca,'YLim', ...
 			mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
 		
-		if ~isempty(var_desc)
+		if ~isempty(var_desc) && ~isempty(var_desc{1})
 			scu = cumsum(var_desc{1}.size);
 			isz = find( scu == min(scu(ipl<=scu)) );
 			sz = var_desc{1}.size(isz); % Size of a data vector
