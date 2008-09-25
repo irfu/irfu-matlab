@@ -10,7 +10,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 %    'cs'        - coordinate system : 'dsi' [default] of 'gse'
 %    'st', 'dt'  - start time (ISDAT epoch) and interval length (sec)
 %    'fullb'     - use full resolution B FGM
-%    'leavewhip' - plot time intervals with Whisper pulses
+%    'withwhip' - plot time intervals with Whisper pulses
 %    'ib'        - Internal Burst format
 %    'wo_r'      - Do not add position labels
 % 
@@ -69,7 +69,7 @@ while have_options
 				end
 			case 'fullb'
 				use_fullb = '';	l = 1;
-			case 'leavewhip'
+			case {'leavewhip','withwhip'}
 				flag_rmwhip = 0; l = 1;
 			case 'ib'
 				flag_ib = 1; l = 1;
