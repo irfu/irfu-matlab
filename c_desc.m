@@ -176,7 +176,7 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
+elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wl?E[1-4]p32$'))
 	v.data = 1;
 	v.inst = 'EFW';
 	v.frame = 'na';
@@ -203,12 +203,14 @@ elseif regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')
 		v.com = '';
 		v.lev = 0;
 		v.quant = 'e';
-	elseif vs(2)=='c'
+	elseif vs(2)=='c' || vs(2)=='l'
 		v.cl_id = vs(4);
 		v.file = 'mERC';
 		v.com = 'This data is not original raw data. It has been cleaned.';
 		v.lev = 1;
-		v.quant = 'ec';
+		if vs(2)=='c', v.quant = 'ec';
+		else v.quant = 'cleanasym';
+		end
 	else
 		v.cl_id = vs(4);
 		v.file = 'mEFWburstR';
@@ -673,19 +675,27 @@ elseif regexp(vs,'^Ddsi[1-4]$')==1
 	v.com = 'DSI offsets';
 	v.file = 'mEDSI';
 	v.quant = '';
+	v.name = {'dE'};
+	v.labels = v.name;
+	v.units =  {'mV/m'};
+	v.size = 1;
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% X-TRA DSI offsets
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^DdsiX[1-4]$')==1
 	v.data = 0;
-	v.cl_id = vs(5);
+	v.cl_id = vs(6);
 	v.inst = 'EFW';
 	v.com = 'X-TRA DSI offsets';
 	v.size = 1;
 	v.labels = {'dE'};
 	v.units = {'mV/m'};
 	v.file = 'mXTRA';
+	v.name = {'dE'};
+	v.labels = v.name;
+	v.units =  {'mV/m'};
+	v.size = 1;
 	v.quant = 'wake';
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
