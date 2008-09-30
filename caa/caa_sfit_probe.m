@@ -10,7 +10,12 @@ function p_res = caa_sfit_probe(cl_id,probe)
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(1,2,nargin))
 if cl_id<1 || cl_id>4, error('CL_ID must be 1..4'), end
@@ -26,9 +31,9 @@ if nargin>1
 	irf_log('save',irf_ssub('sfit_probe? -> mInfo.mat',cl_id))
 else
 	if exist('./mInfo.mat','file')
-		warning off
+		warning off %#ok<WNOFF>
 		c_eval('load mInfo sfit_probe?;',cl_id)
-		warning on
+		warning on %#ok<WNON>
 	end
 	if exist(irf_ssub('sfit_probe?',cl_id),'var')
 		c_eval('pp=sfit_probe?;',cl_id)

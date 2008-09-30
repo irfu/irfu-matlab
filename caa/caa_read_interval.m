@@ -1,11 +1,16 @@
 function [st,dt] = caa_read_interval(sp)
-%CAA_READ_INTERVAL  read caa file .interval
+%CAA_READ_INTERVAL  read caa interval informationf from .interval file
 %
 % [iso_t,dt] = caa_read_interval([sp])
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if nargin<1, sp=pwd; end
 
@@ -19,7 +24,7 @@ if exist('./.interval','file')
 	elseif nargout==1
 		st = st_s;
 	elseif nargout==2
-		dt = str2num(dt_s);
+		dt = str2double(dt_s);
 		st = st_s;
 	else
 		error('wrong number of input arguments')

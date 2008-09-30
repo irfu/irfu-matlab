@@ -24,7 +24,12 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 % TODO: we may try to open persistent connection when ISDAT will get stable
 % TODO: can be use Mat_DbErrorString
