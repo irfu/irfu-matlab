@@ -1,13 +1,21 @@
 function res = caa_filter_e(data,wind)
-% CAA_FILTER_E  simple high pass filter EFW E
+%CAA_FILTER_E  simple high pass filter EFW E
 %
 % res = caa_filter_e(data,[window])
 %	simple high pass filter, will removemoving average over WINDOW
-%	WINDOW in seconds, delault 0.5 sec
+%	WINDOW in seconds, delault 0.5 sec (2 Hz)
+%
+% See also: IRF_FILT
 %
 % $Id$
 
-% Copyright 2005-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
 
 MAXDATA = 100000;
 
@@ -69,9 +77,8 @@ else
 	E( E(:,2)==value ,2:end) = NaN;
 	
 	ttt = E(:,2);
-	ii = find(isnan(ttt));
 	ttt(~isnan(ttt)) = 1;
-	ttt(ii) = 0;
+	ttt(isnan(ttt)) = 0;
 	ii = irf_find_diff(ttt);
 	
 	if isempty(ii) && ttt(1)==0
