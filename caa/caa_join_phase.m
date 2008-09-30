@@ -6,8 +6,12 @@ function caa_join_phase(cl_id,gap)
 %
 % $Id$
 
-% Copyright 2006 Yuri Khotyaintsev
-
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 [iso_t,dt] = caa_read_interval;
 st = iso2epoch(iso_t);
