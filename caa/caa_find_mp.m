@@ -1,5 +1,5 @@
 function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin)
-%CAA_FIND_MP  find model magnetopause crossings
+%CAA_FIND_MP  find model magnetopause crossings using ACE data
 %
 % [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id)
 %
@@ -7,7 +7,12 @@ function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin)
 %
 % $Id$
 
-% Copyright 2006 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if dt>toepoch([1996 01 01 00 00 00])
 	% et is given
