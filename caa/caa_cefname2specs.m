@@ -7,8 +7,15 @@ function [data_level,caa_vs,cl_id,DATA_VERSION,sp,st,dt]=caa_cefname2specs(s)
 %
 % $Id$
 
-cl_id = str2num(s(2));
-data_level = str2num(s(12));
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
+cl_id = str2double(s(2));
+data_level = str2double(s(12));
 
 s = s(14:end);
 if s(2)=='_', caa_vs = s(1); s = s(4:end);
@@ -27,7 +34,7 @@ et_mm = s(19:20);
 et_ss = s(21:22);
 DATA_VERSION = s(25:26);
 
-h3 = num2str( fix( str2num(st_hh)/3 )*3 );
+h3 = num2str( fix( str2double(st_hh)/3 )*3 );
 if length(h3) == 1, h3 = [ '0' h3 ]; end
 
 sp = [ '/data/caa/l1/' YY '/' YY MM DD '_' h3 '00/C' num2str(cl_id) '/' ...
@@ -35,7 +42,7 @@ sp = [ '/data/caa/l1/' YY '/' YY MM DD '_' h3 '00/C' num2str(cl_id) '/' ...
 
 st = iso2epoch([ YY '-' MM '-' DD 'T' st_hh ':' st_mm ':' st_ss 'Z' ]);
 et = iso2epoch([ YY '-' MM '-' DD 'T' et_hh ':' et_mm ':' et_ss 'Z' ]);
-if str2num(et_hh)==0 && str2num(et_mm)==0 && str2num(et_ss)==0
+if str2double(et_hh)==0 && str2double(et_mm)==0 && str2double(et_ss)==0
 	et = et + 86400;
 end
 dt = et - st;
