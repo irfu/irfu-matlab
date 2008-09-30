@@ -1,13 +1,20 @@
 function caa_control_mp(st,et)
-%CAA_CONTROL_MP  control predicted MP location
+%CAA_CONTROL_MP  plot predicted MP location
 %
 % caa_control_mp(st,et)
+%
+% Plots predicted magnetopause
 %
 % See also CAA_FIND_MP, CAA_SH_PLAN
 %
 % $Id$
 
-% Copyright 2006 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if ischar(st), st = iso2epoch(st); end
 if ischar(et), et = iso2epoch(et); end
@@ -18,6 +25,7 @@ v_s = sprintf('ORB1Y%d',st_a(1));
 
 eval(['load mPlan ' v_s])
 
+ORB = [];
 if exist(v_s,'var'), eval(['ORB=' v_s ';'])
 else
 	disp(['cannot load ' v_s])
@@ -57,11 +65,11 @@ for o = 1:length(ORB);
     pp = 0;
 	for cl_id = 1:4
 		subplot(4,2,cl_id*2-1)
-        p1 = get(gca, 'Position');
-        if ~pp, pp=p1(4)*1.2; end
-        set(gca, 'Position', [p1(1:3) pp]);
-        irf_log('proc',['C' num2str(cl_id) ' ' epoch2iso(mp_out-OFF,1)...
-            ' -- ' epoch2iso(mp_out+OFF,1)])
+		p1 = get(gca, 'Position');
+		if ~pp, pp=p1(4)*1.2; end
+		set(gca, 'Position', [p1(1:3) pp]);
+		irf_log('proc',['C' num2str(cl_id) ' ' epoch2iso(mp_out-OFF,1)...
+			' -- ' epoch2iso(mp_out+OFF,1)])
 		Ps = caa_get(mp_out-OFF,2*OFF,cl_id,'Ps?');
 		if ~isempty(Ps), irf_plot(Ps), end
 		irf_zoom(mp_out +[-OFF OFF],'x',gca)
@@ -72,14 +80,14 @@ for o = 1:length(ORB);
 		hold off
 		ylabel(irf_ssub('Cluster ?',cl_id))
 		if cl_id==1, title('OUT'), end
-        if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
-        
-		
+		if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
+
+
 		subplot(4,2,cl_id*2)
-        p = get(gca, 'Position');
-        set(gca, 'Position', [p(1) p1(2) p(3) pp]);
-        irf_log('proc',['C' num2str(cl_id) ' ' epoch2iso(mp_in-OFF,1)...
-            ' -- ' epoch2iso(mp_in+OFF,1)])
+		p = get(gca, 'Position');
+		set(gca, 'Position', [p(1) p1(2) p(3) pp]);
+		irf_log('proc',['C' num2str(cl_id) ' ' epoch2iso(mp_in-OFF,1)...
+			' -- ' epoch2iso(mp_in+OFF,1)])
 		Ps = caa_get(mp_in-OFF,2*OFF,cl_id,'Ps?');
 		if ~isempty(Ps), irf_plot(Ps), end
 		irf_zoom(mp_in +[-OFF OFF],'x',gca)
@@ -90,8 +98,8 @@ for o = 1:length(ORB);
 		hold off
 		ylabel(irf_ssub('Cluster ?',cl_id))
 		if cl_id==1, title('IN'), end
-        if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
-    end
+		if cl_id~=4, xlabel(''), set(gca,'XTickLabel',[]), end
+	end
     orient tall
 	fn = sprintf('C_MP_%s',irf_fname(ORB(o,1)));
 	irf_log('save',['saving ' fn])
