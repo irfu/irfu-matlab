@@ -1,4 +1,20 @@
 function caa_ib_sp_batch(iso_t,dt,cl_id,int2)
+%CAA_IB_SP_BATCH  produce summary plots for internal burst
+%
+% CAA_IB_SP_BATCH(ISO_T,DT,CL_ID,[INT2])
+%
+% INT2 - plot interval half-width
+%
+% List of internal bursts is obtained from listing isdat cluster/burst dir.
+%
+% $Id$
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 DP = '/data/cluster';
 DB = 'db:9';
