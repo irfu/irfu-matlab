@@ -3,11 +3,16 @@ function ints_out = caa_get_ns_ops_int(st,dt,ns_ops,ids)
 %
 % ints_out = caa_get_ns_ops_int(st,dt,ns_ops,ids)
 %
-% See also: C_CTL
+% See also: C_CTL, CAA_NS_OPS_INT
 %
 % $Id$
 
-% Copyright 2006, Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if isempty(ns_ops), error('Empty NS_OPS'), end
 

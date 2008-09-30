@@ -1,9 +1,19 @@
 function res = caa_str2errid(id)
-%CAA_STR2ERRID convert error ID string to number
+%CAA_STR2ERRID  convert error ID string to number
 %
 % res = caa_str2errid(id_s)
 %
+% Numbers in this file must be in sync with 
+% /data/cluster/caa-control/text.xsl
+%
 % $Id$
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 switch id
 case 'no_tm', res = 0;
