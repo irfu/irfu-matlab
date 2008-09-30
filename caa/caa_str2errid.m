@@ -1,10 +1,12 @@
 function res = caa_str2errid(id)
-%CAA_STR2ERRID  convert error ID string to number
+%CAA_STR2ERRID  convert ns_ops error ID string to number
 %
 % res = caa_str2errid(id_s)
 %
 % Numbers in this file must be in sync with 
 % /data/cluster/caa-control/text.xsl
+%
+% See also CAA_ERRID2STR
 %
 % $Id$
 
