@@ -176,7 +176,7 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wl?E[1-4]p32$'))
+elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wh?E[1-4]p32$'))
 	v.data = 1;
 	v.inst = 'EFW';
 	v.frame = 'na';
@@ -203,13 +203,13 @@ elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wl?E[1-4]
 		v.com = '';
 		v.lev = 0;
 		v.quant = 'e';
-	elseif vs(2)=='c' || vs(2)=='l'
+	elseif vs(2)=='c' || vs(2)=='h'
 		v.cl_id = vs(4);
 		v.file = 'mERC';
 		v.com = 'This data is not original raw data. It has been cleaned.';
 		v.lev = 1;
 		if vs(2)=='c', v.quant = 'ec';
-		else v.quant = 'cleanasym';
+		else v.quant = 'washasym';
 		end
 	else
 		v.cl_id = vs(4);

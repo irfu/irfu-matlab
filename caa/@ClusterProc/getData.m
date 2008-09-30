@@ -10,6 +10,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %   ec :   wcE{cl_id}p12/32, wcE{cl_id}p34 -> mERC // correct raw data 
 %          correct_sw_wake - correct wakes in the Solar Wind
+%   washasym: whE{cl_id}p32  -> ./mERC.mat // wash asymmetric probe data
 %   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %          also creates delta offsets D{cl_id}p12p34.
 %          If the offset is real then it must be applied to p12/32,
@@ -270,11 +271,11 @@ elseif strcmp(quantity,'dies')
 		if ~ok || isempty(da)
 			irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 			if probe == 32
-				[ok,da] = c_load(irf_ssub('wlE?p!',cl_id,probe));
+				[ok,da] = c_load(irf_ssub('whE?p!',cl_id,probe));
 				if ~ok || isempty(da)
-					irf_log('load', irf_ssub('No/empty wlE?p!',cl_id,probe));
+					irf_log('load', irf_ssub('No/empty whE?p!',cl_id,probe));
 				else
-					irf_log('proc','Using cleaned asymmetric probe')
+					irf_log('proc','Using washed asymmetric probe')
 				end
 			end
 			if ~ok || isempty(da)
@@ -597,11 +598,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~ok || isempty(da)
 				irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 				if probe == 32
-					[ok,da] = c_load(irf_ssub('wlE?p!',cl_id,probe));
+					[ok,da] = c_load(irf_ssub('whE?p!',cl_id,probe));
 					if ~ok || isempty(da)
-						irf_log('load', irf_ssub('No/empty wlE?p!',cl_id,probe));
+						irf_log('load', irf_ssub('No/empty whE?p!',cl_id,probe));
 					else
-						irf_log('proc','Using cleaned asymmetric probe')
+						irf_log('proc','Using washed asymmetric probe')
 					end
 				end
 				if ~ok || isempty(da)
@@ -1558,14 +1559,14 @@ elseif strcmp(quantity,'probesa')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % rawspec - Spectrum of raw EFW signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
+elseif strcmp(quantity,'rawspec') || strcmp(quantity,'washasym')
 	
 	if strcmp(quantity,'rawspec')
 		save_file = './mEFW.mat';
-		do_clean = 0;
+		do_wash = 0;
 	else
 		save_file = './mERC.mat';
-		do_clean = 1;
+		do_wash = 1;
 	end
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
@@ -1590,7 +1591,7 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 	tpharef = [];
 	corrected_raw_data_p12 = 1;
 	corrected_raw_data_p34 = 1;
-	if do_clean, probe_list = 32;
+	if do_wash, probe_list = 32;
 	else probe_list = [12 32 34];
 	end
 	for probe = probe_list
@@ -1643,7 +1644,7 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
     else irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
 	end
 	
-	if do_clean, probe_list = 12;
+	if do_wash, probe_list = 12;
 	else probe_list = [12 34];
 	end
 	for pr = probe_list
@@ -1666,8 +1667,8 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 		if corrected_raw_data, ss = 'c';
 		else ss = '';
 		end
-		if do_clean
-			irf_log('proc',sprintf('Clean Asymmetric w%sE%dp%d -> wlE%dp%d',...
+		if do_wash
+			irf_log('proc',sprintf('Washing asymmetric w%sE%dp%d -> whE%dp%d',...
 				ss,cl_id,probe,cl_id,probe))
 		else
 			irf_log('proc',sprintf('Raw spectrum w%sE%dp%d -> RSPEC%dp%d',...
@@ -1678,7 +1679,7 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-		if flag_rmwhip && do_clean == 0, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
+		if flag_rmwhip && do_wash == 0, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
 		signal = tt; %#ok<NASGU>
 		remove_problems
 		tt = res; %#ok<NODEF>
@@ -1700,7 +1701,7 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 		tend = tstart + ceil( (tt(end,1) - tstart)/spin_p )*spin_p;
 		n = floor((tend - tstart)/spin_p) + 1;
 		if n<0, error(['N is negative: ' num2str(n)]), end
-		if ~do_clean, rspec = zeros(n,11)*NaN; end
+		if ~do_wash, rspec = zeros(n,11)*NaN; end
 		
 		% N_EMPTY .75 means that we use only spins with more then 75% points.
 		N_EMPTY = .9;
@@ -1709,7 +1710,7 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 		% Do it:
 		for i=1:n
 			t0 = tstart + (i-1)*spin_p;
-			if ~do_clean, rspec(i,1) = t0; end
+			if ~do_wash, rspec(i,1) = t0; end
 			eind = find((tt(:,1) >= t0) & (tt(:,1) < t0+spin_p));
 			
 			% Check for data gaps inside one spin.
@@ -1720,10 +1721,8 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 				%Handle EFW data
 				IFFT_Diff = ifft( tt(eind,2) - mean(tt(eind,2)) );
 				
-				if do_clean
-					l = length(IFFT_Diff);
-					idx = [3, l-1];
-					IFFT_Diff(idx) = IFFT_Diff(idx) - j*imag(IFFT_Diff(idx));
+				if do_wash
+					IFFT_Diff([3, end-1]) = 0; % Remove 2 omega
 					tt1(eind,2) = real(fft(IFFT_Diff));
 				else
 					AmpSin = 2*imag(IFFT_Diff);
@@ -1744,8 +1743,8 @@ elseif strcmp(quantity,'rawspec') || strcmp(quantity,'cleanasym')
 			end
 		end
 		irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))
-		if do_clean
-			eval(irf_ssub('wlE?p!=tt1;save_list=[save_list ''wlE?p! ''];',cl_id,probe));
+		if do_wash
+			eval(irf_ssub('whE?p!=tt1;save_list=[save_list ''whE?p! ''];',cl_id,probe));
 		else
 			eval(irf_ssub('RSPEC?p!=rspec;save_list=[save_list ''RSPEC?p! ''];',cl_id,probe));
 		end
