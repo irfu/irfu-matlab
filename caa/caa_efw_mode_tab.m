@@ -113,7 +113,6 @@ if ~isempty(t_fdm);
 				for j=1:length(var_list)
 					eval(['if length(fdm_last_' var_list{j} ')>1,fdm_save_' var_list{j} '(l+1,:)=fdm_last_' var_list{j} '; else, fdm_save_' var_list{j} '(l+1)=fdm_last_' var_list{j} '; end ']);
 				end
-				n_good = n_good + 1;
 				
 				t_fdm_last = t_fdm(ii_all(jj));
 				for j=1:length(var_list)
