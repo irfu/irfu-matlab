@@ -1,5 +1,5 @@
 function ints_out = caa_get_ns_ops_int(st,dt,ns_ops,ids)
-%CAA_GET_NS_OPS_INT  get interval conerging particular problem in EFW NS_OPS
+%CAA_GET_NS_OPS_INT  get interval for a specific problem in EFW NS_OPS
 %
 % ints_out = caa_get_ns_ops_int(st,dt,ns_ops,ids)
 %
@@ -18,8 +18,7 @@ if isempty(ns_ops), error('Empty NS_OPS'), end
 
 % Remove records which cover permanent problems (as loss of 
 % probes, filters, etc.) as these must be programmed separately
-ii = find(ns_ops(:,2)==-1);
-ns_ops(ii,:) = [];
+ns_ops(ns_ops(:,2)==-1,:) = [];
 
 ints_out = [];
 
@@ -29,8 +28,7 @@ ns_ops = ns_ops(ns_ops(:,4)==id,:);
 if isempty(ns_ops), return, end
 
 % Problem covers the whole interval
-ii = find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>=st+dt );
-if ~isempty(ii)
+if ~isempty( find( ns_ops(:,1)<=st & ns_ops(:,1)+ns_ops(:,2)>=st+dt ,1) )
 	ints_out = [st st+dt];
 	return
 end

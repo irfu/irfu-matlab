@@ -1,5 +1,5 @@
 function [st,dt] = caa_read_interval(sp)
-%CAA_READ_INTERVAL  read caa interval informationf from .interval file
+%CAA_READ_INTERVAL  read caa interval information from .interval file
 %
 % [iso_t,dt] = caa_read_interval([sp])
 %
