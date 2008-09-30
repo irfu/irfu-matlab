@@ -1,5 +1,5 @@
 function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
-%CAA_GET_BATCH_L1 CAA get L0 data by CaaRunner
+%CAA_GET_BATCH_L0  CAA get L0 data by CaaRunner
 %
 % caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 %
@@ -11,7 +11,12 @@ function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 %
 % $Id$
 
-% Copyright 2005,2006 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 error(nargchk(5,5,nargin))
 
@@ -26,7 +31,7 @@ DP_S = c_ctl(0,'data_path');
 
 % Create the storage directory if it does not exist
 if ~exist(sdir, 'dir')
-	[SUCCESS,MESSAGE,MESSAGEID] = mkdir(sdir);
+	[SUCCESS,MESSAGE] = mkdir(sdir);
 	if SUCCESS, irf_log('save',['Created storage directory ' sdir])
     else error(MESSAGE)
 	end
@@ -44,7 +49,7 @@ for cl_id=sc_list
 	while st_tmp<st+dt
 		irf_log('proc',['Requesting C' num2str(cl_id)...
 					' : ' epoch2iso(st_tmp,1)])
-		[t,data] = caa_is_get(DB_S,st_tmp,REQ_INT,cl_id,'efw','FDM');
+		[t,data] = caa_is_get(DB_S,st_tmp,REQ_INT,cl_id,'efw','FDM'); %#ok<ASGLU>
 		if ~isempty(data), tm_cur = data(5,1);
 		else
 			irf_log('dsrc',['No FDM for C' num2str(cl_id) ...
@@ -55,7 +60,7 @@ for cl_id=sc_list
 		% First frame is directly good, probably we started in the middle of
 		% good interval
 		if isempty(tm_prev) && tm_cur>=0
-			tm(end+1,:) = [st_tmp tm_cur];
+			tm(end+1,:) = [st_tmp tm_cur]; %#ok<AGROW>
 		end
 		
 		if ~isempty(tm_prev) && tm_prev~=tm_cur && tm_cur>=0
@@ -67,7 +72,7 @@ for cl_id=sc_list
 				irf_log('proc',['Skipping one NM frame for C' num2str(cl_id)...
 					' at ' epoch2iso(st_tmp,1)])
 			else
-				tm(end+1,:) = [st_tmp tm_cur];
+				tm(end+1,:) = [st_tmp tm_cur]; %#ok<AGROW>
 				count_skip = 0;
 			end
         else count_skip = 0;
@@ -99,7 +104,7 @@ if isempty(sc_list), irf_log('dsrc','No data'), return, end
 for cl_id=sc_list
 	cdir = [sdir '/C' num2str(cl_id)];
 	if ~exist(cdir, 'dir')
-		[SUCCESS,MESSAGE,MESSAGEID] = mkdir(cdir);
+		[SUCCESS,MESSAGE] = mkdir(cdir);
 		if SUCCESS, irf_log('save',['Created storage directory ' cdir])
         else error(MESSAGE)
 		end
@@ -143,7 +148,7 @@ for cl_id=sc_list
 		end
 		
 		% Disregard bad NS_OPS intervals directly here
-		[st_nsops, dt_nsops] = caa_ns_ops_int(t1,dt1,ns_ops);
+		[st_nsops, dt_nsops] = caa_ns_ops_int(t1,dt1,ns_ops); %#ok<NASGU>
 		if isempty(st_nsops)
 			irf_log('proc','Bad interval according to NS_OPS')
 			irf_log('proc',['C' num2str(cl_id) ' skipping ' ...
