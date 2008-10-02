@@ -159,6 +159,7 @@ if strcmp(caa_vs,'E')
    quality_column = size(data, 2);
    bitmask_column = quality_column - 1;
    disp('Data array extended!')
+   keyboard
 	
 	% Remove wakes
 	%problems = 'wake'; %#ok<NASGU>
@@ -168,7 +169,7 @@ if strcmp(caa_vs,'E')
 	%data = res; %#ok<NODEF>
 	%clear res signal problems
 	
-	data = caa_identify_problems(data, sfit_probe, cl_id, bitmask_column, quality_column);
+	data = caa_identify_problems(data, lev, dsc.sen, cl_id, bitmask_column, quality_column);
 	
 	% Correct offsets
 	if ~isempty(data)
