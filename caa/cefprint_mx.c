@@ -151,6 +151,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			mexWarnMsgTxt("Error writing to output file");
 			*res = 1;
 		}
+		
+		status = fprintf(fp,"EOF\n");
+		if ( status < 0 ){
+			mexWarnMsgTxt("Error writing to output file");
+			*res = 1;
+		}
+		
 		fclose(fp);
 	}
 
