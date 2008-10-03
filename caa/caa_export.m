@@ -158,8 +158,7 @@ if strcmp(caa_vs,'E')
    data(:, end) = 9;    % Default quality column to best quality, i.e. good data/no problems.
    quality_column = size(data, 2);
    bitmask_column = quality_column - 1;
-   disp('Data array extended!')
-   keyboard
+%   disp('Data array extended!'), keyboard
 	
 	% Remove wakes
 	%problems = 'wake'; %#ok<NASGU>
@@ -407,7 +406,7 @@ end
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'!                       Data                          !\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-buf = sprintf('%s%s',buf,'DATA_UNTIL = EOF\n');
+buf = sprintf('%s%s',buf,'DATA_UNTIL = "END_OF_DATA"\n');
 
 [fid,msg] = fopen([file_name ext_s],'w');
 if fid < 0

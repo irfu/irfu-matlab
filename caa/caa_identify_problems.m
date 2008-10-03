@@ -137,7 +137,7 @@ if ok
 	end
 else irf_log('load', msg)
 end
-disp('bdump'), keyboard
+%disp('bdump'), keyboard
 clear ok problem_intervals msg
 
 
@@ -153,7 +153,7 @@ if ok
 	end
 else irf_log('load', msg)
 end
-disp('badbiasreset'), keyboard
+%disp('badbiasreset'), keyboard
 clear ok problem_intervals msg
 
 
@@ -170,7 +170,7 @@ for probe_id = probe_list
 		end
 	else irf_log('load', msg)
 	end
-	disp(['badbiasP' num2str(probe_id)]), keyboard
+%	disp(['badbiasP' num2str(probe_id)]), keyboard
 	clear ok problem_intervals msg
 end
 
@@ -188,7 +188,7 @@ for probe_id = probe_list
 		end
 	else irf_log('load', msg)
 	end
-	disp(['saturationP' num2str(probe_id)]), keyboard
+%	disp(['saturationP' num2str(probe_id)]), keyboard
 	clear ok problem_intervals msg
 end
 			
@@ -207,7 +207,7 @@ for probe_id = probe_list
 		end
 	else irf_log('load', msg)
 	end
-	disp(['low density P' num2str(probe_id)]), keyboard
+%	disp(['low density P' num2str(probe_id)]), keyboard
 	clear ok problem_intervals msg
 end
 
@@ -228,7 +228,7 @@ if ~isempty(ns_ops)
       result = caa_set_bitmask_and_quality(result, ns_ops_intervals(k, :), ...
          BITMASK_NS_OPS, QUALITY_NS_OPS, bitmask_column, quality_column);
    end
-   disp('NS_OPS'), keyboard
+%   disp('NS_OPS'), keyboard
    clear ns_ops data_start_time data_time_span ns_ops_intervals
 end
       
@@ -273,7 +273,7 @@ if ok
 	end
 else irf_log('load', msg)
 end
-disp('sweep'), keyboard
+%disp('sweep'), keyboard
 clear ok problem_intervals msg
 
 
@@ -281,7 +281,7 @@ clear ok problem_intervals msg
 if (data_level == 2 && regexp(probe, '^(12|32|34)$'))
    result(:, bitmask_column) = bitor(result(:, bitmask_column), BITMASK_SINGLE_PROBE_PAIR);
    result(:, quality_column) = min(result(:, quality_column), QUALITY_SINGLE_PROBE_PAIR);
-   disp('single pair'), keyboard
+%   disp('single pair'), keyboard
 end
 
 
@@ -299,7 +299,7 @@ for probe_id = probe_pair_list
    else irf_log('load', msg)
    end
 end
-disp('pswake'), keyboard
+%disp('pswake'), keyboard
 clear ok problem_intervals msg
 
 
@@ -310,7 +310,7 @@ for probe_id = probe_pair_list
    	if ~isempty(problem_intervals)
    		irf_log('proc', 'blanking lobe wakes')
    		%intervals = caa_parse_intervals_subfunc(problem_intervals);
-   		keyboard
+%   		keyboard
    		%res = caa_rm_blankt(res,wake,0,5);
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_LOBE_WAKE, QUALITY_LOBE_WAKE, ...
@@ -319,7 +319,7 @@ for probe_id = probe_pair_list
    else irf_log('load', msg)
    end
 end
-disp('lobe wake'), keyboard
+%disp('lobe wake'), keyboard
 clear ok problem_intervals msg
 
 
@@ -329,14 +329,14 @@ if ok
 	if ~isempty(problem_intervals)
 		irf_log('proc', 'blanking Whisper pulses')
 		%res = caa_rm_blankt(res,whip);
-		keyboard
+%		keyboard
       result = caa_set_bitmask_and_quality(result, problem_intervals, ...
          BITMASK_WHISPER_OPERATING, QUALITY_WHISPER_OPERATING, ...
             bitmask_column, quality_column);
 	end
 else irf_log('load', msg)
 end
-disp('whisper'), keyboard
+%disp('whisper'), keyboard
 clear ok problem_intervals msg
 
 
@@ -345,7 +345,7 @@ if ( data_level == 2 && strcmp(probe, '3234') )
    % Asymmetric mode, p32 and p34 present
    result(:, bitmask_column) = bitor(result(:, bitmask_column), BITMASK_ASYMMETRIC_MODE);
    result(:, quality_column) = min(result(:, quality_column), QUALITY_ASYMMETRIC_MODE);
-   disp('asymmetric'), keyboard
+%   disp('asymmetric'), keyboard
 end
 
 
@@ -369,7 +369,7 @@ for probe_id = probe_pair_list
    else irf_log('load', msg)
    end
 end
-disp('solar wind'), keyboard
+%disp('solar wind'), keyboard
 clear ok problem_intervals msg wake_info num_wakes center_time
 			
 

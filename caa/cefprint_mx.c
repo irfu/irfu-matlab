@@ -152,7 +152,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 			*res = 1;
 		}
 		
-		status = fprintf(fp,"EOF\n");
+		status = fprintf(fp,"END_OF_DATA\n");
 		if ( status < 0 ){
 			mexWarnMsgTxt("Error writing to output file");
 			*res = 1;
