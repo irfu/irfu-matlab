@@ -5,7 +5,12 @@ function out = irf_waverage(data,fsample)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if size(data,1)<=1
 	irf_log('proc',['Not enough points (' num2str(size(data,1)) ') to average'])
@@ -27,6 +32,7 @@ out = zeros(ndata+1,ncol);
 out(:,1) = linspace(data(1,1),data(end,1),ndata+1);
 ind = round((data(:,1)-data(1,1))/dt + 1);
 out(ind,2:end) = data(:,2:end);
+out(isnan(out)) = 0; % set NaNs to zeros
 for col=2:ncol
 	dtmp =  [0 0 0 out(:,col)' 0 0 0];
 	for j=1:ndata+1
