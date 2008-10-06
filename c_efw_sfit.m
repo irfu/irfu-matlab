@@ -140,18 +140,18 @@ if method==1
 		te(ind),data(ind),pha);
 	ind = find( sdev~=-159e7 );
 	n_gap = length(sdev) -length(ind);
-	n = length(ind);
-	if n == 0, spinfit = [];
-	else
-		spinfit = zeros(n,8);
-		spinfit(:,1) = ts(ind);		% time
-		spinfit(:,2) = sfit(2,ind);	% Ex
-		spinfit(:,3) = -sfit(3,ind);% Ey, - Because s/c is spinning upside down
-		spinfit(:,4) = sfit(1,ind);
-		spinfit(:,5) = sdev(ind);
-		spinfit(:,6) = sdev(ind);
-		spinfit(:,7) = iter(ind);
-		spinfit(:,8) = nout(ind);
+	n = length(sdev);
+	spinfit = zeros(n,8);
+	spinfit(:,1) = ts;		        % time
+	spinfit(:,2:end) = NaN;
+	if ~isempty(ind)
+		spinfit(ind,2) = sfit(2,ind);	% Ex
+		spinfit(ind,3) = -sfit(3,ind);% Ey, - Because s/c is spinning upside down
+		spinfit(ind,4) = sfit(1,ind);
+		spinfit(ind,5) = sdev(ind);
+		spinfit(ind,6) = sdev(ind);
+		spinfit(ind,7) = iter(ind);
+		spinfit(ind,8) = nout(ind);
 	end
 	n = n + n_gap;
 else
