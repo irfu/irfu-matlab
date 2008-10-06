@@ -1,3 +1,4 @@
 *.mexglx
 *.mexa64
+*.mexw32
 *.asv
