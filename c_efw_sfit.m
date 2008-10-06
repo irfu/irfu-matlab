@@ -156,7 +156,7 @@ if method==1
 	n = n + n_gap;
 else
 	% Turn off warnings for badly conditioned polynomial:
-	warning('OFF','MATLAB:polyfit:RepeatedPointsOrRescale');
+	warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
 	
 	% Chop up time interval
 	% We always start at 0,4,8.. secs, so that we have
@@ -200,7 +200,7 @@ else
 	end
 	spinfit = spinfit(1:n - n_gap, :);
 	
-	warning('ON','MATLAB:polyfit:RepeatedPointsOrRescale');
+	warning('on','MATLAB:polyfit:RepeatedPointsOrRescale');
 end
 
 irf_log('proc',sprintf('%d spins processed, %d gaps found',n,n_gap))
