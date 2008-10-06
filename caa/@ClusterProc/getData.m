@@ -62,6 +62,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %       nosave : do no save on disk
 %       rmwake : remove wakes
 %       withwhip : do not remove time intervals with Whisper pulses
+%       rmwhip : remove time intervals with Whisper pulses
 %       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
 %           compute the offset (affects 'die')
 %       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
@@ -97,6 +98,7 @@ CAA_MODE = c_ctl(0,'caa_mode');
 
 flag_rmwhip = c_ctl(cl_id,'rm_whip');
 if isempty(flag_rmwhip), flag_rmwhip = 1; end 
+flag_rmwhip_force = 0;
 ang_limit = c_ctl(cl_id,'ang_lim');
 if isempty(ang_limit), ang_limit = 10; end
 probe_p = caa_sfit_probe(cl_id);
@@ -111,8 +113,10 @@ while have_options
 		flag_save = 0;
 	case 'withwhip'
 		flag_rmwhip = 0;
+		flag_rmwhip_force = 0;
 	case 'rmwhip'
 		flag_rmwhip = 1;
+		flag_rmwhip_force = 1;
 	case 'rmwake'
 		flag_rmwake = 1;
 	case 'no_caa_delta'
@@ -382,7 +386,8 @@ elseif strcmp(quantity,'dies')
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
-		if flag_rmwhip, problems = [problems '|whip']; end %#ok<AGROW,NASGU>
+		% We remove Whisper only if explicitely asked for this by user
+		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW,NASGU>
 		signal = tt; %#ok<NASGU>
 		remove_problems
 		tt = res; %#ok<NODEF>
@@ -394,7 +399,7 @@ elseif strcmp(quantity,'dies')
 			continue
 		end
 
-		
+		% Run spin fitting
 		if sfit_ver>=0
 			irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
 			sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),...
@@ -410,7 +415,7 @@ elseif strcmp(quantity,'dies')
 			continue
 		end
 		
-		% Remove point with zero time
+		% Remove erroneous points with zero time
 		ind = find(sp(:,1)>0);
 		if length(ind)<length(sp(:,1))
 			irf_log('proc',...
@@ -418,21 +423,24 @@ elseif strcmp(quantity,'dies')
 			sp = sp(ind,:);
 		end
 		
-		% ADC offsets
+		% ADC offsets, i.e. DC offset of the raw sinals
 		% Warn about points with sdev>.8
 		ii = find(sp(:,6)>.8);
 		if length(ii)/size(sp,1)>.05,
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
 		adc_off = sp(:,[1 4]);
+		% Fill NaNs with mean value
 		adc_off_mean = mean(adc_off(~isnan(adc_off(:,2)),2));
 		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
+		% Take care of spikes: replace extreme values with mean value 
 		idx = find( abs( adc_off(:,2) - adc_off_mean ) > 3*std(adc_off(adc_off(:,2)~=0,2)) );
 		if ~isempty(idx)
 			adc_off(idx,2) = 0;
 			adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
 			irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
 		end
+		% Smoothen the signal
 		adc_off = irf_waverage(adc_off,1/4);
 		adc_off(adc_off(:,2)==0,2) = adc_off_mean; %#ok<NASGU>
 		
@@ -442,6 +450,7 @@ elseif strcmp(quantity,'dies')
 		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
 		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = []; %#ok<NASGU>
 		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
+		
 		eval(irf_ssub('diEs?p!=sp;Dadc?p!=adc_off;',cl_id,probe)); 
 		eval(irf_ssub('save_list=[save_list ''diEs?p! Dadc?p! ''];',cl_id,probe));
 		n_sig = n_sig + 1;
@@ -451,7 +460,9 @@ elseif strcmp(quantity,'dies')
 	% Delta offsets (offsets between E DSI obtained from p12/32 and p34)
 	if n_sig==2
 		
-		% To compute delta offsets we remove points which are > deltaof_sdev_max*sdev
+		% Compute delta offsets, i.e. difference between DSI E obtained 
+		% from different probe pairs 
+		% Remove points which are > deltaof_sdev_max*sdev
 		% as this must de a stable quantity
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
