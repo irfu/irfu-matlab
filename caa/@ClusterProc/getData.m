@@ -111,6 +111,8 @@ while have_options
 		flag_save = 0;
 	case 'withwhip'
 		flag_rmwhip = 0;
+	case 'rmwhip'
+		flag_rmwhip = 1;
 	case 'rmwake'
 		flag_rmwake = 1;
 	case 'no_caa_delta'
@@ -272,23 +274,24 @@ elseif strcmp(quantity,'dies')
 			irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
 			if probe == 32
 				[ok,da] = c_load(irf_ssub('whE?p!',cl_id,probe));
-				if ~ok || isempty(da)
-					irf_log('load', irf_ssub('No/empty whE?p!',cl_id,probe));
-				else
-					irf_log('proc','Using washed asymmetric probe')
+				if ok && ~isempty(da)
+					irf_log('proc',irf_ssub('Using washed asymmetric data whE?p!',cl_id,probe))
 				end
 			end
 			if ~ok || isempty(da)
 				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 				if ~ok || isempty(da)
-					irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+					irf_log('load', irf_ssub('No/empty wcE?p!, whE?p!, wE?p!',cl_id,probe));
 					continue
+				else irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
 				end
 				irf_log('load','using raw (not corrected) data')
 				if probe==34, corrected_raw_data_p34 = 0;
 				else corrected_raw_data_p12 = 0;
 				end
 			end
+		else
+			irf_log('proc',irf_ssub('Using corrected data wcE?p!',cl_id,probe))
 		end
 		n_ok = n_ok + 1;
 		
@@ -379,7 +382,7 @@ elseif strcmp(quantity,'dies')
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
-		%if flag_rmwhip, problems = [problems '|whip']; end
+		if flag_rmwhip, problems = [problems '|whip']; end %#ok<AGROW,NASGU>
 		signal = tt; %#ok<NASGU>
 		remove_problems
 		tt = res; %#ok<NODEF>
@@ -416,14 +419,22 @@ elseif strcmp(quantity,'dies')
 		end
 		
 		% ADC offsets
-		adc_off = sp(:,[1 4]);
 		% Warn about points with sdev>.8
 		ii = find(sp(:,6)>.8);
 		if length(ii)/size(sp,1)>.05,
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
+		adc_off = sp(:,[1 4]);
+		adc_off_mean = mean(adc_off(~isnan(adc_off(:,2)),2));
+		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
+		idx = find( abs( adc_off(:,2) - adc_off_mean ) > 3*std(adc_off(adc_off(:,2)~=0,2)) );
+		if ~isempty(idx)
+			adc_off(idx,2) = 0;
+			adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
+			irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
+		end
 		adc_off = irf_waverage(adc_off,1/4);
-		adc_off(adc_off(:,2)==0,2) = mean(adc_off(abs(adc_off(:,2))>0,2)); %#ok<NASGU>
+		adc_off(adc_off(:,2)==0,2) = adc_off_mean; %#ok<NASGU>
 		
 		sp = sp(:,[1:4 6]);
 		sp(:,4) = 0*sp(:,4); % Z component
