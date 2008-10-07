@@ -15,7 +15,7 @@ function irf_zoom(interval,c,axis_handles,t_ref)
 flag_use_t_start_epoch=0; % if 1 use userdata.t_start_epoch as tref
 
 if nargin<4,
-  % try to read the reference time from figures user_data variable
+  % Try to read the reference time from figures user_data variable
   user_data=get(gcf,'userdata');
   if isfield(user_data,'t_start_epoch')
     t_ref=user_data.t_start_epoch;
@@ -35,7 +35,7 @@ end
 if size(interval,2) ~= 2, disp('zooming interval in wrong format');return;end
 
 if strcmp(c,'x'), 
-  if iscell(interval),  % simplified time zooming
+  if iscell(interval),  % Simplified time zooming
     ax=axis;
     if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 ),
       int_min=fromepoch(ax(1)+t_ref);
@@ -45,16 +45,17 @@ if strcmp(c,'x'),
       clear interval;
       interval=[toepoch(int_min) toepoch(int_max)]-t_ref;
     end
-  else % interval should be vector with two values
-    if flag_use_t_start_epoch, % take into accoutn reference time from userdata.t_start_epoch
+  else % Interval must be vector with two values
+    if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
       interval=interval-t_ref;
     end
   end
 end
 
-if diff(interval)==0, interval(2)=interval(1)+1e-10; end % make interval finite if it is one point
+% Make interval finite if it has only one point
+if diff(interval)==0, interval(2)=interval(1)+1e-10; end 
 
-% remove XTickLabel and XLabel from all panels but the last one
+% Remove XTickLabel and XLabel from all panels but the last one
 if c=='x' && length(axis_handles)>1
 	p = cell2mat(get(axis_handles,'Position'));
 	pymin = min(p(:,2));
@@ -65,9 +66,8 @@ for h=axis_handles
 	if c=='x'
 		set(h,'XLim',interval);
 		set(h,'YLim',ax(3:4));
-		set(h,'XTickMode','auto','XTickLabelMode','auto');
 		if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
-			if flag_use_t_start_epoch % read informations about t_ref from userdata.t_start_epoch
+			if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
 				p = get(h,'position');
 				if length(axis_handles)>1 && p(2)==pymin, add_timeaxis(h);
 				else add_timeaxis(h,'nolabels');
