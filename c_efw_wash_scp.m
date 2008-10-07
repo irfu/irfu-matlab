@@ -1,13 +1,19 @@
 function [res,resnan] = c_efw_wash_scp(data,method)
 %C_EFW_WASH_SCP  Make SC Potential look prettier
 %
-% [RES,RESNAN] = C_EFW_WASH_SCP(DATA,METHOD)
+% [RES,RESNAN] = C_EFW_WASH_SCP(DATA,[METHOD])
 %
 % METHOD of filling the gaps can be 
-%           'PREVSPIN' - copy data from previous spin
+%           'PREVSPIN' - copy data from previous spin [default]
 %           'LINEAR'   - linear interpolation through the gap
+% $Id$
 
-
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if nargin < 2, method = 'prevspin'; end
 	
