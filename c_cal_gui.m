@@ -21,7 +21,7 @@ function c_cal_gui(varargin)
 % ----------------------------------------------------------------------------
 
 persistent h0;
-%disp(h0)
+persistent inprog_mtx; % this is a kinda mutex to hold "in progress" status
 
 sp = '.';
 
@@ -106,6 +106,8 @@ switch action
 % init
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'init'
+	inprog_mtx = 0;
+	
 	% Create figure
 	if find(get(0,'children')==main_fig_id)
 		pos_old = get(main_fig_id,'Position');
@@ -598,6 +600,10 @@ case 'fix_plot_pos'
 % replot
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'replot'
+	
+	if inprog_mtx, return, end
+	inprog_mtx = 1;
+	
 	% Plot data
 	hnd = guidata(h0);
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
@@ -706,6 +712,9 @@ case 'replot'
 	
 	guidata(h0,hnd);
 	c_cal_gui('update_legend')
+	
+	inprog_mtx = 0;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % replot_all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -852,6 +861,10 @@ case 'update_SAVEbuttons'
 % update_off
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_off'
+	
+	if inprog_mtx, return, end
+	inprog_mtx = 1;
+	
 	hnd = guidata(h0);
 	k = D_findByName(hnd.Data,hnd.ActiveVar);
 	
@@ -861,6 +874,7 @@ case 'update_off'
 		% Sanity check
 		if ~strcmp(hnd.Data{k}.inst,'EFW')
 			disp('update_off: we are doing something wrong with INST')
+			inprog_mtx = 0;
 			return
 		end
 		
@@ -881,10 +895,12 @@ case 'update_off'
 			% Sanity check
 			if isempty(up_list)
 				disp('update_off: we are doing something wrong with UP_LIST')
+				inprog_mtx = 0;
 				return
 			end
 			hnd.last = up_list;
 			guidata(h0,hnd);
+			inprog_mtx = 0;
 			c_cal_gui('replot')
 		end
 	else
@@ -915,10 +931,12 @@ case 'update_off'
 			% Sanity check
 			if isempty(up_list)
 				disp('update_off: we are doing something wrong with UP_LIST')
+				inprog_mtx = 0;
 				return
 			end
 			hnd.last = up_list;
 			guidata(h0,hnd);
+			inprog_mtx = 0;
 			c_cal_gui('replot')
 		end
 	end
@@ -1163,15 +1181,25 @@ case 'update_Ccheckbox'
 % update_DATAcheckbox
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'update_DATAcheckbox'
+	
 	hnd = guidata(h0);
 	if get(eval(['hnd.DATA' vs 'checkbox']),'Value')==1
+		if inprog_mtx
+			set(eval(['hnd.DATA' vs 'checkbox']),'Value',0)
+			return
+		end
+		inprog_mtx = 1; %#ok<NASGU>
+			
 		% Plot the varible
 		j = D_findByName(hnd.Data,vs);
 		%disp(['plotting ' hnd.Data{j}.name])
 		hnd.Data{j}.visible = 1;
 		hnd.last = {vs};
 		guidata(h0,hnd);
+		
+		inprog_mtx = 0;
 		c_cal_gui('replot')
+		
 		hnd = guidata(h0);
 		
 		% Check if we need to show C# checkBox
@@ -1180,6 +1208,12 @@ case 'update_DATAcheckbox'
 				'Value',1)
 		end
 	else
+		if inprog_mtx
+			set(eval(['hnd.DATA' vs 'checkbox']),'Value',0)
+			return
+		end
+		inprog_mtx = 1; %#ok<NASGU>
+		
 		% Check if we are hiding the active variable
 		if strcmp(hnd.ActiveVar,vs)
 			disp('you cannot hide the active variable')
@@ -1229,6 +1263,8 @@ case 'update_DATAcheckbox'
 		
 		guidata(h0,hnd);
 		c_cal_gui('update_legend')
+		
+		inprog_mtx = 0;
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % update_DATAradiobutton
