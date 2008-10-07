@@ -1770,7 +1770,7 @@ if ~isempty(marker)
 		try
 			for j=4:-1:1, delete(marker.h(j)),end
 		catch
-			% Missed it
+			disp('missed marker')
 		end
 	end
 end
@@ -1780,7 +1780,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function newmarker = replot_t_marker(hnd,marker)
 h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-disp('aaa')
+
 % Try to hide the marker
 newmarker = hide_t_marker(hnd,marker);
 
