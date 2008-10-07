@@ -1780,7 +1780,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function newmarker = replot_t_marker(hnd,marker)
 h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-
+disp('aaa')
 % Try to hide the marker
 newmarker = hide_t_marker(hnd,marker);
 
@@ -1895,7 +1895,9 @@ if data.visible
 		% E->V if in V mode
 		if ~hnd.mode
 			if ~isempty(data.B)
+				warning('off','MATLAB:interp1:NaNinY')
 				p_data = irf_e_vxb(p_data,data.B,-1);
+				warning('on','MATLAB:interp1:NaNinY')
 			else
 				data.visible = 0; 
 				p_data = [];
