@@ -295,9 +295,11 @@ case 'init'
 						% Resample B
 						if ~isempty(Brs)
 							irf_log('proc','interpolating Brs')
+							warning('off','MATLAB:interp1:NaNinY')
 							c_eval(...
 								['data.B = irf_resamp(Brs,' vs ');'],...
 								cl_id)
+							warning('on','MATLAB:interp1:NaNinY')
 						elseif ~isempty(hnd.BPPData{cl_id})
 							irf_log('proc','interpolating B PP')
 							c_eval(...
@@ -976,7 +978,10 @@ case 'press_SAVEbutton'
 		disp(['Cannot save ' ava.name])
 		return
 	end
-	c_eval(['save ' f_name ' ' var_s ' -mat -append'],cl_id)
+	if exist(f_name,'file'), apd = ' -append';
+	else apd = '';
+	end
+	c_eval(['save ' f_name ' ' var_s ' -mat' apd],cl_id)
 	irf_log('save',irf_ssub([var_s ' -> ' f_name],cl_id))
 	guidata(h0,hnd);
 	c_cal_gui('update_SAVEbuttons')
@@ -1877,8 +1882,10 @@ if data.visible
 			if isempty(data.B)
 				irf_log('proc','B is empty. No Ez')
 			else
+				warning('off','MATLAB:interp1:NaNinY')
 				[p_data,angle] = irf_edb(p_data,...
 					data.B,hnd.ang_limit);
+				warning('on','MATLAB:interp1:NaNinY')
 				ii = find(abs(angle) < hnd.ang_limit);
 				if length(ii) > 1
 					p_data(ii,4) = p_data(ii,4)*NaN; 
