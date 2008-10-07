@@ -1,4 +1,4 @@
-function varargout = c_cal_gui(varargin)
+function c_cal_gui(varargin)
 %C_CAL_GUI EFW calibration GUI
 %
 % This program will load EFW, CIS and EDI data for present in the
@@ -13,8 +13,13 @@ function varargout = c_cal_gui(varargin)
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev (yuri@irfu.se)
-%
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
 persistent h0;
 %disp(h0)
 
@@ -190,18 +195,6 @@ case 'init'
 		hnd.BPPData = [hnd.BPPData {BPP}];
 		clear BFGM BPP
 		
-		% Load Delta offsets
-		old_pwd = pwd; cd(sp);
-		clear Delta_off;
-		
-		[ok, Delta_off] = c_load('D?p12p34',cl_id);
-		if ~ok
-			irf_log('load',...
-			sprintf('No D%dp12p34. Probably we have only one probe pair.',cl_id))
-			Delta_off = 0;
-		end
-		cd(old_pwd)
-		
 		% Load data
 		for d=1:4
 			for j=1:length(dd{d})
@@ -260,12 +253,7 @@ case 'init'
 							'Position',[pxd pyd-.02*ndata 0.1 .02],...
 							'String','',...
 							'Callback',['c_cal_gui(''update_DATA' vs 'radiobutton'')'],...
-							'Tag',['DATA' vs 'radiobutton']);
-						%{ 
-						if strcmp(dsc.sig,'V')|strcmp(dsc.sig,'Vp')
-							set(hhd,'Enable','off')
-						end 
-						%}
+							'Tag',['DATA' vs 'radiobutton']); %#ok<NASGU>
 						hnd.DATArbList = [hnd.DATArbList {vs}];
 						eval(['hnd.DATA' vs 'radiobutton=hhd;clear hhd'])
 					end
@@ -370,11 +358,11 @@ case 'init'
 		hnd.EFWoffset(cl_id,:) = offset;
 		
 		% Load CIS offsets, must be only in Z.
-		warning off
+		warning('off','MATLAB:load:variableNotFound')
 		if exist('mCIS.mat','file')
 			c_eval('load -mat mCIS DHdsi? DCdsi? DHz? DCz?',cl_id)
 		end
-		warning on
+		warning('on','MATLAB:load:variableNotFound')
 		
 		offset = [0 0];
 		if exist(irf_ssub('DHdsi?',cl_id),'var')
@@ -459,7 +447,7 @@ case 'init'
 		'Callback','c_cal_gui(''update_DYcheckbox'')','Tag','DYcheckbox');
 	hnd.DZslider = uicontrol(hnd.DZpanel,'Style','slider',...
 		'Units','normalized','Position',[0.1 0.7 0.8 0.2],...
-		'Min',MMZ(2,1),'Max',MMZ(2,2),'Value',0,'Callback','c_cal_gui(''update_DZslider'')');
+		'Min',MMZ(2,1),'Max',MMZ(2,2),'Value',1,'Callback','c_cal_gui(''update_DZslider'')');
 	hnd.DZedit = uicontrol(hnd.DZpanel,'Style','edit',...
 		'Units','normalized','Position',[0.1 0.1 0.4 0.2],...
 		'String','0.0','BackgroundColor',active_color,...
@@ -788,7 +776,7 @@ case 'update_legend'
 		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
-				l_s = [l_s ',''' hnd.Data{ii(j)}.label ''''];
+				l_s = [l_s ',''' hnd.Data{ii(j)}.label '''']; %#ok<AGROW>
 			end
 		end
 		eval(['hxxx=legend(hnd.DLaxes,' l_s ');'])
@@ -819,7 +807,7 @@ case 'update_legend'
 		l_s = ['''' hnd.Data{ii(1)}.label ''''];
 		if length(ii)>1
 			for j=2:length(ii)
-				l_s = [l_s ',''' hnd.Data{ii(j)}.label ''''];
+				l_s = [l_s ',''' hnd.Data{ii(j)}.label '''']; %#ok<AGROW>
 			end
 		end
 		eval(['hxxx=legend(hnd.ALaxes,' l_s ');'])
@@ -1133,10 +1121,11 @@ case 'update_Ccheckbox'
 		c_cal_gui('replot');
 	else
 		% Hide
-		kk = [];
+		kk = zeros(size(ii));
 		for j=1:length(ii)
-			if hnd.Data{ii(j)}.visible == 0, kk = [kk j]; end
+			if hnd.Data{ii(j)}.visible == 0, kk(j) = j; end
 		end
+		kk(kk==0) = [];
 		ii(kk) =[];
 		if isempty(ii), return, end
 		
@@ -1486,8 +1475,8 @@ case 'show_raw'
 			[ok,E_tmp] = c_load(['wE?p' s{sid}],hnd.Data{j}.cl_id);
 			if ok
 				E_tmp = irf_tlim(E_tmp,hnd.tlim(end,:));
-				d_tmp = [d_tmp {E_tmp}]; clear E_tmp
-				leg_tmp = [leg_tmp {irf_ssub(['wE?p' s{sid}],hnd.Data{j}.cl_id)}];
+				d_tmp = [d_tmp {E_tmp}]; clear E_tmp %#ok<AGROW>
+				leg_tmp = [leg_tmp {irf_ssub(['wE?p' s{sid}],hnd.Data{j}.cl_id)}]; %#ok<AGROW>
 			end
 		end
 		% Load P
@@ -1495,9 +1484,9 @@ case 'show_raw'
 			[ok,P_tmp] = c_load(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id);
 			if ok
 				P_tmp = irf_tlim(P_tmp,hnd.tlim(end,:));
-				dp_tmp = [dp_tmp {P_tmp}]; clear P_tmp
-				dp_sid = [dp_sid sid];
-				legp_tmp = [legp_tmp {irf_ssub(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id)}];
+				dp_tmp = [dp_tmp {P_tmp}]; clear P_tmp %#ok<AGROW>
+				dp_sid = [dp_sid sid]; %#ok<AGROW>
+				legp_tmp = [legp_tmp {irf_ssub(['P10Hz?p' num2str(sid)],hnd.Data{j}.cl_id)}]; %#ok<AGROW>
 			end
 		end
 		if isempty(d_tmp) && isempty(dp_tmp), return, end
@@ -1766,7 +1755,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function replot_t_marker
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function newmarker = hide_t_marker(hnd,marker)
+function newmarker = hide_t_marker(hnd,marker) %#ok<INUSL>
 newmarker.t = [];
 if ~isempty(marker)
 	newmarker.t = marker.t;
@@ -1775,6 +1764,8 @@ if ~isempty(marker)
 		lasterr('')
 		try
 			for j=4:-1:1, delete(marker.h(j)),end
+		catch
+			% Missed it
 		end
 	end
 end
@@ -1871,7 +1862,7 @@ if data.visible
 			if isempty(data.B), p_data = [];
 			else
 				p_data = corr_v_velocity(p_data,ofs);
-				[xxx,p_data]=irf_dec_parperp(data.B,p_data);
+				[xxx,p_data]=irf_dec_parperp(data.B,p_data); %#ok<ASGLU>
 				clear xxx
 			end
 		otherwise
@@ -1942,7 +1933,7 @@ function data_ii = D_findByNameList(data_list,name_list)
 data_ii = [];
 for j=1:length(name_list)
 	data_rec = D_findByName(data_list,name_list{j});
-	if ~isempty(data_rec), data_ii = [data_ii data_rec]; end
+	if ~isempty(data_rec), data_ii = [data_ii data_rec]; end %#ok<AGROW>
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function D_findByCLID
@@ -1953,7 +1944,7 @@ function data_ii = D_findByCLID(data_list,cl_id)
 data_ii = [];
 for j=1:length(data_list)
 	if data_list{j}.cl_id == cl_id
-		data_ii = [data_ii j];
+		data_ii = [data_ii j]; %#ok<AGROW>
 	end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1985,7 +1976,7 @@ if ischar(s_list)
 else
 	for k=1:length(s_list)
 		for j=1:length(list)
-			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end
+			if strcmp(list{j},s_list{k}), ii = [ii j]; break, end %#ok<AGROW>
 		end
 	end
 end
