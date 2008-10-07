@@ -326,6 +326,7 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.units =  {'mV/m','mV/m','unitless','unitless'};
 	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','',''};
 	v.size = [3 1 1 1];
+	v.tensor_order = [1 0 0 0];
 	v.name = {'E_Vec_xy_ISR2', 'E_sigma','E_bitmask','E_quality'};
 	v.labels = {'E','St dev','Bitmask','Quality'};
 	v.label_1 = {'"Ex", "Ey"','','',''};

@@ -168,6 +168,7 @@ if strcmp(caa_vs,'E')
 	%data = res; %#ok<NODEF>
 	%clear res signal problems
 	
+	if lev==2, disp('check L2 data'), keyboard, end
 	data = caa_identify_problems(data, lev, dsc.sen, cl_id, bitmask_column, quality_column);
 	
 	% Correct offsets
@@ -313,23 +314,25 @@ buf = sprintf('%s%s',buf,['END_OF_RECORD_MARKER = "' EOR_MARKER '"\n']);
 buf = sprintf('%s%s',buf,'include = "CL_CH_MISSION.ceh"\n');
 buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
 buf = sprintf('%s%s',buf,'include = "CL_CH_EFW_EXP.ceh"\n');
+buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_INST.ceh"\n',cl_id));
+buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_L!_E.ceh"\n', cl_id, lev));
 buf = pmeta(buf,'FILE_TYPE','cef');
-buf = pmeta(buf,'DATA_TYPE','CP');
-buf = pmeta(buf,'INSTRUMENT_NAME','EFW?',cl_id);
-buf = pmeta(buf,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id);
-buf = pmeta(buf,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id);
-buf = pmeta(buf,'DATASET_ID',DATASET_ID,cl_id);
-buf = pmeta(buf,'DATASET_TITLE',dsc.field_name{1});
-buf = pmeta(buf,'DATASET_DESCRIPTION',...
-	{'This dataset contains measurements of the', ...
-	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
-	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)});
+%buf = pmeta(buf,'DATA_TYPE','CP');
+%buf = pmeta(buf,'INSTRUMENT_NAME','EFW?',cl_id);
+%buf = pmeta(buf,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id);
+%buf = pmeta(buf,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id);
+%buf = pmeta(buf,'DATASET_ID',DATASET_ID,cl_id);
+%buf = pmeta(buf,'DATASET_TITLE',dsc.field_name{1});
+%buf = pmeta(buf,'DATASET_DESCRIPTION',...
+%	{'This dataset contains measurements of the', ...
+%	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
+%	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)});
 buf = pmeta(buf,'DATASET_VERSION',EFW_DATASET_VERSION);
-buf = pmeta(buf,'TIME_RESOLUTION',TIME_RESOLUTION);
-buf = pmeta(buf,'MIN_TIME_RESOLUTION',MIN_TIME_RESOLUTION);
-buf = pmeta(buf,'MAX_TIME_RESOLUTION',MAX_TIME_RESOLUTION);
-buf = pmeta(buf,'PROCESSING_LEVEL',PROCESSING_LEVEL);
-buf = pmeta(buf,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id);
+%buf = pmeta(buf,'TIME_RESOLUTION',TIME_RESOLUTION);
+%buf = pmeta(buf,'MIN_TIME_RESOLUTION',MIN_TIME_RESOLUTION);
+%buf = pmeta(buf,'MAX_TIME_RESOLUTION',MAX_TIME_RESOLUTION);
+%buf = pmeta(buf,'PROCESSING_LEVEL',PROCESSING_LEVEL);
+%buf = pmeta(buf,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id);
 buf = pmeta(buf,'LOGICAL_FILE_ID',file_name);
 buf = pmeta(buf,'VERSION_NUMBER',DATA_VERSION);
 buf = sprintf('%s%s',buf,'START_META     =   FILE_TIME_SPAN\n');
@@ -341,20 +344,25 @@ buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
+%buf = pmeta(buf, 'FILE_CAVEATS', ...
+%   ['For offsets see DER dataset for this interval. Probes: ' dsc.sen]);
+buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
 
-buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-buf = sprintf('%s%s',buf,'!                   Variables                         !\n');
-buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-buf = sprintf('%s%s',buf,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
-buf = sprintf('%s%s',buf,'  VALUE_TYPE      = ISO_TIME\n');
-buf = sprintf('%s%s',buf,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
-buf = sprintf('%s%s',buf,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
-buf = sprintf('%s%s',buf, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
-buf = sprintf('%s%s',buf,'  LABLAXIS        = "UT"\n');
-buf = sprintf('%s%s',buf,'  FIELDNAM        = "Universal Time"\n');
-buf = sprintf('%s%s',buf,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
+%buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+%buf = sprintf('%s%s',buf,'!                   Variables                         !\n');
+%buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+%buf = sprintf('%s%s',buf,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
+%buf = sprintf('%s%s',buf,'  VALUE_TYPE      = ISO_TIME\n');
+%buf = sprintf('%s%s',buf,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
+%buf = sprintf('%s%s',buf,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
+%buf = sprintf('%s%s',buf, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
+%buf = sprintf('%s%s',buf,'  LABLAXIS        = "UT"\n');
+%buf = sprintf('%s%s',buf,'  FIELDNAM        = "Universal Time"\n');
+%buf = sprintf('%s%s',buf,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
 
+if 0     % commenting out the entire for-loop
 for j=1:v_size
+   disp('loop over variables'), keyboard
 	buf = sprintf('%s%s',buf,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
 	%buf = sprintf('%s%s',buf,'  PARAMETER_TYPE    = "Data"\n');
 	buf = sprintf('%s%s',buf,['  PARAMETER_TYPE    = "' dsc.ptype{j} '"\n']);
@@ -380,7 +388,9 @@ for j=1:v_size
    else
       buf = sprintf('%s%s',buf,'  FILLVAL           = 0\n');
    end
-	buf = sprintf('%s%s',buf,['  QUALITY           = ' num2str(QUALITY) '\n']);
+	%buf = sprintf('%s%s',buf,['  QUALITY           = ' num2str(QUALITY) '\n']);
+	buf = sprintf('%s%s',buf,['  QUALITY           = ' ...
+	               irf_ssub('E_quality__C?_CP_EFW_L!_E') '\n']);
 %	buf = sprintf('%s%s',buf,'  SIGNIFICANT_DIGITS= 6 \n');
    buf = sprintf('%s%s',buf,['  SIGNIFICANT_DIGITS= ' num2str(dsc.sigdig(j)) '\n']);
 	if ~isempty(dsc.com) && j==1
@@ -394,6 +404,9 @@ for j=1:v_size
 			buf = sprintf('%s%s',buf,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
 		end
 	end
+	if isfield(dsc, 'tensor_order') && dsc.tensor_order{j} > 0
+	   buf = sprintf('%s%s',buf,['  TENSOR_ORDER      = "' dsc.tensor_order{j} '"\n']);
+	end
 	if dsc.size(j) > 1
 		buf = sprintf('%s%s',buf,['  REPRESENTATION_1  = ' dsc.rep_1{j} '\n']);
 		buf = sprintf('%s%s',buf,['  LABEL_1           = ' dsc.label_1{j} '\n']);
@@ -402,7 +415,9 @@ for j=1:v_size
 	buf = sprintf('%s%s',buf,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
 	buf = sprintf('%s%s',buf,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
 end
+end % if-statement commenting out the for-loop
 
+buf = sprintf('%s%s',buf,'!\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'!                       Data                          !\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
