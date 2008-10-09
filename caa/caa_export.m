@@ -65,7 +65,7 @@ else
 	case 'E'
 		if lev==2
 			vs = irf_ssub('diE?p1234',cl_id);
-			v_size = 1;
+			v_size = 3;    % Previously 1. (ML)
 			sfit_probe = caa_sfit_probe(cl_id);
 		elseif lev==3
 			sfit_probe = caa_sfit_probe(cl_id);
@@ -153,23 +153,44 @@ if strcmp(caa_vs,'E')
 		QUALITY = 1;
 	end
 	
+	% Remove Ez, which is zero
+	if lev == 2 || lev == 3
+	   data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
+   else
+      irf_log('warn', 'Ez not removed (data level not 2 or 3)!')
+	end
+	
 	% Extend data array to accept bitmask and quality flag (2 columns at the end)
 	data = [data zeros(size(data, 1), 2)];
    data(:, end) = 9;    % Default quality column to best quality, i.e. good data/no problems.
    quality_column = size(data, 2);
    bitmask_column = quality_column - 1;
-%   disp('Data array extended!'), keyboard
 	
-	% Remove wakes
-	%problems = 'wake'; %#ok<NASGU>
-	%signal = data; %#ok<NASGU>
-	%probe = sfit_probe; %#ok<NASGU>
-	%remove_problems
-	%data = res; %#ok<NODEF>
-	%clear res signal problems
-	
-	if lev==2, disp('check L2 data'), keyboard, end
+	% Identify and flag problem areas in data with bitmask and quality factor:
 	data = caa_identify_problems(data, lev, dsc.sen, cl_id, bitmask_column, quality_column);
+	
+	% Extend variable description to include the new columns bitmask and quality:
+	dsc.cs = {dsc.cs{:}, 'na', 'na'};
+	dsc.rep = {dsc.rep{:}, '', ''};
+	dsc.units =  {dsc.units{:}, 'unitless', 'unitless'};
+	dsc.si_conv = {dsc.si_conv{:}, '', ''};
+	dsc.size = [dsc.size, 1, 1];
+	dsc.tensor_order = [dsc.tensor_order, 0, 0];
+	dsc.name = {dsc.name{:}, 'E_bitmask', 'E_quality'};
+	dsc.labels = {dsc.labels{:}, 'Bitmask', 'Quality'};
+	dsc.label_1 = {dsc.label_1{:}, '', ''};
+	dsc.col_labels = {dsc.col_labels{:}, '', ''};
+	dsc.rep_1 = {dsc.rep_1{:}, '', ''};
+	dsc.field_name = {dsc.field_name{:}, ...
+		'Electric field measurement quality bitmask',...
+		'Electric field measurement quality flag (9=best)'};
+	dsc.ptype = {dsc.ptype{:}, 'Support_Data', 'Support_Data'};
+	dsc.valtype = {dsc.valtype{:}, 'INT', 'INT'};
+	dsc.sigdig = [dsc.sigdig, 5, 1];
+	dsc.ent = {dsc.ent{:}, 'Electric_Field', 'Electric_Field'};
+	dsc.prop = {dsc.prop{:}, 'Status', 'Status'};
+	dsc.fluc = {dsc.fluc{:}, '', ''};
+	
 	
 	% Correct offsets
 	if ~isempty(data)
@@ -230,16 +251,6 @@ if strcmp(caa_vs,'E')
 		dsc.com = 'For offsets see DER dataset for this interval';
 		dsc.com = [dsc.com '. Probes: ' dsc.sen];
 		irf_log('calb',dsc.com)
-		
-		% Remove Ez, which is zero
-		%if lev==3, keyboard, data = data(:,[1:3 5]);
-      %  else data = data(:,1:3);
-		%end
-		if lev==3
-		   data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
-      else
-         data = data(:, [1:3 6:end]);     % Remove columns 4 and 5. (Ez data and ???)
-		end
 		
 	end
 	

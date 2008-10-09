@@ -321,27 +321,46 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.inst = 'EFW';
 	v.sig = 'E';
 	v.sen = vvs(7:8);
-	v.cs = {'ISR2','na','na','na'};
-	v.rep = {'xy','','',''};
-	v.units =  {'mV/m','mV/m','unitless','unitless'};
-	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','',''};
-	v.size = [3 1 1 1];
-	v.tensor_order = [1 0 0 0];
-	v.name = {'E_Vec_xy_ISR2', 'E_sigma','E_bitmask','E_quality'};
-	v.labels = {'E','St dev','Bitmask','Quality'};
-	v.label_1 = {'"Ex", "Ey"','','',''};
-	v.col_labels = {{'x','y','z'},'','',''};
-	v.rep_1 = {'"x", "y"','','',''};
+%	v.cs = {'ISR2','na','na','na'};
+%	v.rep = {'xy','','',''};
+%	v.units =  {'mV/m','mV/m','unitless','unitless'};
+%	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','',''};
+%	v.size = [3 1 1 1];
+%	v.tensor_order = [1 0 0 0];
+%	v.name = {'E_Vec_xy_ISR2', 'E_sigma','E_bitmask','E_quality'};
+%	v.labels = {'E','St dev','Bitmask','Quality'};
+%	v.label_1 = {'"Ex", "Ey"','','',''};
+%	v.col_labels = {{'x','y','z'},'','',''};
+%	v.rep_1 = {'"x", "y"','','',''};
+%	v.field_name = {'Electric field (4 sec resolution)',...
+%		'Electric field standard deviation',...
+%		'Electric field measurement quality bitmask',...
+%		'Electric field measurement quality flag (9=best)'};
+%	v.ptype = {'Data','Data','Support_Data','Support_Data'};
+%	v.valtype = {'FLOAT','FLOAT','INT','INT'};
+%	v.sigdig = [6 6 5 1];
+%	v.ent = {'Electric_Field','Electric_Field','Electric_Field','Electric_Field'};
+%	v.prop = {'Vector','Vector','Status','Status'};
+%	v.fluc = {'Waveform','Fluctuation_Level','',''};
+   v.cs = {'ISR2','na'};
+	v.rep = {'xy',''};
+	v.units =  {'mV/m','mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1'};
+	v.size = [3 1];
+	v.tensor_order = [1 0];
+	v.name = {'E_Vec_xy_ISR2', 'E_sigma'};
+	v.labels = {'E','St dev'};
+	v.label_1 = {'"Ex", "Ey"',''};
+	v.col_labels = {{'x','y','z'},''};
+	v.rep_1 = {'"x", "y"',''};
 	v.field_name = {'Electric field (4 sec resolution)',...
-		'Electric field standard deviation',...
-		'Electric field measurement quality bitmask',...
-		'Electric field measurement quality flag (9=best)'};
-	v.ptype = {'Data','Data','Support_Data','Support_Data'};
-	v.valtype = {'FLOAT','FLOAT','INT','INT'};
-	v.sigdig = [6 6 5 1];
-	v.ent = {'Electric_Field','Electric_Field','Electric_Field','Electric_Field'};
-	v.prop = {'Vector','Vector','Status','Status'};
-	v.fluc = {'Waveform','Fluctuation_Level','',''};
+		'Electric field standard deviation'};
+	v.ptype = {'Data','Data'};
+	v.valtype = {'FLOAT','FLOAT'};
+	v.sigdig = [6 6];
+	v.ent = {'Electric_Field','Electric_Field'};
+	v.prop = {'Vector','Vector'};
+	v.fluc = {'Waveform','Fluctuation_Level'};
 	v.com = 'Ez=0 by definition (not measured).';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -394,6 +413,7 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
  	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
 	v.size = 3;
+	v.tensor_order = 1;
 	v.rep_1 = {'"x", "y"'};
 	v.col_labels = {{'x','y','z'}};
 	v.ent = {'Electric_Field'};

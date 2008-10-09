@@ -164,6 +164,7 @@ for probe_id = probe_list
 		if ~isempty(problem_intervals)
 			irf_log('proc', ['blanking bad bias on P' num2str(probe_id)])
 			%res = caa_rm_blankt(res,bbias);
+			keyboard
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_BAD_BIAS, QUALITY_BAD_BIAS, ...
                bitmask_column, quality_column);
@@ -201,6 +202,7 @@ for probe_id = probe_list
 			irf_log('proc', ...
 				['blanking low density saturation on P' num2str(probe_id)])
 			%res = caa_rm_blankt(res,sa);
+			keyboard
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_LOW_DENSITY_SATURATION, QUALITY_LOW_DENSITY_SATURATION, ...
                bitmask_column, quality_column);
@@ -219,10 +221,11 @@ if isempty(ns_ops)
 	ns_ops = c_ctl('get', spacecraft_id, 'ns_ops');
 end
 if ~isempty(ns_ops)
-   irf_log('proc', 'blanking NS_OPS')
+   %irf_log('proc', 'blanking NS_OPS'), keyboard
    data_start_time = result(1, 1);
    data_time_span = result(end, 1) - data_start_time;
    ns_ops_intervals = caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_data');
+   if ~isempty(ns_ops_intervals), irf_log('proc', 'blanking NS_OPS'), end
    for k = 1:size(ns_ops_intervals, 1)
       result = caa_fill_ns_ops(result, ns_ops_intervals(k, :));   % Recreate time interval and fill this data with NaN.
       result = caa_set_bitmask_and_quality(result, ns_ops_intervals(k, :), ...
