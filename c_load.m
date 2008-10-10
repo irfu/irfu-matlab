@@ -1,4 +1,4 @@
-function [res,v,msg] = c_load(vs,cl_id,mode_s)
+function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 %C_LOAD load cluster data
 %
 % C_LOAD(V_S) will attempth to load a varible given by string VS from a MAT
@@ -49,7 +49,8 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,3,nargin))
+%error(nargchk(1,3,nargin))
+error(nargchk(1,4,nargin))
 if nargout==2 && nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
 end
@@ -59,6 +60,25 @@ ERR_RET = -157e8;
 if ~ischar(vs), error('V_S must be a string'), end
 
 switch nargin
+   case 4
+      if ~isnumeric(cl_id) || length(cl_id)>1
+         error('Second input argument must be a (scalar) number 1..4')
+      end
+	   if cl_id<0 || cl_id>4
+		   error('CL_ID must be in a range 1..4')
+	   end
+	   if (strcmp(mode_s, 'res') == 0)
+	      error('mode_s must be ''res''.')
+	   end
+	   if regexp(vs,'?')
+%	      keyboard
+	      if regexp(vs, '!')
+	         vs = irf_ssub(vs, cl_id);     % Change '?' --> cl_id and '!' --> '?' in vs ...
+	         vs = strrep(vs, '!', '?');    % ...and '!' --> '?' in vs
+	      end
+	      cl_id = probe_id;    % Fool rest of program into thinking probe_id is cl_id.
+	   end
+	   %keyboard
 case 3
 	if ~isnumeric(cl_id), error('Second input argument must be a number 1..4'),end
 	if cl_id<0 || cl_id>4

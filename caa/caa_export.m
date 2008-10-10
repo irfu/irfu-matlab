@@ -76,18 +76,28 @@ else
 			disp('not implemented'), cd(old_pwd), return
 		end
 	case 'DER'
-		sfit_probe = caa_sfit_probe(cl_id);
-		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
-		irf_log('proc',sprintf('using p%d',sfit_probe))
-		v_size = 1;
+	   keyboard
+	   %vs = 'Dadc?p!';
+	   vs = sprintf('Dadc%.0fp?', cl_id);
+	   probe_pairs = [12, 32, 34];
+%		sfit_probe = caa_sfit_probe(cl_id);
+%		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
+%		irf_log('proc',sprintf('using p%d',sfit_probe))    % TODO: Change printing!
+		v_size = 2;
 	otherwise
 		error('unknown variable')
 	end
 end
 
 % Load data
-[ok,data] = c_load(vs);
-if ~ok || isempty(data)
+if strcmp(caa_vs, 'DER')
+   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
+   probe_pairs = probe_pairs(logical(ok));   % Keep list of probe pairs actually loaded.
+   vs = irf_ssub(vs, probe_pairs(1));
+else
+   [ok,data] = c_load(vs);
+end
+if all(~ok) || isempty(data)
 	irf_log('load', ['No ' vs])
 	cd(old_pwd)
 	return
@@ -126,12 +136,25 @@ if ~isempty(st) && ~isempty(dt)
 	t_int = st + [0 dt];
 	irf_log('save', sprintf('%s : %s -- %s',...
 			vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
-	data = irf_tlim(data,t_int);
-	if isempty(data)
-		irf_log('save', 'Saving empty subinterval')
-	end 
+			keyboard
+   if strcmp(caa_vs, 'DER')
+      data1 = irf_tlim([data{1:2}], t_int);
+      data2 = irf_tlim(data{3}, t_int);
+      if isempty(data1) && isempty(data2)
+		   irf_log('save', 'Saving empty subinterval')
+	   end
+   else
+	   data = irf_tlim(data,t_int);
+	   if isempty(data)
+		   irf_log('save', 'Saving empty subinterval')
+	   end 
+	end
 else
 	[iso_ts,dtint] = caa_read_interval;
+	if strcmp(caa_vs, 'DER')
+	   disp('Check data for DER case when no time interval given!')   % TODO: Check this!
+	   keyboard
+	end
 	if isempty(iso_ts)
 		t_int = data([1 end],1);
 	else
@@ -140,6 +163,7 @@ else
 	end
 	clear iso_ts dtint
 end
+
 
 % Do magic on E-field
 if strcmp(caa_vs,'E')
@@ -301,6 +325,31 @@ elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	dsc.ent = {'Instrument'};
 	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
+	
+elseif strcmp(caa_vs, 'DER')  % Do magic on ADC offsets
+   keyboard
+   start_time = min(min(data1(:,1), data2(:,1)));
+   timestamp = start_time:4:t_int(2);
+   data_out = zeros(length(timestamp), 3) * NaN;
+   data_out(:, 1) = timestamp;
+   
+   [ind1, ind2] = irf_find_comm_idx(data_out, data1);
+   data_out(ind1, 2) = data1(ind2, 2);
+   
+   [ind1, ind2] = irf_find_comm_idx(data_out, data2);
+   data_out(ind1, 3) = data2(ind2, 2);
+   
+   data_orig = data;
+   clear data;
+   data = data_out;
+   
+   % Extend description to cover data record for two probe pairs:
+   dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
+   dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
+   dsc.sigdig = [dsc.sigdig 6];
+   dsc.size = [dsc.size 1];
+   
+   clear start_time timestamp ind1 ind2 data_out
 end
 
 cd(old_pwd)
@@ -326,7 +375,8 @@ buf = sprintf('%s%s',buf,'include = "CL_CH_MISSION.ceh"\n');
 buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_OBS.ceh"\n',cl_id));
 buf = sprintf('%s%s',buf,'include = "CL_CH_EFW_EXP.ceh"\n');
 buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_INST.ceh"\n',cl_id));
-buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_L!_E.ceh"\n', cl_id, lev));
+buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_L!_$.ceh"\n', ...
+               cl_id, lev, caa_vs)); % Change to 'E', 'P', etc.!
 buf = pmeta(buf,'FILE_TYPE','cef');
 %buf = pmeta(buf,'DATA_TYPE','CP');
 %buf = pmeta(buf,'INSTRUMENT_NAME','EFW?',cl_id);
