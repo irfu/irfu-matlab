@@ -21,6 +21,7 @@ function [x,in]=irf_tlim(x,t1,t2,mode)
 
 error(nargchk(2,4,nargin))
 
+if isempty(x), in = []; return, end
 if nargin==2, t2 = t1(2) + 1e-7; t1 = t1(1) - 1e-7; end
 if nargin<4, mode = 0; end
 
