@@ -76,7 +76,7 @@ else
 			disp('not implemented'), cd(old_pwd), return
 		end
 	case 'DER'
-	   keyboard
+	   %keyboard
 	   %vs = 'Dadc?p!';
 	   vs = sprintf('Dadc%.0fp?', cl_id);
 	   probe_pairs = [12, 32, 34];
@@ -136,7 +136,7 @@ if ~isempty(st) && ~isempty(dt)
 	t_int = st + [0 dt];
 	irf_log('save', sprintf('%s : %s -- %s',...
 			vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
-			keyboard
+			%keyboard
    if strcmp(caa_vs, 'DER')
       data1 = irf_tlim([data{1:2}], t_int);
       data2 = irf_tlim(data{3}, t_int);
@@ -327,12 +327,17 @@ elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	dsc.fluc = {'Waveform'};
 	
 elseif strcmp(caa_vs, 'DER')  % Do magic on ADC offsets
-   keyboard
-   start_time = min(min(data1(:,1), data2(:,1)));
+   % Debugging:
+%   indexes1 = [1:10 15:20 33:38 45 47 49 63:108 123:150];
+%   indexes2 = [5:10 18:22 27:40 45:60 66:94 104:140];
+%   data1 = data1(indexes1, :); data2 = data2(indexes2, :);
+%   disp('Testing data gap handling in DER data'), keyboard
+   
+   start_time = min( min(data1(:,1)), min(data2(:,1)) );
    timestamp = start_time:4:t_int(2);
    data_out = zeros(length(timestamp), 3) * NaN;
    data_out(:, 1) = timestamp;
-   
+
    [ind1, ind2] = irf_find_comm_idx(data_out, data1);
    data_out(ind1, 2) = data1(ind2, 2);
    
