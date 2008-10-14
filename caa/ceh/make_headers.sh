@@ -1,5 +1,6 @@
 #!/bin/sh
-
+#
+# $Id$
 
 flist="CX_CH_EFW_INST.ceh \
 CX_CH_EFW_L2_E.ceh \
