@@ -1,3 +1,6 @@
+!
+! $Id$
+!
 START_META     =   DATA_TYPE
    ENTRY       =   "CP"
 END_META       =   DATA_TYPE
