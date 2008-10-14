@@ -79,7 +79,6 @@ START_VARIABLE      = E_Vec_xy_ISR2__CXXX_CP_EFW_L3_E
   FILLVAL           = -1000000000.000
   QUALITY           = E_quality__CXXX_CP_EFW_L3_E
   SIGNIFICANT_DIGITS= 6
-  PARAMETER_CAVEATS = "For offsets see DER dataset for this interval. Probes: 34"
   COORDINATE_SYSTEM = "ISR2"
   FRAME_VELOCITY    = "Observatory"
   TENSOR_ORDER      = 1
@@ -94,7 +93,7 @@ START_VARIABLE      = E_sigma__CXXX_CP_EFW_L3_E
   SIZES             = 1
   VALUE_TYPE        = FLOAT
   ENTITY            = "Electric_Field"
-  PROPERTY          = "Vector"
+  PROPERTY          = "Scalar"
   FLUCTUATIONS      = "Fluctuation_Level"
   CATDESC           = "Electric field standard deviation"
   FIELDNAM          = "Electric field standard deviation"
@@ -118,7 +117,6 @@ START_VARIABLE      = E_bitmask__CXXX_CP_EFW_L3_E
   SI_CONVERSION     = "1>unitless"
   UNITS             = "unitless"
   FILLVAL           = 0
-  QUALITY           = 0
   SIGNIFICANT_DIGITS= 5
   LABLAXIS          = "Bitmask"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L3_E
@@ -130,8 +128,8 @@ START_VARIABLE      = E_quality__CXXX_CP_EFW_L3_E
   VALUE_TYPE        = INT
   ENTITY            = "Electric_Field"
   PROPERTY          = "Status"
-  CATDESC           = "Electric field measurement quality flag (9=best)"
-  FIELDNAM          = "Electric field measurement quality flag (9=best)"
+  CATDESC           = "Electric field measurement quality flag (4=best)"
+  FIELDNAM          = "Electric field measurement quality flag (4=best)"
   SI_CONVERSION     = "1>unitless"
   UNITS             = "unitless"
   FILLVAL           = 0
