@@ -1,0 +1,65 @@
+!
+! Name of the experiment
+!
+START_META     =   EXPERIMENT
+   ENTRY       =   "EFW"
+END_META       =   EXPERIMENT
+!
+! Description of the experiment
+!
+START_META     =   EXPERIMENT_DESCRIPTION
+   ENTRY       =   "Electric Field and Wave Experiment"
+END_META       =   EXPERIMENT_DESCRIPTION
+!
+! Name and coordinates of the PI, and possible earlier PIs
+!
+START_META     =   INVESTIGATOR_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Georg Gustafsson>former PI(-2000)>Georg.Gustafsson@irfu.se"
+END_META       =   INVESTIGATOR_COORDINATES
+!
+! List of standard reference documents for the experiment
+!
+START_META     =   EXPERIMENT_REFERENCES
+   ENTRY       =   "*CL_CD_EFW_CAAICD"
+   ENTRY       =   "*CL_CD_EFW_USERMAN"
+   ENTRY       =   "http://www.cluster.irfu.se/"
+END_META       =   EXPERIMENT_REFERENCES
+!
+! Name, role and coordinates of experiment key personnel
+!
+START_META     =   EXPERIMENT_KEY_PERSONNEL
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+   ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
+   ENTRY       =   "Per-Arne Lindqvist>Archive manager>Per-Arne.Lindqvist@alfvenlab.kth.se"
+   ENTRY       =   "Yuri Khotyaintsev>Archive scientist>Yuri.Khotyaintsev@irfu.se"
+END_META       =   EXPERIMENT_KEY_PERSONNEL
+!
+! Miscellaneous information concerning the experiment
+!
+START_META     =   EXPERIMENT_CAVEATS
+   ENTRY       =   "*CL_CQ_EFW_CAVEATS"
+END_META       =   EXPERIMENT_CAVEATS
+!
+! Type of instrument used to collect the data
+!
+START_META     =   INSTRUMENT_TYPE
+   ENTRY       =   "Double_Sphere"
+END_META       =   INSTRUMENT_TYPE
+!
+START_META     =   MEASUREMENT_TYPE
+   ENTRY       =   "Electric_Field"
+END_META       =   MEASUREMENT_TYPE
+!
+! Name of dataset contact
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the EFW team and ESA CAA in any"
+   ENTRY       =   "publication based upon use of these data"
+END_META       =   ACKNOWLEDGEMENT
+
+

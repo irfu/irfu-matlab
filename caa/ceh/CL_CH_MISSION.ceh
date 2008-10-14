@@ -1,0 +1,55 @@
+!
+!  CL_CH_MISSION.ceh
+!  Global mission metadata provided by the CAA.
+!
+!  Save to your own hard drive so this file can be
+!  included as CL_CH_MISSION.ceh in other cef files. 
+! 
+
+START_META = MISSION 
+    ENTRY  = "Cluster" 
+END_META   = MISSION 
+
+START_META     = MISSION_TIME_SPAN 
+    VALUE_TYPE = ISO_TIME_RANGE 
+    ENTRY      = 2000-08-16T12:39:00Z/2005-12-31T23:59:59Z
+END_META       = MISSION_TIME_SPAN 
+
+START_META = MISSION_AGENCY 
+    ENTRY  = "ESA>European Space Agency" 
+END_META   = MISSION_AGENCY 
+
+START_META = MISSION_DESCRIPTION 
+    ENTRY  = "The aim of the Cluster mission is to study small-scale structures of the magnetosphere " 
+    ENTRY  = "and its environment in three dimensions. To achieve this, Cluster is constituted of four " 
+    ENTRY  = "identical spacecraft that will flight in a tetrahedral configuration. The separation distances " 
+    ENTRY  = "between the spacecraft will be varied between 600 km and 20 000 km, according to the " 
+    ENTRY  = "key scientific regions." 
+END_META   = MISSION_DESCRIPTION 
+
+START_META = MISSION_KEY_PERSONNEL 
+    ENTRY  = "Philippe Escoubet>Philippe.Escoubet@esa.int >Cluster Project Scientist" 
+END_META   = MISSION_KEY_PERSONNEL 
+
+START_META = MISSION_REFERENCES 
+    ENTRY  = "The Cluster and Phoenix Missions>Cluster project and instrument teams>Space Sci. Rev. 79, Nos. 1-2, 1997"
+END_META   =  MISSION_REFERENCES 
+
+START_META = MISSION_REGION 
+    ENTRY  = "Solar_Wind" 
+    ENTRY  = "Bow_Shock" 
+    ENTRY  = "Magnetosheath" 
+    ENTRY  = "Magnetopause" 
+    ENTRY  = "Magnetosphere" 
+    ENTRY  = "Magnetotail" 
+    ENTRY  = "Polar_Cap"
+    ENTRY  = "Auroral_Region" 
+    ENTRY  = "Cusp" 
+    ENTRY  = "Radiation_Belt" 
+    ENTRY  = "Plasmasphere" 
+END_META   = MISSION_REGION 
+
+START_META = MISSION_CAVEATS 
+ ENTRY = "*CL" 
+END_META = MISSION_CAVEATS
+
