@@ -96,7 +96,7 @@ clear ie ip
 % Set default method to BHN
 if nargin < 9, method = 1; end
 
-if method==1
+if method==1 || method==2
 	if exist('c_efw_spinfit_mx','file')~=3
 		method = 0;
 		disp('cannot find mex file, defaulting to Matlab code.')
@@ -125,7 +125,7 @@ end
 
 
 % Do it:
-if method==1
+if method==1 || method==2
 	te = torow(te);
 	data = torow(data);
 	ind = find(~isnan(data));
@@ -134,14 +134,21 @@ if method==1
 		irf_log('fcal','not enough data points for spinfit');
 		spinfit = []; return
 	end
+	if method==2
+		NCOLS = 10;
+		NTERM = 5;
+	else
+		NCOLS = 8;
+		NTERM = 3;
+	end
 	pha = torow(pha(ind));
 	[ts,sfit,sdev,iter,nout] = ...
-		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,3,...
+		c_efw_spinfit_mx(maxit,N_EMPTY*4*sf,NTERM,...
 		te(ind),data(ind),pha);
 	ind = find( sdev~=-159e7 );
 	n_gap = length(sdev) -length(ind);
 	n = length(sdev);
-	spinfit = zeros(n,8);
+	spinfit = zeros(n,NCOLS);
 	spinfit(:,1) = ts;		        % time
 	spinfit(:,2:end) = NaN;
 	if ~isempty(ind)
@@ -152,6 +159,10 @@ if method==1
 		spinfit(ind,6) = sdev(ind);
 		spinfit(ind,7) = iter(ind);
 		spinfit(ind,8) = nout(ind);
+		if method==2
+			spinfit(ind,9) = sfit(4,ind); % 2 omega signals
+			spinfit(ind,10) = sfit(5,ind);
+		end
 	end
 	n = n + n_gap;
 else

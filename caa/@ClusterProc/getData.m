@@ -93,6 +93,7 @@ flag_edb = 1;
 flag_rmwake = 0;
 sfit_ver = -1;
 correct_sw_wake = 0;
+flag_wash_p32 = 1;
 
 CAA_MODE = c_ctl(0,'caa_mode');
 
@@ -275,24 +276,15 @@ elseif strcmp(quantity,'dies')
 	for probe = [12,32,34]
 		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
-			irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
-			if probe == 32
-				[ok,da] = c_load(irf_ssub('whE?p!',cl_id,probe));
-				if ok && ~isempty(da)
-					irf_log('proc',irf_ssub('Using washed asymmetric data whE?p!',cl_id,probe))
-				end
-			end
+			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 			if ~ok || isempty(da)
-				[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
-				if ~ok || isempty(da)
-					irf_log('load', irf_ssub('No/empty wcE?p!, whE?p!, wE?p!',cl_id,probe));
-					continue
-				else irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
-				end
-				irf_log('load','using raw (not corrected) data')
-				if probe==34, corrected_raw_data_p34 = 0;
-				else corrected_raw_data_p12 = 0;
-				end
+				irf_log('load', irf_ssub('No/empty wcE?p! and wE?p!',cl_id,probe));
+				continue
+			else irf_log('load', irf_ssub('read wE?p!',cl_id,probe));
+			end
+			irf_log('load','using raw (not corrected) data')
+			if probe==34, corrected_raw_data_p34 = 0;
+			else corrected_raw_data_p12 = 0;
 			end
 		else
 			irf_log('proc',irf_ssub('Using corrected data wcE?p!',cl_id,probe))
@@ -402,11 +394,12 @@ elseif strcmp(quantity,'dies')
 		% Run spin fitting
 		if sfit_ver>=0
 			irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
-			sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),...
-				aa(:,2),sfit_ver);
 		else
-			sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2));
+			if probe==32, sfit_ver = 2;
+			else sfit_ver = 1;
+			end
 		end
+		sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2),sfit_ver);
 		
 		% Check if we have any data left
 		if isempty(sp)
@@ -422,6 +415,9 @@ elseif strcmp(quantity,'dies')
 				[num2str(length(sp(:,1))-length(ind)) ' spins removed (bad time)']);
 			sp = sp(ind,:);
 		end
+		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
+		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = [];
+		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
 		
 		% ADC offsets, i.e. DC offset of the raw sinals
 		% Warn about points with sdev>.8
@@ -429,6 +425,33 @@ elseif strcmp(quantity,'dies')
 		if length(ii)/size(sp,1)>.05,
 			irf_log('proc',[sprintf('%.1f',100*length(ii)/size(sp,1)) '% of spins have SDEV>.8 (ADC offsets)']);
 		end
+		
+		% Remove whisper pulses for ADC offset and 2 Omega
+		[ok,whip,msg] = c_load('WHIP?',cl_id);
+		if ok
+			if ~isempty(whip)
+				irf_log('proc','blanking Whisper pulses in ADC offsets')
+				if probe == 32 && size(sp,2) == 10,	SPCOLS = [4 9 10];
+				else SPCOLS = 4;
+				end
+				% Obtain time interval boundaries around each
+				% (averaged) data point;
+				data_time_lower = sp(:, 1) - 2;
+				data_time_upper = sp(:, 1) + 2;
+				for num = 1:size(whip, 1)
+					problem_start = whip(num, 1);
+					problem_stop = whip(num, 2);
+					sp((problem_start >= data_time_lower & problem_start < data_time_upper) | ...
+						(problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
+						(problem_start <= data_time_lower & problem_stop >= data_time_upper),...
+						SPCOLS) = NaN;
+				end
+			end
+		else irf_log('load',msg)
+		end
+		clear ok whip msg
+		
+		% Continue with ADC offsets
 		adc_off = sp(:,[1 4]);
 		% Fill NaNs with mean value
 		adc_off_mean = mean(adc_off(~isnan(adc_off(:,2)),2));
@@ -444,15 +467,26 @@ elseif strcmp(quantity,'dies')
 		adc_off = irf_waverage(adc_off,1/4);
 		adc_off(adc_off(:,2)==0,2) = adc_off_mean; %#ok<NASGU>
 		
+		% Save 2 omega separately
+		if probe == 32 && size(sp,2) == 10
+			% Fill NaNs with zeros and smoothen the signal
+			for col = 9:10
+				sp( isnan(sp(:,col)) ,col) = 0;
+				sp(:,[1 col]) = irf_waverage(sp(:,[1 col]),1/4);
+			end
+		
+			eval(irf_ssub(...
+			'w2W?p!=sp(:,[1 9 10]);save_list=[save_list ''w2W?p! ''];',...
+			cl_id,probe));
+		end
+		
 		sp = sp(:,[1:4 6]);
-		sp(:,4) = 0*sp(:,4); % Z component
+		sp(:,4) = 0*sp(:,4); %#ok<NASGU> % Z component
 		
-		% Remove spins with bad spin fit (obtained E > 10000 mV/m)
-		ind = find(abs(sp(:,3))>1e4); sp(ind,:) = []; %#ok<NASGU>
-		if ind, disp([num2str(length(ind)) ' spins removed due to E>10000 mV/m']);end
-		
-		eval(irf_ssub('diEs?p!=sp;Dadc?p!=adc_off;',cl_id,probe)); 
-		eval(irf_ssub('save_list=[save_list ''diEs?p! Dadc?p! ''];',cl_id,probe));
+		eval(irf_ssub(...
+			'diEs?p!=sp;Dadc?p!=adc_off;save_list=[save_list ''diEs?p! Dadc?p! ''];',...
+			cl_id,probe));
+			
 		n_sig = n_sig + 1;
 		clear tt sp adc_off
 	end
@@ -619,14 +653,6 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			
 			if ~ok || isempty(da)
 				irf_log('load', irf_ssub('No/empty wcE?p!',cl_id,probe));
-				if probe == 32
-					[ok,da] = c_load(irf_ssub('whE?p!',cl_id,probe));
-					if ~ok || isempty(da)
-						irf_log('load', irf_ssub('No/empty whE?p!',cl_id,probe));
-					else
-						irf_log('proc','Using washed asymmetric probe')
-					end
-				end
 				if ~ok || isempty(da)
 					[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
 					if ~ok || isempty(da)
@@ -879,7 +905,24 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 	% Do actual despin
 	aa = c_phase(full_e(:,1),pha);
-	if p12==32, full_e=c_efw_despin(full_e,aa,coef,'asym');
+	if p12==32
+		
+		% x(4)*cos(2*pha)+x(5)*sin(2*pha)
+		if flag_wash_p32
+			[ok,w2] = c_load('w2W?p32',cl_id);
+			if ~ok || isempty(w2)
+				irf_log('load', irf_ssub('No/empty w2W?p!',cl_id,probe));
+			else
+				irf_log('proc','Washing asymmetric probe')
+				w2(isnan(w2(:,2)),:) = [];
+				w2r = irf_resamp(w2,full_e(:,1),'fsample',c_efw_fsample(full_e(:,1),'hx'));
+				[i1,i2] = irf_find_comm_idx(aa(:,1),full_e(:,1));
+				full_e(i2,4) = full_e(i2,4) + w2r(i2,2).*cos(2*aa(i1,2)*pi/180) + ...
+					w2r(i2,3).*sin(2*aa(i1,2)*pi/180);
+			end
+		end
+		
+		full_e=c_efw_despin(full_e,aa,coef,'asym');
     else full_e=c_efw_despin(full_e,aa,coef);
 	end
 	

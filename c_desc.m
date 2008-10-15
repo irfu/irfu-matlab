@@ -176,7 +176,7 @@ elseif any(regexp(vs,'^P(32|4)kHz[1-4]p[1-4]$')==1) || ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wh?E[1-4]p32$'))
+elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$'))
 	v.data = 1;
 	v.inst = 'EFW';
 	v.frame = 'na';
@@ -203,14 +203,12 @@ elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$')) || any(regexp(vs,'^wh?E[1-4]
 		v.com = '';
 		v.lev = 0;
 		v.quant = 'e';
-	elseif vs(2)=='c' || vs(2)=='h'
+	elseif vs(2)=='c'
 		v.cl_id = vs(4);
 		v.file = 'mERC';
 		v.com = 'This data is not original raw data. It has been cleaned.';
 		v.lev = 1;
-		if vs(2)=='c', v.quant = 'ec';
-		else v.quant = 'washasym';
-		end
+		v.quant = 'ec';
 	else
 		v.cl_id = vs(4);
 		v.file = 'mEFWburstR';
@@ -362,6 +360,31 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.prop = {'Vector','Vector'};
 	v.fluc = {'Waveform','Fluctuation_Level'};
 	v.com = 'Ez=0 by definition (not measured).';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Spin fits of 2 omega for p32
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^w2W[1-4]p32$')==1
+	v.data = 1;
+	
+	v.frame = 'sc';
+	v.file = 'mEDSI';
+	v.quant = 'dies';
+	v.cl_id = vvs(4);
+	v.inst = 'EFW';
+	v.sig = 'E';
+	v.sen = 32;
+	v.cs = 'ISR2';
+	v.rep = 'xy';
+	v.units =  'mV/m';
+	v.si_conv = '1.0e-3>V m^-1';
+	v.size = 2;
+	v.name = 'E_2omega_ISR2';
+	v.labels = 'E2w';
+	v.label_1 = '"Ex", "Ey"';
+	v.col_labels = {'x','y'};
+	v.rep_1 = '"x", "y"';
+	v.field_name = 'Electric field 2 omega';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Despun full resolution E
