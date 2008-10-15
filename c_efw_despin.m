@@ -58,7 +58,7 @@ if nargin >= 3,
     ref_frame='wec';
    if size(coef,1) == 1,
     ic=coef;
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     clear coef;
     eval(irf_ssub('coef=c?;',ic));
     if nargin == 4
@@ -80,11 +80,11 @@ if nargin >= 3,
     coef=[[1 0 0];[1 0 0]];
   elseif strcmp(coef,'efw'),
     ref_frame='wec';
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     eval(irf_ssub('coef=c?;',ic));
   elseif strcmp(coef,'efw_b'),
     ref_frame='wec';
-    [c1,c2,c3,c4]=c_efw_calib(es(1,1));
+    [c1,c2,c3,c4]=c_efw_calib(es(1,1)); %#ok<NASGU>
     eval(irf_ssub('coef=c?;',ic));
     coef(1,2)=mean(es(:,4));
     coef(2,2)=mean(es(:,3));
@@ -100,7 +100,7 @@ if nargin >= 3,
 end
 
 if numel(phase)==1, % load phase from isdat database
-  ic=phase;phase=[];disp(['load phase for sc' num2str(ic)]);
+  ic=phase;disp(['load phase for sc' num2str(ic)]);
   start_time=fromepoch(es(1,1)); % time of the first point
   Dt=es(end,1)-es(1,1)+1;
   DB_S = c_ctl(0,'isdat_db');
@@ -128,8 +128,8 @@ phc_coef=polyfit(ph(1:2,1),phc,1);
 for j=1:floor(log10(length(ph(:,1))))
  ii=10^j;
  dp=ph(ii,2)-mod(polyval(phc_coef,ph(ii,1))*180/pi,360);
- dpm=[dp dp-360 dp+360];in=find(abs(dpm)<180);
- dph=dpm(in);
+ dpm=[dp dp-360 dp+360];
+ dph=dpm(abs(dpm)<180);
  phc_coef(1)=phc_coef(1)+dph*pi/180/ph(ii,1);
 end
 %dphc=exp(1i*ph(:,2)/180*pi)-exp(1i*polyval(phc_coef,ph(:,1)));
