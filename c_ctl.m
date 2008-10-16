@@ -6,6 +6,7 @@ function out=c_ctl(varargin)
 % c_ctl(cl_id,ctl_name) % equvalent to get
 % c_ctl('list',[sc_list])
 % c_ctl('load_ns_ops',[dir])
+% c_ctl('load_man_int',[dir])
 % c_ctl('save',[dir])
 % c_ctl('set',[sc_list],ctl_name,ctl_val)
 % c_ctl(sc_list,ctl_name,value,[ctl_name1,value1...]) % equvalent to set
@@ -44,6 +45,7 @@ if ischar(args{1})
 				% init 
 				% NOTE: this is the place to initialize defaults
 				def_ct.ns_ops = [];
+				def_ct.man_int = [];
 				def_ct.ang_lim = 10;	% algle limit for E.B=0
 				def_ct.rm_whip = 1;		% remove times with WHI pulses
 				def_ct.probe_p = 34;	% default probe pair to use
@@ -117,6 +119,33 @@ if ischar(args{1})
 					
 					% remove lines with undefined dt
 					c_ct{j}.ns_ops(find(c_ct{j}.ns_ops(:,2)==-157),:) = [];
+				else irf_log('load',['file ' f_name ' not found'])
+				end
+			catch
+				disp(lasterr)
+			end
+		end
+		
+   elseif strcmp(args{1},'load_man_int')
+		global c_ct
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+		end
+		
+		if nargin>1, d = args{2};
+		else d = '.';
+		end
+		
+		for j=1:4
+			try 
+				f_name = [d '/QRecord_c' num2str(j) '.dat'];
+				if exist(f_name,'file')
+					c_ct{j}.man_int = load(f_name,'-ascii');
+					
+					% remove lines with undefined dt
+					c_ct{j}.man_int(find(c_ct{j}.man_int(:,2)==-157),:) = [];      % TODO: Is this valid for man_int as well?
 				else irf_log('load',['file ' f_name ' not found'])
 				end
 			catch
@@ -237,6 +266,8 @@ function c_ctl_usage
 	disp('  c_ctl(''init'',''/path/to/alternative_mcctl.mat'')')
 	disp('  c_ctl(''load_ns_ops'')')
 	disp('  c_ctl(''load_ns_ops'',''/path/to/ns_ops_cN.dat/'')')
+	disp('  c_ctl(''load_man_int'')')
+	disp('  c_ctl(''load_man_int'',''/path/to/QRecord_cN.dat/'')')
 	disp('  c_ctl(''save'')')
 	disp('  c_ctl(''save'',''/path/to/mcctl.mat/'')')
 	disp('  c_ctl(''save'',''/path/to/alternative_mcctl.mat'')')

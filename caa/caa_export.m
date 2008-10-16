@@ -186,7 +186,7 @@ if strcmp(caa_vs,'E')
 	
 	% Extend data array to accept bitmask and quality flag (2 columns at the end)
 	data = [data zeros(size(data, 1), 2)];
-   data(:, end) = 9;    % Default quality column to best quality, i.e. good data/no problems.
+   data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
    quality_column = size(data, 2);
    bitmask_column = quality_column - 1;
 	

@@ -16,16 +16,9 @@ function result = caa_set_bitmask_and_quality(result, time_int, bitmask, quality
 % Example:
 %   E_WAKE = caa_set_bitmask_and_quality(diEs1p34, LOWAKE1p34, 2048, 6);
 %
-
-% ----------------------------------------------------------------------------
-% <milu@irfu.se> wrote this file.  It is a derivative work from Yuri's 
-% file caa_rm_blankt.m, which carried the following text.   Mikael Lundberg
+%  Author:     Mikael Lundberg, Swedish Institute of Space Physics, <milu@irfu.se>
 %
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
+% $Id$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.
@@ -49,7 +42,6 @@ if fs <= 0
    return
 end
 
-%disp('set_bm_and_q'), keyboard
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Set bitmask and quality factors for given intervals.
 
@@ -75,7 +67,6 @@ for num = 1:size(time_int, 1)    % Set for each time interval in turn.
    row_index = (problem_start >= data_time_lower & problem_start < data_time_upper) | ...
                (problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
                (problem_start <= data_time_lower & problem_stop >= data_time_upper);
-%   row_index = result(:, 1) >= time_int(num, 1) & result(:, 1) <= time_int(num, 2);
    
    
    % Mask the bits together, keeping any previously set bits.
