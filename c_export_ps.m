@@ -71,6 +71,8 @@ if nargin<1
 	if isfield(ud,'t_start_epoch'), st=ud.t_start_epoch;
 	else error('please specify ts')
 	end
+else
+	if ischar(st), st = iso2epoch(st); end
 end
 
 for cl_id=sc_list
