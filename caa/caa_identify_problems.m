@@ -114,9 +114,9 @@ QUALITY_MANUAL_INTERVAL          =  1;    % NOTE: Not used! Instead read from fi
 QUALITY_SINGLE_PROBE_PAIR        =  1;    % NOTE: Applies to L2 only.
 QUALITY_ASYMMETRIC_MODE          =  2;    % NOTE: Applies to L2 only.
 QUALITY_SOLAR_WIND_WAKE          =  3;
-QUALITY_LOBE_WAKE                =  0;
-QUALITY_PLASMASPHERE_WAKE        =  0;
-QUALITY_WHISPER_OPERATING        =  3;
+QUALITY_LOBE_WAKE                =  1;
+QUALITY_PLASMASPHERE_WAKE        =  1;
+QUALITY_WHISPER_OPERATING        =  2;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
