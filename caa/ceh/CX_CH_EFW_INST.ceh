@@ -1,3 +1,6 @@
+!
+! $Id$
+!
 START_META     =   INSTRUMENT_NAME
    ENTRY       =   "EFWXXX"
 END_META       =   INSTRUMENT_NAME
