@@ -721,7 +721,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~fsamp, error('no sampling frequency'),end
 			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-			if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
+			if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
 			signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
