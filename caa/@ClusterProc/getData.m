@@ -270,10 +270,12 @@ elseif strcmp(quantity,'dies')
 	end
 	
 	p12 = 12; e12 = []; e34 =[];
-	n_ok = 0;
+	n_ok = 0; p12_ok = 0;
 	corrected_raw_data_p12 = 1;
 	corrected_raw_data_p34 = 1;
+	
 	for probe = [12,32,34]
+		if probe == 32 && p12_ok, continue, end
 		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
 			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
@@ -289,6 +291,7 @@ elseif strcmp(quantity,'dies')
 		else
 			irf_log('proc',irf_ssub('Using corrected data wcE?p!',cl_id,probe))
 		end
+		if probe == 12, p12_ok = 1; end
 		n_ok = n_ok + 1;
 		
 		if probe==32
