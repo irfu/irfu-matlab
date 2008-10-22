@@ -39,6 +39,8 @@ for col=2:ncol
 		out(j,col) = w_ave(dtmp(j:j+6));
 	end
 end
+% Make sure we do return matrix of the same size
+out = out(ind,:);
 
 function av = w_ave(x)
 %m = [.1 .25 .3 .25 .1];
