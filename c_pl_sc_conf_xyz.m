@@ -1,4 +1,4 @@
-function h=c_pl_sc_conf_xyz(time,coord_sys);
+function h=c_pl_sc_conf_xyz(time,coord_sys)
 %C_PL_SC_CONF_XYZ   Plot the configuration of CLuster in XYZ coordinates
 %
 %   h = C_PL_SC_CONF_XYZ;
@@ -22,7 +22,12 @@ if strcmp(action,'initialize'),
   if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
   ok=c_load('R?');
   if  min(ok) == 1,
-      c_eval('r?=R?;clear R?;');
+      switch coord_label
+          case 'GSE'
+              c_eval('r?=R?;clear R?;');
+          case 'GSM'
+              c_eval('r?=irf_gse2gsm(R?);clear R?;');
+      end
   else
       irf_log('fcal','No position data available');return;
   end
@@ -53,9 +58,13 @@ if strcmp(action,'initialize'),
   h(8)=subplot(4,2,8);axis off;
 
   axes(h(4));
+  plot(0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
+  text(0.03,.3,'C1');text(.23,.3,'C2');text(.43,.3,'C3');text(.63,.3,'C4');
+  axis off;
+  
   ht=irf_pl_info(['c_pl_sc_conf_xyz() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
-  htime=irf_pl_info(['Cluster configuration\newline ' epoch2iso(time,1)],gca,[0,.5 ]);set(htime,'fontsize',12); 
-
+  htime=irf_pl_info(['Cluster configuration\newline ' epoch2iso(time,1)],gca,[0,.7 ]);set(htime,'fontsize',12); 
+  
 
  eval(eval_figuserdata);
  set(figNumber,'UserData',figuserdata);
@@ -76,34 +85,35 @@ elseif strcmp(action,'plot'),
 
 	%%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
   axes(h(1));
-    plot(XRe1(2),XRe1(4),'ks', XRe2(2),XRe2(4),'rd', XRe3(2),XRe3(4),'go', XRe4(2),XRe4(4),'bv');
+    plot(XRe1(2),XRe1(4),'ks', XRe2(2),XRe2(4),'rd', XRe3(2),XRe3(4),'go', XRe4(2),XRe4(4),'bv','LineWidth',1.5);
     xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] '  coord_label]);
     grid on;
     set(gca,'xdir','reverse')
 %  axes(h(1));      title(titlestr);
   axes(h(2));
-    plot(XRe1(3),XRe1(4),'ks', XRe2(3),XRe2(4),'rd', XRe3(3),XRe3(4),'go', XRe4(3),XRe4(4),'bv');
+    plot(XRe1(3),XRe1(4),'ks', XRe2(3),XRe2(4),'rd', XRe3(3),XRe3(4),'go', XRe4(3),XRe4(4),'bv','LineWidth',1.5);
     xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
     grid on;
   axes(h(3));
-    plot(XRe1(2),XRe1(3),'ks', XRe2(2),XRe2(3),'rd', XRe3(2),XRe3(3),'go', XRe4(2),XRe4(3),'bv');
+    plot(XRe1(2),XRe1(3),'ks', XRe2(2),XRe2(3),'rd', XRe3(2),XRe3(3),'go', XRe4(2),XRe4(3),'bv','LineWidth',1.5);
     xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
-    grid on;
+    grid on;   
     set(gca,'xdir','reverse')
     set(gca,'ydir','reverse')
+
     
   axes(h(5));
-    plot(x1(2),x1(4),'ks', x2(2),x2(4),'rd', x3(2),x3(4),'go', x4(2),x4(4),'bv');
+    plot(x1(2),x1(4),'ks', x2(2),x2(4),'rd', x3(2),x3(4),'go', x4(2),x4(4),'bv','LineWidth',1.5);
     xlabel(['X [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
     set(gca,'xdir','reverse')
 %  axes(h(1));      title(titlestr);
   axes(h(6));
-    plot(x1(3),x1(4),'ks', x2(3),x2(4),'rd', x3(3),x3(4),'go', x4(3),x4(4),'bv')
+    plot(x1(3),x1(4),'ks', x2(3),x2(4),'rd', x3(3),x3(4),'go', x4(3),x4(4),'bv','LineWidth',1.5)
     xlabel(['Y [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
   axes(h(7));
-    plot(x1(2),x1(3),'ks', x2(2),x2(3),'rd', x3(2),x3(3),'go', x4(2),x4(3),'bv')
+    plot(x1(2),x1(3),'ks', x2(2),x2(3),'rd', x3(2),x3(3),'go', x4(2),x4(3),'bv','LineWidth',1.5)
     xlabel(['X [km] ' coord_label]);ylabel(['Y [km] ' coord_label]);
     grid on;axis([-drref drref -drref drref]);
     set(gca,'xdir','reverse')    
