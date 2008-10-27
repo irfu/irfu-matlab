@@ -146,8 +146,8 @@ variables=[epoch_variable var_name];
 DATA = cdfread(cdf_file, 'VARIABLES', variables);
 
 temp=struct([DATA{:,1}]);
-t=[temp.date];t=t(:);
-t=(t-62167219200000)/1000;
+t = [temp.date]; t = t(:);
+t = (t-62167219200000)/1000; %#ok<NASGU>
 
 for k=2:numel(variables)
   clear var;
@@ -161,7 +161,12 @@ for k=2:numel(variables)
 		  if strcmp(variables{k},cdf_file_info.VariableAttributes.FILLVAL{j,1})
 			  %disp([variables{k} ' : FILLVAL ' ...
 			  %		num2str(cdf_file_info.VariableAttributes.FILLVAL{j,2})])
-			  var( var == cdf_file_info.VariableAttributes.FILLVAL{j,2} ) = NaN;
+			  if ischar(cdf_file_info.VariableAttributes.FILLVAL{j,2})
+				  fill_val = str2double(cdf_file_info.VariableAttributes.FILLVAL{j,2});
+			  else
+				  fill_val = cdf_file_info.VariableAttributes.FILLVAL{j,2};
+			  end
+			  var( var == fill_val ) = NaN;
 		  end
 	  end
   end
