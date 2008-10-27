@@ -724,7 +724,13 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~fsamp, error('no sampling frequency'),end
 			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
-			if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
+			
+			% Always remove Whisper when we use 180Hz filter
+			if (fsamp == 450) || ...
+					( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
+					( flag_rmwhip && flag_rmwhip_force )
+				problems = [problems '|whip'];  %#ok<NASGU>
+			end
 			signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
