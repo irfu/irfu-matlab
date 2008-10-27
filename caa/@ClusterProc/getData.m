@@ -2218,10 +2218,6 @@ elseif strcmp(quantity,'vce')
 		irf_log('load','Please run ''vcis'' first (mCIS missing)')
 		data = []; cd(old_pwd); return
 	end
-	if ~exist('./mBPP.mat','file')
-		irf_log('load','Please run ''b'' first (mBPP missing)')
-		data = []; cd(old_pwd); return
-	end
 
 	CIS = load('mCISR'); %#ok<NASGU>
 	% Load BPP. We use BPP for EDI as it must be a rather approximation
