@@ -1,8 +1,8 @@
-function v=c_v(t);
+function v=c_v(t,coord_sys)
 %C_V   Calculate velocity from timing between 4 spacecraft
 %
-% v=c_v(t);
-% dt=c_v(v);
+% v=c_v(t,[coord_sys]);
+% dt=c_v(v,[coord_sys]);
 %
 % Calculate velocity from timing between 4 spacecraft
 % or calculate timing from the velocity
@@ -10,15 +10,18 @@ function v=c_v(t);
 % v=[t vx vy vz]; t in isdat_epoch, v in GSE ref frame,
 % dt=[0 t2-t1 t3-t1 t4-t1];
 %
+% coord_sys='GSM' - when calculate in GSM reference frame 
+%
 % $Id$
 
 sc_list=1:4;
+if nargin==1, coord_sys='GSE'; end 
 
-if t(2) > 1e8, flag='v_from_t'; else, flag='dt_from_v';v=t;t=v(1);end
+if t(2) > 1e8, flag='v_from_t'; else flag='dt_from_v';v=t;t=v(1);end
 
 if exist('./mR.mat','file'),
     load mR R1 R2 R3 R4 V1 V2 V3 V4;
-else,
+else
     disp('loading position from isdat');
 		DB_S = c_ctl(0,'isdat_db');
     db = Mat_DbOpen(DB_S);
@@ -31,6 +34,15 @@ else,
        eval(irf_ssub('V?=[double(tv) double(data)''];',ic));clear tv data;
     end
 		Mat_DbClose(db);
+end
+
+switch coord_sys
+    case 'GSE'
+        % do nothing
+    case 'GSM'
+        c_eval('R?=irf_gse2gsm(R?);V?=irf_gse2gsm(V?);');
+    otherwise
+        % do nothing, i.e. assume GSE
 end
 
 if strcmp(flag,'v_from_t'),
@@ -48,7 +60,7 @@ if strcmp(flag,'v_from_t'),
   disp([ datestr(datenum(fromepoch(t(1))))])
   strdt=['dt=[' , num2str(dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
   vn=irf_norm(v);
-  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];
+  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
   disp(strdt);disp(strv);
 elseif strcmp(flag,'dt_from_v'),
   t_center=0.5*t(1)+0.5*t;
@@ -60,7 +72,7 @@ elseif strcmp(flag,'dt_from_v'),
   % print result
   disp([ datestr(datenum(fromepoch(t(1))))])
   vn=irf_norm(v);
-  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s GSE'];
+  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
   strdt=['dt=[' , num2str(dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
   disp(strv);  disp(strdt);
   v=dt; % output variable is v
