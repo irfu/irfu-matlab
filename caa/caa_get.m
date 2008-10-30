@@ -1,4 +1,4 @@
-function data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
+function [data, ok] = caa_get(iso_t,dt,cl_id,var_name,ops_s,varargin)
 %CAA_GET  read data from caa Matlab files
 %
 % data = caa_get(start_t,dt/stop_t,cl_id,var_name,ops_s)
@@ -12,18 +12,32 @@ function data = caa_get(iso_t,dt,cl_id,var_name,ops_s)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-DP = '/data/caa/l1';
+DP = '/data/caa/l1';    % TODO: Add option to change base dir via input param! (ML)
 data = [];
+ok = 0;
 
 NEED_SAME_TM = 0;
 DO_MEAN = 0;
+HAVE_LOAD_ARGS = 0;
 
 if nargin > 4
+   if nargin > 5
+      args = varargin;
+   end
 	switch ops_s
 		case 'need_same_tm'
 			NEED_SAME_TM = 1;
 		case 'mean'
 			DO_MEAN = 1;
+		case 'base_dir'
+		   DP = args{1};
+	   case 'load_args'
+	      HAVE_LOAD_ARGS = 1;
+	      load_args = args;
+	      eval_str = 'var_name,cl_id';
+	      for k=1:numel(load_args)
+	         eval_str = [eval_str ',load_args{' num2str(k) '}'];
+	      end
 		otherwise
 			irf_log('fcal','unknown option')
 	end
@@ -87,7 +101,11 @@ if isempty(mode_list), cd(old_pwd), return, end
 dts = [mode_list.dt]; dts = dts(ii);
 for j = ii;
 	cd(mode_list(j).dir);
-	[ok, tt] = c_load(var_name,cl_id);
+	if HAVE_LOAD_ARGS
+	   eval(['[ok, tt] = c_load(' eval_str ');']);
+	else
+	   [ok, tt] = c_load(var_name,cl_id);
+	end
 	if ~ok || isempty(tt), continue, end
 	% Remove NaN times
 	% TODO: times must never be NaN.
@@ -125,5 +143,6 @@ for j = ii;
 end
 
 if ~isempty(data), data = irf_tlim(data,st +[0 dt]); end
+if nargout > 1, ok = ~isempty(data); end
 
 cd(old_pwd)

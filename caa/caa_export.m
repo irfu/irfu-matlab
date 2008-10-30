@@ -27,10 +27,11 @@ status = 0;
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '3';
 
-if nargin<8, st = []; dt=[]; end
-if nargin<6, sp='.'; end
-if nargin<5, DATA_VERSION = '02'; end
-if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
+if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get ! (ML)
+% The above line nullifies these:
+%if nargin<6, sp='.'; end
+%if nargin<5, DATA_VERSION = '02'; end
+%if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
@@ -95,7 +96,9 @@ if strcmp(caa_vs, 'DER')
    probe_pairs = probe_pairs(logical(ok));   % Keep list of probe pairs actually loaded.
    vs = irf_ssub(vs, probe_pairs(1));
 else
-   [ok,data] = c_load(vs);
+%   [ok,data] = c_load(vs);
+   [data, ok] = caa_get(st, dt, cl_id, vs);
+%   keyboard
 end
 if all(~ok) || isempty(data)
 	irf_log('load', ['No ' vs])
@@ -144,7 +147,8 @@ if ~isempty(st) && ~isempty(dt)
 		   irf_log('save', 'Saving empty subinterval')
 	   end
    else
-	   data = irf_tlim(data,t_int);
+%      keyboard
+	   data = irf_tlim(data,t_int);  % NOTE: Superfluous when using caa_get above. (ML)
 	   if isempty(data)
 		   irf_log('save', 'Saving empty subinterval')
 	   end 
@@ -189,7 +193,7 @@ if strcmp(caa_vs,'E')
    data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
    quality_column = size(data, 2);
    bitmask_column = quality_column - 1;
-	
+%	keyboard
 	% Identify and flag problem areas in data with bitmask and quality factor:
 	data = caa_identify_problems(data, lev, dsc.sen, cl_id, bitmask_column, quality_column);
 	
@@ -327,11 +331,6 @@ elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	dsc.fluc = {'Waveform'};
 	
 elseif strcmp(caa_vs, 'DER')  % Do magic on ADC offsets
-   % Debugging:
-%   indexes1 = [1:10 15:20 33:38 45 47 49 63:108 123:150];
-%   indexes2 = [5:10 18:22 27:40 45:60 66:94 104:140];
-%   data1 = data1(indexes1, :); data2 = data2(indexes2, :);
-%   disp('Testing data gap handling in DER data'), keyboard
    
    start_time = min( min(data1(:,1)), min(data2(:,1)) );
    timestamp = start_time:4:t_int(2);
@@ -383,22 +382,7 @@ buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_INST.ceh"\n',cl_id));
 buf = sprintf('%s%s',buf,irf_ssub('include = "C?_CH_EFW_L!_$.ceh"\n', ...
                cl_id, lev, caa_vs)); % Change to 'E', 'P', etc.!
 buf = pmeta(buf,'FILE_TYPE','cef');
-%buf = pmeta(buf,'DATA_TYPE','CP');
-%buf = pmeta(buf,'INSTRUMENT_NAME','EFW?',cl_id);
-%buf = pmeta(buf,'INSTRUMENT_DESCRIPTION','EFW Experiment on Cluster C?',cl_id);
-%buf = pmeta(buf,'INSTRUMENT_CAVEATS','*C?_CQ_EFW_CAVEATS',cl_id);
-%buf = pmeta(buf,'DATASET_ID',DATASET_ID,cl_id);
-%buf = pmeta(buf,'DATASET_TITLE',dsc.field_name{1});
-%buf = pmeta(buf,'DATASET_DESCRIPTION',...
-%	{'This dataset contains measurements of the', ...
-%	[DATASET_DESCRIPTION_PREFIX dsc.field_name{1}],... 
-%	irf_ssub('from the EFW experiment on the Cluster C? spacecraft',cl_id)});
 buf = pmeta(buf,'DATASET_VERSION',EFW_DATASET_VERSION);
-%buf = pmeta(buf,'TIME_RESOLUTION',TIME_RESOLUTION);
-%buf = pmeta(buf,'MIN_TIME_RESOLUTION',MIN_TIME_RESOLUTION);
-%buf = pmeta(buf,'MAX_TIME_RESOLUTION',MAX_TIME_RESOLUTION);
-%buf = pmeta(buf,'PROCESSING_LEVEL',PROCESSING_LEVEL);
-%buf = pmeta(buf,'DATASET_CAVEATS',['*C?_CQ_EFW_' caa_vs],cl_id);
 buf = pmeta(buf,'LOGICAL_FILE_ID',file_name);
 buf = pmeta(buf,'VERSION_NUMBER',DATA_VERSION);
 buf = sprintf('%s%s',buf,'START_META     =   FILE_TIME_SPAN\n');
@@ -410,78 +394,8 @@ buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
-%buf = pmeta(buf, 'FILE_CAVEATS', ...
-%   ['For offsets see DER dataset for this interval. Probes: ' dsc.sen]);
 buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
 
-%buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-%buf = sprintf('%s%s',buf,'!                   Variables                         !\n');
-%buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
-%buf = sprintf('%s%s',buf,['START_VARIABLE    = time_tags__' DATASET_ID '\n']);
-%buf = sprintf('%s%s',buf,'  VALUE_TYPE      = ISO_TIME\n');
-%buf = sprintf('%s%s',buf,['  DELTA_PLUS      = ' num2str(TIME_RESOLUTION/2) '\n']);
-%buf = sprintf('%s%s',buf,['  DELTA_MINUS     = ' num2str(TIME_RESOLUTION/2) '\n']);
-%buf = sprintf('%s%s',buf, '  FILLVAL         = 9999-12-31T23:59:59Z\n');
-%buf = sprintf('%s%s',buf,'  LABLAXIS        = "UT"\n');
-%buf = sprintf('%s%s',buf,'  FIELDNAM        = "Universal Time"\n');
-%buf = sprintf('%s%s',buf,['END_VARIABLE      = time_tags__' DATASET_ID '\n!\n']);
-
-if 0     % commenting out the entire for-loop
-for j=1:v_size
-   disp('loop over variables'), keyboard
-	buf = sprintf('%s%s',buf,['START_VARIABLE      = ' dsc.name{j} '__' DATASET_ID '\n']);
-	%buf = sprintf('%s%s',buf,'  PARAMETER_TYPE    = "Data"\n');
-	buf = sprintf('%s%s',buf,['  PARAMETER_TYPE    = "' dsc.ptype{j} '"\n']);
-	buf = sprintf('%s%s',buf,['  SIZES             = ' num2str(dsc.size(j)) '\n']);
-	%buf = sprintf('%s%s',buf,'  VALUE_TYPE        = FLOAT\n');
-	buf = sprintf('%s%s',buf,['  VALUE_TYPE        = ' dsc.valtype{j} '\n']);
-	buf = sprintf('%s%s',buf,['  ENTITY            = "' dsc.ent{j} '"\n']);
-	buf = sprintf('%s%s',buf,['  PROPERTY          = "' dsc.prop{j} '"\n']);
-	if ~isempty(dsc.fluc{j})
-		buf = sprintf('%s%s',buf,['  FLUCTUATIONS      = "' dsc.fluc{j} '"\n']);
-	end
-	buf = sprintf('%s%s',buf,['  CATDESC           = "' dsc.field_name{j} '"\n']);
-	buf = sprintf('%s%s',buf,['  FIELDNAM          = "' dsc.field_name{j} '"\n']);
-	if ~isempty(dsc.si_conv{j})
-		buf = sprintf('%s%s',buf,['  SI_CONVERSION     = "' dsc.si_conv{j} '"\n']);
-	else
-		buf = sprintf('%s%s',buf,['  SI_CONVERSION     = "1>' dsc.units{j} '"\n']);
-	end
-	buf = sprintf('%s%s',buf,['  UNITS             = "' dsc.units{j} '"\n']);
-	%buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
-	if strcmp(dsc.valtype{j},'FLOAT')
-      buf = sprintf('%s%s',buf,['  FILLVAL           = ' num2str(FILL_VAL,'%8.3f') '\n']);
-   else
-      buf = sprintf('%s%s',buf,'  FILLVAL           = 0\n');
-   end
-	%buf = sprintf('%s%s',buf,['  QUALITY           = ' num2str(QUALITY) '\n']);
-	buf = sprintf('%s%s',buf,['  QUALITY           = ' ...
-	               irf_ssub('E_quality__C?_CP_EFW_L!_E') '\n']);
-%	buf = sprintf('%s%s',buf,'  SIGNIFICANT_DIGITS= 6 \n');
-   buf = sprintf('%s%s',buf,['  SIGNIFICANT_DIGITS= ' num2str(dsc.sigdig(j)) '\n']);
-	if ~isempty(dsc.com) && j==1
-		buf = sprintf('%s%s',buf,['  PARAMETER_CAVEATS = "' dsc.com '"\n']);
-	end
-	if ~strcmp(dsc.cs{j},'na')
-		buf = sprintf('%s%s',buf,['  COORDINATE_SYSTEM = "' dsc.cs{j} '"\n']); 
-	end
-	if isfield(dsc,'frv')
-		if ~isempty(dsc.frv{j})
-			buf = sprintf('%s%s',buf,['  FRAME_VELOCITY    = "' dsc.frv{j} '"\n']);
-		end
-	end
-	if isfield(dsc, 'tensor_order') && dsc.tensor_order{j} > 0
-	   buf = sprintf('%s%s',buf,['  TENSOR_ORDER      = "' dsc.tensor_order{j} '"\n']);
-	end
-	if dsc.size(j) > 1
-		buf = sprintf('%s%s',buf,['  REPRESENTATION_1  = ' dsc.rep_1{j} '\n']);
-		buf = sprintf('%s%s',buf,['  LABEL_1           = ' dsc.label_1{j} '\n']);
-	end
-	buf = sprintf('%s%s',buf,['  LABLAXIS          = "' dsc.labels{j} '"\n']);
-	buf = sprintf('%s%s',buf,['  DEPEND_0          = time_tags__' DATASET_ID '\n']);
-	buf = sprintf('%s%s',buf,['END_VARIABLE        = ' dsc.name{j} '__' DATASET_ID '\n!\n']);
-end
-end % if-statement commenting out the for-loop
 
 buf = sprintf('%s%s',buf,'!\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
@@ -519,7 +433,6 @@ if ~isempty(data)
     end
     format=ctranspose(format);
 	
-%	s = cefprint_mx([file_name ext_s],data);
    s = cefprint_mx([file_name ext_s],data, format);
 	if s~=0
 		if s==1, msg = 'problem writing CEF data';

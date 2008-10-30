@@ -45,7 +45,7 @@ if isstr(probe) & (regexp(probe, '^([1-4]|12|32|34|1234|3234)$') ~= 1)
    error('Wrong probe combination.')
 %elseif isnumeric(sensor) && (regexp(num2str(sensor), '^([1-4]|12|32|34|1234|3234)$') ~= 1)
 %   error('Wrong probe combination.')
-elseif ~( isa(probe, 'char') || isa(probe, 'numeric') )
+elseif ~( isa(probe, 'char') ) %|| isa(probe, 'numeric') )
    error('Wrong probe format.')
 end
 

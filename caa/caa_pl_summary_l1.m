@@ -34,6 +34,8 @@ saveJPG = 0;
 fullscale = 0;
 plotspec = 1;
 usextra = 0;
+data_level = 3;
+QUALITY = 3;
 
 int_s = realmax;
 int_e = -1;
@@ -191,7 +193,15 @@ for cli=1:4
 			% Load Es
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
-				
+			   
+			   % Extend data array to accept bitmask and quality flag (2 columns at the end)
+			   es_tmp = [es_tmp zeros(size(es_tmp, 1), 2)];
+			   es_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
+			   quality_column = size(es_tmp, 2);
+			   bitmask_column = quality_column - 1;
+			   % Identify and flag problem areas in data with bitmask and quality factor:
+            es_tmp = caa_identify_problems(es_tmp, data_level, num2str(pp), cli, bitmask_column, quality_column);
+			   
 				% Delta offsets
 				Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
 				if ~isempty(Del_caa)
@@ -301,8 +311,8 @@ else set(gcf,'position',[7   159   790   916])
 end
 clf
 
-h = 1:6;
-for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
+h = 1:7;
+for pl=1:7, h(pl) = irf_subplot(7,1,-pl); end
 
 figure_start_epoch(st);
 
@@ -332,18 +342,23 @@ for cli=1:4
 	set(gca,'XTickLabel',[])
 end
 
+% Plot quality
+plot_quality(h(5), {es1, es2, es3, es4}, st)
+irf_zoom(st + [0 dt], 'x', h(5))
+
+
 % Plot P
-axes(h(5))
+axes(h(6))
 c_pl_tx('p?')
 ylabel('P L2 [-V]')
 a = get(gca,'YLim');
 if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
-irf_zoom(st +[0 dt],'x',h(5))
+irf_zoom(st +[0 dt],'x',h(6))
 
 if dt>0 
-	plot_intervals(h(6),{in1,in2,in3,in4},st)
-	irf_zoom(st +[0 dt],'x',h(6))
-	if ~isempty(r), add_position(h(6),r), end
+	plot_intervals(h(7),{in1,in2,in3,in4},st)
+	irf_zoom(st +[0 dt],'x',h(7))
+	if ~isempty(r), add_position(h(7),r), end
 end
 
 orient(75,'tall')
@@ -358,7 +373,7 @@ end % if plotspec
 if dt>0
 	TAV = 180;
 	ndata = ceil(dt/TAV);
-	t = st + (1:ndata)*TAV - TAV/2; t = t'; %#ok<NASGU>
+	t = st + (1:ndata)*TAV - TAV/2; t = t'; %#ok<NASGU>   '
 	c_eval('if ~isempty(edi?), edi?_tmp=irf_resamp(edi?,t,''fsample'',1/TAV,''thresh'',1.3); if size(edi?,1)>1,edi?=irf_tlim(edi?_tmp,[edi?(1,1) edi?(end,1)]); else edi?=edi?_tmp; end, clear edi?_tmp, end')
 end
 % Limit EDI
@@ -504,6 +519,65 @@ hold(h,'off')
 set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
 ylabel(h,'proc intrerv/SC')
 grid(h,'on')
+
+
+function plot_quality(h, dataset, st)
+% Plot quality factor
+   
+   linecolor = 'yrgb';
+   cli_pos = [4 3 2 1];
+   
+   axes(h)
+   t_start_epoch = figure_start_epoch(st);
+   
+   hold(h,'on')
+   for cli=1:4
+   	data = dataset{cli};
+   	if isempty(data), continue, end
+      quality = data(:, end);
+      indexes = [];
+      start_ind = 1;
+      finished = 0;
+
+   	while ~finished
+   	   if isnan(quality(start_ind))
+   	      next_ind = find(~isnan(quality(start_ind:end)), 1);
+   	   else
+   	      next_ind = find(quality(start_ind:end) ~= quality(start_ind), 1);
+   	   end
+   	   if isempty(next_ind)
+            next_ind = length(quality(start_ind:end)) + 1;
+            finished = 1;
+         end
+
+   	   end_ind = start_ind + next_ind - 2;
+   	   indexes = [indexes; [start_ind end_ind] quality(start_ind)];
+
+   	   if ~isnan(quality(start_ind))
+            pp = plot([data(start_ind, 1) data(end_ind, 1)] - t_start_epoch, ...
+               [cli_pos(cli) cli_pos(cli)], linecolor(quality(start_ind)+1), ...
+                  'LineWidth', 1);
+         end
+   	   
+   	   start_ind = start_ind + next_ind - 1;
+   	end
+%   	for pl = 1:size(indexes, 1)
+%   	   if ~isnan(indexes(pl, 3))
+%   	      start_time = data(indexes(pl, 1), 1);
+%   	      end_time = data(indexes(pl, 2), 1);
+%   	      pp = plot([start_time, end_time] - t_start_epoch, ...
+%   	         [cli_pos(cli) cli_pos(cli)], linecolor(indexes(pl, 3)+1), 'LineWidth', 2);
+%         end
+%      end
+%      keyboard
+   	
+%      pp = plot([data(:,1), data(:,end)], [cli_pos(cli) cli_pos(cli)], linecolor(cli));
+   end
+   hold(h,'off')
+   set(h,'YLim',[0 5],'YTick',1:4,'YTickLabel',4:-1:1)
+   ylabel(h,'Quality/SC')
+   grid(h,'on')
+
 
 function t_start_epoch = figure_start_epoch(st)
 ud = get(gcf,'userdata');
