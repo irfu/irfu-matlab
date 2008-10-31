@@ -92,7 +92,10 @@ end
 
 % Load data
 if strcmp(caa_vs, 'DER')
-   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
+%   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
+   for k = 1:length(probe_pairs)       % Try loading data for all probe pairs.
+      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pairs(k)));
+   end
    probe_pairs = probe_pairs(logical(ok));   % Keep list of probe pairs actually loaded.
    vs = irf_ssub(vs, probe_pairs(1));
 else
@@ -330,7 +333,8 @@ elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	dsc.prop = {'Probe_Potential'};
 	dsc.fluc = {'Waveform'};
 	
-elseif strcmp(caa_vs, 'DER')  % Do magic on ADC offsets
+% Combine ADC offsets from two probe pairs into one dataset:
+elseif strcmp(caa_vs, 'DER')
    
    start_time = min( min(data1(:,1)), min(data2(:,1)) );
    timestamp = start_time:4:t_int(2);
