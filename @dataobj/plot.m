@@ -102,6 +102,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	funits = getunits(dobj,dep.DEPEND_X{1,1});
 	flab = getlablaxis(dobj,dep.DEPEND_X{1,1});
 	if size(f.data,2) == length(dep.DEPEND_O)
+		if isempty(ax), ax = gca; end
 		h = caa_spectrogram(ax, dep.DEPEND_O, plot_data, f.data(:,1));
 	end
 	ylabel(sprintf('%s [%s]', flab, funits))
