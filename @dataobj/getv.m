@@ -31,5 +31,5 @@ if nvars>0
 	end
 end
 
-error(['No such variable : ' var_s])
-
+disp(['No such variable : ' var_s])
+res = [];

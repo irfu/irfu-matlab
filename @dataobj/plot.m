@@ -92,7 +92,24 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 		
 else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	if dim == 2
-		plot_data = double(data.data)';
+		if data.dim(2)>1
+			
+			% This is a hack for STAFF B
+			if any(any(data.data<0))
+				disp('Data contains negative values!!!')
+				data.data(data.data<0) = NaN;
+			end
+			
+			ndim = data.dim(2);
+			ii = 1:length(dep.DEPEND_O);
+			ii = (ii-1)*ndim;
+			if ~use_comp, comp=1:ndim; end
+			for i=comp
+				plot_data{i} = data.data(:,ii+i)';
+			end
+		else
+			plot_data = double(data.data)';
+		end
 	else
 		error('plotting not implememnted')
 	end
@@ -102,10 +119,56 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	funits = getunits(dobj,dep.DEPEND_X{1,1});
 	flab = getlablaxis(dobj,dep.DEPEND_X{1,1});
 	if size(f.data,2) == length(dep.DEPEND_O)
-		if isempty(ax), ax = gca; end
-		h = caa_spectrogram(ax, dep.DEPEND_O, plot_data, f.data(:,1));
+		if isempty(ax)
+			if isempty(comp), ax = gca; 
+			else
+				for i=1:length(comp), ax(i) = irf_subplot(length(comp),1,-i); end
+			end
+		end
+		
+		lab_2 ='';
+		if ~isempty(dep.DEPEND_X) && size(dep.DEPEND_X,1)>1
+			dep_x_s = dep.DEPEND_X{2,1};
+			dep_x = getv(dobj,dep_x_s);
+			if ~isempty(dep_x)
+				if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
+						&& strcmp(dep.DEPEND_X{2,2},'LABEL_2')
+					reclen=size(dep_x.data,2)/length(dep.DEPEND_O);
+					lab_2 = dep_x.data(:,1:reclen);
+				else
+					error('BAD type for DEPEND_X')
+				end
+			end
+		end
+		
+		text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
+			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+		if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
+		
+		specrec = struct('t',dep.DEPEND_O,'f',f.data(:,1),'f_unit',funits,'p',[]);
+		if isempty(comp)
+			specrec.p = {plot_data};
+			h = caa_spectrogram(ax(1),specrec);
+			if ~isempty(lab_2), lab_2 = [' (' lab_2 ')']; end
+			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
+			add_text(h,text_s);
+		else
+			
+			for i=1:length(comp)
+				specrec.p = plot_data(i);
+				h(i) = caa_spectrogram(ax(i),specrec);
+				if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')']; 
+				else lab_2s = '';
+				end
+				ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
+				if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)]; 
+				else lab_2s = text_s;
+				end
+				add_text(h(i),lab_2s);
+			end
+			set(ax(1:length(comp)-1),'XTickLabel',[])
+		end
 	end
-	ylabel(sprintf('%s [%s]', flab, funits))
 end
 		
 if nargout > 0, res = h; end
