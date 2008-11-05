@@ -620,6 +620,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 						e34(:,1) = p2(:,1);
 						e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
 						p_ok = [p_ok 34]; %#ok<AGROW>
+						eval(irf_ssub('wbE?p!=e34;save_list=[save_list ''wbE?p! ''];',cl_id, 34));
 					end
 				else
 					irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
