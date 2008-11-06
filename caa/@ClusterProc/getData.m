@@ -323,8 +323,17 @@ elseif strcmp(quantity,'dies')
 		dt = double(te - ts); clear te ts1 te1
 		
 		% Guess the sampling frequency
-		fsamp = c_efw_fsample(e34(:,1),'hx');
-		if ~fsamp, error('no sampling frequency'),end
+		fsamp_nom = c_efw_fsample(e34(:,1),'hx');
+		if ~fsamp_nom, error('no sampling frequency'),end
+		
+		% Compute real sampling frequency
+		ndata = round(dt/fsamp_nom);
+		fsamp = dt/ndata;
+		irf_log('proc',sprintf('EFW samp freq diff %.3f mHz',abs(fsamp - fsamp_nom)*1e3))
+		% We allow the diff to be max .1 mHz
+		if abs(fsamp - fsamp_nom) > .0001
+			error('EFW samplig frequency differs too much from nominal')
+		end
 		
 		irf_log('proc','Using new time line for spinfits')
 		t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
@@ -730,7 +739,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if (fsamp == 450) || ...
 					( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
 					( flag_rmwhip && flag_rmwhip_force )
-				problems = [problems '|whip'];  %#ok<NASGU>
+				problems = [problems '|whip'];  %#ok<AGROW,NASGU>
 			end
 			signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
