@@ -164,7 +164,6 @@ if method==1 || method==2
 			spinfit(ind,10) = sfit(5,ind);
 		end
 	end
-	n = n + n_gap;
 else
 	% Turn off warnings for badly conditioned polynomial:
 	warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
