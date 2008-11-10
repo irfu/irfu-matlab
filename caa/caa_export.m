@@ -110,7 +110,8 @@ if all(~ok) || isempty(data)
 end
 d_info = []; ok = 0;
 try
-	[ok, d_info] = c_load([vs '_info'],'var');
+%	[ok, d_info] = c_load([vs '_info'],'var');
+   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
 catch
 	d_info = []; ok = 0;
 end
@@ -230,7 +231,8 @@ if strcmp(caa_vs,'E')
 			% Delta offsets: remove automatic and apply CAA
 			Del_caa = c_efw_delta_off(data(1,1),cl_id);
 			if ~isempty(Del_caa)
-				[ok,Delauto] = c_load('D?p12p34',cl_id);
+%				[ok,Delauto] = c_load('D?p12p34',cl_id);
+            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
 				if ~ok || isempty(Delauto)
 					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
 				else
@@ -243,16 +245,20 @@ if strcmp(caa_vs,'E')
 		% Dsi offsets
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
-			[ok,Ps,msg] = c_load('Ps?',cl_id);
-			if ~ok, irf_log('load',msg), end
+%			[ok,Ps,msg] = c_load('Ps?',cl_id);
+         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
+%			if ~ok, irf_log('load',msg), end
+         if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
 			if caa_is_sh_interval
 				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,[]);
 			else
 				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
 			end
 
-			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
-			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+%			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+         [Ddsi, ok1] = caa_get(st, dt, cl_id, 'Ddsi?'); if ~ok1, Ddsi = dsiof_def; end
+%			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+			[Damp, ok2] = caa_get(st, dt, cl_id, 'Damp?'); if ~ok2, Damp = dam_def; end
 			
 			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
 			else irf_log('calb','Using default DSI offsets')
@@ -285,7 +291,8 @@ if strcmp(caa_vs,'E')
 		
 	end
 	
-	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
+%	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
+   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
 %	if ~isreal(Del)
 %		Del = imag(Del);
 %		% offset is applied to p34
