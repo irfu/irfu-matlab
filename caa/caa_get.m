@@ -138,7 +138,13 @@ for j = ii;
 	end	
 	
 	if isempty(data), data = tt;
-    else data = caa_append_data(data,tt);
+   else
+      try
+         data = caa_append_data(data,tt);
+      catch
+         disp(lasterr)
+         keyboard
+      end
 	end
 end
 
