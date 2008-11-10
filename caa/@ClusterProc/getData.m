@@ -330,8 +330,8 @@ elseif strcmp(quantity,'dies')
 		ndata = round(dt/fsamp_nom);
 		fsamp = dt/ndata;
 		irf_log('proc',sprintf('EFW samp freq diff %.3f mHz',abs(fsamp - fsamp_nom)*1e3))
-		% We allow the diff to be max .1 mHz
-		if abs(fsamp - fsamp_nom) > .0001
+		% We allow the diff to be max .2 mHz
+		if abs(fsamp - fsamp_nom) > .0002
 			error('EFW samplig frequency differs too much from nominal')
 		end
 		
