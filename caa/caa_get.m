@@ -142,8 +142,9 @@ for j = ii;
       try
          data = caa_append_data(data,tt);
       catch
+         disp('!!!!! ERROR: ')
          disp(lasterr)
-         keyboard
+%         keyboard
       end
 	end
 end

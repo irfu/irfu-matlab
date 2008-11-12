@@ -337,7 +337,7 @@ elseif strcmp(quantity,'dies')
 		
 		irf_log('proc','Using new time line for spinfits')
 		t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
-		t_new = t_new';
+		t_new = t_new(:);
 		
 		d_new = zeros(length(t_new),2);
 		d_new(:,1) = ts + t_new;

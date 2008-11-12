@@ -342,27 +342,41 @@ elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
 	
 % Combine ADC offsets from two probe pairs into one dataset:
 elseif strcmp(caa_vs, 'DER')
-   
-   start_time = min( min(data1(:,1)), min(data2(:,1)) );
+
+   if length(probe_pairs) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
+      single_pair_data = [data1 data2];
+      start_time = min( single_pair_data(:,1) );
+   else
+%      start_time = min( min(data1(:,1)), min(data2(:,1)) );
+      start_time = min( min( [data1(:,1) data2(:,1)] ) );
+   end
    timestamp = start_time:4:t_int(2);
    data_out = zeros(length(timestamp), 3) * NaN;
    data_out(:, 1) = timestamp;
 
-   [ind1, ind2] = irf_find_comm_idx(data_out, data1);
-   data_out(ind1, 2) = data1(ind2, 2);
+   if find(probe_pairs == 12 | probe_pairs == 32)
+      [ind1, ind2] = irf_find_comm_idx(data_out, data1);
+      data_out(ind1, 2) = data1(ind2, 2);
+   end
    
-   [ind1, ind2] = irf_find_comm_idx(data_out, data2);
-   data_out(ind1, 3) = data2(ind2, 2);
+   if find(probe_pairs == 34)
+      [ind1, ind2] = irf_find_comm_idx(data_out, data2);
+      data_out(ind1, 3) = data2(ind2, 2);
+   end
    
    data_orig = data;
    clear data;
    data = data_out;
    
    % Extend description to cover data record for two probe pairs:
-   dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
-   dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
-   dsc.sigdig = [dsc.sigdig 6];
-   dsc.size = [dsc.size 1];
+   if length(probe_pairs) > 1
+      dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
+   else
+      dsc.com = sprintf('Probe pair used is p%i', probe_pairs);
+   end
+      dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
+      dsc.sigdig = [dsc.sigdig 6];
+      dsc.size = [dsc.size 1];
    
    clear start_time timestamp ind1 ind2 data_out
 end

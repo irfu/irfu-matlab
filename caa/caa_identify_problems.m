@@ -373,7 +373,7 @@ for probe_id = probe_pair_list
    		   center_time = wake_info(k, 1);      % First column gives position, in time, of wake center.
    		   problem_intervals(k, :) = center_time + [-1 1];  % Interval is 1 sec on either side of center.
    		end
-   		disp('CHECK wake_info (center times) and problem_intervals !!!'), keyboard
+%   		disp('CHECK wake_info (center times) and problem_intervals !!!'), keyboard
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_SOLAR_WIND_WAKE, QUALITY_SOLAR_WIND_WAKE, ...
                bitmask_column, quality_column);

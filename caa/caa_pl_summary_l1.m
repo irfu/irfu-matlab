@@ -193,7 +193,7 @@ for cli=1:4
 			% Load Es
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
-			   
+
 			   % Extend data array to accept bitmask and quality flag (2 columns at the end)
 			   es_tmp = [es_tmp zeros(size(es_tmp, 1), 2)];
 			   es_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
@@ -280,15 +280,15 @@ for cli=1:4
 		if ~isempty(wamp), c_eval('wamp?=wamp;',cli), end, clear wamp
 		if ~isempty(pswake)
 			c_eval('pswake?=pswake;',cli)
-			if ~isempty(es), es = caa_rm_blankt(es,pswake); end
+%			if ~isempty(es), es = caa_rm_blankt(es,pswake); end
 		end
 		clear pswake
 		if ~isempty(lowake)
 			c_eval('lowake?=lowake;',cli)
-			if ~isempty(es), es = caa_rm_blankt(es,lowake); end
+%			if ~isempty(es), es = caa_rm_blankt(es,lowake); end
 		end
 		clear lowake
-		
+
 		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
 		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
@@ -556,7 +556,7 @@ function plot_quality(h, dataset, st)
    	   if ~isnan(quality(start_ind))
             pp = plot([data(start_ind, 1) data(end_ind, 1)] - t_start_epoch, ...
                [cli_pos(cli) cli_pos(cli)], linecolor(quality(start_ind)+1), ...
-                  'LineWidth', 1);
+                  'LineWidth', 3-quality(start_ind)+0.5);
          end
    	   
    	   start_ind = start_ind + next_ind - 1;
