@@ -63,6 +63,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %       rmwake : remove wakes
 %       withwhip : do not remove time intervals with Whisper pulses
 %       rmwhip : remove time intervals with Whisper pulses
+%       rmhbsa : remove saturation due to high bias current
 %       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
 %           compute the offset (affects 'die')
 %       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
@@ -91,6 +92,7 @@ flag_usesaved_adc_off = 1;
 flag_usecaa_del_off = 1;
 flag_edb = 1;
 flag_rmwake = 0;
+flag_rmhbsa = 0;
 sfit_ver = -1;
 correct_sw_wake = 0;
 flag_wash_p32 = 1;
@@ -118,6 +120,8 @@ while have_options
 	case 'rmwhip'
 		flag_rmwhip = 1;
 		flag_rmwhip_force = 1;
+	case 'rmhbsa'
+		flag_rmhbsa = 1;
 	case 'rmwake'
 		flag_rmwake = 1;
 	case 'no_caa_delta'
@@ -391,7 +395,8 @@ elseif strcmp(quantity,'dies')
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
 		% We remove Whisper only if explicitely asked for this by user
-		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW,NASGU>
+		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end
+		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<NASGU>
 		signal = tt; %#ok<NASGU>
 		remove_problems
 		tt = res; %#ok<NODEF>
@@ -739,8 +744,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if (fsamp == 450) || ...
 					( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
 					( flag_rmwhip && flag_rmwhip_force )
-				problems = [problems '|whip'];  %#ok<AGROW,NASGU>
+				problems = [problems '|whip'];
 			end
+			if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<NASGU>
 			signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
@@ -1640,6 +1646,62 @@ elseif strcmp(quantity,'probesa')
 			clear ii res
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HBIASSA - saturation due to high bias current
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
+elseif strcmp(quantity,'hbiassa')
+	save_file = './mEFW.mat';
+	
+	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+	[ok,pha,msg] = c_load('Atwo?',cl_id);
+	if ~ok || isempty(pha)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+	end
+	
+	p12_ok = 0;
+	for probe = [12 32 34]
+		% XXX: this must be changed when c_efw_hbias_satur will have p32
+		if probe == 32, continue, end
+		
+		if probe == 32 && p12_ok, continue, end
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));	
+		if ~ok || isempty(da)
+			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+			continue
+		end
+		if probe == 12, p12_ok = 1; end
+			
+		fsamp = c_efw_fsample(da,'hx');
+		
+		problems = 'reset|bbias|probeld|sweep|bdump';
+		
+		% Always remove Whisper when we use 180Hz filter
+		if (fsamp == 450) || ...
+				( cl_id == 2 && da(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
+				( flag_rmwhip && flag_rmwhip_force )
+			problems = [problems '|whip'];  %#ok<AGROW,NASGU>
+		end
+		signal = da; %#ok<NASGU>
+		remove_problems
+		da = res; %#ok<NODEF>
+		clear res signal problems
+		
+		% Check if we have at least 1 spin of data left
+		if length(find(~isnan(da(:,2)))) < 4*fsamp
+			irf_log('proc',irf_ssub('No p? data after removals',probe))
+			continue
+		end
+		
+		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
+		
+		if isempty(HBIASSA)
+			eval(irf_ssub('HBIASSA?p!=[];save_list=[save_list ''HBIASSA?p! ''];',cl_id,probe));
+		else
+			eval(irf_ssub('HBIASSA?p!=HBIASSA;HBSATDSC?p!=wakedesc; save_list=[save_list ''HBIASSA?p! HBSATDSC?p! ''];',cl_id,probe));
+		end
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % rawspec - Spectrum of raw EFW signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

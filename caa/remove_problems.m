@@ -60,6 +60,19 @@ for i=1:length(param)
 				end
 				clear ok bbias msg
 			end
+			
+		case 'hbiassa'
+			% Remove saturation due to too high bias current
+			[ok,wake,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
+			if ok
+				if ~isempty(wake)
+					irf_log('proc','blanking HB saturation')
+					res = caa_rm_blankt(res,wake);
+					clear wake
+				end
+			else irf_log('load',msg)
+			end
+			clear ok wake msg
 
 		case 'probesa'
 			% Remove probe saturation

@@ -271,6 +271,31 @@ elseif regexp(vs,'^(PS|LO)WAKE[1-4]p(12|32|34)$')==1
 	v.quant = 'wake';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Plasmaspheric/Lobe Wake
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^HBSATDSC[1-4]p(12|32|34)$')==1
+	v.data = 1;
+	v.cl_id = vs(9);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'HBSATDSC';
+	v.sen = vs(end-1:end);
+	v.cs = {'na','na'};
+	v.rep = {'scalar','scalar'};
+ 	v.units =  {'mV/m','deg'};
+	v.si_conv = {'1.0e-3>V m^-1','1>degrees'};
+	v.size = [1 1];
+	v.name = {'HBSat_Max','HBSat_Width'};
+	v.field_name = {'HBSat Max','HBSat Width'};
+	v.labels = v.field_name;
+    v.ptype = {'Data','Data'};
+    v.valtype = {'FLOAT','FLOAT'};
+    v.sigdig = 3;
+	v.com = '';
+	v.file = 'mEFW';
+	v.quant = 'hbiassa';
+	v.lev = 1;	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% RSPEC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
@@ -655,6 +680,18 @@ elseif regexp(vs,'^PROBESA[1-4]p[1-4]$')==1
 	v.file = 'mEFW';
 	v.file_old = 'mFDM';
 	v.quant = 'probesa';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Probe low density saturation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^HBIASSA[1-4]p(12|32|34)$')==1
+	v.data = 0;
+	v.cl_id = vs(8);
+	v.sen = vs(end);
+	v.inst = 'EFW';
+	v.com = 'Lhigh bias saturation';
+	v.file = 'mEFW';
+	v.quant = 'hbiassa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ADC offsets corse
