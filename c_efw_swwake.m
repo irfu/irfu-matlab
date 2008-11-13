@@ -33,6 +33,8 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 % Original idea by Anders Eriksson.
 % Many useful suggestion by Per-Arne Lindqvist.
 
+DEBUG=1;
+
 error(nargchk(3,5,nargin))
 if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end
@@ -205,8 +207,10 @@ for in = iok
 	ind1 = find(d12 == min(d12(i1))) -1;
 	ind2 = find(d12 == max(d12(i1+180))) -1;
 	if abs(ind2-ind1-180)>5
-		%irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
-		%	' deg at ' epoch2iso(ts,1)])
+		if DEBUG
+			irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
+				' deg at ' epoch2iso(ts,1)])
+		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -235,7 +239,9 @@ for in = iok
 	%if in==975, keyboard, end
 	wampl = min(ii(ii>23))-max(ii(ii<23));
 	if isempty(wampl) || wampl<WAKE_MIN_AMPLITUDE
-		%irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)])
+		if DEBUG
+			irf_log('proc',['proxy wake is too small at ' epoch2iso(ts,1)])
+		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -275,14 +281,18 @@ for in = iok
 	
 	if max(max(abs(ccdav1)),max(abs(ccdav2)))< WAKE_MIN_AMPLITUDE ||...
 			max(max(abs(ccdav1)),max(abs(ccdav2)))>WAKE_MAX_AMPLITUDE
-		%irf_log('proc',...
-		%	sprintf('wake too small/big(%.2f mV/m) at %s',...
-		%	max(max(abs(ccdav1)),max(abs(ccdav2))), epoch2iso(ts,1)))
+		if DEBUG
+			irf_log('proc',...
+				sprintf('wake too small/big(%.2f mV/m) at %s',...
+				max(max(abs(ccdav1)),max(abs(ccdav2))), epoch2iso(ts,1)))
+		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
 	if ~(isGoodShape(ccdav1) && isGoodShape(ccdav2))
-		%irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+		if DEBUG
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1)])
+		end
 		wakedesc([in*2-1 in*2],:) = NaN;
 		continue
 	end
@@ -297,8 +307,6 @@ for in = iok
 	% Wake half-width
 	ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
 	iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
-	%disp(ii)
-	%if in==244,keyboard,end
 	wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
 	clear ii iimax
 	
