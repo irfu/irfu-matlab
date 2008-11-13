@@ -48,6 +48,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
 %   probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
+%   hbiassa: HBIASSA{cl_id}p{12/32,34}, HBSATDSC{cl_id}p{12/32,34} -> mEFW
+%          // Saturation due to high bias current
 %   rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
 %   wake : PSWAKE{cl_id}p{12/34}, LOWAKE{cl_id}p{12/34} -> mEFW // wakes
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
