@@ -33,8 +33,6 @@ if nargin<4, whip = []; end
 if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
 
-if pair==32, error('PAIR 32 is not implemented yet'), end
-
 % N_EMPTY .75 means that we use only spins with more then 75% points.
 N_EMPTY = .9; 
 MAX_SPIN_PERIOD = 4.3;
@@ -200,8 +198,8 @@ for in = iok
 		if DEBUG, disp('Matches'), end
 				wakedesc(in,2) = mm;
 				wakedesc(in,3) = w;
-	elseif 	(mm > WAKE_INT_AMPLITUDE) || ...
-			(mm > WAKE_MIN_AMPLITUDE && mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
+	elseif pair~=32	&& ... % Wake position works only for p12 and p34
+			((mm > WAKE_MIN_AMPLITUDE && mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO))
 		if w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH
 			% Check for wake position
 			im = im +da -90; % Angle with respect to the Sun

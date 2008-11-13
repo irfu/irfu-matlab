@@ -1661,9 +1661,6 @@ elseif strcmp(quantity,'hbiassa')
 	
 	p12_ok = 0;
 	for probe = [12 32 34]
-		% XXX: this must be changed when c_efw_hbias_satur will have p32
-		if probe == 32, continue, end
-		
 		if probe == 32 && p12_ok, continue, end
 		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));	
 		if ~ok || isempty(da)
