@@ -42,7 +42,9 @@ WAKE_MAX_WIDTH = 150; % degrees
 WAKE_MIN_WIDTH = 40;  % degrees
 WAKE_MAX_CENTER_OFF = 8; % degrees
 WAKE_MIN_AMPLITUDE = 5; % mV/m
+WAKE_MAX_AMPLITUDE = 780; % mV/m
 WAKE_MIN_MAX_RATIO = 5; % Min ration of the max1/max ratio
+WAKE_INT_AMPLITUDE = 200; % mV/m
 
 plot_step = 1;
 plot_i = 0;
@@ -71,7 +73,7 @@ end
 n_spins = length(i0);
 NPOINTS = 361;
 tt = zeros(NPOINTS,n_spins);
-wakedesc = zeros(n_spins, 2)*NaN;
+wakedesc = zeros(n_spins, 3)*NaN;
 ttime = tt;
 sf = c_efw_fsample(e,'hx');
 iok = [];
@@ -98,7 +100,7 @@ for in = 1:n_spins
         eind(isnan(data_corr(eind,2))) = [];
         % Check for data gaps inside one spin.
         if sf>0 && length(eind)<N_EMPTY*(te-ts +MARG*2)*sf
-            irf_log('proc',['data gap at ' epoch2iso(ts,1)])
+            if DEBUG, irf_log('proc',['data gap at ' epoch2iso(ts,1)]), end
             tt(:,in) = NaN;
         else
             if sf==450, dtmp = irf_resamp(data_corr(eind,:), ttime(:,in));
@@ -165,7 +167,9 @@ for in = iok
 	end
 	
 	[min1,imin1,wmin1,max1,imax1,wmax1,min2,max2] = find4minmax(tt(:, in));
-	
+	if abs(min1)>abs(max1), w = wmin1; im = imin1;
+	else w = wmax1; im = imax1;
+	end
 	mm = max(abs(min1),abs(max1));
 	
 	if plotflag_now
@@ -192,12 +196,12 @@ for in = iok
 			mm,mm/max(abs(min2),abs(max2))))
 	end
 	
-	if mm > WAKE_MIN_AMPLITUDE && ...
-			mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO
-		if abs(min1)>abs(max1), w = wmin1; im = imin1;
-		else w = wmax1; im = imax1;
-		end
-		% Check for wake width
+	if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
+		if DEBUG, disp('Matches'), end
+				wakedesc(in,2) = mm;
+				wakedesc(in,3) = w;
+	elseif 	(mm > WAKE_INT_AMPLITUDE) || ...
+			(mm > WAKE_MIN_AMPLITUDE && mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
 		if w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH
 			% Check for wake position
 			im = im +da -90; % Angle with respect to the Sun
@@ -209,6 +213,7 @@ for in = iok
 			else
 				if DEBUG, disp('Matches'), end
 				wakedesc(in,2) = mm;
+				wakedesc(in,3) = w;
 			end
 		else
 			if DEBUG, disp(sprintf('wrong width : %d degress',w)), end
