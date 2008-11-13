@@ -21,6 +21,8 @@ function c_export_ascii(var,varargin)
 %	c_export_ascii(Etemp,'var_name','diE3p1234',...
 %      'comm','electric field is high pass filtered at 3Hz')
 %
+%   c_export_ascii(dE,'var_name','dump') - no headers
+%
 % $Id$
 
 % ----------------------------------------------------------------------------
