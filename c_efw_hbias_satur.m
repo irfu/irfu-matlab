@@ -190,8 +190,12 @@ for in = iok
 	end
 	
 	if DEBUG
-		disp(sprintf('Max: %.1f mV/m  Ratio: %.1f',...
-			mm,mm/max(abs(min2),abs(max2))))
+		if isempty(min2)
+			disp('No secondary peaks')
+		else
+			disp(sprintf('Max: %.1f mV/m  Ratio: %.1f',...
+				mm,mm/max(abs(min2),abs(max2))))
+		end
 	end
 	
 	if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
@@ -199,7 +203,8 @@ for in = iok
 				wakedesc(in,2) = mm;
 				wakedesc(in,3) = w;
 	elseif pair~=32	&& ... % Wake position works only for p12 and p34
-			((mm > WAKE_MIN_AMPLITUDE && mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO))
+			((mm > WAKE_MIN_AMPLITUDE && ~isempty(min2) &&...
+			mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO))
 		if w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH
 			% Check for wake position
 			im = im +da -90; % Angle with respect to the Sun
@@ -319,7 +324,7 @@ d_tmp = data(~isnan(data));
 if isempty(d_tmp)
     max2 = [];
     min2 = [];
-    disp('no secondary peaks')
+    %disp('no secondary peaks')
     return
 end
 
