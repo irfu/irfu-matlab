@@ -55,7 +55,7 @@ if nargin == 1,
 	a2=n(:,7);
 	n(:,2:end)=[];
   else,
-	help av_whamp_plot_f;
+	help irf_whamp_plot_f;
 	return;
   end
 end

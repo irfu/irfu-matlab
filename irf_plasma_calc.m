@@ -73,7 +73,7 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
 end
 
 Me=9.1094e-31; % electron mass
-Mp=1.6726e-27; % proton mass
+Mp=1.67262e-27; % proton mass
 c=2.9979e8; % speed of light
 e=1.6022e-19; % elementary charge
 epso=8.8542e-12; % vacuum dielectric constant 
