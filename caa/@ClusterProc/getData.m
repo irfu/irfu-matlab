@@ -338,7 +338,7 @@ elseif strcmp(quantity,'dies')
 		irf_log('proc',sprintf('EFW samp freq diff %.3f mHz',abs(fsamp - fsamp_nom)*1e3))
 		% We allow the diff to be max .2 mHz
 		if abs(fsamp - fsamp_nom) > .0002
-			error('EFW samplig frequency differs too much from nominal')
+			irf_log('proc','!!! EFW samplig frequency differs too much from nominal')
 		end
 		
 		irf_log('proc','Using new time line for spinfits')
@@ -518,8 +518,25 @@ elseif strcmp(quantity,'dies')
 		% Remove points which are > deltaof_sdev_max*sdev
 		% as this must de a stable quantity
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
-		eval(irf_ssub('df=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
+		eval(irf_ssub('df=diEs?p!(ii1,1:3);df(:,2:3)=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
+		
+		% Remove saturation due to too high bias current
+		if ~flag_rmhbsa % Otherwise the saturation is already blanked
+			for probe=[p12 34]
+				[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
+				if ok
+					if ~isempty(hbsa)
+						irf_log('proc','blanking HB saturation')
+						df = caa_rm_blankt(df,hbsa);
+					end
+				else irf_log('load',msg)
+				end
+				clear ok hbsa msg
+			end
+		end
+		
+		df = df (:,2:3);
 		df(isnan(df(:,2)),:) = []; %#ok<NODEF>
 		iia = [];
 		if size(df,1)>2
