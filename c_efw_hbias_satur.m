@@ -262,7 +262,7 @@ for in = iok
 			et = wakedesc(in,1) + 4;
 		else
 			% We are not at the end and the next spin is also clean
-			if in+2 == iok(end) || isnan(wakedesc(in+2,2))
+			if in+2 == iok(end) || ( in+2 < iok(end) && isnan(wakedesc(in+2,2)))
 				HBIASSA = [HBIASSA; st et];
 				st = []; et = [];
 			else
