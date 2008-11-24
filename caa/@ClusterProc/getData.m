@@ -1661,7 +1661,7 @@ elseif strcmp(quantity,'hbiassa')
 		data = []; cd(old_pwd); return
 	end
 	
-	p12_ok = 0;
+	p12_ok = 0; sf_probe = []; np = [];
 	for probe = [12 32 34]
 		if probe == 32 && p12_ok, continue, end
 		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));	
@@ -1694,11 +1694,31 @@ elseif strcmp(quantity,'hbiassa')
 		
 		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
 		
+		% Check which of the probe pairs is more affected by saturation
+		if ~isempty(HBIASSA)
+			irf_log('proc','blanking HB saturation')
+			da = caa_rm_blankt(da,HBIASSA);
+		end
+		np_tmp = length( da( ~isnan(da(:,2)) ,2 ) );
+		if np_tmp > 0
+			if isempty(np) || np==0 || np_tmp > np
+				sf_probe = probe;
+			end
+		end
+		np = np_tmp;
+		clear np_tmp da
+		
 		if isempty(HBIASSA)
 			eval(irf_ssub('HBIASSA?p!=[];save_list=[save_list ''HBIASSA?p! ''];',cl_id,probe));
 		else
 			eval(irf_ssub('HBIASSA?p!=HBIASSA;HBSATDSC?p!=wakedesc; save_list=[save_list ''HBIASSA?p! HBSATDSC?p! ''];',cl_id,probe));
 		end
+	end
+	
+	% Save probe to be used for spin resolution data
+	if ~isempty(sf_probe)
+		irf_log('calb',irf_ssub('Will use p? for spin res data',sf_probe))
+		caa_sfit_probe(cl_id,sf_probe);
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
