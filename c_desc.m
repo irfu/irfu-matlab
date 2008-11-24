@@ -509,6 +509,14 @@ elseif regexp(vs,'^diESPEC[1-4]p1234$')==1
 	v.file = 'mEDSI';
 	v.lev = 1;
 	v.quant = 'diespec';
+elseif regexp(vs,'^diESPEC?[1-4]p1234_info$')==1
+	v.data = 0;
+	v.cl_id = vs(8);
+	v.com = 'E spectrum (DSI) INFO';
+	v.quant = 'diespec';
+	v.file = 'mEDSI';
+	v.inst = 'EFW';
+	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% I bias
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

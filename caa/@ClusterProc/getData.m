@@ -597,11 +597,14 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		save_file = './mEFWburst.mat';
 		var1_name = 'dibE?p1234';
 	else
-		if strcmp(quantity,'diespec'), save_file = './mEDSI.mat';
-        else save_file = './mEDSIf.mat';
-		end
-		if do_filter, var1_name = 'diEF?p1234';
-        else var1_name = 'diE?p1234';
+		if strcmp(quantity,'diespec')
+			save_file = './mEDSI.mat';
+			var1_name = 'diESPEC?p1234';
+		else
+			save_file = './mEDSIf.mat';
+			if do_filter, var1_name = 'diEF?p1234';
+			else var1_name = 'diE?p1234';
+			end
 		end
 	end
 
