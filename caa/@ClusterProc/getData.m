@@ -329,7 +329,7 @@ elseif strcmp(quantity,'dies')
 		dt = double(te - ts); clear te ts1 te1
 		
 		% Guess the sampling frequency
-		fsamp_nom = c_efw_fsample(e34(:,1),'hx');
+		fsamp_nom = c_efw_fsample(e34(:,1),'hx',cl_id);
 		if ~fsamp_nom, error('no sampling frequency'),end
 		
 		% Compute real sampling frequency
@@ -339,6 +339,7 @@ elseif strcmp(quantity,'dies')
 		% We allow the diff to be max .2 mHz
 		if abs(fsamp - fsamp_nom) > .0002
 			irf_log('proc','!!! EFW samplig frequency differs too much from nominal')
+			fsamp = fsamp_nom;
 		end
 		
 		irf_log('proc','Using new time line for spinfits')
