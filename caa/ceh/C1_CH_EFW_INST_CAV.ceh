@@ -1,0 +1,20 @@
+!
+! $Id$
+!
+START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "Events:"
+   ENTRY       =   ""
+   ENTRY       =   "2001-12-28 03:03 Probe 1 failed"
+   ENTRY       =   ""
+   ENTRY       =   "Implications:"
+   ENTRY       =   ""
+   ENTRY       =   "Before 2001-12-28 C1 EFW uses all probes, and full time resolution"
+   ENTRY       =   "vector electric field data are available using 4 probes in the spin"
+   ENTRY       =   "plane."
+   ENTRY       =   "After 2001-12-28 C1 EFW uses only 3 probes, and full time resolution"
+   ENTRY       =   "vector electric field data are available using only 3 probes in the spin"
+   ENTRY       =   "plane. The effect is reduced quality in the full time resolution"
+   ENTRY       =   "electric field data (25 samples/s in NM, 450 samples/s in BM)."
+   ENTRY       =   "Spacecraft potential data and 4-second resolution electric field data"
+   ENTRY       =   "are not affected."
+END_META       =   INSTRUMENT_CAVEATS

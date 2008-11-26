@@ -1,0 +1,33 @@
+!
+! $Id$
+!
+START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "Specific caveats for instrument C2 EFW:"
+   ENTRY       =   "Author: Per-Arne Lindqvist"
+   ENTRY       =   "Last modified: 2008-11-25"
+   ENTRY       =   ""
+   ENTRY       =   "Events:"
+   ENTRY       =   ""
+   ENTRY       =   "2001-07-23 13:53 Probe 3 10Hz filter failed"
+   ENTRY       =   "2007-05-13 03:24 Probe 1 failed"
+   ENTRY       =   ""
+   ENTRY       =   "Implications:"
+   ENTRY       =   ""
+   ENTRY       =   "Before 2001-07-23 C2 EFW operates nominally."
+   ENTRY       =   "After 2001-07-23 C2 EFW uses the 180Hz filter (normally used in BM for"
+   ENTRY       =   "sampling data at 450 samples/s) instead of the 10Hz filter for NM data"
+   ENTRY       =   "sampling at 25 samples/s. The effect is a small risk of aliasing in the"
+   ENTRY       =   "full time resolution electric field data in NM (25 samples/s)."
+   ENTRY       =   "Spacecraft potential data and 4-second resolution electric field data"
+   ENTRY       =   "are not affected."
+   ENTRY       =   ""
+   ENTRY       =   "Before 2007-05-13 C2 EFW uses all probes, and full time resolution"
+   ENTRY       =   "vector electric field data are available using 4 probes in the spin"
+   ENTRY       =   "plane."
+   ENTRY       =   "After 2007-05-13 C2 EFW uses only 3 probes, and full time resolution"
+   ENTRY       =   "vector electric field data are available using only 3 probes in the spin"
+   ENTRY       =   "plane. The effect is reduced quality in the full time resolution"
+   ENTRY       =   "electric field data (25 samples/s in NM, 450 samples/s in BM)."
+   ENTRY       =   "Spacecraft potential data and 4-second resolution electric field data"
+   ENTRY       =   "are not affected."
+END_META       =   INSTRUMENT_CAVEATS
