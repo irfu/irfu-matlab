@@ -2,10 +2,6 @@
 ! $Id$
 !
 START_META     =   INSTRUMENT_CAVEATS
-   ENTRY       =   "Specific caveats for instrument C2 EFW:"
-   ENTRY       =   "Author: Per-Arne Lindqvist"
-   ENTRY       =   "Last modified: 2008-11-25"
-   ENTRY       =   ""
    ENTRY       =   "Events:"
    ENTRY       =   ""
    ENTRY       =   "2001-07-23 13:53 Probe 3 10Hz filter failed"
