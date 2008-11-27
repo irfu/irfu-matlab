@@ -1716,8 +1716,7 @@ elseif strcmp(quantity,'rawspec')
 	tpharef = [];
 	corrected_raw_data_p12 = 1;
 	corrected_raw_data_p34 = 1;
-	probe_list = [12 32 34];
-	for probe = probe_list
+	for probe = [12 32 34]
 		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
 		if ~ok || isempty(da)
 			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
@@ -1767,9 +1766,7 @@ elseif strcmp(quantity,'rawspec')
     else irf_log('proc',['spin period is ' num2str(spin_p) ' sec'])
 	end
 	
-	probe_list = [12 34];
-	for pr = probe_list
-		
+	for pr = [12 34]
 		if pr==12
 			tt = e12;
 			probe = p12;
