@@ -22,6 +22,8 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 
 error(nargchk(4, 6, nargin))
 
+DEBUG = 1;
+
 result = data;    % TODO: Change function input to call-by-reference?! (ML)
 if isempty(data), warning('Data is empty: Cannot identify problems in empty data set.'), return, end
 [rows columns] = size(data);
@@ -88,20 +90,21 @@ end
 %% Constants
 
 % Bitmask values; 2^(bit_number - 1):
-BITMASK_RESET                    =  1;    % Bit 1
-BITMASK_BAD_BIAS                 =  2;    % Bit 2
-BITMASK_PROBE_SATURATION         =  4;    % Bit 3
-BITMASK_LOW_DENSITY_SATURATION   =  8;    % Bit 4
-BITMASK_SWEEP_DATA               =  16;   % Bit 5
-BITMASK_BURST_DUMP               =  32;   % Bit 6
-BITMASK_NS_OPS                   =  64;   % Bit 7
-BITMASK_MANUAL_INTERVAL          =  128;  % Bit 8
-BITMASK_SINGLE_PROBE_PAIR        =  256;  % Bit 9
-BITMASK_ASYMMETRIC_MODE          =  512;  % Bit 10
-BITMASK_SOLAR_WIND_WAKE          =  1024; % Bit 11
-BITMASK_LOBE_WAKE                =  2048; % Bit 12
-BITMASK_PLASMASPHERE_WAKE        =  4096; % Bit 13
-BITMASK_WHISPER_OPERATING        =  8192; % Bit 14
+BITMASK_RESET                    =  1;       % Bit 1
+BITMASK_BAD_BIAS                 =  2;       % Bit 2
+BITMASK_PROBE_SATURATION         =  4;       % Bit 3
+BITMASK_LOW_DENSITY_SATURATION   =  8;       % Bit 4
+BITMASK_SWEEP_DATA               =  16;      % Bit 5
+BITMASK_BURST_DUMP               =  32;      % Bit 6
+BITMASK_NS_OPS                   =  64;      % Bit 7
+BITMASK_MANUAL_INTERVAL          =  128;     % Bit 8
+BITMASK_SINGLE_PROBE_PAIR        =  256;     % Bit 9
+BITMASK_ASYMMETRIC_MODE          =  512;     % Bit 10
+BITMASK_SOLAR_WIND_WAKE          =  1024;    % Bit 11
+BITMASK_LOBE_WAKE                =  2048;    % Bit 12
+BITMASK_PLASMASPHERE_WAKE        =  4096;    % Bit 13
+BITMASK_WHISPER_OPERATING        =  8192;    % Bit 14
+BITMASK_HIGH_BIAS_SATURATION     =  16384;   % Bit 15
 
 % Quality factors:
 QUALITY_RESET                    =  0;
@@ -118,9 +121,10 @@ QUALITY_SOLAR_WIND_WAKE          =  3;
 QUALITY_LOBE_WAKE                =  1;
 QUALITY_PLASMASPHERE_WAKE        =  1;
 QUALITY_WHISPER_OPERATING        =  2;
+QUALITY_HIGH_BIAS_SATURATION     =  1;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-DEBUG = 0; if DEBUG, keyboard, end
+if DEBUG, keyboard, end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Identify problem areas in data, and set bitmask and quality flag for them.
 
@@ -153,7 +157,7 @@ clear ok problem_intervals msg
 if ok
    if ~isempty(problem_intervals)
 	   irf_log('proc', 'marking bad bias due to EFW reset')
-	   if DEBUG, assignin('base', 'badbiasreset', problem_intervals); end
+%	   if DEBUG, assignin('base', 'badbiasreset', problem_intervals); keyboard, end
       result = caa_set_bitmask_and_quality(result, problem_intervals, ...
          BITMASK_RESET, QUALITY_RESET, ...
             bitmask_column, quality_column);
@@ -171,7 +175,7 @@ for probe_id = probe_list
 	if ok
 		if ~isempty(problem_intervals)
 			irf_log('proc', ['marking bad bias on P' num2str(probe_id)])
-			if DEBUG, assignin('base', 'badbias', problem_intervals); end
+			if DEBUG, assignin('base', 'badbias', problem_intervals); keyboard, end
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_BAD_BIAS, QUALITY_BAD_BIAS, ...
                bitmask_column, quality_column);
@@ -302,7 +306,7 @@ for probe_id = probe_pair_list
    if ok
        if ~isempty(problem_intervals)
            irf_log('proc', 'marking plasmaspheric wakes')
-           if DEBUG, assignin('base', 'pswake', problem_intervals); end
+           if DEBUG, assignin('base', 'pswake', problem_intervals); keyboard, end
            result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_PLASMASPHERE_WAKE, QUALITY_PLASMASPHERE_WAKE, ...
                bitmask_column, quality_column);
@@ -321,7 +325,7 @@ for probe_id = probe_pair_list
    if ok
    	if ~isempty(problem_intervals)
    		irf_log('proc', 'marking lobe wakes')
-   		if DEBUG, assignin('base', 'lowake', problem_intervals); end
+   		if DEBUG, assignin('base', 'lowake', problem_intervals); keyboard, end
          result = caa_set_bitmask_and_quality(result, problem_intervals, ...
             BITMASK_LOBE_WAKE, QUALITY_LOBE_WAKE, ...
                bitmask_column, quality_column);
@@ -366,7 +370,7 @@ for probe_id = probe_pair_list
    if ok
    	if ~isempty(wake_info)
    		irf_log('proc', 'marking data from solar wind wake')
-   		if DEBUG, assignin('base', 'swwake', wake_info); end
+   		if DEBUG, assignin('base', 'swwake', wake_info); keyboard, end
    		num_wakes = size(wake_info, 1);
    		problem_intervals = zeros(num_wakes, 2);
    		for k = 1:num_wakes
@@ -382,6 +386,25 @@ for probe_id = probe_pair_list
    end
 end
 clear ok problem_intervals msg wake_info num_wakes center_time
+
+
+% Mark high bias saturation
+%if DEBUG, keyboard, end
+for probe_id = probe_pair_list
+   if DEBUG, disp(['probe_id: ' num2str(probe_id)]), end
+   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
+      spacecraft_id, irf_ssub('HBIASSA?p!', spacecraft_id, probe_id));
+   if ok
+      if ~isempty(problem_intervals)
+   	   irf_log('proc', 'marking high bias saturations')
+   	   if DEBUG, assignin('base', 'highbiassat', problem_intervals); keyboard, end
+         result = caa_set_bitmask_and_quality(result, problem_intervals, ...
+            BITMASK_HIGH_BIAS_SATURATION, QUALITY_HIGH_BIAS_SATURATION, ...
+               bitmask_column, quality_column);
+   	end
+   end
+end
+clear ok problem_intervals msg
 			
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

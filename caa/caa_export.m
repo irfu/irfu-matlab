@@ -1,7 +1,7 @@
 function status = caa_export(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %CAA_EXPORT  export data to CAA CEF files
 %
-% STATUS = caa_export(data_level,caa_vs,cl_id,[QUALITY,DATA_VERSION,sp,st,dt])
+% STATUS = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
 % CEF file is written to a current directory. Data is supposed to be also 
 % there, if SP is not specified.
@@ -89,7 +89,7 @@ else
 		error('unknown variable')
 	end
 end
-
+keyboard
 % Load data
 if strcmp(caa_vs, 'DER')
 %   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
@@ -113,6 +113,7 @@ try
 %	[ok, d_info] = c_load([vs '_info'],'var');
    [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
 catch
+   irf_log('load', ['No ' vs '_info'])
 	d_info = []; ok = 0;
 end
 

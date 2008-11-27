@@ -138,18 +138,42 @@ for j = ii;
 	end	
 	
 	if isempty(data), data = tt;
-   else
-      try
+   elseif ~(isstruct(data) || isstruct(tt))
+%      try
          data = caa_append_data(data,tt);
-      catch
-         disp('!!!!! ERROR: ')
-         disp(lasterr)
+%      catch
+%         disp('!!!!! ERROR: ')
+%         disp(lasterr)
 %         keyboard
+%      end
+   elseif (isstruct(data) && isstruct(tt))
+      if ~isfield(data, 'int1')
+         temp.int1 = data;
+         data = temp;
+         clear temp;
       end
+      data.(['int' num2str(j)]) = tt;
 	end
 end
 
-if ~isempty(data), data = irf_tlim(data,st +[0 dt]); end
+if 1  % This is a bugfix (for caa_identify_problems) to include e.g. saturation
+      % intervals which start BEFORE the chosen (e.g. 1800-2100) data interval.
+      % irf_tlim (old method, below) does NOT include these (border) cases!
+   if ~isempty(data) && ~isstruct(data)
+      data_time_lower = st;
+      data_time_upper = st + dt;
+      problem_start = data(:, 1);
+      problem_stop = data(:, 2);
+      row_index = (problem_start >= data_time_lower & problem_start < data_time_upper) | ...
+                  (problem_stop  >  data_time_lower & problem_stop <= data_time_upper) | ...
+                  (problem_start <= data_time_lower & problem_stop >= data_time_upper);
+      data = data(row_index,:);
+      clear data_time_lower data_time_upper problem_start problem_stop row_index
+   end
+else     % This is the old method. TODO: Check that the above does not break old code!
+   if ~isempty(data), data = irf_tlim(data,st +[0 dt]); end
+end
+
 if nargout > 1, ok = ~isempty(data); end
 %if nargout > 1, ok = oks; if nargout > 2, msg = msgs; end, end
 

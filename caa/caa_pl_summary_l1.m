@@ -33,6 +33,7 @@ savePNG = 0;
 saveJPG = 0;
 fullscale = 0;
 plotspec = 1;
+plotbitmask = 1;
 usextra = 0;
 data_level = 3;
 QUALITY = 3;
@@ -193,14 +194,22 @@ for cli=1:4
 			% Load Es
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
+			   
+			   E_info = c_load('diESPEC?p1234_info', cli, 'var');  % Load info; need list of probe pairs!
+%            keyboard
+
+
+
 
 			   % Extend data array to accept bitmask and quality flag (2 columns at the end)
 			   es_tmp = [es_tmp zeros(size(es_tmp, 1), 2)];
 			   es_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
 			   quality_column = size(es_tmp, 2);
 			   bitmask_column = quality_column - 1;
+%			   if cli == 4, keyboard, end
 			   % Identify and flag problem areas in data with bitmask and quality factor:
-            es_tmp = caa_identify_problems(es_tmp, data_level, num2str(pp), cli, bitmask_column, quality_column);
+            es_tmp = caa_identify_problems(es_tmp, data_level, E_info.probe, cli, bitmask_column, quality_column);
+%            if cli == 4, keyboard, end
 			   
 				% Delta offsets
 				Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
@@ -436,6 +445,94 @@ end
 
 orient(76,'tall')
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Quality bitmask figure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+if plotbitmask
+   
+figure(77)
+if scrn_size==1 ,set(gcf,'position',[91  40 909 640])
+else set(gcf,'position',[7   159   790   916])
+end
+clf
+
+h = 1:6;
+for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
+
+figure_start_epoch(st);
+
+% Plot bits in bitmask
+ytick_label =  1:16;
+ytick_offset = fix( (ytick_label-1) / 4 );
+ytick = ytick_label + ytick_offset;
+
+for cli=1:4
+	axes(h(cli))
+	hold on
+	c_eval('es=es?;',cli)
+	if ~isempty(es)
+%	   keyboard
+	   for k = 1:16
+	      plot([es(1,1) es(end,1)] - t_start_epoch, [k k] + fix((k-1)/4), 'k')
+	      index = find( bitget(es(:,bitmask_column), k) );
+	      if ~isempty(index)
+	         ind_d = find( diff(index) > 1 );
+	         if ~isempty(ind_d)
+%               disp('Several intervals!')
+%	            keyboard               
+               ind_start = 1;
+               for ii = 1:length(ind_d)
+                  ind_stop = ind_d(ii);
+                  plot([es(index(ind_start),1) es(index(ind_stop),1)] - t_start_epoch, ...
+                     [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+                  ind_start = ind_d(ii)+1;
+               end
+               plot([es(index(ind_start),1) es(index(end),1)] - t_start_epoch, ...
+                     [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+	         else
+	            plot([es(index(1),1) es(index(end),1)] - t_start_epoch, ...
+	               [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+	         end
+	      end
+	   end
+%		for k=1:length(es), caa_spectrogram(h(cli),spec{k}), end
+%      keyboard
+	end
+	if cli==1
+		if isempty(r), title(h(1),tit)
+		else title(h(1),[tit ', GSE Position C' num2str(ri)])
+		end
+	end
+	ylabel(sprintf('Bitmask C%d [bit no.]',cli))
+	set(gca,'YTick',ytick, 'YTickLabel', ytick_label, 'FontSize', 6)
+	grid
+%	caxis([-4 1])
+	hold off
+%	if fullscale, set(h(cli),'YLim',[0 fmax])
+%	else set(h(cli),'YLim',[0 12.5])
+%	end
+	
+	if dt>0, irf_zoom(st +[0 dt],'x',h(cli)), end
+%	set(gca,'XTickLabel',[])
+	keyboard
+end
+
+% Plot quality
+plot_quality(h(5), {es1, es2, es3, es4}, st)
+irf_zoom(st + [0 dt], 'x', h(5))
+
+if dt>0 
+	plot_intervals(h(6),{in1,in2,in3,in4},st)
+	irf_zoom(st +[0 dt],'x',h(6))
+	if ~isempty(r), add_position(h(6),r), end
+end
+
+orient(77, 'tall')
+%keyboard
+end % if plotbitmask
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Export figures
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -444,15 +541,17 @@ if fullscale,fn = sprintf('EFW_SPLOT_L1FULL__%s',irf_fname(st));
 else fn = sprintf('EFW_SPLOT_L1ESPEC__%s',irf_fname(st));
 end
 fne = sprintf('EFW_SPLOT_L1ERSPEC__%s',irf_fname(st));
+fnq = sprintf('EFW_SPLOT_L1QUAL__%s',irf_fname(st));
 fone = sprintf('EFW_SPLOT_L1__%s',irf_fname(st));
 
 if savePDF
 	irf_log('save',['saving ' fn '.pdf'])
 	irf_log('save',['saving ' fne '.pdf'])
-	print( 75, '-dpdf', fn), print( 76, '-dpdf', fne)
+	irf_log('save',['saving ' fnq '.pdf'])
+	print( 75, '-dpdf', fn), print( 76, '-dpdf', fne), print( 77, '-dpdf', fnq)
 	if exist('/usr/local/bin/pdfjoin','file')
 		irf_log('save',['joining to ' fone '.pdf'])
-		s = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf --outfile ' fone '.pdf']);
+		s = unix(['LD_LIBRARY_PATH="" /usr/local/bin/pdfjoin ' fn '.pdf ' fne '.pdf ' fnq '.pdf --outfile ' fone '.pdf']);
 		if s~=0, irf_log('save','problem with pdfjoin'), end
 	else
 		irf_log('proc',...
@@ -463,10 +562,13 @@ if savePNG
 	if exist('/usr/local/bin/eps2png','file')
 		irf_log('save',['saving ' fn '.png'])
 		irf_log('save',['saving ' fne '.png'])
-		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
+		irf_log('save',['saving ' fnq '.png'])
+		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn), print( 77, '-depsc2', fnq)
 		s = unix(['/usr/local/bin/eps2png -res 150 ' fn '.eps; rm -f ' fn '.eps']);
 		if s~=0, irf_log('save','problem with eps2png'), end
 		s = unix(['/usr/local/bin/eps2png -res 150 ' fne '.eps; rm -f ' fne '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+		s = unix(['/usr/local/bin/eps2png -res 150 ' fnq '.eps; rm -f ' fnq '.eps']);
 		if s~=0, irf_log('save','problem with eps2png'), end
 	else
 		irf_log('proc',...
@@ -477,10 +579,13 @@ if saveJPG
 	if exist('/usr/local/bin/eps2png','file')
 		irf_log('save',['saving ' fn '.jpg'])
 		irf_log('save',['saving ' fne '.jpg'])
-		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn)
+		irf_log('save',['saving ' fnq '.jpg'])
+		print( 75, '-depsc2', fn), print( 76, '-depsc2', fn), print( 77, '-depsc2', fnq)
 		s = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fn '.eps; rm -f ' fn '.eps']);
 		if s~=0, irf_log('save','problem with eps2png'), end
 		s = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fne '.eps; rm -f ' fne '.eps']);
+		if s~=0, irf_log('save','problem with eps2png'), end
+		s = unix(['/usr/local/bin/eps2png -jpg -res 150 ' fnq '.eps; rm -f ' fnq '.eps']);
 		if s~=0, irf_log('save','problem with eps2png'), end
 	else
 		irf_log('proc',...
