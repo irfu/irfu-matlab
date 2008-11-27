@@ -1691,7 +1691,6 @@ elseif strcmp(quantity,'hbiassa')
 % rawspec - Spectrum of raw EFW signal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'rawspec')
-	
 	save_file = './mEFW.mat';
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
@@ -1767,6 +1766,7 @@ elseif strcmp(quantity,'rawspec')
 	end
 	
 	for pr = [12 34]
+		
 		if pr==12
 			tt = e12;
 			probe = p12;
