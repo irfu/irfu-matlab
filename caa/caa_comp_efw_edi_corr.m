@@ -29,7 +29,13 @@ getData(ClusterProc,cl_id,'iedbs')
 
 diEs = c_load('diEs?',cl_id,'var');
 if diEs(1,1) == -157e8, error('No E-field'), end
+diEs(isnan(diEs(:,2)),:) = [];
 diEDI = c_load('diEDI?',cl_id,'var');
+if diEDI(1,1) == -157e8
+	diEDI = [];
+	disp('No EDI data')
+end
+	
 diBr = c_load('diBr?',cl_id,'var');
 if diBr(1,1) == -157e8
 	diBr = c_load('diBrs?',cl_id,'var');
@@ -69,10 +75,17 @@ clf
 h = 1:4;
 for ax=1:3
 	h(ax) = irf_subplot(4,1,-ax);
-	irf_plot({diEDI(:,[1 (ax+1)]),diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
-		'linestyle',{'.','-','-'},'comp');
+	if isempty(diEDI)
+		irf_plot({diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
+		'linestyle',{'-','-'},'comp');
+	else
+		irf_plot({diEDI(:,[1 (ax+1)]),diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
+			'linestyle',{'.','-','-'},'comp');
+	end
 end
-legend(h(1),'EDI','EFW','corrotation')
+if isempty(diEDI), legend(h(1),'EFW','corrotation')
+else legend(h(1),'EDI','EFW','corrotation')
+end
 ylabel(h(1),'Ex [mV/m]')
 ylabel(h(2),'Ey [mV/m]')
 ylabel(h(3),'Ez [mV/m]')

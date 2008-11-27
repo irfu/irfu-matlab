@@ -71,6 +71,7 @@ diECorr(:,2:4) = diECorr(:,2:4) + diEi(:,2:4);
 ndata = ceil((diEs(end,1) - diEs(1,1))/TAV);
 t = diEs(1,1) + (1:ndata)*TAV - TAV/2; t = t';
 
+diEs(isnan(diEs(:,2)),:) = []; % NaNs can cause nasty problems
 diEr = irf_resamp(diEs,t,'fsample',.1/TAV);
 diECr = irf_resamp(diECorr,t,'fsample',.1/TAV);
 Pr = irf_resamp(P(~isnan(P(:,2)),:),t,'fsample',1/TAV);
