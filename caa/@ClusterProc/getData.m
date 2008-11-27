@@ -309,60 +309,6 @@ elseif strcmp(quantity,'dies')
 	end
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
-	% If we have different timelines for p1(3)2 and p34 we try to make 
-	% a common timeline, so that the resulting spinfits will also have 
-	% the common timeline
-	not_same = 0;
-	if n_ok==2
-		if length(e12(:,1))==length(e34(:,1))
-			not_same = 0;
-			% Check fo same length but different timelines
-			if any( (e12(:,1)-e34(:,1))~=0 ), not_same = 1; end
-        else not_same = 1;
-		end
-	end
-	if not_same && n_ok==2
-		ts = e34(1,1); te = e34(end,1);
-		ts1 = e12(1,1); te1 = e12(end,1);
-		if ts>ts1, ts = ts1; end
-		if te<te1, te = te1; end
-		dt = double(te - ts); clear te ts1 te1
-		
-		% Guess the sampling frequency
-		fsamp_nom = c_efw_fsample(e34(:,1),'hx',cl_id);
-		if ~fsamp_nom, error('no sampling frequency'),end
-		
-		% Compute real sampling frequency
-		ndata = round(dt/fsamp_nom);
-		fsamp = dt/ndata;
-		irf_log('proc',sprintf('EFW samp freq diff %.3f mHz',abs(fsamp - fsamp_nom)*1e3))
-		% We allow the diff to be max .2 mHz
-		if abs(fsamp - fsamp_nom) > .0002
-			irf_log('proc','!!! EFW samplig frequency differs too much from nominal')
-			fsamp = fsamp_nom;
-		end
-		
-		irf_log('proc','Using new time line for spinfits')
-		t_new = double(0):double(1/fsamp):dt+double(1/fsamp); 
-		t_new = t_new(:);
-		
-		d_new = zeros(length(t_new),2);
-		d_new(:,1) = ts + t_new;
-		d_new(:,2) = NaN;
-		
-		ii = round((e34(:,1)-ts)*fsamp+1);
-		if ii(end)>length(t_new), error('problemo with new time line'), end
-		d_new(ii,2) = e34(:,2); e34 = d_new;
-		d_new(:,2) = NaN;
-		
-		ii = round((e12(:,1)-ts)*fsamp+1);
-		if ii(end)>length(t_new), error('problemo with new time line'), end
-		d_new(ii,2) = e12(:,2); e12 = d_new;
-		
-		clear t_new ts dt d_new ii
-	end
-	clear not_same
-	
 	aa = [];
 	n_sig = 0;
 	for pr=[12,34]
