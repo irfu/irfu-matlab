@@ -34,6 +34,7 @@ END_META       =   DATASET_CAVEATS
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 START_VARIABLE    = time_tags__CXXX_CP_EFW_L3_DER
+  PARAMETER_TYPE    = "Support_Data"
   VALUE_TYPE      = ISO_TIME
   DELTA_PLUS      = 2
   DELTA_MINUS     = 2
