@@ -150,9 +150,11 @@ for j = ii;
       if ~isfield(data, 'int1')
          temp.int1 = data;
          data = temp;
+         data.int1.mode_list = mode_list(1);
          clear temp;
       end
       data.(['int' num2str(j)]) = tt;
+      data.(['int' num2str(j)]).mode_list = mode_list(j);
 	end
 end
 

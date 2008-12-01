@@ -1,4 +1,4 @@
-function data = caa_fill_gaps(data,te)
+function [data, filldata] = caa_fill_gaps(data,te)
 %CAA_FILL_GAPS(data,te)  fill gaps in the of a dataset
 %
 % res = caa_fill_gaps(data,te)
@@ -32,7 +32,11 @@ if ngap>0
 	tt(:,1) = linspace(data(end,1),data(end,1)+ngap/fs,ngap+1);
 	tt = tt(2:end,:);
 	tt(:,2:end) = NaN;
-	data = [data; tt];
+	if nargout < 2
+	   data = [data; tt];
+	elseif nargout == 2
+	   filldata = tt;
+	end
 	% Do not report 1 point gaps
 	if ngap>1
 		irf_log('proc',...

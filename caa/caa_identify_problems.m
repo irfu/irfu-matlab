@@ -22,7 +22,7 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 
 error(nargchk(4, 6, nargin))
 
-DEBUG = 1;
+DEBUG = 0;
 
 result = data;    % TODO: Change function input to call-by-reference?! (ML)
 if isempty(data), warning('Data is empty: Cannot identify problems in empty data set.'), return, end

@@ -27,10 +27,11 @@ status = 0;
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '3';
 
+%if nargin<8, st = []; dt=[]; end
 if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get ! (ML)
 % The above line nullifies these:
 %if nargin<6, sp='.'; end
-%if nargin<5, DATA_VERSION = '02'; end
+%if nargin<5, DATA_VERSION = 'XX'; end
 %if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
@@ -41,7 +42,16 @@ FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
 
 old_pwd = pwd;
-cd(sp)
+%cd(sp)
+%dirs = caa_get_subdirs(sp);
+dirs = get_subdirs(st, dt, cl_id);
+if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
+
+result = [];
+
+for dd = 1:length(dirs)
+   d = dirs{dd};
+   cd([sp '/' d]);
 
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
@@ -92,15 +102,15 @@ end
 keyboard
 % Load data
 if strcmp(caa_vs, 'DER')
-%   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
-   for k = 1:length(probe_pairs)       % Try loading data for all probe pairs.
-      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pairs(k)));
-   end
+   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
+%   for k = 1:length(probe_pairs)       % Try loading data for all probe pairs.
+%      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pairs(k)));
+%   end
    probe_pairs = probe_pairs(logical(ok));   % Keep list of probe pairs actually loaded.
    vs = irf_ssub(vs, probe_pairs(1));
 else
-%   [ok,data] = c_load(vs);
-   [data, ok] = caa_get(st, dt, cl_id, vs);
+   [ok,data] = c_load(vs);
+%   [data, ok] = caa_get(st, dt, cl_id, vs);
 %   keyboard
 end
 if all(~ok) || isempty(data)
@@ -110,8 +120,8 @@ if all(~ok) || isempty(data)
 end
 d_info = []; ok = 0;
 try
-%	[ok, d_info] = c_load([vs '_info'],'var');
-   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
+	[ok, d_info] = c_load([vs '_info'],'var');
+%   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
 catch
    irf_log('load', ['No ' vs '_info'])
 	d_info = []; ok = 0;
@@ -232,8 +242,8 @@ if strcmp(caa_vs,'E')
 			% Delta offsets: remove automatic and apply CAA
 			Del_caa = c_efw_delta_off(data(1,1),cl_id);
 			if ~isempty(Del_caa)
-%				[ok,Delauto] = c_load('D?p12p34',cl_id);
-            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
+				[ok,Delauto] = c_load('D?p12p34',cl_id);
+%            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
 				if ~ok || isempty(Delauto)
 					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
 				else
@@ -246,8 +256,8 @@ if strcmp(caa_vs,'E')
 		% Dsi offsets
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
-%			[ok,Ps,msg] = c_load('Ps?',cl_id);
-         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
+			[ok,Ps,msg] = c_load('Ps?',cl_id);
+%         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
 %			if ~ok, irf_log('load',msg), end
          if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
 			if caa_is_sh_interval
@@ -256,10 +266,10 @@ if strcmp(caa_vs,'E')
 				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
 			end
 
-%			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
-         [Ddsi, ok1] = caa_get(st, dt, cl_id, 'Ddsi?'); if ~ok1, Ddsi = dsiof_def; end
-%			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-			[Damp, ok2] = caa_get(st, dt, cl_id, 'Damp?'); if ~ok2, Damp = dam_def; end
+			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+%         [Ddsi, ok1] = caa_get(st, dt, cl_id, 'Ddsi?'); if ~ok1, Ddsi = dsiof_def; end
+			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+%			[Damp, ok2] = caa_get(st, dt, cl_id, 'Damp?'); if ~ok2, Damp = dam_def; end
 			
 			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
 			else irf_log('calb','Using default DSI offsets')
@@ -292,8 +302,8 @@ if strcmp(caa_vs,'E')
 		
 	end
 	
-%	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
-   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
+	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
+%   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
 %	if ~isreal(Del)
 %		Del = imag(Del);
 %		% offset is applied to p34
@@ -381,6 +391,12 @@ elseif strcmp(caa_vs, 'DER')
    
    clear start_time timestamp ind1 ind2 data_out
 end
+
+result = [result; data];
+
+end   % for dd = 1:length(dirs)
+
+data = result;
 
 cd(old_pwd)
 
@@ -489,3 +505,42 @@ else
 	obuf = sprintf('%s%s',obuf,['   ENTRY       =   ' q ss q '\n']);
 end
 obuf = sprintf('%s%s',obuf,['END_META       =   ' m_s '\n']);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function dir_list = get_subdirs(st, dt, cl_id)
+% Find all subinterval dirs for spacecraft cl_id
+
+SPLIT_INT = 3; % 3 hour subintervals
+BASE_DIR = '/data/caa/l1';
+
+[st,dt] = irf_stdt(iso_t,dt);
+
+t = fromepoch(st);
+t0 = toepoch([t(1) t(2) t(3) fix(t(4)/SPLIT_INT)*SPLIT_INT 0 0]);
+t = fromepoch(st+dt);
+t1 = toepoch([t(1) t(2) t(3) fix(t(4)/SPLIT_INT)*SPLIT_INT 0 0]);
+if t1>=st+dt, t1 = t1 - SPLIT_INT*3600; end
+
+old_pwd = pwd;
+mode_list = [];
+for t=t0:SPLIT_INT*3600:t1
+	y = fromepoch(t);
+	main_int = [BASE_DIR '/' num2str(y(1)) '/' irf_fname(t) '/C' num2str(cl_id)];
+	if ~exist(main_int,'dir'), continue, end
+	
+	cd(main_int)
+	d = dir('*_*');
+	if isempty(d), continue, end
+	good_dir = {};
+	for j=1:length(d)
+		if ~d(j).isdir, continue, end
+		if caa_is_valid_dirname(d(j).name), good_dir = {good_dir{:} d(j).name}; end
+	end
+	if isempty(good_dir), continue, end
+end
+	
+%	for j=1:length(good_dir)
+%		subdir = [main_int '/' good_dir{j}];
+%		cd(subdir)
+%		[st_t,dt_tmp] = caa_read_interval();
+%		if isempty(st_t), continue, end
