@@ -1667,7 +1667,10 @@ elseif strcmp(quantity,'hbiassa')
 		end
 		np_tmp = length( da( ~isnan(da(:,2)) ,2 ) );
 		if np_tmp > 0
-			if isempty(np) || np==0 || np_tmp > np
+			if ~isempty(np) && np_tmp == np
+				% Same time lines: no preference for a particular pair
+				sf_probe = [];
+			elseif isempty(np) || np==0 || np_tmp > np
 				sf_probe = probe;
 			end
 		end
