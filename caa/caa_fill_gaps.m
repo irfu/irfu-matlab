@@ -20,6 +20,8 @@ if size(data,1)<2
 	return
 end
 
+filldata = [];
+
 fs = c_efw_fsample(data);
 if fs<=0
 	irf_log('proc','cannot fill gaps')

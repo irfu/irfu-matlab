@@ -246,7 +246,9 @@ for dd = 1:length(dirs)
    	% Fill gap in data at start of subinterval
    	if ~isempty(data) && ~isempty(result) && ((data(1,1) - result(end,1)) > TIME_RESOLUTION)
    	   [tmp, filldata] = caa_fill_gaps(result, data(1,1));
-   	   data = [filldata(:,1:size(data,2)); data];
+   	   if ~isempty(filldata)
+   	      data = [filldata(:,1:size(data,2)); data];
+   	   end
    	   clear tmp
    	end
    	
