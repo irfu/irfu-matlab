@@ -69,6 +69,9 @@ if ( (isstr(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
 		case {3234, '3234'}              % Do nothing?
 		   probe_list = [2, 3, 4];
 		   probe_pair_list = [32, 34];
+		case {123234, '123234'}          % Special hack for version of caa_export
+		   probe_list = [1, 2, 3, 4];    % that is using caa_get for 3h-intervals!
+		   probe_pair_list = [12, 32, 34];
 		otherwise
 			error('Unknown probe.')
 	end

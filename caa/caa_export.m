@@ -44,14 +44,15 @@ PROCESSING_LEVEL='Calibrated';
 old_pwd = pwd;
 %cd(sp)
 %dirs = caa_get_subdirs(sp);
-dirs = get_subdirs(st, dt, cl_id);
-if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
 
-result = [];
-
-for dd = 1:length(dirs)
-   d = dirs{dd};
-   cd([sp '/' d]);
+%dirs = get_subdirs(st, dt, cl_id);
+%if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
+%
+%result = [];
+%
+%for dd = 1:length(dirs)
+%   d = dirs{dd};
+%   cd([sp '/' d]);
 
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
@@ -77,9 +78,9 @@ else
 		if lev==2
 			vs = irf_ssub('diE?p1234',cl_id);
 			v_size = 3;    % Previously 1. (ML)
-			sfit_probe = caa_sfit_probe(cl_id);
+			sfit_probe = caa_sfit_probe(cl_id);          % FIXA!!!
 		elseif lev==3
-			sfit_probe = caa_sfit_probe(cl_id);
+			sfit_probe = caa_sfit_probe(cl_id);          % FIXA!!!
 			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 			irf_log('proc',sprintf('using p%d',sfit_probe))
 			v_size = 4;    % Previously 2. (ML)
@@ -102,15 +103,15 @@ end
 keyboard
 % Load data
 if strcmp(caa_vs, 'DER')
-   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
-%   for k = 1:length(probe_pairs)       % Try loading data for all probe pairs.
-%      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pairs(k)));
-%   end
+%   [ok, data] = c_load(vs,cl_id,'res',probe_pairs);   % Try loading data for all probe pairs.
+   for k = 1:length(probe_pairs)       % Try loading data for all probe pairs.
+      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pairs(k)));
+   end
    probe_pairs = probe_pairs(logical(ok));   % Keep list of probe pairs actually loaded.
    vs = irf_ssub(vs, probe_pairs(1));
 else
-   [ok,data] = c_load(vs);
-%   [data, ok] = caa_get(st, dt, cl_id, vs);
+%   [ok,data] = c_load(vs);
+   [data, ok] = caa_get(st, dt, cl_id, vs);
 %   keyboard
 end
 if all(~ok) || isempty(data)
@@ -120,8 +121,8 @@ if all(~ok) || isempty(data)
 end
 d_info = []; ok = 0;
 try
-	[ok, d_info] = c_load([vs '_info'],'var');
-%   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
+%	[ok, d_info] = c_load([vs '_info'],'var');
+   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
 catch
    irf_log('load', ['No ' vs '_info'])
 	d_info = []; ok = 0;
@@ -203,6 +204,13 @@ if strcmp(caa_vs,'E')
       irf_log('warn', 'Ez not removed (data level not 2 or 3)!')
 	end
 	
+	
+%	E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
+	[E_info, okinfo] = caa_get(st, dt, cl_id, 'diE?p1234_info', 'load_args', 'var');  % Load info; need list of probe pairs!
+   if ~okinfo || isempty(E_info) || ~(isfield(E_info, 'probe') || isfield(E_info.int1, 'probe'))
+      error('Could not load probe pair info!')
+   end
+	
 	% Extend data array to accept bitmask and quality flag (2 columns at the end)
 	data = [data zeros(size(data, 1), 2)];
    data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
@@ -210,7 +218,7 @@ if strcmp(caa_vs,'E')
    bitmask_column = quality_column - 1;
 %	keyboard
 	% Identify and flag problem areas in data with bitmask and quality factor:
-	data = caa_identify_problems(data, lev, dsc.sen, cl_id, bitmask_column, quality_column);
+	data = caa_identify_problems(data, lev, '123234', cl_id, bitmask_column, quality_column);
 	
 	% Extend variable description to include the new columns bitmask and quality:
 	dsc.cs = {dsc.cs{:}, 'na', 'na'};
@@ -242,8 +250,8 @@ if strcmp(caa_vs,'E')
 			% Delta offsets: remove automatic and apply CAA
 			Del_caa = c_efw_delta_off(data(1,1),cl_id);
 			if ~isempty(Del_caa)
-				[ok,Delauto] = c_load('D?p12p34',cl_id);
-%            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
+%				[ok,Delauto] = c_load('D?p12p34',cl_id);
+            [Delauto, ok] = caa_get(st, dt, cl_id, 'D?p12p34');
 				if ~ok || isempty(Delauto)
 					irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
 				else
@@ -256,8 +264,8 @@ if strcmp(caa_vs,'E')
 		% Dsi offsets
 		dsiof = c_ctl(cl_id,'dsiof');
 		if isempty(dsiof)
-			[ok,Ps,msg] = c_load('Ps?',cl_id);
-%         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
+%			[ok,Ps,msg] = c_load('Ps?',cl_id);
+         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
 %			if ~ok, irf_log('load',msg), end
          if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
 			if caa_is_sh_interval
@@ -266,10 +274,10 @@ if strcmp(caa_vs,'E')
 				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,Ps);
 			end
 
-			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
-%         [Ddsi, ok1] = caa_get(st, dt, cl_id, 'Ddsi?'); if ~ok1, Ddsi = dsiof_def; end
-			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
-%			[Damp, ok2] = caa_get(st, dt, cl_id, 'Damp?'); if ~ok2, Damp = dam_def; end
+%			[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
+         [Ddsi, ok1] = caa_get(st, dt, cl_id, 'Ddsi?'); if ~ok1, Ddsi = dsiof_def; end
+%			[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
+			[Damp, ok2] = caa_get(st, dt, cl_id, 'Damp?'); if ~ok2, Damp = dam_def; end
 			
 			if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
 			else irf_log('calb','Using default DSI offsets')
@@ -296,14 +304,31 @@ if strcmp(caa_vs,'E')
 		%end
 		clear Ddsi Damp
 		
-		dsc.com = 'For offsets see DER dataset for this interval';
-		dsc.com = [dsc.com '. Probes: ' dsc.sen];
-		irf_log('calb',dsc.com)
+%		dsc.com = 'For offsets see DER dataset for this interval';
+%		dsc.com = [dsc.com '. Probes: ' dsc.sen];
+%		irf_log('calb',dsc.com)
+		
+		if isfield(E_info, 'int1')
+		   result_com = {};
+		   for kk = 1:length(fieldnames(E_info))
+		      pp_info = E_info.(['int' num2str(kk)]);
+		      result_com{kk} = sprintf('Probe pair(s): %s in subinterval: %s/%s', ...
+		         pp_info.probe, epoch2iso(pp_info.mode_list.st, 1), ...
+		            epoch2iso(pp_info.mode_list.st + pp_info.mode_list.dt ,1) );
+            irf_log('calb',result_com{kk})
+         end
+         dsc.com = result_com;
+      else
+         dsc.com = sprintf('Probe pair(s): %s in subinterval: %s/%s', ...
+            E_info.probe, epoch2iso(st, 1), epoch2iso(st+dt, 1) );
+         irf_log('calb',dsc.com)
+      end
+		
 		
 	end
 	
-	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
-%   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
+%	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
+   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
 %	if ~isreal(Del)
 %		Del = imag(Del);
 %		% offset is applied to p34
@@ -392,11 +417,11 @@ elseif strcmp(caa_vs, 'DER')
    clear start_time timestamp ind1 ind2 data_out
 end
 
-result = [result; data];
-
-end   % for dd = 1:length(dirs)
-
-data = result;
+%result = [result; data];
+%
+%end   % for dd = 1:length(dirs)
+%
+%data = result;
 
 cd(old_pwd)
 

@@ -26,7 +26,8 @@ if fs<=0
 	return
 end
 
-ngap = fix( (te -data(end,1))*fs - 1);
+ngap = fix( (te -data(end,1))*fs - 1); % NOTE: Possible error here. Not filling the last point up to TE,
+                                       %       if TE-last_point < 2/fs !   (ML)
 if ngap>0
 	tt = zeros(ngap+1,size(data,2));
 	tt(:,1) = linspace(data(end,1),data(end,1)+ngap/fs,ngap+1);

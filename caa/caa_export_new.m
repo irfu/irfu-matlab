@@ -49,7 +49,7 @@ if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
 
 result = [];
 result_com = {};
-desc_ext = 0;
+%desc_ext = 0;
 
 
 if lev==1
@@ -88,7 +88,7 @@ else
 	case 'DER'
 	   %keyboard
 	   %vs = 'Dadc?p!';
-	   vs = sprintf('Dadc%.0fp?', cl_id);
+	   vs_DER = sprintf('Dadc%.0fp?', cl_id);
 	   probe_pair_list = [12, 32, 34];
 %		sfit_probe = caa_sfit_probe(cl_id);
 %		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
@@ -121,6 +121,7 @@ for dd = 1:length(dirs)
 %   keyboard
    % Load data
    if strcmp(caa_vs, 'DER')
+      vs = vs_DER;
       [ok, data] = c_load(vs,cl_id,'res',probe_pair_list);   % Try loading data for all probe pairs.
    %   for k = 1:length(probe_pair_list)       % Try loading data for all probe pairs.
    %      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pair_list(k)));
@@ -188,13 +189,16 @@ for dd = 1:length(dirs)
    			%keyboard
       if strcmp(caa_vs, 'DER')
          data1 = irf_tlim([data{1:2}], t_int_full);
+         data1 = irf_tlim(data1, t_int);
          data2 = irf_tlim(data{3}, t_int_full);
+         data2 = irf_tlim(data2, t_int);
          if isempty(data1) && isempty(data2)
    		   irf_log('save', 'Saving empty subinterval')
    	   end
       else
 %         keyboard
    	   data = irf_tlim(data,t_int_full);  % NOTE: Superfluous when using caa_get above. (ML)
+   	   data = irf_tlim(data, t_int);
    	   if isempty(data)
    		   irf_log('save', 'Saving empty subinterval')
    	   end 
@@ -446,11 +450,11 @@ for dd = 1:length(dirs)
       end
    irf_log('calb',result_com{end})
       
-      if dd == 1
+%      if dd == 1
          dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
          dsc.sigdig = [dsc.sigdig 6];
          dsc.size = [dsc.size 1];
-      end
+%      end
       
       clear start_time timestamp ind1 ind2 data_out
    end
