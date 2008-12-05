@@ -43,13 +43,11 @@ PROCESSING_LEVEL='Calibrated';
 
 old_pwd = pwd;
 %cd(sp)
-%dirs = caa_get_subdirs(sp);
 dirs = get_subdirs(st, dt, cl_id);
 if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
 
 result = [];
 result_com = {};
-%desc_ext = 0;
 
 
 if lev==1
@@ -153,24 +151,18 @@ for dd = 1:length(dirs)
    
    if lev==3
    	TIME_RESOLUTION = 4;
-   	MIN_TIME_RESOLUTION = TIME_RESOLUTION;
-   	MAX_TIME_RESOLUTION = TIME_RESOLUTION;
    elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(1|2|3|4)?$','once'))) || ...
    		(lev==2 && strcmp(caa_vs,'P'))
    	TIME_RESOLUTION = 1/5;
-   	MIN_TIME_RESOLUTION = TIME_RESOLUTION;
-   	MAX_TIME_RESOLUTION = TIME_RESOLUTION;
    elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))) || ...
-   		(lev==2 && (strcmp(caa_vs,'E') || strcmp(caa_vs,'EF')))
-   	fs = c_efw_fsample(data,'hx');
+   		(lev==2 && strcmp(caa_vs,'E'))
+   	fs = c_efw_fsample(data, 'hx', cl_id); % Use SC number for better accuracy.
    	if ~fs, error('cannot determine time resolution'), end
    	TIME_RESOLUTION = 1/fs;
-   	MIN_TIME_RESOLUTION = 1/25;
-   	MAX_TIME_RESOLUTION = 1/450;
    end
    
    % Make subinterval
-   if ~isempty(st) && ~isempty(dt)
+   if ~isempty(st) && ~isempty(dt)  %  == ~(isempty(st) || isempty(dt)) == NOR
    	t_int_full = st + [0 dt];
    	
    	[iso_ts,dtint] = caa_read_interval;
@@ -180,14 +172,13 @@ for dd = 1:length(dirs)
    		t_int(1) = iso2epoch(iso_ts);
    		t_int(2) = t_int(1) + dtint;
    	end
-%   	if t_int_full(1) > t_int(1), t_int(1) = t_int_full(1); end
-%   	if t_int_full(2) < t_int(2), t_int(2) = t_int_full(2); end
    	
    	
    	irf_log('save', sprintf('%s : %s -- %s',...
    			vs, epoch2iso(t_int(1),1), epoch2iso(t_int(2),1)))
-   			%keyboard
+
       if strcmp(caa_vs, 'DER')
+         % Limit data to both time interval given as input, and time interval read from file.
          data1 = irf_tlim([data{1:2}], t_int_full);
          data1 = irf_tlim(data1, t_int);
          data2 = irf_tlim(data{3}, t_int_full);
@@ -196,19 +187,15 @@ for dd = 1:length(dirs)
    		   irf_log('save', 'Saving empty subinterval')
    	   end
       else
-%         keyboard
+         % Limit data to both time interval given as input, and time interval read from file.
    	   data = irf_tlim(data,t_int_full);  % NOTE: Superfluous when using caa_get above. (ML)
    	   data = irf_tlim(data, t_int);
    	   if isempty(data)
    		   irf_log('save', 'Saving empty subinterval')
    	   end 
    	end
-   else
+   else  % isempty(st) || isempty(dt)   == ~NOR == OR
    	[iso_ts,dtint] = caa_read_interval;
-   	if strcmp(caa_vs, 'DER')
-   	   disp('Check data for DER case when no time interval given!')   % TODO: Check this!
-%   	   keyboard
-   	end
    	if isempty(iso_ts)
    		t_int = data([1 end],1);
    	else
@@ -220,27 +207,23 @@ for dd = 1:length(dirs)
    
    
    % Do magic on E-field
-   if strcmp(caa_vs,'E')
+   if strcmp(caa_vs,'E') && ~isempty(data)
    	
    	% We export only X and Y, no need to export zeroes in Ez.
    	dsc.size(1) = 2;
    	
-   	% We check if this full res E is from coming from two probe pairs
-   	if lev==2 && ~(strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'3234')) && QUALITY>1
-   		irf_log('save','This is not a full E, setting QUALITY=1!')
-   		QUALITY = 1;
-   	end
-   	
    	% Remove Ez, which is zero
-   	if lev == 2 || lev == 3
-   	   data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
-      else
-         irf_log('warn', 'Ez not removed (data level not 2 or 3)!')
-   	end
+   	data = data(:, [1:3 5:end]);     % Remove column 4 (Ez data)
    	
-   	E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
-   	if isempty(E_info) || ~isfield(E_info, 'probe')
-   	   error('Could not load probe pair info!')
+   	% Get info on probe pair(s) in (sub)interval.
+   	if lev == 2
+   	   E_info = c_load('diE?p1234_info', cl_id, 'var');  % Load info; need list of probe pairs!
+   	   if isempty(E_info) || ~isfield(E_info, 'probe')
+   	      error('Could not load probe pair info!')
+   	   end
+   	   probe_info = E_info.probe;
+   	elseif lev == 3
+   	   probe_info = num2str(sfit_probe);
    	end
    	
    	% Fill gap in data at start of subinterval
@@ -262,35 +245,19 @@ for dd = 1:length(dirs)
       data(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
       quality_column = size(data, 2);
       bitmask_column = quality_column - 1;
-   %	keyboard
+
    	% Identify and flag problem areas in data with bitmask and quality factor:
-   	data = caa_identify_problems(data, lev, E_info.probe, cl_id, bitmask_column, quality_column);
+   	data = caa_identify_problems(data, lev, probe_info, cl_id, bitmask_column, quality_column);
    	
    	% Extend variable description to include the new columns bitmask and quality:
-%   	if ~desc_ext
-   	   dsc.cs = {dsc.cs{:}, 'na', 'na'};
-   	   dsc.rep = {dsc.rep{:}, '', ''};
-   	   dsc.units =  {dsc.units{:}, 'unitless', 'unitless'};
-   	   dsc.si_conv = {dsc.si_conv{:}, '', ''};
-   	   dsc.size = [dsc.size, 1, 1];
-   	   dsc.tensor_order = [dsc.tensor_order, 0, 0];
-   	   dsc.name = {dsc.name{:}, 'E_bitmask', 'E_quality'};
-   	   dsc.labels = {dsc.labels{:}, 'Bitmask', 'Quality'};
-   	   dsc.label_1 = {dsc.label_1{:}, '', ''};
-   	   dsc.col_labels = {dsc.col_labels{:}, '', ''};
-   	   dsc.rep_1 = {dsc.rep_1{:}, '', ''};
-   	   dsc.field_name = {dsc.field_name{:}, ...
-   	   	'Electric field measurement quality bitmask',...
-   	   	'Electric field measurement quality flag (9=best)'};
-   	   dsc.ptype = {dsc.ptype{:}, 'Support_Data', 'Support_Data'};
-   	   dsc.valtype = {dsc.valtype{:}, 'INT', 'INT'};
-   	   dsc.sigdig = [dsc.sigdig, 5, 1];
-   	   dsc.ent = {dsc.ent{:}, 'Electric_Field', 'Electric_Field'};
-   	   dsc.prop = {dsc.prop{:}, 'Status', 'Status'};
-   	   dsc.fluc = {dsc.fluc{:}, '', ''};
+   	dsc.size = [dsc.size, 1, 1];
+   	dsc.valtype = {dsc.valtype{:}, 'INT', 'INT'};
+   	dsc.sigdig = [dsc.sigdig, 5, 1];
+   	
+   	result_com{end+1} = ['Probe pair(s): ' probe_info ...
+   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+      irf_log('calb',result_com{end})
    	   
-%   	   desc_ext = 1;
-%   	end
    	
    	
    	% Correct offsets
@@ -318,6 +285,8 @@ for dd = 1:length(dirs)
    %         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
    %			if ~ok, irf_log('load',msg), end
             if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
+            % In the SW/SH we use a different set of offsets which are
+            % independent of the spacecraft potential.
    			if caa_is_sh_interval
    				[dsiof_def, dam_def] = c_efw_dsi_off(t_int(1),cl_id,[]);
    			else
@@ -341,59 +310,48 @@ for dd = 1:length(dirs)
    	
    		data = caa_corof_dsi(data,Ddsi,Damp);
    		
-   		%if length(Ddsi) == 1
-   		%	dsc.com = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-   		%		real(Ddsi(1)),imag(Ddsi(1)),Damp);
-   		%else
-   		%	dsc.com = 'ISR2 offsets';
-   		%	for in = 1:size(Ddsi,1)
-   		%		dsc.com = [dsc.com sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
-   		%			epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
-   		%	end
-   		%	dsc.com = [dsc.com sprintf(' dAmp=%1.2f',Damp)];
-   		%end
+   		if length(Ddsi) == 1
+   			dsi_str = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+   				real(Ddsi(1)),imag(Ddsi(1)),Damp);
+   		else
+   			dsi_str = 'ISR2 offsets';
+   			for in = 1:size(Ddsi,1)
+   				dsi_str = [dsi_str sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
+   					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
+   			end
+   			dsi_str = [dsi_str sprintf(' dAmp=%1.2f',Damp)];
+   		end
    		clear Ddsi Damp
+   	   result_com{end+1} = dsi_str;
+   	   irf_log('calb',result_com{end})
    		
 %   		dsc.com{dd} = ['Probe pair(s): ' E_info.probe ...
 %   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
 %   		irf_log('calb',dsc.com)
-         result_com{end+1} = ['Probe pair(s): ' E_info.probe ...
-   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
-   		irf_log('calb',result_com{end})
+
+%         result_com{end+1} = ['Probe pair(s): ' probe_info ...
+%   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+%   		irf_log('calb',result_com{end})
    		
    	end
    	
    	[ok,Del] = c_load('D?p12p34',cl_id); if ~ok, Del = [0 0]; end
    %   [Del, ok] = caa_get(st, dt, cl_id, 'D?p12p34'); if ~ok, Del = [0 0]; end
-   %	if ~isreal(Del)
-   %		Del = imag(Del);
-   %		% offset is applied to p34
-   %		if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
-   %		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-   %			dsc.com, '34', Del(1), Del(2));
-   %	else
-   %		% offset is applied to p12/32
-   %		if strcmp(dsc.sen,'34'), Del = [0 0]; end
-   %		dsc.com = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-   %			dsc.com, dsc.sen(1:2), Del(1), Del(2));
-   %	end
+      if ~isreal(Del)
+      	Del = imag(Del);
+      	% offset is applied to p34
+      	if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
+      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+      		dsi_str, '34', Del(1), Del(2));
+      else
+      	% offset is applied to p12/32
+      	if strcmp(dsc.sen,'34'), Del = [0 0]; end
+      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+      		dsi_str, dsc.sen(1:2), Del(1), Del(2));
+      end
+      result_com{end} = del_str;
+      irf_log('calb',result_com{end})
    	
-   	dsc.frv = {'Observatory'};
-   	if v_size>1, for j=2:v_size, dsc.frv = [dsc.frv {''}]; end, end
-   	
-   elseif strcmp(caa_vs,'EF')
-   	% We check if this full res E is from coming from two probe pairs
-   	if lev==2 && ~(strcmp(dsc.sen,'1234') || strcmp(dsc.sen,'3234')) && QUALITY>1
-   		irf_log('save','This is not a full E, setting QUALITY=1!')
-   		QUALITY = 1;
-   	end
-   	
-   	if ~isempty(data)
-   		% Remove Ez, which is zero
-   		data = data(:,1:3);
-   	end
-   	
-   	dsc.frv = {'Observatory'};
    	
    elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
    	if ~isempty(data)
@@ -402,15 +360,6 @@ for dd = 1:length(dirs)
            else data(:,2) = data(:,2)*.088;
    		end
    	end
-   	
-   	dsc.units = {'V'};
-   	dsc.cs = {'na'};
-   	dsc.si_conv = {''};
-   	dsc.field_name = {['Potential difference measured between probes '...
-   		dsc.sen(1) ' and ' dsc.sen(2)]};
-   	dsc.ent = {'Instrument'};
-   	dsc.prop = {'Probe_Potential'};
-   	dsc.fluc = {'Waveform'};
    	
    % Combine ADC offsets from two probe pairs into one dataset:
    elseif strcmp(caa_vs, 'DER')
