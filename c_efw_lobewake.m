@@ -172,14 +172,17 @@ if DOPLOT
 	ylabel('\theta [deg]')
 end
 
-% Look for strong apparent Epar if B field is within 15 deg of spin plane:
-ind = find( abs(bele) < ANG_LIM & Psr(:,2) < SCPOT_LIM);
-Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
-	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
-Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
-	./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
-wind = ind(abs(Epar(ind)) > EPAR_LIM &...
-	abs(Epar(ind)./Eperp(ind)) > EPAR_EPERP_RATIO_LIM);
+wind = []; ind = [];
+% Look for strong apparent Epar if B field is within 15 deg of spin plane
+if ~isempty(Psr)
+	ind = find( abs(bele) < ANG_LIM & Psr(:,2) < SCPOT_LIM);
+	Epar = ( diEr(:,2).*diBr(:,2) + diEr(:,3).*diBr(:,3) )...
+		./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
+	Eperp = abs( diEr(:,2).*diBr(:,3) - diEr(:,3).*diBr(:,2) )...
+		./sqrt( diBr(:,2).^2 + diBr(:,3).^2 );
+	wind = ind(abs(Epar(ind)) > EPAR_LIM &...
+		abs(Epar(ind)./Eperp(ind)) > EPAR_EPERP_RATIO_LIM);
+end
 
 if DOPLOT && ~isempty(wind)
 	axes(h(2)), hold on
@@ -188,13 +191,16 @@ if DOPLOT && ~isempty(wind)
 	irf_plot(diEr(wind,[1 3]),'g.');
 end
 
-% Look for strong apparent Ez if B field is above 15 deg of spin plane:
-ind = find( abs(bele) >= ANG_LIM & Psr(:,2) < SCPOT_LIM);
-if ~isempty(ind)
-	diEr(:,4) = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
-	diEr = irf_abs(diEr); % diEr(:,6) now contains abs(E)
-	ind = ind(abs(diEr(ind,4)) > EZ_LIM & diEr(ind,6) > EPERP_LIM &...
-		diEr(ind,6)./Eperp(ind) > EPERP_RATIO_LIM & diEr(ind,5) < EDEV_LIM);
+
+% Look for strong apparent Ez if B field is above 15 deg of spin plane
+if ~isempty(Psr)
+	ind = find( abs(bele) >= ANG_LIM & Psr(:,2) < SCPOT_LIM);
+	if ~isempty(ind)
+		diEr(:,4) = -(diEr(:,2).*diBr(:,2)+diEr(:,3).*diBr(:,3))./diBr(:,4);
+		diEr = irf_abs(diEr); % diEr(:,6) now contains abs(E)
+		ind = ind(abs(diEr(ind,4)) > EZ_LIM & diEr(ind,6) > EPERP_LIM &...
+			diEr(ind,6)./Eperp(ind) > EPERP_RATIO_LIM & diEr(ind,5) < EDEV_LIM);
+	end
 end
 
 if DOPLOT && ~isempty(ind)
