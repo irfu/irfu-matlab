@@ -123,7 +123,8 @@ do
 	echo -n "$fsize: delivering..."
 	scp $fname efw@caa1.estec.esa.int:/c/data-20/EFW/
 	if ! [ $? = 0 ]; then echo "Error!"; exit 1; fi
-	echo "$fname  `LANG= date`">>${log_file}
+	md=`md5sum $fname| awk '{print $1}'`
+	echo "$fname  $md `LANG= date`">>${log_file}
 	echo -n " moving..."
 	mv $fname $out_dir
 	if ! [ $? = 0 ]; then echo "Error!"; exit 1; fi
