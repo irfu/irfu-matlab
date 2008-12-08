@@ -203,6 +203,7 @@ cd(old_pwd)
 % Subfunction to check whether a file 'fn' exists in a
 % given list of subdirs 'sp' do a directory 'cur_dir'
 function found = checkFileExists_subfunc(fn, cur_dir, sp)
+   found = [];
    for ff = 1:length(sp)
       found(ff) = exist([cur_dir '/' sp(ff).name '/' fn], 'file');
    end

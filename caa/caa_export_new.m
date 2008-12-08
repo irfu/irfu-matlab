@@ -125,7 +125,9 @@ for dd = 1:length(dirs)
    %      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pair_list(k)));
    %   end
       probe_pairs = probe_pair_list(logical(ok));   % Keep list of probe pairs actually loaded.
-      vs = irf_ssub(vs, probe_pairs(1));
+      if numel(probe_pairs) > 0
+         vs = irf_ssub(vs, probe_pairs(1));
+      end
    else
       [ok,data] = c_load(vs);
    %   [data, ok] = caa_get(st, dt, cl_id, vs);
@@ -363,51 +365,56 @@ for dd = 1:length(dirs)
    	
    % Combine ADC offsets from two probe pairs into one dataset:
    elseif strcmp(caa_vs, 'DER')
+      if ~(isempty(data1) && isempty(data2))
    
-      if length(probe_pairs) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
-         single_pair_data = [data1 data2];
-         start_time = min( single_pair_data(:,1) );
-      else
-   %      start_time = min( min(data1(:,1)), min(data2(:,1)) );
-         start_time = min( min( [data1(:,1) data2(:,1)] ) );
+         if length(probe_pairs) == 1   % Most likely p1 broken, so no 'Dadc?p12' product!
+            single_pair_data = [data1 data2];
+            start_time = min( single_pair_data(:,1) );
+         else
+            start_time = min( min(data1(:,1)), min(data2(:,1)) );
+%            start_time = min( min( [data1(:,1) data2(:,1)] ) );
+         end
+         timestamp = start_time:4:t_int(2);
+         data_out = zeros(length(timestamp), 3) * NaN;
+         data_out(:, 1) = timestamp;
+         
+         if find(probe_pairs == 12 | probe_pairs == 32)
+            [ind1, ind2] = irf_find_comm_idx(data_out, data1);
+            data_out(ind1, 2) = data1(ind2, 2);
+         end
+         
+         if find(probe_pairs == 34)
+            [ind1, ind2] = irf_find_comm_idx(data_out, data2);
+            data_out(ind1, 3) = data2(ind2, 2);
+         end
+         
+         data_orig = data;
+         clear data;
+         data = data_out;
+         
+         % Extend description to cover data record for two probe pairs:
+         if length(probe_pairs) > 1
+%            dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
+            result_com{end+1} = [sprintf('Probe pairs: p%i,p%i', probe_pairs) ...
+   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+         else
+%            dsc.com = sprintf('Probe pair used is p%i', probe_pairs);
+            result_com{end+1} = [sprintf('Probe pair: p%i', probe_pairs) ...
+   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+         end
+         irf_log('calb',result_com{end})
+         
+%         if dd == 1
+            dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
+            dsc.sigdig = [dsc.sigdig 6];
+            dsc.size = [dsc.size 1];
+%         end
+         
+         clear start_time timestamp ind1 ind2 data_out
+      
+      else % isempty(data1) && isempty(data2)
+         data = [];
       end
-      timestamp = start_time:4:t_int(2);
-      data_out = zeros(length(timestamp), 3) * NaN;
-      data_out(:, 1) = timestamp;
-   
-      if find(probe_pairs == 12 | probe_pairs == 32)
-         [ind1, ind2] = irf_find_comm_idx(data_out, data1);
-         data_out(ind1, 2) = data1(ind2, 2);
-      end
-      
-      if find(probe_pairs == 34)
-         [ind1, ind2] = irf_find_comm_idx(data_out, data2);
-         data_out(ind1, 3) = data2(ind2, 2);
-      end
-      
-      data_orig = data;
-      clear data;
-      data = data_out;
-      
-      % Extend description to cover data record for two probe pairs:
-      if length(probe_pairs) > 1
-%         dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
-         result_com{end+1} = [sprintf('Probe pairs: p%i,p%i', probe_pairs) ...
-   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
-      else
-%         dsc.com = sprintf('Probe pair used is p%i', probe_pairs);
-         result_com{end+1} = [sprintf('Probe pair: p%i', probe_pairs) ...
-   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
-      end
-   irf_log('calb',result_com{end})
-      
-%      if dd == 1
-         dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
-         dsc.sigdig = [dsc.sigdig 6];
-         dsc.size = [dsc.size 1];
-%      end
-      
-      clear start_time timestamp ind1 ind2 data_out
    end
    
 %   result = [result; data];
