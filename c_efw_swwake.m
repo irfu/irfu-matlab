@@ -121,7 +121,7 @@ for in = 1:n_spins
 					t_temp = dtmp(1,1) + ((1:nm) - nm-1)*ddt;
 					data_temp = irf_resamp(dtmp,[t_temp'; dtmp(1:2,1)],...
 						'linear');
-					dtmp = [data_temp(1:end-2,:); dtmp];
+					dtmp = [data_temp(1:end-2,:); dtmp]; %#ok<AGROW>
 					clear nm t_temp data_temp
 				end
 				if dtmp(end,1)<=te-ddt
@@ -130,7 +130,7 @@ for in = 1:n_spins
 					t_temp = dtmp(end,1) + (1:nm)*ddt;
 					data_temp = irf_resamp(dtmp,...
 						[dtmp(end-1:end,1); t_temp'], 'linear');
-					dtmp = [dtmp; data_temp(3:end,:)];
+					dtmp = [dtmp; data_temp(3:end,:)]; %#ok<AGROW>
 					clear nm t_temp data_temp
 				end
 				dtmp = irf_resamp(dtmp, ttime(:,in), 'spline');
@@ -264,7 +264,7 @@ for in = iok
 	if plotflag_now
 		d12_tmp = d12; % save for plotting
 	end
-	% Average with only 5 points to get a more fne fit
+	% Average with only 5 points to get a more fine fit
 	d12 = w_ave(d12,5);
 	
 	wake_width = WAKE_MAX_HALFWIDTH;
