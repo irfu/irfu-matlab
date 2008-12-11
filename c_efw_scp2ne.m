@@ -1,7 +1,7 @@
-function n=c_efw_scp2ne(Vps,flag)
+function n=c_efw_scp2ne(Vps,flag,coef)
 %C_EFW_SCP2NE calculates the plasma density (Ne) for given EFW sc potential
 %
-% Ne = c_efw_scp2ne( Vps, flag );
+% Ne = c_efw_scp2ne( Vps, [flag],[coef] );
 %
 %   Function that calculates the plasma density (Ne) for given EFW
 %   probes to spacecraft potential values Vps.
@@ -14,6 +14,7 @@ function n=c_efw_scp2ne(Vps,flag)
 %   Vps - if negative values assumes those to be the negative of the spacecraft potential
 %   flag
 %        -1   convert from Ne to Vps
+%   coef - multiplication factor for the final density, default = 1
 %
 % $Id$
 
@@ -35,16 +36,21 @@ n           = Vps;
 colind      = min(2,size(Vps,2)):size(Vps,2);
 
 switch nargin
-  
-case 1 % Vps -> Ne
-  n(:,colind) = 10.^interp1( Vps_ref, log10(Ne_ref), abs(real(Vps(:,colind))), 'linear', 'extrap' );
-  
-case 2 % Ne -> Vps
-  if flag == -1,
+    case 1
+        % Vps -> Ne
+        flag=1;coef=1;
+    case 2
+        coef=1;
+end
+
+if flag==-1, 
+    % Ne -> Vps
     warning off
-    n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)), 'linear', 'extrap' );  
+    n(:,colind) = interp1( log10(Ne_ref), Vps_ref, log10(Vps(:,colind)/coef), 'linear', 'extrap' );
     warning on
-  end
+else    % Vps -> Ne
+    n(:,colind) = 10.^interp1( Vps_ref, log10(Ne_ref), abs(real(Vps(:,colind))), 'linear', 'extrap' )*coef;
+  
 end
 
 return;
