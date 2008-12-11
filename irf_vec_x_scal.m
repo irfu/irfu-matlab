@@ -9,12 +9,10 @@ function [z]=irf_vec_x_scal(x,y,p)
 %
 % $Id$
 
-global AV_DEBUG;if isempty(AV_DEBUG), debug=0; else debug=AV_DEBUG;end
-
 if nargin==2,p=1;end
 
 if size(x,1) ~= size(y,1),
- if debug ==1, disp('interpolating y to x, irf_vec_x_scal()');end
+ irf_log('fcal','interpolating y to x')
  y = irf_resamp(y,x);
 end
 

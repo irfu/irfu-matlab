@@ -128,9 +128,9 @@ if strcmp(action,'initialize'),
   %====================================
   % The definition of LMN coordinates
   callbackStr='c_pl_sc_conf_lmn(''fixLMN_N'');';
-  LMN_Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.10 .3 .05],'string',LMN_Ltitle,'Callback',callbackStr);
+  LMN_Lflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.10 .4 .05],'string',LMN_Ltitle,'Callback',callbackStr);
   callbackStr='c_pl_sc_conf_lmn(''fixLMN_L'');';
-  LMN_Nflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.05 .3 .05],'string',LMN_Ntitle,'Callback',callbackStr);
+  LMN_Nflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.05 .4 .05],'string',LMN_Ntitle,'Callback',callbackStr);
   set(LMN_Lflag,'value',1);
 
   %====================================

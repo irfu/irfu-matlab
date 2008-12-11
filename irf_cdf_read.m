@@ -48,7 +48,8 @@ if nargin==0,
         disp([num2str(j) '. ' D(j).name]);
       end
       disp('Choose cdf file');
-      cdf_file=irf_ask('Cdf_file? [%]>','cdf_file',1);
+      cdf_file_number=irf_ask('Cdf_file? [%]>','cdf_file_number',1);
+      cdf_file=D(cdf_file_number).name;
   end
 end
 

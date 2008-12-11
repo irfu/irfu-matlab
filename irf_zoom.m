@@ -14,6 +14,7 @@ function irf_zoom(interval,c,axis_handles,t_ref)
 
 flag_use_t_start_epoch=0; % if 1 use userdata.t_start_epoch as tref
 
+if nargin==0, help irf_zoom, return; end
 if nargin<4,
   % Try to read the reference time from figures user_data variable
   user_data=get(gcf,'userdata');
