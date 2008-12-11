@@ -43,7 +43,7 @@ PROCESSING_LEVEL='Calibrated';
 
 old_pwd = pwd;
 %cd(sp)
-dirs = get_subdirs(st, dt, cl_id);
+dirs = caa_get_subdirs(st, dt, cl_id);
 if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
 
 result = [];
@@ -103,7 +103,8 @@ end
 
 for dd = 1:length(dirs)
    d = dirs{dd};
-   cd([sp '/' d]);
+%   cd([sp '/' d]);
+   cd(d);
    
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
@@ -256,9 +257,16 @@ for dd = 1:length(dirs)
    	dsc.valtype = {dsc.valtype{:}, 'INT', 'INT'};
    	dsc.sigdig = [dsc.sigdig, 5, 1];
    	
-   	result_com{end+1} = ['Probe pair(s): ' probe_info ...
-   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
-      irf_log('calb',result_com{end})
+   	if length(probe_info) > 2
+   	   probe_str = sprintf('Probe pairs p%s,p%s', probe_info(1:2), probe_info(3:4));
+   	   if length(probe_info) > 4, probe_str = [probe_str ',p' probe_info(5:6)]; end
+   	else probe_str = sprintf('Probe pair p%s', probe_info);
+   	end
+   	com_str = sprintf('Subinterval %s/%s: %s', ...
+   	   epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
+   	
+   	result_com{end+1} = com_str;
+      irf_log('calb',com_str)
    	   
    	
    	
@@ -285,8 +293,8 @@ for dd = 1:length(dirs)
    		if isempty(dsiof)
    			[ok,Ps,msg] = c_load('Ps?',cl_id);
    %         [Ps, ok] = caa_get(st, dt, cl_id, 'Ps?');
-   %			if ~ok, irf_log('load',msg), end
-            if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
+   			if ~ok, irf_log('load',msg), end
+%            if ~ok, irf_log('load',irf_ssub('Cannot load/empty Ps?',cl_id)), end
             % In the SW/SH we use a different set of offsets which are
             % independent of the spacecraft potential.
    			if caa_is_sh_interval
@@ -313,10 +321,12 @@ for dd = 1:length(dirs)
    		data = caa_corof_dsi(data,Ddsi,Damp);
    		
    		if length(Ddsi) == 1
-   			dsi_str = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+%   			dsi_str = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+            dsi_str = sprintf('Dsi offsets (ISR2): dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
    				real(Ddsi(1)),imag(Ddsi(1)),Damp);
    		else
-   			dsi_str = 'ISR2 offsets';
+%   			dsi_str = 'ISR2 offsets';
+   			dsi_str = 'Dsi offsets';
    			for in = 1:size(Ddsi,1)
    				dsi_str = [dsi_str sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
    					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
@@ -325,7 +335,7 @@ for dd = 1:length(dirs)
    		end
    		clear Ddsi Damp
    	   result_com{end+1} = dsi_str;
-   	   irf_log('calb',result_com{end})
+   	   irf_log('calb',dsi_str)
    		
 %   		dsc.com{dd} = ['Probe pair(s): ' E_info.probe ...
 %   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
@@ -343,16 +353,20 @@ for dd = 1:length(dirs)
       	Del = imag(Del);
       	% offset is applied to p34
       	if strcmp(dsc.sen,'12') || strcmp(dsc.sen,'32'), Del = [0 0]; end
-      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-      		dsi_str, '34', Del(1), Del(2));
+%      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+%            dsi_str, '34', Del(1), Del(2));
+      	del_str = sprintf('p%s offset (ISR2): dEx=%1.2f dEy=%1.2f', ...
+      	   '34', Del(1), Del(2));
       else
       	% offset is applied to p12/32
       	if strcmp(dsc.sen,'34'), Del = [0 0]; end
-      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
-      		dsi_str, dsc.sen(1:2), Del(1), Del(2));
+%      	del_str = sprintf('%s. p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+%            dsi_str, dsc.sen(1:2), Del(1), Del(2));
+         del_str = sprintf('p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
+      		dsc.sen(1:2), Del(1), Del(2));
       end
-      result_com{end} = del_str;
-      irf_log('calb',result_com{end})
+      result_com{end+1} = del_str;
+      irf_log('calb',del_str)
    	
    	
    elseif lev==1 && ~isempty(regexp(caa_vs,'^P(12|32|34)?$','once'))
@@ -395,20 +409,23 @@ for dd = 1:length(dirs)
          % Extend description to cover data record for two probe pairs:
          if length(probe_pairs) > 1
 %            dsc.com = sprintf('Probe pairs used are p%i and p%i', probe_pairs);
-            result_com{end+1} = [sprintf('Probe pairs: p%i,p%i', probe_pairs) ...
-   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+            adc_str = sprintf('Probe pairs p%i,p%i', probe_pairs);
+%            result_com{end+1} = [sprintf('Probe pairs: p%i,p%i', probe_pairs) ...
+%   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
          else
 %            dsc.com = sprintf('Probe pair used is p%i', probe_pairs);
-            result_com{end+1} = [sprintf('Probe pair: p%i', probe_pairs) ...
-   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
+            adc_str = sprintf('Probe pair p%i', probe_pairs);
+%            result_com{end+1} = [sprintf('Probe pair: p%i', probe_pairs) ...
+%   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
          end
-         irf_log('calb',result_com{end})
+         adc_str = sprintf('Subinterval %s/%s: %s', ...
+            epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), adc_str);
+         result_com{end+1} = adc_str;
+         irf_log('calb',adc_str)
          
-%         if dd == 1
-            dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
-            dsc.sigdig = [dsc.sigdig 6];
-            dsc.size = [dsc.size 1];
-%         end
+         dsc.valtype = {dsc.valtype{:}, 'FLOAT'};
+         dsc.sigdig = [dsc.sigdig 6];
+         dsc.size = [dsc.size 1];
          
          clear start_time timestamp ind1 ind2 data_out
       
@@ -538,6 +555,8 @@ obuf = sprintf('%s%s',obuf,['END_META       =   ' m_s '\n']);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function dir_list = get_subdirs(iso_t, dt, cl_id)
 % Find all subinterval dirs for spacecraft cl_id
+% NOTE: For the export of 24-h files, this has been replaced
+%       by caa_get_subdirs.m
 
 SPLIT_INT = 3; % 3 hour subintervals
 BASE_DIR = '/data/caa/l1';

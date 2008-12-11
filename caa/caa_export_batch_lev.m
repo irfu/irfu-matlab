@@ -21,9 +21,11 @@ old_pwd = pwd;
 QUAL=3;
 DATA_VER = 'XX';
 BASE_DIR = '/data/caa/l1';
+LOG_DIR = '~/Matlab/Cluster/devel/output/export/log';
 %BASE_OUTPUT = '/data/caa/cef';
 BASE_OUTPUT = '~/Matlab/Cluster/devel/output/export';
-time_length = 3*3600;   % Operate on 3-hour intervals.
+
+time_length = 24*3600;   % Operate on 24-hour intervals.
 
 dirs = textread(fname, '%s');
 if isempty(dirs), disp('No directories given'), return, end
@@ -31,6 +33,10 @@ if isempty(dirs), disp('No directories given'), return, end
 ind = regexp(fname, '\.', 'once');
 if ~isempty(ind), job_name = fname(1:ind-1); else, job_name = fname; end
 out_path = [BASE_OUTPUT '/' job_name];
+
+logfile = [LOG_DIR '/' job_name '.log'];
+errlog = [LOG_DIR '/' fname '_errors'];
+
 
 
 l1p = {'P1','P2','P3','P4'};
@@ -53,7 +59,15 @@ l3 = {'E', 'DER'};
 %fprintf(fid,'%s %s\n', v_s, epoch2iso(date2epoch(now),1));
 %fclose(fid);
 
-errlog = [BASE_OUTPUT '/' fname '_errors'];
+
+dirfind = @(y) ([]);
+if exist(logfile, 'file')
+   [logdirs, logstatus] = textread(logfile, '%s%s');
+   if ~isempty(logdirs)
+      dirfind = @(y) (find(cellfun(@(x) (~isempty(regexp(x, y))), logdirs)));
+   end
+end
+
 
 v_s = DATA_VER;
 
@@ -64,11 +78,14 @@ cd(out_path)
 
 for kk = 1:length(dirs)
    d = dirs{kk};
+   if regexp(d, '^%'), continue, end
    if length(d) > length(BASE_DIR) & strcmp(BASE_DIR, d(1:length(BASE_DIR)))
       d = d((length(BASE_DIR)+2):end);
    end
    cur_dir = [BASE_DIR '/' d];
-   disp(['Running directory:   ' cur_dir])
+   found = dirfind(d);
+   if found, disp(['----- Skipping directory:   ' cur_dir]), continue, end
+   disp(['----- Running directory:   ' cur_dir])
 
    ind = regexp(d, '_');   % Find divider between date and time in dirname.
    if isempty(ind), disp(['Invalid dir: ' d]), continue, end
@@ -77,7 +94,7 @@ for kk = 1:length(dirs)
    DD    = str2num(d(ind-2:ind-1));
    hh    = str2num(d(ind+1:ind+2));
 %   mm = str2num(d(ind+3:ind+4));
-   start_time = toepoch([YYYY MM DD hh 00 00]);
+   start_time = toepoch([YYYY MM DD 00 00 00]);
    
    ind = regexp(d, 'C[1-4]'); % Find Cluster ID in dirname.
    if isempty(ind), disp(['Invalid dir: ' d]), continue, end
@@ -194,8 +211,13 @@ for kk = 1:length(dirs)
    		   end
    		end
    	end
-   end
-end
+   end   % lev == 3
+   
+   logfid = fopen(logfile, 'a');
+   if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end
+   fprintf(logfid, '%s\tDone\n', cur_dir);
+   fclose(logfid);
+end   % for
 cd(old_pwd)
 
 
