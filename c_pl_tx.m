@@ -30,24 +30,29 @@ function out=c_pl_tx(varargin)
 %
 % $Id$
 
+sc_list=1:4; % default plto all s/c data
 error(nargchk(1,8,nargin))
 
 args = varargin;
 
 if ischar(args{1})
-% We have 4 arguments
-	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]'); 
-		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
-	end
+    % We have variables defines in style B?
+    flag_get_variables_from_caller=1;
+    varable_name_to_get_from_caller=args{1};
+%     for cl_id=1:4
+% 		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]'); 
+% 		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
+% 	end
 	if length(args) > 1, args = args(2:end); 
     else args = ''; end
 else
+    % We have four variables as input
 	if length(args)<4, error('use c_pl_tx(x1,x2,x3,x4) or c_pl_tx(''x?'')'), end
 	% We have x1,x2..x4
 	c_eval('x? = args{?};');
 	if length(args) > 4, args = args(5:end); 
     else args = ''; end
+    flag_get_variables_from_caller=0;
 end
 
 % Check for deprecated 1
@@ -68,23 +73,6 @@ if length(args)>0
 		if isempty(args{1}), args = args(2:end); end
 	end
 end
-if isempty(column) && ~isempty(x1)
-	% try to guess the size of the matrix
-	column = size(x1,2);
-	if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x2)
-	column = size(x2,2);
-	if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x3)
-	column = size(x3,2);
-	if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x4)
-	column = size(x4,2);
-	if column > 2, column = 2:column; end
-elseif isempty(column)
-	irf_log('fcal','all inputs are empty')
-	return
-end
 
 delta_t = [];
 l_style = {};
@@ -95,10 +83,15 @@ end
 
 while have_args
 	if ischar(args{1})
-		% Linestyle
-		if isempty(l_style), c_eval('l_style(?)={args{1}};')
-        else irf_log('fcal','L_STYLE is already set')
-		end
+        if strcmp(args{1},'sc_list')
+            args = args(2:end);
+            sc_list=args{1};
+        else
+            % assume that argument defines Linestyle
+            if isempty(l_style), c_eval('l_style(?)={args{1}};')
+            else irf_log('fcal','L_STYLE is already set')
+            end
+        end
 		args = args(2:end);
 	elseif iscell(args{1}) && length(args{1})==4
 		% Individual linestyles for each sc
@@ -121,6 +114,32 @@ while have_args
     else have_args = 0;
 	end
 end
+if flag_get_variables_from_caller==1,
+	for cl_id=sc_list,
+		ttt = evalin('caller',irf_ssub(varable_name_to_get_from_caller,cl_id),'[]'); 
+		c_eval('x? =ttt;',cl_id); clear ttt
+    end
+end
+
+
+if isempty(column) && ~isempty(x1)
+	% try to guess the size of the matrix
+	column = size(x1,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column) && ~isempty(x2)
+	column = size(x2,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column) && ~isempty(x3)
+	column = size(x3,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column) && ~isempty(x4)
+	column = size(x4,2);
+	if column > 2, column = 2:column; end
+elseif isempty(column)
+	irf_log('fcal','all inputs are empty')
+	return
+end
+
 
 if isempty(delta_t), delta_t = [0 0 0 0]; end
 
@@ -154,7 +173,7 @@ c_eval('ts?=t_start_epoch+delta_t(?);')
 
 if length(column) == 1
 	pl = '';
-	for jj=1:4
+	for jj=sc_list
 		if eval(irf_ssub('~isempty(x?)',jj))
 			c_eval(['s_s=''(x?(:,1)-ts?),x?(:,column),''''' l_style{jj} ''''''';'],jj);
 			if isempty(pl), pl = s_s; else pl = [pl ',' s_s]; end
@@ -174,7 +193,7 @@ else
 	for j=1:length(column)
 		c(j)=irf_subplot(length(column),1,-j);
 		pl = '';
-		for jj=1:4
+		for jj=sc_list
 			if eval(irf_ssub('~isempty(x?)',jj))
 				c_eval(['s_s=''(x?(:,1)-ts?),x?(:,column(j)),''''' l_style{jj} ''''''';'],jj);
 				if isempty(pl), pl = s_s; else pl = [pl ',' s_s]; end
