@@ -19,7 +19,7 @@ end
 old_pwd = pwd;
 
 QUAL=3;
-DATA_VER = 'XX';
+DATA_VER = '00';
 BASE_DIR = '/data/caa/l1';
 LOG_DIR = '~/Matlab/Cluster/devel/output/export/log';
 %BASE_OUTPUT = '/data/caa/cef';
@@ -62,7 +62,11 @@ l3 = {'E', 'DER'};
 
 dirfind = @(y) ([]);
 if exist(logfile, 'file')
-   [logdirs, logstatus] = textread(logfile, '%s%s');
+   logfid = fopen(logfile, 'r');
+   logtext = textscan(logfid, '%s%s');
+   fclose(logfid);
+   [logdirs, logstatus] = deal(logtext{:});
+%   [logdirs, logstatus] = textread(logfile, '%s%s');
    if ~isempty(logdirs)
       dirfind = @(y) (find(cellfun(@(x) (~isempty(regexp(x, y))), logdirs)));
    end
@@ -94,6 +98,7 @@ for kk = 1:length(dirs)
    DD    = str2num(d(ind-2:ind-1));
    hh    = str2num(d(ind+1:ind+2));
 %   mm = str2num(d(ind+3:ind+4));
+   if hh ~= 0, disp(['----- Skipping directory:   ' cur_dir]), continue, end
    start_time = toepoch([YYYY MM DD 00 00 00]);
    
    ind = regexp(d, 'C[1-4]'); % Find Cluster ID in dirname.

@@ -35,7 +35,7 @@ fullscale = 0;
 plotspec = 1;
 plotbitmask = 1;
 usextra = 0;
-data_level = 3;
+data_level = 2;
 QUALITY = 3;
 
 int_s = realmax;
@@ -195,21 +195,23 @@ for cli=1:4
 			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
 			   
-			   E_info = c_load('diESPEC?p1234_info', cli, 'var');  % Load info; need list of probe pairs!
-%            keyboard
+%			   E_info = c_load('diESPEC?p1234_info', cli, 'var');  % Load info; need list of probe pairs!
+            E_info = c_load('diE?p1234_info', cli, 'var');    % Load info; need list of probe pairs!
+            if isempty(E_info) || ~isfield(E_info, 'probe')
+               error('Could not load probe pair info!')
+            end
 
-
-
+            %%% Fill gaps in data???? %%%
+            
 
 			   % Extend data array to accept bitmask and quality flag (2 columns at the end)
 			   es_tmp = [es_tmp zeros(size(es_tmp, 1), 2)];
 			   es_tmp(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
 			   quality_column = size(es_tmp, 2);
 			   bitmask_column = quality_column - 1;
-%			   if cli == 4, keyboard, end
+
 			   % Identify and flag problem areas in data with bitmask and quality factor:
             es_tmp = caa_identify_problems(es_tmp, data_level, E_info.probe, cli, bitmask_column, quality_column);
-%            if cli == 4, keyboard, end
 			   
 				% Delta offsets
 				Del_caa = c_efw_delta_off(es_tmp(1,1),cli);

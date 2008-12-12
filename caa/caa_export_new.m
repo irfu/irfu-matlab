@@ -22,7 +22,7 @@ function status = caa_export_new(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-status = 0;
+status = 0;disp('moo')
 
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '3';
@@ -31,7 +31,7 @@ EFW_DATASET_VERSION = '3';
 if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get ! (ML)
 % The above line nullifies these:
 %if nargin<6, sp='.'; end
-%if nargin<5, DATA_VERSION = 'XX'; end
+%if nargin<5, DATA_VERSION = '00'; end
 %if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
@@ -262,7 +262,7 @@ for dd = 1:length(dirs)
    	   if length(probe_info) > 4, probe_str = [probe_str ',p' probe_info(5:6)]; end
    	else probe_str = sprintf('Probe pair p%s', probe_info);
    	end
-   	com_str = sprintf('Subinterval %s/%s: %s', ...
+   	com_str = sprintf('%s/%s %s', ...
    	   epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), probe_str);
    	
    	result_com{end+1} = com_str;
@@ -320,22 +320,38 @@ for dd = 1:length(dirs)
    	
    		data = caa_corof_dsi(data,Ddsi,Damp);
    		
+%   		if length(Ddsi) == 1
+%%   			dsi_str = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+%            dsi_str = sprintf('Dsi offsets (ISR2): dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
+%   				real(Ddsi(1)),imag(Ddsi(1)),Damp);
+%   		else
+%%   			dsi_str = 'ISR2 offsets';
+%   			dsi_str = 'Dsi offsets';
+%   			for in = 1:size(Ddsi,1)
+%   				dsi_str = [dsi_str sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
+%   					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
+%   			end
+%   			dsi_str = [dsi_str sprintf(' dAmp=%1.2f',Damp)];
+%   		end
+   		
    		if length(Ddsi) == 1
-%   			dsi_str = sprintf('ISR2 offsets: dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-            dsi_str = sprintf('Dsi offsets (ISR2): dEx=%1.2f dEy=%1.2f dAmp=%1.2f',...
-   				real(Ddsi(1)),imag(Ddsi(1)),Damp);
-   		else
-%   			dsi_str = 'ISR2 offsets';
-   			dsi_str = 'Dsi offsets';
-   			for in = 1:size(Ddsi,1)
-   				dsi_str = [dsi_str sprintf(' %s: dEx=%1.2f dEy=%1.2f,',...
-   					epoch2iso(Ddsi(in,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)))];
-   			end
-   			dsi_str = [dsi_str sprintf(' dAmp=%1.2f',Damp)];
-   		end
-   		clear Ddsi Damp
-   	   result_com{end+1} = dsi_str;
+   		   dsi_str = sprintf('%s/%s ISR2 offsets: dEx=%1.2f dEy=%1.2f, dAmp=%1.2f',...
+               epoch2iso(t_int(1),1),epoch2iso(t_int(2),1),real(Ddsi),imag(Ddsi),Damp);
+         else
+            for in = 1:(size(Ddsi, 1)-1)
+               dsi_str = sprintf('%s/%s ISR2 offsets: dEx=%1.2f dEy=%1.2f, dAmp=%1.2f',...
+                  epoch2iso(Ddsi(in,1),1),epoch2iso(Ddsi(in+1,1),1),real(Ddsi(in,2)),imag(Ddsi(in,2)),Damp);
+               result_com{end+1} = dsi_str;
+   	         irf_log('calb',dsi_str)
+            end
+            dsi_str = sprintf('%s/%s ISR2 offsets: dEx=%1.2f dEy=%1.2f, dAmp=%1.2f',...
+               epoch2iso(Ddsi(end,1),1),epoch2iso(t_int(2),1),real(Ddsi(end,2)),imag(Ddsi(end,2)),Damp);
+         end   
+         result_com{end+1} = dsi_str;
    	   irf_log('calb',dsi_str)
+   		clear Ddsi Damp
+%   	   result_com{end+1} = dsi_str;
+%   	   irf_log('calb',dsi_str)
    		
 %   		dsc.com{dd} = ['Probe pair(s): ' E_info.probe ...
 %   		   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
@@ -365,6 +381,8 @@ for dd = 1:length(dirs)
          del_str = sprintf('p%s offset (ISR2): dEx=%1.2f dEy=%1.2f',...
       		dsc.sen(1:2), Del(1), Del(2));
       end
+      del_str = sprintf('%s/%s %s', ...
+         epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), del_str);
       result_com{end+1} = del_str;
       irf_log('calb',del_str)
    	
@@ -418,7 +436,7 @@ for dd = 1:length(dirs)
 %            result_com{end+1} = [sprintf('Probe pair: p%i', probe_pairs) ...
 %   	   	   ' in subinterval: ' epoch2iso(t_int(1),1) '/' epoch2iso(t_int(2),1)];
          end
-         adc_str = sprintf('Subinterval %s/%s: %s', ...
+         adc_str = sprintf('%s/%s %s', ...
             epoch2iso(t_int(1),1), epoch2iso(t_int(2),1), adc_str);
          result_com{end+1} = adc_str;
          irf_log('calb',adc_str)
