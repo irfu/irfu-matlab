@@ -10,6 +10,7 @@ function out=irf_fname(st,fmt)
 %	0: YYYYMMDD_hhmm (default)
 %	1: YYMMDDhhmmss
 %	2: YYYYMMDD_hhmmss_hhmmss (CAA)
+%  3: YYYYMMDD    (new CAA daily format)
 %
 % $Id$
 
@@ -39,6 +40,8 @@ elseif fmt==2
 		if d(k)<10, se{k-3} = ['0' se{k-3}]; end
 	end
 	out = [s{1} s{2} s{3} '_' s{4} s{5} s{6} '_' se{1} se{2} se{3}];
+elseif fmt == 3
+   out = [s{1} s{2} s{3}];
 else
 	error('unknown format')
 end

@@ -30,12 +30,16 @@ time_length = 24*3600;   % Operate on 24-hour intervals.
 dirs = textread(fname, '%s');
 if isempty(dirs), disp('No directories given'), return, end
 
-ind = regexp(fname, '\.', 'once');
-if ~isempty(ind), job_name = fname(1:ind-1); else, job_name = fname; end
+%ind = regexp(fname, '\.', 'once');
+ind = regexp(fname, '200[1-7]\d+');
+if ~isempty(ind), job_name = fname(ind(end):end);
+elseif ~isempty(find(fname == '/'))
+   job_name = fname(find(fname == '/', 1, 'last')+1:end);
+end
 out_path = [BASE_OUTPUT '/' job_name];
 
 logfile = [LOG_DIR '/' job_name '.log'];
-errlog = [LOG_DIR '/' fname '_errors'];
+errlog = [LOG_DIR '/' job_name '_errors'];
 
 
 
@@ -88,7 +92,10 @@ for kk = 1:length(dirs)
    end
    cur_dir = [BASE_DIR '/' d];
    found = dirfind(d);
-   if found, disp(['----- Skipping directory:   ' cur_dir]), continue, end
+   if found & strcmp(logstatus(found), 'Done')
+      disp(['----- Skipping directory:   ' cur_dir])
+      continue
+   end
    disp(['----- Running directory:   ' cur_dir])
 
    ind = regexp(d, '_');   % Find divider between date and time in dirname.

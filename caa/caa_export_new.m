@@ -22,7 +22,7 @@ function status = caa_export_new(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-status = 0;disp('moo')
+status = 0;
 
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '3';
@@ -40,11 +40,19 @@ DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
 FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
+DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
 
 old_pwd = pwd;
 %cd(sp)
 dirs = caa_get_subdirs(st, dt, cl_id);
 if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
+
+if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
+   st_temp = fromepoch(st);
+   if dt ~= 24*3600 || st_temp(4) ~= 00
+      error('Incorrect format for daily files. Check parameters!')
+   end
+end
 
 result = [];
 result_com = {};
@@ -469,8 +477,13 @@ cd(old_pwd)
 ext_s = '.cef';
 % We have special names for CAA
 DATASET_ID = irf_ssub(['C?_CP_EFW_L' num2str(lev) '_' caa_vs],cl_id);
-file_name = ...
-	[DATASET_ID '__' irf_fname(t_int_full,2) '_V' DATA_VERSION];
+if DELIVERY_TO_CAA
+   file_name = ...
+      [DATASET_ID '__' irf_fname(t_int_full,3) '_V' DATA_VERSION];
+else
+   file_name = ...
+	   [DATASET_ID '__' irf_fname(t_int_full,2) '_V' DATA_VERSION];
+end
 
 buf = '';
 
