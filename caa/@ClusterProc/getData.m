@@ -904,7 +904,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		if flag_wash_p32
 			[ok,w2] = c_load('w2W?p32',cl_id);
 			if ~ok || isempty(w2)
-				irf_log('load', irf_ssub('No/empty w2W?p!',cl_id,probe));
+				irf_log('load', irf_ssub('No/empty w2W?p32',cl_id));
 			else
 				irf_log('proc','Washing asymmetric probe')
 				w2(isnan(w2(:,2)),:) = [];
