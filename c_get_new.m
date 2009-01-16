@@ -7,7 +7,15 @@
 %
 % $Id$
 
-if exist('sc_list') == 0, sc_list=1:4;end % default values
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
+
+if exist('sc_list','var') == 0, sc_list=1:4;end % default values
 
 mmm =  ...
    ['q        end, quit                              ';
@@ -66,13 +74,21 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 q=input('input>','s');if isempty(q),q='0';end
 save_list='';save_file='';
 if strcmp(q,'q'), return,
-elseif q == '0' | strcmp(q,'h'), disp(mmm);
+elseif q == '0' || strcmp(q,'h'), disp(mmm);
 elseif q == '1',
 	DB_S = c_ctl(0,'isdat_db');
 	DP_S = c_ctl(0,'data_path');
 	DATABASE = irf_ask('Database as string [%]>','DATABASE',DB_S);
 	data_dir = irf_ask('Data path [%]>','data_dir',DP_S);
 	cdb = ClusterDB(DATABASE,data_dir,pwd);
+	if ~exist('start_time_s','var')
+		[iso_t,Dt] = caa_read_interval; %#ok<NASGU>
+		if ~isempty(iso_t)
+			start_time_s = sprintf('%s %s %s %s %s %s', iso_t(1:4), ...
+				iso_t(6:7),iso_t(9:10),iso_t(12:13),iso_t(15:16),iso_t(18:19));%#ok<NASGU>
+		end
+		clear iso_t
+	end
 	start_time_s = irf_ask('Start time [%]>','start_time_s','2001 02 01 00 00 00');
 	start_time = eval(['[' start_time_s ']']);
 	start_date_str = strrep(datestr(start_time,29),'-','');
@@ -103,11 +119,11 @@ elseif strcmp(q,'p')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ClusterDB/getData quantities
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(q,'r') | strcmp(q,'v') | strcmp(q,'a') | strcmp(q,'whip') | ...
-	strcmp(q,'e') | strcmp(q,'b') | ...
-	strcmp(q,'bfgm') | q=='p' | strcmp(q,'pburst') | strcmp(q,'eburst') | ...
-	strcmp(q,'ncis') | strcmp(q,'tcis') | strcmp(q,'vcis') | ...
-	strcmp(q,'vce') | strcmp(q,'wbdwf') | strcmp(q,'sax')
+elseif strcmp(q,'r') || strcmp(q,'v') || strcmp(q,'a') || strcmp(q,'whip') || ...
+	strcmp(q,'e') || strcmp(q,'b') || ...
+	strcmp(q,'bfgm') || q=='p' || strcmp(q,'pburst') || strcmp(q,'eburst') || ...
+	strcmp(q,'ncis') || strcmp(q,'tcis') || strcmp(q,'vcis') || ...
+	strcmp(q,'vce') || strcmp(q,'wbdwf') || strcmp(q,'sax')
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,9 +135,9 @@ elseif strcmp(q,'iedi'),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ClusterProc/getData quantities
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(q,'edi') | strcmp(q,'ps') | strcmp(q,'idies') | strcmp(q,'idie') | ...
-	strcmp(q,'dieburst') | strcmp(q,'vedbs') | strcmp(q,'vedb') | ...
-	strcmp(q,'br') | strcmp(q,'brs')
+elseif strcmp(q,'edi') || strcmp(q,'ps') || strcmp(q,'idies') || strcmp(q,'idie') || ...
+	strcmp(q,'dieburst') || strcmp(q,'vedbs') || strcmp(q,'vedb') || ...
+	strcmp(q,'br') || strcmp(q,'brs')
 	for ic=sc_list, getData(ClusterProc(pwd),ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,7 +169,7 @@ elseif strcmp(q,'die')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E.B=0 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(q,'edbs') | strcmp(q,'edb') | strcmp(q,'iedb') | strcmp(q,'iedbs')
+elseif strcmp(q,'edbs') || strcmp(q,'edb') || strcmp(q,'iedb') || strcmp(q,'iedbs')
 	ang_limit = irf_ask('Minimum angle(B,spin plane) [%]>','ang_limit',10);
 	below_ang_limit = ...
 		irf_ask('Points < min_ang (0-Ez to NaN, 1-Ez to 1e27, 2-use Ez=0)[%]>',...
@@ -233,14 +249,14 @@ elseif strcmp(q,'x'),
  elseif strcmp(q,'bs'),
   mode=input('Model L=1/M=2? If different give as vector. [1]');if isempty(mode),mode=1;end;
   for ic=sc_list,
-   	if (length(mode)>1), mm=mode(ic);else, mm=mode;end
-		if (mm == 1), param='0-10Hz';end;
-		if (mm == 2), param='0-180Hz';end;
-    disp(['STAFF...wBS' num2str(ic) ' ' param ' filter' ]);
-    [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'staff', 'B_SC', 'Bx_By_Bz', param, '');
-    eval(irf_ssub('wBS?=[double(t) double(data)''];',ic));clear t data;
-    end
-    save mBS wBS1 wBS2 wBS3 wBS4;
+	  if (length(mode)>1), mm=mode(ic);else mm=mode;end
+	  if (mm == 1), param='0-10Hz';end;
+	  if (mm == 2), param='0-180Hz';end;
+	  disp(['STAFF...wBS' num2str(ic) ' ' param ' filter' ]);
+	  [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'staff', 'B_SC', 'Bx_By_Bz', param, '');
+	  eval(irf_ssub('wBS?=[double(t) double(data)''];',ic));clear t data;
+  end
+  save mBS wBS1 wBS2 wBS3 wBS4; %#ok<USENS>
 
  elseif strcmp(q,'dbs'),
   for ic=sc_list,
@@ -252,26 +268,26 @@ elseif strcmp(q,'x'),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'ea')|strcmp(q,'esa') % create E ascii files
-	 if strcmp(q,'ea'), s = ''; else, s = 's'; end
+ elseif strcmp(q,'ea')||strcmp(q,'esa') % create E ascii files
+	 if strcmp(q,'ea'), s = ''; else s = 's'; end
   for ic=sc_list,
      eval(irf_ssub(['if ~exist(''E' s '?'') & exist(''mEdB.mat'',''file''), load mEdB E' s '? ang_limit?;disp(''Loading E' s '?, ang_limit? from mEdB'');end'],ic));
      eval(irf_ssub('if ~exist(''D?p12p34'') & ~exist(''Ddsi?''), load mEDSI D?p12p34 Ddsi? Da?p12 Da?p34 Damp?;disp(''Loading offset values from mEDSI.mat'');end',ic));
      eval(irf_ssub(['if ~exist(''diE' s '?'')& exist(''mEdB.mat'',''file''), load mEdB diE' s '? ang_limit?;disp(''Loading diE' s '?, ang_limit? from mEdB'');end'],ic));
 	offset_comment = 'Offsets => '; 
-	if exist(irf_ssub('Damp?',ic))
+	if exist(irf_ssub('Damp?',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Damp='' num2str(Damp?)];',ic)); 
 	end
-	if exist(irf_ssub('Da?p12',ic))
+	if exist(irf_ssub('Da?p12',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dap12='' num2str(Da?p12)];',ic)); 
 	end
-	if exist(irf_ssub('Da?p34',ic))
+	if exist(irf_ssub('Da?p34',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dap34='' num2str(Da?p34)];',ic)); 
 	end
-	if exist(irf_ssub('D?p12p34',ic))
+	if exist(irf_ssub('D?p12p34',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Dp12p34='' num2str(D?p12p34)];',ic)); 
 	end
-	if exist(irf_ssub('Ddsi?',ic))
+	if exist(irf_ssub('Ddsi?',ic),'var')
      	eval(irf_ssub('offset_comment=[offset_comment '' Ddsi(x,y)=('' num2str(real(Ddsi?)) '','' num2str(imag(Ddsi?)) '')''];',ic)); 
 	end
     offset_comment=[offset_comment '\n']; 
@@ -294,30 +310,30 @@ elseif strcmp(q,'x'),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % V=ExB ASCII
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- elseif strcmp(q,'va')|strcmp(q,'vsa') 
-	if strcmp(q,'va'), s = ''; else, s = 's'; end
-	for ic=sc_list,
-		% GSE
-     eval(irf_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));
-     eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
-     if eval(irf_ssub(['exist(''VExB' s '?'')'],ic)),
-       eval(irf_ssub(['number_of_points=size(VExB' s '?,1);'],ic));
-       disp(['VExB' s num2str(ic) ' --> VExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       E_add_comment=['\nang_limit=' ang_limit_s '\n'];
-       E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
-       eval(irf_ssub(['c_export_ascii(VExB' s '?,''VExB' s '?'',''' E_add_comment ''');'],ic));
-     end
-	 % DSI
-     eval(irf_ssub(['if ~exist(''diVExB' s '?'',''var'') & exist(''mEdB.mat'',''file''), load mEdB diVExB' s '? ang_limit?;disp(''Loading diVExB' s '?, ang_limit? from mEdB'');end'],ic));
-     eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
-     if eval(irf_ssub(['exist(''diVExB' s '?'')'],ic)),
-       eval(irf_ssub(['number_of_points=size(diVExB' s '?,1);'],ic));
-       disp(['diVExB' s num2str(ic) ' --> diVExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
-       diE_add_comment=['\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
-       eval(irf_ssub(['c_export_ascii(diVExB' s '?,''diVExB' s '?'',''' diE_add_comment ''');'],ic));
-     end
-     clear E_add_comment diE_add_comment number_of_points;
-   end
+ elseif strcmp(q,'va') || strcmp(q,'vsa') 
+	 if strcmp(q,'va'), s = ''; else s = 's'; end
+	 for ic=sc_list,
+		 % GSE
+		 eval(irf_ssub(['if ~exist(''VExB' s '?'') & exist(''mEdB.mat'',''file''), load mEdB VExB' s '? ang_limit?;disp(''Loading VExB' s '?, ang_limit? from mEdB'');end'],ic));
+		 eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
+		 if eval(irf_ssub(['exist(''VExB' s '?'')'],ic)),
+			 eval(irf_ssub(['number_of_points=size(VExB' s '?,1);'],ic));
+			 disp(['VExB' s num2str(ic) ' --> VExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+			 E_add_comment=['\nang_limit=' ang_limit_s '\n'];
+			 E_add_comment=[E_add_comment 'E.B=0 used only for points in which magnetic field makes an angle \nwith respect to the spin plane that is larger than ang_limit'];
+			 eval(irf_ssub(['c_export_ascii(VExB' s '?,''VExB' s '?'',''' E_add_comment ''');'],ic));
+		 end
+		 % DSI
+		 eval(irf_ssub(['if ~exist(''diVExB' s '?'',''var'') & exist(''mEdB.mat'',''file''), load mEdB diVExB' s '? ang_limit?;disp(''Loading diVExB' s '?, ang_limit? from mEdB'');end'],ic));
+		 eval(irf_ssub('ang_limit_s=num2str(ang_limit?);',ic)),
+		 if eval(irf_ssub(['exist(''diVExB' s '?'')'],ic)),
+			 eval(irf_ssub(['number_of_points=size(diVExB' s '?,1);'],ic));
+			 disp(['diVExB' s num2str(ic) ' --> diVExB' s num2str(ic) '.dat  ' num2str(number_of_points) ' samples']);
+			 diE_add_comment=['\nang_limit=' ang_limit_s '\nE.B=0 used to estimate Ez for points in which magnetic field makes an \nangle with respect to the spin plane that is larger than ang_limit'];
+			 eval(irf_ssub(['c_export_ascii(diVExB' s '?,''diVExB' s '?'',''' diE_add_comment ''');'],ic));
+		 end
+		 clear E_add_comment diE_add_comment number_of_points;
+	 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P ASCII
@@ -341,12 +357,12 @@ elseif strcmp(q,'x'),
  elseif strcmp(q,'vc'),
     for ic=sc_list,
      disp(['...VCp' num2str(ic) ', dVCp' num2str(ic)]);
-     [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'CIS', ['V_p_xyz_gse__C' num2str(ic) '_PP_CIS'], ' ', ' ',' ');
-     eval(irf_ssub('VCp?=[double(t) double(real(data))''];',ic));clear t,data;
+     [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'CIS', ['V_p_xyz_gse__C' num2str(ic) '_PP_CIS'], ' ', ' ',' '); %#ok<NASGU>
+     eval(irf_ssub('VCp?=[double(t) double(real(data))''];',ic)); clear t data
      eval(irf_ssub('if size(VCp?), dVCp?=c_gse2dsc(VCp?,[VCp?(1,1) ic]); save_list=[save_list '' VCp? dVCp? '']; end; ',ic));
      disp(['...VCh' num2str(ic) ', dVCh' num2str(ic)]);
      [t, data] = isGetDataLite( db, start_time, Dt, 'CSDS_PP', ['C' num2str(ic)], 'CIS', ['V_HIA_xyz_gse__C' num2str(ic) '_PP_CIS'], ' ', ' ',' ');
-     eval(irf_ssub('VCh?=[double(t) double(real(data))''];',ic));clear t,data;
+     eval(irf_ssub('VCh?=[double(t) double(real(data))''];',ic)); clear t data
      eval(irf_ssub('if size(VCh?), dVCh?=c_gse2dsc(VCh?,[VCh?(1,1) ic]); save_list=[save_list '' VCh? dVCh? '']; end;',ic));
     end
     eval(['save mCIS ' save_list]);
@@ -362,16 +378,16 @@ elseif strcmp(q,'x'),
  end
  
 % If flag_save is set, save variables to specified file
- if flag_save==1 & length(save_file)>0 & ~isempty(save_list),
+ if flag_save==1 && length(save_file)>0 && ~isempty(save_list),
   if exist(save_file,'file'), 
    eval(['save -append ' save_file ' ' save_list]); 
-  else, 
+  else
    eval(['save ' save_file ' ' save_list]);
   end
  end
  
 end
 
-if exist('db'), Mat_DbClose(db); end
+if exist('db','var'), Mat_DbClose(db); end
 
 
