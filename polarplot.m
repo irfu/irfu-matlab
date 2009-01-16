@@ -27,7 +27,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 %  
 
   %% Check the input
-  warning off
+  %warning off
   if nargin>7
     error('Too many arguments')
   end
@@ -114,8 +114,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
   %% Plot everything
   
   if plotflag == 1 %%% The case with phase difference and coherence
-    temp=find(coh<threshold);
-    phase(temp)=NaN;
+    phase(coh<threshold)=NaN;
     
     subplot(4,1,1)
     pcolor(T-t0,freq,log10(2*n*Imean/sampl))
@@ -211,5 +210,5 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     %set(gca,'yscale','log')
   end
 
-  suptitle(datestr(epoch2date(t0),31))
+  %suptitle(datestr(epoch2date(t0),31))
   warning on
