@@ -43,7 +43,7 @@ n=np+no; % total plasma density  m^-3
 %if time series are supplied then time series shoud be returned
 if size(B,2)>1, % we have time series of density
     t=B(:,1); % time axis
-    if length(t)>1 & ~isstr(noshow), noshow=1;end % if more than  one time point do not print result
+    if length(t)>1 && ~ischar(noshow), noshow=1;end % if more than  one time point do not print result
     B(:,1)=[]; % delete time column
     if size(B,2)>3; %asssume that column 4 is amplitude, delete other coolumns
         B(:,[1:3 5:end])=[];
@@ -128,7 +128,7 @@ if strcmp(flag_time_series,'yes')
         };
     for j=1:length(var),
         eval([var{j}{1} '= [t ' var{j}{1} '];']);
-        if isstr(noshow)
+        if ischar(noshow)
             if strcmp(noshow,var{j}{1}),
                 eval(['Fpe_out=' var{j}{1} ';']);
                 return;
@@ -161,10 +161,10 @@ for ii = 1:length(freq)
     if val > 1e6
         units = '[MHz]';
         koef = 1e-6;
-    elseif val < 1e6 & val > 1e3
+    elseif val < 1e6 && val > 1e3
         units = '[KHz]';
         koef = 1e-3;
-    elseif val <1e3 & val >.1
+    elseif val <1e3 && val >.1
         units = '[Hz]';
         koef = 1;
     else
@@ -186,7 +186,7 @@ for ii = 1:length(v)
     if val > 1e6
         units = '[km/s 1e3]';
         koef = 1e-6;
-    elseif val < 1e6 & val > 1e3
+    elseif val < 1e6 && val > 1e3
         units = '[km/s]';
         koef = 1e-3;
     else
@@ -207,7 +207,7 @@ for ii = 1:length(l)
     if val > 1e3
         units = '[km]';
         koef = 1e-3;
-    elseif val < 1e3 & val > 1
+    elseif val < 1e3 && val > 1
         units = '[m]';
         koef = 1;
     else
