@@ -1317,6 +1317,65 @@ elseif regexp(vs,'^WHINAT[1-4]$')
 	v.quant = 'whinat';	
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% STAFF SC raw data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif any(regexp(vs,'^wBSC[1-4]$'))
+	v.data = 1;
+	v.cl_id = vs(5);
+	v.inst = 'STAFF';
+	v.frame = 'na';
+	v.sig = 'B_SC';
+	v.sen = 'Bx_By_Bz';
+	v.cs = {'SC'};
+	v.rep = {'vector'};
+	v.units =  {'nT'};
+	v.si_conv = {'1.0e-9>T'};
+	v.size = 3;
+	v.name = {'B_SC'};
+	v.labels = {'B SC'};
+	v.label_1 = {'"Bx", "By", "Bz"'};
+	v.col_labels = {{'x','y','z'}};
+	v.ptype = {'Data'};
+	v.valtype = {'FLOAT'};
+	v.sigdig = 6;
+	v.ent = {'Magnetic_Field'};
+	v.prop = {'Vector'};
+	v.fluc = {'Waveform'};
+	v.file = 'mBSCR';
+	v.com = '';
+	v.lev = 0;
+	v.quant = 'bsc';
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%% STAFF SC despun data
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^(di)?BSC?[1-4]$')
+	v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'STAFF';
+	v.frame = 'sc';
+	v.sig = 'B_SC';
+	v.sen = 'Bx_By_Bz';
+	if strcmp(vvs(1:2),'di')
+		v.cs = {'ISR2'};
+	else
+		v.cs = {'GSE'};
+	end
+	v.units =  {'nT'};
+	v.si_conv = {'1.0e-9>T'};
+	v.size = 3;
+	v.name = {'B_SC'};
+	v.labels = {'B SC'};
+	v.label_1 = {'"Bx", "By", "Bz"'};
+	v.col_labels = {{'x','y','z'}};
+	v.ptype = {'Data'};
+	v.valtype = {'FLOAT'};
+	v.sigdig = 6;
+	v.file = 'mBSC';
+	v.field_name = {'Magnetic field'};
+	v.com = '';
+	v.quant = 'dibsc';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ADDITIONAL HELP IN PLOTTING, NOT SPECIFIC TO CLUSTER 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')

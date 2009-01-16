@@ -53,6 +53,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   wake : PSWAKE{cl_id}p{12/34}, LOWAKE{cl_id}p{12/34} -> mEFW // wakes
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
+%   dibsc : diBSC{cl_id}, BSC{cl_id} -> mBSC // despun B STAFF SC [DSI+GSE]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
 %
@@ -2283,6 +2284,39 @@ elseif strcmp(quantity,'vce')
 			end
 		end
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dibsc - despun B STAFF SC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'dibsc')
+	save_file='./mBSC.mat';
+	
+	[ok,wBSC,msg] = c_load('wBSC?',cl_id);
+	if ~ok || isempty(wBSC)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+	end
+	
+	[ok,pha, msg] = c_load('Atwo?',cl_id);
+	if ~ok || isempty(pha)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+	end
+	
+	aa = c_phase(wBSC(:,1),pha);
+	diBSC = c_efw_despin(wBSC,aa);
+	% DS-> DSI
+	diBSC(:,3)=-diBSC(:,3); %#ok<NASGU>
+	diBSC(:,4)=-diBSC(:,4); %#ok<NASGU>
+	
+	c_eval('diBSC?=diBSC;save_list=[save_list '' diBSC?''];',cl_id);
+	
+	[ok,sax,msg] = c_load('SAX?',cl_id);
+	if ~ok || isempty(sax)
+		irf_log('load',msg)
+	else
+		c_eval('BSC?=c_gse2dsi(diBSC?,sax,-1);save_list=[save_list '' BSC?''];',cl_id);
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY

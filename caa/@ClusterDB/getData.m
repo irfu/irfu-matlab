@@ -42,6 +42,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
 %	bfgm: B{cl_id},diB{cl_id}	->mB	// B FGM** [GSE+DSI]
 %		** contact Stephan Buchert
+%	bsc : wBSC{cl_id} -> mBSCR // STAFF SC B
 %	edi : iEDI{cl_id},idiEDI{cl_id}	->mEDI	// E EDI PP (inert frame) [GSE+DSI] 
 %	ncis: NC(p,h){cl_id}			->mCIS	// N CIS PP
 %	tcis: T(par,perp)C(p,h){cl_id}	->mCIS	// T CIS PP 
@@ -743,6 +744,47 @@ elseif strcmp(quantity,'bfgm')
 		c_eval('diB?=c_gse2dsi(B?,sax);save_list=[save_list '' diB? ''];',cl_id);
     else irf_log('dsrc',irf_ssub('No data for diB?',cl_id))
 	end
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% B STAFF SC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	
+elseif strcmp(quantity,'bsc')
+	
+	save_file = './mBSCR.mat';
+	
+	[ok,tm] = c_load('mTMode?',cl_id);
+	if ~ok
+		tmode = getData(cdb,start_time,dt,cl_id,'tmode');
+		if isempty(tmode)
+			irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
+			out_data = []; cd(old_pwd), return
+		end
+		tm = tmode{2};
+		clear tmode
+	end
+	if isempty(tm)
+		irf_log('dsrc',irf_ssub('Cannot load mTMode?',cl_id))
+		out_data = []; cd(old_pwd), return
+	end
+
+	if any(tm~=tm(1))
+		irf_log('dsrc','tape mode changes during the selected time inteval')
+		irf_log('dsrc','data interval will be truncated')
+	end
+	tm = tm(1);
+	if tm<1e-30, param='10Hz'; else param='180Hz'; end
+	clear tm
+		
+	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
+		cl_id, 'staff', 'B_SC','Bx_By_Bz', ['0-' param]); %#ok<ASGLU>
+	if isempty(data)
+		irf_log('dsrc',irf_ssub('No data for wBSC?',cl_id))
+		out_data = []; cd(old_pwd), return
+	end
+	
+	c_eval('wBSC?=[t data''];save_list=[save_list '' wBSC? ''];',cl_id);
+	clear t data
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
