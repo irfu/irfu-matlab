@@ -75,6 +75,7 @@ resnan(isnan(data(:,2)),2) = NaN;
 function res = clean_spec(res,k1,k2)
 
 m = mean(res(:,2));
+if isnan(m), error('data still contains NaNs'), end
 f = fft(res(:,2) - m);
 nff = length(f);
 if(rem(nff,2)==0), kfft=nff/2 +1;
