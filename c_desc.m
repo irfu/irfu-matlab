@@ -1155,7 +1155,7 @@ elseif regexp(vs,'^(di)?VCE(h|p)[1-4]$')
 	else
 		v.cs = {'GSE'};
 	end
-	if vvs(3)=='h'
+	if vvs(4)=='h'
 		v.sig = 'V';
 		v.sen = 'HIA';
 		v.field_name = {'Ion VxB'};
