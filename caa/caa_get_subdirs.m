@@ -42,6 +42,7 @@ for t=t0:SPLIT_INT*3600:t1
 	end
 %	if isempty(good_dir), continue, end
 end
+cd(old_pwd)
 dir_list = sort(good_dir);
 	
 %	for j=1:length(good_dir)

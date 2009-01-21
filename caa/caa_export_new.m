@@ -45,7 +45,7 @@ DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
 old_pwd = pwd;
 %cd(sp)
 dirs = caa_get_subdirs(st, dt, cl_id);
-if isempty(dirs), disp(['Invalid dir: ' sp]), return, end
+%if isempty(dirs), disp(['Invalid (empty?) dir: ' sp]), cd(old_pwd); status = 1; return, end
 
 if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    st_temp = fromepoch(st);
@@ -145,7 +145,8 @@ for dd = 1:length(dirs)
    if all(~ok) || isempty(data)
    	irf_log('load', ['No ' vs])
    	cd(old_pwd)
-   	return
+%   	return
+      continue
    end
    d_info = []; ok = 0;
    try
@@ -472,6 +473,31 @@ if exist('result_com') && length(result_com) > 0, dsc.com = result_com; end
 
 cd(old_pwd)
 
+
+if isempty(data)
+%   keyboard
+   t_int_full = st + [0 dt];
+   switch caa_vs
+      case {'E', 'DER'}
+         irf_log('save', sprintf('Saving empty interval %s/%s', ...
+            epoch2iso(t_int_full(1),1), epoch2iso(t_int_full(2),1)) )
+         v_size = 0;
+         dsc.com = '';
+         
+%      case 'E'
+%         dsc = c_desc(vs);
+%         % Extend variable description to include the new columns bitmask and quality:
+%         dsc.size = [dsc.size, 1, 1];
+%         dsc.valtype = {dsc.valtype{:}, 'INT', 'INT'};
+%         dsc.sigdig = [dsc.sigdig, 5, 1];
+         
+      otherwise
+         status = 1; return
+   end         
+	
+end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Write to file
 ext_s = '.cef';
@@ -562,6 +588,24 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
+else
+   [fid,msg] = fopen([file_name ext_s],'a');
+   if fid < 0
+	   irf_log('save',['problem opening CEF file: ' msg])
+	   status = 1;
+	   return
+   end
+   
+   sta = fprintf(fid,'END_OF_DATA\n');
+   fclose(fid);
+   if sta<=0, irf_log('save','problem writing CEF tail'), status = 1; return, end 
+   
+   [sta, res] = unix(['gzip ' file_name ext_s]);
+   if sta>0
+      irf_log('save', ['Error gzipping output file: ' res])
+      status = 1;
+      return
+   end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

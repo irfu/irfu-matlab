@@ -36,6 +36,7 @@ if ~isempty(ind), job_name = fname(ind(end):end);
 elseif ~isempty(find(fname == '/'))
    job_name = fname(find(fname == '/', 1, 'last')+1:end);
 end
+disp(['----- Running job name:   ' job_name])
 out_path = [BASE_OUTPUT '/' job_name];
 
 logfile = [LOG_DIR '/' job_name '.log'];
@@ -65,6 +66,7 @@ l3 = {'E', 'DER'};
 
 
 dirfind = @(y) ([]);
+logstatus = [];
 if exist(logfile, 'file')
    logfid = fopen(logfile, 'r');
    logtext = textscan(logfid, '%s%s');
@@ -78,6 +80,7 @@ end
 
 
 v_s = DATA_VER;
+all_errors = {};
 
 if ~exist(out_path, 'dir')
    mkdir(out_path);
@@ -85,6 +88,7 @@ end
 cd(out_path)
 
 for kk = 1:length(dirs)
+	 numErrors = 0;
    d = dirs{kk};
    if regexp(d, '^%'), continue, end
    if length(d) > length(BASE_DIR) & strcmp(BASE_DIR, d(1:length(BASE_DIR)))
@@ -92,7 +96,7 @@ for kk = 1:length(dirs)
    end
    cur_dir = [BASE_DIR '/' d];
    found = dirfind(d);
-   if found & strcmp(logstatus(found), 'Done')
+   if any(found & strcmp(logstatus(found), 'Done'))
       disp(['----- Skipping directory:   ' cur_dir])
       continue
    end
@@ -153,20 +157,29 @@ for kk = 1:length(dirs)
       lev = 2;
    	% EF
 %   	if exist([sp '/mEDSIf.mat'],'file')
-      if any(checkFileExists_subfunc('mEDSIf.mat', cur_dir, sp))
+%      if any(checkFileExists_subfunc('mEDSIf.mat', cur_dir, sp))
 %         if findCellString_subfunc(l2, 'EF')
 %   		   disp(['Level ' num2str(lev) ' : EF'])
 %   		   caa_export_new(lev,'EF',cl_id,QUAL,v_s,cur_dir,start_time,time_length)
 %         end
          if findCellString_subfunc(l2, 'E')
    		   disp(['Level ' num2str(lev) ' : E'])
+   		   try
    		   if caa_export_new(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L2E in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L2E in ' cur_dir]);
-   			   fclose(fid);
+   			   	fclose(fid);
+   			    numErrors = numErrors + 1;
    		   end
-   		end
+   		   catch
+   		   		logfid = fopen(logfile, 'a');
+   					if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end
+   					fprintf(logfid, '%s\tError_L2E\n', cur_dir);
+   					fclose(logfid);
+   					numErrors = numErrors + 1;
+   		   end
+%   		end
    	end
 %   	if exist([sp '/mP.mat'],'file')
       if any(checkFileExists_subfunc('mP.mat', cur_dir, sp))
@@ -190,23 +203,39 @@ for kk = 1:length(dirs)
    	lev = 3;
    	% E
 %   	if exist([sp '/mEDSI.mat'],'file')
-     if any(checkFileExists_subfunc('mEDSI.mat', cur_dir, sp))
+%     if any(checkFileExists_subfunc('mEDSI.mat', cur_dir, sp))
          if findCellString_subfunc(l3, 'E')
    		   disp(['Level ' num2str(lev) ' : E'])
+   		   try
    		   if caa_export_new(lev,'E',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L3E in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L3E in ' cur_dir]);
    			   fclose(fid);
    		   end
-   		end
+   		   catch
+   		   		logfid = fopen(logfile, 'a');
+   					if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end
+   					fprintf(logfid, '%s\tError_L3E\n', cur_dir);
+   					fclose(logfid);
+   					numErrors = numErrors + 1;
+   		   end
+%   		end
    		if findCellString_subfunc(l3, 'DER')
    		   disp(['Level ' num2str(lev) ' : DER'])
+   		   try
    		   if caa_export_new(lev,'DER',cl_id,QUAL,v_s,cur_dir,start_time,time_length) > 0
    		      fid = fopen(errlog, 'a');
    		      if fid < 0, error(['Export returned error for L3DER in ' cur_dir]), end
    		      fprintf(fid, '%s\n', ['Export returned error for L3DER in ' cur_dir]);
    			   fclose(fid);
+   		   end
+   		   catch
+   		   		logfid = fopen(logfile, 'a');
+   					if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end
+   					fprintf(logfid, '%s\tError_L3DER\n', cur_dir);
+   					fclose(logfid);
+   					numErrors = numErrors + 1;
    		   end
    		end
    	end
@@ -225,10 +254,12 @@ for kk = 1:length(dirs)
    	end
    end   % lev == 3
    
+   if numErrors == 0
    logfid = fopen(logfile, 'a');
    if logfid < 0, warning(['Cannot open log file: ' logfile '. Proceeding without logging.']), end
    fprintf(logfid, '%s\tDone\n', cur_dir);
    fclose(logfid);
+	 end
 end   % for
 cd(old_pwd)
 

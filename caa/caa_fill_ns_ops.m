@@ -34,7 +34,11 @@ end
 data_before_ns_ops = data(data(:, 1) < ns_ops(1), :);
 data_after_ns_ops = data(data(:, 1) > ns_ops(2), :);
 
-fill_interval = data_before_ns_ops(end, 1):(1/fs):ns_ops(2);
+if ~isempty(data_before_ns_ops)
+   fill_interval = data_before_ns_ops(end, 1):(1/fs):ns_ops(2);
+else     % NS OPS active from start of data set
+   fill_interval = data(1,1):(1/fs):ns_ops(2);
+end
 fill_interval = fill_interval(fill_interval >= ns_ops(1) & fill_interval <= ns_ops(2));
 fill_interval = fill_interval(:);
 

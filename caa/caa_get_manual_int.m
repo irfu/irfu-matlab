@@ -32,7 +32,7 @@ row_index = (problem_start_time >= data_start_time & problem_start_time < data_e
             (problem_end_time > data_start_time & problem_end_time <= data_end_time) | ...
             (problem_start_time <= data_start_time & problem_end_time >= data_end_time);
             
-intervals = man_int(row_index, 1) + [0 man_int(row_index, 2)];
+intervals = [man_int(row_index, 1),  man_int(row_index, 1)+man_int(row_index, 2)];
 qualities = man_int(row_index, 3:4);
 
 if nargout < 2
