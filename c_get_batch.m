@@ -28,6 +28,7 @@ function c_get_batch(st,dt,varargin)
 % 'nosrc'  - do not run ClusterDB/getData;
 % 'noproc' - do not run ClusterProc/getData for {'dies','die','brs','br'};
 % 'extrav' - extra variables in addition to default;
+% 'swmode'  - do solar wind wake cleaning for E-field
 % 'cdb' - ClusterDB object;
 % ++ extra options to be passwed to ClusterProc/getData
 % 
@@ -80,6 +81,7 @@ varsProc = '';
 argsProc = '';
 dosrc = 1;
 doproc = 1;
+sw_mode = 0;
 
 [st,dt] = irf_stdt(st,dt);
 
@@ -116,6 +118,8 @@ while have_options
 				if isnumeric(args{2}), sc_list = args{2};
 				else irf_log('fcal','SC_LIST must be numeric')
 				end
+			case 'swmode'
+				sw_mode = 1;
 			case 'vars'
 				if ischar(args{2})
 					vars = {};
@@ -187,7 +191,14 @@ if ~isempty(vars)
 		end
 		if L_find(vars,{'ibias','efwt'}), varsProc = [varsProc {'badbias'}]; end
 		if L_find(vars,'p'), varsProc = [varsProc {'probesa','p','ps'}]; end
-		if L_find(vars,'e'), varsProc = [varsProc {'dies','die'}]; end
+		if L_find(vars,'e')
+			if sw_mode
+				varsProc = [varsProc {'ec','dies','die'}];
+				argsProc = [{'correct_sw_wake'} argsProc];
+			else
+				varsProc = [varsProc {'dies','die'}];
+			end
+		end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
 		if L_find(vars,'edi'), varsProc = [varsProc {'edi'}]; end
 		if L_find(vars,{'pburst','eburst'}), varsProc = [varsProc {'dieburst'}]; end
