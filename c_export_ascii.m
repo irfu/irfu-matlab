@@ -166,8 +166,9 @@ elseif regexp(vs,'^wE[1-4]p(12|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^diEs[1-4]p(12|34)')==1
-
+elseif regexp(vs,'^(i)?diEs[1-4]p(12|34)')==1
+	
+	
 	cl_id = vs(5);
 	inst = 'EFW';
 	sig = 'E';
@@ -233,8 +234,15 @@ elseif regexp(vs,'^di(b)?E[1-4]p1234')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % despun full resolution E with assumption E.B = 0
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
-
+elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
+	vs_old = vs;
+	if vs(1)=='i'
+		frame = 'DSI (inertial frame),  Ez is computed from E.B=0';
+		vs = vs(2:end);
+	else
+		frame = 'DSI,  Ez is computed from E.B=0';
+	end
+	
 	cl_id = vs(end);
 	inst = 'EFW';
 	sig = 'E';
@@ -265,12 +273,12 @@ elseif regexp(vs,'^(diE[1-4]|diEs[1-4])$')==1
 		if vs(4)=='s', sen = 'spin fit';
         else sen = 'p1234';
 		end
-		frame = 'DSI,  approximately the same as GSE';
 		var_labels = {'Ex','Ey','Ez','(B,spin)'};
 		var_units =  {'mV/m','mV/m','mV/m','deg'};
 		com = com_Ez;
 	end
-
+	vs = vs_old;
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % B from FGM
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -297,8 +305,16 @@ elseif regexp(vs,'^(di)?B(r)?[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution E in GSE coordinates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
-
+elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
+	
+	vs_old = vs;
+	if vs(1)=='i'
+		frame = 'GSE (inertial frame)';
+		vs = vs(2:end);
+	else
+		frame = 'GSE';
+	end
+	
 	if CAA
 		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
 		CAA = 0;
@@ -333,11 +349,11 @@ elseif regexp(vs,'^(E[1-4]|Es[1-4])')==1
 		if vs(2)=='s', sen = 'spin fit';
         else sen = 'p1234';
 		end
-		frame = 'GSE';
 		var_labels = {'Ex','Ey','Ez','(B,spin)'};
 		var_units =  {'mV/m','mV/m','mV/m','deg'};
 		com = com_Ez;
 	end
+	vs = vs_old;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
