@@ -463,7 +463,8 @@ for dd = 1:length(dirs)
    
 %   result = [result; data];
    if isempty(result), result = data;
-   else result = caa_append_data(result, data);
+   else result = caa_append_data(result, data);    % NOTE: This will fill ALL columns with NaN unless
+                                                   % caa_fill_gaps is used BEFORE caa_identify_problems!
    end
 
 end   % for dd = 1:length(dirs)
