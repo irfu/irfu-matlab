@@ -179,6 +179,15 @@ if isempty(vars) && isempty(varsProc)
 		'r','v','b','edi','ncis','vcis','bfgm'};
 end
 if ~isempty(vars)
+	if L_find(vars,{'e','p'})
+		if isempty(L_find(vars,'ibias')), vars = [{'ibias'} vars]; end
+		if isempty(L_find(vars,'efwt')), vars = [{'efwt'} vars]; end
+		if isempty(L_find(vars,'fdm')), vars = [{'fdm'} vars]; end
+	end
+	if ~isempty(L_find(vars,'e')) &&  isempty(L_find(vars,'tmode'))
+		vars = [{'tmode'} vars];
+	end
+
 	if dosrc
 		for cl_id=sc_list
 			for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
