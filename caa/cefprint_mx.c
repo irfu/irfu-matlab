@@ -40,6 +40,13 @@ void epoch2iso(double *epoch, char *str)
 
 	sec = floor(*epoch);
 	ms = round((*epoch - (double)sec)*1000000);
+
+	/* Check if we round up to a whole second */
+	if ( ms >= 1000000 )
+	{
+		ms = ms - 1000000;
+		sec++;
+	}
 	
 	t = gmtime(&sec);
 	
