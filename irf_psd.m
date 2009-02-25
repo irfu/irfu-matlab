@@ -99,7 +99,7 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
     KMU = k*norm(window)^2;	% Normalizing scale factor ==> asymptotically unbiased
     % KMU = k*sum(window)^2;% alt. Nrmlzng scale factor ==> peaks are about right
 
-    Spec = zeros(nfft,1); Spec2 = zeros(nfft,1);
+    Spec = zeros(nfft,1);
     for i=1:k
         if strcmp(dflag,'none')
             xw = window.*(x(index));
@@ -111,7 +111,6 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
         index = index + (nwind - noverlap);
         Xx = abs(fft(xw,nfft)).^2;
         Spec = Spec + Xx;
-        Spec2 = Spec2 + abs(Xx).^2;
     end
 
     % Select first half
@@ -122,17 +121,13 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
             select = (1:nfft/2+1)';
         end
         Spec = Spec(select);
-        Spec2 = Spec2(select);
-        %    Spec = 4*Spec(select);     % double the signal content - essentially
-        % folding over the negative frequencies onto the positive and adding.
-        %    Spec2 = 16*Spec2(select);
     else
         select = (1:nfft)';
     end
     freq_vector = (select - 1)*Fs/nfft;
 
     % find confidence interval if needed
-    if (nargout == 3)|((nargout == 0)&~isempty(p)),
+    if (nargout == 3) || ((nargout == 0) && ~isempty(p)),
         if isempty(p),
             p = .95;    % default
         end
@@ -210,7 +205,7 @@ function [msg,nfft,Fs,window,noverlap,p,dflag] = psdchk(P,x,y)
 
 msg = [];
 
-if length(P) == 0
+if isempty(P)
     % psd(x)
     nfft = min(length(x),256);
     window = hanning(nfft);
@@ -221,9 +216,10 @@ if length(P) == 0
 elseif length(P) == 1
     % psd(x,nfft)
     % psd(x,dflag)
-    if isempty(P{1}),   dflag = 'none'; nfft = min(length(x),256);
-    elseif isstr(P{1}), dflag = P{1};       nfft = min(length(x),256);
-    else              dflag = 'none'; nfft = P{1};   end
+	if isempty(P{1}),   dflag = 'none'; nfft = min(length(x),256);
+	elseif ischar(P{1}), dflag = P{1};       nfft = min(length(x),256);
+	else              dflag = 'none'; nfft = P{1};   
+	end
     Fs = 2;
     window = hanning(nfft);
     noverlap = 0;
@@ -232,9 +228,10 @@ elseif length(P) == 2
     % psd(x,nfft,Fs)
     % psd(x,nfft,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else nfft=P{1};     end
-    if isempty(P{2}),   dflag = 'none'; Fs = 2;
-    elseif isstr(P{2}), dflag = P{2};       Fs = 2;
-    else              dflag = 'none'; Fs = P{2}; end
+	if isempty(P{2}),   dflag = 'none'; Fs = 2;
+	elseif ischar(P{2}), dflag = P{2};       Fs = 2;
+	else              dflag = 'none'; Fs = P{2};
+	end
     window = hanning(nfft);
     noverlap = 0;
     p = [];
@@ -243,7 +240,7 @@ elseif length(P) == 3
     % psd(x,nfft,Fs,dflag)
     if isempty(P{1}), nfft = min(length(x),256); else nfft=P{1};     end
     if isempty(P{2}), Fs = 2;     else    Fs = P{2}; end
-    if isstr(P{3})
+    if ischar(P{3})
         dflag = P{3};
         window = hanning(nfft);
     else
@@ -262,7 +259,7 @@ elseif length(P) == 4
     window = P{3};
     if length(window) == 1, window = hanning(window); end
     if isempty(window), window = hanning(nfft); end
-    if isstr(P{4})
+    if ischar(P{4})
         dflag = P{4};
         noverlap = 0;
     else
@@ -279,7 +276,7 @@ elseif length(P) == 5
     if length(window) == 1, window = hanning(window); end
     if isempty(window), window = hanning(nfft); end
     if isempty(P{4}), noverlap = 0; else noverlap = P{4}; end
-    if isstr(P{5})
+    if ischar(P{5})
         dflag = P{5};
         p = [];
     else
@@ -295,7 +292,7 @@ elseif length(P) == 6
     if isempty(window), window = hanning(nfft); end
     if isempty(P{4}), noverlap = 0; else noverlap = P{4}; end
     if isempty(P{5}), p = .95;    else    p = P{5}; end
-    if isstr(P{6})
+    if ischar(P{6})
         dflag = P{6};
     else
         msg = 'DFLAG parameter must be a string.'; return
@@ -309,21 +306,21 @@ end
 if (noverlap >= length(window)),
     msg = 'Requires NOVERLAP to be strictly less than the window length.';
 end
-if (nfft ~= abs(round(nfft)))|(noverlap ~= abs(round(noverlap))),
+if (nfft ~= abs(round(nfft))) || (noverlap ~= abs(round(noverlap))),
     msg = 'Requires positive integer values for NFFT and NOVERLAP.';
 end
 if ~isempty(p),
-    if (prod(size(p))>1)|(p(1,1)>1)|(p(1,1)<0),
+    if (numel(p)>1) || (p(1,1)>1) || (p(1,1)<0),
         msg = 'Requires confidence parameter to be a scalar between 0 and 1.';
     end
 end
-if ~isnumeric(x) | length(size(x))>2
+if ~isnumeric(x) || length(size(x))>2
     msg = 'Requires vector (either row or column) input.';
 end
-if (nargin>2) & ( (min(size(y))~=1) | ~isnumeric(y) | length(size(y))>2 )
+if (nargin>2) && ( (min(size(y))~=1) || ~isnumeric(y) || length(size(y))>2 )
     msg = 'Requires vector (either row or column) input.';
 end
-if (nargin>2) & (length(x)~=length(y))
+if (nargin>2) && (length(x)~=length(y))
     msg = 'Requires X and Y be the same length.';
 end
 
