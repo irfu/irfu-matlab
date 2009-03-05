@@ -194,8 +194,10 @@ if flag_subplot==0,  % One subplot
 
 		% Put YLimits so that no labels are at the end (disturbing in
 		% multipanel plots)
-		set(gca,'YLim',...
-			mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
+        yl = get(gca,'YLim');
+        if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
+            set(gca,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
+        end
 
 		if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
 			lab = cell(1,length(var_desc{1}.size));
