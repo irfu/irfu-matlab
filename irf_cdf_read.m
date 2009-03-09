@@ -110,27 +110,77 @@ elseif ischar(var_name) % one specifies the name of variable
       end
     end
   end
-  % in case string is '*' show all possibilities and allow to choose
+  % in case string is '*' do interactive work with cdf file including
+  % reading variables
   if strcmp(var_name,'*')
-	  if i_time_series_variable == 1
-		  var_name='all';
-		  irf_log('load',['var: ' time_series_variables{1}])
-	  else
-		  disp('=== Choose variable ===');
-		  disp('0) all variables');
-		  for j=1:i_time_series_variable,
-			  disp([num2str(j) ') ' time_series_variables{j}]);
-		  end
-		  var_item=irf_ask('Variable? [%]>','var_item',i_time_series_variable);
-		  if var_item==0, % read all
-			  var_name='all';
-		  else
-			  var_name={''};
-			  for j=1:length(var_item),
-				  var_name(j)=time_series_variables(var_item(j));
-			  end
-		  end
-	  end
+      flag_while=1;
+      while flag_while
+          disp('======== Options ========')
+          disp('q) quit')
+          disp('v) list all variables')
+          disp('t) list and read chosen time variables')
+          disp('va) list the file variable attributes')
+          disp('vav) view the file variable attributes')
+          disp('ga) list global attributes')
+          disp('gav) view global attributes')
+          var_additional_item=irf_ask('Variable? [%]>','var_additional_item','v');
+          switch var_additional_item
+              case 'q'
+                  flag_while=0;
+              case 'v'
+                  cdf_file_info.Variables
+              case 'va'
+                  cdf_file_info.VariableAttributes
+              case 'vav'
+                  ssf=fieldnames(cdf_file_info.VariableAttributes);
+                  for jj=1:length(ssf),
+                      disp('*************************************')
+                      disp(ssf{jj});
+                      disp('*************************************')
+                      eval(['disp(cdf_file_info.VariableAttributes.' ssf{jj} ')'])
+                  end
+              case 'ga'
+                  cdf_file_info.GlobalAttributes
+              case 'gav'
+                  ssf=fieldnames(cdf_file_info.GlobalAttributes);
+                  for jj=1:length(ssf),
+                      disp('*************************************')
+                      disp(ssf{jj});
+                      disp('*************************************')
+                      eval(['disp(cdf_file_info.GlobalAttributes.' ssf{jj} ')'])
+                  end
+              case 't'
+                  if i_time_series_variable == 1
+                      var_name='all';
+                      irf_log('load',['var: ' time_series_variables{1}])
+                  else
+                      flag_time_variable_not_chosen=1;
+                      while flag_time_variable_not_chosen
+                          disp('=== Choose time dependant variable ===');
+                          disp('-2) quit');
+                          disp('-1) additional menu');
+                          disp('0) all time time dependant variables');
+                          for j=1:i_time_series_variable,
+                              disp([num2str(j) ') ' time_series_variables{j}]);
+                          end
+                          var_item=irf_ask('Variable? [%]>','var_item',0);
+                          if var_item==0, % read all
+                              var_name='all';
+                              flag_time_variable_not_chosen=0;
+                          elseif var_item==-2,
+                              return;
+                          elseif var_item==-1,
+                          else
+                              var_name={''};
+                              for j=1:length(var_item),
+                                  var_name(j)=time_series_variables(var_item(j));
+                              end
+                              flag_time_variable_not_chosen=0;
+                          end
+                      end
+                  end
+          end
+      end
   end
   if strcmp(var_name,'all'),
     var_name=time_series_variables;
