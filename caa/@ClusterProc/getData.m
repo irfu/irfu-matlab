@@ -2305,7 +2305,7 @@ elseif strcmp(quantity,'dibsc')
 	aa = c_phase(wBSC(:,1),pha);
 	diBSC = c_efw_despin(wBSC,aa);
 	% DS-> DSI
-	diBSC(:,3)=-diBSC(:,3); %#ok<NASGU>
+	diBSC(:,3)=-diBSC(:,3); 
 	diBSC(:,4)=-diBSC(:,4); %#ok<NASGU>
 	
 	c_eval('diBSC?=diBSC;save_list=[save_list '' diBSC?''];',cl_id);
