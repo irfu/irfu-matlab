@@ -91,7 +91,6 @@ end
 
 com_Ez = 'Ez is not reliable when magnetic field is close to the spin plane\n%% The last column shows the angle of B with respect to the spin plane (B,spin)';
 com = '';
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -358,7 +357,7 @@ elseif regexp(vs,'^(i)?(E[1-4]|Es[1-4])$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ExB
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(diVExB(s)?[1-4]|VExB(s)?[1-4])')==1
+elseif regexp(vs,'^(diVExB(s)?[1-4]|VExB(s)?[1-4])$')==1
 	
 	cl_id = vs(end);
 	inst = 'EFW';
@@ -402,9 +401,24 @@ elseif regexp(vs,'^(diVExB(s)?[1-4]|VExB(s)?[1-4])')==1
 	end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% full/4 sec resolution satellite potential
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^P(s)?[1-4]$')==1
+	
+	desc = c_desc(vs);
+	cl_id = desc.cl_id;
+	inst = desc.inst;
+	sig = desc.sig;
+	sen = desc.sen;
+	frame = desc.frame;
+	var_labels = desc.labels;
+	var_units =  desc.units;
+	com = desc.com;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % full resolution satellite potential and derived density
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(b)?NVps[1-4]')==1
+elseif regexp(vs,'^(b)?NVps[1-4]$')==1
 	
 	desc = c_desc(vs);
 	cl_id = desc.cl_id;
@@ -419,7 +433,7 @@ elseif regexp(vs,'^(b)?NVps[1-4]')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^A[1-4]')
+elseif regexp(vs,'^A[1-4]$')
 
 	if CAA
 		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
@@ -440,7 +454,7 @@ elseif regexp(vs,'^A[1-4]')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CIS V PP
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^NC(h|p)[1-4]')
+elseif regexp(vs,'^NC(h|p)[1-4]$')
 
 	if CAA
 		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
