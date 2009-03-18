@@ -342,10 +342,10 @@ elseif strcmp(quantity,'dies')
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
 		% We remove Whisper only if explicitely asked for this by user
-		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end
-		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<NASGU>
+		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
+		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
 		signal = tt; %#ok<NASGU>
 		remove_problems
 		tt = res; %#ok<NODEF>
@@ -484,7 +484,7 @@ elseif strcmp(quantity,'dies')
 		end
 		
 		df = df (:,2:3);
-		df(isnan(df(:,2)),:) = []; %#ok<NODEF>
+		df(isnan(df(:,2)),:) = []; 
 		iia = [];
 		if size(df,1)>2
 			sdev = std(df);
@@ -713,9 +713,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if (fsamp == 450) || ...
 					( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
 					( flag_rmwhip && flag_rmwhip_force )
-				problems = [problems '|whip'];
+				problems = [problems '|whip']; %#ok<AGROW>
 			end
-			if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<NASGU>
+			if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
 			signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
