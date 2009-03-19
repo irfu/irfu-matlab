@@ -88,9 +88,11 @@ irf_log('load',['cdf file: ' cdf_file]);
 
 cdf_file_info = cdfinfo(cdf_file);
 variable_names = cdf_file_info.Variables(:,1);
+epoch_column=0; % defualt there is no epoch variable
 for j=1:size(variable_names,1),
 	if any(findstr(variable_names{j,1},'Epoch')) || ...
-			any(findstr(variable_names{j,1},'time_tags__'))
+			any(findstr(variable_names{j,1},'time_tags__')) || ...
+			any(findstr(variable_names{j,1},'Time__'))
 		epoch_variable=variable_names(j,1);
 		%disp(['epoch variable: ' epoch_variable{1}]);
 		epoch_column=j;
@@ -99,39 +101,61 @@ end
 
 if iscell(var_name),
 elseif ischar(var_name) % one specifies the name of variable 
-  % get variable list that have associated time 
-  i_time_series_variable=0; % the counter of variables that depend on time
-  for j=2:size(cdf_file_info.Variables,1)
-    if cdf_file_info.Variables{j,3}==cdf_file_info.Variables{epoch_column,3}
-      if isempty(findstr(cdf_file_info.Variables{j,1},'Epoch')) && ...
-		  isempty(findstr(variable_names{j,1},'time_tags__'))
-        i_time_series_variable=i_time_series_variable+1;
-        time_series_variables{i_time_series_variable}=cdf_file_info.Variables{j,1};
-      end
-    end
-  end
   % in case string is '*' do interactive work with cdf file including
   % reading variables
+  % get variable list that have associated time
+  i_time_series_variable=0; % the counter of variables that depend on time
+  if epoch_column ~= 0,
+      for j=2:size(cdf_file_info.Variables,1)
+          if cdf_file_info.Variables{j,3}==cdf_file_info.Variables{epoch_column,3}
+              if isempty(findstr(cdf_file_info.Variables{j,1},'Epoch')) && ...
+                      isempty(findstr(variable_names{j,1},'time_tags__')) && ...
+                      isempty(findstr(variable_names{j,1},'Time__'))
+                  i_time_series_variable=i_time_series_variable+1;
+                  time_series_variables{i_time_series_variable}=cdf_file_info.Variables{j,1};
+              end
+          end
+      end
+  end
   if strcmp(var_name,'*')
       flag_while=1;
       while flag_while
           disp('======== Options ========')
-          disp('q) quit')
+          disp('q) quit, dont return anything')
           disp('v) list all variables')
-          disp('t) list and read chosen time variables')
-          disp('va) list the file variable attributes')
-          disp('vav) view the file variable attributes')
+          disp('vv) list all variables and their values')
+          disp('r) read variable in default format')
+          disp('t) read time variables in irfu format and return')
+          disp('fa) list the file variable attributes')
+          disp('fav) view the file variable attributes')
           disp('ga) list global attributes')
           disp('gav) view global attributes')
           var_additional_item=irf_ask('Variable? [%]>','var_additional_item','v');
           switch var_additional_item
               case 'q'
-                  flag_while=0;
+                  return;
               case 'v'
                   cdf_file_info.Variables
-              case 'va'
+              case 'vv'
+                  for jj=1:size(cdf_file_info.Variables,1);
+                      cdf_var=cdf_file_info.Variables{jj,1};
+                      disp('======================================')
+                      disp(cdf_var);
+                      disp('======================================')
+                      dd=cdfread(cdf_file,'Variables',{cdf_var});
+                      if size(dd,1)>10,
+                          disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
+                          if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
+                      else
+                          if iscell(dd), disp(dd{1}), else, disp(dd), end
+                      end
+                  end
+              case 'r'
+                  var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
+                  eval([var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
+              case 'fa'
                   cdf_file_info.VariableAttributes
-              case 'vav'
+              case 'fav'
                   ssf=fieldnames(cdf_file_info.VariableAttributes);
                   for jj=1:length(ssf),
                       disp('*************************************')
@@ -150,35 +174,33 @@ elseif ischar(var_name) % one specifies the name of variable
                       eval(['disp(cdf_file_info.GlobalAttributes.' ssf{jj} ')'])
                   end
               case 't'
-                  if i_time_series_variable == 1
+                  if i_time_series_variable == 0,
+                      irf_log('load','there are no time variables identified')
+                  elseif i_time_series_variable == 1
                       var_name='all';
                       irf_log('load',['var: ' time_series_variables{1}])
                   else
-                      flag_time_variable_not_chosen=1;
-                      while flag_time_variable_not_chosen
-                          disp('=== Choose time dependant variable ===');
-                          disp('-2) quit');
-                          disp('-1) additional menu');
-                          disp('0) all time time dependant variables');
-                          for j=1:i_time_series_variable,
-                              disp([num2str(j) ') ' time_series_variables{j}]);
-                          end
-                          var_item=irf_ask('Variable? [%]>','var_item',0);
-                          if var_item==0, % read all
-                              var_name='all';
-                              flag_time_variable_not_chosen=0;
-                          elseif var_item==-2,
-                              return;
-                          elseif var_item==-1,
-                          else
-                              var_name={''};
-                              for j=1:length(var_item),
-                                  var_name(j)=time_series_variables(var_item(j));
-                              end
-                              flag_time_variable_not_chosen=0;
+                      disp('=== Choose time dependant variable ===');
+                      disp('0) all time time dependant variables');
+                      for j=1:i_time_series_variable,
+                          disp([num2str(j) ') ' time_series_variables{j}]);
+                      end
+                      var_item=irf_ask('Variable? [%]>','var_item',0);
+                      if var_item==0, % read all
+                          var_name='all';
+                      elseif var_item==-2,
+                          return;
+                      elseif var_item==-1,
+                      else
+                          var_name={''};
+                          for j=1:length(var_item),
+                              var_name(j)=time_series_variables(var_item(j));
                           end
                       end
                   end
+                  flag_while=0;
+              otherwise
+                  eval(var_additional_item);
           end
       end
   end
@@ -191,7 +213,6 @@ else
 end
 
 if ischar(var_name), var_name={var_name};end
-
 variables=[epoch_variable var_name];
 
 DATA = cdfread(cdf_file, 'VARIABLES', variables);
