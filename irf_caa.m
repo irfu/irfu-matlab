@@ -82,12 +82,9 @@ while 1
                     disp('d) data variables')
                     disp('s) support data variables')
                     disp('v) list all variables')
-                    disp('r) read variable in default format')
-                    disp('t) read time variables in irfu format and return')
-                    disp('fa) list the file variable attributes')
-                    disp('fav) view the file variable attributes')
-                    disp('ga) list global attributes')
-                    disp('gav) view global attributes')
+                    disp('r) read variable')
+                    disp('f) file variable attributes')
+                    disp('g) global attributes')
                 end
                 flag_variable_menu=0;
                 var_caa_file_menu=irf_ask(['irf_caa:' name_caa_file '>'],'var_caa_file_menu','');
@@ -97,7 +94,26 @@ while 1
                     case 'q'
                         flag_caa_file_menu=0;
                     case 'v'
-                        current_caa_file
+                        display(current_caa_file,'full')
+                    case 'r'
+                        param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
+                        i_data=[];
+                        for j=1:size(param,1),
+                            yy=param(j,1);i_data=[i_data j]; data_name=yy{1};
+                            disp([num2str(numel(i_data)) '. ' data_name]);
+                        end
+                        var_data_num=irf_ask('Choose data>','var_data_num',1);
+                        yy=param(i_data(var_data_num),1);data_name=yy{1};
+                        disp(['Reading: ' data_name]);
+                        eval([data_name '= get(current_caa_file,''' data_name ''');']);
+                        nelem_data=eval(['numel(' data_name '.data);']);
+                        if nelem_data < 50,
+                            disp(['Value: ']);
+                            eval(['xx=' data_name '.data;']);
+                            disp(xx);clear xx;
+                        else
+                            eval(['disp(' data_name ');']);
+                        end
                     case 'd'
                         param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
                         i_data=[];
@@ -117,6 +133,7 @@ while 1
                                 disp('m) menu')
                                 disp('q) quit')
                                 disp('p) plot data')
+                                disp('i) read into irfu format')
                             end
                             flag_show_data_menu=0;
                             var_caa_data_menu=irf_ask(['irf_caa:' name_caa_file '.' data_name '>'],'var_caa_data_menu','');
@@ -125,6 +142,8 @@ while 1
                                     flag_show_data_menu=1;
                                 case 'q'
                                     flag_caa_data_menu=0;
+                                case 'i'
+                                    eval([data_name '= getmat(current_caa_file,''' data_name ''');']); 
                                 case 'p'
                                     plot(current_caa_file, data_name);
                                 otherwise
@@ -141,10 +160,8 @@ while 1
                                 disp([num2str(numel(i_data)) '. ' data_name]);
                             end
                         end
-                        
-                    case 'fa'
+                    case 'f'
                         get(current_caa_file,'VariableAttributes')
-                    case 'fav'
                         ga=get(current_caa_file,'VariableAttributes');
                         ssf=fieldnames(ga);
                         for jj=1:length(ssf),
@@ -153,9 +170,8 @@ while 1
                             disp('*************************************')
                             eval(['disp(ga.' ssf{jj} ')'])
                         end
-                    case 'ga'
+                    case 'g'
                         get(current_caa_file,'GlobalAttributes')
-                    case 'gav'
                         ga=get(current_caa_file,'GlobalAttributes');
                         ssf=fieldnames(ga);
                         for jj=1:length(ssf),
@@ -165,7 +181,7 @@ while 1
                             eval(['disp(ga.' ssf{jj} ')'])
                         end
                     otherwise
-                        try eval(var_menu); catch end
+                        try eval(var_caa_file_menu); catch end
                 end
             end
         otherwise
