@@ -74,7 +74,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 q=input('input>','s');if isempty(q),q='0';end
 save_list='';save_file='';
 if strcmp(q,'q'), return,
-elseif q == '0' || strcmp(q,'h'), disp(mmm);
+elseif strcmp(q,'0') || strcmp(q,'h'), disp(mmm);
 elseif q == '1',
 	DB_S = c_ctl(0,'isdat_db');
 	DP_S = c_ctl(0,'data_path');
@@ -121,7 +121,7 @@ elseif strcmp(q,'p')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(q,'r') || strcmp(q,'v') || strcmp(q,'a') || strcmp(q,'whip') || ...
 	strcmp(q,'e') || strcmp(q,'b') || ...
-	strcmp(q,'bfgm') || q=='p' || strcmp(q,'pburst') || strcmp(q,'eburst') || ...
+	strcmp(q,'bfgm') || strcmp(q,'p') || strcmp(q,'pburst') || strcmp(q,'eburst') || ...
 	strcmp(q,'ncis') || strcmp(q,'tcis') || strcmp(q,'vcis') || ...
 	strcmp(q,'vce') || strcmp(q,'wbdwf') || strcmp(q,'sax')
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
