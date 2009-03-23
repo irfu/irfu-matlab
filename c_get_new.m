@@ -45,6 +45,8 @@ mmm =  ...
  	'bfgm     high-res B FGM B?, diB?                ';
 	'br       resample B to E Br?, diBr?             ';
 	'brs      resample B to Es Brs?, diBrs?          ';
+	'bsc      load B STAFF-SC wBSC?                  ';
+	'dibsc    despun B STAFF-SC diBSC? BSC?          ';
 	'ncis     CIS density NC{p,h}?                   ';
 	'tcis     CIS temperature T{par,perp}C{p,h}?     ';
 	'vcis     CIS vel VC{p,h}?,diVC{p,h}?            ';
@@ -62,7 +64,6 @@ mmm =  ...
 %	'db despinned dBPP1... -> mBPP         ';
 %	'dbf despinned dB1... -> mB            ';
 %	'dibf despinned diB1... -> mB          ';
-%	'dbs despinned dBS1..dBS4 -> mBS       ';
 ];
 
 disp('-------------- Get Cluster II data ----------------');
@@ -121,7 +122,8 @@ elseif strcmp(q,'p')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(q,'r') || strcmp(q,'v') || strcmp(q,'a') || strcmp(q,'whip') || ...
 	strcmp(q,'e') || strcmp(q,'b') || ...
-	strcmp(q,'bfgm') || strcmp(q,'p') || strcmp(q,'pburst') || strcmp(q,'eburst') || ...
+	strcmp(q,'bfgm') || strcmp(q,'bsc') || ...
+	strcmp(q,'p') || strcmp(q,'pburst') || strcmp(q,'eburst') || ...
 	strcmp(q,'ncis') || strcmp(q,'tcis') || strcmp(q,'vcis') || ...
 	strcmp(q,'vce') || strcmp(q,'wbdwf') || strcmp(q,'sax')
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,q); end
@@ -137,7 +139,7 @@ elseif strcmp(q,'iedi'),
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(q,'edi') || strcmp(q,'ps') || strcmp(q,'idies') || strcmp(q,'idie') || ...
 	strcmp(q,'dieburst') || strcmp(q,'vedbs') || strcmp(q,'vedb') || ...
-	strcmp(q,'br') || strcmp(q,'brs')
+	strcmp(q,'br') || strcmp(q,'brs') || strcmp(q,'dibsc')
 	for ic=sc_list, getData(ClusterProc(pwd),ic,q); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -210,7 +212,7 @@ elseif strcmp(q,'x'),
 		varic = [var_name num2str(ic)];
 		disp(['...free format s/c' num2str(ic) ' ' varic]);
 		for jj=1:size(string,2),str{jj}=irf_ssub(string{jj},ic);end, for jj=size(string,2)+1:7,str{jj}=' ';end
-		[t,data] = isGetDataLite( db, start_time, Dt,str{1}, str{2}, str{3}, str{4},str{5},str{6},str{7});
+		[t,data] = isGetDataLite( DATABASE, start_time, Dt,str{1}, str{2}, str{3}, str{4},str{5},str{6},str{7});
 		eval([varic '=[double(t) double(data)];']);
 	end
 
@@ -244,25 +246,6 @@ elseif strcmp(q,'x'),
    eval(irf_ssub('load mEPH SAX?;',ic));
    eval(irf_ssub('diB?=c_gse2dsi(B?,SAX?);',ic));
    eval(irf_ssub('save -append mB diB?;',ic));
-  end
-
- elseif strcmp(q,'bs'),
-  mode=input('Model L=1/M=2? If different give as vector. [1]');if isempty(mode),mode=1;end;
-  for ic=sc_list,
-	  if (length(mode)>1), mm=mode(ic);else mm=mode;end
-	  if (mm == 1), param='0-10Hz';end;
-	  if (mm == 2), param='0-180Hz';end;
-	  disp(['STAFF...wBS' num2str(ic) ' ' param ' filter' ]);
-	  [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'staff', 'B_SC', 'Bx_By_Bz', param, '');
-	  eval(irf_ssub('wBS?=[double(t) double(data)''];',ic));clear t data;
-  end
-  save mBS wBS1 wBS2 wBS3 wBS4; %#ok<USENS>
-
- elseif strcmp(q,'dbs'),
-  for ic=sc_list,
-   eval(irf_ssub('load mBS wBS?;tt=wBS?(1,1);',ic));
-   eval(irf_ssub('load mA.mat A?;',ic));
-   eval(irf_ssub('dBS?=c_efw_despin(wBS?,A?);save -append mBS dBS?;',ic));
   end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
