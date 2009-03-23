@@ -81,7 +81,7 @@ while 1
                     disp('q) quit')
                     disp('d) data variables')
                     disp('s) support data variables')
-                    disp('vv) list all variables and their values')
+                    disp('v) list all variables')
                     disp('r) read variable in default format')
                     disp('t) read time variables in irfu format and return')
                     disp('fa) list the file variable attributes')
@@ -96,6 +96,8 @@ while 1
                         flag_variable_menu=1;
                     case 'q'
                         flag_caa_file_menu=0;
+                    case 'v'
+                        current_caa_file
                     case 'd'
                         param=getfield(get(current_caa_file,'VariableAttributes'),'PARAMETER_TYPE');
                         i_data=[];
@@ -126,7 +128,7 @@ while 1
                                 case 'p'
                                     plot(current_caa_file, data_name);
                                 otherwise
-                                    eval(var_caa_data_menu);
+                                    try eval(var_caa_data_menu); catch end
                             end
                         end
 
@@ -163,7 +165,7 @@ while 1
                             eval(['disp(ga.' ssf{jj} ')'])
                         end
                     otherwise
-                        eval(var_menu);
+                        try eval(var_menu); catch end
                 end
             end
         otherwise
@@ -187,22 +189,20 @@ if 1
           disp('t) read time variables in irfu format and return')
           var_additional_item=irf_ask('Variable? [%]>','var_additional_item','v');
           switch var_additional_item
-              case 'v'
-                  cdf_file_info.Variables
-              case 'vv'
-                  for jj=1:size(cdf_file_info.Variables,1);
-                      cdf_var=cdf_file_info.Variables{jj,1};
-                      disp('======================================')
-                      disp(cdf_var);
-                      disp('======================================')
-                      dd=cdfread(cdf_file,'Variables',{cdf_var});
-                      if size(dd,1)>10,
-                          disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
-                          if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
-                      else
-                          if iscell(dd), disp(dd{1}), else, disp(dd), end
-                      end
-                  end
+                    case 'vv'
+                        for jj=1:size(cdf_file_info.Variables,1);
+                            cdf_var=cdf_file_info.Variables{jj,1};
+                            disp('======================================')
+                            disp(cdf_var);
+                            disp('======================================')
+                            dd=cdfread(cdf_file,'Variables',{cdf_var});
+                            if size(dd,1)>10,
+                                disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
+                                if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
+                            else
+                                if iscell(dd), disp(dd{1}), else, disp(dd), end
+                            end
+                        end
               case 'r'
                   var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
                   eval([var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
