@@ -1,7 +1,7 @@
-function [slope,cc]=irf_walen(v,b,n,vht,tint,tint_ex)
+function [slope,cc]=irf_walen(v,b,n,vht,tpar,tperp,tint,tint_ex)
 %IRF_WALEN   Walen test and estimate its goodness
 %
-% [slope,cc]=irf_walen(v,b,n,vht,tint,tint_ex);
+% [slope,cc]=irf_walen(v,b,n,vht,[tperp,tpar,tint,tint_ex]);
 %
 % INPUT (all vectors in the same coordinate system e.g GSE or GSM)
 % v - ion velocity [time vx vy vz] km/s
@@ -24,9 +24,15 @@ function [slope,cc]=irf_walen(v,b,n,vht,tint,tint_ex)
 % Alessandro Retino`
 % 2004/11/26
 
+if nargin < 5, anys_mode = 0;
+else
+	if ~isempty(tperp) &&  ~isempty(tpar), anys_mode = 1;
+	else anys_mode = 0;
+	end
+end
 
 %if time interval is not given define it from the size of the input vectors
-if nargin < 5, % if tint is not given
+if nargin < 7, % if tint is not given
   tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];
 elseif isempty(tint), % if tint=[], define tint from v and b time axis
    tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];  
@@ -41,7 +47,12 @@ n = irf_tlim(n,tint);
 %interpolate b,n,tpat,tperp to v
 v = irf_resamp(v,n);
 b = irf_resamp(b,n);
+if anys_mode
+	tperp = irf_resamp(tperp,n);
+	tpar = irf_resamp(tpar,n);
+end
 
+	
 % exclude subintervals
 if nargin > 5
 	for i=1:size(tint_ex)
@@ -49,65 +60,44 @@ if nargin > 5
 		n = irf_tlim(n,tint_ex(i,1),tint_ex(i,2),1);
 		v = irf_tlim(v,tint_ex(i,1),tint_ex(i,2),1);
 		b = irf_tlim(b,tint_ex(i,1),tint_ex(i,2),1);
+		if anys_mode
+			tperp = irf_tlim(tperp,tint_ex(i,1),tint_ex(i,2),1);
+			tpar = irf_tlim(tpar,tint_ex(i,1),tint_ex(i,2),1);
+		end
 	end
 end
 
 n = [n repmat(n(:,2),1,2)];
 
-%tpar=irf_interp(tpar,n);
-%tperp=irf_interp(tperp,n);
-
 %calculate velocity in HT frame, Alfven velocity and pressure anisotropy
-vtransf(:,1)=n(:,1);
+
+vtransf = n;
 vtransf(:,2:4)=v(:,2:4)-repmat(vht,size(n,1),1);
 
-%alpha(:,1)=n(:,1);
-%b=irf_abs(b);
-%alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,5).^2);
-%alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,2).^2+b(:,3).^2+b(:,4).^2);
-%alpha(:,2)=0.0;
-%alpha= [alpha repmat(alpha(:,2),1,2)];
-%irf_plot(alpha)
+valfv = b;
+valfv(:,2:4) = 22*b(:,2:4)./ sqrt(n(:,2:4));
 
-
-valfv(:,1)=n(:,1);
-%valfv1(:,1)=n(:,1);
-
-valfv(:,2:4)=22*b(:,2:4)./ sqrt(n(:,2:4));
-%valfv1(:,2:4)=22*b(:,2:4)./ sqrt( n(:,2:4));
-
-%valfv(:,2:4)=valfv(:,2:4).*sqrt( 1 - alpha(:,2:4))
-
-
-%diff(:,1)=n(:,1);
-%diff(:,2:4)=valfv1(:,2:4)-valfv(:,2:4);
-%irf_plot({vtransf,valfv})
-
-%no anisotropy
-%valfv(:,2:4)=22*b(:,2:4)./ sqrt( n(:,2:4));
-
-
-%calculate the correlation coefficient between all three components of
-%vtransf and valfv
-
+if anys_mode
+	alpha = n(:,1:2);
+	b = irf_abs(b);
+	alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,5).^2);
+	%irf_plot(alpha), keyboard
+	alpha= [alpha repmat(alpha(:,2),1,2)];
+	valfv(:,2:4)=valfv(:,2:4).*sqrt( 1 - alpha(:,2:4));
+end
 
 vtransf3=vtransf(:,2:4);
 valfv3=valfv(:,2:4);
 
-
 vtransf3=vtransf3';
 valfv3=valfv3';
-
 
 vtransftot=vtransf3(:);
 valfvtot=valfv3(:);
 
-
 corr=corrcoef(vtransftot,valfvtot);
 cc=corr(1,2);
 p=polyfit(valfvtot,vtransftot,1);
-
-
 
 slope=p(1);
 if nargout>0
