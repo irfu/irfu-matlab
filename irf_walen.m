@@ -1,7 +1,7 @@
-function [slope,cc]=irf_walen(v,b,n,vht,tint);
+function [slope,cc]=irf_walen(v,b,n,vht,tint,tint_ex)
 %IRF_WALEN   Walen test and estimate its goodness
 %
-% [slope,cc]=irf_walen(v,b,n,vht,tint);
+% [slope,cc]=irf_walen(v,b,n,vht,tint,tint_ex);
 %
 % INPUT (all vectors in the same coordinate system e.g GSE or GSM)
 % v - ion velocity [time vx vy vz] km/s
@@ -12,6 +12,7 @@ function [slope,cc]=irf_walen(v,b,n,vht,tint);
 %interpolated to v
 % vht - HT velocity vector [vhtx vhty vhtz] km/s
 % tint - toepoch([yyyy mm dd hh mm ss]) + [0 ss]
+% tint_ex - time intervals to exclude
 %
 % OUTPUT
 % [slope, cc] - slope and correlation coefficient of the Walen plot 
@@ -33,24 +34,28 @@ end
 
 %display time interval
 strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
-%display HT velocity
-%strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
-%disp(strvht);
 
 %define common time interval for input vectors
 n = irf_tlim(n,tint);
 
 %interpolate b,n,tpat,tperp to v
 v = irf_resamp(v,n);
-%tpar=av_interp(tpar,n);
-%tperp=av_interp(tperp,n);
 b = irf_resamp(b,n);
-%irf_plot({n,v,b,tpar,tperp})
-%
-n = [n repmat(n(:,2),1,2)];
-%tpar= [tpar repmat(tpar(:,2),1,2)];
-%tperp= [tperp repmat(tperp(:,2),1,2)];
 
+% exclude subintervals
+if nargin > 5
+	for i=1:size(tint_ex)
+		disp(['excluding ' irf_disp_iso_range(tint_ex(i,:),1)])
+		n = irf_tlim(n,tint_ex(i,1),tint_ex(i,2),1);
+		v = irf_tlim(v,tint_ex(i,1),tint_ex(i,2),1);
+		b = irf_tlim(b,tint_ex(i,1),tint_ex(i,2),1);
+	end
+end
+
+n = [n repmat(n(:,2),1,2)];
+
+%tpar=irf_interp(tpar,n);
+%tperp=irf_interp(tperp,n);
 
 %calculate velocity in HT frame, Alfven velocity and pressure anisotropy
 vtransf(:,1)=n(:,1);
@@ -100,7 +105,7 @@ valfvtot=valfv3(:);
 
 corr=corrcoef(vtransftot,valfvtot);
 cc=corr(1,2);
-[p,s]=polyfit(valfvtot,vtransftot,1);
+p=polyfit(valfvtot,vtransftot,1);
 
 
 
