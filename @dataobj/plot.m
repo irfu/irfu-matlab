@@ -64,7 +64,7 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 				h = plot(data.data);
 			end
 		end
-		
+		flab = getlablaxis(dobj,var_s);
 		lab_1 = '';
 		if ~isempty(dep.DEPEND_X)
 			dep_x_s = dep.DEPEND_X{1,1};
@@ -83,7 +83,7 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 				end
 			end
 		end
-		ylabel(sprintf('%s%s [%s]', fieldnam, lab_1, units))
+		ylabel(sprintf('%s%s [%s]', flab, lab_1, units))
 		
 		text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
 			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
@@ -104,6 +104,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			ii = 1:length(dep.DEPEND_O);
 			ii = (ii-1)*ndim;
 			if ~use_comp, comp=1:ndim; end
+            plot_data = cell(size(comp));
 			for i=comp
 				plot_data{i} = data.data(:,ii+i)';
 			end
@@ -153,7 +154,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
 			add_text(h,text_s);
 		else
-			
+			h = zeros(1,length(comp));
 			for i=1:length(comp)
 				specrec.p = plot_data(i);
 				h(i) = caa_spectrogram(ax(i),specrec);
