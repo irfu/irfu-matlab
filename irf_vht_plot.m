@@ -1,5 +1,7 @@
-function corr_coef=irf_vht_plot(e,b,tint,vht_flag,vht)
-%function c=irf_vht_plot(e,b,tint,vht_flag,vht);
+function [vht,corr_coef]=irf_vht_plot(e,b,tint,vht_flag,vht)
+%IRF_VHT_PLOT computer and plot de Hoffman-Teller velocity
+%
+% [VHT,CORR_COEF] = IRF_VHT_PLOT(E,B,[TINT,VHT_FLAG,VHT])
 %
 % Make the standard plot for estimate of the goodness of HT-frame
 % E vs V_HT x B
@@ -14,15 +16,13 @@ function corr_coef=irf_vht_plot(e,b,tint,vht_flag,vht)
 %
 % See also IRF_VHT.
 
-if nargin < 3, % if tint is not given
+if nargin < 3 || isempty(tint)
    tint=[min([e(1,1),b(1,1)]) max([e(end,1),b(end,1)])];
-elseif isempty(tint), % if tint=[], define tint from e and b time axis
-   tint=[min([e(1,1),b(1,1)]) max([e(end,1),b(end,1)])];  
 end
 if nargin < 4, vht_flag=2;end
 if nargin == 5, vht_is='given'; else vht_is='calculated';end
 
-strint=[epoch2iso(tint(1),1) ' -- ' epoch2iso(tint(2),1) ];
+strint = irf_disp_iso_range(tint,1);
 disp(strint);
 
 e=irf_tlim(e,tint);
