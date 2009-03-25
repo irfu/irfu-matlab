@@ -1,5 +1,5 @@
-function c=irf_plot_vht(e,b,tint,vht_flag,vht);
-%function c=irf_plot_vht(e,b,tint,vht_flag,vht);
+function corr_coef=irf_vht_plot(e,b,tint,vht_flag,vht)
+%function c=irf_vht_plot(e,b,tint,vht_flag,vht);
 %
 % Make the standard plot for estimate of the goodness of HT-frame
 % E vs V_HT x B
@@ -26,8 +26,6 @@ strint=[epoch2iso(tint(1),1) ' -- ' epoch2iso(tint(2),1) ];
 disp(strint);
 
 e=irf_tlim(e,tint);
-bb=irf_tlim(b,tint);
-t=e(1,1):e(end,1);t=t';
 b=irf_resamp(b,e);
 if strcmp(vht_is,'given'),
   vht=vht(1,end-2:end); % assume that vht=[[t] vx vy vz]; use GSE notation
@@ -40,21 +38,18 @@ elseif strcmp(vht_is,'calculated');
 end
 
 strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] km/s GSE'];
-%disp(strvht);
 eht=irf_e_vxb([0 vht],b); % evht=irf_add(1,e,-1,eht); evht would be E field in VHT frame
 
 if vht_flag == 2,
   ep=[e(:,2);e(:,3)];xp=[min(ep) max(ep)];
   ehtp=[eht(:,2);eht(:,3)];
-else,
+else
   ep=[e(:,2);e(:,3);e(:,4)];xp=[min(ep) max(ep)];
   ehtp=[eht(:,2);eht(:,3);eht(:,4)];
 end
-%[p,s]=polyfit( ep,ehtp,1);
-[p,s]=polyfit( ehtp,ep,1);
+p=polyfit( ehtp,ep,1);
 cc=corrcoef(ep,ehtp);
 corr_coef=cc(1,2);
-h=corr_coef;
 
 if vht_flag == 2,
    plot(eht(:,2),e(:,2),'b.',eht(:,3),e(:,3),'r.');
@@ -63,16 +58,16 @@ else
 end
 axis equal;grid on;
 ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
-title(['deHoffmann-Teller frame']);
+title('deHoffmann-Teller frame');
 xlabel('E_{HT} [mV/m] DS');ylabel('E [mV/m] DS')
 if vht_flag == 2, legend('x','y');
-else, legend('x','y','z');
+else legend('x','y','z');
 end
 
 ax=axis;
 ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
 ytext=ymax-dy;
-xtext=ax(1)+(ax(2)-ax(1))/40;
+xtext=ax(1)+(ax(2)-ax(1))/10;
 text(xtext,ytext,strint);ytext=ytext-dy;
 text(xtext,ytext,strvht);ytext=ytext-dy;
 hold on
@@ -80,6 +75,6 @@ plot(xp,polyval(p,xp),'k-');
 text(xtext,ytext,['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);ytext=ytext-dy;
 text(xtext,ytext,['cc=' num2str(cc(1,2),3)]);ytext=ytext-dy;
 if strcmp(vht_is,'given'),
-   text(xtext,ytext,['V_{HT} given as input']);ytext=ytext-dy;
+   text(xtext,ytext,'V_{HT} given as input');
 end
 
