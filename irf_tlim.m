@@ -2,7 +2,7 @@ function [x,in]=irf_tlim(x,t1,t2,mode)
 %IRF_TLIM   Find a subinterval defined by time limits
 %
 % [Y, IN] = IRF_TLIM(X,T1,T2,[MODE])
-% [Y, IN] = IRF_TLIM(X,[T1 T2],[MODE])
+% [Y, IN] = IRF_TLIM(X,[T1 T2])
 % Y is part of the X that is within interval T1 <= X(:,1) < T2
 % if MODE is nonzero, part of X outside the interval :
 % X(:,1) < T1 & X(:,1) > T2
