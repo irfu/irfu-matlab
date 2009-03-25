@@ -32,14 +32,12 @@ else
 end
 
 %if time interval is not given define it from the size of the input vectors
-if nargin < 7, % if tint is not given
-  tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];
-elseif isempty(tint), % if tint=[], define tint from v and b time axis
-   tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];  
+if nargin < 7 || isempty(tint)
+	tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];
 end
 
 %display time interval
-strint=[epoch2iso(tint(1)) ' -- ' epoch2iso(tint(2)) ];
+strint = irf_disp_iso_range(tint,1);
 
 %define common time interval for input vectors
 n = irf_tlim(n,tint);
@@ -105,13 +103,13 @@ if nargout>0
     disp(['Offset: ' num2str(p(2))])
     return
 end
-
+figure(117), clf
 plot(valfv(:,2),vtransf(:,2),'b.',valfv(:,3),vtransf(:,3),'g.',valfv(:,4),vtransf(:,4),'r.');
 axis equal;grid on;
 ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
 
 title(['Walen test ' strint])
-xlabel('V_{A} [km/s] GSE');ylabel('V-V_{HT} [km/s] GSE')
+xlabel('V_{A} [km/s]');ylabel('V-V_{HT} [km/s]')
 legend('x','y','z');
 
 xx=get(gca,'XLim');
@@ -122,3 +120,18 @@ text(xx(1)+dx,yy(1)+2*dy,  [' slope: ' num2str(slope,'%1.2f')])
 text(xx(1)+dx,yy(1)+1.5*dy,['    cc: ' num2str(cc,'%1.2f')])
 text(xx(1)+dx,yy(1)+dy,    ['offset: ' num2str(p(2),'%1.2f')])
 text(xx(1)+dx,yy(1)+.5*dy, ['   vht: [' num2str(vht) '] km/s GSE'])
+
+figure(118), clf
+irf_plot({valfv,vtransf},'comp','.')
+legend('V_A','V-V_{HT}')
+ylabel('V [km/s]');
+
+figure(119), clf
+irf_subplot(2,1,-1)
+if anys_mode
+	irf_plot(alpha,'.')
+end
+ylabel('\alpha');
+irf_subplot(2,1,-2)
+irf_plot(b,'.')
+ylabel('B [nT]');
