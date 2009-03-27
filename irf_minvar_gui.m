@@ -24,7 +24,7 @@ if isempty(message), % run only the first time during the session
 end
 
 if      nargin < 1, help irf_minvar_gui;return;
-elseif  (nargin==1 & isstr(x)), action=x;%disp(['action=' action]);
+elseif  (nargin==1 && ischar(x)), action=x;%disp(['action=' action]);
 elseif  isnumeric(x),
     if size(x,2)<3, disp('Vector has too few components');return;end
     if nargin < 2,
@@ -37,7 +37,6 @@ end
 switch action,
     case 'initialize'
         % X is used for minimum variance estimates
-        tlim = [];
         evalin('base','clear ud; global ud;');
 
         if min(column)==1, time_vector=1:size(x,1);
@@ -88,7 +87,7 @@ switch action,
 
 
         xp=0.1;yp=0.1;
-        uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
+        uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
         ud.filter = uicontrol('style', 'edit', ...
             'string', '1', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
@@ -137,11 +136,11 @@ switch action,
             axis tight;add_timeaxis(ud.h(2),'date');
             axes(ud.h(3));
             plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
-            axis tight;axis equal; ax=axis;grid on;
+            axis tight;axis equal; grid on;
             axes(ud.h(4))
             plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
             axis equal; grid on;
-        elseif (tlim(1)>=ud.tlim_mva(1) & tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
+        elseif (tlim(1)>=ud.tlim_mva(1) && tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
             irf_zoom(tlim,'x',ud.h(2));
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);
@@ -151,7 +150,7 @@ switch action,
             irf_plot(ud.Xminvar);
             axis tight;add_timeaxis(ud.h(2),'date');
         end
-        if (tlim(1)<ud.tlim_mva(1) | tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
+        if (tlim(1)<ud.tlim_mva(1) || tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
             axes(ud.h(2));set(ud.h(2),'layer','top');
             ax=axis;grid on;
             ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
@@ -166,7 +165,7 @@ switch action,
 					X = irf_tlim(X, tlim + [-20/Fs 20/Fs]);
 					X = irf_filt(X,0,flim,Fs,5);
 				else
-					disp('f/Fs must be <1!!!')
+					if eval(get(ud.filter,'string'))>1, disp('f/Fs must be <1!!!'), end
 					set(ud.filter,'string','1')
 				end
         X = irf_tlim(X,tlim);
