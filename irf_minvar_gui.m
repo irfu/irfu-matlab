@@ -1,4 +1,4 @@
-function status = irf_minvar_gui(x,column)
+function irf_minvar_gui(x,column)
 %IRF_MINVAR_GUI interactively do the minimum variance analysis
 %
 % IRF_MINVAR_GUI(X,COLUMN)
