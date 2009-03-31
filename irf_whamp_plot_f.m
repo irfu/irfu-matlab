@@ -54,13 +54,13 @@ if nargin == 1,
 	a1=n(:,6);
 	a2=n(:,7);
 	n(:,2:end)=[];
-  else,
+  else
 	help irf_whamp_plot_f;
 	return;
   end
 end
 
-if nargin<7 & nargin>1,return;end
+if nargin<7 && nargin>1,return;end
 for j=1:length(n),
   % estimate thermal velocity in m/s
   if m(j)==0, mm(j)=Me;else mm(j)=Mp*m(j);end
@@ -93,12 +93,12 @@ ntot=sum(n)/length(n);	%added DS
 
 for j=1:length(n),
   if a1(j)==0, 
-    ea1=vp.*0;;
+    ea1=vp.*0;
   else
     ea1=exp(-1*(vp.^2./a1(j)./vt(j)./vt(j)));
   end
   if a2(j)==0, 
-    ea2=vp.*0;;
+    ea2=vp.*0;
   else
     ea2=exp(-1*(vp.^2./a2(j)./vt(j)./vt(j)));
   end
@@ -113,6 +113,9 @@ for j=1:length(n),
   										%f units [s^3/m^6]
 										%f/ntot=f in whamp.
 end
+
+QJAS_UNITS=0;
+if QJAS_UNITS,  f = f*1e18; end
 
 if nargin<8
 	h=contour3(vp,vz,log10(f),30);view(0,90);
@@ -132,14 +135,16 @@ elseif nargin>=8
 		h=plot(vtot',f');
 		xlabel('Vtot [m/s]')
 	end
-	ylabel('PSD [s^3/m^6]')
+	if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
+	else ylabel('PSD [s^3/m^6]')
+	end
 	for I=1:length(pitchangles)
-		s=[num2str(180/pi*pitchangles(I))];
+		s = num2str(180/pi*pitchangles(I));
 		M(I)={s};
 	end
 	legend(M)
 end
-if exist('title_option'),
+if exist('title_option','var'),
   if ischar(title_option),
     title(title_option);
   elseif title_option==1,
