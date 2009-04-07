@@ -17,7 +17,7 @@ function [slope,cc]=irf_walen(v,b,n,vht,tpar,tperp,tint,tint_ex)
 % OUTPUT
 % [slope, cc] - slope and correlation coefficient of the Walen plot 
 %
-% See also IRF_WALEN2, IRF_VHT
+% See also IRF_VHT, IRF_VHT_PLOT
 %
 % $Id$
 
@@ -79,6 +79,7 @@ if anys_mode
 	alpha = n(:,1:2);
 	b = irf_abs(b);
 	alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,5).^2);
+	%alpha(alpha(:,1)<=iso2epoch('2007-03-27T05:07:58.000Z'),2) = 0;
 	%irf_plot(alpha), keyboard
 	alpha= [alpha repmat(alpha(:,2),1,2)];
 	valfv(:,2:4)=valfv(:,2:4).*sqrt( 1 - alpha(:,2:4));
