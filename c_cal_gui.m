@@ -275,6 +275,21 @@ case 'init'
 					end
 					eval(['hnd.DATA' vs 'checkbox=hhd;clear hhd'])
 					
+					% Delta offsets: remove automatic and apply CAA
+					if d==1 && strcmp(dsc.quant,'dies')
+						eval(['Del_caa = c_efw_delta_off(' vs '(1,1),cl_id);'])
+						if ~isempty(Del_caa)
+							[ok,Delauto] = c_load('D?p12p34',cl_id);
+							if ~ok || isempty(Delauto)
+								irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cl_id))
+							else
+								eval([vs ' = caa_corof_delta(' vs ',str2double(dsc.sen),Delauto,''undo'');'])
+								eval([vs ' = caa_corof_delta(' vs ',str2double(dsc.sen),Del_caa,''apply'');'])
+							end
+						end
+						clear Del_caa
+					end
+					
 					% Assign magnetic field to the variable
 					% For EFW we use already resampled filed
 					% for the others we resample.
