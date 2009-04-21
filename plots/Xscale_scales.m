@@ -61,21 +61,21 @@ line(l_range(2)*[0.03 11], [tt tt])
 ht=text(l_range(2)*0.9,tt*1.1,'fields superburst');
 set(ht,'fontsize',14,'horizontalalignment','right','verticalalignment','baseline');
 
-[hp,ht]=text_square(l_rho_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'ion scale')
-[hp,ht]=text_square(l_erho_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'e- scale')
-[hp,ht]=text_square(l_deb_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'Debye length')
+[hp,ht]=text_square(l_rho_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'ion scale');
+[hp,ht]=text_square(l_erho_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'e- scale');
+[hp,ht]=text_square(l_deb_range,t_range(1)*[1.25 3],1,[0.5 1 0.5],'Debye length');
 
-[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_cp_range,1,[0.8 0.8 1],'f_{ci}')
-[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_lh_range,1,[0.8 0.8 1],'f_{LH}')
-[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_ce_range,1,[0.8 0.8 1],'f_{ce}')
-[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_pe_range,1,[0.8 0.8 1],'f_{pe}')
+[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_cp_range,1,[0.8 0.8 1],'f_{ci}');
+[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_lh_range,1,[0.8 0.8 1],'f_{LH}');
+[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_ce_range,1,[0.8 0.8 1],'f_{ce}');
+[hp,ht]=text_square(l_range(1)*[1.2 2.6],t_pe_range,1,[0.8 0.8 1],'f_{pe}');
 
-[hp,ht]=text_square([l_deb_range(1) l_erho_range(2)],[t_pe_range(2) t_ce_range(1)],1,[1 1 0.7],'e- physics')
-[hp,ht]=text_square([l_rho_range(1) l_rho_range(2)],[sqrt(t_lh_range(1)*t_lh_range(2)) t_cp_range(1)*2],1,[1 1 0.7],'ion physics')
-[hp,ht]=text_square([6.372e3 1e5],[50 1000],1,[1 1 0.7],'fluid physics')
+[hp,ht]=text_square([l_deb_range(1) l_erho_range(2)],[t_pe_range(2) t_ce_range(1)],1,[1 1 0.7],'e- physics');
+[hp,ht]=text_square([l_rho_range(1) l_rho_range(2)],[sqrt(t_lh_range(1)*t_lh_range(2)) t_cp_range(1)*2],1,[1 1 0.7],'ion physics');
+[hp,ht]=text_square([6.372e3 1e5],[50 1000],1,[1 1 0.7],'fluid physics');
 
-[hp,ht]=text_square([l_erho_range(2)/2 l_rho_range(1)*2],[t_ce_range(1)/2 t_lh_range(1)],0.5,[1 0.7 0.7],'e-/ion \newline coupling')
-[hp,ht]=text_square([l_rho_range(2)/2 1e4],[t_cp_range(1)/2 200],0.5,[1 0.7 0.7],'ion/fluid \newline coupling')
+[hp,ht]=text_square([l_erho_range(2)/2 l_rho_range(1)*2],[t_ce_range(1)/2 t_lh_range(1)],0.5,[1 0.7 0.7],'e-/ion \newline coupling');
+[hp,ht]=text_square([l_rho_range(2)/2 1e4],[t_cp_range(1)/2 200],0.5,[1 0.7 0.7],'ion/fluid \newline coupling');
 
 
 title('Characteristic scales encountered by Cross-Scale');
