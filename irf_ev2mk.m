@@ -4,14 +4,14 @@ function res = irf_ev2mk(T_eV,dir)
 %function res = irf_ev2mk(T_eV,[dir])
 %
 % convert Temperature from keV to K
-% dir=-1, konvert K to keV
+% dir=-1, konvert MK to eV
 %
 % See also: IRF_KEV2K
 %
 % $Id$
 
 factor = 1.1604*1e-2;
-if dir == -1
+if ~( nargin==1 || dir ~= -1)
 	factor = 1/factor;
 end
 if size(T_eV,2)==1
