@@ -522,7 +522,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		case 2
 			if start_time>=toepoch([2007 06 01 17 20 00])
 				% We use 180 Hz filter
-				param={'180Hz'};
+				if ~do_burst, param={'180Hz'}; end
 				irf_log('dsrc',sprintf('using 180Hz filter on sc%d',cl_id))
 				probe_list = 2:4;
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
