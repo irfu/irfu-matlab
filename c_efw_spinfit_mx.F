@@ -5,6 +5,8 @@ c This is a new 64-bit compatible version
 c
 c compile with the following flags for the best speed:
 c mex -v c_efw_spinfit_mx.F FFLAGS='$FFLAGS -O2 -mtune=opteron -funroll-loops'
+c 
+c for gfortran under Linux, use the -ffixed-line-length-none flag.
 c
 c $Id$
 c
@@ -258,8 +260,7 @@ c		check number of data points
 c		write(*,*) 'got: ',nn,' min:',minpts
 		if ( nn .gt. minpts) then
 c			write(*,*) 'start: ',idxs,' stop:',idxe
-			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),
-			1	nbad,x,sigma,ierr)
+			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),nbad,x,sigma,ierr)
 			if (ierr .eq. 0) then
 c			write(*,*) '         spin: ok'
 				do j=1, nterms
