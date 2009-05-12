@@ -239,18 +239,18 @@ for dd = 1:length(dirs)
    	end
    	
    	% Fill gap in data at start of subinterval
-   	if ~isempty(data) && ~isempty(result) && ((data(1,1) - result(end,1)) > TIME_RESOLUTION)
-   	   [tmp, filldata] = caa_fill_gaps(result, data(1,1));
-   	   if ~isempty(filldata)
-   	      data = [filldata(:,1:size(data,2)); data];
-   	   end
-   	   clear tmp
-   	end
+    %if ~isempty(data) && ~isempty(result) && ((data(1,1) - result(end,1)) > TIME_RESOLUTION)
+   	%   [tmp, filldata] = caa_fill_gaps(result, data(1,1));
+   	%   if ~isempty(filldata)
+   	%      data = [filldata(:,1:size(data,2)); data];
+   	%   end
+   	%   clear tmp
+   	%end
    	
    	% Fill gap in data at end of subinterval
-   	if ~isempty(data) && ((t_int(2) - data(end,1)) > TIME_RESOLUTION)
-   	   data = caa_fill_gaps(data, t_int(2));
-   	end
+   	%if ~isempty(data) && ((t_int(2) - data(end,1)) > TIME_RESOLUTION)
+   	%   data = caa_fill_gaps(data, t_int(2));
+   	%end
    	
    	% Extend data array to accept bitmask and quality flag (2 columns at the end)
    	data = [data zeros(size(data, 1), 2)];
@@ -461,11 +461,29 @@ for dd = 1:length(dirs)
       end
    end
    
-%   result = [result; data];
    if isempty(result), result = data;
-   else result = caa_append_data(result, data);    % NOTE: This will fill ALL columns with NaN unless
-                                                   % caa_fill_gaps is used BEFORE caa_identify_problems!
+   else
+       t = result(:,1);
+       tapp = data(:,1);
+       
+       if tapp(1) <= t(end)
+           irf_log('proc',sprintf('Last point in data is %f seconds before first point in appended data',t(end)-tapp(1)))
+           irf_log('proc',sprintf('   Last point in data: %s',epoch2iso(t(end))))
+           irf_log('proc',sprintf('   Attempt to append interval %s to %s',epoch2iso(tapp(1)),epoch2iso(tapp(end))))
+           data = irf_tlim(data,tapp(1),t(end),1);
+       end
+       
+       if ~isempty(data)
+           result = [result; data];
+       end
    end
+       
+
+   
+%   if isempty(result), result = data;
+%   else result = caa_append_data(result, data);    % NOTE: This will fill ALL columns with NaN unless
+%                                                   % caa_fill_gaps is used BEFORE caa_identify_problems!
+%   end
 
 end   % for dd = 1:length(dirs)
 
