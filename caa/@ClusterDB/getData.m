@@ -223,7 +223,7 @@ if strcmp(quantity,'dsc')
 	
 	irf_log('dsrc',sprintf('\nFound total %d good and %d jumpy intervals',...
 		n_good, n_jumpy))
-	c_eval('DSC?=[t_start_save dsc_save''];save_list=[save_list '' DSC? ''];',cl_id);
+	c_eval('DSC?=[t_start_save'' dsc_save'']'';save_list=[save_list '' DSC? ''];',cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fdm - EFW FDM
