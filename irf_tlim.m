@@ -30,6 +30,7 @@ elseif nargin<4
 	if length(t1)==2 && length(t2)==1
 		mode = t2;
 		t2 = t1(2) + 1e-7; t1 = t1(1) - 1e-7;
+	else mode = 0;
 	end
 end
 
