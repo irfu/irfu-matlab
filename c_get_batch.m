@@ -82,8 +82,9 @@ argsProc = '';
 dosrc = 1;
 doproc = 1;
 sw_mode = 0;
+sdir_st = '';
 
-[st,dt] = irf_stdt(st,dt);
+
 
 if have_options
 	if isnumeric(args{1}), 
@@ -103,7 +104,7 @@ while have_options
 				else irf_log('fcal','SP must be string')
 				end
 			case 'sdir'
-				if ischar(args{2}), sp = [args{2} '/' irf_fname(st)];
+				if ischar(args{2}), sdir_st = args{2};
 				else irf_log('fcal','SDIR must be string')
 				end
 			case 'dp'
@@ -171,6 +172,9 @@ while have_options
 		error('caa:wrongArgType','use c_get_batch(..,''option'',''value'')')
 	end
 end
+
+if dosrc==1, [st,dt] = irf_stdt(st,dt); end
+if ~isempty(sdir_st), sp = [sdir_st '/' irf_fname(st)]; end
 
 if isempty(cdb), cdb = ClusterDB(db,dp,sp); end
 
