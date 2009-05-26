@@ -169,7 +169,8 @@ end
 if flag_subplot==0,  % One subplot
 	if isstruct(x)
 		% Plot a spectrogram
-		caa_spectrogram(x);
+		c = gca;
+		caa_spectrogram(c,x);
 		hcbar = colorbar;
 		if ~isempty(var_desc{1})
 			lab = cell(1,length(var_desc{1}.size));
