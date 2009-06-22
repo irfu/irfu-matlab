@@ -34,6 +34,7 @@ end
 %if time interval is not given define it from the size of the input vectors
 if nargin < 7 || isempty(tint)
 	tint=[min([v(1,1),b(1,1),n(1,1)]) max([v(end,1),b(end,1),n(end,1)])];
+	tint_ex = [];
 end
 
 %display time interval
@@ -50,6 +51,15 @@ if anys_mode
 	tpar = irf_resamp(tpar,n);
 end
 
+NTHRESH=0.6;
+ii = find(n(:,2)>NTHRESH);
+n = n(ii,:);
+v = v(ii,:);
+b = b(ii,:);
+if anys_mode
+	tperp = tperp(ii,:);
+	tpar = tpar(ii,:);
+end
 	
 % exclude subintervals
 if nargin > 5
@@ -81,6 +91,7 @@ if anys_mode
 	alpha(:,2)=17.33*n(:,2).*( tpar(:,2)-tperp(:,2) )./( b(:,5).^2);
 	%alpha(alpha(:,1)<=iso2epoch('2007-03-27T05:07:58.000Z'),2) = 0;
 	%irf_plot(alpha), keyboard
+    alpha(:,2) = my_smooth(alpha(:,2),3);
 	alpha= [alpha repmat(alpha(:,2),1,2)];
 	valfv(:,2:4)=valfv(:,2:4).*sqrt( 1 - alpha(:,2:4));
 end
@@ -136,3 +147,23 @@ ylabel('\alpha');
 irf_subplot(2,1,-2)
 irf_plot(b,'.')
 ylabel('B [nT]');
+
+function sig = my_smooth(sig, niter)
+% Remove spikes and smoothen the signal
+
+%clf, plot(sig,'k.'), hold on
+
+if niter > 0
+    for i=1:niter
+        mm = mean(sig);
+        ii = find(abs(sig - mm) > 1.2*std(sig));
+        sig_tmp = sig;
+        sig_tmp(ii) = mm;
+        sig_tmp = smooth(sig_tmp);
+        sig(ii) = sig_tmp(ii);
+        %plot(sig,irf_lstyle(i));
+    end
+end
+
+sig = smooth(sig);
+%plot(sig,irf_lstyle(niter+1)); hold off
