@@ -1342,6 +1342,7 @@ elseif any(regexp(vs,'^wBSC[1-4]$'))
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
 	v.file = 'mBSCR';
+    v.field_name = {'Magnetic field'};
 	v.com = '';
 	v.lev = 0;
 	v.quant = 'bsc';
