@@ -433,7 +433,7 @@ elseif regexp(vs,'^(b)?NVps[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % phase
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^A[1-4]$')
+elseif regexp(vs,'^A(two)?[1-4]$')
 
 	if CAA
 		irf_log('fcal', ['Variable ' vs ' is not intended for the CAA'])
@@ -443,7 +443,7 @@ elseif regexp(vs,'^A[1-4]$')
 		irf_log('fcal', ['CEF export is not (yet) supported for ' vs])
 		CEF = 0;
 	end
-	cl_id = vs(2);
+	cl_id = vs(end);
 	inst = 'ephemeris';
 	sig = 'phase';
 	sen = '';
