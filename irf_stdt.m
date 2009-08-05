@@ -34,4 +34,4 @@ elseif ischar(dt_in), dt = iso2epoch(dt_in) -st;
 else error('DT/ET must be eather numeric or ISO string')
 end
 
-if dt<=0, error('negative of zero DT'), end
+if dt<=0, error('negative or zero DT'), end
