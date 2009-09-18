@@ -1078,8 +1078,8 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	v.inst = 'CIS';
 	v.frame = 'na';
 	v.cs = {'na'};
-	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular';
-    else comp = 'par'; cf = 'Parallel';
+	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular'; lcomp='\perp';
+    else comp = 'par'; cf = 'Parallel'; lcomp='{||}';
 	end
 	if vvs(findstr(vvs,'C')+1)=='h' % characters after 'C'
 		v.sig = ['T_' comp];
@@ -1093,10 +1093,10 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
     v.ptype = {'Data'};
     v.valtype = {'FLOAT'};
     v.sigdig = 6;
- 	v.units =  {'mK'};
+ 	v.units =  {'MK'};
 	v.si_conv = {'1.0e6>K'};
 	v.size = 1;
-	v.name = {['T_' comp]};
+	v.name = {['T_' lcomp]};
 	v.labels = v.name;
 	v.com = '';
 	v.file = 'mCISR';
