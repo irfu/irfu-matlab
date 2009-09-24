@@ -25,12 +25,19 @@ function [hout,jout,divBout,jparout,jperpout]=c_pl_j(varargin)
 %
 % $Id$
 
-% Copyright 2004 Yuri Khotyaintsev (yuri@irfu.se)
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
+B1 = [];
 
 if nargin==0, 
   help c_pl_j;return;
 end
- if nargin~=2 & nargin~=3 & nargin~=4 & nargin~=8 & nargin~=9 & nargin~=10
+ if nargin~=2 && nargin~=3 && nargin~=4 && nargin~=8 && nargin~=9 && nargin~=10
 	error('wrong number of input arguments')
 end
  
@@ -39,32 +46,30 @@ args = varargin;
 if nargin < 6
 	% we have 2 string arguments
 	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(args{2},cl_id)); 
+		ttt = evalin('caller',irf_ssub(args{2},cl_id));  %#ok<NASGU>
 		eval(irf_ssub('B? =ttt;',cl_id)); clear ttt
-		ttt = evalin('caller',irf_ssub(args{1},cl_id)); 
+		ttt = evalin('caller',irf_ssub(args{1},cl_id));  %#ok<NASGU>
 		eval(irf_ssub('R? =ttt;',cl_id)); clear ttt
 	end
 	if length(args) > 2, args = args(3:end); 
-	else, args = ''; end
+	else args = ''; end
 else
 	% We have 8 arguments
 	c_eval('B? = args{4+?};');
 	c_eval('R? = args{?};');
 	if length(args) > 8, args = args(5:end); 
-	else, args = ''; end
+	else args = ''; end
 end
 
 if length(args)>0
 	ref_sc = args{1};
 	if length(args) > 1, args = args(2:end); 
-	else, args = ''; end
+	else args = ''; end
 else
 	ref_sc = 1;
 end
 if length(args)>0
 	fcut = args{1};
-	if length(args) > 1, args = args(2:end); 
-	else, args = ''; end
 else
 	fcut = .7;
 end
@@ -76,7 +81,7 @@ c_eval('fhz?=50/(B?(51,1)-B?(1,1));')
 %irf_lowpass filter B
 for j=2:4,c_eval(['B?(:,' num2str(j) ')=irf_lowpass(B?(:,' num2str(j) '),fcut,fhz?);']),end
 
-[jj,divB,B,jxB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4);
+[jj,divB,B,jxB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4); %#ok<ASGLU>
 
 c_eval('[jpar,jperp]=irf_dec_parperp(B?,jj);',ref_sc)
 
@@ -111,8 +116,8 @@ for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 
 for j=1:5,xlabel(h(j),''),set(h(j),'XTickLabel',''),end
 
-legend(h(1),'x','y','z','tot','Location','NorthEastOutside')
-legend(h(3),'x','y','z','Location','NorthEastOutside')
+irf_zoom([B1(1,1) B1(end,1)],'x',h)
+
 if nargout>0, hout = h; end
 if nargout>1, jout = jj; end
 if nargout>2, divBout = divB; end
