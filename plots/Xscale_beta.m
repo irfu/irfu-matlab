@@ -31,13 +31,13 @@ grid on;hold on;
 ylabel('f_{p}/f_{ce}');
 xlabel('\beta');
 
-hp=patch([beta_range(1) .1 10 10 3 .1 beta_range(1)],[3 3 6 60 300 300 30],[0.8 1 0.8]);
+hp=patch([beta_range(1)*1.06 .1 15 15 3 .1 beta_range(1)*1.06],[3 3 8 60 300 300 30],[0.8 1 0.8]);
 set(hp,'FaceAlpha',0,'LineWidth',2,'edgecolor','none')
-text_square(beta_range(1)* [ 1 100],fpfce_range(2)*[1 .5],1,[0.8 1 0.8],{'plasma at Cross-Scale'});
-text_square(beta_range(1)* [ 1 100],fpfce_range(2)*[.5 .5^2],1,0,{'other astrophysical plasmas'});
+%text_square(beta_range(1)* [ 1 100],fpfce_range(2)*[1 .5],1,[0.8 1 0.8],{'plasma at Cross-Scale'});
+%text_square(beta_range(1)* [ 1 100],fpfce_range(2)*[.5 .5^2],1,0,{'other astrophysical plasmas'});
 
 
-text_square([.001 0.1],[3 30],1,[0.8 1 0.8],{'Lobes'});
+text_square([.001 0.1],[3 30],1.3,-1,{'Lobes'});
 text_square([1 1.1],[70 71],1.3,-1,{'Magnetopause'});
 %text_square([.2 20],[6 60],1,[0.8 1 0.8],{' Plasma sheet'});
 text_square([.2 20],[6 60],1.3,-1,{' Plasma sheet'});
