@@ -2239,7 +2239,7 @@ elseif strcmp(quantity,'ps')
 	n = floor((P_tmp(end,1)-t0)/4) + 1;
 	tvec = t0 + ( (1:n) -1)*4;
 	
-	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec %#ok<NASGU>
+	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'median'); clear tvec %#ok<NASGU>
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
 	[ok,P_info] = c_load('P?_info',cl_id); %#ok<NASGU>
