@@ -10,11 +10,15 @@ function caa_sh_plan(yyyy)
 if yyyy==2001, mm=2:12;
 else mm = 1:12;
 end
+c_ctl('set','isdat_db','db:9');
+force_orbit_read=[0 0 0 0];
+force_orbit_splitting=[0 0 0 0];
+force_MP_determination=[0 0 0 0];
 
 for cl_id = 1:4
 	v_s = sprintf('R%dY%d',cl_id,yyyy);
     cl_id_s = num2str(cl_id);
-	if exist('./mR.mat','file'), eval(['load ./mR.mat ' v_s]), end
+	if (~force_orbit_read(cl_id)), if exist('./mR.mat','file'), eval(['load ./mR.mat ' v_s]), end, end
 	if ~exist(v_s,'var')
 		et = []; R = [];
 		for mo=mm
@@ -26,9 +30,9 @@ for cl_id = 1:4
 			
 			if mo==12, et = toepoch([yyyy+1 01 01 00 00 00]);
             else et = toepoch([yyyy mo+1 01 00 00 00]);
-			end
+            end
 			
-			data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
+            data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
 			if isempty(data), error('cannot fetch position'), end
 
 			R_tmp = irf_abs(data{2});
@@ -45,7 +49,7 @@ for cl_id = 1:4
 	end
 	
 	v_s = sprintf('ORB%dY%d',cl_id,yyyy);
-	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
+	if (~force_orbit_splitting(cl_id)), if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end, end
 	if ~exist(v_s,'var')
 		dR = diff(R(:,5))./diff(R(:,1));
 		ii = find(dR(1:end-1,1).*dR(2:end,1)<0) +1; %shift to hit the extremum
@@ -57,11 +61,19 @@ for cl_id = 1:4
 					ORB = [2*t_prev-R(ii(o),1) R(ii(o),1)-t_prev];
 					irf_log('proc',['C' cl_id_s ' first perigy at ' epoch2iso(2*t_prev -R(ii(o),1),1)])
 					ORB = [ORB; [t_prev  R(ii(o),1)-t_prev]];
-					irf_log('proc',['C' cl_id_s ' perigy at ' epoch2iso(t_prev,1)])
+					irf_log('proc',['C' cl_id_s ' perigee at ' epoch2iso(t_prev,1)])
 				end
 				if ~isempty(ORB)
-					ORB = [ORB; [R(ii(o),1)  R(ii(o),1)-t_prev]];
-					irf_log('proc',['C' cl_id_s ' perigy at ' epoch2iso(R(ii(o),1),1)])
+					dt_expected=ORB(1,2);
+                    if(abs(R(ii(o),1)-t_prev-dt_expected) < 1000)
+                        ORB = [ORB; [R(ii(o),1)  R(ii(o),1)-t_prev]];
+                        irf_log('proc',['C' cl_id_s ' perigee at ' epoch2iso(R(ii(o),1),1)])
+                    else
+                        n_skipped=round((R(ii(o+1),1)-R(ii(o-1),1))/dt_expected);
+                        for i=1:n_skipped, ORB = [ORB; [ORB(end,1)+dt_expected  dt_expected]]; end
+                        R(ii(o),1)=ORB(end,1);
+                        irf_log('proc',['Fixing '  num2str(n_skipped) ' orbits on C' cl_id_s ' near ' epoch2iso(R(ii(o),1),1)])
+                    end
 				end
 				t_prev = R(ii(o),1);
 			end
@@ -76,7 +88,7 @@ for cl_id = 1:4
 	end
 	
 	v_s = sprintf('MP%dY%d',cl_id,yyyy);
-	if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end
+	if (~force_MP_determination(cl_id)), if exist('./mPlan.mat','file'), eval(['load ./mPlan.mat ' v_s]), end, end
 	if ~exist(v_s,'var')
 		MP = [];
 		for o=1:length(ORB)
@@ -119,7 +131,7 @@ for cl_id = 1:4
 		end
 	end
 	irf_zoom([toepoch([yyyy 1 1 0 0 0]) toepoch([yyyy+1 1 1 0 0 0])],'x')
-	ylabel('time [hours] from perigy')
+	ylabel('time [hours] from perigee')
 	title(sprintf('Cluster %d',cl_id))
 	clear MP R
 end

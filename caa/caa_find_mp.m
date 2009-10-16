@@ -41,7 +41,7 @@ if isempty(Rin)
 	clear data
 else
 	R = irf_tlim(Rin, start_time + [0 dt]);
-	if isempty(R), error('empty position'), end
+	if isempty(R), irf_log('proc','empty position'), return, end
 end
 	
 R = R(R(:,1)>0,:); % we probably cross the MP only for positive X
