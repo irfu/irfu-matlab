@@ -5,12 +5,13 @@ function out = irf_resamp(x,y,varargin)
 % otherwise we interpolate X.
 %
 % out = irf_resamp(X,Y,[METHOD],['fsample',FSAMPLE],['window',WIN],
-%                      ['thresh',THRESH])
+%                      ['thresh',THRESH],['median'])
 % method - method of interpolation 'spline', 'linear' etc. (default 'linear')
-%          if method is given the interpolate independant of sampling
+%          if method is given then interpolate independant of sampling
 % thresh - points above STD*THRESH are disregarded for averaging
 % fsample - sampling frequency of the Y signal, 1/window
 % window - length of the averaging window, 1/fsample
+% median - use median instead of mean when averaging
 %
 % See also INTERP1
 %
@@ -34,6 +35,7 @@ sfy = [];
 thresh = 0;
 method = '';
 flag_do='check'; % if no method check if interpolate or average
+median_flag=0;
 
 while have_options
 	l = 1;
@@ -83,7 +85,9 @@ while have_options
 				else irf_log('fcal,','wrongArgType : THRESHOLD must be numeric')
 				end
 			else irf_log('fcal,','wrongArgType : THRESHOLD value is missing')
-			end
+            end
+        case 'median'
+            median_flag=1;
 		otherwise
 			irf_log('fcal',['Skipping parameter ''' args{1} ''''])
 			args = args(2:end);
@@ -126,7 +130,8 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 						not_found = 0;
 						sfy = (sfy+sfy1)/2;
 						break
-					end
+                    end
+                    sfy1=sfy;
 					cur = cur + 1;
 				end
 				if not_found
@@ -149,45 +154,51 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 end
 
 if strcmp(flag_do,'average')
-	dt2 = .5/sfy; % Half interval
-	if exist('irf_average_mx','file')~=3
-		irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
-		out = zeros(ndata,size(x,2));
-		out(:,1) = t;
-		for j=1:ndata
-			ii = find(x(:,1) <=  t(j) + dt2 & x(:,1) >  t(j) - dt2);
-			if isempty(ii), out(j,2:end) = NaN;
-			else
-				if thresh % Throw away points above THERESH*STD()
-					sdev = std(x(ii,2:end)); 
-					mm = mean(x(ii,2:end));
-					if any(~isnan(sdev))
-						for k=1:length(sdev)
-							if ~isnan(sdev(k))
-								kk = find( abs( x(ii,k+1) -mm(k) ) <= thresh*sdev(k));
-								%disp(sprintf(...
-								%	'interval(%d) : disregarding %d 0f %d points',...
-								%	j, length(ii)-length(kk),length(ii)));
-								if ~isempty(kk), out(j,k+1) = mean(x(ii(kk),k+1));
-								else out(j,k+1) = NaN;
-								end
-							else out(j,k+1) = NaN;
-							end
-						end
-					else out(j,2:end) = NaN;
-					end
-				else out(j,2:end) = mean(x(ii,2:end));
-				end
-			end
-		end
-	else
-		if ( (x(1,1) > t(end) + dt2) || (x(end,1) <= t(1) - dt2) )
-			irf_log('proc','interval mismatch')
-			out = [];
-		else
-			out = irf_average_mx(x,t,dt2,thresh);
-		end
-	end
+    dt2 = .5/sfy; % Half interval
+    if median_flag || (exist('irf_average_mx','file')~=3)
+        if (~median_flag) irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
+        end
+        out = zeros(ndata,size(x,2));
+        out(:,1) = t;
+        for j=1:ndata
+            ii = find(x(:,1) <=  t(j) + dt2 & x(:,1) >  t(j) - dt2);
+            if isempty(ii), out(j,2:end) = NaN;
+            else
+                if thresh % Throw away points above THERESH*STD()
+                    sdev = std(x(ii,2:end));
+                    mm = mean(x(ii,2:end));
+                    if any(~isnan(sdev))
+                        for k=1:length(sdev)
+                            if ~isnan(sdev(k))
+                                kk = find( abs( x(ii,k+1) -mm(k) ) <= thresh*sdev(k));
+                                %disp(sprintf(...
+                                %	'interval(%d) : disregarding %d 0f %d points',...
+                                %	j, length(ii)-length(kk),length(ii)));
+                                if ~isempty(kk)
+                                    if (median_flag) out(j,k+1) = median(x(ii(kk),k+1));
+                                    else out(j,k+1) = mean(x(ii(kk),k+1));
+                                    end
+                                end
+                            else out(j,k+1) = NaN;
+                            end
+                        end
+                    else out(j,2:end) = NaN;
+                    end
+                else
+                    if (median_flag) out(j,2:end) = median(x(ii,2:end));
+                    else out(j,2:end) = mean(x(ii,2:end));
+                    end
+                end
+            end
+        end
+    else
+        if ( (x(1,1) > t(end) + dt2) || (x(end,1) <= t(1) - dt2) )
+            irf_log('proc','interval mismatch')
+            out = [];
+        else
+            out = irf_average_mx(x,t,dt2,thresh);
+        end
+    end
 elseif strcmp(flag_do,'interpolation'),
   if nargin < 3, method = 'linear'; end
 
