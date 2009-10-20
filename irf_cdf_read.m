@@ -25,6 +25,7 @@ function [varargout]=irf_cdf_read(cdf_file,var_name,flag)
 % $Id$
 
 flag_latest=0;
+persistent old_cdfread_call;
 
 if nargin==3,
   switch flag
@@ -215,18 +216,44 @@ end
 if ischar(var_name), var_name={var_name};end
 variables=[epoch_variable var_name];
 
-DATA = cdfread(cdf_file, 'VARIABLES', variables);
+if isempty(old_cdfread_call)
+  try
+    % New, faster call (requires Matlab R2008b or higher, or the CDF patch from Goddard):
+    DATA = cdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true);
+    old_cdfread_call=0;
+  catch %#ok<CTCH>
+      % Old, slow call:
+      DATA = cdfread(cdf_file, 'VARIABLES', variables);
+      disp('**************** Using the old and slow cdfread call.')
+      disp('                 Consider upgrading Matlab (R2008b) or using the Goddard CDF patch.')
+      old_cdfread_call=1;
+  end
+else
+  if(old_cdfread_call), DATA = cdfread(cdf_file, 'VARIABLES', variables);
+  else DATA = cdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
+end
 
-temp=struct([DATA{:,1}]);
-t = [temp.date]; t = t(:);
+if(old_cdfread_call)
+      temp=struct([DATA{:,1}]);
+      t = [temp.date];
+      t = t(:);
+else
+    t = DATA{1};
+    t = (t-1).* (24 * 3600 * 1000);
+end
 t = (t-62167219200000)/1000; %#ok<NASGU>
 
 for k=2:numel(variables)
   clear var;
-  for j=1:size(DATA,1)
-    temp=DATA{j,k};temp=temp(:)';var(j,:)=temp;
+  if(old_cdfread_call)
+    for j=1:size(DATA,1)
+      temp=DATA{j,k};temp=temp(:)';var(j,:)=temp;
+    end
+    var=[DATA{:,k}]';
+  else
+      var=DATA{k};
   end
-  var=[DATA{:,k}]';
+  
   var(var<-1e30) = NaN;
   if isfield(cdf_file_info.VariableAttributes,'FILLVAL')
 	  for j = 1:size(cdf_file_info.VariableAttributes.FILLVAL,1)
