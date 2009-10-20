@@ -39,6 +39,7 @@ function data=c_csds_read(data_path,start_time,dt,cl_id,quantity)
 error(nargchk(5,5,nargin))
 
 cl_id_s = num2str(cl_id);
+pp_infix='PP';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % define request parameters
@@ -46,9 +47,20 @@ cl_id_s = num2str(cl_id);
 switch (quantity)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CSDS PP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'b'
-	r.inst  = 'FGM';
-	r.var	= ['B_xyz_gse__C' cl_id_s '_PP_' r.inst];
-	r.pr	= 'CSDS_PP';
+	if (start_time > 1136073600) % After 2006-01-01, use the UP files
+      r.inst  = 'FGM';
+      r.var	= ['B_xyz_gse__C' cl_id_s '_UP_' r.inst];
+      r.pr	= 'CSDS_PP';
+      pp_infix='UP';
+    else
+      if ((start_time+dt) > 1136073600)
+        warning('c_csds_read:PP_UP_transition',...
+            '***** Interval spans both PP and UP files. Data truncated at 2006-01-01.')
+      end
+      r.inst  = 'FGM';
+      r.var	= ['B_xyz_gse__C' cl_id_s '_PP_' r.inst];
+      r.pr	= 'CSDS_PP';
+    end
 case 'edi'
 	r.inst  = 'EDI';
 	r.var	= ['E_xyz_gse__C' cl_id_s '_PP_' r.inst];
@@ -105,7 +117,7 @@ if strcmp(r.pr,'CSDS_SP')
 	r.sen	= r.var;
 elseif strcmp(r.pr,'CSDS_PP')
 	r.mem	= ['C' cl_id_s];
-	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_PP_' r.inst '_'];
+	r.file	= ['PP/' r.inst '/C' cl_id_s '/C' cl_id_s '_' pp_infix '_' r.inst '_'];
 	r.sen	= r.var;
 else
 	error('caa:noSuchQuantity','Project ''%s'' is not recongized',r.pr)
