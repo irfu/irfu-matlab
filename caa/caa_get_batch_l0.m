@@ -19,12 +19,14 @@ function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 % ----------------------------------------------------------------------------
 
 error(nargchk(5,5,nargin))
-
 sc_list = cl_id;
 
 REQ_INT = 60; % Intervals (sec) for which we request FDM
 SPLIT_INT = 90*60; % Typical interval length (sec)
 MAX_SKIP = 2; % Number of NM frames we skip after BM interval
+
+warning off  'ISDAT:serverWarning'
+warning off  'ISDAT:serverMessage'
 
 DB_S = c_ctl(0,'isdat_db');
 DP_S = c_ctl(0,'data_path');
@@ -49,7 +51,7 @@ for cl_id=sc_list
 	while st_tmp<st+dt
 		irf_log('proc',['Requesting C' num2str(cl_id)...
 					' : ' epoch2iso(st_tmp,1)])
-		[t,data] = caa_is_get(DB_S,st_tmp,REQ_INT,cl_id,'efw','FDM'); %#ok<ASGLU>
+        [t,data] = caa_is_get(DB_S,st_tmp,REQ_INT,cl_id,'efw','FDM'); %#ok<ASGLU>
 		if ~isempty(data), tm_cur = data(5,1);
 		else
 			irf_log('dsrc',['No FDM for C' num2str(cl_id) ...
@@ -168,8 +170,49 @@ for cl_id=sc_list
 				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
 		end
 		
-		% Get the data
-		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc') 	
-	end
+		% Determine whether this is a solar wind interval.
+        sw_mode=0;
+        if ~exist('/data/caa/l1/mPlan.mat','file')
+            irf_log('proc','No MPlan.mat found. No solar wind wake correction performed.')
+        else
+            load '/data/caa/l1/mPlan.mat'
+            v_s = ['MPauseY' iso_t(1:4)];
+            if ~exist(v_s,'var')
+                irf_log('proc',['**** Cannot load ' v_s 'from MPlan.mat.'])
+                irf_log('proc','No solar wind wake correction performed.')
+            else
+                eval([ 'MP=' v_s ';'])
+                st = iso2epoch(iso_t);
+                et = st +dt;
+                if ~isempty( find( MP(:,1)>=st & MP(:,1)<et ,1) ) || ...
+                        ~isempty( find( MP(:,2)>st & MP(:,2)<=et ,1) ) || ...
+                        ~isempty( find( MP(:,1)<=st & MP(:,2)>=et ,1) )
+                    sw_mode=1;
+                end
+            end
+        end
+    
+        % Get the data
+        if sw_mode
+            c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc','swmode')
+            % Create .caa_sh_interval
+            sp = [cdir '/' irf_fname(st)];
+            fid = fopen([sp '/.caa_sh_interval'],'w');
+            if fid<0
+                irf_log('save','**** Problem creating .caa_sh_interval')
+                sw_mode=0;
+            else
+                count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+                fclose(fid);
+                if count<=0
+                    irf_log('save','**** Problem writing to .caa_sh_interval')
+                    sw_mode=0;
+                end
+            end
+        else
+            c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc')
+        end
+        
+    end
 end
 
