@@ -158,6 +158,8 @@ while have_options
 				dosrc = 0; l = 1;
 			case 'noproc'
 				doproc = 0; l = 1;
+            case 'write_caa_sh_interval'
+                argsProc = [{'write_caa_sh_interval'} argsProc];
 			otherwise
 				irf_log('fcal',...
 					['Option ''' args{1}...
