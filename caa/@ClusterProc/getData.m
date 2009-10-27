@@ -10,6 +10,11 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %   ec :   wcE{cl_id}p12/32, wcE{cl_id}p34 -> mERC // correct raw data 
 %          correct_sw_wake - correct wakes in the Solar Wind
+%          write_caa_sh_interval - checks whether interval is in the solar
+%               wind or sheath; if so, writes the file .caa_sh_interval. If not, removes it.
+%               Implies check_caa_sh_interval and correct_sw_wake options.
+%          check_caa_sh_interval - only corrects the wake if
+%               .caa_sh_interval exists and correct_sw_wake set.
 %   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %          also creates delta offsets D{cl_id}p12p34.
 %          If the offset is real then it must be applied to p12/32,
@@ -98,6 +103,8 @@ flag_rmhbsa = 0;
 sfit_ver = -1;
 correct_sw_wake = 0;
 flag_wash_p32 = 1;
+write_caa_sh_interval=0;
+check_caa_sh_interval=0;
 
 CAA_MODE = c_ctl(0,'caa_mode');
 
@@ -170,8 +177,14 @@ while have_options
         else irf_log('fcal,','wrongArgType : sfit_ver value is missing')
 		end
 	case 'correct_sw_wake'
-		correct_sw_wake = 1;
-	otherwise
+        correct_sw_wake = 1;
+    case 'write_caa_sh_interval'
+        write_caa_sh_interval = 1;
+        check_caa_sh_interval = 1;
+        correct_sw_wake = 1;
+    case 'check_caa_sh_interval'
+        check_caa_sh_interval = 1;
+    otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
@@ -192,10 +205,44 @@ if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
 if strcmp(quantity,'ec')
 	save_file = './mERC.mat';
 	
-	if ~any([correct_sw_wake]) %#ok<NBRAK> % List all possible methods here
-		irf_log('proc','no cleaning method defined')
-		data = []; cd(old_pwd), return
-	end
+    if write_caa_sh_interval
+        if exist('/data/caa/l1/mPlan.mat','file'), load '/data/caa/l1/mPlan.mat'
+        else error('No MPlan.mat found')
+        end
+		[iso_t,dt] = caa_read_interval;
+		v_s = ['MPauseY' iso_t(1:4)];
+		if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
+		eval([ 'MP=' v_s ';'])
+        st = iso2epoch(iso_t);
+        et = st +dt;
+        if any(  MP(:,1)>=st & MP(:,1)<et ) || ...
+                any(  MP(:,2)>st & MP(:,2)<=et ) || ...
+                any(  MP(:,1)<=st & MP(:,2)>=et ) %#ok<NODEF>
+            % Create .caa_sh_interval
+            fid = fopen('.caa_sh_interval','w');
+            if fid<0, error('**** Problem creating .caa_sh_interval'), end
+            count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+            fclose(fid);
+            if count<=0,error('**** Problem writing to .caa_sh_interval'), end
+        else
+            if exist('.caa_sh_interval','file')
+                irf_log('proc','Removing .caa_sh_interval file (not a solar wind interval).')
+                delete('.caa_sh_interval');
+            end
+        end
+    end
+    
+    if check_caa_sh_interval
+        if ~exist('./.caa_sh_interval','file')
+            irf_log('proc','Inside magnetosphere. No solar wind cleaning performed.')
+            data = []; cd(old_pwd), return
+        end
+    end
+    
+    if ~any([correct_sw_wake]) %#ok<NBRAK> % List all possible methods here
+        irf_log('proc','no cleaning method defined')
+        data = []; cd(old_pwd), return
+    end
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha] = c_load('Atwo?',cl_id);
