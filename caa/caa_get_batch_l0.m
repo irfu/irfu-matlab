@@ -143,7 +143,7 @@ for cl_id=sc_list
 	end
 	if isempty(ns_ops), error(['cannot get NS_OPS for C' num2str(cl_id)]), end
 	
-	for inter=1:size(tm,1)
+    for inter=1:size(tm,1)
 		t1 = tm(inter,1);
 		if inter==size(tm,1), dt1 = st +dt -t1;
         else dt1 = tm(inter+1,1) -t1;
@@ -170,49 +170,8 @@ for cl_id=sc_list
 				epoch2iso(t1,1) ' -- ' epoch2iso(t1+dt1,1)])
 		end
 		
-		% Determine whether this is a solar wind interval.
-        sw_mode=0;
-        if ~exist('/data/caa/l1/mPlan.mat','file')
-            irf_log('proc','No MPlan.mat found. No solar wind wake correction performed.')
-        else
-            load '/data/caa/l1/mPlan.mat'
-            v_s = ['MPauseY' iso_t(1:4)];
-            if ~exist(v_s,'var')
-                irf_log('proc',['**** Cannot load ' v_s 'from MPlan.mat.'])
-                irf_log('proc','No solar wind wake correction performed.')
-            else
-                eval([ 'MP=' v_s ';'])
-                st = iso2epoch(iso_t);
-                et = st +dt;
-                if ~isempty( find( MP(:,1)>=st & MP(:,1)<et ,1) ) || ...
-                        ~isempty( find( MP(:,2)>st & MP(:,2)<=et ,1) ) || ...
-                        ~isempty( find( MP(:,1)<=st & MP(:,2)>=et ,1) )
-                    sw_mode=1;
-                end
-            end
-        end
-    
-        % Get the data
-        if sw_mode
-            c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc','swmode')
-            % Create .caa_sh_interval
-            sp = [cdir '/' irf_fname(st)];
-            fid = fopen([sp '/.caa_sh_interval'],'w');
-            if fid<0
-                irf_log('save','**** Problem creating .caa_sh_interval')
-                sw_mode=0;
-            else
-                count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
-                fclose(fid);
-                if count<=0
-                    irf_log('save','**** Problem writing to .caa_sh_interval')
-                    sw_mode=0;
-                end
-            end
-        else
-            c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc')
-        end
-        
+		% Get the data
+		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc')
     end
 end
 
