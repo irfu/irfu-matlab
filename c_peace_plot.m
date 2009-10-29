@@ -19,7 +19,7 @@ error(nargchk(1,3,nargin))
 if nargin==0,
     help c_peace_plot;
 elseif nargin==1, % assume c_peace_plot(peace_spec)
-    peace_spec=hin;hin=[];
+    peace_spec=hin;hin=[];i_spectra=1;
 elseif nargin==2, % assume c_peace_plot(peace_spec,i_spectra)
     i_spectra=peace_spec;peace_spec=hin;hin=[];
 elseif nargin==3, 
@@ -48,6 +48,7 @@ for jj=1:nsubplots,
         axes(h(jj));cla;
         htmp=irf_plot({[peace_spec.t peace_spec.pa{1}(:,1)],[peace_spec.t peace_spec.pa{2}(:,1)],[peace_spec.t peace_spec.pa{3}(:,1)]},'comp','linestyle','.');
         ylabel('pitch angle [deg]');
+        axis tight
         set(htmp,'ylim',[0 180],'ytick',[0 30 60 90 120 150 180])
     else
         peace_spec_comp=peace_spec;
@@ -55,17 +56,17 @@ for jj=1:nsubplots,
         peace_spec_comp.p_label=peace_spec.p_label(i_spectra(jj));
         hspec=caa_spectrogram(h(jj),peace_spec_comp);
         if strcmp(peace_spec_comp.f_unit,'eV'),
-            set(hspec,'xtick',[]);
+            set(hspec,'xticklabel',[]);
             set(hspec,'Yscale','log');
             set(gca,'ytick',[10 100 1000 10000])
             grid on;
         else
-            set(hspec,'xtick',[]);
+           set(hspec,'xticklabel',[]);
             set(hspec,'Yscale','lin');
             set(gca,'ytick',[30 60 90 120 150 180 210 240 270 300 330])
             grid on;
         end
-        if jj==1,
+                if jj==1,
             hc=colorbar;cax=caxis; % all panels have common colorbar axis
         else
             caxis(cax);hc=colorbar;
