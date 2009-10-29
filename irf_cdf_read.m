@@ -97,6 +97,9 @@ for j=1:size(variable_names,1),
 		epoch_variable=variable_names(j,1);
 		%disp(['epoch variable: ' epoch_variable{1}]);
 		epoch_column=j;
+    elseif strcmp(cdf_file_info.Variables(j,4),'epoch')
+        epoch_variable=variable_names(j,1);
+        epoch_column=j;
 	end
 end
 
