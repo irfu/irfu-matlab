@@ -15,7 +15,7 @@ nloaded = 0;
 dirs = dir;
 old_pwd = pwd;
 for j = 1:numel(dirs)
-	if regexp(dirs(j).name,'^C[1-4]_CP_')
+	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
 		disp(['loading ' dirs(j).name]);
 		try
 			cd(dirs(j).name)

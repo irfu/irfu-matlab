@@ -45,7 +45,7 @@
 %   irf_pl_number_subplots - number subplots by putting in each subplot 'a', 'b', 'c', etc.
 %   irf_tm          - time manager for plots created by irf_plot
 %   irf_zoom        - zoom in
-%   plot            - plot data objects. help dataobj/plot.m
+%   dataobj/plot    - plot data objects. help dataobj/plot.m
 %
 % Cluster
 %   c_4_v_gui       - timing analysis 

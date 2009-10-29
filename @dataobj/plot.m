@@ -1,6 +1,8 @@
 function res = plot(dobj,var_s,comp,ax)
-%PLOT(dobj, var_s)  plot a variable
+%PLOT(dobj, var_s, [comp], [ax])  plot a variable
 %
+% comp - which component of vector to plot
+% ax - axis handle where to plot 
 % $Id$
 
 % ----------------------------------------------------------------------------
