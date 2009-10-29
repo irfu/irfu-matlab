@@ -219,7 +219,7 @@ c		write(*,*) 'i: ',i,' dt:', dt,' ts(i)-t0:',ts(i)-t0
 	end do
 	do i = 1, nspins
 		do j = 1, nterms
-			sfit(i,j) = NaN
+			sfit(j,i) = NaN
 		end do
 	end do
 	do i = 1, nspins
