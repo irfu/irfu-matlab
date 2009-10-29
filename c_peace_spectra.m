@@ -38,7 +38,7 @@ theta_all=peace.psd;
 for j=1:length(theta),
     theta_all(:,j,:)=peace.theta(j);
 end
-theta_all(find(~peace.psd))=NaN; % fast(dirty) solution assuming zero counts means pitch angle no measured
+%theta_all(find(~peace.psd))=NaN; % fast(dirty) solution assuming zero counts means pitch angle no measured
 [theta_par,theta_par_index]=min(theta_all,[],2); 
 [theta_antipar,theta_antipar_index]=max(theta_all,[],2);
 
