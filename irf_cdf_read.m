@@ -71,7 +71,7 @@ if findstr(cdf_file,'*'), % use wilcard '*' expansion
   otherwise
    cdf_names={};
    for j=1:size(ff,1),
-    cdf_names{end+1}=ff(j).name;
+    cdf_names{end+1}=ff(j).name; %#ok<AGROW>
     disp([num2str(j) '. ' ff(j).name]);
    end
    if flag_latest
@@ -116,7 +116,7 @@ elseif ischar(var_name) % one specifies the name of variable
                       isempty(findstr(variable_names{j,1},'time_tags__')) && ...
                       isempty(findstr(variable_names{j,1},'Time__'))
                   i_time_series_variable=i_time_series_variable+1;
-                  time_series_variables{i_time_series_variable}=cdf_file_info.Variables{j,1};
+                  time_series_variables{i_time_series_variable}=cdf_file_info.Variables{j,1}; %#ok<AGROW>
               end
           end
       end
@@ -149,14 +149,14 @@ elseif ischar(var_name) % one specifies the name of variable
                       dd=cdfread(cdf_file,'Variables',{cdf_var});
                       if size(dd,1)>10,
                           disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
-                          if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
+                          if iscell(dd), disp(dd{1}), else disp(dd(1,:)), end
                       else
-                          if iscell(dd), disp(dd{1}), else, disp(dd), end
+                          if iscell(dd), disp(dd{1}), else disp(dd), end
                       end
                   end
               case 'r'
                   var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
-                  eval([var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
+                  evalin('caller',[var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
               case 'fa'
                   cdf_file_info.VariableAttributes
               case 'fav'
@@ -250,7 +250,7 @@ for k=2:numel(variables)
   clear var;
   if(old_cdfread_call)
     for j=1:size(DATA,1)
-      temp=DATA{j,k};temp=temp(:)';var(j,:)=temp;
+      temp=DATA{j,k};temp=temp(:)';var(j,:)=temp; %#ok<AGROW>
     end
     var=[DATA{:,k}]';
   else
