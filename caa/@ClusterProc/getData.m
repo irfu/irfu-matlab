@@ -886,7 +886,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		if flag_usecaa_del_off
 			Del = c_efw_delta_off(full_e(1,1),cl_id);
 		end
-		if isempty(Del)
+		if ~flag_usecaa_del_off || isempty(Del)
 			% Try saved offsets
 			[ok,Del] = c_load('D?p12p34',cl_id);
 			if ~ok || isempty(Del)
