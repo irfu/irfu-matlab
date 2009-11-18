@@ -47,7 +47,7 @@ pp_infix='PP';
 switch (quantity)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% CSDS PP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 case 'b'
-	if (start_time > 1136073600) % After 2006-01-01, use the UP files
+	if (start_time > 1136073599.9) % After 2006-01-01, use the UP files
       r.inst  = 'FGM';
       r.var	= ['B_xyz_gse__C' cl_id_s '_UP_' r.inst];
       r.pr	= 'CSDS_PP';
