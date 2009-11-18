@@ -10,7 +10,7 @@ function caa_sh_plan(yyyy)
 if yyyy==2001, mm=2:12;
 else mm = 1:12;
 end
-c_ctl('set','isdat_db','db:9');
+c_ctl('set',5,'isdat_db','db:9');
 force_orbit_read=[0 0 0 0];
 force_orbit_splitting=[0 0 0 0];
 force_MP_determination=[0 0 0 0];
