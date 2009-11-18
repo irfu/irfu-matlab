@@ -10,11 +10,6 @@ function data = getData(cp,cl_id,quantity,varargin)
 %
 %   ec :   wcE{cl_id}p12/32, wcE{cl_id}p34 -> mERC // correct raw data 
 %          correct_sw_wake - correct wakes in the Solar Wind
-%          write_caa_sh_interval - checks whether interval is in the solar
-%               wind or sheath; if so, writes the file .caa_sh_interval. If not, removes it.
-%               Implies check_caa_sh_interval and correct_sw_wake options.
-%          check_caa_sh_interval - only corrects the wake if
-%               .caa_sh_interval exists and correct_sw_wake set.
 %   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %          also creates delta offsets D{cl_id}p12p34.
 %          If the offset is real then it must be applied to p12/32,
@@ -46,7 +41,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
-%   whip: WHIP{cl_id} -> mEFW	// Whisper pulses present +1 precceding sec
+%   whip: WHIP{cl_id} ->          	// Whisper pulses present +1 precceding sec
 %   bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
 %   sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
 %   badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
@@ -76,6 +71,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
 %           e.g. compute the offset from spinfits and use it afterwards 
 %           (affects 'dies','die')
+%       check_caa_sh_interval - check for .caa_sh_interval/.caa_ms_interval.
+%           'ec|vce' only processed if .caa_sh_interval found.
+%           'brs|edi|wake' only processed if .caa_ms_interval found.
 %
 % See also C_GET, C_CTL
 %
@@ -103,7 +101,6 @@ flag_rmhbsa = 0;
 sfit_ver = -1;
 correct_sw_wake = 0;
 flag_wash_p32 = 1;
-write_caa_sh_interval=0;
 check_caa_sh_interval=0;
 
 CAA_MODE = c_ctl(0,'caa_mode');
@@ -178,10 +175,6 @@ while have_options
 		end
 	case 'correct_sw_wake'
         correct_sw_wake = 1;
-    case 'write_caa_sh_interval'
-        write_caa_sh_interval = 1;
-        check_caa_sh_interval = 1;
-        correct_sw_wake = 1;
     case 'check_caa_sh_interval'
         check_caa_sh_interval = 1;
     otherwise
@@ -192,45 +185,17 @@ while have_options
 	end
 end
 
-
 save_list = '';
 
 old_pwd = pwd;
 cd(cp.sp) %enter the storage directory
 if cp.sp~='.', irf_log('save',['Storage directory is ' cp.sp]), end
-
+   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ec - correct raw Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(quantity,'ec')
 	save_file = './mERC.mat';
-	
-    if write_caa_sh_interval
-        if exist('/data/caa/l1/mPlan.mat','file'), load '/data/caa/l1/mPlan.mat'
-        else error('No MPlan.mat found')
-        end
-		[iso_t,dt] = caa_read_interval;
-		v_s = ['MPauseY' iso_t(1:4)];
-		if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
-		eval([ 'MP=' v_s ';'])
-        st = iso2epoch(iso_t);
-        et = st +dt;
-        if any(  MP(:,1)>=st & MP(:,1)<et ) || ...
-                any(  MP(:,2)>st & MP(:,2)<=et ) || ...
-                any(  MP(:,1)<=st & MP(:,2)>=et ) %#ok<NODEF>
-            % Create .caa_sh_interval
-            fid = fopen('.caa_sh_interval','w');
-            if fid<0, error('**** Problem creating .caa_sh_interval'), end
-            count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
-            fclose(fid);
-            if count<=0,error('**** Problem writing to .caa_sh_interval'), end
-        else
-            if exist('.caa_sh_interval','file')
-                irf_log('proc','Removing .caa_sh_interval file (not a solar wind interval).')
-                delete('.caa_sh_interval');
-            end
-        end
-    end
     
     if check_caa_sh_interval
         if ~exist('./.caa_sh_interval','file')
@@ -1291,7 +1256,7 @@ elseif strcmp(quantity,'sweep')
 		if isempty(ii)
 			% We hit sweep dump directly
 			irf_log('dsrc','found loonely sweep dump')
-			if length(ii_px)>1, irf_log('proc','WARNING: too many loonely sweep dumps'), end
+			if length(ii_px)>1, irf_log('proc','WARNING: too many lonely sweep dumps'), end
 			bdump = zeros(1,2);
 			% We add one second at the start of the interval for safety
 			bdump(1,1) = t_s_px(ii_px(1)) -1;
@@ -1910,7 +1875,14 @@ elseif strcmp(quantity,'rawspec')
 elseif strcmp(quantity,'wake')
 	save_file = './mEFW.mat';
 	
-	var_s = sprintf('diEs%dp%d',cl_id, probe_p);
+    if check_caa_sh_interval
+        if ~exist('./.caa_ms_interval','file')
+            irf_log('proc','Outside magnetosphere. No wake removal performed.')
+            data = []; cd(old_pwd), return
+        end
+    end
+    
+    var_s = sprintf('diEs%dp%d',cl_id, probe_p);
 	[ok,diEs,msg] = c_load(var_s);
 	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	
@@ -1955,7 +1927,14 @@ elseif strcmp(quantity,'edi')
 	
 	save_file = './mEDI.mat';
 	
-	var_s = 'iEDI?';
+    if check_caa_sh_interval
+        if ~exist('./.caa_ms_interval','file')
+            irf_log('proc','Outside magnetosphere. No edi processing performed.')
+            data = []; cd(old_pwd), return
+        end
+    end
+    
+    var_s = 'iEDI?';
 	varo_s = 'EDI?';
 	
 	% Load BPP. We use BPP for EDI as it must be a rather approximation
@@ -2036,7 +2015,14 @@ elseif strcmp(quantity,'vedb') || strcmp(quantity,'vedbs')
 elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	save_file = './mBr.mat';
 	
-	if strcmp(quantity,'br')
+    if check_caa_sh_interval && strcmp(quantity,'brs')
+        if ~exist('./.caa_ms_interval','file')
+            irf_log('proc','Outside magnetosphere. No brs resampling performed.')
+            data = []; cd(old_pwd), return
+        end
+    end
+    
+    if strcmp(quantity,'br')
 		var_b = 'Br?';
 		[ok,E_tmp,msg] = c_load('diE?p1234',cl_id);
 		if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
@@ -2299,7 +2285,14 @@ elseif strcmp(quantity,'ps')
 elseif strcmp(quantity,'vce')
 	save_file='./mCIS.mat';
 
-	c_load('SAX?',cl_id)
+    if check_caa_sh_interval
+        if ~exist('./.caa_sh_interval','file')
+            irf_log('proc','Inside magnetosphere. No vce data fetched.')
+            data = []; cd(old_pwd), return
+        end
+    end
+    
+    c_load('SAX?',cl_id)
 	if ~exist('./mCISR.mat','file')
 		irf_log('load','Please run ''vcis'' first (mCIS missing)')
 		data = []; cd(old_pwd); return
