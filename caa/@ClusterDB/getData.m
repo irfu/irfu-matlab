@@ -37,6 +37,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	a   : A{cl_id} -> mA	// SC phase
 %	r   : R{cl_id} -> mR	// SC position
 %	v   : V{cl_id}, diV{cl_id} -> mR	// SC velocity
+%   caa_int: write .caa_sh_interval/.caa_ms_interval file.
 %
 %	//// Other instruments ////
 %	b   : BPP{cl_id},diBPP{cl_id}	->mBPP	// B FGM PP [GSE+DSI] 
@@ -52,6 +53,9 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %
 %	options - one of the following:
 %	nosave : do no save on disk
+%   check_caa_sh_interval : check for .caa_sh_interval/.caa_ms_interval.
+%           vcis     only fetched if .caa_sh_interval found.
+%           bfgm|edi only fetched if .caa_ms_interval found.
 %
 % Example:
 %	data = getData(...
@@ -75,15 +79,21 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 
 error(nargchk(5,15,nargin))
 
+warning off  'ISDAT:serverWarning'
+warning off  'ISDAT:serverMessage'
+
 out_data = '';
 
 % default options
 flag_save = 1;
+check_caa_sh_interval=0;
 
 for i=1:length(varargin)
 	switch(varargin{i})
 	case 'nosave'
 		flag_save = 0;
+    case 'check_caa_sh_interval'
+        check_caa_sh_interval = 1;
 	otherwise
 		irf_log('fcal',['Option ''' varargin{i} '''not recognized'])
 	end
@@ -141,9 +151,43 @@ if strcmp(quantity,'e') || strcmp(quantity,'eburst') ||...
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% caa_int - write .caa_sh_interval/.caa_ms_interval
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if strcmp(quantity,'caa_int')
+    if exist('/data/caa/l1/mPlan.mat','file'), load '/data/caa/l1/mPlan.mat'
+    else error('No MPlan.mat found')
+    end
+    [iso_t,dt] = caa_read_interval;
+    v_s = ['MPauseY' iso_t(1:4)];
+    if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
+    eval([ 'MP=' v_s ';'])
+    st = iso2epoch(iso_t);
+    et = st +dt;
+    if any(  MP(:,1)>=st & MP(:,1)<et ) || ...
+            any(  MP(:,2)>st & MP(:,2)<=et ) || ...
+            any(  MP(:,1)<=st & MP(:,2)>=et ) %#ok<NODEF>
+        % Create .caa_sh_interval
+        fid = fopen('.caa_sh_interval','w');
+        if fid<0, error('**** Problem creating .caa_sh_interval'), end
+        count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+        fclose(fid);
+        if count<=0,error('**** Problem writing to .caa_sh_interval'), end
+        irf_log('proc','Wrote .caa_sh_interval.')
+    else
+         % Create .caa_ms_interval
+        fid = fopen('.caa_ms_interval','w');
+        if fid<0, error('**** Problem creating .caa_ms_interval'), end
+        count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+        fclose(fid);
+        if count<=0,error('**** Problem writing to .caa_ms_interval'), end
+        irf_log('proc','Wrote .caa_ms_interval.')
+    end
+    flag_save=0;
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dsc - EFW DSC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if strcmp(quantity,'dsc')
+elseif strcmp(quantity,'dsc')
 	save_file = './mEFWR.mat';
 	
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
@@ -720,7 +764,14 @@ elseif strcmp(quantity,'magc')
 elseif strcmp(quantity,'bfgm')
 	save_file = './mB.mat';
 	
-	dat = c_get_bfgm(start_time + [0 dt],cl_id);
+    if check_caa_sh_interval
+        if ~exist('./.caa_ms_interval','file')
+            irf_log('proc','Outside magnetosphere. No bfgm data fetched.')
+            out_data = []; cd(old_pwd), return
+        end
+    end
+    
+    dat = c_get_bfgm(start_time + [0 dt],cl_id);
 	
 	if isempty(dat)
 		irf_log('dsrc',irf_ssub('No data for B, diB?',cl_id))
@@ -794,7 +845,18 @@ elseif strcmp(quantity,'b') || strcmp(quantity,'edi') || ...
 	
 	% TODO: add oxygen
 	
-	ipref = '';
+    if check_caa_sh_interval
+        if ~exist('./.caa_sh_interval','file') && strcmp(quantity,'vcis')
+            irf_log('proc','Inside magnetosphere. No vcis data fetched.')
+            out_data = []; cd(old_pwd), return
+        end
+        if ~exist('./.caa_ms_interval','file') && strcmp(quantity,'edi')
+            irf_log('proc','Outside magnetosphere. No edi data fetched.')
+            out_data = []; cd(old_pwd), return
+        end
+   end
+    
+    ipref = '';
 	r.qua = {quantity};
 	switch(quantity)
 	case 'b'
