@@ -158,8 +158,8 @@ while have_options
 				dosrc = 0; l = 1;
 			case 'noproc'
 				doproc = 0; l = 1;
-            case 'write_caa_sh_interval'
-                argsProc = [{'write_caa_sh_interval'} argsProc];
+            case 'check_caa_sh_interval'
+                argsProc = [{'check_caa_sh_interval'} argsProc];
 			otherwise
 				irf_log('fcal',...
 					['Option ''' args{1}...
@@ -196,7 +196,7 @@ if ~isempty(vars)
 
 	if dosrc
 		for cl_id=sc_list
-			for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
+          for k=1:length(vars), getData(cdb,st,dt,cl_id,vars{k}); end
 		end
 	end
 	
