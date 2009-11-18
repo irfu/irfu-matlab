@@ -171,7 +171,7 @@ for cl_id=sc_list
 		end
 		
 		% Get the data
-		c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'noproc')
+        c_get_batch(t1,dt1,'db',DB_S,'sc_list',cl_id,'sdir',cdir,'vars',srcvars,'check_caa_sh_interval',1,'noproc')
     end
 end
 
