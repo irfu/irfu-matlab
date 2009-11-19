@@ -9,7 +9,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   quantity - one of the following:
 %
 %   ec :   wcE{cl_id}p12/32, wcE{cl_id}p34 -> mERC // correct raw data 
-%          correct_sw_wake - correct wakes in the Solar Wind
+%          correct_sw_wake - correct wakes in the Solar Wind.
 %   dies : diEs{cl_id}p12/32, diEs{cl_id}p34 -> mEDSI // spin fits [DSI]
 %          also creates delta offsets D{cl_id}p12p34.
 %          If the offset is real then it must be applied to p12/32,
@@ -72,7 +72,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %           e.g. compute the offset from spinfits and use it afterwards 
 %           (affects 'dies','die')
 %       check_caa_sh_interval - check for .caa_sh_interval/.caa_ms_interval.
-%           'ec|vce' only processed if .caa_sh_interval found.
+%           'ec|vce' only processed if .caa_sh_interval found. correct_sw_wake flag set if needed.
 %           'brs|edi|wake' only processed if .caa_ms_interval found.
 %
 % See also C_GET, C_CTL
@@ -198,10 +198,15 @@ if strcmp(quantity,'ec')
 	save_file = './mERC.mat';
     
     if check_caa_sh_interval
-        if ~exist('./.caa_sh_interval','file')
+        if exist('./.caa_ms_interval','file')
             irf_log('proc','Inside magnetosphere. No solar wind cleaning performed.')
             data = []; cd(old_pwd), return
         end
+        if ~exist('./.caa_sh_interval','file')
+            irf_log('proc','**** No .caa_XX_interval file! No solar wind cleaning performed.')
+            data = []; cd(old_pwd), return
+        end
+        correct_sw_wake=1;
     end
     
     if ~any([correct_sw_wake]) %#ok<NBRAK> % List all possible methods here
@@ -1877,7 +1882,7 @@ elseif strcmp(quantity,'wake')
 	
     if check_caa_sh_interval
         if ~exist('./.caa_ms_interval','file')
-            irf_log('proc','Outside magnetosphere. No wake removal performed.')
+            irf_log('proc','Outside magnetosphere. No lobe wake removal performed.')
             data = []; cd(old_pwd), return
         end
     end
