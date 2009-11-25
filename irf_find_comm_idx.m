@@ -25,7 +25,7 @@ n_loop = 0;
 while 1
 	la = min(length(t1(s1:end)),length(t2(s2:end))) - 1;
 	d = t1(s1:s1+la)-t2(s2:s2+la);
-	ii = find(abs(d) > 0);
+	ii = find(abs(d) > 1e-5);
 
 	if isempty(ii) % time lines are identical
 		% save the interval and break
