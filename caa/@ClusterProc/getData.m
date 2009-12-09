@@ -2030,22 +2030,22 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
     end
     
     if strcmp(quantity,'br')
-		var_b = 'Br?';
-		[ok,E_tmp,msg] = c_load('diE?p1234',cl_id);
-		if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
-		e_sf = c_efw_fsample(E_tmp,'hx');
-	else
-		var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
-		[ok,E_tmp] = c_load(var_e{1},cl_id);
-		if ~ok
-			[ok,E_tmp] = c_load(var_e{2},cl_id);
-			if ~ok
-				irf_log('load',sprintf('Canot load diEs%d(p12|p34). Please load it.',cl_id))
-				data = []; cd(old_pwd); return
-			end
-		end
-		e_sf = .25;
-	end
+        var_b = 'Br?';
+        [ok,E_tmp,msg] = c_load('diE?p1234',cl_id);
+        if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+        e_sf = c_efw_fsample(E_tmp,'hx');
+    else
+        var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
+        [ok,E_tmp] = c_load(var_e{1},cl_id);
+        if ~ok
+            [ok,E_tmp] = c_load(var_e{2},cl_id);
+            if ~ok
+                irf_log('load',sprintf('Canot load diEs%d(p12|p34). Please load it.',cl_id))
+                data = []; cd(old_pwd); return
+            end
+        end
+        e_sf = .25;
+    end
 	
 	% Load B GSE, as it is level 0 FGM data for us. 
 	B_tmp = c_load('B?',cl_id,'var');
