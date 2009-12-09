@@ -375,14 +375,16 @@ elseif strcmp(quantity,'dies')
 		end
 
 		% Run spin fitting
+        sfit_ver_bak = sfit_ver; % save sfit_ver for next probe pair
 		if sfit_ver>=0
 			irf_log('proc',['using SFIT_VER=' num2str(sfit_ver)])
-		else
+        else
 			if probe==32, sfit_ver = 2;
 			else sfit_ver = 1;
 			end
 		end
 		sp = c_efw_sfit(probe,3,10,20,tt(:,1),tt(:,2),aa(:,1),aa(:,2),sfit_ver);
+        sfit_ver = sfit_ver_bak;
 		
 		% Check if we have any data left
 		if isempty(sp)
