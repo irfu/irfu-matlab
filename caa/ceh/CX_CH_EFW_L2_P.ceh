@@ -1,0 +1,72 @@
+!
+! $Id$
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L2_P"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Spacecraft potential"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains measurements of the"
+   ENTRY       =   "negative of the Spacecraft potential"
+   ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft"
+END_META       =   DATASET_DESCRIPTION
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "Level 2 quantity P is the negative of the spacecraft potential,"
+   ENTRY       =   "calculated by averaging the Level 1 P1, P2, P3 and P4 quantities."
+   ENTRY       =   "If all four probes are available, the average is done over all 4 probes."
+   ENTRY       =   "If only two or three probes are available, the average is done over 2"
+   ENTRY       =   "probes (P1 and P2, or P3 and P4). If only one probe is available, this"
+   ENTRY       =   "quantity is the value of that probe."
+   ENTRY       =   ""
+   ENTRY       =   "For more information on data quality and how the CAA data are processed,"
+   ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
+   ENTRY       =   "Document (ICD)."
+END_META       =   DATASET_CAVEATS
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 0.1
+  DELTA_MINUS     = 0.1
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L2_P
+!
+START_VARIABLE      = Spacecraft_potential__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Spacecraft potential"
+  FIELDNAM          = "Spacecraft potential"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = "*CXXX_CP_EFW_L2_P"
+  LABLAXIS          = "-Sc pot"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
+END_VARIABLE        = Spacecraft_potential__CXXX_CP_EFW_L2_P

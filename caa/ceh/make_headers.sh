@@ -13,7 +13,9 @@ do
    CLI=$(($CLI+1))
 done
 
-flist="CX_CH_EFW_L2_E.ceh \
+flist="CX_CH_EFW_L2_P.ceh \
+CX_CH_EFW_L3_P.ceh \
+CX_CH_EFW_L2_E.ceh \
 CX_CH_EFW_L3_E.ceh \
 CX_CH_EFW_L3_DER.ceh"
 
