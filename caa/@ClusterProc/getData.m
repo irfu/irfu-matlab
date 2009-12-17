@@ -41,8 +41,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
-%   whip: WHIP{cl_id} ->          	// Whisper pulses present +1 precceding sec
+%   whip: WHIP{cl_id} ->        // Whisper pulses present +1 precceding sec
 %   bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
+%   efwa: EFWA{cl_id} -> mA	    // Phase from EFW FDM
 %   sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
 %   badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
@@ -1204,6 +1205,32 @@ elseif strcmp(quantity,'whip')
 		c_eval('WHIP?=[];save_list=[save_list '' WHIP? ''];',cl_id);
 	end
 	clear t_s t_e fdm_r ii fdm ok
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% efwpha - sun angle from EFW FDM
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'efwa')
+	save_file = './mA.mat';
+	
+	[ok,fdm] = c_load('FDM?',cl_id);
+    if ~ok
+        irf_log('load',...
+            irf_ssub('No FDM?. Use getData(CDB,...,cl_id,''fdm'')',cl_id))
+        data = []; cd(old_pwd); return
+    end
+    
+    if isempty(fdm)
+        irf_log('load',	irf_ssub('Empty FDM?)',cl_id))
+		data = []; cd(old_pwd); return
+    end
+	
+    % 0.002 sec is from EFW Command and telemetry Decription
+    % 32 degrees is determined emprirically
+    efwpha = [fdm(:,1)+0.002 fdm(:,4)*360.0/255.0-32.0];
+    ii = find( efwpha(:,2) < 0 );
+    efwpha(ii,2) = efwpha(ii,2) + 360.0; %#ok<NASGU>
+    c_eval('EFWA?=efwpha;save_list=[save_list '' EFWA? ''];',cl_id);
+    clear efwpha ii
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % bdump - Burst dump
