@@ -362,8 +362,9 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 
 		line_colors=get(gca,'ColorOrder');
 		for jj=1:size(x,2)
+            use_color = 1;
 			if iscell(marker)
-				if length(marker)==size(x,2), marker_cur = marker{jj};
+				if length(marker)==size(x,2), marker_cur = marker{jj};  use_color = 0;
 				else marker_cur = marker{1};
 				end
 			else marker_cur = marker;
@@ -371,8 +372,12 @@ elseif flag_subplot==3,  % components of vectors in separate panels
 			
 			if size(x{jj},2)>=ipl+1
 				y = x{jj};
-				plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),...
-					'Color', line_colors(jj,:),'LineStyle', marker_cur)
+                if use_color
+                    plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),...
+                        'Color', line_colors(jj,:), 'LineStyle',marker_cur)
+                else
+                    plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),marker_cur)
+                end
 				hold on;
 			end
 		end
