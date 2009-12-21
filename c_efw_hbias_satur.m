@@ -37,7 +37,7 @@ if size(phase_2,1)<2, error('not enough points in phase_2'), end
 N_EMPTY = .9; 
 MAX_SPIN_PERIOD = 4.3;
 WAKE_MAX_WIDTH = 150; % degrees
-WAKE_MIN_WIDTH = 40;  % degrees
+WAKE_MIN_WIDTH = 20;  % degrees
 WAKE_MAX_CENTER_OFF = 8; % degrees
 WAKE_MIN_AMPLITUDE = 5; % mV/m
 WAKE_MAX_AMPLITUDE = 780; % mV/m
@@ -198,33 +198,59 @@ for in = iok
 		end
 	end
 	
-	if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
-		if DEBUG, disp('Matches'), end
-				wakedesc(in,2) = mm;
-				wakedesc(in,3) = w;
-	elseif pair~=32	&& ... % Wake position works only for p12 and p34
-			((mm > WAKE_MIN_AMPLITUDE && ~isempty(min2) &&...
-			mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO))
-		if w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH
-			% Check for wake position
-			im = im +da -90; % Angle with respect to the Sun
-			if round( im/180 ) >= 1, im = im -180; end
-			if abs(im) > WAKE_MAX_CENTER_OFF
-				if DEBUG
-					disp(sprintf('wake center offset by : %d degress',im))
-				end
-			else
-				if DEBUG, disp('Matches'), end
-				wakedesc(in,2) = mm;
-				wakedesc(in,3) = w;
-			end
-		else
-			if DEBUG, disp(sprintf('wrong width : %d degress',w)), end
-		end
-	else
-		if DEBUG, disp(['no sat at spin # ' num2str(in)]), end
-	end
-	if plotflag_now,input('press enter'), end
+    if (mm > WAKE_MAX_AMPLITUDE) || (mm > WAKE_INT_AMPLITUDE && w >=WAKE_MIN_WIDTH)
+        if DEBUG, disp('Matches'), end
+        wakedesc(in,2) = mm;
+        wakedesc(in,3) = w;
+    elseif pair~=32	 % Wake position works only for p12 and p34
+ %check what min2 means...
+        if(mm > WAKE_MIN_AMPLITUDE && ~isempty(min2) && ...
+                w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH)
+            % Check for wake position
+            im = im +da -90; % Angle with respect to the Sun
+            if round( im/180 ) >= 1, im = im -180; end
+            if abs(im) > WAKE_MAX_CENTER_OFF
+                if DEBUG
+                    disp(sprintf('wake center offset by : %d degress',im))
+                end
+            else
+                if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
+                    if DEBUG, disp('Matches'), end
+                    wakedesc(in,2) = mm;
+                    wakedesc(in,3) = w;
+                else
+                    if DEBUG, disp('Possibly matches, but only one spike detected.'), end
+                    wakedesc(in,2) = -mm;
+                    wakedesc(in,3) = -w;
+                end
+            end
+        else
+            if DEBUG, disp(['no saturation at spin # ' num2str(in)]), end
+        end
+    else
+        if DEBUG, disp('wake position works only for p12 and p34'), end
+    end
+    if plotflag_now,input('press enter'), end
+end
+
+% Take care of any "maybe" matches (i.e. detected one spike only)
+maybes=find(wakedesc(iok,2)<0);
+if ~isempty(maybes)
+    if length(iok) > 1
+        neighbor1=maybes-1;
+        neighbor2=maybes+1;
+        if neighbor1(1) < 1, neighbor1(1)=2; end
+        if neighbor2(end) > iok(end), neighbor2(end) = iok(end-1); end
+        idx1=find( isfinite(wakedesc(iok(neighbor1),2)) |  isfinite(wakedesc(iok(neighbor2),2)));
+        idx2=find(~isfinite(wakedesc(iok(neighbor1),2)) & ~isfinite(wakedesc(iok(neighbor2),2)));
+        if ~isempty(idx1)
+            wakedesc(iok(maybes(idx1)),2)= -wakedesc(iok(maybes(idx1)),2);
+            wakedesc(iok(maybes(idx1)),3)= -wakedesc(iok(maybes(idx1)),3);
+        end
+        if ~isempty(idx2), wakedesc(iok(idx2),3)= NaN; end
+    else
+        wakedesc(iok,2:3)= NaN;
+    end
 end
 
 % Join intervals
@@ -286,8 +312,7 @@ end
 data = w_ave(data,5);
 if PLOT_FLAG, plot(data); end
 
-d1 = diff(data);
-
+%d1 = diff(data);
 %plot(idx(1:end-1)+.5,d1*2,'r')
 
 min1 = min(data);
@@ -301,7 +326,7 @@ if PLOT_FLAG
 	%plot(imin1,d1(imin1),'r*',imax1,d1(imax1),'r*')
 end
 
-[ii_left, ii_right] = find_peak(d1,imin1,0);
+[ii_left, ii_right] = find_peak(data,imin1,0);
 wmin1 = ii_right - ii_left +1;
 
 %plot(ii_left,d1(ii_left),'r*',ii_right,d1(ii_right),'r*')
@@ -310,7 +335,7 @@ idx_out_min = ii_left:ii_right;
 data(idx_out_min) = NaN;
 %plot(data,'g')
 
-[ii_left, ii_right] = find_peak(d1,imax1,1);
+[ii_left, ii_right] = find_peak(data,imax1,1);
 wmax1 = ii_right - ii_left +1;
 
 %plot(ii_left,d1(ii_left),'r*',ii_right,d1(ii_right),'r*')
@@ -344,28 +369,35 @@ if PLOT_FLAG
 end
 
 %% find_peak
-function [ii_left, ii_right] = find_peak(d1,im,mode)
+function [ii_left, ii_right] = find_peak(data,im,mode)
 % mode = 0  minimum
 % mode = 1  maximum
+N_HALFWIDTHS=2.0;
+if ~mode, data = -data; end
 
-if mode, d1 = -d1; end
-
-ndata = length(d1) +1;
+ndata = length(data) +1;
+N_HALFWIDTHS=N_HALFWIDTHS-1;
 
 ii_left = 1;
 ii_right = ndata;
 if im > 1
     idxtmp = 1:im-1;
-    ii_left = find(d1(idxtmp) > 0);
+    ii_left = find(data(idxtmp) < 0.5*data(im));
     if isempty(ii_left), ii_left = 1; 
-    else ii_left = idxtmp(max(ii_left))+1;
+    else
+        ii_left = idxtmp(max(ii_left))+1;
+        ii_left = ii_left-N_HALFWIDTHS*(im-ii_left);
+        if ii_left<1, ii_left=1; end
     end
 end
 if im < ndata
     idxtmp =im:ndata-1;
-    ii_right = find(d1(idxtmp) < 0);
+    ii_right = find(data(idxtmp) < 0.5*data(im));
     if isempty(ii_right), ii_right = ndata; 
-    else ii_right = idxtmp(min(ii_right)) -1;
+    else
+        ii_right = idxtmp(min(ii_right)) -1;
+        ii_right = ii_right+N_HALFWIDTHS*(ii_right-im);
+        if ii_right > (ndata-1), ii_right=ndata-1; end
     end
 end
 
