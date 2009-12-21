@@ -2277,6 +2277,34 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     else irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
 	end
 	
+    % Fix periods of high bias saturation
+    sa12=[]; sa34=[];
+    if Pinfo.probe == 1234 || Pinfo.probe == 12
+        [ok,sa12] = c_load(irf_ssub('HBIASSA?p12',cl_id));
+        if ~ok, irf_log('load',irf_ssub('Cannot load HBIASSA?p12',cl_id)); end
+    end
+    if Pinfo.probe == 1234 || Pinfo.probe == 34
+        [ok,sa34] = c_load(irf_ssub('HBIASSA?p34',cl_id));
+        if ~ok, irf_log('load',irf_ssub('Cannot load HBIASSA?p34',cl_id)); end
+    end
+    time_int=[sa12' sa34']';
+    if ~isempty(time_int) && ~isempty(p)
+        irf_log('proc','Fixing high bias saturation. Using maximum probe potential in affected intervals.')
+        time_int = sort(time_int,1);
+        for j=1:size(time_int,1)
+            indx=p(:,1)>=(time_int(j,1)-10) & p(:,1)<=(time_int(j,2)+10);
+            if Pinfo.probe == 1234
+                ptmp = [p1(indx,2) p2(indx,2) p3(indx,2) p4(indx,2)];
+            elseif Pinfo.probe == 12
+                ptmp = [p1(indx,2) p2(indx,2)];
+            elseif Pinfo.probe == 34
+                ptmp = [p3(indx,2) p4(indx,2)];
+            else
+            end
+            p(indx,2:end) = max(ptmp,[],2);
+        end
+    end
+   
 	c_eval(['P' loaded_param '?=p;save_list=[save_list ''P' loaded_param '? ''];'],cl_id);
     if do_burst
         c_eval('bP?=p;bP?_info=Pinfo;bNVps?=c_efw_scp2ne(p);bNVps?(:,end+1)=p(:,2); save_list=[save_list '' bP? bP?_info bNVps?''];',cl_id)
