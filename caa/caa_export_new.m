@@ -492,6 +492,21 @@ if exist('result_com') && length(result_com) > 0, dsc.com = result_com; end
 
 cd(old_pwd)
 
+% Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
+if (lev > 1) && ~isempty(data)
+    indx=find(diff(data(:,1)) < 0.5e-3);
+    if ~isempty(indx)
+        irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
+        for i=indx
+            irf_log('save',['Removing data near non-monotonic time stamp at ' epoch2iso(data(i,1))])
+            ii_left =find(data(:,1) < (data(i+1,1) - 10.4), 1, 'last' );
+            ii_right=find(data(:,1) > (data(i,1)   + 10.4), 1, 'first' );
+            data(ii_left:ii_right,:)=NaN;             
+        end
+        indx=isfinite(data(:,1));
+        data=data(indx,:);
+    end
+end
 
 if isempty(data)
 %   keyboard
