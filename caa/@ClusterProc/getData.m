@@ -2247,31 +2247,31 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	
 	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
             all(size(p1)==size(p4) )
-		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4]; %#ok<NASGU>
+		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
 		Pinfo.probe = 1234;
 		irf_log('proc','computing from p1234')
 	elseif ~isempty(p3) && all(size(p3)==size(p4)) && ~(all(size(p1)==size(p2)) && l1>l3)
-		p = [p3(:,1) (p3(:,2)+p4(:,2))/2]; %#ok<NASGU>
+		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
 		Pinfo.probe = 34;
 		irf_log('proc','computing from p34')
 	elseif ~isempty(p1) && all(size(p1)==size(p2))
-		p = [p1(:,1) (p1(:,2)+p2(:,2))/2]; %#ok<NASGU>
+		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
 		Pinfo.probe = 12;
 		irf_log('proc','computing from p12')
 	elseif ~isempty(p4) && l4>=max([l1 l2 l3])
-		p = p4; %#ok<NASGU>
+		p = p4;
 		Pinfo.probe = 4;
 		irf_log('proc','computing from p4')
 	elseif ~isempty(p2) && l2>=max([l1 l3])
-		p = p2; %#ok<NASGU>
+		p = p2;
 		Pinfo.probe = 2;
 		irf_log('proc','computing from p2')
 	elseif ~isempty(p3) && l3>=l1
-		p = p3; %#ok<NASGU>
+		p = p3;
 		Pinfo.probe = 3;
 		irf_log('proc','computing from p3')
 	elseif ~isempty(p1)
-		p = p1; %#ok<NASGU>
+		p = p1;
 		Pinfo.probe = 1;
 		irf_log('proc','computing from p1')
     else irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
