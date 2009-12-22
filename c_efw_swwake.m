@@ -40,6 +40,8 @@ if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end
 
 n_corrected = 0;
+data = e;
+wakedesc = [];
 
 if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
@@ -55,7 +57,6 @@ WAKE_MIN_AMPLITUDE = 0.4; % mV/m
 WAKE_MAX_AMPLITUDE = 7; % mV/m
 plot_step = 1;
 plot_i = 0;
-data = e;
 data_corr = e;
 if ~isempty(whip)
 	irf_log('proc','blanking Whisper pulses')

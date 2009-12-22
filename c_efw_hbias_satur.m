@@ -25,6 +25,7 @@ function [HBIASSA,wakedesc] = c_efw_hbias_satur(e,pair,phase_2,whip,plotflag)
 DEBUG = 0;
 
 HBIASSA = [];
+wakedesc=[];
 
 error(nargchk(3,5,nargin))
 if nargin<5, plotflag = 0; end
