@@ -2274,7 +2274,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		p = p1; %#ok<NASGU>
 		Pinfo.probe = 1;
 		irf_log('proc','computing from p1')
-    else irf_log('dsrc','Cannot compute P'), cd(old_pwd); return
+    else irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
 	end
 	
     % Fix periods of high bias saturation
