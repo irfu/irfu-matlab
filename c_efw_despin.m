@@ -110,6 +110,12 @@ if numel(phase)==1, % load phase from isdat database
   Mat_DbClose(db);
 end
 
+if numel(phase) < 3
+  irf_log('proc',['c_efw_despin failed: no phase information for interval starting ' epoch2iso(t(1,1))])
+  e=[t zeros(length(t),1)+NaN zeros(length(t),1)+NaN];
+  return
+end
+
 switch ref_frame
 case 'wec'
   phi_12=3*pi/4;
