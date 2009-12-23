@@ -241,7 +241,7 @@ if ~isempty(maybes)
         neighbor1=maybes-1;
         neighbor2=maybes+1;
         if neighbor1(1) < 1, neighbor1(1)=2; end
-        if neighbor2(end) > iok(end), neighbor2(end) = iok(end-1); end
+        if neighbor2(end) > length(iok), neighbor2(end) = length(iok)-1; end
         idx1=find( isfinite(wakedesc(iok(neighbor1),2)) |  isfinite(wakedesc(iok(neighbor2),2)));
         idx2=find(~isfinite(wakedesc(iok(neighbor1),2)) & ~isfinite(wakedesc(iok(neighbor2),2)));
         if ~isempty(idx1)
