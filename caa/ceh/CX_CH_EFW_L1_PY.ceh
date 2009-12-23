@@ -1,0 +1,60 @@
+!
+! $Id$
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L1_PYYY"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Probe YYY to spacecraft potential"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains measurements of the"
+   ENTRY       =   "Probe YYY to spacecraft potential"
+   ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft"
+END_META       =   DATASET_DESCRIPTION
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   0.2
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L1_PYYY
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 0.1
+  DELTA_MINUS     = 0.1
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L1_PYYY
+!
+START_VARIABLE      = PYYY__CXXX_CP_EFW_L1_PYYYY
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Probe YYY to spacecraft potential"
+  FIELDNAM          = "Probe YYY to spacecraft potential"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = "*CXXX_CP_EFW_L1_PYYY"
+  LABLAXIS          = "PYYY"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L1_PYYY
+END_VARIABLE        = PYYY__CXXX_CP_EFW_L1_PYYYY
