@@ -41,11 +41,12 @@ do
 	do
 		fout=`echo $f| sed -e "s=X=${CLI}=" | sed -e "s=Y=${PROBE}="`
 		echo "Writing $fout"
-		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=YYY=${PROBE}=" > $fout
+		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=YYY=${PROBE}="|sed -e "s=YYY=${PROBE}=" > $fout
 		PROBE=$(($PROBE+1))
 	done
 	CLI=$(($CLI+1))
 done
+
 f="CX_CH_EFW_L1_PYY.ceh"
 CLI=1
 while test $CLI -le 4
@@ -55,9 +56,13 @@ do
 	34"
 	for PROBE in $PROBES
 	do
+		# No p32 on C4 yet
+		[ "$CLI" = "4" ] && [ "$PROBE" = "32" ] && continue
 		fout=`echo $f| sed -e "s=X=${CLI}=" | sed -e "s=YY=${PROBE}="`
 		echo "Writing $fout"
-		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=YYY=${PROBE}=" > $fout
+		PROBE1=`echo $PROBE|cut -c 1`
+		PROBE2=`echo $PROBE|cut -c 2`
+		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=TTT=${PROBE}="|sed -e "s=YYY=${PROBE1}="|sed -e "s=ZZZ=${PROBE2}=" > $fout
 		PROBE=$(($PROBE+1))
 	done
 	CLI=$(($CLI+1))
