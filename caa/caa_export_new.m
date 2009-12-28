@@ -497,10 +497,10 @@ if (lev > 1) && ~isempty(data)
     indx=find(diff(data(:,1)) < 0.5e-3);
     if ~isempty(indx)
         irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
-        for i=indx
-            irf_log('save',['Removing data near non-monotonic time stamp at ' epoch2iso(data(i,1))])
-            ii_left =find(data(:,1) < (data(i+1,1) - 10.4), 1, 'last' );
-            ii_right=find(data(:,1) > (data(i,1)   + 10.4), 1, 'first' );
+        for i=1:length(indx)
+            irf_log('save',['Removing data near non-monotonic time stamp at ' epoch2iso(data(indx(i),1))])
+            ii_left =find(data(:,1) < (data(indx(i)+1,1) - 10.4), 1, 'last' );
+            ii_right=find(data(:,1) > (data(indx(i),1)   + 10.4), 1, 'first' );
             data(ii_left:ii_right,:)=NaN;             
         end
         indx=isfinite(data(:,1));
