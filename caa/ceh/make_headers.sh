@@ -31,3 +31,34 @@ do
       CLI=$(($CLI+1))
    done
 done
+
+f="CX_CH_EFW_L1_PY.ceh"
+CLI=1
+while test $CLI -le 4
+do
+	PROBE=1
+	while test $PROBE -le 4
+	do
+		fout=`echo $f| sed -e "s=X=${CLI}=" | sed -e "s=Y=${PROBE}="`
+		echo "Writing $fout"
+		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=YYY=${PROBE}=" > $fout
+		PROBE=$(($PROBE+1))
+	done
+	CLI=$(($CLI+1))
+done
+f="CX_CH_EFW_L1_PYY.ceh"
+CLI=1
+while test $CLI -le 4
+do
+	PROBES="12 \
+	32 \
+	34"
+	for PROBE in $PROBES
+	do
+		fout=`echo $f| sed -e "s=X=${CLI}=" | sed -e "s=YY=${PROBE}="`
+		echo "Writing $fout"
+		cat $f|sed -e "s=XXX=${CLI}="|sed -e "s=YYY=${PROBE}=" > $fout
+		PROBE=$(($PROBE+1))
+	done
+	CLI=$(($CLI+1))
+done
