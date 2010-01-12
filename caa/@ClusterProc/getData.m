@@ -1246,6 +1246,10 @@ elseif strcmp(quantity,'bdump')
 	end
 	
 	[t_s,t_e,fdm_px] = caa_efw_mode_tab(fdm, 'px');
+    if isempty(fdm_px)
+        irf_log('load','Insufficient FDM samples for bdump flagging.')
+		data = []; cd(old_pwd); return
+    end
 	ii = find(fdm_px(:,1)==1 & fdm_px(:,2)==0);
 	
 	if ~isempty(ii)
@@ -1285,6 +1289,10 @@ elseif strcmp(quantity,'sweep')
 	ii = find(fdm_w==1);
 
 	[t_s_px,t_e_px,fdm_px] = caa_efw_mode_tab(fdm, 'px');
+    if isempty(fdm_px)
+        irf_log('load','Insufficient FDM samples for sweep flagging.')
+		data = []; cd(old_pwd); return
+    end
 	ii_px = find(fdm_px(:,1)==1 & fdm_px(:,2)==1);
 	if ~isempty(ii) || ~isempty(ii_px)
 		if isempty(ii)
