@@ -79,12 +79,17 @@ if length(diEs) < 2
 	ecorr = [];
     return
 end
-
 diEr = irf_resamp(diEs,t,'fsample',.1/TAV);
 diECr = irf_resamp(diECorr,t,'fsample',.1/TAV);
 Pr = irf_resamp(P(~isnan(P(:,2)),:),t,'fsample',1/TAV);
 diRrr = irf_resamp(diRr,t,'fsample',1/TAV);
 diRrr = irf_abs(diRrr,1);
+if length(diEr) < 2 || length(diECr) < 2 || length(Pr) < 2
+    irf_log('proc','Not enough data after resampling.')
+	res = [];
+	ecorr = [];
+    return
+end
 
 dE = sqrt( (diEr(:,2) - diECr(:,2)).^2 + (diEr(:,3) - diECr(:,3)).^2 );
 idx = find( Pr(:,2) > SCPOT_LIM & dE > DE_LIM & diRrr < R_LIM);
