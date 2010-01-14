@@ -59,7 +59,7 @@ for jj=1:nint
 	if isempty(X), for comp=1:ncomp,specrec.p{comp}(jj,:) = NaN;end
 	else
 		for comp=2:ncomp+1
-			if ~isempty(~isnan(X(:,comp)))
+			if any(~isnan(X(:,comp)))
 				ff = fft(detrend(X(:,comp)) .* w,nfft);
 				pf = ff .*conj(ff) *nnorm;
 				specrec.p{comp-1}(jj,:) = pf(1:nf);
