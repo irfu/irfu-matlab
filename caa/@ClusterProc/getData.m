@@ -2301,14 +2301,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         time_int = sort(time_int,1);
         for j=1:size(time_int,1)
             indx=p(:,1)>=(time_int(j,1)-10) & p(:,1)<=(time_int(j,2)+10);
-            if Pinfo.probe == 1234
-                ptmp = [p1(indx,2) p2(indx,2) p3(indx,2) p4(indx,2)];
-            elseif Pinfo.probe == 12
-                ptmp = [p1(indx,2) p2(indx,2)];
-            elseif Pinfo.probe == 34
-                ptmp = [p3(indx,2) p4(indx,2)];
-            else
-            end
+            ptmp=zeros(sum(indx),4)+NaN;
+            if ~isempty(p1) && all(size(p1)==size(p)), ptmp(:,1)=p1(indx,2); end
+            if ~isempty(p2) && all(size(p2)==size(p)), ptmp(:,2)=p2(indx,2); end
+            if ~isempty(p3) && all(size(p3)==size(p)), ptmp(:,3)=p3(indx,2); end
+            if ~isempty(p4) && all(size(p4)==size(p)), ptmp(:,4)=p4(indx,2); end
             p(indx,2:end) = max(ptmp,[],2);
         end
     end
@@ -2319,7 +2316,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     else
         c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
     end
-	clear p p1 p2 p3 p4
+	clear p p1 p2 p3 p4 ptmp
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P spin resolution
