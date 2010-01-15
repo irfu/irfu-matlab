@@ -109,6 +109,7 @@ for cli=1:4
 		if t1+dt1>int_e, int_e = t1+dt1; end
 		in_tmp.interv = [t1 dt1];
 		in_tmp.st_s = st_s(12:16);
+        in_tmp.probeID= caa_sfit_probe(cli);
 		tm = c_load('mTMode?',cli,'var');
 		if ~isempty(tm) && tm(1,1)~=-157e8
 			if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
@@ -163,26 +164,29 @@ for cli=1:4
 			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
 			clear p_tmp
 			
-			% Load SW WAKE amplitude
-			pp = caa_sfit_probe(cli);
-			wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
-			if ~isempty(wamp_tmp) && wamp_tmp(1,1)~=-157e8
-				wamp = [wamp; wamp_tmp(:,[1 3])];
-			end
-			clear wamp_tmp
-			
+            % Load SW WAKE amplitude
+            for pp=[12 32 34]
+                wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
+                if ~isempty(wamp_tmp) && wamp_tmp(1,1)~=-157e8
+                    wamp = [wamp; wamp_tmp(:,[1 3])];
+                end
+                clear wamp_tmp
+            end
+            
 			% Load PS/LO WAKEs
-			pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
-			if ~isempty(pswake_tmp) && pswake_tmp(1,1)~=-157e8
-				pswake = [pswake; pswake_tmp];
-			end
-			clear pswake_tmp
-			lowake_tmp = c_load(['LOWAKE?p' num2str(pp)],cli,'var');
-			if ~isempty(lowake_tmp) && lowake_tmp(1,1)~=-157e8
-				lowake = [lowake; lowake_tmp];
-			end
-			clear lowake_tmp
-			
+            for pp=[12 32 34]
+                pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
+                if ~isempty(pswake_tmp) && pswake_tmp(1,1)~=-157e8
+                    pswake = [pswake; pswake_tmp];
+                end
+                clear pswake_tmp
+                lowake_tmp = c_load(['LOWAKE?p' num2str(pp)],cli,'var');
+                if ~isempty(lowake_tmp) && lowake_tmp(1,1)~=-157e8
+                    lowake = [lowake; lowake_tmp];
+                end
+                clear lowake_tmp
+            end
+            
 			% Load spectrum
 			spec_tmp = c_load('diESPEC?p1234',cli,'var');
 			if ~isempty(spec_tmp) && isstruct(spec_tmp)
@@ -192,7 +196,8 @@ for cli=1:4
 			clear spec_tmp
 			
 			% Load Es
-			es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
+			pp = caa_sfit_probe(cli);
+            es_tmp = c_load(['diEs?p' num2str(pp)],cli,'var');
 			if ~isempty(es_tmp) && es_tmp(1,1)~=-157e8
 			   
 %			   E_info = c_load('diESPEC?p1234_info', cli, 'var');  % Load info; need list of probe pairs!
@@ -201,6 +206,31 @@ for cli=1:4
                error('Could not load probe pair info!')
             end
 
+            % Remove saturation due to too high bias current        
+            for probepair=[12 32 34]
+                [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
+                if ok
+                    if ~isempty(hbias)
+                        irf_log('proc','blanking HB saturation')
+                        es_tmp = caa_rm_blankt(es_tmp,hbias);
+                    end
+                else irf_log('load',msg)
+                end
+                clear ok hbias msg
+            end
+            
+             % Remove whisper pulses    
+             [ok,whip,msg] = c_load('WHIP?',cli);
+             if ok
+                 if ~isempty(whip)
+                     irf_log('proc','blanking Whisper pulses')
+                     es_tmp = caa_rm_blankt(es_tmp,whip);
+                 end
+             else irf_log('load',msg)
+             end
+             clear ok whip msg
+           
+            
             %%% Fill gaps in data???? %%%
             
 
@@ -299,7 +329,7 @@ for cli=1:4
 %			if ~isempty(es), es = caa_rm_blankt(es,lowake); end
 		end
 		clear lowake
-
+        
 		if ~isempty(es), c_eval('es?=es;',cli), end, clear es
 		if ~isempty(rspec), c_eval('rspec?=rspec;',cli), end, clear rspec
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
@@ -412,7 +442,17 @@ axes(he(2)), c_pl_tx('edi?',3,'.'), hold on
 c_pl_tx('es?',3), hold off, ylabel('Ey [mV/m]'), axis tight
 
 % Plot RSPEC
-c_eval('axes(he(2+?)),if ~isempty(rspec?),irf_plot(rspec?), if ~isempty(lowake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),lowake?,1),''rO''),end,if ~isempty(pswake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),pswake?,1),''gd''),end,axis tight,end, ylabel(''Rspec C?''), grid on, hold off')
+for cli=1:4
+    c_eval('axes(he(2+?)),if ~isempty(rspec?),irf_plot(rspec?), if ~isempty(lowake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),lowake?,1),''rO''),end,if ~isempty(pswake?),hold on,irf_plot(caa_rm_blankt(rspec?(:,1:2),pswake?,1),''gd''),end,axis tight,end, ylabel(''Rspec C?''), grid on, hold off',cli);
+	c_eval('in = in?;',cli);
+	if isempty(in), continue, end 
+	for k=1:length(in)
+		in_tmp = in{k};
+        yrange = get(gca,'YLim');
+		text(in_tmp.interv(1)-figure_start_epoch(st)+60,yrange(2)*0.8,['p' num2str(in_tmp.probeID)])
+	end
+
+end
 
 t_start_epoch = figure_start_epoch(st);
 for cli=1:4
