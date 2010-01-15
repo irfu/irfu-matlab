@@ -351,7 +351,7 @@ elseif strcmp(quantity,'dies')
 		irf_log('proc',sprintf('Spin fit w%sE%dp%d -> diEs%dp%d',...
 			ss,cl_id,probe,cl_id,probe))
 
-		if isempty(aa), aa = c_phase(tt(:,1),pha); end
+		aa = c_phase(tt(:,1),pha);
 		if isempty(aa)
 			irf_log('proc','Empty phase')
 			continue
