@@ -2297,6 +2297,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     time_int=[sa12' sa34']';
     if ~isempty(time_int) && ~isempty(p)
         irf_log('proc','Fixing high bias saturation. Using maximum probe potential in affected intervals.')
+        Pinfo.useMax4hbiassa=1;
         time_int = sort(time_int,1);
         for j=1:size(time_int,1)
             indx=p(:,1)>=(time_int(j,1)-10) & p(:,1)<=(time_int(j,2)+10);
@@ -2325,7 +2326,9 @@ elseif strcmp(quantity,'ps')
 	
 	[ok,P_tmp,msg] = c_load('P?',cl_id);
 	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
-	
+	[ok,P_info] = c_load('P?_info',cl_id);
+	if ~ok, P_info =[]; end
+    
 	P_tmp = P_tmp(~isnan(P_tmp(:,2)),:);
 	if isempty(P_tmp)
 		irf_log('proc',sprintf('Empty P%d.',cl_id))
@@ -2338,11 +2341,14 @@ elseif strcmp(quantity,'ps')
 	n = floor((P_tmp(end,1)-t0)/4) + 1;
 	tvec = t0 + ( (1:n) -1)*4;
 	
-	P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'median'); clear tvec %#ok<NASGU>
+    if isfield(P_info,'useMax4hbiassa') && P_info.useMax4hbiassa==1
+        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'max'); clear tvec %#ok<NASGU>
+    else
+        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec %#ok<NASGU>
+    end
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
-	[ok,P_info] = c_load('P?_info',cl_id); %#ok<NASGU>
-	if ok
+	if ~isempty(P_info)
 		c_eval('Ps?_info=P_info;save_list=[save_list ''Ps?_info '' ];',cl_id);
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
