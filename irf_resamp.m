@@ -5,13 +5,14 @@ function out = irf_resamp(x,y,varargin)
 % otherwise we interpolate X.
 %
 % out = irf_resamp(X,Y,[METHOD],['fsample',FSAMPLE],['window',WIN],
-%                      ['thresh',THRESH],['median'])
+%                      ['thresh',THRESH],['median'],['max'])
 % method - method of interpolation 'spline', 'linear' etc. (default 'linear')
 %          if method is given then interpolate independant of sampling
 % thresh - points above STD*THRESH are disregarded for averaging
 % fsample - sampling frequency of the Y signal, 1/window
 % window - length of the averaging window, 1/fsample
 % median - use median instead of mean when averaging
+% max    - return max within each averaging window, rather than mean
 %
 % See also INTERP1
 %
@@ -36,6 +37,7 @@ thresh = 0;
 method = '';
 flag_do='check'; % if no method check if interpolate or average
 median_flag=0;
+max_flag=0;
 
 while have_options
 	l = 1;
@@ -88,6 +90,8 @@ while have_options
             end
         case 'median'
             median_flag=1;
+        case 'max'
+            max_flag=1;
 		otherwise
 			irf_log('fcal',['Skipping parameter ''' args{1} ''''])
 			args = args(2:end);
@@ -155,8 +159,8 @@ end
 
 if strcmp(flag_do,'average')
     dt2 = .5/sfy; % Half interval
-    if median_flag || (exist('irf_average_mx','file')~=3)
-        if (~median_flag) irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
+    if median_flag || max_flag || (exist('irf_average_mx','file')~=3)
+        if (~median_flag && ~max_flag), irf_log('fcal','cannot find mex file, defaulting to Matlab code.')
         end
         out = zeros(ndata,size(x,2));
         out(:,1) = t;
@@ -175,7 +179,8 @@ if strcmp(flag_do,'average')
                                 %	'interval(%d) : disregarding %d 0f %d points',...
                                 %	j, length(ii)-length(kk),length(ii)));
                                 if ~isempty(kk)
-                                    if (median_flag) out(j,k+1) = median(x(ii(kk),k+1));
+                                    if median_flag, out(j,k+1) = median(x(ii(kk),k+1));
+                                    elseif max_flag, out(j,k+1) = max(x(ii(kk),k+1));
                                     else out(j,k+1) = mean(x(ii(kk),k+1));
                                     end
                                 end
@@ -185,7 +190,8 @@ if strcmp(flag_do,'average')
                     else out(j,2:end) = NaN;
                     end
                 else
-                    if (median_flag) out(j,2:end) = median(x(ii,2:end));
+                    if median_flag, out(j,2:end) = median(x(ii,2:end));
+                    elseif max_flag out(j,2:end) = max(x(ii,2:end));
                     else out(j,2:end) = mean(x(ii,2:end));
                     end
                 end
