@@ -44,6 +44,7 @@ WAKE_MIN_AMPLITUDE = 5; % mV/m
 WAKE_MAX_AMPLITUDE = 780; % mV/m
 WAKE_MIN_MAX_RATIO = 5; % Min ration of the max1/max ratio
 WAKE_INT_AMPLITUDE = 200; % mV/m
+WAKE_MAX_ADC_OFF = 50;
 
 plot_step = 1;
 plot_i = 0;
@@ -194,8 +195,8 @@ for in = iok
 		if isempty(min2)
 			disp('No secondary peaks')
 		else
-			disp(sprintf('Max: %.1f mV/m  Ratio: %.1f',...
-				mm,mm/max(abs(min2),abs(max2))))
+			disp(sprintf('Max: %.1f mV/m  Ratio: %.1f  Width: %.1f',...
+				mm,mm/max(abs(min2),abs(max2)), w))
 		end
 	end
 	
@@ -203,10 +204,13 @@ for in = iok
         if DEBUG, disp('Matches'), end
         wakedesc(in,2) = mm;
         wakedesc(in,3) = w;
+    elseif mean(tt(:, in)) > WAKE_MAX_ADC_OFF
+        if DEBUG, disp('Possibly matches based on ADC offset'), end
+        wakedesc(in,2) = -mm;
+        wakedesc(in,3) = -w;    
     elseif pair~=32	 % Wake position works only for p12 and p34
- %check what min2 means...
         if(mm > WAKE_MIN_AMPLITUDE && ~isempty(min2) && ...
-                w >= WAKE_MIN_WIDTH && w <= WAKE_MAX_WIDTH)
+                w >= WAKE_MIN_WIDTH)
             % Check for wake position
             im = im +da -90; % Angle with respect to the Sun
             if round( im/180 ) >= 1, im = im -180; end
@@ -215,7 +219,7 @@ for in = iok
                     disp(sprintf('wake center offset by : %d degress',im))
                 end
             else
-                if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
+                if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO) && (w <= WAKE_MAX_WIDTH)
                     if DEBUG, disp('Matches'), end
                     wakedesc(in,2) = mm;
                     wakedesc(in,3) = w;
@@ -248,7 +252,7 @@ if ~isempty(maybes)
             wakedesc(iok(maybes(idx1)),2)= -wakedesc(iok(maybes(idx1)),2);
             wakedesc(iok(maybes(idx1)),3)= -wakedesc(iok(maybes(idx1)),3);
         end
-        if ~isempty(idx2), wakedesc(iok(idx2),3)= NaN; end
+        if ~isempty(idx2), wakedesc(iok(maybes(idx2)),2:3)= NaN; end
     else
         wakedesc(iok,2:3)= NaN;
     end
