@@ -45,6 +45,9 @@ WAKE_MAX_AMPLITUDE = 780; % mV/m
 WAKE_MIN_MAX_RATIO = 5; % Min ration of the max1/max ratio
 WAKE_INT_AMPLITUDE = 200; % mV/m
 WAKE_MAX_ADC_OFF = 50;
+WIDE_WAKE_MIN_AMPLITUDE = 50; % Min amplitude for wide wakes
+WIDE_WAKE_MIN_WIDTH = 100;  % Width at which to consider a wake as wide
+
 
 plot_step = 1;
 plot_i = 0;
@@ -219,14 +222,18 @@ for in = iok
                     disp(sprintf('wake center offset by : %d degress',im))
                 end
             else
-                if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO) && (w <= WAKE_MAX_WIDTH)
-                    if DEBUG, disp('Matches'), end
-                    wakedesc(in,2) = mm;
-                    wakedesc(in,3) = w;
-                else
-                    if DEBUG, disp('Possibly matches, but only one spike detected.'), end
-                    wakedesc(in,2) = -mm;
-                    wakedesc(in,3) = -w;
+                if(w <= WAKE_MAX_WIDTH)
+                    if( mm/max(abs(min2),abs(max2)) > WAKE_MIN_MAX_RATIO)
+                        if DEBUG, disp('Matches'), end
+                        wakedesc(in,2) = mm;
+                        wakedesc(in,3) = w;
+                    else
+                        if (w < WIDE_WAKE_MIN_WIDTH) || (mm > WIDE_WAKE_MIN_AMPLITUDE)
+                            if DEBUG, disp('Possibly matches, but only one spike detected.'), end
+                            wakedesc(in,2) = -mm;
+                            wakedesc(in,3) = -w;
+                        end
+                    end
                 end
             end
         else
