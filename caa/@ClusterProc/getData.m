@@ -41,7 +41,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %          ang_ez0 - use Ez=0 for points below ang_limit
 %   p : P{cl_id}, P{cl_id}_info, NVps{cl_id},P10Hz{cl_id} -> mP	// P averaged
 %   ps : Ps{cl_id} -> mP	// P spin resolution
-%   whip: WHIP{cl_id} ->        // Whisper pulses present +1 precceding sec
+%   whip: WHIP{cl_id} -> mEFW   // Whisper pulses present +1 precceding sec
 %   bdump: DBUMP{cl_id} -> mEFW	// Burst dump present
 %   efwa: EFWA{cl_id} -> mA	    // Phase from EFW FDM
 %   sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
@@ -56,7 +56,9 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   dibsc : diBSC{cl_id}, BSC{cl_id} -> mBSC // despun B STAFF SC [DSI+GSE]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
-%   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI] 
+%   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI]
+%   manproblems: whip|sweep|bdump|badbias|probesa|hbiassa|wake -> mEFW
+%          // Reads manually-set problems from database.
 %
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
@@ -2429,6 +2431,36 @@ elseif strcmp(quantity,'dibsc')
 		c_eval('BSC?=c_gse2dsi(diBSC?,sax,-1);save_list=[save_list '' BSC?''];',cl_id);
 	end
 	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% manproblems: Reads manually-set problems from database.
+%              affects whip|sweep|bdump|badbias|probesa|hbiassa|wake
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'manproblems')
+	save_file='./mEFW.mat';
+
+    d=[c_ctl('get', 5, 'data_path') '/caa-control'];
+    f_name = [d '/manual_problems_c' num2str(cl_id) '.dat'];
+    if ~exist(f_name,'file')
+        irf_log('load',['file ' f_name ' not found']);
+        data = []; cd(old_pwd), return
+    end
+    fid = fopen(f_name);
+    C = textscan(fid, '%s %n %s');
+    fclose(fid);
+    
+ 	[iso_t,dt] = caa_read_interval;
+	int_start = iso2epoch(iso_t);
+    int_end=int_start+dt;
+    for i=1:length(C{1})
+        st=iso2epoch(C{1}{i});
+        dt=C{2}(i);
+        if (st<int_end && (st+dt)>int_start)
+            irf_log('proc',['Setting manual problem:' C{3}{i}]);
+            eval([C{3}{i} '=[st st+dt];'])
+            eval('save_list=[save_list C{3}{i}];');
+        end
+    end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
 end %main QUANTITY
