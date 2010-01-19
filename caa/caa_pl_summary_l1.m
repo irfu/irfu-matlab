@@ -87,7 +87,7 @@ end
 r = [];
 ri = [];
 fmax = 12.5;
-c_eval('p?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake?=[];edi?=[];')
+c_eval('p?=[];ps?=[];spec?={};es?=[];rspec?=[];in?={};wamp?=[];pswake?=[];lowake?=[];edi?=[];')
 
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
@@ -132,7 +132,7 @@ end
 dEx = cell(4,1);
 for cli=1:4
 	cdir = [sdir '/C' num2str(cli)];
-	p = []; spec = {}; es = []; rspec = []; wamp = [];
+	p = []; ps = [];spec = {}; es = []; rspec = []; wamp = [];
 	pswake = []; lowake = []; edi = [];
 	
 	if exist(cdir, 'dir')
@@ -162,6 +162,11 @@ for cli=1:4
 			% Load P
 			p_tmp = c_load('P?',cli,'var');
 			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
+			clear p_tmp
+            
+			% Load Ps
+			p_tmp = c_load('Ps?',cli,'var');
+			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, ps = [ps; p_tmp]; end
 			clear p_tmp
 			
             % Load SW WAKE amplitude
@@ -318,6 +323,7 @@ for cli=1:4
 		end
 		if ~isempty(edi), c_eval('edi?=edi;',cli), end, clear edi
 		if ~isempty(p), c_eval('p?=p;',cli), end, clear p
+		if ~isempty(ps), c_eval('ps?=ps;',cli), end, clear ps
 		if ~isempty(wamp), c_eval('wamp?=wamp;',cli), end, clear wamp
 		if ~isempty(pswake)
 			c_eval('pswake?=pswake;',cli)
@@ -390,8 +396,8 @@ irf_zoom(st + [0 dt], 'x', h(5))
 
 % Plot P
 axes(h(6))
-c_pl_tx('p?')
-ylabel('P L2 [-V]')
+c_pl_tx('ps?')
+ylabel('P L3 [-V]')
 a = get(gca,'YLim');
 if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
 irf_zoom(st +[0 dt],'x',h(6))
