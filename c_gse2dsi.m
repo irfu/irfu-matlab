@@ -36,7 +36,7 @@ else
 end
 
 if nargin<3, direction = 1; end
-if abs(direction)~=1, direction = 1; warning('using GSE->DSI'), end
+if abs(direction)~=1, direction = 1; warning('irf:gse2dsi','using GSE->DSI'), end
 	
 spin_axis=spin_axis/norm(spin_axis);
 if debug_flag, disp('Spin axis orientation');spin_axis, end
@@ -49,7 +49,6 @@ Ry = spin_axis(2);
 Rz = spin_axis(3);
 a = 1/sqrt(Ry^2+Rz^2);
 M = [[a*(Ry^2+Rz^2) -a*Rx*Ry -a*Rx*Rz];[0 a*Rz	-a*Ry];[Rx	Ry	Rz]];
-Minv = inv(M);
 
 if direction == 1
 	out = M*inp';
@@ -60,7 +59,7 @@ if direction == 1
 		end
 	end
 elseif direction==-1
-	out = Minv*inp';
+	out = M\inp';
 	out = out';
 	if length(out(:,1))==1
 		if debug_flag == 1
