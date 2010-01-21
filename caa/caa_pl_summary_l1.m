@@ -224,6 +224,19 @@ for cli=1:4
                 clear ok hbias msg
             end
             
+            % Remove saturation
+            for probe=[1 2 3 4]
+                [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
+                if ok
+                    if ~isempty(hbias)
+                        irf_log('proc','blanking probe saturation')
+                        es_tmp = caa_rm_blankt(es_tmp,hbias);
+                    end
+                else irf_log('load',msg)
+                end
+                clear ok hbias msg
+            end
+            
              % Remove whisper pulses    
              [ok,whip,msg] = c_load('WHIP?',cli);
              if ok
