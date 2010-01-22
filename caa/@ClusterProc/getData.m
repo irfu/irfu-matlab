@@ -534,6 +534,7 @@ elseif strcmp(quantity,'dies')
 			irf_log('calb',...
 				irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
 				cl_id,deltaof_max))
+			Del=[0 0]; %#ok<NASGU>
 		else
 			% Always correct p12/p32.
 			% Deprecated behavior: real offset is applied to p12, imaginary to p34.
