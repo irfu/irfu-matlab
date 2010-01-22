@@ -2458,7 +2458,7 @@ elseif strcmp(quantity,'manproblems')
         if (st<int_end && (st+dt)>int_start)
             irf_log('proc',['Setting manual problem:' C{3}{i}]);
             eval([C{3}{i} '=[st st+dt];'])
-            eval('save_list=[save_list C{3}{i}];');
+            eval('save_list=[save_list C{3}{i} '' ''];');
         end
     end
 
