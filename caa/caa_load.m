@@ -16,13 +16,16 @@ dirs = dir;
 old_pwd = pwd;
 for j = 1:numel(dirs)
 	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
-		disp(['loading ' dirs(j).name]);
+        var_name = dirs(j).name;
+        d3 = findstr(var_name,'-');
+        if d3, var_name( d3 ) = '_'; end
+		disp(['loading ' var_name]);
 		try
 			cd(dirs(j).name)
-			eval([dirs(j).name '=dataobj(''*.cdf'');'])
+			eval([var_name '=dataobj(''*.cdf'');'])
 			nloaded = nloaded + 1;
 		catch
-			disp(['error loading ' dirs(j).name]);
+			disp(['error loading ' var_name]);
 		end
 		cd(old_pwd)
 	end
