@@ -2446,7 +2446,7 @@ elseif strcmp(quantity,'manproblems')
         data = []; cd(old_pwd), return
     end
     fid = fopen(f_name);
-    C = textscan(fid, '%s %n %s');
+    C = textscan(fid, '%s %n %1[+-] %s','commentStyle', '%');
     fclose(fid);
     
  	[iso_t,dt] = caa_read_interval;
@@ -2456,9 +2456,39 @@ elseif strcmp(quantity,'manproblems')
         st=iso2epoch(C{1}{i});
         dt=C{2}(i);
         if (st<int_end && (st+dt)>int_start)
-            irf_log('proc',['Setting manual problem:' C{3}{i}]);
-            eval([C{3}{i} '=[st st+dt];'])
-            eval('save_list=[save_list C{3}{i} '' ''];');
+            eval(['[ok,' C{4}{i} ',msg]=c_load(C{4}{i});'])
+            if ~ok %#ok<NODEF>
+                irf_log('load',['Load failed of' C{4}{i}])
+            else irf_log('load',msg)
+            end
+            clear ok hbsa msg
+            if C{3}{i} == '+'
+                irf_log('proc',['Setting manual problem:' C{4}{i}]);
+                eval([C{4}{i} '=[' C{4}{i} ''' [st st+dt]'']'';']);
+                eval('save_list=[save_list C{4}{i} '' ''];');
+            elseif C{3}{i} == '-'
+                irf_log('proc',['Removing manual problem: ' C{4}{i}]);
+                eval(['prob=' C{4}{i} ';'])
+                idx=find(prob(:,1)<st & prob(:,2)>(st+dt));
+                if any(idx)
+                    prob=[prob' [prob(idx,1) st]' [st+dt prob(idx,2)]']';
+                    prob(idx,:)=0;
+                end
+                idx=find(prob(:,1)<st & prob(:,2)>st);
+                if any(idx), prob(idx,2)=st;end
+                idx=find(prob(:,1)<st+dt & prob(:,2)>st+dt);
+                if any(idx), prob(idx,1)=st+dt;end
+                idx=find(prob(:,1)>st & prob(:,2)<st+dt);
+                if any(idx), prob(idx,1:2)=0;end
+                idx=find(prob(:,1) ~= 0);
+                if any(idx), prob=prob(idx,:);
+                else prob=[];
+                end
+                eval([C{4}{i} '=prob;'])
+                eval('save_list=[save_list C{4}{i} '' ''];');
+            else
+                error(['Corrupt manual problems file ' f_name])
+           end
         end
     end
 
