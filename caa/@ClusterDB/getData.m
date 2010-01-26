@@ -154,9 +154,7 @@ end
 % caa_int - write .caa_sh_interval/.caa_ms_interval
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if strcmp(quantity,'caa_int')
-    if exist('/data/caa/l1/mPlan.mat','file'), load '/data/caa/l1/mPlan.mat'
-    else error('No MPlan.mat found')
-    end
+    load mPlan
     [iso_t,dt] = caa_read_interval;
     v_s = ['MPauseY' iso_t(1:4)];
     if ~exist(v_s,'var'), error(['Cannot load ' v_s]), end
