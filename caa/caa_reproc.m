@@ -41,6 +41,7 @@ end
 	
 old_pwd = pwd;
 BASE_DIR = '/data/caa/l1';
+write_caa_reproc=0;
 
 dirs = textread(fname,'%s');
 if isempty(dirs), disp('NO DIRS'), cd(old_pwd), return, end
@@ -67,7 +68,7 @@ for d=1:length(dirs)
 			
 		cd( [BASE_DIR '/' curr_d])
 
-		if ~exist('./.caa_reproc','file') && ( exist('./.caa_sh_interval','file') ...
+		if ~write_caa_reproc || ~exist('./.caa_reproc','file') && ( exist('./.caa_sh_interval','file') ...
 				|| exist('./.caa_ms_interval','file') )
 			cl_id = str2double(curr_d(21));
 			if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
@@ -122,17 +123,19 @@ for d=1:length(dirs)
 				cd(old_pwd), return
 			end
 			
-			lf = '.caa_reproc';
-			fid = fopen(lf,'w');
-			if fid<0
-				irf_log('save',['problem creating ' lf])
-				cd(old_pwd),return
-			end
-			count = fprintf(fid,'%s',epoch2iso(date2epoch(now))); fclose(fid);
-			if count<=0
-				irf_log('save',['problem writing to ' lf])
-				cd(old_pwd), return
-			end
+			if write_caa_reproc
+                lf = '.caa_reproc';
+                fid = fopen(lf,'w');
+                if fid<0
+                    irf_log('save',['problem creating ' lf])
+                    cd(old_pwd),return
+                end
+                count = fprintf(fid,'%s',epoch2iso(date2epoch(now))); fclose(fid);
+                if count<=0
+                    irf_log('save',['problem writing to ' lf])
+                    cd(old_pwd), return
+                end
+            end
 
 		else
 			irf_log('proc',[ '-- SKIPPING -- : ' curr_d]);
