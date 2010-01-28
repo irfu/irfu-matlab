@@ -18,16 +18,20 @@ function caa_update_deltaoff(d,cl_id)
 % ----------------------------------------------------------------------------
 
 DT = 86400*6;
-SY = 2001;
-EY = 2006;
+SY = 2006;
+EY = 2007;
+deltaoff_max=2.0;
+
+d=d(abs(d(:,2)) < deltaoff_max & abs(d(:,3)) < deltaoff_max & abs(d(:,2)) ~=0 & abs(d(:,3)) ~=0 ,:);
 
 d = real(d) - imag(d); % Old style delta offsets (imag is applied to p34)
 ndata = fix((d(end,1)-d(1,1))/DT);
 t = d(1,1):DT:( d(1,1) + DT*ndata ) + DT/2;
 da = irf_resamp(d,t','thresh',.5); %#ok<NASGU>
+da=da(isfinite(da(:,2)) & isfinite(da(:,3)),:);
 
 figure
-h = irf_plot({d,da},'comp','linestyle',{'-','*'});
+h = irf_plot({d,da},'comp','linestyle',{'-','r*'});
 ylabel(h(1),'\Delta Ex [mV/m]')
 ylabel(h(2),'\Delta Ey [mV/m]')
 title(h(1),sprintf('Cluster %d',cl_id))
@@ -45,5 +49,7 @@ set(h(2),'XTick',tt,'XLim',[tt(1) tt(end)],'Ylim',[-2 2],'XTickLabel',ts)
 
 y = irf_ask('Save? yes/no [%]>','y','no');
 if strcmpi(y,'y') || strcmpi(y,'yes')
-	c_eval('DeltaOff?=da; save deltaoff DeltaOff? -append; disp(''DeltaOff? -> deltaoff.mat'')',cl_id)
+	 load deltaoff
+     c_eval('DeltaOff?=[DeltaOff?'' da'']'' ',cl_id);
+     c_eval('save deltaoff DeltaOff? -append; disp(''DeltaOff? -> deltaoff.mat'')',cl_id)
 end
