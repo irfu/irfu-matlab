@@ -242,8 +242,9 @@ end
 if ~isempty(ns_ops)
 %   data_start_time = result(1, 1);
 %   data_time_span = result(end, 1) - data_start_time;
-   ns_ops_intervals = caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_data');
-   
+   ns_ops_intervals = [caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_data')' ...
+                       caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_tm')']';
+  
    if ~isempty(ns_ops_intervals), irf_log('proc', 'marking NS_OPS'), end
    if DEBUG, assignin('base', 'nsopsint', ns_ops_intervals); end
    for k = 1:size(ns_ops_intervals, 1)
