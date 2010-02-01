@@ -1727,8 +1727,14 @@ elseif strcmp(quantity,'hbiassa')
 			if ~isempty(np) && np_tmp == np
 				% Same time lines: no preference for a particular pair
 				sf_probe = [];
-			elseif isempty(np) || np==0 || np_tmp > np
-				sf_probe = probe;
+			elseif probe == 32
+                if isempty(np) || np==0 || np_tmp > (np*1.2)
+                    sf_probe = probe;
+                end
+            else
+                if isempty(np) || np==0 || np_tmp*1.2 > np
+                    sf_probe = probe;
+                end
 			end
 		end
 		np = np_tmp;
