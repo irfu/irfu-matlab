@@ -23,7 +23,7 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2006 07 01 00 00 0]), Ddsi = [ .24      .79 1.90  .57 ]; 
+if     t>=toepoch([2006 07 01 00 00 0]), Ddsi = [ .24      .79 1.70  .57 ]; 
 elseif t>=toepoch([2006 02 01 00 00 0]), Ddsi = [ .40     1.03 2.08  .57 ]; 
 elseif t>=toepoch([2006 01 01 00 00 0]), Ddsi = [ .40     1.13 2.08  .57 ]; 
 elseif t>=toepoch([2005 07 01 00 00 0]), Ddsi = [ .31      .60 .52  .64 ]; % Big jump to 2006-01-01.
@@ -67,7 +67,8 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if     t>=toepoch([2006 01 01 00 0 0]), Ddsi = [ 0.83  1.53 1.68  1.00 ];
+if     t>=toepoch([2006 07 01 00 0 0]), Ddsi = [ 0.83  1.53 1.18  1.00 ];
+elseif t>=toepoch([2006 01 01 00 0 0]), Ddsi = [ 0.83  1.53 1.68  1.00 ];
 elseif t>=toepoch([2005 01 01 00 0 0]), Ddsi = [ 1.26  2.34 1.81  1.37 ];
 elseif t>=toepoch([2004 01 01 00 0 0]), Ddsi = [ 1.35  2.06 1.45  1.15 ];
 elseif t>=toepoch([2003 01 01 00 0 0]), Ddsi = [ 1.42  2.18 1.64  1.43 ];
