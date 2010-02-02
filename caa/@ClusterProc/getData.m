@@ -1342,8 +1342,8 @@ elseif strcmp(quantity,'badbias')
 	
 	% First we check for EFW resets which usually mean bas bias settings
 	% in 2-3 minutes following the reset
-	[ok,efwt] = c_load('EFWT?',cl_id);
-	if ok
+	[efwtok,efwt] = c_load('EFWT?',cl_id);
+	if efwtok
 		c_eval(['BADBIASRESET?=[];'...
 			'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
 				
@@ -1359,7 +1359,7 @@ elseif strcmp(quantity,'badbias')
 		
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
-	clear ok t0 efwt ii
+    clear t0 efwt ii
 	
 	% The reason we remove 300 seconds (DELTA_MINUS) of data before a bad
 	% bias is that we get rid of all the EFW resets in a clean way.
@@ -1379,7 +1379,9 @@ elseif strcmp(quantity,'badbias')
 			continue
 		end
 		
-		% Good & bad points
+		if ~efwtok, if ibias(1,1)>iso2epoch('2006-06-16T00:00:00Z'), GOOD_BIAS = -95; end; end
+        
+        % Good & bad points
 		ii_bad = find(ibias(:,2)>GOOD_BIAS);
 		if isempty(ii_bad)
 			irf_log('dsrc',irf_ssub('Bias current OK on C? p!',cl_id,pro))
@@ -2465,7 +2467,7 @@ elseif strcmp(quantity,'manproblems')
             eval(['[ok,' C{4}{i} ',msg]=c_load(C{4}{i});'])
             if ~ok %#ok<NODEF>
                 irf_log('load',['Load failed of' C{4}{i}])
-            else irf_log('load',msg)
+            else irf_log('load',msg) %#ok<NODEF>
             end
             clear ok hbsa msg
             if C{3}{i} == '+'
