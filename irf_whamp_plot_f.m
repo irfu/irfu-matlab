@@ -12,6 +12,7 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,
 % if pitchangles are given PSD vs velocity are plotted for the given angles.
 % plotoption (optional) 0 - PSD vs V [m/s]
 %			1 - PSD vs E [eV]
+%			2 - F_reduced vs E [eV]
 % title_option: 1 - default title (info on plasma parameters)
 %               0 - no title
 %               string - string as title 
@@ -88,6 +89,8 @@ end
 
 
 f=vp.*0;
+vz_reduced=min([-3*vt(1) -2*vt(1)+vd(1)]):vt(1)/20:max([vt(1)*3 vt(1)*3+vd(1)]);
+F_reduced=vz_reduced.*0; % reduced distribution function
 
 ntot=sum(n)/length(n);	%added DS
 
@@ -112,6 +115,7 @@ for j=1:length(n),
   f=f+1/(pi^(3/2)*(vt(j))^3)*ff.*n(j).*(d(j)/a1(j).*ea1+K.*(ea1-ea2));	%added normalization /DS
   										%f units [s^3/m^6]
 										%f/ntot=f in whamp.
+  F_reduced=F_reduced+1/(pi^(1/2)*vt(j))*exp(-1*(vz_reduced./vt(j)-vd(j)).^2).*n(j);
 end
 
 QJAS_UNITS=0;
@@ -131,7 +135,12 @@ elseif nargin>=8
 		h=loglog(Etot',f');
 		grid on
 		xlabel('Etot [eV]')
-	else
+	elseif plotoption == 2
+		h=loglog(vz_reduced,F_reduced);
+		grid on
+		xlabel('Vz [m/s]')
+		ylabel('F_{reduced} [[m/s]^{-1} m^{-3}]')
+	else % default f(v)
 		h=plot(vtot',f');
 		xlabel('Vtot [m/s]')
 	end
