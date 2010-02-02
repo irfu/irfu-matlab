@@ -248,7 +248,24 @@ for cli=1:4
              end
              clear ok whip msg
            
-            
+             % Remove ns_ops intervals
+             ns_ops = c_ctl('get', cli, 'ns_ops');
+             if isempty(ns_ops)
+                 c_ctl('load_ns_ops', [c_ctl('get', 5, 'data_path') '/caa-control'])
+                 ns_ops = c_ctl('get', cli, 'ns_ops');
+             end
+             if ~isempty(ns_ops)
+                 ns_ops_intervals = [caa_get_ns_ops_int(es_tmp(1,1), es_tmp(end,1)-es_tmp(1,1), ns_ops, 'bad_data')' ...
+                     caa_get_ns_ops_int(es_tmp(1,1), es_tmp(end,1)-es_tmp(1,1), ns_ops, 'bad_tm')']';             
+                 if ~isempty(ns_ops_intervals)
+                     ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
+                     ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
+                     irf_log('proc', 'blanking NS_OPS')
+                     es_tmp = caa_rm_blankt(es_tmp,ns_ops_intervals);
+                 end
+                 clear ns_ops ns_ops_intervals
+             end
+           
             %%% Fill gaps in data???? %%%
             
 
