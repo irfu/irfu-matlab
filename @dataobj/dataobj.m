@@ -85,6 +85,10 @@ switch nargin
 					if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
 					% Replace dots with underscores
 					dobj.vars{v,1}(findstr(dobj.vars{v,1},'.')) = '_';
+                    % Add "x" if the varible name starts with a number
+                    if ~isletter(dobj.vars{v,1}(1)),
+                        dobj.vars{v,1}=['x' dobj.vars{v,1}];
+                    end
 					% Take care of names longer than 63 symbols (Matlab limit) 
 					if length(dobj.vars{v,1})>63
 						dobj.vars{v,1} = dobj.vars{v,1}(1:63);
