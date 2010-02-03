@@ -82,9 +82,13 @@ elseif nargin>=8
 		vvec(I,:)=0:vt(1)/20:10*vt(1);
 		vpvec(I,:)=sin(pitchangles(I)).*vvec(I,:);
 		vzvec(I,:)=cos(pitchangles(I)).*vvec(I,:);
-	end
-	vp=vpvec;
-	vz=vzvec;
+    end
+    vp=vpvec;
+    vz=vzvec;
+    for I=1:length(pitchangles)
+        s = num2str(180/pi*pitchangles(I));
+        M(I)={s};
+    end
 end
 
 
@@ -130,28 +134,29 @@ if nargin<8
 elseif nargin>=8
 	vtot=sqrt(vp.^2+vz.^2);
 %	Etot=1e3*1/3.517388e14*1*vtot.^2;	%normalized to first species, Etot[eV]
-	Etot=(1/e)*mm(j)/2*vtot.^2;	%normalized to first species, Etot[eV]
+	Etot=(1/e)*mm(1)/2*vtot.^2;	%normalized to first species, Etot[eV]
 	if plotoption==1
 		h=loglog(Etot',f');
 		grid on
-		xlabel('Etot [eV]')
-	elseif plotoption == 2
-		h=loglog(vz_reduced,F_reduced);
-		grid on
-		xlabel('Vz [m/s]')
-		ylabel('F_{reduced} [[m/s]^{-1} m^{-3}]')
-	else % default f(v)
-		h=plot(vtot',f');
-		xlabel('Vtot [m/s]')
+        xlabel('Etot [eV]')
+        if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
+        else ylabel('PSD [s^3/m^6]')
+        end
+        legend(M)
+    elseif plotoption == 2
+    	% E_reduced=(1/e)*mm(1)/2*vz_reduced.^2;	%normalized to first species, Etot[eV]
+        h=semilogy(vz_reduced,F_reduced);
+        grid on
+        xlabel('vz_{reduced} [m/s]')
+        ylabel('F_{reduced} [[m/s]^{-1} m^{-3}]')
+    else % default f(v)
+        h=plot(vtot',f');
+        xlabel('Vtot [m/s]')
+        if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
+        else ylabel('PSD [s^3/m^6]')
+        end
+        legend(M)
 	end
-	if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
-	else ylabel('PSD [s^3/m^6]')
-	end
-	for I=1:length(pitchangles)
-		s = num2str(180/pi*pitchangles(I));
-		M(I)={s};
-	end
-	legend(M)
 end
 if exist('title_option','var'),
   if ischar(title_option),
