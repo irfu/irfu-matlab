@@ -692,7 +692,7 @@ elseif regexp(vs,'^PROBESA[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Probe low density saturation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^HBIASSA[1-4]p(12|32|34)$')==1
+elseif regexp(vs,'^HBIASSA[1-4]p([1-4]|12|32|34)$')==1
 	v.data = 0;
 	v.cl_id = vs(8);
 	v.sen = vs(end);
@@ -749,6 +749,8 @@ elseif regexp(vs,'^D[1-4]p12p34$')==1
 	v.inst = 'EFW';
 	v.com = 'Delta offset';
 	v.file = 'mEDSI';
+	v.name = {'Delta offset'};
+	v.labels = v.name;
 	v.units =  {'mV/m'};
 	v.si_conv = {'1.0e-3>V m^-1'};
 	v.quant = 'dies';
