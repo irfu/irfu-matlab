@@ -1457,6 +1457,7 @@ elseif strcmp(quantity,'probesa')
 	% Saturation level nA
 	SA_LEVEL = 66; %#ok<NASGU>
 	SA_LEV_POS = 0; % 0.0 V
+	SA_LEV_POS_2 = 10; % 10.0 V
 	
 	% N_CONST sets the minimum number of points of constant potential
 	% which we consider bad
@@ -1484,20 +1485,26 @@ elseif strcmp(quantity,'probesa')
 	c_eval('sa_int_p?=[];')
 	for pro=1:4
 		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
-		if pro==3 && ~isempty(start_time) && ...
-			start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2
-			
-			sa_int = []; %#ok<NASGU>
-			if ~isempty(ns_ops)
-				sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,'no_p3');
-				if ~isempty(sa_int), irf_log('proc','Found no_p3 in NS_OPS'), end
+		if ~isempty(start_time)
+			if (pro==3 && start_time>toepoch([2001 07 23 00 00 00]) && cl_id==2) || ...
+					(pro==1 && start_time>toepoch([2002 07 29 09 06 59]) && cl_id==3) || ...
+					(pro==1 && start_time>toepoch([2002 12 28 03 02 57]) && cl_id==1) || ...
+					(pro==1 && start_time>toepoch([2007 05 13 03 23 30]) && cl_id==2) || ...
+					(pro==4 && start_time>toepoch([2009 10 14 03 23 30]) && cl_id==1) || ...
+					(pro==4 && start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]) && cl_id==1)
+				sa_int = []; %#ok<NASGU>
+				if ~isempty(ns_ops)
+					probestr=['p' num2str(pro)];
+					sa_int = caa_get_ns_ops_int(start_time,dt,ns_ops,['no_' probestr]);
+					if ~isempty(sa_int), irf_log('proc',['Found no_' probestr ' in NS_OPS']), end
+				end
+				
+				irf_log('dsrc',...
+					irf_ssub('Using fake PROBELD?p!',cl_id,pro));
+				c_eval(['p?=[];sa_int_p?=sa_int;PROBELD' num2str(cl_id) ...
+					'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
+				continue
 			end
-			
-			irf_log('dsrc',...
-				irf_ssub('Using fake PROBELD?p!',cl_id,pro));
-			c_eval(['p?=[];sa_int_p?=sa_int;PROBELD' num2str(cl_id) ...
-				'p?=[];save_list=[save_list '' PROBELD' num2str(cl_id) 'p? ''];'],pro);
-			continue
 		end
 		if ~ok
 			irf_log('load',	irf_ssub('Cannot load P10Hz?p!',cl_id,pro))
@@ -1530,10 +1537,11 @@ elseif strcmp(quantity,'probesa')
 		c_eval('p?=p;',pro)
 	end
 	
-	% Points below SA_LEVEL should be excluded from E, but not from
-	% P ans they atill contain valuable physical information.
-	% This is not the case with points with positive and/or 
-	% constant potential (latched probe).
+	% Points below SA_LEVEL should be flagged as PROBELD.
+	% This is excluded from E (NaN + flag), but not from P
+	% as they still contain valuable physical information.
+	% Points with positive potential should be flagged HBIASSA,
+	% and flagged in E (but not excluded).
 	
 	% Bad points are points below SA_LEVEL
 	c_eval(['if isempty(p?),ii_bad?=[];ii_god?=[];else,'...
@@ -1581,7 +1589,7 @@ elseif strcmp(quantity,'probesa')
 		end
 		
 		if isempty(ii_god) %#ok<NODEF>
-			c_eval(['PROBELD' num2str(cl_id) ...
+			 c_eval(['PROBELD' num2str(cl_id) ...
 				'p?=[double(p(1,1))'' double(p(end,1))''];'...
 				'PROBESA' num2str(cl_id) 'p?=sa_int_p?;'...
 				'save_list=[save_list '' PROBELD' num2str(cl_id) ...
@@ -1604,6 +1612,8 @@ elseif strcmp(quantity,'probesa')
 		clear ii_god ii_bad p
 	end
 	
+	% Points with constant potential (latched probe) or potential > 10 V should be flagged
+	% PROBESA, and excluded from E and P.
 	for pro=1:4
 		c_eval(['p=p?;if ~isempty(p), ldsa = PROBELD' num2str(cl_id) 'p?; end'],pro)
 		if isempty(p), continue, end
@@ -1617,8 +1627,8 @@ elseif strcmp(quantity,'probesa')
 		end
 		
 		% Bad points are points with positive and/or constant potential
-		ii_bad = find( p(:,2) >=SA_LEV_POS );
-		ii_god = find( p(:,2) < SA_LEV_POS );
+		ii_bad = find( p(:,2) >=SA_LEV_POS_2 );
+		ii_god = find( p(:,2) < SA_LEV_POS_2 );
 		if isempty(ii_god)
 			c_eval(['PROBESA' num2str(cl_id) ...
 				'p?=[sa_int_p?; double(p(1,1))'' double(p(end,1))''];'...
@@ -1673,6 +1683,52 @@ elseif strcmp(quantity,'probesa')
 			clear ii res
 		end
 	end
+	
+	% Points with positive potential should be flagged HBIASSA.
+	% Note that this will be something like HBIASSA3p4, rather
+	% than the HBIASSA3p34 that would be written by the hbiassa routines.
+	for pro=1:4
+		c_eval('p=p?;',pro)
+		if isempty(p)
+			c_eval(['HBIASSA' num2str(cl_id) 'p?=[];'...
+				'save_list=[save_list '' HBIASSA' num2str(cl_id) 'p? ''];'],pro);
+			continue
+		end	
+		
+		% Bad points are points with positive potential
+		ii_bad = find( p(:,2) >=SA_LEV_POS );
+		ii_god = find( p(:,2) < SA_LEV_POS );
+		if isempty(ii_god)
+			c_eval(['HBIASSA' num2str(cl_id) ...
+				'p?=[double(p(1,1)) double(p(end,1))];'...
+				'save_list=[save_list '' HBIASSA' num2str(cl_id) 'p? ''];'],pro);
+		else
+			p(ii_god,2) = 1;
+			p(ii_bad,2) = 0; %#ok<FNDSB>
+			ii = irf_find_diff(p(:,2));
+			if p(1,2)==0, ii = [1; ii]; end %#ok<AGROW>
+			if p(end,2)==0, ii = [ii; length(p(:,2))]; end %#ok<AGROW>
+			ii = reshape(ii,2,length(ii)/2);
+			
+			% We add DT_PLUMIN sec on each side and check for overlapping intervals
+			res = [p(ii(1,:))-DT_PLUMIN; p(ii(2,:)-1)+DT_PLUMIN]';
+			if length(ii(1,:))>1
+				pos = 1;
+				while 1
+					if res(pos,2)+DT_PLUMIN>=res(pos+1,1)
+						res(pos,2) = res(pos+1,2);
+						res(pos+1,:) = [];
+					end
+					pos = pos + 1;
+					if pos>=size(res,1), break, end
+				end
+			end
+			c_eval(['HBIASSA' num2str(cl_id) 'p?=res;'...
+			'save_list=[save_list '' HBIASSA' num2str(cl_id) 'p? ''];'],pro);
+			clear ii res
+		end
+	end
+	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HBIASSA - saturation due to high bias current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
@@ -1718,6 +1774,16 @@ elseif strcmp(quantity,'hbiassa')
 		end
 		
 		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
+		
+		% Append single-ended high bias saturation intervals from probesa
+		for single_probe=[mod(probe,10) floor(probe/10)]
+			sp_name=irf_ssub('HBIASSA?p!',cl_id,single_probe);
+			[ok, sp_hbiassa] = c_load(sp_name);
+			if ok && ~isempty(sp_hbiassa)
+				irf_log('proc',['Appending ' sp_name ' to ' irf_ssub('HBIASSA?p!',cl_id,probe)])
+				HBIASSA=[HBIASSA' sp_hbiassa']';
+			end
+		end
 		
 		% Check which of the probe pairs is more affected by saturation
 		if ~isempty(HBIASSA)
@@ -2484,11 +2550,11 @@ elseif strcmp(quantity,'manproblems')
                         prob(idx,:)=0;
                     end
                     idx=find(prob(:,1)<st & prob(:,2)>st);
-                    if any(idx), prob(idx,2)=st;end
+                    if any(idx), prob(idx,2)=st;end %#ok<AGROW>
                     idx=find(prob(:,1)<st+dt & prob(:,2)>st+dt);
-                    if any(idx), prob(idx,1)=st+dt;end
+                    if any(idx), prob(idx,1)=st+dt;end %#ok<AGROW>
                     idx=find(prob(:,1)>st & prob(:,2)<st+dt);
-                    if any(idx), prob(idx,1:2)=0;end
+                    if any(idx), prob(idx,1:2)=0;end %#ok<AGROW>
                     idx=find(prob(:,1) ~= 0);
                     if any(idx), prob=prob(idx,:);
                     else prob=[];
