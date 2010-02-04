@@ -12,7 +12,7 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,
 % if pitchangles are given PSD vs velocity are plotted for the given angles.
 % plotoption (optional) 0 - PSD vs V [m/s]
 %			1 - PSD vs E [eV]
-%			2 - F_reduced vs E [eV]
+%			2 - F_reduced vs V_z [m/s] - sum_j m_1/m_j*F_j(V_z)
 % title_option: 1 - default title (info on plasma parameters)
 %               0 - no title
 %               string - string as title 
@@ -119,7 +119,7 @@ for j=1:length(n),
   f=f+1/(pi^(3/2)*(vt(j))^3)*ff.*n(j).*(d(j)/a1(j).*ea1+K.*(ea1-ea2));	%added normalization /DS
   										%f units [s^3/m^6]
 										%f/ntot=f in whamp.
-  F_reduced=F_reduced+1/(pi^(1/2)*vt(j))*exp(-1*(vz_reduced./vt(j)-vd(j)).^2).*n(j);
+  F_reduced=F_reduced+(mm(1)/mm(j))/(pi^(1/2)*vt(j))*exp(-1*(vz_reduced./vt(j)-vd(j)).^2).*n(j);
 end
 
 QJAS_UNITS=0;
