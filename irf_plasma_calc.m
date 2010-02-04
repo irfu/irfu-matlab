@@ -223,11 +223,7 @@ end
 disp(sprintf('\nPlasma dimensionless parameters\n'))
 
 beta  = Vtp^2/Va^2;
-
-if beta < 10/Mp_Me
-    disp(sprintf('beta*Mp_Me = %1.5f',Vtp^2/Va^2*Mp_Me))
-else
-    disp(sprintf('beta  = %1.5f',Vtp^2/Va^2))
-end
+disp(sprintf('beta  = %1.5f',Vtp^2/Va^2))
+disp(sprintf('beta*Mp_Me = %1.5f',Vtp^2/Va^2*Mp_Me))
 
 if nargout>0, Fpe_out = Fpe; end
