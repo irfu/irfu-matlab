@@ -2187,7 +2187,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 	% Try to use BPP as a backup
 	if bad_coverage
 		BPP_tmp = c_load('BPP?',cl_id,'var');
-		if isempty(BPP_tmp)
+		if length(BPP_tmp) < 8
 			% Use FR data if there is any (cover != 0)
 			if cover==0
 				irf_log('load','Cannot load B. Please load B FGM or B PP.')
