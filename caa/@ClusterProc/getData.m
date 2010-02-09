@@ -2536,12 +2536,14 @@ elseif strcmp(quantity,'manproblems')
         st=iso2epoch(C{1}{i});
         dt=C{2}(i);
         if (st<int_end && (st+dt)>int_start)
-            eval(['[ok,' C{4}{i} ',msg]=c_load(C{4}{i});'])
-            if ~ok %#ok<NODEF>
-                irf_log('load',['Load failed of ' C{4}{i}])
-            else irf_log('load',msg) %#ok<NODEF>
-            end
-            clear ok hbsa msg
+			if ~exist(C{4}{i},'var')
+				eval(['[ok,' C{4}{i} ',msg]=c_load(C{4}{i});'])
+				if ~ok %#ok<NODEF>
+					irf_log('load',['Load failed of ' C{4}{i}])
+				else irf_log('load',msg) %#ok<NODEF>
+				end
+				clear ok hbsa msg
+			end
             if C{3}{i} == '+'
                 irf_log('proc',['Setting manual problem:' C{4}{i}]);
                 eval([C{4}{i} '=[' C{4}{i} ''' [st st+dt]'']'';']);
