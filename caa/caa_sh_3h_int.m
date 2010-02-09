@@ -31,7 +31,7 @@ eval([ 'ORB=' v_s ';'])
 irf_log('proc',['creating 3h intervals for ' epoch2iso(st,1) ' -- ' ...
 	epoch2iso(et,1)])
 
-ORB = ORB(ORB(:,1)>=st & ORB(:,1)<et, :);
+ORB = ORB((ORB(:,1)+ORB(:,2))>=st & ORB(:,1)<et, :);
 if isempty(ORB), error('no ORB for the requested interval'), end
 
 MP = [];
