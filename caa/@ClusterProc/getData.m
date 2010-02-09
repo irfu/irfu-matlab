@@ -2294,7 +2294,13 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 			end
 		end
 		clear res signal problems probe
-		if ~n_ok, data = []; cd(old_pwd), return, end
+		if ~n_ok
+			data = [];
+			irf_log('proc','No P data remaining after blanking.')
+			if exist(save_file,'file'), delete(save_file); end
+			cd(old_pwd);
+			return
+		end
 	end
 	
 	if flag_rmwhip
