@@ -179,6 +179,7 @@ switch action,
         v3_str=['v3=[' num2str(v(3,:),'%6.2f') '] \newline'];
         v_str=[v1_str v2_str v3_str];
         set(ud.result_text,'string',[l_str lratio_str v_str],'verticalalignment','top');
+        % disp(l_str);disp(lratio_str);disp(v1_str);disp(v2_str);disp(v3_str);
         irf_minvar_gui('update_mva_axis');
 end
 
