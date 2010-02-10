@@ -1,9 +1,12 @@
 function h = c_peace_plot(hin,peace_spec,i_spectra)
 %C_PEACE_PLOT  plot standard PEACE spectrograms (parallel, perp, antiparallel, ..)
 %
+% h = c_peace_plot(peace_spec)
 % h = c_peace_plot(peace_spec,i_spectra)
+% h = c_peace_plot(hin,peace_spec,i_spectra)
 %
 % Input: 
+%        hin: handle of panels in which to plot
 %     peace_spec: PEACE spectrograms
 %     i_spectra: the number of spectra to plot
 %               if 0 line-plot angles, if -1 plot all 
@@ -28,7 +31,7 @@ else
 end
 
 if i_spectra==-1,
-    i_spectra=1:length(peace_spec.p);
+    i_spectra=length(peace_spec.p):-1:1;
 end
 
 nsubplots=length(i_spectra);
