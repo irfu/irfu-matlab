@@ -23,7 +23,8 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95  .13 ]; % very approximate due to high-speed solar wind streams
+if     t>=toepoch([2007 02 01 00 00 0]), Ddsi = [-0.08     .46 1.65  .13 ]; % very approximate due to high-speed solar wind streams
+elseif t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95  .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2006 10 01 00 00 0]), Ddsi = [ .24      .79 2.08  .57 ]; 
 elseif t>=toepoch([2006 07 01 00 00 0]), Ddsi = [ .24      .79 1.70  .57 ]; 
 elseif t>=toepoch([2006 02 01 00 00 0]), Ddsi = [ .40     1.03 2.08  .57 ]; 
