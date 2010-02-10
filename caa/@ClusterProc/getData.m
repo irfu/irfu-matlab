@@ -799,10 +799,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				if size(e12,1)>size(e34,1)
 					irf_log('proc',['Setting Ep34 to 0, except for '...
 						num2str(length(ii12)) ' data points'])
-					E_info.probe = '12';
+					E_info.probe = p12;
                     e34_tmp = e12;
 					e34_tmp(~isnan(e12(:,2)),2) = 0;
-					e34_tmp(ii12,2) = e34(ii34);
+					e34_tmp(ii12,2) = e34(ii34,2);
 					e34 = e34_tmp;
 					clear e34_tmp
 				else
@@ -811,7 +811,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					E_info.probe = '34';
                     e12_tmp = e34;
 					e12_tmp(~isnan(e34(:,2)),2) = 0;
-					e12_tmp(ii34,2) = e12(ii12);
+					e12_tmp(ii34,2) = e12(ii12,2);
 					e12 = e12_tmp;
 					clear e12_tmp
 				end
