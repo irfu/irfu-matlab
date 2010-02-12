@@ -20,6 +20,25 @@ elseif   (nargin < 9)                   , action='initialize';
 end
 
 if strcmp(action,'initialize'),
+  if nargin<1, help c_pl_sc_conf_xyz;return;end
+  if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
+  ok=c_load('R?');
+  if  min(ok) == 1,
+      switch coord_label
+          case {'GSE','gse'}
+              c_eval('r?=R?;clear R?;');
+          case {'GSM','gsm'}
+              c_eval('r?=irf_gse2gsm(R?);clear R?;');
+      end
+  else
+      irf_log('fcal','No position data available');return;
+  end
+  t=time;
+
+  % See if spacecraft configuration XYZ figure is open
+  ch = get(0,'ch');indx=[];
+  if ~isempty(ch),
+=======
     if nargin<1, help c_pl_sc_conf_xyz;return;end
     if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
     ok=c_load('R?');
