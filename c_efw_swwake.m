@@ -1,13 +1,14 @@
-function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotflag)
+function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotflag,extraparams)
 %C_EFW_SWWAKE  Correct raw EFW E data for wake in the solar wind
 %
-% [data, n_spins_corrected,w_dsc] = c_efw_swwake(e,pair,phase_2,[whip,plotflag])
+% [data, n_spins_corrected,w_dsc] = c_efw_swwake(e,pair,phase_2,[whip,plotflag,extraparams])
 %
 % Input:
 %   e        - raw EFW data (wE?p12/34)
 %   pair     - probe pair (12/34/32)
 %   phase_2  - Phase 2
 %   plotflag - 0 no plotting of debug 
+%   extraparams - Extra parameters to override the default settings.
 %
 % Output:
 %   data - corrected data
@@ -20,6 +21,10 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 %
 % This program was written in order to improve quality of the EFW data
 % in the solar wind for the CAA.
+%
+% extrparams, if used, should be a cell array of strings containing the
+% names of the parameters to override followed by their value. For example:
+%   extraparams={'DEBUG','1','WAKE_MAX_HALFWIDTH','30','MAX_SPIN_PERIOD','4.8'}
 %
 % $Id$
 
@@ -35,7 +40,8 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 
 DEBUG=1;
 
-error(nargchk(3,5,nargin))
+error(nargchk(3,6,nargin))
+if nargin<6,extraparams=[]; end
 if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end
 
@@ -57,6 +63,13 @@ WAKE_MIN_AMPLITUDE = 0.4; % mV/m
 WAKE_MAX_AMPLITUDE = 7; % mV/m
 plot_step = 1;
 plot_i = 0;
+
+for i=1:2:length(extraparams)
+	irf_log('proc','blanking Whisper pulses')
+	irf_log('proc',['extra parameter to c_efw_swwake: ' extraparams{i} ' = ' extraparams{i+1} ';'])
+	eval([extraparams{i} ' = ' extraparams{i+1} ';']);
+end
+
 data_corr = e;
 if ~isempty(whip)
 	irf_log('proc','blanking Whisper pulses')
