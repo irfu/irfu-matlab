@@ -63,12 +63,15 @@ function data = getData(cp,cl_id,quantity,varargin)
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
 %
-% General options - one of the following:
+% General options:
 %       nosave : do no save on disk
-%       rmwake : remove wakes
-%       withwhip : do not remove time intervals with Whisper pulses
-%       rmwhip : remove time intervals with Whisper pulses
+%       rmwhip/withwhip : do/do not remove time intervals with Whisper pulses
+%            (affects dies,die,dief,diespec,dieburst,hbiassa,rawspec,p,pburst)
+%
+% Specific options:
+%       rmwake : remove wakes (affects edb,edbs,iedb,iedbs)
 %       rmhbsa : remove saturation due to high bias current
+%                 (affects dies,die,dief,diespec,dieburst)
 %       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
 %           compute the offset (affects 'die')
 %       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
@@ -77,6 +80,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %       check_caa_sh_interval - check for .caa_sh_interval/.caa_ms_interval.
 %           'ec|vce' only processed if .caa_sh_interval found. correct_sw_wake flag set if needed.
 %           'brs|edi|wake' only processed if .caa_ms_interval found.
+%       ec_extraparams : extra paramters to pass to c_efw_swwake (affects ec)
 %
 % See also C_GET, C_CTL
 %
@@ -105,6 +109,7 @@ sfit_ver = -1;
 correct_sw_wake = 0;
 flag_wash_p32 = 1;
 check_caa_sh_interval=0;
+ec_extraparams = [];
 
 CAA_MODE = c_ctl(0,'caa_mode');
 
@@ -180,6 +185,15 @@ while have_options
         correct_sw_wake = 1;
     case 'check_caa_sh_interval'
         check_caa_sh_interval = 1;
+	case 'ec_extraparams'
+		if length(args)>1
+			if iscell(args{2})
+				ec_extraparams = args{2};
+				l = 2;
+            else irf_log('fcal,','wrongArgType : ec_extraparams must be a cell array')
+			end
+        else irf_log('fcal,','wrongArgType : ec_extraparams value is missing')
+		end		
     otherwise
 		irf_log('fcal,',['Option ''' args{1} '''not recognized'])
 	end
@@ -261,7 +275,7 @@ if strcmp(quantity,'ec')
 		if correct_sw_wake
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
-			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip); %#ok<NASGU,ASGLU>
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip,0,ec_extraparams); %#ok<NASGU,ASGLU>
 			
 			if n_corrected>0
 				eval(irf_ssub(...

@@ -159,7 +159,9 @@ while have_options
 			case 'noproc'
 				doproc = 0; l = 1;
             case 'check_caa_sh_interval'
-                argsProc = [{'check_caa_sh_interval'} argsProc];
+                argsProc = [{'check_caa_sh_interval'} argsProc]; %#ok<AGROW>
+            case 'ec_extraparams'
+                argsProc = [argsProc {'ec_extraparams'} args(2)]; %#ok<AGROW>
 			otherwise
 				irf_log('fcal',...
 					['Option ''' args{1}...
