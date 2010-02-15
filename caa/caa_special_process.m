@@ -60,7 +60,7 @@ function run_special_processing(st,et,cli,cmd)
 		cd(dirs{i});
 		irf_log('proc',['dir: ' pwd])
 		irf_log('proc',['cmd: ' cmd])
-		%eval(cmd);
+		eval(cmd);
 	end
 	cd(old_pwd);
 end
