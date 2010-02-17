@@ -237,15 +237,15 @@ elseif strcmp(quantity,'dsc')
 			l = length(jump_flag);
 			if count_good == 0
 				% The previous point was also different
-				t_start_save(l+1) = t(i);
-				dsc_save(:,l+1) = dsc(dsc_is,i);
-				jump_flag(l+1) = 1;
+				t_start_save(l+1) = t(i); %#ok<AGROW>
+				dsc_save(:,l+1) = dsc(dsc_is,i); %#ok<AGROW>
+				jump_flag(l+1) = 1; %#ok<AGROW>
 				n_jumpy = n_jumpy + 1;
 			else
 				% Save a good interval
-				t_start_save(l+1) = t_st;
-				dsc_save(:,l+1) = dsc_good(dsc_is);
-				jump_flag(l+1) = 0;
+				t_start_save(l+1) = t_st; %#ok<AGROW>
+				dsc_save(:,l+1) = dsc_good(dsc_is); %#ok<AGROW>
+				jump_flag(l+1) = 0; %#ok<AGROW>
 				n_good = n_good + 1;
 				irf_log('dsrc',['Saving good from ' ...
 					epoch2iso(t_st,1) '-' epoch2iso(t_end,1)])
@@ -292,11 +292,23 @@ elseif strcmp(quantity,'ibias')
 	probe_list = 1:4;
 	p_ok = [];
 	
-	% Check for p1 problems on SC1 and SC3
-	if (start_time>toepoch([2001 12 28 03 00 00]) && cl_id==1) || ...
-		(start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3)
+	% Check for p1 problems on SC2,3
+	if (start_time>toepoch([2002 07 29 09 06 59 ]) && cl_id==3) || ...
+		(start_time>toepoch([2007 05 13 03 23 30]) && cl_id==2)
 		probe_list = 2:4;
 		irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+	end
+	
+	% Check for p1, p4 problems on SC1
+	if cl_id==1
+		if start_time > toepoch([2009 10 14 03 23 30]) || ...
+		   (start_time > toepoch([2009 04 19 00 00 00]) && start_time < toepoch([2009 05 07 00 00 00]))
+			probe_list = 2:3;
+			irf_log('dsrc',sprintf('p1 and p4 are BAD on sc%d',cl_id));
+		elseif start_time>toepoch([2001 12 28 03 00 00])
+			probe_list = 2:4;
+			irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+		end
 	end
 	
 	for probe=probe_list;
@@ -442,41 +454,60 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 	
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	pl = [12,34];
-	if ( (cl_id==1 || cl_id==3) && (start_time>toepoch([2003 9 29 00 27 0]) || ...
-		(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
-		(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
-		(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) ) ) || ...
-		( cl_id==2 && start_time>toepoch([2007 11 27 00 00 0]) ) % XXX: exact time TBC
-		
-		% FSW 2.4 (2.5 for C2) Use P32 instead of P12
-		pl = [32, 34];
-		irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
-		
-	elseif (cl_id==1 && start_time>toepoch([2001 12 28 03 00 00])) || ...
-			(cl_id==3 && start_time>toepoch([2002 07 29 09 06 59])) || ...
-			(cl_id==2 && start_time>toepoch([2007 05 13 03 23 48]))
-		
-		% p1 problems on SC1, SC3 and SC2
-		pl = 34;
-		irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
-    elseif ( cl_id == 1 && ...
-            ( (start_time>=toepoch([2001 04 12 03 00 00]) && start_time<toepoch([2001 04 12 06 00 00])) || ...
-            (  start_time>=toepoch([2001 04 14 06 00 00]) && start_time<toepoch([2001 04 16 15 00 00])) || ...
-            (  start_time>=toepoch([2001 04 18 03 00 00]) && start_time<toepoch([2001 04 20 09 00 00])) || ...
-            (  start_time>=toepoch([2001 04 21 21 00 00]) && start_time<toepoch([2001 04 22 03 00 00])) || ...
-            (  start_time>=toepoch([2001 04 23 09 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) ) ) || ...
-            (cl_id==2 && ...
-            ( (start_time>=toepoch([2001 04 09 21 00 00]) && start_time<toepoch([2001 04 10 06 00 00])) || ...
-            (  start_time>=toepoch([2001 04 10 09 00 00]) && start_time<toepoch([2001 04 19 15 00 00])) || ...
-            (  start_time>=toepoch([2001 04 20 03 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) || ...
-            (  start_time>=toepoch([2001 04 24 00 00 00]) && start_time<toepoch([2001 04 24 15 00 00])) ) )
-        % The bias current is a bit too large 
-        % on p3 and p4 on C1&2 in April 2001. 
-        % Ignore p3, p4 and p34 and only use p1, p2 and p12.
-        % Use only complete 3-hour intervals to keep it simple.
-        pl = 12;
-        irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
+	switch cl_id
+		case 1
+			if start_time>toepoch([2009 10 14 03 23 30]) ||  ...
+					(start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
+				pl = 32;
+				irf_log('dsrc',sprintf('            !Only p32 exists on sc%d',cl_id));
+			elseif (start_time>toepoch([2003 9 29 00 27 0]) || ...
+					(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
+					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
+					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) )
+				pl = [32, 34];
+				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+			elseif start_time>toepoch([2001 12 28 03 00 00])
+				pl = 34;
+				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+			elseif  (start_time>=toepoch([2001 04 12 03 00 00]) && start_time<toepoch([2001 04 12 06 00 00])) || ...
+					(  start_time>=toepoch([2001 04 14 06 00 00]) && start_time<toepoch([2001 04 16 15 00 00])) || ...
+				    (  start_time>=toepoch([2001 04 18 03 00 00]) && start_time<toepoch([2001 04 20 09 00 00])) || ...
+					(  start_time>=toepoch([2001 04 21 21 00 00]) && start_time<toepoch([2001 04 22 03 00 00])) || ...
+					(  start_time>=toepoch([2001 04 23 09 00 00]) && start_time<toepoch([2001 04 23 15 00 00]))
+				% The bias current is a bit too large
+				% on p3 and p4 on C1&2 in April 2001.
+				% Ignore p3, p4 and p34 and only use p1, p2 and p12.
+				% Use only complete 3-hour intervals to keep it simple.
+				pl = 12;
+				irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
+			end
+		case 2
+			if start_time>toepoch([2007 11 24 15 40 0])
+				pl = [32, 34];
+				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+			elseif start_time>toepoch([2007 05 13 03 23 48])
+				pl = 34;
+				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+			elseif (start_time>=toepoch([2001 04 09 21 00 00]) && start_time<toepoch([2001 04 10 06 00 00])) || ...
+					(  start_time>=toepoch([2001 04 10 09 00 00]) && start_time<toepoch([2001 04 19 15 00 00])) || ...
+					(  start_time>=toepoch([2001 04 20 03 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) || ...
+					(  start_time>=toepoch([2001 04 24 00 00 00]) && start_time<toepoch([2001 04 24 15 00 00]))
+				pl = 12;
+				irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
+			end
+		case 3
+			if start_time>toepoch([2003 9 29 00 27 0]) || ...
+					(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
+					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
+					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) 
+				pl = [32, 34];
+				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+			elseif start_time>toepoch([2002 07 29 09 06 59])
+				pl = 34;
+				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+			end
 	end
+
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
 	p_ok = [];
@@ -492,7 +523,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 			end
 			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
 				'efw', 'E', ['p' num2str(probe)], param, tmmode);
-			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
+			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp %#ok<AGROW>
 		end
 		if ~isempty(data)
 			% Correct start time of the burst
@@ -545,7 +576,12 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	switch cl_id
 		case 1
-			if start_time>toepoch([2001 12 28 03 00 00]) 
+			if start_time>toepoch([2009 10 14 03 23 30]) || ...
+					(start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
+				% p1 and p4 failure
+				probe_list = 2:3;
+				irf_log('dsrc',sprintf('p1 and p4 are BAD on sc%d',cl_id))
+			elseif start_time>toepoch([2001 12 28 03 00 00]) 
 				% p1 failure
 				probe_list = 2:4;
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
@@ -566,10 +602,10 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				% We use 180 Hz filter
 				if ~do_burst, param={'180Hz'}; end
 				irf_log('dsrc',sprintf('using 180Hz filter on sc%d',cl_id))
-				probe_list = 2:4;
+				probe_list = [2 4];
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
 			elseif start_time>=toepoch([2007 05 13 03 23 48])
-				probe_list = 2:4;
+				probe_list = [2 4];
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
 			elseif start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
 				% 10Hz filter problem on C2 p3
@@ -610,7 +646,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				end
 				[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
 					'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
-				t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp
+				t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp %#ok<AGROW>
 			end
 
 			if ~isempty(data)
@@ -972,7 +1008,7 @@ elseif strcmp(quantity,'wbdwf')
 	try
 		wf = c_wbd_read(start_time, dt, cl_id);  %#ok<NASGU>
 		c_eval('wfWBD?=wf; save_list=[save_list '' wfWBD? ''];',cl_id);
-	catch
+	catch %#ok<CTCH>
 		out_data = [];
 	end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1001,7 +1037,7 @@ end %main QUANTITY
 
 % saving
 % If flag_save is set, save variables to specified file
-if flag_save==1 && ~isempty(save_list) && length(save_file)>0
+if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
 	irf_log('save',[save_list ' -> ' save_file])
 	if exist(save_file,'file')
 		eval(['save -append ' save_file ' ' save_list]);
