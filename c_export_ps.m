@@ -67,7 +67,8 @@ end
 old_pwd=pwd;
 cd(sp)
 if nargin<1
-	ud=get(1,'userdata');
+    figs=get(0,'children');if length(figs)<4,sc_list=figs;end
+	ud=get(figs(1),'userdata');
 	if isfield(ud,'t_start_epoch'), st=ud.t_start_epoch;
 	else error('please specify ts')
 	end
@@ -75,7 +76,7 @@ else
 	if ischar(st), st = iso2epoch(st); end
 end
 
-for cl_id=sc_list
+for cl_id=sc_list(:)'
 	figure(cl_id)
 	orient tall
 	fn = sprintf('EFW_C%d_%s%s',cl_id,irf_fname(st),suf);
