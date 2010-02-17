@@ -24,6 +24,8 @@ elseif   (nargin < 9),plot_type='default';action='initialize';
 end
 if nargin==4, sc_list=spacecraft;
 elseif ~exist('sc_list') sc_list=1:4;
+else 
+    if isempty(sc_list), sc_list=1:4;end
 end
 
 if strcmp(action,'initialize'),
