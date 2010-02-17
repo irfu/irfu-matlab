@@ -4,6 +4,8 @@ function h=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 %   h = C_PL_SC_CONF_XYZ;
 %   h = C_PL_SC_CONF_XYZ(t);
 %   h = C_PL_SC_CONF_XYZ(t,coord_sys);
+%   h = C_PL_SC_CONF_XYZ(t,coord_sys,flag);
+%   h = C_PL_SC_CONF_XYZ(t,coord_sys,flag,spacecraft);
 %   t  - time in isdat epoch
 % coord_sys - 'GSE' or 'GSM', default is 'GSE'
 % flag - 'default','compact'(to make a compact plot with double axis)
