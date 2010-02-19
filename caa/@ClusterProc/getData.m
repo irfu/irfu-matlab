@@ -827,6 +827,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					e12_tmp(~isnan(e34(:,2)),2) = 0;
 					e12_tmp(ii34,2) = e12(ii12,2);
 					e12 = e12_tmp;
+					flag_wash_p32=0;
 					clear e12_tmp
 				end
 				irf_log('proc','using one probe pair some part of the interval')
