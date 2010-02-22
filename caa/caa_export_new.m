@@ -463,16 +463,18 @@ for dd = 1:length(dirs)
    
    if isempty(result), result = data;
    else
-       t = result(:,1);
-       tapp = data(:,1);
-       
-       if tapp(1) <= t(end)
-           irf_log('proc',sprintf('Last point in data is %f seconds before first point in appended data',t(end)-tapp(1)))
-           irf_log('proc',sprintf('   Last point in data: %s',epoch2iso(t(end))))
-           irf_log('proc',sprintf('   Attempt to append interval %s to %s',epoch2iso(tapp(1)),epoch2iso(tapp(end))))
-           data = irf_tlim(data,tapp(1),t(end),1);
-       end
-       
+	   if ~isempty(data)
+		   t = result(:,1);
+		   tapp = data(:,1);
+		   
+		   if tapp(1) <= t(end)
+			   irf_log('proc',sprintf('Last point in data is %f seconds before first point in appended data',t(end)-tapp(1)))
+			   irf_log('proc',sprintf('   Last point in data: %s',epoch2iso(t(end))))
+			   irf_log('proc',sprintf('   Attempt to append interval %s to %s',epoch2iso(tapp(1)),epoch2iso(tapp(end))))
+			   data = irf_tlim(data,tapp(1),t(end),1);
+		   end
+	   end
+	   
        if ~isempty(data)
            result = [result; data];
        end
