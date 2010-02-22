@@ -68,7 +68,7 @@ end
 function out=isISOtime(s)
   out=0;
   if length(s) < 19, return, end
-  if length(s) > 25, return, end
+  if length(s) > 30, return, end
   a = sscanf(s,'%4d-%2d-%2dT%2d:%2d:%fZ');
   if length(a) ~= 6, return, end
   if a(1) < 1900 || a(1) > 2100, return, end
