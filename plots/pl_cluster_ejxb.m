@@ -1,4 +1,4 @@
-function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flagEdotB,sc_list)
+function [Blnm1,h]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flag_EdotB,sc_list)
 % function [Blnm]=pl_cluster_ejxb(tint,Vmp,L,Nsign,flagEdotB,sc_list)
 %
 % Magnetic field in LMN
@@ -49,7 +49,7 @@ Te1=irf_ask('Electron energy Te?[%]>','Te1',1);
 n_coef=irf_ask('Density correction factor [%]>','n_coef',1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Load data
+%% Load data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 c_load('B?',sc_list);
 c_load('diB?',sc_list);
@@ -64,12 +64,13 @@ M=cross(L,N);L=cross(N,M);
 N=N./norm(N);M=M./norm(M);L=L./norm(L);
 
 v=-Vmp; % velocity of sc with respect to discontinuity
-dt =c_v([tint(1) Vmp]); dt = dt - dt(2);
+dt =c_v([tint(1) Vmp]); dt = dt - dt(3);
 
 tint_data=tint+[min(dt) max(dt)];
 c_eval('B?=irf_tlim(irf_abs(B?),tint_data);',sc_list);
 c_eval('diB?=irf_tlim(diB?,tint_data);',sc_list);
 c_eval('dvE?=irf_tlim(diE?p1234,tint_data);',sc_list);
+c_eval('dvE?=irf_filt(dvE?,0,20);',sc_list);
 
 if flag_EdotB==1,
   c_eval('[dvE?,d?]=irf_edb(dvE?,diB?,10);',sc_list);
@@ -86,8 +87,9 @@ if flag_EdotB==1,
   c_eval('dEn?=irf_dot(dvE?,dN?);dEm?=irf_dot(dvE?,dM?);',sc_list);
 end
 
-c_eval('[j?]=irf_jz(v,B?);jz?=irf_dot(j?,irf_norm(B?));jtot?=irf_abs(j?,1);jperp?=jz?;jperp?(:,2)=sqrt(jtot?.^2-jz?(:,2).^2);',sc_list);
+c_eval('Bf?=irf_filt(B?,0,10);[j?]=irf_jz(v,Bf?);jz?=irf_dot(j?,irf_norm(Bf?));jtot?=irf_abs(j?,1);jperp?=jz?;jperp?(:,2)=sqrt(jtot?.^2-jz?(:,2).^2);',sc_list);
 c_eval('n?=c_efw_scp2ne(P?,1,n_coef);',sc_list);
+%load local_density.mat
 
 c_eval('ejb?=irf_vec_x_scal(irf_tappl(irf_cross(j?,B?),''*1e-9*1e3''),irf_tappl(n?,''*1.6e-19*1e6''),-1);',sc_list); % j=[A],B=[nT],n=[cc],E=[mV/m]
 c_eval('dejb?=c_gse2dsc(ejb?,?,2);',sc_list);
@@ -139,7 +141,7 @@ sc_list_pl=irf_ask('For which s/c plot single s/c plots ?[%]>','sc_list_pl',[]);
 
 
 
-%%%%%%%%%%%%%%  Figure 1 %%%%%%%%%%%%%%
+%%  Figure 1 %%%%%%%%%%%%%%
 %%%%%%%%%%%%%% All sc %%%%%%%%%%%%%%%%%
 
 figure;
@@ -196,7 +198,7 @@ dd1=0;dd2=0;dd3=.5;dd4=-.5;
 c_eval('eint?=[dEn?(:,1) 1e-3*irf_abs(Vmp,1)/fs?*cumsum(dEn?(:,2))+dd?];',sc_list)
 c_pl_tx('eint?',2,dt,'sc_list',sc_list);
 ylabel('U [kV]')
-set(h(9),'YLim',[0 5.9],'YTick',[1 2 3 4 5])
+%set(h(9),'YLim',[0 5.9],'YTick',[1 2 3 4 5])
 
 % lw=1;k=-3:0;
 % for j=1:9,
@@ -212,7 +214,7 @@ add_timeaxis(h);
 % 
 %ht=irf_pl_number_subplots(h);
 
-%%%%%%%%%%%%%%  Figure single s/c %%%%%%%%%%%%%%
+%%  Figure single s/c %%%%%%%%%%%%%%
 %%%%%%%%%%%%%% Separate s/c %%%%%%%%%%%%%%%%%
 
 for ic=sc_list;
@@ -227,8 +229,8 @@ for ic=sc_list;
   %end
   %c_eval('irf_plot(Blnm?(:,[1 5])); ylabel(''B [nT] sc?''); ',ic);
   leg_coord=[.1,.6];font_size=13;figure_labels={'E ', 'jxB/ne','-\nabla p/ne'};line_colors='bgr';
-  for ic=1:3,
-      ht=irf_pl_info(figure_labels{ic},gca,leg_coord);set(ht,'color',line_colors(ic),'Fontsize',font_size,'FontWeight','demi');
+  for iq=1:3,
+      ht=irf_pl_info(figure_labels{iq},gca,leg_coord);set(ht,'color',line_colors(iq),'Fontsize',font_size,'FontWeight','demi');
       ext=get(ht,'extent'); leg_coord=leg_coord+[ext(3)*1.1 0];
   end
   ht=irf_pl_info([mfilename '  ' datestr(now) ...
@@ -263,7 +265,7 @@ for ic=sc_list;
   %ht=irf_pl_number_subplots(h)
 
 end
-%%%%%%%%%%%%%%  Figure 3 %%%%%%%%%%%%%%
+%%  Figure 3 
 %%%%%%%%%%%%%% Separate s/c %%%%%%%%%%%%%%%%%
 
 
@@ -318,7 +320,7 @@ if 1 % 1 if plot, 0 if skip the figure
 %             'irf_plot(igradn1?,''dt'',dt(?),''LineStyle'',''k'');'...
 %             'irf_plot([igradn?(end,:); igradn1?(1,:)],''dt'',dt(?),''LineStyle'',''k--'');'...
         hold off
-        set(gca,'YLim',[-39 64])
+        set(gca,'YLim',[-19 19])
 
 %         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'uxB ','jxB/ne','-\nabla p/ne'};cluster_colors='bkgr';
         leg_coord=[.1,.6];font_size=13;cluster_labels={'E ', 'jxB/ne','-\nabla p/ne'};cluster_colors='bgr';
@@ -329,7 +331,7 @@ if 1 % 1 if plot, 0 if skip the figure
     end
 
     %axis(h,'tight');
-    %irf_zoom(tint,'x',h);
+    irf_zoom(tint,'x',h);
 %     irf_zoom(toepoch([2004 01 04 12 47 07]) + [.5 4],'x',h)
     add_timeaxis(h);
 
