@@ -82,6 +82,13 @@ for ax=1:3
 		irf_plot({diEDI(:,[1 (ax+1)]),diEs(:,[1 (ax+1)]),diECorr(:,[1 (ax+1)])},...
 			'linestyle',{'.','-','-'},'comp');
 	end
+	sfit_probe = caa_sfit_probe(cl_id);
+	[ok, lowake] = c_load(sprintf('LOWAKE?p%d',sfit_probe),cl_id);
+	if ok && ~isempty(lowake)
+		diEs_wake = caa_rm_blankt(diEs,lowake,1);
+		hold on
+		irf_plot(diEs_wake(:,[1 (ax+1)]),'g*')
+	end
 end
 if isempty(diEDI), legend(h(1),'EFW','corrotation')
 else legend(h(1),'EDI','EFW','corrotation')
