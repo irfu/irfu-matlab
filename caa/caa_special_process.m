@@ -43,8 +43,9 @@ for i=1:length(C)
 						if isempty(C{i+j}), break, end
 						entry2=textscan(C{i+j},'%s %s %s','commentStyle', '%');
 						if isISOtime(entry2{1}{1}), break, end
-						run_special_processing(t1,t2,cli,C{i+j})
 					end
+					j=j-1;
+					run_special_processing(t1,t2,cli,C(i+1:i+j))
 				end
 			end
 		end 
@@ -53,16 +54,22 @@ end
 cd(old_pwd);
 end
 
-function run_special_processing(st,et,cli,cmd)
-    old_pwd=pwd;
-	dirs=caa_get_subdirs(epoch2iso(st), et-st, cli);
-	for i=1:length(dirs)
-		cd(dirs{i});
-		irf_log('proc',['dir: ' pwd])
-		irf_log('proc',['cmd: ' cmd])
-		eval(cmd);
+function run_special_processing(st__,et__,cli,cmd__)
+    old_pwd__=pwd;
+	dirs__=caa_get_subdirs(epoch2iso(st__), et__-st__, cli);
+	for i__=1:length(dirs__)
+		cd(dirs__{i__});
+		[st_int__,dt_int__] = caa_read_interval();
+		st_int__=iso2epoch(st_int__);
+		if (st_int__<et__) && (st_int__+dt_int__ > st__)
+			irf_log('proc',['dir: ' pwd])
+			for j__=1:length(cmd__)
+				irf_log('proc',['cmd: ' cmd__{j__}])
+				eval(cmd__{j__});
+			end
+		end
 	end
-	cd(old_pwd);
+	cd(old_pwd__);
 end
 
 function out=isISOtime(s)
