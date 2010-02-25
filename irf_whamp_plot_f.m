@@ -1,15 +1,25 @@
-function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option);
+function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
 % Usage:
 % [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
 % [h,f,vp,vz]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2);
 % [h,f,vtot]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
 %
 % plot the distribution function, parameters as defined in whamp 
+%
+% Input:
+%     n  - density [m^-3]
+%     m  - particle mass, 0-electrons, 1-protons, 16-oxygen 
+%     t  - temperature [keV]
+%     vd - V_drift/V_term
+%     d  - loss cone parameter, 1.0 = no loss cone)
+%     a1 - T_perp/T_par
+%     a2 - ??? (use 0)
+%
 % n,m,.. can be vectors (if more than one plasma component) 
 % input can also be one matrix size Nx7 (if plotting countour plot)
 % the plot is +-thermal velocities of first component around the mass center of first component
 % 
-% if pitchangles are given PSD vs velocity are plotted for the given angles.
+% If pitchangles are given PSD vs velocity are plotted for the given angles.
 % plotoption (optional) 0 - PSD vs V [m/s]
 %			1 - PSD vs E [eV]
 %			2 - F_reduced vs V_z [m/s] - sum_j m_1/m_j*F_j(V_z)
@@ -22,6 +32,7 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,
 %		vp, vz - matrices for plotting countour plots
 %		vtot - nxm matrix where n-# of pitchangles, m-length of vtot [m/s].
 %		Etot - nxm matrix where n-# of pitchangles, m-length of vtot [eV].
+%
 % Examples:
 %	irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
 %	[h,f,vp,vz]=irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
@@ -29,17 +40,14 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,
 %	[h,f,vtot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
 %	[h,f,Etot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
 %
-% Last change 20050415
-%
-%
-% short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual_v1.1.pdf
+% short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
+%
+% $Id$
 
 Me=9.1094e-31; % electron mass
 Mp=1.6726e-27; % proton mass
-c=2.9979e8; % speed of light
 e=1.6022e-19; % elementary charge
-Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 
 if nargin < 1 , 
@@ -122,7 +130,7 @@ for j=1:length(n),
   F_reduced=F_reduced+(mm(1)/mm(j))/(pi^(1/2)*vt(j))*exp(-1*(vz_reduced./vt(j)-vd(j)).^2).*n(j);
 end
 
-QJAS_UNITS=0;
+QJAS_UNITS=1;
 if QJAS_UNITS,  f = f*1e18; end
 
 if nargin<8
@@ -132,31 +140,36 @@ if nargin<8
 	xlabel('Vperp');ylabel('Vpar');
 % added PSD vs vtot for pitchangles /DS
 elseif nargin>=8
-	vtot=sqrt(vp.^2+vz.^2);
+    vtot=sqrt(vp.^2+vz.^2);
 %	Etot=1e3*1/3.517388e14*1*vtot.^2;	%normalized to first species, Etot[eV]
-	Etot=(1/e)*mm(1)/2*vtot.^2;	%normalized to first species, Etot[eV]
-	if plotoption==1
-		h=loglog(Etot',f');
-		grid on
+    Etot=(1/e)*mm(1)/2*vtot.^2;	%normalized to first species, Etot[eV]
+    if plotoption==1
+        h=loglog(Etot',f');
+        grid on
         xlabel('Etot [eV]')
         if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
         else ylabel('PSD [s^3/m^6]')
         end
         legend(M)
-    elseif plotoption == 2
-    	% E_reduced=(1/e)*mm(1)/2*vz_reduced.^2;	%normalized to first species, Etot[eV]
+    elseif plotoption==2
+        % E_reduced=(1/e)*mm(1)/2*vz_reduced.^2;	%normalized to first species, Etot[eV]
         h=semilogy(vz_reduced,F_reduced);
         grid on
         xlabel('vz_{reduced} [m/s]')
         ylabel('F_{reduced} [[m/s]^{-1} m^{-3}]')
     else % default f(v)
+        if QJAS_UNITS, vtot = vtot*1e-3; end
         h=plot(vtot',f');
-        xlabel('Vtot [m/s]')
-        if QJAS_UNITS, ylabel('PSD [s^3/km^6]')
-        else ylabel('PSD [s^3/m^6]')
+        grid on
+        if QJAS_UNITS
+            xlabel('Vtot [km/s]')
+            ylabel('PSD [s^3/km^6]')
+        else
+            xlabel('Vtot [m/s]')
+            ylabel('PSD [s^3/m^6]')
         end
         legend(M)
-	end
+    end
 end
 if exist('title_option','var'),
   if ischar(title_option),
