@@ -12,7 +12,11 @@ function res = getmat(dobj,var_s)
 
 data = getv(dobj,var_s);
 fillv = getfillval(dobj,var_s);
-data.data(data.data==fillv) = NaN;
+if ~ischar(fillv),
+    data.data(data.data==fillv) = NaN;
+else
+    disp('fill value is character: discarding')
+end
 
 dep = getdep(dobj,var_s);
 
