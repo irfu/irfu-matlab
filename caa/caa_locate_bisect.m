@@ -37,5 +37,5 @@ function index=caa_locate_bisect(vec,value,indx2)
        end
    end
    index=lower;
-   if index==0, index=1;, end
+   if index==0, index=1; end
 end
