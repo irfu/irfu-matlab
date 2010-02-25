@@ -1,7 +1,7 @@
-function caa_export_month(year,month,startday,stopday)
+function caa_export_month(year,month,startday,stopday,sats)
 % CAA_EXPORT_MONTH: Export all caa data for the specified month.
 %
-% caa_export_month(year,month,startday,stopday)
+% caa_export_month(year,month,[startday],[stopday],[sats])
 % Exports the following cef files to /data/caa/cef/YEAR:
 %   L1: P1, P2, P3, P4, P12, P34, P32
 %   L2: P, E
@@ -9,6 +9,8 @@ function caa_export_month(year,month,startday,stopday)
 % with exceptions for probe failures.
 % If stopday is not specified, takes the remainder of the month.
 % If startday and stopday are not specified, defaults to the whole month.
+% If sats is not specified, defaults to 1:4.
+  if nargin < 5, sats=1:4; end
   if nargin < 4, stopday=eomday(year,month); end
   if nargin < 3, startday=1; end
 
@@ -46,7 +48,7 @@ function caa_export_month(year,month,startday,stopday)
       for i=1:length(levels)
           level=levels(i);
           datatype=datatypes{i};
-          for sat=1:4
+          for sat=sats
               excepted=0;
               for j=1:length(exceptions)
                   if (exceptions{j}{1} == sat) && (strcmp(exceptions{j}{2},datatype)==1)
