@@ -10,6 +10,8 @@ function res = irf_kev2k(T_eV,dir)
 %
 % $Id$
 
+if nargin==1, dir = 1; end
+
 factor = 1.16*1e7;
 if dir == -1
 	factor = 1/factor;
