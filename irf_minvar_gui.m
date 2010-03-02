@@ -133,7 +133,7 @@ switch action,
         if tlim==ud.tlim_mva, % plot first time after 'mva'
             axes(ud.h(2));
             irf_plot(ud.Xminvar);
-            axis tight;add_timeaxis(ud.h(2),'date');
+            axis fill;axis tight;add_timeaxis(ud.h(2),'date');
             axes(ud.h(3));
             plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
             axis tight;axis equal; grid on;
