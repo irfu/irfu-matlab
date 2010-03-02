@@ -52,7 +52,7 @@ switch action,
         ud.tlim_mva=tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
 
         dgh=figure;clf;irf_figmenu;
-        h(1)=subplot(4,1,1);
+        h(1)=subplot(4,1,1);set(h(1),'outerposition',[0 0.75 1 0.25]);
         irf_plot(X);axis tight;
         uf=get(gcf,'userdata');
         if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
@@ -62,7 +62,7 @@ switch action,
         ax=axis;grid on;
         ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y');
 
-        h(2)=subplot(4,1,2);
+        h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
         irf_plot(X);axis tight; 
         zoom off;
 
