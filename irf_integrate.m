@@ -1,9 +1,9 @@
 function xint=irf_integrate(x,tref,time_step)
 %IRF_INTEGRATE  Integrate time series
 %
-% xint=irf_integrate(x,tref)
+% xint=irf_integrate(x,tref,time_step)
 %   integrate time series. time steps that are larger
-%   than 3times the smallest time step are assumed to be data gaps
+%   than 3times the time step are assumed to be data gaps.
 %
 %   x - time series  to integrate
 %   tref - optional, integration starting time (optional) 
