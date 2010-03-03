@@ -30,9 +30,14 @@ else
 end
 
 if tapp(1) <= t(end)
-   if tapp(1) == t(end), error('Last point in DATA has same timestamp as first point in APP'), end
-	app = irf_tlim(app,tapp(1),t(end),1);
-	if isempty(app), return, end
+   if tapp(1) == t(end)
+       %error('Last point in DATA has same timestamp as first point in APP')
+       if length(tapp) == 1, return, end
+       app=app(2:end,:);
+   else
+       app = irf_tlim(app,tapp(1),t(end),1);
+       if isempty(app), return, end
+   end
 end
 
 if isstruct(data)
