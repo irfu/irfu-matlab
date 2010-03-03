@@ -34,6 +34,7 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 % TODO: we may try to open persistent connection when ISDAT will get stable
 % TODO: can be use Mat_DbErrorString
 
+MAXOPENATTEMPTS = 10;  % Number of times to retry in case open fails
 MAXNRET = 2;  % Number of times to retry in case of internal server error
 SLEEPINT = 5; % Number of seconds to sleep when waiting for server restart
 
@@ -57,18 +58,25 @@ if ~ischar(par), error('PAR must be a string'), end
 nret = 0;
 while nret<MAXNRET
 	nret = nret + 1;
-	% Reset errors, otherwise try/catch fails
-	lasterr('')
-	try
-		dbase = Mat_DbOpen(db_s);
-	catch
-		error('ISDAT:Mat_DbOpen',['ISDAT : error opening database ' db_s])
+	
+	openAttempts=1;
+	while (openAttempts ~= 0)
+		try
+			dbase = Mat_DbOpen(db_s);
+			openAttempts=0;
+		catch ME
+			if (openAttempts>MAXOPENATTEMPTS)
+				error('ISDAT:Mat_DbOpen',['ISDAT : error opening database ' db_s])
+			end
+			openAttempts=openAttempts+1;
+			pause(0.01*openAttempts);
+		end
 	end
 	
 	[t, d, iserr] = isGetDataLite(dbase, st, dt, ...
 		'Cluster',num2str(cli),ins,sig,sen,cha,par);
 	Mat_DbClose(dbase);
-	t = double(t); % TODO: check if this is needed
+    d = double(d);
 	
 	% If we got DbBAD_INTERNAL we suppose it was cause by the server crash,
 	% so we sleep for SLEEPINT sec and try again
