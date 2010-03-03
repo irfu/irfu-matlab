@@ -48,6 +48,7 @@ fgm_t = -1;
 fgm_data = 0;
 
 [fgm_t, fgm_data] = isGetDataLite(db, start_time, Dt, 'Cluster', num2str(spacecraft),'fgm', 'Bprim', ' ', ' ', ' ');
+fgm_data=double(fgm_data);
 
 [a, b] = size(fgm_data);
 [c, d] = size(fgm_t);

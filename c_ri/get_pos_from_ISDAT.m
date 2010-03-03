@@ -31,6 +31,7 @@ db = Mat_DbOpen('disco:10');
 
 [tp, p_gse] = isGetDataLite(db, start_time, Dt, 'Cluster', num2str(spacecraft),'ephemeris', 'position', ' ', ' ', ' ');
 Mat_DbClose(db);
+p_gse=double(p_gse);
 
 %if there is an error in the reading
 if isempty(tp)

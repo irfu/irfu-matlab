@@ -45,7 +45,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %  'Cluster', '4', 'efw','E','p34','10Hz','hx');  
 %  [tpha,pha] = isGetDataLite(db, [2002 12 24 14 00 00], 600, ...
 %  'Cluster', '4', 'ephemeris','phase_2','','','');  
-%  sp34 = c_efw_sfit(34,3,10,20,t34,e34,tpha,pha);
+%  sp34 = c_efw_sfit(34,3,10,20,t34,double(e34),tpha,double(pha));
 %  t0 = toepoch([2002 12 24 14 00 00]);
 %  t = sp34(:,1) - t0;
 %  ex = sp34(:,2);

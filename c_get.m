@@ -209,7 +209,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
   		[ok,tm] = c_load('mTMode?',ic);
 		if ~ok
 			[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic),'efw','FDM');
-			if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
+			if ~isempty(data), tm=double(data(5,:)); else, error('Cannot fetch FDM'), end
 			eval(irf_ssub('mTMode?=tm;',ic));
 			if exist('./mTMode.mat','file'), eval(irf_ssub('save -append mEFWR mTMode?;',ic));
 			else, eval(irf_ssub('save mEFWR mTMode?;',ic));	
@@ -247,6 +247,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
        	    data = [data(:,1)*0 data(:,1) data(:,1)*0]';
         else,
             [t,data] = isGetDataLite( db, start_time, Dt,'Cluster', num2str(ic), 'efw', 'E', 'p1234', param, tmmode);
+       	    data = double(real(data));
         end
         t = double(t);
         eval(irf_ssub('wE?=[t data''];',ic)); clear t data;
@@ -524,7 +525,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
 			if ~ok
 				[t,data] = isGetDataLite( db, start_time, Dt,'Cluster', ...
 					num2str(ic),'efw','FDM');
-				if ~isempty(data), tm=data(5,:); else, error('Cannot fetch FDM'), end
+				if ~isempty(data), tm=double(data(5,:)); else, error('Cannot fetch FDM'), end
 				eval(irf_ssub('mTMode?=tm;',ic));
 				if exist('./mTMode.mat','file')
 					eval(irf_ssub('save -append mEFWR mTMode?;',ic));
