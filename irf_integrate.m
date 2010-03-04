@@ -19,7 +19,7 @@ if nargin < 3, % estimate time step
     time_steps=diff(x(:,1));
     [time_step,ind_min]=min(time_steps);
     time_steps(ind_min)=[]; % remove the smallest time steps in case some problems
-    time_step=min(time_steps);
+    time_step=min(time_steps),
 end
 data_gaps=find(dt>3*time_step);
 dt(data_gaps)=0;
@@ -29,10 +29,10 @@ for j=2:size(xint,2),
   xint(j_ok,j)=cumsum(x(j_ok,j).*dt(j_ok),1);
 end
 
-if nargin==2, % other origo for integration 
-    if size(tref==6),
+if nargin>=2, % other origo for integration 
+    if size(tref)==6,
         tt=toepoch(tref);
-    elseif size(tref==1);
+    elseif size(tref)==1;
         tt=tref;
     else
         irf_log('proc','do not know how to treat <tref> input')
