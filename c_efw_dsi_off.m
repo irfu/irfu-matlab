@@ -23,8 +23,9 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2007 08 05 01 01 0]), Ddsi = [0.70  1.45 1.49  0.85]; % Force MS offset July-... when don't enter SW.
-elseif t>=toepoch([2007 08 01 00 00 0]), Ddsi = [0.70  1.45+1.4 1.49  0.85]; % Force MS offset July-... when don't enter SW.
+if     t>=toepoch([2007 11 01 01 01 0]), Ddsi = [ 0.20    0.76 1.77 0.28];
+elseif t>=toepoch([2007 08 05 01 01 0]), Ddsi = [0.70  1.45 1.49  0.85]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2007 08 01 00 00 0]), Ddsi = [0.70  1.45+1.4 1.49  0.85]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [-0.08     .46+1.4 1.65  .13 ]; % problem with guard settings on C2
 elseif t>=toepoch([2007 02 01 00 00 0]), Ddsi = [-0.08     .46 1.65  .13 ]; % very approximate due to high-speed solar wind streams
 elseif t>=toepoch([2007 01 01 00 00 0]), Ddsi = [-0.08     .46 1.95  .13 ]; % very approximate due to high-speed solar wind streams
