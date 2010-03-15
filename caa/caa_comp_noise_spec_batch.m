@@ -1,7 +1,6 @@
 function res = caa_comp_noise_spec_batch(fname,probe_p)
 
 if nargin<2, probe_p = 34; end
-var_s = sprintf('wE?p%d', probe_p);
 count = 0;
 
 old_pwd = pwd;
@@ -48,8 +47,12 @@ for d=1:length(dirs)
             continue
         end
         
-        [ok,data] = c_load(var_s,cl_id);
-        
+        ok = 0; data = [];
+        for i=1:length(probe_p)
+            if ~ok || isempty(data)
+                [ok,data] = c_load(sprintf('wE?p%d', probe_p(i)),cl_id);
+            end
+        end
         if ~ok || isempty(data), continue, end
         
         [ok,whip] = c_load('WHIP?',cl_id);
