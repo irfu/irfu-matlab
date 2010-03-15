@@ -38,6 +38,7 @@ for d=1:length(dirs)
         irf_log('proc',[ '-- GETTING -- : ' curr_d]);
         
         [iso_t,dt] = caa_read_interval;
+        if isempty(iso_t), continue, end
         st = iso2epoch(iso_t);
         
         [ok,tmode] = c_load('mTMode?',cl_id);
