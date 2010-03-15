@@ -25,13 +25,13 @@ for d=1:length(dirs)
 		sdirs = {''};
 	end
 	
-	for sdi = 1:length(sdirs)
-		if isempty(sdirs{sdi}), curr_d = dir_s;
-		else curr_d = [dir_s '/' sdirs{sdi}];
-		end
-			
-		cd( [BASE_DIR '/' curr_d])
-
+    for sdi = 1:length(sdirs)
+        if isempty(sdirs{sdi}), curr_d = dir_s;
+        else curr_d = [dir_s '/' sdirs{sdi}];
+        end
+        
+        cd( [BASE_DIR '/' curr_d])
+        
         cl_id = str2double(curr_d(21));
         if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
         
@@ -47,7 +47,7 @@ for d=1:length(dirs)
             irf_log('proc',[ '-- SKIPPING -- : ' curr_d]);
             continue
         end
-       
+        
         [ok,data] = c_load(var_s,cl_id);
         
         if ~ok || isempty(data), continue, end
