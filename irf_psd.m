@@ -178,9 +178,10 @@ for ii=ii_start:size(xx,2) % cycle over the columns of x
             units='(singal unit)^2/Hz';
         end
         ylabel(units);
+        hold off
     end
 end
-hold off
+
 
 function [msg,nfft,Fs,window,noverlap,p,dflag] = psdchk(P,x,y)
 %PSDCHK Helper function for PSD, CSD, COHERE, and TFE.
