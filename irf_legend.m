@@ -1,10 +1,10 @@
 function irf_legend(axis_handle,labels,position,varargin)
-% irf_legend(labels,position,axis_handle,text_property,text_value,...)
+% irf_legend(axis_handle,labels,position,text_property,text_value,...)
 %
 % labels - cell array with strings
 % position - in normalized units 
 %
-% irf_legend({'B_X','B_Y','B_Z','B'},[0 
+% irf_legend(gca,{'B_X','B_Y','B_Z','B'},[0.02, 0.1]);
 
 colord=get(axis_handle, 'ColorOrder');
 
