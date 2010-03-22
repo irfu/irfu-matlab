@@ -14,6 +14,8 @@ function res = plot(dobj,var_s,comp,ax)
 
 error(nargchk(2,4,nargin))
 
+LCOMP = 5;
+
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 
 data = getv(dobj,var_s);
@@ -122,14 +124,11 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	funits = getunits(dobj,dep.DEPEND_X{1,1});
 	flab = getlablaxis(dobj,dep.DEPEND_X{1,1});
 	if size(f.data,2) == length(dep.DEPEND_O)
-		if isempty(ax)
-			if isempty(comp), ax = gca; 
-			else
-				for i=1:length(comp), ax(i) = irf_subplot(length(comp),1,-i); end
-			end
-		end
-		
-		lab_2 ='';
+        if isempty(ax), create_axes = 1;
+        else create_axes = 0;
+        end
+        
+ 		lab_2 ='';
 		if ~isempty(dep.DEPEND_X) && size(dep.DEPEND_X,1)>1
 			dep_x_s = dep.DEPEND_X{2,1};
 			dep_x = getv(dobj,dep_x_s);
@@ -138,6 +137,9 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 						&& strcmp(dep.DEPEND_X{2,2},'LABEL_2')
 					reclen=size(dep_x.data,2)/length(dep.DEPEND_O);
 					lab_2 = dep_x.data(:,1:reclen);
+                elseif strcmp(dep_x.type,'single') && strcmp(dep_x.variance,'F/T')
+                    dep_x_units = getunits(dobj,dep.DEPEND_X{2,1});
+                    lab_2 = num2str(dep_x.data(:,1),['%.2f ' dep_x_units]);
 				else
 					error('BAD type for DEPEND_X')
 				end
@@ -151,23 +153,50 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		specrec = struct('t',dep.DEPEND_O,'f',f.data(:,1),'f_unit',funits,'p',[]);
 		if isempty(comp)
 			specrec.p = {plot_data};
+            if create_axes, ax = gca; end
 			h = caa_spectrogram(ax(1),specrec);
 			if ~isempty(lab_2), lab_2 = [' (' lab_2 ')']; end
 			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
 			add_text(h,text_s);
-		else
-			h = zeros(1,length(comp));
-			for i=1:length(comp)
+        else
+            ncomp = length(comp);
+			h = zeros(1,ncomp);
+            % special case for degrees
+            ytick = [];
+            if strcmp(funits,'degrees')
+                frange = abs(min(specrec.f) - max(specrec.f));
+                if frange > 80 && frange <=150, da = 15;
+                elseif frange > 150 && frange <=200, da = 45;
+                elseif frange > 200 && frange <=380, da = 90;
+                else da = [];
+                end
+                if ~isempty(da)
+                    ytick = round(min(specrec.f)/da):round(max(specrec.f)/da);
+                    ytick = ytick*da;
+                end
+            end
+            
+			for i=1:ncomp
 				specrec.p = plot_data(i);
+                if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end
 				h(i) = caa_spectrogram(ax(i),specrec);
-				if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')']; 
-				else lab_2s = '';
-				end
-				ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
-				if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)]; 
-				else lab_2s = text_s;
-				end
-				add_text(h(i),lab_2s);
+                if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
+                if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
+                else lab_2s = '';
+                end
+                if ncomp<=LCOMP % small number of components
+                    ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
+                    if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
+                    else lab_2s = text_s;
+                    end
+                    add_text(h(i),lab_2s);
+                else %large number of components
+                    if i==1, title(text_s), end
+                    if i==fix(ncomp/2), ylabel(sprintf('%s [%s]', flab, funits))
+                    else ylabel('')
+                    end
+                    add_text(h(i),lab_2(i,:));
+                end
 			end
 			set(ax(1:length(comp)-1),'XTickLabel',[])
 		end
