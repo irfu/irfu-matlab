@@ -155,6 +155,11 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			specrec.p = {plot_data};
             if create_axes, ax = gca; end
 			h = caa_spectrogram(ax(1),specrec);
+            
+            % Add colorbar
+            hcb = colorbar;
+            ylabel(hcb,['Log ' units])
+                    
 			if ~isempty(lab_2), lab_2 = [' (' lab_2 ')']; end
 			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
 			add_text(h,text_s);
@@ -164,7 +169,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % special case for degrees
             ytick = [];
             if strcmp(funits,'degrees')
-                frange = abs(min(specrec.f) - max(specrec.f));
+                frange = abs(my_range(specrec.f));
                 if frange > 80 && frange <=150, da = 15;
                 elseif frange > 150 && frange <=200, da = 45;
                 elseif frange > 200 && frange <=380, da = 90;
@@ -176,28 +181,44 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 end
             end
             
-			for i=1:ncomp
-				specrec.p = plot_data(i);
+            for i=1:ncomp
+                specrec.p = plot_data(i);
                 if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end
-				h(i) = caa_spectrogram(ax(i),specrec);
+                h(i) = caa_spectrogram(ax(i),specrec);
                 if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
                 if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
                 else lab_2s = '';
                 end
-                if ncomp<=LCOMP % small number of components
+                dy = [];
+                if ncomp<=LCOMP % Small number of components
                     ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
                     if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
                     else lab_2s = text_s;
                     end
                     add_text(h(i),lab_2s);
-                else %large number of components
+                else % Large number of components
                     if i==1, title(text_s), end
                     if i==fix(ncomp/2), ylabel(sprintf('%s [%s]', flab, funits))
                     else ylabel('')
                     end
                     add_text(h(i),lab_2(i,:));
                 end
-			end
+                % Add colorbar
+                if i==fix(ncomp/2)
+                    hcb = colorbar;
+                    dy = get(ax(i),'Position'); dy = dy(3);
+                    pcb = get(hcb,'Position');
+                    ylabel(hcb,['Log ' units ])
+                    set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(0+(ncomp-2)/2) pcb(3) pcb(4)*(ncomp-3)])
+                end
+            end
+            % Resize all panels aftre addition of a colorbar
+            if ~isempty(dy)
+                for i=1:ncomp
+                    tt = get(ax(i),'Position');
+                    set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
+                end
+            end
 			set(ax(1:length(comp)-1),'XTickLabel',[])
 		end
 	end
