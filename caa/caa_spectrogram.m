@@ -104,19 +104,17 @@ for comp=1:min(length(h),ncomp)
 	
     ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));
-	if isfield(ud,'t_start_epoch'), 
-		t_start_epoch = double(ud.t_start_epoch);
-	elseif specrec.t(ii(1))> 1e8, 
-		% Set start_epoch if time is in isdat epoch
-		% Warn about changing t_start_epoch
-		t_start_epoch = double(specrec.t(ii(1)));
-		ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-		irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
-	else
-		t_start_epoch = double(0);
-	end
-
-	axes(h(comp));
+    if isfield(ud,'t_start_epoch'),
+        t_start_epoch = double(ud.t_start_epoch);
+    elseif specrec.t(ii(1))> 1e8,
+        % Set start_epoch if time is in isdat epoch
+        % Warn about changing t_start_epoch
+        t_start_epoch = double(specrec.t(ii(1)));
+        ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+        irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+    else
+        t_start_epoch = double(0);
+    end
 	
 	% Special case when we have only one spectrum
     % We duplicate it
@@ -170,16 +168,16 @@ for comp=1:min(length(h),ncomp)
     end
 
     if min(size(ff))==1, % frequency is vector
-    pcolor(double(tt-t_start_epoch),ff,log10(double(pp')))
+        pcolor(h(comp),double(tt-t_start_epoch),ff,log10(double(pp')))
     else % frequency is matrix
-     ttt=repmat(tt,1,size(ff,2));
-     pcolor(double(ttt-t_start_epoch),ff,log10(double(pp)))
-    end   
+        ttt = repmat(tt,1,size(ff,2));
+        pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
+    end
 	colormap(cmap)
-    shading flat
+    shading(h(comp),'flat')
     %	colorbar('vert')
     %	set(gca,'TickDir','out','YScale','log')
-    set(gca,'TickDir','out')
+    set(h(comp),'TickDir','out')
     %check ylabel
     if ~isfield(specrec,'f_label')
         if ~isfield(specrec,'f_unit'),
@@ -187,10 +185,10 @@ for comp=1:min(length(h),ncomp)
         end
         specrec.f_label=['[' specrec.f_unit ']'];
     end
-    ylabel(specrec.f_label)
+    ylabel(h(comp),specrec.f_label)
 
     if comp==min(length(h),ncomp), add_timeaxis;
-    else set(gca,'XTicklabel','')
+    else set(h(comp),'XTicklabel','')
     end
 end
 
