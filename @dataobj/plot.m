@@ -23,7 +23,7 @@ dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
 units = getunits(dobj,var_s);
 fieldnam = findva(dobj,'FIELDNAM',var_s);
-%lablaxis = getlablaxis(dobj,var_s);
+lablaxis = getlablaxis(dobj,var_s);
 cs = getcs(dobj,var_s);
 if ~isempty(cs), cs = [' ' cs]; end
 fillv = getfillval(dobj,var_s);
@@ -158,7 +158,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % Add colorbar
             hcb = colorbar;
-            ylabel(hcb,['Log ' units])
+            ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
                     
 			if ~isempty(lab_2), lab_2 = [' (' lab_2 ')']; end
 			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
@@ -208,7 +208,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     hcb = colorbar;
                     dy = get(ax(i),'Position'); dy = dy(3);
                     pcb = get(hcb,'Position');
-                    ylabel(hcb,['Log ' units ])
+                    ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
                     set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(0+(ncomp-2)/2) pcb(3) pcb(4)*(ncomp-3)])
                 end
             end
