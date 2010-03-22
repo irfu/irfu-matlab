@@ -21,9 +21,11 @@ if ~ischar(var_s), error('VAR_S must be a stirng'), end
 data = getv(dobj,var_s);
 dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
-units = getunits(dobj,var_s);
+units = corr_latex(getunits(dobj,var_s));
 fieldnam = findva(dobj,'FIELDNAM',var_s);
+ii = regexp(fieldnam,'_'); fieldnam(ii) = ' '; % Get rid of underscores
 lablaxis = getlablaxis(dobj,var_s);
+ii = regexp(lablaxis,'_'); lablaxis(ii) = ' '; % Get rid of underscores
 cs = getcs(dobj,var_s);
 if ~isempty(cs), cs = [' ' cs]; end
 fillv = getfillval(dobj,var_s);
@@ -189,7 +191,6 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
                 else lab_2s = '';
                 end
-                dy = [];
                 if ncomp<=LCOMP % Small number of components
                     ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
                     if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
@@ -245,4 +246,22 @@ if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
 % Help function
 function r=my_range(x)
 r=max(x)-min(x);
+
+% Try to correct latex
+function s = corr_latex(s)
+
+expr = {'\^-[1-3]','\^[2-3]'};
+exprl = [2 1];
+for i=1:length(expr)
+    while 1
+        ii = regexp(s,expr{i});
+        if isempty(ii), break, end
+        ii = ii(1);
+        l = length(s);
+        s_tmp = [s(1:ii) '{' s(ii+1:ii+exprl(i)) '}'];
+        if l > ii+2, s = [s_tmp s(ii+exprl(i)+1:end)];
+        else s = s_tmp;
+        end
+    end
+end
 
