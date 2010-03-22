@@ -1,4 +1,4 @@
-function res = plot(dobj,var_s,comp,ax)
+function res = plot(dobj,var_s,varargin)
 %PLOT(dobj, var_s, [comp], [ax])  plot a variable
 %
 % comp - which component of vector to plot
@@ -12,7 +12,7 @@ function res = plot(dobj,var_s,comp,ax)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,4,nargin))
+error(nargchk(2,14,nargin))
 
 LCOMP = 3;
 
@@ -32,12 +32,52 @@ fillv = getfillval(dobj,var_s);
 data.data(data.data==fillv) = NaN;
 
 
-if nargin == 2, comp = []; ax = [];
-elseif nargin == 3, ax = []; 
-end
+%% INPUT ARGUMENTS
 
-if isempty(comp), use_comp = 0;
-else use_comp = 1;
+have_options = 0;
+arg_pos = 0;
+args = varargin; 
+if nargin > 2, have_options = 1; end
+
+% Default values that can be override by options
+sum_dim = 0;
+use_comp = 0;
+comp = [];
+ax = [];
+create_axes = 1;
+
+while have_options
+    arg_pos = arg_pos + 1;
+    l = 1;
+    if arg_pos==1 && isnumeric(args{1})
+        use_comp = 1; 
+        comp = args{1};
+    else
+        switch(lower(args{1}))
+            case 'ax'
+                l = 2;
+                if all(ishandle(args{2}))
+                    ax = args{2};
+                    create_axes = 0;
+                else disp('invalid value for AX')
+                end
+            case 'comp'
+                l = 2;
+                if isnumeric(args{2})
+                    use_comp = 1; 
+                    comp = args{2};
+                else
+                    disp('invalid value for COMP')
+                end
+            case 'sum_dim1'
+                sum_dim = 1;
+            otherwise
+                disp('unknown argument')
+                break
+        end
+    end
+	args = args(l+1:end);
+	if isempty(args), break, end
 end
 
 if dim == 1
@@ -48,6 +88,7 @@ if dim == 1
 	end
 end
 
+%% PLOT
 if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		
 		plot_data = double(data.data)';
@@ -97,12 +138,32 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 		add_text(h,text_s);
 		
 else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	if dim == 2
+	
+    dep_x_1 = getv(dobj,dep.DEPEND_X{1,1});
+    dep_x_1.s = dep.DEPEND_X{1,1};
+	dep_x_1.fillv = getfillval(dobj,dep_x_1.s);
+    dep_x_1.data(dep_x_1.data==dep_x_1.fillv) = NaN;
+	dep_x_1.units = getunits(dobj,dep_x_1.s);
+	dep_x_1.lab = getlablaxis(dobj,dep_x_1.s);
+    specrec = struct('t',dep.DEPEND_O,'f',dep_x_1.data(:,1),'f_unit',dep_x_1.units,'p',[]);
+    
+    if size(dep.DEPEND_X,1)>1
+        dep_x_2 = getv(dobj,dep.DEPEND_X{2,1});
+        dep_x_2.s = dep.DEPEND_X{2,1};
+        dep_x_2.fillv = getfillval(dobj,dep_x_2.s);
+        dep_x_2.data(dep_x_2.data==dep_x_2.fillv) = NaN;
+        dep_x_2.units = getunits(dobj,dep_x_2.s);
+        dep_x_2.lab = getlablaxis(dobj,dep_x_2.s);
+    else
+        dep_x_2 = [];
+    end
+    
+    if dim == 2
 		if data.dim(2)>1
 			
 			% This is a hack for STAFF B
-			if any(any(data.data<0))
-				disp('Data contains negative values!!!')
+			if any(any(data.data<=0))
+				disp('Data contains negative & zero values!!!')
 				data.data(data.data<0) = NaN;
 			end
 			
@@ -111,118 +172,110 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			ii = (ii-1)*ndim;
 			if ~use_comp, comp=1:ndim; end
             plot_data = cell(size(comp));
-			for i=1:length(comp)
-				plot_data{i} = data.data(:,ii+comp(i))';
-			end
+            for i=1:length(comp)
+                plot_data{i} = data.data(:,ii+comp(i))';
+            end
+            if sum_dim==1 % sum over frequency, pitch angle
+                pd_tmp = zeros(length(dep.DEPEND_O),length(comp));
+                for i=1:length(comp)
+                    plot_data{i}(isnan(plot_data{i})) = 0;
+                    pd_tmp(:,i) = sum(plot_data{i},2);
+                end
+                clear plot_data
+                plot_data{1} = pd_tmp; clear pd_tmp
+                dep_x_1 = dep_x_2; dep_x_2 = [];
+                specrec.f = dep_x_1.data(comp,1);
+                specrec.f_unit = dep_x_1.units;
+                comp = [];
+            end
 		else
-			plot_data = double(data.data)';
+			plot_data{1} = double(data.data)';
 		end
 	else
 		error('plotting not implememnted')
-	end
-	f = getv(dobj,dep.DEPEND_X{1,1});
-	fillv = getfillval(dobj,dep.DEPEND_X{1,1});
-	f.data(f.data==fillv) = NaN;
-	funits = getunits(dobj,dep.DEPEND_X{1,1});
-	flab = getlablaxis(dobj,dep.DEPEND_X{1,1});
-	if size(f.data,2) == length(dep.DEPEND_O)
-        if isempty(ax), create_axes = 1;
-        else create_axes = 0;
-        end
+    end
         
- 		lab_2 ='';
-		if ~isempty(dep.DEPEND_X) && size(dep.DEPEND_X,1)>1
-			dep_x_s = dep.DEPEND_X{2,1};
-			dep_x = getv(dobj,dep_x_s);
-			if ~isempty(dep_x)
-				if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
-						&& strcmp(dep.DEPEND_X{2,2},'LABEL_2')
-					reclen=size(dep_x.data,2)/length(dep.DEPEND_O);
-					lab_2 = dep_x.data(:,1:reclen);
-                elseif strcmp(dep_x.type,'single') && strcmp(dep_x.variance,'F/T')
-                    dep_x_units = getunits(dobj,dep.DEPEND_X{2,1});
-                    lab_2 = num2str(dep_x.data(comp,1),['%.2f ' dep_x_units]);
-				else
-					error('BAD type for DEPEND_X')
-				end
-			end
-		end
-		
-		text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
-			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
-		if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
-		
-		specrec = struct('t',dep.DEPEND_O,'f',f.data(:,1),'f_unit',funits,'p',[]);
-		if isempty(comp)
-			specrec.p = {plot_data};
-            if create_axes, ax = gca; end
-			h = caa_spectrogram(ax(1),specrec);
-            
-            % Add colorbar
-            hcb = colorbar;
-            ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
-                    
-			if ~isempty(lab_2), lab_2 = [' (' lab_2 ')']; end
-			ylabel(sprintf('%s [%s]%s', flab, funits,lab_2))
-			add_text(h,text_s);
+    if size(dep_x_1.data,2) ~= length(dep.DEPEND_O)
+        error('bad size for DEPEND_X_1')
+    end
+     
+    lab_2 ='';
+    if ~isempty(dep_x_2)
+        if strcmp(dep_x_2.type,'char') && strcmp(dep_x_2.variance,'F/T')...
+                && strcmp(dep_x_2.s,'LABEL_2')
+            reclen = size(dep_x_2.data,2)/length(dep.DEPEND_O);
+            lab_2 = dep_x_2.data(:,1:reclen);
+        elseif strcmp(dep_x_2.type,'single') && ...
+                (strcmp(dep_x_2.variance,'F/T') || strcmp(dep_x_2.variance,'T/T'))
+            lab_2 = num2str(dep_x_2.data(comp,1),['%.2f ' dep_x_2.units]);
         else
-            ncomp = length(comp);
-			h = zeros(1,ncomp);
-            % special case for degrees
-            ytick = [];
-            if strcmp(funits,'degrees')
-                frange = abs(my_range(specrec.f));
-                if frange > 80 && frange <=150, da = 15;
-                elseif frange > 150 && frange <=200, da = 45;
-                elseif frange > 200 && frange <=380, da = 90;
-                else da = [];
-                end
-                if ~isempty(da)
-                    ytick = round(min(specrec.f)/da):round(max(specrec.f)/da);
-                    ytick = ytick*da;
-                end
+            error('BAD type for DEPEND_X')
+        end
+    end
+    
+    text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
+        dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+    if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
+    
+    if isempty(comp), comp = 1; end
+    ncomp = length(comp);
+    h = zeros(1,ncomp);
+    if create_axes, ax = zeros(1, ncomp); end
+    
+    % special case for degrees
+    ytick = [];
+    if strcmpi(dep_x_1.units,'degrees')
+        frange = abs(my_range(specrec.f));
+        if frange > 80 && frange <=150, da = 15;
+        elseif frange > 150 && frange <=200, da = 45;
+        elseif frange > 200 && frange <=380, da = 90;
+        else da = [];
+        end
+        if ~isempty(da)
+            ytick = round(min(specrec.f)/da):round(max(specrec.f)/da);
+            ytick = ytick*da;
+        end
+    end
+    
+    for i=1:ncomp
+        specrec.p = plot_data(i);
+        if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end %#ok<AGROW>
+        h(i) = caa_spectrogram(ax(i),specrec);
+        if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
+        %if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
+        %else lab_2s = '';
+        %end
+        if ncomp<=LCOMP % Small number of components
+            ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
+            if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
+            else lab_2s = text_s;
             end
-            
-            for i=1:ncomp
-                specrec.p = plot_data(i);
-                if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end
-                h(i) = caa_spectrogram(ax(i),specrec);
-                if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
-                if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
-                else lab_2s = '';
-                end
-                if ncomp<=LCOMP % Small number of components
-                    ylabel(sprintf('%s [%s]', flab, funits))
-                    if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
-                    else lab_2s = text_s;
-                    end
-                    add_text(h(i),lab_2s);
-                else % Large number of components
-                    if i==1, title(text_s), end
-                    if i==fix(ncomp/2), ylabel(sprintf('%s [%s]', flab, funits))
-                    else ylabel('')
-                    end
-                    add_text(h(i),lab_2(i,:));
-                end
-                % Add colorbar
-                if i==fix(ncomp/2)+1
-                    hcb = colorbar;
-                    dy = get(ax(i),'Position'); dy = dy(3);
-                    pcb = get(hcb,'Position');
-                    ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
-                    set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
-                end
+            add_text(h(i),lab_2s);
+        else % Large number of components
+            if i==1, title(text_s), end
+            if i==fix(ncomp/2), ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
+            else ylabel('')
             end
-            % Resize all panels aftre addition of a colorbar
-            if ~isempty(dy)
-                for i=1:ncomp
-                    tt = get(ax(i),'Position');
-                    set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
-                end
-            end
-			set(ax(1:length(comp)-1),'XTickLabel',[])
-		end
-	end
+            add_text(h(i),lab_2(i,:));
+        end
+        % Add colorbar
+        if i==fix(ncomp/2)+1
+            hcb = colorbar;
+            dy = get(ax(i),'Position'); dy = dy(3);
+            pcb = get(hcb,'Position');
+            ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
+            set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
+        end
+    end
+    % Resize all panels aftre addition of a colorbar
+    if ~isempty(dy)
+        for i=1:ncomp
+            tt = get(ax(i),'Position');
+            set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
+        end
+    end
+    set(ax(1:length(comp)-1),'XTickLabel',[])
+
 end
 		
 if nargout > 0, res = h; end
