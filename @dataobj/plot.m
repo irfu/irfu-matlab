@@ -1,8 +1,11 @@
 function res = plot(dobj,var_s,varargin)
-%PLOT(dobj, var_s, [comp], [ax])  plot a variable
+%PLOT(dobj, var_s, [comp], [options])  plot a variable
 %
-% comp - which component of vector to plot
-% ax - axis handle where to plot 
+% OPTIONS - one of the following:
+%	'AX'       - axis handles to use
+%   'COMP'     - components to plot
+%   'SUM_DIM1' - sum over first dimension (frequency, pitch angle)
+%
 % $Id$
 
 % ----------------------------------------------------------------------------
