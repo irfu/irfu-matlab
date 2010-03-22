@@ -14,7 +14,7 @@ function res = plot(dobj,var_s,comp,ax)
 
 error(nargchk(2,4,nargin))
 
-LCOMP = 5;
+LCOMP = 3;
 
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 
@@ -111,8 +111,8 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			ii = (ii-1)*ndim;
 			if ~use_comp, comp=1:ndim; end
             plot_data = cell(size(comp));
-			for i=comp
-				plot_data{i} = data.data(:,ii+i)';
+			for i=1:length(comp)
+				plot_data{i} = data.data(:,ii+comp(i))';
 			end
 		else
 			plot_data = double(data.data)';
@@ -141,7 +141,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 					lab_2 = dep_x.data(:,1:reclen);
                 elseif strcmp(dep_x.type,'single') && strcmp(dep_x.variance,'F/T')
                     dep_x_units = getunits(dobj,dep.DEPEND_X{2,1});
-                    lab_2 = num2str(dep_x.data(:,1),['%.2f ' dep_x_units]);
+                    lab_2 = num2str(dep_x.data(comp,1),['%.2f ' dep_x_units]);
 				else
 					error('BAD type for DEPEND_X')
 				end
@@ -192,7 +192,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 else lab_2s = '';
                 end
                 if ncomp<=LCOMP % Small number of components
-                    ylabel(sprintf('%s [%s]%s', flab, funits, lab_2s))
+                    ylabel(sprintf('%s [%s]', flab, funits))
                     if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
                     else lab_2s = text_s;
                     end
@@ -205,12 +205,12 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                     add_text(h(i),lab_2(i,:));
                 end
                 % Add colorbar
-                if i==fix(ncomp/2)
+                if i==fix(ncomp/2)+1
                     hcb = colorbar;
                     dy = get(ax(i),'Position'); dy = dy(3);
                     pcb = get(hcb,'Position');
                     ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
-                    set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(0+(ncomp-2)/2) pcb(3) pcb(4)*(ncomp-3)])
+                    set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
                 end
             end
             % Resize all panels aftre addition of a colorbar
