@@ -22,6 +22,7 @@ LCOMP = 3;
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 
 data = getv(dobj,var_s);
+if isempty(data), error('VAR_S not found'), end
 dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
 units = corr_latex(getunits(dobj,var_s));
