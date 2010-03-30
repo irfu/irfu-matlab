@@ -23,7 +23,8 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2007 11 01 01 01 0]), Ddsi = [ 0.20    0.76 1.77 0.28];
+if     t>=toepoch([2008 01 01 00 00 0]), Ddsi = [-0.16    0.44 1.37 -0.03];
+elseif t>=toepoch([2007 11 01 01 01 0]), Ddsi = [ 0.20    0.76 1.77 0.28];
 elseif t>=toepoch([2007 08 05 01 01 0]), Ddsi = [0.70  1.45 1.49  0.85]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2007 08 01 00 00 0]), Ddsi = [0.70  1.45+1.4 1.49  0.85]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [-0.08     .46+1.4 1.65  .13 ]; % problem with guard settings on C2
@@ -74,7 +75,8 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if     t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
+if     t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
+elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.70  1.45+1.4 1.49  0.85 ]; % problem with guard settings on C2
 elseif t>=toepoch([2007 01 01 00 0 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
