@@ -18,12 +18,12 @@ z=x;
 
 if size(x,2) < 3, error('not enough components for x vector. irf_dot()');
 elseif size(x,2) == 3, xx=x;
-else, xx=x(:,2:4);
+else xx=x(:,2:4);
 end
 
 if size(y,2) > 3, yy=y(:,2:4);
 elseif size(y,2) == 3,  yy=y;
-else,  error('not enough components for y vector. irf_dot()');
+else  error('not enough components for y vector. irf_dot()');
 end
 
 if size(x,1) ~= size(y,1)
@@ -37,7 +37,7 @@ if size(x,1) ~= size(y,1)
   end
 end
 
-zout=[xx(:,1).*yy(:,1)+xx(:,2).*yy(:,2)+xx(:,3).*yy(:,3)];
+zout=xx(:,1).*yy(:,1)+xx(:,2).*yy(:,2)+xx(:,3).*yy(:,3);
 
 z(:,end)=[];z(:,end)=[];z(:,end)=zout;
 if size(z,2)>2,  % if input is vector [t x y z r ...], result should be [t dotproduct]
@@ -46,7 +46,7 @@ end
 
 % if flag=1 only abs(y) should be returned
 if exist('flag_output','var'),
-  if (flag_output == 1) & size(z,2)>1,
+  if (flag_output == 1) && size(z,2)>1,
     z=z(:,end);  
   end
 end
