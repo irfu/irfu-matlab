@@ -5,6 +5,7 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 % [jz,jp,nj,angle]=irf_jz(v,B);                            % method A
 % [j]=irf_jz(v,B,dB,n_av);                                 % method B
 % [j]=irf_jz(v,B);                                         % method B
+% [jz,jp]=irf_jz(v,B);                                     % method B
 %
 % estimates the current given velocity and magnetic field
 % can use two methods
@@ -39,7 +40,7 @@ function [jz,jp,nj,angle]=irf_jz(v,B,dB,deg_p,deg_z,n_av);
 
 if size(v,2)==3, v=[v(:,1)*0+B(1,1) v];end
 
-if nargout==1, method='B'; else method='A';end
+if nargout<=2, method='B'; else method='A';end
 if nargin <3, dB=B;end
 flag_average=0;
 if strcmp(method,'A'),
@@ -86,7 +87,8 @@ case 'B'
   irf_log('proc',['fs=' num2str(1/dt,3) ' irf_jz()']);
   vb=irf_resamp(v,dtB);
   jxx=irf_vec_x_scal(irf_cross(dtB,vb),[vb(:,1) irf_abs(vb,1)],-2);
-  j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12')  ;
-  jz=j;
+  j=irf_tappl(jxx,'*(-1)/(4*pi/1e7)*1e-12');
+  jz=irf_dot(j,irf_norm(B));
+  jp=irf_dot(j,irf_norm(irf_cross(B,vb)));
+  if nargout==1, jz=j; end
 end
-
