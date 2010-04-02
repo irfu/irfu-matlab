@@ -38,7 +38,17 @@ theta_all=peace.psd;
 for j=1:length(theta),
     theta_all(:,j,:)=peace.theta(j);
 end
-%theta_all(find(~peace.psd))=NaN; % fast(dirty) solution assuming zero counts means pitch angle no measured
+% clean up non-measured pitch angles
+% put to NaN all pitch angles where no counts at any energy
+for j=1:length(peace.t),
+    for jj=1:length(theta),
+        if sum(peace.psd(j,jj,:)) == 0, % there is no count at any energy level
+            theta_all(j,jj,:)=NaN;
+        end
+    end
+end
+
+%theta_all(find(~peace.psd))=NaN; % fast(dirty) solution assuming zero counts means pitch angle not measured
 [theta_par,theta_par_index]=min(theta_all,[],2); 
 [theta_antipar,theta_antipar_index]=max(theta_all,[],2);
 
