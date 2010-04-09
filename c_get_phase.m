@@ -19,9 +19,10 @@ else
 	if t(end)+4-start_time > dt, return, end
 	low=t(end)+60;
 end
+up=start_time+dt;
+if up<=(low+60), return, end
 irf_log('dsrc',[phasetype ' for C' num2str(cl_id) ' does not cover the full interval.'])
 
-up=start_time+dt;
 while up>(low+60)
 	test_t=floor((up+low)/2);
 	[t1,data1] = caa_is_get(db, test_t, dt-(test_t-start_time),cl_id, 'ephemeris', phasetype); 
