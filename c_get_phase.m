@@ -31,6 +31,9 @@ while up>(low+60)
 		up=test_t;
 	end
 end
+if isempty(t1)
+	[t1,data1] = caa_is_get(db, up, dt-(up-start_time),cl_id, 'ephemeris', phasetype); 
+end
 
 if isempty(t1), return, end
 if isempty(t)
