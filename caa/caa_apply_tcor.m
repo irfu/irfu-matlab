@@ -56,9 +56,9 @@ for dir_i=1:length(dir_list)
 						end
 						if tcor_offset(tcor_i) > -1e29 && tcor_diff(tcor_i) > -1e29 
 							if is_interval
-								var(valid_indx(i1:i2),:)=var(valid_indx(i1:i2),:)+(tcor_offset(tcor_i)+tcor_diff(tcor_i))*0.001;
+								var(valid_indx(i1:i2),:)=var(valid_indx(i1:i2),:)+(tcor_offset(tcor_i)+tcor_diff(tcor_i))*1e-6;
 							else
-								var(valid_indx(i1:i2),1)=var(valid_indx(i1:i2),1)+(tcor_offset(tcor_i)+tcor_diff(tcor_i))*0.001;
+								var(valid_indx(i1:i2),1)=var(valid_indx(i1:i2),1)+(tcor_offset(tcor_i)+tcor_diff(tcor_i))*1e-6;
 							end
 						end
 						i1=i2+1;
