@@ -38,13 +38,21 @@ MP = [];
 for o=1:length(ORB)
 	st = ORB(o,1);
 	et = ORB(o,1)+ORB(o,2);
+	t_out = min(MP1(MP1(:,1)>st & MP1(:,1)<et,1));
+	t_out2 = min(MP2(MP2(:,1)>st & MP2(:,1)<et,1));
+	t_out3 = min(MP3(MP3(:,1)>st & MP3(:,1)<et,1));
+	t_out4 = min(MP4(MP4(:,1)>st & MP4(:,1)<et,1));
+	if(isempty(t_out) || (~isempty(t_out2) && t_out2<t_out)), t_out=t_out2; end
+	if(isempty(t_out) || (~isempty(t_out3) && t_out3<t_out)), t_out=t_out3; end
+	if(isempty(t_out) || (~isempty(t_out4) && t_out4<t_out)), t_out=t_out4; end
+	t_in   = max(MP1(MP1(:,2)>st & MP1(:,2)<et,2));
+	t_in2  = max(MP2(MP2(:,2)>st & MP2(:,2)<et,2));
+	t_in3  = max(MP3(MP3(:,2)>st & MP3(:,2)<et,2));
+	t_in4  = max(MP4(MP4(:,2)>st & MP4(:,2)<et,2));
+	if(isempty(t_in) || (~isempty(t_in2) && t_in2>t_in)), t_in=t_in2; end
+	if(isempty(t_in) || (~isempty(t_in3) && t_in3>t_in)), t_in=t_in3; end
+	if(isempty(t_in) || (~isempty(t_in4) && t_in4>t_in)), t_in=t_in4; end
 	
-	t_out = min([MP1(MP1(:,1)>st & MP1(:,1)<et,1) ...
-		MP2(MP2(:,1)>st & MP2(:,1)<et,1)  MP3(MP3(:,1)>st & MP3(:,1)<et,1) ...
-		MP4(MP4(:,1)>st & MP4(:,1)<et,1)]);
-	t_in  = max([MP1(MP1(:,2)>st & MP1(:,2)<et,2) ...
-		MP2(MP2(:,2)>st & MP2(:,2)<et,2)  MP3(MP3(:,2)>st & MP3(:,2)<et,2) ...
-		MP4(MP4(:,2)>st & MP4(:,2)<et,2)]);
 	if ~isempty(t_out) && ~isempty(t_in)
 		tt = fromepoch(t_out);
 		t_out = toepoch([tt(1:3) fix(tt(4)/3)*3 0 0]);
