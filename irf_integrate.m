@@ -18,7 +18,7 @@ dt=[0 ; diff(x(:,1))];
 if nargin < 3, % estimate time step
     time_steps=diff(x(:,1));
     [time_step,ind_min]=min(time_steps);
-    time_steps(ind_min)=[]; % remove the smallest time steps in case some problems
+    time_steps(ind_min)=[]; % remove the smallest time step in case some problems
     time_step=min(time_steps),
 end
 data_gaps=find(dt>3*time_step);
