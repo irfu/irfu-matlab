@@ -162,8 +162,8 @@ elseif strcmp(action,'plot'),
             set(ax1,'position',axpos); % narrow axis
             ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
             xlabel(['X [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
-            xtlax2=num2str((str2num(xticklabel_ax1)+R(2))/6372,'%5.2f');
-            ytlax2=num2str((str2num(yticklabel_ax1)+R(4))/6372,'%5.2f');
+            xtlax2=num2str((str2num(xticklabel_ax1)+R(2))/6372,'%6.3f');
+            ytlax2=num2str((str2num(yticklabel_ax1)+R(4))/6372,'%6.3f');
             set(ax1_2,'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
             
             
@@ -181,8 +181,8 @@ elseif strcmp(action,'plot'),
             ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
             xlabel(['Y [km] ' coord_label]);ylabel(['Z [km] ' coord_label]);
             set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
-            xtlax2=num2str((str2num(xticklabel_ax1)+R(3))/6372,'%5.2f');
-            ytlax2=num2str((str2num(yticklabel_ax1)+R(4))/6372,'%5.2f');
+            xtlax2=num2str((str2num(xticklabel_ax1)+R(3))/6372,'%6.3f');
+            ytlax2=num2str((str2num(yticklabel_ax1)+R(4))/6372,'%6.3f');
             set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
             
             axes(h(3));ax1=gca;
@@ -200,8 +200,8 @@ elseif strcmp(action,'plot'),
             ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
             xlabel(['X [km] ' coord_label]);ylabel(['Y [km] ' coord_label]);
             set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);set(ax1_2,'xdir','reverse')
-            xtlax2=num2str((str2num(xticklabel_ax1)+R(2))/6372,'%5.2f');
-            ytlax2=num2str((str2num(yticklabel_ax1)+R(3))/6372,'%5.2f');
+            xtlax2=num2str((str2num(xticklabel_ax1)+R(2))/6372,'%6.3f');
+            ytlax2=num2str((str2num(yticklabel_ax1)+R(3))/6372,'%6.3f');
             set(ax1_2,'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
             
     end
