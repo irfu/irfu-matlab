@@ -2576,7 +2576,7 @@ elseif strcmp(quantity,'manproblems')
                     if any(idx), prob(idx,2)=st;end %#ok<AGROW>
                     idx=find(prob(:,1)<st+dt & prob(:,2)>st+dt);
                     if any(idx), prob(idx,1)=st+dt;end %#ok<AGROW>
-                    idx=find(prob(:,1)>st & prob(:,2)<st+dt);
+                    idx=find(prob(:,1)>=st & prob(:,2)<=st+dt);
                     if any(idx), prob(idx,1:2)=0;end %#ok<AGROW>
                     idx=find(prob(:,1) ~= 0);
                     if any(idx), prob=prob(idx,:);
