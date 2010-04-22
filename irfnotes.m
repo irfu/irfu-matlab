@@ -1,5 +1,7 @@
 % IRFNOTES File with different common examples how to use irf routines
- 
+%
+% use code folding options to fast find your necessary examples
+
 edit irfnotes; return
 
 %% Initializing some figure
