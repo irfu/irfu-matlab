@@ -1,17 +1,21 @@
-function irf_plot_axis_align(nsubplot)
+function irf_plot_axis_align(nsubplot,h)
 %IRF_PLOT_AXIS_ALIGN  align all axis with respect to given subplot
 % usefull when due to colorbars and other stuff axis gets disaligned
 %
 % irf_plot_axis_align(nsbuplot)
+% irf_plot_axis_align(nsbuplot,h)
 %
 % Input:
 %     nsbuplot: subplot with respect to which align axis
-%               if none given align to the panel
+%               if none given align to fit all
+%            h: axes handles which to align, if not given, align all axes
 %
 % $Id$
 
-error(nargchk(0,1,nargin))
-h=irf_plot_get_subplot_handles;
+error(nargchk(0,2,nargin))
+if nargin<=1, % align all subplots
+    h=irf_plot_get_subplot_handles;
+end
 
 % calculate the size of axis to which align
 if nargin==0, % no subplot number given
