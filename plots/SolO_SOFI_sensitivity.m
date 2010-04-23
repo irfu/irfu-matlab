@@ -70,4 +70,3 @@ set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','right')
 patch([f_transition(2) f_range(2) f_range(2) f_transition(2)],db_range(1)+ [2 2 7 7], [0.9 0.9 0.9]);
 ht=text(f_transition(2),db_range(1)+2,'   capacitive ');
 set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left');
-
