@@ -77,7 +77,8 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if     t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
+if     t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
+elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
 elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
 elseif t>=toepoch([2007 07 21 18 45 0]), Ddsi = [ 0.70  1.45+1.4 1.49  0.85 ]; % problem with guard settings on C2
