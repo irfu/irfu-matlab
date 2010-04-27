@@ -316,7 +316,16 @@ for in = iok
 	% Wake half-width
 	ii =    find( abs(ccdav1) <  max(abs(ccdav1))/2 );
 	iimax = find( abs(ccdav1) == max(abs(ccdav1))   );
-	wakedesc(in*2-1+fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
+	iimax = min(ii(ii>iimax))-max(ii(ii<iimax));
+	if ~isempty(iimax)
+		wakedesc(in*2-1+fw,4) = iimax;
+	else
+		if DEBUG
+			irf_log('proc',['wrong wake shape at  ' epoch2iso(ts,1) ' (spike corner case)'])
+		end
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue		
+	end
 	wakedesc(in*2-fw,3) = max(abs(ccdav2));
 	% Wake half-width
 	ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
