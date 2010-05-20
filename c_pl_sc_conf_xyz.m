@@ -90,8 +90,8 @@ if strcmp(action,'initialize'),
             xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
             set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
             
-            h(1)=axes('position',[0.07 0.18 0.35 0.7]); % [x y dx dy]
-            h(2)=axes('position',[0.55 0.18 0.35 0.7]); % [x y dx dy]
+            h(1)=axes('position',[0.09 0.18 0.33 0.66]); % [x y dx dy]
+            h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
             h(3)=axes('position',[0 0 1 1]);axis off;
             %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
             flag_show_cluster_description=0;
@@ -226,7 +226,7 @@ elseif strcmp(action,'plot'),
             xlabel(['{\Delta}X [km] ' coord_label]);ylabel(['{\Delta}Z [km] ' coord_label]);
             set(gca,'xdir','reverse')
             grid on;axis([-drref drref -drref drref]);
-            if drref>1000, REform='%6.1f';
+            if drref>10000, REform='%6.1f';
             elseif drref<100, REform='%6.3f';
             else REform='%6.2f';
             end
