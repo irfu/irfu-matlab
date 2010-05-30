@@ -30,7 +30,7 @@ flag_read_isdat=0;
 
 if nargin <  2, disp('Not enough arguments'); help c_gse2dsc; return; end
 if nargin <  3, direction=1;                                          end
-if nargin == 4, flag_db=1; else, flag_db=0;                           end
+if nargin == 4, flag_db=1; else flag_db=0;                           end
 
   % Spin_axis gives only s/c number
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,15 +47,16 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
      t  = spin_axis(1);
      ic = spin_axis(2);
      clear spin_axis;
-     if exist('./maux.mat');
+     if exist('./maux.mat','file');
          irf_log('load','Loading maux.mat file');
          try c_eval('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic);
-         catch irf_log('load','Loading maux.mat file failed'); flag_read_isdat=1;
+         catch
+             irf_log('load','Loading maux.mat file failed'); flag_read_isdat=1;
          end
          if flag_read_isdat==0, % if reading maux file suceeded
              tmin = lat(1,1);
              tmax = lat(end,1);
-             if (t > tmin) | (t < tmax)
+             if (t > tmin) || (t < tmax)
                  eval( irf_ssub('load maux sc_at?_lat__CL_SP_AUX sc_at?_long__CL_SP_AUX; lat=sc_at?_lat__CL_SP_AUX; long = sc_at?_long__CL_SP_AUX;', ic) );
                  latlong   = irf_resamp([lat long(:,2)],t);
              end
@@ -65,12 +66,12 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
              disp('            I am getting attitude data from isdat instead');
              flag_read_isdat=1;
          end
-     else,
+     else
          flag_read_isdat=1;
      end
      if flag_read_isdat,  % try if there is SP CDF file, otherwise continue to isdat
          cdf_files=dir(['CL_SP_AUX_' epoch2yyyymmdd(t) '*']);
-         switch prod(size(cdf_files))
+         switch numel(cdf_files)
              case 1
                  cdf_file=cdf_files.name;
                  irf_log('load',['converting CDF file ' cdf_file ' -> maux.mat']);
@@ -78,7 +79,7 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
                  irf_log('load',['Loading from CDF file:' cdf_file '. Next time will use maux.mat']);
                  c_eval('lat=irf_cdf_read(cdf_file,{''sc_at?_lat__CL_SP_AUX''});',ic);
                  c_eval('long=irf_cdf_read(cdf_file,{''sc_at?_long__CL_SP_AUX''});',ic);
-                 if (t > lat(1,1)) & (t < lat(end,1)),
+                 if (t > lat(1,1)) && (t < lat(end,1)),
                      flag_read_isdat=0;
                      latlong   = irf_resamp([lat long(:,2)],t);
                  end
@@ -105,10 +106,10 @@ if nargin == 4, flag_db=1; else, flag_db=0;                           end
           db = Mat_DbOpen(DB_S);
         end
         [tlat, lat] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_lat__CL_SP_AUX'], ' ', ' ',' ');
-        [tlong, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');
+        [~, long] = isGetDataLite( db, start_time, Dt, 'CSDS_SP', 'CL', 'AUX', ['sc_at' num2str(ic) '_long__CL_SP_AUX'], ' ', ' ',' ');
         xxx=[double(tlat) double(lat) double(long)];
         if isempty(xxx), y=NaN; return;
-        else,
+        else
           latlong=xxx(1,:);
         end
         irf_log('proc',['lat=' num2str(latlong(2)) '  long=' num2str(latlong(3))]);
