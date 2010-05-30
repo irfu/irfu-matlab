@@ -1,4 +1,4 @@
-function J_probe=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
+function [J_probe, J_the, J_thi1, J_thi2, J_photo]=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
     m_amu1, m_amu2,m2_fraction,Ne,Ti_eV,Te_eV,V_SC)
 % J_probe=lp_probecurrent(probe_type, XA,Ap,U_probe,R_sun,UV_factor, ...
 %    m_amu1, m_amu2,m2_fraction,Ne,Ti_eV,Te_eV,V_SC)
@@ -96,6 +96,12 @@ Te=Te_eV*qe/kb;
 %%%%%%%%%%
   J_probe = J_the - J_thi1 - J_thi2 - J_photo + J_SC; 
 
+% Define J_thi1 J_thi2 and J_photo with + sign being from probe to
+% electronics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  J_thi1=-J_thi1;
+  J_thi2=-J_thi2;
+  J_photo=-J_photo;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
