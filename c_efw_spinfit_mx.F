@@ -58,9 +58,9 @@ c
 c check for proper number of arguments
 c
 	if (nrhs .ne. 6) then
-		call mexErrMsgTxt('c_efw_spinfit_mx requires six input arguments')
+	call mexErrMsgTxt('c_efw_spinfit_mx needs six input args')
 	elseif (nlhs .gt. 5) then
-		call mexErrMsgTxt('c_efw_spinfit_mx requires five output argument')
+	call mexErrMsgTxt('c_efw_spinfit_mx needs five output args')
 	endif
 
 c	maxit		argument #1
@@ -89,7 +89,7 @@ c	nterms		argument #3
 	call mxCopyPtrToReal8(pr_tmp, tvar, 1)
 	nterms = nint(tvar)
 	if (nterms .le. 1 .or. nterms .gt. MAXTERMS_FIT .or.
-	1	mod(nterms,2) .eq. 0) then
+     +	mod(nterms,2) .eq. 0) then
 		call mexErrMsgTxt('NTERMS must be one of 3,5,7,9')
 	endif
 c	write(*,*) 'nterms: ',nterms
@@ -162,8 +162,10 @@ c
 	pr_nout = mxGetPr(plhs(5))
 c	write(*,*) 'Ready to go.'
 
-	call spinfit( maxit,minpts,nterms,tstart,nspins,ndata,%val(pr_te),%val(pr_data),
-	1	%val(pr_pha),%val(pr_ts),%val(pr_sfit),%val(pr_sdev),%val(pr_iter),%val(pr_nout))
+	call spinfit( maxit,minpts,nterms,tstart,
+     + nspins,ndata,%val(pr_te),%val(pr_data),
+     + %val(pr_pha),%val(pr_ts),%val(pr_sfit),%val(pr_sdev),
+     + %val(pr_iter),%val(pr_nout))
 	
 c	write(*,*) 'returning...'
 	
@@ -196,16 +198,19 @@ c	write(*,*) 'tstart:', tstart
 c
 c call onesfit for every spin
 c
-	subroutine spinfit(maxit,minpts,nterms,t0,nspins,ndata,te,az,pha,ts,sfit,sdev,iter,nout)
+	subroutine spinfit(maxit,minpts,nterms,t0,nspins,ndata,
+     +	te,az,pha,ts,sfit,sdev,iter,nout)
 	implicit none
 c in
 	integer maxit, minpts, nterms, nspins, ndata
 	integer*8 t0
 	real*8 te(ndata), az(ndata), pha(ndata)
 c out
-	real*8 ts(nspins), sfit (nterms,nspins), sdev(nspins), iter(nspins), nout(nspins)
+	real*8 ts(nspins),sfit(nterms,nspins),sdev(nspins),iter(nspins)
+	real*8 nout(nspins)
 c local
-	integer idx, nn, i, j, idxs, idxe, ierr, niter, nbad, lim, spinstart
+	integer idx, nn, i, j, idxs, idxe, ierr, niter, nbad
+	integer lim, spinstart
 	real*8 x(MAXTERMS_FIT), sigma
 	real*8 dt
 
@@ -260,7 +265,8 @@ c		check number of data points
 c		write(*,*) 'got: ',nn,' min:',minpts
 		if ( nn .gt. minpts) then
 c			write(*,*) 'start: ',idxs,' stop:',idxe
-			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),nbad,x,sigma,ierr)
+			call onesfit(nterms,maxit,niter,lim,nn,pha(idxs),az(idxs),nbad,
+     + x,sigma,ierr)
 			if (ierr .eq. 0) then
 c			write(*,*) '         spin: ok'
 				do j=1, nterms
@@ -289,7 +295,8 @@ c by Yuri Khotyaintsev for g77 compiler
 c 1) replace structures
 c 2) use automatic array instead of pointers
 
-	subroutine onesfit (fnterms,fitmax,fiter,flim,nn,apha,az,nbad,x,sigma,ier)
+	subroutine onesfit (fnterms,fitmax,fiter,flim,
+     + nn,apha,az,nbad,x,sigma,ier)
 
 c Function name: SFIT
 c
@@ -327,7 +334,7 @@ c local
 	real*8 omega
 	real*8 arg,pha,y
 	real*8 s(MAXTERMS_FIT,MAXTERMS_FIT+1),w(MAXTERMS_FIT+1),
-	1	q(MAXTERMS_FIT,MAXTERMS_FIT+1)
+     + q(MAXTERMS_FIT,MAXTERMS_FIT+1)
 	real*8 diff,ref,const
 	integer row,col,i,iter
 	logical*1 change
@@ -341,7 +348,7 @@ c local
 	ier = -1
 	if (nn .lt. fnterms+1) goto 999
 	if (fnterms .gt. MAXTERMS_FIT .or.
-	1	mod(fnterms,2) .eq. 0) goto 999
+     + mod(fnterms,2) .eq. 0) goto 999
 
 c	write(*,*) 'onesfit E:'
 c10	format(F6.4)
