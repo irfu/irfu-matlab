@@ -79,7 +79,7 @@ while have_options
 			if length(args)>1
 				if isnumeric(args{2})
 					flag_yy = 1;
-					scaleyy = varargin{j+2};
+					scaleyy = args{2};
 					l = 2;
 				else irf_log('fcal,','wrongArgType : yy must be numeric')
 				end
@@ -91,7 +91,7 @@ while have_options
 		otherwise
 			%irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
 			marker = args{1};
-			args = args(2:end);
+			args = args(2:end); %#ok<NASGU>
 			break
 	end
 	args = args(l+1:end);
@@ -114,11 +114,11 @@ if ischar(x), % Try to get variable labels etc.
     x = {}; ix = 1;
     for ii=1:length(var_names)
         try % Try to get variable from calling workspace
-            x{ix} = evalin('caller',var_names{ii});
-        catch
+            x{ix} = evalin('caller',var_names{ii}); %#ok<AGROW>
+        catch %#ok<CTCH>
             try % If there is none try to load variable
                 c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
-            catch % If nothing works give up
+            catch %#ok<CTCH> % If nothing works give up
                 irf_log('load',...
 					['skipping, do not know where to get variable >'...
 					var_names{ii}]);
@@ -127,7 +127,7 @@ if ischar(x), % Try to get variable labels etc.
         if length(x)==ix,
           try
               var_desc{ix} = c_desc(var_names{ii}); %#ok<AGROW>
-          catch
+          catch %#ok<CTCH>
               var_desc{ix} = {}; %#ok<AGROW>
           end
           ix = ix +1;
@@ -156,7 +156,7 @@ if iscell(x), % Plot several variables
 else
     try
         var_desc{1} = c_desc(inputname(1));
-    catch
+    catch %#ok<CTCH>
         var_desc{1} = {};
     end
 end
