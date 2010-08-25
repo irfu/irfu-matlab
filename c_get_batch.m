@@ -77,6 +77,7 @@ db = c_ctl(0,'isdat_db');
 dp = c_ctl(0,'data_path');
 cdb = '';
 vars = '';
+varsXtra = '';
 varsProc = '';
 argsProc = '';
 dosrc = 1;
@@ -125,7 +126,7 @@ while have_options
 				if ischar(args{2})
 					vars = {};
 					p = tokenize(args{2},'|');
-					for i=1:length(p), vars(length(vars)+1) = p(i); end
+					for i=1:length(p), vars(length(vars)+1) = p(i); end %#ok<AGROW>
 				elseif iscell(args{2}), vars = args{2};
 				else
 					irf_log('fcal','VARS must be eather string or cell array')
@@ -134,7 +135,7 @@ while have_options
 				if ischar(args{2})
 					varsProc = {};
 					p = tokenize(args{2},'|');
-					for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end
+					for i=1:length(p), varsProc(length(varsProc)+1) = p(i); end %#ok<AGROW>
 				elseif iscell(args{2}), varsProc = args{2};
 				else
 					irf_log('fcal',...
@@ -142,9 +143,8 @@ while have_options
 				end
 			case 'extrav'
 				if ischar(args{2})
-					p = tokenize(args{2},'|');
-					for i=1:length(p), vars(length(vars)+1) = p(i); end
-				elseif iscell(args{2}), vars = [vars args{2}]; %#ok<AGROW>
+					varsXtra = tokenize(args{2},'|');
+				elseif iscell(args{2}), varsXtra = args{2};
 				else
 					irf_log('fcal',...
 						'EXTRAV must be eather string or cell array')
@@ -186,13 +186,16 @@ if isempty(vars) && isempty(varsProc)
 	vars = {'tmode','fdm','efwt','ibias','p','e','a','sax',...
 		'r','v','b','edi','ncis','vcis','bfgm'};
 end
+
+if ~isempty(varsXtra), vars = [vars varsXtra]; end
+
 if ~isempty(vars)
 	if L_find(vars,{'e','p'})
 		if isempty(L_find(vars,'ibias')), vars = [{'ibias'} vars]; end
 		if isempty(L_find(vars,'efwt')), vars = [{'efwt'} vars]; end
 		if isempty(L_find(vars,'fdm')), vars = [{'fdm'} vars]; end
 	end
-	if ~isempty(L_find(vars,'e')) &&  isempty(L_find(vars,'tmode'))
+	if ~isempty(L_find(vars,{'e','bsc'})) &&  isempty(L_find(vars,'tmode'))
 		vars = [{'tmode'} vars];
 	end
 
@@ -211,12 +214,13 @@ if ~isempty(vars)
 		if L_find(vars,'e')
 			if sw_mode
 				varsProc = [varsProc {'ec','dies','die'}];
-				argsProc = [{'correct_sw_wake'} argsProc];
+				argsProc = [{'correct_sw_wake','rmwhip'} argsProc];
 			else
 				varsProc = [varsProc {'dies','die'}];
 			end
 		end
 		if L_find(vars,{'b','bfgm'}), varsProc = [varsProc {'brs','br'}]; end
+        if L_find(vars,{'bsc'}), varsProc = [varsProc {'dibsc'}]; end
 		if L_find(vars,'edi'), varsProc = [varsProc {'edi'}]; end
 		if L_find(vars,{'pburst','eburst'}), varsProc = [varsProc {'dieburst'}]; end
 		if L_find(vars,'vcis'), varsProc = [varsProc {'vce'}]; end
@@ -227,7 +231,7 @@ if ~isempty(varsProc) && doproc
 	cp=ClusterProc(get(cdb,'sp'));
 	for cl_id=sc_list
 		for k=1:length(varsProc)
-			proc_options = [{cp} {cl_id} {varsProc{k}} argsProc];
+			proc_options = [{cp} {cl_id} varsProc(k) argsProc];
 			getData(proc_options{:});
 		end
 	end
