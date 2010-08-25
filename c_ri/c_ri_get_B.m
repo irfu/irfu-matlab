@@ -53,6 +53,8 @@ if strcmp(mext,'mexglx') % running on x86
 	CMDPATH = '/home/scb/fgm/bin/';
 elseif strcmp(mext,'mexa64') % running on amd64
 	CMDPATH = '/home/scb/fgm/bin64/';
+elseif strcmp(mext,'mexmaci64')
+    CMDPATH = '/Users/yuri/devel/fgm/clfgm/bin64/';
 else
 	error('Cannot find CMDPATH for the current operating system/platform.')
 end
@@ -62,7 +64,7 @@ fgmtel = [CMDPATH 'fgmtel'];
 fgmcal = [CMDPATH 'fgmcal'];
 fgmhrt = [CMDPATH 'fgmhrt'];
 fgmvec = [CMDPATH 'fgmvec'];
-d_path = sprintf('/data/cluster/DDS/');
+d_path = sprintf('%s/DDS/',c_ctl(0,'data_path'));
 
 from_U =fromepoch(from);
 to_U = fromepoch(to);
@@ -98,7 +100,7 @@ fn = sprintf('Ba_%s_%s_%s_%s.0%d',d_s,fhhmmss,thhmmss,mode,cl_id');
 to_file = sprintf('%s%s',path_output,fn);
 irf_log('dsrc',['Reading FGM ' d_s ' ' fhhmmss '-' thhmmss ', s/c' num2str(cl_id) ]);
 
-FGMPATH = '/data/cluster/cal/fgm';
+FGMPATH = sprintf('%s/cal/fgm/',c_ctl(0,'data_path'));
 if ~exist(FGMPATH,'dir'), error('FGMPATH does not exist'), end
 
 if nargout,  % return B
