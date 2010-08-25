@@ -27,7 +27,8 @@ time_u = fromepoch(time);
 y = datestr(time_u,11);
 m = datestr(time_u,5);
 d = datestr(time_u,7);
-path = sprintf('/data/cluster/DDS/');
+
+path = sprintf('%s/DDS/',c_ctl(0,'data_path'));
 
 %the filename 
 filename = sprintf('%s%s%s*f%s.0%d',y,m,d,mode,cl_id);
@@ -40,6 +41,8 @@ if strcmp(mext,'mexglx') % running on x86
 	unix_command = sprintf('/home/scb/fgm/bin/ddsls %s >%s',p_f,output_file);
 elseif strcmp(mext,'mexa64')
     unix_command = sprintf('/home/scb/fgm/bin64/ddsls %s >%s',p_f,output_file);
+elseif strcmp(mext,'mexmaci64')
+    unix_command = sprintf('/Users/yuri/devel/fgm/clfgm/bin64/ddsls %s >%s',p_f,output_file);    
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
     error('SPARC is not supported at the moment.')
 else
