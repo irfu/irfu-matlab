@@ -72,7 +72,7 @@ elseif strcmp(flag,'dt_from_v'),
   % print result
   disp([ datestr(datenum(fromepoch(t(1))))])
   vn=irf_norm(v);
-  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
+  strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
   strdt=['dt=[' , num2str(dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
   disp(strv);  disp(strdt);
   v=dt; % output variable is v
