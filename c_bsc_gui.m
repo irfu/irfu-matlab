@@ -221,23 +221,28 @@ switch action
     case 'get_data_auto'
         hnd = guidata(h0);
         
-        DT_OFF = 120;
+        fsamp = c_efw_fsample(hnd.BSCData);
+        FFTW = 65536; % 2^16
+        DT_OFF = 0.05*FFTW/fsamp;
+        request_dt = min(1.01*FFTW/fsamp, hnd.tint(2) - hnd.ts_marker.t + 2*DT_OFF);
+        DT_OFF = request_dt*0.05;
         DT = DT_OFF*3/4;
-        st = hnd.ts_marker.t;
         
         hnd.BSCDataAppend = [];
         set(hnd.menu_save_data,'Enable','off')
         
-        h_wbar = waitbar(0,[main_fig_title ' : Fetching data...']);
-        steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT);
+        h_wbar = waitbar(0,[main_fig_title ' : Fetching data in '...
+            num2str(request_dt/60,'%.1f') ' min chunks...']);
+        steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT_OFF);
         step = 0;
         
+        st = hnd.ts_marker.t;
         while st < hnd.tint(2)
         
             data = getData(...
                 ClusterDB(c_ctl(0,'isdat_db'), c_ctl(0,'data_path'), '.'), ...
                 st - DT_OFF,...
-                hnd.tint(2) - hnd.ts_marker.t + 2*DT_OFF,...
+                request_dt,...
                 hnd.cl_id, 'bsc','nosave');
        
             if ~isempty(data)
