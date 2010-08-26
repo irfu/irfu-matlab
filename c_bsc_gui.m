@@ -16,6 +16,7 @@ persistent h0;
 %persistent inprog_mtx; % this is a kinda mutex to hold "in progress" status
 
 main_fig_id = 28;
+main_fig_title = 'Cluster B-SA GUI';
 
 if nargin, action = varargin{1};
 else action = 'init';
@@ -41,7 +42,7 @@ switch action
         % Create figure
         h0 = figure(main_fig_id);
         clf
-        set(main_fig_id,'Name', 'CLUSTER B-SA GUI')
+        set(main_fig_id,'Name', main_fig_title)
         
         hnd = guihandles(h0);
         
@@ -95,6 +96,9 @@ switch action
         hnd.menu_get_data = uimenu(hnd.menu_b_sc,'Label','&Get data',...
             'Callback','c_bsc_gui(''get_data'')',...
             'Accelerator','g');
+        hnd.menu_get_data = uimenu(hnd.menu_b_sc,'Label','&Get data auto',...
+            'Callback','c_bsc_gui(''get_data_auto'')',...
+            'Accelerator','r');
         hnd.menu_get_data = uimenu(hnd.menu_b_sc,'Label','&Compare to FGM',...
             'Callback','c_bsc_gui(''compare_fgm'')',...
             'Accelerator','f');
@@ -212,6 +216,56 @@ switch action
                 epoch2iso(hnd.tint(2)+DT_OFF,1)])
         end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% get_data_auto
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%       
+    case 'get_data_auto'
+        hnd = guidata(h0);
+        
+        DT_OFF = 120;
+        DT = DT_OFF*3/4;
+        st = hnd.ts_marker.t;
+        
+        hnd.BSCDataAppend = [];
+        set(hnd.menu_save_data,'Enable','off')
+        
+        h_wbar = waitbar(0,[main_fig_title ' : Fetching data...']);
+        steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT);
+        step = 0;
+        
+        while st < hnd.tint(2)
+        
+            data = getData(...
+                ClusterDB(c_ctl(0,'isdat_db'), c_ctl(0,'data_path'), '.'), ...
+                st - DT_OFF,...
+                hnd.tint(2) - hnd.ts_marker.t + 2*DT_OFF,...
+                hnd.cl_id, 'bsc','nosave');
+       
+            if ~isempty(data)
+                data = irf_tlim(data{2},st,hnd.tint(2));
+                if ~isempty(hnd.BSCDataAppend)
+                    hnd.BSCDataAppend = irf_tlim(...
+                        hnd.BSCDataAppend, hnd.BSCDataAppend(1,1), st);
+                end
+                hnd.BSCDataAppend = [hnd.BSCDataAppend; data];
+            end
+            
+            st = st + DT;
+            step = step + 1;
+            waitbar(step / steps, h_wbar)
+        end
+        close(h_wbar)
+        
+        if ~isempty(hnd.BSCDataAppend)
+            set(hnd.menu_save_data,'Enable','on')
+            
+            guidata(h0,hnd);
+            c_bsc_gui('replot_all')
+        else
+            disp(['Load: No data for Cluster ' num2str(curr_sc) ' '...
+                epoch2iso(hnd.ts_marker.t-DT_OFF,1) ' -- '...
+                epoch2iso(hnd.tint(2)+DT_OFF,1)])
+        end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% save_data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'save_data'
@@ -302,10 +356,10 @@ if ~isempty(marker)
 	newmarker.t = marker.t;
 	% Hide the marker if marker.h exists
 	if isfield(marker,'h')
-		lasterr('')
+		lasterr('') %#ok<LERR>
 		try
 			for j=3:-1:1, delete(marker.h(j)),end
-		catch
+		catch %#ok<CTCH>
 			%disp('missed marker')
 		end
 	end
@@ -335,21 +389,4 @@ function update_title(hnd)
 title(hnd.Xaxes, ['Cluster ' num2str(hnd.cl_id) ...
             ' Start: ' epoch2iso(hnd.ts_marker.t,1)])
 return
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% function load_data
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function res = load_data(h0,cl_id)
-hnd = guidata(h0);
-
-[ok, data] = c_load('wBSC?',cl_id);
-if ok && ~isempty(data)
-    res = 1;
-    hnd.BSCData = data;
-    hnd.cl_id = cl_id;
-    guidata(h0,hnd);
-else
-    res = 0;
-    disp(['Load: No data for Cluster ' num2str(cl_id)])
-end
   
