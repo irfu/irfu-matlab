@@ -48,7 +48,7 @@ end
 for jj=1:nsubplots,
     if i_spectra(jj)==0, % plot angles 
         disp('assumes that peace spectra have par/perp/antipar');
-        axes(h(jj));cla;
+        axes(h(jj));cla; %#ok<LAXES>
         htmp=irf_plot({[peace_spec.t peace_spec.pa{1}(:,1)],[peace_spec.t peace_spec.pa{2}(:,1)],[peace_spec.t peace_spec.pa{3}(:,1)]},'comp','linestyle','.');
         ylabel('pitch angle [deg]');
         axis tight
@@ -69,10 +69,12 @@ for jj=1:nsubplots,
             set(gca,'ytick',[30 60 90 120 150 180 210 240 270 300 330])
             grid on;
         end
-                if jj==1,
-            hc=colorbar;cax=caxis; % all panels have common colorbar axis
+        if jj==1,
+            hc=colorbar('peer',h(jj));
+            caxis_save = caxis(h(jj)); % all panels have common colorbar axis
         else
-            caxis(cax);hc=colorbar;
+            caxis(h(jj),caxis_save);
+            hc=colorbar('peer',h(jj));
         end
         ylabel(hc,peace_spec_comp.p_label);
     end
