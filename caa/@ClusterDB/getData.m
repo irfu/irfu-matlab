@@ -183,9 +183,9 @@ if strcmp(quantity,'caa_int')
     flag_save=0;
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% dsc - EFW DSC
+% dsc - EFW DSC old
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'dsc')
+elseif strcmp(quantity,'dscold')
 	save_file = './mEFWR.mat';
 	
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
@@ -266,6 +266,21 @@ elseif strcmp(quantity,'dsc')
 	irf_log('dsrc',sprintf('\nFound total %d good and %d jumpy intervals',...
 		n_good, n_jumpy))
 	c_eval('DSC?=[t_start_save'' dsc_save'']'';save_list=[save_list '' DSC? ''];',cl_id);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dsc - EFW DSC new save all
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'dsc')
+	save_file = './mEFWR.mat';
+	
+	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
+	if isempty(dsc)
+		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
+		out_data = []; cd(old_pwd), return
+	end
+
+	% All DSC fields are saved
+
+	c_eval('DSC?=[t dsc''];save_list=[save_list '' DSC? ''];',cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % fdm - EFW FDM
