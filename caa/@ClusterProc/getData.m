@@ -59,6 +59,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI]
 %   manproblems: whip|sweep|bdump|badbias|probesa|hbiassa|wake -> mEFW
 %          // Reads manually-set problems from database.
+%   hk: ibias puck guard -> mHK // save house keeping values
 %
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
@@ -2590,6 +2591,147 @@ elseif strcmp(quantity,'manproblems')
            end
         end
     end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% hk - housekeeping: time bias1-4 puck(stub)1-4 guard1-4
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'hk')
+	save_file='./mEFW.mat';
+
+    global c_ct % includes hk calib values
+    if isempty(c_ct)
+        disp('c_ct undefined');
+    end
+    if c_ct{1,1}.ibias(2,1) == 0.
+%        irf_log('proc','c_ct hk cal not loaded: run c_ctl(''load_hk_cal'')');
+        c_ctl('load_hk_cal');
+    end
+    
+    [ok,HK,msg] = c_load('DSC?',cl_id);
+	if ~ok || isempty(HK)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+    end
+    
+    [ok,fdm] = c_load('FDM?',cl_id);
+	if ~ok
+		irf_log('load',...
+			irf_ssub('No FDM?. Use getData(CDB,...,cl_id,''fdm'')',cl_id))
+		data = []; cd(old_pwd); return
+	end
+
+%    datestr(epoch2date(HK(1,1)))
+%    binval=HK(130:141,:);
+    binval=HK(:,130:141);
+    sbv = size(binval,1);
+    sfdm=size(fdm,1);
+    DSCindex=bitand(fdm(:,3),31);
+%    DSCindex
+
+    % convert bin values like in isdat ./server/Wec/Efw/EfwCal.c
+    ix = binval>127;
+    binval(ix)=binval(ix)-256;
+    binval=binval+128;
+    ix = binval<0;
+    binval(ix)=0;
+    ix = binval>255;
+    binval(ix)=255;
+
+    binvalred=zeros(sbv,12);
+    timest = zeros(sbv);
+
+    k=0;
+    lastfound=1;
+    for j=1:sbv % check DSCindex 0-31 and romid as in isdat ./server/Wec/Index.c
+        for i=lastfound:sfdm
+            if abs(HK(j,1)-fdm(i,1))<.5
+                cnt=0;
+                ok=1;
+                for l=i:sfdm
+                   if cnt~=DSCindex(l)
+                        ok=0;
+                        break;
+                    end
+                    if cnt>=31
+                        break;
+                    end;
+                    cnt = cnt + 1;
+                end
+                romid=HK(j,80); % Does checking romid really work for a reset?
+                if romid ~= hex2dec('b1') && romid ~= hex2dec('e1') && romid ~= hex2dec('f1') && romid ~= hex2dec('f2') &&...
+                    romid ~= hex2dec('f3') && romid ~= hex2dec('f4') && romid ~= hex2dec('f5') && romid ~= hex2dec('f6') &&...
+                    romid ~= hex2dec('f7') && romid ~= hex2dec('f8') && romid ~= hex2dec('f9')
+                    ok=0;
+                end
+
+                if ok==1
+                    k = k + 1;
+                    binvalred(k,:)=binval(j,:);
+                    timest(k)=HK(j,1);
+                else
+                    irf_log('proc',sprintf('DSCindex and/or romid bad. i%d cnt%d ind%d rom%X',i,cnt,DSCindex(l),HK(j,80)));
+                end               
+                lastfound=i+1;
+            end
+        end
+    end
+    redsize=k;
+
+if 0 % NOT USED. remove jumpy hk data. no difference (of 12) per time stamp is ok
+    sbv = size(binval,1);
+    binvalred=zeros(sbv,12);
+    timest = zeros(sbv);
+    drop=0;
+    j=1;
+    i=1;
+    % first vector
+    if sum(binval(i,:)==binval(i+2,:))==12 || sum(binval(i,:)==binval(i+1,:))==12
+        binvalred(i,:)=binval(i,:);
+        timest(i)=HK(i,1);
+        j=2;
+    else
+        drop = drop + 1;
+    end
+    for i=1:sbv-2
+        if sum(binval(i,:)==binval(i+2,:))==12 && sum(binval(i,:)~=binval(i+1,:))~=0
+            drop = drop + 1;
+        else
+            binvalred(j,:)=binval(i+1,:);
+            timest(j)=HK(i+1,1);
+            j = j + 1;
+        end
+    end
+    redsize=j;
+    i=sbv;
+    % last vector
+    if sum(binval(i,:)==binval(i-2,:))==12 || sum(binval(i,:)==binval(i-1,:))==12
+        binvalred(redsize,:)=binval(i,:);
+        timest(redsize)=HK(i,1);
+    else
+        redsize = redsize - 1;
+        drop = drop + 1;
+    end
+    if drop~=0
+        irf_log('proc',sprintf('Ignoring %d jumpy hk time stamp(s)',drop));
+    end
+    binvalred
+    calhk=zeros(12,redsize);
+end
+
+    calhk=zeros(12,redsize);
+    % substitute to calib values from c_ct
+    for i=1:redsize
+        for k=1:4
+            calhk(k,i)=c_ct{1,cl_id}.ibias(binvalred(i,k)+1,1+k);
+            calhk(k+4,i)=c_ct{1,cl_id}.puck(binvalred(i,k+4)+1,1+k);
+            calhk(k+8,i)=c_ct{1,cl_id}.guard(binvalred(i,k+8)+1,1+k);
+        end
+    end
+
+%    HK_info.probe = '1234'; % c_desc support for hk info needed
+%    c_eval('HK?_info=HK_info;save_list=[save_list ''HK?_info'' '' HK?''];',cl_id)
+    % save time and only dsc 128->139: time,  BIAS_DAC_1 -> 4, STUB_DAC_1 -> 4, GUARD_DAC_1 -> 4 
+    c_eval('HK?=[timest(1:redsize)'' calhk''];',cl_id);
+    c_eval('save_list=[save_list ''HK?''];',cl_id);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 else error('caa:noSuchQuantity','Quantity ''%s'' unknown',quantity)
