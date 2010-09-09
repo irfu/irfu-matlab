@@ -10,10 +10,12 @@ function out=c_ctl(varargin)
 % c_ctl('save',[dir])
 % c_ctl('set',[sc_list],ctl_name,ctl_val)
 % c_ctl(sc_list,ctl_name,value,[ctl_name1,value1...]) % equvalent to set
-% 
+% c_ctl('load_hk_cal')
+%
 % $Id$
 
 % Copyright 2005 Yuri Khotyaintsev
+
 
 default_mcctl_path = '.';
 
@@ -54,11 +56,16 @@ if ischar(args{1})
 				def_ct.deltaof_sdev_max = 2; 
 										% delta offsets we remove points which 
 										% are > deltaof_sdev_max*sdev
-				
+                
 				% DSI offsets are moved to c_efw_dsi_off
 				% use c_ctl only if you want to override the default value
 				def_ct.dsiof = [];
-				c_ct{1} = def_ct;
+
+                def_ct.ibias = zeros(256,5,'single');
+				def_ct.puck  = zeros(256,5,'single');
+				def_ct.guard = zeros(256,5,'single');
+
+                c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
 				c_ct{4} = def_ct;
@@ -98,7 +105,19 @@ if ischar(args{1})
 			if nargout>0, out=[]; end
 			irf_log('fcal',['unknown ctl: ' c])
 		end
+	elseif strcmp(args{1},'load_hk_cal')
 
+        global c_ct
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+        end
+%        c_eval('[c_ct{?}.ibias c_ct{?}.puck c_ct{?}.guard] = readhkcalmatrix(''C?_CT_EFW_20001128_V002.cal'');');
+        [c_ct{1}.ibias c_ct{1}.puck c_ct{1}.guard] = readhkcalmatrix('C1_CT_EFW_20001128_V002.cal');
+        [c_ct{2}.ibias c_ct{2}.puck c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
+        [c_ct{3}.ibias c_ct{3}.puck c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
+        [c_ct{4}.ibias c_ct{4}.puck c_ct{4}.guard] = readhkcalmatrix('C4_CT_EFW_20001128_V002.cal');
 	elseif strcmp(args{1},'load_ns_ops')
 		global c_ct
 		if isempty(c_ct)
@@ -259,6 +278,78 @@ else
 	error('Invalid argument')
 end
 
+function ret = findhkcalmatrix( fid, searchstr )
+    ret = -2;
+    tline = fgetl(fid);
+    while ischar(tline)
+%        disp(tline)
+        if strncmpi(tline,searchstr,length(searchstr))
+            ret = -1;
+            break;
+        end
+        tline = fgetl(fid);
+    end
+    while ischar(tline)
+%        disp(tline)
+        if strncmpi(tline,'# step',6) % find first data line
+            ret = 0;
+            break;
+        end
+        tline = fgetl(fid);
+    end
+    
+function [ibias, puck, guard] = readhkcalmatrix( filen )
+    datapath='/data/cluster/cal/';
+    fid = fopen([ datapath filen ]);
+
+    if fid >= 0
+        ibias=zeros(256,5,'single');
+        ret = findhkcalmatrix(fid, 'QTY          IBIAS1'); 
+        if ret ~= 0
+            irf_log('load',['BIAS hk cal matrix not found in ' datapath filen]);
+        else
+            ib = textscan(fid,' %d16 %f32 %f32 %f32 %f32',255);
+            for i=1:5
+                ibias(2:end,i)=ib{i};
+                if i > 1 % 1st value computed as in isdat ./server/Wec/Efw/calib_read.c
+                    ibias(1,i)=2*ibias(2,i)-ibias(3,i);
+                end
+            end
+        end
+        
+        puck=zeros(256,5,'single');
+        ret = findhkcalmatrix(fid, 'QTY          PUCK1');
+        if ret ~= 0
+            irf_log('load',['PUCK hk cal matrix not found in ' datapath filen]);
+        else
+            ib = textscan(fid,' %d16 %f32 %f32 %f32 %f32',255);
+            for i=1:5
+                puck(2:end,i)=ib{i};
+                if i > 1 % 1st value computed as in isdat ./server/Wec/Efw/calib_read.c
+                    puck(1,i)=2*puck(2,i)-puck(3,i);
+                end
+            end
+        end
+        
+        guard=zeros(256,5,'single');
+        ret = findhkcalmatrix(fid, 'QTY          GUARD1'); 
+        if ret ~= 0
+			irf_log('load',['GUARD hk cal matrix not found in ' datapath filen]);
+        else
+            ib = textscan(fid,' %d16 %f32 %f32 %f32 %f32',255);
+            for i=1:5
+                guard(2:end,i)=ib{i};
+                if i > 1 % 1st value computed as in isdat ./server/Wec/Efw/calib_read.c
+                    guard(1,i)=2*guard(2,i)-guard(3,i);
+                end
+            end
+        end
+        
+        fclose(fid);
+    else
+        irf_log('load',['file ' datapath filen ' not found']);
+    end
+
 function c_ctl_usage
 	disp('Usage:')
 	disp('  c_ctl(''init'')')
@@ -272,3 +363,4 @@ function c_ctl_usage
 	disp('  c_ctl(''save'',''/path/to/mcctl.mat/'')')
 	disp('  c_ctl(''save'',''/path/to/alternative_mcctl.mat'')')
 	disp('  c_ctl(''sc_list'',''ctl'',value)')
+    disp('  c_ctl(''load_hk_cal'')')
