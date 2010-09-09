@@ -42,6 +42,7 @@ FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
 DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
 
+
 old_pwd = pwd;
 %cd(sp)
 dirs = caa_get_subdirs(st, dt, cl_id);
@@ -88,6 +89,13 @@ else
 %			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
 %			irf_log('proc',sprintf('using p%d',sfit_probe))
 			v_size = 4;    % Previously 2. (ML)
+		else
+			disp('not implemented'), cd(old_pwd), return
+        end
+	case 'HK'
+		if lev==2
+			vs = irf_ssub('HK?',cl_id);
+			v_size = 12;
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -143,7 +151,7 @@ for dd = 1:length(dirs)
    %   keyboard
    end
    if all(~ok) || isempty(data)
-   	irf_log('load', ['No ' vs])
+   	irf_log('load', ['No ' vs]);
    	cd(old_pwd)
 %   	return
       continue
@@ -153,7 +161,7 @@ for dd = 1:length(dirs)
    	[ok, d_info] = c_load([vs '_info'],'var');
    %   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
    catch
-      irf_log('load', ['No ' vs '_info'])
+      irf_log('load', ['No ' vs '_info']);
    	d_info = []; ok = 0;
    end
    
@@ -613,8 +621,8 @@ if ~isempty(data)
         i=i+dsc.size(j);
     end
     format=ctranspose(format);
-	
-   s = cefprint_mx([file_name ext_s],data, format);
+
+    s = cefprint_mx([file_name ext_s],data, format);
 	if s~=0
 		if s==1, msg = 'problem writing CEF data';
 		elseif s==2, msg = 'problem compressing CEF';

@@ -2,10 +2,10 @@ function varargout = c_desc(vs,v_info)
 %C_DESC  Provide a description of a Cluster variable
 %
 % C_DESC(V_S [,V_S_INFO]) 
-%        prints out a descriptoon of variable VS
+%        prints out a description of variable VS
 %
 % DESC = C_DESC(V_S [,V_S_INFO]) 
-%        returns a descriptoon of variable VS as structure DESC.
+%        returns a description of variable VS as structure DESC.
 %
 % Input:
 %	V_S      - string defining a variable
@@ -581,6 +581,33 @@ elseif regexp(vs,'^DSC[1-4]$')==1
 	v.file_old = 'mFDM';
 	v.quant = 'dsc';
 	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% HK
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^HK[1-4]$')==1
+	v.data = 1;
+	v.cl_id = vs(3);
+	v.inst = 'EFW';
+    v.frame = 'na';
+    v.sig = 'HK';
+	v.com = 'HK';
+    v.sen = '';
+    v.size = [1 1 1 1 1 1 1 1 1 1 1 1];
+	v.file = 'mEFW';
+    v.name = {'BIAS1','BIAS2','BIAS3','BIAS4','PUCK1','PUCK2','PUCK3','PUCK4','GUARD1','GUARD2','GUARD3','GUARD4'};
+    v.labels = v.name;
+    v.field_name = {'BIAS current probe1','BIAS current probe2','BIAS current probe3','BIAS current probe4',...
+        'PUCK voltage probe1','PUCK voltage probe2','PUCK voltage probe3','PUCK voltage probe4',...
+        'GUARD voltage probe1','GUARD voltage probe2','GUARD voltage probe3','GUARD voltage probe4'};
+    v.cs = {'na'};
+    v.units =  {'nA','nA','nA','nA','V','V','V','V','V','V','V','V'};
+    v.si_conv = {'1.0e-9>A','1.0e-9>A','1.0e-9>A','1.0e-9>A','V>V','V>V','V>V','V>V','V>V','V>V','V>V','V>V'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT'};
+    v.sigdig = [6 6 6 6 6 6 6 6 6 6 6 6]; 
+%	v.file_old = 'mFDM';
+	v.quant = 'dsc';
+	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% TMMode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1408,7 +1435,7 @@ elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')
         v.label_1 = {'"JxBx", "JxBy", "JxBz"'};
     end
 else
-	error('Variable name not recognized')
+	error(['Variable name not recognized: ' vs])
 end
 
 %% Construct the output
