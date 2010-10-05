@@ -588,24 +588,23 @@ elseif regexp(vs,'^HK[1-4]$')==1
 	v.data = 1;
 	v.cl_id = vs(3);
 	v.inst = 'EFW';
-    v.frame = 'na';
-    v.sig = 'HK';
-	v.com = 'HK';
-    v.sen = '';
-    v.size = [1 1 1 1 1 1 1 1 1 1 1 1];
+	v.frame = 'na';
+	v.sig = 'HK';
+	v.com = 'Housekeeping';
+	v.sen = '';
+	v.size = [1 1 1 1 1 1 1 1 1 1 1 1];
 	v.file = 'mEFW';
-    v.name = {'BIAS1','BIAS2','BIAS3','BIAS4','PUCK1','PUCK2','PUCK3','PUCK4','GUARD1','GUARD2','GUARD3','GUARD4'};
-    v.labels = v.name;
-    v.field_name = {'BIAS current probe1','BIAS current probe2','BIAS current probe3','BIAS current probe4',...
-        'PUCK voltage probe1','PUCK voltage probe2','PUCK voltage probe3','PUCK voltage probe4',...
-        'GUARD voltage probe1','GUARD voltage probe2','GUARD voltage probe3','GUARD voltage probe4'};
-    v.cs = {'na'};
-    v.units =  {'nA','nA','nA','nA','V','V','V','V','V','V','V','V'};
-    v.si_conv = {'1.0e-9>A','1.0e-9>A','1.0e-9>A','1.0e-9>A','V>V','V>V','V>V','V>V','V>V','V>V','V>V','V>V'};
-    v.ptype = {'Data'};
-    v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT'};
-    v.sigdig = [6 6 6 6 6 6 6 6 6 6 6 6]; 
-%	v.file_old = 'mFDM';
+	v.name = {'BIAS1','BIAS2','BIAS3','BIAS4','PUCK1','PUCK2','PUCK3','PUCK4','GUARD1','GUARD2','GUARD3','GUARD4'};
+	v.labels = v.name;
+	v.field_name = {'BIAS current probe1','BIAS current probe2','BIAS current probe3','BIAS current probe4',...
+	    'PUCK voltage probe1','PUCK voltage probe2','PUCK voltage probe3','PUCK voltage probe4',...
+	    'GUARD voltage probe1','GUARD voltage probe2','GUARD voltage probe3','GUARD voltage probe4'};
+	v.cs = {'na'};
+	v.units =  {'nA','nA','nA','nA','V','V','V','V','V','V','V','V'};
+	v.si_conv = {'1.0e-9>A','1.0e-9>A','1.0e-9>A','1.0e-9>A','V>V','V>V','V>V','V>V','V>V','V>V','V>V','V>V'};
+	v.ptype = {'Data'};
+	v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT'};
+	v.sigdig = [6 6 6 6 6 6 6 6 6 6 6 6]; 
 	v.quant = 'dsc';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
