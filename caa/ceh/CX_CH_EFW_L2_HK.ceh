@@ -1,0 +1,266 @@
+!
+! $Id$
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L2_HK"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Instrument bias, puck and guard settings"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains settings (bias current, puck and guard voltages)"
+   ENTRY       =   "of the EFW experiment on the Cluster CXXX spacecraft"
+END_META       =   DATASET_DESCRIPTION
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "The settings are the commanded ones, not the measured."
+END_META       =   DATASET_CAVEATS
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   32
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   32
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   32
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 32
+  DELTA_MINUS     = 0
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L2_HK
+!
+! Bias
+!
+START_VARIABLE      = I_BIAS_P1__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Current"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Bias current, probe 1"
+  FIELDNAM          = "Bias current, probe 1"
+  SI_CONVERSION     = "1.0e-9>A"
+  UNITS             = "nA"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "BIAS1"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = I_BIAS_P1__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = I_BIAS_P2__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Current"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Bias current, probe 2"
+  FIELDNAM          = "Bias current, probe 2"
+  SI_CONVERSION     = "1.0e-9>A"
+  UNITS             = "nA"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "BIAS2"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = I_BIAS_P2__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = I_BIAS_P3__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Current"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Bias current, probe 3"
+  FIELDNAM          = "Bias current, probe 3"
+  SI_CONVERSION     = "1.0e-9>A"
+  UNITS             = "nA"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "BIAS3"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = I_BIAS_P3__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = I_BIAS_P4__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Current"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Bias current, probe 4"
+  FIELDNAM          = "Bias current, probe 4"
+  SI_CONVERSION     = "1.0e-9>A"
+  UNITS             = "nA"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "BIAS4"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = I_BIAS_P4__CXXX_CP_EFW_L2_HK 
+!
+! Puck
+!
+START_VARIABLE      = V_PUCK_P1__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Puck voltage, probe 1"
+  FIELDNAM          = "Puck voltage, probe 1"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "PUCK1"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_PUCK_P1__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_PUCK_P2__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Puck voltage, probe 2"
+  FIELDNAM          = "Puck voltage, probe 2"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "PUCK2"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_PUCK_P2__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_PUCK_P3__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Puck voltage, probe 3"
+  FIELDNAM          = "Puck voltage, probe 3"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "PUCK3"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_PUCK_P3__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_PUCK_P4__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Puck voltage, probe 4"
+  FIELDNAM          = "Puck voltage, probe 4"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "PUCK4"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_PUCK_P4__CXXX_CP_EFW_L2_HK 
+!
+! Guard
+!
+START_VARIABLE      = V_GUARD_P1__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Guard voltage, probe 1"
+  FIELDNAM          = "Guard voltage, probe 1"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "GUARD1"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_GUARD_P1__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_GUARD_P2__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Guard voltage, probe 2"
+  FIELDNAM          = "Guard voltage, probe 2"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "GUARD2"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_GUARD_P2__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_GUARD_P3__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Guard voltage, probe 3"
+  FIELDNAM          = "Guard voltage, probe 3"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "GUARD3"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_GUARD_P3__CXXX_CP_EFW_L2_HK 
+!
+START_VARIABLE      = V_GUARD_P4__CXXX_CP_EFW_L2_HK
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Guard voltage, probe 4"
+  FIELDNAM          = "Guard voltage, probe 4"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  LABLAXIS          = "GUARD4"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_HK
+END_VARIABLE        = V_GUARD_P4__CXXX_CP_EFW_L2_HK 
+!
