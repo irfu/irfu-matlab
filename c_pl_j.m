@@ -61,14 +61,14 @@ else
 	else args = ''; end
 end
 
-if length(args)>0
+if ~isempty(args)
 	ref_sc = args{1};
 	if length(args) > 1, args = args(2:end); 
 	else args = ''; end
 else
 	ref_sc = 1;
 end
-if length(args)>0
+if ~isempty(args)
 	fcut = args{1};
 else
 	fcut = .7;
@@ -83,34 +83,38 @@ for j=2:4,c_eval(['B?(:,' num2str(j) ')=irf_lowpass(B?(:,' num2str(j) '),fcut,fh
 
 [jj,divB,B,jxB] = c_4_j(R1,R2,R3,R4,B1,B2,B3,B4); %#ok<ASGLU>
 
+jpar = []; jperp = [];
 c_eval('[jpar,jperp]=irf_dec_parperp(B?,jj);',ref_sc)
 
+NPLOTS = 6;
+h = 1:NPLOTS;
 
-h = irf_plot({B1,B1,B1,B1,B1,B1}); %c_pl_tx('irf_abs(B?)');
-
-axes(h(1))
-c_eval('irf_plot(irf_abs(B));',ref_sc)
+h(1) = irf_subplot(NPLOTS, 1, -1);
+c_eval('irf_plot(irf_abs(B?));',ref_sc)
 ylabel([' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 
-axes(h(2))
+h(2) = irf_subplot(NPLOTS, 1, -2);
+jpar(:,2:end) = jpar(:,2:end)*1e9;
 irf_plot(jpar);
-ylabel('j_{||} [A/m^2]')
+ylabel('j_{||} [nA/m^2]')
 
-axes(h(3))
+h(3) = irf_subplot(NPLOTS, 1, -3);
+jperp(:,2:end) = jperp(:,2:end)*1e9;
 irf_plot(jperp);
-ylabel('j_{\perp} GSE [A/m^2]')
+ylabel('j_{\perp} GSE [nA/m^2]')
 
-axes(h(4))
+h(4) = irf_subplot(NPLOTS, 1, -4);
 irf_plot(jxB);
 ylabel('jxB [A/m^2 T]')
 
-axes(h(5))
+h(5) = irf_subplot(NPLOTS, 1, -5);
 irf_plot(irf_integrate(jxB));
 ylabel('\int jxB [A/m^2 T s]')
 
-axes(h(6))
+h(6) = irf_subplot(NPLOTS, 1, -6);
+divB(:,2:end) = divB(:,2:end)*1e9;
 irf_plot(divB);
-ylabel('div(B) [A/m^2]')
+ylabel('div(B) [nA/m^2]')
 
 for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 
