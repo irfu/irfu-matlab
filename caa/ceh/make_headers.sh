@@ -17,7 +17,8 @@ flist="CX_CH_EFW_L2_P.ceh \
 CX_CH_EFW_L3_P.ceh \
 CX_CH_EFW_L2_E.ceh \
 CX_CH_EFW_L3_E.ceh \
-CX_CH_EFW_L3_DER.ceh"
+CX_CH_EFW_L3_DER.ceh \
+CX_CH_EFW_L2_HK.ceh"
 
 
 for f in $flist
