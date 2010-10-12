@@ -42,7 +42,6 @@ FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
 DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
 
-
 old_pwd = pwd;
 %cd(sp)
 dirs = caa_get_subdirs(st, dt, cl_id);
@@ -108,13 +107,18 @@ else
 %		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
 %		irf_log('proc',sprintf('using p%d',sfit_probe))    % TODO: Change printing!
 		v_size = 2;
+	case 'SFIT'
+		if lev==3
+            % Fake for c_desc only. No data variable in .mat files
+			vs = irf_ssub('SFIT?',cl_id);
+			v_size = 4;
+		else
+			disp('not implemented'), cd(old_pwd), return
+		end
 	otherwise
 		error('unknown variable')
 	end
 end
-
-
-
 
 
 for dd = 1:length(dirs)
@@ -132,8 +136,7 @@ for dd = 1:length(dirs)
       end
    end
 
-
-%   keyboard
+   %   keyboard
    % Load data
    if strcmp(caa_vs, 'DER')
       vs = vs_DER;
@@ -144,6 +147,40 @@ for dd = 1:length(dirs)
       probe_pairs = probe_pair_list(logical(ok));   % Keep list of probe pairs actually loaded.
       if numel(probe_pairs) > 0
          vs = irf_ssub(vs, probe_pairs(1));
+      end
+   elseif strcmp(caa_vs, 'SFIT')
+      [ok,spf34,msg] = c_load('diEs?p34',cl_id);
+      if ~ok || isempty(spf34)
+		 irf_log('load',msg)
+		 data = []; cd(old_pwd); return
+      end;
+      nanfill = 0;
+      pnosfit = 12;
+      ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
+      if isempty(ret)
+         pnosfit = 32;
+      end
+      [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
+      if ~ok || isempty(spfD)
+         nanfill = 1; % No P12/32 data
+         irf_log('load',irf_ssub('Fillvalue used. No diEs?p12 or diEs?p32 data',cl_id) )
+         ok = 1; % yes it's all good
+      else
+         [ok,Del,msg] = c_load('D?p12p34',cl_id);
+         if ~ok || isempty(Del)
+            irf_log('load',msg)
+            data = []; cd(old_pwd); return
+         end;
+         if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
+            irf_log('load','Info: Imaginary delta offset.');
+         end
+      end;
+      if nanfill
+         % save time, NaN(fillval) and p34 spin-fit: B C sdev 
+         data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
+      else
+         % save time, p12/32 and p34 spin-fit: B C sdev 
+         data=[spf34(:,1) spfD(:,2:3)+ones(size(spfD,1),1)*Del spfD(:,5) spf34(:,2:3) spf34(:,5)];
       end
    else
       [ok,data] = c_load(vs);
@@ -164,7 +201,7 @@ for dd = 1:length(dirs)
       irf_log('load', ['No ' vs '_info']);
    	d_info = []; ok = 0;
    end
-   
+
    if ~ok || isempty(d_info), dsc = c_desc(vs);
    else dsc = c_desc(vs,d_info);
    end
@@ -583,8 +620,15 @@ buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
-buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
-
+if strcmp(caa_vs, 'SFIT')
+    if nanfill
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
+    else
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' & P34 data.' dsc.com ]);
+    end
+else
+    buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
+end    
 
 buf = sprintf('%s%s',buf,'!\n');
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
