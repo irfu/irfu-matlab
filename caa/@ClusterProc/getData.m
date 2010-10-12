@@ -485,21 +485,23 @@ elseif strcmp(quantity,'dies')
 						end
 					end
 				end
-				% Save problem to file mEFW.mat (not save_file=mEDSI.mat)
-				if ~adc_despike
-					badDACname=irf_ssub('BADDAC?p!',cl_id,probe);
-					irf_log('save', [badDACname ' -> mEFW.mat']);
-					eval([badDACname '=badDAC;']);
-					if exist('mEFW.mat','file')
-						eval(['save -append mEFW.mat ' badDACname]);
-					else
-						eval(['save mEFW.mat ' badDACname]);
-					end
-					% Tell export routines to use p12
-					caa_sfit_probe(cl_id,p12);
+			end
+			
+			% Save problem to file mEFW.mat (not save_file=mEDSI.mat)
+			if ~adc_despike
+				badDACname=irf_ssub('BADDAC?p!',cl_id,probe);
+				irf_log('save', [badDACname ' -> mEFW.mat']);
+				eval([badDACname '=badDAC;']);
+				if exist('mEFW.mat','file')
+					eval(['save -append mEFW.mat ' badDACname]);
+				else
+					eval(['save mEFW.mat ' badDACname]);
 				end
+				% Tell export routines to use p12
+				caa_sfit_probe(cl_id,p12);
 			end
 		end
+
 		% Unless a suspect DAC interval was detected, take care of spikes
 		if adc_despike
 			% Take care of spikes: replace extreme values with mean value
