@@ -16,8 +16,8 @@ function caa_export_month(year,month,startday,stopday,sats)
 
   old_pwd=pwd;
   cd(sprintf('/data/caa/cef/%4.4i',year))
-  levels= [1 1 1 1 1 1 1 2 3 3 2 3];
-  datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E'};
+  levels= [1 1 1 1 1 1 1 2 3 3 2 3 2];
+  datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK'};
   switch year
 	  case 2006
 		  exceptions={{1 'P1'} {3 'P1'}  {2 'P3'} {1 'P12'} {3 'P12'} {2 'P32'} {4 'P32'}};
@@ -31,6 +31,11 @@ function caa_export_month(year,month,startday,stopday,sats)
 		  end
 	  case 2008
 		  exceptions={{1 'P1'} {2 'P1'} {2 'P3'} {3 'P1'} {1 'P12'} {2 'P12'} {3 'P12'} {4 'P32'}};
+	  case 2009
+		    % No TCOR yet...
+		    levels= [2 3 3 2];
+			datatypes={'P' 'P' 'E' 'HK'};
+			exceptions={};
 	  otherwise
 		  disp('Not sure which files to except.')
 		  disp('To continue, enter return at the prompt.')
