@@ -458,20 +458,65 @@ elseif strcmp(quantity,'dies')
 		% Fill NaNs with mean value
 		adc_off_mean = mean(adc_off(~isnan(adc_off(:,2)),2));
 		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
-		% Take care of spikes: replace extreme values with mean value 
-		idx = find( abs( adc_off(:,2) - adc_off_mean ) > 3*std(adc_off(adc_off(:,2)~=0,2)) );
-		if ~isempty(idx)
-			adc_off(idx,2) = 0;
-			adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
-			irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
+		% For C4p34, check for DAC problems if date is after 2009-01-01
+		adc_despike=1;
+		if cl_id == 4 && probe == 34 && adc_off(1,1) > 1230768000
+			idx = find( abs( adc_off(:,2)) > 1);
+			if length(idx) > 150 % Longer interval of DAC problems
+				adc_despike=0;
+				badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20];
+				irf_log('proc','Long interval of DAC problems.');
+			else
+				if length(idx) > 5
+					% Check for short interval at start
+					idx2=find(idx < 150);
+					if length(idx2) > 3 && idx2(end) < idx(idx2(end))*1.3
+						adc_despike=0;
+						badDAC=[adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20];
+						irf_log('proc','Short interval of DAC problems at start of interval.');
+					end
+					% Check for short interval at end
+					idx2=find(idx > length(adc_off(:,1))-150);
+					if length(idx2) > 3 && idx2(end)-idx2(1) < (idx(idx2(end))-idx(idx2(1)))*1.3
+						if adc_despike, badDAC=[adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20];
+						else badDAC=[badDAC' [adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]']';
+							adc_despike=0;
+							irf_log('proc','Short interval of DAC problems at end of interval.');
+						end
+					end
+				end
+				% Save problem to file mEFW.mat (not save_file=mEDSI.mat)
+				if ~adc_despike
+					badDACname=irf_ssub('BADDAC?p!',cl_id,probe);
+					irf_log('save', [badDACname ' -> mEFW.mat']);
+					eval([badDACname '=badDAC;']);
+					if exist('mEFW.mat','file')
+						eval(['save -append mEFW.mat ' badDACname]);
+					else
+						eval(['save mEFW.mat ' badDACname]);
+					end
+					% Tell export routines to use p12
+					caa_sfit_probe(cl_id,p12);
+				end
+			end
 		end
-		% Smoothen the signal
-		adc_off = irf_waverage(adc_off,1/4);
-		adc_off(adc_off(:,2)==0,2) = adc_off_mean; %#ok<NASGU>
+		% Unless a suspect DAC interval was detected, take care of spikes
+		if adc_despike
+			% Take care of spikes: replace extreme values with mean value
+			idx = find( abs( adc_off(:,2) - adc_off_mean ) > 3*std(adc_off(adc_off(:,2)~=0,2)) );
+			if ~isempty(idx)
+				adc_off(idx,2) = 0;
+				adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
+				adc_off(adc_off(:,2)==0,2) = adc_off_mean;
+				irf_log('proc',sprintf('%d spikes (ADC offsets)',length(idx)));
+			end
+		end
+		% Smooth the ADC offset signal
+		adc_off = irf_waverage(adc_off,1/4); %#ok<NASGU>
 		
 		% Save 2 omega separately
 		if probe == 32 && size(sp,2) == 10
-			% Fill NaNs with zeros and smoothen the signal
+			% Fill NaNs with zeros and smooth the signal
 			for col = 9:10
 				sp( isnan(sp(:,col)) ,col) = 0;
 				sp(:,[1 col]) = irf_waverage(sp(:,[1 col]),1/4);
@@ -2351,6 +2396,18 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		end
 	end
 	
+	%Check for problem with bad DAC
+	[ok,badDAC,msg] = c_load('BADDAC?p34',cl_id);
+	if ok || ~isempty(badDAC)
+		irf_log('proc',irf_ssub('Bad DAC C?p34',cl_id))
+		p3=[];p4=[];
+	end
+	[ok,badDAC,msg] = c_load('BADDAC?p12',cl_id);
+	if ok || ~isempty(badDAC)
+		irf_log('proc',irf_ssub('Bad DAC C?p12',cl_id))
+		p1=[];p2=[];
+	end
+
 	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
             all(size(p1)==size(p4) )
 		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
