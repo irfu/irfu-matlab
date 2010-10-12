@@ -762,7 +762,19 @@ elseif regexp(vs,'^HBIASSA[1-4]p([1-4]|12|32|34)$')==1
 	v.quant = 'hbiassa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% ADC offsets corse
+%% Probe low density saturation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^BADDAC[1-4]p(12|32|34)$')==1
+	v.data = 0;
+	v.cl_id = vs(7);
+	v.sen = vs(9:end);
+	v.inst = 'EFW';
+	v.com = 'Bad settings on bias DAC';
+	v.file = 'mEFW';
+	v.quant = 'baddac';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ADC offsets coarse
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^Da[1-4]p(12|32|34)$')==1
 	v.data = 0;
