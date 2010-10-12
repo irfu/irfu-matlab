@@ -59,7 +59,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI]
 %   manproblems: whip|sweep|bdump|badbias|probesa|hbiassa|wake -> mEFW
 %          // Reads manually-set problems from database.
-%   hk: ibias puck guard -> mHK // save house keeping values
+%   hk: ibias puck guard HK{cl_id} -> mEFW // save housekeeping data
 %
 % Example: 
 %       getData(cp,4,'edbs','ang_fill','ang_limit',20,'probe_p',12)
@@ -499,7 +499,7 @@ elseif strcmp(quantity,'dies')
 		% Compute delta offsets, i.e. difference between DSI E obtained 
 		% from different probe pairs 
 		% Remove points which are > deltaof_sdev_max*sdev
-		% as this must de a stable quantity
+		% as this must be a stable quantity
 		eval(irf_ssub('[ii1,ii2] = irf_find_comm_idx(diEs?p!,diEs?p34);',cl_id,p12))
 		eval(irf_ssub('df=diEs?p!(ii1,1:3);df(:,2:3)=diEs?p!(ii1,2:3)-diEs?p34(ii2,2:3);',cl_id,p12))
 		clear ii1 ii2
