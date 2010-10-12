@@ -387,6 +387,40 @@ elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)$')==1
 	v.com = 'Ez=0 by definition (not measured).';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Spin fits E p12/32 and p34 level 3 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^SFIT[1-4]$')==1
+	v.data = 1;
+	v.frame = 'sc';
+	v.file = 'mEDSI';
+	v.quant = 'dies';
+	v.cl_id = vvs(5);
+	v.inst = 'EFW';
+	v.sig = 'E';
+    v.sen = '';
+    v.cs = {'ISR2','na','ISR2','na'};
+	v.units =  {'mV/m','mV/m','mV/m','mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','1.0e-3>V m^-1',...
+        '1.0e-3>V m^-1'};
+	v.size = [2 1 2 1];
+	v.name = {'E_Vec_xy_ISR2','E_sigma','E_Vec_xy_ISR2','E_sigma'};
+	v.labels = {'E','E','St dev','E','E','St dev'};
+	v.field_name = {'Electric field (4 sec resolution)',...
+        'Electric field standard deviation',...
+        'Electric field (4 sec resolution)',...
+        'Electric field standard deviation'};
+	v.ptype = {'Data','Data','Data','Data'};
+	v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT'};
+	v.sigdig = [6 6 6 6];
+	v.ent = {'Electric_Field','Electric_Field',...
+        'Electric_Field','Electric_Field'};
+	v.prop = {'Vector','Vector','Vector','Vector'};
+	v.fluc = {'Waveform','Fluctuation_Level','Waveform',...
+        'Fluctuation_Level'};
+	v.com = '';
+	v.lev = 2;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Spin fits of 2 omega for p32
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^w2W[1-4]p32$')==1
