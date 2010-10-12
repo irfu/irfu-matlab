@@ -108,6 +108,8 @@ BITMASK_LOBE_WAKE                =  2048;    % Bit 12
 BITMASK_PLASMASPHERE_WAKE        =  4096;    % Bit 13
 BITMASK_WHISPER_OPERATING        =  8192;    % Bit 14
 BITMASK_HIGH_BIAS_SATURATION     =  16384;   % Bit 15
+BITMASK_BAD_DAC                  =  32768;   % Bit 16
+
 
 % Quality factors:
 QUALITY_RESET                    =  0;
@@ -125,6 +127,7 @@ QUALITY_LOBE_WAKE                =  1;
 QUALITY_PLASMASPHERE_WAKE        =  1;
 QUALITY_WHISPER_OPERATING        =  2;
 QUALITY_HIGH_BIAS_SATURATION     =  1;
+QUALITY_BAD_DAC                  =  2;    % NOTE: Applies to L2 only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if DEBUG, keyboard, end
@@ -374,6 +377,18 @@ if ( data_level == 2 && strcmp(probe, '3234') )
    result(:, quality_column) = min(result(:, quality_column), QUALITY_ASYMMETRIC_MODE);
 end
 
+% Mark data with suspected bad DAC settings
+if data_level == 2
+	for probe_loop={'12' '32' '34'}
+		[ok, problem_intervals] = c_load(irf_ssub('BADDAC?p!', spacecraft_id,probe_loop{1}));
+		if ok && ~isempty(problem_intervals)
+			irf_log('proc', 'marking bad DAC interval')
+			result = caa_set_bitmask_and_quality(result, problem_intervals, ...
+				BITMASK_BAD_DAC, QUALITY_BAD_DAC,bitmask_column, quality_column);
+		end
+	end
+	clear ok problem_intervals
+end
 
 % Mark data from solar wind wake
 for probe_id = probe_pair_list
