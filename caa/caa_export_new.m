@@ -151,36 +151,37 @@ for dd = 1:length(dirs)
    elseif strcmp(caa_vs, 'SFIT')
       [ok,spf34,msg] = c_load('diEs?p34',cl_id);
       if ~ok || isempty(spf34)
-		 irf_log('load',msg)
-		 data = []; cd(old_pwd); return
-      end;
-      nanfill = 0;
-      pnosfit = 12;
-      ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
-      if isempty(ret)
-         pnosfit = 32;
-      end
-      [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
-      if ~ok || isempty(spfD)
-         nanfill = 1; % No P12/32 data
-         irf_log('load',irf_ssub('Fillvalue used. No diEs?p12 or diEs?p32 data',cl_id) )
-         ok = 1; % yes it's all good
+          irf_log('load',msg)
+		  data = [];
       else
-         [ok,Del,msg] = c_load('D?p12p34',cl_id);
-         if ~ok || isempty(Del)
-            irf_log('load',msg)
-            data = []; cd(old_pwd); return
-         end;
-         if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
-            irf_log('load','Info: Imaginary delta offset.');
-         end
-      end;
-      if nanfill
-         % save time, NaN(fillval) and p34 spin-fit: B C sdev 
-         data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
-      else
-         % save time, p12/32 and p34 spin-fit: B C sdev 
-         data=[spf34(:,1) spfD(:,2:3)+ones(size(spfD,1),1)*Del spfD(:,5) spf34(:,2:3) spf34(:,5)];
+          nanfill = 0;
+          pnosfit = 12;
+          ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
+          if isempty(ret)
+             pnosfit = 32;
+          end
+          [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
+          if ~ok || isempty(spfD)
+             nanfill = 1; % No P12/32 data
+             irf_log('load',irf_ssub('Fillvalue used. No diEs?p12 or diEs?p32 data',cl_id) )
+             ok = 1; % yes it's all good
+          else
+             [ok,Del,msg] = c_load('D?p12p34',cl_id);
+             if ~ok || isempty(Del)
+                irf_log('load',msg)
+                data = []; cd(old_pwd); return
+             end;
+             if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
+                irf_log('load','Info: Imaginary delta offset.');
+             end
+          end;
+          if nanfill
+             % save time, NaN(fillval) and p34 spin-fit: B C sdev 
+             data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
+          else
+             % save time, p12/32 and p34 spin-fit: B C sdev 
+             data=[spf34(:,1) spfD(:,2:3)+ones(size(spfD,1),1)*Del spfD(:,5) spf34(:,2:3) spf34(:,5)];
+          end
       end
    else
       [ok,data] = c_load(vs);
