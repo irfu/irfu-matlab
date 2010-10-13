@@ -480,8 +480,17 @@ elseif strcmp(quantity,'dies')
 					if length(idx2) > 3 && idx2(end)-idx2(1) < (idx(idx2(end))-idx(idx2(1)))*1.3
 						if adc_despike, badDAC=[adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20];
 						else badDAC=[badDAC' [adc_off(idx(idx2(1)),1)-20 adc_off(end,1)+20]']';
+						end
+						adc_despike=0;
+						irf_log('proc','Short interval of DAC problems at end of interval.');
+					end
+					% Check for short interval in middle
+					if adc_despike
+						idx2=find(diff(idx)<3);
+						if length(idx2) > 15
+							badDAC=[adc_off(idx(1),1)-20 adc_off(idx(end),1)+20];
 							adc_despike=0;
-							irf_log('proc','Short interval of DAC problems at end of interval.');
+							irf_log('proc','Short interval of DAC problems in middle of interval.');
 						end
 					end
 				end
