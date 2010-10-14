@@ -461,6 +461,14 @@ elseif strcmp(quantity,'dies')
 		% For C4p34, check for DAC problems if date is after 2009-01-01
 		adc_despike=1;
 		if cl_id == 4 && probe == 34 && adc_off(1,1) > 1230768000
+			% Check for BADDAC set earlier (i.e. by manual forcing)
+			[ok, badDAC] = c_load(irf_ssub('BADDAC?p!', cl_id,probe));
+			if ok && ~isempty(badDAC)
+				irf_log('proc', 'BADDAC set manually')
+				adc_despike=0;
+			end
+
+			% Identify intervals
 			idx = find( abs( adc_off(:,2)) > 1);
 			if length(idx) > 150 % Longer interval of DAC problems
 				adc_despike=0;
@@ -472,7 +480,9 @@ elseif strcmp(quantity,'dies')
 					idx2=find(idx < 150);
 					if length(idx2) > 3 && idx2(end) < idx(idx2(end))*1.3
 						adc_despike=0;
-						badDAC=[adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20];
+						if adc_despike,badDAC=[adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20];
+						else badDAC=[badDAC' [adc_off(1,1)-20 adc_off(idx(idx2(end)),1)+20]']';
+						end
 						irf_log('proc','Short interval of DAC problems at start of interval.');
 					end
 					% Check for short interval at end
