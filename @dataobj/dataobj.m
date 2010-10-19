@@ -63,7 +63,9 @@ switch nargin
 				error(['file ' cdf_file ' does not exist'])
 			end
 			
-			[data,info] = cdfread(cdf_file);
+			[data,info] = cdfread(cdf_file,...
+                'ConvertEpochToDatenum',true,...
+                'CombineRecords',true);
 			dobj.FileModDate = info.FileModDate;
 			dobj.VariableAttributes = info.VariableAttributes;
 			dobj.GlobalAttributes = info.GlobalAttributes;
@@ -101,13 +103,9 @@ switch nargin
 					dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
 					dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
 					dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
+                    %Convert to isdat epoch
 					if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
-						temp = struct(dobj.data.(dobj.vars{v,1}).data);
-						temp = [temp.date]; 
-						temp = temp(:);
-						temp = (temp-62167219200000)/1000;
-						dobj.data.(dobj.vars{v,1}).data = temp;
-						clear temp
+						dobj.data.(dobj.vars{v,1}).data = date2epoch(dobj.data.(dobj.vars{v,1}).data);
 					end
 				end
 			else

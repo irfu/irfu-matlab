@@ -92,10 +92,10 @@ if dim == 1
 	end
 end
 
-%% PLOT
-if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% LINEAR PLOT
+if dim == 0 || dim == 1
 		
-		plot_data = double(data.data)';
+		plot_data = double(data.data);
 		if use_comp, plot_data = plot_data(:,comp); end
 
 		if isfield(dep,'DEPEND_O')
@@ -123,10 +123,9 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 			if ~isempty(dep_x)
 				if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
 						&& strcmp(dep.DEPEND_X{1,2},'LABEL_1')
-					reclen=size(dep_x.data,2)/length(dep.DEPEND_O);
-					if use_comp, lab_1 = ['(' dep_x.data(comp,1:reclen) ')'];
+					if use_comp, lab_1 = ['(' dep_x.data(1,:,comp) ')'];
 					else
-						legend({dep_x.data(:,1:reclen)}, 'location','NorthWest')
+						legend(num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
 						legend('boxoff')
 					end
 				else
@@ -140,16 +139,17 @@ if dim == 0 || dim == 1 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LINEAR PLOT %%%%%%%%%%%%%
 			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
 		if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
 		add_text(h,text_s);
-		
-else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	
+
+
+else
+    %% SPECTROGRAM
     dep_x_1 = getv(dobj,dep.DEPEND_X{1,1});
     dep_x_1.s = dep.DEPEND_X{1,1};
 	dep_x_1.fillv = getfillval(dobj,dep_x_1.s);
     dep_x_1.data(dep_x_1.data==dep_x_1.fillv) = NaN;
 	dep_x_1.units = getunits(dobj,dep_x_1.s);
 	dep_x_1.lab = getlablaxis(dobj,dep_x_1.s);
-    specrec = struct('t',dep.DEPEND_O,'f',dep_x_1.data(:,1),'f_unit',dep_x_1.units,'p',[]);
+    specrec = struct('t',dep.DEPEND_O,'f',dep_x_1.data(1,:),'f_unit',dep_x_1.units,'p',[]);
     
     if size(dep.DEPEND_X,1)>1
         dep_x_2 = getv(dobj,dep.DEPEND_X{2,1});
@@ -163,7 +163,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     end
     
     if dim == 2
-		if data.dim(2)>1
+		if data.dim(1)>1
 			
 			% This is a hack for STAFF B
 			if any(any(data.data<=0))
@@ -172,12 +172,14 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 			end
 			
 			ndim = data.dim(2);
-			ii = 1:length(dep.DEPEND_O);
-			ii = (ii-1)*ndim;
 			if ~use_comp, comp=1:ndim; end
-            plot_data = cell(size(comp));
-            for i=1:length(comp)
-                plot_data{i} = data.data(:,ii+comp(i))';
+            if ndim == 1
+                plot_data = {data.data};
+            else
+                plot_data = cell(size(comp));
+                for i=1:length(comp)
+                    plot_data{i} = squeeze(data.data(:,:,comp(i)));
+                end
             end
             if sum_dim==1 % sum over frequency, pitch angle
                 pd_tmp = zeros(length(dep.DEPEND_O),length(comp));
@@ -188,7 +190,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 clear plot_data
                 plot_data{1} = pd_tmp; clear pd_tmp
                 dep_x_1 = dep_x_2; dep_x_2 = [];
-                specrec.f = dep_x_1.data(comp,1);
+                specrec.f = dep_x_1.data(1,comp);
                 specrec.f_unit = dep_x_1.units;
                 comp = [];
             end
@@ -199,7 +201,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		error('plotting not implememnted')
     end
         
-    if size(dep_x_1.data,2) ~= length(dep.DEPEND_O)
+    if size(dep_x_1.data,1) ~= length(dep.DEPEND_O)
         error('bad size for DEPEND_X_1')
     end
      
@@ -211,7 +213,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             lab_2 = dep_x_2.data(:,1:reclen);
         elseif strcmp(dep_x_2.type,'single') && ...
                 (strcmp(dep_x_2.variance,'F/T') || strcmp(dep_x_2.variance,'T/T'))
-            lab_2 = num2str(dep_x_2.data(comp,1),['%.2f ' dep_x_2.units]);
+            lab_2 = num2str(dep_x_2.data(1,comp)',['%.2f ' dep_x_2.units '\n']);
         else
             error('BAD type for DEPEND_X')
         end
@@ -257,7 +259,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             add_text(h(i),lab_2s);
         else % Large number of components
             if i==1, title(text_s), end
-            if i==fix(ncomp/2), ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
+            if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
             else ylabel('')
             end
             add_text(h(i),lab_2(i,:));
@@ -271,7 +273,7 @@ else %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% SPECTROGRAM %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
         end
     end
-    % Resize all panels aftre addition of a colorbar
+    % Resize all panels after addition of the colorbar
     if ~isempty(dy)
         for i=1:ncomp
             tt = get(ax(i),'Position');

@@ -22,6 +22,6 @@ dep = getdep(dobj,var_s);
 
 plot_data = double(data.data)';
 
-if isfield(dep,'DEPEND_O'), res = [dep.DEPEND_O plot_data];
+if isfield(dep,'DEPEND_O'), res = [dep.DEPEND_O plot_data'];
 else res = plot_data;
 end
