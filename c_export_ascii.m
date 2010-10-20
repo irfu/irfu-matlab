@@ -137,7 +137,7 @@ elseif regexp(vs,'^P10Hz[1-4]p[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % raw E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^wE[1-4]p(12|34)')==1
+elseif regexp(vs,'^wE[1-4]p(12|32|34)')==1
 
 	cl_id = vs(3);
 	inst = 'EFW';
@@ -260,13 +260,13 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
 			var = var(:,1:4);
 		else
 			var_size = [3 1];
-			var_name = {var_name{:}, 'B_field_elevation'};
-			frame = {frame{:}, 'scalar>na'};
-			field_name = {field_name{:}, 'Elevation of B above the sc spin plane'};
-			var_labels = {var_labels{:}, 'Theta'};
-			var_label_1 = {var_label_1{:}, ''};
-			si_conv = {si_conv{:}, '1>degree'};
-			var_units =  {var_units{:}, 'deg'};
+			var_name = [var_name {'B_field_elevation'}];
+			frame = [frame {'scalar>na'}];
+			field_name = [field_name{:} {'Elevation of B above the sc spin plane'}];
+			var_labels = [var_labels{:} {'Theta'}];
+			var_label_1 = [var_label_1{:} {''}];
+			si_conv = [si_conv {'1>degree'}];
+			var_units =  [var_units {'deg'}];
 		end
 	else
 		if vs(4)=='s', sen = 'spin fit';
