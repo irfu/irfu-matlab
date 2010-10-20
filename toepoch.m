@@ -1,8 +1,8 @@
 function [secs]=toepoch(x)
 % toepoch - Convert a [YYYY MM DD hh mm ss] time specification to seconds since 1970.
 [m,n]=size(x);
-if n~=2 & n~=3 & n~=6,
-  if m==2 | m==3 | n==6,
+if n~=2 && n~=3 && n~=6,
+  if m==2 || m==3 || n==6,
      x=x'; [m,n]=size(x);
   else
 %    fprintf('Illegal argument:\n')
