@@ -244,60 +244,68 @@ if plot_type == 2,
   add_timeaxis(gca,'nodate');
 end
 
-if plot_type == 1 | plot_type == 2 | plot_type == 0,
+if plot_type == 1 || plot_type == 2 || plot_type == 0,
    t_start_epoch=t_start_epoch(t(1,1));
 %%%%%%%%% E spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'e')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'e')),
 %    pcolor(t-t0,newfreq,log10(abs(power2E.'))) % With edge effects removed
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
+    %ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
     cmean=mean(mean(log10(abs(powerE))));
     caxis(floor(cmean)+[-3.5 3.5]);
 %      caxis([-5 2]);
-    colormap(xcm);colorbar
+    colormap(xcm);
+    hca = colorbar;
+    ylabel(hca,'E [(mV/m)^2/Hz]');
   end
 %%%%%%%%% B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'b')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'b')),
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    ht=text(0,0,'B [nT^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
+    %ht=text(0,0,'B [nT^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
       cmean=mean(mean(log10(abs(powerB))));
       caxis(floor(cmean)+[-3.5 3.5]);
 %      caxis([-8 -1]);
-    colormap(xcm);colorbar;
+    colormap(xcm);
+    hca = colorbar;
+    ylabel(hca,'B [nT^2/Hz]');
 %    add_timeaxis(h,t0); % For time in epoch
   end
 %%%%%%%%% S spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'s')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'s')),
     pcolor(t-t_start_epoch,newfreq,(sign(Spar_plot).*sqrt(abs(Spar_plot))).') % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
+    %ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
 
     cc = [-max(max(sqrt(abs(Spar)))) max(max(sqrt(abs(Spar))))];
   	caxis(cc);
-  	colormap(xcm);colorbar;
+  	colormap(xcm);
+    hca = colorbar;
+    ylabel(hca,'S_{II} [\mu W/m^2Hz]^{1/2}');
     if plot_type ~= 0, axes(h(ipl-2));colorbar; axes(h(ipl-3));colorbar; end
   end
 %%%%%%%%% E/B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
-  if plot_type ~= 0 | (plot_type == 0 & strcmp(plot_param,'eb')),
+  if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'eb')),
     pcolor(t-t_start_epoch,newfreq,log10(abs(EtoB_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    ht=text(0,0,'log10(E/B) [(1000 km/s)]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
+    %ht=text(0,0,'log10(E/B) [(1000 km/s)]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
     caxis([-1 4]);
-    colormap(xcm);colorbar
+    colormap(xcm);
+    hca = colorbar;
+    ylabel(hca,'log10(E/B) [(1e3 km/s)]');
   end
 elseif plot_type == 3,
    t_start_epoch=t_start_epoch(t(1,1));
