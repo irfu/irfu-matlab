@@ -455,8 +455,16 @@ elseif strcmp(quantity,'dies')
 		
 		% Continue with ADC offsets
 		adc_off = sp(:,[1 4]);
+		% Don't include hbiassa intervals when calculating mean, variance
+		max_off=adc_off(~isnan(adc_off(:,2)),:);
+		[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,p12));
+		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+		[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,34));
+		if ok && ~isempty(hbsa),max_off = caa_rm_blankt(max_off,hbsa); end
+		max_off=max_off(~isnan(max_off(:,2)),:);
+		adc_off_mean = mean(max_off(:,2));
+		max_off = 3*std(max_off(:,2));
 		% Fill NaNs with mean value
-		adc_off_mean = mean(adc_off(~isnan(adc_off(:,2)),2));
 		adc_off(isnan(adc_off(:,2)),2) = adc_off_mean;
 		% For C4p34, check for DAC problems if date is after 2009-01-01
 		adc_despike=1;
@@ -524,7 +532,7 @@ elseif strcmp(quantity,'dies')
 		% Unless a suspect DAC interval was detected, take care of spikes
 		if adc_despike
 			% Take care of spikes: replace extreme values with mean value
-			idx = find( abs( adc_off(:,2) - adc_off_mean ) > 3*std(adc_off(adc_off(:,2)~=0,2)) );
+			idx = find( abs( adc_off(:,2) - adc_off_mean ) > max_off );
 			if ~isempty(idx)
 				adc_off(idx,2) = 0;
 				adc_off_mean = mean(adc_off(abs(adc_off(:,2))>0,2));
