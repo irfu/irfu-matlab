@@ -21,6 +21,7 @@ switch id
 case 'no_tm', res = 0;
 case 'bad_tm', res = 1;
 case 'bad_data', res = 2;
+case 'bad_bias', res = 3;
 case 'no_p1', res = 11;
 case 'no_p2', res = 12;
 case 'no_p3', res = 13;

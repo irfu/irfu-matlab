@@ -194,6 +194,24 @@ for probe_id = probe_list
 	clear ok problem_intervals msg
 end
 
+% Mark bad bias from NS_OPS
+ns_ops = c_ctl('get', spacecraft_id, 'ns_ops');
+if isempty(ns_ops)
+   c_ctl('load_ns_ops', [c_ctl('get', 5, 'data_path') '/caa-control'])
+	ns_ops = c_ctl('get', spacecraft_id, 'ns_ops');
+end
+if ~isempty(ns_ops)
+   ns_ops_intervals = [caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'bad_bias')' ...
+                       caa_get_ns_ops_int(data_start_time, data_time_span, ns_ops, 'spec_bias')']';
+  
+	if ~isempty(ns_ops_intervals)
+		irf_log('proc', 'marking bad bias from NS_OPS')
+		result = caa_set_bitmask_and_quality(result, ns_ops_intervals, ...
+			BITMASK_BAD_BIAS, QUALITY_BAD_BIAS, ...
+			bitmask_column, quality_column);
+	end
+	clear ns_ops ns_ops_intervals
+end
 
 % Mark probe saturation
 for probe_id = probe_list
