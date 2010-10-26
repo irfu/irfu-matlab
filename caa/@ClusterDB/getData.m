@@ -591,7 +591,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	%%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
 	switch cl_id
 		case 1
-			if start_time>toepoch([2009 10 14 03 23 30]) || ...
+			if start_time>toepoch([2009 10 14 07 00 00]) || ...
 					(start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
 				% p1 and p4 failure
 				probe_list = 2:3;
