@@ -1,4 +1,4 @@
-function R=c_4_r(r1,r2,r3,r4,flag)
+function [R,R_Center,dR1,dR2,dR3,dR4]=c_4_r(r1,r2,r3,r4,flag)
 %C_4_R  Calculate volumetric tensor R
 %
 %  R=c_4_r(r1,r2,r3,r4,flag)  if flag=-1 returns the inverse of
