@@ -43,16 +43,11 @@ vn = irf_norm(V);
 disp([' V=' num2str(irf_abs(V,1),3) '*[' num2str(vn(end-2:end),' %5.2f') '] km/s GSE [initial]'])
 
 %% Improve the velocity and estimate errors
-R_Center = ( r1 + r2 + r3 + r4 )/4;
-dR1 = r1 - R_Center;
-dR2 = r2 - R_Center;
-dR3 = r3 - R_Center;
-dR4 = r4 - R_Center;
-R = ( dR1'*dR1 + dR2'*dR2 + dR3'*dR3 + dR4'*dR4)/4; % Volumetric tensor
+[R,R_Center,dR1,dR2,dR3,dR4]=c_4_r(r1,r2,r3,r4); % R Volumetri tensor
 
 dt = zeros(4,1);
 c_eval('dt(?) = sum(dR?.*V)/sum(V.*V);') % Time shifts using the initial V
-tint1 = tint - [min(dt) max(dt)];
+tint1 = tint + [min(dt) max(dt)];
 it = irf_tlim(b1(:,1),tint1);
 iB1 = []; iB2 = []; iB3 = []; iB4 = []; 
 c_eval('iB? = irf_resamp([b?(:,1)-dt(?) b?(:,2:end)],it);')
@@ -63,10 +58,15 @@ B0(ii1,:) = [it (iB1(:,2:4) + iB2(:,2:4) + iB3(:,2:4) + iB4(:,2:4))/4]; %#ok<NAS
 it0 = zeros(4,1); ddt = zeros(4,1);
 c_eval('[it0(?),ddt(?)]=mycorr(b?,B0,fs); dt=b?(1,1)-B0(1,1); it0(?)=it0(?)+dt;')
 M = ( it0(1)*dR1 + it0(2)*dR2 + it0(3)*dR3 + it0(4)*dR4)/4/R;
-dM = sqrt( (ddt(1)*dR1/R).^2 + (ddt(2)*dR2/R).^2 + (ddt(3)*dR3/R).^2 + (ddt(4)*dR4/R).^2);
+dM = sqrt( (ddt(1)*dR1/R).^2 );
+c_eval('dV?=0; Mplus=M+0.25*ddt(?)*dR?/R;Mminus=M-0.25*ddt(?)*dR?/R;dV?=(Mplus/sum(Mplus.^2)-Mminus/sum(Mminus.^2))/2;');
+dV=sqrt(dV1.^2+dV2.^2+dV3.^2+dV4.^2);
+
+%dM = sqrt( (ddt(1)*dR1/R).^2 + (ddt(2)*dR2/R).^2 + (ddt(3)*dR3/R).^2 + (ddt(4)*dR4/R).^2);
 
 iV = M/sum(M.^2);
-dV = dM/sum(M.^2);
+%dV = dM/sum((M+dM).^2);
+%dV = dM/sum(M.^2);
 
 ivn = irf_norm(iV);
 disp([' V=' num2str(irf_abs(iV,1),3) '*[' num2str(ivn(end-2:end),' %5.2f') '] km/s GSE [final]'])
