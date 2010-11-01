@@ -179,8 +179,36 @@ for dd = 1:length(dirs)
              % save time, NaN(fillval) and p34 spin-fit: B C sdev 
              data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
           else
-             % save time, p12/32 and p34 spin-fit: B C sdev 
-             data=[spf34(:,1) spfD(:,2:3)+ones(size(spfD,1),1)*Del spfD(:,5) spf34(:,2:3) spf34(:,5)];
+             % save time, p12/32 and p34 spin-fit: B C sdev
+             spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
+             s34=size(spf34(:,1),1);
+             sd=size(spfD(:,1),1);
+             if s34 > sd
+%                s34
+%                spf34(1,1)
+%                sd
+%                spfD(1,1)
+                found=0;
+                for i=1:s34
+                    if spf34(i,1) == spfD(1,1)
+                        found=i;
+                        break;
+                    end
+                end
+                if found
+%                   found
+                   spfD=[NaN(found-1,5);spfD];
+                   if s34-found-sd > 0
+                       spfD=[spfD;NaN(s34-found-sd,5)];
+                   end
+%                   size(spfD,1)
+                else
+                   irf_log('sfit data','Panic: Can not sync time.');
+                end
+             elseif s34 < sd
+                irf_log('sfit data','Panic: s34 < sd.');
+             end       
+             data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
           end
       end
    else
