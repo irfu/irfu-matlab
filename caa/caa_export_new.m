@@ -199,16 +199,39 @@ for dd = 1:length(dirs)
 %                   found
                    spfD=[NaN(found-1,5);spfD];
                    if s34-found-sd > 0
-                       spfD=[spfD;NaN(s34-found-sd,5)];
+                       spfD=[spfD;NaN(s34-found-sd+1,5)];
                    end
 %                   size(spfD,1)
                 else
-                   irf_log('sfit data','Panic: Can not sync time.');
+                   irf_log('proc','Panic: Can not sync time. sd');
                 end
+                data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              elseif s34 < sd
-                irf_log('sfit data','Panic: s34 < sd.');
-             end       
-             data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+%                s34
+%                spf34(1,1)
+%                sd
+%                spfD(1,1)
+                found=0;
+                for i=1:sd
+                    if spf34(1,1) == spfD(i,1)
+                        found=i;
+                        break;
+                    end
+                end
+                if found
+%                   found
+                   spf34=[NaN(found-1,5);spf34];
+                   if sd-found-s34 > 0
+                       spf34=[spf34;NaN(sd-found-s34+1,5)];
+                   end
+%                   size(spf34)
+                else
+                   irf_log('proc','Panic: Can not sync time. s34');
+                end
+                data=[spfD(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+             else
+                data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
+             end
           end
       end
    else
