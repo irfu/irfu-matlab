@@ -185,9 +185,7 @@ for dd = 1:length(dirs)
              sd=size(spfD(:,1),1);
              if s34 > sd
 %                s34
-%                spf34(1,1)
 %                sd
-%                spfD(1,1)
                 found=0;
                 for i=1:s34
                     if spf34(i,1) == spfD(1,1)
@@ -198,7 +196,7 @@ for dd = 1:length(dirs)
                 if found
 %                   found
                    spfD=[NaN(found-1,5);spfD];
-                   if s34-found-sd > 0
+                   if s34-found-sd >= 0
                        spfD=[spfD;NaN(s34-found-sd+1,5)];
                    end
 %                   size(spfD,1)
@@ -208,9 +206,7 @@ for dd = 1:length(dirs)
                 data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              elseif s34 < sd
 %                s34
-%                spf34(1,1)
 %                sd
-%                spfD(1,1)
                 found=0;
                 for i=1:sd
                     if spf34(1,1) == spfD(i,1)
@@ -221,7 +217,7 @@ for dd = 1:length(dirs)
                 if found
 %                   found
                    spf34=[NaN(found-1,5);spf34];
-                   if sd-found-s34 > 0
+                   if sd-found-s34 >= 0
                        spf34=[spf34;NaN(sd-found-s34+1,5)];
                    end
 %                   size(spf34)
