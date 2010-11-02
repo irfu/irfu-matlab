@@ -1,7 +1,16 @@
 function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
-%C_4_V_XCORR  Automatically estimate boundary speed 
+%C_4_V_XCORR  Automatically estimate boundary velocity 
 %
-%  [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
+%  [V, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
+%
+%  Automatically estimate velocity of a boundary. The time difference
+%  between two of the spacecrfat if found from minimum of the sum
+%  S = SUM ( [data1 - data2]^2 ). The error is defined as DT at thich S is
+%  double the minimum value.
+%
+%  Output:
+%     V - velocity in GSE
+%    dV - error on velocity
 %
 % $Id$
 
@@ -43,7 +52,7 @@ vn = irf_norm(V);
 disp([' V=' num2str(irf_abs(V,1),3) '*[' num2str(vn(end-2:end),' %5.2f') '] km/s GSE [initial]'])
 
 %% Improve the velocity and estimate errors
-[R,R_Center,dR1,dR2,dR3,dR4]=c_4_r(r1,r2,r3,r4); % R Volumetri tensor
+[R,~,dR1,dR2,dR3,dR4]=c_4_r(r1,r2,r3,r4); % R Volumetric tensor
 
 dt = zeros(4,1);
 c_eval('dt(?) = sum(dR?.*V)/sum(V.*V);') % Time shifts using the initial V
@@ -56,7 +65,14 @@ B0 = [b1(:,1) ones(size(b1,1),3)*NaN];
 B0(ii1,:) = [it (iB1(:,2:4) + iB2(:,2:4) + iB3(:,2:4) + iB4(:,2:4))/4]; %#ok<NASGU> % Average B profile
 
 it0 = zeros(4,1); ddt = zeros(4,1);
-c_eval('[it0(?),ddt(?)]=mycorr(b?,B0,fs); dt=b?(1,1)-B0(1,1); it0(?)=it0(?)+dt;')
+for cli = 1:4
+    btmp = [];
+    c_eval('btmp=b?;',cli);
+    [ it0(cli), ddt(cli) ] = mycorr(btmp,B0,fs); 
+    dt = btmp(1,1) - B0(1,1);
+    it0(cli) = it0(cli) + dt;
+end
+
 M = ( it0(1)*dR1 + it0(2)*dR2 + it0(3)*dR3 + it0(4)*dR4)/4/R;
 dM = sqrt( (ddt(1)*dR1/R).^2 );
 c_eval('dV?=0; Mplus=M+0.25*ddt(?)*dR?/R;Mminus=M-0.25*ddt(?)*dR?/R;dV?=(Mplus/sum(Mplus.^2)-Mminus/sum(Mminus.^2))/2;');
