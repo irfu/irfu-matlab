@@ -57,7 +57,6 @@ end
 result = [];
 result_com = {};
 
-
 if lev==1
 	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
 		id = str2double(caa_vs(2:end));
@@ -115,6 +114,14 @@ else
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
+	case 'SCP'
+		if lev==2 || lev==3
+            % Fake for c_desc only. No data variable in .mat files
+			vs = irf_ssub('SCP?',cl_id);
+			v_size = 5;
+		else
+			disp('not implemented'), cd(old_pwd), return
+		end
 	otherwise
 		error('unknown variable')
 	end
@@ -147,6 +154,69 @@ for dd = 1:length(dirs)
       probe_pairs = probe_pair_list(logical(ok));   % Keep list of probe pairs actually loaded.
       if numel(probe_pairs) > 0
          vs = irf_ssub(vs, probe_pairs(1));
+      end
+   elseif strcmp(caa_vs, 'SCP')      
+      global c_ct % includes aspoc active values
+      if isempty(c_ct)
+         c_ctl('load_aspoc_active');
+         global c_ct
+      end
+      ASPOC = c_ct{1,cl_id}.aspoc;
+
+      if lev == 2
+          pvar = 'P?';
+      elseif lev == 3
+          pvar = 'Ps?';
+      end
+      
+      [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
+      if ~ok || isempty(probe_info)
+         irf_log('load',msg)
+         data = [];
+      else          
+         [ok,data,msg] = c_load(pvar,cl_id);
+         if ~ok || isempty(data)
+            irf_log('load',msg)
+            data = [];
+         else
+            % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
+            if size(data,1) == 1    % Fix short data
+                data=[data;[data(1,1)+4 NaN]];
+                irf_log('proc','short data padded');
+            end
+            dsize=size(data, 1);
+            data = [data zeros(dsize, 4)]; % add columns: probe# aspoc bitmask quality
+            data(:, 3) = probe_info.probe; % Set probe#.
+
+            if isempty(ASPOC)
+                irf_log('proc','no ASPOC active data');
+            else
+                for i=1:size(ASPOC,1)
+                    %i
+                    if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
+                        continue;
+                    end
+                    if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
+                        break;
+                    end
+                    irf_log('proc','marking ASPOC active');
+                    for j=1:dsize
+                       if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
+                            data(j,4)=1;
+                        end
+                    end
+                end
+            end
+            data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
+            quality_column = size(data, 2);
+            bitmask_column = quality_column - 1;
+
+            % Identify and flag problem areas in data with bitmask and quality factor:
+            data = caa_identify_problems(data, lev, num2str(probe_info.probe), cl_id, bitmask_column, quality_column, 1);
+
+%data(:,2:end);
+%cd(old_pwd); return
+         end
       end
    elseif strcmp(caa_vs, 'SFIT')
       [ok,spf34,msg] = c_load('diEs?p34',cl_id);
@@ -199,20 +269,15 @@ for dd = 1:length(dirs)
                         break;
                     end
                 end
-%                for i=1:s34
-%                    if spf34(i,1) == spfD(1,1)
-%                        found=i;
-%                        break;
-%                    end
-%                end
                 if found
                    if pos > 1
-                       irf_log('proc','Info: pos>1 sd');
+                      spf34=[NaN(pos-1,5);spf34];
+                      irf_log('proc','Info: pos>1 sd');
                    end
 %                  found
                    spfD=[NaN(found-1,5);spfD];
                    if s34-found-sd >= 0
-                       spfD=[spfD;NaN(s34-found-sd+1,5)];
+                       spfD=[spfD;NaN(s34-found-sd+pos,5)];
                    end
 %                   size(spfD)
                 else
@@ -223,7 +288,6 @@ for dd = 1:length(dirs)
                        spf34=[NaN(sd,5);spf34];
                        spfD=[spfD;NaN(s34,5)];
                    end    
-%                   irf_log('proc','Panic: Can not sync time. sd');
                 end
                 data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              elseif s34 < sd
@@ -242,22 +306,20 @@ for dd = 1:length(dirs)
                         break;
                     end
                 end
-%                for i=1:sd
-%                    if spf34(1,1) == spfD(i,1)
-%                        found=i;
-%                        break;
-%                    end
-%                end
                 if found
+%                   pos
+%                   found
                    if pos > 1
-                       irf_log('proc','Info: pos>1 s34');
+                      spfD=[NaN(pos-1,5);spfD];
+                      irf_log('proc','Info: pos>1 s34');
                    end
-%                  found
+%                   found
                    spf34=[NaN(found-1,5);spf34];
                    if sd-found-s34 >= 0
-                       spf34=[spf34;NaN(sd-found-s34+1,5)];
+                       spf34=[spf34;NaN(sd-found-s34+pos,5)];
                    end
 %                   size(spf34)
+%                   size(spfD)
                 else
                    if spf34(1,1) < spfD(1,1)
                        spf34=[spf34;NaN(sd,5)];
@@ -266,7 +328,6 @@ for dd = 1:length(dirs)
                        spf34=[NaN(sd,5);spf34];
                        spfD=[spfD;NaN(s34,5)];
                    end    
-%                   irf_log('proc','Panic: Can not sync time. s34');
                 end
                 data=[spfD(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              else
