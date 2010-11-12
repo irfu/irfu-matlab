@@ -11,6 +11,7 @@ function out=c_ctl(varargin)
 % c_ctl('set',[sc_list],ctl_name,ctl_val)
 % c_ctl(sc_list,ctl_name,value,[ctl_name1,value1...]) % equvalent to set
 % c_ctl('load_hk_cal')
+% c_ctl('load_aspoc_active')
 %
 % $Id$
 
@@ -65,11 +66,13 @@ if ischar(args{1})
 				def_ct.puck  = zeros(256,5,'single');
 				def_ct.guard = zeros(256,5,'single');
 
+                def_ct.aspoc = [];
+
                 c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
 				c_ct{3} = def_ct;
 				c_ct{4} = def_ct;
-				clear def_ct
+				clear def_ct                
 				
 				% cell number 5 has global settings
 				% this cell must be accessed as SC # 0
@@ -118,6 +121,19 @@ if ischar(args{1})
         [c_ct{2}.ibias c_ct{2}.puck c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
         [c_ct{3}.ibias c_ct{3}.puck c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
         [c_ct{4}.ibias c_ct{4}.puck c_ct{4}.guard] = readhkcalmatrix('C4_CT_EFW_20001128_V002.cal');
+	elseif strcmp(args{1},'load_aspoc_active')
+
+        global c_ct
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+        end
+
+        c_ct{1}.aspoc = readaspocactive('C1_CP_ASP_ACTIVE_ALL_DATA.cef');
+        c_ct{2}.aspoc = readaspocactive('C2_CP_ASP_ACTIVE_ALL_DATA.cef');
+        c_ct{3}.aspoc = readaspocactive('C3_CP_ASP_ACTIVE_ALL_DATA.cef');
+        c_ct{4}.aspoc = readaspocactive('C4_CP_ASP_ACTIVE_ALL_DATA.cef');
 	elseif strcmp(args{1},'load_ns_ops')
 		global c_ct
 		if isempty(c_ct)
@@ -300,7 +316,7 @@ function ret = findhkcalmatrix( fid, searchstr )
     
 function [ibias, puck, guard] = readhkcalmatrix( filen )
     datapath='/data/cluster/cal/';
-    fid = fopen([ datapath filen ]);
+    fid = fopen([ datapath filen ], 'r');
 
     if fid >= 0
         ibias=zeros(256,5,'single');
@@ -350,6 +366,59 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
         irf_log('load',['file ' datapath filen ' not found']);
     end
 
+function aspa = readaspocactive( filen )
+%READASPOCACTIVE read cef ascii files
+%   ep = read_cef_active(file) caa cef file and returns the data.
+%   ep(x,1) is the ON date in epoch format
+%   ep(x,2) is the OFF date in epoch format
+%
+%
+% $Id$
+    datapath='/data/caa/cef/ASPOC/';
+    fid = fopen([ datapath filen ], 'r');
+
+    aspa=[];
+    cols=0;
+    if fid==-1
+        irf_log('load',['file ' datapath filen ' not found']);
+        return
+    end
+    s = '';
+    while not(strncmp(s,'DATA_UNTIL',10))
+        s = fgets(fid);
+    end;
+
+    fposmem=ftell(fid);
+    s = fgets(fid);
+    if s(1) == '!' % check for no data
+        fclose(fid);
+    %    disp(['Reading: ' file ' done. No data.']);
+        return;
+    end
+    % Count columns
+    cols=1;
+    for i=1:size(s,2)
+        if s(i)=='/'
+            cols=cols+1;
+        end
+    end
+
+    fseek(fid,fposmem,'bof');
+
+    if cols==2
+        C = textscan(fid, '%24s/%24s $', 'bufSize', 32768);
+    else
+        disp('PANIC: Can only read cef files with on/off data.');
+        return;
+    end
+    fclose(fid);
+    C1=C{1}(1:end-1);
+    C2=C{2}(1:end);
+    for i=1:size(C1,1)
+        aspa(i,1) = iso2epoch(C1{i});
+        aspa(i,2) = iso2epoch(C2{i});
+    end
+
 function c_ctl_usage
 	disp('Usage:')
 	disp('  c_ctl(''init'')')
@@ -364,3 +433,4 @@ function c_ctl_usage
 	disp('  c_ctl(''save'',''/path/to/alternative_mcctl.mat'')')
 	disp('  c_ctl(''sc_list'',''ctl'',value)')
     disp('  c_ctl(''load_hk_cal'')')
+    disp('  c_ctl(''load_aspoc_active'')')
