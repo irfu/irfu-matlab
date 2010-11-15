@@ -45,6 +45,7 @@ if nargin > 2, have_options = 1; end
 
 % Default values that can be override by options
 sum_dim = 0;
+comp_dim = 0;
 use_comp = 0;
 comp = [];
 ax = [];
@@ -75,6 +76,16 @@ while have_options
                 end
             case 'sum_dim1'
                 sum_dim = 1;
+            case 'sum_dim2'
+                sum_dim = 2;
+            case 'sum_dim3'
+                sum_dim = 3;
+            case 'comp_dim1'
+                comp_dim = 1;
+            case 'comp_dim2'
+                comp_dim = 2;
+            case 'comp_dim3'
+                comp_dim = 3;
             otherwise
                 disp('unknown argument')
                 break
@@ -82,6 +93,10 @@ while have_options
     end
 	args = args(l+1:end);
 	if isempty(args), break, end
+end
+
+if comp_dim ~=0 && comp_dim == sum_dim
+    error('SUM_DIM and COMP_DIM must be different')
 end
 
 if dim == 1
@@ -143,24 +158,15 @@ if dim == 0 || dim == 1
 
 else
     %% SPECTROGRAM
-    dep_x_1 = getv(dobj,dep.DEPEND_X{1,1});
-    dep_x_1.s = dep.DEPEND_X{1,1};
-	dep_x_1.fillv = getfillval(dobj,dep_x_1.s);
-    dep_x_1.data(dep_x_1.data==dep_x_1.fillv) = NaN;
-	dep_x_1.units = getunits(dobj,dep_x_1.s);
-	dep_x_1.lab = getlablaxis(dobj,dep_x_1.s);
-    specrec = struct('t',dep.DEPEND_O,'f',dep_x_1.data(1,:),'f_unit',dep_x_1.units,'p',[]);
-    
-    if size(dep.DEPEND_X,1)>1
-        dep_x_2 = getv(dobj,dep.DEPEND_X{2,1});
-        dep_x_2.s = dep.DEPEND_X{2,1};
-        dep_x_2.fillv = getfillval(dobj,dep_x_2.s);
-        dep_x_2.data(dep_x_2.data==dep_x_2.fillv) = NaN;
-        dep_x_2.units = getunits(dobj,dep_x_2.s);
-        dep_x_2.lab = getlablaxis(dobj,dep_x_2.s);
-    else
-        dep_x_2 = [];
+    for d = 1:size(dep.DEPEND_X,1)
+        dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
+        dep_x{d}.s = dep.DEPEND_X{d,1};
+        dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
+        dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        dep_x{d}.units = getunits(dobj,dep_x{d}.s);
+        dep_x{d}.lab = getlablaxis(dobj,dep_x{d}.s);
     end
+    specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[]);
     
     if dim == 2
 		if data.dim(1)>1
@@ -189,31 +195,109 @@ else
                 end
                 clear plot_data
                 plot_data{1} = pd_tmp; clear pd_tmp
-                dep_x_1 = dep_x_2; dep_x_2 = [];
-                specrec.f = dep_x_1.data(1,comp);
-                specrec.f_unit = dep_x_1.units;
+                dep_x{1} = dep_x{2}; dep_x{2} = [];
+                specrec.f = dep_x{1}.data(1,comp);
+                specrec.f_unit = dep_x{1}.units;
                 comp = [];
             end
 		else
 			plot_data{1} = double(data.data)';
 		end
-	else
+    elseif dim == 3
+        if comp_dim == 0
+            if sum_dim == 3
+                comp_dim = 2;
+            else
+                comp_dim = 3; 
+            end
+        end
+        
+        if use_comp && size(comp) == 1; % Make a cut
+            fprintf('Cutting at dimension %d (%s) = %d', ...
+                sum_dim, dep_x{sum_dim}.lab,comp)
+            switch comp_dim
+                case 1
+                    data.data = squeeze(data.data(:,comp,:,:));
+                case 2
+                    data.data = squeeze(data.data(:,:,comp,:));
+                case 3
+                    data.data = squeeze(data.data(:,:,:,comp));
+                otherwise
+                    error('smth wrong')
+            end
+            dep_x{comp_dim} = [];
+            data.dim(comp_dim) = [];
+            if sum_dim > comp_dim, sum_dim = sum_dim - 1; end
+            if sum_dim == 2
+                comp_dim = 1;
+            else
+                comp_dim = 2; 
+            end
+            
+            ndim = data.dim(comp_dim);
+            if ~use_comp, comp=1:ndim; end
+            if ndim == 1
+                plot_data = {data.data};
+            else
+                plot_data = cell(size(comp));
+                for i=1:length(comp)
+                    switch comp_dim
+                        case 1
+                            plot_data{i} = squeeze(data.data(:,comp(i),:));
+                        case 2
+                            plot_data{i} = squeeze(data.data(:,:,comp(i)));
+                        otherwise
+                            error('smth wrong')
+                    end
+                end
+            end
+        else
+            if use_comp == 0 && sum_dim == 0
+                sum_dim = 2;
+            end
+            
+            data.data = sum(data.data,sum_dim+1); % The data is 2D from now on
+            fprintf('Summing over dimension %d (%s)\n', ...
+                sum_dim, dep_x{sum_dim}.lab)
+            
+            ndim = data.dim(comp_dim);
+            if ~use_comp, comp=1:ndim; end
+            if ndim == 1
+                plot_data = {data.data};
+            else
+                plot_data = cell(size(comp));
+                for i=1:length(comp)
+                    switch comp_dim
+                        case 1
+                            plot_data{i} = squeeze(data.data(:,comp(i),:,:));
+                        case 2
+                            plot_data{i} = squeeze(data.data(:,:,comp(i),:));
+                        case 3
+                            plot_data{i} = squeeze(data.data(:,:,:,comp(i)));
+                        otherwise
+                            error('smth wrong')
+                    end
+                end
+            end
+        end
+    else
 		error('plotting not implememnted')
     end
         
-    if size(dep_x_1.data,1) ~= length(dep.DEPEND_O)
+    if size(dep_x{1}.data,1) ~= length(dep.DEPEND_O)
         error('bad size for DEPEND_X_1')
     end
      
     lab_2 ='';
-    if ~isempty(dep_x_2)
-        if strcmp(dep_x_2.type,'char') && strcmp(dep_x_2.variance,'F/T')...
-                && strcmp(dep_x_2.s,'LABEL_2')
-            reclen = size(dep_x_2.data,2)/length(dep.DEPEND_O);
-            lab_2 = dep_x_2.data(:,1:reclen);
-        elseif strcmp(dep_x_2.type,'single') && ...
-                (strcmp(dep_x_2.variance,'F/T') || strcmp(dep_x_2.variance,'T/T'))
-            lab_2 = num2str(dep_x_2.data(1,comp)',['%.2f ' dep_x_2.units '\n']);
+    if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
+        if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
+                && strcmp(dep_x{comp_dim}.s,'LABEL_2')
+            reclen = size(dep_x{comp_dim}.data,2)/length(dep.DEPEND_O);
+            lab_2 = dep_x{comp_dim}.data(:,1:reclen);
+        elseif strcmp(dep_x{comp_dim}.type,'single') && ...
+                (strcmp(dep_x{comp_dim}.variance,'F/T') || ...
+                strcmp(dep_x{comp_dim}.variance,'T/T'))
+            lab_2 = num2str(dep_x{comp_dim}.data(1,comp)',['%.2f ' dep_x{comp_dim}.units '\n']);
         else
             error('BAD type for DEPEND_X')
         end
@@ -230,7 +314,7 @@ else
     
     % special case for degrees
     ytick = [];
-    if strcmpi(dep_x_1.units,'degrees')
+    if strcmpi(dep_x{1}.units,'degrees') || strcmpi(dep_x{1}.units,'deg')
         frange = abs(my_range(specrec.f));
         if frange > 80 && frange <=150, da = 15;
         elseif frange > 150 && frange <=200, da = 45;
@@ -252,14 +336,14 @@ else
         %else lab_2s = '';
         %end
         if ncomp<=LCOMP % Small number of components
-            ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
+            ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
             if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
             else lab_2s = text_s;
             end
             add_text(h(i),lab_2s);
         else % Large number of components
             if i==1, title(text_s), end
-            if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x_1.lab, dep_x_1.units))
+            if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
             else ylabel('')
             end
             add_text(h(i),lab_2(i,:));
