@@ -169,6 +169,9 @@ else
     specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[]);
     
     if dim == 2
+        if comp_dim == 0
+           comp_dim = 2; 
+        end
 		if data.dim(1)>1
 			
 			% This is a hack for STAFF B
