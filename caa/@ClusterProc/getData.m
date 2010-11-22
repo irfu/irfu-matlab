@@ -169,7 +169,7 @@ while have_options
 			if (probe_p_tmp==12 || probe_p_tmp==34), probe_p = probe_p_tmp;
             else irf_log('fcal,','wrongArgType : probe_p must be 12 or 34')
 			end
-        else irf_log('fcal,','wrongArgType : ang_limit value is missing')
+        else irf_log('fcal,','wrongArgType : probe_p value is missing')
 		end
 	case 'sfit_ver'
 		if length(args)>1
@@ -1255,8 +1255,7 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 	end
 
 	eval([ s 'di' varo_s '=diE;']); clear diE
-	eval(irf_ssub('ang_limit?=ang_limit;',cl_id)) 
-	save_list=[save_list s 'di' varo_s ' ang_limit' num2str(cl_id) ' '];
+	save_list=[save_list s 'di' varo_s];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % whip - Whisper present.
