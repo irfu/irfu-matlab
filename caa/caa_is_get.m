@@ -1,7 +1,7 @@
-function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
+function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par,units)
 % CAA_IS_GET  get Cluster data from ISDAT database
 %
-% [time,data] = caa_is_get(db_s,st,dt,cl_id,ins,sig,[sen,cha,par])
+% [time,data] = caa_is_get(db_s,st,dt,cl_id,ins,sig,[sen,cha,par,units])
 %  get data from ISDAT database
 %
 % OUTPUT
@@ -12,6 +12,7 @@ function [t,d] = caa_is_get(db_s,st,dt,cli,ins,sig,sen,cha,par)
 %  dt    - time interval in seconds
 %  cl_id - Cluster ID 1..4
 %  ins,sig,sen,cha,par - data request parameters
+%  units - 'tm' or 'phys' (default)
 %
 % In case ISDAT server returned DbBAD_INTERNAL (may be caused by the server 
 % crash) program will sleep for some time and retry the request.
@@ -38,7 +39,8 @@ MAXOPENATTEMPTS = 10;  % Number of times to retry in case open fails
 MAXNRET = 2;  % Number of times to retry in case of internal server error
 SLEEPINT = 5; % Number of seconds to sleep when waiting for server restart
 
-error(nargchk(6,9,nargin))
+error(nargchk(6,10,nargin))
+if nargin < 10, units = ''; end
 if nargin < 9, par = ' '; end
 if nargin < 8, cha = ' '; end
 if nargin < 7, sen = ' '; end
@@ -71,10 +73,16 @@ while nret<MAXNRET
 			openAttempts=openAttempts+1;
 			pause(0.01*openAttempts);
 		end
-	end
+    end
 	
-	[t, d, iserr] = isGetDataLite(dbase, st, dt, ...
-		'Cluster',num2str(cli),ins,sig,sen,cha,par);
+    if ~isempty(units)
+        [t, d, iserr] = isGetDataLite(dbase, st, dt, ...
+            'Cluster',num2str(cli),ins,sig,sen,cha,par,units);
+    else
+        [t, d, iserr] = isGetDataLite(dbase, st, dt, ...
+            'Cluster',num2str(cli),ins,sig,sen,cha,par);
+    end
+    
 	Mat_DbClose(dbase);
     d = double(d);
 	
