@@ -19,9 +19,23 @@ else
 end
 
 dep = getdep(dobj,var_s);
+dim = length(data.variance(3:end));
 
-plot_data = double(data.data)';
-
-if isfield(dep,'DEPEND_O'), res = [dep.DEPEND_O plot_data'];
-else res = plot_data;
+if dim <=1
+    plot_data = double(data.data)';
+    
+    if isfield(dep,'DEPEND_O'), res = [dep.DEPEND_O plot_data'];
+    else res = plot_data;
+    end
+else
+    for d = 1:size(dep.DEPEND_X,1)
+        dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
+        dep_x{d}.s = dep.DEPEND_X{d,1};
+        dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
+        dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        dep_x{d}.units = getunits(dobj,dep_x{d}.s);
+        dep_x{d}.lab = getlablaxis(dobj,dep_x{d}.s);
+    end
+    res = struct('t',dep.DEPEND_O,'dep_x',[],'data',data.data);
+    res.dep_x = dep_x;
 end
