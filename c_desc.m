@@ -57,11 +57,39 @@ vvs = 'XXXXXXXXXX';
 vvs(1:length(vs)) = vs;
 
 v.file_old = ''; % compatibility mode for old files
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% P Spacecraft potential level 2/3 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if regexp(vs,'^P[1-4]$')==1
+	v.data = 1;
+    v.cl_id = vs(2);
+    v.lev = 2;
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'P';
+    v.sen = '1234';
+	v.cs = {'na','na','na','na','na'};
+	v.rep = {'scalar','scalar','scalar','scalar','scalar'};
+ 	v.units =  {'V','na','na','na','na'};
+	v.si_conv = {'1>V','','','',''};
+	v.size = [ 1 1 1 1 1 ];
+	v.name = {'Spacecraft_Potential','Probe','ASPOC_Status','P_Bitmask','P_Quality'};
+    v.quant = 'p';
+	v.labels = {'-Sc pot','Probe','ASPOC Active','Bitmask','Quality'};
+	v.field_name = {'Spacecraft potential','Probe','ASPOC','Bitmask','Quality'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT','INT','INT','INT','INT'};
+    v.sigdig = [ 6 4 1 5 1 ];
+	v.ent = {'Instrument'};
+	v.prop = {'Probe_Potential'};
+	v.fluc = {'Waveform'};
+	v.com = '';
+    v.file = 'mP';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if regexp(vs,'^(b)?P(s)?[1-4]$')==1
+elseif regexp(vs,'^(b)?P(s)?[1-4]$')==1
 	v.data = 1;
 	if vs(2)=='s' || vs(1)=='b' , v.cl_id = vs(3);
     else v.cl_id = vs(2);
@@ -118,34 +146,6 @@ elseif regexp(vs,'^(b)?P(s)?[1-4]_info$')==1
 		v.quant = 'p';
 	end
 	v.lev = 1;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% SCP Spacecraft potential level 2/3 caa_export only no variable in .mat
-%% files
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^SCP[1-4]$')==1
-	v.data = 1;
-    v.cl_id = vs(4);
-    v.lev = 2;
-	v.inst = 'EFW';
-	v.frame = 'sc';
-	v.sig = 'P';
-    v.sen = '1234';
-	v.cs = {'na','na','na','na','na'};
-	v.rep = {'scalar','scalar','scalar','scalar','scalar'};
- 	v.units =  {'V','na','na','na','na'};
-	v.si_conv = {'1>V','','','',''};
-	v.size = [ 1 1 1 1 1 ];
-	v.name = {'Spacecraft_Potential','Probe','ASPOC_Status','P_Bitmask','P_Quality'};
-	v.labels = {'-Sc pot','Probe','ASPOC Active','Bitmask','Quality'};
-	v.field_name = {'Spacecraft potential','Probe','ASPOC','Bitmask','Quality'};
-    v.ptype = {'Data'};
-    v.valtype = {'FLOAT','INT','INT','INT','INT'};
-    v.sigdig = [ 6 4 1 5 1 ];
-	v.ent = {'Instrument'};
-	v.prop = {'Probe_Potential'};
-	v.fluc = {'Waveform'};
-	v.com = '';
-    v.file = 'cef export only'; % caa_export_new() cef export only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% P - individual probes 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

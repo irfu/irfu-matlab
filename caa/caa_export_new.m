@@ -69,14 +69,22 @@ if lev==1
 else
 	switch caa_vs
 	case 'P'
-		if lev==2
+		if lev==2 || lev==3
+            % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('P?',cl_id);
-			v_size = 1;
+			v_size = 5;
 		else
-			vs = irf_ssub('Ps?',cl_id);
-			v_size = 1;
+			disp('not implemented'), cd(old_pwd), return
 		end
-		DATASET_DESCRIPTION_PREFIX = 'negative of the ';
+%	case 'P' % old format
+%		if lev==2
+%			vs = irf_ssub('P?',cl_id);
+%			v_size = 1;
+%		else
+%			vs = irf_ssub('Ps?',cl_id);
+%			v_size = 1;
+%		end
+%		DATASET_DESCRIPTION_PREFIX = 'negative of the ';
 	case 'E'
 		if lev==2
 			vs = irf_ssub('diE?p1234',cl_id);
@@ -114,14 +122,6 @@ else
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
-	case 'SCP'
-		if lev==2 || lev==3
-            % Fake for c_desc only. No data variable in .mat files
-			vs = irf_ssub('SCP?',cl_id);
-			v_size = 5;
-		else
-			disp('not implemented'), cd(old_pwd), return
-		end
 	otherwise
 		error('unknown variable')
 	end
@@ -155,7 +155,7 @@ for dd = 1:length(dirs)
       if numel(probe_pairs) > 0
          vs = irf_ssub(vs, probe_pairs(1));
       end
-   elseif strcmp(caa_vs, 'SCP')      
+   elseif strcmp(caa_vs, 'P')      
       global c_ct % includes aspoc active values
       if isempty(c_ct)
          c_ctl('load_aspoc_active');
@@ -173,7 +173,7 @@ for dd = 1:length(dirs)
       if ~ok || isempty(probe_info)
          irf_log('load',msg)
          data = [];
-      else          
+      else
          [ok,data,msg] = c_load(pvar,cl_id);
          if ~ok || isempty(data)
             irf_log('load',msg)
