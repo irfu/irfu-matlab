@@ -313,7 +313,7 @@ function ret = findhkcalmatrix( fid, searchstr )
         end
         tline = fgetl(fid);
     end
-    
+
 function [ibias, puck, guard] = readhkcalmatrix( filen )
     datapath='/data/cluster/cal/';
     fid = fopen([ datapath filen ], 'r');
@@ -332,7 +332,7 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
                 end
             end
         end
-        
+
         puck=zeros(256,5,'single');
         ret = findhkcalmatrix(fid, 'QTY          PUCK1');
         if ret ~= 0
@@ -346,7 +346,7 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
                 end
             end
         end
-        
+
         guard=zeros(256,5,'single');
         ret = findhkcalmatrix(fid, 'QTY          GUARD1'); 
         if ret ~= 0
@@ -360,7 +360,7 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
                 end
             end
         end
-        
+
         fclose(fid);
     else
         irf_log('load',['file ' datapath filen ' not found']);
@@ -368,12 +368,10 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
 
 function aspa = readaspocactive( filen )
 %READASPOCACTIVE read cef ascii files
-%   ep = read_cef_active(file) caa cef file and returns the data.
-%   ep(x,1) is the ON date in epoch format
-%   ep(x,2) is the OFF date in epoch format
+%   aa = read_cef_active(file) caa cef file and returns the data.
+%   aa(x,1) is the ON date in epoch format
+%   aa(x,2) is the OFF date in epoch format
 %
-%
-% $Id$
     datapath='/data/caa/cef/ASPOC/';
     fid = fopen([ datapath filen ], 'r');
 
@@ -432,5 +430,5 @@ function c_ctl_usage
 	disp('  c_ctl(''save'',''/path/to/mcctl.mat/'')')
 	disp('  c_ctl(''save'',''/path/to/alternative_mcctl.mat'')')
 	disp('  c_ctl(''sc_list'',''ctl'',value)')
-    disp('  c_ctl(''load_hk_cal'')')
-    disp('  c_ctl(''load_aspoc_active'')')
+	disp('  c_ctl(''load_hk_cal'')')
+	disp('  c_ctl(''load_aspoc_active'')')
