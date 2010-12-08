@@ -1,4 +1,4 @@
-function [A]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
+function [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
 % Usage:
 % [h]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
 %
@@ -19,12 +19,18 @@ function [A]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_
 % 12.   init_type % 0 - fixed square 1 - extended square 2- zoomed square
 %
 % Output: 	A - movie matrix
+%           im - image matrix
+%           map - color map
 %
 % Examples:
 % irf_plasma_wave_visualization('',[-1i*.05*2*pi .0],[.05 1i*0],[.05 1i*0],1500,1,1,0,2*pi/1,1,1,1)
 % irf_plasma_wave_visualization('',.1,[.01 1i*0],[-.01 1i*0],1500,[.3+1i*.05],8,2*pi/.5,2*pi/1)
 % surface wave
 % irf_plasma_wave_visualization('',.1,[0.03 1i*.03],[0.03 1i*.03],2000,1,5,2*pi/.5,1i*1.5*pi,1,1,1)
+%
+% to create animated gif
+% imwrite(im,map,'anim.gif','DelayTime',0,'LoopCount',inf)
+
 global Xplot_lim Yplot_lim
 for ha=1, % check input
     if nargin < 1 ,
@@ -54,6 +60,7 @@ end
 for ha=1, % initialize figure
     set(0,'defaultLineLineWidth', 1.5);
     fn=figure(101);clf;
+    set(fn,'color','white')
     set(gcf,'PaperUnits','centimeters')
     xSize = 12; ySize = 12;
     xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
@@ -134,11 +141,18 @@ for ha=1, % step through wave
         end
     end
     for haha=1, % plot wave animation
-        A=moviein(length(time_steps)); % create movie matrix
+        A=moviein(length(time_steps)); % create matlab movie matrix
         for jj=1:length(time_steps), % plot wave animation
             pause(.05);
             plot_particles(h,r_ions(:,:,jj),r_electrons(:,:,jj),squeeze(field_lines(jj,:,:,:)));
             A(:,jj)=getframe;
+            if jj==1, % initialize animated gif matrix
+                f=getframe;
+                [im,map] = rgb2ind(f.cdata,256,'nodither');
+                im(1,1,1,20) = 0;
+            end
+            f=getframe;
+            im(:,:,1,jj) = rgb2ind(f.cdata,map,'nodither');
         end
     end
 end
