@@ -147,7 +147,7 @@ disp('IRFU plasma calculator, relativistic effects not fully included')
 disp('velocities, gyroradia are relativistically correct')
 disp('can somebody fix relativstically correct frequencies Fpe, Fce,.. ?')
 disp('===============================================================')
-disp(['B=' num2str(B) ' [nT]; n_H=' num2str(n*1e-6) ' [cc]; n_O=' num2str(no) ' [cc]; ' ...
+disp(['B=' num2str(B) ' [nT]; n_H=' num2str(np*1e-6) ' [cc]; n_O=' num2str(no*1e-6) ' [cc]; ' ...
   'T_e=' num2str(Te) ' [eV]; T_i=' num2str(Ti) ' [eV];']);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
