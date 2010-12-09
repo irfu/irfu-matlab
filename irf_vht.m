@@ -71,11 +71,18 @@ disp(['cc=' num2str(cc(1,2),3)]);
 %
 % Calculate error in velocity estimate
 %
-delta_xxExB=abs(irf_cross(delta_e,b));
-delta_ExB=sum(delta_xxExB(ind_number,2:4),1)/length(delta_xxExB(ind_number,1));
-delta_VHT=K\ delta_ExB'.*1e3; % 9.12 in ISSI book 
-delta_vht=delta_VHT';dvht=delta_vht;
-delta_strvht=['\delta V_{HT}=' num2str(irf_abs(delta_vht,1),3) ' [ ' num2str(irf_norm(delta_vht),' %5.2f') '] =[' num2str(delta_vht,' %5.2f') '] km/s'];
+% 9.16 in ISSI book
+DVHT=sum(irf_abs(delta_e(ind_number,:),1).^2)/length(ind_number)
+lambda=eig(K);
+S=DVHT/(2*length(ind_number)-3)*inv(K);
+dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
+dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;
+dvht(3)=sqrt([0 0 1]*S*[0;0;1])*1e3;
+% delta_xxExB=abs(irf_cross(delta_e,b));
+% delta_ExB=sum(delta_xxExB(ind_number,2:4),1)/length(delta_xxExB(ind_number,1));
+% delta_VHT=K\ delta_ExB'.*1e3; % 9.12 in ISSI book 
+% delta_vht=delta_VHT';dvht=delta_vht;
+strdvht=['\delta V_{HT}=' num2str(irf_abs(dvht,1),3) ' [ ' num2str(irf_norm(dvht),' %5.2f') '] =[' num2str(dvht,' %5.2f') '] km/s'];
 disp(comm)
-disp(delta_strvht);
+disp(strdvht);
 
