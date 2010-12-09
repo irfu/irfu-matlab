@@ -62,20 +62,21 @@ axis equal;grid on;
 ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
 title('deHoffmann-Teller frame');
 xlabel('E_{HT} [mV/m] DS');ylabel('E [mV/m] DS')
-if vht_flag == 2, legend('x','y');
-else legend('x','y','z');
+if vht_flag == 2, legend({'x','y'},'location','southeast');
+else legend({'x','y','z'});
 end
 
 ax=axis;
 ymax=ax(4);ymin=ax(3);dy=(ymax-ymin)/20;
 ytext=ymax-dy;
-xtext=ax(1)+(ax(2)-ax(1))/10;
+xtext=ax(1)+(ax(2)-ax(1))/20;
 text(xtext,ytext,strint);ytext=ytext-dy;
 text(xtext,ytext,strvht);ytext=ytext-dy;
 text(xtext,ytext,strdvht);ytext=ytext-dy;
 hold on
 xp=[min(min(eht(:,2:end))) max(max(eht(:,2:end)))];
 plot(xp,polyval(p,xp),'k-');
+axis(ax);
 text(xtext,ytext,['slope=' num2str(p(1),3) '  offs=' num2str(p(2),2)]);ytext=ytext-dy;
 text(xtext,ytext,['cc=' num2str(cc(1,2),3)]);ytext=ytext-dy;
 if strcmp(vht_is,'given'),
