@@ -239,7 +239,7 @@ for dd = 1:length(dirs)
              [ok,Del,msg] = c_load('D?p12p34',cl_id);
              if ~ok || isempty(Del)
                 irf_log('load',msg)
-                data = []; cd(old_pwd); return
+                data = []; continue
              end;
              if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
                 irf_log('load','Info: Imaginary delta offset.');
