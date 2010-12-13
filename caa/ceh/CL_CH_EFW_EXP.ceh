@@ -32,7 +32,8 @@ START_META     =   EXPERIMENT_KEY_PERSONNEL
    ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
    ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
    ENTRY       =   "Per-Arne Lindqvist>Archive manager>Per-Arne.Lindqvist@alfvenlab.kth.se"
-   ENTRY       =   "Yuri Khotyaintsev>Archive scientist>Yuri.Khotyaintsev@irfu.se"
+   ENTRY       =   "Yuri Khotyaintsev>Archive manager>Yuri.Khotyaintsev@irfu.se"
+   ENTRY       =   "Chris Cully>Archive scientist>Chris.Cully@irfu.se"
 END_META       =   EXPERIMENT_KEY_PERSONNEL
 !
 ! Miscellaneous information concerning the experiment
