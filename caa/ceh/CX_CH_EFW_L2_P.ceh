@@ -26,6 +26,20 @@ START_META     =   DATASET_CAVEATS
    ENTRY       =   "For more information on data quality and how the CAA data are processed,"
    ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
    ENTRY       =   "Document (ICD)."
+   ENTRY       =   " "
+   ENTRY       =   "Detailed quality information is provided as a 16 bit set of
+flags"
+   ENTRY       =   "in the parameter P_bitmask__CXXX_CP_EFW_L2_P. The meaning of
+"
+   ENTRY       =   "the bits is as follows (LSB numbering starting at 0):"
+   ENTRY       =   "Bit  0: Reset."
+   ENTRY       =   "Bit  1: Bad bias."
+   ENTRY       =   "Bit  2: Probe saturation."
+   ENTRY       =   "Bit  3: Low density saturation (-68V)."
+   ENTRY       =   "Bits 4-12: N/A"
+   ENTRY       =   "Bit 13: Whisper operating."
+   ENTRY       =   "Bit 14: Saturation due to high bias current."
+   ENTRY       =   "Bit 15: N/A"
 END_META       =   DATASET_CAVEATS
 START_META     =   TIME_RESOLUTION
    ENTRY       =   0.2
@@ -70,3 +84,67 @@ START_VARIABLE      = Spacecraft_potential__CXXX_CP_EFW_L2_P
   LABLAXIS          = "-Sc pot"
   DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
 END_VARIABLE        = Spacecraft_potential__CXXX_CP_EFW_L2_P
+!
+START_VARIABLE      = P_probes__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Probes used for Spacecraft potential measurement"
+  FIELDNAM          = "Probes used for Spacecraft potential measurement"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 4
+  LABLAXIS          = "Probes"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
+END_VARIABLE        = P_probes__CXXX_CP_EFW_L2_P
+!
+START_VARIABLE      = ASPOC_status__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "ASPOC status bit (1=active)"
+  FIELDNAM          = "ASPOC status bit (1=active)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "ASPOC_ON"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
+END_VARIABLE        = ASPOC_status__CXXX_CP_EFW_L2_P
+!
+START_VARIABLE      = P_bitmask__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Spacecraft potential measurement quality bitmask"
+  FIELDNAM          = "Spacecraft potential measurement quality bitmask"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 5
+  LABLAXIS          = "Bitmask"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
+END_VARIABLE        = P_bitmask__CXXX_CP_EFW_L2_P
+!
+START_VARIABLE      = P_quality__CXXX_CP_EFW_L2_P
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Spacecraft potential measurement quality flag (4=best)"
+  FIELDNAM          = "Spacecraft potential measurement quality flag (4=best)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "Quality"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_P
+END_VARIABLE        = P_quality__CXXX_CP_EFW_L2_P
