@@ -30,10 +30,9 @@ END_META       =   EXPERIMENT_REFERENCES
 !
 START_META     =   EXPERIMENT_KEY_PERSONNEL
    ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
-   ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
-   ENTRY       =   "Per-Arne Lindqvist>Archive manager>Per-Arne.Lindqvist@alfvenlab.kth.se"
    ENTRY       =   "Yuri Khotyaintsev>Archive manager>Yuri.Khotyaintsev@irfu.se"
    ENTRY       =   "Chris Cully>Archive scientist>Chris.Cully@irfu.se"
+   ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
 END_META       =   EXPERIMENT_KEY_PERSONNEL
 !
 ! Miscellaneous information concerning the experiment
@@ -60,7 +59,7 @@ START_META     =   EXPERIMENT_CAVEATS
    ENTRY       =   ""
    ENTRY       =   "For more information on data quality and how the CAA data are processed"
    ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
-   ENTRY       =   "Document (ICD).""
+   ENTRY       =   "Document (ICD)."
 END_META       =   EXPERIMENT_CAVEATS
 !
 ! Type of instrument used to collect the data
