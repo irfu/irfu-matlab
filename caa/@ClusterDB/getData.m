@@ -24,6 +24,8 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// EFW internal clock from DSC
 %	ibias: IBIAS{cl_id}p{1..4} -> mEFWR
 %			// EFW probe bias current
+%   bscburst : wBSC4kHz{cl_id} -> mBSCBurst
+%			// EFW probe bias current
 %
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
@@ -273,7 +275,7 @@ elseif strcmp(quantity,'dsc')
 	save_file = './mEFWR.mat';
 	
 	[t,dsc] = caa_is_get(cdb.db, start_time, dt, cl_id, 'efw', 'DSC');
-	if isempty(dsc)
+	if isempty(t) || isempty(dsc)
 		irf_log('dsrc',irf_ssub('No data for DSC?',cl_id))
 		out_data = []; cd(old_pwd), return
 	end
@@ -883,6 +885,45 @@ elseif strcmp(quantity,'bsc')
 	
 	c_eval('wBSC?=[t data''];save_list=[save_list '' wBSC? ''];',cl_id);
 	clear t data
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% B STAFF SC in the EFW IB
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'bscburst')
+	
+	save_file = './mBSCBurst.mat';
+	
+    co = 'xyz';
+    for comp=1:3
+        [t,data] = caa_is_get(cdb.db, start_time, dt, cl_id,...
+            'efw','dB',co(comp),'4kHz','burst','tm');
+        if isempty(t) || isempty(data)
+            irf_log('dsrc',irf_ssub('No data for wBSC4kHz?',cl_id))
+            out_data = []; cd(old_pwd), return
+        end   
+       B(:,comp) = data; %#ok<AGROW>
+    end
+    
+    B = -B/7000; % Convert to V - same as STAFF B_SC_Level_1
+    
+    % Correct start time of the burst
+    burst_f_name = [cdb.dp '/burst/'...
+        irf_ssub([irf_fname(t(1),1) 'we.0?'],cl_id)];
+    if exist(burst_f_name,'file')
+        err_t = t(1) - c_efw_burst_chkt(cdb.db,burst_f_name);
+        
+        t = t - err_t;
+        irf_log('dsrc',...
+            ['burst start time was corrected by ' num2str(err_t) ' sec'])
+    else irf_log('dsrc','burst start time was not corrected')
+    end
+    
+    B = rm_ib_spike([t B]);
+    
+    B = c_efw_burst_bsc_tf(B,cl_id); %#ok<NASGU> % Apply the transfer function
+	
+	c_eval('wBSC4kHz?=B;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
+	clear t data
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CSDS PP [GSE+DSI] 
@@ -1098,5 +1139,39 @@ while 1
 		sprintf('Bad time %s - %s',epoch2iso(taj,1),epoch2iso(tbj,1)));
 		
 	if isempty(out), return, end % extra precaution to avoid a dead loop
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function dataout = rm_ib_spike(data)
+% Remove spikes in staff IB data
+
+DT = 0.455; % sec, time window
+THR = 5; % data above TRH StDev discarded
+
+dataout = data;
+
+ndata = length(data(:,1));
+dt2 = ceil(DT*c_efw_fsample(data,'ib')/2);
+
+i = 1;
+while i < ndata
+    i2 = i + dt2*2;
+    if i2 > ndata % last window
+        i = ndata - dt2*2;
+        i2 = ndata;
+    end
+    x = data(i:i2,2:4);
+    y = x;
+    
+    x = detrend(x);
+    s = std(x);
+    for comp=3:-1:1
+        ii = find(abs(x(:,comp))>THR*s(comp));
+        if ~isempty(ii), y(ii,:) = y(ii+1,:); end
+    end
+    
+    dataout(i:i2,2:4) = y;
+    
+    i = i2 + 1;
 end
 
