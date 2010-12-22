@@ -24,14 +24,14 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// EFW internal clock from DSC
 %	ibias: IBIAS{cl_id}p{1..4} -> mEFWR
 %			// EFW probe bias current
-%   bscburst : wBSC4kHz{cl_id} -> mBSCBurst
-%			// EFW probe bias current
 %
 %	//// EFW internal burst////
 %	eburst: wbE{cl_id}p12,34 -> mEFWburst
 %			// electric fields 8kHz
 %	pburst: P{180Hz,4kHz,32kHz}{cl_id}p{1..4} -> mEFWburstR	
 %			// probe potentials (180Hz,4kHz,32kHz)
+%   bscburst : wBSC4kHz{cl_id} -> mBSCBurst
+%			// EFW probe bias current
 %
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
