@@ -78,19 +78,23 @@ else
 	end
 end
 
+end %epoch2iso
+
 % Help function to insert zeros for numbers containing only one digit 
 function out = add_zero(d,s)
-out = s;
 
-ii = find(d<10);
-if ~isempty(ii)
-	ss = s(ii,1);
-	ss(:) = '0';
-	if length(ii)==length(d)
-		% Add to all lines
-		out = [ss s];
-	else
-		out(ii,:) = [ss s(ii,1:end-1)];
-	end
+    if size(s,2) == 1
+        ss = s;
+        ss(:) = '0';
+        out = [ss s];
+    else
+        out = s;
+        ii = find(d<10);
+        if ~isempty(ii)
+            ss = s(ii,1);
+            ss(:) = '0';
+            out(ii,:) = [ss s(ii,end)];
+        end
+    end
 end
 
