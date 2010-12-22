@@ -72,6 +72,8 @@ elseif f<K_PLUS*fdwp/36 && f>K_MINUS*fdwp/36 && (strcmp(mode,'any') || strcmp(mo
 	sf = 25;    % NM
 elseif f<K_PLUS*fdwp/2 && f>K_MINUS*fdwp/2 && (strcmp(mode,'any') || strcmp(mode,'hx') || strcmp(mode,'ib'))
 	sf = 450;   % BM1/IB
+elseif f<K_PLUS*2250 && f>K_MINUS*2250 && (strcmp(mode,'any') || strcmp(mode,'ib'))
+    sf = 2250;  % IB
 elseif f<K_PLUS*4500 && f>K_MINUS*4500 && (strcmp(mode,'any') || strcmp(mode,'ib'))
 	sf = 4500;  % IB
 elseif f<K_PLUS*9000 && f>K_MINUS*9000 && (strcmp(mode,'any') || strcmp(mode,'ib'))
