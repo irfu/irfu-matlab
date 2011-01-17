@@ -29,7 +29,7 @@ if length(t)<5
 	for j=2:5, s1(j-1) = {add_zero(d(:,j),num2str(d(:,j),'%d'))}; end
 	
 	% Take care about seconds separately
-	s2 = add_zero(d(:,6),num2str(d(:,6),'%6f'));
+    s2 = add_zero(d(:,6),num2str(d(:,6),'%6f'));
 	if fmt, s2 = s2(:,1:6); end
 	
 	sZ = s2(:,1); sZ(:) = 'Z';
@@ -98,7 +98,8 @@ function out = add_zero(d,s)
         if ~isempty(ii)
             ss = s(ii,1);
             ss(:) = '0';
-            out(ii,:) = [ss s(ii,end)];
+            out(ii,:) = [ss s(ii:(end-1))];  %Huishan Fu changes
+            %out(ii,:) = [ss s(ii,end)];
         end
     end
 end
