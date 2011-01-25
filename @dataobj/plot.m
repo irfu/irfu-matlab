@@ -5,6 +5,9 @@ function res = plot(dobj,var_s,varargin)
 %	'AX'       - axis handles to use
 %   'COMP'     - components to plot
 %   'SUM_DIM1' - sum over first dimension (frequency, pitch angle)
+%   'nolabels' - only plot data, do not add any labels or text
+%   'ColorbarLabel' - specify colorbar label 
+%   'FitColorbarLabel' - fit the text of colorbar label to colobar height
 %
 % $Id$
 
@@ -50,6 +53,9 @@ use_comp = 0;
 comp = [];
 ax = [];
 create_axes = 1;
+flag_labels_is_on=1;
+flag_colorbar_label_is_manually_specified=0;
+flag_colorbar_label_fit_to_colorbar_height_is_on=0;
 
 while have_options
     arg_pos = arg_pos + 1;
@@ -74,6 +80,18 @@ while have_options
                 else
                     disp('invalid value for COMP')
                 end
+            case 'nolabels'
+                flag_labels_is_on = 0;
+            case {'colorbarlabel','ColorbarLabel'}
+                l=2;
+                if ischar(args{2})
+                    flag_colorbar_label_is_manually_specified=1;
+                    colorbar_label = args{2};
+                else
+                    disp('invalid value for ColorbarLabel in PLOT')
+                end
+            case {'fitcolorbarlabel','FitColorbarLabel'}
+                flag_colorbar_label_fit_to_colorbar_height_is_on=1;
             case 'sum_dim1'
                 sum_dim = 1;
             case 'sum_dim2'
@@ -318,7 +336,7 @@ else
     % special case for degrees
     ytick = [];
     if strcmpi(dep_x{1}.units,'degrees') || strcmpi(dep_x{1}.units,'deg')
-        frange = abs(my_range(specrec.f));
+        frange = abs(max(specrec.f)-min(specrec.f));
         if frange > 80 && frange <=150, da = 15;
         elseif frange > 150 && frange <=200, da = 45;
         elseif frange > 200 && frange <=380, da = 90;
@@ -338,27 +356,39 @@ else
         %if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
         %else lab_2s = '';
         %end
-        if ncomp<=LCOMP % Small number of components
-            ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
-            if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
-            else lab_2s = text_s;
+        if flag_labels_is_on,
+            if ncomp<=LCOMP % Small number of components
+                ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
+                if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
+                else lab_2s = text_s;
+                end
+                add_text(h(i),lab_2s);
+            else % Large number of components
+                if i==1, title(text_s), end
+                if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
+                else ylabel('')
+                end
+                add_text(h(i),lab_2(i,:));
             end
-            add_text(h(i),lab_2s);
-        else % Large number of components
-            if i==1, title(text_s), end
-            if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
-            else ylabel('')
+        end
+            % Add colorbar
+            if i==fix(ncomp/2)+1
+                hcb = colorbar;
+                dy = get(ax(i),'Position'); dy = dy(3);
+                pcb = get(hcb,'Position');
+                set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
+                if flag_labels_is_on,
+                    if ~flag_colorbar_label_is_manually_specified
+                        colorbar_label=['Log ' lablaxis ' [' units ']' ];
+                    end
+                    ylabel(hcb,colorbar_label);
+                    if flag_colorbar_label_fit_to_colorbar_height_is_on
+                        fit_colorbarlabel_height(hcb);
+                    end                    
+                else
+                    ylabel(hcb,'');
+                end
             end
-            add_text(h(i),lab_2(i,:));
-        end
-        % Add colorbar
-        if i==fix(ncomp/2)+1
-            hcb = colorbar;
-            dy = get(ax(i),'Position'); dy = dy(3);
-            pcb = get(hcb,'Position');
-            ylabel(hcb,['Log ' lablaxis ' [' units ']' ])
-            set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
-        end
     end
     % Resize all panels after addition of the colorbar
     if ~isempty(dy)
@@ -374,11 +404,8 @@ end
 if nargout > 0, res = h; end
 
 function add_text(h,txt)
-
-ylim = get(h,'YLim');
-xlim = get(h,'XLim');
-text(xlim(2) - my_range(xlim)*.05, ylim(2) - my_range(ylim)*.05, [' ' txt],...
-	'HorizontalAlignment','right')
+text(0.99, 0.97, [' ' txt],'HorizontalAlignment','right','VerticalAlignment','top',...
+    'units','normalized','fontsize',8,'parent',h)
 
 function cs = shorten_cs(cs)
 
@@ -388,10 +415,6 @@ if isempty(cs), return, end
 while cs(1) == ' ', cs(1) = []; end
 	
 if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
-
-% Help function
-function r=my_range(x)
-r=max(x)-min(x);
 
 % Try to correct latex
 function s = corr_latex(s)
@@ -411,3 +434,23 @@ for i=1:length(expr)
     end
 end
 
+function fit_colorbarlabel_height(hcb)
+hy=get(hcb,'ylabel');
+%outpos=get(hcb,'outerposition');
+%pos=get(hcb,'position');
+%factor=outpos(4)/pos(4); % colorbar label can be heigher than colorbar itslef
+colorbar_label_fontsize=get(hy,'fontsize');
+units=get(hy,'units');
+set(hy,'units','normalized');
+temp=get(hy,'Extent');
+labelposition=get(hy,'Position');
+colorbarlabelheight = temp(4);
+while colorbarlabelheight>1.1,
+    colorbar_label_fontsize=colorbar_label_fontsize*0.95;
+    set(hy,'fontsize',colorbar_label_fontsize,'position',labelposition);
+    temp=get(hy,'Extent');
+    colorbarlabelheight=temp(4);
+end
+set(hy,'units',units);
+
+                        
