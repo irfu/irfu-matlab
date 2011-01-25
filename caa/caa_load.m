@@ -58,4 +58,3 @@ end
 if nloaded, disp(sprintf('CAA_LOAD : loaded %d variables',nloaded));
 else disp('CAA_LOAD : nothing to load')
 end
-clear nloaded dirs old_pwd
