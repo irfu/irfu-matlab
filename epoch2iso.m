@@ -26,12 +26,13 @@ if length(t)<5
 	% We need to do all this because DATESTR rounds seconds
 	d = fromepoch(t);
 	
-	for j=2:5, s1(j-1) = {add_zero(d(:,j),num2str(d(:,j),'%d'))}; end
+	for j=2:5, s1(j-1) = {num2str(d(:,j),'%02d')}; end
 	
-	% Take care about seconds separately
-    s2 = add_zero(d(:,6),num2str(d(:,6),'%6f'));
-	if fmt, s2 = s2(:,1:6); end
-	
+    % Take care about seconds separately
+    if fmt, s2 = num2str(d(:,6),'%06.3f');
+    else s2 = num2str(d(:,6),'%09.6f');
+    end
+
 	sZ = s2(:,1); sZ(:) = 'Z';
 	sT = sZ; sT(:) = 'T';
 	sdash = sZ; sdash(:) = '-';
@@ -98,8 +99,7 @@ function out = add_zero(d,s)
         if ~isempty(ii)
             ss = s(ii,1);
             ss(:) = '0';
-            out(ii,:) = [ss s(ii:(end-1))];  %Huishan Fu changes
-            %out(ii,:) = [ss s(ii,end)];
+            out(ii,:) = [ss s(ii:(end-1))];
         end
     end
 end
