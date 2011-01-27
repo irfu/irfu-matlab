@@ -5,8 +5,10 @@
 % see help units.m for more details
 %
 % Examples: 
-%   Units.R_Earth
-%   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e
+%   Units.R_Earth                               % display Earth radius in SI
+%   Units.R_Earth/Units.R_Sun                   % display Earth radius in solar radia
+%   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e    % to convert from MK to eV
+%   Units                                       % to see all defined units
 %
 % Suggestion: execute irf_units in your startup and you can everywhere
 % access the units and constants
