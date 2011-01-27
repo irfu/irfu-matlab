@@ -92,7 +92,17 @@ irf_legend(gca,{'B_X','B_Y','B_Z'},[0.02 0.35])
 %add_timeaxis(gca,'nolabels');
 ht=irf_pl_info(['C' num2str(ic)],gca,[0.02,0.7]);set(ht,'fontsize',12,'fontweight','bold')
 end
-
+for ttt=1, % PANEL: PEACE temperature in eV C1..C4
+    h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+    caa_load PEA MOMENTS
+    c_eval('TelectronC?=getmat(C?_CP_PEA_MOMENTS,''Data_Temperature_ComponentPerpendicularToMagField__C?__MOMENTS'');');
+    c_eval('TelectronC?=irf_tappl(TelectronC?,''*1e6*Units.kB/Units.eV'');'); % convert temperature to eV
+    c_pl_tx('TelectronC?','.-') 
+    disp('SUBPLOT: C1..4, PEACE Temperature');
+    set(gca,'yscale','lin'); 
+    irf_legend(gca,{'C1','C2','C3','C4'},[0.02, 0.9],'color','cluster');
+    ylabel('T_{e} [eV] PEACE');
+end
 %% CAA Rapid 
 dt_rap = 2.0715; % time shift of the pixels
 
@@ -133,5 +143,4 @@ shading flat
 caxis(cc);
 ylabel('')
 set(gca,'TickDir','out','YScale','log','YLim',[10000.01 245e3],'Color',[.5 .5 .5 ])
-
 %% Other
