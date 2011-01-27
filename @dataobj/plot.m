@@ -8,6 +8,7 @@ function res = plot(dobj,var_s,varargin)
 %   'nolabels' - only plot data, do not add any labels or text
 %   'ColorbarLabel' - specify colorbar label 
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
+%   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
 % $Id$
 
@@ -56,6 +57,8 @@ create_axes = 1;
 flag_labels_is_on=1;
 flag_colorbar_label_is_manually_specified=0;
 flag_colorbar_label_fit_to_colorbar_height_is_on=0;
+line_color='k'; % default line color is black, can be changed with flags, e.g. clustercolors
+flag_use_cluster_colors=0;
 
 while have_options
     arg_pos = arg_pos + 1;
@@ -80,9 +83,17 @@ while have_options
                 else
                     disp('invalid value for COMP')
                 end
+            case 'clustercolors'
+                flag_use_cluster_colors = 1;
+                if findstr('C1',var_s), line_color='k';
+                elseif findstr('C2',var_s), line_color='r';
+                elseif findstr('C3',var_s), line_color='g';
+                elseif findstr('C4',var_s), line_color='b';
+                else flag_use_cluster_colors = 0;
+                end
             case 'nolabels'
                 flag_labels_is_on = 0;
-            case {'colorbarlabel','ColorbarLabel'}
+            case 'colorbarlabel'
                 l=2;
                 if ischar(args{2})
                     flag_colorbar_label_is_manually_specified=1;
@@ -90,7 +101,7 @@ while have_options
                 else
                     disp('invalid value for ColorbarLabel in PLOT')
                 end
-            case {'fitcolorbarlabel','FitColorbarLabel'}
+            case 'fitcolorbarlabel'
                 flag_colorbar_label_fit_to_colorbar_height_is_on=1;
             case 'sum_dim1'
                 sum_dim = 1;
@@ -135,11 +146,11 @@ if dim == 0 || dim == 1
 			if ishandle(ax)
 				cax = gca;
 				axes(ax)
-				h = irf_plot([dep.DEPEND_O plot_data]);
+				h = irf_plot([dep.DEPEND_O plot_data],line_color);
 				axes(cax)
 			else
 				if ~isempty(ax), disp('AX is not an axis handle'), end
-				h = irf_plot([dep.DEPEND_O plot_data]);
+				h = irf_plot([dep.DEPEND_O plot_data],line_color);
 			end
 		else
 			if ishandle(ax), h = plot(ax,data.data);
