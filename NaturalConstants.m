@@ -11,7 +11,10 @@
 %
 %  c_light = 3e8;
 %  R_Earth = 6370e3; 
- 
+
+disp('!!!! NaturalConstants will be soon removed from irfu-matlab depository  !!!!')
+disp('use irf_units instead!')
+
  global qe kb mH me eps0 mu0 c_light R_Earth
 
   qe    = 1.60219e-19;
