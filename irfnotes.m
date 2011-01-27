@@ -11,12 +11,13 @@ xSize = 12; ySize = 24;
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*50 ySize*50])
+clear xSize sLeft ySize yTop
 
 % set subplots
 % specifying position
 h(1)=axes('position',[0.65 0.78 0.2 0.2]); % [x y dx dy]
 % having all in standard form
-n_subplots=8;i_subplot=1;
+n_subplots=8;i_subplot=1;clear h;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % 
 %% Add information to figures
@@ -53,7 +54,7 @@ for j=1:size(t1,1),
   tint(j,1)=iso2epoch(t1{j});tint(j,2)=iso2epoch(t2{j});
 end
 clear t1 t2 j;
-%% Cluster data reading
+%% Cluster data reading from local disks
 % using c_get_batch
     c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
 % if time intervals to download are in matrix tint 
@@ -61,6 +62,37 @@ for j=1:size(tint,1),
  c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
 end
 clear j;
+%% Cluster data reading and plotting from CAA files
+for ttt=1, % PANEL: CIS HIA/CODIF spectrogram
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+ic=2;
+%dobjname=irf_ssub('C?_CP_CIS_HIA_HS_1D_PEF',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('flux__C?_CP_CIS_HIA_HS_1D_PEF',ic); % HIA
+%dobjname=irf_ssub('C?_CP_CIS_CODIF_H1_1D_PEF',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('flux__C?_CP_CIS_CODIF_H1_1D_PEF',ic); % CODIF H+
+%dobjname=irf_ssub('C?_CP_CIS_CODIF_O1_1D_PEF',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('flux__C?_CP_CIS_CODIF_O1_1D_PEF',ic); % CODIF O+
+%units=eval(['getunits(' dobjname ',''' varname ''')']);
+units='log_{10} dEF\newline keV/cm^2 s sr keV';
+disp(['SUBPLOT: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['units: ' units]);
+%eval(['plot(' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' units ''',''fitcolorbarlabel'');']);
+%set(gca,'yscale','log'); set(gca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
+%ylabel('E [eV]');
+end
+for ttt=1, % PANEL: FGM B
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+ic=2;
+%dobjname=irf_ssub('C?_CP_FGM_FULL',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic);
+dobjname=irf_ssub('C?_CP_FGM_5VPS',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_5VPS',ic);
+c_eval(['B?=getmat(' dobjname ',''' varname ''');'],ic);
+c_eval('gsmB?=irf_gse2gsm(B?);',ic);
+units=eval(['getunits(' dobjname ',''' varname ''')']);
+%units='log_{10} dEF\newline keV/cm^2 s sr keV';
+disp(['SUBPLOT: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['units: ' units]);
+c_eval('irf_plot gsmB?',ic);
+ylabel('B [nT] GSM');set(gca,'ylim',[-24 19.9]);
+irf_legend(gca,{'B_X','B_Y','B_Z'},[0.02 0.35])
+%add_timeaxis(gca,'nolabels');
+ht=irf_pl_info(['C' num2str(ic)],gca,[0.02,0.7]);set(ht,'fontsize',12,'fontweight','bold')
+end
+
 %% CAA Rapid 
 dt_rap = 2.0715; % time shift of the pixels
 
