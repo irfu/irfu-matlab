@@ -7,8 +7,12 @@
 % Examples: 
 %   Units.R_Earth
 %   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e
+%
+% Suggestion: execute irf_units in your startup and you can everywhere
+% access the units and constants
 
 global Units
+clear u;
 
 u=units;
 
@@ -33,6 +37,7 @@ u.mHz = 1e-3*u.Hz;
 %----- energy -----
 u.keV = 1e3*u.eV;
 u.MeV = 1e6*u.eV;
+u.erg = 1e-7*u.J;
 
 %---- temperature ---
 u.MK = 1e6*u.K;
@@ -45,6 +50,7 @@ u.G = 6.6726e-11*u.N*u.m^2/u.kg^2;           % gravitational constant
 u.kB = 1.38e-23*u.J/u.K;                     % Boltzmann constant
 
 
-Units=u; clear u;
+Units=u; 
+clear u;
 
 
