@@ -4,6 +4,9 @@ function irf_legend(axis_handle,labels,position,varargin)
 % labels - cell array with strings
 % position - in normalized units 
 %
+% default is "smart" alignment,e.g.'left' in left side 
+%  and 'right' in righ side of plot
+%
 % nonstandard text property values: 
 %  'color'='cluster' - if 4 labels given write them in cluster colors (black,red,green,blue)
 %
@@ -15,12 +18,38 @@ function irf_legend(axis_handle,labels,position,varargin)
 %
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.02, 0.9],'color','cluster')
 
-cluster_colors=[[0 0 0];[1 0 0];[0 1 0];[0 0 1]];
+cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
 colord=get(axis_handle, 'ColorOrder');
 
+% use smart alignment in upper part of panel vertical alignment='top', 
+% when vertical position above 1 then again 'bottom', in bottom part use
+% vertical alignment 'bottom'. Similarly for horizontal alignment
+
+if position(1)<0, 
+    value_horizontal_alignment='right';
+elseif position(1) < 0.5 
+    value_horizontal_alignment='left';
+elseif position(1) <= 1 
+    value_horizontal_alignment='right';
+else    
+    value_horizontal_alignment='left';
+end
+
+if position(2)<0, 
+    value_vertical_alignment='top';
+elseif position(2) < 0.5 
+    value_vertical_alignment='baseline';
+elseif position(2) <= 1 
+    value_vertical_alignment='top';
+else    
+    value_vertical_alignment='baseline';
+end
+
 for i=1:length(labels),
-  ht=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','verticalalignment','baseline','fontweight','bold','fontsize',12);
+  ht=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
   set(ht,'color',colord(i,:));
+  set(ht,'verticalalignment',value_vertical_alignment);
+  set(ht,'horizontalalignment',value_horizontal_alignment);
   for j=1:size(varargin,2)/2
       textprop=varargin{2*j-1};
       textvalue=varargin{2*j};
