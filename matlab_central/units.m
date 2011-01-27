@@ -130,7 +130,7 @@ u.eV = 1.6022e-19*u.J;
 u.BTU = 1.0550559e3*u.J;
 u.kWh = 3.6e6*u.J;
 u.cal = 4.1868*u.J;
-u.kCal = 1e3*u.cal;
+u.kcal = 1e3*u.cal;
 
 %---- temperature ---
 u.K = 1;
@@ -161,7 +161,7 @@ u.hp = 745.69987*u.W;
 
 %------ charge ------
 u.coul = 1;
-u.e = 1.6022e-19*u.coul;
+u.e = 1.6022e-19*u.coul;                        % elementary charge
 
 
 %------ Voltage -----
@@ -184,7 +184,7 @@ u.gauss = 1e-4*u.T;
 
 %----fundamental constants ----
 u.g = 9.80665*u.m/u.s^2;
-u.kB = 1.38e-23*u.J/u.K;
+u.kB = 1.38e-23*u.J/u.K;                        % Boltzman constant
 u.sigma_SB = 5.670e-8 * u.W/(u.m^2 * u.K^4);
 u.h = 6.626e-34 * u.J*u.s;
 u.hbar = u.h/(2*pi);
