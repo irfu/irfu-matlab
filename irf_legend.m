@@ -18,8 +18,15 @@ function irf_legend(axis_handle,labels,position,varargin)
 %
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.02, 0.9],'color','cluster')
 
-cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
+hgca = gca;
+
+if axis_handle == 0, % add to the whole figure if inhandle = 0
+    axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
+        'Tag','BackgroundAxes', 'HitTest','off');
+end
+
 colord=get(axis_handle, 'ColorOrder');
+cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
 
 % use smart alignment in upper part of panel vertical alignment='top', 
 % when vertical position above 1 then again 'bottom', in bottom part use
@@ -45,6 +52,13 @@ else
     value_vertical_alignment='baseline';
 end
 
+
+if ischar(labels), % Try to get variable labels from string (space separates).
+    lab=labels;clear labels;
+    labels{1}=lab;
+    colord=[0 0 0];
+end
+
 for i=1:length(labels),
   ht=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
   set(ht,'color',colord(i,:));
@@ -61,3 +75,5 @@ for i=1:length(labels),
   end
   ext=get(ht,'extent'); position(1)=position(1)+ext(3)*1.4;
 end
+
+axes(hgca); % return to original axis
