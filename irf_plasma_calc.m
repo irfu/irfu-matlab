@@ -1,8 +1,8 @@
 function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_inp,no_inp,Te_inp,Ti_inp,noshow)
 %IRF_PLASMA_CALC   Calculate basic plasma quantities
-%
+% Calculate many important plasma parameters (also interactively)
 % irf_plasma_calc(B,n,no,Te,Ti)
-%
+% irf_plasma_calc
 % [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,flag);
 %
 %	B - magnetic field [nT]
@@ -16,6 +16,31 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %
 % returned variables are in SI units, frequencies in Hz, lengths in m
 %
+% Here is also given a small table for simple/fast estimates of
+% space plasma paremeters with precision <5%
+%  units T[eV] B[nT] n[cc] E[mV/m]	
+% 
+%  Debye length [m]       = sqrt(200 T/n)
+%  e- plasma f. [kHz]     = 9 sqrt(n)
+%  e- gyrof. [Hz]         = 28 B
+%  e- gyrorad. [km]       = sqrt(10 T) / B
+%  e- inert. l [km]       = 5.3 / sqrt(n)
+%  e- veloc. [km/s]       = 600 sqrt(T)
+%  H+ plasma f. [Hz]      = 0.033 sqrt(n)
+%  H+ gyrof. [Hz]         = 0.015 B
+%  H+ veloc. [km/s]       = sqrt(200 T)
+%  H+ gyror. [km]         = 100 sqrt(2 T) / B
+%  H+ inert. l [km]       = 230 / sqrt(n)
+%  H+ veloc. [km/s]       = 13.8 sqrt(T)
+%  O+ gyrof. [mHz]        = B
+%  O+ veloc. [km/s]       = sqrt(10 T)
+%  O+ gyror. [km]         = 100 sqrt(33 T) / B
+%  low. hybr. f. [Hz]     = sqrt(0.427 (B)^2 /(1+ 9.7e-6 (B)^2)/n);
+%  Alfven vel. V_A[km/s]  = 22 B /sqrt(n)
+%  Poynting fl. S[uW/m2]  = 0.8 E B
+%  Plasma beta = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2 
+%  Magnetic pressure [nT] = (B/50)^2
+ 
 % $Id$
 
 persistent B np_cc no_rel Te Ti
