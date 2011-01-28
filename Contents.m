@@ -59,10 +59,10 @@
 %   c_eval          - evaluate expression for list of spacecraft
 %   c_gse2dsi       - Convert vector from GSE to DSI reference system
 %   c_pl_flux_tube_distance - estimate the distance between flux tubes
-%   c_pl_sc_conf_lmn - Plot the configuration of CLuster in LMN (or arbitrary) coordinates
+%   c_pl_sc_conf_lmn - Plot the configuration of Cluster in LMN (or arbitrary) coordinates  
+%   c_pl_sc_conf_xyz - Plot the configuration of Cluster in XYZ (GSE or GSM) coordinates   
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
-%
 %   c_peace_plot .. - plot PEACE data (also reading and spectra routines)
 %   c_staff_getsa   - read STAFF data
 %   c_wbd_read      - read Wideband data
