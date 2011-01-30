@@ -6,36 +6,39 @@ function res = timeaxis(limit)
 dtime = limit(2)-limit(1);
 
 % get the time difference between two ticks and the number of unlabeled ticks
-if dtime>3600*24*500
-  dticv = 3600*24*100;
-  mtics = 2;
+if dtime>3600*24*365*5
+  dticv = 3600*24*365*2;
+  mtics = 4;
+elseif dtime>3600*24*500
+  dticv = 3600*24*200;
+  mtics = 4;
 elseif dtime>3600*24*200
-  dticv = 3600*24*50;
+  dticv = 3600*24*100;
   mtics = 5;
 elseif dtime>3600*24*100
+  dticv = 3600*24*30;
+  mtics = 3;
+elseif dtime>3600*24*50
   dticv = 3600*24*20;
   mtics = 4;
-elseif dtime>3600*24*50
-  dticv = 3600*24*10;
-  mtics = 2;
 elseif dtime>3600*24*20
-  dticv = 3600*24*5;
+  dticv = 3600*24*10;
   mtics = 5;
 elseif dtime>3600*24*10
-  dticv = 3600*24*2;
-  mtics = 2;
+  dticv = 3600*24*3;
+  mtics = 3;
 elseif dtime>3600*24*5
-  dticv = 3600*24;
+  dticv = 3600*24*2;
   mtics = 4;
 elseif dtime>3600*24*2
-  dticv = 3600*6;
+  dticv = 3600*12;
   mtics = 3;
 elseif dtime>3600*24
-  dticv = 3600*4;
-  mtics = 4;
+  dticv = 3600*6;
+  mtics = 3;
 elseif dtime>3600*12
-  dticv = 3600*2;
-  mtics = 2;
+  dticv = 3600*3;
+  mtics = 3;
 elseif dtime>3600*5
   dticv = 3600;
   mtics = 6;
@@ -134,7 +137,7 @@ while ttic<=limit(2)
   ttic = ttic+dmort;
   ntics = ntics+1;
   if ntics>100
-    warning, 'too many ticks in timeaxis'
+    warning, 'too many ticks in timeaxis';
     break;
   end
 end
@@ -142,7 +145,7 @@ end
 % generate array with the time values of the major ticks
 % tictv = tbeg + dticv.*[0:ntics-1];
 % generate array with the time values of the ticks
-tictv = tbeg + dmort*[0:ntics-1];
+tictv = tbeg + dmort*(0:ntics-1);
 
 % generate the time strings for the labels,
 ticstr = cell(1, ntics);
@@ -154,7 +157,7 @@ n=1:ntics;
 hour = floor(ticval(n)/3600);
 minute = floor(mod(ticval(n), 3600)/60);
 if dticv>=3600*24
-  hhmmss = 'datestr(datenum(fromepoch(tictv(j))),1)';
+  hhmmss = 'datestr(datenum(fromepoch(tictv(j))),29)';
 elseif dticv>=60
   format = '%02d:%02d';
   hhmmss = [hour; minute];
@@ -179,7 +182,7 @@ ind_labels=find(abs(mod(tictv,dticv))<1e-6); % NOTE does not work for tick dista
 for j=n,ticstr{j} = ' ';end
 if dticv>=3600*24,
   for j=ind_labels, ticstr{j} = eval(hhmmss);end
-else,
+else
   for j=ind_labels, ticstr{j} = sprintf(format, hhmmss(:,j));end
 end
 
