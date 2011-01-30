@@ -226,6 +226,7 @@ u.mu0 = 1.2566370614359e-6 * u.J/(u.m*u.A^2);
 %------- length ----
 u.AU = 1.496e11*u.m;
 u.R_Earth = 6370e3*u.m;                     % Earth radius
+u.RE = u.R_Earth;                          % Earth radius
 u.R_Sun = 6.96e8*u.m;                       % Solar radius 
 u.pc = 3.0857e16*u.m;                        % parsec
 

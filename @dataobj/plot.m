@@ -462,6 +462,6 @@ while colorbarlabelheight>1.1,
     temp=get(hy,'Extent');
     colorbarlabelheight=temp(4);
 end
-set(hy,'units',units);
+%set(hy,'units',units);
 
                         
