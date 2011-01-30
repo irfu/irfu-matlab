@@ -64,7 +64,7 @@ if length(args)>1
 end
 
 column = [];
-if length(args)>0
+if ~isempty(args)
 	if isnumeric(args{1})
 		column = args{1};
 		args = args(2:end);
@@ -77,7 +77,7 @@ end
 delta_t = [];
 l_style = {};
 
-if length(args)>0, have_args = 1;
+if ~isempty(args), have_args = 1;
 else have_args = 0;
 end
 
@@ -110,7 +110,7 @@ while have_args
 		args = args(2:end);
 	end
 	
-	if length(args)>0, have_args = 1;
+	if ~isempty(args), have_args = 1;
     else have_args = 0;
 	end
 end
