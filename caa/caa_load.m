@@ -28,7 +28,6 @@ end
 
 nloaded = 0;
 dirs = dir;
-old_pwd = pwd;
 for j = 1:numel(dirs)
 	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
         var_name = dirs(j).name;
@@ -44,15 +43,13 @@ for j = 1:numel(dirs)
         end
         if flag_load_variable,
             try
-                disp(['loading ' var_name]);
-                cd(dirs(j).name)
-                evalin('caller',[var_name '=dataobj(''*.cdf'');'])
+                disp(['loading ' dirs(j).name filesep '*.cdf']);
+                evalin('caller',[var_name '=dataobj(''' dirs(j).name filesep '*.cdf'');']);
                 nloaded = nloaded + 1;
             catch
                 disp(['error loading ' var_name]);
             end
         end
-		cd(old_pwd)
 	end
 end
 if nloaded, disp(sprintf('CAA_LOAD : loaded %d variables',nloaded));
