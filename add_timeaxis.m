@@ -58,8 +58,8 @@ flag_date=1;   % default is to add date labels
   end
 
   for j=1:length(h)
-      axes( h(j) );xlabel('');
-      ax   = axis;axis(axis);
+      xlabel(h(j),'');
+      ax = axis;axis(axis);
       tint = ax(1:2) + t_start_epoch;
       res  = timeaxis(tint);
       set( h(j), 'XTick', res{1} - t_start_epoch );

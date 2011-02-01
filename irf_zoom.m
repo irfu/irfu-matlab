@@ -63,10 +63,8 @@ if c=='x' && length(axis_handles)>1
 end
 
 for h=axis_handles
-	axes(h); ax = axis;
 	if c=='x'
 		set(h,'XLim',interval);
-		set(h,'YLim',ax(3:4));
 		if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
 			if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
 				p = get(h,'position');
@@ -84,6 +82,5 @@ for h=axis_handles
 	end
 	if c=='y'
 		set(h,'Ylim',interval);
-		set(h,'Xlim',ax(1:2));
 	end
 end
