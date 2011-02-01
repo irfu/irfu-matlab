@@ -11,6 +11,7 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.p - spectral density matrix (size(t)xsize(f))
 %              specrec.dt - vector of dt interval for every t point (can be ommitted)
 %              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
+%                           df can be structure with two vectors df.plus and df.minus 
 %
 % See also CAA_POWERFFT
 %
@@ -84,7 +85,7 @@ end
 specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
 specrec.dt = double(specrec.dt);
-specrec.df = double(specrec.df);
+%specrec.df = double(specrec.df);
   
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
@@ -148,24 +149,25 @@ for comp=1:min(length(h),ncomp)
         fnew(2:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
         fnew(3:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
         ff=fnew;
-        jj=1:size(pp,2);
-        ppnew=[pp pp];
-        ppnew(:,jj*2-1)=pp;
-        ppnew(:,jj*2)=NaN;
-        pp=ppnew;
     else                   % if frequency steps are given
-        if min(size(specrec.df))==1, df=double(specrec.df(:))';end % if df vector make it row vector
+        if isstruct(specrec.df) % df.plus and df.minus should be specified
+            dfplus=torow(double(specrec.df.plus(:))); % if df vector make it row vector
+            dfminus=torow(double(specrec.df.minus(:))); % if df vector make it row vector
+        else
+            dfplus=torow(double(specrec.df(:))); % if df vector make it row vector
+            dfminus=dfplus;
+        end
         fnew=[ff ff];
         jj=1:size(ff,2);
-        fnew(:,jj*2-1)=ff-df;
-        fnew(:,jj*2)=ff+df;
+        fnew(:,jj*2-1)=ff-dfminus;
+        fnew(:,jj*2)=ff+dfplus;
         ff=fnew;
-        jj=1:size(pp,2);
-        ppnew=[pp pp];
-        ppnew(:,jj*2-1)=pp;
-        ppnew(:,jj*2)=NaN;
-        pp=ppnew;
     end
+    jj=1:size(pp,2);
+    ppnew=[pp pp];
+    ppnew(:,jj*2-1)=pp;
+    ppnew(:,jj*2)=NaN;
+    pp=ppnew;
     if ~isempty(specrec.dt) % if time steps are not given
         dt=double(specrec.dt(:));
         ttnew=[tt; tt];
