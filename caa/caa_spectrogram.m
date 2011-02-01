@@ -141,7 +141,19 @@ for comp=1:min(length(h),ncomp)
     end % if f vector make it row vector
     tt=double(specrec.t(:));
     pp=specrec.p{comp};
-    if ~isempty(specrec.df) % if frequency steps are given
+    if isempty(specrec.df) % if frequency steps are not given
+        fnew=[ff ff];
+        fnew(1)=ff(1)-0.5*(ff(2)-ff(1));
+        fnew(end)=ff(end)+0.5*(ff(end)-ff(end-1));
+        fnew(2:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
+        fnew(3:2:end-1)=0.5*(ff(1:end-1)+ff(2:end));
+        ff=fnew;
+        jj=1:size(pp,2);
+        ppnew=[pp pp];
+        ppnew(:,jj*2-1)=pp;
+        ppnew(:,jj*2)=NaN;
+        pp=ppnew;
+    else                   % if frequency steps are given
         if min(size(specrec.df))==1, df=double(specrec.df(:))';end % if df vector make it row vector
         fnew=[ff ff];
         jj=1:size(ff,2);
