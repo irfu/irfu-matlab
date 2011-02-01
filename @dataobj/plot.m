@@ -202,7 +202,6 @@ else
            comp_dim = 2; 
         end
 		if data.dim(1)>1
-			
 			% This is a hack for STAFF B
 			if any(any(data.data<=0))
 				disp('Data contains negative & zero values!!!')
@@ -382,24 +381,25 @@ else
                 add_text(h(i),lab_2(i,:));
             end
         end
-            % Add colorbar
-            if i==fix(ncomp/2)+1
-                hcb = colorbar;
-                dy = get(ax(i),'Position'); dy = dy(3);
-                pcb = get(hcb,'Position');
-                set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp])
-                if flag_labels_is_on,
-                    if ~flag_colorbar_label_is_manually_specified
-                        colorbar_label=['Log ' lablaxis ' [' units ']' ];
-                    end
-                    ylabel(hcb,colorbar_label);
-                    if flag_colorbar_label_fit_to_colorbar_height_is_on
-                        fit_colorbarlabel_height(hcb);
-                    end                    
-                else
-                    ylabel(hcb,'');
-                end
-            end
+    end
+    % Add colorbar
+    i=fix(ncomp/2)+1;
+    axes(h(i));
+    hcb = colorbar;
+    dy = get(ax(i),'Position'); dy = dy(3);
+    pcb = get(hcb,'Position');
+    if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
+    cbfreeze(hcb);
+    if flag_labels_is_on,
+        if ~flag_colorbar_label_is_manually_specified
+            colorbar_label=['Log ' lablaxis ' [' units ']' ];
+        end
+        hcbl=cblabel(colorbar_label);
+        if flag_colorbar_label_fit_to_colorbar_height_is_on
+            fit_colorbarlabel_height(hcbl);
+        end
+    else
+        ylabel(hcb,'');
     end
     % Resize all panels after addition of the colorbar
     if ~isempty(dy)
@@ -408,7 +408,8 @@ else
             set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
         end
     end
-    set(ax(1:length(comp)-1),'XTickLabel',[])
+    set(ax(1:ncomp-1),'XTickLabel',[]);
+    for i=1:1:ncomp-1, xlabel(ax(i),'');end    
 
 end
 		
@@ -446,7 +447,8 @@ for i=1:length(expr)
 end
 
 function fit_colorbarlabel_height(hcb)
-hy=get(hcb,'ylabel');
+%hy=get(hcb,'ylabel');
+hy=hcb;
 %outpos=get(hcb,'outerposition');
 %pos=get(hcb,'position');
 %factor=outpos(4)/pos(4); % colorbar label can be heigher than colorbar itslef
@@ -454,11 +456,12 @@ colorbar_label_fontsize=get(hy,'fontsize');
 units=get(hy,'units');
 set(hy,'units','normalized');
 temp=get(hy,'Extent');
-labelposition=get(hy,'Position');
+%labelposition=get(hy,'Position');
 colorbarlabelheight = temp(4);
 while colorbarlabelheight>1.1,
     colorbar_label_fontsize=colorbar_label_fontsize*0.95;
-    set(hy,'fontsize',colorbar_label_fontsize,'position',labelposition);
+    %set(hy,'fontsize',colorbar_label_fontsize,'position',labelposition);
+    set(hy,'fontsize',colorbar_label_fontsize);
     temp=get(hy,'Extent');
     colorbarlabelheight=temp(4);
 end
