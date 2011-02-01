@@ -298,10 +298,19 @@ else
             end
         else
             if use_comp == 0 && sum_dim == 0
-                sum_dim = 2;
+                if comp_dim==2
+                    sum_dim = 1;
+                else
+                    sum_dim = 2;
+                end
             end
             
-            data.data = sum(data.data,sum_dim+1); % The data is 2D from now on
+            % Do not count NaNs when summing
+            tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
+            data.data(isnan(data.data)) = 0;
+            data.data = sum(data.data,sum_dim+1,'double')./...
+                sum(tt,sum_dim+1,'double'); % The data is 2D from now on
+            clear tt
             fprintf('Summing over dimension %d (%s)\n', ...
                 sum_dim, dep_x{sum_dim}.lab)
             
@@ -357,9 +366,27 @@ else
     h = zeros(1,ncomp);
     if create_axes, ax = zeros(1, ncomp); end
     
+    
+    switch comp_dim
+        case 1
+            if sum_dim == 2, ydim = 3; else ydim = 2; end
+        case 2
+            if sum_dim == 1, ydim = 3; else ydim = 1; end
+        case 3
+            if sum_dim == 1, ydim = 2; else ydim = 1; end
+        otherwise 
+            error('invalid COMP_DIM')
+    end
+    
+    if ydim > 1
+        specrec.f = dep_x{ydim}.data(1,:);
+        specrec.f_unit = dep_x{ydim}.units;
+        specrec.df = dep_x{ydim}.df;
+    end
+    
     % special case for degrees
     ytick = [];
-    if strcmpi(dep_x{1}.units,'degrees') || strcmpi(dep_x{1}.units,'deg')
+    if strcmpi(dep_x{ydim}.units,'degrees') || strcmpi(dep_x{ydim}.units,'deg')
         frange = abs(max(specrec.f)-min(specrec.f));
         if frange > 80 && frange <=150, da = 15;
         elseif frange > 150 && frange <=200, da = 45;
@@ -382,14 +409,14 @@ else
         %end
         if flag_labels_is_on,
             if ncomp<=LCOMP % Small number of components
-                ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
+                ylabel(sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
                 if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
                 else lab_2s = text_s;
                 end
                 add_text(h(i),lab_2s);
             else % Large number of components
                 if i==1, title(text_s), end
-                if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{1}.lab, dep_x{1}.units))
+                if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
                 else ylabel('')
                 end
                 add_text(h(i),lab_2(i,:));
