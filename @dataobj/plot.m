@@ -5,6 +5,7 @@ function res = plot(dobj,var_s,varargin)
 %	'AX'       - axis handles to use
 %   'COMP'     - components to plot
 %   'SUM_DIM1' - sum over first dimension (frequency, pitch angle)
+%   'COMP_DIM1' - form subplots from that component
 %   'nolabels' - only plot data, do not add any labels or text
 %   'ColorbarLabel' - specify colorbar label 
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
@@ -194,8 +195,20 @@ else
         dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
         dep_x{d}.units = getunits(dobj,dep_x{d}.s);
         dep_x{d}.lab = getlablaxis(dobj,dep_x{d}.s);
+        % check if DELTA_PLUS and  DELTA_MINUS are given
+        if isfield(dep_x{d},'DELTA_PLUS') && isfield(dep_x{d},'DELTA_MINUS')
+            dep_x{d}.df=struct('plus',dep_x{d}.DELTA_PLUS,'minus',dep_x{d}.DELTA_MINUS);
+            if ischar(dep_x{d}.DELTA_PLUS)
+                deltaplus= getv(dobj,dep_x{d}.DELTA_PLUS);
+                deltaminus= getv(dobj,dep_x{d}.DELTA_MINUS);
+                dep_x{d}.df.plus=deltaplus.data(1,:);
+                dep_x{d}.df.minus=deltaminus.data(1,:);
+            end
+        else dep_x{d}.df=[];
+        end
+
     end
-    specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[]);
+    specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
     
     if dim == 2
         if comp_dim == 0
@@ -229,6 +242,7 @@ else
                 dep_x{1} = dep_x{2}; dep_x{2} = [];
                 specrec.f = dep_x{1}.data(1,comp);
                 specrec.f_unit = dep_x{1}.units;
+                specrec.df = dep_x{1}.df;
                 comp = [];
             end
 		else
