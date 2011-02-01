@@ -173,7 +173,7 @@ for comp=1:min(length(h),ncomp)
         ttt = repmat(tt,1,size(ff,2));
         pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
     end
-	colormap(cmap)
+%	colormap(cmap)
     shading(h(comp),'flat')
     %	colorbar('vert')
     %	set(gca,'TickDir','out','YScale','log')
