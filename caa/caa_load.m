@@ -31,8 +31,7 @@ dirs = dir;
 for j = 1:numel(dirs)
 	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
         var_name = dirs(j).name;
-        d3 = findstr(var_name,'-');
-        if d3, var_name( d3 ) = '_'; end
+        var_name(findstr(var_name,'-'))='_'; % substitute '-' to '_'
         flag_load_variable=1;
         if flag_filter==1, % if there is name filtering required check if to load variable
             for jj=1:length(variable_filter),
@@ -43,7 +42,7 @@ for j = 1:numel(dirs)
         end
         if flag_load_variable,
             try
-                disp(['loading ' dirs(j).name filesep '*.cdf']);
+                disp(['caa_load ' var_name]);
                 evalin('caller',[var_name '=dataobj(''' dirs(j).name filesep '*.cdf'');']);
                 nloaded = nloaded + 1;
             catch
