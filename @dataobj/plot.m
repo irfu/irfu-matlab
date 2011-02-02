@@ -7,7 +7,7 @@ function res = plot(dobj,var_s,varargin)
 %   'SUM_DIM1' - sum over first dimension (frequency, pitch angle)
 %   'COMP_DIM1' - form subplots from that component
 %   'nolabels' - only plot data, do not add any labels or text
-%   'ColorbarLabel' - specify colorbar label 
+%   'ColorbarLabel' - specify colorbar label
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
 %   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
@@ -45,7 +45,7 @@ data.data(data.data==fillv) = NaN;
 
 have_options = 0;
 arg_pos = 0;
-args = varargin; 
+args = varargin;
 if nargin > 2, have_options = 1; end
 
 % Default values that can be override by options
@@ -55,6 +55,8 @@ use_comp = 0;
 comp = [];
 ax = [];
 create_axes = 1;
+flag_lineplot = 0;
+flag_spectrogram = 0;
 flag_labels_is_on=1;
 flag_colorbar_label_is_manually_specified=0;
 flag_colorbar_label_fit_to_colorbar_height_is_on=0;
@@ -65,7 +67,7 @@ while have_options
     arg_pos = arg_pos + 1;
     l = 1;
     if arg_pos==1 && isnumeric(args{1})
-        use_comp = 1; 
+        use_comp = 1;
         comp = args{1};
     else
         switch(lower(args{1}))
@@ -79,7 +81,7 @@ while have_options
             case 'comp'
                 l = 2;
                 if isnumeric(args{2})
-                    use_comp = 1; 
+                    use_comp = 1;
                     comp = args{2};
                 else
                     disp('invalid value for COMP')
@@ -121,73 +123,186 @@ while have_options
                 break
         end
     end
-	args = args(l+1:end);
-	if isempty(args), break, end
+    args = args(l+1:end);
+    if isempty(args), break, end
 end
 
 if comp_dim ~=0 && comp_dim == sum_dim
     error('SUM_DIM and COMP_DIM must be different')
 end
 
-if dim == 1
-	if ~isempty(dep.DEPEND_X)
-		if strcmp(dep.DEPEND_X{1,2},'DEPEND_1')
-			dim = 2;
-		end
-	end
+% if dim == 1
+%     if ~isempty(dep.DEPEND_X)
+%         if strcmp(dep.DEPEND_X{1,2},'DEPEND_1')
+%             dim = 2;
+%         end
+%     end
+% end
+
+%% DATA PROCESSING
+if dim == 0 
+    plot_data = {double(data.data)};
+    flag_lineplot = 1;
+
+elseif dim == 1   
+    if use_comp,
+        plot_data = cell(size(comp));
+        for i=1:length(comp)
+            plot_data{i} = double(data.data(:,comp(i)));
+        end
+        flag_lineplot = 1;
+    else
+        plot_data = {double(data.data)};
+        if dim == 1
+            if isfield(data,'DEPEND_1')
+                flag_spectrogram = 1;
+            else
+                flag_lineplot = 1;
+            end
+        end
+    end
+    
+elseif dim == 2
+    if comp_dim == 0
+        comp_dim = 2;
+    end
+    if data.dim(1)>1
+        % This is a hack for STAFF B
+        if any(any(data.data<=0))
+            disp('Data contains negative & zero values!!!')
+            data.data(data.data<0) = NaN;
+        end
+        
+        ndim = data.dim(2);
+        if ~use_comp, comp=1:ndim; end
+        if ndim == 1
+            plot_data = {data.data};
+        else
+            plot_data = cell(size(comp));
+            for i=1:length(comp)
+                plot_data{i} = squeeze(data.data(:,:,comp(i)));
+            end
+        end
+        
+        if sum_dim==1 % sum over frequency, pitch angle
+            pd_tmp = zeros(length(dep.DEPEND_O),length(comp));
+            for i=1:length(comp)
+                plot_data{i}(isnan(plot_data{i})) = 0;
+                pd_tmp(:,i) = sum(plot_data{i},2);
+                %TODO: fix here
+            end
+            clear plot_data
+            plot_data{1} = pd_tmp; clear pd_tmp
+            dep_x{1} = dep_x{2}; dep_x{2} = [];
+            specrec.f = dep_x{1}.data(1,comp);
+            specrec.f_unit = dep_x{1}.units;
+            specrec.df = dep_x{1}.df;
+            comp = [];
+            
+            flag_lineplot = 1;
+        else
+            flag_spectrogram = 1;
+        end
+    else
+        plot_data{1} = double(data.data)';
+    end
+elseif dim == 3
+    if comp_dim == 0
+        if sum_dim == 3
+            comp_dim = 2;
+        else
+            comp_dim = 3;
+        end
+    end
+    
+    if use_comp == 0 && sum_dim == 0
+        if comp_dim==2
+            sum_dim = 1;
+        else
+            sum_dim = 2;
+        end
+    end
+    
+    % Do not count NaNs when summing
+    tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
+    data.data(isnan(data.data)) = 0;
+    data.data = sum(data.data,sum_dim+1,'double')./...
+        sum(tt,sum_dim+1,'double'); % The data is 2D from now on
+    clear tt
+    
+    ndim = data.dim(comp_dim);
+    if ~use_comp, comp=1:ndim; end
+    if ndim == 1
+        plot_data = {data.data};
+    else
+        plot_data = cell(size(comp));
+        for i=1:length(comp)
+            switch comp_dim
+                case 1
+                    plot_data{i} = squeeze(data.data(:,comp(i),:,:));
+                case 2
+                    plot_data{i} = squeeze(data.data(:,:,comp(i),:));
+                case 3
+                    plot_data{i} = squeeze(data.data(:,:,:,comp(i)));
+                otherwise
+                    error('smth wrong')
+            end
+        end
+    end
+    
+    flag_spectrogram = 1;
+else
+    error('plotting not implememnted')
 end
 
-%% LINEAR PLOT
-if dim == 0 || dim == 1
-		
-		plot_data = double(data.data);
-		if use_comp, plot_data = plot_data(:,comp); end
 
-		if isfield(dep,'DEPEND_O')
-			if ishandle(ax)
-				cax = gca;
-				axes(ax)
-				h = irf_plot([dep.DEPEND_O plot_data],line_color);
-				axes(cax)
-			else
-				if ~isempty(ax), disp('AX is not an axis handle'), end
-				h = irf_plot([dep.DEPEND_O plot_data],line_color);
-			end
-		else
-			if ishandle(ax), h = plot(ax,data.data);
-			else
-				if ~isempty(ax), disp('AX is not an axis handle'), end
-				h = plot(data.data);
-			end
-		end
-		flab = getlablaxis(dobj,var_s);
-		lab_1 = '';
-		if ~isempty(dep.DEPEND_X)
-			dep_x_s = dep.DEPEND_X{1,1};
-			dep_x = getv(dobj,dep_x_s);
-			if ~isempty(dep_x)
-				if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
-						&& strcmp(dep.DEPEND_X{1,2},'LABEL_1')
-					if use_comp, lab_1 = ['(' dep_x.data(1,:,comp) ')'];
-					else
-						legend(num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
-						legend('boxoff')
-					end
-				else
-					error('BAD type for DEPEND_X')
-				end
-			end
-		end
-		ylabel(sprintf('%s%s [%s]', flab, lab_1, units))
-		
-		text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
-			dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
-		if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
-		add_text(h,text_s);
-
-
-else
-    %% SPECTROGRAM
+if flag_lineplot
+    %% PLOTTING -- LINE PLOT
+    if isfield(dep,'DEPEND_O')
+        if ishandle(ax)
+            cax = gca;
+            axes(ax)
+            h = irf_plot([dep.DEPEND_O plot_data],line_color);
+            axes(cax)
+        else
+            if ~isempty(ax), disp('AX is not an axis handle'), end
+            h = irf_plot([dep.DEPEND_O plot_data],line_color);
+        end
+    else
+        if ishandle(ax), h = plot(ax,data.data);
+        else
+            if ~isempty(ax), disp('AX is not an axis handle'), end
+            h = plot(data.data);
+        end
+    end
+    flab = getlablaxis(dobj,var_s);
+    lab_1 = '';
+    if ~isempty(dep.DEPEND_X)
+        dep_x_s = dep.DEPEND_X{1,1};
+        dep_x = getv(dobj,dep_x_s);
+        if ~isempty(dep_x)
+            if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
+                    && strcmp(dep.DEPEND_X{1,2},'LABEL_1')
+                if use_comp, lab_1 = ['(' dep_x.data(1,:,comp) ')'];
+                else
+                    legend(num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
+                    legend('boxoff')
+                end
+            else
+                error('BAD type for DEPEND_X')
+            end
+        end
+    end
+    ylabel(sprintf('%s%s [%s]', flab, lab_1, units))
+    
+    text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
+        dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+    if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
+    add_text(h,text_s);
+    
+elseif flag_spectrogram 
+    %% PLOT -- SPECTRPGRAM
+    
     for d = 1:size(dep.DEPEND_X,1)
         dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
         dep_x{d}.s = dep.DEPEND_X{d,1};
@@ -206,101 +321,18 @@ else
             end
         else dep_x{d}.df=[];
         end
-
+        
     end
+    
+    fprintf('Summing over dimension %d (%s)\n', ...
+        sum_dim, dep_x{sum_dim}.lab)
+    
     specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
     
-    if dim == 2
-        if comp_dim == 0
-           comp_dim = 2; 
-        end
-		if data.dim(1)>1
-			% This is a hack for STAFF B
-			if any(any(data.data<=0))
-				disp('Data contains negative & zero values!!!')
-				data.data(data.data<0) = NaN;
-			end
-			
-			ndim = data.dim(2);
-			if ~use_comp, comp=1:ndim; end
-            if ndim == 1
-                plot_data = {data.data};
-            else
-                plot_data = cell(size(comp));
-                for i=1:length(comp)
-                    plot_data{i} = squeeze(data.data(:,:,comp(i)));
-                end
-            end
-            if sum_dim==1 % sum over frequency, pitch angle
-                pd_tmp = zeros(length(dep.DEPEND_O),length(comp));
-                for i=1:length(comp)
-                    plot_data{i}(isnan(plot_data{i})) = 0;
-                    pd_tmp(:,i) = sum(plot_data{i},2);
-                end
-                clear plot_data
-                plot_data{1} = pd_tmp; clear pd_tmp
-                dep_x{1} = dep_x{2}; dep_x{2} = [];
-                specrec.f = dep_x{1}.data(1,comp);
-                specrec.f_unit = dep_x{1}.units;
-                specrec.df = dep_x{1}.df;
-                comp = [];
-            end
-		else
-			plot_data{1} = double(data.data)';
-		end
-    elseif dim == 3
-        if comp_dim == 0
-            if sum_dim == 3
-                comp_dim = 2;
-            else
-                comp_dim = 3; 
-            end
-        end
-        
-        if use_comp == 0 && sum_dim == 0
-            if comp_dim==2
-                sum_dim = 1;
-            else
-                sum_dim = 2;
-            end
-        end
-        
-        % Do not count NaNs when summing
-        tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
-        data.data(isnan(data.data)) = 0;
-        data.data = sum(data.data,sum_dim+1,'double')./...
-            sum(tt,sum_dim+1,'double'); % The data is 2D from now on
-        clear tt
-        fprintf('Summing over dimension %d (%s)\n', ...
-            sum_dim, dep_x{sum_dim}.lab)
-        
-        ndim = data.dim(comp_dim);
-        if ~use_comp, comp=1:ndim; end
-        if ndim == 1
-            plot_data = {data.data};
-        else
-            plot_data = cell(size(comp));
-            for i=1:length(comp)
-                switch comp_dim
-                    case 1
-                        plot_data{i} = squeeze(data.data(:,comp(i),:,:));
-                    case 2
-                        plot_data{i} = squeeze(data.data(:,:,comp(i),:));
-                    case 3
-                        plot_data{i} = squeeze(data.data(:,:,:,comp(i)));
-                    otherwise
-                        error('smth wrong')
-                end
-            end
-        end
-    else
-		error('plotting not implememnted')
-    end
-        
-    if size(dep_x{comp_dim}.data,1) ~= length(dep.DEPEND_O)
-        error('bad size for DEPEND_X_1')
-    end
-     
+%     if size(dep_x{comp_dim}.data,1) ~= length(dep.DEPEND_O)
+%         error('bad size for DEPEND_X_1')
+%     end
+    
     lab_2 ='';
     if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
         if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
@@ -333,7 +365,9 @@ else
             if sum_dim == 1, ydim = 3; else ydim = 1; end
         case 3
             if sum_dim == 1, ydim = 2; else ydim = 1; end
-        otherwise 
+        case 0
+            ydim = 1;
+        otherwise
             error('invalid COMP_DIM')
     end
     
@@ -409,10 +443,10 @@ else
         end
     end
     set(ax(1:ncomp-1),'XTickLabel',[]);
-    for i=1:1:ncomp-1, xlabel(ax(i),'');end    
-
+    for i=1:1:ncomp-1, xlabel(ax(i),'');end
+    
 end
-		
+
 if nargout > 0, res = h; end
 
 function add_text(h,txt)
@@ -425,7 +459,7 @@ if isempty(cs), return, end
 
 % Remove leading spaces
 while cs(1) == ' ', cs(1) = []; end
-	
+
 if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
 
 % Try to correct latex
@@ -467,4 +501,3 @@ while colorbarlabelheight>1.1,
 end
 %set(hy,'units',units);
 
-                        
