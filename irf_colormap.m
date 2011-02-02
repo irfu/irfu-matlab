@@ -18,7 +18,16 @@ end
 if nargout == 0, % apply the colormap and freeze
     colormap(cmap);
     freezeColors;
-    cbfreeze;
+    hcb = cbhandle;
+    if hcb, % workaround cbfreeze bug that cbfreeze removes cblabel
+        hy=get(hcb,'ylabel');
+        ylabel_string=get(hy,'string');
+        ylabel_fontsize=get(hy,'fontsize');
+        new_hcb = cbfreeze (hcb);
+        new_hy=get(new_hcb,'ylabel');
+        set(new_hy,'string',ylabel_string,'fontsize',ylabel_fontsize);
+    end
+%    cbfreeze;
 elseif nargout == 1, % only return colormap
     cmap1=cmap;
 end
