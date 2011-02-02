@@ -321,7 +321,9 @@ elseif flag_spectrogram
         dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
         dep_x{d}.s = dep.DEPEND_X{d,1};
         dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
-        dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        if ~strcmp(dep_x{d}.type,'char')
+            dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        end
         dep_x{d}.units = getunits(dobj,dep_x{d}.s);
         dep_x{d}.lab = getlablaxis(dobj,dep_x{d}.s);
         % check if DELTA_PLUS and  DELTA_MINUS are given
@@ -352,7 +354,7 @@ elseif flag_spectrogram
     lab_2 ='';
     if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
         if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
-                && strcmp(dep_x{comp_dim}.s,'LABEL_2')
+                && findstr(dep_x{comp_dim}.s,'LABEL_2')
             reclen = size(dep_x{comp_dim}.data,2)/length(dep.DEPEND_O);
             lab_2 = dep_x{comp_dim}.data(:,1:reclen);
         elseif strcmp(dep_x{comp_dim}.type,'single') && ...
