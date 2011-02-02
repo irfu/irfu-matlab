@@ -148,6 +148,7 @@ elseif dim == 1
         if dim == 1
             if isfield(data,'DEPEND_1')
                 flag_spectrogram = 1;
+                ydim = 1;
             else
                 flag_lineplot = 1;
             end
