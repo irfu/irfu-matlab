@@ -18,7 +18,7 @@ function irf_legend(axis_handle,labels,position,varargin)
 %
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.02, 0.9],'color','cluster')
 
-hgca = gca;
+%hgca = gca;
 
 if axis_handle == 0, % add to the whole figure if inhandle = 0
     axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
@@ -76,4 +76,4 @@ for i=1:length(labels),
   ext=get(ht,'extent'); position(1)=position(1)+ext(3)*1.4;
 end
 
-axes(hgca); % return to original axis
+%axes(hgca); % return to original axis
