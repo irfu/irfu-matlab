@@ -428,7 +428,7 @@ elseif flag_spectrogram
     dy = get(ax(i),'Position'); dy = dy(3);
     pcb = get(hcb,'Position');
     if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
-    cbfreeze(hcb);
+%    cbfreeze(hcb);
     if flag_labels_is_on,
         if ~flag_colorbar_label_is_manually_specified
             colorbar_label=['Log ' lablaxis ' [' units ']' ];
