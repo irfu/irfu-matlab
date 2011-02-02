@@ -258,7 +258,7 @@ else
         end
         
         if use_comp && length(comp) == 1; % Make a cut
-            fprintf('Cutting at dimension %d (%s) = %d', ...
+            fprintf('Cutting at dimension %d (%s) == %d\n', ...
                 sum_dim, dep_x{sum_dim}.lab,comp)
             switch comp_dim
                 case 1
