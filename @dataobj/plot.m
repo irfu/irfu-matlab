@@ -257,72 +257,39 @@ else
             end
         end
         
-        if use_comp && length(comp) == 1; % Make a cut
-            fprintf('Cutting at dimension %d (%s) == %d\n', ...
-                sum_dim, dep_x{sum_dim}.lab,comp)
-            switch comp_dim
-                case 1
-                    data.data = squeeze(data.data(:,comp,:,:));
-                case 2
-                    data.data = squeeze(data.data(:,:,comp,:));
-                case 3
-                    data.data = squeeze(data.data(:,:,:,comp));
-                otherwise
-                    error('smth wrong')
-            end
-
-            ndim = data.dim(comp_dim);
-            if ~use_comp, comp=1:ndim; end
-            if ndim == 1
-                plot_data = {data.data};
+        if use_comp == 0 && sum_dim == 0
+            if comp_dim==2
+                sum_dim = 1;
             else
-                plot_data = cell(size(comp));
-                for i=1:length(comp)
-                    switch comp_dim
-                        case 1
-                            plot_data{i} = squeeze(data.data(:,comp(i),:));
-                        case 2
-                            plot_data{i} = squeeze(data.data(:,:,comp(i)));
-                        otherwise
-                            error('smth wrong')
-                    end
-                end
+                sum_dim = 2;
             end
+        end
+        
+        % Do not count NaNs when summing
+        tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
+        data.data(isnan(data.data)) = 0;
+        data.data = sum(data.data,sum_dim+1,'double')./...
+            sum(tt,sum_dim+1,'double'); % The data is 2D from now on
+        clear tt
+        fprintf('Summing over dimension %d (%s)\n', ...
+            sum_dim, dep_x{sum_dim}.lab)
+        
+        ndim = data.dim(comp_dim);
+        if ~use_comp, comp=1:ndim; end
+        if ndim == 1
+            plot_data = {data.data};
         else
-            if use_comp == 0 && sum_dim == 0
-                if comp_dim==2
-                    sum_dim = 1;
-                else
-                    sum_dim = 2;
-                end
-            end
-            
-            % Do not count NaNs when summing
-            tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
-            data.data(isnan(data.data)) = 0;
-            data.data = sum(data.data,sum_dim+1,'double')./...
-                sum(tt,sum_dim+1,'double'); % The data is 2D from now on
-            clear tt
-            fprintf('Summing over dimension %d (%s)\n', ...
-                sum_dim, dep_x{sum_dim}.lab)
-            
-            ndim = data.dim(comp_dim);
-            if ~use_comp, comp=1:ndim; end
-            if ndim == 1
-                plot_data = {data.data};
-            else
-                plot_data = cell(size(comp));
-                for i=1:length(comp)
-                    switch comp_dim
-                        case 1
-                            plot_data{i} = squeeze(data.data(:,comp(i),:,:));
-                        case 2
-                            plot_data{i} = squeeze(data.data(:,:,comp(i),:));
-                        case 3
-                            plot_data{i} = squeeze(data.data(:,:,:,comp(i)));
-                        otherwise
-                            error('smth wrong')
-                    end
+            plot_data = cell(size(comp));
+            for i=1:length(comp)
+                switch comp_dim
+                    case 1
+                        plot_data{i} = squeeze(data.data(:,comp(i),:,:));
+                    case 2
+                        plot_data{i} = squeeze(data.data(:,:,comp(i),:));
+                    case 3
+                        plot_data{i} = squeeze(data.data(:,:,:,comp(i)));
+                    otherwise
+                        error('smth wrong')
                 end
             end
         end
