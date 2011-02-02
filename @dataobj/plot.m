@@ -131,14 +131,6 @@ if comp_dim ~=0 && comp_dim == sum_dim
     error('SUM_DIM and COMP_DIM must be different')
 end
 
-% if dim == 1
-%     if ~isempty(dep.DEPEND_X)
-%         if strcmp(dep.DEPEND_X{1,2},'DEPEND_1')
-%             dim = 2;
-%         end
-%     end
-% end
-
 %% DATA PROCESSING
 if dim == 0 
     plot_data = {double(data.data)};
@@ -163,49 +155,57 @@ elseif dim == 1
     end
     
 elseif dim == 2
-    if comp_dim == 0
-        comp_dim = 2;
+    % This is a hack for STAFF B
+    if any(any(data.data<=0))
+        disp('Data contains negative & zero values!!!')
+        data.data(data.data<0) = NaN;
     end
-    if data.dim(1)>1
-        % This is a hack for STAFF B
-        if any(any(data.data<=0))
-            disp('Data contains negative & zero values!!!')
-            data.data(data.data<0) = NaN;
-        end
+    
+    if comp_dim == 0, comp_dim = 2; end
+    if sum_dim > 0
+        % Do not count NaNs when summing
+        tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
+        data.data(isnan(data.data)) = 0;
+        data.data = sum(data.data,sum_dim+1,'double')./...
+            sum(tt,sum_dim+1,'double'); % The data is 2D from now on
+        clear tt
         
-        ndim = data.dim(2);
+        if sum_dim == 1, comp_dim = 2;
+        else  comp_dim = 1;
+        end
+    end 
+    
+    if sum_dim > 0 && isfield(data,'DEPEND_1') && ~use_comp
+        plot_data = {squeeze(data.data)};
+        ydim = comp_dim;
+    else
+        ndim = data.dim(comp_dim);
         if ~use_comp, comp=1:ndim; end
-        if ndim == 1
-            plot_data = {data.data};
-        else
+        
             plot_data = cell(size(comp));
             for i=1:length(comp)
-                plot_data{i} = squeeze(data.data(:,:,comp(i)));
+                switch comp_dim
+                    case 1
+                        plot_data{i} = squeeze(data.data(:,comp(i),:));
+                    case 2
+                        plot_data{i} = squeeze(data.data(:,:,comp(i)));
+                    otherwise
+                        error('smth wrong')
+                end
             end
-        end
-        
-        if sum_dim==1 % sum over frequency, pitch angle
-            pd_tmp = zeros(length(dep.DEPEND_O),length(comp));
-            for i=1:length(comp)
-                plot_data{i}(isnan(plot_data{i})) = 0;
-                pd_tmp(:,i) = sum(plot_data{i},2);
-                %TODO: fix here
-            end
-            clear plot_data
-            plot_data{1} = pd_tmp; clear pd_tmp
-            dep_x{1} = dep_x{2}; dep_x{2} = [];
-            specrec.f = dep_x{1}.data(1,comp);
-            specrec.f_unit = dep_x{1}.units;
-            specrec.df = dep_x{1}.df;
-            comp = [];
-            
-            flag_lineplot = 1;
-        else
-            flag_spectrogram = 1;
-        end
-    else
-        plot_data{1} = double(data.data)';
+            if comp_dim == 2, ydim =1; else ydim = 2; end
     end
+    
+    plot_f = 2;
+    if ~isfield(data,'DEPEND_1'), plot_f = plot_f-1; end
+    if sum_dim > 0, plot_f = plot_f-1; end
+    if use_comp, plot_f = plot_f-1; end
+    if plot_f > 0
+        flag_spectrogram = 1;
+    else
+        flag_lineplot = 1;
+    end
+    
 elseif dim == 3
     if comp_dim == 0
         if sum_dim == 3
@@ -250,6 +250,19 @@ elseif dim == 3
         end
     end
     
+    switch comp_dim
+        case 1
+            if sum_dim == 2, ydim = 3; else ydim = 2; end
+        case 2
+            if sum_dim == 1, ydim = 3; else ydim = 1; end
+        case 3
+            if sum_dim == 1, ydim = 2; else ydim = 1; end
+        case 0
+            ydim = 1;
+        otherwise
+            error('invalid COMP_DIM')
+    end
+    
     flag_spectrogram = 1;
 else
     error('plotting not implememnted')
@@ -262,11 +275,11 @@ if flag_lineplot
         if ishandle(ax)
             cax = gca;
             axes(ax)
-            h = irf_plot([dep.DEPEND_O plot_data],line_color);
+            h = irf_plot([dep.DEPEND_O plot_data{:}],line_color);
             axes(cax)
         else
             if ~isempty(ax), disp('AX is not an axis handle'), end
-            h = irf_plot([dep.DEPEND_O plot_data],line_color);
+            h = irf_plot([dep.DEPEND_O plot_data{:}],line_color);
         end
     else
         if ishandle(ax), h = plot(ax,data.data);
@@ -359,19 +372,6 @@ elseif flag_spectrogram
     h = zeros(1,ncomp);
     if create_axes, ax = zeros(1, ncomp); end
     
-    
-    switch comp_dim
-        case 1
-            if sum_dim == 2, ydim = 3; else ydim = 2; end
-        case 2
-            if sum_dim == 1, ydim = 3; else ydim = 1; end
-        case 3
-            if sum_dim == 1, ydim = 2; else ydim = 1; end
-        case 0
-            ydim = 1;
-        otherwise
-            error('invalid COMP_DIM')
-    end
     
     if ydim > 1
         specrec.f = dep_x{ydim}.data(1,:);
