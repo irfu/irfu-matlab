@@ -423,17 +423,16 @@ elseif flag_spectrogram
     end
     % Add colorbar
     i=fix(ncomp/2)+1;
-    axes(h(i));
-    hcb = colorbar;
+    hcb = colorbar('peer',h(i));
+    hcbl = get(hcb,'ylabel');
     dy = get(ax(i),'Position'); dy = dy(3);
     pcb = get(hcb,'Position');
     if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
-%    cbfreeze(hcb);
     if flag_labels_is_on,
         if ~flag_colorbar_label_is_manually_specified
             colorbar_label=['Log ' lablaxis ' [' units ']' ];
         end
-        hcbl=cblabel(colorbar_label);
+        ylabel(hcb,colorbar_label);
         if flag_colorbar_label_fit_to_colorbar_height_is_on
             fit_colorbarlabel_height(hcbl);
         end
