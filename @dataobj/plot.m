@@ -257,7 +257,7 @@ else
             end
         end
         
-        if use_comp && size(comp) == 1; % Make a cut
+        if use_comp && length(comp) == 1; % Make a cut
             fprintf('Cutting at dimension %d (%s) = %d', ...
                 sum_dim, dep_x{sum_dim}.lab,comp)
             switch comp_dim
@@ -270,15 +270,7 @@ else
                 otherwise
                     error('smth wrong')
             end
-            dep_x{comp_dim} = [];
-            data.dim(comp_dim) = [];
-            if sum_dim > comp_dim, sum_dim = sum_dim - 1; end
-            if sum_dim == 2
-                comp_dim = 1;
-            else
-                comp_dim = 2; 
-            end
-            
+
             ndim = data.dim(comp_dim);
             if ~use_comp, comp=1:ndim; end
             if ndim == 1
@@ -338,7 +330,7 @@ else
 		error('plotting not implememnted')
     end
         
-    if size(dep_x{1}.data,1) ~= length(dep.DEPEND_O)
+    if size(dep_x{comp_dim}.data,1) ~= length(dep.DEPEND_O)
         error('bad size for DEPEND_X_1')
     end
      
