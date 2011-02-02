@@ -324,8 +324,10 @@ elseif flag_spectrogram
         
     end
     
-    fprintf('Summing over dimension %d (%s)\n', ...
-        sum_dim, dep_x{sum_dim}.lab)
+    if sum_dim > 0
+        fprintf('Summing over dimension %d (%s)\n', ...
+            sum_dim, dep_x{sum_dim}.lab)
+    end
     
     specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
     
