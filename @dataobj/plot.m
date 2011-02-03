@@ -157,10 +157,10 @@ elseif dim == 1
     
 elseif dim == 2
     % This is a hack for STAFF B
-    if any(any(data.data<=0))
-        disp('Data contains negative & zero values!!!')
-        data.data(data.data<0) = NaN;
-    end
+%    if any(any(data.data<=0))
+%        disp('Data contains negative & zero values!!!')
+%        data.data(data.data<0) = NaN;
+%   end
     
     if comp_dim == 0, comp_dim = 2; end
     if sum_dim > 0
@@ -181,8 +181,7 @@ elseif dim == 2
         ydim = comp_dim;
     else
         ndim = data.dim(comp_dim);
-        if ~use_comp, comp=1:ndim; end
-        
+        if ~use_comp, comp=1:ndim; end        
             plot_data = cell(size(comp));
             for i=1:length(comp)
                 switch comp_dim
@@ -343,10 +342,6 @@ elseif flag_spectrogram
     end
     
     specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
-    
-%     if size(dep_x{comp_dim}.data,1) ~= length(dep.DEPEND_O)
-%         error('bad size for DEPEND_X_1')
-%     end
     
     lab_2 ='';
     if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
