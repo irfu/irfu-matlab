@@ -274,10 +274,7 @@ if flag_lineplot
     %% PLOTTING -- LINE PLOT
     if isfield(dep,'DEPEND_O')
         if ishandle(ax)
-            cax = gca;
-            axes(ax)
-            h = irf_plot([dep.DEPEND_O plot_data{:}],line_color);
-            axes(cax)
+            h = irf_plot(ax,[dep.DEPEND_O plot_data{:}],line_color);
         else
             if ~isempty(ax), disp('AX is not an axis handle'), end
             h = irf_plot([dep.DEPEND_O plot_data{:}],line_color);
