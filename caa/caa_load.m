@@ -43,7 +43,11 @@ for j = 1:numel(dirs)
         if flag_load_variable,
             try
                 disp(['caa_load ' var_name]);
-                evalin('caller',[var_name '=dataobj(''' dirs(j).name filesep '*.cdf'');']);
+                if evalin('caller',['exist(''' var_name ''',''var'')']),
+                    disp('Variable exist in memory. NOT LOADING FROM FILE!')
+                else
+                    evalin('caller',[var_name '=dataobj(''' dirs(j).name filesep '*.cdf'');']);
+                end
                 nloaded = nloaded + 1;
             catch
                 disp(['error loading ' var_name]);
