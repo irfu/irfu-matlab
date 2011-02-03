@@ -182,11 +182,19 @@ for comp=1:min(length(h),ncomp)
     end
 
     if min(size(ff))==1, % frequency is vector
-        pcolor(h(comp),double(tt-t_start_epoch),ff,log10(double(pp')))
+        if any(min(pp)<0) % spectra include negative values linear spectrogram
+            pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
+        else
+            pcolor(h(comp),double(tt-t_start_epoch),ff,log10(double(pp')))
+        end
     else % frequency is matrix
         ttt = repmat(tt,1,size(ff,2));
-        pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
-    end
+        if any(min(pp)<0) % spectra include negative values linear spectrogram
+            pcolor(h(comp),double(ttt-t_start_epoch),ff,double(pp))
+        else
+            pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
+        end
+        end
 %	colormap(cmap)
     shading(h(comp),'flat')
     %	colorbar('vert')
