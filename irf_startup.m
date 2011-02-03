@@ -8,14 +8,5 @@ clear scrsz;
 
 irf_units % defines globa variable Units
 
-load caa/cmap.mat
-irf_colormap.standard=cmap;
-irf_colormap.cmap=cmap;
-irf_colormap.default=cmap;
-
-it=0:.02:1;it=it(:); 
-irf_colormap.poynting=[ [0*it flipud(it) it];[it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
-clear it
-
-colormap(irf_colormap.standard);
+colormap(irf_colormap('standard'));
 
