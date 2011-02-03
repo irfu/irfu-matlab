@@ -1,7 +1,8 @@
-function c=irf_plot(x,varargin)
+function c=irf_plot(varargin)
 %IRF_PLOT   Flexible plotting routine for time series
 %
-% c=irf_plot(X,[arguments...]);
+% c=irf_plot([H],X,[arguments...]);
+%   H axes handle
 %   X is one of:
 %      - matrix in AV Cluster format
 %      - cell array data, each of cells containing a matrix in AV Cluster
@@ -39,18 +40,22 @@ function c=irf_plot(x,varargin)
 %
 % $Id$
 
-
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array
 %              3 - components of vectors in separate panels
 
+[ax,args,nargs] = axescheck(varargin{:});
+if isempty(ax),
+    ax=gca;
+end
+x=args{1};
+args=args(2:end);
+
 var_desc{1} = '';
 flag_subplot = 0;
 have_options = 0;
-args = varargin; 
-if nargin > 1, have_options = 1; end
-
+if nargs > 1, have_options = 1; end
 
 % Default values that can be override by options
 dt = 0;
@@ -67,7 +72,7 @@ while have_options
 		case 'comp'
 			plot_type = 'comp';
 		case 'dt'
-			if length(args)>1
+			if nargs>1
 				if isnumeric(args{2})
 					dt = args{2};
 					l = 2;
@@ -76,7 +81,7 @@ while have_options
 			else irf_log('fcal,','wrongArgType : dt value is missing')
 			end
 		case 'yy'
-			if length(args)>1
+			if nargs>1
 				if isnumeric(args{2})
 					flag_yy = 1;
 					scaleyy = args{2};
@@ -169,9 +174,8 @@ end
 if flag_subplot==0,  % One subplot
 	if isstruct(x)
 		% Plot a spectrogram
-		c = gca;
-		caa_spectrogram(c,x);
-		hcbar = colorbar;
+		caa_spectrogram(ax,x);
+		hcbar = colorbar('peer',ax);
 		if ~isempty(var_desc{1})
 			lab = cell(1,length(var_desc{1}.size));
 			for v = 1:length(var_desc{1}.size)
@@ -188,14 +192,14 @@ if flag_subplot==0,  % One subplot
 		ts = t_start_epoch(x(:,1));
 		
 		ii = 2:length(x(1,:));
-		if flag_yy == 0, h = plot((x(:,1)-ts-dt),x(:,ii),marker);
-		else h = plotyy((x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
+		if flag_yy == 0, h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker);
+		else h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
 		end
 		grid on;
 
 		% Put YLimits so that no labels are at the end (disturbing in
 		% multipanel plots)
-        yl = get(gca,'YLim');
+        yl = get(ax,'YLim');
         if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
             set(gca,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
         end
@@ -206,7 +210,7 @@ if flag_subplot==0,  % One subplot
 				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
 					'] sc' var_desc{1}.cl_id];
 			end
-			ylabel(lab);
+			ylabel(ax,lab);
 		end
 
 		c = get(h(1),'Parent');
