@@ -63,14 +63,9 @@ if nargin < 3, no_rel=irf_ask('Oxygen density in percent from H+ density [%] >',
 if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
 if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
 
-np=np_cc*1e6; % proton density m^-3
-no=no_rel/100*np; % proton density m^-3
-n=np+no; % total plasma density  m^-3
-
 %if time series are supplied then time series shoud be returned
 if size(B,2)>1, % we have time series of density
     t=B(:,1); % time axis
-    if length(t)>1 && ~ischar(noshow), noshow=1;end % if more than  one time point do not print result
     B(:,1)=[]; % delete time column
     if size(B,2)>3; %asssume that column 4 is amplitude, delete other coolumns
         B(:,[1:3 5:end])=[];
@@ -85,13 +80,13 @@ else
     flag_time_series='no';
 end
 if strcmp(flag_time_series,'yes'), % check that other variables are time series, if not interpoplate
-    variables_to_check={'n','no','Te','Ti'};
-    for j=1,length(variables_to_check)
+    variables_to_check={'np_cc','no_rel','Te','Ti'};
+    for j=1:length(variables_to_check)
         if eval(['size(' variables_to_check{j} ',2)'])>1, % we have time series
             c_eval('?=irf_resamp(?,t);',variables_to_check{j}) % resample to new time axis
             c_eval('?(:,[1,3:end])=[];',variables_to_check{j}) % delete time and  other columns
         elseif eval(['prod(size(' variables_to_check{j} '))==1']), % only one number
-            c_eval('?=repmat(?,size(t));',variables_to_check{j})
+            eval([variables_to_check{j} '=repmat(' variables_to_check{j} ',size(t));']);
         else
             c_eval('irf_log(''proc'',''do not understand input <?>'');',variables_to_check{j});
             return;
@@ -99,7 +94,11 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
     end
 end
 
-irf_units; 
+np=np_cc*1e6; % proton density m^-3
+no=no_rel/100.*np; % proton density m^-3
+n=np+no; % total plasma density  m^-3
+
+irf_units; % read in standard units
 
 Me=Units.me; % electron mass
 Mp=Units.mp; % proton mass
@@ -118,16 +117,16 @@ Wpp = sqrt(np*e^2/Mp/epso);
 WpO = sqrt(no*e^2/Mp/16/epso);
 Va = B_SI./sqrt(mu0*(np+16*no)*Mp);
 Vae = B_SI./sqrt(mu0*n*Me);
-Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s (relativ. correct)
-Vtp = c*sqrt(1-1/(Ti*e/(Mp*c^2)+1)^2);   % m/s
-Vts = Vtp*sqrt(Te/Ti);  % ? what is relativistic formula???
-VtO = c*sqrt(1-1/(Ti*e/(16*Mp*c^2)+1)^2);   % m/s
-gamma_e=1/sqrt(1-(Vte/c).^2);
-gamma_p=1/sqrt(1-(Vtp/c).^2);
-gamma_O=1/sqrt(1-(VtO/c).^2);
-Le = c/Wpe;
-Li = c/Wpp;
-Ld = Vte/Wpe ; % Debye length scale
+Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct)
+Vtp = c*sqrt(1-1./(Ti.*e./(Mp*c^2)+1).^2);              % m/s
+Vts = Vtp.*sqrt(Te./Ti); Vts=Vts(:);                    % ? what is relativistic formula???
+VtO = c*sqrt(1-1./(Ti.*e./(16*Mp*c^2)+1).^2);           % m/s
+gamma_e=1./sqrt(1-(Vte/c).^2);
+gamma_p=1./sqrt(1-(Vtp/c).^2);
+gamma_O=1./sqrt(1-(VtO/c).^2);
+Le = c./Wpe;
+Li = c./Wpp;
+Ld = Vte./Wpe ; % Debye length scale
 
 
 Fpe = Wpe/2/pi; % Hz
@@ -137,11 +136,11 @@ Fpp = Wpp/2/pi;
 Fcp = Fce/Mp_Me;
 FpO = WpO/2/pi;
 FcO = Fce/Mp_Me/16;
-Flh = sqrt(Fcp.*Fce./(1+Fce.^2/Fpe.^2)+Fcp.^2);
+Flh = sqrt(Fcp.*Fce./(1+Fce.^2./Fpe.^2)+Fcp.^2);
 
-Roe = Me*c/(e*B_SI)*sqrt(gamma_e.^2-1); % m, relativistically correct
-Rop = Mp*c/(e*B_SI)*sqrt(gamma_p.^2-1); % m, relativistically correct
-RoO = Mp*16*c/(e*B_SI)*sqrt(gamma_O.^2-1); % m, relativistically correct
+Roe = Me*c./(e*B_SI).*sqrt(gamma_e.^2-1); % m, relativistically correct
+Rop = Mp*c./(e*B_SI).*sqrt(gamma_p.^2-1); % m, relativistically correct
+RoO = Mp*16*c./(e*B_SI).*sqrt(gamma_O.^2-1); % m, relativistically correct
 Ros = Vts./Fcp/2/pi; % m
 
 
@@ -170,22 +169,26 @@ end
 
 if ~flag_display_values,    return; end 
 
+if strcmp(flag_time_series,'yes'), 
+    disp('!!! TIME SERIES. Showing only the values for the first point!');
+end
+
 disp('===============================================================')
 disp('IRFU plasma calculator, relativistic effects not fully included')
 disp('velocities, gyroradia are relativistically correct')
 disp('can somebody fix relativstically correct frequencies Fpe, Fce,.. ?')
 disp('===============================================================')
-disp(['B=' num2str(B) ' [nT]; n_H=' num2str(np*1e-6) ' [cc]; n_O=' num2str(no*1e-6) ' [cc]; ' ...
-  'T_e=' num2str(Te) ' [eV]; T_i=' num2str(Ti) ' [eV];']);
+disp(['B=' num2str(B(1)) ' [nT]; n_H=' num2str(np(1)*1e-6) ' [cc]; n_O=' num2str(no(1)*1e-6) ' [cc]; ' ...
+  'T_e=' num2str(Te(1)) ' [eV]; T_i=' num2str(Ti(1)) ' [eV];']);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % frequencies
 
-freq = [Fpe Fce Fuh Flh Fpp Fcp FpO FcO];
+freq = [Fpe(:,end) Fce(:,end) Fuh(:,end) Flh(:,end) Fpp(:,end) Fcp(:,end) FpO(:,end) FcO(:,end)];
 freqs = {'F_pe'; 'F_ce'; 'F_uh'; 'F_lh'; 'F_pp'; 'F_cp'; 'F_pO'; 'F_cO'};
-disp(sprintf('\nPlasma frequencies\n'))
-for ii = 1:length(freq)
-    val = freq(ii);
+fprintf('\nPlasma frequencies\n');
+for ii = 1:size(freq,2)
+    val = freq(1,ii);
     if val > 1e6
         units = '[MHz]';
         koef = 1e-6;
@@ -199,18 +202,18 @@ for ii = 1:length(freq)
         units = '[mHz]';
         koef = 1e3;
     end
-    disp(sprintf('%s = %5.2f %s',freqs{ii},val*koef, units))
+    fprintf('\n%s = %5.2f %s',freqs{ii},val*koef, units);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % velocities
 
-v = [Va Vae Vte Vtp Vts VtO ];
+v = [Va(:,end) Vae(:,end) Vte(:,end) Vtp(:,end) Vts(:,end) VtO(:,end)];
 vs = {'V_a'; 'V_ae'; 'V_Te'; 'V_Tp'; 'C_s'; 'V_TO'};
 
-disp(sprintf('\nPlasma velocities\n'))
-for ii = 1:length(v)
-    val = v(ii);
+fprintf('\n\nPlasma velocities\n');
+for ii = 1:size(v,2)
+    val = v(1,ii);
     if val > 1e6
         units = '[km/s 1e3]';
         koef = 1e-6;
@@ -221,17 +224,17 @@ for ii = 1:length(v)
         units = '[m/s]';
         koef = 1;
     end
-    disp(sprintf('%s = %5.2f %s',vs{ii},val*koef, units))
+    fprintf('\n%s = %5.2f %s',vs{ii},val*koef, units);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % scales
 
-l = [Le Li Ld Roe Rop RoO Ros];
+l = [Le(:,end) Li(:,end) Ld(:,end) Roe(:,end) Rop(:,end) RoO(:,end) Ros(:,end)];
 ls = {'L_e'; 'L_i'; 'L_d' ; 'Ro_e' ; 'Ro_p'; 'Ro_O'; 'Ro_s'};
-disp(sprintf('\nPlasma scales\n'))
-for ii = 1:length(l)
-    val = l(ii);
+fprintf('\n\nPlasma scales\n');
+for ii = 1:size(l,2)
+    val = l(1,ii);
     if val > 1e3
         units = '[km]';
         koef = 1e-3;
@@ -248,11 +251,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % etc
 
-disp(sprintf('\nPlasma dimensionless parameters\n'))
+fprintf('\nPlasma dimensionless parameters\n');
 
-beta  = Vtp^2/Va^2;
-disp(sprintf('beta  = %1.5f',Vtp^2/Va^2))
-disp(sprintf('beta*sqrt(Mp/Me)  = %1.5f',Vtp^2/Va^2*sqrt(Mp_Me)))
-disp(sprintf('beta*(Mp/Me) = %1.5f',Vtp^2/Va^2*Mp_Me))
+beta  = Vtp.^2./Va.^2;
+fprintf('\nbeta  = %1.5f',beta(1));
+fprintf('\nbeta*sqrt(Mp/Me)  = %1.5f',beta(1)*sqrt(Mp_Me));
+fprintf('\nbeta*(Mp/Me) = %1.5f\n',beta(1)*Mp_Me);
 
 if nargout>0, Fpe_out = Fpe; end
