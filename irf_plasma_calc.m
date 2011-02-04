@@ -7,7 +7,7 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %
 %	B - magnetic field [nT]
 %	n - density [cm^-3]
-%	no - content of O+ [%]
+%	no - content of O+ [% of number density]
 %	Te - electron temperature [eV]
 %	Ti - ion temperature [eV]
 % flag - 1: do not display the output
@@ -42,19 +42,21 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %  Magnetic pressure [nT] = (B/50)^2
  
 % $Id$
+% Copyright 1997-2005 Yuri Khotyaintsev
 
 persistent B np_cc no_rel Te Ti
 
-if nargin < 6
-    noshow = 0;
-end
+flag_display_values=1;  % dispaly all values on screen
+
+if nargin < 6,     noshow = 0;end
+if nargout,        flag_display_values=0;end
+
 if nargin >= 1, B=B_inp; end
-if nargin >= 2, n=n_inp; end
-if nargin >= 3, no=no_inp; end
+if nargin >= 2, np_cc=n_inp; end
+if nargin >= 3, no_rel=no_inp; end
 if nargin >= 4, Te=Te_inp; end
 if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
-% Copyright 1997-2005 Yuri Khotyaintsev
 if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
 if nargin < 2, np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);end
 if nargin < 3, no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);end
@@ -97,12 +99,14 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
     end
 end
 
-Me=9.1094e-31; % electron mass
-Mp=1.67262e-27; % proton mass
-c=2.9979e8; % speed of light
-e=1.6022e-19; % elementary charge
-epso=8.8542e-12; % vacuum dielectric constant 
-mu0=4*pi*1e-7; % Mu_0
+irf_units; 
+
+Me=Units.me; % electron mass
+Mp=Units.mp; % proton mass
+c=Units.c; % speed of light
+e=Units.e; % elementary charge
+epso=Units.eps0; % vacuum dielectric constant 
+mu0=Units.mu0; % Mu_0
 Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
 
 % in formulas it is more convenient to use variables expresesd in SI units 
@@ -114,12 +118,9 @@ Wpp = sqrt(np*e^2/Mp/epso);
 WpO = sqrt(no*e^2/Mp/16/epso);
 Va = B_SI./sqrt(mu0*(np+16*no)*Mp);
 Vae = B_SI./sqrt(mu0*n*Me);
-%Vte = 4.19*1e2*sqrt(Te);
-Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s
-%Vtp = 9.79*sqrt(Ti);
+Vte = c*sqrt(1-1/(Te*e/(Me*c^2)+1)^2);  % m/s (relativ. correct)
 Vtp = c*sqrt(1-1/(Ti*e/(Mp*c^2)+1)^2);   % m/s
-Vts = Vtp*sqrt(Te/Ti);  % ? relativistic formula???
-%VtO = Vtp/4;
+Vts = Vtp*sqrt(Te/Ti);  % ? what is relativistic formula???
 VtO = c*sqrt(1-1/(Ti*e/(16*Mp*c^2)+1)^2);   % m/s
 gamma_e=1/sqrt(1-(Vte/c).^2);
 gamma_p=1/sqrt(1-(Vtp/c).^2);
@@ -153,19 +154,21 @@ if strcmp(flag_time_series,'yes')
         };
     for j=1:length(var),
         eval([var{j}{1} '= [t ' var{j}{1} '];']);
-        if ischar(noshow)
-            if strcmp(noshow,var{j}{1}),
-                eval(['Fpe_out=' var{j}{1} ';']);
-                return;
-            end
-        end
     end
 end
 
-
-if noshow > 0
-    return
+if ischar(noshow) % return only particular value
+    try
+        eval(['Fpe_out=' noshow ';']);
+        return;
+    catch ME
+        disp(['variable ''' noshow ''' not recognized']);
+        Fpe_out=[];
+        flag_display_values=0;
+    end
 end
+
+if ~flag_display_values,    return; end 
 
 disp('===============================================================')
 disp('IRFU plasma calculator, relativistic effects not fully included')
