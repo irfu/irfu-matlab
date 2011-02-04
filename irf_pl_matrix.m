@@ -44,7 +44,7 @@ elseif nargin>=3 % caa_spectrogram(x,y,F,..)
     specrec.ylabel = ylab;
 end
 
-load caa/cmap.mat
+
 
 Fsize=size(F);
 xx=[specrec.x(1)-specrec.dx(1)/2; specrec.x(:)+specrec.dx(:)/2];
@@ -55,7 +55,8 @@ FF=zeros(size(xx));FF(1:end-1,1:end-1)=specrec.F;
 
 FF(FF==0)=NaN; % zero counts put to NaN
 pcolor(xx,yy,log10(FF))
-colormap(cmap)
+%load caa/cmap.mat
+%colormap(cmap)
 shading('flat')
     %	colorbar('vert')
     %	set(gca,'TickDir','out','YScale','log')
