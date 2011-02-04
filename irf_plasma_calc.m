@@ -120,7 +120,7 @@ Vae = B_SI./sqrt(mu0*n*Me);
 Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct)
 Vtp = c*sqrt(1-1./(Ti.*e./(Mp*c^2)+1).^2);              % m/s
 Vts = Vtp.*sqrt(Te./Ti); Vts=Vts(:);                    % ? what is relativistic formula???
-VtO = c*sqrt(1-1./(Ti.*e./(16*Mp*c^2)+1).^2);           % m/s
+VtO = c*sqrt(1-1./(To.*e./(16*Mp*c^2)+1).^2);           % m/s
 gamma_e=1./sqrt(1-(Vte/c).^2);
 gamma_p=1./sqrt(1-(Vtp/c).^2);
 gamma_O=1./sqrt(1-(VtO/c).^2);
@@ -160,7 +160,7 @@ if ischar(noshow) % return only particular value
     try
         eval(['Fpe_out=' noshow ';']);
         return;
-    catch ME
+    catch
         disp(['variable ''' noshow ''' not recognized']);
         Fpe_out=[];
         flag_display_values=0;
@@ -245,7 +245,7 @@ for ii = 1:size(l,2)
         units = '[cm]';
         koef = 1e2;
     end
-    disp(sprintf('%s = %5.2f %s',ls{ii},val*koef, units))
+    fprintf('\n%s = %5.2f %s',ls{ii},val*koef, units);
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
