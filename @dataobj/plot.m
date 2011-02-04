@@ -347,8 +347,9 @@ elseif flag_spectrogram
     if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
         if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
                 && findstr(dep_x{comp_dim}.s,'LABEL_2')
-            reclen = size(dep_x{comp_dim}.data,2)/length(dep.DEPEND_O);
-            lab_2 = dep_x{comp_dim}.data(:,1:reclen);
+%            reclen = size(dep_x{comp_dim}.data,2)/length(dep.DEPEND_O);
+            lab_2 = shiftdim(dep_x{comp_dim}.data(1,:,:),1)';
+%            lab_2 = dep_x{comp_dim}.data(:,1:reclen);
         elseif strcmp(dep_x{comp_dim}.type,'single') && ...
                 (strcmp(dep_x{comp_dim}.variance,'F/T') || ...
                 strcmp(dep_x{comp_dim}.variance,'T/T'))
