@@ -192,8 +192,10 @@ if flag_subplot==0,  % One subplot
 		ts = t_start_epoch(x(:,1));
 		
 		ii = 2:length(x(1,:));
-		if flag_yy == 0, h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker);
-		else h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
+		if flag_yy == 0, 
+            h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
+        else
+            h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
 		end
 		grid on;
 
@@ -237,7 +239,7 @@ elseif flag_subplot==1, % Separate subplot for each component
 		else marker_cur = marker;
 		end
 
-		plot((x(:,1)-ts-dt),x(:,ipl+1),marker_cur); grid on;
+		plot((x(:,1)-ts-dt),x(:,ipl+1),marker_cur,args{:}); grid on;
 
 		% Put YLimits so that no labels are at the end (disturbing in
 		% multipanel plots)
