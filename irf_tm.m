@@ -17,10 +17,16 @@ tlim = [];
   for last=length(hc):-1:1
   	if strcmp(get(hc(last),'Type'),'axes'), break, end
   	if strcmp(get(hc(last),'Type'),'line'), break, end
+  	if strcmp(get(hc(last),'Type'),'surface'), break, end
   end
-  xd=get(hc(last),'XData');
-  avail=[min([xl xd(:)']) max([xl xd(:)'])];
-  presel=xl;
+  try % if axes had data
+      xd=get(hc(last),'XData');
+      avail=[min([xl xd(:)']) max([xl xd(:)'])];
+      presel=xl;
+  catch % there are no data, use Xlim
+      presel=get(hh,'XLim');
+  end
+  
   
   % read t_start_epoch from figures userdata field and update time
   % intervals
