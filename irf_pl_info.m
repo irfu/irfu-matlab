@@ -6,6 +6,7 @@ function outhandle=irf_pl_info(string,inhandle,position);
 % add information in string to the plot given by handle inhandle
 % output is the handle of the text
 % position - [x y], where [0,1] is the left upper corner
+% if inhandle is 0 use the whole figure area as coordinates
 %
 % Example:
 %   ht=irf_pl_info(['c_pl_sc_orient() ' datestr(now)],gca,[0,1 ]); 
