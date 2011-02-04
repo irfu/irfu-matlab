@@ -1,11 +1,11 @@
-function c=caa_load(varargin)
+function caa_load(varargin)
 %Script to load data downloaded from the CAA in CDF format.
 %Downloaded zip file must be unpacked, and script must be run 
 %from a CAA_Download_YYYYMMDD_hhmm directory.
-% Examples:
-% caa_load
-% caa_load CIS 
-% caa_load C1
+%  Examples:
+%   caa_load
+%   caa_load CIS 
+%   caa_load C1 CIS
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -21,7 +21,8 @@ if nargin > 0, % filter which variables to load
     for j=1:length(varargin),
         if ischar(varargin{j}),
             variable_filter{i}=varargin{j};
-            i=i+1;flag_filter=1;
+            i=i+1;
+            flag_filter=1;
         end
     end
 end
@@ -31,11 +32,11 @@ dirs = dir;
 for j = 1:numel(dirs)
 	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
         var_name = dirs(j).name;
-        var_name(findstr(var_name,'-'))='_'; % substitute '-' to '_'
+        var_name(strfind(var_name,'-'))='_'; % substitute '-' to '_'
         flag_load_variable=1;
         if flag_filter==1, % if there is name filtering required check if to load variable
             for jj=1:length(variable_filter),
-                if isempty(findstr(variable_filter{jj},var_name)),
+                if isempty(strfind(variable_filter{jj},var_name)),
                     flag_load_variable=0;
                 end
             end
@@ -55,6 +56,6 @@ for j = 1:numel(dirs)
         end
 	end
 end
-if nloaded, disp(sprintf('CAA_LOAD : loaded %d variables',nloaded));
+if nloaded, fprintf('\nCAA_LOAD : loaded %d variables\n',nloaded);
 else disp('CAA_LOAD : nothing to load')
 end
