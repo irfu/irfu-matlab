@@ -72,7 +72,7 @@ disp(['cc=' num2str(cc(1,2),3)]);
 % Calculate error in velocity estimate
 %
 % 9.16 in ISSI book
-DVHT=sum(irf_abs(delta_e(ind_number,:),1).^2)/length(ind_number)
+DVHT=sum(irf_abs(delta_e(ind_number,:),1).^2)/length(ind_number);
 lambda=eig(K);
 S=DVHT/(2*length(ind_number)-3)*inv(K);
 dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
