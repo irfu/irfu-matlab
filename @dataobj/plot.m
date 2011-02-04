@@ -69,7 +69,7 @@ line_color='k'; % default line color is black, can be changed with flags, e.g. c
 flag_use_cluster_colors=0;
 
 arg_pos = 0;
-while length(args)
+while ~isempty(args)
     arg_pos = arg_pos + 1;
     l = 1;
     if arg_pos==1 && isnumeric(args{1})
@@ -128,7 +128,7 @@ while length(args)
                 disp('unknown argument')
                 disp('the rest or arguments are passed to plot routines');
                 plot_properties=args; 
-                args(:)=[];
+                args=cell(0);
                 break
         end
     end
@@ -308,7 +308,8 @@ if flag_lineplot
 elseif flag_spectrogram 
     %% PLOT -- SPECTRPGRAM
     
-    for d = 1:size(dep.DEPEND_X,1)
+    dep_x=cell(size(dep.DEPEND_X,1));
+    for d = 1:length(dep_x)
         dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
         dep_x{d}.s = dep.DEPEND_X{d,1};
         dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
@@ -443,7 +444,7 @@ if nargout > 0, res = h; end
 
 function add_text(h,txt)
 text(0.99, 0.97, [' ' txt],'HorizontalAlignment','right','VerticalAlignment','top',...
-    'units','normalized','fontsize',8,'parent',h)
+    'units','normalized','fontsize',6,'parent',h)
 
 function cs = shorten_cs(cs)
 
@@ -456,7 +457,6 @@ if strcmpi(cs(1:3),'GSE'), cs = 'GSE'; end
 
 % Try to correct latex
 function s = corr_latex(s)
-
 expr = {'\^-[1-3]','\^[2-3]'};
 exprl = [2 1];
 for i=1:length(expr)
@@ -473,16 +473,11 @@ for i=1:length(expr)
 end
 
 function fit_colorbarlabel_height(hcb)
-%hy=get(hcb,'ylabel');
 hy=hcb;
-%outpos=get(hcb,'outerposition');
-%pos=get(hcb,'position');
-%factor=outpos(4)/pos(4); % colorbar label can be heigher than colorbar itslef
 colorbar_label_fontsize=get(hy,'fontsize');
 units=get(hy,'units');
 set(hy,'units','normalized');
 temp=get(hy,'Extent');
-%labelposition=get(hy,'Position');
 colorbarlabelheight = temp(4);
 while colorbarlabelheight>1.1,
     colorbar_label_fontsize=colorbar_label_fontsize*0.95;
@@ -491,5 +486,4 @@ while colorbarlabelheight>1.1,
     temp=get(hy,'Extent');
     colorbarlabelheight=temp(4);
 end
-%set(hy,'units',units);
 
