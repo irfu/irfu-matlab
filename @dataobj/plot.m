@@ -1,5 +1,5 @@
-function res = plot(dobj,var_s,varargin)
-%PLOT(dobj, var_s, [comp], [options])  plot a variable
+function res = plot(varargin)
+%PLOT([H], dobj, var_s, [comp], [options])  plot a variable
 %
 % OPTIONS - one of the following:
 %	'AX'       - axis handles to use
@@ -22,6 +22,15 @@ function res = plot(dobj,var_s,varargin)
 
 error(nargchk(2,14,nargin))
 
+[ax,args,nargs] = axescheck(varargin{:});
+if isempty(ax),
+    ax=gca;
+end
+dobj=args{1};
+var_s=args{2};
+args=args(3:end);
+nargs=nargs-2;
+
 LCOMP = 3;
 
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
@@ -43,17 +52,13 @@ data.data(data.data==fillv) = NaN;
 
 %% INPUT ARGUMENTS
 
-have_options = 0;
-arg_pos = 0;
-args = varargin;
-if nargin > 2, have_options = 1; end
-
 % Default values that can be override by options
-sum_dim = 0;
-comp_dim = 0;
-use_comp = 0;
-comp = [];
-ax = [];
+sum_dim = 0;  % along which dimension to sum
+comp_dim = 0; % component dimension used to separate subplots 
+use_comp = 0; % pick up separate component values in separate plots
+comp = [];    % index of component vector values to pick up 
+ydim = 0;     % default dimension of data used for y axis (0- data value itself);
+plot_properties=cell(0);
 create_axes = 1;
 flag_lineplot = 0;
 flag_spectrogram = 0;
@@ -63,7 +68,8 @@ flag_colorbar_label_fit_to_colorbar_height_is_on=0;
 line_color='k'; % default line color is black, can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
 
-while have_options
+arg_pos = 0;
+while length(args)
     arg_pos = arg_pos + 1;
     l = 1;
     if arg_pos==1 && isnumeric(args{1})
@@ -120,11 +126,13 @@ while have_options
                 comp_dim = 3;
             otherwise
                 disp('unknown argument')
+                disp('the rest or arguments are passed to plot routines');
+                plot_properties=args; 
+                args(:)=[];
                 break
         end
     end
     args = args(l+1:end);
-    if isempty(args), break, end
 end
 
 if comp_dim ~=0 && comp_dim == sum_dim
@@ -132,6 +140,31 @@ if comp_dim ~=0 && comp_dim == sum_dim
 end
 
 %% DATA PROCESSING
+
+    
+% define summing dimension and component to plot when component not defined
+if comp_dim == 0,
+    if dim == 2 && sum_dim == 0,    comp_dim = 2; ydim = 1;     end
+    if dim == 2 && sum_dim == 1,    comp_dim = 2; ydim = 0;     end
+    if dim == 2 && sum_dim == 2,    comp_dim = 1;               end
+    if dim == 3 && sum_dim == 0,    comp_dim = 3; sum_dim = 1;  end
+    if dim == 3 && sum_dim == 1,    comp_dim = 3;               end
+    if dim == 3 && sum_dim == 2,    comp_dim = 3;               end
+    if dim == 3 && sum_dim == 3,    comp_dim = 2; ydim = 1;     end
+end
+
+if dim ==3,  
+    switch comp_dim
+        case 1
+            if sum_dim == 2, ydim = 3; else ydim = 2; end
+        case 2
+            if sum_dim == 1, ydim = 3; else ydim = 1; end
+        case 3
+            if sum_dim == 1, ydim = 2; else ydim = 1; end
+    end
+end
+
+
 if dim == 0 
     plot_data = {double(data.data)};
     flag_lineplot = 1;
@@ -156,13 +189,6 @@ elseif dim == 1
     end
     
 elseif dim == 2
-    % This is a hack for STAFF B
-%    if any(any(data.data<=0))
-%        disp('Data contains negative & zero values!!!')
-%        data.data(data.data<0) = NaN;
-%   end
-    
-    if comp_dim == 0, comp_dim = 2; end
     if sum_dim > 0
         % Do not count NaNs when summing
         tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
@@ -206,15 +232,7 @@ elseif dim == 2
         flag_lineplot = 1;
     end
     
-elseif dim == 3
-    if comp_dim == 0
-        if sum_dim == 3
-            comp_dim = 2;
-        else
-            comp_dim = 3;
-        end
-    end
-    
+elseif dim == 3    
     if use_comp == 0 && sum_dim == 0
         if comp_dim==2
             sum_dim = 1;
@@ -248,21 +266,7 @@ elseif dim == 3
                     error('smth wrong')
             end
         end
-    end
-    
-    switch comp_dim
-        case 1
-            if sum_dim == 2, ydim = 3; else ydim = 2; end
-        case 2
-            if sum_dim == 1, ydim = 3; else ydim = 1; end
-        case 3
-            if sum_dim == 1, ydim = 2; else ydim = 1; end
-        case 0
-            ydim = 1;
-        otherwise
-            error('invalid COMP_DIM')
-    end
-    
+    end    
     flag_spectrogram = 1;
 else
     error('plotting not implememnted')
@@ -272,34 +276,25 @@ end
 if flag_lineplot
     %% PLOTTING -- LINE PLOT
     if isfield(dep,'DEPEND_O')
-        if ishandle(ax)
-            h = irf_plot(ax,[dep.DEPEND_O plot_data{:}],line_color);
-        else
-            if ~isempty(ax), disp('AX is not an axis handle'), end
-            h = irf_plot([dep.DEPEND_O plot_data{:}],line_color);
-        end
+        h = irf_plot(ax,[dep.DEPEND_O plot_data{:}],line_color,plot_properties{:});
     else
-        if ishandle(ax), h = plot(ax,data.data);
-        else
-            if ~isempty(ax), disp('AX is not an axis handle'), end
-            h = plot(data.data);
-        end
+        h = plot(ax,data.data,line_color,plot_properties{:});
     end
     flab = getlablaxis(dobj,var_s);
-    lab_1 = '';
-    if ~isempty(dep.DEPEND_X)
-        dep_x_s = dep.DEPEND_X{1,1};
+    lab_1 = ''; 
+    if ~isempty(dep.DEPEND_X) % 
+        dep_x_s = dep.DEPEND_X{comp_dim,1};
         dep_x = getv(dobj,dep_x_s);
         if ~isempty(dep_x)
-            if strcmp(dep_x.type,'char') && strcmp(dep_x.variance,'F/T')...
-                    && strcmp(dep.DEPEND_X{1,2},'LABEL_1')
-                if use_comp, lab_1 = ['(' dep_x.data(1,:,comp) ')'];
-                else
+            if strcmp(dep_x.type,'char')
+                if use_comp, % pick up components, data should be char
+                    lab_1 = ['(' dep_x.data(1,:,comp) ')'];
+                else % data are values, label under LABLAXIS
                     legend(num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
                     legend('boxoff')
                 end
             else
-                error('BAD type for DEPEND_X')
+                lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
             end
         end
     end
