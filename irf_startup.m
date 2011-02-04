@@ -8,5 +8,5 @@ clear scrsz;
 
 irf_units % defines globa variable Units
 
-colormap(irf_colormap('standard'));
+%irf_colormap('standard'); % defines default colormap
 
