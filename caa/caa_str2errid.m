@@ -18,15 +18,19 @@ function res = caa_str2errid(id)
 % ----------------------------------------------------------------------------
 
 switch id
+% IDs of 10 and less are removed from the data (both HX and LX)
 case 'no_tm', res = 0;
 case 'bad_tm', res = 1;
 case 'bad_data', res = 2;
-case 'bad_bias', res = 3;
+% IDs greater than 10 are not blanked unless otherwise commented
 case 'no_p1', res = 11;
 case 'no_p2', res = 12;
 case 'no_p3', res = 13;
 case 'no_p4', res = 14;
-case 'hxonly', res = 15;
+case 'hxonly',   res = 15; % LX data is blanked
+case 'bad_bias', res = 16; % HX data is blanked
+case 'bad_hx',   res = 17; % HX data is blanked
+case 'bad_lx',   res = 18; % LX data is blanked
 case 'no_p12', res = 112;
 case 'no_p23', res = 123;
 case 'no_p34', res = 134;
