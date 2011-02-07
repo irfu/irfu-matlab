@@ -141,6 +141,26 @@ for i=1:length(param)
 			end
 			clear ok bdump msg
 			
+		case 'nsops'
+			% Remove nonstandard operations intervals
+			[ok,nsops,msg] = c_load('NSOPS?',cl_id);
+			if ok
+				if ~isempty(nsops)
+					if ~exist('nsops_errlist','var'),nsops_errlist=[];end
+					for j=1:length(nsops(:,3))
+						opcode=nsops(j,3);
+						% If nsops_errlist is present, only match on those
+						% opcodes in the list
+						if (opcode<10 && opcode>0) || (~isempty(nsops_errlist) && any(opcode==nsops_errlist));
+							irf_log('proc','blanking nsops interval')
+							res = caa_rm_blankt(res,nsops);
+						end
+					end
+				end
+			else irf_log('load',msg)
+			end
+			clear ok nsops msg opcode
+			
 		case 'wake'
 			% Remove wakes
 			[ok,wake,msg] = c_load(irf_ssub('PSWAKE?p!',cl_id,probe));
