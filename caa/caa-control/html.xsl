@@ -21,7 +21,7 @@ $Id$
 	</HEAD>
 	<BODY>
 	<H1 ALIGN="center">
-		List
+		Non-Standard Operations
 	</H1>
 	<H2>
 		<xsl:value-of select="//description"/>
@@ -37,7 +37,7 @@ $Id$
 			<TH>short Desc</TH>
 		</TR>
 		<xsl:apply-templates select="//operation">
-			<xsl:sort order="ascending" data-type="number" select="@satrtepoch"/>
+			<xsl:sort order="ascending" data-type="number" select="@startepoch"/>
 		</xsl:apply-templates>
 	</TABLE>
 	</BODY>
