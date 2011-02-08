@@ -17,7 +17,8 @@ function caa_load(varargin)
 
 flag_filter = 0;
 if nargin > 0, % filter which variables to load 
-    i=1;clear variable_filter;
+    i=1;
+    variable_filter=cell(nargin,1);
     for j=1:length(varargin),
         if ischar(varargin{j}),
             variable_filter{i}=varargin{j};
@@ -36,7 +37,7 @@ for j = 1:numel(dirs)
         flag_load_variable=1;
         if flag_filter==1, % if there is name filtering required check if to load variable
             for jj=1:length(variable_filter),
-                if isempty(strfind(variable_filter{jj},var_name)),
+                if isempty(strfind(var_name,variable_filter{jj})),
                     flag_load_variable=0;
                 end
             end
