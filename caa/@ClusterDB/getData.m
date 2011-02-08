@@ -1196,14 +1196,15 @@ while 1
 	if isempty(out), return, end % extra precaution to avoid a dead loop
 end
 
-<<<<<<< getData.m
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ss = prob_s(ns_ops_rec,warn)
-if nargin<2, warn=0; end
-if warn, s = 'WARNING: ';
-else s = 'PROBLEM: ';
-end
-ss = [s caa_errid2str(ns_ops_rec(4)) ' ' epoch2iso(ns_ops_rec(1),1)...
-	' -- ' epoch2iso(ns_ops_rec(1)+ns_ops_rec(2),1)];=======
+  if nargin<2, warn=0; end
+  if warn, s = 'WARNING: ';
+  else s = 'PROBLEM: ';
+  end
+  ss = [s caa_errid2str(ns_ops_rec(4)) ' ' epoch2iso(ns_ops_rec(1),1)...
+  	' -- ' epoch2iso(ns_ops_rec(1)+ns_ops_rec(2),1)];
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function dataout = rm_ib_spike(data)
 % Remove spikes in staff IB data
@@ -1238,4 +1239,3 @@ while i < ndata
     i = i2 + 1;
 end
 
->>>>>>> 1.113
