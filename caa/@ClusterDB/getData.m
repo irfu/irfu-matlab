@@ -33,6 +33,9 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %   bscburst : wBSC4kHz{cl_id} -> mBSCBurst
 %			// EFW probe bias current
 %
+%	//// Non-standard operations ////
+%   nsops:  NSOPS{cl_id} -> mEFW
+%
 %	//// Ephemeris ////
 %	sax : SAX{cl_id} ->mEPH
 %			// spin axis vector [GSE] 
@@ -126,32 +129,6 @@ if flag_save,
     end
 end
 
-% Read list of nonstandard operations and see if we have one of those 
-% during the requested period. Permanent problems (as loss of 
-% probes, filters, etc.) must be programmed separately
-if strcmp(quantity,'e') || strcmp(quantity,'eburst') ||...
-	strcmp(quantity,'p') || strcmp(quantity,'pburst')
-	
-	ns_ops = c_ctl('get',cl_id,'ns_ops');
-	if isempty(ns_ops)
-		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
-		ns_ops = c_ctl('get',cl_id,'ns_ops');
-	end
-	if ~isempty(ns_ops)
-		if strcmp(quantity,'p') || strcmp(quantity,'pburst')
-			errlist = caa_str2errid('hxonly');
-		else errlist = [];
-		end
-		[start_time_nsops, dt_nsops] = caa_ns_ops_int(start_time,dt,ns_ops,errlist);
-		if isempty(start_time_nsops)
-			irf_log('dsrc',sprintf('bad NS_OPS interval for C%d - %s',cl_id,quantity))
-			out_data = []; 
-			cd(old_pwd), return
-		end
-    else start_time_nsops = start_time; dt_nsops = dt;
-	end
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % caa_int - write .caa_sh_interval/.caa_ms_interval
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -184,6 +161,84 @@ if strcmp(quantity,'caa_int')
     end
     flag_save=0;
     
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% nsops - check nonstandard operations table
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'nsops')
+	save_file = './mEFW.mat';
+	
+	% Read list of nonstandard operations and see if we have one of those
+	% during the requested period. Permanent problems (as loss of
+	% probes, filters, etc.) must be programmed separately
+	ns_ops = c_ctl('get',cl_id,'ns_ops');
+	if isempty(ns_ops)
+		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
+		ns_ops = c_ctl('get',cl_id,'ns_ops');
+	end
+	if isempty(ns_ops)
+		irf_log('dsrc','Nonstandard operations table not found!')
+		out_data = []; cd(old_pwd), return
+	end
+
+	bad_start=[];
+	bad_stop=[];
+	bad_opcode=[];
+	
+	% Problem covers the whole interval
+	ii = find( ns_ops(:,1)<=start_time & ns_ops(:,1)+ns_ops(:,2)>=start_time+dt );
+	if ~isempty(ii)
+		for j=1:length(ii)
+			% no/bad data - remove the interval
+			irf_log('proc',prob_s(ns_ops(ii(j),:)))
+			irf_log('proc',	'whole interval in covered by ns_ops')
+		end
+		bad_start  =[bad_start  start_time*ones(1,length(ii))]; 
+		bad_stop   =[bad_stop   (start_time+dt)*ones(1,length(ii))]; 
+		bad_opcode =[bad_opcode ns_ops(ii(j),4)*ones(1,length(ii))]; 
+	end
+	% clear already processed records
+	ns_ops(ii,:) = [];
+	
+	% Problem starts inside the interval and ends after the interval
+	while 1
+		ii = find( ns_ops(:,1)<start_time+dt & ns_ops(:,1)>start_time & ns_ops(:,1)+ns_ops(:,2)>=start_time+dt);
+		if isempty(ii), break, end
+		irf_log('proc',prob_s(ns_ops(ii(1),:)))
+		irf_log('proc',	'ns_ops problem starts inside the interval and ends after the interval' )
+		bad_start=[bad_start ns_ops(ii(1),1)]; %#ok<AGROW>
+		bad_stop =[bad_stop  start_time+dt]; %#ok<AGROW>
+		bad_opcode =[bad_opcode ns_ops(ii(1),4)]; %#ok<AGROW>
+		% clear already processed records
+		ns_ops(ii(1),:) = [];
+	end
+	
+	% Problem starts before the interval and ends inside the interval
+	while 1
+		ii = find( ns_ops(:,1)<=start_time & ns_ops(:,1)+ns_ops(:,2)>start_time & ns_ops(:,1)+ns_ops(:,2)<=start_time+dt);
+		if isempty(ii), break, end
+		irf_log('proc',prob_s(ns_ops(ii(1),:)))
+		irf_log('proc',	'ns_ops problem starts before the interval and ends inside the interval' )
+		bad_start=[bad_start start_time]; %#ok<AGROW>
+		bad_stop =[bad_stop  ns_ops(ii(1),1)+ns_ops(ii(1),2)]; %#ok<AGROW>
+		bad_opcode =[bad_opcode ns_ops(ii(1),4)]; %#ok<AGROW>
+		ns_ops(ii(1),:) = [];
+	end
+	
+	% Problem is inside the interval
+	while 1
+		ii = find( ns_ops(:,1)>start_time & ns_ops(:,1)+ns_ops(:,2)<start_time+dt);
+		if isempty(ii), break, end
+		irf_log('proc',prob_s(ns_ops(ii(1),:)))
+		irf_log('proc',	'ns_ops problem inside the interval' )
+		bad_start=[bad_start ns_ops(ii(1),1)]; %#ok<AGROW>
+		bad_stop =[bad_stop  ns_ops(ii(1),1)+ns_ops(ii(1),2)]; %#ok<AGROW>
+		bad_opcode =[bad_opcode ns_ops(ii(1),4)]; %#ok<AGROW>
+		ns_ops(ii(1),:) = [];
+	end	
+	
+	bad_intervals = [bad_start' bad_stop' bad_opcode']; %#ok<NASGU>
+	c_eval('NSOPS?=bad_intervals;save_list=[save_list '' NSOPS? ''];',cl_id);
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dsc - EFW DSC old
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -442,11 +497,11 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
             % Request interval overlaps with the time when the 10Hz filter
             % got broken on SC2. We truncate the request.
             dt = toepoch([2001 07 23 13 54 17]) - start_time;
-            for in=1:length(start_time_nsops)
-                if start_time_nsops(in)<toepoch([2001 07 23 13 54 18]) && ...
-                    start_time_nsops(in)+dt_nsops(in)>toepoch([2001 07 23 13 54 18])
-                    dt_nsops(in) = toepoch([2001 07 23 13 54 17]) ...
-                        - start_time_nsops(in);
+            for in=1:length(start_time)
+                if start_time(in)<toepoch([2001 07 23 13 54 18]) && ...
+                    start_time(in)+dt(in)>toepoch([2001 07 23 13 54 18])
+                    dt(in) = toepoch([2001 07 23 13 54 17]) ...
+                        - start_time(in);
                 end
             end
             irf_log('proc', ...
@@ -532,13 +587,13 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		irf_log('dsrc',['EFW...sc' num2str(cl_id)...
 			'...Ep' num2str(probe) ' ' param ' filter']);
 		t = [];	data = [];
-		for in=1:length(start_time_nsops)
-			if length(start_time_nsops)>1
+		for in=1:length(start_time)
+			if length(start_time)>1
 				irf_log('dsrc',...
 					sprintf('chunk #%d : %s %d sec',in,...
-						epoch2iso(start_time_nsops(in),1),dt_nsops(in)))
+						epoch2iso(start_time(in),1),dt(in)))
 			end
-			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
+			[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time(in), dt(in), cl_id, ...
 				'efw', 'E', ['p' num2str(probe)], param, tmmode);
 			t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp %#ok<AGROW>
 		end
@@ -655,13 +710,13 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 			irf_log('dsrc',['EFW...sc' num2str(cl_id) '...probe' num2str(probe)...
 				'->P' param{j} num2str(cl_id) 'p' num2str(probe)]);
 			t = [];	data = [];
-			for in=1:length(start_time_nsops)
-				if length(start_time_nsops)>1
+			for in=1:length(start_time)
+				if length(start_time)>1
 					irf_log('dsrc',...
 						sprintf('chunk #%d : %s %d sec',in,...
-						epoch2iso(start_time_nsops(in),1),dt_nsops(in)))
+						epoch2iso(start_time(in),1),dt(in)))
 				end
-				[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time_nsops(in), dt_nsops(in), cl_id, ...
+				[t_tmp,data_tmp] = caa_is_get(cdb.db, start_time(in), dt(in), cl_id, ...
 					'efw', 'E', ['p' num2str(probe)],param{j}, tmmode);
 				t = [t; t_tmp]; data = [data; data_tmp]; clear t_tmp data_tmp %#ok<AGROW>
 			end
@@ -1141,6 +1196,14 @@ while 1
 	if isempty(out), return, end % extra precaution to avoid a dead loop
 end
 
+<<<<<<< getData.m
+function ss = prob_s(ns_ops_rec,warn)
+if nargin<2, warn=0; end
+if warn, s = 'WARNING: ';
+else s = 'PROBLEM: ';
+end
+ss = [s caa_errid2str(ns_ops_rec(4)) ' ' epoch2iso(ns_ops_rec(1),1)...
+	' -- ' epoch2iso(ns_ops_rec(1)+ns_ops_rec(2),1)];=======
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function dataout = rm_ib_spike(data)
 % Remove spikes in staff IB data
@@ -1175,3 +1238,4 @@ while i < ndata
     i = i2 + 1;
 end
 
+>>>>>>> 1.113
