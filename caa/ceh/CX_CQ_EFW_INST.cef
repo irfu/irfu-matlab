@@ -1,0 +1,52 @@
+!
+! $Id$
+!
+START_META = DATASET_ID
+	ENTRY = "CXXX_CQ_EFW_INST"
+END_META = DATASET_ID
+START_META = DATA_TYPE
+	ENTRY = "CQ>CAA_Quality/Caveats"
+END_META = DATA_TYPE
+START_META = DATASET_TITLE
+	ENTRY = "EFWXXX operations caveats"
+END_META = DATASET_TITLE
+START_META = DATASET_DESCRIPTION
+	ENTRY = "This dataset contains operation caveats information"
+	ENTRY = "from the EFW experiment on the Cluster CXXX spacecraft"
+END_META = DATASET_DESCRIPTION 
+START_META = PROCESSING_LEVEL
+	ENTRY = "Auxiliary"
+END_META = PROCESSING_LEVEL
+START_META = FILE_TYPE
+	ENTRY = "cef"
+END_META = FILE_TYPE 
+START_META = METADATA_TYPE
+	ENTRY = "CAA"
+END_META = METADATA_TYPE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE  =  Time_range__CXXX_CQ_WHI_INST
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "Validity time range of a specified caveat"
+    VALUE_TYPE          = ISO_TIME_RANGE
+    FILLVAL             = 9999-12-31T23:59:59.999Z/9999-12-31T23:59:59.999Z
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIGNIFICANT_DIGITS  = 49
+    FIELDNAM            = "Universal Time Range"
+END_VARIABLE    =  Time_range__CXXX_CQ_EFW_INST
+
+START_VARIABLE = Caveat_text__CXXX_CQ_EFW_INST
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "Caveats"
+    ENTITY              = "Instrument"
+    SIGNIFICANT_DIGITS  = 80
+    VALUE_TYPE          = CHAR
+    FILLVAL             = "NA"
+    UNITS               = "unitless"
+    SI_CONVERSION       = "1>unitless"
+    PROPERTY            = "Status"
+    FIELDNAM            = "Caveats"
+    DEPEND_0            = Time_range__CXXX_CQ_EFW_INST
+END_VARIABLE = Caveat_text__CXXX_CQ_EFW_INST
