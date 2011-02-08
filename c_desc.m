@@ -778,7 +778,7 @@ elseif regexp(vs,'^PROBESA[1-4]p[1-4]$')==1
 	v.quant = 'probesa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Probe low density saturation
+%% Probe high bias saturation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^HBIASSA[1-4]p([1-4]|12|32|34)$')==1
 	v.data = 0;
@@ -790,7 +790,7 @@ elseif regexp(vs,'^HBIASSA[1-4]p([1-4]|12|32|34)$')==1
 	v.quant = 'hbiassa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Probe low density saturation
+%% Probe bad DAC interval
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^BADDAC[1-4]p(12|32|34)$')==1
 	v.data = 0;
@@ -800,6 +800,17 @@ elseif regexp(vs,'^BADDAC[1-4]p(12|32|34)$')==1
 	v.com = 'Bad settings on bias DAC';
 	v.file = 'mEFW';
 	v.quant = 'baddac';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Nonstandard operations
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^NSOPS[1-4]$')==1
+	v.data = 0;
+	v.cl_id = vs(6);
+	v.inst = 'EFW';
+	v.com = 'Nonstandard operations';
+	v.file = 'mEFW';
+	v.quant = 'nsops';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ADC offsets coarse
