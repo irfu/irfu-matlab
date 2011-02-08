@@ -11,6 +11,8 @@ function res = plot(varargin)
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
 %   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
+%
+% for common cluster variables see: http://spreadsheets.google.com/pub?key=0AjU2FPHMIluIdEcydzhHeXhRUzRiM3lsN1VzQWMySmc&hl=en&single=true&gid=0&output=html
 % $Id$
 
 % ----------------------------------------------------------------------------
