@@ -30,10 +30,10 @@ switch nargin
             
         elseif ischar(varargin{1})
             
-            if findstr(varargin{1},'*')
+            if strfind(varargin{1},'*')
                 cdf_files = dir(varargin{1});
-                if findstr(varargin{1},filesep) % if there is directory in file name
-                    directory_name=varargin{1}(1:findstr(varargin{1},filesep));
+                if strfind(varargin{1},filesep) % if there is directory in file name
+                    directory_name=varargin{1}(1:strfind(varargin{1},filesep));
                 else
                     directory_name='';
                 end
@@ -82,16 +82,16 @@ switch nargin
                 dobj.vars(:,2) = info.Variables(:,1);
                 for v=1:nvars
                     % Replace minuses with underscores
-                    dobj.vars{v,1}(findstr(dobj.vars{v,1},'-')) = '_';
+                    dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
                     % Remove training dots
                     while (dobj.vars{v,1}(end) == '.')
                         dobj.vars{v,1}(end) = [];
                     end
                     % Take care of '...'
-                    d3 = findstr(dobj.vars{v,1},'...');
+                    d3 = strfind(dobj.vars{v,1},'...');
                     if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
                     % Replace dots with underscores
-                    dobj.vars{v,1}(findstr(dobj.vars{v,1},'.')) = '_';
+                    dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
                     % Add "x" if the varible name starts with a number
                     if ~isletter(dobj.vars{v,1}(1)),
                         dobj.vars{v,1}=['x' dobj.vars{v,1}];
