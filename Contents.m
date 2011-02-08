@@ -26,7 +26,7 @@
 %   irf_tlim        - find a subinterval defined by time limits
 %
 % Space physics specific routines
-%   irf_cdf_read    - read cdf files
+%   irf_cdf_read    - read cdf files (see also caa_load for CAA cdf files)
 %   irf_disp_surf   - Interactively plot cold plasma dispersion surfaces
 %   irf_e_vxb       - Compute VxB and ExB/B^2
 %   irf_gse2gsm     - GSE <> GSM
@@ -34,23 +34,23 @@
 %   irf_mean        - put time series into mean field coordinates
 %   irf_plasma_calc - Calculate basic plasma quantities
 %   irf_shue_mp     - estimate distance to model magnetopause (Shue)
+%   irf_units       - natural constants and units 
 %   irf_vht         - estimate velocity of the deHoffman-Teller frame
 %   lp_...          - Langmuir probe specific routines 
-%   NaturalConstants- some natural constants defining as globals
 %
 % Plotting
-%   irf_figmenu     - Add to the current figure a menu with some useful commands
 %   irf_plot        - Flexible plotting routine for time series
+%   dataobj/plot    - plot data objects. help dataobj/plot.m
 %   irf_pl_mark     - Mark that time interval(s) with color backround
 %   irf_pl_number_subplots - number subplots by putting in each subplot 'a', 'b', 'c', etc.
 %   irf_tm          - time manager for plots created by irf_plot
 %   irf_zoom        - zoom in
-%   dataobj/plot    - plot data objects. help dataobj/plot.m
+%   irf_figmenu     - Add to the current figure a menu with some useful commands
 %
 % Cluster
 %   c_4_v_gui       - timing analysis 
 %   c_get_batch     - get Cluster data from ISDAT/CDF/DDS
-%   c_load          - load data from MAT files
+%   c_load          - load data from MAT files (caa_load for CAA cdf files)
 %   c_pl_summary    - Make EFW summary plots
 %
 %   c_4_grad        - calculate linear gradient operators using 4 spacecraft technique
