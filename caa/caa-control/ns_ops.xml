@@ -6,7 +6,7 @@
 		<!ELEMENT operation (desc,res*)>
 			<!ATTLIST operation start NMTOKEN #REQUIRED>
 			<!ATTLIST operation dt NMTOKEN #REQUIRED>
-			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|hxonly|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|TBD ) #REQUIRED>
+			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|hxonly|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|bad_bias|bad_lx|bad_hx|info|TBD ) #REQUIRED>
 			<!ATTLIST operation plan ( yes | no ) #REQUIRED>
 			<!ATTLIST operation c1 ( yes | no ) "no">
 			<!ATTLIST operation c2 ( yes | no ) "no">
@@ -26,18 +26,22 @@ START   Start time of the anomaly, ISO time string
 DT      Length of the anomaly in sec. -1 means infinity. -157 means TDB.
 
 SDESC   Short description of the anomaly (problem code). Possible values:
-no_tm = no telemetry at all (WEC off, missing data, etc)
-bad_tm = digital problems, like chopped up data
-bad_data = data formats OK, but data is crap for analog reasons,
-       e.g. latched probes, strange guard voltage, hanging sweeps, ...
+no_tm     = no telemetry at all (WEC off, missing data, etc)
+bad_tm    = digital problems, like chopped up data
+bad_data  = data formats OK, but data is crap for analog reasons,
+            e.g. latched probes, strange guard voltage, hanging sweeps, ...
+bad_lx    = LX data is bad, but HX data is OK
+bad_hx    = HX data is bad, but LX data is OK
 spec_bias = commanded intervals with unusual bias, not accidents
-       setting guard to strange values etc which goes to bad_data
-no_bm3       No BM3 telemetry
-no_p[1-4]    No data on probes [1-4]
-hxonly       HXONLY sampling mode
-no_10Hz_filt 10Hz filter is not operational
-no_spin_fits No on-board spin fits
-TBD          TBD
+            setting guard to strange values etc which goes to bad_data
+bad_bias  = intervals with accidental unusual bias
+no_bm3    = No BM3 telemetry
+no_p[1-4] = No data on probes [1-4]
+hxonly    = HXONLY sampling mode
+no_10Hz_filt = 10Hz filter is not operational
+no_spin_fits = No on-board spin fits
+info      = informational only (no effect on CAA processing)
+TBD       = TBD
 
  -->
 
@@ -47,16 +51,16 @@ TBD          TBD
 		This list is intended to cover all non-standard operations of EFW, 
 		planned or accidental, from 2001-02-01.
 	</description>
-	<operation start="2001-02-23T05:18:00Z" dt="11700" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-02-23T05:18:00Z" dt="11700" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-02-23T05:27:00Z" dt="11160" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-02-23T05:27:00Z" dt="11160" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2001-02-25T23:26:00Z" dt="2640" c1="yes" plan="no" sdesc="bad_data">
 		<desc>Bad timing of eclipse bias current change.</desc>
 	</operation>
-	<operation start="2001-02-26T06:10:00Z" dt="12960" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-02-26T06:10:00Z" dt="12960" c1="yes" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2001-03-05T02:42:00Z" dt="2520" c1="yes" plan="yes" sdesc="bad_data">
@@ -65,22 +69,22 @@ TBD          TBD
 	<operation start="2001-03-09T20:58:00Z" dt="2340" c1="yes" plan="yes" sdesc="bad_data">
 		<desc>Eclipse.</desc>
 	</operation>
-	<operation start="2001-03-12T12:16:00Z" dt="9240" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-12T12:16:00Z" dt="9240" c1="yes" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-16T11:59:00Z" dt="14160" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-16T11:59:00Z" dt="14160" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-16T11:59:00Z" dt="18540" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-16T11:59:00Z" dt="18540" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-17T09:20:00Z" dt="13260" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-17T09:20:00Z" dt="13260" c1="yes" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-19T00:18:00Z" dt="10920" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-19T00:18:00Z" dt="10920" c1="yes" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-22T02:48:00Z" dt="3120" c1="yes" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-22T02:48:00Z" dt="3120" c1="yes" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2001-03-22T03:40:00Z" dt="99660" c2="yes" plan="no" sdesc="no_tm">
@@ -111,10 +115,10 @@ TBD          TBD
 		<link href="esoc010323ad.txt">Anders 010323</link>
 		</res>
 	</operation>
-	<operation start="2001-03-23T20:06:00Z" dt="6240" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-23T20:06:00Z" dt="6240" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2001-03-31T06:35:00Z" dt="1380" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-03-31T06:35:00Z" dt="1380" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2001-04-12T11:00:00Z" dt="60600" c4="yes" plan="no" sdesc="hxonly">
@@ -129,7 +133,7 @@ TBD          TBD
 	<operation start="2001-04-18T12:00:00Z" dt="240" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Atitude manoeuvre.</desc>
 	</operation>
-	<operation start="2001-04-21T21:30:00Z" dt="11100" c1="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2001-04-21T21:30:00Z" dt="11100" c1="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2001-05-10T18:04:20Z" dt="70" c1="yes" plan="yes" sdesc="bad_data">
@@ -244,7 +248,7 @@ TBD          TBD
 			<link href="esoc011108.txt">ESOC 011108</link>
 		</res>
 	</operation>
-	<operation start="2001-11-13T00:20:00Z" dt="65400" c2="yes" plan="no" sdesc="TBD">
+	<operation start="2001-11-13T00:20:00Z" dt="65400" c2="yes" plan="no" sdesc="bad_hx">
 		<desc>Strange data for unknown reason. EDI high current?</desc>
 	</operation>
 	<operation start="2001-11-14T18:16:00Z" dt="26880" c1="yes" plan="no" sdesc="no_tm">
@@ -488,7 +492,7 @@ TBD          TBD
 	<operation start="2002-08-29T22:52:00Z" dt="59880" c2="yes" plan="no" sdesc="no_tm">
 		<desc>
 			SC2 reebooted by mistake at 22:5WEC not fully recovered until 
-			the end of a BM1 period at�2002-08-30 15:30.
+			the end of a BM1 period at 2002-08-30 15:30.
 		</desc>
 		<res>
 			<link href="jv020830a.txt">ESOC 020830</link> 
@@ -555,7 +559,7 @@ TBD          TBD
 			<link href="pal021006a.txt.txt">Per-Arne 021006</link>
 		</res>
 	</operation>
-	<operation start="2002-10-02T16:00:00Z" dt="34200" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+	<operation start="2002-10-02T16:00:00Z" dt="34200" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="info">
 		<desc>Testing the FGM burst trig flag</desc>
 		<res>
 			<link href="aie020910a.txt">Anders 020910</link> 
@@ -563,7 +567,7 @@ TBD          TBD
 			<link href="aie021104.txt">Anders 021104</link>
 		</res>
 	</operation>
-	<operation start="2002-10-05T02:30:00Z" dt="23400" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
+	<operation start="2002-10-05T02:30:00Z" dt="23400" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="info">
 		<desc>Testing the FGM burst trig flag</desc>
 		<res>
 			<link href="aie020910a.txt">Anders 020910</link> 
@@ -622,7 +626,7 @@ TBD          TBD
 			<link href="aie021009b.txt">Anders 021009</link>
 		</res>
 	</operation>
-	<operation start="2002-11-01T21:23:00Z" dt="11820" c1="yes" c3="yes"  plan="no" sdesc="TBD">
+	<operation start="2002-11-01T21:23:00Z" dt="11820" c1="yes" c3="yes"  plan="no" sdesc="info">
 		<desc>
 			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
 			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
@@ -632,7 +636,7 @@ TBD          TBD
 			<link href="aie021106a.txt">Anders 021106</link>
 		</res>
 	</operation>
-	<operation start="2002-11-02T01:33:00Z" dt="87060" c1="yes" c3="yes" plan="no" sdesc="TBD">
+	<operation start="2002-11-02T01:33:00Z" dt="87060" c1="yes" c3="yes" plan="no" sdesc="info">
 	<desc>
 			By mistake, the failed P1 on SC13 were in E-field mode. This causes the 
 			flight s/w to use P12 for calcultating Vsc for HK and IEL, which thus 
@@ -663,7 +667,7 @@ TBD          TBD
 			<link href="ky021107.txt">Keith 021107</link>
 		</res>
 	</operation>
-	<operation start="2002-11-05T08:27:20Z" dt="820" c2="yes" plan="no" sdesc="TBD">
+	<operation start="2002-11-05T08:27:20Z" dt="820" c2="yes" plan="no" sdesc="bad_data">
 		<desc>Uncontrolled manoeuvre</desc>
 		<res><link href="pal060331c.txt">Per-Arne 060331</link></res>
 	</operation>
@@ -841,8 +845,8 @@ TBD          TBD
 	<operation start="2003-02-25T15:37:39Z" dt="2" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad HX telemetry packet.</desc>
 	</operation>
-	<operation start="2003-02-26T10:11:30Z" dt="600" c1="yes" plan="no" sdesc="bad_tm">
-		<desc>Very bad data, probably because of high density and too large bias current.</desc>
+	<operation start="2003-02-26T10:11:30Z" dt="600" c1="yes" plan="no" sdesc="info">
+		<desc>Very bad data because of high density and too large bias current.</desc>
 	</operation>
 	<operation start="2003-03-07T23:30:56Z" dt="1200" c3="yes" plan="yes" sdesc="spec_bias">
 		<desc>Eclipse bias +16 nA was commanded 20 minutes too early.</desc>
@@ -928,10 +932,10 @@ TBD          TBD
 		</desc>
 		<res><link href="pal060411qqq.txt">Per-Arne 060411</link></res>
 	</operation>
-	<operation start="2003-04-10T06:26:00Z" dt="180" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2003-04-10T06:26:00Z" dt="180" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2003-04-10T06:49:00Z" dt="120" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2003-04-10T06:49:00Z" dt="120" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2003-04-25T07:00:00Z" dt="300" c2="yes" plan="yes" sdesc="bad_data">
@@ -1400,7 +1404,7 @@ TBD          TBD
 		<desc>WEC switched off by s/c</desc>
 		<res><link href="esoc040515c.txt">ESOC 040515</link> </res>
 	</operation>
-	<operation start="2004-05-18T10:00:00Z" dt="15600" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-05-18T10:00:00Z" dt="15600" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2004-05-19T06:00:00Z" dt="30" c2="yes" plan="yes" sdesc="bad_data">
@@ -1481,13 +1485,13 @@ TBD          TBD
 			<link href="AR_054_CTU_SO_on_SC1.pdf">AR-054 (pdf)</link>
 		</res>
 	</operation>
-	<operation start="2004-06-14T00:16:00Z" dt="47940" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-06-14T00:16:00Z" dt="47940" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2004-06-14T00:19:00Z" dt="43980" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-06-14T00:19:00Z" dt="43980" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2004-06-14T02:37:00Z" dt="18360" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-06-14T02:37:00Z" dt="18360" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2004-06-16T09:57:00Z" dt="3600" c1="yes" c2="yes" c3="yes" c4="yes" plan="yes" sdesc="TBD">
@@ -1715,7 +1719,7 @@ TBD          TBD
 			<link href="esoc041108b.txt">ESOC 041108</link>
 		</res>
 	</operation>
-	<operation start="2004-11-07T10:00:00Z" dt="20220" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-11-07T10:00:00Z" dt="20220" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2004-11-09T08:22:49Z" dt="110251" c1="yes" plan="no" sdesc="bad_tm">
@@ -1740,10 +1744,10 @@ TBD          TBD
 		<link href="esoc041130a.txt">ESOC 041130</link>
 		</res>
 	</operation>
-	<operation start="2004-11-28T14:18:00Z" dt="19860" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-11-28T14:18:00Z" dt="19860" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2004-11-28T15:34:00Z" dt="13800" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-11-28T15:34:00Z" dt="13800" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2004-11-30T09:09:00Z" dt="103800" c3="yes" plan="no" sdesc="bad_tm">
@@ -1758,10 +1762,10 @@ TBD          TBD
 		<desc>WEC off by monitoring</desc>
 		<res><link href="esoc041209w.txt">ESOC 041209</link></res>
 	</operation>
-	<operation start="2004-12-05T05:12:00Z" dt="9300" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-12-05T05:12:00Z" dt="9300" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2004-12-12T23:03:00Z" dt="2400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2004-12-12T23:03:00Z" dt="2400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2004-12-24T14:00:00Z" c2="yes" dt="94680" plan="no" sdesc="no_tm">
@@ -1771,7 +1775,7 @@ TBD          TBD
 	<operation start="2004-12-31T04:06:00Z" dt="81370" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>NULL sampling mode</desc>
 	</operation>
-	<operation start="2005-01-08T07:59:00Z" dt="5940" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-01-08T07:59:00Z" dt="5940" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-01-17T17:33:00Z" dt="46800" c4="yes" plan="no" sdesc="bad_data">
@@ -1801,37 +1805,37 @@ TBD          TBD
 			<link href="esoc050121aa.html">ESOC 050121</link>
 		</res>
 	</operation>
-	<operation start="2005-01-27T20:35:00Z" dt="13980" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-01-27T20:35:00Z" dt="13980" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-02-05T16:59:00Z" dt="16080" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-02-05T16:59:00Z" dt="16080" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-02-17T23:59:00Z" dt="660" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-02-17T23:59:00Z" dt="660" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-02-19T20:08:29Z" dt="3" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet</desc>
 	</operation>
-	<operation start="2005-02-22T08:57:00Z" dt="4440" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-02-22T08:57:00Z" dt="4440" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-02-23T06:00:00Z" dt="1260" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-02-23T06:00:00Z" dt="1260" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-03-04T02:20:00Z" dt="16440" c4="yes" plan="no" sdesc="bad_data">
 		<desc>Bad data after spontaneous EFW reset</desc>
 	</operation>
-	<operation start="2005-03-06T06:10:00Z" dt="9300" c1="yes" c2="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-06T06:10:00Z" dt="9300" c1="yes" c2="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-03-10T07:28:57Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet</desc>
 	</operation>
-	<operation start="2005-03-13T06:55:00Z" dt="22020" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-13T06:55:00Z" dt="22020" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Intermittently very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-03-14T01:10:00Z" dt="12660" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-14T01:10:00Z" dt="12660" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-03-14T10:30:00Z" dt="260" c1="yes" plan="yes" sdesc="bad_data">
@@ -1849,19 +1853,19 @@ TBD          TBD
 	<operation start="2005-03-20T09:28:00Z" dt="46620" c4="yes" plan="no" sdesc="bad_data">
 		<desc>Bad data after spontaneous EFW reset</desc>
 	</operation>
-	<operation start="2005-03-23T13:08:00Z" dt="9780" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-23T13:08:00Z" dt="9780" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-03-23T13:52:00Z" dt="7260" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-23T13:52:00Z" dt="7260" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-03-23T14:06:00Z" dt="6780" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-03-23T14:06:00Z" dt="6780" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-03-25T21:14:53Z" dt="8" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad TM due to unknown reasons</desc>
 	</operation>
-	<operation start="2005-04-03T17:10:00Z" dt="18720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-04-03T17:10:00Z" dt="18720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-04-04T01:57:00Z" dt="9300" c3="yes" plan="no" sdesc="bad_tm">
@@ -1876,7 +1880,7 @@ TBD          TBD
 	<operation start="2005-04-10T06:47:00Z" c1="yes" c3="yes" dt="107400" plan="yes" sdesc="no_p23">
 		<desc>P2 at 25 S/s rather than P23, for SC13 only</desc>
 	</operation>
-	<operation start="2005-04-11T12:38:00Z" dt="15060" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-04-11T12:38:00Z" dt="15060" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-04-16T08:50:00Z" dt="9000" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
@@ -1888,13 +1892,13 @@ TBD          TBD
 			<link href="esoc050421ad.html">ESOC 050421</link>
 		</res>
 	</operation>
-	<operation start="2005-04-29T19:31:00Z" dt="8760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-04-29T19:31:00Z" dt="8760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-05-05T10:00:00Z" dt="10800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
 		<desc>Bad data due to DWP buffer overflow in BM</desc>
 	</operation>
-	<operation start="2005-05-07T18:28:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-05-07T18:28:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-05-10T11:05:00Z" dt="5400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_tm">
@@ -1921,12 +1925,12 @@ TBD          TBD
 		<desc>HXONLY sampling mode</desc>
 	</operation>
 	<operation start="2005-05-23T16:44:00Z" dt="19740" c3="yes" plan="no" sdesc="bad_data">
-		<desc>HXONLY sampling modeand bad data due to low density</desc>
+		<desc>HXONLY sampling mode and bad data due to low density saturation</desc>
 	</operation>
 	<operation start="2005-05-23T22:13:00Z" dt="21600" c3="yes" plan="no" sdesc="hxonly">
 		<desc>HXONLY sampling mode</desc>
 	</operation>
-	<operation start="2005-05-27T01:42:00Z" dt="123780" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-05-27T01:42:00Z" dt="123780" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-06-01T03:59:00Z" dt="2880" c4="yes" plan="no" sdesc="bad_data">
@@ -1946,7 +1950,7 @@ TBD          TBD
 			sequence SWECJ305 after interval of no data taking) and stuck 
 			at -68 V</desc>
 	</operation>
-	<operation start="2005-06-12T07:47:00Z" dt="34140" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-06-12T07:47:00Z" dt="34140" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-06-14T00:35:00Z" dt="368700" c2="yes" plan="yes" sdesc="bad_data">
@@ -1972,7 +1976,7 @@ TBD          TBD
 	<operation start="2005-06-20T09:00:00Z" dt="30" c4="yes" plan="yes" sdesc="bad_data">
 		<desc>Spin-up manoeuvre</desc>
 	</operation>
-	<operation start="2005-06-22T18:18:00Z" dt="63720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-06-22T18:18:00Z" dt="63720" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-06-24T20:24:00Z" dt="1080" c2="yes" plan="yes" sdesc="bad_data">
@@ -1993,7 +1997,7 @@ TBD          TBD
 	<operation start="2005-07-06T21:35:00Z" dt="30" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Axial manoeuvre</desc>
 	</operation>
-	<operation start="2005-07-10T11:12:00Z" dt="2760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-07-10T11:12:00Z" dt="2760" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-07-24T00:22:00Z" dt="71520" c4="yes" plan="no" sdesc="bad_data">
@@ -2069,16 +2073,16 @@ TBD          TBD
 	<operation start="2005-09-16T13:10:00Z" dt="12240" c4="yes" plan="no" sdesc="no_p2">
 		<desc>Probe 2 stuck at -68 V, problem was cleared by sweep</desc>
 	</operation>
-	<operation start="2005-09-27T21:00:00Z" dt="5580" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-09-27T21:00:00Z" dt="5580" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-09-27T20:47:00Z" dt="3360" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-09-27T20:47:00Z" dt="3360" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-09-27T23:48:00Z" dt="3660" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-09-27T23:48:00Z" dt="3660" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-09-28T00:02:00Z" dt="3480" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-09-28T00:02:00Z" dt="3480" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-10-01T03:31:00Z" dt="151140" c2="yes" plan="no" sdesc="bad_data">
@@ -2098,16 +2102,16 @@ TBD          TBD
 	<operation start="2005-10-06T00:30:00Z" dt="320" c3="yes" plan="yes" sdesc="bad_data">
 		<desc>Attitude manoeuvre.</desc>
 	</operation>
-	<operation start="2005-10-07T08:27:00Z" dt="11880" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-10-07T08:27:00Z" dt="11880" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2005-10-07T08:27:00Z" dt="14040" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-10-07T08:27:00Z" dt="14040" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2005-10-07T09:18:00Z" dt="5820" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-10-07T09:18:00Z" dt="5820" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
-	<operation start="2005-10-07T09:19:00Z" dt="5520" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-10-07T09:19:00Z" dt="5520" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density.</desc>
 	</operation>
 	<operation start="2005-10-31T02:58:00Z" dt="31980" c2="yes" plan="no" sdesc="TBD">
@@ -2121,31 +2125,31 @@ TBD          TBD
 	<operation start="2005-11-09T05:36:00Z" dt="25080" c1="yes" plan="no" sdesc="bad_tm">
 		<desc>Apparent DWP buffer overflow</desc>
 	</operation>
-	<operation start="2005-11-11T00:20:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-11T00:20:00Z" dt="11400" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-18T05:50:00Z" dt="70500" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-18T05:50:00Z" dt="70500" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-18T06:30:00Z" dt="69900" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-18T06:30:00Z" dt="69900" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-18T06:30:00Z" dt="81900" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-18T06:30:00Z" dt="81900" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-18T09:55:00Z" dt="57600" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-18T09:55:00Z" dt="57600" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-11-19T10:15:52Z" dt="10" c2="yes" plan="yes" sdesc="bad_data">
 		<desc>Phasing manoeuvre</desc>
 	</operation>
-	<operation start="2005-11-28T09:03:00Z" dt="37440" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-28T09:03:00Z" dt="37440" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-28T09:03:00Z" dt="39480" c1="yes" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-28T09:03:00Z" dt="39480" c1="yes" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-11-28T09:03:00Z" dt="43020" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-11-28T09:03:00Z" dt="43020" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-11-29T13:26:00Z" dt="17160" c2="yes" plan="no" sdesc="bad_data">
@@ -2175,10 +2179,10 @@ TBD          TBD
 		<desc>Probe 1 positive, starts slightly positive 
 			and gradually increases to +68 V, problem cleared by sweep</desc>
 	</operation>
-	<operation start="2005-12-09T06:22:00Z" dt="94080" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-09T06:22:00Z" dt="94080" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-09T17:15:00Z" dt="54900" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-09T17:15:00Z" dt="54900" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-12-13T05:25:00Z" dt="1500" c1="yes" c3="yes" plan="yes" sdesc="spec_bias">
@@ -2195,32 +2199,32 @@ TBD          TBD
 	<operation start="2005-12-16T02:11:38Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet</desc>
 	</operation>
-	<operation start="2005-12-16T05:10:00Z" dt="133800" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-16T05:10:00Z" dt="133800" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-16T05:10:00Z" dt="130680" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-16T05:10:00Z" dt="130680" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-16T05:10:00Z" dt="103020" c3="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-16T05:10:00Z" dt="103020" c3="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-16T05:10:00Z" dt="140700" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-16T05:10:00Z" dt="140700" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-12-17T09:47:00Z" dt="124260" c3="yes" plan="no" sdesc="bad_data">
 		<desc>Bad data after spontaneous EFW reset</desc>
 		<res><link href="ky051219a.txt">Keith 051219</link></res>
 	</operation>
-	<operation start="2005-12-18T11:50:00Z" dt="18600" c2="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-18T11:50:00Z" dt="18600" c2="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-18T14:14:00Z" dt="18180" c1="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-18T14:14:00Z" dt="18180" c1="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-18T14:14:00Z" dt="18060" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-18T14:14:00Z" dt="18060" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-19T00:32:00Z" dt="14880" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-19T00:32:00Z" dt="14880" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2005-12-19T10:36:38Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
@@ -2229,10 +2233,10 @@ TBD          TBD
 	<operation start="2005-12-23T02:55:22Z" dt="2" c3="yes" plan="no" sdesc="bad_tm">
 		<desc>Single bad HX packet</desc>
 	</operation>
-	<operation start="2005-12-24T06:40:00Z" dt="52800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-24T06:40:00Z" dt="52800" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Intermittently very bad data due to high density</desc>
 	</operation>
-	<operation start="2005-12-26T21:25:00Z" dt="29100" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="bad_data">
+	<operation start="2005-12-26T21:25:00Z" dt="29100" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
 		<desc>Very bad data due to high density</desc>
 	</operation>
 	<operation start="2006-01-06T13:00:00Z" dt="300" c4="yes" plan="yes" sdesc="bad_data">
