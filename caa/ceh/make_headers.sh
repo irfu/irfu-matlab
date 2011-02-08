@@ -19,7 +19,8 @@ CX_CH_EFW_L2_E.ceh \
 CX_CH_EFW_L3_E.ceh \
 CX_CH_EFW_L3_SFIT.ceh \
 CX_CH_EFW_L3_DER.ceh \
-CX_CH_EFW_L2_HK.ceh"
+CX_CH_EFW_L2_HK.ceh \
+CX_CQ_EFW_INST.ceh"
 
 
 for f in $flist
