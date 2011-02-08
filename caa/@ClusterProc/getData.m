@@ -250,7 +250,8 @@ if strcmp(quantity,'ec')
 		
 		fsamp = c_efw_fsample(da(:,1),'hx');
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump'; %#ok<NASGU>
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops'; %#ok<NASGU>
+		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		signal = da; %#ok<NASGU>
 		remove_problems
 		da = res; %#ok<NODEF>
@@ -376,7 +377,8 @@ elseif strcmp(quantity,'dies')
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
+		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		% We remove Whisper only if explicitely asked for this by user
 		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
 		if flag_rmhbsa, problems = [problems '|hbiassa']; end %#ok<AGROW,NASGU>
@@ -818,7 +820,8 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			fsamp = c_efw_fsample(tt,'hx');
 			if ~fsamp, error('no sampling frequency'),end
 			
-			problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+			problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
+			nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 			
 			% Always remove Whisper when we use 180Hz filter
 			if (fsamp == 450) || ...
@@ -1843,7 +1846,8 @@ elseif strcmp(quantity,'hbiassa')
 			
 		fsamp = c_efw_fsample(da,'hx');
 		
-		problems = 'reset|bbias|probeld|sweep|bdump';
+		problems = 'reset|bbias|probeld|sweep|bdump|nsops';
+		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		
 		% Always remove Whisper when we use 180Hz filter
 		if (fsamp == 450) || ...
@@ -2013,7 +2017,8 @@ elseif strcmp(quantity,'rawspec')
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump';
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
+		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
 		signal = tt; %#ok<NASGU>
 		remove_problems
@@ -2371,7 +2376,8 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 		end
 		c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 
-		problems = 'reset|bbias|sweep'; %#ok<NASGU>
+		problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+		nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')];%#ok<NASGU>
 		n_ok = 0;
 		for probe=1:4
 			c_eval('signal=p?;',probe)
