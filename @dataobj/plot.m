@@ -67,7 +67,7 @@ flag_spectrogram = 0;
 flag_labels_is_on=1;
 flag_colorbar_label_is_manually_specified=0;
 flag_colorbar_label_fit_to_colorbar_height_is_on=0;
-line_color='k'; % default line color is black, can be changed with flags, e.g. clustercolors
+line_color=''; % default line color; can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
 
 arg_pos = 0;
@@ -146,13 +146,15 @@ end
     
 % define summing dimension and component to plot when component not defined
 if comp_dim == 0,
-    if dim == 2 && sum_dim == 0,    comp_dim = 2; ydim = 1;     end
-    if dim == 2 && sum_dim == 1,    comp_dim = 2; ydim = 0;     end
-    if dim == 2 && sum_dim == 2,    comp_dim = 1;               end
-    if dim == 3 && sum_dim == 0,    comp_dim = 3; sum_dim = 1;  end
-    if dim == 3 && sum_dim == 1,    comp_dim = 3;               end
-    if dim == 3 && sum_dim == 2,    comp_dim = 3;               end
-    if dim == 3 && sum_dim == 3,    comp_dim = 2; ydim = 1;     end
+    if dim == 1, comp_dim = 1;
+    elseif dim == 2 && sum_dim == 0,    comp_dim = 2; ydim = 1;
+    elseif dim == 2 && sum_dim == 1,    comp_dim = 2; ydim = 0;
+    elseif dim == 2 && sum_dim == 2,    comp_dim = 1;
+    elseif dim == 3 && sum_dim == 0,    comp_dim = 3; sum_dim = 1;
+    elseif dim == 3 && sum_dim == 1,    comp_dim = 3;
+    elseif dim == 3 && sum_dim == 2,    comp_dim = 3;
+    elseif dim == 3 && sum_dim == 3,    comp_dim = 2; ydim = 1;     
+    end
 end
 
 if dim ==3,  
