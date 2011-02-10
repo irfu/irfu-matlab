@@ -23,7 +23,7 @@ END_META = METADATA_TYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                   Variables                         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-START_VARIABLE  =  Time_range__CXXX_CQ_WHI_INST
+START_VARIABLE  =  Time_range__CXXX_CQ_EFW_INST
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "Validity time range of a specified caveat"
     VALUE_TYPE          = ISO_TIME_RANGE
@@ -52,7 +52,7 @@ START_VARIABLE = Planned_flag__CXXX_CQ_EFW_INST
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "Caveats"
     ENTITY              = "Instrument"
-    SIGNIFICANT_DIGITS  = 20
+    SIGNIFICANT_DIGITS  = 12
     VALUE_TYPE          = CHAR
     FILLVAL             = "NA"
     UNITS               = "unitless"
