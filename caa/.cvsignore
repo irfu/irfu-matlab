@@ -1,3 +1,4 @@
 *.mexglx
 *.mexa64
 *.asv
+.DS_Store
