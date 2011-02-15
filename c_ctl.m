@@ -15,7 +15,12 @@ function out=c_ctl(varargin)
 %
 % $Id$
 
-% Copyright 2005 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 
 default_mcctl_path = '.';
@@ -76,8 +81,18 @@ if ischar(args{1})
 				
 				% cell number 5 has global settings
 				% this cell must be accessed as SC # 0
-				def_ct.isdat_db = 'db.irfu.se:10';
-				def_ct.data_path = '/data/cluster';
+                if ismac || isunix
+                    def_ct.isdat_db = 'db.irfu.se:10';
+                else
+                    def_ct.isdat_db = 'NO ISDAT ON WINDOWS';
+                end
+                if ismac
+                    def_ct.data_path = '/Volumes/cluster';
+                elseif isunix				
+                    def_ct.data_path = '/data/cluster';
+                else
+                    def_ct.data_path = '';
+                end
 				def_ct.caa_mode = 0;
 				c_ct{5} = def_ct;
 			end
