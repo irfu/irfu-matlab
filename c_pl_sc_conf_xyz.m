@@ -42,9 +42,9 @@ if strcmp(action,'initialize'),
     if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
     ok=c_load('R?',sc_list);
     if ~any(ok),
-        DATABASE = c_ctl(0,'isdat_db');
+%        DATABASE = c_ctl('set',0,'isdat_db','db.irfu.se:0');
         for ic=1:4,
-            [tr,r] = caa_is_get(DATABASE, start_time, 60, ic, 'ephemeris', 'position');
+            [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
             c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
         end
     end
