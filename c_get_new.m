@@ -54,6 +54,7 @@ mmm =  ...
 	'iedi     EDI E inertial fr iEDI?, idiEDI?       ';
 	'edi      EDI E sc fr EDI?, diEDI?               ';
 	'wbdwf    WBD E/B wfWBD?                         ';
+    'whinat   WHISPER E WHINAT?                      ';
 %	'---------------------------                     ';
 %	'ea,esa   (s-fit)  E ->ascii E?                  ';
 %	'va,vsa   (s-fit)  ExB ->ascii VExB?             ';
@@ -133,6 +134,12 @@ elseif strcmp(q,'r') || strcmp(q,'v') || strcmp(q,'a') || strcmp(q,'whip') || ..
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(q,'iedi'),
 	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,'edi'); end
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WHISPER Natural
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(q,'whinat'),
+	for ic=sc_list, getData(cdb,tint_epoch(1),Dt,ic,'whinat'); end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ClusterProc/getData quantities
