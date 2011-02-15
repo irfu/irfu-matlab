@@ -2263,7 +2263,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 		bad_coverage = 0;
 		cover = 0;
 		B_tmp = irf_tlim(B_tmp,E_tmp(1,1) + [-.5/e_sf (dt+.5/e_sf)]);
-		if isempty(B_tmp), bad_coverage = 1;
+		if size(B_tmp,1) < 2, bad_coverage = 1;
 		else
 			fgm_sf = 1/(B_tmp(2,1)-B_tmp(1,1));
 			del_f = 1.5;
@@ -2289,7 +2289,7 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 			end
 		else
 			BPP_tmp = irf_tlim(BPP_tmp,E_tmp(1,1) + [-.5/e_sf (dt+.5/e_sf)]);
-			if isempty(BPP_tmp)
+			if size(BPP_tmp,1) < 2
 				irf_log('load','Cannot find any usefull B data. Please load B FGM or B PP.')
 				data = []; cd(old_pwd); return
 			end
