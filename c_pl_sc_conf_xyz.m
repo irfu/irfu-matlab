@@ -308,7 +308,7 @@ switch lower(action)
         t=toepoch(eval(variable_str));
         c_pl_sc_conf_xyz('initialize');
 end
-
+hout=h;
 
 function menus
 % generate menus
