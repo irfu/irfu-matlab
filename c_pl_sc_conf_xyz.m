@@ -6,7 +6,7 @@ function h=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 %   h = C_PL_SC_CONF_XYZ(t,coord_sys);
 %   h = C_PL_SC_CONF_XYZ(t,coord_sys,flag);
 %   h = C_PL_SC_CONF_XYZ(t,coord_sys,flag,spacecraft);
-%   t  - time in isdat epoch
+%   t  - time in isdat epoch or vector [year  month day hour min seconds]
 % coord_sys - 'GSE' or 'GSM', default is 'GSE'
 % flag - 'default','compact','supercompact'
 % spacecraft - default 1:4, in other case specify
@@ -28,23 +28,36 @@ else
     if isempty(sc_list), sc_list=1:4;end
 end
 
+
 if strcmp(action,'initialize'),
+    if length(time)==1,
+        start_time=fromepoch(time);
+    elseif length(time)==6,
+        start_time=time;
+        time=toepoch(time);
+    else
+        irf_log('fcal','Check time format');return;
+    end
     if nargin<1, help c_pl_sc_conf_xyz;return;end
     if nargin==1, coord_label='GSE';else coord_label=coord_sys;end
     ok=c_load('R?',sc_list);
-    if  min(ok) == 1,
-        switch coord_label
-            case 'GSE'
-                c_eval('r?=R?;clear R?;',sc_list);
-            case 'GSM'
-                c_eval('r?=irf_gse2gsm(R?);clear R?;',sc_list);
-            case 'gsm'
-                c_eval('coord_label=''GSM'';r?=irf_gse2gsm(R?);clear R?;',sc_list);
-            otherwise
-                c_eval('coord_label=''GSE'';r?=R?;clear R?;',sc_list);
+    if ~any(ok),
+        DATABASE = c_ctl(0,'isdat_db');
+        db = Mat_DbOpen(DATABASE);
+        for ic=1:4,
+            [tr,r] = isGetDataLite( db, start_time, 60,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
+            c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
         end
-    else
-        irf_log('fcal','No position data available');return;
+    end
+    switch coord_label
+        case 'GSE'
+            c_eval('r?=R?;clear R?;',sc_list);
+        case 'GSM'
+            c_eval('r?=irf_gse2gsm(R?);clear R?;',sc_list);
+        case 'gsm'
+            c_eval('coord_label=''GSM'';r?=irf_gse2gsm(R?);clear R?;',sc_list);
+        otherwise
+            c_eval('coord_label=''GSE'';r?=R?;clear R?;',sc_list);
     end
     t=time;
     
