@@ -301,11 +301,15 @@ switch lower(action)
             set(htime,'fontsize',12);
         end
         
-
     case 'new_time'
         xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(fromepoch(t))});
         variable_str=xx{1};
         t=toepoch(eval(variable_str));
+        c_pl_sc_conf_xyz('initialize');
+    case 'new_sc_list'
+        xx=inputdlg('Enter new sc_list. ex. [1 3 4]','**',1,{mat2str(sc_list)});
+        variable_str=xx{1};
+        sc_list=eval(variable_str);
         c_pl_sc_conf_xyz('initialize');
 end
 hout=h;
@@ -320,6 +324,7 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
     uimenu(hcoordfigmenu,'Label','normal','Callback','c_pl_sc_conf_xyz(''default'')')
     uimenu(hcoordfigmenu,'Label','compact','Callback','c_pl_sc_conf_xyz(''compact'')')
     uimenu(hcoordfigmenu,'Label','supercompact','Callback','c_pl_sc_conf_xyz(''supercompact'')')
+    uimenu(hcoordfigmenu,'Label','New sc_list','Callback','c_pl_sc_conf_xyz(''new_sc_list'')')
     user_data = get(gcf,'userdata');
     user_data.coordfigmenu=1;
     set(gcf,'userdata',user_data);
