@@ -23,7 +23,7 @@ elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
 end
 if nargin==4, sc_list=spacecraft;
-elseif ~exist('sc_list') sc_list=1:4;
+elseif ~exist('sc_list','var') sc_list=1:4;
 else 
     if isempty(sc_list), sc_list=1:4;end
 end
@@ -69,7 +69,7 @@ if strcmp(action,'initialize'),
     end
     if isempty(indx),
         figNumber=figure( ...
-            'Name',['Cluster s/c configuration in XYZ'], ...
+            'Name','Cluster s/c configuration in XYZ', ...
             'Tag','cplscconfXYZ');
     else
         figure(ch(indx));clf;figNumber=gcf;
