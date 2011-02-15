@@ -76,7 +76,7 @@ if ischar(args{1})
 				
 				% cell number 5 has global settings
 				% this cell must be accessed as SC # 0
-				def_ct.isdat_db = 'db:10';
+				def_ct.isdat_db = 'db.irfu.se:10';
 				def_ct.data_path = '/data/cluster';
 				def_ct.caa_mode = 0;
 				c_ct{5} = def_ct;
