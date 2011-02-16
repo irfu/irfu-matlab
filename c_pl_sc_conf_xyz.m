@@ -313,7 +313,11 @@ switch lower(action)
         sc_list=eval(variable_str);
         c_pl_sc_conf_xyz('initialize');
 end
-hout=h;
+if nargout,
+    hout=h;
+else
+    hout=[];
+end
 
 function menus
 % generate menus
