@@ -151,8 +151,8 @@ for i=1:length(param)
 						opcode=nsops(j,3);
 						% If nsops_errlist is present, only match on those
 						% opcodes in the list
-						if (opcode<10 && opcode>0) || (~isempty(nsops_errlist) && any(opcode==nsops_errlist));
-							irf_log('proc','blanking nsops interval')
+						if (opcode<10 && opcode>0) || ((opcode>=11 && opcode<=14) && any(opcode-10==p_list)) || (~isempty(nsops_errlist) && any(opcode==nsops_errlist))
+							irf_log('proc',['blanking nsops interval. opcode:' num2str(opcode) ' probe:' num2str(probe)]);
 							res = caa_rm_blankt(res,nsops);
 						end
 					end
