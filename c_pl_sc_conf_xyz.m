@@ -49,9 +49,10 @@ switch lower(action)
             irf_log('fcal','Check time format');return;
         end
         ok=c_load('R?',sc_list);
+        DATABASE=c_ctl(0,'isdat_db');
         if ~any(ok),
             for ic=1:4,
-                [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
+                [tr,r] = caa_is_get(DATABASE, toepoch(start_time), 60, ic, 'ephemeris', 'position');
                 c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
             end
         end
