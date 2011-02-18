@@ -346,11 +346,11 @@ switch lower(action)
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
                 xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
-                xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
-                set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
+                set(ax1_2,'xdir','reverse','ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
         end
         if flag_show_cluster_description==1,
             plot(h(4),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
