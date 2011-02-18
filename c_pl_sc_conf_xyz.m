@@ -28,12 +28,12 @@ elseif ~exist('sc_list','var') sc_list=1:4;
 elseif isempty(sc_list), sc_list=1:4;
 end
 if nargin>=2,
-    coord_label=lower(coord_sys);
-    if ~strcmp(coord_label,'gse') || ~strcmp(coord_label,'gsm'),
-        coord_label='gse'; % default reference frame GSE if does not recognize coord system
+    coord_label=upper(coord_sys);
+    if ~strcmp(coord_label,'GSE') || ~strcmp(coord_label,'GSM'),
+        coord_label='GSE'; % default reference frame GSE if does not recognize coord system
     end
 end
-if ~exist(coord_label,'var'), coord_label='gse'; end % in case coord_sys not specified
+if ~exist(coord_label,'var'), coord_label='GSE'; end % in case coord_sys not specified
 
 switch lower(action)
     case 'initialize' % read in all data and open figure
@@ -103,6 +103,12 @@ switch lower(action)
         set(figNumber,'Position',[10 10 700 350]);
         flag_show_cluster_description=0;
         plot_type='supercompact';
+        c_pl_sc_conf_xyz(coord_label);
+
+    case 'supercompact2'
+        set(figNumber,'Position',[10 10 350 650]);
+        flag_show_cluster_description=0;
+        plot_type='supercompact2';
         c_pl_sc_conf_xyz(coord_label);
        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,6 +294,63 @@ switch lower(action)
                 xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
                 set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
+            case 'supercompact2'
+                delete(findall(gcf,'Type','axes'))
+                h=[];
+                set(gcf,'PaperUnits','centimeters')
+                xSize = 16; ySize = 8;
+                xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+                set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+                
+                h(2)=axes('position',[0.18 0.08 0.66 0.4]); % [x y dx dy]
+                h(1)=axes('position',[0.18 0.58 0.66 0.4]); % [x y dx dy]
+                h(3)=axes('position',[0 0 1 1]);axis off;
+                %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
+
+                ax1=h(1);
+                c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                xlabel(ax1,['{\Delta}X [km] ' coord_label]);
+                ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
+                set(ax1,'xdir','reverse')
+                grid(ax1,'on');
+                axis(ax1,[-drref drref -drref drref]);
+                if drref>10000, REform='%6.1f';
+                elseif drref<100, REform='%6.3f';
+                else REform='%6.2f';
+                end
+                
+                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
+                set(ax1,'position',axpos); % narrow axis
+                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+                xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
+                xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
+                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
+                xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
+                ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
+                set(ax1_2,'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
+                
+                ax1=h(2);
+                c_eval('plot(ax1,x?(2),x?(3),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                xlabel(ax1,['{\Delta}X [km] ' coord_label]);
+                ylabel(ax1,['{\Delta}Y [km] ' coord_label]);
+                set(ax1,'xdir','reverse','ydir','reverse')
+                grid(ax1,'on');
+                axis(ax1,[-drref drref -drref drref]);
+                c_eval('text(x?(2),x?(3),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
+                text(0.02,0.94,epoch2iso(t,1),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
+                
+                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
+                set(ax1,'position',axpos); % narrow axis
+                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+                xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
+                xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
+                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
+                xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
+                xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
+                ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
+                set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
         end
         if flag_show_cluster_description==1,
             plot(h(4),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
@@ -316,7 +379,7 @@ end
 if nargout,
     hout=h;
 else
-    hout=[];
+    clear hout;
 end
 
 function menus
@@ -329,6 +392,7 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
     uimenu(hcoordfigmenu,'Label','normal','Callback','c_pl_sc_conf_xyz(''default'')')
     uimenu(hcoordfigmenu,'Label','compact','Callback','c_pl_sc_conf_xyz(''compact'')')
     uimenu(hcoordfigmenu,'Label','supercompact','Callback','c_pl_sc_conf_xyz(''supercompact'')')
+    uimenu(hcoordfigmenu,'Label','supercompact2','Callback','c_pl_sc_conf_xyz(''supercompact2'')')
     uimenu(hcoordfigmenu,'Label','New sc_list','Callback','c_pl_sc_conf_xyz(''new_sc_list'')')
     user_data = get(gcf,'userdata');
     user_data.coordfigmenu=1;
