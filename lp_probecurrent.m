@@ -30,9 +30,11 @@ function [J_probe, J_the, J_thi1, J_thi2, J_photo]=lp_probecurrent(probe_type, X
 %  V_SC - probe velocity with respect to media m/s
 % Initialize.
 %%%%%%%%%%%%%
-NaturalConstants
-Ti=Ti_eV*qe/kb;
-Te=Te_eV*qe/kb;
+
+irf_units
+
+Ti=Ti_eV*Units.e/Units.kB;
+Te=Te_eV*Units.e/Units.kB;
 
   U_pts  = length( U_probe );
 
@@ -73,7 +75,7 @@ Te=Te_eV*qe/kb;
 % Ion thermal current. (H+)
 %%%%%%%%%%%%%%%%%%%%%%
   Z      = +1;
-  mi1    = m_amu1 * mH;
+  mi1    = m_amu1 * Units.mp;
   Ni1    = (1 - m2_fraction) * Ne;
   J_thi1 = lp_thermal_current( probe_type, Ni1, Ti, mi1, V_SC, Z, U_probe, Ap );
 
@@ -81,7 +83,7 @@ Te=Te_eV*qe/kb;
 % Ion thermal current. (O+ or He++ or ..)
 %%%%%%%%%%%%%%%%%%%%%%
   Z      = +1;
-  mi2    = m_amu2 * mH;
+  mi2    = m_amu2 * Units.mp;
   Ni2    = m2_fraction * Ne;
   J_thi2 = lp_thermal_current( probe_type, Ni2, Ti, mi2, V_SC, Z, U_probe, Ap );
 
@@ -89,7 +91,7 @@ Te=Te_eV*qe/kb;
 % Electron thermal current.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
   Z = -1;
-  J_the = lp_thermal_current( probe_type, Ne, Te, me, V_SC, Z, U_probe, Ap );
+  J_the = lp_thermal_current( probe_type, Ne, Te, Units.me, V_SC, Z, U_probe, Ap );
 
 
 % Sum up !

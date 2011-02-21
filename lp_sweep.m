@@ -1,6 +1,5 @@
 % lp_sweep script to plot a standard IU curve for different antennas
 
-NaturalConstants
 
 U_min=irf_ask('Umin(V) [%]>','U_min',-10); 
 U_max=irf_ask('Umax(V) [%]>','U_max',20); 
@@ -18,12 +17,15 @@ Ti=irf_ask('Ion temperature in eV [%]>','Ti',20);
 Te=irf_ask('Electron temperature in eV [%]>','Te',20); 
 V_SC=irf_ask('Spacecraft velocity in km/s [%]>','V_SC',0); 
 UV_factor=irf_ask('UV factor [%]>','UV_factor',1); 
-probe_type=irf_ask('Probe type. 1-spherical, 2- cylindrical [%]>','probe_type',2); 
-stazer_area=irf_ask('Stazer area in m2. [%]>','stazer_area',0.1885); % stazer surface area in m2
+probe_type=irf_ask('Probe type. 1-spherical, 2- cylindrical 3-specify [%]>','probe_type',2); 
+stazer_area=irf_ask('Probe total area in m2. [%]>','stazer_area',0.1885); % stazer surface area in m2
 if probe_type==1,
     stazer_cross_section=stazer_area/pi;probe_text='spherical'; %cylinder
 elseif probe_type ==2,
     stazer_cross_section=stazer_area/4;probe_text='cylindrical'; %sphere
+elseif probe_type ==3,
+    sunlit_total_surface_ratio=irf_ask('Specify ratio between sunlit and total area:','sunlit_total_surface_ratio',.2);
+    stazer_cross_section=stazer_area*sunlit_total_surface_ratio;probe_text='cylindrical'; %sphere
 end
 
 J_probe=lp_probecurrent(probe_type,stazer_cross_section, ...
@@ -44,8 +46,8 @@ set(hp,'linewidth',2)
 
 h(2)=axes('position',[0.12 0.07 0.8 0.35]); % [x y dx dy]
 hp=plot(Upot,dUdI);grid on;xlabel('U [V]');ylabel('dU/dI [\Omega]');
-disp(['Minimum resistance R=' num2str(min(dUdI),3) ' Ohm']);
+disp(['Minimum resistance    R=' num2str(min(dUdI),3) ' Ohm']);
+disp(['Satellite potential Usc=' num2str(interp1(J_probe,Upot,0),3) ' V']);
 set(h(2),'yscale','log')
 set(h(2),'linewidth',2,'MinorGridLineStyle','none','FontSize',14)
 set(hp,'linewidth',2)
-%print -depsc2 IU_so_T20_n100_A0.35.eps

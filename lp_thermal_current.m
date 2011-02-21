@@ -32,8 +32,7 @@ function [j_thermal] = lp_thermal_current( p_type, N, T, m, V, Z, U, A )
 
 % Globals.
 %%%%%%%%%%
-  NaturalConstants;
-
+irf_units;
 
 % Initialize.
 %%%%%%%%%%%%%
@@ -47,17 +46,17 @@ function [j_thermal] = lp_thermal_current( p_type, N, T, m, V, Z, U, A )
 % Criteria set such that it is considered 
 % important if V > 0.1 * V_th.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  if V < 0.1 * sqrt(kb*T/m)
+  if V < 0.1 * sqrt(Units.kB*T/m)
 
      % Ratio of potential to thermal energy.
-     X = ( qe / (kb*T) ) .* U;
+     X = ( Units.e / (Units.kB*T) ) .* U;
 
      % Total current to/from body.
-     Ip = A*N*qe*sqrt( T*kb/(2.0*pi*m) );
+     Ip = A*N*Units.e*sqrt( T*Units.kB/(2.0*pi*m) );
 
   else
-     X = ( qe / (m*V^2/2 + kb*T) ) .* U;
-     Ip = A*N*qe*sqrt( V^2/16 + T*kb/(2.0*pi*m) );
+     X = ( Units.e / (m*V^2/2 + Units.kB*T) ) .* U;
+     Ip = A*N*Units.e*sqrt( V^2/16 + T*Units.kB/(2.0*pi*m) );
   end
 
 
