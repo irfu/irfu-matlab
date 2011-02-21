@@ -18,10 +18,6 @@ function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun )
   error(nargchk(3,3,nargin))
 %  error(nargchk(1,1,nargout))
 
-% Globals.
-%%%%%%%%%%
-  NaturalConstants;
-
 % Check size of V_pot, and make it an column vector.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   U_pot = U_pot(:);
