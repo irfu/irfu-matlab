@@ -14,7 +14,6 @@
 % access the units and constants
 
 global Units
-clear u;
 
 %%%%%%%%%%%%%%%%%%%%%%%%% including original units.m code %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%% from matlab_exchange %%%%%%%%%%%%%%%%%%%%
@@ -38,21 +37,21 @@ clear u;
 %    Then:
 %    
 %          %To enter a number in a given unit, MULTIPLY by the unit:
-%                L = 5*u.in   % matlab automatically displays L in SI units
+%                L = 5*Units.in   % matlab automatically displays L in SI units
 %  
 %          % To display in a desired unit, simply divide by that unit
-%                L/u.ft       % displays L in ft.
+%                L/Units.ft       % displays L in ft.
 %  
 %          % To convert between units, MULTIPLY by the starting unit, and
 %          % DIVIDE by the ending unit:
-%                u.mi^2/u.ft^2  %displays the number of feet^2 in one mile^2
+%                Units.mi^2/Units.ft^2  %displays the number of feet^2 in one mile^2
 %  
 %          %More complicated units can be obtained through arithmatic
-%                mach1 = 340.29*u.m/u.s;  %speed of sound 
+%                mach1 = 340.29*Units.m/Units.s;  %speed of sound 
 %  
 %             %Note... to make the speed of sound available wherever your
 %             %units struct is defined, simply write:
-%                u.mach1 = 340.29*u.m/u.s;   %mach1 now part of units struct
+%                Units.mach1 = 340.29*Units.m/Units.s;   %mach1 now part of units struct
 % 
 %
 %
@@ -62,20 +61,20 @@ clear u;
 % %at the bottom and filled with oil.
 % 
 % u = units;
-% pipeInnerDiameter = 4*u.in;     %4 inch inner diameter
-% pipeHeight = 30*u.ft;           %pipe sticks 30 feet up into the air
-% densityOfOil = 0.926*u.gm/u.cc; %density of oil as found on some random web site = .926 gm/cc
+% pipeInnerDiameter = 4*Units.in;     %4 inch inner diameter
+% pipeHeight = 30*Units.ft;           %pipe sticks 30 feet up into the air
+% densityOfOil = 0.926*Units.gm/Units.cc; %density of oil as found on some random web site = .926 gm/cc
 % pipeCrossSectionArea = pi*(pipeInnerDiameter/2)^2;  %cross sectional area of pipe bore
 % volumeOfOil = pipeCrossSectionArea * pipeHeight;    %volume of oil that the pipe can hold
-% pressurePipeBottom = densityOfOil * u.g * pipeHeight;  %pressure formula from physics: P = rho*g*h.
+% pressurePipeBottom = densityOfOil * Units.g * pipeHeight;  %pressure formula from physics: P = rho*g*h.
 % forceOnPipeBottom = pressurePipeBottom * pipeCrossSectionArea;  %force exterted on bottom cap of the pipe.
 % 
 % %Note that each variable holds its value as expressed in SI units.  To
 % %express these values in different units, simply divide by the desired
 % %unit as shown below.
-% line1 = sprintf('A %2.3g inch diameter pipe sticking %3.3g meters into the air and filled',pipeInnerDiameter/u.in, pipeHeight/u.m);
-% line2 = sprintf('with %3.3g fluid ounces of oil will have a pressure at the bottom of %4.4g psi.',volumeOfOil/u.floz, pressurePipeBottom/u.psi);
-% line3 = sprintf('This will cause a total force of %5.5g lbs to press on the bottom cap of the pipe.',forceOnPipeBottom/u.lbf);
+% line1 = sprintf('A %2.3g inch diameter pipe sticking %3.3g meters into the air and filled',pipeInnerDiameter/Units.in, pipeHeight/Units.m);
+% line2 = sprintf('with %3.3g fluid ounces of oil will have a pressure at the bottom of %4.4g psi.',volumeOfOil/Units.floz, pressurePipeBottom/Units.psi);
+% line3 = sprintf('This will cause a total force of %5.5g lbs to press on the bottom cap of the pipe.',forceOnPipeBottom/Units.lbf);
 % 
 % textVal = sprintf('\n\n%s\n%s\n%s\n',line1,line2,line3);
 % disp(textVal);
@@ -86,134 +85,134 @@ clear u;
 %============ START THE ACTUAL CODE TO DEFINE THE UNITS STRUCT =========
 %-------- UNITS ------------------------------
 %------- length ----
-u.m = 1;
-u.km = 1e3*u.m;
-u.cm = 1e-2*u.m;
-u.mm = 1e-3*u.m;
-u.um = 1e-6*u.m;
-u.nm = 1e-9*u.m;
-u.ang = 1e-10*u.m;
-u.in = 2.54*u.cm;
-u.mil = 1e-3*u.in;
-u.ft = 12*u.in;
-u.yd = 3*u.ft;
-u.mi = 5280*u.ft;
-u.a0 = .529e-10*u.m;
+Units.m = 1;
+Units.km = 1e3*Units.m;
+Units.cm = 1e-2*Units.m;
+Units.mm = 1e-3*Units.m;
+Units.um = 1e-6*Units.m;
+Units.nm = 1e-9*Units.m;
+Units.ang = 1e-10*Units.m;
+Units.in = 2.54*Units.cm;
+Units.mil = 1e-3*Units.in;
+Units.ft = 12*Units.in;
+Units.yd = 3*Units.ft;
+Units.mi = 5280*Units.ft;
+Units.a0 = .529e-10*Units.m;
 
 %------- Volume -------
-u.cc = (u.cm)^3;
-u.L = 1000*u.cc;
-u.mL = u.cc;
-u.floz = 29.5735297*u.cc;
-u.pint = 473.176475*u.cc;
-u.quart = 946.35295*u.cc;
-u.gal = 3.78541197*u.L;
+Units.cc = (Units.cm)^3;
+Units.L = 1000*Units.cc;
+Units.mL = Units.cc;
+Units.floz = 29.5735297*Units.cc;
+Units.pint = 473.176475*Units.cc;
+Units.quart = 946.35295*Units.cc;
+Units.gal = 3.78541197*Units.L;
 
 %----- mass ---------
-u.kg = 1;
-u.gm = 1e-3*u.kg;
-u.mg = 1e-3*u.gm;
-u.lb = 0.45359237*u.kg;
-u.oz = (1/16)*u.lb;
-u.amu = 1.66e-27*u.kg;
+Units.kg = 1;
+Units.gm = 1e-3*Units.kg;
+Units.mg = 1e-3*Units.gm;
+Units.lb = 0.45359237*Units.kg;
+Units.oz = (1/16)*Units.lb;
+Units.amu = 1.66e-27*Units.kg;
 
 %---- time -------
-u.s = 1;
-u.ms = 1e-3*u.s;
-u.us = 1e-6*u.s;
-u.ns = 1e-9*u.s;
-u.ps = 1e-12*u.s;
-u.min = 60*u.s;
-u.hr = 60*u.min;
-u.day = 24*u.hr;
-u.yr = 365.242199*u.day; 
+Units.s = 1;
+Units.ms = 1e-3*Units.s;
+Units.us = 1e-6*Units.s;
+Units.ns = 1e-9*Units.s;
+Units.ps = 1e-12*Units.s;
+Units.min = 60*Units.s;
+Units.hr = 60*Units.min;
+Units.day = 24*Units.hr;
+Units.yr = 365.242199*Units.day; 
 
 %---- frequency ---- 
-u.Hz = 1/u.s;
-u.kHz = 1e3 *u.Hz;
-u.MHz = 1e6 *u.Hz;
-u.GHz = 1e9 *u.Hz;
+Units.Hz = 1/Units.s;
+Units.kHz = 1e3 *Units.Hz;
+Units.MHz = 1e6 *Units.Hz;
+Units.GHz = 1e9 *Units.Hz;
 
 %---- force -------
-u.N = 1;
-u.dyne = 1e-5*u.N;
-u.lbf = 4.44822*u.N;
+Units.N = 1;
+Units.dyne = 1e-5*Units.N;
+Units.lbf = 4.44822*Units.N;
 
 
 %----- energy -----
-u.J = 1;
-u.MJ = 1e6*u.J;
-u.kJ = 1e3*u.J;
-u.mJ = 1e-3*u.J;
-u.uJ = 1e-6*u.J;
-u.nJ = 1e-9*u.J;
-u.eV = 1.6022e-19*u.J;
-u.BTU = 1.0550559e3*u.J;
-u.kWh = 3.6e6*u.J;
-u.cal = 4.1868*u.J;
-u.kcal = 1e3*u.cal;
+Units.J = 1;
+Units.MJ = 1e6*Units.J;
+Units.kJ = 1e3*Units.J;
+Units.mJ = 1e-3*Units.J;
+Units.uJ = 1e-6*Units.J;
+Units.nJ = 1e-9*Units.J;
+Units.eV = 1.6022e-19*Units.J;
+Units.BTU = 1.0550559e3*Units.J;
+Units.kWh = 3.6e6*Units.J;
+Units.cal = 4.1868*Units.J;
+Units.kcal = 1e3*Units.cal;
 
 %---- temperature ---
-u.K = 1;
-u.mK = 1e-3*u.K;
-u.uK = 1e-6*u.K;
-u.nK = 1e-9*u.K;
+Units.K = 1;
+Units.mK = 1e-3*Units.K;
+Units.uK = 1e-6*Units.K;
+Units.nK = 1e-9*Units.K;
 
 %---- pressure -----
-u.Pa = 1;
-u.torr = 133.322*u.Pa;
-u.mtorr = 1e-3*u.torr;
-u.bar = 1e5*u.Pa;
-u.mbar = 1e-3*u.bar;
-u.atm = 1.013e5*u.Pa;
-u.psi = 6.895e3*u.Pa;
+Units.Pa = 1;
+Units.torr = 133.322*Units.Pa;
+Units.mtorr = 1e-3*Units.torr;
+Units.bar = 1e5*Units.Pa;
+Units.mbar = 1e-3*Units.bar;
+Units.atm = 1.013e5*Units.Pa;
+Units.psi = 6.895e3*Units.Pa;
 
 
 
 %----- power --- ---
-u.W = 1;
-u.MW = 1e6*u.W;
-u.kW = 1e3*u.W;
-u.mW = 1e-3*u.W;
-u.uW = 1e-6*u.W;
-u.nW = 1e-9*u.W;
-u.pW = 1e-12*u.W;
-u.hp = 745.69987*u.W;
+Units.W = 1;
+Units.MW = 1e6*Units.W;
+Units.kW = 1e3*Units.W;
+Units.mW = 1e-3*Units.W;
+Units.uW = 1e-6*Units.W;
+Units.nW = 1e-9*Units.W;
+Units.pW = 1e-12*Units.W;
+Units.hp = 745.69987*Units.W;
 
 %------ charge ------
-u.coul = 1;
-u.e = 1.6022e-19*u.coul;                        % elementary charge
+Units.coul = 1;
+Units.e = 1.6022e-19*Units.coul;                        % elementary charge
 
 
 %------ Voltage -----
-u.V = 1;
-u.kV = 1e3*u.V;
-u.mV = 1e-3*u.V;
-u.uV = 1e-6*u.V;
+Units.V = 1;
+Units.kV = 1e3*Units.V;
+Units.mV = 1e-3*Units.V;
+Units.uV = 1e-6*Units.V;
 
 %----- Current ------
-u.A = 1;
-u.mA = 1e-3*u.A;
-u.uA = 1e-6*u.A;
-u.nA = 1e-9*u.A;
+Units.A = 1;
+Units.mA = 1e-3*Units.A;
+Units.uA = 1e-6*Units.A;
+Units.nA = 1e-9*Units.A;
 
 %----magnetic field -----
-u.T = 1;
-u.gauss = 1e-4*u.T;
+Units.T = 1;
+Units.gauss = 1e-4*Units.T;
 
 
 
 %----fundamental constants ----
-u.g = 9.80665*u.m/u.s^2;
-u.kB = 1.38e-23*u.J/u.K;                        % Boltzman constant
-u.sigma_SB = 5.670e-8 * u.W/(u.m^2 * u.K^4);
-u.h = 6.626e-34 * u.J*u.s;
-u.hbar = u.h/(2*pi);
-u.mu_B = 9.274e-24 * u.J/u.T;
-u.mu_N = 5.0507866e-27 * u.J/u.T;
-u.c = 2.99792458e8*u.m/u.s;
-u.eps0 = 8.8541878176204e-12* u.coul/(u.V*u.m);
-u.mu0 = 1.2566370614359e-6 * u.J/(u.m*u.A^2);
+Units.g = 9.80665*Units.m/Units.s^2;
+Units.kB = 1.38e-23*Units.J/Units.K;                        % Boltzman constant
+Units.sigma_SB = 5.670e-8 * Units.W/(Units.m^2 * Units.K^4);
+Units.h = 6.626e-34 * Units.J*Units.s;
+Units.hbar = Units.h/(2*pi);
+Units.mu_B = 9.274e-24 * Units.J/Units.T;
+Units.mu_N = 5.0507866e-27 * Units.J/Units.T;
+Units.c = 2.99792458e8*Units.m/Units.s;
+Units.eps0 = 8.8541878176204e-12* Units.coul/(Units.V*Units.m);
+Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,38 +223,36 @@ u.mu0 = 1.2566370614359e-6 * u.J/(u.m*u.A^2);
 
 %-------- UNITS ------------------------------
 %------- length ----
-u.AU = 1.496e11*u.m;
-u.R_Earth = 6370e3*u.m;                     % Earth radius
-u.RE = u.R_Earth;                          % Earth radius
-u.R_Sun = 6.96e8*u.m;                       % Solar radius 
-u.pc = 3.0857e16*u.m;                        % parsec
+Units.AU = 1.496e11*Units.m;
+Units.R_Earth = 6370e3*Units.m;                     % Earth radius
+Units.RE = Units.R_Earth;                          % Earth radius
+Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
+Units.pc = 3.0857e16*Units.m;                        % parsec
 
 %------- mass ----
-u.M_Earth = 5.9742e24*u.kg;                 % Mass of the Earth
-u.M_Sun = 1.98892e30*u.kg;                  % Mass of the Sun
-u.me = 9.1094e-31*u.kg;                      % electron mass
-u.mp = 1.6726e-27*u.kg;                      % proton mass
+Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
+Units.M_Sun = 1.98892e30*Units.kg;                  % Mass of the Sun
+Units.me = 9.1094e-31*Units.kg;                      % electron mass
+Units.mp = 1.6726e-27*Units.kg;                      % proton mass
 
 %---- frequency ---- 
-u.mHz = 1e-3*u.Hz;
+Units.mHz = 1e-3*Units.Hz;
 
 %----- energy -----
-u.keV = 1e3*u.eV;
-u.MeV = 1e6*u.eV;
-u.erg = 1e-7*u.J;
+Units.keV = 1e3*Units.eV;
+Units.MeV = 1e6*Units.eV;
+Units.erg = 1e-7*Units.J;
 
 %---- temperature ---
-u.MK = 1e6*u.K;
+Units.MK = 1e6*Units.K;
 
 %----magnetic field -----
-u.nT = 1e-9*u.T;
+Units.nT = 1e-9*Units.T;
 
 %----fundamental constants ----
-u.G = 6.6726e-11*u.N*u.m^2/u.kg^2;           % gravitational constant
-u.kB = 1.38e-23*u.J/u.K;                     % Boltzmann constant
+Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;           % gravitational constant
+Units.kB = 1.38e-23*Units.J/Units.K;                     % Boltzmann constant
 
 
-Units=u; 
-clear u;
 
 
