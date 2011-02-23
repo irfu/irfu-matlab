@@ -84,7 +84,7 @@ irf_units;
      neg_ind = find( U < 0 );
 
      sq         = zeros( U_pts, 1 );
-     erfv       = zeros( U_pts, 1 );
+%     erfv       = zeros( U_pts, 1 );
 
      sq(neg_ind) = sqrt( abs(-X(neg_ind)) );
      sq(pos_ind) = sqrt( abs(+X(pos_ind)) );
@@ -101,7 +101,7 @@ irf_units;
      end
 
   else
-     'This probe type is not supported yet !'
+     disp('This probe type is not supported yet !');
   end
 
   return
