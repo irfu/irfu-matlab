@@ -37,6 +37,7 @@ function c=irf_plot(varargin)
 %                    and dt2 correspondingly
 %
 % See also C_PL_TX, C_DESC
+
 %
 % $Id$
 
@@ -96,7 +97,7 @@ while have_options
 		otherwise
 			%irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
 			marker = args{1};
-			args = args(2:end); %#ok<NASGU>
+			args = args(2:end); 
 			break
 	end
 	args = args(l+1:end);
