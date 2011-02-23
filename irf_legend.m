@@ -1,4 +1,4 @@
-function irf_legend(axis_handle,labels,position,varargin)
+function ht=irf_legend(axis_handle,labels,position,varargin)
 % irf_legend(axis_handle,labels,position,text_property,text_value,...)
 %
 % labels - cell array with strings
@@ -60,20 +60,19 @@ if ischar(labels), % Try to get variable labels from string (space separates).
 end
 
 for i=1:length(labels),
-  ht=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
-  set(ht,'color',colord(i,:));
-  set(ht,'verticalalignment',value_vertical_alignment);
-  set(ht,'horizontalalignment',value_horizontal_alignment);
+  ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
+  set(ht(i),'color',colord(i,:));
+  set(ht(i),'verticalalignment',value_vertical_alignment);
+  set(ht(i),'horizontalalignment',value_horizontal_alignment);
   for j=1:size(varargin,2)/2
       textprop=varargin{2*j-1};
       textvalue=varargin{2*j};
       if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
-          set(ht,'color',cluster_colors(i,:));  
+          set(ht(i),'color',cluster_colors(i,:));  
       else
-          set(ht,varargin{2*j-1},varargin{2*j});
+          set(ht(i),varargin{2*j-1},varargin{2*j});
       end
   end
-  ext=get(ht,'extent'); position(1)=position(1)+ext(3)*1.4;
+  ext=get(ht(i),'extent'); position(1)=position(1)+ext(3)*1.4;
 end
 
-%axes(hgca); % return to original axis
