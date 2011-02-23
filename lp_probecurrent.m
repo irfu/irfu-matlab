@@ -30,19 +30,21 @@ function [J_probe, J_the, J_thi1, J_thi2, J_photo]=lp_probecurrent(probe_type, X
 %  V_SC - probe velocity with respect to media m/s
 % Initialize.
 %%%%%%%%%%%%%
+%
+% See also: LP_PHOTOCURRENT, LP_THERMAL_CURRENT
 
-irf_units
+irf_units;
 
 Ti=Ti_eV*Units.e/Units.kB;
 Te=Te_eV*Units.e/Units.kB;
 
-  U_pts  = length( U_probe );
+%  U_pts  = length( U_probe );
 
-  J_the      = zeros(U_pts, 1);
-  J_thi1     = zeros(U_pts, 1);
-  J_thi2     = zeros(U_pts, 1);
-  J_photo    = zeros(U_pts, 1);
-  J_SC       = zeros(U_pts, 1);
+%  J_the      = zeros(U_pts, 1);
+%  J_thi1     = zeros(U_pts, 1);
+%  J_thi2     = zeros(U_pts, 1);
+%  J_photo    = zeros(U_pts, 1);
+%  J_SC       = zeros(U_pts, 1);
 
 
 % Photo-current.
@@ -61,14 +63,15 @@ Te=Te_eV*Units.e/Units.kB;
 
   % Rolf's S/C photo-electron cloud.
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  Nph     = 50e6;
-  Wph     = 2.74;         % Typical photoelectron temperature.
-  Tph     = Wph * 11605;
-  Z       = -1;
+%  Nph     = 50e6;
+%  Wph     = 2.74;         % Typical photoelectron temperature.
+%  Tph     = Wph * 11605;
+%  Z       = -1;
   %U_cloud = 15;  % [V]
-  U_cloud = 0;  % [V]
-  U_eff   = U_probe - U_cloud;
+%  U_cloud = 0;  % [V]
+%  U_eff   = U_probe - U_cloud;
   %J_SC = ThermalCurrent( probe_type, Nph, Tph, me, 0, Z, U_eff, Ap );
+
   J_SC = 0;
 
 

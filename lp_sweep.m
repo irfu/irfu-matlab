@@ -1,4 +1,6 @@
 % lp_sweep script to plot a standard IU curve for different antennas
+%
+% See also LP_PROBECURRENT
 
 
 U_min=irf_ask('Umin(V) [%]>','U_min',-10); 
