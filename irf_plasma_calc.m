@@ -39,8 +39,10 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %  Alfven vel. V_A[km/s]  = 22 B /sqrt(n)
 %  Poynting fl. S[uW/m2]  = 0.8 E B
 %  Plasma beta = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2 
-%  Magnetic pressure [nT] = (B/50)^2
+%  Magnetic pressure[nPa] = (B/50)^2
+%  E_corrotation  [mV/m]  = 0.6e-4 R[RE] B
  
+
 % $Id$
 % Copyright 1997-2005 Yuri Khotyaintsev
 
