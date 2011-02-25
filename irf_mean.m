@@ -17,7 +17,7 @@ function [out]=irf_mean(inp,r,b,z)
 % Z axis is along b, Y axis is zxb.sign(b.r), X=YxZ
 
 out=inp;flag_dipole=0;
-if (nargin > 3) & (isstr(z)),
+if (nargin > 3) && (ischar(z)),
  earth_dip=[inp(:,1) inp(:,1)*0 inp(:,1)*0 inp(:,1)*0+1];
  outinfo='     CA';outinfo(5-length(z):4)=z;
  z=av_x2x(earth_dip,'  SM CA',outinfo);
@@ -44,14 +44,14 @@ zv=irf_norm(bb);
 if flag_dipole == 0,
  yv=irf_norm(irf_cross(zv,rr));
 else
- ss=irf_dot(b,r);ind=find(ss(:,2) > 0);
+ ss=irf_dot(b,r);ind= ss(:,2) > 0;
  ss(:,2)=-1;ss(ind,2)=1;
  yv=irf_norm(irf_vec_x_scal(irf_cross(zz,bb),ss));
 end
 xv=irf_cross(yv,zv);
 %keyboard
 % in case rotation axis is used as reference uncomment next line
-% rot_axis=rr;rot_axis(:,[2 3])=0;yv=av_norm(av_cross(av_cross(bb,rot_axis),bb));xv=av_cross(yv,zv);
+% rot_axis=rr;rot_axis(:,[2 3])=0;yv=irf_norm(irf_cross(irf_cross(bb,rot_axis),bb));xv=irf_cross(yv,zv);
 
 out(:,2)=irf_dot(xv,inp,1);
 out(:,3)=irf_dot(yv,inp,1);
