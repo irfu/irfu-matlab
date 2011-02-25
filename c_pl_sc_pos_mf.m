@@ -1,4 +1,4 @@
-function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref);
+function h=c_pl_sc_pos_mf(t,R1,R2,R3,R4,Vref,Bref)
 %C_PL_SC_POS_MF   Plot spacecraft position in mean field coordinates
 %
 % that are defined usign spacecraft position and magnetic field.
@@ -21,7 +21,7 @@ if nargin < 1, help c_pl_sc_pos_mf;return; end
 
 figure;clf
 if nargin == 1,
-  for ic=1:4,eval(irf_ssub('load mR R?; r?=irf_resamp(R?,t,''spline'');clear R?;',ic)),end
+  c_eval('load mR R?; r?=irf_resamp(R?,t,''spline'');clear R?;');
   c_load('V3');Vref=irf_resamp(V3,t);clear V3;
   c_load('B3');Bref=irf_resamp(B3,t);clear B3;
 elseif nargin==7,
@@ -36,26 +36,25 @@ end
 %load mBmod BT89Kp11; Bref=irf_resamp(BT89Kp11,t);clear BT89Kp11;
 
 R=(r1+r2+r3+r4)/4;
-for ic=1:4,eval(irf_ssub('dr?=r?-R;dr?(1)=t;dr?=irf_abs(dr?);',ic)),end
+c_eval('dr?=r?-R;dr?(1)=t;dr?=irf_abs(dr?);');
 drref=max([dr1(5) dr2(5) dr3(5) dr4(5)]);
-%Vref_MF=av_mean(Vref,r3,Bref,'GSE');
 Vref_MF=irf_mean(Vref,r3,Bref);
 Vscaling=.5*drref/irf_abs(Vref_MF,1);Vscale=Vscaling*Vref_MF(:,2:4);
-% for ic=1:4,eval(irf_ssub('dr_MF?=av_mean(dr?,r3,Bref,''GSE'');',ic)),end
-for ic=1:4,eval(irf_ssub('dr_MF?=irf_mean(dr?,r3,Bref);',ic)),end
+c_eval('dr_MF?=irf_mean(dr?,r3,Bref);');
 
 view1=[90 90];
 view2=[90 0];
 npl=2;ypl=2;xpl=1;
 for ipl=1:npl,
   h(ipl)=subplot(ypl,xpl,ipl);
-  for ic=1:4,eval(irf_ssub('x?=dr_MF?;',ic)),end;xl='outward [km] MF';yl='east [km] MF';zl='along B [km] MF';
+  c_eval('x?=dr_MF?;');
+  xl='outward [km] MF';yl='east [km] MF';zl='along B [km] MF';
   plot3(x1(2),x1(3),x1(4),'ks', ...
        x2(2),x2(3),x2(4),'rd', ...
         x3(2),x3(3),x3(4),'go', ...
         x4(2),x4(3),x4(4),'mv')
   xlabel(xl);ylabel(yl);zlabel(zl);
-  eval(irf_ssub('view(view?);',ipl));
+  c_eval('view(view?);',ipl);
   axis equal;grid on;
   line([0 Vscale(1)],[0 Vscale(2)],[0 Vscale(3)]);
 end
