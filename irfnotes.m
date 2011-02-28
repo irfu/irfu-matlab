@@ -184,6 +184,20 @@ if 1, % plot figures panels
             ylabel('E [eV]');
         end
     end
+    if 0,   % PANEL: EFW E field in ISR2 reference frame single s/c
+        h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+        dobjname=irf_ssub('C?_CP_EFW_L2_E',ic);
+        varname=irf_ssub('E_Vec_xy_ISR2__C?_CP_EFW_L2_E',ic);
+        caa_load(dobjname);
+        c_eval(['diE?=getmat(' dobjname ',''' varname ''');'],ic);
+        varunits=eval(['getunits(' dobjname ',''' varname ''')']);
+        %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+        disp(['SUBPLOT: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
+        c_eval('irf_plot diE?',ic);
+        ylabel('E [mV/m] ISR2');set(gca,'ylim',[-10 10]);
+        irf_legend(gca,{'E_X','E_Y'},[0.02 0.49])
+        irf_legend(gca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
+    end
     if 1,   % PANEL: RAPID spectrogram
         h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
         dobjname=irf_ssub('C?_CP_RAP_ESPCT6',ic);
