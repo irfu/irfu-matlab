@@ -28,8 +28,13 @@ if nargin > 0, % filter which variables to load
     end
 end
 
+if isdir('CAA'), % check if is CAA folder, then assume data are there
+    dirs = dir('CAA');
+else % otherwise assume one is in the CAA data folder
+    dirs = dir;
+end
+
 nloaded = 0;
-dirs = dir;
 for j = 1:numel(dirs)
 	if regexp(dirs(j).name,'^C[1-4]_(C|P)P_')
         var_name = dirs(j).name;
