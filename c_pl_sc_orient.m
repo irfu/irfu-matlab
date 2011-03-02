@@ -151,7 +151,7 @@ switch lower(action)
             if ~any(ok) % no B loaded
                 flag_read_isdat=1;
             else
-                b(:,3)=-b(:,3);b(:,4)=b(:,-4); % go to DS reference frame instead of DSI
+                b(:,3)=-b(:,3);b(:,4)=-b(:,4); % go to DS reference frame instead of DSI
                 if t>=b(1,1) && t<=b(end,1), % time within interval of B
                     flag_read_isdat=0;
                 else
