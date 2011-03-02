@@ -184,11 +184,12 @@ switch lower(action)
             if ~any(ok), % check if phase info is on disk
                 flag_read_isdat=1;
             else
-                if t>=a(1,1) && a<=b(end,1), % time within phase interval of B
-                    flag_read_isdat=0;
-                else
-                    flag_read_isdat=1;
-                end
+              a=phase_time_series;
+              if t>=a(1,1) && t<=a(end,1), % time within phase interval of B
+                flag_read_isdat=0;
+              else
+                flag_read_isdat=1;
+              end
             end
             if flag_read_isdat % read phase form isdat
                 [tt,phase_data] = caa_is_get('db.irfu.se:0',t-5,10,ic,'ephemeris','phase_2');
