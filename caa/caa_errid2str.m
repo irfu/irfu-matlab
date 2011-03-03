@@ -42,6 +42,15 @@ case 14
 case 15
 	r.s = 'hxonly';
 	r.l = 'HXONLY sampling mode';
+case 16
+	r.s = 'bad_bias';
+	r.l = 'Bad bias';
+case 17
+	r.s = 'bad_hx';
+	r.l = 'Bad HX';
+case 18
+	r.s = 'bad_lx';
+	r.l = 'Bad LX';
 case 112
 	r.s = 'no_p12';
 	r.l = 'No probe 12';
