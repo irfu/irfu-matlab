@@ -28,7 +28,7 @@ if nargin > 0, % filter which variables to load
     end
 end
 
-if isdir('CAA'), % check if is CAA folder, then assume data are there
+if isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
     dirs = dir('CAA');
 else % otherwise assume one is in the CAA data folder
     dirs = dir;
