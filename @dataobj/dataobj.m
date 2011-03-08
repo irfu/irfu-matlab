@@ -33,7 +33,8 @@ switch nargin
             if strfind(varargin{1},'*')
                 cdf_files = dir(varargin{1});
                 if strfind(varargin{1},filesep) % if there is directory in file name
-                    directory_name=varargin{1}(1:strfind(varargin{1},filesep));
+                    filesep_indexes=strfind(varargin{1},filesep);
+                    directory_name=varargin{1}(1:filesep_indexes(end));
                 else
                     directory_name='';
                 end
