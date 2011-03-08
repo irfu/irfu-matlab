@@ -6,6 +6,7 @@ function caa_load(varargin)
 %   caa_load
 %   caa_load CIS
 %   caa_load C1 CIS
+%   caa_load Sweep_Energy__C3_CP_PEA_PITCH_SPIN_PSD
 % $Id$
 
 % ----------------------------------------------------------------------------
