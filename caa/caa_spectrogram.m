@@ -84,7 +84,7 @@ end
 
 specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
-specrec.dt = double(specrec.dt);
+%specrec.dt = double(specrec.dt);
 %specrec.df = double(specrec.df);
   
 ndata = length(specrec.t);
@@ -100,7 +100,8 @@ if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end,
 for comp=1:min(length(h),ncomp)
 	
 	for jj=1:ndata
-		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
+%		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
+		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = NaN;
 	end
 	
     ud = get(gcf,'userdata');
@@ -169,11 +170,17 @@ for comp=1:min(length(h),ncomp)
     ppnew(:,jj*2)=NaN;
     pp=ppnew;
     if ~isempty(specrec.dt) % if time steps are not given
-        dt=double(specrec.dt(:));
+        if isstruct(specrec.dt) % df.plus and df.minus should be specified
+            dtplus=torow(double(specrec.dt.plus(:))); % if df vector make it row vector
+            dtminus=torow(double(specrec.dt.minus(:))); % if df vector make it row vector
+        else
+            dtplus=torow(double(specrec.dt(:))); % if df vector make it row vector
+            dtminus=dtplus;
+        end
         ttnew=[tt; tt];
         jj=1:length(tt);
-        ttnew(jj*2-1)=tt-dt;
-        ttnew(jj*2)=tt+dt;
+        ttnew(jj*2-1)=tt-dtminus;
+        ttnew(jj*2)=tt+dtplus;
         tt=ttnew;
         ppnew=[pp;pp];
         ppnew(jj*2-1,:)=pp;
