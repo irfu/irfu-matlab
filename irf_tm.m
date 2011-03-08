@@ -54,7 +54,7 @@ dgud.cancel = 0;
 dgud.h=h;
 
 screensize = get(0, 'screensize');
-xsize = 510;
+xsize = 550;
 ysize = 150;
 left = 0.5*screensize(3)-xsize/2;
 bottom = 0.5*screensize(4)-ysize/2;
@@ -105,7 +105,7 @@ dgud.fromh = uicontrol('style', 'edit', ...
     'callback', 'irf_fromto(''from'')', ...
     'backgroundcolor','white');
 ext2 = get(dgud.fromh, 'extent');
-set(dgud.fromh, 'position', [x0 ysize-98 ext2(3)+50 ext(4)]);
+set(dgud.fromh, 'position', [x0 ysize-98 ext2(3)+50 ext(4)*1.2]);
 
 uch1 = uicontrol('style', 'text', 'string', 'Step:');
 extstep=get(uch1,'extent');
@@ -113,14 +113,14 @@ dgud.step = uicontrol('style', 'edit', ...
     'string', datestr(datenum(fromepoch(diff(presel))), 13), ...
     'callback', 'irf_fromto(''step'')','backgroundcolor','white');
 set(uch1, 'position', [x0+ext2(3)+55 ysize-100 extstep(3) ext(4)]);
-set(dgud.step, 'position', [x0+ext2(3)+extstep(3)+55 ysize-100 ext2(3) ext(4)]);
+set(dgud.step, 'position', [x0+ext2(3)+extstep(3)+55 ysize-100 ext2(3) ext(4)*1.2]);
 
 uch1 = uicontrol('style', 'text', 'string', 'To:');
 dgud.toh = uicontrol('style', 'edit', ...
     'string', epoch2iso(presel(2)), ...
     'callback', 'irf_fromto(''to'')','backgroundcolor','white');
 set(uch1, 'position', [ext1(1) 30 ext1(3:4)]);
-set(dgud.toh, 'position', [x0 30 ext2(3)+50 ext(4)]);
+set(dgud.toh, 'position', [x0 30 ext2(3)+50 ext(4)*1.2]);
 
 ypos=30;xpos=x0+ext2(3)+55;
 uch1 = uicontrol('style', 'pushbutton','string', ' < ');ext=get(uch1,'extent');
