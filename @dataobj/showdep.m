@@ -1,6 +1,7 @@
-function res = showdep(dobj,var_s)
+function showdep(dobj,var_s)
 %SHOWDEP(dobj, var_s)  show dependencies for a variable (except time)
 %
+% SHOWDEP(dobj, var_s)
 % give values for each dependency and other information
 
 % $Id$
@@ -14,10 +15,10 @@ function res = showdep(dobj,var_s)
 
 error(nargchk(2,2,nargin))
 
-if ~ischar(var_s), error('VAR_S must be a stirng'), end
+if ~ischar(var_s), error('VAR_S must be a string'), end
 
 var=getv(dobj,var_s);
-for j=1:3 % maximum number of dependencies
+for j=0:3 % maximum number of dependencies
     if isfield(var,['DEPEND_' num2str(j)]), % there is dependency
         dep_variable_name = eval(['var.DEPEND_' num2str(j)]);
         disp('_______________');
