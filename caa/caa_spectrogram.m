@@ -86,10 +86,18 @@ specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
 %specrec.dt = double(specrec.dt);
 %specrec.df = double(specrec.df);
+if iscell(specrec.p)
+  ncomp=length(specrec.p);
+elseif isnumeric(specrec.p)
+  ncomp=1;
+  specrec.p={specrec.p};
+else
+  disp('WARNING: cannot intepret input parameters in caa_spectrogram, returning.')
+  return
+end
   
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
-ncomp = length(specrec.p);
 
 load caa/cmap.mat
 
