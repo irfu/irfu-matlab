@@ -11,6 +11,7 @@ xSize = 12; ySize = 24;
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*50 ySize*50])
+set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
 clear xSize sLeft ySize yTop
 
 % set subplots
