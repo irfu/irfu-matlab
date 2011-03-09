@@ -12,6 +12,8 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.dt - vector of dt interval for every t point (can be ommitted)
 %              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
 %                           df can be structure with two vectors df.plus and df.minus 
+%         specrec.f_label - label of f axis
+%         specrec.p_label - label of colorbar
 %
 % See also CAA_POWERFFT
 %
@@ -223,7 +225,12 @@ for comp=1:min(length(h),ncomp)
         specrec.f_label=['[' specrec.f_unit ']'];
     end
     ylabel(h(comp),specrec.f_label)
-
+    
+    if isfield(specrec,'p_label')
+      hcb = colorbar('peer',h(comp));
+      ylabel(hcb,specrec.p_label);
+      irf_colorbar_fit_label_height(hcb);
+    end
     if comp==min(length(h),ncomp), add_timeaxis;
     else set(h(comp),'XTicklabel','')
     end
