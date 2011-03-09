@@ -59,8 +59,7 @@ flag_date=1;   % default is to add date labels
 
   for j=1:length(h)
       xlabel(h(j),'');
-      ax = axis;axis(axis);
-      tint = ax(1:2) + t_start_epoch;
+      tint = get(h(j),'xlim') + t_start_epoch;
       res  = timeaxis(tint);
       set( h(j), 'XTick', res{1} - t_start_epoch );
       if j == length(h)
@@ -105,8 +104,9 @@ flag_date=1;   % default is to add date labels
           end
       end
   end
-
-  start_time = fromepoch( ax(1) + t_start_epoch );
+  
+  xlimlast=get(h(end),'xlim');
+  start_time = fromepoch(xlimlast(1) + t_start_epoch );
   time_label = datestr( datenum(start_time),1 );
   if flag_date == 1, xlabel(time_label);  end
   if flag_labels == 0, set(gca,'XTickLabel',' '); end
