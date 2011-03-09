@@ -1,4 +1,4 @@
-function [res,dataobj] = c_caa_var_get(varargin)
+function [res,dataobject] = c_caa_var_get(varargin)
 %C_CAA_VAR_GET(var_name)  get variable (except time)
 %
 % Example:
@@ -10,11 +10,12 @@ for j=1:length(varargin),
     dd=regexp(varargin{j}, '__', 'split');
     dataobj_name=dd{end};
     if evalin('caller',['exist(''' dataobj_name ''',''var'')']),
-      dataobj=evalin('caller',dataobj_name);
+      dataobject=evalin('caller',dataobj_name);
       disp('Dataobj exist in memory. NOT LOADING FROM FILE!')
     else
-      dataobj=caa_load(dataobj_name);
+      caa_load(dataobj_name);
+      eval(['dataobject=' dataobj_name ';']);
     end
-    res=getv(dataobj,varargin{j});
+    res=getv(dataobject,varargin{j});
   end
 end

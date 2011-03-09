@@ -4,6 +4,7 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 %
 % res = c_caa_construct_subspin_res_data(variable_name)
 %
+% res.tt   - time axis
 % res.data - full data matrix 
 % res.omni - omni directional energy spectra (summed over pitch angles)
 % res.pitch_angle - data summer over energies
@@ -60,6 +61,7 @@ data_omni=reshape(sum(data,2)./sum(ind_data,2),size(data,1),size(data,3));
 data_angle=reshape(sum(data,3)./sum(ind_data,3),size(data,1),size(data,2));
 phiphi=reshape(phiphi',numel(phiphi),1);
 
+res.tt = tt;
 res.data=data;
 res.omni=data_omni;
 res.pitch_angle=data_angle;
