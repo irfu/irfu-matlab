@@ -27,6 +27,9 @@ error(nargchk(2,14,nargin))
 [ax,args,nargs] = axescheck(varargin{:});
 if isempty(ax),
     ax=gca;
+    create_axes = 1;
+else
+    create_axes = 0;
 end
 dobj=args{1};
 var_s=args{2};
@@ -61,7 +64,6 @@ use_comp = 0; % pick up separate component values in separate plots
 comp = [];    % index of component vector values to pick up 
 ydim = 0;     % default dimension of data used for y axis (0- data value itself);
 plot_properties=cell(0);
-create_axes = 1;
 flag_lineplot = 0;
 flag_spectrogram = 0;
 flag_labels_is_on=1;
@@ -333,16 +335,28 @@ elseif flag_spectrogram
             end
         else dep_x{d}.df=[];
         end
-        
     end
-    
+    % add time DELTA_PLUS and  DELTA_MINUS if given
+    timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});
+    if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
+      dep.dt=struct('plus',timevar.DELTA_PLUS,'minus',timevar.DELTA_MINUS);
+      if ischar(timevar.DELTA_PLUS)
+        deltaplus= getv(dobj,timevar.DELTA_PLUS);
+        deltaminus= getv(dobj,timevar.DELTA_MINUS);
+        dep.dt.plus=deltaplus.data(1,:);
+        dep.dt.minus=deltaminus.data(1,:);
+      end
+    end
+        
     if sum_dim > 0
         fprintf('Summing over dimension %d (%s)\n', ...
             sum_dim, dep_x{sum_dim}.lab)
     end
     
     specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
-    
+    if isfield(dep,'dt'),
+      specrec.dt=dep.dt;
+    end
     lab_2 ='';
     if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
         if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
@@ -392,7 +406,7 @@ elseif flag_spectrogram
     
     for i=1:ncomp
         specrec.p = plot_data(i);
-        if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end %#ok<AGROW>
+        if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end 
         h(i) = caa_spectrogram(ax(i),specrec);
         if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
         %if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
@@ -427,7 +441,7 @@ elseif flag_spectrogram
         end
         ylabel(hcb,colorbar_label);
         if flag_colorbar_label_fit_to_colorbar_height_is_on
-            fit_colorbarlabel_height(hcbl);
+            irf_colorbar_fit_label_height(hcb);
         end
     else
         ylabel(hcb,'');
@@ -474,20 +488,5 @@ for i=1:length(expr)
         else s = s_tmp;
         end
     end
-end
-
-function fit_colorbarlabel_height(hcb)
-hy=hcb;
-colorbar_label_fontsize=get(hy,'fontsize');
-units=get(hy,'units');
-set(hy,'units','normalized');
-temp=get(hy,'Extent');
-colorbarlabelheight = temp(4);
-while colorbarlabelheight>1.1,
-    colorbar_label_fontsize=colorbar_label_fontsize*0.95;
-    %set(hy,'fontsize',colorbar_label_fontsize,'position',labelposition);
-    set(hy,'fontsize',colorbar_label_fontsize);
-    temp=get(hy,'Extent');
-    colorbarlabelheight=temp(4);
 end
 
