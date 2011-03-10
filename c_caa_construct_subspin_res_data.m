@@ -5,6 +5,9 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 % res = c_caa_construct_subspin_res_data(variable_name)
 %
 % res.tt   - time axis
+% res.en   - energy vector 
+% res.phi   - azimuth angle vector 
+% res.theta   - pitch angle vector 
 % res.data - full data matrix 
 % res.omni - omni directional energy spectra (summed over pitch angles)
 % res.pitch_angle - data summer over energies
@@ -25,12 +28,13 @@ enlabel=[enlabel ' [' enunits ']'];
 phi=peace.dep_x{1}.data(1,:);
 theta=peace.dep_x{2}.data(1,:);
 en=peace.dep_x{3}.data(1,:);nan_en=isnan(en);en(nan_en)=[];
-data=peace.data;
-data(:,:,:,nan_en)=[]; % remove NaN energy data
-en=sort(en); % sort energy in ascending order
-data=sort(data,4,'ascend'); % sort data accordingly
-data=permute(data,[2 1 3 4]); % permute the order azimuts, pitch angle, energy
-data=reshape(data,size(data,1)*size(data,2),size(data,3),size(data,4));
+dataraw=peace.data;
+dataraw(dataraw == variable.FILLVAL)=NaN; 
+dataraw(:,:,:,nan_en)=[]; % remove NaN energy data
+[en,ix]=sort(en); % sort energy in ascending order
+dataraw=dataraw(:,:,:,ix); % sort data accordingly
+dataraw=permute(dataraw,[2 1 3 4]); % permute the order azimuts, pitch angle, energy
+data=reshape(dataraw,size(dataraw,1)*size(dataraw,2),size(dataraw,3),size(dataraw,4));
 tt=repmat(peace.t(:),1,length(phi));
 phiphi=tt;
 timevar=getv(dataobject,dataobject.VariableAttributes.DEPEND_0{1,2});
@@ -56,13 +60,18 @@ for j=length(phi):-1:1,
 end
 tt=reshape(tt',numel(tt),1);
 ind_data = data; ind_data(~isnan(data)) = 1; ind_data(isnan(data)) = 0;
+data_with_nan=data;
 data(isnan(data)) = 0;
 data_omni=reshape(sum(data,2)./sum(ind_data,2),size(data,1),size(data,3));
 data_angle=reshape(sum(data,3)./sum(ind_data,3),size(data,1),size(data,2));
 phiphi=reshape(phiphi',numel(phiphi),1);
 
 res.tt = tt;
-res.data=data;
+res.en = en;
+res.phi = phi;
+res.theta = theta;
+res.data=data_with_nan;
+res.dtsampling=dtsampling;
 res.omni=data_omni;
 res.pitch_angle=data_angle;
 res.phiphi=phiphi;
