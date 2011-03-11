@@ -28,6 +28,7 @@ if nargin > 0, % filter which variables to load
       else
         variable_filter{i}=varargin{j};
       end
+      variable_filter{i}(strfind(variable_filter{i},'-'))='_'; % substitute '-' to '_'
       i=i+1;
       flag_filter=1;
     end
