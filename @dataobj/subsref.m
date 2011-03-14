@@ -6,15 +6,14 @@ for j=1:length(index),
   switch index(j).type
     case '()'
       if j==1,
-        switch index.subs{:}
+        switch index(j).subs{:}
           case 1,
-            b=a.GlobalAttributes;
+            expr='.GlobalAttributes';
           case 2,
-            b=a.VariableAttributes;
+            expr='.VariableAttributes';
           otherwise
             error('Index out of range')
         end
-        return
       else
         expr=[expr index(j).subs];
       end
