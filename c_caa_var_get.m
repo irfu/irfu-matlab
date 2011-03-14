@@ -9,6 +9,7 @@ for j=1:length(varargin),
   if ischar(varargin{j}) && strfind(varargin{j},'__') % variable name specified as input
     dd=regexp(varargin{j}, '__', 'split');
     dataobj_name=dd{end};
+    dataobj_name(strfind(dataobj_name,'-'))='_'; % substitute '-' with '_'
     if evalin('caller',['exist(''' dataobj_name ''',''var'')']),
       dataobject=evalin('caller',dataobj_name);
       disp('Dataobj exist in memory. NOT LOADING FROM FILE!')
