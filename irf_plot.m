@@ -7,7 +7,7 @@ function c=irf_plot(varargin)
 %      - matrix in AV Cluster format
 %      - cell array data, each of cells containing a matrix in AV Cluster
 %      format
-%      - string defining variable
+%      - string defining variable (can be CAA variable)
 %
 %   arguments can be:
 %     'subplot' - plot all x values in separate subplots
@@ -52,10 +52,13 @@ if isempty(ax),
 end
 x=args{1};
 args=args(2:end);
+original_args=args;
 
 var_desc{1} = '';
 flag_subplot = 0;
 have_options = 0;
+caa_dataobject={[]}; % by default assume we are not working with CAA variables
+
 if nargs > 1, have_options = 1; end
 
 % Default values that can be override by options
@@ -110,21 +113,26 @@ if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
 if ischar(x), % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
     jj = 1;
-    for ii=1:length(var_nam),
+    for ii=1:length(var_nam), % construct varibale names var_names
         if regexp(var_nam{ii},'?'),
             c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
         else
-            var_names{jj} = var_nam{ii}; jj=jj+1; %#ok<AGROW>
+            var_names{jj} = var_nam{ii}; jj=jj+1; 
         end
-    end
-    x = {}; ix = 1;
+    end 
+    x = {}; ix = 1; 
     for ii=1:length(var_names)
         try % Try to get variable from calling workspace
-            x{ix} = evalin('caller',var_names{ii}); %#ok<AGROW>
-        catch %#ok<CTCH>
+            x{ix} = evalin('caller',var_names{ii}); 
+        catch 
             try % If there is none try to load variable
+              if strfind(var_names{ii},'__') % CAA variable
+                caa_varname{ix}=var_names{ii};
+                [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii});
+              else
                 c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
-            catch %#ok<CTCH> % If nothing works give up
+              end
+            catch % If nothing works give up
                 irf_log('load',...
 					['skipping, do not know where to get variable >'...
 					var_names{ii}]);
@@ -132,9 +140,9 @@ if ischar(x), % Try to get variable labels etc.
         end
         if length(x)==ix,
           try
-              var_desc{ix} = c_desc(var_names{ii}); %#ok<AGROW>
-          catch %#ok<CTCH>
-              var_desc{ix} = {}; %#ok<AGROW>
+              var_desc{ix} = c_desc(var_names{ii}); 
+          catch 
+              var_desc{ix} = {}; 
           end
           ix = ix +1;
         end
@@ -174,52 +182,61 @@ end
 
 if flag_subplot==0,  % One subplot
 	if isstruct(x)
-		% Plot a spectrogram
-		caa_spectrogram(ax,x);
-		hcbar = colorbar('peer',ax);
-		if ~isempty(var_desc{1})
-			lab = cell(1,length(var_desc{1}.size));
-			for v = 1:length(var_desc{1}.size)
-				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-					'] sc' var_desc{1}.cl_id];
-			end
-			ylabel(hcbar, lab);
-		end
-		
-		tt = x.t(~isnan(x.t),1);
-		tt = tt(1);
-	else
-		% t_start_epoch is saved in figures user_data variable
-		ts = t_start_epoch(x(:,1));
-		
-		ii = 2:length(x(1,:));
-		if flag_yy == 0, 
-            h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
-        else
-            h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
-		end
-		grid on;
-
-		% Put YLimits so that no labels are at the end (disturbing in
-		% multipanel plots)
-        yl = get(ax,'YLim');
-        if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
-            set(gca,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
+    if isempty(caa_dataobject{1}), % not caa variable, then assume spectrogram
+      % Plot a spectrogram
+      caa_spectrogram(ax,x);
+      hcbar = colorbar('peer',ax);
+      if ~isempty(var_desc{1})
+        lab = cell(1,length(var_desc{1}.size));
+        for v = 1:length(var_desc{1}.size)
+          lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+            '] sc' var_desc{1}.cl_id];
         end
-
-		if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
-			lab = cell(1,length(var_desc{1}.size));
-			for v = 1:length(var_desc{1}.size)
-				lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-					'] sc' var_desc{1}.cl_id];
-			end
-			ylabel(ax,lab);
-		end
-
-		c = get(h(1),'Parent');
-
-		tt = x(~isnan(x(:,1)),1);
-		tt = tt(1);
+        ylabel(hcbar, lab);
+      end
+      
+      tt = x.t(~isnan(x.t),1);
+      tt = tt(1);
+    else % CAA variable
+      plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+      tt=x.t(1);
+    end
+  else % x is matrix
+		ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
+    if isempty(caa_dataobject{1}), % not caa variable, then assume spectrogram
+      
+      ii = 2:length(x(1,:));
+      if flag_yy == 0,
+        h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
+      else
+        h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
+      end
+      grid on;
+      
+      % Put YLimits so that no labels are at the end (disturbing in
+      % multipanel plots)
+      yl = get(ax,'YLim');
+      if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
+        set(gca,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
+      end
+      
+      if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
+        lab = cell(1,length(var_desc{1}.size));
+        for v = 1:length(var_desc{1}.size)
+          lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+            '] sc' var_desc{1}.cl_id];
+        end
+        ylabel(ax,lab);
+      end
+      
+      c = get(h(1),'Parent');
+      
+      tt = x(~isnan(x(:,1)),1);
+      tt = tt(1);
+    else % CAA variable
+      plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+      tt=x(1,1);      
+    end
 	end
     
 elseif flag_subplot==1, % Separate subplot for each component 
