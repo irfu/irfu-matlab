@@ -1,6 +1,6 @@
-function [y]=av_lmn(x,b,n,flag)
-% function [y]=av_lmn(x,b,n,flag)
-% function [y]=av_lmn(x,L,M,N)
+function [y]=irf_lmn(x,b,n,flag)
+% function [y]=irf_lmn(x,b,n,flag)
+% function [y]=irf_lmn(x,L,M,N)
 %
 % x - input vector consists of columns [time y_N y_M y_L]
 % b - magnetic field, [time bx by bz]
@@ -44,7 +44,7 @@ case 'N'
 
 case 'LMN'
   if abs(dot(cross(M,L),N)-norm(L)*norm(M)*norm(N))>1e-5, 
-    disp('av_lmn: L,M,N does not satisfy M=LxN,N=MxL! using L=(NxL)xN; M=LxN;');
+    disp('irf_lmn: L,M,N does not satisfy M=LxN,N=MxL! using L=(NxL)xN; M=LxN;');
     L=cross(cross(N,L),N);
     M=cross(L,N);
   end
