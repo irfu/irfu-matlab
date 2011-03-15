@@ -73,7 +73,7 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'HIA_HS_MAG'
   ic=str2num(dd{2}(2));
   c_eval('caa_load C?_CP_FGM_FULL;',ic);
   c_eval('B=getmat(C?_CP_FGM_FULL,''B_vec_xyz_gse__C?_CP_FGM_FULL'');',ic);
-  B_ISR2=irf_resamp(c_gse2dsc(B,ic,2),tt,'nearest'); % sample to t 
+  B_ISR2=irf_resamp(c_cs_trans('GSE','ISR2',B,'cl_id',ic),tt,'nearest'); % sample to t 
   b_ISR2=irf_norm(B_ISR2);
   nsec=zeros(length(polar),length(phi),length(t),3);
   cosphi=cos(phi/180*pi);sinphi=sin(phi/180*pi);
