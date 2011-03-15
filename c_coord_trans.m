@@ -123,7 +123,7 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
             c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',cl_id);
             c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',cl_id);
             if (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60),
-                latlong   = irf_resamp([lat long(:,2)],t);
+                latlong   = irf_resamp([lat long(:,2)],t(1));
                 [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
                 sax = [xspin yspin zspin];
                 irf_log('dsrc',irf_ssub('Loaded SAX? from CAA file',cl_id))
