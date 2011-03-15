@@ -115,13 +115,13 @@ for cli=cl_id
 	d = c_desc(vs_tmp);
 	
 	% Try to load from file
-	if exist([d.file '.mat'],'file')
+	if exist(['./' d.file '.mat'],'file')
 		warning off %#ok<WNOFF>
-		eval(['load -mat ' d.file ' ' vs_tmp])
+		eval(['load -mat ./' d.file '.mat ' vs_tmp])
 		warning on %#ok<WNON>
-	elseif exist([d.file_old '.mat'],'file')
+	elseif exist(['./' d.file_old '.mat'],'file')
 		warning off %#ok<WNOFF>
-		eval(['load -mat ' d.file_old ' ' vs_tmp])
+		eval(['load -mat ./' d.file_old '.mat ' vs_tmp])
 		warning on %#ok<WNON>
 	end
 	
