@@ -85,6 +85,17 @@ if nargin == 4, flag_db=1; else flag_db=0;                           end
                  end
          end
      end
+     if flag_read_isdat,  % try if there are auxilaruy files from CAA
+       caa_load CL_SP_AUX
+       if isvarname('CL_SP_AUX'), % succeeded to load CAA data files
+         c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',ic);
+         c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',ic);
+         if (t > lat(1,1)-60) && (t < lat(end,1)+60),
+           flag_read_isdat=0;
+           latlong   = irf_resamp([lat long(:,2)],t);
+         end
+       end
+     end
      if flag_read_isdat,  % try if there are SAX variables in mEPH
          if exist('./mEPH.mat','file'),
              try
