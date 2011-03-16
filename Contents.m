@@ -39,7 +39,7 @@
 %   lp_...          - Langmuir probe specific routines 
 %
 % Plotting
-%   irf_plot        - Flexible plotting routine for time series
+%   irf_plot        - Flexible plotting routine for time series & CAA variables
 %   dataobj/plot    - plot data objects. help dataobj/plot.m
 %   irf_pl_mark     - Mark that time interval(s) with color backround
 %   irf_pl_number_subplots - number subplots by putting in each subplot 'a', 'b', 'c', etc.
@@ -49,6 +49,7 @@
 %
 % Cluster
 %   caa_load        - load data downloaded from CAA in CDF format
+%   c_caa_get_var   - get variable from CAA files
 %   c_load          - load data from MAT files (caa_load for CAA cdf files)
 %   c_get_batch     - get Cluster data from ISDAT/CDF/DDS
 %   c_4_v_gui       - timing analysis from 4 or less spacecraft 
@@ -59,9 +60,9 @@
 %   c_4_j           - Calculate current from using 4 spacecraft technique
 %   c_efw_scp2ne    - calculates the plasma density (Ne) for given EFW sc potential
 %   c_eval          - evaluate expression for list of spacecraft
-%   c_gse2dsi       - Convert vector from GSE to DSI reference system
+%   c_coord_trans   - Convert vectors among GSE/ISR2/DS reference system
 %   c_pl_flux_tube_distance - estimate the distance between flux tubes
-%   c_pl_sc_conf_xyz - Plot the configuration of Cluster in XYZ (GSE or GSM) coordinates   
+%   c_pl_sc_conf_xyz - Plot the configuration of Cluster in GSE/GSM    
 %   c_pl_sc_conf_lmn - Plot the configuration of Cluster in LMN (or arbitrary) coordinates  
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
