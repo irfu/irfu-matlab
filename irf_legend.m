@@ -59,20 +59,39 @@ if ischar(labels), % Try to get variable labels from string (space separates).
     colord=[0 0 0];
 end
 
-for i=1:length(labels),
-  ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
-  set(ht(i),'color',colord(i,:));
-  set(ht(i),'verticalalignment',value_vertical_alignment);
-  set(ht(i),'horizontalalignment',value_horizontal_alignment);
-  for j=1:size(varargin,2)/2
-      textprop=varargin{2*j-1};
-      textvalue=varargin{2*j};
-      if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
-          set(ht(i),'color',cluster_colors(i,:));  
-      else
-          set(ht(i),varargin{2*j-1},varargin{2*j});
-      end
-  end
-  ext=get(ht(i),'extent'); position(1)=position(1)+ext(3)*1.4;
+if strcmpi(value_horizontal_alignment,'left'), 
+    for i=1:length(labels), % start with first label first
+        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
+        set(ht(i),'color',colord(i,:));
+        set(ht(i),'verticalalignment',value_vertical_alignment);
+        set(ht(i),'horizontalalignment',value_horizontal_alignment);
+        for j=1:size(varargin,2)/2
+            textprop=varargin{2*j-1};
+            textvalue=varargin{2*j};
+            if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
+                set(ht(i),'color',cluster_colors(i,:));
+            else
+                set(ht(i),varargin{2*j-1},varargin{2*j});
+            end
+        end
+        ext=get(ht(i),'extent'); position(1)=position(1)+ext(3)*1.4;
+    end
+else
+    for i=length(labels):-1:1, % start with last label first
+        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
+        set(ht(i),'color',colord(i,:));
+        set(ht(i),'verticalalignment',value_vertical_alignment);
+        set(ht(i),'horizontalalignment',value_horizontal_alignment);
+        for j=1:size(varargin,2)/2
+            textprop=varargin{2*j-1};
+            textvalue=varargin{2*j};
+            if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
+                set(ht(i),'color',cluster_colors(i,:));
+            else
+                set(ht(i),varargin{2*j-1},varargin{2*j});
+            end
+        end
+        ext=get(ht(i),'extent'); position(1)=position(1)-ext(3)*1.4; %% !!! minus sign because we start with last label and go left
+    end    
 end
 
