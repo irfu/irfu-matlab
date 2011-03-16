@@ -1,5 +1,7 @@
 function [y] = c_gse2dsc( x, spin_axis, direction, db )
 % C_GSE2DSC  Convert vector between GSE and DSC reference systems.
+% replaced by C_COORD_TRANS
+% will be removed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %  Usage:
@@ -25,6 +27,8 @@ function [y] = c_gse2dsc( x, spin_axis, direction, db )
 %     choosen interval. Only values at start time point is used.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+disp('WARNING!!!!! will be removed. use c_coord_trans instead.')
 
 flag_read_isdat=0;
 

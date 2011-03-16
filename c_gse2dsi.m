@@ -1,5 +1,7 @@
 function [y] = c_gse2dsi( x, spin_axis, direction )
 % C_GSE2DSI Convert vector from GSE to DSI reference system %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% WARNING!!! will be removed
+% use C_COORD_TRANS
 %
 %  Usage:
 %  function [out] = c_gse2dsi( inp, spin_axis, [direction])
