@@ -17,7 +17,9 @@ function hout=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 cluster_marker={'ks','rd','go','bv'};
 
 persistent t r1 r2 r3 r4 R1 R2 R3 R4 figNumber coord_label plot_type sc_list h flag_show_cluster_description;
-if       (nargin==1 && ischar(time)), action=time;irf_log('fcal',['action=' action]);
+if       (nargin==1 && ischar(time)), 
+    action=time;
+    %irf_log('fcal',['action=' action]);
 elseif   (nargin==3), plot_type=flag;action='initialize';
 elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
