@@ -82,7 +82,7 @@ if ischar(args{1})
 				% cell number 5 has global settings
 				% this cell must be accessed as SC # 0
                 if ismac || isunix
-                    def_ct.isdat_db = 'db.irfu.se:10';
+                    def_ct.isdat_db = 'db.irfu.se:0';
                 else
                     def_ct.isdat_db = 'NO ISDAT ON WINDOWS';
                 end
