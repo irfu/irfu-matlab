@@ -23,7 +23,7 @@ if nargout == 0, % apply the colormap and freeze
         hy=get(hcb,'ylabel');
         ylabel_string=get(hy,'string');
         ylabel_fontsize=get(hy,'fontsize');
-        new_hcb = cbfreeze (hcb);
+        new_hcb = cbfreeze(hcb);
         new_hy=get(new_hcb,'ylabel');
         set(new_hy,'string',ylabel_string,'fontsize',ylabel_fontsize);
     end
