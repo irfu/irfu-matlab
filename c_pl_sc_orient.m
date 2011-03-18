@@ -45,7 +45,7 @@ switch lower(action)
         if nargin<6, flag_v=1; end
         if nargin<5, flag_v=0; end
         if nargin>4, % use mangetic field that is given as input
-            b=c_gse2dsc(magnetic_field,ic,2);
+            b=c_coord_trans('GSE','ISR2',magnetic_field,'cl_id',ic);
         end
         if nargin>2, % use phase given as input
             a=phase_time_series;
@@ -166,7 +166,7 @@ switch lower(action)
                     magnetic_field=[1 0 0 1];
                 else
                     b=data{3};
-                    b=c_gse2dsc(b,ic);
+                    b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
                 end
             end
         end
@@ -244,24 +244,24 @@ switch lower(action)
         rrapid=sec_length*[cos(phase_rapid) sin(phase_rapid);cos(phase_rapid-dphi) sin(phase_rapid-dphi);cos(phase_rapid+dphi) sin(phase_rapid+dphi)];
         rsunsensor=sec_length*[cos(phase_sunsensor) sin(phase_sunsensor)];
         
-        for ip=1:4,c_eval('rp?_gse=c_gse2dsc([t rp?],ic,-1);rp?_gse(1)=[];',ip),end
+        for ip=1:4,c_eval('rp?_gse=c_coord_trans(''DSC'',''GSE'',[t rp?],''cl_id'',ic);rp?_gse(1)=[];',ip),end
         bfield=irf_resamp(b,t);
         bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
         bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
         bn=irf_norm(bfield);
-        bn_gse=c_gse2dsc(bn,ic,-1);
+        bn_gse=c_coord_trans('DSC','GSE',bn,'cl_id',ic);
         b_elevation=-asin(bn(4))*180/pi;
         angle_deg_p34_vs_b=acos(bn(2)*cos(phase_p4)+bn(3)*sin(phase_p4))*180/pi; % acos(bx*rx+by*ry)
         angle_deg_p12_vs_b=acos(bn(2)*cos(phase_p2)+bn(3)*sin(phase_p2))*180/pi;
         
         if flag_v1==1,
             vn1_gse=[bn(1,1) irf_norm(v1)];
-            vn1_ds=c_gse2dsc(vn1_gse,ic);
+            vn1_ds=c_coord_trans('GSE','DSC',vn1_gse,'cl_id',ic);
             vn1_elevation=-asin(vn1_ds(4))*180/pi;
         end
         if flag_v2==1,
             vn2_gse=[bn(1,1) irf_norm(v2)];
-            vn2_ds=c_gse2dsc(vn2_gse,ic);
+            vn2_ds=c_coord_trans('GSE','DSC',vn2_gse,'cl_id',ic);
             vn2_elevation=-asin(vn2_ds(4))*180/pi;
         end
         
