@@ -258,7 +258,7 @@ ht=irf_pl_info(['c_efw_pl_orient() ' datestr(now)],gca,[0,1 ]); set(ht,'interpre
 xp=0;yp=.9;dyp=-0.1;
 yp=yp+dyp;
 %if flag_v==1, % add v velocity
-%  vstr=[' V=' num2str(av_abs(v,1),3) ' [' num2str(irf_norm(v),' %5.2f') '] km/s. '];
+%  vstr=[' V=' num2str(irf_abs(v,1),3) ' [' num2str(irf_norm(v),' %5.2f') '] km/s. '];
 %  text(xp,yp,vstr);
 %  yp=yp+dyp;
 %end
