@@ -23,7 +23,7 @@ function [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,
 %           map - color map
 %
 % Examples:
-%   irf_plasma_wave_visualization('alfven')  
+%   irf_plasma_wave_visualization('alfven')
 %   irf_plasma_wave_visualization('',[-1i*.05*2*pi .0],[.05 1i*0],[.05 1i*0],1500,1,1,0,2*pi/1,1,1,1)
 %   irf_plasma_wave_visualization('',[.1 0],[.01 1i*0],[-.01 1i*0],1500,[.3+1i*.05],8,2*pi/.5,2*pi/1)
 %   surface wave
@@ -33,6 +33,8 @@ function [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,
 % imwrite(im,map,'anim.gif','DelayTime',0,'LoopCount',inf)
 
 global Xplot_lim Yplot_lim
+flag_generate_output_files=0;
+if nargout>=1, flag_generate_output_files=1;end
 if 1, % check input
     if nargin < 1 ,
         help irf_plasma_wave_visualization;
@@ -105,8 +107,8 @@ if 1, % initialize location of particles
         r_e=rand(N,2); % random electrons
         r_e(:,1)=r_e(:,1)*X;
         r_e(:,2)=r_e(:,2)*Z;
-        dVxlim=max(abs(dVi(1)),abs(dVi(1)));
-        dVylim=max(abs(dVi(2)),abs(dVi(2)));
+%        dVxlim=max(abs(dVi(1)),abs(dVi(1)));
+%        dVylim=max(abs(dVi(2)),abs(dVi(2)));
         Xplot_lim=[0 X];
         Yplot_lim=[0 Z];
     elseif init_type==1,
@@ -145,6 +147,8 @@ end
 if 1, % step through wave
     dt=1/20; % 20 frames per second
     time_steps=0:dt:T;
+    r_ions=zeros([size(r_i) length(time_steps)]);   % initialize matrix
+    r_electrons=r_ions;                             % intialize matrix
     for j=1:length(time_steps), % calculate particle positions
         t=time_steps(j);
         dri=1i*dVi/(2*pi*f);
@@ -156,7 +160,7 @@ if 1, % step through wave
         r_ions(:,:,j)=r_i+dr_ions;
         r_electrons(:,:,j)=r_e+dr_electrons;
     end
-    for haha=1, % calculate field line position
+    if 1, % calculate field line position
         field_lines=zeros(length(time_steps),Nfield,Npoints,2); % field line time evolution
         if kx==0,E=-dB(1)*2*pi*f/kz; else E=dB(2)*2*pi*f/kx;end
         dro=-1i*E/(2*pi*f);
@@ -167,24 +171,26 @@ if 1, % step through wave
             field_lines(j,:,:,2)=field_lines_init(:,:,2);
         end
     end
-    for haha=1, % plot wave animation
+    if 1, % plot wave animation
         A=moviein(length(time_steps)); % create matlab movie matrix
         for jj=1:length(time_steps), % plot wave animation
-            pause(.02);
+            pause(.05);
             plot_particles(h,r_ions(:,:,jj),r_electrons(:,:,jj),squeeze(field_lines(jj,:,:,:)));
-            A(:,jj)=getframe;
-            if jj==1, % initialize animated gif matrix
-                f=getframe;
-                [im,map] = rgb2ind(f.cdata,256,'nodither');
-                im(1,1,1,20) = 0;
+            if flag_generate_output_files,
+                f=getframe(h);
+                A(:,jj)=f;
+                if jj==1, % initialize animated gif matrix
+                    [im,map] = rgb2ind(f.cdata,256,'nodither');
+                    im(1,1,1,20) = 0;
+                else
+                    im(:,:,1,jj) = rgb2ind(f.cdata,map,'nodither');
+                end
             end
-            f=getframe;
-            im(:,:,1,jj) = rgb2ind(f.cdata,map,'nodither');
         end
     end
 end
 
-    function  plotstatus=plot_particles(h,r_ions,r_electrons,field_lines,mark_ions,mark_electrons)
+    function  plot_particles(h,r_ions,r_electrons,field_lines,mark_ions,mark_electrons)
         %        global X Z
         % mark_electrons={marker_size,marker_type,marker_color}
         if nargin<6,
