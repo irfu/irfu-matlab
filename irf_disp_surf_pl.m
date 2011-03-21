@@ -97,6 +97,9 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
   ylabel('k_{||} c/\omega_{ce}')
   zlabel('\omega/\omega_{ce}')
   
+  set(gca,'xlim',[0 kc_x_max]);
+  set(gca,'ylim',[0 kc_z_max]);
+  
   hold off
   caxis(colorlimits);
   h_cbar=colorbar('hor');
