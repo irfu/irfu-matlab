@@ -23,26 +23,20 @@ function [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,
 %           map - color map
 %
 % Examples:
-% irf_plasma_wave_visualization('',[-1i*.05*2*pi .0],[.05 1i*0],[.05 1i*0],1500,1,1,0,2*pi/1,1,1,1)
-% irf_plasma_wave_visualization('',.1,[.01 1i*0],[-.01 1i*0],1500,[.3+1i*.05],8,2*pi/.5,2*pi/1)
-% surface wave
-% irf_plasma_wave_visualization('',.1,[0.03 1i*.03],[0.03 1i*.03],2000,1,5,2*pi/.5,1i*1.5*pi,1,1,1)
+%   irf_plasma_wave_visualization('alfven')  
+%   irf_plasma_wave_visualization('',[-1i*.05*2*pi .0],[.05 1i*0],[.05 1i*0],1500,1,1,0,2*pi/1,1,1,1)
+%   irf_plasma_wave_visualization('',[.1 0],[.01 1i*0],[-.01 1i*0],1500,[.3+1i*.05],8,2*pi/.5,2*pi/1)
+%   surface wave
+%   irf_plasma_wave_visualization('',[.1 0],[0.03 1i*.03],[0.03 1i*.03],2000,1,5,2*pi/.5,1i*1.5*pi,1,1,1)
 %
 % to create animated gif
 % imwrite(im,map,'anim.gif','DelayTime',0,'LoopCount',inf)
 
 global Xplot_lim Yplot_lim
-for ha=1, % check input
+if 1, % check input
     if nargin < 1 ,
-        help irf_whamp_plot_f;
+        help irf_plasma_wave_visualization;
         return
-    end
-    
-    if nargin == 1,
-        switch flag
-            case 'Alfven'
-            case 'whistler'
-        end
     end
     
     if nargin < 12, init_type=1; end
@@ -56,10 +50,43 @@ for ha=1, % check input
     if nargin < 4, dVe=[0,0]; end
     if nargin < 3, dVi=[.1,0]; end
     if nargin < 2, dB=.1; end
+    if nargin == 1 && ischar(flag), % example demos
+        switch lower(flag)
+            case 'alfven'
+                Bo=1;                       % background magnetic field is amplitude 1
+                dVix=.2;dViz=.2;
+                dVex=dVix;dVez=dViz;
+                N=1500;
+                f=1+1i*.0;w=2*pi/f;T=1;
+                Lx=1;kx=2*pi/Lx;
+                Lz=1;kz=2*pi/Lz;
+                dBx=dVix*kz*Bo/w;
+                dBz=-dVix*kx*Bo/w;
+                dB=[dBx dBz];
+                dVi=[dVix dViz];
+                dVe=[dVex dVez];
+                init_type=2;
+            case 'whistler'
+                Bo=1;                       % background magnetic field is amplitude 1
+                dVix=0;dViz=0;
+                dVex=.2;dVez=.2;
+                N=1500;                     % number of particles
+                f=1+1i*.0;w=2*pi/f;T=1;
+                Lx=1;kx=2*pi/Lx;            % wave period in X
+                Lz=1;kz=2*pi/Lz;            % wave period in Z
+                dBx=dVex*kz*Bo/w;
+                dBz=-dVex*kx*Bo/w;
+                dB=[dBx dBz];
+                dVi=[dVix dViz];
+                dVe=[dVex dVez];
+                init_type=2;
+        end
+    end
 end
-for ha=1, % initialize figure
+if 1, % initialize figure
     set(0,'defaultLineLineWidth', 1.5);
     fn=figure(101);clf;
+    set(fn,'Renderer','painters')
     set(fn,'color','white')
     set(gcf,'PaperUnits','centimeters')
     xSize = 12; ySize = 12;
@@ -70,7 +97,7 @@ for ha=1, % initialize figure
     cla;
     set(h,'visible','off')
 end
-for ha=1, % initialize location of particles
+if 1, % initialize location of particles
     if init_type==0,
         r_i=rand(N,2); % random ions
         r_i(:,1)=r_i(:,1)*X;
@@ -105,7 +132,7 @@ for ha=1, % initialize location of particles
     end
     plot_particles(h,r_i,r_e);
 end
-for ha=1, % initialize field lines
+if 1, % initialize field lines
     Nfield=20; % number of field lines
     Npoints=20; % number of field line points
     field_lines_init=zeros(Nfield,Npoints,2); % x and y coordinates of field lines
@@ -115,7 +142,7 @@ for ha=1, % initialize field lines
         field_lines_init(j,:,2)=0:Z/(Npoints-1):Z;
     end
 end
-for ha=1, % step through wave
+if 1, % step through wave
     dt=1/20; % 20 frames per second
     time_steps=0:dt:T;
     for j=1:length(time_steps), % calculate particle positions
@@ -143,7 +170,7 @@ for ha=1, % step through wave
     for haha=1, % plot wave animation
         A=moviein(length(time_steps)); % create matlab movie matrix
         for jj=1:length(time_steps), % plot wave animation
-            pause(.05);
+            pause(.02);
             plot_particles(h,r_ions(:,:,jj),r_electrons(:,:,jj),squeeze(field_lines(jj,:,:,:)));
             A(:,jj)=getframe;
             if jj==1, % initialize animated gif matrix
