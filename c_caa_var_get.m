@@ -14,6 +14,10 @@ function [res,resdataobject,resmat] = c_caa_var_get(varargin)
 % give values for each dependency and other information
 
 jloaded=0;
+if nargout, % initialize return variables to empty 
+    res=[];resdataobject=[];resmat=[];
+end
+
 flagmat=0; if nargout>2, flagmat=1;end % whether to calculate mat variable
 for j=1:length(varargin),
   var_name=varargin{j};
@@ -27,8 +31,13 @@ for j=1:length(varargin),
       disp('Dataobj exist in memory. NOT LOADING FROM FILE!')
     else
       caa_load(dataobj_name);
+      if exist(dataobj_name,'var'), % success loading data
       eval(['dataobject=' dataobj_name ';']);
       jloaded=jloaded+1;
+      else
+          disp([dataobj_name ' could not be loaded!']);
+          continue;
+      end
     end
     var=getv(dataobject,var_name);
     if flagmat % construct also matlab format
@@ -39,7 +48,7 @@ for j=1:length(varargin),
       resdataobject=dataobject;
       if flagmat, resmat=varmat;end
     elseif jloaded == 2
-      res={var};
+      res={res,var};
       resdataobject={resdataobject,dataobject};
       if flagmat, resmat={resmat,varmat}; end
     elseif jloaded > 2
