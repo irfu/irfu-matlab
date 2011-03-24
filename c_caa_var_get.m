@@ -21,9 +21,15 @@ end
 flagmat=0; if nargout>2, flagmat=1;end % whether to calculate mat variable
 for j=1:length(varargin),
   var_name=varargin{j};
-  if ischar(var_name) && strfind(var_name,'__') % variable name specified as input
+  if ischar(var_name) && any(strfind(var_name,'__')) % variable name specified as input
     dd=regexp(var_name, '__', 'split');
-    dataobj_name=dd{end};
+    if length(dd)==2, % data object can be properly identifide
+        dataobj_name=dd{end};
+    elseif length(dd)==3, % the case of PEACE moments
+        if strcmp(dd{3},'MOMENTS'),
+            dataobj_name=[dd{2}(1:2) '_CP_PEA_' dd{3}];
+        end
+    end
     dataobj_name(strfind(dataobj_name,'-'))='_'; % substitute '-' with '_'
     if evalin('caller',['exist(''' dataobj_name ''',''var'')']),
       dataobject=evalin('caller',dataobj_name);
