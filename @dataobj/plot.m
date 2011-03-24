@@ -296,15 +296,15 @@ if flag_lineplot
         if use_comp, % pick up components, data should be char
           lab_1 = ['(' dep_x.data(1,:,comp) ')'];
         else % data are values, label under LABLAXIS
-          legend(num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
-          legend('boxoff')
+          legend(ax,num2cell(dep_x.data(1,:,:),2), 'Location','NorthWest')
+          legend(ax,'boxoff')
         end
       else
         lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
       end
     end
   end
-  ylabel(sprintf('%s%s [%s]', flab, lab_1, units))
+  ylabel(ax,sprintf('%s%s [%s]', flab, lab_1, units))
   
   text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
     dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
