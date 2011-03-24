@@ -56,8 +56,8 @@ for j=1:length(h)
   ypoints(:,3:4) = ylim(2);
   zpoints = -1 * ones(size(ypoints,1),4); % to put patches under all plots
   for jj=1:size(tpoints,1),
-      if tlim(jj,1)==tlim(jj,2) % draw line instead of patch
-          hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3]),'color',color(jj,:),'parent',h(j),varargin{:});
+      if tlim(jj,1)==tlim(jj,2) % draw line instead of patch (in this case draw line above everything, therefore "+2" in the next line)
+          hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3])+2,'color',color(jj,:),'parent',h(j),varargin{:});
       else % make patch
           hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),varargin{:});
           fc=get(hp(j,jj),'facecolor');
