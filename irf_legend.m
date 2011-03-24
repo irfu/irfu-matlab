@@ -2,9 +2,9 @@ function ht=irf_legend(axis_handle,labels,position,varargin)
 % irf_legend(axis_handle,labels,position,text_property,text_value,...)
 %
 % labels - cell array with strings
-% position - in normalized units 
+% position - in normalized units (default, if x position is epoch assumes data units)
 %
-% default is "smart" alignment,e.g.'left' in left side 
+% default for normalized units is "smart" alignment,e.g.'left' in left side 
 %  and 'right' in righ side of plot
 %
 % nonstandard text property values: 
@@ -25,12 +25,21 @@ if axis_handle == 0, % add to the whole figure if inhandle = 0
         'Tag','BackgroundAxes', 'HitTest','off');
 end
 
+unit_format='normalized';
 colord=get(axis_handle, 'ColorOrder');
 cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
 
 % use smart alignment in upper part of panel vertical alignment='top', 
 % when vertical position above 1 then again 'bottom', in bottom part use
 % vertical alignment 'bottom'. Similarly for horizontal alignment
+
+if position(1)>1e8 % assume that position specifued in axis units
+    unit_format='data';
+    ud = get(gcf,'userdata');
+    if isfield(ud,'t_start_epoch')
+        position(1)=position(1)- double(ud.t_start_epoch);
+    end
+end
 
 if position(1)<0, 
     value_horizontal_alignment='right';
@@ -61,7 +70,7 @@ end
 
 if strcmpi(value_horizontal_alignment,'left'), 
     for i=1:length(labels), % start with first label first
-        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
+        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi','fontsize',12);
         set(ht(i),'color',colord(i,:));
         set(ht(i),'verticalalignment',value_vertical_alignment);
         set(ht(i),'horizontalalignment',value_horizontal_alignment);
