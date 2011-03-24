@@ -15,10 +15,9 @@ if nargin == 1
   if flag_exist_dobj,
     dobj=evalin('caller',dobjname);
   else
-    caa_load(dobj);
+    caa_load(dobjname);
+    dobj=eval(dobjname);
   end
 end
 
 showdep(dobj,var_s)
-
-  
