@@ -214,13 +214,13 @@ if flag_subplot==0,  % One subplot
     else
       h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
     end
-    grid on;
+    grid(ax,'on');
     
     % Put YLimits so that no labels are at the end (disturbing in
     % multipanel plots)
     yl = get(ax,'YLim');
     if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
-      set(gca,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
+      set(ax,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
     end
     
     if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
