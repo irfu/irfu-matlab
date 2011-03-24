@@ -1,4 +1,4 @@
-function [outhandle colr]=irf_pl_mark(tlim,inhandle,color)
+function [outhandle colr]=irf_pl_mark(tlim,inhandle,color,varargin)
 %IRF_PL_MARK   Mark that time interval(s) with color backround
 %
 % outhandle=irf_pl_mark(tlim,inhandle,color);
@@ -57,9 +57,9 @@ for j=1:length(h)
   zpoints = -1 * ones(size(ypoints,1),4); % to put patches under all plots
   for jj=1:size(tpoints,1),
       if tlim(jj,1)==tlim(jj,2) % draw line instead of patch
-          hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3]),'color',color(jj,:),'parent',h(j));
+          hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3]),'color',color(jj,:),'parent',h(j),varargin{:});
       else % make patch
-          hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j));
+          hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),varargin{:});
           fc=get(hp(j,jj),'facecolor');
           fc=[1 1 1]-([1 1 1]-fc)/3; % make facecolor lighter
           set(hp(j,jj),'facecolor',fc);
