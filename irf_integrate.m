@@ -17,12 +17,11 @@ function xint=irf_integrate(x,tref,time_step)
 dt=[0 ; diff(x(:,1))];
 if nargin < 3, % estimate time step
     time_steps=diff(x(:,1));
-    [time_step,ind_min]=min(time_steps);
+    [~,ind_min]=min(time_steps);
     time_steps(ind_min)=[]; % remove the smallest time step in case some problems
-    time_step=min(time_steps),
+    time_step=min(time_steps);
 end
-data_gaps=find(dt>3*time_step);
-dt(data_gaps)=0;
+dt(dt>3*time_step)=0;
 xint=x;
 for j=2:size(xint,2),
   j_ok=find(~isnan(xint(:,j)));
@@ -37,9 +36,9 @@ if nargin>=2, % other origo for integration
     else
         irf_log('proc','do not know how to treat <tref> input')
     end
-    if tt < x(1,1),tt=x(1,1);end % if tref before first data point,set it to time ofo first data point
-    if tt > x(end,1),tt=x(end,1);end % if tref after laast data point,set it to time ofo last data point
-    xint_ref=irf_resamp(xint,tt);
+    if tt < x(1,1),tt=x(1,1);end % if tref before first data point,set it to time of first data point
+    if tt > x(end,1),tt=x(end,1);end % if tref after laast data point,set it to time of last data point
+    xint_ref=irf_resamp(xint,tt,'nearest');
     xint=irf_add(1,xint,-1,xint_ref);
 end
 
