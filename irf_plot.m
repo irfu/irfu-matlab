@@ -109,7 +109,26 @@ end
 
 % Plot separate subplots for all x components
 if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
-
+if isnumeric(x), % check if single number argument, to initialize only subplots
+    if numel(x)==1, % only one number
+        if x>1 && x<20,
+            number_of_subplots=floor(x);
+            set(gcf,'color','white'); % white background for figures (default is grey)
+            set(gcf,'PaperUnits','centimeters')
+            xSize = 10;
+            ySize = 5+5*sqrt(number_of_subplots);
+            xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+            set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+            xx=min(500/xSize,800/ySize);
+            set(gcf,'Position',[10 10 xSize*xx ySize*xx])
+            clear xSize sLeft ySize yTop
+            for j=1:number_of_subplots,
+                c(j)=irf_subplot(number_of_subplots,1,-j);
+            end    
+        end
+        return
+    end
+end
 if ischar(x), % Try to get variable labels etc.
   var_nam = tokenize(x); % White space separates variables
   jj = 1;
@@ -148,8 +167,6 @@ if ischar(x), % Try to get variable labels etc.
     end
   end
 end
-
-
 if iscell(x), % Plot several variables
   
   % No ylabels are given
