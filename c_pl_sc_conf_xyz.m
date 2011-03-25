@@ -29,13 +29,19 @@ if nargin==4, sc_list=spacecraft;
 elseif ~exist('sc_list','var') sc_list=1:4;
 elseif isempty(sc_list), sc_list=1:4;
 end
-if nargin>=2,
+if nargin>=2, % t,coord_sys
     coord_label=upper(coord_sys);
     if ~strcmp(coord_label,'GSE') || ~strcmp(coord_label,'GSM'),
         coord_label='GSE'; % default reference frame GSE if does not recognize coord system
     end
 end
-if ~exist(coord_label,'var'), coord_label='GSE'; end % in case coord_sys not specified
+if exist('coord_label','var'), % define coord label if not defined so far
+    if isempty(coord_label),
+        coord_label='GSE';
+    end
+else % in case coord_sys not specified
+    coord_label='GSE'; 
+end 
 
 switch lower(action)
     case 'initialize' % read in all data and open figure
@@ -51,6 +57,7 @@ switch lower(action)
             irf_log('fcal','Check time format');return;
         end
         ok=c_load('R?',sc_list);
+        c_eval('if (R?(1,1)>t) || (R?(end,1)<t), ok=[];end',sc_list(1)); 
         if ~any(ok),
             for ic=1:4,
                 [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
@@ -73,10 +80,12 @@ switch lower(action)
         menus;
         c_pl_sc_conf_xyz(plot_type);
     case 'gse'
+        coord_label='GSE';
         c_eval('coord_label=''GSE'';r?=R?;',sc_list);
         c_pl_sc_conf_xyz('plot');
     case 'gsm'
-        c_eval('coord_label=''GSM'';r?=irf_gse2gsm(R?);',sc_list);
+        coord_label='GSM';
+        c_eval('r?=irf_gse2gsm(R?);',sc_list);
         c_pl_sc_conf_xyz('plot');
     case 'default'
         set(figNumber,'Position',[10 10 600 1000]);
@@ -126,8 +135,9 @@ switch lower(action)
         switch plot_type
             case 'default'
                 cla(h(1));
-                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?},''LineWidth'',1.5);hold on;',sc_list);
-                xlabel(h(1),['X [R_E] ' coord_label]);ylabel(['Z [R_E] '  coord_label]);
+                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
+                xlabel(h(1),['X [R_E] ' coord_label]);
+                ylabel(h(1),['Z [R_E] '  coord_label]);
                 grid(h(1),'on')
                 set(h(1),'xdir','reverse')
                 
