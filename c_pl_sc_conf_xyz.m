@@ -26,12 +26,12 @@ elseif   (nargin < 9),plot_type='default';action='initialize';
 end
 if nargin==0, time=[2010 12 31 01 01 01];end
 if nargin==4, sc_list=spacecraft;
-elseif ~exist('sc_list','var') sc_list=1:4;
+elseif ~exist('sc_list','var'), sc_list=1:4;
 elseif isempty(sc_list), sc_list=1:4;
 end
 if nargin>=2, % t,coord_sys
     coord_label=upper(coord_sys);
-    if ~strcmp(coord_label,'GSE') || ~strcmp(coord_label,'GSM'),
+    if ~(strcmp(coord_label,'GSE') || strcmp(coord_label,'GSM')),
         coord_label='GSE'; % default reference frame GSE if does not recognize coord system
     end
 end
@@ -188,7 +188,8 @@ switch lower(action)
                 h(4)=subplot(2,2,4);axis off;
                 hold(h(1),'off');
                 c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
-                xlabel(h(1),['{\Delta}X [km] ' coord_label]);ylabel(['{\Delta}Z [km] ' coord_label]);
+                xlabel(h(1),['{\Delta}X [km] ' coord_label]);
+                ylabel(h(1),['{\Delta}Z [km] ' coord_label]);
                 set(h(1),'xdir','reverse')
                 grid(h(1),'on');
                 axis(h(1),[-drref drref -drref drref]);
@@ -197,12 +198,12 @@ switch lower(action)
                 else REform='%6.2f';
                 end
                 
-                axpos=get(h(1),'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
+                axpos=get(h(1),'position');
+                axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
                 set(h(1),'position',axpos); % narrow axis
                 ax1_2 = axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(h(1),'XLim');ylim_ax1=get(h(1),'YLim');
                 xtick_ax1=get(h(1),'XTick');ytick_ax1=get(h(1),'YTick');
-                xticklabel_ax1=get(h(1),'XTickLabel');yticklabel_ax1=get(h(1),'YTickLabel');
                 xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
@@ -221,7 +222,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
@@ -241,7 +241,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);set(ax1_2,'xdir','reverse')
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
@@ -278,7 +277,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
@@ -299,7 +297,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
@@ -335,7 +332,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
@@ -356,7 +352,6 @@ switch lower(action)
                 ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xticklabel_ax1=get(ax1,'XTickLabel');yticklabel_ax1=get(ax1,'YTickLabel');
                 xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
