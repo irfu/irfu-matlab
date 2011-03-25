@@ -98,11 +98,11 @@ for h=axis_handles
         if ischar(interval), % if interval is specified as text 'smart'
             if strcmpi(interval,'smart'), % smart labels (no overlap between subplots)
                 set(h,'ylimmode','auto');
-                interval=mean(get(h,'YLim'))+diff(get(h,'YLim'))*[-.499999 .499999];
-            else
-                interval=get(h,'ylim');
+                yzoom=mean(get(h,'YLim'))+diff(get(h,'YLim'))*[-.499999 .499999];
+                set(h,'Ylim',yzoom);
             end
+        else
+            set(h,'Ylim',interval);
         end
-        set(h,'Ylim',interval);
     end
 end
