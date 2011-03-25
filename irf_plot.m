@@ -8,6 +8,7 @@ function c=irf_plot(varargin)
 %      - cell array data, each of cells containing a matrix in AV Cluster
 %      format
 %      - string defining variable (can be CAA variable)
+%      - number (initialize figure with so many subplots)
 %
 %   arguments can be:
 %     'subplot' - plot all x values in separate subplots
