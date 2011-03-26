@@ -108,8 +108,8 @@ flag_date=1;   % default is to add date labels
   xlimlast=get(h(end),'xlim');
   start_time = fromepoch(xlimlast(1) + t_start_epoch );
   time_label = datestr( datenum(start_time),1 );
-  if flag_date == 1, xlabel(time_label);  end
-  if flag_labels == 0, set(gca,'XTickLabel',' '); end
+  if flag_date == 1, xlabel(h(end),time_label);  end
+  if flag_labels == 0, set(h(end),'XTickLabel',' '); end
   return;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
