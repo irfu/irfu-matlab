@@ -305,12 +305,9 @@ elseif flag_subplot==2, % Separate subplot for each variable
     t_st = []; t_end = [];
     xlen = [];
     
-     npl = size(x,2);
-%     c = zeros(1,npl);
+    npl = size(x,2);
     c=initialize_figure(npl);
     for ipl=1:npl
-%         c(ipl) = irf_subplot(npl,1,-ipl);
-        
         y = x{ipl};
         if isstruct(y), t_tmp = double(y.t);
         else t_tmp = double(y(:,1));
@@ -386,14 +383,14 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     ts = t_start_epoch(x{1}(:,1));
     
     npl = size(x{1},2) -1;
-    c = zeros(1,npl);
+    if npl==1,     % We make new figure with subplots only if more than 1 component to plot
+        c = gca;
+    else
+        c=initialize_figure(npl);
+    end
     for ipl=1:npl
-        % We make subplot only if wee need it
-        if npl==1, c(ipl) = gca;
-        else c(ipl) = irf_subplot(npl,1,-ipl);
-        end
         
-        line_colors=get(gca,'ColorOrder');
+        line_colors=get(c(ipl),'ColorOrder');
         for jj=1:size(x,2)
             use_color = 1;
             if iscell(marker)
@@ -406,20 +403,20 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             if size(x{jj},2)>=ipl+1
                 y = x{jj};
                 if use_color
-                    plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),...
+                    plot(c(ipl),(y(:,1)-ts-dt(jj)), y(:,ipl+1),...
                         'Color', line_colors(jj,:), 'LineStyle',marker_cur)
                 else
-                    plot((y(:,1)-ts-dt(jj)), y(:,ipl+1),marker_cur)
+                    plot(c(ipl),(y(:,1)-ts-dt(jj)), y(:,ipl+1),marker_cur)
                 end
-                hold on;
+                hold(c(ipl),'on');
             end
         end
-        grid on;
+        grid(c(ipl),'on');
         
         % Put YLimits so that no labels are at the end (disturbing in
         % multipanel plots)
-        set(gca,'YLim',...
-            mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
+        set(c(ipl),'YLim',...
+            mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
         
     end
     tt = y(~isnan(y(:,1)),1);
@@ -496,6 +493,7 @@ if number_of_subplots>1 && number_of_subplots<20,
     end
     for j=1:number_of_subplots,
         c(j)=irf_subplot(number_of_subplots,1,-j);
+        cla(c(j));
     end
     figure(gcf); % bring figure to front
 end
