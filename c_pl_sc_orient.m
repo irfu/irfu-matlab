@@ -163,7 +163,7 @@ switch lower(action)
                 data = getData(ClusterDB(DATABASE,c_ctl(0,'data_path')),t-5,5,ic,'b','nosave');
                 if isempty(data),
                     irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame'); % first col is time
-                    magnetic_field=[1 0 0 1];
+                    b=[1 0 0 NaN];
                 else
                     b=data{3};
                     b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
@@ -387,7 +387,8 @@ switch lower(action)
             c_pl_sc_orient('read_phase_and_b');
         end
 end
-hout=h;
+if nargout,hout=h;end
+
 
 function menus
 % generate menus
