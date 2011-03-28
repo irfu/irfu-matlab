@@ -2,7 +2,10 @@
 % enable code folding (including cells) to fast find your necessary examples
 edit irfnotes; return
 %% Initializing some figure
-% define size to have best agreement with eps file
+% fast way
+h=irf_plot(number_of_subplots);
+% slow, more detailed way
+% needed to define size to have best agreement with eps file
 set(0,'defaultLineLineWidth', 1.5);
 fn=figure(61);clf;
 set(fn,'color','white'); % white background for figures (default is grey)
@@ -23,14 +26,13 @@ h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 %
 %% Add information to figures
 % text and legends
-ht=irf_pl_info([mfilename '  ' datestr(now)]);set(ht,'interpreter','none');
+ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
 
 % labels a),b)...
 numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
-for ip=1:2,
-    axes(h(ip));
-    ht=irf_pl_info(numb{ip},gca,[0.01,1]);
-    set(ht,'fontsize',10,'verticalalignment','top');
+h=irf_plot_get_subplot_handles;
+for ip=1:length(h),
+    irf_legend(h(ip),numb{ip},[0.01,0.98],'fontsize',10);
 end
 %% Second axis
 hl1 = line(x1,y1,'Color','r');
@@ -55,7 +57,7 @@ for j=1:size(t1,1),
     tint(j,1)=iso2epoch(t1{j});tint(j,2)=iso2epoch(t2{j});
 end
 clear t1 t2 j;
-%% Cluster data reading from local disks
+%% Cluster data reading from local Uppsala disks
 % using c_get_batch
 c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
 % if time intervals to download are in matrix tint
