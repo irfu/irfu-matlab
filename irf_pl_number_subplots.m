@@ -1,11 +1,19 @@
 function ht=irf_pl_number_subplots(h,position,varargin)
-% ht=irf_pl_number_subplots(h,position,text_property,text_value,...)
+%IRF_PL_NUMBER_SUBPLOTS alpha numbering of subplots
+%  IRF_PL_NUMBER_SUBPLOTS adds a),b) to current figure
+%
+%  IRF_PL_NUMBER_SUBPLOTS(AX) number specified axis 
+%
+%  IRF_PL_NUMBER_SUBPLOTS(AX,position) put numbering at specified X,Y position
+%  X,Y units are normalized, values between 0 and 1.
+%
+%  IRF_PL_NUMBER_SUBPLOTS(AX,position,'Property1',PropertyValue1,...)
+%  sets the text property values of the numbering 
 % 
-% number subplots by putting in each subplot 'a)', 'b)', 'c)', etc.
-% INPUT 
-%   h           handles to subplots
-%   position    position of legend
-% any text property/value pairs can be passed 
+%  See also IRF_LEGEND
+% 
+%  Example:
+%     irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
 
 if nargin<=1, position=[0.01, 0.97];end
 if nargin==0, h=irf_plot_get_subplot_handles; end
