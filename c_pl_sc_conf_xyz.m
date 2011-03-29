@@ -57,7 +57,9 @@ switch lower(action)
             irf_log('fcal','Check time format');return;
         end
         ok=c_load('R?',sc_list);
-        c_eval('if (R?(1,1)>t) || (R?(end,1)<t), ok=[];end',sc_list(1)); 
+        if sum(ok)==4, % R1..R4 have been loaded
+            c_eval('if (R?(1,1)>t) || (R?(end,1)<t), ok=[];end',sc_list(1));
+        end
         if ~any(ok),
             for ic=1:4,
                 [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
