@@ -1,11 +1,11 @@
 % IRFNOTES File with different common examples how to use irf routines
 % enable code folding (including cells) to fast find your necessary examples
 edit irfnotes; return
-%% Initializing some figure
+%% Initialize and print some figure
 % fast way
 h=irf_plot(number_of_subplots);
-% slow, more detailed way
-% needed to define size to have best agreement with eps file
+% more detailed way
+% most lines needed to define the size to have best agreement with eps file
 set(0,'defaultLineLineWidth', 1.5);
 fn=figure(61);clf;
 set(fn,'color','white'); % white background for figures (default is grey)
@@ -24,16 +24,16 @@ h(1)=axes('position',[0.65 0.78 0.2 0.2]); % [x y dx dy]
 n_subplots=8;i_subplot=1;clear h;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 %
+
+% print
+set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+print -dpng delme.png
 %% Add information to figures
 % text and legends
+help irf_legend
 ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
-
 % labels a),b)...
-numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
-h=irf_plot_get_subplot_handles;
-for ip=1:length(h),
-    irf_legend(h(ip),numb{ip},[0.01,0.98],'fontsize',10);
-end
+help irf_pl_number_subplots
 %% Second axis
 hl1 = line(x1,y1,'Color','r');
 ax1 = gca;
