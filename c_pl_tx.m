@@ -4,6 +4,7 @@ function out=c_pl_tx(varargin)
 % c=c_pl_tx('x?',column,[linestyle],[dt1 dt2 dt3 dt4])
 % c=c_pl_tx(x1,x2,x3,x4,[column],[linestyle],[dt1 dt2 dt3 dt4])
 %   plot all 4 cluster values, time is in the first column
+% c=c_pl_tx(AX,...) plot in the specified axis
 %
 %   column - gives which column to plot. All columns will be plotted 
 %            if set to empty string or ommited.
@@ -30,10 +31,19 @@ function out=c_pl_tx(varargin)
 %
 % $Id$
 
-sc_list=1:4; % default plto all s/c data
-error(nargchk(1,8,nargin))
+[ax,args,nargs] = axescheck(varargin{:});
+if isempty(ax), % if empty axes
+    ax=gca;
+end
+hcf=get(ax,'parent'); % get figure handle 
 
-args = varargin;
+if nargs == 0, % show help if no input parameters
+    help c_pl_tx;
+    return
+end
+
+sc_list=1:4; % default plot all s/c data
+error(nargchk(1,8,nargs))
 
 if ischar(args{1})
     % We have variables defines in style B?
@@ -152,7 +162,7 @@ end
 
 % t_start_epoch is saved in figures user_data variable
 % check first if it exist otherwise assume zero
-ud=get(gcf,'userdata');
+ud=get(hcf,'userdata');
 if isfield(ud,'t_start_epoch'), 
 	t_start_epoch = double(ud.t_start_epoch);
 elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
@@ -162,7 +172,7 @@ elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
 	tt = [];
 	c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
 	t_start_epoch = double(min(tt)); clear tt
-	ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
+	ud.t_start_epoch = t_start_epoch; set(hcf,'userdata',ud);
 	irf_log('proc',['user_data.t_start_epoch is set to ' ...
 		epoch2iso(t_start_epoch)]);
 else
@@ -181,17 +191,17 @@ if length(column) == 1
 		end
 	end 
 	if ~isempty(pl)
-		eval(['h=plot(' pl ');'])
-		grid on
+		eval(['h=plot(ax,' pl ');'])
+		grid(ax,'on');
 		c = get(h(1),'parent');
 		add_timeaxis(c);
 		irf_figmenu;
 	end
 else
 	clf
-	c = zeros(1,length(column));
+	c = irf_plot(length(column));
 	for j=1:length(column)
-		c(j)=irf_subplot(length(column),1,-j);
+%		c(j)=irf_subplot(length(column),1,-j);
 		pl = '';
 		for jj=sc_list
 			if eval(irf_ssub('~isempty(x?)',jj))
@@ -200,10 +210,10 @@ else
 				clear s_s
 			end
 		end 
-		eval(['plot(' pl ')'])
-		grid on
+		eval(['plot(c(j),' pl ')'])
+		grid(c(j),'on');
 		
-        ud = get(gcf,'userdata'); ud.subplot_handles = c; set(gcf,'userdata',ud);
+        ud = get(hcf,'userdata'); ud.subplot_handles = c; set(hcf,'userdata',ud);
 	end
 	add_timeaxis(c);
 	irf_figmenu;
