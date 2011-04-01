@@ -1,4 +1,4 @@
-function caa_export_month(year,month,startday,stopday,sats)
+function caa_export_month(year,month,startday,stopday,sats,varargin)
 % CAA_EXPORT_MONTH: Export all caa data for the specified month.
 %
 % caa_export_month(year,month,[startday],[stopday],[sats])
@@ -7,17 +7,34 @@ function caa_export_month(year,month,startday,stopday,sats)
 %   L2: P, E
 %   L3: P, E, DER
 % with exceptions for probe failures.
-% If stopday is not specified, takes the remainder of the month.
+% If stopday is not specified or is zero, takes the remainder of the month.
 % If startday and stopday are not specified, defaults to the whole month.
 % If sats is not specified, defaults to 1:4.
+% Option: 'P_L23_only': exports only L2 and L3 P data.
   if nargin < 5, sats=1:4; end
   if nargin < 4, stopday=eomday(year,month); end
   if nargin < 3, startday=1; end
+  if stopday==0, stopday=eomday(year,month); end 
+  P_L23_only = 0;
+  for i=1:length(varargin)
+	switch(varargin{i})
+	case 'P_L23_only'
+		P_L23_only = 1;
+	otherwise
+		irf_log('fcal',['Option ''' varargin{i} '''not recognized'])
+	end
+  end
 
   old_pwd=pwd;
   cd(sprintf('/data/caa/cef/%4.4i',year))
-  levels= [1 1 1 1 1 1 1 2 3 3 2 3 2];
-  datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK'};
+  if P_L23_only
+	  datatypes={ 'P' 'P' };
+	  levels= [2 3];
+  else
+	  datatypes={'P1' 'P2' 'P3' 'P4' 'P12' 'P34' 'P32' 'P' 'P' 'DER' 'E' 'E' 'HK'};
+	  levels= [1 1 1 1 1 1 1 2 3 3 2 3 2];
+  end
+  
   switch year
 	  case 2006
 		  exceptions={{1 'P1'} {3 'P1'}  {2 'P3'} {1 'P12'} {3 'P12'} {2 'P32'} {4 'P32'}};
@@ -32,6 +49,12 @@ function caa_export_month(year,month,startday,stopday,sats)
 	  case 2008
 		  exceptions={{1 'P1'} {2 'P1'} {2 'P3'} {3 'P1'} {1 'P12'} {2 'P12'} {3 'P12'} {4 'P32'}};
 	  case 2009
+		  if month <= 10     % probe failure on C1
+			  exceptions={{1 'P1'} {2 'P1'} {2 'P3'} {3 'P1'} {1 'P12'} {2 'P12'} {3 'P12'} {4 'P32'}};
+		  else
+			  exceptions={{1 'P1'} {1 'P4'} {2 'P1'} {2 'P3'} {3 'P1'} {1 'P12'} {2 'P12'} {3 'P12'} {4 'P32'}};
+		  end
+	  case 2010
 		    % No TCOR yet...
 		    levels= [2 3 3 2];
 			datatypes={'P' 'P' 'E' 'HK'};
