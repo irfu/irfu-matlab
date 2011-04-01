@@ -74,7 +74,7 @@ flag_date=1;   % default is to add date labels
           xcoord = res{1};
           for ii = 1:size(res{1},2)
               if ~strcmp(lab(ii),' ')
-                  ax = axis;
+                  ax = axis(h(j));
                   mm = irf_resamp( xlabels, xcoord(ii));
                   for jj = 1:length(mm)
                       if jj==1, % the first line is time
@@ -82,10 +82,9 @@ flag_date=1;   % default is to add date labels
                       else % other lines are xlabels
                           str = [repmat(' \newline',1,jj-1) num2str(mm(jj),3)];
                       end
-                      outhandle   = text(xcoord(ii)-t_start_epoch, ...
-					  	ax(3)-abs(ax(3)-ax(4))/100, str);
+                      outhandle   = text(xcoord(ii)-t_start_epoch, ax(3), str);
                       set( outhandle, 'HorizontalAlignment', 'center', ...
-                          'VerticalAlignment', 'top', 'FontSize', 10);
+                          'VerticalAlignment', 'top', 'FontSize', 10,'parent',h(j));
                   end
               end
           end
@@ -97,10 +96,9 @@ flag_date=1;   % default is to add date labels
                   flag_date=0; % if more than one line in xlabels, remove date
                   str      = [repmat(' \newline',1,jj) xlabeltitle{jj}];
               end
-              outhandle = text( ax(1)-abs(ax(2)-ax(1))/20, ...
-			  	ax(3)-abs(ax(3)-ax(4))/100, str );
+              outhandle = text( ax(1)-abs(ax(2)-ax(1))/20,ax(3), str );
               set( outhandle, 'HorizontalAlignment', 'right', ...
-                  'VerticalAlignment', 'top', 'FontSize', 10);
+                  'VerticalAlignment', 'top', 'FontSize', 10,'parent',h(j));
           end
       end
   end
