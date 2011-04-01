@@ -34,6 +34,7 @@ if nargin > 2,
     flag_add_extra_xlabels=1;
     for j=1:numel(h)
         ud=get(h,'UserData');
+        if ~isstruct(ud), clear ud; ud=struct; end
         ud.xlabels=xlabels;
         ud.xlabeltitle=xlabeltitle;
         set(h(j),'UserData',ud);
