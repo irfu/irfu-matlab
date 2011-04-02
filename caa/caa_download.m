@@ -1,9 +1,15 @@
 function caa_download(tint,dataset)
-%Script to download data from the CAA in CDF format.
+% CAA_DOWNLOAD Download CAA data in CDF format
+%       CAA_DOWNLOAD(tint,dataset)
+% 
+% Downloads CAA data in CDF format into subdirectory "CAA/"
+%
 %  Examples:
-%   caa_download(tint) - tint is time interval [tstart_epoch, tend_epoch]
 %   caa_download(tint,'C3_CP_FGM_5VPS')
-%   caa_download(tint,'E_Vec_xy_ISR2__C2_CP_EFW_L3_E')
+%   caa_download(tint,'C?_CP_FGM_5VPS') 
+%           download all satellites (can use also * wildcard)
+% 
+%   tint - time interval in epoch
 %
 % The example list of datasets:
 % FGM 
