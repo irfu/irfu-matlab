@@ -487,7 +487,7 @@ if number_of_subplots>1 && number_of_subplots<20,
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
         set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-        xx=min(500/xSize,800/ySize);
+        xx=min(600/xSize,900/ySize);
         set(gcf,'Position',[10 10 xSize*xx ySize*xx])
         clear xSize sLeft ySize yTop
     end
