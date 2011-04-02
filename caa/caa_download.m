@@ -38,8 +38,6 @@ function caa_download(tint,dataset,flag)
 % RAPID
 %   caa_download(tint,'C?_CP_RAP_ESPCT6');
 
-
-
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -80,7 +78,7 @@ if nargin==0,    % check/show status of downloads
                     if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
                     movefile(filelist{jj},['CAA/' dataset]);
                 end
-                disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
+                %disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
                 rmdir(filelist{jj}(1:ii(1)),'s');
                 delete(f);
                 caa{j}.status='FINNISHED';
@@ -127,12 +125,13 @@ if strfind(dataset,'list'), % list  files
     caalog=urlread(url_line_list);
     disp(caalog);
     return;
-else
+else  % download data
+    
     url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         dataset '&time_range=' tintiso '&format=cdf&list=1'];
     caalist=urlread(url_line_list);
     disp(caalist);
-    if ~strfind(caalist,'FileName'),% there are no CAA datasets available
+    if ~any(strfind(caalist,'FileName')),% there are no CAA datasets available
         disp('There are no CAA data sets available!');
         return;
     end
