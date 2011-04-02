@@ -1,16 +1,18 @@
 function caa_download(tint,dataset)
 % CAA_DOWNLOAD Download CAA data in CDF format
-%       CAA_DOWNLOAD(tint,dataset)
+%       CAA_DOWNLOAD - check the status of jobs in current directory
+% 
+%       CAA_DOWNLOAD(tint,dataset) - download dataset from given time interval
 % 
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
+%   tint   - time interval in epoch 
+%  dataset - dataset name, can uses also wildcard * (? is changed to *)
+%
 %  Examples:
 %   caa_download(tint,'C3_CP_FGM_5VPS')
-%   caa_download(tint,'C?_CP_FGM_5VPS') 
-%           download all satellites (can use also * wildcard)
+%   caa_download(tint,'C?_CP_FGM_5VPS')   %    download all satellites 
 % 
-%   tint - time interval in epoch
-%
 % The example list of datasets:
 % FGM 
 %   caa_download(tint,'C?_CP_FGM_5VPS');
