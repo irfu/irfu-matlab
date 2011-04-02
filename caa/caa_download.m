@@ -65,18 +65,18 @@ if nargin==0,    % check/show status of downloads
             disp(['=== Checking status of job nr: ' num2str(j) '==='])
             [f,status]=urlwrite(caa{j}.zip,'delme.zip');
             if status == 0,
-                disp(['STILL WAITING TO FINNISH']);
+                disp('STILL WAITING TO FINNISH');
             else
                 filelist=unzip(f);
                 for jj=1:length(filelist),
                     ii=strfind(filelist{1},filesep);
                     dataset=filelist{jj}(ii(1)+1:ii(2)-1);
                     disp(['Data set: ' dataset '--> CAA/']);
-                    if ~exist(['CAA/' dataset],'dir') mkdir(['CAA/' dataset]);end
+                    if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
                     movefile(filelist{jj},['CAA/' dataset]);
                 end
-                disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{j}(1:ii(1)) ',delme.zip']);
-                rmdir(filelist{j}(1:ii(1)),'s');
+                disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
+                rmdir(filelist{jj}(1:ii(1)),'s');
                 delete(f);
                 caa{j}.status='FINNISHED';
                 save -mat .caa caa; % changes in caa saved
