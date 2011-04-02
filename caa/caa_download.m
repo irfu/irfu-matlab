@@ -57,8 +57,8 @@ if nargin==0,    % check/show status of downloads
         disp('No active downloads');
         return;
     end
+    j_finnished_jobs=[];
     for j=1:length(caa), % go through jobs
-        j_finnished_jobs=[];
         if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') , % do nothing
             j_finnished_jobs(end+1)=j;
         elseif strcmpi(caa{j}.status,'submitted'),
@@ -86,10 +86,11 @@ if nargin==0,    % check/show status of downloads
             return
         end
     end
-    if j_finnished_jobs>5, % ask for cleanup
+    if numel(j_finnished_jobs)>5, % ask for cleanup
         y=input('Shall I remove FINNISHED from the list? y/n :','s');
         if strcmpi(y,'y'),
             caa(j_finnished_jobs)=[];
+            save -mat .caa caa;
         end
     end
     return;
