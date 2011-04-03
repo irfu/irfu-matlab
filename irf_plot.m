@@ -482,7 +482,8 @@ if number_of_subplots>1 && number_of_subplots<20,
     c=zeros(1,number_of_subplots);
     if strcmpi(flag,'newfigure'), % if to open new figure
         set(gcf,'color','white'); % white background for figures (default is grey)
-        set(gcf,'PaperUnits','centimeters')
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'defaultlinelinewidth',1.0);
         xSize = 10;
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
