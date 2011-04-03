@@ -1,6 +1,6 @@
 function [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
 % Usage:
-% [h]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
+% [A,im,map]=irf_plasma_wave_visualization(flag,dB,dVi,dVe,N,f,T,kx,kz,X,Z,init_type)
 %
 % visualize plasma waves (ion,electron locations and field lines)
 %
@@ -94,7 +94,8 @@ if 1, % initialize figure
     xSize = 12; ySize = 12;
     xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
     set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-    set(gcf,'Position',[10 10 xSize*50 ySize*50])
+    pos=get(gcf,'Position');
+    set(gcf,'Position',[pos(1) pos(2) xSize*50 ySize*50])
     h=axes('position',[0.1 0.1 0.8 0.8]); % [x y dx dy]
     cla;
     set(h,'visible','off')
@@ -107,8 +108,8 @@ if 1, % initialize location of particles
         r_e=rand(N,2); % random electrons
         r_e(:,1)=r_e(:,1)*X;
         r_e(:,2)=r_e(:,2)*Z;
-%        dVxlim=max(abs(dVi(1)),abs(dVi(1)));
-%        dVylim=max(abs(dVi(2)),abs(dVi(2)));
+        %        dVxlim=max(abs(dVi(1)),abs(dVi(1)));
+        %        dVylim=max(abs(dVi(2)),abs(dVi(2)));
         Xplot_lim=[0 X];
         Yplot_lim=[0 Z];
     elseif init_type==1,
