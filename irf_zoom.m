@@ -103,6 +103,8 @@ for h=axis_handles
             end
         else
             set(h,'Ylim',interval);
+            yzoom=mean(get(h,'YLim'))+diff(get(h,'YLim'))*[-.499999 .499999];
+            set(h,'Ylim',yzoom);
         end
     end
 end
