@@ -1,4 +1,4 @@
-function caa_download(tint,dataset,flag)
+function caa_download(tint,dataset)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -60,15 +60,22 @@ if nargin==0,    % check/show status of downloads
         disp('No active downloads');
         return;
     end
-    j_finnished_jobs=[];
+    j_remove_jobs=zeros(1,length(caa));
+    j_finnished_jobs=zeros(1,length(caa));
     for j=1:length(caa), % go through jobs
         if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') , % do nothing
-            j_finnished_jobs(end+1)=j;
+            j_finnished_jobs(j)=1;
         elseif strcmpi(caa{j}.status,'submitted'),
             disp(['=== Checking status of job nr: ' num2str(j) '==='])
             [f,status]=urlwrite(caa{j}.zip,'delme.zip');
             if status == 0,
-                disp('STILL WAITING TO FINNISH');
+                disp(['STILL WAITING TO FINNISH, submitted ' num2str((now-caa{j}.timeofrequest)*24,3) 'h ago.']);
+                if now-caa{j}.timeofrequest>1, % waiting more than 1 day
+                    y=input('Waiting more than 24h. Delete from list? y/n :','s');
+                    if strcmpi(y,'y'),
+                        j_remove_jobs(j)=1;
+                    end
+                end
             else
                 filelist=unzip(f);
                 for jj=1:length(filelist),
@@ -89,13 +96,14 @@ if nargin==0,    % check/show status of downloads
             return
         end
     end
-    if numel(j_finnished_jobs)>5, % ask for cleanup
+    if sum(j_finnished_jobs)>5, % ask for cleanup
         y=input('Shall I remove FINNISHED from the list? y/n :','s');
         if strcmpi(y,'y'),
-            caa(j_finnished_jobs)=[];
-            save -mat .caa caa;
+            j_remove_jobs=j_remove_jobs | j_finnished_jobs;
         end
     end
+    caa(j_remove_jobs==1)=[];
+    save -mat .caa caa;
     return;
 end
 
@@ -107,8 +115,7 @@ if nargin==1, help caa_download;return; end
 % caa.status - status (0-submitted, 1-downloaded)
 % caa.timeofrequest - in matlab time units
 
-if ~exist('CAA','dir') mkdir('CAA');end
-caa_data_directory='CAA/';
+if ~exist('CAA','dir'), mkdir('CAA');end
 t1iso=epoch2iso(tint(1));
 t2iso=epoch2iso(tint(2));
 tintiso=[t1iso '/' t2iso];
@@ -122,6 +129,7 @@ if strfind(dataset,'list'), % list  files
     end
     url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         filter '&time_range=' tintiso '&format=cdf&list=1'];
+    disp('Be patient! Contacting CAA...');
     caalog=urlread(url_line_list);
     disp(caalog);
     return;
@@ -129,6 +137,7 @@ else  % download data
     
     url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         dataset '&time_range=' tintiso '&format=cdf&list=1'];
+    disp('Be patient! Contacting CAA to see the list of files...');
     caalist=urlread(url_line_list);
     disp(caalist);
     if ~any(strfind(caalist,'FileName')),% there are no CAA datasets available
@@ -139,6 +148,7 @@ else  % download data
     url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         dataset '&time_range=' tintiso '&format=cdf'];
     
+    disp('Be patient! Submitting data request to CAA...');
     caalog=urlread(url_line);
     disp(caalog);
     
