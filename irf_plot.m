@@ -48,10 +48,20 @@ function c=irf_plot(varargin)
 %              3 - components of vectors in separate panels
 
 [ax,args,nargs] = axescheck(varargin{:});
+x=args{1};
+if isnumeric(x), % check if single number argument, to initialize only subplots
+    if numel(x)==1, % only one number
+        if x>1 && x<20,
+            c=initialize_figure(x);
+        else
+            disp('Only 1-20 number of subplots supported.;)');
+        end
+        return
+    end
+end
 if isempty(ax),
     ax=gca;
 end
-x=args{1};
 args=args(2:end);
 original_args=args;
 
@@ -110,16 +120,6 @@ end
 
 % Plot separate subplots for all x components
 if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
-if isnumeric(x), % check if single number argument, to initialize only subplots
-    if numel(x)==1, % only one number
-        if x>1 && x<20,
-            c=initialize_figure(x,'newfigure');
-        else
-            disp('Only 1-20 number of subplots supported.;)');
-        end
-        return
-    end
-end
 if ischar(x), % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
     jj = 1;
