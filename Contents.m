@@ -48,8 +48,9 @@
 %   irf_figmenu     - Add to the current figure a menu with some useful commands
 %
 % Cluster
-%   caa_load        - load data downloaded from CAA in CDF format
-%   c_caa_get_var   - get variable from CAA files
+%   caa_load        - load data downloaded from CAA 
+%   caa_download    - download data from CAA in CDF format
+%   c_caa_var_get   - get variable from CAA files
 %   c_load          - load data from MAT files (caa_load for CAA cdf files)
 %   c_get_batch     - get Cluster data from ISDAT/CDF/DDS
 %   c_4_v_gui       - timing analysis from 4 or less spacecraft 
