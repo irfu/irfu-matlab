@@ -22,9 +22,11 @@ UV_factor=irf_ask('UV factor [%]>','UV_factor',1);
 probe_type=irf_ask('Probe type. 1-spherical, 2- cylindrical 3-specify [%]>','probe_type',2); 
 stazer_area=irf_ask('Probe total area in m2. [%]>','stazer_area',0.1885); % stazer surface area in m2
 if probe_type==1,
-    stazer_cross_section=stazer_area/pi;probe_text='spherical'; %cylinder
+    stazer_cross_section=stazer_area/pi;probe_text='spherical'; %sphere
+    sunlit_total_surface_ratio=.25;
 elseif probe_type ==2,
-    stazer_cross_section=stazer_area/4;probe_text='cylindrical'; %sphere
+    stazer_cross_section=stazer_area/4;probe_text='cylindrical'; %cylinder
+     sunlit_total_surface_ratio=1/pi;
 elseif probe_type ==3,
     sunlit_total_surface_ratio=irf_ask('Specify ratio between sunlit and total area [%]:','sunlit_total_surface_ratio',.2);
     stazer_cross_section=stazer_area*sunlit_total_surface_ratio;probe_text='';probe_type=1; % for further calcualtions assume probe type sphere
