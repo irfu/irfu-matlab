@@ -72,7 +72,8 @@ function [wfinal,extraparam]=irf_disp_surf_calc(kc_x_max,kc_z_max,m_i,wp_e)
       disppolynomial=[1, 0, polkoeff8(kz,kx), 0, polkoeff6(kz,kx), 0, ...
 		      polkoeff4(kz,kx), 0, polkoeff2(kz,kx), 0, ...
 		      polkoeff0(kz,kx)];
-      wtemp=roots(disppolynomial);
+%      wtemp=roots(disppolynomial); 
+      wtemp=real(roots(disppolynomial)); % theoretically should be real (A. Tjulin)
       wfinal(:,kz,kx)=sort(wtemp); % We need to sort the answers to
                                    % get nice surfaces.
     end
