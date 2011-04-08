@@ -10,11 +10,13 @@ function caa_download(tint,dataset)
 %
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
-%   tint   - time interval in epoch
+%   tint   - time interval in epoch  [tint_start tint_stop]
+%            or in ISO format, ex. '2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z'
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 %  Examples:
 %   caa_download(tint,'list:*FGM*')
+%   caa_download('2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z','list:*FGM*')
 %   caa_download(tint,'C3_CP_FGM_5VPS')
 %   caa_download(tint,'C?_CP_FGM_5VPS')   %    download all satellites
 %
@@ -116,9 +118,16 @@ if nargin==1, help caa_download;return; end
 % caa.timeofrequest - in matlab time units
 
 if ~exist('CAA','dir'), mkdir('CAA');end
+if isnumeric(tint), % assume tint is epoch
 t1iso=epoch2iso(tint(1));
 t2iso=epoch2iso(tint(2));
 tintiso=[t1iso '/' t2iso];
+elseif ischar(tint), % tint is in isoformat
+    tintiso=tint;
+else % unknown format
+    disp(tint);
+    error('caa_download: unknown tint format');
+end
 dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
 
 if strfind(dataset,'list'), % list  files
