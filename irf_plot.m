@@ -476,6 +476,8 @@ function c=initialize_figure(number_of_subplots,flag)
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
     flag='newfigure';
+elseif isempty(get(gcf,'children')) % current figure is empty
+    flag='newfigure';    
 end
 if number_of_subplots>1 && number_of_subplots<20,
     number_of_subplots=floor(number_of_subplots);
@@ -488,7 +490,8 @@ if number_of_subplots>1 && number_of_subplots<20,
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
         set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-        xx=min(600/xSize,900/ySize);
+        sz=get(0,'screensize'); 
+        xx=min(min(600,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
         set(gcf,'Position',[10 10 xSize*xx ySize*xx])
         clear xSize sLeft ySize yTop
     end
