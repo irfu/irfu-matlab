@@ -31,7 +31,8 @@ function [A,im,map]=irf_plasma_wave_visualization(varargin)
 %           map - color map
 %
 % Examples:
-%   irf_plasma_wave_visualization('demo','alfven_shear')
+%   [A,im,map]=irf_plasma_wave_visualization('demo','alfven_shear');
+%   movie(A,20);
 %
 % to create animated gif
 % imwrite(im,map,'anim.gif','DelayTime',0,'LoopCount',inf)
