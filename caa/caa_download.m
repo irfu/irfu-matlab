@@ -136,25 +136,33 @@ if strfind(dataset,'list'), % list  files
     else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
     end
-    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-        filter '&time_range=' tintiso '&format=cdf&list=1'];
+%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        filter '&time_range=' tintiso '&format=cdf&list=1'];
+%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        filter '&time_range=' tintiso '&format=cdf&list=1'];
+    url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' filter '&time_range=' tintiso ];
     disp('Be patient! Contacting CAA...');
     caalog=urlread(url_line_list);
     disp(caalog);
     return;
 else  % download data
     
-    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+    url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso ];
     disp('Be patient! Contacting CAA to see the list of files...');
     caalist=urlread(url_line_list);
     disp(caalist);
-    if ~any(strfind(caalist,'FileName')),% there are no CAA datasets available
+    if ~any(strfind(caalist,'Version')),% there are no CAA datasets available
         disp('There are no CAA data sets available!');
         return;
     end
     
-    url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%    url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        dataset '&time_range=' tintiso '&format=cdf'];
+    url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         dataset '&time_range=' tintiso '&format=cdf'];
     
     disp('Be patient! Submitting data request to CAA...');
