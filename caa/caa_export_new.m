@@ -693,14 +693,16 @@ if exist('result_com') && length(result_com) > 0, dsc.com = result_com; end
 cd(old_pwd)
 
 % Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
-if (lev > 1) && ~isempty(data)
+if ~isempty(data)
     indx=find(diff(data(:,1)) < 0.5e-3);
     if ~isempty(indx)
         irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
         for i=1:length(indx)
             irf_log('save',['Removing data near non-monotonic time stamp at ' epoch2iso(data(indx(i),1))])
             ii_left =find(data(:,1) < (data(indx(i)+1,1) - 10.4), 1, 'last' );
+			if isempty(ii_left), ii_left=1; end
             ii_right=find(data(:,1) > (data(indx(i),1)   + 10.4), 1, 'first' );
+			if isempty(ii_right), ii_right=length(data(:,1)); end
             data(ii_left:ii_right,:)=NaN;             
         end
         indx=isfinite(data(:,1));
@@ -803,7 +805,12 @@ if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
 if ~isempty(data)
 	n_col = size(data,2) -1; % number of data columns - time
 	for j=1:n_col
-		ii = find(isnan(data(:,j+1)));
+		ii = find(abs(data(:,j+1)) > 1e8);
+		if ~isempty(ii)
+			irf_log('save',['WARNING: detected ' num2str(length(ii)) ' wildly out of range data points.'])
+			data(ii,j+1) = FILL_VAL;
+		end
+		ii = find(isnan(data(:,j+1))) ;
 		if ~isempty(ii), data(ii,j+1) = FILL_VAL; end
 	end
 	
