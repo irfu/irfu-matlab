@@ -57,7 +57,7 @@ switch lower(action)
             irf_log('fcal','Check time format');return;
         end
         ok=c_load('R?',sc_list);
-        if sum(ok)==4, % R1..R4 have been loaded
+        if sum(ok)==numel(sc_list), % R1..R4 have been loaded
             c_eval('if (R?(1,1)>t) || (R?(end,1)<t), ok=[];end',sc_list(1));
         end
         if ~any(ok),
@@ -132,7 +132,7 @@ switch lower(action)
         R=0; c_eval('R=R+rr?/length(sc_list);',sc_list);
         c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);x?=dr?;',sc_list);
         drref=0; c_eval('drref=max([drref dr?(5)]);',sc_list);
-        
+        if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
         %%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
         switch plot_type
             case 'default'
