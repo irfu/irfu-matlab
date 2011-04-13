@@ -59,7 +59,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		int nrhs, const mxArray *prhs[])
 {
 	char *f_name, *format, *formats=NULL;
-	char tmp_s[BUFSIZ], tmp_s1[64], buf[BUFSIZ*64], unix_c[BUFSIZ];
+	char tmp_s[BUFSIZ], tmp_s1[128], buf[BUFSIZ*64], unix_c[BUFSIZ];
 	double *data, *res;
 	int   buflen,status,t_mrows,t_ncols,d_mrows,d_ncols,i,j,formatlen;
 	FILE *fp;
