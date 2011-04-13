@@ -5,4 +5,7 @@ START_META     =   INSTRUMENT_CAVEATS
    ENTRY       =   "Events:"
    ENTRY       =   ""
    ENTRY       =   "no events reported yet"
+   ENTRY       =   ""
+   ENTRY       =   "EFW operations caveats:"
+   ENTRY       =   "*C4_CQ_EFW_INST"
 END_META       =   INSTRUMENT_CAVEATS
