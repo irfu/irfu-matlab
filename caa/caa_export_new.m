@@ -156,7 +156,9 @@ for dd = 1:length(dirs)
          vs = irf_ssub(vs, probe_pairs(1));
       end
    elseif strcmp(caa_vs, 'P')      
-      global c_ct % includes aspoc active values
+      if ~exist('c_ct','var')
+         global c_ct % includes aspoc active values
+      end
       if isempty(c_ct)
          c_ctl('load_aspoc_active');
          global c_ct
@@ -728,7 +730,8 @@ if isempty(data)
 %         dsc.sigdig = [dsc.sigdig, 5, 1];
          
       otherwise
-         status = 1; return
+         dsc.com = '';
+%         status = 1; return
    end         
 	
 end
@@ -837,6 +840,7 @@ if ~isempty(data)
 		return
 	end
 else
+   disp(['Filename: ' file_name ext_s ' (Empty)' ]);
    [fid,msg] = fopen([file_name ext_s],'a');
    if fid < 0
 	   irf_log('save',['problem opening CEF file: ' msg])
@@ -847,7 +851,10 @@ else
    sta = fprintf(fid,'END_OF_DATA\n');
    fclose(fid);
    if sta<=0, irf_log('save','problem writing CEF tail'), status = 1; return, end 
-   
+
+   if exist([file_name ext_s '.gz'],'file')
+       delete([file_name ext_s '.gz']);
+   end
    [sta, res] = unix(['gzip ' file_name ext_s]);
    if sta>0
       irf_log('save', ['Error gzipping output file: ' res])
