@@ -119,7 +119,8 @@ else
             % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('SFIT?',cl_id);
 			v_size = 4;
-		else
+            nanfill = -1;
+        else
 			disp('not implemented'), cd(old_pwd), return
 		end
 	otherwise
@@ -778,7 +779,7 @@ buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
-if strcmp(caa_vs, 'SFIT')
+if strcmp(caa_vs, 'SFIT') && nanfill ~= -1
     if nanfill
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
     else
