@@ -129,7 +129,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
 		mexWarnMsgTxt("Cannot open output file");
 		*res = 1;
 	} else {
-		setbuf(fp,buf);
+/*		setbuf(fp,buf);*/
+		setbuffer(fp,buf,BUFSIZ*64-1);
 		status = 0;
 
 		for (i=0; i<d_mrows; i++){
