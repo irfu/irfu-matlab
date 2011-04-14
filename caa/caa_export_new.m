@@ -840,7 +840,7 @@ if ~isempty(data)
 		return
 	end
 else
-   disp(['Filename: ' file_name ext_s ' (Empty)' ]);
+   disp(['Filename : ' file_name ext_s ' (Empty)' ]);
    [fid,msg] = fopen([file_name ext_s],'a');
    if fid < 0
 	   irf_log('save',['problem opening CEF file: ' msg])
