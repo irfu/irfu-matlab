@@ -232,6 +232,15 @@ while 1
                         N=500;
                         axis_view=[0 0];
                         flag_axis_view_given=1;
+                    case 'plasma'
+                        Lx=Inf;kx=2*pi/Lx;
+                        Lz=.4;kz=2*pi/Lz;
+                        E=.03*[kx 0 kz]/sqrt(kx^2+kz^2); % electrostatic
+                        qm=[1 -400];
+                        f=20/(2*pi);T=1/f;flag_T=1;
+                        N=1000;
+                        axis_view=[0 0];
+                        flag_axis_view_given=1;
                     otherwise
                         irf_log('fcal,','wrongArgType : ''demo'' parameter value unknown')
                 end
