@@ -71,7 +71,7 @@ if nargin==0,    % check/show status of downloads
             disp(['=== Checking status of job nr: ' num2str(j) '==='])
             [f,status]=urlwrite(caa{j}.zip,'delme.zip');
             if status == 0,
-                disp(['STILL WAITING TO FINNISH, submitted ' num2str((now-caa{j}.timeofrequest)*24,3) 'h ago.']);
+                disp(['STILL WAITING TO FINNISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
                 if now-caa{j}.timeofrequest>1, % waiting more than 1 day
                     y=input('Waiting more than 24h. Delete from list? y/n :','s');
                     if strcmpi(y,'y'),
@@ -129,6 +129,7 @@ else % unknown format
     error('caa_download: unknown tint format');
 end
 dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
+dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
 
 if strfind(dataset,'list'), % list  files
     if strcmpi(dataset,'list'), % list all files
