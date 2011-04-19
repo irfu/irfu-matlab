@@ -1,4 +1,4 @@
-function [res,resdataobject,resmat] = c_caa_var_get(varargin)
+function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %C_CAA_VAR_GET(var_name)  get CAA variable (if necessary load it)
 % 
 % if input is cell array, output is also cell array
@@ -7,6 +7,7 @@ function [res,resdataobject,resmat] = c_caa_var_get(varargin)
 %  var= c_caa_var_get(varargin)
 %  [var,dataobject] = c_caa_var_get(varargin)
 %  [var,dataobject,variable_matlab_format]=c_caa_var_get(varargin)
+%  [var,dataobject,variable_matlab_format,variable_unit]=c_caa_var_get(varargin)
 %
 % Example:
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
@@ -19,6 +20,7 @@ if nargout, % initialize return variables to empty
 end
 
 flagmat=0; if nargout>2, flagmat=1;end % whether to calculate mat variable
+flagunit=0; if nargout>3, flagunit=1;end % whether to get the unit of variable
 for j=1:length(varargin),
   var_name=varargin{j};
   if ischar(var_name) && any(strfind(var_name,'__')) % variable name specified as input
@@ -49,18 +51,24 @@ for j=1:length(varargin),
     if flagmat % construct also matlab format
       varmat=getmat(dataobject,var_name);
     end
+    if flagunit % obtain variable unit
+      varunit=getunits(dataobject,var_name);
+    end
     if jloaded == 1
       res=var;
       resdataobject=dataobject;
       if flagmat, resmat=varmat;end
+      if flagunit, resunit=varunit;end
     elseif jloaded == 2
       res={res,var};
       resdataobject={resdataobject,dataobject};
       if flagmat, resmat={resmat,varmat}; end
+      if flagunit, resunit={resunit,varunit}; end
     elseif jloaded > 2
       res{jloaded}=var;
       resdataobject{j}=dataobject;
       if flagmat, resmat{j}=varmat;end
+      if flagunit, resunit{j}=varunit;end
     end
   end
 end
