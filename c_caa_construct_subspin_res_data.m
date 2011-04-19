@@ -19,9 +19,7 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 %   res=c_caa_construct_subspin_res_data('Data__C4_CP_PEA_PITCH_3DRH_PSD')
 
 if strfind(variable_name,'PITCH_3DR'), % PEACE variable
-  [variable,dataobject]=c_caa_var_get(variable_name); % check that it is loaded in memory
-  peace=getmat(dataobject,variable_name);
-  dataunits=getunits(dataobject,variable_name);
+  [variable,dataobject,peace,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
   enunits=getfield(getv(dataobject,variable.DEPEND_3),'UNITS');
   enlabel=getfield(getv(dataobject,variable.DEPEND_3),'LABLAXIS');
   enlabel=[enlabel ' [' enunits ']'];
@@ -34,9 +32,7 @@ if strfind(variable_name,'PITCH_3DR'), % PEACE variable
 elseif strfind(variable_name,'RAP_L3DD'), % RAPID variable
   % RAPID does not have pitch angle matrix data, therefore rebinning
   % necessary
-  [variable,dataobject]=c_caa_var_get(variable_name); % check that it is loaded in memory
-  rapid=getmat(dataobject,variable_name);
-  dataunits=getunits(dataobject,variable_name);
+  [variable,dataobject,rapid,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
   enunits=getfield(getv(dataobject,variable.DEPEND_1),'UNITS');
   enlabel=getfield(getv(dataobject,variable.DEPEND_1),'LABLAXIS');
   enlabel=[enlabel ' [' enunits ']'];
@@ -57,9 +53,7 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'HIA_HS_MAG'
   % CODIF does not have pitch angle matrix data, therefore rebinning
   % necessary  
   theta=11.25:22.5:180; % pitch angles to which rebin
-  [variable,dataobject]=c_caa_var_get(variable_name); % check that it is loaded in memory
-  varmat=getmat(dataobject,variable_name);
-  dataunits=getunits(dataobject,variable_name);
+  [variable,dataobject,varmat,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
   phivar=c_caa_var_get(variable.DEPEND_2);phi=phivar.data(1,:);
   polarvar=c_caa_var_get(variable.DEPEND_1);polar=polarvar.data(1,:);
   envar=c_caa_var_get(variable.DEPEND_3);en=envar.data(1,:);
