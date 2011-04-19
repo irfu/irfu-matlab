@@ -12,8 +12,10 @@ function irf_zoom(varargin)
 %
 %   IRF_ZOOM('x',xlim,'tref',tref) tref is EPOCH of time=0 point
 %
-%   IRF_ZOOM('y',ylim) zooms Y axis (avoiding labels at top and bottom)
+%   IRF_ZOOM('y') zooms Y axis (avoiding labels at top and bottom)
 %       useful when having many subpanels
+%
+%   IRF_ZOOM('y',ylim) zooms Y axis (avoiding labels at top and bottom)
 %
 
 % Old syntax
@@ -68,7 +70,11 @@ end
 %% NEW syntax case
 if ~flag_old_syntax,
     c=args{1};
-    interval=args{2};
+    if nargs == 1 && c=='y', % auto y zooming
+        interval=[]; % empty interval is auto y-zooming
+    else
+        interval=args{2};
+    end
     if nargs==4, % check if tref
         if strcmpi(args{3},'tref'),
             t_ref=args{4};
@@ -90,7 +96,7 @@ end
 
 axis_handles = reshape(ax,1,numel(ax));
 
-if size(interval,2) ~= 2, % check if interval input is ok
+if ~isempty(interval) && size(interval,2) ~= 2, % check if interval input is ok
     disp('zooming interval in wrong format');
     return;
 end
@@ -149,8 +155,20 @@ for h=axis_handles
                 end
             end
         case 'y'
+            if isempty(interval), % auto y zooming
+                set(h,'YLimMode','auto');
+                interval=get(h,'ylim');
+            end
+            if interval(1)>=0,
+                interval(1)=interval(1)*(1+1e-9);
+            else
+                interval(1)=interval(1)*(1-1e-9);
+            end
+            if interval(2)>=0,
+                interval(2)=interval(2)*(1-1e-9);
+            else
+                interval(2)=interval(2)*(1+1e-9);
+            end
             set(h,'Ylim',interval);
-            yzoom=mean(get(h,'YLim'))+diff(get(h,'YLim'))*[-.499999 .499999];
-            set(h,'Ylim',yzoom);
     end
 end
