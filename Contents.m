@@ -21,11 +21,12 @@
 %   irf_minvar ...  - minimum variance analysis routines
 %   irf_newxyz      - rotate vector into new coordinate system
 %   irf_norm        - Normalize vector
+%   irf_powerfft    - Calculate spectrograms
 %   irf_resamp      - Resample time series to the time line of another times series
 %   irf_tappl       - apply expression to data
 %   irf_tlim        - find a subinterval defined by time limits
 %
-% Space physics specific routines
+% Space/plasma physics specific routines
 %   irf_cdf_read    - read cdf files (see also caa_load for CAA cdf files)
 %   irf_disp_surf   - Interactively plot cold plasma dispersion surfaces
 %   irf_e_vxb       - Compute VxB and ExB/B^2
@@ -33,6 +34,7 @@
 %   irf_jz          - Estimate the current given velocity and magnetic field
 %   irf_mean        - put time series into mean field coordinates
 %   irf_plasma_calc - Calculate basic plasma quantities
+%   irf_plasma_wave_visualization.m - Visualize plasma waves
 %   irf_shue_mp     - estimate distance to model magnetopause (Shue)
 %   irf_units       - natural constants and units 
 %   irf_vht         - estimate velocity of the deHoffman-Teller frame
