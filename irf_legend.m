@@ -139,3 +139,5 @@ else
     end
 end
 
+if nargout==0, clear ht; end
+
