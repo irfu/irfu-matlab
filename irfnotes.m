@@ -371,7 +371,7 @@ if 1, % plot figures panels
         specrec.t=l3dd.t;
         specrec.f=l3dd_energies.data(1,:);
         specrec.p={rap_an};
-        caa_spectrogram(hca,specrec);
+        irf_spectrogram(hca,specrec);
         colorbar('peer',hca);
         caxis(hca,[-2 2]);
         irf_colormap('poynting');
@@ -469,7 +469,7 @@ if 1, % plot figures panels
             specrec.p=log10(res.data(ind,:,enindex));
         end
         specrec_C33DRH=specrec;
-        caa_spectrogram(hca,specrec);
+        irf_spectrogram(hca,specrec);
         caxis(hca,[-2.99 0.99])
         irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
         set(hca,'ytick',[30 60 90 120 150]);
@@ -492,7 +492,7 @@ if 1, % plot figures panels
             specrec.p=log10(res.data(ind,:,enindex)*5.369e-9);
             yticks=[30 60 90 120 150];
         end
-        caa_spectrogram(hca,specrec);
+        irf_spectrogram(hca,specrec);
         caxis(hca,[-4.99 -3.01])
         irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
         set(hca,'ytick',yticks);
@@ -521,7 +521,7 @@ if 1, % plot figures panels
             specrec.p=sum(res.data(ind,:,enindex),3);
             yticks=[45 90 135 ];
         end
-        caa_spectrogram(hca,specrec);colormap(jet);
+        irf_spectrogram(hca,specrec);colormap(jet);
         caxis([1 5]);
         set(hca,'ytick',yticks);
         irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
@@ -581,9 +581,9 @@ if 1,   % PANEL: PEACE PADH high resolution pitch C4 (cdf files from QJAS)
         specrec.p=log10(psdnew(ind,:,enindex));
     end
     specrec_C4PADH=specrec;
-    caa_spectrogram(hca,specrec);
+    irf_spectrogram(hca,specrec);
     %    hold on;
-    %    caa_spectrogram(hca,specrec_C43DRH);
+    %    irf_spectrogram(hca,specrec_C43DRH);
     caxis([-2.99 -1.01])
     colormap(jet);
     irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
