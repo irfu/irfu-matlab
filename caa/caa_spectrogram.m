@@ -26,6 +26,12 @@ function hout = caa_spectrogram(h,t,Pxx,F,dt,dF)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+disp('');
+disp('WARNING!!!!!')
+disp('');
+disp('caa_spectrogram is replaced with irf_spectrogram');
+disp('caa_spectrogram will be removed in the near future');
+disp('');
 
 error(nargchk(1,6,nargin))
 
