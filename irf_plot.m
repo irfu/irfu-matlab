@@ -201,7 +201,7 @@ end
 if flag_subplot==0,  % One subplot
     if isstruct(x)
         % Plot a spectrogram
-        caa_spectrogram(ax,x);
+        irf_spectrogram(ax,x);
         hcbar = colorbar('peer',ax);
         if ~isempty(var_desc{1})
             lab = cell(1,length(var_desc{1}.size));
@@ -323,7 +323,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
         clear tt
         
         if isstruct(y)
-            caa_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
+            irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
             hcbar = colorbar;
             if ~isempty(var_desc{ipl})
                 lab = cell(1,length(var_desc{ipl}.size));

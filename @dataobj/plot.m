@@ -413,7 +413,7 @@ elseif flag_spectrogram
   for i=1:ncomp
     specrec.p = plot_data(i);
     if create_axes, ax(i) = irf_subplot(length(comp),1,-i); end
-    h(i) = caa_spectrogram(ax(i),specrec);
+    h(i) = irf_spectrogram(ax(i),specrec);
     if ~isempty(ytick), set(ax(i) ,'YTick',ytick), end
     %if ~isempty(lab_2), lab_2s = [' (' lab_2(i,:) ')'];
     %else lab_2s = '';
