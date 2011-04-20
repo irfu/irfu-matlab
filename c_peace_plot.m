@@ -57,7 +57,7 @@ for jj=1:nsubplots,
         peace_spec_comp=peace_spec;
         peace_spec_comp.p=peace_spec.p(i_spectra(jj));
         peace_spec_comp.p_label=peace_spec.p_label(i_spectra(jj));
-        hspec=caa_spectrogram(h(jj),peace_spec_comp);
+        hspec=irf_spectrogram(h(jj),peace_spec_comp);
         if strcmp(peace_spec_comp.f_unit,'eV'),
             set(hspec,'xticklabel',[]);
             set(hspec,'Yscale','log');
