@@ -167,6 +167,7 @@ else  % download data
         dataset '&time_range=' tintiso '&format=cdf'];
     
     disp('Be patient! Submitting data request to CAA...');
+    disp(url_line);
     caalog=urlread(url_line);
     disp(caalog);
     
