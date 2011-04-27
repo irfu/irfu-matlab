@@ -23,10 +23,8 @@ START_META     =   DATASET_CAVEATS
    ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
    ENTRY       =   "Document (ICD)."
 ENTRY       =   " "
-   ENTRY       =   "Detailed quality information is provided as a 16 bit set of 
-flags"
-   ENTRY       =   "in the parameter P_bitmask__CXXX_CP_EFW_L3_P. The meaning of
-"
+   ENTRY       =   "Detailed quality information is provided as a 16 bit set of flags"
+   ENTRY       =   "in the parameter P_bitmask__CXXX_CP_EFW_L3_P. The meaning of"
    ENTRY       =   "the bits is as follows (LSB numbering starting at 0):"
    ENTRY       =   "Bit  0: Reset."
    ENTRY       =   "Bit  1: Bad bias."
