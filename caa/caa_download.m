@@ -80,15 +80,7 @@ if nargin==0,    % check/show status of downloads
                 end
             else
                 filelist=unzip(f);
-                for jj=1:length(filelist),
-                    ii=strfind(filelist{1},filesep);
-                    dataset=filelist{jj}(ii(1)+1:ii(2)-1);
-                    disp(['Data set: ' dataset '--> CAA/']);
-                    if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
-                    movefile(filelist{jj},['CAA/' dataset]);
-                end
-                %disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
-                rmdir(filelist{jj}(1:ii(1)),'s');
+                move_to_caa_directory(filelist);
                 delete(f);
                 caa{j}.status='FINNISHED';
                 save -mat .caa caa; % changes in caa saved
@@ -161,28 +153,49 @@ else  % download data
         return;
     end
     
-%    url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        dataset '&time_range=' tintiso '&format=cdf'];
-    url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+    url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         dataset '&time_range=' tintiso '&format=cdf'];
+%    url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+%        dataset '&time_range=' tintiso '&format=cdf'];
     
     disp('Be patient! Submitting data request to CAA...');
     disp(url_line);
-    caalog=urlread(url_line);
-    disp(caalog);
-    
-    downloadfile = caalog(strfind(caalog,'http:'):strfind(caalog,'zip')+3);
-    
-    j=length(caa)+1;
-    caa{j}.url=url_line;
-    caa{j}.dataset=dataset;
-    caa{j}.tintiso=tintiso;
-    caa{j}.zip = downloadfile;
-    caa{j}.status = 'SUBMITTED';
-    caa{j}.timeofrequest = now;
-    
-    disp('=====');
-    disp('To check the status of jobs execute: caa_download');
-    
-    save -mat .caa caa
+    temp_file=tempname;
+    urlwrite(url_line,temp_file);
+    disp('data downloaded. unzipping ...');
+    try 
+        filelist=unzip(temp_file);
+        move_to_caa_directory(filelist);
+        delete(temp_file);
+    catch
+        fid=fopen(temp_file);
+        caa_log=textscan(fid,'%s');
+        fclose(temp_file);
+        delete(temp_file)
+        downloadfile = caalog(strfind(caalog,'http:'):strfind(caalog,'zip')+3);
+        
+        j=length(caa)+1;
+        caa{j}.url=url_line;
+        caa{j}.dataset=dataset;
+        caa{j}.tintiso=tintiso;
+        caa{j}.zip = downloadfile;
+        caa{j}.status = 'SUBMITTED';
+        caa{j}.timeofrequest = now;
+        
+        disp('=====');
+        disp('To check the status of jobs execute: caa_download');
+        
+        save -mat .caa caa
+    end
 end
+
+function move_to_caa_directory(filelist)
+for jj=1:length(filelist),
+    ii=strfind(filelist{1},filesep);
+    dataset=filelist{jj}(ii(1)+1:ii(2)-1);
+    disp(['Data set: ' dataset '--> CAA/']);
+    if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
+    movefile(filelist{jj},['CAA/' dataset]);
+end
+%disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
+rmdir(filelist{jj}(1:ii(1)),'s');
