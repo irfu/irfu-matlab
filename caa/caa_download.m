@@ -162,7 +162,8 @@ else  % download data
     disp(url_line);
     temp_file=tempname;
     urlwrite(url_line,temp_file);
-    disp('data downloaded. unzipping ...');
+    disp(['data downloaded to file:' temp_file]);
+    disp('unzipping ...');
     try 
         filelist=unzip(temp_file);
         move_to_caa_directory(filelist);
@@ -170,8 +171,9 @@ else  % download data
     catch
         fid=fopen(temp_file);
         caa_log=textscan(fid,'%s');
-        fclose(temp_file);
-        delete(temp_file)
+        fclose(fid);
+        delete(temp_file);
+        caalog=sprintf('%s ',caa_log{1}{:}); % convert cell array to string
         downloadfile = caalog(strfind(caalog,'http:'):strfind(caalog,'zip')+3);
         
         j=length(caa)+1;
