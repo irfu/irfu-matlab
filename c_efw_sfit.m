@@ -1,4 +1,4 @@
-function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
+function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,freq)
 %C_EFW_SFIT produce spin fit data values (ex, ey)
 %   of EFW data frome given probe pair at 4 second resolution.
 %
@@ -18,6 +18,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %      correspond to tp 
 %  method - 0: c_efw_onesfit, Matlab routine by AIE
 %           1: c_efw_spinfit_mx (default), BHN Fortran source obtained from KTH
+%  freq - frequency for internal burst processing
 %
 % Output:
 %  spinfit = [ts,ex,ey,offset,sdev0,sdev,iter,nout]
@@ -37,7 +38,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 % Example: (assuming valid db exist, see isGetDataLite)
 % To plot spinfits of data from probe pair 34 (obtained during
 %    the first 10 minutes of the Donald Duck show on Swedish
-%    national TV on Christmas Eve 2001), defining outliers as
+%    national TV on Christmas Eve 2002), defining outliers as
 %    points outside 3 standard deviations, allowing maximum 10
 %    iterations for each spin, and demanding 20 data points for
 %    the fit to be valid, do as follows:
@@ -62,7 +63,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
-error(nargchk(8,9,nargin))
+error(nargchk(8,10,nargin))
 
 if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
 
@@ -71,6 +72,10 @@ if ~isequal(size(te),size(data))
 end
 if ~isequal(size(tp),size(ph))
     error('TP and PH vectors must be the same size.')
+end
+fsmode='hx';
+if nargin>=10
+    fsmode='any'; % For internal burst data processing
 end
 
 % Check if the phase is good
@@ -109,7 +114,9 @@ MAX_SPIN_PERIOD = 4.3;
 MIN_SPIN_PERIOD = 3.7;
 
 % Guess the sampling frequency
-sf = c_efw_fsample(te,'hx');
+%sf = freq;
+sf = c_efw_fsample(te,fsmode);
+
 if sf == 0, error('cannot guess the sampling frequency'), end
 
 tpha = tocolumn(tp);
