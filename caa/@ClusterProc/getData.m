@@ -55,6 +55,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   dibsc : diBSC{cl_id}, BSC{cl_id} -> mBSC // despun B STAFF SC [DSI+GSE]
+%   dibscburst : wBSC4kHz{cl_id}, Atwo{cl_id} -> mBSCBurst // despun B STAFF SC burst [DSI+GSE]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI]
 %   manproblems: whip|sweep|bdump|badbias|probesa|hbiassa|wake -> mEFW
@@ -250,7 +251,7 @@ if strcmp(quantity,'ec')
 		
 		fsamp = c_efw_fsample(da(:,1),'hx');
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops'; %#ok<NASGU>
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip'; %#ok<NASGU>
 		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		signal = da; %#ok<NASGU>
 		remove_problems
@@ -377,7 +378,7 @@ elseif strcmp(quantity,'dies')
 		fsamp = c_efw_fsample(tt,'hx');
 		if ~fsamp, error('no sampling frequency'),end
 		
-		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
+		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
 		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		% We remove Whisper only if explicitely asked for this by user
 		if flag_rmwhip && flag_rmwhip_force, problems = [problems '|whip']; end %#ok<AGROW>
@@ -812,7 +813,13 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				tt(:,2) = tt(:,2) - tmp_adc(:,2); %#ok<NASGU>
 				clear tmp_adc
 			else irf_log('calb','saved ADC offset empty')
-			end
+            end
+            problems = 'whip';
+            signal = tt; %#ok<NASGU>
+			probe = ps; %#ok<NASGU>
+			remove_problems
+			tt = res; %#ok<NODEF>
+			clear res signal problems probe
 			n_sig = n_sig + 1;
 			c_eval('e?=tt;',p)
 	
@@ -2618,6 +2625,38 @@ elseif strcmp(quantity,'dibsc')
 	else
 		c_eval('BSC?=c_gse2dsi(diBSC?,sax,-1);save_list=[save_list '' BSC?''];',cl_id);
 	end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% dibscburst - despun B STAFF SC burst
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif strcmp(quantity,'dibscburst')
+	save_file='./mBSCBurst.mat';
+	
+	[ok,wBSC4kHz,msg] = c_load('wBSC4kHz?',cl_id);
+	if ~ok || isempty(wBSC4kHz)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+	end
+	
+	[ok,pha, msg] = c_load('Atwo?',cl_id);
+	if ~ok || isempty(pha)
+		irf_log('load',msg)
+		data = []; cd(old_pwd); return
+	end
+	
+	aa = c_phase(wBSC4kHz(:,1),pha);
+	diBSC4kHz = c_efw_despin(wBSC4kHz,aa);
+	% DS-> DSI
+	diBSC4kHz(:,3)=-diBSC4kHz(:,3); 
+	diBSC4kHz(:,4)=-diBSC4kHz(:,4); %#ok<NASGU>
+	
+	c_eval('diBSC4kHz?=diBSC4kHz;save_list=[save_list '' diBSC4kHz?''];',cl_id);
+	
+	[ok,sax,msg] = c_load('SAX?',cl_id);
+	if ~ok || isempty(sax)
+		irf_log('load',msg)
+	else
+		c_eval('diBSC4kHz?=c_gse2dsi(diBSC4kHz?,sax,-1);save_list=[save_list '' diBSC4kHz?''];',cl_id);
+	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % manproblems: Reads manually-set problems from database.
@@ -2856,3 +2895,4 @@ if nargout > 0
 end
 
 cd(old_pwd)
+
