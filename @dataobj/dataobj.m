@@ -58,7 +58,7 @@ switch nargin
                         end
                         disp('Choose cdf file');
                         j = irf_ask('Cdf_file? [%]>','cdf_file',1);
-                        cdf_file = cdf_files(j).name;
+                        cdf_file = [directory_name cdf_files(j).name];
                 end
                 clear cdf_files
             else cdf_file = varargin{1};
