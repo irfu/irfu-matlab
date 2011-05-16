@@ -30,6 +30,10 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_EFW_L3_E3D_INERT'); % 4s resolution
 %   caa_download(tint,'C?_CP_EFW_L2_P'); % full resolution
 %   caa_download(tint,'C?_CP_EFW_L3_P'); % 4s resolution
+% STAFF
+%   caa_download(tint,'C?_CP_STA_PSD');
+% WHISPER 
+%   caa_download(tint,'C?_CP_WHI_NATURAL');
 % CIS
 %   caa_download(tint,'C?_CP_CIS_HIA_ONBOARD_MOMENTS');
 %   caa_download(tint,'C?_CP_CIS_CODIF_HS_H1_MOMENTS');
@@ -43,8 +47,6 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_RAP_L3DD');   % electron, 3D distribution (standard)
 %   caa_download(tint,'C?_CP_RAP_E3DD');   % electron, 3D distr. (best) in BM
 %   caa_download(tint,'C?_CP_RAP_HSPCT');  % ion, omni-directional
-% WHISPER 
-%   caa_download(tint,'C?_CP_WHI_NATURAL');
 % EPHEMERIS
 %   caa_download(tint,'C?_CP_AUX_POSGSE_1M');  % position & velocity for each sc
 %   caa_download(tint,'CL_SP_AUX');             % position,attitude.. for all sc
