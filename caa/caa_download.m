@@ -1,4 +1,4 @@
-function caa_download(tint,dataset)
+function caa_download(tint,dataset,flags)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -15,7 +15,8 @@ function caa_download(tint,dataset)
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 %  Examples:
-%   caa_download(tint,'list:*FGM*')
+%   caa_download(tint,'list:*')       % list everything available from all sc
+%   caa_download(tint,'list:*FGM*') 
 %   caa_download('2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z','list:*FGM*')
 %   caa_download(tint,'C3_CP_FGM_5VPS')
 %   caa_download(tint,'C?_CP_FGM_5VPS')   %    download all satellites
@@ -38,7 +39,16 @@ function caa_download(tint,dataset)
 %   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DPFlux');
 %   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DEFlux');
 % RAPID
-%   caa_download(tint,'C?_CP_RAP_ESPCT6');
+%   caa_download(tint,'C?_CP_RAP_ESPCT6'); % electron omni-directional
+%   caa_download(tint,'C?_CP_RAP_L3DD');   % electron, 3D distribution (standard)
+%   caa_download(tint,'C?_CP_RAP_E3DD');   % electron, 3D distr. (best) in BM
+%   caa_download(tint,'C?_CP_RAP_HSPCT');  % ion, omni-directional
+% WHISPER 
+%   caa_download(tint,'C?_CP_WHI_NATURAL');
+% EPHEMERIS
+%   caa_download(tint,'C?_CP_AUX_POSGSE_1M');  % position & velocity for each sc
+%   caa_download(tint,'CL_SP_AUX');             % position,attitude.. for all sc
+
 
 % $Id$
 
@@ -109,11 +119,16 @@ if nargin==1, help caa_download;return; end
 % caa.status - status (0-submitted, 1-downloaded)
 % caa.timeofrequest - in matlab time units
 
+flag_test=0; % do not use caa_test_query
+if nargin==3 && strcmpi(flags,'test'),
+    flag_test=1;
+end
+
 if ~exist('CAA','dir'), mkdir('CAA');end
 if isnumeric(tint), % assume tint is epoch
-t1iso=epoch2iso(tint(1));
-t2iso=epoch2iso(tint(2));
-tintiso=[t1iso '/' t2iso];
+    t1iso=epoch2iso(tint(1));
+    t2iso=epoch2iso(tint(2));
+    tintiso=[t1iso '/' t2iso];
 elseif ischar(tint), % tint is in isoformat
     tintiso=tint;
 else % unknown format
@@ -129,10 +144,10 @@ if strfind(dataset,'list'), % list  files
     else                        % list only filtered files
         filter=dataset(strfind(dataset,':')+1:end);
     end
-%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        filter '&time_range=' tintiso '&format=cdf&list=1'];
-%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        filter '&time_range=' tintiso '&format=cdf&list=1'];
+    %    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+    %        filter '&time_range=' tintiso '&format=cdf&list=1'];
+    %    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+    %        filter '&time_range=' tintiso '&format=cdf&list=1'];
     url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' filter '&time_range=' tintiso ];
     disp('Be patient! Contacting CAA...');
     caalog=urlread(url_line_list);
@@ -140,10 +155,10 @@ if strfind(dataset,'list'), % list  files
     return;
 else  % download data
     
-%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
-%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+    %    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+    %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+    %    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+    %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
     url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso ];
     disp('Be patient! Contacting CAA to see the list of files...');
     caalist=urlread(url_line_list);
@@ -153,51 +168,62 @@ else  % download data
         return;
     end
     
-    url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-        dataset '&time_range=' tintiso '&format=cdf'];
-%    url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-%        dataset '&time_range=' tintiso '&format=cdf'];
+    if flag_test, 
+        url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+            dataset '&time_range=' tintiso '&format=cdf&schedule=1'];
+    else
+        url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+            dataset '&time_range=' tintiso '&format=cdf'];
+    end
     
     disp('Be patient! Submitting data request to CAA...');
     disp(url_line);
-    temp_file=tempname;
-    urlwrite(url_line,temp_file);
-    disp(['data downloaded to file:' temp_file]);
-    disp('unzipping ...');
-    try 
-        filelist=unzip(temp_file);
-        move_to_caa_directory(filelist);
-        delete(temp_file);
-    catch
-        fid=fopen(temp_file);
-        caa_log=textscan(fid,'%s');
-        fclose(fid);
-        delete(temp_file);
-        caalog=sprintf('%s ',caa_log{1}{:}); % convert cell array to string
-        downloadfile = caalog(strfind(caalog,'http:'):strfind(caalog,'zip')+3);
-        
-        j=length(caa)+1;
-        caa{j}.url=url_line;
-        caa{j}.dataset=dataset;
-        caa{j}.tintiso=tintiso;
-        caa{j}.zip = downloadfile;
-        caa{j}.status = 'SUBMITTED';
-        caa{j}.timeofrequest = now;
-        
-        disp('=====');
-        disp('To check the status of jobs execute: caa_download');
-        
-        save -mat .caa caa
-    end
+
+       temp_file=tempname;
+       urlwrite(url_line,temp_file);
+       disp(['url response downloaded to file:' temp_file]);
+       try 
+           filelist=unzip(temp_file);
+           disp('unzipped data files.');
+           move_to_caa_directory(filelist);
+           delete(temp_file);
+       catch
+           fid=fopen(temp_file);
+           while 1
+               tline = fgetl(fid);
+               if ~ischar(tline), break, end
+               disp(tline)
+               if any(strfind(tline,'http:')) && any(strfind(tline,'zip')),
+                   downloadfile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
+               end
+           end
+           fclose(fid);
+           delete(temp_file);
+
+           j=length(caa)+1;
+           caa{j}.url=url_line;
+           caa{j}.dataset=dataset;
+           caa{j}.tintiso=tintiso;
+           caa{j}.zip = downloadfile;
+           caa{j}.status = 'SUBMITTED';
+           caa{j}.timeofrequest = now;
+           
+           disp('=====');
+           disp('To check the status of jobs execute: caa_download');
+           
+           save -mat .caa caa
+       end
 end
 
 function move_to_caa_directory(filelist)
 for jj=1:length(filelist),
-    ii=strfind(filelist{1},filesep);
-    dataset=filelist{jj}(ii(1)+1:ii(2)-1);
-    disp(['Data set: ' dataset '--> CAA/']);
-    if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
-    movefile(filelist{jj},['CAA/' dataset]);
+    ii=strfind(filelist{jj},filesep);
+    if numel(ii)==2, % dataset files (cdf_convert_summary.log not copied)
+        dataset=filelist{jj}(ii(1)+1:ii(2)-1);
+        disp(['Data set: ' dataset '--> CAA/']);
+        if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
+        movefile(filelist{jj},['CAA/' dataset]);
+    end
 end
 %disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
 rmdir(filelist{jj}(1:ii(1)),'s');
