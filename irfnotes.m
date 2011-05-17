@@ -74,11 +74,8 @@ for j=1:size(tint,1),
 end
 clear j;
 %% Cluster data reading from CAA, data coordinate transformations
-% To download form CAA
+% To download from CAA
 help caa_download
-% Example:
-%tint=[toepoch([2002 10 2 21 10 0]) toepoch([2002 10 2 21 30 0]) ];
-%caa_download(tint,'C*_CP_FGM_5VPS');
 
 % To read downloaded CAA data
 tint=[toepoch([2006 9 27 17 14 0]) toepoch([2006 9 27 17 26 0])];
@@ -121,7 +118,7 @@ if 1, % initialize figure
     set(fn,'defaultLineLineWidth',1);
 end
 if 1, % plot figures panels
-    if 0, % read FGM data form all sc
+    if 0, % read FGM data from all sc
         c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');');
         % c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');');
         c_eval('B?=irf_abs(B?);');
@@ -227,18 +224,12 @@ if 1, % plot figures panels
         end
     end
     if 0,   % PANEL: EFW E field in ISR2 reference frame single s/c
-        h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-        dobjname=irf_ssub('C?_CP_EFW_L2_E',ic);
-        varname=irf_ssub('E_Vec_xy_ISR2__C?_CP_EFW_L2_E',ic);
-        caa_load(dobjname);
-        c_eval(['diE?=getmat(' dobjname ',''' varname ''');'],ic);
-        varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-        %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-        disp(['SUBPLOT: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        c_eval('irf_plot diE?',ic);
-        ylabel('E [mV/m] ISR2');set(gca,'ylim',[-10 10]);
-        irf_legend(gca,{'E_X','E_Y'},[0.02 0.49])
-        irf_legend(gca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
+        hca=h(i_subplot);i_subplot=i_subplot+1;
+        c_eval('irf_plot(hca,diE?)',ic);
+        ylabel(hca,'E [mV/m] ISR2');
+        irf_zoom(hca,'ylim','smart');
+        irf_legend(hca,{'E_X','E_Y'},[0.02 0.49])
+        irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
     end
     if 1,   % STAFF: spectrogram Bx
         hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -548,7 +539,7 @@ add_timeaxis(h)
 %% Plot panels reading data from other sources than CAA
 % copy the following panels into your figure
 if 1,   % PANEL: PEACE PADH high resolution pitch C4 (cdf files from QJAS)
-    h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
+    hca=h(i_subplot);i_subplot=i_subplot+1;
     qjas_file='qjas_data_C4_PADH';
     t=irf_cdf_read(qjas_file,'timetags_delta');
     tt=t(:,1);
