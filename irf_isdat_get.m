@@ -2,6 +2,7 @@ function [t,res]=irf_isdat_get(datasource,st,dt)
 % getting data from isdat (using ISDAT.jar)
 % FUNCTIONS STILL IN DEVELOPMENT, do not use
 % [t,res]=irf_isdat_get('Cluster/1/ephemeris/position','2002-03-04T10:00:00.000Z',60)
+% irf_stdt to get st,dt
 
 %% Fix path
 wd=which('irf_plot.m');
