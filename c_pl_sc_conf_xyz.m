@@ -17,7 +17,8 @@ function hout=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 cluster_marker={'ks','rd','go','bv'};
 
 persistent t r1 r2 r3 r4 R1 R2 R3 R4 figNumber coord_label plot_type sc_list h flag_show_cluster_description;
-if       (nargin==1 && ischar(time)), 
+
+if       (nargin==1 && ischar(time)),
     action=time;
     %irf_log('fcal',['action=' action]);
 elseif   (nargin==3), plot_type=flag;action='initialize';
@@ -40,8 +41,8 @@ if exist('coord_label','var'), % define coord label if not defined so far
         coord_label='GSE';
     end
 else % in case coord_sys not specified
-    coord_label='GSE'; 
-end 
+    coord_label='GSE';
+end
 
 switch lower(action)
     case 'initialize' % read in all data and open figure
@@ -51,21 +52,26 @@ switch lower(action)
         elseif length(time)==6,
             start_time=time;
             t=toepoch(time);
-        elseif exist('t','var'), 
+        elseif exist('t','var'),
             start_time=fromepoch(t);
         else
             irf_log('fcal','Check time format');return;
         end
-        ok=c_load('R?',sc_list);
-        if sum(ok)==numel(sc_list), % R1..R4 have been loaded
-            c_eval('if (R?(1,1)>t) || (R?(end,1)<t), ok=[];end',sc_list(1));
-        end
-        if ~any(ok),
-            for ic=1:4,
-                [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
-                c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
+        if ~is_R_ok,     % try reading from disk mat files
+            ok=c_load('R?',sc_list);
+            if ~is_R_ok,  % try reading from isdat server
+                c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], toepoch(start_time), 60);R?=[tr r];clear tr r;',sc_list);
+                if ~is_R_ok,% no idea
+                    disp('NO POSITION DATA!');
+                end
             end
         end
+        %        if ~any(ok),
+        %            for ic=sc_list,
+        %                [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
+        %                c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
+        %            end
+        %        end
         % See if spacecraft configuration XYZ figure is open
         ch = get(0,'ch');indx=[];
         if ~isempty(ch),
@@ -116,13 +122,13 @@ switch lower(action)
         flag_show_cluster_description=0;
         plot_type='supercompact';
         c_pl_sc_conf_xyz(coord_label);
-
+        
     case 'supercompact2'
         set(figNumber,'Position',[10 10 350 650]);
         flag_show_cluster_description=0;
         plot_type='supercompact2';
         c_pl_sc_conf_xyz(coord_label);
-       
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -261,7 +267,7 @@ switch lower(action)
                 h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
                 h(3)=axes('position',[0 0 1 1]);axis off;
                 %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
-
+                
                 ax1=h(1);
                 c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
@@ -316,7 +322,7 @@ switch lower(action)
                 h(1)=axes('position',[0.18 0.58 0.66 0.4]); % [x y dx dy]
                 h(3)=axes('position',[0 0 1 1]);axis off;
                 %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
-
+                
                 ax1=h(1);
                 c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
@@ -367,7 +373,7 @@ switch lower(action)
             text(.43,.3,'C3','parent',h(4));
             text(.63,.3,'C4','parent',h(4));
             axis(h(4),'off');
-            ht=irf_pl_info(['c_pl_sc_conf_xyz() ' datestr(now)],h(4),[0,1 ]); 
+            ht=irf_pl_info(['c_pl_sc_conf_xyz() ' datestr(now)],h(4),[0,1 ]);
             set(ht,'interpreter','none');
             htime=irf_pl_info(['Cluster configuration\newline ' epoch2iso(t,1)],h(4),[0,.7 ]);
             set(htime,'fontsize',12);
@@ -407,3 +413,20 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
     set(gcf,'userdata',user_data);
 end
 
+function answer=is_R_ok
+sc_list=evalin('caller','sc_list');
+t=evalin('caller','t');
+for ic=1:numel(sc_list)
+    stric=num2str(sc_list(ic));
+    if evalin('caller',['numel(R' stric ')']) < 8 % less than 2 time points
+        answer=0;
+        return;
+    else
+        tint=evalin('caller',['[ R' stric '(1,1) R' stric '(end,1)]']);
+        if (tint(1)>t) || (tint(2)<t),
+            answer=0;
+            return;
+        end
+    end
+end
+answer=1;
