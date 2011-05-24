@@ -35,7 +35,7 @@ for seg = 1:sciData.segments
     data = reshape(sciData.data(seg,:),...
         length(sciData.data(seg,:))/sciData.samples(seg),...
         sciData.samples(seg))';
-    res = [res; data];
+    res = [res; double(data)];
     time = ISDAT.Epoch.toDoubleArray(sciData.time(seg));
     t = [t; time];
 end
