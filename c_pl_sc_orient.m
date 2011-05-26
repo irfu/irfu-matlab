@@ -17,7 +17,7 @@ function hout=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,ve
 % $Id$
 
 persistent t a b h phase v ic phaseHndl timeHndl figNumber ...
-    vec1Hndl vec2Hndl vec1flag vec2flag ...
+    vec1Hndl vec2Hndl vec1flag vec2flag flag_get_phase_data ...
     flag_v1 flag_v2 v1 v2;
 
 if nargin==1 && ischar(spacecraft)
@@ -31,6 +31,7 @@ if isempty(ic), ic=spacecraft; end
 
 switch lower(action)
     case 'initialize'
+        flag_get_phase_data=1;
         if length(time)==1, % define time of interest when initializing
             start_time=fromepoch(time);
             t=time;
@@ -65,7 +66,7 @@ switch lower(action)
             delete(findall(gcf,'Type','axes'))
             h=[];
         else
-            figure(ch(indx));        
+            figure(ch(indx));
             delete(findall(gcf,'Type','axes'))
             h=[];
             figNumber=gcf;
@@ -80,7 +81,7 @@ switch lower(action)
         figuserdata.h=[];
         figuserdata.h=h;
         set(figNumber,'userdata',figuserdata);
-
+        
         %====================================
         % The vector 1 entering
         labelStr='0';
@@ -146,66 +147,80 @@ switch lower(action)
         else
             flag_get_b_data=1;
         end
-        if flag_get_b_data % get B data
+        if flag_get_b_data % try to get B data from disk mat files
             [ok,b]=c_load('diB?',ic);
-            if ~any(ok) % no B loaded
-                flag_read_isdat=1;
-            else
+            if any(ok) % B loaded
                 b(:,3)=-b(:,3);b(:,4)=-b(:,4); % go to DS reference frame instead of DSI
                 if t>=b(1,1) && t<=b(end,1), % time within interval of B
-                    flag_read_isdat=0;
-                else
-                    flag_read_isdat=1;
-                end
-            end
-            if flag_read_isdat, % read B in di ref frame from isdat (use CSDD PP data)
-                DATABASE=c_ctl(0,'isdat_db');
-                data = getData(ClusterDB(DATABASE,c_ctl(0,'data_path')),t-5,5,ic,'b','nosave');
-                if isempty(data),
-                    irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame'); % first col is time
-                    b=[1 0 0 NaN];
-                else
-                    b=data{3};
-                    b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
+                    flag_get_b_data=0;
                 end
             end
         end
-        if ~isempty(a), % check if getting phasew data is necessary
-            if t>=a(1,1) && t<=a(end,1), % time within interval of B
-                flag_get_phase_data=0;
-            else % get phase data
-                flag_get_phase_data=1;
+        if flag_get_b_data, % try to read B in ISR2 ref frame from isdat (use CSDD PP data)
+            DATABASE=c_ctl(0,'isdat_db');
+            data = getData(ClusterDB(DATABASE,c_ctl(0,'data_path')),t-5,5,ic,'b','nosave');
+            if ~isempty(data),
+                b=data{3};
+                b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
+                flag_get_b_data=0;
             end
-        else
-            flag_get_phase_data=1;
         end
-        if flag_get_phase_data % get phase data
+        if flag_get_b_data, % did not succeed to read B data
+            irf_log('load','Could not read B field data');
+            b=[1 0 0 NaN]; % first col is time
+        end
+        if ~flag_get_phase_data, % can use old phase data if they are valid
+                if t<=a(1,1) || t>=a(end,1), % time outside interval of phase
+                    flag_get_phase_data=1;
+                end
+        end
+        if flag_get_phase_data % try to read phase data from disk matlab files
             [ok,phase_time_series]=c_load('A?',ic);
-            if ~any(ok), % check if phase info is on disk
-                flag_read_isdat=1;
-            else
-              a=phase_time_series;
-              if t>=a(1,1) && t<=a(end,1), % time within phase interval of B
-                flag_read_isdat=0;
-              else
-                flag_read_isdat=1;
-              end
-            end
-            if flag_read_isdat % read phase form isdat
-                [tt,phase_data] = caa_is_get('db.irfu.se:0',t-5,10,ic,'ephemeris','phase_2');
-                phase_time_series=[double(tt) double(phase_data)];
-                if isempty(phase_time_series),
-                    phase_time_series=[1 0]; % default using 0 phase
+            if any(ok), % check if phase info is on disk
+                a=phase_time_series;
+                if t>=a(1,1) && t<=a(end,1), % time within phase interval of B
+                    flag_get_phase_data=0;
                 end
             end
-            a=phase_time_series;
+        end
+        if flag_get_phase_data % try to read caa phase if exists
+            sp=c_caa_var_get(['spin_period__C' num2str(ic) '_CP_AUX_SPIN_TIME']);
+            if ~isempty(sp), % could not read
+                tsp=c_caa_var_get(['time_tags__C' num2str(ic) '_CP_AUX_SPIN_TIME']);
+                ref_times=[-.5 .5]; % part of spin
+                ref_phase=ref_times*360+180; % spin period center corresponds to phase 0
+                dt=repmat(ref_times,length(tsp.data),1).*repmat(double(sp.data),1,length(ref_times));
+                tmat=repmat(tsp.data,1,length(ref_times))+dt;
+                amat=repmat(ref_phase,length(tsp.data),1);
+                tmat=reshape(tmat',numel(tmat),1);
+                difftmat=diff(tmat);
+                ii=find(difftmat<0);
+                tmat(ii)=tmat(ii+1);
+                amat=reshape(amat',numel(amat),1);
+                a=[tmat amat];
+                if t>=a(1,1) && t<=a(end,1), % time within phase interval of B
+                    flag_get_phase_data=0;
+                end
+            end
+        end
+        if flag_get_phase_data % try to read phase data from isdat server
+            c_eval('[tt,phase_data] = irf_isdat_get([''Cluster/?/ephemeris/phase_2''], t-5, 10);',ic);
+            %                [tt,phase_data] = caa_is_get('db.irfu.se:0',t-5,10,ic,'ephemeris','phase_2');
+            phase_time_series=[tt phase_data];
+            if ~isempty(phase_time_series),
+                flag_get_phase_data=0;
+                a=phase_time_series;
+            end
+        end
+        if flag_get_phase_data % no phase info, use default 0
+            a=[1 0]; % default using 0 phase
         end
         phase=c_phase(t,a);phase(1)=[];
         set(phaseHndl,'string',num2str(phase,'%3.1f'));
         c_pl_sc_orient('plot');
     case 'time'
         t=toepoch(eval(get(timeHndl, 'string')));
-        c_pl_sc_orient('read_phase_and_b');       
+        c_pl_sc_orient('read_phase_and_b');
     case 'phase'
         phase=str2double(get(phaseHndl, 'string'));
         c_pl_sc_orient('plot');
@@ -214,12 +229,12 @@ switch lower(action)
         h=figuserdata.h;
         
         flag_v1=get(vec1flag, 'value');
-        if flag_v1==1, 
+        if flag_v1==1,
             v1=eval(['[' get(vec1Hndl,'string') ']']);
             if length(v1)==1, flag_v1=0;end;
         end
         flag_v2=get(vec2flag, 'value');
-        if flag_v2==1, 
+        if flag_v2==1,
             v2=eval(['[' get(vec2Hndl,'string') ']']);
             if length(v2)==1, flag_v2=0;end;
         end
@@ -244,7 +259,7 @@ switch lower(action)
         rrapid=sec_length*[cos(phase_rapid) sin(phase_rapid);cos(phase_rapid-dphi) sin(phase_rapid-dphi);cos(phase_rapid+dphi) sin(phase_rapid+dphi)];
         rsunsensor=sec_length*[cos(phase_sunsensor) sin(phase_sunsensor)];
         
-        for ip=1:4,c_eval('rp?_gse=c_coord_trans(''DSC'',''GSE'',[t rp?],''cl_id'',ic);rp?_gse(1)=[];',ip),end
+        for ip=1:4, c_eval('rp?_gse=c_coord_trans(''DSC'',''GSE'',[t rp?],''cl_id'',ic);rp?_gse(1)=[];',ip),end
         bfield=irf_resamp(b,t);
         bxs=irf_norm(irf_cross(bfield,[0 0 0 1]));
         bxsxb=irf_norm(irf_cross(bxs,bfield)); % (bxs)xb
@@ -360,35 +375,37 @@ switch lower(action)
             c_eval('text(rp?_b(1)*.8,rp?_b(2)*.8,num2str(?));',ip);
         end
         
-        % add text 
+        % add text
         cla(h(4))
-        irf_legend(h(4),['c_pl_sc_orient() ' datestr(now)],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]); 
+        irf_legend(h(4),['c_pl_sc_orient() ' datestr(now)],[0,1],'fontsize',8,'interpreter','none','color',[0.5 0.5 0.5]);
         irf_legend(h(4),['Cluster spacecraft C' num2str(ic)],[0,.9],'fontsize',10);
         irf_legend(h(4),['angle beteen p34 (Ey WBD) and B ' num2str(angle_deg_p34_vs_b,'%3.1f') 'deg'],[0,.8],'interpreter','none','fontsize',10);
         irf_legend(h(4),['angle beteen p12 (Ez WBD) and B ' num2str(angle_deg_p12_vs_b,'%3.1f') 'deg'],[0,.7],'interpreter','none','fontsize',10);
         xp=0;yp=.9;dyp=-0.1;
         yp=yp+dyp;
     case 'c1'
-        ic=1;
+        if ic~=1,
+            flag_get_phase_data=1;b=[];ic=2;
+            ic=1;
+        end
         c_pl_sc_orient('read_phase_and_b');
     case 'c2'
         if ic~=2
-            a=[];b=[];ic=2;
+            flag_get_phase_data=1;b=[];ic=2;
             c_pl_sc_orient('read_phase_and_b');
         end
     case 'c3'
         if ic~=3
-            a=[];b=[];ic=3;
+            flag_get_phase_data=1;b=[];ic=3;
             c_pl_sc_orient('read_phase_and_b');
         end
     case 'c4'
         if ic~=4
-            a=[];b=[];ic=4;
+            flag_get_phase_data=1;b=[];ic=4;
             c_pl_sc_orient('read_phase_and_b');
         end
 end
 if nargout,hout=h;end
-
 
 function menus
 % generate menus
