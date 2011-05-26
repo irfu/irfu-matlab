@@ -1,4 +1,4 @@
-function y = c_cs_trans(from,to,x,varargin)
+function y = c_coord_trans(from,to,x,varargin)
 %C_CS_TRANS  coordinate transform between GSE/DSC/DSI/ISR2 for Cluster
 %
 % OUT = C_CS_TRANS(FROM_CS,TO_CS,INP,[ARGS])
@@ -7,10 +7,10 @@ function y = c_cs_trans(from,to,x,varargin)
 %
 % Input:
 %     FROM_CS,TO_CS - one of GSE/DSC/DSI/ISR2
-%     INP           - vector data with or without the time column 
-% 
+%     INP           - vector data with or without the time column
+%
 % ARGS can be:
-%     'SAX'   - plot all x values in separate subplots
+%     'SAX'   - spin axis vector in GSE
 %     'CL_ID' - Cluster id 1..4
 %     'T'     - Time corresponding to INP (ISDAT epoch or ISO time string)
 %
@@ -25,6 +25,8 @@ function y = c_cs_trans(from,to,x,varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+
+persistent lat long cl_id_saved
 
 error(nargchk(4,6,nargin))
 
@@ -116,40 +118,76 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
         error('Need both CL_ID and T if SAX is not given and wanting GSE')
     end
     
-    if isempty(sax) % Need to fetch/load spin axis
-        caa_load CL_SP_AUX % Load CAA data files
-        if exist('CL_SP_AUX','var')
-            lat = []; long = [];
-            c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',cl_id);
-            c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',cl_id);
-            if (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60),
-                latlong   = irf_resamp([lat long(:,2)],t(1));
-                [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
-                sax = [xspin yspin zspin];
-                irf_log('dsrc',irf_ssub('Loaded SAX? from CAA file',cl_id))
-            end
-        end
-    end
-    
-    if isempty(sax)
+    if 0, % isempty(sax) % try to read SAX? form matlab file, NOT USED currently
         [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
         if ok
-            irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id))
+            irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
             % XXX TODO: check that the SAX is from the right time
             %[iso_t,dt] = caa_read_interval();
         else
-            tempv = getData(ClusterDB(c_ctl(0,'isdat_db'),c_ctl(0,'data_path')),...
-                t(1),120,cl_id,'sax','nosave');
-            if isempty(tempv)
-                irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
-                sax = [];
-            else
-                sax = tempv{2};
-                irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT',cl_id))
-            end
-            clear tempv
+            sax=[];
         end
     end
+    
+    if isempty(sax) % try to fetch/load spin axis latitude longitude
+        flag_read_lat=1;
+        if ~isempty(lat), % exists saved spin latidude files, check they are ok
+            if (cl_id == cl_id_saved) && (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60)
+                latlong   = irf_resamp([lat long(:,2)],t(1));
+                [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
+                sax = [xspin yspin zspin];
+                flag_read_lat=0;
+            end
+        end
+        if flag_read_lat, % try to read from CAA files
+            caa_load CL_SP_AUX % Load CAA data files
+            if exist('CL_SP_AUX','var')
+                lat = []; long = [];
+                c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',cl_id);
+                c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',cl_id);
+                cl_id_saved=cl_id;
+            end
+            irf_log('dsrc',irf_ssub('Trying to read SAX? from CAA dataset in memory or file',cl_id));
+            if ~isempty(lat) && (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60), % check if latitude data within right time interval
+                latlong   = irf_resamp([lat long(:,2)],t(1));
+                [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
+                sax = [xspin yspin zspin];cl_id_saved=cl_id;
+                irf_log('dsrc','Success!');
+                flag_read_lat=0;
+            end
+        end
+        if flag_read_lat, % try to read from isdat served using ISDAT.jar
+            lat = []; long = [];
+            irf_log('dsrc',irf_ssub('Trying to read SAX? from isdat database through ISDAT.jar',cl_id));
+            c_eval('[tll,ll] = irf_isdat_get([''Cluster/?/ephemeris/sax_lat''], t(1)-60, t(end)-t(1)+120);lat=[tll ll];clear tl ll;',cl_id);
+            c_eval('[tll,ll] = irf_isdat_get([''Cluster/?/ephemeris/sax_long''], t(1)-60, t(end)-t(1)+120);long=[tll ll];clear tl ll;',cl_id);
+            cl_id_saved=cl_id;
+            if ~isempty(lat) && (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60), % check if latitude data within right time interval
+                latlong   = irf_resamp([lat long(:,2)],t(1));
+                [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
+                sax = [xspin yspin zspin];cl_id_saved=cl_id;
+                irf_log('dsrc','Success!');
+                flag_read_lat=0;
+            end
+        end
+        if flag_read_lat==1,
+            sax=[];
+        end
+    end
+    
+    if isempty(sax) % try to read from isdat database
+        tempv = getData(ClusterDB(c_ctl(0,'isdat_db'),c_ctl(0,'data_path')),...
+            t(1),120,cl_id,'sax','nosave');
+        if isempty(tempv)
+            irf_log('dsrc',irf_ssub('Cannot load SAX?',cl_id))
+            sax = [];
+        else
+            sax = tempv{2};
+            irf_log('dsrc',irf_ssub('Loaded SAX? from local disk or local ISDAT database',cl_id))
+        end
+        clear tempv
+    end
+    
     if isempty(sax), error('Cannot get SAX'), end
     Rx = sax(1);
     Ry = sax(2);
