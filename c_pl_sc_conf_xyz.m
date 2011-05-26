@@ -25,7 +25,9 @@ elseif   (nargin==3), plot_type=flag;action='initialize';
 elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
 end
-if nargin==0, time=[2010 12 31 01 01 01];end
+if nargin==0, % default time (with time can make smarter solution)
+    time=[2010 12 31 01 01 01];
+end
 if nargin==4, sc_list=spacecraft;
 elseif ~exist('sc_list','var'), sc_list=1:4;
 elseif isempty(sc_list), sc_list=1:4;
@@ -60,6 +62,7 @@ switch lower(action)
         if ~is_R_ok,     % try reading from disk mat files
             ok=c_load('R?',sc_list);
             if ~is_R_ok,  % try reading from isdat server
+                disp('Trying to obtain satellite position from isdat server...')
                 c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], toepoch(start_time), 60);R?=[tr r];clear tr r;',sc_list);
                 if ~is_R_ok,% no idea
                     disp('NO POSITION DATA!');
@@ -381,14 +384,18 @@ switch lower(action)
         
     case 'new_time'
         xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(fromepoch(t))});
-        variable_str=xx{1};
-        t=toepoch(eval(variable_str));
-        c_pl_sc_conf_xyz('initialize');
+        if ~isempty(xx),
+            variable_str=xx{1};
+            t=toepoch(eval(variable_str));
+            c_pl_sc_conf_xyz('initialize');
+        end
     case 'new_sc_list'
         xx=inputdlg('Enter new sc_list. ex. [1 3 4]','**',1,{mat2str(sc_list)});
-        variable_str=xx{1};
-        sc_list=eval(variable_str);
-        c_pl_sc_conf_xyz('initialize');
+        if ~isempty(xx),
+            variable_str=xx{1};
+            sc_list=eval(variable_str);
+            c_pl_sc_conf_xyz('initialize');
+        end
 end
 if nargout,
     hout=h;
