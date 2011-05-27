@@ -224,16 +224,16 @@ Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 %-------- UNITS ------------------------------
 %------- length ----
 Units.AU = 1.496e11*Units.m;
-Units.R_Earth = 6370e3*Units.m;                     % Earth radius
-Units.RE = Units.R_Earth;                          % Earth radius
-Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
-Units.pc = 3.0857e16*Units.m;                        % parsec
+Units.R_Earth = 6371.2e3*Units.m;                     % Earth radius
+Units.RE = Units.R_Earth;                             % Earth radius
+Units.R_Sun = 6.96e8*Units.m;                         % Solar radius 
+Units.pc = 3.0857e16*Units.m;                         % parsec
 
 %------- mass ----
 Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
 Units.M_Sun = 1.98892e30*Units.kg;                  % Mass of the Sun
-Units.me = 9.1094e-31*Units.kg;                      % electron mass
-Units.mp = 1.6726e-27*Units.kg;                      % proton mass
+Units.me = 9.1094e-31*Units.kg;                     % electron mass
+Units.mp = 1.6726e-27*Units.kg;                     % proton mass
 
 %---- frequency ---- 
 Units.mHz = 1e-3*Units.Hz;
@@ -248,9 +248,10 @@ Units.MK = 1e6*Units.K;
 
 %----magnetic field -----
 Units.nT = 1e-9*Units.T;
+Units.gauss = 1e-4*Units.T;
 
 %----fundamental constants ----
-Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;           % gravitational constant
+Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;       % gravitational constant
 Units.kB = 1.38e-23*Units.J/Units.K;                     % Boltzmann constant
 
 
