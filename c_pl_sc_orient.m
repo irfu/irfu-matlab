@@ -18,7 +18,7 @@ function hout=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,ve
 
 persistent t a b h phase v ic phaseHndl timeHndl figNumber ...
     vec1Hndl vec2Hndl vec1flag vec2flag flag_get_phase_data ...
-    flag_v1 flag_v2 v1 v2;
+    flag_get_b_data flag_v1 flag_v2 v1 v2;
 
 if nargin==1 && ischar(spacecraft)
     action=spacecraft;
@@ -32,14 +32,13 @@ if isempty(ic), ic=spacecraft; end
 switch lower(action)
     case 'initialize'
         flag_get_phase_data=1;
+        flag_get_b_data=1;
         if length(time)==1, % define time of interest when initializing
-            start_time=fromepoch(time);
             t=time;
         elseif length(time)==6,
-            start_time=time;
             t=toepoch(time);
         elseif exist('t','var'),
-            start_time=fromepoch(t);
+            % use existing t
         else
             irf_log('fcal','Check time format');return;
         end
@@ -138,14 +137,14 @@ switch lower(action)
         menus
         c_pl_sc_orient('read_phase_and_b');
     case 'read_phase_and_b'
-        if ~isempty(b), % check if getting B data is necessary
-            if t>=b(1,1) && t<=b(end,1), % time within interval of B
-                flag_get_b_data=0;
-            else % get B data
-                flag_get_b_data=1;
+        if ~flag_get_b_data, % check if getting B data is necessary
+            if ~isempty(b), % use existing b if there is one
+                if t>=b(1,1) && t<=b(end,1), % time within interval of B
+                    flag_get_b_data=0;
+                else % get B data
+                    flag_get_b_data=1;
+                end
             end
-        else
-            flag_get_b_data=1;
         end
         if flag_get_b_data % try to get B data from disk mat files
             [ok,b]=c_load('diB?',ic);
@@ -156,13 +155,33 @@ switch lower(action)
                 end
             end
         end
+        if flag_get_b_data % try to get B data from caa files full resolution
+            c_eval('[~,~,b]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');',ic);
+            if ~isempty(b),
+                b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
+                if t>=b(1,1) && t<=b(end,1), % time within interval of B
+                    flag_get_b_data=0;
+                end
+            end            
+        end
+        if flag_get_b_data % try to get B data from caa files 5S/s resolution
+            c_eval('[~,~,b]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');',ic);
+            if ~isempty(b),
+                b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
+                if t>=b(1,1) && t<=b(end,1), % time within interval of B
+                    flag_get_b_data=0;
+                end
+            end            
+        end
         if flag_get_b_data, % try to read B in ISR2 ref frame from isdat (use CSDD PP data)
             DATABASE=c_ctl(0,'isdat_db');
             data = getData(ClusterDB(DATABASE,c_ctl(0,'data_path')),t-5,5,ic,'b','nosave');
             if ~isempty(data),
                 b=data{3};
                 b=c_coord_trans('GSE','DSC',b,'cl_id',ic);
-                flag_get_b_data=0;
+                if t>=b(1,1) && t<=b(end,1), % time within interval of B
+                    flag_get_b_data=0;
+                end
             end
         end
         if flag_get_b_data, % did not succeed to read B data
@@ -204,18 +223,23 @@ switch lower(action)
             end
         end
         if flag_get_phase_data % try to read phase data from isdat server
-            c_eval('[tt,phase_data] = irf_isdat_get([''Cluster/?/ephemeris/phase_2''], t-5, 10);',ic);
+            try 
+                c_eval('[tt,phase_data] = irf_isdat_get([''Cluster/?/ephemeris/phase_2''], t-5, 10);',ic);
             %                [tt,phase_data] = caa_is_get('db.irfu.se:0',t-5,10,ic,'ephemeris','phase_2');
-            phase_time_series=[tt phase_data];
+                phase_time_series=[tt phase_data];
+            catch
+                phase_time_series=[]; % cannot connect to internet
+            end
             if ~isempty(phase_time_series),
                 flag_get_phase_data=0;
                 a=phase_time_series;
             end
         end
-        if flag_get_phase_data % no phase info, use default 0
-            a=[1 0]; % default using 0 phase
+        if flag_get_phase_data % still no phase info, use default 0
+            phase=0; % default using 0 phase
+        else
+            phase=c_phase(t,a);phase(1)=[];
         end
-        phase=c_phase(t,a);phase(1)=[];
         set(phaseHndl,'string',num2str(phase,'%3.1f'));
         c_pl_sc_orient('plot');
     case 'time'
@@ -292,8 +316,8 @@ switch lower(action)
         patch([0 rheea(2,2) rheea(3,2)], [0 rheea(2,1) rheea(3,1)],'b'); % heea
         patch([0 rleea(2,2) rleea(3,2)], [0 rleea(2,1) rleea(3,1)],'g'); % leea
         patch([0 rrapid(2,2) rrapid(3,2)], [0 rrapid(2,1) rrapid(3,1)],'k'); % rapid
-        line([0 rsunsensor(2)],[0 rsunsensor(1)],[0 0],'Color','y','LineWidth',2); % sun sensor direction
-        text(50,50,'Sun sensor','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','y');
+        line([0 rsunsensor(2)],[0 rsunsensor(1)],[0 0],'Color',[1 0.5 .5],'LineWidth',2); % sun sensor direction
+        text(50,50,'Sun sensor','verticalalignment','top','horizontalalignment','right','fontweight','demi','color',[1 0.5 .5]);
         text(50,45,'LEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','g');
         text(50,40,'HEEA','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','b');
         text(50,35,'Rapid','verticalalignment','top','horizontalalignment','right','fontweight','demi','color','k');
@@ -385,23 +409,23 @@ switch lower(action)
         yp=yp+dyp;
     case 'c1'
         if ic~=1,
-            flag_get_phase_data=1;b=[];ic=2;
+            flag_get_phase_data=1;flag_get_b_data=1;b=[];ic=2;
             ic=1;
         end
         c_pl_sc_orient('read_phase_and_b');
     case 'c2'
         if ic~=2
-            flag_get_phase_data=1;b=[];ic=2;
+            flag_get_phase_data=1;flag_get_b_data=1;b=[];ic=2;
             c_pl_sc_orient('read_phase_and_b');
         end
     case 'c3'
         if ic~=3
-            flag_get_phase_data=1;b=[];ic=3;
+            flag_get_phase_data=1;flag_get_b_data=1;b=[];ic=3;
             c_pl_sc_orient('read_phase_and_b');
         end
     case 'c4'
         if ic~=4
-            flag_get_phase_data=1;b=[];ic=4;
+            flag_get_phase_data=1;flag_get_b_data=1;b=[];ic=4;
             c_pl_sc_orient('read_phase_and_b');
         end
 end
