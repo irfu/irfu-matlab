@@ -48,6 +48,7 @@
 %   irf_tm          - time manager for plots created by irf_plot
 %   irf_zoom        - zoom in
 %   irf_figmenu     - Add to the current figure a menu with some useful commands
+%   irf_timeaxis    - Add timeaxis in different formats
 %
 % Cluster
 %   caa_load        - load data downloaded from CAA 
