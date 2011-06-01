@@ -78,7 +78,7 @@ for g =1:f_count
 
   irf_pl_mark(t + [-.1 .1],h,'y');
   irf_zoom(t+[-per per],'x',h);
-  add_timeaxis(h);
+  irf_timeaxis(h);
 %  legendst=[2002 04 16 00 14 19]
   
   %plotting data

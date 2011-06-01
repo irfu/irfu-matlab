@@ -194,7 +194,7 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     elseif iscell(x), tt=x{1}(1,1);
     else tt=x(1,1);
     end
-    c=ax; % axis to which apply add_timeaxis
+    c=ax; % axis to which apply irf_timeaxis
     flag_subplot=-1; % dont make more plots
 end
 
@@ -433,8 +433,8 @@ set(gcf,'userdata',user_data);
 
 % In case time is in isdat_epoch add time_axis
 if ((tt > 1e8) && (tt < 1e10))
-    if flag_subplot == 0, add_timeaxis(ax);
-    else add_timeaxis(c);
+    if flag_subplot == 0, irf_timeaxis(ax);
+    else irf_timeaxis(c);
     end
 end
 

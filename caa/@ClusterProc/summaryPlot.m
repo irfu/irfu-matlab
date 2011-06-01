@@ -311,7 +311,7 @@ for k=1:n_plots
 	end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
     else
-        add_timeaxis;
+        irf_timeaxis;
 		% This magic is needed for correct location of panels on printouts
 		ttt = get(gca,'XTickLabel'); 
 		ttt(end) = {' '}; 

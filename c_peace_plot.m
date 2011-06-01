@@ -81,5 +81,5 @@ for jj=1:nsubplots,
 end
 
 irf_figmenu
-add_timeaxis
+irf_timeaxis
 

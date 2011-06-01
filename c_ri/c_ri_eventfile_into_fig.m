@@ -106,7 +106,7 @@ for i_file=1:size(file_list,1),
       eval(loop_comm);
     end
     irf_zoom(tint_plot,'x',h(i_fig,:));
-    add_timeaxis(h(i_fig,:));
+    irf_timeaxis(h(i_fig,:));
     legend;
     i_fig=i_fig+1;
   end

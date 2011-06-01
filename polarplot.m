@@ -122,7 +122,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert');
     ylabel('Hz')
     title('Power spectral density')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
 
@@ -133,7 +133,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Coherence')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
 
@@ -145,7 +145,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     ylabel('Hz')
     title('Phase difference')
     temp1=axis;
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
     
@@ -158,7 +158,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	grid
     temp2=axis;
     axis([temp1(1:2),temp2(3:4)])
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
   
   else %%% The standard case
@@ -172,7 +172,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert');
     ylabel('Hz')
     title('Spectral intensity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
 
@@ -183,7 +183,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Degree of polarisation')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
 
@@ -194,7 +194,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     colorbar('vert')
     ylabel('Hz')
     title('Ellipticity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out','XTickLabel','');
 	xlabel('')
     %set(gca,'yscale','log')
 
@@ -206,7 +206,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     xlabel('UT')
     ylabel('Hz')
     title('Tilt angle')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
   end
 

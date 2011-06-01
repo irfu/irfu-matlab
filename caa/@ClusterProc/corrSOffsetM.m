@@ -160,7 +160,7 @@ for co=1:2
 
 	axes(h(co))
 	eval(['plot(' dummy ');'])
-	add_timeaxis
+	irf_timeaxis
 	grid
 	set(gca,'XTickLabel',[])
 	if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
@@ -267,7 +267,7 @@ while(q ~= 'q')
 			ax_pos=get(h(co),'position');
 			eval(['plot(h(co),' dummy ');'])
 			set(h(co),'position',ax_pos);
-			add_timeaxis(h(co))
+			irf_timeaxis(h(co))
 			grid(h(co)), set(h(co),'XTickLabel',[]), xlabel('')
 			if co==1, ylabel('E_x DSI'), else ylabel('E_y DSI'), end
 		end

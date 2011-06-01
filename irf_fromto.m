@@ -84,7 +84,7 @@ switch fromto
   case 'update'
     [tlim step]=get_fromto(ud);
     irf_zoom(tlim,'x',SUBPLOT_HANDLES);
-    add_timeaxis(SUBPLOT_HANDLES);
+    irf_timeaxis(SUBPLOT_HANDLES);
   case 'prev'
     [tlim step]=get_fromto(ud);
     tlim = tlim-step;

@@ -168,7 +168,7 @@ for g =1:f_count
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('B1, nT')
-      add_timeaxis
+      irf_timeaxis
       legend('Bx','By','Bz')
       hold off
       
@@ -184,7 +184,7 @@ for g =1:f_count
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('|B|, nT')
-      add_timeaxis
+      irf_timeaxis
       legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
       hold off
       
@@ -195,7 +195,7 @@ for g =1:f_count
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('Bx, nT')
-      add_timeaxis
+      irf_timeaxis
       legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
       hold off
       
@@ -206,7 +206,7 @@ for g =1:f_count
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('By, nT')
-      add_timeaxis
+      irf_timeaxis
       legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
       hold off
       
@@ -217,7 +217,7 @@ for g =1:f_count
       set(gca,'xlim',t+[-5 5]);
       plot(t,0,'xk')
       ylabel('Bz, nT')
-      add_timeaxis
+      irf_timeaxis
       legend('cl 1', 'cl 2' , 'cl 3', 'cl 4')
       hold off
       

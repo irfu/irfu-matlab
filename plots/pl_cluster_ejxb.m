@@ -207,7 +207,7 @@ ylabel('U [kV]')
 
 axis(h,'tight');
 irf_zoom(tint,'x',h);
-add_timeaxis(h);
+irf_timeaxis(h);
 
 % irf_pl_mark([toepoch([2004 01 04 12 47 10]) + [-.15 .4]],h);
 % irf_pl_mark([toepoch([2004 01 04 12 47 8.4]) + [-.05 .05]],h);
@@ -260,7 +260,7 @@ for ic=sc_list;
 
   axis(h,'tight');
   irf_zoom(tint,'x',h);
-  add_timeaxis(h);
+  irf_timeaxis(h);
 
   %ht=irf_pl_number_subplots(h)
 
@@ -333,7 +333,7 @@ if 1 % 1 if plot, 0 if skip the figure
     %axis(h,'tight');
     irf_zoom(tint,'x',h);
 %     irf_zoom(toepoch([2004 01 04 12 47 07]) + [.5 4],'x',h)
-    add_timeaxis(h);
+    irf_timeaxis(h);
 
     % % lw=1;k=-5:0;
     % % for j=1:2

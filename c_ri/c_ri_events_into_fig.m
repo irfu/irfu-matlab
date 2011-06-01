@@ -187,7 +187,7 @@ h(ip)=irf_subplot(np,1,-ip);ip=ip+1;
       ylabel('Vps, [cc]')
       
 irf_zoom(t+[-5 5],'x',h);
-add_timeaxis(h);
+irf_timeaxis(h);
 set(h,'YLimMode','auto');
 
       %plotting data

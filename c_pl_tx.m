@@ -194,7 +194,7 @@ if length(column) == 1
 		eval(['h=plot(ax,' pl ');'])
 		grid(ax,'on');
 		c = get(h(1),'parent');
-		add_timeaxis(c);
+		irf_timeaxis(c);
 		irf_figmenu;
 	end
 else
@@ -215,7 +215,7 @@ else
 		
         ud = get(hcf,'userdata'); ud.subplot_handles = c; set(hcf,'userdata',ud);
 	end
-	add_timeaxis(c);
+	irf_timeaxis(c);
 	irf_figmenu;
 end
 

@@ -97,7 +97,7 @@ irf_zoom([-25 -2],'y',h(sc_list,1)); % V_sc
 irf_zoom([-30 30],'y',h(sc_list,2)); % B field
 irf_zoom([-10 10],'y',h(sc_list,3:6)); % measured E field
 for ic=sc_list,
-add_timeaxis(h(ic,:));
+irf_timeaxis(h(ic,:));
 legend(h(ic,2),'B_L','B_M','B_N')
 legend(h(ic,3),'Ex','Ey')
 legend(h(ic,4),'E_L','E_M','E_N');

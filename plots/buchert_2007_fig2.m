@@ -122,7 +122,7 @@ axes(h(1));cla
 
 axis(h,'tight');
 irf_zoom(tint,'x',h);
-add_timeaxis(h);
+irf_timeaxis(h);
 
 numb={'a','b','c','d','e','f','g','h','i','j','k','l','mf'};
 for ip=1:4,

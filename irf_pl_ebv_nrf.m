@@ -136,7 +136,7 @@ irf_zoom(tint,'x',h(sc_list,:));
 irf_zoom([-15 15],'y',h(sc_list,3:5)); % measured E field
 irf_zoom([-400 400],'y',h(sc_list,6)); % ExB velocity
 for ic=sc_list,
-  add_timeaxis(h(ic,:));
+  irf_timeaxis(h(ic,:));
   legend(h(ic,2),'L','M','N')
   legend(h(ic,3),'X','Y','Z')
   legend(h(ic,4),'L','M','N');

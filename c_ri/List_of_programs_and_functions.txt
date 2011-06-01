@@ -18,7 +18,7 @@ using:	-fromepoch
 		
 program pres
 using:	-020302_test.mat !a binary file!
-		-add_timeaxis
+		-irf_timeaxis
 	
 function get_B_from_ISDAT
 using:	-Mat_DbOpen

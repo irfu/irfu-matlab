@@ -222,7 +222,7 @@ for ip=1:6,
 end
 
 for j=1:6,irf_zoom(tint,'x',h(j));end
-add_timeaxis(h)
+irf_timeaxis(h)
 legend
 irf_figmenu
 

@@ -240,8 +240,8 @@ if plot_type == 2,
   irf_plot(B);ylabel('B [nT]');
   set(gca,'tickdir','out');colorbar;hh=get(gca,'position');colorbar off;set(gca,'position',hh); set(gca,'tickdir','in'); % to get the same size as colorbar plots
 
-  add_timeaxis(h(1:3),'nolabels');
-  add_timeaxis(gca,'nodate');
+  irf_timeaxis(h(1:3),'nolabels');
+  irf_timeaxis(gca,'nodate');
 end
 
 if plot_type == 1 || plot_type == 2 || plot_type == 0,
@@ -276,7 +276,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     colormap(xcm);
     hca = colorbar;
     ylabel(hca,'B [nT^2/Hz]');
-%    add_timeaxis(h,t0); % For time in epoch
+%    irf_timeaxis(h,t0); % For time in epoch
   end
 %%%%%%%%% S spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
@@ -342,7 +342,7 @@ elseif plot_type == 3,
   set(gca,'yscale','log');set(gca,'tickdir','out');
   caxis([-5 2]);colorbar
 
-  add_timeaxis(h);
+  irf_timeaxis(h);
 end
 
 if plot_type ~=0,
@@ -350,7 +350,7 @@ if plot_type ~=0,
   title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
   ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
   irf_zoom([min(t) max(t)],'x',h);
-  add_timeaxis(h)
+  irf_timeaxis(h)
 end
 end
 

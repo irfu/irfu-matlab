@@ -14,5 +14,5 @@ if isempty(r), irf_log('func','empty position'), return, end
 if size(r,2)~=4, error('R has bad size'), end
 
 r = irf_abs(r);
-add_timeaxis(h,'usefig',[r(:,1) r(:,2:end)/6371.2],...
+irf_timeaxis(h,'usefig',[r(:,1) r(:,2:end)/6371.2],...
 	{'X [Re]','Y [Re]','Z [Re]','R [Re]'})

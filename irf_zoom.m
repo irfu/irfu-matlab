@@ -139,15 +139,15 @@ for h=axis_handles
                     p = get(h,'position');
                     if numel(axis_handles)>1, % in case of multiple handles only last handle gets date label
                         if p(2)==pymin,
-                            add_timeaxis(h);
+                            irf_timeaxis(h);
                         else
-                            add_timeaxis(h,'nolabels');
+                            irf_timeaxis(h,'nolabels');
                         end
                     else
-                        add_timeaxis(h);
+                        irf_timeaxis(h);
                     end
                 else
-                    add_timeaxis(h,t_ref);
+                    irf_timeaxis(h,t_ref);
                     if length(axis_handles)>1
                         p = get(h,'position');
                         if p(2)>pymin, xlabel(h,''), set(h,'XTickLabel',''), end

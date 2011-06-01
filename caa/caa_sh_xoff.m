@@ -87,7 +87,7 @@ for co=1:2
     if on, hold on, end
     if ~isempty(CE3), irf_plot(CE3(:, [1 1+co]),'g+'), on = 1; end
     hold off
-    add_timeaxis
+    irf_timeaxis
     set(gca,'YLimMode','auto', 'XLimMode','auto','XTickLabel','')
     xlabel('')
     if co==1
@@ -229,7 +229,7 @@ if ~isempty(Eref)
 end
 
 irf_zoom(st+[0 dt],'x',h)
-axes(h(6)), add_timeaxis
+axes(h(6)), irf_timeaxis
 
 dE = [dE1 dE2 dE3 dE4];
 dAmp = [dAmp1 dAmp2 dAmp3 dAmp4];

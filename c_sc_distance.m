@@ -75,6 +75,6 @@ for ic1=1:3,
   isc=isc+1;
  end
 end
-add_timeaxis(gca,'date');
+irf_timeaxis(gca,'date');
 
 

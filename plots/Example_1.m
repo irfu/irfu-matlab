@@ -82,7 +82,7 @@ ylabel('E [eV]');
 irf_plot_axis_align
 irf_zoom(h,'x',tint);
 irf_pl_number_subplots(h);
-add_timeaxis(h);
+irf_timeaxis(h);
 irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%

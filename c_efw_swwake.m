@@ -357,19 +357,19 @@ for in = iok
 			ttime(ind2,in)*[1 1]-ts, [-2 2], 'r',...
 			ttime(:,in)-ts, av12-wake,'r');
 		ylabel('E12 [mV/m]');
-		add_timeaxis(gca,ts); xlabel('');
+		irf_timeaxis(gca,ts); xlabel('');
 		set(gca,'XLim',[0 te-ts])
 		
 		subplot(4,1,2)
 		plot(ttime(:,in)-ts,d12_tmp,'g',ttime(:,in)-ts, d12,'b');
 		ylabel(['D2(E' num2str(pair) ') [mV/m]']);
-		add_timeaxis(gca,ts); xlabel('');
+		irf_timeaxis(gca,ts); xlabel('');
 		set(gca,'XLim',[0 te-ts])
 
 		subplot(4,1,3)
 		plot(ttime(:,in)-ts, wake)
 		ylabel('Wake [mV/m]');
-		add_timeaxis(gca,ts);
+		irf_timeaxis(gca,ts);
 		set(gca,'XLim',[0 te-ts])
 	end
 	

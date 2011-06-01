@@ -10,7 +10,7 @@ function u = plot_angles(angle)
 %
 %Descrition of the function:
 %
-%Using: add_timeaxis
+%Using: irf_timeaxis
 % 
 %Work method:
 %
@@ -34,41 +34,41 @@ plot(angle(:,1),angle(:,2))
 title('The angle between the magnetic vectors at cluster 1 and cluster 2');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 subplot(3,2,2)
 plot(angle(:,1),angle(:,3))
 title('The angle between the magnetic vectors at cluster 1 and cluster 3');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 subplot(3,2,3)
 plot(angle(:,1),angle(:,4))
 title('The angle between the magnetic vectors at cluster 1 and cluster 4');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 subplot(3,2,4)
 plot(angle(:,1),angle(:,5))
 title('The angle between the magnetic vectors at cluster 2 and cluster 3');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 subplot(3,2,5)
 plot(angle(:,1),angle(:,6))
 title('The angle between the magnetic vectors at cluster 2 and cluster 4');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 subplot(3,2,6)
 plot(angle(:,1),angle(:,7))
 title('The angle between the magnetic vectors at cluster 3 and cluster 4');
 ylabel('angle');
 axis(axis_size);
-add_timeaxis;
+irf_timeaxis;
 
 hold off

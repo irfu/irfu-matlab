@@ -9,7 +9,7 @@ if strcmp(action,'initialize'),
     % execute irf_figmenu if there is no such menu
     if isempty(findobj(gcf,'type','uimenu','label','&irf'))
         hfigmenu=uimenu('Label','&irf');
-        uimenu(hfigmenu,'Label','&Update time axis','Callback','add_timeaxis(gca,''date'')','Accelerator','t')
+        uimenu(hfigmenu,'Label','&Update time axis','Callback','irf_timeaxis(gca,''date'')','Accelerator','t')
         uimenu(hfigmenu,'Label','Fit &Y axis','Callback','set(gca,''YLimMode'',''auto'')','Accelerator','y')
         uimenu(hfigmenu,'Label','&irf_tm','Callback','irf_figmenu(''irf_tm'')','Accelerator','i')
         uimenu(hfigmenu,'Label','Pointer &Crosshair','Callback','set(gcbf,''pointer'',''fullcrosshair'')')
@@ -44,4 +44,4 @@ function adaptiveDateTicks(figureHandle,eventObjectHandle)
 hsubplots=irf_plot_get_subplot_handles(figureHandle);
 xlim=get(eventObjectHandle.Axes,'xlim');
 set(hsubplots,'xlim',xlim);
-add_timeaxis(hsubplots);
+irf_timeaxis(hsubplots);

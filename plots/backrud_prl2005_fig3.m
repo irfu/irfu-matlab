@@ -137,7 +137,7 @@ irf_plot(efp,'r');
 grid on;
 ylabel('E_{f} [mV/m]');
 irf_zoom([-149.999 149.999],'y');
-add_timeaxis(gca,'nolabels');
+irf_timeaxis(gca,'nolabels');
 legend('|| B','\perp B');
 
 
@@ -149,7 +149,7 @@ irf_plot(vphi_bp(:,1:2),'r*');
 grid on;
 irf_zoom([-0.0199 .0199],'y');
 ylabel('k/\omega [s/km]');
-add_timeaxis(gca,'nolabels');
+irf_timeaxis(gca,'nolabels');
 legend('|| B','\perp B');
 
 %%%%%% subplot 4 %%%%%%
@@ -157,7 +157,7 @@ axes(h(ipanel));ipanel=ipanel+1;
 irf_plot(k,'k*');
 irf_zoom([0 1.999],'y');
 grid on;
-add_timeaxis(gca,'nolabels');
+irf_timeaxis(gca,'nolabels');
 ylabel('\lambda^{-1} [1/km]')
 
 %%%%%% subplot 5 %%%%%%
@@ -165,7 +165,7 @@ axes(h(ipanel));ipanel=ipanel+1;
 irf_plot(nf)
 irf_zoom([-1.499 1.499],'y');
 grid on
-add_timeaxis(gca,'nolabels');
+irf_timeaxis(gca,'nolabels');
 ylabel('dn [cm^{-3}]');
 
 %%%%%% subplot 6 %%%%%%

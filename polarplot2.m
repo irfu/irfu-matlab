@@ -152,7 +152,7 @@ clear polarplot2_manager
     ylabel('mV/m')
     title([' nfft=' num2str(steplength) ', av=' num2str(avnumber)] )
     ht=irf_pl_info(['polarplot2() ' datestr(now)],gca,[0,1 ]); set(ht,'interpreter','none');
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
     h(2)=irf_subplot(5,1,-2);
@@ -162,7 +162,7 @@ clear polarplot2_manager
     ht=text(0,0,'Power density');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     ylabel('Hz')
 %    title('Power spectral density')
-%    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+%    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
                   
     h(3)=irf_subplot(5,1,-3);
@@ -173,7 +173,7 @@ clear polarplot2_manager
     ylabel('Hz')
 %    title('Coherence')
     ht=text(0,0,'Coherence');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
     h(4)=irf_subplot(5,1,-4);
@@ -184,7 +184,7 @@ clear polarplot2_manager
     ylabel('Hz')
     ht=text(0,0,'\Delta \phi_1');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
 %    title('Phase difference')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
     set(hp,    'buttondownfcn', 'polarplot2_manager(''ja'')');
 
@@ -197,7 +197,7 @@ clear polarplot2_manager
     ht=text(0,0,'\Delta \phi_2');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
 %    title('Phase difference')
     temp1=axis;
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
     set(hp,    'buttondownfcn', 'polarplot2_manager(''ja'')');
 
@@ -212,7 +212,7 @@ clear polarplot2_manager
     colorbar('vert');
     ylabel('Hz')
     title('Spectral intensity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
     h(2)=subplot(4,1,2);
@@ -222,7 +222,7 @@ clear polarplot2_manager
     colorbar('vert')
     ylabel('Hz')
     title('Degree of polarisation')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
     h(3)=subplot(4,1,3);
@@ -232,7 +232,7 @@ clear polarplot2_manager
     colorbar('vert')
     ylabel('Hz')
     title('Ellipticity')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
 
     h(4)=subplot(4,1,4);
@@ -243,14 +243,14 @@ clear polarplot2_manager
     xlabel('UT')
     ylabel('Hz')
     title('Tilt angle')
-    add_timeaxis(gca,t0); set(gca,'tickdir','out');
+    irf_timeaxis(gca,t0); set(gca,'tickdir','out');
     %set(gca,'yscale','log')
   end
 
 %  suptitle([datestring(fromepoch(t0)) ', nfft=' num2str(steplength) ', av=' num2str(avnumber)] )
   warning on
 
-  irf_zoom([0 t(end)-t(1)],'x',h);add_timeaxis(h,t0);
+  irf_zoom([0 t(end)-t(1)],'x',h);irf_timeaxis(h,t0);
 global POLARPLOT_RESULTS
 POLARPLOT_RESULTS={t0, T-t0,freq,2*n*Imean1/sampl,coh1,phase_all1,2*n*Imean2/sampl,coh2,phase_all2,threshold};
 

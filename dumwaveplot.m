@@ -96,7 +96,7 @@ function dumwaveplot(t,Ex)
   pcolor(t-t0,newfreq,log10(abs(power2.'))) % With edge effects removed
   shading flat
   ylabel('Hz')
-%  add_timeaxis(gca,t0); set(gca,'tickdir','out'); % For time in epoch
+%  irf_timeaxis(gca,t0); set(gca,'tickdir','out'); % For time in epoch
   set(gca,'yscale','log')
   set(gca,'tickdir','out')
   

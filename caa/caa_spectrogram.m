@@ -237,7 +237,7 @@ for comp=1:min(length(h),ncomp)
       ylabel(hcb,specrec.p_label);
       irf_colorbar_fit_label_height(hcb);
     end
-    if comp==min(length(h),ncomp), add_timeaxis;
+    if comp==min(length(h),ncomp), irf_timeaxis;
     else set(h(comp),'XTicklabel','')
     end
 end

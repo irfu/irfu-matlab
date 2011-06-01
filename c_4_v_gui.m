@@ -39,7 +39,7 @@ switch action,
         c_pl_tx(var1,var2,var3,var4,var_col);zoom on;
         ylabel(var_label(variable_str,var_col));
         axis([xl(1) xl(2) 0 1]);
-        set(ud.h(1),'YLimMode','auto');add_timeaxis
+        set(ud.h(1),'YLimMode','auto');irf_timeaxis
         axes(ud.h(2));
         c_pl_tx(var1,var2,var3,var4,var_col);
         c_4_v_gui('dt');
@@ -175,7 +175,7 @@ switch action,
         else c_pl_tx('var?',var_col,dt);
         end
         irf_zoom(xl,'x');irf_zoom(yl,'y');
-        add_timeaxis;
+        irf_timeaxis;
         text(.5,-.6,['t_{2nd panedel} = t_{1st panel} - dt\newline  dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s ' coord_sys(ud) ],'units','normalized','verticalalignment','top');
 
     case 'v'
@@ -209,7 +209,7 @@ switch action,
         else
             c_pl_tx(var1,var2,var3,var4,var_col,dt);
         end
-        axis([xl yl]);add_timeaxis;
+        axis([xl yl]);irf_timeaxis;
         text(.5,-.6,['t_{2nd panedel} = t_{1st panel} - dt\newline dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s ' coord_sys(ud)],'units','normalized','verticalalignment','top');
         
     case 'click_times'

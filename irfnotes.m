@@ -521,7 +521,7 @@ if 1, % plot figures panels
     irf_zoom(h,'x',tint);
     irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);    irf_plot_axis_align
     irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-    add_timeaxis(h);
+    irf_timeaxis(h);
 end
 cd(cur_dir)
 %print -depsc2 -painters fig/vaivads2011a_fig2.eps
@@ -535,7 +535,7 @@ irf_plot(h(3),'E_Vec_xy_ISR2__C2_CP_EFW_L3_E');
 irf_plot(h(4),'B_vec_xyz_gse__C2_CP_FGM_5VPS');
 irf_zoom(h,'x',tint);
 irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-add_timeaxis(h)
+irf_timeaxis(h)
 %% Plot panels reading data from other sources than CAA
 % copy the following panels into your figure
 if 1,   % PANEL: PEACE PADH high resolution pitch C4 (cdf files from QJAS)

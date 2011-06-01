@@ -72,7 +72,7 @@ for ic1=1:4,
   eval(irf_ssub('plot(b1(:,1),d!d?,[''-'',ccol(?),''o''],''MarkerFaceColor'',ccol(!),''MarkerSize'',2);',ic1,ic2));
  end
 end
-add_timeaxis(gca,'date');
+irf_timeaxis(gca,'date');
 
 if flag_distance_along_B==1,
   subplot(2,1,2);
@@ -87,7 +87,7 @@ if flag_distance_along_B==1,
     eval(irf_ssub('plot(b1(:,1),zd!d?,[''-'',ccol(?),''o''],''MarkerFaceColor'',ccol(!),''MarkerSize'',2);',ic1,ic2));
    end
   end
-  add_timeaxis(gca,'date');
+  irf_timeaxis(gca,'date');
 
 end
 

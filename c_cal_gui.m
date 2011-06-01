@@ -764,7 +764,7 @@ case 'replot_all'
 			grid(h(ax),'on')
 		end
 		ylabel(h(4),'AUX')
-		axes(h(4)); add_timeaxis; grid on
+		axes(h(4)); irf_timeaxis; grid on
 		
 		% Time span
 		irf_zoom(hnd.tlim(end,:),'x',h);

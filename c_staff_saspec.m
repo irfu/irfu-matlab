@@ -72,7 +72,7 @@ t0=time(1,1);h=pcolor(time-t0,freq,log10(dat));
 %set(gca,'yscale','log') %messes up the y-axis values even if spacing is fine..
 
 
-c_bar=colorbar;shading flat;add_timeaxis(gca,t0);
+c_bar=colorbar;shading flat;irf_timeaxis(gca,t0);
 
 
 
