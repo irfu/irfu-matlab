@@ -622,7 +622,7 @@ case 'replot'
 	% Plot data
 	hnd = guidata(h0);
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	if ~length(hnd.Data), error('no data to calibrate'),end
+	if isempty(hnd.Data), error('no data to calibrate'),end
 	if isempty(hnd.last), disp('List empty, will do nothing'), return, end
 
 	% Update selected records in DataLegList
@@ -661,15 +661,12 @@ case 'replot'
 			ii = L_find(hnd.DataList,hnd.Data{d_ii(j)}.name);
 			if ii
 				hnd.DataList = L_rm_ii(hnd.DataList,ii);
-				%disp([action ': removing ' hnd.Data{d_ii(j)}.name])
-				%xx = hnd.Data{d_ii(j)}.ploth;
-				%disp(sprintf('%s before: %f %f %f',hnd.Data{d_ii(j)}.name,xx(1),xx(2),xx(3)))
-				lasterr('')
 				try
 					delete(hnd.Data{d_ii(j)}.ploth)
-				catch
-					disp([action ': cannot remove ' hnd.Data{d_ii(j)}.name])
-					disp(lasterr)
+                catch err
+                    if ~strcmp(err.identifier,'MATLAB:hg:udd_interface:CannotDelete')
+                        rethrow(err)
+                    end
 				end
 			end
 			
@@ -709,7 +706,7 @@ case 'replot'
 	hnd.last = [];
 	hnd.off_updated = 0;
 
-	irf_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(h,'x',hnd.tlim(end,:));
 	
 	% Hide the markers so thet they will not contribute YLim
 	ts_tmp = hide_t_marker(hnd,hnd.ts_marker);
@@ -737,7 +734,7 @@ case 'replot_all'
 	% Replot all data
 	hnd = guidata(h0);
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	if ~length(hnd.Data), error('no data to calibrate'),end
+	if isempty(hnd.Data), error('no data to calibrate'),end
 	
 	if isempty(hnd.last)
 		% Clear everything
@@ -764,10 +761,11 @@ case 'replot_all'
 			grid(h(ax),'on')
 		end
 		ylabel(h(4),'AUX')
-		axes(h(4)); irf_timeaxis; grid on
+		irf_timeaxis(h); 
+        grid(h(4),'on')
 		
 		% Time span
-		irf_zoom(hnd.tlim(end,:),'x',h);
+		irf_zoom(h,'x',hnd.tlim(end,:));
 		
 		guidata(h0,hnd);
 	else
@@ -1083,9 +1081,9 @@ case 'update_Dslider'
 	set(eval(['hnd.D' comp_s 'edit']),'String',num2str(val));
 	switch comp
 	case 1
-		hnd.off(1) = val + i*imag(hnd.off(1));
+		hnd.off(1) = val + 1i*imag(hnd.off(1));
 	case 2
-		hnd.off(1) = i*val + real(hnd.off(1));
+		hnd.off(1) = 1i*val + real(hnd.off(1));
 	case 3
 		hnd.off(2) = val;
 	end
@@ -1105,9 +1103,9 @@ case 'update_Dedit'
 		set(eval(['hnd.D' comp_s 'slider']),'Value',val);
 		switch comp
 		case 1
-			hnd.off(1) = val + i*imag(hnd.off(1));
+			hnd.off(1) = val + 1i*imag(hnd.off(1));
 		case 2
-			hnd.off(1) = i*val + real(hnd.off(1));
+			hnd.off(1) = 1i*val + real(hnd.off(1));
 		case 3
 			hnd.off(2) = val;
 		end
@@ -1227,7 +1225,7 @@ case 'update_DATAcheckbox'
 			set(eval(['hnd.DATA' vs 'checkbox']),'Value',0)
 			return
 		end
-		inprog_mtx = 1; %#ok<NASGU>
+		inprog_mtx = 1; 
 		
 		% Check if we are hiding the active variable
 		if strcmp(hnd.ActiveVar,vs)
@@ -1424,8 +1422,9 @@ case 'zoom_in'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	irf_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(h,'x',hnd.tlim(end,:));
 	set(h,'YLimMode','auto')
+    irf_timeaxis(h)
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
@@ -1452,8 +1451,9 @@ case 'zoom_un'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	irf_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(h,'x',hnd.tlim(end,:));
 	set(h,'YLimMode','auto')
+    irf_timeaxis(h)
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
@@ -1482,8 +1482,9 @@ case 'zoom_rs'
 	hide_t_marker(hnd,hnd.te_marker); hnd.te_marker = [];
 	
 	h = [hnd.Xaxes hnd.Yaxes hnd.Zaxes hnd.AUXaxes];
-	irf_zoom(hnd.tlim(end,:),'x',h);
+	irf_zoom(h,'x',hnd.tlim(end,:));
 	set(h,'YLimMode','auto')
+    irf_timeaxis(h)
 	
 	% Enable/disable menus
 	set(hnd.menu_zoom_in,'Enable','off')
@@ -1550,7 +1551,7 @@ case 'show_raw'
 		if ~isempty(d_tmp)
 			h1 = irf_subplot(2,1,1);
 			irf_plot(d_tmp,'comp')
-			irf_zoom(hnd.tlim(end,:),'x',h1);
+			irf_zoom(h1,'x',hnd.tlim(end,:));
 			set(h1,'YLimMode','auto')
 			ylabel('E [mV/m]')
 			legend(leg_tmp{:},'Location','NorthEastOutside')
@@ -1558,7 +1559,7 @@ case 'show_raw'
 		if ~isempty(dp_tmp)
 			h2 = irf_subplot(2,1,2);
 			irf_plot(dp_tmp,'comp')
-			irf_zoom(hnd.tlim(end,:),'x',h2);
+			irf_zoom(h1,'x',hnd.tlim(end,:));
 			set(h2,'YLimMode','auto')
 			ylabel(h2,'V [V]')
 			legend(h2,legp_tmp{:},'Location','NorthEastOutside')
@@ -1575,7 +1576,7 @@ case 'show_raw'
 			figure(raw_fig_id), clf
 			irf_plot(V_tmp)
 			ylabel([v_s ' GSE [km/s]'])
-			irf_zoom(hnd.tlim(end,:),'x',gca);
+			irf_zoom(gca,'x',hnd.tlim(end,:));
 			set(gca,'YLimMode','auto')
 			legend('Vx','Vy','Vz')
 		end
@@ -1599,7 +1600,7 @@ case 'show_b'
 	set(raw_fig_id,'Name', 'Magnetic field')
 	if isempty(pos_old), set(fig,'Position', pos_raw_fig(hnd.scrn_size,:)), end
 	h1 = irf_plot(irf_abs(hnd.Data{j}.B));
-	irf_zoom(hnd.tlim(end,:),'x',h1);
+	irf_zoom(h1,'x',hnd.tlim(end,:));
 	ylabel(['B SC' num2str(hnd.Data{j}.cl_id) ' [nT]'])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % show_spect
@@ -1700,13 +1701,13 @@ case 'cut_int'
 		if strcmp(btn,'No'), rm_pot = 0; end
 		if strcmp(hnd.Data{j}.sen,'1234')
 			var_list = {'wE?p12','wE?p32','wE?p34'};
-			if rm_pot, var_list = {var_list{:}, ...
-				'P10Hz?p1','P10Hz?p2','P10Hz?p3','P10Hz?p4'};
+			if rm_pot, var_list = [var_list, ...
+				{'P10Hz?p1','P10Hz?p2','P10Hz?p3','P10Hz?p4'}];
 			end
 		else
 			var_list = {['wE?p' hnd.Data{j}.sen]};
-			if rm_pot, var_list = {var_list{:},...
-				['P10Hz?p' hnd.Data{j}.sen(1)],['P10Hz?p' hnd.Data{j}.sen(2)]};
+			if rm_pot, var_list = [var_list,...
+				{['P10Hz?p' hnd.Data{j}.sen(1)],['P10Hz?p' hnd.Data{j}.sen(2)]}];
 			end
 		end
 		
@@ -1746,7 +1747,7 @@ case 'cut_int'
 		end
 		% Variables which we need to reload
 		var_list = {'diEs?p12','diEs?p32','diEs?p34','diE?p1234'};
-		if rm_pot, var_list = {var_list{:},'P?'}; end
+		if rm_pot, var_list = [var_list, {'P?'}]; end
 		
 	else % Cut V CIS
 		if strcmp(hnd.Data{j}.sen,'HIA'), v_s = irf_ssub('VCh?',hnd.Data{j}.cl_id);
@@ -1770,7 +1771,7 @@ case 'cut_int'
 		if n_ok<1, disp('was no raw data'), return, end
 		
 		% We need only diV*
-		var_list = {var_list{1}};
+		var_list = var_list(1);
 	end
 	
 	% Reload updated variables
@@ -1817,11 +1818,12 @@ if ~isempty(marker)
 	newmarker.t = marker.t;
 	% Hide the marker if marker.h exists
 	if isfield(marker,'h')
-		lasterr('')
 		try
 			for j=4:-1:1, delete(marker.h(j)),end
-		catch
-			disp('missed marker')
+        catch err
+            if ~strcmp(err.identifier,'MATLAB:hg:udd_interface:CannotDelete')
+                rethrow(err)
+            end
 		end
 	end
 end
