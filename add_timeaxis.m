@@ -23,6 +23,12 @@ function add_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
 %
 % $Id$
 
+disp('!!!!!!!!!! WARNING !!!!!!!!!!')
+disp('You are using routine add_timeaxis')
+disp('Please change to irf_timeaxis')
+disp('add_timeaxis will be removed before the next release.')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
 flag_labels=1; % default is to add labels to the last axis handle, can be changed by 'nolabels' argument
 flag_date=1;   % default is to add date labels
 flag_add_extra_xlabels=0; % default add only time labels on x axis
