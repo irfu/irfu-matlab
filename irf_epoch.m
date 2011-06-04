@@ -1,7 +1,7 @@
 function t_out = irf_epoch(t_in,flag)
 %IRF_EPOCH  Convert time between different formats
 %
-%   time=IRF_EPOCH([year month date hour min sec])
+%   epoch=IRF_EPOCH([year month date hour min sec])
 %            convert [year month date hour min sec] column vector to epoch
 %   time_vector=IRF_EPOCH(epoch,'vector')
 %           convert epoch to [year month date hour min sec] column vector
@@ -9,6 +9,12 @@ function t_out = irf_epoch(t_in,flag)
 %           convert to ISO format time, argument can be time in epoch
 %   time_iso=IRF_EPOCH(epoch,'isoshort')
 %           convert to ISO short format time, argument can be time in epoch
+%   time=IRF_EPOCH(epoch,'yyyymmdd')
+%           convert to YYYYMMDD format
+%   time_date=IRF_EPOCH(epoch,'date')
+%           convert to Matlabe date format 
+%   epoch=IRF_EPOCH(date,'date2epoch')
+%           convert from Matlab date to epoch 
 %
 %  epoch - seconds since the epoch 1 Jan 1970.
 %   The seconds since epoch time format is the time specification
@@ -150,8 +156,16 @@ switch lower(flag)
                 t_out(ii,18:end-1) = s2;
             end
         end  
+    case 'date' % matlab date
+        t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
+    case 'date2epoch' 
+        t_out = double(t_in(:) - 719529)*double(24 * 3600);
+    case 'yyyymmdd'
+        t=fromepoch(t_in);
+        t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
     otherwise
-        
+        disp('!!! irf_epoch: unknown flag, not converting.')
+        t_out=t_in;
 end
 
 % Help function to insert zeros for numbers containing only one digit
