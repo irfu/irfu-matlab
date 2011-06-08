@@ -51,8 +51,7 @@ elseif lx == 3
     inp = x;
     t = [];
 else
-    disp('too few components of vector')
-    exit
+    error('c_coord_trans: too few components of vector!')
 end
 
 cl_id = [];
