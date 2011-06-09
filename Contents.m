@@ -1,13 +1,7 @@
 % IRFU Matlab routines
 %
 % Time operations
-%   toepoch         - convert a [YYYY MM DD hh mm ss] time specification to seconds since 1970
-%   fromepoch       - Convert seconds since 1970 to [YYYY MM DD hh mm dd] time format
-%   date2epoch      - converts MATLAB datenum to ISDAT epoch
-%   epoch2date      - converts ISDAT epoch to MATLAB datenum
-%   iso2epoch       - convert ISO time string to ISDAT epoch
-%   epoch2iso       - Convert ISDAT epoch to ISO time string
-%   epoch2yyyymmdd  - Convert ISDAT epoch to YYYYMMDD
+%   irf_time        - Convert between time formats in epoch/vector/iso/others
 %   irf_fname       - construct a filename string from time
 %
 % Time series operations
