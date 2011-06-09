@@ -32,7 +32,7 @@ irf_plot(hca,gsmB);
 ylabel(hca,'B [nT] GSM');
 irf_zoom(hca,'y',[-25 15])
 irf_legend(hca,{'B_X','B_Y','B_Z'},[0.98 0.95])
-irf_legend(hca,{['C' num2str(ic)]},[0.98 0.05],'color','k')
+irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -43,7 +43,7 @@ irf_plot(hca,gsmV)
 ylabel(hca,'V [km/s] GSM');
 irf_zoom(hca,'y',[-300 500])
 irf_legend(hca,{'V_X','V_Y','V_Z'},[0.02 0.1])
-irf_legend(hca,{['C' num2str(ic)]},[0.98 0.05],'color','k')
+irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -53,7 +53,7 @@ caxis([3.9 6.1]);
 set(hca,'yscale','log')
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
 ylabel(hca,'E [eV]')
-irf_legend(hca,{['C' num2str(ic)]},[0.98 0.05],'color','k')
+irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 irf_colormap('default');
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -62,7 +62,7 @@ hca=h(i_subplot); i_subplot=i_subplot+1;
 irf_plot(hca,'Electron_Dif_flux__C1_CP_RAP_ESPCT6','colorbarlabel','log10 dF\newline 1/cm^2 s sr keV','fitcolorbarlabel');
 caxis([0.51 4.49]);
 ylabel(hca,'E [keV]');
-irf_legend(hca,{['C' num2str(ic)]},[0.98 0.9],'color','k');
+irf_legend(hca,{'C1'},[0.98 0.9],'color','k');
 set(hca,'yscale','log');
 set(hca,'ytick',[5e1 1e2 2e2 5e2 1e3])
 
@@ -74,7 +74,7 @@ irf_plot(hca,'Data__C1_CP_PEA_PITCH_SPIN_DEFlux','sum_dim1','colorbarlabel','log
 caxis([5.9 7.6]);
 set(hca,'yscale','log','ylim',[100 3e4])
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
-irf_legend(hca,{['C' num2str(ic)]},[0.98 0.05],'color','k')
+irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 ylabel('E [eV]');
 
 %%%%%%%%%%%%%%%%%%%%%%%%
