@@ -194,7 +194,7 @@ switch lower(action)
                 end
         end
         if flag_get_phase_data % try to read phase data from disk matlab files
-            [ok,phase_time_series]=c_load('A?',ic);
+            [ok,phase_time_series]=c_load('Atwo?',ic);
             if any(ok), % check if phase info is on disk
                 a=phase_time_series;
                 if t>=a(1,1) && t<=a(end,1), % time within phase interval of B
