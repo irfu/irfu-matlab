@@ -2,33 +2,44 @@ function t_out = irf_time(t_in,flag)
 %IRF_TIME  Convert time between different formats
 %
 %   epoch=IRF_TIME([year month date hour min sec])
+%   epoch=IRF_TIME([year month date hour min sec],'vector2epoch')
 %            convert [year month date hour min sec] column vector to epoch
+%
+%   time_vector=IRF_TIME(epoch,'epoch2vector')
 %   time_vector=IRF_TIME(epoch,'vector')
 %           convert epoch to [year month date hour min sec] column vector
+%
+%   time_iso=IRF_TIME(epoch,'epoch2iso')
 %   time_iso=IRF_TIME(epoch,'iso')
 %           convert to ISO format time, argument can be time in epoch
+%
+%   time_iso=IRF_TIME(epoch,'epoch2isoshort')
 %   time_iso=IRF_TIME(epoch,'isoshort')
 %           convert to ISO short format time, argument can be time in epoch
-%   time=IRF_TIME(epoch,'yyyymmdd')
+%
+%   time_yyyymmdd=IRF_TIME(epoch,'epoch2yyyymmdd')
+%   time_yyyymmdd=IRF_TIME(epoch,'yyyymmdd')
 %           convert to YYYYMMDD format
-%   time_date=IRF_TIME(epoch,'date')
-%           convert to Matlabe date format 
+%
+%   date=IRF_TIME(epoch,'epoch2date')
+%   date=IRF_TIME(epoch,'date')
+%           convert to Matlab date format 
+%
 %   epoch=IRF_TIME(date,'date2epoch')
 %           convert from Matlab date to epoch 
 %
 %  epoch - seconds since the epoch 1 Jan 1970.
 %   The seconds since epoch time format is the time specification
-%   used by the ISDAT system. To convert into Matlabs standard time
-%   format use DATENUM.
+%   used by the ISDAT system. 
 %
 % $Id$
 
 if nargin==1,
-    flag='toepoch';
+    flag='vector2epoch';
 end
 
 switch lower(flag)
-    case 'toepoch'
+    case 'vector2epoch'
         % TOEPOCH - Convert a [YYYY MM DD hh mm ss] time specification
         % to seconds since 1970.
         x=t_in;
@@ -77,7 +88,7 @@ switch lower(flag)
             secs(ind,1)=secs(ind,1)+plus;
         end
         t_out=secs;
-    case 'vector'
+    case {'epoch2vector','vector'}
         t = datevec(epoch2date(fix(double(t_in(:)))));
         % The following lines are needed to work aroung the problem with numerical
         % accuracy in conversion from isdat epoch to matlab date.
@@ -95,17 +106,20 @@ switch lower(flag)
         % accuracy ~1e-6 sec for year 2004.
         t(:,6) = t(:,6) + double(t_in(:)) - fix(double(t_in(:)));
         t_out = t;
-    case {'iso','isoshort'}
-        if strcmp(flag,'isoshort'), fmt=1;end
+    case {'iso','isoshort','epoch2iso','epoch2isoshort'}
         if length(t_in)<5
             % We need to do all this because DATESTR rounds seconds
-            d = irf_epoch(t_in,'vector');
+            d = irf_time(t_in,'vector');
             
-            for j=2:5, s1(j-1) = {add_zero(d(:,j),num2str(d(:,j),'%d'))}; end
+            for j=2:5, 
+                s1(j-1) = {num2str(d(:,j),'%02d')}; 
+            end
             
             % Take care about seconds separately
-            s2 = add_zero(d(:,6),num2str(d(:,6),'%6f'));
-            if strcmp(flag,'isoshort'), s2 = s2(:,1:6); end
+            s2 = num2str(d(:,6),'%09.6f');
+            if strcmp(flag,'isoshort') || strcmp(flag,'epoch2isoshort'), 
+                s2 = num2str(d(:,6),'%06.3f');
+            end
             
             sZ = s2(:,1); sZ(:) = 'Z';
             sT = sZ; sT(:) = 'T';
@@ -116,17 +130,22 @@ switch lower(flag)
         else
             % This approach is faster for data with many samples per minute, as we run
             % from epoch only once per minute
-            out = char(zeros(length(t_in),27-fmt*3));
-            out(:,[5 8]) = '-';
-            out(:,11) = 'T';
-            out(:,[14 17]) = ':';
-            out(:,end) = 'Z';
+            if strcmp(flag,'isoshort') || strcmp(flag,'epoch2isoshort') , 
+                fmt=1;
+            else
+                fmt=0;
+            end
+            t_out = char(zeros(length(t_in),27-fmt*3));
+            t_out(:,[5 8]) = '-';
+            t_out(:,11) = 'T';
+            t_out(:,[14 17]) = ':';
+            t_out(:,end) = 'Z';
             
-            tss = irf_epoch(t_in(1),'vector');
-            tee = irf_epoch(t_in(end),'vector');
+            tss = irf_time(t_in(1),'vector');
+            tee = irf_time(t_in(end),'vector');
             
-            mins = irf_epoch([tss(1:5) 0]):60:irf_epoch([tee(1:5) 0]);
-            d = irf_epoch(mins,'vector');
+            mins = irf_time([tss(1:5) 0]):60:irf_time([tee(1:5) 0]);
+            d = irf_time(mins,'vector');
             
             s1 = {'', '', '', '',''}; sl=[0 4; 5 2; 8 2; 11 2; 14 2];
             j_start = 0;
@@ -134,7 +153,9 @@ switch lower(flag)
             for j=1:5
                 if d(1,j)==d(end,j)
                     ss = add_zero(d(1,j),num2str(d(1,j),'%d'));
-                    for jj=1:sl(j,2), out(:,sl(j,1)+jj) = ss(jj); end
+                    for jj=1:sl(j,2), 
+                        t_out(:,sl(j,1)+jj) = ss(jj); 
+                    end
                 else
                     j_start = j;
                     for jj=j:5, s1(jj) = {add_zero(d(:,jj),num2str(d(:,jj),'%d'))}; end
@@ -143,28 +164,30 @@ switch lower(flag)
             end            
             for j=1:length(mins)
                 if j==length(mins), ii = find(t_in>=mins(j));
-                else ii = find(t>=mins(j) & t<mins(j+1));
+                else ii = find(t_in>=mins(j) & t_in<mins(j+1));
                 end;
                 if isempty(ii), continue, end
                 if j_start
                     for kk=j_start:5
-                        for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
+                        for jj=1:sl(kk,2), t_out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
                     end
                 end
-                s2 = add_zero(t(ii)-mins(j),num2str(t(ii)-mins(j),'%6f'));
-                if strcmp(flag,'isoshort'), s2 = s2(:,1:6); end
+                s2 = add_zero(t_in(ii)-mins(j),num2str(t_in(ii)-mins(j),'%6f'));
+                if strcmp(flag,'isoshort')|| strcmp(flag,'epoch2isoshort')
+                    s2 = s2(:,1:6); 
+                end
                 t_out(ii,18:end-1) = s2;
             end
         end  
-    case 'date' % matlab date
+    case {'date','epoch2date'} % matlab date
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
-    case 'yyyymmdd'
+    case {'yyyymmdd','epoch2yyyymmdd'}
         t=fromepoch(t_in);
         t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
     otherwise
-        disp('!!! irf_epoch: unknown flag, not converting.')
+        disp('!!! irf_time: unknown flag, not converting.')
         t_out=t_in;
 end
 
