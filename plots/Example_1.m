@@ -1,7 +1,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
-tint=[toepoch([2006 9 27 17 10 0]) toepoch([2006 9 27 17 40 0])]; % time interval
+tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])]; % time interval
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once)
@@ -88,7 +88,7 @@ irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 %%%%%%%%%%%%%%%%%%%%%%%%
 % add tmarks and mark intervals
 % add line marks
-tmarks=toepoch([2006 9 27 17 12 0;2006 9 27 17 15 0;2006 9 27 17 18 0;2006 9 27 17 21 0;2006 9 27 17 23 0]);
+tmarks=irf_time([2006 9 27 17 12 0;2006 9 27 17 15 0;2006 9 27 17 18 0;2006 9 27 17 21 0;2006 9 27 17 23 0]);
 irf_pl_mark(h,tmarks,'black','LineWidth',0.5)
 text_tmarks={'A','B','C','D','E'};
 ypos=ylim(h(1));ypos(2)=ypos(2);ypos(1)=[];
@@ -96,7 +96,7 @@ for j=1:length(tmarks)
     irf_legend(h(1),text_tmarks{j},[tmarks(j) ypos],'horizontalalignment','center');
 end
 % add interval mark
-tmarks=toepoch([2006 9 27 17 25 0])+[0 5*60];
+tmarks=irf_time([2006 9 27 17 25 0])+[0 5*60];
 irf_pl_mark(h(1:2),tmarks)
 
 
