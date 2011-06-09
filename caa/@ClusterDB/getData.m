@@ -773,14 +773,6 @@ elseif strcmp(quantity,'a')
 	
 	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
-	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase');%#ok<ASGLU>
-	if ~isempty(data)
-		c_eval('A?=[t data];save_list=[save_list '' A? ''];',cl_id);
-		n_ok = n_ok + 1;
-    else irf_log('dsrc',irf_ssub('No data for A?',cl_id))
-	end
-	clear t data
-	
 	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');%#ok<ASGLU>
 	if ~isempty(data)
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
