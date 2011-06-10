@@ -13,13 +13,14 @@ function t_out = irf_time(t_in,flag)
 %   time_iso=IRF_TIME(epoch,'iso')
 %           convert to ISO format time, argument can be time in epoch
 %
+%   epoch=IRF_TIME(time_iso,'iso2epoch')
+%
 %   time_iso=IRF_TIME(epoch,'epoch2isoshort')
 %   time_iso=IRF_TIME(epoch,'isoshort')
-%           convert to ISO short format time, argument can be time in epoch
+%           convert to ISO short format time
 %
 %   time_yyyymmdd=IRF_TIME(epoch,'epoch2yyyymmdd')
 %   time_yyyymmdd=IRF_TIME(epoch,'yyyymmdd')
-%           convert to YYYYMMDD format
 %
 %   date=IRF_TIME(epoch,'epoch2date')
 %   date=IRF_TIME(epoch,'date')
@@ -48,7 +49,7 @@ switch lower(flag)
             if m==2 || m==3 || n==6,
                 x=x'; [~,n]=size(x);
             else
-                warning('Illegal argument')
+                warning('irfu:argument','irf_time:Illegal argument')
                 t_out=NaN;
                 return
             end
@@ -67,7 +68,7 @@ switch lower(flag)
             if x(1,1)<100, x(:,1)=1900+x(:,1); end
         end
         
-        years=x(:,1);
+        years=x(:,1);hours=zeros(size(years));secs=hours;
         for year=unique(x(:,1))'
             daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
             if rem(year,4)==0, daym(3)=29; end  % works up to 2100
@@ -89,7 +90,7 @@ switch lower(flag)
         end
         t_out=secs;
     case {'epoch2vector','vector'}
-        t = datevec(epoch2date(fix(double(t_in(:)))));
+        t = datevec(irf_time(fix(double(t_in(:)))),'epoch2date');
         % The following lines are needed to work aroung the problem with numerical
         % accuracy in conversion from isdat epoch to matlab date.
         % We give whole seconds to datevec(epoch2date)) and expect whole seconds in
@@ -99,7 +100,7 @@ switch lower(flag)
         ii = find(t(:,6)==60);
         if ~isempty(ii)
             t(ii,6) = 0;
-            t_tmp = datevec(epoch2date(fix(double(t_in(ii)+1))));
+            t_tmp = datevec(irf_time(fix(double(t_in(ii)+1))),'epoch2date');
             t(ii,1:5) = t_tmp(:,1:5);
         end
         % Correct fractions of second. This actually preserves
@@ -107,101 +108,39 @@ switch lower(flag)
         t(:,6) = t(:,6) + double(t_in(:)) - fix(double(t_in(:)));
         t_out = t;
     case {'iso','isoshort','epoch2iso','epoch2isoshort'}
-        if length(t_in)<5
-            % We need to do all this because DATESTR rounds seconds
-            d = irf_time(t_in,'vector');
-            
-            for j=2:5, 
-                s1(j-1) = {num2str(d(:,j),'%02d')}; 
-            end
-            
-            % Take care about seconds separately
-            s2 = num2str(d(:,6),'%09.6f');
-            if strcmp(flag,'isoshort') || strcmp(flag,'epoch2isoshort'), 
-                s2 = num2str(d(:,6),'%06.3f');
-            end
-            
-            sZ = s2(:,1); sZ(:) = 'Z';
-            sT = sZ; sT(:) = 'T';
-            sdash = sZ; sdash(:) = '-';
-            scol = sZ; scol(:) = ':';
-            
-            t_out = [num2str(d(:,1)) sdash s1{1} sdash s1{2} sT s1{3} scol s1{4} scol s2 sZ];
+        d = irf_time(t_in,'vector');
+        if strcmp(flag,'isoshort')|| strcmp(flag,'epoch2isoshort')
+            t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%06.3fZ');
         else
-            % This approach is faster for data with many samples per minute, as we run
-            % from epoch only once per minute
-            if strcmp(flag,'isoshort') || strcmp(flag,'epoch2isoshort') , 
-                fmt=1;
-            else
-                fmt=0;
-            end
-            t_out = char(zeros(length(t_in),27-fmt*3));
-            t_out(:,[5 8]) = '-';
-            t_out(:,11) = 'T';
-            t_out(:,[14 17]) = ':';
-            t_out(:,end) = 'Z';
-            
-            tss = irf_time(t_in(1),'vector');
-            tee = irf_time(t_in(end),'vector');
-            
-            mins = irf_time([tss(1:5) 0]):60:irf_time([tee(1:5) 0]);
-            d = irf_time(mins,'vector');
-            
-            s1 = {'', '', '', '',''}; sl=[0 4; 5 2; 8 2; 11 2; 14 2];
-            j_start = 0;
-            
-            for j=1:5
-                if d(1,j)==d(end,j)
-                    ss = add_zero(d(1,j),num2str(d(1,j),'%d'));
-                    for jj=1:sl(j,2), 
-                        t_out(:,sl(j,1)+jj) = ss(jj); 
-                    end
-                else
-                    j_start = j;
-                    for jj=j:5, s1(jj) = {add_zero(d(:,jj),num2str(d(:,jj),'%d'))}; end
-                    break
-                end
-            end            
-            for j=1:length(mins)
-                if j==length(mins), ii = find(t_in>=mins(j));
-                else ii = find(t_in>=mins(j) & t_in<mins(j+1));
-                end;
-                if isempty(ii), continue, end
-                if j_start
-                    for kk=j_start:5
-                        for jj=1:sl(kk,2), t_out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
-                    end
-                end
-                s2 = add_zero(t_in(ii)-mins(j),num2str(t_in(ii)-mins(j),'%6f'));
-                if strcmp(flag,'isoshort')|| strcmp(flag,'epoch2isoshort')
-                    s2 = s2(:,1:6); 
-                end
-                t_out(ii,18:end-1) = s2;
-            end
-        end  
+            t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%09.6fZ');
+        end
+    case 'iso2epoch'
+        mask = '%4d-%2d-%2dT%2d:%2d:%fZ';
+        s=t_in;
+        % If we have multiple rows, we need to turn the matrix
+        if min(size(s))>1
+            if size(s,2)==27 || size(s,2)==24, s=s'; end
+            n_column = size(s,2);
+        else n_column = 1;
+        end
+        
+        a = sscanf(s,mask);
+        
+        N = length(a)/6;
+        if N~=fix(N) || N~=n_column, disp('something is wrong with input'), end
+        a = reshape(a,6,fix(N));
+        a = a';
+        t_out = irf_time([a(:,1) a(:,2) a(:,3) a(:,4) a(:,5) a(:,6)]);
+        
     case {'date','epoch2date'} % matlab date
+        % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
     case {'yyyymmdd','epoch2yyyymmdd'}
-        t=fromepoch(t_in);
+        t=irf_time(t_in,'epoch2vector');
         t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
     otherwise
         disp('!!! irf_time: unknown flag, not converting.')
         t_out=t_in;
-end
-
-% Help function to insert zeros for numbers containing only one digit
-function out = add_zero(d,s)
-out = s;
-ii = find(d<10);
-if ~isempty(ii)
-    ss = s(ii,1);
-    ss(:) = '0';
-    if length(ii)==length(d)
-        % Add to all lines
-        out = [ss s];
-    else
-        out(ii,:) = [ss s(ii,1:end-1)];
-    end
 end
