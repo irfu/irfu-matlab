@@ -67,7 +67,7 @@ end
 clear t1 t2 j;
 %% Cluster data reading from local Uppsala disks
 % using c_get_batch
-c_get_batch(toepoch([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
+c_get_batch(irf_time([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
 % if time intervals to download are in matrix tint
 for j=1:size(tint,1),
     c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
@@ -78,7 +78,7 @@ clear j;
 help caa_download
 
 % To read downloaded CAA data
-tint=[toepoch([2006 9 27 17 14 0]) toepoch([2006 9 27 17 26 0])];
+tint=[irf_time([2006 9 27 17 14 0]) irf_time([2006 9 27 17 26 0])];
 if 0, % read s/c position and velocity
     c_eval('[caaR?,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
     c_eval('[caaV?,~,V?]=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
@@ -91,10 +91,10 @@ if 0, % read FGM data form all sc
     c_eval('gsmB?=irf_gse2gsm(B?);');
 end
 if 0, % read CIS HIA/CODIF velocity moments from available s/c
-    c_eval('[caaVCIS?,~,VCIS?]=c_caa_var_get(''velocity_gse__C?_CP_CIS_HIA_ONBOARD_MOMENTS'');',[3]);
-    c_eval('[caaVCISH?,~,VCISH?]=c_caa_var_get(''velocity__C?_CP_CIS_CODIF_HS_H1_MOMENTS'');',[4]);
-    c_eval('gsmVCIS?=irf_gse2gsm(VCIS?);',[3]);
-    c_eval('gsmVCISH?=irf_gse2gsm(VCISH?);',[4]);
+    c_eval('[caaVCIS?,~,VCIS?]=c_caa_var_get(''velocity_gse__C?_CP_CIS_HIA_ONBOARD_MOMENTS'');',3);
+    c_eval('[caaVCISH?,~,VCISH?]=c_caa_var_get(''velocity__C?_CP_CIS_CODIF_HS_H1_MOMENTS'');',4);
+    c_eval('gsmVCIS?=irf_gse2gsm(VCIS?);',3);
+    c_eval('gsmVCISH?=irf_gse2gsm(VCISH?);',4);
 end
 if 0, % read RAPID data
     c_eval('[caaRAPID_J?,~,RAPID_J?]=c_caa_var_get(''Electron_Dif_flux__C?_CP_RAP_ESPCT6'');');
@@ -107,7 +107,7 @@ end
 cur_dir=pwd;
 irf_units;
 cd('/share/Cluster/Test/CAA');
-tint=[toepoch([2006 9 27 17 10 0]) toepoch([2006 9 27 17 40 0])];
+tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])];
 ic=1;
 CISinstrument='HIA';
 %CISinstrument='CODIF';
@@ -470,7 +470,7 @@ if 1, % plot figures panels
         ic=4;
         res=c_caa_construct_subspin_res_data(irf_ssub('Electron_L_Dif_flux_3D__C?_CP_RAP_L3DD',ic));
         [delmett,ind]=irf_tlim(res.tt,tint);
-        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [s^3/km^6]']);
+        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label','Log PSD [s^3/km^6]');
         if 0, % energy spectrogram (integrated over pitch angles)
             specrec.f=res.en;
             specrec.p=res.omni(ind,:);
@@ -498,12 +498,12 @@ if 1, % plot figures panels
         if 0, % energy spectorgram (integrated over pitch angles)
             specrec.f=log10(res.en);
             specrec.p=res.omni(ind,:);
-            specrec.f_label=['Log_{10} E [eV]'];
+            specrec.f_label='Log_{10} E [eV]';
             yticks=[1 2 3 4 5];
         elseif 1, % pitch angle spectrogram for given energy
             specrec.f=res.theta;specrec.f_label='Pitch angle';
             specrec.p=res.pitch_angle(ind,:);
-            enindex=[26:30];
+            enindex=(26:30);
             if numel(enindex)==1,
                 specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
             else
@@ -527,7 +527,7 @@ cd(cur_dir)
 %print -depsc2 -painters fig/vaivads2011a_fig2.eps
 %c_eval('print -dpng -painters fig/vaivads2011a_Figure_2z_C?.png',ic);
 %% Another example plot, simple CAA plot
-tint=[toepoch([2006 9 27 17 10 0]) toepoch([2006 9 27 17 40 0]) ];
+tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0]) ];
 h=irf_plot(4);
 irf_plot(h(1),'Data_Velocity_ComponentPerpendicularToMagField__C2_CP__MOMENTS');
 irf_plot(h(2),'v_drift_ISR2__C2_CP_EFW_L3_V3D_INERT');
