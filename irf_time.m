@@ -90,7 +90,7 @@ switch lower(flag)
         end
         t_out=secs;
     case {'epoch2vector','vector'}
-        t = datevec(irf_time(fix(double(t_in(:)))),'epoch2date');
+        t = datevec(irf_time(fix(double(t_in(:))),'epoch2date'));
         % The following lines are needed to work aroung the problem with numerical
         % accuracy in conversion from isdat epoch to matlab date.
         % We give whole seconds to datevec(epoch2date)) and expect whole seconds in
@@ -100,7 +100,7 @@ switch lower(flag)
         ii = find(t(:,6)==60);
         if ~isempty(ii)
             t(ii,6) = 0;
-            t_tmp = datevec(irf_time(fix(double(t_in(ii)+1))),'epoch2date');
+            t_tmp = datevec(irf_time(fix(double(t_in(ii)+1)),'epoch2date'));
             t(ii,1:5) = t_tmp(:,1:5);
         end
         % Correct fractions of second. This actually preserves
