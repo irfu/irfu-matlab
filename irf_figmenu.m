@@ -24,8 +24,10 @@ if strcmp(action,'initialize'),
     end
 elseif strcmpi(action,'irf_tm'),
     user_data = get(gcf,'userdata');
-    user_data.subplot_handles=irf_plot_get_subplot_handles;
-    set(gcf,'userdata',user_data);
+    if ~isfied(user_data,'suplot_handles'),        
+        user_data.subplot_handles=irf_plot_get_subplot_handles;
+        set(gcf,'userdata',user_data);
+    end
     irf_tm(user_data.subplot_handles);
 elseif strcmpi(action,'zoomall'),
     hmenu_zoom = getfield(get(gcf,'userdata'),'hmenu_zoom');
