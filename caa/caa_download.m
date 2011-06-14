@@ -49,8 +49,9 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_RAP_HSPCT');  % ion, omni-directional
 % EPHEMERIS
 %   caa_download(tint,'C?_CP_AUX_POSGSE_1M');  % position & velocity for each sc
-%   caa_download(tint,'CL_SP_AUX');             % position,attitude.. for all sc
-
+%   caa_download(tint,'CL_SP_AUX');            % position,attitude.. for all sc
+%   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
+%   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell. 
 
 % $Id$
 
