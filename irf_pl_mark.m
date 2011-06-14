@@ -93,22 +93,19 @@ for j=1:length(h)
         if tlim(jj,1)==tlim(jj,2) % draw line instead of patch (in this case draw line above everything, therefore "+2" in the next line)
             hp(j,jj)=line(tpoints(jj,1:2), ypoints(jj,[1 3]), zpoints(jj,[1 3]),'color',color(jj,:),'parent',h(j),pvpairs{:});
         else % make patch
-            %          hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),varargin{:});
-            % if there are patch or surface overplot with transparent (DOES NOT
-            % WORK!! requires opengl renderer but it has problems on Mac (cannot
-            % treat log scale in spectrograms for example)
-            if any([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')]),
-%                if ~strcmpi(get(gcf,'renderer'),'opengl'), % transparency works only in opengl
-%                    set(gcf,'renderer','opengl');
-%                end
-%                hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),'facealpha',.5,pvpairs{:});
-            else % put mark under everything
-                hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),'facealpha',1,pvpairs{:});
+            % 
+            % transparency yet does not work on spectrograms (work only in
+            % opengl renderer mode in which other things does not work).
+            % therefore we put interval marking only in figures where are no
+            % spectrograms, patches or surface plots (except irf_pl_mark marking
+            % itself)
+            %
+            if any(findobj(h(j),'tag','irf_pl_mark')) || ~any(any([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')])), % put mark under everything
+                hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),'facealpha',1,'tag','irf_pl_mark',pvpairs{:});
                 set(h(j),'children',circshift(get(h(j),'children'),-1)); % move patch to be the first children (below other plots)
                 fc=get(hp(j,jj),'facecolor');
                 fc=[1 1 1]-([1 1 1]-fc)*0.5; % make facecolor lighter
                 set(hp(j,jj),'facecolor',fc);
-                %drawnow update;
             end
         end
     end
