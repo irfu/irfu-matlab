@@ -46,7 +46,13 @@ function c=irf_plot(varargin)
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array
 %              3 - components of vectors in separate panels
+%
+% For zooming to work even in cases of wide band it is important that time
+% axis is not big number. Isdat epoch is too big. Therefore if time is
+% isdat epoch we choose reference time the first point of first variable
+% (in practices it does not matter).
 
+%% Check input 
 [ax,args,nargs] = axescheck(varargin{:});
 x=args{1};
 if isnumeric(x), % check if single number argument, to initialize only subplots
@@ -59,7 +65,7 @@ if isnumeric(x), % check if single number argument, to initialize only subplots
         return
     end
 end
-if isempty(ax),
+if isempty(ax), % if empty axis use current axis GCA
     ax=gca;
 end
 args=args(2:end);
@@ -72,13 +78,14 @@ caa_dataobject={[]}; % by default assume we are not working with CAA variables
 
 if nargs > 1, have_options = 1; end
 
-% Default values that can be override by options
+%% Default values that can be override by options
 dt = 0;
 flag_yy = 0;
 scaleyy = 1;
 plot_type = '';
 marker = '-';
 
+%% Check input options
 while have_options
     l = 1;
     switch(lower(args{1}))
@@ -118,7 +125,7 @@ while have_options
     if isempty(args), break, end
 end
 
-% Plot separate subplots for all x components
+%% Plot separate subplots for all x components
 if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
 if ischar(x), % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
@@ -182,12 +189,6 @@ else
         var_desc{1} = {};
     end
 end
-
-% For zooming to work even in cases of wide band it is important that time
-% axis is not big number. Isdat epoch is too big. Therefore if time is
-% isdat epoch we choose reference time the first point of first variable
-% (in practices it does not matter).
-
 if ~isempty(caa_dataobject{1}) % plot CAA variable
     plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
     if isstruct(x), tt=x.t(1);
@@ -198,6 +199,7 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     flag_subplot=-1; % dont make more plots
 end
 
+%% One subplot only
 if flag_subplot==0,  % One subplot
     if isstruct(x)
         % Plot a spectrogram
@@ -217,12 +219,14 @@ if flag_subplot==0,  % One subplot
     else % x is matrix
         ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
         ii = 2:length(x(1,:));
+        tag=get(ax,'tag');
         if flag_yy == 0,
             h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
         else
             h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
         end
         grid(ax,'on');
+        set(ax,'tag',tag);
         
         % Put YLimits so that no labels are at the end (disturbing in
         % multipanel plots)
@@ -423,22 +427,23 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     tt = tt(1);
 end
 
+%% Add figure menu
 irf_figmenu;
 
-% Add information about subplot handles to userdata of figure
+%% Add information about subplot handles to userdata of figure
 user_data = get(gcf,'userdata');
 if flag_subplot>0, user_data.subplot_handles = c; end
 set(gcf,'userdata',user_data);
 
 
-% In case time is in isdat_epoch add time_axis
+%% In case time is in isdat_epoch add time axis
 if ((tt > 1e8) && (tt < 1e10))
     if flag_subplot == 0, irf_timeaxis(ax);
     else irf_timeaxis(c);
     end
 end
 
-% Do not give axis handle as answer if not asked for
+%% Do not give axis handle as answer if not asked for
 if nargout==0, clear c; end
 
 end
@@ -499,7 +504,12 @@ if number_of_subplots>1 && number_of_subplots<20,
     for j=1:number_of_subplots,
         c(j)=irf_subplot(number_of_subplots,1,-j);
         cla(c(j));
+        set(c(j),'tag','');
     end
+    user_data = get(gcf,'userdata');
+    user_data.subplot_handles = c;
+    user_data.current_panel=0;
+    set(gcf,'userdata',user_data);
     figure(gcf); % bring figure to front
 end
 end
