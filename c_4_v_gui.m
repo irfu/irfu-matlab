@@ -174,7 +174,8 @@ switch action,
             c_pl_tx('x?',var_col,dt);
         else c_pl_tx('var?',var_col,dt);
         end
-        irf_zoom(xl,'x');irf_zoom(yl,'y');
+        irf_zoom(ud.h(2),'x',xl);
+        irf_zoom(ud.h(2),'y',yl);
         irf_timeaxis;
         text(.5,-.6,['t_{2nd panedel} = t_{1st panel} - dt\newline  dt = ' tstr '\newline V_{discontinuity}=' vstr ' km/s ' coord_sys(ud) ],'units','normalized','verticalalignment','top');
 
