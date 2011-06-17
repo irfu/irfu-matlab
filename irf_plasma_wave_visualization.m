@@ -93,13 +93,13 @@ while 1
         case 'kz'
             if isnumeric(args{2})
                 kz = args{2};
-                kz = 2*pi*kz; % input kz is only 1/L_z
+%                kz = 2*pi*kz; % input kz is only 1/L_z
             else irf_log('fcal,','wrongArgType : kz must be numeric')
             end
         case 'kx'
             if isnumeric(args{2})
                 kx = args{2};
-                kx = 2*pi*kz; % input kz is only 1/L_z
+%                kx = 2*pi*kx; % input kx is only 1/L_z
             else irf_log('fcal,','wrongArgType : kz must be numeric')
             end
         case 'f'
@@ -284,7 +284,8 @@ end
 % construct magnetic field disturbance from Faradays law
 % k x E = - i 2 pi f dB
 % dB = i (k x E) / 2 pi f
-dB = 1i * cross(k,E) / (2*pi*f);
+%
+% dB = 1i * cross(k,E) / (2*pi*f);
 
 % construct velocity disturbance and gyrofrequencies
 Omega_c=zeros(numel(qm),1); % allocate gyrofrequencies
@@ -306,7 +307,7 @@ dR=1i*V/(2*pi*f); % position disturbances
 bvec= [0 0 B0]/B0^2;
 dRfieldline=1i*cross(E,bvec)/(2*pi*f); % field line disturbance vector
 for j=1:numel(qm), % display information on disturbances
-    disp(sprintf('%d. ===== q/m = %5.1f =====',j,qm(j)));
+    fprintf('%d. ===== q/m = %5.1f =====\n',j,qm(j));
     disp(['dR = ' num2str(dR(j,:),'%6.2f')]);
     disp(['dV = ' num2str(V(j,:),'%6.2f')]);
 end
@@ -364,7 +365,7 @@ set(h,'xlim',Xplot_lim,'ylim',Yplot_lim,'zlim',Zplot_lim);
 hold(h,'on');
 flag_plot_initiated=1;
 if ~flag_axis_view_given, % allow to adjust axes interactively
-    qqq=input('Press enter to continue:','s');
+    input('Press enter to continue:','s');
 end
 %% step through wave
 dt=(1/abs(f))/30; % 20 frames per period
@@ -404,6 +405,7 @@ if 1, % plot wave animation
     for j=1:length(time_steps), % plot wave animation
         %pause(.01);
         plot_particles(h,r{j},qm,squeeze(field_lines(j,:,:,:)));
+        drawnow;
         if flag_generate_output_files,
             f=getframe(h);
             A(:,j)=f;
