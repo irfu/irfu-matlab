@@ -29,6 +29,10 @@ function t_out = irf_time(t_in,flag)
 %   epoch=IRF_TIME(date,'date2epoch')
 %           convert from Matlab date to epoch 
 %
+%   doy=IRF_TIME(date,'date2doy')
+%   date=IRF_TIME([year doy],'doy2date')
+%           convert between date [yyyy mm dd hh mm ss] and doy 
+%
 %  epoch - seconds since the epoch 1 Jan 1970.
 %   The seconds since epoch time format is the time specification
 %   used by the ISDAT system. 
@@ -145,13 +149,29 @@ switch lower(flag)
         
     case 'date2doy'
           if nargin<1, help date2doy, return, end
-          eomdays = eomday(t(:,1)*ones(1,12),ones(length(t(:,1)),1) *(1:12));
+          eomdays = eomday(t_in(:,1)*ones(1,12),ones(length(t_in(:,1)),1) *(1:12));
           doy=[];
-          for k=1:size(t,1)
-              t_out = [doy;sum( eomdays(k,1:t(k,2)-1),2)];
+          for k=1:size(t_in,1)
+              t_out = [doy; sum( eomdays(k,1:t_in(k,2)-1),2)];
           end
-          t_out = doy + t(:,3);
+          t_out = t_out + t_in(:,3);
           
+    case 'doy2date'
+        YEAR=t_in(:,1);
+        DOY=t_in(:,2);
+        t_out = ones(length(YEAR(:,1)),3);
+        for n=1:length(YEAR(:,1))
+            year = YEAR(n,:); doy  =  DOY(n,:);
+            total_day = cumsum(eomday(year,1:12));
+            month = find( total_day>= doy ); month = month(1);
+            if month>1
+                pmonth = find( total_day< doy ); day = doy-total_day(pmonth(end));
+            else
+                day = doy;
+            end
+            t_out(n,:) = [year month day];
+        end
+
     otherwise
         disp('!!! irf_time: unknown flag, not converting.')
         t_out=t_in;
