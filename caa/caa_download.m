@@ -173,10 +173,10 @@ else  % download data
     
     if flag_test, 
         url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-            dataset '&time_range=' tintiso '&format=cdf&schedule=1'];
+            dataset '&time_range=' tintiso '&format=cdf&schedule=1&file_interval=72hours'];
     else
         url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-            dataset '&time_range=' tintiso '&format=cdf'];
+            dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours'];
     end
     
     disp('Be patient! Submitting data request to CAA...');
