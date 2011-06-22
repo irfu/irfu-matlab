@@ -135,11 +135,23 @@ switch lower(flag)
     case {'date','epoch2date'} % matlab date
         % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
+        
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
+        
     case {'yyyymmdd','epoch2yyyymmdd'}
         t=irf_time(t_in,'epoch2vector');
         t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
+        
+    case 'date2doy'
+          if nargin<1, help date2doy, return, end
+          eomdays = eomday(t(:,1)*ones(1,12),ones(length(t(:,1)),1) *(1:12));
+          doy=[];
+          for k=1:size(t,1)
+              t_out = [doy;sum( eomdays(k,1:t(k,2)-1),2)];
+          end
+          t_out = doy + t(:,3);
+          
     otherwise
         disp('!!! irf_time: unknown flag, not converting.')
         t_out=t_in;
