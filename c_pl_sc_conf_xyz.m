@@ -16,8 +16,6 @@ function hout=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 % eval_figuserdata='figuserdata={h};';
 cluster_marker={'ks','rd','go','bv'};
 
-persistent t r1 r2 r3 r4 R1 R2 R3 R4 figNumber coord_label plot_type sc_list h flag_show_cluster_description;
-
 if       (nargin==1 && ischar(time)),
     action=time;
     %irf_log('fcal',['action=' action]);
@@ -26,7 +24,18 @@ elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
 end
 if nargin==0, % default time (with time can make smarter solution)
-    time=[2010 12 31 01 01 01];
+    if evalin('caller','exist(''tint'')'),
+        time=irf_time(evalin('caller','tint(1)'),'vector');
+    elseif exist('CAA','dir')
+        [~,~,R]=c_caa_var_get('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M');
+        if numel(R)==0,
+            time=[2010 12 31 01 01 01];
+        else
+            time=irf_time(R(1,1),'vector');
+        end
+    else
+        time=[2010 12 31 01 01 01];
+    end
 end
 if nargin==4, sc_list=spacecraft;
 elseif ~exist('sc_list','var'), sc_list=1:4;
@@ -49,101 +58,134 @@ end
 switch lower(action)
     case 'initialize' % read in all data and open figure
         if length(time)==1,
-            start_time=fromepoch(time);
+            start_time=irf_time(time,'vector');
             t=time;
         elseif length(time)==6,
             start_time=time;
-            t=toepoch(time);
+            t=irf_time(time);
         elseif exist('t','var'),
-            start_time=fromepoch(t);
+            start_time=irf_time(t,'vector');
         else
             irf_log('fcal','Check time format');return;
         end
+        % Open new figure
+        figNumber=figure( ...
+            'Name','Cluster s/c configuration in XYZ', ...
+            'Tag','cplscconfXYZ');
+        set(figNumber,'defaultLineLineWidth', 1.5);
+        set(figNumber,'defaultAxesFontSize', 12);
+        menus;
+        data.t=t;
+        data.figNumber=figNumber;
+        data.coord_label=coord_label;
+        data.plot_type=plot_type;
+        data.sc_list=sc_list;
+        c_eval('data.r?=[];data.R?=[];');
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz('read_position');
+        c_pl_sc_conf_xyz(plot_type);
+
+    case 'read_position'
+        data=get(gcf,'userdata');
+        c_eval('R?=data.R?;',data.sc_list);
         if ~is_R_ok,     % try reading from disk mat files
-            ok=c_load('R?',sc_list);
-            if ~is_R_ok,  % try reading from isdat server
-                disp('Trying to obtain satellite position from isdat server...')
-                c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], toepoch(start_time), 60);R?=[tr r];clear tr r;',sc_list);
+            c_load('R?',sc_list);
+        end
+        if ~is_R_ok,  % try reading from isdat server
+            disp('Trying to obtain satellite position from isdat server...')
+            try
+                c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R?=[tr r];clear tr r;',data.sc_list);
                 if ~is_R_ok,% no idea
                     disp('NO POSITION DATA!');
                 end
+            catch
+                disp('Did not succeed!');
             end
         end
-        %        if ~any(ok),
-        %            for ic=sc_list,
-        %                [tr,r] = caa_is_get('db.irfu.se:0', toepoch(start_time), 60, ic, 'ephemeris', 'position');
-        %                c_eval('R?=[double(tr) double(r)''];',ic);clear tr r;
-        %            end
-        %        end
-        % See if spacecraft configuration XYZ figure is open
-        ch = get(0,'ch');indx=[];
-        if ~isempty(ch),
-            chTags = get(ch,'Tag');
-            indx = find(strcmp(chTags,'cplscconfXYZ'));
+        if ~is_R_ok,     % try reading from CAA files
+            disp('Trying to read CAA files...')
+            c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');',sc_list);
         end
-        if isempty(indx),
-            figNumber=figure( ...
-                'Name','Cluster s/c configuration in XYZ', ...
-                'Tag','cplscconfXYZ');
-        else
-            figure(ch(indx));clf;figNumber=gcf;
+        if ~is_R_ok,     % try reading from CAA files
+            disp('Could not obtain position data!')
+            c_eval('R?=[];',data.sc_list);
         end
-        menus;
-        c_pl_sc_conf_xyz(plot_type);
+        c_eval('data.R?=R?;',data.sc_list);
+        set(gcf,'userdata',data);
+        return;
+        
     case 'gse'
-        coord_label='GSE';
-        c_eval('coord_label=''GSE'';r?=R?;',sc_list);
+        data=get(gcf,'userdata');
+        data.coord_label='GSE';
+        c_eval('data.r?=data.R?;',data.sc_list);
+        set(gcf,'userdata',data);
         c_pl_sc_conf_xyz('plot');
+        
     case 'gsm'
-        coord_label='GSM';
-        c_eval('r?=irf_gse2gsm(R?);',sc_list);
+        data=get(gcf,'userdata');
+        data.coord_label='GSM';
+        c_eval('data.r?=irf_gse2gsm(data.R?);',data.sc_list);
+        set(gcf,'userdata',data);
         c_pl_sc_conf_xyz('plot');
+        
     case 'default'
-        set(figNumber,'Position',[10 10 600 1000]);
+        data=get(gcf,'userdata');
+        set(gcf,'Position',[10 10 600 1000]);
         delete(findall(gcf,'Type','axes'))
-        h=[];
-        h(1)=subplot(4,2,1);axis([-19.99 14.99 -14.99 14.99]);hold on;
-        h(2)=subplot(4,2,2);axis([-19.99 19.99 -19.99 19.99]);hold on;
-        h(3)=subplot(4,2,3);axis([-19.99 14.99 -19.99 19.99]);hold on;
-        h(4)=subplot(4,2,4);axis off;
-        h(5)=subplot(4,2,5);axis([-50 50 -50 50]);
-        h(6)=subplot(4,2,6);axis([-50 50 -50 50]);
-        h(7)=subplot(4,2,7);axis([-50 50 -50 50]);
-        h(8)=subplot(4,2,8);axis off;
-        flag_show_cluster_description=1; % show cluster description
-        plot_type='default';
-        c_pl_sc_conf_xyz(coord_label);
+        data.h=[];
+        data.h(1)=subplot(4,2,1);axis([-19.99 14.99 -14.99 14.99]);hold on;
+        data.h(2)=subplot(4,2,2);axis([-19.99 19.99 -19.99 19.99]);hold on;
+        data.h(3)=subplot(4,2,3);axis([-19.99 14.99 -19.99 19.99]);hold on;
+        data.h(4)=subplot(4,2,4);axis off;
+        data.h(5)=subplot(4,2,5);axis([-50 50 -50 50]);
+        data.h(6)=subplot(4,2,6);axis([-50 50 -50 50]);
+        data.h(7)=subplot(4,2,7);axis([-50 50 -50 50]);
+        data.h(8)=subplot(4,2,8);axis off;
+        data.flag_show_cluster_description=1; % show cluster description
+        data.plot_type='default';
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz(data.coord_label);
         
     case 'compact'
-        set(figNumber,'Position',[10 10 700 700]);
-        flag_show_cluster_description=1; % show cluster description
-        plot_type='compact';
-        c_pl_sc_conf_xyz(coord_label);
+        data=get(gcf,'userdata');
+        set(gcf,'Position',[10 310 700 700]);
+        data.flag_show_cluster_description=1; % show cluster description
+        data.plot_type='compact';
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz(data.coord_label);
         
     case 'supercompact'
-        set(figNumber,'Position',[10 10 700 350]);
-        flag_show_cluster_description=0;
-        plot_type='supercompact';
-        c_pl_sc_conf_xyz(coord_label);
+        data=get(gcf,'userdata');
+        set(data.figNumber,'Position',[10 660 700 350]);
+        data.flag_show_cluster_description=0;
+        data.plot_type='supercompact';
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz(data.coord_label);
         
     case 'supercompact2'
-        set(figNumber,'Position',[10 10 350 650]);
-        flag_show_cluster_description=0;
-        plot_type='supercompact2';
-        c_pl_sc_conf_xyz(coord_label);
+        data=get(gcf,'userdata');
+        set(data.figNumber,'Position',[10 360 350 650]);
+        data.flag_show_cluster_description=0;
+        data.plot_type='supercompact2';
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz(data.coord_label);
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         %%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
     case 'plot'
-        c_eval('rr?=irf_resamp(r?,t);',sc_list);
-        R=0; c_eval('R=R+rr?/length(sc_list);',sc_list);
-        c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=t;dr?=irf_abs(dr?);x?=dr?;',sc_list);
-        drref=0; c_eval('drref=max([drref dr?(5)]);',sc_list);
+        data=get(gcf,'userdata');
+        c_eval('rr?=irf_resamp(data.r?,data.t);',data.sc_list);
+        R=0; c_eval('R=R+rr?/length(data.sc_list);',data.sc_list);
+        c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=data.t;dr?=irf_abs(dr?);x?=dr?;',data.sc_list);
+        drref=0; c_eval('drref=max([drref dr?(5)]);',data.sc_list);
         if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
         %%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
-        switch plot_type
+        h=data.h;
+        coord_label=data.coord_label;
+        sc_list=data.sc_list;
+        switch data.plot_type
             case 'default'
                 cla(h(1));
                 c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
@@ -301,7 +343,7 @@ switch lower(action)
                 grid(ax1,'on');
                 axis(ax1,[-drref drref -drref drref]);
                 c_eval('text(x?(3),x?(4),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
-                text(0.02,0.94,epoch2iso(t,1),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
+                text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
                 axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
                 set(ax1,'position',axpos); % narrow axis
@@ -356,7 +398,7 @@ switch lower(action)
                 grid(ax1,'on');
                 axis(ax1,[-drref drref -drref drref]);
                 c_eval('text(x?(2),x?(3),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
-                text(0.02,0.94,epoch2iso(t,1),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
+                text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
                 axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
                 set(ax1,'position',axpos); % narrow axis
@@ -369,7 +411,7 @@ switch lower(action)
                 ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
                 set(ax1_2,'xdir','reverse','ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
         end
-        if flag_show_cluster_description==1,
+        if data.flag_show_cluster_description==1,
             plot(h(4),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
             text(0.03,.3,'C1','parent',h(4));
             text(.23,.3,'C2','parent',h(4));
@@ -378,23 +420,32 @@ switch lower(action)
             axis(h(4),'off');
             ht=irf_pl_info(['c_pl_sc_conf_xyz() ' datestr(now)],h(4),[0,1 ]);
             set(ht,'interpreter','none');
-            htime=irf_pl_info(['Cluster configuration\newline ' epoch2iso(t,1)],h(4),[0,.7 ]);
+            htime=irf_pl_info(['Cluster configuration\newline ' irf_time(data.t,'isoshort')],h(4),[0,.7 ]);
             set(htime,'fontsize',12);
         end
-        
+        data.h=h;
+        set(gcf,'userdata',data);
+
     case 'new_time'
-        xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(fromepoch(t))});
+        data=get(gcf,'userdata');
+        xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'))});
         if ~isempty(xx),
             variable_str=xx{1};
-            t=toepoch(eval(variable_str));
-            c_pl_sc_conf_xyz('initialize');
+            data.t=irf_time(eval(variable_str));
+            set(gcf,'userdata',data);
+            c_pl_sc_conf_xyz('read_position');
+            c_pl_sc_conf_xyz(data.plot_type);
         end
     case 'new_sc_list'
         xx=inputdlg('Enter new sc_list. ex. [1 3 4]','**',1,{mat2str(sc_list)});
         if ~isempty(xx),
             variable_str=xx{1};
             sc_list=eval(variable_str);
-            c_pl_sc_conf_xyz('initialize');
+            data=get(gcf,'userdata');
+            data.sc_list=sc_list;
+            set(gcf,'userdata',data);
+            c_pl_sc_conf_xyz('read_position');
+            c_pl_sc_conf_xyz(data.plot_type);
         end
 end
 if nargout,
@@ -421,15 +472,16 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
 end
 
 function answer=is_R_ok
-sc_list=evalin('caller','sc_list');
-t=evalin('caller','t');
+data=get(gcf,'userdata');
+sc_list=data.sc_list;
+t=data.t;
 for ic=1:numel(sc_list)
     stric=num2str(sc_list(ic));
     if evalin('caller',['numel(R' stric ')']) < 8 % less than 2 time points
         answer=0;
         return;
     else
-        tint=evalin('caller',['[ R' stric '(1,1) R' stric '(end,1)]']);
+        tint=evalin('caller',['[' 'R' stric '(1,1) R' stric '(end,1)]']);
         if (tint(1)>t) || (tint(2)<t),
             answer=0;
             return;
