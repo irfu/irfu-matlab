@@ -74,6 +74,7 @@ switch lower(action)
             'Tag','cplscconfXYZ');
         set(figNumber,'defaultLineLineWidth', 1.5);
         set(figNumber,'defaultAxesFontSize', 12);
+        set(figNumber,'defaultAxesFontUnits', 'pixels');
         menus;
         data.t=t;
         data.figNumber=figNumber;
@@ -130,7 +131,9 @@ switch lower(action)
         
     case 'default'
         data=get(gcf,'userdata');
-        set(gcf,'Position',[10 10 600 1000]);
+        ss=get(0,'screensize');
+        sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
+        set(gcf,'Position',[10 10 600/sfactor 1000/sfactor]);
         delete(findall(gcf,'Type','axes'))
         data.h=[];
         data.h(1)=subplot(4,2,1);axis([-19.99 14.99 -14.99 14.99]);hold on;
@@ -148,7 +151,9 @@ switch lower(action)
         
     case 'compact'
         data=get(gcf,'userdata');
-        set(gcf,'Position',[10 310 700 700]);
+        ss=get(0,'screensize');
+        sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
+        set(gcf,'Position',[10 ss(4)-80-700/sfactor 700/sfactor 700/sfactor]);
         data.flag_show_cluster_description=1; % show cluster description
         data.plot_type='compact';
         set(gcf,'userdata',data);
@@ -156,7 +161,9 @@ switch lower(action)
         
     case 'supercompact'
         data=get(gcf,'userdata');
-        set(data.figNumber,'Position',[10 660 700 350]);
+        ss=get(0,'screensize');
+        sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
+        set(data.figNumber,'Position',[10 ss(4)-80-350/sfactor 700/sfactor 350/sfactor]);
         data.flag_show_cluster_description=0;
         data.plot_type='supercompact';
         set(gcf,'userdata',data);
@@ -164,7 +171,9 @@ switch lower(action)
         
     case 'supercompact2'
         data=get(gcf,'userdata');
-        set(data.figNumber,'Position',[10 360 350 650]);
+        ss=get(0,'screensize');
+        sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
+        set(data.figNumber,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
         data.flag_show_cluster_description=0;
         data.plot_type='supercompact2';
         set(gcf,'userdata',data);
@@ -233,12 +242,14 @@ switch lower(action)
                 set(h(7),'xdir','reverse')
                 set(h(7),'ydir','reverse')
             case 'compact'
-                delete(findall(gcf,'Type','axes'))
+                initialize_figure;
                 h=[];
-                h(1)=subplot(2,2,1);axis([-50 50 -50 50]);
-                h(2)=subplot(2,2,2);axis([-50 50 -50 50]);
-                h(3)=subplot(2,2,3);axis([-50 50 -50 50]);
-                h(4)=subplot(2,2,4);axis off;
+                h(1)=axes('position',[0.09 0.58 0.33 0.4]); % [x y dx dy]
+                h(2)=axes('position',[0.57 0.58 0.33 0.4]); % [x y dx dy]
+                h(3)=axes('position',[0.09 0.08 0.33 0.4]); % [x y dx dy]
+                h(4)=axes('position',[0.57 0.08 0.33 0.4]); % [x y dx dy]
+                axis(h(4),'off');
+
                 hold(h(1),'off');
                 c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
                 xlabel(h(1),['{\Delta}X [km] ' coord_label]);
@@ -301,13 +312,8 @@ switch lower(action)
                 set(ax1_2,'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
                 
             case 'supercompact'
-                delete(findall(gcf,'Type','axes'))
+                initialize_figure;
                 h=[];
-                set(gcf,'PaperUnits','centimeters')
-                xSize = 16; ySize = 8;
-                xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-                set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-                
                 h(1)=axes('position',[0.09 0.18 0.33 0.66]); % [x y dx dy]
                 h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
                 h(3)=axes('position',[0 0 1 1]);axis off;
@@ -356,13 +362,8 @@ switch lower(action)
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
                 set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
             case 'supercompact2'
-                delete(findall(gcf,'Type','axes'))
+                initialize_figure;
                 h=[];
-                set(gcf,'PaperUnits','centimeters')
-                xSize = 16; ySize = 8;
-                xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-                set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-                
                 h(2)=axes('position',[0.18 0.08 0.66 0.4]); % [x y dx dy]
                 h(1)=axes('position',[0.18 0.58 0.66 0.4]); % [x y dx dy]
                 h(3)=axes('position',[0 0 1 1]);axis off;
@@ -454,6 +455,19 @@ else
     clear hout;
 end
 
+function initialize_figure
+delete(findall(gcf,'Type','axes'))
+set(gcf,'PaperUnits','centimeters')
+pos=get(gcf,'position');
+factor=min(16./pos(3:4));
+xSize = pos(3)*factor; ySize = pos(4)*factor; % should not exceed 16cm in x or y direction
+xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+set(gcf,'PaperPosition',[xLeft yTop xSize ySize]);
+set(gcf,'defaultLineLineWidth', 1.5);
+set(gcf,'defaultAxesFontUnits', 'pixels');
+set(gcf,'defaultAxesFontSize', 12);
+
+
 function menus
 % generate menus
 if isempty(findobj(gcf,'type','uimenu','label','&Options'))
@@ -489,3 +503,4 @@ for ic=1:numel(sc_list)
     end
 end
 answer=1;
+
