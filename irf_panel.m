@@ -6,12 +6,8 @@ function hout=irf_panel(handles,tag)
 %   HCA = IRF_PANEL(handles,tag);
 %   HCA = IRF_PANEL(handles,subplotnumber);
 %   handles - handles of figures subplots
-%   tag - unique string (for example current date) identifying suplot
+%   tag - unique string (for example current date) identifying subplot
 %   subplotnumber  - number of subplot
-%   a  - time vector of the satellite phase in degrees
-%   b  - magnetic field in GSE reference frame
-%   v  - velocity vector [vx vy vz] in GSE which will be marked in the
-%        plots, e.g. magnetopause velocity
 %
 % $Id$
 
