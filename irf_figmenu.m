@@ -24,7 +24,7 @@ if strcmp(action,'initialize'),
     end
 elseif strcmpi(action,'irf_tm'),
     user_data = get(gcf,'userdata');
-    if ~isfied(user_data,'suplot_handles'),        
+    if ~isfield(user_data,'suplot_handles'),        
         user_data.subplot_handles=irf_plot_get_subplot_handles;
         set(gcf,'userdata',user_data);
     end
