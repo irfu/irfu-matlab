@@ -7,11 +7,11 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 % Input:
 %    specrec - structure including spectra
 %              specrec.t  - time vector
-%              specrec.f - frequency vector 
+%              specrec.f - frequency vector
 %              specrec.p - spectral density matrix (size(t)xsize(f))
 %              specrec.dt - vector of dt interval for every t point (can be ommitted)
 %              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
-%                           df can be structure with two vectors df.plus and df.minus 
+%                           df can be structure with two vectors df.plus and df.minus
 %         specrec.f_label - label of f axis
 %         specrec.p_label - label of colorbar
 %
@@ -29,59 +29,59 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 
 error(nargchk(1,6,nargin))
 
-if nargin==1, 
+if nargin==1,
     specrec = h; h = [];
     if ~isfield(specrec,'dt'), specrec.dt=[];end
     if ~isfield(specrec,'df'), specrec.df=[];end
 elseif nargin==2 % irf_spectrogram(h,t)
-	specrec = t;
+    specrec = t;
     if ~isfield(specrec,'dt'), specrec.dt=[];end
     if ~isfield(specrec,'df'), specrec.df=[];end
 elseif nargin==3 % irf_spectrogram(t,Pxx,F)
-	if size(t,2) == length(h), t = t'; end
-	if iscell(t), specrec.p = t;
-	else specrec.p = {t};
-	end
-	specrec.f = Pxx; 
-	specrec.t = h; 
-    if length(specrec.t)>1 % assume equidistant times 
+    if size(t,2) == length(h), t = t'; end
+    if iscell(t), specrec.p = t;
+    else specrec.p = {t};
+    end
+    specrec.f = Pxx;
+    specrec.t = h;
+    if length(specrec.t)>1 % assume equidistant times
         specrec.dt=(specrec.t(2)-specrec.t(1))/2;
     else
         specrec.dt=[]; % will be calculated later
     end
     specrec.df=[];
-	h = [];
+    h = [];
 elseif	nargin==4 % irf_spectrogram(h,t,Pxx,F)
-	specrec.t = t;
-	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
-	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
-	end
-	specrec.f = F;
-    if length(specrec.t)>1 % assume equidistant times 
+    specrec.t = t;
+    if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
+    if iscell(Pxx),specrec.p = Pxx;
+    else specrec.p = {Pxx};
+    end
+    specrec.f = F;
+    if length(specrec.t)>1 % assume equidistant times
         specrec.dt=(specrec.t(2)-specrec.t(1))/2;
     else
         specrec.dt=[]; % will be calculated later
     end
     specrec.df=[];
 elseif	nargin==5 % irf_spectrogram(h,t,Pxx,F,dt)
-	specrec.t = t;
-	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
-	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
-	end
-	specrec.f = F;
-	specrec.dt = dt;
+    specrec.t = t;
+    if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
+    if iscell(Pxx),specrec.p = Pxx;
+    else specrec.p = {Pxx};
+    end
+    specrec.f = F;
+    specrec.dt = dt;
     specrec.df=[];
 elseif	nargin==6 % irf_spectrogram(h,t,Pxx,F,dt,df)
-	specrec.t = t;
-	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
-	if iscell(Pxx),specrec.p = Pxx;
-	else specrec.p = {Pxx};
-	end
-	specrec.f = F;
-	specrec.dt = dt;
-	specrec.df = dF;
+    specrec.t = t;
+    if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
+    if iscell(Pxx),specrec.p = Pxx;
+    else specrec.p = {Pxx};
+    end
+    specrec.f = F;
+    specrec.dt = dt;
+    specrec.df = dF;
 end
 
 specrec.t = double(specrec.t);
@@ -89,15 +89,15 @@ specrec.f = double(specrec.f);
 %specrec.dt = double(specrec.dt);
 %specrec.df = double(specrec.df);
 if iscell(specrec.p)
-  ncomp=length(specrec.p);
+    ncomp=length(specrec.p);
 elseif isnumeric(specrec.p)
-  ncomp=1;
-  specrec.p={specrec.p};
+    ncomp=1;
+    specrec.p={specrec.p};
 else
-  disp('WARNING: cannot intepret input parameters in irf_spectrogram, returning.')
-  return
+    disp('WARNING: cannot intepret input parameters in irf_spectrogram, returning.')
+    return
 end
-  
+
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 
@@ -105,17 +105,17 @@ load caa/cmap.mat
 
 if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end, end
 
-% If H is specified, but is shorter than NCOMP, we plot just first 
+% If H is specified, but is shorter than NCOMP, we plot just first
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
-	
-	for jj=1:ndata
-%		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
-		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = NaN;
-	end
-	
+    
+    for jj=1:ndata
+        %		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
+        specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = NaN;
+    end
+    
     ud = get(gcf,'userdata');
-	ii = find(~isnan(specrec.t));
+    ii = find(~isnan(specrec.t));
     if isfield(ud,'t_start_epoch'),
         t_start_epoch = double(ud.t_start_epoch);
     elseif specrec.t(ii(1))> 1e8,
@@ -127,8 +127,8 @@ for comp=1:min(length(h),ncomp)
     else
         t_start_epoch = double(0);
     end
-	
-	% Special case when we have only one spectrum
+    
+    % Special case when we have only one spectrum
     % We duplicate it
     if ndata==1
         specrec.dt = double(.5/specrec.f(2));
@@ -146,10 +146,10 @@ for comp=1:min(length(h),ncomp)
             specrec.f_label=['frequency [' specrec.f_unit ']'];
         end
     end
-
+    
     if min(size(specrec.f))==1, ff=double(specrec.f(:))';
     else
-    ff=double(specrec.f);
+        ff=double(specrec.f);
     end % if f vector make it row vector
     tt=double(specrec.t(:));
     pp=specrec.p{comp};
@@ -197,7 +197,9 @@ for comp=1:min(length(h),ncomp)
         ppnew(jj*2,:)=NaN;
         pp=ppnew;
     end
-
+    
+    tag=get(h(comp),'tag'); % keep tag during plotting
+    ud=get(h(comp),'userdata'); % keep tag during plotting
     if min(size(ff))==1, % frequency is vector
         if any(min(pp)<0) % spectra include negative values linear spectrogram
             pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
@@ -211,8 +213,11 @@ for comp=1:min(length(h),ncomp)
         else
             pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
         end
-        end
-%	colormap(cmap)
+    end
+    set(h(comp),'tag',tag);
+    set(h(comp),'userdata',ud);
+    zoom_in_if_necessary(h(comp)); % 
+    
     shading(h(comp),'flat')
     %	colorbar('vert')
     %	set(gca,'TickDir','out','YScale','log')
@@ -227,9 +232,9 @@ for comp=1:min(length(h),ncomp)
     ylabel(h(comp),specrec.f_label)
     
     if isfield(specrec,'p_label')
-      hcb = colorbar('peer',h(comp));
-      ylabel(hcb,specrec.p_label);
-      irf_colorbar_fit_label_height(hcb);
+        hcb = colorbar('peer',h(comp));
+        ylabel(hcb,specrec.p_label);
+        irf_colorbar_fit_label_height(hcb);
     end
     if comp==min(length(h),ncomp), irf_timeaxis;
     else set(h(comp),'XTicklabel','')
@@ -237,3 +242,13 @@ for comp=1:min(length(h),ncomp)
 end
 
 if nargout>0, hout=h; end
+
+function zoom_in_if_necessary(h)
+ud=get(h,'userdata');
+if isfield(ud,'zoom_x'),
+    disp('zooming in the updated plot')
+    irf_zoom(h,'x',ud.zoom_x);
+    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
+        irf_timeaxis(h,'nolabel');
+    end
+end
