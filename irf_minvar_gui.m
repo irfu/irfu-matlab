@@ -52,19 +52,23 @@ switch action,
         ud.tlim_mva=tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
 
         dgh=figure;clf;irf_figmenu;
-        h(1)=subplot(4,1,1);set(h(1),'outerposition',[0 0.75 1 0.25]);
-        irf_plot(X);axis tight;
+        h(1)=subplot(4,1,1);
+        set(h(1),'outerposition',[0 0.75 1 0.25]);
+        irf_plot(h(1),X);axis tight;
         uf=get(gcf,'userdata');
         if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
         set(dgh,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
-        irf_pl_info(['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
+        
+      %  irf_pl_info(h(1),['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
-        ax=axis;grid on;
-        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y');
+        grid(h(1),'on');
+        ax=axis(h(1));
+        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','parent',h(1));
 
         h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
-        irf_plot(X);axis tight; 
-        zoom off;
+        irf_plot(h(2),X);
+        axis(h(2),'tight'); 
+        zoom(h(2),'off');
 
         h(3)=subplot(4,2,5);
 
@@ -75,14 +79,14 @@ switch action,
         xp=0.2;yp=0.2;
         ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
         ud.fromh = uicontrol('style', 'edit', ...
-            'string', epoch2iso(tlim(1),1), ...
+            'string', irf_time(tlim(1),'iso'), ...
             'callback', 'irf_minvar_gui(''from'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
 
         yp=0.15;
         ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
         ud.toh=uicontrol('style', 'edit', ...
-            'string', epoch2iso(tlim(2),1), ...
+            'string', irf_time(tlim(2),'iso'), ...
             'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 
 
@@ -94,8 +98,10 @@ switch action,
 
         uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_gui(''mva'')');
 
-        subplot(4,2,8);axis off;
-        ud.result_text=text(0,0.8,'result');
+        h(5)=subplot(4,2,8);
+        axis(h(5),'off');
+        irf_legend(0,['irf\_minvar\_gui() ' datestr(now)],[0.02 0.02],'fontsize',8); % add information to the plot
+        ud.result_text=text(0,0.8,'result','parent',h(5));
 
         irf_minvar_gui('from');
         fix_legends;
@@ -131,29 +137,35 @@ switch action,
         irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
         if tlim==ud.tlim_mva, % plot first time after 'mva'
-            axes(ud.h(2));
-            irf_plot(ud.Xminvar);
-            axis fill;axis tight;irf_timeaxis(ud.h(2),'date');
-            axes(ud.h(3));
-            plot(ud.Xminvar(:,4),ud.Xminvar(:,2));xlabel('min');ylabel('max');
-            axis tight;axis equal; grid on;
-            axes(ud.h(4))
-            plot(ud.Xminvar(:,3),ud.Xminvar(:,2));xlabel('interm');ylabel('max');
-            axis equal; grid on;
+            irf_plot(ud.h(2),ud.Xminvar);
+            axis(ud.h(2),'fill');
+            axis(ud.h(2),'tight');
+            irf_timeaxis(ud.h(2),'date');
+            plot(ud.h(3),ud.Xminvar(:,4),ud.Xminvar(:,2));
+            xlabel(ud.h(3),'min');ylabel(ud.h(3),'max');
+            axis(ud.h(3),'tight');
+            axis(ud.h(3),'equal');
+            grid(ud.h(3),'on');
+            plot(ud.h(4),ud.Xminvar(:,3),ud.Xminvar(:,2));
+            xlabel(ud.h(4),'interm');
+            ylabel(ud.h(4),'max');
+            axis(ud.h(4),'equal');
+            grid(ud.h(4),'on');
         elseif (tlim(1)>=ud.tlim_mva(1) && tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
-            irf_zoom(tlim,'x',ud.h(2));
+            irf_zoom(ud.h(2),'x',tlim);
         else                   % zoom to interval outside mva
             X=irf_tlim(ud.X,tlim);
             clear ud.Xminvar;
             ud.Xminvar=irf_newxyz(X,ud.v1,ud.v2,ud.v3);
-            axes(ud.h(2));
-            irf_plot(ud.Xminvar);
-            axis tight;irf_timeaxis(ud.h(2),'date');
+            irf_plot(ud.h(2),ud.Xminvar);
+            axis(ud.h(2),'tight');
+            irf_timeaxis(ud.h(2),'date');
         end
         if (tlim(1)<ud.tlim_mva(1) || tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
-            axes(ud.h(2));set(ud.h(2),'layer','top');
-            ax=axis;grid on;
-            ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')');
+            set(ud.h(2),'layer','top');
+            ax=axis(ud.h(2));
+            grid(ud.h(2),'on');
+            ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')','parent',ud.h(2));
         end
         fix_legends;
     case 'mva'
