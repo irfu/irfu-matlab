@@ -6,13 +6,17 @@ function y = c_coord_trans(from,to,x,varargin)
 % Transform INP from FROM_CS to TO_CS.
 %
 % Input:
-%     FROM_CS,TO_CS - one of GSE/DSC/DSI/ISR2
+%     FROM_CS,TO_CS - one of GSE/DSC/SR2/DSI/ISR2
 %     INP           - vector data with or without the time column
 %
 % ARGS can be:
 %     'SAX'   - spin axis vector in GSE
 %     'CL_ID' - Cluster id 1..4
 %     'T'     - Time corresponding to INP (ISDAT epoch or ISO time string)
+%
+% Note on reference frames:
+%       DSI=ISR2 - despinned inversed reference frame
+%       DSC=SR2  - despinned reference frame
 %
 % Examples:
 %     B1 = c_cs_trans('DSI','GSE',diB1,'cl_id',1);
@@ -31,14 +35,16 @@ persistent lat long cl_id_saved
 error(nargchk(4,6,nargin))
 
 if ~ischar(from) || ~ischar(to) || ...
-        ~( strcmpi(from,'GSE') || strcmpi(from,'DSC') || ...
+        ~( strcmpi(from,'GSE') || strcmpi(from,'DSC') || strcmpi(from,'SR2') || ...
         strcmpi(from,'DSI') || strcmpi(from,'ISR2') ) || ...
-        ~( strcmpi(to,'GSE') || strcmpi(to,'DSC') || ...
+        ~( strcmpi(to,'GSE') || strcmpi(to,'DSC') || strcmpi(to,'SR2') || ...
         strcmpi(to,'DSI') || strcmpi(to,'ISR2') )
-    error('FROM/TO must be one of GSE,DSC,DSI,ISR2')
+    error('FROM/TO must be one of GSE,DSC,SR2,DSI,ISR2')
 end
 if strcmpi(from,'ISR2'), from = 'DSI'; end
+if strcmpi(from,'SR2'), from = 'DSC'; end
 if strcmpi(to,'ISR2'), to = 'DSI'; end
+if strcmpi(to,'SR2'), to = 'DSC'; end
 if strcmpi(from,to)
     error('FROM and TO must be different')
 end
