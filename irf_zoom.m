@@ -154,6 +154,9 @@ for h=axis_handles
                     end
                 end
             end
+            ud=get(h,'userdata');
+            ud.zoom_x=interval+t_ref;
+            set(h,'userdata',ud);
         case 'y'
             if isempty(interval), % auto y zooming
                 set(h,'YLimMode','auto');
