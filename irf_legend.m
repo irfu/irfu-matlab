@@ -32,7 +32,12 @@ end
 
 if isempty(axis_handle),
     if any(ishandle(args{1})), % first argument is axis handles
-        axis_handle=args{1};
+        if args{1}==0, % add to the whole figure
+            axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
+                'Tag','BackgroundAxes', 'HitTest','off');
+        else
+            axis_handle=args{1};
+        end
         args=args(2:end);
         nargs=nargs-1;
     else % no axis handles
