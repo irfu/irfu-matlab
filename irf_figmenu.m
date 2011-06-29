@@ -45,5 +45,10 @@ function adaptiveDateTicks(figureHandle,eventObjectHandle)
 % Resetting x axis to automatic tick mark generation
 hsubplots=irf_plot_get_subplot_handles(figureHandle);
 xlim=get(eventObjectHandle.Axes,'xlim');
-set(hsubplots,'xlim',xlim);
+ud=get(gcf,'userdata');
+if isfield(ud,'t_start_epoch'),
+    irf_zoom(hsubplots,'x',xlim+double(ud.t_start_epoch));
+else
+    set(hsubplots,'xlim',xlim);
+end
 irf_timeaxis(hsubplots);
