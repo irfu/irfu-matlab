@@ -1,10 +1,10 @@
 % IRFNOTES Notes on how to use irf routines
 %   Includes different examples that can be directly used
 %
-%  IRFNOTES   opens file with all examples
+%  IRFNOTES   opens file with all the different examples
 %
 % enable code folding!!! (including cells and if/endif blocks)
-% This allows to fast find your necessary examples.
+% This allows to fast find your necessary examples and execute them.
 %
 
 edit irfnotes; return
@@ -40,8 +40,9 @@ help irf_legend
 ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
 % labels a),b)...
 help irf_pl_number_subplots
-% colorbar with white in middle, blue negative and red positive
-help irf_colromap
+% if you want some alternative colorbars, like white in middle, blue negative and red positive
+% or if you want to use different colorbars within the same figure 
+help irf_colormap
 %% Second axis
 hl1 = line(x1,y1,'Color','r');
 ax1 = gca;
@@ -369,7 +370,7 @@ if 1, % plot figures panels
         set(hca,'yscale','log');
         set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
     end
-    if 1,   % PANEL: PEACE spectrogram omni
+    if 1,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
         hca=h(i_subplot);i_subplot=i_subplot+1;
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
@@ -384,7 +385,7 @@ if 1, % plot figures panels
         set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
         ylabel(hca,'E [eV]');
     end
-    if 0,   % PANEL: PEACE spectrogram angles
+    if 0,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram angles
         hca=h(i_subplot);i_subplot=i_subplot+1;
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
