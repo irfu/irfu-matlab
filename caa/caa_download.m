@@ -16,7 +16,7 @@ function caa_download(tint,dataset,flags)
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
-%   caa_download(tint,'list:*FGM*') 
+%   caa_download(tint,'list:*FGM*')
 %   caa_download('2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z','list:*FGM*')
 %   caa_download(tint,'C3_CP_FGM_5VPS')
 %   caa_download(tint,'C?_CP_FGM_5VPS')   %    download all satellites
@@ -32,7 +32,7 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_EFW_L3_P'); % 4s resolution
 % STAFF
 %   caa_download(tint,'C?_CP_STA_PSD');
-% WHISPER 
+% WHISPER
 %   caa_download(tint,'C?_CP_WHI_NATURAL');
 % CIS
 %   caa_download(tint,'C?_CP_CIS_HIA_ONBOARD_MOMENTS');
@@ -51,7 +51,7 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_AUX_POSGSE_1M');  % position & velocity for each sc
 %   caa_download(tint,'CL_SP_AUX');            % position,attitude.. for all sc
 %   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
-%   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell. 
+%   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
 % $Id$
 
@@ -171,7 +171,7 @@ else  % download data
         return;
     end
     
-    if flag_test, 
+    if flag_test,
         url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
             dataset '&time_range=' tintiso '&format=cdf&schedule=1&file_interval=72hours'];
     else
@@ -181,41 +181,45 @@ else  % download data
     
     disp('Be patient! Submitting data request to CAA...');
     disp(url_line);
-
-       temp_file=tempname;
-       urlwrite(url_line,temp_file);
-       disp(['url response downloaded to file:' temp_file]);
-       try 
-           filelist=unzip(temp_file);
-           disp('unzipped data files.');
-           move_to_caa_directory(filelist);
-           delete(temp_file);
-       catch
-           fid=fopen(temp_file);
-           while 1
-               tline = fgetl(fid);
-               if ~ischar(tline), break, end
-               disp(tline)
-               if any(strfind(tline,'http:')) && any(strfind(tline,'zip')),
-                   downloadfile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
-               end
-           end
-           fclose(fid);
-           delete(temp_file);
-
-           j=length(caa)+1;
-           caa{j}.url=url_line;
-           caa{j}.dataset=dataset;
-           caa{j}.tintiso=tintiso;
-           caa{j}.zip = downloadfile;
-           caa{j}.status = 'SUBMITTED';
-           caa{j}.timeofrequest = now;
-           
-           disp('=====');
-           disp('To check the status of jobs execute: caa_download');
-           
-           save -mat .caa caa
-       end
+    
+    temp_file=tempname;
+    urlwrite(url_line,temp_file);
+    disp(['url response downloaded to file:' temp_file]);
+    try
+        filelist=unzip(temp_file);
+        disp('unzipped data files.');
+        move_to_caa_directory(filelist);
+        delete(temp_file);
+    catch
+        fid=fopen(temp_file);
+        while 1
+            tline = fgetl(fid);
+            if ~ischar(tline), break, end
+            disp(tline)
+            if any(strfind(tline,'http:')) && any(strfind(tline,'zip')),
+                downloadfile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
+            end
+        end
+        fclose(fid);
+        delete(temp_file);
+        
+        if exist('downloadfile','var'),
+            j=length(caa)+1;
+            caa{j}.url=url_line;
+            caa{j}.dataset=dataset;
+            caa{j}.tintiso=tintiso;
+            caa{j}.zip = downloadfile;
+            caa{j}.status = 'SUBMITTED';
+            caa{j}.timeofrequest = now;
+            
+            disp('=====');
+            disp('To check the status of jobs execute: caa_download');
+            
+            save -mat .caa caa
+        else
+            disp('!!!! Did not succeed to download !!!!!');
+        end
+    end
 end
 
 function move_to_caa_directory(filelist)
