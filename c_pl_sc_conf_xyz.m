@@ -92,6 +92,10 @@ switch lower(action)
         if ~is_R_ok,     % try reading from disk mat files
             c_load('R?',sc_list);
         end
+        if ~is_R_ok,     % try reading from CAA files
+            disp('Trying to read CAA files...')
+            c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');',sc_list);
+        end
         if ~is_R_ok,  % try reading from isdat server
             disp('Trying to obtain satellite position from isdat server...')
             try
@@ -103,11 +107,7 @@ switch lower(action)
                 disp('Did not succeed!');
             end
         end
-        if ~is_R_ok,     % try reading from CAA files
-            disp('Trying to read CAA files...')
-            c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');',sc_list);
-        end
-        if ~is_R_ok,     % try reading from CAA files
+        if ~is_R_ok,     % could not obtain
             disp('Could not obtain position data!')
             c_eval('R?=[];',data.sc_list);
         end
@@ -174,7 +174,16 @@ switch lower(action)
         data=get(gcf,'userdata');
         ss=get(0,'screensize');
         sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
-        set(data.figNumber,'Position',[10 ss(4)-80-350/sfactor 700/sfactor 350/sfactor]);
+        set(gcf,'Position',[10 ss(4)-80-350/sfactor 700/sfactor 350/sfactor]);
+        initialize_figure;
+        h=[];
+        h(1)=axes('position',[0.09 0.18 0.33 0.66]); % [x y dx dy]
+        h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
+        h(3)=axes('position',[0 0 1 1]);
+        h(21)=axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        axis(h(3),'off');
+        data.h=h;
         data.flag_show_cluster_description=0;
         data.plot_type='supercompact';
         set(gcf,'userdata',data);
@@ -184,7 +193,16 @@ switch lower(action)
         data=get(gcf,'userdata');
         ss=get(0,'screensize');
         sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
-        set(data.figNumber,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
+        set(gcf,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
+        initialize_figure;
+        h=[];
+        h(2)=axes('position',[0.18 0.06 0.66 0.36]); % [x y dx dy]
+        h(1)=axes('position',[0.18 0.56 0.66 0.36]); % [x y dx dy]
+        h(3)=axes('position',[0 0 1 1]);axis off;
+        h(21)=axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        axis(h(3),'off');
+        data.h=h;
         data.flag_show_cluster_description=0;
         data.plot_type='supercompact2';
         set(gcf,'userdata',data);
@@ -208,7 +226,7 @@ switch lower(action)
         switch data.plot_type
             case 'default'
                 cla(h(1));
-                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
+                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?});hold(h(1),''on'');',sc_list);
                 xlabel(h(1),['X [R_E] ' coord_label]);
                 ylabel(h(1),['Z [R_E] '  coord_label]);
                 grid(h(1),'on')
@@ -216,13 +234,13 @@ switch lower(action)
                 
                 %  axes(h(1));      title(titlestr);
                 cla(h(2));
-                c_eval('plot(h(2),XRe?(3),XRe?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(2),''on'');',sc_list);
+                c_eval('plot(h(2),XRe?(3),XRe?(4),cluster_marker{?});hold(h(2),''on'');',sc_list);
                 xlabel(h(2),['Y [R_E] ' coord_label]);
                 ylabel(h(2),['Z [R_E] ' coord_label]);
                 grid(h(2),'on');
                 
                 cla(h(3));
-                c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker{?},''LineWidth'',1.5);hold(h(3),''on'');',sc_list);
+                c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker{?});hold(h(3),''on'');',sc_list);
                 xlabel(h(3),['X [R_E] ' coord_label]);
                 ylabel(h(3),['Y [R_E] ' coord_label]);
                 grid(h(3),'on');
@@ -230,7 +248,7 @@ switch lower(action)
                 set(h(3),'ydir','reverse')
                 
                 cla(h(5));
-                c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(5),''on'');',sc_list);
+                c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?});hold(h(5),''on'');',sc_list);
                 xlabel(h(5),['X [km] ' coord_label]);
                 ylabel(h(5),['Z [km] ' coord_label]);
                 grid(h(5),'on');
@@ -238,14 +256,14 @@ switch lower(action)
                 set(h(5),'xdir','reverse')
                 
                 cla(h(6));
-                c_eval('plot(h(6),x?(3),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(6),''on'');',sc_list);
+                c_eval('plot(h(6),x?(3),x?(4),cluster_marker{?});hold(h(6),''on'');',sc_list);
                 xlabel(h(6),['Y [km] ' coord_label]);
                 ylabel(h(6),['Z [km] ' coord_label]);
                 grid(h(6),'on');
                 axis(h(6),[-drref drref -drref drref]);
                 
                 cla(h(7));
-                c_eval('plot(h(7),x?(2),x?(3),cluster_marker{?},''LineWidth'',1.5);hold(h(7),''on'');',sc_list);
+                c_eval('plot(h(7),x?(2),x?(3),cluster_marker{?});hold(h(7),''on'');',sc_list);
                 xlabel(h(7),['X [km] ' coord_label]);
                 ylabel(h(7),['Y [km] ' coord_label]);
                 grid(h(7),'on');
@@ -256,7 +274,7 @@ switch lower(action)
             case 'compact'
                 
                 hold(h(1),'off');
-                c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(1),''on'');',sc_list);
+                c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?});hold(h(1),''on'');',sc_list);
                 xlabel(h(1),['{\Delta}X [km] ' coord_label]);
                 ylabel(h(1),['{\Delta}Z [km] ' coord_label]);
                 set(h(1),'xdir','reverse');
@@ -276,7 +294,7 @@ switch lower(action)
                 set(h(21),'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
                 cla(h(2));
-                c_eval('plot(h(2),x?(3),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(h(2),''on'');',sc_list);
+                c_eval('plot(h(2),x?(3),x?(4),cluster_marker{?});hold(h(2),''on'');',sc_list);
                 xlabel(h(2),['{\Delta}Y [km] ' coord_label]);
                 ylabel(h(2),['{\Delta}Z [km] ' coord_label]);
                 grid(h(2),'on');
@@ -292,7 +310,7 @@ switch lower(action)
                 set(h(22),'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
                 cla(h(3));
-                c_eval('plot(h(3),x?(2),x?(3),cluster_marker{?},''LineWidth'',1.5);hold(h(3),''on'');',sc_list);
+                c_eval('plot(h(3),x?(2),x?(3),cluster_marker{?});hold(h(3),''on'');',sc_list);
                 xlabel(h(3),['{\Delta}X [km] ' coord_label]);
                 ylabel(h(3),['{\Delta}Y [km] ' coord_label]);
                 grid(h(3),'on');
@@ -300,8 +318,8 @@ switch lower(action)
                 set(h(3),'xdir','reverse')
                 set(h(3),'ydir','reverse')
                 
-                xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
-                xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
+                xlim_ax1=get(h(3),'XLim');ylim_ax1=get(h(3),'YLim');
+                xtick_ax1=get(h(3),'XTick');ytick_ax1=get(h(3),'YTick');
                 xlabel(h(23),['X [R_E] ' coord_label]);
                 ylabel(h(23),['Y [R_E] ' coord_label]);
                 set(h(23),'xlim',xlim_ax1,'ylim',ylim_ax1,'xdir','reverse')
@@ -310,14 +328,8 @@ switch lower(action)
                 set(h(23),'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
                 
             case 'supercompact'
-                initialize_figure;
-                h=[];
-                h(1)=axes('position',[0.09 0.18 0.33 0.66]); % [x y dx dy]
-                h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
-                h(3)=axes('position',[0 0 1 1]);axis off;
-                %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
-                
-                ax1=h(1);
+                ax1=h(1);ax1_2=h(21);
+                hold(ax1,'off');
                 c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
@@ -329,19 +341,17 @@ switch lower(action)
                 else REform='%6.2f';
                 end
                 
-                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
-                set(ax1,'position',axpos); % narrow axis
-                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                xlabel(ax1_2,['X [R_E] ' coord_label]);ylabel(ax1_2,['Z [R_E] ' coord_label]);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
                 set(ax1_2,'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
                 %  axes(h(1));      title(titlestr);
-                ax1=h(2);
-                c_eval('plot(ax1,x?(3),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                ax1=h(2);ax1_2=h(22);
+                hold(ax1,'off');
+                c_eval('plot(ax1,x?(3),x?(4),cluster_marker{?});hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}Y [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
                 grid(ax1,'on');
@@ -349,25 +359,18 @@ switch lower(action)
                 c_eval('text(x?(3),x?(4),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
                 text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
-                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
-                set(ax1,'position',axpos); % narrow axis
-                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xlabel(['Y [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                xlabel(ax1_2,['Y [R_E] ' coord_label]);ylabel(ax1_2,['Z [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
                 set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
+
             case 'supercompact2'
-                initialize_figure;
-                h=[];
-                h(2)=axes('position',[0.18 0.08 0.66 0.4]); % [x y dx dy]
-                h(1)=axes('position',[0.18 0.58 0.66 0.4]); % [x y dx dy]
-                h(3)=axes('position',[0 0 1 1]);axis off;
-                %h(2)=subplot(1,2,2);axis([-50 50 -50 50]);
                 
-                ax1=h(1);
+                ax1=h(1);ax1_2=h(21);
+                hold(ax1,'off');
                 c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
@@ -379,17 +382,15 @@ switch lower(action)
                 else REform='%6.2f';
                 end
                 
-                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
-                set(ax1,'position',axpos); % narrow axis
-                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xlabel(['X [R_E] ' coord_label]);ylabel(['Z [R_E] ' coord_label]);
+                xlabel(ax1_2,['X [R_E] ' coord_label]);ylabel(ax1_2,['Z [R_E] ' coord_label]);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
                 set(ax1_2,'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
-                ax1=h(2);
+                ax1=h(2);ax1_2=h(22);
+                hold(ax1,'off');
                 c_eval('plot(ax1,x?(2),x?(3),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Y [km] ' coord_label]);
@@ -399,12 +400,9 @@ switch lower(action)
                 c_eval('text(x?(2),x?(3),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
                 text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
-                axpos=get(ax1,'position');axpos(1)=axpos(1)+0.02;axpos(3)=axpos(3)-0.05;axpos(4)=axpos(4)-0.05;
-                set(ax1,'position',axpos); % narrow axis
-                ax1_2 = axes('Position',get(ax1,'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
                 xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-                xlabel(['X [R_E] ' coord_label]);ylabel(['Y [R_E] ' coord_label]);
+                xlabel(ax1_2,['X [R_E] ' coord_label]);ylabel(ax1_2,['Y [R_E] ' coord_label]);
                 set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
