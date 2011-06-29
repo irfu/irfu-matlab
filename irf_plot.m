@@ -492,6 +492,9 @@ if number_of_subplots>1 && number_of_subplots<20,
         set(gcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
         set(gcf,'PaperUnits','centimeters');
         set(gcf,'defaultlinelinewidth',1.0);
+        set(gcf,'defaultAxesFontSize',14);
+        set(gcf,'defaultAxesFontUnits','pixels');
+
         xSize = 10;
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
