@@ -192,7 +192,8 @@ if length(column) == 1
 	end 
 	if ~isempty(pl)
 		eval(['h=plot(ax,' pl ');'])
-		grid(ax,'on');
+		irf_zoom(ax,'y'); % optimize Y zoom to skip labels at top and bottom
+        grid(ax,'on');
 		c = get(h(1),'parent');
 		irf_timeaxis(c);
 		irf_figmenu;
@@ -211,6 +212,7 @@ else
 			end
 		end 
 		eval(['plot(c(j),' pl ')'])
+		irf_zoom(ax,'y'); % optimize Y zoom to skip labels at top and bottom
 		grid(c(j),'on');
 		
         ud = get(hcf,'userdata'); ud.subplot_handles = c; set(hcf,'userdata',ud);
