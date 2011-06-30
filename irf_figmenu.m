@@ -51,4 +51,12 @@ if isfield(ud,'t_start_epoch'),
 else
     set(hsubplots,'xlim',xlim);
 end
+for h=hsubplots,
+    % if not spectrogram do also smart y adjustment
+    if any(findobj(h,'tag','irf_pl_mark')) || ...
+            ~any(any([findobj(h,'Type','surface') ...
+            findobj(h,'Type','patch')]))
+        irf_zoom(h,'y');
+    end
+end
 irf_timeaxis(hsubplots);
