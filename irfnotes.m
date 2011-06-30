@@ -8,7 +8,7 @@
 %
 
 edit irfnotes; return
-%% Initialize figure
+%% Initialize figure                       
 % fast way
 h=irf_plot(5); % h= irf_plot(number_of_subplots);
 % more detailed way
@@ -30,11 +30,11 @@ h(1)=axes('position',[0.65 0.78 0.2 0.2]); % [x y dx dy]
 % having all in standard form
 n_subplots=8;i_subplot=1;clear h;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-%% Print the figure as it looks on screen
+%% Print the figure as it looks on screen  
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 print -dpng delme.png
 %print -depsc2 delme.eps
-%% Add information to figures
+%% Add information to figures              
 % text and legends
 help irf_legend
 ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
@@ -43,7 +43,7 @@ help irf_pl_number_subplots
 % if you want some alternative colorbars, like white in middle, blue negative and red positive
 % or if you want to use different colorbars within the same figure 
 help irf_colormap
-%% Second axis
+%% Second axis                             
 hl1 = line(x1,y1,'Color','r');
 ax1 = gca;
 set(ax1,'XColor','r','YColor','r')
@@ -53,7 +53,7 @@ ax2 = axes('Position',get(ax1,'Position'),...
     'YAxisLocation','right',...
     'Color','none',...
     'XColor','k','YColor','k');
-%% Reading files
+%% Reading files                           
 % formatted file reading
 %File contents are time intervals in format "T1 T2 Comments":
 %2008-03-03T22:50:00 2008-03-03T23:30:00
@@ -125,7 +125,7 @@ if 1, % plot figures panels
         c_eval('B?=irf_abs(B?);');
         c_eval('gsmB?=irf_gse2gsm(B?);');
     end
-    if 1,   % PANEL: FGM B single s/c
+    if 1,   % SUBPLOT: C?       FGM B 
         hca=h(i_subplot);i_subplot=i_subplot+1;
         c_eval('irf_plot(hca,gsmB?);',ic);
         ylabel(hca,'B [nT] GSM');
@@ -133,14 +133,38 @@ if 1, % plot figures panels
         irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.3])
         irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
     end
-    if 1,   % SUBPLOT: FGM Bz
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+    if 1,   % SUBPLOT: C?       FGM Bz
+        hca=irf_panel('C? FGM Bz');
         c_eval('irf_plot(hca,gsmB?(:,[1 4]));',ic);
         ylabel(hca,'B_Z [nT] GSM');
-        irf_zoom(hca,'y',[-30 30]);
         irf_legend(hca,{['C' num2str(ic)]},[0.95 0.95],'color','k');
     end
-    if 1,   % PANEL: CIS HIA/CODIF velocity moment single s/c
+    if 1,   % SUBPLOT: C1..C4   FGM B magnitude
+        hca=irf_panel(' C1..C4 FGM |B|');
+        c_pl_tx(hca,'B?',5)
+        ylabel(hca,'|B| [nT]');
+        irf_legend(gca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+    end
+    if 1,   % SUBPLOT: C1..C4   FGM BX GSM
+        hca=irf_panel('SUBPLOT: C1..C4, FGM BX');
+        c_pl_tx(hca,'gsmB?',2);
+        ylabel(hca,'B_X [nT] GSM');
+        irf_zoom(hca,'y'); % zoom nicely
+        irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+    end
+    if 1,   % SUBPLOT: C1..C4   FGM BY GSM
+        hca=irf_panel('SUBPLOT: C1..C4, FGM BY');
+        c_pl_tx(hca,'gsmB?',3)
+        ylabel(hca,'B_Y [nT] GSM');
+        irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+    end
+    if 1,   % SUBPLOT: C1..C4   FGM BZ GSM
+        hca=irf_panel('SUBPLOT: C1..C4, FGM BZ');
+        c_pl_tx(hca,'gsmB?',4)
+        ylabel(hca,'B_Z [nT] GSM');
+        irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+    end
+    if 1,   % SUBPLOT: C1       CIS HIA/CODIF velocity moment single s/c
         hca=h(i_subplot);i_subplot=i_subplot+1;
         if ic ~=2, % on s/c 2 there is no CIS
             if strcmp(CISinstrument,'HIA')
@@ -162,6 +186,28 @@ if 1, % plot figures panels
             irf_legend(hca,{'V_X','V_Y','V_Z'},[0.02 0.49])
             irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
         end
+    end
+    if 1,   % SUBPLOT: C1,C3,C4 CIS Vx velocities
+        hca=irf_panel(h,'C1,C3,C4 CIS Vx velocities');
+        hold(hca,'off');
+        irf_plot(hca,gsmVCIS1(:,1:2),'color','k'); % HIA
+        hold(hca,'on');
+        irf_plot(hca,gsmVCIS3(:,1:2),'color','g'); % HIA
+        irf_plot(hca,gsmVCISH4(:,1:2),'color','b'); % CODIF
+        ylabel(hca,'V_X [km/s] GSM');
+        irf_zoom(hca,'y',[-1000 1000]);
+        irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
+    end
+    if 1,   % SUBPLOT: C1,C3,C4 CIS Vy velocities
+        hca=irf_panel(h,'C1,C3,C4 CIS Vy velocities');
+        hold(hca,'off');
+        irf_plot(hca,gsmVCIS1(:,[1 3]),'color','k'); % HIA
+        hold(hca,'on');
+        irf_plot(hca,gsmVCIS3(:,[1 3]),'color','g'); % HIA
+        irf_plot(hca,gsmVCISH4(:,[1 3]),'color','b'); % CODIF
+        ylabel(hca,'V_X [km/s] GSM');
+        irf_zoom(hca,'y',[-1000 1000]);
+        irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
     end
     if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
         hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -515,6 +561,109 @@ if 1, % plot figures panels
         end
         irf_spectrogram(hca,specrec);colormap(jet);
         caxis([1 5]);
+        set(hca,'ytick',yticks);
+        irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
+    end
+    if 1,   % PANEL: PEACE 3DXPH_DEFlux high res energy spectrogram
+        hca=irf_panel('PEACE 3DXPH_DEFlux energy');
+        res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
+        [~,ind]=irf_tlim(res.tt,tint);
+        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
+        if 1, % energy spectorgram (integrated over pitch angles)
+            specrec.f=log10(res.en);
+            specrec.p=res.omni(ind,:);
+            specrec.f_label=['Log10 ' res.enlabel];
+            irf_spectrogram(hca,specrec);
+        elseif 1, % pitch angle spectrogram for given energy
+            specrec.f=res.theta;specrec.f_label='Pitch angle';
+            specrec.p=res.pitch_angle(ind,:);
+            enindex=13;
+            specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
+            specrec.p=log10(res.data(ind,:,enindex));
+            irf_spectrogram(hca,specrec);
+            set(hca,'ytick',[30 60 90 120 150]);
+        end
+        caxis(hca,[-1.99 0.49]);
+        irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
+    end
+    if 1,   % PANEL: PEACE 3DXPH_DEFlux high res angular spectrogra,
+        hca=irf_panel('PEACE 3DXPH_DEFlux angular');
+        res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
+        [delmett,ind]=irf_tlim(res.tt,tint);
+        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
+        if 0, % energy spectorgram (integrated over pitch angles)
+            specrec.f=log10(res.en);
+            specrec.p=res.omni(ind,:);
+            specrec.f_label=['Log10 ' res.enlabel];
+            irf_spectrogram(hca,specrec);
+        elseif 1, % pitch angle spectrogram for given energy
+            specrec.f=res.theta;specrec.f_label='Pitch angle';
+            specrec.p=res.pitch_angle(ind,:);
+            enindex=13; % specify which energy chanel
+            specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
+            specrec.p=log10(res.data(ind,:,enindex));
+            irf_spectrogram(hca,specrec);
+            set(hca,'ytick',[30 60 90 120 150]);
+        end
+        caxis(hca,[-1.99 0.49]);
+        irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
+    end
+    if 1,  % PANEL: CIS HIA/CODIF high res energy C3
+        hca=irf_panel('CIS CODIF high res energy');
+        ic=3;
+        %res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_CODIF_HS_H1_PSD',ic));
+        res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_HIA_HS_MAG_IONS_PEF',ic));
+        
+        [~,ind]=irf_tlim(res.tt,tint);
+        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PEF \newline [' res.dataunits ']']);
+        if 1, % energy spectorgram (integrated over pitch angles)
+            specrec.f=log10(res.en);
+            specrec.p=res.omni(ind,:);
+            specrec.f_label='Log_{10} E [eV]';
+            yticks=[1 2 3 4 5];
+        elseif 1, % pitch angle spectrogram for given energy
+            specrec.f=res.theta;specrec.f_label='Pitch angle';
+            specrec.p=res.pitch_angle(ind,:);
+            enindex=(26:30);
+            if numel(enindex)==1,
+                specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
+            else
+                specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex(1)),'%6.f') ' - ' num2str(res.en(enindex(end)),'%6.f') 'eV]'];
+            end
+            specrec.p=sum(res.data(ind,:,enindex),3);
+            yticks=[45 90 135 ];
+        end
+        irf_spectrogram(hca,specrec);
+        caxis([1 5]);
+        set(hca,'ytick',yticks);
+        irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
+    end
+    if 1,  % PANEL: CIS HIA/CODIF high res energy C4
+        hca=irf_panel('CIS CODIF high res pitch angle');
+        %res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_CODIF_HS_H1_PSD',ic));
+        res=c_caa_construct_subspin_res_data(irf_ssub('x3d_ions__C?_CP_CIS_HIA_HS_MAG_IONS_PEF',ic));
+        
+        [~,ind]=irf_tlim(res.tt,tint);
+        specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PEF  \newline [' res.dataunits ']']);
+        if 0, % energy spectorgram (integrated over pitch angles)
+            specrec.f=log10(res.en);
+            specrec.p=res.omni(ind,:);
+            specrec.f_label='Log_{10} E [eV]';
+            yticks=[1 2 3 4 5];
+        elseif 1, % pitch angle spectrogram for given energy
+            specrec.f=res.theta;specrec.f_label='Pitch angle';
+            specrec.p=res.pitch_angle(ind,:);
+            enindex=(26:30);
+            if numel(enindex)==1,
+                specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex),'%6.f') 'eV]'];
+            else
+                specrec.f_label=[specrec.f_label '\newline[E=' num2str(res.en(enindex(1)),'%6.f') ' - ' num2str(res.en(enindex(end)),'%6.f') 'eV]'];
+            end
+            specrec.p=sum(res.data(ind,:,enindex),3);
+            yticks=[45 90 135 ];
+        end
+        irf_spectrogram(hca,specrec);
+        caxis([4 7]);
         set(hca,'ytick',yticks);
         irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
     end
