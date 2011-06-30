@@ -220,6 +220,7 @@ if flag_subplot==0,  % One subplot
         ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
         ii = 2:length(x(1,:));
         tag=get(ax,'tag');
+        ud=get(ax,'userdata'); % keep userdata during plotting
         if flag_yy == 0,
             h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
         else
@@ -227,13 +228,11 @@ if flag_subplot==0,  % One subplot
         end
         grid(ax,'on');
         set(ax,'tag',tag);
+        set(ax,'userdata',ud);
+        zoom_in_if_necessary(ax);
         
-        % Put YLimits so that no labels are at the end (disturbing in
-        % multipanel plots)
-        yl = get(ax,'YLim');
-        if ~(any(any(x(:,2:end) == yl(1))) || any(any(x(:,2:end) == yl(2))))
-            set(ax,'YLim', mean(yl) + diff(yl)*[-.499999 .499999])
-        end
+        % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
+        irf_zoom(ax,'y');
         
         if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
             lab = cell(1,length(var_desc{1}.size));
@@ -270,10 +269,8 @@ elseif flag_subplot==1, % Separate subplot for each component
         
         plot((x(:,1)-ts-dt),x(:,ipl+1),marker_cur,args{:}); grid on;
         
-        % Put YLimits so that no labels are at the end (disturbing in
-        % multipanel plots)
-        set(gca,'YLim', ...
-            mean(get(gca,'YLim'))+diff(get(gca,'YLim'))*[-.499999 .499999])
+        % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
+        irf_zoom(c(ipl),'y');
         
         if ~isempty(var_desc) && ~isempty(var_desc{1})
             scu = cumsum(var_desc{1}.size);
@@ -353,11 +350,10 @@ elseif flag_subplot==2, % Separate subplot for each variable
             end
             plot(c(ipl),t_tmp,y(:,2:end),marker_cur); 
             grid(c(ipl),'on');
+            zoom_in_if_necessary(c(ipl));
             
-            % Put YLimits so that no labels are at the end (disturbing in
-            % multipanel plots)
-            set(c(ipl),'YLim',...
-                mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
+            % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
+            irf_zoom(c(ipl),'y');
             
             if ~isempty(var_desc) && ~isempty(var_desc{ipl})
                 for v = 1:length(var_desc{ipl}.size)
@@ -435,7 +431,6 @@ user_data = get(gcf,'userdata');
 if flag_subplot>0, user_data.subplot_handles = c; end
 set(gcf,'userdata',user_data);
 
-
 %% In case time is in isdat_epoch add time axis
 if ((tt > 1e8) && (tt < 1e10))
     if flag_subplot == 0, irf_timeaxis(ax);
@@ -476,7 +471,9 @@ else
 end
 
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function c=initialize_figure(number_of_subplots,flag)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % flag = "newfigure" % [optional] if to open a new figure
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
@@ -514,5 +511,17 @@ if number_of_subplots>1 && number_of_subplots<20,
     user_data.current_panel=0;
     set(gcf,'userdata',user_data);
     figure(gcf); % bring figure to front
+end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function zoom_in_if_necessary(h)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ud=get(h,'userdata');
+if isfield(ud,'zoom_x'),
+    disp('zooming in the updated plot')
+    irf_zoom(h,'x',ud.zoom_x);
+    if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
+        irf_timeaxis(h,'nolabel');
+    end
 end
 end
