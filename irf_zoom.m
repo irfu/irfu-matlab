@@ -171,13 +171,17 @@ for h=axis_handles
                 interval_to_use=interval;
                 set(h,'userdata',ud);
             end
-            if interval_to_use(1)>=0,
+            if interval_to_use(1)>0,
                 interval_to_use(1)=interval_to_use(1)*(1+1e-9);
+            elseif interval_to_use(1)==0,
+                interval_to_use(1)=interval_to_use(1)+1e-9*diff(interval_to_use(1:2));
             else
                 interval_to_use(1)=interval_to_use(1)*(1-1e-9);
             end
-            if interval_to_use(2)>=0,
+            if interval_to_use(2)>0,
                 interval_to_use(2)=interval_to_use(2)*(1-1e-9);
+            elseif interval_to_use(2)==0,
+                interval_to_use(2)=interval_to_use(2)-1e-9*diff(interval_to_use(1:2));
             else
                 interval_to_use(2)=interval_to_use(2)*(1+1e-9);
             end
