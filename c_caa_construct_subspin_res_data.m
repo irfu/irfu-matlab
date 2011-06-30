@@ -115,8 +115,7 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'HIA_HS_MAG'
     for jphi=1:length(phi),
         for jpolar=1:length(polar),
             % nn vector of given sector in SR2 ref rframe
-            nsector=[cospolar(jpolar).*cosphi(jphi) cospolar(jpolar).*sinphi(jphi) sinpolar(jpolar)];
-            nparticle=-nsector;
+            nparticle=[cospolar(jpolar).*cosphi(jphi) cospolar(jpolar).*sinphi(jphi) sinpolar(jpolar)];
             pitchsector=acos(dot(b_ISR2(jphi:length(phi):end,2:4),repmat(nparticle,[length(t) 1]),2))*180/pi;
             pitchangle(:,jpolar,jphi,:)=repmat(pitchsector,[1 1 1 length(en)]);
         end
