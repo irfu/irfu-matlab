@@ -158,20 +158,29 @@ for h=axis_handles
             ud.zoom_x=interval+t_ref;
             set(h,'userdata',ud);
         case 'y'
+            ud=get(h,'userdata');
             if isempty(interval), % auto y zooming
-                set(h,'YLimMode','auto');
-                interval=get(h,'ylim');
-            end
-            if interval(1)>=0,
-                interval(1)=interval(1)*(1+1e-9);
+                if isfield(ud,'zoom_y'),
+                    interval_to_use=ud.zoom_y;
+                else
+                    set(h,'YLimMode','auto');
+                    interval_to_use=get(h,'ylim');
+                end
             else
-                interval(1)=interval(1)*(1-1e-9);
+                ud.zoom_y=interval;
+                interval_to_use=interval;
+                set(h,'userdata',ud);
             end
-            if interval(2)>=0,
-                interval(2)=interval(2)*(1-1e-9);
+            if interval_to_use(1)>=0,
+                interval_to_use(1)=interval_to_use(1)*(1+1e-9);
             else
-                interval(2)=interval(2)*(1+1e-9);
+                interval_to_use(1)=interval_to_use(1)*(1-1e-9);
             end
-            set(h,'Ylim',interval);
+            if interval_to_use(2)>=0,
+                interval_to_use(2)=interval_to_use(2)*(1-1e-9);
+            else
+                interval_to_use(2)=interval_to_use(2)*(1+1e-9);
+            end
+            set(h,'Ylim',interval_to_use);
     end
 end
