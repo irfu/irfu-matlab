@@ -35,6 +35,8 @@ if isempty(axis_handle),
         if args{1}==0, % add to the whole figure
             axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                 'Tag','BackgroundAxes', 'HitTest','off');
+            c=get(gcf,'children');
+            set(gcf,'children', [c(2:end) ;c(1)]); % move axis to background
         else
             axis_handle=args{1};
         end
@@ -45,6 +47,8 @@ if isempty(axis_handle),
             if args{1}==0, % add to the whole figure
                 axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                     'Tag','BackgroundAxes', 'HitTest','off');
+                c=get(gcf,'children');
+                set(gcf,'children', [c(2:end) ;c(1)]); % move axis to background
                 args=args(2:end);
                 nargs=nargs-1;
             else
