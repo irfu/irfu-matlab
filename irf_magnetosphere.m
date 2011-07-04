@@ -40,12 +40,9 @@ switch lower(model)
         x(ii)=[];
         y(ii)=[];
     case 'bs'
-        [xmp,ymp] = irf_magnetosphere('mp_shue1998',Dp,Bz);
-        L=22.1; % should be scales with solar wind parameters in future
-        epsilon=1.02;
+        [xmp,~] = irf_magnetosphere('mp_shue1998',Dp,Bz);
         gamma=5/3;
         M=4;
-        xzero=3.5; % see Fairfield
         rmp=xmp(1);
         rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)));
         x=rstandoff:-0.5:-100;
