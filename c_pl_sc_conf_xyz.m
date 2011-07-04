@@ -31,7 +31,7 @@ if nargin==0, % default time (with time can make smarter solution)
         if numel(R)==0,
             time=[2010 12 31 01 01 01];
         else
-            time=irf_time(R(1,1),'vector');
+            time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
         end
     else
         time=[2010 12 31 01 01 01];
@@ -57,16 +57,13 @@ end
 
 switch lower(action)
     case 'initialize' % read in all data and open figure
-        if length(time)==1,
-            start_time=irf_time(time,'vector');
+        if length(time)==1, % time given in epoch
             t=time;
-        elseif length(time)==6,
-            start_time=time;
+        elseif length(time)==6, % time given as vector
             t=irf_time(time);
-        elseif exist('t','var'),
-            start_time=irf_time(t,'vector');
         else
-            irf_log('fcal','Check time format');return;
+            irf_log('fcal','Wrong input format of time.');
+            return;
         end
         % Open new figure
         figNumber=figure( ...
@@ -93,22 +90,22 @@ switch lower(action)
             c_load('R?',sc_list);
         end
         if ~is_R_ok,     % try reading from CAA files
-            disp('Trying to read CAA files...')
+            irf_log('dsrc','Trying to read CAA files...')
             c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');',sc_list);
         end
         if ~is_R_ok,  % try reading from isdat server
-            disp('Trying to obtain satellite position from isdat server...')
+            irf_log('dsrc','Trying to obtain satellite position from isdat server...')
             try
                 c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R?=[tr r];clear tr r;',data.sc_list);
                 if ~is_R_ok,% no idea
                     disp('NO POSITION DATA!');
                 end
-            catch
-                disp('Did not succeed!');
+            catch ME
+                irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
             end
         end
         if ~is_R_ok,     % could not obtain
-            disp('Could not obtain position data!')
+            irf_log('dsrc','Could not obtain position data!')
             c_eval('R?=[];',data.sc_list);
         end
         c_eval('data.R?=R?;',data.sc_list);
@@ -135,15 +132,18 @@ switch lower(action)
         sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
         set(gcf,'Position',[10 10 600/sfactor 1000/sfactor]);
         delete(findall(gcf,'Type','axes'))
-        data.h=[];
-        data.h(1)=subplot(4,2,1);axis([-19.99 14.99 -14.99 14.99]);hold on;
-        data.h(2)=subplot(4,2,2);axis([-19.99 19.99 -19.99 19.99]);hold on;
-        data.h(3)=subplot(4,2,3);axis([-19.99 14.99 -19.99 19.99]);hold on;
-        data.h(4)=subplot(4,2,4);axis off;
-        data.h(5)=subplot(4,2,5);axis([-50 50 -50 50]);
-        data.h(6)=subplot(4,2,6);axis([-50 50 -50 50]);
-        data.h(7)=subplot(4,2,7);axis([-50 50 -50 50]);
-        data.h(8)=subplot(4,2,8);axis off;
+        data.h=[];h=zeros(1,8);
+        xsize=.35;ysize=.195;dx=.13;dy=.05;
+        for ix=1:2,
+            for iy=1:4,
+                h(iy*2-2+ix)=axes('position',[dx*ix+(ix-1)*xsize dy*(5-iy)+(4-iy)*ysize xsize ysize]);                
+            end
+        end
+        axis(h(8),'off');
+        axis(h(1:3),[-20 20 -20 20]);
+        axis(h(4),[-20 20 0 20]);
+        for ii=1:4, hold(h(ii),'on');daspect(h(ii),[1 1 1]);end
+        data.h=h;
         data.flag_show_cluster_description=1; % show cluster description
         data.plot_type='default';
         set(gcf,'userdata',data);
@@ -174,11 +174,11 @@ switch lower(action)
         data=get(gcf,'userdata');
         ss=get(0,'screensize');
         sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
-        set(gcf,'Position',[10 ss(4)-80-350/sfactor 700/sfactor 350/sfactor]);
+        set(gcf,'Position',[10 ss(4)-80-350/sfactor 750/sfactor 350/sfactor]);
         initialize_figure;
         h=[];
-        h(1)=axes('position',[0.09 0.18 0.33 0.66]); % [x y dx dy]
-        h(2)=axes('position',[0.57 0.18 0.33 0.66]); % [x y dx dy]
+        h(1)=axes('position',[0.09 0.13 0.32 0.74]); % [x y dx dy]
+        h(2)=axes('position',[0.59 0.13 0.32 0.74]); % [x y dx dy]
         h(3)=axes('position',[0 0 1 1]);
         h(21)=axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
         h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
@@ -196,8 +196,8 @@ switch lower(action)
         set(gcf,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
         initialize_figure;
         h=[];
-        h(2)=axes('position',[0.18 0.06 0.66 0.36]); % [x y dx dy]
-        h(1)=axes('position',[0.18 0.56 0.66 0.36]); % [x y dx dy]
+        h(2)=axes('position',[0.18 0.06 0.63 0.36]); % [x y dx dy]
+        h(1)=axes('position',[0.18 0.57 0.63 0.36]); % [x y dx dy]
         h(3)=axes('position',[0 0 1 1]);axis off;
         h(21)=axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
         h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
@@ -231,6 +231,9 @@ switch lower(action)
                 ylabel(h(1),['Z [R_E] '  coord_label]);
                 grid(h(1),'on')
                 set(h(1),'xdir','reverse')
+                add_magnetopause(h(1));
+                add_bowshock(h(1));
+                add_Earth(h(1));
                 
                 %  axes(h(1));      title(titlestr);
                 cla(h(2));
@@ -238,7 +241,7 @@ switch lower(action)
                 xlabel(h(2),['Y [R_E] ' coord_label]);
                 ylabel(h(2),['Z [R_E] ' coord_label]);
                 grid(h(2),'on');
-                
+                 
                 cla(h(3));
                 c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker{?});hold(h(3),''on'');',sc_list);
                 xlabel(h(3),['X [R_E] ' coord_label]);
@@ -246,6 +249,19 @@ switch lower(action)
                 grid(h(3),'on');
                 set(h(3),'xdir','reverse')
                 set(h(3),'ydir','reverse')
+                add_magnetopause(h(3));
+                add_bowshock(h(3));
+                add_Earth(h(3));
+                
+                cla(h(4));
+                c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(3)^2),cluster_marker{?});hold(h(4),''on'');',sc_list);
+                xlabel(h(4),['X [R_E] ' coord_label]);
+                ylabel(h(4),['sqrt (Y^2+Z^2) [R_E] ' coord_label]);
+                grid(h(4),'on');
+                set(h(4),'xdir','reverse')
+                add_magnetopause(h(4));
+                add_bowshock(h(4));
+                add_Earth(h(4));
                 
                 cla(h(5));
                 c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?});hold(h(5),''on'');',sc_list);
@@ -409,15 +425,15 @@ switch lower(action)
                 set(ax1_2,'xdir','reverse','ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
         end
         if data.flag_show_cluster_description==1,
-            plot(h(4),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
-            text(0.03,.3,'C1','parent',h(4));
-            text(.23,.3,'C2','parent',h(4));
-            text(.43,.3,'C3','parent',h(4));
-            text(.63,.3,'C4','parent',h(4));
-            axis(h(4),'off');
-            ht=irf_pl_info(['c_pl_sc_conf_xyz() ' datestr(now)],h(4),[0,1 ]);
+            plot(h(8),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
+            text(0.03,.3,'C1','parent',h(8));
+            text(.23,.3,'C2','parent',h(8));
+            text(.43,.3,'C3','parent',h(8));
+            text(.63,.3,'C4','parent',h(8));
+            axis(h(8),'off');
+            ht=irf_legend(h(8),['c_pl_sc_conf_xyz() ' datestr(now)],[0,0],'fontsize',8);
             set(ht,'interpreter','none');
-            htime=irf_pl_info(['Cluster configuration\newline ' irf_time(data.t,'isoshort')],h(4),[0,.7 ]);
+            htime=irf_legend(h(8),['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.8]);
             set(htime,'fontsize',12);
         end
         data.h=h;
@@ -499,4 +515,23 @@ for ic=1:numel(sc_list)
     end
 end
 answer=1;
+
+function add_magnetopause(h)
+[x,y]=irf_magnetosphere('mp_shue1998');
+x=[fliplr(x) x];
+y=[fliplr(y) -y];
+line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
+
+function add_bowshock(h)
+[x,y]=irf_magnetosphere('bs');
+x=[fliplr(x) x];
+y=[fliplr(y) -y];
+line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
+
+function add_Earth(h)
+theta=0:pi/20:pi;
+x=sin(theta);y=cos(theta);
+patch(-x,y,'k','edgecolor','none','parent',h)
+patch(x,y,'w','edgecolor','k','parent',h)
+
 
