@@ -163,7 +163,7 @@ for h=axis_handles
                 if isfield(ud,'zoom_y'),
                     interval_to_use=ud.zoom_y;
                 else
-                    set(h,'YLimMode','auto');
+                    zoom_y_auto(h)
                     interval_to_use=get(h,'ylim');
                 end
             else
@@ -187,4 +187,69 @@ for h=axis_handles
             end
             set(h,'Ylim',interval_to_use);
     end
+end
+
+function zoom_y_auto(h)
+% make more space related auto zoom than Matlab 
+hlines=findall(h,'Type','line');
+ud=get(h,'userdata');
+uf=get(get(h,'parent'),'userdata');
+xzero=0; % reference point
+if isfield(uf,'t_start_epoch'), xzero=uf.t_start_epoch;end
+
+if isfield(ud,'zoom_x'), % use zoom x values
+    xlim=ud.zoom_x;
+    ylim=[];
+    for ih=1:numel(hlines)
+       hh=hlines(ih);
+       xd=get(hh,'XData')+xzero;
+       yd=get(hh,'YData');
+       ydlim=yd(xd>xlim(1) & xd<xlim(2));
+       if numel(ydlim)<2,
+           ylimd=ylim; % dont change if zooming to 1 or less points
+       else
+           ylimd=[min(ydlim) max(ydlim)];
+       end
+       if isempty(ylim),
+           ylim=ylimd;
+       else
+           if ylimd(1)<ylim(1),
+               ylim(1)=ylimd(1);
+           end
+           if ylimd(2)>ylim(2),
+               ylim(2)=ylimd(2);
+           end
+       end
+       if isempty(ylim), % has been to few data points to estimate limits
+           ylim=get(h,'ylim');
+       end
+    end
+else
+    limits = objbounds(hlines);
+    ylims=limits(3:4);
+end
+
+yscale=get(h,'yscale');
+
+switch lower(yscale)
+    case 'linear'
+        diffy=diff(ylim);
+        dy=diffy/4; % 1st approx      
+        dy10power=10^(floor(log10(dy)));
+        dy1stcipher=floor(dy/dy10power);
+        if dy1stcipher>5,
+            dy = 5*dy10power;
+        else
+            dy=dy1stcipher*dy10power;
+        end
+        if ylim(1)<dy && ylim(2)>-dy,
+            ymin=dy*floor(ylim(1)/dy);
+            ymax=dy*ceil(ylim(2)/dy);
+        else % needs to be explanded
+            ymin=dy*floor(ylim(1)/dy);
+            ymax=dy*ceil(ylim(2)/dy);
+        end
+        set(h,'ylim',[ymin ymax]);
+    case 'log'
+        set(h,'YLimMode','auto');
 end
