@@ -46,7 +46,7 @@ for j=1:length(varargin),
       eval(['dataobject=' dataobj_name ';']);
       jloaded=jloaded+1;
       else
-          disp([dataobj_name ' could not be loaded!']);
+          irf_log('dsrc',[dataobj_name ' could not be loaded!']);
           continue;
       end
     end

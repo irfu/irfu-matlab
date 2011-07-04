@@ -72,5 +72,5 @@ for j = 1:numel(dirs)
   end
 end
 if nloaded, fprintf('\nCAA_LOAD : loaded %d variables\n',nloaded);
-else disp('CAA_LOAD : nothing to load')
+else irf_log('dsrc','CAA_LOAD : nothing to load')
 end
