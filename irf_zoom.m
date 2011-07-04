@@ -198,30 +198,30 @@ xzero=0; % reference point
 if isfield(uf,'t_start_epoch'), xzero=uf.t_start_epoch;end
 
 if isfield(ud,'zoom_x'), % use zoom x values
-    xlim=ud.zoom_x;
-    ylim=[];
+    xlims=ud.zoom_x;
+    ylims=[];
     for ih=1:numel(hlines)
        hh=hlines(ih);
        xd=get(hh,'XData')+xzero;
        yd=get(hh,'YData');
-       ydlim=yd(xd>xlim(1) & xd<xlim(2));
+       ydlim=yd(xd>xlims(1) & xd<xlims(2));
        if numel(ydlim)<2,
-           ylimd=ylim; % dont change if zooming to 1 or less points
+           ylimd=ylims; % dont change if zooming to 1 or less points
        else
            ylimd=[min(ydlim) max(ydlim)];
        end
-       if isempty(ylim),
-           ylim=ylimd;
+       if isempty(ylims),
+           ylims=ylimd;
        else
-           if ylimd(1)<ylim(1),
-               ylim(1)=ylimd(1);
+           if ylimd(1)<ylims(1),
+               ylims(1)=ylimd(1);
            end
-           if ylimd(2)>ylim(2),
-               ylim(2)=ylimd(2);
+           if ylimd(2)>ylims(2),
+               ylims(2)=ylimd(2);
            end
        end
-       if isempty(ylim), % has been to few data points to estimate limits
-           ylim=get(h,'ylim');
+       if isempty(ylims), % has been to few data points to estimate limits
+           ylims=get(h,'ylim');
        end
     end
 else
@@ -233,7 +233,7 @@ yscale=get(h,'yscale');
 
 switch lower(yscale)
     case 'linear'
-        diffy=diff(ylim);
+        diffy=diff(ylims);
         dy=diffy/4; % 1st approx      
         dy10power=10^(floor(log10(dy)));
         dy1stcipher=floor(dy/dy10power);
@@ -242,12 +242,12 @@ switch lower(yscale)
         else
             dy=dy1stcipher*dy10power;
         end
-        if ylim(1)<dy && ylim(2)>-dy,
-            ymin=dy*floor(ylim(1)/dy);
-            ymax=dy*ceil(ylim(2)/dy);
+        if ylims(1)<dy && ylims(2)>-dy,
+            ymin=dy*floor(ylims(1)/dy);
+            ymax=dy*ceil(ylims(2)/dy);
         else % needs to be explanded
-            ymin=dy*floor(ylim(1)/dy);
-            ymax=dy*ceil(ylim(2)/dy);
+            ymin=dy*floor(ylims(1)/dy);
+            ymax=dy*ceil(ylims(2)/dy);
         end
         set(h,'ylim',[ymin ymax]);
     case 'log'
