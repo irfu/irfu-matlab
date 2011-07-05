@@ -518,7 +518,7 @@ function zoom_in_if_necessary(h)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ud=get(h,'userdata');
 if isfield(ud,'zoom_x'),
-    disp('zooming in the updated plot')
+    irf_log('fcal','zooming in the updated plot')
     irf_zoom(h,'x',ud.zoom_x);
     if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
         irf_timeaxis(h,'nolabel');
