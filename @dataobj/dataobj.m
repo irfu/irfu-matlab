@@ -68,7 +68,7 @@ switch nargin
                 error(['file ' cdf_file ' does not exist'])
             end
             
-            disp(['Reading: ' cdf_file]);
+            irf_log('dsrc',['Reading: ' cdf_file]);
             [data,info] = cdfread(cdf_file,...
                 'ConvertEpochToDatenum',true,...
                 'CombineRecords',true);

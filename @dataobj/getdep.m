@@ -29,7 +29,7 @@ if nvars>0
 				field = sprintf('LABEL_%d',d);
 				tt = findva(dobj,field,v1_s);
 				if ~isempty(tt)
-					disp([field ' : ' tt])
+					irf_log('dsrc',[field ' : ' tt])
 					dep_x(d,:) = {tt,field};
 					found = 1;
 					found_any = 1;
@@ -39,7 +39,7 @@ if nvars>0
 				tt = findva(dobj,field,v1_s);
 				if ~isempty(tt)
 					if found, error('found both LABEL_X and DEPEND_X'), end
-					disp([field ' : ' tt])
+					irf_log('dsrc',[field ' : ' tt])
 					dep_x(d,:) = {tt,field};
 					found_any = 1;
 				end
@@ -50,7 +50,7 @@ if nvars>0
 					tvar = [];
 					for vv=1:size(va,1);
 						if strcmp(va{vv,1},v1_s)
-							disp(sprintf('DEPEND_%d : %s',0,va{vv,2}))
+							irf_log('dsrc',sprintf('DEPEND_%d : %s',0,va{vv,2}))
 							tvar = getv(dobj,va{vv,2});
 						end
 					end

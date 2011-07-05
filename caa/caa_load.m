@@ -58,19 +58,20 @@ for j = 1:numel(dirs)
     end
     if flag_load_variable,
       try
-        disp(['caa_load ' var_name]);
+        irf_log('dsrc',['caa_load ' var_name]);
         if evalin('caller',['exist(''' var_name ''',''var'')']),
-          disp('Variable exist in memory. NOT LOADING FROM FILE!')
+          irf_log('dsrc','Variable exist in memory. NOT LOADING FROM FILE!')
         else
           evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
         end
         nloaded = nloaded + 1;
-      catch
-        disp(['error loading ' var_name]);
+      catch ME
+          irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
+          irf_log('dsrc',['error loading ' var_name]);
       end
     end
   end
 end
-if nloaded, fprintf('\nCAA_LOAD : loaded %d variables\n',nloaded);
+if nloaded, irf_log('dsrc',['=====> loaded ' num2str(nloaded) ' variables']);
 else irf_log('dsrc','CAA_LOAD : nothing to load')
 end
