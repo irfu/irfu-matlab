@@ -13,7 +13,7 @@ function irf_log(log_ids,log_msg)
 %   'save' - saving of data to MAT files
 %   'calb' - calibration
 %   'proc' - processing
-% log_msg - message string 
+% log_msg - message string
 %
 % Example:
 % irf_log('proc','using E.B=0 for computing Ez')
@@ -34,10 +34,13 @@ function irf_log(log_ids,log_msg)
 %
 % irf_log('log_out',file) - redirect the output from screen (default) to FILE.
 % Default can be restored by running irf_log('log_out','screen')
-% 
+%
 % Example:
 % irf_log('log_out','/tmp/my_event.log')
 %
+%   IRF_LOG ON  - swith ON the showing of log messages
+%   IRF_LOG OFF - switch OFF the showing of log messages
+% 
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -47,93 +50,102 @@ function irf_log(log_ids,log_msg)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,15,nargin))
-
-switch(log_ids)
-case 'log_lev'
-	global IRF_LOG
-	IRF_LOG = log_msg;
-	return
-case 'log_out'
-	global IRF_LOG_OUT
-	IRF_LOG_OUT = log_msg;
-	return
-case 'fcal'
-	log_id = 1;
-case 'dsrc'
-	log_id = 2;
-case 'load'
-	log_id = 3;
-case 'save'
-	log_id = 4;
-case 'calb'
-	log_id = 5;	
-case 'proc'
-	log_id = 6;
-otherwise
-	[sta,curr] = dbstack;
-	% if irf_log is called from the main env, then use curr,
-	% otherwise we are interested in callers name (curr+1)
-	if curr == length(sta), idx = curr;
-    else idx = curr +1;
-	end
-	log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
-	disp(['unknown LOG_ID at ' log_ids])
-	log_id = 255;
+persistent d_out
+persistent d_out_prev
+persistent IRF_LOG IRF_LOG_OUT
+persistent flag_irf_log_ON
+if isempty(flag_irf_log_ON),
+    flag_irf_log_ON=1;
 end
 
-global IRF_LOG
+error(nargchk(1,15,nargin))
+
+switch lower(log_ids)
+    case 'log_lev'
+        IRF_LOG = log_msg;
+        return
+    case 'log_out'
+        IRF_LOG_OUT = log_msg;
+        return
+    case 'fcal'
+        log_id = 1;
+    case 'dsrc'
+        log_id = 2;
+    case 'load'
+        log_id = 3;
+    case 'save'
+        log_id = 4;
+    case 'calb'
+        log_id = 5;
+    case 'proc'
+        log_id = 6;
+    case 'on'
+        flag_irf_log_ON=1;
+        return
+    case 'off'
+        flag_irf_log_ON=0;
+        return
+    otherwise
+        [sta,curr] = dbstack;
+        % if irf_log is called from the main env, then use curr,
+        % otherwise we are interested in callers name (curr+1)
+        if curr == length(sta), idx = curr;
+        else idx = curr +1;
+        end
+        log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
+        disp(['unknown LOG_ID at ' log_ids])
+        log_id = 255;
+end
+
 if isempty(IRF_LOG), log_ok = 1; log_fn = 1;
 else
-	log_ok = bitget(uint32(IRF_LOG),log_id);
-	log_fn = bitget(uint32(IRF_LOG),1);
+    log_ok = bitget(uint32(IRF_LOG),log_id);
+    log_fn = bitget(uint32(IRF_LOG),1);
 end
 
 if log_ok
-	if log_fn
-		[sta,curr] = dbstack;
-		% if irf_log is called from the main env, then use curr,
-		% otherwise we are interested in callers name (curr+1)
-		if curr == length(sta), idx = curr;
-		else idx = curr +1;
-		end
-		log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
-		clear sta curr
-	end
-	d_str = ['[' datestr(now,31) '][' log_ids '] ' log_msg];
-	
-	persistent d_out
-	persistent d_out_prev
-	global IRF_LOG_OUT
-	
-	if isempty(d_out) || ~strcmp(d_out_prev,IRF_LOG_OUT)
-		d_out_prev = IRF_LOG_OUT;
-		d_out = 'screen';
-		if ~isempty(IRF_LOG_OUT) 
-			if ~strcmp(IRF_LOG_OUT,'screen')
-				fid = fopen(IRF_LOG_OUT,'a');
-				if fid > 0
-					d_out = IRF_LOG_OUT;
-					fclose(fid);
-				else
-					disp(['IRF_LOG: cannot open output file ' IRF_LOG_OUT 'for writing'])
-					disp('IRF_LOG: check the global variable IRF_LOG_OUT')
-					disp('IRF_LOG: redirecting output to screen')
-				end
-			end
-		end
-	end
-	if strcmp(d_out,'screen')
-		disp(d_str)
-	else
-		fid = fopen(d_out,'a');
-		if fid > 0
-			fprintf(fid,'%s\n',d_str);
-			fclose(fid);
-		else 
-			disp(['IRF_LOG: cannot open output file ' IRF_LOG_OUT 'for writing'])
-			disp('IRF_LOG: redirecting output to screen')
-			disp(d_str)
-		end
-	end
+    if log_fn
+        [sta,curr] = dbstack;
+        % if irf_log is called from the main env, then use curr,
+        % otherwise we are interested in callers name (curr+1)
+        if curr == length(sta), idx = curr;
+        else idx = curr +1;
+        end
+        log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
+        clear sta curr
+    end
+    d_str = ['[' datestr(now,31) '][' log_ids '] ' log_msg];
+    
+    if isempty(d_out) || ~strcmp(d_out_prev,IRF_LOG_OUT)
+        d_out_prev = IRF_LOG_OUT;
+        d_out = 'screen';
+        if ~isempty(IRF_LOG_OUT)
+            if ~strcmp(IRF_LOG_OUT,'screen')
+                fid = fopen(IRF_LOG_OUT,'a');
+                if fid > 0
+                    d_out = IRF_LOG_OUT;
+                    fclose(fid);
+                else
+                    disp(['IRF_LOG: cannot open output file ' IRF_LOG_OUT 'for writing'])
+                    disp('IRF_LOG: check the global variable IRF_LOG_OUT')
+                    disp('IRF_LOG: redirecting output to screen')
+                end
+            end
+        end
+    end
+    if flag_irf_log_ON
+        if strcmp(d_out,'screen')
+            disp(d_str)
+        else
+            fid = fopen(d_out,'a');
+            if fid > 0
+                fprintf(fid,'%s\n',d_str);
+                fclose(fid);
+            else
+                disp(['IRF_LOG: cannot open output file ' IRF_LOG_OUT 'for writing'])
+                disp('IRF_LOG: redirecting output to screen')
+                disp(d_str)
+            end
+        end
+    end
 end
