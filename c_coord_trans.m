@@ -6,7 +6,7 @@ function y = c_coord_trans(from,to,x,varargin)
 % Transform INP from FROM_CS to TO_CS.
 %
 % Input:
-%     FROM_CS,TO_CS - one of GSE/DSC/SR2/DSI/ISR2
+%     FROM_CS,TO_CS - one of GSE/GSM/DSC/SR2/DSI/ISR2
 %     INP           - vector data with or without the time column
 %
 % ARGS can be:
@@ -34,19 +34,28 @@ persistent lat long cl_id_saved
 
 error(nargchk(4,6,nargin))
 
-if ~ischar(from) || ~ischar(to) || ...
-        ~( strcmpi(from,'GSE') || strcmpi(from,'DSC') || strcmpi(from,'SR2') || ...
-        strcmpi(from,'DSI') || strcmpi(from,'ISR2') ) || ...
-        ~( strcmpi(to,'GSE') || strcmpi(to,'DSC') || strcmpi(to,'SR2') || ...
-        strcmpi(to,'DSI') || strcmpi(to,'ISR2') )
-    error('FROM/TO must be one of GSE,DSC,SR2,DSI,ISR2')
+allowed_coord_sys={'GSE','DSC','SR2','DSI','ISR2','GSM'};
+
+if ~any(strcmpi(from,allowed_coord_sys)) || ~any(strcmpi(to,allowed_coord_sys))
+    error('FROM/TO must be one of GSE,GSM,DSC,SR2,DSI,ISR2')
+end
+if strcmpi(from,to) % if both reference frames are the same
+    y=x;
+    return;
 end
 if strcmpi(from,'ISR2'), from = 'DSI'; end
 if strcmpi(from,'SR2'), from = 'DSC'; end
 if strcmpi(to,'ISR2'), to = 'DSI'; end
 if strcmpi(to,'SR2'), to = 'DSC'; end
-if strcmpi(from,to)
-    error('FROM and TO must be different')
+if strcmpi(to,'GSM'), 
+    xgse=c_coord_trans(from,'GSE',x,varargin{:});
+    y=irf_gse2gsm(xgse);
+    return
+end
+if strcmpi(from,'GSM'), 
+    xgse=irf_gse2gsm(x,-1);
+    y=c_coord_trans('GSE',to,xgse,varargin{:});
+    return
 end
 
 lx=size(x,2);
@@ -67,7 +76,6 @@ args = varargin;
 if size(args,2) > 1, have_options = 1; end
 
 while have_options
-    l = 1;
     if ~ischar(args{1}), error('expecting ''sax'',''cl_id'' or ''t'''),end
     
     switch(lower(args{1}))
@@ -100,10 +108,10 @@ while have_options
                     l = 2;
                 elseif ischar(args{2})
                     try
-                        t = iso2epoch(args{2});
+                        t = irf_time(args{2},'iso2epoch');
                         l = 2;
-                    catch
-                        error('T is not a valid ISO time string')
+                    catch ME
+                        error(['T is not a valid ISO time string. ' ME.identifier])
                     end
                 else error('SCL_IDAX value must be an ISDAT epoch or ISO time string')
                 end
@@ -123,16 +131,16 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
         error('Need both CL_ID and T if SAX is not given and wanting GSE')
     end
     
-    if 0, % isempty(sax) % try to read SAX? form matlab file, NOT USED currently
-        [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
-        if ok
-            irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
-            % XXX TODO: check that the SAX is from the right time
-            %[iso_t,dt] = caa_read_interval();
-        else
-            sax=[];
-        end
-    end
+%     if 0, % isempty(sax) % try to read SAX? form matlab file, NOT USED currently
+%         [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
+%         if ok
+%             irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
+%             % XXX TODO: check that the SAX is from the right time
+%             %[iso_t,dt] = caa_read_interval();
+%         else
+%             sax=[];
+%         end
+%     end
     
     if isempty(sax) % try to fetch/load spin axis latitude longitude
         flag_read_lat=1;
@@ -175,6 +183,8 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                     irf_log('dsrc','Success!');
                     flag_read_lat=0;
                 end
+            catch ME
+                irf_log('dsrc',['Could not read lat/long from isdat server. ' ME.identifier]);
             end
         end
         if flag_read_lat==1,
@@ -194,6 +204,8 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                 irf_log('dsrc',irf_ssub('Loaded SAX? from local disk or local ISDAT database',cl_id))
             end
             clear tempv
+        catch ME
+            irf_log('dsrc',['Could not read sax fgrom isdat database. ' ME.identifier]);
         end
     end
     
