@@ -1,5 +1,5 @@
 function [out]=irf_newxyz(inp,x,y,z)
-%IRF_NEWXYZ   Rotate vector into a new CS
+%IRF_NEWXYZ   Rotate vector into a new coordinate system
 %
 % [out]=irf_newxyz(inp,x,y,z)
 % inp,out - column vector if more than 3 columns assume that first is time and 2nd-4th is X Y Z
@@ -38,5 +38,5 @@ elseif size(out,2)>3,
   out(:,3)=inp(:,2:4)*y';
   out(:,4)=inp(:,2:4)*z';
 else
-  disp('irf_newxyz - conversion not possible');
+  irf_log('fcal','!!!!!! Coordinate transformation not possible !!!!!!!!!');
 end
