@@ -38,8 +38,7 @@ if nargin==0, % default time (with time can make smarter solution)
     end
 end
 if nargin==4, sc_list=spacecraft;
-elseif ~exist('sc_list','var'), sc_list=1:4;
-elseif isempty(sc_list), sc_list=1:4;
+else sc_list=1:4;
 end
 if nargin>=2, % t,coord_sys
     coord_label=upper(coord_sys);
@@ -151,6 +150,8 @@ switch lower(action)
         
     case 'compact'
         data=get(gcf,'userdata');
+        clf;menus;
+        set(gcf,'userdata',data);
         ss=get(0,'screensize');
         sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
         set(gcf,'Position',[10 ss(4)-80-700/sfactor 700/sfactor 700/sfactor]);
@@ -163,12 +164,39 @@ switch lower(action)
 	    h(21) = axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 	    h(22) = axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 	    h(23) = axes('Position',get(h(3),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
-        axis(h(4),'off');
+        axis(h(4),'off');hold(h(4),'on');
         data.h=h;
         data.flag_show_cluster_description=1; % show cluster description
         data.plot_type='compact';
         set(gcf,'userdata',data);
         c_pl_sc_conf_xyz(data.coord_label);
+    case 'lmn'
+        c_pl_sc_conf_xyz('compact');
+        data=get(gcf,'userdata');
+        delete(data.h(21)); % remove secondary axis
+        delete(data.h(22));
+        delete(data.h(23));
+        data.h(5:end)=[];
+        data.plot_type='lmn';
+        hca=data.h(4);
+        cla(hca);hold(hca,'on');
+        % L vector
+        callbackStr='c_pl_sc_conf_xyz(''plot'')';
+        uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05])
+        uicontrol('string','L','style','text','units','normalized','Position',[0.5 0.2 .05 .04])
+        if isfield(data,'Lstr'), Lstr=data.Lstr;else Lstr='[1 0 0]';end
+        data.L_hndl=uicontrol('Style','edit','Units','normalized', ...
+            'Position',[0.55 0.2 .3 .05],'String',Lstr,'Callback',callbackStr);
+        uicontrol('string','M','style','text','units','normalized','Position',[0.5 0.15 .05 .04])
+        if isfield(data,'Lstr'), Mstr=data.Mstr;else Mstr='[0 1 0]';end
+        data.M_hndl=uicontrol('Style','edit','Units','normalized', ...
+            'Position',[0.55 0.15 .3 .05],'String',Mstr,'Callback',callbackStr);
+        uicontrol('string','N','style','text','units','normalized','Position',[0.5 0.1 .05 .04])
+        if isfield(data,'Nstr'), Nstr=data.Nstr;else Nstr='0';end
+        data.N_hndl=uicontrol('Style','edit','Units','normalized', ...
+            'Position',[0.55 0.1 .3 .05],'String',Nstr,'Callback',callbackStr);
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz('plot');
         
     case 'supercompact'
         data=get(gcf,'userdata');
@@ -217,8 +245,13 @@ switch lower(action)
         c_eval('rr?=irf_resamp(data.r?,data.t);',data.sc_list);
         R=0; c_eval('R=R+rr?/length(data.sc_list);',data.sc_list);
         c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=data.t;dr?=irf_abs(dr?);x?=dr?;',data.sc_list);
+        x=[];
+        for ic=1:numel(data.sc_list),
+            eval(['x{ic}=x' num2str(data.sc_list(ic)) ';']);
+        end
         drref=0; c_eval('drref=max([drref dr?(5)]);',data.sc_list);
         if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
+        set(gcf,'userdata',data);
         %%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
         h=data.h;
         coord_label=data.coord_label;
@@ -343,6 +376,42 @@ switch lower(action)
                 ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
                 set(h(23),'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
                 
+            case 'lmn'
+                
+                hold(h(1),'off');
+                x=get_in_lmn(x);
+                for ic=1:numel(sc_list);
+                    plot(h(1),x{ic}(2),x{ic}(4),cluster_marker{sc_list(ic)});
+                    hold(h(1),'on');
+                end
+                xlabel(h(1),['L [km] ' coord_label]);
+                ylabel(h(1),['N [km] ' coord_label]);
+                set(h(1),'xdir','reverse');
+                grid(h(1),'on');
+                axis(h(1),[-drref drref -drref drref]);
+                              
+                cla(h(2));
+                for ic=1:numel(sc_list);
+                    plot(h(2),x{ic}(3),x{ic}(4),cluster_marker{sc_list(ic)});
+                    hold(h(2),'on');
+                end
+                xlabel(h(2),['M [km] ' coord_label]);
+                ylabel(h(2),['N [km] ' coord_label]);
+                grid(h(2),'on');
+                axis(h(2),[-drref drref -drref drref]);
+                
+                cla(h(3));
+                for ic=1:numel(sc_list);
+                    plot(h(3),x{ic}(2),x{ic}(3),cluster_marker{sc_list(ic)});
+                    hold(h(3),'on');
+                end
+                xlabel(h(3),['L [km] ' coord_label]);
+                ylabel(h(3),['M [km] ' coord_label]);
+                grid(h(3),'on');
+                axis(h(3),[-drref drref -drref drref]);
+                set(h(3),'xdir','reverse')
+                set(h(3),'ydir','reverse')
+                                
             case 'supercompact'
                 ax1=h(1);ax1_2=h(21);
                 hold(ax1,'off');
@@ -425,19 +494,27 @@ switch lower(action)
                 set(ax1_2,'xdir','reverse','ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
         end
         if data.flag_show_cluster_description==1,
-            plot(h(8),0,.3,'ks',.2,.3,'rd',.4,.3,'go',.6,.3,'bv','LineWidth',1.5);
-            text(0.03,.3,'C1','parent',h(8));
-            text(.23,.3,'C2','parent',h(8));
-            text(.43,.3,'C3','parent',h(8));
-            text(.63,.3,'C4','parent',h(8));
-            axis(h(8),'off');
-            ht=irf_legend(h(8),['c_pl_sc_conf_xyz() ' datestr(now)],[0,0],'fontsize',8);
+            if strcmpi(data.plot_type,'compact') || ...
+                    strcmpi(data.plot_type,'lmn')  % decide in which axes write labels
+                hca=h(4);
+            else
+                hca=h(8);
+            end
+            cla(hca);
+            axis(hca,[0 1 0 1]);
+            hold(hca,'on');
+            yy=1;
+            plot(hca,0,yy,'ks',.2,yy,'rd',.4,yy,'go',.6,yy,'bv','LineWidth',1.5);
+            text(0.03,yy,'C1','parent',hca);
+            text(.23,yy,'C2','parent',hca);
+            text(.43,yy,'C3','parent',hca);
+            text(.63,yy,'C4','parent',hca);
+            axis(hca,'off');
+            ht=irf_legend(hca,['c_pl_sc_conf_xyz() ' datestr(now)],[0,0],'fontsize',8);
             set(ht,'interpreter','none');
-            htime=irf_legend(h(8),['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.8]);
+            htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
             set(htime,'fontsize',12);
         end
-        data.h=h;
-        set(gcf,'userdata',data);
 
     case 'new_time'
         data=get(gcf,'userdata');
@@ -491,6 +568,7 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
     uimenu(hcoordfigmenu,'Label','compact','Callback','c_pl_sc_conf_xyz(''compact'')')
     uimenu(hcoordfigmenu,'Label','supercompact','Callback','c_pl_sc_conf_xyz(''supercompact'')')
     uimenu(hcoordfigmenu,'Label','supercompact2','Callback','c_pl_sc_conf_xyz(''supercompact2'')')
+    uimenu(hcoordfigmenu,'Label','LMN','Callback','c_pl_sc_conf_xyz(''lmn'')')
     uimenu(hcoordfigmenu,'Label','New sc_list','Callback','c_pl_sc_conf_xyz(''new_sc_list'')')
     user_data = get(gcf,'userdata');
     user_data.coordfigmenu=1;
@@ -534,4 +612,30 @@ x=sin(theta);y=cos(theta);
 patch(-x,y,'k','edgecolor','none','parent',h)
 patch(x,y,'w','edgecolor','k','parent',h)
 
-
+function y=get_in_lmn(x)
+% get x in LMN reference frame
+data=get(gcf,'userdata');
+y=x; % intialize
+Lstr=get(data.L_hndl, 'string');
+Mstr=get(data.M_hndl, 'string');
+Nstr=get(data.N_hndl, 'string');
+L=eval(Lstr);
+M=eval(Mstr);
+N=eval(Nstr);
+if numel(L)~=3, L=0; end
+if numel(M)~=3, M=0; end
+if numel(N)~=3, N=0; end
+if numel(L)+numel(M)+numel(N) <= 5 % not enough information
+    irf_log('fcal','LMN not correctly defined');
+    return
+end
+data.Lstr=Lstr;
+data.Mstr=Mstr;
+data.Nstr=Nstr;
+for ic=1:numel(data.sc_list),
+    y{ic}=irf_newxyz(x{ic},L,M,N);
+end
+if L==0, data.Lstr=['[' num2str(irf_norm(cross(M,N)),'%6.2f') ']']; set(data.L_hndl,'string',data.Lstr);end
+if M==0, data.Mstr=['[' num2str(irf_norm(cross(N,L)),'%6.2f') ']']; set(data.M_hndl,'string',data.Mstr);end
+if N==0, data.Nstr=['[' num2str(irf_norm(cross(L,M)),'%6.2f') ']']; set(data.N_hndl,'string',data.Nstr);end
+set(gcf,'userdata',data);
