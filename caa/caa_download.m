@@ -28,6 +28,8 @@ function caa_download(tint,dataset,flags)
 % EFW
 %   caa_download(tint,'C?_CP_EFW_L2_E3D_INERT'); % full resolution
 %   caa_download(tint,'C?_CP_EFW_L3_E3D_INERT'); % 4s resolution
+%   caa_download(tint,'C?_CP_EFW_L2_E'); % full resolution
+%   caa_download(tint,'C?_CP_EFW_L3_E'); % 4s resolution
 %   caa_download(tint,'C?_CP_EFW_L2_P'); % full resolution
 %   caa_download(tint,'C?_CP_EFW_L3_P'); % 4s resolution
 % STAFF
