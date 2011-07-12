@@ -68,7 +68,7 @@ elseif any(strfind(variable_name,'3DXPH')),
     variable=fillval_to_nan(variable); % FILLVALs put to NaN
     dataraw=ftheta(variable.data,pitchangle,theta);
     dataraw=permute(dataraw,[1 3 2 4]); % permute in order [time, azimuth, pitch, energy]
-elseif strfind(variable_name,'RAP_L3DD'), % RAPID variable
+elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]), % RAPID variable
     %% RAPID does not have pitch angle matrix data, therefore rebinning
     % necessary
     [variable,dataobject,rapid,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
