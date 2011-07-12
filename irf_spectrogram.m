@@ -180,11 +180,11 @@ for comp=1:min(length(h),ncomp)
     ppnew(:,jj*2)=NaN;
     pp=ppnew;
     if ~isempty(specrec.dt) % if time steps are not given
-        if isstruct(specrec.dt) % df.plus and df.minus should be specified
-            dtplus=torow(double(specrec.dt.plus(:))); % if df vector make it row vector
-            dtminus=torow(double(specrec.dt.minus(:))); % if df vector make it row vector
+        if isstruct(specrec.dt) % dt.plus and dt.minus should be specified
+            dtplus=torow(double(specrec.dt.plus(:))); % if dt vector make it row vector
+            dtminus=torow(double(specrec.dt.minus(:))); % if dt vector make it row vector
         else
-            dtplus=torow(double(specrec.dt(:))); % if df vector make it row vector
+            dtplus=torow(double(specrec.dt(:))); % if dt vector make it row vector
             dtminus=dtplus;
         end
         ttnew=[tt; tt];
