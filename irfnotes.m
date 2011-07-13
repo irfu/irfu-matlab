@@ -106,26 +106,17 @@ if 0, % read EFW data
 end
 %% Cluster data CAA reading and different panel plotting
 % example file for creating a figure (run on brain)
-cur_dir=pwd;
 irf_units;
 cd('/share/Cluster/Test/CAA');
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])];
 ic=1;
-CISinstrument='HIA';
-%CISinstrument='CODIF';
+CISinstrument='HIA';% alternative 'CODIF'
 if 1, % initialize figure
     fn=figure(61);
     h=irf_plot(8);
-    i_subplot=1; % in which subplot is active
-    set(fn,'defaultLineLineWidth',1);
+    %set(fn,'defaultLineLineWidth',1);
 end
 if 1, % plot figures panels
-    if 0, % read FGM data from all sc
-        c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');');
-        % c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');');
-        c_eval('B?=irf_abs(B?);');
-        c_eval('gsmB?=irf_gse2gsm(B?);');
-    end
     if 1,   % PANEL: C?       FGM B GSM
         hca=irf_panel('C? FGM B GSM');
         c_eval('irf_plot(hca,gsmB?);',ic);
@@ -280,14 +271,14 @@ if 1, % plot figures panels
         irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
     end
     if 1,   % PANEL: STAFF spectrogram Bx
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+        hca=irf_panel('staff_b');
         dobjname=irf_ssub('C?_CP_STA_PSD',ic);
         caa_load(dobjname);
         varname=irf_ssub('BB_xxyyzz_isr2__C?_CP_STA_PSD',ic);
         varunits=eval(['getunits(' dobjname ',''' varname ''')']);
         varunits='nT^2/Hz';
         disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        eval(['plot(hca,' dobjname ',''' varname ''',''ax'',hca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',1);']);
+        eval(['plot(hca,' dobjname ',''' varname ''',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',1);']);
         hold(hca,'on');
         c_eval('fce=irf_plasma_calc(B?,0,0,0,0,''Fce'');',ic);
         c_eval('flh=irf_plasma_calc(B?,1,0,0,0,''Flh'');',ic);
@@ -296,7 +287,7 @@ if 1, % plot figures panels
         irf_plot(hca,[fce(:,1) fce(:,2)*.25],'-','linewidth',0.2,'color','w');
         irf_plot(hca,flh,'-','linewidth',0.2,'color','k');
         caxis(hca,[-10 -7]);
-        irf_colormap;
+        irf_colormap(hca,'default');
         set(hca,'yscale','lin','ylim',[0 499]);
     end
     if 1,   % PANEL: STAFF spectrogram Ex
@@ -426,31 +417,31 @@ if 1, % plot figures panels
         set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
     end
     if 1,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+        hca=irf_panel('C1 PEACE energy spectra');
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
         varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         varunits=eval(['getunits(' dobjname ',''' varname ''')']);
         %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
         disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        eval(['plot(hca,' dobjname ',''' varname ''',''sum_dim1'',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
+        eval(['plot(hca,' dobjname ',''' varname ''',''sum_dim1'',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
         caxis(hca,[5.8 7.6]);
-        irf_colormap;
+        irf_colormap(hca,'default');
         set(hca,'yscale','log');
         set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
         ylabel(hca,'E [eV]');
     end
     if 0,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram angles
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+        hca=irf_panel('C1 PEACE pitch spectra');
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
         varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         varunits=eval(['getunits(' dobjname ',''' varname ''')']);
         %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
         disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        eval(['plot(hca,' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',15);']);
+        eval(['plot(hca,' dobjname ',''' varname ''',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',15);']);
         caxis(hca,[5.8 7.6]);
-        irf_colormap;
+        irf_colormap(hca,'default');
         set(hca,'yscale','lin');
         set(hca,'ytick',[0 45 90 135 180]);
         ylabel(hca,'\Theta [deg]');
@@ -682,9 +673,12 @@ if 1, % plot figures panels
     irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
     irf_timeaxis(h);
 end
-cd(cur_dir)
-%print -depsc2 -painters fig/vaivads2011a_fig2.eps
-%c_eval('print -dpng -painters fig/vaivads2011a_Figure_2z_C?.png',ic);
+if 0, % different print options 
+    set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+    print -dpng delme.png
+    %print -depsc2 -painters delme.eps
+    %c_eval('print -dpng -painters delme_C?.png',ic);
+end
 %% Another example plot, simple CAA plot
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0]) ];
 h=irf_plot(4);
@@ -751,6 +745,3 @@ open('Example_1.m');
 % 3. E Ex,Ey
 % 4. RAPID pitch angle
 % 5. Bx waves
-
-
-%% Figure s/c configuration 
