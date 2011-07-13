@@ -34,8 +34,8 @@ elseif nargin==2,
     sc_list_2=1:4;
 end
 
-if findstr(ev_str,'?'),
-	if findstr(ev_str,'!'),
+if strfind(ev_str,'?'),
+	if strfind(ev_str,'!'),
 		for num1=sc_list_1,
 			for num2=sc_list_2,
 				evalin('caller', irf_ssub(ev_str, num1,num2)),
