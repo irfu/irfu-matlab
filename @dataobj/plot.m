@@ -34,7 +34,6 @@ end
 dobj=args{1};
 var_s=args{2};
 args=args(3:end);
-nargs=nargs-2;
 
 LCOMP = 3;
 
@@ -420,14 +419,14 @@ elseif flag_spectrogram
     %end
     if flag_labels_is_on,
       if ncomp<=LCOMP % Small number of components
-        ylabel(sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
+        ylabel(h(i),sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
         if ~isempty(lab_2), lab_2s = [text_s ' > ' lab_2(i,:)];
         else lab_2s = text_s;
         end
         add_text(h(i),lab_2s);
       else % Large number of components
-        if i==1, title(text_s), end
-        if i==fix(ncomp/2)+1, ylabel(sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
+        if i==1, title(h(i),text_s), end
+        if i==fix(ncomp/2)+1, ylabel(h(i),sprintf('%s [%s]', dep_x{ydim}.lab, dep_x{ydim}.units))
         else ylabel('')
         end
         add_text(h(i),lab_2(i,:));
