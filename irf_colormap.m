@@ -1,13 +1,32 @@
-function cmap1=irf_colormap(colormap_name)
+function cmap1=irf_colormap(varargin)
 % IRF_COLORMAP return colormap by name or apply and freeze the colormap
-% 
+%
+% IRF_COLORMAP(colormap_name)
 %  Colormap_names:
-%       standard - in space physics (default)
-%       cmap     - same as standard
-%       pynting  - white in center and blue/green for negative and red/black for positive values
+%       'standard'  - (default), same as 'space','cmap' (commonly used showing space data)
+%       'poynting'  - white in center and blue/green for negative and red/black for positive values
+%
+% IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
+%
+
+[ax,args,nargs] = axescheck(varargin{:});
+
+if nargs == 0, % show only help
+    help irf_colormap;
+    return
+end
+
+% put focus on axis
+if isempty(ax),
+    axes(gca);
+else
+    axes(ax);
+end
+
+colormap_name=args{1};
 
 load caa/cmap.mat % default map
-if nargin == 1, 
+if nargs > 0,
     switch lower(colormap_name)
         case 'poynting'
             it=0:.02:1;it=it(:);
@@ -27,7 +46,7 @@ if nargout == 0, % apply the colormap and freeze
         new_hy=get(new_hcb,'ylabel');
         set(new_hy,'string',ylabel_string,'fontsize',ylabel_fontsize);
     end
-%    cbfreeze;
+    %    cbfreeze;
 elseif nargout == 1, % only return colormap
     cmap1=cmap;
 end
