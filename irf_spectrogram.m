@@ -28,6 +28,8 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 
 
 error(nargchk(1,6,nargin))
+f_multiplier=1; % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
+
 
 if nargin==1,
     specrec = h; h = [];
@@ -138,6 +140,7 @@ for comp=1:min(length(h),ncomp)
     if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
         if max(specrec.f) > 2000, % check whether to use kHz
             specrec.f=specrec.f*double(1e-3);
+            f_multiplier=1e-3;
             specrec.f_unit='kHz';
         else
             specrec.f_unit='Hz';
@@ -168,6 +171,8 @@ for comp=1:min(length(h),ncomp)
             dfplus=torow(double(specrec.df(:))); % if df vector make it row vector
             dfminus=dfplus;
         end
+        dfplus=dfplus*f_multiplier;
+        dfminus=dfminus*f_multiplier;
         fnew=[ff ff];
         jj=1:size(ff,2);
         fnew(:,jj*2-1)=ff-dfminus;
