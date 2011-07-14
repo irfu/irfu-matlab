@@ -35,24 +35,29 @@ set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 print -dpng delme.png
 %print -depsc2 delme.eps
 %% Add information to figures              
+%
 % text and legends
 help irf_legend
 ht=irf_legend(gca,[mfilename '  ' datestr(now)],[0.02 1.01], 'interpreter','none','fontsize',8);
+%
 % labels a),b)...
 help irf_pl_number_subplots
+%
 % if you want some alternative colorbars, like white in middle, blue negative and red positive
 % or if you want to use different colorbars within the same figure 
 help irf_colormap
+%
 %% Second axis                             
+%
 hl1 = line(x1,y1,'Color','r');
 ax1 = gca;
-set(ax1,'XColor','r','YColor','r')
-
-ax2 = axes('Position',get(ax1,'Position'),...
-    'XAxisLocation','top',...
-    'YAxisLocation','right',...
-    'Color','none',...
-    'XColor','k','YColor','k');
+%
+ax2 = axes('Position',get(ax1,'Position'));
+set(ax2,'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required 
+set(ax2,    'YAxisLocation','right');
+set(ax2,'Color','none'); % color of axis
+set(ax2,'XColor','r','YColor','r'); % color of axis lines and numbers
+%
 %% Reading files                           
 % formatted file reading
 %File contents are time intervals in format "T1 T2 Comments":
@@ -74,10 +79,11 @@ for j=1:size(tint,1),
     c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
 end
 clear j;
-%% Cluster data reading from CAA, data coordinate transformations
+%% Cluster data reading from CAA + basic data coordinate transformations
+%
 % To download from CAA
 help caa_download
-
+%
 % To read downloaded CAA data
 tint=[irf_time([2006 9 27 17 14 0]) irf_time([2006 9 27 17 26 0])];
 if 0, % read s/c position and velocity
@@ -104,6 +110,8 @@ if 0, % read EFW data
     c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
     c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
 end
+%
+%
 %% Cluster data CAA reading and different panel plotting
 % example file for creating a figure (run on brain)
 irf_units;
@@ -238,7 +246,7 @@ if 1, % plot figures panels
             irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
         end
     end
-    irf_colormap % execute, if necessary with parameter, every time you want to change colormap
+    irf_colormap(hca,'default'); % execut for every axis you want to fix colormap
     if 1,   % PANEL: CIS HIA/CODIF spectrogram
         hca=h(i_subplot);i_subplot=i_subplot+1;
         if ic~=2,
@@ -737,11 +745,3 @@ end
 % see overview of examples under https://sites.google.com/site/andrisvaivads/Andris_Vaivads/cluster/irfu-matlab-examples
 open('Example_1.m'); 
 
-
-%%  Figure  3
-% top - spatial scale
-% 1. 4 sc B
-% 2. density, CIS + EFW
-% 3. E Ex,Ey
-% 4. RAPID pitch angle
-% 5. Bx waves
