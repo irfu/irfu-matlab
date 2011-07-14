@@ -34,6 +34,7 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_EFW_L3_P'); % 4s resolution
 % STAFF
 %   caa_download(tint,'C?_CP_STA_PSD');
+%   caa_download(tint,'*STA_SM*');           % STAFF spectral matrix
 % WHISPER
 %   caa_download(tint,'C?_CP_WHI_NATURAL');
 % CIS
@@ -42,8 +43,8 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_CIS_HIA_HS_1D_PEF');
 %   caa_download(tint,'C?_CP_CIS_CODIF_H1_1D_PEF');
 % PEACE
-%   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DPFlux');
-%   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DEFlux');
+%   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DPFlux'); % DPFlux/DEFLux/PSD
+%   caa_download(tint,'C?_CP_PEA_3DR?_PSD');
 % RAPID
 %   caa_download(tint,'C?_CP_RAP_ESPCT6'); % electron omni-directional
 %   caa_download(tint,'C?_CP_RAP_L3DD');   % electron, 3D distribution (standard)
