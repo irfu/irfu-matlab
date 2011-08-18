@@ -137,7 +137,7 @@ for comp=1:min(length(h),ncomp)
         %		specrec.t = [specrec.t-dt; specrec.t+dt];
         %		specrec.p(comp) = {[specrec.p{comp}; specrec.p{comp}]};
     end
-    if ~isfield(specrec,'f_unit'), % if not specified assume units are Hz
+    if ~isfield(specrec,'f_unit') && ~isfield(specrec,'f_label'), % if not specified assume units are Hz
         if max(specrec.f) > 2000, % check whether to use kHz
             specrec.f=specrec.f*double(1e-3);
             f_multiplier=1e-3;
