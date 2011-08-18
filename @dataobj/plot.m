@@ -444,10 +444,12 @@ elseif flag_spectrogram
     if ~flag_colorbar_label_is_manually_specified
       colorbar_label=['Log ' lablaxis ' [' units ']' ];
     end
+    set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
     ylabel(hcb,colorbar_label);
     if flag_colorbar_label_fit_to_colorbar_height_is_on
       irf_colorbar_fit_label_height(hcb);
     end
+    set(hcb,'yticklabelmode','auto');
   else
     ylabel(hcb,'');
   end
