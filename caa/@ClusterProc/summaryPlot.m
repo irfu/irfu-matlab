@@ -299,7 +299,7 @@ for k=1:n_plots
 	axes(h(k))
 	irf_plot(data{k},'comp')
 	axis tight
-	irf_zoom([t_st t_end],'x',h(k))
+	irf_zoom(h(k),'x',[t_st t_end])
 	YL = get(gca,'YLim'); DYL = (YL(2) -YL(1))*0.05;
 	set(gca,'YLim',YL +[-DYL DYL])
 	clear YL DYL
