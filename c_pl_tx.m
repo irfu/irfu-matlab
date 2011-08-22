@@ -85,7 +85,7 @@ if ~isempty(args)
 end
 
 delta_t = [];
-l_style = {};
+line_style = {};
 
 if ~isempty(args), have_args = 1;
 else have_args = 0;
@@ -98,16 +98,20 @@ while have_args
             sc_list=args{1};
         else
             % assume that argument defines Linestyle
-            if isempty(l_style), c_eval('l_style(?)={args{1}};')
+            if isempty(line_style), c_eval('line_style(?)={args{1}};')
             else irf_log('fcal','L_STYLE is already set')
             end
         end
         args = args(2:end);
     elseif iscell(args{1}) && length(args{1})==4
         % Individual linestyles for each sc
-        if isempty(l_style), l_style = args{1};
+        if isempty(line_style), line_style = args{1};
         else irf_log('fcal','L_STYLE is already set')
         end
+        args = args(2:end);
+    elseif iscell(args{1})
+        % Individual linestyles for each sc
+        irf_log('fcal','L_STYLE must be a cell with 4 elements')
         args = args(2:end);
     elseif isnumeric(args{1}) && length(args{1})==4
         % Dt
@@ -126,7 +130,7 @@ while have_args
 end
 if flag_get_variables_from_caller==1,
     for cl_id=sc_list,
-        ttt = evalin('caller',irf_ssub(varable_name_to_get_from_caller,cl_id),'[]');
+        ttt = evalin('caller',irf_ssub(varable_name_to_get_from_caller,cl_id),'[]'); %#ok<NASGU>
         c_eval('x? =ttt;',cl_id); clear ttt
     end
 end
@@ -150,30 +154,20 @@ elseif isempty(column)
     return
 end
 
-
-if isempty(delta_t), delta_t = [0 0 0 0]; end
-
 % define Cluster colors
 cluster_colors={'[0 0 0]';'[1 0 0]';'[0 0.5 0]';'[0 0 1]'};
-if isempty(l_style),
-    l_style=cell(1,4);
+l_style=cell(1,4);
+if isempty(line_style),
     for ic=1:4, l_style(ic)={['''color'','  cluster_colors{ic}]};end
 else
-    for ic=1:4, l_style(ic)={['''' l_style{ic} ''',''color'','  cluster_colors{ic}]};end
+    for ic=1:4, l_style(ic)={['''' line_style{ic} ''',''color'','  cluster_colors{ic}]};end
 end
-
-% if isempty(l_style), l_style= {'k','r','g','b'};
-% else
-%     cls = 'krgb';
-%     c_eval('l_style(?)={[cls(?) l_style{?}]};')
-%     clear cls
-% end
 
 % t_start_epoch is saved in figures user_data variable
 % check first if it exist otherwise assume zero
 ud=get(hcf,'userdata');
 if isfield(ud,'t_start_epoch'),
-    t_start_epoch = double(ud.t_start_epoch);
+    t_start_epoch = double(ud.t_start_epoch); %#ok<NASGU>
 elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
         (~isempty(x3) && x3(1,1)>1e8) || (~isempty(x4) && x4(1,1)>1e8)
     % Set start_epoch if time is in isdat epoch,
@@ -185,45 +179,29 @@ elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
     irf_log('proc',['user_data.t_start_epoch is set to ' ...
         epoch2iso(t_start_epoch)]);
 else
-    t_start_epoch = double(0);
+    t_start_epoch = double(0); %#ok<NASGU>
 end
-
+if isempty(delta_t), delta_t = [0 0 0 0]; end %#ok<NASGU>
 c_eval('ts?=t_start_epoch+delta_t(?);')
+
 % check which data are available
 sc_list=[];for ic=1:4,c_eval('if ~isempty(x?), sc_list=[sc_list ?];end',ic);end
 
+if length(column) > 1, clf, ax = irf_plot(length(column)); end
 
-if length(column) == 1
-    for ic=1:numel(sc_list)
-        c_eval(['h=irf_plot(ax, [x?(:,1)-delta_t(?) x?(:,column)],' l_style{sc_list(ic)} ');'],sc_list(ic));
-        hold(ax,'on');
+for j=1:length(column)
+    for jj=sc_list
+        c_eval(['if ~isempty(x?),'...
+            'irf_plot(ax(j), [x?(:,1)-delta_t(?) x?(:,j+1)],' l_style{jj} ');'...
+            'hold(ax(j),''on''); end, '],jj);
     end
-    hold(ax,'off');
-    irf_zoom(ax,'y'); % optimize Y zoom to skip labels at top and bottom
-    grid(ax,'on');
-    irf_timeaxis(ax);
-    irf_figmenu;
-else
-    clf
-    c = irf_plot(length(column));
-    for j=1:length(column)
-        %		c(j)=irf_subplot(length(column),1,-j);
-        pl = '';
-        for jj=sc_list
-            if eval(irf_ssub('~isempty(x?)',jj))
-                c_eval(['s_s=''(x?(:,1)-ts?),x?(:,column(j)),''''' l_style{jj} ''''''';'],jj);
-                if isempty(pl), pl = s_s; else pl = [pl ',' s_s]; end
-                clear s_s
-            end
-        end
-        eval(['plot(c(j),' pl ')'])
-        irf_zoom(ax,'y'); % optimize Y zoom to skip labels at top and bottom
-        grid(c(j),'on');
-        
-        ud = get(hcf,'userdata'); ud.subplot_handles = c; set(hcf,'userdata',ud);
-    end
-    irf_timeaxis(c);
-    irf_figmenu;
+    hold(ax(j),'off');
+    irf_zoom(ax(j),'y'); % optimize Y zoom to skip labels at top and bottom
+    grid(ax(j),'on');
 end
+ud = get(hcf,'userdata'); ud.subplot_handles = ax; set(hcf,'userdata',ud);
+irf_timeaxis(ax);
+irf_figmenu;
 
-if nargout > 0, out = c; end
+
+if nargout > 0, out = ax; end
