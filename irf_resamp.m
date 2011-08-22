@@ -102,11 +102,22 @@ end
 
 % return in case inputs are empty
 if numel(x)==0 || numel(y)==0
-    out=[];return;
+    out=[];
+    irf_log('fcal','some of input is empty, returning empty ouput');
+    return;
 end
 
 % construct output time axis
-if size(y,2)==1, t = y(:); % y is only time
+if isstruct(y),
+    if isfield(y,'t'),
+        t=y.t;
+        t=t(:);
+    else
+        irf_log('fcal','input is structure without time field, returning empty output');
+        out=[];
+        return;
+    end
+elseif size(y,2)==1, t = y(:); % y is only time
 else t = y(:,1); t = t(:);   % first column of y is time
 end
 ndata = length(t);
@@ -211,5 +222,5 @@ elseif strcmp(flag_do,'interpolation'),
   % If time series agree, no interpolation is necessary.
   if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end
 
-  out = [y(:,1) interp1(x(:,1),x(:,2:end),y(:,1),method,'extrap')];
+  out = [t interp1(x(:,1),x(:,2:end),t,method,'extrap')];
 end
