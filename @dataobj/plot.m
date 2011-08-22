@@ -308,7 +308,9 @@ if flag_lineplot
   text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
     dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
-  add_text(h,text_s);
+  if flag_labels_is_on, 
+      add_text(h,text_s);
+  end
   
 elseif flag_spectrogram
   %% PLOT -- SPECTRPGRAM
