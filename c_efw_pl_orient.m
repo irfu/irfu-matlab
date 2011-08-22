@@ -22,7 +22,7 @@ eval_figuserdata='figuserdata={h};';
 persistent t a b phase v ic phaseHndl timeHndl figNumber ...
             vec1Hndl vec2Hndl vec1flag vec2flag ...
             flag_v1 flag_v2 v1 v2;
-if       (nargin==1 & isstr(spacecraft)), action=spacecraft;irf_log('proc',['action=' action]);
+if       (nargin==1 && ischar(spacecraft)), action=spacecraft;irf_log('proc',['action=' action]);
 elseif   (nargin < 6)                   , action='initialize';
 end
 
@@ -39,7 +39,7 @@ if strcmp(action,'initialize'),
     else   irf_log('load','Could not read B field, using B=[0 0 1] nT in DS ref frame');magnetic_field=[1 0 0 1]; % first col is time
     end
   end
-  if nargin<3, eval(irf_ssub('load mA.mat A?;phase_time_series=A?;clear A?',ic));          end
+  if nargin<3, eval(irf_ssub('load mA.mat Atwo?;phase_time_series=Atwo?;clear Atwo?',ic));          end
   if nargin<2, time=phase_time_series(1,1);                                                end
   t=time;a=phase_time_series;b=magnetic_field;
   if flag_v == 1, v=velocity; end
@@ -120,9 +120,9 @@ if strcmp(action,'initialize'),
   
 elseif strcmp(action,'time'),
   t=iso2epoch(get(timeHndl, 'string'));
-  phase=irf_resamp([a(:,1) unwrap(a(:,2)/180*pi)],t);
-  phase(1)=[];phase=mod(phase*180/pi,360); % take away time column
-  set(phaseHndl,'string',num2str(phase));
+  phase = c_phase(t,a);
+  phase = phase(2);
+  set(phaseHndl,'string',num2str(phase,'%.1f'));
   c_efw_pl_orient('plot');
 
 elseif strcmp(action,'phase'),
