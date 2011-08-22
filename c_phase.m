@@ -13,10 +13,10 @@ function phase_out = c_phase(t,phase_2)
 
 error(nargchk(2,2,nargin))
 
-if size(t,1)>1 && size(t,2)>1, error('t must be a vector'), end
+if ~iscolumn(t), error('t must be a vector'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
 
-MAX_SPIN_PERIOD = 4.3;
+MAX_SPIN_PERIOD = 4.3; % Sane value for Cluster
 
 t=t(:); % t should be column vector
 phase_out = [];
