@@ -11,6 +11,7 @@ edit irfnotes; return
 %% Initialize figure                       
 % fast way
 h=irf_plot(5); % h= irf_plot(number_of_subplots);
+
 % more detailed way
 % most lines needed to define the size to have best agreement with eps file
 set(0,'defaultLineLineWidth', 1.5);
@@ -71,15 +72,7 @@ for j=1:size(t1,1),
     tint(j,1)=iso2epoch(t1{j});tint(j,2)=iso2epoch(t2{j});
 end
 clear t1 t2 j;
-%% Cluster data reading from local Uppsala disks
-% using c_get_batch
-c_get_batch(irf_time([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
-% if time intervals to download are in matrix tint
-for j=1:size(tint,1),
-    c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
-end
-clear j;
-%% Cluster data reading from CAA + basic data coordinate transformations
+%% Cluster data reading from CAA + basic data usage, coordinate transformations
 %
 % To download from CAA
 help caa_download
@@ -109,6 +102,109 @@ end
 if 0, % read EFW data
     c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
     c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
+end
+if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux products above given energy threshold
+    for ic=1:4,
+        energy_threshold=60; %
+        c_eval('caa_load C?_CP_PEA_PITCH_SPIN_DPFlux',ic); % to speed up later
+        varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
+        [var,dobj,varmat,varunits]=c_caa_var_get(varname);
+        phi=c_caa_var_get(var.DEPEND_1);
+        x=getfield(c_caa_var_get(phi.DELTA_PLUS),'data');phi_dplus=x(1,:);
+        x=getfield(c_caa_var_get(phi.DELTA_MINUS),'data');phi_dminus=x(1,:);
+        en=c_caa_var_get(var.DEPEND_2);
+        x=getfield(c_caa_var_get(en.DELTA_PLUS),'data');en_dplus=x(1,:);
+        x=getfield(c_caa_var_get(en.DELTA_MINUS),'data');en_dminus=x(1,:);
+        PEACE_energy_channels=en.data(1,:)+0.5*(en_dplus-en_dminus);
+        PEACE_phi_min=phi.data(1,:)-phi_dminus;
+        PEACE_phi_max=phi.data(1,:)+phi_dplus;
+        ii_energy=find(PEACE_energy_channels>energy_threshold); % use only these energy chanels
+        ncoef=ones(length(phi_dplus),length(ii_energy));
+        phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(ii_energy));
+        en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy))./sqrt(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
+        ncoef=ncoef*0.2284e-7*sqrt(1/1836)*2*pi.*phi_factor.*en_factor;
+        
+        nPEACE=[varmat.t(:) varmat.t(:)*0];
+        varmat.data(isnan(varmat.data))=0;
+        for jj=1:size(nPEACE,1),
+            nPEACE(jj,2)=sum(sum(shiftdim(varmat.data(jj,:,ii_energy)).*ncoef));
+        end
+        c_eval('nPEACE?=nPEACE;',ic);
+    end
+end
+if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux products using s/c potential correction from EFW
+    for ic=1:4,
+        c_eval('caa_load C?_CP_PEA_PITCH_SPIN_DPFlux',ic); % to speed up later
+        varname=irf_ssub('Spacecraft_potential__C?_CP_EFW_L3_P',ic);
+        [~,~,scpotmat]=c_caa_var_get(varname);
+        scpotmat(isnan(scpotmat(:,2)),:)=[]; % remove NaN densities
+        varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
+        [var,~,varmat]=c_caa_var_get(varname);
+        scpot=irf_resamp(scpotmat,varmat); % interpolate sc potential to PEACE data points
+        phi=c_caa_var_get(var.DEPEND_1);
+        x=getfield(c_caa_var_get(phi.DELTA_PLUS),'data');phi_dplus=x(1,:);
+        x=getfield(c_caa_var_get(phi.DELTA_MINUS),'data');phi_dminus=x(1,:);
+        en=c_caa_var_get(var.DEPEND_2);
+        x=getfield(c_caa_var_get(en.DELTA_PLUS),'data');en_dplus=x(1,:);
+        x=getfield(c_caa_var_get(en.DELTA_MINUS),'data');en_dminus=x(1,:);
+        PEACE_energy_channels=en.data(1,:)+0.5*(en_dplus-en_dminus);
+        PEACE_phi_min=phi.data(1,:)-phi_dminus;
+        PEACE_phi_max=phi.data(1,:)+phi_dplus;
+        phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(PEACE_energy_channels));
+        
+        nPEACE=[varmat.t(:) varmat.t(:)*0];
+        varmat.data(isnan(varmat.data))=0;
+        for jj=1:size(nPEACE,1),
+            satpot=-scpot(ii,2)*1.3; % assumes that probe t spacecraft potential is ~75% of spacecraft potential
+            ii_energy=find(PEACE_energy_channels>satpot); % use only these energy chanels
+            [en_min,ii_energy_min]=min(PEACE_energy_channels(ii_energy));
+            ii_energy(ii_energy==ii_energy_min)=[]; % remove first channel after satellite potential
+            [en_min,ii_energy_min]=min(PEACE_energy_channels(ii_energy));
+            ii_energy(ii_energy==ii_energy_min)=[]; % remove second channel after satellite potential
+            ii_energy=find(PEACE_energy_channels>60); % use only these energy chanels
+            
+            en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy)).*sqrt(1e-3*(PEACE_energy_channels(ii_energy)-satpot))./(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
+            ncoef=ones(length(phi_dplus),length(ii_energy));
+            ncoef=ncoef*0.2284e-7*sqrt(1/1836)*2*pi.*phi_factor(:,ii_energy).*en_factor;
+            nPEACE(jj,2)=sum(sum(shiftdim(varmat.data(jj,:,ii_energy)).*ncoef));
+        end
+        c_eval('nPEACE?=nPEACE;',ic);
+    end
+end
+if 0, % PEACE calculate pressure P_PEACE1..P_PEACE4 [nPa] from PITCH_SPIN_DPFlux products
+    for ic=1:4,
+        energy_threshold=60; % only energy channels above this are used (to avoid photoelectrons)
+        c_eval('caa_load C?_CP_PEA_PITCH_SPIN_DPFlux',ic); % to speed up later
+        varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
+        [var,dobj,varmat,varunits]=c_caa_var_get(varname);
+        phi=c_caa_var_get(var.DEPEND_1);
+        x=getfield(c_caa_var_get(phi.DELTA_PLUS),'data');phi_dplus=x(1,:);
+        x=getfield(c_caa_var_get(phi.DELTA_MINUS),'data');phi_dminus=x(1,:);
+        en=c_caa_var_get(var.DEPEND_2);
+        x=getfield(c_caa_var_get(en.DELTA_PLUS),'data');en_dplus=x(1,:);
+        x=getfield(c_caa_var_get(en.DELTA_MINUS),'data');en_dminus=x(1,:);
+        PEACE_energy_channels=en.data(1,:)+0.5*(en_dplus-en_dminus);
+        PEACE_phi_min=phi.data(1,:)-phi_dminus;
+        PEACE_phi_max=phi.data(1,:)+phi_dplus;
+        ii_energy=find(PEACE_energy_channels>energy_threshold); % use only these energy chanels
+        Pcoef=ones(length(phi_dplus),length(ii_energy));
+        phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(ii_energy));
+        en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy)).*sqrt(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
+        Pcoef=Pcoef*2/3*0.731026e-8*sqrt(1/1836)*2*pi.*phi_factor.*en_factor;
+        
+        P_PEACE=[varmat.t(:) varmat.t(:)*0];
+        varmat.data(isnan(varmat.data))=0;
+        for jj=1:size(P_PEACE,1),
+            P_PEACE(jj,2)=sum(sum(shiftdim(varmat.data(jj,:,ii_energy)).*Pcoef));
+        end
+        c_eval('P_PEACE?=P_PEACE;',ic);
+    end
+
+end
+if 0, % PEACE calculate temperature T_PEACE1..T_PEACE4 [keV] from from nPEACE1..4 and P_PEACE1..4
+    for ic=1:4,
+        c_eval('T_PEACE?=irf_multiply(4.1609,P_PEACE?,1,nPEACE?,-1);',ic);
+    end
 end
 %
 %
@@ -246,7 +342,7 @@ if 1, % plot figures panels
             irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
         end
     end
-    irf_colormap(hca,'default'); % execut for every axis you want to fix colormap
+    irf_colormap(hca,'default'); % execute for every axis you want to fix colormap
     if 1,   % PANEL: CIS HIA/CODIF spectrogram
         hca=h(i_subplot);i_subplot=i_subplot+1;
         if ic~=2,
@@ -453,6 +549,56 @@ if 1, % plot figures panels
         set(hca,'yscale','lin');
         set(hca,'ytick',[0 45 90 135 180]);
         ylabel(hca,'\Theta [deg]');
+    end
+    if 0,   % PANEL: RAPID/PEACE electron densities
+        % requires that both RAPID and PEACE densities are calculated before
+        hca=irf_panel('nonthermal_vs_thermal_e');
+        %
+        % RAPID density
+        %
+        varname=irf_ssub('Electron_Dif_flux__C?_CP_RAP_ESPCT6',ic);
+        [var,~,varmat,varunits]=c_caa_var_get(varname);
+        en=c_caa_var_get(var.DEPEND_1);
+        en_dplus=en.DELTA_PLUS;
+        RAPID_energy_channels=en.data(1,:)+0.5*en_dplus;
+        ncoef=0.2284e-7*sqrt(1/1836)*4*pi*en_dplus./sqrt(RAPID_energy_channels);
+        nmat=varmat; nmat(:,2:end)=nmat(:,2:end).*repmat(ncoef,size(varmat,1),1);
+        nRAPID=nmat(:,1:2);nRAPID(:,2)=sum(nmat(:,2:end),2);
+        %
+        % PEACE density
+        %
+        varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
+        caa_load('C?_CP_PEA_PITCH_SPIN_DPFlux'); % speeds up later loading
+        [var,dobj,varmat,varunits]=c_caa_var_get(varname);
+        phi=c_caa_var_get(var.DEPEND_1);
+        x=getfield(c_caa_var_get(phi.DELTA_PLUS),'data');phi_dplus=x(1,:);
+        x=getfield(c_caa_var_get(phi.DELTA_MINUS),'data');phi_dminus=x(1,:);
+        en=c_caa_var_get(var.DEPEND_2);
+        x=getfield(c_caa_var_get(en.DELTA_PLUS),'data');en_dplus=x(1,:);
+        x=getfield(c_caa_var_get(en.DELTA_MINUS),'data');en_dminus=x(1,:);
+        PEACE_energy_channels=en.data(1,:)+0.5*(en_dplus-en_dminus);
+        PEACE_phi_min=phi.data(1,:)-phi_dminus;
+        PEACE_phi_max=phi.data(1,:)+phi_dplus;
+        ii_energy=find(PEACE_energy_channels>100); % use only these energy chanels
+        ncoef=ones(length(phi_dplus),length(ii_energy));
+        phi_factor=repmat((cos(PEACE_phi_min*pi/180)-cos(PEACE_phi_max*pi/180))',1,length(ii_energy));
+        en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy))./sqrt(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
+        ncoef=ncoef*0.2284e-7*sqrt(1/1836)*2*pi.*phi_factor.*en_factor;
+        nPEACE=[varmat.t(:) varmat.t(:)*0];
+        varmat.data(isnan(varmat.data))=0;
+        for jj=1:size(nPEACE,1),
+            nPEACE(jj,2)=sum(sum(shiftdim(varmat.data(jj,:,ii_energy)).*ncoef));
+        end
+        %
+        % Ratio of densities
+        %
+        ratio_RAPIDvsPEACE=irf_multiply(1e3,nRAPID,1,nPEACE,-1);
+        %
+        % Plot
+        %
+        irf_plot(hca,ratio_RAPIDvsPEACE,'.-');
+        ylabel(hca,'(n_{RAPID}/n_{PEACE})10^3')
+        set(hca,'yscale','lin');
     end
     if 0,   % PANEL: RAPID PSD power law fit
         hca=h(i_subplot); i_subplot=i_subplot+1;
@@ -744,4 +890,12 @@ end
 %% Example plots
 % see overview of examples under https://sites.google.com/site/andrisvaivads/Andris_Vaivads/cluster/irfu-matlab-examples
 open('Example_1.m'); 
+%% Cluster data reading from local Uppsala disks
+% using c_get_batch
+c_get_batch(irf_time([2002 03 04 10 00 00]),30*60,'sp','/home/yuri/caa-data/20020304')
+% if time intervals to download are in matrix tint
+for j=1:size(tint,1),
+    c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
+end
+clear j;
 
