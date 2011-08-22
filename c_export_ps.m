@@ -1,4 +1,4 @@
-function c_export_ps(st,sc_list,varargin)
+function c_export_ps(st,varargin)
 %C_EXPORT_PS export figures 1:4 into PS and PDF
 %
 % function c_export_ps(st,[sc_list],[option,value])
@@ -27,7 +27,6 @@ function c_export_ps(st,sc_list,varargin)
 % ----------------------------------------------------------------------------
 
 
-if nargin<2, sc_list = 1:4; end
 if nargin>2, have_options = 1; args = varargin;
 else have_options = 0;
 end
@@ -36,10 +35,16 @@ sp = '.';
 suf = '';
 ex_ps = 1;
 ex_pdf = 1;
+sc_list = 1:4;
 
 while have_options
 	l = 2;
 	switch(args{1})
+        case 'sc_list'
+			if length(args) < 2, error('SC_LIST requires a value'), end
+			if isnumeric(args{2}), sc_list = args{2};
+			else irf_log('fcal','wrong ArgType : suf must be numeric')
+			end
 		case 'sp'
 			if length(args) < 2, error('SP requires a value'), end
 			if ischar(args{2}), sp = args{2};
@@ -57,7 +62,7 @@ while have_options
 			ex_pdf = 0;
 			l = 1;
 		otherwise
-			irf_log('fcal',['Option ''' args{i} '''not recognized'])
+			irf_log('fcal',['Option ''' args{1} '''not recognized'])
 	end
 	if length(args) > l, args = args(l+1:end);
 	else break
