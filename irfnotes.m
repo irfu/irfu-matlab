@@ -15,7 +15,9 @@ h=irf_plot(5); % h= irf_plot(number_of_subplots);
 % more detailed way
 % most lines needed to define the size to have best agreement with eps file
 set(0,'defaultLineLineWidth', 1.5);
-fn=figure(61);clf;
+fn=figure(61);
+clf reset;
+clear h;
 set(fn,'color','white'); % white background for figures (default is grey)
 set(gcf,'PaperUnits','centimeters')
 xSize = 12; ySize = 24;
@@ -33,8 +35,13 @@ n_subplots=8;i_subplot=1;clear h;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 %% Print the figure as it looks on screen  
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+% to get bitmap file
 print -dpng delme.png
-%print -depsc2 delme.eps
+% to get pdf file with no white margins
+print -depsc2 -painters delme.eps
+% to convert to pdf on the system command line execute  
+% ps2pdf -dEPSFitPage -dEPSCrop delme.eps
+
 %% Add information to figures              
 %
 % text and legends
@@ -366,13 +373,27 @@ if 1, % plot figures panels
             ylabel(hca,'E [eV]');
         end
     end
-    if 0,   % PANEL: EFW E field in ISR2 reference frame single s/c
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+    if 0,   % PANEL: C?       EFW E ISR2 
+        hca=irf_panel('EFW E ISR2 c?');
         c_eval('irf_plot(hca,diE?)',ic);
         ylabel(hca,'E [mV/m] ISR2');
         irf_zoom(hca,'ylim','smart');
         irf_legend(hca,{'E_X','E_Y'},[0.02 0.49])
         irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
+    end
+    if 0,   % PANEL: C1..C4   EFW satellite potential 
+        % change L3 to L2 to get full resolution instead of spin
+        hca=irf_panel('EFW satellite potential spin');
+        hold(hca,'off');
+        irf_plot(hca,'Spacecraft_potential__C1_CP_EFW_L3_P');
+        hold(hca,'on');
+        irf_plot(hca,'Spacecraft_potential__C2_CP_EFW_L3_P','color','r');
+        irf_plot(hca,'Spacecraft_potential__C3_CP_EFW_L3_P','color',[0 0.5 0]);
+        irf_plot(hca,'Spacecraft_potential__C4_CP_EFW_L3_P','color','b');
+        
+        irf_zoom(hca,'y',[-50 -10]);
+        irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
+        ylabel(hca,'Sat pot [V]');
     end
     if 1,   % PANEL: STAFF spectrogram Bx
         hca=irf_panel('staff_b');
@@ -520,7 +541,18 @@ if 1, % plot figures panels
         set(hca,'yscale','log');
         set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
     end
-    if 1,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram omni
+    if 0,   % PANEL: C1..C4   PEACE density MOMENTS 
+        hca=irf_panel('PEACE N MOMENTS');
+        caa_load PEA MOMENTS
+        c_eval('nPEACE?=getmat(C?_CP_PEA_MOMENTS,''Data_Density__C?_CP_PEA_MOMENTS'');');
+        c_pl_tx(hca,'nPEACE?','-');
+        set(hca,'yscale','log','ytick',[1e-2 1e-1]);
+        irf_zoom(hca,'y',[0.005 0.3]);
+        irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
+        ylabel(hca,'N_{e} [cc]');
+    end
+    if 1,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
+        % ic (number of spacecraft) should be defined 
         hca=irf_panel('C1 PEACE energy spectra');
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
@@ -535,7 +567,7 @@ if 1, % plot figures panels
         set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
         ylabel(hca,'E [eV]');
     end
-    if 0,   % PANEL: PEACE PITCH_SPIN_DEFlux spectrogram angles
+    if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
         hca=irf_panel('C1 PEACE pitch spectra');
         dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
         caa_load(dobjname);
