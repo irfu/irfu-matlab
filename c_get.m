@@ -182,11 +182,7 @@ while(q ~= 'q') % ====== MAIN LOOP =========
     save mBS wBS1 wBS2 wBS3 wBS4;
 
  elseif strcmp(q,'dbs'),
-  for ic=sc_list,
-   eval(irf_ssub('load mBS wBS?;tt=wBS?(1,1);',ic));
-   eval(irf_ssub('load mA.mat A?;',ic));
-   eval(irf_ssub('dBS?=c_efw_despin(wBS?,A?);save -append mBS dBS?;',ic));
-  end
+   c_eval('load mBS.mat wBS?; c_load A?; if ~isempty(wBS?), dBS?=c_efw_despin(wBS?,A?); save -append mBS dBS?;end; clear wBS? A?',sc_list);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % E p1234 or p12 & p34
