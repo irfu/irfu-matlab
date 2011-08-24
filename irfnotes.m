@@ -162,14 +162,12 @@ if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux pro
         nPEACE=[varmat.t(:) varmat.t(:)*0];
         varmat.data(isnan(varmat.data))=0;
         for jj=1:size(nPEACE,1),
-            satpot=-scpot(ii,2)*1.3; % assumes that probe t spacecraft potential is ~75% of spacecraft potential
+            satpot=-scpot(jj,2)*1.3; % assumes that probe t spacecraft potential is ~75% of spacecraft potential
             ii_energy=find(PEACE_energy_channels>satpot); % use only these energy chanels
             [en_min,ii_energy_min]=min(PEACE_energy_channels(ii_energy));
             ii_energy(ii_energy==ii_energy_min)=[]; % remove first channel after satellite potential
             [en_min,ii_energy_min]=min(PEACE_energy_channels(ii_energy));
-            ii_energy(ii_energy==ii_energy_min)=[]; % remove second channel after satellite potential
-            ii_energy=find(PEACE_energy_channels>60); % use only these energy chanels
-            
+            ii_energy(ii_energy==ii_energy_min)=[]; % remove second channel after satellite potential            
             en_factor=repmat(1e-3*(en_dplus(ii_energy)+en_dminus(ii_energy)).*sqrt(1e-3*(PEACE_energy_channels(ii_energy)-satpot))./(1e-3*PEACE_energy_channels(ii_energy)),length(phi_dplus),1);
             ncoef=ones(length(phi_dplus),length(ii_energy));
             ncoef=ncoef*0.2284e-7*sqrt(1/1836)*2*pi.*phi_factor(:,ii_energy).*en_factor;
