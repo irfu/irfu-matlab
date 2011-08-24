@@ -192,14 +192,14 @@ if length(column) > 1, clf, ax = irf_plot(length(column)); end
 for j=1:length(column)
     for jj=sc_list
         c_eval(['if ~isempty(x?),'...
-            'irf_plot(ax(j), [x?(:,1)-delta_t(?) x?(:,j+1)],' l_style{jj} ');'...
+            'irf_plot(ax(j), [x?(:,1)-delta_t(?) x?(:,column(j))],' l_style{jj} ');'...
             'hold(ax(j),''on''); end, '],jj);
     end
     hold(ax(j),'off');
     irf_zoom(ax(j),'y'); % optimize Y zoom to skip labels at top and bottom
     grid(ax(j),'on');
 end
-ud = get(hcf,'userdata'); ud.subplot_handles = ax; set(hcf,'userdata',ud);
+%ud = get(hcf,'userdata'); ud.subplot_handles = ax; set(hcf,'userdata',ud);
 irf_timeaxis(ax);
 irf_figmenu;
 
