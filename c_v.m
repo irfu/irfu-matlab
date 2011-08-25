@@ -19,7 +19,11 @@ if nargin==1, coord_sys='GSE'; end
 
 if t(2) > 1e8, flag='v_from_t'; else flag='dt_from_v';v=t;t=v(1);end
 
-if exist('./mR.mat','file'),
+if exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
+    irf_log('dsrc','Trying to read CAA files...')
+    c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
+    c_eval('[~,~,V?]=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
+elseif exist('./mR.mat','file'),
     load mR R1 R2 R3 R4 V1 V2 V3 V4;
 else
     disp('loading position from isdat');
