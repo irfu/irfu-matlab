@@ -490,7 +490,9 @@ if number_of_subplots>1 && number_of_subplots<20,
         set(gcf,'PaperUnits','centimeters');
         set(gcf,'defaultlinelinewidth',1.0);
         set(gcf,'defaultAxesFontSize',14);
+        set(gcf,'defaultTextFontSize',14);
         set(gcf,'defaultAxesFontUnits','pixels');
+        set(gcf,'defaultTextFontUnits','pixels');
         set(gcf,'defaultAxesColorOrder',[0 0 0;1 0 0;0 0 1;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
         
         xSize = 10;
