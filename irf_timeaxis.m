@@ -114,7 +114,7 @@ for j=1:numel(h)
                     end
                     h_xlabels(ii,jj) = text(xcoord(ii)-t_start_epoch, ax(3), str);
                     set(h_xlabels(ii,jj), 'HorizontalAlignment', 'center', ...
-                        'VerticalAlignment', 'top', 'FontSize', 10,'parent',h(j),'units','normalized');
+                        'VerticalAlignment', 'top','parent',h(j),'units','normalized');
                 end
             end
         end
@@ -124,15 +124,15 @@ for j=1:numel(h)
         
         % Add titles
         h_xlabeltitle=1:size(xlabeltitle,2); % allocated handles for text labels
-        str = 'UT';
+        str = 'UT      ';
         for jj = 0:size(xlabeltitle,2),
             if jj>0,
                 flag_date=0; % if more than one line in xlabels, remove date
-                str      = [repmat(' \newline',1,jj) xlabeltitle{jj}];
+                str      = [repmat(' \newline',1,jj) xlabeltitle{jj} '     '];
             end
-            h_xlabeltitle(jj+1) = text( ax(1)-abs(ax(2)-ax(1))/20,ax(3), str, 'parent',h(j));
+            h_xlabeltitle(jj+1) = text( ax(1),ax(3), str, 'parent',h(j));
             set(h_xlabeltitle(jj+1), 'HorizontalAlignment', 'right', ...
-                'VerticalAlignment', 'top', 'FontSize', 10,'parent',h(j),'units','normalized');
+                'VerticalAlignment', 'top', 'parent',h(j),'units','normalized');
         end
         ud=get(h(j),'UserData');
         ud.h_xlabeltitle=h_xlabeltitle;
