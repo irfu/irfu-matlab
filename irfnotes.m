@@ -39,9 +39,9 @@ set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 print -dpng delme.png
 % to get pdf file with no white margins
 print -depsc2 -painters delme.eps
-% to convert to pdf on the system command line execute  
+% to convert to pdf on the system command line execute some of
 % ps2pdf -dEPSFitPage -dEPSCrop delme.eps
-
+% epstopdf delme.eps
 %% Add information to figures              
 %
 % text and legends
@@ -348,8 +348,8 @@ if 1, % plot figures panels
         end
     end
     irf_colormap(hca,'default'); % execute for every axis you want to fix colormap
-    if 1,   % PANEL: CIS HIA/CODIF spectrogram
-        hca=h(i_subplot);i_subplot=i_subplot+1;
+    if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
+        hca=irf_panel('C? CIS HIA/CODIF spectrogram');
         if ic~=2,
             if strcmp(CISinstrument,'HIA')
                 dobjname=irf_ssub('C?_CP_CIS_HIA_HS_1D_PEF',ic);
@@ -363,7 +363,7 @@ if 1, % plot figures panels
             %varunits=eval(['getunits(' dobjname ',''' varname ''')']);
             varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
             disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-            eval(['plot(hca,' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
+            eval(['plot(hca,' dobjname ',''' varname ''',''ax'',hca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
             caxis(hca,[3.9 6.1]);
             irf_colormap;
             set(hca,'yscale','log');
@@ -928,4 +928,171 @@ for j=1:size(tint,1),
     c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
 end
 clear j;
+%% Demo of irfu-matlab 
+% Philosophy
+% 1. Maximize time spent on science
+% 2. Make data analysis easy and natural
+% 3. All instrument data in the same plot
+% 4. We want to data analysis ourselves
+% 5. Publishing quality figures
+% CAA - basic source of data
+
+%____________________________________________________
+% Some basic routines and basic usage
+irf
+irfnotes
+
+% plasma parameters
+help irf_plasma_calc
+irf_plasma_calc
+
+% cold wave dispersion relation
+irf_disp_surf
+
+% plasma wave polarization
+irf_plasma_wave_visualization
+irf_plasma_wave_visualization('demo','alfven_shear45');
+
+%____________________________________________________
+% Example 1
+% artificial data
+% define time interval
+t=irf_time([2008 03 01 10 0 0]):.2:irf_time([2008 03 01 11 0 0]);
+t=t(:); % make it column vector
+% define one time series
+y=exp(0.001*(t-t(1))).*sin(2*pi*t/180);
+% define data matrix
+data1=[t y];
+% plot data
+irf_plot(data1)
+
+%____________________________________________________
+% Example 2
+y=exp(0.001*(t-t(1))).*cos(2*pi*t/180);
+data2=[data1 y];
+irf_plot(data2)
+irf_legend({'X','Y'},[0.02 0.02])
+
+%____________________________________________________
+% Example 3
+clf;
+data3=irf_tappl(data2,'*1.2+2');
+h=irf_plot({data2,data3})
+ylabel(h(1),'data2');
+ylabel(h(2),'data3');
+irf_legend(h(1),{'X','Y'},[0.02 0.98],'fontsize',20)
+
+%____________________________________________________
+% Example 4
+data3=irf_tappl(data2,'*1.2+2');
+h=irf_plot({data2,data3},'comp');
+ylabel(h(1),'X');
+ylabel(h(2),'Y');
+irf_legend(h(1),{'data2','data3=data2*1.2+2'},[0.02 0.98],'fontsize',20)
+hours=[t (t-t(1))/3600]; % hours from beginning of time interval
+irf_timeaxis(h(2),t(1),hours,{'hours'})
+
+%____________________________________________________
+% Example 5
+clf;
+tint1=[irf_time([2008 03 01 10 10 0]) irf_time([2008 03 01 10 20 0])];
+tint2=[irf_time([2008 03 01 10 11 0]) irf_time([2008 03 01 10 12 0])];
+h=irf_plot(3);
+irf_plot(h(1),data2);
+ylabel(h(1),'data2');
+irf_plot(h(2),data2(:,1:2),'r.','markersize',12);
+irf_plot(h(3),data3);
+hours=[t (t-t(1))/3600]; % hours from beginning of time interval
+irf_zoom(h,'x',tint1);
+irf_pl_mark(h(2:3),tint2);
+irf_timeaxis(h(end),t(1),hours,{'hours'})
+irf_legend(0,'Some additional info',[0,1],'color','r')
+
+%____________________________________________________
+% Example 6
+% GET REAL DATA
+rmdir ~/test; 
+mkdir ~/test; cd ~/test 
+
+tint=[irf_time([2003 02 04 18 0 0]) irf_time([2003 02 04 20 0 0])];
+caa_download(tint,'list:*FGM*')
+caa_download(tint,'list:*FGM_SPIN*')
+caa_download(tint,'*FGM_SPIN*')
+% plot
+clf
+irf_plot('B_vec_xyz_gse__C1_CP_FGM_SPIN');
+
+%____________________________________________________
+% Example 7 
+% Where are satellites?
+clf
+c_pl_sc_conf_xyz
+% to work offline get satellite position data locally
+caa_download(tint,'C?_CP_AUX_POSGSE_1M');
+
+%____________________________________________________
+% Example 8
+% Ions?
+caa_download(tint,'list:*CIS*')
+caa_download(tint,'list:*CODIF_HS*O*PEF')
+caa_download(tint,'*CODIF_O1_1D*PEF')
+
+%plot
+clf;
+h=irf_plot(2);
+irf_plot(h(1),'B_vec_xyz_gse__C4_CP_FGM_SPIN');
+irf_plot(h(2),'flux__C4_CP_CIS_CODIF_O1_1D_PEF')
+
+set(h(2),'yscale','log')
+irf_zoom(h,'x',tint);
+irf_plot_axis_align(2)
+
+%____________________________________________________
+% Example 9
+% Moments 
+ caa_download(tint,'*CODIF*O*MOMENTS*')
+ 
+clf;
+h=irf_plot(3);
+irf_plot(h(1),'B_vec_xyz_gse__C4_CP_FGM_SPIN');
+irf_plot(h(2),'flux__C4_CP_CIS_CODIF_O1_1D_PEF')
+irf_colormap('space')
+irf_plot(h(3),'velocity__C4_CP_CIS_CODIF_HS_O1_MOMENTS')
+
+set(h(2),'yscale','log')
+irf_zoom(h,'x',tint);
+irf_plot_axis_align(2)
+
+irf_legend(h(3),{'VX','VY','VZ'},[0.02 0.05])
+
+% print
+set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+% to get bitmap file
+print -dpng delme.png
+% to get pdf file with no white margins pint to eps and convert after
+print -depsc2 -painters delme.eps
+% to convert to pdf on the system command line execute some of
+% ps2pdf -dEPSFitPage -dEPSCrop delme.eps
+
+%____________________________________________________
+% Example 10
+% massage of data (MVAR)
+[~,~,B1]=c_caa_var_get('B_vec_xyz_gse__C1_CP_FGM_SPIN');
+
+clf 
+irf_plot(B1)
+
+B1=irf_abs(B1);
+irf_plot(B1)
+
+% minvar 
+irf_minvar_gui(B1)
+
+%____________________________________________________
+% Example 11
+% massage of data (timing)
+c_eval('[~,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_SPIN'');');
+c_eval('B?=irf_abs(B?);');
+
+c_4_v_gui('B?')
 
