@@ -158,7 +158,7 @@ switch action,
         yl=get(hh,'YLim');
         hc=get(hh,'Children');
         dt=eval(['[' get(ud.dt,'string') ']']);
-        tstr=['[' num2str(dt,'%7.2f') '] s'];
+        tstr=['[' num2str(dt,'%9.2f') '] s'];
         t=0.5*(xl(1)+xl(2))+dt;
         if max(abs(dt))==0
             vstr='0 * [0 0 0]';
@@ -195,7 +195,7 @@ switch action,
             if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end
             dt=dt-dt(ref_satellite);
         end
-        tstr=['[' num2str(dt,'%7.2f') ']'];
+        tstr=['[' num2str(dt,'%9.2f') ']'];
         if norm(v) > 0,
             vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
         else
@@ -230,7 +230,7 @@ switch action,
             title('');
             ic=0;
             dt=ud.dtv-ud.dtv(1);
-            tstr=['[' num2str(dt,'%8.2f') ']'];
+            tstr=['[' num2str(dt,'%10.2f') ']'];
             set(ud.dt,'string',tstr);
             zoom on;
             c_4_v_gui('dt');
