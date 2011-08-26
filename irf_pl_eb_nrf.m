@@ -1,6 +1,8 @@
 function [elmn,h]=irf_pl_eb_nrf(vngse,tint,e,b,sc_list);
 %IRF_PL_EB_NRF   Plot E and B in the new reference frame
 %
+% OLD ROUTINE!!!!!
+%
 % [elmn,h]=irf_pl_eb_nrf(vngse,tint,e,b,sc_list);
 % [elmn,h]=irf_pl_eb_nrf(vngse,tint);
 % [elmn,h]=irf_pl_eb_nrf(vngse,tint,sc_list);
