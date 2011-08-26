@@ -71,6 +71,9 @@
 % Miscellaneous
 %   irf_ssub         - substitute ? ! and $ in string to number or variable
 %   irf_whamp_plot_f - plot the distribution function, parameters as defined in WHAMP
+%   irfnotes         - notes on using irfu-matlab
+%
+% Bug reports, feature requests - https://launchpad.net/irfu-matlab
 
 %
 % $Id$
