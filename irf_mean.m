@@ -17,11 +17,6 @@ function [out]=irf_mean(inp,r,b,z)
 % Z axis is along b, Y axis is zxb.sign(b.r), X=YxZ
 
 out=inp;flag_dipole=0;
-if (nargin > 3) && (ischar(z)),
- earth_dip=[inp(:,1) inp(:,1)*0 inp(:,1)*0 inp(:,1)*0+1];
- outinfo='     CA';outinfo(5-length(z):4)=z;
- z=av_x2x(earth_dip,'  SM CA',outinfo);
-end
 if nargin > 3,
  flag_dipole=1;
  if size(z,1) ~= size(inp,1)
