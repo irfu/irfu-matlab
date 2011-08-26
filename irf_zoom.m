@@ -234,20 +234,29 @@ yscale=get(h,'yscale');
 switch lower(yscale)
     case 'linear'
         diffy=diff(ylims);
-        dy=diffy/4; % 1st approx      
-        dy10power=10^(floor(log10(dy)));
-        dy1stcipher=floor(dy/dy10power);
-        if dy1stcipher>5,
-            dy = 5*dy10power;
+        if diffy==0,
+            if ylims(1)==0, 
+                ymin=-1;ymax=1;
+            else
+             ymin=ylims(1)-abs(ylims(1))/10;
+             ymax=ylims(1)+abs(ylims(1))/10;
+            end
         else
-            dy=dy1stcipher*dy10power;
-        end
-        if ylims(1)<dy && ylims(2)>-dy,
-            ymin=dy*floor(ylims(1)/dy);
-            ymax=dy*ceil(ylims(2)/dy);
-        else % needs to be explanded
-            ymin=dy*floor(ylims(1)/dy);
-            ymax=dy*ceil(ylims(2)/dy);
+            dy=diffy/4; % 1st approx
+            dy10power=10^(floor(log10(dy)));
+            dy1stcipher=floor(dy/dy10power);
+            if dy1stcipher>5,
+                dy = 5*dy10power;
+            else
+                dy=dy1stcipher*dy10power;
+            end
+            if ylims(1)<dy && ylims(2)>-dy,
+                ymin=dy*floor(ylims(1)/dy);
+                ymax=dy*ceil(ylims(2)/dy);
+            else % needs to be explanded
+                ymin=dy*floor(ylims(1)/dy);
+                ymax=dy*ceil(ylims(2)/dy);
+            end
         end
         set(h,'ylim',[ymin ymax]);
     case 'log'
