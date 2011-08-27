@@ -1,24 +1,25 @@
 function f = omni( tint, parameter )
-%OMNI download omni data 
-% 
-% DEVELOPMENT VERSION !!! 
+%OMNI download omni data
 %
-% OMNI(tint,parameter) download parameters for specified time interval
-% 
-% parameters - string, paramters separated by comma. 
+% DEVELOPMENT VERSION !!! maybe put everything in universal routine irf_get_data
+%
+% f=OMNI(tint,parameter) download parameters for specified time interval
+%       f is column vector, first column time and parameters in next columns
+%
+% parameters - string, paramters separated by comma (case does not matter).
 %               'B'     - <|B|>, magnetic field magnitude [nT]
 %               'avgB'  - |<B>|, magnitude of average magnetic field [nT]
 %               'Bx'    - Bx GSE (the same as 'BxGSE')
 %               'By'
 %               'Bz'
-%               'ByGSM' - By GSM 
+%               'ByGSM' - By GSM
 %               'BzGSM' - Bz GSM
 %               'T'     - proton temperature (K)
 %               'n'     - proton density (cc)
 %               'NaNp'  - alpha/proton ratio
 %               'v'     - bulk speed (km/s)
 %               'P'     - flow pressure (nPa)
-%               'beta'     - plasma beta 
+%               'beta'     - plasma beta
 %               'ssn'   - daily sunspot number
 %               'dst'   - DST index
 %               'f10.7' - F10.7 flux
@@ -71,27 +72,31 @@ for jj=1:length(istart)
         case 'f10.7', var_number=50;
         otherwise, var_number=0;
     end
-    if var_number>0, 
-        vars=[vars '&vars=' num2str(var_number)]; 
+    if var_number>0,
+        vars=[vars '&vars=' num2str(var_number)];
         number_var=number_var+1;
     end
 end
 
 url=[httpreq 'start_date=' start_date '&end_date=' end_date vars];
 disp(['url:' url]);
-c=urlread(url);
+[c,status]=urlread(url);
 
-cstart=strfind(c,'YEAR');
-cend=strfind(c,'</pre>')-1;
-fmt='%f %f %f';
-for jj=1:number_var, fmt=[fmt ' %f']; end
-cc=textscan(c(cstart:cend),fmt,'headerlines',1);
-
-xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
-f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
-for jj=1:number_var, 
-    f(:,jj+1)=cc{jj+3};
+if status==1, % success in downloading from internet
+    cstart=strfind(c,'YEAR');
+    cend=strfind(c,'</pre>')-1;
+    fmt='%f %f %f';
+    for jj=1:number_var, fmt=[fmt ' %f']; end
+    cc=textscan(c(cstart:cend),fmt,'headerlines',1);
+    
+    xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
+    f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
+    for jj=1:number_var,
+        f(:,jj+1)=cc{jj+3};
+    end
+    f(f==9999.9)=NaN;
+else % no success in getting data from internet
+    irf_log('fcal','Can not get OMNI data form internet!');
+    f=[];
 end
-f(f==9999.9)=NaN;
-
 
