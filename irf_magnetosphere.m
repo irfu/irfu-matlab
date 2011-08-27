@@ -1,35 +1,49 @@
 function [x,y] = irf_magnetosphere(model,Dp,Bz)
-%IRF_MAGNETOPAUSE Return the location of magnetopause
+%IRF_MAGNETOSPHERE Return the location of magnetopause
 %  
-%  IRF_MAGNETOPAUSE(model,Dp,Bz)
+%  [X,Y]=IRF_MAGNETOSPHERE(model,Dp,Bz)
+%     X,Y - vectors with X and Y coordinates of magnetopause location
 %
 % INPUT: 
-%       model - model to use. Implemented - "mp_shue1998"
+%       model - model to use. Implemented - 'mp_shue1998','bs'
 %       Dp    - dynamic pressure
 %       Bz    - IMF Bz GSM
 %
-%  [X,Y] = IRF_MAGNETOPAUSE('mp_shue1998',Dp,Bz)
-%     X,Y - vectors with X and Y coordinates of magnetopause location
+%  [X,Y]=IRF_MAGNETOSPHERE(model,time) - get solar wind parameters online form OMNI  database
+%
+% Examples:
+%  [x,y] = irf_magnetosphere('mp_shue1998',10,-2)
+%  [x,y] = irf_magnetosphere('mp_shue1998',irf_time([2001 10 01 18 0 0]))
 %
 
+persistent dpbz
+
+if nargin == 1, % use default solar wind values
+    Dp=2;
+    Bz=0;
+elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
+    t=Dp;
+    tint=t + [-2 2]*3600;
+    if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
+        dpbz=omni(tint,'P,bzgsm');
+    end
+    if isempty(dpbz),
+        Dp=2;Bz=0;
+    else
+        dpbz_t=irf_resamp(dpbz,t);
+        Dp=dpbz_t(2);
+        Bz=dpbz_t(2);
+    end
+end
+
+switch lower(model)
+    case 'mp_shue1998'
 % Reference: Shue et al 1998
 %  Eq.(1) r=rzero*(2/(1+cos(theta)))^alpha
 %  Eq.(9) rzero=(10.22+1.29*tanh(0.184*(Bz+8.14)))*Dp^(-1/6.6)
 % Eq.(10) alpha=(0.58-0.007*Bz)*(1+0.024*log(Dp))
 % Default values: Dp=2nPa, Bz=0nT
 % 
-
-% 'bs'
-%  standoff distance (Farris and Russell 1994)
-%  rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)))
-
-if nargin == 1, % use default solar wind values
-    Dp=2;
-    Bz=0;
-end
-
-switch lower(model)
-    case 'mp_shue1998'
         theta=0:0.1:pi;
         rzero=(10.22+1.29*tanh(0.184*(Bz+8.14)))*Dp^(-1/6.6);
         alpha=(0.58-0.007*Bz)*(1+0.024*log(Dp));
@@ -40,6 +54,9 @@ switch lower(model)
         x(ii)=[];
         y(ii)=[];
     case 'bs'
+% 'bs'
+%  standoff distance (Farris and Russell 1994)
+%  rstandoff=rmp*(1+1.1*((gamma-1)*M^2+2)/((gamma+1)*(M^2-1)))
         [xmp,~] = irf_magnetosphere('mp_shue1998',Dp,Bz);
         gamma=5/3;
         M=4;
