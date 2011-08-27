@@ -287,7 +287,7 @@ switch lower(action)
                 add_Earth(h(3));
                 
                 cla(h(4));
-                c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(3)^2),cluster_marker{?});hold(h(4),''on'');',sc_list);
+                c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(4)^2),cluster_marker{?});hold(h(4),''on'');',sc_list);
                 xlabel(h(4),['X [R_E] ' coord_label]);
                 ylabel(h(4),['sqrt (Y^2+Z^2) [R_E] ' coord_label]);
                 grid(h(4),'on');
@@ -514,6 +514,11 @@ switch lower(action)
             set(ht,'interpreter','none');
             htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
             set(htime,'fontsize',12);
+            ff=omni(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm');
+            if ~isempty(ff),
+                fft=irf_resamp(ff,data.t);
+                irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(fft(2),'%6.1f') '[nPa],\newline Bx=' num2str(fft(3),'%6.1f') ',By=' num2str(fft(4),'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+            end
         end
 
     case 'new_time'
@@ -595,13 +600,15 @@ end
 answer=1;
 
 function add_magnetopause(h)
-[x,y]=irf_magnetosphere('mp_shue1998');
+t=getfield(get(gcf,'userdata'),'t');
+[x,y]=irf_magnetosphere('mp_shue1998',t);
 x=[fliplr(x) x];
 y=[fliplr(y) -y];
 line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
 
 function add_bowshock(h)
-[x,y]=irf_magnetosphere('bs');
+t=getfield(get(gcf,'userdata'),'t');
+[x,y]=irf_magnetosphere('bs',t);
 x=[fliplr(x) x];
 y=[fliplr(y) -y];
 line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
