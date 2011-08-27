@@ -1,6 +1,8 @@
 function [elmn,h]=irf_pl_ebv_nrf(vngse,tint,e,b,sc_list);
 %IRF_PL_EBV_NRF   Plot E, B and ExB in the new reference frame
 %
+% OLD ROUTINE !!!!
+%
 % [elmn,h]=irf_pl_ebv_nrf(vngse,tint,e,b,sc_list);
 % [elmn,h]=irf_pl_ebv_nrf(vngse,tint);
 % [elmn,h]=irf_pl_ebv_nrf(vngse,tint,sc_list);
