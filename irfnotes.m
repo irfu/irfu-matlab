@@ -394,44 +394,42 @@ if 1, % plot figures panels
         ylabel(hca,'Sat pot [V]');
     end
     if 1,   % PANEL: STAFF spectrogram Bx
-        hca=irf_panel('staff_b');
-        dobjname=irf_ssub('C?_CP_STA_PSD',ic);
-        caa_load(dobjname);
+        hca=irf_panel('STAFF spectrogram B and fce/flh lines');
+        ic=3;
         varname=irf_ssub('BB_xxyyzz_isr2__C?_CP_STA_PSD',ic);
-        varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-        varunits='nT^2/Hz';
-        disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        eval(['plot(hca,' dobjname ',''' varname ''',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',1);']);
+        [~,dobj,~,varunits]=c_caa_var_get(varname);
+        %varunits='nT^2/Hz';
+        hold(hca,'off');
+        plot(hca,dobj,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',1);
         hold(hca,'on');
-        c_eval('fce=irf_plasma_calc(B?,0,0,0,0,''Fce'');',ic);
-        c_eval('flh=irf_plasma_calc(B?,1,0,0,0,''Flh'');',ic);
+        c_eval('fce=irf_plasma_calc(B?,0,0,0,0,''Fce'');',ic); % calculate electron gyrofrequency
         irf_plot(hca,fce,'-','linewidth',0.2,'color','k');
-        irf_plot(hca,[fce(:,1) fce(:,2)*.5],'-','linewidth',0.2,'color','w');
-        irf_plot(hca,[fce(:,1) fce(:,2)*.25],'-','linewidth',0.2,'color','w');
+        irf_plot(hca,[fce(:,1) fce(:,2)*.5],'-','linewidth',0.2,'color','w'); % fce/2 white line
+        irf_plot(hca,[fce(:,1) fce(:,2)*.25],'-','linewidth',0.2,'color','w'); % fce/4 white line
+        c_eval('flh=irf_plasma_calc(B?,1,0,0,0,''Flh'');',ic); % calculate lower hybrid frequency (underdense case in puter magnetosphere)
         irf_plot(hca,flh,'-','linewidth',0.2,'color','k');
         caxis(hca,[-10 -7]);
-        irf_colormap(hca,'default');
-        set(hca,'yscale','lin','ylim',[0 499]);
-    end
+        set(hca,'yscale','log','ytick',[1e1 1e2 1e3]);
+        irf_zoom(hca,'y',[10 4000]);
+     end
     if 1,   % PANEL: STAFF spectrogram Ex
-        hca=h(i_subplot);i_subplot=i_subplot+1;
-        dobjname=irf_ssub('C?_CP_STA_PSD',ic);
-        caa_load(dobjname);
+        hca=irf_panel('STAFF spectrogram Ex and fce/flh lines');
+        ic=3;
         varname=irf_ssub('EE_xxyy_isr2__C?_CP_STA_PSD',ic);
-        varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-        varunits='(mV/m)^2/Hz';
-        disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-        eval(['plot(hca,' dobjname ',''' varname ''',''ax'',hca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',1);']);
+        [~,dobj,~,varunits]=c_caa_var_get(varname);
+        %varunits='(mV/m)^2/Hz';
+        hold(hca,'off');
+        plot(hca,dobj,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',1);
         hold(hca,'on');
-        c_eval('fce=irf_plasma_calc(B?,0,0,0,0,''Fce'');',ic);
-        c_eval('flh=irf_plasma_calc(B?,1,0,0,0,''Flh'');',ic);
+        c_eval('fce=irf_plasma_calc(B?,0,0,0,0,''Fce'');',ic); % calculate electron gyrofrequency
         irf_plot(hca,fce,'-','linewidth',0.2,'color','k');
-        irf_plot(hca,[fce(:,1) fce(:,2)*.5],'-','linewidth',0.2,'color','w');
-        irf_plot(hca,[fce(:,1) fce(:,2)*.25],'-','linewidth',0.2,'color','w');
+        irf_plot(hca,[fce(:,1) fce(:,2)*.5],'-','linewidth',0.2,'color','w'); % fce/2 white line
+        irf_plot(hca,[fce(:,1) fce(:,2)*.25],'-','linewidth',0.2,'color','w'); % fce/4 white line
+        c_eval('flh=irf_plasma_calc(B?,1,0,0,0,''Flh'');',ic); % calculate lower hybrid frequency (underdense case in puter magnetosphere)
         irf_plot(hca,flh,'-','linewidth',0.2,'color','k');
         caxis(hca,[-9 -1]);
-        irf_colormap;
-        set(hca,'yscale','lin','ylim',[0 599]);
+        set(hca,'yscale','log','ytick',[1e1 1e2 1e3]);
+        irf_zoom(hca,'y',[10 4000]);
     end
     if 1,   % PANEL: RAPID spectrogram
         hca=h(i_subplot);i_subplot=i_subplot+1;
