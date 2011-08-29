@@ -9,6 +9,7 @@ function res = plot(varargin)
 %   'nolabels' - only plot data, do not add any labels or text
 %   'ColorbarLabel' - specify colorbar label
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
+%   'FillSpectrogramGaps' - fill data gaps with previous value (makes spectrograms look nice on screen)
 %   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
 %
@@ -24,7 +25,7 @@ function res = plot(varargin)
 
 error(nargchk(2,14,nargin))
 
-[ax,args,nargs] = axescheck(varargin{:});
+[ax,args,~] = axescheck(varargin{:});
 if isempty(ax),
   ax=gca;
   create_axes = 1;
@@ -68,6 +69,7 @@ flag_spectrogram = 0;
 flag_labels_is_on=1;
 flag_colorbar_label_is_manually_specified=0;
 flag_colorbar_label_fit_to_colorbar_height_is_on=0;
+flag_fill_spectrogram_gaps=0;
 line_color=''; % default line color; can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
 
@@ -97,10 +99,10 @@ while ~isempty(args)
         end
       case 'clustercolors'
         flag_use_cluster_colors = 1;
-        if findstr('C1',var_s), line_color='k';
-        elseif findstr('C2',var_s), line_color='r';
-        elseif findstr('C3',var_s), line_color='g';
-        elseif findstr('C4',var_s), line_color='b';
+        if strfind(var_s,'C1'), line_color='k';
+        elseif strfind(var_s,'C2'), line_color='r';
+        elseif strfind(var_s,'C3'), line_color='g';
+        elseif strfind(var_s,'C4'), line_color='b';
         else flag_use_cluster_colors = 0;
         end
       case 'nolabels'
@@ -115,6 +117,8 @@ while ~isempty(args)
         end
       case 'fitcolorbarlabel'
         flag_colorbar_label_fit_to_colorbar_height_is_on=1;
+      case 'fillspectrogramgaps'
+        flag_fill_spectrogram_gaps=1;
       case 'sum_dim1'
         sum_dim = 1;
       case 'sum_dim2'
@@ -131,7 +135,6 @@ while ~isempty(args)
         disp('unknown argument')
         disp('the rest or arguments are passed to plot routines');
         plot_properties=args;
-        args=cell(0);
         break
     end
   end
@@ -349,12 +352,14 @@ elseif flag_spectrogram
     end
     if ischar(timevar.DELTA_MINUS)
       deltaminus= getv(dobj,timevar.DELTA_MINUS);
-      dep.dt.minus=deltaplus.data(1,:);
+      dep.dt.minus=deltaminus.data(1,:);
     elseif isnumeric(timevar.DELTA_MINUS)
       dep.dt.minus=timevar.DELTA_MINUS;
     end
   end
-  
+  if flag_fill_spectrogram_gaps==1 && isfield(dep,'dt'), % fill gaps, disregard delta_plus and delta_minus for each data point
+      dep=rmfield(dep,'dt');
+  end
   if sum_dim > 0
     fprintf('Summing over dimension %d (%s)\n', ...
       sum_dim, dep_x{sum_dim}.lab)
@@ -367,7 +372,7 @@ elseif flag_spectrogram
   lab_2 ='';
   if length(dep_x)>1 && ~isempty(dep_x{comp_dim})
     if strcmp(dep_x{comp_dim}.type,'char') && strcmp(dep_x{comp_dim}.variance,'F/T')...
-        && findstr(dep_x{comp_dim}.s,'LABEL_2')
+        && strfind(dep_x{comp_dim}.s,'LABEL_2')
       %            reclen = size(dep_x{comp_dim}.data,2)/length(dep.DEPEND_O);
       lab_2 = shiftdim(dep_x{comp_dim}.data(1,:,:),1)';
       %            lab_2 = dep_x{comp_dim}.data(:,1:reclen);
