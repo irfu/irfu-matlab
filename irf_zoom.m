@@ -103,7 +103,7 @@ end
 
 if strcmpi(c,'x'),
     if iscell(interval),  % Simplified time zooming
-        ax=get(axis_handle(1),'xlim');
+        ax=get(axis_handles(1),'xlim');
         if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 ),
             int_min=fromepoch(ax(1)+t_ref);
             int_max=fromepoch(ax(2)+t_ref);
