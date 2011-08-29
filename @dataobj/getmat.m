@@ -32,9 +32,14 @@ else
         dep_x{d} = getv(dobj,dep.DEPEND_X{d,1});
         dep_x{d}.s = dep.DEPEND_X{d,1};
         dep_x{d}.fillv = getfillval(dobj,dep_x{d}.s);
-        dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        if isnumeric(dep_x{d}.fillv), % only implemented for numeric data 
+            dep_x{d}.data(dep_x{d}.data==dep_x{d}.fillv) = NaN;
+        end
         dep_x{d}.units = getunits(dobj,dep_x{d}.s);
         dep_x{d}.lab = getlablaxis(dobj,dep_x{d}.s);
+    end
+    if isnumeric(data.FILLVAL), % put fillvalues to NaN
+        data.data(data.data==data.FILLVAL) = NaN;
     end
     res = struct('t',dep.DEPEND_O,'dep_x',[],'data',data.data);
     res.dep_x = dep_x;
