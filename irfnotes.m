@@ -215,15 +215,15 @@ end
 %
 %% Cluster data CAA reading and different panel plotting
 % example file for creating a figure (run on brain)
-irf_units;
-cd('/share/Cluster/Test/CAA');
+irf_units; % in case you need phyiscal units, see help of irf_units
+cd('/share/Cluster/Test'); % data directory
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])];
 ic=1;
 CISinstrument='HIA';% alternative 'CODIF'
 if 1, % initialize figure
     fn=figure(61);
-    h=irf_plot(8);
-    %set(fn,'defaultLineLineWidth',1);
+    h=irf_plot(8); % number of panels in the plot
+    %set(fn,'defaultLineLineWidth',1);  % example of making default changes to all figure
 end
 if 1, % plot figures panels
     if 1,   % PANEL: C?       FGM B GSM
@@ -430,6 +430,18 @@ if 1, % plot figures panels
         caxis(hca,[-9 -1]);
         set(hca,'yscale','log','ytick',[1e1 1e2 1e3]);
         irf_zoom(hca,'y',[10 4000]);
+    end
+    if 1,   % PANEL: WHISPER spectrogram 
+        hca=irf_panel('WHISPER spectrogram natural');
+        ic=3;
+        varname=irf_ssub('Electric_Spectral_Power_Density__C?_CP_WHI_NATURAL',ic);
+        [~,dobj,~,varunits]=c_caa_var_get(varname);
+        varunits='(V/m)^2/Hz';
+        % REMOVE 'fillspectgrogramgaps' flag in the next line if precise intervals of
+        % WHISPER measurements are needed !!!!
+        plot(hca,dobj,varname,'colorbarlabel',varunits,'fitcolorbarlabel','fillspectrogramgaps');
+        caxis(hca,[-17 -11]);
+        set(hca,'yscale','log','ytick',[3 5 1e1 20 30 50 ])
     end
     if 1,   % PANEL: RAPID spectrogram
         hca=h(i_subplot);i_subplot=i_subplot+1;
