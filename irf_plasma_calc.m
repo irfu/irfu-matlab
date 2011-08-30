@@ -5,14 +5,14 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 % irf_plasma_calc
 % [Fpe,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B,n,no,Te,Ti,flag);
 %
-%	B - magnetic field [nT]
-%	n - density [cm^-3]
-%	no - content of O+ [% of number density]
-%	Te - electron temperature [eV]
-%	Ti - ion temperature [eV]
+%	B - magnetic field [nT]                 (can be time series with first column time)
+%	n - density [cc]                        (can be time series with first column time only if B also is time series)
+%	no - content of O+ [% of number density](can be time series with first column time only if B also is time series)
+%	Te - electron temperature [eV]          (can be time series with first column time only if B also is time series)
+%	Ti - ion temperature [eV]               (can be time series with first column time only if B also is time series)
 % flag - 1: do not display the output
 % flag - string : return only specified output
-%        string can be 'Fpe','Fce','Flh','Fuh'...
+%        string can be 'Fpe','Fce','Fcp','Flh','Fuh','Fpp'
 %
 % returned variables are in SI units, frequencies in Hz, lengths in m
 %
@@ -66,15 +66,15 @@ if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
 if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
 
 %if time series are supplied then time series shoud be returned
-if size(B,2)>1, % we have time series of density
-    t=B(:,1); % time axis
-    B(:,1)=[]; % delete time column
+if size(B,2)>1,     % we have time series of B
+    t=B(:,1);       % time axis
+    B(:,1)=[];      % delete time column
     if size(B,2)>3; %asssume that column 4 is amplitude, delete other coolumns
         B(:,[1:3 5:end])=[];
     elseif size(B,2)==3, % assume there are three columns Bx,By,Bz
         B(:,4)=sqrt(B(:,1).^2+B(:,2).^2+B(:,3).^2);
-        B(:,1:3)=[]; %leave only amplitude
-    else % do not know what to do if several B columns, take only first
+        B(:,1:3)=[];  %leave only amplitude
+    else              % do not know what to do if several B columns, take only first
         B(:,2:end)=[];
     end
     flag_time_series='yes';
@@ -85,8 +85,8 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
     variables_to_check={'np_cc','no_rel','Te','Ti'};
     for j=1:length(variables_to_check)
         if eval(['size(' variables_to_check{j} ',2)'])>1, % we have time series
-            c_eval('?=irf_resamp(?,t);',variables_to_check{j}) % resample to new time axis
-            c_eval('?(:,[1,3:end])=[];',variables_to_check{j}) % delete time and  other columns
+            c_eval('?=irf_resamp(?,t);',variables_to_check(j)) % resample to new time axis
+            c_eval('?(:,[1,3:end])=[];',variables_to_check(j)) % delete time and  other columns
         elseif eval(['prod(size(' variables_to_check{j} '))==1']), % only one number
             eval([variables_to_check{j} '=repmat(' variables_to_check{j} ',size(t));']);
         else
