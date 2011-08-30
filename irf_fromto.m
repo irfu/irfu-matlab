@@ -83,7 +83,7 @@ switch fromto
     update_fromto(ud,tlim);
   case 'update'
     [tlim step]=get_fromto(ud);
-    irf_zoom(tlim,'x',SUBPLOT_HANDLES);
+    irf_zoom(SUBPLOT_HANDLES,'x',tlim);
     irf_timeaxis(SUBPLOT_HANDLES);
   case 'prev'
     [tlim step]=get_fromto(ud);
