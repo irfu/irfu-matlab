@@ -59,10 +59,19 @@ if nargin >= 3, no_rel=no_inp; end
 if nargin >= 4, Te=Te_inp; end
 if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
+if numel(B)>1; B=B(1); end             % use only the first element in persistent variable
 if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
+
+if numel(np_cc)>1; np_cc=np_cc(1); end % use only the first element in persistent variable
 if nargin < 2, np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);end
+
+if numel(no_rel)>1; no_rel=no_rel(1); end % use only the first element in persistent variable
 if nargin < 3, no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);end
+
+if numel(Te)>1; Te=Te(1); end % use only the first element in persistent variable
 if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
+
+if numel(Ti)>1; Ti=Ti(1); end % use only the first element in persistent variable
 if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
 
 %if time series are supplied then time series shoud be returned
