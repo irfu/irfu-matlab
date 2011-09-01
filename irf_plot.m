@@ -84,7 +84,7 @@ flag_yy = 0;
 scaleyy = 1;
 plot_type = '';
 marker = '-';
-
+flag_plot_all_data=1;
 %% Check input options
 while have_options
     l = 1;
@@ -101,6 +101,14 @@ while have_options
                 else irf_log('fcal,','wrongArgType : dt must be numeric')
                 end
             else irf_log('fcal,','wrongArgType : dt value is missing')
+            end
+        case 'tint'
+            if nargs>1 && isnumeric(args{2})
+                    tint = args{2};
+                    l = 2;
+                    flag_plot_all_data=0;
+                    original_args(find(strcmpi(original_args,'tint'))+ [0 1])=[]; % remove tint argument
+            else irf_log('fcal,','wrongArgType : dt must be numeric')
             end
         case 'yy'
             if nargs>1
@@ -145,7 +153,11 @@ if ischar(x), % Try to get variable labels etc.
             try % If there is none try to load variable
                 if strfind(var_names{ii},'__') % CAA variable
                     caa_varname{ix}=var_names{ii};
-                    [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii});
+                    if flag_plot_all_data,
+                      [~,caa_dataobject{ix},x{ix}]=evalin('caller',['c_caa_var_get(''' var_names{ii} ''')']);
+                    else
+                      [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
+                    end
                 else
                     c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
                 end
