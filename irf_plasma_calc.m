@@ -49,8 +49,10 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 persistent B np_cc no_rel Te Ti
 
 flag_display_values=1;  % dispaly all values on screen
+flag_ask_parameters_interactively=1; % default do ask parameters on command line
 
-if nargin < 6,     noshow = 0;end
+if nargin < 6, noshow = 0; end
+if nargin >= 6, flag_ask_parameters_interactively=0; end
 if nargout,        flag_display_values=0;end
 
 if nargin >= 1, B=B_inp; end
@@ -59,20 +61,32 @@ if nargin >= 3, no_rel=no_inp; end
 if nargin >= 4, Te=Te_inp; end
 if nargin >= 5, Ti=Ti_inp; To=Ti; end % O+ temperature the same as for H+
 
-if numel(B)>1; B=B(1); end             % use only the first element in persistent variable
-if nargin < 1, B=irf_ask('Magnetic field in nT [%] >','B',10);end
-
-if numel(np_cc)>1; np_cc=np_cc(1); end % use only the first element in persistent variable
-if nargin < 2, np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);end
-
-if numel(no_rel)>1; no_rel=no_rel(1); end % use only the first element in persistent variable
-if nargin < 3, no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);end
-
-if numel(Te)>1; Te=Te(1); end % use only the first element in persistent variable
-if nargin < 4, Te=irf_ask('Electron  temperature in eV [%] >','Te',100);end
-
-if numel(Ti)>1; Ti=Ti(1); end % use only the first element in persistent variable
-if nargin < 5, Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; end
+if flag_ask_parameters_interactively
+  if nargin < 1, 
+    if numel(B)>1; B=B(1); end             % use only the first element in persistent variable
+    B=irf_ask('Magnetic field in nT [%] >','B',10);
+  end
+  
+  if nargin < 2, 
+    if numel(np_cc)>1; np_cc=np_cc(1); end % use only the first element in persistent variable
+    np_cc=irf_ask('H+ desity in cc [%] >','np_cc',1);
+  end
+  
+  if nargin < 3, 
+    if numel(no_rel)>1; no_rel=no_rel(1); end % use only the first element in persistent variable
+    no_rel=irf_ask('Oxygen density in percent from H+ density [%] >','no_rel',0);
+  end
+  
+  if nargin < 4, 
+    if numel(Te)>1; Te=Te(1); end % use only the first element in persistent variable
+    Te=irf_ask('Electron  temperature in eV [%] >','Te',100);
+  end
+  
+  if nargin < 5, 
+    if numel(Ti)>1; Ti=Ti(1); end % use only the first element in persistent variable
+    Ti=irf_ask('Ion  temperature in eV [%] >','Ti',1000); To=Ti; 
+  end
+end
 
 %if time series are supplied then time series shoud be returned
 if size(B,2)>1,     % we have time series of B
