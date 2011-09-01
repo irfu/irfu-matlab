@@ -1,13 +1,27 @@
 function caa_load(varargin)
-%Script to load data downloaded from the CAA in CDF format.
+%CAA_LOAD Script to load data downloaded from the CAA in CDF format.
 %Downloaded zip file must be unpacked, and script must be run
-%from a CAA_Download_YYYYMMDD_hhmm directory.
+% from a CAA_Download_YYYYMMDD_hhmm directory  
+% or directory where is subdirectories with all the CAA data object directories 
+% or directory where is subdirectory CAA with all the CAA data object directories. 
+%
+% CAA_LOAD('string1','string2',..)
+%   load only data objects that match string1 & string2 &...
+% CAA_LOAD('string1','string2',...,'tint',tint)
+%   load only time interval tint (good for large files, reads always from file)
+%
 %  Examples:
 %   caa_load
 %   caa_load CIS
 %   caa_load C1 CIS
 %   caa_load Sweep_Energy__C3_CP_PEA_PITCH_SPIN_PSD
+%
+%   tint=[irf_time([2007 9 2 14 25 0]) irf_time([2007 9 2 18 40 0])];
+%   caa_load('C1_CP_FGM','tint',tint);
+%
 % $Id$
+
+% add 'tint=[irf_time([**]) irf_time([***])' option
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -15,13 +29,24 @@ function caa_load(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-
+flag_read_all=1; % default load everything
 flag_filter = 0;
 if nargin > 0, % filter which variables to load
   i=1;
   variable_filter=cell(nargin,1);
   for j=1:length(varargin),
-    if ischar(varargin{j}),
+    if ischar(varargin{j}) && ~isempty(strfind(varargin{j},'tint=')),
+      flag_read_all=0;
+      tint=eval(varargin{j});
+      variable_filter(j:end)=[]; % remove last cells from variable file
+      break;
+    elseif ischar(varargin{j}) && strcmpi(varargin{j},'tint') ...
+        && length(varargin)>j && isnumeric(varargin{j+1}),
+      flag_read_all=0;
+      tint=varargin{j+1};
+      variable_filter(j:end)=[]; % remove last cells from variable file
+      break;
+    elseif ischar(varargin{j})
       if strfind(varargin{j},'__') % variable name specified as input
         dd=regexp(varargin{j}, '__', 'split');
         variable_filter{i}=dd{end};
@@ -59,15 +84,21 @@ for j = 1:numel(dirs)
     if flag_load_variable,
       try
         irf_log('dsrc',['caa_load ' var_name]);
-        if evalin('caller',['exist(''' var_name ''',''var'')']),
+        if flag_read_all && evalin('caller',['exist(''' var_name ''',''var'')']),
           irf_log('dsrc','Variable exist in memory. NOT LOADING FROM FILE!')
         else
-          evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
+          if flag_read_all,
+            evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
+          else
+            assignin('caller','caa_load_tint_temp',tint);
+            evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'',''tint'',caa_load_tint_temp);']);
+            evalin('caller','clear caa_load_tint_temp');
+          end
         end
         nloaded = nloaded + 1;
       catch ME
-          irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
-          irf_log('dsrc',['error loading ' var_name]);
+        irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
+        irf_log('dsrc',['error loading ' var_name]);
       end
     end
   end
