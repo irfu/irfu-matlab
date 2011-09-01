@@ -56,6 +56,10 @@ function caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
+% input 'flags' is in test phase
+%   'test' - use caa test server instead
+%   'overwrite' - overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
+%                 maybe this behavikour should be default
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -132,9 +136,7 @@ end
 
 if ~exist('CAA','dir'), mkdir('CAA');end
 if isnumeric(tint), % assume tint is epoch
-    t1iso=epoch2iso(tint(1));
-    t2iso=epoch2iso(tint(2));
-    tintiso=[t1iso '/' t2iso];
+    tintiso=irf_time(tint,'tint2iso');
 elseif ischar(tint), % tint is in isoformat
     tintiso=tint;
 else % unknown format
