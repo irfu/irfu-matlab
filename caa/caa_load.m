@@ -9,6 +9,8 @@ function caa_load(varargin)
 %   load only data objects that match string1 & string2 &...
 % CAA_LOAD('string1','string2',...,'tint',tint)
 %   load only time interval tint (good for large files, reads always from file)
+% CAA_LOAD('string1','string2',...,'list')
+%   list only the data objects that are on disk 
 %
 %  Examples:
 %   caa_load
@@ -18,10 +20,12 @@ function caa_load(varargin)
 %
 %   tint=[irf_time([2007 9 2 14 25 0]) irf_time([2007 9 2 18 40 0])];
 %   caa_load('C1_CP_FGM','tint',tint);
+%   caa_load FGM list;
 %
 % $Id$
 
-% add 'tint=[irf_time([**]) irf_time([***])' option
+% add 'list' option
+% also 'tint=[irf_time([**]) irf_time([***])' option
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -29,7 +33,8 @@ function caa_load(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-flag_read_all=1; % default load everything
+flag_read_all=1;        % default load everything
+flag_only_list_files=0; % default do not only list files
 flag_filter = 0;
 if nargin > 0, % filter which variables to load
   i=1;
@@ -44,6 +49,11 @@ if nargin > 0, % filter which variables to load
         && length(varargin)>j && isnumeric(varargin{j+1}),
       flag_read_all=0;
       tint=varargin{j+1};
+      variable_filter(j:end)=[]; % remove last cells from variable file
+      break;
+    elseif ischar(varargin{j}) && strcmpi(varargin{j},'list'), % only list whats available
+      flag_read_all=0;
+      flag_only_list_files=1;
       variable_filter(j:end)=[]; % remove last cells from variable file
       break;
     elseif ischar(varargin{j})
@@ -78,6 +88,9 @@ for j = 1:numel(dirs)
       for jj=1:length(variable_filter),
         if isempty(strfind(var_name,variable_filter{jj})),
           flag_load_variable=0;
+        elseif flag_only_list_files
+          disp(var_name);
+          flag_load_variable=0;
         end
       end
     end
@@ -103,6 +116,8 @@ for j = 1:numel(dirs)
     end
   end
 end
-if nloaded, irf_log('dsrc',['=====> loaded ' num2str(nloaded) ' variables']);
-else irf_log('dsrc','CAA_LOAD : nothing to load')
+if nloaded, 
+  irf_log('dsrc',['=====> loaded ' num2str(nloaded) ' variables']);
+elseif ~flag_only_list_files
+  irf_log('dsrc','CAA_LOAD : nothing to load')
 end
