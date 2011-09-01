@@ -33,11 +33,16 @@ function t_out = irf_time(t_in,flag)
 %   date=IRF_TIME([year doy],'doy2date')
 %           convert between date [yyyy mm dd hh mm ss] and doy 
 %
+%   time_int=IRF_TIME(tint,'tint2iso')
+%           convert time interval to iso (first column epoch start time, 2nd epoch end time)  
+%
 %  epoch - seconds since the epoch 1 Jan 1970.
 %   The seconds since epoch time format is the time specification
 %   used by the ISDAT system. 
 %
 % $Id$
+
+% 'tint2iso'
 
 if nargin==1,
     flag='vector2epoch';
@@ -171,6 +176,12 @@ switch lower(flag)
             end
             t_out(n,:) = [year month day];
         end
+        
+  case 'tint2iso'
+        t1iso=irf_time(t_in(:,1),'epoch2iso');
+        t2iso=irf_time(t_in(:,2),'epoch2iso');
+        t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
+
 
     otherwise
         disp('!!! irf_time: unknown flag, not converting.')
