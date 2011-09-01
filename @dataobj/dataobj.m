@@ -5,6 +5,9 @@ function dobj = dataobj(varargin)
 %    Construct dataobj form file FILENAME. FILENAME can also contain
 %    wildcards ('*').
 %
+% DATAOBJ(FILENAME,'tint',tint)
+%       tint - limit dataobject to time interval (good for large files)
+%
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -14,113 +17,144 @@ function dobj = dataobj(varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-switch nargin
-    case 0
-        % if no input arguments, create a default object
-        dobj.FileModDate = datestr(now);
-        dobj.VariableAttributes = {};
-        dobj.GlobalAttributes = {};
-        dobj.Variables = {};
-        dobj.vars = {};
-        dobj = class(dobj,'dataobj');
-    case 1
-        % if single argument of class ClusterDB, return it
-        if (isa(varargin{1},'dataobj'))
-            dobj = varargin{1};
+flag_read_all_data=1; % default read all data
+if nargin==0, action='create_default_object'; end
+if nargin==1, action='read_data_from_file'; end
+if nargin==3 && ...
+    ischar(varargin{2}) && strcmp(varargin{2},'tint') && ...
+    isnumeric(varargin{3}) && (length(varargin{3})==2),
+  tint=varargin{3};
+  irf_log('fcal',['returnig time interval limited data!' irf_time(tint,'tint2iso')])
             
-        elseif ischar(varargin{1})
-            
-            if strfind(varargin{1},'*')
-                cdf_files = dir(varargin{1});
-                if strfind(varargin{1},filesep) % if there is directory in file name
-                    filesep_indexes=strfind(varargin{1},filesep);
-                    directory_name=varargin{1}(1:filesep_indexes(end));
-                else
-                    directory_name='';
-                end
-                switch numel(cdf_files)
-                    case 0
-                        error('no cdf files specified')
-                    case 1
-                        cdf_file = [directory_name cdf_files.name];
-                    otherwise
-                        % remove '.' and '..' from the list
-                        j = 1;
-                        while j<=numel(cdf_files)
-                            if strcmp(cdf_files(j).name,'.') || ...
-                                    strcmp(cdf_files(j).name,'..')
-                                cdf_files(j) = [];
-                            else j = j + 1;
-                            end
-                        end
-                        for j=1:numel(cdf_files),
-                            disp([num2str(j) '. ' cdf_files(j).name]);
-                        end
-                        disp('Choose cdf file');
-                        j = irf_ask('Cdf_file? [%]>','cdf_file',1);
-                        cdf_file = [directory_name cdf_files(j).name];
-                end
-                clear cdf_files
-            else cdf_file = varargin{1};
-            end
-            
-            if ~exist(cdf_file,'file')
-                error(['file ' cdf_file ' does not exist'])
-            end
-            
-            irf_log('dsrc',['Reading: ' cdf_file]);
-            [data,info] = cdfread(cdf_file,...
-                'ConvertEpochToDatenum',true,...
-                'CombineRecords',true);
-            dobj.FileModDate = info.FileModDate;
-            dobj.VariableAttributes = info.VariableAttributes;
-            dobj.GlobalAttributes = info.GlobalAttributes;
-            dobj.Variables = info.Variables;
-            nvars = size(info.Variables,1);
-            dobj.vars = cell(nvars,2);
-            if nvars>0
-                dobj.vars(:,1) = info.Variables(:,1);
-                dobj.vars(:,2) = info.Variables(:,1);
-                for v=1:nvars
-                    % Replace minuses with underscores
-                    dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
-                    % Remove training dots
-                    while (dobj.vars{v,1}(end) == '.')
-                        dobj.vars{v,1}(end) = [];
-                    end
-                    % Take care of '...'
-                    d3 = strfind(dobj.vars{v,1},'...');
-                    if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
-                    % Replace dots with underscores
-                    dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
-                    % Add "x" if the varible name starts with a number
-                    if ~isletter(dobj.vars{v,1}(1)),
-                        dobj.vars{v,1}=['x' dobj.vars{v,1}];
-                    end
-                    % Take care of names longer than 63 symbols (Matlab limit)
-                    if length(dobj.vars{v,1})>63
-                        dobj.vars{v,1} = dobj.vars{v,1}(1:63);
-                        disp(['orig var : ' dobj.vars{v,2}])
-                        disp(['new var  : ' dobj.vars{v,1}])
-                    end
-                    dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
-                    dobj.data.(dobj.vars{v,1}).dim = info.Variables{v,2};
-                    dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
-                    dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
-                    dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
-                    dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
-                    %Convert to isdat epoch
-                    if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
-                        dobj.data.(dobj.vars{v,1}).data = date2epoch(dobj.data.(dobj.vars{v,1}).data);
-                    end
-                end
-            else
-                dobj.data = [];
-            end
-            dobj = class(dobj,'dataobj');
+  flag_read_all_data=0;
+  action='read_data_from_file';
+end
+switch action
+  case 'create_default_object'
+    % if no input arguments, create a default object
+    dobj.FileModDate = datestr(now);
+    dobj.VariableAttributes = {};
+    dobj.GlobalAttributes = {};
+    dobj.Variables = {};
+    dobj.vars = {};
+    dobj = class(dobj,'dataobj');
+  case 'read_data_from_file'
+    % if single argument of class ClusterDB, return it
+    if (isa(varargin{1},'dataobj'))
+      dobj = varargin{1};
+      
+    elseif ischar(varargin{1})
+      
+      if strfind(varargin{1},'*')
+        cdf_files = dir(varargin{1});
+        if strfind(varargin{1},filesep) % if there is directory in file name
+          filesep_indexes=strfind(varargin{1},filesep);
+          directory_name=varargin{1}(1:filesep_indexes(end));
         else
-            error('Wrong argument type')
+          directory_name='';
         end
-    otherwise
-        error('Wrong number of input arguments')
+        switch numel(cdf_files)
+          case 0
+            error('no cdf files specified')
+          case 1
+            cdf_file = [directory_name cdf_files.name];
+          otherwise
+            % remove '.' and '..' from the list
+            j = 1;
+            while j<=numel(cdf_files)
+              if strcmp(cdf_files(j).name,'.') || ...
+                  strcmp(cdf_files(j).name,'..')
+                cdf_files(j) = [];
+              else j = j + 1;
+              end
+            end
+            for j=1:numel(cdf_files),
+              disp([num2str(j) '. ' cdf_files(j).name]);
+            end
+            disp('Choose cdf file');
+            j = irf_ask('Cdf_file? [%]>','cdf_file',1);
+            cdf_file = [directory_name cdf_files(j).name];
+        end
+        clear cdf_files
+      else cdf_file = varargin{1};
+      end
+      
+      if ~exist(cdf_file,'file')
+        error(['file ' cdf_file ' does not exist'])
+      end
+      
+      irf_log('dsrc',['Reading: ' cdf_file]);
+      [data,info] = cdfread(cdf_file,...
+        'ConvertEpochToDatenum',true,...
+        'CombineRecords',true);
+      if flag_read_all_data==0, % check which records to return later
+        info=cdfinfo(cdf_file);
+        timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
+        timeline = irf_time(cdfread(cdf_file,'Variable',{timevar},'ConvertEpochToDatenum',true,'CombineRecords',true),'date2epoch');
+        records_within_interval=find((timeline > tint(1)) & (timeline < tint(2)));
+      end
+      dobj.FileModDate = info.FileModDate;
+      dobj.VariableAttributes = info.VariableAttributes;
+      dobj.GlobalAttributes = info.GlobalAttributes;
+      dobj.Variables = info.Variables;
+      nvars = size(info.Variables,1);
+      dobj.vars = cell(nvars,2);
+      if nvars>0
+        dobj.vars(:,1) = info.Variables(:,1);
+        dobj.vars(:,2) = info.Variables(:,1);
+        for v=1:nvars
+          % Replace minuses with underscores
+          dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
+          % Remove training dots
+          while (dobj.vars{v,1}(end) == '.')
+            dobj.vars{v,1}(end) = [];
+          end
+          % Take care of '...'
+          d3 = strfind(dobj.vars{v,1},'...');
+          if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
+          % Replace dots with underscores
+          dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
+          % Add "x" if the varible name starts with a number
+          if ~isletter(dobj.vars{v,1}(1)),
+            dobj.vars{v,1}=['x' dobj.vars{v,1}];
+          end
+          % Take care of names longer than 63 symbols (Matlab limit)
+          if length(dobj.vars{v,1})>63
+            dobj.vars{v,1} = dobj.vars{v,1}(1:63);
+            disp(['orig var : ' dobj.vars{v,2}])
+            disp(['new var  : ' dobj.vars{v,1}])
+          end
+          if flag_read_all_data, % return all data
+            dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
+            dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
+          else
+            data_all_records=[data{:,v}];
+            if numel(size(data_all_records))==2,
+              data_records_within_interval=data_all_records(records_within_interval,:);
+            elseif numel(size(data_all_records))==3,
+              data_records_within_interval=data_all_records(records_within_interval,:,:);
+            elseif numel(size(data_all_records))==4,
+              data_records_within_interval=data_all_records(records_within_interval,:,:,:);
+            end
+            dobj.data.(dobj.vars{v,1}).data = data_records_within_interval;
+            dobj.data.(dobj.vars{v,1}).nrec = numel(records_within_interval);
+          end
+          dobj.data.(dobj.vars{v,1}).dim = info.Variables{v,2};
+          dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
+          dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
+          dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
+          %Convert to isdat epoch
+          if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
+            dobj.data.(dobj.vars{v,1}).data = date2epoch(dobj.data.(dobj.vars{v,1}).data);
+          end
+        end
+      else
+        dobj.data = [];
+      end
+      dobj = class(dobj,'dataobj');
+    else
+      error('Wrong argument type')
+    end
+  otherwise
+    error('Wrong number of input arguments')
 end
