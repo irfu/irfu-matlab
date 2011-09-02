@@ -14,7 +14,12 @@ function hout=c_pl_sc_conf_xyz(time,coord_sys,flag,spacecraft)
 
 %   figuserdata=[h];
 % eval_figuserdata='figuserdata={h};';
-cluster_marker={'ks','rd','go','bv'};
+cluster_marker={{'ks','markersize',12},{'rd','markersize',12},...
+  {'go','markersize',12,'color',[0 0.6 0]},{'bv','markersize',12}};
+cluster_marker_small={{'ks','markersize',8},{'rd','markersize',8},...
+  {'go','markersize',8,'color',[0 0.6 0]},{'bv','markersize',8}};
+cluster_marker_shaded={{'ks','color',[0.3 0.3 0.3]},...
+  {'rd','color',[1 0.3 0.3]},{'go','color',[.3 1 .3]},{'bv','color',[.3 .3 1]}};
 
 if       (nargin==1 && ischar(time)),
     action=time;
@@ -70,6 +75,7 @@ switch lower(action)
             'Tag','cplscconfXYZ');
         set(figNumber,'defaultLineLineWidth', 1.5);
         set(figNumber,'defaultAxesFontSize', 12);
+        set(figNumber,'defaultTextFontSize', 12);
         set(figNumber,'defaultAxesFontUnits', 'pixels');
         menus;
         data.t=t;
@@ -161,13 +167,29 @@ switch lower(action)
         h(2)=axes('position',[0.59 0.56 0.3 0.36]); % [x y dx dy]
         h(3)=axes('position',[0.1  0.06 0.3 0.36]); % [x y dx dy]
         h(4)=axes('position',[0.59 0.06 0.3 0.36]); % [x y dx dy]
-	    h(21) = axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
-	    h(22) = axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
-	    h(23) = axes('Position',get(h(3),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        h(21) = axes('Position',get(h(1),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        h(22) = axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
+        h(23) = axes('Position',get(h(3),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
         axis(h(4),'off');hold(h(4),'on');
         data.h=h;
         data.flag_show_cluster_description=1; % show cluster description
         data.plot_type='compact';
+        set(gcf,'userdata',data);
+        c_pl_sc_conf_xyz(data.coord_label);
+    case 'config3d'
+        data=get(gcf,'userdata');
+        clf;menus;
+        set(gcf,'userdata',data);
+        ss=get(0,'screensize');
+        sfactor=max([1 700/(ss(3)-80) 1000/(ss(4)-80)]);
+        set(gcf,'Position',[10 ss(4)-80-500/sfactor 500/sfactor 500/sfactor]);
+        initialize_figure;
+        h=[];
+        h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
+        data.h=h;
+        data.flag_show_cluster_description=1; % show cluster description
+        data.plot_type='config3d';
+        data.flag_show_cluster_description=0;
         set(gcf,'userdata',data);
         c_pl_sc_conf_xyz(data.coord_label);
     case 'lmn'
@@ -259,7 +281,7 @@ switch lower(action)
         switch data.plot_type
             case 'default'
                 cla(h(1));
-                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker{?});hold(h(1),''on'');',sc_list);
+                c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker_small{?}{:});hold(h(1),''on'');',sc_list);
                 xlabel(h(1),['X [R_E] ' coord_label]);
                 ylabel(h(1),['Z [R_E] '  coord_label]);
                 grid(h(1),'on')
@@ -270,13 +292,13 @@ switch lower(action)
                 
                 %  axes(h(1));      title(titlestr);
                 cla(h(2));
-                c_eval('plot(h(2),XRe?(3),XRe?(4),cluster_marker{?});hold(h(2),''on'');',sc_list);
+                c_eval('plot(h(2),XRe?(3),XRe?(4),cluster_marker_small{?}{:});hold(h(2),''on'');',sc_list);
                 xlabel(h(2),['Y [R_E] ' coord_label]);
                 ylabel(h(2),['Z [R_E] ' coord_label]);
                 grid(h(2),'on');
                  
                 cla(h(3));
-                c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker{?});hold(h(3),''on'');',sc_list);
+                c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker_small{?}{:});hold(h(3),''on'');',sc_list);
                 xlabel(h(3),['X [R_E] ' coord_label]);
                 ylabel(h(3),['Y [R_E] ' coord_label]);
                 grid(h(3),'on');
@@ -287,7 +309,7 @@ switch lower(action)
                 add_Earth(h(3));
                 
                 cla(h(4));
-                c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(4)^2),cluster_marker{?});hold(h(4),''on'');',sc_list);
+                c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(4)^2),cluster_marker_small{?}{:});hold(h(4),''on'');',sc_list);
                 xlabel(h(4),['X [R_E] ' coord_label]);
                 ylabel(h(4),['sqrt (Y^2+Z^2) [R_E] ' coord_label]);
                 grid(h(4),'on');
@@ -297,7 +319,7 @@ switch lower(action)
                 add_Earth(h(4));
                 
                 cla(h(5));
-                c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?});hold(h(5),''on'');',sc_list);
+                c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?}{:});hold(h(5),''on'');',sc_list);
                 xlabel(h(5),['X [km] ' coord_label]);
                 ylabel(h(5),['Z [km] ' coord_label]);
                 grid(h(5),'on');
@@ -305,14 +327,14 @@ switch lower(action)
                 set(h(5),'xdir','reverse')
                 
                 cla(h(6));
-                c_eval('plot(h(6),x?(3),x?(4),cluster_marker{?});hold(h(6),''on'');',sc_list);
+                c_eval('plot(h(6),x?(3),x?(4),cluster_marker{?}{:});hold(h(6),''on'');',sc_list);
                 xlabel(h(6),['Y [km] ' coord_label]);
                 ylabel(h(6),['Z [km] ' coord_label]);
                 grid(h(6),'on');
                 axis(h(6),[-drref drref -drref drref]);
                 
                 cla(h(7));
-                c_eval('plot(h(7),x?(2),x?(3),cluster_marker{?});hold(h(7),''on'');',sc_list);
+                c_eval('plot(h(7),x?(2),x?(3),cluster_marker{?}{:});hold(h(7),''on'');',sc_list);
                 xlabel(h(7),['X [km] ' coord_label]);
                 ylabel(h(7),['Y [km] ' coord_label]);
                 grid(h(7),'on');
@@ -323,7 +345,7 @@ switch lower(action)
             case 'compact'
                 
                 hold(h(1),'off');
-                c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?});hold(h(1),''on'');',sc_list);
+                c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?}{:});hold(h(1),''on'');',sc_list);
                 xlabel(h(1),['{\Delta}X [km] ' coord_label]);
                 ylabel(h(1),['{\Delta}Z [km] ' coord_label]);
                 set(h(1),'xdir','reverse');
@@ -343,7 +365,7 @@ switch lower(action)
                 set(h(21),'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
                 cla(h(2));
-                c_eval('plot(h(2),x?(3),x?(4),cluster_marker{?});hold(h(2),''on'');',sc_list);
+                c_eval('plot(h(2),x?(3),x?(4),cluster_marker{?}{:});hold(h(2),''on'');',sc_list);
                 xlabel(h(2),['{\Delta}Y [km] ' coord_label]);
                 ylabel(h(2),['{\Delta}Z [km] ' coord_label]);
                 grid(h(2),'on');
@@ -359,7 +381,7 @@ switch lower(action)
                 set(h(22),'xticklabel',xtlax2,'yticklabel',ytlax2);
                 
                 cla(h(3));
-                c_eval('plot(h(3),x?(2),x?(3),cluster_marker{?});hold(h(3),''on'');',sc_list);
+                c_eval('plot(h(3),x?(2),x?(3),cluster_marker{?}{:});hold(h(3),''on'');',sc_list);
                 xlabel(h(3),['{\Delta}X [km] ' coord_label]);
                 ylabel(h(3),['{\Delta}Y [km] ' coord_label]);
                 grid(h(3),'on');
@@ -375,6 +397,35 @@ switch lower(action)
                 xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
                 ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
                 set(h(23),'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
+            case 'config3d'
+                
+                hold(h(1),'off');
+                c_eval('plot3(h(1),-drref,x?(3),x?(4),cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
+                c_eval('plot3(h(1),x?(2),-drref,x?(4),cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
+                c_eval('plot3(h(1),x?(2),x?(3),-drref,cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
+                axis(h(1),[-drref drref -drref drref -drref drref ]);
+                for ii=1:4, 
+                  for jj=ii+1:4,
+                    if any(find(sc_list==ii)) && any(find(sc_list==jj)),
+                      c_eval('line([x?(2) x!(2)],[x?(3) x!(3)],[x?(4) x!(4)],''parent'',h(1),''linewidth'',2,''linestyle'',''-'',''color'',[0.6 0.6 0.6])',ii,jj);
+                    end
+                  end
+                end
+                c_eval('line([x?(2) -drref],[x?(3) x?(3)],[x?(4) x?(4)],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
+                c_eval('line([x?(2) x?(2)],[x?(3) -drref],[x?(4) x?(4)],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
+                c_eval('line([x?(2) x?(2)],[x?(3) x?(3)],[x?(4) -drref],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
+                line([-drref drref],[-drref -drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
+                line([-drref -drref],[-drref drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
+                line([-drref -drref],[-drref -drref],[-drref drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
+                c_eval('plot3(h(1),x?(2),x?(3),x?(4),cluster_marker{?}{:});hold(h(1),''on'');',sc_list);
+                text(0.1,1,0,irf_time(data.t,'isoshort'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
+                xlabel(h(1),['{\Delta}X [km] ' coord_label]);
+                ylabel(h(1),['{\Delta}Y [km] ' coord_label]);
+                zlabel(h(1),['{\Delta}Z [km] ' coord_label]);
+                set(h(1),'xdir','reverse');
+                set(h(1),'ydir','reverse');
+                grid(h(1),'on');
+                axis(h(1),[-drref drref -drref drref]);
                 
             case 'lmn'
                 
@@ -415,7 +466,7 @@ switch lower(action)
             case 'supercompact'
                 ax1=h(1);ax1_2=h(21);
                 hold(ax1,'off');
-                c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?}{:},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
                 set(ax1,'xdir','reverse')
@@ -436,12 +487,12 @@ switch lower(action)
                 %  axes(h(1));      title(titlestr);
                 ax1=h(2);ax1_2=h(22);
                 hold(ax1,'off');
-                c_eval('plot(ax1,x?(3),x?(4),cluster_marker{?});hold(ax1,''on'');',sc_list);
+                c_eval('plot(ax1,x?(3),x?(4),cluster_marker{?}{:});hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}Y [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
                 grid(ax1,'on');
                 axis(ax1,[-drref drref -drref drref]);
-                c_eval('text(x?(3),x?(4),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
+                c_eval('text(x?(3),x?(4),''   C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
                 text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
@@ -456,7 +507,7 @@ switch lower(action)
                 
                 ax1=h(1);ax1_2=h(21);
                 hold(ax1,'off');
-                c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?}{:},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
                 set(ax1,'xdir','reverse')
@@ -476,13 +527,13 @@ switch lower(action)
                 
                 ax1=h(2);ax1_2=h(22);
                 hold(ax1,'off');
-                c_eval('plot(ax1,x?(2),x?(3),cluster_marker{?},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
+                c_eval('plot(ax1,x?(2),x?(3),cluster_marker{?}{:},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
                 xlabel(ax1,['{\Delta}X [km] ' coord_label]);
                 ylabel(ax1,['{\Delta}Y [km] ' coord_label]);
                 set(ax1,'xdir','reverse','ydir','reverse')
                 grid(ax1,'on');
                 axis(ax1,[-drref drref -drref drref]);
-                c_eval('text(x?(2),x?(3),''  C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
+                c_eval('text(x?(2),x?(3),''   C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
                 text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
                 
                 xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
@@ -570,6 +621,7 @@ if isempty(findobj(gcf,'type','uimenu','label','&Options'))
     uimenu(hcoordfigmenu,'Label','&GSE','Callback','c_pl_sc_conf_xyz(''GSE'')','Accelerator','G')
     uimenu(hcoordfigmenu,'Label','GS&M','Callback','c_pl_sc_conf_xyz(''GSM'')','Accelerator','M')
     uimenu(hcoordfigmenu,'Label','normal','Callback','c_pl_sc_conf_xyz(''default'')')
+    uimenu(hcoordfigmenu,'Label','config3D','Callback','c_pl_sc_conf_xyz(''config3D'')')
     uimenu(hcoordfigmenu,'Label','compact','Callback','c_pl_sc_conf_xyz(''compact'')')
     uimenu(hcoordfigmenu,'Label','supercompact','Callback','c_pl_sc_conf_xyz(''supercompact'')')
     uimenu(hcoordfigmenu,'Label','supercompact2','Callback','c_pl_sc_conf_xyz(''supercompact2'')')
