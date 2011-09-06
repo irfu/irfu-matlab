@@ -168,6 +168,12 @@ if length(dd)==2, % data object can be properly identifide
   dataobj_name=dd{end};
   if strcmp(dataobj_name,'C3_CP_PEA_'), % the bad case of PEACE
     dataobj_name='C3_CP_PEA_MOMENTS';
+  elseif strcmp(dataobj_name,'C2_CP_PEA_'), % the bad case of PEACE
+    dataobj_name='C2_CP_PEA_MOMENTS';
+  elseif strcmp(dataobj_name,'C1_CP_PEA_'), % the bad case of PEACE
+    dataobj_name='C1_CP_PEA_MOMENTS';
+  elseif strcmp(dataobj_name,'C4_CP_PEA_'), % the bad case of PEACE
+    dataobj_name='C4_CP_PEA_MOMENTS';
   end
 elseif length(dd)==3, % the case of PEACE moments
   if strcmp(dd{3},'MOMENTS'),
