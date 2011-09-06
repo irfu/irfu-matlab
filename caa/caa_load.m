@@ -94,6 +94,13 @@ for j = 1:numel(dirs)
         end
       end
     end
+    if flag_filter == 0 && isempty(variable_filter),
+      flag_load_variable=0;
+      if flag_only_list_files,
+        disp(var_name);
+      end
+    end
+
     if flag_load_variable,
       try
         irf_log('dsrc',['caa_load ' var_name]);
