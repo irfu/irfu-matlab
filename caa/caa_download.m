@@ -1,4 +1,4 @@
-function caa_download(tint,dataset,flags)
+function download_status=caa_download(tint,dataset,flags)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -6,7 +6,8 @@ function caa_download(tint,dataset,flags)
 %
 %       CAA_DOWNLOAD(tint,'list') - list all datasets available
 %       CAA_DOWNLOAD(tint,'list:filter') - list all datasets corresponding to filter
-%
+%       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download 
+%             snd 0 if request is put in the queue, the information of queued requests is saved in file ".caa"
 %
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
@@ -195,7 +196,9 @@ else  % download data
         disp('unzipped data files.');
         move_to_caa_directory(filelist);
         delete(temp_file);
-    catch
+        if nargout==1, download_status=1;end
+    catch ME
+        irf_log('fcal',['Could not find zip file with data! ' ME.identifier]);
         fid=fopen(temp_file);
         while 1
             tline = fgetl(fid);
@@ -216,8 +219,11 @@ else  % download data
             caa{j}.zip = downloadfile;
             caa{j}.status = 'SUBMITTED';
             caa{j}.timeofrequest = now;
+            if nargout==1, download_status=0; end
             
             disp('=====');
+            disp('The request has been put in queue');
+            disp(['When ready data will be downloaded from: ' downloadfile]);
             disp('To check the status of jobs execute: caa_download');
             
             save -mat .caa caa
