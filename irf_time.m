@@ -19,7 +19,7 @@ function t_out = irf_time(t_in,flag)
 %   time_iso=IRF_TIME(epoch,'isoshort')
 %           convert to ISO short format time
 %
-%   time_yyyymmdd=IRF_TIME(epoch,'epoch2yyyymmdd')
+%   time_yyyymmdd=IRF_TIME(epoch,'epoch2yyyymmdd') similar with yyyymmddhh and yyyymmddhhmm 
 %   time_yyyymmdd=IRF_TIME(epoch,'yyyymmdd')
 %
 %   date=IRF_TIME(epoch,'epoch2date')
@@ -148,9 +148,22 @@ switch lower(flag)
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
         
+  case 'tint2iso'
+        t1iso=irf_time(t_in(:,1),'epoch2iso');
+        t2iso=irf_time(t_in(:,2),'epoch2iso');
+        t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
+
     case {'yyyymmdd','epoch2yyyymmdd'}
         t=irf_time(t_in,'epoch2vector');
         t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
+        
+    case {'yyyymmddhh','epoch2yyyymmddhh'}
+        t=irf_time(t_in,'epoch2vector');
+        t_out=sprintf('%04d%02d%02d%02d',t(1),t(2),t(3),t(4));
+        
+    case {'yyyymmddhhmm','epoch2yyyymmddhhmm'}
+        t=irf_time(t_in,'epoch2vector');
+        t_out=sprintf('%04d%02d%02d%02d%02d',t(1),t(2),t(3),t(4),t(5));
         
     case 'date2doy'
           if nargin<1, help date2doy, return, end
@@ -177,12 +190,6 @@ switch lower(flag)
             t_out(n,:) = [year month day];
         end
         
-  case 'tint2iso'
-        t1iso=irf_time(t_in(:,1),'epoch2iso');
-        t2iso=irf_time(t_in(:,2),'epoch2iso');
-        t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
-
-
     otherwise
         disp('!!! irf_time: unknown flag, not converting.')
         t_out=t_in;
