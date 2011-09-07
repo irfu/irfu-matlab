@@ -29,9 +29,9 @@ function t_out = irf_time(t_in,flag)
 %   epoch=IRF_TIME(date,'date2epoch')
 %           convert from Matlab date to epoch 
 %
-%   doy=IRF_TIME(date,'date2doy')
-%   date=IRF_TIME([year doy],'doy2date')
-%           convert between date [yyyy mm dd hh mm ss] and doy 
+%   doy=IRF_TIME(time_vector,'vector2doy')
+%   time_evctor=IRF_TIME([year doy],'doy2vector')
+%           convert between time [yyyy mm dd hh mm ss] and doy 
 %
 %   time_int=IRF_TIME(tint,'tint2iso')
 %           convert time interval to iso (first column epoch start time, 2nd epoch end time)  
@@ -144,7 +144,9 @@ switch lower(flag)
     case {'date','epoch2date'} % matlab date
         % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
-        
+    case 'vector2date'
+        t=irf_time(t_in,'vector2epoch');
+        t_out=irf_time(t,'epoch2date');
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
         
@@ -165,19 +167,19 @@ switch lower(flag)
         t=irf_time(t_in,'epoch2vector');
         t_out=sprintf('%04d%02d%02d%02d%02d',t(1),t(2),t(3),t(4),t(5));
         
-    case 'date2doy'
-          if nargin<1, help date2doy, return, end
-          eomdays = eomday(t_in(:,1)*ones(1,12),ones(length(t_in(:,1)),1) *(1:12));
-          doy=[];
-          for k=1:size(t_in,1)
-              t_out = [doy; sum( eomdays(k,1:t_in(k,2)-1),2)];
-          end
-          t_out = t_out + t_in(:,3);
+    case 'vector2doy'
+        dateend=irf_time(t_in,'vector2date');
+        datestart=irf_time([t_in(:,1) t_in(:,1).*0+1 t_in(:,1).*0+1 repmat(t_in(:,1).*0,1,3)],'vector2date');
+        t_out=floor(dateend-datestart+1);
           
-    case 'doy2date'
+    case {'doy','epoch2doy'}
+          t=irf_time(t_in,'epoch2vector');
+          t_out=irf_time(t,'vector2doy');
+          
+    case 'doy2vector'
         YEAR=t_in(:,1);
         DOY=t_in(:,2);
-        t_out = ones(length(YEAR(:,1)),3);
+        t_out = ones(length(YEAR(:,1)),6);
         for n=1:length(YEAR(:,1))
             year = YEAR(n,:); doy  =  DOY(n,:);
             total_day = cumsum(eomday(year,1:12));
@@ -187,10 +189,10 @@ switch lower(flag)
             else
                 day = doy;
             end
-            t_out(n,:) = [year month day];
+            t_out(n,:) = [year month day 0 0 0];
         end
         
     otherwise
-        disp('!!! irf_time: unknown flag, not converting.')
+        disp(['!!! irf_time: unknown flag ''' lower(flag) ''', not converting.'])
         t_out=t_in;
 end
