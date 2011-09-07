@@ -84,15 +84,15 @@ if nargin==0,    % check/show status of downloads
         return;
     end
     j_remove_jobs=zeros(1,length(caa));
-    j_finnished_jobs=zeros(1,length(caa));
+    j_finished_jobs=zeros(1,length(caa));
     for j=1:length(caa), % go through jobs
-        if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') , % do nothing
-            j_finnished_jobs(j)=1;
+        if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') || strcmpi(caa{j}.status,'finished') % 'finnished shoudl be removed after some time % do nothing
+            j_finished_jobs(j)=1;
         elseif strcmpi(caa{j}.status,'submitted'),
             disp(['=== Checking status of job nr: ' num2str(j) '==='])
             [f,status]=urlwrite(caa{j}.zip,'delme.zip');
             if status == 0,
-                disp(['STILL WAITING TO FINNISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
+                disp(['STILL WAITING TO FINISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
                 if now-caa{j}.timeofrequest>1, % waiting more than 1 day
                     y=input('Waiting more than 24h. Delete from list? y/n :','s');
                     if strcmpi(y,'y'),
@@ -103,7 +103,7 @@ if nargin==0,    % check/show status of downloads
                 filelist=unzip(f);
                 move_to_caa_directory(filelist);
                 delete(f);
-                caa{j}.status='FINNISHED';
+                caa{j}.status='FINISHED';
                 save -mat .caa caa; % changes in caa saved
             end
         else
@@ -111,10 +111,10 @@ if nargin==0,    % check/show status of downloads
             return
         end
     end
-    if sum(j_finnished_jobs)>5, % ask for cleanup
-        y=input('Shall I remove FINNISHED from the list? y/n :','s');
+    if sum(j_finished_jobs)>5, % ask for cleanup
+        y=input('Shall I remove FINISHED from the list? y/n :','s');
         if strcmpi(y,'y'),
-            j_remove_jobs=j_remove_jobs | j_finnished_jobs;
+            j_remove_jobs=j_remove_jobs | j_finished_jobs;
         end
     end
     caa(j_remove_jobs==1)=[];
