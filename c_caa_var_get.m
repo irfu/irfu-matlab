@@ -12,7 +12,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
 %  var=C_CAA_VAR_GET(varname,'mat') return only in matlab matrix format
-%  dobj=C_CAA_VAR_GET(varname,'mat') return only data object
+%  dobj=C_CAA_VAR_GET(varname,'dobj') return only data object
 %  unit=C_CAA_VAR_GET(varname,'unit') return only units
 %
 %  C_CAA_VAR_GET(varname,'tint',tint) get only the interval specified by tint
@@ -25,7 +25,6 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %   [~,~,xm]=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF');
 
 % TODO: add options:
-% 'output'(parameters 'dobj','caa','mat','dataunits')
 % 'source'(parameters 'file','fast')
 
 %% Check input options
@@ -59,29 +58,17 @@ while nargs
       showdep(dobj,varnames)
       return;
     case 'mat' % return matlab format only
-      if nargin>2,
-        irf_log('fcal','WARNING!!!! wrong input parameters, see help.');
-      else
-        flag_return_mat_only=1;
-        flagmat=1;
-        flagvar=0;
-      end    
+      flag_return_mat_only=1;
+      flagmat=1;
+      flagvar=0;
     case 'dobj' % return matlab format only
-      if nargin>2,
-        irf_log('fcal','WARNING!!!! wrong input parameters, see help.');
-      else
-        flag_return_dobj_only=1;
-        flagdobj=1;
-        flagvar=0;
-      end    
+      flag_return_dobj_only=1;
+      flagdobj=1;
+      flagvar=0;
     case {'unit','units'} % return matlab format only
-      if nargin>2,
-        irf_log('fcal','WARNING!!!! wrong input parameters, see help.');
-      else
-        flag_return_unit_only=1;
-        flagunit=1;
-        flagvar=0;
-      end    
+      flag_return_unit_only=1;
+      flagunit=1;
+      flagvar=0;
     case 'tint'                          % load specified time interval
       if nargs>1
         if isnumeric(args{2})
