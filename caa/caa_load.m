@@ -88,10 +88,11 @@ for j = 1:numel(dirs)
       for jj=1:length(variable_filter),
         if isempty(strfind(var_name,variable_filter{jj})),
           flag_load_variable=0;
-        elseif flag_only_list_files
-          disp(var_name);
-          flag_load_variable=0;
         end
+      end
+      if flag_load_variable && flag_only_list_files
+        disp(var_name);
+        flag_load_variable=0;
       end
     end
     if flag_filter == 0 && isempty(variable_filter),
