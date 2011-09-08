@@ -14,14 +14,33 @@ function f = irf_get_data( tint, parameter , database, format)
 %   ff= irf_get_data(tint,'f10.7','omni');
 
 % http://omniweb.gsfc.nasa.gov/html/ow_data.html
-
-if nargin == 0,
+nargs=nargin; % number of defined input arguments
+flag_tint_not_defined=0;
+if ischar(tint), % tint not specified
+  flag_tint_not_defined=1;
+  if nargin==2,
+    database=parameter;parameter=tint;
+  elseif nargin==3,
+    format=database;database=parameter;parameter=tint;
+  end
+  irf_log('fcal',['Reading ' parameter ' from database: ' database '.']);
+  irf_log('fcal','Time interval not specified. Analyzing if tint exists.');
+  if evalin('caller','exist(''tint'',''var'')'),
+    irf_log('fcal','Using existing tint variable values.');
+    flag_tint_not_defined=0;
+    tint=evalin('caller','tint');
+    nargs=nargs+1;
+  else
+      irf_log('fcal','tint not defined, reading all data.');
+  end
+end
+if nargs == 0,
   help irf_get_data;
   return;
-elseif nargin < 3;
+elseif nargs < 3;
   irf_cal('fcal','Wrong number of inputs, see help.');
   return;
-elseif nargin==3,
+elseif nargs==3,
   format=[]; % default format is empty
 end
 
@@ -39,7 +58,11 @@ switch lower(database)
     if isempty(format),
       format='mat'; % default value
     end
+    if flag_tint_not_defined,
+      f=c_caa_var_get(parameter,format);
+    else
       f=c_caa_var_get(parameter,format,'tint',tint);
+    end
   otherwise
       error(['Unknown database: ' database]);
 end
