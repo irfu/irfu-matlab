@@ -55,6 +55,10 @@ function c=irf_plot(varargin)
 %% Check input 
 [ax,args,nargs] = axescheck(varargin{:});
 x=args{1};
+if isempty(x), % nothing to plot, first input parameter empty
+  return;
+end
+  
 if isnumeric(x), % check if single number argument, to initialize only subplots
     if numel(x)==1, % only one number
         if x>1 && x<20,
