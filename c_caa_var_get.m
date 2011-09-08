@@ -92,7 +92,7 @@ end
 
 jloaded=0;
 if nargout, % initialize return variables to empty
-  res=cell(1,length(varargin));
+  res=cell(1,length(varargin(1)));
   resdataobject=res;resmat=res;resunit=res;
 end
 
@@ -132,7 +132,9 @@ for j=1:length(varargin),
     end
   end
 end
-if jloaded ==1, % return variables and not cell arrays
+if jloaded==0, % nothing is loaded, return empty
+  res=[];resdataobject=[];resmat=[];resunit=[];
+elseif jloaded ==1, % return variables and not cell arrays
   res=res{1};
   resdataobject=resdataobject{1};
   resmat=resmat{1};
