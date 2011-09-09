@@ -25,7 +25,7 @@ elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
     t=Dp;
     tint=t + [-2 2]*3600;
     if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
-        dpbz=omni(tint,'P,bzgsm');
+        dpbz=irf_get_data(tint,'P,bzgsm','omni');
     end
     if isempty(dpbz),
         Dp=2;Bz=0;
