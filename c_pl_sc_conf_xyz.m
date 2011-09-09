@@ -565,7 +565,7 @@ switch lower(action)
             set(ht,'interpreter','none');
             htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
             set(htime,'fontsize',12);
-            ff=omni(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm');
+            ff=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
             if ~isempty(ff),
                 fft=irf_resamp(ff,data.t);
                 irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(fft(2),'%6.1f') '[nPa],\newline Bx=' num2str(fft(3),'%6.1f') ',By=' num2str(fft(4),'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
