@@ -5,6 +5,9 @@ function f = irf_get_data( tint, parameter , database, format)
 %       default f is column vector, first column time and parameters in next columns
 %       parameters - string, data names separated by comma (case does not matter).
 %
+% f=IRF_GET_DATA(parameter,database) checking if tint defined in calling environment and using that one 
+%       if tint not defined reading all data
+%
 % database:  'omni2'    - 1h resolution OMNI2 data (default), see also IRF_GET_DATA_OMNI
 %            'omni_min' - 1min resolution OMNI data
 %            'caa'      - Cluster Active Archive, see also C_CAA_VAR_GET
