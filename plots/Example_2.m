@@ -29,7 +29,7 @@ h=irf_plot(6); % 5 subplots
 % new panel
 hca=irf_panel('C1..C4 FGM BZ GSM');
 % read data
-c_eval('B?=irf_get_data(tint,''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''caa'');');
+c_eval('B?=irf_get_data(tint,''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''caa'',''mat'');');
 c_eval('gsmB?=irf_gse2gsm(B?);');
 % plot
 c_pl_tx(hca,'gsmB?',4)
