@@ -1,31 +1,37 @@
+%%%%%%%%%%%%%%%%%%%%%%%
+% go to new/empty directory 
+% >cd new_directory
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])]; % time interval
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% download data from CAA (needed only once)
-if 0, % put to 1 if needed to download
+% download data from CAA (needed only once!!!!!)
+if 1, % put to 0 if data already downloaded !!!!
     caa_download(tint,'C1_CP_FGM_5VPS')
     caa_download(tint,'C1_CP_CIS-HIA_ONBOARD_MOMENTS')
     caa_download(tint,'C1_CP_CIS_HIA_HS_1D_PEF')
     caa_download(tint,'C1_CP_RAP_ESPCT6')
     caa_download(tint,'C1_CP_PEA_PITCH_SPIN_DEFlux')
-    caa_download % repeat until all data are downloaded
-    disp('Execute "caa_download" until all data are downloaded');
-    return
+    download_status=caa_download; % repeat until all data are downloaded
+    if download_status==0, % some data are still in queue
+      disp('___________!!!!_____________')
+      disp('Some data where put in queue!')
+      disp('To see when they are ready and to download execute "caa_download".');
+      return
+    end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % initialize figure
 h=irf_plot(5); % 5 subplots
-i_subplot=1;
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
-hca=h(i_subplot); i_subplot=i_subplot+1;
+hca=irf_panel('FGM B GSM');
 % read data
-[caaB,~,B]=c_caa_var_get('B_vec_xyz_gse__C1_CP_FGM_5VPS');
+B=irf_get_data('B_vec_xyz_gse__C1_CP_FGM_5VPS','caa','mat');
 gsmB=irf_gse2gsm(B);
 % plot
 irf_plot(hca,gsmB);
@@ -36,8 +42,8 @@ irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
-hca=h(i_subplot); i_subplot=i_subplot+1;
-[caaV,~,V]=c_caa_var_get('velocity_gse__C1_CP_CIS_HIA_ONBOARD_MOMENTS');
+hca=irf_panel('CIS V');
+V=irf_get_data('velocity_gse__C1_CP_CIS_HIA_ONBOARD_MOMENTS','caa','mat');
 gsmV=irf_gse2gsm(V);
 irf_plot(hca,gsmV)
 ylabel(hca,'V [km/s] GSM');
@@ -47,8 +53,8 @@ irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
-hca=h(i_subplot); i_subplot=i_subplot+1;
-irf_plot(hca,'flux__C1_CP_CIS_HIA_HS_1D_PEF','colorbarlabel','log_{10} dEF\newline keV/cm^2 s sr keV','fitcolorbarlabel');
+hca=irf_panel('CIS spectrogram');
+irf_plot(hca,'flux__C1_CP_CIS_HIA_HS_1D_PEF','colorbarlabel',{'log_{10} dEF','keV/cm^2 s sr keV'},'fitcolorbarlabel');
 caxis([3.9 6.1]);
 set(hca,'yscale','log')
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
@@ -58,8 +64,8 @@ irf_colormap('default');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
-hca=h(i_subplot); i_subplot=i_subplot+1;
-irf_plot(hca,'Electron_Dif_flux__C1_CP_RAP_ESPCT6','colorbarlabel','log10 dF\newline 1/cm^2 s sr keV','fitcolorbarlabel');
+hca=irf_panel('RAPID spectrogram');
+irf_plot(hca,'Electron_Dif_flux__C1_CP_RAP_ESPCT6','colorbarlabel',{'log10 dF','1/cm^2 s sr keV'},'fitcolorbarlabel');
 caxis([0.51 4.49]);
 ylabel(hca,'E [keV]');
 irf_legend(hca,{'C1'},[0.98 0.9],'color','k');
@@ -69,8 +75,8 @@ set(hca,'ytick',[5e1 1e2 2e2 5e2 1e3])
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
-hca=h(i_subplot); i_subplot=i_subplot+1;
-irf_plot(hca,'Data__C1_CP_PEA_PITCH_SPIN_DEFlux','sum_dim1','colorbarlabel','log10 dEF\newline keV/cm^2 s sr keV','fitcolorbarlabel');
+hca=irf_panel('PEACE spectrogram');
+irf_plot(hca,'Data__C1_CP_PEA_PITCH_SPIN_DEFlux','sum_dim1','colorbarlabel',{'log10 dEF','keV/cm^2 s sr keV'},'fitcolorbarlabel');
 caxis([5.9 7.6]);
 set(hca,'yscale','log','ylim',[100 3e4])
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
@@ -101,8 +107,7 @@ irf_pl_mark(h(1:2),tmarks)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% print the figure
-if 0, % put to 1 if you want to print
-    set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
-    print -dpng -painters Example_1.png;
-end
+% to print the figure uncomment the lines below
+%
+% set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+% print -dpng -painters Example_1.png;
