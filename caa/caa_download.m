@@ -7,7 +7,8 @@ function download_status=caa_download(tint,dataset,flags)
 %       CAA_DOWNLOAD(tint,'list') - list all datasets available
 %       CAA_DOWNLOAD(tint,'list:filter') - list all datasets corresponding to filter
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download 
-%             snd 0 if request is put in the queue, the information of queued requests is saved in file ".caa"
+%             returns 0 if request is put in the queue, 
+%             the information of queued requests is saved in file ".caa"
 %
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
@@ -81,6 +82,7 @@ if nargin==0,    % check/show status of downloads
         end
     else
         disp('No active downloads');
+        if nargout==1, download_status=1; end
         return;
     end
     j_remove_jobs=zeros(1,length(caa));
