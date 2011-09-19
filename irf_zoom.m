@@ -210,6 +210,7 @@ if isfield(ud,'zoom_x'), % use zoom x values
        else
            ylimd=[min(ydlim) max(ydlim)];
        end
+       if any(isnan(ylimd)), ylimd=[];end % put limits to empty if NaNs
        if isempty(ylims),
            ylims=ylimd;
        else
@@ -220,9 +221,9 @@ if isfield(ud,'zoom_x'), % use zoom x values
                ylims(2)=ylimd(2);
            end
        end
-       if isempty(ylims), % has been to few data points to estimate limits
-           ylims=get(h,'ylim');
-       end
+    end
+    if isempty(ylims), % has been to few data points to estimate limits
+      ylims=get(h,'ylim');
     end
 else
     limits = objbounds(hlines);
