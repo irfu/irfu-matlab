@@ -203,6 +203,7 @@ for ih=1:numel(hlines)
   xd=get(hh,'XData')+xzero;
   yd=get(hh,'YData');
   if isfield(ud,'zoom_x'), % use zoom x values
+    xlims=ud.zoom_x;
     ydlim=yd(xd>xlims(1) & xd<xlims(2));
   else
     ydlim=yd;
