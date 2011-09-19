@@ -197,37 +197,35 @@ uf=get(get(h,'parent'),'userdata');
 xzero=0; % reference point
 if isfield(uf,'t_start_epoch'), xzero=uf.t_start_epoch;end
 
-if isfield(ud,'zoom_x'), % use zoom x values
-    xlims=ud.zoom_x;
-    ylims=[];
-    for ih=1:numel(hlines)
-       hh=hlines(ih);
-       xd=get(hh,'XData')+xzero;
-       yd=get(hh,'YData');
-       ydlim=yd(xd>xlims(1) & xd<xlims(2));
-       if numel(ydlim)<2,
-           ylimd=ylims; % dont change if zooming to 1 or less points
-       else
-           ylimd=[min(ydlim) max(ydlim)];
-       end
-       if any(isnan(ylimd)), ylimd=[];end % put limits to empty if NaNs
-       if isempty(ylims),
-           ylims=ylimd;
-       else
-           if ylimd(1)<ylims(1),
-               ylims(1)=ylimd(1);
-           end
-           if ylimd(2)>ylims(2),
-               ylims(2)=ylimd(2);
-           end
-       end
+ylims=[];
+for ih=1:numel(hlines)
+  hh=hlines(ih);
+  xd=get(hh,'XData')+xzero;
+  yd=get(hh,'YData');
+  if isfield(ud,'zoom_x'), % use zoom x values
+    ydlim=yd(xd>xlims(1) & xd<xlims(2));
+  else
+    ydlim=yd;
+  end
+  ydlim=ydlim(isfinite(ydlim)); % remove NaN and Inf points
+  if numel(ydlim)<2,
+    ylimd=ylims; % dont change if zooming to 1 or less points
+  else
+    ylimd=[min(ydlim) max(ydlim)];
+  end
+  if isempty(ylims),
+    ylims=ylimd;
+  else
+    if ylimd(1)<ylims(1),
+      ylims(1)=ylimd(1);
     end
-    if isempty(ylims), % has been to few data points to estimate limits
-      ylims=get(h,'ylim');
+    if ylimd(2)>ylims(2),
+      ylims(2)=ylimd(2);
     end
-else
-    limits = objbounds(hlines);
-    ylims=limits(3:4);
+  end
+end
+if isempty(ylims), % has been to few data points to estimate limits
+  ylims=get(h,'ylim');
 end
 
 yscale=get(h,'yscale');
