@@ -41,6 +41,57 @@ function f = irf_get_data_omni( tint, parameter , database)
 
 % http://omniweb.gsfc.nasa.gov/html/ow_data.html
 
+% data description of high res 1min,5min omni data set
+% http://omniweb.gsfc.nasa.gov/html/omni_min_data.html#4b
+% %
+% %
+% Year			        I4	      1995 ... 2006
+% Day			        I4	1 ... 365 or 366
+% Hour			        I3	0 ... 23
+% Minute			        I3	0 ... 59 at start of average
+% ID for IMF spacecraft	        I3	See  footnote D below
+% ID for SW Plasma spacecraft	I3	See  footnote D below
+% # of points in IMF averages	I4
+% # of points in Plasma averages	I4
+% Percent interp		        I4	See  footnote A above
+% Timeshift, sec		        I7
+% RMS, Timeshift		        I7
+% RMS, Phase front normal	        F6.2	See Footnotes E, F below
+% Time btwn observations, sec	I7	DBOT1, See  footnote C above
+% Field magnitude average, nT	F8.2
+% Bx, nT (GSE, GSM)		F8.2
+% By, nT (GSE)		        F8.2
+% Bz, nT (GSE)		        F8.2
+% By, nT (GSM)	                F8.2	Determined from post-shift GSE components
+% Bz, nT (GSM)	                F8.2	Determined from post-shift GSE components
+% RMS SD B scalar, nT	        F8.2	
+% RMS SD field vector, nT	        F8.2	See  footnote E below
+% Flow speed, km/s		F8.1
+% Vx Velocity, km/s, GSE	        F8.1
+% Vy Velocity, km/s, GSE	        F8.1
+% Vz Velocity, km/s, GSE	        F8.1
+% Proton Density, n/cc		F7.2
+% Temperature, K		        F9.0
+% Flow pressure, nPa		F6.2	See  footnote G below		
+% Electric field, mV/m		F7.2	See  footnote G below
+% Plasma beta		        F7.2	See  footnote G below
+% Alfven mach number		F6.1	See  footnote G below
+% X(s/c), GSE, Re		        F8.2
+% Y(s/c), GSE, Re		        F8.2
+% Z(s/c), GSE, Re		        F8.2
+% BSN location, Xgse, Re	        F8.2	BSN = bow shock nose
+% BSN location, Ygse, Re	        F8.2
+% BSN location, Zgse, Re 	        F8.2
+% 
+% AE-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
+% AL-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
+% AU-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
+% SYM/D index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
+% SYM/H index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
+% ASY/D index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
+% ASY/H index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
+% PC(N) index,                    F7.2    See World Data Center for Geomagnetism, Copenhagen
+
 if nargin < 3, % database not specified defaulting to omni2
   datasource='omni2';
   dateformat='yyyymmdd';
@@ -68,34 +119,41 @@ vars='';number_var=0;
 for jj=1:length(istart)
     variable=parameter(istart(jj):iend(jj));
     switch lower(variable)
-        case 'b', var_number=8;
-        case 'avgb', var_number=9;
-        case 'blat', var_number=10;
-        case 'blong', var_number=11;
-        case {'bx','bxgse'}, var_number=12;
-        case {'by','bygse'}, var_number=13;
-        case {'bz','bzgse'}, var_number=14;
-        case 'bygsm', var_number=14;
-        case 'bzgsm', var_number=15;
-        case 't', var_number=22;
-        case 'n', var_number=23;
-        case 'nanp', var_number=27;
-        case 'v', var_number=24;
-        case 'p', var_number=28;
-        case 'beta', var_number=36;
-        case 'ssn', var_number=39;
-        case 'dst', var_number=40;
-        case 'ae', var_number=41;
-        case 'al', var_number=52;
-        case 'au', var_number=53;
-        case 'kp', var_number=38;
-        case 'pc', var_number=51;
-        case 'f10.7', var_number=50;
-        otherwise, var_number=0;
+        case 'b', var_number_omni2=8;var_number_omni1min=13;
+        case 'avgb', var_number_omni2=9;var_number_omni1min=-1;
+        case 'blat', var_number_omni2=10;var_number_omni1min=-1;
+        case 'blong', var_number_omni2=11;var_number_omni1min=-1;
+        case {'bx','bxgse'}, var_number_omni2=12;var_number_omni1min=14;
+        case {'by','bygse'}, var_number_omni2=13;var_number_omni1min=15;
+        case {'bz','bzgse'}, var_number_omni2=14;var_number_omni1min=16;
+        case 'bygsm', var_number_omni2=14;var_number_omni1min=17;
+        case 'bzgsm', var_number_omni2=15;var_number_omni1min=18;
+        case 't', var_number_omni2=22;var_number_omni1min=26;
+        case 'n', var_number_omni2=23;var_number_omni1min=25;
+        case 'nanp', var_number_omni2=27;var_number_omni1min=-1;
+        case 'v', var_number_omni2=24;var_number_omni1min=21;
+        case 'p', var_number_omni2=28;var_number_omni1min=27;
+        case 'beta', var_number_omni2=36;var_number_omni1min=29;
+        case 'ssn', var_number_omni2=39;var_number_omni1min=-1;
+        case 'dst', var_number_omni2=40;var_number_omni1min=-1;
+        case 'ae', var_number_omni2=41;var_number_omni1min=37;
+        case 'al', var_number_omni2=52;var_number_omni1min=38;
+        case 'au', var_number_omni2=53;var_number_omni1min=39;
+        case 'kp', var_number_omni2=38;var_number_omni1min=-1;
+        case 'pc', var_number_omni2=51;var_number_omni1min=44;
+        case 'f10.7', var_number_omni2=50;var_number_omni1min=-1;
+        otherwise, var_number_omni2=0;var_number_omni1min=-1;
     end
-    if var_number>0,
-        vars=[vars '&vars=' num2str(var_number)];
+    if strcmp(datasource,'omni2'),
+      if var_number_omni2>0,
+        vars=[vars '&vars=' num2str(var_number_omni2)];
         number_var=number_var+1;
+      end
+    else % datasource omni_min
+      if var_number_omni1min>0,
+        vars=[vars '&vars=' num2str(var_number_omni1min)];
+        number_var=number_var+1;
+      end
     end
 end
 
@@ -114,14 +172,29 @@ if status==1, % success in downloading from internet
       return
     end
     cend=strfind(c,'</pre>')-1;
-    fmt=['%f %f %f' repmat(' %f',1,number_var)];
-    cc=textscan(c(cstart:cend),fmt,'headerlines',1);
-    xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
-    f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
-    for jj=1:number_var,
+    if strcmp(datasource,'omni2')
+      fmt=['%f %f %f' repmat(' %f',1,number_var)];
+      cc=textscan(c(cstart:cend),fmt,'headerlines',1);
+      xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
+      f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
+      for jj=1:number_var,
         f(:,jj+1)=cc{jj+3};
+      end
+    else
+      fmt=['%f %f %f %f' repmat(' %f',1,number_var)];
+      cc=textscan(c(cstart:cend),fmt,'headerlines',1);
+      xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
+      f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600+cc{4}*60;
+      for jj=1:number_var,
+        f(:,jj+1)=cc{jj+4};
+      end
     end
-    f(f==9999.9)=NaN;
+    f(f==9999999.)=NaN;
+    f(f==999999.9)=NaN;
+    f(f==99999.9)=NaN;
+    f(f==9999.99)=NaN;
+    f(f==999.99)=NaN;
+    f(f==99.99)=NaN;
 else % no success in getting data from internet
     irf_log('fcal','Can not get OMNI data form internet!');
     f=[];
