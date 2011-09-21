@@ -400,7 +400,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     
     npl = size(x{1},2) -1;
     if npl==1,     % We make new figure with subplots only if more than 1 component to plot
-        c = gca;
+        c = ax;
     else
         c=initialize_figure(npl);
     end
@@ -443,9 +443,9 @@ end
 irf_figmenu;
 
 %% Add information about subplot handles to userdata of figure
-user_data = get(gcf,'userdata');
-if flag_subplot>0, user_data.subplot_handles = c; end
-set(gcf,'userdata',user_data);
+%user_data = get(gcf,'userdata');
+%if flag_subplot>0, user_data.subplot_handles = c; end
+%set(gcf,'userdata',user_data);
 
 %% In case time is in isdat_epoch add time axis
 if ((tt > 1e8) && (tt < 1e10))
