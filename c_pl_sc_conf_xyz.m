@@ -114,6 +114,14 @@ switch lower(action)
             c_eval('R?=[];',data.sc_list);
         end
         c_eval('data.R?=R?;',data.sc_list);
+        if isfield(data,'omni')
+            if data.t < data.omni(1,1) || data.t > data.omni(end,1)
+                omni=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
+            end
+        else
+            omni=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
+            data.omni=omni;
+        end
         set(gcf,'userdata',data);
         return;
         
@@ -122,14 +130,22 @@ switch lower(action)
         data.coord_label='GSE';
         c_eval('data.r?=data.R?;',data.sc_list);
         set(gcf,'userdata',data);
-        c_pl_sc_conf_xyz('plot');
+        if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
+            c_pl_sc_conf_xyz('lmn');
+        else
+            c_pl_sc_conf_xyz('plot');
+        end
         
     case 'gsm'
         data=get(gcf,'userdata');
         data.coord_label='GSM';
         c_eval('data.r?=irf_gse2gsm(data.R?);',data.sc_list);
         set(gcf,'userdata',data);
-        c_pl_sc_conf_xyz('plot');
+        if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
+            c_pl_sc_conf_xyz('lmn');
+        else
+            c_pl_sc_conf_xyz('plot');
+        end
         
     case 'default'
         data=get(gcf,'userdata');
@@ -204,7 +220,7 @@ switch lower(action)
         cla(hca);hold(hca,'on');
         % L vector
         callbackStr='c_pl_sc_conf_xyz(''plot'')';
-        uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05])
+        data.LMN_text_hndl=uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05]);
         uicontrol('string','L','style','text','units','normalized','Position',[0.5 0.2 .05 .04])
         if isfield(data,'Lstr'), Lstr=data.Lstr;else Lstr='[1 0 0]';end
         data.L_hndl=uicontrol('Style','edit','Units','normalized', ...
@@ -428,36 +444,35 @@ switch lower(action)
                 axis(h(1),[-drref drref -drref drref]);
                 
             case 'lmn'
-                
-                hold(h(1),'off');
+                cla(h(1));
                 x=get_in_lmn(x);
                 for ic=1:numel(sc_list);
-                    plot(h(1),x{ic}(2),x{ic}(4),cluster_marker{sc_list(ic)});
+                    plot(h(1),x{ic}(2),x{ic}(4),cluster_marker{sc_list(ic)}{:});
                     hold(h(1),'on');
                 end
-                xlabel(h(1),['L [km] ' coord_label]);
-                ylabel(h(1),['N [km] ' coord_label]);
+                xlabel(h(1),'L [km]');
+                ylabel(h(1),'N [km] ');
                 set(h(1),'xdir','reverse');
                 grid(h(1),'on');
                 axis(h(1),[-drref drref -drref drref]);
                               
                 cla(h(2));
                 for ic=1:numel(sc_list);
-                    plot(h(2),x{ic}(3),x{ic}(4),cluster_marker{sc_list(ic)});
+                    plot(h(2),x{ic}(3),x{ic}(4),cluster_marker{sc_list(ic)}{:});
                     hold(h(2),'on');
                 end
-                xlabel(h(2),['M [km] ' coord_label]);
-                ylabel(h(2),['N [km] ' coord_label]);
+                xlabel(h(2),'M [km] ');
+                ylabel(h(2),'N [km] ');
                 grid(h(2),'on');
                 axis(h(2),[-drref drref -drref drref]);
                 
                 cla(h(3));
                 for ic=1:numel(sc_list);
-                    plot(h(3),x{ic}(2),x{ic}(3),cluster_marker{sc_list(ic)});
+                    plot(h(3),x{ic}(2),x{ic}(3),cluster_marker{sc_list(ic)}{:});
                     hold(h(3),'on');
                 end
-                xlabel(h(3),['L [km] ' coord_label]);
-                ylabel(h(3),['M [km] ' coord_label]);
+                xlabel(h(3),'L [km] ');
+                ylabel(h(3),'M [km] ');
                 grid(h(3),'on');
                 axis(h(3),[-drref drref -drref drref]);
                 set(h(3),'xdir','reverse')
@@ -565,10 +580,11 @@ switch lower(action)
             set(ht,'interpreter','none');
             htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
             set(htime,'fontsize',12);
-            ff=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
-            if ~isempty(ff),
-                fft=irf_resamp(ff,data.t);
-                irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(fft(2),'%6.1f') '[nPa],\newline Bx=' num2str(fft(3),'%6.1f') ',By=' num2str(fft(4),'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+            if isfield(data,'omni')
+                if ~isempty(data.omni) && ~strcmpi(data.plot_type,'lmn'),
+                    fft=irf_resamp(data.omni,data.t);
+                    irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(fft(2),'%6.1f') '[nPa],\newline Bx=' num2str(fft(3),'%6.1f') ',By=' num2str(fft(4),'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+                end
             end
         end
 
