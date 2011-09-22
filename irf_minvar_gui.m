@@ -6,6 +6,9 @@ function irf_minvar_gui(x,column)
 %  COLUMN - which columns to use, if not given use 2,3,4
 %
 % You can access the results through variable 'ud' that is defined as global
+% or in the figures data 'userdata'. 
+% data=get(gcf,'userdata');data.ud
+%
 % ud.l - eigenvalues  ud.l(1), ud.l(2),ud.l(3)
 % ud.v - eigenvectors (ud.v(1,:), ..), also ud.v1, ud.v2. ud.v3
 % ud.Xminvar - data in minimum variance coordinates
@@ -15,11 +18,10 @@ function irf_minvar_gui(x,column)
 % $Id$
 
 global ud
-persistent tlim message t0;
-%persistent ud tlim;
+persistent message;
 
 if isempty(message), % run only the first time during the session
-    message='You can anytime access all the results from the variable "ud".';
+    message='You can anytime access all the results from the variable "ud" or from get(gcf,''userdata'').';
     disp(message);
 end
 
@@ -44,26 +46,25 @@ switch action,
         end
 
         X=[time_vector x(:,column)];X=irf_abs(X);
-        ud={}; % structure to pass all information to manager function
-        ud.X=X;
-        ud.from = 1; % first click with mouse is 'from', second is 'to'
-        ud.cancel = 0;
-        tlim = [min(X(:,1)) max(X(:,1))];
-        ud.tlim_mva=tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
-
         dgh=figure;clf;irf_figmenu;
         h(1)=subplot(4,1,1);
         set(h(1),'outerposition',[0 0.75 1 0.25]);
         irf_plot(h(1),X);axis tight;
-        uf=get(gcf,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
+        ud=get(gcf,'userdata');
+        if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else ud.t0=0; end
         set(dgh,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
-        
+
+        ud.X=X;
+        ud.from = 1; % first click with mouse is 'from', second is 'to'
+        ud.cancel = 0;
+        ud.tlim = [min(X(:,1)) max(X(:,1))];
+        ud.tlim_mva=ud.tlim+[-1 1]; % default tlim_mva includes all interval, add 1s to help later in program
+
       %  irf_pl_info(h(1),['irf\_minvar\_gui() ' datestr(now)]); % add information to the plot
         set(h(1),'layer','top');
         grid(h(1),'on');
         ax=axis(h(1));
-        ud.patch_mvar_intervals=patch([tlim(1) tlim(2) tlim(2) tlim(1)]-t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','parent',h(1));
+        ud.patch_mvar_intervals=patch([ud.tlim(1) ud.tlim(2) ud.tlim(2) ud.tlim(1)]-ud.t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','parent',h(1));
 
         h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
         irf_plot(h(2),X);
@@ -79,14 +80,14 @@ switch action,
         xp=0.2;yp=0.2;
         ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
         ud.fromh = uicontrol('style', 'edit', ...
-            'string', irf_time(tlim(1),'iso'), ...
+            'string', irf_time(ud.tlim(1),'iso'), ...
             'callback', 'irf_minvar_gui(''from'')', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
 
         yp=0.15;
         ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
         ud.toh=uicontrol('style', 'edit', ...
-            'string', irf_time(tlim(2),'iso'), ...
+            'string', irf_time(ud.tlim(2),'iso'), ...
             'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 
 
@@ -95,24 +96,34 @@ switch action,
         ud.filter = uicontrol('style', 'edit', ...
             'string', '1', ...
             'backgroundcolor','white','units','normalized','position', [xp+0.21 yp 0.1 0.05]);
-
+        
+        xp=0.1;yp=0.05;
+        uicontrol('style', 'text', 'string', 'MVAR method','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
+        ud.mvar_method_handle=uicontrol('Style', 'popup',...
+           'String', 'Unconstrained|Constrained min(<Bn^2>)',...
+           'backgroundcolor','white','units','normalized',...
+           'Position', [xp+0.21 yp 0.25 0.04],...
+           'Callback', @setmethod);  
+        ud.mvar_method='mvar'; % default method
+        
         uimenu('label','&Recalculate','accelerator','r','callback','irf_minvar_gui(''mva'')');
 
         h(5)=subplot(4,2,8);
         axis(h(5),'off');
         irf_legend(0,['irf\_minvar\_gui() ' datestr(now)],[0.02 0.02],'fontsize',8); % add information to the plot
         ud.result_text=text(0,0.8,'result','parent',h(5));
+        
+        set(gcf,'userdata',ud);
 
         irf_minvar_gui('from');
         fix_legends;
 
     case 'ax'
+        ud=get(gcf,'userdata');
         tlim = get(ud.patch_mvar_intervals, 'xdata'); tlim=tlim(:)';tlim(3:4)=[];
-        uf=get(gcf,'userdata');
-        if isfield(uf,'t_start_epoch'), t0=uf.t_start_epoch;else t0=0; end
-        tlim=tlim+t0;
-        p = get(gca, 'currentpoint')+t0;
-        tlim_interval=get(gca,'xlim')+t0;
+        tlim=tlim+ud.t0;
+        p = get(gca, 'currentpoint')+ud.t0;
+        tlim_interval=get(gca,'xlim')+ud.t0;
         if ud.from
             tlim(1) = max(tlim_interval(1), p(1));
             tlim(2) = max(p(1),tlim(2));
@@ -128,15 +139,21 @@ switch action,
         end
         set(ud.fromh, 'string', epoch2iso(tlim(1),1));
         set(ud.toh, 'string', epoch2iso(tlim(2),1));
-        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
+        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-ud.t0);
+        ud.tlim=tlim;
+        set(gcf,'userdata',ud);
         irf_minvar_gui('update_mva_axis');
     case 'from'
-        tlim(1) = iso2epoch(get(ud.fromh,'string'));
-        tlim(2) = iso2epoch(get(ud.toh,'string'));
-        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-t0);
+        ud=get(gcf,'userdata');
+        tlim(1) = irf_time(get(ud.fromh,'string'),'iso2epoch');
+        tlim(2) = irf_time(get(ud.toh,'string'),'iso2epoch');
+        set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-ud.t0);       
+        ud.tlim=tlim;
+        set(gcf,'userdata',ud);
         irf_minvar_gui('update_mva_axis');
     case 'update_mva_axis'
-        if tlim==ud.tlim_mva, % plot first time after 'mva'
+        ud=get(gcf,'userdata');
+        if ud.tlim==ud.tlim_mva, % plot first time after 'mva'
             irf_plot(ud.h(2),ud.Xminvar);
             axis(ud.h(2),'fill');
             axis(ud.h(2),'tight');
@@ -151,38 +168,40 @@ switch action,
             ylabel(ud.h(4),'max');
             axis(ud.h(4),'equal');
             grid(ud.h(4),'on');
-        elseif (tlim(1)>=ud.tlim_mva(1) && tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
-            irf_zoom(ud.h(2),'x',tlim);
+        elseif (ud.tlim(1)>=ud.tlim_mva(1) && ud.tlim(2)<=ud.tlim_mva(2)) % zoom to something within tlim_mva
+            irf_zoom(ud.h(2),'x',ud.tlim);
         else                   % zoom to interval outside mva
-            X=irf_tlim(ud.X,tlim);
+            X=irf_tlim(ud.X,ud.tlim);
             clear ud.Xminvar;
             ud.Xminvar=irf_newxyz(X,ud.v1,ud.v2,ud.v3);
             irf_plot(ud.h(2),ud.Xminvar);
             axis(ud.h(2),'tight');
             irf_timeaxis(ud.h(2),'date');
         end
-        if (tlim(1)<ud.tlim_mva(1) || tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
+        if (ud.tlim(1)<ud.tlim_mva(1) || ud.tlim(2)>ud.tlim_mva(2)) % if zooming outside tlim_mva mark mva interval
             set(ud.h(2),'layer','top');
             ax=axis(ud.h(2));
             grid(ud.h(2),'on');
             ud.mvar_interval_2nd=patch([ud.tlim_mva(1) ud.tlim_mva(2) ud.tlim_mva(2) ud.tlim_mva(1)],[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', 'irf_minvar_gui(''ax'')','parent',ud.h(2));
         end
+        set(gcf,'userdata',ud);
         fix_legends;
     case 'mva'
-        ud.tlim_mva=tlim;
+        ud=get(gcf,'userdata');
+        ud.tlim_mva=ud.tlim;
 				X = ud.X;
 				if eval(get(ud.filter,'string'))<1
 					Fs = 1/(X(2,1)-X(1,1));
 					flim = Fs*eval(get(ud.filter,'string'));
-					X = irf_tlim(X, tlim + [-20/Fs 20/Fs]);
+					X = irf_tlim(X, ud.tlim + [-20/Fs 20/Fs]);
 					X = irf_filt(X,0,flim,Fs,5);
 				else
 					if eval(get(ud.filter,'string'))>1, disp('f/Fs must be <1!!!'), end
 					set(ud.filter,'string','1')
 				end
-        X = irf_tlim(X,tlim);
+        X = irf_tlim(X,ud.tlim);
         clear ud.Xminvar;
-        [ud.Xminvar, l, v]=irf_minvar(X);
+        [ud.Xminvar, l, v]=irf_minvar(X,ud.mvar_method);
         ud.l=l;ud.v=v;ud.v1=v(1,:);ud.v2=v(2,:);ud.v3=v(3,:);
         l_str=['L1=' num2str(l(1),3) ' L2=' num2str(l(2),3) ' L3=' num2str(l(3),3) '\newline'];
         lratio_str=['L1/L2=' num2str(l(1)/l(2),2) ' L2/L3=' num2str(l(2)/l(3),2) '\newline'];
@@ -192,14 +211,17 @@ switch action,
         v_str=[v1_str v2_str v3_str];
         set(ud.result_text,'string',[l_str lratio_str v_str],'verticalalignment','top');
         % disp(l_str);disp(lratio_str);disp(v1_str);disp(v2_str);disp(v3_str);
+        set(gcf,'userdata',ud);
         irf_minvar_gui('update_mva_axis');
 end
+
+ud=get(gcf,'userdata'); % assign ud that can be accessed because it is global
 
 end
 
 
 function fix_legends
-global ud
+ud=get(gcf,'userdata');
 
 switch size(ud.X,2)-1, % how many components
     case 3 %
@@ -209,4 +231,16 @@ switch size(ud.X,2)-1, % how many components
         legend(ud.h(1),'x','y','z','abs','Location','EastOutside');
         legend(ud.h(2),'max','interm','min','abs','Location','EastOutside');
 end
+end
+
+function setmethod(hObj,event) %#ok<INUSD>
+        % Called when user activates popup menu of minvar method 
+        val = get(hObj,'Value');
+        data=get(gcf,'userdata');
+        if val ==1
+            data.mvar_method='mvar';    
+        elseif val == 2
+            data.mvar_method='td';    
+        end
+        set(gcf,'userdata',data);
 end
