@@ -150,9 +150,14 @@ switch lower(flag)
     case 'date2epoch' 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
         
-  case 'tint2iso'
+    case 'tint2iso'
         t1iso=irf_time(t_in(:,1),'epoch2iso');
         t2iso=irf_time(t_in(:,2),'epoch2iso');
+        t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
+
+    case 'tint2isoshort'
+        t1iso=irf_time(t_in(:,1),'epoch2isoshort');
+        t2iso=irf_time(t_in(:,2),'epoch2isoshort');
         t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 
     case {'yyyymmdd','epoch2yyyymmdd'}
