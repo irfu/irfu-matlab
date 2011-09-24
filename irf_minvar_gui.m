@@ -100,7 +100,7 @@ switch action,
         xp=0.1;yp=0.05;
         uicontrol('style', 'text', 'string', 'MVAR method','units','normalized','position', [xp yp 0.2 0.04],'backgroundcolor','white');
         ud.mvar_method_handle=uicontrol('Style', 'popup',...
-           'String', 'Unconstrained|Constrained min(<Bn^2>)',...
+           'String', 'Unconstrained|Constrained min(<Bn^2>)|Constrained <Bn>=0',...
            'backgroundcolor','white','units','normalized',...
            'Position', [xp+0.21 yp 0.25 0.04],...
            'Callback', @setmethod);  
@@ -238,9 +238,11 @@ function setmethod(hObj,event) %#ok<INUSD>
         val = get(hObj,'Value');
         data=get(gcf,'userdata');
         if val ==1
-            data.mvar_method='mvar';    
+            data.mvar_method='mvar';
         elseif val == 2
             data.mvar_method='td';    
+        elseif val == 3
+            data.mvar_method='<Bn>=0';    
         end
         set(gcf,'userdata',data);
 end
