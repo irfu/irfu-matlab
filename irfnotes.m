@@ -83,8 +83,8 @@ clear t1 t2 j;
 %% Example TEMPLATE for a figure
 irf_units; % in case you need phyiscal units, see help of irf_units
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])];
-ic=1;
-CISinstrument='HIA';% alternative 'CODIF'
+ic=1;                % satellite number
+CISinstrument='HIA'; % alternative 'CODIF'
 if 1, % initialize figure
   fn=figure(61);
   h=irf_plot(8); % number of panels in the plot
@@ -337,7 +337,7 @@ if 1,   % PANEL: C1,C3,C4 CIS Vy velocities
   irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
-  hca=h(i_subplot);i_subplot=i_subplot+1;
+  hca=irf_subplot('C? CIS/FGM Pressures')
   if ic~=2,
     if strcmp(CISinstrument,'HIA')
       dobjname=irf_ssub('C?_CP_CIS_HIA_ONBOARD_MOMENTS',ic);
@@ -606,36 +606,65 @@ if 0,   % PANEL: C1..C4   PEACE density MOMENTS
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
   ylabel(hca,'N_{e} [cc]');
 end
-if 1,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
-  % ic (number of spacecraft) should be defined
-  hca=irf_panel('C1 PEACE energy spectra');
-  dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-  caa_load(dobjname);
-  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-  varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-  disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''sum_dim1'',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
-  caxis(hca,[5.8 7.6]);
-  irf_colormap(hca,'default');
-  set(hca,'yscale','log');
-  set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
-  ylabel(hca,'E [eV]');
+if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
+    hca=irf_panel('C? PEACE energy spectra');
+    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+    varunits=irf_get_data(varname,'caa','units');
+    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+    irf_plot(hca,varname,'sum_dim1','colorbarlabel',varunits,'fitcolorbarlabel');
+    caxis(hca,[5.9 8.9]);
+    set(hca,'yscale','log');
+    ylabel(hca,'E [eV]');
 end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
-  hca=irf_panel('C1 PEACE pitch spectra');
-  dobjname=irf_ssub('C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-  caa_load(dobjname);
-  varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-  varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-  disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',15);']);
-  caxis(hca,[5.8 7.6]);
-  irf_colormap(hca,'default');
-  set(hca,'yscale','lin');
-  set(hca,'ytick',[0 45 90 135 180]);
-  ylabel(hca,'\Theta [deg]');
+    hca=irf_panel('C? PEACE DEFlux pitch spectra');
+    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+    varunits=irf_get_data(varname,'caa','units');
+    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
+    caxis(hca,[5.9 8.9]);
+    set(hca,'yscale','lin');
+    set(hca,'ytick',[ 45 90 135 ]);
+    ylabel(hca,'\Theta [deg]');
+end
+if 0,   % PANEL: C?       PEACE PITCH_SPIN_PSD spectrogram angles
+    hca=irf_panel('C? PEACE PSD pitch spectra');
+    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_PSD',ic);
+    varunits=irf_get_data(varname,'caa','units');
+    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','comp',22);
+    caxis(hca,[1.4 3.1]);
+    set(hca,'yscale','lin');
+    set(hca,'ytick',[ 45 90 135 ]);
+    ylabel(hca,'\Theta [deg]');
+end
+if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles in specified energy range
+    hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
+    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+    pea=c_caa_var_get(varname,'mat');
+    en_chanels=8:14; % sum over those chanels
+    if numel(en_chanels)>1,
+        en_values=pea.dep_x{2}.data(1,en_chanels);
+        en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
+    else
+        en_label=[num2str(pea.dep_x{2}.data(1,en_chanels)) ' ' pea.dep_x{2}];
+    end
+    specrec={};
+    specrec.p=squeeze(sum(pea.data(:,:,en_chanels),3));
+    specrec.t=pea.t;
+    specrec.f=pea.dep_x{1}.data(1,:);
+    specrec.dt=pea.dt;
+    specrec.df=pea.dep_x{1}.df;
+    varunits=irf_get_data(varname,'caa','units');
+    specrec.p_label=varunits;
+    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+    irf_spectrogram(hca,specrec);
+    irf_legend(hca,en_label,[0.98 0.05]);
+    irf_legend(hca,['C' num2str(ic)],[0.98 0.98]);
+    caxis(hca,[5.9 8.9]);
+    set(hca,'yscale','lin');
+    set(hca,'ytick',[ 45 90 135 ]);
+    ylabel(hca,'\Theta [deg]');
 end
 if 0,   % PANEL: RAPID/PEACE electron densities
   % requires that both RAPID and PEACE densities are calculated before
