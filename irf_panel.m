@@ -14,6 +14,9 @@ function hout=irf_panel(handles,tag)
 flag_tag_defined=0;
 if nargin==1 && ischar(handles)
     tag=handles;
+    if isempty(get(0,'CurrentFigure')), % there is no figure open
+        irf_plot(1);                    % create new figure with one panel
+    end
     ud=get(gcf,'userdata');
     if isfield(ud,'subplot_handles')
         handles=ud.subplot_handles;
