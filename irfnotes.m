@@ -128,7 +128,7 @@ if 0, % read s/c position and velocity
 end
 if 0, % read FGM data form all sc
   c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');');
-  %    c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');');
+  %c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');');
   c_eval('B?=irf_abs(B?);');
   c_eval('diB?=c_coord_trans(''GSE'',''ISR2'',B?,''cl_id'',?);');
   c_eval('gsmB?=irf_gse2gsm(B?);');
@@ -145,6 +145,7 @@ end
 if 0, % read EFW data
   c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
   c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
+  c_eval('ExB?=c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE'',''mat'');');
 end
 if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux products above given energy threshold
   for ic=1:4,
@@ -378,20 +379,14 @@ if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
   hca=irf_panel('C? CIS HIA/CODIF spectrogram');
   if ic~=2,
     if strcmp(CISinstrument,'HIA')
-      dobjname=irf_ssub('C?_CP_CIS_HIA_HS_1D_PEF',ic);
       varname=irf_ssub('flux__C?_CP_CIS_HIA_HS_1D_PEF',ic); % HIA
     elseif strcmp(CISinstrument,'CODIF')
-      dobjname=irf_ssub('C?_CP_CIS_CODIF_H1_1D_PEF',ic);
       varname=irf_ssub('flux__C?_CP_CIS_CODIF_H1_1D_PEF',ic); % CODIF H+
-      %dobjname=irf_ssub('C?_CP_CIS_CODIF_O1_1D_PEF',ic);eval(['caa_load ' dobjname]);varname=irf_ssub('flux__C?_CP_CIS_CODIF_O1_1D_PEF',ic); % CODIF O+
     end
-    caa_load(dobjname);
     %varunits=eval(['getunits(' dobjname ',''' varname ''')']);
     varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-    eval(['plot(hca,' dobjname ',''' varname ''',''ax'',hca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
+    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel');
     caxis(hca,[3.9 6.1]);
-    irf_colormap;
     set(hca,'yscale','log');
     set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
     ylabel(hca,'E [eV]');
@@ -761,7 +756,7 @@ end
 % subspin resolution panels
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if 0,   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
-  hca=h(i_subplot);i_subplot=i_subplot+1;
+  hca=irf_panel('C? PEACE 3DRH');
   ic=3;
   res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_PITCH_3DRH_PSD',ic));
   [delmett,ind]=irf_tlim(res.tt,tint);
