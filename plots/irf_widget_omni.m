@@ -97,7 +97,7 @@ switch lower(action)
     tint=[irf_time(data.t) irf_time(data.t)+data.dt];
     for j=1:numel(h),
       ud=get(h(j),'userdata');
-      ud=rmfield(ud,'zoom_x');
+      if isstruct(ud), ud=rmfield(ud,'zoom_x');end % remove zoom_x if exists
       set(h(j),'userdata',ud);
     end
     %%%%%%%%%%%%
@@ -133,7 +133,7 @@ switch lower(action)
     irf_legend(hca,{'AE','AL','AU'},[0.02 0.05]);
     
     irf_zoom(h,'x',tint);
-    irf_zoom(h,'y','smart');
+    irf_zoom(h,'y');
     irf_timeaxis(h);
     
   case 'new_start_time'
