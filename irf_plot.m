@@ -4,9 +4,8 @@ function c=irf_plot(varargin)
 % c=irf_plot([H],X,[arguments...]);
 %   H axes handle
 %   X is one of:
-%      - matrix in AV Cluster format
-%      - cell array data, each of cells containing a matrix in AV Cluster
-%      format
+%      - matrix of data (1st column time in isdat epoch, other columns data)
+%      - cell array data, each of cells containing a matrix of data 
 %      - string defining variable (can be CAA variable)
 %      - number (initialize figure with so many subplots)
 %
@@ -61,7 +60,7 @@ end
   
 if isnumeric(x), % check if single number argument, to initialize only subplots
     if numel(x)==1, % only one number
-        if x>1 && x<20,
+        if x>=1 && x<=20,
             c=initialize_figure(x);
         else
             disp('Only 1-20 number of subplots supported.;)');
@@ -70,6 +69,9 @@ if isnumeric(x), % check if single number argument, to initialize only subplots
     end
 end
 if isempty(ax), % if empty axis use current axis GCA
+    if isempty(get(0,'CurrentFigure')), % there is no figure open
+        irf_plot(1);
+    end
     ax=gca;
 end
 args=args(2:end);
@@ -141,7 +143,7 @@ end
 if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
 if ischar(x), % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
-    jj = 1;
+    jj = 1;var_names=cell(1,4*length(var_nam));
     for ii=1:length(var_nam), % construct varibale names var_names
         if regexp(var_nam{ii},'?'),
             c_eval(['var_names{jj}=''' var_nam{ii} ''';jj=jj+1;']);
@@ -149,37 +151,38 @@ if ischar(x), % Try to get variable labels etc.
             var_names{jj} = var_nam{ii}; jj=jj+1;
         end
     end
-    x = {}; ix = 1;
+    var_names(jj:end)=[];
+    x = cell(1,length(var_names)); % preallocate expected number of variables
+    caa_varname=x;                 % preallocate caa variable names
+    var_desc=x;                    % preallocate non-caa variable description
+    ix = 1;
     for ii=1:length(var_names) % get variables
-        try % Try to get variable from calling workspace
+        if evalin('caller',['exist(''' var_names{ii} ''')']), % Try to get variable from calling workspace
             x{ix} = evalin('caller',var_names{ii});
-        catch
-            try % If there is none try to load variable
-                if strfind(var_names{ii},'__') % CAA variable
+        elseif strfind(var_names{ii},'__') % CAA variable
                     caa_varname{ix}=var_names{ii};
                     if flag_plot_all_data,
                       [~,caa_dataobject{ix},x{ix}]=evalin('caller',['c_caa_var_get(''' var_names{ii} ''')']);
                     else
                       [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
                     end
-                else
+        else
+            try 
                     c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
-                end
-            catch % If nothing works give up
+            catch ME
                 irf_log('load',...
                     ['skipping, do not know where to get variable >'...
-                    var_names{ii}]);
+                    var_names{ii} '.' ME.identifier]);
             end
         end
-        if length(x)==ix,
-            try
-                var_desc{ix} = c_desc(var_names{ii});
-            catch
-                var_desc{ix} = {};
-            end
+        if length(x)==ix, % has succeeded to get new variable
+            var_desc{ix} = c_desc(var_names{ii});
             ix = ix +1;
         end
     end
+    x(ix:end)=[]; % remove unused variables
+    caa_varname(ix:end)=[];
+    var_desc(ix:end)=[];
 end
 if iscell(x), % Plot several variables
     
@@ -232,7 +235,7 @@ if flag_subplot==0,  % One subplot
         
         tt = x.t(~isnan(x.t),1);
         tt = tt(1);
-    else % x is matrix
+    elseif ~isempty(x) % x is nonempty matrix
         ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
         ii = 2:length(x(1,:));
         tag=get(ax,'tag');
@@ -263,6 +266,8 @@ if flag_subplot==0,  % One subplot
         
         tt = x(~isnan(x(:,1)),1);
         tt = tt(1);
+    else % empty matrix or does not know what to do
+        return
     end
     
 elseif flag_subplot==1, % Separate subplot for each component
@@ -497,7 +502,7 @@ if isempty(get(0,'CurrentFigure')) % no current figures opened
 elseif isempty(get(gcf,'children')) % current figure is empty
     flag='newfigure';    
 end
-if number_of_subplots>1 && number_of_subplots<20,
+if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
     c=zeros(1,number_of_subplots);
     if strcmpi(flag,'newfigure'), % if to open new figure
