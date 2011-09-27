@@ -1519,7 +1519,9 @@ elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')
         v.label_1 = {'"JxBx", "JxBy", "JxBz"'};
     end
 else
-	error(['Variable name not recognized: ' vs])
+	irf_log('fcal',['Variable name not recognized: ' vs]);
+    varargout={[]};
+    return
 end
 
 %% Construct the output
