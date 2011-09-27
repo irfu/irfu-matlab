@@ -23,17 +23,17 @@ function download_status=caa_download(tint,dataset,flags)
 %   caa_download(tint,'C3_CP_FGM_5VPS')
 %   caa_download(tint,'C?_CP_FGM_5VPS')   %    download all satellites
 %
-% The example list of datasets:
+% The example list of datasets: (see also http://bit.ly/pKWVKh)
 % FGM
 %   caa_download(tint,'C?_CP_FGM_5VPS');
 %   caa_download(tint,'C?_CP_FGM_FULL');
-% EFW
-%   caa_download(tint,'C?_CP_EFW_L2_E3D_INERT'); % full resolution
-%   caa_download(tint,'C?_CP_EFW_L3_E3D_INERT'); % 4s resolution
-%   caa_download(tint,'C?_CP_EFW_L2_E'); % full resolution
-%   caa_download(tint,'C?_CP_EFW_L3_E'); % 4s resolution
-%   caa_download(tint,'C?_CP_EFW_L2_P'); % full resolution
-%   caa_download(tint,'C?_CP_EFW_L3_P'); % 4s resolution
+% EFW (L2 - full resolution, L3 - spin resolution)
+%   caa_download(tint,'C?_CP_EFW_L?_E3D_INERT'); % Ex,Ey,Ez in ISR2
+%   caa_download(tint,'C?_CP_EFW_L?_E3D_GSE'); % Ex,Ey,Ez in GSE
+%   caa_download(tint,'C?_CP_EFW_L?_E'); % Ex,Ey in ISR2
+%   caa_download(tint,'C?_CP_EFW_L?_P'); % satellite potential
+%   caa_download(tint,'C?_CP_EFW_L?_V3D_GSE'); % ExB velocity GSE
+%   caa_download(tint,'C?_CP_EFW_L?_V3D_INERT'); % ExB velocity ISR2
 % STAFF
 %   caa_download(tint,'C?_CP_STA_PSD');
 %   caa_download(tint,'*STA_SM*');           % STAFF spectral matrix
