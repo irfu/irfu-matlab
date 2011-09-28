@@ -141,7 +141,7 @@ switch lower(flag)
         a = a';
         t_out = irf_time([a(:,1) a(:,2) a(:,3) a(:,4) a(:,5) a(:,6)]);
         
-    case {'date','epoch2date'} % matlab date
+    case {'date','epoch2date','datenum'} % matlab date
         % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
     case 'vector2date'
