@@ -47,6 +47,7 @@ function download_status=caa_download(tint,dataset,flags)
 % PEACE
 %   caa_download(tint,'C?_CP_PEA_PITCH_SPIN_DPFlux'); % DPFlux/DEFLux/PSD
 %   caa_download(tint,'C?_CP_PEA_3DR?_PSD');
+%   caa_download(tint,'C?_CP_PEA_MOMENTS')
 % RAPID
 %   caa_download(tint,'C?_CP_RAP_ESPCT6'); % electron omni-directional
 %   caa_download(tint,'C?_CP_RAP_L3DD');   % electron, 3D distribution (standard)
