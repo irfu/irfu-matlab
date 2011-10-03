@@ -22,7 +22,8 @@ function startSAT=c_efw_burst_chkt(database,filename)
   playbackEFW=times(1);
   playbackSAT=times(2);
   startEFW=times(3);
-  
+  startSAT=[];
+
   % Choose the earliest possible starting time, preferably a short
   % time before what ISDAT tells you
   
@@ -41,8 +42,9 @@ function startSAT=c_efw_burst_chkt(database,filename)
       if ~isempty(temp), break, end
       shorttime = shorttime - 5;
   end
-  if isempty(temp)
-	  error('Cannot get EFW time for IB')
+  if isempty(temp) || size(sctime,1)<3
+	  irf_log('proc','Cannot get EFW time for IB');
+      return;
   end
   efwtime=(temp(81,:)+temp(82,:)*256+temp(83,:)*65536+ temp(84,:)* ...
 	 16777216+temp(85,:)*4294967296)/1000;
