@@ -449,6 +449,33 @@ elseif regexp(vs,'^SFIT[1-4]$')==1
 	v.com = ''; % Set in caa_export_new()
 	v.lev = 2;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% IB Internal Burst P1-4 BX-Z P12/P34 level 1 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^IB[1-4]$')==1
+	v.data = 1;
+	v.frame = 'sc';
+	v.file = 'cef export only';  % caa_export_new() cef export only
+	v.quant = 'pburst';
+	v.cl_id = vvs(3);
+	v.inst = 'EFW';
+	v.sig = 'P';
+    v.sen = ''; % No fixed data order
+    v.cs = {'na','na','na','na','na','na','na','na'};
+	v.units = {'na','na','na','na','na','na','na','na'};
+	v.si_conv = {'na','na','na','na','na','na','na','na'};
+	v.size = [1 1 1 1 1 1 1 1];
+	v.name = {'na','na','na','na','na','na','na','na'};
+	v.labels = {'na','na','na','na','na','na','na','na'};
+	v.field_name = {'na','na','na','na','na','na','na','na'};
+	v.ptype = {'Data','Data','Data','Data','Data','Data','Data','Data'};
+	v.valtype = {'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT'};
+	v.sigdig = [6 6 6 6 6 6 6 6];
+	v.ent = {'Instrument'};
+
+	v.com = ''; % Set in caa_export_new()
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Spin fits of 2 omega for p32
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^w2W[1-4]p32$')==1
@@ -1359,6 +1386,66 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
     v.sigdig = 6;
 	v.com = '';
 	v.file = 'mBPP';
+	v.quant = 'b';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% B
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^diBSC4kHz?')
+    v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'FGM';
+	v.frame = 'sc';
+	v.sig = 'B';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di')
+		v.cs = {'ISR2'};
+	else
+		v.cs = {'GSE'};
+	end
+ 	v.units =  {'nT'};
+	v.si_conv = {'1.0e-9>T'};
+	v.size = 3;
+	v.name = {'B'};
+	v.labels = v.name;
+	v.label_1 = {'"Bx", "By", "Bz"'};
+	v.col_labels = {{'x','y','z'},''};
+	v.field_name = {'Magnetic field'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
+	v.com = '';
+	v.file = 'mBSCBurst';
+	v.quant = 'b';
+	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% B
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^wBSC4kHz?')
+    v.data = 1;
+	v.cl_id = vs(end);
+	v.inst = 'FGM';
+	v.frame = 'sc';
+	v.sig = 'B';
+	v.sen = '';
+	if strcmp(vvs(1:2),'di')
+		v.cs = {'ISR2'};
+	else
+		v.cs = {'GSE'};
+	end
+ 	v.units =  {'nT'};
+	v.si_conv = {'1.0e-9>T'};
+	v.size = 3;
+	v.name = {'B'};
+	v.labels = v.name;
+	v.label_1 = {'"Bx", "By", "Bz"'};
+	v.col_labels = {{'x','y','z'},''};
+	v.field_name = {'Magnetic field'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
+	v.com = '';
+	v.file = 'mBSCBurst';
 	v.quant = 'b';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
