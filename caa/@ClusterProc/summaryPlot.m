@@ -13,6 +13,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 %    'withwhip' - plot time intervals with Whisper pulses
 %    'ib'        - Internal Burst format
 %    'wo_r'      - Do not add position labels
+%    'vars'      - parameters for title
 % 
 % Output:
 %   h - axes handles // can be omitted
@@ -45,6 +46,7 @@ use_fullb = 'rs';
 flag_rmwhip = 1;
 flag_ib = 0;
 flag_r = 1;
+flag_ibs = 0;
 
 while have_options
 	l = 2;
@@ -75,6 +77,17 @@ while have_options
 				flag_ib = 1; l = 1;
 			case 'wo_r'
 				flag_r = 0; l = 1;
+            case 'vars'
+                vars=args{2};
+                l=size(vars,1);
+                vars_names=[];
+                if l>0
+                    flag_ibs = 1;
+                    vars_names=[strtrim(vars(1,:))];
+                    for i=2:l
+                        vars_names=[vars_names ', ' strtrim(vars(i,:))];
+                    end
+                end
 			otherwise
 				irf_log('fcal',['Option ''' args{1} '''not recognized'])
 		end
@@ -95,8 +108,8 @@ if st && dt, have_tint = 1; end
 
 % Define variables we want to plot
 if flag_ib
-	q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','dibE?p1234','diVExBs?'};
-	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','V=ExB DSI [km/s]'};
+	q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','dibE?p1234','diBSC4kHz?','diVExBs?'};
+	l_list = {'SC pot [-V]','B DSI [nT]','E DSI [mV/m]','E DSI [mV/m]','B DSI [nT]','V=ExB DSI [km/s]'};
 else
 	if strcmp(cs,'dsi')
 		q_list = {'P?',['diB' use_fullb '?'],'diE?p1234','diEs?','diVExBs?'};
@@ -108,7 +121,7 @@ else
 end
 
 old_pwd = pwd;
-cd(cp.sp)
+cd(cp.sp);
 
 n_plots = 0;
 data = {};
@@ -118,15 +131,17 @@ if flag_rmwhip, c_load('WHIP?',cl_id), end
 
 % Load data
 for k=1:length(q_list)
+%q_list{k}
+    
 	if c_load(q_list{k},cl_id)
 		if have_tint
-			c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id)
+			c_eval([q_list{k} '=irf_tlim(' q_list{k} ',st+[0 dt]);'],cl_id);
 		end
 		
 		if flag_rmwhip && (k==1 || k==3)
 			if exist(irf_ssub('WHIP?',cl_id),'var')
-				irf_log('proc','not using times with Whisper pulses')
-				c_eval([q_list{k} '=caa_rm_blankt(' q_list{k}  ',WHIP? );'],cl_id)
+				irf_log('proc','not using times with Whisper pulses');
+				c_eval([q_list{k} '=caa_rm_blankt(' q_list{k}  ',WHIP? );'],cl_id);
 			end
 		end
 		
@@ -144,14 +159,17 @@ for k=1:length(q_list)
 					else
 						data{n_plots} = d_t;
 					end
-					clear ok P_ib
+					clear ok P_ib;
 				else
 					data{n_plots} = d_t;
 				end
 
 			case 2 % B-field
 				c_eval(['data{n_plots}=irf_abs(' q_list{k} '(:,1:4));'],cl_id)
-				labels{n_plots} = l_list{k};
+                labels{n_plots} = l_list{k};
+                if size(data{n_plots},2)<4  % data satity check
+                    continue;
+                end
 				elev_ang = [data{n_plots}(:,1) atan2(data{n_plots}(:,4),...
 					sqrt(data{n_plots}(:,2).^2+data{n_plots}(:,3).^2))*180/pi];
 				
@@ -178,24 +196,24 @@ for k=1:length(q_list)
 						if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
 						else irf_log('calb','Using default DSI offsets')
 						end
-						clear dsiof_def dam_def
+						clear dsiof_def dam_def;
 					else
 						Ddsi = dsiof(1); Damp = dsiof(2);
 						irf_log('calb','Using user specified DSI offsets')
 					end
 					clear dsiof
-					c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id)
+					c_eval([q_list{k} '=caa_corof_dsi(' q_list{k} ',Ddsi,Damp);'],cl_id);
 				end
 
-				c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id)
+				c_eval(['data{n_plots}=' q_list{k} '(:,1:3);'],cl_id);
 				labels{n_plots} = l_list{k};
 				
 			case 4 % Es-field /IB
-				c_eval(['d_t=' q_list{k} ';'],cl_id)
+				c_eval(['d_t=' q_list{k} ';'],cl_id);
 				if flag_ib
 					E_hx = data{n_plots-1};
 					E_ib = [];
-					c_eval(['E_ib=' q_list{k} ';'],cl_id)
+					c_eval(['E_ib=' q_list{k} ';'],cl_id);
 					% correct DSI offsets
 					dsiof = c_ctl(cl_id,'dsiof');
 					if isempty(dsiof)
@@ -212,10 +230,10 @@ for k=1:length(q_list)
 						[ok1,Ddsi] = c_load('Ddsi?',cl_id); if ~ok1, Ddsi = dsiof_def; end
 						[ok2,Damp] = c_load('Damp?',cl_id); if ~ok2, Damp = dam_def; end
 
-						if ok1 || ok2, irf_log('calb','Using saved DSI offsets')
-						else irf_log('calb','Using default DSI offsets')
+						if ok1 || ok2, irf_log('calb','Using saved DSI offsets');
+						else irf_log('calb','Using default DSI offsets');
 						end
-						clear dsiof_def dam_def
+						clear dsiof_def dam_def;
 					else
 						Ddsi = dsiof(1); Damp = dsiof(2);
 						irf_log('calb','Using user specified DSI offsets')
@@ -244,10 +262,11 @@ for k=1:length(q_list)
 					data{n_plots} = d_t(:,1:4);
 					labels{n_plots} = l_list{k};
 				end
-				clear d_t Ddsi Damp
+				clear d_t Ddsi Damp    
+            
 			otherwise
 				d_t = [];
-				c_eval(['d_t=' q_list{k} ';'],cl_id)
+				c_eval(['d_t=' q_list{k} ';'],cl_id);
 				labels{n_plots} = l_list{k};
 				if min(size(d_t))> 4
 					data{n_plots} = d_t(:,1:4);
@@ -257,7 +276,7 @@ for k=1:length(q_list)
 				clear d_t
 		end
 		
-	end
+    end
 end
 
 if n_plots==0, return, end % Nothing to plot
@@ -283,8 +302,8 @@ else
 end
 
 % Plotting
-clf
-orient tall
+clf;
+orient tall;
 
 if iscell(data{1}), dummyel = data{1}{1};
 else dummyel = data{1};
@@ -292,22 +311,45 @@ end
 dummy = cell(1,n_plots);
 for k=1:n_plots, dummy(k) = {dummyel}; end
 h = irf_plot(dummy); 
-clear dummy dummyel
+clear dummy dummyel;
 
 for k=1:n_plots
+<<<<<<< summaryPlot.m
+	axes(h(k));
+	if isempty(data{k})
+        if k==1
+            st_s = epoch2iso(t_st);
+            if flag_ibs == 1
+                title(['EFW, Cluster ' num2str(cl_id,'%1d') ', ' vars_names ' - '  st_s(1:10)]);
+            else
+                title(['EFW, Cluster ' num2str(cl_id,'%1d') ', ' st_s(1:10)]);
+            end
+            clear st_s;
+        end
+        continue;
+    end
+	irf_plot(data{k},'comp');
+	axis tight;
+	irf_zoom(h(k),'x',[t_st t_end]);
+=======
 	if isempty(data{k}), continue, end
 	axes(h(k))
 	irf_plot(data{k},'comp')
 	axis tight
 	irf_zoom(h(k),'x',[t_st t_end])
+>>>>>>> 1.31
 	YL = get(gca,'YLim'); DYL = (YL(2) -YL(1))*0.05;
-	set(gca,'YLim',YL +[-DYL DYL])
-	clear YL DYL
-	ylabel(labels{k})
+	set(gca,'YLim',YL +[-DYL DYL]);
+	clear YL DYL;
+	ylabel(labels{k});
 	if k==1
 		st_s = epoch2iso(t_st);
-		title(['EFW, Cluster ' num2str(cl_id,'%1d') '  (' st_s(1:10) ')'])
-		clear st_s
+        if flag_ibs == 1
+            title(['EFW, Cluster ' num2str(cl_id,'%1d') ', ' vars_names ' - '  st_s(1:10)]);
+        else
+            title(['EFW, Cluster ' num2str(cl_id,'%1d') ', ' st_s(1:10)]);
+        end
+		clear st_s;
 	end
 	if k<n_plots, xlabel(''),set(gca,'XTickLabel',[])
     else
@@ -323,7 +365,7 @@ for k=1:n_plots
 		if yl(1)<-YLIM, yl(1) = -YLIM; end
 		if yl(2)>YLIM, yl(2) = YLIM; end
 		set(gca,'YLim',yl);
-		clear yl YLIM
+		clear yl YLIM;
 	end
 end
 
@@ -337,21 +379,21 @@ for k=n_plots:-1:1
 		switch ncol
 			case 2
 				if flag_ib
-					legend(h(k),'nm','IB','Location','NorthEastOutside')
+					legend(h(k),'nm','IB','Location','NorthEastOutside');
 				else
-					legend(h(k),'X','Y','Location','NorthEastOutside')
+					legend(h(k),'X','Y','Location','NorthEastOutside');
 				end
 			case 3
-				legend(h(k),'X','Y','Z','Location','NorthEastOutside')
+				legend(h(k),'X','Y','Z','Location','NorthEastOutside');
 			case 4
-				legend(h(k),'X','Y','Z','tot','Location','NorthEastOutside')	
+				legend(h(k),'X','Y','Z','tot','Location','NorthEastOutside');	
 			otherwise
-				error('too many columns')
+				error('too many columns');
 		end
 		if lyy==0, pos = get(h(k),'Position'); lyy = pos(3); clear pos, end
 	end
 end
-clear ncol
+clear ncol;
 
 if lyy
     for k=n_plots:-1:1
@@ -365,6 +407,6 @@ if flag_r
 	if ok, add_position(h(n_plots),r), end
 end
 
-cd(old_pwd)
+cd(old_pwd);
 
 if nargout>0, out=h; end
