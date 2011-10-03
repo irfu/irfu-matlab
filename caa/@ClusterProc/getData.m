@@ -705,8 +705,12 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 						e12(:,1) = p2(:,1);
 						e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-						p_ok = [p_ok 12]; %#ok<AGROW>
-						eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+                        if abs(mean(e12(~isnan(e12(:,2)),2)))>30 % Sanity check for realistic electric field value
+                            e12 = [];
+                        else
+                            p_ok = [p_ok 12]; %#ok<AGROW>
+                            eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+                        end
 					else
 						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
 						if ~ok
@@ -814,7 +818,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 				clear tmp_adc
 			else irf_log('calb','saved ADC offset empty')
             end
-            problems = 'whip';
+            problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
             signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
@@ -1021,6 +1025,10 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 
 	% Do actual despin
 	aa = c_phase(full_e(:,1),pha);
+    if isempty(aa)
+		irf_log('proc','Can not do despin')
+		data = []; cd(old_pwd); return
+    end
 	if p12==32
 		
 		% x(4)*cos(2*pha)+x(5)*sin(2*pha)
@@ -2365,45 +2373,46 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     end
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
-	if ~do_burst
-		% Remove probe saturation
-		for probe = 1:4
-			if eval(irf_ssub('~isempty(p?)',probe))
-				[ok,sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
-				if ~ok
-					irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
-					continue
-				end
-				if ~isempty(sa)
-					irf_log('proc',['blanking saturated P' num2str(probe)])
-					c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
-				end
-				clear ok sa
-			end
-		end
-		c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+    % Remove probe saturation
+    for probe = 1:4
+        if eval(irf_ssub('~isempty(p?)',probe))
+            [ok,sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
+            if ~ok
+                irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
+                continue
+            end
+            if ~isempty(sa)
+                irf_log('proc',['blanking saturated P' num2str(probe)])
+                c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
+            end
+            clear ok sa
+        end
+    end
+    c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 
-		problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+    problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+
+    if ~do_burst
 		nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')];%#ok<NASGU>
-		n_ok = 0;
-		for probe=1:4
-			c_eval('signal=p?;',probe)
-			if ~isempty(signal) %#ok<NODEF>
-				remove_problems
-				res(isnan(res(:,2)),:) = []; %#ok<AGROW>
-				c_eval('p?=res;',probe)
-				n_ok = n_ok + 1;
-			end
-		end
-		clear res signal problems probe
-		if ~n_ok
-			data = [];
-			irf_log('proc','No P data remaining after blanking.')
-			if exist(save_file,'file'), delete(save_file); end
-			cd(old_pwd);
-			return
-		end
-	end
+    end
+    n_ok = 0;
+    for probe=1:4
+        c_eval('signal=p?;',probe)
+        if ~isempty(signal) %#ok<NODEF>
+            remove_problems
+            res(isnan(res(:,2)),:) = []; %#ok<AGROW>
+            c_eval('p?=res;',probe)
+            n_ok = n_ok + 1;
+        end
+    end
+    clear res signal problems probe
+    if ~n_ok
+        data = [];
+        irf_log('proc','No P data remaining after blanking.')
+        if exist(save_file,'file'), delete(save_file); end
+        cd(old_pwd);
+        return
+    end
 	
 	if flag_rmwhip
 		problems = 'whip'; %#ok<NASGU>
@@ -2646,8 +2655,10 @@ elseif strcmp(quantity,'dibscburst')
 	aa = c_phase(wBSC4kHz(:,1),pha);
 	diBSC4kHz = c_efw_despin(wBSC4kHz,aa);
 	% DS-> DSI
-	diBSC4kHz(:,3)=-diBSC4kHz(:,3); 
-	diBSC4kHz(:,4)=-diBSC4kHz(:,4); %#ok<NASGU>
+	diBSC4kHz(:,3)=-diBSC4kHz(:,3);
+    if size(diBSC4kHz,2)>3
+        diBSC4kHz(:,4)=-diBSC4kHz(:,4); %#ok<NASGU>
+    end
 	
 	c_eval('diBSC4kHz?=diBSC4kHz;save_list=[save_list '' diBSC4kHz?''];',cl_id);
 	
@@ -2655,7 +2666,7 @@ elseif strcmp(quantity,'dibscburst')
 	if ~ok || isempty(sax)
 		irf_log('load',msg)
 	else
-		c_eval('diBSC4kHz?=c_gse2dsi(diBSC4kHz?,sax,-1);save_list=[save_list '' diBSC4kHz?''];',cl_id);
+		c_eval('BSC4kHz?=c_gse2dsi(diBSC4kHz?,sax,-1);save_list=[save_list '' BSC4kHz?''];',cl_id);
 	end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
