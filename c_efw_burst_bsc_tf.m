@@ -26,9 +26,13 @@ for comp=1:3
     tfinp = get_staff_ib_tf(cl_id,comp);
     tf = interp1(tfinp(:,1),tfinp(:,2),f,'linear','extrap');
     tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,3),f,'linear','extrap');
-    
+
     Pxx = fft(binp(:,comp+1));
-    Pxy = Pxx./[tf;fliplr(tf)];
+    if size(Pxx,1)+1==size(tf,1)*2
+        Pxy = Pxx./[tf;fliplr(tf(2:end))];
+    else
+        Pxy = Pxx./[tf;fliplr(tf)];
+    end
     
     bout(:,comp+1) = ifft(Pxy,'symmetric');
 end
