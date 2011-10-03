@@ -45,20 +45,24 @@ DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
 old_pwd = pwd;
 %cd(sp)
 dirs = caa_get_subdirs(st, dt, cl_id);
-%if isempty(dirs), disp(['Invalid (empty?) dir: ' sp]), cd(old_pwd); status = 1; return, end
-
+%if isempty(dirs), disp(['Invalid (empty?) dir: ' sp]), cd(old_pwd); status
+%= 1; return, end
+if 0
 if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    st_temp = fromepoch(st);
    if dt ~= 24*3600 || st_temp(4) ~= 00
       error('Incorrect format for daily files. Check parameters!')
    end
 end
-
+end
 result = [];
 result_com = {};
 
 if lev==1
-	if regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
+	if strcmp(caa_vs, 'IB')
+        vs = irf_ssub('IB?',cl_id);
+		v_size = 8;
+    elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
 		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
         else vs = irf_ssub('wE?p!',cl_id,id);
@@ -123,8 +127,16 @@ else
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
+	case 'IB'
+		if lev==2
+            % Fake for c_desc only. No data variable in .mat files
+			vs = irf_ssub('IB?',cl_id);
+			v_size = 4;
+        else
+			disp('not implemented'), cd(old_pwd), return
+		end
 	otherwise
-		error('unknown variable')
+		error(['Unknown variable ' caa_vs])
 	end
 end
 
@@ -338,6 +350,68 @@ for dd = 1:length(dirs)
              end
           end
       end
+   elseif strcmp(caa_vs, 'IB')
+       ok=0;
+       if lev==1
+         mfn='./mEFWburstTM1.mat'; % For tm
+         if exist(mfn,'file')
+           r=load(mfn);
+           di=eval(irf_ssub('r.ib?_info',cl_id))
+           data=eval(irf_ssub('r.iburst?',cl_id));
+           ok=1;
+         else
+           data=[];
+         end
+
+       elseif lev==2
+         mfn='./mEFWburstR.mat'; % For P
+         if exist(mfn,'file')
+           r=load(mfn);
+           finr=fieldnames(r)
+           fnl=size(finr{1},2);
+           for fno=1:size(finr,1)
+               d=eval(['r.' finr{fno}]);
+               if fno==1
+                   data=NaN(size(d,1),9); % Make data matrix
+                   data(:,1)=d(:,1);      % Set time col
+               end
+               probeno=str2num(finr{fno}(fnl));
+               data(:,probeno+1)=d(:,2);
+               ok=1;
+           end
+           bscix=0;
+           mfn='./mBSCBurst.mat'; % For Bx By Bz
+           if exist(mfn,'file')
+             bsc=load(mfn);
+             finbsc=fieldnames(bsc);
+             fnl=size(finbsc,1)
+             found=0;
+             for bscix=1:fnl % find BSC data
+               finbsc{bscix}
+               if strcmp(finbsc{bscix}(1:4),'wBSC')
+                 found=1;
+                 break;
+               end
+             end
+             if found
+               irf_log('proc','BSC burst data used');
+               d=eval(['bsc.' finbsc{bscix}]);
+               for col=2:4  % Set Bx By Bz cols
+                 data(:,col+5)=d(:,col);
+               end
+             else
+                 error('Can not find wBSC data matrix in mBSCBurst.mat');
+                 cd(old_pwd);
+                 return;
+             end
+           end
+         else
+           data=[];
+         end
+       end
+       if ~isempty(data)
+           data(1:5,2:9)
+       end
    else
       [ok,data] = c_load(vs);
    %   [data, ok] = caa_get(st, dt, cl_id, vs);
@@ -354,8 +428,10 @@ for dd = 1:length(dirs)
    	[ok, d_info] = c_load([vs '_info'],'var');
    %   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
    catch
-      irf_log('load', ['No ' vs '_info']);
-   	d_info = []; ok = 0;
+      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs, 'IB')
+        irf_log('load', ['No ' vs '_info']);
+      end
+   	  d_info = []; ok = 0;
    end
 
    if ~ok || isempty(d_info), dsc = c_desc(vs);
@@ -697,7 +773,11 @@ cd(old_pwd)
 
 % Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
 if ~isempty(data)
-    indx=find(diff(data(:,1)) < 0.5e-3);
+    tdiff=0.5e-3;
+    if strcmp(caa_vs, 'IB')
+        tdiff=1e-5;
+    end
+    indx=find(diff(data(:,1)) < tdiff);
     if ~isempty(indx)
         irf_log('save',['WARNING: detected ' num2str(length(indx)) ' non-monotonic time stamp.'])
         for i=1:length(indx)
@@ -785,6 +865,11 @@ if strcmp(caa_vs, 'SFIT') && nanfill ~= -1
     else
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' & P34 data.' dsc.com ]);
     end
+elseif strcmp(caa_vs, 'IB')
+    if isempty(data)
+        di='na';
+    end
+    buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' di ' ' dsc.com ]);        
 else
     buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
 end    
