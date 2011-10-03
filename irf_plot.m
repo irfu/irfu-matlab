@@ -184,6 +184,7 @@ if ischar(x), % Try to get variable labels etc.
     caa_varname(ix:end)=[];
     var_desc(ix:end)=[];
 end
+
 if iscell(x), % Plot several variables
     
     % No ylabels are given
@@ -333,6 +334,10 @@ elseif flag_subplot==2, % Separate subplot for each variable
         y = x{ipl};
         if isstruct(y), t_tmp = double(y.t);
         else t_tmp = double(y(:,1));
+        end
+        if numel(t_tmp)==0
+            irf_log('proc',['Can not plot data ' num2str(ipl)]);
+            return;
         end
         t_tmp = t_tmp -double(ts) -double(dt(ipl));
         tt = t_tmp(~isnan(t_tmp));
