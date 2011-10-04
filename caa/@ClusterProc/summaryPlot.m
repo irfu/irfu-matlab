@@ -314,7 +314,6 @@ h = irf_plot(dummy);
 clear dummy dummyel;
 
 for k=1:n_plots
-<<<<<<< summaryPlot.m
 	axes(h(k));
 	if isempty(data{k})
         if k==1
@@ -331,13 +330,6 @@ for k=1:n_plots
 	irf_plot(data{k},'comp');
 	axis tight;
 	irf_zoom(h(k),'x',[t_st t_end]);
-=======
-	if isempty(data{k}), continue, end
-	axes(h(k))
-	irf_plot(data{k},'comp')
-	axis tight
-	irf_zoom(h(k),'x',[t_st t_end])
->>>>>>> 1.31
 	YL = get(gca,'YLim'); DYL = (YL(2) -YL(1))*0.05;
 	set(gca,'YLim',YL +[-DYL DYL]);
 	clear YL DYL;
