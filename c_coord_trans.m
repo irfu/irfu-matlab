@@ -84,7 +84,7 @@ while have_options
             if length(args)>1
                 if isnumeric(args{2})
                     sax = args{2};
-                    if ~all(size(SAX2)==[1 3]), error('size(SAX) ~= [1 3]'), end
+                    if ~all(size(sax)==[1 3]), error('size(sax) ~= [1 3]'), end
                     l = 2;
                 else error('SAX value must be numeric')
                 end
@@ -207,6 +207,17 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
             clear tempv
         catch ME
             irf_log('dsrc',['Could not read sax fgrom isdat database. ' ME.identifier]);
+        end
+    end
+    
+    if isempty(sax) % try to read from disk
+        [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
+        if ok
+            irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
+            % XXX TODO: check that the SAX is from the right time
+            %[iso_t,dt] = caa_read_interval();
+        else
+            sax=[];
         end
     end
     
