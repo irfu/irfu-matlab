@@ -1,7 +1,7 @@
 function [apar,aperp]=irf_dec_parperp(b0,a)
 %IRF_DEC_PARPERP   Decompose a vector into par/perp to B components
 %
-% function [apar,aperp]=irf_dec_parperp(b0,a)
+% [apar,aperp]=irf_dec_parperp(b0,a)
 %
 %	Decomposes A to parallel and perpendicular to BO components
 %
@@ -23,7 +23,7 @@ function [apar,aperp]=irf_dec_parperp(b0,a)
 btot = irf_abs(b0,1);
 
 ii = find(btot<1e-3);
-if length(ii)>0, btot(ii) = ones(size(ii))*1e-3; end
+if ~isempty(ii), btot(ii) = ones(size(ii))*1e-3; end
 normb = [b0(:,1) b0(:,2)./btot b0(:,3)./btot b0(:,4)./btot]; 
 normb = irf_resamp(normb,a);
 
