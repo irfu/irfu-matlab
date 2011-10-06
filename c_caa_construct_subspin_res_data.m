@@ -88,7 +88,7 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
     dataraw=ftheta(rapid.data,rapid_pitch,theta);
     dataraw=permute(dataraw,[1 3 2 4]); % permute in order [time, azimuth, pitch, energery]
     t=rapid.t(:);
-elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'HIA_HS_MAG')]) % CIS variable
+elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') strfind(variable_name,'HIA_HS_MAG')]) % CIS variable
     %% CODIF_HS does not have pitch angle matrix data, therefore rebinning
     % necessary
     % CIS sector angels are given in ISR2 reference frame and show particle arrival direction!
