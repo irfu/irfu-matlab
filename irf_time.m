@@ -1,44 +1,33 @@
 function t_out = irf_time(t_in,flag)
 %IRF_TIME  Convert time between different formats
 %
-%   epoch=IRF_TIME([year month date hour min sec])
-%   epoch=IRF_TIME([year month date hour min sec],'vector2epoch')
-%            convert [year month date hour min sec] column vector to epoch
+%   t_out=IRF_TIME(t_in,'in2out');
+%   
+%   Input:
+%       t_in: column vector of input time in format 'in'
+%   Output:
+%       t_out: column vector of output time in format 'out'
 %
-%   time_vector=IRF_TIME(epoch,'epoch2vector')
-%   time_vector=IRF_TIME(epoch,'vector')
-%           convert epoch to [year month date hour min sec] column vector
+%   Formats 'in' and 'out' can be (default 'in' is 'epoch'):%
+%      epoch: seconds since the epoch 1 Jan 1970, default, used by the ISDAT system. 
+%     vector: [year month date hour min sec] in each row
+%        iso: string in ISO format
+%   isoshort: string in shorter ISO format 
+%   yyyymmdd: string 
+% yyyymmddhh: string 
+%yyyymmddhhmm: string 
+%       date: MATLAB datenum format
+%    datenum: -=-
+%        doy: [year doy]
 %
-%   time_iso=IRF_TIME(epoch,'epoch2iso')
-%   time_iso=IRF_TIME(epoch,'iso')
-%           convert to ISO format time, argument can be time in epoch
+%  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch2out');
+%  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector2epoch');
 %
-%   epoch=IRF_TIME(time_iso,'iso2epoch')
+%  Example: t_out=irf_time('2011-09-13T01:23:19.000000Z','iso2epoch');
 %
-%   time_iso=IRF_TIME(epoch,'epoch2isoshort')
-%   time_iso=IRF_TIME(epoch,'isoshort')
-%           convert to ISO short format time
-%
-%   time_yyyymmdd=IRF_TIME(epoch,'epoch2yyyymmdd') similar with yyyymmddhh and yyyymmddhhmm 
-%   time_yyyymmdd=IRF_TIME(epoch,'yyyymmdd')
-%
-%   date=IRF_TIME(epoch,'epoch2date')
-%   date=IRF_TIME(epoch,'date')
-%           convert to Matlab date format 
-%
-%   epoch=IRF_TIME(date,'date2epoch')
-%           convert from Matlab date to epoch 
-%
-%   doy=IRF_TIME(time_vector,'vector2doy')
-%   time_evctor=IRF_TIME([year doy],'doy2vector')
-%           convert between time [yyyy mm dd hh mm ss] and doy 
-%
+%  There are also commands to convert time intervals
 %   time_int=IRF_TIME(tint,'tint2iso')
 %           convert time interval to iso (first column epoch start time, 2nd epoch end time)  
-%
-%  epoch - seconds since the epoch 1 Jan 1970.
-%   The seconds since epoch time format is the time specification
-%   used by the ISDAT system. 
 %
 % $Id$
 
@@ -48,6 +37,35 @@ if nargin==1,
     flag='vector2epoch';
 end
 
+flag_tint=strfind(flag,'tint'); % check if we work with time interval (special case)
+if isempty(flag_tint),          % default transformation
+    flag_2=strfind(flag,'2');   % see if flag has number 2 in it 
+    if isempty(flag_2),         % if no '2' convert from epoch
+        format_in='epoch';   
+        format_out=flag;
+        flag=[format_in '2' format_out];
+    else
+        format_in=flag(1:flag_2-1);
+        format_out=flag(flag_2+1:end);
+    end
+    if strcmp(format_in,format_out) % if in and out equal return
+        t_out=t_in;
+        return;
+    elseif ~strcmp(format_in,'epoch') && ~strcmp(format_out,'epoch')
+        % if there is no epoch in the format then 
+        % first convert from 'in' to 'epoch' 
+        % and then from 'epoch' to 'out'
+        t_temp=irf_time(t_in,[format_in '2epoch']);
+        t_out=irf_time(t_temp,['epoch2' format_out]);
+        return
+    end
+end
+
+
+%
+% flag should include 'tint' or 'epoch'
+% no other flags are allowed below
+%
 switch lower(flag)
     case 'vector2epoch'
         % TOEPOCH - Convert a [YYYY MM DD hh mm ss] time specification
@@ -98,7 +116,7 @@ switch lower(flag)
             secs(ind,1)=secs(ind,1)+plus;
         end
         t_out=secs;
-    case {'epoch2vector','vector'}
+    case 'epoch2vector'
         t = datevec(irf_time(fix(double(t_in(:))),'epoch2date'));
         % The following lines are needed to work aroung the problem with numerical
         % accuracy in conversion from isdat epoch to matlab date.
@@ -116,9 +134,9 @@ switch lower(flag)
         % accuracy ~1e-6 sec for year 2004.
         t(:,6) = t(:,6) + double(t_in(:)) - fix(double(t_in(:)));
         t_out = t;
-    case {'iso','isoshort','epoch2iso','epoch2isoshort'}
+    case {'epoch2iso','epoch2isoshort'}
         d = irf_time(t_in,'vector');
-        if strcmp(flag,'isoshort')|| strcmp(flag,'epoch2isoshort')
+        if strcmp(flag,'epoch2isoshort')
             t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%06.3fZ');
         else
             t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%09.6fZ');
@@ -141,15 +159,36 @@ switch lower(flag)
         a = a';
         t_out = irf_time([a(:,1) a(:,2) a(:,3) a(:,4) a(:,5) a(:,6)]);
         
-    case {'date','epoch2date','datenum'} % matlab date
+    case {'epoch2date','epoch2datenum'} % matlab date
         % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
-    case 'vector2date'
-        t=irf_time(t_in,'vector2epoch');
-        t_out=irf_time(t,'epoch2date');
-    case 'date2epoch' 
+    case {'date2epoch','datenum2epoch'} 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
         
+    case 'epoch2yyyymmdd'
+        t=irf_time(t_in,'epoch2vector');
+        t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
+        
+    case 'epoch2yyyymmddhh'
+        t=irf_time(t_in,'epoch2vector');
+        t_out=sprintf('%04d%02d%02d%02d',t(1),t(2),t(3),t(4));
+        
+    case 'epoch2yyyymmddhhmm'
+        t=irf_time(t_in,'epoch2vector');
+        t_out=sprintf('%04d%02d%02d%02d%02d',t(1),t(2),t(3),t(4),t(5));
+                  
+    case 'epoch2doy'
+          t_first_january_vector=irf_time(t_in,'vector');
+          t_first_january_vector(:,2:end)=1;
+          t_out=[t_first_january_vector(:,1) floor(irf_time(t_in,'datenum'))-floor(irf_time(t_first_january_vector,'vector2datenum'))+1];
+          
+    case 'doy2epoch'
+        t_out=irf_time([t_in(:,1) t_in(:,1).*0+1 t_in(:,1).*0+1 ...
+            t_in(:,2).*24-12 t_in(:,1).*0 t_in(:,1).*0]);
+%
+% Time interval conversions
+%
+
     case 'tint2iso'
         t1iso=irf_time(t_in(:,1),'epoch2iso');
         t2iso=irf_time(t_in(:,2),'epoch2iso');
@@ -160,43 +199,6 @@ switch lower(flag)
         t2iso=irf_time(t_in(:,2),'epoch2isoshort');
         t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 
-    case {'yyyymmdd','epoch2yyyymmdd'}
-        t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
-        
-    case {'yyyymmddhh','epoch2yyyymmddhh'}
-        t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d%02d',t(1),t(2),t(3),t(4));
-        
-    case {'yyyymmddhhmm','epoch2yyyymmddhhmm'}
-        t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d%02d%02d',t(1),t(2),t(3),t(4),t(5));
-        
-    case 'vector2doy'
-        dateend=irf_time(t_in,'vector2date');
-        datestart=irf_time([t_in(:,1) t_in(:,1).*0+1 t_in(:,1).*0+1 repmat(t_in(:,1).*0,1,3)],'vector2date');
-        t_out=floor(dateend-datestart+1);
-          
-    case {'doy','epoch2doy'}
-          t=irf_time(t_in,'epoch2vector');
-          t_out=irf_time(t,'vector2doy');
-          
-    case 'doy2vector'
-        YEAR=t_in(:,1);
-        DOY=t_in(:,2);
-        t_out = ones(length(YEAR(:,1)),6);
-        for n=1:length(YEAR(:,1))
-            year = YEAR(n,:); doy  =  DOY(n,:);
-            total_day = cumsum(eomday(year,1:12));
-            month = find( total_day>= doy ); month = month(1);
-            if month>1
-                pmonth = find( total_day< doy ); day = doy-total_day(pmonth(end));
-            else
-                day = doy;
-            end
-            t_out(n,:) = [year month day 0 0 0];
-        end
-        
     otherwise
         disp(['!!! irf_time: unknown flag ''' lower(flag) ''', not converting.'])
         t_out=t_in;
