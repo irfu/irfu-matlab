@@ -281,6 +281,7 @@ fprintf('\nPlasma dimensionless parameters\n');
 beta  = Vtp.^2./Va.^2;
 fprintf('\nbeta  = %1.5f',beta(1));
 fprintf('\nbeta*sqrt(Mp/Me)  = %1.5f',beta(1)*sqrt(Mp_Me));
-fprintf('\nbeta*(Mp/Me) = %1.5f\n',beta(1)*Mp_Me);
+fprintf('\nbeta*(Mp/Me) = %1.5f',beta(1)*Mp_Me);
+fprintf('\nGamma_e  = %1.2f\n',gamma_e);
 
 if nargout>0, Fpe_out = Fpe; end
