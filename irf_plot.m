@@ -167,15 +167,16 @@ if ischar(x), % Try to get variable labels etc.
                       [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
                     end
         else
-            try 
-                    c_load(var_names{ii});eval(['x{ix}=' var_names{ii} ';']);
-            catch ME
+            flag_ok=c_load(var_names{ii});
+            if flag_ok
+                eval(['x{ix}=' var_names{ii} ';']);
+            else
                 irf_log('load',...
                     ['skipping, do not know where to get variable >'...
-                    var_names{ii} '.' ME.identifier]);
+                    var_names{ii}]);
             end
         end
-        if length(x)==ix, % has succeeded to get new variable
+        if ~isempty(x{ix}), % has succeeded to get new variable
             var_desc{ix} = c_desc(var_names{ii});
             ix = ix +1;
         end
