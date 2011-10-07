@@ -19,7 +19,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'NaNp'  - alpha/proton ratio
 %               'v'     - bulk speed (km/s)
 %               'P'     - flow pressure (nPa)
-%               'beta'     - plasma beta
+%               'beta'  - plasma beta
+%               'Ma'    - Alfven Mach number
 %               'ssn'   - daily sunspot number
 %               'dst'   - DST index
 %               'f10.7' - F10.7 flux
@@ -28,16 +29,16 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'al'    - AL index
 %               'au'    - AL index
 % 
-% f=OMNI(tint,parameter,database) download from specified database 
+% f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database 
 %
 % database:  'omni2'    - 1h resolution OMNI2 data (default)
 %            'omni_min' - 1min resolution OMNI data
 %
 % Examples:
 %   tint=[irf_time([2006 01 01 1 1 0]) irf_time([2006 12 31 23 59 0])];
-%   ff= omni(tint,'b,bx,bygsm');
-%   ff= omni(tint,'f10.7');
-%   ff= omni(tint,'b','omni_min');
+%   ff= irf_get_data_omni(tint,'b,bx,bygsm');
+%   ff= irf_get_data_omni(tint,'f10.7');
+%   ff= irf_get_data_omni(tint,'b','omni_min');
 
 % http://omniweb.gsfc.nasa.gov/html/ow_data.html
 
@@ -134,6 +135,7 @@ for jj=1:length(istart)
         case 'v', var_number_omni2=24;var_number_omni1min=21;
         case 'p', var_number_omni2=28;var_number_omni1min=27;
         case 'beta', var_number_omni2=36;var_number_omni1min=29;
+        case 'ma', var_number_omni2=37;var_number_omni1min=30;
         case 'ssn', var_number_omni2=39;var_number_omni1min=-1;
         case 'dst', var_number_omni2=40;var_number_omni1min=-1;
         case 'ae', var_number_omni2=41;var_number_omni1min=37;
@@ -167,7 +169,7 @@ if status==1, % success in downloading from internet
       cstart=strfind(c,'YYYY'); % returned by omni_min database
     end
     if isempty(cstart), % no data returned
-      irf_log('fcal','Can not get OMNI data form internet!');
+      irf_log('fcal','Can not get OMNI data from internet!');
       f=[];
       return
     end
@@ -194,6 +196,7 @@ if status==1, % success in downloading from internet
     f(f==99999.9)=NaN;
     f(f==9999.99)=NaN;
     f(f==999.99)=NaN;
+    f(f==999.9)=NaN;
     f(f==99.99)=NaN;
 else % no success in getting data from internet
     irf_log('fcal','Can not get OMNI data form internet!');
