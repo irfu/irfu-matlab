@@ -18,6 +18,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'n'     - proton density (cc)
 %               'NaNp'  - alpha/proton ratio
 %               'v'     - bulk speed (km/s)
+%               'E'     - electric field (mV/m)
 %               'P'     - flow pressure (nPa)
 %               'beta'  - plasma beta
 %               'Ma'    - Alfven Mach number
@@ -134,6 +135,7 @@ for jj=1:length(istart)
         case 'nanp', var_number_omni2=27;var_number_omni1min=-1;
         case 'v', var_number_omni2=24;var_number_omni1min=21;
         case 'p', var_number_omni2=28;var_number_omni1min=27;
+        case 'e', var_number_omni2=35;var_number_omni1min=28;
         case 'beta', var_number_omni2=36;var_number_omni1min=29;
         case 'ma', var_number_omni2=37;var_number_omni1min=30;
         case 'ssn', var_number_omni2=39;var_number_omni1min=-1;
@@ -197,6 +199,7 @@ if status==1, % success in downloading from internet
     f(f==9999.99)=NaN;
     f(f==999.99)=NaN;
     f(f==999.9)=NaN;
+    f(f==999)=NaN;
     f(f==99.99)=NaN;
 else % no success in getting data from internet
     irf_log('fcal','Can not get OMNI data form internet!');
