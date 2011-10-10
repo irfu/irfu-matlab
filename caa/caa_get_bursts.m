@@ -791,10 +791,11 @@ if 1      % ff gg di
     t1m=mean(t1(:,2));
     t2(:,1:2)=data8(:,[1 di+2]);
     t2m=mean(t2(:,2));
-
+di
     divf=t2m/t1m;
 %    if divf<0.67 || divf>1.5    % different data types skip
     if divf<0.5 || divf>2    % different data types skip
+divf
         continue;
     end
     aa1=c_phase(tt1(:,1),pha);
@@ -810,7 +811,7 @@ if 1      % ff gg di
     end
     sp2=c_efw_sfit(12,3,10,20,t2(:,1),tt2,aa2(:,1),aa2(:,2),1,output(1,1));       % org sfit2
     [a,b] = size(sp2);
-    gg=0;
+    gg=0;                
     i=1;
 
     while i<a+1
@@ -819,12 +820,12 @@ if 1      % ff gg di
         ex2=sp2(i,2);
         ey1=sp1(c,3);
         ey2=sp2(i,3);
-
+                                
         timevec=fromepoch(sp2(i,1));
         z1=atan2(ey1,ex1);
         z2=atan2(ey2,ex2);
         y=round(abs(((z1-z2)/pi)*180));
-
+                      
         if ~isempty(y)
             if isnan(y)==1 
 %                irf_log('proc','NaN');
@@ -843,13 +844,13 @@ if 1      % ff gg di
     end
 %t1(1:5,2)
 %t2(1:5,2)
-%ff
-%gg
+ff
+gg
     if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
         bestguess=[ff gg di];
     end
 end
-%bestguess
+bestguess
 xy=1:varsbsize;
 svar=irf_ssub('V?',probev);
 svar1=irf_ssub('V?',probev+1);
@@ -864,7 +865,7 @@ end
 %size(data8)
 data8ord=data8; % assume no order change
 %bestguess(3)=3;
-
+pos
 if ~pfound || bestguess(1)==-1
     irf_log('proc','Can not find burst order. standard order 1-n used');
 elseif pos~=bestguess(3)
@@ -895,6 +896,8 @@ elseif pos~=bestguess(3)
 end
 
 %data8ord(1:5,2:end)
+xy
+probe_list
 else
     t1=eval(name11); %name11 = irf_ssub('tm?!p$',filter,cl_id,bla(iii,1)); %irf_ssub('SSS2.wE?p!',cl_id,probe(iii,1));                    
     t2=eval(name22); %name22 = irf_ssub('tm?!p$',filter,cl_id,bla(iii,2));
@@ -1654,119 +1657,46 @@ function [rdata ix] = rm_spike_ndt(e,filt,typesc)
 % e:      [time data]
 % filter: U L H M
 % typesc: 0=V?? 1=SCX-Z
-sdevthold=20; % (old 4) hould be high 20?
 
-    ix=e(:,1)<0;
-    standard=std(e);
+ix=e(:,1)<0;
 
-    x=1;  
-    y=2;
-    xx=0;
-    while abs(e(y,2)-e(x,2))<3*standard(1,2) && y<length(e)     
-        x=x+1;
-        y=y+1;
-        xx=xx+1;
+PL = 8192; % page length
+PI = 2; % Number of pages after which we have to shift the mask right by 1 point
+        % Every PI*4 pages we have to extend the mask by two more points
+NP = ceil(length(e)/PL); % number of pages
+if NP < 12, PL = PL/2; NP = NP*2; PI = PI*2; end
+rdata=e;
+mask = [-1 0 1 2 3 4];
+m = [];
+for i=1:NP
+    if floor((i-1)/PI)==(i-1)/PI
+        % Shift the mask every PI pages
+        mask = mask + 1;
     end
-
-    i=1;    
-    x=x-xx;                   
-    z=x+5;
-    % Try to fix boundary problem
-    if z<length(e)                     
-%            e(x:z,:)=[];
-        if x==1
-            meanv=e(z+1,2);
-        else
-            meanv=(e(x-1,2)+e(z+1,2))/2;
-        end
-        e(x:z,2)=meanv;
-        ix(x:z)=true;
-%            e(x:z,2)=0;
-        while i<round(length(e)/8192)
-            x=x+8192-5;
-%            z=z+8192;
-            z=z+8192-5;
-%                e(x:z,:)=[];
-            meanv=(e(x-1,2)+e(z+1,2))/2;
-            e(x:z,2)=meanv;
-            ix(x:z)=true;
-            i=i+1;
-        end
+    if floor((i-1)/(PI*4))==(i-1)/(PI*4)
+        % Extend the mask every PI*4 pages
+        mask = [mask mask(end)+[1 2]]; %#ok<AGROW>
     end
-
-if 1
-    elen=size(e,1);
-    step=round((elen+1)/57);    % 6 window step size (old 57)
-    for i=1:step:elen-1
-        stop=i+step-1;
-        if stop>elen-1
-            stop=elen-1;
-        end
-        if (i>1)
-            te=e(i-1:stop,2);   % 1 point overlap
-        else
-            te=e(i:stop,2);
-        end
-        sdev=std(te);
-        meanv=mean(te);
-        out=abs(te-meanv)>sdevthold*sdev;
-        outlen=length(out);
-        % put linear value on spike
-        x=2;
-%i
-%sum(out)
-tem=te;
-        while (x < outlen)
-            if out(x)
-                s=x+1;
-                while (s < outlen-1)
-                    if ~out(s)
-                        s=s-1;
-                        break;
-                    end
-                    s=s+1;
-                end
-                if s>=outlen
-                    s=outlen-1;
-                end
-                xx=i+x-2;
-                ss=i+s-2;
-%sdev*4
-%meanv
-%e(xx-1:ss+1,2)-meanv
-                if x==s
-                    e(xx:ss,2)=(e(xx-1,2)+e(ss+1,2))/2;
-                elseif xx==1
-                    for ii=0:ss-xx
-                        e(xx+ii,2)=e(ss+1,2);
-                    end                    
-                else
-                    df=e(ss+1,2)-e(xx-1,2);
-                    inc=df/(ss-xx+2);
-                    for ii=0:ss-xx
-                        e(xx+ii,2)=(ii+1)*inc+e(xx-1,2);
-                    end
-                end
-                ix(xx:ss)=true;
-                x=s;
-%e(xx-1:ss+1,2)
-            end
-            x=x+1;
-        end
-%size(e(i:stop))
-        if i>1
-            tem=tem(2:end);
-        end
-%size(tem)
-%        figure; plot(e(i:stop,2)-meanv); hold; plot((out*sdev)+sdevthold*sdev,'r'); plot((-out*sdev)-sdevthold*sdev,'r');
+    pos=(i-1)*PL+mask;
+    if pos(1)<1
+rdata(pos(3):pos(end)+1,2)
+        rdata(pos(3:end),2)=rdata(pos(end)+1,2);
+rdata(pos(3):pos(end)+1,2)
+        ix(pos(3:end))=true;
+    else
+rdata(pos(1)-1:pos(end)+1,2)
+        rdata(pos,2)=(rdata(pos(1)-1,2)+rdata(pos(end)+1,2))/2;
+rdata(pos(1)-1:pos(end)+1,2)
+        ix(pos)=true;
     end
-%sum(ix)
+    m = [m pos]; %#ok<AGROW>
 end
-   rdata = e;
-%    figure;
-%    plot(e(:,2));
-%    zoom on;
-%ix
+
+%m( m<=0 ) = []; % Remove the first points containing -1, 0
+size(ix)
+
+%rdata(m,2:end) = NaN;
+
 end
 
 function filt = get_filter(ibstr)
