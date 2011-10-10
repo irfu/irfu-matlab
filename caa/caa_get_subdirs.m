@@ -14,7 +14,11 @@ if ~isnumeric(cl_id) || cl_id < 1 || cl_id > 4
 end
 
 SPLIT_INT = 3; % 3 hour subintervals
-BASE_DIR = '/data/caa/l1';
+if ismac
+    BASE_DIR = '/Volumes/caa/l1';
+else
+    BASE_DIR = '/data/caa/l1';
+end
 
 [st,dt] = irf_stdt(iso_t,dt);
 

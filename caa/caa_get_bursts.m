@@ -44,9 +44,10 @@ cord=1;
 burstreadbytes=44;
 
     fns=size(filename,2);
-    fid=fopen(['/data/cluster/burst/' filename],'rb'); % opens the binary file for reading
+    DP = c_ctl(0,'data_path');
+    fid=fopen([DP '/burst/' filename],'rb'); % opens the binary file for reading
     if fid==-1
-        error(['Can not find burst file ' filename ' in /data/cluster/burst']);
+        error(['Can not find burst file ' filename ' in ' DP '/burst']);
         cd(old_pwd);
         return;
     end
@@ -89,14 +90,14 @@ burstreadbytes=44;
 
     date = fromepoch(full_time);
     sp = [pwd() '/' irf_fname(full_time)];  
-    cdb=ClusterDB(DBNO,'/data/cluster/burst','.');
+    cdb=ClusterDB(DBNO,[ DP '/burst'],'.');
     %Sets the variables for gathering normal mode data   
     vars0 = {'tmode','fdm','efwt','ibias','p','e','a','sax','r','v','bfgm','bsc'};
 	%Sets the variables thats needed for burst data.
     vars11 = {'whip','sweep','bdump','probesa','p','ps' 'dies','die','pburst','dieburst','dibsc','dibscburst'};
 	%Scans the correct line from the text file to be used later.
 %	data=sscanf(tline,'%s %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x');%,fname,&bcode,&bfreq,&btrig,&bchirp,&bpages,&bthrsh0,&bp0,&bp1,&bp2,&bp3,&st[0],&st[1],&st[2],&st[3],&st[4],&vt[0], &vt[1], &vt[2], &vt[3], &vt[4],&et[0],&et[1],&et[2],&et[3],&et[4],&sa[0],&sa[1],&sa[2],&ea[0],&ea[1],&ea[2],&lr[0],&lr[1],&lr[2],&spare1,&spare2,&f[0],&f[1],&f[2],&f[3],&f[4],&f[5],&f[6],&f[7]))
-    filename=irf_ssub('/data/cluster/burst/?',filename)
+    filename=irf_ssub([ DP '/burst/?'],filename)
     dec2bin(data(19),8);
     OUT = c_efw_burst_geth(filename);
     
