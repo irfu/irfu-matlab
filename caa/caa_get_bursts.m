@@ -25,7 +25,6 @@ ret=1;
 % WARNING: Do NOT use 1 for this on server L1 data
 fetch_efw_data=0; % must be 1 if no efw data in current directory
 
-cord_plot=0;
 plot_save=1;
 plotpath=[getenv('HOME') '/figures/'];
 
@@ -651,7 +650,7 @@ co = 'xyz';
             irf_log('dsrc',irf_ssub('No data for wBSC4kHz?',cl_id))
             out_data = []; continue
         else
-            B(:,comp) = data; %#ok<AGROW>
+            B(:,comp) = data;
         end   
        
        
@@ -965,646 +964,126 @@ else
 end
 save_time=[];
 
-if 1
-    % save raw ordered data
-    save_file = './mEFWburstTM1.mat';
-    save_list='';
-    burst_info=sprintf('%s ',varsb{:});
-    eval(irf_ssub(['ib?_info=burst_info(1:end-1);' 'save_list=[save_list ''ib?_info ''];'],cl_id));
+% save raw ordered data
+save_file = './mEFWburstTM1.mat';
+save_list='';
+burst_info=sprintf('%s ',varsb{:}); %#ok<NASGU>
+eval(irf_ssub(['ib?_info=burst_info(1:end-1);' 'save_list=[save_list ''ib?_info ''];'],cl_id));
 
-    eval(irf_ssub(['iburst?=data8ord;' 'save_list=[save_list ''iburst? ''];'],cl_id));
-    if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-        irf_log('save',[save_list ' -> ' save_file])
-        if exist(save_file,'file')
-            eval(['save -append ' save_file ' ' save_list]);
-        else
-            eval(['save ' save_file ' ' save_list]);
-        end
-    end
-    % filter data
-    % calib data
-    data8ordfc=zeros(size(data8ord));
-    data8ordfc(:,1)=data8ord(:,1);
-    if varsbsize>4
-        Stemp=zeros(size(data8ord,1),4);
-        Stemp(:,1)=data8ord(:,1);
-        Smem=Stemp;
-    end
-    Spos=zeros(1,3);
-    Scnt=1;
-    t=data8ord(:,1);
-    ixm=zeros(3,size(data8ord,1))>0;
-    for i=1:varsbsize
-        if varsb{i}(1)=='B'
-            [sfilt ix]=rm_spike_ndt([t data8ord(:,i+1)],filt);
-            sfilt(ix,2)=nan;
-            data8ordfc(:,i+1)=sfilt(:,2); % factor?            
-        elseif varsb{i}(1)=='S'
-            Spos(Scnt)=i;
-            xyzord=double(varsb{i}(3))-87;
-            Scnt=Scnt+1;
-            [scfilt ix]=rm_spike_ndt([t data8ord(:,i+1)],filt);
-            ixm(xyzord,:)=ix;
-            scfilt(:,2)=-scfilt(:,2)/7000;
-%            data8ord(:,i+1)=scfilt(:,2);
-            Stemp(:,xyzord+1)=scfilt(:,2);
-            Smem(:,xyzord+1)=scfilt(:,2);
-        elseif varsb{i}(1)=='V'
-            [spfilt ix]=rm_spike_ndt([t data8ord(:,i+1)],filt);
-            spfilt(:,2)=spfilt(:,2)*0.00212;
-            spfilt=c_efw_invert_tf(spfilt,filt);
-            spfilt(ix,2)=nan; % insert nan on bad data
-            data8ordfc(:,i+1)=spfilt(:,2);
-        else
-            error(['Unknown ib data type: ' varsb{i}]);
-        end
-    end
-
-    if Spos(end)  % filter SCX-Z
-        save_file = './mBSCBurst.mat';
-        save_list='';
-        [B] = irf_filt(Stemp,10,0,[],3);
-        f=filt;
-        if f~='L'
-            f='H';
-        end
-        B = c_efw_invert_tf(B,f);
-        size(B)
-        B = c_efw_burst_bsc_tf(B,cl_id); % Apply the transfer function
-        for i=1:3 % insert nan on bad data
-            B(ixm(i,:),i+1)=nan;
-        end
-        eval(irf_ssub(['w4kHz?=Smem;' 'save_list=[save_list ''w4kHz? ''];'],cl_id));
-        eval(irf_ssub(['wBSC4kHz?=B;' 'save_list=[save_list ''wBSC4kHz? ''];'],cl_id));
-    
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-            irf_log('save',[save_list ' -> ' save_file])
-            if exist(save_file,'file')    
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-        end
-    elseif varsbsize<=4
-        irf_log('proc','No ib SCX-Z data <=4 cols');
+eval(irf_ssub(['iburst?=data8ord;' 'save_list=[save_list ''iburst? ''];'],cl_id));
+if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
+    irf_log('save',[save_list ' -> ' save_file])
+    if exist(save_file,'file')
+        eval(['save -append ' save_file ' ' save_list]);
     else
-        irf_log('proc','No ib SCX-Z data >4 cols');
+        eval(['save ' save_file ' ' save_list]);
     end
-    save_file = './mEFWburstR.mat';
-    save_list='';
-    t=data8ordfc(:,1);
-    for i=1:varsbsize
-        if varsb{i}~='V'
-            continue
-        end
+end
+% filter data
+% calib data
 
-        data=[t data8ordfc(:,i+1)];
-        probe=varsb{i}(2);
-        if length(varsb{i})>3
-            if vt(2)=='4'  % 43 check
-                probe = vt(3:-1:2);
-            else
-                probe = vt(2:3);
-            end
-%varsb{i}
-        else
-            probe=varsb{i}(2);
-        end
-        filter=get_filter(varsb{i});
-%        eval(irf_ssub(['wbE?p!=data;' 'save_list=[save_list ''wbE?p! ''];'],cl_id,probe)); 
-        eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
+[data8ordfc, ix] = caa_identify_ib_spikes(data8ord);
+
+BSCpos=zeros(1,3);
+BSCcnt=0;
+for i=1:varsbsize
+    if varsb{i}(1)=='B' % BP data
+        % TODO: BP factor???
+        %data8ordfc(:,i+1)=data8ordfc(:,i+1)*BPFACTOR;
+    elseif varsb{i}(1)=='S' % SC data       
+        xyzord=double(varsb{i}(3))-87; % X=1
+        BSCpos(xyzord)=i;
+        data8ordfc(:,i+1) = -data8ordfc(:,i+1)/7000;
+        c_efw_burst_bsc_tf(data8ordfc(:,[1 BSCpos+1]),cl_id,xyzord);
+        BSCcnt=BSCcnt+1;
+    elseif varsb{i}(1)=='V'
+        data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
+        data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),...
+            get_filter(varsb{i}));
+    else
+        error(['Unknown ib data type: ' varsb{i}]);
     end
+end
+
+data8ordfc(ix,2:end) = NaN; % Set spikes to NaNs
+
+% Save BSC data
+if BSCcnt
+    if BSCcnt<3, error('Less than 3 BSC components'), end % Sanity check
+    BSCtemp = data8ordfc(:,[1 BSCpos+1]);  %#ok<NASGU>
+    
+    save_file = './mBSCBurst.mat';
+    save_list='';
+	c_eval('wBSC4kHz?=BSCtemp;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
     if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
         irf_log('save',[save_list ' -> ' save_file])
-
         if exist(save_file,'file')
             eval(['save -append ' save_file ' ' save_list]);
         else
             eval(['save ' save_file ' ' save_list]);
         end
     end
-    % make L2
-    getData(cp,cl_id,'whip');
+end
+
+save_file = './mEFWburstR.mat';
+save_list='';
+for i=1:varsbsize
+    if varsb{i}~='V'
+        continue
+    end
+    if length(varsb{i})>3
+        if vt(2)=='4'  % 43 check
+            probe = vt(3:-1:2);
+        else
+            probe = vt(2:3);
+        end
+
+    else
+        probe=varsb{i}(2);
+    end
+    filter=get_filter(varsb{i});
+    data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
+    eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
+end
+if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
+    irf_log('save',[save_list ' -> ' save_file])
+    
+    if exist(save_file,'file')
+        eval(['save -append ' save_file ' ' save_list]);
+    else
+        eval(['save ' save_file ' ' save_list]);
+    end
+end
+% make L2
+getData(cp,cl_id,'whip');
 %    getData(cp,cl_id,'p');%
 %    getData(cp,cl_id,'die');%
-    getData(cp,cl_id,'pburst');
-    getData(cp,cl_id,'dieburst');
-    getData(cp,cl_id,'dibscburst');
-
-    if burst_plot
-        clf;
-%st=st+300
-%sp=sp+300
-        dt2=5;
-        st_int=st-dt2;
-        st_int2=sp-st+2*dt2;
-        %summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',vars1);
-%        summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char(varsb));
-        summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char([fnshort varsb]));
-        %summaryPlot(cp,cl_id,'ib','st',st_int,'dt',st_int2);
-        if plot_save
-            orient landscape
-            print('-dpdf', fname);
-        end
-    end
-
-    ret=0;
-    delete('mEFWburstR1.mat'); %Remove some files
-    delete('mEFWburstTM.mat');
-    cd(old_pwd);
-else
-for aa=probe_l
-    save_list='';
-    aa
-    save_file = './mEFWburstR11.mat';
-        name1 = bla2(xy(aa),:);
-        data = eval(name1);
-        name = bla2(aa,:);
-        if vars(aa,4)>60
-            eval(irf_ssub(['wb1E?p!=data;' 'save_list=[save_list ''wb1E?p! ''];'],cl_id,name(9:end))); 
-        else
-            
-            eval(irf_ssub(['P1?!p$=data;' 'save_list=[save_list ''P1?!p$ ''];'],filter,cl_id,aa));
-        end
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-	
-            irf_log('save',[save_list ' -> ' save_file])
-	
-            if exist(save_file,'file')
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-            
-        end
-        
-        % prepare the output
-  
-        if nargout > 0 
-	    
-            if ~isempty(save_list)
-                sl = tokenize(save_list);
-                out_data = {sl};
-                for i=1:length(sl)
-                    eval(['out_data{i+1}=' sl{i} ';'])
-                end   
-            end  
-            
-        else   
-            clear out_data
-        end
-        
-        save_list='';
-    
-    save_file = './mEFWburstTM1.mat';
-%        name = bla(xy(aa),:)
-%        data = eval(name);
-        name = bla(aa,:);
-        data = eval(name);
-        if (aa==1)
-            burst_info=sprintf('%s,',varsb{:})
-            eval(irf_ssub(['ib?_info=burst_info(1:end-1);' 'save_list=[save_list ''ib?_info ''];'],cl_id));
-        end
-name
-char(vars(aa,:))
-        if vars(aa,4)>60
-            eval(irf_ssub(['wb1E?p!=data;' 'save_list=[save_list ''wb1E?p! ''];'],cl_id,name(9:end))); 
-        else
-            eval(irf_ssub(['tm1?!p$=data;' 'save_list=[save_list ''tm1?!p$ ''];'],filter,cl_id,aa));
-        end
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-	
-            irf_log('save',[save_list ' -> ' save_file])
-	
-            if exist(save_file,'file')
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-            
-        end
-        
-        % prepare the output
-  
-        if nargout > 0 
-	    
-            if ~isempty(save_list)
-                sl = tokenize(save_list);
-                out_data = {sl};
-                for i=1:length(sl)
-                    eval(['out_data{i+1}=' sl{i} ';'])
-                end   
-            end  
-            
-        else   
-            clear out_data
-        end
-end
-end
-
-return % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                                  %%%%%%%%%%%%%%%%%%%%%
-%%%%%    Removing spikes from the data                 %%%%%%%%%%%%%%%%%%%%%
-%%%%%                                                  %%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
-t3 = load('mEFWburstR11.mat');
-%load('mEFWburstR11.mat')
-fn3 = fieldnames(t3);
-bla3=char(fn3);
-cc3=size(bla3);
-sdevthold=4;
-
-for aa=1:cc3(1)
-    if vars(aa,4)>60
-            name = irf_ssub('wb1E?p!',cl_id,bla3(aa,7:end));
-    else
-            name = irf_ssub('P1?!p$',filter,cl_id,bla3(aa,end));
-    end
-    
-    if  vars(aa,4)>60 && (name(9:end)==12 || name(9:end)==34)
-        e=eval(name);
-    else
-        
-if 0        % no filter       
-        e=eval(name);
-elseif 1    % non destructive time filter
-        e=eval(name);
-        ix=e(:,1)<0;
-        standard=std(e);
-
-        x=1;  
-        y=2;
-        xx=0;
-        while abs(e(y,2)-e(x,2))<3*standard(1,2) && y<length(e)     
-            x=x+1;
-            y=y+1;
-            xx=xx+1;
-        end
-                           
-        i=1;    
-        x=x-xx;                   
-        z=x+5;
-
-        if z<length(e)                     
-%            e(x:z,:)=[];
-            if x==1
-                meanv=e(z+1,2);
-            else
-                meanv=(e(x-1,2)+e(z+1,2))/2;
-            end
-            e(x:z,2)=meanv;
-            ix(x:z)=true;
-%            e(x:z,2)=0;                 
-            while i<round(length(e)/8192)
-                x=x+8192-5;                    
-                z=z+8192-5;                    
-%                e(x:z,:)=[];
-                meanv=(e(x-1,2)+e(z+1,2))/2;
-                e(x:z,2)=meanv;
-                ix(x:z)=true;
-                i=i+1;                 
-            end
-        end
-
-        elen=size(e,1);
-        step=round(elen/97)    % step size
-        for i=1:step:elen-1
-            stop=i+step-1;
-            if stop>elen-1
-                stop=elen-1;
-            end
-            if (i>1)
-                te=e(i-1:stop,2);   % 1 point overlap
-            else
-                te=e(i:stop,2);
-            end
-            sdev=std(te);
-            meanv=mean(te);
-            out=abs(te-meanv)>sdevthold*sdev;
-            outlen=length(out);
-            % put linear value on spike
-            x=2;
-            while (x < outlen)
-                if out(x)                
-                    s=x+1;
-                    while (s < outlen-1)
-                        if ~out(s)
-                            s=s-1;
-                            break;
-                        end
-                        s=s+1;
-                    end
-                    if s>=outlen
-                        s=outlen-1;
-                    end
-                    xx=i+x-2;
-                    ss=i+s-2;
-%sdev
-%meanv
-%e(xx-1:ss+1,2)
-                    if x==s
-                        e(xx:ss,2)=(e(xx-1,2)+e(ss+1,2))/2;
-                    else
-                        df=e(ss+1,2)-e(xx-1,2);
-                        inc=df/(ss-xx+2);
-                        for ii=0:ss-xx
-                            e(xx+ii,2)=(ii+1)*inc+e(xx-1,2);
-                        end
-                    end
-                    ix(xx:ss)=true;
-                    x=s;
-%e(xx-1:ss+1,2)
-                end
-                x=x+1;
-            end
-
-        end
-sum(ix)
-else
-        data_phys=eval(name);
-        standard=std(eval(name));   
-    
-        x=1;  
-        y=2;
-        xx=0;
-            
-        while abs(data_phys(y,2)-data_phys(x,2))<3*standard(1,2) && y<length(data_phys)     
-            x=x+1;
-            y=y+1;
-            xx=xx+1;
-        end
-        
-        a=data_phys;                   
-        i=1;    
-        x=x-xx;                   
-        z=x+5;
-
-        if z<length(a)                     
-            a(x:z,:)=[];                 
-%            a(x:z,2)=0;                 
-            while i<round(length(data_phys)/8192)                        
-                x=x+8192-5;                    
-                z=z+8192-5;                    
-                a(x:z,:)=[];
-%                meanv=(a(x-1,2)+a(z+1,2))/2;
-%                a(x:z,2)=meanv;
-                i=i+1;                 
-            end
-
-            pl=length(a);
-            x=round(pl/50)
-            i=1;                   
-            k=1;                   
-            d=x;                    
-            e=a;                    
-            f=1;                    
-            g=0;                    
-               
-            while i<(length(a)/x)+1
-                if d>pl
-                    d=pl;
-                end
-
-                count=a(k:d,:);
-                mu = mean(count);
-                sigma = std(count);
-                [n,p] = size(count);
-                    
-                % Create a matrix of mean values by                    
-                % replicating the mu vector for n rows                   
-                MeanMat = repmat(mu,n,1);
-                    
-                % Create a matrix of standard deviation values by                    
-                % replicating the sigma vector for n rows                     
-                SigmaMat = repmat(sigma,n,1);                  
-                    
-                % Create a matrix of zeros and ones, where ones indicate                   
-                % the location of outliers                   
-                outliers = abs(count - MeanMat) > 2*SigmaMat;                   
-
-                % Calculate the number of outliers in each column                     
-%                nout = sum(outliers);                   
-                count(any(outliers,2),:) = [];
-%                count(any(outliers,2),2) = 0;
-                [h,j]=size(count);                    
-                g=g+h;                  
-                e(f:g,:)=count;                   
-                f=f+h;                    
-                k=k+x;                   
-                d=d+x;                   
-                i=i+1;
-              
-            end
-            if g<d
-                e(g:end,:)=[];
-%                e(g:end,2)=0;
-            else
-            end
-             
-        else
-            
-        end
-
-        if isempty(save_time)==1
-%            irf_log('proc','save_time empty');
-            save_time=e;
-        else
-            a=length(e);
-            b=length(save_time);
-            
-%            irf_log('proc',['save_time ' num2str(a) ' ' num2str(b)]);
-            if a>b
-                x=a-b;
-                e(b+1:b+x,:)=[];
-%                e(b+1:b+x,2)=0;
-            elseif a<b
-                x=b-a;
-                e(a+1:a+x,:)=e(a-x+1:a,:);
-                
-            else
-            end
-        end
-
-    end
-end    
-    switch filt
-        case 72
-            filt='H';
-        case 76
-            filt='L';
-        otherwise
-            filt='U';
-    end
-% NaNs cant be used in FFT.
-    e = c_efw_invert_tf(e,filt);
-% Insert NaN
-    if exist('ix','var')
-        e(ix,2)=nan;
-    end
-
-    
-    save_file = './mEFWburstR.mat';
- save_list='';
-   
-    data=e;
-data(1:15,2:end)
-    if vars(aa,4)>60
-        eval(irf_ssub(['wbE?p!=data;' 'save_list=[save_list ''wbE?p! ''];'],cl_id,name(7:end))); 
-    else
-        eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,name(end)));
-    end
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-            irf_log('save',[save_list ' -> ' save_file])
-	
-            if exist(save_file,'file')
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-        end
-        
-        % prepare the output
-  
-        if nargout > 0 
-            if ~isempty(save_list)
-                sl = tokenize(save_list);
-                out_data = {sl};
-                for i=1:length(sl)
-                    eval(['out_data{i+1}=' sl{i} ';'])
-                end   
-            end  
-        else   
-            clear out_data
-        end
-       save_list='';
-       
-end
-
-% Create mEFWburst mBSC...
-for v=length(vars11)-4:length(vars11)
-%    vars11{v}
-    getData(cp,cl_id,vars11{v});
-end
+getData(cp,cl_id,'pburst');
+getData(cp,cl_id,'dieburst');
+getData(cp,cl_id,'dibscburst');
 
 if burst_plot
-%for v=1:length(vars11)-5
-%    getData(cp,cl_id,vars11{v});	
-%end
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%    Making summary plots of the data  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clf;
-
-dt2=5;
-st_int=st-dt2;
-st_int2=sp-st+2*dt2;
-orient tall
-%summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',vars1);
-summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2);
-if plot_save
-    print('-dpng', fname);
+    clf;
+    %st=st+300
+    %sp=sp+300
+    dt2=5;
+    st_int=st-dt2;
+    st_int2=sp-st+2*dt2;
+    %summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',vars1);
+    %        summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char(varsb));
+    summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char([fnshort varsb]));
+    %summaryPlot(cp,cl_id,'ib','st',st_int,'dt',st_int2);
+    if plot_save
+        orient landscape
+        print('-dpdf', fname);
+    end
 end
 
-if cord_plot
-load('mR.mat');
-cordinates=eval(irf_ssub(['R?'],cl_id));
-YZ=sqrt(cordinates(1,3)^2+cordinates(1,4));
-GSE(cord,:)=[cordinates(2,:) YZ];
-GSM(cord,:)=irf_gse2gsm(cordinates(2,:));
-cord=cord+1;
-    %catch
-    %end
+ret=0;
+delete('mEFWburstR1.mat'); %Remove some files
+delete('mEFWburstTM.mat');
+cd(old_pwd);
 
-%end
-  if ~isempty(GSE)
-    orient PORTRAIT
-    GSM(:,2:4)=GSM(:,2:4)/6171;
-    GSE(:,2:5)=GSE(:,2:5)/6371;
-    figure
-    subplot(2,1,1);plot(GSE(:,2),GSE(:,5),'x')
-    title('Positions of bursts in GSE')
-    xlabel('X [Re]')
-    ylabel('sqrt(Y^2 + Z^2) [Re]')
-    grid on
-    subplot(2,1,2);plot(GSM(:,2),GSM(:,4),'x')
-    title('Positions of bursts in GSM')
-    xlabel('X [Re]')
-    ylabel('Z [Re]')
-    grid on
-
-        save_file = './position.mat';
-        
-        data = GSM;
-                
-        eval(irf_ssub(['GSM=data;' 'save_list=[save_list ''GSM ''];'],1));
-              
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-                     
-            irf_log('save',[save_list ' -> ' save_file])
-	        
-            if exist(save_file,'file')
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-            
-        end
-        
-        % prepare the output
-        if nargout > 0 
-	            
-            if ~isempty(save_list)
-                sl = tokenize(save_list);
-                out_data = {sl};
-                for i=1:length(sl)
-                    eval(['out_data{i+1}=' sl{i} ';'])
-                end
-            end
-        else
-            clear out_data
-        end
-        
-        save_list='';
-        
-%        save_file = './position.mat';
-        
-        data = GSE;
-                
-        eval(irf_ssub(['GSE=data;' 'save_list=[save_list ''GSE ''];'],1));
-              
-        if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-            irf_log('save',[save_list ' -> ' save_file])
-            if exist(save_file,'file')
-                eval(['save -append ' save_file ' ' save_list]);
-            else
-                eval(['save ' save_file ' ' save_list]);
-            end
-            
-        end
-        
-        % prepare the output
-        if nargout > 0 
-            if ~isempty(save_list)
-                sl = tokenize(save_list);
-                out_data = {sl};
-                for i=1:length(sl)
-                    eval(['out_data{i+1}=' sl{i} ';'])
-                end
-            end
-        else
-            clear out_data
-        end
-        
-        save_list='';
-
-  end
-end
-end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
