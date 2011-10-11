@@ -40,7 +40,12 @@ irf_units;
   U_pts        = length( U );
   j_thermal    = zeros( U_pts, 1 );
 
-
+% If zero density return zero current
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if N==0 || T==0,
+    j_thermal=zeros(size(U));
+    return;
+end
 % Is the body moving with a velocity, V, with 
 % respect to the plasma ?
 % Criteria set such that it is considered 
