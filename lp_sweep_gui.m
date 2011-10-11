@@ -33,14 +33,14 @@ switch action,
         ud.probe_total_area=(ud.probe_radius*.01)^2*4*pi;
         % s/c
         ud.sc_radius=1; % [m]
-        ud.flag_use_sc=0; % 0-not use, 1- use sc 
+        ud.flag_use_sc=0; % 0-not use, 1- use sc
         ud.sc_probe_refpot_as_fraction_of_scpot=0.25; % reference potential at probe
         % plasma
         ud.m_amu1=1;
         ud.m_amu2=16;
         ud.m2=0; % relative fraction of 2nd species
         ud.n=0; % [cc]
-        ud.Ti=0; 
+        ud.Ti=0;
         ud.Te=0;
         ud.V_SC=0;
         
@@ -96,7 +96,7 @@ switch action,
         inp.sc_probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc_probe_refpot_as_fraction_of_scpot),'style','edit','Position',[120 25 50 25],'backgroundcolor','white');
         inp.flag_sc = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,'Position',[0 75 120 25]);
         inp.sc_example = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS','style','popup','Position',[0 50 150 25],'backgroundcolor','white','Callback', @setscexample);
-
+        
         %% initialize plasma menu
         hpl = uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .75 .3 .2]);
         inp.n = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 50 25]);
@@ -123,9 +123,8 @@ switch action,
         ud.Te=eval(get(inp.Te_value,'string'));
         ud.Ti=eval(get(inp.Ti_value,'string'));
         
-        %% calculate IU curves 
-        Upot=ud.U;Upot=Upot(:);
-        dU=0.001; % dU when estimating difference
+        %% calculate IU curves
+        Upot=ud.U(:);
         switch ud.probe_type
             case 'spherical'
                 probe_cross_section=pi*(ud.probe_radius*.01)^2;
@@ -137,14 +136,7 @@ switch action,
                 probe_type=2;
                 ud.probe_length=str2double(get(inp.probe_length_value,'string'));
             case 'arbitrary'
-        end
-        % probe to plasma IU curve
-        if strcmp(ud.probe_type,'spherical'),
-            probe_type=1;
-        elseif strcmp(ud.probe_type,'cylindrical'),
-            probe_type=2;
-        else
-            probe_type=1;
+                probe_type=1;
         end
         J_probe=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
         dUdI=gradient(Upot,J_probe);
@@ -156,7 +148,7 @@ switch action,
             ud.sc_probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc_probe_refpot_as_fraction_of_scpot_value,'string'));
             ud.sc_radius=str2double(get(inp.sc_radius_value,'string'));
         end
-        % if scflag then calculate s/c IU curve 
+        % if scflag then calculate s/c IU curve
         if ud.flag_use_sc,
             J_sc=lp_probecurrent(probe_type,pi*ud.sc_radius^2,4*pi*ud.sc_radius^2,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
             % probe current neglecting reference potential
@@ -167,24 +159,34 @@ switch action,
         % if scflag calculate probe to sc IU curve
         if ud.flag_use_sc,
             Iprobe=min(J_probe):.01*(max(J_probe)-min(J_probe)):max(J_probe);
+            Iprobe=Iprobe(:);
             % plasma current with UV factor zero
             J_probe_plasma=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,0.00000000,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
-            % photoelectron current with plasma current zero
-            J_probe_photo=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,0.000000000,ud.Ti,ud.Te,ud.V_SC);
             Isat=-Iprobe;
             Usatsweep=interp1(J_sc,Upot,Isat); % floating potential of sc during sweep
             Uproberefsweep=ud.sc_probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
-            Uprobesweep=interp1(J_probe,Upot,Iprobe); % probe potential with respect to reference potential during sweep
-            Uprobe2plasma=Uproberefsweep+Uprobesweep;
+            Uprobe2plasma=zeros(size(Upot)); % initialize
+            for ii=1:numel(Iprobe),
+                % photoelectron current with plasma current zero
+                J_probe_photo=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,0.000000000,ud.Ti,ud.Te,ud.V_SC);
+                J_probe=J_probe_plasma+J_probe_photo;
+                Uprobe2plasma(ii)=interp1(J_probe,Upot,Iprobe(ii));
+            end
+            
             Uprobe2sc=Uprobe2plasma-Usatsweep;
+            Uprobe2refpot=Uprobe2plasma-Uproberefsweep;
             dUdI_probe2plasma=gradient(Uprobe2plasma,Iprobe);
             dUdI_probe2sc=gradient(Uprobe2sc,Iprobe);
+            dUdI_probe2refpot=gradient(Uprobe2refpot,Iprobe);
+            dUdI=dUdI_probe2refpot;
+            Upot=Uprobe2refpot;
+            J_probe=Iprobe;
         end
         
         %% plot IU curve
         info_txt='';
         h=ud.h;
-        plot(h(1),Upot,J_probe*1e6);
+        plot(h(1),Upot,J_probe*1e6,'b');
         grid(h(1),'on');
         xlabel(h(1),'U [V]');
         ylabel(h(1),'I [\mu A]');
@@ -221,13 +223,13 @@ switch action,
         end
         if min(J_probe)<0 && max(J_probe)>0,
             Ufloat=interp1(J_probe,Upot,0); % floating potential
-            Rfloat=interp1(Upot,dUdI,Ufloat);
+            ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
             info_txt=[info_txt '\newline Ufloat=' num2str(Ufloat,3) 'V, R at Ufloat R= ' num2str(Rfloat,3) ' Ohm'];
             disp(['Ufloat=' num2str(Ufloat,3) ' V, R at Ufloat R=' num2str(Rfloat,3) ' Ohm']);
         end
         set(h(2),'yscale','log')
         
-
+        
         axis(h(3),'off');
         set(ud.ht,'string',info_txt);
         set(gcf,'userdata',ud);
@@ -255,7 +257,7 @@ function setscexample(hObj,event) %#ok<INUSD>
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
-elseif val ==2, % Cluster 
+elseif val ==2, % Cluster
     data.probe_type='spherical';
     set(data.inp.probe_type,'Value',1);
     set(data.inp.probe_length_value,'style','text','string','');
