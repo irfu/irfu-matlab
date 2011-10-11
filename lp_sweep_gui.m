@@ -158,7 +158,6 @@ switch action,
         % calculate IU curves 
         Upot=ud.U;Upot=Upot(:);
         dU=0.001; % dU when estimating difference
-        Upot2=Upot+dU; ii=find(Upot<0);Upot2(ii)=Upot(ii)-dU;
         switch ud.probe_type
             case 'spherical'
                 probe_cross_section=pi*(ud.probe_radius*.01)^2;
@@ -172,11 +171,16 @@ switch action,
             case 'arbitrary'
         end
         % probe to plasma IU curve
+        if strcmp(ud.probe_type,'spherical'),
+            probe_type=1;
+        elseif strcmp(ud.probe_type,'cylindrical'),
+            probe_type=2;
+        else
+            probe_type=1;
+        end
         J_probe=lp_probecurrent(probe_type,probe_cross_section, ...
             probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
-        J_probe_2=lp_probecurrent(probe_type,probe_cross_section, ...
-            probe_total_area,Upot2,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
-        dUdI=(Upot2-Upot)./(J_probe_2-J_probe);
+        dUdI=gradient(Upot,J_probe);
         ud.I=J_probe;
         ud.dUdI=dUdI;
         % if scflag read in sc parameters
@@ -189,11 +193,8 @@ switch action,
         if ud.flag_use_sc,
             J_sc=lp_probecurrent(probe_type,pi*ud.sc_radius^2, ...
                 4*pi*ud.sc_radius^2,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
-            J_sc_2=lp_probecurrent(probe_type,pi*ud.sc_radius^2, ...
-                4*pi*ud.sc_radius^2,Upot2,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
-            dUdI_sc=(Upot2-Upot)./(J_sc_2-J_sc);
             ud.I_sc=J_sc;
-            ud.dUdI_sc=dUdI_sc;
+            ud.dUdI_sc=gradient(Upot,J_sc);
         end
         % if scflag calculate probe to sc IU curve
         if ud.flag_use_sc,
@@ -281,6 +282,7 @@ data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
 elseif val ==2, % Cluster 
     data.probe_type='spherical';
+    set(data.inp.probe_type,'Value',1);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','4');
     set(data.inp.sc_radius_value,'string','1');
