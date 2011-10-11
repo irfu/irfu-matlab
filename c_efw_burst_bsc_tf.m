@@ -1,7 +1,10 @@
-function bout = c_efw_burst_bsc_tf(binp,cl_id)
+function bout = c_efw_burst_bsc_tf(binp,cl_id,component)
 %C_EFW_BURST_BSC_TF  Apply transfer fuction to EFW IB BSC data
 %
-%  B_CAL = C_EFW_BURST_BSC_TF(B_TM,CL_ID)
+%  B_CAL = C_EFW_BURST_BSC_TF(B_TM,CL_ID,[COMP])
+%
+% If COMP is given, we assume that BINP contains only one B component
+% for example COMP=2, means BINP=[t By]
 %
 % $Id$
 
@@ -22,8 +25,17 @@ f = fsamp*((1:nf) -1)'/nfft;
 
 bout = binp;
 
-for comp=1:3
-    tfinp = get_staff_ib_tf(cl_id,comp);
+if nargin < 3, component = 1:3; col = 1:3;
+else
+    if component>3 || component<1, error('COMP must be 1..3'), end
+    col = 1;
+    l='xyz';
+    irf_log('fcal',['calibrating B' l(component)])
+end
+    
+
+for comp=col
+    tfinp = get_staff_ib_tf(cl_id,component(comp));
     tf = interp1(tfinp(:,1),tfinp(:,2),f,'linear','extrap');
     tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,3),f,'linear','extrap');
 
