@@ -1,10 +1,13 @@
-function idx = caa_identify_ib_spikes(pdata)
+function [pdata,idx] = caa_identify_ib_spikes(idata)
 % CAA_IDENTIFY_IB_SPIKES  Identify spikes in the internal burst data
 %
-% IDX = CAA_IDENTIFY_IB_SPIKES(PDATA)
+% [PDATA,IDX] = CAA_IDENTIFY_IB_SPIKES(PDATA)
 %
+% Input:
 % PDATA - input in TM units (from mEFWburstTM1.mat)
 %
+% Output:
+% PDATA - data with spikes removed and interpolated by nearest good values
 % IDX - indeces if the points with spikes
 %
 % $Id$
@@ -16,19 +19,16 @@ function idx = caa_identify_ib_spikes(pdata)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+pdata = idata;
 pdata(:,isnan(pdata(1,:))) = [];
 
 ndata = size(pdata,1);
 
 PL = 8192; % page length
-PI = 2; % Numbef of pages after which we have to shift the mask right by 1 point
-        % Every PI*4 pages we have to extend the mask by two more points
-NP = ceil(ndata/PL); % number of pages
-if NP < 12, PL = PL/2; NP = NP*2; PI = PI*2; end
+if ceil(ndata/PL) < 12, PL = PL/2; end
 
+SDTTHRESH = 30; % Threshold for spikes
 
-
-SDTTHRESH = 30;
 pos = ndata; idx = []; prevSpike = [];
 
 %figure(73)
@@ -42,7 +42,7 @@ while pos-PL >= 1
 %      hold(h(1),'on'),hold(h(2),'on'),set(h(1),'XLim',pos + [0 PL-1],'YLimMode','auto')
 %      ylabel(h(1),'pdata'), ylabel(h(2),'diff')
      
-     nSpike = 0; spike = NaN;
+     nSpike = 0;
      while nSpike<=3
          OFF_P=2; OFF_M=2;
          if nSpike == 0 && ~isempty(prevSpike) % Spike position indicated by spike on the prev page
@@ -80,7 +80,7 @@ while pos-PL >= 1
          
          if isempty(prevSpike), prevSpike = spike; end
          idx_add = spike + ((-OFF_M+1):1:(OFF_P-1));
-         idx = [idx idx_add];
+         idx = [idx idx_add]; %#ok<AGROW>
          nSpike = nSpike + 1;
          
          %plot(h(1),idx_add,pdata(idx_add,2:end),'ko')
@@ -110,7 +110,7 @@ if length(ii)>1
         while jj<=length(kk)
             bad_i = find(ii-ii(kk(jj))-(1:length(ii))'+kk(jj)==0);
             if length(bad_i)>N_CONST
-                idx = [idx (ii(bad_i):ii(bad_i(end)))];
+                idx = [idx ((ii(bad_i)-1):(ii(bad_i(end))+1))]; %#ok<AGROW>
             end
             if isempty(bad_i), jj = jj + 1;
             else
@@ -123,18 +123,29 @@ if length(ii)>1
     end
 end
 
-idx = unique([1 2 3 4 5 sort(idx)]);
+% First points are usually bad
+idx = unique([1:6 sort(idx)]);
+idx(idx>ndata) = [];
+pdata = idata;
+pdata(1:6,2:end) = ones(6,1)*pdata(7,2:end);
 
-if 0
-    figure(72), clf
-    if exist('p1','var')
-        for i=1:4
-            h(i) = irf_subplot(4,1,-i);
-            c_eval('p?_new = p?; p?_new(idx,2:end) = NaN; irf_plot({p?,p?_new},''comp''), irf_plot({p?,p?_new},''comp'',''.'')',i)
+% Fill the gaps in the data
+di = diff(idx);
+ii = find(di > 1);
+if ~isempty(ii)
+    for i=1:length(ii)
+        first = idx(ii(i)+1);
+        if i==length(ii)
+            last = idx(end);
+        else
+            last = idx(ii(i+1));
         end
-    else
-        pdata_new = pdata;
-        pdata_new(idx,2:end) = NaN;
-        irf_plot({pdata,pdata_new},'comp')
+        idx_add = first:1:last;
+        if last+1<ndata
+            pdata(idx_add,2:end) = ones(length(idx_add),1)*(...
+                pdata(first-1,2:end) + pdata(last+1,2:end) )*0.5;
+        else
+            pdata(idx_add,2:end) = ones(length(idx_add),1)*pdata(first-1,2:end);
+        end
     end
 end
