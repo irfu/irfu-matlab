@@ -11,6 +11,7 @@ function lp_sweep_gui(action)
 % ud.dUdI - resistance
 % ud.... - many other parameters
 %
+irf_units;
 
 persistent message;
 if isempty(message), % run only the first time during the session
@@ -22,7 +23,7 @@ switch action,
     case 'initialize'
         %% default values
         ud=struct();
-        ud.U_string='-20 : 50';
+        ud.U_string='-10:.1:50';
         ud.R_sun=1; % distance in AU
         ud.UV_factor=1;
         % probe
@@ -98,13 +99,17 @@ switch action,
         inp.sc_example = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS','style','popup','Position',[0 50 150 25],'backgroundcolor','white','Callback', @setscexample);
         
         %% initialize plasma menu
-        hpl = uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .75 .3 .2]);
-        inp.n = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 50 25]);
-        inp.n_value = uicontrol('Parent',hpl,'String',num2str(ud.n),'style','edit','Position',[50 0 50 25],'backgroundcolor','white');
-        inp.Te = uicontrol('Parent',hpl,'String','Te [eV]','Position',[0 25 50 25]);
-        inp.Te_value = uicontrol('Parent',hpl,'String',num2str(ud.Te),'style','edit','Position',[50 25 50 25],'backgroundcolor','white');
-        inp.Ti = uicontrol('Parent',hpl,'String','Ti [eV]','Position',[0 50 50 25]);
-        inp.Ti_value = uicontrol('Parent',hpl,'String',num2str(ud.Ti),'style','edit','Position',[50 50 50 25],'backgroundcolor','white');
+        hpl = uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .7 .3 .25]);
+        inp.n = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 80 25]);
+        inp.n_value = uicontrol('Parent',hpl,'String',num2str(ud.n),'style','edit','Position',[80 0 90 25],'backgroundcolor','white');
+        inp.T = uicontrol('Parent',hpl,'String','T [eV]','Position',[0 25 80 25]);
+        inp.T_value = uicontrol('Parent',hpl,'String','1 1','style','edit','Position',[80 25 90 25],'backgroundcolor','white');
+        inp.m = uicontrol('Parent',hpl,'String','m [mp],0=me','Position',[0 50 80 25]);
+        inp.m_value = uicontrol('Parent',hpl,'String','0 1','style','edit','Position',[80 50 90 25],'backgroundcolor','white');
+        inp.q = uicontrol('Parent',hpl,'String','q [e]','Position',[0 75 80 25]);
+        inp.q_value = uicontrol('Parent',hpl,'String','-1 1','style','edit','Position',[80 75 90 25],'backgroundcolor','white');
+        inp.vsc = uicontrol('Parent',hpl,'String','Vsc [m/s]','Position',[0 100 80 25]);
+        inp.vsc_value = uicontrol('Parent',hpl,'String','0','style','edit','Position',[80 100 90 25],'backgroundcolor','white');
         
         ud.inp=inp;
         set(gcf,'userdata',ud);
@@ -119,9 +124,11 @@ switch action,
         ud.UV_factor=str2double(get(inp.UV_factor_value,'string'));
         ud.R_sun=str2double(get(inp.Rsun_value,'string'));
         ud.probe_radius=str2double(get(inp.probe_radius_value,'string'));
-        ud.n=eval(get(inp.n_value,'string'));
-        ud.Te=eval(get(inp.Te_value,'string'));
-        ud.Ti=eval(get(inp.Ti_value,'string'));
+        ud.n  =eval(['[' get(inp.n_value,'string')   ']' ]);
+        ud.T  =eval(['[' get(inp.T_value,'string')   ']' ]);
+        ud.m  =eval(['[' get(inp.m_value,'string')   ']' ]);
+        ud.q  =eval(['[' get(inp.q_value,'string')   ']' ]);
+        ud.vsc=eval(['[' get(inp.vsc_value,'string') ']' ]);
         
         %% calculate IU curves
         Upot=ud.U(:);
@@ -130,15 +137,17 @@ switch action,
                 probe_cross_section=pi*(ud.probe_radius*.01)^2;
                 probe_total_area=4*probe_cross_section;
                 probe_type=1;
+                probe_capacitance=4*pi*Units.eps0*ud.probe_radius*.01;
             case 'cylindrical'
                 probe_cross_section=2*ud.probe_radius*ud.probe_length*0.01^2;
                 probe_total_area=pi*probe_cross_section;
                 probe_type=2;
                 ud.probe_length=str2double(get(inp.probe_length_value,'string'));
+                probe_capacitance=2*pi*Units.eps0*ud.probe_length*0.01/log(ud.probe_length/ud.probe_radius); % assuming length >> radius
             case 'arbitrary'
                 probe_type=1;
         end
-        J_probe=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
+        J_probe=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud);
         dUdI=gradient(Upot,J_probe);
         ud.I=J_probe;
         ud.dUdI=dUdI;
@@ -150,9 +159,9 @@ switch action,
         end
         % if scflag then calculate s/c IU curve
         if ud.flag_use_sc,
-            J_sc=lp_probecurrent(probe_type,pi*ud.sc_radius^2,4*pi*ud.sc_radius^2,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
+            J_sc=lp_probe_current(probe_type,pi*ud.sc_radius^2,4*pi*ud.sc_radius^2,Upot,ud.R_sun,ud.UV_factor,ud);
             % probe current neglecting reference potential
-            J_probe=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
+            J_probe=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud);
             ud.I_sc=J_sc;
             ud.dUdI_sc=gradient(Upot,J_sc);
         end
@@ -161,14 +170,14 @@ switch action,
             Iprobe=min(J_probe):.01*(max(J_probe)-min(J_probe)):max(J_probe);
             Iprobe=Iprobe(:);
             % plasma current with UV factor zero
-            J_probe_plasma=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,0.00000000,ud.m_amu1,ud.m_amu2,ud.m2,ud.n*1e6,ud.Ti,ud.Te,ud.V_SC);
+            J_probe_plasma=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,0.00000000,ud);
             Isat=-Iprobe;
             Usatsweep=interp1(J_sc,Upot,Isat); % floating potential of sc during sweep
             Uproberefsweep=ud.sc_probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
             Uprobe2plasma=zeros(size(Iprobe)); % initialize
             for ii=1:numel(Iprobe),
                 % photoelectron current with plasma current zero
-                J_probe_photo=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,0.000000000,ud.Ti,ud.Te,ud.V_SC);
+                [~,J_probe_photo]=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud);
                 J_probe=J_probe_plasma+J_probe_photo;
                 Uprobe2plasma(ii)=interp1(J_probe,Upot,Iprobe(ii));
             end
@@ -213,13 +222,14 @@ switch action,
         end
         axis(h(2),'tight');
         Rmin = min(abs(dUdI)); % minimum resistance
-        disp(['Rmin=' num2str(Rmin,3) ' Ohm']);
+        fcr=1/2/pi/Rmin/probe_capacitance;
+        disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe_capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
         if ud.flag_use_sc,
             info_txt=[info_txt '\newline probe to plasma Rmin=' num2str(min(abs(dUdI_probe2plasma)),3) ' Ohm'];
             info_txt=[info_txt '\newline probe to reference Rmin=' num2str(min(abs(dUdI)),3) ' Ohm'];
             info_txt=[info_txt '\newline probe to spacecraft Rmin=' num2str(min(abs(dUdI_probe2sc)),3) ' Ohm'];
         else
-            info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm'];
+            info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe_capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.'];
         end
         if min(J_probe)<0 && max(J_probe)>0,
             Ufloat=interp1(J_probe,Upot,0); % floating potential
@@ -268,8 +278,7 @@ elseif val ==2, % Cluster
     set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
     data.probe_total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
-    set(data.inp.Te_value,'string','100');
-    set(data.inp.Ti_value,'string','500');
+    set(data.inp.T_value,'string','100 500');
 elseif val == 3 % Solar Orbiter
     data.probe_type='cylindrical';
     set(data.inp.probe_type,'Value',2);
@@ -281,8 +290,7 @@ elseif val == 3 % Solar Orbiter
     data.probe_total_vs_sunlit_area=pi;
     set(data.inp.Rsun_value,'string','0.28');
     set(data.inp.n_value,'string','100');
-    set(data.inp.Te_value,'string','20');
-    set(data.inp.Ti_value,'string','40');
+    set(data.inp.T_value,'string','20 40');
 elseif val == 4 % THEMIS
     data.probe_type='spherical';
     set(data.inp.probe_type,'Value',1);
@@ -294,8 +302,8 @@ elseif val == 4 % THEMIS
     set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
     data.probe_total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
-    set(data.inp.Te_value,'string','100');
-    set(data.inp.Ti_value,'string','500');
+    set(data.inp.n_value,'string','1');
+    set(data.inp.T_value,'string','100 500');
 end
 set(gcf,'userdata',data);
 end
