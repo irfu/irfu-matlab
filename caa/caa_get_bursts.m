@@ -845,7 +845,9 @@ divf
 %t2(1:5,2)
 ff
 gg
-    if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
+% Remember best guess so far
+%    if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
+    if (ff>bestguess(1) && gg==0)
         bestguess=[ff gg di];
     end
 end
@@ -999,7 +1001,7 @@ for i=1:varsbsize
     elseif varsb{i}(1)=='V'
         data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
         data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),...
-            get_filter(varsb{i}));
+            varsb{i}(end));
     else
         error(['Unknown ib data type: ' varsb{i}]);
     end
