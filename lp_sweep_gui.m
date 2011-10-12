@@ -39,9 +39,9 @@ switch action,
         ud.m_amu1=1;
         ud.m_amu2=16;
         ud.m2=0; % relative fraction of 2nd species
-        ud.n=0; % [cc]
-        ud.Ti=0;
-        ud.Te=0;
+        ud.n=1; % [cc]
+        ud.Ti=1;
+        ud.Te=1;
         ud.V_SC=0;
         
         %% initialize figure
@@ -165,7 +165,7 @@ switch action,
             Isat=-Iprobe;
             Usatsweep=interp1(J_sc,Upot,Isat); % floating potential of sc during sweep
             Uproberefsweep=ud.sc_probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
-            Uprobe2plasma=zeros(size(Upot)); % initialize
+            Uprobe2plasma=zeros(size(Iprobe)); % initialize
             for ii=1:numel(Iprobe),
                 % photoelectron current with plasma current zero
                 J_probe_photo=lp_probecurrent(probe_type,probe_cross_section,probe_total_area,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud.m_amu1,ud.m_amu2,ud.m2,0.000000000,ud.Ti,ud.Te,ud.V_SC);
@@ -212,12 +212,12 @@ switch action,
             hold(h(2),'off');
         end
         axis(h(2),'tight');
-        Rmin = min(dUdI); % minimum resistance
+        Rmin = min(abs(dUdI)); % minimum resistance
         disp(['Rmin=' num2str(Rmin,3) ' Ohm']);
         if ud.flag_use_sc,
-            info_txt=[info_txt '\newline probe to plasma Rmin=' num2str(min(dUdI_probe2plasma),3) ' Ohm'];
-            info_txt=[info_txt '\newline probe to reference Rmin=' num2str(min(dUdI),3) ' Ohm'];
-            info_txt=[info_txt '\newline probe to spacecraft Rmin=' num2str(min(dUdI_probe2sc),3) ' Ohm'];
+            info_txt=[info_txt '\newline probe to plasma Rmin=' num2str(min(abs(dUdI_probe2plasma)),3) ' Ohm'];
+            info_txt=[info_txt '\newline probe to reference Rmin=' num2str(min(abs(dUdI)),3) ' Ohm'];
+            info_txt=[info_txt '\newline probe to spacecraft Rmin=' num2str(min(abs(dUdI_probe2sc)),3) ' Ohm'];
         else
             info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm'];
         end
