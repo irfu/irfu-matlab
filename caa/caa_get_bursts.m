@@ -37,9 +37,6 @@ B_DT = 300;
 B_DELTA = 60;
 cp = ClusterProc;
 
-GSE=[];
-GSM=[];
-cord=1;
 burstreadbytes=44;
 
     fns=size(filename,2);
@@ -47,8 +44,6 @@ burstreadbytes=44;
     fid=fopen([DP '/burst/' filename],'rb'); % opens the binary file for reading
     if fid==-1
         error(['Can not find burst file ' filename ' in ' DP '/burst']);
-        cd(old_pwd);
-        return;
     end
         
     fseek(fid,128,0); % skip first 128 bytes
