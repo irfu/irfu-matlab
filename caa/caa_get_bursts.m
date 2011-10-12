@@ -804,50 +804,6 @@ cd(old_pwd);
 
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function dataout = rm_ib_spike(magneticdata)
-% Remove spikes in staff IB data
-
-DT = 0.455; % sec, time window
-THR = 5; % data above TRH StDev discarded
-
-dataout = magneticdata;
-
-ndata = length(magneticdata(:,1));
-dt2 = ceil(DT*c_efw_fsample(magneticdata,'ib')/2);
-
-i = 1;
-while i < ndata
-    i2 = i + dt2*2;
-    if i2 > ndata % last window
-        i = ndata - dt2*2;
-        i2 = ndata;
-    end
-    x = magneticdata(i:i2,2:4);
-    y = x;
-    iii=length(y);
-    x = detrend(x);
-    s = std(x);
-    for comp=3:-1:1
-        if s(comp)<1e-6
-            continue;
-        end
-        ii = find(abs(x(:,comp))>THR*s(comp));
-        if ~isempty(ii)
-            if ii(end)==iii
-                y(ii,:) = y(ii-1,:);
-            else
-                y(ii,:) = y(ii+1,:);
-            end
-        end
-    end
-    
-    dataout(i:i2,2:4) = y;
-    
-    i = i2 + 1;
-end
-end
-
 function filt = get_filter(ibstr)
 % get filter from ib string
 
