@@ -848,54 +848,6 @@ while i < ndata
 end
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [rdata ix] = rm_spike_ndt(e,filt,typesc)
-% Remove spikes in data non destructive for time
-% e:      [time data]
-% filter: U L H M
-% typesc: 0=V?? 1=SCX-Z
-
-ix=e(:,1)<0;
-
-PL = 8192; % page length
-PI = 2; % Number of pages after which we have to shift the mask right by 1 point
-        % Every PI*4 pages we have to extend the mask by two more points
-NP = ceil(length(e)/PL); % number of pages
-if NP < 12, PL = PL/2; NP = NP*2; PI = PI*2; end
-rdata=e;
-mask = [-1 0 1 2 3 4];
-m = [];
-for i=1:NP
-    if floor((i-1)/PI)==(i-1)/PI
-        % Shift the mask every PI pages
-        mask = mask + 1;
-    end
-    if floor((i-1)/(PI*4))==(i-1)/(PI*4)
-        % Extend the mask every PI*4 pages
-        mask = [mask mask(end)+[1 2]]; %#ok<AGROW>
-    end
-    pos=(i-1)*PL+mask;
-    if pos(1)<1
-rdata(pos(3):pos(end)+1,2)
-        rdata(pos(3:end),2)=rdata(pos(end)+1,2);
-rdata(pos(3):pos(end)+1,2)
-        ix(pos(3:end))=true;
-    else
-rdata(pos(1)-1:pos(end)+1,2)
-        rdata(pos,2)=(rdata(pos(1)-1,2)+rdata(pos(end)+1,2))/2;
-rdata(pos(1)-1:pos(end)+1,2)
-        ix(pos)=true;
-    end
-    m = [m pos]; %#ok<AGROW>
-end
-
-%m( m<=0 ) = []; % Remove the first points containing -1, 0
-size(ix)
-
-%rdata(m,2:end) = NaN;
-
-end
-
 function filt = get_filter(ibstr)
 % get filter from ib string
 
