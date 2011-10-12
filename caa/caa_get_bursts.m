@@ -339,7 +339,6 @@ probes=[];
 filtv=zeros(1,4);   % remember V filter usage
     for out = 1:varsbsize;
         vt=varsb{out};
-if 1
         vtlen=length(vt);
         field='E';
 
@@ -400,125 +399,6 @@ if 1
         d_phys=data*0.00212;
         data_phys = [t d_phys];
 
-else
-        if vars(out,4)==32
-            filt=vars(out,3);
-            if vars(out,3)==72 % H
-                filter = '4kHz';
-                if s==8 && out>4
-                    probe = out-4;
-                    sen = irf_ssub('p?',out-4);   
-                else
-                    probe = out;
-                    sen = irf_ssub('p?',out);
-                end
-            elseif vars(out,3)==85 % U
-                filter = '32kHz';
-                probe = vars1(out,2);
-                sen = irf_ssub('p?',probe);
-            elseif vars(out,3)==77 % M
-                filter = '180Hz';
-                if s==8 && out>4
-                    probe = out-4;
-                    sen = irf_ssub('p?',out-4);
-                else
-                    probe = out;
-                    sen = irf_ssub('p?',out);                    
-                end
-            elseif vars(out,3)==76 % L
-                filter = '10Hz';
-                if s==8 && out>4
-                    probe = out-4;
-                    sen = irf_ssub('p?',out-4);
-                else
-                    probe = out;
-                    sen = irf_ssub('p?',out);
-                end
-            else            % BP12
-                continue
-            end
-            
-            field = 'E';
-            instrument = 'efw';
-            [t,data] = caa_is_get(DBNO,st-B_DELTA,B_DT,cl_id,instrument,field,sen,filter,'burst','tm');
-            start_satt = c_efw_burst_chkt(DBNO,filename);
-            if isempty(start_satt)
-                irf_log('dsrc','burst start time was not corrected')
-            elseif isempty(t)
-                error('t is empty. bad channel? c4?');
-            else
-                err_t = t(1) - start_satt;
-                irf_log('dsrc',['burst start time was corrected by ' ...
-                num2str(err_t) ' sec'])
-                t = t - err_t;
-            end
-            d_phys=data*0.00212;
-            data_phys = [t d_phys];
-            
-        else
-            filt=vars(out,4);
-            if vars(out,4)==72
-                filter = '8kHz';
-                
-                if strcmp(vars1(out,2:3),'43')
-                    sen = irf_ssub('p?',34);
-                    probe = 34;
-                else
-                    sen = irf_ssub('p?',vars1(out,2:3));
-                    probe = 12;
-                end
-            elseif vars(out,4)==85
-                filter = '32kHz';
-                
-                probe = out;
-                if strcmp(vars1(out,2:3),'43')
-                    sen = irf_ssub('p?',34);
-                else
-                    sen = irf_ssub('p?',vars1(out,2:3));
-                end
-            elseif vars(out,4)==77
-                continue % What is this??? 77 never used???
-                filter = '180Hz';
-                
-                probe = out;
-                sen = irf_ssub('p?',vars1(out,2:3));
-                if vars1(out,2:3)==43
-                    sen = irf_ssub('p?',34)
-                else
-                    sen = irf_ssub('p?',vars1(out,2:3))
-                end
-            elseif vars(out,4)==76
-            
-                filter = '10Hz';
-                
-                probe = out;
-            
-                if vars1(out,2:3)==43
-                    sen = irf_ssub('p?',34);
-                else
-                    sen = irf_ssub('p?',vars1(out,2:3));
-                end
-            else
-                continue
-            end
-            
-            field = 'E';
-            instrument = 'efw';
-            [t,data] = caa_is_get(DBNO,st-B_DELTA,B_DT,cl_id,instrument,field,sen,filter,'burst','tm');
-            start_satt = c_efw_burst_chkt(DBNO,filename);
-            if isempty(start_satt)
-                irf_log('dsrc','burst start time was not corrected')
-            else 
-                err_t = t(1) - start_satt;
-                irf_log('dsrc',['burst start time was corrected by ' ...
-                num2str(err_t) ' sec'])
-                t = t - err_t;
-            end
-            d_phys=data*0.00212;
-            data_phys = [t d_phys];
-            
-        end
-end
         if (out==1) % Create data matrix for t and all 8 possible variables
             if size(t,1)<3 || size(data,1)<3 % sanity check
                 irf_log('proc','No usable burst data');               
@@ -783,7 +663,7 @@ if cc2(1)>=4
         probev=2;
     end
     
-if 1      % ff gg di
+% ff gg di
  bestguess=[-1 -1 -1];
  for di=1:2:varsbsize
     t1(:,1:2)=data8(:,[1 di+1]);
@@ -899,56 +779,7 @@ end
 %data8ord(1:5,2:end)
 xy
 probe_list
-else
-    t1=eval(name11); %name11 = irf_ssub('tm?!p$',filter,cl_id,bla(iii,1)); %irf_ssub('SSS2.wE?p!',cl_id,probe(iii,1));                    
-    t2=eval(name22); %name22 = irf_ssub('tm?!p$',filter,cl_id,bla(iii,2));
 
-    aa1=c_phase(tt1(:,1),pha);           
-    sp1=c_efw_sfit(12,3,10,20,tt1(:,1),tt1(:,2),aa1(:,1),aa1(:,2),1,output(1,1)); % org sfit2
-    distance=88;
-    tt2=(t1(:,2)-t2(:,2))/distance;
-    aa2=c_phase(t2(:,1),pha);        
-    sp2=c_efw_sfit(12,3,10,20,t2(:,1),tt2,aa2(:,1),aa2(:,2),1,output(1,1));       % org sfit2
-    [a,b] = size(sp2);
-    gg=0;                
-    i=1;
-
-    while i<a+1
-        [c,d]=find(sp1==sp2(i,1));
-        ex1=sp1(c,2);
-        ex2=sp2(i,2);
-        ey1=sp1(c,3);
-        ey2=sp2(i,3);
-                                
-        timevec=fromepoch(sp2(i,1));
-        z1=atan2(ey1,ex1);
-        z2=atan2(ey2,ex2);
-        y=round(abs(((z1-z2)/pi)*180));
-                      
-        if ~isempty(y)
-            if isnan(y)==1 
-                irf_log('proc','NaN');
-            elseif  25<y && y<155
-                gg=gg+1;
-            elseif  205<y && y<335 
-                gg=gg+1;
-            else
-                ff=ff+1;
-%                irf_log('proc','the data match');
-            end
-        end
-        
-        i=i+1;
-                            
-    end
-
-    if ff>gg
-        xy=[1 2 3 4];
-    else
-        xy=[3 4 1 2];
-    end
-
-end    
     probe_l=probe_list;
                     
 else
