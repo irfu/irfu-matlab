@@ -1,35 +1,35 @@
-function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,freq)
-%C_EFW_SFIT produce spin fit data values (ex, ey)
+function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,tmmode)
+%C_EFW_SFIT  Produce spin fit data values (ex, ey)
 %   of EFW data frome given probe pair at 4 second resolution.
 %
-% spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method)
+% SPINFIT = C_EFW_SFIT(PAIR,FOUT,MAXIT,MINPTS,TE,DATA,TP,PH,METHOD,[TMMODE])
 %
 % Input:
-%  pair - probe pair used (12, 32, 34)
-%  fout - minimum fraction of fit standard deviation that defines an outlier 
+%  PAIR - probe pair used (12, 32, 34)
+%  FOUT - minimum fraction of fit standard deviation that defines an outlier 
 %         (zero means no removal of outliers). Has no effect if METHOD=1
-%  maxit - maximum number of iterations (zero means infinity)
-%  minpts - minimum number of data points to perform fit
+%  MAXIT - maximum number of iterations (zero means infinity)
+%  MINPTS - minimum number of data points to perform fit
 %      (set to 5 if smaller number if given)
-%  te - EFW time in seconds (isGetDataLite time)
-%  data - EFW data from pair in mV/m, should correspond to te
-%  tp - Ephemeris time in seconds (isGetDataLite time)
-%  ph - Ephemeris phase_2 in degr (sun angle for s/c Y axis), should 
+%  TE - EFW time in seconds (isGetDataLite time)
+%  DATA - EFW data from pair in mV/m, should correspond to te
+%  TP - Ephemeris time in seconds (isGetDataLite time)
+%  PH - Ephemeris phase_2 in degr (sun angle for s/c Y axis), should 
 %      correspond to tp 
-%  method - 0: c_efw_onesfit, Matlab routine by AIE
+%  METHOD - 0: c_efw_onesfit, Matlab routine by AIE
 %           1: c_efw_spinfit_mx (default), BHN Fortran source obtained from KTH
-%  freq - frequency for internal burst processing
+%  TMMODE - 'hx' (default) or 'ib', used for determination of sampling freq
 %
 % Output:
-%  spinfit = [ts,ex,ey,offset,sdev0,sdev,iter,nout]
-%  ts - time vector in seconds 
-%  ex - E-field x-component in DSI coordinates (almost GSE)
-%  ey - E-field y-component in DSI coordinates (almost GSE)
-%  offset - mean value of input data
-%  sdev0 - standard deviation in first fit. Has no meaning if METHOD=1
-%  sdev - standard deviation in final fit
-%  iter - number of iterations (one if OK at once)
-%  nout - number of outliers removed
+%  SPINFIT = [TS,EX,EY,OFFSET,SDEV0,SDEV,ITER,NOUT]
+%  TS - time vector in seconds 
+%  EX - E-field x-component in DSI coordinates (almost GSE)
+%  EY - E-field y-component in DSI coordinates (almost GSE)
+%  OFFSET - mean value of input data
+%  SDEV0 - standard deviation in first fit. Has no meaning if METHOD=1
+%  SDEV - standard deviation in final fit
+%  ITER - number of iterations (one if OK at once)
+%  NOUT - number of outliers removed
 %
 % This function chops up the time series in four second
 % intervals, each of which are analysed by c_efw_onesfit.
@@ -73,9 +73,9 @@ end
 if ~isequal(size(tp),size(ph))
     error('TP and PH vectors must be the same size.')
 end
-fsmode='hx';
-if nargin>=10
-    fsmode='any'; % For internal burst data processing
+
+if nargin<10
+    tmmode='hx';
 end
 
 % Check if the phase is good
@@ -114,8 +114,7 @@ MAX_SPIN_PERIOD = 4.3;
 MIN_SPIN_PERIOD = 3.7;
 
 % Guess the sampling frequency
-%sf = freq;
-sf = c_efw_fsample(te,fsmode);
+sf = c_efw_fsample(te,tmmode);
 
 if sf == 0, error('cannot guess the sampling frequency'), end
 
