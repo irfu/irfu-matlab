@@ -814,15 +814,15 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~isempty(dadc)
 				irf_log('calb','using saved ADC offsets')
 				tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
-				tt(:,2) = tt(:,2) - tmp_adc(:,2); %#ok<NASGU>
+				tt(:,2) = tt(:,2) - tmp_adc(:,2); 
 				clear tmp_adc
 			else irf_log('calb','saved ADC offset empty')
             end
-            problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip';
+            problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip'; %#ok<NASGU>
             signal = tt; %#ok<NASGU>
 			probe = ps; %#ok<NASGU>
 			remove_problems
-			tt = res; %#ok<NODEF>
+			tt = res; %#ok<NASGU,NODEF>
 			clear res signal problems probe
 			n_sig = n_sig + 1;
 			c_eval('e?=tt;',p)
@@ -1008,7 +1008,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			clear e12
 		else
 			pp = 34;
-			E_info.probe = '34';
+			E_info.probe = '34'; %#ok<STRNU>
 			EE = e34;
 			clear e34
 		end
