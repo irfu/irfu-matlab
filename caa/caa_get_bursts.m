@@ -38,7 +38,6 @@ B_DELTA = 60;
 cp = ClusterProc;
 
 delete('mEFWburs*.mat') %Remove old files
-%    delete('*.mat') %Removes old files. THIS IS DANGEROUS!!! FIX ME!
 
 cl_id=str2double(filename(end)); %Get the satellite number
 fname=irf_ssub([plotpath 'p?-c!'],filename(1:12),cl_id); %Sets the name that will be used to save the plots
@@ -71,8 +70,6 @@ cd(dirs{i})
 varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
 
-%probes=[];
-%pl
 filtv=zeros(1,4);   % remember V filter usage
 for out = 1:varsbsize;
     vt=varsb{out};
@@ -119,7 +116,8 @@ for out = 1:varsbsize;
     end
     instrument = 'efw';
     
-    [t,data] = caa_is_get(DB,st-B_DELTA,B_DT,cl_id,instrument,field,sen,filter,'burst','tm');
+    [t,data] = caa_is_get(DB,st-B_DELTA,B_DT,cl_id,instrument,field,...
+        sen,filter,'burst','tm');
     start_satt = c_efw_burst_chkt(DB,[DP '/burst/' filename]);
     if isempty(start_satt)
         irf_log('dsrc','burst start time was not corrected')
@@ -146,6 +144,7 @@ for out = 1:varsbsize;
         data8(:,1)=t;   % corrected time
     end
     data8(:,out+1)=data;
+    
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%%%%                                                  %%%%%%%%%%%%%%%%%%%%%
@@ -195,6 +194,7 @@ for out = 1:varsbsize;
             eval(['save ' save_file ' ' save_list]);
         end
     end
+    save_list = '';
 end
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -297,10 +297,7 @@ if cc2(1)>=4
             i=i+1;
             
         end
-        %t1(1:5,2)
-        %t2(1:5,2)
-        %ff
-        %gg
+        
         % Remember best guess so far
         %    if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
         if (ff>bestguess(1) && gg==0)
@@ -319,7 +316,6 @@ if cc2(1)>=4
             break;
         end
     end
-    %size(data8)
     data8ord=data8; % assume no order change
     %bestguess(3)=3;
     %pos
@@ -349,7 +345,6 @@ if cc2(1)>=4
         for j=1:varsbsize
             data8ord(:,xy(j)+1)=data8(:,j+1);
         end
-        %    data8(1:5,2:end)
     end
 else
     data8ord=data8; % assume no order change
@@ -379,7 +374,8 @@ BSCpos=zeros(1,3);
 BSCcnt=0;
 for i=1:varsbsize
     if varsb{i}(1)=='B' % BP data
-        % TODO: BP factor???
+        % BP12 factor is unkrown. These data do not have an easy physical
+        % meaning.
         %data8ordfc(:,i+1)=data8ordfc(:,i+1)*BPFACTOR;
     elseif varsb{i}(1)=='S' % SC data       
         xyzord=double(varsb{i}(3))-87; % X=1
