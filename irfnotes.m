@@ -127,8 +127,8 @@ if 0, % read s/c position and velocity
   c_eval('[caaV?,~,V?]=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
 end
 if 0, % read FGM data form all sc
-  c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');');
-  %c_eval('[caaB?,~,B?]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');');
+ % c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''mat'');');
+  c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');');
   c_eval('B?=irf_abs(B?);');
   c_eval('diB?=c_coord_trans(''GSE'',''ISR2'',B?,''cl_id'',?);');
   c_eval('gsmB?=irf_gse2gsm(B?);');
@@ -253,6 +253,13 @@ end
 %% PANELS that can be used for your figures
 % !!! when single sc data are plotted, assumes s/c number is in variable 'ic'
 
+if 1,   % PANEL: C?       FGM B GSE
+  hca=irf_panel('C? FGM B GSE');
+  c_eval('irf_plot(hca,B?);',ic);
+  ylabel(hca,'B [nT] GSE');
+  irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.3])
+  irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
+end
 if 1,   % PANEL: C?       FGM B GSM
   hca=irf_panel('C? FGM B GSM');
   c_eval('irf_plot(hca,gsmB?);',ic);
@@ -593,13 +600,22 @@ if 0,   % PANEL: RAPID spectrogram anisotropy
 end
 if 0,   % PANEL: C1..C4   PEACE density MOMENTS
   hca=irf_panel('PEACE N MOMENTS');
-  caa_load PEA MOMENTS
-  c_eval('nPEACE?=getmat(C?_CP_PEA_MOMENTS,''Data_Density__C?_CP_PEA_MOMENTS'');');
+  c_eval('nPEACE?=irf_get_data(''Data_Density__C?_CP_PEA_MOMENTS'',''caa'',''mat'');');
   c_pl_tx(hca,'nPEACE?','-');
-  set(hca,'yscale','log','ytick',[1e-2 1e-1]);
+  set(hca,'yscale','log','ytick',[1e-2 1e-1 1e0 1e1]);
   irf_zoom(hca,'y',[0.005 0.3]);
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
   ylabel(hca,'N_{e} [cc]');
+end
+if 0,   % PANEL: C1..C4   PEACE density MOMENTS
+  hca=irf_panel('C1..C4 PEACE T MOMENTS');
+  c_eval('T_PEACE?=irf_get_data(''Data_Temperature_ComponentPerpendicularToMagField__C2_CP_PEA_'',''caa'',''mat'');');
+  c_eval('T_PEACE?=irf_tappl(T_PEACE?,''*86.132'');'); % conversion from MK to eV 
+  c_pl_tx(hca,'T_PEACE?','.-');
+  set(hca,'yscale','log','ytick',[1e-2 1e-1 1e0 1e1]);
+%  irf_zoom(hca,'y',[0.005 0.3]);
+  irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
+  ylabel(hca,'T_{e} [eV]');
 end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
     hca=irf_panel('C? PEACE energy spectra');
