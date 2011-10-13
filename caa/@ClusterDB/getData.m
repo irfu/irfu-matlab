@@ -432,7 +432,7 @@ elseif strcmp(quantity,'efwt')
 elseif strcmp(quantity,'tmode')
 	save_file = './mEFWR.mat';
 	
-	%% Find TapeMode
+	% Find TapeMode
 	% We read FDM from isdat and 5-th column contains the HX mode
 	% (undocumented feature)
 	% 0 - normal mode  (V12L,V34L)
