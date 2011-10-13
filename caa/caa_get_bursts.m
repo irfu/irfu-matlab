@@ -23,9 +23,6 @@ old_pwd = pwd;
 
 ret=1;
 
-% WARNING: Do NOT use 1 for this on server L1 data
-fetch_efw_data=0; % must be 1 if no efw data in current directory
-
 plot_save=1;
 plotpath=[getenv('HOME') '/figures/'];
 
@@ -158,7 +155,7 @@ for out = 1:varsbsize;
     
     save_file = './mEFWburstTM.mat';
     if ~isempty(data)
-        data = [t data]; %#ok<AGROW>
+        data = [t data]; %#ok<NASGU,AGROW>
         if vt(1)=='S'
             eval(irf_ssub(['tm?!b$=data;' 'save_list=[save_list ''tm?!b$ ''];'],filter,cl_id,probe));
         else
@@ -187,7 +184,7 @@ for out = 1:varsbsize;
     end
     
     save_file = './mEFWburstR1.mat';
-    data = data_phys;
+    data = data_phys; %#ok<NASGU>
     eval(irf_ssub(['PP?!p$=data;' 'save_list=[save_list ''PP?!p$ ''];'],filter,cl_id,probe));
     
     if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
@@ -198,38 +195,6 @@ for out = 1:varsbsize;
             eval(['save ' save_file ' ' save_list]);
         end
     end
-end
-    
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%    Getting normal data from ISDAT    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%                                      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-st=data(1,1);
-sp=data(end,1);
-if st==-Inf || isnan(st)
-    return;
-end
-cdb=ClusterDB(DB,DP,'.');
-if fetch_efw_data % must be 1 if no efw data in directory
-    %Sets the variables for gathering normal mode data
-    vars0 = {'tmode','fdm','efwt','ibias','p','e','a','sax','r','v',...
-        'bfgm','bsc'}; %#ok<UNRCH>
-    %Sets the variables thats needed for burst data.
-    vars11 = {'whip','sweep','bdump','probesa','p','ps' 'dies','die',...
-        'pburst','dieburst','dibsc','dibscburst'};
-    
-    for v=1:length(vars0)
-        data2 = getData(cdb,st-B_DELTA,B_DT,cl_id,vars0{v});
-        if isempty(data2) && (strcmp(vars0{v},'tmode') || strcmp(vars0{v},'fdm'))
-            irf_log('load','No EFW data')
-            break
-        end
-    end
-    clear data2;
-else
-    getData(cdb,st-B_DELTA,B_DT,cl_id,'bfgm');
 end
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -260,13 +225,13 @@ ff=0;
 
 if cc2(1)>=4
     if exist(irf_ssub('wE?p!',cl_id,12),'var')
-%        name11 = irf_ssub('PP?!p$',filter,cl_id,1);
-%        name22 = irf_ssub('PP?!p$',filter,cl_id,2);
+        %        name11 = irf_ssub('PP?!p$',filter,cl_id,1);
+        %        name22 = irf_ssub('PP?!p$',filter,cl_id,2);
         tt1=eval(irf_ssub('wE?p!',cl_id,12));   %(t1(:,2)-t2(:,2))/88;
         probev=1;
     elseif exist(irf_ssub('wE?p!',cl_id,34),'var')
-%        name11 = irf_ssub('PP?!p$',filter,cl_id,3);
-%        name22 = irf_ssub('PP?!p$',filter,cl_id,4);
+        %        name11 = irf_ssub('PP?!p$',filter,cl_id,3);
+        %        name22 = irf_ssub('PP?!p$',filter,cl_id,4);
         tt1=eval(irf_ssub('wE?p!',cl_id,34));   %(t1(:,2)-t2(:,2))/88;
         probev=3;
     else
@@ -274,139 +239,121 @@ if cc2(1)>=4
         probev=2;
     end
     
-% ff gg di
- bestguess=[-1 -1 -1];
- for di=1:2:varsbsize
-    t1(:,1:2)=data8(:,[1 di+1]);
-    t1m=mean(t1(:,2));
-    t2(:,1:2)=data8(:,[1 di+2]);
-    t2m=mean(t2(:,2));
-%di
-    divf=t2m/t1m;
-%    if divf<0.67 || divf>1.5    % different data types skip
-    if divf<0.5 || divf>2    % different data types skip
-%divf
-        continue;
-    end
-    aa1=c_phase(tt1(:,1),pha);
-    if isempty(aa1)
-        continue;
-    end
-    sp1=c_efw_sfit(12,3,10,20,tt1(:,1),tt1(:,2),aa1(:,1),aa1(:,2),1,'hx'); % org sfit2
-    distance=88;
-    tt2=(t1(:,2)-t2(:,2))/distance;
-    aa2=c_phase(t2(:,1),pha);
-    if isempty(aa2)
-        continue;
-    end
-    sp2=c_efw_sfit(12,3,10,20,t2(:,1),tt2,aa2(:,1),aa2(:,2),1,'ib');       % org sfit2
-    [a,~] = size(sp2);
-    gg=0;                
-    i=1;
-
-    while i<a+1
-        [c,]=find(sp1==sp2(i,1));
-        ex1=sp1(c,2);
-        ex2=sp2(i,2);
-        ey1=sp1(c,3);
-        ey2=sp2(i,3);
-                                
-        %timevec=fromepoch(sp2(i,1));
-        z1=atan2(ey1,ex1);
-        z2=atan2(ey2,ex2);
-        y=round(abs(((z1-z2)/pi)*180));
-                      
-        if ~isempty(y)
-            if isnan(y)==1 
-%                irf_log('proc','NaN');
-            elseif  25<y && y<155
-                gg=gg+1;
-            elseif  205<y && y<335 
-                gg=gg+1;
-            else
-                ff=ff+1;
-%                irf_log('proc','the data match');
-            end
+    % ff gg di
+    bestguess=[-1 -1 -1];
+    for di=1:2:varsbsize
+        t1(:,1:2)=data8(:,[1 di+1]);
+        t1m=mean(t1(:,2));
+        t2(:,1:2)=data8(:,[1 di+2]);
+        t2m=mean(t2(:,2));
+        %di
+        divf=t2m/t1m;
+        %    if divf<0.67 || divf>1.5    % different data types skip
+        if divf<0.5 || divf>2    % different data types skip
+            %divf
+            continue;
         end
-
-        i=i+1;
-
-    end
-%t1(1:5,2)
-%t2(1:5,2)
-%ff
-%gg
-% Remember best guess so far
-%    if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
-    if (ff>bestguess(1) && gg==0)
-        bestguess=[ff gg di];
-    end
-end
-%bestguess
-xy=1:varsbsize;
-svar=irf_ssub('V?',probev);
-svar1=irf_ssub('V?',probev+1);
-pfound=false;
-% find variable position
-for pos=1:varsbsize-1
-    if strcmp(varsb{pos}(1:2),svar) && length(varsb{pos})==3 && strcmp(varsb{pos+1}(1:2),svar1) && length(varsb{pos+1})==3
-        pfound=true;
-        break;
-    end
-end
-%size(data8)
-data8ord=data8; % assume no order change
-%bestguess(3)=3;
-%pos
-if ~pfound || bestguess(1)==-1
-    irf_log('proc','Can not find burst order. standard order 1-n used');
-elseif pos~=bestguess(3)
-    % make order vector
-    pcnt=pos;
-    for j=bestguess(3):varsbsize
-        xy(j)=pcnt;
-        pcnt=pcnt+1;
-        if pcnt>varsbsize
-            pcnt=1;
+        aa1=c_phase(tt1(:,1),pha);
+        if isempty(aa1)
+            continue;
+        end
+        sp1=c_efw_sfit(12,3,10,20,tt1(:,1),tt1(:,2),aa1(:,1),aa1(:,2),1,'hx'); % org sfit2
+        distance=88;
+        tt2=(t1(:,2)-t2(:,2))/distance;
+        aa2=c_phase(t2(:,1),pha);
+        if isempty(aa2)
+            continue;
+        end
+        sp2=c_efw_sfit(12,3,10,20,t2(:,1),tt2,aa2(:,1),aa2(:,2),1,'ib');       % org sfit2
+        [a,~] = size(sp2);
+        gg=0;
+        i=1;
+        
+        while i<a+1
+            [c,]=find(sp1==sp2(i,1));
+            ex1=sp1(c,2);
+            ex2=sp2(i,2);
+            ey1=sp1(c,3);
+            ey2=sp2(i,3);
+            
+            %timevec=fromepoch(sp2(i,1));
+            z1=atan2(ey1,ex1);
+            z2=atan2(ey2,ex2);
+            y=round(abs(((z1-z2)/pi)*180));
+            
+            if ~isempty(y)
+                if isnan(y)==1
+                    %                irf_log('proc','NaN');
+                elseif  25<y && y<155
+                    gg=gg+1;
+                elseif  205<y && y<335
+                    gg=gg+1;
+                else
+                    ff=ff+1;
+                    %                irf_log('proc','the data match');
+                end
+            end
+            
+            i=i+1;
+            
+        end
+        %t1(1:5,2)
+        %t2(1:5,2)
+        %ff
+        %gg
+        % Remember best guess so far
+        %    if (ff-gg>bestguess(1)-bestguess(2)) || (ff-gg==bestguess(1)-bestguess(2) && gg<bestguess(2))
+        if (ff>bestguess(1) && gg==0)
+            bestguess=[ff gg di];
         end
     end
-    if bestguess(3)>1
-        pcnt=pos-1;
-        for j=bestguess(3)-1:-1:1
-            if pcnt<1
-                pcnt=varsbsize;
-            end
+    %bestguess
+    xy=1:varsbsize;
+    svar=irf_ssub('V?',probev);
+    svar1=irf_ssub('V?',probev+1);
+    pfound=false;
+    % find variable position
+    for pos=1:varsbsize-1
+        if strcmp(varsb{pos}(1:2),svar) && length(varsb{pos})==3 && strcmp(varsb{pos+1}(1:2),svar1) && length(varsb{pos+1})==3
+            pfound=true;
+            break;
+        end
+    end
+    %size(data8)
+    data8ord=data8; % assume no order change
+    %bestguess(3)=3;
+    %pos
+    if ~pfound || bestguess(1)==-1
+        irf_log('proc','Can not find burst order. standard order 1-n used');
+    elseif pos~=bestguess(3)
+        % make order vector
+        pcnt=pos;
+        for j=bestguess(3):varsbsize
             xy(j)=pcnt;
-            pcnt=pcnt-1;
+            pcnt=pcnt+1;
+            if pcnt>varsbsize
+                pcnt=1;
+            end
         end
+        if bestguess(3)>1
+            pcnt=pos-1;
+            for j=bestguess(3)-1:-1:1
+                if pcnt<1
+                    pcnt=varsbsize;
+                end
+                xy(j)=pcnt;
+                pcnt=pcnt-1;
+            end
+        end
+        % order data
+        for j=1:varsbsize
+            data8ord(:,xy(j)+1)=data8(:,j+1);
+        end
+        %    data8(1:5,2:end)
     end
-    % order data
-    for j=1:varsbsize
-        data8ord(:,xy(j)+1)=data8(:,j+1);
-    end
-%    data8(1:5,2:end)
-end
-
-%data8ord(1:5,2:end)
-%xy
-%probe_list
-
-    %probe_l=probe_list;
-                    
 else
     data8ord=data8; % assume no order change
-    %probe_l=1:length(pl);
-%     if length(pl)==2
-%         xy=[1 2];
-%     else
-%         if pl==34
-%             xy=[1];
-%         else
-%             xy=[2];
-%         end
-%     end
 end
-%save_time=[];
 
 % save raw ordered data
 save_file = './mEFWburstTM1.mat';
@@ -498,25 +445,31 @@ if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
         eval(['save ' save_file ' ' save_list]);
     end
 end
+
 % make L2
 getData(cp,cl_id,'whip');
-%    getData(cp,cl_id,'p');%
-%    getData(cp,cl_id,'die');%
 getData(cp,cl_id,'pburst');
 getData(cp,cl_id,'dieburst');
 getData(cp,cl_id,'dibscburst');
 
 if plot_flag
+    
+    
+    
+    st=data8ordfc(1,1);
+    sp=data8ordfc(end,1);
+    if st==-Inf || isnan(st)
+        return;
+    end
+    getData(ClusterDB(DB,DP,'.'),st-B_DELTA,B_DT,cl_id,'bfgm');
+    
     clf;
-    %st=st+300
-    %sp=sp+300
     dt2=5;
     st_int=st-dt2;
     st_int2=sp-st+2*dt2;
-    %summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',vars1);
-    %        summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char(varsb));
+    
     summaryPlot(cp,cl_id,'fullb','ib','st',st_int,'dt',st_int2,'vars',char([fnshort varsb]));
-    %summaryPlot(cp,cl_id,'ib','st',st_int,'dt',st_int2);
+    
     if plot_save
         orient landscape
         print('-dpdf', fname);
