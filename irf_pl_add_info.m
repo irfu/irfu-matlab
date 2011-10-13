@@ -3,7 +3,13 @@ function irf_pl_add_info
 %
 % $Id$
 
-% Copyright 2004-2007 Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
 
 h00 = gca;
 axes('Units','normalized', ...
@@ -13,30 +19,19 @@ axes('Units','normalized', ...
 	'HitTest','off');
 	created_string = [ 'Created ' date ];
 if isunix
-	[s,u] = unix('whoami');
-	[s,h] = unix('hostname');
+	[~,u] = unix('whoami');
+	[~,h] = unix('hostname');
 	u = clean_unix(u);
 	h = clean_unix(h);
 	created_string = [ created_string ' by ' u '@' h];
 end
-h1 = text('Units','normalized', ...
+text('Units','normalized', ...
 	'FontSize',6, ...
 	'HorizontalAlignment','left', ...
 	'Position',[0.01 0.97], ...
 	'String',created_string, ...
 	'Tag','CreatedText');
 
-% Make some other axes active
-ch = get(gcf,'children');
-for j=1:length(ch)
-	if ch(j)==h1, continue, end
-	lasterr('')
-	try
-		axes(ch(j))
-	catch
-		% Do nothing
-	end
-end 
 axes(h00)
 end
 
