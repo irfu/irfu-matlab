@@ -96,7 +96,7 @@ switch action,
         inp.sc_probe_refpot_as_fraction_of_scpot_text = uicontrol('Parent',hsc,'String','Probe refpot/scpot','Position',[0 25 120 25]);
         inp.sc_probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc_probe_refpot_as_fraction_of_scpot),'style','edit','Position',[120 25 50 25],'backgroundcolor','white');
         inp.flag_sc = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,'Position',[0 75 120 25]);
-        inp.sc_example = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS','style','popup','Position',[0 50 150 25],'backgroundcolor','white','Callback', @setscexample);
+        inp.sc_example = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','style','popup','Position',[0 50 150 25],'backgroundcolor','white','Callback', @setscexample);
         
         %% initialize plasma menu
         hpl = uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .7 .3 .25]);
@@ -304,6 +304,19 @@ elseif val == 4 % THEMIS
     set(data.inp.n_value,'string','1');
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
+elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 mm) 
+    data.probe_type='spherical';
+    set(data.inp.probe_type,'Value',1);
+    set(data.inp.probe_length_value,'style','text','string','');
+    set(data.inp.probe_radius_value,'string','2.5');
+    set(data.inp.sc_radius_value,'string','3');
+    set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
+    set(data.inp.Rsun_value,'string','5.2');
+    set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
+    data.probe_total_vs_sunlit_area=4;
+    set(data.inp.n_value,'string','1');
+    set(data.inp.n_value,'string','1');
+    set(data.inp.T_value,'string','1 1');
 end
 set(gcf,'userdata',data);
 end
