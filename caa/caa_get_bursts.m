@@ -153,6 +153,7 @@ for out = 1:varsbsize;
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     save_file = './mEFWburstTM.mat';
+    save_list = '';
     if ~isempty(data)
         data = [t data]; %#ok<NASGU,AGROW>
         if vt(1)=='S'
@@ -183,6 +184,7 @@ for out = 1:varsbsize;
     end
     
     save_file = './mEFWburstR1.mat';
+    save_list = '';
     data = data_phys; %#ok<NASGU>
     eval(irf_ssub(['PP?!p$=data;' 'save_list=[save_list ''PP?!p$ ''];'],filter,cl_id,probe));
     
@@ -194,7 +196,6 @@ for out = 1:varsbsize;
             eval(['save ' save_file ' ' save_list]);
         end
     end
-    save_list = '';
 end
         
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -227,15 +228,15 @@ if cc2(1)>=4
     if exist(irf_ssub('wE?p!',cl_id,12),'var')
         %        name11 = irf_ssub('PP?!p$',filter,cl_id,1);
         %        name22 = irf_ssub('PP?!p$',filter,cl_id,2);
-        tt1=eval(irf_ssub('wE?p!',cl_id,12));   %(t1(:,2)-t2(:,2))/88;
+        nmdata=eval(irf_ssub('wE?p!',cl_id,12));   %(t1(:,2)-t2(:,2))/88;
         probev=1;
     elseif exist(irf_ssub('wE?p!',cl_id,34),'var')
         %        name11 = irf_ssub('PP?!p$',filter,cl_id,3);
         %        name22 = irf_ssub('PP?!p$',filter,cl_id,4);
-        tt1=eval(irf_ssub('wE?p!',cl_id,34));   %(t1(:,2)-t2(:,2))/88;
+        nmdata=eval(irf_ssub('wE?p!',cl_id,34));   %(t1(:,2)-t2(:,2))/88;
         probev=3;
     else
-        tt1=eval(irf_ssub('wE?p!',cl_id,32));   %(t1(:,2)-t2(:,2))/88;
+        nmdata=eval(irf_ssub('wE?p!',cl_id,32));   %(t1(:,2)-t2(:,2))/88;
         probev=2;
     end
     
@@ -253,11 +254,11 @@ if cc2(1)>=4
             %divf
             continue;
         end
-        aa1=c_phase(tt1(:,1),pha);
+        aa1=c_phase(nmdata(:,1),pha);
         if isempty(aa1)
             continue;
         end
-        sp1=c_efw_sfit(12,3,10,20,tt1(:,1),tt1(:,2),aa1(:,1),aa1(:,2),1,'hx'); % org sfit2
+        sp1=c_efw_sfit(12,3,10,20,nmdata(:,1),nmdata(:,2),aa1(:,1),aa1(:,2),1,'hx'); % org sfit2
         distance=88;
         tt2=(t1(:,2)-t2(:,2))/distance;
         aa2=c_phase(t2(:,1),pha);
