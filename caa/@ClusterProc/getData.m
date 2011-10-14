@@ -2388,9 +2388,14 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
             clear ok sa
         end
     end
-    c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
 
-    problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+%    c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+
+    if do_burst
+        problems = 'reset|bbias|sweep|nsops|spike'; %#ok<NASGU>
+    else
+        problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+    end
 
     if ~do_burst
 		nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')];%#ok<NASGU>
@@ -2400,7 +2405,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         c_eval('signal=p?;',probe)
         if ~isempty(signal) %#ok<NODEF>
             remove_problems
-            res(isnan(res(:,2)),:) = []; %#ok<AGROW>
+            %res(isnan(res(:,2)),:) = []; %#ok<AGROW>
             c_eval('p?=res;',probe)
             n_ok = n_ok + 1;
         end
