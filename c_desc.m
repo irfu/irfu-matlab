@@ -243,7 +243,36 @@ elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$'))
 		v.com = 'This data is from EFW internal burst.';
 		v.lev = 0;
 		v.quant = 'e';
-	end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Raw and corrected E p12 and p34
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif any(regexp(vs,'^wE8kHz[1-4]p(12|34)$'))
+	v.data = 1;
+	v.inst = 'EFW';
+	v.frame = 'na';
+	v.sig = 'E';
+	v.sen = vs(end-1:end);
+	v.cs = {'SC'};
+	v.rep = {'scalar'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1'};
+	v.size = 1;
+	v.name = {['P' v.sen]};
+	v.labels = v.name;
+	v.field_name = {['Electric field component measured between the probes '...
+		v.sen(1) ' and ' v.sen(2)]};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
+	v.ent = {'Electric_Field'};
+	v.prop = {'Component'};
+	v.fluc = {'Waveform'};
+    v.cl_id = vs(7);
+    v.file = 'mEFWburstR';
+    v.com = 'This data is from EFW internal burst.';
+    v.lev = 0;
+    v.quant = 'e';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Wake description
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
