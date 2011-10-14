@@ -30,7 +30,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %			// electric fields 8kHz
 %	pburst: P{180Hz,4kHz,32kHz}{cl_id}p{1..4} -> mEFWburstR	
 %			// probe potentials (180Hz,4kHz,32kHz)
-%   bscburst : wBSC4kHz{cl_id} -> mBSCBurst
+%   bscburst : wBSC4kHz{cl_id} -> mEFWburstR
 %			// EFW probe bias current
 %
 %	//// Non-standard operations ////
@@ -938,7 +938,7 @@ elseif strcmp(quantity,'bsc')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'bscburst')
 	
-	save_file = './mBSCBurst.mat';
+	save_file = './mEFWburstR.mat';
 	
     co = 'xyz';
     for comp=1:3

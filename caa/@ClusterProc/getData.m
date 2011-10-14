@@ -55,7 +55,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   edi : EDI{cl_id}, diEDI{cl_id} -> mEDI // EDI E in sc ref frame
 %   br, brs : Br[s]{cl_id}, diBr[s]{cl_id} -> mBr // B resampled to E[s]
 %   dibsc : diBSC{cl_id}, BSC{cl_id} -> mBSC // despun B STAFF SC [DSI+GSE]
-%   dibscburst : wBSC4kHz{cl_id}, Atwo{cl_id} -> mBSCBurst // despun B STAFF SC burst [DSI+GSE]
+%   dibscburst : wBSC4kHz{cl_id}, Atwo{cl_id} -> mEFWburst // despun B STAFF SC burst [DSI+GSE]
 %   vedbs, vedb : VExB[s]{cl_id}, diVExB[s]{cl_id} -> mEdB // E.B=0 [DSI+GSE]
 %   vce : VCE(p,h){cl_id},diVCE(p,h){cl_id} ->mCIS	// E CIS PP [GSE+DSI]
 %   manproblems: whip|sweep|bdump|badbias|probesa|hbiassa|wake -> mEFW
@@ -2638,7 +2638,7 @@ elseif strcmp(quantity,'dibsc')
 % dibscburst - despun B STAFF SC burst
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'dibscburst')
-	save_file='./mBSCBurst.mat';
+	save_file='./mEFWburst.mat';
 	
 	[ok,wBSC4kHz,msg] = c_load('wBSC4kHz?',cl_id);
 	if ~ok || isempty(wBSC4kHz)
