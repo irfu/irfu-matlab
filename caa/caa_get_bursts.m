@@ -33,7 +33,11 @@ B_DELTA = 60;
 
 cp = ClusterProc;
 
-delete('mEFWburs*.mat') %Remove old files
+%Remove old files
+delete('mEFWburstTM.mat')
+delete('mEFWburstR.mat')
+delete('mEFWburst.mat')
+
 
 cl_id=str2double(filename(end)); %Get the satellite number
 fname=irf_ssub([plotpath 'p?-c!'],filename(1:12),cl_id); %Sets the name that will be used to save the plots
@@ -207,7 +211,7 @@ else
 end
 
 % save raw ordered data
-save_file = './mEFWburstTM1.mat';
+save_file = './mEFWburstTM.mat';
 save_list='';
 burst_info=sprintf('%s ',varsb{:}); %#ok<NASGU>
 eval(irf_ssub(['ib?_info=burst_info(1:end-1);' 'save_list=[save_list ''ib?_info ''];'],cl_id));
@@ -247,30 +251,19 @@ for i=1:varsbsize
         error(['Unknown ib data type: ' varsb{i}]);
     end
 end
-%ix = [ix 12 13 14 15 16 19 20 2500 2501 2502 2503 2504 2505 2506];
 data8ordfc(ix,2:end) = NaN; % Set spikes to NaNs
 
-% Save BSC data
-if BSCcnt
-    if BSCcnt<3, error('Less than 3 BSC components'), end % Sanity check
-    BSCtemp = data8ordfc(:,[1 BSCpos+1]);  %#ok<NASGU>
-    
-    save_file = './mBSCBurst.mat';
-    save_list='';
-	c_eval('wBSC4kHz?=BSCtemp;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
-    if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
-        irf_log('save',[save_list ' -> ' save_file])
-        if exist(save_file,'file')
-            eval(['save -append ' save_file ' ' save_list]);
-        else
-            eval(['save ' save_file ' ' save_list]);
-        end
-    end
-end
-
+% Save data
 save_file = './mEFWburstR.mat';
 save_list='';
-for i=1:varsbsize
+if BSCcnt % BSC
+    if BSCcnt<3, error('Less than 3 BSC components'), end % Sanity check
+    BSCtemp = data8ordfc(:,[1 BSCpos+1]);  %#ok<NASGU>
+	c_eval('wBSC4kHz?=BSCtemp;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
+    clear BSCtemp
+end
+
+for i=1:varsbsize % Single ended
     if varsb{i}~='V'
         continue
     end
@@ -293,27 +286,24 @@ end
 mem=1;
 ii=1;
 tinter=[];
-%ix = [ix 12 13 14 15 16 19 20 2500 2501 2502 2503 2504 2505 2506];
 sz=length(ix);
 if sz>1
     for i=2:sz
         if ix(i)-ix(i-1)>1
-            tinter(ii,1)=data8ordfc(ix(mem),1);
-            tinter(ii,2)=data8ordfc(ix(i-1),1);
-            mem
-            i-1
+            tinter(ii,1)=data8ordfc(ix(mem),1); %#ok<AGROW>
+            tinter(ii,2)=data8ordfc(ix(i-1),1); %#ok<AGROW>
             ii=ii+1;
             mem=i;
         end
     end
     tinter(ii,1)=data8ordfc(ix(mem),1);
     tinter(ii,2)=data8ordfc(ix(sz),1);
-    mem
-    sz
-    tinter
 end
+if ~isempty(tinter)
+    eval(irf_ssub(['SPIKE?=tinter;' 'save_list=[save_list ''SPIKE? ''];'],cl_id));
+end
+clear tinter ii mem sz
 
-eval(irf_ssub(['SPIKE?=tinter;' 'save_list=[save_list ''SPIKE? ''];'],cl_id));
 if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
     irf_log('save',[save_list ' -> ' save_file])
     
