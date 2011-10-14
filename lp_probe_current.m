@@ -1,4 +1,4 @@
-function [J_probe, J_photo, J_plasma]=lp_probe_current(probe_type, XA,Ap,U_probe,R_sun,UV_factor,plasma)
+function [J_probe, J_photo, J_plasma]=lp_probe_current(probe,U_probe,R_sun,UV_factor,plasma)
 % LP_PROBE_CURRENT calculate current to the probe
 % J_probe=LP_PROBE_CURRENT(probe_type, XA,Ap,U_probe,R_sun,UV_factor,plasma)
 %
@@ -6,9 +6,10 @@ function [J_probe, J_photo, J_plasma]=lp_probe_current(probe_type, XA,Ap,U_probe
 %   a cylindrical or spherical Langmuir probe.
 %
 % Input:
-%  probe_type - spherical(1) or cylindrical (2).
-%  XA         - cross section area
-%  Ap         - probe area
+%  probe.type    - 'spherical','cylindrical'
+%  probe.surface - 'themis','cassini' (one of flags in lp_photocurrent)
+%  probe.cross_section_area - in m2
+%  probe.total_area - in m2
 %  U_probe    - probe potential (can be vector) 
 %  R_sun      - distance from sun in AU
 %  UV_factor  - default is 1
@@ -30,8 +31,10 @@ irf_units;
 n_of_species=numel(plasma.q);
 J_plasma=cell(n_of_species,1);
 plasma.TK=plasma.T*Units.e/Units.kB;
+if strcmpi(probe.type,'spherical'), probe_type=1;end
+if strcmpi(probe.type,'cylindrical'), probe_type=2;end
 
-J_photo = -lp_photocurrent( XA, U_probe, R_sun,'themis' );
+J_photo = -lp_photocurrent(probe.cross_section_area, U_probe, R_sun,probe.surface);
 J_photo = J_photo .* UV_factor;
 J_probe=J_photo; % initialize
 for ii=1:n_of_species,
@@ -66,7 +69,7 @@ for ii=1:n_of_species,
     else
         vsc=plasma.vsc(ii);
     end
-    J_thi = lp_thermal_current( probe_type,n,T,m,vsc,q,U_probe,Ap);
+    J_thi = lp_thermal_current( probe_type,n,T,m,vsc,q,U_probe,probe.total_area);
     J_plasma{ii}=-sign(q)*J_thi; % positive current away from probe 
     J_probe=J_probe+J_plasma{ii};
 end

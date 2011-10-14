@@ -56,10 +56,21 @@ switch flag
         j_photo = j_photo*j_photo_ref(1)*X_area/R_sun^2; % negative potentials
         pos_ind = find( U_pot >= U_ref(1) );        
         j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'cubic','extrap'))*X_area/R_sun^2;
+        return
+    case 'cassini'        
+        U_ref  =        [.1 1   5  10  50];
+        j_photo_ref   = [50 27 10   5   .5]*1e-6;
+        j_photo_ref=j_photo_ref/4; % Cassini is 4x less than THEMIS
+        logU=log(U_ref);
+        logj=log(j_photo_ref);
+        
+        j_photo = ones(size(U_pot)); %
+        j_photo = j_photo*j_photo_ref(1)*X_area/R_sun^2; % negative potentials
+        pos_ind = find( U_pot >= U_ref(1) );        
+        j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'cubic','extrap'))*X_area/R_sun^2;
         
         return
         
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'cluster'
     otherwise
 end
