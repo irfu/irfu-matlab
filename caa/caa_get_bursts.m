@@ -71,47 +71,7 @@ varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
 
 for out = 1:varsbsize;
-    vt=varsb{out};
-    vtlen=length(vt);
-    field='E';
-    
-    if vt(1)=='B'
-        probe=vt(3:4);
-        sen = irf_ssub('p?',probe);
-        filter='bp';
-    elseif vt(1)=='S'
-        field='dB';
-        probe=lower(vt(3));
-        sen=probe;
-        filter='4kHz';
-    elseif vt(1)=='V'
-        if vtlen>3
-            if vt(2)=='4'  % 43 check
-                probe = vt(3:-1:2);
-            else
-                probe = vt(2:3);
-            end
-        else
-            probe = vt(2);
-        end
-        sen = irf_ssub('p?',probe);
-        filt=vt(vtlen);
-        switch filt
-            case 'U'
-                filter='32kHz';
-            case 'H'
-                if length(probe)==1, filter='4kHz';
-                else filter='8kHz';
-                end
-            case 'M'
-                filter='180Hz';
-            case 'L'
-                filter='10Hz';
-            otherwise
-                error(['Unknown filter char for V: ' vt(vtlen)]);
-        end
-        
-    end
+    [field,sen,filter] = get_ib_props(varsb{out});
     instrument = 'efw';
     
     [t,data] = caa_is_get(DB,st-B_DELTA,B_DT,cl_id,instrument,field,...
@@ -265,17 +225,7 @@ for i=1:varsbsize % Single ended
     if varsb{i}~='V'
         continue
     end
-    if length(varsb{i})>3
-        if vt(2)=='4'  % 43 check
-            probe = vt(3:-1:2);
-        else
-            probe = vt(2:3);
-        end
-
-    else
-        probe=varsb{i}(2);
-    end
-    filter=get_filter(varsb{i});
+    [~,~,filter,probe] = get_ib_props(varsb{i});
     data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
     eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
 end
@@ -343,25 +293,45 @@ ret=0;
 cd(old_pwd);
 end
 
-function filt = get_filter(ibstr)
+function [field,sen,filter,probe] = get_ib_props(ibvarstr)
 % get filter from ib string
-
-    if ibstr(1)=='B'
-        filt='bp';
-    elseif ibstr(1)=='S'
-            filt='4kHz';
-    elseif ibstr(1)=='V'
-        switch ibstr(end)
-            case 'U'
-                filt='32kHz';
-            case 'H'
-                filt='4kHz';
-            case 'M'
-                filt='180Hz';
-            case 'L'
-                filt='10Hz';
-            otherwise
-                error(['Unknown filter char for V: ' ibstr(end)]);
+field='E';
+switch ibvarstr(1)
+    case 'B'
+        probe=ibvarstr(3:4);
+        sen = irf_ssub('p?',probe);
+        filter='bp';
+    case 'S'
+        field='dB';
+        probe=lower(ibvarstr(3));
+        sen=probe;
+        filter='4kHz';
+    case 'V'
+        if length(ibvarstr) > 3
+            if ibvarstr(2)=='4'  % 43 check
+                probe = ibvarstr(3:-1:2);
+            else
+                probe = ibvarstr(2:3);
+            end
+        else
+            probe = ibvarstr(2);
         end
-    end
+        sen = irf_ssub('p?',probe);
+        switch ibvarstr(end)
+            case 'U'
+                filter='32kHz';
+            case 'H'
+                if length(probe)==1, filter='4kHz';
+                else filter='8kHz';
+                end
+            case 'M'
+                filter='180Hz';
+            case 'L'
+                filter='10Hz';
+            otherwise
+                error(['Unknown filter char for V: ' ibvarstr(vtlen)]);
+        end
+    otherwise
+        error(['Unknown leading char in V: ' ibvarstr(vtlen)]);
+end
 end
