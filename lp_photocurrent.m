@@ -60,7 +60,7 @@ switch flag
     case 'cassini'        
         U_ref  =        [.1 1   5  10  50];
         j_photo_ref   = [50 27 10   5   .5]*1e-6;
-        j_photo_ref=j_photo_ref/4; % Cassini is 4x less than THEMIS
+        j_photo_ref=j_photo_ref/2; % Cassini is 4x less than THEMIS
         logU=log(U_ref);
         logj=log(j_photo_ref);
         

@@ -12,7 +12,6 @@ function lp_sweep_gui(action)
 % ud.... - many other parameters
 %
 irf_units;
-
 persistent message;
 if isempty(message), % run only the first time during the session
     message='You can anytime access all the results from get(gcf,''userdata'').';
@@ -131,8 +130,7 @@ switch action,
         ud.T  =eval(['[' get(inp.T_value,'string')   ']' ]);
         ud.m  =eval(['[' get(inp.m_value,'string')   ']' ]);
         ud.q  =eval(['[' get(inp.q_value,'string')   ']' ]);
-        ud.vsc=eval(['[' get(inp.vsc_value,'string') ']' ]);
-        
+        ud.vsc=eval(['[' get(inp.vsc_value,'string') ']' ]);       
         %% calculate IU curves
         Upot=ud.U(:);
         probe=ud.probe;
@@ -150,21 +148,23 @@ switch action,
                 probe.type='spherical';
         end
         ud.probe=probe;
-        J_probe=lp_probe_current(probe,Upot,ud.R_sun,ud.UV_factor,ud);
+        [J_probe,J_photo,J_plasma]=lp_probe_current(probe,Upot,ud.R_sun,ud.UV_factor,ud);
         dUdI=gradient(Upot,J_probe);
         ud.I=J_probe;
         ud.dUdI=dUdI;
         % if scflag read in sc parameters
         ud.flag_use_sc=get(inp.flag_sc,'Value');
         if ud.flag_use_sc,
-            ud.sc_probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc_probe_refpot_as_fraction_of_scpot_value,'string'));
-            ud.sc_radius=str2double(get(inp.sc_radius_value,'string'));
+            ud.probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc_probe_refpot_as_fraction_of_scpot_value,'string'));
+            ud.sc.radius=100*str2double(get(inp.sc_radius_value,'string')); % in cm
+            ud.sc.cross_section_area=pi*(ud.sc.radius*.01)^2;
+            ud.sc.total_area=4*ud.sc.cross_section_area;
+            ud.sc.type='spherical';
+            ud.sc.surface='default';
         end
         % if scflag then calculate s/c IU curve
         if ud.flag_use_sc,
-            J_sc=lp_probe_current(probe_type,pi*ud.sc_radius^2,4*pi*ud.sc_radius^2,Upot,ud.R_sun,ud.UV_factor,ud);
-            % probe current neglecting reference potential
-            J_probe=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,ud.UV_factor,ud);
+            J_sc=lp_probe_current(ud.sc,Upot,ud.R_sun,ud.UV_factor,ud);
             ud.I_sc=J_sc;
             ud.dUdI_sc=gradient(Upot,J_sc);
         end
@@ -173,14 +173,14 @@ switch action,
             Iprobe=min(J_probe):.01*(max(J_probe)-min(J_probe)):max(J_probe);
             Iprobe=Iprobe(:);
             % plasma current with UV factor zero
-            J_probe_plasma=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot,ud.R_sun,0.00000000,ud);
+            J_probe_plasma=lp_probe_current(probe,Upot,ud.R_sun,0.00000000,ud);
             Isat=-Iprobe;
             Usatsweep=interp1(J_sc,Upot,Isat); % floating potential of sc during sweep
-            Uproberefsweep=ud.sc_probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
+            Uproberefsweep=ud.probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
             Uprobe2plasma=zeros(size(Iprobe)); % initialize
             for ii=1:numel(Iprobe),
                 % photoelectron current with plasma current zero
-                [~,J_probe_photo]=lp_probe_current(probe_type,probe_cross_section,probe_total_area,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud);
+                [~,J_probe_photo]=lp_probe_current(probe,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud);
                 J_probe=J_probe_plasma+J_probe_photo;
                 Uprobe2plasma(ii)=interp1(J_probe,Upot,Iprobe(ii));
             end
@@ -194,33 +194,41 @@ switch action,
             Upot=Uprobe2refpot;
             J_probe=Iprobe;
         end
-        
         %% plot IU curve
         info_txt='';
         h=ud.h;
-        plot(h(1),Upot,J_probe*1e6,'b');
+        plot(h(1),Upot,J_probe*1e6,'k');
         grid(h(1),'on');
         xlabel(h(1),'U [V]');
         ylabel(h(1),'I [\mu A]');
-        if ud.flag_use_sc,
+        if ud.flag_use_sc, % add probe potential wrt s/c and plasma
             hold(h(1),'on');
             plot(h(1),Uprobe2plasma,Iprobe*1e6,'r','linewidth',1.5);
-            plot(h(1),Uprobe2sc,Iprobe*1e6,'k','linewidth',1.5);
+            plot(h(1),Uprobe2sc,Iprobe*1e6,'b','linewidth',1.5);
             hold(h(1),'off');
-        end
-        if ud.flag_use_sc,
             irf_legend(h(1),'    probe to plasma IU',[0.98 0.03],'color','r');
-            irf_legend(h(1),' probe to reference IU',[0.98 0.13],'color','b');
-            irf_legend(h(1),'probe to spacecraft IU',[0.98 0.23],'color','k');
+            irf_legend(h(1),' probe to reference IU',[0.98 0.13],'color','k');
+            irf_legend(h(1),'probe to spacecraft IU',[0.98 0.23],'color','b');
+        else % add photoelectron and photoelectron currents
+            hold(h(1),'on');
+            plot(h(1),Upot,J_photo*1e6,'r','linewidth',0.5);
+            irf_legend(h(1),'    total',      [0.98 0.03],'color','k');
+            irf_legend(h(1),' photoelectrons',[0.98 0.13],'color','r');
+            clr=[0.5 0 0; 0 0.5 0; 0 0 0.5];
+            for ii=1:length(J_plasma),
+                plot(h(1),Upot,J_plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
+                irf_legend(h(1),['plasma ' num2str(ii)],[0.98 0.13+ii*0.1],'color',clr(:,ii));
+            end
+            hold(h(1),'off');            
         end
         
-        plot(h(2),Upot,dUdI);
+        plot(h(2),Upot,dUdI,'k');
         grid(h(2),'on');xlabel(h(2),'U [V]');
         ylabel(h(2),'dU/dI [\Omega]');
-        if ud.flag_use_sc,
+        if ud.flag_use_sc, % add probe resistance wrt plasma and s/c
             hold(h(2),'on');
             plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
-            plot(h(2),Uprobe2sc,dUdI_probe2sc,'k','linewidth',1.5);
+            plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
             hold(h(2),'off');
         end
         axis(h(2),'tight');
@@ -234,11 +242,17 @@ switch action,
         else
             info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.'];
         end
-        if min(J_probe)<0 && max(J_probe)>0,
+        if min(J_probe)<0 && max(J_probe)>0, % display information on Ufloat
             Ufloat=interp1(J_probe,Upot,0); % floating potential
             ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
             info_txt=[info_txt '\newline Ufloat=' num2str(Ufloat,3) 'V, R at Ufloat R= ' num2str(Rfloat,3) ' Ohm'];
             disp(['Ufloat=' num2str(Ufloat,3) ' V, R at Ufloat R=' num2str(Rfloat,3) ' Ohm']);
+        end
+        if ud.UV_factor>0,  % display photoelectron saturation current
+            info_txt=[info_txt '\newline photo e- Io = ' num2str(ud.UV_factor*lp_photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
+            if ud.R_sun~=1,
+                info_txt=[info_txt '  (' num2str(ud.UV_factor*lp_photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
+            end
         end
         set(h(2),'yscale','log')
         
@@ -324,7 +338,7 @@ elseif val == 4 % THEMIS
     data.probe_total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
-elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 mm) 
+elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 mm) (efficient radius 56.5 taking into account stub)
     data.probe.type='spherical';
     set(data.inp.probe_type,'Value',1);
     data.probe.surface='cassini';
@@ -333,7 +347,7 @@ elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 m
     set(data.inp.probe_radius_value,'string','2.5');
     set(data.inp.sc_radius_value,'string','3');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.Rsun_value,'string','5.2');
+    set(data.inp.Rsun_value,'string','9.5');
     set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
     data.probe.total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','0.1');

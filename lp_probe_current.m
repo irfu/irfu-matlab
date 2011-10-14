@@ -69,7 +69,7 @@ for ii=1:n_of_species,
     else
         vsc=plasma.vsc(ii);
     end
-    J_thi = lp_thermal_current( probe_type,n,T,m,vsc,q,U_probe,probe.total_area);
+    J_thi = lp_thermal_current(probe_type,n,T,m,vsc,q,U_probe,probe.total_area);
     J_plasma{ii}=-sign(q)*J_thi; % positive current away from probe 
     J_probe=J_probe+J_plasma{ii};
 end
