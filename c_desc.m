@@ -87,6 +87,35 @@ if regexp(vs,'^P[1-4]$')==1
 	v.com = '';
     v.file = 'mP';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% P internal burst level 2 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^PB[1-4]$')==1
+	v.data = 1;
+    v.cl_id = vs(2);
+    v.lev = 2;
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'P';
+    v.sen = '1234';
+	v.cs = {'na','na','na','na','na'};
+	v.rep = {'scalar','scalar','scalar','scalar','scalar'};
+ 	v.units =  {'V','na','na','na','na'};
+	v.si_conv = {'1>V','','','',''};
+	v.size = [ 1 1 1 1 1 ];
+	v.name = {'Spacecraft_Potential','Probe','ASPOC_Status','P_Bitmask','P_Quality'};
+    v.quant = 'p';
+	v.labels = {'-Sc pot','Probe','ASPOC Active','Bitmask','Quality'};
+	v.field_name = {'Spacecraft potential','Probe','ASPOC','Bitmask','Quality'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT','INT','INT','INT','INT'};
+    v.sigdig = [ 6 4 1 5 1 ];
+	v.ent = {'Instrument'};
+	v.prop = {'Probe_Potential'};
+	v.fluc = {'Waveform'};
+	v.com = '';
+    v.file = 'mEFWburst';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(b)?P(s)?[1-4]$')==1
@@ -530,6 +559,37 @@ elseif regexp(vs,'^w2W[1-4]p32$')==1
 	v.field_name = 'Electric field 2 omega';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% E internal burst level 2 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^EB[1-4]$')==1
+	v.data = 1;
+    v.cl_id = vs(2);
+    v.lev = 2;
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+    else v.sen = '1234';
+	end
+	v.cs = {'na','na','na','na','na','na'};
+	v.rep = {'scalar','scalar','scalar','scalar','scalar','scalar'};
+ 	v.units =  {'mV/m','mV/m','na','na','na','na'};
+	v.si_conv = {'1.0e-3>V m^-1','1.0e-3>V m^-1','','','',''};
+	v.size = [ 1 1 1 1 1 1 ];
+	v.name = {'Electric field','Electric field','Probe','ASPOC_Status','P_Bitmask','P_Quality'};
+    v.quant = 'dibe';
+	v.labels = {'Ex','Ey','Probe','ASPOC Active','Bitmask','Quality'};
+	v.field_name = {'Electric field','Electric field','Probe','ASPOC','Bitmask','Quality'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT','FLOAT','INT','INT','INT','INT'};
+    v.sigdig = [ 6 6 4 1 5 1 ];
+	v.ent = {'Electric_Field'};
+	v.prop = {'Vector'};
+	v.fluc = {'Waveform'};
+	v.com = '';
+    v.file = 'mEFWburst';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
@@ -759,6 +819,18 @@ elseif regexp(vs,'^WHIP[1-4]$')==1
 	v.file = 'mEFW';
 	v.file_old = 'mFDM';
 	v.quant = 'whip';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Spike internal burst
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^SPIKE[1-4]$')==1
+	v.data = 0;
+	v.cl_id = vs(6);
+	v.inst = 'EFW';
+	v.com = 'Spike';
+	v.file = 'mEFWburstR';
+	v.file_old = '';
+	v.quant = 'spike';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Sweep + dump
@@ -1417,6 +1489,35 @@ elseif regexp(vs,'^(di)?BPP[1-4]$')
 	v.file = 'mBPP';
 	v.quant = 'b';
 	v.lev = 0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% B internal burst level 2 caa_export only no variable in .mat
+%% files
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^BB[1-4]$')==1
+	v.data = 1;
+    v.cl_id = vs(2);
+    v.lev = 2;
+	v.inst = 'FGM';
+	v.frame = 'sc';
+	v.sig = 'B';
+    v.sen = '';
+	v.cs = {'ISR2','ISR2','ISR2','na','na','na','na'};
+	v.rep = {'scalar','scalar','scalar','scalar','scalar','scalar','scalar'};
+ 	v.units =  {'nT','nT','nT','na','na','na','na'};
+	v.si_conv = {'1.0e-9>T','1.0e-9>T','1.0e-9>T','','','',''};
+	v.size = [ 1 1 1 1 1 1 1 ];
+	v.name = {'B','B','B','Probe','ASPOC_Status','P_Bitmask','P_Quality'};
+    v.quant = 'b';
+	v.labels = {'Bx','By','Bz','Probe','ASPOC Active','Bitmask','Quality'};
+	v.field_name = {'Magnetic field','Magnetic field','Magnetic field','Probe','ASPOC','Bitmask','Quality'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT','FLOAT','FLOAT','INT','INT','INT','INT'};
+    v.sigdig = [ 6 6 6 4 1 5 1 ];
+%	v.ent = {'Instrument'};
+%	v.prop = {'Probe_Potential'};
+%	v.fluc = {'Waveform'};
+	v.com = '';
+    v.file = 'mBSCBurst';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
