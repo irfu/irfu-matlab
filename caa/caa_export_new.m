@@ -127,11 +127,27 @@ else
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
-	case 'IB'
+	case 'PB'
 		if lev==2
             % Fake for c_desc only. No data variable in .mat files
-			vs = irf_ssub('IB?',cl_id);
-			v_size = 4;
+			vs = irf_ssub('PB?',cl_id);
+			v_size = 5;
+        else
+			disp('not implemented'), cd(old_pwd), return
+		end
+	case 'BB'
+		if lev==2
+            % Fake for c_desc only. No data variable in .mat files
+			vs = irf_ssub('BB?',cl_id);
+			v_size = 7;
+        else
+			disp('not implemented'), cd(old_pwd), return
+		end
+	case 'EB'
+		if lev==2
+            % Fake for c_desc only. No data variable in .mat files
+			vs = irf_ssub('EB?',cl_id);
+			v_size = 6;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -362,62 +378,219 @@ for dd = 1:length(dirs)
          else
            data=[];
          end
+       end
+   elseif strcmp(caa_vs, 'PB')
+       if lev==2
+         if ~exist('c_ct','var')
+            global c_ct % includes aspoc active values
+         end
+         if isempty(c_ct)
+            c_ctl('load_aspoc_active');
+            global c_ct
+         end
+         ASPOC = c_ct{1,cl_id}.aspoc;
+         pvar='bP?';
+         [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
+         if ~ok || isempty(probe_info) % Check for no IB data
+%            irf_log('load',msg)
+            data = [];
+         else
+            [ok,data,msg] = c_load(pvar,cl_id);
+            if ~ok || isempty(data)
+                irf_log('load',msg)
+                data = [];
+            else
+                % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
+                if size(data,1) == 1    % Fix short data
+                    data=[data;[data(1,1)+4 NaN]];
+                    irf_log('proc','short data padded');
+                end
+                dsize=size(data, 1);
+                data = [data zeros(dsize, 4)]; % add columns: probe# aspoc bitmask quality
+                data(:, 3) = probe_info.probe; % Set probe#.
 
-       elseif lev==2
-         mfn='./mEFWburstR.mat'; % For P
+                if isempty(ASPOC)
+                    irf_log('proc','no ASPOC active data');
+                else
+                    for i=1:size(ASPOC,1)
+                        %i
+                        if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
+                            continue;
+                        end
+                        if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
+                            break;
+                        end
+                        irf_log('proc','marking ASPOC active');
+                        for j=1:dsize
+                           if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
+                                data(j,4)=1;
+                            end
+                        end
+                    end
+                end
+                data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
+                quality_column = size(data, 2);
+                bitmask_column = quality_column - 1;
+
+                % Identify and flag problem areas in data with bitmask and quality factor:
+                data = caa_identify_problems(data, lev, num2str(probe_info.probe), cl_id, bitmask_column, quality_column, 2);
+            end
+         end
+       end
+   elseif strcmp(caa_vs, 'BB')
+       if lev==2
+         if ~exist('c_ct','var')
+            global c_ct % includes aspoc active values
+         end
+         if isempty(c_ct)
+            c_ctl('load_aspoc_active');
+            global c_ct
+         end
+         ASPOC = c_ct{1,cl_id}.aspoc;
+ 
+         data=[];
+         ok=0;
+         mfn='./mBSCBurst.mat'; % For Bx By Bz
          if exist(mfn,'file')
-           r=load(mfn);
-           finr=fieldnames(r)
-           fnl=size(finr{1},2);
-           for fno=1:size(finr,1)
-               d=eval(['r.' finr{fno}]);
-               if fno==1
-                   data=NaN(size(d,1),9); % Make data matrix
-                   data(:,1)=d(:,1);      % Set time col
-               end
-               probeno=str2num(finr{fno}(fnl));
-               data(:,probeno+1)=d(:,2);
-               ok=1;
-           end
-           bscix=0;
-           mfn='./mBSCBurst.mat'; % For Bx By Bz
-           if exist(mfn,'file')
              bsc=load(mfn);
              finbsc=fieldnames(bsc);
-             fnl=size(finbsc,1)
+             fnl=size(finbsc,1);
              found=0;
              for bscix=1:fnl % find BSC data
-               finbsc{bscix}
-               if strcmp(finbsc{bscix}(1:4),'wBSC')
+%               finbsc{bscix}
+               if length(finbsc{bscix})<5
+                   continue;
+               end
+               if strcmp(finbsc{bscix}(1:5),'diBSC')
                  found=1;
                  break;
                end
              end
              if found
-               irf_log('proc','BSC burst data used');
-               d=eval(['bsc.' finbsc{bscix}]);
-               for col=2:4  % Set Bx By Bz cols
-                 data(:,col+5)=d(:,col);
+               irf_log('proc','BSC burst data found');
+               data=eval(['bsc.' finbsc{bscix}]);
+               ok=1;
+               % Extend data array to accept probe#, aspoc, bitmask and quality (4 new columns at the end)
+               if size(data,1) == 1    % Fix short data
+                   data=[data;[data(1,1)+4 NaN NaN NaN]];
+                   irf_log('proc','short data padded');
                end
+               dsize=size(data, 1);
+               data = [data zeros(dsize, 4)]; % add columns: probe# aspoc bitmask quality
+               data(:, 5) = 0; % Set probe#.
+
+               if isempty(ASPOC)
+                   irf_log('proc','no ASPOC active data');
+               else
+                   for i=1:size(ASPOC,1)
+                       %i
+                       if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
+                           continue;
+                       end
+                       if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
+                           break;
+                       end
+                       irf_log('proc','marking ASPOC active');
+                       for j=1:dsize
+                          if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
+                               data(j,4)=1;
+                           end
+                       end
+                   end
+               end
+               data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
+               quality_column = size(data, 2);
+               bitmask_column = quality_column - 1;
+
+               % Identify and flag problem areas in data with bitmask and quality factor:
+               data = caa_identify_problems(data, lev, num2str(1), cl_id, bitmask_column, quality_column, 3);
              else
-                 error('Can not find wBSC data matrix in mBSCBurst.mat');
-                 cd(old_pwd);
-                 return;
+                irf_log('load','No diBSC data matrix in mBSCBurst.mat. No BB.');
              end
-           end
-         else
-           data=[];
          end
        end
-       if ~isempty(data)
-           data(1:5,2:9)
+   elseif strcmp(caa_vs, 'EB')
+       if lev==2
+         if ~exist('c_ct','var')
+            global c_ct % includes aspoc active values
+         end
+         if isempty(c_ct)
+            c_ctl('load_aspoc_active');
+            global c_ct
+         end
+         ASPOC = c_ct{1,cl_id}.aspoc;
+ 
+         data=[];
+         ok=0;
+         mfn='./mEFWburst.mat'; % For E
+         if exist(mfn,'file')
+             e=load(mfn);
+             fine=fieldnames(e);
+             fnl=size(fine,1);
+             found=0;
+             for eix=1:fnl % find dibE data
+%               fine{eix}
+               if length(fine{eix})<4
+                   continue;
+               end
+               if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                 found=1;
+                 break;
+               end
+             end
+             if found
+               irf_log('proc','E burst data found');
+               [ok,probe_info,msg] = c_load([ fine{eix} '_info']);
+               data=eval(['e.' fine{eix}]);
+               ok=1;
+               % Extend data array to accept (probe#,) aspoc, bitmask and quality (3 new columns at the end 1 reused)
+               if size(data,1) == 1    % Fix short data
+                   data=[data;[data(1,1)+4 NaN NaN NaN]];
+                   irf_log('proc','short data padded');
+               end
+               dsize=size(data, 1);
+               data = [data zeros(dsize, 3)]; % add columns: (probe#) aspoc bitmask quality
+               data(:, 4) = str2num(probe_info.probe); % Set probe#.
+
+               if isempty(ASPOC)
+                   irf_log('proc','no ASPOC active data');
+               else
+                   for i=1:size(ASPOC,1)
+                       %i
+                       if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
+                           continue;
+                       end
+                       if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
+                           break;
+                       end
+                       irf_log('proc','marking ASPOC active');
+                       for j=1:dsize
+                          if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
+                               data(j,4)=1;
+                           end
+                       end
+                   end
+               end
+               data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
+               quality_column = size(data, 2);
+               bitmask_column = quality_column - 1;
+
+               % Identify and flag problem areas in data with bitmask and quality factor:
+               data = caa_identify_problems(data, lev, probe_info.probe, cl_id, bitmask_column, quality_column, 3);
+             else
+                irf_log('load','No dibE data matrix in mEFWburst.mat. No EB.');
+             end
+         end
        end
    else
       [ok,data] = c_load(vs);
    %   [data, ok] = caa_get(st, dt, cl_id, vs);
    %   keyboard
    end
-   if all(~ok) || isempty(data)
+%   if ~isempty(data)
+%       data(1:10,2:end)
+%   end
+   if (all(~ok) || isempty(data)) && ~strcmp(caa_vs(end), 'B')
    	irf_log('load', ['No ' vs]);
    	cd(old_pwd)
 %   	return
@@ -428,7 +601,7 @@ for dd = 1:length(dirs)
    	[ok, d_info] = c_load([vs '_info'],'var');
    %   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
    catch
-      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs, 'IB')
+      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs(end), 'B')
         irf_log('load', ['No ' vs '_info']);
       end
    	  d_info = []; ok = 0;
@@ -774,7 +947,7 @@ cd(old_pwd)
 % Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
 if ~isempty(data)
     tdiff=0.5e-3;
-    if strcmp(caa_vs, 'IB')
+    if strcmp(caa_vs, 'IB') || strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
         tdiff=1e-5;
     end
     indx=find(diff(data(:,1)) < tdiff);
@@ -866,10 +1039,14 @@ if strcmp(caa_vs, 'SFIT') && nanfill ~= -1
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' & P34 data.' dsc.com ]);
     end
 elseif strcmp(caa_vs, 'IB')
-    if isempty(data)
-        di='na';
+    if lev==1
+        if isempty(data)
+            di='na';
+        end
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' di ' ' dsc.com ]);
+    else
+        buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
     end
-    buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' di ' ' dsc.com ]);        
 else
     buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
 end    
