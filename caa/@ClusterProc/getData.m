@@ -692,11 +692,12 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
             p_ok = 12;
             flag_bp = 1;
         end
-        [ok,e34] = c_load('wE8kHz?p34',cl_id);
+        [ok,e34] = c_load('wE8kHz?p43',cl_id);
         if ~ok || isempty(e34)
-            irf_log('load', irf_ssub('No/empty wE8kHz?p34',cl_id));
+            irf_log('load', irf_ssub('No/empty wE8kHz?p43',cl_id));
         else
             loaded = 1;
+            e34(:,2) = -e34(:,2); % V43 -> V34
             p_ok = [p_ok 34];
             flag_bp = 1;
         end

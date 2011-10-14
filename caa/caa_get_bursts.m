@@ -319,15 +319,19 @@ switch ibvarstr(1)
         filter='4kHz';
     case 'V'
         if length(ibvarstr) > 3
-            if ibvarstr(2)=='4'  % 43 check
-                probe = ibvarstr(3:-1:2);
-            else
-                probe = ibvarstr(2:3);
+            probe = ibvarstr(2:3);
+            switch probe
+                case '12'
+                    sen = 'p12';
+                case '43'
+                    sen = 'p34'; % for isdat
+                otherwise
+                    error('Bad probe value "%s". Must be 12 or 43',probe)
             end
         else
             probe = ibvarstr(2);
+            sen = irf_ssub('p?',probe);
         end
-        sen = irf_ssub('p?',probe);
         switch ibvarstr(end)
             case 'U'
                 filter='32kHz';
