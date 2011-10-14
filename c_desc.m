@@ -505,7 +505,7 @@ elseif regexp(vs,'^w2W[1-4]p32$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.data = 1;
-    switch vvs(1:findstr(vvs,'E')-1) % characters before 'E'
+    switch vvs(1:strfind(vvs,'E')-1) % characters before 'E'
         case 'di'
             v.frame = 'sc';
             v.file = 'mEDSIf';
@@ -523,15 +523,15 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
             v.file = 'mEFWburst';
             v.quant = 'idibe';
     end
-	if vvs(findstr(vvs,'E')+1)=='F'
-		v.cl_id = vvs(findstr(vvs,'E')+2);
+	if vvs(strfind(vvs,'E')+1)=='F'
+		v.cl_id = vvs(strfind(vvs,'E')+2);
 		v.name = {'EF_Vec_xy_ISR2'};
 		v.labels = {'EF'};
 		v.label_1 = {'"EFx", "EFy"'};
 		v.field_name = {'Electric field (high-pass filtered)'};
 		v.quant = 'dief';
 	else
-		v.cl_id = vvs(findstr(vvs,'E')+1); % next character after 'E'
+		v.cl_id = vvs(strfind(vvs,'E')+1); % next character after 'E'
 		v.name = {'E_Vec_xy_ISR2'};
 		v.labels = {'E'};
 		v.label_1 = {'"Ex", "Ey"'};
@@ -1221,7 +1221,7 @@ elseif regexp(vs,'^T(perp|par)?C(h|p)[1-4]$')
 	if strcmp(vs(2:4),'per'), comp = 'perp'; cf = 'Perpendicular'; lcomp='\perp';
     else comp = 'par'; cf = 'Parallel'; lcomp='{||}';
 	end
-	if vvs(findstr(vvs,'C')+1)=='h' % characters after 'C'
+	if vvs(strfind(vvs,'C')+1)=='h' % characters after 'C'
 		v.sig = ['T_' comp];
 		v.sen = 'HIA';
 		v.field_name = {[cf ' ion temperature']};
@@ -1415,7 +1415,7 @@ elseif regexp(vs,'^diBSC4kHz?')
     v.valtype = {'FLOAT'};
     v.sigdig = 6;
 	v.com = '';
-	v.file = 'mBSCBurst';
+	v.file = 'mEFWburst';
 	v.quant = 'b';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1445,7 +1445,7 @@ elseif regexp(vs,'^wBSC4kHz?')
     v.valtype = {'FLOAT'};
     v.sigdig = 6;
 	v.com = '';
-	v.file = 'mBSCBurst';
+	v.file = 'mEFWburstR';
 	v.quant = 'b';
 	v.lev = 0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
