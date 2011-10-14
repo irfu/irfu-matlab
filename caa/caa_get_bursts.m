@@ -247,7 +247,7 @@ for i=1:varsbsize
         error(['Unknown ib data type: ' varsb{i}]);
     end
 end
-
+%ix = [ix 12 13 14 15 16 19 20 2500 2501 2502 2503 2504 2505 2506];
 data8ordfc(ix,2:end) = NaN; % Set spikes to NaNs
 
 % Save BSC data
@@ -288,6 +288,32 @@ for i=1:varsbsize
     data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
     eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
 end
+
+% Make spike problem time vector
+mem=1;
+ii=1;
+tinter=[];
+%ix = [ix 12 13 14 15 16 19 20 2500 2501 2502 2503 2504 2505 2506];
+sz=length(ix);
+if sz>1
+    for i=2:sz
+        if ix(i)-ix(i-1)>1
+            tinter(ii,1)=data8ordfc(ix(mem),1);
+            tinter(ii,2)=data8ordfc(ix(i-1),1);
+            mem
+            i-1
+            ii=ii+1;
+            mem=i;
+        end
+    end
+    tinter(ii,1)=data8ordfc(ix(mem),1);
+    tinter(ii,2)=data8ordfc(ix(sz),1);
+    mem
+    sz
+    tinter
+end
+
+eval(irf_ssub(['SPIKE?=tinter;' 'save_list=[save_list ''SPIKE? ''];'],cl_id));
 if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
     irf_log('save',[save_list ' -> ' save_file])
     
