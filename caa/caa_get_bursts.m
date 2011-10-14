@@ -70,7 +70,6 @@ cd(dirs{i})
 varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
 
-filtv=zeros(1,4);   % remember V filter usage
 for out = 1:varsbsize;
     vt=varsb{out};
     vtlen=length(vt);
@@ -86,23 +85,6 @@ for out = 1:varsbsize;
         sen=probe;
         filter='4kHz';
     elseif vt(1)=='V'
-        filt=vt(vtlen);
-        switch filt
-            case 'U'
-                filter='32kHz';
-                filtv(1)=filtv(1)+1;
-            case 'H'
-                filter='4kHz';
-                filtv(2)=filtv(2)+1;
-            case 'M'
-                filter='180Hz';
-                filtv(3)=filtv(3)+1;
-            case 'L'
-                filter='10Hz';
-                filtv(4)=filtv(4)+1;
-            otherwise
-                error(['Unknown filter char for V: ' vt(vtlen)]);
-        end
         if vtlen>3
             if vt(2)=='4'  % 43 check
                 probe = vt(3:-1:2);
@@ -113,6 +95,22 @@ for out = 1:varsbsize;
             probe = vt(2);
         end
         sen = irf_ssub('p?',probe);
+        filt=vt(vtlen);
+        switch filt
+            case 'U'
+                filter='32kHz';
+            case 'H'
+                if length(probe)==1, filter='4kHz';
+                else filter='8kHz';
+                end
+            case 'M'
+                filter='180Hz';
+            case 'L'
+                filter='10Hz';
+            otherwise
+                error(['Unknown filter char for V: ' vt(vtlen)]);
+        end
+        
     end
     instrument = 'efw';
     
