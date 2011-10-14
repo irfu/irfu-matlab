@@ -202,9 +202,14 @@ for i=1:varsbsize
         c_efw_burst_bsc_tf(data8ordfc(:,[1 BSCpos+1]),cl_id,xyzord);
         BSCcnt=BSCcnt+1;
     elseif varsb{i}(1)=='V'
-        data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
-        data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),...
-            varsb{i}(end));
+        if length(varsb{i})>3 % Differential signals are special
+            data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
+            data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),'BP');
+        else
+            data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
+            data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),...
+                varsb{i}(end));
+        end
     else
         error(['Unknown ib data type: ' varsb{i}]);
     end
