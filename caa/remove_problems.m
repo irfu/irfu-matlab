@@ -128,7 +128,20 @@ for i=1:length(param)
 			end
 			clear ok sweep msg
 
-		case 'bdump'
+		case 'spike'
+			% Remove spike
+			[ok,spike,msg] = c_load('SPIKE?',cl_id);
+			if ok
+				if ~isempty(spike)
+					irf_log('proc','blanking spike')
+					res = caa_rm_blankt(res,spike);
+					clear spike
+				end
+			else irf_log('load',msg)
+			end
+			clear ok spike msg
+
+        case 'bdump'
 			% Remove burst dumps
 			[ok,bdump,msg] = c_load('BDUMP?',cl_id);
 			if ok
