@@ -680,75 +680,95 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	
     % Make electric field for the burst
 	if do_burst
-		var_name = 'wbE?p!';
-		p12 = 12; e12 = []; e34 =[];
-		param={'180Hz','4kHz','32kHz'};
-		p_ok = [];
+		p12 = 12; flag_bp = 0;
+        p_ok = [];
 		loaded = 0;
-		for k=1:length(param)
-			for probe=[2 4]
-				[ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
-				if ok
-					loaded = 1;
-					p_sep = .088;
-					if probe==2
-						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
-						if ~ok
-							[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
-							p_sep = .066;
-							p12 = 32;
-						end
-						if ~ok
-							irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
-							continue
-						end
-
-						e12(:,1) = p2(:,1);
-						e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-                        if abs(mean(e12(~isnan(e12(:,2)),2)))>30 % Sanity check for realistic electric field value
-                            e12 = [];
+        % First try to see if we have any V12H and V43H
+        [ok,e12] = c_load('wE8kHz?p12',cl_id);
+        if ~ok || isempty(e12)
+            irf_log('load', irf_ssub('No/empty wE8kHz?p12',cl_id));
+        else
+            loaded = 1;
+            p_ok = 12;
+            flag_bp = 1;
+        end
+        [ok,e34] = c_load('wE8kHz?p34',cl_id);
+        if ~ok || isempty(e34)
+            irf_log('load', irf_ssub('No/empty wE8kHz?p34',cl_id));
+        else
+            loaded = 1;
+            p_ok = [p_ok 34];
+            flag_bp = 1;
+        end
+        
+        if ~loaded
+            var_name = 'wbE?p!';
+            param={'180Hz','4kHz','32kHz'};
+            for k=1:length(param)
+                for probe=[2 4]
+                    [ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
+                    if ok
+                        loaded = 1;
+                        p_sep = .088;
+                        if probe==2
+                            [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
+                            if ~ok
+                                [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+                                p_sep = .066;
+                                p12 = 32;
+                            end
+                            if ~ok
+                                irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+                                continue
+                            end
+                            
+                            e12(:,1) = p2(:,1);
+                            e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            if abs(mean(e12(~isnan(e12(:,2)),2)))>30 % Sanity check for realistic electric field value
+                                e12 = [];
+                            else
+                                p_ok = [p_ok 12]; %#ok<AGROW>
+                                eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+                            end
                         else
-                            p_ok = [p_ok 12]; %#ok<AGROW>
-                            eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
+                            [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
+                            if ~ok
+                                irf_log('load', irf_ssub(['No P' param{k} '?p3'],cl_id));
+                                continue
+                            end
+                            
+                            e34(:,1) = p2(:,1);
+                            e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            p_ok = [p_ok 34]; %#ok<AGROW>
+                            eval(irf_ssub('wbE?p!=e34;save_list=[save_list ''wbE?p! ''];',cl_id, 34));
                         end
-					else
-						[ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
-						if ~ok
-							irf_log('load', irf_ssub(['No P' param{k} '?p3'],cl_id));
-							continue
-						end
-
-						e34(:,1) = p2(:,1);
-						e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-						p_ok = [p_ok 34]; %#ok<AGROW>
-						eval(irf_ssub('wbE?p!=e34;save_list=[save_list ''wbE?p! ''];',cl_id, 34));
-					end
-				else
-					irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
-				end
-			end
-			if loaded, break, end
-		end
-		if ~loaded
-			p_ok = [];
-			for probe = [12 32 34]
-				[ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
-				if ~ok || isempty(da)
-					irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
-					continue
-				end
-
-				if probe==32
-					p12 = 32;
-					e12 = da;
-					p_ok = [p_ok 12]; %#ok<AGROW>
-				else
-					c_eval('e?=da;',probe)
-					p_ok = [p_ok probe]; %#ok<AGROW>
-				end
-				clear ok da
-			end
-		end
+                    else
+                        irf_log('load', irf_ssub(['No P' param{k} '?p!'],cl_id, probe));
+                    end
+                end
+                if loaded, break, end
+            end
+            if ~loaded
+                p_ok = [];
+                for probe = [12 32 34]
+                    [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
+                    if ~ok || isempty(da)
+                        irf_log('load', irf_ssub(['No/empty ' var_name],cl_id,probe));
+                        continue
+                    end
+                    
+                    if probe==32
+                        p12 = 32;
+                        e12 = da;
+                        p_ok = [p_ok 12]; %#ok<AGROW>
+                    else
+                        c_eval('e?=da;',probe)
+                        p_ok = [p_ok probe]; %#ok<AGROW>
+                    end
+                    clear ok da
+                end
+            end
+        end
 	else % Not burst
 		p12 = 12; e12 = []; e34 =[];
 		p_ok = []; p12_ok = 0;
@@ -811,12 +831,14 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		end
 		if do_burst
 			% Correct ADC offset
-			if ~isempty(dadc)
-				irf_log('calb','using saved ADC offsets')
-				tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
-				tt(:,2) = tt(:,2) - tmp_adc(:,2); 
-				clear tmp_adc
-			else irf_log('calb','saved ADC offset empty')
+            if  ~flag_bp
+                if ~isempty(dadc)
+                    irf_log('calb','using saved ADC offsets')
+                    tmp_adc = irf_resamp(dadc,tt,'fsample',c_efw_fsample(tt,'ib'));
+                    tt(:,2) = tt(:,2) - tmp_adc(:,2);
+                    clear tmp_adc
+                else irf_log('calb','saved ADC offset empty')
+                end
             end
             problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops|whip'; %#ok<NASGU>
             signal = tt; %#ok<NASGU>
@@ -855,7 +877,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			end
 			
 			% Correct ADC offset
-			if flag_usesaved_adc_off
+			if flag_usesaved_adc_off && ~flag_bp
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
@@ -869,7 +891,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					flag_usesaved_adc_off = 0;
 				end
 			end
-			if ~flag_usesaved_adc_off
+			if ~flag_usesaved_adc_off  && ~flag_bp
 				irf_log('calb','computing ADC offsets (simple averaging)')
 				[tt,dadc] = caa_corof_adc(tt); %#ok<ASGLU>
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
@@ -962,10 +984,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		clear e12 e34
 		
 		% Load Delta offsets D?p12p34
-		if flag_usecaa_del_off
-			Del = c_efw_delta_off(full_e(1,1),cl_id);
-		end
-		if ~flag_usecaa_del_off || isempty(Del)
+		Del = [];
+        if flag_usecaa_del_off  && ~flag_bp
+            Del = c_efw_delta_off(full_e(1,1),cl_id);
+        end
+		if (~flag_usecaa_del_off || isempty(Del))  && ~flag_bp
 			% Try saved offsets
 			[ok,Del] = c_load('D?p12p34',cl_id);
 			if ~ok || isempty(Del)
