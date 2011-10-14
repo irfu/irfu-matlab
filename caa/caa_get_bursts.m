@@ -34,10 +34,12 @@ B_DELTA = 60;
 cp = ClusterProc;
 
 %Remove old files
-delete('mEFWburstTM.mat')
-delete('mEFWburstR.mat')
-delete('mEFWburst.mat')
-
+fn={'mEFWburstTM.mat' 'mEFWburstR.mat' 'mEFWburst.mat'};
+for i=1:size(fn,2)
+    if exist(fn{i},'file')
+        delete(fn{i});
+    end
+end
 
 cl_id=str2double(filename(end)); %Get the satellite number
 fname=irf_ssub([plotpath 'p?-c!'],filename(1:12),cl_id); %Sets the name that will be used to save the plots
