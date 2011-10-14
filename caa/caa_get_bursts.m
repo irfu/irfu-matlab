@@ -234,7 +234,11 @@ for i=1:varsbsize % Single ended
     end
     [~,~,filter,probe] = get_ib_props(varsb{i});
     data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
-    eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
+    if length(probe)>1
+        eval(irf_ssub(['wE?!p$=data;' 'save_list=[save_list ''wE?!p$ ''];'],filter,cl_id,probe));
+    else
+        eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));
+    end
 end
 
 % Make spike problem time vector
