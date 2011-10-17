@@ -90,7 +90,7 @@ else
         irf_log('proc','Order OK')
     else
         newidx = mod((1:nv)+sh-1,nv) + 1;
-        data8ord(:,2:end) = data8(:,newidx+1);
+        data8ord(:,2:nv+1) = data8(:,newidx+1);
         irf_log('proc','reordering')
     end
 end
