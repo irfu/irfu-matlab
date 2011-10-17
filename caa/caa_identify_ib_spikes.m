@@ -79,7 +79,11 @@ while pos-PL >= 1
          end
          
          if isempty(prevSpike), prevSpike = spike; end
-         idx_add = spike + ((-OFF_M+1):1:(OFF_P-1));
+         if size(spike,1)==2
+            idx_add = [spike(1) + ((-OFF_M+1):1:0) spike(2) + (0:1:(OFF_P-1))]
+         else
+            idx_add = spike + ((-OFF_M+1):1:(OFF_P-1));
+         end
          idx = [idx idx_add]; %#ok<AGROW>
          nSpike = nSpike + 1;
          
