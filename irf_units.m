@@ -232,8 +232,8 @@ Units.Merucry.distance_to_Sun=0.3871*Units.AU;        % Mercury orbit, semimajor
 Units.Venus.distance_to_Sun=0.7233*Units.AU;          % Venus orbit, semimajor axis
 Units.Earth.distance_to_Sun=1*Units.AU;               % Venus orbit, semimajor axis
 Units.Mars.distance_to_Sun=1.5273*Units.AU;           % Mars orbit, semimajor axis
-Units.Saturn.distance_to_Sun=5.2028*Units.AU;         % Jupiter orbit, semimajor axis
-Units.Jupiter.distance_to_Sun=9.5388*Units.AU;        % Saturn orbit, semimajor axis
+Units.Saturn.distance_to_Sun=9.5388*Units.AU;         % Jupiter orbit, semimajor axis
+Units.Jupiter.distance_to_Sun=5.2028*Units.AU;        % Saturn orbit, semimajor axis
 Units.Uranus.distance_to_Sun=19.1914*Units.AU;        % Uranus orbit, semimajor axis
 Units.Neptune.distance_to_Sun=30.0611*Units.AU;       % Neptune orbit, semimajor axis
 
