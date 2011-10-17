@@ -112,39 +112,38 @@ if ischar(labels), % Try to get variable labels from string (space separates).
 end
 
 if strcmpi(value_horizontal_alignment,'left'),
-    ht=zeros(1,length(labels)); % allocate handles
-    for i=1:length(labels), % start with first label first
-        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi','fontsize',12);
-        set(ht(i),'color',colord(i,:));
-        set(ht(i),'verticalalignment',value_vertical_alignment);
-        set(ht(i),'horizontalalignment',value_horizontal_alignment);
-        for j=1:size(pvpairs,2)/2
-            textprop=pvpairs{2*j-1};
-            textvalue=pvpairs{2*j};
-            if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
-                set(ht(i),'color',cluster_colors(i,:));
-            else
-                set(ht(i),pvpairs{2*j-1},pvpairs{2*j});
-            end
-        end
-        ext=get(ht(i),'extent'); position(1)=position(1)+ext(3)*1.4;
-    end
+    label_order=1:length(labels);
 else
-    for i=length(labels):-1:1, % start with last label first
-        ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units','normalized','fontweight','demi','fontsize',12);
-        set(ht(i),'color',colord(i,:));
-        set(ht(i),'verticalalignment',value_vertical_alignment);
-        set(ht(i),'horizontalalignment',value_horizontal_alignment);
-        for j=1:size(pvpairs,2)/2
-            textprop=pvpairs{2*j-1};
-            textvalue=pvpairs{2*j};
-            if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
-                set(ht(i),'color',cluster_colors(i,:));
-            else
-                set(ht(i),pvpairs{2*j-1},pvpairs{2*j});
-            end
+    label_order=length(labels):-1:1;
+end
+ht=zeros(1,length(labels)); % allocate handles
+tmp_ref_pos=position(1);
+for i=label_order, % start with first label first
+    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi','fontsize',12);
+    set(ht(i),'color',colord(i,:));
+    set(ht(i),'verticalalignment',value_vertical_alignment);
+    set(ht(i),'horizontalalignment',value_horizontal_alignment);
+    for j=1:size(pvpairs,2)/2
+        textprop=pvpairs{2*j-1};
+        textvalue=pvpairs{2*j};
+        if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
+            set(ht(i),'color',cluster_colors(i,:));
+        else
+            set(ht(i),pvpairs{2*j-1},pvpairs{2*j});
         end
-        ext=get(ht(i),'extent'); position(1)=position(1)-ext(3)*1.4; %% !!! minus sign because we start with last label and go left
+    end
+    txt_ext=get(ht(i),'extent'); 
+    txt_pos=get(ht(i),'position'); 
+    if strcmpi(value_horizontal_alignment,'left'),
+        txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos);
+        set(ht(i),'position',txt_pos);
+        txt_ext=get(ht(i),'extent'); 
+        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/numel(labels{i});
+    else
+        txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
+        set(ht(i),'position',txt_pos);
+        txt_ext=get(ht(i),'extent'); 
+        tmp_ref_pos=txt_ext(1)-txt_ext(3)/numel(labels{i});
     end
 end
 
