@@ -65,6 +65,7 @@ for i=size(dirs,2):-1:1 % find start time directory
 end
 if ~found
     irf_log('proc','iburst start time does not match any L1 data dir');
+    ret=2;
     return;
 end
 cd(dirs{i})
@@ -82,6 +83,7 @@ for out = 1:varsbsize;
     if (out==1) % Create data matrix for t and all 8 possible variables
         if size(t,1)<3 || size(data,1)<3 % sanity check
             irf_log('proc','No usable burst data');
+            ret=3;
             return;
         end
         data8 = NaN(size(data,1),9);
@@ -91,6 +93,7 @@ for out = 1:varsbsize;
             irf_log('dsrc','burst start time was not corrected')
         elseif isempty(t)
             irf_log('proc','t is empty. no iburst data?!');
+            ret=4;
             cd(old_pwd);
             return;
         else
@@ -283,6 +286,8 @@ if plot_flag
     st=data8ordfc(1,1);
     sp=data8ordfc(end,1);
     if st==-Inf || isnan(st)
+        ret=5;
+        irf_log('proc','Cannot plot IB. Bad time vector.')
         return;
     end
     getData(ClusterDB(DB,DP,'.'),st-B_DELTA,B_DT,cl_id,'bfgm');
