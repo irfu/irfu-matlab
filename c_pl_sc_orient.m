@@ -144,8 +144,9 @@ switch lower(action)
                 end
             end
             if data.flag_get_b_data % try to get B data from disk mat files
-                [ok,b]=c_load('diB?',ic);
+                [ok,b]=c_load('diB?',data.ic);
                 if any(ok) % B loaded
+                    data.b=b;
                     data.b(:,3)=-b(:,3);data.b(:,4)=-b(:,4); % go to DS reference frame instead of DSI
                     if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
                         data.flag_get_b_data=0;
