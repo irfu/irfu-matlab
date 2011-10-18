@@ -672,15 +672,16 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	% Aux quantities: Dadc?
 	[ok,pha] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha)
-		irf_log('load',...
-			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
-		data = []; cd(old_pwd); return
-	end
+    if ~ok || isempty(pha)
+        irf_log('load',...
+            irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+        data = []; cd(old_pwd); return
+    end
 	
+    flag_bp = 0; % Flag for 8kHz BP filter internal burst data
     % Make electric field for the burst
 	if do_burst
-		p12 = 12; flag_bp = 0;
+		p12 = 12;
         p_ok = [];
 		loaded = 0;
         % First try to see if we have any V12H and V43H
