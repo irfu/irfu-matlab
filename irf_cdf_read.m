@@ -217,7 +217,7 @@ else
 end
 
 if ischar(var_name), var_name={var_name};end
-variables=[epoch_variable var_name];
+variables=[epoch_variable; var_name(:)];
 
 if isempty(old_cdfread_call)
   try
