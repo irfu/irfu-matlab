@@ -37,6 +37,8 @@ switch action,
         ud.flag_use_sc=0; % 0-not use, 1- use sc
         ud.sc_probe_refpot_as_fraction_of_scpot=0.25; % reference potential at probe
         ud.sc.number_of_probes=4;
+        ud.sc.illuminated_area=1; % illuminated cross section generating photoelectrons
+        ud.sc.total_area=4;       % total s/c area collecting photoelectrons
         % plasma
         ud.m_amu1=1;
         ud.m_amu2=16;
@@ -57,7 +59,7 @@ switch action,
         set(gcf,'defaultTextFontSize',14);
         set(gcf,'defaultAxesFontUnits','pixels');
         set(gcf,'defaultTextFontUnits','pixels');
-        xSize = 12; ySize = 12;
+        xSize = 13; ySize = 13;
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
         set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
         set(gcf,'Position',[100 300 xSize*50 ySize*50])
@@ -73,7 +75,7 @@ switch action,
         set(fn,'userdata',ud);
         
         %% initialize probe menu
-        hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .45]);
+        hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .42]);
         inp.update                           = uicontrol('Parent',hp,'String','Update',                'Position',[0   0 60 30],'Callback','lp_sweep_gui(''update'')');
         inp.reset                            = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30],'callback', 'lp_sweep_gui(''initialize'')');
         inp.U_text                           = uicontrol('Parent',hp,'String','U [V]',                 'Position',[0   25 60 30]);
@@ -92,15 +94,17 @@ switch action,
         inp.probe_surface                    = uicontrol('Parent',hp,'String','probe_surface|themis|cassini',         'Position',[2 200 150 30],'style','popup','backgroundcolor','white','Callback', @setprobesurface);
         
         %% initialize s/c menu
-        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .45 .3 .25]);
-        inp.sc_radius_text                             = uicontrol('Parent',hsc,'String','s/c efficient radius [m]',                               'Position',[0 50 120 25]);
-        inp.sc_radius_value                            = uicontrol('Parent',hsc,'String',num2str(ud.sc_radius),'style','edit',                     'Position',[120 50 50 25],'backgroundcolor','white');
+        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .43 .3 .27]);
+        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0 125 120 25]);
+        inp.sc_example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0 100 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
+        inp.sc.illuminated_area_text                   = uicontrol('Parent',hsc,'String','Illuminated area [m2]',                                  'Position',[0 50 120 25]);
+        inp.sc.illuminated_area_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.illuminated_area),'style','edit',           'Position',[120 50 50 25],'backgroundcolor','white');
+        inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0 75 120 25]);
+        inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(ud.sc.total_area),'style','edit',                 'Position',[120 75 50 25],'backgroundcolor','white');
         inp.sc_probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0 25 120 25]);
         inp.sc_probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc_probe_refpot_as_fraction_of_scpot),         'Position',[120 25 50 25],'style','edit','backgroundcolor','white');
         inp.sc_number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0 0 120 25]);
         inp.sc_number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.number_of_probes),                          'Position',[120 0 50 25],'style','edit','backgroundcolor','white');
-        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0 100 120 25]);
-        inp.sc_example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0 75 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
         
         %% initialize plasma menu
         hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .7 .3 .25]);
@@ -138,10 +142,9 @@ switch action,
         ud.flag_use_sc=get(inp.flag_sc,'Value');
         if ud.flag_use_sc,
             ud.probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc_probe_refpot_as_fraction_of_scpot_value,'string'));
-            ud.sc.radius=100*str2double(get(inp.sc_radius_value,'string')); % in cm
             ud.sc.number_of_probes=str2double(get(inp.sc_number_of_probes_value,'string')); % in cm
-            ud.sc.cross_section_area=pi*(ud.sc.radius*.01)^2;
-            ud.sc.total_area=4*ud.sc.cross_section_area;
+            ud.sc.cross_section_area=str2double(get(inp.sc.illuminated_area_value,'string'));
+            ud.sc.total_area=str2double(get(inp.sc.total_area_value,'string'));
             ud.sc.type='spherical';
             ud.sc.surface='default';
         end
@@ -302,14 +305,15 @@ function setscexample(hObj,event) %#ok<INUSD>
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
-elseif val ==2, % Cluster
+elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     data.probe.type='spherical';
     set(data.inp.probe_type,'Value',1);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc_radius_value,'string','1.1');
+    set(data.inp.sc.illuminated_area_value,'string','3.77');
+    set(data.inp.sc.total_area_value,'string','11.84');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
@@ -317,15 +321,15 @@ elseif val ==2, % Cluster
     data.probe_total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
-elseif val == 3 % Solar Orbiter
+elseif val == 3 % Solar Orbiter with solar panel back side
     data.probe.type='cylindrical';
     set(data.inp.probe_type,'Value',2);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
-    set(data.inp.sc_radius_value,'string','1.2');
     set(data.inp.probe_radius_value,'string','1.15');
     set(data.inp.probe_length_value,'style','edit','string','500');
-    set(data.inp.sc_radius_value,'string','1.1');
+    set(data.inp.sc.illuminated_area_value,'string','2.2');
+    set(data.inp.sc.total_area_value,'string','20.5');
     set(data.inp.probe_total_vs_sunlit_area_value,'string',num2str(pi,4));
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','3');
@@ -340,7 +344,8 @@ elseif val == 4 % THEMIS
     set(data.inp.probe_surface,'Value',2);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc_radius_value,'string','0.41');
+    set(data.inp.sc.illuminated_area_value,'string','0.53');
+    set(data.inp.sc.total_area_value,'string','2.1');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
@@ -349,13 +354,15 @@ elseif val == 4 % THEMIS
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
 elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 mm) (efficient radius 56.5 taking into account stub)
+    % sc - >6.7 metres high and >4 metres wide
     data.probe.type='spherical';
     set(data.inp.probe_type,'Value',1);
     data.probe.surface='cassini';
     set(data.inp.probe_surface,'Value',3);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','2.5');
-    set(data.inp.sc_radius_value,'string','3');
+    set(data.inp.sc.illuminated_area_value,'string','27');
+    set(data.inp.sc.total_area_value,'string','140');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','1');
     set(data.inp.Rsun_value,'string','9.5');
