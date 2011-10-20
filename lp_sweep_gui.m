@@ -312,8 +312,8 @@ elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     set(data.inp.probe_surface,'Value',2);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc.illuminated_area_value,'string','3.77');
-    set(data.inp.sc.total_area_value,'string','11.84');
+    set(data.inp.sc.illuminated_area_value,'string','3.87');
+    set(data.inp.sc.total_area_value,'string','25.66');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
@@ -326,10 +326,10 @@ elseif val == 3 % Solar Orbiter with solar panel back side
     set(data.inp.probe_type,'Value',2);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
-    set(data.inp.probe_radius_value,'string','1.15');
+    set(data.inp.probe_radius_value,'string','0.575');
     set(data.inp.probe_length_value,'style','edit','string','500');
-    set(data.inp.sc.illuminated_area_value,'string','2.2');
-    set(data.inp.sc.total_area_value,'string','20.5');
+    set(data.inp.sc.illuminated_area_value,'string','5.95');
+    set(data.inp.sc.total_area_value,'string','28.11');
     set(data.inp.probe_total_vs_sunlit_area_value,'string',num2str(pi,4));
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','3');
@@ -344,8 +344,8 @@ elseif val == 4 % THEMIS
     set(data.inp.probe_surface,'Value',2);
     set(data.inp.probe_length_value,'style','text','string','');
     set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc.illuminated_area_value,'string','0.53');
-    set(data.inp.sc.total_area_value,'string','2.1');
+    set(data.inp.sc.illuminated_area_value,'string','0.71');
+    set(data.inp.sc.total_area_value,'string','4.2');
     set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc_number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
