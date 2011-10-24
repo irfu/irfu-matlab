@@ -69,6 +69,10 @@ for di=1:2:nv
     if ref_probep==32, distance = 62; else distance = 88;end
     eburst=1000*0.00212*(p2(:,2)-p1(:,2))/distance; % Burst electric field in mV/m
     bsfit=c_efw_sfit(ref_probep,3,10,20,p2(:,1),eburst,bpha(:,1),bpha(:,2),1,'ib');
+    if isempty(nmsfit) || isempty(bsfit)
+%        irf_log('proc','sfit empty')
+        continue
+    end
     [ii1,ii2] = irf_find_comm_idx(nmsfit,bsfit);
     % Second, compare direction of E-fields
     y = abs(((atan2(nmsfit(ii1,2),nmsfit(ii1,3))-atan2(bsfit(ii2,2),bsfit(ii2,3)))/pi)*180);
