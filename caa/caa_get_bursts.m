@@ -236,6 +236,57 @@ for i=1:varsbsize % Single ended
         continue
     end
     [~,~,filter,probe] = get_ib_props(varsb{i});
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%% PROBE MAGIC %%%%%%%%%%%%%%%%%%%%%%
+    start_time = data8ordfc(1,1);
+    switch cl_id
+        case 1
+            if start_time>toepoch([2009 10 14 07 00 00]) || ...
+                    (start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
+                % p1 and p4 failure
+                if any(probe=='1') || any(probe=='4')
+                    irf_log('dsrc',sprintf('p1 and p4 are BAD on sc%d',cl_id))
+                    continue
+                end
+            elseif start_time>toepoch([2001 12 28 03 00 00])
+                % p1 failure
+                if any(probe=='1')
+                    irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
+                    continue
+                end
+            elseif ( (start_time>=toepoch([2001 04 12 03 00 00]) && start_time<toepoch([2001 04 12 06 00 00])) || ...
+                    (  start_time>=toepoch([2001 04 14 06 00 00]) && start_time<toepoch([2001 04 16 15 00 00])) || ...
+                    (  start_time>=toepoch([2001 04 18 03 00 00]) && start_time<toepoch([2001 04 20 09 00 00])) || ...
+                    (  start_time>=toepoch([2001 04 21 21 00 00]) && start_time<toepoch([2001 04 22 03 00 00])) || ...
+                    (  start_time>=toepoch([2001 04 23 09 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) )
+                % The bias current is a bit too large
+                % on p3 and p4 on C1&2 in April 2001.
+                % Ignore p3, p4 and p34 and only use p1, p2 and p12.
+                % Use only complete 3-hour intervals to keep it simple.
+                if any(probe=='3') || any(probe=='4')
+                    irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
+                    continue
+                end
+            end
+        case 2
+            if start_time>=toepoch([2007 05 13 03 23 48])
+                % p1 failure
+                if any(probe=='1')
+                    irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
+                    continue
+                end
+            end
+        case 3
+            if start_time>toepoch([2002 07 29 09 06 59 ])
+                % p1 failure
+                if any(probe=='1')
+                    irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
+                    continue
+                end
+            end
+    end
+    %%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
+    
     data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
     if length(probe)>1
         eval(irf_ssub(['wE?!p$=data;' 'save_list=[save_list ''wE?!p$ ''];'],filter,cl_id,probe));
