@@ -129,6 +129,7 @@ end
 
 % First points are usually bad
 idx = unique([1:6 sort(idx)]);
+idx(idx<1) = [];
 idx(idx>ndata) = [];
 pdata = idata;
 pdata(1:6,2:end) = ones(6,1)*pdata(7,2:end);
