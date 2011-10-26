@@ -369,7 +369,7 @@ for dd = 1:length(dirs)
    elseif strcmp(caa_vs, 'IB')
        ok=0;
        if lev==1
-         mfn='./mEFWburstTM1.mat'; % For tm
+         mfn='./mEFWburstTM.mat'; % For tm
          if exist(mfn,'file')
            r=load(mfn);
            di=eval(irf_ssub('r.ib?_info',cl_id))
@@ -389,6 +389,7 @@ for dd = 1:length(dirs)
             global c_ct
          end
          ASPOC = c_ct{1,cl_id}.aspoc;
+
          pvar='bP?';
          [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
          if ~ok || isempty(probe_info) % Check for no IB data
@@ -1102,6 +1103,8 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
+elseif strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
+   irf_log('proc','Will not export empty internal burst PB, EB or BB files')
 else
    disp(['Filename : ' file_name ext_s ' (Empty)' ]);
    [fid,msg] = fopen([file_name ext_s],'a');
