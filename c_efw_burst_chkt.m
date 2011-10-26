@@ -59,6 +59,10 @@ function startSAT=c_efw_burst_chkt(database,filename)
   else
       tempindex = tempindex(1);
   end
+  % adjust if time gap in efwtime or sctime
+  if (efwtime(tempindex) - efwtime(tempindex-1))>60 || (sctime(tempindex) - sctime(tempindex-1))>60
+      tempindex=tempindex+1;
+  end
   if tempindex==1, idx=2; else idx = tempindex; end
   
   % Interpolate to get the exact start time
