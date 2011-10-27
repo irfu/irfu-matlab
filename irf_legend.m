@@ -138,12 +138,12 @@ for i=label_order, % start with first label first
         txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos);
         set(ht(i),'position',txt_pos);
         txt_ext=get(ht(i),'extent'); 
-        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/numel(labels{i});
+        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i}));
     else
         txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
         set(ht(i),'position',txt_pos);
         txt_ext=get(ht(i),'extent'); 
-        tmp_ref_pos=txt_ext(1)-txt_ext(3)/numel(labels{i});
+        tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
     end
 end
 
