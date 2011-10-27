@@ -204,10 +204,14 @@ if iscell(x), % Plot several variables
             flag_subplot = 2;
     end
 else
-    try % try to obtain variable description
-        var_desc{1} = c_desc(inputname(1));
-    catch %#ok<CTCH>
+    if isempty(inputname(1))
         var_desc{1} = {};
+    else    
+        try % try to obtain variable description
+            var_desc{1} = c_desc(inputname(1));
+        catch %#ok<CTCH>
+            var_desc{1} = {};
+        end
     end
 end
 if ~isempty(caa_dataobject{1}) % plot CAA variable
