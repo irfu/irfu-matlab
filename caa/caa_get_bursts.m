@@ -1,11 +1,11 @@
 function ret = caa_get_bursts(filename, plot_flag)
 %caa_get_bursts(filename) produce and plot Cluster burst data from the raw data
 %
-% data = caa_get_bursts(filename, plotflag)
+% data = caa_get_bursts(filename, burst_plot)
 %
 % Input:
 %   filename   : burst data file name
-%   burst_plot : generate plot 0=off 1=on (default off)
+%   burst_plot : generate plot 0=off(default) 1=on 2=on+local data (not CAA)
 %
 % Burst files are read from directory /data/cluster/burst/
 % Plot files are saved in directory $HOME/figures/
@@ -16,30 +16,26 @@ function ret = caa_get_bursts(filename, plot_flag)
 % $Id$
 
 error(nargchk(1,2,nargin));
+
+flag_local = 0;
 if nargin < 2
     plot_flag = 0;
+elseif plot_flag==2
+    flag_local = 1;
 end
-old_pwd = pwd;
 
-ret=1;
 plot_save=1;
-plotpath=[getenv('HOME') '/figures/'];
+if flag_local
+    plotpath='./';
+else
+    plotpath=[getenv('HOME') '/figures/'];
+end
 flag_save = 1;
 
 DP = c_ctl(0,'data_path');
 DB = c_ctl(0,'isdat_db');
 B_DT = 300;
 B_DELTA = 60;
-
-cp = ClusterProc;
-
-%Remove old files
-fn={'mEFWburstTM.mat' 'mEFWburstR.mat' 'mEFWburst.mat'};
-for i=1:size(fn,2)
-    if exist(fn{i},'file')
-        delete(fn{i});
-    end
-end
 
 cl_id=str2double(filename(end)); %Get the satellite number
 fname=irf_ssub([plotpath 'p?-c!'],filename(1:12),cl_id); %Sets the name that will be used to save the plots
@@ -49,26 +45,52 @@ full_time = iso2epoch(['20' s(1:2) '-' s(3:4) '-' s(5:6) 'T' s(7:8) ':' s(9:10) 
 start_time=full_time;
 st=full_time;
 
-dirs = caa_get_subdirs(st, 90, cl_id);
-if isempty(dirs)
-    irf_log('proc',['Can not find L1 data dir for ' s]);
-    return;
-end
-found=false;
-for i=size(dirs,2):-1:1 % find start time directory
-    d=dirs{i}(end-12:end);
-    dtime=iso2epoch([d(1:4) '-' d(5:6) '-' d(7:8) 'T' d(10:11) ':' d(12:13) ':00Z']);
-    if dtime<=start_time
-        found=true;
-        break;
+if flag_local
+    old_pwd = '.';
+    [loc_st,loc_dt] = caa_read_interval;
+    if isempty(loc_st)
+        irf_log('proc','No Cluster data in the current directory (.interval not found)');
+        ret=2;
+        return;
     end
+    loc_st = iso2epoch(loc_st);
+    if start_time < loc_st || loc_st > start_time + loc_st
+        irf_log('proc',['Current directory(' irf_disp_iso_range(loc_st+[0 loc_dt],1) ')'])
+        irf_log('proc',['does not match the burts start time (' epoch2iso(start_time,1) ')']);
+        ret=2;
+        return;
+    end 
+else
+    %Remove old files
+    fn={'mEFWburstTM.mat' 'mEFWburstR.mat' 'mEFWburst.mat'};
+    for i=1:size(fn,2)
+        if exist(fn{i},'file')
+            delete(fn{i});
+        end
+    end
+
+    dirs = caa_get_subdirs(st, 90, cl_id);
+    if isempty(dirs)
+        irf_log('proc',['Can not find L1 data dir for ' s]);
+        return;
+    end
+    found=false;
+    for i=size(dirs,2):-1:1 % find start time directory
+        d=dirs{i}(end-12:end);
+        dtime=iso2epoch([d(1:4) '-' d(5:6) '-' d(7:8) 'T' d(10:11) ':' d(12:13) ':00Z']);
+        if dtime<=start_time
+            found=true;
+            break;
+        end
+    end
+    if ~found
+        irf_log('proc','iburst start time does not match any L1 data dir');
+        ret=2;
+        return;
+    end
+    old_pwd = pwd;
+    cd(dirs{i})
 end
-if ~found
-    irf_log('proc','iburst start time does not match any L1 data dir');
-    ret=2;
-    return;
-end
-cd(dirs{i})
 
 varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
@@ -328,7 +350,10 @@ if flag_save==1 && ~isempty(save_list) && ~isempty(save_file)
 end
 
 % make L2
-getData(cp,cl_id,'whip');
+cp = ClusterProc;
+if ~flag_local
+    getData(cp,cl_id,'whip');
+end
 getData(cp,cl_id,'pburst');
 getData(cp,cl_id,'dieburst');
 getData(cp,cl_id,'dibscburst');
@@ -341,7 +366,9 @@ if plot_flag
         irf_log('proc','Cannot plot IB. Bad time vector.')
         return;
     end
-    getData(ClusterDB(DB,DP,'.'),st-B_DELTA,B_DT,cl_id,'bfgm');
+    if ~flag_local
+        getData(ClusterDB(DB,DP,'.'),st-B_DELTA,B_DT,cl_id,'bfgm');
+    end
     
     clf;
     dt2=5;
