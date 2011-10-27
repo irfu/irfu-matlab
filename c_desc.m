@@ -114,7 +114,7 @@ elseif regexp(vs,'^PB[1-4]$')==1
 	v.prop = {'Probe_Potential'};
 	v.fluc = {'Waveform'};
 	v.com = '';
-    v.file = 'mEFWburst';
+	v.file = 'cef export only';  % caa_export_new() cef export only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% P & Ps
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -588,7 +588,7 @@ elseif regexp(vs,'^EB[1-4]$')==1
 	v.prop = {'Vector'};
 	v.fluc = {'Waveform'};
 	v.com = '';
-    v.file = 'mEFWburst';
+	v.file = 'cef export only';  % caa_export_new() cef export only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1517,7 +1517,7 @@ elseif regexp(vs,'^BB[1-4]$')==1
 %	v.prop = {'Probe_Potential'};
 %	v.fluc = {'Waveform'};
 	v.com = '';
-    v.file = 'mBSCBurst';
+	v.file = 'cef export only';  % caa_export_new() cef export only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% B
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
