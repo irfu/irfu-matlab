@@ -10,7 +10,7 @@
 mode = irf_ask('Mode p1_34->p_34_2(1) or p23->p41(0)? [%]>','mode',0);
 
 if mode, disp('p1_34->p_34_2, p1_34->p_34_2 interferometry');
-else, disp('p23->p41, p42->p13 interferometry');
+else disp('p23->p41, p42->p13 interferometry');
 end
 
 flag_corr_deriv = irf_ask('Use max gradient (0) or zero crossings(1)? [%]>',...
@@ -32,20 +32,21 @@ disp(['Using f=' num2str(ff_ref) ' Hz to estimate phase velocities']);
 
 % Distance between the signals
 if mode, dist=.044;
-else, dist=.062;
+else dist=.062;
 end
 
 Fs = irf_ask('sampling frequnecy? [%]>','Fs',9000);
 
 kHz = irf_ask('Use P4kHz?px or P32kHz?px? 4/32 [%]>','kHz','4');
-if ~strcmp(kHz,'4') & ~strcmp(kHz,'32')
+if ~strcmp(kHz,'4') && ~strcmp(kHz,'32')
 	kHz = '4';
 	disp('using 4kHz')
 end
-c_eval(['load mEFWburst P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4;'],ic)
+c_eval(['load mEFWburstR P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4;'],ic)
 c_eval(['p1=P' kHz 'kHz?p1; p2=P' kHz 'kHz?p2; p3=P' kHz 'kHz?p3; p4=P' kHz 'kHz?p4;'],ic)
 c_eval(['clear P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4'],ic)
-A = c_load('A?',ic,'var');
+A = c_load('Atwo?',ic,'var');
+A = c_phase(p1(:,1),A);
 
 if mode
 	p1s=[p1(:,1) (-p1(:,2) +(p3(:,2)+p4(:,2))/2)/.044];
@@ -117,7 +118,7 @@ if mode
 	vi_d_4s_s3 = [ts3_d (ts3_d-t4s_d)/dist];
 	vi_dd_4s_s3 = [ts3_dd (ts3_dd-t4s_dd)/dist];
 	vi_4s_s3 = sortrows([vi_d_4s_s3;vi_dd_4s_s3]);
-	ii = find(diff(vi_4s_s3(:,1))==0); %Remove repeating points
+	ii = diff(vi_4s_s3(:,1))==0; %Remove repeating points
 	vi_4s_s3(ii,:) = [];
 	
 	[ts2_d,t1s_d,ts2_dd,t1s_dd] = irf_corr_deriv(ps2f,p1sf,flag_corr_deriv);
@@ -150,7 +151,7 @@ else
 	vi_dd_42_13=[t42_dd (t13_dd-t42_dd)/dist];
 	vi_42_13=sortrows([vi_d_42_13;vi_dd_42_13]);
 	
-	ii = find(diff(vi_23_41(:,1))==0); %Remove repeating points
+	ii = diff(vi_23_41(:,1))==0; %Remove repeating points
 	vi_23_41(ii,:) = [];
 	ii = find(diff(vi_42_13(:,1))==0); %Remove repeating points
 	vi_42_13(ii,:) = [];
@@ -171,7 +172,7 @@ vphi_bp=irf_dot(vphiDS,bp);
 %%%%%%%%%%%%%% FIGURE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-figure;tref=0;
+figure(91); clf, tref=0;
 h=irf_plot({n,n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
 
 %%%%%% subplot 1 %%%%%%
@@ -182,7 +183,7 @@ irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to
 
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), ts = ud.t_start_epoch;
-else, ts = 0;
+else ts = 0;
 end
 
 %%%%%% subplot 2 %%%%%%
@@ -194,25 +195,21 @@ irf_zoom([-49.9 49.9],'y');
 grid on;
 
 %%%%%% subplot 3 %%%%%%
-axes(h(3));
-plot(vphi_bn(:,1)-ts,vphi_bn(:,2),'.',vphi_bp(:,1)-ts,vphi_bp(:,2),'.');grid on;
+plot(h(3),vphi_bn(:,1)-ts,vphi_bn(:,2),'.',vphi_bp(:,1)-ts,vphi_bp(:,2),'.');grid on;
 %hold on;plot(vphi_n_sc(:,1)-tref,vphi_n_sc(:,2),vphi_m_sc(:,1)-tref,vphi_m_sc(:,2));grid on;
-ylabel('k/\omega [s/km]');
-irf_zoom([-0.0199 .0199],'y');
+ylabel(h(3),'k/\omega [s/km]');
+irf_zoom(h(3),'y',[-0.0199 .0199],'y');
 
 %%%%%% subplot 4 %%%%%%
-axes(h(4));
 %plot(k(:,1)-tref, k(:,2),'b.',k(ind,1)-tref,k(ind,2),'c.');
-plot(k(:,1)-ts, k(:,2),'k.');
-ylabel('\lambda^{-1} [1/km]')
-irf_zoom([0 4.99],'y');
-grid on;
+plot(h(4),k(:,1)-ts, k(:,2),'k.');
+ylabel(h(4),'\lambda^{-1} [1/km]')
+irf_zoom(h(4),'y',[0 4.99]);
+grid(h(4),'on');
 
-axes(h(5));ylabel('dn [cm^-3]');
-%irf_zoom([-0.1999 0.1999],'y');
-%axis tight;
+ylabel(h(5),'dn [cm^-3]');
 
-axes(h(6));ylabel('dn dE [cc mV/m]');axis tight;
+ylabel(h(6),'dn dE [cc mV/m]');axis(h(6),'tight');
 
 numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
 for ip=1:6,
@@ -226,6 +223,6 @@ irf_timeaxis(h)
 legend
 irf_figmenu
 
-axes(h(2)); legend(psignal{1},psignal{3});
-axes(h(3)); legend(leg{1},leg{2});
-axes(h(6)); legend(leg{1},leg{2})
+legend(h(2),psignal{1},psignal{3});
+legend(h(3),leg{1},leg{2});
+legend(h(6),leg{1},leg{2})
