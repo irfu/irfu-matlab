@@ -451,7 +451,7 @@ for dd = 1:length(dirs)
  
          data=[];
          ok=0;
-         mfn='./mBSCBurst.mat'; % For Bx By Bz
+         mfn='./mEFWburst.mat'; % Read Bx By Bz
          if exist(mfn,'file')
              bsc=load(mfn);
              finbsc=fieldnames(bsc);
@@ -506,7 +506,7 @@ for dd = 1:length(dirs)
                % Identify and flag problem areas in data with bitmask and quality factor:
                data = caa_identify_problems(data, lev, num2str(1), cl_id, bitmask_column, quality_column, 3);
              else
-                irf_log('load','No diBSC data matrix in mBSCBurst.mat. No BB.');
+                irf_log('load','No diBSC data matrix in mEFWburst.mat. No BB.');
              end
          end
        end
