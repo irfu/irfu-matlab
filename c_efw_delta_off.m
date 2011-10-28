@@ -22,7 +22,7 @@ da = [];
 load caa/deltaoff.mat
 c_eval('da=DeltaOff?;',cl_id);
 
-if (data(end,1) < da(1,1)-DT) || (data(1,1) > da(end,1)-DT)
+if (data(end,1) < da(1,1)-DT) || (data(1,1) > da(end,1)-DT) || isnan(data)
 	irf_log('proc','No precomputed Delta offsets for this time')
 	dof = [];
 	return
