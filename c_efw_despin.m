@@ -111,7 +111,11 @@ if numel(phase)==1, % load phase from isdat database
 end
 
 if numel(phase) < 3
-  irf_log('proc',['c_efw_despin failed: no phase information for interval starting ' epoch2iso(t(1,1))])
+  tf=t(1,1);
+  if isinf(t(1,1)) || isnan(t(1,1))
+      tf=0;
+  end
+  irf_log('proc',['c_efw_despin failed: no phase information for interval starting ' epoch2iso(tf)])
   e=[t zeros(length(t),1)+NaN zeros(length(t),1)+NaN];
   return
 end
