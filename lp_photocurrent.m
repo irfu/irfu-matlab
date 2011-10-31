@@ -1,54 +1,67 @@
 function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun ,flag)
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun )
+% LP_PHOTOCURRENT Langmuir probe photocurrent for different materials
 %
-%   Matlab function that calculates the photo-current emitted by an
-%   arbitrary body with cross area, X_area [m^2], a distance, R_sun [AU],
-%   from the Sun, when the body has a potential, U_pot [V].
+% j_photo = LP_PHOTOCURRENT( X_area, U_pot, R_sun )
 %
-%   Input parameters:    X_area             --- scalar
-%                        U_pot              --- scalar or vector
+%   Calculates the photo-current emitted by an arbitrary body with 
+%   cross section area, X_area [m^2], at a distance R_sun [AU]
+%   from the Sun, when the body has a potential, U_pot [V]. Estimates
+%   are done for the solar minimum conditions. 
 %
-%   Created by Jan-Erik Wahlund, Cornell University, October-1994.
+%   X_area  - scalar
+%   U_pot   - scalar or vector or matrix
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% j_photo = LP_PHOTOCURRENT( X_area, U_pot, R_sun, surface_material )
+%       returns photo current for specified material
+% 
+%   some of implemented surface materials
+%   for full list execute LP_PHOTOCURRENT without arguments
+%       'cluster' - same as 'default', based on Pedersen papers
+%       'themis'  - based on corrected THEMIS sweeps
+%       'cassini' - saturation current based on experimental data
+% 
+% surface_materials=LP_PHOTOCURRENT
+%   returns cell array with implemented surface materials
+%
 
 % Check # input/output parameters.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-error(nargchk(3,4,nargin))
+error(nargchk(0,4,nargin))
 
+surface_materials={'default','cluster','themis','cassini','aluminium','gold','graphite','solar cells'};
+if nargin==0 && nargout ==0, 
+    for ii=1:numel(surface_materials)
+        surf=surface_materials{ii};
+        j0=lp_photocurrent(1,0,1,surf);
+        disp([surf ': Io= ' num2str(j0*1e6,2) ' uA/m2']);
+    end
+    return
+end
+if nargin==0 && nargout == 1,
+    j_photo=surface_materials;
+    return
+end
 if nargin==3, flag='default';end
 
 % Check size of V_pot, and make it an column vector.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-U_pot = U_pot(:);
 
-switch flag
-    case 'default'
+switch lower(flag)
+    case {'default','cluster'}
         % The Photo-current emitted depends on if the potential of the body is
         % positive or negative.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        pos_ind = find( U_pot >= 0 );
-        neg_ind = find( U_pot < 0 );
         
-        j_photo = U_pot*0; % initialize
+        j_photo = zeros(size(U_pot)); % initialize
+        j_photo(:) = 5.6e-5*X_area/R_sun^2; % initialize to current valid for negative potentials
+        j_photo(U_pot >= 0) = (X_area/R_sun^2) .* ...
+            ( 5.0e-5 .* exp( - U_pot(U_pot>=0) ./ 2.74 ) ...
+            + 1.2e-5 .* exp( - (U_pot(U_pot>=0) + 10.0) ./ 14.427 ) );
         
-        j_photo(pos_ind) = (X_area/R_sun^2) .* ...
-            ( 5.0e-5 .* exp( - U_pot(pos_ind) ./ 2.74 ) ...
-            + 1.2e-5 .* exp( - (U_pot(pos_ind) + 10.0) ./ 14.427 ) );
-        
-        j_photo(neg_ind) = (5.6e-5*X_area/R_sun^2) .* ones(length(neg_ind),1);
-        
-        return
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     case 'themis'
-        % The Photo-current emitted depends on if the potential of the body is
-        % positive or negative.
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        
         U_ref  =        [.1 1   5  10  50];
         j_photo_ref   = [50 27 10   5   .5]*1e-6;
+       
         logU=log(U_ref);
         logj=log(j_photo_ref);
         
@@ -56,22 +69,36 @@ switch flag
         j_photo = j_photo*j_photo_ref(1)*X_area/R_sun^2; % negative potentials
         pos_ind = find( U_pot >= U_ref(1) );        
         j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'cubic','extrap'))*X_area/R_sun^2;
-        return
     case 'cassini'        
-        U_ref  =        [.1 1   5  10  50];
-        j_photo_ref   = [50 27 10   5   .5]*1e-6;
-        j_photo_ref=j_photo_ref/2; % Cassini is 4x less than THEMIS
-        logU=log(U_ref);
-        logj=log(j_photo_ref);
+        % Cassini material is 25 uA/m2 at 1AU
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=25e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
+
+    case 'aluminium'        
+        %aluminium is 40 uA/m2 at 1AU, we scale THEMIS 
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=40e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
         
-        j_photo = ones(size(U_pot)); %
-        j_photo = j_photo*j_photo_ref(1)*X_area/R_sun^2; % negative potentials
-        pos_ind = find( U_pot >= U_ref(1) );        
-        j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'cubic','extrap'))*X_area/R_sun^2;
+    case 'gold'        
+        %gold is 29 uA/m2 at 1AU, we scale THEMIS 
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=29e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
         
-        return
+    case 'graphite'        
+        %graphite is 7.2 uA/m2 at 1AU, we scale THEMIS 
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=7.2e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
         
-    case 'cluster'
+    case 'solar cells'        
+        %graphite is 20 uA/m2 at 1AU, we scale THEMIS 
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=20e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
+        
     otherwise
 end
 
