@@ -28,7 +28,7 @@ ff = irf_ask('Frequency interval to filter? [%]>','ff',[10 25]);
 fstr = ['filter [' num2str(ff(1)) ' ' num2str(ff(2)) '] Hz'];
  
 ff_ref = (ff(1)+ff(2))/2;
-disp(['Using f=' num2str(ff_ref) ' Hz to estimate phase velocities']);
+disp(['Using f=' num2str(ff_ref) ' Hz to estimate wavelength']);
 
 % Distance between the signals
 if mode, dist=.044;
@@ -95,8 +95,6 @@ end
 legend_corr=[psignal{1} '->' psignal{2} ' ' psignal{3} '->' psignal{4}];
 legend_corr12=[psignal{1} '->' psignal{2}];
 legend_corr34=[psignal{3} '->' psignal{4}];
-
-tref=toepoch(start_time);
 
 % Filter the data and Crop the data
 ff_str=['f_{filter}=[' num2str(ff(1),3) ' ' num2str(ff(2),3) '] Hz'];
@@ -176,10 +174,9 @@ figure(91); clf, tref=0;
 h=irf_plot({n,n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
 
 %%%%%% subplot 1 %%%%%%
-axes(h(1));ylabel('N_{Vps} [cm^{-3}]');
+ylabel(h(1),'N_{Vps} [cm^{-3}]');
 title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
-irf_pl_info([mfilename '  ' datestr(now) '. ' title_text]); % add information to the plot
-%irf_zoom([0 2.5],'y',gca);
+irf_pl_info([mfilename '  ' datestr(now) '. ' title_text],h(1)); % add information to the plot
 
 ud=get(gcf,'userdata');
 if isfield(ud,'t_start_epoch'), ts = ud.t_start_epoch;
@@ -187,22 +184,28 @@ else ts = 0;
 end
 
 %%%%%% subplot 2 %%%%%%
-axes(h(2));
-%eval(['plot(' psignal{1} '(:,1)-tref, ' psignal_f{1} '(:,2),' psignal{2} '(:,1)-tref, ' psignal_f{2} '(:,2),' psignal{3} '(:,1)-tref, ' psignal_f{3} '(:,2),' psignal{4} '(:,1)-tref, ' psignal_f{4} '(:,2))' ]);
-eval(['plot(' psignal{1} '(:,1)-ts, ' psignal_f{1} '(:,2),' psignal{3} '(:,1)-ts, ' psignal_f{3} '(:,2))']);
-ylabel('E_{f} [mV/m]');
-irf_zoom([-49.9 49.9],'y');
-grid on;
+eval(['plot(h(2),' psignal{1} '(:,1)-ts, ' psignal_f{1} '(:,2),' psignal{3} '(:,1)-ts, ' psignal_f{3} '(:,2))']);
+ylabel(h(2),'E_{f} [mV/m]');
+irf_zoom(h(2),'y',[-49.9 49.9]);
+grid(h(2),'on')
 
 %%%%%% subplot 3 %%%%%%
-plot(h(3),vphi_bn(:,1)-ts,vphi_bn(:,2),'.',vphi_bp(:,1)-ts,vphi_bp(:,2),'.');grid on;
-%hold on;plot(vphi_n_sc(:,1)-tref,vphi_n_sc(:,2),vphi_m_sc(:,1)-tref,vphi_m_sc(:,2));grid on;
+plot(h(3),vphi_bn(:,1)-ts,vphi_bn(:,2),'.',vphi_bp(:,1)-ts,vphi_bp(:,2),'.');
+hold(h(3),'on')
+vmax=1/dist/Fs;
+plot(h(3),vphi_bn([1 end],1)-ts,[vmax vmax],'r--')
+plot(h(3),vphi_bn([1 end],1)-ts,-[vmax vmax],'r--')
+hold(h(3),'off')
 ylabel(h(3),'k/\omega [s/km]');
 irf_zoom(h(3),'y',[-0.0199 .0199],'y');
+grid(h(3),'on')
 
 %%%%%% subplot 4 %%%%%%
-%plot(k(:,1)-tref, k(:,2),'b.',k(ind,1)-tref,k(ind,2),'c.');
 plot(h(4),k(:,1)-ts, k(:,2),'k.');
+hold(h(4),'on')
+kmax = ff_ref*vmax;
+plot(h(4),k([1 end],1)-ts,[kmax kmax],'r--')
+hold(h(4),'off')
 ylabel(h(4),'\lambda^{-1} [1/km]')
 irf_zoom(h(4),'y',[0 4.99]);
 grid(h(4),'on');
@@ -213,12 +216,11 @@ ylabel(h(6),'dn dE [cc mV/m]');axis(h(6),'tight');
 
 numb={'a)','b)','c)','d)','e)','f)','g)','h)','i)','j)','k)','l)','m)'};
 for ip=1:6,
-  axes(h(ip));
-  ht=irf_pl_info(numb{ip},gca,[0.05,.7]);
-  set(ht,'fontsize',10);
+  ht=irf_pl_info(numb{ip},h(ip),[0.05,.7]);
+  set(ht,'interpreter','none','FontSize', 10);
 end
 
-for j=1:6,irf_zoom(tint,'x',h(j));end
+for j=1:6,irf_zoom(h(j),'x',tint);end
 irf_timeaxis(h)
 legend
 irf_figmenu
