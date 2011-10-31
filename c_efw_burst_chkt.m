@@ -69,7 +69,11 @@ function startSAT=c_efw_burst_chkt(database,filename)
   else
       % adjust if time gap in efwtime or sctime
       if (efwtime(tempindex) - efwtime(tempindex-1))>60 || (sctime(tempindex) - sctime(tempindex-1))>60
-        tempindex=tempindex+1;
+        if tempindex==length(efwtime)
+            tempindex=tempindex-1;
+        else    
+            tempindex=tempindex+1;
+        end
       end
       idx = tempindex;
   end
