@@ -6,11 +6,11 @@ function [J_probe, J_photo, J_plasma]=lp_probe_current(probe,U_probe,R_sun,UV_fa
 %   a cylindrical or spherical Langmuir probe.
 %
 % Input:
-%  probe.type    - 'spherical','cylindrical'
+%  probe.type    - 'spherical','cylindrical','arbitrary'
 %  probe.surface - 'themis','cassini' (one of flags in lp_photocurrent)
 %  probe.cross_section_area - in m2
 %  probe.total_area - in m2
-%  U_probe    - probe potential (can be vector) 
+%  U_probe    - probe potential (can be vector or matrix) 
 %  R_sun      - distance from sun in AU
 %  UV_factor  - default is 1
 %  plasma     - describes plasma components (structure)
@@ -28,11 +28,16 @@ function [J_probe, J_photo, J_plasma]=lp_probe_current(probe,U_probe,R_sun,UV_fa
 
 irf_units;
 
-n_of_species=numel(plasma.q);
-J_plasma=cell(n_of_species,1);
-plasma.TK=plasma.T*Units.e/Units.kB;
+if isempty(plasma), % calculate only photocurrent
+    n_of_species=0;
+else
+    n_of_species=numel(plasma.q);
+    J_plasma=cell(n_of_species,1);
+    plasma.TK=plasma.T*Units.e/Units.kB;
+end
 if strcmpi(probe.type,'spherical'), probe_type=1;end
 if strcmpi(probe.type,'cylindrical'), probe_type=2;end
+if strcmpi(probe.type,'arbitrary'), probe_type=1;end
 
 J_photo = -lp_photocurrent(probe.cross_section_area, U_probe, R_sun,probe.surface);
 J_photo = J_photo .* UV_factor;
