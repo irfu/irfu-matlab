@@ -36,16 +36,12 @@ irf_units;
 
 % Initialize.
 %%%%%%%%%%%%%
-  U            = U(:);
-  U_pts        = length( U );
-  j_thermal    = zeros( U_pts, 1 );
+  j_thermal    = zeros(size(U));
 
 % If zero density return zero current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if N==0 || T==0,
-    j_thermal=zeros(size(U));
-    return;
-end
+if N==0 || T==0,    return;end
+
 % Is the body moving with a velocity, V, with 
 % respect to the plasma ?
 % Criteria set such that it is considered 
@@ -88,7 +84,7 @@ end
      pos_ind = find( U >= 0 );
      neg_ind = find( U < 0 );
 
-     sq         = zeros( U_pts, 1 );
+     sq         = zeros(size(U));
 %     erfv       = zeros( U_pts, 1 );
 
      sq(neg_ind) = sqrt( abs(-X(neg_ind)) );
