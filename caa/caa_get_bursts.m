@@ -1,12 +1,14 @@
 function ret = caa_get_bursts(filename, plot_flag)
 %caa_get_bursts(filename) produce and plot Cluster burst data from the raw data
 %
-% data = caa_get_bursts(filename, burst_plot)
+% data = caa_get_bursts(filename, plot_flag)
 %
 % Input:
 %   filename   : burst data file name
-%   burst_plot : generate plot 0=off(default) 1=on 2=on+local data (not CAA)
+%   plot_flag  : generate plot 0=off(default) 1=on 2=on+local data (not CAA)
 %
+% mEFWburstTM.mat, mEFWburstR.mat & mEFWburst.mat are saved in
+% data/caa/l1 working directory.
 % Burst files are read from directory /data/cluster/burst/
 % Plot files are saved in directory $HOME/figures/
 % 
@@ -113,11 +115,6 @@ for out = 1:varsbsize;
         start_satt = c_efw_burst_chkt(DB,[DP '/burst/' filename]);
         if isempty(start_satt)
             irf_log('dsrc','burst start time was not corrected')
-        elseif isempty(t)
-            irf_log('proc','t is empty. no iburst data?!');
-            ret=4;
-            cd(old_pwd);
-            return;
         else
             err_t = t(1) - start_satt;
             irf_log('dsrc',['burst start time was corrected by ' ...
@@ -361,7 +358,7 @@ getData(cp,cl_id,'dibscburst');
 if plot_flag  
     st=data8ordfc(1,1);
     sp=data8ordfc(end,1);
-    if st==-Inf || isnan(st)
+    if abs(st)==Inf || isnan(st)
         ret=5;
         irf_log('proc','Cannot plot IB. Bad time vector.')
         return;
