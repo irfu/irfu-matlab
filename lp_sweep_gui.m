@@ -35,9 +35,9 @@ switch action,
         % s/c
         ud.sc_radius=1; % [m]
         ud.flag_use_sc=0; % 0-not use, 1- use sc
-        ud.sc_probe_refpot_as_fraction_of_scpot=0.25; % reference potential at probe
+        ud.sc.probe_refpot_as_fraction_of_scpot=0.25; % reference potential at probe
         ud.sc.number_of_probes=4;
-        ud.sc.illuminated_area=1; % illuminated cross section generating photoelectrons
+        ud.sc.sunlit_area=1; % sunlit cross section generating photoelectrons
         ud.sc.total_area=4;       % total s/c area collecting photoelectrons
         % plasma
         ud.m_amu1=1;
@@ -84,30 +84,33 @@ switch action,
         inp.Rsun_value                       = uicontrol('Parent',hp,'String',num2str(ud.R_sun),       'Position',[70  50 100 30],'style','edit','backgroundcolor','white');
         inp.UV_factor_text                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   75 60 30]);
         inp.UV_factor_value                  = uicontrol('Parent',hp,'String',num2str(ud.UV_factor),   'Position',[70  75 100 30],'style','edit','backgroundcolor','white');
-        inp.probe_radius_text                = uicontrol('Parent',hp,'String','probe radius [cm]',     'Position',[0   125 90 30]);
-        inp.probe_radius_value               = uicontrol('Parent',hp,'String',num2str(ud.probe.radius),'Position',[100 125 70 30],'style','edit','backgroundcolor','white');
-        inp.probe_length_text                = uicontrol('Parent',hp,'String','probe length [cm]',     'Position',[0   150 90 30]);
-        inp.probe_length_value               = uicontrol('Parent',hp,'String','','style','text',       'Position',[100 150 70 30],'backgroundcolor','white');
-        inp.probe_total_vs_sunlit_area_text  = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   175 90 30]);
-        inp.probe_total_vs_sunlit_area_value = uicontrol('Parent',hp,'String',num2str(ud.probe.total_vs_sunlit_area),'style','text','Position',[100 175 70 30],'backgroundcolor','white');
-        inp.probe_type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 225 150 30],'backgroundcolor','white','Callback', @setprobetype);
-        inp.probe_surface                    = uicontrol('Parent',hp,'String','probe_surface|themis|cassini',         'Position',[2 200 150 30],'style','popup','backgroundcolor','white','Callback', @setprobesurface);
+        inp.probe.radius_text                = uicontrol('Parent',hp,'String','probe radius [cm]',     'Position',[0   125 120 30]);
+        inp.probe.radius_value               = uicontrol('Parent',hp,'String',num2str(ud.probe.radius),'Position',[100 125 70 30],'style','edit','backgroundcolor','white');
+        inp.probe.length_text                = uicontrol('Parent',hp,'String','probe length [cm]',     'Position',[0   150 120 30]);
+        inp.probe.length_value               = uicontrol('Parent',hp,'String','','style','text',       'Position',[100 150 70 30],'backgroundcolor','white');
+        inp.probe.total_vs_sunlit_area_text  = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   175 120 30]);
+        inp.probe.total_vs_sunlit_area_value = uicontrol('Parent',hp,'String',num2str(ud.probe.total_vs_sunlit_area),'style','text','Position',[100 175 70 30],'backgroundcolor','white');
+        inp.probe.type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 225 150 30],'backgroundcolor','white','Callback', @setprobetype);
+        surf=lp_photocurrent;probtxt='probe surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
+        inp.probe_surface                    = uicontrol('Parent',hp,'String',probtxt,                 'Position',[2 200 150 30],'style','popup','backgroundcolor','white','Callback', @setprobesurface);
         
         %% initialize s/c menu
-        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .43 .3 .27]);
-        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0 125 120 25]);
-        inp.sc_example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0 100 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
-        inp.sc.illuminated_area_text                   = uicontrol('Parent',hsc,'String','Illuminated area [m2]',                                  'Position',[0 50 120 25]);
-        inp.sc.illuminated_area_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.illuminated_area),'style','edit',           'Position',[120 50 50 25],'backgroundcolor','white');
-        inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0 75 120 25]);
-        inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(ud.sc.total_area),'style','edit',                 'Position',[120 75 50 25],'backgroundcolor','white');
-        inp.sc_probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0 25 120 25]);
-        inp.sc_probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc_probe_refpot_as_fraction_of_scpot),         'Position',[120 25 50 25],'style','edit','backgroundcolor','white');
-        inp.sc_number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0 0 120 25]);
-        inp.sc_number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.number_of_probes),                          'Position',[120 0 50 25],'style','edit','backgroundcolor','white');
+        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .43 .3 .3]);
+        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0 150 120 25]);
+        inp.sc.example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0 120 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
+        inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0 100 120 25]);
+        inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(ud.sc.total_area),'style','edit',                 'Position',[120 100 50 25],'backgroundcolor','white');
+        inp.sc.sunlit_area_text                        = uicontrol('Parent',hsc,'String','Sunlit area [m2]',                                       'Position',[0 75 120 25]);
+        inp.sc.sunlit_area_value                       = uicontrol('Parent',hsc,'String',num2str(ud.sc.sunlit_area),'style','edit',                'Position',[120 75 50 25],'backgroundcolor','white');
+        inp.sc.antenna_guard_area_text                 = uicontrol('Parent',hsc,'String','Sunlit guard area [m2]',                                 'Position',[0 50 120 25],'Tooltipstring','Cross section area of pucks and guards, assuming similar photoelectron emission as antenna');
+        inp.sc.antenna_guard_area_value                = uicontrol('Parent',hsc,'String','0','style','edit',                                       'Position',[120 50 50 25],'backgroundcolor','white');
+        inp.sc.probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0 25 120 25],'Tooltipstring','The ratio between the probe reference potential and satellite potential');
+        inp.sc.probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc.probe_refpot_as_fraction_of_scpot),         'Position',[120 25 50 25],'style','edit','backgroundcolor','white');
+        inp.sc.number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0 0 120 25]);
+        inp.sc.number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.number_of_probes),                          'Position',[120 0 50 25],'style','edit','backgroundcolor','white');
         
         %% initialize plasma menu
-        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .7 .3 .25]);
+        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .75 .3 .25]);
         inp.n         = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 80 25]);
         inp.n_value   = uicontrol('Parent',hpl,'String',num2str(ud.n),'style','edit','Position',[80 0 90 25],'backgroundcolor','white');
         inp.T         = uicontrol('Parent',hpl,'String','T [eV]','Position',[0 25 80 25]);
@@ -131,8 +134,8 @@ switch action,
         ud.U=eval(get(inp.U_value,'string'));
         ud.UV_factor=str2double(get(inp.UV_factor_value,'string'));
         ud.R_sun=str2double(get(inp.Rsun_value,'string'));
-        ud.probe.radius=str2double(get(inp.probe_radius_value,'string'));
-        ud.probe.length=str2double(get(inp.probe_length_value,'string'));
+        ud.probe.radius=str2double(get(inp.probe.radius_value,'string'));
+        ud.probe.length=str2double(get(inp.probe.length_value,'string'));
         ud.n  =eval(['[' get(inp.n_value,'string')   ']' ]);
         ud.T  =eval(['[' get(inp.T_value,'string')   ']' ]);
         ud.m  =eval(['[' get(inp.m_value,'string')   ']' ]);
@@ -141,12 +144,13 @@ switch action,
         % if scflag read in sc parameters
         ud.flag_use_sc=get(inp.flag_sc,'Value');
         if ud.flag_use_sc,
-            ud.probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc_probe_refpot_as_fraction_of_scpot_value,'string'));
-            ud.sc.number_of_probes=str2double(get(inp.sc_number_of_probes_value,'string')); % in cm
-            ud.sc.cross_section_area=str2double(get(inp.sc.illuminated_area_value,'string'));
+            ud.probe_refpot_as_fraction_of_scpot=str2double(get(inp.sc.probe_refpot_as_fraction_of_scpot_value,'string'));
+            ud.sc.number_of_probes=str2double(get(inp.sc.number_of_probes_value,'string')); % in cm
+            ud.sc.cross_section_area=str2double(get(inp.sc.sunlit_area_value,'string'));
             ud.sc.total_area=str2double(get(inp.sc.total_area_value,'string'));
             ud.sc.type='spherical';
             ud.sc.surface='default';
+            ud.sc.antenna_guard_area=str2double(get(inp.sc.antenna_guard_area_value,'string'));
         end
         %% calculate IU curves
         Upot=ud.U(:);
@@ -159,10 +163,13 @@ switch action,
             case 'cylindrical'
                 probe.cross_section_area=2*ud.probe.radius*ud.probe.length*0.01^2;
                 probe.total_area=pi*probe.cross_section_area;
-                probe.length=str2double(get(inp.probe_length_value,'string'));
+                probe.length=str2double(get(inp.probe.length_value,'string'));
                 probe.capacitance=2*pi*Units.eps0*ud.probe.length*0.01/log(ud.probe.length/ud.probe.radius); % assuming length >> radius
             case 'arbitrary'
-                probe.type='spherical';
+                probe.cross_section_area=str2double(get(inp.probe.radius_value,'string'))*0.01^2;
+                probe.total_area=str2double(get(inp.probe.length_value,'string'))*0.01^2;
+                set(inp.probe.total_vs_sunlit_area_value,'string',num2str(probe.total_area/probe.cross_section_area));
+                probe.capacitance=4*pi*Units.eps0*sqrt(probe.total_area/4/pi); % assume sphere having the specified total area
         end
         ud.probe=probe;
         [J_probe,J_photo,J_plasma]=lp_probe_current(probe,Upot,ud.R_sun,ud.UV_factor,ud);
@@ -177,29 +184,78 @@ switch action,
         end
         % if scflag calculate probe to sc IU curve
         if ud.flag_use_sc,
-            Iprobe=min(J_probe):.01*(max(J_probe)-min(J_probe)):max(J_probe);
-            Iprobe=Iprobe(:);
-            Isat=-ud.sc.number_of_probes*Iprobe;
-            Usatsweep=interp1(J_sc,Upot,Isat); % floating potential of sc during sweep
-            % plasma current with UV factor zero
-            J_probe_plasma=lp_probe_current(probe,Upot,ud.R_sun,0.00000000,ud);
-            Uproberefsweep=ud.probe_refpot_as_fraction_of_scpot*Usatsweep; % reference potential around probe
-            Uprobe2plasma=zeros(size(Iprobe)); % initialize
+            % reduce probe curve to reasonable number of points (derivative does
+            % not change more than 10% between points
+            ind=ones(size(Upot));
+            ilast=2;
+            slopechange=0.2; % how long slope change is allowed
+            dudilast=diff(Upot(1:2))/diff(J_probe(1:2));
+            for ii=2:numel(Upot)
+%                dudi=diff(Upot([ilast ii]))/diff(J_probe([ilast ii]));
+                dudi=diff(Upot([ii-1 ii]))/diff(J_probe([ii-1 ii]));
+                if abs((dudi-dudilast)/dudilast)<slopechange && Upot(ii)-Upot(ilast)<1
+                    ind(ii)=NaN;
+                else
+                    ilast=ii;
+                    dudilast=dudi;
+                end
+            end
+            Ibias=J_probe(ind==1);
+            Ubias=Upot(ind==1);
+            
+            %
+            antena_guard_area_factor=(ud.probe.cross_section_area+ud.sc.antenna_guard_area/ud.sc.number_of_probes)/ud.probe.cross_section_area;
+            Iprobe=Ibias*antena_guard_area_factor;
+            % zero approximation
+            Isat=-ud.sc.number_of_probes*Iprobe; 
+            Usatsweep=interp1(J_sc,Upot,Isat/5); % floating potential of sc during sweep,  assuming of only 1/10 of bias current electrons esacpe to space 
+            Isat_probe_photoelectrons=Isat*0; % electrons from probes hitting spacecraft
+            Uprobe2plasma=zeros(size(Ibias)); % initialize
+            Uproberefsweep=zeros(size(Ibias)); % initialize
+            Jprobephotoreturn=zeros(size(Ibias)); % initialize
+            FitError=zeros(size(Ibias)); % initialize
+            refpotvec=Ubias(1:4:end)*ud.probe_refpot_as_fraction_of_scpot;
+            [probepotgrid,refpotgrid] = meshgrid(Ubias,refpotvec);
+            Jprobephotogrid=lp_probe_current(probe,probepotgrid-refpotgrid,ud.R_sun,ud.UV_factor,[]);
+            Jprobephotoescapingscgrid=lp_probe_current(probe,probepotgrid,ud.R_sun,ud.UV_factor,[]);
+            Jprobeplasmagrid=lp_probe_current(probe,probepotgrid,ud.R_sun,0,ud);
+            Jprobegrid=Jprobeplasmagrid+Jprobephotogrid;
+            Jprobephotoe2scgrid=Jprobephotogrid-Jprobephotoescapingscgrid;
             for ii=1:numel(Iprobe),
-                % photoelectron current with plasma current zero
-                [~,J_probe_photo]=lp_probe_current(probe,Upot-Uproberefsweep(ii),ud.R_sun,ud.UV_factor,ud);
-                J_probe=J_probe_plasma+J_probe_photo;
-                Uprobe2plasma(ii)=interp1(J_probe,Upot,Iprobe(ii));
+                % plasma current with UV factor zero
+                satpot=Usatsweep(ii);
+                uprobe=interp1(J_probe,Upot,Ibias(ii))+satpot*ud.probe_refpot_as_fraction_of_scpot;
+                ibias=Ibias(ii);
+                jj=1;
+                err=1;
+                while err > .001 && jj<10
+                    refpot=satpot*ud.probe_refpot_as_fraction_of_scpot;
+                    if isnan(refpot), break; end
+                    uprobe=interp1(interp1(refpotvec,Jprobegrid,refpot,'linear','extrap'),Ubias,ibias);
+                    if isnan(uprobe); uprobe=interp1(J_probe,Upot,Ibias(ii))+satpot*ud.probe_refpot_as_fraction_of_scpot;end
+                    J_probe_photoe2sc=interp2(probepotgrid,refpotgrid,Jprobephotoe2scgrid,uprobe,refpot);
+                    new_Isat_probe_photoelectrons=-J_probe_photoe2sc*antena_guard_area_factor*ud.sc.number_of_probes;
+                    err=abs(new_Isat_probe_photoelectrons-Isat_probe_photoelectrons(ii))/abs(new_Isat_probe_photoelectrons);
+                    if isnan(err), err=0; end
+                    Isat_probe_photoelectrons(ii)=new_Isat_probe_photoelectrons;
+                    satpot=interp1(J_sc,Upot,Isat(ii)+Isat_probe_photoelectrons(ii));
+                    jj=jj+1;
+                end
+                FitError(ii)=err;
+                Jprobephotoreturn(ii)=J_probe_photoe2sc;
+                Usatsweep(ii)=satpot;
+                Uprobe2plasma(ii)=uprobe;
+                Uproberefsweep(ii)=refpot;
             end
             
             Uprobe2sc        =Uprobe2plasma-Usatsweep;
             Uprobe2refpot    =Uprobe2plasma-Uproberefsweep;
-            dUdI_probe2plasma=gradient(Uprobe2plasma,Iprobe);
-            dUdI_probe2sc    =gradient(Uprobe2sc,Iprobe);
-            dUdI_probe2refpot=gradient(Uprobe2refpot,Iprobe);
+            dUdI_probe2plasma=gradient(Uprobe2plasma,Ibias);
+            dUdI_probe2sc    =gradient(Uprobe2sc,Ibias);
+            dUdI_probe2refpot=gradient(Uprobe2refpot,Ibias);
             dUdI             =dUdI_probe2refpot;
             Upot             =Uprobe2refpot;
-            J_probe          =Iprobe;
+            J_probe          =Ibias;
         end
         %% plot IU curve
         info_txt='';
@@ -210,13 +266,16 @@ switch action,
         ylabel(h(1),'I [\mu A]');
         if ud.flag_use_sc, % add probe potential wrt s/c and plasma
             hold(h(1),'on');
-            plot(h(1),Uprobe2plasma,Iprobe*1e6,'r','linewidth',1.5);
-            plot(h(1),Uprobe2sc,Iprobe*1e6,'b','linewidth',1.5);
-            plot(h(1),Usatsweep,Iprobe*1e6,'color',[0.5 0 0.5],'linewidth',1);
+            plot(h(1),Ubias,Ibias*1e6,'k','linewidth',0.5);
+            plot(h(1),Uprobe2plasma,Ibias*1e6,'r.','linewidth',1.5);
+            plot(h(1),Uprobe2sc,Ibias*1e6,'b','linewidth',1.5);
+            plot(h(1),Uprobe2sc,Jprobephotoreturn*1e6,'g','linewidth',1.5);
+            plot(h(1),Usatsweep,Ibias*1e6,'color',[0.5 0 0.5],'linewidth',1);
             hold(h(1),'off');
             irf_legend(h(1),'probe to plasma',[0.02 0.98],'color','r');
             irf_legend(h(1),'probe to reference',[0.02 0.88],'color','k');
-            irf_legend(h(1),'probe to s/c',[0.02 0.78],'color','b');
+            irf_legend(h(1),'probe bias',[0.02 0.78],'color','b');
+            irf_legend(h(1),'probe photo e- to s/c',[0.02 0.68],'color','g');
             irf_legend(h(1),'Satellite potential',[0.98 0.03],'color',[0.5 0 0.5]);
         else % add photoelectron and photoelectron currents
             hold(h(1),'on');
@@ -270,20 +329,27 @@ switch action,
         set(ud.ht,'string',info_txt);
         set(gcf,'userdata',ud);
 end
+disp('READY!')
 end
 
 function setprobetype(hObj,event) %#ok<INUSD>
 % Called when user activates popup menu of minvar method
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
+set(data.inp.probe.radius_text,'string','probe radius [cm]');
+set(data.inp.probe.length_text,'string','probe length [cm]');
 if val ==1
     data.probe.type='spherical';
-    set(data.inp.probe_length_value,'style','text','string','');
+    set(data.inp.probe.length_value,'style','text','string','');
 elseif val == 2
-    data.probe_type='cylindrical';
-    set(data.inp.probe_length_value,'style','edit','string',num2str(data.probe.length));
+    data.probe.type='cylindrical';
+    set(data.inp.probe.length_value,'style','edit','string',num2str(data.probe.length));
 elseif val == 3
-    data.probe.type='spherical';
+    set(data.inp.probe.radius_text,'string','Sunlit area [cm2]');
+    set(data.inp.probe.length_text,'string','Total area [cm2]');
+    set(data.inp.probe.length_value,'string','1','style','edit');
+    set(data.inp.probe.radius_value,'string','.2','style','edit');
+    data.probe.type='arbitrary';
 end
 set(gcf,'userdata',data);
 end
@@ -291,12 +357,11 @@ function setprobesurface(hObj,event) %#ok<INUSD>
 % Called when user activates popup menu of minvar method
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
+surf=lp_photocurrent; % get all possbile surfaces
 if val ==1
-    data.probe.surface='themis';
-elseif val == 2
-    data.probe.surface='themis';
-elseif val == 3
-    data.probe.surface='cassini';
+    data.probe.surface=surf{1};
+else
+    data.probe.surface=surf{val-1};
 end
 set(gcf,'userdata',data);
 end
@@ -307,66 +372,70 @@ data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
 elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     data.probe.type='spherical';
-    set(data.inp.probe_type,'Value',1);
+    set(data.inp.probe.type,'Value',1);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
-    set(data.inp.probe_length_value,'style','text','string','');
-    set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc.illuminated_area_value,'string','3.87');
+    set(data.inp.probe.length_value,'style','text','string','');
+    set(data.inp.probe.radius_value,'string','4');
+    set(data.inp.sc.sunlit_area_value,'string','3.87');
+    set(data.inp.sc.antenna_guard_area_value,'string','0.039');
     set(data.inp.sc.total_area_value,'string','25.66');
-    set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.sc_number_of_probes_value,'string','4');
+    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
+    set(data.inp.sc.number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
-    set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
-    data.probe_total_vs_sunlit_area=4;
+    set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
+    data.probe.total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
 elseif val == 3 % Solar Orbiter with solar panel back side
     data.probe.type='cylindrical';
-    set(data.inp.probe_type,'Value',2);
+    set(data.inp.probe.type,'Value',2);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
-    set(data.inp.probe_radius_value,'string','0.575');
-    set(data.inp.probe_length_value,'style','edit','string','500');
-    set(data.inp.sc.illuminated_area_value,'string','5.95');
+    set(data.inp.probe.radius_value,'string','0.575');
+    set(data.inp.probe.length_value,'style','edit','string','500');
+    set(data.inp.sc.sunlit_area_value,'string','5.95');
+    set(data.inp.sc.antenna_guard_area_value,'string','0.0');
     set(data.inp.sc.total_area_value,'string','28.11');
-    set(data.inp.probe_total_vs_sunlit_area_value,'string',num2str(pi,4));
-    set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.sc_number_of_probes_value,'string','3');
-    data.probe_total_vs_sunlit_area=pi;
+    set(data.inp.probe.total_vs_sunlit_area_value,'string',num2str(pi,4));
+    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
+    set(data.inp.sc.number_of_probes_value,'string','3');
+    data.probe.total_vs_sunlit_area=pi;
     set(data.inp.Rsun_value,'string','0.28');
     set(data.inp.n_value,'string','100');
     set(data.inp.T_value,'string','20 40');
 elseif val == 4 % THEMIS
     data.probe.type='spherical';
-    set(data.inp.probe_type,'Value',1);
+    set(data.inp.probe.type,'Value',1);
     data.probe.surface='themis';
     set(data.inp.probe_surface,'Value',2);
-    set(data.inp.probe_length_value,'style','text','string','');
-    set(data.inp.probe_radius_value,'string','4');
-    set(data.inp.sc.illuminated_area_value,'string','0.71');
+    set(data.inp.probe.length_value,'style','text','string','');
+    set(data.inp.probe.radius_value,'string','4');
+    set(data.inp.sc.sunlit_area_value,'string','0.71');
+    set(data.inp.sc.antenna_guard_area_value,'string','0.0085');
     set(data.inp.sc.total_area_value,'string','4.2');
-    set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.sc_number_of_probes_value,'string','4');
+    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
+    set(data.inp.sc.number_of_probes_value,'string','4');
     set(data.inp.Rsun_value,'string','1');
-    set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
-    data.probe_total_vs_sunlit_area=4;
+    set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
+    data.probe.total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
 elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 mm) (efficient radius 56.5 taking into account stub)
     % sc - >6.7 metres high and >4 metres wide
     data.probe.type='spherical';
-    set(data.inp.probe_type,'Value',1);
+    set(data.inp.probe.type,'Value',1);
     data.probe.surface='cassini';
     set(data.inp.probe_surface,'Value',3);
-    set(data.inp.probe_length_value,'style','text','string','');
-    set(data.inp.probe_radius_value,'string','2.5');
-    set(data.inp.sc.illuminated_area_value,'string','27');
+    set(data.inp.probe.length_value,'style','text','string','');
+    set(data.inp.probe.radius_value,'string','2.5');
+    set(data.inp.sc.sunlit_area_value,'string','27');
+    set(data.inp.sc.antenna_guard_area_value,'string','0.0');
     set(data.inp.sc.total_area_value,'string','140');
-    set(data.inp.sc_probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.sc_number_of_probes_value,'string','1');
+    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
+    set(data.inp.sc.number_of_probes_value,'string','1');
     set(data.inp.Rsun_value,'string','9.5');
-    set(data.inp.probe_total_vs_sunlit_area_value,'string','4');
+    set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
     data.probe.total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','0.1');
     set(data.inp.T_value,'string','1 1');
