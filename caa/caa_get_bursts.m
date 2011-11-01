@@ -74,6 +74,7 @@ else
     dirs = caa_get_subdirs(st, 90, cl_id);
     if isempty(dirs)
         irf_log('proc',['Can not find L1 data dir for ' s]);
+        ret=1;
         return;
     end
     found=false;
@@ -123,7 +124,13 @@ for out = 1:varsbsize;
         end
         data8(:,1)=t;   % corrected time
     end
-    data8(:,out+1)=data;
+    if isempty(data)
+            irf_log('proc',['Bad burst data column: ' num2str(out)]);
+            ret=4;
+            return;
+    else
+        data8(:,out+1)=data;
+    end
 end
 clear data
         
