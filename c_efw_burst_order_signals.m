@@ -24,8 +24,8 @@ if isempty(bpha)
 end
     
 nmdata = irf_tlim(nmdata,data8(1,1),data8(end,1));
-if isempty(nmdata)
-    irf_log('proc','Cannot check burst order: no reference NM data')
+if size(nmdata,1)<2 
+    irf_log('proc','Cannot check burst order: no/short reference NM data')
     return
 end
 nmpha=c_phase(nmdata(:,1),pha);
