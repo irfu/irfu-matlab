@@ -372,7 +372,7 @@ for dd = 1:length(dirs)
          mfn='./mEFWburstTM.mat'; % For tm
          if exist(mfn,'file')
            r=load(mfn);
-           di=eval(irf_ssub('r.ib?_info',cl_id))
+           di=eval(irf_ssub('r.ib?_info',cl_id));
            data=eval(irf_ssub('r.iburst?',cl_id));
            ok=1;
          else
@@ -599,12 +599,14 @@ for dd = 1:length(dirs)
    end
    d_info = []; ok = 0;
    try
-   	[ok, d_info] = c_load([vs '_info'],'var');
+      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs(end), 'B')
+        [ok, d_info] = c_load([vs '_info'],'var');
+      else
+   	    d_info = []; ok = 0;
+      end
    %   [d_info, ok] = caa_get(st, dt, cl_id, [vs '_info'], 'load_args', 'var');
    catch
-      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs(end), 'B')
-        irf_log('load', ['No ' vs '_info']);
-      end
+      irf_log('load', ['No ' vs '_info']);
    	  d_info = []; ok = 0;
    end
 
@@ -1058,18 +1060,18 @@ buf = sprintf('%s%s',buf,'!                       Data                          
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'DATA_UNTIL = "END_OF_DATA"\n');
 
-[fid,msg] = fopen([file_name ext_s],'w');
-if fid < 0
-	irf_log('save',['problem opening CEF file: ' msg])
-	status = 1;
-	return
-end
-
-sta = fprintf(fid,buf);
-fclose(fid);
-if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
-
 if ~isempty(data)
+    [fid,msg] = fopen([file_name ext_s],'w');
+    if fid < 0
+        irf_log('save',['problem opening CEF file: ' msg])
+        status = 1;
+        return
+    end
+
+    sta = fprintf(fid,buf);
+    fclose(fid);
+    if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
+
 	n_col = size(data,2) -1; % number of data columns - time
 	for j=1:n_col
 		ii = find(abs(data(:,j+1)) > 1e8);
@@ -1103,8 +1105,8 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
-elseif strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
-   irf_log('proc','Will not export empty internal burst PB, EB or BB files')
+elseif strcmp(caa_vs, 'IB') || strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
+   irf_log('proc','Will not export empty internal burst IB, PB, EB or BB files')
 else
    disp(['Filename : ' file_name ext_s ' (Empty)' ]);
    [fid,msg] = fopen([file_name ext_s],'a');
