@@ -28,7 +28,7 @@ function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun ,flag)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 error(nargchk(0,4,nargin))
 
-surface_materials={'default','cluster','themis','cassini','aluminium','gold','graphite','solar cells','1eV'};
+surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV'};
 if nargin==0 && nargout ==0, 
     for ii=1:numel(surface_materials)
         surf=surface_materials{ii};
@@ -47,7 +47,7 @@ if nargin==3, flag='default';end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 switch lower(flag)
-    case {'default','cluster'}
+    case 'default'
         % The Photo-current emitted depends on if the potential of the body is
         % positive or negative.
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,11 +81,22 @@ switch lower(flag)
         j0=lp_photocurrent(1,0,1,'themis');
         scale_factor=25e-6/j0;
         j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
+    case 'cluster'        
+        % Cluster is like aquadag but closer to alluminium, we take 25 uA/m2 at 1AU
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=25e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
 
     case 'aluminium'        
+        %aluminium is 30 uA/m2 at 1AU (roughly from Erik Winkler exjobb)
+        j0=lp_photocurrent(1,0,1,'themis');
+        scale_factor=30e-6/j0;
+        j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
+        
+    case 'aquadag'        
         %aluminium is 40 uA/m2 at 1AU, we scale THEMIS 
         j0=lp_photocurrent(1,0,1,'themis');
-        scale_factor=40e-6/j0;
+        scale_factor=18e-6/j0;
         j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
         
     case 'gold'        
