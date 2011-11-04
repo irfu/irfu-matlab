@@ -156,6 +156,7 @@ switch action,
             ud.sc.number_of_probes=str2double(get(inp.sc.number_of_probes_value,'string')); % in cm
             ud.sc.cross_section_area=str2double(get(inp.sc.sunlit_area_value,'string'));
             ud.sc.total_area=str2double(get(inp.sc.total_area_value,'string'));
+            ud.sc.capacitance=4*pi*Units.eps0*sqrt(ud.sc.total_area/4/pi); % assume sphere having the specified total area
             ud.sc.type='spherical';
             surf=lp_photocurrent;
             ud.sc.surface=surf{max(1,get(inp.sc.surface,'Value')-1)}; %
@@ -201,7 +202,7 @@ switch action,
             slopechange=0.2; % how long slope change is allowed
             dudi=gradient(Upot,J_probe);
             for ii=2:numel(Upot)
-                if abs((dudi(ii)-dudi(ilast))/dudi(ilast))<slopechange && Upot(ii)-Upot(ilast)<1
+                if abs((dudi(ii)-dudi(ilast))/dudi(ilast))<slopechange && Upot(ii)-Upot(ilast)<.4
                     ind(ii)=NaN;
                 else % keep previous point as last
                     ind(ii-1)=1;
@@ -216,7 +217,7 @@ switch action,
             Iprobe=Ibias*antena_guard_area_factor;
             % zero approximation
             Isat=ud.sc.number_of_probes*Iprobe; 
-            Usatsweep=interp1(J_sc,Upot,Isat/5); % floating potential of sc during sweep,  assuming of only 1/10 of bias current electrons esacpe to space 
+            Usatsweep=interp1(J_sc,Upot,Isat/5,'nearest'); % floating potential of sc during sweep, assuming of only 1/5 of bias current electrons esacpe to space 
             Isat_probe_photoelectrons=Isat*0; % electrons from probes hitting spacecraft
             Uprobe2plasma=zeros(size(Ibias)); % initialize
             Uproberefsweep=zeros(size(Ibias)); % initialize
@@ -352,8 +353,8 @@ switch action,
         if min(J_probe)<0 && max(J_probe)>0, % display information on Ufloat
             Ufloat=interp1(J_probe,Upot,0); % floating potential
             ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
-            info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm'];
-            disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm']);
+            info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF'];
+            disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF']);
         end
         if flag_add_bias_point_values, 
             Ubias=interp1(J_probe,Upot,-ud.probe.bias_current); % floating potential
@@ -363,21 +364,33 @@ switch action,
             disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
             info_txt=[info_txt '\newline Probe: (without s/c) Ubias=' num2str(Ubias,3)  ', Rbias=' num2str(Rbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
             if ud.flag_use_sc,
+                Uscbias=interp1(J_probe,Usatsweep,-ud.probe.bias_current); % floating potential
+                ii=isfinite(Upot);
+                Rscbias=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscbias);
+                fcr=1/2/pi/Rscbias/ud.sc.capacitance;
+                disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
+                info_txt=[info_txt '\newline Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
                 Usp=-interp1(Ibias,Uprobe2sc,-ud.probe.bias_current); % floating potential
                 disp(['Spacecraft to Probe: Usp=' num2str(Usp,3) 'V.']);
                 info_txt=[info_txt '\newline Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
             end
         end
-        if  ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
+        if ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
             Uscfloat=interp1(ud.I_sc,ud.U_sc,0); % floating potential
             ii=isfinite(ud.U_sc);Rscfloat=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscfloat);
-            info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm'];
-            disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm']);
+            info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF'];
+            disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF']);
         end
         if ud.UV_factor>0,  % display photoelectron saturation current
             info_txt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp_photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
             if ud.R_sun~=1,
                 info_txt=[info_txt '  (' num2str(ud.UV_factor*lp_photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
+            end
+            if ud.flag_use_sc,
+                info_txt=[info_txt '\newline Spacecraft: photo e- Io = ' num2str(ud.UV_factor*lp_photocurrent(1,-1,ud.R_sun,ud.sc.surface)*1e6,3) '[\mu A/m^2]'];
+                if ud.R_sun~=1,
+                    info_txt=[info_txt '  (' num2str(ud.UV_factor*lp_photocurrent(1,-1,1,ud.sc.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
+                end
             end
         end
         
