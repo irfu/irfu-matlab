@@ -28,7 +28,7 @@ function [j_photo] = lp_photocurrent( X_area, U_pot, R_sun ,flag)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 error(nargchk(0,4,nargin))
 
-surface_materials={'default','cluster','themis','cassini','aluminium','gold','graphite','solar cells'};
+surface_materials={'default','cluster','themis','cassini','aluminium','gold','graphite','solar cells','1eV'};
 if nargin==0 && nargout ==0, 
     for ii=1:numel(surface_materials)
         surf=surface_materials{ii};
@@ -57,6 +57,13 @@ switch lower(flag)
         j_photo(U_pot >= 0) = (X_area/R_sun^2) .* ...
             ( 5.0e-5 .* exp( - U_pot(U_pot>=0) ./ 2.74 ) ...
             + 1.2e-5 .* exp( - (U_pot(U_pot>=0) + 10.0) ./ 14.427 ) );
+        
+    case '1ev'
+
+        j_photo = zeros(size(U_pot)); % initialize
+        j_photo(:) = 5.0e-5*X_area/R_sun^2; % initialize to current valid for negative potentials
+        j_photo(U_pot >= 0) = (X_area/R_sun^2) .* ...
+            ( 5.0e-5 .* exp( - U_pot(U_pot>=0) ./ 1.0 ) );
         
     case 'themis'
         U_ref  =        [.1 1   5  10  50];
@@ -93,7 +100,7 @@ switch lower(flag)
         scale_factor=7.2e-6/j0;
         j_photo=scale_factor*lp_photocurrent(X_area,U_pot,R_sun,'themis');
         
-    case 'solar cells'        
+    case {'solar cells','solar cell'}        
         %graphite is 20 uA/m2 at 1AU, we scale THEMIS 
         j0=lp_photocurrent(1,0,1,'themis');
         scale_factor=20e-6/j0;
