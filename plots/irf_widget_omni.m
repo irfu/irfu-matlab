@@ -6,7 +6,7 @@ function hout=irf_widget_omni(varargin)
 %
 % uses OMNI data base to obtain the data
 % if interval larger than 1day uses hourly database
-
+irf_units;
 %% Check input
 if nargin==0, % initialize
   action='initialize';
@@ -45,7 +45,7 @@ end
 %% Check actions
 switch lower(action)
   case 'initialize' % read in all data and open figure
-    initialize_figure(5); % default 5 subplots
+    initialize_figure(6); % default 5 subplots
     data=get(gcf,'userdata');
     if ~isfield(data,'t')
       if evalin('caller','exist(''tint'')'),
@@ -120,14 +120,22 @@ switch lower(action)
     ylabel(hca,'density [cc]');
     
     %%%%%%%%%%%%
-    % Pressure
+    % Proton temperature
     hca=h(4);
+    Tp=ff(:,[1 6]);
+    Tp(:,2)=Tp(:,2)*Units.kB/Units.e;
+    irf_plot(hca,Tp);
+    ylabel(hca,'T proton [eV]');
+    
+    %%%%%%%%%%%%
+    % Pressure
+    hca=h(5);
     irf_plot(hca,ff(:,[1 9]));
     ylabel(hca,'pressure [nPa]');
     
     %%%%%%%%%%%%
     % A indices
-    hca=h(5);
+    hca=h(6);
     irf_plot(hca,ff(:,[1 12 13 14]));
     ylabel(hca,'AE,AL,AU [nT]');
     irf_legend(hca,{'AE','AL','AU'},[0.02 0.05]);
