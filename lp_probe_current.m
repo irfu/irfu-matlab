@@ -1,6 +1,6 @@
 function [J_probe, J_photo, J_plasma]=lp_probe_current(probe,U_probe,R_sun,UV_factor,plasma)
 % LP_PROBE_CURRENT calculate current to the probe
-% J_probe=LP_PROBE_CURRENT(probe_type, XA,Ap,U_probe,R_sun,UV_factor,plasma)
+% J_probe=LP_PROBE_CURRENT(probe,U_probe,R_sun,UV_factor,plasma)
 %
 %   Calculates the total probe current to/from 
 %   a cylindrical or spherical Langmuir probe.
