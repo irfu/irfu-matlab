@@ -25,6 +25,7 @@ function e = c_efw_despin(es,phase,coef,options)
 %        'staff' or 'wec' despin from WEC
 %        'sat'      despin from SR
 %        'asym'     despin asymmetric probe configuration
+%        'interf'   despin p14/p24 data
 %
 % !Phase is calculated as a linear fit to the data, to make it fast and simple
 % In some case with many and large data gaps this can fail.
@@ -49,8 +50,13 @@ if size(es,2)==3, % if input is [t p12 p34] convert to [t 0 p34 p12]
   es=es(:,[1 3 3 2]);es(:,2)=0;
 end
 use_asym = 0;
+use_interf = 0;
 if nargin == 4
-	if strcmp(options,'asym'), use_asym = 1; end
+    if strcmp(options,'asym'), use_asym = 1;
+    elseif strcmp(options,'interf'), 
+        use_interf = 1;
+        ref_frame='wec';
+    end
 end
 		
 if nargin >= 3,
@@ -96,6 +102,10 @@ if nargin >= 3,
   elseif strcmp(coef,'staff'),
     ref_frame='wec';
     coef=[[1 0 0];[1 0 0]];
+  elseif strcmp(coef,'interf'),
+      use_interf = 1;
+      ref_frame='wec';
+      coef=[[1 0 0];[1 0 0]];
   end
 end
 
@@ -121,14 +131,19 @@ if numel(phase) < 3
 end
 
 switch ref_frame
-case 'wec'
-  phi_12=3*pi/4;
-  phi_32=pi/2;
-  phi_34=pi/4; % angles when phase =0
-  p12=es(:,4);p34=es(:,3);
+case 'wec' 
+    if use_interf
+        phi_12 = pi/2;   % p14
+        phi_34 = 0; % p24
+    else
+        phi_12=3*pi/4;
+        phi_32=pi/2;
+        phi_34=pi/4; % angles when phase =0
+    end
+    p12=es(:,4);p34=es(:,3);
 case 'sat'
-  phi_12=pi/2;phi_34=0; % angles when phase =0
-  p12=es(:,3);p34=es(:,2);
+    phi_12=pi/2;phi_34=0; % angles when phase =0
+    p12=es(:,3);p34=es(:,2);
 end
 
 %contPhase=unwrap(double(real(phaseVal))/180*pi);
