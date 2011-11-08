@@ -118,9 +118,15 @@ for out = 1:varsbsize;
             irf_log('dsrc','burst start time was not corrected')
         else
             err_t = t(1) - start_satt;
-            irf_log('dsrc',['burst start time was corrected by ' ...
-                num2str(err_t) ' sec'])
-            t = t - err_t;
+            if abs(err_t) > 5
+                irf_log('dsrc',['burst start offset ' ...
+                    num2str(err_t) ' sec is too big!'])
+                irf_log('dsrc','burst start time was not corrected')
+            else
+                irf_log('dsrc',['burst start time was corrected by ' ...
+                    num2str(err_t) ' sec'])
+                t = t - err_t;
+            end
         end
         data8(:,1)=t;   % corrected time
     end
@@ -224,7 +230,7 @@ BSCcnt=0;
 for i=1:varsbsize
     if varsb{i}(1)=='B' % BP data
         % BP12 factor is unkrown. These data do not have an easy physical
-        % meaning.
+        % meaning. typically used as a place holder.
         %data8ordfc(:,i+1)=data8ordfc(:,i+1)*BPFACTOR;
     elseif varsb{i}(1)=='S' % SC data       
         xyzord=double(varsb{i}(3))-87; % X=1
@@ -234,8 +240,16 @@ for i=1:varsbsize
         BSCcnt=BSCcnt+1;
     elseif varsb{i}(1)=='V'
         if length(varsb{i})>3 % Differential signals are special
-            data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
-            data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),'BP');
+            probe = str2double(varsb{i}(2:3));
+            if probe==12 || probe==43
+                data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212/0.088; % Convert to mV/m
+            else
+                % XXX: do we ever have asymmetric, e.g. p23 ?
+                error('Strange probe confuguration. Update the code!!')
+            end
+            filter = varsb{i}(end);
+            if filter=='H', filter = 'BP'; end% It is a special case
+            data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),filter);
         else
             data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212;
             data8ordfc(:,[1 i+1]) = c_efw_invert_tf(data8ordfc(:,[1 i+1]),...
@@ -257,7 +271,7 @@ if BSCcnt % BSC
     clear BSCtemp
 end
 
-for i=1:varsbsize % Single ended
+for i=1:varsbsize
     if varsb{i}~='V'
         continue
     end
@@ -313,8 +327,11 @@ for i=1:varsbsize % Single ended
     end
     %%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
     
-    data=data8ordfc(:,[1 i+1]); %#ok<NASGU>
+    data=data8ordfc(:,[1 i+1]);  
     if length(probe)>1
+        % Invert the sign to match the HX data
+        data(:,2) = -data(:,2); %#ok<NASGU>
+        if strcmp(probe,'43'), probe = '34'; end
         eval(irf_ssub(['wE?!p$=data;' 'save_list=[save_list ''wE?!p$ ''];'],filter,cl_id,probe));
     else
         eval(irf_ssub(['P?!p$=data;' 'save_list=[save_list ''P?!p$ ''];'],filter,cl_id,probe));

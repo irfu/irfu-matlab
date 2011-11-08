@@ -254,29 +254,29 @@ elseif any(regexp(vs,'^w(b|c)?E[1-4]p(12|32|34)$'))
 	v.ent = {'Electric_Field'};
 	v.prop = {'Component'};
 	v.fluc = {'Waveform'};
-	if vs(2)=='E'
-		v.cl_id = vs(3);
-		v.file = 'mER';
-		v.com = '';
-		v.lev = 0;
-		v.quant = 'e';
-	elseif vs(2)=='c'
-		v.cl_id = vs(4);
-		v.file = 'mERC';
-		v.com = 'This data is not original raw data. It has been cleaned.';
-		v.lev = 1;
-		v.quant = 'ec';
-	else
-		v.cl_id = vs(4);
-		v.file = 'mEFWburstR';
-		v.com = 'This data is from EFW internal burst.';
-		v.lev = 0;
-		v.quant = 'e';
+    if vs(2)=='E'
+        v.cl_id = vs(3);
+        v.file = 'mER';
+        v.com = '';
+        v.lev = 0;
+        v.quant = 'e';
+    elseif vs(2)=='c'
+        v.cl_id = vs(4);
+        v.file = 'mERC';
+        v.com = 'This data is not original raw data. It has been cleaned.';
+        v.lev = 1;
+        v.quant = 'ec';
+    else
+        v.cl_id = vs(4);
+        v.file = 'mEFWburstR';
+        v.com = 'This data is from EFW internal burst.';
+        v.lev = 0;
+        v.quant = 'e';
     end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Raw and corrected E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif any(regexp(vs,'^wE8kHz[1-4]p(12|43)$'))
+elseif any(regexp(vs,'^wE8kHz[1-4]p(12|34)$'))
 	v.data = 1;
 	v.inst = 'EFW';
 	v.frame = 'na';
