@@ -106,13 +106,6 @@ end
 
 if mode
 	[ts3_d,t4s_d,ts3_dd,t4s_dd] = irf_corr_deriv(ps3f,p4sf,flag_corr_deriv);
-	%{ 
-	vi_d_s3_4s = [ts3_d (t4s_d-ts3_d)/dist];
-	vi_dd_s3_4s = [ts3_dd (t4s_dd-ts3_dd)/dist];
-	vi_s3_4s = sortrows([vi_d_s3_4s;vi_dd_s3_4s]);
-	ii = find(diff(vi_s3_4s(:,1))==0); %Remove repeating points
-	vi_s3_4s(ii,:) = [];
-	 %}
 	vi_d_4s_s3 = [ts3_d (ts3_d-t4s_d)/dist];
 	vi_dd_4s_s3 = [ts3_dd (ts3_dd-t4s_dd)/dist];
 	vi_4s_s3 = sortrows([vi_d_4s_s3;vi_dd_4s_s3]);
@@ -125,11 +118,6 @@ if mode
 	vi_s2_1s = sortrows([vi_d_s2_1s;vi_dd_s2_1s]);
 	ii = find(diff(vi_s2_1s(:,1))==0); %Remove repeating points
 	vi_s2_1s(ii,:) = [];
-	
-	%{ 
-	[t1,t2,i1,i2] = irf_find_closest(vi_s3_4s(:,1),vi_s2_1s(:,1));
-	vi23 = [vi_s3_4s(i1,1) vi_s3_4s(i1,2) vi_s2_1s(i2,2) 0*t1];
-	 %}
 	
 	[t1,t2,i1,i2] = irf_find_closest(vi_4s_s3(:,1),vi_s2_1s(:,1));
 	vi23 = [vi_4s_s3(i1,1) vi_s2_1s(i2,2) vi_4s_s3(i1,2)];
@@ -154,11 +142,11 @@ else
 	ii = find(diff(vi_42_13(:,1))==0); %Remove repeating points
 	vi_42_13(ii,:) = [];
 	[t1,t2,i1,i2]=irf_find_closest(vi_23_41(:,1),vi_42_13(:,1));
-	vi23=[vi_23_41(i1,1) vi_23_41(i1,2) vi_42_13(i2,2) 0*t1];
+	vi23=[vi_23_41(i1,1) vi_42_13(i2,2) -vi_23_41(i1,2)];
 	
-	k=[vi23(:,1) ff_ref*irf_abs(vi23,1)];
+	k=[vi23(:,1) ff_ref*irf_abs([vi23 vi23(:,1)*0],1)];
 	
-	vphiDS=c_despin_new(vi23,A,'23');
+    vphiDS=c_efw_despin(vi23,A,'interf');
 	vphiDS(:,3) = -vphiDS(:,3); % convert to DSI
 end
 
