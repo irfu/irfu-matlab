@@ -63,14 +63,6 @@ if flag_local
         return;
     end 
 else
-    %Remove old files
-    fn={'mEFWburstTM.mat' 'mEFWburstR.mat' 'mEFWburst.mat'};
-    for i=1:size(fn,2)
-        if exist(fn{i},'file')
-            delete(fn{i});
-        end
-    end
-
     dirs = caa_get_subdirs(st, 90, cl_id);
     if isempty(dirs)
         irf_log('proc',['Can not find L1 data dir for ' s]);
@@ -97,6 +89,31 @@ end
 
 varsb = c_efw_burst_param([DP '/burst/' filename]);
 varsbsize = length(varsb);
+
+if 0    % Exit if no V43M/H or V12H parameter
+found=false;
+for i=1:varsbsize
+    if strcmp(varsb(i),'V43M') || strcmp(varsb(i),'V43H') || strcmp(varsb(i),'V12H')
+        found=true;
+        break;
+    end
+end
+if ~found
+    irf_log('proc','iburst special no V43M/H or V12H continue');
+    ret=2;
+    return;  
+end
+end
+
+if ~flag_local
+    %Remove old files
+    fn={'mEFWburstTM.mat' 'mEFWburstR.mat' 'mEFWburst.mat'};
+    for i=1:size(fn,2)
+        if exist(fn{i},'file')
+            delete(fn{i});
+        end
+    end
+end
 
 for out = 1:varsbsize;
     [field,sen,filter] = get_ib_props(varsb{out});
