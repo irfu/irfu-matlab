@@ -1060,7 +1060,7 @@ buf = sprintf('%s%s',buf,'!                       Data                          
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'DATA_UNTIL = "END_OF_DATA"\n');
 
-if ~isempty(data)
+if ~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~strcmp(caa_vs, 'BB')
     [fid,msg] = fopen([file_name ext_s],'w');
     if fid < 0
         irf_log('save',['problem opening CEF file: ' msg])
@@ -1071,7 +1071,8 @@ if ~isempty(data)
     sta = fprintf(fid,buf);
     fclose(fid);
     if sta<=0, irf_log('save','problem writing CEF header'), status = 1; return, end
-
+end
+if ~isempty(data)
 	n_col = size(data,2) -1; % number of data columns - time
 	for j=1:n_col
 		ii = find(abs(data(:,j+1)) > 1e8);
