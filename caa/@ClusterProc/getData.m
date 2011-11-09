@@ -2279,13 +2279,16 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
         if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
         e_sf = c_efw_fsample(E_tmp,'hx');
     else
-        var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12'};
+        var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12','diEs?p32'};
         [ok,E_tmp] = c_load(var_e{1},cl_id);
         if ~ok
             [ok,E_tmp] = c_load(var_e{2},cl_id);
             if ~ok
-                irf_log('load',sprintf('Canot load diEs%d(p12|p34). Please load it.',cl_id))
-                data = []; cd(old_pwd); return
+                [ok,E_tmp] = c_load(var_e{3},cl_id);
+                if ~ok
+                    irf_log('load',sprintf('Canot load diEs%d(p12|p32|p34). Please load it.',cl_id))
+                    data = []; cd(old_pwd); return
+                end
             end
         end
         e_sf = .25;
