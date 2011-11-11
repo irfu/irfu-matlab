@@ -198,6 +198,7 @@ Units.nA = 1e-9*Units.A;
 
 %----magnetic field -----
 Units.T = 1;
+Units.nT = 1e-9*Units.T;
 Units.gauss = 1e-4*Units.T;
 
 
@@ -206,7 +207,7 @@ Units.gauss = 1e-4*Units.T;
 Units.g = 9.80665*Units.m/Units.s^2;
 Units.kB = 1.38e-23*Units.J/Units.K;                        % Boltzman constant
 Units.sigma_SB = 5.670e-8 * Units.W/(Units.m^2 * Units.K^4);
-Units.h = 6.626e-34 * Units.J*Units.s;
+Units.h = 6.62607e-34 * Units.J*Units.s;
 Units.hbar = Units.h/(2*pi);
 Units.mu_B = 9.274e-24 * Units.J/Units.T;
 Units.mu_N = 5.0507866e-27 * Units.J/Units.T;
