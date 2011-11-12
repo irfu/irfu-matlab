@@ -1,7 +1,7 @@
 function y = c_coord_trans(from,to,x,varargin)
-%C_CS_TRANS  coordinate transform between GSE/DSC/DSI/ISR2 for Cluster
+%C_COORD_TRANS  coordinate transform between GSE/DSC/DSI/ISR2 for Cluster
 %
-% OUT = C_CS_TRANS(FROM_CS,TO_CS,INP,[ARGS])
+% OUT = C_COORD_TRANS(FROM_CS,TO_CS,INP,[ARGS])
 %
 % Transform INP from FROM_CS to TO_CS.
 %
