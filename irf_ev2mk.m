@@ -10,6 +10,13 @@ function res = irf_ev2mk(T_eV,dir)
 %
 % $Id$
 
+
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp(' Will be removed')
+disp(' Use irf_convert')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
+
 factor = 1.1604*1e-2;
 if ~( nargin==1 || dir ~= -1)
 	factor = 1/factor;

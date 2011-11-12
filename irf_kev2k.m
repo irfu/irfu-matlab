@@ -10,6 +10,11 @@ function res = irf_kev2k(T_eV,dir)
 %
 % $Id$
 
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp(' Will be removed')
+disp(' Use irf_convert')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
 if nargin==1, dir = 1; end
 
 factor = 1.16*1e7;
