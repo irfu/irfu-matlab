@@ -31,12 +31,20 @@ switch flag
         out=Units.h*Units.c/Units.e*1e9./in;
     case 'eV2K'
         out=Units.e/Units.kB.*in;
+    case 'keV2K'
+        out=Units.e*1e3/Units.kB.*in;
     case 'eV2MK'
         out=Units.e/Units.kB*1e-6.*in;
+    case 'keV2MK'
+        out=Units.e*1e3/Units.kB*1e-6.*in;
     case 'K2eV'
         out=Units.kB/Units.e.*in;
+    case 'K2keV'
+        out=Units.kB*1e-3/Units.e.*in;
     case 'MK2eV'
         out=Units.kB*1e6/Units.e.*in;
+    case 'MK2keV'
+        out=Units.kB*1e3/Units.e.*in;
     otherwise
         disp(['!!! irf_convert: unknown flag ''' lower(flag) ''', not converting.'])
         disp('CONSIDER ADDING THIS CONVERSION;)!');
