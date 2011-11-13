@@ -194,6 +194,13 @@ switch lower(flag)
         t2iso=irf_time(t_in(:,2),'epoch2iso');
         t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 
+    case 'iso2tint'
+        % assume column array where each row is interval in iso format
+        ii=strfind(t_in(1,:),'/');
+        t1=irf_time(t_in(:,1:ii-1),'iso2epoch');
+        t2=irf_time(t_in(ii+1:end),'iso2epoch');
+        t_out=[t1 t2];
+
     case 'tint2isoshort'
         t1iso=irf_time(t_in(:,1),'epoch2isoshort');
         t2iso=irf_time(t_in(:,2),'epoch2isoshort');
