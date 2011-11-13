@@ -32,7 +32,7 @@ if nargin==0, % default time (with time can make smarter solution)
     if evalin('caller','exist(''tint'')'),
         time=irf_time(evalin('caller','tint(1)'),'vector');
     elseif exist('CAA','dir')
-        [~,~,R]=c_caa_var_get('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M');
+        R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
         if numel(R)==0,
             time=[2010 12 31 01 01 01];
         else
@@ -96,7 +96,7 @@ switch lower(action)
         end
         if ~is_R_ok,     % try reading from CAA files
             irf_log('dsrc','Trying to read CAA files...')
-            c_eval('[~,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');',sc_list);
+            c_eval('R?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
         end
         if ~is_R_ok,  % try reading from isdat server
             irf_log('dsrc','Trying to obtain satellite position from isdat server...')
