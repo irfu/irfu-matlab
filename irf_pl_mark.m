@@ -12,7 +12,9 @@ function [outhandle colr]=irf_pl_mark(varargin)
 %
 %   [H,COLOR]=IRF_PL_MARK(...) returns handle to patch or line and the color table
 %
-% tlim - time interval or array of intervals to mark, or column vector of time instants
+% tlim - time interval or array of intervals to mark
+%        or time intervals as string (ISO 8601 time interval 1. format)
+%        or column vector of time instants to draw lines
 % color - string, rgb 1x3, nx3, or 1xnx3 specifying color(s);
 %         if omitted colors are chosen randomly.
 %
@@ -45,6 +47,9 @@ end
 
 tlim=args{1};
 % if mark time instants instead of time intervals (only one time given)
+if ischar(tlim), % time interval specified in iso format
+    tlim=irf_time(tlim, 'iso2tint');
+end
 if size(tlim,2) == 1, tlim(:,2)=tlim(:,1); end
 
 if nargs == 1, % if only time intervals given, specify color
