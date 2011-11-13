@@ -1,19 +1,24 @@
 function res = plot(varargin)
-%PLOT([H], dobj, var_s, [comp], [options])  plot a variable
+%PLOT([H], dobj, var, [comp], [options])  plot a variable 'var' in dataobj 'dobj'
+%   dobj - data object, see also CAA_LOAD
+%   var  - can be a string of variable name in data object
+%        - or can be a a variable itself (structure, see caa form in C_CAA_VAR_GET)
+%   comp - components to plot
 %
 % OPTIONS - one of the following:
-%	'AX'       - axis handles to use
-%   'COMP'     - components to plot
-%   'SUM_DIM1' - sum over first dimension (frequency, pitch angle)
-%   'COMP_DIM1' - form subplots from that component
-%   'nolabels' - only plot data, do not add any labels or text
+%	'AX'         - axis handles to use
+%   'COMP'       - components to plot
+%   'SUM_DIM1'   - sum over first dimension (frequency, pitch angle)
+%   'COMP_DIM1'  - form subplots from that component
+%   'nolabels'   - only plot data, do not add any labels or text
+%   'NoColorbar' - do not plot colorbar 
 %   'ColorbarLabel' - specify colorbar label
 %   'FitColorbarLabel' - fit the text of colorbar label to colobar height
 %   'FillSpectrogramGaps' - fill data gaps with previous value (makes spectrograms look nice on screen)
 %   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
 %
-% for common cluster variables see: http://spreadsheets.google.com/pub?key=0AjU2FPHMIluIdEcydzhHeXhRUzRiM3lsN1VzQWMySmc&hl=en&single=true&gid=0&output=html
+% for common cluster variables see: http://bit.ly/pKWVKh
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -38,9 +43,13 @@ args=args(3:end);
 
 LCOMP = 3;
 
-if ~ischar(var_s), error('VAR_S must be a stirng'), end
+if ischar(var_s)             % input is the name of variable
+    data = getv(dobj,var_s);
+else                         % input is variable itself
+    data=var_s;
+    var_s=data.name;
+end
 
-data = getv(dobj,var_s);
 if isempty(data), error('VAR_S not found'), end
 dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
@@ -67,6 +76,7 @@ plot_properties=cell(0);
 flag_lineplot = 0;
 flag_spectrogram = 0;
 flag_labels_is_on=1;
+flag_colorbar_is_on=1;
 flag_colorbar_label_is_manually_specified=0;
 flag_colorbar_label_fit_to_colorbar_height_is_on=0;
 flag_fill_spectrogram_gaps=0;
@@ -107,6 +117,8 @@ while ~isempty(args)
         end
       case 'nolabels'
         flag_labels_is_on = 0;
+      case 'nocolorbar'
+        flag_colorbar_is_on = 0;
       case 'colorbarlabel'
         l=2;
         if ischar(args{2}) || iscell(args{2})
@@ -441,31 +453,33 @@ elseif flag_spectrogram
     end
   end
   % Add colorbar
-  i=fix(ncomp/2)+1;
-  hcb = colorbar('peer',h(i));
-  hcbl = get(hcb,'ylabel');
-  dy = get(ax(i),'Position'); dy = dy(3);
-  pcb = get(hcb,'Position');
-  if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
-  if flag_labels_is_on || flag_colorbar_label_is_manually_specified,
-    if ~flag_colorbar_label_is_manually_specified
-      colorbar_label=['Log ' lablaxis ' [' units ']' ];
-    end
-    set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
-    ylabel(hcb,colorbar_label);
-    if flag_colorbar_label_fit_to_colorbar_height_is_on
-      irf_colorbar_fit_label_height(hcb);
-    end
-    set(hcb,'yticklabelmode','auto');
-  else
-    ylabel(hcb,'');
-  end
-  % Resize all panels after addition of the colorbar
-  if ~isempty(dy)
-    for i=1:ncomp
-      tt = get(ax(i),'Position');
-      set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
-    end
+  if flag_colorbar_is_on,
+      i=fix(ncomp/2)+1;
+      hcb = colorbar('peer',h(i));
+      hcbl = get(hcb,'ylabel');
+      dy = get(ax(i),'Position'); dy = dy(3);
+      pcb = get(hcb,'Position');
+      if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
+      if flag_labels_is_on || flag_colorbar_label_is_manually_specified,
+          if ~flag_colorbar_label_is_manually_specified
+              colorbar_label=['Log ' lablaxis ' [' units ']' ];
+          end
+          set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+          ylabel(hcb,colorbar_label);
+          if flag_colorbar_label_fit_to_colorbar_height_is_on
+              irf_colorbar_fit_label_height(hcb);
+          end
+          set(hcb,'yticklabelmode','auto');
+      else
+          ylabel(hcb,'');
+      end
+      % Resize all panels after addition of the colorbar
+      if ~isempty(dy)
+          for i=1:ncomp
+              tt = get(ax(i),'Position');
+              set(ax(i),'Position',[tt(1) tt(2) dy tt(4)])
+          end
+      end
   end
   set(ax(1:ncomp-1),'XTickLabel',[]);
   for i=1:1:ncomp-1, xlabel(ax(i),'');end
