@@ -526,17 +526,24 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         set(gcf,'defaultTextFontUnits','pixels');
         set(gcf,'defaultAxesColorOrder',[0 0 0;1 0 0;0 0 1;0 0.5 0;0 1 1 ;1 0 1; 1 1 0])
         
-        xSize = 10;
+        xSize = 11;
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
         set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
         sz=get(0,'screensize'); 
-        xx=min(min(600,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
+        xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
         set(gcf,'Position',[10 10 xSize*xx ySize*xx])
         clear xSize sLeft ySize yTop
     end
+    clf;
+    all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
+    subplot_width=all_axis_position(3)-all_axis_position(1);
+    subplot_height=(all_axis_position(4)-all_axis_position(2))/number_of_subplots;
     for j=1:number_of_subplots,
-        c(j)=irf_subplot(number_of_subplots,1,-j);
+        c(j)=axes('position',[all_axis_position(1) ...
+            all_axis_position(4)-j*subplot_height ...
+            subplot_width subplot_height]); % [x y dx dy]
+%        c(j)=irf_subplot(number_of_subplots,1,-j);
         cla(c(j));
         set(c(j),'tag','');
     end
