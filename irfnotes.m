@@ -28,12 +28,18 @@ set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*50 ySize*50])
 set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
 clear xSize sLeft ySize yTop
+% additional good options
+        set(gcf,'defaultAxesFontSize',14);
+        set(gcf,'defaultTextFontSize',14);
+        set(gcf,'defaultAxesFontUnits','pixels');
+        set(gcf,'defaultTextFontUnits','pixels');
 %% Print the figure as it looks on screen
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % to get bitmap file
 print -dpng delme.png
 % to get pdf file with no white margins
 print -depsc2 -painters delme.eps
+%print -dpdf -painters delme.pdf
 % to convert to pdf on the system command line execute some of
 % ps2pdf -dEPSFitPage -dEPSCrop delme.eps
 % epstopdf delme.eps
@@ -111,7 +117,7 @@ if 1, % general commands on all figure
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   irf_plot_axis_align
   irf_zoom(h,'x',tint);
-  irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);    irf_plot_axis_align
+  irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
   irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
   irf_timeaxis(h);
 end
@@ -415,6 +421,14 @@ if 1,   % PANEL: C?       EFW satellite potential
   irf_zoom(hca,'y',[-50 -10]);
   ylabel(hca,'Sat pot [V]');
 end
+if 1,   % PANEL: C?       EFW ExB - velocity
+  % change L3 to L2 to get full resolution instead of spin
+  hca=irf_panel('EFW satellite potential spin');
+  ExB=irf_ssub('v_drift_GSE__C?_CP_EFW_L3_V3D_GSE',ic);
+  irf_plot(hca,ExB,'nolabels');
+  irf_zoom(hca,'y',[-500 500]);
+  ylabel(hca,'ExB [km/s]');
+end
 if 0,   % PANEL: C1..C4   EFW satellite potential
   % change L3 to L2 to get full resolution instead of spin
   hca=irf_panel('EFW satellite potential spin');
@@ -492,19 +506,28 @@ if 1,   % PANEL: C?       WHISPER spectrogram
   set(hca,'yscale','log','ytick',[3 4 5 1e1 20 30 50 ]);
   irf_zoom(hca,'y',[2 12]);
 end
-if 1,   % PANEL: RAPID spectrogram
-  hca=h(i_subplot);i_subplot=i_subplot+1;
-  dobjname=irf_ssub('C?_CP_RAP_ESPCT6',ic);
-  caa_load(dobjname);
+if 1,   % PANEL: C?       RAPID electron spectrogram
+  hca=irf_panel('C?_CP_RAP_ESPCT6');
   varname=irf_ssub('Electron_Dif_flux__C?_CP_RAP_ESPCT6',ic);
-  varunits=eval(['getunits(' dobjname ',''' varname ''')']);
+  varunits=irf_get_data(varname,'caa','unit');
   %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-  disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'');']);
+  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel');
   caxis(hca,[0.51 4.49]);
-  irf_colormap;
   set(hca,'yscale','log');
   set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
+end
+if 1,   % PANEL: C?       RAPID ion spectrogram
+    hca=irf_panel('C?_CP_RAP_HSPCT');
+    varname=irf_ssub('Proton_Dif_flux__C?_CP_RAP_HSPCT',ic);
+    %varunits=c_caa_var_get(varname,'units');
+    varunits='log_{10} dF  1/cm^2 s sr keV';
+    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
+    caxis(hca,[0.51 4.49]);
+    irf_colormap('space');
+    set(hca,'yscale','log');
+    ylabel(hca,'E [keV]');
+    irf_zoom(hca,'y',[80 2000]);
+    set(hca,'ytick',[1e2 2e2 5e2 1e3 1e4 1e5])
 end
 if 0,   % PANEL: RAPID spectrogram parallel
   hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -653,15 +676,21 @@ if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles in specifie
     hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
     varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
     pea=c_caa_var_get(varname,'mat');
-    en_chanels=8:14; % sum over those chanels
-    if numel(en_chanels)>1,
-        en_values=pea.dep_x{2}.data(1,en_chanels);
+    Enmin=1e3;Enmax=5e3; % energy interval
+    energy_channels=[]; % if do not want energy interval, specify energy channel
+    energy_channel_values=pea.dep_x{2}.data(1,:);
+    if numel(energy_channels)==0, % specified energy interval
+        energy_channels=find(energy_channel_values>Enmin & energy_channel_values < Enmax); % use only these energy chanels
+        en_values=energy_channel_values(energy_channels);
         en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
-    else
-        en_label=[num2str(pea.dep_x{2}.data(1,en_chanels)) ' ' pea.dep_x{2}];
+    elseif numel(energy_channels)>1,
+        en_values=energy_channel_values(energy_channels);
+        en_label=[num2str(min(en_values),'%5.0f') ' - ' num2str(max(en_values),'%5.0f') ' ' pea.dep_x{2}.units];
+    elseif numel(energy_channels)==1, % only one channel specified
+        en_label=[num2str(energy_channel_values(energy_channels)) ' ' pea.dep_x{2}.units];
     end
     specrec={};
-    specrec.p=squeeze(sum(pea.data(:,:,en_chanels),3));
+    specrec.p=squeeze(sum(pea.data(:,:,energy_channels),3));
     specrec.t=pea.t;
     specrec.f=pea.dep_x{1}.data(1,:);
     specrec.dt=pea.dt;
@@ -795,6 +824,50 @@ if 0,   % PANEL: PEACE PEA_PITCH_3DRH_PSD high res
   irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
   set(hca,'ytick',[30 60 90 120 150]);
 end
+if 1,   % PANEL: PEACE 3DXPH_DEFlux high res energy spectrogram
+  hca=irf_panel('PEACE 3DXPH_DEFlux energy');
+  res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
+  [~,ind]=irf_tlim(res.tt,tint);
+  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
+  if 1, % energy spectorgram (integrated over pitch angles)
+    specrec.f=log10(res.en);
+    specrec.p=res.omni(ind,:);
+    specrec.f_label=['Log10 ' res.enlabel];
+    irf_spectrogram(hca,specrec);
+  elseif 1, % pitch angle spectrogram for given energy
+    specrec.f=res.theta;specrec.f_label='Pitch angle';
+    specrec.p=res.pitch_angle(ind,:);
+    enindex=13;
+    specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
+    specrec.p=log10(res.data(ind,:,enindex));
+    irf_spectrogram(hca,specrec);
+    set(hca,'ytick',[30 60 90 120 150]);
+  end
+  caxis(hca,[-1.99 0.49]);
+  irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
+end
+if 1,   % PANEL: PEACE 3DXPH_DEFlux high res angular spectrogra,
+  hca=irf_panel('PEACE 3DXPH_DEFlux angular');
+  res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
+  [delmett,ind]=irf_tlim(res.tt,tint);
+  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
+  if 0, % energy spectorgram (integrated over pitch angles)
+    specrec.f=log10(res.en);
+    specrec.p=res.omni(ind,:);
+    specrec.f_label=['Log10 ' res.enlabel];
+    irf_spectrogram(hca,specrec);
+  elseif 1, % pitch angle spectrogram for given energy
+    specrec.f=res.theta;specrec.f_label='Pitch angle';
+    specrec.p=res.pitch_angle(ind,:);
+    enindex=13; % specify which energy chanel
+    specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
+    specrec.p=log10(res.data(ind,:,enindex));
+    irf_spectrogram(hca,specrec);
+    set(hca,'ytick',[30 60 90 120 150]);
+  end
+  caxis(hca,[-1.99 0.49]);
+  irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
+end
 if 0,   % PANEL: RAPID L3DD high res pitch C4
   h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
   ic=4;
@@ -846,50 +919,6 @@ if 0,   % PANEL: CIS CODIF high res energy C4
   caxis([1 5]);
   set(hca,'ytick',yticks);
   irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
-end
-if 1,   % PANEL: PEACE 3DXPH_DEFlux high res energy spectrogram
-  hca=irf_panel('PEACE 3DXPH_DEFlux energy');
-  res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
-  [~,ind]=irf_tlim(res.tt,tint);
-  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
-  if 1, % energy spectorgram (integrated over pitch angles)
-    specrec.f=log10(res.en);
-    specrec.p=res.omni(ind,:);
-    specrec.f_label=['Log10 ' res.enlabel];
-    irf_spectrogram(hca,specrec);
-  elseif 1, % pitch angle spectrogram for given energy
-    specrec.f=res.theta;specrec.f_label='Pitch angle';
-    specrec.p=res.pitch_angle(ind,:);
-    enindex=13;
-    specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
-    specrec.p=log10(res.data(ind,:,enindex));
-    irf_spectrogram(hca,specrec);
-    set(hca,'ytick',[30 60 90 120 150]);
-  end
-  caxis(hca,[-1.99 0.49]);
-  irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
-end
-if 1,   % PANEL: PEACE 3DXPH_DEFlux high res angular spectrogra,
-  hca=irf_panel('PEACE 3DXPH_DEFlux angular');
-  res=c_caa_construct_subspin_res_data(irf_ssub('Data__C?_CP_PEA_3DXPH_PSD',ic));
-  [delmett,ind]=irf_tlim(res.tt,tint);
-  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',['Log PSD [' res.dataunits ']']);
-  if 0, % energy spectorgram (integrated over pitch angles)
-    specrec.f=log10(res.en);
-    specrec.p=res.omni(ind,:);
-    specrec.f_label=['Log10 ' res.enlabel];
-    irf_spectrogram(hca,specrec);
-  elseif 1, % pitch angle spectrogram for given energy
-    specrec.f=res.theta;specrec.f_label='Pitch angle';
-    specrec.p=res.pitch_angle(ind,:);
-    enindex=13; % specify which energy chanel
-    specrec.f_label=[specrec.f_label '  \newline[E=' num2str(res.en(enindex),4) 'eV]'];
-    specrec.p=log10(res.data(ind,:,enindex));
-    irf_spectrogram(hca,specrec);
-    set(hca,'ytick',[30 60 90 120 150]);
-  end
-  caxis(hca,[-1.99 0.49]);
-  irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
 end
 if 1,   % PANEL: CIS HIA/CODIF high res energy C3
   hca=irf_panel('CIS CODIF high res energy');
