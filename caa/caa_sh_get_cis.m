@@ -10,8 +10,12 @@ function caa_sh_get_cis(fname)
 old_pwd = pwd;
 BASE_DIR = '/data/caa/l1';
 dirs = textread(fname,'%s');
+force_reload=0;
 
-if exist('./mPlan.mat','file'), load ./mPlan.mat
+c_ctl('init')
+c_ctl('set',5,'isdat_db','130.238.30.32:8')
+
+if exist('/data/caa/l1/mPlan.mat','file'), load /data/caa/l1//mPlan.mat
 else error('No MPlan.mat found')
 end
 
@@ -21,7 +25,7 @@ for d=1:length(dirs)
 	curr_d = dirs{d};
 	cd( [BASE_DIR '/' curr_d])
 	
-	if ~exist('./mCIS.mat','file')
+	if force_reload || ~exist('./mCIS.mat','file')
 		cl_id = str2double(curr_d(21));
 		if isnan(cl_id) || cl_id>4 || cl_id<1, error(['wrong directory ' curr_d]), end
 		
@@ -40,10 +44,11 @@ for d=1:length(dirs)
             
         
             irf_log('proc',[ '-- GETTING -- : ' curr_d]);
-            getData(ClusterDB,st,dt,cl_id,'sax')
-            getData(ClusterDB,st,dt,cl_id,'b')
-            getData(ClusterDB,st,dt,cl_id,'vcis')
-            getData(ClusterProc(pwd),cl_id,'vce')
+            getData(ClusterDB,st,dt,cl_id,'sax');
+            getData(ClusterDB,st,dt,cl_id,'b');
+            getData(ClusterDB,st,dt,cl_id,'vcis');
+            getData(ClusterDB,st,dt,cl_id,'v');
+%            getData(ClusterProc(pwd),cl_id,'vce');
             
         else irf_log('proc',[ '-- INSIDE MP -- : ' curr_d]);
         end
