@@ -162,9 +162,9 @@ if ischar(x), % Try to get variable labels etc.
         elseif strfind(var_names{ii},'__') % CAA variable
                     caa_varname{ix}=var_names{ii};
                     if flag_plot_all_data,
-                      [~,caa_dataobject{ix},x{ix}]=evalin('caller',['c_caa_var_get(''' var_names{ii} ''')']);
+                      [tmp,caa_dataobject{ix},x{ix}]=evalin('caller',['c_caa_var_get(''' var_names{ii} ''')']);
                     else
-                      [~,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
+                      [tmp,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
                     end
         else
             flag_ok=c_load(var_names{ii});
