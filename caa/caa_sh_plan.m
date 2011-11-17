@@ -1,4 +1,4 @@
-function caa_sh_plan(yyyy)
+function caa_sh_plan(yyyy,mm)
 %CAA_SH_PLAN  identify magnetosheath/sw intervals
 %
 % caa_sh_plan(yyyy)
@@ -7,9 +7,12 @@ function caa_sh_plan(yyyy)
 %
 % $Id$
 
-if yyyy==2001, mm=2:12;
-else mm = 1:12;
+if nargin <2,
+	if yyyy==2001, mm=2:12;
+	else mm = 1:12;
+	end
 end
+	
 c_ctl('set',5,'isdat_db','db:9');
 force_orbit_read=[0 0 0 0];
 force_orbit_splitting=[0 0 0 0];
@@ -29,10 +32,21 @@ for cl_id = 1:4
 			end
 			
 			if mo==12, et = toepoch([yyyy+1 01 01 00 00 00]);
-            else et = toepoch([yyyy mo+1 01 00 00 00]);
-            end
+			else et = toepoch([yyyy mo+1 01 00 00 00]);
+			end
 			
-            data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
+			data = getData(ClusterDB, st, et-st, cl_id, 'r', 'nosave');
+			if isempty(data) || (data{2}(end,1)-data{2}(1,1)) < (et-st-3600*4)
+				data=[];
+				irf_log('proc',['Error in position data for month ' num2str(mo) '. Fetching one day at a time.'])
+				for st1=st:86400:et-86399
+					data2=getData(ClusterDB, st1, 86400, cl_id, 'r', 'nosave');
+					if ~isempty(data2)
+						if isempty(data),data=data2;
+						else data{2}=[data{2}' data2{2}']'; end
+					end
+				end
+			end
 			if isempty(data), error('cannot fetch position'), end
 
 			R_tmp = irf_abs(data{2});
