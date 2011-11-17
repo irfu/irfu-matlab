@@ -1,7 +1,13 @@
-function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin)
+function [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id, Rin,sc_source)
 %CAA_FIND_MP  find model magnetopause crossings using ACE data
 %
 % [t_mp_out,t_mp_in] = caa_find_mp(start_time, dt, cl_id)
+%
+% start_time: start time in epoch format
+%         dt: duration in seconds or end time in epoch
+%      cl_id: which Cluster sat
+%        Rin: position of Cluster (optional)
+%  sc_source: source for solar wind data, 'omni2' (default) or 'ace'
 %
 % See also IRF_SHUE_MP
 %
@@ -19,16 +25,19 @@ if dt>toepoch([1996 01 01 00 00 00])
 	if dt< start_time, error('STOP_TIME must be larger then START_TIME)'), end
 	dt = dt - start_time;
 end
-
+if nargin < 5, sc_source='omni2'; end
 if nargin < 4, Rin = []; end
-
+if ~strcmp(sc_source,'omni2') && ~strcmp(sc_source,'ace')
+	error('Solar wind data source improperly specified. Should be ace or omni2.')
+end
+	
 t_mp_out = []; t_mp_in = [];
 
 R_E = 6378;
 ACE_X_POS = 222*R_E;	% ACE X postition
 ACE_VX_DEF = 480;		% Default solar wind speed
 ACE_DT_DEF = ACE_X_POS/ACE_VX_DEF;
-ACE_N_DEF = 1;			% Defaultsolar wind density
+ACE_N_DEF = 6;			% Default solar wind density
 ACE_BZ_DEF = 0;			% Default IMF Bz
 
 irf_log('proc',['orbit : ' epoch2iso(start_time,1) ' -- ' ...
@@ -60,9 +69,9 @@ irf_log('proc',['X>0, R>7R_E: ' epoch2iso(start_time,1) ' -- ' ...
 
 % Fetch ACE data
 ISTP_PATH = '/data/istp';
-ace_B = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'b');
-ace_V = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'v');
-ace_N = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, 'ace', 'n');
+ace_B = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'b');
+ace_V = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'v');
+ace_N = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'n');
 
 % Create new timeline with 30 min step
 st_a = fromepoch(start_time);
@@ -78,17 +87,21 @@ for t=st:1800:st+dt
 	irf_log('proc',['time: ' epoch2iso(t,1)])
 	
 	% ACE time shift
-	if isempty(ace_V), dt_ace = ACE_DT_DEF;
-	else
-		v_tmp = linear_solve(ace_V, t, ACE_DT_DEF);
-		%irf_log('proc',['ace_v_tmp: ' num2str(round(v_tmp)) ' km/s'])
-		if isnan(v_tmp)
-			dt_ace = ACE_DT_DEF;
-			irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
-		else dt_ace = ACE_X_POS/v_tmp;
+	if strcmp(sc_source,'ace')
+		if isempty(ace_V), dt_ace = ACE_DT_DEF;
+		else
+			v_tmp = linear_solve(ace_V, t, ACE_DT_DEF);
+			%irf_log('proc',['ace_v_tmp: ' num2str(round(v_tmp)) ' km/s'])
+			if isnan(v_tmp)
+				dt_ace = ACE_DT_DEF;
+				irf_log('proc',['ace_v_tmp: NaN at ' epoch2iso(t,1)])
+			else dt_ace = ACE_X_POS/v_tmp;
+			end
 		end
+		%irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
+	else
+		dt_ace = 0;
 	end
-	%irf_log('proc',['ace_dt   : ' num2str(round(dt_ace/60)) ' min'])
 	
 	if isempty(ace_V), vx_tmp = ACE_VX_DEF;
 	else
