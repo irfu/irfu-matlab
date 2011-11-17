@@ -14,6 +14,8 @@ function [data, ok, msg] = caa_get(iso_t,dt,cl_id,var_name,ops_s,varargin)
 
 DP = '/data/caa/l1';    % TODO: Add option to change base dir via input param! (ML)
 data = [];
+ok=0;
+msg='';
 
 NEED_SAME_TM = 0;
 DO_MEAN = 0;
