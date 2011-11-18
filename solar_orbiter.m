@@ -76,9 +76,11 @@ switch flag
         out=solar_orbiter('antenna');
     case 'spacecraft' % spacecraft properties
         sc.sunlit_area=5.95;
+        sc.cross_section_area=sc.sunlit_area;
         sc.total_area=28.11;
-        sc.probe_refpot_as_fraction_of_scpot_value=.2;
-        sc.number_of_probes_value=3;
+        sc.probe_refpot_as_fraction_of_scpot=.2;
+        sc.number_of_probes=3;
+        sc.antenna_guard_area=0;
         out=sc;
     case 'sc'     % same as 'spacecraft'
         out=solar_orbiter('spacecraft');
