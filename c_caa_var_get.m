@@ -1,13 +1,13 @@
 function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %C_CAA_VAR_GET(var_name)  get CAA variable (if necessary load it)
 %
-%  var= C_CAA_VAR_GET(varargin)
+%  var= C_CAA_VAR_GET(varname)
 %     get the variable in caa form
-%  [var,dataobject] = C_CAA_VAR_GET(varargin)
+%  [var,dataobject] = C_CAA_VAR_GET(varname)
 %     return also dataobject
-%  [var,dataobject,variable_matlab_format]=C_CAA_VAR_GET(varargin)
+%  [var,dataobject,variable_matlab_format]=C_CAA_VAR_GET(varname)
 %     return variable also in matlab matrix form
-%  [var,dataobject,variable_matlab_format,variable_unit]=C_CAA_VAR_GET(varargin)
+%  [var,dataobject,variable_matlab_format,variable_unit]=C_CAA_VAR_GET(varname)
 %     return also units
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
