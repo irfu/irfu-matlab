@@ -14,11 +14,16 @@ function out = irf_convert(in,flag)
 % $Id$
 
 if nargin==0,
+    disp(' ');
+    disp('out=irf_convert(in,flag); % flag is in format ''in2out''');
+    disp('Possible flag values:');
+    disp(' ');
     a=fscanf(fopen(which('irf_convert')),'%s');
     b=regexp(a,'case''\w*''','match');
     for ib=1:numel(b)
         disp(b{ib}(6:end-1));
     end
+    disp(' ');
     return
 end
 
