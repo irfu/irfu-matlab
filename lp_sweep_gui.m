@@ -424,6 +424,7 @@ set(gcf,'userdata',data);
 end
 function setscexample(hObj,event) %#ok<INUSD>
 % Called when user activates popup menu of minvar method
+irf_units
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
@@ -446,22 +447,25 @@ elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     set(data.inp.n_value,'string','1');
     set(data.inp.T_value,'string','100 500');
 elseif val == 3 % Solar Orbiter with solar panel back side
-    data.probe.type='cylindrical';
-    set(data.inp.probe.type,'Value',2);
-    data.probe.surface='themis';
-    set(data.inp.probe.surface,'Value',2);
-    set(data.inp.probe.radius_value,'string','0.575');
-    set(data.inp.probe.length_value,'style','edit','string','500');
-    set(data.inp.sc.sunlit_area_value,'string','5.95');
-    set(data.inp.sc.antenna_guard_area_value,'string','0.0');
-    set(data.inp.sc.total_area_value,'string','28.11');
-    set(data.inp.probe.total_vs_sunlit_area_value,'string',num2str(pi,4));
-    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
-    set(data.inp.sc.number_of_probes_value,'string','3');
-    data.probe.total_vs_sunlit_area=pi;
+    data.probe=solar_orbiter('probe');
+    data.sc=solar_orbiter('sc');
+    p=solar_orbiter('plasma');
+    data.plasma=p.perihelion;
+    set(data.inp.probe.type,'Value',2); % cylindrical
+    set(data.inp.probe.surface,'Value',find(strcmp(data.probe.surface,lp_photocurrent))+1);
+    set(data.inp.probe.radius_value,'string',num2str(data.probe.radius/Units.cm,4)); %cm
+    set(data.inp.probe.length_value,'style','edit','string',num2str(data.probe.length/Units.cm,4)); % cm
+    set(data.inp.probe.total_vs_sunlit_area_value,'string',num2str(data.probe.total_vs_sunlit_area,4));
+    set(data.inp.sc.sunlit_area_value,'string',num2str(data.sc.cross_section_area,4));
+    set(data.inp.sc.antenna_guard_area_value,'string',num2str(data.sc.antenna_guard_area,4));
+    set(data.inp.sc.total_area_value,'string',num2str(data.sc.total_area,4));
+    set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string',num2str(data.sc.probe_refpot_as_fraction_of_scpot,4));
+    set(data.inp.sc.number_of_probes_value,'string',num2str(data.sc.number_of_probes,4));
     set(data.inp.Rsun_value,'string','0.28');
-    set(data.inp.n_value,'string','100');
-    set(data.inp.T_value,'string','20 40');
+    set(data.inp.q_value,'string',num2str(data.plasma.q,'%5.0f '));
+    set(data.inp.vsc_value,'string',num2str(data.plasma.vsc,'%5.0e '));
+    set(data.inp.n_value,'string',num2str(data.plasma.n,'%5.0f '));
+    set(data.inp.T_value,'string',num2str(data.plasma.T,'%5.0f '));
 elseif val == 4 % THEMIS
     data.probe.type='spherical';
     set(data.inp.probe.type,'Value',1);
