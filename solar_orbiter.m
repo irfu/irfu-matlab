@@ -42,7 +42,7 @@ flag=varargin{1};
 irf_units
 
 switch flag
-    case '?'      % show all possibel flag options
+    case '?'         % show all possibel flag options
         fid=fopen(which('solar_orbiter'));
         while 1
             tline = fgetl(fid);
@@ -52,7 +52,7 @@ switch flag
                 disp(['solar_orbiter(''' b.flag ''') - ' b.comment]);
             end
         end
-    case 'antenna'% antenna properties, can be used for probe current estimates
+    case 'antenna'   % antenna properties, can be used for probe current estimates
         probe.type='cylindrical';
         probe.surface='gold';
         probe.radius=0.575*Units.cm;
@@ -72,9 +72,9 @@ switch flag
         else % return infomration
             out=probe;
         end
-    case 'probe'  % same as 'antenna'
+    case 'probe'     % same as 'antenna'
         out=solar_orbiter('antenna');
-    case 'spacecraft' % spacecraft properties
+    case 'spacecraft'% spacecraft properties
         sc.sunlit_area=5.95;
         sc.cross_section_area=sc.sunlit_area;
         sc.total_area=28.11;
@@ -82,10 +82,11 @@ switch flag
         sc.number_of_probes=3;
         sc.antenna_guard_area=0;
         out=sc;
-    case 'sc'     % same as 'spacecraft'
+    case 'sc'        % same as 'spacecraft'
         out=solar_orbiter('spacecraft');
-    case 'plasma' % typical plasma parameters
+    case 'plasma'    % typical plasma parameters
         plasma.perihelion=struct('q',[-1 1],'m',[0 1],'n',[100 100],'T',[10 25],'vsc',[4e5 4e5]);
+        plasma.aphelion  =struct('q',[-1 1],'m',[0 1],'n',[ 10  10],'T',[ 4 10],'vsc',[4e5 4e5]);
         out=plasma;
     otherwise
         disp(['!!! solar_orbiter: unknown flag ''' lower(flag) '''.'])
