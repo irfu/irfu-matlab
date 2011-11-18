@@ -18,6 +18,9 @@ error(nargchk(2,2,nargin))
 if ~ischar(var_s), error('VAR_S must be a string'), end
 
 var=getv(dobj,var_s);
+disp('_______________');
+disp(['VARIABLE : ' var_s]);
+disp(var);
 for j=0:3 % maximum number of dependencies
     if isfield(var,['DEPEND_' num2str(j)]), % there is dependency
         dep_variable_name = eval(['var.DEPEND_' num2str(j)]);
