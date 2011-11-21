@@ -545,6 +545,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
             subplot_width subplot_height]); % [x y dx dy]
 %        c(j)=irf_subplot(number_of_subplots,1,-j);
         cla(c(j));
+        set(c(j),'box','on');
         set(c(j),'tag','');
     end
     user_data = get(gcf,'userdata');
