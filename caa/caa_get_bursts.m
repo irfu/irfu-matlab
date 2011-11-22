@@ -100,7 +100,8 @@ for i=1:varsbsize
 end
 if ~found
     irf_log('proc','iburst special no V43M/H or V12H continue');
-    ret=2;
+    ret=-1;
+    cd(old_pwd);
     return;  
 end
 end
@@ -262,7 +263,7 @@ for i=1:varsbsize
                 data8ordfc(:,i+1) = data8ordfc(:,i+1)*0.00212/0.088; % Convert to mV/m
             else
                 % XXX: do we ever have asymmetric, e.g. p23 ?
-                error('Strange probe confuguration. Update the code!!')
+                error('Strange probe configuration. Update the code!!')
             end
             filter = varsb{i}(end);
             if filter=='H', filter = 'BP'; end% It is a special case
@@ -282,10 +283,15 @@ data8ordfc(ix,2:end) = NaN; % Set spikes to NaNs
 save_file = './mEFWburstR.mat';
 save_list='';
 if BSCcnt % BSC
-    if BSCcnt<3, error('Less than 3 BSC components'), end % Sanity check
-    BSCtemp = data8ordfc(:,[1 BSCpos+1]);  %#ok<NASGU>
-	c_eval('wBSC4kHz?=BSCtemp;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
-    clear BSCtemp
+    % Sanity check. 4 param data with only 2 BSC exists 2011 ex:
+    % 110814220936we.03 110816184430we.03 110828095728we.01
+    if BSCcnt<3
+        irf_log('save','No BSC data save. Less than 3 BSC components.');
+    else
+        BSCtemp = data8ordfc(:,[1 BSCpos+1]);  %#ok<NASGU>
+        c_eval('wBSC4kHz?=BSCtemp;save_list=[save_list '' wBSC4kHz? ''];',cl_id);
+        clear BSCtemp
+    end
 end
 
 for i=1:varsbsize
