@@ -62,17 +62,17 @@ while nret<MAXNRET
 	nret = nret + 1;
 	
 	openAttempts=1;
-	while (openAttempts ~= 0)
-		try
-			dbase = Mat_DbOpen(db_s);
-			openAttempts=0;
-		catch ME
-			if (openAttempts>MAXOPENATTEMPTS)
-				error('ISDAT:Mat_DbOpen',['ISDAT : error opening database ' db_s])
-			end
-			openAttempts=openAttempts+1;
-			pause(0.01*openAttempts);
-		end
+    while (openAttempts ~= 0)
+        try
+            dbase = Mat_DbOpen(db_s);
+            openAttempts=0;
+        catch
+            if (openAttempts>MAXOPENATTEMPTS)
+                error('ISDAT:Mat_DbOpen',['ISDAT : error opening database ' db_s])
+            end
+            openAttempts=openAttempts+1;
+            pause(0.01*openAttempts);
+        end
     end
 	
     if ~isempty(units)

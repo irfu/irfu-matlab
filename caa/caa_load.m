@@ -117,8 +117,8 @@ for j = 1:numel(dirs)
           end
         end
         nloaded = nloaded + 1;
-      catch ME
-        irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
+      catch
+        irf_log('dsrc','Did not succeed!');
         irf_log('dsrc',['error loading ' var_name]);
       end
     end
