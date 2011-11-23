@@ -111,8 +111,8 @@ while have_options
                     try
                         t = irf_time(args{2},'iso2epoch');
                         l = 2;
-                    catch ME
-                        error(['T is not a valid ISO time string. ' ME.identifier])
+                    catch
+                        error('T is not a valid ISO time string. ')
                     end
                 else error('SCL_IDAX value must be an ISDAT epoch or ISO time string')
                 end
@@ -184,8 +184,8 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                     irf_log('dsrc','Success!');
                     flag_read_lat=0;
                 end
-            catch ME
-                irf_log('dsrc',['Could not read lat/long from isdat server. ' ME.identifier]);
+            catch
+                irf_log('dsrc','Could not read lat/long from isdat server. ');
             end
         end
         if flag_read_lat==1,
@@ -205,8 +205,8 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                 irf_log('dsrc',irf_ssub('Loaded SAX? from local disk or local ISDAT database',cl_id))
             end
             clear tempv
-        catch ME
-            irf_log('dsrc',['Could not read sax fgrom isdat database. ' ME.identifier]);
+        catch 
+            irf_log('dsrc','Could not read sax fgrom isdat database. ');
         end
     end
     
