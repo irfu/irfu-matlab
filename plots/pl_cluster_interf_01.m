@@ -16,6 +16,12 @@ end
 flag_corr_deriv = irf_ask('Use max gradient (0) or zero crossings(1)? [%]>',...
 	'flag_corr_deriv',0);
 
+if flag_corr_deriv
+    flag_corr_deriv_str = 'zero crossings';
+else
+    flag_corr_deriv_str = 'max gradient';
+end
+
 ic=irf_ask('Which s/c? [%]>','ic',2);
 ic_str=['s/c ' num2str(ic)];
  
@@ -42,6 +48,14 @@ if ~strcmp(kHz,'4') && ~strcmp(kHz,'32')
 	kHz = '4';
 	disp('using 4kHz')
 end
+
+% two directions
+bn = irf_ask('N direction DSI? [%]>', 'bn', [1 0 0]);
+bn=irf_norm(bn);
+bp = irf_ask('M direction DSI? [%]>', 'bp', [0 1 0]);
+bp=irf_norm(irf_cross(irf_cross(bn,bp),bn));
+leg = {'N','M'};
+
 c_eval(['load mEFWburstR P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4;'],ic)
 c_eval(['p1=P' kHz 'kHz?p1; p2=P' kHz 'kHz?p2; p3=P' kHz 'kHz?p3; p4=P' kHz 'kHz?p4;'],ic)
 c_eval(['clear P' kHz 'kHz?p1 P' kHz 'kHz?p2 P' kHz 'kHz?p3 P' kHz 'kHz?p4'],ic)
@@ -71,13 +85,6 @@ ef = irf_tlim(ef,tint);
 e = irf_tlim(e,tint);
 
 disp('...data loaded');
-
-% two directions
-bn = irf_ask('N direction DSI? [%]>', 'bn', [1 0 0]);
-bn=irf_norm(bn);
-bp = irf_ask('M direction DSI? [%]>', 'bp', [0 1 0]);
-bp=irf_norm(irf_cross(irf_cross(bn,bp),bn));
-leg = {'N','M'};
 
 nfef=irf_vec_x_scal(ef,nf,1); % dE*dn 
 nfef_bn=irf_dot(nfef,bn);
@@ -163,7 +170,7 @@ h=irf_plot({n,n,n,n,nf,[nfef_bn nfef_bp(:,2)]});
 
 %%%%%% subplot 1 %%%%%%
 ylabel(h(1),'N_{Vps} [cm^{-3}]');
-title_text=['s/c' num2str(ic) '  ' legend_corr ff_str '.'];
+title_text=['s/c' num2str(ic) '  ' legend_corr '(' flag_corr_deriv_str ') ' ff_str '.'];
 irf_pl_info([mfilename '  ' datestr(now) '. ' title_text],h(1)); % add information to the plot
 
 ud=get(gcf,'userdata');
