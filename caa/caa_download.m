@@ -61,6 +61,7 @@ function download_status=caa_download(tint,dataset,flags)
 
 % input 'flags' is in test phase
 %   'test' - use caa test server instead
+%   'nowildcard' - download the dataset without any expansion in the name and not checking if data are there
 %   'overwrite' - overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
 %                 maybe this behavikour should be default
 % $Id$
@@ -134,8 +135,16 @@ if nargin==1, help caa_download;return; end
 % caa.timeofrequest - in matlab time units
 
 flag_test=0; % do not use caa_test_query
+flag_wildcard=1; % default is to use wildcard
+flag_check_if_there_is_data=1; % check if there are any at caa
+nonotify=''; % default is notify by email
+
 if nargin==3 && strcmpi(flags,'test'),
     flag_test=1;
+elseif nargin==3 && strcmpi(flags,'nowildcard'),
+    flag_wildcard=0;
+    flag_check_if_there_is_data=0;
+    nonotify='&nonotify=1';
 end
 
 if ~exist('CAA','dir'), mkdir('CAA');end
@@ -147,8 +156,11 @@ else % unknown format
     disp(tint);
     error('caa_download: unknown tint format');
 end
-dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
-dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
+
+if flag_wildcard, % expand wildcards
+    dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
+    dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
+end
 
 if strfind(dataset,'list'), % list  files
     if strcmpi(dataset,'list'), % list all files
@@ -167,17 +179,19 @@ if strfind(dataset,'list'), % list  files
     return;
 else  % download data
     
-    %    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-    %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
-    %    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-    %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
-    url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso ];
-    disp('Be patient! Contacting CAA to see the list of files...');
-    caalist=urlread(url_line_list);
-    disp(caalist);
-    if ~any(strfind(caalist,'Version')),% there are no CAA datasets available
-        disp('There are no CAA data sets available!');
-        return;
+    if flag_check_if_there_is_data 
+        %    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+        %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+        %    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
+        %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
+        url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso];
+        disp('Be patient! Contacting CAA to see the list of files...');
+        caalist=urlread(url_line_list);
+        disp(caalist);
+        if ~any(strfind(caalist,'Version')),% there are no CAA datasets available
+            disp('There are no CAA data sets available!');
+            return;
+        end
     end
     
     if flag_test,
@@ -185,7 +199,7 @@ else  % download data
             dataset '&time_range=' tintiso '&format=cdf&schedule=1&file_interval=72hours'];
     else
         url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-            dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours'];
+            dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours' nonotify];
     end
     
     disp('Be patient! Submitting data request to CAA...');
@@ -200,8 +214,8 @@ else  % download data
         move_to_caa_directory(filelist);
         delete(temp_file);
         if nargout==1, download_status=1;end
-    catch ME
-        irf_log('fcal',['Could not find zip file with data! ' ME.identifier]);
+    catch 
+        irf_log('fcal','Could not find zip file with data! ');
         fid=fopen(temp_file);
         while 1
             tline = fgetl(fid);
@@ -232,6 +246,7 @@ else  % download data
             save -mat .caa caa
         else
             disp('!!!! Did not succeed to download !!!!!');
+            download_status=0;
         end
     end
 end
