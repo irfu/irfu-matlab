@@ -105,8 +105,8 @@ switch lower(action)
                 if ~is_R_ok,% no idea
                     disp('NO POSITION DATA!');
                 end
-            catch ME
-                irf_log('dsrc',['Did not succeed! (' ME.identifier ')'] );
+            catch
+                irf_log('dsrc','Did not succeed getting position data!');
             end
         end
         if ~is_R_ok,     % could not obtain
