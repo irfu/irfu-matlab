@@ -1,0 +1,61 @@
+!
+! $Id$
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L1_IB"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Internal burst"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains measurements of"
+   ENTRY       =   "up to 8 parameters (specified in the FILE_CAVEATS)"
+   ENTRY       =   "collected during the internal burst"
+   ENTRY       =   "of the EFW experiment on the Cluster CXXX spacecraft"
+END_META       =   DATASET_DESCRIPTION
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   0.0022222
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   0.0022222
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   0.0000555
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Uncalibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L1_IB
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 0.1
+  DELTA_MINUS     = 0.1
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L1_IB
+!
+START_VARIABLE      = Data__CXXX_CP_EFW_L1_IB
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 8
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Internal burst"
+  FIELDNAM          = "Internal burst"
+  SI_CONVERSION     = "1>(TM)"
+  UNITS             = "TM"
+  FILLVAL           = -1000000000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = "*CXXX_CP_EFW_L1_PYYY"
+  LABLAXIS          = "PYYY"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L1_IB
+END_VARIABLE        = Data__CXXX_CP_EFW_L1_IB

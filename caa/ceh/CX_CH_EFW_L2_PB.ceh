@@ -1,0 +1,148 @@
+!
+! $Id$
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP"
+END_META       =   DATA_TYPE
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_EFW_L2_PB"
+END_META       =   DATASET_ID
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Spacecraft potential (internal burst)"
+END_META       =   DATASET_TITLE
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains measurements of the"
+   ENTRY       =   "negative of the Spacecraft potential (internal burst)"
+   ENTRY       =   "from the EFW experiment on the Cluster CXXX spacecraft"
+END_META       =   DATASET_DESCRIPTION
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "Level 2 quantity P is the negative of the spacecraft potential,"
+   ENTRY       =   "calculated by averaging the Level 1 P1, P2, P3 and P4 quantities."
+   ENTRY       =   "If all four probes are available, the average is done over all 4 probes."
+   ENTRY       =   "If only two or three probes are available, the average is done over 2"
+   ENTRY       =   "probes (P1 and P2, or P3 and P4). If only one probe is available, this"
+   ENTRY       =   "quantity is the value of that probe."
+   ENTRY       =   ""
+   ENTRY       =   "For more information on data quality and how the CAA data are processed,"
+   ENTRY       =   "please consult the EFW CAA Users Guide and the EFW CAA Interface Control"
+   ENTRY       =   "Document (ICD)."
+   ENTRY       =   " "
+   ENTRY       =   "Detailed quality information is provided as a 16 bit set of flags"
+   ENTRY       =   "in the parameter P_bitmask__CXXX_CP_EFW_L2_PB. The meaning of"
+   ENTRY       =   "the bits is as follows (LSB numbering starting at 0):"
+   ENTRY       =   "Bit  0: Reset."
+   ENTRY       =   "Bit  1: Bad bias."
+   ENTRY       =   "Bit  2: Probe latchup."
+   ENTRY       =   "Bit  3: Low density saturation (-68V)."
+   ENTRY       =   "Bits 4-12: N/A"
+   ENTRY       =   "Bit 13: Whisper operating."
+   ENTRY       =   "Bit 14: Saturation due to high bias current."
+   ENTRY       =   "Bit 15: N/A"
+END_META       =   DATASET_CAVEATS
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   0.0022222
+END_META       =   TIME_RESOLUTION
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   0.0022222
+END_META       =   MIN_TIME_RESOLUTION
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   0.0000555
+END_META       =   MAX_TIME_RESOLUTION
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                   Variables                         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+START_VARIABLE    = time_tags__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Support_Data"
+  VALUE_TYPE      = ISO_TIME
+  DELTA_PLUS      = 0.1
+  DELTA_MINUS     = 0.1
+  FILLVAL         = 9999-12-31T23:59:59Z
+  LABLAXIS        = "UT"
+  FIELDNAM        = "Universal Time"
+END_VARIABLE      = time_tags__CXXX_CP_EFW_L2_PB
+!
+START_VARIABLE      = Spacecraft_potential__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Data"
+  SIZES             = 1
+  VALUE_TYPE        = FLOAT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Probe_Potential"
+  FLUCTUATIONS      = "Waveform"
+  CATDESC           = "Spacecraft potential (internal burst)"
+  FIELDNAM          = "Spacecraft potential (internal burst)"
+  SI_CONVERSION     = "1>V"
+  UNITS             = "V"
+  FILLVAL           = -1000000000.000
+  QUALITY           = 3
+  SIGNIFICANT_DIGITS= 6
+  PARAMETER_CAVEATS = "*CXXX_CP_EFW_L2_PB"
+  LABLAXIS          = "-Sc pot"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_PB
+END_VARIABLE        = Spacecraft_potential__CXXX_CP_EFW_L2_PB
+!
+START_VARIABLE      = P_probes__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Probes used for Spacecraft potential measurement  (internal burst)"
+  FIELDNAM          = "Probes used for Spacecraft potential measurement  (internal burst)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 4
+  LABLAXIS          = "Probes"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_PB
+END_VARIABLE        = P_probes__CXXX_CP_EFW_L2_PB
+!
+START_VARIABLE      = ASPOC_status__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "ASPOC status bit (1=active)"
+  FIELDNAM          = "ASPOC status bit (1=active)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "ASPOC_ON"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_PB
+END_VARIABLE        = ASPOC_status__CXXX_CP_EFW_L2_PB
+!
+START_VARIABLE      = P_bitmask__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Spacecraft potential (internal burst) measurement quality bitmask"
+  FIELDNAM          = "Spacecraft potential (internal burst) measurement quality bitmask"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 5
+  LABLAXIS          = "Bitmask"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_PB
+END_VARIABLE        = P_bitmask__CXXX_CP_EFW_L2_PB
+!
+START_VARIABLE      = P_quality__CXXX_CP_EFW_L2_PB
+  PARAMETER_TYPE    = "Support_Data"
+  SIZES             = 1
+  VALUE_TYPE        = INT
+  ENTITY            = "Instrument"
+  PROPERTY          = "Status"
+  CATDESC           = "Spacecraft potential (internal burst) measurement quality flag (4=best)"
+  FIELDNAM          = "Spacecraft potential (internal burst) measurement quality flag (4=best)"
+  SI_CONVERSION     = "1>unitless"
+  UNITS             = "unitless"
+  FILLVAL           = 0
+  SIGNIFICANT_DIGITS= 1
+  LABLAXIS          = "Quality"
+  DEPEND_0          = time_tags__CXXX_CP_EFW_L2_PB
+END_VARIABLE        = P_quality__CXXX_CP_EFW_L2_PB
