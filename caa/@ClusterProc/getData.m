@@ -725,8 +725,11 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                             
                             e12(:,1) = p2(:,1);
                             e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
-                            if abs(mean(e12(~isnan(e12(:,2)),2)))>30 % Sanity check for realistic electric field value
+                            BURST_MEAN_THRESH = 100; % mV/m
+                            if abs(mean(e12(~isnan(e12(:,2)),2)))>BURST_MEAN_THRESH % Sanity check for realistic electric field value
                                 e12 = [];
+                                irf_log('proc',sprintf('Disregarding p%d (mean>%d mV/m)',...
+                                    p12,BURST_MEAN_THRESH))
                             else
                                 p_ok = [p_ok 12]; %#ok<AGROW>
                                 eval(irf_ssub('wbE?p!=e12;save_list=[save_list ''wbE?p! ''];',cl_id, p12));
