@@ -19,6 +19,7 @@ function t_out = irf_time(t_in,flag)
 %       date: MATLAB datenum format
 %    datenum: -=-
 %        doy: [year doy]
+%         et: J2000 Ephemeris Time, seconds past  January 1, 2000, 11:58:55.816 (UTC)
 %
 %  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch2out');
 %  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector2epoch');
@@ -185,6 +186,13 @@ switch lower(flag)
     case 'doy2epoch'
         t_out=irf_time([t_in(:,1) t_in(:,1).*0+1 t_in(:,1).*0+1 ...
             t_in(:,2).*24-12 t_in(:,1).*0 t_in(:,1).*0]);
+
+    case 'epoch2et'
+        t_out=t_in-irf_time([2000 01 01 11 58 55.816]);
+
+    case 'et2epoch'
+        t_out=t_in+irf_time([2000 01 01 11 58 55.816]);
+
 %
 % Time interval conversions
 %
