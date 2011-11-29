@@ -186,7 +186,7 @@ if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux pro
   for ic=1:4,
     c_eval('caa_load C?_CP_PEA_PITCH_SPIN_DPFlux',ic); % to speed up later
     varname=irf_ssub('Spacecraft_potential__C?_CP_EFW_L3_P',ic);
-    [~,~,scpotmat]=c_caa_var_get(varname);
+    scpotmat=c_caa_var_get(varname,'mat');
     scpotmat(isnan(scpotmat(:,2)),:)=[]; % remove NaN densities
     varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DPFlux',ic);
     [var,~,varmat]=c_caa_var_get(varname);
