@@ -75,7 +75,7 @@ switch lower(flag)
         [m,n]=size(x);
         if n~=2 && n~=3 && n~=6,
             if m==2 || m==3 || n==6,
-                x=x'; [~,n]=size(x);
+                x=x'; n=size(x,2);
             else
                 warning('irfu:argument','irf_time:Illegal argument')
                 t_out=NaN;
