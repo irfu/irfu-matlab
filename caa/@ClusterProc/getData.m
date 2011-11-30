@@ -1490,6 +1490,7 @@ elseif strcmp(quantity,'badbias')
 
 		% 2006-06-16 23:30 bias current was lowered to 100 nA
 		if efwt(1,1)>iso2epoch('2006-06-16T00:00:00Z'), GOOD_BIAS = -95; end
+		if (cl_id == 2) && (efwt(1,1)>iso2epoch('2011-04-30T00:00:00Z')), GOOD_BIAS = -18; end
 		
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
