@@ -11,8 +11,9 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 %     quality_column    the number of the column in 'data' which holds the quality flag.
 %     mask_type         0=default
 %                       1=spacecraft potential P caa_export_new() L2/3 processing
-%                       flag and for for internal burst PBurst & EBurst L2.
-%                       2=internal burst BBurst L2 (BITMASK_RESET & BITMASK_PROBE_SATURATION only)
+%                       2=internal burst PBurst L2
+%                       3=internal burst EBurst L2
+%                       4=internal burst BBurst L2 (BITMASK_RESET & BITMASK_PROBE_SATURATION only)
 %
 % Output:
 %     result            the set of data from input, with bitmask and quality flag added.
@@ -32,13 +33,23 @@ if isempty(data), warning('Data is empty: Cannot identify problems in empty data
 [rows columns] = size(data);
 [data_start_time, data_time_span] = irf_stdt(result(1,1), result(end,1));
 
-sc_potential = 0                      % Default 0. No sc potential processing (P).
+iburst=0;
+sc_potential = 0;                      % Default 0. No sc potential processing (P).
 if nargin < 7                          % If set to 1 only some of the bitmask values and modified quality factors are used.
     mask_type = 0;
-elseif mask_type==1
-        sc_potential = 1     
+else
+    if mask_type==1
+        sc_potential = 1;
+    elseif mask_type==2
+        sc_potential = 1;
+        iburst = 1;
+    elseif mask_type==3
+        iburst = 1;
+    elseif mask_type==4
+        iburst = 1;
+    end
 end
-        
+
 qindex=sc_potential+1;                 % Index# in quality factors.
 if nargin < 6
    quality_column = columns;           % Default quality flag to the last column in 'data'.
@@ -157,7 +168,7 @@ if DEBUG, keyboard, end
 %        Since this is the case, check for problems in order of ascending
 %        maximum quality!
 
-if ~sc_potential && mask_type~=2
+if ~sc_potential && mask_type~=4
     % Mark bad data during burst dump:
     %[problem_intervals, ok] = ...
     %   caa_get(data_start_time, data_time_span, spacecraft_id, 'BDUMP?');
@@ -176,6 +187,24 @@ if ~sc_potential && mask_type~=2
     clear ok problem_intervals msg
 end
 
+% Mark probe saturation due to internal burst spike filter
+if iburst
+%    'iburst spike'
+%   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
+%      spacecraft_id, irf_ssub('PROBESA?p!', spacecraft_id, probe_id));   
+        [ok, problem_intervals, msg] = c_load(irf_ssub('SPIKE?', spacecraft_id));
+        if ok
+                if ~isempty(problem_intervals)
+                   irf_log('proc', irf_ssub('marking saturated probe spike IB?',spacecraft_id))
+                   if DEBUG, assignin('base', 'probesat', problem_intervals); end
+           result = caa_set_bitmask_and_quality(result, problem_intervals, ...   
+            BITMASK_PROBE_SATURATION, QUALITY_PROBE_SATURATION(qindex), bitmask_column, quality_column);
+                end
+%       else irf_log('load', msg)
+        end
+        clear ok problem_intervals msg
+end
+
 % Mark bad bias around EFW reset
 %[problem_intervals, ok] = ...
 %   caa_get(data_start_time, data_time_span, spacecraft_id, 'BADBIASRESET?');
@@ -192,7 +221,7 @@ if ok
 end
 clear ok problem_intervals msg
 
-if mask_type~=2
+if mask_type~=4
     % Mark bad bias from bias current indication
     for probe_id = probe_list
     %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
@@ -248,7 +277,7 @@ for probe_id = probe_list
 	clear ok problem_intervals msg
 end
 			
-if mask_type~=2
+if mask_type~=4
     % Mark probe saturation due to low density
     for probe_id = probe_list
     %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
