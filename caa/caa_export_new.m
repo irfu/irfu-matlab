@@ -36,6 +36,7 @@ if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get !
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
+%BADIBFILENAME=[getenv('HOME') '/iblist.txt'];
 DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
 FILL_VAL = -1.0E9;
@@ -47,7 +48,7 @@ old_pwd = pwd;
 dirs = caa_get_subdirs(st, dt, cl_id);
 %if isempty(dirs), disp(['Invalid (empty?) dir: ' sp]), cd(old_pwd); status
 %= 1; return, end
-if 0
+if 1
 if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    st_temp = fromepoch(st);
    if dt ~= 24*3600 || st_temp(4) ~= 00
@@ -55,13 +56,16 @@ if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    end
 end
 end
+ibsave=false;
 result = [];
 result_com = {};
+
 
 if lev==1
 	if strcmp(caa_vs, 'IB')
         vs = irf_ssub('IB?',cl_id);
 		v_size = 8;
+        alldi='';
     elseif regexp(caa_vs,'^P(1|2|3|4|12|32|34)?$')
 		id = str2double(caa_vs(2:end));
 		if id <=4, vs = irf_ssub('P10Hz?p!',cl_id,id);
@@ -139,7 +143,7 @@ else
 		if lev==2
             % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('BB?',cl_id);
-			v_size = 7;
+			v_size = 5;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -147,7 +151,7 @@ else
 		if lev==2
             % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('EB?',cl_id);
-			v_size = 6;
+			v_size = 5;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -156,6 +160,11 @@ else
 	end
 end
 
+% Moved to c_ctl
+%if regexp(caa_vs,'^(P|E|B)B$') 
+    % Read list of bad iburst files for no L2 export.
+%    badib=ibfn2epoch(BADIBFILENAME);
+%end
 
 for dd = 1:length(dirs)
    d = dirs{dd};
@@ -373,6 +382,11 @@ for dd = 1:length(dirs)
          if exist(mfn,'file')
            r=load(mfn);
            di=eval(irf_ssub('r.ib?_info',cl_id));
+           if isempty(alldi)
+                alldi=di;
+           else
+                alldi=[alldi ', ' di];
+           end
            data=eval(irf_ssub('r.iburst?',cl_id));
            ok=1;
          else
@@ -389,6 +403,46 @@ for dd = 1:length(dirs)
             global c_ct
          end
          ASPOC = c_ct{1,cl_id}.aspoc;
+
+         % Export empty file if BB or EB data exist
+         % Check for B data
+         mfn='./mEFWburst.mat';
+         if exist(mfn,'file')
+             bsc=load(mfn);
+             finbsc=fieldnames(bsc);
+             fnl=size(finbsc,1);
+             found=0;
+             for bscix=1:fnl % find BSC data
+%               finbsc{bscix}
+               if length(finbsc{bscix})<5
+                   continue;
+               end
+               if strcmp(finbsc{bscix}(1:5),'diBSC')
+                 ibsave=true;
+                 break;
+               end
+             end
+         end
+         if ~ibsave
+             % Check for E data
+             mfn='./mEFWburst.mat'; % For E
+             if exist(mfn,'file')
+                 e=load(mfn);
+                 fine=fieldnames(e);
+                 fnl=size(fine,1);
+                 found=0;
+                 for eix=1:fnl % find dibE data
+    %               fine{eix}
+                   if length(fine{eix})<4
+                       continue;
+                   end
+                   if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                     ibsave=true;
+                     break;
+                   end
+                 end
+             end
+         end
 
          pvar='bP?';
          [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
@@ -444,11 +498,37 @@ for dd = 1:length(dirs)
             global c_ct % includes aspoc active values
          end
          if isempty(c_ct)
-            c_ctl('load_aspoc_active');
+            c_ctl('load_bad_ib');
             global c_ct
          end
-         ASPOC = c_ct{1,cl_id}.aspoc;
- 
+
+         % Export empty file if PB or EB data exist. Ex 110227205958we.03
+         % Check for P data
+         pvar='bP?';
+         [ok,data,msg] = c_load(pvar,cl_id);
+         if ok && ~isempty(data)
+            ibsave=true;
+         else
+             % Check for E data
+             mfn='./mEFWburst.mat';
+             if exist(mfn,'file')
+                 e=load(mfn);
+                 fine=fieldnames(e);
+                 fnl=size(fine,1);
+                 found=0;
+                 for eix=1:fnl % find dibE data
+    %               fine{eix}
+                   if length(fine{eix})<4
+                       continue;
+                   end
+                   if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                     ibsave=true;
+                     break;
+                   end
+                 end
+             end
+         end
+
          data=[];
          ok=0;
          mfn='./mEFWburst.mat'; % Read Bx By Bz
@@ -477,34 +557,14 @@ for dd = 1:length(dirs)
                    irf_log('proc','short data padded');
                end
                dsize=size(data, 1);
-               data = [data zeros(dsize, 4)]; % add columns: probe# aspoc bitmask quality
-               data(:, 5) = 0; % Set probe#.
+               data = [data zeros(dsize, 2)]; % add columns: bitmask quality
 
-               if isempty(ASPOC)
-                   irf_log('proc','no ASPOC active data');
-               else
-                   for i=1:size(ASPOC,1)
-                       %i
-                       if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
-                           continue;
-                       end
-                       if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
-                           break;
-                       end
-                       irf_log('proc','marking ASPOC active');
-                       for j=1:dsize
-                          if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
-                               data(j,4)=1;
-                           end
-                       end
-                   end
-               end
                data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
                quality_column = size(data, 2);
                bitmask_column = quality_column - 1;
 
                % Identify and flag problem areas in data with bitmask and quality factor:
-               data = caa_identify_problems(data, lev, num2str(1), cl_id, bitmask_column, quality_column, 3);
+               data = caa_identify_problems(data, lev, num2str(1), cl_id, bitmask_column, quality_column, 4);
              else
                 irf_log('load','No diBSC data matrix in mEFWburst.mat. No BB.');
              end
@@ -516,10 +576,36 @@ for dd = 1:length(dirs)
             global c_ct % includes aspoc active values
          end
          if isempty(c_ct)
-            c_ctl('load_aspoc_active');
+            c_ctl('load_bad_ib');
             global c_ct
          end
-         ASPOC = c_ct{1,cl_id}.aspoc;
+
+         % Export empty file if PB or BB data exist. Ex 110227205958we.03
+         % Check for P data
+         pvar='bP?';
+         [ok,data,msg] = c_load(pvar,cl_id);
+         if ok && ~isempty(data)
+            ibsave=true;
+         else
+             % Check for B data
+             mfn='./mEFWburst.mat';
+             if exist(mfn,'file')
+                 bsc=load(mfn);
+                 finbsc=fieldnames(bsc);
+                 fnl=size(finbsc,1);
+                 found=0;
+                 for bscix=1:fnl % find BSC data
+    %               finbsc{bscix}
+                   if length(finbsc{bscix})<5
+                       continue;
+                   end
+                   if strcmp(finbsc{bscix}(1:5),'diBSC')
+                     ibsave=true;
+                     break;
+                   end
+                 end
+             end
+         end
  
          data=[];
          ok=0;
@@ -544,34 +630,15 @@ for dd = 1:length(dirs)
                [ok,probe_info,msg] = c_load([ fine{eix} '_info']);
                data=eval(['e.' fine{eix}]);
                ok=1;
-               % Extend data array to accept (probe#,) aspoc, bitmask and quality (3 new columns at the end 1 reused)
+               % Extend data array to accept (probe#,) bitmask and quality (2 new columns at the end 1 reused)
                if size(data,1) == 1    % Fix short data
                    data=[data;[data(1,1)+4 NaN NaN NaN]];
                    irf_log('proc','short data padded');
                end
                dsize=size(data, 1);
-               data = [data zeros(dsize, 3)]; % add columns: (probe#) aspoc bitmask quality
+               data = [data zeros(dsize, 2)]; % add columns: (probe#) bitmask quality
                data(:, 4) = str2num(probe_info.probe); % Set probe#.
 
-               if isempty(ASPOC)
-                   irf_log('proc','no ASPOC active data');
-               else
-                   for i=1:size(ASPOC,1)
-                       %i
-                       if data(1,1)>ASPOC(i,1) && data(1,1)>ASPOC(i,2) %  too early: next
-                           continue;
-                       end
-                       if data(dsize,1)<ASPOC(i,1) && data(dsize,1)<ASPOC(i,2) % too late: stop
-                           break;
-                       end
-                       irf_log('proc','marking ASPOC active');
-                       for j=1:dsize
-                          if data(j,1)>=ASPOC(i,1) && data(j,1)<=ASPOC(i,2)
-                               data(j,4)=1;
-                           end
-                       end
-                   end
-               end
                data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
                quality_column = size(data, 2);
                bitmask_column = quality_column - 1;
@@ -591,15 +658,17 @@ for dd = 1:length(dirs)
 %   if ~isempty(data)
 %       data(1:10,2:end)
 %   end
-   if (all(~ok) || isempty(data)) && ~strcmp(caa_vs(end), 'B')
-   	irf_log('load', ['No ' vs]);
-   	cd(old_pwd)
+   if (all(~ok) || isempty(data))
+        if ~regexp(caa_vs,'^(I|P|E|B)B$') 
+            irf_log('load', ['No ' vs]);
+        end
+        cd(old_pwd)
 %   	return
-      continue
+        continue
    end
    d_info = []; ok = 0;
    try
-      if ~strcmp(caa_vs, 'SFIT') && ~strcmp(caa_vs(end), 'B')
+      if ~strcmp(caa_vs, 'SFIT') && ~regexp(caa_vs,'^(I|P|E|B)B$') 
         [ok, d_info] = c_load([vs '_info'],'var');
       else
    	    d_info = []; ok = 0;
@@ -657,7 +726,32 @@ for dd = 1:length(dirs)
    	   data = irf_tlim(data, t_int);
    	   if isempty(data)
    		   irf_log('save', 'Saving empty subinterval')
-   	   end 
+       end
+       % Check for bad iburst file
+%if 0
+       if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
+           if ~exist('c_ct','var')
+                global c_ct % includes bad ib files
+           end
+           if isempty(c_ct{1,1}.badib)
+                c_ctl('load_bad_ib');
+                global c_ct
+           end
+           badiburst = c_ct{1,cl_id}.badib;
+           tint = irf_tlim(badiburst,t_int_full);
+           if ~isempty(tint) % remove iburst
+               for i=1:size(tint,1)
+                    if ~isempty(data)
+                        sizemem=size(data,1);
+                        data = irf_tlim(data,tint(i)-60,tint(i)+240,1); % remove -1 min to +4 min
+                        if size(data,1)~=sizemem
+                            irf_log('save', [caa_vs num2str(cl_id) ' L2 iburst removed. Data marked as bad.'])
+                        end
+
+                    end
+               end
+           end
+       end
    	end
    else  % isempty(st) || isempty(dt)   == ~NOR == OR
    	[iso_ts,dtint] = caa_read_interval;
@@ -950,7 +1044,7 @@ cd(old_pwd)
 % Check for non-monotonic time, and remove data within 2 HK packets (10.4s)
 if ~isempty(data)
     tdiff=0.5e-3;
-    if strcmp(caa_vs, 'IB') || strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
+    if regexp(caa_vs,'^(I|P|E|B)B$') 
         tdiff=1e-5;
     end
     indx=find(diff(data(:,1)) < tdiff);
@@ -1044,12 +1138,12 @@ if strcmp(caa_vs, 'SFIT') && nanfill ~= -1
 elseif strcmp(caa_vs, 'IB')
     if lev==1
         if isempty(data)
-            di='na';
+            alldi='na';
         end
-        buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' di ' ' dsc.com ]);
-    else
-        buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' alldi ' ' dsc.com ]);
     end
+elseif regexp(caa_vs,'^(P|E|B)B$') && ibsave && isempty(data)
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'No iburst ' caa_vs ' data. ' dsc.com ]);    
 else
     buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
 end    
@@ -1060,7 +1154,7 @@ buf = sprintf('%s%s',buf,'!                       Data                          
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'DATA_UNTIL = "END_OF_DATA"\n');
 
-if ~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~strcmp(caa_vs, 'BB')
+if (~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~strcmp(caa_vs, 'BB')) || ~isempty(data) || ibsave
     [fid,msg] = fopen([file_name ext_s],'w');
     if fid < 0
         irf_log('save',['problem opening CEF file: ' msg])
@@ -1106,7 +1200,7 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
-elseif strcmp(caa_vs, 'IB') || strcmp(caa_vs, 'PB') || strcmp(caa_vs, 'EB') || strcmp(caa_vs, 'BB')
+elseif regexp(caa_vs,'^(I|P|E|B)B$') && ~ibsave 
    irf_log('proc','Will not export empty internal burst IB, PB, EB or BB files')
 else
    disp(['Filename : ' file_name ext_s ' (Empty)' ]);
@@ -1192,3 +1286,4 @@ dir_list = good_dir;
 %		cd(subdir)
 %		[st_t,dt_tmp] = caa_read_interval();
 %		if isempty(st_t), continue, end
+
