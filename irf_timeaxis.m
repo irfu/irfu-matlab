@@ -141,9 +141,9 @@ for j=1:numel(h)
 end
 
 xlimlast=get(h(end),'xlim');
-start_time = fromepoch(xlimlast(1) + t_start_epoch );
+start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
 time_label = datestr( datenum(start_time),1 );
-if flag_date == 1 && flag_add_extra_xlabels ~= 1, 
+if flag_date == 1 && flag_add_extra_xlabels ~= 1 && diff(xlimlast)<=3600*24*100, 
     xlabel(h(end),time_label);  % add data only if no extra xlabels
 end
 if flag_labels == 0, 
