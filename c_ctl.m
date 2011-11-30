@@ -12,6 +12,7 @@ function out=c_ctl(varargin)
 % c_ctl(sc_list,ctl_name,value,[ctl_name1,value1...]) % equvalent to set
 % c_ctl('load_hk_cal')
 % c_ctl('load_aspoc_active')
+% c_ctl('load_bad_ib');
 %
 % $Id$
 
@@ -72,6 +73,8 @@ if ischar(args{1})
 				def_ct.guard = zeros(256,5,'single');
 
                 def_ct.aspoc = [];
+
+                def_ct.badib = [];
 
                 c_ct{1} = def_ct;
 				c_ct{2} = def_ct;
@@ -149,6 +152,20 @@ if ischar(args{1})
         c_ct{2}.aspoc = readaspocactive('C2_CP_ASP_ACTIVE_ALL_DATA.cef');
         c_ct{3}.aspoc = readaspocactive('C3_CP_ASP_ACTIVE_ALL_DATA.cef');
         c_ct{4}.aspoc = readaspocactive('C4_CP_ASP_ACTIVE_ALL_DATA.cef');
+	elseif strcmp(args{1},'load_bad_ib')
+
+        global c_ct
+		if isempty(c_ct)
+			irf_log('fcal','CTL is not initialized. Initializing...') 
+			c_ctl('init') 
+			global c_ct
+        end
+
+        badiblist=ibfn2epoch('BAD_IB_L2_LIST_C1-4.txt');
+        for i=1:4
+            c_ct{i}.badib=badiblist{i};
+%size(c_ct{i}.badib)
+        end
 	elseif strcmp(args{1},'load_ns_ops')
 		global c_ct
 		if isempty(c_ct)
@@ -330,7 +347,12 @@ function ret = findhkcalmatrix( fid, searchstr )
     end
 
 function [ibias, puck, guard] = readhkcalmatrix( filen )
-    datapath='/data/cluster/cal/';
+    if ismac
+        datapath = '/Volumes/cluster/cal/';
+    else
+        datapath = '/data/cluster/cal/';
+    end
+
     fid = fopen([ datapath filen ], 'r');
 
     if fid >= 0
@@ -378,7 +400,7 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
 
         fclose(fid);
     else
-        irf_log('load',['file ' datapath filen ' not found']);
+        irf_log('load',['File ' datapath filen ' not found']);
     end
 
 function aspa = readaspocactive( filen )
@@ -387,13 +409,18 @@ function aspa = readaspocactive( filen )
 %   aa(x,1) is the ON date in epoch format
 %   aa(x,2) is the OFF date in epoch format
 %
-    datapath='/data/caa/cef/ASPOC/';
+    if ismac
+        datapath = '/Volumes/caa/cef/ASPOC/';
+    else
+        datapath = '/data/caa/cef/ASPOC/';
+    end
+
     fid = fopen([ datapath filen ], 'r');
 
     aspa=[];
     cols=0;
     if fid==-1
-        irf_log('load',['file ' datapath filen ' not found']);
+        irf_log('load',['File ' datapath filen ' not found']);
         return
     end
     s = '';
@@ -431,6 +458,43 @@ function aspa = readaspocactive( filen )
         aspa(i,1) = iso2epoch(C1{i});
         aspa(i,2) = iso2epoch(C2{i});
     end
+    
+function timeclid = ibfn2epoch( filen )
+% Make an epoch list of burst start time and cluster ID from
+% a text file with burst file names from /(data|Volumes)/cluster/burst.
+
+    if ismac
+        datapath = '/Volumes/caa/cef/iburst/';
+    else
+        datapath = '/data/caa/cef/iburst/';
+    end
+    
+    fid = fopen([ datapath filen ],'r'); %Open the text file that contain the information about the burst.
+    if fid==-1
+        irf_log('load',['File ' datapath filen ' not found']);
+        return
+    end
+    i=0;
+    cnt=zeros(1,4);
+    timeclid={ [] [] [] [] };
+    s='Empty';
+    while ~feof(fid)
+        tline = fgetl(fid);
+        if length(tline)>=17
+            s = tline(1:17);
+            cl = str2double(s(end));
+            if cl<1 || cl>4
+                error(['Spacecraft ID must be 1..4. Value: ' num2str(cl) ]);
+            end
+            full_time = iso2epoch(['20' s(1:2) '-' s(3:4) '-' s(5:6) 'T' s(7:8) ':' s(9:10) ':' s(11:12) 'Z']);
+            cnt(cl)=cnt(cl)+1;
+            timeclid{cl}(cnt(cl),1)=full_time;
+        end
+    end
+%cnt
+    irf_log('proc',['Last bad L2 iburst file name read: ' s]);
+    fclose(fid);
+
 
 function c_ctl_usage
 	disp('Usage:')
@@ -447,3 +511,4 @@ function c_ctl_usage
 	disp('  c_ctl(''sc_list'',''ctl'',value)')
 	disp('  c_ctl(''load_hk_cal'')')
 	disp('  c_ctl(''load_aspoc_active'')')
+	disp('  c_ctl(''load_bad_ib'')')
