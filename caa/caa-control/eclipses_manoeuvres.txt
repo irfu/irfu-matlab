@@ -1,0 +1,1206 @@
+Cluster eclipses and manoeuvres
+
+Checked MOR 1-73 and 126-438 = 000721-011230 and 021230-081231
+/PAL 100428
+
+General information (2001-2003 only):
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/calendar.htm
+
+--------------------------------------------------
+2000
+
+000814 Manoeuvre (LEOP/TOP)
+MOR 3
+C1 11:15, 14:45
+C4 10:15, 13:15
+
+000815 - 000820 Manoeuvres (orit trim + attitude)
+MOR 3
+000815 C2
+000816 C3
+000817 C1
+000818 C4
+000819 C2,3
+000820 C2,3
+
+000823 - 000826 Manoeuvres (orbit trim + attitude)
+MOR 4
+000823 C1,4
+000824 C2,3
+000826 C1,3,4
+
+000828 - 000904 Eclipses (long)
+MOR 4-5
+C2 000828
+C1,2,3,4 000830, 000901-2, 000904
+
+000905 Manoeuvre (spin)
+MOR 5
+C2 21:00, 113 s
+
+000908 Manoeuvre (spin)
+MOR 5
+C1 01:00, 117 s
+
+000918 Manoeuvre (spin)
+MOR 7
+C2 20:00, 74 s
+
+000925 Manoeuvre (spin)
+MOR 8
+C1 19:38, 65 s
+
+001004 Manoeuvre (spin)
+MOR 9
+C2 19:31:12, 127 s
+
+001006 Manoeuvre (spin)
+MOR 9
+C1 19:45:10, 122 s
+
+001011 Manoeuvre (spin)
+MOR 10
+C3 20:59:18, 113 s
+
+001018 Manoeuvres (delta-v + spin)
+MOR 11
+C1 02:39:26 (delta-v compensation)
+C3 15:29:27, 73 s
+
+001026 Manoeuvre (spin)
+Mor 12
+C4 13:45:10, 112 s
+
+001102 Manoeuvre (spin)
+MOR 13
+C4 16:14:47, 73 s
+
+001111 Manoeuvre (spin)
+MOR 14
+C3 20:00, 121 s
+
+001116 Manoeuvre (spin)
+MOR 15
+C4 17:59, 121 s
+
+001118 Manoeuvre (attitude)
+MOR 15
+C3 14:00, 330 s
+
+001128 Manoeuvres (attitude)
+MOR 17
+C1 17:00, 346 s
+C2 13:00, 339 s
+C4 21:15, 322 s
+
+001202 Manoeuvres (axial)
+MOR 17
+C1 07:36
+C4 07:42
+
+001221 Manoeuvres (axial)
+MOR 20
+C1 08:25:49
+C2 08:29:44
+C4 08:31:14
+
+--------------------------------------------------
+2001
+
+010107 Manoeuvres (attitude)
+MOR 22
+C1 11:33:05, 137 s
+C2 11:30:11, 147 s (wrong time 11:37:11 in MOR)
+
+010109 Manoeuvres (attitude)
+MOR 23
+C3 03:37:11
+C4 03:35:23
+
+010123 Manoeuvre (axial)
+MOR 25
+C3 15:53:53
+
+010214 - 010314 Eclipses (short)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/Short_eclipse_season_2001.htm
+MOR 28-32
+C1,2,3,4 010214, 010216, 010218
+C1,2,3,4 010221, 010223
+C1,2,3,4 010225-6, 010228, 010302
+C1,2,3,4 010305, 010307, 010309
+C1,2,3,4 010312, 010314
+
+010418 Manoeuvres (attitude)
+MOR 37
+C1 07:30:00
+C2 09:00:00
+C3 12:00:00
+C4 15:00:00
+
+010510 - 010603 Manoeuvres (constellation)
+MOR 40-43
+010510 C1,C3.C4
+010513 C2,C3
+010516 C1
+010517 C2,C3
+010520 C1
+010521 C2,C3,C3,C4
+010525 C1,C2,C3,C4
+010529 C1,C2,C3,C4
+010603 C3,C4
+
+010716 - 010717 Manoeuvres (attitude)
+MOR 50
+010716 21:45 C3
+010717 01:00 C2
+010717 04:45 C4
+010717 07:15 C1
+
+010721 Manoeuvre (orbit correction)
+MOR 50
+03:14:45 C1
+
+010831 - 010905 Eclipses (long)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/Long_eclipses_seasons_2001.txt
+MOR 56-57
+010831 C1,C2,C3,C4
+010903 C1,C2,C3,C4
+010905 C1,C2,C3,C4
+
+011022 Manoeuvres (attitude)
+MOR 64
+19:30 C4
+21:15 C3
+21:45 C1
+22:15 C2
+
+011026 Manoeuvre (orbit correction)
+not confirmed
+
+--------------------------------------------------
+2002
+
+020106 - 020213 Manoeuvres (constellation)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2002_01.htm
+
+020113 Eclipse (SC2 short, Moon?)
+not confirmed
+
+020217 - 020316 Eclipses (short)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/Short_eclipse_season_2002_v02.htm
+
+020416 Manoeuvre (attitude)
+not confirmed
+
+020616 - 020722 Manoeuvres (constellation)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/cma_ns2_cu3.pdf
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2002_06.htm
+
+020902 - 020906 Eclipses (long)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/Long_eclipse_season_2002_v01.htm
+
+021007 Manoeuvres (attitude)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2002_10.htm
+C1 22:45-22:50
+C2 19:00-19:05
+C3 22:00-22:05? (no EFW data)
+C4 20:00-20:05
+
+021016 Manoeuvres (orbit correction)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2002_10.htm
+
+021105 Manoeuvre (uncontrolled)
+C2 08:28-08:40 after ADCE switchover
+
+--------------------------------------------------
+2003
+
+030104 Eclipsees (moon)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/moon_eclipses_january_2003.txt
+MOR 126
+C1 00:28-00:47
+C3 00:22-01:22
+C4 01:14-01:47
+
+030115 Manoeuvres (attitude)
+MOR 128
+C1 17:00-17:05
+C2 12:00-12:05
+C3 18:00-18:05
+C4 13:00-13:05
+
+030124 Manoeuvres (orbit trim)
+MOR 129
+C2,3,4 03:30
+
+030216 - 030319 Eclipses (short)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/Short_eclipse_season_2003.htm
+MOR 132-137
+C2,3,4 030216
+C1,2,3,4 030219, 030221
+C1,2,3,4 030224, 030226, 030228
+C1,2,3,4 030303, 030305, 030307
+C1,2,3,4 030310, 030312, 030315
+C1,3,4 030317
+C4 030319
+
+030425 Manoeuvres (attitude)
+MOR 142
+C1 10:00-10:05
+C2 07:00-07:05
+C3 12:00-12:05
+C4 08:30-08:35
+
+030502-3 Manoeuvres (orbit?)
+not confirmed
+
+030521 Manoeuvres (spin)
+not confirmed
+
+030604 - 030712 Manoeuvres (constellation)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2003_06_v01.htm
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/manoeuvres_2003_06_v02.htm
+http://jsoc1.bnsc.rl.ac.uk/pub/msp/june_man_raw.pdf
+E-mail 2003-11-06: 
+MOR 148-154
+C3 030604
+C1,2 030607
+C3,4 030608
+C1,2,3,4 030609, 030614, 030618, 030621, 030624, 030629
+C1,2,3 030702
+C1,2,3,4 030707
+C1,3,4 030712
+
+030822, 030828 Manoeuvres (attitude)
+not confirmed
+
+030903 - 030908 Eclipses (long)
+http://jsoc1.bnsc.rl.ac.uk/pub/SpecialEvents/profiles_of_eclipses_in_sept03.txt
+MOR 161-163
+C1,2,3,4 030903, 030905, 030908
+
+030926 Manoeuvres (attitude)
+MOR 164
+C1 18:00
+C2 18:15
+C3 19:10
+C4 19:30
+
+030929 Manoeuvre (spin)
+MOR 165
+C4 20:00 (15.101 -> 14.970 rpm)
+
+031008 Manoeuvre (orbit)
+MOR 166
+C1 04:40:34
+C4 04:44:44
+
+--------------------------------------------------
+2004
+
+040107 Manoeuvres (attitude)
+MOR 179
+C1 17:30
+C2 15:00
+C3 15:30
+C4 18:15
+
+040116 Manoeuvres (orbit)
+MOR 180
+C1 01:42:18
+C3 01:43:58
+C4 01:46:27
+
+040220 - 040317 Eclipses (short)
+MOR 185-189
+C1,2,3,4 040220
+C1,2,3,4 040223, 040225, 040227
+C1,2,3,4 040301, 040303, 040305-6
+C1,2,3,4 040308, 040310, 040313
+C1,2,3,4 040315, 040317
+
+0404end Manoeuvres (attitude)
+not confirmed
+
+040502 - 040620 Manoeuvres (constellation)
+E-mail 2004-11-12: Constellation_change_Season2004_CL-MSC-RP-1003-OPS-OFC.pdf
+MOR 195-202
+040502 C1,2,3,4 Radial delta-v
+040503 C1,2,3,4 Radial delta-v
+040507 C1,2,3,4 Attitude
+040511 C2,3,4   Axial delta-v
+040512 C1,2,3,4 Radial delta-v
+040515 C1,2,3,4 Radial delta-v
+040519 C1,2,3,4 Attitude delta-v
+040521 C1,2,3,4 C1 Spin-up, C2,3,4 Spin-down
+040523 C4       Axial delta-v
+040524 C1,2,3   Axial delta-v
+040527 C1,2,3,4 Axial delta-v (not seen in EFW data)
+040530 C1,2,3   Radial delta-v
+040603 C1,2,3,4 Radial delta-v
+040607 C2,3,4   Axial trim delta-v
+040613 C1,3,4   Axial trim delta-v
+040620 C1,2,3,4 Axial trim delta-v
+
+
+040616 Eclipses (Moon)
+E-mail 2004-07-20: Microsoft Word - Moon eclipse 16June2004_CL-OPS-RP-1005-OPS-OFC.pdf
+MOR 202
+C1 10:05-10:57
+C2 10:03-10:52
+C3 10:07-10:43
+C4 09:57-10:48
+
+040822 Manoeuvres (attitude)
+C1 00:15-00:20
+C2 02:00-02:05 (no data)
+C3 02:30-02:35
+C4 01:00-01:05
+
+040828 Manoeuvres (trim)
+C2 10:22:41 (no data)
+C3 10:31:44 (no data)
+C4 10:13:39 (not seen in data)
+
+040905 - 040910 Eclipses (long)
+E-mail 2005-05-20: Long Eclipses 2004_CL-SC-RP-1002-OPS-OFC.pdf
+MOR 213-214
+C1,2,3,4 040905, 040907, 040910 (note wrong dates in MOR 214 page 8)
+
+041209 Manoeuvres (attitude)
+MOR 227
+16:30-16:35 C1
+17:00-17:05 C3
+19:00-19:05 C2
+19:30-19:35 C4
+
+041215 Manoeuvres (orbit correction)
+MOR 228
+19:49:42 C4
+19:50:18 C1
+19:58:19 C2
+20:06:41 C3
+
+--------------------------------------------------
+2005
+
+050220 - 050320 Eclipses (short)
+E-mail 2005-02-01: 2005 Short Cluster eclipses_ info to WBD_DSN.xls
+MOR 237-241
+050220
+050222,25,27
+050301,04,06
+050309,11,13
+050316,18,20
+
+050314  Manoeuvres (attitude)
+MOR 241
+10:30-10:35 C1
+11:00-11:05 C4
+15:30-15:35 C2
+16:00-16:05 C3 (Misprint: "16:30" in MOR)
+
+050408 Eclipses (Moon)
+E-mail 2005-04-25: CL-OPS-RP-1007-OPS-OFC.pdf
+MOR 244
+23:17-23:28 C4
+23:24-23:39 C2
+23:29-23:52 C3
+
+050526 - 050706 Manoeuvres (constellation)
+E-mail 2005-05-18: Constellation_2005_SUMMARY.xls
+E-mail 2005-08-04: Constellation_Change_Season_May-July 2005_(CL-OPS-RP-1012).pdf
+MOR 251-257
+050526 C2,3,4 (axial)
+050530 C1 (radial)
+050601 C4,3 (axial), C2 (radial)
+050602 C1 (radial)
+050605 C2,1 (attitude)
+050606 C1 (spin-up)
+050608 C4 (radial)
+050610 C2 (radial)
+050611 C2,1 (radial)
+050614 C1,2 (radial) (gave SAA < 93.2 on C2)
+050615 C3 (radial)
+050618 C1,2,3,4 (attitude) (SAA on C2 ok again)
+050620 C1,2,3,4 (spin-up)
+050624 C1,2,3,4 (axial)
+050629 C1,2,4 (axial)
+050630 C1,2,3,4 (radial)
+050630 C1,2,3,4 (axial)
+050701 C1,2,3,4 (radial)
+050706 C1,2,3,4 (axial)
+
+050605 Eclipses (Moon)
+MOR 252
+16:29-17:06 C3
+17:19-18:07 C1
+
+050905 - 050916 Eclipses (long)
+E-mail 2005-09-05: long eclipses season-summary.xls
+MOR 266-267
+050905 C2
+050907 C2,3,4
+050909 C2,3,4
+050912 C1,2,3,4
+050914 C1,3,4
+050916 C1
+
+051005-06 Manoeuvres (attitude)
+MOR 270
+051005 19:00 C2
+051005 20:00 C4
+051005 23:30 C1
+051006 00:30 C3
+
+051102 Manoeuvres (phasing)
+MOR 274
+17:20:50 C2
+18:19:32 C1
+20:37:19 C3
+20:51:39 C4
+
+051114 Manoeuvres (phasing)
+MOR 276
+16:05:30 C2
+16:46:34 C1
+17:16:11 C3
+18:51:36 C4
+
+051119 Manoeuvres (phasing)
+MOR 276
+10:15:52 C2
+10:56:14 C1
+11:25:38 C3
+12:59:50 C4
+
+051201 Eclipse (moon)
+MOR 278
+07:37-08:01 C4
+
+--------------------------------------------------
+2006
+
+060106 Manoeuvres (attitude)
+MOR 283
+12:00 C2
+13:00 C4
+14:00 C1
+15:00 C3
+
+060113 Manoeuvres (trim)
+MOR 284
+03:43:16 C2
+04:12:17 C1
+04:36:26 C3
+06:00:12 C4
+
+060222-060327 Eclipses (short + moon penumbra)
+MOR 290-295
+060222 14:19-14:38 C2
+060224 23:18-23:47 C2
+060224 23:50-00:10 C3
+060225 01:05-01:26 C4
+060227 08:21-08:58 C2
+060227 08:49-09:04 C1 (missing in MOR)
+060227 08:50-09:21 C3
+060227 10:05-10:38 C4
+060228 05:21-06:00 C1 moon penumbra
+060228 03:35-04:23 C3 moon penumbra
+060228 04:22-04:59 C4 moon penumbra
+060301 17:51-18:19 C1
+060301 17:28-18:09 C2
+060301 17:54-18:32 C3
+060301 19:09-19:47 C4
+060304 02:53-03:28 C1
+060304 02:33-03:18 C2
+060304 02:57-03:39 C3
+060304 04:11-04:53 C4
+060306 11:54-12:34 C1
+060306 11:37-12:21 C2
+060306 11:59-12:44 C3
+060306 13:13-13:58 C4
+060308 20:57-21:40 C1
+060308 20:41-21:27 C2
+060308 21:03-21:49 C3
+060308 22:16-23:02 C4
+060311 06:01-06:46 C1
+060311 05:48-06:32 C2
+060311 06:08-06:54 C3
+060311 07:21-08:07 C4
+060313 15:06-15:52 C1
+060313 14:56-15:38 C2
+060313 15:14-15:59 C3
+060313 16:27-17:12 C4
+060316 00:13-00:58 C1
+060316 00:04-00:43 C2
+060316 00:21-01:04 C3
+060316 01:33-02:16 C4
+060318 09:19-10:03 C1
+060318 09:13-09:47 C2
+060318 09:28-10:07 C3
+060318 10:40-11:19 C4
+060320 18:25-19:06 C1
+060320 18:23-18:48 C2
+060320 18:35-19:09 C3
+060320 19:47-20:20 C4
+060323 03:31-04:08 C1
+060323 03:44-04:08 C3
+060323 04:55-05:19 C4
+060325 12:38-13:09 C1 (no EFW data)
+060327 21:51-22:11 C1 (no EFW data)
+
+060316 Manoeuvre (uncontrolled)
+C3 14:18:41 (Battery leak?)
+
+060320 Manoeuvre (uncontrolled)
+C1 00:04:08 (Battery leak?)
+
+060407 Manoeuvre (attitude)
+MOR 296
+07:00 C3
+08:00 C2
+13:00 C1
+20:30 C4
+
+060519 Manoeuvre (orbit)
+MOR 302
+07:07:03 C1
+07:04:00 C2
+07:13:34 C3
+08:13:14 C4
+
+060526 Eclipse (moon)
+MOR 303
+16:24:01-16:37:32 C3
+
+060614 Manoeuvre (orbit)
+MOR 306
+10:22:47 C2
+10:47:00 C1
+11:29:58 C3
+13:06:39 C4
+
+060621 Manoeuvre (trim)
+MOR 307
+13:44:10 C2
+14:07:55 C1
+14:49:39 C3
+16:26:39 C4
+
+060628 Manoeuvre (trim)
+MOR 308
+16:59:14 C2
+17:22:56 C1
+19:42:14 C4
+
+060710-060711 Manoeuvre (attitude)
+MOR 310
+060710 07:00 C1 (no data)
+060710 08:00 C2 (no data)
+060711 12:30 C3 (no data)
+060711 15:00 C4 (no data)
+
+060720 Manoeuvre (trim)
+MOR 311
+03:30 C1
+03:30 C2
+
+060724-060725 Moon eclipses
+MOR 312
+060724 23:35-00:00 C1
+060725 00:01-00:28 C3
+060725 01:22-01:46 C4
+
+060908-060918 Eclipses (long)
+Orbits 953-957
+060908 17 - 060909 06 C2 off
+060910 17 - 060911 1530 C2 off
+060910 19 - 060911 13 C3 off
+060910 21 - 060911 1430 C4 off
+060913 00 - 22 C3 off
+060913 02 - 24 C2 off
+060913 02 - 24 C4 off
+060915 09 - 060916 07 C3 off
+060915 1030 - 060916 0830 C4 off
+060915 1330 - 060921 02 C1 off
+060915 1930 - 24 C2 off
+060918 00 - 08 C3 off
+060918 0130 - 0930 C4 off
+
+060908-060918 Eclipses (long)
+MOR 318-320
+060908 18:12-20:18 C2
+060911 02:16-05:29 C2
+060911 00:59-02:48 C3
+060911 02:37-04:30 C4
+060913 11:01-14:00 C2
+060913 09:10-12:02 C3
+060913 10:50-13:42 C4
+060915 19:41-22:14 C1
+060915 20:32-21:40 C2
+060915 17:52-20:43 C3
+060915 19:32-22:23 C4
+060918 04:02-07:08 C1
+060918 02:56-04:57 C3
+060918 04:38-06:36 C4
+060920 12:49-15:32 C1
+060922 22:17-23:12 C1
+060922 10:40-22:01 C4
+
+061016-17 Manoeuvres (attitude)
+MOR 324
+061016 1830 C2
+061016 2100 C1
+061017 0830 C3 (12:30 in MOR, wrong)
+061017 1530 C4 (15:00 in MOR, wrong)
+
+061101 Manoeuvres (drift)
+MOR 326
+19:15 C2 (axial)
+20:32 C1 (radial)
+20:59 C3 (radial)
+22:44 C4 (radial)
+
+061120 Eclipse (moon penumbra)
+MOR 329
+18:16-18:37 C2
+18:18-18:39 C3
+18:28-18:52 C4
+
+061123 Manoeuvres (drift)
+MOR 329
+04:39-04:39:54 C1
+05:32-05:32:16 C3
+05:35-05:36:52 C4
+06:36-06:37:02 C2
+
+061130 Manoeuvres (trim)
+MOR 330
+08:51-08:51:02 C2
+08:57-08:57:09 C1
+09:47-09:47:03 C3
+09:54-09:54:16 C4
+
+061207 Manoeuvres (trim)
+MOR 331
+11:17-11:17:03 C1
+12:05-12:05:02 C3
+12:08-12:08:03 C4
+13:07-13:07:03 C2
+
+070111 Manoeuvres (attitude)
+MOR336
+10:45-10:50:16 C3
+12:45-12:48:58 C1
+14:35-14:38:48 C2
+16:35-16:38:59 C4
+
+070119 Manoeuvres (trim)
+MOR337
+08:00 C1, C2, C3 (1 pulse)
+
+070120 Eclipse (moon)
+MOR337
+03:50-04:59 C2
+
+070221-070405 Eclipses (short)
+MOR 342-348
+070221 15:26-15:39 C2
+070224 00:25-00:48 C2
+070224 00:35-00:49 C3
+070224 00:41-00:54 C4
+070226 09:26-09:55 C2
+070226 09:35-09:58 C3
+070226 09:40-10:03 C4
+070228 18:35-18:53 C1
+070228 18:30-19:03 C2
+070228 18:37-19:06 C3
+070228 18:43-19:11 C4
+070303 03:38-04:04 C1
+070303 03:34-04:10 C2
+070303 03:41-04:14 C3
+070303 03:47-04:19 C4
+070305 12:42-13:13 C1
+070305 12:39-13:18 C2
+070305 12:46-13:21 C3
+070305 12:51-13:27 C4
+070307 21:47-22:22 C1
+070307 21:44-22:24 C2
+070307 21:50-22:28 C3
+070307 21:56-22:34 C4
+070310 06:51-07:29 C1
+070310 06:48-07:29 C2
+070310 06:54-07:34 C3
+070310 07:00-07:40 C4
+070312 15:55-16:35 C1
+070312 15:52-16:34 C2
+070312 15:58-16:38 C3
+070312 16:03-16:44 C4
+070315 01:00-01:41 C1
+070315 00:57-01:38 C2
+070315 01:02-01:43 C3
+070315 01:07-01:49 C4
+070317 10:07-10:48 C1
+070317 10:04-10:44 C2
+070317 10:08-10:49 C3
+070317 10:14-10:55 C4
+070319 19:15-19:57 C1
+070319 19:13-19:51 C2
+070319 19:16-19:56 C3
+070319 19:22-20:02 C4
+070322 04:22-05:03 C1
+070322 04:20-04:55 C2
+070322 04:22-05:01 C3
+070322 04:28-05:07 C4
+070324 13:27-14:07 C1
+070324 13:26-13:57 C2
+070324 13:27-14:04 C3
+070324 13:33-14:10 C4
+070326 22:34-23:12 C1
+070326 22:33-22:58 C2
+070326 22:33-23:07 C3
+070326 22:39-23:13 C4
+070329 07:41-08:18 C1
+070329 07:44-07:59 C2
+070329 07:41-08:11 C3
+070329 07:47-08:17 C4
+070331 16:50-17:23 C1
+070331 16:50-17:14 C3
+070331 16:56-17:20 C4
+070403 02:00-02:28 C1
+070403 02:02-02:15 C3
+070403 02:08-02:21 C4
+070405 11:10-11:30 C1
+
+070418 Manoeuvres (attitude)
+MOR 350
+09:30-09:34:01 C2
+10:00-10:04:03 C4
+11:00-11:04:07 C1
+11:30-11:35:33 C3
+
+070524-070525 Manoeuvres (constellation)
+MOR 355
+070524 04:07:52-04:08:39 C3 (radial)
+070524 22:22:43-22:34:32 C3 (radial)
+070525 10:19:59-10:22:30 C2 (axial)
+070525 10:55:49-10:58:39 C1 (axial)
+070525 17:09:44-17:10:25 C3 (axial)
+
+070620 Manoeuvres (constellation)
+MOR 359
+10:12:10 C2 (43 pulses, axial)
+10:53:29 C1 (43 pulses, axial)
+14:39:12 C3 (1 pulse, axial)
+
+070627 Manoeuvres (trim)
+MOR 360
+13:39:59 C2 (2 pulses, axial)
+14:22:59 C1 (2 pulses, axial)
+17:50:00 C3 (1 pulse, axial)
+17:50:00 C4 (1 pulse, axial)
+
+070704 Manoeuvres (drift stop)
+MOR 361
+17:04 C2
+17:46 C1
+21:06 C3
+21:06 C4
+
+070714 Moon eclipse
+MOR 362
+07:45-08:06 C2
+08:15-08:32 C1
+
+070725 Manoeuvres (attitude)
+MOR 364
+06:30 C1
+12:00 C2
+13:00 C3
+14:00 C4
+
+070802 Manoeuvres (trim)
+MOR 365
+10:30 C1
+17:00 C3
+
+070912-070928 Eclipses (long)
+MOR 371-373
+070912 07:14-08:47 C2 (penumbra only)
+070914 15:09-18:15 C2
+070916 23:45-02:58 C2
+070917 00:30-02:35 C3
+070917 00:30-02:35 C4
+070919 10:15-10:25 C1 (penumbra only)
+070919 08:46-11:12 C2
+070919 08:51-11:41 C3
+070919 08:51-11:40 C4
+070921 17:43-20:22 C1
+070921 17:33-20:23 C3
+070921 17:32-20:22 C4
+070924 02:13-05:14 C1
+070924 02:27-04:49 C3
+070924 02:26-04:48 C4
+070926 10:57-13:44 C1
+070926 11:39-12:51 C3 (penumbra only)
+070926 11:38-12:52 C4 (penumbra only)
+070928 19:58-21:55 C1
+
+071024 Manoeuvres (attitude)
+MOR 377
+18:00 C2
+19:30 C3
+21:00 C4
+23:00 C1
+
+071030-071213 Manoeuvres (constellation)
+MOR 378-384
+071030 18:49:42 C4 (990 pulses, radial)
+071102 06:00:00 C2 (1296 pulses, radial)
+071104 12:50:00 C1 (1396 pulses, radial)
+071104 14:21:10 C3 (1460 pulses, radial)
+071105 15:22:38-15:42:40 C3 (290 pulses, radial)
+071108 03:04:10-03:32:15 C4 (407 pulses, radial)
+071110 08:55:09-08:55:12 C3 (1 pulse, radial)
+071110 09:58:48-10:20:26 C1 (312 pulses, radial)
+071110 10:57:17-11:22:54 C2 (370 pulses, radial)
+
+071111 Moon eclipses
+MOR 379
+05:27:37-07:20:38 C1
+05:41:42-06:48:44 C4
+08:20:30-10:18:11 C2
+
+071030-071213 Manoeuvres (constellation)
+MOR 378-384
+071116 10:43:04 C4 (1381 pulses, radial)
+071116 12:20:00 C1 (1059 pulses, radial)
+071116 13:40:00 C2 (888 pulses, radial)
+071118 17:36:56 C3 (1283 pulses, radial)
+071122 05:23:06 C3 (52 pulses, radial)
+071122 05:46:14 C1 (3 pulses, radial)
+071122 06:30:04 C4 (2 pulses, radial)
+071122 06:51:56 C2 (4 pulses, radial)
+071123 14:51:00 C4 30 pulses, radial)
+071123 14:50:00 C1 (9 pulses, radial)
+071123 16:07:38 C2 (65 pulses, radial)
+071123 18:12:00 C3 (31 pulses, radial)
+071129 09:03:59 C1 (1 pulse, radial)
+071129 09:43:03 C4 (1 pulse, radial)
+071129 10:03:02 C2 (1 pulse, radial)
+071129 12:00:00 C3 (spin-up + comp.)
+071130 15:27:31 C3 (9 pulses, radial)
+071204 03:53:43 C3 (54 pulses, radial)
+071206 12:24:02 C1 (1 pulse, radial)
+071206 13:01:22 C4 (1 pulse, radial)
+071206 13:18:34 C2 (1 pulse, radial)
+071208 22:05:45 C3 (3 pulses, radial)
+071213 16:14:03 C3 (1 pulse, radial)
+
+080128 Manoeuvres (attitude)
+MOR 391
+16:30 C1 (63 pulses)
+12:00 C2 (71 pulses)
+13:30 C3 (87 pulses)
+15:00 C4 (74 pulses)
+
+080204 Manoeuvres (orbit trim)
+MOR 392
+15:00:00 C1, C2, C3, C4 (1 pulse each)
+
+080222-080417 Eclipses (short)
+MOR 394-402
+080223 C2
+080225 C2, C3, C4
+080227 C2, C3, C4
+080301 C1, C2, C3, C4
+080303 C1, C2, C3, C4
+080305 C1, C2, C3, C4
+080308 C1, C2, C3, C4
+080310 C1, C2, C3, C4
+080313 C1, C2, C3, C4
+080315 C1, C2, C3, C4
+080317 C1, C2, C3, C4
+080320 C1, C2, C3, C4
+080322 C1, C2, C3, C4
+080324 C1, C2, C3, C4
+080327 C1, C2, C3, C4
+080329 C1, C2, C3, C4
+080401 C1, C2, C3, C4
+080403 C1, C2, C3, C4
+080405 C1, C2, C3, C4
+080408 C1, C2, C3, C4
+080410 C1, C3, C4
+080412 C1, C3, C4
+080415 C1, C3, C4
+080417 C1
+
+080425 Manoeuvres (attitude + C3 tilt)
+MOR 403
+12:00 C1 (52 pulses)
+13:00 C2 (52 pulses)
+09:00 C3 (215 pulses)
+10:30 C4 (55 pulses)
+
+080428-080530 Manoeuvres (C3 tilt)
+MOR 404-408
+080428 08:00 C3 (81 pulses)
+080430 21:00 C3 (4 pulses)
+080507 23:30 C3 (1 pulse)
+080514 08:00 C3 (82 pulses)
+080530 08:00-08:24 C3 (355 pulses)
+
+080611-080618 Manoeuvres (orbit)
+MOR 410-411
+080611 11:56:31 C1 (29 pulses)
+080611 11:18:24 C2 (27 pulses)
+080611 11:30:03 C3 (10 pulses)
+080618 14:12:36 C1 (1 pulse)
+080618 13:31:46 C2 (1 pulse)
+080618 13:31:46 C3 (1 pulse)
+
+080702 Eclipse (moon penumbra)
+MOR 413
+21:54-22:07 C1 (85% visibility)
+21:15-21:36 C2 (7% visibility)
+21:59-22:09 C3 (93% visibility)
+22:21-22:31 C4 (94% visibility)
+
+080728-080809 Manoeuvres (orbit)
+MOR 417-418
+080728 22:42:31 C1 (18 pulses)
+080728 22:01:35 C2 (16 pulses)
+080728 23:39:46 C3 (7 pulses)
+080730 13:30 C1 (55 pulses)
+080730 12:30 C2 (56 pulses)
+080730 14:30 C3 (63 pulses)
+080730 15:30 C4 (58 pulses)
+080802 16:58:27 C1 (1 pulse)
+080802 17:58:10 C3 (1 pulse)
+080802 18:45:57 C4 (1 pulse)
+080809 20:22:54 C1
+080809 19:44:52 C2
+080809 21:19:58 C3
+080809 22:08:23 C4
+
+080917-081010 Eclipses (long)
+MOR 424-427
+080917 C2
+080919 C2
+080922 C2
+080924 C2, C3, C4
+080926 C2, C3, C4
+080929 C1, C3, C4
+081001 C1, C3, C4
+081003 C1, C3, C4
+081006 C1, C3, C4
+081008 C1
+081010 C1
+
+081110-081115 Manoeuvres (orbit and attitude)
+MOR 432
+081110 16:09:12 C2 (10 pulses)
+081110 16:21:38 C1 (12 pulses)
+081110 16:40:08 C3 (39 pulses)
+081111 13:00 C1 (67 pulses, attitude)
+081111 14:00 C2 (68 pulses, attitude)
+081111 15:00 C3 (90 pulses, attitude)
+081111 16:30:40 C4 (71 pulses, attitude)
+081115 11:37:36 C3 (8 pulses)
+
+081127-081211 Manoeuvres (orbit trim)
+MOR 434-435
+081127 09:05:22 C1 (18 pulses)
+081127 09:15:16 C4 (1 pulse)
+081127 15:30:01 C3 (2 pulses)
+081127 16:20:02 C2 (28 pulses)
+081202 02:47:07 C1 (1 pulse)
+081202 02:51:31 C2 (1 pulse)
+081202 05:33:13 C3 (2 pulses)
+081206 20:58:44 C1 (1 pulse)
+081206 21:03:40 C2 (1 pulse)
+081206 23:45:46 C3 (2 pulses)
+081206 21:05:00 C4 (1 pulse)
+081211 17:55:05 C3 (1 pulse)
+
+081228 Moon eclipses (penumbra)
+MOR 438
+081228 15:46:16-17:25:47 C1
+081228 18:01:35-18:50:27 C2
+081228 15:19:39-16:54:29 C4
+
+090205-090211 Attitude manoeuvres
+MOR 444-445
+090205 14:30:00 C1 (64 pulses)
+090205 13:30:00 C2 (65 pulses)
+090205 11:30:00 C3 (84 pulses)
+090205 12:30:00 C4 (69 pulses)
+090211 11:55:00 C1 (1 pulse)
+090211 11:55:00 C2 (1 pulse)
+
+090216-090512 short eclipse season
+MOR 446-458
+090216 C2
+090218 C2, C3, C4
+090221 C2, C3, C4
+090223 C1, C2, C3, C4
+090225 C1, C2, C3, C4
+090228 C1, C2, C3, C4
+090302 C1, C2, C3, C4
+090304 C1, C2, C4
+090305 C3
+090307 C1, C2, C3, C4
+090309 C1, C2, C3, C4
+090307 C1, C2, C3, C4
+090312 C1, C2, C3, C4
+090314 C1, C2, C3, C4
+090316 C1, C2, C3, C4
+090319 C1, C2, C3, C4
+090321 C1, C2, C3, C4
+090323 C1, C2, C4
+090324 C3
+090326 C1, C2, C3, C4
+090328 C1, C2, C3, C4
+090331 C1, C2, C3, C4
+090402 C1, C2, C3, C4
+090404 C1, C2, C3, C4
+090407 C1, C2, C3, C4
+090409 C1, C2, C3, C4
+090411 C1, C2, C4
+090412 C3
+090414 C1, C2, C3, C4
+090416 C1, C2, C3, C4
+090419 C1, C2, C3, C4
+090421 C1, C2, C3, C4
+090423 C1, C2, C3, C4
+090426 C1, C2, C3, C4
+090428 C1, C2, C3, C4
+090430 C1, C4
+090501 C3
+090503 C1, C3, C4
+090505 C1, C3, C4
+090508 C1, C3, C4
+090510 C1, C3, C4
+090512 C1
+
+090409-090421 manoeuvres
+MOR 453, 455
+090409 09:30:00 C1 (4 pulses)
+090409 15:30:00 C3 (60 pulses)
+090421 09:15:00 c3 (3 pulses)
+
+090512-090520 manoeuvres
+MOR 458-459
+090512 20:00:00 C1 (1 pulse)
+090512 21:34:20 C3 (20 pulses)
+090515 11:00:00 C1 (59 pulses)
+090515 12:00:00 C2 (60 pulses)
+090515 13:00:00 C3 (83 pulses)
+090515 14:00:00 C4 (63 pulses)
+090520 02:50:00 C1 (2 pulses)
+090520 02:50:00 C2 (1 pulse)
+090520 02:50:00 C3 (1 pulse)
+
+090701 drift start manoeuvres
+MOR 465
+090701 20:32:11 C1 (18 pulses)
+090701 20:36:12 C2 (36 pulses)
+090701 20:16:26 C3 (2 pulses)
+
+090723 drift stop manoeuvres
+MOR 468
+090723 04:57:35 C1 (22 pulses)
+090723 04:09:10 C2 (39 pulses)
+090723 06:30:07 C3 (6 pulses)
+090723 06:01:09 C4 (1 pulse)
+
+090730 manoeuvres
+MOR 469
+090730 08:18:30 C1 (32 pulses)
+090730 07:32:39 C2 (48 pulses)
+090730 09:28:30 C3 (75 pulses)
+
+090806 manoeuvres
+MOR 470
+090806 11:37:40 C1 (15 pulses)
+090806 10:49:38 C2 (31 pulses)
+090806 12:35:33 C4 (50 pulses)
+
+090820 moon eclipse
+MOR 472
+090820 16:33:40-16:59:49 C1
+
+090828 attitude slew manoeuvres
+MOR 473
+090828 08:00:00 C1 (49 pulses)
+090828 07:00:00 C2 (51 pulses)
+090828 06:30:00 C3 (70 pulses)
+090828 06:00:00 C4 (52 pulses)
+
+090904 trim manoeuvres
+MOR 474
+090904 00:55:00 C1 (1 pulse)
+090904 00:15:00 C2 (1 pulse)
+090904 01:55:00 C3 (1 pulse)
+090904 01:50:00 C4 (1 pulse)
+
+
+090928-091116 long eclipse season
+MOR 478-485
+090928 C2
+090930 C2
+091002 C2
+091002 C2
+091005 C2
+091007 C2
+091009 C2, C3, C4
+091012 C2, C3, C4
+091014 C1, C2, C3, C4
+091016 C1, C2, C3, C4
+091019 C1, C3, C4
+091021 C1, C3, C4
+091024 C1, C3, C4
+091026 C1, C3, C4
+091028 C1, C3, C4
+091031 C1, C3, C4
+091102 C1, C3, C4
+091104 C1, C3, C4
+091107 C1, C3, C4
+091109 C1, C3, C4
+091112 C1, C3, C4
+091114 C1, C3, C4
+091116 C1, C3, C4
+
+091121 attitude slew manoeuvres
+MOR 485
+091121 15:45:00 C1 (42 pulses)
+091121 17:00:00 C2 (45 pulses)
+091121 15:00:00 C3 (58 pulses)
+091121 16:30:00 C4 (45 pulses)
+091121 13:38:27 C1 (150 pulses)
+091121 13:23:28 C2 (133 pulses)
+091121 14:15:34 C3 (174 pulses)
+091121 14:14:41 C4 (41 pulses)
+
+091126-091128 apogee lowering manoeuvres
+091126 07:44:37 C4 (334 pulses)
+091128 14:01:26 C1 (311 pulses)
+091128 14:09:29 C2 (335 pulses)
+091128 14:06:47 C3 (267 pulses)
+
+091203-091212 trim manoeuvres
+MOR 487-488
+091203 02:53:58 C1 (6 pulses)
+091203 02:59:32 C2 (8 pulses)
+091203 02:57:51 C3 (5 pulses)
+091203 02:54:47 C4 (2 pulses)
+091207 15:31:20 C1 (8 pulses)
+091207 15:36:16 C2 (7 pulses)
+091207 15:36:23 C3 (9 pulses)
+091207 15:33:23 C4 (10 pulses)
+091212 06:14:00 C1 (1 pulse)
+091212 07:36:37 C2 (1 pulse)
+091212 05:58:46 C3 (1 pulse)
+091212 06:02:47 C4 (1 pulse)
+
