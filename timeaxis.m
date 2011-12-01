@@ -6,9 +6,8 @@ function res = timeaxis(limit)
 dtime = limit(2)-limit(1);
 
 % get the time difference between two ticks and the number of unlabeled ticks
-if dtime>3600*24*365*12
+if dtime>3600*24*365*10
   dticv = '3years';
-  mtics = 1;
 elseif dtime>3600*24*365*5
   dticv = 'year';
   mtics = 4;                % 3month period
@@ -130,6 +129,17 @@ if ischar(dticv), % dticv = 'year','3years','month'
     tstart=irf_time(limit(1),'epoch2vector');
     tend=irf_time(limit(2),'epoch2vector');
     switch dticv
+        case '3years' % mtics is number of month
+            tictv=zeros((tend(1)-tstart(1)),1);
+            ticstr=cell(size(tictv));
+            i=1;
+            for iy=tstart(1)+1:3:tend(1)
+                ticstr{i}=num2str(iy); % yyyy
+                for iyy=0:2
+                    tictv(i)=irf_time([iy+iyy 1 1 0 0 0]);
+                    i=i+1;
+                end
+            end
         case 'year' % mtics is number of month
             tictvtemp=zeros((tend(1)+1-tstart(1))*(12/mtics),1);
             ticstrtemp=cell(size(tictvtemp));
