@@ -1,0 +1,286 @@
+!---- CAA MERGED CEF FILE (2010-11-09T13:33:44Z) ----
+FILE_NAME            = "C1_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef"
+FILE_FORMAT_VERSION = "CEF-2.0"
+END_OF_RECORD_MARKER = "$"
+
+! START_CEFMERGE_INCLUDE = "CL_CH_MISSION.ceh"
+!
+!  CL_CH_MISSION.ceh
+!  Global mission metadata provided by the CAA.
+!
+!  Save to your own hard drive so this file can be
+!  included as CL_CH_MISSION.ceh in other cef files. 
+! 
+
+START_META = MISSION 
+    ENTRY  = "Cluster" 
+END_META   = MISSION 
+
+START_META     = MISSION_TIME_SPAN 
+    VALUE_TYPE = ISO_TIME_RANGE 
+    ENTRY      = 2000-08-16T12:39:00Z/2009-12-31T23:59:59Z
+END_META       = MISSION_TIME_SPAN 
+
+START_META = MISSION_AGENCY 
+    ENTRY  = "ESA" 
+END_META   = MISSION_AGENCY 
+
+START_META = MISSION_DESCRIPTION 
+    ENTRY  = "The aim of the Cluster mission is to study small-scale structures of the magnetosphere " 
+    ENTRY  = "and its environment in three dimensions. To achieve this, Cluster is constituted of four " 
+    ENTRY  = "identical spacecraft that will flight in a tetrahedral configuration. The separation distances " 
+    ENTRY  = "between the spacecraft will be varied between ~40 km and 10 000 km, according to the " 
+    ENTRY  = "key scientific regions." 
+END_META   = MISSION_DESCRIPTION 
+
+START_META = MISSION_KEY_PERSONNEL 
+    ENTRY  = "Philippe Escoubet>Philippe.Escoubet@esa.int >Cluster Project Scientist" 
+END_META   = MISSION_KEY_PERSONNEL 
+
+START_META = MISSION_REFERENCES 
+    ENTRY  = "The Cluster and Phoenix Missions>Cluster project and instrument teams>Space Sci. Rev. 79, Nos. 1-2, 1997"
+END_META   =  MISSION_REFERENCES 
+
+START_META = MISSION_REGION 
+    ENTRY  = "Solar_Wind" 
+    ENTRY  = "Bow_Shock" 
+    ENTRY  = "Magnetosheath" 
+    ENTRY  = "Magnetopause" 
+    ENTRY  = "Magnetosphere" 
+    ENTRY  = "Magnetotail" 
+    ENTRY  = "Polar_Cap"
+    ENTRY  = "Auroral_Region" 
+    ENTRY  = "Cusp" 
+    ENTRY  = "Radiation_Belt" 
+    ENTRY  = "Plasmasphere" 
+END_META   = MISSION_REGION 
+
+START_META = MISSION_CAVEATS 
+ ENTRY = "*CL" 
+END_META = MISSION_CAVEATS
+
+! END_CEFMERGE_INCLUDE = "CL_CH_MISSION.ceh"
+
+! START_CEFMERGE_INCLUDE = "CL_CH_ASP_EXP.ceh"
+!  CL_CH_ASP_EXP.ceh
+!  Global ASPOC experiment metadata provided by the instrument team.
+
+START_META = EXPERIMENT
+    ENTRY = "ASPOC"
+END_META = EXPERIMENT
+
+START_META = EXPERIMENT_DESCRIPTION
+    ENTRY = "Active Spacecraft Potential Control"
+END_META = EXPERIMENT_DESCRIPTION
+
+START_META = INVESTIGATOR_COORDINATES
+    ENTRY = "KlausTorkar>PI>Klaus.Torkar@oeaw.ac.at"
+END_META = INVESTIGATOR_COORDINATES
+
+START_META = EXPERIMENT_REFERENCES
+    ENTRY = "*CL_CD_ASP_CAAICD"
+END_META = EXPERIMENT_REFERENCES
+
+START_META = EXPERIMENT_KEY_PERSONNEL
+    ENTRY = "KlausTorkar>PI>Klaus.Torkar@oeaw.ac.at"
+END_META = EXPERIMENT_KEY_PERSONNEL
+
+START_META = EXPERIMENT_CAVEATS
+    ENTRY = "*CL_CQ_ASP"
+END_META = EXPERIMENT_CAVEATS
+! END_CEFMERGE_INCLUDE = "CL_CH_ASP_EXP.ceh"
+
+! START_CEFMERGE_INCLUDE = "C1_CH_OBS.ceh"
+!
+!  C1_CH_OBS.ceh
+!  Global Cluster2 metadata provided by the CAA.
+!
+! Save to your own hard drive so this file can be
+! included as C1_CH_OBS.ceh in other cef files. 
+! 
+START_META     =   OBSERVATORY
+   ENTRY       =   "Cluster-2"
+END_META       =   OBSERVATORY
+!
+START_META     =   OBSERVATORY_CAVEATS
+   ENTRY       =   "*C1_CQ"
+END_META       =   OBSERVATORY_CAVEATS
+!
+START_META     = OBSERVATORY_DESCRIPTION  
+   ENTRY       = "Cluster-2 (Salsa)"
+   ENTRY       = "Launched: 16 Jul 2000"
+   ENTRY       = "ESA Number: 2"
+   ENTRY       = "COSPAR ID: 2000-041B"
+   ENTRY       = "USSPACECOM catalogue number: 26411"
+   ENTRY       = "CSDS Code: C1"
+   ENTRY       = "ESOC FD code: S2"
+   ENTRY       = "ESA Flight Model Number: FM6"
+END_META       = OBSERVATORY_DESCRIPTION 
+!
+START_META     = OBSERVATORY_TIME_SPAN
+   VALUE_TYPE  = ISO_TIME_RANGE
+   ENTRY       = 2000-07-16T12:39:00Z/2009-12-31T23:59:59Z 
+END_META       = OBSERVATORY_TIME_SPAN
+!
+START_META = OBSERVATORY_REGION 
+ ENTRY     = "Solar_Wind" 
+ ENTRY     = "Bow_Shock" 
+ ENTRY     = "Magnetosheath" 
+ ENTRY     = "Magnetopause" 
+ ENTRY     = "Magnetosphere" 
+ ENTRY     = "Magnetotail" 
+ ENTRY     = "Polar_Cap" 
+ ENTRY     = "Auroral_Region" 
+ ENTRY     = "Cusp" 
+ ENTRY     = "Radiation_Belt" 
+ ENTRY     = "Plasmasphere" 
+END_META   = OBSERVATORY_REGION
+
+! END_CEFMERGE_INCLUDE = "C1_CH_OBS.ceh"
+
+! START_CEFMERGE_INCLUDE = "CL_CH_ASPOC1_INST.ceh"
+!  CL_CH_ASPOC1_INST.ceh
+!  Global ASPOC-2 instrument level metadata provided by the instrument team.
+
+START_META = INSTRUMENT_NAME
+    ENTRY = "ASPOC1"
+END_META = INSTRUMENT_NAME
+
+START_META = INSTRUMENT_DESCRIPTION
+    ENTRY = "ASPOC Experiment on Cluster C1"
+END_META = INSTRUMENT_DESCRIPTION
+
+START_META = INSTRUMENT_TYPE
+    ENTRY = "Spacecraft_Potential_Control"
+END_META = INSTRUMENT_TYPE
+
+START_META = MEASUREMENT_TYPE
+    ENTRY = "Instrument_Status"
+END_META = MEASUREMENT_TYPE
+
+START_META = INSTRUMENT_CAVEATS
+    ENTRY = "*CL_CQ_ASPOC1.txt"
+END_META = INSTRUMENT_CAVEATS
+! END_CEFMERGE_INCLUDE = "CL_CH_ASPOC1_INST.ceh"
+
+! START_CEFMERGE_INCLUDE = "C1_CH_ASP_ACTIVE_DATASET.ceh"
+!  C1_CH_ASP_ACTIVE_DATASET.ceh
+!  Global ASPOC-2 ACTIVE dataset level metadata provided by the instrument team.
+
+START_META = DATASET_ID
+    ENTRY = "C1_CP_ASP_ACTIVE"
+END_META = DATASET_ID
+
+START_META = DATA_TYPE
+    ENTRY = "CP>CAA Parameter"
+END_META = DATA_TYPE
+
+START_META = DATASET_TITLE
+    ENTRY = "ASPOC ON/OFF (ACTIVE) times"
+END_META = DATASET_TITLE
+
+START_META = DATASET_DESCRIPTION
+    ENTRY = "This dataset contains the ON/OFF (ACTIVE) times "
+    ENTRY = "from the ASPOC experiment on the Cluster C1 spacecraft."
+END_META = DATASET_DESCRIPTION
+
+START_META = CONTACT_COORDINATES
+    ENTRY = "KlausTorkar>PI>Klaus.Torkar@oeaw.ac.at"
+END_META = CONTACT_COORDINATES
+
+START_META = TIME_RESOLUTION
+    VALUE_TYPE = FLOAT
+    ENTRY = 0.000000
+END_META = TIME_RESOLUTION
+
+START_META = MIN_TIME_RESOLUTION
+    VALUE_TYPE = FLOAT
+    ENTRY = 0.000000
+END_META = MIN_TIME_RESOLUTION
+
+START_META = MAX_TIME_RESOLUTION
+    VALUE_TYPE = FLOAT
+    ENTRY = 0.000000
+END_META = MAX_TIME_RESOLUTION
+
+START_META = PROCESSING_LEVEL
+    ENTRY = "Calibrated"
+END_META = PROCESSING_LEVEL
+
+START_META = DATASET_CAVEATS
+    ENTRY = "*CL_CQ_ASP_CAVEATS_"
+END_META = DATASET_CAVEATS
+
+START_META = ACKNOWLEDGEMENT
+    ENTRY = "Please acknowledge the instrument team and ESA "
+    ENTRY = "Cluster Active Archive when using this data."
+END_META = ACKNOWLEDGEMENT
+! END_CEFMERGE_INCLUDE = "C1_CH_ASP_ACTIVE_DATASET.ceh"
+
+START_META = LOGICAL_FILE_ID
+  ENTRY      = "C1_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030"
+END_META = LOGICAL_FILE_ID
+
+START_META = VERSION_NUMBER
+  ENTRY      = 081030
+END_META = VERSION_NUMBER
+!
+START_META   = DATASET_VERSION
+    ENTRY    = "Merged file, the dataset version for each segment follows:-"
+    ENTRY    = "2001-01-01T00:00:00Z/2008-07-01T00:00:00Z , C1_CP_ASP_ACTIVE__00000000_V04"
+    ENTRY    = "  1_0"
+END_META     = DATASET_VERSION
+!
+START_META   = FILE_CAVEATS
+    ENTRY    = "CAA Merged File - $Id$"
+    ENTRY    = "The file caveats for each segment follows:-"
+    ENTRY    = "2001-01-01T00:00:00Z/2008-07-01T00:00:00Z , C1_CP_ASP_ACTIVE__00000000_V04"
+    ENTRY    = "  TBW"
+END_META     = FILE_CAVEATS
+
+START_META = FILE_TYPE
+    ENTRY = "cef"
+END_META = FILE_TYPE
+
+START_META = METADATA_TYPE
+    ENTRY = "CAA"
+END_META = METADATA_TYPE
+
+START_META = METADATA_VERSION
+    ENTRY = "2.0"
+END_META = METADATA_VERSION
+
+START_META = FILE_TIME_SPAN
+    VALUE_TYPE = ISO_TIME_RANGE
+  ENTRY      = 2001-01-01T00:00:00.000Z/2010-01-01T00:00:00.000Z
+END_META = FILE_TIME_SPAN
+
+START_META = GENERATION_DATE
+    VALUE_TYPE = ISO_TIME
+  ENTRY      = 2010-11-09T13:33:44Z
+END_META = GENERATION_DATE
+
+
+
+! START_CEFMERGE_INCLUDE = "C1_CH_ASP_ACTIVE_PARAMETER.ceh"
+!  C1_CH_ASP_ACTIVE_PARAMETER.ceh
+!  Global ASPOC-2 ACTIVE parameter level metadata provided by the instrument team.
+
+START_VARIABLE = time_tags__C1_CP_ASP_ACTIVE
+    PARAMETER_TYPE = "Support_Data"
+    CATDESC = "Interval covering time tag (ASPOC ON)"
+    UNITS = "s"
+    SI_CONVERSION = "1.0>s"
+    VALUE_TYPE = ISO_TIME_RANGE
+    SIGNIFICANT_DIGITS = 23
+    FILLVAL = 9999-12-31T23:59:59Z/9999-12-31T23:59:59Z
+    FIELDNAM = "Universal Time"
+    LABLAXIS = "UT"
+    DELTA_PLUS = 0.25
+    DELTA_MINUS = 0
+END_VARIABLE = time_tags__C1_CP_ASP_ACTIVE
+! END_CEFMERGE_INCLUDE = "C1_CH_ASP_ACTIVE_PARAMETER.ceh"
+
+DATA_UNTIL = "END_OF_DATA"
+!RECORDS= 0
+END_OF_DATA
