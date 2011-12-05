@@ -169,17 +169,23 @@ switch action,
             case 'spherical'
                 probe.cross_section_area=pi*(ud.probe.radius*.01)^2;
                 probe.total_area=4*probe.cross_section_area;
-                probe.capacitance=4*pi*Units.eps0*ud.probe.radius*.01;
+                if ~isfield(probe,'capacitance') || probe.capacitance==0 % if not defined or put to zero, calculate
+                    probe.capacitance=4*pi*Units.eps0*ud.probe.radius*.01;
+                end
             case 'cylindrical'
                 probe.cross_section_area=2*ud.probe.radius*ud.probe.length*0.01^2;
                 probe.total_area=pi*probe.cross_section_area;
                 probe.length=str2double(get(inp.probe.length_value,'string'));
-                probe.capacitance=2*pi*Units.eps0*ud.probe.length*0.01/log(ud.probe.length/ud.probe.radius); % assuming length >> radius
+                if ~isfield(probe,'capacitance') || probe.capacitance==0 % if not defined or put to zero, calculate
+                    probe.capacitance=2*pi*Units.eps0*ud.probe.length*0.01/log(ud.probe.length/ud.probe.radius); % assuming length >> radius
+                end
             case 'arbitrary'
                 probe.cross_section_area=str2double(get(inp.probe.radius_value,'string'))*0.01^2;
                 probe.total_area=str2double(get(inp.probe.length_value,'string'))*0.01^2;
                 set(inp.probe.total_vs_sunlit_area_value,'string',num2str(probe.total_area/probe.cross_section_area,3));
-                probe.capacitance=4*pi*Units.eps0*sqrt(probe.total_area/4/pi); % assume sphere having the specified total area
+                if ~isfield(probe,'capacitance') || probe.capacitance==0 % if not defined or put to zero, calculate
+                    probe.capacitance=4*pi*Units.eps0*sqrt(probe.total_area/4/pi); % assume sphere having the specified total area
+                end
         end
         ud.probe=probe;
         [J_probe,J_photo,J_plasma]=lp_probe_current(probe,Upot,ud.R_sun,ud.UV_factor,ud);
