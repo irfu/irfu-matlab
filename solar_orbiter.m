@@ -60,7 +60,8 @@ switch flag
         probe.cross_section_area=2*probe.radius*probe.length;
         probe.total_area=pi*probe.cross_section_area;
         probe.total_vs_sunlit_area=probe.total_area/probe.cross_section_area;
-        probe.capacitance=2*pi*Units.eps0*probe.length/log(probe.length/probe.radius); % assuming length >> radius
+        %        probe.capacitance=2*pi*Units.eps0*probe.length/log(probe.length/probe.radius); % assuming length >> radius
+        probe.capacitance=30e-12; % 30pF from Chris simulations
         if nargout==0, % display information
             disp('Solar Orbiter has 3 cylindrical antennas.')
             disp(['Antenna surface  = ' probe.surface]);
