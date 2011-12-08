@@ -151,7 +151,7 @@ else
 		if lev==2
             % Fake for c_desc only. No data variable in .mat files
 			vs = irf_ssub('EB?',cl_id);
-			v_size = 5;
+			v_size = 4;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -630,14 +630,14 @@ for dd = 1:length(dirs)
                [ok,probe_info,msg] = c_load([ fine{eix} '_info']);
                data=eval(['e.' fine{eix}]);
                ok=1;
-               % Extend data array to accept (probe#,) bitmask and quality (2 new columns at the end 1 reused)
+               % Extend data array to accept bitmask and quality (1 new column at the end 1 reused)
                if size(data,1) == 1    % Fix short data
                    data=[data;[data(1,1)+4 NaN NaN NaN]];
                    irf_log('proc','short data padded');
                end
                dsize=size(data, 1);
-               data = [data zeros(dsize, 2)]; % add columns: (probe#) bitmask quality
-               data(:, 4) = str2num(probe_info.probe); % Set probe#.
+               data = [data zeros(dsize, 1)]; % add columns: bitmask quality
+%               data(:, 4) = str2num(probe_info.probe); % Set probe#.
 
                data(:, end) = QUALITY;        % Default quality column to best quality, i.e. good data/no problems.
                quality_column = size(data, 2);
