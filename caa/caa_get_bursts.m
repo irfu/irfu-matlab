@@ -40,6 +40,9 @@ B_DT = 300;
 B_DELTA = 60;
 
 cl_id=str2double(filename(end)); %Get the satellite number
+if ( cl_id < 1 || cl_id > 4 )
+   error(['Wrong spacecraft ID read from filename. ' filename ])
+end
 fname=irf_ssub([plotpath 'p?-c!'],filename(1:12),cl_id); %Sets the name that will be used to save the plots
 fnshort=filename;
 s=filename;
