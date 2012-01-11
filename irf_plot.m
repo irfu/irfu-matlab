@@ -52,6 +52,7 @@ function c=irf_plot(varargin)
 % (in practices it does not matter).
 
 %% Check input 
+flag_ax_is_empty=0;
 [ax,args,nargs] = axescheck(varargin{:});
 x=args{1};
 if isempty(x), % nothing to plot, first input parameter empty
@@ -69,6 +70,7 @@ if isnumeric(x), % check if single number argument, to initialize only subplots
     end
 end
 if isempty(ax), % if empty axis use current axis GCA
+    flag_ax_is_empty=1; % important if calling later dataobj/plot
     if isempty(get(0,'CurrentFigure')), % there is no figure open
         irf_plot(1);
     end
@@ -215,7 +217,11 @@ else
     end
 end
 if ~isempty(caa_dataobject{1}) % plot CAA variable
-    plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+    if flag_ax_is_empty,
+        ax=plot(caa_dataobject{1},caa_varname{1},original_args{:});
+    else
+        plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+    end
     if isstruct(x), tt=x.t(1);
     elseif iscell(x), tt=x{1}(1,1);
     else tt=x(1,1);
