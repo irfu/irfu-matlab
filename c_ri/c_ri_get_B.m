@@ -54,7 +54,7 @@ if strcmp(mext,'mexglx') % running on x86
 elseif strcmp(mext,'mexa64') % running on amd64
 	CMDPATH = '/home/scb/fgm/bin64/';
 elseif strcmp(mext,'mexmaci64')
-    CMDPATH = '/Users/yuri/devel/fgm/clfgm/bin64/';
+    CMDPATH = '/Users/huishan/Software/matlab/irfu-matlab/fgm/clfgm/bin64/';
 else
 	error('Cannot find CMDPATH for the current operating system/platform.')
 end

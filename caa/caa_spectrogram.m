@@ -190,7 +190,7 @@ for comp=1:min(length(h),ncomp)
             dtplus=torow(double(specrec.dt.plus(:))); % if df vector make it row vector
             dtminus=torow(double(specrec.dt.minus(:))); % if df vector make it row vector
         else
-            dtplus=torow(double(specrec.dt(:))); % if df vector make it row vector
+            dtplus=tocolumn(double(specrec.dt(:))); % if df vector make it row vector
             dtminus=dtplus;
         end
         ttnew=[tt; tt];

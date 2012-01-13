@@ -42,7 +42,7 @@ if strcmp(mext,'mexglx') % running on x86
 elseif strcmp(mext,'mexa64')
     unix_command = sprintf('/home/scb/fgm/bin64/ddsls %s >%s',p_f,output_file);
 elseif strcmp(mext,'mexmaci64')
-    unix_command = sprintf('/Users/yuri/devel/fgm/clfgm/bin64/ddsls %s >%s',p_f,output_file);    
+    unix_command = sprintf('/Users/huishan/Software/matlab/irfu-matlab/fgm/clfgm/bin64/ddsls %s >%s',p_f,output_file);    
 elseif strcmp(mext,'mexsol') % running on Solaris/SPARC
     error('SPARC is not supported at the moment.')
 else
