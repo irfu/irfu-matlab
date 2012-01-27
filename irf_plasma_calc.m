@@ -13,6 +13,9 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 % flag - 1: do not display the output
 % flag - string : return only specified output
 %        string can be 'Fpe','Fce','Fcp','Flh','Fuh','Fpp'
+%             length - 'Li' (c/wpi),'Le' (c/wpe),'Ld' (Debye length)
+%             speeds - 'Va' (Alfven), 'Vte','Vtp','VtO','Vts'
+%         gyroradius - 'Roe','Rop','RoO'
 %
 % returned variables are in SI units, frequencies in Hz, lengths in m
 %
@@ -175,6 +178,9 @@ if strcmp(flag_time_series,'yes')
         {'Fpe','Hz'},{'Fce','Hz'}...
         {'Fpp','Hz'},{'Fcp','Hz'}...
         {'Fuh','Hz'},{'Flh','Hz'}...
+        {'Le'},{'Li'},{'Ld'}...
+        {'Va'},{'Vtp'},{'Vti'},{'VtO'},{'Vts'}...
+        {'Roe'},{'Rop'},{'RoO'}...
         };
     for j=1:length(var),
         eval([var{j}{1} '= [t ' var{j}{1} '];']);
