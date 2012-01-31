@@ -1172,12 +1172,12 @@ MOR 478-485
 091114 C1, C3, C4
 091116 C1, C3, C4
 
-091121 attitude slew manoeuvres
+091119-21 attitude slew manoeuvres
 MOR 485
-091121 15:45:00 C1 (42 pulses)
-091121 17:00:00 C2 (45 pulses)
-091121 15:00:00 C3 (58 pulses)
-091121 16:30:00 C4 (45 pulses)
+091119 15:45:00 C1 (42 pulses)
+091119 17:00:00 C2 (45 pulses)
+091119 15:00:00 C3 (58 pulses)
+091119 16:30:00 C4 (45 pulses)
 091121 13:38:27 C1 (150 pulses)
 091121 13:23:28 C2 (133 pulses)
 091121 14:15:34 C3 (174 pulses)
