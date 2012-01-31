@@ -1,0 +1,722 @@
+
+1. Gather files, etc.
+=====================
+
+1a. Update the ns_ops tables
+===========================
+Non-standard operations are stored in the XML table at /home/www/cluster/efw/ops on hq.
+Present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops/ns_ops.html
+Matlab accesses a text version of this on db when processing the data.
+
+1. Check through /home/www/cluster/efw/ops/ns_ops.xml on hq, and make sure it's complete and OK.
+    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wex, xdwp3000)for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate.
+    b) The maneuvers need to be extracted from the Mission Ops Reports (http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and added both to the eclipse list (CVS controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt) and to the ns_ops file.
+2. Edit the XML table. There's no emacs on hq, but there is vi and ee.
+3. Run "sudo make all" to export the XML file to html, then "sudo make txt" to export to text, and then "sudo make update" to move it to db.irfu.se. The last will likely fail unless you have Yuri's password, so try it manually instead: 
+   scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
+4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops').
+
+1b. Get the ACE and OMNI files
+==============================
+Download data (mfi_h2 and swe_h2) from:
+  ftp://cdaweb.gsfc.nasa.gov/pub/istp/ace
+to:
+  db.irfu.se/export/data/istp/ace    (should be NFS mounted at /data/istp/ace)
+Also download the OMNI data from:
+  ftp://cdaweb.gsfc.nasa.gov/pub/istp/omni2
+to:
+  db.irfu.se/export/data/istp/omni2    (should be NFS mounted at /data/istp/omni2)
+
+
+1c. Get the CSDS cdf files
+==========================
+CIS/EDI/FGM. Ask Per-Arne. Note that after 2006-01-01, only the UP (unvalidated) files are available for FGM.
+
+1d. Re-generate the ISDAT index files
+=====================================
+The ISDAT index files may need re-generation to avoid missing data intervals.
+
+1. Delete the index files, burst data files and indexmap for the interval in question.
+   For example, to remove 2006 files:
+     ssh db
+     cd /data/cluster/burst
+     sudo rm 06*
+     cd ../index 
+     sudo rm 06*
+     rm indexmap.bak
+     mv indexmap indexmap.bak
+2. Re-run the ISDAT index generation.  This will take at least a few hours.  You'll eventually see output.
+     ssh db
+     iscmd i db.irfu.se:9/Cluster/1/efw
+   (This will regenerate for all 4 sats, not just C1)
+3. Restart the ISDAT servers:
+     ssh db
+     sudo su
+     /usr/local/etc/rc.d/dbhCAA.sh restart
+     /usr/local/etc/rc.d/dbhCAA1.sh restart
+     /usr/local/etc/rc.d/dbhIRFU.sh restart
+     /usr/local/etc/rc.d/dbhWORLD.sh restart
+
+1e. Find intervals of EFW-DWP synchronization failures
+======================================================
+1. The intervals are found by Per-Arne by comparing the sun pulse times from the spacecraft and from WEC. Talk to Per-Arne.
+2. Go in with isdat-igr and refine the start/stop times, then enter into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt
+   Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
+3. Re-start the ISDAT servers.
+If the intervals are not available before processing, they can be found after L1 processing (step 6). However, it's better to do them at this stage to avoid the need to re-run the L0 processing for affected intervals.
+
+1f. Get the TCOR files
+======================
+1. Download the TCOR CEF files from the CAA in intervals of about 6 months.
+2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTc or and put the files there.
+3. Edit the index files TCOR_INDEX_*.txt to include the new cef files.
+4. Re-start the ISDAT servers.
+If the TCOR files are not available, the TCOR correction can be applied after processing by using the function caa_apply_tcor().
+
+1g. Create log directory
+========================
+Make sure the permissions are correct, or the software will silently fail to write any logs!
+  mkdir /data/caa/log/2010
+  chmod go+w /data/caa/log/2010
+
+2. Switch the MySQl database
+============================
+1. Stop runners and server, and start mysql console:
+ssh caa
+sudo su
+/usr/local/etc/rc.d/CaaRunner.sh stop
+/usr/local/etc/rc.d/CaaRunner1.sh stop
+/usr/local/etc/rc.d/CaaRunner2.sh stop
+/usr/local/etc/rc.d/CaaServer.sh stop
+mysql
+
+2. Create new database for current data (if needed):
+SHOW databases;
+CREATE database caa2009;
+
+3. Move tables from the active caa database to the inactive (eg. caa2007) database:
+RENAME TABLE caa.JELogRecord TO caa2010.JELogRecord;
+RENAME TABLE caa.Job         TO caa2010.Job;
+RENAME TABLE caa.JobEntry    TO caa2010.JobEntry;
+RENAME TABLE caa.JobGroup    TO caa2010.JobGroup;
+RENAME TABLE caa.QRecord     TO caa2010.QRecord;
+
+4. Move tables into active caa database. If no data to move in, this can be skipped.
+RENAME TABLE caa2010.JELogRecord TO caa.JELogRecord;
+RENAME TABLE caa2010.Job         TO caa.Job;
+RENAME TABLE caa2010.JobEntry    TO caa.JobEntry;
+RENAME TABLE caa2010.JobGroup    TO caa.JobGroup;
+RENAME TABLE caa2010.QRecord     TO caa.QRecord;
+
+5. Restart runners and server
+/usr/local/etc/rc.d/CaaRunner.sh start
+/usr/local/etc/rc.d/CaaRunner1.sh start
+/usr/local/etc/rc.d/CaaRunner2.sh start
+/usr/local/etc/rc.d/CaaServer.sh start
+(May need to re-add runners from caaconsole)
+
+3. Find magnetopause locations
+==============================
+1. Copy the directory /data/caa/test-mp to somewhere local (e.g. ~/caa/test-mp on fernie).
+   In Matlab, change to that directory and run: c_ctl('init'); caa_sh_plan(YEAR).
+   This will find the model magnetopause locations.
+2. Run caa_sh_3h_int() to find common 3h intervals for the 4 spacecraft. Example:
+     caa_sh_3h_int('2006-01-01T00:00:00.000Z','2006-12-31T23:59:59Z')
+3. Re-run caa_sh_plan(). The plots should look like what's in /data/caa/test-mp.
+4. Copy the mPlan.mat file to /data/caa/l1 and [irfu-matlab root]/caa.
+   Check it into CVS and update the CVS-controlled version at db:/data/cluster/irfu-matlab
+
+4. Run the CAA Runner L0->L1
+============================
+1. Start the caa console:
+     ssh caa
+     ~caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se
+2. Add new group(s). e.g.:
+     new group=200601_L01 st=2006-01-01T00:00:00Z dt=2678400 lev=0 maxlev=1 ddt=10800
+   Can include L2 as well; the advantage of doing this is that it links L2 to the parent jobs L1, L0.
+   The disadvantage is that L2 data is useless at this point and must be re-processed in step 8.
+   e.g.:
+new group=201101_L012 st=2011-01-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201102_L012 st=2011-02-01T00:00:00Z dt=2419200 lev=0 maxlev=2 ddt=10800
+new group=201003_L012 st=2010-03-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201004_L012 st=2010-04-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=10800
+new group=201005_L012 st=2010-05-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201006_L012 st=2010-06-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=10800
+new group=201007_L012 st=2010-07-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201008_L012 st=2010-08-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201009_L012 st=2010-09-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=10800
+new group=201010_L012 st=2010-10-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+new group=201011_L012 st=2010-11-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=10800
+new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
+
+
+3. Run the groups:
+     take a web browser to www.cluster.irfu.se/caaconsole/CaaWeb.py  
+       (user: caa password: caarunner)
+       (note: IP-controlled access.  Try from fernie or ice or via ssh tunnel from hq.)
+     go to the groups list, select a group, click on run
+     It takes about a day to process a month's worth of data, using runners on caa and sipadan.
+4. Re-run any jobs that come back marked as "error" (not "init failed" - see next step)
+   (For fixes to some CAA Runner problems, see Appendix)
+      /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200601_L01" > ttt.txt
+      cat ttt.txt|grep error > ttt1.txt
+      /home/caa/devel/caa-runner/scripts/nice_jlist.sh ttt1.txt
+      /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ttt1.txt.nice
+   (May need to be repeated)
+5. Make sure to unload (not remove) the groups when they aren't needed any more (after the next step).
+
+5. Fix missing data intervals
+=============================
+Those jobs that come back marked "init failed" probably have no data.  Check whether these intervals are also missing in the CSDS, and whether the intervals are in ns_ops.  Then check whether they were planned intervals of no data collection at www.jsoc.rl.ac.uk/msp/, (click on "ASCII list of overall plan").  Look for Housekeeping only (HK) or No data taking (D0).  See init_failed_2006.txt.  Track down any unexplained data gaps.  Also, check the Mission Ops reports at http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/ and the WEC Ops mailing list at http://www.acse.shef.ac.uk/wec-ops/at to find intervals that should be in ns_ops but aren't. Another good resource is Per-Arne's list of eclipses and maneuvers (ask him for the latest version, or check at /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt for a CVS-controlled version). Update ns_ops accordingly, and re-run any jobs that should be re-run.
+
+5a. Export and deliver P data
+=============================
+Check the P data first:
+  [data, ok, msg] = caa_get('2011-04-01T00:00:00Z','2011-09-01T00:00:00Z',1,'Ps1');irf_plot data
+Then export. Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
+Then sftp the following data to the CAA: *_L*_P, *_L2_HK (*_L3_E????, *_L3_SFIT) 
+
+6a. Check for timing problems
+==============================
+Some tools exist for this on fernie in /home/chris/caa.
+
+6b. Find the n*0.2 sec problems
+===============================
+If this was done by Per-Arne prior to processing, and included in step 1e, then you can skip this.
+1. Run caa_check_for_n02_error(year,month) for each month.
+2. Check the output times for intervals which have a constant non-zero offset in the pdf file.
+   Ignore intervals with jumpy dt (telemetry problems) or drifting dt (maneuvers/eclipses).
+   The dt should also be near a multiple of 0.2 seconds.
+3. Enter the affected times into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt.
+   Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
+4. Restart the ISDAT servers, and re-run the L01 processing for any affected intervals.
+
+7. Find the delta offsets
+=========================
+1. Load the delta offsets computed during the runs. Example for C2:
+     D2p12p34=caa_get('2006-01-01T00:00:00Z','2007-01-01T00:00:00Z',2,'D?p12p34');
+       (this will take 10 minutes or so, the first minutes of which it will be silent)
+       (ignore the cannot fill gaps/guess sampling f errors)
+     irf_plot D2p12p34
+2. Enter into the delta offsets database. Example:
+     (edit SY, EY in caa_update_deltaoff)
+     cd /home/chris/devel/irfu-matlab/caa
+     caa_update_deltaoff(D2p12p34,2)
+3. Commit the new caa/deltaoff.mat to CVS, and update it on db:/data/cluster/irfu-matlab.
+
+8. Run the CAA Runner L2
+========================
+Like step 4. Example:
+new group=200701_L2 st=2007-01-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200702_L2 st=2007-02-01T00:00:00Z dt=2419200 lev=2 maxlev=2 ddt=10800
+new group=200703_L2 st=2007-03-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200704_L2 st=2007-04-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
+new group=200705_L2 st=2007-05-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200706_L2 st=2007-06-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
+new group=200707_L2 st=2007-07-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200708_L2 st=2007-08-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200709_L2 st=2007-09-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
+new group=200710_L2 st=2007-10-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+new group=200711_L2 st=2007-11-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
+new group=200712_L2 st=2007-12-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+
+
+9. Special processing
+=====================
+If this is a re-run, then run any special processing called out in /data/caa/l1/YYYY/special_processing.txt.
+e.g. caa_special_process('2007-01-01T00:00:00Z','2008-01-01T00:00:00Z', '/data/caa/l1/2007/special_processing.txt')
+
+10. Find the DSI offsets
+========================
+(Can be done before L2 if wanted)
+1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Example:
+     cp /data/cluster/irfu-matlab/caa/mPlan.mat /home/chris/caa/test-mp
+     cp /data/cluster/irfu-matlab/caa/deltaoff.mat /home/chris/caa/test-mp
+     matlab
+     cd /home/chris/caa/test-mp
+     [dE,dAmp,dt,weight] = caa_sh_xoff_batch('2008-01-01T00:00:00Z','2008-12-31T23:59:59Z',0);
+     save OffAmp2008.mat dE dAmp dt weight
+2. Plot the offsets:
+    caa_sh_pl_xoff(dE,dAmp,dt,weight)
+   and read out the mean offsets for all 4 spacecraft.
+3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft: 
+   (Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox, and at the moment must be run from ice.irfu.se)
+     DdsiX1=caa_get('2008-01-01T00:00:00Z','2008-12-31T23:59:59Z',1,'DdsiX?');
+     save Ddsi2008.mat DdsiX1 DdsiX2 DdsiX3 DdsiX4
+     (Edit line 18 of caa_ms_pl_xoff_stats)
+     caa_ms_pl_xoff_stats(DdsiX1)
+4. If all looks OK, update the tables in c_efw_dsi_off.m. Check it into CVS and update on db.
+
+11. Create the summary plots
+============================
+Either:
+1) Use the CAA Runner web interface.
+   Make sure that the jobs only go to machines with the X virtual framebuffer properly configured.
+   At the moment, that's only sipadan.irfu.se.
+   Actually, even then it doesn't work.
+Or:
+2) Create them straight from Matlab (old):
+    a) Set up a directory where you want to store all the files.
+    b) Create a list of data directories. Example:
+         ls -d --format=single-column /data/caa/l1/2006/2006* > /data/caa/sp/2006/file_list.txt
+    c) Start Matlab, cd to the proper directory (eg. /data/caa/sp/2006), and run caa_sp_batch('file_list.txt').
+       Runtime is widely variable, and depends on how much hardware-based graphics acceleration can be applied.
+       Matlab will probably leak too much memory and crash after about 1-2 months of summary plots.
+       Try running locally, with the window for Figure 75 exposed and visible on the screen.
+         Make sure to deactivate the screensaver and tell the monitor not to sleep.
+       On fernie, with Figure 75 exposed, it takes about 1 hour and 45 minutes to create a month of summary plots.
+         If running on a desk which is hidden, it effectively grinds to a standstill (10-12 hours per month of plots!)
+       To run quickly in the background on fernie and avoid the window grabbing focus, use Xvfb:
+          cd /data/caa/sp/2009
+          xvfb-run -s "-screen 0 640x480x24 -extension Composite" /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -nodesktop -r "caa_sp_batch('file_list03.txt'); quit"
+          This runs at "full" speed (about 2 hours to make a month of summary plots). 
+       In order to get around the memory leak, consider using a script that runs one month at a time. E.g.:
+         cd /data/caa/sp/2006
+         /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -r "caa_sp_batch('file_list01.txt'); quit"
+         /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -r "caa_sp_batch('file_list02.txt'); quit"
+         ...
+       Make sure to check the .failed files.
+Or:
+3) Create them straight from Matlab (new): use caa_pl_summary_l1_batch
+     e.g. caa_pl_summary_l1_batch('2007-04-08T06:00:00Z', '2007-04-09T09:00:00Z')
+   This can still be slow if running on a desk which is hidden (see above).
+   The memory leak issues are still present. To generate a lot of summary plots, consider something like this:
+     unalias rm
+     for i in 01 02 03 04 05 06 07 08
+     do
+       xvfb-run -s "-screen 0 640x480x24 -extension Composite" /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -nodesktop -r "caa_pl_summary_l1_batch('2010-$i-01T00:00:00Z', '2010-$i-31T23:59:59Z'); quit"
+       cd /data/caa/sp/2010
+       ../cpdf_new 2010$i
+       rm *L1SHORT*
+       pdfjoin *QUAL*2010$i* --outfile 2010${i}_qual.pdf
+       mkdir $i
+       mv *2010$i* $i
+     done
+
+12. Look through the summary plots
+=================================
+Make the combined files:
+  cd /data/caa/sp/2006
+  ../cpdf_new 200601
+  unalias rm
+  rm *L1SHORT*
+  pdfjoin *QUAL*200601* --outfile 200601_qual.pdf
+Check through the summary plots.  Easiest is to use okular in dual-page mode to examine the bigger pdf (eg. 200601.pdf), and open the quality plots in a window beside it. Keep a record of the problems at ~/caa/sp_problems_YEAR.txt.
+
+First, take a look at the Eclipses and Manoeuvres file (CVS-controlled, /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt or CVS local version), and check if there were any manoeuvres when the instruments were operating during that month. Those intervals will need to be flagged in the nsops file, and the summary plots redone. The intervals will probably not need to be re-processed.
+
+There will be problems. Look particularly for:
+1. Unexplained data gaps.
+2. Missing phase information after maneuvers (thick blue line at 0.5 Hz). Enter into ns_ops, use caa_join_phase to fix the phase problems, and then re-run the L1/L2 processing. Take care to set the permissions properly when re-running things.
+3. Bad Ex or Ey offsets.
+4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/caa-control/manual_problems_c?.dat. After marking, they can be re-run as needed. There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated). Can use caa_apply_manproblems to apply the manual_problems files during a given time.
+6. Bad packets.
+7. Missed HBIASSA.
+8. Jumping offsets at the flanks from bad SW/MS identifications.
+Fix and re-run things as needed.
+For help with the summary plots, see appendix B.
+
+12. Export to CEF
+================
+Data is read in from the MEX files.  Some additional processing is done:
+1. Quality flags are calculated and applied.
+2...
+The CEF files are stored at db.irfu.se:/export/data1/caa/cef/YYYYMM* (/data/caa/cef/YYYYMM*)
+To export a whole month (or multiple months), use caa_export_month(year,month).
+  Be sure to check the resulting "export failed" log.
+  Use P_L23_only for preliminary deliveries:
+    e.g.  for month=10:12, caa_export_month(2010,month,1,0,1:4,'P_L23_only',1); end
+
+The Matlab command to call is caa_export_new.  For example, to process the L2 E data for Cluster 1:
+  level=2
+  datatype='E'
+  sat=1
+  start_time=toepoch([2001,02,19,0,0,0])
+  caa_export_new(level, datatype, sat, 3,'00','Null', start_time, 3600*24)
+Note that you might need to compile mex 'cefprint_mx.c' before calling caa_export_new().
+New: use caa_export_month(year,month) to export everything expected for that month. Check the resulting "export failed" log.
+
+
+
+13: Deliver to CAA
+==================
+ssh -x efw@caa-delivery.estec.esa.int
+  EFW4Yu71
+Put the .cef.gz files in /caa/dropzone/EFW/CEF
+
+
+
+
+
+
+
+Appendix A: CAA Runner issues and workarounds
+=============================================
+
+File locations:
+  Job level info is documented at ~yuri/devel/Job levels.odt
+  Configuration info for both server and runner is kept at /etc/rc.conf
+  Log file is written to /var/log/CaaServer.log
+Add runners from the CaaConsole:
+  add runner=localhost:8002 (or similar)
+Remove group from the CaaConsole:
+  rm group=20060501-10 (or similar)
+  (included in 'help rm', but not 'help')
+To restart server: sudo /usr/local/etc/rc.d/CaaServer.sh restart 
+  - also responds to start, stop, status
+To stop runner  0: sudo /usr/local/etc/rc.d/CaaRunner.sh  stop
+To start runner 1: sudo /usr/local/etc/rc.d/CaaRunner1.sh start
+When starting runners, remember to start Xvfb: sudo /usr/local/etc/rc.d/Xvfb start
+To forcibly unload a job group:
+  sudo mysql
+  SHOW databases;
+  USE caa;
+  SHOW tables;
+  DESCRIBE JobGroup;
+  SELECT * from JobGroup;
+  UPDATE JobGroup set loaded=0 where loaded=1;
+  SELECT * from JobGroup;
+  QUIT
+To kill the CAA server:
+  ps -l -f `pgrep python`
+  kill -9 (the CaaServer)
+To update the irfu-matlab software repository:
+  ssh db
+  cd /data/cluster/irfu-matlab
+  export CVSROOT=':pserver:chris@space.irfu.se:/stor/devel'
+  ( cvs login )
+  cvs update
+  ( cvs logout )
+To update the CAA software from CVS:
+  ssh caa
+  sudo -i -u caa 
+  cd ~caa/devel/caa-runner
+  export CVSROOT=':pserver:caa@space.irfu.se:/stor/devel'
+  cvs login
+    (caarunner)
+  cvs update
+  cvs logout
+  cd ..
+  rm -r caa-runner2
+  cp -r caa-runner caa-runner2
+  vi caa-runner2/CaaSettings.py
+    (change isdatDb to 130.238.30.32:8)
+  (make sure to log out of caa's account)
+To cure a hung NFS client on fernie:
+  sudo su
+  ps -u chris
+  kill -9 (all of the processes likely attached to /data)
+  umount -f /data/caa
+  umount -f /data/cluster
+  umount -f /data/istp
+  umount -f /data/CIS
+    (ps -e | grep rpciod
+     kill -9 (the rpciod threads) )
+  mount /data/caa
+  mount /data/cluster
+  mount /data/istp
+  mount /data/CIS
+Installing a new set of caa runners on the machine caa1, set up to access db:8 (130.238.30.32:8):
+  sudo su caa
+  cd /home/caa/devel
+  cp -r caa-runner caa-runner2
+  vi caa-runner2/CaaSettings.py
+    (change isdatDb to 130.238.30.32:8)
+  Ctrl-d
+  cd /home/caa/devel
+  sudo cp caa-runner2/scripts/CaaRunner.sh /usr/local/etc/rc.d
+  cd /usr/local/etc/rc.d
+  sudo vi CaaRunner.sh
+    (change command=/home/caa/devel/caa-runner/CaaRunner.py to ...caa-runner2...)
+  sudo cp /home/caa/devel/caa-runner2/scripts/CaaRunner.sh CaaRunner1.sh
+  sudo vi CaaRunner1.sh
+     # PROVIDE: CaaRunner1
+     name="CaaRunner1"
+     cr_host=${CaaRunner1_host-"localhost"}
+     cr_port=${CaaRunner1_port-"8000"}
+     cr_levs=${CaaRunner1_levels-"11"}
+     cr_user=${CaaRunner1_user-"caa"}
+     cr_logl=${CaaRunner1_loglev-"INFO"}
+     cr_clie=${CaaRunner1_clients-""}
+     command=/home/caa/devel/caa-runner2/CaaRunner.py
+  sudo vi /etc/rc.conf
+     #Caa
+     Xvfb_enable="NO"
+     CaaRunner_enable="YES"
+     CaaRunner_user="caa"
+     CaaRunner_host="caa1.irfu.se"
+     CaaRunner_port="8000"
+     CaaRunner_levels="0:2:4:8"
+     CaaRunner_clients="130.238.30.25"
+     #CaaRunner_loglev="DEBUG"
+     CaaRunner1_enable="YES"
+     CaaRunner1_user="caa"
+     CaaRunner1_host="caa1.irfu.se"
+     CaaRunner1_port="8001"
+     CaaRunner1_levels="1:2:4:8"
+     CaaRunner1_clients="130.238.30.25"
+  sudo /usr/local/etc/rc.d/CaaRunner.sh start
+  sudo /usr/local/etc/rc.d/CaaRunner1.sh start
+  cd /usr/local     
+  sudo mkdir matlab
+  cd matlab
+  sudo mkdir bin   
+  cd bin
+  sudo ln -s /usr/local/bin/matlab matlab
+To re-run a JobGroup with a lot of errors (rerun only those jobs with errors):
+  /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200604_L01" > ttt.txt
+  cat ttt.txt|grep error > ttt1.txt
+  /home/caa/devel/caa-runner/scripts/nice_jlist.sh ttt1.txt
+  /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ttt1.txt.nice 
+Installing a new matlab on sipadan:
+  sudo su
+  mkdir /usr/local/m2009b
+  cp -r /data/caa/matlab/m2009b/* /usr/local/m2009b
+  cd /usr/local/matlab/bin
+  cp matlab77 m2009b
+  vi m2009b:
+       #!/bin/sh
+           (removed:)export LD_LIBRARY_PATH=/usr/local/matlab/isdat_usrlib_glnx86:$LD_LIBRARY_PATH
+       /compat/linux/bin/sh /usr/local/matlab/m2009b/bin/matlab "$@"
+  cp m2009b matlab
+Useful network stats under FreeBSD: systat
+
+  
+
+Appendix B:Summary plots
+========================
+Page 1:
+  4 panels of E-field spectra, presumably from p34.
+  Quality
+    Yellow= quality 0 (Really bad or missing)
+    Red   = quality 1 (Bad, uually wakes)
+    Green = quality 2 (Caution: whisper operating or asymmetric data).
+            (Note: C1 and C3 never get above qual=2 after 2002 becuase of the failed probes.)
+    Blue  = quality 3 (OK)
+  Spacecraft potential (C1234 = black, R, G, B)
+  Processing intervals (usually 1.5 hrs, but depends on data availability)
+Page 2:
+  Ex (C1234 = black, R, G, B)
+  Ey (C1234 = black, R, G, B)
+  4 panels of spectra of the raw (spinning) signal
+    blue=spin fundamental (~electric field)   -- should be much larger than other components
+    green, red, cyan, magenta, yellow: first through fifth harmonics 
+    red circles: lobe wake
+    green circles: plasmasphere saturation
+  Spacecraft potential
+  Processing intervals
+Page 3:
+  Bitmasks for each sat
+    BITMASK_RESET                    =  1;       % Bit 1    Quality=0
+    BITMASK_BAD_BIAS                 =  2;       % Bit 2    Quality=0
+    BITMASK_PROBE_SATURATION         =  4;       % Bit 3    Quality=0
+    BITMASK_LOW_DENSITY_SATURATION   =  8;       % Bit 4    Quality=0
+    BITMASK_SWEEP_DATA               =  16;      % Bit 5    Quality=0
+    BITMASK_BURST_DUMP               =  32;      % Bit 6    Quality=0
+    BITMASK_NS_OPS                   =  64;      % Bit 7    Quality=0
+    BITMASK_MANUAL_INTERVAL          =  128;     % Bit 8    Quality=1
+    BITMASK_SINGLE_PROBE_PAIR        =  256;     % Bit 9    Quality=1
+    BITMASK_ASYMMETRIC_MODE          =  512;     % Bit 10   Quality=2
+    BITMASK_SOLAR_WIND_WAKE          =  1024;    % Bit 11   Quality=3
+    BITMASK_LOBE_WAKE                =  2048;    % Bit 12   Quality=1
+    BITMASK_PLASMASPHERE_WAKE        =  4096;    % Bit 13   Quality=1
+    BITMASK_WHISPER_OPERATING        =  8192;    % Bit 14   Quality=2
+    BITMASK_HIGH_BIAS_SATURATION     =  16384;   % Bit 15   Quality=1
+
+Appenidix C: ISDAT
+==================
+Restart the ISDAT servers on db.irfu.se:
+     ssh db
+     sudo su
+     /usr/local/etc/rc.d/dbhCAA.sh restart
+     /usr/local/etc/rc.d/dbhCAA1.sh restart
+     /usr/local/etc/rc.d/dbhIRFU.sh restart
+     /usr/local/etc/rc.d/dbhWORLD.sh restart
+ISDAT index files are stored in db.irfu.se:/data/cluster/index
+To regenerate the ISDAT index files: see section 1d
+Data is actually stored in db.irfu.se:/data/cluster/DDS
+File naming convention is: yymmdst.sat, with s=source, t=data type, sat=satellite
+         st=ba        --> short-term orbit file (auxiliary)
+         st=fb/fh/fn  --> FGM burst/housekeeping/normal
+         st=ga        --> attitude and spin rate (auxiliary)
+         st=la        --> time calibration (auxiliary)
+         st=ia        --> command history (auxiliary)
+         st=sh        --> Spacecraft platform housekeeping data 
+         st=ta        --> Short term event file (auxiliary)
+         st=va        --> Covariance matrix file (auxiliary)
+         st=wb/h/n    --> WEC burst/housekeeping/normal
+         st=xa/ya     --> Unknown auxiliary files
+
+
+Appendix E: CAA runner Matlab equivalents
+=========================================
+L0:
+umask 0002;
+export DISPLAY=localhost:5 TMP=/tmp LD_LIBRARY_PATH=/usr/local/isdat/usrlib_lx:$LD_LIBRARY_PATH;
+/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm
+  addpath /usr/local/isdat/clients/APIs/matlab/Db_mex:/usr/local/isdat/clients/APIs/matlab/Tm_mex:/usr/local/isdat/clients/APIs/matlab/matlib:/data/cluster/matlab:/data/cluster/matlab/caa:/data/cluster/matlab/c_ri:/home/scb/matlab/clfgm;
+  irf_log('log_out','/data/caa/log/2006/C1-2006-07-01T00:00:00Z-L00-AmnD.log');
+  c_ctl('init')
+  c_ctl('set',5,'isdat_db','130.238.30.32:8')
+  caa_get_batch_l0('2007-12-01T00:00:00Z',10800,1,'/data/caa/l1/2007/20071201_0000','tmode|fdm|efwt|ibias|p|e|a|r|caa_int|b|sax|v|vcis|bfgm|edi|nsops') ;
+  exit
+
+L1:
+umask 0002;
+export DISPLAY=localhost:5 TMP=/tmp LD_LIBRARY_PATH=/usr/local/isdat/usrlib_lx:$LD_LIBRARY_PATH;
+/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm
+  addpath /usr/local/isdat/clients/APIs/matlab/Db_mex:/usr/local/isdat/clients/APIs/matlab/Tm_mex:/usr/local/isdat/clients/APIs/matlab/matlib:/data/cluster/matlab:/data/cluster/matlab/caa:/data/cluster/matlab/c_ri:/home/scb/matlab/clfgm;
+  irf_log('log_out','/data/caa/log/2006/C1-2006-07-01T00:00:00Z-L00-AmnD.log');
+  c_get_batch(0,0,'sc_list',1,'sp','/data/caa/l1/2007/20070101_0000/C1/20070101_0000','varsproc','manproblems|vce|whip|sweep|bdump|badbias|probesa|ec|hbiassa|rawspec|dies|p|ps|diespec|brs|edi|wake','check_caa_sh_interval',1,'nosrc')
+
+L2:
+umask 0002;
+export DISPLAY=localhost:5 TMP=/tmp LD_LIBRARY_PATH=/usr/local/isdat/usrlib_lx:$LD_LIBRARY_PATH;
+/usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se:1712@flexlmtmw2.uu.se:1712@flexlmtmw3.uu.se -nojvm
+  addpath /usr/local/isdat/clients/APIs/matlab/Db_mex:/usr/local/isdat/clients/APIs/matlab/Tm_mex:/usr/local/isdat/clients/APIs/matlab/matlib:/data/cluster/matlab:/data/cluster/matlab/caa:/data/cluster/matlab/c_ri:/home/scb/matlab/clfgm;
+  irf_log('log_out','/data/caa/log/2006/C1-2006-07-01T00:00:00Z-L00-AmnD.log');
+  c_get_batch(0,0,'sc_list',1,'sp','/data/caa/l1/2007/20070101_0000/C1/20070101_0000','varsproc','dief|die','check_caa_sh_interval',1,'nosrc')
+
+
+Appendix F: Loading the CAA data
+================================
+example:
+(cd into subinterval 20060101_1200)
+[ok,da]    = c_load(irf_ssub('wcE?p!',3,34)); ok
+[ok,uncor] = c_load(irf_ssub('wE?p!',3,34)); ok
+irf_plot({da,uncor})
+
+Appendix G: example levelone access
+===================================
+cd ~/data/cluster/DDS
+cp /data/cluster/DDS/060110*.03 .
+levelone -n 0601100000wn.03 -b 0601100000wb.03 -h 0601100000wh.03 -m 3 -e diagnostics.txt -T /data/cluster/cal/WecEfwTcor/ -0  L1_EFW_20060110.03
+getefw L1_EFW_20060110.03 L1_EFW_20060110_03.txt 1 9999999 1 6 7 14
+(Puts data in files Vi.dat and Vij.dat)
+
+Appendix H: rebooting db
+========================
+If db ever gets rebooted (e.g. power failure), then the RAID array will NOT properly automatically re-attach. Here's the black magic to fix this:
+1. Boot db.
+2. ssh to knatte (the RAID array) using the password written on the Post-It note on db.
+3. reboot knatte ("reset" on the menu). It will do a self-test, wait a few moments, run a RAM test, and then finally report being ready.
+4. While knatte is checking its memory (but NOT earlier or later), rescan the SCSI channels:
+     camcontrol rescan 2
+     camcontrol rescan 4
+   If you don't get both done (and you probably won't), you can do a second reboot/rescan cycle for the other channel.
+5. Fix the SCSI communication parameters:
+     camcontrol negotiate 2:0 -R 160.000 -O 127 -a
+     camcontrol negotiate 4:1 -R 160.000 -O 127 -a
+   Check them with camcontrol devlist. Should look like this:
+     <transtec T6100S16R1-E 347G>       at scbus2 target 0 lun 0 (pass7,da6)
+     <transtec T6100S16R1-E 347G>       at scbus4 target 1 lun 0 (pass8,da7)
+6. Check that zpool sees both devices using zpool status. Should look something like this:
+	NAME                   STATE     READ WRITE CKSUM
+	DataPool               ONLINE       0     0     0
+	  da6                  ONLINE       0     0     0
+	  label/TranstecRaid1  ONLINE       0     0     0
+7. zfs mount -a
+8. Check the nfs mounts (especially to Linux clients like brain or fernie). You may need to restart rpc/mountd/nfsd:
+     zfs share -a
+     pgrep rpcbind
+     kill [rpcbind PID]
+     rpcbind
+     /etc/rc.d/mountd onerestart
+     /etc/rc.d/nfsd restart
+   Check that
+    [root@db /]# showmount -e
+     Exports list on localhost:
+     /export/data3/CIS                  130.238.30.0 
+     /export/data/istp                  130.238.30.0 
+     /export/data/cluster               130.238.30.0 
+     /export/data/caa                   abba.irfu.se brain.irfu.se caa.irfu.se caa1.irfu.se hem.irfu.se hq.irfu.se ice.irfu.se sipadan.irfu.se fernie.irfu.se 
+   [root@db /]# rpcinfo -p
+   program vers proto   port  service
+    100000    4   tcp    111  rpcbind
+    100000    3   tcp    111  rpcbind
+    100000    2   tcp    111  rpcbind
+    100000    4   udp    111  rpcbind
+    100000    3   udp    111  rpcbind
+    100000    2   udp    111  rpcbind
+    100000    4 local    111  rpcbind
+    100000    3 local    111  rpcbind
+    100000    2 local    111  rpcbind
+    100005    1   udp    845  mountd
+    100005    3   udp    845  mountd
+    100005    1   tcp    845  mountd
+    100005    3   tcp    845  mountd
+    100003    2   udp   2049  nfs
+    100003    3   udp   2049  nfs
+    100003    2   tcp   2049  nfs
+    100003    3   tcp   2049  nfs
+
+Appendix I: compiling mex files for FreeBSD
+===========================================
+Since you need to use linux compatibility, this is more complicated than you'd think.
+  ssh sanna
+  cd ~/devel/isdat
+  export CVSROOT=':pserver:chris@space.irfu.se:/cvsisdat'
+  cvs checkout wec
+  cd ~/devel/isdat/isdat_root/scripts
+  vi my_isdat_profile
+    line 17:  ISDAT_HOME=/home/chris/devel/isdat/isdat_root; export ISDAT_HOME;
+  cd ~/devel/isdat/isdat_root/config/cf
+  cp site.def_DEFAULT site.def
+  vi site.def
+    line 102: #define HasMatlab       YES
+  cd ~/devel/isdat/isdat_root/config
+  cp /usr/local/isdat/isdat_CAA/config/isdat.server .
+  vi isdat.server
+  cd ~/devel/isdat/isdat_root/server
+  cd ~/devel/isdat/isdat_root/scripts
+  . my_isdat_profile
+  cd ~/devel/isdat/isdat_root
+  cp Makefile.ini Makefile
+  make isdat
+    (will fail, but after making the clients)
+
+
+
+OPEN ISSUES
+===========
+
+Should shut down matlab when done with it on the runners!
+
+ns_ops should not be checked at L0. It should only be checked on export.
+
+Track down the 1.1 ms problem.  :-(
+(It's TED (i.e. the same problem appears in levelone); ignore it entirely.)
+
+Track down all the 0.2s problems that are easily visible.
+
+Fix ISDAT to read the FGM UP files
+(Not relevant to CAA processing unless CSDS is compiled into db:8/9)
+Fix Matlab on caa/caa1/sipadan to read CDF files at a reasonable speed
+
+Timing shit:
+ 1.1 ms jumps
+ Per-Arne 0.2*n second jumps
+ bigger negative dt jumps
+
+Move all runners over to m2009b (?)
+ Message: "Not all CPUs are enabled." ???
+
+Let sipadan:8000 work on L2 (?)
+
+- update efw_tcor files (esp. for 2007!)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
