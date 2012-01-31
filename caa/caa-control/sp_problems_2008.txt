@@ -1,0 +1,150 @@
+Problems seen when looking through the summary plots for 2008
+=============================================================
+
+1a) Processing bugs fixed
+========================
+When try to fetch phase for an interval with a maneuver, the phase data often stops at the maneuver. 
+  Fixed and committed to CVS 2010 April 09.
+
+
+1b) Plotting bugs fixed
+=======================
+
+1c) Data problems fixed
+=======================
+0107 1330 C2 sign flip. reprocessed
+0122 0608-1537+ data gap C4. added to nsops
+0131 2040-1115+ data gap, C3. bad_bias, added to nsops
+0104 0907-1738 corrupt phase data on C1. added to nsops
+0128 1200 maneuver, C2  re-procesed
+     1330 maneuver, C3  re-procesed
+     1500 maneuver, C4  re-procesed
+     1630 maneuver, C1  re-procesed
+0217 0130 C2 sign flip. reprocessed
+0227 22:31:33, 22:36:35 bad packet C2?. added to nsops.
+0225 0750 to 0227 16:15 multiple telemetry glitches on C3. Also, sending p12 rather than p34 until 0226 14:29
+  added to nsops and set quality=1 using manual_interval.
+03-05 21-2130 C2 sign flip
+  03-08 06 "
+  03-10 15 "
+  03-13 00 "
+  03-17 18 "
+  re-processed.
+03-11 0550-2218 (59280 sec) C1 corrupt data. bad tlm.
+  added to nsops.
+03-16 12:32:31 (2 seconds) C4 bad p3 and p4. Cause uncertain.
+  added to nsops and reprocessed.
+04-03 1030 sign flip C2
+  04-08 0430 "
+  re-processed.
+04-23 0011 C2 bad packet? 2008-04-23_00:10:44.0000 (1 sec)
+  added to nsops
+04-25 1030 C4 maneuver
+      1300 C2 maneuver
+04-28 0800 C3 maneuver
+  reprocessed.
+05-10 0810 sign flip C2
+05-22 0600 sign flip C2
+  reprocessed
+05-14 0800 maneuver C3 360 sec
+05-30 0800 maneuver C3 1440 sec
+  reprocessed
+06-23 12-21 force MS offsets
+06-30 18-24 force MS offsets
+ fixed using special_processing
+06-20 19:55:04 C4 bad HK packet
+06-27 08:26:43 bad packet C3
+ added to nsops
+06-13 06:23:30-16:44 (37230 sec)C3 probe latchup
+06-24 21:33-13:30 (57420 sec) C4 bad_bias
+  added to nsops
+06-14 12-18 missed some hbiassat intervals on C1234
+  added to man_problems
+06-18 1330 maneuver C3
+  reprocessed.
+2008-07-xx Force MS offsets for the whole month
+  forced in c_efw_dsi_off.m
+07-04 00:18:23 (4 sec) and 00:38:19 (4 sec) C1 bad packet
+07-05 20:16-20:41 (1500 sec)C4 bad phase from HK
+07-13 23:30:08 (5 sec) C1 bad HK packet
+07-18 14:29:00 (16 sec) C3 missing phase
+07-18 14:27:08 (26 sec) C3 bad packet
+  Entered into nsops
+07-19 2230-2317 C2 sign flip
+  reprocessed
+07-01 1829-1620+ (78660 sec) C1 badbias
+  Entered into nsops
+08-06 00:16-14:00 (49440 sec) C3 badbias
+08-23 14:26-14:26++ (172800 sec) C3 badbias
+  Added to nsops
+08-29 1920-18+ missed wake on C3
+  added to manual_problems
+2008-08-12 Corrupt DDS files 0808120000wb.0*.
+  Contacted Per-Arne, who delivered uncorrupted files. Re-generated index files and reprocessed.
+09-02 01:35:53 (2 sec) C3 bad packet
+09-04 08:50:40 (5 sec) C1 bad phase2
+09-16 11:18:57 (3 sec) C3 bad packet
+09-21 13:35:18 (3 sec) C3 bad packet
+  added to nsops
+09-17 10:30-18 C3 lobe wake
+  added to manual_problems
+09-08 23:43-0422++ C3 badbias
+  added to nsops
+09-25 18:00-09:10+ C123 mixed-up quantitites in HX telemetry (p? replaced p32)
+09-29 12:00-05:22+ C13 mixed-up quantitites in HX telemetry (p? replaced p32)
+  added to nsops, special_processing and manual_problems
+10-04 0500-1200 C13 mixed-up quantitites in HX telemetry (p? replaced p32)
+10-13 0623-1130+ C123 mixed-up quantitites in HX telemetry (p? replaced p32)
+  added to nsops, special_processing and manual_problems
+10-20 06-1054 bad LX data on C1
+  Put in ns_ops, added a PROBESA to manual_problems and reprocessed 'p|ps'.
+10-22 Per-Arne reported that the following data has funny timing: 0446-1225   SC3
+  added to nsops
+10-12 1138-0620+ digital fault on C3 affects HX data
+  upgraded to bad_data in nsops
+11-01 20:50:06 (2 sec) C3 bad packet
+  added to nsops
+11-04 1440-2020 (20400 sec)C123 mixed-up quantitites in HX telemetry (p? replaced p32)
+11-11 0805-1030 (8700 sec)C123 mixed-up quantitites in HX telemetry (p? replaced p32)
+  added to nsops, special_processing and manual_problems
+12-11 21-00 force MS offsets on C1
+12-19 00-06 force MS offsets
+12-23 18-21 force MS offsets
+12-28 12-1630 force MS offsets C24 only
+  added to special_processing
+12-09 07:25:31-10:00:00 C23 mixed-up quantitites in HX telemetry (p? replaced p32)
+  added to nsops, special_processing and manual_problems
+12-09 1816-1046+ C4 badbias
+12-26 1344-0242+ C4 badbias
+  added to nsops
+12-30 23-0120 fix up the hbiassa on C124
+  added to manual_problems
+C3 offset could be bumped up a bit, maybe 0.3 mV/m. Check the CIS crosscal for early 2009.
+  Adjusted offsets.
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems (new from 2006)
+======================
+
+4) Ignored problems
+===================
+
+04-22 0137-0915 where is C4 data? 
+04-04 12:08:12 1-point spike in p34 on C3
+05-20 0020-0500 where's C3 data?
+10-05 1645-0109 where's C3?  (eclipse is 0310-0809)
+      2110-1345+ where's C1? (eclipse is 0310-0809)
+what the hell is with the c3 p32 data in the inner magnetosphere? eg. 2008-12-09 0600-0630
+
+5) Unclassified
+===============
+
+
+
+
+

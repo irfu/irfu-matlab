@@ -1,0 +1,496 @@
+
+Problems seen when looking through the summary plots for 2006
+=============================================================
+
+1a) Processing bugs fixed
+========================
+2006-01-11 06: problems in the C2 Vsc data
+   Consider changing to blank the saturated probe data from the L2/L3 products, rather than using the max.
+   Will result in cleaner L3, but blanks in the L2.
+   Maybe still use the max method for 4-probe data.
+   Fix: use max of all available probes, not just the 2 in the active probe pair.
+
+2006-02-01 06: summary plot generation failed with message MATLAB:pcolor:NonRealInputs. Data inputs must be real.
+  - spectra generated and put into diESPEC2p1234 (/data/caa/l1/2006/20060201_0600/C2/20060201_0730) is complex.
+  - fixed caa_powerfft.m
+
+2006-01-09 00: C3 lacking spinfit data
+  - wE3p32 has only 31 points vs. wE3p34 which has 134976 points
+     - reason: switchover of HX sampling from V32L_V34L to V2L_V34L
+  - in the dies processing, this causes the phase to be retrieved only for these 31 p32 points, but then used for the p34 points
+  - removed assumption that (# p12/p32 points) = (# p34 points) from GetData.m
+
+2006-01-09 00: C3 quality flags wrong after bugxfix. Most of interval should be marked as single probe pair (quality=1)
+  Sets flag based on result of c_load('diE?p1234_info', cli, 'var'), which looks in EDSIf.mat
+  diE?p1234_info is set during diespec/die/dief processing
+  If blanking too much data from one probe pair (>50%), mark whole interval as single-probe
+  (dirty, but affects extremely little data, and that data is bad anyway)
+
+2006-01-13 12: Bad Vsc on C2. Other sats go bad soon after. see also 2006-01-11 09
+  Changed hbiassa to flag intervals with ADC offsets consistently > 50 mV/m (at least 2 spins in a row)
+  Then changed ps processing to use a max, rather than a mean, for hbiassa affected intervals
+
+Want some way to mark problems by hand. 
+  New getData quantity "manproblems" sets problems based on datatbase at /data/cluster/caa-control.
+  Added to the CaaRunner L1 quantities.
+
+2006-01-03 03: why is C2 flagging saturation?
+  Problem: large (>5 mV/m) strictly-sunward fields are being erroneously flagged as hbiassa.
+  Put a new criterion on wide (>100 deg) wakes: must be really large fields (>50 mV/m).
+
+2006-02-13 00:  C2 Ex offset from 0130 to 0300
+  It's supposed to zero this at getData line 534, but it isn't. Creates a problem when generating sp/cef
+
+07-18 12: C1 delta offset looks bad. Continues until about 07-19 1033. Started at 0721.
+  Switching over too easily to p32. Made it harder in getData.
+
+09-16 18- (09-17 12): Where's C2?
+  badbias, but doesn't look that way to me...
+  no efwt data, which means that the badbias threshold was set wrong.
+  ISDAT returns end of file.
+  Fixed in matlab software and reprocessed. Should maybe be fixed in ISDAT.
+
+1b) Plotting bugs fixed
+=======================
+2006-01-01 00: jump in 2nd harmonic at 0130
+   also:  2006-01-01 21, 01-02 00, 01-02 03,01-02 09, ...
+   - using p32 data for earlier interval, due to selection
+     based on hsbias flagging (GetData line 1745)
+   - maybe add a label to the summary plot panel?
+
+summary plots should remove hbiassa before plotting Ex, Ey
+summary plots should remove whisper before plotting Ex, Ey
+summary plots should remove probe saturation before plotting Ex, Ey
+
+2006-01-03 09: why are the lobe wake circles only going on C4?
+2006-01-03 12: why are the plasmasphere wake symbols not being plotted?
+
+What does the L3 P data look like? Should switch the panel in the spec figure to L3.
+
+abba has no pdfjoin utility, so the summary plots created there have not been joined as they should.
+  Fixed.
+
+How far apart are the spacecraft now?
+  wrote caa_pl_separation. Quick and dirty.
+
+remove ns_ops intervals from Exy data.
+
+1c) Data problems fixed
+=======================
+2006-01-06 12: phase problem on C4 after maneuver
+
+2006-01-13 06: What happened to the C4 spinfit data?
+2006-01-26 15: What happened to the C3 spinfit data?
+2006-01-30 03: What happened to the C4 data?
+  Bad phase data. (All of the above)
+
+2006-01-03 12: Missed the plasmasphere wake detection on C3.
+  Not sure what happened here. Re-run fixed it.
+
+2006-01-10 18: Missed the plasmasphere wake detection on C3.
+  Small fields didn't exceed the error threshold of 1 mV/m.
+  Set flag by hand.
+2006-01-06 00: missed pswake on C3
+2006-01-20 06: missed pswake on C3
+2006-01-25 00: missed parts of pswake on C123
+2006-01-29 18: missed parts of pswake on C3
+2006-02-01 03: missed pswake on C3
+2006-02-03 12: Missed pswake on C3
+2006-02-05 21: Missed pswake on C34
+03-04 03: missed pswake on C3
+03-13 15: partly missed pswake on C34
+
+2006-02-05 09: why is the Ex plot limits so bad?
+  Bad point in C2 data (should have been removed as probe saturation)
+
+2006-02-12 12: what's going on with the gaps in the C4 spectra?
+   Bad TM. Those packets are really missing. Flagged part of interval in ns_ops.
+
+2006-02: C2 offset is too large by 0.1 mV/m
+
+2006-02-09 09: only p12 is bad on C4. what does the L3 data look like? is it getting flagged?
+  No, it's using the good probes and not flagging the data as hsbias. Good.
+
+2006-02-12 15: Weird C4 Ex offset. Continues until lose data on 2006-02-13 0000.
+  Strange-looking raw data with big difference p12 vs. p34.
+  bad bias, strange problems with DSC data. Added to ns_ops and problems database.
+
+03-08 0830 to 03-09 0130: where's the C3 data?
+  Bad bias settings lead to probe saturation.
+  Entered into ns_ops.
+
+03-08 2100 to 0000: where's the C1 data?
+  badbias. Entered into ns_ops.
+
+03-19 0930-1505 where's C3?
+  All probes saturate. p2 goes positive. Entered into ns_ops.
+
+03-17 0830 to 03-18 1127: serious problems on C2
+  Garbled telemetry. Entered into ns_ops.
+
+04-08 12: where's the C1 data? (11:48:30 - 23:37:30)
+  probe 3 latchup. Added to ns_ops.
+
+04-21 18: where's C2? (190930 - 0000)
+  badbias. Added to ns_ops.
+
+04-07 06: maneuvers on C2 (07:59:50 + 6 min)
+04-07 06: maneuvers on C3 (06:59:54 + 6 min)
+04-07 12: maneuvers on C1 (12:59:50 + 6 min)
+04-07 18: maneuvers on C4 (20:29:54 + 6 min)
+
+04-18 06: partial pswake on C3. 0735-0900
+04-20 15: pswake on C3. 1645-1815
+04-27 18: partial pswake on C3. 1945-2115
+04-30 03: missed pswake on C3. 0430-0650.
+
+04-04 03: this doesn't look like pswake on C3 to me.
+  removed in problems file.
+
+04-04 06/9: outliers in Ex (C1/2 0820-0830, C2 0750-0800, C4 0930-0935, 1020-1030)
+  should be marked hbiassa. fixed in problems file.
+
+03-04 18: C2 needs another 0.2 mV/m of offset from 1930 to 2230.
+  Looks like delta offsets are not very good for this interval, or indeed for all of 2006-03.
+  Delta offsets were computed before changes to hbiassa processing.
+  Re-did C2 delta offsets for 03-06 (inclusive).
+
+05-02 12: C3 pswake: add 1430-1530.
+05-02 12: C4 pswake: add 1455-1500.
+05-09 15/18: add pswake C3/4 1750-1840
+05-14 09: add pswake C3 1150-1200
+05-24 00: add pswake C3 00-01, C4 0200-0250
+05-26 09: add pswake C3 0900-1030
+ added to manual problems.
+
+05-03 03: Ex outliers. add hbiassa on C14 0300-0540
+05-03 21: Ex outliers. add hbiassa on C1 2250-2313
+05-04 03: Ex outliers. add hbiassa on C1 0450-0510
+05-04 06/9/12: Ex outliers. add hbiassa on C1234 0600-1500
+05-06 15: Ex outliers. add hbiassa on C1234 1500-1800
+05-17 06...: Ex outliers. add hsbias C3 7300-1500
+05-18 06: add hsbias C1 06-09
+05-18 12: add hsbias C3 12-15
+05-24 12: Ex outliers. add hsbias C1 1200-1400
+05-24 18: Ex outliers. add hsbias C1234 1800-2130
+05-24 21: Ex outliers. add hsbias C1 2240-2244
+05-25 09: Ex outliers. add hsbias C2 0900-1200
+05-30 12: Ex outliers. add hsbias C1 1440-1600,1700-1800
+ added to manual problems.
+
+Much of 2006-05/06/07: Bad delta offsets.
+  Spline interpolation in delta offsets was bad.
+  Fixed the points in deltaoff.mat to be compatible with splining.
+
+05-13 00: Ex outliers. something funny on C3  00:56:48-00:56:50
+ Bad packet. marked in ns_ops.
+
+05-10 03...: where's C3 0455-0000?
+  badbias 0501-0000. Added to ns_ops.
+
+06-23 18: what happened to C3?
+  probe latchup. 1,3 neg. 2,4 pos. 1544-0244. noted in ns_ops.
+
+06-29 1630-2152 : what happened to C1?
+  probe latchup on p3. noted in ns_ops.
+
+pswake problems
+C4 07-01 0400-0500
+C3 07-22 1130-1200
+C3 07-27 0550-0610
+pswake problems
+C3 06-04 2130-2230
+C3 06-12 0130-0230
+hbiassa problems
+C2: 06-01 0000 to 06-16 2330 (take p12 as well)
+C1:06-16 0037-0327
+C1: 06-22 0215-0220
+C1(2)34: 06-27 0755-1100  
+C1:06-27 1329-1331
+C1(2)34: 06-05 21-1810 the next day
+C1: 06-13 1650-1653
+C2 06-27 0800-1100
+C1 06-27 1328-1332
+  added to manual_problems.
+
+06-18 0552- 06-19 0000: C4 Ex offset funny. Needs to be increased by about 3 mV/m. Big spin harmonic, too.
+  badbias, not detected properly. Seems to be a problem sometimes with ISDAT's bias values.
+  added to manual_problems and ns_ops.
+
+2006-07-07T14:22, dt="924810", C1: weird digital problem.
+  Added to ns_ops and QRecord
+  Use QRecord to take L2 to quality 1 and L3 to quality 2 
+
+07-12 12 C3: maneuver at 1230
+  refetched phase, reprocessed L12. 1200 second break required in ns_ops.
+
+07-01 00-06: where's C3?
+  badbias. added to nsops.
+
+07-15 0500: bad packets on C3
+  added to ns_ops.
+
+2006-07:
+  The C3 Ex offset is too big by about 0.5-1 mV/m in the msphere, and maybe 0.2 in the sw, at least at the start of August
+  reduced it.
+
+08-08 0630-1730: where's C1?
+  0630-1530: p3 latched at -68V.
+  1530-1730: badbias
+  added to nsops.
+
+08-08 16:57:05 C3 bad packet?
+  bad sc housekeeping packet. blank 16:57:00 to 16:57:10. added to nsops.
+
+08-15 1300-1410: hbiassa on C4
+  added to manual_problems.
+
+08-21 1802 C4 bad packet?
+  blank 18:04:08 for one second.  added to nsops. 
+
+08-30 1500: C2 is strange 1519-0000, and then vanishes for the remainder of the month.
+  upgraded tbd to bad_data in ns_ops for 15:15:54-03:37:22 interval.
+  Then have a badbias interval until midnight. 
+  Added to nsops.
+
+08-21 1802 C3 bad packet?
+  blanked 18:02:28.5 for two seconds in ns_ops
+
+08-27 1215 C3 bad packet?
+  blanked 12:15:34 for 2 seconds in ns_ops.
+
+08-15 1200 to 08-17 0000: where's C3?
+  note also loss of phase info 1155-1200.
+  very good question...
+    No/empty Atwo3 in mA. Use getData(CDB,...,cl_id,'a')
+    ISDAT says there's no data after 11:55:30. Corrupt DDS files? Other mysterious ISDAT problem?
+    ISDAT server prints the following to stderr: Ephemeris error -123: bad date
+      More specifically, debug shows the following error: EPH_DAY_NOT_FOUND
+      WecReadSatt for the 2006-08-16 GA file:
+        vsttim: 2006-07-31T11:55:36Z
+        ventim: 2006-08-15T11:55:36Z
+        gentim: 2006-07-31T12:12:51Z
+      WecReadSatt for the 2006-08-18 GA file:
+        vsttim: 2006-08-12T14:29:58Z
+        ventim: 2006-08-22T08:50:11Z
+        gentim: 2006-08-22T09:19:31Z
+    0608150000ga.03 and 0608160000ga.03 are the same as 0608140000ga.03.
+    They should instead be the same as 0608170000ga.03.
+  remedy: in /data/cluster/DDS:
+    cp 0608170000ga.03 0608150000ga.03
+    cp 0608170000ga.03 0608160000ga.03
+
+09-05 C1 0812: bad packet 08:14:49, 3 second blank
+  added to ns_ops.
+09-16 1412,1455 C3: spiky data. blank the following:
+  14:12:49.5, 1 sec
+  14:54:52,   33 sec
+  15:03:47.5, 1
+  15:07:10.5, 1
+  15:33:11, 1
+  15:39:01.5, 1
+  15:33:06.5, 1
+  15:54:49, 1
+  16:11:00, 18*60
+  16:42:29, 1
+  added to ns_ops.
+09-30 2244 C4 bad packet
+  22:44:45 15 seconds bad HK added to ns_ops.
+
+09-16 18- (09-17 12): Where's C2?
+  no efwt data, which means that the badbias threshold was set wrong.
+  Fixed by hand.
+
+09-21 12:14-1227: set reset flag on C1
+09-24 18: hbiassa on C123 is false. also, C4 at 2130
+  added to manproblems.
+
+10-05 10:40:40 for 20 seconds: bad HK on C1
+10-16 1830: maneuver, C2 (18:29:55, 300 seconds)
+10-16 2100: maneuver, C1 (21:00:00, 420 seconds)
+10-17 0830: maneuver, C3 (08:30:05, 420 seconds)
+10-17 1530: maneuver, C4 (15:29:46, 300 seconds)
+  added to ns_ops and reprocessed.
+
+10-29 1145 to 10-31 0000:where's the C1 E data?
+  p3 latchup at -68 V. Added to ns_ops.
+
+2006-10-04 18: C3 Ex offset looks like it should perhaps be increased by 0.5 mV/m.
+   Done.
+
+11-30 18: strange offset on C2,4
+  swapping between ms and sh offsets. Forced the offset by putting a Ddsi? in mEDSI.m
+
+11-01 1052 bad packet C3 11:08:28 for 9 seconds.
+  Plus bad HK packet at 10:53:16 for 4 seconds.
+11-07 0359 bad packet C3 03:58:32.5 for 2 seconds
+11-29 0355 bad packet C3 03:54:05 for 3 seconds.
+11-23 0440: maneuver, C1 04:39:00 for 300 seconds
+11-23 0650: maneuver, C2 06:35:50 for 300 seconds
+11-11 1200-1330: bad_tm C3 12:00:00 for 40 seconds
+  entered into nsops.
+
+2006-11-08 0000-0000 where's C1?
+  Corrupt ISDAT index file
+  Re-generated the index file for that day, and the data became available.
+
+12-07 11:16:50 (300 seconds): maneuver, C1 
+12-09 06: 0309 to 1243: probe latchup on C3 (all probes to -68V)
+12-29 1033-0200: what's going on with C2? badbias.
+12-14 0045: bad HK packet, C3 00:44:31 (5 sec)
+12-15 1445: bad HK packet, C2 14:43:58 (8 sec)
+12-17 2325: bad packet, C3 23:06:12 (8 sec) and 23:24:11 (3 sec)
+  added to nsops.
+12-31 2100: hbiassa problems.
+  added to manual_problems
+
+12-21 15: remove hbiassa from C1234
+  what's happening geophysically here? Interesting data.
+
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems
+======================
+2006-01-06 06: C2 data is really bad. contaminated with some noise that looks somewhat like the 450 Hz noise, but at low frequency. Does this have to do with C2 using the 180 Hz filters??
+
+2006-01-02 06: why is C3 Ey different?
+  See also (among others): 2006-01-02 18, 2006-02-01 21
+  2006-02-02 15/18 is interesting, since it starts out OK and then diverges as Ex gets larger.
+  But this isn't always true (e.g. 2006-02-04 15, or 2006-01-26 03)
+  C3 Ey is often a bit low (about 0.2 mV/m), but only when Ey is positive in the solar wind.
+  C3 Ex is often then a bit high (about 0.2 mV/m)
+  Overall, C3 Vsc is a bit higher than the other spacecraft, which is odd.
+  It also seems a bit less prone to saturation (e.g. 2006-03-26). C2 is certainly most prone.
+
+07-13 15 C3: maneuver at 16:25? Nope. What is this? (see also below)
+07-30 09 C3: what's that at 0934? 1630? 07-31 0600? 07-31 09-12? 07-29 15? 07-28 22:10?
+  ADC offset on p32 gets really large (15 mV/m, as opposed to 10 mV/m surrounding) for about 5 minutes.
+  Happens during a dip in Vsc (density cavity).
+
+4) Ignored problems
+===================
+2006-02-13 00: Why is C4 missing?
+   The whole interval has badbias. Hence, there's no spinfitting done.
+
+Should the plasmasphere wake detection algorithm be changed to look for spin harmonics?
+  Currently examines deviation from corotation, and requires at least 1 mV/m.
+  However, sometimes it misses (see above).
+  May be easiest to just mark by eye when this happens.
+
+2006-01-07 00: phase problems (?) at interval start on C3. Repeats at 0300 and 0730.
+  No, just asymmetric data in the solar wind.
+
+2006-02-08 18: Problems with Vsc L3 data
+
+2006-02-04 09: why is there blanked Vsc on C3?
+  Rendering problem in okular. evince correctly displays the pdf file with continuous Vsc on C3.
+
+2006-02-13 00: C4 data missing. why? Continues until 02-14 00
+  badbias.
+
+2006-02-22 15: missing C3 data. continues until 1930
+  saturated P3
+
+04-24 00-07: C2 Ex is too high. again at 04-26 06. about 0.2 mV/m both times.
+
+02-25 2230-0430: What's happening with C1 Vsc?
+  This seems to be real. Maybe EDI is operating in a strange mode.
+
+
+5) Unclassified
+===============
+ISDAT: why is the bias sometimes not returned correctly?
+  e.g. 2006-06-18 C4: the bias was clearly changed to -40 nA at 0552, but ISDAT continues to show an OK bias until 0000.
+  08-27 20:55- (28 0000) where's C3?
+    badbias. probably is some data that could be rescued once ISDAT is fixed. Should also be noted in ns_ops.
+  It looks to me like the ISDAT bias currents are largely just wrong with the new server.
+  Example: compare bias changes for C3 2002-02-17 2200 between matlab (old ISDAT) and ISDAT (new ISDAT). :(
+           must have occurred quite some time ago, since the "old" ISDAT server here on fernie is also broken.
+  Index files were generated with an old ISDAT server and are not quite right. Need to be redone.
+
+manproblems not properly implemented in the runners.
+
+
+
+2006-09
+*******
+
+09-01 C3 0040: probe saturation in the auroral zone?
+  Also 09-10 12 C34, 09-17 1540 C2
+  probesa algorithm blanks anything near a negative probe voltage on any of the probes.
+  Results in frequent NaNs in L2,L3 E data.
+  Proposed solution:
+   rename probesa from PROBE_SATURATION to NEGATIVE_PROBE_POTENTIAL
+   rename probeld from LOW_DENSITY_SATURATION to PROBE_SATURATION 
+   move detection of latched probes from probesa to probeld in getData
+   make sure Vp>50 goes inteo probesa
+   Don't blank probesa from ec|dies|die
+   Reprocess all data (all affected L1,L2 parameters) from 2006-09 onward that has any probesa set.
+
+currently, probeld only when all 4 probes are at -68 for at least some time during the interval when a given probe goes below -68. Otherwise, it falls through to probesa if only some of the probes are below -68. So, for example, during the interval 2006-08-28T20:20Z to 21:00, C1 gets a probesa (not a probeld) flag because p1 doesn't go to -68V (since it's dead).
+
+Need to reprocess E-field for any data with the new single-probe HBIASSA problems.
+cd /home/chris/caa
+caa_reproc('e_reproc_2006.txt','','ec|hbiassa|rawspec|dies|diespec|wake|manproblems|dief|die',[]);
+(no need for manproblems when doing 2007)
+
+  Need to decide on reprocessing other months (2006 01-06) as well.
+   -> No, but do write it down on the Twiki.
+
+2006
+****
+- what should be the write permissions for old directories (eg. 2001-2006?)?
+
+2007
+****
+- may wish to modify caa_is_get near line 65, to try pause and try again if Mat_DbOpen fails
+- need to determine sw offsets for late 2007
+
+
+2007-01
+*******
+sp failure:
+  Error encountered for 2007/20070119_1500:
+  MATLAB:badsubscript
+  Attempted to access result(4,1); index out of bounds because size(result)=[3,7].
+
+2007-01-01: C3 offset needs to be increased by about 0.5 V.
+   should be sh_interval, not ms_interval: all of 01-01, plus 01-02 until 1200
+
+2007-01-03 1930-2040: what happened to C2?
+
+2007-01-08 1500: C3 offset too small. Using sh offsets here in the sheath (correctly determined).
+2007-01-09 0300: C3 offset too small by 0.3 mV/m even in sw (using sh offsets).
+2007-01-13 0600: C3 offset too LARGE(!!) by 0.5 mV/m in sheath (using sh offsets).
+
+2007-01-10 1732: bad packet, C3
+
+NEED TO DO AN INIT_FAILED CHECK!!!
+01-11 C1234
+01-19 C134
+
+01-11 1435: maneuver, C2
+01-11 1635: maneuver, C4
+
+01-19 0340: bad packet, C3
+
+01-19 0900-1200: remove hbiassa from C4
+01-19 0900-1500: remove hbiassa from C2
+01-26 1330-1400: remove hbiassa from C234
+
+01-26 2100: hbiassa problems, C1234
+
+
+
+
+
+
+
+
+
+

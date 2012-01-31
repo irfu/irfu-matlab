@@ -1,0 +1,386 @@
+
+Problems seen when looking through the summary plots for 2007
+=============================================================
+
+1a) Processing bugs fixed
+========================
+sp failure:
+  Error encountered for 2007/20070119_1500:
+  MATLAB:badsubscript
+  Attempted to access result(4,1); index out of bounds because size(result)=[3,7].
+  Fixed bug in caa_set_bitmask_and_quality.
+
+2007-01-01: C3 offset bad.
+  should be sh_interval, not ms_interval: all of 01-01, plus 01-02 until 1200 flagged for wrong region.
+  Fixed bug in caa_sh_3h_int.m
+
+02-28 1910 C3: what is that??
+  17:17:24: p32 data goes inexplicably bad, then data gap in p32 only until 19:12.
+  Bug in die processing leads to really weird data under these conditions.
+  Fixed bug.
+
+04-08 15/18: check C2.
+ Missing solar wind wake correction. wake is too narrow (10 deg)
+ 1620-1640
+ 1700-2015
+ 0520-0650
+ Added new parameter passing to ec, and reprocessed files.
+ Created new special-processing functionality caa_special_process and new file /data/caa/l1/2007/special_processing.txt
+
+05-13 screwed up Vsc data 
+  Problem with Db/getData for all C2 data after probe failure on 2007-05-13. Patched and reprocessed.
+
+05-28 1500 C1,3 very messed up data.
+  fixed bug in ClusterProc/getData : don't wash the asymmetric data if some of it has been blanked (weird extrapolation errors)
+
+It would be nice to have a quick way of applying all manual_problems within a time period.
+  wrote routine: caa_apply_manproblems(st,dt,cli)
+
+
+1b) Plotting bugs fixed
+=======================
+
+1c) Data problems fixed
+=======================
+
+2007-01-03 1930-2040: what happened to C2?
+  p12 and p34 have very different timelines. p12 includes data from the burst after the gap.
+  Fixed data manually.
+
+2007-01-26 2100: hbiassa problems, C1234
+
+2007-01-08 1500: C3 offset too small. Using sh offsets here in the sheath (correctly determined).
+  2007-01-09 0300: C3 offset too small by 0.3 mV/m even in sw (using sh offsets).
+  2007-01-13 0600: C3 offset too large(!!) by 0.5 mV/m in sheath (using sh offsets).
+  Problem is antisunward fields that vary based on solar wind.
+  Increased C3 offset by 0.3 mV/m. Will make some data better, some worse, probably a good compromise value.
+
+2007-01-10 1732: bad packet, C3 17:30:46 (6 sec)
+2007-01-19 0340: bad packet, C3 03:39:55 (5 sec)
+2007-01-11 1435: maneuver, C2 14:34:54 (300 sec)
+2007-01-11 1635: maneuver, C4 16:34:50 (300 sec)
+  added to ns_ops
+
+02-26 1608 to 2007-02-28T00:00 :C1?
+   badbias until 2007-02-27 1430, then false badbias until 0000. Re-ran L012 and recovered 1430-0000.
+
+02-02 0210-0530 : C3 probe latchup all probes to -68 (followed by no data until 1052).
+   Set probesa in manual_problems and made a note in nsops.
+
+02-05 09: hbiassa problems onC1,4
+02-12 1105: hbiassa on C1
+
+02-25 06 until 02-27 0000: what happened to C4?
+  2007-02-25 05:59:04 C4 telemetry switched to something incomprehensible until 13:30 on the 26th.
+  Added to nsops.
+  Data OK for a few minutes, then goes to false badbias. Re-ran L012 and recovered 1330-0000.
+
+02-01 00: C3 offset too large by 0.6. same (maybe a bit worse) on the next orbit. Orbit after that is OK, then 0.4 too big, then OK, then 0.5 too big, then  0.5 too big, then 0.2, then...
+   Adjusted offset down by 0.3 mV/m.
+
+2007-02-20 19:02:52 C4: unexplained data gap until 2007-02-22 10:22.
+  Corrupt data. Added to nsops.
+
+03-01 1932 C2 bad packet 2007-03-01T19:33:08Z (2 sec)
+03-24 1332 C4 bad packet 2007-03-24T13:33:11Z (4 sec)
+03-30 0730-1322: where's C3? 2007-03-30T07:27:20Z probe latchup. p3 to -68V, p2,4 to +23 V. lasts until 13:20 (21160 sec)
+03-21 1500 missed hbiassa C1234
+03-22 1200 missed hbiassa C1234 all sats from 1250 to 1440
+04-03 1920-0735 : where's C3?
+  probe latchup. p1 and p4 go up, p2 goes down.
+04-17 1315-1800 :where's C1?
+  data gap 1315-1600, then too high bias (-135 nA) until 0840
+04-23 05:53: C1, bad packet 2007-04-23T05:53:29Z (2 sec)
+04-29 1017: C3, bad packet  2007-04-29T10:16:34.5Z (2 sec)
+04-18 0900 maneuvers, C1234
+  C1: 2007-04-18T10:59:52Z (300 sec)
+  C2: 2007-04-18T09:29:52Z (300 sec)
+  C3: 2007-04-18T11:29:52Z (480 sec)
+  C4: 2007-04-18T10:00:23Z (300 sec)
+04-30 2232: C1 probe latchup 2007-04-30T22:42:10Z (until 17:56:30 = 69260 sec)
+04-17 1530-2045: add hbiassa on C1
+04-09 06: hbiassa on C2 0530-0630
+04-21 12/15: needs hbiassa extension.
+04-22 12: needs hbiassa extension.
+
+05-06 1710-2110: hbiassa on all 4 sats
+05-06 2250-2300: hbiassa on C2
+05-14 0400-0402 hbiassap34 on C2
+05-15 0450-0600 hbiassa on C234
+05-15 0528-0532 and 0550-0602 hbiassa on C1 
+05-31 2240-2250 hbiassa on C2
+  added to manual_problems
+
+05-01 0947 C3 bad packet
+05-04 2230-2330 C4 tm problems
+05-24 22:22:32 C3 maneuver (3 min)
+  added to ns_ops
+
+05-05 00-09 wake too narrow on all 4 sats
+05-13 0300-0430 C2 needs special processing (probe died in this interval)
+   added to special_processing
+
+06-01 2100-2220 C124 hbiassa
+06-04 0200-0205 C2 badbiasreset
+06-09 0729.5-0730.5 C1 hbiassa
+06-21 0935-1010 C12 hbiassa
+      0950-1010 C3 hbiassa
+      0950-1017 C4 hbiassa
+06-26 0900-1000 C2 hbiassa
+  added to manual_problems
+
+06-24 0620-1000+ where's C3? badbias 0623-1007+. added to nsops.
+
+0702 1630-0000 weird things happening with the offsets on C124. Need to force MS offsets.
+ 0703 12-15  force SW (!)
+ 0709 18-18+ force MS
+ 0712 09-12  force MS
+ 0716 21-03+ force MS
+ 0719 21-18+ force MS
+ 0721 18-09+ force MS
+ 0724 06-18  force MS
+ 0727 00-09  force MS
+ 0728 18-15+ force MS
+ Forced the offsets by putting a Ddsi? in mEDSI.m. Included in special_processing.
+
+0706 0119 C1 bad packet 01:19:30.5 2 seconds
+  Put in ns_ops.
+
+0711 0547-0644+ where's C3? badbias
+  Put in ns_ops.
+
+0721 1800-1845 C4 bad data. Digital corruption.
+  Put in ns_ops.
+0725 0630 maneuver, C1 (06:29:52 420 s)
+     1300 maneuver, C3 (12:59:56 420 s)
+     1400 maneuver, C4 (13:59:51 300 s)
+  Reprocessed. Put in ns_ops.
+
+0729 0208 bad data, C3 02:06:47 for 5 seconds: bad HK
+  Put in ns_ops.
+
+0704 1200-1530 C13 nasty C13 data. taken out as hbiassa, but there's something stranger at work here.
+  V? in place of p32 in the telemetry 13:25:29 until 15:30 on C13 (flight software test?)
+0705 12:01:30-23:00:00 C13 same problem
+  Put in ns_ops.
+
+0731 0737-07:40:01 BADBIASRESET1
+  Added to manual_problems.
+
+0721 1845-... what's wrong with the C2 offset?
+  Raw signal jumps at the reset on 0721 1845 and then lasts until at least the end of the month
+  Bad puck and guard settings on C2  2007-07-21 18:45 until 2007-08-05 01:01
+  Added special offsets for this interval in special_processing.
+  Put in ns_ops. Considered adding as 
+
+0725 0447-0450 C2 bad data in the LX stream
+  Put in ns_ops, and added a PROBESA to the manual_problems.
+
+0816 1930-2100 wtf on C4
+0821 2248-0000 wtf on C4
+0826 0450-0530 wtf on C3
+0828 1800-2010 wtf on C4
+0803 1950-2100 wtf on C1
+  imaginary wE4p12/34!! Needs rerun from L0
+
+0802 18-00 problems with switching offsets
+  0805 00-03, 06-09, 15-18
+  0807 15-21
+  0809 18-09+
+  0821 15-21
+  0826 12-00
+  0828 21-06+
+  Forced MS offsets starting 2007-08-01 in c_efw_dsi_off.m
+
+0805 0052-0100 (should be 0052-0109): Big jump in Vsc on C2 a few minutes prior to the reset.
+  also: 2007-08-05T00:52:00Z,2007-08-08T14:23:00Z,2007-08-12T03:55:00Z,2007-08-15T17:30:00Z
+  2007-08-19T07:25:00Z,2007-08-20T11:47:00Z,2007-08-22T20:39:00Z,2007-08-27T14:30:00Z,2007-08-31T04:04:00Z, ...
+  Further investigation: Vsc always jumps a few minutes prior to reset.
+  Based on the Vsc jumps and the PEACE data, it looks like this is an EDI problem.
+  Decided to leave the data as-is, since the jump in Vsc is real.
+
+0802 1030 maneuver C1
+  Added to nsops and reprocessed.
+
+0831 1740-2100 wtf on C2
+  Wrong quantity in telemetry. Added to nsops.
+
+0901 0000-0742: where's C2? badbias (-40 nA)
+0903 23:57 bad packet C4? 23:57:40 bad HK (5 seconds)
+0926 1910-24+:wrong quantities in C2 HX tlm 19:10:00-12:30:00+ plus corrupt p3 1910-2045
+0916 1910-2230: C3 probe latchup, all probes, 19:10:22-22:25:10
+  added to nsops
+
+0919 12:03:00-12:05:35 C2 reset
+  added to manual problems
+
+1006 00-24 where's C4?
+1007 0038-0000 where's C2?
+1013 00-24 where's C2?
+  something weird in L0 processing (nfs?). re-ran; OK.
+
+1011 0410-1630 lobewake C3
+1012 0430-1430 lobewake C4.
+  added to man_prob.
+
+1012 0430-1430 choppy tlm on C4
+1015 15-1247+ C4 Probe latchup (all probes -68) 14:52:02 to 12:40 (78478 seconds)
+1024 C3 maneuver 19:29:50 (420 s)
+     C1 maneuver 22:59:53.5 (300 s)
+1028 11:14:15 C1 bad HKpacket (5 sec) 
+1030 1849-2030 C4 Extreme (30V) spin-dependent swings in probe potentials. Cause unknown.
+  added to nsops 
+
+1123 18:12:03 maneuver C3 (300 s)
+1129 10:02:56 maneuver on C2 (300 s)
+1130 15:27:19 maneuver C3 (120 s)
+1102 02:05:30-0420 wrong quantities in HX telemetry on C1
+1102 02:05:29-0420 wrong quantities in HX telemetry on C3
+1103 00:18:29 bad packet, C3 (3 sec)
+  added to nsops and fixed.
+
+1130 1800 highbiassa on C23 only partially caught
+  added to manproblems.
+
+1102   06:00:00-07:31:00 C2 long pulsed maneuver (DOY 306) see ops_files/ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf
+  1104 12:50:00-13:59:00 C1 see ops_files/ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf
+  1104 14:20:00-15:59:00 C3 see ops_files/ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf
+  1105 C3 15:22:38-15:42:40 no EFW data
+  1108 C4 03:04:10-03:32:15 no EFW data
+  1110 C1 09:58:48-10:20:26 no EFW data
+       C2 10:57:17-11:22:54 see below
+       C3 08:55:09-08:55:12 
+  1116 10:43:00-12:18:00 C4 see ops_files/ESOC_MOR/Cluster_MOR_no380_(week46-2007).pdf
+  1118 17:37:00-19:08:00 on C3 
+  added to nsops and reprocessed.
+
+1123 01:10-03:10 hacked-up telemetry on C4
+1112 03:29:35-01:15:00 C2 badbias (-40 nA) followed by -135 nA until 22:00
+  added to nsops
+
+1109 18 C3 offset needs to be increased. Need to implement the sh offsets.
+1110 18 C3 ms offset also needs to increase by 0.2 mV/m (noticed this earlier, too)
+  note also offset change on 11-11 21 between MS and sheath.
+  Note how C3 and C4 don't follow each other at the MP crossing near 2230.
+  1105 21-06 force offsets to MS
+  1108 06-21 force offsets to MS
+  1110 15-03 force offsets to MS
+  1124 21-03 force offsets to MS
+
+1204 0350 maneuver C3
+1206 1230 maneuver C1
+  fixed
+
+1204 12-18 force MS offsets
+  fixed
+
+1219 21:00-23:30+ where's C4? badbias (-40 nA)
+1225 12:45-23:09 check C2. looks like bad tlm.
+  note in nsops
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems (new from 2006)
+======================
+
+4) Ignored problems
+===================
+
+5) Unclassified
+===============
+ISDAT: why is the bias sometimes not returned correctly?
+  e.g. 2006-06-18 C4: the bias was clearly changed to -40 nA at 0552, but ISDAT continues to show an OK bias until 0000.
+  08-27 20:55- (28 0000) where's C3?
+    badbias. probably is some data that could be rescued once ISDAT is fixed. Should also be noted in ns_ops.
+  It looks to me like the ISDAT bias currents are largely just wrong with the new server.
+  Example: compare bias changes for C3 2002-02-17 2200 between matlab (old ISDAT) and ISDAT (new ISDAT). :(
+           must have occurred quite some time ago, since the "old" ISDAT server here on fernie is also broken.
+  Index files were generated with an old ISDAT server and were not quite right. Re-generated.
+
+what should be the write permissions for old directories (eg. 2001-2006?)?
+
+manproblems not properly implemented in the runners.
+
+
+
+2006-09
+*******
+
+09-01 C3 0040: probe saturation in the auroral zone?
+  Also 09-10 12 C34, 09-17 1540 C2
+   Proposed solution:
+   move detection of latched probes from probesa to probeld in getData
+   make sure Vp>50 goes inteo probesa
+   Don't blank probesa from ec|dies|die
+   Reprocess all data (all affected L1,L2 parameters) from 2006-09 onward that has any probesa set.
+
+Need to reprocess E-field for any data with the new single-probe HBIASSA problems.
+cd /home/chris/caa
+caa_reproc('e_reproc_2006.txt','','ec|hbiassa|rawspec|dies|diespec|wake|manproblems|dief|die',[]);
+(no need for manproblems when doing 2007)
+
+  Need to decide on reprocessing other months (2006 01-06) as well.
+   -> No, but do write it down on the Twiki.
+
+
+2007-09/10/11/12
+*******
+0914 06-24 C2 init_failed interval (0549-0103+) is unexplained. So are all the other intervals for this month.
+  0916 lots of data missing C234. Lasts until 0803 on the next day.
+  the long C1 gap 21-28 needs an explanation. Also the C234 gap 20-22.
+  check the archives and update nsops accordingly.
+Investigate the unexplained nsops problems.
+
+
+2007-11
+*******
+1130 something wrong on C2 1330-1400: sign on p34 is wrong
+  Fixed ISDAT bug in Read.c and reprocessed.
+  Need to rebuild the ISDAT servers.
+
+2007-later
+**********
+- runners should check for special processing.
+- I think we're being overly hard on data with Vsc>0
+- we should look into C3 p32 drift with Vsc
+
+2008
+****
+- weird problem with complex-valued telemetry. Put a test into Mat_DbGetDataLite.c and uploaded to caa,caa1,sipadan. Test will need to be cleaned out later (cvs?). For now, it will write out a short log to the pwd when it finds complex-valued data.
+on fernie:
+  mex -I. -I../include -I../../../..//include -L../../../../lib/Db -lDb -L../../../../lib/Isutil -lIsutil -L../lib -lConvert -L/home/chris/devel/isdat/isdat_root/usrlib -ldl Mat_DbGetDataLite.c
+on caa/caa1/sipadan:
+  cd /usr/local/isdat/clients/APIs/matlab/Db_mex
+  sudo scp chris@fernie:/home/chris/devel/isdat/isdat_root/clients/APIs/matlab/Db_mex/Mat_DbGetDataLite.mexglx .
+Now the runners are hanging for some reason. :(
+  sudo scp chris@ice:/usr/local/isdat/clients/APIs/matlab/Db_mex/Mat_DbGetDataLite.mexglx .
+Reverted to the old Mat_DbGetDataLite.mexglx. Stopped it from hanging, although caa1:8000 seems not to be participating (runner is up, but status is always "ready" in the dispatcher listing, and it's not consuming any processing time on caa1). Will need to compile the new Mat_DbGetDataLite.c (with the revisions) somewhere other than on fernie. However, the problem does not seem to be occurring with the 2008-04 data. Strange.
+
+Recompiled on sanna, with some extra debugging. Finally works on caa1. Left things alone on caa.
+  Going fishing on caa1.
+  First, noticed something nasty during the fgm call:
+**    Shared object "libm.so.3" not found, required by "ddsls"
+  Then, caught something (but only if the whole L0 processing chain is run; not simply with repeated isdat calls)
+    mexFunction: imaginary part not zeroed!
+    mexFunction: imaginary part non-zero after isDatObj2MatMat call
+    Indicating a problem in mxCreateNumericArray
+     patched Mat_DbGetDataLite.c
+     Trouble compiling and running in the FreeBSD environments. Eventually got it to compile.
+
+Also trying to assess the damage. There are a number of files during 2007-08 with complex-valued tlm. Other months:
+  2006: clean except for 20060917_0300/C2
+  2007-01 to 2007-07: clean
+  2007-08: multiple problems, mostly in mEFWR.mat, mPR.mat files. No problems with cef files.
+  2007-09: clean
+  2007-10: clean
+  2007-11: clean
+  2007-12: multiple problems in mER, mEFWR, mERC, mPR, mP files. Will need some re-runs.
+  2008 data is heavily affected. (shit.)
+Re-ran and cleaned all affected data except 2007-08 (already delivered, with no cef files affected).
+Re-checked for affected months. Found problems in Aug 2007(as expected), and also in 2005 (03-06). Full list at caa/complex_tlm.txt
+
+

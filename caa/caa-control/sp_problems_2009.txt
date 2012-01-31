@@ -1,0 +1,218 @@
+Problems seen when looking through the summary plots for 2008
+=============================================================
+
+1a) Processing bugs fixed
+========================
+1006 0130-0250 C2
+  The highbiassa interval at the end is screwing up the ADC offset determination.
+  Fixed in getData.
+
+1010 2052-2137 C123 bias test
+1013 0102-0147 C123 bias test
+1017 1641-1726 C123 bias test
+1019 2351-0016 C123 bias test
+  bad_bias in ns_ops should be propagated through to the quality flags
+
+1b) Plotting bugs fixed
+=======================
+
+1c) Data problems fixed
+=======================
+01-29 13:15:10 (2 sec) C3 bad packet
+ added to nsops
+02-05 11:30 C3 maneuver. Also: 12:30 C4
+02-15 08:31:37 (4 sec) C1 bad HK packet
+02-18 2011-2330 C1: is the nsops really required here any more? No, problem cleared at 2011
+02-13 0220-1742 where's C1? badbias
+  added to nsops
+02-25 16:25:42-01:31:00+: probe latchup C3
+02-18 1630-2011: bad LX on C1
+  Put in ns_ops, and added a PROBESA to the manual_problems.
+02-14 0155-0340ish a few misses on the C124 hbiassa detection
+02-14 0344-0510 C3 hbiassa
+02-19 01:36:54 (10 sec) missing hbiassa on C1
+  Put in manual_problems.
+02-10 00-12 and 18-0230+: poor SW wake identification (too narrow)
+02-19 0120-1200+ bad SW wake removal C4,1,2 (too narrow) (C3 OK)
+  Added to special_processing.
+03-01 0620-0630 C4 battery leak
+ upgraded from TBD to bad_data in nsops
+03-18 05:41:02 (3 sec) C3 bad packet
+ added to nsops
+03-19 0801-1424 C2 bad telemetry, including some bad LX packets which need fixup.
+  Put in ns_ops, and added a PROBESA to manual_problems for the appropriate interval.
+03-21 0130-0335 and 0450-0710 bad data on C1,2,3. Getting flagged as hbiassa, but looks like something worse than that.
+  Put into nsops, added to special_processing.
+03-31 1200-1333 C4 choppy HX telemetry
+ added to nsops
+03-02 1730-1728+ C4 badbias
+03-31 1413-0640+C3 badbias
+ added to nsops
+0403 01:38:41 (2 sec) bad packet C1 
+0408 04:45-10 where's C3?
+0429 21:40:27 (2 sec) bad packet C3
+0422 0144-1638 C3 bad bias (-40 nA)
+  added to nsops
+0517 0753-0756 C4 BADDAC
+0509 17-09:10+ hbiassa on C1
+  added to manual_problems 
+0519 0340-0630 bad telemetry C2 (also affects p)
+ added to nsops and special_processing
+090515 11:00:00 C1 manoeuvre (59 pulses)
+090515 12:00:00 C2 (60 pulses)
+090515 13:00:00 C3 (83 pulses)
+090515 14:00:00 C4 (63 pulses)
+ added to nsops
+0525 00- force MS offsets
+0531 09-12 force SH offsets
+  added to special_processing
+0603 0403-1030+  blank C1 P maybe should start 2009-06-02 18:32:00
+0608 06-12 force MS offsets
+0614 15-18 force MS offsets
+0617 0130-300 force MS offsets
+0619 9-15 force MS offsets
+  added to special_processing
+0624 0130-0629 C2 hbiassa (also 134)
+  added to manual_problems 
+07* entire month: force MS offset
+  changed in c_efw_dsi_off.m
+0718 07:46:05 C2 glitch (660 s)
+0724 09:43:04 C3 glitch (3 s)
+ added to nsops
+0802 07:46:20 BADDAC C4 (160 sec)
+0802 11:53:40 BADDAC C4 (100 sec)
+0809 15:49:30 BADDAC C4 (90 sec)
+0814 03:05:30 BADDAC C4 (50 sec)
+0825 20:10:00 BADDAC C4 (120 sec)
+  added to manual_problems
+0828 08:00:00 C1 manoeuvre (49 pulses)
+0828 07:00:00 C2 manoeuvre (51 pulses)
+0828 06:30:00 C3 manoeuvre (70 pulses)
+0828 06:00:00 C4 manoeuvre (52 pulses)
+  added to ns_ops
+0913 1445-1826+ C123 hbiassa
+0923 1930-2100 C2 lobewake
+0928 0710-0900 C2 hbiassa
+ added to man_prob
+1004 1459-0900+   SC4  nasty data with a few glitches in the LX quantities.
+  Fixed stop time in nsops and reprocessed.
+1008 05-1330 C3 glitchy HX data
+  added to nsops
+1012 08:28:30-0740 C1 bad data (disturbed telemetry)
+1019 1128-2308 C2 bad tlm including LX
+  added to nsops. deleted and rerun
+10-14 C1p4 failure fime incorrectly listed as 2009-10-14T03:23:30Z in getData.m.
+ Fixed and reprocessed
+11-06 1630-2120 C4 bad DAC making weird higher-freq signals. Spinfits OK.
+  added to ns_ops and used manual_problems to mark L2 as quality 1.
+11-11 07:31 C1 WTF
+  bad phase. entered into nsops and reprocessed.
+11-19 14:03-end of day: data gaps on C1234, thruster firings at 15:00 (C3) and 17:00 (C2)
+  added to ns-ops and reprocessed.
+11-24 1743-0201+  SC4 weird timing
+   added to ns_ops. Automatically removed from CAA data 
+11-29 09-12 force MS offsets
+11-30 09-15 force SH offsets
+  added to special_processing
+11-30 1318-1319 C4 bad data
+  added to ns-ops and reprocessed.
+1209 2148-0058++ SC1 (2009-12-11 00:58) timing problems
+  added to ns_ops. doesn't need reprocessing.
+1202 21-00 force MS offsets
+1207 21-03+ force MS offsets??
+1215 18-00 force MS offsets
+12-25 22:30-03:20 force MS offsets
+1222 12-00 should be SW intervals
+1231 06-18 should be SW intervals
+  added to special_processing and reprocessed.
+1209 0758 C1 bad phase data
+  added to ns_ops and reprocessed.
+
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems (new from 2006)
+======================
+There's something funny that started happening on C4P3 in early 2009.
+The bias isn't getting programmed correctly sometimes, leaving the probe drifting a bit high.
+It always starts on a sweep, and ends either on a sweep or a whisper pulse.
+Anders was going to try changing things around a bit to alleviate this problem.
+For the CAA, it means that the ADC offset on C4p34 can become rather large, and then suddenly correct itself.
+The spinfit routine throws out some outliers for the ADC offsets, which makes a rather strange effect sometimes.
+Need to fix the discarding of the outliers in the spinfit, then re-spinfit C4.
+  - Fix:
+     IF C4 after 2009-01-01
+     AND at least 3 spins with |ADC offset| > 1 mV/m
+     THEN flag interval as suspect_DAC and do not discard ADC offsets
+
+Make sure to switch to p12 electric field, and discard p3 from the Vsc determination.
+Need a new quality flag in the export routines.
+Update export scripts to export housekeeping data
+Fix order of L2 products in Python
+Examples:
+03-03 1730-1930
+03-16 1110-1130
+0403 0130
+0408 1200
+0417 0425
+0419 1625
+0422 0950
+0427 1250
+0429 0600
+0412 0950-1005
+0415 12-15 weird Ex
+0426 21-01+
+0422 0950 short interval
+0427 1250 short interval
+
+
+4) Ignored problems
+===================
+01-23 01:28:22 (3 sec) C1 bad packet? No, don't think so.
+03-10 0900-1500+ spotty SW wake identification.
+09-29 0710 C2 battery leak? Maybe. Left the data alone.
+11-24 00-03 C1 spiky spinfits: whisper pulses. already marked.
+
+5) Unclassified
+===============
+
+
+
+intervals in which the timing is strange:
+yymmdd hhmm-hhmm   SC
+090218 1421-1606?  SC1  disappears entirely from CAA data due to repeated probe saturation identifications. Also called out in nsops.
+090318 0810-1419   SC2  Wrong date in email. Should be 090319 (below).
+090319 0810-1419   SC2  mostly disappears from CAA data. Removed some bad LX data by man_prob. Called out in nsops. 
+090406 0929-0045+  SC3  Called out in nsops and removed.
+090409 2115-2235   SC4  patchy telemetry, gaps in CAA data
+090417 1823-2210   SC2  disappears entirely from CAA data
+090419 1253-1419   SC4  patchy telemetry, gaps in CAA data
+090424 0715-0835   SC4  patchy telemetry, gaps in CAA data
+090508 0300-0316   SC4  disappears from CAA
+090709 2007-0351+  SC3  patchy telemetry, gaps in CAA data (upped from tbd to bad_data in nsops)
+091004 1459-2114   SC4  nasty data with a few glitches in the LX quantities. Added to nsops.
+091005 0152-2200   SC4  up to 0900: included in above. after 0900: disappears entirely from CAA data
+091009 1301-1458   SC3  disappears entirely from CAA data
+091019 1133-2304   SC2  disappears entirely from CAA data
+091026 0000-0100   SC1  looks OK to me...
+091124 1743-0201+  SC4  disappears from CAA data entirely
+
+091209 2148-0058++ SC1 (-091211 0058)
+
+To do:
+- check all init_failed intervals
+- enter data into nsops:
+   - Per-Arne's bad timing intervals into nsops
+- identify maneuvers, eclipses
+   - enter into nsops
+
+=================================0
+
+Export the "true" ADC offsets before filtering, etc.
+Should update the CAA documentation.
+Backup.
+
