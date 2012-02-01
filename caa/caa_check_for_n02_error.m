@@ -67,6 +67,7 @@ for day=1:eomday(year,month)
 							num2str(cli) ];
 						title(txt);
 						xlabel(' ');
+						ylabel('error (deg)')
 						output_string=[output_string txt '\n'];
 						drawnow;
 						pause(0.1);
