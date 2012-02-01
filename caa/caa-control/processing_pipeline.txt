@@ -70,7 +70,8 @@ After 2006-01-01, the FGM files are called C?_UP_FGM* instead of C?_PP_FGM*
 3.3 Get the TCOR files
 ======================
 1. Download the TCOR CEF files from the CAA in intervals of about 6 months.
-2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTc or and put the files there.
+   Instrument: DWP. Ancillary product: Time corrections
+2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTcor or and put the files there.
 3. Edit the index files TCOR_INDEX_*.txt to include the new cef files.
 4. Re-start the ISDAT servers.
 If the TCOR files are not available, the TCOR correction can also be applied after processing by using the function caa_apply_tcor(). Try to avoid this.
