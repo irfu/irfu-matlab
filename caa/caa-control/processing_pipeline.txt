@@ -1,22 +1,56 @@
 
-1. Gather files, etc.
-=====================
+A spreadsheet keeping track of the progress of all of the months is maintained as a CVS-controlled document at:
+   irfu-matlab/caa/caa-control/delivery_status.ods
+Notes on each year are also kept at irfu-matlab/caa/caa-control/sp_problems_YYYY.txt
 
-1a. Update the ns_ops tables
+====================================
+1. Preliminary processing for P data
+====================================
+This preliminary processing is mainly required to deliver the P data in a timely fashion.
+It's a quick processing, with everything set to default values.
+
+1.1 Create log directory
+========================
+Make sure the permissions are correct, or the software will silently fail to write any logs!
+  mkdir /data/caa/log/2010
+  chmod go+w /data/caa/log/2010
+
+1.2 Preliminary processing
+==========================
+Run only the most critical steps up to step 6 in this document, skipping many of the time-consuming ones.
+  Skip step 2 (ns_ops).
+  Gather files as in step 3. If they aren't available, just ignore them.
+  Skip step 4.
+  Perform steps 5 and 6 (skip 6.1).
+
+1.3 Export and deliver P data
+=============================
+Check the P data first. For example.:
+  [data, ok, msg] = caa_get('2011-04-01T00:00:00Z','2011-09-01T00:00:00Z',1,'Ps1'); irf_plot data
+Then export (see step 14). Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
+Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 15)
+
+
+===========================
+2. Update the ns_ops tables (Anders/Per-Arne)
 ===========================
 Non-standard operations are stored in the XML table at /home/www/cluster/efw/ops on hq.
-Present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops/ns_ops.html
+The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops/ns_ops.html
 Matlab accesses a text version of this on db when processing the data.
 
 1. Check through /home/www/cluster/efw/ops/ns_ops.xml on hq, and make sure it's complete and OK.
-    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wex, xdwp3000)for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate.
-    b) The maneuvers need to be extracted from the Mission Ops Reports (http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and added both to the eclipse list (CVS controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt) and to the ns_ops file.
+    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. Some of the older messages are hidden at http://www.acse.shef.ac.uk/wec-ops/older_mail/maillist.html.
 2. Edit the XML table. There's no emacs on hq, but there is vi and ee.
 3. Run "sudo make all" to export the XML file to html, then "sudo make txt" to export to text, and then "sudo make update" to move it to db.irfu.se. The last will likely fail unless you have Yuri's password, so try it manually instead: 
    scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
 4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops').
 
-1b. Get the ACE and OMNI files
+
+===============
+3. Gather files
+===============
+
+3.1 Get the ACE and OMNI files
 ==============================
 Download data (mfi_h2 and swe_h2) from:
   ftp://cdaweb.gsfc.nasa.gov/pub/istp/ace
@@ -27,12 +61,21 @@ Also download the OMNI data from:
 to:
   db.irfu.se/export/data/istp/omni2    (should be NFS mounted at /data/istp/omni2)
 
-
-1c. Get the CSDS cdf files
+3.2 Get the CSDS cdf files (Per-Arne)
 ==========================
-CIS/EDI/FGM. Ask Per-Arne. Note that after 2006-01-01, only the UP (unvalidated) files are available for FGM.
+Per-Arne keeps these files updated at /data/cluster/CSDS/PP.
+Check that the CIS/EDI/FGM files are present. If not, ask Per-Arne.
+After 2006-01-01, the FGM files are called C?_UP_FGM* instead of C?_PP_FGM*
 
-1d. Re-generate the ISDAT index files
+3.3 Get the TCOR files
+======================
+1. Download the TCOR CEF files from the CAA in intervals of about 6 months.
+2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTc or and put the files there.
+3. Edit the index files TCOR_INDEX_*.txt to include the new cef files.
+4. Re-start the ISDAT servers.
+If the TCOR files are not available, the TCOR correction can also be applied after processing by using the function caa_apply_tcor(). Try to avoid this.
+
+3.4 Re-generate the ISDAT index files
 =====================================
 The ISDAT index files may need re-generation to avoid missing data intervals.
 
@@ -57,30 +100,64 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
      /usr/local/etc/rc.d/dbhIRFU.sh restart
      /usr/local/etc/rc.d/dbhWORLD.sh restart
 
-1e. Find intervals of EFW-DWP synchronization failures
+
 ======================================================
-1. The intervals are found by Per-Arne by comparing the sun pulse times from the spacecraft and from WEC. Talk to Per-Arne.
-2. Go in with isdat-igr and refine the start/stop times, then enter into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt
-   Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
-3. Re-start the ISDAT servers.
-If the intervals are not available before processing, they can be found after L1 processing (step 6). However, it's better to do them at this stage to avoid the need to re-run the L0 processing for affected intervals.
+4. Find intervals of EFW-DWP synchronization failures (Per-Arne or other)
+======================================================
+There is a software bug that sometimes results in the EFW and DWP instruments not synchronizing properly.
+This results in an error in the time stamp of n*0.2 seconds (integer n).
+We keep a file at /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt with the affected intervals.
+The file lists start/end times for the affected intervals, the time offset to be applied, and whether ISDAT should issue a warning if data from this period is retrieved.
+The last line shows when the file is valid until. Note that the warning flag is set to 1 and the dt to 0 seconds.
+Per-Arne has software for finding these bugs with relatively coarse time resolution by comparing the sun pulse times from the spacecraft and from WEC.
+  1. Ask Per-Arne to find the times.
+  2. Using isdat (igr), refine the start/stop times of the bug, then enter into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt
+     Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
+  3. Re-start the ISDAT servers.
+Alternatively, we have a routine here which seems to work roughly as well, except that it can't be run before the initial processing.
+  1. Run caa_check_for_n02_error(year,month) for each month.
+  2. Check the output times for intervals which have a constant non-zero phase error close to n*0.2 seconds in the pdf file.
+     Often times, these problems will persist for many hours.
+     Ignore intervals with jumpy dt (telemetry problems) or drifting dt (maneuvers/eclipses).
+     The dt should also be near a multiple of 0.2 seconds.
+  3. Using isdat (igr), refine the start/stop times.
+  4. Enter the affected times into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt.
+     Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
+  5. Restart the ISDAT servers.
+Note that after the error is flagged in the txt files and ISDAT is restarted, caa_check_for_n02_error won't find the error again.
 
-1f. Get the TCOR files
-======================
-1. Download the TCOR CEF files from the CAA in intervals of about 6 months.
-2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTc or and put the files there.
-3. Edit the index files TCOR_INDEX_*.txt to include the new cef files.
-4. Re-start the ISDAT servers.
-If the TCOR files are not available, the TCOR correction can be applied after processing by using the function caa_apply_tcor().
+==============================
+5. Find magnetopause locations
+==============================
+The processing software needs to know where the magnetopause is.
+This is done on a yearly basis, with the locations stored in the CVS-controlled file mPlan.mat.
+If the required files (ACE, OMNI) were present when this step was done in the preliminary processing then it does not need to be repeated.
+1. Copy the directory /data/caa/test-mp to somewhere local (e.g. ~/caa/test-mp on fernie).
+   In Matlab, change to that directory and run: c_ctl('init'); caa_sh_plan(YEAR).
+   This will find the model magnetopause locations.
+2. Run caa_sh_3h_int() to find common 3h intervals for the 4 spacecraft. Example:
+     caa_sh_3h_int('2006-01-01T00:00:00.000Z','2006-12-31T23:59:59Z')
+3. Re-run caa_sh_plan(). The plots should look like what's in /data/caa/test-mp.
+4. Copy the mPlan.mat file to /data/caa/l1 and [irfu-matlab root]/caa.
+   Check it into CVS and update the CVS-controlled version at db:/data/cluster/irfu-matlab
 
-1g. Create log directory
-========================
-Make sure the permissions are correct, or the software will silently fail to write any logs!
-  mkdir /data/caa/log/2010
-  chmod go+w /data/caa/log/2010
 
-2. Switch the MySQl database
+================================
+6. (Re-)Run the L0-L1 processing
+================================
+This is the main processing step.
+
+6.1 Delete preliminary data
+===========================
+Move the preliminary data from /data/caa/l1/YYYY to a temporary directory.
+The preliminary data could be discarded; the temporary storage is just for safety.
+Be very careful not to alter any of the data in /data/caa/l1/YYYY except for the preliminary data you're about to reprocess.
+
+6.2 Switch the MySQl database
 ============================
+Each year is kept in a separate database.
+If the server at www.cluster.irfu.se/caaconsole/CaaWeb.py shows that a different year is loaded, you'll need to switch the database.
+
 1. Stop runners and server, and start mysql console:
 ssh caa
 sudo su
@@ -115,19 +192,8 @@ RENAME TABLE caa2010.QRecord     TO caa.QRecord;
 /usr/local/etc/rc.d/CaaServer.sh start
 (May need to re-add runners from caaconsole)
 
-3. Find magnetopause locations
-==============================
-1. Copy the directory /data/caa/test-mp to somewhere local (e.g. ~/caa/test-mp on fernie).
-   In Matlab, change to that directory and run: c_ctl('init'); caa_sh_plan(YEAR).
-   This will find the model magnetopause locations.
-2. Run caa_sh_3h_int() to find common 3h intervals for the 4 spacecraft. Example:
-     caa_sh_3h_int('2006-01-01T00:00:00.000Z','2006-12-31T23:59:59Z')
-3. Re-run caa_sh_plan(). The plots should look like what's in /data/caa/test-mp.
-4. Copy the mPlan.mat file to /data/caa/l1 and [irfu-matlab root]/caa.
-   Check it into CVS and update the CVS-controlled version at db:/data/cluster/irfu-matlab
-
-4. Run the CAA Runner L0->L1
-============================
+6.3 Run the CAA Runner L0->L1
+=============================
 1. Start the caa console:
      ssh caa
      ~caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se
@@ -149,7 +215,6 @@ new group=201010_L012 st=2010-10-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 new group=201011_L012 st=2010-11-01T00:00:00Z dt=2592000 lev=0 maxlev=2 ddt=10800
 new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=10800
 
-
 3. Run the groups:
      take a web browser to www.cluster.irfu.se/caaconsole/CaaWeb.py  
        (user: caa password: caarunner)
@@ -164,35 +229,14 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
       /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ttt1.txt.nice
    (May need to be repeated)
 5. Make sure to unload (not remove) the groups when they aren't needed any more (after the next step).
+6. You might also want to restart the CAA runners to make sure they release their matlab licenses.
 
-5. Fix missing data intervals
-=============================
-Those jobs that come back marked "init failed" probably have no data.  Check whether these intervals are also missing in the CSDS, and whether the intervals are in ns_ops.  Then check whether they were planned intervals of no data collection at www.jsoc.rl.ac.uk/msp/, (click on "ASCII list of overall plan").  Look for Housekeeping only (HK) or No data taking (D0).  See init_failed_2006.txt.  Track down any unexplained data gaps.  Also, check the Mission Ops reports at http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/ and the WEC Ops mailing list at http://www.acse.shef.ac.uk/wec-ops/at to find intervals that should be in ns_ops but aren't. Another good resource is Per-Arne's list of eclipses and maneuvers (ask him for the latest version, or check at /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt for a CVS-controlled version). Update ns_ops accordingly, and re-run any jobs that should be re-run.
 
-5a. Export and deliver P data
-=============================
-Check the P data first:
-  [data, ok, msg] = caa_get('2011-04-01T00:00:00Z','2011-09-01T00:00:00Z',1,'Ps1');irf_plot data
-Then export. Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
-Then sftp the following data to the CAA: *_L*_P, *_L2_HK (*_L3_E????, *_L3_SFIT) 
-
-6a. Check for timing problems
-==============================
-Some tools exist for this on fernie in /home/chris/caa.
-
-6b. Find the n*0.2 sec problems
-===============================
-If this was done by Per-Arne prior to processing, and included in step 1e, then you can skip this.
-1. Run caa_check_for_n02_error(year,month) for each month.
-2. Check the output times for intervals which have a constant non-zero offset in the pdf file.
-   Ignore intervals with jumpy dt (telemetry problems) or drifting dt (maneuvers/eclipses).
-   The dt should also be near a multiple of 0.2 seconds.
-3. Enter the affected times into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt.
-   Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
-4. Restart the ISDAT servers, and re-run the L01 processing for any affected intervals.
-
+=========================
 7. Find the delta offsets
 =========================
+The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
+The delta offsets must be computed before L2 processing.
 1. Load the delta offsets computed during the runs. Example for C2:
      D2p12p34=caa_get('2006-01-01T00:00:00Z','2007-01-01T00:00:00Z',2,'D?p12p34');
        (this will take 10 minutes or so, the first minutes of which it will be silent)
@@ -204,9 +248,11 @@ If this was done by Per-Arne prior to processing, and included in step 1e, then 
      caa_update_deltaoff(D2p12p34,2)
 3. Commit the new caa/deltaoff.mat to CVS, and update it on db:/data/cluster/irfu-matlab.
 
+
+========================
 8. Run the CAA Runner L2
 ========================
-Like step 4. Example:
+Like step 6. Example:
 new group=200701_L2 st=2007-01-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
 new group=200702_L2 st=2007-02-01T00:00:00Z dt=2419200 lev=2 maxlev=2 ddt=10800
 new group=200703_L2 st=2007-03-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
@@ -221,14 +267,19 @@ new group=200711_L2 st=2007-11-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
 new group=200712_L2 st=2007-12-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
 
 
+=====================
 9. Special processing
 =====================
 If this is a re-run, then run any special processing called out in /data/caa/l1/YYYY/special_processing.txt.
 e.g. caa_special_process('2007-01-01T00:00:00Z','2008-01-01T00:00:00Z', '/data/caa/l1/2007/special_processing.txt')
 
-10. Find the DSI offsets
+
 ========================
-(Can be done before L2 if wanted)
+10. Find the DSI offsets (Yuri?)
+========================
+(Can be done before step 8 if wanted)
+The DSI offsets are constant offsets applied to the despun data.
+They are computed on a statistical basis and applied on a roughly per-year basis.
 1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Example:
      cp /data/cluster/irfu-matlab/caa/mPlan.mat /home/chris/caa/test-mp
      cp /data/cluster/irfu-matlab/caa/deltaoff.mat /home/chris/caa/test-mp
@@ -247,6 +298,7 @@ e.g. caa_special_process('2007-01-01T00:00:00Z','2008-01-01T00:00:00Z', '/data/c
      caa_ms_pl_xoff_stats(DdsiX1)
 4. If all looks OK, update the tables in c_efw_dsi_off.m. Check it into CVS and update on db.
 
+============================
 11. Create the summary plots
 ============================
 Either:
@@ -293,8 +345,17 @@ Or:
        mv *2010$i* $i
      done
 
-12. Look through the summary plots
-=================================
+=====================================
+12. Update the eclipse/maneuvers list
+=====================================
+It's useful to know the times of the eclipses and maneuvers before looking through the summary plots.
+Extract the maneuver times from the Mission Ops Reports (http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/), and add them to the eclipse list (CVS controlled version at: irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt).
+A relatively small fraction of these maneuvers (those that occured while EFW was on) will need to be added to ns_ops in the next step.
+
+
+=====================
+13. Validate the data
+=====================
 Make the combined files:
   cd /data/caa/sp/2006
   ../cpdf_new 200601
@@ -303,10 +364,15 @@ Make the combined files:
   pdfjoin *QUAL*200601* --outfile 200601_qual.pdf
 Check through the summary plots.  Easiest is to use okular in dual-page mode to examine the bigger pdf (eg. 200601.pdf), and open the quality plots in a window beside it. Keep a record of the problems at ~/caa/sp_problems_YEAR.txt.
 
-First, take a look at the Eclipses and Manoeuvres file (CVS-controlled, /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt or CVS local version), and check if there were any manoeuvres when the instruments were operating during that month. Those intervals will need to be flagged in the nsops file, and the summary plots redone. The intervals will probably not need to be re-processed.
+First, take a look at the Eclipses and Manoeuvres file (CVS-controlled, /data/cluster/irfu-matlab/caa/caa-control/eclipses_manoeuvres.txt or CVS local version), and check if there were any manoeuvres when the instruments were operating during that month. Those intervals will need to be flagged in the nsops file, and the summary plots redone.
 
 There will be problems. Look particularly for:
-1. Unexplained data gaps.
+1. Unexplained data gaps. In later years, there are very few unexplained large data gaps. Mostly, these are either:
+    1. Eclipses or maneuvers (check the eclipse/maneuvers list from step 12)
+    2. ns_ops intervals (check the nsops page)
+    3. Something missed in ns_ops: check the Mission Ops reports at http://www.cluster.irfu.se/efw/ops/ops_files/ESOC_MOR/ and the WEC Ops mailing list at http://www.acse.shef.ac.uk/wec-ops/at to find intervals that should be in ns_ops but aren't. In this case, update ns_ops accordingly, and re-run any jobs that should be re-run (step 6).
+    4. Planned intervals of no data collection (rare in later years). Check www.jsoc.rl.ac.uk/msp/, (click on "ASCII list of overall plan").  Look for Housekeeping only (HK) or No data taking (D0).
+   Any long data gap that doesn't fall into the above categories should be further investigated. Very rarely, the DDS files may be corrupt or missing.
 2. Missing phase information after maneuvers (thick blue line at 0.5 Hz). Enter into ns_ops, use caa_join_phase to fix the phase problems, and then re-run the L1/L2 processing. Take care to set the permissions properly when re-running things.
 3. Bad Ex or Ey offsets.
 4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/caa-control/manual_problems_c?.dat. After marking, they can be re-run as needed. There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated). Can use caa_apply_manproblems to apply the manual_problems files during a given time.
@@ -316,33 +382,38 @@ There will be problems. Look particularly for:
 Fix and re-run things as needed.
 For help with the summary plots, see appendix B.
 
-12. Export to CEF
+
+================
+14. Export to CEF
 ================
 Data is read in from the MEX files.  Some additional processing is done:
 1. Quality flags are calculated and applied.
-2...
+2. DSI offsets are applied.
 The CEF files are stored at db.irfu.se:/export/data1/caa/cef/YYYYMM* (/data/caa/cef/YYYYMM*)
-To export a whole month (or multiple months), use caa_export_month(year,month).
+
+Use caa_export_month(year,month) to export everything expected for that month.
   Be sure to check the resulting "export failed" log.
-  Use P_L23_only for preliminary deliveries:
-    e.g.  for month=10:12, caa_export_month(2010,month,1,0,1:4,'P_L23_only',1); end
+  Use P_L23_only for preliminary deliveries. For example:
+    for month=10:12, caa_export_month(2010,month,1,0,1:4,'P_L23_only',1); end
 
-The Matlab command to call is caa_export_new.  For example, to process the L2 E data for Cluster 1:
-  level=2
-  datatype='E'
-  sat=1
-  start_time=toepoch([2001,02,19,0,0,0])
-  caa_export_new(level, datatype, sat, 3,'00','Null', start_time, 3600*24)
-Note that you might need to compile mex 'cefprint_mx.c' before calling caa_export_new().
-New: use caa_export_month(year,month) to export everything expected for that month. Check the resulting "export failed" log.
+caa_export_month in turn calls caa_export_new.
+You might need to compile the mex file 'cefprint_mx.c' before calling caa_export_new().
 
 
 
-13: Deliver to CAA
+
 ==================
-ssh -x efw@caa-delivery.estec.esa.int
-  EFW4Yu71
+15: Deliver to CAA
+==================
+Deliver the files to the CAA using sftp:
+  sftp efw@caa-delivery.estec.esa.int
+    EFW4Yu71
 Put the .cef.gz files in /caa/dropzone/EFW/CEF
+Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
+
+
+
+
 
 
 
