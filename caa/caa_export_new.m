@@ -36,7 +36,6 @@ if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get !
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
-%BADIBFILENAME=[getenv('HOME') '/iblist.txt'];
 DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
 FILL_VAL = -1.0E9;
@@ -198,7 +197,7 @@ for dd = 1:length(dirs)
          global c_ct % includes aspoc active values
       end
       if isempty(c_ct)
-         c_ctl('load_aspoc_active');
+         c_ctl('load_aspoc_active', [c_ctl('get', 5, 'data_path') '/caa-control']);
          global c_ct
       end
       ASPOC = c_ct{1,cl_id}.aspoc;
@@ -399,7 +398,8 @@ for dd = 1:length(dirs)
             global c_ct % includes aspoc active values
          end
          if isempty(c_ct)
-            c_ctl('load_aspoc_active');
+            c_ctl('load_aspoc_active', [c_ctl('get', 5, 'data_path') '/caa-control']);
+%            c_ctl('load_aspoc_active');
             global c_ct
          end
          ASPOC = c_ct{1,cl_id}.aspoc;
@@ -498,7 +498,8 @@ for dd = 1:length(dirs)
             global c_ct % includes aspoc active values
          end
          if isempty(c_ct)
-            c_ctl('load_bad_ib');
+            c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control'])
+%            c_ctl('load_bad_ib');
             global c_ct
          end
 
@@ -576,7 +577,8 @@ for dd = 1:length(dirs)
             global c_ct % includes aspoc active values
          end
          if isempty(c_ct)
-            c_ctl('load_bad_ib');
+            c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control'])
+%            c_ctl('load_bad_ib');
             global c_ct
          end
 
@@ -734,7 +736,7 @@ for dd = 1:length(dirs)
                 global c_ct % includes bad ib files
            end
            if isempty(c_ct{1,1}.badib)
-                c_ctl('load_bad_ib');
+                c_ctl('load_bad_ib', [c_ctl('get', 5, 'data_path') '/caa-control']);
                 global c_ct
            end
            badiburst = c_ct{1,cl_id}.badib;

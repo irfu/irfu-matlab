@@ -134,7 +134,9 @@ if ischar(args{1})
 			c_ctl('init') 
 			global c_ct
         end
-%        c_eval('[c_ct{?}.ibias c_ct{?}.puck c_ct{?}.guard] = readhkcalmatrix(''C?_CT_EFW_20001128_V002.cal'');');
+
+% Read from (/Volumes)/data/cluster/cal
+        
         [c_ct{1}.ibias c_ct{1}.puck c_ct{1}.guard] = readhkcalmatrix('C1_CT_EFW_20001128_V002.cal');
         [c_ct{2}.ibias c_ct{2}.puck c_ct{2}.guard] = readhkcalmatrix('C2_CT_EFW_20001128_V002.cal');
         [c_ct{3}.ibias c_ct{3}.puck c_ct{3}.guard] = readhkcalmatrix('C3_CT_EFW_20001128_V002.cal');
@@ -147,11 +149,15 @@ if ischar(args{1})
 			c_ctl('init') 
 			global c_ct
         end
+        
+        if nargin>1, d = args{2};
+		else d = '.';
+		end
 
-        c_ct{1}.aspoc = readaspocactive('C1_CP_ASP_ACTIVE_ALL_DATA.cef');
-        c_ct{2}.aspoc = readaspocactive('C2_CP_ASP_ACTIVE_ALL_DATA.cef');
-        c_ct{3}.aspoc = readaspocactive('C3_CP_ASP_ACTIVE_ALL_DATA.cef');
-        c_ct{4}.aspoc = readaspocactive('C4_CP_ASP_ACTIVE_ALL_DATA.cef');
+        c_ct{1}.aspoc = readaspocactive('/C1_CP_ASP_ACTIVE_ALL_DATA.cef', d);
+        c_ct{2}.aspoc = readaspocactive('/C2_CP_ASP_ACTIVE_ALL_DATA.cef', d);
+        c_ct{3}.aspoc = readaspocactive('/C3_CP_ASP_ACTIVE_ALL_DATA.cef', d);
+        c_ct{4}.aspoc = readaspocactive('/C4_CP_ASP_ACTIVE_ALL_DATA.cef', d);
 	elseif strcmp(args{1},'load_bad_ib')
 
         global c_ct
@@ -160,8 +166,12 @@ if ischar(args{1})
 			c_ctl('init') 
 			global c_ct
         end
+        
+        if nargin>1, d = args{2};
+		else d = '.';
+		end
 
-        badiblist=ibfn2epoch('BAD_IB_L2_LIST_C1-4.txt');
+        badiblist=ibfn2epoch('/BAD_IB_L2_LIST_C1-4.txt', d);
         for i=1:4
             c_ct{i}.badib=badiblist{i};
 %size(c_ct{i}.badib)
@@ -327,6 +337,7 @@ else
 end
 
 function ret = findhkcalmatrix( fid, searchstr )
+% Find string in hk calib matrix
     ret = -2;
     tline = fgetl(fid);
     while ischar(tline)
@@ -347,6 +358,8 @@ function ret = findhkcalmatrix( fid, searchstr )
     end
 
 function [ibias, puck, guard] = readhkcalmatrix( filen )
+% Read hk calib matrix from file
+
     if ismac
         datapath = '/Volumes/cluster/cal/';
     else
@@ -403,17 +416,17 @@ function [ibias, puck, guard] = readhkcalmatrix( filen )
         irf_log('load',['File ' datapath filen ' not found']);
     end
 
-function aspa = readaspocactive( filen )
+function aspa = readaspocactive( filen, datapath )
 %READASPOCACTIVE read cef ascii files
 %   aa = read_cef_active(file) caa cef file and returns the data.
 %   aa(x,1) is the ON date in epoch format
 %   aa(x,2) is the OFF date in epoch format
 %
-    if ismac
-        datapath = '/Volumes/caa/cef/ASPOC/';
-    else
-        datapath = '/data/caa/cef/ASPOC/';
-    end
+%    if ismac
+%        datapath = '/Volumes/caa/cef/ASPOC/';
+%    else
+%        datapath = '/data/caa/cef/ASPOC/';
+%    end
 
     fid = fopen([ datapath filen ], 'r');
 
@@ -459,15 +472,15 @@ function aspa = readaspocactive( filen )
         aspa(i,2) = iso2epoch(C2{i});
     end
     
-function timeclid = ibfn2epoch( filen )
+function timeclid = ibfn2epoch( filen, datapath )
 % Make an epoch list of burst start time and cluster ID from
 % a text file with burst file names from /(data|Volumes)/cluster/burst.
 
-    if ismac
-        datapath = '/Volumes/caa/cef/iburst/';
-    else
-        datapath = '/data/caa/cef/iburst/';
-    end
+%    if ismac
+%        datapath = '/Volumes/caa/cef/iburst/';
+%    else
+%        datapath = '/data/caa/cef/iburst/';
+%    end
     
     fid = fopen([ datapath filen ],'r'); %Open the text file that contain the information about the burst.
     if fid==-1
