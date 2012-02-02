@@ -685,6 +685,21 @@ TBD       = TBD
 			<link href="esoc021115a.txt">ESOC 021115</link>
 		</res>
 	</operation>
+	<operation start="2002-11-12T23:56:24Z" dt="40" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 stuck after a sweep.</desc>
+	</operation>
+	<operation start="2002-11-13T02:34:27Z" dt="21" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 stuck after a sweep.</desc>
+	</operation>
+	<operation start="2002-11-13T03:13:58Z" dt="43" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 stuck after a sweep.</desc>
+	</operation>
+	<operation start="2002-11-13T04:32:59Z" dt="33" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 stuck after a sweep.</desc>
+	</operation>
+	<operation start="2002-11-13T05:52:01Z" dt="24" c2="yes" plan="no" sdesc="no_p3">
+		<desc>P3 stuck after a sweep.</desc>
+	</operation>
 	<operation start="2002-11-15T03:27:00Z" dt="100080" c2="yes"  plan="no" sdesc="bad_tm">
 		<desc>C2 is bad after a spontanous EFW reset.</desc>
 		<res><link href="pal060405a.txt">Per-Arne 060405</link></res>
@@ -4558,11 +4573,33 @@ TBD       = TBD
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01809.html">Juergen 091023</link>
                 </res>
         </operation>
+        <operation c4="yes" start="2009-11-06T16:30:00Z" dt="17400" plan="no" sdesc ="info">
+                <desc>Stuck DAC making weird higher-freq signals. Spinfits OK.</desc>
+        </operation>
+	<operation c1="yes" start="2009-11-11T07:31:03Z" dt="8" plan="no" sdesc ="bad_data">
+                <desc>Strange phase from isdat.</desc>
+        </operation>
 	<operation c3="yes" start="2009-11-12T13:45:26Z" dt="33060" plan="no" sdesc="no_data">
                 <desc>SSR controller failure</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01905.html">Juergen 091117</link>
                 </res>
+        </operation>
+        <operation c1="yes" start="2009-11-19T15:45:00Z" dt="200" plan="yes" sdesc="bad_data">
+		<desc>Attitude slew manoeuvre (42 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no485_(week47-2009).pdf">MOR 485</link></res>
+        </operation>
+        <operation c2="yes" start="2009-11-19T17:00:00Z" dt="200" plan="yes" sdesc="bad_data">
+                <desc>Attitude slew manoeuvre (45 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no485_(week47-2009).pdf">MOR 485</link></res>
+        </operation>
+        <operation c3="yes" start="2009-11-19T15:00:00Z" dt="270" plan="yes" sdesc="bad_data">
+                <desc>Attitude slew manoeuvre (58 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no485_(week47-2009).pdf">MOR 485</link></res>
+        </operation>
+        <operation c4="yes" start="2009-11-19T16:30:00Z" dt="200" plan="yes" sdesc="bad_data">
+                <desc>Attitude slew manoeuvre (45 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no485_(week47-2009).pdf">MOR 485</link></res>
         </operation>
 	<operation c4="yes" start="2009-11-24T17:41:00Z" dt="29880" plan="no" sdesc="bad_data">
                 <desc>Corrupt data after DWP watchdog reset.</desc>
@@ -4570,6 +4607,12 @@ TBD       = TBD
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02064.html">Per-Arne 091223</link>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02067.html">Keith 091223</link>
                 </res>
+        </operation>
+        <operation c4="yes" start="2009-11-30T13:15:30Z" dt="80"  plan="no" sdesc="bad_data">
+                <desc>DAC stuck after sweep.</desc>
+        </operation>
+        <operation c4="yes" start="2009-11-24T17:43:00Z" dt="29880"  plan="no" sdesc="bad_data">
+                <desc>Bad timing solved by WEC restart.</desc>
         </operation>
 	<operation c4="yes" start="2009-12-01T12:00:00Z" dt="31500" plan="no" sdesc="tbd">
                 <desc>WEC in a strange state. ISDAT has a tough time unpacking the HK, although no obvious problems in EFW data. Few details.</desc>
@@ -4596,18 +4639,126 @@ TBD       = TBD
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02011.html">Keith 091209</link>
                 </res>
         </operation>
+        <operation c1="yes" start="2009-12-09T07:58:56Z" dt="11" plan="no" sdesc="bad_data">
+                <desc>Bad phase data.</desc>
+        </operation>
+        <operation c1="yes" start="2009-12-09T21:48:00Z" dt="11400" plan="no" sdesc="bad_data">
+                <desc>Bad timing in WEC packets.</desc>
+        </operation>
+        <operation c2="yes" start="2009-12-25T17:33:00Z" dt="8280" plan="no" sdesc="bad_data">
+                <desc>WEC problem, cleared by scheduled reset.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02107.html">Per-Arne 100106</link>
+                </res>
+        </operation>
 	<operation c4="yes" start="2009-12-28T03:05:00Z" dt="92820" plan="no" sdesc="no_data">
 		<desc>WEC switched off by monitoring entry 444.</desc>
 		<res>
 			<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg02084.html">Keith 091231</link>
 		</res>
 	</operation>
+        <operation c1="yes" start="2010-01-03T18:38:44Z" dt="20" plan="no" sdesc="bad_data">
+                <desc>TM Buffer Overflow. </desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02162.html">Collette 100121</link>
+                </res>
+        </operation>
+         <operation c2="yes" start="2010-01-06T01:00:58Z" dt="12" plan="no" sdesc="bad_data">
+                <desc>TM buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02173.html">Collette 100125</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-01-06T03:35:00Z" dt="26100" plan="no" sdesc="no_data">
+                <desc>SSR sropped recording. Anomaly report.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02139.html">Sylvia 100113</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-01-06T19:37:50Z" dt="20" plan="no" sdesc="bad_data">
+                <desc>TM buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02173.html">Collette 100125</link>
+                </res>
+        </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2010-01-09T11:07:52Z" dt="-1" plan="yes" sdesc="TBD">
 		<desc>Sliding window set to LX (instead of spinfits) from this time.</desc>
 		<res>
 			<link href="ky091217a.txt">Keith 091217</link>
 		</res>
 	</operation>
+        <operation c2="yes" start="2010-01-10T05:34:13Z" dt="43560" plan="no" sdesc="no_data">
+                <desc>DWP watchdog reset.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02121.html">Keith 100111</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-01-10T13:31:00Z" dt="169800" plan="no" sdesc="no_data">
+                <desc>DWP watchdog reset. 48 hours of data lost.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02129.html">Keith 100112</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-01-12T19:44:34Z" dt="10" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-01-14T14:27:32Z" dt="10" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-01-15T01:01:02Z" dt="10" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-01-15T02:02:12Z" dt="15" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-01-15T02:03:00Z" dt="120" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-01-19T19:48:04Z" dt="15" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-01-17T16:21:05Z" dt="10" plan="no" sdesc="bad_data">
+                <desc>TM Buffer overflow</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-01-21T20:48:00Z" dt="84300" plan="no" sdesc="bad_data">
+                <desc>WEC off by monitoring 444.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02168.html">ESOC 100122</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-01-26T00:21:00Z" dt="36600" plan="no" sdesc="no_data">
+                <desc>SSR anomaly</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02182.html">Silvia 100127</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-01-28T17:01:00Z" dt="26880" plan="no" sdesc="no_data">
+                <desc>Commanding mistake</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02249.html">Juergen, Per-Arne 100219</link>
+                </res>
+        </operation>
 	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_data">
 		<desc>Data loss for all payload.</desc>
 		<res>
@@ -4626,6 +4777,18 @@ TBD       = TBD
 			<link href="AR-2624.pdf">AR-2624</link>
 		</res>
 	</operation>
+        <operation c1="yes" start="2010-02-04T07:55:00Z" dt="429900" plan="no" sdesc="no_data">
+                <desc>Undervoltage in CTU caused serious payload problems. Roughly 5 days of data lost. Anomaly: CLU-AR-162 SC1 does not accept block commands</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02219.html">Juergen 100209</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-02-12T08:50:00Z" dt="10200" plan="no" sdesc="no_data">
+                <desc>SSR anomaly</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02235.html">Juergen 100215</link>
+                </res>
+        </operation>
 	<operation c2="yes" start="2010-03-02T13:40:46Z" dt="72560" plan="no" sdesc="bad_data">
 		<desc>DWP reset caused bad data.</desc>
 		<res>
@@ -4661,4 +4824,322 @@ TBD       = TBD
 		<res>
 		</res>
 	</operation>
+
+<operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
+                <desc>Data loss due to ground segment problem.</desc>
+                <res>
+                    <link href="AR-2733.pdf">AR-2733</link>
+                </res>
+        </operation>
+
+
+	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_data">
+		<desc>WEC switched off by spacecraft monitoring and could
+	not be switched on again by standard procedures. Investigations 
+	identified likely cause and led to tests in late May. If
+	successful, operations could possibly be resumed in June.
+		</desc>
+		<res>
+		1. <link href="CL-OPS-MIN-1022_incl_annex.pdf">Meeting
+		ESOC 110513</link>
+		</res>
+	</operation>
+
+        <operation c3="yes" c4="yes" start="2011-05-22T17:15:00Z" dt="19200" plan="yes" sdesc ="tbd">
+                <desc>Sweeps also on SC34, 30 min interval.</desc>
+                <res>
+                </res>
+        </operation>
+                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-26T12:05:00Z" dt="660" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
+                <res>
+                </res>
+        </operation>
+                <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-05-31T00:35:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
+                <res>
+                </res>
+        </operation>
+<operation c3="yes" start="2011-06-01T09:31:24Z" dt="-1" plan="yes" sdesc ="tbd">
+                <desc>EFW operational again after WEC on SC3 was brought back to life.</desc>
+                <res>
+                </res>
+        </operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-04T12:29:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
+                <res>
+                </res>
+        </operation>
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-09T01:38:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-13T14:55:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-16T19:18:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-22T16:08:00Z" dt="720" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-25T18:19:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-27T03:45:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-03T22:31:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-04T21:19:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-11T15:19:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-15T02:19:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-18T10:19:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-22T00:42:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-24T06:58:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-31T01:35:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-06T20:14:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-13T14:49:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-20T09:27:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c2="yes" start="2011-08-22T13:11:51Z" dt="279240" plan="no" sdesc ="bad_tm">
+                <desc>Bad or non-existing EFW data. Exact reason not known, but the problem started following a DWP anonaly.
+	</desc>
+        <res>
+	<link href="pal110825.txt">Per-Arne 110822</link>
+	<link href="ky110831.txt">Keith 110831</link>
+        </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-27T04:13:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-05T05:23:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-12T00:12:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c4="yes" start="2011-10-29T12:15:36Z" dt="60"
+plan="yes" sdesc ="bad_bias">
+                <desc>Bias stepping from 140 to 320 nA in steps of 12 nA, 4 sec step rate.
+                </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c2="yes" start="2011-10-30T02:49:00Z" dt="52380" plan="no" sdesc ="tbd">
+                <desc>WEC turned off by onboard monitoring.
+                </desc>
+                <res>
+	        <link href="ky111031a.txt">Keith 111031</link>
+                </res>
+        </operation>
+
+<operation c1="yes" c3="yes" c4="yes" start="2011-10-30T10:01:00Z" dt="900"
+plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M, V3V4M, V1V2U, V3V4U. (Was planned also for C2, but lost due to WEC turned off on that s/c by the problem noted above).
+                </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c3="yes" c4="yes" start="2011-10-31T21:30:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
+                </desc>
+                <res><link href="aie111011a.txt">Anders 111011</link>
+                </res>
+        </operation>
+
+<operation c2="yes" start="2011-10-31T22:05:24Z" dt="1500" plan="yes" sdesc ="tbd">
+                <desc>Special burst targeting narrowband noise.
+                </desc>
+                <res><link href="aie111011a.txt">Anders 111011</link>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="ye
+s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
+                </desc>
+                <res><link href="aie111011a.txt">Anders 111011</link>
+                </res>
+        </operation>
+
+<operation c3="yes" start="2011-11-03T04:31:24Z" dt="480" plan="yes" sdesc ="tbd">
+                <desc>Special burst targeting narrowband noise.
+                </desc>
+                <res><link href="aie111011a.txt">Anders 111011</link>
+                </res>
+        </operation>
+
+<operation c4="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
+                <desc>Bias stepping P34 from 8 to 380 nA in steps of 12 nA, 4 sec step rate. Start by setting 8 nA, 4 nA, 8 nA (to give time for any transient).  
+                </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c2="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
+                <desc>Bias stepping P2 from 4 to 132 nA in steps of 4 nA, 4 sec step rate. 
+                </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-12-05T15:15:00Z" dt="900" plan="yes" sdesc ="tbd">
+                <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M
+, V3V4M, V1V2U, V3V4U. 
+                </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-01-23T10:51:19Z" dt="78600" c1="yes" plan="no" sdesc="no_tm">
+                <desc>WEC data lost following DWP watchdog reset.</desc>
+                <res>
+                        <link href="ky120124a.txt">Keith 120124</link>
+                </res>
+        </operation>
+
+
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-02-03T22:08:00Z" dt="300" plan="yes" sdesc ="tbd">
+                <desc>Sweeps during BM3 interval that could not be used for dumping internal burst. Sweeps start at 22:01 and go on into the BM3. </desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-11T19:05:00Z" dt="85700" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-14T00:35:00Z" dt="88200" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-16T09:05:00Z" dt="99000" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-18T14:35:00Z" dt="80800" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-20T19:35:00Z" dt="87000" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-23T03:05:00Z" dt="83100" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
 </table>
