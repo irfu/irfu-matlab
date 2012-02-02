@@ -39,7 +39,8 @@ The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops
 Matlab accesses a text version of this on db when processing the data.
 
 1. Check through /home/www/cluster/efw/ops/ns_ops.xml on hq, and make sure it's complete and OK.
-    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. Some of the older messages are hidden at http://www.acse.shef.ac.uk/wec-ops/older_mail/maillist.html.
+    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. Some of the older messages are hidden at http://www.acse.shef.ac.uk/wec-ops/older_mail/maillist.html,
+    or at http://www.acse.shef.ac.uk/wec-ops/oldish_mail/threads.html
 2. Edit the XML table. There's no emacs on hq, but there is vi and ee.
 3. Run "sudo make all" to export the XML file to html, then "sudo make txt" to export to text, and then "sudo make update" to move it to db.irfu.se. The last will likely fail unless you have Yuri's password, so try it manually instead: 
    scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
