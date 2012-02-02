@@ -127,7 +127,7 @@ Alternatively, we have a routine here which seems to work roughly as well, excep
   4. Enter the affected times into /data/cluster/cal/WecEfwTcor/C*_EFW_TIME_COR.txt.
      Be careful not to leave a C*_EFW_TIME_COR.txt~ file, as this will be read instead of the right file.
   5. Restart the ISDAT servers.
-Note that after the error is flagged in the txt files and ISDAT is restarted, caa_check_for_n02_error won't find the error again.
+After the error is flagged in the txt files, ISDAT is restarted and the data is reprocessed then caa_check_for_n02_error won't find the error again.
 
 ==============================
 5. Find magnetopause locations
