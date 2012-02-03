@@ -4789,12 +4789,36 @@ TBD       = TBD
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02235.html">Juergen 100215</link>
                 </res>
         </operation>
+        <operation c3="yes" start="2010-02-24T14:59:55Z" dt="25" plan="no" sdesc="bad_data">
+                <desc>Manoeuvre with instruments on.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02268.html">Juergen 100226</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-03-01T05:53:00Z" dt="10800" plan="no" sdesc="bad_data">
+                <desc>Bad TM buffer overflows.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02325.html">Colette 100317</link>
+                </res>
+        </operation>
 	<operation c2="yes" start="2010-03-02T13:40:46Z" dt="72560" plan="no" sdesc="bad_data">
 		<desc>DWP reset caused bad data.</desc>
 		<res>
 			<link href="ky100303s.txt">Keith 100303</link>
 		</res>
 	</operation>
+        <operation c4="yes" start="2010-03-26T10:23:00Z" dt="45600" plan="no" sdesc="no_data">
+                <desc>WEC off after monitoring</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02351.html">ESOC 100330</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-03-26T18:13:00Z" dt="51000" plan="no" sdesc="bad_data">
+                <desc>WEC monitor 445. EFW data is corrupt (10 Hz filters, full of spikes).</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02384.html">Colette 100414</link>
+                </res>
+        </operation>
 	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_data">
 		<desc>EFW turn-off by WEC following probable DWP SEU.</desc>
 		<res>
@@ -4803,6 +4827,24 @@ TBD       = TBD
 			<link href="ky100417a.txt">Keith 100417</link>
 		</res>
 	</operation>
+        <operation c1="yes" start="2010-04-16T14:21:00Z" dt="3000" plan="no" sdesc="no_data">
+                <desc>WEC error.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02395.html">Colette 100416</link>
+                </res>
+        </operation>
+       <operation c1="yes" start="2010-04-20T21:46:00Z" dt="27240" plan="no" sdesc="no_data">
+                <desc>anomaly AR-135: repeating VC2 virtual channelframe counter on C1</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02416.html">Juergen 100423</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-04-24T10:10:00Z" dt="28800" plan="no" sdesc="bad_data">
+                <desc>SSR anomaly</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02424.html">Juergen 100427</link>
+                </res>
+        </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2010-05-04T03:07:12Z" dt="29808" plan="yes" sdesc="TBD">
 		<desc>Sweep interval 15 minutes.</desc>
 		<res>
@@ -4813,19 +4855,49 @@ TBD       = TBD
 		<res>
 		</res>
 	</operation>
+        <operation c4="yes" start="2010-05-23T13:02:00Z" dt="10200" plan="no" sdesc="no_data">
+                <desc>SSR controller failure</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02575.html">Juergen 1006616</link>
+                </res>
+        </operation>
 	<operation c2="yes" start="2010-05-28T04:12:14Z" dt="98580" plan="no" sdesc="no_data">
 		<desc>EFW turn-off by DWP watchdog reset.</desc>
 		<res>
 			<link href="ky100529a.txt">Keith 100529</link>
 		</res>
 		</operation>
+        <operation c3="yes" start="2010-06-01T13:02:00Z" dt="36000" plan="no" sdesc="bad_data">
+                <desc>SSR controller failure. EFW data is patchy and of very suspect quality.</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02575.html">Juergen 1006616</link>
+                </res>
+        </operation>
 	<operation c3="yes" start="2010-06-01T00:00:00Z" dt="-1" plan="no" sdesc="tbd">
 		<desc>Bad EDI currents during this month caused occasional extreme (keV) charging on SC3.</desc>
 		<res>
 		</res>
 	</operation>
+        <operation c3="yes" start="2010-06-08T15:38:00Z" dt="7200" plan="no" sdesc="bad_data">
+                <desc>Probe latchup</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02539.html">Per-Arne 100608</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-06-09T23:10:00Z" dt="22230" plan="no" sdesc="bad_data">
+                <desc>WEC off by monitoring 444</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02554.html">esoc 100611</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-06-16T11:36:00Z" dt="8400" plan="no" sdesc="no_data">
+                <desc>SSR controller failure</desc>
+                <res>
+                        <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02577.html">Juergen 1006617</link>
+                </res>
+        </operation>
 
-<operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
+        <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
                 <desc>Data loss due to ground segment problem.</desc>
                 <res>
                     <link href="AR-2733.pdf">AR-2733</link>
