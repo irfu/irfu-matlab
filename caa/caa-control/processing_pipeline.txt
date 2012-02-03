@@ -72,11 +72,28 @@ After 2006-01-01, the FGM files are called C?_UP_FGM* instead of C?_PP_FGM*
 3.3 Get the TCOR files
 ======================
 1. Download the TCOR CEF files from the CAA in intervals of about 6 months.
-   Instrument: DWP. Ancillary product: Time corrections
-2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTcor or and put the files there.
+   Log in on caa.estec.esa.int
+   Click  CAA DATA/CAA Data Download Area
+    Fill in start and stop time
+    Check Experiment: DWP
+    Click Search
+   Click Expand All
+    Under Ancillary: C1-C4
+    Check: Time corrections
+   Click Continue
+     (CEF format default)
+     Click Select all
+    Click Download
+
+    Downloaded Archive is a zip file
+     Use the C?_CP_DWP_TCOR* files
+
+2. Strip off the headers to match the other cef files in /data/cluster/cal/WecEfwTcor or and
+   put the files there.
 3. Edit the index files TCOR_INDEX_*.txt to include the new cef files.
 4. Re-start the ISDAT servers.
-If the TCOR files are not available, the TCOR correction can also be applied after processing by using the function caa_apply_tcor(). Try to avoid this.
+   If the TCOR files are not available, the TCOR correction can also be applied after processing by
+   using the function caa_apply_tcor(). Try to avoid this.
 
 3.4 Re-generate the ISDAT index files
 =====================================
@@ -153,6 +170,8 @@ This is the main processing step.
 6.1 Delete preliminary data
 ===========================
 Move the preliminary data from /data/caa/l1/YYYY to a temporary directory.
+Make sure the new data directory has this mode drwxrwxr-x  owner:caa group:cluster or
+processing will not work.
 The preliminary data could be discarded; the temporary storage is just for safety.
 Be very careful not to alter any of the data in /data/caa/l1/YYYY except for the preliminary data you're about to reprocess.
 
@@ -270,9 +289,9 @@ new group=200711_L2 st=2007-11-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
 new group=200712_L2 st=2007-12-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
 
 
-=====================
-9. Special processing
-=====================
+======================
+9.  Special processing
+======================
 If this is a re-run, then run any special processing called out in /data/caa/l1/YYYY/special_processing.txt.
 e.g. caa_special_process('2007-01-01T00:00:00Z','2008-01-01T00:00:00Z', '/data/caa/l1/2007/special_processing.txt')
 
@@ -385,10 +404,38 @@ There will be problems. Look particularly for:
 Fix and re-run things as needed.
 For help with the summary plots, see appendix B.
 
+==================
+14. Internal Burst
+==================
+Internal burst is not processed the normal way (for now).
+Iburst works from the internal burst files in /data/cluster/burst.
+Ex. file name: 050719140830we.03
+It is an iburst file from date 20050719 start time is 14:08:30 and .03 means from Cluster 3.
 
-================
-14. Export to CEF
-================
+To process internal burst and export to .cef files:
+
+1. Make a list of all iburst files for year 2009 using shell commands:
+   cd /data/cluster/burst
+   ls -1 09*we.0? >~/ib2009.list
+   The list file is in the home directory ~/.
+
+2. Run caa_proc_bursts() in matlab (Make sure directory ~/figures exist):
+   caa_proc_bursts('ib2009.list',1)
+   This will produce the iburst data in /data/caa/l1/2009 and iburst plots under ~/figures.
+   Failed files are logged in the /data/caa/log/ directory as *.ibfail.log files.
+
+3. Look at the plots in ~/figures and decide which iburst files are no good for L2 cef
+   export. Put all these file names in file irfu-matlab/caa/caa-control/BAD_IB_L2_LIST_C1-4.txt.
+   Do a cvs checkin of the updated file and copy it to db:/data/cluster/caa-control/.
+
+4. To export iburst .cef files use caa_export_month().
+   levels=[1 2 2 2]
+   datatypes={'IB' 'PB' 'EB' 'BB'}
+   See also step 15.
+
+=================
+15. Export to CEF
+=================
 Data is read in from the MEX files.  Some additional processing is done:
 1. Quality flags are calculated and applied.
 2. DSI offsets are applied.
@@ -403,23 +450,14 @@ caa_export_month in turn calls caa_export_new.
 You might need to compile the mex file 'cefprint_mx.c' before calling caa_export_new().
 
 
-
-
 ==================
-15: Deliver to CAA
+16: Deliver to CAA
 ==================
 Deliver the files to the CAA using sftp:
   sftp efw@caa-delivery.estec.esa.int
     EFW4Yu71
 Put the .cef.gz files in /caa/dropzone/EFW/CEF
 Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
-
-
-
-
-
-
-
 
 
 
@@ -748,7 +786,6 @@ Since you need to use linux compatibility, this is more complicated than you'd t
   cp Makefile.ini Makefile
   make isdat
     (will fail, but after making the clients)
-
 
 
 OPEN ISSUES
