@@ -144,7 +144,7 @@ switch action
           dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
           dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
           %Convert to isdat epoch
-          if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
+          if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch') || strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
             dobj.data.(dobj.vars{v,1}).data = date2epoch(dobj.data.(dobj.vars{v,1}).data);
           end
         end
