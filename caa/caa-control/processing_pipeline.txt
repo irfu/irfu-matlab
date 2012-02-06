@@ -257,15 +257,17 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 =========================
 7. Find the delta offsets
 =========================
+Updated to 2010-04-01T00:00:00. No update on C1 possible since 2009-10-14 (no p4).
 The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
 The delta offsets must be computed before L2 processing.
-1. Load the delta offsets computed during the runs. Example for C2:
+1. Load the delta offsets computed during the runs. Example for C2 (D2p12p34 from mEDSI.mat):
+   (D1p12p34 or similar does not exist for data year>=2010)
      D2p12p34=caa_get('2006-01-01T00:00:00Z','2007-01-01T00:00:00Z',2,'D?p12p34');
        (this will take 10 minutes or so, the first minutes of which it will be silent)
        (ignore the cannot fill gaps/guess sampling f errors)
      irf_plot D2p12p34
 2. Enter into the delta offsets database. Example:
-     (edit SY, EY in caa_update_deltaoff)
+     (edit SY in caa_update_deltaoff. Plot time is one year.)
      cd /home/chris/devel/irfu-matlab/caa
      caa_update_deltaoff(D2p12p34,2)
 3. Commit the new caa/deltaoff.mat to CVS, and update it on db:/data/cluster/irfu-matlab.
@@ -274,19 +276,14 @@ The delta offsets must be computed before L2 processing.
 ========================
 8. Run the CAA Runner L2
 ========================
-Like step 6. Example:
-new group=200701_L2 st=2007-01-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200702_L2 st=2007-02-01T00:00:00Z dt=2419200 lev=2 maxlev=2 ddt=10800
-new group=200703_L2 st=2007-03-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200704_L2 st=2007-04-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
-new group=200705_L2 st=2007-05-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200706_L2 st=2007-06-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
-new group=200707_L2 st=2007-07-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200708_L2 st=2007-08-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200709_L2 st=2007-09-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
-new group=200710_L2 st=2007-10-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
-new group=200711_L2 st=2007-11-01T00:00:00Z dt=2592000 lev=2 maxlev=2 ddt=10800
-new group=200712_L2 st=2007-12-01T00:00:00Z dt=2678400 lev=2 maxlev=2 ddt=10800
+Rerun all level 2 in the L012 linked jobs. See step 6.
+To re-run only level 2 jobs in a JobGroup:
+  /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200904_L012" | grep L02 >l2jobs.txt
+  /home/caa/devel/caa-runner/scripts/nice_jlist.sh l2jobs.txt
+  /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun l2jobs.txt.nice
+
+See also Appendix A: To re-run all jobs with "error" result.
+One month of L02 data rerun takes about 1h20min to complete with all 7 runners active.
 
 
 ======================
@@ -319,6 +316,7 @@ They are computed on a statistical basis and applied on a roughly per-year basis
      (Edit line 18 of caa_ms_pl_xoff_stats)
      caa_ms_pl_xoff_stats(DdsiX1)
 4. If all looks OK, update the tables in c_efw_dsi_off.m. Check it into CVS and update on db.
+
 
 ============================
 11. Create the summary plots
@@ -366,6 +364,7 @@ Or:
        mkdir $i
        mv *2010$i* $i
      done
+
 
 =====================================
 12. Update the eclipse/maneuvers list
@@ -461,24 +460,28 @@ Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
 
 
 
-
 Appendix A: CAA Runner issues and workarounds
 =============================================
-
 File locations:
   Job level info is documented at ~yuri/devel/Job levels.odt
   Configuration info for both server and runner is kept at /etc/rc.conf
   Log file is written to /var/log/CaaServer.log
+
 Add runners from the CaaConsole:
-  add runner=localhost:8002 (or similar)
+  add runner=caa1.irfu.se:8000 (or similar)
+
+  Standard runners are: sipadan.irfu.se:8000-2, localhost:8000-1 and caa1.irfu.se:8000-1
+
 Remove group from the CaaConsole:
-  rm group=20060501-10 (or similar)
+  rm group=200605_L012 (or similar)
   (included in 'help rm', but not 'help')
+
 To restart server: sudo /usr/local/etc/rc.d/CaaServer.sh restart 
   - also responds to start, stop, status
 To stop runner  0: sudo /usr/local/etc/rc.d/CaaRunner.sh  stop
 To start runner 1: sudo /usr/local/etc/rc.d/CaaRunner1.sh start
 When starting runners, remember to start Xvfb: sudo /usr/local/etc/rc.d/Xvfb start
+
 To forcibly unload a job group:
   sudo mysql
   SHOW databases;
@@ -489,9 +492,11 @@ To forcibly unload a job group:
   UPDATE JobGroup set loaded=0 where loaded=1;
   SELECT * from JobGroup;
   QUIT
+
 To kill the CAA server:
   ps -l -f `pgrep python`
   kill -9 (the CaaServer)
+
 To update the irfu-matlab software repository:
   ssh db
   cd /data/cluster/irfu-matlab
@@ -499,6 +504,7 @@ To update the irfu-matlab software repository:
   ( cvs login )
   cvs update
   ( cvs logout )
+
 To update the CAA software from CVS:
   ssh caa
   sudo -i -u caa 
@@ -514,6 +520,7 @@ To update the CAA software from CVS:
   vi caa-runner2/CaaSettings.py
     (change isdatDb to 130.238.30.32:8)
   (make sure to log out of caa's account)
+
 To cure a hung NFS client on fernie:
   sudo su
   ps -u chris
@@ -528,6 +535,7 @@ To cure a hung NFS client on fernie:
   mount /data/cluster
   mount /data/istp
   mount /data/CIS
+
 Installing a new set of caa runners on the machine caa1, set up to access db:8 (130.238.30.32:8):
   sudo su caa
   cd /home/caa/devel
@@ -569,17 +577,18 @@ Installing a new set of caa runners on the machine caa1, set up to access db:8 (
      CaaRunner1_clients="130.238.30.25"
   sudo /usr/local/etc/rc.d/CaaRunner.sh start
   sudo /usr/local/etc/rc.d/CaaRunner1.sh start
-  cd /usr/local     
+  cd /usr/local
   sudo mkdir matlab
   cd matlab
-  sudo mkdir bin   
+  sudo mkdir bin
   cd bin
   sudo ln -s /usr/local/bin/matlab matlab
+
 To re-run a JobGroup with a lot of errors (rerun only those jobs with errors):
-  /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200604_L01" > ttt.txt
-  cat ttt.txt|grep error > ttt1.txt
-  /home/caa/devel/caa-runner/scripts/nice_jlist.sh ttt1.txt
-  /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ttt1.txt.nice 
+  /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200904_L012" | grep error >ejobs.txt
+  /home/caa/devel/caa-runner/scripts/nice_jlist.sh ejobs.txt
+  /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ejobs.txt.nice
+
 Installing a new matlab on sipadan:
   sudo su
   mkdir /usr/local/m2009b
@@ -591,9 +600,9 @@ Installing a new matlab on sipadan:
            (removed:)export LD_LIBRARY_PATH=/usr/local/matlab/isdat_usrlib_glnx86:$LD_LIBRARY_PATH
        /compat/linux/bin/sh /usr/local/matlab/m2009b/bin/matlab "$@"
   cp m2009b matlab
+
 Useful network stats under FreeBSD: systat
 
-  
 
 Appendix B:Summary plots
 ========================
@@ -634,6 +643,7 @@ Page 3:
     BITMASK_PLASMASPHERE_WAKE        =  4096;    % Bit 13   Quality=1
     BITMASK_WHISPER_OPERATING        =  8192;    % Bit 14   Quality=2
     BITMASK_HIGH_BIAS_SATURATION     =  16384;   % Bit 15   Quality=1
+
 
 Appenidix C: ISDAT
 ==================
@@ -698,6 +708,7 @@ example:
 [ok,uncor] = c_load(irf_ssub('wE?p!',3,34)); ok
 irf_plot({da,uncor})
 
+
 Appendix G: example levelone access
 ===================================
 cd ~/data/cluster/DDS
@@ -705,6 +716,7 @@ cp /data/cluster/DDS/060110*.03 .
 levelone -n 0601100000wn.03 -b 0601100000wb.03 -h 0601100000wh.03 -m 3 -e diagnostics.txt -T /data/cluster/cal/WecEfwTcor/ -0  L1_EFW_20060110.03
 getefw L1_EFW_20060110.03 L1_EFW_20060110_03.txt 1 9999999 1 6 7 14
 (Puts data in files Vi.dat and Vij.dat)
+
 
 Appendix H: rebooting db
 ========================
@@ -815,19 +827,4 @@ Move all runners over to m2009b (?)
 Let sipadan:8000 work on L2 (?)
 
 - update efw_tcor files (esp. for 2007!)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
