@@ -67,6 +67,39 @@ set(ax2,    'YAxisLocation','right');
 set(ax2,'Color','none'); % color of axis
 set(ax2,'XColor','r','YColor','r'); % color of axis lines and numbers
 %
+
+
+%___________________________________________
+% Another example 
+% 
+t=irf_time([2008 03 01 10 0 0]):.2:irf_time([2008 03 01 11 0 0]);
+t=t(:); % make it column vector
+% define one time series
+y=exp(0.001*(t-t(1))).*sin(2*pi*t/180);
+% define data matrix
+data1=[t y];
+data2=[t sqrt(abs(y))];
+% initialize plot
+h=irf_plot(1);
+% plot data
+irf_plot(h(1),data1)
+set(h(1),'box','off')
+%
+h(2) = axes('Position',get(h(1),'Position'));
+irf_plot(h(2),data2,'r')
+set(h(2),'XAxisLocation','top','xtick',[]); % remove 'xtick' if xticks required
+set(h(2),'YAxisLocation','right');
+set(h(2),'Color','none','box','off'); % color of axis
+set(h(2),'XColor','r','YColor','r'); % color of axis lines and numbers
+
+irf_timeaxis(h(2),'nolabels')
+
+irf_legend(h(1),'data',[0.02 0.98],'color','k')
+irf_legend(h(2),'sqrt(data)',[0.8 0.98],'color','r')
+
+ylabel(h(1),'data')
+ylabel(h(2),'sqrt(data)')
+
 %% Reading files
 % formatted file reading
 
@@ -150,6 +183,7 @@ if 0, % read RAPID data
 end
 if 0, % read EFW data
   c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
+  c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'');');
   c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
   c_eval('ExB?=c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE'',''mat'');');
 end
