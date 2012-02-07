@@ -136,12 +136,13 @@ for i=label_order, % start with first label first
     txt_pos=get(ht(i),'position'); 
     if strcmpi(value_horizontal_alignment,'left'),
         txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos); % how much to shift wrt to previous label
-        if i>1, set(ht(i),'position',txt_pos);end       % make shift starting from 2nd label
+        if i~=label_order(1), set(ht(i),'position',txt_pos);end       % make shift starting from 2nd label
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
     else
         txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
-        if i>1, set(ht(i),'position',txt_pos); end
+        if i~=label_order(1), set(ht(i),'position',txt_pos); end
+        %set(ht(i),'position',txt_pos);
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
     end
