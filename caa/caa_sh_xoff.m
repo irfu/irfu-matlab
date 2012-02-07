@@ -43,16 +43,19 @@ Ps4 = caa_get(st,dt,4,'Ps?'); %#ok<NASGU>
 
 for cli=1:4
 	es_tmp = caa_get(st,dt,cli,'diEs?p34');
-	if ~isempty(es_tmp)
-		% Delta offsets
-		Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
-		if ~isempty(Del_caa)
-			es_tmp = caa_corof_delta(es_tmp,34,Del_caa,'apply');
-		end
-	else es_tmp = [];
-	end
-	es_tmp = irf_resamp(es_tmp,t); %#ok<NASGU>
-	c_eval('E?=es_tmp;',cli)
+    if isempty(es_tmp) && cli==1
+        es_tmp = caa_get(st,dt,cli,'diEs?p32');
+    end
+    if ~isempty(es_tmp)
+        % Delta offsets
+        Del_caa = c_efw_delta_off(es_tmp(1,1),cli);
+        if ~isempty(Del_caa)
+            es_tmp = caa_corof_delta(es_tmp,34,Del_caa,'apply');
+        end
+        es_tmp(isnan(es_tmp(:,2)),:) = [];
+        es_tmp = irf_resamp(es_tmp,t); %#ok<NASGU>
+        c_eval('E?=es_tmp;',cli)
+    end
 end
 		
 diVCEh1 = caa_get(st,dt,1,'diVCEh?');
@@ -228,7 +231,7 @@ if ~isempty(Eref)
 		length(find(~isnan(Eref(:,2)))), round(weight*100)))
 end
 
-irf_zoom(st+[0 dt],'x',h)
+irf_zoom(h,'x',st+[0 dt])
 axes(h(6)), irf_timeaxis
 
 dE = [dE1 dE2 dE3 dE4];
