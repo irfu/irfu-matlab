@@ -129,19 +129,19 @@ for i=label_order, % start with first label first
         if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
             set(ht(i),'color',cluster_colors(i,:));
         else
-            set(ht(i),pvpairs{2*j-1},pvpairs{2*j});
+            set(ht(i),textprop,textvalue);
         end
     end
     txt_ext=get(ht(i),'extent'); 
     txt_pos=get(ht(i),'position'); 
     if strcmpi(value_horizontal_alignment,'left'),
-        txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos);
-        set(ht(i),'position',txt_pos);
+        txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos); % how much to shift wrt to previous label
+        if i>1, set(ht(i),'position',txt_pos);end       % make shift starting from 2nd label
         txt_ext=get(ht(i),'extent'); 
-        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i}));
+        tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
     else
         txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
-        set(ht(i),'position',txt_pos);
+        if i>1, set(ht(i),'position',txt_pos); end
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
     end
