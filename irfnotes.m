@@ -173,10 +173,10 @@ if 0, % read FGM data form all sc
   c_eval('gsmB?=irf_gse2gsm(B?);');
 end
 if 0, % read CIS HIA/CODIF velocity moments from available s/c
-  c_eval('[caaVCIS?,~,VCIS?]=c_caa_var_get(''velocity_gse__C?_CP_CIS_HIA_ONBOARD_MOMENTS'');',3);
-  c_eval('[caaVCISH?,~,VCISH?]=c_caa_var_get(''velocity__C?_CP_CIS_CODIF_HS_H1_MOMENTS'');',4);
-  c_eval('gsmVCIS?=irf_gse2gsm(VCIS?);',3);
-  c_eval('gsmVCISH?=irf_gse2gsm(VCISH?);',4);
+  c_eval('VCIS?=irf_get_data(''velocity_gse__C?_CP_CIS_HIA_ONBOARD_MOMENTS'',''caa'',''mat'');',[1 3]);
+  c_eval('VCISH?=irf_get_data(''velocity__C?_CP_CIS_CODIF_HS_H1_MOMENTS'',''caa'',''mat'');',[1 3 4]);
+  c_eval('gsmVCIS?=irf_gse2gsm(VCIS?);',[1 3]);
+  c_eval('gsmVCISH?=irf_gse2gsm(VCISH?);',[1 3 4]);
 end
 if 0, % read RAPID data
   c_eval('[caaRAPID_J?,~,RAPID_J?]=c_caa_var_get(''Electron_Dif_flux__C?_CP_RAP_ESPCT6'');');
@@ -293,20 +293,20 @@ end
 %% PANELS that can be used for your figures
 % !!! when single sc data are plotted, assumes s/c number is in variable 'ic'
 
-if 1,   % PANEL: C?       FGM B GSE
+if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSE
   hca=irf_panel('C? FGM B GSE');
   c_eval('irf_plot(hca,B?);',ic);
   ylabel(hca,'B [nT] GSE');
   irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.3])
   irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
 end
-if 1,   % PANEL: C?       FGM B GSM
+if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSM
   hca=irf_panel('C? FGM B GSM');
   c_eval('irf_plot(hca,gsmB?);',ic);
   ylabel(hca,'B [nT] GSM');
   irf_zoom(hca,'y',[-25 25]);
-  irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.3])
-  irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
+  irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.1])
+  irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
 if 1,   % PANEL: C?       FGM Bz GSM
   hca=irf_panel('C? FGM Bz');
@@ -339,27 +339,15 @@ if 1,   % PANEL: C1..C4   FGM BZ GSM
   ylabel(hca,'B_Z [nT] GSM');
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
-if 1,   % PANEL: C1       CIS HIA/CODIF velocity moment single s/c
-  hca=h(i_subplot);i_subplot=i_subplot+1;
+if 1,   % PANEL: C?       CIS Vx,Vyy,Vz,V CODIF(HIA) GSM
+  hca=irf_panel('C? CIS V GSM');
   if ic ~=2, % on s/c 2 there is no CIS
-    if strcmp(CISinstrument,'HIA')
-      dobjname=irf_ssub('C?_CP_CIS_HIA_ONBOARD_MOMENTS',ic);
-      varname=irf_ssub('velocity_gse__C?_CP_CIS_HIA_ONBOARD_MOMENTS',ic);
-    elseif strcmp(CISinstrument,'CODIF')
-      dobjname=irf_ssub('C?_CP_CIS_CODIF_HS_H1_MOMENTS',ic);
-      varname=irf_ssub('velocity__C?_CP_CIS_CODIF_HS_H1_MOMENTS',ic);
-    end
-    caa_load(dobjname);
-    c_eval(['VCIS?=getmat(' dobjname ',''' varname ''');'],ic);
-    c_eval('gsmVCIS?=irf_gse2gsm(VCIS?);',ic);
-    varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    disp(['PANEL: C' num2str(ic)]);disp(['dobj:' dobjname ]);disp([' var:' varname]);disp(['varunits: ' varunits]);
-    c_eval('irf_plot(hca,gsmVCIS?);',ic);
+    c_eval('irf_plot(hca,gsmVCISH?);',ic);
+    % c_eval('irf_plot(hca,gsmVCIS?);',ic); % HIA 
     ylabel(hca,'V [km/s] GSM');
-    set(hca,'ylim',[-199 799]);
+    irf_zoom(hca,'y',[-200 1200]);
     irf_legend(hca,{'V_X','V_Y','V_Z'},[0.02 0.49])
-    irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
+    irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
   end
 end
 if 1,   % PANEL: C1,C3,C4 CIS Vx GSM velocities
@@ -431,13 +419,14 @@ if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
       varname=irf_ssub('flux__C?_CP_CIS_CODIF_H1_1D_PEF',ic); % CODIF H+
     end
     %varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-    varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel');
+    varunits={'log_{10} dEF','keV/cm^2 s sr keV'};
+    irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
     caxis(hca,[3.9 6.1]);
     set(hca,'yscale','log');
     set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
     ylabel(hca,'E [eV]');
   end
+  irf_legend(hca,{['C' num2str(ic)]},[0.98 0.1],'color','k')
 end
 if 0,   % PANEL: C?       EFW E ISR2
   hca=irf_panel('EFW E ISR2 c?');
@@ -543,25 +532,26 @@ end
 if 1,   % PANEL: C?       RAPID electron spectrogram
   hca=irf_panel('C?_CP_RAP_ESPCT6');
   varname=irf_ssub('Electron_Dif_flux__C?_CP_RAP_ESPCT6',ic);
-  varunits=irf_get_data(varname,'caa','unit');
-  %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel');
+  %varunits=irf_get_data(varname,'caa','unit');
+  varunits={'log_{10} dF','1/cm^2 s sr keV'};
+  irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
   caxis(hca,[0.51 4.49]);
   set(hca,'yscale','log');
   set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
+  irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
 if 1,   % PANEL: C?       RAPID ion spectrogram
     hca=irf_panel('C?_CP_RAP_HSPCT');
     varname=irf_ssub('Proton_Dif_flux__C?_CP_RAP_HSPCT',ic);
     %varunits=c_caa_var_get(varname,'units');
-    varunits='log_{10} dF  1/cm^2 s sr keV';
+    varunits={'log_{10} dF','1/cm^2 s sr keV'};
     irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
     caxis(hca,[0.51 4.49]);
-    irf_colormap('space');
     set(hca,'yscale','log');
     ylabel(hca,'E [keV]');
     irf_zoom(hca,'y',[80 2000]);
     set(hca,'ytick',[1e2 2e2 5e2 1e3 1e4 1e5])
+    irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
 if 0,   % PANEL: RAPID spectrogram parallel
   hca=h(i_subplot);i_subplot=i_subplot+1;
@@ -677,12 +667,14 @@ end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
     hca=irf_panel('C? PEACE energy spectra');
     varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-    varunits=irf_get_data(varname,'caa','units');
-    %varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
-    irf_plot(hca,varname,'sum_dim1','colorbarlabel',varunits,'fitcolorbarlabel');
-    caxis(hca,[5.9 8.9]);
+    %varunits=irf_get_data(varname,'caa','units');
+    varunits={'log_{10} dEF','keV/cm^2 s sr keV'};
+    irf_plot(hca,varname,'sum_dim1','colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
+    caxis(hca,[5.6 7.9]);
     set(hca,'yscale','log');
+    set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
     ylabel(hca,'E [eV]');
+    irf_legend(hca,{['C' num2str(ic)]},[0.98 0.2],'color','k')
 end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
     hca=irf_panel('C? PEACE DEFlux pitch spectra');
