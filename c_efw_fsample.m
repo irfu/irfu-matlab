@@ -7,7 +7,7 @@ function sf = c_efw_fsample(data,mode,cl_id)
 %        'any' - default 0.25/5/25/450/4500/9000 Hz
 %        'lx'  - LX data 5 Hz
 %        'hx'  - HX data 25/450 Hz
-%        'ib'  - internal burst data 450/4500/9000 Hz
+%        'ib'  - internal burst data 450/4500/9000/18000 Hz
 %
 % $Id$
 
