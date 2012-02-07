@@ -51,6 +51,7 @@ else                         % input is variable itself
 end
 
 if isempty(data), error('VAR_S not found'), end
+if isempty(data.data), error('Nothing to plot (Empty dataset)'), end
 dim = length(data.variance(3:end));
 dep = getdep(dobj,var_s);
 units = corr_latex(getunits(dobj,var_s));
