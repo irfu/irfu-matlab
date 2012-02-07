@@ -94,6 +94,8 @@ jloaded=0;
 if nargout, % initialize return variables to empty
   res=cell(1,length(varargin(1)));
   resdataobject=res;resmat=res;resunit=res;
+else
+  return;  
 end
 
 for j=1:length(varargin),
