@@ -16,7 +16,7 @@ persistent h0;
 %persistent inprog_mtx; % this is a kinda mutex to hold "in progress" status
 
 main_fig_id = 28;
-main_fig_title = 'Cluster B-SA GUI';
+main_fig_title = 'Cluster B-SC GUI';
 
 if nargin, action = varargin{1};
 else action = 'init';
@@ -137,7 +137,8 @@ switch action
         end
         
         % Time span
-        irf_zoom(hnd.tint,'x',h);
+        irf_timeaxis(h(3))
+        irf_zoom(h,'x',hnd.tint);
         
         update_title(hnd)
         
@@ -338,7 +339,7 @@ switch action
         
         figure(main_fig_id+1), clf
         h = irf_plot({hnd.diBSC,diBSCAppend,hnd.diB},'comp');
-        irf_zoom(hnd.tint,'x',h);
+        irf_zoom(h,'x',hnd.tint);
         
         leg='xyz';
         for comp = 1:3
