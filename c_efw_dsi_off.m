@@ -23,8 +23,11 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if     t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ]; % Force MS offset for months when don't enter SW.
-elseif t>=toepoch([2008 12 01 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05]; % Back to variable offsets
+if     t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
+elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.12    0.46 2.0 0.05];   % Increase C3 offset to bring in line with C124
+elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05];  % Back to variable offsets
+elseif t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];  % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2008 12 01 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05];  % Back to variable offsets
 elseif t>=toepoch([2008 07 01 00 00 0]), Ddsi = [ 0.59    1.31 1.36  0.68]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2008 01 01 00 00 0]), Ddsi = [-0.16    0.44 1.37 -0.03];
 elseif t>=toepoch([2007 11 01 01 01 0]), Ddsi = [ 0.20    0.76 1.77 0.28];
@@ -78,8 +81,7 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if     t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
-elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
+if t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
 elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
