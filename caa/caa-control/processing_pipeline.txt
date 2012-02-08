@@ -257,7 +257,7 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 =========================
 7. Find the delta offsets
 =========================
-Updated to 2010-04-01T00:00:00. No update on C1 possible since 2009-10-14 (no p4).
+Updated to 2010-05-01T00:00:00. No update on C1 possible since 2009-10-14 (no p4).
 The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
 The delta offsets must be computed before L2 processing.
 1. Load the delta offsets computed during the runs. Example for C2 (D2p12p34 from mEDSI.mat):
@@ -308,7 +308,7 @@ They are computed on a statistical basis and applied on a roughly per-year basis
      save OffAmp2008.mat dE dAmp dt weight
 2. Plot the offsets:
     caa_sh_pl_xoff(dE,dAmp,dt,weight)
-   and read out the mean offsets for all 4 spacecraft.
+   and read out the mean offsets for all 4 spacecraft. (Under Table of SW/SH offsets)
 3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft: 
    (Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox, and at the moment must be run from ice.irfu.se)
      DdsiX1=caa_get('2008-01-01T00:00:00Z','2008-12-31T23:59:59Z',1,'DdsiX?');
@@ -472,7 +472,7 @@ Add runners from the CaaConsole:
 
   Standard runners are: sipadan.irfu.se:8000-2, localhost:8000-1 and caa1.irfu.se:8000-1
 
-Remove group from the CaaConsole:
+Remove group from the CaaConsole (To do this for "new" jobs they have to be stopped first):
   rm group=200605_L012 (or similar)
   (included in 'help rm', but not 'help')
 
@@ -610,7 +610,7 @@ Page 1:
   4 panels of E-field spectra, presumably from p34.
   Quality
     Yellow= quality 0 (Really bad or missing)
-    Red   = quality 1 (Bad, uually wakes)
+    Red   = quality 1 (Bad, usually wakes)
     Green = quality 2 (Caution: whisper operating or asymmetric data).
             (Note: C1 and C3 never get above qual=2 after 2002 becuase of the failed probes.)
     Blue  = quality 3 (OK)
