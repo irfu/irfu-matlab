@@ -78,7 +78,8 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if     t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
+if     t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
+elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
 elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
 elseif t>=toepoch([2007 08 05 01 1 0]), Ddsi = [ 0.70  1.45 1.49  0.85 ];
@@ -109,19 +110,7 @@ Dd(:,1) = Dd(:,1) - TAV/2; % offset is set at the start of the interval
 Dd(:,2) = DdsiSW(cl_id);
 Dd(ii,2) = DdsiMS(cl_id);
 
-% Remove repeating points 
+% Remove repeating points
 d = [1; diff(Dd(:,2))]; d(d~=0) = 1;
 Ddsi = Dd(d==1,:);
 
-
-
-
-	
-
-
-
-	
-	
-				
-				
-				
