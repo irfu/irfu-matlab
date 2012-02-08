@@ -415,13 +415,13 @@ for cli=1:4
 		else title(h(1),[tit ', GSE Position C' num2str(ri)])
 		end
 	end
-	if dt>0, irf_zoom(st +[0 dt],'x',h(cli)), end
+	if dt>0, irf_zoom(h(cli),'x',st +[0 dt]), end
 	set(gca,'XTickLabel',[])
 end
 
 % Plot quality
 plot_quality(h(5), {es1, es2, es3, es4}, st)
-irf_zoom(st + [0 dt], 'x', h(5))
+irf_zoom(h(5),'x',st + [0 dt])
 
 
 % Plot P
@@ -430,11 +430,11 @@ c_pl_tx('ps?')
 ylabel('P L3 [-V]')
 a = get(gca,'YLim');
 if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
-irf_zoom(st +[0 dt],'x',h(6))
+irf_zoom(h(6),'x',st +[0 dt])
 
 if dt>0 
 	plot_intervals(h(7),{in1,in2,in3,in4},st)
-	irf_zoom(st +[0 dt],'x',h(7))
+	irf_zoom(h(7),'x',st +[0 dt])
 	if ~isempty(r), add_position(h(7),r), end
 end
 
@@ -517,7 +517,7 @@ end
 
 if dt>0 
 	plot_intervals(he(8),{in1,in2,in3,in4},st)
-	irf_zoom(st +[0 dt],'x',he)
+	irf_zoom(he,'x',st +[0 dt])
 	if ~isempty(r), add_position(he(8),r), end
 end
 
@@ -592,18 +592,18 @@ for cli=1:4
 %	else set(h(cli),'YLim',[0 12.5])
 %	end
 	
-	if dt>0, irf_zoom(st +[0 dt],'x',h(cli)), end
+	if dt>0, irf_zoom(h(cli),'x',st +[0 dt]), end
 %	set(gca,'XTickLabel',[])
 %	keyboard
 end
 
 % Plot quality
 plot_quality(h(5), {es1, es2, es3, es4}, st)
-irf_zoom(st + [0 dt], 'x', h(5))
+irf_zoom(h(5), 'x', st + [0 dt])
 
 if dt>0 
 	plot_intervals(h(6),{in1,in2,in3,in4},st)
-	irf_zoom(st +[0 dt],'x',h(6))
+	irf_zoom(h(6),'x',st +[0 dt])
 	if ~isempty(r), add_position(h(6),r), end
 end
 
