@@ -9,6 +9,7 @@ function download_status=caa_download(tint,dataset,flags)
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download 
 %             returns 0 if request is put in the queue, 
 %             the information of queued requests is saved in file ".caa"
+%       CAA_DOWNLOAD(url_string) - download CAA data zip file from the link "url_string"
 %
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
@@ -75,8 +76,32 @@ function download_status=caa_download(tint,dataset,flags)
 
 if exist('.caa','file') == 0, caa=cell(0);save -mat .caa caa;end
 load -mat .caa caa
+% caa.url - links to download
+% caa.dataset - dataset to download
+% caa.tintiso - time interval
+% caa.zip - zip files to download
+% caa.status - status ('submitted','downloaded','finnished')
+% caa.timeofrequest - in matlab time units
 
-if nargin==0,    % check/show status of downloads
+flag_check_status_of_downloads=0; 
+
+if nargin==0, flag_check_status_of_downloads=1; end
+if nargin==1, % check if argument is not caa zip file link
+    if ischar(tint) && strcmp(tint(end-2:end),'zip')
+        j=numel(caa)+1;
+        caa{j}.url='*';
+        caa{j}.dataset='*';
+        caa{j}.tintiso='*';
+        caa{j}.zip=tint;
+        caa{j}.status='submitted';
+        caa{j}.timeofrequest=now;
+        flag_check_status_of_downloads=1; 
+    else
+        help caa_download;return;
+    end
+end
+
+if flag_check_status_of_downloads,    % check/show status of downloads
     disp('=== status of jobs (saved in file .caa) ====');
     if ~isempty(caa),
         for j=1:length(caa), % go through jobs
@@ -94,7 +119,8 @@ if nargin==0,    % check/show status of downloads
             j_finished_jobs(j)=1;
         elseif strcmpi(caa{j}.status,'submitted'),
             disp(['=== Checking status of job nr: ' num2str(j) '==='])
-            [f,status]=urlwrite(caa{j}.zip,'delme.zip');
+            temp_file=tempname;
+            [f,status]=urlwrite(caa{j}.zip,temp_file);
             if status == 0,
                 disp(['STILL WAITING TO FINISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
                 if now-caa{j}.timeofrequest>1, % waiting more than 1 day
@@ -104,7 +130,7 @@ if nargin==0,    % check/show status of downloads
                     end
                 end
             else
-                filelist=unzip(f);
+                filelist=unzip(temp_file);
                 move_to_caa_directory(filelist);
                 delete(f);
                 caa{j}.status='FINISHED';
@@ -126,13 +152,6 @@ if nargin==0,    % check/show status of downloads
     return;
 end
 
-if nargin==1, help caa_download;return; end
-% caa.url - links to download
-% caa.dataset - dataset to download
-% caa.tintiso - time interval
-% caa.zip - zip files to download
-% caa.status - status (0-submitted, 1-downloaded)
-% caa.timeofrequest - in matlab time units
 
 flag_test=0; % do not use caa_test_query
 flag_wildcard=1; % default is to use wildcard
