@@ -17,6 +17,15 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 %
 % Example:
 %   res=c_caa_construct_subspin_res_data('Data__C4_CP_PEA_PITCH_3DRH_PSD')
+%
+% $Id$
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <andris@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Andris Vaivads
+% ----------------------------------------------------------------------------
 
 if any(strfind(variable_name,'PITCH_3DR'))  % PEACE variable
     [variable,dataobject,peace,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
