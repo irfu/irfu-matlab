@@ -4,11 +4,25 @@ function [b]=c_fgm_staff_combine(b_fgm,b_staff)
 %           currently implemented for burst mode data
 % 
 
+%% check input 
 if nargout==0, help c_fgm_staff_combine;return;end
+
+%% define common time interval in which to combine data sets
 tint=[max(b_fgm(1,1),b_staff(1,1)) min(b_fgm(end,1),b_staff(end,1))]; % define common time interval
 b_fgm=irf_tlim(b_fgm,tint);     % limit time series to common time interval
 b_staff=irf_tlim(b_staff,tint); % limit time series to common time interval
 
+%% check if FGM and STAFF are in normal mode
+if 1/mean(diff(b_staff(1:min(end,100),1))) < 400 % STAFF in normal mode, not implemented
+    disp('STAFF data in normal mode! FGM and STAFF combination not yet implemented!');
+    b=[];
+    return;
+elseif 1/mean(diff(b_fgm(1:min(end,100),1))) < 60 % FGM in normal  mode
+    disp('FGM data in normal mode! FGM and STAFF combination not yet implemented!');
+    b=[];
+    return;
+end    
+    
 %% design filters
 % low pass filter for FGM
     Fs = 66.7;  % Sampling Frequency
