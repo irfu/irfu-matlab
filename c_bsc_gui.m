@@ -234,7 +234,7 @@ switch action
         
         h_wbar = waitbar(0,[main_fig_title ' : Fetching data in '...
             num2str(request_dt/60,'%.1f') ' min chunks...']);
-        steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT_OFF);
+        steps = ceil( (hnd.tint(2) - hnd.ts_marker.t)/DT_OFF)+1;
         step = 0;
         
         st = hnd.ts_marker.t;
@@ -252,6 +252,20 @@ switch action
                     hnd.BSCDataAppend = irf_tlim(...
                         hnd.BSCDataAppend, hnd.BSCDataAppend(1,1), st);
                 end
+                % Match the signals - remove jumps in phase
+                if ~isempty(hnd.BSCDataAppend) && size(hnd.BSCDataAppend,1)>1
+                    dtlast = hnd.BSCDataAppend(end,1) - hnd.BSCDataAppend(end-1,1);
+                    dtj = data(1,1) - hnd.BSCDataAppend(end,1);
+                    dtnext = data(2,1) - data(1,1);
+                    if dtj > dtlast*.99 && dtj < dtlast*1.01 && dtnext > dtlast*.99 && dtnext < dtlast*1.01
+                        junction = (hnd.BSCDataAppend(end,2:4)-...
+                            hnd.BSCDataAppend(end-1,2:4))/dtlast*(dtlast+dtj/2)+...
+                            hnd.BSCDataAppend(end-1,2:4);
+                        offset = (data(2,2:4) - data(1,2:4))/dtnext*(-dtj/2)+...
+                            data(1,2:4) - junction;
+                        data(:,2:4) = data(:,2:4) - ones(size(data,1),1)*offset;
+                    end
+                end
                 hnd.BSCDataAppend = [hnd.BSCDataAppend; data];
             end
             
@@ -262,6 +276,27 @@ switch action
         close(h_wbar)
         
         if ~isempty(hnd.BSCDataAppend)
+            % Remove the spin offset introduces by the matching
+            if (hnd.BSCDataAppend(end,1)-hnd.BSCDataAppend(1,1)) > 40
+                data = getData(...
+                    ClusterDB(c_ctl(0,'isdat_db'), c_ctl(0,'data_path'), '.'), ...
+                    hnd.BSCDataAppend(1,1),...
+                    hnd.BSCDataAppend(end,1)-hnd.BSCDataAppend(1,1),...
+                    hnd.cl_id, 'a','nosave');
+                if ~isempty(data)
+                    spin_period = c_spin_period(data{2});
+                    if isempty(spin_period), spin_period = 4; end
+                    toff = spin_period*5/2 + ...
+                        (hnd.BSCDataAppend(1,1):(spin_period*5):hnd.BSCDataAppend(end,1));
+                    toff = irf_resamp(hnd.BSCDataAppend,toff','median');
+                    toff=[hnd.BSCDataAppend(1,1) 0 0 0; toff];
+                    toff = irf_resamp(toff,hnd.BSCDataAppend(:,1));
+                    hnd.BSCDataAppend(:,2:4) = hnd.BSCDataAppend(:,2:4) - toff(:,2:4);
+                    clear toff
+                else
+                    irf_log('proc','Cannot get phase from ISDAT')
+                end
+            end
             set(hnd.menu_save_data,'Enable','on')
             
             guidata(h0,hnd);
