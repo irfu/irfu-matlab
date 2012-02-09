@@ -1,0 +1,30 @@
+
+warning: negative values in spectrogram
+
+0101 00 C3 is about 0.5 mV/m too high
+0101 12 C3,C4 missing
+0101 12 C2 P spiky
+0102 00 C3 too high by 2 mV/m, then starts agreeing later
+0103 18 C3,C4 missing
+0104 18 C3 too high by 1 mV/m
+0104 21 C2 data gap 45 minutes
+0105 2330 C3,C4 burst of noise
+0107 12 C3 too high by 0.4
+0108 06 gaps in C234
+0108 21 C3 too high by 1.0
+0110 12 C34 missing again near perigee
+0113 15-18 C1234 thruster firings
+0113 18-24 C234 missing
+014 00 C3 low by 0.2
+0114 2041 C1 big spike
+0115 C3 long period of problems after eclipse: high bias saturation
+        should blank P data
+0117 2010 C3 data gap until next reset
+0119 06 C3 0.2 too high
+0118 12 C3 Ey offset
+0118 18 C2 weird rspec
+
+
+
+
+
