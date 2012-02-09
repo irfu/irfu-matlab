@@ -424,10 +424,10 @@ irf_colormap(hca,'default'); % execute for every axis you want to fix colormap
 if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
   hca=irf_panel('C? CIS HIA/CODIF spectrogram');
   if ic~=2,
-    if strcmp(CISinstrument,'HIA')
-      varname=irf_ssub('flux__C?_CP_CIS_HIA_HS_1D_PEF',ic); % HIA
-    elseif strcmp(CISinstrument,'CODIF')
+    if ic==4 || strcmp(CISinstrument,'CODIF')
       varname=irf_ssub('flux__C?_CP_CIS_CODIF_H1_1D_PEF',ic); % CODIF H+
+    elseif strcmp(CISinstrument,'HIA')
+      varname=irf_ssub('flux__C?_CP_CIS_HIA_HS_1D_PEF',ic); % HIA
     end
     %varunits=eval(['getunits(' dobjname ',''' varname ''')']);
     varunits={'log_{10} dEF','keV/cm^2 s sr keV'};
