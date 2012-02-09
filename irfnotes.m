@@ -339,7 +339,7 @@ if 1,   % PANEL: C1..C4   FGM BZ GSM
   ylabel(hca,'B_Z [nT] GSM');
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
-if 1,   % PANEL: C?       CIS Vx,Vyy,Vz,V CODIF(HIA) GSM
+if 1,   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
   hca=irf_panel('C? CIS V GSM');
   if ic ~=2, % on s/c 2 there is no CIS
     c_eval('irf_plot(hca,gsmVCISH?);',ic);
@@ -361,7 +361,7 @@ if 1,   % PANEL: C1,C3,C4 CIS Vx GSM velocities
   irf_zoom(hca,'y',[-1000 1000]);
   irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
 end
-if 1,   % PANEL: C1,C3,C4 CIS Vy velocities
+if 1,   % PANEL: C1,C3,C4 CIS Vy GSM velocities
   hca=irf_panel(h,'C1,C3,C4 CIS Vy velocities');
   hold(hca,'off');
   irf_plot(hca,gsmVCIS1(:,[1 3]),'color','k'); % HIA
@@ -370,6 +370,17 @@ if 1,   % PANEL: C1,C3,C4 CIS Vy velocities
   irf_plot(hca,gsmVCISH4(:,[1 3]),'color','b'); % CODIF
   ylabel(hca,'V_X [km/s] GSM');
   irf_zoom(hca,'y',[-1000 1000]);
+  irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
+end
+if 1,   % PANEL: C1,C3,C4 CIS Vz GSM velocities
+  hca=irf_panel(h,'C1,C3,C4 CIS Vz velocities');
+  hold(hca,'off');
+  irf_plot(hca,gsmVCIS1(:,[1 4]),'color','k'); % HIA
+  hold(hca,'on');
+  irf_plot(hca,gsmVCIS3(:,[1 4]),'color','g'); % HIA
+  irf_plot(hca,gsmVCISH4(:,[1 4]),'color','b'); % CODIF
+  ylabel(hca,'V_Z [km/s] GSM');
+  irf_zoom(hca,'y',[-150 150]);
   irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
