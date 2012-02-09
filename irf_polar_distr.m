@@ -1,5 +1,6 @@
 function irf_polar_distr(varargin)
-
+%IRF_POLAR_DISTR  Plot polar distribution
+%
 % Plots a polar distribution of particle data.
 % First argument is time interval in epoch.
 % Works currently only for PITCH products.
