@@ -14,7 +14,6 @@ function v=c_v(t,coord_sys)
 %
 % $Id$
 
-sc_list=1:4;
 if nargin==1, coord_sys='GSE'; end 
 
 if t(2) > 1e8, flag='v_from_t'; else flag='dt_from_v';v=t;t=v(1);end
@@ -26,18 +25,11 @@ if exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID
 elseif exist('./mR.mat','file'),
     load mR R1 R2 R3 R4 V1 V2 V3 V4;
 else
-    disp('loading position from isdat');
-		DB_S = c_ctl(0,'isdat_db');
-    db = Mat_DbOpen(DB_S);
-    for ic=sc_list, disp(['...R' num2str(ic)]);
-     [tr,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'position', ' ', ' ', ' ');
-     eval(irf_ssub('R?=[double(tr) double(data)''];',ic));clear tr data;
-    end
-	for ic=sc_list, disp(['...V' num2str(ic)]);
-       [tv,data] = isGetDataLite( db,min(t)-1, max(t)-min(t)+2,'Cluster', num2str(ic), 'ephemeris', 'velocity', ' ', ' ', ' ');
-       eval(irf_ssub('V?=[double(tv) double(data)''];',ic));clear tv data;
-    end
-		Mat_DbClose(db);
+    disp('loading position from isdat. Connecting ...');
+    tmin=min(t);tmax=max(t);
+    c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], tmin-30, tmax-tmin+30);R?=[tr r];fprintf(''%s'',''R?'');clear tr r;');
+    c_eval('[tv,v] = irf_isdat_get([''Cluster/?/ephemeris/velocity''], tmin-30, tmax-tmin+30);V?=[tv v];fprintf(''%s'',''V?'');clear tv v;');
+    disp('');
 end
 
 switch coord_sys
