@@ -37,16 +37,11 @@ switch action,
         ud.flag_use_sc=0; % 0-not use, 1- use sc
         ud.sc.probe_refpot_as_fraction_of_scpot=0.25; % reference potential at probe
         ud.sc.number_of_probes=4;
-        ud.sc.sunlit_area=1; % sunlit cross section generating photoelectrons
+        ud.sc.probe_distance_to_spacecraft=44;
+        ud.sc.sunlit_area=1;      % sunlit cross section generating photoelectrons
         ud.sc.total_area=4;       % total s/c area collecting photoelectrons
-        % plasma
-        ud.m_amu1=1;
-        ud.m_amu2=16;
-        ud.m2=0; % relative fraction of 2nd species
-        ud.n=1; % [cc]
-        ud.Ti=1;
-        ud.Te=1;
-        ud.V_SC=0;        
+        % plasma default values are specified in plasma menu (can be moved here
+        % if deemed necessary
         %% initialize figure
         set(0,'defaultLineLineWidth', 1.5);
         fn=figure(63);
@@ -95,25 +90,27 @@ switch action,
         inp.update                           = uicontrol('Parent',hp,'String','Update',                'Position',[0   0 60 30],'Callback','lp_sweep_gui(''update'')');
         inp.reset                            = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30],'callback','lp_sweep_gui(''initialize'')');       
         %% initialize s/c menu
-        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .37 .3 .26]);
-        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0 170 120 25]);
-        inp.sc.example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0 145 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
+        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .37 .3 .31]);
+        inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0   205 120 25]);
+        inp.sc.example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0   180 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
         surf=lp_photocurrent;probtxt='spacecraft surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
-        inp.sc.surface                                 = uicontrol('Parent',hsc,'String',probtxt,                                                  'Position',[0 120 150 30],'style','popup','backgroundcolor','white');
-        inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0 100 120 25]);
-        inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(ud.sc.total_area),'style','edit',                 'Position',[120 100 50 25],'backgroundcolor','white');
-        inp.sc.sunlit_area_text                        = uicontrol('Parent',hsc,'String','Sunlit area [m2]',                                       'Position',[0 75 120 25]);
-        inp.sc.sunlit_area_value                       = uicontrol('Parent',hsc,'String',num2str(ud.sc.sunlit_area),'style','edit',                'Position',[120 75 50 25],'backgroundcolor','white');
-        inp.sc.antenna_guard_area_text                 = uicontrol('Parent',hsc,'String','Sunlit guard area [m2]',                                 'Position',[0 50 120 25],'Tooltipstring','Cross section area of pucks and guards, assuming similar photoelectron emission as antenna');
-        inp.sc.antenna_guard_area_value                = uicontrol('Parent',hsc,'String','0','style','edit',                                       'Position',[120 50 50 25],'backgroundcolor','white');
-        inp.sc.probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0 25 120 25],'Tooltipstring','The ratio between the probe reference potential and satellite potential');
-        inp.sc.probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc.probe_refpot_as_fraction_of_scpot),         'Position',[120 25 50 25],'style','edit','backgroundcolor','white');
-        inp.sc.number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0 0 120 25]);
-        inp.sc.number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.number_of_probes),                          'Position',[120 0 50 25],'style','edit','backgroundcolor','white');        
+        inp.sc.surface                                 = uicontrol('Parent',hsc,'String',probtxt,                                                  'Position',[0   155 150 30],'style','popup','backgroundcolor','white');
+        inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0   135 120 25]);
+        inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(ud.sc.total_area),'style','edit',                 'Position',[120 135 50 25],'backgroundcolor','white');
+        inp.sc.sunlit_area_text                        = uicontrol('Parent',hsc,'String','Sunlit area [m2]',                                       'Position',[0   110 120 25]);
+        inp.sc.sunlit_area_value                       = uicontrol('Parent',hsc,'String',num2str(ud.sc.sunlit_area),'style','edit',                'Position',[120 110 50 25],'backgroundcolor','white');
+        inp.sc.antenna_guard_area_text                 = uicontrol('Parent',hsc,'String','Sunlit guard area [m2]',                                 'Position',[0   85 120 25],'Tooltipstring','Cross section area of pucks and guards, assuming similar photoelectron emission as antenna');
+        inp.sc.antenna_guard_area_value                = uicontrol('Parent',hsc,'String','0','style','edit',                                       'Position',[120 85 50 25],'backgroundcolor','white');
+        inp.sc.probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0   60 120 25],'Tooltipstring','The ratio between the probe reference potential and satellite potential');
+        inp.sc.probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(ud.sc.probe_refpot_as_fraction_of_scpot),         'Position',[120 60 50 25],'style','edit','backgroundcolor','white');
+        inp.sc.number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0   35 120 25]);
+        inp.sc.number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(ud.sc.number_of_probes),                          'Position',[120 35 50 25],'style','edit','backgroundcolor','white');        
+        inp.sc.probe_distance_to_spacecraft_text       = uicontrol('Parent',hsc,'String','distance probe-sc [m]',                                  'Position',[0   10 120 25]);
+        inp.sc.probe_distance_to_spacecraft_value      = uicontrol('Parent',hsc,'String',num2str(ud.sc.probe_distance_to_spacecraft),              'Position',[120 10 50 25],'style','edit','backgroundcolor','white');        
         %% initialize plasma menu
-        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .63 .3 .2]);
+        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .68 .3 .2]);
         inp.n         = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 80 25]);
-        inp.n_value   = uicontrol('Parent',hpl,'String',num2str(ud.n),'style','edit','Position',[80 0 90 25],'backgroundcolor','white');
+        inp.n_value   = uicontrol('Parent',hpl,'String','1','style','edit','Position',[80 0 90 25],'backgroundcolor','white');
         inp.T         = uicontrol('Parent',hpl,'String','T [eV]','Position',[0 25 80 25]);
         inp.T_value   = uicontrol('Parent',hpl,'String','1 1','style','edit','Position',[80 25 90 25],'backgroundcolor','white');
         inp.m         = uicontrol('Parent',hpl,'String','m [mp],0=me','Position',[0 50 80 25]);
@@ -123,8 +120,8 @@ switch action,
         inp.vsc       = uicontrol('Parent',hpl,'String','Vsc [m/s]','Position',[0 100 80 25]);
         inp.vsc_value = uicontrol('Parent',hpl,'String','0','style','edit','Position',[80 100 90 25],'backgroundcolor','white');        
         %% initialize plot menu
-        hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .83 .3 .17]);
-        inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp_sweep_gui(''update'')');
+        hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .88 .3 .12]);
+        inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp_sweep_gui(''update'')');
         
         ud.inp=inp;
         set(gcf,'userdata',ud);
@@ -138,8 +135,16 @@ switch action,
         ud.U=eval(get(inp.U_value,'string'));
         ud.UV_factor=str2double(get(inp.UV_factor_value,'string'));
         ud.R_sun=str2double(get(inp.Rsun_value,'string'));
-        ud.probe.radius=str2double(get(inp.probe.radius_value,'string'));
-        ud.probe.length=str2double(get(inp.probe.length_value,'string'));
+        new_radius=str2double(get(inp.probe.radius_value,'string'));
+        if (new_radius ~= ud.probe.radius)
+            ud.probe.radius=new_radius;
+            ud.probe.capacitance=0; % force recalculate capacitanc
+        end
+        new_length=str2double(get(inp.probe.length_value,'string'));
+        if (new_length ~= ud.probe.length)
+            ud.probe.length=new_length;
+            ud.probe.capacitance=0; % force recalculate capacitanc
+        end
         ud.probe.bias_current=str2double(get(inp.probe.bias_current_value,'string'))*1e-6; % convert from uA to A
         surf=lp_photocurrent;
         ud.probe.surface=surf{max(1,get(inp.probe.surface,'Value')-1)}; % 
@@ -177,7 +182,8 @@ switch action,
                 probe.total_area=pi*probe.cross_section_area;
                 probe.length=str2double(get(inp.probe.length_value,'string'));
                 if ~isfield(probe,'capacitance') || probe.capacitance==0 % if not defined or put to zero, calculate
-                    probe.capacitance=2*pi*Units.eps0*ud.probe.length*0.01/log(ud.probe.length/ud.probe.radius); % assuming length >> radius
+%                    probe.capacitance=2*pi*Units.eps0*ud.probe.length*0.01/log(ud.probe.length/ud.probe.radius); % assuming length >> radius
+                    probe.capacitance=irf_estimate('capacitance_cylinder',ud.probe.radius*0.01,ud.probe.length*0.01); % assuming length >> radius
                 end
             case 'arbitrary'
                 probe.cross_section_area=str2double(get(inp.probe.radius_value,'string'))*0.01^2;
@@ -276,27 +282,6 @@ switch action,
         info_txt='';
         h=ud.h;
         flag_add_bias_point_values=0; % default
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % TOP PANEL
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if ud.toppanel==1, % plot resistance 
-            plot(h(2),Upot,dUdI,'k');
-            grid(h(2),'on');xlabel(h(2),'U [V]');
-            ylabel(h(2),'dU/dI [\Omega]');
-            if ud.flag_use_sc, % add probe resistance wrt plasma and s/c
-                hold(h(2),'on');
-                plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
-                plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
-                hold(h(2),'off');
-            end
-            axis(h(2),'auto y');
-            set(h(2),'yscale','log')
-        elseif ud.toppanel==2 && ud.flag_use_sc, % plot spacecraft IU
-            plot(h(2),ud.U_sc,ud.I_sc*1e6,'k');
-            grid(h(2),'on');xlabel(h(2),'U [V]');
-            ylabel(h(2),'I [\mu A/m^2]');
-        end
-        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % BOTTOM PANEL
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -356,7 +341,7 @@ switch action,
             info_txt=[info_txt '\newline Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
         end
 
-        if min(J_probe)<0 && max(J_probe)>0, % display information on Ufloat
+        if min(J_probe)<0 && max(J_probe)>0,                   % display information on Ufloat
             Ufloat=interp1(J_probe,Upot,0); % floating potential
             ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
             info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF'];
@@ -387,7 +372,7 @@ switch action,
             info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF'];
             disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF']);
         end
-        if ud.UV_factor>0,  % display photoelectron saturation current
+        if ud.UV_factor>0,                                     % display photoelectron saturation current
             info_txt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp_photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
             if ud.R_sun~=1,
                 info_txt=[info_txt '  (' num2str(ud.UV_factor*lp_photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
@@ -403,12 +388,120 @@ switch action,
         axis(h(3),'off');
         set(ud.ht,'string',info_txt,'fontsize',11);
         set(gcf,'userdata',ud);
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % TOP PANEL
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        if ud.toppanel==1, % plot resistance 
+            plot(h(2),Upot,dUdI,'k');
+            grid(h(2),'on');xlabel(h(2),'U [V]');
+            ylabel(h(2),'dU/dI [\Omega]');
+            if ud.flag_use_sc, % add probe resistance wrt plasma and s/c
+                hold(h(2),'on');
+                plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
+                plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
+                hold(h(2),'off');
+            end
+            axis(h(2),'auto y');
+            set(h(2),'yscale','log')
+            linkaxes(ud.h(1:2),'x');
+        elseif ud.toppanel==2 && ud.flag_use_sc, % plot spacecraft IU
+            plot(h(2),ud.U_sc,ud.I_sc*1e6,'k');
+            grid(h(2),'on');xlabel(h(2),'U [V]');
+            ylabel(h(2),'I [\mu A/m^2]');
+            linkaxes(ud.h(1:2),'x');
+        elseif ud.toppanel==3, % plot probe noise levels
+            E_int_range=[1e-19 1e-9]; % range of E intensity
+            f_range=[1e-3 9.9e5];      % frequencies in Hz
+            f_noise_range=10.^(log10(f_range(1)):.1:log10(f_range(2)));
+            f=f_noise_range';
+            ud.sc.probe_distance_to_spacecraft=str2double(get(inp.sc.probe_distance_to_spacecraft_value,'string'));
+            antenna_eff_length=ud.sc.probe_distance_to_spacecraft*2; % efficient length of antenna from satellite center
+            C_antenna=ud.probe.capacitance;
+            n=ud.n*1e6;                                             % TEMPORAR SOLUTION!!!!
+            T_plasma=ud.T(1);                                       % TEMPORAR SOLUTION!!!!
+            A_antenna=ud.probe.total_area;
+            distance_to_Sun=ud.R_sun; % AU
+            UV=ud.UV_factor;
+            
+            noise_preamp=10e-9; % preamplifier noise 10nV/Hz1/2
+            noise_preamp_level=(noise_preamp/antenna_eff_length)^2;
+            f_break=400; % transition frequency at which 1/f noise is starting
+            
+            % instrumental noise
+            noise_instr_X=[f_range(1) f_break f_range(2)];
+            noise_instr_Y=noise_preamp_level*[sqrt(f_break/f_range(1)) 1  1];
+            
+            if exist('Rbias','var')
+                T_eV=1; % photoelectron temperature
+                noise_thermal_bias=4*Units.e*T_eV*sqrt(Rbias^2./(1+(2*pi*f).^2*Rbias^2*C_antenna^2))/antenna_eff_length^2;
+                nu=n/2*sqrt(8*Units.kB*T_plasma/pi/Units.me)*A_antenna;
+                noise_shot_plasma_bias=2*nu*Units.e^2*Rbias^2./(1+(2*pi*f).^2*Rbias^2*C_antenna^2)/antenna_eff_length^2;
+                Iphoto=abs(lp_probe_current(probe,-1,distance_to_Sun,UV,[]));
+                nu=Iphoto/Units.e;
+                noise_shot_photoelectrons_bias=2*nu*Units.e^2*Rbias^2./(1+(2*pi*f).^2*Rbias^2*C_antenna^2)/antenna_eff_length^2;
+                noise_total_bias=noise_shot_photoelectrons_bias+noise_shot_plasma_bias+noise_thermal_bias;
+            end
+            if exist('Rfloat','var')
+                T_eV=1; % photoelectron temperature
+                noise_thermal_nobias=4*Units.e*T_eV*sqrt(Rfloat^2./(1+(2*pi*f).^2*Rfloat^2*C_antenna^2))/antenna_eff_length^2;
+                nu=n/2*sqrt(8*Units.kB*T_plasma/pi/Units.me)*A_antenna;
+                noise_shot_plasma_nobias=2*nu*Units.e^2*Rfloat^2./(1+(2*pi*f).^2*Rfloat^2*C_antenna^2)/antenna_eff_length^2;
+                Iphoto=abs(lp_probe_current(probe,-1,distance_to_Sun,UV,[]));
+                nu=Iphoto/Units.e;
+                noise_shot_photoelectrons_nobias=2*nu*Units.e^2*Rfloat^2./(1+(2*pi*f).^2*Rfloat^2*C_antenna^2)/antenna_eff_length^2;
+                noise_total_nobias=noise_shot_photoelectrons_nobias+noise_shot_plasma_nobias+noise_thermal_nobias;
+            end
+            if 1, % plot
+                linkaxes(ud.h(1:2),'off');hold(h(2),'off');
+                plot(h(2),noise_instr_X,noise_instr_Y,'k');
+                set(h(2),'xscale','log','yscale','log','xlim',f_range,'ylim',E_int_range);
+                set(h(2),'xtick',10.^[floor(log10(f_range(1))):ceil(log10(f_range(2)))]);
+                set(h(2),'ytick',10.^[floor(log10(E_int_range(1))):ceil(log10(E_int_range(2)))]);
+                set(h(2),'MinorGridLineStyle','none','FontSize',12)
+                grid(h(2),'on');
+                ht=text(1e3,noise_preamp_level*1.5,'instrument');set(ht,'fontsize',14,'color','k');
+                hold(h(2),'on');
+                ax=h(2);
+                if exist('Rfloat','var'),
+                    plot(h(2),f,noise_shot_plasma_nobias,'k:', ...
+                        f,noise_shot_photoelectrons_nobias,'g:', ...
+                        f,noise_thermal_nobias,'b:', ...
+                        f,noise_total_nobias,'r:')
+                    ht=text(2e2,noise_thermal_nobias(1)*1.5,'plasma thermal noise (nobias)','parent',ax);set(ht,'fontsize',14,'color','b');
+                    ht=text(f_range(1),noise_shot_plasma_nobias(1),'shot noise plasma (nobias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','k');
+                    ht=text(f_range(1),noise_shot_photoelectrons_nobias(1),'shot noise photoelectrons (nobias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','top','horizontalalignment','left','color',[0 0.5 0]);
+                    ht=text(f_range(1),noise_total_nobias(1),'total noise (nobias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','r');
+                end
+                if exist('Rbias','var'),
+                    plot(h(2),f,noise_shot_plasma_bias,'k', ...
+                        f,noise_shot_photoelectrons_bias,'g', ...
+                        f,noise_thermal_bias,'b',...
+                        f,noise_total_bias,'r');
+                    ht=text(2e2,noise_thermal_bias(1)*1.5,'plasma thermal noise (bias)','parent',ax);set(ht,'fontsize',14,'color','b');
+                    ht=text(f_range(1),noise_shot_plasma_bias(1),'shot noise plasma (bias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left');
+                    ht=text(f_range(1),noise_shot_photoelectrons_bias(1),'shot noise photoelectrons (bias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','top','horizontalalignment','left','color',[0 0.5 0]);
+                    ht=text(f_range(1),noise_total_bias(1),'total noise (bias)','parent',ax);
+                    set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','r');
+                end
+                
+                ylabel('Electric field intensity [V^2/m^2/Hz]');
+                %ylabel('Electric field intensity [dB V/m/Hz^{1/2}]');
+                xlabel('Frequency [Hz]');
+                hold(h(2),'off');
+            end
+        end
+
 end
 disp('READY!')
 end
 
 function setprobetype(hObj,event) %#ok<INUSD>
-% Called when user activates popup menu of minvar method
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 set(data.inp.probe.radius_text,'string','probe radius [cm]');
@@ -429,7 +522,6 @@ end
 set(gcf,'userdata',data);
 end
 function setscexample(hObj,event) %#ok<INUSD>
-% Called when user activates popup menu of minvar method
 irf_units
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
@@ -447,6 +539,7 @@ elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     set(data.inp.sc.antenna_guard_area_value,'string','0.039');
     set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc.number_of_probes_value,'string','4');
+    set(data.inp.sc.probe_distance_to_spacecraft_value,'string','44');
     set(data.inp.Rsun_value,'string','1');
     set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
     data.probe.total_vs_sunlit_area=4;
@@ -454,7 +547,7 @@ elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     set(data.inp.T_value,'string','100 500');
 elseif val == 3 % Solar Orbiter with solar panel back side
     data.probe=solar_orbiter('probe');
-    data.sc=solar_orbiter('sc');
+    data.sc=solar_orbiter('sc');x
     p=solar_orbiter('plasma');
     data.plasma=p.perihelion;
     set(data.inp.probe.type,'Value',2); % cylindrical
@@ -484,6 +577,7 @@ elseif val == 4 % THEMIS
     set(data.inp.sc.total_area_value,'string','4.2');
     set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
     set(data.inp.sc.number_of_probes_value,'string','4');
+    set(data.inp.sc.probe_distance_to_spacecraft_value,'string','25');
     set(data.inp.Rsun_value,'string','1');
     set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
     data.probe.total_vs_sunlit_area=4;
@@ -507,6 +601,20 @@ elseif val == 5 % Cassini, sensor - 50mm sphere on 10.9 cm stub (diameter 6.35 m
     data.probe.total_vs_sunlit_area=4;
     set(data.inp.n_value,'string','0.1');
     set(data.inp.T_value,'string','1 1');
+end
+set(gcf,'userdata',data);
+end
+function setplasmaexample(hObj,event) %#ok<INUSD>
+irf_units
+val = get(hObj,'Value');
+data=get(gcf,'userdata');
+if val ==1 % do nothing, shows in menu 'Example spacecraft'
+elseif val ==2, % solar wind at 1AU
+    set(data.inp.Rsun_value,'string','1');
+    set(data.inp.probe.total_vs_sunlit_area_value,'string','4');
+    data.probe.total_vs_sunlit_area=4;
+    set(data.inp.n_value,'string','1');
+    set(data.inp.T_value,'string','100 500');
 end
 set(gcf,'userdata',data);
 end
