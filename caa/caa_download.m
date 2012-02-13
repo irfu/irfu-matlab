@@ -2,13 +2,17 @@ function download_status=caa_download(tint,dataset,flags)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
-%       CAA_DOWNLOAD(tint,dataset) - download dataset from given time interval
+%       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
+%
+%       CAA_DOWNLOAD(tint,dataset,'nowildcard') - downloads dataset exactly matching 'dataset'
 %
 %       CAA_DOWNLOAD(tint,'list') - list all datasets available
-%       CAA_DOWNLOAD(tint,'list:filter') - list all datasets corresponding to filter
+%       CAA_DOWNLOAD(tint,'list:dataset') - only list all datasets matching 'dataset'
+%
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download 
 %             returns 0 if request is put in the queue, 
 %             the information of queued requests is saved in file ".caa"
+%
 %       CAA_DOWNLOAD(url_string) - download CAA data zip file from the link "url_string"
 %
 % Downloads CAA data in CDF format into subdirectory "CAA/"

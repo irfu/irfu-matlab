@@ -11,6 +11,8 @@ function caa_load(varargin)
 %   load only time interval tint (good for large files, reads always from file)
 % CAA_LOAD('string1','string2',...,'list')
 %   list only the data objects that are on disk 
+% CAA_LOAD('string1','string2',...,'nowildcard')
+%   list only the data objects whos name are exactly string1, string2 etc.
 %
 %  Examples:
 %   caa_load
@@ -24,8 +26,7 @@ function caa_load(varargin)
 %
 % $Id$
 
-% add 'list' option
-% also 'tint=[irf_time([**]) irf_time([***])' option
+% add 'nowildcard' option to read in just specified data object
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -35,7 +36,9 @@ function caa_load(varargin)
 % ----------------------------------------------------------------------------
 flag_read_all=1;        % default load everything
 flag_only_list_files=0; % default do not only list files
-flag_filter = 0;
+flag_filter = 1;        % default is to filter according to names
+flag_exact_match =0;    % default is to filter not according to exact match
+
 if nargin > 0, % filter which variables to load
   i=1;
   variable_filter=cell(nargin,1);
@@ -54,8 +57,8 @@ if nargin > 0, % filter which variables to load
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'list'), % only list whats available
       flag_read_all=0;
       flag_only_list_files=1;
-      variable_filter(j:end)=[]; % remove last cells from variable file
-      break;
+    elseif ischar(varargin{j}) && strcmpi(varargin{j},'nowildcard'), % load only specified names
+      flag_exact_match=1;  
     elseif ischar(varargin{j})
       if strfind(varargin{j},'__') % variable name specified as input
         dd=regexp(varargin{j}, '__', 'split');
@@ -65,9 +68,10 @@ if nargin > 0, % filter which variables to load
       end
       variable_filter{i}(strfind(variable_filter{i},'-'))='_'; % substitute '-' to '_'
       i=i+1;
-      flag_filter=1;
     end
   end
+  if i==1, flag_filter=0;end % no names found
+  variable_filter(i:end)=[];
 end
 
 if isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
@@ -86,7 +90,14 @@ for j = 1:numel(dirs)
     flag_load_variable=1;
     if flag_filter==1, % if there is name filtering required check if to load variable
       for jj=1:length(variable_filter),
-        if isempty(strfind(var_name,variable_filter{jj})),
+        if flag_exact_match==1,
+            if strcmpi(var_name,variable_filter{jj}),
+                flag_load_variable=1;
+                break; % exact match found, read the variable
+            else
+                flag_load_variable=0;
+            end
+        elseif isempty(strfind(var_name,variable_filter{jj})),
           flag_load_variable=0;
         end
       end
