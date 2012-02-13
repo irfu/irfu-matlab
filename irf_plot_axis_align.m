@@ -15,12 +15,10 @@ function irf_plot_axis_align(nsubplot,h)
 % $Id$
 
 error(nargchk(0,2,nargin))
-if nargin<=1, % align all subplots, get subplot handles
-    h=irf_plot_get_subplot_handles;
-end
 
 % calculate the size of axis to which align
 if nargin==0, % no subplot number given, find smallest common limit for all axis
+    h=irf_plot_get_subplot_handles;
     hpostmp=zeros(numel(h),4);
     for j=1:length(h);
         hpostmp(j,:)=get(h(j),'position');
@@ -35,6 +33,7 @@ elseif nargin==1, % subplot number or handles to align are specified
         end
         xpos=[max(hpostmp(:,1)) min(hpostmp(:,3))];
     else % syntax irf_plot_axis_align(nsubplot) has been used
+        h=irf_plot_get_subplot_handles;
         hpostmp=get(h(nsubplot),'position');
         xpos=hpostmp([1 3]);
     end
@@ -50,3 +49,6 @@ for jj=1:length(h),
     hpos(3)=xpos(2);
     set(h(jj),'position',hpos);
 end
+
+%align ylabels
+irf_plot_ylabels_align(h)
