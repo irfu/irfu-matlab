@@ -119,7 +119,7 @@ end
 ht=zeros(1,length(labels)); % allocate handles
 tmp_ref_pos=position(1);
 for i=label_order, % start with first label first
-    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi','fontsize',12);
+    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi');
     set(ht(i),'color',colord(i,:));
     set(ht(i),'verticalalignment',value_vertical_alignment);
     set(ht(i),'horizontalalignment',value_horizontal_alignment);
@@ -136,13 +136,12 @@ for i=label_order, % start with first label first
     txt_pos=get(ht(i),'position'); 
     if strcmpi(value_horizontal_alignment,'left'),
         txt_pos(1)=txt_pos(1)-(txt_ext(1)-tmp_ref_pos); % how much to shift wrt to previous label
-        if i~=label_order(1), set(ht(i),'position',txt_pos);end       % make shift starting from 2nd label
+        set(ht(i),'position',txt_pos);       
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
     else
         txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
-        if i~=label_order(1), set(ht(i),'position',txt_pos); end
-        %set(ht(i),'position',txt_pos);
+        set(ht(i),'position',txt_pos);
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)-txt_ext(3)/max(1,numel(labels{i}));
     end
