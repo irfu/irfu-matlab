@@ -49,7 +49,7 @@ while nargs
         if flag_exist_dobj,
           dobj=evalin('caller',dobjname);
         else
-          caa_load(dobjname);
+          caa_load(dobjname,'nowildcard');
           dobj=eval(dobjname);
         end
       else
@@ -108,9 +108,9 @@ for j=1:length(varargin),
       disp('Dataobj exist in memory. NOT LOADING FROM FILE!')
     else
       if flag_read_all_data,
-        caa_load(dataobj_name);
+        caa_load(dataobj_name,'nowildcard');
       else
-        caa_load(dataobj_name,'tint',tint);
+        caa_load(dataobj_name,'tint',tint,'nowildcard');
       end
       if exist(dataobj_name,'var'), % success loading data
         eval(['dataobject=' dataobj_name ';']);
