@@ -160,10 +160,11 @@ end
 flag_test=0; % do not use caa_test_query
 flag_wildcard=1; % default is to use wildcard
 flag_check_if_there_is_data=1; % check if there are any at caa
-nonotify=''; % default is notify by email
+nonotify='&nonotify=1'; % default is not notify by email
 
 if nargin==3 && strcmpi(flags,'test'),
     flag_test=1;
+    nonotify=''; % notify also by email
 elseif nargin==3 && strcmpi(flags,'nowildcard'),
     flag_wildcard=0;
     flag_check_if_there_is_data=0;
