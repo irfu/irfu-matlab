@@ -536,9 +536,12 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         ySize = 5+5*sqrt(number_of_subplots);
         xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
         set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+        un=get(0,'units');
+        set(0,'units','pixels');
         sz=get(0,'screensize'); 
         xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
         set(gcf,'Position',[10 10 xSize*xx ySize*xx])
+        set(0,'units',un);
         clear xSize sLeft ySize yTop
     end
     clf;
