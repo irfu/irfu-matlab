@@ -162,8 +162,8 @@ help caa_download
 % To read downloaded CAA data
 tint=[irf_time([2006 9 27 17 14 0]) irf_time([2006 9 27 17 26 0])];
 if 0, % read s/c position and velocity
-  c_eval('[caaR?,~,R?]=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
-  c_eval('[caaV?,~,V?]=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'');');
+  c_eval('R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+  c_eval('V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
 end
 if 0, % read FGM data form all sc
  % c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''mat'');');
@@ -420,7 +420,7 @@ if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
     irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
   end
 end
-irf_colormap(hca,'default'); % execute for every axis you want to fix colormap
+irf_colormap(hca,'default'); % execute once to change the colormap or for every axis you want to fix the different colormap
 if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
   hca=irf_panel('C? CIS HIA/CODIF spectrogram');
   if ic~=2,
@@ -521,20 +521,18 @@ end
 if 1,   % PANEL: C?       WHISPER spectrogram
   hca=irf_panel('WHISPER spectrogram natural');
   varname=irf_ssub('Electric_Spectral_Power_Density__C?_CP_WHI_NATURAL',ic);
-  %[~,~,~,varunits]=c_caa_var_get(varname);
   varunits='(V/m)^2/Hz';
   % REMOVE 'fillspectgrogramgaps' flag in the next line if precise intervals of
   % WHISPER measurements are needed !!!!
   % If working with shorter intervals can also remove 'tint' option
   irf_plot(hca,varname,'tint',tint,'colorbarlabel',varunits,'fitcolorbarlabel','fillspectrogramgaps','nolabels');
-  % next lines are examples how to add plasma frequency lines
-  % density should be calculated before
-  hold(hca,'on');
-  c_eval('fpe=irf_plasma_calc(irf_resamp(B?,ncal_PEACE?),ncal_PEACE?,0,0,0,''Fpe'');',ic); % calculate electron gyrofrequency
-  irf_plot(hca,irf_tappl(fpe,'/1e3'),'-','linewidth',0.2,'color','k');
-  c_eval('fpemom=irf_plasma_calc(irf_resamp(B?,nPEACE),nPEACE,0,0,0,''Fpe'');',ic); % calculate electron gyrofrequency
-  irf_plot(hca,irf_tappl(fpemom,'/1e3'),'.','linewidth',0.2,'color','r');
-  hold(hca,'off');
+  if 1, % add plasma frequency lines
+      % density n should be calculated before
+      hold(hca,'on');
+      c_eval('fpe=irf_plasma_calc(irf_resamp(1,n),n,0,0,0,''Fpe'');',ic); % calculate electron gyrofrequency
+      irf_plot(hca,irf_tappl(fpe,'/1e3'),'-','linewidth',0.2,'color','k');
+      hold(hca,'off');
+  end
   % polish the panel
   caxis(hca,[-16 -11]);
   set(hca,'yscale','log','ytick',[3 4 5 1e1 20 30 50 ]);
@@ -547,6 +545,7 @@ if 1,   % PANEL: C?       RAPID electron spectrogram
   varunits={'log_{10} dF','1/cm^2 s sr keV'};
   irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
   caxis(hca,[0.51 4.49]);
+  ylabel(hca,'E [keV]');
   set(hca,'yscale','log');
   set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5])
   irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
