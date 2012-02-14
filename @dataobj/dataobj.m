@@ -16,6 +16,34 @@ function dobj = dataobj(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+persistent flag_using_nasa_patch_cdfread
+
+if isempty(flag_using_nasa_patch_cdfread) % check which cdfread is used, NASA may give errors
+    flag_using_nasa_patch_cdfread=0; % assuming as default that matlab cdfread is used
+    fid=fopen(which('cdfread'));
+    while 1
+        tline = fgetl(fid);
+        if strfind(tline,'Mike Liu')
+            fprintf('\n\n\n');
+            disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            disp(' You are using NASA cdfread patch!')
+            disp(' This may give errors reading in multidimensional data sets!')
+            disp(' Also option ''tint'' in routine databoj is disabled.');
+            disp(' We suggest you to use the MATLAB cdfread!');
+            disp(' To use MATLAB cdfread please remove path to NASA cdfread patch.');
+            disp(' You can execute and then continue:');
+            a=which('cdfread');
+            ai=strfind(a,'/');
+            disp(['> rmpath ' a(1:ai(end))]);
+            disp('> clear databoj');
+            disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            fprintf('\n\n\n');
+            flag_using_nasa_patch_cdfread=1;
+            break;
+        end
+    end
+    fclose(fid);
+end
 
 flag_read_all_data=1; % default read all data
 if nargin==0, action='create_default_object'; end
@@ -24,9 +52,10 @@ if nargin==3 && ...
     ischar(varargin{2}) && strcmp(varargin{2},'tint') && ...
     isnumeric(varargin{3}) && (length(varargin{3})==2),
   tint=varargin{3};
-  irf_log('fcal',['returnig time interval limited data!' irf_time(tint,'tint2iso')])
-            
-  flag_read_all_data=0;
+  if ~flag_using_nasa_patch_cdfread,
+      irf_log('fcal',['returnig time interval limited data!' irf_time(tint,'tint2iso')])
+      flag_read_all_data=0;
+  end
   action='read_data_from_file';
 end
 switch action
