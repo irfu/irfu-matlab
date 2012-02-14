@@ -439,12 +439,12 @@ if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
   end
   irf_legend(hca,{['C' num2str(ic)]},[0.98 0.1],'color','k')
 end
-if 0,   % PANEL: C?       EFW E ISR2
+if 1,   % PANEL: C?       EFW Ex,Ey ISR2 
   hca=irf_panel('EFW E ISR2 c?');
-  c_eval('irf_plot(hca,diE?)',ic);
+  c_eval('irf_plot(hca,diE?(:,1:3))',ic);
   ylabel(hca,'E [mV/m] ISR2');
   irf_zoom(hca,'ylim','smart');
-  irf_legend(hca,{'E_X','E_Y'},[0.02 0.49])
+  irf_legend(hca,{'E_X','E_Y'},[0.02 0.98])
   irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
 end
 if 1,   % PANEL: C?       EFW satellite potential
