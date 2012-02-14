@@ -70,7 +70,7 @@ end
 
 unit_format='normalized';
 colord=get(axis_handle, 'ColorOrder');
-cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
+cluster_colors=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1];[1 0 1];[1 1 0];[0 1 1]];
 
 % use smart alignment in upper part of panel vertical alignment='top',
 % when vertical position above 1 then again 'bottom', in bottom part use
