@@ -12,6 +12,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
 %  var=C_CAA_VAR_GET(varname,'mat') return only in matlab matrix format
+%  caa=C_CAA_VAR_GET(varname,'caa') equivalent to caa=C_CAA_VAR_GET(varname)
 %  dobj=C_CAA_VAR_GET(varname,'dobj') return only data object
 %  unit=C_CAA_VAR_GET(varname,'unit') return only units
 %
@@ -29,7 +30,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 
 %% Check input options
 flag_read_all_data=1;                    % default read all data
-flagvar=1;                               % default return variable 
+flagvar=1;                               % default return variable in caa form 
 flagdobj=0; if nargout>1, flagdobj=1;end % whether to get dataobj
 flagmat=0;  if nargout>2, flagmat=1; end % whether to calculate mat variable
 flagunit=0; if nargout>3, flagunit=1;end % whether to get the unit of variable
@@ -57,6 +58,8 @@ while nargs
       end
       showdep(dobj,varnames)
       return;
+    case 'caa' % return caa format only
+        % default behaviour, do nothing
     case 'mat' % return matlab format only
       flag_return_mat_only=1;
       flagmat=1;
