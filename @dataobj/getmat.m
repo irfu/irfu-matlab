@@ -15,7 +15,7 @@ fillv = getfillval(dobj,var_s);
 if ~ischar(fillv),
     data.data(data.data==fillv) = NaN;
 else
-    disp('fill value is character: discarding')
+    irf_log('dsrc','fill value is character: discarding')
 end
 
 dep = getdep(dobj,var_s);
