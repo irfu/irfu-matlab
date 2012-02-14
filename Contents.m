@@ -24,6 +24,7 @@
 %   irf_cdf_read    - read cdf files (see also caa_load for CAA cdf files)
 %   irf_disp_surf   - Interactively plot cold plasma dispersion surfaces
 %   irf_e_vxb       - Compute VxB and ExB/B^2
+%   irf_get_data    - Get different kind of data
 %   irf_gse2gsm     - GSE <> GSM
 %   irf_jz          - Estimate the current given velocity and magnetic field
 %   irf_mean        - put time series into mean field coordinates
@@ -39,6 +40,8 @@
 %   dataobj/plot    - plot data objects. help dataobj/plot.m
 %   irf_pl_mark     - Mark that time interval(s) with color backround
 %   irf_pl_number_subplots - number subplots by putting in each subplot 'a', 'b', 'c', etc.
+%   irf_plot_axis_align  - align x axis of different subplots
+%   irf_plot_ylabels_align - left align ylabels of different subplots 
 %   irf_tm          - time manager for plots created by irf_plot
 %   irf_zoom        - zoom in
 %   irf_figmenu     - Add to the current figure a menu with some useful commands
@@ -56,12 +59,12 @@
 %   c_4...          - different 4 spacecraft methods
 %   c_4_grad        - calculate linear gradient operators using 4 spacecraft technique
 %   c_4_j           - Calculate current from using 4 spacecraft technique
+%   c_coord_trans   - Convert vectors among GSE/GSM/DSC/DSI/ISR2 reference system
+%   c_fgm_staff_combine - combine FGM and STAFF data into one timeseries
 %   c_efw_scp2ne    - calculates the plasma density (Ne) for given EFW sc potential
 %   c_eval          - evaluate expression for list of spacecraft
-%   c_coord_trans   - Convert vectors among GSE/ISR2/DS reference system
 %   c_pl_flux_tube_distance - estimate the distance between flux tubes
 %   c_pl_sc_conf_xyz - Plot the configuration of Cluster in GSE/GSM    
-%   c_pl_sc_conf_lmn - Plot the configuration of Cluster in LMN (or arbitrary) coordinates  
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
 %   c_peace_plot .. - plot PEACE data (also reading and spectra routines)
