@@ -1,9 +1,9 @@
 function y = c_coord_trans(from,to,x,varargin)
-%C_COORD_TRANS  coordinate transform between GSE/DSC/DSI/ISR2 for Cluster
+%C_COORD_TRANS  coordinate transform between GSE/GSM/DSC/DSI/ISR2 for Cluster
 %
 % OUT = C_COORD_TRANS(FROM_CS,TO_CS,INP,[ARGS])
 %
-% Transform INP from FROM_CS to TO_CS.
+% Transform INP from coordinate system FROM_CS into coordinate system TO_CS.
 %
 % Input:
 %     FROM_CS,TO_CS - one of GSE/GSM/DSC/SR2/DSI/ISR2
@@ -19,7 +19,7 @@ function y = c_coord_trans(from,to,x,varargin)
 %       DSC=SR2  - despinned reference frame
 %
 % Examples:
-%     B1 = c_cs_trans('DSI','GSE',diB1,'cl_id',1);
+%     B1 = C_COORD_TRANS('DSI','GSE',diB1,'cl_id',1);
 %
 % $Id$
 
