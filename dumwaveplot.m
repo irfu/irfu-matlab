@@ -14,6 +14,12 @@ function dumwaveplot(t,Ex)
 % By Anders Tjulin (Last update 15/4-2003)
 %
   
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp('dumwaveplot routine will be removed!')
+disp('Use irf_wavelet!')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!')
+%remove 2012.06
+
   %% Check the input
 
   if nargin>2
