@@ -22,7 +22,21 @@ if nargin==1 && ischar(spacecraft)
 elseif   (nargin < 6)
     action='initialize';
 end
-if nargin==0, time=[2005 12 31 01 01 01];spacecraft=1;end
+if nargin==0, 
+    spacecraft=1;
+    if evalin('caller','exist(''tint'')'),
+        time=irf_time(evalin('caller','tint(1)'),'vector');
+    elseif exist('CAA','dir')
+        R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+        if numel(R)==0,
+            time=[2010 12 31 01 01 01];
+        else
+            time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
+        end
+    else
+        time=[2010 12 31 01 01 01];
+    end
+end
 if ~exist('ic','var') || isempty(ic), ic=spacecraft; end
 
 switch lower(action)
