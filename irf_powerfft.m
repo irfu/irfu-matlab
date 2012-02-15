@@ -1,5 +1,5 @@
 function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
-%CAA_POWERFFT  compute power spectrum
+%IRF_POWERFFT  compute power spectrum
 %
 % [t,power,f] = irf_powerfft(data,nfft,sfreq,[overlap])
 % [specrec] = irf_powerfft(data,nfft,sfreq,[overlap])
@@ -8,7 +8,7 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
 %		SPECREC.P - spectrum
 %		SPECREC.F - frequency
 %
-% See also FFT, CAA_SPECTROGRAM
+% See also FFT, IRF_SPECTROGRAM
 %
 % $Id$
 
