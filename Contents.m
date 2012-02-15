@@ -19,6 +19,7 @@
 %   irf_resamp      - Resample time series to the time line of another times series
 %   irf_tappl       - apply expression to data
 %   irf_tlim        - find a subinterval defined by time limits
+%   irf_wavelet     - fast wavelet spectrogram calculation
 %
 % Space/plasma physics specific routines
 %   irf_cdf_read    - read cdf files (see also caa_load for CAA cdf files)
