@@ -23,6 +23,7 @@ if isempty(flag_using_nasa_patch_cdfread) % check which cdfread is used, NASA ma
     fid=fopen(which('cdfread'));
     while 1
         tline = fgetl(fid);
+        if ~ischar(tline), break, end
         if strfind(tline,'Mike Liu')
             fprintf('\n\n\n');
             disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
