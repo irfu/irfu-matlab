@@ -16,11 +16,9 @@ if nargs == 0, % show only help
     return
 end
 
-% put focus on axis
-if isempty(ax),
-    axes(gca);
-else
-    axes(ax);
+% check which axis to apply
+if isempty(ax), 
+    ax=gca;
 end
 
 colormap_name=args{1};
@@ -31,13 +29,16 @@ if nargs > 0,
         case 'poynting'
             it=0:.02:1;it=it(:);
             cmap=[ [0*it flipud(it) it];[it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
+        case 'solo'
+            it=0:.02:1;it=it(:);
+            cmap=[ [it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
     end
 end
 
 if nargout == 0, % apply the colormap and freeze
     colormap(cmap);
     freezeColors;
-    hcb = cbhandle;
+    hcb = cbhandle(ax);
     if hcb, % workaround cbfreeze bug that cbfreeze removes cblabel
         hy=get(hcb,'ylabel');
         ylabel_string=get(hy,'string');
