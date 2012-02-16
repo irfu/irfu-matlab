@@ -22,23 +22,25 @@ end
 
 nvars = size(dobj.vars,1);
 if nvars>0
-	for v=1:nvars
-		if strcmpi(dobj.vars{v,1},var_s) || strcmpi(dobj.vars{v,2},var_s)
-			res = dobj.data.(dobj.vars{v,1});
-			res.name = var_s;
-			% Add Variable attributes to the returned variable
-            variable_attribute_names=fieldnames(dobj.VariableAttributes);
-            for j=1:length(variable_attribute_names),
-                current_attribute=dobj.VariableAttributes.(variable_attribute_names{j});
-                for jj=1:size(current_attribute,1),
-                    if strcmpi(dobj.vars{v,2},current_attribute{jj,1})
-                        res.(variable_attribute_names{j})=current_attribute{jj,2};
-                    end
-                end
+    ivar=find(sum(strcmp(var_s,dobj.vars(:,1:2)),2)>0); % find variable
+    if isempty(ivar)
+        disp(['No such variable : ' var_s])
+        res = [];
+        return;
+    else
+        res = dobj.data.(dobj.vars{ivar,1});
+        res.name = var_s;
+        % Add Variable attributes to the returned variable
+        variable_attribute_names=fieldnames(dobj.VariableAttributes);
+        for j=1:length(variable_attribute_names),
+            iattr=find(strcmpi(dobj.vars{ivar,2},...
+                dobj.VariableAttributes.(variable_attribute_names{j})(:,1))==1);
+            if iattr,
+                res.(variable_attribute_names{j})=dobj.VariableAttributes.(variable_attribute_names{j}){iattr,2};
             end
-            return
-		end
-	end
+        end
+        return
+    end
 end
 
 disp(['No such variable : ' var_s])
