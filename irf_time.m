@@ -34,7 +34,20 @@ function t_out = irf_time(t_in,flag)
 
 % 'tint2iso'
 
-if nargin==1,
+persistent tlastcall strlastcall
+if nargin==0, % return string with current time (second precision)
+    % datestr is slow function therefore if second has not passed use the old
+    % value of string as output without calling datestr function. Increases speed!
+    if isempty(tlastcall),
+        tlastcall=0; % initialize
+    end
+    if 24*3600*(now-tlastcall)>1,
+        tlastcall=now;
+        strlastcall=irf_time(now,'date2yyyy-mm-dd hh:mm:ss');
+    end
+    t_out=strlastcall;
+    return
+elseif nargin==1,
     flag='vector2epoch';
 end
 
@@ -118,22 +131,25 @@ switch lower(flag)
         end
         t_out=secs;
     case 'epoch2vector'
-        t = datevec(irf_time(fix(double(t_in(:))),'epoch2date'));
+        t_in=double(t_in(:));
+        t = datevec(irf_time(fix(t_in),'epoch2date'));
+        % THE HACK BELOW IS COMMENTED OUT! IF THERE ARE 0.01s PRECISION
+        % PROBLEMS, THEY NEE TO BE UNDERSTOOD!!!!!
         % The following lines are needed to work aroung the problem with numerical
         % accuracy in conversion from isdat epoch to matlab date.
         % We give whole seconds to datevec(epoch2date)) and expect whole seconds in
         % return. Bu we get something different, and that is why we use round as we
         % expect the error to be on a level of .01 sec.
-        t(:,6) = round(t(:,6));
-        ii = find(t(:,6)==60);
-        if ~isempty(ii)
-            t(ii,6) = 0;
-            t_tmp = datevec(irf_time(fix(double(t_in(ii)+1)),'epoch2date'));
-            t(ii,1:5) = t_tmp(:,1:5);
-        end
+%         t(:,6) = round(t(:,6));
+%         ii = find(t(:,6)==60);
+%         if ~isempty(ii)
+%             t(ii,6) = 0;
+%             t_tmp = datevec(irf_time(fix(t_in(ii)+1),'epoch2date'));
+%             t(ii,1:5) = t_tmp(:,1:5);
+%         end
         % Correct fractions of second. This actually preserves
         % accuracy ~1e-6 sec for year 2004.
-        t(:,6) = t(:,6) + double(t_in(:)) - fix(double(t_in(:)));
+        t(:,6) = t(:,6) + t_in - fix(t_in);
         t_out = t;
     case {'epoch2iso','epoch2isoshort'}
         d = irf_time(t_in,'vector');
@@ -168,15 +184,19 @@ switch lower(flag)
         
     case 'epoch2yyyymmdd'
         t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d',t(1),t(2),t(3));
+        t_out=num2str(t(:,1:3),'%04d%02d%02d');
         
     case 'epoch2yyyymmddhh'
         t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d%02d',t(1),t(2),t(3),t(4));
+        t_out=num2str(t(:,1:3),'%04d%02d%02d%02d');
         
     case 'epoch2yyyymmddhhmm'
         t=irf_time(t_in,'epoch2vector');
-        t_out=sprintf('%04d%02d%02d%02d%02d',t(1),t(2),t(3),t(4),t(5));
+        t_out=num2str(t(:,1:5),'%04d%02d%02d%02d%02d');
+                  
+    case 'epoch2yyyy-mm-dd hh:mm:ss'
+        d=irf_time(fix(t_in),'epoch2vector');
+        t_out=num2str(d,'%04d-%02d-%02d %02d:%02d:%02.0f');
                   
     case 'epoch2doy'
           t_first_january_vector=irf_time(t_in,'vector');
