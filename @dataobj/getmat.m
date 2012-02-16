@@ -24,8 +24,10 @@ dim = length(data.variance(3:end));
 if dim <=1
     plot_data = double(data.data)';
     
-    if isfield(dep,'DEPEND_O'), res = [dep.DEPEND_O plot_data'];
-    else res = plot_data;
+    if isfield(dep,'DEPEND_O'), % add time column as first column
+        res = [dep.DEPEND_O plot_data'];
+    else                        % time variable requested, return column vector
+        res = plot_data(:);
     end
 else
     for d = 1:size(dep.DEPEND_X,1)
