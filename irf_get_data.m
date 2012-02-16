@@ -8,9 +8,13 @@ function f = irf_get_data( tint, parameter , database, format)
 % f=IRF_GET_DATA(parameter,database) checking if tint defined in calling environment and using that one 
 %       if tint not defined reading all data
 %
+% f=IRF_GET_DATA(parameter,database,format) get data in specified format (specific for databases)
+%
 % database:  'omni2'    - 1h resolution OMNI2 data (default), see also IRF_GET_DATA_OMNI
 %            'omni_min' - 1min resolution OMNI data
 %            'caa'      - Cluster Active Archive, see also C_CAA_VAR_GET
+%                         formats: 'caa','mat','units'
+%
 % Examples:
 %   tint=[irf_time([2006 01 01 1 1 0]) irf_time([2006 01 02 23 59 0])];
 %   ff= irf_get_data(tint,'b,bx,bygsm','omni_min');
