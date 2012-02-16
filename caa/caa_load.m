@@ -39,6 +39,10 @@ flag_only_list_files=0; % default do not only list files
 flag_filter = 1;        % default is to filter according to names
 flag_exact_match =0;    % default is to filter not according to exact match
 
+if nargin==0, 
+    flag_filter=0; % load all variables, no filtering
+end
+
 if nargin > 0, % filter which variables to load
   i=1;
   variable_filter=cell(nargin,1);
@@ -105,12 +109,13 @@ for j = 1:numel(dirs)
         disp(var_name);
         flag_load_variable=0;
       end
-    end
-    if flag_filter == 0 && isempty(variable_filter),
-      flag_load_variable=0;
-      if flag_only_list_files,
-        disp(var_name);
-      end
+    else % work on all variables 
+        if flag_only_list_files,
+            flag_load_variable=0;
+            disp(var_name);
+        else
+            flag_load_variable=1; 
+        end
     end
 
     if flag_load_variable,
