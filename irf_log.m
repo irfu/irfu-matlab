@@ -114,7 +114,6 @@ if log_ok
         log_ids = sprintf('%s(%d) : %s',sta(idx).name,sta(idx).line,log_ids);
         clear sta curr
     end
-    d_str = ['[' datestr(now,31) '][' log_ids '] ' log_msg];
     
     if isempty(d_out) || ~strcmp(d_out_prev,IRF_LOG_OUT)
         d_out_prev = IRF_LOG_OUT;
@@ -134,9 +133,11 @@ if log_ok
         end
     end
     if flag_irf_log_ON
-        if strcmp(d_out,'screen')
+        if strcmp(d_out,'screen') % write to screen, do not include time
+            d_str = ['[' log_ids '] ' log_msg];
             disp(d_str)
-        else
+        else % write to file, include time in log string
+            d_str = ['[' irf_time '][' log_ids '] ' log_msg];
             fid = fopen(d_out,'a');
             if fid > 0
                 fprintf(fid,'%s\n',d_str);
