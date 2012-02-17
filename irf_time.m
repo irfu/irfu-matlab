@@ -140,13 +140,13 @@ switch lower(flag)
         % We give whole seconds to datevec(epoch2date)) and expect whole seconds in
         % return. Bu we get something different, and that is why we use round as we
         % expect the error to be on a level of .01 sec.
-%         t(:,6) = round(t(:,6));
-%         ii = find(t(:,6)==60);
-%         if ~isempty(ii)
-%             t(ii,6) = 0;
-%             t_tmp = datevec(irf_time(fix(t_in(ii)+1),'epoch2date'));
-%             t(ii,1:5) = t_tmp(:,1:5);
-%         end
+        t(:,6) = round(t(:,6));
+        ii = find(t(:,6)==60);
+        if ~isempty(ii)
+            t(ii,6) = 0;
+            t_tmp = datevec(irf_time(fix(t_in(ii)+1),'epoch2date'));
+            t(ii,1:5) = t_tmp(:,1:5);
+        end
         % Correct fractions of second. This actually preserves
         % accuracy ~1e-6 sec for year 2004.
         t(:,6) = t(:,6) + t_in - fix(t_in);
