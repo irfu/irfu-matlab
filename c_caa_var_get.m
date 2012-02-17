@@ -108,7 +108,7 @@ for j=1:length(varargin),
     if flag_read_all_data && evalin('caller',['exist(''' dataobj_name ''',''var'')']),
       dataobject=evalin('caller',dataobj_name);
       jloaded=jloaded+1;
-      disp('Dataobj exist in memory. NOT LOADING FROM FILE!')
+      irf_log('dsrc',[dataobj_name ' exist in memory. NOT LOADING FROM FILE!'])
     else
       if flag_read_all_data,
         caa_load(dataobj_name,'nowildcard');
