@@ -568,7 +568,10 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 				irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
 			end
 		case 3
-			if start_time>toepoch([2003 9 29 00 27 0]) || ...
+			if start_time>toepoch([2011 6 01 09 30 0])
+				pl = [];
+				irf_log('dsrc',sprintf('            !No diff measurement on sc%d',cl_id));
+			elseif start_time>toepoch([2003 9 29 00 27 0]) || ...
 					(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
 					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
 					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) 
@@ -579,6 +582,7 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
 			end
 	end
+	if isempty(pl), out_data = []; cd(old_pwd), return, end
 
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
@@ -696,7 +700,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
 			end
 		case 3
-			if start_time>toepoch([2002 07 29 09 06 59 ])
+			if start_time>toepoch([2011 6 01 09 30 0])
+				% p3 failure
+				probe_list = [2 4];
+				irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
+			elseif start_time>toepoch([2002 07 29 09 06 59 ])
 				% p1 failure
 				probe_list = 2:4;
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
