@@ -57,7 +57,7 @@ elseif dtime>60*10
 elseif dtime>60*5
   dticv = 120;
   mtics = 4;
-elseif dtime>60*3
+elseif dtime>=60*3
   dticv = 60;
   mtics = 6;
 elseif dtime>60*2
