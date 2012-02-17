@@ -165,6 +165,8 @@ switch action
               data_records_within_interval=data_all_records(records_within_interval,:,:);
             elseif numel(size(data_all_records))==4,
               data_records_within_interval=data_all_records(records_within_interval,:,:,:);
+            elseif numel(size(data_all_records))==5,
+              data_records_within_interval=data_all_records(records_within_interval,:,:,:,:);
             end
             dobj.data.(dobj.vars{v,1}).data = data_records_within_interval;
             dobj.data.(dobj.vars{v,1}).nrec = numel(records_within_interval);
