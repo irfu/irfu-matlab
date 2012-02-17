@@ -18,7 +18,9 @@ end
 
 % check which axis to apply
 if isempty(ax), 
-    ax=gca;
+    axes(gca);
+else
+    axes(ax(1));
 end
 
 colormap_name=args{1};
