@@ -111,10 +111,7 @@ if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end,
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
     
-    for jj=1:ndata
-        %		specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = 1e-15;
-        specrec.p{comp}(jj,isnan(specrec.p{comp}(jj,:))) = NaN;
-    end
+    specrec.p{comp}(isnan(specrec.p{comp})) = NaN;
     
     ud = get(gcf,'userdata');
     ii = find(~isnan(specrec.t));
