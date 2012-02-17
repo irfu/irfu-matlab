@@ -40,7 +40,7 @@ end
 if nargout == 0, % apply the colormap and freeze
     colormap(cmap);
     freezeColors;
-    hcb = cbhandle(ax);
+    hcb = cbhandle;
     if hcb, % workaround cbfreeze bug that cbfreeze removes cblabel
         hy=get(hcb,'ylabel');
         ylabel_string=get(hy,'string');
