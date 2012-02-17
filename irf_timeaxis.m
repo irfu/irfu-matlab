@@ -77,7 +77,7 @@ if ~exist('t_start_epoch','var') || ischar(t_start_epoch) || flag_usefig
 end
 
 for j=1:numel(h)
-    xlabel(h(j),'');
+%    xlabel(h(j),'');
     tint = get(h(j),'xlim') + t_start_epoch;
     res  = timeaxis(tint);
     set( h(j), 'XTick', res{1} - t_start_epoch );
