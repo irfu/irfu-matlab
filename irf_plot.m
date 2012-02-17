@@ -75,6 +75,9 @@ if isempty(ax), % if empty axis use current axis GCA
         irf_plot(1);
     end
     ax=gca;
+    inp_name=inputname(1);
+else
+    inp_name=inputname(2);
 end
 args=args(2:end);
 original_args=args;
@@ -206,11 +209,11 @@ if iscell(x), % Plot several variables
             flag_subplot = 2;
     end
 else
-    if isempty(inputname(1))
+    if isempty(inp_name)
         var_desc{1} = {};
     else    
         try % try to obtain variable description
-            var_desc{1} = c_desc(inputname(1));
+            var_desc{1} = c_desc(inp_name);
         catch %#ok<CTCH>
             var_desc{1} = {};
         end
