@@ -122,7 +122,7 @@ for j = 1:numel(dirs)
       try
         irf_log('dsrc',['caa_load ' var_name]);
         if flag_read_all && evalin('caller',['exist(''' var_name ''',''var'')']),
-          irf_log('dsrc','Variable exist in memory. NOT LOADING FROM FILE!')
+          irf_log('dsrc',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
         else
           if flag_read_all,
             evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
