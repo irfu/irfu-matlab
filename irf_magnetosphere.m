@@ -1,4 +1,4 @@
-function [x,y] = irf_magnetosphere(model,Dp,Bz)
+function [x,y,omni] = irf_magnetosphere(model,Dp,Bz)
 %IRF_MAGNETOSPHERE Return the location of magnetopause
 %  
 %  [X,Y]=IRF_MAGNETOSPHERE(model,Dp,Bz)
@@ -9,7 +9,15 @@ function [x,y] = irf_magnetosphere(model,Dp,Bz)
 %       Dp    - dynamic pressure
 %       Bz    - IMF Bz GSM
 %
-%  [X,Y]=IRF_MAGNETOSPHERE(model,time) - get solar wind parameters online form OMNI  database
+%  [X,Y]=IRF_MAGNETOSPHERE(model,time) 
+%       get solar wind parameters online form OMNI  database
+%       if no OMNI data available, return empty dataset
+%
+%  [X,Y]=IRF_MAGNETOSPHERE(model)
+%       use default parameters, Dp=2nPa, Bz=0nT
+% 
+%  [X,Y,OMNI]=IRF_MAGNETOSPHERE(model,time) 
+%       return OMNI data used in variable OMNI
 %
 % Examples:
 %  [x,y] = irf_magnetosphere('mp_shue1998',10,-2)
@@ -18,23 +26,35 @@ function [x,y] = irf_magnetosphere(model,Dp,Bz)
 
 persistent dpbz
 
+if nargout>0, % default return empty variables
+    x=[];y=[];omni=[];
+end
+
 if nargin == 1, % use default solar wind values
     Dp=2;
-    Bz=0;
+    Bx=0;By=0;Bz=0;
 elseif nargin == 2, % IRF_MAGNETOPAUSE(model, time)
     t=Dp;
     tint=t + [-2 2]*3600;
     if isempty(dpbz) || t<dpbz(1,1) || t>dpbz(end,1),
-        dpbz=irf_get_data(tint,'P,bzgsm','omni');
+        dpbz=irf_get_data(tint,'P,bzgsm,bx,bygsm','omni');
     end
-    if isempty(dpbz),
-        Dp=2;Bz=0;
+    if isempty(dpbz), % no OMNI data, return empty 
+        return
     else
         dpbz_t=irf_resamp(dpbz,t);
         Dp=dpbz_t(2);
-        Bz=dpbz_t(2);
+        Bz=dpbz_t(3);
+        Bx=dpbz_t(4);
+        By=dpbz_t(5);
+        if isnan(Dp) || isnan(Bz) || isempty(Dp) || isempty(Bz)
+            return
+        end
     end
+elseif nargin==3, % specified Dp and Bz
+    Bx=0;By=0;
 end
+omni.Dp=Dp;omni.Bz=Bz;omni.Bx=Bx;omni.By=By;
 
 switch lower(model)
     case 'mp_shue1998'
