@@ -27,7 +27,7 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 % this stuff is worth it, you can buy me a beer in return.   Andris Vaivads
 % ----------------------------------------------------------------------------
 
-if any(strfind(variable_name,'PADMAR'))  % PEACE variable
+if any(strfind(variable_name,'PADMAR'))  % PEACE variables PADMARL and PADMARH
     %% PADMARL and PADMARH need to be treated specially in order to recover 
     % the subspin timing
     % PEACE sector angles are given in SR2 reference frame!
