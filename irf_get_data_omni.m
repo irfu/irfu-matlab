@@ -125,7 +125,7 @@ for jj=1:length(istart)
         case 'avgb', var_number_omni2=9;var_number_omni1min=-1;
         case 'blat', var_number_omni2=10;var_number_omni1min=-1;
         case 'blong', var_number_omni2=11;var_number_omni1min=-1;
-        case {'bx','bxgse'}, var_number_omni2=12;var_number_omni1min=14;
+        case {'bx','bxgse','bxgsm'}, var_number_omni2=12;var_number_omni1min=14;
         case {'by','bygse'}, var_number_omni2=13;var_number_omni1min=15;
         case {'bz','bzgse'}, var_number_omni2=14;var_number_omni1min=16;
         case 'bygsm', var_number_omni2=14;var_number_omni1min=17;
