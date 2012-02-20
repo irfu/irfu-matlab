@@ -173,7 +173,7 @@ elseif regexp(vs,'^wE[1-4]p(12|32|34)')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % spin fits E p12 and p34
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(i)?diEs[1-4]p(12|34)')==1
+elseif regexp(vs,'^(i)?diEs[1-4]p(12|32|34)')==1
 	
 	
 	cl_id = vs(5);
@@ -280,8 +280,8 @@ elseif regexp(vs,'^(i)?(diE[1-4]|diEs[1-4])$')==1
 		if vs(4)=='s', sen = 'spin fit';
         else sen = 'p1234';
 		end
-		var_labels = {'Ex','Ey','Ez','(B,spin)'};
-		var_units =  {'mV/m','mV/m','mV/m','deg'};
+		var_labels = {'Ex','Ey','Ez','(B,spin)','sdev'};
+		var_units =  {'mV/m','mV/m','mV/m','deg','unitless'};
 		com = com_Ez;
 	end
 	vs = vs_old;
