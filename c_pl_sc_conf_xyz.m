@@ -114,14 +114,6 @@ switch lower(action)
             c_eval('R?=[];',data.sc_list);
         end
         c_eval('data.R?=R?;',data.sc_list);
-        if isfield(data,'omni')
-            if data.t < data.omni(1,1) || data.t > data.omni(end,1)
-                omni=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
-            end
-        else
-            omni=irf_get_data(data.t+[-2 2]*3600,'p,bx,bygsm,bzgsm','omni');
-            data.omni=omni;
-        end
         set(gcf,'userdata',data);
         return;
         
@@ -280,6 +272,7 @@ switch lower(action)
         
     case 'plot'
         data=get(gcf,'userdata');
+        flag_using_omni_data=[]; % default that there is no plot involving OMNI data
         c_eval('rr?=irf_resamp(data.r?,data.t);',data.sc_list);
         R=0; c_eval('R=R+rr?/length(data.sc_list);',data.sc_list);
         c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=data.t;dr?=irf_abs(dr?);x?=dr?;',data.sc_list);
@@ -302,7 +295,7 @@ switch lower(action)
                 ylabel(h(1),['Z [R_E] '  coord_label]);
                 grid(h(1),'on')
                 set(h(1),'xdir','reverse')
-                add_magnetopause(h(1));
+                [flag_using_omni_data,omni]=add_magnetopause(h(1));
                 add_bowshock(h(1));
                 add_Earth(h(1));
                 
@@ -580,10 +573,13 @@ switch lower(action)
             set(ht,'interpreter','none');
             htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
             set(htime,'fontsize',12);
-            if isfield(data,'omni')
-                if ~isempty(data.omni) && ~strcmpi(data.plot_type,'lmn'),
-                    fft=irf_resamp(data.omni,data.t);
-                    irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(fft(2),'%6.1f') '[nPa],\newline Bx=' num2str(fft(3),'%6.1f') ',By=' num2str(fft(4),'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+            if ~isempty(flag_using_omni_data)
+                if ~strcmpi(data.plot_type,'lmn'),
+                    if flag_using_omni_data==1, % succeeded downloading OMNI
+                        irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+                    elseif flag_using_omni_data==0, % did not succeeded downloading OMNI
+                        irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+                    end
                 end
             end
         end
@@ -667,16 +663,30 @@ for ic=1:numel(sc_list)
 end
 answer=1;
 
-function add_magnetopause(h)
+function [flag_omni,omni]=add_magnetopause(h)
+% flag_omni=1 - using OMNI, flag_omni=0 - using default values
 t=getfield(get(gcf,'userdata'),'t');
-[x,y]=irf_magnetosphere('mp_shue1998',t);
+[x,y,omni]=irf_magnetosphere('mp_shue1998',t);
+if isempty(x), 
+    flag_omni=0;
+    [x,y,omni]=irf_magnetosphere('mp_shue1998');
+else
+    flag_omni=1;
+end
 x=[fliplr(x) x];
 y=[fliplr(y) -y];
 line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
 
-function add_bowshock(h)
+function [flag_omni,omni]=add_bowshock(h)
+% flag_omni=1 - using OMNI, flag_omni=0 - using default values
 t=getfield(get(gcf,'userdata'),'t');
-[x,y]=irf_magnetosphere('bs',t);
+[x,y,omni]=irf_magnetosphere('bs',t);
+if isempty(x), 
+    flag_omni=0;
+    [x,y,omni]=irf_magnetosphere('bs');
+else
+    flag_omni=1;
+end
 x=[fliplr(x) x];
 y=[fliplr(y) -y];
 line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
