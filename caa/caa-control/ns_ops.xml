@@ -4878,6 +4878,12 @@ TBD       = TBD
 		<res>
 		</res>
 	</operation>
+        <operation c1="yes" start="2010-06-08T06:36:00Z" dt="10800" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
+                </res>
+        </operation>
         <operation c3="yes" start="2010-06-08T15:38:00Z" dt="7200" plan="no" sdesc="bad_data">
                 <desc>Probe latchup</desc>
                 <res>
@@ -4890,21 +4896,264 @@ TBD       = TBD
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02554.html">esoc 100611</link>
                 </res>
         </operation>
+        <operation c1="yes" start="2010-06-10T07:23:00Z" dt="10800" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
+                </res>
+        </operation>
+         <operation c1="yes" start="2010-06-12T07:42:00Z" dt="12600" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02666.html">Colette 100706</link>
+                </res>
+        </operation>
+       <operation c1="yes" start="2010-06-14T07:49:00Z" dt="12540" plan="no" sdesc="no_data">
+                <desc>WEC off for HPA in high power mode.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02653.html">Keith 100702</link>
+                </res>
+        </operation>
         <operation c2="yes" start="2010-06-16T11:36:00Z" dt="8400" plan="no" sdesc="no_data">
                 <desc>SSR controller failure</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02577.html">Juergen 1006617</link>
                 </res>
         </operation>
-
+         <operation c1="yes" start="2010-06-17T06:59:00Z" dt="8640" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02690.html">Colette 100714</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-06-18T10:35:00Z" dt="6840" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02690.html">Colette 100714</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-06-21T22:17:00Z" dt="60" plan="no" sdesc="bad_data">
+                <desc>Battery crack.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02614.html">Iannis 1006624</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-06-22T09:55:00Z" dt="11700" plan="no" sdesc="no_data">
+                <desc>Data loss due to STU switchover. AR-171</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02588.html">Juergen 1006622</link>
+                </res>
+        </operation>
+         <operation c1="yes" start="2010-06-22T19:12:00Z" dt="118800" plan="no" sdesc="no_data">
+                <desc>EFW off for unclear reason. Problems with restarting due WECto inrush current. Long data gap.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02698.html">Colette 100715</link>
+                </res>
+        </operation>
+       <operation c3="yes" start="2010-06-29T04:17:32Z" dt="122400" plan="no" sdesc="no_data">
+                <desc>Long data gap from SSR failure.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02664.html">Juergen 100706</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-07-05T18:14:00Z" dt="4200" plan="no" sdesc="bad_data">
+                <desc>APPL Buffer Overflow. HX data is bad.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02700.html">Colette 100716</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-07-05T18:15:00Z" dt="3600" plan="no" sdesc="bad_data">
+                <desc>APPL Buffer Overflow.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02700.html">Colette 100716</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-07-06T11:53:00Z" dt="4020" plan="no" sdesc="bad_data">
+                <desc>WEC monitoring 445.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02702.html">Colette 100716</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-07-15T06:06:30Z" dt="75600" plan="no" sdesc="no_data">
+                <desc>DWP SEU upset</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02751.html">Keith 100802</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-07-17T07:00:00Z" dt="156600" plan="no" sdesc="no_data">
+                <desc>Obscure DWP malfunction.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02742.html">Keith 100729</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-07-30T01:17:00Z" dt="53400" plan="no" sdesc="bad_data">
+                <desc>Bad data. WEC in emergency mode.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02753.html">Keith 100802</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00033.html">Colette 100903</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-08-14T02:31:00Z" dt="20400" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-08-15T03:28:00Z" dt="7200" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-08-15T16:32:00Z" dt="27000" plan="no" sdesc="no_data">
+                <desc>WEC off by multiple monitoring entries.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-08-16T08:28:21Z" dt="3600" plan="no" sdesc="no_data">
+                <desc>WEC was Power cycle after the CLU_AR-175 (Uncommanded WEC LCL-B On).</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-08-20T05:14:36Z" dt="304200" plan="no" sdesc="no_data">
+                <desc>WEC off by multiple monitoring entries. Long data gap while teams asked to analyse WBD temp OOL(3 days).</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-08-20T23:52:00Z" dt="7700" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00063.html">Colette 100914</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-08-26T12:55:00Z" dt="387300" plan="no" sdesc="bad_data">
+                <desc>Problem with EFW-DWP interface. Data lost for 4.5 days until 2010-08-31 00:30.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00005.html">Keith 100827</link>
+                </res>
+        </operation>
+        <operation c4="yes" start="2010-08-31T16:55:00Z" dt="27300" plan="no" sdesc="no_data">
+                <desc>WEC off by multiple monitoring groups.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00017.html">Jefferys 100901</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-09-01T15:20:00Z" dt="24120" plan="no" sdesc="no_data">
+                <desc>DWP latchup. Data loss until 2010-09-04 10:20.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00029.html">Keith 100903</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-09-09T22:00:00Z" dt="66600" plan="no" sdesc="bad_data">
+                <desc>WEC in emergency mode.</desc>
+                <res>
+                    <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00051.html">Keith 100910</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-09-16T22:18:00Z" dt="18000" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-09-181T14:30:00Z" dt="172800" plan="no" sdesc="no_data">
+                <desc>WEC problems. 2 days of data lost.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-09-28T21:44:00Z" dt="14400" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-10-02T21:16:00Z" dt="18000" plan="yes" sdesc="no_data">
+                <desc>HPA /WEC Power Sharing procedure</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_data">
+                <desc>SSR latchup. CLU_AR-177.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00201.html">Juergen 101026</link>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-10-20T08:09:00Z" dt="12600" plan="no" sdesc="no_data">
+                <desc>EFW switched off for unknown reason.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00177.html">Per-Arne 101021</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-10-23T16:30:00Z" dt="80100" plan="no" sdesc="bad_data">
+                <desc>EFW probe latchup and telemetry problems.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00188.html">Per-Arne 101025</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-10-24T19:30:00Z" dt="162900" plan="no" sdesc="bad_data">
+                <desc>Bad biasing on P4, looks like other problems, too. Very bad data.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00188.html">Per-Arne 101025</link>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00197.html">Per-Arne 101026</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-10-26T18:14:00Z" dt="10800" plan="no" sdesc="no_data">
+                <desc>CTU switchover. CLU_AR-179</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00211.html">Silvia 101028</link>
+                </res>
+        </operation>
+         <operation c4="yes" start="2010-10-27T00:57:00Z" dt="23280" plan="no" sdesc="no_data">
+                <desc>CTU switchover. CLU_AR-180</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00211.html">Silvia 101028</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-11-02T23:40:00Z" dt="88800" plan="no" sdesc="bad_data">
+                <desc>Probe latchups, then a DWP upset</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00230.html">Keith 101104</link>
+                </res>
+        </operation>
+        <operation c1="yes" start="2010-11-07T11:10:00Z" dt="73800" plan="no" sdesc="bad_data">
+                <desc>Choppy telemetry, digital errors.</desc>
+                <res>
+                </res>
+        </operation>
+        <operation c2="yes" start="2010-11-08T11:10:00Z" dt="43200" plan="no" sdesc="no_data">
+                <desc>WEC off by monitoring 444/445/446.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00244.html">Keith 101109</link>
+                </res>
+        </operation>
         <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
                 <desc>Data loss due to ground segment problem.</desc>
                 <res>
                     <link href="AR-2733.pdf">AR-2733</link>
                 </res>
         </operation>
-
-
+        <operation c3="yes" start="2010-11-22T02:10:00Z" dt="64800" plan="no" sdesc="no_data">
+                <desc>WEC off by monitoring 444.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00375.html">Colette 101224</link>
+                </res>
+        </operation>
+        <operation c3="yes" start="2010-11-28T12:09:00Z" dt="25200" plan="no" sdesc="no_data">
+                <desc>WEC off by multiple monitoring entries.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00378.html">Colette 101230</link>
+                </res>
+        </operation>
 	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_data">
 		<desc>WEC switched off by spacecraft monitoring and could
 	not be switched on again by standard procedures. Investigations 
@@ -4932,8 +5181,8 @@ TBD       = TBD
                 <res>
                 </res>
         </operation>
-<operation c3="yes" start="2011-06-01T09:31:24Z" dt="-1" plan="yes" sdesc ="tbd">
-                <desc>EFW operational again after WEC on SC3 was brought back to life.</desc>
+<operation c3="yes" start="2011-06-01T09:31:24Z" dt="-1" plan="yes" sdesc ="no_p3">
+                <desc>EFW operational again after WEC on SC3 was brought back to life. However, P3 does not work any longer after this date.</desc>
                 <res>
                 </res>
         </operation>
@@ -5213,5 +5462,63 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
+                        
+<operation start="2012-02-25T09:05:00Z" dt="77100" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+                        
+<operation start="2012-02-27T15:05:00Z" dt="85200" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-02-29T21:35:00Z" dt="80400" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+                        
+<operation start="2012-03-03T05:35:00Z" dt="75500" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-03-04T02:51:00Z" dt="280" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias stepping (slow sweep) on P2 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias
+ steps of -4 nA from -12 nA to -140 nA).</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
+<operation start="2012-03-04T02:54:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias steps of -12 nA from -104 nA to -500 nA).</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
+<operation start="2012-03-04T02:55:36Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+                        
+<operation start="2012-03-05T10:05:00Z" dt="84600" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation start="2012-03-07T17:35:00Z" dt="80400" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>P2 at maximum positive bias voltage +39 V.</desc>
+                <res>
+                </res>
+        </operation>
+
+
+
 
 </table>
