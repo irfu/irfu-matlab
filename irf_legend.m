@@ -126,6 +126,12 @@ for i=label_order, % start with first label first
     for j=1:size(pvpairs,2)/2
         textprop=pvpairs{2*j-1};
         textvalue=pvpairs{2*j};
+        if strcmpi(textprop,'verticalalignment'), 
+            value_vertical_alignment=textvalue; % value has been reset manually by input parameter
+        end
+        if strcmpi(textprop,'horizontalalignment'), 
+            value_horizontal_alignment=textvalue; % value has been reset manually by input parameter
+        end
         if strcmpi(textprop,'color') && strcmp(textvalue,'cluster') && i<=4,
             set(ht(i),'color',cluster_colors(i,:));
         else
@@ -139,7 +145,7 @@ for i=label_order, % start with first label first
         set(ht(i),'position',txt_pos);       
         txt_ext=get(ht(i),'extent'); 
         tmp_ref_pos=txt_ext(1)+txt_ext(3)+txt_ext(3)/max(1,numel(labels{i})); % the new reference position
-    else
+    elseif strcmpi(value_horizontal_alignment,'right')
         txt_pos(1)=txt_pos(1)-(txt_ext(1)+txt_ext(3)-tmp_ref_pos);
         set(ht(i),'position',txt_pos);
         txt_ext=get(ht(i),'extent'); 
