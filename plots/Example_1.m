@@ -5,6 +5,7 @@
 tempdir_name=tempname;
 mkdir(tempdir_name);
 cd(tempdir_name);
+disp(['Moving to temporary directory: ' tempdir_name]); 
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
