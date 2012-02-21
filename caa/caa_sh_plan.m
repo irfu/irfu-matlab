@@ -144,7 +144,7 @@ for cl_id = 1:4
 			irf_plot([MP(ii,:);  (MP(ii,:)-ORB(o,1))/3600]','ro-')
 		end
 	end
-	irf_zoom([toepoch([yyyy 1 1 0 0 0]) toepoch([yyyy+1 1 1 0 0 0])],'x')
+	irf_zoom('x',[toepoch([yyyy 1 1 0 0 0]) toepoch([yyyy+1 1 1 0 0 0])]);
 	ylabel('time [hours] from perigee')
 	title(sprintf('Cluster %d',cl_id))
 	clear MP R
