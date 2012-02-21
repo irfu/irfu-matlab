@@ -1,10 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%
 % go to new/empty directory 
 % >cd new_directory
+% here using temporary directory
+tempdir_name=tempname;
+mkdir(tempdir_name);
+cd(tempdir_name);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
-tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])]; % time interval
+tint=[irf_time([2006 9 27 17 17 0]) irf_time([2006 9 27 17 24 0])]; % time interval
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA (needed only once!!!!!)
@@ -37,8 +41,8 @@ gsmB=irf_gse2gsm(B);
 irf_plot(hca,gsmB);
 ylabel(hca,'B [nT] GSM');
 irf_zoom(hca,'y',[-25 15])
-irf_legend(hca,{'B_X','B_Y','B_Z'},[0.98 0.95])
-irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
+irf_legend(hca,{'B_X','B_Y','B_Z'},[0.98 0.05])
+irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -48,8 +52,8 @@ gsmV=irf_gse2gsm(V);
 irf_plot(hca,gsmV)
 ylabel(hca,'V [km/s] GSM');
 irf_zoom(hca,'y',[-300 500])
-irf_legend(hca,{'V_X','V_Y','V_Z'},[0.02 0.1])
-irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
+irf_legend(hca,{'V_X','V_Y','V_Z'},[0.2 0.95])
+irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -94,7 +98,7 @@ irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 %%%%%%%%%%%%%%%%%%%%%%%%
 % add tmarks and mark intervals
 % add line marks
-tmarks=irf_time([2006 9 27 17 12 0;2006 9 27 17 15 0;2006 9 27 17 18 0;2006 9 27 17 21 0;2006 9 27 17 23 0]);
+tmarks=irf_time([2006 9 27 17 17 30;2006 9 27 17 18 20;2006 9 27 17 19 45;2006 9 27 17 21 0;2006 9 27 17 23 0]);
 irf_pl_mark(h,tmarks,'black','LineWidth',0.5)
 text_tmarks={'A','B','C','D','E'};
 ypos=ylim(h(1));ypos(2)=ypos(2);ypos(1)=[];
@@ -111,3 +115,13 @@ irf_pl_mark(h(1:2),tmarks)
 %
 % set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % print -dpng -painters Example_1.png;
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+% remove temporary directory
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp('When finnished with the example, ');
+disp('remove the temporary directory in which you are located!')
+disp('>p=pwd;cd ..; rmdir(p,''s'');');
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
+
