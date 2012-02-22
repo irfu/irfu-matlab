@@ -209,6 +209,7 @@ else  % download data
         %    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
         %        dataset '&time_range=' tintiso '&format=cdf&list=1'];
         url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso];
+        disp(url_line_list);
         disp('Be patient! Contacting CAA to see the list of files...');
         caalist=urlread(url_line_list);
         disp(caalist);
