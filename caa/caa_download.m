@@ -220,7 +220,7 @@ else  % download data
     
     if flag_test,
         url_line=['http://caa5.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-            dataset '&time_range=' tintiso '&format=cdf2.7&file_interval=72hours' nonotify];
+            dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours' nonotify];
 %        url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
 %            dataset '&time_range=' tintiso '&format=cdf&schedule=1&file_interval=72hours'];
     else
