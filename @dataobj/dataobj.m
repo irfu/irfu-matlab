@@ -114,9 +114,40 @@ switch action
       end
       
       irf_log('dsrc',['Reading: ' cdf_file]);
+      %% check if epoch16 file
+      
+      cdfid   = cdflib.open(cdf_file);
+      inq=cdflib.inquireVar(cdfid,0);
+      if strcmpi(inq.datatype,'cdf_epoch16')
+          flag_using_cdfepoch16=1;
+      else
+          flag_using_cdfepoch16=0;
+      end
+      % leave open cdf file
+      
+      %% read in file 
+      if flag_using_cdfepoch16, 
+          irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+          flag_read_all_data=1; % read all data
+          info = cdflib.inquire(cdfid);
+          vars=cell(info.numVars-1,1);
+          for jj=1:info.numVars
+              vars{jj}=cdflib.getVarName(cdfid,jj-1);
+          end
+          [data] = cdfread(cdf_file,'variables',vars(2:end),'CombineRecords',true);
+          info=cdfinfo(cdf_file);
+          % get time axis
+          numrecs = cdflib.getVarAllocRecords(cdfid,0);
+          tc=zeros(2,numrecs);
+          for jj=1:numrecs,
+              tc(:,jj) = cdflib.getVarRecordData(cdfid,0,jj-1);
+          end
+          data={tc',data{:}};
+      else
       [data,info] = cdfread(cdf_file,...
         'ConvertEpochToDatenum',true,...
         'CombineRecords',true);
+      end
       if flag_read_all_data==0, % check which records to return later
         info=cdfinfo(cdf_file);
         timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
@@ -176,8 +207,10 @@ switch action
           dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
           dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
           %Convert to isdat epoch
-          if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch') || strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
-            dobj.data.(dobj.vars{v,1}).data = date2epoch(dobj.data.(dobj.vars{v,1}).data);
+          if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
+            dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'date2epoch');
+          elseif strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
+            dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
           end
         end
       else
