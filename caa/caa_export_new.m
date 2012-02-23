@@ -1144,7 +1144,7 @@ elseif strcmp(caa_vs, 'IB')
         end
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'Data order: ' alldi ' ' dsc.com ]);
     end
-elseif regexp(caa_vs,'^(P|E|B)B$') && ibsave && isempty(data)
+elseif ~isempty(regexp(caa_vs,'^(P|E|B)B$')) && ibsave && isempty(data)
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'No iburst ' caa_vs ' data. ' dsc.com ]);    
 else
     buf = pmeta(buf, 'FILE_CAVEATS', dsc.com);
@@ -1202,7 +1202,7 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
-elseif regexp(caa_vs,'^(I|P|E|B)B$') && ~ibsave 
+elseif ~isempty(regexp(caa_vs,'^(I|P|E|B)B$')) && ~ibsave 
    irf_log('proc','Will not export empty internal burst IB, PB, EB or BB files')
 else
    disp(['Filename : ' file_name ext_s ' (Empty)' ]);
