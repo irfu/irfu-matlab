@@ -26,14 +26,24 @@ Run only the most critical steps up to step 6 in this document, skipping many of
 1.3 Export and deliver P data
 =============================
 Check the P data first. For example.:
- c_eval('[Ps?, ok, msg] = caa_get(''2011-09-01T00:00:00Z'',''2011-10-01T00:00:00Z'',?,''Ps?'');figure;irf_plot Ps?');
+ c_eval('[Ps?,ok?,msg?]=caa_get(''2011-09-01T00:00:00Z'',''2011-10-01T00:00:00Z'',?,''Ps?'');figure;irf_plot Ps?;axis tight');
+
+Matlab zoom plot of all sats:
+ figure;h=irf_plot({Ps1,Ps2,Ps3,Ps4});irf_zoom(h,'x',[toepoch([2011 9 1 18 0 0]) toepoch([2011 9 2 6 0 0])]);
 
 Zoom plot the data gaps. Check runner log of gap time. Probably ISDAT no data problem in L1.
- figure;irf_plot(Ps4);irf_zoom('x',[toepoch([2011 9 1 18 0 0]) toepoch([2011 9 2 6 0 0])])
+
+Visual check:
+ Choose:  Quicklook - 6 Hour 4 S/C E Fluctuations
+ First panel always plotted when sats ON (FGM)
+ Second panel EFW C1=Black C2=Red C3=Green C4=Blue line
+ http://www.cluster.rl.ac.uk/csdsweb-cgi/csdsweb_pick
 
 Then export (see step 14). Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
-Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 15)
+Ex: caa_export_month(2010,2,1,0,1:4,'P_L23_only') (all sats (1:4) and the whole month of 201002)
 
+Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 15)
+L3 E data???
 
 ===========================
 2. Update the ns_ops tables (Anders/Per-Arne)
