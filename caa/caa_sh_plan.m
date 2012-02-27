@@ -17,6 +17,7 @@ c_ctl('set',5,'isdat_db','db:9');
 force_orbit_read=[0 0 0 0];
 force_orbit_splitting=[0 0 0 0];
 force_MP_determination=[0 0 0 0];
+solar_wind_data='omni2'; %'ace'
 
 for cl_id = 1:4
 	v_s = sprintf('R%dY%d',cl_id,yyyy);
@@ -106,7 +107,7 @@ for cl_id = 1:4
 	if ~exist(v_s,'var')
 		MP = [];
 		for o=1:length(ORB)
-			[t_out, t_in] = caa_find_mp(ORB(o,1),ORB(o,2),cl_id, R);
+			[t_out, t_in] = caa_find_mp(ORB(o,1),ORB(o,2),cl_id, R,solar_wind_data);
 			if ~isempty(t_out) && ~isempty(t_in)
 				if isempty(MP), MP = [t_out, t_in];
 				else MP = [MP; [t_out, t_in]];
