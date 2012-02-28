@@ -678,11 +678,12 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				% We use 180 Hz filter
 				if ~do_burst, param={'180Hz'}; end
 				irf_log('dsrc',sprintf('using 180Hz filter on sc%d',cl_id))
-				probe_list = [2 4];
+				probe_list = 2:4;
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
 			elseif start_time>=toepoch([2007 05 13 03 23 48])
 				probe_list = [2 4];
 				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id))
+				irf_log('dsrc',sprintf('10Hz filter problem on p3 sc%d',cl_id))
 			elseif start_time+dt>toepoch([2001 07 23 13 54 18]) && ~do_burst
 				% 10Hz filter problem on C2 p3
 				% Any changes should also go to ClusterProc/getData/probesa
