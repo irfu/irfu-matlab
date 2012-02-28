@@ -4705,11 +4705,30 @@ TBD       = TBD
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
         </operation>
+        <operation dt="300" plan="yes" sdesc="bad_data" start="2010-01-13T17:15:00Z"  c1="yes">
+                <desc>Manoeuvre. (46 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no493_(week02-2010).pdf">ESOC MOR</link></res>
+        </operation>
+        <operation dt="300" plan="yes" sdesc="bad_data" start="2010-01-13T15:00:00Z"  c2="yes">
+                <desc>Manoeuvre. (50 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no493_(week02-2010).pdf">ESOC MOR</link></res>
+        </operation>
+        <operation dt="300" plan="yes" sdesc="bad_data" start="2010-01-13T15:45:00Z"  c3="yes">
+                <desc>Manoeuvre. (64 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no493_(week02-2010).pdf">ESOC MOR</link></res>
+        </operation>
+        <operation dt="300" plan="yes" sdesc="bad_data" start="2010-01-13T16:30:00Z"  c4="yes">
+                <desc>Manoeuvre. (50 pulses)</desc>
+                <res><link href="ESOC_MOR/Cluster_MOR_no493_(week02-2010).pdf">ESOC MOR</link></res>
+        </operation>
         <operation c3="yes" start="2010-01-14T14:27:32Z" dt="10" plan="no" sdesc="bad_data">
                 <desc>TM Buffer overflow</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
+        </operation>
+        <operation c1="yes" start="2010-01-14T20:42:17Z" dt="8" plan="no" sdesc ="bad_data">
+                <desc>Strange phase from isdat.</desc>
         </operation>
         <operation c1="yes" start="2010-01-15T01:01:02Z" dt="10" plan="no" sdesc="bad_data">
                 <desc>TM Buffer overflow</desc>
@@ -4729,6 +4748,12 @@ TBD       = TBD
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
         </operation>
+        <operation c3="yes" start="2010-01-15T02:30:00Z" dt="190800" plan="no" sdesc ="bad_data">
+                <desc>Probes 3 and 4 in a strange state. p2 data may or may not be useful. Commanding error?</desc>
+        </operation>
+        <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:00:00Z" dt="12600" plan="no" sdesc ="no_p32">
+                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        </operation>
         <operation c3="yes" start="2010-01-19T19:48:04Z" dt="15" plan="no" sdesc="bad_data">
                 <desc>TM Buffer overflow</desc>
                 <res>
@@ -4741,11 +4766,17 @@ TBD       = TBD
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
         </operation>
+        <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:30:00Z" dt="34200" plan="no" sdesc ="no_p32">
+                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        </operation>
         <operation c1="yes" start="2010-01-21T20:48:00Z" dt="84300" plan="no" sdesc="bad_data">
                 <desc>WEC off by monitoring 444.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02168.html">ESOC 100122</link>
                 </res>
+        </operation>
+        <operation c4="yes" start="2010-01-25T16:50:40Z" dt="70" plan="no" sdesc ="bad_data">
+                <desc>DAC error.</desc>
         </operation>
         <operation c2="yes" start="2010-01-26T00:21:00Z" dt="36600" plan="no" sdesc="no_data">
                 <desc>SSR anomaly</desc>
@@ -4758,6 +4789,9 @@ TBD       = TBD
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02249.html">Juergen, Per-Arne 100219</link>
                 </res>
+        </operation>
+        <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:00Z" dt="29700" plan="no" sdesc ="no_p32">
+                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_data">
 		<desc>Data loss for all payload.</desc>
