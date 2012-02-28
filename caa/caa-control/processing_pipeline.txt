@@ -39,11 +39,11 @@ Visual check:
  Second panel EFW C1=Black C2=Red C3=Green C4=Blue line
  http://www.cluster.rl.ac.uk/csdsweb-cgi/csdsweb_pick
 
-Then export (see step 14). Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
+Then export (see step 15). Use caa_export_month(year,month,startday,stopday,sats,'P_L23_only')
 Ex: caa_export_month(2010,2,1,0,1:4,'P_L23_only') (all sats (1:4) and the whole month of 201002)
 
-Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 15)
-L3 E data???
+Then deliver the following data to the CAA: *_L*_P, *_L2_HK (see step 16)
+
 
 ===========================
 2. Update the ns_ops tables (Anders/Per-Arne)
@@ -468,10 +468,12 @@ You might need to compile the mex file 'cefprint_mx.c' before calling caa_export
 ==================
 16: Deliver to CAA
 ==================
+This must be done from "ice" for now or connection is not permitted.
 Deliver the files to the CAA using sftp:
   sftp efw@caa-delivery.estec.esa.int
     EFW4Yu71
 Put the .cef.gz files in /caa/dropzone/EFW/CEF
+~/NEW-DATASETS/CEF/ for new datasets or ~/CEF for reupload of old datasets
 Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
 
 
@@ -604,6 +606,12 @@ To re-run a JobGroup with a lot of errors (rerun only those jobs with errors):
   /home/caa/devel/caa-runner/CaaConsole.py -H caa.irfu.se -e "list g=200904_L012" | grep error >ejobs.txt
   /home/caa/devel/caa-runner/scripts/nice_jlist.sh ejobs.txt
   /home/caa/devel/caa-runner/scripts/proc_jobs.sh rerun ejobs.txt.nice
+
+External matlab re-run of C2 only p ps:
+  cd /data/caa/l1
+  ls -d --format=single-column 2010/201001*/C2/* >~/201001_C2_list.txt
+  Matlab:
+  caa_reproc('~/201001_C2_list.txt','p','p|ps')
 
 Installing a new matlab on sipadan:
   sudo su
