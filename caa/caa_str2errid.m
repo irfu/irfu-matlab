@@ -32,12 +32,13 @@ case 'bad_bias', res = 16; % HX data is blanked
 case 'bad_hx',   res = 17; % HX data is blanked
 case 'bad_lx',   res = 18; % LX data is blanked
 case 'no_p12', res = 112;
-case 'no_p23', res = 123;
+case 'no_p23', res = 132;
+case 'no_p32', res = 132;
 case 'no_p34', res = 134;
 case 'no_10Hz_filt', res = 255;
 case 'no_spin_fits', res = 260;
 case 'spec_bias', res = 261;
-case 'TDB', res = 999;
+case 'TBD', res = 999;
 otherwise
 	error('Unknown problem ID')
 end

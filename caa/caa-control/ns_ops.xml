@@ -6,7 +6,7 @@
 		<!ELEMENT operation (desc,res*)>
 			<!ATTLIST operation start NMTOKEN #REQUIRED>
 			<!ATTLIST operation dt NMTOKEN #REQUIRED>
-			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|hxonly|no_p12|no_p34|no_p23|no_10Hz_filt|no_spin_fits|spec_bias|bad_bias|bad_lx|bad_hx|info|TBD ) #REQUIRED>
+			<!ATTLIST operation sdesc ( no_tm|no_bm3|bad_tm|bad_data|no_p1|no_p2|no_p3|no_p4|hxonly|no_p12|no_p34|no_p23|no_p32|no_10Hz_filt|no_spin_fits|spec_bias|bad_bias|bad_lx|bad_hx|info|TBD ) #REQUIRED>
 			<!ATTLIST operation plan ( yes | no ) #REQUIRED>
 			<!ATTLIST operation c1 ( yes | no ) "no">
 			<!ATTLIST operation c2 ( yes | no ) "no">
@@ -36,12 +36,22 @@ spec_bias = commanded intervals with unusual bias, not accidents
             setting guard to strange values etc which goes to bad_data
 bad_bias  = intervals with accidental unusual bias
 no_bm3    = No BM3 telemetry
-no_p[1-4] = No data on probes [1-4]
+no_p[1-4] = No/bad data on probes [1-4]
+no_p[12/32/34] = No/bad data on probe pairs [12/32/34]
 hxonly    = HXONLY sampling mode
 no_10Hz_filt = 10Hz filter is not operational
 no_spin_fits = No on-board spin fits
 info      = informational only (no effect on CAA processing)
 TBD       = TBD
+
+Effect on the CAA processing:
+              no_tm: informational
+ bad_tm or bad_data: data is treated as non-existent. No processing performed, no L0 data.
+              no_p*: if present, data is blanked from L1.
+ bad_bias or bad_hx: E-field data is processed to L0 only. No science E data processed.
+   hxonly or bad_lx: P data is processed to L0 only. No science P data processed.
+          spec_bias: data is flagged with NSOPS flag
+ no_10Hz_filt, no_spin_fits, TBD, info: informational
 
  -->
 
@@ -1892,7 +1902,7 @@ TBD       = TBD
 	<operation start="2005-04-06T17:17:15Z" dt="3" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>Two bad HX packets</desc>
 	</operation>
-	<operation start="2005-04-10T06:47:00Z" c1="yes" c3="yes" dt="107400" plan="yes" sdesc="no_p23">
+	<operation start="2005-04-10T06:47:00Z" c1="yes" c3="yes" dt="107400" plan="yes" sdesc="no_p32">
 		<desc>P2 at 25 S/s rather than P23, for SC13 only</desc>
 	</operation>
 	<operation start="2005-04-11T12:38:00Z" dt="15060" c1="yes" c2="yes" c3="yes" c4="yes" plan="no" sdesc="info">
@@ -2624,7 +2634,7 @@ TBD       = TBD
         <operation dt="2" plan="no" sdesc="bad_data" start="2006-08-21T18:04:07.5Z" c4="yes">
                 <desc>Bad packet.</desc>
         </operation>
-	<operation dt="5400" plan="yes" sdesc="no_p23" start="2006-08-22T09:15:00Z" c1="yes" c3="yes">
+	<operation dt="5400" plan="yes" sdesc="no_p32" start="2006-08-22T09:15:00Z" c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
         <operation dt="59970" plan="no" sdesc="bad_tm" start="2006-08-23T13:09:00.0Z" c1="yes">
@@ -2665,7 +2675,7 @@ TBD       = TBD
 	<operation dt="73380" plan="no" sdesc="bad_bias" start="2006-08-31T03:37:00Z" c2="yes">
                 <desc>Bias defaults to -40 nA.</desc>
         </operation>
-	<operation dt="6000" plan="yes" sdesc="no_p23" start="2006-09-05T15:35:00Z" c1="yes" c3="yes">
+	<operation dt="6000" plan="yes" sdesc="no_p32" start="2006-09-05T15:35:00Z" c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
         <operation dt="3" plan="no" sdesc="bad_data" start="2006-09-05T08:14:49Z" c1="yes">
@@ -2722,7 +2732,7 @@ TBD       = TBD
 		<link href="esoc060718pdf.pdf">ESOC 060718</link>
 		</res>
 	</operation>
-	<operation dt="8700" plan="yes" sdesc="no_p23" start="2006-09-12T16:50:00Z" c1="yes" c3="yes">
+	<operation dt="8700" plan="yes" sdesc="no_p32" start="2006-09-12T16:50:00Z" c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation dt="79200" plan="yes" sdesc="no_tm" start="2006-09-13T00:00:00Z" c3="yes">
@@ -2768,7 +2778,7 @@ TBD       = TBD
 		<link href="esoc060718pdf.pdf">ESOC 060718</link>
 		</res>
 	</operation>
-	<operation dt="7560" plan="yes" sdesc="no_p23" start="2006-09-17T12:44:00Z"  c3="yes">
+	<operation dt="7560" plan="yes" sdesc="no_p32" start="2006-09-17T12:44:00Z"  c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation dt="28800" plan="yes" sdesc="no_tm" start="2006-09-18T00:00:00Z" c3="yes">
@@ -2789,7 +2799,7 @@ TBD       = TBD
 		<link href="esoc060927aa.txt">ESOC 060927</link>
 		</res>
 	</operation>
-	<operation dt="9000" plan="yes" sdesc="no_p23" start="2006-09-27T03:30:00Z"  c1="yes" c3="yes">
+	<operation dt="9000" plan="yes" sdesc="no_p32" start="2006-09-27T03:30:00Z"  c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
         <operation dt="15" plan="no" sdesc="bad_data" start="2006-09-30T22:44:45Z" c4="yes">
@@ -2805,7 +2815,7 @@ TBD       = TBD
         <operation dt="20" plan="no" sdesc="bad_data" start="2006-10-05T10:40:40Z" c1="yes">
                 <desc>Bad HK packet(s).</desc>
         </operation>
-	<operation dt="10800" plan="yes" sdesc="no_p23" start="2006-10-08T22:05:00Z"  c1="yes" c3="yes">
+	<operation dt="10800" plan="yes" sdesc="no_p32" start="2006-10-08T22:05:00Z"  c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation sdesc="no_tm" start="2006-10-12T16:55:58Z" dt="101069" plan="no" c2="yes">
@@ -2829,7 +2839,7 @@ TBD       = TBD
         <operation dt="300" plan="yes" sdesc="bad_data" start="2006-10-17T15:29:46Z"  c4="yes">
                 <desc>Maneuver.</desc>
         </operation>
-	<operation dt="5400" plan="yes" sdesc="no_p23" start="2006-10-23T06:10:00Z"  c1="yes" c3="yes">
+	<operation dt="5400" plan="yes" sdesc="no_p32" start="2006-10-23T06:10:00Z"  c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation dt="141" plan="no" sdesc="no_tm" start="2006-10-23T13:32:32Z"  c3="yes">
@@ -2877,7 +2887,7 @@ TBD       = TBD
         <operation dt="40" plan="no" sdesc="bad_tm" start="2006-11-11T12:00:00Z"  c3="yes">
                 <desc>Corrupt telemetry.</desc>
         </operation>
- 	<operation dt="90066" plan="yes" sdesc="no_p23" start="2006-11-11T12:00:00Z"  c3="yes">
+ 	<operation dt="90066" plan="yes" sdesc="no_p32" start="2006-11-11T12:00:00Z"  c3="yes">
 		<desc>Probe 2 in Langmuir mode at -40 V for continuous measurement of photosaturation current. Sweep interval 30 minutes.</desc>
 		<res>
 		<link href="aie061020a.txt">Anders 061020</link>
@@ -2890,7 +2900,7 @@ TBD       = TBD
 		<link href="CLU_AR-99.pdf">AR-99</link>
 		</res>
 	</operation>
-	<operation dt="2460" plan="yes" sdesc="no_p23" start="2006-11-16T01:35:00Z"  c1="yes" c3="yes">
+	<operation dt="2460" plan="yes" sdesc="no_p32" start="2006-11-16T01:35:00Z"  c1="yes" c3="yes">
 		<desc>V2V34M instead of V23V34M in BM1.</desc>
 	</operation>
 	<operation dt="33120" plan="no" sdesc="bad_tm" start="2006-11-18T05:38:00Z"  c2="yes">
@@ -3249,13 +3259,13 @@ TBD       = TBD
 	<operation dt="60" plan="yes" sdesc="bad_data" start="2007-05-28T15:21:00Z"  c1="yes" c3="yes">
 		<desc>Strange data at switch to Langmuir mode.</desc>
 	</operation>
-	<operation dt="33486" plan="yes" sdesc="no_p23" start="2007-05-28T15:21:00Z"  c1="yes" c3="yes">
+	<operation dt="33486" plan="yes" sdesc="no_p32" start="2007-05-28T15:21:00Z"  c1="yes" c3="yes">
 		<desc>Langmuir mode in solar wind, including a 8x450 Hz burst.</desc>
 		<res>
 		<link href="aie070503a.txt">Anders 070503</link>
 		</res>
 	</operation>
-	<operation dt="33486" plan="yes" sdesc="no_p23" start="2007-05-28T15:21:00Z"  c1="yes" c3="yes">
+	<operation dt="33486" plan="yes" sdesc="no_p32" start="2007-05-28T15:21:00Z"  c1="yes" c3="yes">
 		<desc>Langmuir mode in solar wind, including a 8x450 Hz burst.</desc>
 		<res>
 		<link href="aie070503a.txt">Anders 070503</link>

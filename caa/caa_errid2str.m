@@ -54,9 +54,9 @@ case 18
 case 112
 	r.s = 'no_p12';
 	r.l = 'No probe 12';
-case 123
-	r.s = 'no_p23';
-	r.l = 'No probe 23';
+case 132
+	r.s = 'no_p32';
+	r.l = 'No probe 32';
 case 134
 	r.s = 'no_p34';
 	r.l = 'No probe 34';
@@ -70,7 +70,7 @@ case 261
 	r.s = 'spec_bias';
 	r.l = 'Special bias settings';
 case 999
-	r.s = 'TDB';
+	r.s = 'TBD';
 	r.l = 'Problem to be defined';
 case 9999
 	r.s = 'unknown';
