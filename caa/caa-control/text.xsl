@@ -13,6 +13,8 @@ no_tm			0
 bad_tm			1
 bad_data		2
 no_p[1-4]		1[1-4]
+no_p[12/32/34]		1[12/32/34]
+no_p23                  132 (alias for no_p32)
 hxonly			15
 bad_bias		16
 bad_hx                  17
@@ -70,7 +72,8 @@ $Id$
 		<xsl:when test="@sdesc='bad_hx'">17</xsl:when>
 		<xsl:when test="@sdesc='bad_lx'">18</xsl:when>
 		<xsl:when test="@sdesc='no_p12'">112</xsl:when>
-		<xsl:when test="@sdesc='no_p23'">123</xsl:when>
+		<xsl:when test="@sdesc='no_p23'">132</xsl:when>
+		<xsl:when test="@sdesc='no_p32'">132</xsl:when>
 		<xsl:when test="@sdesc='no_p34'">134</xsl:when>
 		<xsl:when test="@sdesc='no_10Hz_filt'">255</xsl:when>
 		<xsl:when test="@sdesc='no_spin_fits'">260</xsl:when>
