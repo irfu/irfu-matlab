@@ -148,6 +148,7 @@ switch action
         'ConvertEpochToDatenum',true,...
         'CombineRecords',true);
       end
+      cdflib.close(cdfid);
       if flag_read_all_data==0, % check which records to return later
         info=cdfinfo(cdf_file);
         timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
