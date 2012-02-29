@@ -21,7 +21,7 @@ function t_out = irf_time(t_in,flag)
 %        doy: [year, doy]
 %         et: J2000 Ephemeris Time, seconds past  January 1, 2000, 11:58:55.816 (UTC)
 %   cdfepoch: miliseconds since 1-Jan-0000
-% cdfepoch16: [miliseconds since 1-Jan-0000, picoseconds within the second]
+% cdfepoch16: [seconds since 1-Jan-0000, picoseconds within the second]
 %
 %  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch2out');
 %  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector2epoch');
