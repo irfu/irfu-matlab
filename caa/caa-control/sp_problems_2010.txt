@@ -1,29 +1,56 @@
+Problems seen when looking through the summary plots for 2010
+=============================================================
 
-warning: negative values in spectrogram
+1a) Processing bugs fixed
+========================
+0101 12 C2 P3 spiky.
+0103 18-19:30 C2 P3 spiky.
+  C2 was not retrieving P3 data as it should. Fixed in processing software.
 
-0101 00 C3 is about 0.5 mV/m too high
-0101 12 C3,C4 missing
-0101 12 C2 P spiky
-0102 00 C3 too high by 2 mV/m, then starts agreeing later
-0103 18 C3,C4 missing
-0104 18 C3 too high by 1 mV/m
-0104 21 C2 data gap 45 minutes
-0105 2330 C3,C4 burst of noise
-0107 12 C3 too high by 0.4
-0108 06 gaps in C234
-0108 21 C3 too high by 1.0
-0110 12 C34 missing again near perigee
+1b) Plotting bugs fixed
+=======================
+Added a yellow line for nsops intervals. Should make validation a bit easier.
+
+
+1c) Data problems fixed
+=======================
 0113 15-18 C1234 thruster firings
-0113 18-24 C234 missing
-014 00 C3 low by 0.2
-0114 2041 C1 big spike
-0115 C3 long period of problems after eclipse: high bias saturation
-        should blank P data
-0117 2010 C3 data gap until next reset
-0119 06 C3 0.2 too high
-0118 12 C3 Ey offset
-0118 18 C2 weird rspec
+0114 20:42:17 (8 sec) C1 big spike
+0115 0230-0730++ (01-17) C3 probes malfunctioning. Cause unknown.
+0125 16:50:40 (70 s) C4 DAC malfunction
+  Added to nsops and reprocessed.
 
+0117 2010 C4 data gap until next reset at 11:30. Data present in ISDAT.
+  bad_bias (-40 nA default). Added to ns_ops
+
+0117 0100-04:30 C123 8 kHz internal burst caused split sampling caused bad p32 data
+0121 0730-17:00 C123 8 kHz internal burst caused split sampling caused bad p32 data
+0130 10:03-18:15 C123 8 kHz internal burst caused split sampling caused bad p32 data
+  Added to nsops and reprocessed.
+
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+3) Major data problems
+======================
+
+4) Ignored problems
+===================
+0105 2330 C3,C4 burst of noise
+  I think that might be real.
+0118 12-23 C3 Ey offset
+  Don't know why. Up to about 0.5 mV/m on a 1 mV/m signal.
+  Spinfit and wake removal look perfect. The y component is just different.
+0113 18-24 C234 missing.
+  Immediately after maneuver. Probably ops issue.
+
+
+5) Unclassified
+===============
 
 
 
