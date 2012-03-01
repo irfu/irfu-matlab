@@ -144,8 +144,7 @@ for cl_id=sc_list
 	if isempty(ns_ops), error(['cannot get NS_OPS for C' num2str(cl_id)]), end
 
 	% Split intervals if a non-blanking nsops starts in the interval
-	ii = find( (ns_ops(:,1)>st & ns_ops(:,1)<st+dt) | ...
-		       (ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<st+dt));
+	ii = find( ns_ops(:,1)>st & ns_ops(:,1)<st+dt);
 	problem_list=[caa_str2errid('hxonly') caa_str2errid('bad_bias') caa_str2errid('bad_hx') caa_str2errid('bad_lx')];
 	c_eval('problem_list=[problem_list caa_str2errid(''no_p?'')];',[1 2 3 4 12 32 34]); 
 	if size(ii)>0
@@ -154,6 +153,17 @@ for cl_id=sc_list
 				irf_log('proc',['NSOPS interval start/stop. Splitting interval for C' num2str(cl_id)...
 					' at ' epoch2iso(ns_ops(j,1))])
 				tm=sort([tm' [ns_ops(j,1) 0]'],2)';
+			end
+		end
+	end
+	% Split intervals if a non-blanking nsops stops in the interval
+	ii = find(ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<st+dt);
+	if size(ii)>0
+		for j=ii
+			if any(ns_ops(j,4)==problem_list)
+				irf_log('proc',['NSOPS interval start/stop. Splitting interval for C' num2str(cl_id)...
+					' at ' epoch2iso(ns_ops(j,1))])
+				tm=sort([tm' [ns_ops(j,1)+ns_ops(j,2) 0]'],2)';
 			end
 		end
 	end
