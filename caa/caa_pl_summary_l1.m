@@ -712,9 +712,23 @@ function plot_quality(h, dataset, st)
    
    axes(h)
    t_start_epoch = figure_start_epoch(st);
+   t_end_epoch=t_start_epoch+10800;
    
    hold(h,'on')
    for cli=1:4
+	% Start by plotting nsops intervals. 
+	ns_ops = c_ctl('get',cli,'ns_ops');
+	if isempty(ns_ops)
+		c_ctl('load_ns_ops',[cdb.dp '/caa-control'])
+		ns_ops = c_ctl('get',cl_id,'ns_ops');
+	end
+	if isempty(ns_ops),error('Nonstandard operations table not found!'),end
+	ii = find( ns_ops(:,1)<=t_end_epoch & ns_ops(:,1)+ns_ops(:,2)>t_start_epoch);
+	for j=1:length(ii)
+		 plot([ns_ops(ii(j),1) ns_ops(ii(j),1)+ns_ops(ii(j),2)] - t_start_epoch, ...
+               [cli_pos(cli) cli_pos(cli)], 'y','LineWidth', 3.5);
+	end
+	% Then plot quality lines.
    	data = dataset{cli};
    	if isempty(data), continue, end
       quality = data(:, end);
@@ -728,19 +742,19 @@ function plot_quality(h, dataset, st)
    	   else
    	      next_ind = find(quality(start_ind:end) ~= quality(start_ind), 1);
    	   end
-   	   if isempty(next_ind)
-            next_ind = length(quality(start_ind:end)) + 1;
-            finished = 1;
-         end
+	   if isempty(next_ind)
+		   next_ind = length(quality(start_ind:end)) + 1;
+		   finished = 1;
+	   end
 
    	   end_ind = start_ind + next_ind - 2;
-   	   indexes = [indexes; [start_ind end_ind] quality(start_ind)];
+   	   indexes = [indexes; [start_ind end_ind] quality(start_ind)]; %#ok<AGROW>
 
-   	   if ~isnan(quality(start_ind))
-            pp = plot([data(start_ind, 1) data(end_ind, 1)] - t_start_epoch, ...
-               [cli_pos(cli) cli_pos(cli)], linecolor(quality(start_ind)+1), ...
-                  'LineWidth', 3-quality(start_ind)+0.5);
-         end
+	   if ~isnan(quality(start_ind))
+		   plot([data(start_ind, 1) data(end_ind, 1)] - t_start_epoch, ...
+			   [cli_pos(cli) cli_pos(cli)], linecolor(quality(start_ind)+1), ...
+			   'LineWidth', 3-quality(start_ind)+0.5);
+	   end
    	   
    	   start_ind = start_ind + next_ind - 1;
    	end
