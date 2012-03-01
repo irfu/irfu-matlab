@@ -476,8 +476,24 @@ Put the .cef.gz files in /caa/dropzone/EFW/CEF
 ~/NEW-DATASETS/CEF/ for new datasets or ~/CEF for reupload of old datasets
 Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
 
+===============================
+17: Update online summary plots
+===============================
+Move the summary plots from the default location /data/caa/sp/YYYY to /data/caa/sp/YYYY/MM.
+ssh db
+cd /data/caa/sp
+Edit /data/caa/sp/make_sp_www.sh
+  Change the yy= and $yy -lt lines
+sudo su
+. make_sp_www.sh
+. splot_to_html.sh YYYY > www/2010/index.html
+Check output at http://www.cluster.irfu.se/efw/data/caa-splots/2010/
 
 
+
+
+
+=============================================
 Appendix A: CAA Runner issues and workarounds
 =============================================
 File locations:
@@ -824,17 +840,11 @@ Since you need to use linux compatibility, this is more complicated than you'd t
     (will fail, but after making the clients)
 
 
+
 OPEN ISSUES
 ===========
 
 Should shut down matlab when done with it on the runners!
-
-ns_ops should not be checked at L0. It should only be checked on export.
-
-Track down the 1.1 ms problem.  :-(
-(It's TED (i.e. the same problem appears in levelone); ignore it entirely.)
-
-Track down all the 0.2s problems that are easily visible.
 
 Fix ISDAT to read the FGM UP files
 (Not relevant to CAA processing unless CSDS is compiled into db:8/9)
@@ -850,5 +860,4 @@ Move all runners over to m2009b (?)
 
 Let sipadan:8000 work on L2 (?)
 
-- update efw_tcor files (esp. for 2007!)
 
