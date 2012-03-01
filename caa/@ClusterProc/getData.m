@@ -858,7 +858,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			if ~fsamp, error('no sampling frequency'),end
 			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
-			nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
+			nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx') caa_str2errid(irf_ssub('no_p?',ps))];%#ok<NASGU>
 			
 			% Always remove Whisper when we use 180Hz filter
 			if (fsamp == 450) || ...
