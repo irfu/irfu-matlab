@@ -90,7 +90,7 @@ for cl_id=sc_list
 		if ~isempty(ii_out)
 			irf_log('proc',sprintf('Removing %d intervals TM>1 for C%d',...
 				length(ii_out),cl_id))
-			tm(ii_out,:) = [];
+			tm(ii_out,:) = []; %#ok<AGROW>
 		end
 	end
 	c_eval('tm? = tm;',cl_id)
@@ -124,7 +124,7 @@ for cl_id=sc_list
 		% For BM1 we take SPLIT_INT/3 intervals
 		if dt_tmp > SPLIT_INT*4/3*(1-tm_cur*2/3)
 			if j==size(tm,1)
-				tm(j+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2)];
+				tm(j+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2)]; %#ok<AGROW>
 			else
 				tm(j+1:end+1,:) = [tm(j,1)+SPLIT_INT*(1-tm_cur*2/3) tm(j,2); tm(j+1:end,:)];
 			end
@@ -142,6 +142,19 @@ for cl_id=sc_list
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
 	end
 	if isempty(ns_ops), error(['cannot get NS_OPS for C' num2str(cl_id)]), end
+
+	% Split intervals if a non-blanking nsops starts in the interval
+	ii = find( (ns_ops(:,1)>st & ns_ops(:,1)<st+dt) | ...
+		       (ns_ops(:,1)+ns_ops(:,2)>st & ns_ops(:,1)+ns_ops(:,2)<st+dt));
+	problem_list=[caa_str2errid('hxonly') caa_str2errid('bad_bias') caa_str2errid('bad_hx') caa_str2errid('bad_lx')];
+	c_eval('problem_list=[problem_list caa_str2errid(''no_p?'')];',[1 2 3 4 12 32 34]); 
+	for j=ii
+		if any(ns_ops(j,4)==problem_list)
+			irf_log('proc',['NSOPS interval start/stop. Splitting interval for C' num2str(cl_id)...
+				' at ' epoch2iso(ns_ops(j,1))])
+			tm=sort([tm' [ns_ops(j,1) 0]'],2)';	
+		end
+	end
 	
     for inter=1:size(tm,1)
 		t1 = tm(inter,1);
