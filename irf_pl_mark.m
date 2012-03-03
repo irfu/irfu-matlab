@@ -75,6 +75,8 @@ pvpairs = args(3:end);
 % create 1 x n x 3 color matrix
 if ischar(color),
     color = repmat(color, size(tlim,1), 1);
+elseif size(color,1)<size(tlim,1)
+	color=repmat(color(1,:),size(tlim,1),1);
 end
 
 
