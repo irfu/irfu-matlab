@@ -129,7 +129,7 @@ if flag_create_figure, % create the figure
 	for ic1=1:4
 		for ic2=ic1+1:4
 			c_eval('irf_plot(hca,drap?!(:,[1 5]),''.'',''color'',cluster_color(!,:),''markersize'',10)',ic1,ic2);
-			c_eval('irf_plot(hca,drap?!(:,[1 5]),''color'',cluster_color(?,:),''linewidth'',2)',ic1,ic2);
+			c_eval('irf_plot(hca,drap?!(:,[1 5]),''color'',cluster_color(?,:),''linewidth'',1)',ic1,ic2);
 		end
 	end
 	irf_zoom(hca,'x',[drap12(1,1) drap12(end,1)]);
