@@ -40,7 +40,8 @@ if nargin==0, % default time (with time can make smarter solution)
         end
     else
         time=[2010 12 31 01 01 01];
-    end
+	end
+	t=irf_time(time);
 end
 if nargin==4, sc_list=spacecraft;
 else sc_list=1:4;
@@ -194,6 +195,7 @@ switch lower(action)
         initialize_figure;
         h=[];
         h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
+        h(2)=axes('position',[0 0 1 1]);            % for legends
         data.h=h;
         data.flag_show_cluster_description=1; % show cluster description
         data.plot_type='config3d';
@@ -435,6 +437,17 @@ switch lower(action)
                 set(h(1),'ydir','reverse');
                 grid(h(1),'on');
                 axis(h(1),[-drref drref -drref drref]);
+				
+				hca=h(2);
+				hold(hca,'on');
+				axis(hca,[0 1 0 1]); 
+				yy=.9;dxx=.1;xs=.55;
+				plot(hca,xs,yy,'ks',xs+1*dxx,yy,'rd',xs+2*dxx,yy,'go',xs+3*dxx,yy,'bv','LineWidth',1.5);
+				text(xs+0.03,yy,'C1','parent',hca);
+				text(xs+1*dxx+0.03,yy,'C2','parent',hca);
+				text(xs+2*dxx+0.03,yy,'C3','parent',hca);
+				text(xs+3*dxx+0.03,yy,'C4','parent',hca);
+				axis(hca,'off');
                 
             case 'lmn'
                 cla(h(1));
