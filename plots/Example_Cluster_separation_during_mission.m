@@ -42,7 +42,7 @@ if flag_get_all_Cluster_positions_from_isdat,
 end
 if flag_get_all_Cluster_positions_from_www,
 	disp('Downloading from internet file with all Cluster orbits ...');
-	[f,status]=urlwrite('http://space.irfu.se/~andris/data/cluster/mR.mat','m.mat');
+	[f,status]=urlwrite('http://space.irfu.se/~andris/data/cluster/mR.mat','mR.mat');
 end
 
 %% Get all Cluster position from isdat
@@ -103,9 +103,9 @@ if flag_create_Cluster_file
 	save -append mRcluster drap12 drap13 drap14 drap23 drap24 drap34;
 	
 	%% Find tail season an dayside season
-	c_eval('itail?=find(Rap?(2:end,2)>0 & (Rap?(1:end-1,3).*Rap?(2:end,3) <0) );')
+	c_eval('itail?=find(Rap?(2:end,2)<0 & (Rap?(1:end-1,3).*Rap?(2:end,3) <0) );')
 	c_eval('ttail?=Rap?(itail?,1);');
-	c_eval('iday?=find(Rap?(2:end,2)<0 & (Rap?(1:end-1,3).*Rap?(2:end,3) <0 ));')
+	c_eval('iday?=find(Rap?(2:end,2)>0 & (Rap?(1:end-1,3).*Rap?(2:end,3) <0 ));')
 	c_eval('tday?=Rap?(iday?,1);');
 	c_eval('save -append mRcluster ttail? tday?');
 end
