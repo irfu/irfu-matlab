@@ -1,6 +1,8 @@
 function outhandle=irf_pl_info(string,inhandle,position);
 %IRF_PL_INFO   Add information to the plot
 %
+% Will be removed!!! Use IRF_LEGEND instead!
+%
 % outhandle=irf_pl_info(string,inhandle,position);
 % outhandle=irf_pl_info(string,inhandle);
 % add information in string to the plot given by handle inhandle
@@ -13,6 +15,10 @@ function outhandle=irf_pl_info(string,inhandle,position);
 %   set(ht,'interpreter','none','FontSize', 10);
 %
 % $Id$
+
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+disp('IRF_PL_INFO will be removed! Use IRF_LEGEND instead.');
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
 
 if nargin == 1, inhandle=gca;position=[.02 1];end
 if nargin == 2, position=[.02 1];end
