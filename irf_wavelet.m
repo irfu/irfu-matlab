@@ -59,6 +59,9 @@ fmin=0.5*Fs/10^amax;
 nf=100;
 % wavelet_width
 wavelet_width=5.36;
+%% Check for NaNs
+inan=isnan(data);
+data(inan)=0;
 
 %% Check the options
 while flag_have_options
@@ -161,6 +164,10 @@ for i=1:size(data,2), % go through all the datacolumns
 		power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
     end
     specrec.p{i}=power2;
+	
+	%% remove NaNs
+	
+	specrec.p{i}(inan(:,i),:)=NaN;
 end
 
 if nargout==0,
