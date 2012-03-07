@@ -52,9 +52,9 @@ else                % assume time axis is first column
 end
 % f
 amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
-fmin=0.5*Fs/10^amin;
+fmax=0.5*Fs/10^amin;
 amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax
-fmax=0.5*Fs/10^amax;
+fmin=0.5*Fs/10^amax;
 % nf
 nf=100;
 % wavelet_width
@@ -85,8 +85,8 @@ while flag_have_options
         case 'f'
             if numel(args)>1 && isnumeric(args{2})
                 if numel(args{2})== 2,
-                    fmin=args{2}(1);
-                    fmax=args{2}(2);
+                    fmin=max(fmin,args{2}(1)); 
+                    fmax=min(fmax,args{2}(2));
                 else
                     irf_log('fcal','parameter ''f'' should have vector with 2 elements as parameter value.')
                 end
@@ -157,7 +157,8 @@ for i=1:size(data,2), % go through all the datacolumns
     censur=floor(2*a);
     power2=power;
     for j=1:anumber;
-        power2(1:censur(j),j)=NaN;power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
+        power2(1:censur(j),j)=NaN;
+		power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
     end
     specrec.p{i}=power2;
 end
