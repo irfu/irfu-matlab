@@ -18,10 +18,12 @@ if nargin==1 && ischar(handles)
         irf_plot(1);                    % create new figure with one panel
     end
     ud=get(gcf,'userdata');
-    if isfield(ud,'subplot_handles')
+    if isfield(ud,'subplot_handles') && any(ishandle(ud.subplot_handles))
         handles=ud.subplot_handles;
     else
-        handles=gca;
+		handles=gca;
+		ud.subplot_handles=handles;
+		set(gcf,'userdata',ud);
     end
     flag_tag_defined=1;
 end
