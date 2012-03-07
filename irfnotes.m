@@ -293,6 +293,25 @@ end
 %% PANELS that can be used for your figures
 % !!! when single sc data are plotted, assumes s/c number is in variable 'ic'
 
+% GENERAL
+if 1,   % PANEL:          time series wavelet spectrogram
+	hca=irf_panel('B wavelet spectrogram'); % example time series magnetic field
+	B=B4(:,[1 2]);                          % define time series 
+	specrec=irf_wavelet(B,'f',[0.1 180]);   % specify frequency range if needed
+	specrec.p_label={'log10 S','[nT^2/Hz]'};
+	irf_spectrogram(hca,specrec);
+	set(hca,'yscale','log');
+	irf_zoom(hca,'y',[1 180]);
+	set(hca,'ytick',[0.1 1 10 100])
+	caxis(hca,[-9 -1]);
+	% add frequency lines
+	hold(hca,'on');
+	c_eval('fce=irf_plasma_calc(B?(:,[1 5]),0,0,0,0,''Fce'');',ic);          % fce frequency
+	irf_plot(hca,[fce(:,1) fce(:,2)/42.85],'-','linewidth',0.2,'color','k'); % lower hybrid frequency
+	hold(hca,'off');
+end
+
+% CLUSTER SPECIFIC
 if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSE
   hca=irf_panel('C? FGM B GSE');
   c_eval('irf_plot(hca,B?);',ic);
