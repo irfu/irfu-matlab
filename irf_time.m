@@ -156,9 +156,19 @@ switch lower(flag)
     case {'epoch2iso','epoch2isoshort'}
         d = irf_time(t_in,'vector');
         if strcmp(flag,'epoch2isoshort')
-            t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%06.3fZ');
-        else
-            t_out=num2str(d,'%04d-%02d-%02dT%02d:%02d:%09.6fZ');
+			fmt='%04d-%02d-%02dT%02d:%02d:%06.3fZ';
+            t_out=num2str(d,fmt);
+			ii=find(t_out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
+			if any(ii),
+				t_out(ii,:)=num2str(irf_time(t_in(ii)+0.0005,'vector'),fmt);
+			end
+		else
+			fmt='%04d-%02d-%02dT%02d:%02d:%09.6fZ';
+            t_out=num2str(d,fmt);
+			ii=find(t_out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
+			if any(ii),
+				t_out(ii,:)=num2str(irf_time(t_in(ii)+0.0000005,'vector'),fmt);
+			end
         end
     case 'iso2epoch'
         mask = '%4d-%2d-%2dT%2d:%2d:%fZ';
