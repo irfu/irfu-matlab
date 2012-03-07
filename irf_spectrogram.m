@@ -143,7 +143,7 @@ for comp=1:min(length(h),ncomp)
             specrec.f_unit='Hz';
         end
         if ~isfield(specrec,'f_label')
-            specrec.f_label=['frequency [' specrec.f_unit ']'];
+            specrec.f_label=['f [' specrec.f_unit ']'];
         end
     end
     
