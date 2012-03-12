@@ -266,7 +266,7 @@ if flag_subplot==0,  % One subplot
         zoom_in_if_necessary(ax);
         
         % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
-        irf_zoom(ax,'y');
+        if ~ishold(ax), irf_zoom(ax,'y'); end % automatic zoom only if hold is not on
         
         if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
             lab = cell(1,length(var_desc{1}.size));
@@ -276,8 +276,8 @@ if flag_subplot==0,  % One subplot
             end
             ylabel(ax,lab);
         end
-        
-        c = get(h(1),'Parent');
+        c=h;
+%        c = get(h(1),'Parent');
         
         tt = x(~isnan(x(:,1)),1);
         tt = tt(1);
