@@ -30,23 +30,13 @@ switch fmt % set rounding precision for different formats
 end
 
 if length(t)<5
-	% We need to do all this because DATESTR rounds seconds
-	d = fromepoch(t);
-	
-    s1 = cell(4,1);
-	for j=2:5, s1(j-1) = {num2str(d(:,j),'%02d')}; end
-	
-    % Take care about seconds separately
-    if fmt, s2 = num2str(d(:,6),'%06.3f');
-    else s2 = num2str(d(:,6),'%09.6f');
+    d = fromepoch(t);
+    switch fmt
+        case 0
+            out = num2str(d,'%04d-%02d-%02dT%02d:%02d:%09.6fZ');
+        case 1
+            out = num2str(d,'%04d-%02d-%02dT%02d:%02d:%06.3fZ');
     end
-
-	sZ = s2(:,1); sZ(:) = 'Z';
-	sT = sZ; sT(:) = 'T';
-	sdash = sZ; sdash(:) = '-';
-	scol = sZ; scol(:) = ':';
-	
-	out = [num2str(d(:,1)) sdash s1{1} sdash s1{2} sT s1{3} scol s1{4} scol s2 sZ];
     
     ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
     if any(ii),
@@ -91,15 +81,16 @@ else
                 for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
             end
         end
-        s2 = num2str(t(ii)-mins(j),'%09.6f');
-        if fmt, s2 = s2(:,1:6); end
-        out(ii,18:end-1) = s2;
+        switch fmt
+        case 0
+            out(ii,18:end-1) = num2str(t(ii)-mins(j),'%09.6f');
+        case 1
+            out(ii,18:end-1) = num2str(t(ii)-mins(j),'%06.3f');
+        end
     end
     ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
     if any(ii),
         out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
     end
 end
-
-end %epoch2iso
 
