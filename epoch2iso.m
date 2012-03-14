@@ -59,11 +59,11 @@ else
 	
 	for j=1:5
 		if d(1,j)==d(end,j)
-			ss = add_zero(d(1,j),num2str(d(1,j),'%d'));
+			ss = num2str(d(1,j),'%02d');
 			for jj=1:sl(j,2), out(:,sl(j,1)+jj) = ss(jj); end
 		else
 			j_start = j; 
-			for jj=j:5, s1(jj) = {add_zero(d(:,jj),num2str(d(:,jj),'%d'))}; end
+			for jj=j:5, s1(jj) = {num2str(d(:,jj),'%02d')}; end
 			break
 		end
 	end
@@ -78,29 +78,11 @@ else
 				for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
 			end
 		end
-		s2 = add_zero(t(ii)-mins(j),num2str(t(ii)-mins(j),'%6f'));
+		s2 = num2str(t(ii)-mins(j),'%09.6f');
 		if fmt, s2 = s2(:,1:6); end
 		out(ii,18:end-1) = s2;
 	end
 end
 
 end %epoch2iso
-
-% Help function to insert zeros for numbers containing only one digit 
-function out = add_zero(d,s)
-
-    if size(s,2) == 1
-        ss = s;
-        ss(:) = '0';
-        out = [ss s];
-    else
-        out = s;
-        ii = find(d<10);
-        if ~isempty(ii)
-            ss = s(ii,1);
-            ss(:) = '0';
-            out(ii,:) = [ss s(ii:(end-1))];
-        end
-    end
-end
 
