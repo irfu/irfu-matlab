@@ -22,6 +22,13 @@ function out = epoch2iso(t,fmt)
 
 if nargin<2, fmt = 0; end
 
+switch fmt % set rounding precision for different formats
+    case 0
+        dt_res = 5e-7;
+    case 1
+        dt_res = 5e-4;
+end
+
 if length(t)<5
 	% We need to do all this because DATESTR rounds seconds
 	d = fromepoch(t);
@@ -39,6 +46,11 @@ if length(t)<5
 	scol = sZ; scol(:) = ':';
 	
 	out = [num2str(d(:,1)) sdash s1{1} sdash s1{2} sT s1{3} scol s1{4} scol s2 sZ];
+    
+    ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
+    if any(ii),
+        out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
+    end
 else
 	% This approach is faster for data with many samples per minute, as we run 
 	% from epoch only once per minute
@@ -68,20 +80,24 @@ else
 		end
 	end
 	
-	for j=1:length(mins)
-		if j==length(mins), ii = find(t>=mins(j));
+    for j=1:length(mins)
+        if j==length(mins), ii = find(t>=mins(j));
         else ii = find(t>=mins(j) & t<mins(j+1));
-		end;
-		if isempty(ii), continue, end
-		if j_start
-			for kk=j_start:5
-				for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
-			end
-		end
-		s2 = num2str(t(ii)-mins(j),'%09.6f');
-		if fmt, s2 = s2(:,1:6); end
-		out(ii,18:end-1) = s2;
-	end
+        end;
+        if isempty(ii), continue, end
+        if j_start
+            for kk=j_start:5
+                for jj=1:sl(kk,2), out(ii,sl(kk,1)+jj) = s1{kk}(j,jj); end
+            end
+        end
+        s2 = num2str(t(ii)-mins(j),'%09.6f');
+        if fmt, s2 = s2(:,1:6); end
+        out(ii,18:end-1) = s2;
+    end
+    ii = find(out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
+    if any(ii),
+        out(ii,:) = epoch2iso(t(ii)+dt_res,fmt);
+    end
 end
 
 end %epoch2iso
