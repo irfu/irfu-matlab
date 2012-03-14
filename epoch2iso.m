@@ -33,6 +33,7 @@ if length(t)<5
 	% We need to do all this because DATESTR rounds seconds
 	d = fromepoch(t);
 	
+    s1 = cell(4,1);
 	for j=2:5, s1(j-1) = {num2str(d(:,j),'%02d')}; end
 	
     % Take care about seconds separately
