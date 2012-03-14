@@ -29,7 +29,7 @@ switch fmt % set rounding precision for different formats
         dt_res = 5e-4;
 end
 
-if length(t)<5
+if length(t)<5 || any(diff(t)<0)
     d = fromepoch(t);
     switch fmt
         case 0
@@ -45,6 +45,7 @@ if length(t)<5
 else
 	% This approach is faster for data with many samples per minute, as we run 
 	% from epoch only once per minute
+    % This approach is only applicable to monotonically increasing time
 	out = char(zeros(length(t),27-fmt*3));
 	out(:,[5 8]) = '-';
 	out(:,11) = 'T';
