@@ -325,7 +325,7 @@ if flag_lineplot
     dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
   if flag_labels_is_on, 
-      add_text(h,text_s);
+      add_text(ax,text_s);
   end
   
 elseif flag_spectrogram
