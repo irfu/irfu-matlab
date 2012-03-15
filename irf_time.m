@@ -13,9 +13,9 @@ function t_out = irf_time(t_in,flag)
 %     vector: [year month date hour min sec] in each row
 %        iso: string in ISO format
 %   isoshort: string in shorter ISO format 
-%   yyyymmdd: string 
-% yyyymmddhh: string 
-%yyyymmddhhmm: string 
+%   yyyymmdd: string
+% yyyymmddhh: string
+%yyyymmddhhmm: string
 %       date: MATLAB datenum format
 %    datenum: -=-
 %        doy: [year, doy]
