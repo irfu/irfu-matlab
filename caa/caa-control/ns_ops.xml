@@ -4776,6 +4776,9 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
         </operation>
+        <operation c4="yes" start="2010-01-17T20:10:00Z" dt="55200" plan="no" sdesc="bad_bias">
+                <desc>Default -40 nA bias.</desc>
+        </operation>
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:30:00Z" dt="34200" plan="no" sdesc ="no_p32">
                 <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
@@ -5108,7 +5111,7 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
                 </res>
         </operation>
-        <operation c2="yes" start="2010-09-181T14:30:00Z" dt="172800" plan="no" sdesc="no_data">
+        <operation c2="yes" start="2010-09-18T14:30:00Z" dt="172800" plan="no" sdesc="no_data">
                 <desc>WEC problems. 2 days of data lost.</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
