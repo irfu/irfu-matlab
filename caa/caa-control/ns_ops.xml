@@ -4830,11 +4830,20 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02219.html">Juergen 100209</link>
                 </res>
         </operation>
+        <operation c2="yes" c3="yes" start="2010-02-06T05:00:20Z" dt="29102" plan="no" sdesc ="no_p32">
+                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        </operation>
+        <operation c1="yes" start="2010-02-12T00:28:32Z" dt="6" plan="no" sdesc="bad_data">
+                <desc>Bad phase data</desc>
+        </operation>
         <operation c4="yes" start="2010-02-12T08:50:00Z" dt="10200" plan="no" sdesc="no_data">
                 <desc>SSR anomaly</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02235.html">Juergen 100215</link>
                 </res>
+        </operation>
+        <operation c2="yes" c3="yes" start="2010-02-15T14:15:00Z" dt="13500" plan="no" sdesc="bad_bias">
+                <desc>Instruments operated through eclipse at high bias.</desc>
         </operation>
         <operation c3="yes" start="2010-02-24T14:59:55Z" dt="25" plan="no" sdesc="bad_data">
                 <desc>Manoeuvre with instruments on.</desc>
@@ -5547,12 +5556,25 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </res>
         </operation>
 
-<operation start="2012-03-04T02:55:36Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
-        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).</desc>
+<operation start="2012-03-04T02:55:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 02:51.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
+<operation start="2012-03-14T03:12:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias step
+s of -12 nA from -104 nA to -500 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
                         
+<operation start="2012-03-14T03:13:44Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 03:09.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
 <operation start="2012-03-05T10:05:00Z" dt="84600" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
