@@ -154,10 +154,10 @@ if ischar(args{1})
 		else d = '.';
 		end
 
-        c_ct{1}.aspoc = readaspocactive('/C1_CP_ASP_ACTIVE_ALL_DATA.cef', d);
-        c_ct{2}.aspoc = readaspocactive('/C2_CP_ASP_ACTIVE_ALL_DATA.cef', d);
-        c_ct{3}.aspoc = readaspocactive('/C3_CP_ASP_ACTIVE_ALL_DATA.cef', d);
-        c_ct{4}.aspoc = readaspocactive('/C4_CP_ASP_ACTIVE_ALL_DATA.cef', d);
+        c_ct{1}.aspoc = readaspocactive('/C1_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
+        c_ct{2}.aspoc = readaspocactive('/C2_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
+        c_ct{3}.aspoc = readaspocactive('/C3_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
+        c_ct{4}.aspoc = readaspocactive('/C4_CP_ASP_ACTIVE__20010101_000000_20100101_000000_V081030.cef', d);
 	elseif strcmp(args{1},'load_bad_ib')
 
         global c_ct
