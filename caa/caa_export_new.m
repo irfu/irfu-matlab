@@ -56,6 +56,7 @@ if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
 end
 end
 ibsave=false;
+badibfound=false;
 result = [];
 result_com = {};
 
@@ -723,6 +724,11 @@ for dd = 1:length(dirs)
    		   irf_log('save', 'Saving empty subinterval')
    	   end
       else
+       if regexp(caa_vs,'^(I|P|E|B)B$') % iburst can be only partly inside time frame
+           t_int(1)=t_int(1)-120;
+           t_int(2)=t_int(2)+300;
+       end
+           
          % Limit data to both time interval given as input, and time interval read from file.
    	   data = irf_tlim(data,t_int_full);  % NOTE: Superfluous when using caa_get above. (ML)
    	   data = irf_tlim(data, t_int);
@@ -731,7 +737,7 @@ for dd = 1:length(dirs)
        end
        % Check for bad iburst file
 %if 0
-       if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
+        if regexp(caa_vs,'^(P|E|B)B$')   % working on multiple iburst in 24h
            if ~exist('c_ct','var')
                 global c_ct % includes bad ib files
            end
@@ -745,8 +751,9 @@ for dd = 1:length(dirs)
                for i=1:size(tint,1)
                     if ~isempty(data)
                         sizemem=size(data,1);
-                        data = irf_tlim(data,tint(i)-60,tint(i)+240,1); % remove -1 min to +4 min
+                        data = irf_tlim(data,tint(i)-90,tint(i)+240,1); % remove -1.5 min to +4 min
                         if size(data,1)~=sizemem
+                            badibfound=true;
                             irf_log('save', [caa_vs num2str(cl_id) ' L2 iburst removed. Data marked as bad.'])
                         end
 
@@ -1156,7 +1163,7 @@ buf = sprintf('%s%s',buf,'!                       Data                          
 buf = sprintf('%s%s',buf,'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 buf = sprintf('%s%s',buf,'DATA_UNTIL = "END_OF_DATA"\n');
 
-if (~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~strcmp(caa_vs, 'BB')) || ~isempty(data) || ibsave
+if (~strcmp(caa_vs, 'IB') && ~strcmp(caa_vs, 'PB') && ~strcmp(caa_vs, 'EB') && ~strcmp(caa_vs, 'BB')) || ~isempty(data) || ibsave || badibfound
     [fid,msg] = fopen([file_name ext_s],'w');
     if fid < 0
         irf_log('save',['problem opening CEF file: ' msg])
@@ -1202,7 +1209,7 @@ if ~isempty(data)
 		status = 1;
 		return
 	end
-elseif ~isempty(regexp(caa_vs,'^(I|P|E|B)B$')) && ~ibsave 
+elseif ~isempty(regexp(caa_vs,'^(I|P|E|B)B$')) && ~ibsave && ~badibfound 
    irf_log('proc','Will not export empty internal burst IB, PB, EB or BB files')
 else
    disp(['Filename : ' file_name ext_s ' (Empty)' ]);
