@@ -4857,6 +4857,9 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02325.html">Colette 100317</link>
                 </res>
         </operation>
+	<operation c2="yes" start="2010-03-04T18:00:00Z" dt="81240" plan="no" sdesc="info">
+		<desc>Bias at defualt -40 nA.</desc>
+	</operation>
 	<operation c2="yes" start="2010-03-02T13:40:46Z" dt="72560" plan="no" sdesc="bad_data">
 		<desc>DWP reset caused bad data.</desc>
 		<res>
@@ -4875,6 +4878,12 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02384.html">Colette 100414</link>
                 </res>
         </operation>
+	<operation c1="yes" start="2010-03-27T05:25:00Z" dt="9900" plan="no" sdesc="no_p32">
+		<desc>Something seriously wrong with p32. Looks like a SPLIT sampling interval not caught automatically.</desc>
+	</operation>
+	<operation c1="yes" start="2010-03-30T04:32:18Z" dt="2" plan="no" sdesc="bad_data">
+		<desc>Bad packet.</desc>
+	</operation>
 	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_data">
 		<desc>EFW turn-off by WEC following probable DWP SEU.</desc>
 		<res>
