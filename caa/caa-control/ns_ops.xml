@@ -3340,14 +3340,14 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 <operation c1="yes" c3="yes" start="2007-07-04T13:25:24Z" dt="7722" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation dt="7471" plan="no" sdesc="bad_data" start="2007-07-04T13:25:29Z"  c1="yes" c3="yes">
                 <desc>V? in place of p32 in the telemetry (flight software test?)</desc>
         </operation>
 <operation c1="yes" c3="yes" start="2007-07-05T12:01:24Z" dt="39462" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation dt="39510" plan="no" sdesc="bad_data" start="2007-07-05T12:01:30Z"  c1="yes" c3="yes">
@@ -3534,7 +3534,7 @@ Effect on the CAA processing:
 		<res><link href="ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf">ESOC MOR</link></res>
 	</operation>
 <operation c1="yes" c3="yes" start="2007-11-02T02:05:24Z" dt="8142" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation dt="8070" plan="no" sdesc="bad_data" start="2007-11-02T02:05:29Z"  c1="yes" c3="yes">
@@ -3956,19 +3956,19 @@ Effect on the CAA processing:
 		<desc>Default bias (-40 nA).</desc>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-08-08T17:04:24Z" dt="21222" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c3="yes" start="2008-08-14T16:40:24Z" dt="119862" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" start="2008-08-15T10:32:24Z" dt="55542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-08-20T13:31:24Z" dt="23382" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2008-08-23T07:06:00Z" dt="280380" plan="no" sdesc="no_tm">
@@ -3982,7 +3982,7 @@ Effect on the CAA processing:
 		<desc>Default bias (-40 nA) for 2 days.</desc>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-08-26T19:40:24Z" dt="98562" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation plan="no" sdesc="bad_data" start="2008-09-02T01:35:53Z" c3="yes" dt="2">
@@ -4016,21 +4016,21 @@ Effect on the CAA processing:
 		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-09-25T18:40:24Z" dt="52962" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" c3="yes" start="2008-09-29T12:00:00Z" dt="62400" plan="no" sdesc="tbd">
 		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
 	</operation>
 <operation c1="yes" c3="yes" start="2008-09-29T12:05:48Z" dt="61998" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" c3="yes" start="2008-10-04T05:00:00Z" dt="25200" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
 <operation c1="yes" c3="yes" start="2008-10-04T05:15:24Z" dt="24642" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2008-10-04T11:58:00Z" dt="8400" plan="no" sdesc="no_tm">
@@ -4049,7 +4049,7 @@ Effect on the CAA processing:
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-10-13T06:51:24Z" dt="102762" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2008-10-20T18:34:00Z" dt="208440" plan="yes" sdesc="TBD">
@@ -4082,7 +4082,7 @@ Effect on the CAA processing:
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-11-04T14:40:24Z" dt="20382" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation plan="yes" sdesc="bad_data" start="2008-11-10T16:09:12Z" c2="yes" dt="50">
@@ -4098,7 +4098,7 @@ Effect on the CAA processing:
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-11-11T08:06:24Z" dt="8622" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation plan="yes" sdesc="bad_data" start="2008-11-11T13:00:00Z" c1="yes" dt="300">
@@ -4177,7 +4177,7 @@ Effect on the CAA processing:
 		<desc>Manoeuvre (2 pulses)</desc>
         </operation>
 <operation c2="yes" c3="yes" start="2008-12-09T07:25:24Z" dt="9582" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c2="yes" c3="yes" start="2008-12-09T07:25:31Z" dt="9269" plan="no" sdesc="tbd">
@@ -4330,7 +4330,7 @@ Effect on the CAA processing:
 		<desc>Unknown error (commanding?) caused corrupt p32 data. p34 OK.</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-03-21T00:00:24Z" dt="25782" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c4="yes" start="2009-03-31T12:00:00Z" dt="5580" plan="no" sdesc="bad_data">
@@ -4401,7 +4401,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-05-09T17:01:24Z" dt="58422" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-05-15T11:00:00Z" dt="270" plan="yes" sdesc="bad_data">
@@ -4544,7 +4544,7 @@ Effect on the CAA processing:
                 <res><link href="ESOC_MOR/Cluster_MOR_no473_(week35-2009).pdf">MOR 473</link></res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-01T10:09:24Z" dt="9342" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-09-02T17:50:40Z" dt="121920" plan="no" sdesc="no_data">
@@ -4555,15 +4555,15 @@ Effect on the CAA processing:
 		</res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-03T20:49:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-06T04:55:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-08T06:37:24Z" dt="34242" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c3="yes" start="2009-09-09T01:19:38Z" dt="198000" plan="no" sdesc="no_data">
@@ -4575,15 +4575,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-13T08:58:24Z" dt="6342" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-13T14:45:24Z" dt="99462" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-15T16:52:24Z" dt="9282" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c3="yes" start="2009-09-18T23:02:00Z" dt="16080" plan="no" sdesc="no_data">
@@ -4593,7 +4593,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-20T11:50:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-09-20T13:48:48Z" dt="38400" plan="no" sdesc="no_data">
@@ -4603,11 +4603,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" start="2009-09-20T22:55:24Z" dt="5976" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" c3="yes" start="2009-09-20T22:55:24Z" dt="82242" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c2="yes" start="2009-09-22T13:00:00Z" dt="14400" plan="yes" sdesc="no_data">
@@ -4618,7 +4618,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-09-22T20:43:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-09-30T10:33:00Z" dt="44820" plan="no" sdesc="no_data">
@@ -4628,15 +4628,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c2="yes" start="2009-10-01T09:05:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-10-02T06:26:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2009-10-03T08:17:24Z" dt="39762" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c4="yes" start="2009-10-04T14:58:30Z" dt="111540" plan="no" sdesc="bad_data">
@@ -4646,11 +4646,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-10-04T15:09:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2009-10-06T02:54:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c3="yes" start="2009-10-08T05:00:00Z" dt="30600" plan="no" sdesc="bad_data">
@@ -4680,7 +4680,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-10-14T04:24:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-10-14T07:00:00Z" dt="-1" plan="no" sdesc="no_p4">
@@ -4708,7 +4708,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-10-21T07:44:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2009-10-21T19:35:00Z" dt="21420" plan="no" sdesc="no_data">
@@ -4718,11 +4718,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-10-28T04:01:24Z" dt="36582" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-11-02T05:10:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2009-11-06T16:30:00Z" dt="17400" plan="no" sdesc ="info">
@@ -4904,10 +4904,10 @@ Effect on the CAA processing:
                 <desc>Probes 3 and 4 in a strange state. p2 data may or may not be useful. Commanding error?</desc>
         </operation>
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:00:00Z" dt="12600" plan="no" sdesc ="no_p32">
-                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:06:24Z" dt="12342" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-01-17T16:21:05Z" dt="10" plan="no" sdesc="bad_data">
@@ -4926,10 +4926,10 @@ Effect on the CAA processing:
                 </res>
         </operation>
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:30:00Z" dt="34200" plan="no" sdesc ="no_p32">
-                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:35:24Z" dt="34302" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-01-21T20:48:00Z" dt="84300" plan="no" sdesc="bad_data">
@@ -4954,10 +4954,10 @@ Effect on the CAA processing:
                 </res>
         </operation>
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:00Z" dt="29700" plan="no" sdesc ="no_p32">
-                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:24Z" dt="29322" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_data">
@@ -4985,10 +4985,10 @@ Effect on the CAA processing:
                 </res>
         </operation>
         <operation c2="yes" c3="yes" start="2010-02-06T05:00:20Z" dt="29102" plan="no" sdesc ="no_p32">
-                <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c2="yes" c3="yes" start="2010-02-06T05:00:24Z" dt="29082" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-02-12T00:28:32Z" dt="6" plan="no" sdesc="bad_data">
@@ -5037,25 +5037,26 @@ Effect on the CAA processing:
                 </res>
         </operation>
 	<operation c1="yes" start="2010-03-27T05:25:00Z" dt="9900" plan="no" sdesc="no_p32">
-		<desc>Something seriously wrong with p32. Looks like a SPLIT sampling interval not caught automatically.</desc>
-	</operation>
+		<desc>Unusual burst setup: V43M and SCY sampled at 18 kHz. Caused use of SPLIT sampling and attendant problems with V23 data.</desc>
+                <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+ 	</operation>
 	<operation c1="yes" start="2010-03-30T04:32:18Z" dt="2" plan="no" sdesc="bad_data">
 		<desc>Bad packet.</desc>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-06T04:40:24Z" dt="8982" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-07T17:40:24Z" dt="41382" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-10T16:05:24Z" dt="17922" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-12T22:40:24Z" dt="16902" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_data">
@@ -5067,7 +5068,7 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-15T01:40:24Z" dt="28722" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-04-16T14:21:00Z" dt="3000" plan="no" sdesc="no_data">
@@ -5077,11 +5078,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-17T04:50:24Z" dt="39822" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-19T16:40:24Z" dt="19782" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
        <operation c1="yes" start="2010-04-20T21:46:00Z" dt="27240" plan="no" sdesc="no_data">
@@ -5091,11 +5092,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-21T23:15:24Z" dt="18702" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-23T23:36:24Z" dt="39822" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c3="yes" start="2010-04-24T10:10:00Z" dt="28800" plan="no" sdesc="bad_data">
@@ -5105,15 +5106,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-26T11:35:24Z" dt="19602" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-04-28T18:05:24Z" dt="18822" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-05-03T04:55:24Z" dt="24282" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2010-05-04T03:07:12Z" dt="29808" plan="yes" sdesc="TBD">
@@ -5127,11 +5128,11 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-05-09T15:15:24Z" dt="48282" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-05-16T14:40:24Z" dt="38862" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-05-23T13:02:00Z" dt="10200" plan="no" sdesc="no_data">
@@ -5141,7 +5142,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-05-27T12:55:24Z" dt="60282" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c2="yes" start="2010-05-28T04:12:14Z" dt="98580" plan="no" sdesc="no_data">
@@ -5162,15 +5163,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-01T13:05:24Z" dt="29742" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-04T01:00:24Z" dt="5982" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-05T23:40:24Z" dt="26982" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-06-08T06:36:00Z" dt="10800" plan="yes" sdesc="no_data">
@@ -5240,7 +5241,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c3="yes" start="2010-06-22T17:30:24Z" dt="69882" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
          <operation c1="yes" start="2010-06-22T19:12:00Z" dt="118800" plan="no" sdesc="no_data">
@@ -5250,7 +5251,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-26T16:12:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
        <operation c3="yes" start="2010-06-29T04:17:32Z" dt="122400" plan="no" sdesc="no_data">
@@ -5260,7 +5261,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-30T12:45:24Z" dt="65082" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-07-05T18:14:00Z" dt="4200" plan="no" sdesc="bad_data">
@@ -5270,7 +5271,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-05T18:14:24Z" dt="4122" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c2="yes" start="2010-07-05T18:15:00Z" dt="3600" plan="no" sdesc="bad_data">
@@ -5286,19 +5287,19 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-08T00:33:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-10T06:48:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-12T00:40:24Z" dt="48582" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-14T10:25:24Z" dt="18882" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c2="yes" start="2010-07-15T06:06:30Z" dt="75600" plan="no" sdesc="no_data">
@@ -5308,7 +5309,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-17T01:39:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-07-17T07:00:00Z" dt="156600" plan="no" sdesc="no_data">
@@ -5318,27 +5319,27 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-19T07:55:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" start="2010-07-21T20:25:24Z" dt="76282" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" c3="yes" start="2010-07-21T20:25:24Z" dt="93582" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-23T19:30:24Z" dt="7362" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-25T20:30:24Z" dt="26322" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-28T08:00:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c2="yes" start="2010-07-30T01:17:00Z" dt="53400" plan="no" sdesc="bad_data">
@@ -5348,11 +5349,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-01T15:40:24Z" dt="25182" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-04T03:50:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
@@ -5362,11 +5363,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-08T15:34:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-13T03:58:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-08-14T02:31:00Z" dt="20400" plan="yes" sdesc="no_data">
@@ -5382,7 +5383,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-15T11:15:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c3="yes" start="2010-08-15T16:32:00Z" dt="27000" plan="no" sdesc="no_data">
@@ -5410,7 +5411,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-21T10:30:24Z" dt="69942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-08-26T12:55:00Z" dt="387300" plan="no" sdesc="bad_data">
@@ -5420,7 +5421,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-08-28T14:56:24Z" dt="40002" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-08-31T16:55:00Z" dt="27300" plan="no" sdesc="no_data">
@@ -5436,15 +5437,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" start="2010-09-04T06:39:24Z" dt="51162" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c3="yes" start="2010-09-04T06:39:24Z" dt="13416" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-09-09T08:22:24Z" dt="3942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-09-09T22:00:00Z" dt="66600" plan="no" sdesc="bad_data">
@@ -5454,11 +5455,11 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-09-11T06:35:24Z" dt="32082" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-09-15T08:00:24Z" dt="73122" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-09-16T22:18:00Z" dt="18000" plan="yes" sdesc="no_data">
@@ -5474,19 +5475,19 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" start="2010-09-20T06:30:24Z" dt="34782" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2010-09-20T06:30:24Z" dt="33336" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c3="yes" start="2010-09-20T06:30:24Z" dt="34782" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-09-27T05:18:24Z" dt="23142" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-09-28T21:44:00Z" dt="14400" plan="yes" sdesc="no_data">
@@ -5502,15 +5503,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-10-04T04:28:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-10-10T06:24:24Z" dt="68502" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-10-17T06:10:24Z" dt="50682" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_data">
@@ -5551,15 +5552,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-10-29T01:36:24Z" dt="7422" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c3="yes" start="2010-10-29T08:14:24Z" dt="97722" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2010-10-30T04:27:24Z" dt="24942" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c3="yes" start="2010-11-02T23:40:00Z" dt="88800" plan="no" sdesc="bad_data">
@@ -5569,7 +5570,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-11-07T04:15:24Z" dt="4002" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c1="yes" start="2010-11-07T11:10:00Z" dt="73800" plan="no" sdesc="bad_data">
@@ -5584,23 +5585,23 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" start="2010-11-08T13:45:24Z" dt="78702" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c2="yes" start="2010-11-08T13:45:24Z" dt="34356" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c3="yes" start="2010-11-08T13:45:24Z" dt="78702" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c3="yes" start="2010-11-11T02:16:24Z" dt="56202" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c3="yes" start="2010-11-18T02:05:24Z" dt="30882" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
@@ -5622,15 +5623,15 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-12-10T22:40:24Z" dt="17442" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-12-13T05:05:24Z" dt="16242" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c3="yes" start="2011-02-26T14:16:24Z" dt="62802" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_data">
@@ -5645,27 +5646,27 @@ Effect on the CAA processing:
 		</res>
 	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-03-11T06:45:24Z" dt="14082" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-03-31T05:04:24Z" dt="36342" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c3="yes" start="2011-04-24T03:25:24Z" dt="65442" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-04-28T11:07:24Z" dt="79542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-05-02T02:45:24Z" dt="24882" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-05-06T20:16:24Z" dt="21222" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
         <operation c3="yes" c4="yes" start="2011-05-22T17:15:00Z" dt="19200" plan="yes" sdesc ="tbd">
@@ -5741,7 +5742,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c3="yes" start="2011-07-06T07:30:24Z" dt="74862" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-11T15:19:00Z" dt="900" plan="yes" sdesc ="tbd">
@@ -5751,7 +5752,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-07-13T18:34:24Z" dt="7542" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-15T02:19:00Z" dt="900" plan="yes" sdesc ="tbd">
@@ -5761,7 +5762,7 @@ Effect on the CAA processing:
                 </res>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-07-18T08:19:24Z" dt="8442" plan="no" sdesc="no_p32">
-        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-18T10:19:00Z" dt="900" plan="yes" sdesc ="tbd">
