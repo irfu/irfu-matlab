@@ -17,14 +17,11 @@
 			<!ELEMENT link (#PCDATA)>
 			<!ATTLIST link href CDATA #REQUIRED>
 ]>
-
 <!--
 There are four columns in the output:
 START    DT    PLAN   SDESC
-
 START   Start time of the anomaly, ISO time string
 DT      Length of the anomaly in sec. -1 means infinity. -157 means TDB.
-
 SDESC   Short description of the anomaly (problem code). Possible values:
 no_tm     = no telemetry at all (WEC off, missing data, etc)
 bad_tm    = digital problems, like chopped up data
@@ -43,7 +40,6 @@ no_10Hz_filt = 10Hz filter is not operational
 no_spin_fits = No on-board spin fits
 info      = informational only (no effect on CAA processing)
 TBD       = TBD
-
 Effect on the CAA processing:
               no_tm: informational
  bad_tm or bad_data: data is treated as non-existent. No processing performed, no L0 data.
@@ -52,9 +48,7 @@ Effect on the CAA processing:
    hxonly or bad_lx: P data is processed to L0 only. No science P data processed.
           spec_bias: data is flagged with NSOPS flag
  no_10Hz_filt, no_spin_fits, TBD, info: informational
-
  -->
-
 <table>
 	<title>Cluster EFW Operations</title>
 	<description>
@@ -3345,9 +3339,17 @@ Effect on the CAA processing:
 		<link href="esoc070626a.txt">ESOC 070626</link>
 		</res>
 	</operation>
+<operation c1="yes" c3="yes" start="2007-07-04T13:25:24Z" dt="7722" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation dt="7471" plan="no" sdesc="bad_data" start="2007-07-04T13:25:29Z"  c1="yes" c3="yes">
                 <desc>V? in place of p32 in the telemetry (flight software test?)</desc>
         </operation>
+<operation c1="yes" c3="yes" start="2007-07-05T12:01:24Z" dt="39462" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation dt="39510" plan="no" sdesc="bad_data" start="2007-07-05T12:01:30Z"  c1="yes" c3="yes">
                 <desc>V? in place of p32 in the telemetry (flight software test?)</desc>
         </operation>
@@ -3531,6 +3533,10 @@ Effect on the CAA processing:
 		<desc>Long pulsed radial delta-v maneuver.</desc>
 		<res><link href="ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf">ESOC MOR</link></res>
 	</operation>
+<operation c1="yes" c3="yes" start="2007-11-02T02:05:24Z" dt="8142" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation dt="8070" plan="no" sdesc="bad_data" start="2007-11-02T02:05:29Z"  c1="yes" c3="yes">
 		<desc>Wrong quantities in HX telemetry</desc>
 	</operation>
@@ -3949,6 +3955,22 @@ Effect on the CAA processing:
 	<operation plan="no" sdesc="bad_bias" start="2008-08-06T00:16:00Z" c3="yes" dt="49440">
 		<desc>Default bias (-40 nA).</desc>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-08-08T17:04:24Z" dt="21222" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c3="yes" start="2008-08-14T16:40:24Z" dt="119862" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" start="2008-08-15T10:32:24Z" dt="55542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-08-20T13:31:24Z" dt="23382" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2008-08-23T07:06:00Z" dt="280380" plan="no" sdesc="no_tm">
 		<desc>EFW off for unknown reason; all WEC swithched off by onboard monitoring due to high EFW inrush current when a scheduled reset tried to start EFW with all WEC already on at 2008-08-25 13:56:08.</desc>
 		<res>
@@ -3959,6 +3981,10 @@ Effect on the CAA processing:
 	<operation plan="no" sdesc="bad_bias" start="2008-08-23T14:26:00Z" c3="yes" dt="172800">
 		<desc>Default bias (-40 nA) for 2 days.</desc>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-08-26T19:40:24Z" dt="98562" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation plan="no" sdesc="bad_data" start="2008-09-02T01:35:53Z" c3="yes" dt="2">
 		<desc>Bad packet</desc>
 	</operation>
@@ -3989,12 +4015,24 @@ Effect on the CAA processing:
 	<operation c1="yes" c2="yes" c3="yes" start="2008-09-25T18:00:00Z" dt="54600" plan="no" sdesc="tbd">
 		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-09-25T18:40:24Z" dt="52962" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" c3="yes" start="2008-09-29T12:00:00Z" dt="62400" plan="no" sdesc="tbd">
 		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
 	</operation>
+<operation c1="yes" c3="yes" start="2008-09-29T12:05:48Z" dt="61998" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" c3="yes" start="2008-10-04T05:00:00Z" dt="25200" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
+<operation c1="yes" c3="yes" start="2008-10-04T05:15:24Z" dt="24642" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2008-10-04T11:58:00Z" dt="8400" plan="no" sdesc="no_tm">
 		<desc>WEC switched off by voltage monitoring 444</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00541.html">Colette 081006</link></res>
@@ -4010,6 +4048,10 @@ Effect on the CAA processing:
 	<operation c1="yes" c2="yes" c3="yes" start="2008-10-13T06:23:00Z" dt="104820" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-10-13T06:51:24Z" dt="102762" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2008-10-20T18:34:00Z" dt="208440" plan="yes" sdesc="TBD">
 		<desc>Sweep interval 30 minutes on all s/c for one orbit.</desc>
 		<res>
@@ -4039,6 +4081,10 @@ Effect on the CAA processing:
 	<operation c1="yes" c2="yes" c3="yes" start="2008-11-04T14:40:00Z" dt="20400" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-11-04T14:40:24Z" dt="20382" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation plan="yes" sdesc="bad_data" start="2008-11-10T16:09:12Z" c2="yes" dt="50">
 		<desc>Manoeuvre (10 pulses)</desc>
         </operation>
@@ -4051,6 +4097,10 @@ Effect on the CAA processing:
 	<operation c1="yes" c2="yes" c3="yes" start="2008-11-11T08:05:00Z" dt="8700" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2008-11-11T08:06:24Z" dt="8622" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation plan="yes" sdesc="bad_data" start="2008-11-11T13:00:00Z" c1="yes" dt="300">
 		<desc>Manoeuvre (67 pulses, attitude)</desc>
         </operation>
@@ -4126,6 +4176,10 @@ Effect on the CAA processing:
 	<operation plan="yes" sdesc="bad_data" start="2008-12-06T23:45:46Z" c3="yes" dt="10">
 		<desc>Manoeuvre (2 pulses)</desc>
         </operation>
+<operation c2="yes" c3="yes" start="2008-12-09T07:25:24Z" dt="9582" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c2="yes" c3="yes" start="2008-12-09T07:25:31Z" dt="9269" plan="no" sdesc="tbd">
                 <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
@@ -4275,6 +4329,10 @@ Effect on the CAA processing:
 	<operation c1="yes" c2="yes" c3="yes" start="2009-03-21T00:00:00Z" dt="25800" plan="no" sdesc="no_p32">
 		<desc>Unknown error (commanding?) caused corrupt p32 data. p34 OK.</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-03-21T00:00:24Z" dt="25782" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c4="yes" start="2009-03-31T12:00:00Z" dt="5580" plan="no" sdesc="bad_data">
                 <desc>Choppy HX telemetry for this burst.</desc>
         </operation>
@@ -4342,6 +4400,10 @@ Effect on the CAA processing:
                 <link href="esoc090508a.txt">ESOC 090508</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-05-09T17:01:24Z" dt="58422" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-05-15T11:00:00Z" dt="270" plan="yes" sdesc="bad_data">
                 <desc>Maneuver (59 pulses)</desc>
                 <res><link href="ESOC_MOR/Cluster_MOR_no465_(week27-2009).pdf">MOR 465</link></res>
@@ -4481,6 +4543,10 @@ Effect on the CAA processing:
                 <desc>Maneuver (49 pulses)</desc>
                 <res><link href="ESOC_MOR/Cluster_MOR_no473_(week35-2009).pdf">MOR 473</link></res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-01T10:09:24Z" dt="9342" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-09-02T17:50:40Z" dt="121920" plan="no" sdesc="no_data">
                 <desc>WEC switched off by watchdog.</desc>
 		<res>
@@ -4488,6 +4554,18 @@ Effect on the CAA processing:
 		<link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01659.html">Keith 090904</link>
 		</res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-03T20:49:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-06T04:55:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-08T06:37:24Z" dt="34242" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c3="yes" start="2009-09-09T01:19:38Z" dt="198000" plan="no" sdesc="no_data">
                 <desc>Long data loss due to WEC watchdog reset caused by WBD command malfunction.</desc>
                 <res>
@@ -4496,18 +4574,42 @@ Effect on the CAA processing:
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01690.html">Keith 090911</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-13T08:58:24Z" dt="6342" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-13T14:45:24Z" dt="99462" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-15T16:52:24Z" dt="9282" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c3="yes" start="2009-09-18T23:02:00Z" dt="16080" plan="no" sdesc="no_data">
                 <desc>Data lost due to s/c problem (SSR controller failure).</desc>
                 <res>
                 <link href="AR-152.pdf">AR-152</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-20T11:50:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-09-20T13:48:48Z" dt="38400" plan="no" sdesc="no_data">
                 <desc>WEC off by monitoring entries 445/446/444.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01712.html">Keith 090921</link>
                 </res>
         </operation>
+<operation c1="yes" start="2009-09-20T22:55:24Z" dt="5976" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" c3="yes" start="2009-09-20T22:55:24Z" dt="82242" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c2="yes" start="2009-09-22T13:00:00Z" dt="14400" plan="yes" sdesc="no_data">
                 <desc>WEC switched off for s/c tests.
 		</desc>
@@ -4515,18 +4617,42 @@ Effect on the CAA processing:
                 <link href="esoc090910a.eml">ESOC 090910</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-09-22T20:43:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-09-30T10:33:00Z" dt="44820" plan="no" sdesc="no_data">
                 <desc>WEC off by monitoring entries 445/446/444.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01738.html">Jefferys 091001</link>
                 </res>
         </operation>
+<operation c2="yes" start="2009-10-01T09:05:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-10-02T06:26:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" start="2009-10-03T08:17:24Z" dt="39762" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c4="yes" start="2009-10-04T14:58:30Z" dt="111540" plan="no" sdesc="bad_data">
                 <desc>WEC operation "very disturbed". EFW data has big spikes and glitches.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01748.html">Colette 091006</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-10-04T15:09:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" start="2009-10-06T02:54:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c3="yes" start="2009-10-08T05:00:00Z" dt="30600" plan="no" sdesc="bad_data">
                 <desc>Glitchy HX telemetry.</desc>
         </operation>
@@ -4553,6 +4679,10 @@ Effect on the CAA processing:
                 <link href="efw-peace.pdf">Report 091203</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-10-14T04:24:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-10-14T07:00:00Z" dt="-1" plan="no" sdesc="no_p4">
                 <desc>P4 fails again, never to return.</desc>
                 <res>
@@ -4577,12 +4707,24 @@ Effect on the CAA processing:
                 <link href="efw-peace.pdf">Report 091203</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-10-21T07:44:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2009-10-21T19:35:00Z" dt="21420" plan="no" sdesc="no_data">
                 <desc>Spacecraft in nominal survival mode after power-down eclipse.</desc>
                 <res>
                 <link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01809.html">Juergen 091023</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-10-28T04:01:24Z" dt="36582" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2009-11-02T05:10:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2009-11-06T16:30:00Z" dt="17400" plan="no" sdesc ="info">
                 <desc>Stuck DAC making weird higher-freq signals. Spinfits OK.</desc>
         </operation>
@@ -4764,6 +4906,10 @@ Effect on the CAA processing:
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:00:00Z" dt="12600" plan="no" sdesc ="no_p32">
                 <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:06:24Z" dt="12342" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-01-17T16:21:05Z" dt="10" plan="no" sdesc="bad_data">
                 <desc>TM Buffer overflow</desc>
                 <res>
@@ -4782,6 +4928,10 @@ Effect on the CAA processing:
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:30:00Z" dt="34200" plan="no" sdesc ="no_p32">
                 <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:35:24Z" dt="34302" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-01-21T20:48:00Z" dt="84300" plan="no" sdesc="bad_data">
                 <desc>WEC off by monitoring 444.</desc>
                 <res>
@@ -4806,6 +4956,10 @@ Effect on the CAA processing:
         <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:00Z" dt="29700" plan="no" sdesc ="no_p32">
                 <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:24Z" dt="29322" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" start="2010-02-01T08:33:00Z" dt="1500" plan="no" sdesc="no_data">
 		<desc>Data loss for all payload.</desc>
 		<res>
@@ -4833,6 +4987,10 @@ Effect on the CAA processing:
         <operation c2="yes" c3="yes" start="2010-02-06T05:00:20Z" dt="29102" plan="no" sdesc ="no_p32">
                 <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
+<operation c2="yes" c3="yes" start="2010-02-06T05:00:24Z" dt="29082" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-02-12T00:28:32Z" dt="6" plan="no" sdesc="bad_data">
                 <desc>Bad phase data</desc>
         </operation>
@@ -4857,14 +5015,14 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02325.html">Colette 100317</link>
                 </res>
         </operation>
-	<operation c2="yes" start="2010-03-04T18:00:00Z" dt="81240" plan="no" sdesc="info">
-		<desc>Bias at defualt -40 nA.</desc>
-	</operation>
 	<operation c2="yes" start="2010-03-02T13:40:46Z" dt="72560" plan="no" sdesc="bad_data">
 		<desc>DWP reset caused bad data.</desc>
 		<res>
 			<link href="ky100303s.txt">Keith 100303</link>
 		</res>
+	</operation>
+	<operation c2="yes" start="2010-03-04T18:00:00Z" dt="81240" plan="no" sdesc="info">
+		<desc>Bias at defualt -40 nA.</desc>
 	</operation>
         <operation c4="yes" start="2010-03-26T10:23:00Z" dt="45600" plan="no" sdesc="no_data">
                 <desc>WEC off after monitoring</desc>
@@ -4884,6 +5042,22 @@ Effect on the CAA processing:
 	<operation c1="yes" start="2010-03-30T04:32:18Z" dt="2" plan="no" sdesc="bad_data">
 		<desc>Bad packet.</desc>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-06T04:40:24Z" dt="8982" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-07T17:40:24Z" dt="41382" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-10T16:05:24Z" dt="17922" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-12T22:40:24Z" dt="16902" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c2="yes" start="2010-04-13T07:57:45Z" dt="205200" plan="no" sdesc="no_data">
 		<desc>EFW turn-off by WEC following probable DWP SEU.</desc>
 		<res>
@@ -4892,24 +5066,56 @@ Effect on the CAA processing:
 			<link href="ky100417a.txt">Keith 100417</link>
 		</res>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-15T01:40:24Z" dt="28722" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-04-16T14:21:00Z" dt="3000" plan="no" sdesc="no_data">
                 <desc>WEC error.</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02395.html">Colette 100416</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-17T04:50:24Z" dt="39822" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-19T16:40:24Z" dt="19782" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
        <operation c1="yes" start="2010-04-20T21:46:00Z" dt="27240" plan="no" sdesc="no_data">
                 <desc>anomaly AR-135: repeating VC2 virtual channelframe counter on C1</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02416.html">Juergen 100423</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-21T23:15:24Z" dt="18702" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-23T23:36:24Z" dt="39822" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c3="yes" start="2010-04-24T10:10:00Z" dt="28800" plan="no" sdesc="bad_data">
                 <desc>SSR anomaly</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02424.html">Juergen 100427</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-26T11:35:24Z" dt="19602" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-04-28T18:05:24Z" dt="18822" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-05-03T04:55:24Z" dt="24282" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2010-05-04T03:07:12Z" dt="29808" plan="yes" sdesc="TBD">
 		<desc>Sweep interval 15 minutes.</desc>
 		<res>
@@ -4920,12 +5126,24 @@ Effect on the CAA processing:
 		<res>
 		</res>
 	</operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-05-09T15:15:24Z" dt="48282" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-05-16T14:40:24Z" dt="38862" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-05-23T13:02:00Z" dt="10200" plan="no" sdesc="no_data">
                 <desc>SSR controller failure</desc>
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02575.html">Juergen 1006616</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-05-27T12:55:24Z" dt="60282" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c2="yes" start="2010-05-28T04:12:14Z" dt="98580" plan="no" sdesc="no_data">
 		<desc>EFW turn-off by DWP watchdog reset.</desc>
 		<res>
@@ -4943,6 +5161,18 @@ Effect on the CAA processing:
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02575.html">Juergen 1006616</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-06-01T13:05:24Z" dt="29742" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-06-04T01:00:24Z" dt="5982" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-06-05T23:40:24Z" dt="26982" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-06-08T06:36:00Z" dt="10800" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
@@ -5009,24 +5239,40 @@ Effect on the CAA processing:
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02588.html">Juergen 1006622</link>
                 </res>
         </operation>
+<operation c3="yes" start="2010-06-22T17:30:24Z" dt="69882" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
          <operation c1="yes" start="2010-06-22T19:12:00Z" dt="118800" plan="no" sdesc="no_data">
                 <desc>EFW off for unclear reason. Problems with restarting due WECto inrush current. Long data gap.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02698.html">Colette 100715</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-06-26T16:12:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
        <operation c3="yes" start="2010-06-29T04:17:32Z" dt="122400" plan="no" sdesc="no_data">
                 <desc>Long data gap from SSR failure.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02664.html">Juergen 100706</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-06-30T12:45:24Z" dt="65082" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-07-05T18:14:00Z" dt="4200" plan="no" sdesc="bad_data">
                 <desc>APPL Buffer Overflow. HX data is bad.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02700.html">Colette 100716</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-05T18:14:24Z" dt="4122" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c2="yes" start="2010-07-05T18:15:00Z" dt="3600" plan="no" sdesc="bad_data">
                 <desc>APPL Buffer Overflow.</desc>
                 <res>
@@ -5039,30 +5285,90 @@ Effect on the CAA processing:
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02702.html">Colette 100716</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-08T00:33:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-10T06:48:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-12T00:40:24Z" dt="48582" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-14T10:25:24Z" dt="18882" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c2="yes" start="2010-07-15T06:06:30Z" dt="75600" plan="no" sdesc="no_data">
                 <desc>DWP SEU upset</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02751.html">Keith 100802</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-17T01:39:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-07-17T07:00:00Z" dt="156600" plan="no" sdesc="no_data">
                 <desc>Obscure DWP malfunction.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02742.html">Keith 100729</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-19T07:55:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" start="2010-07-21T20:25:24Z" dt="76282" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" c3="yes" start="2010-07-21T20:25:24Z" dt="93582" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-23T19:30:24Z" dt="7362" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-25T20:30:24Z" dt="26322" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-07-28T08:00:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c2="yes" start="2010-07-30T01:17:00Z" dt="53400" plan="no" sdesc="bad_data">
                 <desc>Bad data. WEC in emergency mode.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02753.html">Keith 100802</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-01T15:40:24Z" dt="25182" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-04T03:50:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00033.html">Colette 100903</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-08T15:34:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-13T03:58:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-08-14T02:31:00Z" dt="20400" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
@@ -5075,6 +5381,10 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-15T11:15:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c3="yes" start="2010-08-15T16:32:00Z" dt="27000" plan="no" sdesc="no_data">
                 <desc>WEC off by multiple monitoring entries.</desc>
                 <res>
@@ -5099,12 +5409,20 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00063.html">Colette 100914</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-21T10:30:24Z" dt="69942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-08-26T12:55:00Z" dt="387300" plan="no" sdesc="bad_data">
                 <desc>Problem with EFW-DWP interface. Data lost for 4.5 days until 2010-08-31 00:30.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00005.html">Keith 100827</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-08-28T14:56:24Z" dt="40002" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-08-31T16:55:00Z" dt="27300" plan="no" sdesc="no_data">
                 <desc>WEC off by multiple monitoring groups.</desc>
                 <res>
@@ -5117,12 +5435,32 @@ Effect on the CAA processing:
                     <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00029.html">Keith 100903</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" start="2010-09-04T06:39:24Z" dt="51162" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c3="yes" start="2010-09-04T06:39:24Z" dt="13416" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-09-09T08:22:24Z" dt="3942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-09-09T22:00:00Z" dt="66600" plan="no" sdesc="bad_data">
                 <desc>WEC in emergency mode.</desc>
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00051.html">Keith 100910</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-09-11T06:35:24Z" dt="32082" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-09-15T08:00:24Z" dt="73122" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-09-16T22:18:00Z" dt="18000" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
@@ -5135,6 +5473,22 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00118.html">Colette 101001</link>
                 </res>
         </operation>
+<operation c1="yes" start="2010-09-20T06:30:24Z" dt="34782" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" start="2010-09-20T06:30:24Z" dt="33336" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c3="yes" start="2010-09-20T06:30:24Z" dt="34782" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-09-27T05:18:24Z" dt="23142" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-09-28T21:44:00Z" dt="14400" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
@@ -5147,6 +5501,18 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-10-04T04:28:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-10-10T06:24:24Z" dt="68502" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-10-17T06:10:24Z" dt="50682" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_data">
                 <desc>SSR latchup. CLU_AR-177.</desc>
                 <res>
@@ -5184,12 +5550,28 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00211.html">Silvia 101028</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-10-29T01:36:24Z" dt="7422" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c3="yes" start="2010-10-29T08:14:24Z" dt="97722" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" start="2010-10-30T04:27:24Z" dt="24942" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c3="yes" start="2010-11-02T23:40:00Z" dt="88800" plan="no" sdesc="bad_data">
                 <desc>Probe latchups, then a DWP upset</desc>
                 <res>
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00230.html">Keith 101104</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-11-07T04:15:24Z" dt="4002" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c1="yes" start="2010-11-07T11:10:00Z" dt="73800" plan="no" sdesc="bad_data">
                 <desc>Choppy telemetry, digital errors.</desc>
                 <res>
@@ -5201,6 +5583,26 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00244.html">Keith 101109</link>
                 </res>
         </operation>
+<operation c1="yes" start="2010-11-08T13:45:24Z" dt="78702" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c2="yes" start="2010-11-08T13:45:24Z" dt="34356" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c3="yes" start="2010-11-08T13:45:24Z" dt="78702" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c3="yes" start="2010-11-11T02:16:24Z" dt="56202" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c3="yes" start="2010-11-18T02:05:24Z" dt="30882" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c4="yes" start="2010-11-18T21:00:00Z" dt="28140" plan="no" sdesc="no_data">
                 <desc>Data loss due to ground segment problem.</desc>
                 <res>
@@ -5219,6 +5621,18 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00378.html">Colette 101230</link>
                 </res>
         </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-12-10T22:40:24Z" dt="17442" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2010-12-13T05:05:24Z" dt="16242" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c3="yes" start="2011-02-26T14:16:24Z" dt="62802" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 	<operation c3="yes" start="2011-03-05T18:13:40Z" dt="-1" plan="no" sdesc="no_data">
 		<desc>WEC switched off by spacecraft monitoring and could
 	not be switched on again by standard procedures. Investigations 
@@ -5230,7 +5644,30 @@ Effect on the CAA processing:
 		ESOC 110513</link>
 		</res>
 	</operation>
-
+<operation c1="yes" c2="yes" c3="yes" start="2011-03-11T06:45:24Z" dt="14082" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2011-03-31T05:04:24Z" dt="36342" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c3="yes" start="2011-04-24T03:25:24Z" dt="65442" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2011-04-28T11:07:24Z" dt="79542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2011-05-02T02:45:24Z" dt="24882" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" c2="yes" c3="yes" start="2011-05-06T20:16:24Z" dt="21222" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
         <operation c3="yes" c4="yes" start="2011-05-22T17:15:00Z" dt="19200" plan="yes" sdesc ="tbd">
                 <desc>Sweeps also on SC34, 30 min interval.</desc>
                 <res>
@@ -5261,119 +5698,114 @@ Effect on the CAA processing:
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-13T14:55:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-16T19:18:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-22T16:08:00Z" dt="720" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-25T18:19:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-06-27T03:45:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-03T22:31:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-04T21:19:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
+<operation c3="yes" start="2011-07-06T07:30:24Z" dt="74862" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-11T15:19:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
+<operation c1="yes" c2="yes" c3="yes" start="2011-07-13T18:34:24Z" dt="7542" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-15T02:19:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
+<operation c1="yes" c2="yes" c3="yes" start="2011-07-18T08:19:24Z" dt="8442" plan="no" sdesc="no_p32">
+        <desc>8 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
+        <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-18T10:19:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-22T00:42:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-24T06:58:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-07-31T01:35:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-06T20:14:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-13T14:49:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-20T09:27:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c2="yes" start="2011-08-22T13:11:51Z" dt="279240" plan="no" sdesc ="bad_tm">
                 <desc>Bad or non-existing EFW data. Exact reason not known, but the problem started following a DWP anonaly.
 	</desc>
@@ -5382,28 +5814,24 @@ Effect on the CAA processing:
 	<link href="ky110831.txt">Keith 110831</link>
         </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-08-27T04:13:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-05T05:23:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-09-12T00:12:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval.
 		</desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c4="yes" start="2011-10-29T12:15:36Z" dt="60"
 plan="yes" sdesc ="bad_bias">
                 <desc>Bias stepping from 140 to 320 nA in steps of 12 nA, 4 sec step rate.
@@ -5411,7 +5839,6 @@ plan="yes" sdesc ="bad_bias">
                 <res>
                 </res>
         </operation>
-
 <operation c2="yes" start="2011-10-30T02:49:00Z" dt="52380" plan="no" sdesc ="tbd">
                 <desc>WEC turned off by onboard monitoring.
                 </desc>
@@ -5419,7 +5846,6 @@ plan="yes" sdesc ="bad_bias">
 	        <link href="ky111031a.txt">Keith 111031</link>
                 </res>
         </operation>
-
 <operation c1="yes" c3="yes" c4="yes" start="2011-10-30T10:01:00Z" dt="900"
 plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M, V3V4M, V1V2U, V3V4U. (Was planned also for C2, but lost due to WEC turned off on that s/c by the problem noted above).
@@ -5427,48 +5853,41 @@ plan="yes" sdesc ="tbd">
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c3="yes" c4="yes" start="2011-10-31T21:30:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-
 <operation c2="yes" start="2011-10-31T22:05:24Z" dt="1500" plan="yes" sdesc ="tbd">
                 <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="ye
 s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-
 <operation c3="yes" start="2011-11-03T04:31:24Z" dt="480" plan="yes" sdesc ="tbd">
                 <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-
 <operation c4="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
                 <desc>Bias stepping P34 from 8 to 380 nA in steps of 12 nA, 4 sec step rate. Start by setting 8 nA, 4 nA, 8 nA (to give time for any transient).  
                 </desc>
                 <res>
                 </res>
         </operation>
-
 <operation c2="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
                 <desc>Bias stepping P2 from 4 to 132 nA in steps of 4 nA, 4 sec step rate. 
                 </desc>
                 <res>
                 </res>
         </operation>
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2011-12-05T15:15:00Z" dt="900" plan="yes" sdesc ="tbd">
                 <desc>Sweeps on all s/c, 64 s interval, with 450 Hz burst collection by time-tagged trig just after start. Burst quantities (same for all s/c): V1V2M
 , V3V4M, V1V2U, V3V4U. 
@@ -5476,52 +5895,42 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-01-23T10:51:19Z" dt="78600" c1="yes" plan="no" sdesc="no_tm">
                 <desc>WEC data lost following DWP watchdog reset.</desc>
                 <res>
                         <link href="ky120124a.txt">Keith 120124</link>
                 </res>
         </operation>
-
-
-
 <operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-02-03T22:08:00Z" dt="300" plan="yes" sdesc ="tbd">
                 <desc>Sweeps during BM3 interval that could not be used for dumping internal burst. Sweeps start at 22:01 and go on into the BM3. </desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-11T19:05:00Z" dt="85700" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-14T00:35:00Z" dt="88200" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-16T09:05:00Z" dt="99000" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-18T14:35:00Z" dt="80800" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-20T19:35:00Z" dt="87000" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-23T03:05:00Z" dt="83100" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
@@ -5539,7 +5948,6 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-02-29T21:35:00Z" dt="80400" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
@@ -5551,63 +5959,52 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-03-04T02:51:00Z" dt="280" c2="yes" plan="yes" sdesc="bad_p2">
         <desc>Bias stepping (slow sweep) on P2 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias
  steps of -4 nA from -12 nA to -140 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-03-04T02:54:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias steps of -12 nA from -104 nA to -500 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-03-04T02:55:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 02:51.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-03-05T10:05:00Z" dt="84600" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-03-07T17:35:00Z" dt="80400" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
                 </res>
         </operation>
-
 <operation start="2012-03-14T03:12:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias step
 s of -12 nA from -104 nA to -500 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-03-14T03:13:44Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 03:09.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-03-14T04:33:44Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 03:09.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
 <operation start="2012-04-10T04:32:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias step
 s of -12 nA from -104 nA to -500 nA).</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-
-
 </table>
