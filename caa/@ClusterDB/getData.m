@@ -803,6 +803,12 @@ elseif strcmp(quantity,'r')
 	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
 		cl_id, 'ephemeris', 'position'); %#ok<ASGLU>
 	if ~isempty(data)
+		% Remove points exactly equal to the end time
+		% to avoid duplicate time at the start of the next interval
+		if (t(end) >= start_time+dt-0.001) && (length(t) > 1)
+			t=t(1:end-1); %#ok<NASGU>
+			data=data(:,1:end-1); %#ok<NASGU>
+		end
 		c_eval('R?=[t data''];save_list=[save_list '' R? ''];',cl_id);
 	else
 		irf_log('dsrc',irf_ssub('No data for R?',cl_id))
