@@ -468,7 +468,7 @@ irf_figmenu;
 %% In case time is in isdat_epoch add time axis
 if ((tt > 1e8) && (tt < 1e10))
     if flag_subplot == 0, irf_timeaxis(ax);
-    else irf_timeaxis(ax);
+    else irf_timeaxis(c);
     end
 end
 
