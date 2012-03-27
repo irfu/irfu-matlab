@@ -77,6 +77,7 @@ if ndata==0
 	return
 end
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
+diE=diE(isfinite(diE(:,2)),:);
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
 
