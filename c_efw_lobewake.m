@@ -70,14 +70,19 @@ if ecorr > 0
 	clear DE_RANGE
 end
 
-ndata = ceil((diE(end,1) - diE(1,1))/TAV);
+% Remove NaN
+diE=diE(isfinite(diE(:,2)),:);
+if size(diE,1) < 1
+    ndata = 0;
+else
+    ndata = ceil((diE(end,1) - diE(1,1))/TAV);
+end
 if ndata==0
 	irf_log('proc','not enough data to compute wakes')
 	res = []; dEx = [];
 	return
 end
 t = diE(1,1) + (1:ndata)*TAV - TAV/2; t = t';
-diE=diE(isfinite(diE(:,2)),:);
 
 diEr = irf_resamp(diE,t,'fsample',1/TAV);
 
@@ -111,7 +116,13 @@ end
 if isempty(dEx) && ~isempty(R)
 	Rr = irf_resamp(R,t,'fsample',1/TAV); Rr = irf_abs(Rr);
 	% Look for negative X and distances > than 5 RE, RE = 6378 km
-	ii = find( Rr(:,2) < 0 & Rr(:,5) > 5*6378 );
+    if isempty(Rr)
+        ii=[];
+        dEx=[];
+		irf_log('proc','Short R data. No dEx.')
+    else
+        ii = find( Rr(:,2) < 0 & Rr(:,5) > 5*6378 );
+    end
 	%ii = 1:length(diEr(:,1));
 	if ~isempty(ii)
 		dEx = mean( diEr(~isnan(diEr(ii,2)),2) );
