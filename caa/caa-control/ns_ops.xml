@@ -3343,16 +3343,10 @@ Effect on the CAA processing:
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation dt="7471" plan="no" sdesc="bad_data" start="2007-07-04T13:25:29Z"  c1="yes" c3="yes">
-                <desc>V? in place of p32 in the telemetry (flight software test?)</desc>
-        </operation>
 <operation c1="yes" c3="yes" start="2007-07-05T12:01:24Z" dt="39462" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-        <operation dt="39510" plan="no" sdesc="bad_data" start="2007-07-05T12:01:30Z"  c1="yes" c3="yes">
-                <desc>V? in place of p32 in the telemetry (flight software test?)</desc>
-        </operation>
         <operation dt="2" plan="no" sdesc="bad_data" start="2007-07-06T01:19:30.5Z"  c1="yes">
                 <desc>Bad packet.</desc>
         </operation>
@@ -3537,9 +3531,6 @@ Effect on the CAA processing:
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation dt="8070" plan="no" sdesc="bad_data" start="2007-11-02T02:05:29Z"  c1="yes" c3="yes">
-		<desc>Wrong quantities in HX telemetry</desc>
-	</operation>
 	<operation dt="5460" plan="yes" sdesc="bad_data" start="2007-11-02T06:00:00Z"  c2="yes">
 		<desc>Long pulsed radial delta-v maneuver.</desc>
 		<res><link href="ESOC_MOR/Cluster_MOR_no378_(week44-2007).pdf">ESOC MOR</link></res>
@@ -4012,23 +4003,14 @@ Effect on the CAA processing:
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00590.html">Colette 081023</link></res>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00592.html">Juergen 081023</link></res>
 	</operation>
-	<operation c1="yes" c2="yes" c3="yes" start="2008-09-25T18:00:00Z" dt="54600" plan="no" sdesc="tbd">
-		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-09-25T18:40:24Z" dt="52962" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" c3="yes" start="2008-09-29T12:00:00Z" dt="62400" plan="no" sdesc="tbd">
-		<desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-	</operation>
 <operation c1="yes" c3="yes" start="2008-09-29T12:05:48Z" dt="61998" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c1="yes" c3="yes" start="2008-10-04T05:00:00Z" dt="25200" plan="no" sdesc="tbd">
-                <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-        </operation>
 <operation c1="yes" c3="yes" start="2008-10-04T05:15:24Z" dt="24642" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -4045,9 +4027,6 @@ Effect on the CAA processing:
 		<desc>numerous short data gaps in EFW</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg00610.html">Per-Arne 081028</link></res>
 	</operation>
-	<operation c1="yes" c2="yes" c3="yes" start="2008-10-13T06:23:00Z" dt="104820" plan="no" sdesc="tbd">
-                <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-        </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-10-13T06:51:24Z" dt="102762" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -4078,9 +4057,6 @@ Effect on the CAA processing:
 	<operation c3="yes" start="2008-11-01T20:50:06Z" dt="2" plan="no" sdesc="bad_data">
 		<desc>Bad packet</desc>
 	</operation>
-	<operation c1="yes" c2="yes" c3="yes" start="2008-11-04T14:40:00Z" dt="20400" plan="no" sdesc="tbd">
-                <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-        </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-11-04T14:40:24Z" dt="20382" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -4093,9 +4069,6 @@ Effect on the CAA processing:
         </operation>
 	<operation plan="yes" sdesc="bad_data" start="2008-11-10T16:40:08Z" c3="yes" dt="180">
 		<desc>Manoeuvre (39 pulses)</desc>
-        </operation>
-	<operation c1="yes" c2="yes" c3="yes" start="2008-11-11T08:05:00Z" dt="8700" plan="no" sdesc="tbd">
-                <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2008-11-11T08:06:24Z" dt="8622" plan="no" sdesc="no_p32">
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
@@ -4180,9 +4153,6 @@ Effect on the CAA processing:
         <desc>118 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
-	<operation c2="yes" c3="yes" start="2008-12-09T07:25:31Z" dt="9269" plan="no" sdesc="tbd">
-                <desc>mixed-up quantitites in HX telemetry (p? replaced p32)</desc>
-        </operation>
 	<operation c4="yes" start="2008-12-09T18:16:00Z" dt="59400" plan="no" sdesc="bad_bias">
                 <desc>Bias at default -40 nA</desc>
         </operation>
@@ -4325,9 +4295,6 @@ Effect on the CAA processing:
 	<operation c2="yes" start="2009-03-19T01:01:45Z" dt="48120" plan="no" sdesc="bad_data">
 		<desc>DWP commanding error caused first slightly corrupt HX data until 07:55, then highly corrupt data (including bad LX). Interval until 07:55 may be recoverable.</desc>
                 <res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01073.html">Keith 090319</link></res>
-        </operation>
-	<operation c1="yes" c2="yes" c3="yes" start="2009-03-21T00:00:00Z" dt="25800" plan="no" sdesc="no_p32">
-		<desc>Unknown error (commanding?) caused corrupt p32 data. p34 OK.</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2009-03-21T00:00:24Z" dt="25782" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
@@ -4903,9 +4870,6 @@ Effect on the CAA processing:
         <operation c3="yes" start="2010-01-15T02:30:00Z" dt="190800" plan="no" sdesc ="bad_data">
                 <desc>Probes 3 and 4 in a strange state. p2 data may or may not be useful. Commanding error?</desc>
         </operation>
-        <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:00:00Z" dt="12600" plan="no" sdesc ="no_p32">
-                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
-        </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-17T01:06:24Z" dt="12342" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -4924,9 +4888,6 @@ Effect on the CAA processing:
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02185.html">Collette 100129</link>
                 </res>
-        </operation>
-        <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:30:00Z" dt="34200" plan="no" sdesc ="no_p32">
-                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-21T07:35:24Z" dt="34302" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
@@ -4952,9 +4913,6 @@ Effect on the CAA processing:
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02249.html">Juergen, Per-Arne 100219</link>
                 </res>
-        </operation>
-        <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:00Z" dt="29700" plan="no" sdesc ="no_p32">
-                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-01-30T10:03:24Z" dt="29322" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
@@ -4983,9 +4941,6 @@ Effect on the CAA processing:
                 <res>
                         <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02219.html">Juergen 100209</link>
                 </res>
-        </operation>
-        <operation c2="yes" c3="yes" start="2010-02-06T05:00:20Z" dt="29102" plan="no" sdesc ="no_p32">
-                <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         </operation>
 <operation c2="yes" c3="yes" start="2010-02-06T05:00:24Z" dt="29082" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
