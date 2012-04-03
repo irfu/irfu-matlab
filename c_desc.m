@@ -331,7 +331,7 @@ elseif regexp(vs,'^WAKE[1-4]p(12|32|34)$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Plasmaspheric/Lobe Wake
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(PS|LO)WAKE[1-4]p(12|32|34)$')==1
+elseif regexp(vs,'^(NONSIN|PS|LO)WAKE[1-4]p(12|32|34)$')==1
 	v.data = 1;
 	v.cl_id = vs(7);
 	v.inst = 'EFW';
@@ -344,6 +344,7 @@ elseif regexp(vs,'^(PS|LO)WAKE[1-4]p(12|32|34)$')==1
 	v.si_conv = {'1>sec'};
 	v.size = 1;
 	if vs(1)=='P', reg = 'Plasmaspheric';
+	elseif vs(1)=='N', reg = 'Non-sinusoidal';
 	else reg = 'Lobe';
 	end
 	v.name = {[reg ' wake-p' v.sen]};
