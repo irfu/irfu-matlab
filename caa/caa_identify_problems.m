@@ -408,8 +408,28 @@ if mask_type~=4
             end
         %   else irf_log('load', msg)
            end
+		end
+       clear ok problem_intervals msg
+		
+        % Mark nonsinusoidal wakes
+        for probe_id = probe_pair_list
+        %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
+        %      spacecraft_id, irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
+           [ok, problem_intervals, msg] = c_load(irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
+           if ok
+            if ~isempty(problem_intervals)
+                irf_log('proc', 'marking nonsinusoidal wakes')
+        %   		if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
+        %   		if DEBUG, assignin('base', 'lowake', problem_intervals); keyboard, end
+                 result = caa_set_bitmask_and_quality(result, problem_intervals, ...
+                    BITMASK_LOBE_WAKE, QUALITY_LOBE_WAKE, ...
+                       bitmask_column, quality_column);
+            end
+        %   else irf_log('load', msg)
+           end
         end
-        clear ok problem_intervals msg
+
+		clear ok problem_intervals msg
     end
 
     % Mark whisper pulses
