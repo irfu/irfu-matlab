@@ -2163,16 +2163,45 @@ elseif strcmp(quantity,'wake')
 	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id,Ps);
 	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
 
+	% Detect lobe and plasmaspheric wakes
 	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV);
 	diEs = caa_rm_blankt(diEs,pswake);
-	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI,1); %#ok<ASGLU>
+	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI,1);
+   	
+	% Detect nonsinusoidal wakes if x_GSE>0
+	nonsinwake = []; %#ok<NASGU>
+	if any(R(:,2) > 0)
+		% Load required data
+		probe = caa_sfit_probe(cl_id);
+		[ok,pha] = c_load('Atwo?',cl_id);
+		if ~ok, irf_log('load',msg), pha=[]; end
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+		if ~ok, irf_log('load',msg), da=[]; end
+
+		if ~isempty(da) && ~isempty(pha)
+			% Blank intervals where GSE X position is > 0 or wakes already
+			% detected
+			if any(R(:,2)<0)
+				x=irf_resamp(R(:,1:2),da);
+				da(x<0,:)=NaN;
+			end
+			da=caa_rm_blankt(da,pswake);
+			da=caa_rm_blankt(da,lowake);
+			
+			% Find nonsinusoidal wakes
+			if any(isfinite(da(:,2)))
+				nonsinwake = c_efw_nonsinwake(cl_id,probe,pha,da); %#ok<NASGU>
+			end
+		end
+	end
+	
 	if ~isempty(dEx)
 		cmd = 'if length(Ddsi)==1,DdsiX?=Ddsi+dEx;else DdsiX?=Ddsi;DdsiX?(:,2)=DdsiX?(:,2)+dEx; end; save mXTRA DdsiX?';
 		if exist('./mXTRA.mat','file'), cmd = [cmd ' -append']; end
 		c_eval(cmd,cl_id), clear cmd
 	end
 	eval(irf_ssub(...
-		'PSWAKE?p!=pswake;LOWAKE?p!=lowake;save_list=[save_list ''PSWAKE?p! LOWAKE?p!''];',...
+		'PSWAKE?p!=pswake;LOWAKE?p!=lowake;NONSINWAKE?p!=nonsinwake;save_list=[save_list ''PSWAKE?p! LOWAKE?p! NONSINWAKE?p!''];',...
 		cl_id,probe_p));
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
