@@ -29,7 +29,7 @@ switch fmt % set rounding precision for different formats
         dt_res = 5e-4;
 end
 
-if length(t)<5 || any(diff(t)<0)
+if length(t)<5 || any(diff(t)<0) || (t(end)-t(1)) > length(t)*100
     d = fromepoch(t);
     switch fmt
         case 0
