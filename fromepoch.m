@@ -19,10 +19,16 @@ function full_time = fromepoch(second)
 %
 
 % Yuri Khotyaintsev, 2003
-t = datevec(epoch2date(fix(double(second(:)))));
 
-% correct fractions of second. This actually preserves 
-% accuracy ~1e-6 sec for year 2004.
+% Offset by 0.1 seconds to avoid rounding problems in 
+% Matlab versions prior to R2009a (7.8)
+% See http://www.mathworks.com/support/bugreports/485847
+t = datevec(epoch2date(fix(double(second(:)))+0.1));
+t(:,6)=fix(t(:,6));
+
+% correct fractions of second. This preserves double-precision accuracy
+% using isdat epoch (1970-01-01) rather than matlab epoch (year 0).
+% Resulting accuracy ~1e-6 sec for year 2004.
 t(:,6) = t(:,6) + double(second(:)) - fix(double(second(:))); 
 
 full_time = t;
