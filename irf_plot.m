@@ -68,11 +68,7 @@ if isnumeric(x), % check if single number argument, to initialize only subplots
         return
     end
 end
-if isempty(ax), % if empty axis use current axis GCA
-    if isempty(get(0,'CurrentFigure')), % there is no figure open
-        irf_plot(1);
-    end
-    ax=gca;
+if isempty(ax),
     inp_name=inputname(1);
 else
     inp_name=inputname(2);
@@ -218,13 +214,24 @@ else
     end
 end
 if ~isempty(caa_dataobject{1}) % plot CAA variable
-	plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+    if isempty(ax)
+        ax = plot(caa_dataobject{1},caa_varname{1},original_args{:});
+    else
+        ax = plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+    end
     if isstruct(x), tt=x.t(1);
     elseif iscell(x), tt=x{1}(1,1);
     else tt=x(1,1);
     end
     c=ax; % axis to which apply irf_timeaxis
     flag_subplot=-1; % dont make more plots
+end
+
+if isempty(ax), % if empty axis use current axis GCA
+    if isempty(get(0,'CurrentFigure')), % there is no figure open
+        irf_plot(1);
+    end
+    ax=gca;
 end
 
 %% One subplot only
