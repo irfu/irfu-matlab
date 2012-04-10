@@ -373,6 +373,11 @@ for in = iok
 	% Wake half-width
 	ii =    find( abs(ccdav2) <  max(abs(ccdav2))/2 );
 	iimax = find( abs(ccdav2) == max(abs(ccdav2))   );
+	if (iimax < ii(1)) || (iimax > ii(end))
+		irf_log('proc',sprintf('wake shape is bad at %s',epoch2iso(ts,1)))
+		wakedesc([in*2-1 in*2],:) = NaN;
+		continue
+	end
 	wakedesc(in*2-fw,4) = min(ii(ii>iimax))-max(ii(ii<iimax));
 	clear ii iimax
 	
