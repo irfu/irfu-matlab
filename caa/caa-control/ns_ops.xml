@@ -5077,6 +5077,9 @@ Effect on the CAA processing:
 		<res>
 		</res>
 	</operation>
+<operation c4="yes" start="2010-05-05T03:34:30Z" dt="6" plan="no" sdesc="bad_data">
+		<desc>Bad spin phase from ISDAT.</desc>
+	</operation>
 	<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2010-05-07T13:05:00Z" dt="40320" plan="yes" sdesc="TBD">
 		<desc>Sweep interval 15 minutes.</desc>
 		<res>
@@ -5086,6 +5089,9 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
+<operation c1="yes" start="2010-05-12T20:31:34Z" dt="2" plan="no" sdesc="bad_data">
+		<desc>Corrupt HX data .</desc>
+	</operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-05-16T14:40:24Z" dt="38862" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -5214,6 +5220,9 @@ Effect on the CAA processing:
                 <res>
                     <link href="http://www.acse.shef.ac.uk/wec-ops/oldish_mail/msg02664.html">Juergen 100706</link>
                 </res>
+        </operation>
+<operation c2="yes" start="2010-06-28T23:50:00Z" dt="2760" plan="no" sdesc="bad_data">
+                <desc>Corrupt LX data. HX may or may not contain a burst dump.</desc>
         </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-06-30T12:45:24Z" dt="65082" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>

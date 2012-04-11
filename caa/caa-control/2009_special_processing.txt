@@ -1,0 +1,132 @@
+% Each entry starts with 2 valid ISO times (start/stop) and a list of spacecraft (e.g. 234)
+% separated by spaces, and then a list of commands forming the special processing.
+% The special processing is run for all 3-hour intervals that contain part of the time range.
+% To run the special processing for a given interval, use caa_special_process().
+% The variable name cli can be used to refer to the cluster satellite number.
+% pwd can be used to refer to the appropriate l1 storage directory.
+
+%first:  c_ctl('init'); c_ctl('set',5,'isdat_db','130.238.30.32:9')
+%2009-05-01T00:00:00Z 2009-12-31T12:59:59Z 4321  %  outdated FGM-UP. Needs reprocessing.
+% [st,dt] = caa_read_interval(pwd);
+% c_get_batch(st,dt,'db','130.238.30.32:9','sc_list',cli,'sp',pwd,'vars','b','check_caa_sh_interval',1,'noproc')
+% c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','vce|brs|wake','check_caa_sh_interval',1,'nosrc')
+
+%2008-10-01T00:00:00Z  2009-07-31T12:59:59Z 4321  %  outdated EDI.
+% [st,dt] = caa_read_interval(pwd);
+% c_get_batch(st,dt,'db','130.238.30.32:9','sc_list',cli,'sp',pwd,'vars','edi','check_caa_sh_interval',1,'noproc')
+% c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','edi','check_caa_sh_interval',1,'nosrc')
+
+%2008-06-01T00:00:00Z 2009-12-31T12:59:59Z 4321  %  outdated CIS
+% [st,dt] = caa_read_interval(pwd);
+% c_get_batch(st,dt,'db','130.238.30.32:9','sc_list',cli,'sp',pwd,'vars','vcis','check_caa_sh_interval',1,'noproc')
+% c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','vce','check_caa_sh_interval',1,'nosrc')
+
+2009-02-10T00:00:00Z 2009-02-11T03:00:00Z 124  % Wakes too narrow in the solar wind
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','ec','nosrc','check_caa_sh_interval',1,'ec_extraparams',{'WAKE_MIN_HALFWIDTH','7'})
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','manproblems|rawspec|dies|diespec|wake|dief|die','check_caa_sh_interval',1,'nosrc')
+
+2009-02-19T00:00:00Z 2009-02-20T12:00:00Z 124  % Wakes too narrow in the solar wind
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','ec','nosrc','check_caa_sh_interval',1,'ec_extraparams',{'WAKE_MIN_HALFWIDTH','7'})
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','manproblems|rawspec|dies|diespec|wake|dief|die','check_caa_sh_interval',1,'nosrc')
+
+2009-05-19T03:40:00Z 2009-05-19T06:30:00Z 2   % weird LX data
+  load('mPR.mat');
+  idx=find(P10Hz2p2(:,1) > iso2epoch('2009-05-19T06:30:00Z') | P10Hz2p2(:,1) < iso2epoch('2009-05-19T03:40:00Z'));
+  P10Hz2p2=P10Hz2p2(idx,:);
+  idx=find(P10Hz2p4(:,1) > iso2epoch('2009-05-19T06:30:00Z') | P10Hz2p4(:,1) < iso2epoch('2009-05-19T03:40:00Z'));
+  P10Hz2p4=P10Hz2p4(idx,:);
+  save 'mPR.mat' P10Hz2p2 P10Hz2p4
+  delete('mP.mat');
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','p|ps','check_caa_sh_interval',1,'nosrc')
+
+2009-05-25T00:00:00Z 2009-05-25T03:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-05-31T09:00:00Z 2009-05-31T12:00:00Z  1234 % force SW offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [0 0]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-06-02T18:32:00Z 2009-06-04T10:30:00Z 1   % bad LX data
+  load('mPR.mat');
+  idx=find(P10Hz1p2(:,1) > iso2epoch('2009-06-04T10:30:00Z') | P10Hz1p2(:,1) < iso2epoch('2009-06-02T18:32:00Z'));
+  P10Hz1p2=P10Hz1p2(idx,:);
+  idx=find(P10Hz1p3(:,1) > iso2epoch('2009-06-04T10:30:00Z') | P10Hz1p3(:,1) < iso2epoch('2009-06-02T18:32:00Z'));
+  P10Hz1p3=P10Hz1p3(idx,:);
+  idx=find(P10Hz1p4(:,1) > iso2epoch('2009-06-04T10:30:00Z') | P10Hz1p4(:,1) < iso2epoch('2009-06-02T18:32:00Z'));
+  P10Hz1p4=P10Hz1p4(idx,:);
+  save 'mPR.mat' P10Hz1p2 P10Hz1p3 P10Hz1p4
+  delete('mP.mat');
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','p|ps','check_caa_sh_interval',1,'nosrc')
+
+2009-06-08T06:00:00Z 2009-06-08T12:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-06-14T15:00:00Z 2009-06-14T18:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-06-17T01:30:00Z 2009-06-17T03:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-06-19T09:00:00Z 2009-06-19T15:0:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-11-29T09:00:00Z 2009-11-29T12:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-11-30T09:00:00Z 2009-11-30T12:00:00Z  1234 % force SH offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [0 0]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-12-02T21:00:00Z 2009-12-03T00:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-12-07T21:00:00Z 2009-12-08T03:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-12-15T18:00:00Z 2009-12-16T00:00:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-12-22T12:00:00Z 2009-12-23T00:00:00Z  1234 % should be SW interval
+  delete .caa_ms_interval
+  fid = fopen('.caa_sh_interval','w');
+  if fid<0, error('**** Problem creating .caa_sh_interval'), end
+  count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+  fclose(fid);
+  if count<=0,error('**** Problem writing to .caa_sh_interval'), end
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','manproblems|ec|rawspec|dies|diespec|wake|die','check_caa_sh_interval',1,'nosrc')
+
+2009-12-25T22:30:00Z 2009-12-26T03:20:00Z  1234 % force MS offsets
+ [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+ Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+ if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+
+2009-12-31T06:00:00Z 2009-12-31T18:00:00Z  1234 % should be SW interval
+  delete .caa_ms_interval
+  fid = fopen('.caa_sh_interval','w');
+  if fid<0, error('**** Problem creating .caa_sh_interval'), end
+  count = fprintf(fid,'%s',epoch2iso(date2epoch(now)));
+  fclose(fid);
+  if count<=0,error('**** Problem writing to .caa_sh_interval'), end
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','manproblems|ec|rawspec|dies|diespec|wake|die','check_caa_sh_interval',1,'nosrc')
+
+

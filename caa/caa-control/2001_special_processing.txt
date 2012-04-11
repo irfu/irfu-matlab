@@ -1,0 +1,11 @@
+% Each entry starts with 2 valid ISO times (start/stop) and a list of spacecraft (e.g. 234)
+% separated by spaces, and then a list of commands forming the special processing.
+% The special processing is run for all 3-hour intervals that contain part of the time range.
+% To run the special processing for a given interval, use caa_special_process().
+% The variable name cli can be used to refer to the cluster satellite number.
+% pwd can be used to refer to the appropriate l1 storage directory.
+
+2001-02-20T02:00:00Z 2001-02-20T21:00:00Z 2  % Wakes too narrow in the solar wind
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','ec','nosrc','check_caa_sh_interval',1,'ec_extraparams',{'WAKE_MIN_HALFWIDTH','7'})
+  c_get_batch(0,0,'sc_list',cli,'sp',pwd,'varsproc','manproblems|rawspec|dies|diespec|wake|dief|die','check_caa_sh_interval',1,'nosrc')
+

@@ -23,7 +23,8 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
+if t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
 elseif t>=toepoch([2010 02 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
 elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
 elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.12    0.46 2.0 0.05];   % Increase C3 offset to bring in line with C124
