@@ -1,9 +1,10 @@
 function full_time = fromepoch(second)
-%fromepoch - Convert seconds since 1970 to [YYYY MM DD hh mm dd] time format.
+%FROMEPOCH - Convert seconds since 1970 to [YYYY MM DD hh mm dd] format
 %
-% timevec = fromepoch(epochsec) converts the time epochsec, which
-%   is given as seconds since the epoch 1 Jan 1970, to a numerical vector
-%   in the form timevec=[year mon day hour min sec].
+% timevec = fromepoch(epochsec) 
+%   Converts the time epochsec, which is given as seconds since 
+%   the epoch 1 Jan 1970, to a numerical vector in the form 
+%   timevec=[year mon day hour min sec].
 %   The seconds since epoch time format is the time specification
 %   used by the ISDAT system. To convert into Matlabs standard time
 %   format use DATENUM.
@@ -13,12 +14,17 @@ function full_time = fromepoch(second)
 %     mt = datenum(fromepoch(0)) returns mt = 719529,
 %     ts = datestr(datenum(fromepoch(0))) returns ts='01-Jan-1970'.
 %
-%   See also: TOEPOCH, ISGETDATALITE, DATENUM, DATESTR.
+%   See also: TOEPOCH, EPOCH2ISO, IRF_TIME, DATENUM, DATESTR
 %
 % $Id$
 %
 
-% Yuri Khotyaintsev, 2003
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 % Offset by 0.1 seconds to avoid rounding problems in 
 % Matlab versions prior to R2009a (7.8)
