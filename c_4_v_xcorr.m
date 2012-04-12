@@ -5,7 +5,7 @@ function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
 %
 %  Automatically estimate velocity of a boundary. The time difference
 %  between two of the spacecrfat if found from minimum of the sum
-%  S = SUM ( [data1 - data2]^2 ). The error is defined as DT at thich S is
+%  S = SUM ( [data1 - data2]^2 ). The error is defined as DT at which S is
 %  double the minimum value.
 %
 %  Output:
