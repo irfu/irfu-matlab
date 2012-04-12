@@ -212,7 +212,10 @@ for cli=1:4
             end
 
             % Remove saturation due to too high bias current        
-            for probepair=[12 32 34]
+			probe_numeric=str2double(E_info.probe);
+            if probe_numeric<50, probepair_list=probe_numeric;
+			else probepair_list=[12 32 34];end
+			for probepair=probepair_list
                 [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
                 if ok
                     if ~isempty(hbias)
@@ -225,7 +228,9 @@ for cli=1:4
             end
             
             % Remove saturation
-            for probe=[1 2 3 4]
+            if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
+			else probepair_list=[1 2 3 4];end
+            for probe=probepair_list
                 [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
                 if ok
                     if ~isempty(hbias)
