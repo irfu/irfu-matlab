@@ -5332,6 +5332,9 @@ Effect on the CAA processing:
 <operation c2="yes" start="2010-08-05T15:55:00Z" dt="1900" plan="yes" sdesc="bad_data">
         <desc>Perigee raise manoeuvre (440 pulses).</desc>
     </operation>
+<operation c4="yes" start="2010-08-06T15:00:00Z" dt="62460" plan="no" sdesc="bad_data">
+        <desc>Corrupt data. Cause unknown.</desc>
+    </operation>
 
         <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure FCP_CLU_M821</desc>
