@@ -52,14 +52,27 @@ Non-standard operations are stored in the XML table at /home/www/cluster/efw/ops
 The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops/ns_ops.html
 Matlab accesses a text version of this on db when processing the data.
 
-1. Check through /home/www/cluster/efw/ops/ns_ops.xml on hq, and make sure it's complete and OK.
+1. Check through ns_ops.xml (CVS controlled at irfu-matlab/caa/caa-control/), and make sure it's complete and OK.
     a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. Some of the older messages are hidden at http://www.acse.shef.ac.uk/wec-ops/older_mail/maillist.html,
     or at http://www.acse.shef.ac.uk/wec-ops/oldish_mail/threads.html
-2. Edit the XML table. There's no emacs on hq, but there is vi and ee.
-3. Run "sudo make all" to export the XML file to html, then "sudo make txt" to export to text, and then "sudo make update" to move it to db.irfu.se. The last will likely fail unless you have Yuri's password, so try it manually instead: 
-   scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
-4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops').
-5. Update the CVS version of ns_ops.xml.
+2. Edit the XML table locally, then commit to CVS.
+3. Update at hq:
+     cd /home/chris/devel/irfu-matlab/caa/caa-control
+     cvs up
+     make all
+     make txt
+     cvs -f commit -m '' ns_ops_c?.dat
+     ssh hq 'cd /home/www/cluster/efw/ops; cvs up;'
+     ssh db 'cd /data/cluster/irfu-matlab; cvs up; cd /data/cluster/caa-control/; cvs up'
+  or just:
+     /home/chris/devel/irfu-matlab/caa/scripts/cvs_synch.sh 
+4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops'). To force the runners to reload, either restart them all, or just run a pkill on all the MATLAB sessions:
+     ssh caa 'sudo pkill -9 MATLAB'
+     ssh caa1 'sudo pkill -9 MATLAB'
+     ssh sipadan 'sudo pkill -9 MATLAB'
+  or just:
+     /home/chris/devel/irfu-matlab/caa/scripts/caa_kill_runner_matlabs.sh
+
 
 
 ===============
@@ -412,12 +425,32 @@ There will be problems. Look particularly for:
    Any long data gap that doesn't fall into the above categories should be further investigated. Very rarely, the DDS files may be corrupt or missing.
 2. Missing phase information after maneuvers (thick blue line at 0.5 Hz). Enter into ns_ops, use caa_join_phase to fix the phase problems, and then re-run the L1/L2 processing. Take care to set the permissions properly when re-running things.
 3. Bad Ex or Ey offsets.
-4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/caa-control/manual_problems_c?.dat. After marking, they can be re-run as needed. There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated). Can use caa_apply_manproblems to apply the manual_problems files during a given time.
+4. Missing problems that ought to be marked. These can be marked by hand in the files /data/cluster/caa-control/manual_problems_c?.dat:
+   Edit the CVS version under irfu-matlab/caa/caa-control and commit it.
+   ssh db
+   cd /data/cluster/caa-control/
+   cvs up
+After marking, the affected intervals can be re-run as needed from the CAA Server, or use the matlab commend caa_apply_manproblems to do it manually.
+Some problems should be added to nsops:
+   Edit the CVS version under irfu-matlab/caa/caa-control and commit it.
+   ssh hq
+   cd /home/www/cluster/efw/ops
+   scp chris@fernie:/home/chris/devel/irfu-matlab/caa/caa-control/ns_ops.xml .
+   sudo make all
+   sudo make txt
+   scp ns_ops_c[1-4].dat ns_ops.xml chris@db:/export/data/cluster/caa-control 
+The runners will need to be restarted on sipadan, caa and caa1 after this operation in order to force them to reload the new nsops file (alternatively, just sudo pkill -9 MATLAB). After this, the affected intervals can be re-run as needed.
+There's also a separate "manual problems" file at /data/cluster/caa-control/QRecord_c?.dat that can be used to mark it as a "manual interval". The columns in this file are: epoch time, dt, L2 quality, L3 quality, dief quality (deprecated).
 6. Bad packets.
 7. Missed HBIASSA.
-8. Jumping offsets at the flanks from bad SW/MS identifications.
-Fix and re-run things as needed.
-For help with the summary plots, see appendix B.
+8. Jumping offsets at the flanks from bad SW/MS identifications. These should be added to special_processing (CVS: irfu-matlab/caa/caa-control/YYYY_special_processing.txt) with an entry something like this:
+   2010-06-22T03:00:00Z 2010-06-22T06:00:00Z  1234 % force MS offsets
+    [st,dt] = caa_read_interval(pwd); st=iso2epoch(st);
+    Ddsi = c_efw_dsi_off(st,cli,[st+[-1 1]' [-20 -20]']); c_eval('Ddsi?=Ddsi;',cli);  
+    if exist('mEDSI.mat','file'), c_eval('save mEDSI.mat Ddsi? -append',cli); end
+Once entered into the file, call caa_special_process to run the special processing.
+If you encounter a lot of these, consider forcing the whole month in c_efw_dsi_off.m.
+9. Anything else looks weird?
 
 ==================
 14. Internal Burst
