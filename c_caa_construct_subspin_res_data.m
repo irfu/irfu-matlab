@@ -128,7 +128,7 @@ elseif any(strfind(variable_name,'PITCH_3DR'))  % PEACE variable
     peace.data(:,nan_phi,:,:)=[]; % remove NaN energy data
     dataraw=peace.data;
     t=peace.t(:);    
-elseif any(strfind(variable_name,'3DXPH')),
+elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')]),
     %% PEACE_3DXPH does not have pitch angle matrix data, therefore rebinning
     % necessary
     % PEACE sector angles are given in SR2 reference frame!
