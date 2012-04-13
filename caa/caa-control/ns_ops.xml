@@ -5265,7 +5265,7 @@ Effect on the CAA processing:
 <operation c1="yes" c2="yes" c3="yes" start="2010-07-14T10:25:24Z" dt="18882" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
-<operation c2="yes" start="2010-07-14T16:30:00Z" dt="300" plan="yes" sdesc="bad_data">
+<operation c3="yes" start="2010-07-14T16:30:00Z" dt="300" plan="yes" sdesc="bad_data">
         <desc>Thruster firing with EFW on (66 pulses)</desc>
     </operation>
     </operation>
