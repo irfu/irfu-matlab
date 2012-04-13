@@ -22,7 +22,7 @@ function out=irf_fname(st,fmt)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-narginchk(1,2)
+error(nargchk(1,2,nargin))
 
 if nargin < 2, fmt = 0; end
 if fmt==2 && length(st)<=1, error('ST must have two elements for FORMAT=2'), end
