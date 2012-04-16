@@ -5381,6 +5381,9 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00059.html">Colette 100913</link>
                 </res>
         </operation>
+<operation c4="yes" start="2010-08-17T03:30:99Z" dt="48600" plan="no" sdesc="info">
+        <desc>No data (LX or HX). Reason unknown.</desc>
+    </operation>
         <operation c3="yes" start="2010-08-20T05:14:36Z" dt="304200" plan="no" sdesc="no_data">
                 <desc>WEC off by multiple monitoring entries. Long data gap while teams asked to analyse WBD temp OOL(3 days).</desc>
                 <res>
@@ -5468,6 +5471,12 @@ Effect on the CAA processing:
 <operation c3="yes" start="2010-09-20T06:30:24Z" dt="34782" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
+    </operation>
+<operation c1="yes" start="2010-09-25T17:35:43Z" dt="2" plan="no" sdesc="bad_data">
+        <desc>Bad packet.</desc>
+    </operation>
+<operation c3="yes" start="2010-09-26T01:02:23Z" dt="3" plan="no" sdesc="bad_data">
+        <desc>Bad packet.</desc>
     </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2010-09-27T05:18:24Z" dt="23142" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
