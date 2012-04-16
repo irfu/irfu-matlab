@@ -5332,8 +5332,11 @@ Effect on the CAA processing:
 <operation c2="yes" start="2010-08-05T15:55:00Z" dt="1900" plan="yes" sdesc="bad_data">
         <desc>Perigee raise manoeuvre (440 pulses).</desc>
     </operation>
+<operation c2="yes" start="2010-08-06T14:50:00Z" dt="7200" plan="no" sdesc="bad_data">
+        <desc>Corrupt data. Cause unknown. Likely commanding error. Recovered with default (-40 nA) bias, so no good data until after next reset at 2010-09-07 18:20.</desc>
+    </operation>
 <operation c4="yes" start="2010-08-06T15:00:00Z" dt="62460" plan="no" sdesc="bad_data">
-        <desc>Corrupt data. Cause unknown.</desc>
+        <desc>Corrupt data. Cause unknown. Likely commanding error.</desc>
     </operation>
 
         <operation c1="yes" start="2010-08-08T00:48:00Z" dt="6900" plan="yes" sdesc="no_data">
