@@ -5512,6 +5512,9 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
+<operation c3="yes" start="2010-10-17T15:26:50Z" dt="3" plan="no" sdesc="bad_data">
+        <desc>Bad packet.</desc>
+    </operation>
         <operation c2="yes" start="2010-10-19T23:20:00Z" dt="45000" plan="no" sdesc="no_data">
                 <desc>SSR latchup. CLU_AR-177.</desc>
                 <res>
