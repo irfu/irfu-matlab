@@ -387,7 +387,7 @@ if 1,   % PANEL: C1,C3,C4 CIS Vy GSM velocities
   hold(hca,'on');
   irf_plot(hca,gsmVCIS3(:,[1 3]),'color','g'); % HIA
   irf_plot(hca,gsmVCISH4(:,[1 3]),'color','b'); % CODIF
-  ylabel(hca,'V_X [km/s] GSM');
+  ylabel(hca,'V_Y [km/s] GSM');
   irf_zoom(hca,'y',[-1000 1000]);
   irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
 end
