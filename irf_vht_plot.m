@@ -1,4 +1,4 @@
-function [vht,corr_coef]=irf_vht_plot(e,b,tint,vht_flag,vht)
+function [vht,corr_coef,eht]=irf_vht_plot(e,b,tint,vht_flag,vht)
 %IRF_VHT_PLOT computer and plot de Hoffman-Teller velocity
 %
 % [VHT,CORR_COEF] = IRF_VHT_PLOT(E,B,[TINT,VHT_FLAG,VHT])
