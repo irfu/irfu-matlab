@@ -116,7 +116,7 @@ if any(strfind(variable_name,'PADMAR'))  % PEACE variables PADMARL and PADMARH
     res.enlabel=enlabel;
     res.dataunits=dataunits;
     return
-elseif any(strfind(variable_name,'PITCH_3DR'))  % PEACE variable
+elseif any([strfind(variable_name,'PITCH_3DR') strfind(variable_name,'PITCH_3DX')])  % PEACE variable
     [variable,dataobject,peace,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
     enunits=getfield(getv(dataobject,variable.DEPEND_3),'UNITS');
     enlabel=getfield(getv(dataobject,variable.DEPEND_3),'LABLAXIS');
@@ -322,7 +322,7 @@ else
     dtplus=2;
     dtminus=2;
 end
-spin_period=dtplus+dtminus;
+spin_period=double(dtplus+dtminus);
 dtsampling=spin_period/length(phi);
 for j=length(phi):-1:1,
     tt(:,j)=tt(:,1)+double(-dtminus+(j-0.5)*dtsampling);
