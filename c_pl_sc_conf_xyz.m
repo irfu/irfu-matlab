@@ -29,10 +29,13 @@ elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
 end
 if nargin==0, % default time (with time can make smarter solution)
-    if evalin('caller','exist(''tint'')'),
+    if evalin('caller','exist(''tint'') && isnumeric(''tint'')') ,
         time=irf_time(evalin('caller','tint(1)'),'vector');
     elseif exist('CAA','dir')
         R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+		if isempty(R),
+			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+		end
         if numel(R)==0,
             time=[2010 12 31 01 01 01];
         else
@@ -96,8 +99,16 @@ switch lower(action)
             c_load('R?',sc_list);
         end
         if ~is_R_ok,     % try reading from CAA files
-            irf_log('dsrc','Trying to read CAA files...')
+            irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M ...')
             c_eval('R?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
+        end
+        if ~is_R_ok,     % try reading from CAA files
+            irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
+			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			if ~isempty(R)
+				c_eval('dR?=irf_get_data(''sc_dr1_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				c_eval('R?=irf_add(1,R,1,dR?);',sc_list);
+			end
         end
         if ~is_R_ok,  % try reading from isdat server
             irf_log('dsrc','Trying to obtain satellite position from isdat server...')
