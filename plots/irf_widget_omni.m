@@ -48,19 +48,22 @@ switch lower(action)
     initialize_figure(6); % default 5 subplots
     data=get(gcf,'userdata');
     if ~isfield(data,'t')
-      if evalin('caller','exist(''tint'')'),
+      if evalin('caller','exist(''tint'') && isnumeric(''tint'')'),
         time=irf_time(evalin('caller','tint(1)'),'vector');
         dt=evalin('caller','tint(2)-tint(1)');
       elseif exist('CAA','dir')
-        [~,~,R]=c_caa_var_get('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M');
+        R=c_caa_var_get('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+		if isempty (R)
+			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+		end
         if numel(R)==0,
-          time=[2010 12 31 01 01 01];dt=24*3600; % 1 day interval
+          time=irf_time([2010 12 31 01 01 01]);dt=24*3600; % 1 day interval
         else
           time=R(1,1);
           dt=R(end,1)-R(1,1);
         end
       else
-        time=[2010 12 31 01 01 01];dt=24*3600;
+        time=irf_time([2010 12 31 01 01 01]);dt=24*3600;
       end
       data.t=time;
       data.dt=dt;
@@ -71,7 +74,7 @@ switch lower(action)
 
   case 'read_data'
     data=get(gcf,'userdata');
-    tint=[irf_time(data.t) irf_time(data.t)+data.dt];
+    tint=[data.t data.t+data.dt];
     omni2=irf_get_data(tint,'dst,f10.7','omni2');
     if diff(tint)< 48*3600 % interval larger than 48 h use 1h resolution
     disp(['Reading OMNI_MIN 1min data :' irf_time(tint,'tint2iso')]);
@@ -94,7 +97,7 @@ switch lower(action)
     %%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
     h=data.subplot_handles;
     ff=data.ff;
-    tint=[irf_time(data.t) irf_time(data.t)+data.dt];
+    tint=[data.t data.t+data.dt];
     for j=1:numel(h),
       ud=get(h(j),'userdata');
       if isstruct(ud), ud=rmfield(ud,'zoom_x');end % remove zoom_x if exists
@@ -106,6 +109,7 @@ switch lower(action)
     irf_plot(hca,ff(:,[1 3 4 5 2]));
     ylabel(hca,'B [nT] GSM');
     irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.05]);
+	title(hca,'OMNI solar wind parameters');
     
     %%%%%%%%%%%%
     % Velocity
@@ -146,20 +150,20 @@ switch lower(action)
     
   case 'new_start_time'
     data=get(gcf,'userdata');
-    xx=inputdlg('Enter new start time. [yyyy mm dd hh mm ss]','**',1,{mat2str(data.t)});
+    xx=inputdlg('Enter new start time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'),4)});
     if ~isempty(xx),
       variable_str=xx{1};
-      data.t=eval(variable_str);
+      data.t=irf_time(eval(variable_str));
       set(gcf,'userdata',data);
       irf_widget_omni('read_data');
       irf_widget_omni('plot');
     end
   case 'new_time_interval'
     data=get(gcf,'userdata');
-    xx=inputdlg('Enter time interval in hours.','**',1,{mat2str(data.dt)});
+    xx=inputdlg('Enter time interval in hours.','**',1,{mat2str(data.dt/3600,3)});
     if ~isempty(xx),
       variable_str=xx{1};
-      data.dt=eval(variable_str);
+      data.dt=eval(variable_str)*3600;
       set(gcf,'userdata',data);
       irf_widget_omni('read_data');
       irf_widget_omni('plot');
