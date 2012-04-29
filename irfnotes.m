@@ -184,6 +184,8 @@ end
 if 0, % read EFW data
   c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
   c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'');');
+  c_eval('diE? =c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'',''mat'');');
+  c_eval('diEs?=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L3_E3D_INERT'',''mat'');');
   c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
   c_eval('ExB?=c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE'',''mat'');');
 end
@@ -295,18 +297,21 @@ end
 
 % GENERAL
 if 1,   % PANEL:          time series wavelet spectrogram
+	% B is original time series  
 	hca=irf_panel('B wavelet spectrogram'); % example time series magnetic field
-	B=B4(:,[1 2]);                          % define time series 
-	specrec=irf_wavelet(B,'f',[0.1 180]);   % specify frequency range if needed
+	b=B(:,[1 2]);                           % define time series B
+	specrec=irf_wavelet(b,'f',[0.1 180]);   % specify frequency range if needed
 	specrec.p_label={'log10 S','[nT^2/Hz]'};
 	irf_spectrogram(hca,specrec);
 	set(hca,'yscale','log');
 	irf_zoom(hca,'y',[1 180]);
 	set(hca,'ytick',[0.1 1 10 100])
 	caxis(hca,[-9 -1]);
-	% add frequency lines
+end
+if 1,   %   ADD:          frequency lines to the plot (move into the necessary panel before manual ylim settings)
 	hold(hca,'on');
-	c_eval('fce=irf_plasma_calc(B?(:,[1 5]),0,0,0,0,''Fce'');',ic);          % fce frequency
+	fce=irf_plasma_calc(B,0,0,0,0,'Fce');
+	irf_plot(hca,[fce(:,1) fce(:,2)],'-','linewidth',0.2,'color','k');       % electron cyclotron frequency
 	irf_plot(hca,[fce(:,1) fce(:,2)/42.85],'-','linewidth',0.2,'color','k'); % lower hybrid frequency
 	hold(hca,'off');
 end
@@ -337,7 +342,7 @@ if 1,   % PANEL: C1..C4   FGM |B|
   hca=irf_panel(' C1..C4 FGM |B|');
   c_pl_tx(hca,'B?',5)
   ylabel(hca,'|B| [nT]');
-  irf_legend(gca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+  irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 1,   % PANEL: C1..C4   FGM BX GSM
   hca=irf_panel('PANEL: C1..C4, FGM BX');
@@ -466,6 +471,12 @@ if 1,   % PANEL: C?       EFW Ex,Ey ISR2
   irf_legend(hca,{'E_X','E_Y'},[0.02 0.98])
   irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
 end
+if 1,   % PANEL: C1..C4   EFW Ex
+  hca=irf_panel(' C1..C4 EFW Ex');
+  c_pl_tx(hca,'diE?',2)
+  ylabel(hca,'Ex [mV/m] ISR2');
+  irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
+end
 if 1,   % PANEL: C?       EFW satellite potential
   % change L3 to L2 to get full resolution instead of spin
   hca=irf_panel('EFW satellite potential spin');
@@ -515,7 +526,7 @@ end
 if 1,   % PANEL: C?       STAFF spectrogram Ex and fce/flh lines
   hca=irf_panel('STAFF spectrogram Ex and fce/flh lines');
   varname=irf_ssub('EE_xxyy_isr2__C?_CP_STA_PSD',ic);
-  %[~,~,~,varunits]=c_caa_var_get(varname);
+  %varunits=c_caa_var_get(varname,'unit');
   varunits='(mV/m)^2/Hz';
   irf_plot(hca,varname,'tint',tint,'colorbarlabel',varunits,'fitcolorbarlabel','comp',1,'nolabels');
   % next lines are examples how to add gyro/lower hybrid frequency lines
