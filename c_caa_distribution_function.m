@@ -217,10 +217,10 @@ switch plot_type
                 else % CIS products
                     products{k}(strfind(products{k},'-'))='_';
                     res=c_caa_construct_subspin_res_data(['x3d_ions__', products{k}]);
-                    [caaSEDL,~,SEDL]=c_caa_var_get(['delta_plus_energy_table__', products{k}]);
-                    [caaSEDU,~,SEDU]=c_caa_var_get(['delta_minus_energy_table__', products{k}]);                            
-                    SEDL=flipdim(SEDL(1:end,1),1)'; en_nan=isnan(SEDL);SEDL(en_nan)=[];
-                    SEDU=flipdim(SEDU(1:end,1),1)'; en_nan=isnan(SEDU);SEDU(en_nan)=[]; 
+                    caaSEDL=c_caa_var_get(['delta_plus_energy_table__', products{k}]);
+                    caaSEDU=c_caa_var_get(['delta_minus_energy_table__', products{k}]);                            
+                    SEDL=flipdim(caaSEDL.data(1,:),2); en_nan=isnan(SEDL);SEDL(en_nan)=[];
+                    SEDU=flipdim(caaSEDU.data(1,:),2); en_nan=isnan(SEDU);SEDU(en_nan)=[]; 
                 end
             
                 [~,ind]=irf_tlim(res.tt,tint);
