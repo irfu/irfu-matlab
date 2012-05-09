@@ -344,8 +344,9 @@ switch action,
         if min(J_probe)<0 && max(J_probe)>0,                   % display information on Ufloat
             Ufloat=interp1(J_probe,Upot,0); % floating potential
             ii=isfinite(Upot);Rfloat=interp1(Upot(ii),dUdI(ii),Ufloat);
-            info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF'];
-            disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF']);
+			fcr=1/2/pi/Rfloat/probe.capacitance;
+            info_txt=[info_txt '\newline Probe: Ufloat=' num2str(Ufloat,3) 'V, Rfloat= ' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.'];
+            disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
         end
         if flag_add_bias_point_values, 
             Ubias=interp1(J_probe,Upot,-ud.probe.bias_current); % floating potential
