@@ -783,16 +783,16 @@ elseif strcmp(quantity,'a')
 	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
 	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');%#ok<ASGLU>
-	if ~isempty(data) && size(t)>1
+	if ~isempty(data) && length(t)>1
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
 		n_ok = n_ok + 1;
 	else
-		c_eval('Atwo?=[];',cl_id);
+		c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
 		irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
 	end
 	clear t data
 	
-	if ~n_ok, out_data = []; cd(old_pwd), return, end
+	if ~n_ok, out_data = []; end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
