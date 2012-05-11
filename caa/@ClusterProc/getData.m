@@ -1872,12 +1872,8 @@ elseif strcmp(quantity,'hbiassa')
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha,msg] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha) || size(pha,1)<2
-        if size(pha,1)<2
-            irf_log('load',irf_ssub('Short Atwo? data unusable (hbiassa)',cl_id));
-        else    
-            irf_log('load',msg);
-        end
+	if ~ok || isempty(pha)
+        irf_log('load',msg);
 		data = []; cd(old_pwd); return
 	end
 	
@@ -1970,8 +1966,8 @@ elseif strcmp(quantity,'rawspec')
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha] = c_load('Atwo?',cl_id);
 	if ~ok || isempty(pha)
-		irf_log('load',...
-			irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id))
+        irf_log('load',...
+             irf_ssub('No/empty Atwo? in mA. Use getData(CDB,...,cl_id,''a'')',cl_id));
 		data = []; cd(old_pwd); return
 	else
 		%Find zero phase
