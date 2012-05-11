@@ -1872,8 +1872,12 @@ elseif strcmp(quantity,'hbiassa')
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha,msg] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha)
-		irf_log('load',msg)
+	if ~ok || isempty(pha) || size(pha,1)<2
+        if size(pha,1)<2
+            irf_log('load',irf_ssub('Short Atwo? data unusable (hbiassa)',cl_id));
+        else    
+            irf_log('load',msg);
+        end
 		data = []; cd(old_pwd); return
 	end
 	
