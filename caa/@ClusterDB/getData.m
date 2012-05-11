@@ -531,16 +531,16 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 			if start_time>toepoch([2009 10 14 07 00 00]) ||  ...
 					(start_time>toepoch([2009 04 19 00 00 00]) && start_time<toepoch([2009 05 07 00 00 00]))
 				pl = 32;
-				irf_log('dsrc',sprintf('            !Only p32 exists on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Only p32 exists on sc%d',cl_id));
 			elseif (start_time>toepoch([2003 9 29 00 27 0]) || ...
 					(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
 					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
 					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) )
 				pl = [32, 34];
-				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Using p32 on sc%d',cl_id));
 			elseif start_time>toepoch([2001 12 28 03 00 00])
 				pl = 34;
-				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
 			elseif  (start_time>=toepoch([2001 04 12 03 00 00]) && start_time<toepoch([2001 04 12 06 00 00])) || ...
 					(  start_time>=toepoch([2001 04 14 06 00 00]) && start_time<toepoch([2001 04 16 15 00 00])) || ...
 				    (  start_time>=toepoch([2001 04 18 03 00 00]) && start_time<toepoch([2001 04 20 09 00 00])) || ...
@@ -556,16 +556,16 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 		case 2
 			if start_time>toepoch([2007 11 24 15 40 0])
 				pl = [32, 34];
-				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Using p32 on sc%d',cl_id));
 			elseif start_time>toepoch([2007 05 13 03 23 48])
 				pl = 34;
-				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
 			elseif (start_time>=toepoch([2001 04 09 21 00 00]) && start_time<toepoch([2001 04 10 06 00 00])) || ...
 					(  start_time>=toepoch([2001 04 10 09 00 00]) && start_time<toepoch([2001 04 19 15 00 00])) || ...
 					(  start_time>=toepoch([2001 04 20 03 00 00]) && start_time<toepoch([2001 04 23 15 00 00])) || ...
 					(  start_time>=toepoch([2001 04 24 00 00 00]) && start_time<toepoch([2001 04 24 15 00 00]))
 				pl = 12;
-				irf_log('dsrc',sprintf('            !Too high bias current on p34 for sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Too high bias current on p34 for sc%d',cl_id));
 			end
 		case 3
 			if start_time>toepoch([2011 6 01 09 30 0])
@@ -576,10 +576,10 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
 					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) 
 				pl = [32, 34];
-				irf_log('dsrc',sprintf('            !Using p32 on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Using p32 on sc%d',cl_id));
 			elseif start_time>toepoch([2002 07 29 09 06 59])
 				pl = 34;
-				irf_log('dsrc',sprintf('            !Only p34 exists on sc%d',cl_id));
+				irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
 			end
 	end
 	if isempty(pl), out_data = []; cd(old_pwd), return, end
@@ -783,12 +783,12 @@ elseif strcmp(quantity,'a')
 	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
 	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');%#ok<ASGLU>
-	if ~isempty(data)
+	if ~isempty(data) && size(t)>1
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
 		n_ok = n_ok + 1;
 	else
 		c_eval('Atwo?=[];',cl_id);
-		irf_log('dsrc',irf_ssub('No data for Atwo?',cl_id))
+		irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
 	end
 	clear t data
 	
@@ -881,7 +881,7 @@ elseif strcmp(quantity,'bfgm')
             out_data = []; cd(old_pwd), return
         end
     end
-    
+
     dat = c_get_bfgm(start_time + [0 dt],cl_id);
 	
 	if isempty(dat)
