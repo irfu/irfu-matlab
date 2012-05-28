@@ -130,7 +130,7 @@ elseif nargin==3 && strcmpi(flags,'nowildcard'),
 	flag_check_if_there_is_data=0;
 	nonotify='&nonotify=1';
 end
-%% Check status of downloades if needed
+%% Check status of downloads if needed
 if flag_check_status_of_downloads,    % check/show status of downloads
 	disp('=== status of jobs (saved in file .caa) ====');
 	if ~isempty(caa),
@@ -196,7 +196,9 @@ end
 %% expand wildcards
 if flag_wildcard, % expand wildcards
 	dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
-	dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
+	if (any(strfind(dataset,'CIS')) || any(strfind(dataset,'CCODIF')) || any(strfind(dataset,'HIA')))
+		dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
+	end
 end
 
 %% list data if required
