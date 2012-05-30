@@ -1,8 +1,8 @@
-function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
+function [h]=polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
   
 %POLARPLOT  Plot polarization parameters for a given signal
 %
-% POLARPLOT(t,Ex,Ey,step,av,thresh,plotflag) plots the polarization
+% [h]=POLARPLOT(t,Ex,Ey,step,av,thresh,plotflag) plots the polarization
 % parameters for a given signal. The polarisation parameters are the
 % Horizontal Spectral Intensity, the Horizontal Degree of
 % Polarization, the Degree of Pure Circular Polarization and the
@@ -116,7 +116,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
   if plotflag == 1 %%% The case with phase difference and coherence
     phase(coh<threshold)=NaN;
     
-    subplot(4,1,1)
+    h(1)=subplot(4,1,1);
     pcolor(T-t0,freq,log10(2*n*Imean/sampl))
     shading flat
     colorbar('vert');
@@ -126,7 +126,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
 
-    subplot(4,1,2)
+    h(2)=subplot(4,1,2);
     pcolor(T-t0,freq,coh)
     shading flat
     caxis([0,1])
@@ -137,7 +137,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
 
-    subplot(4,1,3)
+    h(3)=subplot(4,1,3);
     pcolor(T-t0,freq,phase)
     shading flat
     caxis([-180,180])
@@ -149,7 +149,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
     
-    subplot(4,1,4)
+    h(4)=subplot(4,1,4);
     plot(t-t0,Ex,t-t0,Ey)
     xlabel('UT')
     ylabel('mV/m')
@@ -166,7 +166,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
     vp(temp)=NaN;
     phi(temp)=NaN;
     
-    subplot(4,1,1)
+    h(1)=subplot(4,1,1);
     pcolor(T-t0,freq,log10(Imean))
     shading flat
     colorbar('vert');
@@ -176,7 +176,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
 
-    subplot(4,1,2)
+    h(2)=subplot(4,1,2);
     pcolor(T-t0,freq,p)
     shading flat
     caxis([0,1])
@@ -187,7 +187,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
 
-    subplot(4,1,3)
+    h(3)=subplot(4,1,3);
     pcolor(T-t0,freq,vp)
     shading flat
     caxis([-1,1])
@@ -198,7 +198,7 @@ function polarplot(t,Ex,Ey,steplength,avnumber,threshold,plotflag)
 	xlabel('')
     %set(gca,'yscale','log')
 
-    subplot(4,1,4)
+    h(4)=subplot(4,1,4);
     pcolor(T-t0,freq,phi)
     shading flat
     caxis([-180,180])
