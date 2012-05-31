@@ -131,18 +131,27 @@ switch action
           flag_read_all_data=1; % read all data
           info = cdflib.inquire(cdfid);
           vars=cell(info.numVars-1,1);
+          vars_i16 = ones(size(1:info.numVars)); % array indicating which of the variables are EPOCH16
           for jj=1:info.numVars
               vars{jj}=cdflib.getVarName(cdfid,jj-1);
+              inq=cdflib.inquireVar(cdfid,jj-1);
+              if strcmpi(inq.datatype,'cdf_epoch16')
+                  vars_i16(jj)=0;
+              end
           end
-          [data] = cdfread(cdf_file,'variables',vars(2:end),'CombineRecords',true);
+          data=cell(1,info.numVars);
+          data(vars_i16==1) = cdfread(cdf_file,'variables',vars(vars_i16==1),'CombineRecords',true);
           info=cdfinfo(cdf_file);
-          % get time axis
+          ii = find(vars_i16==0);
           numrecs = cdflib.getVarAllocRecords(cdfid,0);
-          tc=zeros(2,numrecs);
-          for jj=1:numrecs,
-              tc(:,jj) = cdflib.getVarRecordData(cdfid,0,jj-1);
+          for i=1:length(ii)
+              % get time axis
+              tc=zeros(2,numrecs);
+              for jj=1:numrecs,
+                  tc(:,jj) = cdflib.getVarRecordData(cdfid,ii(i)-1,jj-1);
+              end
+              data(ii(i))={tc'};
           end
-          data={tc',data{:}};
       else
       [data,info] = cdfread(cdf_file,...
         'ConvertEpochToDatenum',true,...
