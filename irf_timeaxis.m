@@ -78,6 +78,7 @@ end
 
 for j=1:numel(h)
 %    xlabel(h(j),'');
+	if flag_date==0, xlabel(h(j),''); end
     tint = get(h(j),'xlim') + t_start_epoch;
     res  = timeaxis(tint);
     set( h(j), 'XTick', res{1} - t_start_epoch );
