@@ -23,7 +23,8 @@ TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
-if t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
+if t>=toepoch([2011 01 01 00 00 0]), Ddsi = [ 0.13  0.76  2.05  0.66 ];
+elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
 elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offsets.
 elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
@@ -86,7 +87,8 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
+if t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.7  1.62  1.22  1.03 ]; % C3 only 7 data points. using 2010 offset for C3
+elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
 elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
 elseif t>=toepoch([2007 11 01 00 0 0]), Ddsi = [ 0.70  1.45 1.69  0.85 ];
