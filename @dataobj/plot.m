@@ -28,7 +28,7 @@ function res = plot(varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-narginchk(2,14)
+%narginchk(2,14)
 
 [ax,args,~] = axescheck(varargin{:});
 if isempty(ax),
