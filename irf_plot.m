@@ -90,6 +90,7 @@ scaleyy = 1;
 plot_type = '';
 marker = '-';
 flag_plot_all_data=1;
+flag_colorbar=1;
 %% Check input options
 while have_options
     l = 1;
@@ -128,6 +129,9 @@ while have_options
         case 'linestyle'
             marker = args{2};
             l = 2;
+        case 'nocolorbar'
+            flag_colorbar=0;
+            l = 1;
         otherwise
             %irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
             marker = args{1};
@@ -239,7 +243,7 @@ if flag_subplot==0,  % One subplot
     if isstruct(x)
         % Plot a spectrogram
         irf_spectrogram(ax,x);
-        hcbar = colorbar('peer',ax);
+		if flag_colorbar, hcbar = colorbar('peer',ax); end
         if ~isempty(var_desc{1})
             lab = cell(1,length(var_desc{1}.size));
             for v = 1:length(var_desc{1}.size)
@@ -366,7 +370,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
         
         if isstruct(y)
             irf_spectrogram(c(ipl),y.t-dt(ipl), y.p, y.f);
-            hcbar = colorbar;
+            if flag_colorbar, hcbar = colorbar; end
             if ~isempty(var_desc{ipl})
                 lab = cell(1,length(var_desc{ipl}.size));
                 for v = 1:length(var_desc{ipl}.size)
