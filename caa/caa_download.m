@@ -209,9 +209,9 @@ if strfind(dataset,'list'),     % list  files
 		filter=dataset(strfind(dataset,':')+1:end);
 	end
 	if isempty(tint) % work on all datasets
-		if strfind(dataset,'listdesc')	% show also description
+		if strfind(dataset,'listdesc') | strfind(dataset,'listgui')	% get also description
 			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1&desc=1'];
-		else							% do not show description
+		else							% do not get description
 			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1'];
 		end
 	else
@@ -224,7 +224,25 @@ if strfind(dataset,'list'),     % list  files
 	disp('Be patient! Contacting CAA...');
 	disp(url_line_list);
 	caalog=urlread(url_line_list);
-	disp(caalog);
+	if strfind(dataset,'listgui'), % make gui window with results
+		A = strread(caalog, '%s', 'delimiter', sprintf('\n')); % cell array with lines
+		B=regexp(A(10:end),'(?<dataset>^[C][-\w]*)\s*(?<tint>\d.*:\d\d)\s*(?<description>.*)','names');
+		imatch=ones(numel(B),1);
+		for i=1:numel(B), 
+			if isempty(B{i}), imatch(i)=0;end 
+		end;
+		B(imatch==0)=[];
+		list=cell(numel(B),1);
+		values=cell(numel(B),2);
+		for j=1:numel(B), 
+			list{j}=B{j}.dataset;
+			values{j,1}=B{j}.tint;
+			values{j,2}=B{j}.description;
+		end
+		caa_gui_list(list,values)
+	else
+		disp(caalog);
+	end
 	return;
 end
 
