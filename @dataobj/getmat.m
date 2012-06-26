@@ -1,5 +1,15 @@
 function res = getmat(dobj,var_s)
-%GETMAT(dobj, var_s)  get a variable in the Cluster AV format
+%GETMAT(dobj, var_s)  get a variable in the matlab format
+%
+% Output:
+%			empty		if variable does not exist
+%			matrix		if variable depends only on time (e.g. fields, position,..)
+%						first column time, other columns variable values
+%			structure 	if variable has additional dependencies (e.g. spectra)
+%						res.t - time 
+%						res.dt - time step (can be also defined res.dt.plus, res.dt.minus)
+%						res.data - data
+%						res.dep_x - additional dependencies
 %
 % $Id$
 
@@ -11,6 +21,10 @@ function res = getmat(dobj,var_s)
 % ----------------------------------------------------------------------------
 
 data = getv(dobj,var_s);
+if isempty(data), % no such variable, return empty
+	res=[];
+	return;
+end
 fillv = getfillval(dobj,var_s);
 if ~ischar(fillv),
     data.data(data.data==fillv) = NaN;
