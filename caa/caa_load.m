@@ -88,7 +88,7 @@ end
 
 nloaded = 0;
 for j = 1:numel(dirs)
-  if regexp(dirs(j).name,'^C[1-4,L]_(C|P|S)(P|Q)_')
+  if regexp(dirs(j).name,'^C[1-4,L]_(C|J|P|S)(P|Q)_')
     var_name = dirs(j).name;
     var_name(strfind(var_name,'-'))='_'; % substitute '-' to '_'
     flag_load_variable=1;
