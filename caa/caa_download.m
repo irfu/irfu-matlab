@@ -2,10 +2,10 @@ function download_status=caa_download(tint,dataset,flags)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
-%       CAA_DOWNLOAD('list') - list all datasets and their available times
-%       CAA_DOWNLOAD('listdesc') - same with dataset description
-%       CAA_DOWNLOAD('list:dataset') - list specified datasets and their available times
-%       CAA_DOWNLOAD('listdesc:dataset') - same with dataset description
+%       CAA_DOWNLOAD('list')    - list all datasets and their available times
+%       CAA_DOWNLOAD('listdesc')- same with dataset description
+%       CAA_DOWNLOAD('listgui') - same presenting output in separate window
+%       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
 %
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,'nowildcard') - downloads dataset exactly matching 'dataset'
@@ -209,7 +209,7 @@ if strfind(dataset,'list'),     % list  files
 		filter=dataset(strfind(dataset,':')+1:end);
 	end
 	if isempty(tint) % work on all datasets
-		if strfind(dataset,'listdesc') | strfind(dataset,'listgui')	% get also description
+		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
 			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1&desc=1'];
 		else							% do not get description
 			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1'];
@@ -226,7 +226,7 @@ if strfind(dataset,'list'),     % list  files
 	caalog=urlread(url_line_list);
 	if strfind(dataset,'listgui'), % make gui window with results
 		A = strread(caalog, '%s', 'delimiter', sprintf('\n')); % cell array with lines
-		B=regexp(A(10:end),'(?<dataset>^[C][-\w]*)\s*(?<tint>\d.*:\d\d)\s*(?<description>.*)','names');
+		B=regexp(A(10:end),'(?<dataset>^[C][-\w]*)\s*(?<tint>\d.*:\d\d)\s*(?<title>.*)\t(?<description>.*)','names');
 		imatch=ones(numel(B),1);
 		for i=1:numel(B), 
 			if isempty(B{i}), imatch(i)=0;end 
@@ -237,7 +237,8 @@ if strfind(dataset,'list'),     % list  files
 		for j=1:numel(B), 
 			list{j}=B{j}.dataset;
 			values{j,1}=B{j}.tint;
-			values{j,2}=B{j}.description;
+			values{j,2}=B{j}.title;
+			values{j,3}=B{j}.description;
 		end
 		caa_gui_list(list,values)
 	else
