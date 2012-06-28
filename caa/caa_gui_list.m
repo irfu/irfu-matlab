@@ -1,36 +1,36 @@
-function varargout = untitled(varargin)
-% UNTITLED MATLAB code for untitled.fig
-% UNTITLED(list,values)
-%      UNTITLED, by itself, creates a new UNTITLED or raises the existing
+function varargout = caa_gui_list(varargin)
+% CAA_GUI_LIST list/filter interactively cell array values
+% CAA_GUI_LIST(list,values)
+%      CAA_GUI_LIST, by itself, creates a new CAA_GUI_LIST or raises the existing
 %      singleton*.
 %
-%      H = UNTITLED returns the handle to a new UNTITLED or the handle to
+%      H = CAA_GUI_LIST returns the handle to a new CAA_GUI_LIST or the handle to
 %      the existing singleton*.
 %
-%      UNTITLED('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in UNTITLED.M with the given input arguments.
+%      CAA_GUI_LIST('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in CAA_GUI_LIST.M with the given input arguments.
 %
-%      UNTITLED('Property','Value',...) creates a new UNTITLED or raises the
+%      CAA_GUI_LIST('Property','Value',...) creates a new CAA_GUI_LIST or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before untitled_OpeningFcn gets called.  An
+%      applied to the GUI before CAA_GUI_LIST_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to untitled_OpeningFcn via varargin.
+%      stop.  All inputs are passed to CAA_GUI_LIST_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help untitled
+% Edit the above text to modify the response to help CAA_GUI_LIST
 
-% Last Modified by GUIDE v2.5 21-Jun-2012 21:22:16
+% Last Modified by GUIDE v2.5 28-Jun-2012 14:02:28
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @untitled_OpeningFcn, ...
-                   'gui_OutputFcn',  @untitled_OutputFcn, ...
+                   'gui_OpeningFcn', @caa_gui_list_OpeningFcn, ...
+                   'gui_OutputFcn',  @caa_gui_list_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -45,15 +45,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before untitled is made visible.
-function untitled_OpeningFcn(hObject, eventdata, handles, varargin)
+% --- Executes just before caa_gui_list is made visible.
+function caa_gui_list_OpeningFcn(hObject, eventdata, handles, varargin)
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to untitled (see VARARGIN)
+% varargin   command line arguments to caa_gui_list (see VARARGIN)
 
-% Choose default command line output for untitled
+% Choose default command line output for CAA_GUI_LIST
 handles.output = hObject;
 handles.list=varargin{1};
 handles.list_index_match_filter=1:numel(handles.list);
@@ -65,12 +65,12 @@ set(handles.edit1,'string','');
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes untitled wait for user response (see UIRESUME)
+% UIWAIT makes CAA_GUI_LIST wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = untitled_OutputFcn(hObject, eventdata, handles) 
+function varargout = caa_gui_list_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -111,29 +111,31 @@ function edit1_Callback(hObject, eventdata, handles)
 % hObject    handle to edit1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-filter=regexp(get(handles.edit1,'string'),'\w*','match'); % cell array with filter values
+filter=regexpi(get(handles.edit1,'string'),'\w*','match'); % cell array with filter values
 handles.list_index_match_filter=[];
 if isempty(filter),
 	handles.list_index_match_filter=1:numel(handles.list);
 else
 	for i=1:numel(handles.list),
 		ok=1;
-		a=regexp(handles.list{i},filter);
+		a=regexpi(handles.list{i},filter);
 		for j=1:numel(a)
 			ok=ok*(~isempty(a{j}));
 		end
 		if ok, handles.list_index_match_filter(end+1)=i; end
 	end
 end
-if any(handles.list_index_match_filter),
-	set(handles.listbox1,'listboxtop',1);
-	set(handles.listbox1,'string',handles.list(handles.list_index_match_filter));
-	set(handles.listbox1,'value',1);
-	set(handles.listbox2,'listboxtop',1);
-	set(handles.listbox2,'string',handles.values(handles.list_index_match_filter));
-	set(handles.listbox2,'value',1);
-	set(handles.edit2,'string',handles.values{handles.list_index_match_filter(1)});
+if isempty(handles.list_index_match_filter),
+	disp('WARNING! Filter did not match anything!');
+	handles.list_index_match_filter=1:numel(handles.list);
 end
+set(handles.listbox1,'listboxtop',1);
+set(handles.listbox1,'string',handles.list(handles.list_index_match_filter));
+set(handles.listbox1,'value',1);
+set(handles.listbox2,'listboxtop',1);
+set(handles.listbox2,'string',handles.values(handles.list_index_match_filter));
+set(handles.listbox2,'value',1);
+set(handles.edit2,'string',edit2_output(handles));
 % Hints: get(hObject,'String') returns contents of edit1 as text
 %        str2double(get(hObject,'String')) returns contents of edit1 as a double
 
@@ -211,3 +213,13 @@ for j=1:size(handles.values,2)
 	txt{end+1}='';
 	txt{end+1}=handles.values{ii,j};
 end
+
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
