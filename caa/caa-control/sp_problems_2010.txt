@@ -9,7 +9,12 @@ Problems seen when looking through the summary plots for 2010
 
 1b) Plotting bugs fixed
 =======================
-Added a yellow line for nsops intervals. Should make validation a bit easier.
+Added a yellow line for nsops intervals. Should make validation a bit easier in some cases.
+
+0701 00:00-06:50 where is the C23 L3 data? (problem started about 1630 previous day)0707 12-14+
+(many other intervals affected)
+  plotting problem: should only blank L3 data if HBIASSA detected on probe pair actually used.
+  fixed problem. Will need to rerun summary plots and recheck.
 
 
 1c) Data problems fixed
@@ -28,6 +33,85 @@ Added a yellow line for nsops intervals. Should make validation a bit easier.
 0130 10:03-18:15 C123 8 kHz internal burst caused split sampling caused bad p32 data
   Added to nsops and reprocessed.
 
+Early in 02, C3 is too low by about 0.3 mV/m or so. C3 offset quite good mid-Feb, then too low again near the end of the month.
+  Modified DSI offsets.
+
+2010-02-06T05:00:24.000Z   2010-02-06T13:05:06.000Z C23 SPLIT
+0212 00:28:32 (6 sec) C1 bad phase
+0215 14:15-18:00 C23 Instruments operated through eclipse
+  Added to nsops and reprocessed.
+
+0304 18:00-16:34+ where is C2 data?
+  badbias. added info to nsops.
+
+0307 09:59:55-10:01:11 bad data on C4 for a few minutes
+0320 23:41:52-23:43:10 bad data on C4 for a few minutes
+  badDAC. Added to manual_problems and reprocessed.
+
+0321 1830-0000 1Hz line in C2,4
+0326 0730-1030 1Hz line in C2,4
+  skinny little wake. Added lobe_wake to manual_problems and reprocessed.
+
+0327 0525-0810 something weird in C1 data
+  SPLIT interval not initially caught by Anders. Added to nsops as bad_p32 and reprocessed. 
+
+0330 04:32:18 (2 seconds) spike in C1
+  bad packet. Added to nsops and reprocess.
+
+0410 why is there a 21:04 and 21:06 plot?
+  Consequence of re-running jobs after fixing SPLIT interval issue.
+  Reran L012 for C123.
+
+0422 1030-1130 missed badDAC on C4
+  Added to manual_problems
+
+0512 20:31 C1 bad packet
+0505 03:35 C4 bad phase
+  Added to nsops and reprocessed.
+
+0628 23:50-00:36 bad LX/HX tlm on C2
+  Added to ns_ops and reprocessed.
+
+0608 06-15 force to msphere offsets
+0610 12-00 force to msphere offsets
+0617 9-15 force to msphere offsets
+0619 12-18 force to msphere offsets
+0621 12-6 force to msphere offsets
+  Added to special_processing and ran special processing.
+
+0708 18-12+ should enable SW offsets
+0711 03-21 should enable SW offsets
+  Enabled for 2010-07-08 to 2010-07-12.
+0710 21-00 force MS offset
+  Forced in special_processing
+
+0714 16:30:00 C3 Thruster firing with EFW on(66 pulses)
+0720 20:21:03 C2 Thruster firing with EFW on(124 pulses)
+0731 14:45:25 C3 bad packet (2 seconds)
+  Added to nsops.
+
+0805 15:55:00 C2 (440 pulses) perigee raising (ends 16:25ish)
+   Added to nsops and reprocessed.
+0806 14:50-18:23+ C2/4: corrupt data
+   Added to nsops and reprocessed.
+0817 03:30-17:00 where is C4? No data in ISDAT. Don't know why.
+   Added note to nsops.
+
+0925 17:36 C1 bad packet
+0926 01:03 C3 bad packet
+  Added to nsops and reprocessed.
+
+1002 00:20-18:30 Where is C2?
+  Missed nsops entry for WEC off. Added to nsops.
+1010 21:04:40 C4 bad phase (5 seconds)
+1016 22:06:59 C3 bad packet (2 seconds)
+  Added to nsops and reprocessed.
+1017 09,15,18 C3 needs reprocessing for SPLIT problem.
+1029 03 to 1030 09 C3 needs reprocessing for SPLIT problem.
+  Reprocessed.
+1017 15:26:50 C3 bad packet (3 seconds)
+  Added to nsops and reprocessed. Made whole interval disappear.
+  Fixed minor problem in remove_problems and reprocessed.
 
 2a) Software bugs to be fixed
 =============================
@@ -37,9 +121,19 @@ Added a yellow line for nsops intervals. Should make validation a bit easier.
 
 3) Major data problems
 ======================
+L3 P data is spiky when there are not 2 opposing probes available for the averaging.
+Will need to develop some sort of spinfit for this case, and reprocess/redliver data.
 
-4) Ignored problems
-===================
+If the burst is run at 8 kHz, then the spacecraft uses the SPLIT sampling mode.
+The patch for p32 doesn't deal with the SPLIT sampling mode, which causes bad p32 data when this happens.
+Anders made a list of all affected intervals. Flagged in nsops and reprocessed.
+
+Problem: going through plumes and making non-sinusoidal wakes.
+Solution: use the wake routine developed for the GRL paper
+
+
+4) Ignored
+==========
 0105 2330 C3,C4 burst of noise
   I think that might be real.
 0118 12-23 C3 Ey offset
@@ -47,10 +141,72 @@ Added a yellow line for nsops intervals. Should make validation a bit easier.
   Spinfit and wake removal look perfect. The y component is just different.
 0113 18-24 C234 missing.
   Immediately after maneuver. Probably ops issue.
-
+0225 15:10-16:00-17:00 C3 BIG CLUE as to the cause of the different Ex offset on C3: note correlation of difference with plasma freq
+From 2010-03: Wow, there are a lot of DAC problems on C4!!!
+0401 11:52-20:00 what happened to C1?
+       badbias.
+0502 06 big C3 offset: 0.5 mV/m too high
+0602 03:30 interesting natural signal
+0608 09:00 what's the matter with C1?
+    Also: 0610 12:00, 0619 11:30, 0929 09:00
+    WHISPER signatures are unusually large at these times. 
+    Not quite sure why.
+0601 00:00-12:30 missed wake? in the sheath? Odd.
+   Also 0607 06 , 0612 03 
+   Yes. this is a "cold ion" wake in the sheath.
+   Clear nonsinusoidal wake signal (e.g. 2010-06-12 03:07).
+   CIS reports about 4/cc at about 400 eV.
+   WHISPER sees a very clear (suspiciously clear) plasma line at about n=8.
+0815 18:00 Nice EMIC (?) line in the spectra just outside plasmapause. 0820 0900 again. 0822 15 again. 0829 10 again.
+0916 09 Very nice EMIC (?) waves on C4.
+   Also strong EM emissions at the ion plasma frequency (~lower hybrid) (30ish Hz) as well (STAFF).
+0914 00:40 where is C2? (until reset 0915 05:14)
+  badbias.
 
 5) Unclassified
 ===============
+
+For Jan:
+* release the matlab licence after a minute or 5 of nonactivity.
+* remove summary plot dependence on caa_spectrogram
+* Why does the spectrum summary plot come out with the wrong font when run on spis?
+    (also, it should print on usletter, rather than A4, for consistency)
+* leap second data
+* after probe failures, there should be a fill file for data sets that are no longer produced.
+
+
+
+2010-10
+-------
+No data delivered for 2010-10-19.
+
+1019 00:00-10:28 where are C1234?
+  Corrupt DDS files. Per-Arne has fixed the files for this day and re-uploaded them.
+  Will need to re-do ISDAT indexing, then reprocess the data.
+  Should also check the IB data for this day.
+
+
+2010-11
+-------
+1101 C4 21:00-21:20 bad data? bad timing?
+1102 C1234 03-06 should not be solar wind interval
+1104 C3 15-18 C3 ADC offset problems?
+1105 06:30-22:02 C1 DWP timing problem? No data.
+1106 09-15 should not be solar wind interval
+1107 03-06 missed SPLIT
+1107 18:17:45 2 seconds bad packet C3
+1107 18-20 why is C3 LX data so spiky?
+1110 15-18 should not be solar wind
+1110 18- should be starting to use solar wind offsets again
+
+
+
+
+
+
+
+
+
 
 
 
