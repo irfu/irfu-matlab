@@ -188,16 +188,21 @@ No data delivered for 2010-10-19.
 
 2010-11
 -------
-1101 C4 21:00-21:20 bad data? bad timing?
-1102 C1234 03-06 should not be solar wind interval
-1104 C3 15-18 C3 ADC offset problems?
+1101 C4 21:00-21:20 bad data?
+       Check why the data is so patchy.
+       If needed, enter into nsops and reprocess.
 1105 06:30-22:02 C1 DWP timing problem? No data.
-1106 09-15 should not be solar wind interval
-1107 03-06 missed SPLIT
+       Ignore
+1106 09-15 should be solar wind interval
+	Set this manually in c_efw_dsi_off, rerun summary plots.
+1107 03-06 missed SPLIT.
+       Should be added to nsops and reprocessed.
 1107 18:17:45 2 seconds bad packet C3
-1107 18-20 why is C3 LX data so spiky?
-1110 15-18 should not be solar wind
+       Should be added to nsops and reprocessed.
+1110 15-09+ should be solar wind
+	Set this manually in c_efw_dsi_off, rerun summary plots.
 1110 18- should be starting to use solar wind offsets again
+	Set this manually in c_efw_dsi_off, rerun summary plots for rest of Nov and Dec.
 
 
 

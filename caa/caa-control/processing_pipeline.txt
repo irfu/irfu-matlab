@@ -53,8 +53,7 @@ The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops
 Matlab accesses a text version of this on db when processing the data.
 
 1. Check through ns_ops.xml (CVS controlled at irfu-matlab/caa/caa-control/), and make sure it's complete and OK.
-    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. Some of the older messages are hidden at http://www.acse.shef.ac.uk/wec-ops/older_mail/maillist.html,
-    or at http://www.acse.shef.ac.uk/wec-ops/oldish_mail/threads.html
+    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. The most recent messages are at https://lists.shef.ac.uk/sympa/info/wec-ops . You'll need a password and also need to be a member of the mailing list to view the page. Older messages are at http://www.acse.shef.ac.uk/wec-ops/mail/ . Look in the directory for the appropriate subdirectory (labeled by most recent message as mail_YYMMDD). Within the subdirectory, open the file maillist.html or threads.html. Sometimes you need to sort by thread instead of date if you want to see all the messages.
 2. Edit the XML table locally, then commit to CVS.
 3. Update at hq:
      cd /home/chris/devel/irfu-matlab/caa/caa-control
@@ -352,35 +351,7 @@ They are computed on a statistical basis and applied on a roughly per-year basis
 ============================
 11. Create the summary plots
 ============================
-Either:
-1) Use the CAA Runner web interface.
-   Make sure that the jobs only go to machines with the X virtual framebuffer properly configured.
-   At the moment, that's only sipadan.irfu.se.
-   Actually, even then it doesn't work.
-Or:
-2) Create them straight from Matlab (old):
-    a) Set up a directory where you want to store all the files.
-    b) Create a list of data directories. Example:
-         ls -d --format=single-column /data/caa/l1/2006/2006* > /data/caa/sp/2006/file_list.txt
-    c) Start Matlab, cd to the proper directory (eg. /data/caa/sp/2006), and run caa_sp_batch('file_list.txt').
-       Runtime is widely variable, and depends on how much hardware-based graphics acceleration can be applied.
-       Matlab will probably leak too much memory and crash after about 1-2 months of summary plots.
-       Try running locally, with the window for Figure 75 exposed and visible on the screen.
-         Make sure to deactivate the screensaver and tell the monitor not to sleep.
-       On fernie, with Figure 75 exposed, it takes about 1 hour and 45 minutes to create a month of summary plots.
-         If running on a desk which is hidden, it effectively grinds to a standstill (10-12 hours per month of plots!)
-       To run quickly in the background on fernie and avoid the window grabbing focus, use Xvfb:
-          cd /data/caa/sp/2009
-          xvfb-run -s "-screen 0 640x480x24 -extension Composite" /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -nodesktop -r "caa_sp_batch('file_list03.txt'); quit"
-          This runs at "full" speed (about 2 hours to make a month of summary plots). 
-       In order to get around the memory leak, consider using a script that runs one month at a time. E.g.:
-         cd /data/caa/sp/2006
-         /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -r "caa_sp_batch('file_list01.txt'); quit"
-         /usr/local/matlab/bin/matlab -c 1712@flexlmtmw1.uu.se -r "caa_sp_batch('file_list02.txt'); quit"
-         ...
-       Make sure to check the .failed files.
-Or:
-3) Create them straight from Matlab (new): use caa_pl_summary_l1_batch
+Create them straight from Matlab (new): use caa_pl_summary_l1_batch
      e.g. caa_pl_summary_l1_batch('2007-04-08T06:00:00Z', '2007-04-09T09:00:00Z')
    This can still be slow if running on a desk which is hidden (see above).
    The memory leak issues are still present. To generate a lot of summary plots, consider something like this:

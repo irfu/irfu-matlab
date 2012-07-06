@@ -5488,6 +5488,12 @@ Effect on the CAA processing:
                     <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
                 </res>
         </operation>
+        <operation c2="yes" start="2010-10-02T00:20:00Z" dt="65400" plan="no" sdesc="no_data">
+                <desc>WEC off by onboard monitor.</desc>
+                <res>
+                    <link href="http://http://www.acse.shef.ac.uk/wec-ops/old_mail/msg00161.html">Colette 101014</link>
+                </res>
+        </operation>
         <operation c1="yes" start="2010-10-02T21:16:00Z" dt="18000" plan="yes" sdesc="no_data">
                 <desc>HPA /WEC Power Sharing procedure</desc>
                 <res>
