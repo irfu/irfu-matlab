@@ -126,11 +126,21 @@ end
 
 % Remove XTickLabel and XLabel from all panels but the last one
 if strcmpi(c,'x') && numel(axis_handles)>1
-    p = cell2mat(get(axis_handles,'Position'));
+    if strcmp(get(axis_handles(1),'Type'),'line')
+        parent_handles = cell2mat(get(axis_handles,'Parent'));
+        p = cell2mat(get(parent_handles,'Position'));
+    else %axis
+        p = cell2mat(get(axis_handles,'Position'));
+    end
     pymin = min(p(:,2));
 end
 
-for h=axis_handles
+for hii=axis_handles
+    if strcmp(get(hii,'Type'),'line')
+        h = get(hii,'Parent');
+    else
+        h = hii;
+    end
     switch lower(c)
         case 'x'
             set(h,'XLim',interval);
