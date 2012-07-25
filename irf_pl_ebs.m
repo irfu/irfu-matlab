@@ -77,7 +77,7 @@ end
   sampl_b=1/(b(2,1)-b(1,1));
   if     sampl_b > 1.5*sampl_e, e=irf_resamp(e,b); sampl=sampl_b; disp('irf_pl_ebs: interpolating e to b');
   elseif sampl_e > 1.5*sampl_b, b=irf_resamp(b,e); sampl=sampl_e; disp('irf_pl_ebs: interpolating b to e');
-  elseif sampl_e == sampl_b & size(e)==size(b),   sampl=sampl_e;
+  elseif sampl_e == sampl_b && size(e)==size(b),   sampl=sampl_e;
   else   sampl=2*sampl_e; 
       t=max(e(1,1),b(1,1)):1/sampl:min(e(end,1),b(end,1)); t=t'; 
       e=irf_resamp(e,t); b=irf_resamp(b,t); 
@@ -95,9 +95,9 @@ end
   end
 
   % set to zero NaNs
-  ind_nan_e=find(isnan(e)); e(ind_nan_e)=0;
-  ind_nan_b=find(isnan(b)); b(ind_nan_b)=0;
-  ind_nan_B=find(isnan(B)); B(ind_nan_B)=0;
+  ind_nan_e=isnan(e); e(ind_nan_e)=0;
+  ind_nan_b=isnan(b); b(ind_nan_b)=0;
+  ind_nan_B=isnan(B); B(ind_nan_B)=0;
   
   
 %% the direction of background magnetic field
@@ -203,7 +203,7 @@ for ind_a=1:length(a),
       power2B_plot(last_point,ind_a)=sum(power2B(last_interval))/n_in_last_interval;
       Spar_plot(last_point,ind_a)   =sum(Spar(last_interval))/n_in_last_interval;
     end
-  else,
+  else
     power2E_plot(:,ind_a)=power2E;
     power2B_plot(:,ind_a)=power2B;
     Spar_plot(:,ind_a)=Spar;
