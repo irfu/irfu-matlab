@@ -1,7 +1,10 @@
 function caa_sh_plan(yyyy,mm)
 %CAA_SH_PLAN  identify magnetosheath/sw intervals
 %
-% caa_sh_plan(yyyy)
+% caa_sh_plan(yyyy,[month_list])
+%
+% Example:
+%     caa_sh_plan(2012,1:5) will generate MP crossings for Jan-May 2012
 %
 % See also CAA_FIND_MP
 %
