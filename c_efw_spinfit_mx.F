@@ -1,4 +1,4 @@
-c Spin fit routime obtained from KHT and matlab interface to it.
+c Spin fit routine obtained from KTH and matlab interface to it.
 c yuri@irfu.se, 2007
 c
 c This is a new 64-bit compatible version
