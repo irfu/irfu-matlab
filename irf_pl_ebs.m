@@ -85,7 +85,6 @@ end
   end
   %% Check the sampling rate
   disp(['Fs=' num2str(sampl) 'Fs_e=' num2str(sampl_e) 'Fs_b=' num2str(sampl_b)]);
-  t0=e(1,1);
 
   %% Remove the last sample if the total number of samples is odd
 
@@ -102,6 +101,7 @@ end
   
 %% the direction of background magnetic field
 bn=irf_norm(irf_resamp(B,e));
+bn(:,1) = [];
 t=e(:,1);
 
   %% Find the frequencies for an FFT of all data
@@ -148,7 +148,7 @@ powerBy_plot = zeros(ndata,nfreq);
 powerBz_plot = zeros(ndata,nfreq);
 power2B_plot = zeros(ndata,nfreq);
 Spar_plot = zeros(ndata,nfreq);
-for ind_a=1:length(a),
+parfor ind_a=1:length(a),
  % if debug, disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);end
   mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
   mWexp = repmat(mWexp,1,3);
@@ -183,7 +183,7 @@ for ind_a=1:length(a),
   %    + We(:,[2 3 1]).*conjWb(:,[3 1 2]) + conjWe(:,[2 3 1]).*Wb(:,[3 1 2])...
   %    - We(:,[3 1 2]).*conjWb(:,[2 3 1]) - conjWe(:,[3 1 2]).*Wb(:,[2 3 1])...
   %    )./newfreqmat;
-  Spar=sum(S.*bn(:,2:4),2);
+  Spar=sum(S.*bn,2);
   
   %% Remove data possibly influenced by edge effects
   censur=floor(2*a);
@@ -310,7 +310,7 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     ylabel(hca,'S_{II} [\mu W/m^2Hz]^{1/2}');
   end
 %%%%%%%%% E/B spectra %%%%%%%%%%%%
-  if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
+  if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl); end
   if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'eb')),
     pcolor(t-t_start_epoch,newfreq,log10(abs(EtoB_plot.'))) % With edge effects removed
     shading flat
@@ -355,7 +355,7 @@ elseif plot_type == 3,
     hca = colorbar;
     ylabel(hca,'Ez [(mV/m)^2/Hz]');
     %%%%%%%%% E spectra %%%%%%%%%%%%
-    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+    h(ipl)=irf_subplot(npl,1,-ipl);
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.')))
     shading flat
     ylabel('f [Hz]')
