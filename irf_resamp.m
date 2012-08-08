@@ -42,7 +42,7 @@ max_flag=0;
 while have_options
 	l = 1;
 	switch(lower(args{1}))
-		case {'nearest','linear','spline','pchip','cubic','pchip','v5cubic'}
+		case {'nearest','linear','spline','pchip','cubic','v5cubic'}
 			method = args{1};
 			flag_do='interpolation'; % if method is given do interpolation
 		case 'method'
