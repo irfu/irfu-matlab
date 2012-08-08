@@ -170,7 +170,7 @@ for ind_a=1:length(a),
   %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
   coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
   Sx= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
-  Sy= -coef_poynt*real(Wex.*conj(Wbz)+conj(Wex).*Wbz-Wez.*conj(Wbx)-conj(Wez).*Wbx)./newfreqmat;
+  Sy= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
   Sz= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
   
   Spar=Sx.*bn(:,2)+Sy.*bn(:,3)+Sz.*bn(:,4);
