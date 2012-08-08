@@ -19,7 +19,7 @@ function res = irf_lstyle(n)
 % ----------------------------------------------------------------------------
 
 colors = {'k' 'r' 'g' 'b' 'm' 'c' 'y'};
-markers = {'-' '--' '.-' '-.-'};
+markers = {'-' '--' '.-' '-.' 'o-'};
 
 mr = floor(n/length(colors));
 cl = n - mr*length(colors);
