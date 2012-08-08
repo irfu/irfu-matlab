@@ -12,7 +12,7 @@ function h=irf_pl_ebs(e,b,B,parameters)
 % B = background magnetic field, columns (t Bx By Bz)
 % parameters=[spec_width...
 %    freq_min freq_max freq_n Morlet_width detrend colorbar plot_type panel]
-%  spec -  Maximum pixel width of spectrogram (0 for all points)
+%  spec -  Maximum pixel width of spectrogram (0 for all points) [CURRENTLY IGNORED]
 %  freq_min, freq_max  -     Frequency interval to analyze
 %  Morlet_width -  The width of the Morlet wavelet (original 5.36)
 %  detrend  - 1) do linear detrend, 0) do nothing
@@ -131,84 +131,105 @@ end
 
 disp('irf_pl_ebs ... calculate e and b wavelet transform ....');
 %% Make the FFT of all data
-Swex=fft(e(:,2));Swey=fft(e(:,3));Swez=fft(e(:,4));
-Swbx=fft(b(:,2));Swby=fft(b(:,3));Swbz=fft(b(:,4));
+Swe=fft(e(:,2:4),[],1);
+Swb=fft(b(:,2:4),[],1);
 
 %% Get the correct frequencies for the wavelet transform
-  newfreq=w0./a; 
+newfreq=w0./a;
 
-  %% Loop through all frequencies 
-
+%% Loop through all frequencies
+ndata = size(e,1); nfreq = length(a);
+powerEx_plot = zeros(ndata,nfreq);
+powerEy_plot = zeros(ndata,nfreq);
+powerEz_plot = zeros(ndata,nfreq);
+power2E_plot = zeros(ndata,nfreq);
+powerBx_plot = zeros(ndata,nfreq);
+powerBy_plot = zeros(ndata,nfreq);
+powerBz_plot = zeros(ndata,nfreq);
+power2B_plot = zeros(ndata,nfreq);
+Spar_plot = zeros(ndata,nfreq);
 for ind_a=1:length(a),
  % if debug, disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);end
-  Wwex=sqrt(1).*Swex.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  Wwey=sqrt(1).*Swey.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  Wwez=sqrt(1).*Swez.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  Wwbx=sqrt(1).*Swbx.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  Wwby=sqrt(1).*Swby.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  Wwbz=sqrt(1).*Swbz.*exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
+  mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
+  mWexp = repmat(mWexp,1,3);
+  Wwe = sqrt(1).*Swe.*mWexp;
+  Wwb = sqrt(1).*Swb.*mWexp;
+  
   %% Get the wavelet transform by IFFT of the FFT
-  %W=ifft(Ww);
-  Wex=ifft(Wwex);Wey=ifft(Wwey);Wez=ifft(Wwez);
-  Wbx=ifft(Wwbx);Wby=ifft(Wwby);Wbz=ifft(Wwbz);
+  We = ifft(Wwe,[],1);
+  Wb = ifft(Wwb,[],1);
   
   %% Calculate the power spectrum
   newfreqmat=w0/a(ind_a);
   
   %  power=(2*pi)*conj(W).*W./newfreqmat;
-  powerEx=2*pi*(Wex.*conj(Wex))./newfreqmat;
-  powerEy=2*pi*(Wey.*conj(Wey))./newfreqmat;
-  powerEz=2*pi*(Wez.*conj(Wez))./newfreqmat;
-  powerE=powerEx+powerEy+powerEz;
-  
-  powerBx=2*pi*(Wbx.*conj(Wbx))./newfreqmat;
-  powerBy=2*pi*(Wby.*conj(Wby))./newfreqmat;
-  powerBz=2*pi*(Wbz.*conj(Wbz))./newfreqmat;
-  powerB=powerBx+powerBy+powerBz;
-  
+  powerE = 2*pi*(We.*conj(We))./newfreqmat;
+  powerE(:,4) = sum(powerE,2);
+  powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
+  powerB(:,4) = sum(powerB,2);
   
   %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
   coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
-  Sx= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
-  Sy= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
-  Sz= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
+  S = zeros(ndata,3);
+  Wex=We(:,1);Wey=We(:,2);Wez=We(:,3);
+  Wbx=Wb(:,1);Wby=Wb(:,2);Wbz=Wb(:,3);
+  S(:,1)= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
+  S(:,2)= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
+  S(:,3)= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
   
-  Spar=Sx.*bn(:,2)+Sy.*bn(:,3)+Sz.*bn(:,4);
+  %For some reason this code works 20% slower than the above one
+  %conjWe = conj(We); conjWb = conj(Wb);
+  %S = coef_poynt*real( ...
+  %    + We(:,[2 3 1]).*conjWb(:,[3 1 2]) + conjWe(:,[2 3 1]).*Wb(:,[3 1 2])...
+  %    - We(:,[3 1 2]).*conjWb(:,[2 3 1]) - conjWe(:,[3 1 2]).*Wb(:,[2 3 1])...
+  %    )./newfreqmat;
+  Spar=sum(S.*bn(:,2:4),2);
   
   %% Remove data possibly influenced by edge effects
   censur=floor(2*a);
-  power2E=powerE;
-  power2B=powerB;
-  %  for j=1:anumber;
   censur_indexes=[1:min(censur(ind_a),size(e,1)) max(1,size(e,1)-censur(ind_a)):size(e,1)];
-  power2E(censur_indexes)=NaN;
-  power2B(censur_indexes)=NaN;
-  Spar(censur_indexes)=NaN;
+  powerE(censur_indexes,:) = NaN;
+  powerB(censur_indexes,:) = NaN;
+  Spar(censur_indexes) = NaN;
   
-  if q_spectra_width,
-    if q_spectra_width<length(e(:,1)),
-      nav=ceil(length(e(:,1))/q_spectra_width);
-      t=e(1:nav:end,1);
-      for jj=1:length(t)-1
-        power2E_plot(jj,ind_a)=sum(power2E((jj-1)*nav+1:jj*nav))/nav;
-        power2B_plot(jj,ind_a)=sum(power2B((jj-1)*nav+1:jj*nav))/nav;
-        Spar_plot(jj,ind_a)=sum(Spar((jj-1)*nav+1:jj*nav))/nav;
-      end
-      last_point=length(t);n_points=length(power2E);
-      last_interval=(last_point-1)*nav+1:max(jj*nav,n_points);
-      n_in_last_interval=length(last_interval);
-      power2E_plot(last_point,ind_a)=sum(power2E(last_interval))/n_in_last_interval;
-      power2B_plot(last_point,ind_a)=sum(power2B(last_interval))/n_in_last_interval;
-      Spar_plot(last_point,ind_a)   =sum(Spar(last_interval))/n_in_last_interval;
-    end
-  else
-    power2E_plot(:,ind_a)=power2E;
-    power2B_plot(:,ind_a)=power2B;
-    Spar_plot(:,ind_a)=Spar;
-  end
-  EtoB_plot=sqrt(power2E_plot./power2B_plot);
-  %% Plot everything
+  powerEx_plot(:,ind_a) = powerE(:,1);
+  powerEy_plot(:,ind_a) = powerE(:,2);
+  powerEz_plot(:,ind_a) = powerE(:,3);
+  power2E_plot(:,ind_a) = powerE(:,4);
+  powerBx_plot(:,ind_a) = powerB(:,1);
+  powerBy_plot(:,ind_a) = powerB(:,2);
+  powerBz_plot(:,ind_a) = powerB(:,3);
+  power2B_plot(:,ind_a) = powerB(:,4);
+  Spar_plot(:,ind_a) = Spar;
 end
+idx_nan_e = sum(ind_nan_e,2)>0;
+powerEx_plot(idx_nan_e,:) = NaN;
+powerEy_plot(idx_nan_e,:) = NaN;
+powerEz_plot(idx_nan_e,:) = NaN;
+power2E_plot(idx_nan_e,:) = NaN;
+Spar_plot(idx_nan_e,:) = NaN;
+EtoB_plot=sqrt(power2E_plot./power2B_plot);
+
+% if q_spectra_width,
+%     error('q_spectra_width not impelemted')
+%     if q_spectra_width<length(e(:,1)),
+%         nav=ceil(length(e(:,1))/q_spectra_width);
+%         t=e(1:nav:end,1);
+%         for jj=1:length(t)-1
+%             power2E_plot(jj,ind_a)=sum(power2E((jj-1)*nav+1:jj*nav))/nav;
+%             power2B_plot(jj,ind_a)=sum(power2B((jj-1)*nav+1:jj*nav))/nav;
+%             Spar_plot(jj,ind_a)=sum(Spar((jj-1)*nav+1:jj*nav))/nav;
+%         end
+%         last_point=length(t);n_points=length(power2E);
+%         last_interval=(last_point-1)*nav+1:max(jj*nav,n_points);
+%         n_in_last_interval=length(last_interval);
+%         power2E_plot(last_point,ind_a)=sum(power2E(last_interval))/n_in_last_interval;
+%         power2B_plot(last_point,ind_a)=sum(power2B(last_interval))/n_in_last_interval;
+%         Spar_plot(last_point,ind_a)   =sum(Spar(last_interval))/n_in_last_interval;
+%     end
+% end
+
+%% Plot everything
 clear h;
 switch plot_type
 case 0,   npl=NaN;
@@ -243,7 +264,7 @@ if plot_type == 2,
 end
 
 if plot_type == 1 || plot_type == 2 || plot_type == 0,
-   t_start_epoch=t_start_epoch(t(1,1));
+   t_start_epoch=get_t_start_epoch(t(1,1));
 %%%%%%%%% E spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
   if plot_type ~= 0 || (plot_type == 0 && strcmp(plot_param,'e')),
@@ -251,11 +272,9 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.'))) % With edge effects removed
     shading flat
     ylabel('f [Hz]')
-    %ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-    set(gca,'yscale','log');set(gca,'tickdir','out');
-    cmean=mean(mean(log10(abs(powerE))));
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(power2E_plot))));
     caxis(floor(cmean)+[-3.5 3.5]);
-%      caxis([-5 2]);
     colormap(xcm);
     hca = colorbar;
     ylabel(hca,'E [(mV/m)^2/Hz]');
@@ -267,10 +286,9 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     shading flat
     ylabel('f [Hz]')
     %ht=text(0,0,'B [nT^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-    set(gca,'yscale','log');set(gca,'tickdir','out');
-      cmean=mean(mean(log10(abs(powerB))));
-      caxis(floor(cmean)+[-3.5 3.5]);
-%      caxis([-8 -1]);
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(power2B_plot))));
+    caxis(floor(cmean)+[-3.5 3.5]);
     colormap(xcm);
     hca = colorbar;
     ylabel(hca,'B [nT^2/Hz]');
@@ -285,12 +303,11 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     %ht=text(0,0,'S_{II} [\mu W/m^2Hz]^{1/2}');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
     set(gca,'yscale','log');set(gca,'tickdir','out');
 
-    cc = [-max(max(sqrt(abs(Spar)))) max(max(sqrt(abs(Spar))))];
+    cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
   	caxis(cc);
   	colormap(xcm);
     hca = colorbar;
     ylabel(hca,'S_{II} [\mu W/m^2Hz]^{1/2}');
-    if plot_type ~= 0, axes(h(ipl-2));colorbar; axes(h(ipl-3));colorbar; end
   end
 %%%%%%%%% E/B spectra %%%%%%%%%%%%
   if plot_type ~= 0, h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1; end
@@ -306,54 +323,62 @@ if plot_type == 1 || plot_type == 2 || plot_type == 0,
     ylabel(hca,'log10(E/B) [(1e3 km/s)]');
   end
 elseif plot_type == 3,
-   t_start_epoch=t_start_epoch(t(1,1));
-%%%%%%%%% Ex spectra %%%%%%%%%%%%
-  h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEx.'))) % Without edge effects removed
-  shading flat
-  ylabel('f [Hz]')
-  ht=text(0,0,'Ex [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-  set(gca,'yscale','log');set(gca,'tickdir','out');
-  caxis([-5 2]);colorbar
-%%%%%%%%% Ey spectra %%%%%%%%%%%%
-  h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEy.'))) % Without edge effects removed
-  shading flat
-  ylabel('f [Hz]')
-  ht=text(0,0,'Ey [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-  set(gca,'yscale','log');set(gca,'tickdir','out');
-  caxis([-5 2]);colorbar
-%%%%%%%%% Ez spectra %%%%%%%%%%%%
-  h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t_start_epoch,newfreq,log10(abs(powerEz.'))) % Without edge effects removed
-  shading flat
-  ylabel('f [Hz]')
-  ht=text(0,0,'Ez [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-  set(gca,'yscale','log');set(gca,'tickdir','out');
-  caxis([-5 2]);colorbar
-%%%%%%%%% E spectra %%%%%%%%%%%%
-  h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-  pcolor(t-t_start_epoch,newfreq,log10(abs(powerE.'))) % Without edge effects removed
-  shading flat
-  ylabel('f [Hz]')
-  ht=text(0,0,'E [(mV/m)^2/Hz]');set(ht,'units','normalized','position',[1 0.5],'rotation',90,'verticalalignment','top','horizontalalignment','center')
-  set(gca,'yscale','log');set(gca,'tickdir','out');
-  caxis([-5 2]);colorbar
+    t_start_epoch=get_t_start_epoch(t(1,1));
+    %%%%%%%%% Ex spectra %%%%%%%%%%%%
+    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+    pcolor(t-t_start_epoch,newfreq,log10(abs(powerEx_plot.')))
+    shading flat
+    ylabel('f [Hz]')
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(powerEx_plot))));
+    caxis(floor(cmean)+[-3.5 3.5]);
+    hca = colorbar;
+    ylabel(hca,'Ex [(mV/m)^2/Hz]');
+    %%%%%%%%% Ey spectra %%%%%%%%%%%%
+    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+    pcolor(t-t_start_epoch,newfreq,log10(abs(powerEy_plot.')))
+    shading flat
+    ylabel('f [Hz]')
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(powerEy_plot))));
+    caxis(floor(cmean)+[-3.5 3.5]);
+    hca = colorbar;
+    ylabel(hca,'Ey [(mV/m)^2/Hz]');
+    %%%%%%%%% Ez spectra %%%%%%%%%%%%
+    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+    pcolor(t-t_start_epoch,newfreq,log10(abs(powerEz_plot.')))
+    shading flat
+    ylabel('f [Hz]')
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(powerEz_plot))));
+    caxis(floor(cmean)+[-3.5 3.5]);
+    hca = colorbar;
+    ylabel(hca,'Ez [(mV/m)^2/Hz]');
+    %%%%%%%%% E spectra %%%%%%%%%%%%
+    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
+    pcolor(t-t_start_epoch,newfreq,log10(abs(power2E_plot.')))
+    shading flat
+    ylabel('f [Hz]')
+    set(gca,'yscale','log','tickdir','out');
+    cmean=nanmean(nanmean(log10(abs(power2E_plot))));
+    caxis(floor(cmean)+[-3.5 3.5]);
+    hca = colorbar;
+    ylabel(hca,'E [(mV/m)^2/Hz]');
 
-  irf_timeaxis(h);
+    irf_timeaxis(h);
 end
 
 if plot_type ~=0,
   axes(h(1));
   title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
-  ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
-  irf_zoom([min(t) max(t)],'x',h);
+  %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
+  irf_zoom(h,'x',[min(t) max(t)]);
   irf_timeaxis(h)
 end
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function t_start_epoch=t_start_epoch(t)
+function t_start_epoch=get_t_start_epoch(t)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % gives back the value of t_start_epoch of the figure
 % if not  set, sets t_start_epoch of the figure
@@ -379,6 +404,39 @@ elseif valid_time_stamp,
 else
   t_start_epoch=0;
 end
+end
 
+function m = nanmean(x,dim)
+%NANMEAN Mean value, ignoring NaNs.
+%   M = NANMEAN(X) returns the sample mean of X, treating NaNs as missing
+%   values.  For vector input, M is the mean value of the non-NaN elements
+%   in X.  For matrix input, M is a row vector containing the mean value of
+%   non-NaN elements in each column.  For N-D arrays, NANMEAN operates
+%   along the first non-singleton dimension.
+%
+%   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
+%
+%   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
+
+%   Copyright 1993-2004 The MathWorks, Inc.
+%   Revision: 1.1.8.1   Date: 2010/03/16 00:15:50 
+
+% Find NaNs and set them to zero
+nans = isnan(x);
+x(nans) = 0;
+
+if nargin == 1 % let sum deal with figuring out which dimension to use
+    % Count up non-NaNs.
+    n = sum(~nans);
+    n(n==0) = NaN; % prevent divideByZero warnings
+    % Sum up non-NaNs, and divide by the number of non-NaNs.
+    m = sum(x) ./ n;
+else
+    % Count up non-NaNs.
+    n = sum(~nans,dim);
+    n(n==0) = NaN; % prevent divideByZero warnings
+    % Sum up non-NaNs, and divide by the number of non-NaNs.
+    m = sum(x,dim) ./ n;
+end
 end
 
