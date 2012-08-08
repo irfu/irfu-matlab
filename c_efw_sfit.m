@@ -65,7 +65,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,tmmode
 
 error(nargchk(8,10,nargin))
 
-if pair~=12 && pair~=32 && pair~=34, error('PAIR must be one of: 12, 32, 34'), end
+if pair~=12 && pair~=32 && pair~=34 && pair~=42, error('PAIR must be one of: 12, 34, 32, 42'), end
 
 if ~isequal(size(te),size(data))
     error('TE and DATA vectors must be the same size.')
@@ -126,7 +126,8 @@ pha = unwrap(pi*pha/180);
 if pair == 12, pha = pha + 3*pi/4;
 elseif pair == 32, pha = pha + pi/2;
 elseif pair == 34, pha = pha + pi/4;
-else error('probe pair must be one of 12, 32 or 34')
+elseif pair == 42, pha = pha + pi;
+else error('probe pair must be one of 12, 34, 32 or 42')
 end
 
 
