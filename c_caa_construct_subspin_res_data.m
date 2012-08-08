@@ -27,10 +27,20 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 % this stuff is worth it, you can buy me a beer in return.   Andris Vaivads
 % ----------------------------------------------------------------------------
 
-if any(strfind(variable_name,'PADMAR'))  % PEACE variables PADMARL and PADMARH
+if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(variable_name,'PADHAR')])  % PEACE variables PADMARL and PADMARH
     %% PADMARL and PADMARH need to be treated specially in order to recover 
     % the subspin timing
     % PEACE sector angles are given in SR2 reference frame!
+    if any(strfind(variable_name,'PADLAR'))
+        AR_MODE = 1;
+    elseif any(strfind(variable_name,'PADMAR'))
+        AR_MODE = 2;
+    elseif any(strfind(variable_name,'PADHAR'))
+        AR_MODE = 4;
+    else
+        error('c_caa_construct_subspin_res_data: should not be here')
+    end
+    %XXX : possibly here we should use different values for LAR/MAR/HAR
     theta=15:30:180; % pitch angles to which rebin
     [variable,dataobject,varmat,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
     
@@ -60,28 +70,34 @@ if any(strfind(variable_name,'PADMAR'))  % PEACE variables PADMARL and PADMARH
     phi_0 = double(phi - phi_spin_center);
     phi_0(phi_0<-180) = phi_0(phi_0<-180) + 360;
     phi_0(phi_0>180) = phi_0(phi_0>180) - 360;
-    tt = [t t] + spin_period * phi_0/360; tt = reshape(tt',ndata*2,1);
-    tt_dminus = spin_period * double(phi_dminus)/360; tt_dminus = reshape(tt_dminus',ndata*2,1);
-    tt_dplus = spin_period * double(phi_dplus)/360; tt_dplus = reshape(tt_dplus',ndata*2,1);
+    tt = repmat(t,1,AR_MODE) + spin_period * phi_0/360; tt = reshape(tt',ndata*AR_MODE,1);
+    tt_dminus = spin_period * double(phi_dminus)/360; tt_dminus = reshape(tt_dminus',ndata*AR_MODE,1);
+    tt_dplus = spin_period * double(phi_dplus)/360; tt_dplus = reshape(tt_dplus',ndata*AR_MODE,1);
     
     variable.data(:,:,:,nan_en)=[]; % remove NaN energy data
     variable=fillval_to_nan(variable); % FILLVALs put to NaN
-    newdata = zeros(ndata*2,size(variable.data,3),size(variable.data,4));
+    newdata = zeros(ndata*AR_MODE,size(variable.data,3),size(variable.data,4));
     pitchangle = newdata;
-    ii = 1:2:ndata*2;
+    ii = 1:AR_MODE:ndata*AR_MODE;
     newdata(ii,:,:) = squeeze(variable.data(:,1,:,:));
-    newdata(ii+1,:,:) = squeeze(variable.data(:,2,:,:));
+    if AR_MODE>1
+        newdata(ii+1,:,:) = squeeze(variable.data(:,2,:,:));
+    end
+    if AR_MODE==4
+        newdata(ii+2,:,:) = squeeze(variable.data(:,3,:,:));
+        newdata(ii+3,:,:) = squeeze(variable.data(:,4,:,:));
+    end
     
     B = c_caa_var_get(irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic),'mat');
     B_SR2=irf_resamp(c_coord_trans('GSE','SR2',B,'cl_id',ic),tt,'nearest'); % sample to t
     b_SR2=irf_norm(B_SR2);
     
-    phi = reshape(phi',ndata*2,1);
+    phi = reshape(phi',ndata*AR_MODE,1);
     cosphi=cosd(phi);sinphi=sind(phi);
     cospolar=cosd(polar);sinpolar=sind(polar);
     for jpolar=1:length(polar),
         % n-vector of given sector in ISR2 ref rframe
-        nsector = [sinpolar(jpolar).*cosphi sinpolar(jpolar).*sinphi ones(ndata*2,1)*cospolar(jpolar)];
+        nsector = [sinpolar(jpolar).*cosphi sinpolar(jpolar).*sinphi ones(ndata*AR_MODE,1)*cospolar(jpolar)];
         nparticle = -nsector;
         pitchsector = acosd((dot(nparticle,b_SR2(:,2:4),2)));
         pitchangle(:,jpolar,:)=repmat(pitchsector,[1 1 length(en)]);
@@ -221,6 +237,8 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') 
     variable=fillval_to_nan(variable); % FILLVALs put to NaN
     dataraw=ftheta(variable.data,pitchangle,theta);
     dataraw=permute(dataraw,[1 3 2 4]); % permute in order [time, azimuth, pitch, energery]
+else
+    error('This dataset is not know to c_caa_construct_subspin_res_data(). Please add it :-)')
 end
 
 % assume dataraw in order [time, azimuth, pitch, energery]
