@@ -13,9 +13,7 @@ function [t1_d,t2_d,t1_dd,t2_dd]=irf_corr_deriv(x1,x2,fla);
 %
 % $Id$
 
-if nargin<3, fla = 0;
-else, fla = 1;
-end
+if nargin<3, fla = 0; end
 
 k=1:2;
 
@@ -40,7 +38,7 @@ c_eval('t?_d = sortrows([t?_d_plus;t?_d_minu]);',k)
 
 if fla
 	%%%%%%%%%%%%%%% zero crossings %%%%%%%%%%%
-	c_eval('ind_zeros?=find(sign(x?(1:end-1,2).*x?(2:end,2))<0);',k)
+	c_eval('ind_zeros?=find(sign(x?(1:end-1,2).*x?(2:end,2))<0);ind_zeros?(ind_zeros?==1)=[];',k)
 	c_eval('ind_zeros?_plus=find(x?(ind_zeros?-1,2)-x?(ind_zeros?,2)>0);',k)
 	c_eval('ind_zeros?_minu=find(x?(ind_zeros?-1,2)-x?(ind_zeros?,2)<0);',k)
 	c_eval('ind=ind_zeros?(ind_zeros?_plus);xx=x?;t_zeros?_plus=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
@@ -49,7 +47,7 @@ else
 	%%%%%%%%%%%%%%% 2nd derivative %%%%%%%%%%%
 	
 	c_eval('ddx?=[dx?(1:end-1,1)+0.5*diff(dx?(:,1)) diff(dx?(:,2))];',k)
-	c_eval('ind_zeros?=find(sign(ddx?(1:end-1,2).*ddx?(2:end,2))<0);',k)
+	c_eval('ind_zeros?=find(sign(ddx?(1:end-1,2).*ddx?(2:end,2))<0);ind_zeros?(ind_zeros?==1)=[];',k)
 	c_eval('ind_zeros?_plus=find(ddx?(ind_zeros?-1,2)-ddx?(ind_zeros?,2)>0);',k)
 	c_eval('ind_zeros?_minu=find(ddx?(ind_zeros?-1,2)-ddx?(ind_zeros?,2)<0);',k)
 	c_eval('ind=ind_zeros?(ind_zeros?_plus);xx=ddx?;t_zeros?_plus=xx(ind,1)+(xx(ind+1,1)-xx(ind,1)).*1./(1+abs(xx(ind+1,2))./abs(xx(ind,2)));',k)
