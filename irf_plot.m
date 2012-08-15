@@ -1,15 +1,20 @@
 function c=irf_plot(varargin)
 %IRF_PLOT   Flexible plotting routine for time series
 %
-% c=irf_plot([H],X,[arguments...]);
-%   H axes handle
+% IRF_PLOT(X) plot data X
 %   X is one of:
 %      - matrix of data (1st column time in isdat epoch, other columns data)
 %      - cell array data, each of cells containing a matrix of data 
 %      - string defining variable (can be CAA variable)
 %      - number (initialize figure with so many subplots)
 %
-%   arguments can be:
+% C=IRF_PLOT(..) return handle to axes of plots into C
+% 
+% IRF_PLOT(H,X,..) plot into axes handle H
+%
+% IRF_PLOT(X,arguments) arguments can be:
+%     all arguments allowed by PLOT command 
+%     'newfigure' - create new figure 
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
 %     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
@@ -18,25 +23,29 @@ function c=irf_plot(varargin)
 %     given as last argument, 'linestyle' keyword is not necessary in this
 %     case. LineStyle can be given as cell array to specify style for different variables/subplots.
 %
-% irf_plot, to improve zooming, will sometimes set t_start_epoch within the
-% 'userdata' field of the figure and internally use it as origo but in most cases you should not care about this.
+% To improve zooming of high time resolution data IRF_PLOT will sometimes 
+% set t_start_epoch within the 'userdata' field of the figure and 
+% internally use it as origo but in most cases you should not care about this.
+%
+% IRF_PLOT(CAA_variable,..) can have all arguments as DATAOBJ/PLOT
+%
+% IRF_PLOT(number) reset figure to 'number' subplots 
 %
 % Examples:
-%   irf_plot(B1) - plot variable B1 (all components), assuming that the
-%                    first column is time
+%   irf_plot(B1) - plot variable B1 (all components), assuming that the first column is time
 %   irf_plot('B1') - plot variable B1, if it does not exist try to load it
 %                    with c_load('B1') and try to put ylabel from c_desc('B1')
 %   irf_plot('B?') - Cluser oriented, plot B1.. B4 in separate subplots
 %   irf_plot({B1,B2}) - plot B1 and B2 in separate subplots
-%   irf_plot('B1 B2') - -"- but if B1,B2 do not exist try to load them and
-%                    put labels according to c_desc
+%   irf_plot('B1 B2') - -"- but if B1,B2 do not exist try to load them
 %   irf_plot({B1,B2},'comp') - plot in 1. subplot B1_X and B2_X, in second
 %                    subplot B1_Y and B2_Y etc.
 %   irf_plot({B1,B2},'dt',[dt1 dt2]) - separate subplots with B1 and B2,
 %                    but in addition B1 and B2 time axis are shifted by dt1
 %                    and dt2 correspondingly
+%   irf_plot('B_mag__C1_CP_FGM_5VPS') plot CAA variable B_mag__C1_CP_FGM_5VPS (if necessary load it)
 %
-% See also C_PL_TX, C_DESC
+% See also DATAOBJ/PLOT, C_PL_TX, C_DESC
 
 %
 % $Id$
@@ -57,14 +66,21 @@ x=args{1};
 if isempty(x), % nothing to plot, first input parameter empty
   return;
 end
-  
-if isnumeric(x), % check if single number argument, to initialize only subplots
+
+% Check if single number argument, then use syntax IRF_PLOT(number)
+if isnumeric(x),    
     if numel(x)==1, % only one number
         if x>=1 && x<=20,
-            c=initialize_figure(x);
+			% check if there is 'newfigure' argument
+			if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
+	            c=initialize_figure(x,'newfigure');
+			else
+	            c=initialize_figure(x);
+			end
         else
             disp('Only 1-20 number of subplots supported.;)');
-        end
+		end
+		if nargout==0, clear c; end % if no output required do not return anything
         return
     end
 end
@@ -95,6 +111,8 @@ flag_colorbar=1;
 while have_options
     l = 1;
     switch(lower(args{1}))
+        case 'newfigure'
+            c=initialize_figure(x);
         case 'subplot'
             plot_type = 'subplot';
         case 'comp'
@@ -527,8 +545,8 @@ function c=initialize_figure(number_of_subplots,flag)
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
     flag='newfigure';
-elseif isempty(get(gcf,'children')) % current figure is empty
-    flag='newfigure';    
+elseif isempty(get(gcf,'children')) % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
+	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
 if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
