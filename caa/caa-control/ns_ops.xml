@@ -5967,6 +5967,7 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
+
 <operation start="2012-03-04T02:51:00Z" dt="280" c2="yes" plan="yes" sdesc="bad_p2">
         <desc>Bias stepping (slow sweep) on P2 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias
  steps of -4 nA from -12 nA to -140 nA).</desc>
@@ -5983,6 +5984,7 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
+
 <operation start="2012-03-05T10:05:00Z" dt="84600" c2="yes" plan="yes" sdesc="no_p2">
         <desc>P2 at maximum positive bias voltage +39 V.</desc>
                 <res>
@@ -5993,26 +5995,117 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res>
                 </res>
         </operation>
-<operation start="2012-03-14T03:12:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
-        <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias step
-s of -12 nA from -104 nA to -500 nA).</desc>
+
+<operation start="2012-03-14T03:09:00Z" dt="140" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>Bias voltage stepping (slow sweep) on P2. Modified from 120304.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-03-14T03:09:00Z" dt="140" c4="yes" plan="yes" sdesc="no_p34">
+        <desc>Bias voltage stepping (slow sweep) on P34. Modified from 120304.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-03-14T03:11:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-14T03:13:44Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
-        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 03:09.</desc>
+<operation start="2012-03-14T03:11:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-03-14T04:33:44Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
-        <desc>Bias stepping (slow sweep) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Stepping on P2 starts at 03:09.</desc>
+<operation start="2012-03-14T03:13:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA). Modified from 120304.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
-<operation start="2012-04-10T04:32:00Z" dt="280" c4="yes" plan="yes" sdesc="bad_p34">
-        <desc>Bias stepping (slow sweep) on P34 (first vbias steps of 10 V from -39 V to -19.4 V, then vbias steps of +0.6 V from -19.4 V to -0.6 V, then ibias step
-s of -12 nA from -104 nA to -500 nA).</desc>
+
+<operation start="2012-04-10T04:29:00Z" dt="140" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>Bias voltage stepping (slow sweep) on P2. Operation identical to 120314.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-04-10T04:29:00Z" dt="140" c4="yes" plan="yes" sdesc="no_p34">
+        <desc>Bias voltage stepping (slow sweep) on P34. Operation identical to 120314.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-04-10T04:31:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
                 <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
                 </res>
         </operation>
+<operation start="2012-04-10T04:31:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+<operation start="2012-04-10T04:33:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
+<operation start="2012-06-10T06:49:00Z" dt="140" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>Bias voltage stepping (slow sweep) on P2. Operation identical to 120314 and 120410.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-06-10T06:49:00Z" dt="140" c4="yes" plan="yes" sdesc="no_p34">
+        <desc>Bias voltage stepping (slow sweep) on P34. Operation identical to 120314 and 120410.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+	</operation>
+<operation start="2012-06-10T06:51:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweeps) on P2 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+<operation start="2012-06-10T06:51:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias current stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+<operation start="2012-06-10T06:53:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias stepping (slow sweeps) on P34 (ibias steps of -4 nA from -12 nA to -140 nA).  Operation identical to 120314 and 120410.</desc>
+                <res><link href="slowsweeps_PP616.txt">Anders 120214</link>
+                </res>
+        </operation>
+
+<operation start="2012-09-04T06:40:00Z" dt="140" c1="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweep) on P2.</desc>
+	</operation>
+<operation start="2012-09-04T06:40:00Z" dt="140" c2="yes" plan="yes" sdesc="no_p2">
+        <desc>Bias voltage stepping (slow sweep) on P2.</desc>
+	</operation>
+<operation start="2012-09-04T06:40:00Z" dt="140" c3="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweep) on P2.</desc>
+	</operation>
+<operation start="2012-09-04T06:40:00Z" dt="140" c4="yes" plan="yes" sdesc="bad_p12">
+        <desc>Bias current stepping (slow sweep) on P12.</desc>
+	</operation>
+<operation start="2012-09-04T06:42:20Z" dt="140" c1="yes" plan="yes" sdesc="bad_p3">
+        <desc>Bias current stepping (slow sweep) on P3.</desc>
+	</operation>
+<operation start="2012-09-04T06:42:20Z" dt="140" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>Bias current stepping (slow sweep) on P2.</desc>
+	</operation>
+<operation start="2012-09-04T06:42:20Z" dt="140" c3="yes" plan="yes" sdesc="bad_p4">
+        <desc>Bias current stepping (slow sweep) on P4.</desc>
+	</operation>
+<operation start="2012-09-04T06:42:20Z" dt="140" c4="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias current stepping (slow sweeps) on P34.</desc>
+        </operation>
+<operation start="2012-09-04T06:44:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
+        <desc>Bias current stepping (slow sweeps) on P34.</desc>
+        </operation>
+<operation start="2012-09-040T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_p3">
+        <desc>P3 bias current test.</desc>
+        </operation>
+<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p4 sdesc="bad_p2"">
+        <desc>P2 and P4 bias current test.</desc>
+        </operation>
+
 </table>
