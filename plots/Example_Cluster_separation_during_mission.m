@@ -7,8 +7,8 @@
 % mR.mat file has all positions, not needed if only apogee/perigee values needed
 flag_get_all_Cluster_positions_from_isdat=0; % construct mR.mat file with Cluster position for all mission
 flag_get_all_Cluster_positions_from_www=0;   % get mR.mat file from internet
-% mRcluste.mat file, includes all information on perigee/apogee/separation
-flag_get_Cluster_file_from_www=0; % get mRcluster.mat form www
+% mRcluster.mat file, includes all information on perigee/apogee/separation
+flag_get_Cluster_file_from_www=0; % get mRcluster.mat from www
 flag_create_Cluster_file=0;       % create from mR.mat file
 % figure creating/printing
 flag_create_figure=1;             % create figure
@@ -24,7 +24,7 @@ end
 
 %% Defined time interval and stepping
 %tint=[[2000 01 01 00 0 0 ];irf_time(now,'date2vector')]; % vector first row start time, 2nd row end time
-tint=[[2000 10 01 00 0 0 ];[2012 01 01 00 0 0]];
+tint=[[2000 10 01 00 0 0 ];[2012 06 01 00 0 0]];
 step_request=3600*100; % step with 10h, seems largest possible (why?)
 step_save=3600;       % how often save points
 tstart=irf_time(tint(1,:),'vector2epoch');
@@ -112,7 +112,7 @@ end
 
 %% Get Cluster file from internet 
 if flag_get_Cluster_file_from_www,
-	disp('Downloading from internet Cluster file...');
+	disp('Downloading from internet Cluster orbit parameter file mRcluster.mat ...');
 	[f,status]=urlwrite('http://space.irfu.se/~andris/data/cluster/mRcluster.mat','mRcluster.mat');
 end
 
@@ -121,9 +121,8 @@ if flag_create_figure, % create the figure
 	load mRcluster
 	dtmark_season=365/24*2*24*3600; % seconds corresponding to 2h drift of perigee
 	cluster_color=[[0 0 0];[1 0 0];[0 0.5 0];[0 0 1]];
-	fn=figure(71);
-	hca=irf_plot(1);
-	set(fn,'position',[10 10 700 450]);
+	hca=irf_plot(1,'newfigure');
+	set(gcf,'position',[10 10 700 450]);
 	set(hca,'yscale','log');
 	hold on;
 	for ic1=1:4
@@ -138,7 +137,7 @@ if flag_create_figure, % create the figure
 	irf_legend(hca,{'C1','C2','C3','C4'},[0.05 0.95],'color','cluster')
 	ylabel(hca,'Separation [km]');
 	title(hca,'Cluster separation at apogee. Seasons - tail (gray), dayside (yellow).');
-	irf_legend(0,'irfu-matlab Example_Cluster_separation_during_mission',[0.02 0.02],'interpreter','none','color',[0.7 0.7 0.7],'fontsize',8)
+	irf_legend(0,'irfu-matlab Example_Cluster_separation_during_mission ',[0.02 0.02],'interpreter','none','color',[0.7 0.7 0.7],'fontsize',8)
 end
 
 %% Print figure
