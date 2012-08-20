@@ -226,8 +226,10 @@ Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 %------- length ----
 Units.AU = 1.496e11*Units.m;
 Units.R_Earth = 6371.2e3*Units.m;                     % Earth radius
+Units.Earth.radius=Units.R_Earth;
 Units.RE = Units.R_Earth;                             % Earth radius
 Units.R_Sun = 6.96e8*Units.m;                         % Solar radius 
+Units.Sun.radius=Units.R_Sun;
 Units.pc = 3.0857e16*Units.m;                         % parsec
 Units.Merucry.distance_to_Sun=0.3871*Units.AU;        % Mercury orbit, semimajor axis
 Units.Venus.distance_to_Sun=0.7233*Units.AU;          % Venus orbit, semimajor axis
@@ -240,7 +242,9 @@ Units.Neptune.distance_to_Sun=30.0611*Units.AU;       % Neptune orbit, semimajor
 
 %------- mass ----
 Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
+Units.Earth.mass=Units.M_Earth;
 Units.M_Sun = 1.98892e30*Units.kg;                  % Mass of the Sun
+Units.Sun.mass=Units.M_Sun;
 Units.me = 9.1094e-31*Units.kg;                     % electron mass
 Units.mp = 1.6726e-27*Units.kg;                     % proton mass
 
