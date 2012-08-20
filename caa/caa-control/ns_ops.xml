@@ -6101,11 +6101,17 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
 <operation start="2012-09-04T06:44:40Z" dt="140" c2="yes" plan="yes" sdesc="bad_p34">
         <desc>Bias current stepping (slow sweeps) on P34.</desc>
         </operation>
-<operation start="2012-09-040T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_p3">
+<operation start="2012-09-04T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_p3">
         <desc>P3 bias current test.</desc>
         </operation>
 <operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p4 sdesc="bad_p2"">
         <desc>P2 and P4 bias current test.</desc>
+        </operation>
+
+<operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
+        <desc>WBD interference test (guard stepping).</desc> 
+               <res><link href="aie120817a.txt">Anders 120817</link>
+                </res>
         </operation>
 
 </table>
