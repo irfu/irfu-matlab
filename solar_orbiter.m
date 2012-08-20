@@ -9,7 +9,7 @@ function out = solar_orbiter(varargin)
 %   solar_orbiter('antenna')         % display probe information
 %   probe=solar_orbiter('antenna');  % return probe information
 %
-% Some common flags: probe, spacecraft
+% Some common flags: antenna, spacecraft, plasma
 %
 % To see all possibilities execute
 %   SOLAR_ORBITER('?')
@@ -82,14 +82,21 @@ switch flag
         sc.probe_refpot_as_fraction_of_scpot=.2;
         sc.number_of_probes=3;
         sc.antenna_guard_area=0;
-        out=sc;
+        if nargout==0, % display information
+            disp('Solar Orbiter spacecraft properties.')
+            disp(['Sunlit area  = ' num2str(sc.sunlit_area,3) ' m^2']);
+            disp(['Total area   = ' num2str(sc.total_area,3) ' m^2']);
+         else % return infomration
+			out=sc;
+        end
     case 'sc'        % same as 'spacecraft'
         out=solar_orbiter('spacecraft');
     case 'plasma'    % typical plasma parameters
         plasma.perihelion=struct('q',[-1 1],'m',[0 1],'n',[100 100],'T',[10 25],'vsc',[4e5 4e5]);
         plasma.aphelion  =struct('q',[-1 1],'m',[0 1],'n',[ 10  10],'T',[ 4 10],'vsc',[4e5 4e5]);
         out=plasma;
-    otherwise
+	case 'orbit'
+	otherwise
         disp(['!!! solar_orbiter: unknown flag ''' lower(flag) '''.'])
         out=[];
 end
