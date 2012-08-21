@@ -6104,9 +6104,12 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
 <operation start="2012-09-04T06:44:40Z" dt="1946" c4="yes" plan="yes" sdesc="bad_p3">
         <desc>P3 bias current test.</desc>
         </operation>
-<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p4 sdesc="bad_p2"">
+<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p4">
         <desc>P2 and P4 bias current test.</desc>
-        </operation>
+</operation>
+<operation start="2012-09-04T06:47:00Z" dt="1786" c2="yes" plan="yes" sdesc="bad_p2">
+        <desc>P2 and P4 bias current test.</desc>
+</operation>
 
 <operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>WBD interference test (guard stepping).</desc> 
