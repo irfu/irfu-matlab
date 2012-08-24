@@ -3,7 +3,7 @@
 #
 XSLTPROC=xsltproc
 
-all: check ns_ops_epo.xml cef
+all: check ns_ops_epo.xml txt cef
 	${XSLTPROC} html.xsl ns_ops_epo.xml > ns_ops.html
 	rm -f ns_ops_epo.xml
 
