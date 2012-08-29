@@ -48,7 +48,9 @@ elseif nargs < 3;
   irf_cal('fcal','Wrong number of inputs, see help.');
   return;
 elseif nargs==3,
-  format=[]; % default format is empty
+	if ~exist('format','var'),	% if format is not defined
+	 format=[];					% then default format is empty
+	end
 end
 
 if nargout==1, f=[];end % default return empty
