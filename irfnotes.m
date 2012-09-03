@@ -10,7 +10,7 @@
 edit irfnotes; return
 %% Initialize figure
 % fast way
-h=irf_plot(5); % h= irf_plot(number_of_subplots);
+h=irf_plot(5,'newfigure'); % h= irf_plot(number_of_subplots,'newfigure');
 % example to set subplot position manually
 h(1)=axes('position',[0.65 0.78 0.2 0.2]); % [x y dx dy]
 
@@ -115,7 +115,8 @@ ylabel(h(2),'sqrt(data)')
 %file reading
 [t1,t2,tint_comments]=textread('Events_reconnection.txt','%s%s%[^\n]');
 for j=1:size(t1,1),
-  tint(j,1)=iso2epoch(t1{j});tint(j,2)=iso2epoch(t2{j});
+  tint(j,1)=irf_time(t1{j},'iso2epoch');
+  tint(j,2)=irf_time(t2{j},'iso2epoch');
 end
 clear t1 t2 j;
 
