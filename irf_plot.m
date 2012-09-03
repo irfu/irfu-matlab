@@ -14,7 +14,6 @@ function c=irf_plot(varargin)
 %
 % IRF_PLOT(X,arguments) arguments can be:
 %     all arguments allowed by PLOT command 
-%     'newfigure' - create new figure 
 %     'subplot' - plot all x values in separate subplots
 %     'comp'    - plot vector component in separate subplots
 %     ['dt', [dt1, dt2, dt3, dt4]] - specify time shifts, new time = old time - dt
@@ -29,7 +28,8 @@ function c=irf_plot(varargin)
 %
 % IRF_PLOT(CAA_variable,..) can have all arguments as DATAOBJ/PLOT
 %
-% IRF_PLOT(number) reset figure to 'number' subplots 
+% IRF_PLOT(number)	reset figure to 'number' subplots 
+% IRF_PLOT(number,'newfigure') initialize new figure with 'number' of subplots 
 %
 % Examples:
 %   irf_plot(B1) - plot variable B1 (all components), assuming that the first column is time
