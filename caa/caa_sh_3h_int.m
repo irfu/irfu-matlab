@@ -39,7 +39,7 @@ ORB = ORB((ORB(:,1)+ORB(:,2))>=st & ORB(:,1)<et, :);
 if isempty(ORB), error('no ORB for the requested interval'), end
 
 MP = [];
-for o=1:length(ORB)
+for o=1:size(ORB,1)
 	st = ORB(o,1);
 	et = ORB(o,1)+ORB(o,2);
 	t_out = min(MP1(MP1(:,1)>st & MP1(:,1)<et,1));
