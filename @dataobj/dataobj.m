@@ -219,6 +219,12 @@ switch action
           %Convert to isdat epoch
           if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
             dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'date2epoch');
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.UNITS(:,1))==1); if iattr, dobj.VariableAttributes.UNITS(iattr,2)={'s'};end % change from ms to s UNITS of epoch if present
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.SI_CONVERSION(:,1))==1); if iattr, dobj.VariableAttributes.SI_CONVERSION(iattr,2)={'1.0>s'};end % change from ms to s SI_CONVERSION of epoch if present
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_PLUS(:,1))==1); % to convert DELTA_PLUS
+				if iattr && isnumeric(dobj.VariableAttributes.DELTA_PLUS{iattr,2}),   dobj.VariableAttributes.DELTA_PLUS{iattr,2}=dobj.VariableAttributes.DELTA_PLUS{iattr,2}/1000; end
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_MINUS(:,1))==1); % to convert DELTA_PLUS
+				if iattr && isnumeric(dobj.VariableAttributes.DELTA_MINUS{iattr,2}),   dobj.VariableAttributes.DELTA_MINUS{iattr,2}=dobj.VariableAttributes.DELTA_MINUS{iattr,2}/1000; end
           elseif strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
             dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
           end
