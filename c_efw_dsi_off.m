@@ -24,6 +24,8 @@ Damp = 1.1*ones(1,4);
 
 % Table of SW/SH offsets
 if t>=toepoch([2011 01 01 00 00 0]), Ddsi = [ 0.02  0.65  2.05  0.48 ];
+elseif t>=toepoch([2010 12 01 00 00 0]), Ddsi = [ 0.4  1.1  2.72 0.84  ]; % Force MS offset for months when don't enter SW.
+elseif t>=toepoch([2010 11 01 00 00 0]), Ddsi = [ 0.4  1.3  2.42 0.84  ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
 elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offsets.
