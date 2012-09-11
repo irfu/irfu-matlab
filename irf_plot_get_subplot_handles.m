@@ -6,6 +6,11 @@ if nargin==0, figurehandle=gcf;end
 ud=get(figurehandle,'userdata');
 if isfield(ud,'subplot_handles')
     h=ud.subplot_handles;
+	h=h(ishandle(h)); % remove h values that are not handles
+	if numel(h)~=numel(ud.subplot_handles), % in case some h values had to be removed update ud
+		ud.subplot_handles=h;
+		set(figurehandle,'userdata',ud);
+	end
 else
     
     htmp=findobj(figurehandle,'type','axes','-not','tag','Colorbar');
