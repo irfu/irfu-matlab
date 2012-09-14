@@ -1,6 +1,10 @@
 
 A shared spreadsheet keeping track of the progress of all of the months is maintained on Google docs.
 Document name: CAA delivery status
+
+Web link (Can edit document: Anders, Jan K, Yuri and Chris(Owner))
+https://docs.google.com/spreadsheet/ccc?key=0AnEKm-D1gw9XdEhmTFZ2UUkzV3RkOW9YRGFIOVg2UVE&invite=CKeb7twH
+
 Notes on each year are also kept at irfu-matlab/caa/caa-control/sp_problems_YYYY.txt
 
 ====================================
@@ -31,10 +35,10 @@ Check the P data first. For example.:
 Matlab zoom plot of all sats:
  figure;h=irf_plot({Ps1,Ps2,Ps3,Ps4});irf_zoom(h,'x',[toepoch([2011 9 1 18 0 0]) toepoch([2011 9 2 6 0 0])]);
 
-Zoom plot the data gaps. Check runner log of gap time. Probably ISDAT no data problem in L1.
+Zoom plot the data gaps. Check runner log of gap time. Probably ISDAT no data problem in L0.
 
 Visual check:
- Choose:  Quicklook - 6 Hour 4 S/C E Fluctuations
+ Choose: Quicklook - 6 Hour 4 S/C E Fluctuations
  First panel always plotted when sats ON (FGM)
  Second panel EFW C1=Black C2=Red C3=Green C4=Blue line
  http://www.cluster.rl.ac.uk/csdsweb-cgi/csdsweb_pick
@@ -176,12 +180,12 @@ After the error is flagged in the txt files, ISDAT is restarted and the data is 
 ==============================
 5. Find magnetopause locations
 ==============================
-First make sure /data/istp is mounted on the processing computer.
+First make sure /data/istp is mounted on the processing computer and that omni2 files are in place (see 3.1).
 The processing software needs to know where the magnetopause is.
 This is done on a yearly basis, with the locations stored in the CVS-controlled file mPlan.mat.
 If the required files (ACE, OMNI) were present when this step was done in the preliminary processing then it does not need to be repeated.
 1. Copy the directory /data/caa/test-mp to somewhere local (e.g. ~/caa/test-mp on fernie).
-   In Matlab, change to that directory and run: c_ctl('init'); caa_sh_plan(YEAR).
+   In Matlab, change to that directory and run: c_ctl('init'); caa_sh_plan(YEAR,1:12).
    This will find the model magnetopause locations.
 2. Run caa_sh_3h_int() to find common 3h intervals for the 4 spacecraft. Example:
      caa_sh_3h_int('2006-01-01T00:00:00Z','2006-12-31T23:59:59.99Z')
@@ -479,8 +483,9 @@ Deliver the files to the CAA using sftp:
   sftp efw@caa-delivery.estec.esa.int
     EFW4Yu71
 Put the .cef.gz files in /caa/dropzone/EFW/CEF
-~/NEW-DATASETS/CEF/ for new datasets or ~/CEF for reupload of old datasets
+~/CEF for common/updated data or ~/NEW-DATASETS/CEF/ for new datasets (new datatypes only first time upload)
 Email caateam@rssd.esa.int to tell them that there is new data in the dropzone.
+
 
 ===============================
 17: Update online summary plots
