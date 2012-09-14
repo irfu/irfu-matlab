@@ -548,7 +548,7 @@ elseif val ==2, % Cluster s/c diameter 2.9, height 1.3m
     set(data.inp.T_value,'string','100 500');
 elseif val == 3 % Solar Orbiter with solar panel back side
     data.probe=solar_orbiter('probe');
-    data.sc=solar_orbiter('sc');x
+    data.sc=solar_orbiter('sc');
     p=solar_orbiter('plasma');
     data.plasma=p.perihelion;
     set(data.inp.probe.type,'Value',2); % cylindrical
