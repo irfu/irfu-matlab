@@ -235,8 +235,7 @@ Units.Merucry.distance_to_Sun=0.3871*Units.AU;        % Mercury orbit, semimajor
 Units.Venus.distance_to_Sun=0.7233*Units.AU;          % Venus orbit, semimajor axis
 Units.Earth.distance_to_Sun=1*Units.AU;               % Venus orbit, semimajor axis
 Units.Mars.distance_to_Sun=1.5273*Units.AU;           % Mars orbit, semimajor axis
-Units.Saturn.distance_to_Sun=9.5388*Units.AU;         % Jupiter orbit, semimajor axis
-Units.Jupiter.distance_to_Sun=5.2028*Units.AU;        % Saturn orbit, semimajor axis
+Units.Saturn.distance_to_Sun=9.5388*Units.AU;		% Jupiter orbit, semimajor axis
 Units.Uranus.distance_to_Sun=19.1914*Units.AU;        % Uranus orbit, semimajor axis
 Units.Neptune.distance_to_Sun=30.0611*Units.AU;       % Neptune orbit, semimajor axis
 
@@ -267,6 +266,9 @@ Units.gauss = 1e-4*Units.T;
 Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;       % gravitational constant
 Units.kB = 1.38e-23*Units.J/Units.K;                     % Boltzmann constant
 
-
+%---- JUPITER -----
+Units.Jupiter.radius			=69911*Units.km;				% Jupiter mean radius
+Units.Jupiter.distance_to_Sun	=5.2028*Units.AU;        % Saturn orbit, semimajor axis
+Units.Jupiter.mass				=1.8986e27*Units.kg;
 
 
