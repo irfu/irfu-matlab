@@ -582,7 +582,7 @@ end
 if 1,   % PANEL: C?       RAPID ion spectrogram
     hca=irf_panel('C?_CP_RAP_HSPCT');
     varname=irf_ssub('Proton_Dif_flux__C?_CP_RAP_HSPCT',ic);
-    %varunits=c_caa_var_get(varname,'units');
+    %varunits=irf_get_data(varname,'caa','units');
     varunits={'log_{10} dF','1/cm^2 s sr keV'};
     irf_plot(hca,varname,'colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
     caxis(hca,[0.51 4.49]);
@@ -592,52 +592,26 @@ if 1,   % PANEL: C?       RAPID ion spectrogram
     set(hca,'ytick',[1e2 2e2 5e2 1e3 1e4 1e5])
     irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
-if 0,   % PANEL: RAPID spectrogram parallel
-  hca=h(i_subplot);i_subplot=i_subplot+1;
-  dobjname=irf_ssub('C?_CP_RAP_PAD_L3DD',ic);
-  caa_load(dobjname);
-  varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
-  varunits=eval(['getunits(' dobjname ',''' varname ''')']);
-  l3dd_caa=eval(['getv(' dobjname ',''' varname ''')']);
-  l3dd=eval(['getmat(' dobjname ',''' varname ''')']);
-  l3dd_energies=eval(['getv(' dobjname ',''' l3dd_caa.DEPEND_1 ''')']);
-  disp(['PANEL: C' num2str(ic) ' RAPID anisotropy']);
-  disp(['dobj:' dobjname ]);disp([' var:' varname]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',1);']);
-  caxis(hca,[1.1 4.3]);
-  irf_colormap;
-  set(hca,'yscale','log');
-  set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5]);
+if 0,   % PANEL: C?       RAPID PAD_L3DD spectrogram parallel
+	ic = 3;
+	hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
+	varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
+	irf_plot(hca,varname,'colorbarlabel',varunits,...
+		'fitcolorbarlabel','comp',1);
+	caxis(hca,[1.1 4.3]);
+	set(hca,'yscale','log');
+	set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5]);
 end
-if 0,   % PANEL: RAPID PAD_L3DD spectrogram perpendicular
-  hca=h(i_subplot);i_subplot=i_subplot+1;
-  dobjname=irf_ssub('C?_CP_RAP_PAD_L3DD',ic);
-  caa_load(dobjname);
-  varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
-  l3dd_caa=eval(['getv(' dobjname ',''' varname ''')']);
-  l3dd=eval(['getmat(' dobjname ',''' varname ''')']);
-  l3dd_energies=eval(['getv(' dobjname ',''' l3dd_caa.DEPEND_1 ''')']);
-  disp(['PANEL: C' num2str(ic) ' RAPID anisotropy']);
-  disp(['dobj:' dobjname ]);disp([' var:' varname]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''ax'',gca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp'',5);']);
-  caxis(hca,[1.1 4.3]);
-  irf_colormap;
-  set(hca,'yscale','log');
-  set(hca,'ytick',[1 1e1 2e1 5e1 1e2 2e2 1e3 1e4 1e5]);
-end
-if 0,   % PANEL: RAPID spectrogram pitch angle
-  hca=h(i_subplot);i_subplot=i_subplot+1;
-  dobjname=irf_ssub('C?_CP_RAP_PAD_L3DD',ic);
-  caa_load(dobjname);
-  varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
-  disp(['PANEL: C' num2str(ic) ' RAPID anisotropy']);
-  disp(['dobj:' dobjname ]);disp([' var:' varname]);
-  eval(['plot(hca,' dobjname ',''' varname ''',''ax'',hca,''colorbarlabel'',''' varunits ''',''fitcolorbarlabel'',''comp_dim1'',''comp'',1);']);
-  caxis(hca,[1.1 4.3]);
-  irf_colormap;
-  set(hca,'yscale','lin');
-  set(hca,'ytick',[0 45 90 135 180]);
-  ylabel(hca,'Pitch ang. [deg]');
+if 0,   % PANEL: C?       RAPID spectrogram pitch angle
+	hca=irf_panel('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD');
+	varname=irf_ssub('PAD_Electron_L_Dif_flux__C?_CP_RAP_PAD_L3DD',ic);
+	varunits=irf_get_data(varname,'caa','units');
+	irf_plot(hca,varname,'colorbarlabel',varunits,...
+		'fitcolorbarlabel','comp_dim1','comp',1);
+	caxis(hca,[1.1 4.3]);
+	set(hca,'yscale','lin');
+	set(hca,'ytick',[0 45 90 135 180]);
+	ylabel(hca,'Pitch ang. [deg]');
 end
 if 0,   % PANEL: RAPID spectrogram anisotropy
   hca=h(i_subplot);i_subplot=i_subplot+1;
