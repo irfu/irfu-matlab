@@ -318,6 +318,8 @@ if 1,   %   ADD:          frequency lines to the plot (move into the necessary p
 end
 
 % CLUSTER SPECIFIC
+irf_colormap(hca,'default'); % execute once to change the colormap or for every axis you want to fix the different colormap
+ic = 1; % defines Cluster # for single s/c panels, having 'C?' in comment
 if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSE
   hca=irf_panel('C? FGM B GSE');
   c_eval('irf_plot(hca,B?);',ic);
@@ -445,7 +447,6 @@ if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
     irf_legend(hca,{['C' num2str(ic)]},[0.02 0.9],'color','k')
   end
 end
-irf_colormap(hca,'default'); % execute once to change the colormap or for every axis you want to fix the different colormap
 if 1,   % PANEL: C?       CIS HIA/CODIF spectrogram
   hca=irf_panel('C? CIS HIA/CODIF spectrogram');
   if ic~=2,
@@ -907,28 +908,31 @@ if 1,   % PANEL: PEACE 3DXPH_DEFlux high res angular spectrogra,
   caxis(hca,[-1.99 0.49]);
   irf_legend(hca,['C' num2str(ic)],[0.98,0.98]);
 end
-if 0,   % PANEL: RAPID L3DD high res pitch C4
-  h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
-  ic=4;
-  res=c_caa_construct_subspin_res_data(irf_ssub('Electron_L_Dif_flux_3D__C?_CP_RAP_L3DD',ic));
-  [delmett,ind]=irf_tlim(res.tt,tint);
-  specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label','Log PSD [s^3/km^6]');
-  if 0, % energy spectrogram (integrated over pitch angles)
-    specrec.f=res.en;
-    specrec.p=res.omni(ind,:);
-    specrec.f_label=[res.enlabel];
-    yticks=[1 2 3 4 5];
-  elseif 1, % pitch angle spectrogram for given energy
-    specrec.f=res.theta;specrec.f_label='Pitch angle';
-    specrec.p=res.pitch_angle(ind,:);
-    enindex=1;specrec.f_label=[specrec.f_label '\newline  [E=' num2str(res.en(enindex),4) 'keV]'];
-    specrec.p=log10(res.data(ind,:,enindex)*5.369e-9);
-    yticks=[30 60 90 120 150];
-  end
-  irf_spectrogram(hca,specrec);
-  caxis(hca,[-4.99 -3.01])
-  irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
-  set(hca,'ytick',yticks);
+if 1,   % PANEL: C?       RAPID L3DD high resolution
+    hca=irf_panel('RAPID L3DD high res pitch');
+	variableName=irf_ssub('Electron_L_Dif_flux_3D__C?_CP_RAP_L3DD',ic);
+    res=c_caa_construct_subspin_res_data(variableName);
+    specrec=struct('t',res.tt(ind),'dt',res.dtsampling/2,'p_label',res.dataunits);
+    if 0, % energy spectrogram (integrated over pitch angles)
+        specrec.f=res.en;
+        specrec.p=res.omni(ind,:);
+        specrec.f_label=[res.enlabel];
+        yticks=[1 2 3 4 5];
+    elseif 1, % pitch angle spectrogram for given energy
+        specrec.f=res.theta;specrec.f_label='Pitch angle';
+        specrec.p=res.pitch_angle(ind,:);
+        enindex=1;specrec.f_label={specrec.f_label, ['[E=' num2str(res.en(enindex),4) 'keV]']};
+		% if one wants PSD instead of difflux, multiply by constant factor 
+		% for the values of constant factor, see table 4 in CAA-EST-UG-RAP
+		% 5.369e-9 is for the first energy chanel
+        specrec.p=log10(res.data(ind,:,enindex)*5.369e-9); 
+        specrec.p_label='Log PSD [s^3/km^6]';
+		yticks=[30 60 90 120 150];
+    end
+    irf_spectrogram(hca,specrec);
+    caxis(hca,[-4.99 -3.01])
+    irf_legend(hca,['C' num2str(ic)],[0.02,0.98]);
+    set(hca,'ytick',yticks);
 end
 if 0,   % PANEL: CIS CODIF high res energy C4
   h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);hca=h(i_subplot);i_subplot=i_subplot+1;
