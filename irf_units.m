@@ -1,20 +1,30 @@
-% IRF_UNITS create global variable Units with key units and constants
+function Units=irf_units
+% IRF_UNITS returns structure containing key units and constants
+%	uses units.m from web matlab_exchange depository 
+%	adds also space relevant stuff
 %
-% uses units.m from web matlab_exchange depository 
-% adds also space relevant stuff
-% see help units.m for more details
+% Usage: 
+%	Units = IRF_UNITS
 %
 % Examples: 
-%   Units.R_Earth                               % display Earth radius in SI
+%	Units=irf_units;
+%	Units										% display all values
+%	Units.Earth									% display all values for Earth
 %   Units.R_Earth/Units.R_Sun                   % display Earth radius in solar radia
 %   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e    % to convert from MK to eV
-%   Units                                       % to see all defined units
 %
-% Suggestion: execute irf_units in your startup and you can everywhere
-% access the units and constants
 
-global Units
-
+if nargout==0,
+	disp('!!!WARNING!!!!');
+	disp('IRF_UNITS usage has been changed, from script it has become function.');
+	disp('please check the help!');
+	disp('Instead of :')
+	disp('> irf_units');
+	disp('please run :');
+	disp('> Units=irf_units;');
+	clear Units;
+	return;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%% including original units.m code %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%% from matlab_exchange %%%%%%%%%%%%%%%%%%%%
 
@@ -225,19 +235,18 @@ Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 %-------- UNITS ------------------------------
 %------- length ----
 Units.AU = 1.496e11*Units.m;
-Units.R_Earth = 6371.2e3*Units.m;                     % Earth radius
+Units.R_Earth = 6371.2e3*Units.m;                   % Earth radius
 Units.Earth.radius=Units.R_Earth;
-Units.RE = Units.R_Earth;                             % Earth radius
-Units.R_Sun = 6.96e8*Units.m;                         % Solar radius 
+Units.RE = Units.R_Earth;                           % Earth radius
+Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
 Units.Sun.radius=Units.R_Sun;
-Units.pc = 3.0857e16*Units.m;                         % parsec
-Units.Merucry.distance_to_Sun=0.3871*Units.AU;        % Mercury orbit, semimajor axis
-Units.Venus.distance_to_Sun=0.7233*Units.AU;          % Venus orbit, semimajor axis
-Units.Earth.distance_to_Sun=1*Units.AU;               % Venus orbit, semimajor axis
-Units.Mars.distance_to_Sun=1.5273*Units.AU;           % Mars orbit, semimajor axis
-Units.Saturn.distance_to_Sun=9.5388*Units.AU;		% Jupiter orbit, semimajor axis
-Units.Uranus.distance_to_Sun=19.1914*Units.AU;        % Uranus orbit, semimajor axis
-Units.Neptune.distance_to_Sun=30.0611*Units.AU;       % Neptune orbit, semimajor axis
+Units.pc = 3.0857e16*Units.m;                       % parsec
+Units.Merucry.distanceToSun	=0.3871*Units.AU;       % Mercury orbit, semimajor axis
+Units.Venus.distanceToSun	=0.7233*Units.AU;       % Venus orbit, semimajor axis
+Units.Earth.distanceToSun	=1*Units.AU;            % Venus orbit, semimajor axis
+Units.Mars.distanceToSun	=1.5273*Units.AU;       % Mars orbit, semimajor axis
+Units.Uranus.distanceTSun	=19.1914*Units.AU;      % Uranus orbit, semimajor axis
+Units.Neptune.distanceToSun =30.0611*Units.AU;      % Neptune orbit, semimajor axis
 
 %------- mass ----
 Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
@@ -263,12 +272,16 @@ Units.nT = 1e-9*Units.T;
 Units.gauss = 1e-4*Units.T;
 
 %----fundamental constants ----
-Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;       % gravitational constant
-Units.kB = 1.38e-23*Units.J/Units.K;                     % Boltzmann constant
+Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;  % gravitational constant
+Units.kB = 1.38e-23*Units.J/Units.K;                % Boltzmann constant
+
+%---- SATURN -----
+Units.Saturn.distanceToSun	= 9.5388*Units.AU;		% Saturn orbit, semimajor axis
+Units.Saturn.radius			= 60268*Units.km;		% Saturn equatorial radius
 
 %---- JUPITER -----
-Units.Jupiter.radius			=69911*Units.km;				% Jupiter mean radius
-Units.Jupiter.distance_to_Sun	=5.2028*Units.AU;        % Saturn orbit, semimajor axis
-Units.Jupiter.mass				=1.8986e27*Units.kg;
+Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius
+Units.Jupiter.distanceToSun	= 5.2028*Units.AU;      % Saturn orbit, semimajor axis
+Units.Jupiter.mass			= 1.8986e27*Units.kg;
 
 
