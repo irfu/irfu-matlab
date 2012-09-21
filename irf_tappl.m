@@ -9,7 +9,7 @@ function [z]=irf_tappl(x,s)
 %    y=irf_tappl(x,'*2/1e3');
 %
 % $Id$
-irf_units;
+Units=irf_units;
 
 z=x;
 z(:,2:end)=eval(['x(:,2:end)',s]);

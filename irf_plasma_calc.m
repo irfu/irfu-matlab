@@ -126,7 +126,7 @@ np=np_cc*1e6; % proton density m^-3
 no=no_rel/100.*np; % proton density m^-3
 n=np+no; % total plasma density  m^-3
 
-irf_units; % read in standard units
+Units=irf_units; % read in standard units
 
 Me=Units.me; % electron mass
 Mp=Units.mp; % proton mass

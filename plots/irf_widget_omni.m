@@ -6,7 +6,7 @@ function hout=irf_widget_omni(varargin)
 %
 % uses OMNI data base to obtain the data
 % if interval larger than 1day uses hourly database
-irf_units;
+Units=irf_units;
 %% Check input
 if nargin==0, % initialize
   action='initialize';

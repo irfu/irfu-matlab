@@ -26,7 +26,7 @@ function [J_probe, J_photo, J_plasma]=lp_probe_current(probe,U_probe,R_sun,UV_fa
 %
 % See also: LP_PHOTOCURRENT, LP_THERMAL_CURRENT
 
-irf_units;
+Units=irf_units;
 
 if isempty(plasma), % calculate only photocurrent
     n_of_species=0;

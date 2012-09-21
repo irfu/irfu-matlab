@@ -39,7 +39,7 @@ if nargin==0, % return basic information on Solar Orbiter
 end
 
 flag=varargin{1};
-irf_units
+Units=irf_units;
 
 switch flag
     case '?'         % show all possibel flag options

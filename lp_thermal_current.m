@@ -26,13 +26,13 @@ function [j_thermal] = lp_thermal_current( p_type, N, T, m, V, Z, U, A )
 
 % Check # input/output parameters.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  error(nargchk(8,8,nargin))
-  error(nargchk(1,1,nargout))
+  narginchk(8,8)
+  nargoutchk(1,1)
 
 
 % Globals.
 %%%%%%%%%%
-irf_units;
+Units=irf_units;
 
 % Initialize.
 %%%%%%%%%%%%%

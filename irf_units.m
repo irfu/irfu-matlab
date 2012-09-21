@@ -242,7 +242,6 @@ Units.R_Sun = 6.96e8*Units.m;                       % Solar radius
 Units.Sun.radius=Units.R_Sun;
 Units.pc = 3.0857e16*Units.m;                       % parsec
 Units.Merucry.distanceToSun	=0.3871*Units.AU;       % Mercury orbit, semimajor axis
-Units.Venus.distanceToSun	=0.7233*Units.AU;       % Venus orbit, semimajor axis
 Units.Earth.distanceToSun	=1*Units.AU;            % Venus orbit, semimajor axis
 Units.Mars.distanceToSun	=1.5273*Units.AU;       % Mars orbit, semimajor axis
 Units.Uranus.distanceTSun	=19.1914*Units.AU;      % Uranus orbit, semimajor axis
@@ -275,6 +274,10 @@ Units.gauss = 1e-4*Units.T;
 Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;  % gravitational constant
 Units.kB = 1.38e-23*Units.J/Units.K;                % Boltzmann constant
 
+%---- VENUS -----
+Units.Venus.distanceToSun	= 0.7233*Units.AU;      % Venus orbit, semimajor axis
+Units.Venus.radius			= 6051.8*Units.km;
+
 %---- SATURN -----
 Units.Saturn.distanceToSun	= 9.5388*Units.AU;		% Saturn orbit, semimajor axis
 Units.Saturn.radius			= 60268*Units.km;		% Saturn equatorial radius
@@ -284,4 +287,5 @@ Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius
 Units.Jupiter.distanceToSun	= 5.2028*Units.AU;      % Saturn orbit, semimajor axis
 Units.Jupiter.mass			= 1.8986e27*Units.kg;
 
-
+Units.Ganymede.semiMajorAxis = 1070400*Units.km;	% 
+Units.Ganymede.radius		= 2634.1*Units.km;		%

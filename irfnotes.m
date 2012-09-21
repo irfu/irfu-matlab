@@ -121,7 +121,7 @@ end
 clear t1 t2 j;
 
 %% Example TEMPLATE for a figure
-irf_units; % in case you need phyiscal units, see help of irf_units
+Units=irf_units; % in case you need phyiscal units, see help of irf_units
 tint=[irf_time([2006 9 27 17 10 0]) irf_time([2006 9 27 17 40 0])];
 ic=1;                % satellite number
 CISinstrument='HIA'; % alternative 'CODIF'

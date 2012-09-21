@@ -11,7 +11,7 @@ function lp_sweep_gui(action)
 % ud.dUdI - resistance
 % ud.... - many other parameters
 %
-irf_units;
+Units=irf_units;
 persistent message;
 if isempty(message), % run only the first time during the session
     message='You can anytime access all the results from get(gcf,''userdata'').';
@@ -523,7 +523,7 @@ end
 set(gcf,'userdata',data);
 end
 function setscexample(hObj,event) %#ok<INUSD>
-irf_units
+Units=irf_units;
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'
@@ -606,7 +606,7 @@ end
 set(gcf,'userdata',data);
 end
 function setplasmaexample(hObj,event) %#ok<INUSD>
-irf_units
+Units=irf_units;
 val = get(hObj,'Value');
 data=get(gcf,'userdata');
 if val ==1 % do nothing, shows in menu 'Example spacecraft'

@@ -27,7 +27,7 @@ if nargin==0,
     return
 end
 
-irf_units
+Units=irf_units;
 
 switch flag
     case 'eV2nm'
