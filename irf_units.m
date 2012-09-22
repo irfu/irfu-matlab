@@ -1,10 +1,13 @@
-function Units=irf_units
+function Units=irf_units(varargin)
 % IRF_UNITS returns structure containing key units and constants
 %	uses units.m from web matlab_exchange depository 
 %	adds also space relevant stuff
 %
-% Usage: 
-%	Units = IRF_UNITS
+%	Units = IRF_UNITS returns structure with all the values
+%
+%	IRF_UNITS('pattern')
+%	IRF_UNITS pattern
+%		displays all the units matching pattern on command line
 %
 % Examples: 
 %	Units=irf_units;
@@ -14,7 +17,22 @@ function Units=irf_units
 %   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e    % to convert from MK to eV
 %
 
-if nargout==0,
+if nargin==1, % display matching units
+    fid=fopen(which('irf_units'));
+    while 1
+        tline = fgetl(fid);
+        if ~ischar(tline), break, end
+		if ~isempty(tline) && ~strcmp(tline(1),'%'), % check that not comment line
+			if strfind(lower(tline),lower(varargin{:}));
+				disp(tline);
+			end
+		end
+    end
+    fclose(fid);
+    return
+end
+	
+if nargout==0 && nargin==0, 
 	disp('!!!WARNING!!!!');
 	disp('IRF_UNITS usage has been changed, from script it has become function.');
 	disp('please check the help!');
@@ -25,6 +43,7 @@ if nargout==0,
 	clear Units;
 	return;
 end
+
 %%%%%%%%%%%%%%%%%%%%%%%%% including original units.m code %%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%% from matlab_exchange %%%%%%%%%%%%%%%%%%%%
 
@@ -191,7 +210,7 @@ Units.hp = 745.69987*Units.W;
 
 %------ charge ------
 Units.coul = 1;
-Units.e = 1.6022e-19*Units.coul;                        % elementary charge
+Units.e = 1.6022e-19*Units.coul;					% elementary charge
 
 
 %------ Voltage -----
@@ -214,14 +233,15 @@ Units.gauss = 1e-4*Units.T;
 
 
 %----fundamental constants ----
-Units.g = 9.80665*Units.m/Units.s^2;
-Units.kB = 1.38e-23*Units.J/Units.K;                        % Boltzman constant
+Units.g = 9.80665*Units.m/Units.s^2;				% gravitational acceleration
+Units.G = 6.67384e-11*Units.m^3/Units.kg/Units.s^2; % graviational constants
+Units.kB = 1.38e-23*Units.J/Units.K;				% Boltzman constant
 Units.sigma_SB = 5.670e-8 * Units.W/(Units.m^2 * Units.K^4);
-Units.h = 6.62607e-34 * Units.J*Units.s;
-Units.hbar = Units.h/(2*pi);
+Units.h = 6.62607e-34 * Units.J*Units.s;			% Planck constant
+Units.hbar = Units.h/(2*pi);						% Planck constant
 Units.mu_B = 9.274e-24 * Units.J/Units.T;
 Units.mu_N = 5.0507866e-27 * Units.J/Units.T;
-Units.c = 2.99792458e8*Units.m/Units.s;
+Units.c = 2.99792458e8*Units.m/Units.s;				% speed of light
 Units.eps0 = 8.8541878176204e-12* Units.coul/(Units.V*Units.m);
 Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 
@@ -234,16 +254,10 @@ Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 
 %-------- UNITS ------------------------------
 %------- length ----
-Units.AU = 1.496e11*Units.m;
-Units.R_Earth = 6371.2e3*Units.m;                   % Earth radius
-Units.Earth.radius=Units.R_Earth;
-Units.RE = Units.R_Earth;                           % Earth radius
+Units.AU = 149597870700*Units.m;					% astronomical unit, exact
 Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
 Units.Sun.radius=Units.R_Sun;
 Units.pc = 3.0857e16*Units.m;                       % parsec
-Units.Merucry.distanceToSun	=0.3871*Units.AU;       % Mercury orbit, semimajor axis
-Units.Earth.distanceToSun	=1*Units.AU;            % Venus orbit, semimajor axis
-Units.Mars.distanceToSun	=1.5273*Units.AU;       % Mars orbit, semimajor axis
 Units.Uranus.distanceTSun	=19.1914*Units.AU;      % Uranus orbit, semimajor axis
 Units.Neptune.distanceToSun =30.0611*Units.AU;      % Neptune orbit, semimajor axis
 
@@ -270,9 +284,25 @@ Units.MK = 1e6*Units.K;
 Units.nT = 1e-9*Units.T;
 Units.gauss = 1e-4*Units.T;
 
-%----fundamental constants ----
-Units.G = 6.6726e-11*Units.N*Units.m^2/Units.kg^2;  % gravitational constant
-Units.kB = 1.38e-23*Units.J/Units.K;                % Boltzmann constant
+%---- MERCURY -----
+Units.Mercury.semiMajorAxis = 57909100*Units.km;	% Mercury semimajor axis
+Units.Merucry.distanceToSun	= 57909100*Units.km;	% Mercury orbit, semimajor axis
+Units.Mercury.aphelion		= 69816900*Units.km;
+Units.Mercury.perihelion	= 46001200*Units.km;
+Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean)
+
+%---- MARS -----
+Units.Mars.distanceToSun	= 1.5273*Units.AU;		% Mars orbit, semimajor axis
+Units.Mars.radius			= 3396.2*Units.km;		% Mars radius (equatorial)
+Units.Mars.radiusEquatorial	= 3396.2*Units.km;		% Mars radius (equatorial)
+Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (polar)
+
+%---- EARTH -----
+Units.Earth.semiMajorAxis	= 149598261*Units.km;	% Earth semimajor axis
+Units.Earth.distanceToSun	= 149598261*Units.km;	% Earth distance to Sun (=semimajor axis)
+Units.Earth.radius			= 6371.2e3*Units.m;		% Earth radius
+Units.R_Earth				= 6371.2e3*Units.m;		% Earth radius
+Units.RE					= Units.R_Earth;		% Earth radius
 
 %---- VENUS -----
 Units.Venus.distanceToSun	= 0.7233*Units.AU;      % Venus orbit, semimajor axis
@@ -284,8 +314,23 @@ Units.Saturn.radius			= 60268*Units.km;		% Saturn equatorial radius
 
 %---- JUPITER -----
 Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius
-Units.Jupiter.distanceToSun	= 5.2028*Units.AU;      % Saturn orbit, semimajor axis
+Units.Jupiter.radiusEquatorial = 71492*Units.km;
+Units.Jupiter.radiusPolar 	= 66854*Units.km;
+Units.Jupiter.semiMajorAxis = 778547200*Units.km;   
+Units.Jupiter.distanceToSun	= 778547200*Units.km;	% Jupiter semimajor axis
+Units.Jupiter.aphelion 		= 816520800*Units.km;
+Units.Jupiter.perihelion 	= 740573600*Units.km;
 Units.Jupiter.mass			= 1.8986e27*Units.kg;
 
-Units.Ganymede.semiMajorAxis = 1070400*Units.km;	% 
-Units.Ganymede.radius		= 2634.1*Units.km;		%
+%---- GANYMEDE -----
+Units.Ganymede.semiMajorAxis = 1070400*Units.km;
+Units.Ganymede.radius		= 2634.1*Units.km;
+
+%---- EUROPA -----
+Units.Europa.semiMajorAxis	= 670900*Units.km;		% 
+Units.Europa.radius			= 1560.8*Units.km;		%
+
+%---- CALLISTO -----
+Units.Callisto.semiMajorAxis= 1882700*Units.km;		% 
+Units.Callisto.radius		= 2410.3*Units.km;		%
+
