@@ -16,6 +16,7 @@ function t_out = irf_time(t_in,flag)
 %   yyyymmdd: string
 % yyyymmddhh: string
 %yyyymmddhhmm: string
+%yyyymmddhhmmss: string
 %       date: MATLAB datenum format
 %    datenum: -=-
 %        doy: [year, doy]
@@ -205,7 +206,11 @@ switch lower(flag)
     case 'epoch2yyyymmddhhmm'
         t=irf_time(t_in,'epoch2vector');
         t_out=num2str(t(:,1:5),'%04d%02d%02d%02d%02d');
-                  
+    
+    case 'epoch2yyyymmddhhmmss'
+        t=irf_time(t_in,'epoch2vector');
+        t_out=num2str(t(:,1:6),'%04d%02d%02d%02d%02d%02d');
+        
     case 'epoch2yyyy-mm-dd hh:mm:ss'
         d=irf_time(fix(t_in),'epoch2vector');
         t_out=num2str(d,'%04d-%02d-%02d %02d:%02d:%02.0f');
