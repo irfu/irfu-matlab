@@ -2280,7 +2280,7 @@ case 'H' % 4 kHz filters
 38819.482240    -29.8514614   -124.5173069     -0.0182283     -0.0265052
 39405.322729    -30.0396977   -125.8607511     -0.0184407     -0.0255116];
     otherwise
-        error('not implemented')
+        error(['not implemented: ' filt])
 end
 
 end
