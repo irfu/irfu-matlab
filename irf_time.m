@@ -154,23 +154,31 @@ switch lower(flag)
         % accuracy ~1e-6 sec for year 2004.
         t(:,6) = t(:,6) + t_in - fix(t_in);
         t_out = t;
-    case {'epoch2iso','epoch2isoshort'}
+    case {'epoch2iso','epoch2isoshort','epoch2yyyymmddhhmmss','epoch2yyyy-mm-dd hh:mm:ss'}
         d = irf_time(t_in,'vector');
         if strcmp(flag,'epoch2isoshort')
 			fmt='%04d-%02d-%02dT%02d:%02d:%06.3fZ';
-            t_out=num2str(d,fmt);
-			ii=find(t_out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
-			if any(ii),
-				t_out(ii,:)=num2str(irf_time(t_in(ii)+0.0005,'vector'),fmt);
-			end
-		else
+			positionTenSeconds=18;
+			roundingStep=0.0005;
+		elseif strcmp(flag,'epoch2isoshort')
 			fmt='%04d-%02d-%02dT%02d:%02d:%09.6fZ';
-            t_out=num2str(d,fmt);
-			ii=find(t_out(:,18)=='6'); % in case there has been rounding leading to 60.000 seconds
-			if any(ii),
-				t_out(ii,:)=num2str(irf_time(t_in(ii)+0.0000005,'vector'),fmt);
-			end
-        end
+            positionTenSeconds=18;
+			roundingStep=0.0000005;
+		elseif strcmp(flag,'epoch2yyyymmddhhmmss')
+			fmt='%04d%02d%02d%02d%02d%02.0f';
+			positionTenSeconds=13;
+			roundingStep=0.5;
+		elseif strcmp(flag,'epoch2yyyy-mm-dd hh:mm:ss')
+			fmt='%04d-%02d-%02d %02d:%02d:%02.0f';
+			positionTenSeconds=18;
+			roundingStep=0.5;
+		end
+		t_out=num2str(d,fmt);
+		ii=find(t_out(:,positionTenSeconds)=='6'); % in case there has been rounding leading to 60.000 seconds
+		if any(ii),
+			t_out(ii,:)=num2str(irf_time(t_in(ii)+roundingStep,'vector'),fmt);
+		end
+
     case 'iso2epoch'
         mask = '%4d-%2d-%2dT%2d:%2d:%fZ';
         s=t_in;
@@ -206,15 +214,7 @@ switch lower(flag)
     case 'epoch2yyyymmddhhmm'
         t=irf_time(t_in,'epoch2vector');
         t_out=num2str(t(:,1:5),'%04d%02d%02d%02d%02d');
-    
-    case 'epoch2yyyymmddhhmmss'
-        t=irf_time(t_in,'epoch2vector');
-        t_out=num2str(t(:,1:6),'%04d%02d%02d%02d%02d%02d');
-        
-    case 'epoch2yyyy-mm-dd hh:mm:ss'
-        d=irf_time(fix(t_in),'epoch2vector');
-        t_out=num2str(d,'%04d-%02d-%02d %02d:%02d:%02.0f');
-                  
+                      
     case 'epoch2doy'
           t_first_january_vector=irf_time(t_in,'vector');
           t_first_january_vector(:,2:end)=1;
