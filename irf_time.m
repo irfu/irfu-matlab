@@ -156,23 +156,23 @@ switch lower(flag)
         t_out = t;
     case {'epoch2iso','epoch2isoshort','epoch2yyyymmddhhmmss','epoch2yyyy-mm-dd hh:mm:ss'}
         d = irf_time(t_in,'vector');
-        if strcmp(flag,'epoch2isoshort')
-			fmt='%04d-%02d-%02dT%02d:%02d:%06.3fZ';
-			positionTenSeconds=18;
-			roundingStep=0.0005;
-		elseif strcmp(flag,'epoch2isoshort')
-			fmt='%04d-%02d-%02dT%02d:%02d:%09.6fZ';
+        if     strcmp(flag,'epoch2isoshort')
+            fmt='%04d-%02d-%02dT%02d:%02d:%06.3fZ';
             positionTenSeconds=18;
-			roundingStep=0.0000005;
-		elseif strcmp(flag,'epoch2yyyymmddhhmmss')
-			fmt='%04d%02d%02d%02d%02d%02.0f';
-			positionTenSeconds=13;
-			roundingStep=0.5;
-		elseif strcmp(flag,'epoch2yyyy-mm-dd hh:mm:ss')
-			fmt='%04d-%02d-%02d %02d:%02d:%02.0f';
-			positionTenSeconds=18;
-			roundingStep=0.5;
-		end
+            roundingStep=0.0005;
+        elseif strcmp(flag,'epoch2iso')
+            fmt='%04d-%02d-%02dT%02d:%02d:%09.6fZ';
+            positionTenSeconds=18;
+            roundingStep=0.0000005;
+        elseif strcmp(flag,'epoch2yyyymmddhhmmss')
+            fmt='%04d%02d%02d%02d%02d%02.0f';
+            positionTenSeconds=13;
+            roundingStep=0.5;
+        elseif strcmp(flag,'epoch2yyyy-mm-dd hh:mm:ss')
+            fmt='%04d-%02d-%02d %02d:%02d:%02.0f';
+            positionTenSeconds=18;
+            roundingStep=0.5;
+        end
 		t_out=num2str(d,fmt);
 		ii=find(t_out(:,positionTenSeconds)=='6'); % in case there has been rounding leading to 60.000 seconds
 		if any(ii),
