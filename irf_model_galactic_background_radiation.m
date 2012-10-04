@@ -124,6 +124,7 @@ if isPlot,
     plot(h,f/1e6,S,'-');
 	grid(h,'on');
 	set(h,'xscale','log');
+	set(h,'yscale','log');
 	title(h,'Galactic background radiation');
 	xlabel(h,'frequency [MHz]');
 	if isWUnits,
