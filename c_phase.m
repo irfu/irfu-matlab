@@ -17,6 +17,7 @@ if size(t,1)>1 && size(t,2)>1, error('t must be a vector'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end
 
 MAX_SPIN_PERIOD = 4.3; % Sane value for Cluster
+MIN_SPIN_PERIOD = 3.6;
 
 t=t(:); % t should be column vector
 phase_out = [];
@@ -48,6 +49,24 @@ while size(phase_2,1)>2
 			phase_2(1:ii(1),:) = [];
 		end
 	end
+end
+
+% Sanity check
+phase_unwrapped = unwrap(phase_out(:,2)/180*pi);
+SpinRate = diff(phase_unwrapped)./diff(phase_out(:,1));
+ii = find( SpinRate<2*pi/MAX_SPIN_PERIOD | SpinRate>2*pi/MIN_SPIN_PERIOD );
+if ~isempty(ii)
+    ii_jump = find(diff(ii)>1);
+    ii_jump = [1 ii_jump];
+    for i=1:length(ii_jump)
+        if i==length(ii_jump)
+            kk = [ii(ii_jump(i)) ii(end)];
+        else
+            kk = [ii(ii_jump(i)) ii(ii_jump(i+1))-1];
+        end
+        irf_log('proc',['bad phase at ' irf_disp_iso_range(phase_out(kk,1)',1)])
+    end
+    phase_out(ii,:) = [];
 end
 
 n_out = length(t) - length(phase_out);
