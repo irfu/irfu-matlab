@@ -6074,11 +6074,12 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </res>
         </operation>
 <operation start="2012-08-16T20:09:40Z" dt="347141" c1="yes" plan="no" sdesc="bad_data">
-        <desc>All probes latched at -68 V, reason unknown.</desc>
-                <res><link href="ky120820.txt">Keith 120820</link>
-                </res>
+	<desc>All probes latched at -68 V, reason unknown.</desc>
+	<res><link href="ky120820.txt">Keith 120820</link></res>
 </operation>
-
+<operation start="2012-08-20T20:35:21Z" dt="46939" c1="yes" plan="no" sdesc="bad_p2">
+	<desc>Probe 2 latched at +68 V, reason unknown.</desc>
+</operation>
 <operation start="2012-09-04T06:40:00Z" dt="140" c1="yes" plan="yes" sdesc="bad_p2">
         <desc>Bias current stepping (slow sweep) on P2.</desc>
 	</operation>
