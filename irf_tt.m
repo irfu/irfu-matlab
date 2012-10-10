@@ -13,6 +13,8 @@ function out=irf_tt(varargin)
 %
 %   tt=IRF_TT('import_ASCII',filename);% import time table from file
 %
+%   tt=IRF_TT('read_www',http_address) read time table from http_address
+%
 %   tt=IRF_TT('read_IRF',tt_id) read time table tt_id from IRF
 %
 %   IRF_TT(tt,'write_IRF',tt_id) write time table tt_id to IRF
@@ -38,6 +40,8 @@ function out=irf_tt(varargin)
 %        irf_tt(TT); % display time table
 %		tt=irf_tt('read_IRF','Example');
 %		irf_tt(tt,'write_IRF','new_id'); % write time table tt to brain.irfu.se with new id 'new_id'
+%		% read Cluster Master Science Plan
+%		msp=irf_tt('read_www','http://jsoc1.bnsc.rl.ac.uk/msp/full_msp_ascii.lst');
 
 % $Id$
 % $Revision$  $Date$
@@ -79,7 +83,8 @@ elseif ischar(varargin{1}) % first argument is action
 	if nargin>1 && ischar(varargin{2}) && strcmpi(varargin{1},'import_ASCII')
 		filename=varargin{2};
 	end
-	if nargin>1 && ischar(varargin{2}) && strcmpi(varargin{1},'read_IRF')
+	if nargin>1 && ischar(varargin{2}) && ...
+			(strcmpi(varargin{1},'read_IRF') || strcmpi(varargin{1},'read_www'))
 		tt_id=varargin{2};
 	end
 end
@@ -101,6 +106,9 @@ switch action
 		eval(['!scp ' remoteFile ' ' tempFile]);
 		out=irf_tt('import_ASCII',tempFile);
 		delete(tempFile);
+	case 'read_www'
+		tempTT=urlread(tt_id);
+		out=tt_from_ascii(tempTT);
 	case 'write_IRF'
 		remoteFile=['brain.irfu.se:/share/Cluster/TT/' tt_id];
 		tempFile=tempname;
@@ -189,31 +197,46 @@ fid = fopen(filename);
 fileContents=fscanf(fid,'%c',inf);
 fclose(fid);
 ttAscii=textscan(fileContents,'%s','delimiter',sprintf('\n'));
+out=tt_from_ascii(ttAscii);
+end
+
+function out=tt_from_ascii(ttascii) % convert ascii tt to matlab format
+
+if ~iscell(ttascii) && ischar(ttascii), % character array
+	ttAscii=textscan(ttascii,'%s','delimiter',sprintf('\n'));
+else
+	ttAscii=ttascii; % input is already cell array with one line per cell
+end
+
 nTimeInterval			= 0;
 isFirstDescriptionLine	= 1;
 description				= '';
 
 for iTtAscii=1:numel(ttAscii{1})
 	str=ttAscii{1}{iTtAscii};
-	if ~isempty(regexp(str,'^\s*#','match')) % commented line
+	if ~isempty(regexp(str,'^\s*[#,!]','match')) % commented line
 		if isFirstDescriptionLine,
 			isFirstDescriptionLine=0;
 		end
-		linetext=regexp(str,'^\s*#\s?(.*)','tokens');
+		linetext=regexp(str,'^\s*[#,!]\s?(.*)','tokens');
 		if isempty(description)
 			description=[description linetext{1}{1}];
 		else
 			description=[description sprintf('\n') linetext{1}{1}];
 		end
 	else % assume number in iso format
-		nTimeInterval=nTimeInterval+1;
-		timeInterval=regexp(str,'^\s*([\d-:\.TZ]*)\s*([\d-:\.TZ]*)\s*(.*)','tokens');
-		out.start(nTimeInterval)		= irf_time(timeInterval{1}{1},'iso2epoch');
-		out.end(nTimeInterval)			= irf_time(timeInterval{1}{2},'iso2epoch');
-		out.comment{nTimeInterval}		= timeInterval{1}{3};
-		out.description{nTimeInterval}	= description;
-		isFirstDescriptionLine			= 1;
-		description						= '';
+		timeInterval=regexp(str,'^\s*([\d-]*T[\d:\.]*Z+)\s*([\d-:\.TZ]*)\s(.*)','tokens');
+		if ~isempty(timeInterval)
+			nTimeInterval=nTimeInterval+1;
+			out.start(nTimeInterval)		= irf_time(timeInterval{1}{1},'iso2epoch');
+			out.end(nTimeInterval)			= irf_time(timeInterval{1}{2},'iso2epoch');
+			out.comment{nTimeInterval}		= timeInterval{1}{3};
+			out.description{nTimeInterval}	= description;
+			isFirstDescriptionLine			= 1;
+			description						= '';
+		else
+			description=[description sprintf('\n') str];
+		end
 	end
 end
 end
