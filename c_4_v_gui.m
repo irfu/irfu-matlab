@@ -24,6 +24,7 @@ elseif   (nargin ==4) || (nargin == 5),
 	if nargin ==4, irf_log('fcal','Using second column');column=2;end
 	figure;ud=[]; % intialize
 	c_eval('ud.var?=x?;');
+	ud.variable_str=[inputname(1) '..' inputname(4)];
 	ud.var_col=column;
 	action='initialize';
 else      help c_4_v_gui
