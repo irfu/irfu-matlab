@@ -43,7 +43,10 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
     %XXX : possibly here we should use different values for LAR/MAR/HAR
     theta=15:30:180; % pitch angles to which rebin
     [variable,dataobject,varmat,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
-    
+    if isempty(variable)
+        error('Cannot load the requested CAA variable')
+    end
+        
     phivar=c_caa_var_get(variable.DEPEND_1);phivar=fillval_to_nan(phivar);phi=phivar.data;%nan_phi=isnan(phi);phi(nan_phi)=[];
     phi_dminus = getv(dataobject,phivar.DELTA_MINUS); phi_dminus = phi_dminus.data;
     phi_dplus = getv(dataobject,phivar.DELTA_PLUS); phi_dplus = phi_dplus.data;
@@ -134,6 +137,9 @@ if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(
     return
 elseif any([strfind(variable_name,'PITCH_3DR') strfind(variable_name,'PITCH_3DX')])  % PEACE variable
     [variable,dataobject,peace,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
+    if isempty(variable)
+        error('Cannot load the requested CAA variable')
+    end
     enunits=getfield(getv(dataobject,variable.DEPEND_3),'UNITS');
     enlabel=getfield(getv(dataobject,variable.DEPEND_3),'LABLAXIS');
     enlabel=[enlabel ' [' enunits ']'];
@@ -150,6 +156,9 @@ elseif any([strfind(variable_name,'3DXPL') strfind(variable_name,'3DXPH')]),
     % PEACE sector angles are given in SR2 reference frame!
     theta=15:30:180; % pitch angles to which rebin
     [variable,dataobject,varmat,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
+    if isempty(variable)
+        error('Cannot load the requested CAA variable')
+    end
     phivar=c_caa_var_get(variable.DEPEND_1);phivar=fillval_to_nan(phivar);phi=phivar.data(1,:);nan_phi=isnan(phi);phi(nan_phi)=[];
     polarvar=c_caa_var_get(variable.DEPEND_2);polar=polarvar.data(1,:);
     envar=c_caa_var_get(variable.DEPEND_3);envar=fillval_to_nan(envar);en=envar.data(1,:);nan_en=isnan(en);en(nan_en)=[];
@@ -186,6 +195,9 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
     %% RAPID does not have pitch angle matrix data, therefore rebinning
     % necessary
     [variable,dataobject,rapid,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
+    if isempty(variable)
+        error('Cannot load the requested CAA variable')
+    end
     enunits=getfield(getv(dataobject,variable.DEPEND_1),'UNITS');
     enlabel=getfield(getv(dataobject,variable.DEPEND_1),'LABLAXIS');
     enlabel=[enlabel ' [' enunits ']'];
@@ -208,6 +220,9 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') 
     % CIS sector angels are given in ISR2 reference frame and show particle arrival direction!
     theta=11.25:22.5:180; % pitch angles to which rebin
     [variable,dataobject,varmat,dataunits]=c_caa_var_get(variable_name); % check that it is loaded in memory
+    if isempty(variable)
+        error('Cannot load the requested CAA variable')
+    end
     phivar=c_caa_var_get(variable.DEPEND_2);phi=phivar.data(1,:);
     polarvar=c_caa_var_get(variable.DEPEND_1);polar=polarvar.data(1,:);
     envar=c_caa_var_get(variable.DEPEND_3);en=envar.data(1,:);
