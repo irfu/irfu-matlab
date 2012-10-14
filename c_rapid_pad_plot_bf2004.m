@@ -59,9 +59,10 @@ for kk=1:length(ttt)
 	Pitang_each=squeeze(bbb(kk,:,:));
 	for ii=1:16
 		for jj=1:9
-			ind=find(angtemp>=Pitang_each(ii,jj)); index=ind(1)-1;
-			if index==0; index=1; end
-			if isnan(Flux_each(ii,jj))==0;
+			if isnan(Flux_each(ii,jj))==0 & isnan(Pitang_each(ii,jj))==0;
+                ind=find(angtemp>=Pitang_each(ii,jj)); index=ind(1)-1;
+			    if index==0; index=1; end
+            
 				Flux(kk,index)=Flux(kk,index)+Flux_each(ii,jj);
 				count(kk,index)=count(kk,index)+1;
 			end
@@ -79,8 +80,8 @@ end
 
 specFlux=struct('t',ttt,'f',Pitang,'p',Flux,'f_unit','Pitch angle [deg]');
 if nargout == 0, % no output, just plot the spectrogram
-	irf_spectrogram(ax, specFlux);
-	colorbar;
+    irf_spectrogram(ax, specFlux);
+    colorbar('peer',ax);
 	colormap(jet);
 	clear specFlux; % do not return anything
 end
