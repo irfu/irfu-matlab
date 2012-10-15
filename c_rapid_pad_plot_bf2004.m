@@ -43,6 +43,7 @@ RapFlux=getmat(RAPflux_obj, Flux_str);
 RapPitang=getmat(RAPpitang_obj,Pitang_str);
 %RapAzmang=getmat(RAPflux_obj, Azm_str); % NEVER USED
 Raptime=getmat(RAPflux_obj, Time_str);
+Fluxunits=getunits(RAPflux_obj,Flux_str);
 
 aaa=RapFlux.data;
 bbb=RapPitang.data;
@@ -65,8 +66,7 @@ for kk=1:length(ttt)
             
 				Flux(kk,index)=Flux(kk,index)+Flux_each(ii,jj);
 				count(kk,index)=count(kk,index)+1;
-			end
-			
+            end
 		end
 	end
 	for jj=1:length(Pitang)
@@ -81,8 +81,9 @@ end
 specFlux=struct('t',ttt,'f',Pitang,'p',Flux,'f_unit','Pitch angle [deg]');
 if nargout == 0, % no output, just plot the spectrogram
     irf_spectrogram(ax, specFlux);
-    colorbar('peer',ax);
-	colormap(jet);
+    hcb=colorbar('peer',ax);
+	colormap(hcb,jet);
+    ylabel(hcb,Fluxunits);
 	clear specFlux; % do not return anything
 end
 end
