@@ -165,7 +165,7 @@ else
 end
 if numel(description)<numel(tt.start) % fill with empty
 	for j=(numel(description)+1):numel(tt.start),
-		description{j}='';
+		description{j}=[];
 	end
 end
 description=regexprep(description,'\n','\n# '); % new lines in description should be commented
@@ -174,7 +174,7 @@ for iTT=1:numel(tt.start)
 	if ~isempty(description{iTT}),
 		out=[out sprintf('# %s\n',description{iTT})];
 	end
-	if isComment,
+	if isComment && ~isempty(comment{iTT}),
 		if numel(comment{iTT})>1 && any(strcmp(comment{iTT}(1),'#')),
 			fmt='%s %s %s\n';
 		else
@@ -225,12 +225,16 @@ for iTtAscii=1:numel(ttAscii{1})
 			description=[description sprintf('\n') linetext{1}{1}];
 		end
 	else % assume number in iso format
-		timeInterval=regexp(str,'^\s*([\d-]*T[\d:\.]*Z+)\s*([\d-:\.TZ]*)\s(.*)','tokens');
-		if ~isempty(timeInterval)
+		timeInterval=regexp(str,'^\s*(?<start>[\d-]*T[\d:\.]*Z+)\s*(?<end>[\d-]*T[\d:\.]*Z+)\s?(.*)','names');
+		if ~isempty(timeInterval) && isfield(timeInterval,'start') && isfield(timeInterval,'end')
 			nTimeInterval=nTimeInterval+1;
-			out.start(nTimeInterval)		= irf_time(timeInterval{1}{1},'iso2epoch');
-			out.end(nTimeInterval)			= irf_time(timeInterval{1}{2},'iso2epoch');
-			out.comment{nTimeInterval}		= timeInterval{1}{3};
+			out.start(nTimeInterval)		= irf_time(timeInterval.start,'iso2epoch');
+			out.end(nTimeInterval)			= irf_time(timeInterval.end,'iso2epoch');
+			if isfield(timeInterval,'comment'),
+				out.comment{nTimeInterval}		= timeInterval.comment;
+			else
+				out.comment{nTimeInterval}		= [];
+			end
 			out.description{nTimeInterval}	= description;
 			isFirstDescriptionLine			= 1;
 			description						= '';
