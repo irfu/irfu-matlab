@@ -21,9 +21,10 @@ function out=irf_tt(varargin)
 %
 %   IRF_TT('list_IRF') list time tables in IRF repository
 %
-%  =========== BELOW NOT IMPLEMENTED =========
-%
 %   [tt]=IRF_TT('read_AMDA',tt_id) read time table tt_id from AMDA
+%		you can see AMDA shared time tables http://cdpp-amda.cesr.fr/DDHTML/SHARED/ttrepository.html
+%
+%  =========== BELOW NOT IMPLEMENTED =========
 %
 %   hashid=IRF_TT(tt,'save_AMDA',tt_id,'user',username,'passw',password)
 %     save time table tt_id. Return hashid, if saving did not succeed return NaN.
@@ -80,44 +81,50 @@ if isTT(varargin{1}) % first argument is TT in matlab format (structure)
 	end
 elseif ischar(varargin{1}) % first argument is action
 	action=varargin{1};
-	if nargin>1 && ischar(varargin{2}) && strcmpi(varargin{1},'import_ASCII')
+	if nargin>1 && ischar(varargin{2}) && strcmpi(varargin{1},'import_ascii')
 		filename=varargin{2};
 	end
 	if nargin>1 && ischar(varargin{2}) && ...
-			(strcmpi(varargin{1},'read_IRF') || strcmpi(varargin{1},'read_www'))
+			(strcmpi(varargin{1},'read_irf') ...
+			|| strcmpi(varargin{1},'read_www') ...
+			|| strcmpi(varargin{1},'read_amda'))
 		tt_id=varargin{2};
 	end
 end
 
 %% Act
-switch action
+switch lower(action)
 	case 'display'
 		display(asciiTT(tt));
-	case 'export_ASCII'
+	case 'export_ascii'
 		out=asciiTT(tt);
 		if exist('filename','var') % read from file
 			fid = fopen(filename,'w');
 			fwrite(fid,out);
 			fclose(fid);
 		end
-	case 'read_IRF'
+	case 'read_irf'
 		remoteFile=['brain.irfu.se:/share/Cluster/TT/' tt_id];
 		tempFile=tempname;
 		eval(['!scp ' remoteFile ' ' tempFile]);
 		out=irf_tt('import_ASCII',tempFile);
 		delete(tempFile);
+	case 'read_amda'
+		httpLink=['http://cdpp-amda.cesr.fr/DDHTML/SHARED/' tt_id '.txt'];
+		tempTT=urlread(httpLink);
+		out=tt_from_ascii(tempTT);
 	case 'read_www'
 		tempTT=urlread(tt_id);
 		out=tt_from_ascii(tempTT);
-	case 'write_IRF'
+	case 'write_irf'
 		remoteFile=['brain.irfu.se:/share/Cluster/TT/' tt_id];
 		tempFile=tempname;
 		irf_tt(tt,'export_ASCII',tempFile);
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
-	case 'list_IRF'
+	case 'list_irf'
 		eval('!ssh brain.irfu.se ls /share/Cluster/TT');
-	case 'import_ASCII'
+	case 'import_ascii'
 		if exist('filename','var') % read from file
 			out=readasciiTT(filename);
 		else
@@ -199,7 +206,6 @@ fclose(fid);
 ttAscii=textscan(fileContents,'%s','delimiter',sprintf('\n'));
 out=tt_from_ascii(ttAscii);
 end
-
 function out=tt_from_ascii(ttascii) % convert ascii tt to matlab format
 
 if ~iscell(ttascii) && ischar(ttascii), % character array
@@ -225,7 +231,7 @@ for iTtAscii=1:numel(ttAscii{1})
 			description=[description sprintf('\n') linetext{1}{1}];
 		end
 	else % assume number in iso format
-		timeInterval=regexp(str,'^\s*(?<start>[\d-]*T[\d:\.]*Z+)\s*(?<end>[\d-]*T[\d:\.]*Z+)\s?(.*)','names');
+		timeInterval=regexp(str,'^\s*(?<start>[\d-]*T[\d:\.]*Z?)\s*(?<end>[\d-]*T[\d:\.]*Z?)\s?(.*)','names');
 		if ~isempty(timeInterval) && isfield(timeInterval,'start') && isfield(timeInterval,'end')
 			nTimeInterval=nTimeInterval+1;
 			out.start(nTimeInterval)		= irf_time(timeInterval.start,'iso2epoch');
