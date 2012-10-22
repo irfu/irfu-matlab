@@ -4,7 +4,7 @@
 function [Bpsd,planarity,waveangle,elliptict]=irf_wavepolarize_magneticSVD(varargin)
 %irf_wavepolarize_magneticSVD analysis the polarization of magnetic wave using "magnetic SVD" method
 %
-%*****************************caution***************************************
+%***************************************************************************
 %**if you find any bugs in this function, pls contact me (huishan@irfu.se)**
 %***************************************************************************
 %Input parameter (2 parameters or 3, or 4)
@@ -55,11 +55,10 @@ end
 window_overlap=windwid/2; % length of each window overlaps in micro second
 
 
-
 %% fft
-[Bxcomplex, freq, time]=irf_fft(Bwave(:,2), 'hamming', window_overlap, windwid, fs);
-[Bycomplex, freq, time]=irf_fft(Bwave(:,3), 'hamming', window_overlap, windwid, fs);
-[Bzcomplex, freq, time]=irf_fft(Bwave(:,4), 'hamming', window_overlap, windwid, fs);
+[Bxcomplex, freq, time]=irf_wavefft(Bwave(:,2), 'hamming', window_overlap, windwid, fs);
+[Bycomplex, freq, time]=irf_wavefft(Bwave(:,3), 'hamming', window_overlap, windwid, fs);
+[Bzcomplex, freq, time]=irf_wavefft(Bwave(:,4), 'hamming', window_overlap, windwid, fs);
 time=linspace(Bwave(1,1),Bwave(end,1),length(time));
 
 
