@@ -3,7 +3,7 @@
 function [Bpsd,degpol,waveangle,elliptict,helict]=irf_wavepolarize_means(varargin)
 %irf_wavepolarize_means analysis the polarization of magnetic wave using "means" method
 %
-%*****************************caution***************************************
+%***************************************************************************
 %**if you find any bugs in this function, pls contact me (huishan@irfu.se)**
 %***************************************************************************
 %Input parameter (2 parameters or 3, or 4)
