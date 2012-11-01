@@ -1,0 +1,50 @@
+% Special processing 2004. Force MS offset even if PL2 >-8V. Quicklook per-orbit overview used for reference.
+% Remember to put extra newline at end of file or last command will fail.
+%C1-4
+2004-07-09T20:00:00.00Z 2004-07-11T14:00:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C3
+2004-08-05T01:00:00.00Z 2004-08-06T13:30:00.00Z 3 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C3
+2004-08-09T20:00:00.00Z 2004-08-11T07:00:00.00Z 3 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C3
+2004-09-02T06:30:00.00Z 2004-09-04T08:20:00.00Z 3 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-4
+2004-09-14T06:00:00.00Z 2004-09-16T06:00:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C2-3
+2004-09-26T03:45:00.00Z 2004-09-28T03:00:00.00Z 23 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-4
+2004-10-03T07:00:00.00Z 2004-10-05T06:00:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-4
+2004-10-08T00:40:00.00Z 2004-10-10T00:30:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-4
+2004-10-12T19:00:00.00Z 2004-10-14T18:30:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C3
+2004-10-15T11:00:00.00Z 2004-10-17T03:30:00.00Z 3 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-3
+2004-10-19T22:00:00.00Z 2004-10-21T21:30:00.00Z 123 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
+%C1-4
+2004-11-03T05:00:00.00Z 2004-11-05T05:00:00.00Z 1234 % force MS offsets
+ Ddsi=[ 1.35  2.06 1.45  1.15 ]; c_eval('Ddsi?=Ddsi(cli);',cli); if exist('mEDSI.mat','file') c_eval('save mEDSI.mat Ddsi? -append',cli); else c_eval('save mEDSI.mat Ddsi?',cli); end;
+
