@@ -14,7 +14,7 @@ function irf_plot_axis_align(nsubplot,h)
 %
 % $Id$
 
-error(nargchk(1,2,nargin))
+error(nargchk(0,2,nargin))
 
 % calculate the size of axis to which align
 if nargin==0, % no subplot number given, find smallest common limit for all axis
