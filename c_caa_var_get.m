@@ -23,7 +23,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %
 % Example:
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
-%   [~,~,xm]=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF');
+%   xm=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF','mat');
 
 % TODO: add options:
 % 'source'(parameters 'file','fast')
