@@ -170,9 +170,9 @@ if isfield(tt,'comment'),
 else
 	isComment=0;
 end
-if numel(description)<numel(tt.start) % fill with empty
+if numel(description)<numel(tt.start) % fill with empty strings
 	for j=(numel(description)+1):numel(tt.start),
-		description{j}=[];
+		description{j}='';
 	end
 end
 description=regexprep(description,'\n','\n# '); % new lines in description should be commented
