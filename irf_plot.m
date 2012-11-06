@@ -560,7 +560,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         set(gcf,'defaultTextFontSize',14);
         set(gcf,'defaultAxesFontUnits','pixels');
         set(gcf,'defaultTextFontUnits','pixels');
-        set(gcf,'defaultAxesColorOrder',[0 0 0;1 0 0;0 0.5 0;0 0 1;0 1 1 ;1 0 1; 1 1 0])
+        set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
         
         xSize = 11;
         ySize = 5+5*sqrt(number_of_subplots);
