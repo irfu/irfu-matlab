@@ -26,7 +26,8 @@ function caa_load(varargin)
 %
 % $Id$
 
-% add 'nowildcard' option to read in just specified data object
+% CAA_LOAD('string1','string2',...,'ifnotinmemory')
+%   load only those data that are not in memory
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -38,6 +39,7 @@ flag_read_all=1;        % default load everything
 flag_only_list_files=0; % default do not only list files
 flag_filter = 1;        % default is to filter according to names
 flag_exact_match =0;    % default is to filter not according to exact match
+forceLoadFromFile = 1;  % if 0, do not load object if it exists in memory
 
 if nargin==0, 
     flag_filter=0; % load all variables, no filtering
@@ -63,6 +65,8 @@ if nargin > 0, % filter which variables to load
       flag_only_list_files=1;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'nowildcard'), % load only specified names
       flag_exact_match=1;  
+    elseif ischar(varargin{j}) && strcmpi(varargin{j},'ifnotinmemory'), % load only specified names
+      forceLoadFromFile=0;  
     elseif ischar(varargin{j})
       if strfind(varargin{j},'__') % variable name specified as input
         dd=regexp(varargin{j}, '__', 'split');
@@ -120,9 +124,9 @@ for j = 1:numel(dirs)
 
     if flag_load_variable,
       try
-        irf_log('dsrc',['caa_load ' var_name]);
-        if flag_read_all && evalin('caller',['exist(''' var_name ''',''var'')']),
-          irf_log('dsrc',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
+        irf_log('dsrc',['loading ' var_name]);
+        if flag_read_all && ~forceLoadFromFile && evalin('caller',['exist(''' var_name ''',''var'')']),
+			irf_log('dsrc',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
         else
           if flag_read_all,
             evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
