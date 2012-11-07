@@ -119,7 +119,17 @@ switch lower(action)
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
 	case 'list_irf'
-		eval('!ssh hq.irfu.se ls /usr/home/www/space/TT');
+		s=urlread('http://www.space.irfu.se/TT/');
+		A = strread(s, '%s', 'delimiter', sprintf('\n'));
+		A(1:10)=[];
+		A(end-2:end)=[];
+		for i=1:numel(A),
+			A{i}(1:49)=[];
+			ii=strfind(A{i},'"');
+			A{i}(ii:end)=[];
+		end
+		disp(A)
+%		eval('!ssh hq.irfu.se ls /usr/home/www/space/TT');
 	case 'import_ascii'
 		if exist('filename','var') % read from file
 			out=readasciiTT(filename);
