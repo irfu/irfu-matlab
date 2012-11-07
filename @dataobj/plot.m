@@ -347,8 +347,8 @@ elseif flag_spectrogram
       if ischar(dep_x{d}.DELTA_PLUS)
         deltaplus= getv(dobj,dep_x{d}.DELTA_PLUS);
         deltaminus= getv(dobj,dep_x{d}.DELTA_MINUS);
-        dep_x{d}.df.plus=deltaplus.data(1,:);
-        dep_x{d}.df.minus=deltaminus.data(1,:);
+        dep_x{d}.df.plus=deltaplus.data;
+        dep_x{d}.df.minus=deltaminus.data;
       end
     else dep_x{d}.df=[];
     end
@@ -378,7 +378,7 @@ elseif flag_spectrogram
       sum_dim, dep_x{sum_dim}.lab)
   end
   
-  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data(1,:),'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
+  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
   if isfield(dep,'dt'),
     specrec.dt=dep.dt;
   end
@@ -409,7 +409,7 @@ elseif flag_spectrogram
   
   
   if ydim > 1
-    specrec.f = dep_x{ydim}.data(1,:);
+    specrec.f = dep_x{ydim}.data;
     specrec.f_unit = dep_x{ydim}.units;
     specrec.df = dep_x{ydim}.df;
   end
@@ -417,14 +417,14 @@ elseif flag_spectrogram
   % special case for degrees
   ytick = [];
   if strcmpi(dep_x{ydim}.units,'degrees') || strcmpi(dep_x{ydim}.units,'deg')
-    frange = abs(max(specrec.f)-min(specrec.f));
+    frange = abs(max(specrec.f(:))-min(specrec.f(:)));
     if frange > 80 && frange <=150, da = 15;
     elseif frange > 150 && frange <=200, da = 45;
     elseif frange > 200 && frange <=380, da = 90;
     else da = [];
     end
     if ~isempty(da)
-      ytick = round(min(specrec.f)/da):round(max(specrec.f)/da);
+      ytick = round(min(specrec.f(:))/da):round(max(specrec.f(:))/da);
       ytick = ytick*da;
     end
   end
