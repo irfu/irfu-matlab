@@ -43,9 +43,8 @@ function out=irf_tt(varargin)
 %		irf_tt(tt,'write_IRF','new_id'); % write time table tt to brain.irfu.se with new id 'new_id'
 %		% read Cluster Master Science Plan
 %		msp=irf_tt('read_www','http://jsoc1.bnsc.rl.ac.uk/msp/full_msp_ascii.lst');
-
+%
 % $Id$
-% $Revision$  $Date$
 
 %% Check inputs
 
@@ -104,11 +103,8 @@ switch lower(action)
 			fclose(fid);
 		end
 	case 'read_irf'
-		remoteFile=['brain.irfu.se:/share/Cluster/TT/' tt_id];
-		tempFile=tempname;
-		eval(['!scp ' remoteFile ' ' tempFile]);
-		out=irf_tt('import_ASCII',tempFile);
-		delete(tempFile);
+        tempTT=urlread(['http://www.space.irfu.se/TT/' tt_id]);
+		out=tt_from_ascii(tempTT);
 	case 'read_amda'
 		httpLink=['http://cdpp-amda.cesr.fr/DDHTML/SHARED/' tt_id '.txt'];
 		tempTT=urlread(httpLink);
@@ -117,13 +113,13 @@ switch lower(action)
 		tempTT=urlread(tt_id);
 		out=tt_from_ascii(tempTT);
 	case 'write_irf'
-		remoteFile=['brain.irfu.se:/share/Cluster/TT/' tt_id];
+		remoteFile=['hq.irfu.se:/usr/home/www/space/TT/' tt_id];
 		tempFile=tempname;
 		irf_tt(tt,'export_ASCII',tempFile);
 		eval(['!scp ' tempFile ' ' remoteFile]);
 		delete(tempFile);
 	case 'list_irf'
-		eval('!ssh brain.irfu.se ls /share/Cluster/TT');
+		eval('!ssh hq.irfu.se ls /usr/home/www/space/TT');
 	case 'import_ascii'
 		if exist('filename','var') % read from file
 			out=readasciiTT(filename);
