@@ -552,6 +552,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
     c=zeros(1,number_of_subplots);
     if strcmpi(flag,'newfigure'), % if to open new figure
+		figure;
         set(gcf,'color','white'); % white background for figures (default is grey)
         set(gcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
         set(gcf,'PaperUnits','centimeters');
