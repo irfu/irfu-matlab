@@ -165,15 +165,21 @@ for comp=1:min(length(h),ncomp)
 		ff=fnew;
 	else                   % if frequency steps are given
 		if isstruct(specrec.df)                % if df is structure df.plus and df.minus should be specified
-			if min(size(specrec.df.plus))==1,       % if df.plus is vector or scalar
+			if numel(specrec.df.plus)==1,           % if df.plus is scalar
+				dfplus=double(specrec.df.plus);   %    assign it
+			elseif min(size(specrec.df.plus))==1,   % if df.plus is vector 
 				dfplus=double(specrec.df.plus(:))'; %    make df.plus row vector
+				dfplus=repmat(dfplus,size(ff,1),1); %    replicate to size of ff
 			else                                    % if df.plus is matrix
 				dfplus=double(specrec.df.plus);     %    assign it
 			end
-			if min(size(specrec.df.minus))==1,      % if df.minus is vector or scalar
+			if numel(specrec.df.minus)==1,          % if df.minus is scalar
+				dfminus=double(specrec.df.minus); %    assign it
+			elseif min(size(specrec.df.minus))==1,  % if df.minus is vector
 				dfminus=double(specrec.df.minus(:))';%    make df.minus row vector
+				dfminus=repmat(dfminus,size(ff,1),1);%    replicate to size of ff
 			else                                    % if df.minus is matrix
-				dfminus=double(specrec.df.minus);    %    assign it
+				dfminus=double(specrec.df.minus);   %     assign it
 			end
 		else
 			if min(size(specrec.df))==1,       % if df is vector or scalar
