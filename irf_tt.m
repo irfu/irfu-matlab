@@ -237,7 +237,7 @@ for iTtAscii=1:numel(ttAscii{1})
 			description=[description sprintf('\n') linetext{1}{1}];
 		end
 	else % assume number in iso format
-		timeInterval=regexp(str,'^\s*(?<start>[\d-]*T[\d:\.]*Z?)\s*(?<end>[\d-]*T[\d:\.]*Z?)\s?(.*)','names');
+		timeInterval=regexp(str,'^\s*(?<start>[\d-]*T[\d:\.]*Z?)\s*(?<end>[\d-]*T[\d:\.]*Z?)\s?(?<comment>.*)','names');
 		if ~isempty(timeInterval) && isfield(timeInterval,'start') && isfield(timeInterval,'end')
 			nTimeInterval=nTimeInterval+1;
 			out.start(nTimeInterval)		= irf_time(timeInterval.start,'iso2epoch');
