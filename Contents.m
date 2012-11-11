@@ -34,7 +34,7 @@
 %   irf_shue_mp     - estimate distance to model magnetopause (Shue)
 %   irf_units       - natural constants and units 
 %   irf_vht         - estimate velocity of the deHoffman-Teller frame
-%   lp_...          - Langmuir probe specific routines 
+%   lp.             - package with Langmuir probe specific routines 
 %
 % Plotting
 %   irf_plot        - Flexible plotting routine for time series & CAA variables
