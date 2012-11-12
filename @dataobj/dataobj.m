@@ -160,7 +160,12 @@ switch action
 			dobj.VariableAttributes = info.VariableAttributes;
 			dobj.GlobalAttributes = info.GlobalAttributes;
 			dobj.Variables = info.Variables;
-			nvars = size(info.Variables,1);
+			% test if there are some data
+			if ~any(strcmpi(info.Variables(:,4),'epoch')==1),
+				nvars=0; % no time variable, return nothing
+			else
+				nvars = size(info.Variables,1);
+			end
 			dobj.vars = cell(nvars,2);
 			if nvars>0
 				dobj.vars(:,1) = info.Variables(:,1);
