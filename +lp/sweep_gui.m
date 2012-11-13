@@ -1,7 +1,7 @@
 function sweep_gui(action)
-%LP_SWEEP_GUI interactively work with sweeps
+%LP.SWEEP_GUI interactively work with sweeps
 %
-% LP_SWEEP
+% LP.SWEEP_GUI
 %
 % You can access the results from the figures data 'userdata'.
 % data=get(gcf,'userdata');ud=data.ud

@@ -1,4 +1,6 @@
 function [j_thermal] = thermal_current( p_type, N, T, m, V, Z, U, A )
+% LP.THERMAL_CURRENT calculates thermal current to Langmuir probe
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % function [j_thermal] = lp.thermal_current( p_type, N, T, m, V, Z, U, A )
 %
 %   Matlab function that calculates the thermal probe current to/from 

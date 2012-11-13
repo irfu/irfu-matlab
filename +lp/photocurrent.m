@@ -1,7 +1,7 @@
 function [j_photo] = photocurrent( X_area, U_pot, R_sun ,flag)
-% LP_PHOTOCURRENT Langmuir probe photocurrent for different materials
+% LP.PHOTOCURRENT Langmuir probe photocurrent for different materials
 %
-% j_photo = LP_PHOTOCURRENT( X_area, U_pot, R_sun )
+% j_photo = LP.PHOTOCURRENT( X_area, U_pot, R_sun )
 %
 %   Calculates the photo-current emitted by an arbitrary body with 
 %   cross section area, X_area [m^2], at a distance R_sun [AU]
@@ -11,7 +11,7 @@ function [j_photo] = photocurrent( X_area, U_pot, R_sun ,flag)
 %   X_area  - scalar
 %   U_pot   - scalar or vector or matrix
 %
-% j_photo = LP_PHOTOCURRENT( X_area, U_pot, R_sun, surface_material )
+% j_photo = LP.PHOTOCURRENT( X_area, U_pot, R_sun, surface_material )
 %       returns photo current for specified material
 % 
 %   some of implemented surface materials

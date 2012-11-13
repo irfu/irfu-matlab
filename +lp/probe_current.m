@@ -1,6 +1,6 @@
 function [J_probe, J_photo, J_plasma]=probe_current(probe,U_probe,R_sun,UV_factor,plasma)
-% LP_PROBE_CURRENT calculate current to the probe
-% J_probe=LP_PROBE_CURRENT(probe,U_probe,R_sun,UV_factor,plasma)
+% LP.PROBE_CURRENT calculate current to the probe
+% J_probe=LP.PROBE_CURRENT(probe,U_probe,R_sun,UV_factor,plasma)
 %
 %   Calculates the total probe current to/from 
 %   a cylindrical or spherical Langmuir probe.
@@ -20,11 +20,11 @@ function [J_probe, J_photo, J_plasma]=probe_current(probe,U_probe,R_sun,UV_facto
 %    plasma.T - temperature [eV]
 %    plasma.vsc - velocity of probe wrt. mmedia [m/s]
 %
-% [J_probe, J_photo, J_plasma]=LP_PROBE_CURRENT
+% [J_probe, J_photo, J_plasma]=LP.PROBE_CURRENT
 %   Return current contributions from photoeletrons and all
 %   the plasma components
 %
-% See also: LP_PHOTOCURRENT, LP_THERMAL_CURRENT
+% See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
 Units=irf_units;
 
