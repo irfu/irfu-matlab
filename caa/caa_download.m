@@ -1,4 +1,4 @@
-function download_status=caa_download(tint,dataset,flags)
+function download_status=caa_download(tint,dataset,varargin)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -8,7 +8,7 @@ function download_status=caa_download(tint,dataset,flags)
 %       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
 %
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
-%       CAA_DOWNLOAD(tint,dataset,'nowildcard') - downloads dataset exactly matching 'dataset'
+%       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
 %
 %       CAA_DOWNLOAD(tint,'list') - inventory of all datasets available 
 %       CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
@@ -24,6 +24,12 @@ function download_status=caa_download(tint,dataset,flags)
 %   tint   - time interval in epoch  [tint_start tint_stop]
 %            or in ISO format, ex. '2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z'
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
+%
+% Input flags
+%   'file_interval'- see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
+%   'nowildcard'  - download the dataset without any expansion in the name and not checking if data are there
+%   'overwrite'   - overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
+%   'schedule'    - schedule the download, check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -68,10 +74,8 @@ function download_status=caa_download(tint,dataset,flags)
 %   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
-% input 'flags' is in test phase
-%   'test' - use caa test server instead
-%   'nowildcard' - download the dataset without any expansion in the name and not checking if data are there
-%   'overwrite' - overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
+% Test flags
+%   'test'        - use caa test server instead
 %                 maybe this behavikour should be default
 % $Id$
 
@@ -91,16 +95,20 @@ load -mat .caa caa
 % caa.status - status ('submitted','downloaded','finnished')
 % caa.timeofrequest - in matlab time units
 
-%% default flags
-flag_check_status_of_downloads=0;
-flag_download_data=1;
-flag_test=0; % do not use caa_test_query
-flag_wildcard=1; % default is to use wildcard
-flag_check_if_there_is_data=1; % check if there are any at caa
-nonotify='&nonotify=1'; % default is not notify by email
-
+%% Defaults
+checkDownloadsStatus=0;
+%flag_download_data=1;
+flag_wildcard     =1;                     % default is to use wildcard
+flag_check_if_there_is_data=1;            % check if there are any at caa
+urlNonotify='&nonotify=1';                % default is not notify by email
+urlFileInterval='&file_interval=72hours'; % default time interval of returned files
+urlSchedule='';                           % default do not have schedule option
+urlFormat='&format=cdf';                  % default is CDF (3.3) format
+caaServer='http://caa.estec.esa.int/'; % default server
+urlIdentity='?uname=vaivads&pwd=caa';     % default identity
+urlInventory='';                          % default no inventory output
 %% check input
-if nargin==0, flag_check_status_of_downloads=1; end
+if nargin==0, checkDownloadsStatus=1; end
 if nargin==1, % check if argument is not caa zip file link
 	if ischar(tint)
 		if strcmp(tint(end-2:end),'zip') % download data zip file
@@ -111,7 +119,7 @@ if nargin==1, % check if argument is not caa zip file link
 			caa{j}.zip=tint;
 			caa{j}.status='submitted';
 			caa{j}.timeofrequest=now;
-			flag_check_status_of_downloads=1;
+			checkDownloadsStatus=1;
 		else	% list or inventory ingested data, no time interval specified
 			dataset=tint;
 			tint=[];
@@ -122,16 +130,31 @@ if nargin==1, % check if argument is not caa zip file link
 end
 %% check input for additional parameters like 'test', 'nowildcard'
 
-if nargin==3 && strcmpi(flags,'test'),
-	flag_test=1;
-	nonotify=''; % notify also by email
-elseif nargin==3 && strcmpi(flags,'nowildcard'),
-	flag_wildcard=0;
-	flag_check_if_there_is_data=0;
-	nonotify='&nonotify=1';
+if nargin>2, % there are additional flags
+	for iFlag=1:numel(varargin)
+		flag=varargin{iFlag};
+		if strcmpi(flag,'test'),  % use test server
+			caaServer='http://caa5.estec.esa.int/caa_query/';
+			urlNonotify='';           % notify also by email
+		elseif strcmpi(flag,'nowildcard'), 
+			flag_wildcard=0;
+			flag_check_if_there_is_data=0;
+			urlNonotify='&nonotify=1';
+		elseif any(strfind(flag,'file_interval'))
+			urlFileInterval = urlparameter(flag);
+		elseif any(strcmpi('schedule',flag))
+			urlSchedule = '&schedule=1';
+		elseif any(strcmpi('inventory',flag))
+			urlSchedule = '&inventory=1';
+		else
+			irf_log('fcal',['Flag ''' flag ''' not recognized']);
+		end
+	end
 end
+caaQuery=[caaServer 'caa_query/']; 
+caaInventory=[caaServer 'inventory/'];
 %% Check status of downloads if needed
-if flag_check_status_of_downloads,    % check/show status of downloads
+if checkDownloadsStatus,    % check/show status of downloads
 	disp('=== status of jobs (saved in file .caa) ====');
 	if ~isempty(caa),
 		for j=1:length(caa), % go through jobs
@@ -151,6 +174,8 @@ if flag_check_status_of_downloads,    % check/show status of downloads
 			disp(['=== Checking status of job nr: ' num2str(j) '==='])
 			temp_file=tempname;
 			[f,status]=urlwrite(caa{j}.zip,temp_file);
+			irf_log('dsrc',['Downloading: ' caa{j}.zip]);
+			irf_log('dsrc',['into ->' temp_file]);
 			if status == 0,
 				disp(['STILL WAITING TO FINISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
 				if now-caa{j}.timeofrequest>1, % waiting more than 1 day
@@ -161,7 +186,11 @@ if flag_check_status_of_downloads,    % check/show status of downloads
 				end
 			else
 				filelist=unzip(temp_file);
-				move_to_caa_directory(filelist);
+				if isempty(filelist)
+					irf_log('dsrc','Returned zip file is empty');
+				else
+					move_to_caa_directory(filelist);
+				end
 				delete(f);
 				caa{j}.status='FINISHED';
 				save -mat .caa caa; % changes in caa saved
@@ -210,17 +239,13 @@ if strfind(dataset,'list'),     % list  files
 	end
 	if isempty(tint) % work on all datasets
 		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
-			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1&desc=1'];
+			url_line_list=[caaQuery urlIdentity '&dataset_id=' filter '&dataset_list=1&desc=1'];
 		else							% do not get description
-			url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' filter '&dataset_list=1'];
+			url_line_list=[caaQuery urlIdentity '&dataset_id=' filter '&dataset_list=1'];
 		end
 	else
-		url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' filter '&time_range=' tintiso ];
+		url_line_list=[caaInventory urlIdentity '&dataset_id=' filter '&time_range=' tintiso ];
 	end
-	%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%        filter '&time_range=' tintiso '&format=cdf&list=1'];
-	%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%        filter '&time_range=' tintiso '&format=cdf&list=1'];
 	disp('Be patient! Contacting CAA...');
 	disp(url_line_list);
 	caalog=urlread(url_line_list);
@@ -267,19 +292,8 @@ if flag_check_if_there_is_data
 	end
 end
 
-if flag_test,
-	url_line=['http://caa5.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-		dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours' nonotify];
-	%        url_line=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%            dataset '&time_range=' tintiso '&format=cdf&schedule=1&file_interval=72hours'];
-else
-	url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-		dataset '&time_range=' tintiso '&format=cdf2.7&file_interval=72hours' nonotify];
-	% temporaly commented out because by default caa returns cdf 3.3.1 format, but matlab does
-	% not support CDFEPOCH16 in that format
-	%        url_line=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%            dataset '&time_range=' tintiso '&format=cdf&file_interval=72hours' nonotify];
-end
+url_line=[caaQuery urlIdentity '&dataset_id=' ...
+		dataset '&time_range=' tintiso urlFormat urlFileInterval urlNonotify urlSchedule];
 
 disp('Be patient! Submitting data request to CAA...');
 disp(url_line);
@@ -341,3 +355,9 @@ for jj=1:length(filelist),
 end
 %disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
 rmdir(filelist{jj}(1:ii(1)),'s');
+function paramOut=urlparameter(paramIn)
+if paramIn(1)~= '&'
+	paramOut=['&' paramIn];
+else
+	paramOut=paramIn;
+end;
