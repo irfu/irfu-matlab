@@ -16,47 +16,20 @@ function dobj = dataobj(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-persistent flag_using_nasa_patch_cdfread
+persistent testedUsingNasaPatchCdf
 
-if isempty(flag_using_nasa_patch_cdfread) % check which cdfread is used, NASA may give errors
-	flag_using_nasa_patch_cdfread=0; % assuming as default that matlab cdfread is used
-	fid=fopen(which('cdfread'));
-	while 1
-		tline = fgetl(fid);
-		if ~ischar(tline), break, end
-		if strfind(tline,'Mike Liu')
-			fprintf('\n\n\n');
-			disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-			disp(' You are using NASA cdfread patch!')
-			disp(' This may give errors reading in multidimensional data sets!')
-			disp(' Also option ''tint'' in routine databoj is disabled.');
-			disp(' We suggest you to use the MATLAB cdfread!');
-			disp(' To use MATLAB cdfread please remove path to NASA cdfread patch.');
-			disp(' You can execute and then continue:');
-			a=which('cdfread');
-			ai=strfind(a,'/');
-			disp(['> rmpath ' a(1:ai(end))]);
-			disp('> clear databoj');
-			disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-			fprintf('\n\n\n');
-			flag_using_nasa_patch_cdfread=1;
-			break;
-		end
-	end
-	fclose(fid);
+if isempty(testedUsingNasaPatchCdf), % check only once if using NASA cdf
+	check_if_using_nasa_patch_cdf;   % stop with error if using NASA cdf
+	testedUsingNasaPatchCdf=1;
 end
-
-flag_read_all_data=1; % default read all data
+shouldReadAllData= 1; % default read all data
+noDataReturned   = 0; % default expects data to be returned
 if nargin==0, action='create_default_object'; end
 if nargin==1, action='read_data_from_file'; end
 if nargin==3 && ...
 		ischar(varargin{2}) && strcmp(varargin{2},'tint') && ...
 		isnumeric(varargin{3}) && (length(varargin{3})==2),
 	tint=varargin{3};
-	if ~flag_using_nasa_patch_cdfread,
-		irf_log('fcal',['returnig time interval limited data!' irf_time(tint,'tint2iso')])
-		flag_read_all_data=0;
-	end
 	action='read_data_from_file';
 end
 switch action
@@ -120,7 +93,7 @@ switch action
 			%% read in file
 			if flag_using_cdfepoch16,
 				irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
-				flag_read_all_data=1; % read all data
+				shouldReadAllData=1; % read all data
 				info = cdflib.inquire(cdfid);
 				vars=cell(info.numVars-1,1);
 				vars_i16 = ones(size(1:info.numVars)); % array indicating which of the variables are EPOCH16
@@ -150,7 +123,7 @@ switch action
 					'CombineRecords',true);
 			end
 			cdflib.close(cdfid);
-			if flag_read_all_data==0, % check which records to return later
+			if ~shouldReadAllData, % check which records to return later
 				info=cdfinfo(cdf_file);
 				timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
 				timeline = irf_time(cdfread(cdf_file,'Variable',{timevar},'ConvertEpochToDatenum',true,'CombineRecords',true),'date2epoch');
@@ -162,15 +135,16 @@ switch action
 			dobj.Variables = info.Variables;
 			% test if there are some data
 			if ~any(strcmpi(info.Variables(:,4),'epoch')==1),
-				nvars=0; % no time variable, return nothing
+				nVariables=0; % no time variable, return nothing
+				irf_log('dsrc','CDF FILE IS EMPTY!')
 			else
-				nvars = size(info.Variables,1);
+				nVariables = size(info.Variables,1);
 			end
-			dobj.vars = cell(nvars,2);
-			if nvars>0
+			dobj.vars = cell(nVariables,2);
+			if nVariables>0
 				dobj.vars(:,1) = info.Variables(:,1);
 				dobj.vars(:,2) = info.Variables(:,1);
-				for v=1:nvars
+				for v=1:nVariables
 					% Replace minuses with underscores
 					dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
 					% Remove training dots
@@ -192,7 +166,7 @@ switch action
 						disp(['orig var : ' dobj.vars{v,2}])
 						disp(['new var  : ' dobj.vars{v,1}])
 					end
-					if flag_read_all_data, % return all data
+					if shouldReadAllData, % return all data
 						dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
 						dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
 					else
@@ -208,6 +182,11 @@ switch action
 						end
 						dobj.data.(dobj.vars{v,1}).data = data_records_within_interval;
 						dobj.data.(dobj.vars{v,1}).nrec = numel(records_within_interval);
+						if numel(records_within_interval)==0,
+							irf_log('dsrc','No data within specified time interval');
+							noDataReturned=1;
+							break;
+						end
 					end
 					dobj.data.(dobj.vars{v,1}).dim = info.Variables{v,2};
 					dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
@@ -215,13 +194,20 @@ switch action
 					dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
 					%Convert to isdat epoch
 					if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
-						convert_cdfepoch_to_isdat_epoch % update all the structure fields necessary when doing conversion
+						if numel(dobj.data.(dobj.vars{v,1}).data)==1 && dobj.data.(dobj.vars{v,1}).data == 1,
+							irf_log('dsrc','CDF FILE IS EMPTY!')
+							noDataReturned=1;
+						else
+							convert_cdfepoch_to_isdat_epoch % update all the structure fields necessary when doing conversion
+						end
 					elseif strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
 						dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
 					end
 				end
-			else
+			end
+			if noDataReturned
 				dobj.data = [];
+				irf_log('dsrc','No data returned!')
 			end
 			dobj = class(dobj,'dataobj');
 		else
@@ -233,10 +219,10 @@ end
 
 	function convert_cdfepoch_to_isdat_epoch() % nested function
 		dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'date2epoch');
-		isFieldUnits=isfield(dobj.VariableAttributes,'UNITS');
-		isFieldSIConversion=isfield(dobj.VariableAttributes,'SI_CONVERSION');
-		isFieldDeltaPlus=isfield(dobj.VariableAttributes,'DELTA_PLUS');
-		isFieldDeltaMinus=isfield(dobj.VariableAttributes,'DELTA_MINUS');
+		isFieldUnits        = isfield(dobj.VariableAttributes,'UNITS');
+		isFieldSIConversion = isfield(dobj.VariableAttributes,'SI_CONVERSION');
+		isFieldDeltaPlus    = isfield(dobj.VariableAttributes,'DELTA_PLUS');
+		isFieldDeltaMinus   = isfield(dobj.VariableAttributes,'DELTA_MINUS');
 		if isFieldUnits,
 			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.UNITS(:,1))==1);
 			if iattr, dobj.VariableAttributes.UNITS(iattr,2)={'s'};end % change from ms to s UNITS of epoch if present
@@ -257,6 +243,31 @@ end
 				dobj.VariableAttributes.DELTA_MINUS{iattr,2}=dobj.VariableAttributes.DELTA_MINUS{iattr,2}/1000;
 			end
 		end
+	end
+	function check_if_using_nasa_patch_cdf
+		fid=fopen(which('cdfread'));
+		while 1
+			tline = fgetl(fid);
+			if ~ischar(tline), break, end
+			if strfind(tline,'Mike Liu')
+				fprintf('\n\n\n');
+				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+				disp(' You are using NASA cdfread patch which we do not support!')
+				disp(' This may give errors reading in multidimensional data sets!')
+				disp(' Also option ''tint'' in routine databoj is disabled.');
+				disp(' We suggest you to use the MATLAB cdfread!');
+				disp(' To use MATLAB cdfread please remove path to NASA cdfread patch.');
+				disp(' You can execute and then continue:');
+				a=which('cdfread');
+				ai=strfind(a,'/');
+				disp(['> rmpath ' a(1:ai(end))]);
+				disp('> clear databoj');
+				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+				fprintf('\n\n\n');
+				error('Using NASA cdf is not supported!');
+			end
+		end
+		fclose(fid);
 	end
 
 end % end of main functions
