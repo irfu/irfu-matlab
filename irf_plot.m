@@ -545,14 +545,13 @@ function c=initialize_figure(number_of_subplots,flag)
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
     flag='newfigure';
-elseif isempty(get(gcf,'children')) % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
+elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
 	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
 if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
     c=zeros(1,number_of_subplots);
     if strcmpi(flag,'newfigure'), % if to open new figure
-		figure;
         set(gcf,'color','white'); % white background for figures (default is grey)
         set(gcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
         set(gcf,'PaperUnits','centimeters');
