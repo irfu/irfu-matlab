@@ -138,6 +138,7 @@ for j=1:length(varargin),
   end
 end
 if jloaded==0, % nothing is loaded, return empty
+  irf_log('load','Nothing is loaded')
   res=[];resdataobject=[];resmat=[];resunit=[];
 elseif jloaded ==1, % return variables and not cell arrays
   res=res{1};
