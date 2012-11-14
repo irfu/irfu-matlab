@@ -32,6 +32,6 @@ for iDataSet=1:numel(dataSetArray)
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
 	eval(['index_' dataSet '=index;']);
-	save('caa',['index_' datSet],'-append');
+	save('caa',['index_' dataSet],'-append');
 end
 
