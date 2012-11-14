@@ -8,7 +8,7 @@ function c=irf_plot(varargin)
 %      - string defining variable (can be CAA variable)
 %      - number (initialize figure with so many subplots)
 %
-% C=IRF_PLOT(..) return handle to axes of plots into C
+% H=IRF_PLOT(..) return handle to axes of plots into C
 % 
 % IRF_PLOT(H,X,..) plot into axes handle H
 %
@@ -28,7 +28,10 @@ function c=irf_plot(varargin)
 %
 % IRF_PLOT(CAA_variable,..) can have all arguments as DATAOBJ/PLOT
 %
-% IRF_PLOT(number)	reset figure to 'number' subplots 
+% H=IRF_PLOT(number)	reset current figure to 'number' subplots
+%						keep figure properties, return handle vector to subplots 
+% IRF_PLOT(number,'reset') reset current figure 
+%						but update default properties except figure size
 % IRF_PLOT(number,'newfigure') initialize new figure with 'number' of subplots 
 %
 % Examples:
@@ -70,15 +73,17 @@ end
 % Check if single number argument, then use syntax IRF_PLOT(number)
 if isnumeric(x),    
     if numel(x)==1, % only one number
-        if x>=1 && x<=20,
+		if x>=1 && x<=20,
 			% check if there is 'newfigure' argument
 			if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
-	            c=initialize_figure(x,'newfigure');
+				c=initialize_figure(x,'newfigure');
+			elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
+				c=initialize_figure(x,'reset');
 			else
-	            c=initialize_figure(x);
+				c=initialize_figure(x);
 			end
-        else
-            disp('Only 1-20 number of subplots supported.;)');
+		else
+			disp('Only 1-20 number of subplots supported.;)');
 		end
 		if nargout==0, clear c; end % if no output required do not return anything
         return
@@ -545,14 +550,27 @@ function c=initialize_figure(number_of_subplots,flag)
 if nargin==1, flag='';end
 if isempty(get(0,'CurrentFigure')) % no current figures opened
     flag='newfigure';
-elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
+elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') && ~strcmpi(flag,'reset') % current figure is empty, display warning of new syntax (REMOVE THIS ELSE LOOP IN 2013)
 	disp('WARNING! use syntax irf_plot(number_of_subplots,''newfigure'') if you want new figure.')
 end
 if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
     c=zeros(1,number_of_subplots);
-    if strcmpi(flag,'newfigure'), % if to open new figure
-        set(gcf,'color','white'); % white background for figures (default is grey)
+	if strcmpi(flag,'newfigure'), % if to open new figure
+		xSize = 11;
+		ySize = 5+5*sqrt(number_of_subplots);
+		xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+		set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+		un=get(0,'units');
+		set(0,'units','pixels');
+		sz=get(0,'screensize');
+		xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
+		set(gcf,'Position',[10 10 xSize*xx ySize*xx])
+		set(0,'units',un);
+		clear xSize sLeft ySize yTop
+	end
+	if strcmpi(flag,'newfigure') || strcmpi(flag,'reset') 
+		set(gcf,'color','white'); % white background for figures (default is grey)
         set(gcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
         set(gcf,'PaperUnits','centimeters');
         set(gcf,'defaultlinelinewidth',1.0);
@@ -561,19 +579,7 @@ if number_of_subplots>=1 && number_of_subplots<=20,
         set(gcf,'defaultAxesFontUnits','pixels');
         set(gcf,'defaultTextFontUnits','pixels');
         set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
-        
-        xSize = 11;
-        ySize = 5+5*sqrt(number_of_subplots);
-        xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-        set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-        un=get(0,'units');
-        set(0,'units','pixels');
-        sz=get(0,'screensize'); 
-        xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
-        set(gcf,'Position',[10 10 xSize*xx ySize*xx])
-        set(0,'units',un);
-        clear xSize sLeft ySize yTop
-    end
+	end
     clf;
     all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
     subplot_width=all_axis_position(3)-all_axis_position(1);
