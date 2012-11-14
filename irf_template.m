@@ -13,13 +13,13 @@ function out=irf_template(varargin)
 %
 % 	See also IRF_FUNCTION_A, IRF_FUNCTION_B.
 %
+% $Id$
+
+%- (The line above is needed for CVS, keep it! REMOVE THIS LINE!!)
 %-----------------------------------------
 %- This is a template function that shows how the help should be formatted
 %- When writing the code please follow guidelines in http://www.datatool.com/prod02.htm
 %- Remove all lines from this help starting with '-' in your code
 %-----------------------------------------
 
-%- (Do not touch lines below, they are filled automatically, REMOVE THIS LINE)
-% $Id$
-% $Revision$  $Date$
 
