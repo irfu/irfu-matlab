@@ -354,7 +354,7 @@ end
 			ii=strfind(filelist{jj},filesep);
 			isDataSet = ~any(strfind(filelist{jj},'log'));
 			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
-				dataset=filelist{jj}(ii(1)+1:ii(2)-1);
+				dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
 				disp(['Data set: ' dataset '--> CAA/']);
 				if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
 				movefile(filelist{jj},['CAA/' dataset]);
