@@ -41,11 +41,13 @@ function out=c_read(varargin)
 % 
 %	Example:
 %		tint='2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
-%		R1=LOCAL.C_READ_AUX('R1',tint);
-%		DipoleTilt=LOCAL.C_READ_AUX('dipole_tilt__CL_SP_AUX',tint);
+%		R1=local.c_read('R1',tint);
+%		DipoleTilt=local.c_read('dipole_tilt__CL_SP_AUX',tint);
 %
 % to update file index run LOCA.C_UPDATE
 %
+% $Id$
+
 persistent index % to make fast access read only once
 
 cd('/data/caa/CAA');
@@ -141,9 +143,4 @@ end
 	end
 end
 
-
-
-
-% $Id$
-% $Revision$  $Date$
 
