@@ -22,8 +22,8 @@ for iDataSet=1:numel(dataSetArray)
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
 	%% read in file time intervals
-	listFilesNames=vertcat(listFiles.name);
-	tmp=[listFilesNames listFilesNames(:,end)]; % add one more column at the end
+	listFileNames=vertcat(listFiles.name);
+	tmp=[listFileNames listFileNames(:,end)]; % add one more column at the end
 	tmp(:,end)='=';       % changfe end column to character = (used as separator)
 	tmp=tmp';
 	tt=textscan(tmp(:),'%*11s%4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
