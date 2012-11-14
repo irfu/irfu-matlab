@@ -22,13 +22,13 @@ for iDataSet=1:numel(dataSetArray)
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
 	%% read in file time intervals
-	tmp=vertcat(listFiles.name);
-	listFilesNames=[tmp tmp(:,end)]; % add one more column at the end
-	listFilesNames(:,end)='=';       % changfe end column to character = (used as separator)
-	listFilesNames=listFilesNames';
-	tt=textscan(listFilesNames(:),'%*11s%4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
+	listFilesNames=vertcat(listFiles.name);
+	tmp=[listFilesNames listFilesNames(:,end)]; % add one more column at the end
+	tmp(:,end)='=';       % changfe end column to character = (used as separator)
+	tmp=tmp';
+	tt=textscan(tmp(:),'%*11s%4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
 	%% create index
-	index.filename=[repmat([dataSet filesep],size(f,1),1) f];
+	index.filename=[repmat([dataSet filesep],numel(listFiles),1) listFileNames];
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
 	eval(['index_' dataSet '=index;']);
