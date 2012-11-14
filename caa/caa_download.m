@@ -10,7 +10,7 @@ function download_status=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
 %
-%       CAA_DOWNLOAD(tint,'list') - inventory of all datasets available 
+%       CAA_DOWNLOAD(tint,'list') - inventory of all datasets available
 %       CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
 %
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download
@@ -106,7 +106,7 @@ urlSchedule='';                           % default do not have schedule option
 urlFormat='&format=cdf';                  % default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/'; % default server
 urlIdentity='?uname=vaivads&pwd=caa';     % default identity
-urlInventory='';                          % default no inventory output
+%urlInventory='';                          % default no inventory output (currently use different www link)
 %% check input
 if nargin==0, checkDownloadsStatus=1; end
 if nargin==1, % check if argument is not caa zip file link
@@ -136,7 +136,7 @@ if nargin>2, % there are additional flags
 		if strcmpi(flag,'test'),  % use test server
 			caaServer='http://caa5.estec.esa.int/caa_query/';
 			urlNonotify='';           % notify also by email
-		elseif strcmpi(flag,'nowildcard'), 
+		elseif strcmpi(flag,'nowildcard'),
 			flag_wildcard=0;
 			flag_check_if_there_is_data=0;
 			urlNonotify='&nonotify=1';
@@ -151,8 +151,8 @@ if nargin>2, % there are additional flags
 		end
 	end
 end
-caaQuery=[caaServer 'caa_query/']; 
-caaInventory=[caaServer 'inventory/'];
+caaQuery=[caaServer 'caa_query/'];
+caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
 if checkDownloadsStatus,    % check/show status of downloads
 	disp('=== status of jobs (saved in file .caa) ====');
@@ -173,10 +173,11 @@ if checkDownloadsStatus,    % check/show status of downloads
 		elseif strcmpi(caa{j}.status,'submitted'),
 			disp(['=== Checking status of job nr: ' num2str(j) '==='])
 			temp_file=tempname;
-			[f,status]=urlwrite(caa{j}.zip,temp_file);
-			irf_log('dsrc',['Downloading: ' caa{j}.zip]);
-			irf_log('dsrc',['into ->' temp_file]);
-			if status == 0,
+			isJobFinished=get_zip_file(caa{j}.zip,temp_file);
+			if isJobFinished, %
+				caa{j}.status='FINISHED';
+				save -mat .caa caa; % changes in caa saved
+			else % job not finished
 				disp(['STILL WAITING TO FINISH, submitted ' num2str((now-caa{j}.timeofrequest)*24*60,3) 'min ago.']);
 				if now-caa{j}.timeofrequest>1, % waiting more than 1 day
 					y=input('Waiting more than 24h. Delete from list? y/n :','s');
@@ -184,16 +185,6 @@ if checkDownloadsStatus,    % check/show status of downloads
 						j_remove_jobs(j)=1;
 					end
 				end
-			else
-				filelist=unzip(temp_file);
-				if isempty(filelist)
-					irf_log('dsrc','Returned zip file is empty');
-				else
-					move_to_caa_directory(filelist);
-				end
-				delete(f);
-				caa{j}.status='FINISHED';
-				save -mat .caa caa; % changes in caa saved
 			end
 		else
 			disp('ERROR: Unknown status!')
@@ -253,13 +244,13 @@ if strfind(dataset,'list'),     % list  files
 		A = strread(caalog, '%s', 'delimiter', sprintf('\n')); % cell array with lines
 		B=regexp(A(10:end),'(?<dataset>^[C][-\w]*)\s*(?<tint>\d.*:\d\d)\s*(?<title>.*)\t(?<description>.*)','names');
 		imatch=ones(numel(B),1);
-		for i=1:numel(B), 
-			if isempty(B{i}), imatch(i)=0;end 
+		for i=1:numel(B),
+			if isempty(B{i}), imatch(i)=0;end
 		end;
 		B(imatch==0)=[];
 		list=cell(numel(B),1);
 		values=cell(numel(B),2);
-		for j=1:numel(B), 
+		for j=1:numel(B),
 			list{j}=B{j}.dataset;
 			values{j,1}=B{j}.tint;
 			values{j,2}=B{j}.title;
@@ -293,19 +284,14 @@ if flag_check_if_there_is_data
 end
 
 url_line=[caaQuery urlIdentity '&dataset_id=' ...
-		dataset '&time_range=' tintiso urlFormat urlFileInterval urlNonotify urlSchedule];
+	dataset '&time_range=' tintiso urlFormat urlFileInterval urlNonotify urlSchedule];
 
 disp('Be patient! Submitting data request to CAA...');
 disp(url_line);
 
-temp_file=tempname;
-urlwrite(url_line,temp_file);
-disp(['url response downloaded to file:' temp_file]);
 try
-	filelist=unzip(temp_file);
-	disp('unzipped data files.');
-	move_to_caa_directory(filelist);
-	delete(temp_file);
+	temp_file=tempname;
+	get_zip_file(url_line,temp_file);
 	if nargout==1, download_status=1;end
 catch
 	irf_log('fcal','Could not find zip file with data! ');
@@ -343,21 +329,45 @@ catch
 	end
 end
 
-function move_to_caa_directory(filelist)
-for jj=1:length(filelist),
-	ii=strfind(filelist{jj},filesep);
-	if numel(ii)==2, % dataset files (cdf_convert_summary.log not copied)
-		dataset=filelist{jj}(ii(1)+1:ii(2)-1);
-		disp(['Data set: ' dataset '--> CAA/']);
-		if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
-		movefile(filelist{jj},['CAA/' dataset]);
+	function status=get_zip_file(urlLink,temp_file)
+		[f,isZipFileReady]=urlwrite(urlLink,temp_file);
+		if isZipFileReady, %
+			irf_log('dsrc',['Downloaded: ' urlLink]);
+			irf_log('dsrc',['into ->' temp_file]);
+			tempDirectory=tempname;
+			filelist=unzip(temp_file,tempDirectory);
+			if isempty(filelist)
+				irf_log('dsrc','Returned zip file is empty');
+			else
+				move_to_caa_directory(filelist);
+			end
+			rmdir(tempDirectory,'s');
+			delete(f);
+			status=1;
+		else
+			irf_log('dsrc',['There is no zip file: ' urlLink]);
+			status=0;
+		end			
+	end
+	function move_to_caa_directory(filelist)
+		for jj=1:length(filelist),
+			ii=strfind(filelist{jj},filesep);
+			isDataSet = ~any(strfind(filelist{jj},'log'));
+			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
+				dataset=filelist{jj}(ii(1)+1:ii(2)-1);
+				disp(['Data set: ' dataset '--> CAA/']);
+				if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
+				movefile(filelist{jj},['CAA/' dataset]);
+			end
+		end
+		%disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
+		%rmdir(filelist{jj}(1:ii(1)),'s');
+	end
+	function paramOut=urlparameter(paramIn)
+		if paramIn(1)~= '&'
+			paramOut=['&' paramIn];
+		else
+			paramOut=paramIn;
+		end;
 	end
 end
-%disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
-rmdir(filelist{jj}(1:ii(1)),'s');
-function paramOut=urlparameter(paramIn)
-if paramIn(1)~= '&'
-	paramOut=['&' paramIn];
-else
-	paramOut=paramIn;
-end;
