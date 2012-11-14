@@ -12,7 +12,7 @@ dirCaa='/data/caa/CAA';
 cd(dirCaa);
 tmp=dir(dirCaa);
 iDir = [tmp(:).isdir]; % find directories
-dataSetArray = {d(iDir).name}';
+dataSetArray = {tmp(iDir).name}';
 dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
 
 for iDataSet=1:numel(dataSetArray)
