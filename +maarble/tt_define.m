@@ -45,7 +45,7 @@ c_eval(['tt_C?_in_' ttLabel '.end=RRE?(indend?,1)+tStep/2;'])
 c_eval(['tt_C?_in_' ttLabel '.description=[''' ttTitle '''];']);
 c_eval(['Created time table: ' 'tt_C?_in_' ttLabel ]);
 
-y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no'];  
+y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
 if strcmp(y,'yes'),
 	c_eval(['irf_tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
 end
