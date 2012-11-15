@@ -9,7 +9,7 @@ workDir=tempname;
 mkdir(workDir);
 cd(workDir);
 tintIso='2001-01-01T00:00:00.000Z/2012-01-01T00:00:00.000Z';
-tint=irf_time(tintiso,'iso2tint');
+tint=irf_time(tintIso,'iso2tint');
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
