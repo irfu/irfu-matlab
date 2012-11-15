@@ -43,7 +43,7 @@ c_eval('indend?=find(diff([imaarble?(:)'' 0]) == -1);');
 c_eval(['tt_C?_in_' ttLabel '.start=RRE?(indstart?,1)-tStep/2;'])
 c_eval(['tt_C?_in_' ttLabel '.end=RRE?(indend?,1)+tStep/2;'])
 c_eval(['tt_C?_in_' ttLabel '.description=[''' ttTitle '''];']);
-c_eval(['Created time table: ' 'tt_C?_in_' ttLabel ]);
+c_eval(['disp(''Created time table: tt_C?_in_' ttLabel ''');']);
 
 y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
 if strcmp(y,'yes'),
