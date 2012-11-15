@@ -134,7 +134,8 @@ switch action
 			dobj.GlobalAttributes = info.GlobalAttributes;
 			dobj.Variables = info.Variables;
 			% test if there are some data
-			if ~any(strcmpi(info.Variables(:,4),'epoch')==1),
+			if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
+                    any(strcmpi(info.Variables(:,4),'epoch16')==1)),
 				nVariables=0; % no time variable, return nothing
 				irf_log('dsrc','CDF FILE IS EMPTY!')
 			else
