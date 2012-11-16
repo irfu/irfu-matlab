@@ -26,7 +26,7 @@ for iDataSet=1:numel(dataSetArray)
 	tmp=[listFileNames listFileNames(:,end)]; % add one more column at the end
 	tmp(:,end)='=';       % changfe end column to character = (used as separator)
 	tmp=tmp';
-	tt=textscan(tmp(:),'%*11s%4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
+	tt=textscan(regexprep(tmp(:)','__',' '),'%*[^ ] %4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
 	%% create index
 	index.filename=[repmat([dataSet filesep],numel(listFiles),1) listFileNames];
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
