@@ -18,7 +18,8 @@ dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
 for iDataSet=1:numel(dataSetArray)
 	%% list files in data set directory
 	dataSet=dataSetArray{iDataSet};
-	replace_minus_in_cis_names;
+	irf_log('fcal',['Indexing data set: ' dataSet]);
+	dataSet=replace_minus_in_cis_names(dataSet);
 	listFiles=dir(dataSet);
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
@@ -36,17 +37,21 @@ for iDataSet=1:numel(dataSetArray)
 	save('caa',['index_' dataSet],'-append');
 end
 
-	function replace_minus_in_cis_names
-		if strfind(dataSet,'-'),
+	function dataSetOut=replace_minus_in_cis_names(dataSet)
+		if strfind(dataSet,'CIS'),
+			if strfind(dataSet,'-'),
 			irf_log('dsrc',['Replacing minus signs in dataset: ' dataSet]),
-			dataSet=strrep(dataSet,'-','_');
-			irf_log('dsrc',['New data set: ' dataSet]);
+			dataSetNew=strrep(dataSet,'-','_');
+			irf_log('dsrc',['New data set: ' dataSetNew]);
+			eval(['!mv ' dataSet ' ' dataSetNew]);
+			dataSet=dataSetNew;
+			end
 			listFiles=dir(dataSet);
 			iDir = [listFiles(:).isdir]; %# returns logical vector
 			listFiles(iDir)=[];
 			%% read in file time intervals
 			listFileNames=vertcat(listFiles.name);
-			if strfind(listFileNames,'-'), % files names to be updated
+			if strfind(listFileNames(:)','-'), % files names to be updated
 				cd(dataSet);
 				for j=1:size(listFileNames),
 					fileName=listFileNames(j,:);
@@ -57,9 +62,9 @@ end
 						eval(evalStr);
 					end
 				end
+				cd('..');
 			end
 		end
-	end
-end
+		dataSetOut=dataSet;
 
 
