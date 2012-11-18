@@ -1,6 +1,6 @@
 function c_update
 % LOCAL.C_UPDATE update index information in CAA directory
-% 
+%
 % See also:
 %	LOCAL.C_READ
 
@@ -18,6 +18,7 @@ dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
 for iDataSet=1:numel(dataSetArray)
 	%% list files in data set directory
 	dataSet=dataSetArray{iDataSet};
+	replace_minus_in_cis_names;
 	listFiles=dir(dataSet);
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
@@ -34,4 +35,31 @@ for iDataSet=1:numel(dataSetArray)
 	eval(['index_' dataSet '=index;']);
 	save('caa',['index_' dataSet],'-append');
 end
+
+	function replace_minus_in_cis_names
+		if strfind(dataSet,'-'),
+			irf_log('dsrc',['Replacing minus signs in dataset: ' dataSet]),
+			dataSet=strrep(dataSet,'-','_');
+			irf_log('dsrc',['New data set: ' dataSet]);
+			listFiles=dir(dataSet);
+			iDir = [listFiles(:).isdir]; %# returns logical vector
+			listFiles(iDir)=[];
+			%% read in file time intervals
+			listFileNames=vertcat(listFiles.name);
+			if strfind(listFileNames,'-'), % files names to be updated
+				cd(dataSet);
+				for j=1:size(listFileNames),
+					fileName=listFileNames(j,:);
+					if strfind(fileName,'-'),
+						fileNameNew=strrep(fileName,'-','_');
+						evalStr=['!mv ' fileName ' ' fileNameNew];
+						irf_log('fcal',evalStr);
+						eval(evalStr);
+					end
+				end
+			end
+		end
+	end
+end
+
 
