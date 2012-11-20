@@ -1,14 +1,15 @@
-function [apar,aperp]=irf_dec_parperp(b0,a,flagspinplane)
+function [apar,aperp,alpha]=irf_dec_parperp(b0,a,flagspinplane)
 %IRF_DEC_PARPERP   Decompose a vector into par/perp to B components
 %
-% [apar,aperp]=irf_dec_parperp(B0,a,[flagSpinPlane])
+% [Apar,Aperp]=irf_dec_parperp(B0,A)
 %
-%	Decomposes A to parallel and perpendicular to BO components
+% Decomposes A into parallel and perpendicular to BO components
 %
-%	b0,a - martixes A=(t,Ax,Ay,Az) // AV Cluster format
+% [Apar,Aperp,Alpha_XY]=irf_dec_parperp(B0,A,1)
 %
-%   if flagSpinPlane=1 is given, perform the computation in the XY plabne
-%   only.
+% Decomposes A into parallel and perpendicular components to the 
+% projection of B onto the XY plain. Alpha_XY gives the angle between B0
+% and the XY plain.
 %
 % $Id$
 
@@ -34,13 +35,14 @@ if nargin<3 || flagspinplane==0
     apar = irf_dot(normb,a);
     aperp = a;
     aperp(:,2:4) = a(:,2:4) - normb(:,2:4).*(apar(:,2)*[1 1 1]);
+    alpha = [];
 else
     irf_log('proc','Decomposing in the XY plane')
-    b0(:,4) = [];
     b0 = irf_resamp(b0,a(:,1));
     btot = sqrt(b0(:,2).^2 + b0(:,3).^2);
+    alpha = b0(:,1:2);
+    alpha(:,2) = atan2d(b0(:,4),btot);
     b0(:,2) = b0(:,2)./btot; b0(:,3) = b0(:,3)./btot;
-    
     apar = a(:,1:2); aperp = apar;
     apar(:,2) = a(:,2).*b0(:,2) + a(:,3).*b0(:,3);
     aperp(:,2) = a(:,2).*b0(:,3) - a(:,3).*b0(:,2);
