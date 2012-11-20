@@ -59,7 +59,6 @@ else
     plot(eht(:,2),e(:,2),'b.',eht(:,3),e(:,3),'r.',eht(:,4),e(:,4),'g.');
 end
 axis equal;grid on;
-ht=irf_pl_info([mfilename ' ' datestr(now)]); set(ht,'interpreter','none','FontSize', 5);
 title('deHoffmann-Teller frame');
 xlabel('E_{HT} [mV/m] DS');ylabel('E [mV/m] DS')
 if vht_flag == 2, legend({'x','y'},'location','southeast');
