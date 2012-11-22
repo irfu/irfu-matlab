@@ -321,10 +321,13 @@ catch
 		disp('The request has been put in queue');
 		disp(['When ready data will be downloaded from: ' downloadfile]);
 		disp('To check the status of jobs execute: caa_download');
-		
+		caa_log({'Request put in queue: ',url_line,...
+			'When ready download from:' downloadfile});
+
 		save -mat .caa caa
 	else
 		disp('!!!! Did not succeed to download !!!!!');
+		caa_log('Did not succeed to download');
 		download_status=0;
 	end
 end
@@ -334,10 +337,12 @@ end
 		if isZipFileReady, %
 			irf_log('dsrc',['Downloaded: ' urlLink]);
 			irf_log('dsrc',['into ->' temp_file]);
+			caa_log({'Zip file returned for request',urlLink});
 			tempDirectory=tempname;
 			filelist=unzip(temp_file,tempDirectory);
 			if isempty(filelist)
 				irf_log('dsrc','Returned zip file is empty');
+				caa_log('Zip file empty.');
 			else
 				move_to_caa_directory(filelist);
 			end
@@ -369,5 +374,17 @@ end
 		else
 			paramOut=paramIn;
 		end;
+	end
+	function caa_log(logText)
+		tt=irf_time;
+		if ischar(logText), logText={logText};end
+		if iscellstr(logText)
+			fid=fopen('.caa.log','a');
+			fprintf(fid,'\n[%s]\n',tt);
+			for jLine=1:numel(logText),
+				fprintf(fid,'%s\n',logText{jLine});
+			end
+			fclose(fid);
+		end
 	end
 end
