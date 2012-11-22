@@ -120,7 +120,7 @@ for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 
 for j=1:5,xlabel(h(j),''),set(h(j),'XTickLabel',''),end
 
-irf_zoom([B1(1,1) B1(end,1)],'x',h)
+irf_zoom(h,'x',B1([1 end],1)')
 
 if nargout>0, hout = h; end
 if nargout>1, jout = jj; end
