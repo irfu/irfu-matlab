@@ -1,27 +1,21 @@
 function out=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
-%	[out]=LOCAL.C_READ(variable,tint) read variable for given time interval
+%	[out]=LOCAL.C_READ(variable,tint) 
+%		read variable for given time interval in matlab format (matrix)
 %
 % Variable can be CAA variable or shortcuts
 %  'R1'  - Cluster 1 position
 %  'dR1' - Cluster 1 relative position wrt center
 %   'R'   - Cluster center posiiton
+%
+% Possible variables: (question mark needs to be sustituted to Cluster number)
 % status__CL_SP_AUX
 % sc_orbit_num__CL_SP_AUX
 % sc_r_xyz_gse__CL_SP_AUX
 % sc_v_xyz_gse__CL_SP_AUX
-% sc_dr1_xyz_gse__CL_SP_AUX
-% sc_dr2_xyz_gse__CL_SP_AUX
-% sc_dr3_xyz_gse__CL_SP_AUX
-% sc_dr4_xyz_gse__CL_SP_AUX
-% sc_at1_lat__CL_SP_AUX
-% sc_at1_long__CL_SP_AUX
-% sc_at2_lat__CL_SP_AUX
-% sc_at2_long__CL_SP_AUX
-% sc_at3_lat__CL_SP_AUX
-% sc_at3_long__CL_SP_AUX
-% sc_at4_lat__CL_SP_AUX
-% sc_at4_long__CL_SP_AUX
+% sc_dr?_xyz_gse__CL_SP_AUX
+% sc_at?_lat__CL_SP_AUX
+% sc_at?_long__CL_SP_AUX
 % sc_config_QG__CL_SP_AUX
 % sc_config_QR__CL_SP_AUX
 % sc_dr_min__CL_SP_AUX
@@ -50,7 +44,7 @@ function out=c_read(varargin)
 
 persistent index % to make fast access read only once
 
-cd('/data/caa/CAA');
+caaDir='/data/caa/CAA/';
 if isempty(index), index=struct('dummy',[]);end
 % sc_r_xyz_gse__CL_SP_AUX
 % sc_v_xyz_gse__CL_SP_AUX
@@ -70,6 +64,7 @@ else
 end
 
 out=[];
+specialCaseCis=0;
 switch lower(varName)
 	case {'r'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX'};
@@ -85,6 +80,7 @@ switch lower(varName)
 		if ok, out=[data{1} double(data{2})];end
 	otherwise
 		irf_log('fcal',['Reading variable (assume to exist): ' varName]);
+		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
 		ok=readdata;
 		if ok, out=[data{1} double(data{2})];end
@@ -96,10 +92,10 @@ end
 		if ii,
 			dataset=varToRead{1}(ii+2:end);
 			if ~isfield(index,dataset)
-				s=load('caa',['index_' dataset]);
-				eval(['index.' dataset '=s.index_' dataset ';']);
+				s=load([caaDir 'caa'],['index_' dataset]);
+				index.(dataset)=s.(['index_' dataset]);
 			end
-			eval(['index=index.' dataset ';']);
+			index=index.(dataset);
 		else
 			irf_log('dsrc',['Do not now how to read variable: ' varToRead{1}]);
 			status=0;
@@ -116,7 +112,11 @@ end
 		%% read in records
 		for iFile=istart:iend
 			cdf_file=index.filename(iFile,:);
-			[tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,'Variables', [{['time_tags__' dataset]},varToRead{:}]);
+			if specialCaseCis,
+				dataset=strrep(dataset,'CIS_','CIS-');
+				varToRead=strrep(varToRead,'CIS_','CIS-');
+			end
+			[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,'Variables', [{['time_tags__' dataset]},varToRead{:}]);
 			if iFile==istart, data=cell(size(tmpdata));end
 			iist=1;iien=numel(tmpdata{1});
 			tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
@@ -127,7 +127,7 @@ end
 				iien=find(tmpdata{1}<tint(2),1,'last');
 			end
 			%% check for NaNs
-			cdfInfo=cdfinfo(cdf_file);
+			cdfInfo=cdfinfo([caaDir cdf_file]);
 			fillValList=cdfInfo.VariableAttributes.FILLVAL;
 			for iVar=1:numel(varToRead),
 				ii=strcmp(fillValList,varToRead{iVar});
