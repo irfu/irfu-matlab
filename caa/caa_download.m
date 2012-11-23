@@ -380,6 +380,19 @@ end
 		if ischar(logText), logText={logText};end
 		if iscellstr(logText)
 			fid=fopen('.caa.log','a');
+			if fid==-1 % cannot open .caa.log
+			  if isempty(whos('-file','.caa','logFileName')) % no log file name in caa
+				logFileName=tempname;
+				save -append .caa logFileName;
+			  else
+				load -mat .caa logFileName;
+			  end
+			  fid=fopen(logFileName,'a');
+			  if fid==-1, 
+				irf_log('fcal','log file cannot be opened, no log entry');
+				return;
+			  end
+			end
 			fprintf(fid,'\n[%s]\n',tt);
 			for jLine=1:numel(logText),
 				fprintf(fid,'%s\n',logText{jLine});

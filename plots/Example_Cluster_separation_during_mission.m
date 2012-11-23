@@ -5,11 +5,11 @@
 
 %% Define flags
 % mR.mat file has all positions, not needed if only apogee/perigee values needed
-flag_get_all_Cluster_positions_from_isdat=0; % construct mR.mat file with Cluster position for all mission
+flag_get_all_Cluster_positions_from_isdat=1; % construct mR.mat file with Cluster position for all mission
 flag_get_all_Cluster_positions_from_www=0;   % get mR.mat file from internet
 % mRcluster.mat file, includes all information on perigee/apogee/separation
 flag_get_Cluster_file_from_www=0; % get mRcluster.mat from www
-flag_create_Cluster_file=0;       % create from mR.mat file
+flag_create_Cluster_file=1;       % create from mR.mat file
 % figure creating/printing
 flag_create_figure=1;             % create figure
 flag_print_figure=1;              % print figure
