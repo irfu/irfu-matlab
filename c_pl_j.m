@@ -109,7 +109,7 @@ ylabel('jxB [A/m^2 T]')
 
 h(5) = irf_subplot(NPLOTS, 1, -5);
 irf_plot(irf_integrate(jxB));
-ylabel('\int jxB [A/m^2 T s]')
+ylabel('Int jxB [A/m^2 T s]')
 
 h(6) = irf_subplot(NPLOTS, 1, -6);
 divB(:,2:end) = divB(:,2:end)*1e9;
@@ -121,6 +121,7 @@ for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 for j=1:5,xlabel(h(j),''),set(h(j),'XTickLabel',''),end
 
 irf_zoom(h,'x',B1([1 end],1)')
+irf_plot_ylabels_align(h)
 
 if nargout>0, hout = h; end
 if nargout>1, jout = jj; end
