@@ -3,6 +3,7 @@ function download_status=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
 %       CAA_DOWNLOAD('list')    - list all datasets and their available times
+%       list=CAA_DOWNLOAD('list')- return list as cell string array
 %       CAA_DOWNLOAD('listdesc')- same with dataset description
 %       CAA_DOWNLOAD('listgui') - same presenting output in separate window
 %       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
@@ -259,6 +260,10 @@ if strfind(dataset,'list'),     % list  files
 		caa_gui_list(list,values)
 	else
 		disp(caalog);
+		if nargout == 1,
+			out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
+			download_status = out{1};
+		end
 	end
 	return;
 end
