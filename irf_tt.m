@@ -48,6 +48,10 @@ function out=irf_tt(varargin)
 
 %% Check inputs
 
+disp('')
+disp('!!!!!!!!!!!!!! USE irf.tt, see help irf.tt !!!!!!!!!!!!!!!')
+disp('')
+
 if nargin==0,
 	help irf_tt;
 	return;
