@@ -96,7 +96,10 @@ classdef TimeTable
 						end
 					end
 				end
-				
+			elseif isnumeric(source) && size(source,2)==2 % time interval
+				TT.TimeInterval=source;
+				TT.Comment=cell(size(source,1),1);
+				TT.Description=cell(size(source,1),1);
 			else
 				irf_log('fcal','Unknown argument.');
 				return;
