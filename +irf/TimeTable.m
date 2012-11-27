@@ -206,5 +206,20 @@ classdef TimeTable
 				if nargout==0, clear ok, end;
 			end
 		end
+		function TTout  = select(TTin,index) % return index
+			TTout=[];
+			if ~isnumeric(index)
+				irf_log('fcal','Index not number');
+				return;
+			end
+			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
+				irf_log('fcal','Index out of range');
+				return;
+			end
+			TTout				= irf.TimeTable;
+			TTout.TimeInterval  = TTin.TimeInterval(index(:),:);
+			TTout.Comment		= TTin.Comment(index(:));
+			TTout.Description   = TTin.Description(index(:));
+		end
 	end % methods
 end % classdef
