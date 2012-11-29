@@ -270,7 +270,7 @@ cmapCombo=[cmapStandard;xcm2];
     %%%%% B spectra from spectral matrix
    
     h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-    hold on
+    %hold on
     pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_SM_plot(:,:,4).'))) 
 %    pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_plot.'))) 
     shading flat
@@ -278,11 +278,11 @@ cmapCombo=[cmapStandard;xcm2];
     set(gca,'yscale','log','tickdir','out');
   %  set(gca,'tickdir','out');
     cmean=nanmean(nanmean(log10(abs(power2B_SM_plot(:,:,4)))));
-    %hold on
+    hold on
     %plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1.6e-19./1.67e-27);
-    plot(BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi,'color','k');
-    plot(BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4,'--','color','k');
-    plot(BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16,'-.','color','k');
+    plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi,'color','k');
+    plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4,'--','color','k');
+    plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16,'-.','color','k');
     axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
     hold off
     caxis(floor(cmean)+[-3.5 3.5]);
@@ -296,6 +296,7 @@ cmapCombo=[cmapStandard;xcm2];
     %irf_colormap(hca2,'standard');
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
     %cbfreeze(hca)
+    
     
     %%%%%% propogation direction from SVD
     
@@ -421,7 +422,7 @@ cmapCombo=[cmapStandard;xcm2];
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
             %caxis([-50 50]);
-            caxis([-30 30]);
+            caxis([-10 10]);
         else
             cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
             caxis(cc);
@@ -448,7 +449,7 @@ cmapCombo=[cmapStandard;xcm2];
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
             %caxis([-50 50]);
-            caxis([-30 30]);
+            caxis([-10 10]);
         else
             cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
             caxis(cc);
