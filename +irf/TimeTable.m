@@ -2,9 +2,11 @@ classdef TimeTable
 	% irf.TimeTable class to handle time tables
 	%
 	% TT=irf.TimeTable	- generate empty time table
+	% TT=irf.TimeTable(tint) - generate time table from matrix tint. 
+	%			1st column start time and 2nd column end times in isdat epoch
 	% TT=irf.TimeTable('demo') - generate short example time table
 	% TT=irf.TimeTable('http://..') - load ascii time table from internet link 
-	% TT=irf.TimeTable(filename) - load ascii time table form file
+	% TT=irf.TimeTable(filename) - load ascii time table from file
 	% TT=irf.TimeTable(ascii_text) - load time table from cell string array ascii_text
 	%
 	% N = numel(TT)		- number of time intervals
