@@ -8,6 +8,8 @@ function out=c_caa_download(varargin)
 
 % $Id$
 
+cd('/data/caa');
+
 if nargin==1 && ischar(varargin{1})
 	dataset=varargin{1};
 else
@@ -32,4 +34,5 @@ for iRequest = 1:numel(TT),
 	irf_log('fcal',['Requesting interval ' num2str(iRequest) ': ' irf_time(tint,'tint2iso')]);
 	caa_download(tint,TT.UserData(iRequest).dataset,'schedule');
 end
+
 out=TT;
