@@ -24,4 +24,12 @@ else
 	ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataset]);
 end
 
-out=ttInventory;
+iData=find([ttInventory.UserData(:).number]);
+TT=select(ttInventory,iData);
+
+for iRequest = 1:numel(TT),
+	tint=TT.TimeInterval(iRequest,:);
+	irf_log('fcal',['Requesting interval ' num2str(iRequest) ': ' irf_time(tint,'tint2iso')]);
+	caa_download(tint,TT.UserData(iRequest).dataset,'schedule');
+end
+out=TT;
