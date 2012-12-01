@@ -3,7 +3,7 @@ function download_status=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
 %       CAA_DOWNLOAD('list')    - list all datasets and their available times
-%       list=CAA_DOWNLOAD('list')- return list as cell string array
+%       TT=CAA_DOWNLOAD('list')- return time table with datasets and available times
 %       CAA_DOWNLOAD('listdesc')- same with dataset description
 %       CAA_DOWNLOAD('listgui') - same presenting output in separate window
 %       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
@@ -11,8 +11,8 @@ function download_status=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
 %
-%       CAA_DOWNLOAD(tint,'list') - inventory of all datasets available
-%       CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
+%       TT=CAA_DOWNLOAD(tint,'list') - inventory of all datasets available, can return time table TT
+%       TT=CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
 %
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download
 %             returns 0 if request is put in the queue,
@@ -87,6 +87,7 @@ function download_status=caa_download(tint,dataset,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+%% load .caa file with status for all downloads
 if exist('.caa','file') == 0, caa=cell(0);save -mat .caa caa;end
 load -mat .caa caa
 % caa.url - links to download
@@ -95,10 +96,9 @@ load -mat .caa caa
 % caa.zip - zip files to download
 % caa.status - status ('submitted','downloaded','finnished')
 % caa.timeofrequest - in matlab time units
-
 %% Defaults
-checkDownloadsStatus=0;
-%flag_download_data=1;
+checkDownloadsStatus	= false;
+returnTimeTable			= '';
 flag_wildcard     =1;                     % default is to use wildcard
 flag_check_if_there_is_data=1;            % check if there are any at caa
 urlNonotify='&nonotify=1';                % default is not notify by email
@@ -107,9 +107,11 @@ urlSchedule='';                           % default do not have schedule option
 urlFormat='&format=cdf';                  % default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/'; % default server
 urlIdentity='?uname=vaivads&pwd=caa';     % default identity
+caaQuery=[caaServer 'caa_query/'];
+caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %urlInventory='';                          % default no inventory output (currently use different www link)
 %% check input
-if nargin==0, checkDownloadsStatus=1; end
+if nargin==0, checkDownloadsStatus=true; end
 if nargin==1, % check if argument is not caa zip file link
 	if ischar(tint)
 		if strcmp(tint(end-2:end),'zip') % download data zip file
@@ -120,7 +122,7 @@ if nargin==1, % check if argument is not caa zip file link
 			caa{j}.zip=tint;
 			caa{j}.status='submitted';
 			caa{j}.timeofrequest=now;
-			checkDownloadsStatus=1;
+			checkDownloadsStatus=true;
 		else	% list or inventory ingested data, no time interval specified
 			dataset=tint;
 			tint=[];
@@ -152,8 +154,6 @@ if nargin>2, % there are additional flags
 		end
 	end
 end
-caaQuery=[caaServer 'caa_query/'];
-caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
 if checkDownloadsStatus,    % check/show status of downloads
 	disp('=== status of jobs (saved in file .caa) ====');
@@ -232,37 +232,36 @@ if strfind(dataset,'list'),     % list  files
 	if isempty(tint) % work on all datasets
 		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
 			url_line_list=[caaQuery urlIdentity '&dataset_id=' filter '&dataset_list=1&desc=1'];
+			returnTimeTable='listdesc';
 		else							% do not get description
 			url_line_list=[caaQuery urlIdentity '&dataset_id=' filter '&dataset_list=1'];
+			returnTimeTable='list';
 		end
 	else
 		url_line_list=[caaInventory urlIdentity '&dataset_id=' filter '&time_range=' tintiso ];
+		returnTimeTable='inventory';
 	end
 	disp('Be patient! Contacting CAA...');
 	disp(url_line_list);
 	caalog=urlread(url_line_list);
 	if strfind(dataset,'listgui'), % make gui window with results
-		A = strread(caalog, '%s', 'delimiter', sprintf('\n')); % cell array with lines
-		B=regexp(A(10:end),'(?<dataset>^[C][-\w]*)\s*(?<tint>\d.*:\d\d)\s*(?<title>.*)\t(?<description>.*)','names');
-		imatch=ones(numel(B),1);
-		for i=1:numel(B),
-			if isempty(B{i}), imatch(i)=0;end
-		end;
-		B(imatch==0)=[];
-		list=cell(numel(B),1);
-		values=cell(numel(B),2);
-		for j=1:numel(B),
-			list{j}=B{j}.dataset;
-			values{j,1}=B{j}.tint;
-			values{j,2}=B{j}.title;
-			values{j,3}=B{j}.description;
-		end
+		B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
+		list={B.dataset};
+		values=cell(numel(B),3);
+		values(:,1)={B.tint}';
+		values(:,2)={B.title}';
+		values(:,3)={B.description}';
 		caa_gui_list(list,values)
 	else
-		disp(caalog);
 		if nargout == 1,
-			out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
-			download_status = out{1};
+			if isempty(returnTimeTable),
+				out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
+				download_status = out{1};
+			else
+				download_status = construct_time_table(caalog,returnTimeTable);
+			end
+		else
+			disp(caalog);
 		end
 	end
 	return;
@@ -405,4 +404,39 @@ end
 			fclose(fid);
 		end
 	end
+end
+function TT=construct_time_table(caalog,returnTimeTable)
+TT=irf.TimeTable;
+switch returnTimeTable
+	case 'inventory'
+		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
+		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
+		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+		c=num2cell(str2num(strvcat(textLine(:).number))); 
+		[TT.UserData(:).number]=deal(c{:});
+		c=num2cell(str2num(strvcat(textLine(:).version))); 
+		[TT.UserData(:).version]=deal(c{:});
+	case 'list'
+		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
+		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
+		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+		[TT.UserData(:).title] = deal(textLine(:).title);
+	case 'listdesc'
+		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t]*)\t(?<description>[^\n]*)','names');
+		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t])*\t(?<description>[^\n]*)','start');
+		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+		[TT.UserData(:).title] = deal(textLine(:).title);
+		[TT.UserData(:).description] = deal(textLine(:).description);
+	otherwise
+		return;
+end
+tintiso=[vertcat(textLine(:).start) repmat('/',numel(startIndices),1) vertcat(textLine(:).end)];
+tint=irf_time(tintiso,'iso2tint');
+TT.TimeInterval=tint;
+TT.Header=caalog(1:startIndices(1)-1);
+TT.Comment=cell(numel(TT),1);
+TT.Description=cell(numel(TT),1);
 end
