@@ -53,7 +53,7 @@ if nargin==0, % return string with current time (second precision)
 elseif nargin==1,
     flag='vector2epoch';
 end
-
+if isempty(t_in),t_out=[];return;end
 flag_tint=strfind(flag,'tint'); % check if we work with time interval (special case)
 if isempty(flag_tint),          % default transformation
     flag_2=strfind(flag,'2');   % see if flag has number 2 in it 
@@ -180,23 +180,20 @@ switch lower(flag)
 		end
 
     case 'iso2epoch'
-        mask = '%4d-%2d-%2dT%2d:%2d:%fZ';
-        s=t_in;
-        % If we have multiple rows, we need to turn the matrix
-        if min(size(s))>1
-            if size(s,2)==27 || size(s,2)==24, s=s'; end
-            n_column = size(s,2);
-        else n_column = 1;
-        end
-        
-        a = sscanf(s,mask);
-        
-        N = length(a)/6;
-        if N~=fix(N) || N~=n_column, disp('something is wrong with input'), end
-        a = reshape(a,6,fix(N));
-        a = a';
-        t_out = irf_time([a(:,1) a(:,2) a(:,3) a(:,4) a(:,5) a(:,6)]);
-        
+        mask = '%4d-%2d-%2d%*[ T]%2d:%2d:%f%*c';
+        s=t_in';
+		s(end+1,:)=sprintf(' ');
+		a = sscanf(s,mask);
+		N = numel(a)/6;
+		if N~=fix(N) || N~=size(s,2),
+			irf_log('fcal','something is wrong with iso input format'),
+			t_out=[];
+			return;
+		end
+		a = reshape(a,6,N);
+		a = a';
+		t_out = irf_time(a);
+		
     case {'epoch2date','epoch2datenum'} % matlab date
         % 719529 is the number of days from 0-Jan-0000 to 1-Jan-1970
         t_out = double(719529 + double(double(t_in(:))/double(24 * 3600)));
@@ -255,7 +252,7 @@ switch lower(flag)
         % assume column array where each row is interval in iso format
         ii=strfind(t_in(1,:),'/');
         t1=irf_time(t_in(:,1:ii-1),'iso2epoch');
-        t2=irf_time(t_in(ii+1:end),'iso2epoch');
+        t2=irf_time(t_in(:,ii+1:end),'iso2epoch');
         t_out=[t1 t2];
 
     case 'tint2isoshort'
