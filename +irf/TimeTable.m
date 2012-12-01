@@ -228,6 +228,7 @@ classdef TimeTable
 			TTout.Comment		= TTin.Comment(index(:));
 			TTout.Description   = TTin.Description(index(:));
 			TTout.Header		= TTin.Header;
+			TTout.UserData		= TTin.UserData(index);
 		end
 		function TTout	= unique(TTin) % time table sorted and unique
 			TTout=TTin;
