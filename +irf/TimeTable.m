@@ -30,6 +30,7 @@ classdef TimeTable
 		TimeInterval
 		Comment
 		Description
+		UserData
 	end
 	methods
 		function TT		= TimeTable(varargin) % construct time table
@@ -37,6 +38,7 @@ classdef TimeTable
 			TT.TimeInterval=[];	%	matrix with 2 columns, start/end
 			TT.Comment={};		%	short comment for each time interval
 			TT.Description={};	%	description lines for each interval
+			TT.UserData=struct([]);	%	user can put different info in this structure
 			if numel(varargin)==1,
 				source = varargin{1};
 			elseif numel(varargin)==0,
@@ -225,6 +227,7 @@ classdef TimeTable
 			TTout.TimeInterval  = TTin.TimeInterval(index(:),:);
 			TTout.Comment		= TTin.Comment(index(:));
 			TTout.Description   = TTin.Description(index(:));
+			TTout.Header		= TTin.Header;
 		end
 		function TTout	= unique(TTin) % time table sorted and unique
 			TTout=TTin;
@@ -276,6 +279,17 @@ classdef TimeTable
 			TT.TimeInterval=tout;
 			TT.Comment=cell(1,size(tout,1));
 			TT.Description=cell(1,size(tout,1));
+		end
+		function [TT,i]	= setdiff(TT1,TT2) % returns TT1 elements that are not in TT2
+			% TT=setdiff(TT1,TT2) returns TT1 elements that are not in TT2
+			% [TT,ii]=setdiff(TT1,TT2) returns also indices of TT1 that are different
+			t1=TT1.TimeInterval;
+			t2=TT2.TimeInterval;
+			[~,ia1,~]=intersect(t1(:,1),t2(:,1));
+			[~,ia2,]=intersect(t1(:,2),t2(:,2));
+			ia=intersect(ia1,ia2); % ia intervals are common in both series
+			i=setdiff(1:size(t1,1),ia);
+			TT=select(TT1,i);
 		end
 	end % methods
 end % classdef
