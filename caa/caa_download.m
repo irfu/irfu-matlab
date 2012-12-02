@@ -1,4 +1,4 @@
-function download_status=caa_download(tint,dataset,varargin)
+function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -15,8 +15,11 @@ function download_status=caa_download(tint,dataset,varargin)
 %       TT=CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
 %
 %       download_status=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download
-%             returns 0 if request is put in the queue,
-%             the information of queued requests is saved in file ".caa"
+%				returns 0 if request is put in the queue,
+%				the information of queued requests is saved in file ".caa"
+%		[download_status,downloadfile]=CAA_DOWNLOAD(tint,dataset) - returns also
+%				zip file link if request put in queue (good for batch processing)
+%       download_status=CAA_DOWNLOAD(tint,dataset,input_flags) see list of Input flags
 %
 %       CAA_DOWNLOAD(url_string) - download CAA data zip file from the link "url_string"
 %
@@ -27,10 +30,12 @@ function download_status=caa_download(tint,dataset,varargin)
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 % Input flags
-%   'file_interval'- see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
-%   'nowildcard'  - download the dataset without any expansion in the name and not checking if data are there
-%   'overwrite'   - overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
-%   'schedule'    - schedule the download, check the readiness by executing CAA_DOWNLOAD from the same direcotry
+%   'file_interval' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
+%   'nowildcard'	- download the dataset without any expansion in the name and not checking if data are there
+%   'overwrite'		- overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
+%   'schedule'		- schedule the download, (returns zip file link)
+%						check the readiness by executing CAA_DOWNLOAD from the same direcotry
+%   'nolog'			- do not log into .caa file (good for batch processing)
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -77,7 +82,6 @@ function download_status=caa_download(tint,dataset,varargin)
 
 % Test flags
 %   'test'        - use caa test server instead
-%                 maybe this behavikour should be default
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -87,18 +91,9 @@ function download_status=caa_download(tint,dataset,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-%% load .caa file with status for all downloads
-if exist('.caa','file') == 0, caa=cell(0);save -mat .caa caa;end
-load -mat .caa caa
-% caa.url - links to download
-% caa.dataset - dataset to download
-% caa.tintiso - time interval
-% caa.zip - zip files to download
-% caa.status - status ('submitted','downloaded','finnished')
-% caa.timeofrequest - in matlab time units
 %% Defaults
 checkDownloadsStatus	= false;
-returnTimeTable			= '';
+doLog					= true; % log into .caa file
 flag_wildcard     =1;                     % default is to use wildcard
 flag_check_if_there_is_data=1;            % check if there are any at caa
 urlNonotify='&nonotify=1';                % default is not notify by email
@@ -107,33 +102,25 @@ urlSchedule='';                           % default do not have schedule option
 urlFormat='&format=cdf';                  % default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/'; % default server
 urlIdentity='?uname=vaivads&pwd=caa';     % default identity
-caaQuery=[caaServer 'caa_query/'];
-caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %urlInventory='';                          % default no inventory output (currently use different www link)
+%% load .caa file with status for all downloads
+if doLog,
+	if exist('.caa','file') == 0, 
+		caa=cell(0);
+		save -mat .caa caa;
+	end
+	load -mat .caa caa
+end
+
+% caa.url - links to download
+% caa.dataset - dataset to download
+% caa.tintiso - time interval
+% caa.zip - zip files to download
+% caa.status - status ('submitted','downloaded','finnished')
+% caa.timeofrequest - in matlab time units
 %% check input
 if nargin==0, checkDownloadsStatus=true; end
-if nargin==1, % check if argument is not caa zip file link
-	if ischar(tint)
-		if strcmp(tint(end-2:end),'zip') % download data zip file
-			j=numel(caa)+1;
-			caa{j}.url='*';
-			caa{j}.dataset='*';
-			caa{j}.tintiso='*';
-			caa{j}.zip=tint;
-			caa{j}.status='submitted';
-			caa{j}.timeofrequest=now;
-			checkDownloadsStatus=true;
-		else	% list or inventory ingested data, no time interval specified
-			dataset=tint;
-			tint=[];
-		end
-	else
-		help caa_download;return;
-	end
-end
-%% check input for additional parameters like 'test', 'nowildcard'
-
-if nargin>2, % there are additional flags
+if nargin>2, % cehck for additional flags
 	for iFlag=1:numel(varargin)
 		flag=varargin{iFlag};
 		if strcmpi(flag,'test'),  % use test server
@@ -147,6 +134,8 @@ if nargin>2, % there are additional flags
 			urlFileInterval = urlparameter(flag);
 		elseif any(strcmpi('schedule',flag))
 			urlSchedule = '&schedule=1';
+		elseif any(strcmpi('nolog',flag))
+			doLog = false;
 		elseif any(strcmpi('inventory',flag))
 			urlSchedule = '&inventory=1';
 		else
@@ -154,8 +143,47 @@ if nargin>2, % there are additional flags
 		end
 	end
 end
+if nargin>=1, % check if fist argument is not caa zip file link
+	if ischar(tint)
+		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
+			doLog=false;
+		end
+		if regexp(tint,'\.zip') % download data zip file
+			if doLog
+				j=numel(caa)+1;
+				caa{j}.url='*';
+				caa{j}.dataset='*';
+				caa{j}.tintiso='*';
+				caa{j}.zip=tint;
+				caa{j}.status='submitted';
+				caa{j}.timeofrequest=now;
+				checkDownloadsStatus=true;
+			else
+				temp_file=tempname;
+				zipFileLink=tint;
+				isJobFinished=get_zip_file(zipFileLink,temp_file);
+				if isJobFinished, %
+					download_status=1;
+					return;
+				else
+					irf_log('dsrc','Job still not finished');
+					download_status=0;
+					return;
+				end
+			end
+		else	% list or inventory ingested data, no time interval specified
+			dataset=tint;
+			tint=[];
+		end
+	elseif ~isnumeric(tint)
+		help caa_download;return;
+	end
+end
+if nargout>0, checkDownloadsStatus=false; end
+caaQuery=[caaServer 'caa_query/'];
+caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
-if checkDownloadsStatus,    % check/show status of downloads
+if doLog && checkDownloadsStatus,    % check/show status of downloads from .caa file
 	disp('=== status of jobs (saved in file .caa) ====');
 	if ~isempty(caa),
 		for j=1:length(caa), % go through jobs
@@ -312,27 +340,29 @@ catch
 	delete(temp_file);
 	
 	if exist('downloadfile','var'),
-		j=length(caa)+1;
-		caa{j}.url=url_line;
-		caa{j}.dataset=dataset;
-		caa{j}.tintiso=tintiso;
-		caa{j}.zip = downloadfile;
-		caa{j}.status = 'SUBMITTED';
-		caa{j}.timeofrequest = now;
-		if nargout==1, download_status=0; end
-		
-		disp('=====');
-		disp('The request has been put in queue');
-		disp(['When ready data will be downloaded from: ' downloadfile]);
-		disp('To check the status of jobs execute: caa_download');
-		caa_log({'Request put in queue: ',url_line,...
-			'When ready download from:' downloadfile});
-
-		save -mat .caa caa
+		if doLog
+			j=length(caa)+1;
+			caa{j}.url=url_line;
+			caa{j}.dataset=dataset;
+			caa{j}.tintiso=tintiso;
+			caa{j}.zip = downloadfile;
+			caa{j}.status = 'SUBMITTED';
+			caa{j}.timeofrequest = now;
+			disp('=====');
+			disp('The request has been put in queue');
+			disp(['When ready data will be downloaded from: ' downloadfile]);
+			disp('To check the status of jobs execute: caa_download');
+			caa_log({'Request put in queue: ',url_line,...
+				'When ready download from:' downloadfile});
+			save -mat .caa caa
+		end
+		if nargout>=1, download_status=0; end	% 0 if job submitted	
 	else
-		disp('!!!! Did not succeed to download !!!!!');
-		caa_log('Did not succeed to download');
-		download_status=0;
+		if doLog
+			disp('!!!! Did not succeed to download !!!!!');
+			caa_log('Did not succeed to download');
+		end
+		download_status=[];
 	end
 end
 
