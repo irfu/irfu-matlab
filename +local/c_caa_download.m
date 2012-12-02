@@ -8,7 +8,10 @@ function out=c_caa_download(varargin)
 
 % $Id$
 
-%cd('/data/caa');
+if exist('/data/caa','dir')
+	disp('!!!! Changing directory to /data/caa !!!');
+	cd('/data/caa');
+end
 
 if nargin==1 && ischar(varargin{1})
 	dataset=varargin{1};
