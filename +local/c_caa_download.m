@@ -65,7 +65,7 @@ while iRequest <= numel(TTRequest),
 				irf_log('drsc',['Saving TT_' dataset ' to matCaaRequests']);
 				varName=['TT_' dataset ];
 				eval([varName '= TTRequest;']);
-				save('matCaaRequests',varName,'-append');
+				save('CAA/matCaaRequests',varName,'-append');
 			end
 		else
 			irf_log('proc','Waiting 1min ....');
