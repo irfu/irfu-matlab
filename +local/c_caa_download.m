@@ -14,21 +14,21 @@ if exist('/data/caa','dir')
 end
 
 if nargin==1 && ischar(varargin{1})
-	dataset=varargin{1};
+	dataSet=varargin{1};
 	irf_log('dsrc','Checking list of available times');
-	tt=caa_download(['list:' dataset]);
+	tt=caa_download(['list:' dataSet]);
 	if numel(tt)==0,
 		disp('Dataset does not exist or there are no data');
 		return;
 	else
 		irf_log('dsrc',['Checking inventory: ' irf_time(tt.TimeInterval(1,:),'tint2iso')]);
-		ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataset]);
+		ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataSet]);
 	end
 	
 	iData=find([ttInventory.UserData(:).number]);
 	TT=select(ttInventory,iData);
 	TTRequest=TT;
-elseif nargin == 1 && isa(varargin{1},'TimeTable')
+elseif nargin == 1 && isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
 else
 	irf_log('fcal','See syntax: help local.c_caa_download');
@@ -47,7 +47,8 @@ nRequest=numel(TTRequest)-iRequest+1;
 while iRequest <= numel(TTRequest),	
 	tint=TTRequest.TimeInterval(iRequest,:);
 	irf_log('fcal',['Requesting interval ' num2str(iRequest) '/' num2str(nRequest) ': ' irf_time(tint,'tint2iso')]);
-	[download_status,downloadfile]=caa_download(tint,TTRequest.UserData(iRequest).dataset,'schedule','nolog');
+	dataSet = TTRequest.UserData(iRequest).dataset;
+    [download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog');
 	if download_status == 0, % scheduling succeeded
 		TTRequest.UserData(iRequest).Status=0;
 		TTRequest.UserData(iRequest).Downloadfile=downloadfile;
@@ -66,10 +67,12 @@ while iRequest <= numel(TTRequest),
 			% save TTRequest each 10th successfull download
 			irf_log('dsrc',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
 			if mod(n_downloaded_jobs(TTRequest),10)==0
-				irf_log('drsc',['Saving TT_' dataset ' to matCaaRequests']);
-				varName=['TT_' dataset ];
+				varName=['TT_' dataSet ];
+				irf_log('drsc',['Saving TT_' dataSet ' to CAA/matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
-				save('CAA/matCaaRequests',varName,'-append');
+                dirName=['CAA/matCaaRequests/' varName];
+                if ~exist(dirName,'dir'), mkdir(dirName);end
+				save(dirName,'-v7',varName);
 			end
 		else
 			irf_log('proc','Waiting 1min ....');
