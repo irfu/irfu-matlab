@@ -15,25 +15,29 @@ end
 
 if nargin==1 && ischar(varargin{1})
 	dataset=varargin{1};
+	irf_log('dsrc','Checking list of available times');
+	tt=caa_download(['list:' dataset]);
+	if numel(tt)==0,
+		disp('Dataset does not exist or there are no data');
+		return;
+	else
+		irf_log('dsrc',['Checking inventory: ' irf_time(tt.TimeInterval(1,:),'tint2iso')]);
+		ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataset]);
+	end
+	
+	iData=find([ttInventory.UserData(:).number]);
+	TT=select(ttInventory,iData);
+	TTRequest=TT;
+elseif nargin == 1 && isa(varargin{1},'TimeTable')
+	TTRequest=varargin{1};
 else
 	irf_log('fcal','See syntax: help local.c_caa_download');
 	return;
 end
 
-irf_log('dsrc','Checking list of available times');
-tt=caa_download(['list:' dataset]);
-if numel(tt)==0, 
-	disp('Dataset does not exist or there are no data');
-	return;
-else
-	irf_log('dsrc',['Checking inventory: ' irf_time(tt.TimeInterval(1,:),'tint2iso')]);
-	ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataset]);
-end
 
-iData=find([ttInventory.UserData(:).number]);
-TT=select(ttInventory,iData);
 
-TTRequest=TT;
+
 % TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
 % TTRequest.UserData.Downloadfile zip file to download (important if status=0)
 % TTRequest.UserData.TimeOfRequest
