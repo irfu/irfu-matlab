@@ -46,7 +46,7 @@ iRequest=find_first_non_processed_time_interval(TTRequest);
 nRequest=numel(TTRequest)-iRequest+1;
 while iRequest <= numel(TTRequest),	
 	tint=TTRequest.TimeInterval(iRequest,:);
-	irf_log('fcal',['Requesting interval ' num2str(iRequest) '/' num2str(nRequest) ': ' irf_time(tint,'tint2iso')]);
+	irf_log('fcal',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 	dataSet = TTRequest.UserData(iRequest).dataset;
     [download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog');
 	if download_status == 0, % scheduling succeeded
@@ -70,9 +70,9 @@ while iRequest <= numel(TTRequest),
 				varName=['TT_' dataSet ];
 				irf_log('drsc',['Saving TT_' dataSet ' to CAA/matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
-                dirName=['CAA/matCaaRequests/' varName];
+                dirName=['CAA/matCaaRequests'];
                 if ~exist(dirName,'dir'), mkdir(dirName);end
-				save(dirName,'-v7',varName);
+				save([dirName '/' varName],'-v7',varName);
 			end
 		else
 			irf_log('proc','Waiting 1min ....');
