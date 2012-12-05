@@ -38,7 +38,7 @@ function out=c_read(varargin)
 %		R1=local.c_read('R1',tint);
 %		DipoleTilt=local.c_read('dipole_tilt__CL_SP_AUX',tint);
 %
-% to update file index run LOCA.C_UPDATE
+% to update file index run LOCAL.C_UPDATE
 %
 % $Id$
 
@@ -116,10 +116,25 @@ end
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
 			end
-			[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,'Variables', [{['time_tags__' dataset]},varToRead{:}]);
+			irf_log('dsrc',['Reading: ' cdf_file]);
+			%% check if epoch16
+			cdfid=cdflib.open([caaDir cdf_file]);
+			useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
+			if useCdfepoch16,
+				irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+				tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
+				tt=irf_time(tmptime','cdfepoch162epoch');
+				tmpdata=cell(1,numel(varToRead));
+				for iVar=1:numel(varToRead),
+					tmp=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
+					tmpdata{iVar}=[tt tmp'];
+				end
+			else
+				[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,'Variables', [{['time_tags__' dataset]},varToRead{:}]);
+				tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
+			end
 			if iFile==istart, data=cell(size(tmpdata));end
 			iist=1;iien=numel(tmpdata{1});
-			tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
 			if iFile==istart
 				iist=find(tmpdata{1}>tint(1),1);
 			end
@@ -127,20 +142,41 @@ end
 				iien=find(tmpdata{1}<tint(2),1,'last');
 			end
 			%% check for NaNs
-			cdfInfo=cdfinfo([caaDir cdf_file]);
-			fillValList=cdfInfo.VariableAttributes.FILLVAL;
 			for iVar=1:numel(varToRead),
-				ii=strcmp(fillValList,varToRead{iVar});
-				fillVal=fillValList{ii,2};
+				fillVal=value_of_variable_attribute(cdfid,varToRead{iVar},'FILLVAL');
 				tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN;
 			end
 			%% attach to result
 			for j=1:numel(data),
 				data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
 			end
+			cdflib.close(cdfid);
 		end
 		status=1;
 	end
 end
+function data = readCdfepoch16(cdfid,varName)
+if isnumeric(varName),
+	varnum=varName;
+elseif ischar(varName)
+	varnum  = cdflib.getVarNum(cdfid,varName);
+else 
+	error('varName should be variable number or name');
+end
+numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
+numElements = getfield(cdflib.inquireVar(cdfid,varnum),'numElements');
+data=zeros(2+numElements,numrecs);
 
-
+for j = 0:numrecs-1
+	% This reads in the data in raw epoch 16 format
+	% That implies each Epoch16 value is a 2-element double precision
+	% value in MATLAB
+	data(:,1+j) = cdflib.getVarRecordData(cdfid,varnum,j);
+end
+data=data';
+end
+function value=value_of_variable_attribute(cdfid,varName,attrName)
+attrnum = cdflib.getAttrNum(cdfid,attrName);
+varnum = cdflib.getVarNum(cdfid,varName);
+value = cdflib.getAttrEntry(cdfid,attrnum,varnum);
+end
