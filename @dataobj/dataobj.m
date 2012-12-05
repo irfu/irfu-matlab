@@ -16,11 +16,10 @@ function dobj = dataobj(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-persistent testedUsingNasaPatchCdf
+persistent usingNasaPatchCdf
 
-if isempty(testedUsingNasaPatchCdf), % check only once if using NASA cdf
-	check_if_using_nasa_patch_cdf;   % stop with error if using NASA cdf
-	testedUsingNasaPatchCdf=1;
+if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+	usingNasaPatchCdf=check_if_using_nasa_patch_cdf;   % stop with error if using NASA cdf
 end
 shouldReadAllData= 1; % default read all data
 noDataReturned   = 0; % default expects data to be returned
@@ -66,8 +65,7 @@ switch action
 						for j=1:numel(cdf_files),
 							disp([num2str(j) '. ' cdf_files(j).name]);
 						end
-						disp('Choose cdf file');
-						j = irf_ask('Cdf_file? [%]>','cdf_file',1);
+						j = irf_ask('Choose cdf-file? [%]>','cdf_file',1);
 						cdf_file = [directory_name cdf_files(j).name];
 				end
 				clear cdf_files
@@ -79,60 +77,61 @@ switch action
 			end
 			
 			irf_log('dsrc',['Reading: ' cdf_file]);
-			%% check if epoch16 file
-			
-			cdfid   = cdflib.open(cdf_file);
-			inq=cdflib.inquireVar(cdfid,0);
-			if strcmpi(inq.datatype,'cdf_epoch16')
-				flag_using_cdfepoch16=1;
-			else
-				flag_using_cdfepoch16=0;
-			end
-			% leave open cdf file
-			
 			%% read in file
-			if flag_using_cdfepoch16,
-				irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
-				shouldReadAllData=1; % read all data
-				info = cdflib.inquire(cdfid);
-				vars=cell(info.numVars-1,1);
-				vars_i16 = ones(size(1:info.numVars)); % array indicating which of the variables are EPOCH16
-				for jj=1:info.numVars
-					vars{jj}=cdflib.getVarName(cdfid,jj-1);
-					inq=cdflib.inquireVar(cdfid,jj-1);
-					if strcmpi(inq.datatype,'cdf_epoch16')
-						vars_i16(jj)=0;
-					end
-				end
-				data=cell(1,info.numVars);
-				data(vars_i16==1) = cdfread(cdf_file,'variables',vars(vars_i16==1),'CombineRecords',true);
-				info=cdfinfo(cdf_file);
-				ii = find(vars_i16==0);
-				numrecs = cdflib.getVarAllocRecords(cdfid,0);
-				for i=1:length(ii)
-					% get time axis
-					tc=zeros(2,numrecs);
-					for jj=1:numrecs,
-						tc(:,jj) = cdflib.getVarRecordData(cdfid,ii(i)-1,jj-1);
-					end
-					data(ii(i))={tc'};
-				end
+			if usingNasaPatchCdf
+				[data,info] = cdfread(cdf_file,'CombineRecords',true);
 			else
-				[data,info] = cdfread(cdf_file,...
-					'ConvertEpochToDatenum',true,...
-					'CombineRecords',true);
+				cdfid   = cdflib.open(cdf_file);
+				
+				% check if epoch 16
+				usingCdfepoch16=strcmpi('cdf_epoch16',...
+					getfield(cdflib.inquireVar(cdfid,0),'datatype'));
+				
+				% read in file
+				if usingCdfepoch16,
+					irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+					shouldReadAllData=1; % read all data
+					info = cdflib.inquire(cdfid);
+					vars=cell(info.numVars-1,1);
+					vars_i16 = ones(size(1:info.numVars)); % array indicating which of the variables are EPOCH16
+					for jj=1:info.numVars
+						vars{jj}=cdflib.getVarName(cdfid,jj-1);
+						inq=cdflib.inquireVar(cdfid,jj-1);
+						if strcmpi(inq.datatype,'cdf_epoch16')
+							vars_i16(jj)=0;
+						end
+					end
+					data=cell(1,info.numVars);
+					data(vars_i16==1) = cdfread(cdf_file,'variables',vars(vars_i16==1),'CombineRecords',true);
+					info=cdfinfo(cdf_file);
+					ii = find(vars_i16==0);
+					numrecs = cdflib.getVarAllocRecords(cdfid,0);
+					for i=1:length(ii)
+						% get time axis
+						tc=zeros(2,numrecs);
+						for jj=1:numrecs,
+							tc(:,jj) = cdflib.getVarRecordData(cdfid,ii(i)-1,jj-1);
+						end
+						data(ii(i))={tc'};
+					end
+				else
+					[data,info] = cdfread(cdf_file,...
+						'ConvertEpochToDatenum',true,...
+						'CombineRecords',true);
+				end
+				cdflib.close(cdfid);
+				if ~shouldReadAllData, % check which records to return later
+					info=cdfinfo(cdf_file);
+					timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
+					timeline = irf_time(cdfread(cdf_file,'Variable',{timevar},'ConvertEpochToDatenum',true,'CombineRecords',true),'date2epoch');
+					records_within_interval=find((timeline > tint(1)) & (timeline < tint(2)));
+				end
 			end
-			cdflib.close(cdfid);
-			if ~shouldReadAllData, % check which records to return later
-				info=cdfinfo(cdf_file);
-				timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
-				timeline = irf_time(cdfread(cdf_file,'Variable',{timevar},'ConvertEpochToDatenum',true,'CombineRecords',true),'date2epoch');
-				records_within_interval=find((timeline > tint(1)) & (timeline < tint(2)));
-			end
-			dobj.FileModDate = info.FileModDate;
+			%% construct data object
+			dobj.FileModDate		= info.FileModDate;
 			dobj.VariableAttributes = info.VariableAttributes;
-			dobj.GlobalAttributes = info.GlobalAttributes;
-			dobj.Variables = info.Variables;
+			dobj.GlobalAttributes	= info.GlobalAttributes;
+			dobj.Variables			= info.Variables;
 			% test if there are some data
 			if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
                     any(strcmpi(info.Variables(:,4),'epoch16')==1)),
@@ -168,8 +167,13 @@ switch action
 						disp(['new var  : ' dobj.vars{v,1}])
 					end
 					if shouldReadAllData, % return all data
-						dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
-						dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
+						if usingNasaPatchCdf
+							dobj.data.(dobj.vars{v,1}).data = data{v};
+							dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
+						else
+							dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
+							dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
+						end
 					else
 						data_all_records=[data{:,v}];
 						if numel(size(data_all_records))==2,
@@ -202,7 +206,11 @@ switch action
 							convert_cdfepoch_to_isdat_epoch % update all the structure fields necessary when doing conversion
 						end
 					elseif strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
-						dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
+						if usingNasaPatchCdf
+							convert_cdfepoch16_to_isdat_epoch % update all the structure fields necessary when doing conversion							
+						else
+							dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
+						end
 					end
 				end
 			end
@@ -245,7 +253,61 @@ end
 			end
 		end
 	end
-	function check_if_using_nasa_patch_cdf
+	function convert_cdfepoch16_to_isdat_epoch() % nested function
+		epochData=cell2mat(dobj.data.(dobj.vars{v,1}).data);
+		DIn=epochData(:,1:20);
+		Dout=zeros(size(DIn,1),6);
+		Dx   = double(DIn - '0');        % For faster conversion of numbers
+		Dout(:,1)=Dx(:,8) * 1000 + Dx(:,9) * 100 + Dx(:,10) * 10 + Dx(:,11); % Year
+		monthN=sum(Dx(:,4:6),2)-143; % Apr,Sep ok
+		monthN(monthN==-3)=1; % jan
+		monthN(monthN==-18)=2; % feb
+		monthN(monthN==1)=3; % mar
+		monthN(monthN==8)=5; % may
+		monthN(monthN==14)=6; % jun
+		monthN(monthN==12)=7; % jul
+		monthN(monthN==-2)=8; % aug
+		monthN(monthN==7)=10; % oct
+		monthN(monthN==20)=11; % nov
+		monthN(monthN==-19)=12; % dec
+		Dout(:,2)=monthN;
+		Dout(:,3) = Dx(:,1)  * 10 + Dx(:,2);   % Day
+		Dout(:,4) = Dx(:,13) * 10 + Dx(:,14);  % Hour
+		Dout(:,5) = Dx(:,16) * 10 + Dx(:,17);  % Minute
+		Dout(:,6) = Dx(:,19) * 10 + Dx(:,20);     % Second
+		psStr=epochData(:,[22:24 26:28 30:32 34:36]); % ps
+		psVec=double(psStr-'0');
+		power=repmat(10.^(-1:-1:-12),size(psStr,1),1);
+		ps=sum(psVec.*power,2);
+		Dout(:,6)=Dout(:,6)+ps;
+		t=irf_time(Dout,'vector2epoch');
+		dobj.data.(dobj.vars{v,1}).data = t;
+		isFieldUnits        = isfield(dobj.VariableAttributes,'UNITS');
+		isFieldSIConversion = isfield(dobj.VariableAttributes,'SI_CONVERSION');
+		isFieldDeltaPlus    = isfield(dobj.VariableAttributes,'DELTA_PLUS');
+		isFieldDeltaMinus   = isfield(dobj.VariableAttributes,'DELTA_MINUS');
+		if isFieldUnits,
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.UNITS(:,1))==1);
+			if iattr, dobj.VariableAttributes.UNITS(iattr,2)={'s'};end % change from ms to s UNITS of epoch if present
+		end
+		if isFieldSIConversion,
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.SI_CONVERSION(:,1))==1);
+			if iattr, dobj.VariableAttributes.SI_CONVERSION(iattr,2)={'1.0>s'};end % change from ms to s SI_CONVERSION of epoch if present
+		end
+		if isFieldDeltaPlus,
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_PLUS(:,1))==1); % to convert DELTA_PLUS
+			if iattr && isnumeric(dobj.VariableAttributes.DELTA_PLUS{iattr,2}),
+				dobj.VariableAttributes.DELTA_PLUS{iattr,2}=dobj.VariableAttributes.DELTA_PLUS{iattr,2}/1e12;
+			end
+		end
+		if isFieldDeltaMinus,
+			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_MINUS(:,1))==1); % to convert DELTA_PLUS
+			if iattr && isnumeric(dobj.VariableAttributes.DELTA_MINUS{iattr,2}),
+				dobj.VariableAttributes.DELTA_MINUS{iattr,2}=dobj.VariableAttributes.DELTA_MINUS{iattr,2}/1e12;
+			end
+		end
+	end
+	function ok=check_if_using_nasa_patch_cdf
 		fid=fopen(which('cdfread'));
 		while 1
 			tline = fgetl(fid);
@@ -253,7 +315,7 @@ end
 			if strfind(tline,'Mike Liu')
 				fprintf('\n\n\n');
 				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-				disp(' You are using NASA cdfread patch which we do not support!')
+				disp(' You are using NASA cdfread patch which we have bad support!')
 				disp(' This may give errors reading in multidimensional data sets!')
 				disp(' Also option ''tint'' in routine databoj is disabled.');
 				disp(' We suggest you to use the MATLAB cdfread!');
@@ -265,7 +327,11 @@ end
 				disp('> clear databoj');
 				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 				fprintf('\n\n\n');
-				error('Using NASA cdf is not supported!');
+				irf_log('fcal','Using NASA cdf is not supported!');
+				ok=true;
+				break;
+			else
+				ok=false;
 			end
 		end
 		fclose(fid);
