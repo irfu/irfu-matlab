@@ -179,7 +179,7 @@ if nargin>=1, % check if fist argument is not caa zip file link
 		help caa_download;return;
 	end
 end
-if nargout>0, checkDownloadsStatus=false; end
+if nargout>0 && nargin>0, checkDownloadsStatus=false; end
 caaQuery=[caaServer 'caa_query/'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
