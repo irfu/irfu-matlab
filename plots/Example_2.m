@@ -61,7 +61,7 @@ end
 % new panel
 hca=irf_panel('STAFF B spectrogram');
 ic=4;
-varname=irf_ssub('BB_xxyyzz_isr2__C?_CP_STA_PSD',ic);
+varname=irf_ssub('BB_xxyyzz_sr2__C?_CP_STA_PSD',ic);
 varunits='nT^2/Hz';
 irf_plot(varname,'ax',hca,'colorbarlabel',{'log_{10}S',varunits},'fitcolorbarlabel','comp',1,'nolabels');
 ylabel(hca,{'frequency','[Hz]'});
@@ -86,5 +86,11 @@ irf_legend(0,'Example 2',[0.02 0.02],'color',[0.5 0.5 0.5]);
 % set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % print -dpng -painters Example_2.png;
 
+%%%%%%%%%%%%%%%%%%%%%%%%
+% remove temporary directory
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp('When finnished with the example, ');
+disp('remove the temporary directory in which you are located!')
+disp('>p=pwd;cd ..; rmdir(p,''s'');');
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
-%  irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
