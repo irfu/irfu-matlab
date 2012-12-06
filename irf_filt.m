@@ -27,7 +27,7 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 %
 % $Id$
 
-if ((nargin < 4) | (isempty(Fs))), 
+if ((nargin < 4) || (isempty(Fs))), 
  Fs=1/(inp(2,1)-inp(1,1));
  irf_log('proc',['Using sampling frequency ',num2str(Fs),' Hz']);
 end % estimate sampling frequency
@@ -41,14 +41,14 @@ out=inp;
 Rp=.5;Rs=60;fact=1.1; % fact defines the width between stopband and passband
 if fmin==0
   if fmax == 1, return;end
-	if nargin < 5 
-        [n wn]=ellipord(fmax,fmax*fact,Rp,Rs);
+    if nargin < 5,
+        n=ellipord(fmax,fmax*fact,Rp,Rs);
     end
 	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B,A] = ellip(n,Rp,Rs,fmax);
 elseif fmax ==0
     if nargin < 5
-        [n wn]=ellipord(fmin,fmin*1.1,Rp,Rs);
+        n=ellipord(fmin,fmin*1.1,Rp,Rs);
     end 
 	[B,A] = ellip(n,Rp,Rs,fmin,'high');
 	%irf_log('proc',['using ' num2str(n) '-th highpass order filter']);
@@ -57,12 +57,12 @@ else
 	%sprintf('using %d-th order ellip irf_lowpass filter',n)
 	%[B1,A1] = ellip(n,Rp,Rs,fmax);
 	if nargin < 5
-    	[n wn]=ellipord(fmax,fmax*1.3,Rp,Rs);
+    	n=ellipord(fmax,min(fmax*1.3,1),Rp,Rs);
 	end
 	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B1,A1] = ellip(n,Rp,Rs,fmax);
 	if nargin < 5
-    	[n wn]=ellipord(fmin,fmin*.75,Rp,Rs);
+    	n=ellipord(fmin,fmin*.75,Rp,Rs);
 	end
 	irf_log('proc',['using ' num2str(n) '-th order ellip high pass filter']);
 	[B2,A2] = ellip(n,Rp,Rs,fmin,'high');
@@ -72,19 +72,19 @@ end
 ind_NaN=find(isnan(inp)); 
 inp(ind_NaN)=0;
 
-[n m] = size(inp);
-ini=1; % from which column start filtering
-if m>1 % assume that first column is time
-    ini=2;
+nColumnsToFilter=size(inp,2);
+iStartColumn=1; % from which column start filtering
+if nColumnsToFilter>1 % assume that first column is time
+    iStartColumn=2;
 end
-if ((fmin ~= 0) & (fmax ~= 0))
-	for i=ini:m
-	out(:,i) = filtfilt(B1,A1,inp(:,i)); 
-	out(:,i) = filtfilt(B2,A2,out(:,i)); 
+if ((fmin ~= 0) && (fmax ~= 0))
+	for iCol=iStartColumn:nColumnsToFilter
+	out(:,iCol) = filtfilt(B1,A1,inp(:,iCol)); 
+	out(:,iCol) = filtfilt(B2,A2,out(:,iCol)); 
 	end
 else
-	for i=ini:m
-	out(:,i) = filtfilt(B,A,inp(:,i)); 
+	for iCol=iStartColumn:nColumnsToFilter
+	out(:,iCol) = filtfilt(B,A,inp(:,iCol)); 
 	end
 end
 out(ind_NaN)=NaN;
