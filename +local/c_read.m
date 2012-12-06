@@ -43,6 +43,11 @@ function out=c_read(varargin)
 % $Id$
 
 persistent index % to make fast access read only once
+persistent usingNasaPatchCdf
+
+if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;   
+end
 
 caaDir='/data/caa/CAA/';
 if isempty(index), index=struct('dummy',[]);end
@@ -130,7 +135,8 @@ end
 					tmpdata{iVar}=[tt tmp'];
 				end
 			else
-				[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,'Variables', [{['time_tags__' dataset]},varToRead{:}]);
+				[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,...
+					'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
 				tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
 			end
 			if iFile==istart, data=cell(size(tmpdata));end
