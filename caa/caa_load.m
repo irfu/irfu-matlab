@@ -35,36 +35,32 @@ function caa_load(varargin)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
-flag_read_all=1;        % default load everything
-flag_only_list_files=0; % default do not only list files
-flag_filter = 1;        % default is to filter according to names
-flag_exact_match =0;    % default is to filter not according to exact match
-forceLoadFromFile = 1;  % if 0, do not load object if it exists in memory
-
-if nargin==0, 
-    flag_filter=0; % load all variables, no filtering
-end
+shouldReadAllData=true;   % default load everything
+listFilesOnly=false;      % default list and load files
+filterNames = any(nargin);% if there is input, use it to filter names, otherwise load all
+useExactNameMatch = false;% default is to filter not according to exact match
+forceLoadFromFile = true; % if false, do not load object from file if it exists in memory
 
 if nargin > 0, % filter which variables to load
   i=1;
   variable_filter=cell(nargin,1);
   for j=1:length(varargin),
     if ischar(varargin{j}) && ~isempty(strfind(varargin{j},'tint=')),
-      flag_read_all=0;
+      shouldReadAllData=false;
       tint=eval(varargin{j});
       variable_filter(j:end)=[]; % remove last cells from variable file
       break;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'tint') ...
         && length(varargin)>j && isnumeric(varargin{j+1}),
-      flag_read_all=0;
+      shouldReadAllData=false;
       tint=varargin{j+1};
       variable_filter(j:end)=[]; % remove last cells from variable file
       break;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'list'), % only list whats available
-      flag_read_all=0;
-      flag_only_list_files=1;
+      shouldReadAllData=false;
+      listFilesOnly=1;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'nowildcard'), % load only specified names
-      flag_exact_match=1;  
+      useExactNameMatch=1;  
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'ifnotinmemory'), % load only specified names
       forceLoadFromFile=0;  
     elseif ischar(varargin{j})
@@ -78,7 +74,7 @@ if nargin > 0, % filter which variables to load
       i=i+1;
     end
   end
-  if i==1, flag_filter=0;end % no names found
+  if i==1, filterNames=0;end % no names found
   variable_filter(i:end)=[];
 end
 
@@ -96,9 +92,9 @@ for j = 1:numel(dirs)
     var_name = dirs(j).name;
     var_name(strfind(var_name,'-'))='_'; % substitute '-' to '_'
     flag_load_variable=1;
-    if flag_filter==1, % if there is name filtering required check if to load variable
+    if filterNames==1, % if there is name filtering required check if to load variable
       for jj=1:length(variable_filter),
-        if flag_exact_match==1,
+        if useExactNameMatch==1,
             if strcmpi(var_name,variable_filter{jj}),
                 flag_load_variable=1;
                 break; % exact match found, read the variable
@@ -109,12 +105,12 @@ for j = 1:numel(dirs)
           flag_load_variable=0;
         end
       end
-      if flag_load_variable && flag_only_list_files
+      if flag_load_variable && listFilesOnly
         disp(var_name);
         flag_load_variable=0;
       end
     else % work on all variables 
-        if flag_only_list_files,
+        if listFilesOnly,
             flag_load_variable=0;
             disp(var_name);
         else
@@ -125,10 +121,10 @@ for j = 1:numel(dirs)
     if flag_load_variable,
       try
         irf_log('dsrc',['loading ' var_name]);
-        if flag_read_all && ~forceLoadFromFile && evalin('caller',['exist(''' var_name ''',''var'')']),
+        if shouldReadAllData && ~forceLoadFromFile && evalin('caller',['exist(''' var_name ''',''var'')']),
 			irf_log('dsrc',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
         else
-          if flag_read_all,
+          if shouldReadAllData,
             evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
           else
             assignin('caller','caa_load_tint_temp',tint);
@@ -146,6 +142,6 @@ for j = 1:numel(dirs)
 end
 if nloaded, 
   irf_log('dsrc',['=====> loaded ' num2str(nloaded) ' variables']);
-elseif ~flag_only_list_files
+elseif ~listFilesOnly
   irf_log('dsrc','CAA_LOAD : nothing to load')
 end
