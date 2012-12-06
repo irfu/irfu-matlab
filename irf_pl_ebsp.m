@@ -1,127 +1,21 @@
 function h=irf_pl_ebsp(varargin)
 %IRF_PL_EBSP   Plot E wavelet spectra, B wavelet spectra, Poynting flux,
-% E/B, ellipticity, polarization
+% E/B, ellipticity, polarization, wave vector direction
 %
 % h=irf_pl_ebsp(e,b,pos,arguments)
 % modified from irf_pl_ebs
-% assumes equidistant time spacing
 %
-% It uses a Morlet wavelet.
-% e = wave electric field, columns (t ex ey ez)
-% b = wave magnetic field, columns (t bx by bz)
-% pos = position vector of spacecraft in GSE, columns (t x y z)
-% choose which parameters to plot in arguments, options include:
-%  'e', 'b', 's', 'eb', 'pol', 'ellip' %can be included in any order
-% to set the frequency range, add the optional arguments
-%  'freq', [fmin fmax]   %NOTE these must be the last two arguments
-%  (Or use default [.01 5])
-% 
-% Returns in h handles to subplots
+% Plots parameters calculated with irf_ebsp routine
 %
 % Examples:
-%    h=irf_pl_ebsp(e,b,xyz,'b','ellip','pol','e','s','freq',[.01 1.5]);
-%    h=irf_pl_ebsp(e,b,xyz,'b','pol','ellip');
+%   h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac);
+%   h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac,...
+%        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC);
+%   h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac,...
+%        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,...
+%        Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
+%
 
-
-% %% Check input 
-%   [ax,args,nargs] = axescheck(varargin{:});
-%   %x=args{1};
-%   if isempty(args), % nothing to plot, first input parameter empty
-%     return;
-%   end
-%   
-%   original_args=args;
-%   var_desc{1} = '';
-%   flag_subplot = 0;
-%   have_options = 1;
-% 
-%   if nargs > 1, have_options = 1; end
-%   
-%   % TODO: this needs to be determined from data ?
-%   sampl=22.5;
-%   
-%     %% Default values that can be overridden by options
-% % dt = 0;
-% % flag_yy = 0;
-% % scaleyy = 1;
-% % plot_type = '';
-% % marker = '-';
-% % flag_plot_all_data=1;
-% flag_colorbar=1;
-% colorbar_scale=1;
-% 
-%   %% Set some important parameters
-%   freq_int=[.01 5];
-%   freq_number=25;
-%   Morlet_width=5.36;
-% 
-%   if isnumeric(args{end})
-%       freq_int=args{end};
-%       args=args(1:end-2);
-%   elseif ismember({'freq'},args)
-%       disp('frequency interval values missing. using default')
-%       args=args(1:end-1);
-%   end
-%   
-%   amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
-%   a=logspace(amin,amax,anumber);
-%   w0=sampl/2; % The maximum frequency
-%   newfreq=w0./a;
-
-%   %% Calculations
-%   included_params=ismember({'e' 'b' 's' 'eb' 'pol' 'ellip'},lower(args));
-%   if any(included_params(1:4) == 1) && all(included_params(5:6) == 0),
-%     [e1,b1,powerEx_plot,powerEy_plot,powerEz_plot,power2E_plot,powerBx_plot,powerBy_plot,powerBz_plot,power2B_plot,Spar_plot,EtoB_plot,powerBx_SM_plot,powerBy_SM_plot,powerBz_SM_plot,power2B_SM_plot]=irf_ebs(e1,b1,xyz,freq_int);
-% %    [e1,power2E_plot,Spar_plot,power2B_SM_plot]=irf_ebs(e1,b1,xyz);
-%     disp('irf_ebs ... calculations');
-%   elseif all(included_params(1:4) == 0) && any(included_params(5:6) == 1),
-%     [e1,b1,Lp,Ls5]=irf_pol(e1,b1,xyz,freq_int);
-% %    [e1,Lp,Ls5]=irf_pol(e1,b1,xyz);
-%     disp('irf_pol ... calculations');
-%   elseif all(included_params([1 3:4]) == 0) && any(included_params([2 5:6]) == 1),
-%     [e1,b1,Lp,Ls5,powerBx_SM_plot,powerBy_SM_plot,powerBz_SM_plot,power2B_SM_plot]=irf_bpol(e1,b1,xyz,freq_int);
-% %    [e1,Lp,Ls5,power2B_SM_plot]=irf_bpol(e1,b1,xyz);
-%     disp('irf_bpol ... calculations');
-%   else    
-%     %for everything
-%     [e1,b1,Lp,Ls5,powerEx_plot,powerEy_plot,powerEz_plot,power2E_plot,powerBx_plot,powerBy_plot,powerBz_plot,power2B_plot,Spar_plot,EtoB_plot,powerBx_SM_plot,powerBy_SM_plot,powerBz_SM_plot,power2B_SM_plot]=irf_ebsp(e1,b1,xyz,freq_int);
-% %    [e1,Lp,Ls5,power2E_plot,Spar_plot,power2B_SM_plot]=irf_ebsp(e1,b1,xyz);
-%     disp('irf_ebsp ... calculations');
-%   end
-  
-  
-  
-
-% %% Check input options
-% while have_options
-%     l = 1;
-%     switch(lower(args{1})) 
-%         case 'linestyle'
-%             marker = args{2};
-%             l = 2;
-%         case 'nocolorbar'
-%             flag_colorbar=0;
-%             l = 1;
-%         case 
-%         case 'freq'
-%             if nargs>1
-%                 if isnumeric(args{2})
-%                     dt = args{2};
-%                     l = 2;
-%                 else irf_log('fcal,','wrongArgType : dt must be numeric')
-%                 end
-%             else irf_log('fcal,','wrongArgType : dt value is missing')
-%             end
-%         
-%         otherwise
-%             %irf_log('fcal',['Assuming ''' args{1} ''' is a LineStyle'])
-%             marker = args{1};
-%             args = args(2:end);
-%             break
-%     end
-%     args = args(l+1:end);
-%     if isempty(args), break, end
-% end
 
 %save('2009May22.mat', 'e1','b1','power2E_plot','power2B_SM_plot','Spar_plot','EtoB_plot');
 
@@ -141,26 +35,26 @@ if colorbar_scale==1,
    xcm=[ [0*it flipud(it) it];[it2 it2 it3];...
        [flipud(it3) flipud(it2) flipud(it2)]; [flipud(it) 0*it 0*it]];
    xcm2=[ [it2 it2 it3];[flipud(it3) flipud(it2) flipud(it2)]];
-   it4 = 0:.01:.5; it4=it4';
-   it5 = 0:.008:.4; it5=it5';
-   it6 = .4:.004:.6; it6=it6';
-   it7 = .6:.008:1; it7=it7';
-   it9 = 1:1:10;
-   it10 = 1:1:9;
-   xcm3=[ [it5 it./3 it4]; [it6 it./3+.33 0*it+.5]; [it7 it./3+.66 it4+.5]];
-   %it8 = [it9*0 0:.04:.6 fliplr(0:.04:.6) it10*0]; it8=it8';
-   it8 = [0:.024:.6 fliplr(.3+.015:.015:.6) fliplr(0+.06:.06:.3)]; it8=it8';
-   it11 = [fliplr(.1:.016:.5) .1:.02:.5 .5:.02:.6-.04]; it11=it11';
-   it12 = [0:.00375:.15 .15:.063:.78-.063]; it12=it12';
-   %xcm4=[it8 it./1.3 it11];
-   %xcm4=[it8 it12 it11];
-   it13 = [0:.009:.405 .405:.02:.505-.02]; it13=it13';
-   %xcm4=[it8+.1 it13+.1 it11+.1];
-   it14 = .1:.01125:1; it14=it14';
-   it15 = .1:.0025:.3; it15=it15';
-   it16 = .2:.005:.6; it16=it16';
-   it17 = .2:.035:.9; it17=it17';
-   xcm4=[[it14 it15*0+.2 flipud(it16)]; [ones(size(it17)) it17 it17]];
+%    it4 = 0:.01:.5; it4=it4';
+%    it5 = 0:.008:.4; it5=it5';
+%    it6 = .4:.004:.6; it6=it6';
+%    it7 = .6:.008:1; it7=it7';
+%    it9 = 1:1:10;
+%    it10 = 1:1:9;
+%    xcm3=[ [it5 it./3 it4]; [it6 it./3+.33 0*it+.5]; [it7 it./3+.66 it4+.5]];
+%    %it8 = [it9*0 0:.04:.6 fliplr(0:.04:.6) it10*0]; it8=it8';
+%    it8 = [0:.024:.6 fliplr(.3+.015:.015:.6) fliplr(0+.06:.06:.3)]; it8=it8';
+%    it11 = [fliplr(.1:.016:.5) .1:.02:.5 .5:.02:.6-.04]; it11=it11';
+%    it12 = [0:.00375:.15 .15:.063:.78-.063]; it12=it12';
+%    %xcm4=[it8 it./1.3 it11];
+%    %xcm4=[it8 it12 it11];
+%    it13 = [0:.009:.405 .405:.02:.505-.02]; it13=it13';
+%    %xcm4=[it8+.1 it13+.1 it11+.1];
+%    it14 = .1:.01125:1; it14=it14';
+%    it15 = .1:.0025:.3; it15=it15';
+%    it16 = .2:.005:.6; it16=it16';
+%    it17 = .2:.035:.9; it17=it17';
+%    xcm4=[[it14 it15*0+.2 flipud(it16)]; [ones(size(it17)) it17 it17]];
    clear it; clear it2; clear it3;
 else
       colormap('default');xcm=colormap;
@@ -184,13 +78,6 @@ cmapCombo=[cmapStandard;xcm2];
     BVector=args{3};
     args=args(4:end);
 
-%     power2B_SM_plot = BB_xxyyzz_fac;
-%     power2E_plot = EESum_xxyyzz_ISR2;
-%     %EE_xxyyzz_FAC = ;
-%     Spar_plot = Poynting_xyz_FAC;
-%     %Poynting_rThetaPhi_FAC = ;
-%     polarizationSign = polarization;
-%     %polarizationEllipseRatio.*polarizationSign = ellipticity;
     power2B_SM_plot = args{1};
     power2E_plot = args{2};
     EESum_xxyyzz_ISR2 = args{2};
@@ -199,7 +86,6 @@ cmapCombo=[cmapStandard;xcm2];
     Poynting_rThetaPhi_FAC = args{5};
     k_thphSVD_fac = args{6};
     polSVD_fac = args{7};
-    %polarizationEllipseRatio.*polarizationSign = ellipticity;
     ellipticity = args{8};
 
 

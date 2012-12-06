@@ -1,12 +1,20 @@
 function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-    Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=irf_maarble(e,b,xyz,varargin)
+    Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=prepare_ULF_data(e,b,xyz,varargin)
+% This routine prepares the ULF data to be analyzed for the Maarble
+% project. The routine then calculates the various wave parameters using
+% the irf_ebsp routine, and then plots them using irf_pl_ebsp.
 
-% e and b in ISR2
+
+% e in ISR2; b in gse
 % get e from E_Vec_xy_ISR2__C?_CP_EFW_L2_E
 % get b from B_vec_xyz_gse__C?_CP_FGM_FULL
 % position vector xyz from sc_pos_xyz_gse__C?_CP_FGM_FULL 
 % converts b and xyz to ISR2
 % first entry in varargin to be cl_id
+% second and third entries to be the frequency range in the form: 'freq',[.01,1]
+
+% Example:
+%   maarble.prepare_ULF_data(E,B,xyz,4,'freq',[.01,1]);
 
 
   %% Check input 

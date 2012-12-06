@@ -1,8 +1,8 @@
-%function [e,b,polarizationEllipseRatio,polarizationSign,powerEx_plot,powerEy_plot,powerEz_plot,power2E_plot,powerBx_plot,powerBy_plot,powerBz_plot,power2B_plot,Spar_plot,EtoB_plot,powerBx_SM_plot,powerBy_SM_plot,powerBz_SM_plot,power2B_SM_plot]=irf_ebsp(e,b,B,xyz,varargin)
 function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
     Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=irf_ebsp(e,b,B,xyz,varargin)
 %IRF_EBSP   Calculates E wavelet spectra, B wavelet spectra, Poynting flux,
-% E/B, ellipticity, polarization; to be used with irf_pl_ebsp
+% E/B, ellipticity, polarization; 
+% Returns values to be used with irf_pl_ebsp!!
 %
 % irf_ebsp(e,b,pos,freq_int)
 % modified from irf_pl_ebs
@@ -11,14 +11,26 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
 % It uses a Morlet wavelet.
 % e = wave electric field, columns (t ex ey ez)
 % b = wave magnetic field, columns (t bx by bz)
-% pos = position vector of spacecraft, columns (t x y z)
+% B = background magnetic field, columns (t bx by bz)
+% xyz = position vector of spacecraft, columns (t x y z)
 %
-% freq_int set in irf_pl_ebsp (chosen, or default [.01 5])
+% frequency interval chosen as input to varargin, or default [.01 5]
 % 
 % Returns calculated parameters
 %
-% Example:
-%    [e1,b1,powerEx_plot,powerEy_plot,powerEz_plot,power2E_plot,powerBx_plot,powerBy_plot,powerBz_plot,power2B_plot,Spar_plot,EtoB_plot,powerBx_SM_plot,powerBy_SM_plot,powerBz_SM_plot,power2B_SM_plot]=irf_ebs(e1,b1,xyz,freq_int);
+% Examples:
+%    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac]=...
+%        irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
+%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+%        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
+%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+%        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
+%        irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
+% should also be possible to use default frequency range of [.01 5] **need
+% to check this**
+%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+%        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
+%        irf_ebsp(e,b,B,xyz);
 %
 % $Id$ 
 
