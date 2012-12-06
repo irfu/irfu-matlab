@@ -19,9 +19,9 @@ function dobj = dataobj(varargin)
 persistent usingNasaPatchCdf
 
 if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
-	usingNasaPatchCdf=check_if_using_nasa_patch_cdf;   % stop with error if using NASA cdf
+	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
-shouldReadAllData= 1; % default read all data
+shouldReadAllData= true; % default read all data
 noDataReturned   = 0; % default expects data to be returned
 if nargin==0, action='create_default_object'; end
 if nargin==1, action='read_data_from_file'; end
@@ -30,6 +30,7 @@ if nargin==3 && ...
 		isnumeric(varargin{3}) && (length(varargin{3})==2),
 	tint=varargin{3};
 	action='read_data_from_file';
+	shouldReadAllData=false;
 end
 switch action
 	case 'create_default_object'
@@ -43,10 +44,8 @@ switch action
 	case 'read_data_from_file'
 		% if single argument of class ClusterDB, return it
 		if (isa(varargin{1},'dataobj'))
-			dobj = varargin{1};
-			
+			dobj = varargin{1};			
 		elseif ischar(varargin{1})
-			
 			if strfind(varargin{1},'*')
 				cdf_files = dir(varargin{1});
 				cdf_files([cdf_files(:).isdir])=[]; % remove directories from the list
@@ -71,60 +70,64 @@ switch action
 				clear cdf_files
 			else cdf_file = varargin{1};
 			end
-			
 			if ~exist(cdf_file,'file')
 				error(['file ' cdf_file ' does not exist'])
 			end
-			
-			irf_log('dsrc',['Reading: ' cdf_file]);
 			%% read in file
+			irf_log('dsrc',['Reading: ' cdf_file]);
+			% get basic info
+			info   = cdfinfo(cdf_file);
+			% check if cdfepoch16
+			usingCdfepoch16=strcmpi('epoch16',info.Variables{1,4});
+			% initialize data object
+			dobj.FileModDate		= info.FileModDate;
+			dobj.VariableAttributes = info.VariableAttributes;
+			dobj.GlobalAttributes	= info.GlobalAttributes;
+			dobj.Variables			= info.Variables;
+			if usingCdfepoch16
+				update_variable_attributes_cdfepoch16;
+			else
+				update_variable_attributes_cdfepoch;
+			end
 			if usingNasaPatchCdf
 				[data,info] = cdfread(cdf_file,'CombineRecords',true);
+				if usingCdfepoch16
+					timeline = convert_cdfepoch16_string_to_isdat_epoch(data{1});
+				else
+					timeline = irf_time(data{1},'date2epoch');
+				end
+				data{1}=timeline;
+				fix_order_of_array_dimensions;
+				if ~shouldReadAllData
+					records=(timeline > tint(1)) & (timeline < tint(2));
+				end
 			else
-				cdfid   = cdflib.open(cdf_file);
-				
-				% check if epoch 16
-				usingCdfepoch16=strcmpi('cdf_epoch16',...
-					getfield(cdflib.inquireVar(cdfid,0),'datatype'));
-				
 				% read in file
 				if usingCdfepoch16,
 					irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
 					shouldReadAllData=1; % read all data
-					info = cdflib.inquire(cdfid);
-					vars=cell(info.numVars-1,1);
-					vars_i16 = ones(size(1:info.numVars)); % array indicating which of the variables are EPOCH16
-					for jj=1:info.numVars
-						vars{jj}=cdflib.getVarName(cdfid,jj-1);
-						inq=cdflib.inquireVar(cdfid,jj-1);
-						if strcmpi(inq.datatype,'cdf_epoch16')
-							vars_i16(jj)=0;
-						end
-					end
-					data=cell(1,info.numVars);
-					data(vars_i16==1) = cdfread(cdf_file,'variables',vars(vars_i16==1),'CombineRecords',true);
-					info=cdfinfo(cdf_file);
-					ii = find(vars_i16==0);
-					numrecs = cdflib.getVarAllocRecords(cdfid,0);
-					for i=1:length(ii)
+					variableNames=info.Variables(:,1);
+					isCdfepoch16VariableArray=cellfun(@(x) strcmpi(x,'epoch16'), info.Variables(:,4));
+					data=cell(1,size(variableNames,1));
+					data(~isCdfepoch16VariableArray) = cdfread(cdf_file,'variables',variableNames(~isCdfepoch16VariableArray),'CombineRecords',true);
+					iCdf16Variable = find(isCdfepoch16VariableArray);
+					for i=1:length(iCdf16Variable)
+						numrecs = info.Variables{iCdf16Variable(i),3};
 						% get time axis
 						tc=zeros(2,numrecs);
+						cdfid   = cdflib.open(cdf_file);
 						for jj=1:numrecs,
-							tc(:,jj) = cdflib.getVarRecordData(cdfid,ii(i)-1,jj-1);
+							tc(:,jj) = cdflib.getVarRecordData(cdfid,iCdf16Variable(i)-1,jj-1);
 						end
-						data(ii(i))={tc'};
+						cdflib.close(cdfid);
+						data(iCdf16Variable(i))={irf_time(tc','cdfepoch162epoch')};
 					end
 				else
-					[data,info] = cdfread(cdf_file,...
-						'ConvertEpochToDatenum',true,...
-						'CombineRecords',true);
+					[data,info] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true);
+					data{1} = irf_time([data{:,1}],'date2epoch');
 				end
-				cdflib.close(cdfid);
-				if ~shouldReadAllData, % check which records to return later
-					info=cdfinfo(cdf_file);
-					timevar=info.Variables{strcmpi(info.Variables(:,4),'epoch')==1,1};
-					timeline = irf_time(cdfread(cdf_file,'Variable',{timevar},'ConvertEpochToDatenum',true,'CombineRecords',true),'date2epoch');
-					records_within_interval=find((timeline > tint(1)) & (timeline < tint(2)));
+				if ~shouldReadAllData,
+					records=find((data{1} > tint(1)) & (data{1} < tint(2)));
 				end
 			end
 			%% construct data object
@@ -134,7 +137,7 @@ switch action
 			dobj.Variables			= info.Variables;
 			% test if there are some data
 			if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
-                    any(strcmpi(info.Variables(:,4),'epoch16')==1)),
+					any(strcmpi(info.Variables(:,4),'epoch16')==1)),
 				nVariables=0; % no time variable, return nothing
 				irf_log('dsrc','CDF FILE IS EMPTY!')
 			else
@@ -142,52 +145,28 @@ switch action
 			end
 			dobj.vars = cell(nVariables,2);
 			if nVariables>0
-				dobj.vars(:,1) = info.Variables(:,1);
-				dobj.vars(:,2) = info.Variables(:,1);
+				dobj.vars(:,1) = info.Variables(:,1); % new variables
+				dobj.vars(:,2) = info.Variables(:,1); % original variables
 				for v=1:nVariables
-					% Replace minuses with underscores
-					dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
-					% Remove training dots
-					while (dobj.vars{v,1}(end) == '.')
-						dobj.vars{v,1}(end) = [];
-					end
-					% Take care of '...'
-					d3 = strfind(dobj.vars{v,1},'...');
-					if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
-					% Replace dots with underscores
-					dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
-					% Add "x" if the varible name starts with a number
-					if ~isletter(dobj.vars{v,1}(1)),
-						dobj.vars{v,1}=['x' dobj.vars{v,1}];
-					end
-					% Take care of names longer than 63 symbols (Matlab limit)
-					if length(dobj.vars{v,1})>63
-						dobj.vars{v,1} = dobj.vars{v,1}(1:63);
-						disp(['orig var : ' dobj.vars{v,2}])
-						disp(['new var  : ' dobj.vars{v,1}])
-					end
-					if shouldReadAllData, % return all data
-						if usingNasaPatchCdf
-							dobj.data.(dobj.vars{v,1}).data = data{v};
-							dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
-						else
-							dobj.data.(dobj.vars{v,1}).data = [data{:,v}];
-							dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
-						end
+					make_variable_names_acceptable_for_matlab;
+					data_all_records = data{v};
+					if shouldReadAllData || strcmpi(info.Variables{v,5}(1),'F'), % return all data
+						dobj.data.(dobj.vars{v,1}).data = data_all_records;
+						dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
 					else
-						data_all_records=[data{:,v}];
-						if numel(size(data_all_records))==2,
-							data_records_within_interval=data_all_records(records_within_interval,:);
-						elseif numel(size(data_all_records))==3,
-							data_records_within_interval=data_all_records(records_within_interval,:,:);
-						elseif numel(size(data_all_records))==4,
-							data_records_within_interval=data_all_records(records_within_interval,:,:,:);
-						elseif numel(size(data_all_records))==5,
-							data_records_within_interval=data_all_records(records_within_interval,:,:,:,:);
+						nDim=numel(size(data_all_records));
+						if nDim==2,
+							data_records_within_interval=data_all_records(records,:);
+						elseif nDim==3,
+							data_records_within_interval=data_all_records(records,:,:);
+						elseif nDim==4,
+							data_records_within_interval=data_all_records(records,:,:,:);
+						elseif nDim==5,
+							data_records_within_interval=data_all_records(records,:,:,:,:);
 						end
 						dobj.data.(dobj.vars{v,1}).data = data_records_within_interval;
-						dobj.data.(dobj.vars{v,1}).nrec = numel(records_within_interval);
-						if numel(records_within_interval)==0,
+						dobj.data.(dobj.vars{v,1}).nrec = numel(records);
+						if numel(records)==0,
 							irf_log('dsrc','No data within specified time interval');
 							noDataReturned=1;
 							break;
@@ -197,21 +176,6 @@ switch action
 					dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
 					dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
 					dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
-					%Convert to isdat epoch
-					if strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch')
-						if numel(dobj.data.(dobj.vars{v,1}).data)==1 && dobj.data.(dobj.vars{v,1}).data == 1,
-							irf_log('dsrc','CDF FILE IS EMPTY!')
-							noDataReturned=1;
-						else
-							convert_cdfepoch_to_isdat_epoch % update all the structure fields necessary when doing conversion
-						end
-					elseif strcmp(dobj.data.(dobj.vars{v,1}).type,'epoch16')
-						if usingNasaPatchCdf
-							convert_cdfepoch16_to_isdat_epoch % update all the structure fields necessary when doing conversion							
-						else
-							dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'cdfepoch162epoch');
-						end
-					end
 				end
 			end
 			if noDataReturned
@@ -225,36 +189,64 @@ switch action
 	otherwise
 		error('Wrong number of input arguments')
 end
-
-	function convert_cdfepoch_to_isdat_epoch() % nested function
-		dobj.data.(dobj.vars{v,1}).data = irf_time(dobj.data.(dobj.vars{v,1}).data,'date2epoch');
+	function fix_order_of_array_dimensions
+		indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==3); % find 3 dimensional dataset
+		for iDataset=1:numel(indDatasets)
+			data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
+		end
+	end
+	function make_variable_names_acceptable_for_matlab
+		% Replace minuses with underscores
+		dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
+		% Remove training dots
+		while (dobj.vars{v,1}(end) == '.')
+			dobj.vars{v,1}(end) = [];
+		end
+		% Take care of '...'
+		d3 = strfind(dobj.vars{v,1},'...');
+		if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
+		% Replace dots with underscores
+		dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
+		% Add "x" if the varible name starts with a number
+		if ~isletter(dobj.vars{v,1}(1)),
+			dobj.vars{v,1}=['x' dobj.vars{v,1}];
+		end
+		% Take care of names longer than 63 symbols (Matlab limit)
+		if length(dobj.vars{v,1})>63
+			dobj.vars{v,1} = dobj.vars{v,1}(1:63);
+			disp(['orig var : ' dobj.vars{v,2}])
+			disp(['new var  : ' dobj.vars{v,1}])
+		end
+	end
+	function update_variable_attributes_cdfepoch % nested function
 		isFieldUnits        = isfield(dobj.VariableAttributes,'UNITS');
 		isFieldSIConversion = isfield(dobj.VariableAttributes,'SI_CONVERSION');
 		isFieldDeltaPlus    = isfield(dobj.VariableAttributes,'DELTA_PLUS');
 		isFieldDeltaMinus   = isfield(dobj.VariableAttributes,'DELTA_MINUS');
+		timeVariable=info.Variables{1,1};
 		if isFieldUnits,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.UNITS(:,1))==1);
+			iattr=find(strcmpi(dobj.VariableAttributes.UNITS(:,1),timeVariable));
 			if iattr, dobj.VariableAttributes.UNITS(iattr,2)={'s'};end % change from ms to s UNITS of epoch if present
 		end
 		if isFieldSIConversion,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.SI_CONVERSION(:,1))==1);
+			iattr=find(strcmpi(dobj.VariableAttributes.SI_CONVERSION(:,1),timeVariable));
 			if iattr, dobj.VariableAttributes.SI_CONVERSION(iattr,2)={'1.0>s'};end % change from ms to s SI_CONVERSION of epoch if present
 		end
 		if isFieldDeltaPlus,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_PLUS(:,1))==1); % to convert DELTA_PLUS
+			iattr=find(strcmpi(dobj.VariableAttributes.DELTA_PLUS(:,1),timeVariable)); % to convert DELTA_PLUS
 			if iattr && isnumeric(dobj.VariableAttributes.DELTA_PLUS{iattr,2}),
 				dobj.VariableAttributes.DELTA_PLUS{iattr,2}=dobj.VariableAttributes.DELTA_PLUS{iattr,2}/1000;
 			end
 		end
 		if isFieldDeltaMinus,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_MINUS(:,1))==1); % to convert DELTA_PLUS
+			iattr=find(strcmpi(dobj.VariableAttributes.DELTA_MINUS(:,1),timeVariable)); % to convert DELTA_PLUS
 			if iattr && isnumeric(dobj.VariableAttributes.DELTA_MINUS{iattr,2}),
 				dobj.VariableAttributes.DELTA_MINUS{iattr,2}=dobj.VariableAttributes.DELTA_MINUS{iattr,2}/1000;
 			end
 		end
 	end
-	function convert_cdfepoch16_to_isdat_epoch() % nested function
-		epochData=cell2mat(dobj.data.(dobj.vars{v,1}).data);
+	function t=convert_cdfepoch16_string_to_isdat_epoch(in) % nested function
+		epochData=vertcat(in{:});
 		DIn=epochData(:,1:20);
 		Dout=zeros(size(DIn,1),6);
 		Dx   = double(DIn - '0');        % For faster conversion of numbers
@@ -281,60 +273,33 @@ end
 		ps=sum(psVec.*power,2);
 		Dout(:,6)=Dout(:,6)+ps;
 		t=irf_time(Dout,'vector2epoch');
-		dobj.data.(dobj.vars{v,1}).data = t;
+	end
+	function update_variable_attributes_cdfepoch16 % nested function
 		isFieldUnits        = isfield(dobj.VariableAttributes,'UNITS');
 		isFieldSIConversion = isfield(dobj.VariableAttributes,'SI_CONVERSION');
 		isFieldDeltaPlus    = isfield(dobj.VariableAttributes,'DELTA_PLUS');
 		isFieldDeltaMinus   = isfield(dobj.VariableAttributes,'DELTA_MINUS');
+		timeVariable=info.Variables{1,1};
 		if isFieldUnits,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.UNITS(:,1))==1);
+			iattr=find(strcmpi(dobj.VariableAttributes.UNITS(:,1),timeVariable));
 			if iattr, dobj.VariableAttributes.UNITS(iattr,2)={'s'};end % change from ms to s UNITS of epoch if present
 		end
 		if isFieldSIConversion,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.SI_CONVERSION(:,1))==1);
+			iattr=find(strcmpi(dobj.VariableAttributes.SI_CONVERSION(:,1),timeVariable));
 			if iattr, dobj.VariableAttributes.SI_CONVERSION(iattr,2)={'1.0>s'};end % change from ms to s SI_CONVERSION of epoch if present
 		end
 		if isFieldDeltaPlus,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_PLUS(:,1))==1); % to convert DELTA_PLUS
+			iattr=find(strcmpi(dobj.VariableAttributes.DELTA_PLUS(:,1),timeVariable)); % to convert DELTA_PLUS
 			if iattr && isnumeric(dobj.VariableAttributes.DELTA_PLUS{iattr,2}),
 				dobj.VariableAttributes.DELTA_PLUS{iattr,2}=dobj.VariableAttributes.DELTA_PLUS{iattr,2}/1e12;
 			end
 		end
 		if isFieldDeltaMinus,
-			iattr=find(strcmpi(dobj.vars{v,2},dobj.VariableAttributes.DELTA_MINUS(:,1))==1); % to convert DELTA_PLUS
+			iattr=find(strcmpi(dobj.VariableAttributes.DELTA_MINUS(:,1),timeVariable)); % to convert DELTA_PLUS
 			if iattr && isnumeric(dobj.VariableAttributes.DELTA_MINUS{iattr,2}),
 				dobj.VariableAttributes.DELTA_MINUS{iattr,2}=dobj.VariableAttributes.DELTA_MINUS{iattr,2}/1e12;
 			end
 		end
-	end
-	function ok=check_if_using_nasa_patch_cdf
-		fid=fopen(which('cdfread'));
-		while 1
-			tline = fgetl(fid);
-			if ~ischar(tline), break, end
-			if strfind(tline,'Mike Liu')
-				fprintf('\n\n\n');
-				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-				disp(' You are using NASA cdfread patch which we have bad support!')
-				disp(' This may give errors reading in multidimensional data sets!')
-				disp(' Also option ''tint'' in routine databoj is disabled.');
-				disp(' We suggest you to use the MATLAB cdfread!');
-				disp(' To use MATLAB cdfread please remove path to NASA cdfread patch.');
-				disp(' You can execute and then continue:');
-				a=which('cdfread');
-				ai=strfind(a,'/');
-				disp(['> rmpath ' a(1:ai(end))]);
-				disp('> clear databoj');
-				disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-				fprintf('\n\n\n');
-				irf_log('fcal','Using NASA cdf is not supported!');
-				ok=true;
-				break;
-			else
-				ok=false;
-			end
-		end
-		fclose(fid);
 	end
 
 end % end of main functions
