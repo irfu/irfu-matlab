@@ -22,35 +22,37 @@ function f = irf_get_data( tint, parameter , database, format)
 
 % http://omniweb.gsfc.nasa.gov/html/ow_data.html
 nargs=nargin; % number of defined input arguments
-flag_tint_not_defined=0;
+timeIntervalNotDefined = false;
 if ischar(tint), % tint not specified
-  flag_tint_not_defined=1;
+  timeIntervalNotDefined=true;
   if nargin==2,
     database=parameter;parameter=tint;
   elseif nargin==3,
     format=database;database=parameter;parameter=tint;
   end
   irf_log('fcal',['Reading ' parameter ' from database: ' database '.']);
-  irf_log('fcal','Time interval not specified. Analyzing if tint exists.');
-  if evalin('caller','exist(''tint'',''var'')'),
-    irf_log('fcal','Using existing tint variable values.');
-    flag_tint_not_defined=0;
-    tint=evalin('caller','tint');
-    nargs=nargs+1;
-  else
-      irf_log('fcal','tint not defined, reading all data.');
-  end
+  irf_log('fcal','tint not defined, reading all data.');
+%   Possibility to be smart guessing tint (maybe not good idea, needs special flag?)   
+%	irf_log('fcal','Time interval not specified. Analyzing if tint exists.');
+%   if evalin('caller','exist(''tint'',''var'')'),
+%     irf_log('fcal','Using existing tint variable values.');
+%     timeIntervalNotDefined=false;
+%     tint=evalin('caller','tint');
+%     nargs=nargs+1;
+%   else
+%       irf_log('fcal','tint not defined, reading all data.');
+%   end
 end
 if nargs == 0,
   help irf_get_data;
   return;
-elseif nargs < 3;
-  irf_cal('fcal','Wrong number of inputs, see help.');
+end
+if ~exist('database','var'),
+  irf_log('fcal','Database not defined.');
   return;
-elseif nargs==3,
-	if ~exist('format','var'),	% if format is not defined
-	 format=[];					% then default format is empty
-	end
+end
+if ~exist('format','var'),	% if format is not defined
+	 format=[];				% then default format is empty
 end
 
 if nargout==1, f=[];end % default return empty
@@ -67,7 +69,7 @@ switch lower(database)
     if isempty(format),
       format='mat'; % default value
     end
-    if flag_tint_not_defined,
+    if timeIntervalNotDefined,
       f=c_caa_var_get(parameter,format);
     else
       f=c_caa_var_get(parameter,format,'tint',tint);
