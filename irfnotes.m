@@ -1090,6 +1090,40 @@ for j=1:size(tint,1),
   c_get_batch(tint(j,1),tint(j,2)-tint(j,1),'sp',['./' epoch2iso(tint(j,1),1) '-' epoch2iso(tint(j,2),1)]);
 end
 clear j;
+%% Code snippets 
+	%% FGM/STAFF comparison (works on spis.irfu.se)
+	tst=irf_time([2009 9 16 07 24 0]);dt=8*60;
+	tint=tst+[0 dt];
+	tint1=tst+[0 200];
+	c_eval('B?=local.c_read(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',tint);');
+	c_get_batch(tst,dt,'vars','bsc','noproc')
+	
+	refFrame='SR2';
+	c_eval('diB?=c_coord_trans(''GSE'',refFrame,B?,''cl_id'',?);');
+	load mBSCR.mat
+	fmin=.5;fmax=2;
+	c_eval('[wBSC?,~] = irf_tlim(wBSC?,tint1);');
+	c_eval('diBSC? = c_efw_despin(wBSC?,?,''staff'');');
+	c_eval('diBSC? = irf_resamp(diBSC?,diB?);');
+	c_eval('[diB?_filtered]=irf_filt(diB?,fmin,fmax,[],5);');
+	c_eval('[diBSC?_filtered]=irf_filt(diBSC?,fmin,fmax,[],5);');
+	
+	h=irf_plot(5,'newfigure');
+	ic=1;
+	c_eval('B=diB?;B_filtered=diB?_filtered;BSC=diBSC?;BSC_filtered=diBSC?_filtered;',ic)
+	irf_plot(h(1),B);ylabel(h(1),['B [nT] FGM ' refFrame]);
+	irf_plot(h(2),BSC);ylabel(h(2),['B [nT] STAFF ' refFrame]);
+	for iSubplot=1:3
+		hca=h(2+iSubplot);
+		comp=iSubplot+1; % which component to plot
+		compStr=char('X'+iSubplot-1); % string X,Y,Z
+		irf_plot(hca,B_filtered(:,[1,comp]));
+		hold(hca,'on');
+		irf_plot(hca,BSC_filtered(:,[1,comp]),'b');
+		ylabel(hca,['B_' compStr ' [nT] ' refFrame]);
+		irf_legend(hca,{'FGM','STAFF'},[0.98 0.98])
+	end
+	irf_zoom(h,'x',tint1)
 
 %% Demo of irfu-matlab
 % Philosophy
