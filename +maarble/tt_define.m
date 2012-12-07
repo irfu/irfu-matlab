@@ -15,13 +15,13 @@ c_eval('izero=find(R?(:,1)==0);R?(izero,:)=[];');
 c_eval('R?=irf_tlim(R?,tint);');
 c_eval('R?=irf_abs(R?);');
 c_eval('RRE?=irf_tappl(R?(:,[1 5]),''*Units.km/Units.RE'');');
+
+disp('Calculating Cluster mlat, saving to matMlat');
+c_eval('mlat?=[R?(:,1) asin(R?(:,4)./R?(:,5))*180/pi];');
+save /data/caa/CAA/matMlat mlat1 mlat2 mlat3 mlat4
 c_eval('clear R?;');
 
-disp('Reading Cluster mlat');
-c_eval('ILAT?=local.c_read(''Invar_Lat__C?_JP_PMP'',tint);');
-c_eval('ILAT?(diff(ILAT?(:,1))==0,:)=[];')
-c_eval('mlat?=irf_resamp(ILAT?,RRE?);');
-
+%load /data/caa/CAA/matMlat
 disp('Finding when Cluster satisfies MAARBLE conditions');
 tStep=median(diff(RRE1(:,1))); % time step
 minR=3;  % minimum distance from Earth 
@@ -35,12 +35,14 @@ c_eval('imaarble?=(abs(RRE?(:,2))>minR & abs(RRE?(:,2))<maxR & mlat?(:,2) < maxM
 % define intervals
 c_eval('indstart?=find(diff([0 imaarble?(:)'']) == 1);');
 c_eval('indend?=find(diff([imaarble?(:)'' 0]) == -1);');
-c_eval(['tt_C?_in_' ttLabel '.start=RRE?(indstart?,1)-tStep/2;'])
-c_eval(['tt_C?_in_' ttLabel '.end=RRE?(indend?,1)+tStep/2;'])
-c_eval(['tt_C?_in_' ttLabel '.description=[''' ttTitle '''];']);
+c_eval(['clear tt_C?_in_' ttLabel])
+c_eval(['tt_C?_in_' ttLabel '=irf.TimeTable;'])
+c_eval(['tt_C?_in_' ttLabel '.Header={''' ttTitle '''};']);
+c_eval(['tt_C?_in_' ttLabel '.TimeInterval=[RRE?(indstart?,1)-tStep/2 RRE?(indend?,1)+tStep/2];'])
 c_eval(['disp(''Created time table: tt_C?_in_' ttLabel ''');']);
-
+c_eval(['tt_C?_in_' ttLabel '=remove(tt_C?_in_' ttLabel ',find(diff(tt_C?_in_' ttLabel '.TimeInterval,1,2)<10*60));']);
 y=irf_ask('Shall I save the time tables to IRF yes/no? [%]','y','no');  
 if strcmp(y,'yes'),
-	c_eval(['irf_tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
+	c_eval(['irf.tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'])
 end
+
