@@ -9,10 +9,16 @@ classdef TimeTable
 	% TT=irf.TimeTable(filename) - load ascii time table from file
 	% TT=irf.TimeTable(ascii_text) - load time table from cell string array ascii_text
 	%
-	% N = numel(TT)		- number of time intervals
-	% out = ascii(TT)	- time table in ascii format
-	% TT = add(TT,..)	- add time interval to table, see help irf.TimeTable.add
-	% export(TT,filename) - export time table to file
+    % Methods: (see also help irf.TimeTable.(method))
+	%   TT  = add(TT,..)	   add time interval to table, see help irf.TimeTable.add
+	%   out = ascii(TT)	       time table in ascii format
+    %   TT  = intersect(T1,T2) intersection of two time tables
+	%   N   = numel(TT)		   number of time intervals
+    %   T2  = remove(T1,index) remove elements from time table
+    %   T2  = select(T1,index) select elements from time table
+	%   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
+    %   T2  = unique(T1)       return unique time table (sorted nonoverlapping intervals)
+    %    export(TT,filename)   export time table to file
 	% 
 	% Examples:
 	%	TT = irf.TimeTable % initialize empty time table
@@ -164,11 +170,10 @@ classdef TimeTable
 			description=tt.Description;
 			comment=tt.Comment;
 			nElements=numel(tt);
+            if isempty(comment), comment=cell(nElements,1);end
+            if isempty(description), description=cell(nElements,1);end
 			nHeaderLines=numel(header);
-			nDescriptionLines=0;
-			for j=1:nElements,
-				nDescriptionLines=nDescriptionLines+numel(description{j});
-			end
+			nDescriptionLines = sum(cellfun(@(x) numel(x),description));
 			out=cell(nHeaderLines+nElements+nDescriptionLines,1);
 			out(1:nHeaderLines)=header;
 			currentLine=nHeaderLines+1;
@@ -229,6 +234,34 @@ classdef TimeTable
 			TTout.Description   = TTin.Description(index(:));
 			TTout.Header		= TTin.Header;
 			TTout.UserData		= TTin.UserData(index);
+		end
+		function TTout  = remove(TTin,index) % remove entries index
+            % TTout  = remove(TTin,index) remove entries 
+            if isempty(index),
+                TTout=TTin;
+                return;
+            end
+            TTout=[];
+			if ~isnumeric(index)
+				irf_log('fcal','Index not number');
+				return;
+			end
+			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
+				irf_log('fcal','Index out of range');
+				return;
+			end
+			TTout				           = TTin;
+			TTout.TimeInterval(index(:),:) = [];
+            if ~isempty(TTout.Comment),
+               TTout.Comment(index(:))     = []; 
+            end
+            if ~isempty(TTout.Description),
+			    TTout.Description(index(:))    = [];
+            end
+			TTout.Header                   = TTin.Header;
+            if ~isempty(TTout.UserData),
+			    TTout.UserData(index)          = [];
+            end
 		end
 		function TTout	= unique(TTin) % time table sorted and unique
 			TTout=TTin;
