@@ -26,8 +26,7 @@ if nargin==0,
 	return;
 end
 
-if nargin==1 && ischar(varargin{1})
-	if strcmp(varargin{1},'create')
+if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 		irf_log('fcal','Creating structures');
 	    d = dir('./*.XML');
 		isub = [d(:).isdir]; %# returns logical vector
@@ -57,5 +56,26 @@ if nargin==1 && ischar(varargin{1})
 %			save(['meta_' nameDataset],'-v7',['meta_' nameDataset]);
 			save('index',['meta_' nameDataset],'-append');
 		end
+else
+  load index s;
+  metaNames={s(:).name};
+  metaNames(1)=[];
+  datasetNames=cellfun(@(x) x(6:end),metaNames,'uniformoutput',false);
+  datasetNames=datasetNames(:);
+  iSelected=true(numel(datasetNames),1);
+  for jInp=1:numel(varargin)
+	filter=varargin{jInp};
+	if ischar(filter)
+	  ii=cellfun(@(x) any(strfind(x,filter)),datasetNames);
+	  iSelected=iSelected & ii(:);
 	end
+  end
+  if sum(iSelected)>0
+	if sum(iSelected)==1 && nargout == 1,
+	  load('index',metaNames{iSelected});
+	  eval(['out = ' metaNames{iSelected} ';']);
+	else
+		disp(vertcat(datasetNames(iSelected)));
+  	end
+  end
 end
