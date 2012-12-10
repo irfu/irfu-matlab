@@ -20,9 +20,13 @@ for iDataSet=1:numel(dataSetArray)
 	dataSet=dataSetArray{iDataSet};
 	irf_log('fcal',['Indexing data set: ' dataSet]);
 	dataSet=replace_minus_in_cis_names(dataSet);
-	listFiles=dir(dataSet);
+	listFiles=dir([dataSet '/*.cdf']);
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
+	if numel(listFiles)==0, 
+		irf_log('dsrc','No data files');
+		continue;
+	end
 	%% read in file time intervals
 	listFileNames=vertcat(listFiles.name);
 	tmp=[listFileNames listFileNames(:,end)]; % add one more column at the end
