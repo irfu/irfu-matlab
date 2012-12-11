@@ -6,7 +6,7 @@ function out=c_read(varargin)
 % Variable can be CAA variable or shortcuts
 %  'R1'  - Cluster 1 position
 %  'dR1' - Cluster 1 relative position wrt center
-%   'R'   - Cluster center posiiton
+%   'R'   - Cluster center position and position of all s/c into structure out
 %
 % Possible variables: (question mark needs to be sustituted to Cluster number)
 % status__CL_SP_AUX
@@ -33,13 +33,14 @@ function out=c_read(varargin)
 % L_value__C1_JP_PMP
 % Pred_B_mag__C1_JP_PMP
 % 
-%	Example:
-%		tint='2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
-%		R1=local.c_read('R1',tint);
-%		DipoleTilt=local.c_read('dipole_tilt__CL_SP_AUX',tint);
+%	Examples:
+%		tint = '2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
+%		   R = local.c_read('r',tint);
+%		  R1 = local.c_read('R1',tint);
+% DipoleTilt = local.c_read('dipole_tilt__CL_SP_AUX',tint);
 %
 % to update file index run LOCAL.C_UPDATE
-%
+
 % $Id$
 
 persistent index % to make fast access read only once
@@ -72,9 +73,13 @@ out=[];
 specialCaseCis=0;
 switch lower(varName)
 	case {'r'}
-		varToRead={'sc_r_xyz_gse__CL_SP_AUX'};
+		varToRead={'sc_r_xyz_gse__CL_SP_AUX','sc_dr1_xyz_gse__CL_SP_AUX',...
+			'sc_dr2_xyz_gse__CL_SP_AUX','sc_dr3_xyz_gse__CL_SP_AUX','sc_dr4_xyz_gse__CL_SP_AUX'};
 		ok=readdata;
-		if ok, out=[data{1} double(data{2})]; end
+		if ok, 
+			out.R=[data{1} double(data{2})]; 
+			c_eval('out.R?=[data{1} double(data{2}+data{2+?})];')
+		end
 	case {'r1','r2','r3','r4'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX',['sc_dr' varName(2) '_xyz_gse__CL_SP_AUX']};
 		ok=readdata;
