@@ -11,7 +11,7 @@ disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
 load /data/caa/CAA/mR_SM_1min; % load Cluster positions 1min resolution
-c_eval('R?=R?SM;clear R?;')
+c_eval('R?=R?SM;clear R?SM;')
 c_eval('izero=find(R?(:,1)==0);R?(izero,:)=[];');
 c_eval('R?=irf_tlim(R?,tint);');
 c_eval('R?=irf_abs(R?);');
@@ -32,7 +32,7 @@ maxMlat=60; % maximum magnetic latitude
 % maarble definition
 ttLabel='MAARBLE';
 ttTitle='Cluster ? inside MAARBLE area, 3RE<R<10RE,mlat<60deg';
-c_eval('imaarble?=(RRE?(:,2)>minR & RRE?(:,2)<maxR & mlat?(:,2) < maxMlat);')
+c_eval('imaarble?=(RRE?(:,2)>minR & RRE?(:,2)<maxR & abs(mlat?(:,2)) < maxMlat);')
 % define intervals
 c_eval('indstart?=find(diff([0 imaarble?(:)'']) == 1);');
 c_eval('indend?=find(diff([imaarble?(:)'' 0]) == -1);');
