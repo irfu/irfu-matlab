@@ -105,7 +105,7 @@ urlIdentity='?uname=vaivads&pwd=caa';     % default identity
 %urlInventory='';                          % default no inventory output (currently use different www link)
 %% load .caa file with status for all downloads
 if doLog,
-	if exist('.caa','file') == 0, 
+	if exist('.caa','file') == 0,
 		caa=cell(0);
 		save -mat .caa caa;
 	end
@@ -144,36 +144,41 @@ if nargin>2, % cehck for additional flags
 	end
 end
 if nargin>=1, % check if fist argument is not caa zip file link
-	if ischar(tint)
-		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
-			doLog=false;
-		end
-		if regexp(tint,'\.zip') % download data zip file
-			if doLog
-				j=numel(caa)+1;
-				caa{j}.url='*';
-				caa{j}.dataset='*';
-				caa{j}.tintiso='*';
-				caa{j}.zip=tint;
-				caa{j}.status='submitted';
-				caa{j}.timeofrequest=now;
-				checkDownloadsStatus=true;
-			else
-				temp_file=tempname;
-				zipFileLink=tint;
-				isJobFinished=get_zip_file(zipFileLink,temp_file);
-				if isJobFinished, %
-					download_status=1;
-					return;
+	if ischar(tint) % tint is tintiso, dataset or zip file link
+		tt=irf_time(tint,'iso2tint');
+		if isempty(tt), % tint is dataset or zip file
+			if regexp(tint,'\.zip') % download data zip file
+				if doLog
+					j=numel(caa)+1;
+					caa{j}.url='*';
+					caa{j}.dataset='*';
+					caa{j}.tintiso='*';
+					caa{j}.zip=tint;
+					caa{j}.status='submitted';
+					caa{j}.timeofrequest=now;
+					checkDownloadsStatus=true;
 				else
-					irf_log('dsrc','Job still not finished');
-					download_status=0;
-					return;
+					temp_file=tempname;
+					zipFileLink=tint;
+					isJobFinished=get_zip_file(zipFileLink,temp_file);
+					if isJobFinished, %
+						download_status=1;
+						return;
+					else
+						irf_log('dsrc','Job still not finished');
+						download_status=0;
+						return;
+					end
 				end
+			else	% list or inventory ingested data, no time interval specified
+				dataset=tint;
+				tint=[];
 			end
-		else	% list or inventory ingested data, no time interval specified
-			dataset=tint;
-			tint=[];
+			if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
+				doLog=false;
+			end
+		else % tint is tintiso
+			tint=tt;
 		end
 	elseif ~isnumeric(tint)
 		help caa_download;return;
@@ -356,7 +361,7 @@ catch
 				'When ready download from:' downloadfile});
 			save -mat .caa caa
 		end
-		if nargout>=1, download_status=0; end	% 0 if job submitted	
+		if nargout>=1, download_status=0; end	% 0 if job submitted
 	else
 		if doLog
 			disp('!!!! Did not succeed to download !!!!!');
@@ -386,7 +391,7 @@ end
 		else
 			irf_log('dsrc',['There is no zip file: ' urlLink]);
 			status=0;
-		end			
+		end
 	end
 	function move_to_caa_directory(filelist)
 		for jj=1:length(filelist),
@@ -415,17 +420,17 @@ end
 		if iscellstr(logText)
 			fid=fopen('.caa.log','a');
 			if fid==-1 % cannot open .caa.log
-			  if isempty(whos('-file','.caa','logFileName')) % no log file name in caa
-				logFileName=tempname;
-				save -append .caa logFileName;
-			  else
-				load -mat .caa logFileName;
-			  end
-			  fid=fopen(logFileName,'a');
-			  if fid==-1, 
-				irf_log('fcal','log file cannot be opened, no log entry');
-				return;
-			  end
+				if isempty(whos('-file','.caa','logFileName')) % no log file name in caa
+					logFileName=tempname;
+					save -append .caa logFileName;
+				else
+					load -mat .caa logFileName;
+				end
+				fid=fopen(logFileName,'a');
+				if fid==-1,
+					irf_log('fcal','log file cannot be opened, no log entry');
+					return;
+				end
 			end
 			fprintf(fid,'\n[%s]\n',tt);
 			for jLine=1:numel(logText),
@@ -443,9 +448,9 @@ switch returnTimeTable
 		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
 		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-		c=num2cell(str2num(strvcat(textLine(:).number))); 
+		c=num2cell(str2num(strvcat(textLine(:).number)));
 		[TT.UserData(:).number]=deal(c{:});
-		c=num2cell(str2num(strvcat(textLine(:).version))); 
+		c=num2cell(str2num(strvcat(textLine(:).version)));
 		[TT.UserData(:).version]=deal(c{:});
 	case 'list'
 		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
