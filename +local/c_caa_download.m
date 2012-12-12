@@ -89,8 +89,8 @@ while 1
 		  irf_log('dsrc',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
 		  if mod(n_downloaded_jobs(TTRequest),10)==0 || ...%save after every 10th request
 			n_submitted_jobs(TTRequest)==0 % save after last job
-				varName=['TT_' dataSet ];
-				irf_log('drsc',['Saving TT_' dataSet ' to CAA/matCaaRequests/' varName]);
+				varName=['TT_' TTRequest.UserData(iSubmitted).dataset ];
+				irf_log('drsc',['Saving ' varName ' to CAA/matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
 				dirName=['CAA/matCaaRequests'];
 				if ~exist(dirName,'dir'), mkdir(dirName);end
@@ -127,6 +127,7 @@ if nargout==1, out=TTRequest;end
 
 function i=find_first_non_processed_time_interval(TT)
 ud=TT.UserData;
+i=numel(TT)+1; % default all is processed
 if isfield(ud,'Status')
 	for j=1:numel(ud),
 		if isempty(ud(j).Status)
