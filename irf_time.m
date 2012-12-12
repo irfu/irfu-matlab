@@ -253,7 +253,11 @@ switch lower(flag)
         ii=strfind(t_in(1,:),'/');
         t1=irf_time(t_in(:,1:ii-1),'iso2epoch');
         t2=irf_time(t_in(:,ii+1:end),'iso2epoch');
-        t_out=[t1 t2];
+		if isempty(t1) || isempty(t2)
+			t_out=[];
+		else
+			t_out=[t1 t2];
+		end
 
     case 'tint2isoshort'
         t1iso=irf_time(t_in(:,1),'epoch2isoshort');
