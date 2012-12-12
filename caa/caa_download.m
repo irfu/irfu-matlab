@@ -120,6 +120,10 @@ end
 % caa.timeofrequest - in matlab time units
 %% check input
 if nargin==0, checkDownloadsStatus=true; end
+if nargout>0 && nargin>0, 
+	checkDownloadsStatus=false; 
+	doLog = false;
+end
 if nargin>2, % cehck for additional flags
 	for iFlag=1:numel(varargin)
 		flag=varargin{iFlag};
@@ -144,47 +148,41 @@ if nargin>2, % cehck for additional flags
 	end
 end
 if nargin>=1, % check if fist argument is not caa zip file link
-	if ischar(tint) % tint is tintiso, dataset or zip file link
-		tt=irf_time(tint,'iso2tint');
-		if isempty(tt), % tint is dataset or zip file
-			if regexp(tint,'\.zip') % download data zip file
-				if doLog
-					j=numel(caa)+1;
-					caa{j}.url='*';
-					caa{j}.dataset='*';
-					caa{j}.tintiso='*';
-					caa{j}.zip=tint;
-					caa{j}.status='submitted';
-					caa{j}.timeofrequest=now;
-					checkDownloadsStatus=true;
-				else
-					temp_file=tempname;
-					zipFileLink=tint;
-					isJobFinished=get_zip_file(zipFileLink,temp_file);
-					if isJobFinished, %
-						download_status=1;
-						return;
-					else
-						irf_log('dsrc','Job still not finished');
-						download_status=0;
-						return;
-					end
-				end
-			else	% list or inventory ingested data, no time interval specified
-				dataset=tint;
-				tint=[];
-			end
-			if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
-				doLog=false;
-			end
-		else % tint is tintiso
-			tint=tt;
+	if ischar(tint) && regexp(tint,'\.zip')% tint zip file link
+		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
+			doLog=false;
 		end
+		if doLog
+			j=numel(caa)+1;
+			caa{j}.url='*';
+			caa{j}.dataset='*';
+			caa{j}.tintiso='*';
+			caa{j}.zip=tint;
+			caa{j}.status='submitted';
+			caa{j}.timeofrequest=now;
+			checkDownloadsStatus=true;
+		else
+			temp_file=tempname;
+			zipFileLink=tint;
+			isJobFinished=get_zip_file(zipFileLink,temp_file);
+			if isJobFinished, %
+				download_status=1;
+				return;
+			else
+				irf_log('dsrc','Job still not finished');
+				download_status=0;
+				return;
+			end
+		end
+	elseif ischar(tint) && any(irf_time(tint,'iso2tint')) % tint is tintiso 
+	elseif ischar(tint) % tint is dataset 
+		dataset=tint;
+		tint=[];
 	elseif ~isnumeric(tint)
-		help caa_download;return;
+		help caa_download;
+		return;
 	end
 end
-if nargout>0 && nargin>0, checkDownloadsStatus=false; end
 caaQuery=[caaServer 'caa_query/'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
