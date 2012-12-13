@@ -15,19 +15,17 @@ while 1
 	if strfind(tline,'Mike Liu')
 		fprintf('\n\n\n');
 		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		disp(' You are using NASA cdfread patch which we have bad support!')
-		disp(' This may give errors reading in multidimensional data sets!')
-		disp(' Also option ''tint'' in routine databoj is disabled.');
-		disp(' We suggest you to use the MATLAB cdfread!');
-		disp(' To use MATLAB cdfread please remove path to NASA cdfread patch.');
-		disp(' You can execute and then continue:');
+		disp(' You are using NASA cdf patch which within ')
+		disp(' irfu-matlab is still experimental. Please report')
+		disp(' if you encounter some problems.');
+		disp(' If you want to use matlab cdf execute:');
 		a=which('cdfread');
 		ai=strfind(a,'/');
 		disp(['> rmpath ' a(1:ai(end))]);
 		disp('> clear databoj');
 		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 		fprintf('\n\n\n');
-		irf_log('fcal','Using NASA cdf is not supported!');
+		irf_log('fcal','Using NASA cdf is still experimental!');
 		ok=true;
 		break;
 	else
