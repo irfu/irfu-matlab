@@ -148,7 +148,7 @@ if nargin>2, % cehck for additional flags
 	end
 end
 if nargin>=1, % check if fist argument is not caa zip file link
-	if ischar(tint) && regexp(tint,'\.zip')% tint zip file link
+	if ischar(tint) && any(regexp(tint,'\.zip'))% tint zip file link
 		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
 			doLog=false;
 		end
