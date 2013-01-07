@@ -42,13 +42,13 @@ Rp=.5;Rs=60;fact=1.1; % fact defines the width between stopband and passband
 if fmin==0
   if fmax == 1, return;end
     if nargin < 5,
-        n=ellipord(fmax,fmax*fact,Rp,Rs);
+        n=ellipord(fmax,min(fmax*fact,0.9999),Rp,Rs);
     end
 	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B,A] = ellip(n,Rp,Rs,fmax);
 elseif fmax ==0
     if nargin < 5
-        n=ellipord(fmin,fmin*1.1,Rp,Rs);
+        n=ellipord(fmin,min(fmin*1.1,0.9999),Rp,Rs);
     end 
 	[B,A] = ellip(n,Rp,Rs,fmin,'high');
 	%irf_log('proc',['using ' num2str(n) '-th highpass order filter']);
@@ -57,7 +57,7 @@ else
 	%sprintf('using %d-th order ellip irf_lowpass filter',n)
 	%[B1,A1] = ellip(n,Rp,Rs,fmax);
 	if nargin < 5
-    	n=ellipord(fmax,min(fmax*1.3,1),Rp,Rs);
+    	n=ellipord(fmax,min(fmax*1.3,0.9999),Rp,Rs);
 	end
 	irf_log('proc',['using ' num2str(n) '-th order ellip lowpass filter']);
 	[B1,A1] = ellip(n,Rp,Rs,fmax);
