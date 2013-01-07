@@ -19,6 +19,7 @@ if nargin==0,
     disp('Possible flag values:');
     disp(' ');
     a=fscanf(fopen(which('irf_convert')),'%s');
+%    b=regexp(a,'case\s.*','match');
     b=regexp(a,'case''\w*''','match');
     for ib=1:numel(b)
         disp(b{ib}(6:end-1));
@@ -50,6 +51,8 @@ switch flag
         out=Units.kB*1e6/Units.e.*in;
     case 'MK2keV'
         out=Units.kB*1e3/Units.e.*in;
+    case 'F2C' % Fahrenheit to Celsius
+        out=(in-32)*10/18;
     otherwise
         disp(['!!! irf_convert: unknown flag ''' lower(flag) ''', not converting.'])
         disp('CONSIDER ADDING THIS CONVERSION;)!');
