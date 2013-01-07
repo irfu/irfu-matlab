@@ -5,9 +5,13 @@ function cmap1=irf_colormap(varargin)
 %  Colormap_names:
 %       'standard'  - (default), same as 'space','cmap' (commonly used showing space data)
 %       'poynting'  - white in center and blue/green for negative and red/black for positive values
+%       'poynting_gray'  - gray in center and blue/green for negative and red/black for positive values
 %
 % IRF_COLORMAP(AX,colormap_name) - apply colormap to axis AX
 %
+
+
+% $Id$
 
 [ax,args,nargs] = axescheck(varargin{:});
 
@@ -31,6 +35,13 @@ if nargs > 0,
         case 'poynting'
             it=0:.02:1;it=it(:);
             cmap=[ [0*it flipud(it) it];[it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
+        case {'poynting_grey','poynting_gray'}
+            it=0:.02:1;it=it(:);
+            cmap=[ [0*it flipud(it) it];...
+				[it*.8 it*.8 it*0+1];...
+				[it*0+1 flipud(it*.8) flipud(it*.8)];...
+				[flipud(it) 0*it 0*it]]; 
+			clear it;
         case 'solo'
             it=0:.02:1;it=it(:);
             cmap=[ [it it it*0+1];[it*0+1 flipud(it) flipud(it)]; [flipud(it) 0*it 0*it]]; clear it;
