@@ -12,7 +12,11 @@ function [data, ok, msg] = caa_get(iso_t,dt,cl_id,var_name,ops_s,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-DP = '/data/caa/l1';    % TODO: Add option to change base dir via input param! (ML)
+if ismac
+    DP = '/Volumes/caa/l1';    % TODO: Add option to change base dir via input param! (ML)
+else
+    DP = '/data/caa/l1';
+end
 data = [];
 ok=0;
 msg='';
