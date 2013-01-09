@@ -258,13 +258,15 @@ for dd = 1:length(dirs)
 %cd(old_pwd); return
          end
       end
-   elseif strcmp(caa_vs, 'SFIT')
-      [ok,spf34,msg] = c_load('diEs?p34',cl_id);
-      if ~ok || isempty(spf34)
-          irf_log('load',msg)
-		  data = [];
-      else
-          nanfill = 0;
+   elseif strcmp(caa_vs, 'SFIT') 
+          no_p12 = 0; no_p34 = 0;
+          % Load P34
+          [ok,spf34,msg] = c_load('diEs?p34',cl_id);
+          if ~ok || isempty(spf34)
+              no_p34 = 1;
+              irf_log('load',msg)
+          end
+          % Load P12/32    
           pnosfit = 12;
           ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
           if isempty(ret)
@@ -272,30 +274,32 @@ for dd = 1:length(dirs)
           end
           [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
           if ~ok || isempty(spfD)
-             nanfill = 1; % No P12/32 data
-             irf_log('load',irf_ssub('Fillvalue used. No diEs?p12 or diEs?p32 data',cl_id) )
-             ok = 1; % yes it's all good
-          else
-             [ok,Del,msg] = c_load('D?p12p34',cl_id);
-             if ~ok || isempty(Del)
-                irf_log('load',msg)
-                data = []; continue
-             end;
-             if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
-                irf_log('load','Info: Imaginary delta offset.');
-             end
-          end;
-          if nanfill
-             % save time, NaN(fillval) and p34 spin-fit: B C sdev 
+             no_p12 = 1; % No P12/32 data
+             irf_log('load',msg)    
+          end
+          
+          if no_p12 && no_p34
+             data = [];
+          elseif no_p12
+             % save time, NaN(fillval) and p34 spin-fit (B C sdev) 
              data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
+          elseif no_p34
+             % save time, p12/32 spin-fit (B C sdev) and NaN(fillval)  
+             data=[spfD(:,1) spfD(:,2:3) spfD(:,5) NaN(size(spfD,1),3)];
           else
              % save time, p12/32 and p34 spin-fit: B C sdev
+             [ok,Del,msg] = c_load('D?p12p34',cl_id);
+             if ~ok || isempty(Del)
+                 irf_log('load',msg)
+                 data = []; continue
+             end;
+             if imag(Del(1)) ~= 0 || imag(Del(2)) ~= 0
+                 irf_log('load','Info: Imaginary delta offset.');
+             end
              spfD(:,2:3)=spfD(:,2:3)+ones(size(spfD,1),1)*Del;
              s34=size(spf34(:,1),1);
              sd=size(spfD(:,1),1);
              if s34 > sd
-%                s34
-%                sd
                 found=0;
                 for j=1:sd
                     for i=1:s34
@@ -314,12 +318,10 @@ for dd = 1:length(dirs)
                       spf34=[NaN(pos-1,5);spf34];
                       irf_log('proc','Info: pos>1 sd');
                    end
-%                  found
                    spfD=[NaN(found-1,5);spfD];
                    if s34-found-sd >= 0
                        spfD=[spfD;NaN(s34-found-sd+pos,5)];
                    end
-%                   size(spfD)
                 else
                    if spf34(1,1) < spfD(1,1)
                        spf34=[spf34;NaN(sd,5)];
@@ -331,8 +333,6 @@ for dd = 1:length(dirs)
                 end
                 data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              elseif s34 < sd
-%                s34
-%                sd
                 found=0;
                 for j=1:s34
                     for i=1:sd
@@ -347,19 +347,14 @@ for dd = 1:length(dirs)
                     end
                 end
                 if found
-%                   pos
-%                   found
                    if pos > 1
                       spfD=[NaN(pos-1,5);spfD];
                       irf_log('proc','Info: pos>1 s34');
                    end
-%                   found
                    spf34=[NaN(found-1,5);spf34];
                    if sd-found-s34 >= 0
                        spf34=[spf34;NaN(sd-found-s34+pos,5)];
                    end
-%                   size(spf34)
-%                   size(spfD)
                 else
                    if spf34(1,1) < spfD(1,1)
                        spf34=[spf34;NaN(sd,5)];
@@ -374,7 +369,6 @@ for dd = 1:length(dirs)
                 data=[spf34(:,1) spfD(:,2:3) spfD(:,5) spf34(:,2:3) spf34(:,5)];
              end
           end
-      end
    elseif strcmp(caa_vs, 'IB')
        ok=0;
        if lev==1
