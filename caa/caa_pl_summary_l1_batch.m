@@ -37,7 +37,7 @@ for t=t0:3*3600:t1
 		fne = sprintf('EFW_SPLOT_L1ERSPEC__%s',irf_fname(t));
 		fnq = sprintf('EFW_SPLOT_L1QUAL__%s',irf_fname(t));
 		fone = sprintf('EFW_SPLOT_L1__%s',irf_fname(t));
-		irf_log('save',['saving  blank pdf plots.'])
+		irf_log('save','saving  blank pdf plots.')
 		print( 78, '-dpdf', fn), print( 78, '-dpdf', fne), print( 78, '-dpdf', fnq)
 		if exist('/usr/local/bin/pdfjoin','file')
 			irf_log('save',['joining to ' fone '.pdf'])
