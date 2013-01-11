@@ -405,7 +405,7 @@ for cli=1:4
 	hold on
 	c_eval('spec=spec?;',cli)
 	if ~isempty(spec)
-		for k=1:length(spec), caa_spectrogram(h(cli),spec{k}), end
+		for k=1:length(spec), irf_spectrogram(h(cli),spec{k}), end
 	end
 	ylabel(sprintf('Ex C%d freq [Hz]',cli))
 	set(gca,'YTick',ytick,'YScale','log')
