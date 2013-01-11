@@ -41,7 +41,7 @@ if nargin > 4
 	      load_args = args;
 	      eval_str = 'var_name,cl_id';
 	      for k=1:numel(load_args)
-	         eval_str = [eval_str ',load_args{' num2str(k) '}'];
+	         eval_str = [eval_str ',load_args{' num2str(k) '}']; %#ok<AGROW>
 	      end
 		otherwise
 			irf_log('fcal','unknown option')
@@ -72,7 +72,7 @@ for t=t0:SPLIT_INT*3600:t1
 	good_dir = {};
 	for j=1:length(d)
 		if ~d(j).isdir, continue, end
-		if caa_is_valid_dirname(d(j).name), good_dir = {good_dir{:} d(j).name}; end
+		if caa_is_valid_dirname(d(j).name), good_dir = [good_dir {d(j).name}]; end %#ok<AGROW>
 	end
 	if isempty(good_dir), continue, end
 	
@@ -106,12 +106,11 @@ if isempty(mode_list), cd(old_pwd), return, end
 dts = [mode_list.dt]; dts = dts(ii);
 for j = ii;
 	cd(mode_list(j).dir);
-	if HAVE_LOAD_ARGS
-	   eval(['[ok, tt, msg] = c_load(' eval_str ');']);
-	else
-	   [ok, tt, msg] = c_load(var_name,cl_id);
-	end
-	oks(j) = ok; msgs{j} = msg;
+    if HAVE_LOAD_ARGS
+        eval(['[ok, tt, msg] = c_load(' eval_str ');']);
+    else
+        [ok, tt, msg] = c_load(var_name,cl_id);
+    end
 	if ~ok || isempty(tt), continue, end
 	% Remove NaN times
 	% TODO: times must never be NaN.
@@ -178,11 +177,8 @@ if 1  % This is a bugfix (for caa_identify_problems) to include e.g. saturation
       data = data(row_index,:);
       clear data_time_lower data_time_upper problem_start problem_stop row_index
    end
-else     % This is the old method. TODO: Check that the above does not break old code!
-   if ~isempty(data), data = irf_tlim(data,st +[0 dt]); end
 end
 
 if nargout > 1, ok = ~isempty(data); end
-%if nargout > 1, ok = oks; if nargout > 2, msg = msgs; end, end
 
 cd(old_pwd)
