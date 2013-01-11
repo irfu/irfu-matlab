@@ -22,7 +22,7 @@ function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
 % ----------------------------------------------------------------------------
 
 b1 = [];
-c_eval('b?=irf_tlim(B?,tint);')
+c_eval('b?=irf_tlim(B?(:,1:4),tint);')
 c_eval('r?= interp1(R?(:,1),R?(:,[2 3 4]),tint(1),''spline'',''extrap'');')
   
 %% Initial velocity estimate
