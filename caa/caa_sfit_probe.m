@@ -1,11 +1,11 @@
-function p_res = caa_sfit_probe(cl_id,probe)
+function [probeNum,flag_lx,probeStr] = caa_sfit_probe(cl_id,probe)
 %CAA_SFIT_PROBE  set/get probe pair for spin resolution data
 %
 % caa_sfit_probe(cl_id,probe-p)
 %    set probe pair for CL_ID (saves to mInfo.mat)
-%    PROBE-P is one of 12, 32, 34
+%    PROBE-P is one of 12, 32, 34 (HX) or 420 (42 LX)
 %
-% [p_res] = caa_sfit_probe(cl_id)
+% [p_res,flag_lx] = caa_sfit_probe(cl_id)
 %    get/display probe pair for CL_ID
 %
 % $Id$
@@ -21,8 +21,9 @@ error(nargchk(1,2,nargin))
 if cl_id<1 || cl_id>4, error('CL_ID must be 1..4'), end
 
 if nargin>1
-	if probe~=12 && probe~=32 && probe~=34
-		error('PROBE must be 12, 32 or 34')
+	if probe~=12 && probe~=32 && probe~=34 && probe~=42 && ...
+            probe~=120 && probe~=320 && probe~=340 && probe~=420
+		error('PROBE must be 12(0), 32(0), 34(0) or 42(0) ')
 	end
 	c_eval('sfit_probe?=probe;',cl_id)
 	if exist('./mInfo.mat','file'), c_eval('save mInfo sfit_probe? -append',cl_id)
@@ -42,8 +43,17 @@ else
 	end
 	
 	if nargout>0
-		p_res = pp;
-	else
-		disp(sprintf('C%d sfit probe-p : %d',cl_id,pp))
+        if pp>100
+            flag_lx = 1;
+            probeNum = pp/10;
+            probeStr = sprintf('%dLX',probeNum);
+        else
+            flag_lx = 0;
+            probeNum = pp;
+            probeStr = num2str(pp);
+        end
+    else
+        if pp>100, sLX = '(LX)'; pp = pp/10; else sLX = ''; end
+		fprintf('C%d sfit probe-pair : %d %s\n',cl_id,pp,sLX)
 	end
 end

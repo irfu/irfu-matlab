@@ -42,11 +42,11 @@ else DOPLOT = 0;
 end
 
 % Load data
-probe_p = caa_sfit_probe(cl_id);
 if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
 	ecorr = 0;
-	[ok,diE] = c_load(sprintf('diEs%dp%d',cl_id,probe_p));
-	if ~ok, error('cannot load E'), end
+    spinFits = caa_sfit_load(cl_id);
+	if isempty(spinFits), error('cannot load E'), end
+    diE = spinFits.diEs;
 	[ok,Ps] = c_load('Ps?',cl_id);
 	if ~ok, error('cannot load P'), end
 	[Ddsi,Damp] = c_efw_dsi_off(diE(1,1),cl_id,Ps);

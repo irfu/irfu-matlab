@@ -27,12 +27,14 @@ status = 0;
 % This must be changed when we do any major changes to our processing software
 EFW_DATASET_VERSION = '3';
 
-%if nargin<8, st = []; dt=[]; end
-if nargin<8, error('time interval needed'); end    % Now REQUIRED, for caa_get ! (ML)
-% The above line nullifies these:
-%if nargin<6, sp='.'; end
-%if nargin<5, DATA_VERSION = '00'; end
-%if nargin<4, QUALITY = 3; end % Good for publication, subject to PI approval
+if nargin~=8 && nargin~=3, error('3 or 8 input parameters are needed'); end
+if nargin ==3
+    QUALITY = 3;
+    DATA_VERSION = '00';
+    DELIVERY_TO_CAA = 0;    % testing mode
+else
+    DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
+end
 if cl_id<=0 || cl_id>4, error('CL_ID must be 1..4'), end
 if lev<1 || lev>3, error('LEV must be 1,2 or 3'), end
 
@@ -40,13 +42,10 @@ DATASET_DESCRIPTION_PREFIX = '';
 EOR_MARKER = '$';
 FILL_VAL = -1.0E9;
 PROCESSING_LEVEL='Calibrated';
-DELIVERY_TO_CAA = 1;    % Changes file name format to new CAA daily-file-format
+
 
 old_pwd = pwd;
-%cd(sp)
-dirs = caa_get_subdirs(st, dt, cl_id);
-%if isempty(dirs), disp(['Invalid (empty?) dir: ' sp]), cd(old_pwd); status
-%= 1; return, end
+
 if 1
 if DELIVERY_TO_CAA   % Check that files are midnight-to-midnight
    st_temp = fromepoch(st);
@@ -84,27 +83,14 @@ else
 		else
 			disp('not implemented'), cd(old_pwd), return
 		end
-%	case 'P' % old format
-%		if lev==2
-%			vs = irf_ssub('P?',cl_id);
-%			v_size = 1;
-%		else
-%			vs = irf_ssub('Ps?',cl_id);
-%			v_size = 1;
-%		end
-%		DATASET_DESCRIPTION_PREFIX = 'negative of the ';
 	case 'E'
-		if lev==2
-			vs = irf_ssub('diE?p1234',cl_id);
-			v_size = 3;    % Previously 1. (ML)
-%			sfit_probe = caa_sfit_probe(cl_id);
-		elseif lev==3
-%			sfit_probe = caa_sfit_probe(cl_id);
-%			vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
-%			irf_log('proc',sprintf('using p%d',sfit_probe))
-			v_size = 4;    % Previously 2. (ML)
-		else
-			disp('not implemented'), cd(old_pwd), return
+        if lev==2
+            vs = irf_ssub('diE?p1234',cl_id);
+            v_size = 3;    % Previously 1. (ML)
+        elseif lev==3
+            v_size = 4;    % Previously 2. (ML)
+        else
+            disp('not implemented'), cd(old_pwd), return
         end
 	case 'HK'
 		if lev==2
@@ -114,13 +100,8 @@ else
 			disp('not implemented'), cd(old_pwd), return
 		end
 	case 'DER'
-	   %keyboard
-	   %vs = 'Dadc?p!';
-	   vs_DER = sprintf('Dadc%.0fp?', cl_id);
-	   probe_pair_list = [12, 32, 34];
-%		sfit_probe = caa_sfit_probe(cl_id);
-%		vs = irf_ssub('Dadc?p!',cl_id,sfit_probe);
-%		irf_log('proc',sprintf('using p%d',sfit_probe))    % TODO: Change printing!
+	    vs_DER = sprintf('Dadc%.0fp?', cl_id);
+	    probe_pair_list = [12, 32, 34];
 		v_size = 2;
 	case 'SFIT'
 		if lev==3
@@ -160,35 +141,33 @@ else
 	end
 end
 
-% Moved to c_ctl
-%if regexp(caa_vs,'^(P|E|B)B$') 
-    % Read list of bad iburst files for no L2 export.
-%    badib=ibfn2epoch(BADIBFILENAME);
-%end
-
+if DELIVERY_TO_CAA, dirs = caa_get_subdirs(st, dt, cl_id);
+else
+    dirs = {'.'};
+    [iso_st,dt] = caa_read_interval();
+    st = iso2epoch(iso_st);
+end
 for dd = 1:length(dirs)
    d = dirs{dd};
-%   cd([sp '/' d]);
    cd(d);
    
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
    if strcmp(caa_vs, 'E')
-      sfit_probe = caa_sfit_probe(cl_id);
-      irf_log('proc',sprintf('using p%d',sfit_probe))
+      [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
+      irf_log('proc',sprintf('using %s',probeS))
       if lev == 3
-         vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+          if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
+          else vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
+          end
       end
    end
 
-   %   keyboard
    % Load data
    if strcmp(caa_vs, 'DER')
       vs = vs_DER;
       [ok, data] = c_load(vs,cl_id,'res',probe_pair_list);   % Try loading data for all probe pairs.
-   %   for k = 1:length(probe_pair_list)       % Try loading data for all probe pairs.
-   %      [data{k} ok(k)] = caa_get(st, dt, cl_id, irf_ssub(vs, probe_pair_list(k)));
-   %   end
+
       probe_pairs = probe_pair_list(logical(ok));   % Keep list of probe pairs actually loaded.
       if numel(probe_pairs) > 0
          vs = irf_ssub(vs, probe_pairs(1));
@@ -254,8 +233,6 @@ for dd = 1:length(dirs)
             % Identify and flag problem areas in data with bitmask and quality factor:
             data = caa_identify_problems(data, lev, num2str(probe_info.probe), cl_id, bitmask_column, quality_column, 1);
 
-%data(:,2:end);
-%cd(old_pwd); return
          end
       end
    elseif strcmp(caa_vs, 'SFIT') 
@@ -649,18 +626,12 @@ for dd = 1:length(dirs)
        end
    else
       [ok,data] = c_load(vs);
-   %   [data, ok] = caa_get(st, dt, cl_id, vs);
-   %   keyboard
    end
-%   if ~isempty(data)
-%       data(1:10,2:end)
-%   end
    if (all(~ok) || isempty(data))
         if ~regexp(caa_vs,'^(I|P|E|B)B$') 
             irf_log('load', ['No ' vs]);
         end
         cd(old_pwd)
-%   	return
         continue
    end
    d_info = []; ok = 0;

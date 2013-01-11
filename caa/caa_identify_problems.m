@@ -90,6 +90,9 @@ if ( (isstr(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
 		case {34, '34'}
 			probe_list = [3, 4];
 			probe_pair_list = 34;
+        case {42, '42'}
+			probe_list = [2, 4];
+			probe_pair_list = 42;
 		case {1234, '1234'}              % Do nothing?
 		   probe_list = [1, 2, 3, 4];
 		   probe_pair_list = [12, 34];

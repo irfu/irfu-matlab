@@ -299,9 +299,9 @@ if strcmp(quantity,'ec')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% dies, dielxs - spin fiting of Electric field
+% dies, diehxs, dielxs - spin fiting of Electric field
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif strcmp(quantity,'dies') || strcmp(quantity,'dielxs')
+elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'dielxs')
 	save_file = './mEDSI.mat';
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
@@ -312,9 +312,13 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'dielxs')
         data = []; cd(old_pwd); return
     end
 	
+    if strcmp(quantity,'dies'), qlist = {'diehxs', 'dielxs'};
+    else qlist = {quantity};
+    end
+    
+    for qq = qlist
 	n_ok = 0; wE = {}; flag_lx = 0; p12 = ''; flag_have_p34 = 0;
-	
-    if strcmp(quantity,'dies')
+    if strcmp(qq{:},'diehxs')
         flag_p12_loaded = 0;
         for probe = [12,32,34]
             flag_corr = 0; 
@@ -340,7 +344,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'dielxs')
             clear ok da e
         end
         clear flag_corr flag_p12_loaded
-    elseif  strcmp(quantity,'dielxs')
+    elseif strcmp(qq{:},'dielxs')
         flag_lx = 1;
         p1 = []; p2 = []; p3 = []; p4 = [];
         for probe=1:4
@@ -395,7 +399,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'dielxs')
         end
         clear p1 p2 p3 p4 p_sep
     end
-	if ~n_ok, data = []; cd(old_pwd), return, end
+	if ~n_ok, data = []; cd(old_pwd), continue, end
 	
     if flag_lx, lx_str = 'LX'; else lx_str=''; end
 	for pri=1:length(wE)
@@ -697,12 +701,26 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'dielxs')
         elseif exist(irf_ssub('diEs?p!',cl_id,32), 'var')
 			irf_log('calb',irf_ssub('Will use p? for spin res data',32))
 			caa_sfit_probe(cl_id,32);
-        elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
-			irf_log('calb',irf_ssub('Will use p? for spin res data',42))
-			caa_sfit_probe(cl_id,42);
+        %elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
+		%	irf_log('calb',irf_ssub('Will use p? for spin res data',42))
+		%	caa_sfit_probe(cl_id,42);
 		end
-	end
-
+    end
+    end
+    if strcmp(quantity,'dies')
+        % Decide on which probes to use
+        if ~any(strfind(save_list,sprintf('diEs%dp',cl_id))) && ...
+                any(strfind(save_list,sprintf('diELXs%dp',cl_id)))
+            for pp = [34 12 32 42]
+                if strfind(save_list,sprintf('diELXs%dp%d',cl_id,pp))
+                    caa_sfit_probe(cl_id,pp*10);
+                    irf_log('calb',irf_ssub('Will use p?LX for spin res data',pp))
+                    break
+                end
+            end
+        end
+    end
+    
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1242,6 +1260,9 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		case 34
 			irf_log('proc','using p34')
 			var_s = irf_ssub('diEs?p34',cl_id);
+        case 420
+			irf_log('proc','using p42LX')
+			var_s = irf_ssub('diELXs?p34',cl_id);
 		otherwise
 			error(['Invalid probe pair ' num2str(probe_p)])
 		end
@@ -2194,9 +2215,8 @@ elseif strcmp(quantity,'wake')
         end
     end
     
-    var_s = sprintf('diEs%dp%d',cl_id, probe_p);
-	[ok,diEs,msg] = c_load(var_s);
-	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
+    [spinFits,msg] = caa_sfit_load(cl_id);
+	if isempty(spinFits), irf_log('load',msg), data = []; cd(old_pwd); return, end
 	
 	[ok,diBrs,msg] = c_load('diBrs?',cl_id);
 	if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
@@ -2217,22 +2237,21 @@ elseif strcmp(quantity,'wake')
 	if ~ok, irf_log('load',msg), diEDI = []; end
 	
 	% Correct for DSI offsets
-	[Ddsi,Damp] = c_efw_dsi_off(diEs(1,1),cl_id,Ps);
-	diEs = caa_corof_dsi(diEs,Ddsi,Damp);
+	[Ddsi,Damp] = c_efw_dsi_off(spinFits.diEs(1,1),cl_id,Ps);
+	spinFits.diEs = caa_corof_dsi(spinFits.diEs,Ddsi,Damp);
 
 	% Detect lobe and plasmaspheric wakes
-	pswake = c_efw_corrot(cl_id,diEs,diBrs,Ps,R,SAX,diV);
-	diEs = caa_rm_blankt(diEs,pswake);
-	[lowake,dEx] = c_efw_lobewake(cl_id,diEs,diBrs,Ps,R,diEDI,1);
+	pswake = c_efw_corrot(cl_id,spinFits.diEs,diBrs,Ps,R,SAX,diV);
+	spinFits.diEs = caa_rm_blankt(spinFits.diEs,pswake);
+	[lowake,dEx] = c_efw_lobewake(cl_id,spinFits.diEs,diBrs,Ps,R,diEDI,1);
    	
 	% Detect nonsinusoidal wakes if x_GSE>0
 	nonsinwake = []; %#ok<NASGU>
 	if any(R(:,2) > 0)
 		% Load required data
-		probe = caa_sfit_probe(cl_id);
 		[ok,pha] = c_load('Atwo?',cl_id);
 		if ~ok, irf_log('load',msg), pha=[]; end
-		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,spinFits.probePair));
 		if ~ok, irf_log('load',msg), da=[]; end
 
 		if ~isempty(da) && ~isempty(pha)
@@ -2247,7 +2266,7 @@ elseif strcmp(quantity,'wake')
 			
 			% Find nonsinusoidal wakes
 			if any(isfinite(da(:,2)))
-				nonsinwake = c_efw_nonsinwake(cl_id,probe,pha,da); %#ok<NASGU>
+				nonsinwake = c_efw_nonsinwake(cl_id,spinFits.probePair,pha,da); %#ok<NASGU>
 			end
 		end
 	end
@@ -2369,18 +2388,13 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
         if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
         e_sf = c_efw_fsample(E_tmp,'hx');
     else
-        var_b = 'Brs?'; var_e = {'diEs?p34', 'diEs?p12','diEs?p32'};
-        [ok,E_tmp] = c_load(var_e{1},cl_id);
-        if ~ok
-            [ok,E_tmp] = c_load(var_e{2},cl_id);
-            if ~ok
-                [ok,E_tmp] = c_load(var_e{3},cl_id);
-                if ~ok
-                    irf_log('load',sprintf('Canot load diEs%d(p12|p32|p34). Please load it.',cl_id))
-                    data = []; cd(old_pwd); return
-                end
-            end
+        var_b = 'Brs?';
+        spinFits = caa_sfit_load(cl_id);
+        if isempty(spinFits)        
+            irf_log('load','Cannot load spinFits. ')
+            data = []; cd(old_pwd); return  
         end
+        E_tmp = spinFits.diEs;
         e_sf = .25;
     end
 	
