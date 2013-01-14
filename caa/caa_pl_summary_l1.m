@@ -80,6 +80,7 @@ old_pwd = pwd;
 % Save the screen size
 sc_s = get(0,'ScreenSize');
 if sc_s(3)==1600 && sc_s(4)==1200, scrn_size = 2;
+elseif sc_s(3)==1920 && sc_s(4)==1200, scrn_size = 2;
 else scrn_size = 1;
 end
 
@@ -439,6 +440,7 @@ if a(1)<-70, a(1)=-70; set(gca,'YLim',a); end
 if dt>0 
 	plot_intervals(h(7),{in1,in2,in3,in4},st)
 	irf_zoom(h,'x',st +[0 dt])
+    xlabel(h(end),'')
 	if ~isempty(r), add_position(h(7),r), end
 end
 
@@ -522,6 +524,7 @@ end
 if dt>0 
 	plot_intervals(he(8),{in1,in2,in3,in4},st)
 	irf_zoom(he,'x',st +[0 dt])
+    xlabel(he(end),'')
 	if ~isempty(r), add_position(he(8),r), end
 end
 
@@ -595,6 +598,7 @@ plot_quality(h(5), {es1, es2, es3, es4}, st)
 if dt>0 
 	plot_intervals(h(6),{in1,in2,in3,in4},st)
 	irf_zoom(h,'x',st +[0 dt])
+    xlabel(h(end),'')
 	if ~isempty(r), add_position(h(6),r), end
 end
 
