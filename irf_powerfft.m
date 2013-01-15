@@ -19,7 +19,9 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-narginchk(3,4)
+%narginchk(3,4) % Matlab >=2011b
+if nargin<3, error('Not enough input arguments'), end
+if nargin>4, error('Too many input arguments'), end
 if nargin<4, overlap = 0; end
 if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 
