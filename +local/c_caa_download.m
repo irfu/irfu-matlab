@@ -100,38 +100,43 @@ else % merge request lists
 	end
 end
 
+assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 %% loop through request time table
 iRequest=find_first_non_processed_time_interval(TTRequest);
 nRequest=numel(TTRequest)-iRequest+1;
 while 1
-  if iRequest <= numel(TTRequest) && n_submitted_jobs(TTRequest)<maxSubmittedJobs
-	tint=TTRequest.TimeInterval(iRequest,:);
-	irf_log('fcal',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
-	dataSet = TTRequest.UserData(iRequest).dataset;
-	try 
-	  [download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard');
-	catch
-	  download_status = -1; % something wrong with internet
-	  irf_log('dsrc','**** DID NOT SUCCEED! ****');
-	end
-	if download_status == 0, % scheduling succeeded
-		TTRequest.UserData(iRequest).Status=0;
-		TTRequest.UserData(iRequest).Downloadfile=downloadfile;
-		TTRequest.UserData(iRequest).TimeOfRequest=now;
-		TTRequest.UserData(iRequest).TimeOfDownload=now;
-		TTRequest.UserData(iRequest).NumberOfAttemptsToDownload=0;
-	  elseif download_status == -1,
-		TTRequest.UserData(iRequest).Status=-1;
-		TTRequest.UserData(iRequest).Downloadfile=[];
-		TTRequest.UserData(iRequest).TimeOfRequest=now;
-		iRequest = iRequest + 1;
-		continue;
-	end
-	iRequest=iRequest+1;
-  end
-	while 1   % check submitted jobs
-		irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
-		iSubmitted=find_first_submitted_time_interval(TTRequest);
+    while 1 % submit next unsubmitted job
+        if iRequest >= numel(TTRequest), break;end % no more jobs
+        if n_submitted_jobs(TTRequest)>=maxSubmittedJobs, break; end % max allowed submitted jobs reached
+        if isempty(TTRequest.UserData(iRequest).Status) || TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
+            tint=TTRequest.TimeInterval(iRequest,:);
+            irf_log('fcal',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
+            dataSet = TTRequest.UserData(iRequest).dataset;
+            try
+                [download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard');
+            catch
+                download_status = -1; % something wrong with internet
+                irf_log('dsrc','**** DID NOT SUCCEED! ****');
+            end
+            if download_status == 0, % scheduling succeeded
+                TTRequest.UserData(iRequest).Status=0;
+                TTRequest.UserData(iRequest).Downloadfile=downloadfile;
+                TTRequest.UserData(iRequest).TimeOfRequest=now;
+                TTRequest.UserData(iRequest).TimeOfDownload=now;
+                TTRequest.UserData(iRequest).NumberOfAttemptsToDownload=0;
+                iRequest=iRequest+1;
+                break
+            elseif download_status == -1,
+                TTRequest.UserData(iRequest).Status=-1;
+                TTRequest.UserData(iRequest).Downloadfile=[];
+                TTRequest.UserData(iRequest).TimeOfRequest=now;
+            end
+        end
+        iRequest=iRequest+1;
+    end
+    while 1   % check submitted jobs
+        irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
+        iSubmitted=find_first_submitted_time_interval(TTRequest);
 		if now-TTRequest.UserData(iSubmitted).TimeOfDownload>(1+TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload)*1/24/60 % more than 1min*"number of attempts" since last request 
 		  try
 			irf_log('dsrc',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
@@ -245,7 +250,7 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	for j=1:numel(iIndex)
 		fileToDelete=indexTT.UserData(iIndex(j)).filename;
 		irf_log('fcal',['Deleting #' num2str(iIndex(j)) ': ' fileToDelete]);
-%		delete(['CAA/' fileToDelete]);
+		eval(['!mv CAA/' fileToDelete ' CAA/' fileToDelete '.delme']);
 	end
 	if numel(iTT) == numel(TTremove)
 		ok=true;
