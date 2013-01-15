@@ -1,7 +1,11 @@
 function out=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
-%	[out]=LOCAL.C_READ(variable,tint) 
+%	[out]=LOCAL.C_READ(variable,tint)
 %		read variable for given time interval in matlab format (matrix)
+%	[out]=LOCAL.C_READ(variable,tint,format)
+%		read variable in specified format.
+%		format can be:
+%		'caa' - then variable should be dataset name
 %
 % Variable can be CAA variable or shortcuts
 %  'R1'  - Cluster 1 position
@@ -32,7 +36,7 @@ function out=c_read(varargin)
 % Mag_Local_time__C1_JP_PMP
 % L_value__C1_JP_PMP
 % Pred_B_mag__C1_JP_PMP
-% 
+%
 %	Examples:
 %		tint = '2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
 %		   R = local.c_read('r',tint);
@@ -47,28 +51,39 @@ persistent index % to make fast access read only once
 persistent usingNasaPatchCdf
 
 if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
-	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;   
+	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 
+%% Defaults
+returnDataFormat = 'mat'; default matlab format
 caaDir='/data/caa/CAA/';
-if isempty(index), index=struct('dummy',[]);end
-% sc_r_xyz_gse__CL_SP_AUX
-% sc_v_xyz_gse__CL_SP_AUX
-% sc_dr1_xyz_gse__CL_SP_AUX
-% sc_at1_lat__CL_SP_AUX
-% sc_at1_long__CL_SP_AUX
+%% Default index is empty, read in only those indees that are used
 
+if isempty(index), 
+	index=struct('dummy',[]);
+end
+%% Check inputs
 if nargin==2,
 	varName=varargin{1};
 	tint=varargin{2};
 	if ischar(tint),
 		tint=irf_time(tint,'iso2tint');
 	end
+elseif nargin ==3,
+	if ischar(varargin{3}) && any(strcmpi(varargin{3},'caa'))
+		returnDataFormat = 'caa';
+	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'mat'))
+		returnDataFormat = 'mat';
+	else
+		irf_log('fcal','output data format unknown');
+		out=[];
+		return;
+	end
 else
 	irf_log('fcal','Only 2 arguments supported');
 	return
 end
-
+%% Read in data
 out=[];
 specialCaseCis=0;
 switch lower(varName)
@@ -76,18 +91,22 @@ switch lower(varName)
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX','sc_dr1_xyz_gse__CL_SP_AUX',...
 			'sc_dr2_xyz_gse__CL_SP_AUX','sc_dr3_xyz_gse__CL_SP_AUX','sc_dr4_xyz_gse__CL_SP_AUX'};
 		ok=readdata;
-		if ok, 
-			out.R=[data{1} double(data{2})]; 
+		if ok && strcmpi(returnDataFormat,'mat')
+			out.R=[data{1} double(data{2})];
 			c_eval('out.R?=[data{1} double(data{2}+data{2+?})];')
 		end
 	case {'r1','r2','r3','r4'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX',['sc_dr' varName(2) '_xyz_gse__CL_SP_AUX']};
 		ok=readdata;
-		if ok, out=[data{1} double(data{2}+data{3})];end
+		if ok && strcmpi(returnDataFormat,'mat'),
+			out=[data{1} double(data{2}+data{3})];
+		end
 	case {'dr1','dr2','dr3','dr4'}
 		varToRead={['sc_dr' varName(3) '_xyz_gse__CL_SP_AUX']};
 		ok=readdata;
-		if ok, out=[data{1} double(data{2})];end
+		if ok && strcmpi(returnDataFormat,'mat'),
+			out=[data{1} double(data{2})];
+		end
 	otherwise
 		irf_log('fcal',['Reading variable (assume to exist): ' varName]);
 		if strfind(varName,'CIS'),specialCaseCis=1;end
@@ -107,11 +126,11 @@ end
 			end
 			index=index.(dataset);
 		else
-			irf_log('dsrc',['Do not now how to read variable: ' varToRead{1}]);
+			irf_log('dsrc',['Do not know how to read variable: ' varToRead{1}]);
 			status=0;
 			return
 		end
-		%% find records within time interval
+		%% find files within time interval
 		istart=find(index.tend>tint(1),1);
 		iend=find(index.tstart<tint(2),1,'last');
 		
@@ -127,67 +146,84 @@ end
 				varToRead=strrep(varToRead,'CIS_','CIS-');
 			end
 			irf_log('dsrc',['Reading: ' cdf_file]);
-			%% check if epoch16
-			cdfid=cdflib.open([caaDir cdf_file]);
-			useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
-			if useCdfepoch16,
-				irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
-				tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
-				tt=irf_time(tmptime','cdfepoch162epoch');
-				tmpdata=cell(1,numel(varToRead));
-				for iVar=1:numel(varToRead),
-					tmp=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
-					tmpdata{iVar}=[tt tmp'];
-				end
-			else
-				[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,...
-					'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
-				tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
+			switch lower(returnDataFormat)
+				case 'mat'
+					%% check if epoch16
+					cdfid=cdflib.open([caaDir cdf_file]);
+					useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
+					if useCdfepoch16,
+						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+						tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
+						tt=irf_time(tmptime','cdfepoch162epoch');
+						tmpdata=cell(1,numel(varToRead));
+						for iVar=1:numel(varToRead),
+							tmp=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
+							tmpdata{iVar}=[tt tmp'];
+						end
+					else
+						[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,...
+							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
+						tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
+					end
+					if iFile==istart, data=cell(size(tmpdata));end
+					iist=1;iien=numel(tmpdata{1});
+					if iFile==istart
+						iist=find(tmpdata{1}>tint(1),1);
+					end
+					if iFile==iend
+						iien=find(tmpdata{1}<tint(2),1,'last');
+					end
+					%% check for NaNs
+					for iVar=1:numel(varToRead),
+						fillVal=value_of_variable_attribute(cdfid,varToRead{iVar},'FILLVAL');
+						tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN;
+					end
+					%% attach to result
+					for j=1:numel(data),
+						data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
+					end
+					cdflib.close(cdfid);
+				case 'caa'
+					if iFile==istart || iFile==iend % ends of interval
+						data_temp=dataobj(cdf_file,'tint',tint);
+					else
+						data_temp=dataobj(cdf_file);
+					end
+					if iFile==istart,
+						data=data_temp;
+					else
+						data=append(data,data_temp);
+					end
+				otherwise
+					error('unknown format');
 			end
-			if iFile==istart, data=cell(size(tmpdata));end
-			iist=1;iien=numel(tmpdata{1});
-			if iFile==istart
-				iist=find(tmpdata{1}>tint(1),1);
-			end
-			if iFile==iend
-				iien=find(tmpdata{1}<tint(2),1,'last');
-			end
-			%% check for NaNs
-			for iVar=1:numel(varToRead),
-				fillVal=value_of_variable_attribute(cdfid,varToRead{iVar},'FILLVAL');
-				tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN;
-			end
-			%% attach to result
-			for j=1:numel(data),
-				data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
-			end
-			cdflib.close(cdfid);
 		end
 		status=1;
 	end
-end
-function data = readCdfepoch16(cdfid,varName)
-if isnumeric(varName),
-	varnum=varName;
-elseif ischar(varName)
-	varnum  = cdflib.getVarNum(cdfid,varName);
-else 
-	error('varName should be variable number or name');
-end
-numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
-numElements = getfield(cdflib.inquireVar(cdfid,varnum),'numElements');
-data=zeros(2+numElements,numrecs);
 
-for j = 0:numrecs-1
-	% This reads in the data in raw epoch 16 format
-	% That implies each Epoch16 value is a 2-element double precision
-	% value in MATLAB
-	data(:,1+j) = cdflib.getVarRecordData(cdfid,varnum,j);
-end
-data=data';
-end
-function value=value_of_variable_attribute(cdfid,varName,attrName)
-attrnum = cdflib.getAttrNum(cdfid,attrName);
-varnum = cdflib.getVarNum(cdfid,varName);
-value = cdflib.getAttrEntry(cdfid,attrnum,varnum);
+	function data = readCdfepoch16(cdfid,varName)
+		if isnumeric(varName),
+			varnum=varName;
+		elseif ischar(varName)
+			varnum  = cdflib.getVarNum(cdfid,varName);
+		else
+			error('varName should be variable number or name');
+		end
+		numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
+		numElements = getfield(cdflib.inquireVar(cdfid,varnum),'numElements');
+		data=zeros(2+numElements,numrecs);
+		
+		for j = 0:numrecs-1
+			% This reads in the data in raw epoch 16 format
+			% That implies each Epoch16 value is a 2-element double precision
+			% value in MATLAB
+			data(:,1+j) = cdflib.getVarRecordData(cdfid,varnum,j);
+		end
+		data=data';
+	end
+	function value=value_of_variable_attribute(cdfid,varName,attrName)
+		attrnum = cdflib.getAttrNum(cdfid,attrName);
+		varnum = cdflib.getVarNum(cdfid,varName);
+		value = cdflib.getAttrEntry(cdfid,attrnum,varnum);
+	end
 end

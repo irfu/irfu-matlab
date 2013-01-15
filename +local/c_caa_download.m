@@ -1,22 +1,50 @@
 function out=c_caa_download(varargin)
-% LOCAL.C_CAA_DOWNLOAD download files to /data/caa
+% LOCAL.C_CAA_DOWNLOAD download full datasets from CAA
+% Downloads all data from CAA database, in case data
+% already exists on disk, downloads only newer version files.
+% Dataset location - /data/caa/CAA
+% Dataset request timetable information - /data/caa/CAA/matCaaRequests
+% Index location - /data/caa/CAA/index
+% Current request time table is accessible in variable TTRequest
 %
 %   LOCAL.C_CAA_DOWNLOAD(dataset) download all dataset
 %
-% 	See also CAA_DOWNLOAD, IRF_FUNCTION_B.
+%   LOCAL.C_CAA_DOWNLOAD(TTrequest) process request time table TTRequest
+% 
+% Example:
+%		local.c_caa_download('C1_CP_PEA_MOMENTS')			
+% 
+% 	See also CAA_DOWNLOAD
 %
+
+% Request time table TTRequest structure
+%
+% TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
+% TTRequest.UserData.Downloadfile zip file to download (important if status=0)
+% TTRequest.UserData.TimeOfRequest
+% TTRequest.UserData.TimeOfDownload
+% TTRequest.UserData.NumberOfAttemptsToDownload
+% TTRequest.UserData.dataset
+% TTRequest.UserData.number - number of entries
+% TTRequest.UserData.version - version of dataset
 
 % $Id$
 
+%% Defaults
+dataDirectory = '/data/caa';
 maxSubmittedJobs = 13;
 maxNumberOfAttempts = 20;
-
-if exist('/data/caa','dir')
-	disp('!!!! Changing directory to /data/caa !!!');
-	cd('/data/caa');
+%% change to data directory
+if exist(dataDirectory,'dir')		
+	disp(['!!!! Changing directory to ' dataDirectory ' !!!']);
+	cd(dataDirectory);
+else
+	disp(['DOES NOT EXIST data directory: ' dataDirectory ' !!!']);
+	out=[];
+	return;
 end
-
-if nargin==1 && ischar(varargin{1})
+%% check input: get inventory and construct time table if dataset
+if nargin==1 && ischar(varargin{1})   
 	dataSet=varargin{1};
 	irf_log('dsrc','Checking list of available times');
 	tt=caa_download(['list:' dataSet]);
@@ -34,16 +62,42 @@ if nargin==1 && ischar(varargin{1})
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 elseif nargin == 1 && isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
+	dataSet=TTRequest.UserData(1).dataset;
 else
 	irf_log('fcal','See syntax: help local.c_caa_download');
 	return;
 end
+%% check which time intervals are already downloaded, remove obsolete ones
+requestListVariableName=['TT_' dataSet ];
+requestListDirectory='CAA/matCaaRequests';
+requestListVariableFile=[requestListDirectory filesep requestListVariableName];
+if ~exist(requestListDirectory,'dir'), 
+	mkdir(requestListDirectory);
+else % merge request lists 
+	if exist(requestListVariableFile,'file'),
+		load(requestListVariableFile,requestListVariableName);
+		TTRequest_old=eval(requestListVariableName);
+		irf_log('fcal','Previous request list exists, merging...');
+		[~,iiobsolete]=setdiff(TTRequest_old,TTRequest); % those intervals that are not anymore in inventory
+		irf_log('fcal',['Obselete intervals in old requests list: ' iiobsolete]);
+		remove_datafiles(TTRequest_old,iiobsolete);
+		TTRequest_old=remove(TTRequest_old,iiobsolete);
+		updateFields={'Status','TimeOfRequest','TimeOfDownload','NumberOfAttemptsToDownload'};
+		for ii=1:numel(TTRequest_old),
+			if TTRequest_old.UserData(ii).version == TTRequest.UserData(ii).version && ...
+					TTRequest_old.UserData(ii).number == TTRequest.UserData(ii).number
+				for jj=1:numel(updateFields),
+					TTRequest.UserData(ii).(updateFields{jj})=TTRequest_old.UserData(ii).(updateFields{jj});
+				end
+			else
+				remove_datafiles(TTRequest_old,ii);
+				irf_log('fcal',['Request download for interval ' ii]);
+			end
+		end
+	end
+end
 
-
-% TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
-% TTRequest.UserData.Downloadfile zip file to download (important if status=0)
-% TTRequest.UserData.TimeOfRequest
-% TTRequest.UserData.TimeOfDownload
+%% loop through request time table
 iRequest=find_first_non_processed_time_interval(TTRequest);
 nRequest=numel(TTRequest)-iRequest+1;
 while 1
@@ -92,7 +146,7 @@ while 1
 				varName=['TT_' TTRequest.UserData(iSubmitted).dataset ];
 				irf_log('drsc',['Saving ' varName ' to CAA/matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
-				dirName=['CAA/matCaaRequests'];
+				dirName='CAA/matCaaRequests';
 				if ~exist(dirName,'dir'), mkdir(dirName);end
 				  save([dirName '/' varName],'-v7',varName);
 			end
@@ -122,7 +176,7 @@ while 1
 	  break;
 	end
 end % going through all requests
-
+%% assign output
 if nargout==1, out=TTRequest;end
 
 function i=find_first_non_processed_time_interval(TT)
@@ -138,7 +192,6 @@ if isfield(ud,'Status')
 else
 	i=1;
 end
-
 function i=find_first_submitted_time_interval(TT)
 ud=TT.UserData;
 i=[]; % default empty return
@@ -152,18 +205,46 @@ if isfield(ud,'Status')
 else
 	i=1;
 end
-
 function n=n_submitted_jobs(TT)
 if isfield(TT.UserData,'Status')
 	n = sum([TT.UserData(:).Status]==0);
 else
 	n=0;
 end
-
 function n=n_downloaded_jobs(TT)
 if isfield(TT.UserData,'Status')
 	n = sum([TT.UserData(:).Status]==1);
 else
 	n=0;
+end
+function ok=remove_datafiles(TT,ii)
+% remove data files of dataset in request TT and indices ii
+ok=false; % default
+if isa(TT,'irf.TimeTable') && isnumeric(ii)
+	if numel(TT)==0,
+		irf_log('fcal','No time intervals in request');
+		return;
+	end
+	TTremove=select(TT,ii);
+	dataSet=TTremove.UserData(1).dataset;
+	% get dataset file index
+	for jj=1:numel(ii),
+		load('caa',['index_' dataSet]);
+		index=eval(['index_' dataSet]);
+		indexTT=irf.TimeTable([index.tstart(:) index.tend(:)]);
+		for kk=1:numel(indexTT)
+			indexTT.UserData(kk).filename=index.filename(kk,:);
+		end
+	end
+	% check which files to remove
+	[~,iTT,iIndex]=common(TTremove,indexTT);
+	for j=1:numel(iIndex)
+		fileToDelete=indexTT.UserData(iIndex(j)).filename;
+		irf_log('fca',['Deleting: ' fileToDelete]);
+%		delete(['CAA/' fileToDelete]);
+	end
+	if numel(iTT) == numel(TTremove)
+		ok=true;
+	end
 end
 

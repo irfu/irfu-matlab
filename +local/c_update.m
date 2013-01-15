@@ -4,8 +4,10 @@ function c_update
 % See also:
 %	LOCAL.C_READ
 
+% NEEDS to remake so that separate index files are created, matlab is slow at
+% reading many variables from the same mat file
+
 % $Id$
-% $Revision$  $Date$
 
 
 dirCaa='/data/caa/CAA';
