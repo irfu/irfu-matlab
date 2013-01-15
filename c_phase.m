@@ -54,7 +54,8 @@ end
 % Sanity check
 phase_unwrapped = unwrap(phase_out(:,2)/180*pi);
 SpinRate = diff(phase_unwrapped)./diff(phase_out(:,1));
-ii = find( SpinRate<2*pi/MAX_SPIN_PERIOD | SpinRate>2*pi/MIN_SPIN_PERIOD );
+ii = find( diff(phase_out(:,1))< 0.95*2*pi/median(SpinRate) &...
+    (SpinRate<2*pi/MAX_SPIN_PERIOD | SpinRate>2*pi/MIN_SPIN_PERIOD) );
 if ~isempty(ii)
     ii_jump = find(diff(ii')>1);
     ii_jump = [1 ii_jump];
