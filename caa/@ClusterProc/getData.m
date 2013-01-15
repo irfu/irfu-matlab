@@ -338,6 +338,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
             end
             if probe == 12, flag_p12_loaded = 1; p12 = 12; 
             elseif probe == 32 && isempty(p12), p12 = 32;
+            elseif probe == 34, flag_have_p34 = 1;
             end
             e = struct('probe',probe,'corr',flag_corr,'e',da);
             wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
