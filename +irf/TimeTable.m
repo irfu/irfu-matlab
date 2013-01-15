@@ -219,9 +219,12 @@ classdef TimeTable
 			end
 		end
 		function TTout  = select(TTin,index) % return index
-			TTout=[];
+			TTout=irf.TimeTable;
 			if ~isnumeric(index)
 				irf_log('fcal','Index not number');
+				return;
+			elseif isempty(index)
+				irf_log('fcal','index empty');
 				return;
 			end
 			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
