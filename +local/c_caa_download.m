@@ -70,7 +70,7 @@ end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
 requestListDirectory='CAA/matCaaRequests';
-requestListVariableFile=[requestListDirectory filesep requestListVariableName];
+requestListVariableFile=[requestListDirectory filesep requestListVariableName '.mat'];
 if ~exist(requestListDirectory,'dir'), 
 	mkdir(requestListDirectory);
 else % merge request lists 
@@ -79,19 +79,22 @@ else % merge request lists
 		TTRequest_old=eval(requestListVariableName);
 		irf_log('fcal','Previous request list exists, merging...');
 		[~,iiobsolete]=setdiff(TTRequest_old,TTRequest); % those intervals that are not anymore in inventory
-		irf_log('fcal',['Obselete intervals in old requests list: ' iiobsolete]);
+		irf_log('fcal',['Obselete intervals in old requests list: ' num2str(iiobsolete)]);
 		remove_datafiles(TTRequest_old,iiobsolete);
 		TTRequest_old=remove(TTRequest_old,iiobsolete);
+		[~,iinew]=setdiff(TTRequest,TTRequest_old); % new time intervals 
+		irf_log('fcal',['New time intervals, not in old requests list: ' num2str(iinew)]);
+		[~,iiold,iinew]=common(TTRequest_old,TTRequest); % common time intervals
 		updateFields={'Status','TimeOfRequest','TimeOfDownload','NumberOfAttemptsToDownload'};
-		for ii=1:numel(TTRequest_old),
-			if TTRequest_old.UserData(ii).version == TTRequest.UserData(ii).version && ...
-					TTRequest_old.UserData(ii).number == TTRequest.UserData(ii).number
+		for ii=1:numel(iiold),
+			if TTRequest_old.UserData(iiold(ii)).version == TTRequest.UserData(iinew(ii)).version && ...
+					TTRequest_old.UserData(iiold(ii)).number == TTRequest.UserData(iinew(ii)).number
 				for jj=1:numel(updateFields),
-					TTRequest.UserData(ii).(updateFields{jj})=TTRequest_old.UserData(ii).(updateFields{jj});
+					TTRequest.UserData(iinew(ii)).(updateFields{jj})=TTRequest_old.UserData(iiold(ii)).(updateFields{jj});
 				end
 			else
-				remove_datafiles(TTRequest_old,ii);
-				irf_log('fcal',['Request download for interval ' ii]);
+				remove_datafiles(TTRequest_old,iiold(ii));
+				irf_log('fcal',['Request download for interval ' iinew(ii)]);
 			end
 		end
 	end
@@ -224,23 +227,24 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	if numel(TT)==0,
 		irf_log('fcal','No time intervals in request');
 		return;
+	elseif isempty(ii)
+		ok=true;
+		return;		
 	end
 	TTremove=select(TT,ii);
 	dataSet=TTremove.UserData(1).dataset;
 	% get dataset file index
-	for jj=1:numel(ii),
-		load('caa',['index_' dataSet]);
-		index=eval(['index_' dataSet]);
-		indexTT=irf.TimeTable([index.tstart(:) index.tend(:)]);
-		for kk=1:numel(indexTT)
-			indexTT.UserData(kk).filename=index.filename(kk,:);
-		end
+	load('CAA/caa',['index_' dataSet]);
+	index=eval(['index_' dataSet]);
+	indexTT=irf.TimeTable([index.tstart(:) index.tend(:)]);
+	for kk=1:numel(indexTT)
+		indexTT.UserData(kk).filename=index.filename(kk,:);
 	end
 	% check which files to remove
 	[~,iTT,iIndex]=common(TTremove,indexTT);
 	for j=1:numel(iIndex)
 		fileToDelete=indexTT.UserData(iIndex(j)).filename;
-		irf_log('fca',['Deleting: ' fileToDelete]);
+		irf_log('fcal',['Deleting #' num2str(iIndex(j)) ': ' fileToDelete]);
 %		delete(['CAA/' fileToDelete]);
 	end
 	if numel(iTT) == numel(TTremove)
