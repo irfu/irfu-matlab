@@ -325,5 +325,16 @@ classdef TimeTable
 			i=setdiff(1:size(t1,1),ia);
 			TT=select(TT1,i);
 		end
+		function [TT,ii1,ii2]	= common(TT1,TT2) % returns TT1 elements that are commmon in TT2			% TT=common(TT1,TT2) 
+			% [TT,ii1,ii2]=common(TT1,TT2) returns also indexes of those elements 
+			% The UserData information is taken from TT1
+			t1=TT1.TimeInterval;
+			t2=TT2.TimeInterval;
+			[~,ia1,ib1]=intersect(t1(:,1),t2(:,1)); % common start times
+			[~,ia2,ib2]=intersect(t1(:,2),t2(:,2)); % common end times
+			ii1=intersect(ia1,ia2); % TT1 intervals with start/end times common
+			ii2=intersect(ib1,ib2); % TT2 intervals with start/end times common
+			TT=select(TT1,ii1);
+		end
 	end % methods
 end % classdef
