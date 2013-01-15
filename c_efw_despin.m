@@ -52,7 +52,8 @@ end
 use_asym = 0;
 use_interf = 0;
 if nargin == 4
-    if strcmp(options,'asym'), use_asym = 1;
+    if strcmp(options,'asym') || strcmp(options,'asym32'), use_asym = 32;
+    elseif strcmp(options,'asym42'), use_asym = 42;
     elseif strcmp(options,'interf'), 
         use_interf = 1;
         ref_frame='wec';
@@ -138,6 +139,7 @@ case 'wec'
     else
         phi_12=3*pi/4;
         phi_32=pi/2;
+        phi_42=pi;
         phi_34=pi/4; % angles when phase =0
     end
     p12=es(:,4);p34=es(:,3);
@@ -201,10 +203,14 @@ p34=p34-coef(2,2);
 
 % take away dc offsets of the despinned ref frame
 p34=p34-abs(coef(2,3))*cos(angle(coef(2,3))-phase-phi_34);
-if use_asym
+if use_asym==32
 	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_32);
 	p12 = 1.4142*p12 - p34;
-	irf_log('proc','Using ASYMMETRIC probe conf')
+	irf_log('proc','Using ASYMMETRIC probe 32 conf')
+elseif use_asym==42
+	p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_42);
+	p12 = 1.4142*p12 - p34;
+	irf_log('proc','Using ASYMMETRIC probe 42 conf')
 else p12 = p12-abs(coef(1,3))*cos(angle(coef(1,3))-phase-phi_12);
 end
 

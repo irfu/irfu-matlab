@@ -386,7 +386,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
             if isempty(p12), p12 = 32; end
         end
         if ~isempty(p2) && ~isempty(p4)
-            if size(p2,1) ~=  size(p3,1)
+            if size(p2,1) ~=  size(p4,1)
                 [ii2,ii4]=irf_find_comm_idx(p2,p4);
                 tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p4(ii4,2) )/p_sep;
             else
@@ -725,10 +725,14 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 % die - despin of full resolution data.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
-	strcmp(quantity,'diespec') || strcmp(quantity,'dieburst')
+	strcmp(quantity,'diespec') || strcmp(quantity,'dieburst') || ...
+    strcmp(quantity,'dielx') || strcmp(quantity,'dielxspec')
 	
 	if strcmp(quantity,'dieburst'), do_burst = 1; else do_burst = 0; end
 	if strcmp(quantity,'dief'), do_filter = 1; else do_filter = 0; end
+    if strcmp(quantity,'dielx') || strcmp(quantity,'dielxspec'), flag_lx = 1;
+    else flag_lx = 0; 
+    end
 	if do_burst
 		save_file = './mEFWburst.mat';
 		var1_name = 'dibE?p1234';
@@ -736,10 +740,15 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		if strcmp(quantity,'diespec')
 			save_file = './mEDSI.mat';
 			var1_name = 'diESPEC?p1234';
+        elseif strcmp(quantity,'dielxspec')
+			save_file = './mEDSI.mat';
+			var1_name = 'diELXSPEC?p1234';
 		else
 			save_file = './mEDSIf.mat';
 			if do_filter, var1_name = 'diEF?p1234';
-			else var1_name = 'diE?p1234';
+            elseif flag_lx, var1_name = 'diELX?p1234';
+            else
+                var1_name = 'diE?p1234';
 			end
 		end
 	end
@@ -755,31 +764,38 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	
     flag_bp = 0; % Flag for 8kHz BP filter internal burst data
     % Make electric field for the burst
-	if do_burst
-		p12 = 12;
+	if do_burst || flag_lx
         p_ok = [];
-		loaded = 0;
-        % First try to see if we have any V12H and V43H
-        [ok,e12] = c_load('wE8kHz?p12',cl_id);
-        if ~ok || isempty(e12)
-            irf_log('load', irf_ssub('No/empty wE8kHz?p12',cl_id));
-        else
-            loaded = 1;
-            p_ok = 12;
-            flag_bp = 1;
-        end
-        [ok,e34] = c_load('wE8kHz?p34',cl_id);
-        if ~ok || isempty(e34)
-            irf_log('load', irf_ssub('No/empty wE8kHz?p34',cl_id));
-        else
-            loaded = 1;
-            p_ok = [p_ok 34];
-            flag_bp = 1;
+        loaded = 0;
+        if ~flag_lx
+            p12 = 12;
+            % First try to see if we have any V12H and V43H
+            [ok,e12] = c_load('wE8kHz?p12',cl_id);
+            if ~ok || isempty(e12)
+                irf_log('load', irf_ssub('No/empty wE8kHz?p12',cl_id));
+            else
+                loaded = 1;
+                p_ok = 12;
+                flag_bp = 1;
+            end
+            [ok,e34] = c_load('wE8kHz?p34',cl_id);
+            if ~ok || isempty(e34)
+                irf_log('load', irf_ssub('No/empty wE8kHz?p34',cl_id));
+            else
+                loaded = 1;
+                p_ok = [p_ok 34];
+                flag_bp = 1;
+            end
         end
         
-        if ~loaded
-            var_name = 'wbE?p!';
-            param={'180Hz','4kHz','32kHz'};
+        if flag_lx || ~loaded
+            if flag_lx
+                var_name = 'wELX?p!';
+                param={'10Hz'};
+            else
+                var_name = 'wbE?p!';
+                param={'180Hz','4kHz','32kHz'};
+            end
             for k=1:length(param)
                 for probe=[2 4]
                     [ok,p2] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
@@ -788,13 +804,21 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                         p_sep = .088;
                         if probe==2
                             [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,1));
+                            p12 = 12;
                             if ~ok
                                 [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,3));
                                 p_sep = .066;
                                 p12 = 32;
                             end
+                            if ~ok && flag_lx
+                                [ok,p1] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,4));
+                                p_sep = .066;
+                                p12 = 42;
+                            end
                             if ~ok
-                                irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+                                if flag_lx, irf_log('load', irf_ssub(['No P' param{k} '?p1/3/4'],cl_id));
+                                else irf_log('load', irf_ssub(['No P' param{k} '?p1/3'],cl_id));
+                                end
                                 continue
                             end
                             
@@ -886,14 +910,13 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	% Load ADC offsets
 	for probe = p_ok
 		if probe==12, ps=p12; else ps=probe; end
-		[ok,dadc] = c_load(irf_ssub('Dadc?p!',cl_id,ps));
-		if ~ok
-			if CAA_MODE, error(irf_ssub('Cannot load Dadc?p!',cl_id,ps)), end
-			irf_log('load',irf_ssub('Cannot load Dadc?p!',cl_id,ps))
-		end
-		if isempty(dadc)
-			if CAA_MODE, error(irf_ssub('Empty Dadc?p!',cl_id,ps)), end
-		end
+        if flag_lx, wStr = 'DadcLX?p!';
+        else wStr = 'Dadc?p!';
+        end
+            
+		[ok,dadc] = c_load(irf_ssub(wStr,cl_id,ps));
+		if ~ok, error(irf_ssub(['Cannot load ' wStr],cl_id,ps)), end
+		if isempty(dadc), error(irf_ssub(['Empty ' wStr],cl_id,ps)), end
 		c_eval('dadc?=dadc;',probe)
 		clear ok dadc
 	end
@@ -928,13 +951,16 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			n_sig = n_sig + 1;
 			c_eval('e?=tt;',p)
 	
-		else
-			fsamp = c_efw_fsample(tt,'hx');
+        else
+            if flag_lx, fsamp = c_efw_fsample(tt,'lx');
+			else fsamp = c_efw_fsample(tt,'hx');
+            end
 			if ~fsamp, error('no sampling frequency'),end
 			
 			problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
-			nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx') caa_str2errid(irf_ssub('no_p?',ps))];%#ok<NASGU>
-			
+			nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid(irf_ssub('no_p?',ps))];
+			if ~flag_lx, nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; end %#ok<AGROW,NASGU>
+            
 			% Always remove Whisper when we use 180Hz filter
 			if (fsamp == 450) || ...
 					( cl_id == 2 && tt(1,1)>toepoch([2001 07 23 13 54 18]) ) || ...
@@ -1131,7 +1157,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 		irf_log('proc','Can not do despin')
 		data = []; cd(old_pwd); return
     end
-	if p12==32
+	if p12==32 || p12==42
 		
 		% x(4)*cos(2*pha)+x(5)*sin(2*pha)
 		if flag_wash_p32
@@ -1152,15 +1178,19 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
     else full_e=c_efw_despin(full_e,aa,coef);
 	end
 	
-	if strcmp(quantity,'diespec')
+	if strcmp(quantity,'diespec') || strcmp(quantity,'dielxspec')
 		% Make a spectrum and save it.
-		sfreq = c_efw_fsample(full_e(:,1),'hx');
+        if flag_lx, sfreq = c_efw_fsample(full_e(:,1),'lx');
+        else sfreq = c_efw_fsample(full_e(:,1),'hx');
+        end
 		if ~sfreq, error('no sampling frequency'),end
-		if sfreq == 25, nfft = 512; %#ok<NASGU>
+		if sfreq == 5, nfft = 128; %#ok<NASGU>
+        elseif  sfreq == 25, nfft = 512; %#ok<NASGU>
         else nfft = 8192; %#ok<NASGU>
 		end
-		c_eval(...
-		'diESPEC?p1234=caa_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list ''diESPEC?p1234 ''];',cl_id);
+		c_eval([var1_name...
+            '=irf_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list '''...
+            var1_name '''];'],cl_id);
 	else
 		% HP-Filter
 		if do_filter
@@ -2059,7 +2089,7 @@ elseif strcmp(quantity,'rawspec')
 	end
 	
 	p12 = 12; e12 = []; e34 =[];
-	n_ok = 0;
+	n_ok = 0; flag_lx = 0;
 	tpharef = [];
 	corrected_raw_data_p12 = 1;
 	corrected_raw_data_p34 = 1;
@@ -2087,7 +2117,31 @@ elseif strcmp(quantity,'rawspec')
         else c_eval('e?=da;',probe)
 		end
 		clear ok da
-	end
+    end
+    if ~n_ok % Try with LX data p42
+        [ok,p4] = c_load(irf_ssub('P10Hz?p!',cl_id,4));
+        if ok && ~isempty(p4)
+            [ok,p2] = c_load(irf_ssub('P10Hz?p!',cl_id,2));
+            if ok && ~isempty(p2)
+                p_sep = .066;
+                if size(p2,1) ~=  size(p4,1)
+                    [ii2,ii4]=irf_find_comm_idx(p2,p4);
+                    e12(:,1) = p2(ii2,1); e12(:,2) = ( p2(ii2,2) - p4(ii4,2) )/p_sep;
+                else
+                    e12(:,1) = p2(:,1); e12(:,2) = ( p2(:,2) - p4(:,2) )/p_sep;
+                end
+                p12 = 42; flag_lx = 1; n_ok = n_ok + 1;
+                irf_log('proc','Using p42 LX')
+                if size(e12,1) > length(tpharef), tpharef = e12(:,1); end
+            else
+                irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,2));
+            end
+            clear p2 p4 p_sep
+        else
+            irf_log('load', irf_ssub('No/empty P10Hz?p!',cl_id,4));
+        end
+    end
+        
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	%Compute spin period
@@ -2135,11 +2189,14 @@ elseif strcmp(quantity,'rawspec')
 		irf_log('proc',sprintf('Raw spectrum w%sE%dp%d -> RSPEC%dp%d',...
 			ss,cl_id,probe,cl_id,probe))
 		
-		fsamp = c_efw_fsample(tt,'hx');
+        if flag_lx, fsamp = c_efw_fsample(tt,'lx');
+        else fsamp = c_efw_fsample(tt,'hx');
+        end
 		if ~fsamp, error('no sampling frequency'),end
 		
 		problems = 'reset|bbias|probesa|probeld|sweep|bdump|nsops';
-		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
+		nsops_errlist = caa_str2errid('bad_bias');
+        if ~flag_lx, nsops_errlist = [nsops_errlist caa_str2errid('bad_hx')]; end %#ok<AGROW,NASGU>
 		if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU,AGROW>
 		signal = tt; %#ok<NASGU>
 		remove_problems
@@ -2156,6 +2213,7 @@ elseif strcmp(quantity,'rawspec')
 		if probe == 12, tpha0probe = tpha0 - 3*spin_p/8;
 		elseif probe == 32, tpha0probe = tpha0 - spin_p/4;
 		elseif probe == 34, tpha0probe = tpha0 - spin_p/8;
+        elseif probe == 42, tpha0probe = tpha0 - spin_p/2;
 		end
 		
 		tstart = tpha0probe + fix( (tt(1,1) - tpha0probe)/spin_p )*spin_p;

@@ -35,6 +35,7 @@ case 'no_p12', res = 112;
 case 'no_p23', res = 132;
 case 'no_p32', res = 132;
 case 'no_p34', res = 134;
+case 'no_p42', res = 142; % Not used yet
 case 'no_10Hz_filt', res = 255;
 case 'no_spin_fits', res = 260;
 case 'spec_bias', res = 261;

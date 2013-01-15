@@ -180,7 +180,7 @@ for cli=1:4
             end
             
 			% Load PS/LO WAKEs
-            for pp=[12 32 34]
+            for pp=[12 32 34 42]
                 pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
                 if ~isempty(pswake_tmp) && pswake_tmp(1,1)~=-157e8
                     pswake = [pswake; pswake_tmp];
@@ -195,6 +195,9 @@ for cli=1:4
             
 			% Load spectrum
 			spec_tmp = c_load('diESPEC?p1234',cli,'var');
+            if ~isstruct(spec_tmp) && spec_tmp==-157e8
+                spec_tmp = c_load('diELXSPEC?p1234',cli,'var'); 
+            end
 			if ~isempty(spec_tmp) && isstruct(spec_tmp)
 				spec = [spec; {spec_tmp}];
 				if spec_tmp.f(end)>fmax, fmax = spec_tmp.f(end); end
@@ -293,8 +296,8 @@ for cli=1:4
 					if ~ok || isempty(Delauto)
 						irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cli))
 					else
-						spinFits.diEs = caa_corof_delta(spinFits.diEs,pp,Delauto,'undo');
-						spinFits.diEs = caa_corof_delta(spinFits.diEs,pp,Del_caa,'apply');
+						spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Delauto,'undo');
+						spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Del_caa,'apply');
 					end
 				end
 				
@@ -342,8 +345,7 @@ for cli=1:4
             end
 			
 			% Load RSPEC
-            if ~spinFits.flagLX
-			rspec_tmp = c_load(['RSPEC?p' num2str(pp)],cli,'var');
+			rspec_tmp = c_load(['RSPEC?p' num2str(spinFits.probePair)],cli,'var');
 			if ~isempty(rspec_tmp) && rspec_tmp(1,1)~=-157e8 
 				rs = rspec_tmp;
 				rs(:,2) = sqrt(rspec_tmp(:,2).^2+rspec_tmp(:,3).^2);
@@ -356,7 +358,6 @@ for cli=1:4
 				clear rs
 			end
 			clear rspec_tmp
-            end
 			
 			cd(old_pwd)
 		end

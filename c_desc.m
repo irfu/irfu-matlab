@@ -385,7 +385,7 @@ elseif regexp(vs,'^HBSATDSC[1-4]p(12|32|34)$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% RSPEC
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^RSPEC[1-4]p(12|32|34)$')
+elseif regexp(vs,'^RSPEC[1-4]p(12|32|34|42)$')
 	v.data = 1;
 	v.cl_id = vs(6);
 	v.inst = 'EFW';
@@ -633,7 +633,7 @@ elseif regexp(vs,'^EB[1-4]$')==1
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Despun full resolution E
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
+elseif regexp(vs,'^(i)?di(b)?E(F|LX)?[1-4]p1234$')==1
 	v.data = 1;
     switch vvs(1:strfind(vvs,'E')-1) % characters before 'E'
         case 'di'
@@ -660,6 +660,13 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 		v.label_1 = {'"EFx", "EFy"'};
 		v.field_name = {'Electric field (high-pass filtered)'};
 		v.quant = 'dief';
+    elseif vvs(strfind(vvs,'E')+1)=='L'
+		v.cl_id = vvs(strfind(vvs,'E')+3);
+		v.name = {'ELX_Vec_xy_ISR2'};
+		v.labels = {'ELX'};
+		v.label_1 = {'"ELXx", "ELXy"'};
+		v.field_name = {'Electric field (LX)'};
+		v.quant = 'dielx';
 	else
 		v.cl_id = vvs(strfind(vvs,'E')+1); % next character after 'E'
 		v.name = {'E_Vec_xy_ISR2'};
@@ -688,12 +695,17 @@ elseif regexp(vs,'^(i)?di(b)?E(F)?[1-4]p1234$')==1
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;
-elseif regexp(vs,'^di(b)?E(F)?[1-4]p1234_info$')==1
+elseif regexp(vs,'^di(b)?E(F|LX)?[1-4]p1234_info$')==1
 	v.data = 0;
 	if vs(4)=='F'
 		v.cl_id = vs(5);
 		v.com = 'E filtered INFO';
 		v.quant = 'dief';
+		v.file = 'mEDSIf';
+    elseif vs(4)=='L'
+		v.cl_id = vs(6);
+		v.com = 'E LX filtered INFO';
+		v.quant = 'dielx';
 		v.file = 'mEDSIf';
     elseif vs(3)=='b'
         v.cl_id = vs(3);
@@ -733,6 +745,34 @@ elseif regexp(vs,'^diESPEC?[1-4]p1234_info$')==1
 	v.cl_id = vs(8);
 	v.com = 'E spectrum (DSI) INFO';
 	v.quant = 'diespec';
+	v.file = 'mEDSI';
+	v.inst = 'EFW';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% E spectrum LX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^diELXSPEC[1-4]p1234$')==1
+	v.data = 0;
+	v.cl_id = vs(10);
+	v.inst = 'EFW';
+	v.frame = 'sc';
+	v.sig = 'E';
+	if ~isempty(v_info) && isfield(v_info,'probe'), v.sen = num2str(v_info.probe);
+    else v.sen = '1234';
+	end
+	v.size = 2;
+	v.labels = {'E'};
+	v.col_labels = {{'x','y'}};
+	v.units =  {'(mV/m)^2/Hz'};
+	v.com = 'E-field spectrum (LX)';
+	v.file = 'mEDSI';
+	v.lev = 1;
+	v.quant = 'dielxspec';
+elseif regexp(vs,'^diELXSPEC?[1-4]p1234_info$')==1
+	v.data = 0;
+	v.cl_id = vs(10);
+	v.com = 'E spectrum LX (DSI) INFO';
+	v.quant = 'dielxspec';
 	v.file = 'mEDSI';
 	v.inst = 'EFW';
 	v.lev = 1;
@@ -1020,6 +1060,33 @@ elseif regexp(vs,'^Dadc[1-4]p(12|32|34)$')==1
 	v.fluc = {'Waveform'};
 	v.com = '';
 	v.lev = 1;	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ADC offsets from spinfits
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^DadcLX[1-4]p(12|32|34|42)$')==1
+	v.data = 0;
+	v.cl_id = vs(7);
+	v.sen = vvs(9:10);
+	v.inst = 'EFW';
+	v.com = 'raw signal DC offset';
+	v.file = 'mEDSI';
+	v.quant = 'dies';
+	v.cs = {'na'};
+	v.rep = {'scalar'};
+ 	v.units =  {'mV/m'};
+	v.si_conv = {'1.0e-3>V m^-1'};
+	v.size = 1;
+	v.name = {'dER_Mag'};
+	v.labels = v.name;
+	v.field_name = {'raw signal DC offset'};
+    v.ptype = {'Data'};
+    v.valtype = {'FLOAT'};
+    v.sigdig = 6;
+	v.ent = {'Electric_Field'};
+	v.prop = {'Magnitude'};
+	v.fluc = {'Waveform'};
+	v.com = '';
+	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Delta offsets
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

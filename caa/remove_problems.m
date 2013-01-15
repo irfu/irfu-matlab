@@ -23,6 +23,8 @@ if probe>10
 			p_list = [3,2];
 		case 34
 			p_list = [3,4];
+        case 42
+			p_list = [4,2];
 		otherwise
 			error('Unknown probe')
 	end
