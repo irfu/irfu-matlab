@@ -1991,7 +1991,7 @@ elseif strcmp(quantity,'hbiassa')
     if ~ok || isempty(r), irf_log('load',msg);
     else
         r = irf_abs(r); r = r(:,[1 5]);
-        if ~isempty(r) && any( r(:,2)<4*6371200 )
+        if ~isempty(r) && any( r(:,2)<4*6371 )
             % Load resampled B
             [ok,diB] = c_load('diBrs?',cl_id);
             if ~ok
@@ -2072,7 +2072,7 @@ elseif strcmp(quantity,'hbiassa')
             ii_ok = ones(size(HBIASSA,1),1);
             for jInt = 1:size(HBIASSA,1)
                 rs_i = irf_tlim(rs,HBIASSA(jInt,:));
-                if any(rs_i(:,2)<2*6371200)
+                if any(rs_i(:,2)<2*6371)
                     irf_log('proc',['Disregarding HBIASSA below 2 RE at ' irf_disp_iso_range(HBIASSA(jInt,:),1)])
                     ii_ok(jInt) = 0;
                 end
