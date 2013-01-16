@@ -139,6 +139,10 @@ while 1
 	while 1   % check submitted jobs
 		irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
 		iSubmitted=find_first_submitted_time_interval(TTRequest);
+        if isempty(iSubmitted), 
+            irf_log('fcal','No more submitted jobs');
+            break;
+        end
 		if now-TTRequest.UserData(iSubmitted).TimeOfDownload>(1+TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload)*1/24/60 % more than 1min*"number of attempts" since last request
 			try
 				irf_log('dsrc',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
