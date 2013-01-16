@@ -7,6 +7,9 @@ function out=c_read(varargin)
 %		format can be:
 %		'caa' - then variable should be dataset name
 %
+%	LOCAL.C_READ('list') list all datasets that are locally available and indexed
+%		To see variables for any data set see LOCAL.C_CAA_META
+%
 % Variable can be CAA variable or shortcuts
 %  'R1'  - Cluster 1 position
 %  'dR1' - Cluster 1 relative position wrt center
@@ -55,7 +58,7 @@ if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 end
 
 %% Defaults
-returnDataFormat = 'mat'; default matlab format
+returnDataFormat = 'mat'; % default matlab format
 caaDir='/data/caa/CAA/';
 %% Default index is empty, read in only those indees that are used
 
@@ -63,7 +66,10 @@ if isempty(index),
 	index=struct('dummy',[]);
 end
 %% Check inputs
-if nargin==2,
+if nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'list')
+	list_indexed_datasets;
+	return;
+elseif nargin==2,
 	varName=varargin{1};
 	tint=varargin{2};
 	if ischar(tint),
@@ -200,7 +206,6 @@ end
 		end
 		status=1;
 	end
-
 	function data = readCdfepoch16(cdfid,varName)
 		if isnumeric(varName),
 			varnum=varName;
@@ -225,5 +230,16 @@ end
 		attrnum = cdflib.getAttrNum(cdfid,attrName);
 		varnum = cdflib.getVarNum(cdfid,varName);
 		value = cdflib.getAttrEntry(cdfid,attrnum,varnum);
+	end
+	function ok=list_indexed_datasets
+		ok=false;
+		s=whos('-file',[caaDir 'caa']);
+		sind=arrayfun(@(x) any(strfind(x.name,'index_')),s);
+		for jj=1:numel(sind)
+			if sind(jj)
+				disp(s(jj).name(7:end));
+			end
+		end
+		if any(sind), ok=true; end
 	end
 end
