@@ -1700,8 +1700,8 @@ elseif strcmp(quantity,'probesa')
 	
 	% Saturation level nA
 	SA_LEVEL = 66; %#ok<NASGU>
-	SA_LEV_POS = 0; % 0.0 V
-	SA_LEV_POS_2 = 10; % 10.0 V
+	SA_LEV_POS = 66; % 66.0 V
+	SA_LEV_POS_2 = 66; % 66.0 V
 	
 	% N_CONST sets the minimum number of points of constant potential
 	% which we consider bad
@@ -1984,7 +1984,30 @@ elseif strcmp(quantity,'hbiassa')
 	if ~ok || isempty(pha)
         irf_log('load',msg);
 		data = []; cd(old_pwd); return
-	end
+    end
+    
+    evxb = [];
+    [ok,r,msg] = c_load('R?',cl_id);
+    if ~ok || isempty(r), irf_log('load',msg);
+    else
+        r = irf_abs(r); r = r(:,[1 5]);
+        if ~isempty(r) && any( r(:,2)<4*6371200 )
+            % Load resampled B
+            [ok,diB] = c_load('diBrs?',cl_id);
+            if ~ok
+                irf_log('load',...
+                    irf_ssub('No diBs? in mBr. Use getData(CP,cl_id,''brs'')',cl_id))
+            else 
+                [ok,diV] = c_load('diV?',cl_id);
+                if ~ok
+                    irf_log('load',...
+                        irf_ssub('No diV? in mR. Use getData(CDB,...,cl_id,''v'')',cl_id))
+                end
+                evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
+                a_evxb = c_phase(evxb(:,1),pha);
+            end
+        end
+    end
 	
 	p12_ok = 0; sf_probe = []; np = [];
 	for probe = [12 32 34]
@@ -2012,13 +2035,50 @@ elseif strcmp(quantity,'hbiassa')
 		da = res; %#ok<NODEF>
 		clear res signal problems
 		
-		% Check if we have at least 1 spin of data left
-		if length(find(~isnan(da(:,2)))) < 4*fsamp
-			irf_log('proc',irf_ssub('No p? data after removals',probe))
-			continue
-		end
+        % Check if we have at least 1 spin of data left
+        if length(find(~isnan(da(:,2)))) < 4*fsamp
+            irf_log('proc',irf_ssub('No p? data after removals',probe))
+            continue
+        end
+        
+        if ~isempty(evxb)
+            % Remove the V_SC x B field before chechikng for saturation
+            switch probe
+                case 12, dPhi = 3*pi/4;
+                case 32, dPhi = pi/2;
+                case 42, dPhi = pi;
+                case 34, dPhi = pi/4; % angles when phase =0
+                otherwise, error('bad probe pair')
+            end
+            a_evxb = c_phase(da(:,1),pha);
+            if size(a_evxb,1) ~= size(da,1)
+                [iia,iid]=irf_find_comm_idx(a_evxb(:,1),da(:,1));
+            else
+                iia = 1:size(a_evxb,1); iid = iia;
+            end
+            evxb_r = irf_resamp(evxb,da(iid,1));
+            evxb_spin = evxb_r(:,1:2);
+            Phase = a_evxb(iia,2)/180*pi + dPhi;
+            evxb_spin(:,2)=evxb_r(:,2).*cos(Phase) - evxb_r(:,3).*sin(Phase);
+            da(iid,2) = da(iid,2) - evxb_spin(:,2);
+            irf_log('proc','Removing Vsc x B at perigee')
+        end
 		
 		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
+        
+        % Below 2RE we can have real large fields
+        if ~isempty(HBIASSA) && ~isempty(r)
+            rs = irf_resamp(r,da(:,1));
+            ii_ok = ones(size(HBIASSA,1),1);
+            for jInt = 1:size(HBIASSA,1)
+                rs_i = irf_tlim(rs,HBIASSA(jInt,:));
+                if any(rs_i(:,2)<2*6371200)
+                    irf_log('proc',['Disregarding HBIASSA below 2 RE at ' irf_disp_iso_range(HBIASSA(jInt,:),1)])
+                    ii_ok(jInt) = 0;
+                end
+            end
+            HBIASSA(ii_ok==0,:) = [];
+        end
 		
 		% Append single-ended high bias saturation intervals from probesa
 		for single_probe=[mod(probe,10) floor(probe/10)]
