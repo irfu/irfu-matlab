@@ -130,6 +130,7 @@ else
 			try
 				display_fields(dataSet);
 				parameters=dataSet.PARAMETERS.PARAMETER;
+				disp('PARAMETERS:');
 				for j=1:numel(parameters),
 					disp([num2str(j) '. ' parameters{j}.PARAMETER_ID.Text])
 				end
@@ -138,6 +139,8 @@ else
 			disp(' ');
 		end
 		if sum(iSelected) > 1,
+			disp('----');
+			disp([num2str(sum(iSelected)) ' datasets correspond selection']);
 			disp(vertcat(datasetNames(iSelected)));
 			return;
 		end
