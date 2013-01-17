@@ -261,9 +261,11 @@ for dd = 1:length(dirs)
           if no_p12 && no_p34
              data = [];
           elseif no_p12
-             % save time, NaN(fillval) and p34 spin-fit (B C sdev) 
+             % save time, NaN(fillval) and p34 spin-fit (B C sdev)
+             nanfill = 0;
              data=[spf34(:,1) NaN(size(spf34,1),3) spf34(:,2:3) spf34(:,5)];
           elseif no_p34
+             nanfill = 1;
              % save time, p12/32 spin-fit (B C sdev) and NaN(fillval)  
              data=[spfD(:,1) spfD(:,2:3) spfD(:,5) NaN(size(spfD,1),3)];
           else
@@ -1106,9 +1108,11 @@ buf = sprintf('%s%s',buf,'START_META     =   GENERATION_DATE\n');
 buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
-if strcmp(caa_vs, 'SFIT') && nanfill ~= -1
-    if nanfill
+if strcmp(caa_vs, 'SFIT')
+    if nanfill == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
+    elseif nanfill == 1
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' data only.' dsc.com ]);
     else
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' & P34 data.' dsc.com ]);
     end
