@@ -243,18 +243,21 @@ for dd = 1:length(dirs)
               no_p34 = 1;
               irf_log('load',msg)
           end
-          % Load P12/32    
-          pnosfit = 12;
-          ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
-          if isempty(ret)
-             pnosfit = 32;
+          % Load P12/32
+          if exist('./mEDSI.mat')
+              pnosfit = 12;
+              ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
+              if isempty(ret)
+                 pnosfit = 32;
+              end
+              [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
+              if ~ok || isempty(spfD)
+                 no_p12 = 1; % No P12/32 data
+                 irf_log('load',msg)    
+              end
+          else
+              no_p12 = 1;
           end
-          [ok,spfD,msg] = c_load(irf_ssub('diEs?p!',cl_id,pnosfit));
-          if ~ok || isempty(spfD)
-             no_p12 = 1; % No P12/32 data
-             irf_log('load',msg)    
-          end
-          
           if no_p12 && no_p34
              data = [];
           elseif no_p12
