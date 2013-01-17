@@ -367,7 +367,12 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
             p12 = 12;
         end
         if ~isempty(p3) && ~isempty(p4)
-            tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
+            if size(p4,1) ~= size(p3,1)
+                [ii3 ii4]=irf_find_comm_idx(p3,p4);
+                tt(:,1) = p4(ii4,1); tt(:,2) = ( p4(ii4,2) - p3(ii3,2) )/p_sep;
+            else
+                tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
+            end 
             e = struct('probe',34,'corr',0,'e',tt);
             wE = [wE {e}]; n_ok = n_ok + 1;
             clear tt e
@@ -822,9 +827,14 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                                 end
                                 continue
                             end
-                            
-                            e12(:,1) = p2(:,1);
-                            e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            if size(p2,1) ~= size(p1,1)
+                                [ii1 ii2]=irf_find_comm_idx(p1,p2);
+                                e12(:,1) = p2(ii2,1);
+                                e12(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
+                            else
+                                e12(:,1) = p2(:,1);
+                                e12(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            end
                             BURST_MEAN_THRESH = 100; % mV/m
                             if abs(mean(e12(~isnan(e12(:,2)),2)))>BURST_MEAN_THRESH % Sanity check for realistic electric field value
                                 e12 = [];
@@ -841,8 +851,14 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                                 continue
                             end
                             
-                            e34(:,1) = p2(:,1);
-                            e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            if size(p2,1) ~= size(p1,1)
+                                [ii1 ii2]=irf_find_comm_idx(p1,p2);
+                                e34(:,1) = p2(ii2,1);
+                                e34(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
+                            else
+                                e34(:,1) = p2(:,1);
+                                e34(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+                            end
                             p_ok = [p_ok 34]; %#ok<AGROW>
                             eval(irf_ssub('wbE?p!=e34;save_list=[save_list ''wbE?p! ''];',cl_id, 34));
                         end
