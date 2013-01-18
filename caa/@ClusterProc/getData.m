@@ -773,8 +773,8 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 	if do_burst || flag_lx
         p_ok = [];
         loaded = 0;
+        e12 = []; p12 = 12;
         if ~flag_lx
-            p12 = 12;
             % First try to see if we have any V12H and V43H
             [ok,e12] = c_load('wE8kHz?p12',cl_id);
             if ~ok || isempty(e12)
