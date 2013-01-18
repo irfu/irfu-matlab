@@ -150,7 +150,8 @@ switch action
 				for v=1:nVariables
 					make_variable_names_acceptable_for_matlab;
 					data_all_records = data{v};
-					if shouldReadAllData || strcmpi(info.Variables{v,5}(1),'F'), % return all data
+					if shouldReadAllData || ...% return all data
+							(usingNasaPatchCdf && strcmpi(info.Variables{v,5}(1),'F')),% fixed variable with NASA cdf patch (matlab cdfread return fixed variable as time series) 
 						dobj.data.(dobj.vars{v,1}).data = data_all_records;
 						dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
 					else
