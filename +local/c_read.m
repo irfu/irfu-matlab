@@ -1,11 +1,10 @@
-function out=c_read(varargin)
+function [out,dataobject]=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
 %	[out]=LOCAL.C_READ(variable,tint)
 %		read variable for given time interval in matlab format (matrix)
-%	[out]=LOCAL.C_READ(variable,tint,format)
-%		read variable in specified format.
-%		format can be:
-%		'caa' - then variable should be dataset name
+%	[var,dataobj]=LOCAL.C_READ(variable,tint,'caa')
+%		read variable in CAA format.
+%		var - variable, dataobj - dataobject
 %
 %	LOCAL.C_READ('list') list all datasets that are locally available and indexed
 %		To see variables for any data set see LOCAL.C_CAA_META
@@ -15,30 +14,18 @@ function out=c_read(varargin)
 %  'dR1' - Cluster 1 relative position wrt center
 %   'R'   - Cluster center position and position of all s/c into structure out
 %
-% Possible variables: (question mark needs to be sustituted to Cluster number)
-% status__CL_SP_AUX
+% Example variables: (question mark needs to be sustituted to Cluster number)
 % sc_orbit_num__CL_SP_AUX
 % sc_r_xyz_gse__CL_SP_AUX
 % sc_v_xyz_gse__CL_SP_AUX
 % sc_dr?_xyz_gse__CL_SP_AUX
-% sc_at?_lat__CL_SP_AUX
-% sc_at?_long__CL_SP_AUX
-% sc_config_QG__CL_SP_AUX
-% sc_config_QR__CL_SP_AUX
-% sc_dr_min__CL_SP_AUX
-% sc_dr_max__CL_SP_AUX
 % gse_gsm__CL_SP_AUX
 % dipole_tilt__CL_SP_AUX
 % sc_geom_size__CL_SP_AUX
 % sc_geom_elong__CL_SP_AUX
-% sc_geom_planarity__CL_SP_AUX
-% sc_geom_E_dir_gse__CL_SP_AUX
-% sc_geom_P_nor_gse__CL_SP_AUX
-%
 % Invar_Lat__C1_JP_PMP
 % Mag_Local_time__C1_JP_PMP
 % L_value__C1_JP_PMP
-% Pred_B_mag__C1_JP_PMP
 %
 %	Examples:
 %		tint = '2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
@@ -69,13 +56,14 @@ end
 if nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'list')
 	list_indexed_datasets;
 	return;
-elseif nargin==2,
+elseif nargin>=2,
 	varName=varargin{1};
 	tint=varargin{2};
 	if ischar(tint),
 		tint=irf_time(tint,'iso2tint');
 	end
-elseif nargin ==3,
+end
+if nargin ==3,
 	if ischar(varargin{3}) && any(strcmpi(varargin{3},'caa'))
 		returnDataFormat = 'caa';
 	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'mat'))
@@ -85,8 +73,9 @@ elseif nargin ==3,
 		out=[];
 		return;
 	end
-else
-	irf_log('fcal','Only 2 arguments supported');
+end
+if nargin > 3
+	irf_log('fcal','max 3 arguments supported');
 	return
 end
 %% Read in data
@@ -118,7 +107,9 @@ switch lower(varName)
 		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
 		ok=readdata;
-		if ok, out=[data{1} double(data{2})];end
+		if ok && strcmpi(returnDataFormat,'mat'),
+			out=[data{1} double(data{2})];
+		end
 end
 
 	function status=readdata
@@ -139,14 +130,15 @@ end
 		%% find files within time interval
 		istart=find(index.tend>tint(1),1);
 		iend=find(index.tstart<tint(2),1,'last');
-		
-		if isempty(istart) || isempty(iend),
+		irf_log('dsrc',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
+
+		if isempty(istart) || isempty(iend) || istart > iend,
 			status=0;
 			return
 		end
 		%% read in records
 		for iFile=istart:iend
-			cdf_file=index.filename(iFile,:);
+			cdf_file=[caaDir index.filename(iFile,:)];
 			if specialCaseCis,
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
@@ -155,7 +147,7 @@ end
 			switch lower(returnDataFormat)
 				case 'mat'
 					%% check if epoch16
-					cdfid=cdflib.open([caaDir cdf_file]);
+					cdfid=cdflib.open(cdf_file);
 					useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
 					if useCdfepoch16,
 						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
@@ -167,7 +159,7 @@ end
 							tmpdata{iVar}=[tt tmp'];
 						end
 					else
-						[tmpdata,~] = cdfread([caaDir cdf_file],'ConvertEpochToDatenum',true,'CombineRecords',true,...
+						[tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
 						tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
 					end
@@ -203,6 +195,10 @@ end
 				otherwise
 					error('unknown format');
 			end
+		end
+		if strcmp(returnDataFormat,'caa'),
+			dataobject=data;
+			out=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
 		end
 		status=1;
 	end
