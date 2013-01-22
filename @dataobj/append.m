@@ -15,6 +15,11 @@ function dataObject = append(dataObject1,dataObject2)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+persistent usingNasaPatchCdf
+
+if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
+	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
+end
 
 error(nargchk(nargin,2,2))
 
@@ -40,9 +45,12 @@ dataObject = dataObject1;
 variableNameArray=fieldnames(dataObject.data);
 for iVariable=1:numel(variableNameArray)
 	variableName=variableNameArray{iVariable};
-	if strcmp(dataObject.data.(variableName).variance(1),'T') % variable changes with time
-		dataObject.data.(variableName).nrec=dataObject1.data.(variableName).nrec + dataObject2.data.(variableName).nrec;
-		dataObject.data.(variableName).data=[dataObject1.data.(variableName).nrec ; dataObject2.data.(variableName).nrec];		
+	if usingNasaPatchCdf && strcmp(dataObject.data.(variableName).variance(1),'F') % NASA cdfread reads correctly 'F' variables
+        % do nothing, assume that second object has the same values 
+        % TODO: check in future this assumption
+    else % Time variable, or matlab cdfread for 'F' variables gives also 'F' variables as time vectors
+        dataObject.data.(variableName).nrec=dataObject1.data.(variableName).nrec + dataObject2.data.(variableName).nrec;
+		dataObject.data.(variableName).data=[dataObject1.data.(variableName).data ; dataObject2.data.(variableName).data];		
 		dataObject.Variables{iVariable,3}=dataObject.data.(variableName).nrec;
 	end
 end
