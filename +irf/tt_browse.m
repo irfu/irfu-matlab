@@ -41,7 +41,7 @@ function tt_browse_OpeningFcn(hObject,~,handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to irf.tt_browse (see VARARGIN)
 
-% Choose default command line output for CAA_GUI_LIST
+% Choose default command line output for IRF.TT_BROWSE
 handles.output = hObject;
 handles.workDirectory=pwd;
 isSpecifiedDataDirectory = 0;
@@ -70,7 +70,11 @@ end
 handles.list_index_match_filter=1:numel(handles.dirNames);
 set(handles.time_table_to_browse,'string',handles.timeInterval);
 set(handles.edit1,'string','');
-
+if numel(varargin) >= 2, % plot function specified as 2nd argument
+	if ischar(varargin{2})
+		set(handles.edit2,'string',varargin{2});
+	end
+end
 % Update handles structure
 guidata(hObject, handles);
 
@@ -104,6 +108,7 @@ plotFunc=get(handles.edit2,'string');
 if strcmp(plotFuncDir,pwd),
 	addpath(pwd)
 end
+hcf=handles.userdata.figure; % figure handle in which plotFunc should plot
 if~isempty(eventDir); 
 	cd(eventDir);
 	run(plotFunc);
@@ -235,23 +240,29 @@ function addevent_Callback(hObject, ~, handles)
 % hObject    handle to addevent (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-hf=findobj(handles.userdata.figure,'type','axes');
-ud=get(hf(1),'userdata');
-if isempty(ud)
-	tint_add=tint;
-elseif isstruct(ud) && isfield(ud,'zoom_x'),
-	tint_add=ud.zoom_x;
-else
-	irf_log('fcal','cannot read time interval');
-	return
+hf=getfield(get(handles.userdata.figure,'userdata'),'subplot_handles');
+iSelected=get(handles.addevent,'value');
+switch iSelected
+	case 1 % Add event
+		tStart=getfield(get(handles.userdata.figure,'userdata'),'t_start_epoch');
+		tint_add=tStart+get(hf(1),'xlim');
+		handles.userdata.TTselected=add(handles.userdata.TTselected,tint_add);
+		%handles.userdata.TTselected=unique(handles.userdata.TTselected); % if only unique events wanted
+		irf_log('fcal',['Added to time table of interest: ' irf_time(tint_add,'tint2iso')]);
+	case 2 % remove event
+		iRemove=get(handles.time_table_interesting_events,'value');
+		irf_log('fcal',['Removing interval #' num2str(iRemove) ': ' ...
+			irf_time(handles.userdata.TTselected.TimeInterval(iRemove,:),'tint2iso')]);
+		handles.userdata.TTselected=remove(handles.userdata.TTselected,iRemove);
+		set(handles.time_table_interesting_events,'value',max(iRemove-1,1));
+	case 3 % sort events
+		irf_log('fcal','Sorting selected time intervals');
+		handles.userdata.TTselected=sort(handles.userdata.TTselected);
 end
-handles.userdata.TTselected=add(handles.userdata.TTselected,tint_add);
-handles.userdata.TTselected=unique(handles.userdata.TTselected);
 ttsel=handles.userdata.TTselected.TimeInterval;
-irf_log('fcal',['Added to time table of interest: ' irf_time(tint_add,'tint2iso')]);
-irf_log('fcal',['Together ' num2str(numel(handles.userdata.TTselected)) ' events']);
 timeInterval_InterestingEvents=irf_time(ttsel,'tint2iso');
 set(handles.time_table_interesting_events,'string',timeInterval_InterestingEvents);
+irf_log('fcal',['Together ' num2str(numel(handles.userdata.TTselected)) ' events']);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -260,8 +271,26 @@ function exporttable_Callback(hObject, ~, handles)
 % hObject    handle to exporttable (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-disp('****************************')
-disp('Selected time intervals are')
-disp('in variable TT_selected');
-disp('****************************')
-assignin('base','TT_selected',handles.userdata.TTselected);
+iSelected=get(handles.exporttable,'value');
+switch iSelected
+	case 1 % export table		
+		[FileName,PathName,FilterIndex] = uiputfile('*.tt','Select Time Table file (extension tt)');
+		if FilterIndex
+			export_ascii(handles.userdata.TTselected,[PathName FileName]);
+			irf_log('dsrc',['Exporting time table to file:' PathName FileName]);
+		end
+	case 2 % import table
+		[FileName,PathName,FilterIndex] = uigetfile('*.tt','Select Time Table file');
+		if FilterIndex
+			handles.userdata.TTselected=irf.TimeTable([PathName FileName]);
+			irf_log('dsrc',['Imported time table from file:' PathName FileName]);
+		end
+		set(handles.time_table_interesting_events,'string',irf_time(handles.userdata.TTselected.TimeInterval,'tint2iso'));
+		set(handles.time_table_interesting_events,'value',1);
+	case 3 % assign to base 
+		assignin('base','TT_selected',handles.userdata.TTselected);
+		disp('****************************')
+		disp('Selected time intervals are')
+		disp('in variable TT_selected');
+		disp('****************************')
+end
