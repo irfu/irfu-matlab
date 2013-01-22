@@ -12,13 +12,15 @@ classdef TimeTable
     % Methods: (see also help irf.TimeTable.(method))
 	%   TT  = add(TT,..)	   add time interval to table, see help irf.TimeTable.add
 	%   out = ascii(TT)	       time table in ascii format
+	%   TT	= common(TT1,TT2)  return common elements
     %   TT  = intersect(T1,T2) intersection of two time tables
 	%   N   = numel(TT)		   number of time intervals
-    %   T2  = remove(T1,index) remove elements from time table
-    %   T2  = select(T1,index) select elements from time table
+    %   T2  = remove(T1,index) remove elements
+    %   T2  = select(T1,index) select elements
 	%   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
+	%	T2  = sort(T1)         sort according to start times
     %   T2  = unique(T1)       return unique time table (sorted nonoverlapping intervals)
-    %    export(TT,filename)   export time table to file
+    %    export_ascii(TT,filename)   export time table to ascii file
 	% 
 	% Examples:
 	%	TT = irf.TimeTable % initialize empty time table
@@ -265,6 +267,16 @@ classdef TimeTable
             if ~isempty(TTout.UserData),
 			    TTout.UserData(index)          = [];
             end
+		end
+		function TTout	= sort(TTin) % sort according to start time
+			TTout=TTin;
+			[~,inew]=sort(TTin.TimeInterval(:,1));
+			TTout.TimeInterval = TTin.TimeInterval(inew,:);
+			TTout.Comment = TTin.Comment(inew);
+			TTout.Description = TTin.Description;
+			if isfield(TTout,'UserData'),
+				TTout.UserData = TTin.UserData(inew);
+			end
 		end
 		function TTout	= unique(TTin) % time table sorted and unique
 			TTout=TTin;
