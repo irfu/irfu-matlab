@@ -181,8 +181,16 @@ function time_table_interesting_events_Callback(hObject, eventdata, handles)
 % hObject    handle to time_table_interesting_events (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-i=get(handles.time_table_interesting_events,'Value');
-set(handles.time_table_to_browse,'value',i);
+iSelected=get(handles.time_table_interesting_events,'Value');
+tint=handles.userdata.TTselected.TimeInterval(iSelected,:);
+cd(handles.workDirectory);
+plotFunc=get(handles.edit2,'string');
+[plotFuncDir,~,~] = fileparts(which(plotFunc));
+if strcmp(plotFuncDir,pwd),
+	addpath(pwd)
+end
+hcf=handles.userdata.figure; % figure handle in which plotFunc should plot
+run(plotFunc);
 
 % Hints: contents = cellstr(get(hObject,'String')) returns time_table_interesting_events contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from time_table_interesting_events
@@ -294,3 +302,5 @@ switch iSelected
 		disp('in variable TT_selected');
 		disp('****************************')
 end
+% Update handles structure
+guidata(hObject, handles);
