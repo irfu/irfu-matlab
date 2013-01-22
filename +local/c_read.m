@@ -1,7 +1,8 @@
 function [out,dataobject]=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
 %	[out]=LOCAL.C_READ(variable,tint)
-%		read variable for given time interval in matlab format (matrix)
+%		read variable for given time interval tint in matlab format (matrix)
+%		tint - [tstart tend] or ISO format, see example
 %	[var,dataobj]=LOCAL.C_READ(variable,tint,'caa')
 %		read variable in CAA format.
 %		var - variable, dataobj - dataobject
