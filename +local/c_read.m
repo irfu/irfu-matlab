@@ -80,7 +80,7 @@ if nargin > 3
 	return
 end
 %% Read in data
-out=[];
+out=[];dataobject=[]; % default return empty output
 specialCaseCis=0;
 switch lower(varName)
 	case {'r'}
