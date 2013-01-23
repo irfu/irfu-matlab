@@ -188,17 +188,18 @@ end
 					else
 						data_temp=dataobj(cdf_file);
 					end
-					if iFile==istart,
-						data=data_temp;
-					else
-						data=append(data,data_temp);
+					if ~isempty(data_temp)
+						if isempty(dataobject)
+							dataobject=data_temp;
+						else
+							dataobject=append(dataobject,data_temp);
+						end
 					end
 				otherwise
 					error('unknown format');
 			end
 		end
-		if strcmp(returnDataFormat,'caa'),
-			dataobject=data;
+		if strcmp(returnDataFormat,'caa') && ~isempty(dataobject) && ~isempty(dataobject.data)
 			out=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
 		end
 		status=1;
