@@ -43,6 +43,10 @@ args=args(3:end);
 
 LCOMP = 3;
 
+if isempty(dobj.data)
+	irf_log('fcal','Dataobject empty, nothing to plot');
+	return
+end
 if ischar(var_s)             % input is the name of variable
     data = getv(dobj,var_s);
 else                         % input is variable itself
