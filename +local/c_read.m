@@ -144,9 +144,9 @@ end
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
 			end
-			irf_log('dsrc',['Reading: ' cdf_file]);
 			switch lower(returnDataFormat)
 				case 'mat'
+					irf_log('dsrc',['Reading: ' cdf_file]);
 					%% check if epoch16
 					cdfid=cdflib.open(cdf_file);
 					useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
@@ -188,7 +188,7 @@ end
 					else
 						data_temp=dataobj(cdf_file);
 					end
-					if ~isempty(data_temp)
+					if ~isempty(data_temp) && ~isempty(data_temp.data)
 						if isempty(dataobject)
 							dataobject=data_temp;
 						else
