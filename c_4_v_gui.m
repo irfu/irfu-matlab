@@ -22,6 +22,10 @@ if       (nargin<=2 && ischar(x1)), % either action as parameter or string varia
 	end
 elseif   (nargin ==4) || (nargin == 5),
 	if nargin ==4, irf_log('fcal','Using second column');column=2;end
+	if isempty(x1) &&  isempty(x2) && isempty(x3) && isempty(x4)
+		irf_log('fcal','Empty input');
+		return
+	end
 	figure;ud=[]; % intialize
 	c_eval('ud.var?=x?;');
 	ud.variable_str=[inputname(1) '..' inputname(4)];
@@ -33,7 +37,7 @@ end
 irf_log('fcal',['action=' action]);
 switch action,
 	case {'c1','c2','c3','c4','c5','c6'}
-		ud.var_col=str2num(action(2:end));
+		ud.var_col=str2double(action(2:end));
 		set(gcf,'userdata',ud);
 		c_4_v_gui('update_var_col');
 	case 'update_var_col'
@@ -71,8 +75,8 @@ switch action,
 						eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
 						eval(eval_str);
 					end
-					for j_col=(size(ud.var1,2)+1):length(ud.hcol)
-						set(ud.hcol(j_col),'enable','off')
+					for jj_col=(size(ud.var1,2)+1):length(ud.hcol)
+						set(ud.hcol(jj_col),'enable','off')
 					end
 				end
 				set(gcf,'userdata',ud);
@@ -114,7 +118,7 @@ switch action,
 		ud.h=h;
 		
 		xp=0.05;yp=0.25;
-		uch1 = uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
+		uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.dt_input = uicontrol('style', 'edit', ...
 			'string', '[0 0 0 0]', ...
 			'callback', 'c_4_v_gui(''dt'')', ...
@@ -122,14 +126,14 @@ switch action,
 		ud.dt=[0 0 0 0]; % default values
 		
 		xp=0.05;yp=0.2;
-		uch1 = uicontrol('style', 'text', 'string', '[vx vy vz] km/s =','units','normalized','position', [xp yp 0.15 0.03]);
+		uicontrol('style', 'text', 'string', '[vx vy vz] km/s =','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.v = uicontrol('style', 'edit', ...
 			'string', '0*[0 0 0]', ...
 			'callback', 'c_4_v_gui(''v'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 		
 		xp=0.05;yp=0.15;
-		uch1 = uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
+		uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.filter = uicontrol('style', 'edit', ...
 			'string', '1', ...
 			'callback', 'c_4_v_gui(''dt'')', ...
@@ -142,7 +146,7 @@ switch action,
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.3 0.05]);
 		
 		xp=0.05;yp=0.05;
-		uch1 = uicontrol('style', 'text', 'string', 'Reference satellite ','units','normalized','position', [xp yp 0.15 0.03]);
+		uicontrol('style', 'text', 'string', 'Reference satellite ','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.ref_satellite = uicontrol('style', 'edit', ...
 			'string', '1', ...
 			'callback', 'c_4_v_gui(''v'')', ...
@@ -199,7 +203,7 @@ switch action,
 		else
 			dt=c_v([t v],coord_sys(ud));
 			ref_satellite_string=get(ud.ref_satellite,'string');
-			ref_satellite=str2num(ref_satellite_string);
+			ref_satellite=str2double(ref_satellite_string);
 			if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end
 			dt=dt-dt(ref_satellite);
 		end
@@ -211,8 +215,9 @@ switch action,
 		end
 		set(ud.dt_input,'string',tstr);
 		if eval(get(ud.filter,'string'))<1,
-			x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));flim=Fs*eval(get(ud.filter,'string'));
-			for ic=1:4,eval(irf_ssub('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);',ic)),end
+			x1=ud.var1;Fs=1/(x1(2,1)-x1(1,1));
+			flim=Fs*eval(get(ud.filter,'string'));
+			c_eval('x?=irf_tlim(var?,xl+[-20/Fs 20/Fs]);x?=irf_filt(x?,0,flim,Fs,5);');
 			c_pl_tx(ud.h(2),x1,x2,x3,x4,ud.var_col,dt);
 		else
 			c_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,dt);
@@ -253,7 +258,7 @@ switch action,
 		if logd>round(logd), dx=10^(round(logd))/2;
 		else dx=10^(round(logd))/5;
 		end
-		xticks=[-30:30]*dx/norm(v)/5+tcenter;
+		xticks=(-30:30)*dx/norm(v)/5+tcenter;
 		xticklabels=cell(size(-30:30));
 		for j=-30:30, xticklabels{j+31}=' ';end
 		for j=-6:6, xticklabels{j*5+31}=num2str(j*dx);end
@@ -289,12 +294,25 @@ end
 end
 
 function label=var_label(var_str,var_col)
-try
-	dd=c_desc(irf_ssub(var_str,1));
-	%      variable_label=[dd.labels{var_col} '[' dd.units{var_col} ']'];
+dd=c_desc(irf_ssub(var_str,1));
+if isempty(dd)
 	label=[var_str '[' num2str(var_col) ']'];
-catch
-	label=var_str;
+else
+	if numel(dd.units)==1, 
+		labUnit = dd.units{1};
+	else
+		labUnit = dd.units{var_col};
+	end
+	if numel(dd.labels)==1, 
+		labVar = dd.labels{1};
+	else
+		labVar = dd.labels{var_col};
+	end
+	if isfield(dd,'col_labels')
+		colLabels=dd.col_labels{1};
+		labVar = [labVar colLabels{var_col}];
+	end	
+	label=[labVar '[' labUnit ']'];
 end
 end
 
