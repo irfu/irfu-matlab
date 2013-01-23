@@ -30,15 +30,26 @@ end
 disp(' ')
 disp(['dataobj object created : ' dobj.FileModDate])
 disp(' ')
+if isempty(dobj.data)
+	isDataobjEmpty = true;
+	disp('dataobj is empty!');
+	disp(' ');
+else
+	isDataobjEmpty = false;
+end
 disp('Variables:')
 nvars = size(dobj.vars,1);
 if nvars>0
 	for v=1:nvars
-		if m == 0 && strcmpi(dobj.data.(dobj.vars{v,1}).type,'char'), continue, end
-		disp([dobj.vars{v,1} ' : ' dobj.data.(dobj.vars{v,1}).type ' : '...
-			num2str(dobj.data.(dobj.vars{v,1}).nrec) ' recs' ])
+		if isDataobjEmpty
+			disp(dobj.vars{v,1});
+		else
+			if m == 0 && strcmpi(dobj.data.(dobj.vars{v,1}).type,'char'), continue, end
+			disp([dobj.vars{v,1} ' : ' dobj.data.(dobj.vars{v,1}).type ' : '...
+				num2str(dobj.data.(dobj.vars{v,1}).nrec) ' recs' ]);
+		end
 	end
 else
-	disp('empty')
+	disp('No variables in data object');
 end
 disp(' ')	
