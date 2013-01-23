@@ -405,7 +405,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         end
         clear p1 p2 p3 p4 p_sep
     end
-	if ~n_ok, data = []; cd(old_pwd), continue, end
+	if ~n_ok, data = []; continue, end
 	
     if flag_lx, lx_str = 'LX'; else lx_str=''; end
 	for pri=1:length(wE)
