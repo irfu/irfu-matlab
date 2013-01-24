@@ -1,5 +1,5 @@
 function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
-%C_4_GRAD calculate gradient using 4 spacecraft technique
+%C_4_GRAD calculate gradient of physical field  using 4 spacecraft technique
 %  [grad_b,[b]]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4)
 %  [grad_b,[b]]=c_4_grad('r?','b?','grad')
 %  [curl_b,[b]]=c_4_grad('r?','b?','curl')
@@ -13,7 +13,8 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %  r1..r4 are row vectors
 %         column 1     is time
 %         column 2-4   are satellite position in km
-%  b1..b4 are row vectors
+%         if 3 columns, assume x,y,z positions (b should have the same number of rows)
+%  b1..b4 are row vectors of physical field (usually magnetc field)
 %         column 1     is time, b1 time is used for all interpolation of r1..r4 and b2..b4
 %         column 2-4   vector components (if scalar then only one component)
 %  curl_b is row vector,
@@ -44,7 +45,7 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 %
 %   See also C_4_K
 %
-%  Reference: ISSI book  Eq. 14.16, 14.17
+%  Reference: ISSI book  Eq. 14.16, 14.17 p. 353
 %
 % $Id$
 
@@ -62,7 +63,7 @@ if nargin==9,
   if ischar(option),
     flag_option=option;
   end
-elseif nargin==8,
+elseif nargin==8 || nargin == 2,
   flag_option='grad';
 elseif nargin==3, % if 3 input arguments, the 3rd is option
   flag_option=r3;
@@ -70,25 +71,47 @@ else
   warning('c_4_grad','Too many input parameters.'); return;
 end
 
-if nargin==2 || nargin==3, % input is in form 'R?' and 'B?' 
-	rs = r1;
-	bs = r2;
-	for cl_id=1:4
-		ttt = evalin('caller',irf_ssub(rs,cl_id)); 
-		eval(irf_ssub('r? =ttt;',cl_id)); clear ttt
-		ttt = evalin('caller',irf_ssub(bs,cl_id)); 
-		eval(irf_ssub('b? =ttt;',cl_id)); clear ttt
+if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
+	if ischar(r1) && ischar(r2),
+		rs = r1;
+		bs = r2;
+		for cl_id=1:4
+			ttt = evalin('caller',irf_ssub(rs,cl_id));
+			c_eval('r? =ttt;',cl_id); clear ttt
+			ttt = evalin('caller',irf_ssub(bs,cl_id));
+			c_eval('b? =ttt;',cl_id); clear ttt
+		end
+		clear bs rs
+	else
+		irf_log('fcal','For two input parameters, both should be strings');
+		return;
 	end
-	clear bs rs
 end
 
 %%%%%%%%%%%%%%%%%%  Check input - vector or scalar %%%%%%%%%%%%%%
-if size(b1,2)==2 % check if input is scalar field or vector
-  input_is='scalar';
-elseif size(b1,2)>=4, % input is vector using only columns 2,3,4
-  input_is='vector';
-else
-  irf_log('fcal','error: wrong input vector');
+isTimeSpecified = true; % default assume first column is time
+isField='scalar'; % default assume scalar input
+if size(b1,2)>=4, % input is vector using only columns 2,3,4
+  isField='vector';
+elseif size(b1,2) == 3, % assume vector components, time not specified
+	isField='vector';
+	isTimeSpecified = false;
+	if isequal(size(b1,1),size(b2,1),size(b3,1),size(b4,1))
+		if isequal(size(r1,1),size(r2,1),size(r3,1),size(r4,1))
+			if size(r1,2) == 3 % no time column
+				t=1:size(r1,1);
+				t=t(:);
+				c_eval('r?=[t r?];');
+			end
+			c_eval('b?=[t b?];');
+		else
+			irf_log('fcal','ERROR: input vectors not equal');
+			return
+		end
+	else
+		irf_log('fcal','ERROR: input vectors not equal');
+		return
+	end
 end
 
 %%%%%%%%%%%%%%%% Estimate first reciprical coordinates %%%%%%%%%%%%%%
@@ -106,21 +129,21 @@ c_eval('K?=irf_resamp(k?,b1);');
 
 %%%%%%%%%%%%%%%% Calculate gradient if necessary (grad,curvature) %%%%%%%%%%%%%%%%%%%%%%
 if strcmp(flag_option,'grad')||strcmp(flag_option,'curvature')||strcmp(flag_option,'bdivb'),
-  if strcmp(input_is,'scalar'),  % scalar field, gradient is vector
+  if strcmp(isField,'scalar'),  % scalar field, gradient is vector
     grad_b=zeros(size(B1,1),4);grad_b(:,1)=b1(:,1);
     c_eval('grad_b(:,2:4)=grad_b(:,2:4)+K?(:,2:4).*repmat(B?(:,2),1,3);');
     result=grad_b;
-  elseif strcmp(input_is,'vector'), % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
+  elseif strcmp(isField,'vector'), % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
     grad_b=zeros(size(B1,1),1,10);grad_b(:,1)=b1(:,1);
-    grad_b(:,2)=K1(:,2).*B1(:,2)+K2(:,2).*B2(:,2)+K3(:,2).*B3(:,2)+K4(:,2).*B4(:,2);
-    grad_b(:,3)=K1(:,2).*B1(:,3)+K2(:,2).*B2(:,3)+K3(:,2).*B3(:,3)+K4(:,2).*B4(:,3);
-    grad_b(:,4)=K1(:,2).*B1(:,4)+K2(:,2).*B2(:,4)+K3(:,2).*B3(:,4)+K4(:,2).*B4(:,4);
-    grad_b(:,5)=K1(:,3).*B1(:,2)+K2(:,3).*B2(:,2)+K3(:,3).*B3(:,2)+K4(:,3).*B4(:,2);
-    grad_b(:,6)=K1(:,3).*B1(:,3)+K2(:,3).*B2(:,3)+K3(:,3).*B3(:,3)+K4(:,3).*B4(:,3);
-    grad_b(:,7)=K1(:,3).*B1(:,4)+K2(:,3).*B2(:,4)+K3(:,3).*B3(:,4)+K4(:,3).*B4(:,4);
-    grad_b(:,8)=K1(:,4).*B1(:,2)+K2(:,4).*B2(:,2)+K3(:,4).*B3(:,2)+K4(:,4).*B4(:,2);
-    grad_b(:,9)=K1(:,4).*B1(:,3)+K2(:,4).*B2(:,3)+K3(:,4).*B3(:,3)+K4(:,4).*B4(:,3);
-    grad_b(:,10)=K1(:,4).*B1(:,4)+K2(:,4).*B2(:,4)+K3(:,4).*B3(:,4)+K4(:,4).*B4(:,4);
+    grad_b(:,2) = K1(:,2).*B1(:,2)+K2(:,2).*B2(:,2)+K3(:,2).*B3(:,2)+K4(:,2).*B4(:,2);
+    grad_b(:,3) = K1(:,2).*B1(:,3)+K2(:,2).*B2(:,3)+K3(:,2).*B3(:,3)+K4(:,2).*B4(:,3);
+    grad_b(:,4) = K1(:,2).*B1(:,4)+K2(:,2).*B2(:,4)+K3(:,2).*B3(:,4)+K4(:,2).*B4(:,4);
+    grad_b(:,5) = K1(:,3).*B1(:,2)+K2(:,3).*B2(:,2)+K3(:,3).*B3(:,2)+K4(:,3).*B4(:,2);
+    grad_b(:,6) = K1(:,3).*B1(:,3)+K2(:,3).*B2(:,3)+K3(:,3).*B3(:,3)+K4(:,3).*B4(:,3);
+    grad_b(:,7) = K1(:,3).*B1(:,4)+K2(:,3).*B2(:,4)+K3(:,3).*B3(:,4)+K4(:,3).*B4(:,4);
+    grad_b(:,8) = K1(:,4).*B1(:,2)+K2(:,4).*B2(:,2)+K3(:,4).*B3(:,2)+K4(:,4).*B4(:,2);
+    grad_b(:,9) = K1(:,4).*B1(:,3)+K2(:,4).*B2(:,3)+K3(:,4).*B3(:,3)+K4(:,4).*B4(:,3);
+    grad_b(:,10)= K1(:,4).*B1(:,4)+K2(:,4).*B2(:,4)+K3(:,4).*B3(:,4)+K4(:,4).*B4(:,4);
   else
     irf_log('fcal','error: input vector is neither scalar or vector');
     return
@@ -128,7 +151,7 @@ if strcmp(flag_option,'grad')||strcmp(flag_option,'curvature')||strcmp(flag_opti
 end
 
 % estimate divergence and curl in all cases (they are used in most cases)
-if strcmp(input_is,'vector'), 
+if strcmp(isField,'vector'), 
 
   % estimate divergence
   div_b=zeros(size(B1,1),2);div_b(:,1)=b1(:,1);
@@ -146,15 +169,15 @@ switch flag_option
     % gradients are already calculated so do not do anything
     result=grad_b;
   case 'curl'
-    if strcmp(input_is,'vector'),
+    if strcmp(isField,'vector'),
       result=curl_b;
     end
   case 'div'
-    if strcmp(input_is,'vector'),
+    if strcmp(isField,'vector'),
       result=div_b;
     end
   case 'bdivb' % TODO: test that gives correct values
-    if strcmp(input_is,'vector'),
+    if strcmp(isField,'vector'),
       curv=zeros(size(B1,1),4);curv(:,1)=b1(:,1);
       curv(:,2)=dot(b(:,2:4),grad_b(:,[2 5 8]),2);
       curv(:,3)=dot(b(:,2:4),grad_b(:,[3 6 9]),2);
@@ -162,7 +185,7 @@ switch flag_option
       clear grad_b;
       result=curv; 
     end
-  case 'curvature' % TODO: test that gives correct values
+  case 'curvature' % 
     c_eval('bhat?=irf_norm(b?);');
     curvature=c_4_grad('r?','bhat?','bdivb');
     result=curvature;
@@ -177,7 +200,7 @@ switch flag_option
     curvature=c_4_grad('r?','bhat?','bdivb');
     result=irf_tappl(irf_vec_x_scal(irf_cross(b,curvature),[b(:,1) irf_abs(b,1)],-2),'*2*1e9/1e3');
   case 'div_T' % TODO: test that gives correct values
-    if strcmp(input_is,'vector'),
+    if strcmp(isField,'vector'),
       div_T=irf_add(1,irf_vec_x_scal(b,div_b),1,irf_cross(curl_b,b));
       result=div_T;  
     end
@@ -185,6 +208,9 @@ switch flag_option
     irf_log('fcal','warning: unknown input option');
 end
 
+if ~isTimeSpecified % remove time column if time was not given
+	result(:,1)=[];
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
 %  if nargout==0&size(B1,1)==1,
 %         strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A '];
