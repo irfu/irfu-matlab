@@ -114,18 +114,25 @@ switch lower(varName)
 end
 
 	function status=readdata
+		status = false; % default 
 		%% find index
 		ii=strfind(varToRead{1},'__');
 		if ii,
 			dataset=varToRead{1}(ii+2:end);
-			if ~isfield(index,dataset)
-				s=load([caaDir 'caa'],['index_' dataset]);
-				index.(dataset)=s.(['index_' dataset]);
+			if ~isfield(index,dataset) % index not yet read
+				indexVarName = ['index_' dataset];
+				indexFile = [caaDir 'caa'];
+				indexFileInfo=whos('-file',indexFile,indexVarName);
+				if numel(indexFileInfo)==0, % there is no index
+					irf_log('dsrc',['There is no index file:' indexVarName]);
+					return;
+				end
+				s=load(indexFile,indexVarName);
+				index.(dataset)=s.(indexVarName);
 			end
 			index=index.(dataset);
 		else
 			irf_log('dsrc',['Do not know how to read variable: ' varToRead{1}]);
-			status=0;
 			return
 		end
 		%% find files within time interval
@@ -134,7 +141,6 @@ end
 		irf_log('dsrc',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
 
 		if isempty(istart) || isempty(iend) || istart > iend,
-			status=0;
 			return
 		end
 		%% read in records
@@ -202,7 +208,7 @@ end
 		if strcmp(returnDataFormat,'caa') && ~isempty(dataobject) && ~isempty(dataobject.data)
 			out=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
 		end
-		status=1;
+		status = true;
 	end
 	function data = readCdfepoch16(cdfid,varName)
 		if isnumeric(varName),
