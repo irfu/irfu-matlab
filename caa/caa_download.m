@@ -397,9 +397,13 @@ end
 			isDataSet = ~any(strfind(filelist{jj},'log'));
 			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
 				dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
-				disp(['Data set: ' dataset '--> CAA/']);
-				if ~exist(['CAA/' dataset],'dir'), mkdir(['CAA/' dataset]);end
-				movefile(filelist{jj},['CAA/' dataset]);
+				if ~exist(['CAA/' dataset],'dir'),
+					irf_log('dsrc',['Creating directory: CAA/' dataset]); 
+					mkdir(['CAA/' dataset]);
+				end
+				irf_log('dsrc',['file:      ' filelist{jj}]);
+				irf_log('dsrc',['moving to: CAA/' dataset '/']);
+				movefile(filelist{jj},['CAA/' dataset '/']);
 			end
 		end
 		%disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
