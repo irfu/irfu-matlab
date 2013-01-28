@@ -871,7 +871,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                 end
                 if loaded, break, end
             end
-            if ~loaded
+            if ~loaded && ~flag_lx
                 p_ok = [];
                 for probe = [12 32 34]
                     [ok,da] = c_load(irf_ssub(var_name,cl_id,probe));
