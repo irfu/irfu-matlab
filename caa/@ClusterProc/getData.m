@@ -113,8 +113,6 @@ flag_wash_p32 = 1;
 check_caa_sh_interval=0;
 ec_extraparams = [];
 
-CAA_MODE = c_ctl(0,'caa_mode');
-
 flag_rmwhip = c_ctl(cl_id,'rm_whip');
 if isempty(flag_rmwhip), flag_rmwhip = 1; end 
 flag_rmwhip_force = 0;
@@ -362,19 +360,19 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         if ~isempty(p1) && ~isempty(p2)
             tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
             e = struct('probe',12,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1;
+            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
             clear tt e
             p12 = 12;
         end
         if ~isempty(p3) && ~isempty(p4)
             if size(p4,1) ~= size(p3,1)
-                [ii3 ii4]=irf_find_comm_idx(p3,p4);
+                [ii3, ii4]=irf_find_comm_idx(p3,p4);
                 tt(:,1) = p4(ii4,1); tt(:,2) = ( p4(ii4,2) - p3(ii3,2) )/p_sep;
             else
                 tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
             end 
             e = struct('probe',34,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1;
+            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
             clear tt e
             flag_have_p34 = 1;
         end
@@ -387,7 +385,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
                 tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p3(:,2) )/p_sep;
             end
             e = struct('probe',32,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1;
+            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
             clear tt e
             if isempty(p12), p12 = 32; end
         end
@@ -399,7 +397,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
                 tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p4(:,2) )/p_sep;
             end
             e = struct('probe',42,'corr',0,'e',tt);
-            wE = [wE {e}]; n_ok = n_ok + 1;
+            wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
             clear tt e
             if isempty(p12), p12 = 42; end
         end
@@ -632,88 +630,88 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 	end
 
 	% Delta offsets (offsets between E DSI obtained from p12/32 and p34)
-	if flag_have_p34 && ~isempty(p12)
-		
-		% Compute delta offsets, i.e. difference between DSI E obtained 
-		% from different probe pairs 
-		% Remove points which are > deltaof_sdev_max*sdev
-		% as this must be a stable quantity
-		eval(irf_ssub(['[ii1,ii2] = irf_find_comm_idx(diE' lx_str 's?p!,diE'...
+    if flag_have_p34 && ~isempty(p12)
+        
+        % Compute delta offsets, i.e. difference between DSI E obtained
+        % from different probe pairs
+        % Remove points which are > deltaof_sdev_max*sdev
+        % as this must be a stable quantity
+        eval(irf_ssub(['[ii1,ii2] = irf_find_comm_idx(diE' lx_str 's?p!,diE'...
             lx_str 's?p34);'],cl_id,p12))
-		eval(irf_ssub(['df=diE' lx_str 's?p!(ii1,1:3);df(:,2:3)=diE' lx_str ...
+        eval(irf_ssub(['df=diE' lx_str 's?p!(ii1,1:3);df(:,2:3)=diE' lx_str ...
             's?p!(ii1,2:3)-diE' lx_str 's?p34(ii2,2:3);'],cl_id,p12))
-		clear ii1 ii2
-		
-		% Remove saturation due to too high bias current
-		if ~flag_rmhbsa % Otherwise the saturation is already blanked
-			for probe=[p12 34]
-				[ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
-				if ok
-					if ~isempty(hbsa)
-						irf_log('proc','blanking HB saturation')
-						df = caa_rm_blankt(df,hbsa);
-					end
-				else irf_log('load',msg)
-				end
-				clear ok hbsa msg
-			end
-		end
-		
-		df = df (:,2:3);
-		df(isnan(df(:,2)),:) = []; 
-		iia = [];
-		if size(df,1)>2
-			sdev = std(df);
-			for comp = 1:2
-				ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp)); 
-				iia = [iia; ii]; %#ok<AGROW>
-			end
-			iia = sortrows(iia(:));
-			iia(diff(iia)==0) = [];
-			irf_log('calb',sprintf('%d points are removed for delta offsets',...
-				length(iia)))
-		end
-		Del = [0 0];
-		for comp = 1:2
-			ddd = df(:,comp); ddd(iia) = [];
-			Del(comp) = mean(ddd);
-		end
-			
-		irf_log('calb',sprintf('%s delta offsets are: %.2f [x] %.2f [y]', ...
-			lx_str, Del(1), Del(2)))
-
-		% Check for unreallistically large Del. 
-		% If it is larger than deltaof_max, we set it to zero and 
-		% NOT doing any corrections.
-		if ( abs(Del(1)) > deltaof_max ) || ( abs(Del(2)) > deltaof_max )
-			irf_log('calb',...
-				irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
-				cl_id,deltaof_max))
-			Del=[0 0]; %#ok<NASGU>
-		else
-			% Always correct p12/p32.
-			% Deprecated behavior: real offset is applied to p12, imaginary to p34.
-			irf_log('calb',irf_ssub('correcting p?',p12))
-			eval(irf_ssub(['diE' lx_str 's?p!(:,2:3)=diE' lx_str ...
+        clear ii1 ii2
+        
+        % Remove saturation due to too high bias current
+        if ~flag_rmhbsa % Otherwise the saturation is already blanked
+            for probe=[p12 34]
+                [ok,hbsa,msg] = c_load(irf_ssub('HBIASSA?p!',cl_id,probe));
+                if ok
+                    if ~isempty(hbsa)
+                        irf_log('proc','blanking HB saturation')
+                        df = caa_rm_blankt(df,hbsa);
+                    end
+                else irf_log('load',msg)
+                end
+                clear ok hbsa msg
+            end
+        end
+        
+        df = df (:,2:3);
+        df(isnan(df(:,2)),:) = [];
+        iia = [];
+        if size(df,1)>2
+            sdev = std(df);
+            for comp = 1:2
+                ii = find(abs(df(:,comp)-mean(df(:,comp))) > deltaof_sdev_max*sdev(comp));
+                iia = [iia; ii]; %#ok<AGROW>
+            end
+            iia = sortrows(iia(:));
+            iia(diff(iia)==0) = [];
+            irf_log('calb',sprintf('%d points are removed for delta offsets',...
+                length(iia)))
+        end
+        Del = [0 0];
+        for comp = 1:2
+            ddd = df(:,comp); ddd(iia) = [];
+            Del(comp) = mean(ddd);
+        end
+        
+        irf_log('calb',sprintf('%s delta offsets are: %.2f [x] %.2f [y]', ...
+            lx_str, Del(1), Del(2)))
+        
+        % Check for unreallistically large Del.
+        % If it is larger than deltaof_max, we set it to zero and
+        % NOT doing any corrections.
+        if ( abs(Del(1)) > deltaof_max ) || ( abs(Del(2)) > deltaof_max )
+            irf_log('calb',...
+                irf_ssub('DELTA OFFSET TOO BIG >!. Setting D?p12p34=[0 0]',...
+                cl_id,deltaof_max))
+            Del=[0 0]; %#ok<NASGU>
+        else
+            % Always correct p12/p32.
+            % Deprecated behavior: real offset is applied to p12, imaginary to p34.
+            irf_log('calb',irf_ssub('correcting p?',p12))
+            eval(irf_ssub(['diE' lx_str 's?p!(:,2:3)=diE' lx_str ...
                 's?p!(:,2:3)-ones(size(diE' lx_str 's?p!,1),1)*Del;'],cl_id,p12));
-		end
-		
-		eval(irf_ssub(['D' lx_str '?p12p34=Del;'],cl_id))
-		clear m12 m34 Del
-
-		eval(irf_ssub(['save_list=[save_list ''D' lx_str '?p12p34 ''];'],cl_id));
+        end
+        
+        eval(irf_ssub(['D' lx_str '?p12p34=Del;'],cl_id))
+        clear m12 m34 Del
+        
+        eval(irf_ssub(['save_list=[save_list ''D' lx_str '?p12p34 ''];'],cl_id));
     elseif ~flag_have_p34 && ~flag_lx % XXX: fix me
-		% If we have only p12, we should use it for sfits&co
-		if exist(irf_ssub('diEs?p!',cl_id,12), 'var')
-			irf_log('calb',irf_ssub('Will use p? for spin res data',12))
-			caa_sfit_probe(cl_id,12);
+        % If we have only p12, we should use it for sfits&co
+        if exist(irf_ssub('diEs?p!',cl_id,12), 'var')
+            irf_log('calb',irf_ssub('Will use p? for spin res data',12))
+            caa_sfit_probe(cl_id,12);
         elseif exist(irf_ssub('diEs?p!',cl_id,32), 'var')
-			irf_log('calb',irf_ssub('Will use p? for spin res data',32))
-			caa_sfit_probe(cl_id,32);
-        %elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
-		%	irf_log('calb',irf_ssub('Will use p? for spin res data',42))
-		%	caa_sfit_probe(cl_id,42);
-		end
+            irf_log('calb',irf_ssub('Will use p? for spin res data',32))
+            caa_sfit_probe(cl_id,32);
+            %elseif exist(irf_ssub('diEs?p!',cl_id,42), 'var')
+            %	irf_log('calb',irf_ssub('Will use p? for spin res data',42))
+            %	caa_sfit_probe(cl_id,42);
+        end
     end
     end
     if strcmp(quantity,'dies')
@@ -831,7 +829,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                                 continue
                             end
                             if size(p2,1) ~= size(p1,1)
-                                [ii1 ii2]=irf_find_comm_idx(p1,p2);
+                                [ii1, ii2]=irf_find_comm_idx(p1,p2);
                                 e12(:,1) = p2(ii2,1);
                                 e12(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
                             else
@@ -855,7 +853,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
                             end
                             
                             if size(p2,1) ~= size(p1,1)
-                                [ii1 ii2]=irf_find_comm_idx(p1,p2);
+                                [ii1, ii2]=irf_find_comm_idx(p1,p2);
                                 e34(:,1) = p2(ii2,1);
                                 e34(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
                             else
@@ -2000,9 +1998,9 @@ elseif strcmp(quantity,'hbiassa')
 	
 	% Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
 	[ok,pha,msg] = c_load('Atwo?',cl_id);
-	if ~ok || isempty(pha)
+    if ~ok || isempty(pha)
         irf_log('load',msg);
-		data = []; cd(old_pwd); return
+        data = []; cd(old_pwd); return
     end
     
     evxb = [];
@@ -2023,7 +2021,6 @@ elseif strcmp(quantity,'hbiassa')
                         irf_ssub('No diV? in mR. Use getData(CDB,...,cl_id,''v'')',cl_id))
                 end
                 evxb = irf_tappl(irf_cross(diB,irf_resamp(diV,diB)),'*1e-3*(-1)');
-                a_evxb = c_phase(evxb(:,1),pha);
             end
         end
     end
@@ -2173,30 +2170,30 @@ elseif strcmp(quantity,'rawspec')
 	tpharef = [];
 	corrected_raw_data_p12 = 1;
 	corrected_raw_data_p34 = 1;
-	for probe = [12 32 34]
-		[ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
-		if ~ok || isempty(da)
-			irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
-			[ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
-			if ~ok || isempty(da)
-				irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
-				continue
-			end
-			irf_log('load','using raw (not corrected) data')
-			if probe==34, corrected_raw_data_p34 = 0;
-			else corrected_raw_data_p12 = 0;
-			end
-		end
-		n_ok = n_ok + 1;
-		
-		if size(da,1) > length(tpharef), tpharef = da(:,1); end
-		
-		if probe==32
-			p12 = 32;
-			e12 = da;
+    for probe = [12 32 34]
+        [ok,da] = c_load(irf_ssub('wcE?p!',cl_id,probe));
+        if ~ok || isempty(da)
+            irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+            [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+            if ~ok || isempty(da)
+                irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+                continue
+            end
+            irf_log('load','using raw (not corrected) data')
+            if probe==34, corrected_raw_data_p34 = 0;
+            else corrected_raw_data_p12 = 0;
+            end
+        end
+        n_ok = n_ok + 1;
+        
+        if size(da,1) > length(tpharef), tpharef = da(:,1); end
+        
+        if probe==32
+            p12 = 32;
+            e12 = da;
         else c_eval('e?=da;',probe)
-		end
-		clear ok da
+        end
+        clear ok da
     end
     if ~n_ok % Try with LX data p42
         [ok,p4] = c_load(irf_ssub('P10Hz?p!',cl_id,4));
@@ -2721,12 +2718,12 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 	end
 	
 	%Check for problem with bad DAC
-	[ok,badDAC,msg] = c_load('BADDAC?p34',cl_id);
+	[ok,badDAC] = c_load('BADDAC?p34',cl_id);
 	if ok || ~isempty(badDAC)
 		irf_log('proc',irf_ssub('Bad DAC C?p34',cl_id))
 		p3=[];p4=[];
 	end
-	[ok,badDAC,msg] = c_load('BADDAC?p12',cl_id);
+	[ok,badDAC] = c_load('BADDAC?p12',cl_id);
 	if ok || ~isempty(badDAC)
 		irf_log('proc',irf_ssub('Bad DAC C?p12',cl_id))
 		p1=[];p2=[];
@@ -2777,7 +2774,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     time_int=[sa12' sa34']';
     if ~isempty(time_int) && ~isempty(p)
         irf_log('proc','Fixing high bias saturation. Using maximum probe potential in affected intervals.')
-        Pinfo.useMax4hbiassa=1;
+        Pinfo.useMax4hbiassa=1; %#ok<STRNU>
         time_int = sort(time_int,1);
         for j=1:size(time_int,1)
             indx=p(:,1)>=(time_int(j,1)-10) & p(:,1)<=(time_int(j,2)+10);
@@ -2989,11 +2986,11 @@ elseif strcmp(quantity,'manproblems')
                         prob(idx,:)=0;
                     end
                     idx=find(prob(:,1)<st & prob(:,2)>st);
-                    if any(idx), prob(idx,2)=st;end %#ok<AGROW>
+                    if any(idx), prob(idx,2)=st;end 
                     idx=find(prob(:,1)<st+dt & prob(:,2)>st+dt);
-                    if any(idx), prob(idx,1)=st+dt;end %#ok<AGROW>
+                    if any(idx), prob(idx,1)=st+dt;end 
                     idx=find(prob(:,1)>=st & prob(:,2)<=st+dt);
-                    if any(idx), prob(idx,1:2)=0;end %#ok<AGROW>
+                    if any(idx), prob(idx,1:2)=0;end 
                     idx=find(prob(:,1) ~= 0);
                     if any(idx), prob=prob(idx,:);
                     else prob=[];
@@ -3022,9 +3019,9 @@ elseif strcmp(quantity,'hk')
     end
     
     [ok,HK,msg] = c_load('DSC?',cl_id);
-	if ~ok || isempty(HK)
-		irf_log('load',msg)
-		data = []; cd(old_pwd); return
+    if ~ok || isempty(HK)
+        irf_log('load',msg)
+        data = []; cd(old_pwd); return
     end
     
     [ok,fdm] = c_load('FDM?',cl_id);
@@ -3090,47 +3087,6 @@ elseif strcmp(quantity,'hk')
         end
     end
     redsize=k;
-
-if 0 % NOT USED. remove jumpy hk data. no difference (of 12) per time stamp is ok
-    sbv = size(binval,1);
-    binvalred=zeros(sbv,12);
-    timest = zeros(sbv);
-    drop=0;
-    j=1;
-    i=1;
-    % first vector
-    if sum(binval(i,:)==binval(i+2,:))==12 || sum(binval(i,:)==binval(i+1,:))==12
-        binvalred(i,:)=binval(i,:);
-        timest(i)=HK(i,1);
-        j=2;
-    else
-        drop = drop + 1;
-    end
-    for i=1:sbv-2
-        if sum(binval(i,:)==binval(i+2,:))==12 && sum(binval(i,:)~=binval(i+1,:))~=0
-            drop = drop + 1;
-        else
-            binvalred(j,:)=binval(i+1,:);
-            timest(j)=HK(i+1,1);
-            j = j + 1;
-        end
-    end
-    redsize=j;
-    i=sbv;
-    % last vector
-    if sum(binval(i,:)==binval(i-2,:))==12 || sum(binval(i,:)==binval(i-1,:))==12
-        binvalred(redsize,:)=binval(i,:);
-        timest(redsize)=HK(i,1);
-    else
-        redsize = redsize - 1;
-        drop = drop + 1;
-    end
-    if drop~=0
-        irf_log('proc',sprintf('Ignoring %d jumpy hk time stamp(s)',drop));
-    end
-    binvalred
-    calhk=zeros(12,redsize);
-end
 
     calhk=zeros(12,redsize);
     % substitute to calib values from c_ct
