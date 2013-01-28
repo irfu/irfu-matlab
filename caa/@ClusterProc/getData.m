@@ -933,8 +933,12 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         end
             
 		[ok,dadc] = c_load(irf_ssub(wStr,cl_id,ps));
-		if ~ok, error(irf_ssub(['Cannot load ' wStr],cl_id,ps)), end
-		if isempty(dadc), error(irf_ssub(['Empty ' wStr],cl_id,ps)), end
+        if flag_lx
+            if ~ok || isempty(dadc), dadc = []; end
+        else
+            if ~ok, error(irf_ssub(['Cannot load ' wStr],cl_id,ps)), end
+            if isempty(dadc), error(irf_ssub(['Empty ' wStr],cl_id,ps)), end
+        end
 		c_eval('dadc?=dadc;',probe)
 		clear ok dadc
 	end
