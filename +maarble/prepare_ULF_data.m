@@ -26,8 +26,9 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
   end
   
   cl_id=varargin{1};
+  cl_id
   args=args(2:end);
-
+  xyzGSE=xyz;
   %% Convert b and xyz to ISR2
   b = c_coord_trans('GSE','ISR2',b,'cl_id',cl_id);
   xyz = c_coord_trans('GSE','ISR2',xyz,'cl_id',cl_id);
@@ -39,8 +40,6 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
 
   if nargs > 1, have_options = 1; end
   
-  % TODO: this needs to be determined from data ?
-  %sampl=22.5;
   
   %% Default values that can be overridden by options
 % dt = 0;
@@ -87,6 +86,7 @@ colorbar_scale=1;
   B=irf_resamp(B,t);
   e=irf_resamp(e,t); b=irf_resamp(b,t); disp('resampling to 25 Hz');
   b(:,2:4)=b(:,2:4)-B(:,2:4);
+  %xyzGSE=irf_resamp(xyzGSE,t);
   
   %% get third component of e
   
@@ -106,12 +106,12 @@ colorbar_scale=1;
   %% Calculations
   if nargout==4,
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac]=...
-        irf_ebsp(e,b,B,xyz,varargin(1),varargin{2});
-    h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac);
+        irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac);
   elseif nargout==8,
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,varargin(1),varargin{2});
-    h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac,...
+        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC);
   else
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
@@ -119,7 +119,7 @@ colorbar_scale=1;
         irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
     %plot_params={{timeVector},{frequencyVector},{BB_xxyyzz_fac},{EESum_xxyyzz_ISR2},{Poynting_xyz_FAC},{polarization},{ellipticity}};
     %plot_params={timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,Poynting_xyz_FAC,polarization,ellipticity};
-    h=irf_pl_ebsp(timeVector,frequencyVector,BVector,BB_xxyyzz_fac,...
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
   end
 %   plot_params=varargout{1};

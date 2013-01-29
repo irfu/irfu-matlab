@@ -1,4 +1,4 @@
-function h=irf_pl_ebsp(varargin)
+function h=irf_pl_ebsp(cl_id,xyzGSE,varargin)
 %IRF_PL_EBSP   Plot E wavelet spectra, B wavelet spectra, Poynting flux,
 % E/B, ellipticity, polarization, wave vector direction
 %
@@ -72,10 +72,18 @@ cmapCombo=[cmapStandard;xcm2];
     timeVector=args{1};
     t=timeVector;
     t_start_epoch=get_t_start_epoch(t(1,1));
+    
+    sampl=1/(t(2)-t(1))
+    freq_int=args{2};
+    freq_number=25;
+    amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
+    a=logspace(amin,amax,anumber);
+    w0=sampl/2; % The maximum frequency
+    newfreq=w0./a;
 
-    frequencyVector=args{2};
-    newfreq=frequencyVector;
+    %newfreq=frequencyVector;
     BVector=args{3};
+%     power2B_SM_plot = args{4};
     args=args(4:end);
 
     power2B_SM_plot = args{1};
@@ -87,6 +95,7 @@ cmapCombo=[cmapStandard;xcm2];
     k_thphSVD_fac = args{6};
     polSVD_fac = args{7};
     ellipticity = args{8};
+
 
 
     %%%%%%%%% E spectra %%%%%%%%%%%%
@@ -113,7 +122,12 @@ cmapCombo=[cmapStandard;xcm2];
         pcolor(t-t_start_epoch,newfreq,log10(abs(EESum_xxyyzz_ISR2.'))) % With edge effects removed
         shading flat
         ylabel('f [Hz]')
-        set(gca,'yscale','log','tickdir','out');
+        set(gca,'yscale','log','tickdir','out');%,'yTick',[min(newfreq):max(newfreq)]);
+        %ytick=[.02:.01:.1; .1:.1:1; 1:1:5];
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
         if any(isnan(power2E_plot)),
             caxis([-3.5 3.5]);
         else
@@ -125,7 +139,7 @@ cmapCombo=[cmapStandard;xcm2];
         colormap(xcm);
         %freezeColors;
         hca = colorbar;
-        %set(h, 'ylim', [0 257]);
+        set(h, 'ylim', [min(newfreq) max(newfreq)]);
         %hca=colorbar('peer',h(1));
         ylabel(hca,{'log(E)'; '[(mV/m)^2/Hz]'});
         %irf_colormap(hca,'standard');
@@ -152,7 +166,7 @@ cmapCombo=[cmapStandard;xcm2];
 %         %cbfreeze(hca)
         
     end
-
+    
     %%%%% B spectra from spectral matrix
    
     h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
@@ -164,23 +178,28 @@ cmapCombo=[cmapStandard;xcm2];
     set(gca,'yscale','log','tickdir','out');
   %  set(gca,'tickdir','out');
     cmean=nanmean(nanmean(log10(abs(power2B_SM_plot(:,:,4)))));
+    axis(axis)
     hold on
     %plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1.6e-19./1.67e-27);
     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi,'color','k');
     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4,'--','color','k');
     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16,'-.','color','k');
-    axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
+    %axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
     hold off
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
     caxis(floor(cmean)+[-3.5 3.5]);
   %  caxis(floor(cmean)+[-2.5 2.5]);
 %    caxis([-6.5 0.5]);
     %colormap(cmapCombo);
     %freezeColors;
     %hca2 = colorbar;
-    hca2=colorbar('peer',h(2));
+    hca=colorbar('peer',h(2));
     %set(h, 'ylim', [0 257]);
     %irf_colormap(hca2,'standard');
-    ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
+    ylabel(hca,{'log(B)'; '[nT^2/Hz]'});
     %cbfreeze(hca)
     
     
@@ -193,13 +212,17 @@ cmapCombo=[cmapStandard;xcm2];
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
-        caxis([0 90]);
+     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+       caxis([0 90]);
         %colormap(cmapCombo);
         %freezeColors;
-        hca3 = colorbar;
+        hca = colorbar;
         %hca3=colorbar('peer',h(3));
         %set(h, 'ylim', [0 257]);
-        ylabel(hca3,'k (theta)');
+        ylabel(hca,'k (theta)');
         %irf_colormap(hca3,'standard');
         %cbfreeze(hca)
 
@@ -209,13 +232,17 @@ cmapCombo=[cmapStandard;xcm2];
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
         caxis([-180 180]);
         %colormap(cmapCombo);
         %freezeColors;
         %hca4 = colorbar;
-        hca4=colorbar('peer',h(4));
+        hca=colorbar('peer',h(4));
         %set(h, 'ylim', [257 461]);
-        ylabel(hca4,'k (phi)');
+        ylabel(hca,'k (phi)');
         %irf_colormap(hca4,'poynting');
         %cbfreeze(hca)
     end
@@ -230,11 +257,15 @@ cmapCombo=[cmapStandard;xcm2];
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
-        caxis([0 1]);
+     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+       caxis([0 1]);
         %colormap(cmapCombo);
         %freezeColors;
         %hca5 = colorbar;
-        hca5=colorbar('peer',h(5));
+        hca=colorbar('peer',h(5));
         %set(h, 'ylim', [0 257]);
 %         colorbarHandles=findobj(gca,'Tag','Colorbar') 
 %         for i=1:length(colorbarHandles) 
@@ -243,7 +274,7 @@ cmapCombo=[cmapStandard;xcm2];
 %             end 
 %         end
         
-        ylabel(hca5,{'Degree of'; 'Polarization'});
+        ylabel(hca,{'Degree of'; 'Polarization'});
         %irf_colormap(hca5,'standard');
         %cbfreeze(hca)
     end
@@ -265,14 +296,18 @@ cmapCombo=[cmapStandard;xcm2];
     %    set(gca,'tickdir','out');
         %hca6 = colorbar;
         %hca6=colorbar('peer',h(6));
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
         caxis([-1 1]);
         %cLim=[257,461];
     %    caxis([-2 2]);
         %colormap(cmapCombo);
         %freezeColors;
-        hca6=colorbar('peer',h(6));
+        hca=colorbar('peer',h(6));
         %set(hca6, 'ylim', [257 462]);
-        ylabel(hca6,'Ellipticity');
+        ylabel(hca,'Ellipticity');
         %irf_colormap(hca6,'poynting');
         %freezeColors;
         %hca = colorbar;
@@ -304,6 +339,10 @@ cmapCombo=[cmapStandard;xcm2];
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
 
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
@@ -317,10 +356,10 @@ cmapCombo=[cmapStandard;xcm2];
         %colormap(cmapCombo);
         %freezeColors;
         %hca7 = colorbar;
-        hca7=colorbar('peer',h(7));
+        hca=colorbar('peer',h(7));
         %set(h, 'ylim', [257 461]);
         %ylabel(hca,{'S_{perp}'; '[\mu W/m^2Hz]^{1/2}'});
-        ylabel(hca7,{'S_{r}'; '[\mu W/m^2Hz]^{1/2}'});
+        ylabel(hca,{'S_{r}'; '[\mu W/m^2Hz]^{1/2}'});
         %cbfreeze(hca)
         %unfreezeColors;
         %irf_colormap(hca7,'poynting');
@@ -331,6 +370,10 @@ cmapCombo=[cmapStandard;xcm2];
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
+    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+        .7 .8 .9 1 2 3 4 5]);
+    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
 
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
@@ -344,9 +387,9 @@ cmapCombo=[cmapStandard;xcm2];
         %colormap(cmapCombo);
         %freezeColors;
         %hca8 = colorbar;
-        hca8=colorbar('peer',h(8));
+        hca=colorbar('peer',h(8));
         %set(h, 'ylim', [257 461]);
-        ylabel(hca8,{'S_{II}'; '[\mu W/m^2Hz]^{1/2}'});
+        ylabel(hca,{'S_{II}'; '[\mu W/m^2Hz]^{1/2}'});
         %cbfreeze(hca)
         %unfreezeColors;
         %irf_colormap(hca8,'standard');
@@ -387,15 +430,28 @@ cmapCombo=[cmapStandard;xcm2];
     %% Add figure menu
     irf_figmenu;
 
-
       axes(h(1));
       %title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
       %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
       irf_zoom(h,'x',[min(t) max(t)]);
-      irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
+      %irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
+      %following three lines from irf_timeaxis, because the date kept
+      %appearing under the position labels
+      xlimlast=get(h(end),'xlim');
+      start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
+      time_label = datestr( datenum(start_time),1 );
+      
+      irf_legend(h(1),['C' int2str(cl_id) '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-      irf_timeaxis(h)
+      r=xyzGSE;
+      %xlabels=[r(:,2:end)/6371.2];
+      r(:,5)=sqrt(r(:,2).^2+r(:,3).^2+r(:,4).^2);
+      xlabels=[r(:,1) r(:,2)/6371.2 r(:,3)/6371.2 r(:,4)/6371.2 r(:,5)/6371.2];
+      xlabeltitle={'X [Re]','Y [Re]','Z [Re]','R [Re]'};
+      irf_timeaxis(h(end),'usefig',xlabels,xlabeltitle);
+      irf_timeaxis(h,'nodate');
     %irf_legend('C4', 'color','cluster');
+    %irf_figmenu;
 
 end
 

@@ -133,7 +133,7 @@ w0=sampl/2; % The maximum frequency
 %  sigma=5.36/w0; % The width of the Morlet wavelet
 sigma=Morlet_width/w0; % The width of the Morlet wavelet
 
-disp('irf_pl_ebsp ... calculate e and b wavelet transform ....');
+disp('irf_ebsp ... calculate e and b wavelet transform ....');
 
 %% Make the FFT of all data
 Swe=fft(e(:,2:4),[],1);
