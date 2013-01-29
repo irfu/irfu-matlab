@@ -6,13 +6,15 @@ function caa_load(varargin)
 % or directory where is subdirectory CAA with all the CAA data object directories. 
 %
 % CAA_LOAD('string1','string2',..)
-%   load only data objects that match string1 & string2 &...
+%   load from disk data objects that match string1 & string2 &...
 % CAA_LOAD('string1','string2',...,'tint',tint)
 %   load only time interval tint (good for large files, reads always from file)
 % CAA_LOAD('string1','string2',...,'list')
-%   list only the data objects that are on disk 
+%   list the data objects that are on disk 
 % CAA_LOAD('string1','string2',...,'nowildcard')
-%   list only the data objects whos name are exactly string1, string2 etc.
+%   load from disk the data objects whos name are exactly string1, string2 etc.
+% CAA_LOAD('string1','string2',...,'ifnotinmemory')
+%   load from disk only those data that are not in memory
 %
 %  Examples:
 %   caa_load
@@ -25,9 +27,6 @@ function caa_load(varargin)
 %   caa_load FGM list;
 %
 % $Id$
-
-% CAA_LOAD('string1','string2',...,'ifnotinmemory')
-%   load only those data that are not in memory
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
