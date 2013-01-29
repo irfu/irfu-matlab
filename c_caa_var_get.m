@@ -1,8 +1,9 @@
 function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
-%C_CAA_VAR_GET(var_name)  get CAA variable (if necessary load it)
+%C_CAA_VAR_GET(var_name)  load CAA variable from dataobject
+%	Dataobject name is derived from the name of the CAA variable.
 %
-%  var= C_CAA_VAR_GET(varname)
-%     get the variable in caa form
+%  var = C_CAA_VAR_GET(varname)
+%     get the variable in caa form, dataobject 
 %  [var,dataobject] = C_CAA_VAR_GET(varname)
 %     return also dataobject
 %  [var,dataobject,variable_matlab_format]=C_CAA_VAR_GET(varname)
@@ -16,6 +17,9 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %  dobj=C_CAA_VAR_GET(varname,'dobj') return only data object
 %  unit=C_CAA_VAR_GET(varname,'unit') return only units
 %
+%  var=C_CAA_VAR_GET(varname,option,'file') force to read dataobject from file
+%			even if it is already in memory
+%
 %  C_CAA_VAR_GET(varname,'tint',tint) get only the interval specified by tint
 %  (always reads from file in this case, good option for large files)
 %
@@ -25,70 +29,71 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
 %   xm=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF','mat');
 
-% TODO: add options:
-% 'source'(parameters 'file','fast')
 
-%% Check input options
-flag_read_all_data=1;                    % default read all data
-flagvar=1;                               % default return variable in caa form 
-flagdobj=0; if nargout>1, flagdobj=1;end % whether to get dataobj
-flagmat=0;  if nargout>2, flagmat=1; end % whether to calculate mat variable
-flagunit=0; if nargout>3, flagunit=1;end % whether to get the unit of variable
-flag_return_mat_only=0;           % default
-flag_return_dobj_only=0;          % default
-flag_return_unit_only=0;          % default
+%% Check input options and set dafaults
+getAllData = true;									% default read all data
+getCaa = true;										% default return variable in caa form 
+getDobj = false; if nargout>1, getDobj = true;end	% whether to get dataobj
+getMat  = false; if nargout>2, getMat = true; end	% whether to calculate mat variable
+getUnit = false; if nargout>3, getUnit = true;end	% whether to get the unit of variable
+getMatOnly  = false;
+getDobjOnly = false;
+getUnitOnly = false;
+getFromFile = false;	% reads data from file only if dataobj not in memory
 varnames=varargin{1};
 args=varargin(2:end);
 nargs=length(args); % number of additional parameters
 while nargs
-  l = 1;
-  switch(lower(args{1}))
-    case {'show_dependencies','showdep'} % only show dependencies
-      if nargin == 2
-        dobjname=get_dataobj_name(varnames);
-        flag_exist_dobj=evalin('caller',['exist(''' dobjname ''',''var'')']);
-        if flag_exist_dobj,
-          dobj=evalin('caller',dobjname);
-        else
-          caa_load(dobjname,'nowildcard');
-          dobj=eval(dobjname);
-        end
-      else
-        dobj=args{2};
-      end
-      showdep(dobj,varnames)
-      return;
-    case 'caa' % return caa format only
-        % default behaviour, do nothing
-    case 'mat' % return matlab format only
-      flag_return_mat_only=1;
-      flagmat=1;
-      flagvar=0;
-    case 'dobj' % return matlab format only
-      flag_return_dobj_only=1;
-      flagdobj=1;
-      flagvar=0;
-    case {'unit','units'} % return matlab format only
-      flag_return_unit_only=1;
-      flagunit=1;
-      flagvar=0;
-    case 'tint'                          % load specified time interval
-      if nargs>1
-        if isnumeric(args{2})
-          tint = args{2};
-          l = 2;
-        else irf_log('fcal,','wrongArgType : tint must be numeric')
-        end
-      else irf_log('fcal,','wrongArgType : tint value is missing')
-      end
-      flag_read_all_data=0;
-    otherwise
-      irf_log('fcal',['Unknown input parameter  ''' args{1} ''' !!!'])
-      l=1;
-  end
-  args = args(l+1:end);
-  nargs=length(args);
-  if isempty(args), break, end
+	l = 1;
+	switch(lower(args{1}))
+		case {'show_dependencies','showdep'} % only show dependencies
+			if nargin == 2
+				dobjname=get_dataobj_name(varnames);
+				flag_exist_dobj=evalin('caller',['exist(''' dobjname ''',''var'')']);
+				if flag_exist_dobj,
+					dobj=evalin('caller',dobjname);
+				else
+					caa_load(dobjname,'nowildcard');
+					dobj=eval(dobjname);
+				end
+			else
+				dobj=args{2};
+			end
+			showdep(dobj,varnames)
+			return;
+		case 'file' % force reading from file
+			getFromFile = true;			
+		case 'caa' % return caa format only
+			% default behaviour, do nothing
+		case 'mat' % return matlab format only
+			getMatOnly=1;
+			getMat=1;
+			getCaa=0;
+		case 'dobj' % return matlab format only
+			getDobjOnly=1;
+			getDobj=1;
+			getCaa=0;
+		case {'unit','units'} % return matlab format only
+			getUnitOnly=1;
+			getUnit=1;
+			getCaa=0;
+		case 'tint'                          % load specified time interval
+			if nargs>1
+				if isnumeric(args{2})
+					tint = args{2};
+					l = 2;
+				else irf_log('fcal,','wrongArgType : tint must be numeric')
+				end
+			else irf_log('fcal,','wrongArgType : tint value is missing')
+			end
+			getAllData=0;
+		otherwise
+			irf_log('fcal',['Unknown input parameter  ''' args{1} ''' !!!'])
+			l=1;
+	end
+	args = args(l+1:end);
+	nargs=length(args);
+	if isempty(args), break, end
 end
 
 %%
@@ -105,12 +110,12 @@ for j=1:length(varargin),
   var_name=varargin{j};
   if ischar(var_name) && any(strfind(var_name,'__')) % variable name specified as input
     dataobj_name=get_dataobj_name(var_name);
-    if flag_read_all_data && evalin('caller',['exist(''' dataobj_name ''',''var'')']),
+    if getAllData && ~getFromFile &&	evalin('caller',['exist(''' dataobj_name ''',''var'')']),
       dataobject=evalin('caller',dataobj_name);
       jloaded=jloaded+1;
       irf_log('dsrc',[dataobj_name ' exist in memory. NOT LOADING FROM FILE!'])
     else
-      if flag_read_all_data,
+      if getAllData,
         caa_load(dataobj_name,'nowildcard');
       else
         caa_load(dataobj_name,'tint',tint,'nowildcard');
@@ -123,16 +128,16 @@ for j=1:length(varargin),
         continue;
       end
     end
-    if flagvar, % save variable
+    if getCaa, % save variable
       res{jloaded}=getv(dataobject,var_name);
     end
-    if flagmat % save variable in matlab matrix format
+    if getMat % save variable in matlab matrix format
       resmat{jloaded}=getmat(dataobject,var_name);
     end
-    if flagunit % save variable unit
+    if getUnit % save variable unit
       resunit{jloaded}=getunits(dataobject,var_name);
     end
-    if flagdobj,% save dataobject 
+    if getDobj,% save dataobject 
       resdataobject{jloaded}=dataobject; 
     end
   end
@@ -146,13 +151,13 @@ elseif jloaded ==1, % return variables and not cell arrays
   resmat=resmat{1};
   resunit=resunit{1};
 end
-if flag_return_mat_only,
+if getMatOnly,
   res=resmat; return
 end
-if flag_return_dobj_only,
+if getDobjOnly,
   res=resdataobject; return
 end
-if flag_return_unit_only,
+if getUnitOnly,
   res=resunit; return
 end
 
