@@ -191,9 +191,15 @@ switch action
 		error('Wrong number of input arguments')
 end
 	function fix_order_of_array_dimensions
-		indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==3); % find 3 dimensional dataset
-		for iDataset=1:numel(indDatasets)
-			data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
+		for iDimension=3:4,
+			indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
+			for iDataset=1:numel(indDatasets)
+				if iDimension==3,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
+				elseif iDimension==4,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
+				end
+			end
 		end
 	end
 	function make_variable_names_acceptable_for_matlab
