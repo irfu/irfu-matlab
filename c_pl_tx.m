@@ -1,13 +1,15 @@
 function out=c_pl_tx(varargin)
 %C_PL_TX   Plot data from all four Cluster spacecraft in the same plot
 %
-% c=c_pl_tx('x?',column,[linestyle],[dt1 dt2 dt3 dt4])
-% c=c_pl_tx(x1,x2,x3,x4,[column],[linestyle],[dt1 dt2 dt3 dt4])
-%   plot all 4 cluster values, time is in the first column
-% c=c_pl_tx(AX,...) plot in the specified axis
+% C_PL_TX(x1,x2,x3,x4,[column],[linestyle],[dt1 dt2 dt3 dt4])
+% C_PL_TX('x?',[column],[linestyle],[dt1 dt2 dt3 dt4])
+%	plot variables x1,x2,x3,x4 with time shift dt1...dt4
+%	time is 1st column, default plot 2nd column
+% H=C_PL_TX(..) return handle to plot
+% C_PL_TX(AX,...) plot in the specified axis
 %
 %   column - gives which column to plot. All columns will be plotted
-%            if set to empty string or ommited.
+%            in separate panels if set to empty string or ommited.
 %   linestyle - string or cell (size 4) in format accepted by plot.
 %            Usefull to set line style and marker (but not color).
 %   dt1 dt2 dt3 dt4 - timeshifts array
@@ -45,10 +47,11 @@ end
 sc_list=1:4; % default plot all s/c data
 error(nargchk(1,8,nargs))
 
+% Check which are input variables
 if ischar(args{1})
     % We have variables defines in style B?
-    flag_get_variables_from_caller=1;
-    varable_name_to_get_from_caller=args{1};
+    getVariablesFromCaller = true;
+    variableNameInCaller=args{1};
     %     for cl_id=1:4
     % 		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]');
     % 		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
@@ -62,15 +65,7 @@ else
     c_eval('x? = args{?};');
     if length(args) > 4, args = args(5:end);
     else args = ''; end
-    flag_get_variables_from_caller=0;
-end
-
-% Check for deprecated 1
-if length(args)>1
-    if length(args{2})==1 && args{2}==1
-        irf_log('fcal','this usage of c_pl_tx is deprecated. see help c_pl_tx')
-        args(2) = [];
-    end
+    getVariablesFromCaller = false;
 end
 
 column = [];
@@ -87,15 +82,15 @@ end
 delta_t = [];
 line_style = {};
 
-if ~isempty(args), have_args = 1;
-else have_args = 0;
-end
-
-while have_args
+while ~isempty(args)
     if ischar(args{1})
         if strcmp(args{1},'sc_list')
             args = args(2:end);
             sc_list=args{1};
+			if isempty(sc_list),
+				irf_log('fcal','sc_list empty');
+				return;
+			end
         else
             % assume that argument defines Linestyle
             if isempty(line_style), c_eval('line_style(?)={args{1}};')
@@ -114,7 +109,7 @@ while have_args
         irf_log('fcal','L_STYLE must be a cell with 4 elements')
         args = args(2:end);
     elseif isnumeric(args{1}) && length(args{1})==4
-        % Dt
+        % dt1..dt4
         if isempty(delta_t), delta_t = args{1};
         else irf_log('fcal','DELTA_T is already set')
         end
@@ -123,19 +118,15 @@ while have_args
         irf_log('fcal','ignoring input argument')
         args = args(2:end);
     end
-    
-    if ~isempty(args), have_args = 1;
-    else have_args = 0;
-    end
 end
-if flag_get_variables_from_caller==1,
+if getVariablesFromCaller,
     for cl_id=sc_list,
-        ttt = evalin('caller',irf_ssub(varable_name_to_get_from_caller,cl_id),'[]'); %#ok<NASGU>
+        ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]'); 
         c_eval('x? =ttt;',cl_id); clear ttt
     end
 end
 
-
+% TODO: only do column check though sc_list
 if isempty(column) && ~isempty(x1)
     % try to guess the size of the matrix
     column = size(x1,2);
@@ -167,7 +158,7 @@ end
 % check first if it exist otherwise assume zero
 ud=get(hcf,'userdata');
 if isfield(ud,'t_start_epoch'),
-    t_start_epoch = double(ud.t_start_epoch); %#ok<NASGU>
+    t_start_epoch = double(ud.t_start_epoch); 
 elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
         (~isempty(x3) && x3(1,1)>1e8) || (~isempty(x4) && x4(1,1)>1e8)
     % Set start_epoch if time is in isdat epoch,
@@ -179,18 +170,22 @@ elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
     irf_log('proc',['user_data.t_start_epoch is set to ' ...
         epoch2iso(t_start_epoch)]);
 else
-    t_start_epoch = double(0); %#ok<NASGU>
+    t_start_epoch = double(0); 
 end
-if isempty(delta_t), delta_t = [0 0 0 0]; end %#ok<NASGU>
+if isempty(delta_t), delta_t = [0 0 0 0]; end
 c_eval('ts?=t_start_epoch+delta_t(?);')
 
-% check which data are available
-sc_list=[];for ic=1:4,c_eval('if ~isempty(x?), sc_list=[sc_list ?];end',ic);end
+% check which spacecraft data are available
+sc_list_with_data=[];
+c_eval('if ~isempty(x?), sc_list_with_data=[sc_list_with_data ?];end',sc_list);
 
-if length(column) > 1, clf, ax = irf_plot(length(column)); end
+% if more than one column reset figure 
+if length(column) > 1 && numel(ax) ~= numel(column)
+	ax = irf_plot(length(column),'reset'); 
+end
 
 for j=1:length(column)
-    for jj=sc_list
+    for jj=sc_list_with_data
         c_eval(['if ~isempty(x?),'...
             'hl=irf_plot(ax(j), [x?(:,1)-delta_t(?) x?(:,column(j))],' l_style{jj} ');'...
             'hold(ax(j),''on'');set(hl,''Tag'',''C?''); end, '],jj);
