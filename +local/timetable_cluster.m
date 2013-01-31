@@ -9,6 +9,7 @@ function out=timetable_cluster(varargin)
 
 if nargin == 0,
 	help local.timetable_cluster;
+	return;
 end
 
 if ischar(varargin{1})
@@ -33,7 +34,7 @@ switch timetableToGenerate
 			return;
 		end
 		disp('Loading Cluster 1 min positions');
-		load clusterPositionFileGSE; % load Cluster positions 1min resolution
+		load(clusterPositionFileGSE); % load Cluster positions 1min resolution
 		
 		disp('Preparing data');
 		tStep=median(diff(R1(:,1))); % time step
@@ -47,22 +48,26 @@ switch timetableToGenerate
 		c_eval('R?=irf_gse2gsm(R?);',sclist); % TODO: needs to be substituted by onera conversion which is a bit more correct
 		c_eval('RRE?=irf_tappl(R?,''*Units.km/Units.RE'');clear R?;',sclist);
 		
-		conditionString = ['X<' num2str(tailBoxX) 'RE,|Z|<' num2str(tailboxDZ) 'RE,|Y|<' num2str(tailBoxDY-abs(tailBoxX/5)) '+X/5 RE GSM'];
-		disp(['Finding when Cluster is in tailbox, ' conditionString]);
 		% tailbox definition
+		conditionString = ['X<' num2str(tailBoxX) 'RE,|Z|<' num2str(tailBoxDZ) 'RE,|Y|<' num2str(tailBoxDY-abs(tailBoxX/5)) '+|X|/5 RE GSM'];
+		disp(['Finding when Cluster is in tailbox, ' conditionString]);
 		ttLabel='tailbox';
 		ttTitle=['Cluster ? in tailbox, ' conditionString];
+		% all indexes when Cluster in tailbox
 		c_eval('itailbox?=(abs(RRE?(:,3))<tailBoxDY+abs(RRE?(:,2))/5 & abs(RRE?(:,4))<tailBoxDZ & RRE?(:,2)<tailBoxX);',sclist)
-		% tailbox definition
-		% c_eval('itailbox?=(abs(RRE?(:,3))<tailBoxDY & abs(RRE?(:,4))<tailBoxDZ & RRE?(:,2)<tailBoxX);',sclist)
-		% define intervals for tailbox
+		% start indexes of time intervals
 		c_eval('indstart?=find(diff([0 itailbox?(:)'']) == 1);',sclist);
+		% stop indexes of time intervals
 		c_eval('indend?=find(diff([itailbox?(:)'' 0]) == -1);',sclist);
-		c_eval(['tt_C?_in_' ttLabel '.=irf.TimeTable([RRE?(indstart?,1)-tStep/2 RRE?(indend?,1)+tStep/2];'],sclist)
+		% put the interval start/end time half a step before/after start/end index times
+		c_eval(['tt_C?_in_' ttLabel '=irf.TimeTable([RRE?(indstart?,1)-tStep/2 RRE?(indend?,1)+tStep/2]);'],sclist)
 		c_eval(['tt_C?_in_' ttLabel '.Header=[''' ttTitle '''];'],sclist);
-		c_eval(['Access from workspace time table: tt_C?_in_' ttLabel],sclist);
+		% make it possible to access time tables from workspace
+		c_eval('disp([''Access from workspace time table: tt_C?_in_'' ttLabel]);',sclist);
 		c_eval(['assignin(''base'',''tt_C?_in_' ttLabel ''',tt_C?_in_' ttLabel ');'],sclist);
 		
+		% if satisfied with result should be possible to upload to IRF time
+		% table repository
 		answerToSave = irf_ask('Upload time tables to IRF disk? y/n [%]>','answerToSave','n');
 		if strcmp(answerToSave,'y')
 			c_eval(['irf_tt(tt_C?_in_' ttLabel ',''write_IRF'',''C?_in_' ttLabel ''');'],sclist)
