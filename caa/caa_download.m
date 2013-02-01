@@ -375,7 +375,7 @@ end
 			irf_log('dsrc',['Downloaded: ' urlLink]);
 			irf_log('dsrc',['into ->' temp_file]);
 			caa_log({'Zip file returned for request',urlLink});
-			tempDirectory=tempname;
+			tempDirectory=tempdir;
 			filelist=unzip(temp_file,tempDirectory);
 			if isempty(filelist)
 				irf_log('dsrc','Returned zip file is empty');
