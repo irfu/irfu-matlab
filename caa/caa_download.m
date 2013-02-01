@@ -473,7 +473,7 @@ end
 tintiso=[vertcat(textLine(:).start) repmat('/',numel(startIndices),1) vertcat(textLine(:).end)];
 tint=irf_time(tintiso,'iso2tint');
 TT.TimeInterval=tint;
-TT.Header=caalog(1:startIndices(1)-1);
+TT.Header = strread(caalog(1:startIndices(1)-1), '%s', 'delimiter', sprintf('\n'));
 TT.Comment=cell(numel(TT),1);
 TT.Description=cell(numel(TT),1);
 end
