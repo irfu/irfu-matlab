@@ -179,8 +179,8 @@ classdef TimeTable
 			out=cell(nHeaderLines+nElements+nDescriptionLines,1);
 			out(1:nHeaderLines)=header;
 			currentLine=nHeaderLines+1;
+			fmt='%s %s %s';
 			for iTT=1:numel(tt)
-				fmt='%s %s %s';
 				out{currentLine}=sprintf(fmt,irf_time(tint(iTT,1),'iso'),...
 					irf_time(tint(iTT,2),'iso'),comment{iTT});
 				currentLine=currentLine+1;
@@ -191,9 +191,9 @@ classdef TimeTable
 			end
 			if nargout == 0, % interactive calling from command line
 				out=char(out);
-				if size(out,1)>10,
-					disp(out(1:7,:));
-					disp(['.... ' num2str(size(out,1)-10) ' lines ommitted.....']);
+				if size(out,1)>nHeaderLines+10,
+					disp(out(1:nHeaderLines+3,:));
+					disp(['.... ' num2str(size(out,1)-nHeaderLines-5) ' lines ommitted.....']);
 					disp(out(end-2:end,:));
 				else
 					disp(out);
