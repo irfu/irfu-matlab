@@ -29,13 +29,13 @@ function out=tt(varargin)
 
 %  =========== BELOW NOT IMPLEMENTED =========
 %
-%   hashid=IRF_TT(tt,'save_AMDA',tt_id,'user',username,'passw',password)
+%   hashid=IRF.TT(tt,'save_AMDA',tt_id,'user',username,'passw',password)
 %     save time table tt_id. Return hashid, if saving did not succeed return NaN.
 %
-%   out=IRF_TT(tt,'save_AMDA',hashid) replace time table with hashid with a new one
+%   out=IRF.TT(tt,'save_AMDA',hashid) replace time table with hashid with a new one
 %    return NaN if operation did not succeed.
 %
-%   out=IRF_TT(tt,'add_AMDA',hashid) add time intervals to the table hashid
+%   out=IRF.TT(tt,'add_AMDA',hashid) add time intervals to the table hashid
 %    return NaN if operation did not succeed.
 %
 
@@ -43,7 +43,7 @@ function out=tt(varargin)
 %% Check inputs
 
 if nargin==0,
-	help irf_tt;
+	help irf.tt;
 	return;
 end
 
