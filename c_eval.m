@@ -26,8 +26,6 @@ function c_eval(ev_str,sc_list_1,sc_list_2)
 % $Id$
 % Copyright 2004 Yuri Khotyaintsev
 
-error(nargchk(1,3,nargin))
-
 if nargin==0,
     help c_eval;
 elseif nargin==1,
@@ -35,6 +33,9 @@ elseif nargin==1,
     sc_list_2=1:4;
 elseif nargin==2,
     sc_list_2=1:4;
+else
+	irf_log('fcal','cannot be more than 2 input arguments')
+	return
 end
 
 if strfind(ev_str,'?'),

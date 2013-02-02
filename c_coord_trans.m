@@ -23,6 +23,8 @@ function y = c_coord_trans(from,to,x,varargin)
 %
 % $Id$
 
+% TODO: add option to use onera library 
+
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you

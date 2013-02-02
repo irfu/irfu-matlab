@@ -91,6 +91,14 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+%% Check if latest irfu-matlab 
+% The check is appropriate to make when scientist is downloading data from CAA
+persistent usingLatestIrfuMatlab
+
+if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
+	usingLatestIrfuMatlab=irf('check');
+end
+
 %% Defaults
 checkDownloadsStatus	= false;
 doLog					= true; % log into .caa file
@@ -375,7 +383,8 @@ end
 			irf_log('dsrc',['Downloaded: ' urlLink]);
 			irf_log('dsrc',['into ->' temp_file]);
 			caa_log({'Zip file returned for request',urlLink});
-			tempDirectory=tempdir;
+			tempDirectory=tempname;
+			mkdir(tempDirectory);
 			filelist=unzip(temp_file,tempDirectory);
 			if isempty(filelist)
 				irf_log('dsrc','Returned zip file is empty');
