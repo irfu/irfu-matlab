@@ -200,9 +200,11 @@ switch lower(flag)
     case {'date2epoch','datenum2epoch'} 
         t_out = double(t_in(:) - 719529)*double(24 * 3600);
         
-    case 'epoch2yyyymmdd'
+    case {'epoch2yyyymmdd','epoch2yyyy-mm-dd'}
         t=irf_time(t_in,'epoch2vector');
-        t_out=num2str(t(:,1:3),'%04d%02d%02d');
+		fmt = '%04d%02d%02d';
+		if strcmpi(flag,'epoch2yyyy-mm-dd'), fmt = '%04d-%02d-%02d';end
+		t_out=num2str(t(:,1:3),fmt);
         
     case 'epoch2yyyymmddhh'
         t=irf_time(t_in,'epoch2vector');
