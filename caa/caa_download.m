@@ -32,7 +32,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 % Input flags
 %   'file_interval' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
 %   'nowildcard'	- download the dataset without any expansion in the name and not checking if data are there
-%   'overwrite'		- overwrite files in directory (to keep single cdf file) NEEDS IMPLEMENTATION
+%   'overwrite'		- overwrite files in directory (to keep single cdf file)
 %   'schedule'		- schedule the download, (returns zip file link)
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %   'nolog'			- do not log into .caa file (good for batch processing)
@@ -102,6 +102,7 @@ end
 %% Defaults
 checkDownloadsStatus	= false;
 doLog					= true; % log into .caa file
+overwritePreviousData	= false; % continue adding cdf files to CAA directory
 flag_wildcard     =1;                     % default is to use wildcard
 flag_check_if_there_is_data=1;            % check if there are any at caa
 urlNonotify='&nonotify=1';                % default is not notify by email
@@ -142,6 +143,8 @@ if nargin>2, % cehck for additional flags
 			flag_wildcard=0;
 			flag_check_if_there_is_data=0;
 			urlNonotify='&nonotify=1';
+		elseif strcmpi(flag,'overwrite'),
+			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
 			urlFileInterval = urlparameter(flag);
 		elseif any(strcmpi('schedule',flag))
@@ -406,9 +409,12 @@ end
 			isDataSet = ~any(strfind(filelist{jj},'log'));
 			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
 				dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
-				if ~exist(['CAA/' dataset],'dir'),
-					irf_log('dsrc',['Creating directory: CAA/' dataset]); 
-					mkdir(['CAA/' dataset]);
+				datasetDirName = ['CAA/' dataset];
+				if ~exist(datasetDirName,'dir'),
+					irf_log('dsrc',['Creating directory: ' datasetDirName]); 
+					mkdir(datasetDirName);
+				elseif overwritePreviousData
+					delete([datasetDirName filesep '*']);
 				end
 				irf_log('dsrc',['file:      ' filelist{jj}]);
 				irf_log('dsrc',['moving to: CAA/' dataset '/']);
