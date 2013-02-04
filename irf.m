@@ -18,6 +18,8 @@ end
 logFileUrl = 'http://www.space.irfu.se/~andris/irfu-matlab/log.txt';
 
 switch action
+	case 'demo'
+		echodemo irfdemo
 	case 'version'
 		fid=fopen(log_file);
         tline = fgetl(fid);
@@ -30,7 +32,12 @@ switch action
 		end
 	case 'check'
 		fprintf('Checking if you have latest irfu-matlab...');
-		logText      = urlread(logFileUrl);
+		try
+			logText      = urlread(logFileUrl);
+		catch
+			disp('Not connected to internet');
+			return;
+		end
 		logTextArray = textscan(logText, '%s', 'delimiter', sprintf('\n'));
 		logTextArray = logTextArray{1};
 		newestVersion = logTextArray{1}(1:10);
