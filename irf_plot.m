@@ -557,28 +557,31 @@ if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
     c=zeros(1,number_of_subplots);
 	if strcmpi(flag,'newfigure'), % if to open new figure
+		hcf = figure;
 		xSize = 11;
 		ySize = 5+5*sqrt(number_of_subplots);
 		xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-		set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+		set(hcf,'PaperPosition',[xLeft yTop xSize ySize])
 		un=get(0,'units');
 		set(0,'units','pixels');
 		sz=get(0,'screensize');
 		xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
-		set(gcf,'Position',[10 10 xSize*xx ySize*xx])
+		set(hcf,'Position',[10 10 xSize*xx ySize*xx])
 		set(0,'units',un);
 		clear xSize sLeft ySize yTop
+	else
+		hcf = gcf; 
 	end
 	if strcmpi(flag,'newfigure') || strcmpi(flag,'reset') 
-		set(gcf,'color','white'); % white background for figures (default is grey)
-        set(gcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
-        set(gcf,'PaperUnits','centimeters');
-        set(gcf,'defaultlinelinewidth',1.0);
-        set(gcf,'defaultAxesFontSize',14);
-        set(gcf,'defaultTextFontSize',14);
-        set(gcf,'defaultAxesFontUnits','pixels');
-        set(gcf,'defaultTextFontUnits','pixels');
-        set(gcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
+		set(hcf,'color','white'); % white background for figures (default is grey)
+        set(hcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
+        set(hcf,'PaperUnits','centimeters');
+        set(hcf,'defaultlinelinewidth',1.0);
+        set(hcf,'defaultAxesFontSize',14);
+        set(hcf,'defaultTextFontSize',14);
+        set(hcf,'defaultAxesFontUnits','pixels');
+        set(hcf,'defaultTextFontUnits','pixels');
+        set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
 	end
     clf;
     all_axis_position=[0.17 0.1 0.9 0.95]; % xmin ymin xmax ymax
@@ -596,8 +599,8 @@ if number_of_subplots>=1 && number_of_subplots<=20,
     user_data = get(gcf,'userdata');
     user_data.subplot_handles = c;
     user_data.current_panel=0;
-    set(gcf,'userdata',user_data);
-    figure(gcf); % bring figure to front
+    set(hcf,'userdata',user_data);
+    figure(hcf); % bring figure to front
 end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
