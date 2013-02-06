@@ -1,10 +1,15 @@
-function c_4_v_gui(x1,x2,x3,x4,column)
+function out=c_4_v_gui(x1,x2,x3,x4,column)
 %C_4_V_GUI interactive discontinuity analyzer for Cluster
 %
-%  status = c_4_v_gui(x1,x2,x3,x4,column)
-%  status = c_4_v_gui('B?',column)   use variables B1,B2,B3,B4 from base workspace
-%  status = c_4_v_gui('B?')          use column 2
+%  C_4_V_GUI(x1,x2,x3,x4,column)	use interactive discontinuity analyzer 
+%		on variables x1..x4 using column number 'column'
+%  C_4_V_GUI('B?',column)			use variables B1,B2,B3,B4 from base workspace
+%  C_4_V_GUI('B?')					use column 2
+%  H = C_4_V_GUI(..)				return axis handles
 %
+% See also: C_4_V
+%
+
 % $Id$
 
 flag_first_call=0;
@@ -24,6 +29,7 @@ elseif   (nargin ==4) || (nargin == 5),
 	if nargin ==4, irf_log('fcal','Using second column');column=2;end
 	if isempty(x1) &&  isempty(x2) && isempty(x3) && isempty(x4)
 		irf_log('fcal','Empty input');
+		if nargout, out=[];end
 		return
 	end
 	figure;ud=[]; % intialize
@@ -291,6 +297,7 @@ switch action,
 		end
 		set(gcf, 'userdata', ud);
 end
+if nargout, out = ud.h; end
 end
 
 function label=var_label(var_str,var_col)
