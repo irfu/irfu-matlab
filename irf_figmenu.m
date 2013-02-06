@@ -19,6 +19,7 @@ switch lower(action)
 			hmc  = uimenu(hfigmenu,'Label','&Cluster');
 			hmcp = uimenu(hmc,'Label','satellite position','Callback','irf_figmenu(''c_position'')');
 			hmct = uimenu(hmc,'Label','4 s/c timing','Callback','irf_figmenu(''c_timing'')');
+			hmcm = uimenu(hmc,'Label','MVA','Callback','irf_figmenu(''mva'')');
 			
 			hmenu_zoom=uimenu(hfigmenu,'Label','Zoom all panels OFF','Callback','irf_figmenu(''zoomall'')');
 			set(zoom(gcf),'ActionPostCallback', @adaptiveDateTicks);
@@ -54,7 +55,26 @@ switch lower(action)
 		c_eval('v?=[];h?=findobj(gca,''Tag'',''C?'');');
 		c_eval('if h?, v?     =get(h?,''XData'')+tStart;v?=v?(:); end;');
 		c_eval('if h?, v?(:,2)=get(h?,''YData'');                 end;');
-		c_4_v_gui(v1,v2,v3,v4,2);
+		h=c_4_v_gui(v1,v2,v3,v4,2);
+		set(h,'xlim',xlim);
+	case 'mva'
+		xlim=get(gca,'xlim');
+		tStart= getfield(get(gcf,'userdata'),'t_start_epoch');
+		v=[];h=findobj(gca,'type','line');
+		for jh = 1:numel(h)
+			t = get(h(jh),'xdata') + tStart;
+			y = get(h(jh),'ydata');
+			if jh == 1,
+				v = [t(:) y(:)];
+			else
+				if all(t(:) == v(:,1)),
+					v = [v y(:)];
+				else
+					irf_log('dsrc','Lines do not have the same time sampling!');
+				end
+			end
+		end
+		irf_minvar_gui(v);
 end
 
 function adaptiveDateTicks(figureHandle,eventObjectHandle)
