@@ -207,157 +207,159 @@ for cli=1:4
 			% Load Es
             spinFits = caa_sfit_load(cli);
  
-			if ~isempty(spinFits)
-			
-            if spinFits.flagLX
-                probe_numeric = spinFits.probePair;
-            else
-                E_info = c_load('diE?p1234_info', cli, 'var');    % Load info; need list of probe pairs!
-                if isempty(E_info) || ~isfield(E_info, 'probe')
-                    error('Could not load probe pair info!')
+            if ~isempty(spinFits)
+                
+                if spinFits.flagLX
+                    probe_numeric = spinFits.probePair;
+                else
+                    E_info = c_load('diESPEC?p1234_info', cli, 'var');    % Load info; need list of probe pairs!
+                    if isempty(E_info) || ~isfield(E_info, 'probe')
+                        irf_log('load','Could not load probe pair info!')
+                        probe_numeric = spinFits.probePair;
+                    else
+                        probe_numeric=str2double(E_info.probe);
+                    end
                 end
-                probe_numeric=str2double(E_info.probe);
-            end
-            % Remove saturation due to too high bias current        
-            if probe_numeric<50, probepair_list=probe_numeric;
-			else probepair_list=[12 32 34];end
-			for probepair=probepair_list
-                [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
+                % Remove saturation due to too high bias current
+                if probe_numeric<50, probepair_list=probe_numeric;
+                else probepair_list=[12 32 34];end
+                for probepair=probepair_list
+                    [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
+                    if ok
+                        if ~isempty(hbias)
+                            irf_log('proc','blanking HB saturation')
+                            spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
+                        end
+                    else irf_log('load',msg)
+                    end
+                    clear ok hbias msg
+                end
+                
+                % Remove saturation
+                if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
+                else probepair_list=[1 2 3 4];end
+                for probe=probepair_list
+                    [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
+                    if ok
+                        if ~isempty(hbias)
+                            irf_log('proc','blanking probe saturation')
+                            spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
+                        end
+                    else irf_log('load',msg)
+                    end
+                    clear ok hbias msg
+                end
+                
+                % Remove whisper pulses
+                [ok,whip,msg] = c_load('WHIP?',cli);
                 if ok
-                    if ~isempty(hbias)
-                        irf_log('proc','blanking HB saturation')
-                        spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
+                    if ~isempty(whip)
+                        irf_log('proc','blanking Whisper pulses')
+                        spinFits.diEs = caa_rm_blankt(spinFits.diEs,whip);
                     end
                 else irf_log('load',msg)
                 end
-                clear ok hbias msg
-            end
-            
-            % Remove saturation
-            if probe_numeric<50, probepair_list=[mod(probe_numeric,10),fix(probe_numeric/10)];
-			else probepair_list=[1 2 3 4];end
-            for probe=probepair_list
-                [ok,hbias,msg] = c_load(irf_ssub('PROBESA?p!',cli,probe));
-                if ok
-                    if ~isempty(hbias)
-                        irf_log('proc','blanking probe saturation')
-                        spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
-                    end
-                else irf_log('load',msg)
+                clear ok whip msg
+                
+                % Remove ns_ops intervals
+                ns_ops = c_ctl('get', cli, 'ns_ops');
+                if isempty(ns_ops)
+                    c_ctl('load_ns_ops', [c_ctl('get', 5, 'data_path') '/caa-control'])
+                    ns_ops = c_ctl('get', cli, 'ns_ops');
                 end
-                clear ok hbias msg
+                if ~isempty(ns_ops)
+                    ns_ops_intervals = [caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_data')' ...
+                        caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')']';
+                    if ~isempty(ns_ops_intervals)
+                        ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
+                        ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
+                        irf_log('proc', 'blanking NS_OPS')
+                        spinFits.diEs = caa_rm_blankt(spinFits.diEs,ns_ops_intervals);
+                    end
+                    clear ns_ops ns_ops_intervals
+                end
+                
+                %%% Fill gaps in data???? %%%
+                
+                
+                % Extend data array to accept bitmask and quality flag (2 columns at the end)
+                spinFits.diEs = [spinFits.diEs zeros(size(spinFits.diEs, 1), 2)];
+                spinFits.diEs(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
+                quality_column = size(spinFits.diEs, 2);
+                bitmask_column = quality_column - 1;
+                
+                % Identify and flag problem areas in data with bitmask and quality factor:
+                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
+                
+                % Delta offsets
+                Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
+                if ~isempty(Del_caa)
+                    [ok,Delauto] = c_load('D?p12p34',cli);
+                    if ~ok || isempty(Delauto)
+                        irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cli))
+                    else
+                        spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Delauto,'undo');
+                        spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Del_caa,'apply');
+                    end
+                end
+                
+                
+                % DSI offsets
+                dsiof = c_ctl(cli,'dsiof');
+                if isempty(dsiof)
+                    [ok,Ps,msg] = c_load('Ps?',cli,'var');
+                    if ~ok, irf_log('load',msg), end
+                    if caa_is_sh_interval
+                        [dsiof_def, dam_def] = c_efw_dsi_off(spinFits.diEs(1,1),cli,[]);
+                    else
+                        [dsiof_def, dam_def] = c_efw_dsi_off(spinFits.diEs(1,1),cli,Ps);
+                    end
+                    clear ok Ps msg
+                    
+                    if usextra % Xtra offset
+                        [ok1,Ddsi] = c_load('DdsiX?',cli);
+                        if ~ok1
+                            [ok1,Ddsi] = c_load('Ddsi?',cli);
+                            if ~ok1, Ddsi = dsiof_def; end
+                        else
+                            iso_t = caa_read_interval;
+                            dEx(cli)={[dEx{cli}, {[iso2epoch(iso_t) real(Ddsi)]}]};
+                        end
+                    else
+                        [ok1,Ddsi] = c_load('Ddsi?',cli);
+                        if ~ok1, Ddsi = dsiof_def; end
+                    end
+                    [ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
+                    
+                    if ok1 || ok2, irf_log('calb',...
+                            ['Saved DSI offsets on C' num2str(cli)])
+                        %else irf_log('calb','Using default DSI offsets')
+                    end
+                    clear dsiof_def dam_def
+                else
+                    Ddsi = dsiof(1); Damp = dsiof(2);
+                    irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
+                end
+                clear dsiof
+                
+                spinFits.diEs = caa_corof_dsi(spinFits.diEs,Ddsi,Damp); clear Ddsi Damp
+                es = [es; spinFits.diEs];
+                
+                % Load RSPEC
+                rspec_tmp = c_load(['RSPEC?p' num2str(spinFits.probePair)],cli,'var');
+                if ~isempty(rspec_tmp) && rspec_tmp(1,1)~=-157e8
+                    rs = rspec_tmp;
+                    rs(:,2) = sqrt(rspec_tmp(:,2).^2+rspec_tmp(:,3).^2);
+                    rs(:,3) = sqrt(rspec_tmp(:,4).^2+rspec_tmp(:,5).^2);
+                    rs(:,4) = sqrt(rspec_tmp(:,6).^2+rspec_tmp(:,7).^2);
+                    rs(:,5) = sqrt(rspec_tmp(:,8).^2+rspec_tmp(:,9).^2);
+                    rs(:,6) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
+                    rs(:,7:end) = [];
+                    rspec = [rspec; rs];
+                    clear rs
+                end
+                clear rspec_tmp
             end
-            
-             % Remove whisper pulses    
-             [ok,whip,msg] = c_load('WHIP?',cli);
-             if ok
-                 if ~isempty(whip)
-                     irf_log('proc','blanking Whisper pulses')
-                     spinFits.diEs = caa_rm_blankt(spinFits.diEs,whip);
-                 end
-             else irf_log('load',msg)
-             end
-             clear ok whip msg
-           
-             % Remove ns_ops intervals
-             ns_ops = c_ctl('get', cli, 'ns_ops');
-             if isempty(ns_ops)
-                 c_ctl('load_ns_ops', [c_ctl('get', 5, 'data_path') '/caa-control'])
-                 ns_ops = c_ctl('get', cli, 'ns_ops');
-             end
-             if ~isempty(ns_ops)
-                 ns_ops_intervals = [caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_data')' ...
-                     caa_get_ns_ops_int(spinFits.diEs(1,1), spinFits.diEs(end,1)-spinFits.diEs(1,1), ns_ops, 'bad_tm')']';             
-                 if ~isempty(ns_ops_intervals)
-                     ns_ops_intervals(:,1)=ns_ops_intervals(:,1)-4;
-                     ns_ops_intervals(:,2)=ns_ops_intervals(:,2)+4;
-                     irf_log('proc', 'blanking NS_OPS')
-                     spinFits.diEs = caa_rm_blankt(spinFits.diEs,ns_ops_intervals);
-                 end
-                 clear ns_ops ns_ops_intervals
-             end
-           
-            %%% Fill gaps in data???? %%%
-            
-
-			   % Extend data array to accept bitmask and quality flag (2 columns at the end)
-			   spinFits.diEs = [spinFits.diEs zeros(size(spinFits.diEs, 1), 2)];
-			   spinFits.diEs(:, end) = QUALITY;    % Default quality column to best quality, i.e. good data/no problems.
-			   quality_column = size(spinFits.diEs, 2);
-			   bitmask_column = quality_column - 1;
-
-			   % Identify and flag problem areas in data with bitmask and quality factor:
-            spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, E_info.probe, cli, bitmask_column, quality_column);
-			   
-				% Delta offsets
-				Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
-				if ~isempty(Del_caa)
-					[ok,Delauto] = c_load('D?p12p34',cli);
-					if ~ok || isempty(Delauto)
-						irf_log('load',irf_ssub('Cannot load/empty D?p12p34',cli))
-					else
-						spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Delauto,'undo');
-						spinFits.diEs = caa_corof_delta(spinFits.diEs,spinFits.probePair,Del_caa,'apply');
-					end
-				end
-				
-				
-				% DSI offsets
-				dsiof = c_ctl(cli,'dsiof');
-				if isempty(dsiof)
-					[ok,Ps,msg] = c_load('Ps?',cli,'var');
-					if ~ok, irf_log('load',msg), end
-					if caa_is_sh_interval
-						[dsiof_def, dam_def] = c_efw_dsi_off(spinFits.diEs(1,1),cli,[]);
-					else
-						[dsiof_def, dam_def] = c_efw_dsi_off(spinFits.diEs(1,1),cli,Ps);
-					end
-					clear ok Ps msg
-					
-					if usextra % Xtra offset
-						[ok1,Ddsi] = c_load('DdsiX?',cli);
-						if ~ok1
-							[ok1,Ddsi] = c_load('Ddsi?',cli);
-							if ~ok1, Ddsi = dsiof_def; end
-						else
-							iso_t = caa_read_interval;
-							dEx(cli)={[dEx{cli}, {[iso2epoch(iso_t) real(Ddsi)]}]};
-						end
-					else
-						[ok1,Ddsi] = c_load('Ddsi?',cli);
-						if ~ok1, Ddsi = dsiof_def; end
-					end
-					[ok2,Damp] = c_load('Damp?',cli); if ~ok2, Damp = dam_def; end
-
-					if ok1 || ok2, irf_log('calb',...
-							['Saved DSI offsets on C' num2str(cli)])
-					%else irf_log('calb','Using default DSI offsets')
-					end
-					clear dsiof_def dam_def
-				else
-					Ddsi = dsiof(1); Damp = dsiof(2);
-					irf_log('calb',['User DSI offsets on C' num2str(cl_id)])
-				end
-				clear dsiof
-				
-				spinFits.diEs = caa_corof_dsi(spinFits.diEs,Ddsi,Damp); clear Ddsi Damp
-				es = [es; spinFits.diEs];
-            end
-			
-			% Load RSPEC
-			rspec_tmp = c_load(['RSPEC?p' num2str(spinFits.probePair)],cli,'var');
-			if ~isempty(rspec_tmp) && rspec_tmp(1,1)~=-157e8 
-				rs = rspec_tmp;
-				rs(:,2) = sqrt(rspec_tmp(:,2).^2+rspec_tmp(:,3).^2);
-				rs(:,3) = sqrt(rspec_tmp(:,4).^2+rspec_tmp(:,5).^2);
-				rs(:,4) = sqrt(rspec_tmp(:,6).^2+rspec_tmp(:,7).^2);
-				rs(:,5) = sqrt(rspec_tmp(:,8).^2+rspec_tmp(:,9).^2);
-				rs(:,6) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
-				rs(:,7:end) = [];
-				rspec = [rspec; rs];
-				clear rs
-			end
-			clear rspec_tmp
 			
 			cd(old_pwd)
 		end
