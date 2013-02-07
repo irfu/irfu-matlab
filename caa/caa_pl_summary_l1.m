@@ -547,7 +547,7 @@ clf
 h = 1:6;
 for pl=1:6, h(pl) = irf_subplot(6,1,-pl); end
 
-figure_start_epoch(st);
+t_start_epoch = figure_start_epoch(st);
 
 % Plot bits in bitmask
 ytick_label =  1:16;
