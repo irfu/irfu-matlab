@@ -1,21 +1,43 @@
-function h=irf_wave_detection_algorithm(b,varargin)
+function h=irf_wave_detection_algorithm(b,varargin)    
+%function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
+ %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(b,varargin)    
 
-% To duplicate the method of Bortnik et al. 2007
+% IRF_WAVE_DETECTION_ALGORITHM duplicates the method of Bortnik et al. 2007
+% to detect EMIC waves
+%
+% 	IRF_TEMPLATE(b) Produces a plot showing magnetic field spectrogram in the upper panel
+%    and the spectrogram with the background median removed in the lower
+%    panel. Overplotted are points picking out wave events, and also lines
+%    for the cyclotron frequency (H, solid) (He, dashed) (O dash-dot).
+%   A file of the time table is exported.
+%
+%   Currently the conditions are slightly relaxed, so more events are being
+%    chosen than are real. It is important to confirm any event by eye!
+%
+%   Example:
+%    irf_wave_detection_algorithm(B,'freq',[.02 5]);
+%	
+
+
 
   %% Check input 
   [ax,args,nargs] = axescheck(varargin{:});
-
+  %b=local.c_read('B_vec_xyz_gse__C1_CP_FGM_5VPS',tint);
+  
   %% get background magnetic field
-  sampl_low=5;
-  t_low=b(1,1):1/sampl_low:b(end,1); t_low=t_low';
-  b_low=irf_resamp(b,t_low); %low sample frequency to avoid filter issues
-  bf=irf_filt(b_low,1/600,0,[],5);
-  b0=b_low;
-  b0(:,2:4)=b_low(:,2:4)-bf(:,2:4);
+  %sampl_low=5;
+  %t_low=b(1,1):1/sampl_low:b(end,1); t_low=t_low';
+  %b_low=irf_resamp(b,t_low); %low sample frequency to avoid filter issues
+  %bf=irf_filt(b_low,1/600,0,[],5);
+  bf=irf_filt(b,1/600,0,[],5);
+  %b0=b_low;
+  %b0(:,2:4)=b_low(:,2:4)-bf(:,2:4);
+  b0=b;
+  b0(:,2:4)=b(:,2:4)-bf(:,2:4);
   %b=b_low;
   %t=t_low;
   B=b0;
-  sampl=sampl_low;
+  %sampl=sampl_low;
 % %% resample to 25 Hz
   sampl_b=1/(b(2,1)-b(1,1));
   sampl=10;
@@ -45,15 +67,15 @@ function h=irf_wave_detection_algorithm(b,varargin)
   w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
   %% Set some important parameters
-  freq_int=[.01 5];
+  freq_int=[.02 5];
   freq_number=45;
   Morlet_width=5.36;
 
-  if isnumeric(args{end})
-      freq_int=args{end};
-  elseif ismember({'freq'},args)
-      disp('frequency interval values missing. using default')
-  end
+%   if isnumeric(args{end})
+%       freq_int=args{end};
+%   elseif ismember({'freq'},args)
+%       disp('frequency interval values missing. using default')
+%   end
   
 % Btot=irf_resamp(B(:,1),t);
 % B2=irf_resamp(B,t);
@@ -179,8 +201,7 @@ sampl=10/300;
 t=b(1,1):1/sampl:b(end,1); t=t';
 
 %% remove background median over a window
-t_start_epoch=get_t_start_epoch(t(1,1));
-toa = 4; %time of average for background median
+toa = 4; %time (in hours) of average for background median
 
 if t(end)-t(1) <= toa*3600,
     medianPower = nanmedian(powerCrossCov_SM_plot);
@@ -327,6 +348,17 @@ oCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
 bottomCutoffFreq = heCyclFreq;   
 topCutoffFreq = hCyclFreq;  %or should I use 10?
 deltaPeak = .03;
+
+  %% Remove the last sample if waveFrequencies has one more sample than the Cutoffs
+  if size(waveFrequencies,1) ~= size(topCutoffFreq,1)
+    topCutoffFreq=topCutoffFreq(1:end-1,:);
+    bottomCutoffFreq=bottomCutoffFreq(1:end-1,:);
+    hCyclFreq=hCyclFreq(1:end-1,:);
+    heCyclFreq=heCyclFreq(1:end-1,:);
+    oCyclFreq=oCyclFreq(1:end-1,:);
+    t=t(1:end-1);
+  end
+
  validInd = waveFrequencies(:,3) > topCutoffFreq;
  validInd2 = waveFrequencies(:,1) < bottomCutoffFreq;
 %validInd = waveFrequencies(:,3) > newfreq(2);
@@ -362,7 +394,6 @@ nanmean(waveFrequencies(:,2))
 % end
 
 %check for association from one time step to the next
-TT = irf.TimeTable
 % i=1;
 % while i < ndata,
 %     if waveFrequencies(i,1) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
@@ -475,10 +506,14 @@ TT = irf.TimeTable
 %     end
 %     i=i+1;
 % end
-   
+
+
+TT = irf.TimeTable;
+ 
 i=1;
 while i < ndata,
-    if waveFrequencies(i,1) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
+    %if waveFrequencies(i,1) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
+    if  ~isnan(waveFrequencies(i,1)), %| waveFrequencies(i,4) ~= NaN,
         eventStartTime = t(i);
         j=1;
         while (i+j+4<ndata & waveFrequencies(i+j,1) < waveFrequencies(i,3)...
@@ -524,7 +559,8 @@ while i < ndata,
 %         end
 % 
         eventEndTime = t(i+j);
-        if j > 4,  %NOTE: CHANGE THIS IN TWO PLACES
+        minNumSampl = 4;
+        if j > minNumSampl,  
             tint = [eventStartTime eventEndTime];
             TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
         end
@@ -534,7 +570,8 @@ while i < ndata,
 end
 i=1;
 while i < ndata,
-    if waveFrequencies(i,4) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
+    %if waveFrequencies(i,4) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
+    if  ~isnan(waveFrequencies(i,4)), %| waveFrequencies(i,4) ~= NaN,
         eventStartTime = t(i);
         j=1;
         while (i+j+4<ndata & waveFrequencies(i+j,4) > waveFrequencies(i,6)...
@@ -580,7 +617,7 @@ while i < ndata,
 %         end
 % 
         eventEndTime = t(i+j);
-        if j > 4, %NOTE: CHANGE THIS IN TWO PLACES
+        if j > minNumSampl, 
             tint = [eventStartTime eventEndTime];
             TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
         end
@@ -592,12 +629,14 @@ end
 numel(TT)
 ascii(TT)
 %TT.TimeInterval(4,:)
-export_ascii(TT,'/Users/meghanmella/Documents/MATLAB/emic.txt')
+%export_ascii(TT,'/Users/meghanmella/Documents/MATLAB/emic.txt')
              
 % length(t)
 % size(powerCrossCov_SM_plot)
 % length(newfreq)
   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% plot
 
 figure(318), clf 
@@ -615,6 +654,8 @@ ipl=1;
 
    %t=b(:,1);
    %t_start_epoch=get_t_start_epoch(t(1,1));
+   t_start_epoch=get_t_start_epoch(t(1,1));
+
    
        %%%%% B spectra from spectral matrix
    
@@ -701,7 +742,9 @@ ipl=1;
       
       irf_legend(h(1),['C1           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-    %irf_legend('C4', 'color','cluster');
+%  %%%%%%%%%%%%%%%%%%%%%%%%%
+      
+      %irf_legend('C4', 'color','cluster');
     %irf_figmenu;
     
 %         figure(320), clf
