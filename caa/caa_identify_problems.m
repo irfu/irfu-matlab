@@ -71,15 +71,15 @@ if ( spacecraft_id <= 0 || spacecraft_id > 4 )
    error('Wrong spacecraft ID given.')
 end
 
-if isstr(probe) & (regexp(probe, '^([1-4]|12|32|34|1234|3234)$') ~= 1)
-   error('Wrong probe combination.')
-%elseif isnumeric(sensor) && (regexp(num2str(sensor), '^([1-4]|12|32|34|1234|3234)$') ~= 1)
-%   error('Wrong probe combination.')
-elseif ~( isa(probe, 'char') ) %|| isa(probe, 'numeric') )
-   error('Wrong probe format.')
+if ~( isa(probe, 'char') ) %|| isa(probe, 'numeric') )
+   error('PROBE must be a string')
 end
 
-if ( (isstr(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
+if ~regexp(probe, '^([1-4]|12|32|34|1234|3234)$')
+   error('Wrong probe combination.')
+end
+
+if ( (ischar(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
 	switch probe
 		case {12, '12'}
 			probe_list = [1, 2];
@@ -107,8 +107,8 @@ if ( (isstr(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
 	end
 %elseif isnumeric(probe) && (probe>0 && probe <=4)
 %   probe_list = probe;
-elseif isstr(probe) & (regexp(probe, '^[1-4]$') == 1)
-   probe_list = str2num(probe);
+elseif ischar(probe) && (regexp(probe, '^[1-4]$') == 1)
+   probe_list = str2double(probe);
    probe_pair_list = [];
 else
 	error('Unknown probe.')
@@ -162,7 +162,7 @@ QUALITY_HIGH_BIAS_SATURATION     =  [ 1 2 ]; % PQuality 2
 QUALITY_BAD_DAC                  =  2;    % NOTE: Applies to L2 only.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if DEBUG, keyboard, end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Identify problem areas in data, and set bitmask and quality flag for them.
 
@@ -175,7 +175,7 @@ if ~sc_potential && mask_type~=4
     % Mark bad data during burst dump:
     %[problem_intervals, ok] = ...
     %   caa_get(data_start_time, data_time_span, spacecraft_id, 'BDUMP?');
-    [ok, problem_intervals, msg] = c_load('BDUMP?', spacecraft_id);
+    [ok, problem_intervals] = c_load('BDUMP?', spacecraft_id);
     if ok
        if ~isempty(problem_intervals)
            irf_log('proc', 'marking bad data due to burst dump')
@@ -195,7 +195,7 @@ if iburst
 %    'iburst spike'
 %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
 %      spacecraft_id, irf_ssub('PROBESA?p!', spacecraft_id, probe_id));   
-        [ok, problem_intervals, msg] = c_load(irf_ssub('SPIKE?', spacecraft_id));
+        [ok, problem_intervals] = c_load(irf_ssub('SPIKE?', spacecraft_id));
         if ok
                 if ~isempty(problem_intervals)
                    irf_log('proc', irf_ssub('marking saturated probe spike IB?',spacecraft_id))
@@ -211,16 +211,15 @@ end
 % Mark bad bias around EFW reset
 %[problem_intervals, ok] = ...
 %   caa_get(data_start_time, data_time_span, spacecraft_id, 'BADBIASRESET?');
-[ok, problem_intervals, msg] = c_load('BADBIASRESET?', spacecraft_id);
+[ok, problem_intervals] = c_load('BADBIASRESET?', spacecraft_id);
 if ok
-   if ~isempty(problem_intervals)
-	   irf_log('proc', 'marking bad bias due to EFW reset')
-%	   if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
-%	   if DEBUG, assignin('base', 'badbiasreset', problem_intervals); keyboard, end
+    if ~isempty(problem_intervals)
+        irf_log('proc', 'marking bad bias due to EFW reset')
+        %	   if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
+        %	   if DEBUG, assignin('base', 'badbiasreset', problem_intervals); keyboard, end
         result = caa_set_bitmask_and_quality(result, problem_intervals, ...
-         BITMASK_RESET, QUALITY_RESET(qindex), bitmask_column, quality_column);
-	end
-%else irf_log('load', msg)
+            BITMASK_RESET, QUALITY_RESET(qindex), bitmask_column, quality_column);
+    end
 end
 clear ok problem_intervals msg
 
@@ -229,7 +228,7 @@ if mask_type~=4
     for probe_id = probe_list
     %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
     %      spacecraft_id, irf_ssub('BADBIAS?p!', spacecraft_id, probe_id));
-        [ok, problem_intervals, msg] = c_load(irf_ssub('BADBIAS?p!', spacecraft_id, probe_id));
+        [ok, problem_intervals] = c_load(irf_ssub('BADBIAS?p!', spacecraft_id, probe_id));
         if ok
             if ~isempty(problem_intervals)
                 irf_log('proc', ['marking bad bias on P' num2str(probe_id)])
@@ -266,7 +265,7 @@ end
 for probe_id = probe_list
 %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
 %      spacecraft_id, irf_ssub('PROBESA?p!', spacecraft_id, probe_id));
-	[ok, problem_intervals, msg] = c_load(irf_ssub('PROBESA?p!', spacecraft_id, probe_id));
+	[ok, problem_intervals] = c_load(irf_ssub('PROBESA?p!', spacecraft_id, probe_id));
 	if ok
 		if ~isempty(problem_intervals)
 		   irf_log('proc', ['marking saturated P' num2str(probe_id)])
@@ -285,7 +284,7 @@ if mask_type~=4
     for probe_id = probe_list
     %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
     %      spacecraft_id, irf_ssub('PROBELD?p!', spacecraft_id, probe_id));
-        [ok, problem_intervals, msg] = c_load(irf_ssub('PROBELD?p!', spacecraft_id, probe_id));
+        [ok, problem_intervals] = c_load(irf_ssub('PROBELD?p!', spacecraft_id, probe_id));
         if ok
             if ~isempty(problem_intervals)
                 irf_log('proc', ...
@@ -353,7 +352,7 @@ if mask_type~=4
         % Mark sweeps
         %[problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
         %      spacecraft_id, 'SWEEP?');
-        [ok, problem_intervals, msg] = c_load('SWEEP?', spacecraft_id);
+        [ok, problem_intervals] = c_load('SWEEP?', spacecraft_id);
         if ok
             if ~isempty(problem_intervals)
                 irf_log('proc', 'marking sweeps')
@@ -380,7 +379,7 @@ if mask_type~=4
         for probe_id = probe_pair_list
         %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
         %      spacecraft_id, irf_ssub('PSWAKE?p!', spacecraft_id, probe_id));
-           [ok, problem_intervals, msg] = c_load(irf_ssub('PSWAKE?p!', spacecraft_id, probe_id));            
+           [ok, problem_intervals] = c_load(irf_ssub('PSWAKE?p!', spacecraft_id, probe_id));            
            if ok
                if ~isempty(problem_intervals)
                    irf_log('proc', 'marking plasmaspheric wakes')
@@ -397,28 +396,28 @@ if mask_type~=4
 
         % Mark lobe wakes
         for probe_id = probe_pair_list
-        %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
-        %      spacecraft_id, irf_ssub('LOWAKE?p!', spacecraft_id, probe_id));
-           [ok, problem_intervals, msg] = c_load(irf_ssub('LOWAKE?p!', spacecraft_id, probe_id));
-           if ok
-            if ~isempty(problem_intervals)
-                irf_log('proc', 'marking lobe wakes')
-        %   		if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
-        %   		if DEBUG, assignin('base', 'lowake', problem_intervals); keyboard, end
-                 result = caa_set_bitmask_and_quality(result, problem_intervals, ...
-                    BITMASK_LOBE_WAKE, QUALITY_LOBE_WAKE, ...
-                       bitmask_column, quality_column);
+            %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
+            %      spacecraft_id, irf_ssub('LOWAKE?p!', spacecraft_id, probe_id));
+            [ok, problem_intervals] = c_load(irf_ssub('LOWAKE?p!', spacecraft_id, probe_id));
+            if ok
+                if ~isempty(problem_intervals)
+                    irf_log('proc', 'marking lobe wakes')
+                    %   		if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
+                    %   		if DEBUG, assignin('base', 'lowake', problem_intervals); keyboard, end
+                    result = caa_set_bitmask_and_quality(result, problem_intervals, ...
+                        BITMASK_LOBE_WAKE, QUALITY_LOBE_WAKE, ...
+                        bitmask_column, quality_column);
+                end
+                %   else irf_log('load', msg)
             end
-        %   else irf_log('load', msg)
-           end
-		end
+        end
        clear ok problem_intervals msg
 		
         % Mark nonsinusoidal wakes
         for probe_id = probe_pair_list
         %   [problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
         %      spacecraft_id, irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
-           [ok, problem_intervals, msg] = c_load(irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
+           [ok, problem_intervals] = c_load(irf_ssub('NONSINWAKE?p!', spacecraft_id, probe_id));
            if ok
             if ~isempty(problem_intervals)
                 irf_log('proc', 'marking nonsinusoidal wakes')
@@ -438,7 +437,7 @@ if mask_type~=4
     % Mark whisper pulses
     %[problem_intervals, ok] = caa_get(data_start_time, data_time_span, ...
     %      spacecraft_id, 'WHIP?');
-    [ok, problem_intervals, msg] = c_load('WHIP?', spacecraft_id);
+    [ok, problem_intervals] = c_load('WHIP?', spacecraft_id);
     if ok
         if ~isempty(problem_intervals)
             irf_log('proc', 'marking Whisper pulses')
@@ -477,7 +476,7 @@ if mask_type~=4
         for probe_id = probe_pair_list
         %   [wake_info, ok] = caa_get(data_start_time, data_time_span, ...
         %      spacecraft_id, irf_ssub('WAKE?p!', spacecraft_id, probe_id));
-           [ok, wake_info, msg] = c_load(irf_ssub('WAKE?p!', spacecraft_id, probe_id));
+           [ok, wake_info] = c_load(irf_ssub('WAKE?p!', spacecraft_id, probe_id));
            if ok
             if ~isempty(wake_info)
                 irf_log('proc', 'marking data from solar wind wake')
@@ -506,25 +505,16 @@ if mask_type~=4
        if DEBUG, disp(['probe_id: ' num2str(probe_id)]), end
        [problem_intervals2, ok2] = caa_get(data_start_time, data_time_span, ...
           spacecraft_id, irf_ssub('HBIASSA?p!', spacecraft_id, probe_id));
-       [ok, problem_intervals, msg] = c_load(irf_ssub('HBIASSA?p!', spacecraft_id, probe_id));
+       [ok, problem_intervals] = c_load(irf_ssub('HBIASSA?p!', spacecraft_id, probe_id));
        if ok
-          if ~isempty(problem_intervals)
-             irf_log('proc', 'marking high bias saturations')
-             if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
-    %   	  if DEBUG, assignin('base', 'highbiassat', problem_intervals); keyboard, end
-             result = caa_set_bitmask_and_quality(result, problem_intervals, ...
-              BITMASK_HIGH_BIAS_SATURATION, QUALITY_HIGH_BIAS_SATURATION(qindex), bitmask_column, quality_column);
-        end
+           if ~isempty(problem_intervals)
+               irf_log('proc', 'marking high bias saturations')
+               if DEBUG, disp(sprintf('Equal? : %d', isequalwithequalnans(problem_intervals, problem_intervals2))), keyboard, end
+               %   	  if DEBUG, assignin('base', 'highbiassat', problem_intervals); keyboard, end
+               result = caa_set_bitmask_and_quality(result, problem_intervals, ...
+                   BITMASK_HIGH_BIAS_SATURATION, QUALITY_HIGH_BIAS_SATURATION(qindex), bitmask_column, quality_column);
+           end
        end
     end
     clear ok problem_intervals msg
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function intervals_out = caa_parse_intervals_subfunc(intervals_in)
-
-   num_intervals = size(intervals_in, 1);
-	intervals_out = cell(1, num_intervals);
-	for ii=1:num_intervals
-	   intervals_out{ii} = fromepoch([intervals_in(ii, 1); intervals_in(ii,2)]);
-	end
