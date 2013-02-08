@@ -159,29 +159,30 @@ end
 					if useCdfepoch16,
 						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
 						tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
-						tt=irf_time(tmptime','cdfepoch162epoch');
+						timeVector=irf_time(tmptime,'cdfepoch162epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
-							tmp=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
-							tmpdata{iVar}=[tt tmp'];
+							tmpdata{iVar}=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
 						end
+						tmpdata = [{timeVector} tmpdata];
 					else
 						[tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
-						tmpdata{1}=irf_time(tmpdata{1},'date2epoch');
+						timeVector = irf_time(tmpdata{1},'date2epoch');
+						tmpdata{1} = timeVector;
 					end
 					if iFile==istart, data=cell(size(tmpdata));end
-					iist=1;iien=numel(tmpdata{1});
+					iist=1;iien=numel(timeVector);
 					if iFile==istart
-						iist=find(tmpdata{1}>tint(1),1);
+						iist=find(timeVector>tint(1),1);
 					end
 					if iFile==iend
-						iien=find(tmpdata{1}<tint(2),1,'last');
+						iien=find(timeVector<tint(2),1,'last');
 					end
 					%% check for NaNs
 					for iVar=1:numel(varToRead),
 						fillVal=value_of_variable_attribute(cdfid,varToRead{iVar},'FILLVAL');
-						tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN;
+						tmpdata{iVar+1}(tmpdata{iVar+1}==fillVal)=NaN; % +1 because first cell is time and then comes variables
 					end
 					%% attach to result
 					for j=1:numel(data),
@@ -220,7 +221,7 @@ end
 		end
 		numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
 		numElements = getfield(cdflib.inquireVar(cdfid,varnum),'numElements');
-		data=zeros(2+numElements,numrecs);
+		data=zeros(1+numElements,numrecs);
 		
 		for j = 0:numrecs-1
 			% This reads in the data in raw epoch 16 format
