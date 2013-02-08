@@ -5,6 +5,7 @@ function out=c_pl_tx(varargin)
 % C_PL_TX('x?',[column],[linestyle],[dt1 dt2 dt3 dt4])
 %	plot variables x1,x2,x3,x4 with time shift dt1...dt4
 %	time is 1st column, default plot 2nd column
+% C_PL_TX(...,'sc_list',sc_list) specify list of spacecraft to plot
 % H=C_PL_TX(..) return handle to plot
 % C_PL_TX(AX,...) plot in the specified axis
 %
@@ -44,48 +45,41 @@ if nargs == 0, % show help if no input parameters
     return
 end
 
-sc_list=1:4; % default plot all s/c data
-error(nargchk(1,8,nargs))
+% Defaults
+sc_list=1:4;	% default plot all s/c data
+column = [];	% column to plot 
+delta_t = [];	% time shift
+line_style = {};% line styles
 
 % Check which are input variables
 if ischar(args{1})
-    % We have variables defines in style B?
+    % Variables defined in form 'B?'
     getVariablesFromCaller = true;
-    variableNameInCaller=args{1};
-    %     for cl_id=1:4
-    % 		ttt = evalin('caller',irf_ssub(args{1},cl_id),'[]');
-    % 		eval(irf_ssub('x? =ttt;',cl_id)); clear ttt
-    % 	end
-    if length(args) > 1, args = args(2:end);
-    else args = ''; end
+    variableNameInCaller   = args{1};
+    args = args(2:end);
 else
-    % We have four variables as input
+    % Variables given as 4 input paramters
     if length(args)<4, error('use c_pl_tx(x1,x2,x3,x4) or c_pl_tx(''x?'')'), end
-    % We have x1,x2..x4
-    c_eval('x? = args{?};');
-    if length(args) > 4, args = args(5:end);
-    else args = ''; end
+    c_eval('x? = args{?};'); % assign x1,x2..x4
+    args = args(5:end);
     getVariablesFromCaller = false;
 end
 
-column = [];
+% Check if column to plot is specified as input
 if ~isempty(args)
     if isnumeric(args{1})
         column = args{1};
-        args = args(2:end);
-    elseif ischar(args{1})
-        % empty string means default matrix size
-        if isempty(args{1}), args = args(2:end); end
+        args(1) = [];
+    elseif isempty(args{1}) % empty string means default matrix size
+        args(1) = [];
     end
 end
 
-delta_t = [];
-line_style = {};
-
+% check for other input parameters
 while ~isempty(args)
     if ischar(args{1})
         if strcmp(args{1},'sc_list')
-            args = args(2:end);
+            args(1) = [];
             sc_list=args{1};
 			if isempty(sc_list),
 				irf_log('fcal','sc_list empty');
@@ -97,28 +91,26 @@ while ~isempty(args)
             else irf_log('fcal','L_STYLE is already set')
             end
         end
-        args = args(2:end);
     elseif iscell(args{1}) && length(args{1})==4
         % Individual linestyles for each sc
         if isempty(line_style), line_style = args{1};
         else irf_log('fcal','L_STYLE is already set')
         end
-        args = args(2:end);
     elseif iscell(args{1})
         % Individual linestyles for each sc
         irf_log('fcal','L_STYLE must be a cell with 4 elements')
-        args = args(2:end);
     elseif isnumeric(args{1}) && length(args{1})==4
         % dt1..dt4
         if isempty(delta_t), delta_t = args{1};
         else irf_log('fcal','DELTA_T is already set')
         end
-        args = args(2:end);
     else
-        irf_log('fcal','ignoring input argument')
-        args = args(2:end);
+        irf_log('fcal',['ignoring input argument: ' args{1}])
     end
+	args(1) = [];
 end
+
+% Get variable values from caller if needed
 if getVariablesFromCaller,
     for cl_id=sc_list,
         ttt = evalin('caller',irf_ssub(variableNameInCaller,cl_id),'[]'); 
@@ -126,21 +118,19 @@ if getVariablesFromCaller,
     end
 end
 
-% TODO: only do column check though sc_list
-if isempty(column) && ~isempty(x1)
-    % try to guess the size of the matrix
-    column = size(x1,2);
-    if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x2)
-    column = size(x2,2);
-    if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x3)
-    column = size(x3,2);
-    if column > 2, column = 2:column; end
-elseif isempty(column) && ~isempty(x4)
-    column = size(x4,2);
-    if column > 2, column = 2:column; end
-elseif isempty(column)
+% If column empty, check which columns to plot
+if isempty(column)
+	for ic=sc_list
+		eval(['nCol = size(x' num2str(ic) ',2);']);
+		if ~isempty(nCol)
+			if nCol > 2,
+				column = 2:nCol;
+			end
+			break;
+		end
+	end
+end
+if isempty(column)
     irf_log('fcal','all inputs are empty')
     return
 end
@@ -154,23 +144,26 @@ else
     for ic=1:4, l_style(ic)={['''' line_style{ic} ''',''color'','  cluster_colors{ic}]};end
 end
 
-% t_start_epoch is saved in figures user_data variable
-% check first if it exist otherwise assume zero
+% t_start_epoch is saved in figures 'userdata' variable
+% check first if it exist otherwise set it if variables
+% use isdat epoch or put to zero without changing 'userdata'
 ud=get(hcf,'userdata');
+t_start_epoch = double(0); % default
 if isfield(ud,'t_start_epoch'),
-    t_start_epoch = double(ud.t_start_epoch); 
-elseif (~isempty(x1) && x1(1,1)>1e8) || (~isempty(x1) && x2(1,1)>1e8) || ...
-        (~isempty(x3) && x3(1,1)>1e8) || (~isempty(x4) && x4(1,1)>1e8)
-    % Set start_epoch if time is in isdat epoch,
-    % warn about changing t_start_epoch
-    tt = [];
-    c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
-    t_start_epoch = double(min(tt)); clear tt
-    ud.t_start_epoch = t_start_epoch; set(hcf,'userdata',ud);
-    irf_log('proc',['user_data.t_start_epoch is set to ' ...
-        epoch2iso(t_start_epoch)]);
+	t_start_epoch = double(ud.t_start_epoch);
 else
-    t_start_epoch = double(0); 
+	variablesUseEpochTime = false;
+	c_eval(['variablesUseEpochTime = or(variablesUseEpochTime,' ...
+		'(~isempty(x?) && x?(1,1)>1e8) );'],sc_list);
+	if variablesUseEpochTime 
+		% Set start_epoch if time is in isdat epoch,
+		tt = [];
+		c_eval('if ~isempty(x?), tt=[tt; x?(1,1)]; end')
+		t_start_epoch = double(min(tt)); clear tt
+		ud.t_start_epoch = t_start_epoch; set(hcf,'userdata',ud);
+		irf_log('proc',['user_data.t_start_epoch is set to ' ...
+			irf_time(t_start_epoch,'iso')]);
+	end
 end
 if isempty(delta_t), delta_t = [0 0 0 0]; end
 c_eval('ts?=t_start_epoch+delta_t(?);')
