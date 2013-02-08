@@ -34,6 +34,7 @@ function out=c_caa_download(varargin)
 dataDirectory = '/data/caa';
 maxSubmittedJobs = 13;
 maxNumberOfAttempts = 20;
+isInputDatasetName = false; 
 %% change to data directory
 if exist(dataDirectory,'dir')
 	disp(['!!!! Changing directory to ' dataDirectory ' !!!']);
@@ -46,6 +47,7 @@ end
 %% check input: get inventory and construct time table if dataset
 if nargin==1 && ischar(varargin{1})
 	dataSet=varargin{1};
+	isInputDatasetName = true;
 	irf_log('dsrc','Checking list of available times');
 	tt=caa_download(['list:' dataSet]);
 	if numel(tt)==0,
@@ -90,7 +92,9 @@ else % merge request lists
 			if TTRequest_old.UserData(iiold(ii)).version == TTRequest.UserData(iinew(ii)).version && ...
 					TTRequest_old.UserData(iiold(ii)).number == TTRequest.UserData(iinew(ii)).number
 				for jj=1:numel(updateFields),
-					TTRequest.UserData(iinew(ii)).(updateFields{jj})=TTRequest_old.UserData(iiold(ii)).(updateFields{jj});
+					if isInputDatasetName
+						TTRequest.UserData(iinew(ii)).(updateFields{jj})=TTRequest_old.UserData(iiold(ii)).(updateFields{jj});
+					end
 				end
 			else
 				remove_datafiles(TTRequest_old,iiold(ii));
@@ -106,7 +110,7 @@ iRequest=find_first_non_processed_time_interval(TTRequest);
 nRequest=numel(TTRequest)-iRequest+1;
 while 1
 	while 1 % submit next unsubmitted job
-		if iRequest >= numel(TTRequest), break;end % no more jobs
+		if iRequest > numel(TTRequest), break;end % no more jobs
 		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs, break; end % max allowed submitted jobs reached
 		if ~isfield(TTRequest.UserData(iRequest),'Status') || ...
 				isempty(TTRequest.UserData(iRequest).Status) || ...
