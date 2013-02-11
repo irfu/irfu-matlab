@@ -122,8 +122,8 @@ end
 if isempty(column)
 	for ic=sc_list
 		eval(['nCol = size(x' num2str(ic) ',2);']);
-		if ~isempty(nCol)
-			if nCol > 2,
+		if ~isempty(nCol) && nCol > 0
+			if nCol >= 2,
 				column = 2:nCol;
 			end
 			break;
