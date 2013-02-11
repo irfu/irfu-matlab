@@ -39,11 +39,23 @@ Problems seen when looking through the summary plots for 2011
 
 Why all red circles on SC1?
 
-110307-110322 Spin phase missing in DDS files for all but SC4. Per-Arne?
+110307-110321 Spin phase missing in DDS files for all but SC4. Per-Arne?
 
 110330 08-11 SC12 strange harmonics, mark as bad
 
-110331 SC1 05:04-15:13  No spectra or E-field but harmonics exist. Turns out to be missing P32 due to SPLIT mode problem (ns_ops). Should be fixed in new version which then should use LX. Check problem has gone after 
+110331 SC1 05:04-15:13  No spectra or E-field but harmonics exist. Turns out to be missing P32 due to SPLIT mode problem (ns_ops). Should be fixed in new version which then should use LX. Check problem has gone after reprocessing.
+
+110402 07:30 - 22:30
+Lobe wake detected for SC1 far out in SW (X = +15). Happens now and again.
+
+110407
+Apparent jump backwards in time in offset for SC4
+
+110408 2145-0040(reset)
+SC2 strange data, AIE check
+
+
+
 
 
 
