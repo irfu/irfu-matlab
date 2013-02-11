@@ -40,6 +40,7 @@ EDI_COVERAGE_MIN = 0.5;% minimum EDI coverage
 if ischar(diE) && strcmp(diE,'plot'), DOPLOT = 1;
 else DOPLOT = 0;
 end
+DOPLOT = 1;
 
 % Load data
 if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
@@ -235,7 +236,7 @@ if DOPLOT
 	irf_plot(diE(:,1:3))
 	ylabel('E cor [mV/m]')
 
-	irf_zoom([t(1)-TAV/2 t(end)+TAV/2],'x',h)
+	irf_zoom(h,'x',[t(1)-TAV/2 t(end)+TAV/2])
 
 	[ok,r] = c_load('R?',cl_id);
 	if ok, add_position(h(6),r), end
