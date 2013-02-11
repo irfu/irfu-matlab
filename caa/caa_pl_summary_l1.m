@@ -195,7 +195,7 @@ for cli=1:4
             
 			% Load spectrum
 			spec_tmp = c_load('diESPEC?p1234',cli,'var');
-            if ~isstruct(spec_tmp) && spec_tmp==-157e8
+            if ~isstruct(spec_tmp) && (isempty(spec_tmp) || spec_tmp==-157e8)
                 spec_tmp = c_load('diELXSPEC?p1234',cli,'var'); 
             end
 			if ~isempty(spec_tmp) && isstruct(spec_tmp)
