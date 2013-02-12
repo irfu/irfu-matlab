@@ -116,7 +116,7 @@ for cli=1:4
 			if tm(1), in_tmp.tm = 1; else in_tmp.tm = 0; end
 		else in_tmp.tm = -1;
 		end
-		in = [in; {in_tmp}];
+		in = [in; {in_tmp}]; %#ok<AGROW>
 		clear in_tmp
 
 		cd(old_pwd)
@@ -148,7 +148,7 @@ for cli=1:4
 			% Load R
 			if isempty(r) || ri==cli
 				r_tmp = c_load('R?',cli,'var');
-				if ~isempty(r_tmp) && r_tmp(1,1)~=-157e8, r = [r; r_tmp]; end
+				if ~isempty(r_tmp) && r_tmp(1,1)~=-157e8, r = [r; r_tmp]; end %#ok<AGROW>
 				if isempty(ri), ri = cli; end
 			end
 			clear r_tmp
@@ -156,25 +156,30 @@ for cli=1:4
 			% Load EDI
 			edi_tmp = c_load('diEDI?',cli,'var');
 			if ~isempty(edi_tmp) && edi_tmp(1,1)~=-157e8
-				edi = [edi; edi_tmp];
+				edi = [edi; edi_tmp]; %#ok<AGROW>
 			end
 			clear edi_tmp
 			
 			% Load P
 			p_tmp = c_load('P?',cli,'var');
-			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end
+			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, p = [p; p_tmp]; end %#ok<AGROW>
 			clear p_tmp
             
 			% Load Ps
 			p_tmp = c_load('Ps?',cli,'var');
-			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, ps = [ps; p_tmp]; end
+			if ~isempty(p_tmp) && p_tmp(1,1)~=-157e8, ps = [ps; p_tmp]; end %#ok<AGROW>
 			clear p_tmp
 			
             % Load SW WAKE amplitude
             for pp=[12 32 34]
                 wamp_tmp = c_load(['WAKE?p' num2str(pp)],cli,'var');
                 if ~isempty(wamp_tmp) && wamp_tmp(1,1)~=-157e8
-                    wamp = [wamp; wamp_tmp(:,[1 3])];
+                    if isempty(wamp) || wamp_tmp(1,1) > wamp(end,1)
+                        wamp = [wamp; wamp_tmp(:,[1 3])]; %#ok<AGROW>
+                    else
+                        % Add a NaN to avoid lines going backward
+                        wamp = [wamp; [wamp(end,1) NaN]; wamp_tmp(:,[1 3])]; %#ok<AGROW>
+                    end
                 end
                 clear wamp_tmp
             end
@@ -183,12 +188,12 @@ for cli=1:4
             for pp=[12 32 34 42]
                 pswake_tmp = c_load(['PSWAKE?p' num2str(pp)],cli,'var');
                 if ~isempty(pswake_tmp) && pswake_tmp(1,1)~=-157e8
-                    pswake = [pswake; pswake_tmp];
+                    pswake = [pswake; pswake_tmp]; %#ok<AGROW>
                 end
                 clear pswake_tmp
                 lowake_tmp = c_load(['LOWAKE?p' num2str(pp)],cli,'var');
                 if ~isempty(lowake_tmp) && lowake_tmp(1,1)~=-157e8
-                    lowake = [lowake; lowake_tmp];
+                    lowake = [lowake; lowake_tmp]; %#ok<AGROW>
                 end
                 clear lowake_tmp
             end
@@ -199,7 +204,7 @@ for cli=1:4
                 spec_tmp = c_load('diELXSPEC?p1234',cli,'var'); 
             end
 			if ~isempty(spec_tmp) && isstruct(spec_tmp)
-				spec = [spec; {spec_tmp}];
+				spec = [spec; {spec_tmp}]; %#ok<AGROW>
 				if spec_tmp.f(end)>fmax, fmax = spec_tmp.f(end); end
 			end
 			clear spec_tmp
@@ -343,7 +348,7 @@ for cli=1:4
                 clear dsiof
                 
                 spinFits.diEs = caa_corof_dsi(spinFits.diEs,Ddsi,Damp); clear Ddsi Damp
-                es = [es; spinFits.diEs];
+                es = [es; spinFits.diEs]; %#ok<AGROW>
                 
                 % Load RSPEC
                 rspec_tmp = c_load(['RSPEC?p' num2str(spinFits.probePair)],cli,'var');
@@ -355,7 +360,7 @@ for cli=1:4
                     rs(:,5) = sqrt(rspec_tmp(:,8).^2+rspec_tmp(:,9).^2);
                     rs(:,6) = sqrt(rspec_tmp(:,10).^2+rspec_tmp(:,11).^2);
                     rs(:,7:end) = [];
-                    rspec = [rspec; rs];
+                    rspec = [rspec; rs]; %#ok<AGROW>
                     clear rs
                 end
                 clear rspec_tmp
@@ -422,10 +427,10 @@ for cli=1:4
 	if fullscale, set(hca,'YLim',[0 fmax])
 	else set(hca,'YLim',[0 12.5])
 	end
-	if cli==1
-		if isempty(r), title(h(1),tit)
-		else title(h(1),[tit ', GSE Position C' num2str(ri)])
-		end
+    if cli==1
+        if isempty(r), title(h(1),tit)
+        else title(h(1),[tit ', GSE Position C' num2str(ri)])
+        end
     end
 	set(hca,'XTickLabel',[])
 end
@@ -561,27 +566,27 @@ for cli=1:4
 	hold(hca,'on')
 	c_eval('es=es?;',cli)
 	if ~isempty(es)
-	   for k = 1:16
-	      plot(hca,[es(1,1) es(end,1)] - t_start_epoch, [k k] + fix((k-1)/4), 'k')
-	      index = find( bitget(es(:,bitmask_column), k) );
-	      if ~isempty(index)
-	         ind_d = find( diff(index) > 1 );
-	         if ~isempty(ind_d)
-               ind_start = 1;
-               for ii = 1:length(ind_d)
-                  ind_stop = ind_d(ii);
-                  plot(hca,[es(index(ind_start),1) es(index(ind_stop),1)] - t_start_epoch, ...
-                     [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
-                  ind_start = ind_d(ii)+1;
-               end
-               plot(hca,[es(index(ind_start),1) es(index(end),1)] - t_start_epoch, ...
-                     [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
-	         else
-	            plot(hca,[es(index(1),1) es(index(end),1)] - t_start_epoch, ...
-	               [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
-	         end
-	      end
-       end
+        for k = 1:16
+            plot(hca,[es(1,1) es(end,1)] - t_start_epoch, [k k] + fix((k-1)/4), 'k')
+            index = find( bitget(es(:,bitmask_column), k) );
+            if ~isempty(index)
+                ind_d = find( diff(index) > 1 );
+                if ~isempty(ind_d)
+                    ind_start = 1;
+                    for ii = 1:length(ind_d)
+                        ind_stop = ind_d(ii);
+                        plot(hca,[es(index(ind_start),1) es(index(ind_stop),1)] - t_start_epoch, ...
+                            [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+                        ind_start = ind_d(ii)+1;
+                    end
+                    plot(hca,[es(index(ind_start),1) es(index(end),1)] - t_start_epoch, ...
+                        [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+                else
+                    plot(hca,[es(index(1),1) es(index(end),1)] - t_start_epoch, ...
+                        [ytick(k) ytick(k)], 'r', 'LineWidth', 2);
+                end
+            end
+        end
 	end
 	if cli==1
 		if isempty(r), title(h(1),tit)
