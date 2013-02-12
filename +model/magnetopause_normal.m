@@ -26,6 +26,13 @@ function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa)
 %JGR, VOL. 103, NO. A8, PAGES 17,691-17,700, AUGUST 1, 1998
 %equations (10) and (11)
 
+if nargin == 0,
+	help model.magnetopause_normal;
+elseif nargin ~=3
+	irf_log('fcal','Wrong number of input parameters, see help.');
+	return;
+end
+
 if size(pos_Re_gsm,2)>3, pos_Re_gsm = pos_Re_gsm(:,2:4); end
 
 %bz_nT = 5;
