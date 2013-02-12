@@ -19,6 +19,12 @@ function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
 
 % Copyright 2006 Yuri Khotyaintsev
 
+disp(' ')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp('irf_shue_mp will be replaced by MODEL.MAGNETOPAUSE_NORMAL
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp(' ')
+
 if size(pos_Re_gsm,2)>3, pos_Re_gsm = pos_Re_gsm(:,2:4); end
 
 % Shue et. al., Eq. 13
