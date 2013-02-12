@@ -5660,6 +5660,14 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
+<operation c2="yes" start="2011-04-21T09:00:00Z" dt="769414" plan="no" sdesc ="bad_bias">
+                <desc>Probe contamination at extremely low perigee passes caused P2 data to become intolerably bad
+	from about this time (perigee at 09:35) until the problem was discovered, analyzed, tests were run in space, 
+	and the bias current finally was adjusted from 2011-04-30 06:43:34.
+                </desc>
+                <res>
+                </res>
+        </operation>
 <operation c1="yes" c3="yes" start="2011-04-24T03:25:24Z" dt="65442" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
@@ -5668,6 +5676,14 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
+<operation c2="yes" start="2011-04-30T06:43:31Z" dt="-1" plan="yes" sdesc ="info">
+                <desc>The adjusted bias current for low photoemission current due to probe contamination 
+	at low perigee passes should be effective from this time, and data should thus be of acceptable quality.
+                </desc>
+                <res>
+	        <link href="pal110429a.txt">Per-Arne 110429</link>
+                </res>
+        </operation>
 <operation c1="yes" c2="yes" c3="yes" start="2011-05-02T02:45:24Z" dt="24882" plan="no" sdesc="no_p32">
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
