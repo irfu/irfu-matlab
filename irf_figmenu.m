@@ -52,11 +52,12 @@ switch lower(action)
 	case 'c_timing'
 		xlim=get(gca,'xlim');
 		tStart= getfield(get(gcf,'userdata'),'t_start_epoch');
+		tint = tStart + xlim;
 		c_eval('v?=[];h?=findobj(gca,''Tag'',''C?'');');
 		c_eval('if h?, v?     =get(h?,''XData'')+tStart;v?=v?(:); end;');
 		c_eval('if h?, v?(:,2)=get(h?,''YData'');                 end;');
 		h=c_4_v_gui(v1,v2,v3,v4,2);
-		set(h,'xlim',xlim);
+		irf_zoom(h,'x',tint);
 	case 'mva'
 		xlim=get(gca,'xlim');
 		tStart= getfield(get(gcf,'userdata'),'t_start_epoch');
