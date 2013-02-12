@@ -5856,6 +5856,12 @@ Effect on the CAA processing:
                 <res>
                 </res>
         </operation>
+<operation c1="yes" c2="no" c3="yes" c4="yes" start="2011-10-09T03:54:30Z" dt="-1" plan="yes" sdesc ="info">
+                <desc>Bias current changed to 140 nA on SC134 as solar UV flux has increased.
+		</desc>
+                <res>
+                </res>
+        </operation>
 <operation c1="yes" c4="yes" start="2011-10-29T12:15:36Z" dt="60"
 plan="yes" sdesc ="bad_bias">
                 <desc>Bias stepping from 140 to 320 nA in steps of 12 nA, 4 sec step rate.
@@ -6136,6 +6142,27 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
 <operation start="2012-09-10T16:48:00Z" dt="720" c1="yes" c4="yes" plan="yes" sdesc="bad_bias">
         <desc>WBD interference test (guard stepping).</desc> 
                <res><link href="aie120817a.txt">Anders 120817</link>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-14T02:13:30Z" dt="-1" plan="yes" sdesc ="info">
+                <desc>Guard voltage changed to -2 V on all working probes for a week.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-20T21:11:30Z" dt="-1" plan="yes" sdesc ="info">
+                <desc>Guard voltage changed to -8 V on all working probes for a week.
+		</desc>
+                <res>
+                </res>
+        </operation>
+
+<operation c1="yes" c2="yes" c3="yes" c4="yes" start="2012-10-27T16:12:30Z" dt="-1" plan="yes" sdesc ="info">
+                <desc>Guard voltage changed to -4 V on all working probes permanently.
+		</desc>
+                <res>
                 </res>
         </operation>
 
