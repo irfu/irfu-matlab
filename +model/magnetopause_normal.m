@@ -35,9 +35,6 @@ end
 
 if size(pos_Re_gsm,2)>3, pos_Re_gsm = pos_Re_gsm(:,2:4); end
 
-%bz_nT = 5;
-%swp_nPa = 2.0;
-
 alpha = ( 0.58 -0.01*IMF_Bz_nT )*( 1.0 +0.01*swp_nPa);
 
 if IMF_Bz_nT>=0, r0 = ( 11.4 +0.013*IMF_Bz_nT )*swp_nPa^( -1.0/6.6 );
