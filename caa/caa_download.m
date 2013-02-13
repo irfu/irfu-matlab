@@ -100,7 +100,7 @@ if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 end
 
 %% Defaults
-checkDownloadsStatus	= false;
+checkDownloadStatus	= false;
 doLog					= true; % log into .caa file
 overwritePreviousData	= false; % continue adding cdf files to CAA directory
 flag_wildcard     =1;                     % default is to use wildcard
@@ -128,9 +128,9 @@ end
 % caa.status - status ('submitted','downloaded','finnished')
 % caa.timeofrequest - in matlab time units
 %% check input
-if nargin==0, checkDownloadsStatus=true; end
+if nargin==0, checkDownloadStatus=true; end
 if nargout>0 && nargin>0, 
-	checkDownloadsStatus=false; 
+	checkDownloadStatus=false; 
 	doLog = false;
 end
 if nargin>2, % cehck for additional flags
@@ -165,25 +165,21 @@ if nargin>=1, % check if fist argument is not caa zip file link
 		end
 		if doLog
 			j=numel(caa)+1;
-			caa{j}.url='*';
-			caa{j}.dataset='*';
-			caa{j}.tintiso='*';
-			caa{j}.zip=tint;
-			caa{j}.status='submitted';
-			caa{j}.timeofrequest=now;
-			checkDownloadsStatus=true;
+			caa{j}.url		= '*';
+			caa{j}.dataset	= '*';
+			caa{j}.tintiso	= '*';
+			caa{j}.zip		= tint;
+			caa{j}.status	= 'submitted';
+			caa{j}.timeofrequest= now;
+			checkDownloadStatus = true;
 		else
-			temp_file=tempname;
 			zipFileLink=tint;
-			isJobFinished=get_zip_file(zipFileLink,temp_file);
-			if isJobFinished, %
-				download_status=1;
-				return;
-			else
+			isJobFinished=get_zip_file(zipFileLink);
+			if ~isJobFinished, %
 				irf_log('dsrc','Job still not finished');
-				download_status=0;
-				return;
 			end
+			download_status = isJobFinished;
+			return;
 		end
 	elseif ischar(tint) && any(irf_time(tint,'iso2tint')) % tint is tintiso 
 	elseif ischar(tint) % tint is dataset 
@@ -197,7 +193,7 @@ end
 caaQuery=[caaServer 'caa_query/'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
 %% Check status of downloads if needed
-if doLog && checkDownloadsStatus,    % check/show status of downloads from .caa file
+if doLog && checkDownloadStatus,    % check/show status of downloads from .caa file
 	disp('=== status of jobs (saved in file .caa) ====');
 	if ~isempty(caa),
 		for j=1:length(caa), % go through jobs
@@ -208,15 +204,14 @@ if doLog && checkDownloadsStatus,    % check/show status of downloads from .caa 
 		if nargout==1, download_status=1; end
 		return;
 	end
-	j_remove_jobs=zeros(1,length(caa));
-	j_finished_jobs=zeros(1,length(caa));
+	jobsToRemove = false(1,length(caa));
+	jobsFinished = false(1,length(caa));
 	for j=1:length(caa), % go through jobs
 		if strcmpi(caa{j}.status,'downloaded') || strcmpi(caa{j}.status,'finnished') || strcmpi(caa{j}.status,'finished') % 'finnished shoudl be removed after some time % do nothing
-			j_finished_jobs(j)=1;
+			jobsFinished(j) = true;
 		elseif strcmpi(caa{j}.status,'submitted'),
 			disp(['=== Checking status of job nr: ' num2str(j) '==='])
-			temp_file=tempname;
-			isJobFinished=get_zip_file(caa{j}.zip,temp_file);
+			isJobFinished=get_zip_file(caa{j}.zip);
 			if isJobFinished, %
 				caa{j}.status='FINISHED';
 				save -mat .caa caa; % changes in caa saved
@@ -225,7 +220,7 @@ if doLog && checkDownloadsStatus,    % check/show status of downloads from .caa 
 				if now-caa{j}.timeofrequest>1, % waiting more than 1 day
 					y=input('Waiting more than 24h. Delete from list? y/n :','s');
 					if strcmpi(y,'y'),
-						j_remove_jobs(j)=1;
+						jobsToRemove(j)=1;
 					end
 				end
 			end
@@ -234,13 +229,13 @@ if doLog && checkDownloadsStatus,    % check/show status of downloads from .caa 
 			return
 		end
 	end
-	if sum(j_finished_jobs)>5, % ask for cleanup
+	if sum(jobsFinished)>5, % ask for cleanup
 		y=input('Shall I remove FINISHED from the list? y/n :','s');
 		if strcmpi(y,'y'),
-			j_remove_jobs=j_remove_jobs | j_finished_jobs;
+			jobsToRemove = jobsToRemove | jobsFinished;
 		end
 	end
-	caa(j_remove_jobs==1)=[];
+	caa(jobsToRemove)=[];
 	save -mat .caa caa;
 	return;
 end
@@ -314,11 +309,8 @@ end
 if ~exist('CAA','dir'), mkdir('CAA');end
 
 if flag_check_if_there_is_data
-	%    url_line_list=['http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
-	%    url_line_list=['http://caa.estec.esa.int/caa_test_query/?uname=vaivads&pwd=caa&dataset_id=' ...
-	%        dataset '&time_range=' tintiso '&format=cdf&list=1'];
-	url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa&dataset_id=' dataset '&time_range=' tintiso];
+	url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa'...
+		'&dataset_id=' dataset '&time_range=' tintiso];
 	disp(url_line_list);
 	disp('Be patient! Contacting CAA to see the list of files...');
 	caalist=urlread(url_line_list);
@@ -335,13 +327,11 @@ url_line=[caaQuery urlIdentity '&dataset_id=' ...
 disp('Be patient! Submitting data request to CAA...');
 disp(url_line);
 
-try
-	temp_file=tempname;
-	get_zip_file(url_line,temp_file);
-	if nargout==1, download_status=1;end
-catch
+[status,downloadedFile] = get_zip_file(url_line);
+if nargout==1, download_status=status;end
+if status == 0 && exist(downloadedFile,'file')
 	irf_log('fcal','Could not find zip file with data! ');
-	fid=fopen(temp_file);
+	fid=fopen(downloadedFile);
 	while 1
 		tline = fgetl(fid);
 		if ~ischar(tline), break, end
@@ -351,7 +341,7 @@ catch
 		end
 	end
 	fclose(fid);
-	delete(temp_file);
+	delete(downloadedFile);
 	
 	if exist('downloadfile','var'),
 		if doLog
@@ -380,34 +370,44 @@ catch
 	end
 end
 
-	function status=get_zip_file(urlLink,temp_file)
-		[f,isZipFileReady]=urlwrite(urlLink,temp_file);
+%% Functions
+	function [status,downloadedFile]=get_zip_file(urlLink)
+		% download zip file, if succeed status=1 and file is unzipped and moved
+		% to data directory, downloadedFile is set to empty. If there is no zip
+		% file or file is not zip file, status=0 and downloadedFile is set to
+		% the downloaded file. 
+		status = 0; % default
+		[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
 		if isZipFileReady, %
 			irf_log('dsrc',['Downloaded: ' urlLink]);
-			irf_log('dsrc',['into ->' temp_file]);
+			irf_log('dsrc',['into ->' downloadedFile]);
 			caa_log({'Zip file returned for request',urlLink});
 			tempDirectory=tempname;
 			mkdir(tempDirectory);
-			filelist=unzip(temp_file,tempDirectory);
-			if isempty(filelist)
-				irf_log('dsrc','Returned zip file is empty');
-				caa_log('Zip file empty.');
-			else
-				move_to_caa_directory(filelist);
+			try
+				filelist=unzip(downloadedFile,tempDirectory);
+				if isempty(filelist)
+					irf_log('dsrc','Returned zip file is empty');
+					caa_log('Zip file empty.');
+				else
+					move_to_caa_directory(filelist);
+				end
+				status=1;
+				delete(downloadedFile);
+				downloadedFile = '';
+			catch
+				irf_log('fcal','Invalid zip file')
 			end
 			rmdir(tempDirectory,'s');
-			delete(f);
-			status=1;
 		else
 			irf_log('dsrc',['There is no zip file: ' urlLink]);
-			status=0;
 		end
 	end
 	function move_to_caa_directory(filelist)
 		for jj=1:length(filelist),
-			ii=strfind(filelist{jj},filesep);
 			isDataSet = ~any(strfind(filelist{jj},'log'));
 			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
+				ii=strfind(filelist{jj},filesep);
 				dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
 				datasetDirName = ['CAA/' dataset];
 				if ~exist(datasetDirName,'dir'),
@@ -421,8 +421,6 @@ end
 				movefile(filelist{jj},['CAA/' dataset '/']);
 			end
 		end
-		%disp(['REMOVING DATA DIRECTORIES & FILES: ' filelist{jj}(1:ii(1)) ',delme.zip']);
-		%rmdir(filelist{jj}(1:ii(1)),'s');
 	end
 	function paramOut=urlparameter(paramIn)
 		if paramIn(1)~= '&'
