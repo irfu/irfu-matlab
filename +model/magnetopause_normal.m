@@ -1,4 +1,4 @@
-function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa) 
+function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, modelflag) 
 
 % MODEL.MAGNETOPAUSE_NORMAL the distance and normal vector to the magnetopause 
 % Shue et al., 1997 model is assumed.
@@ -9,36 +9,41 @@ function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa)
 %		pos_Re_gsm - GSM position in Re (if more than 3 values assumes that 1st is time)
 %		IMF_Bz_nT  - IMF Bz in nT
 %		swp_nPa    - Solar wind dynamic pressure in nPa
+%       modelflag  - Set to 1 to use the 1998 model, otherwise the 1997 
+%                    model is used.
 %
 % Output: 
-%       mindist - minimum distance to the magnetopause, in Re.
+%       mindist - minimum distance to the magnetopause, in Re. Positive 
+%       value if spacecraft is inside the magnetopause, negative if 
+%       outside the magnetopause.
 %       nvec    - normal vector to the magnetopause (pointing away from
 %       Earth).
-%
 
 % $Id$
 
 % TODO: vectorize, so that input can be vectors
 
-% TODO: implement also 
-%Shue et al.
-%Magnetopause location under extreme solar wind conditions
-%JGR, VOL. 103, NO. A8, PAGES 17,691-17,700, AUGUST 1, 1998
-%equations (10) and (11)
-
 if nargin == 0,
 	help model.magnetopause_normal;
-elseif nargin ~=3
+elseif nargin==3, modelflag=0;
+elseif nargin ~=4
 	irf_log('fcal','Wrong number of input parameters, see help.');
 	return;
-end
+end    
+    
+if modelflag==1, shueex=1;else shueex =0;end
 
-if size(pos_Re_gsm,2)>3, pos_Re_gsm = pos_Re_gsm(:,2:4); end
+if(shueex == 1)
+    alpha = (0.58 -0.007*IMF_Bz_nT)*(1.0 +0.024*log(swp_nPa));
+    r0 = (10.22 + 1.29*tanh(0.184*(IMF_Bz_nT + 8.14)))*swp_nPa^(-1.0/6.6);
+    display ('Shue et al., 1998 model used.')  
+else    
+    alpha = ( 0.58 -0.01*IMF_Bz_nT)*( 1.0 +0.01*swp_nPa);
 
-alpha = ( 0.58 -0.01*IMF_Bz_nT )*( 1.0 +0.01*swp_nPa);
-
-if IMF_Bz_nT>=0, r0 = ( 11.4 +0.013*IMF_Bz_nT )*swp_nPa^( -1.0/6.6 );
-else         r0 = ( 11.4 +0.140*IMF_Bz_nT )*swp_nPa^( -1.0/6.6 );
+    if IMF_Bz_nT>=0, r0 = (11.4 +0.013*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
+    else             r0 = (11.4 +0.140*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
+    end
+    display ('Shue et al., 1997 model used.')
 end
 
 %SC pos
@@ -71,4 +76,5 @@ nvec = [xn yn zn]/mindist;
 %if statement to ensure normal is pointing away from Earth
 if (sqrt(x0^2+y0^2) > r0*(2/(1+cos(thetamin)))^alpha) 
     nvec = -nvec;
+    mindist = -mindist;
 end 
