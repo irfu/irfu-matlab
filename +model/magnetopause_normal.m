@@ -1,7 +1,7 @@
 function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, modelflag) 
 
 % MODEL.MAGNETOPAUSE_NORMAL the distance and normal vector to the magnetopause 
-% Shue et al., 1997 model is assumed.
+% for Shue et al., 1997 or Shue et al., 1998 model.
 %	
 % [mindist,nvec] = MODEL.MAGNETOPAUSE_NORMAL(pos_Re_gsm, IMF_Bz_nT, swp_nPa)
 %
