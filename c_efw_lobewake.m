@@ -40,7 +40,6 @@ EDI_COVERAGE_MIN = 0.5;% minimum EDI coverage
 if ischar(diE) && strcmp(diE,'plot'), DOPLOT = 1;
 else DOPLOT = 0;
 end
-DOPLOT = 1;
 
 % Load data
 if nargin==1 || ( ischar(diE) && strcmp(diE,'plot') )
