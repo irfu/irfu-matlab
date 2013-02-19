@@ -28,7 +28,7 @@ else
     disp('loading position from isdat. Connecting ...');
     tmin=min(t);tmax=max(t);
     c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], tmin-30, tmax-tmin+30);R?=[tr r];fprintf(''%s'',''R?'');clear tr r;');
-    c_eval('[tv,v] = irf_isdat_get([''Cluster/?/ephemeris/velocity''], tmin-30, tmax-tmin+30);V?=[tv v];fprintf(''%s'',''V?'');clear tv v;');
+    c_eval('[tv,VV] = irf_isdat_get([''Cluster/?/ephemeris/velocity''], tmin-30, tmax-tmin+30);V?=[tv VV];fprintf(''%s'',''V?'');clear tv VV;');
     disp('');
 end
 
