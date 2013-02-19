@@ -1,4 +1,4 @@
-function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa) 
+function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
 %IRF_SHUE_MP  estimate distance to model(Shue) magnetopause
 %
 %  r_mp_Re = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
@@ -8,9 +8,9 @@ function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
 %		bz_nT      - IMF Bz in nT
 %		swp_nPa    - Solar wind dynamic pressure in nPa
 %
-% References: 
-%		Shue et. al., A new functional form to study the solar 
-% 		wind control of the magnetopause size ans shape, 
+% References:
+%		Shue et. al., A new functional form to study the solar
+% 		wind control of the magnetopause size ans shape,
 %		JGR, 102, p.9497, 1997.
 %
 % See also IRF_GSE2GSM
@@ -21,7 +21,7 @@ function r_mp = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
 
 disp(' ')
 disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-disp('irf_shue_mp will be replaced by MODEL.MAGNETOPAUSE_NORMAL
+disp('irf_shue_mp will be replaced by MODEL.MAGNETOPAUSE_NORMAL')
 disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 disp(' ')
 
@@ -39,4 +39,4 @@ r = irf_abs(pos_Re_gsm,1);
 cosTheta = pos_Re_gsm(:,1)./r;
 % Shue et. al., Eq. 1
 r_mp = r0 *( 2.0./( 1.0 +cosTheta )).^alpha - r;
-	  
+
