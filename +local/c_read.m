@@ -155,7 +155,7 @@ end
 					irf_log('dsrc',['Reading: ' cdf_file]);
 					%% check if epoch16
 					cdfid=cdflib.open(cdf_file);
-					useCdfepoch16=strcmpi(getfield(cdflib.inquireVar(cdfid,0),'datatype'),'cdf_epoch16');
+					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
 					if useCdfepoch16,
 						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
 						tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
@@ -164,7 +164,7 @@ end
 						for iVar=1:numel(varToRead),
 							tmpdata{iVar}=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
 						end
-						tmpdata = [{timeVector} tmpdata];
+						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
 					else
 						[tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
@@ -220,7 +220,7 @@ end
 			error('varName should be variable number or name');
 		end
 		numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
-		numElements = getfield(cdflib.inquireVar(cdfid,varnum),'numElements');
+		numElements = cdflib.inquireVar(cdfid,varnum).numElements;
 		data=zeros(1+numElements,numrecs);
 		
 		for j = 0:numrecs-1
