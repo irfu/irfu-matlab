@@ -31,7 +31,7 @@ function out=c_caa_download(varargin)
 % $Id$
 
 %% Defaults
-dataDirectory = '/data/caa';
+dataDirectory = '/data/caalocal';
 maxSubmittedJobs = 13;
 maxNumberOfAttempts = 20;
 isInputDatasetName = false; 
@@ -71,7 +71,7 @@ else
 end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
-requestListDirectory='CAA/matCaaRequests';
+requestListDirectory='matCaaRequests';
 requestListVariableFile=[requestListDirectory filesep requestListVariableName '.mat'];
 if ~exist(requestListDirectory,'dir'),
 	mkdir(requestListDirectory);
@@ -249,7 +249,7 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	TTremove=select(TT,ii);
 	dataSet=TTremove.UserData(1).dataset;
 	% get dataset file index
-	load('CAA/caa',['index_' dataSet]);
+	load('caa',['index_' dataSet]);
 	index=eval(['index_' dataSet]);
 	indexTT=irf.TimeTable([index.tstart(:) index.tend(:)]);
 	for kk=1:numel(indexTT)
@@ -260,7 +260,7 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	for j=1:numel(iIndex)
 		fileToDelete=indexTT.UserData(iIndex(j)).filename;
 		irf_log('fcal',['Deleting #' num2str(iIndex(j)) ': ' fileToDelete]);
-		eval(['!mv CAA/' fileToDelete ' CAA/' fileToDelete '.delme']);
+		eval(['!mv ' fileToDelete ' ' fileToDelete '.delme']);
 	end
 	if numel(iTT) == numel(TTremove)
 		ok=true;

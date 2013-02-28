@@ -10,7 +10,7 @@ function c_update
 % $Id$
 
 
-dirCaa='/data/caa/CAA';
+dirCaa='/data/caalocal';
 cd(dirCaa);
 tmp=dir(dirCaa);
 iDir = [tmp(:).isdir]; % find directories

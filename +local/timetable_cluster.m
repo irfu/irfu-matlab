@@ -23,8 +23,8 @@ switch timetableToGenerate
 	case 'tailbox'
 		%% find time intervals when Cluster is in tailbox
 		Units=irf_units;
-		clusterPositionFileGSE = '/data/caa/CAA/mR_1min.mat';
-%		clusterPositionFileSM  = '/data/caa/CAA/mR_SM_1min.mat';
+		clusterPositionFileGSE = '/data/caalocal/mR_1min.mat';
+%		clusterPositionFileSM  = '/data/caalocal/mR_SM_1min.mat';
 		workDir=tempname;
 		mkdir(workDir);
 		cd(workDir);
