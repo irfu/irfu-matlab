@@ -36,6 +36,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %   'schedule'		- schedule the download, (returns zip file link)
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %   'nolog'			- do not log into .caa file (good for batch processing)
+%   'downloadDirectory=...'	- define directory for downloaded datasets (instead of deaful 'CAA/')
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -81,7 +82,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
 % Test flags
-%   'test'        - use caa test server instead
+%   'test'						- use caa test server instead
 % $Id$
 
 % ----------------------------------------------------------------------------
@@ -101,16 +102,17 @@ end
 
 %% Defaults
 checkDownloadStatus	= false;
-doLog					= true; % log into .caa file
-overwritePreviousData	= false; % continue adding cdf files to CAA directory
-flag_wildcard     =1;                     % default is to use wildcard
-flag_check_if_there_is_data=1;            % check if there are any at caa
-urlNonotify='&nonotify=1';                % default is not notify by email
+doLog					= true;			% log into .caa file
+overwritePreviousData	= false;		% continue adding cdf files to CAA directory
+expandWildcards			= true;			% default is to use wildcard
+checkIfDataAreAtCaa		= true;			% check if there are any data at caa
+urlNonotify				= '&nonotify=1';% default is not notify by email
 urlFileInterval='&file_interval=72hours'; % default time interval of returned files
 urlSchedule='';                           % default do not have schedule option
 urlFormat='&format=cdf';                  % default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/'; % default server
 urlIdentity='?uname=vaivads&pwd=caa';     % default identity
+downloadDirectory = 'CAA/';					% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 %urlInventory='';                          % default no inventory output (currently use different www link)
 %% load .caa file with status for all downloads
 if doLog,
@@ -140,9 +142,9 @@ if nargin>2, % cehck for additional flags
 			caaServer='http://caa5.estec.esa.int/caa_query/';
 			urlNonotify='';           % notify also by email
 		elseif strcmpi(flag,'nowildcard'),
-			flag_wildcard=0;
-			flag_check_if_there_is_data=0;
-			urlNonotify='&nonotify=1';
+			expandWildcards = false;
+			checkIfDataAreAtCaa = false;
+			urlNonotify = '&nonotify=1';
 		elseif strcmpi(flag,'overwrite'),
 			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
@@ -153,6 +155,11 @@ if nargin>2, % cehck for additional flags
 			doLog = false;
 		elseif any(strcmpi('inventory',flag))
 			urlSchedule = '&inventory=1';
+		elseif any(strfind(flag,'downloaddirectory='))
+			downloadDirectory = flag(strfind(flag,'=')+1:end);
+			if downloadDirectory(end) ~= filesep,
+				downloadDirectory(end+1) = filesep;
+			end
 		else
 			irf_log('fcal',['Flag ''' flag ''' not recognized']);
 		end
@@ -252,7 +259,7 @@ else
 end
 
 %% expand wildcards
-if flag_wildcard, % expand wildcards
+if expandWildcards, % expand wildcards
 	dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
 	if (any(strfind(dataset,'CIS')) || any(strfind(dataset,'CCODIF')) || any(strfind(dataset,'HIA')))
 		dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
@@ -308,7 +315,7 @@ end
 % create CAA directory if needed
 if ~exist('CAA','dir'), mkdir('CAA');end
 
-if flag_check_if_there_is_data
+if checkIfDataAreAtCaa
 	url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa'...
 		'&dataset_id=' dataset '&time_range=' tintiso];
 	disp(url_line_list);
@@ -409,7 +416,7 @@ end
 			if isDataSet, % dataset files (cdf_convert_summary.log not copied)
 				ii=strfind(filelist{jj},filesep);
 				dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
-				datasetDirName = ['CAA/' dataset];
+				datasetDirName = [downloadDirectory dataset];
 				if ~exist(datasetDirName,'dir'),
 					irf_log('dsrc',['Creating directory: ' datasetDirName]); 
 					mkdir(datasetDirName);
@@ -417,8 +424,8 @@ end
 					delete([datasetDirName filesep '*']);
 				end
 				irf_log('dsrc',['file:      ' filelist{jj}]);
-				irf_log('dsrc',['moving to: CAA/' dataset '/']);
-				movefile(filelist{jj},['CAA/' dataset '/']);
+				irf_log('dsrc',['moving to: ' downloadDirectory	dataset '/']);
+				movefile(filelist{jj},[downloadDirectory dataset '/']);
 			end
 		end
 	end
