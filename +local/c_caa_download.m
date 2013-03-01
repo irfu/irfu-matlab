@@ -2,9 +2,9 @@ function out=c_caa_download(varargin)
 % LOCAL.C_CAA_DOWNLOAD download full datasets from CAA
 % Downloads all data from CAA database, in case data
 % already exists on disk, downloads only newer version files.
-% Dataset location - /data/caa/CAA
-% Dataset request timetable information - /data/caa/CAA/matCaaRequests
-% Index location - /data/caa/CAA/index
+% Dataset location - /data/caalocal
+% Dataset request timetable information - /data/caalocal/matCaaRequests
+% Index location - /data/caalocal/index
 % Current request time table is accessible in variable TTRequest
 %
 %   LOCAL.C_CAA_DOWNLOAD(dataset) download all dataset
@@ -150,7 +150,7 @@ while 1
 		if now-TTRequest.UserData(iSubmitted).TimeOfDownload>(1+TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload)*1/24/60 % more than 1min*"number of attempts" since last request
 			try
 				irf_log('dsrc',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
-				download_status=caa_download(TTRequest.UserData(iSubmitted).Downloadfile,'nolog');
+				download_status=caa_download(TTRequest.UserData(iSubmitted).Downloadfile,'nolog',['downloadDirectory=' dataDirectory]);
 				TTRequest.UserData(iSubmitted).TimeOfDownload=now;
 			catch
 				download_status = -1; % something wrong with internet
@@ -162,9 +162,9 @@ while 1
 				if mod(n_downloaded_jobs(TTRequest),10)==0 || ...%save after every 10th request
 						n_submitted_jobs(TTRequest)==0 % save after last job
 					varName=['TT_' TTRequest.UserData(iSubmitted).dataset ];
-					irf_log('drsc',['Saving ' varName ' to CAA/matCaaRequests/' varName]);
+					irf_log('drsc',['Saving ' varName ' to matCaaRequests/' varName]);
 					eval([varName '= TTRequest;']);
-					dirName='CAA/matCaaRequests';
+					dirName='matCaaRequests';
 					if ~exist(dirName,'dir'), mkdir(dirName);end
 					save([dirName '/' varName],'-v7',varName);
 				end
