@@ -155,7 +155,7 @@ if nargin>2, % cehck for additional flags
 			doLog = false;
 		elseif any(strcmpi('inventory',flag))
 			urlSchedule = '&inventory=1';
-		elseif any(strfind(flag,'downloaddirectory='))
+		elseif any(strfind(lower(flag),'downloaddirectory='))
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
 			if downloadDirectory(end) ~= filesep,
 				downloadDirectory(end+1) = filesep;
