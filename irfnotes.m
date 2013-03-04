@@ -189,6 +189,7 @@ if 0, % read EFW data
   c_eval('diEs?=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L3_E3D_INERT'',''mat'');');
   c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
   c_eval('ExB?=c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE'',''mat'');');
+  c_eval('diExB?=c_caa_var_get(''v_drift_ISR2__C?_CP_EFW_L2_V3D_INERT'',''mat'');'); % use NASA cdfread! otherwise ages to read
 end
 if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux products above given energy threshold
   for ic=1:4,
@@ -377,37 +378,19 @@ if 1,   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
     irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
   end
 end
-if 1,   % PANEL: C1,C3,C4 CIS Vx GSM velocities
-  hca=irf_panel(h,'C1,C3,C4 CIS Vx velocities');
+if 1,   % PANEL: C1,C3,C4 CIS Vx|Vy|Vz GSM velocities
+  hca=irf_panel(h,'C1,C3,C4 CIS Vx velocities'); % Vx|Vy|Vz
+  % uncomment the required line for x|y|z
+  indV = 2; labV = 'X'; % Vx
+  %indV = 3; labV = 'Y'; % Vy
+  %indV = 4; labV = 'Z'; % Vz
   hold(hca,'off');
-  irf_plot(hca,gsmVCIS1(:,1:2),'color','k'); % HIA
+  irf_plot(hca,gsmVCIS1(:,[1 indV]),'color','k'); % HIA
   hold(hca,'on');
-  irf_plot(hca,gsmVCIS3(:,1:2),'color','g'); % HIA
-  irf_plot(hca,gsmVCISH4(:,1:2),'color','b'); % CODIF
-  ylabel(hca,'V_X [km/s] GSM');
+  irf_plot(hca,gsmVCIS3(:,[1 indV]),'color','g'); % HIA
+  irf_plot(hca,gsmVCISH4(:,[1 indV]),'color','b'); % CODIF
+  ylabel(hca,{['V_' labV],'[km/s] GSM'});
   irf_zoom(hca,'y',[-1000 1000]);
-  irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
-end
-if 1,   % PANEL: C1,C3,C4 CIS Vy GSM velocities
-  hca=irf_panel(h,'C1,C3,C4 CIS Vy velocities');
-  hold(hca,'off');
-  irf_plot(hca,gsmVCIS1(:,[1 3]),'color','k'); % HIA
-  hold(hca,'on');
-  irf_plot(hca,gsmVCIS3(:,[1 3]),'color','g'); % HIA
-  irf_plot(hca,gsmVCISH4(:,[1 3]),'color','b'); % CODIF
-  ylabel(hca,'V_Y [km/s] GSM');
-  irf_zoom(hca,'y',[-1000 1000]);
-  irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
-end
-if 1,   % PANEL: C1,C3,C4 CIS Vz GSM velocities
-  hca=irf_panel(h,'C1,C3,C4 CIS Vz velocities');
-  hold(hca,'off');
-  irf_plot(hca,gsmVCIS1(:,[1 4]),'color','k'); % HIA
-  hold(hca,'on');
-  irf_plot(hca,gsmVCIS3(:,[1 4]),'color','g'); % HIA
-  irf_plot(hca,gsmVCISH4(:,[1 4]),'color','b'); % CODIF
-  ylabel(hca,'V_Z [km/s] GSM');
-  irf_zoom(hca,'y',[-150 150]);
   irf_legend(hca,{'C1','','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 1,   % PANEL: Pressures, B and CIS HIA/CODIF single s/c
@@ -469,14 +452,14 @@ if 1,   % PANEL: C?       EFW Ex,Ey ISR2
   hca=irf_panel('EFW E ISR2 c?');
   c_eval('irf_plot(hca,diE?(:,1:3))',ic);
   ylabel(hca,'E [mV/m] ISR2');
-  irf_zoom(hca,'ylim','smart');
+  irf_zoom(hca,'y'); 
   irf_legend(hca,{'E_X','E_Y'},[0.02 0.98])
   irf_legend(hca,{['C' num2str(ic)]},[0.02 0.95],'color','k')
 end
-if 1,   % PANEL: C1..C4   EFW Ex
-  hca=irf_panel(' C1..C4 EFW Ex');
-  c_pl_tx(hca,'diE?',2)
-  ylabel(hca,'Ex [mV/m] ISR2');
+if 1,   % PANEL: C1..C4   EFW Ex|Ey ISR2
+  hca=irf_panel(' C1..C4 EFW Ex');  % Ex|Ey
+  c_pl_tx(hca,'diE?',2);			% Ex=2,Ey=3
+  ylabel(hca,{'Ex','[mV/m] ISR2'});	% Ex|Ey
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 1,   % PANEL: C?       EFW satellite potential
@@ -487,13 +470,24 @@ if 1,   % PANEL: C?       EFW satellite potential
   irf_zoom(hca,'y',[-50 -10]);
   ylabel(hca,'Sat pot [V]');
 end
-if 1,   % PANEL: C?       EFW ExB - velocity
-  % change L3 to L2 to get full resolution instead of spin
-  hca=irf_panel('EFW satellite potential spin');
-  ExB=irf_ssub('v_drift_GSE__C?_CP_EFW_L3_V3D_GSE',ic);
-  irf_plot(hca,ExB,'nolabels');
-  irf_zoom(hca,'y',[-500 500]);
-  ylabel(hca,'ExB [km/s]');
+if 1,   % PANEL: C?       EFW ExB GSE|ISR2
+	% change L3 to L2 to get full resolution instead of spin
+	% see also the next example
+	hca=irf_panel('EFW ExB C?');
+	ExB=irf_ssub('v_drift_GSE__C?_CP_EFW_L3_V3D_GSE',ic);
+	%ExB=irf_ssub('v_drift_ISR2__C?_CP_EFW_L3_V3D_INERT',ic); % ISR2
+	irf_plot(hca,ExB,'nolabels');
+	ylabel(hca,{'ExB','[km/s] GSE'}); % GSE|ISR2
+end
+if 1,   % PANEL: C1..C4   EFW (ExB)x ISR2
+	% [di]ExB[s]? products are prepared under 'reading CAA'
+	% ExB?   - GSE  full resolution, ExBs?   - GSE spin resolution
+	% diExB? - ISR2 full resolution, diExBs? - ISR2 spin resolution
+	% Example on diExB? 
+	hca=irf_panel(' C1..C4 EFW (ExB)x ISR2'); 
+	c_pl_tx(hca,'diExB?',2);		
+	ylabel(hca,{'(ExB/B^2)x','[km/s] ISR2'});
+	irf_legend(hca,{'C1','C2','C3','C4'},[0.98 0.98],'color','cluster');
 end
 if 0,   % PANEL: C1..C4   EFW satellite potential
   % change L3 to L2 to get full resolution instead of spin
