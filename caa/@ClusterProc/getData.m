@@ -76,6 +76,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %                 (affects dies,die,dief,diespec,dieburst)
 %       no_saved_adc : do not use ADC offset computed from spinfits, e.g.
 %           compute the offset (affects 'die')
+%       no_adc_offset : do not correct ADC offset (affects 'die')
+%       adc_offset_5points : compute ADC offset using 5-point averages
 %       no_caa_delta : do not use the CAA Delta offset(c_efw_delta_off), 
 %           e.g. compute the offset from spinfits and use it afterwards 
 %           (affects 'dies','die')
@@ -104,6 +106,7 @@ end
 flag_save = 1;
 flag_usesaved_adc_off = 1;
 flag_usecaa_del_off = 1;
+flag_use_adc_off = 1;
 flag_edb = 1;
 flag_rmwake = 0;
 flag_rmhbsa = 0;
@@ -112,6 +115,7 @@ correct_sw_wake = 0;
 flag_wash_p32 = 1;
 check_caa_sh_interval=0;
 ec_extraparams = [];
+nPointsADCOffset = 7;
 
 flag_rmwhip = c_ctl(cl_id,'rm_whip');
 if isempty(flag_rmwhip), flag_rmwhip = 1; end 
@@ -142,6 +146,10 @@ while have_options
 		flag_usecaa_del_off = 0;
 	case 'no_saved_adc'
 		flag_usesaved_adc_off = 0;
+    case 'no_adc_offset'
+		flag_use_adc_off = 0;
+    case 'adc_offset_5points'
+        nPointsADCOffset = 5;
 	case 'ang_limit'
 		if length(args)>1
 			if isnumeric(args{2})
@@ -604,7 +612,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
 			end
 		end
 		% Smooth the ADC offset signal
-		adc_off = irf_waverage(adc_off,1/4); %#ok<NASGU>
+		adc_off = irf_waverage(adc_off,1/4,nPointsADCOffset); %#ok<NASGU>
 		
 		% Save 2 omega separately
 		if wE{pri}.probe == 32 && size(sp,2) == 10
@@ -933,12 +941,12 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         end
             
 		[ok,dadc] = c_load(irf_ssub(wStr,cl_id,ps));
-        if flag_lx
-            if ~ok || isempty(dadc), dadc = []; end
-        else
-            if ~ok, error(irf_ssub(['Cannot load ' wStr],cl_id,ps)), end
-            if isempty(dadc), error(irf_ssub(['Empty ' wStr],cl_id,ps)), end
-        end
+        if ~ok
+            irf_log('load',irf_ssub(['Cannot load ' wStr],cl_id,ps))
+            dadc = []; %#ok<NASGU>
+        elseif isempty(dadc)
+            irf_log('load',irf_ssub(['Empty ' wStr],cl_id,ps))
+        end    
 		c_eval('dadc?=dadc;',probe)
 		clear ok dadc
 	end
@@ -1004,7 +1012,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 			end
 			
 			% Correct ADC offset
-			if flag_usesaved_adc_off && ~flag_bp
+			if flag_use_adc_off && flag_usesaved_adc_off && ~flag_bp
 				% Correct ADC offset
 				if ~isempty(dadc)
 					irf_log('calb','using saved ADC offset')
@@ -1018,7 +1026,7 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
 					flag_usesaved_adc_off = 0;
 				end
 			end
-			if ~flag_usesaved_adc_off  && ~flag_bp
+			if flag_use_adc_off && ~flag_usesaved_adc_off  && ~flag_bp
 				irf_log('calb','computing ADC offsets (simple averaging)')
 				[tt,dadc] = caa_corof_adc(tt); %#ok<ASGLU>
 				irf_log('calb',sprintf('Da%ddp%d : %.2f',cl_id,ps,dadc))
