@@ -162,7 +162,8 @@ end
 						timeVector=irf_time(tmptime,'cdfepoch162epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
-							tmpdata{iVar}=readCdfepoch16(cdfid,varToRead{iVar}); % currently only first variable read
+                            tmpdata{iVar}=cdfread(cdf_file,'CombineRecords',true,...
+                                'Variables',varToRead{iVar});
 						end
 						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
 					else
