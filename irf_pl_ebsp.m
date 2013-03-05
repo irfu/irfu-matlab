@@ -74,7 +74,7 @@ cmapCombo=[cmapStandard;xcm2];
     t=timeVector;
     t_start_epoch=get_t_start_epoch(t(1,1));
     
-    sampl=1/(t(2)-t(1))
+    sampl=1/(t(2)-t(1));
     freq_range=args{2};
     pc12_range=0;
     pc35_range=0;
@@ -102,7 +102,8 @@ end
 if default_range
     sampl1 = 1;
 end
-t1 = t(1):1/sampl1:t(end); t1=t1'; 
+%t1 = t(1):1/sampl1:t(end); t1=t1'; 
+t1=t;
 ndata2=size(t1);
 
     %freq_number=25;
@@ -128,8 +129,9 @@ ndata2=size(t1);
     polSVD_fac = args{7};
     ellipticity = args{8};
 
-
-
+format long;
+display(t(1:5));
+format short;
     %%%%%%%%% E spectra %%%%%%%%%%%%
     
     if nargs==8 || nargs==11,
@@ -396,8 +398,8 @@ ndata2=size(t1);
 %             end 
 %         end
         
-        %ylabel(hca,{'2D Degree of'; 'Polarization'});
-        ylabel(hca,{'Planarity'});
+        ylabel(hca,{'3D Degree of'; 'Polarization'});
+        %ylabel(hca,{'Planarity'});
         %irf_colormap(hca5,'standard');
         %cbfreeze(hca)
     end

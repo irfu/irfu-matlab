@@ -14,23 +14,19 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
 % B = background magnetic field, columns (t bx by bz)
 % xyz = position vector of spacecraft, columns (t x y z)
 %
-% frequency interval chosen as input to varargin, or default [.01 5]
+% frequency interval chosen as input to varargin, either 'pc12' or 'pc35' 
+% if something else is used, default [.02 5]
 % 
 % Returns calculated parameters
 %
 % Examples:
 %    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac]=...
-%        irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
+%        irf_ebsp(e,b,B,xyz,'pc12');
 %   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-%        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
-%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-%        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
-%        irf_ebsp(e,b,B,xyz,'freq',[.01,1]);
-% should also be possible to use default frequency range of [.01 5] **need
-% to check this**
+%        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,'pc35');
 %   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
 %        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
-%        irf_ebsp(e,b,B,xyz);
+%        irf_ebsp(e,b,B,xyz,'pc12');
 %
 % $Id$ 
 
@@ -193,16 +189,17 @@ end
 t1 = e(1,1):1/sampl1:e(end,1); t1=t1'; 
 ndata2=length(t1);
 ind_nan_b = interp1(t,sum(ind_nan_b,2),t1,'linear','extrap');
+ind_nan_e = interp1(t,sum(ind_nan_e,2),t1,'linear','extrap');
 
-powerEx_plot = zeros(ndata,nfreq);
-powerEy_plot = zeros(ndata,nfreq);
-powerEz_plot = zeros(ndata,nfreq);
-power2E_plot = zeros(ndata,nfreq);
-power2E_ISR2_plot = zeros(ndata,nfreq);
-powerBx_plot = zeros(ndata,nfreq);
-powerBy_plot = zeros(ndata,nfreq);
-powerBz_plot = zeros(ndata,nfreq);
-power2B_plot = zeros(ndata,nfreq);
+powerEx_plot = zeros(ndata2,nfreq);
+powerEy_plot = zeros(ndata2,nfreq);
+powerEz_plot = zeros(ndata2,nfreq);
+power2E_plot = zeros(ndata2,nfreq);
+power2E_ISR2_plot = zeros(ndata2,nfreq);
+powerBx_plot = zeros(ndata2,nfreq);
+powerBy_plot = zeros(ndata2,nfreq);
+powerBz_plot = zeros(ndata2,nfreq);
+power2B_plot = zeros(ndata2,nfreq);
 powerBx_SM_plot = zeros(ndata2,nfreq);
 powerBy_SM_plot = zeros(ndata2,nfreq);
 powerBz_SM_plot = zeros(ndata2,nfreq);
@@ -211,9 +208,9 @@ polarizationEllipseRatio = zeros(ndata2,nfreq);
 %Ls4 = zeros(ndata,nfreq);
 polarizationSign = zeros(ndata2,nfreq);
 degreeOfPolarization = zeros(ndata2,nfreq);
-Spar_plot_z = zeros(ndata,nfreq);
-S_plot_x = zeros(ndata,nfreq);
-S_plot_y = zeros(ndata,nfreq);
+Spar_plot_z = zeros(ndata2,nfreq);
+S_plot_x = zeros(ndata2,nfreq);
+S_plot_y = zeros(ndata2,nfreq);
 thetaSVD_fac = zeros(ndata2,nfreq);
 phiSVD_fac = zeros(ndata2,nfreq);
 parfor ind_a=1:length(a),
@@ -228,12 +225,18 @@ parfor ind_a=1:length(a),
   end
   Wwb = sqrt(1).*Swb.*mWexp;
   
+  %Wwb = interp1(t,Wwb,t1,'linear','extrap')
+  Wwb2 = interp1(t,Wwb,t1,'linear','extrap')
+  Wwe = interp1(t,Wwe,t1,'linear','extrap')
+  WweISR2 = interp1(t,WweISR2,t1,'linear','extrap')
+  
   %% Get the wavelet transform by IFFT of the FFT
   if wantEE, 
       We = ifft(Wwe,[],1);
       WeISR2 = ifft(WweISR2,[],1);
   end
   Wb = ifft(Wwb,[],1);
+  Wb2 = ifft(Wwb2,[],1);
   
   %% Calculate the power spectrum
   newfreqmat=w0/a(ind_a);
@@ -244,7 +247,7 @@ parfor ind_a=1:length(a),
     powerEISR2 = 2*pi*(WeISR2.*conj(WeISR2))./newfreqmat;
     powerEISR2(:,3) = sum(powerEISR2,2);
   end
-  powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
+  powerB = 2*pi*(Wb2.*conj(Wb2))./newfreqmat;
   powerB(:,4) = sum(powerB,2);
     
   %% spectral matrix
@@ -433,9 +436,9 @@ parfor ind_a=1:length(a),
   %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
   if wantEE,
       coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
-      S = zeros(ndata,3);
+      S = zeros(ndata2,3);
       Wex=We(:,1);Wey=We(:,2);Wez=We(:,3);
-      Wbx=Wb(:,1);Wby=Wb(:,2);Wbz=Wb(:,3);
+      Wbx=Wb2(:,1);Wby=Wb2(:,2);Wbz=Wb2(:,3);
       S(:,1)= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
       S(:,2)= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
       S(:,3)= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
@@ -458,27 +461,40 @@ parfor ind_a=1:length(a),
        %% Remove data possibly influenced by edge effects
    censur=floor(2*a);
    censur_indexes=[1:min(censur(ind_a),size(e,1)) max(1,size(e,1)-censur(ind_a)):size(e,1)];
-   if wantEE, 
-       powerE(censur_indexes,:) = NaN;
-       powerEISR2(censur_indexes,:) = NaN;
-   end
-   powerB(censur_indexes,:) = NaN;
-   if wantEE, 
-       Spar(censur_indexes) = NaN;
-       Sx(censur_indexes) = NaN;
-       Sy(censur_indexes) = NaN;
-   end
    %note! the following lines are repeated below the parfor
    if pc12_range || default_range,
-     censur2=floor(.5*a);
+     censur2=floor(.4*a);
    end
    if pc35_range,
        censur2=floor(.1*a);
    end
    censur_indices2=[1:min(censur2(ind_a),length(t1)) max(1,length(t1)-censur2(ind_a)):length(t1)];
-   %SMpermute(censur_indices2,:,:) = NaN;
+   
+%    if wantEE, 
+%        powerE(censur_indexes,:) = NaN;
+%        powerEISR2(censur_indexes,:) = NaN;
+%    end
+%    powerB(censur_indexes,:) = NaN;
+%    if wantEE, 
+%        Spar(censur_indexes) = NaN;
+%        Sx(censur_indexes) = NaN;
+%        Sy(censur_indexes) = NaN;
+%    end
+   
+   if wantEE, 
+       powerE(censur_indices2,:) = NaN;
+       powerEISR2(censur_indices2,:) = NaN;
+   end
+   powerB(censur_indices2,:) = NaN;
+   if wantEE, 
+       Spar(censur_indices2) = NaN;
+       Sx(censur_indices2) = NaN;
+       Sy(censur_indices2) = NaN;
+   end
+   
+   SMpermute(censur_indices2,:,:) = NaN;
    if wantPolarization, 
-     %theta(censur_indices2) = NaN;
+     theta(censur_indices2) = NaN;
      phi(censur_indices2) = NaN;
      W(:,:,censur_indices2) = NaN;
    end
@@ -579,8 +595,8 @@ parfor ind_a=1:length(a),
   powerBz_SM_plot(:,ind_a) = SMpermute(:,3,3);
   power2B_SM_plot(:,ind_a) = SMpermute(:,1,1)+SMpermute(:,2,2)+SMpermute(:,3,3);
 end
-degreeOfPolarization=planarity;
-display('note that DOP is the planarity for now');
+%degreeOfPolarization=planarity;
+%display('note that DOP is the planarity for now');
 
 
 %% set data gaps to NaN and remove edge effects
@@ -603,7 +619,7 @@ ndata2=size(power2B_SM_plot,1);
 % if pc35_range,
 %   censur2=floor(.1*a);
 % end
-censur2=floor(.1*a);
+censur2=floor(.4*a);
 
 for i=1:length(idx_nan_b)-1,
     if idx_nan_b(i) < idx_nan_b(i+1),
@@ -666,7 +682,7 @@ if pc35_range,
   %ind_lowPower = find(abs(power2B_SM_plot) < .005);
 end
 ind_single_eq = find(abs(polarizationEllipseRatio) < .4);
-ind2_lowPower = find(abs(degreeOfPolarization) < .5);
+ind2_lowPower = find(abs(degreeOfPolarization) < .4);
 if wantPolarization,
     thetaSVD_fac(ind_lowPower) = NaN;
     phiSVD_fac(ind_lowPower) = NaN;
@@ -690,7 +706,8 @@ if wantPolarization,
 end
 
 if nargout==4,
-	timeVector = e(:,1);
+	%timeVector = e(:,1);
+    timeVector = fix(t1);
 	frequencyVector = newfreq;
     BVector = Btot;
     BB_xxyyzz_fac = powerBx_SM_plot;
@@ -698,7 +715,8 @@ if nargout==4,
     BB_xxyyzz_fac(:,:,3) = powerBz_SM_plot;
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
 elseif nargout==8,
-	timeVector = e(:,1);
+	%timeVector = e(:,1);
+    timeVector = fix(t1);
 	frequencyVector = newfreq;
     BVector = Btot;
     BB_xxyyzz_fac = powerBx_SM_plot;
@@ -717,7 +735,8 @@ elseif nargout==8,
     Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
     Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
 else
- 	timeVector = e(:,1);
+ 	%timeVector = e(:,1);
+    timeVector = fix(t1);
 	frequencyVector = newfreq;
     BVector = Btot;
     BB_xxyyzz_fac = powerBx_SM_plot;
