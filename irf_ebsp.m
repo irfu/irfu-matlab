@@ -726,9 +726,9 @@ else
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
     EESum_xxyyzz_ISR2 = power2E_ISR2_plot;
     EE_xxyyzz_FAC(:,:,4) = power2E_plot;
-    EE_xxyyzz_FAC(:,:,1) = powerEx_plot
-    EE_xxyyzz_FAC(:,:,2) = powerEy_plot
-    EE_xxyyzz_FAC(:,:,3) = powerEz_plot
+    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
+    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
+    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
     Poynting_xyz_FAC = S_plot_x;
     Poynting_xyz_FAC(:,:,2) = S_plot_y;
     Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
