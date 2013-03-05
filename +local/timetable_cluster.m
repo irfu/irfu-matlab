@@ -39,7 +39,7 @@ switch timetableToGenerate
 		disp('Preparing data');
 		tStep=median(diff(R1(:,1))); % time step
 		tailBoxX=-5; % tailbox is at X less than this value, in RE
-		tailBoxDY=4; % tailbox distance halfwidth in Y at tailBoxX, in RE (tailbox gets wider with distance, y+|tailBoxX|/5)
+		tailBoxDY=2; % tailbox distance halfwidth in Y at tailBoxX, in RE (tailbox gets wider with distance, y+|tailBoxX|/2)
 		tailBoxDZ=5; % tailbox distance halfwidth in Z, in RE
 		izero=find(R1(:,1)==0);
 		sclist={'','1','2','3','4'}; % include also center of configuration
@@ -49,7 +49,7 @@ switch timetableToGenerate
 		c_eval('RRE?=irf_tappl(R?,''*Units.km/Units.RE'');clear R?;',sclist);
 		
 		% tailbox definition
-		conditionString = ['X<' num2str(tailBoxX) 'RE,|Z|<' num2str(tailBoxDZ) 'RE,|Y|<' num2str(tailBoxDY-abs(tailBoxX/5)) '+|X|/5 RE GSM'];
+		conditionString = ['X<' num2str(tailBoxX) 'RE,|Z|<' num2str(tailBoxDZ) 'RE,|Y|<' num2str(tailBoxDY-abs(tailBoxX/5)) '+|X|/2 RE GSM'];
 		disp(['Finding when Cluster is in tailbox, ' conditionString]);
 		ttLabel='tailbox';
 		ttTitle=['Cluster ? in tailbox, ' conditionString];
