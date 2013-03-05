@@ -259,7 +259,7 @@ end
 		Dx   = double(DIn - '0');        % For faster conversion of numbers
 		Dout(:,1)=Dx(:,8) * 1000 + Dx(:,9) * 100 + Dx(:,10) * 10 + Dx(:,11); % Year
 		monthN=sum(Dx(:,4:6),2)-143; % Apr,Sep ok
-		monthN(monthN==-3)=1; % jan
+		monthN(monthN==-6)=1; % jan
 		monthN(monthN==-18)=2; % feb
 		monthN(monthN==1)=3; % mar
 		monthN(monthN==8)=5; % may
