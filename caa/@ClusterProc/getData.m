@@ -366,16 +366,23 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
         
         p_sep = .088;
         if ~isempty(p1) && ~isempty(p2)
-            tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+            if size(p1,1) ~= size(p2,1)
+                [ii1, ii2]=irf_find_comm_idx(p1,p2);
+                tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p1(ii1,2) )/p_sep;
+                clear ii1 ii2
+            else   
+                tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p1(:,2) )/p_sep;
+            end
             e = struct('probe',12,'corr',0,'e',tt);
             wE = [wE {e}]; n_ok = n_ok + 1; %#ok<AGROW>
             clear tt e
             p12 = 12;
         end
         if ~isempty(p3) && ~isempty(p4)
-            if size(p4,1) ~= size(p3,1)
+            if size(p3,1) ~= size(p4,1)
                 [ii3, ii4]=irf_find_comm_idx(p3,p4);
                 tt(:,1) = p4(ii4,1); tt(:,2) = ( p4(ii4,2) - p3(ii3,2) )/p_sep;
+                clear ii3 ii4
             else
                 tt(:,1) = p4(:,1); tt(:,2) = ( p4(:,2) - p3(:,2) )/p_sep;
             end 
@@ -389,6 +396,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
             if size(p2,1) ~=  size(p3,1)
                 [ii2,ii3]=irf_find_comm_idx(p2,p3);
                 tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p3(ii3,2) )/p_sep;
+                clear ii2 ii3
             else
                 tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p3(:,2) )/p_sep;
             end
@@ -401,6 +409,7 @@ elseif strcmp(quantity,'dies') || strcmp(quantity,'diehxs') || strcmp(quantity,'
             if size(p2,1) ~=  size(p4,1)
                 [ii2,ii4]=irf_find_comm_idx(p2,p4);
                 tt(:,1) = p2(ii2,1); tt(:,2) = ( p2(ii2,2) - p4(ii4,2) )/p_sep;
+                clear ii2 ii4
             else
                 tt(:,1) = p2(:,1); tt(:,2) = ( p2(:,2) - p4(:,2) )/p_sep;
             end
