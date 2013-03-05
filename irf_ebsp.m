@@ -468,8 +468,9 @@ parfor ind_a=1:length(a),
        Sx(censur_indexes) = NaN;
        Sy(censur_indexes) = NaN;
    end
+   %note! the following lines are repeated below the parfor
    if pc12_range || default_range,
-     censur2=floor(2*a);
+     censur2=floor(.5*a);
    end
    if pc35_range,
        censur2=floor(.1*a);
@@ -595,13 +596,21 @@ polarizationSign(idx_nan_b,:) = NaN;
 degreeOfPolarization(idx_nan_b,:) = NaN;
 
 ndata2=size(power2B_SM_plot,1);
-censur2=floor(.5*a);
+% I don't know why these lines aren't working
+% if pc12_range || default_range,
+%   censur2=floor(.5*a);
+% end
+% if pc35_range,
+%   censur2=floor(.1*a);
+% end
+censur2=floor(.1*a);
+
 for i=1:length(idx_nan_b)-1,
     if idx_nan_b(i) < idx_nan_b(i+1),
         display('front edge');
         for j=1:length(a),
             censur_index_front=[max(i-censur2(j),1):i];
-            %power2B_SM_plot(censur_index_front,j) = NaN;
+            power2B_SM_plot(censur_index_front,j) = NaN;
             thetaSVD_fac(censur_index_front,j) = NaN;
             phiSVD_fac(censur_index_front,j) = NaN;
             polarizationSign(censur_index_front,j) = NaN;
@@ -612,7 +621,7 @@ for i=1:length(idx_nan_b)-1,
         display('back edge');
         for j=1:length(a),
             censur_index_back=[i:min(i+censur2(j),ndata2)];
-            %power2B_SM_plot(censur_index_back,j) = NaN;
+            power2B_SM_plot(censur_index_back,j) = NaN;
             thetaSVD_fac(censur_index_back,j) = NaN;
             phiSVD_fac(censur_index_back,j) = NaN;
             polarizationSign(censur_index_back,j) = NaN;
@@ -697,7 +706,10 @@ elseif nargout==8,
     BB_xxyyzz_fac(:,:,3) = powerBz_SM_plot;
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
     EESum_xxyyzz_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC = power2E_plot;
+    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
+    EE_xxyyzz_FAC(:,:,1) = powerEx_plot
+    EE_xxyyzz_FAC(:,:,2) = powerEy_plot
+    EE_xxyyzz_FAC(:,:,3) = powerEz_plot
     Poynting_xyz_FAC = S_plot_x;
     Poynting_xyz_FAC(:,:,2) = S_plot_y;
     Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
@@ -713,7 +725,10 @@ else
     BB_xxyyzz_fac(:,:,3) = powerBz_SM_plot;
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
     EESum_xxyyzz_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC = power2E_plot;
+    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
+    EE_xxyyzz_FAC(:,:,1) = powerEx_plot
+    EE_xxyyzz_FAC(:,:,2) = powerEy_plot
+    EE_xxyyzz_FAC(:,:,3) = powerEz_plot
     Poynting_xyz_FAC = S_plot_x;
     Poynting_xyz_FAC(:,:,2) = S_plot_y;
     Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
