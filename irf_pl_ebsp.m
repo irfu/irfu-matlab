@@ -15,7 +15,8 @@ function h=irf_pl_ebsp(cl_id,xyzGSE,varargin)
 %        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,...
 %        Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
 %
-
+% NOTE: tick marks on the y-axis are manually being placed (since 
+% Matlab decides to use just one when there are so many panels.
 
 %save('2009May22.mat', 'e1','b1','power2E_plot','power2B_SM_plot','Spar_plot','EtoB_plot');
 
@@ -74,13 +75,44 @@ cmapCombo=[cmapStandard;xcm2];
     t_start_epoch=get_t_start_epoch(t(1,1));
     
     sampl=1/(t(2)-t(1))
-    freq_int=args{2};
-    freq_number=25;
+    freq_range=args{2};
+    pc12_range=0;
+    pc35_range=0;
+    default_range=0;
+    
+  switch lower(args{2})
+      case {'pc12'}
+          freq_int=[.1 5];
+          pc12_range=1;
+      case {'pc35'}
+          freq_int=[.002 .1];
+          pc35_range=1;
+      otherwise 
+          display('Must choose either pc12 or pc35. Using default [.01 5]');
+          freq_int=[.01 5];
+          default_range=1;
+  end
+  
+if pc12_range
+    sampl1 = 1;
+end
+if pc35_range
+    sampl1 = 1/60;
+end
+if default_range
+    sampl1 = 1;
+end
+t1 = t(1):1/sampl1:t(end); t1=t1'; 
+ndata2=size(t1);
+
+    %freq_number=25;
+    freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12); %to get proper overlap for Morlet
     amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
     a=logspace(amin,amax,anumber);
     w0=sampl/2; % The maximum frequency
     newfreq=w0./a;
-
+%display(min(newfreq));
+%display(max(newfreq));
     %newfreq=frequencyVector;
     BVector=args{3};
 %     power2B_SM_plot = args{4};
@@ -124,10 +156,28 @@ cmapCombo=[cmapStandard;xcm2];
         ylabel('f [Hz]')
         set(gca,'yscale','log','tickdir','out');%,'yTick',[min(newfreq):max(newfreq)]);
         %ytick=[.02:.01:.1; .1:.1:1; 1:1:5];
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
         if any(isnan(power2E_plot)),
             caxis([-3.5 3.5]);
         else
@@ -171,7 +221,7 @@ cmapCombo=[cmapStandard;xcm2];
    
     h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
     %hold on
-    pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_SM_plot(:,:,4).'))) 
+    pcolor(t1-t_start_epoch,newfreq,log10(abs(power2B_SM_plot(:,:,4).'))) 
 %    pcolor(t-t_start_epoch,newfreq,log10(abs(power2B_plot.'))) 
     shading flat
     ylabel('f [Hz]')
@@ -186,13 +236,31 @@ cmapCombo=[cmapStandard;xcm2];
     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16,'-.','color','k');
     %axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
     hold off
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
-    caxis(floor(cmean)+[-3.5 3.5]);
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
+    %caxis(floor(cmean)+[-3.5 3.5]);
   %  caxis(floor(cmean)+[-2.5 2.5]);
-%    caxis([-6.5 0.5]);
+    caxis([-6.5 0.5]);
     %colormap(cmapCombo);
     %freezeColors;
     %hca2 = colorbar;
@@ -207,15 +275,33 @@ cmapCombo=[cmapStandard;xcm2];
     
     if nargs==11,
         h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-        pcolor(t-t_start_epoch,newfreq,180./pi.*k_thphSVD_fac(:,:,1).') % With edge effects removed
+        pcolor(t1-t_start_epoch,newfreq,180./pi.*k_thphSVD_fac(:,:,1).') % With edge effects removed
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
-     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
        caxis([0 90]);
         %colormap(cmapCombo);
         %freezeColors;
@@ -227,15 +313,33 @@ cmapCombo=[cmapStandard;xcm2];
         %cbfreeze(hca)
 
         h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-        pcolor(t-t_start_epoch,newfreq,180./pi.*k_thphSVD_fac(:,:,2).') % With edge effects removed
+        pcolor(t1-t_start_epoch,newfreq,180./pi.*k_thphSVD_fac(:,:,2).') % With edge effects removed
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
         caxis([-180 180]);
         %colormap(cmapCombo);
         %freezeColors;
@@ -252,15 +356,33 @@ cmapCombo=[cmapStandard;xcm2];
     
     if nargs==11,
         h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-        pcolor(t-t_start_epoch,newfreq,polSVD_fac.') % With edge effects removed
+        pcolor(t1-t_start_epoch,newfreq,polSVD_fac.') % With edge effects removed
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
     %    set(gca,'tickdir','out');
-     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
        caxis([0 1]);
         %colormap(cmapCombo);
         %freezeColors;
@@ -274,7 +396,8 @@ cmapCombo=[cmapStandard;xcm2];
 %             end 
 %         end
         
-        ylabel(hca,{'Degree of'; 'Polarization'});
+        %ylabel(hca,{'2D Degree of'; 'Polarization'});
+        ylabel(hca,{'Planarity'});
         %irf_colormap(hca5,'standard');
         %cbfreeze(hca)
     end
@@ -286,7 +409,7 @@ cmapCombo=[cmapStandard;xcm2];
         h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
     %    pcolor(t-t_start_epoch,newfreq,log10(Pol.')) 
         %pcolor(t-t_start_epoch,newfreq,(polarizationEllipseRatio.*polarizationSign).') 
-        pcolor(t-t_start_epoch,newfreq,(ellipticity).') 
+        pcolor(t1-t_start_epoch,newfreq,(ellipticity).') 
     %    pcolor(t-t_start_epoch,newfreq,(Lp.*Phase_dif./abs(Phase_dif)).') 
     %    pcolor(t-t_start_epoch,newfreq,Lp.') 
         shading flat
@@ -296,10 +419,28 @@ cmapCombo=[cmapStandard;xcm2];
     %    set(gca,'tickdir','out');
         %hca6 = colorbar;
         %hca6=colorbar('peer',h(6));
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
         caxis([-1 1]);
         %cLim=[257,461];
     %    caxis([-2 2]);
@@ -339,17 +480,35 @@ cmapCombo=[cmapStandard;xcm2];
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+       if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
 
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
             %caxis([-50 50]);
             caxis([-10 10]);
         else
-            cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
+            cc = [-max(max(sqrt(abs(Spar_plot(:,:,3))))) max(max(sqrt(abs(Spar_plot(:,:,3)))))];
             caxis(cc);
         end
     %    caxis([-10 10]);
@@ -370,17 +529,35 @@ cmapCombo=[cmapStandard;xcm2];
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log');set(gca,'tickdir','out');
-    set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
-        .7 .8 .9 1 2 3 4 5]);
-    set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
-        ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+%     set(gca,'YTick',[0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+%         .7 .8 .9 1 2 3 4 5]);
+%     set(gca,'YTickLabel',{' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+%         ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      if default_range,
+         set(gca,'YTick',[0.01 0.02 .03 .04 .05 .06 .07 .08 .09 .1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.01',' ',' ',' ',' ',' ',' ',' ',' ','0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc12_range,
+         set(gca,'YTick',[.1 .2 .3 .4 .5 .6 ...
+             .7 .8 .9 1 2 3 4 5]);
+         set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
+             ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+      end
+      if pc35_range,
+        set(gca,'YTick',[.002 .003 .004 .005 .006 ...
+            .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
+        set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
+            ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+      end
 
         if any(isnan(Spar_plot)),
 %            caxis([-10 10]);
             %caxis([-50 50]);
             caxis([-10 10]);
         else
-            cc = [-max(max(sqrt(abs(Spar_plot)))) max(max(sqrt(abs(Spar_plot))))];
+            cc = [-max(max(sqrt(abs(Spar_plot(:,:,3))))) max(max(sqrt(abs(Spar_plot(:,:,3)))))];
             caxis(cc);
         end
     %    caxis([-10 10]);

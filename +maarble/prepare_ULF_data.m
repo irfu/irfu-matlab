@@ -5,11 +5,11 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
 % the irf_ebsp routine, and then plots them using irf_pl_ebsp.
 
 
-% e in ISR2; b in gse
+% e, b, and xyz in ISR2
 % get e from E_Vec_xy_ISR2__C?_CP_EFW_L2_E
-% get b from B_vec_xyz_gse__C?_CP_FGM_FULL
-% position vector xyz from sc_pos_xyz_gse__C?_CP_FGM_FULL 
-% converts b and xyz to ISR2
+% get b from B_vec_xyz_isr2__C?_CP_FGM_FULL_ISR2
+% position vector xyz from sc_pos_xyz_isr2__C?_CP_FGM_FULL_ISR2 
+% 
 % first entry in varargin to be cl_id
 % second and third entries to be the frequency range in the form: 'freq',[.01,1]
 
@@ -26,12 +26,14 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
   end
   
   cl_id=varargin{1};
-  cl_id
+  %cl_id
+  freq_range=varargin{2};
+  display(freq_range);
   args=args(2:end);
-  xyzGSE=xyz;
+  xyzGSE=c_coord_trans('ISR2','GSE',xyz,'cl_id',cl_id);
   %% Convert b and xyz to ISR2
-  b = c_coord_trans('GSE','ISR2',b,'cl_id',cl_id);
-  xyz = c_coord_trans('GSE','ISR2',xyz,'cl_id',cl_id);
+  %b = c_coord_trans('GSE','ISR2',b,'cl_id',cl_id);
+  %xyz = c_coord_trans('GSE','ISR2',xyz,'cl_id',cl_id);
 
   original_args=args;
   var_desc{1} = '';
@@ -42,12 +44,6 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
   
   
   %% Default values that can be overridden by options
-% dt = 0;
-% flag_yy = 0;
-% scaleyy = 1;
-% plot_type = '';
-% marker = '-';
-% flag_plot_all_data=1;
 flag_colorbar=1;
 colorbar_scale=1;
 
@@ -106,20 +102,20 @@ colorbar_scale=1;
   %% Calculations
   if nargout==4,
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac]=...
-        irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
-    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac);
+        irf_ebsp(e,b,B,xyz,freq_range);
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac);
   elseif nargout==8,
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
-    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac,...
+        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,freq_range);
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC);
   else
     [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
         Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
-        irf_ebsp(e,b,B,xyz,varargin(2),varargin{3});
+        irf_ebsp(e,b,B,xyz,freq_range);
     %plot_params={{timeVector},{frequencyVector},{BB_xxyyzz_fac},{EESum_xxyyzz_ISR2},{Poynting_xyz_FAC},{polarization},{ellipticity}};
     %plot_params={timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,Poynting_xyz_FAC,polarization,ellipticity};
-    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,varargin{3},BVector,BB_xxyyzz_fac,...
+    h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
   end
 %   plot_params=varargout{1};
