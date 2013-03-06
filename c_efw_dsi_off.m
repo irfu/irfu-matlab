@@ -22,8 +22,10 @@ SC_POT_LIM = -8;  % Above this we apply SW/SH correction, below - MS
 TAV = 300; % Averaging window for SC potential
 Damp = 1.1*ones(1,4);
 
+% i is for Ey +i send curve down
+
 % Table of SW/SH offsets
-if t>=toepoch([2011 01 01 00 00 0]), Ddsi = [ 0.02  0.65  2.05  0.48 ];
+if t>=toepoch([2011 01 01 00 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2010 12 01 00 00 0]), Ddsi = [ 0.4  1.1  2.72 0.84  ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 11 01 00 00 0]), Ddsi = [ 0.4  1.3  2.42 0.84  ]; % Force MS offset for months when don't enter SW.
 elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offset for months when don't enter SW.
@@ -89,7 +91,7 @@ ii = find(Psr(:,2) < SC_POT_LIM);
 if isempty(ii), return, end
 
 % Table of MS offsets
-if t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.68  0.78  1.22  0.79 ]; % C3 only 7 data points. using 2010 offset for C3
+if t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ]; % C2 strange curve limited data
 elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
 elseif t>=toepoch([2009 01 01 00 0 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];
 elseif t>=toepoch([2008 01 01 00 0 0]), Ddsi = [ 0.59  1.31 1.36  0.68 ];
