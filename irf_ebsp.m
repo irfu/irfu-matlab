@@ -1,4 +1,4 @@
-function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyy_ISR2,EE_xxyyzz_FAC,...
     Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=irf_ebsp(e,b,B,xyz,varargin)
 %IRF_EBSP   Calculates E wavelet spectra, B wavelet spectra, Poynting flux,
 % E/B, ellipticity, polarization; 
@@ -466,7 +466,7 @@ parfor ind_a=1:length(a),
      censur2=floor(.4*a);
    end
    if pc35_range,
-       censur2=floor(.1*a);
+       censur2=floor(.005*a);
    end
    censur_indices2=[1:min(censur2(ind_a),length(t1)) max(1,length(t1)-censur2(ind_a)):length(t1)];
    
@@ -612,20 +612,19 @@ polarizationSign(idx_nan_b,:) = NaN;
 degreeOfPolarization(idx_nan_b,:) = NaN;
 
 ndata2=size(power2B_SM_plot,1);
-% I don't know why these lines aren't working
-% if pc12_range || default_range,
-%   censur2=floor(.5*a);
-% end
-% if pc35_range,
-%   censur2=floor(.1*a);
-% end
+if pc12_range || default_range,
+  censur3=floor(.4*a);
+end
+if pc35_range,
+  censur3=floor(.005*a);
+end
 censur2=floor(.4*a);
 
 for i=1:length(idx_nan_b)-1,
     if idx_nan_b(i) < idx_nan_b(i+1),
         display('front edge');
         for j=1:length(a),
-            censur_index_front=[max(i-censur2(j),1):i];
+            censur_index_front=[max(i-censur3(j),1):i];
             power2B_SM_plot(censur_index_front,j) = NaN;
             thetaSVD_fac(censur_index_front,j) = NaN;
             phiSVD_fac(censur_index_front,j) = NaN;
@@ -636,7 +635,7 @@ for i=1:length(idx_nan_b)-1,
     if idx_nan_b(i) > idx_nan_b(i+1),
         display('back edge');
         for j=1:length(a),
-            censur_index_back=[i:min(i+censur2(j),ndata2)];
+            censur_index_back=[i:min(i+censur3(j),ndata2)];
             power2B_SM_plot(censur_index_back,j) = NaN;
             thetaSVD_fac(censur_index_back,j) = NaN;
             phiSVD_fac(censur_index_back,j) = NaN;
@@ -705,6 +704,11 @@ if wantPolarization,
     
 end
 
+if pc35_range,
+    t1=fix(t1/60);
+    t1=t1*60;
+end
+
 if nargout==4,
 	%timeVector = e(:,1);
     timeVector = fix(t1);
@@ -723,7 +727,7 @@ elseif nargout==8,
     BB_xxyyzz_fac(:,:,2) = powerBy_SM_plot;
     BB_xxyyzz_fac(:,:,3) = powerBz_SM_plot;
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
-    EESum_xxyyzz_ISR2 = power2E_ISR2_plot;
+    EESum_xxyy_ISR2 = power2E_ISR2_plot;
     EE_xxyyzz_FAC(:,:,4) = power2E_plot;
     EE_xxyyzz_FAC(:,:,1) = powerEx_plot
     EE_xxyyzz_FAC(:,:,2) = powerEy_plot
@@ -743,7 +747,7 @@ else
     BB_xxyyzz_fac(:,:,2) = powerBy_SM_plot;
     BB_xxyyzz_fac(:,:,3) = powerBz_SM_plot;
 	BB_xxyyzz_fac(:,:,4) = power2B_SM_plot;
-    EESum_xxyyzz_ISR2 = power2E_ISR2_plot;
+    EESum_xxyy_ISR2 = power2E_ISR2_plot;
     EE_xxyyzz_FAC(:,:,4) = power2E_plot;
     EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
     EE_xxyyzz_FAC(:,:,2) = powerEy_plot;

@@ -121,7 +121,7 @@ ndata2=size(t1);
 
     power2B_SM_plot = args{1};
     power2E_plot = args{2};
-    EESum_xxyyzz_ISR2 = args{2};
+    EESum_xxyy_ISR2 = args{2};
     EE_xxyyzz_FAC = args{3};
     Spar_plot = args{4};
     Poynting_rThetaPhi_FAC = args{5};
@@ -129,9 +129,9 @@ ndata2=size(t1);
     polSVD_fac = args{7};
     ellipticity = args{8};
 
-format long;
-display(t(1:5));
-format short;
+%format long;
+%display(t(1:5));
+%format short;
     %%%%%%%%% E spectra %%%%%%%%%%%%
     
     if nargs==8 || nargs==11,
@@ -153,7 +153,7 @@ format short;
 %             pcolor(t-t_start_epoch,newfreq,log10(abs(EESum_xxyyzz_ISR2.'))) % With edge effects removed
 %         end    
          %pcolor(t-t_start_epoch,newfreq,log10(abs(EE_xxyyzz_FAC.'))) % With edge effects removed
-        pcolor(t-t_start_epoch,newfreq,log10(abs(EESum_xxyyzz_ISR2.'))) % With edge effects removed
+        pcolor(t-t_start_epoch,newfreq,log10(abs(EESum_xxyy_ISR2.'))) % With edge effects removed
         shading flat
         ylabel('f [Hz]')
         set(gca,'yscale','log','tickdir','out');%,'yTick',[min(newfreq):max(newfreq)]);

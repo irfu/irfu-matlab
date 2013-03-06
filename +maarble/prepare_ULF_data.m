@@ -1,4 +1,4 @@
-function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyy_ISR2,EE_xxyyzz_FAC,...
     Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=prepare_ULF_data(e,b,xyz,varargin)
 % This routine prepares the ULF data to be analyzed for the Maarble
 % project. The routine then calculates the various wave parameters using
@@ -11,10 +11,10 @@ function [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_
 % position vector xyz from sc_pos_xyz_isr2__C?_CP_FGM_FULL_ISR2 
 % 
 % first entry in varargin to be cl_id
-% second and third entries to be the frequency range in the form: 'freq',[.01,1]
+% second entry to be the frequency range, either 'pc12' or 'pc35'
 
 % Example:
-%   maarble.prepare_ULF_data(E,B,xyz,4,'freq',[.01,1]);
+%   maarble.prepare_ULF_data(E,B,xyz,4,'pc12');
 
 
   %% Check input 
@@ -105,18 +105,18 @@ colorbar_scale=1;
         irf_ebsp(e,b,B,xyz,freq_range);
     h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac);
   elseif nargout==8,
-    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyy_ISR2,EE_xxyyzz_FAC,...
         Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,freq_range);
     h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac,...
-        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC);
+        EESum_xxyy_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC);
   else
-    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyy_ISR2,EE_xxyyzz_FAC,...
         Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
         irf_ebsp(e,b,B,xyz,freq_range);
     %plot_params={{timeVector},{frequencyVector},{BB_xxyyzz_fac},{EESum_xxyyzz_ISR2},{Poynting_xyz_FAC},{polarization},{ellipticity}};
     %plot_params={timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,Poynting_xyz_FAC,polarization,ellipticity};
     h=irf_pl_ebsp(cl_id,xyzGSE,timeVector,freq_range,BVector,BB_xxyyzz_fac,...
-        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
+        EESum_xxyy_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity);
   end
 %   plot_params=varargout{1};
 %   for i=2,nargout,
