@@ -108,6 +108,7 @@ end
 
 for j=1:length(varargin),
   var_name=varargin{j};
+  testLocalCaaRepository = false; % default test local CAA directory and not local repository
   if ischar(var_name) && any(strfind(var_name,'__')) % variable name specified as input
     dataobj_name=get_dataobj_name(var_name);
     if getAllData && ~getFromFile &&	evalin('caller',['exist(''' dataobj_name ''',''var'')']),
@@ -125,14 +126,39 @@ for j=1:length(varargin),
         jloaded=jloaded+1;
       else
         irf_log('dsrc',[dataobj_name ' could not be loaded!']);
-        continue;
+		if (getMat || getCaa) && ~getAllData && local.c_read('test')
+			testLocalCaaRepository = true;
+			irf_log('dsrc','will test if data are in local CAA data repository.');
+		else
+			continue;
+		end
       end
     end
     if getCaa, % save variable
-      res{jloaded}=getv(dataobject,var_name);
+		if testLocalCaaRepository
+			ttt = local.c_read(var_name,tint,'caa');
+			if isempty(ttt),
+				irf_log('dsrc','NO DATA in repository!');
+			else
+				jloaded = jloaded + 1;
+				resmat{jloaded} = ttt;
+			end
+		else
+			res{jloaded}=getv(dataobject,var_name);
+		end
     end
     if getMat % save variable in matlab matrix format
-      resmat{jloaded}=getmat(dataobject,var_name);
+		if testLocalCaaRepository
+			ttt = local.c_read(var_name,tint,'mat');
+			if isempty(ttt),
+				irf_log('dsrc','NO DATA in repository!');
+			else
+				jloaded = jloaded + 1;
+				resmat{jloaded} = ttt;
+			end
+		else
+			resmat{jloaded}=getmat(dataobject,var_name);
+		end
     end
     if getUnit % save variable unit
       resunit{jloaded}=getunits(dataobject,var_name);
