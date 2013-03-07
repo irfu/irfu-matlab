@@ -1,0 +1,35 @@
+!
+START_META     =   OBSERVATORY
+   ENTRY       =   "Cluster-Context"
+END_META       =   OBSERVATORY
+!
+START_META     = OBSERVATORY_DESCRIPTION
+    ENTRY      = "This is an observatory class for used to contain contextual data"
+    ENTRY      = "relevant to the Cluster mission but not measured by Cluster itself."
+    ENTRY      = "Examples will be data from other missions or groundbased facilities"
+    ENTRY      = "for which the Cluster Archive is not the main archive and therefore"
+    ENTRY      = "maintaining detailed observatory level metadata would be too much"
+    ENTRY      = "of an overhead. Details of the data sources should be provided in"
+    ENTRY      = "the DATASET_DESCRIPTION for each contextual dataset even where this"
+    ENTRY      = "results in some duplication of information."
+END_META       = OBSERVATORY_DESCRIPTION
+!
+START_META     = OBSERVATORY_TIME_SPAN
+    VALUE_TYPE = ISO_TIME_RANGE
+    ENTRY      = 2000-01-01T00:00:00Z/2020-12-31T23:59:59Z
+END_META       = OBSERVATORY_TIME_SPAN
+!
+START_META = OBSERVATORY_REGION
+    ENTRY  = "Solar_Wind"
+    ENTRY  = "Bow_Shock"
+    ENTRY  = "Magnetosheath"
+    ENTRY  = "Magnetopause"
+    ENTRY  = "Magnetosphere"
+    ENTRY  = "Magnetotail"
+    ENTRY  = "Polar_Cap"
+    ENTRY  = "Auroral_Region"
+    ENTRY  = "Cusp"
+    ENTRY  = "Radiation_Belt"
+    ENTRY  = "Plasmasphere"
+END_META   = OBSERVATORY_REGION
+!

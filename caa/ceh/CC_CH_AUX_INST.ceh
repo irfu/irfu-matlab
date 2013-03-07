@@ -1,0 +1,25 @@
+!
+!  CC_CH_AUX_INST.ceh
+!  Global metadata for the Auxilary Contextual INSTRUMENT level metadata
+!
+
+START_META = INSTRUMENT_NAME
+    ENTRY = "AUXC"
+END_META = INSTRUMENT_NAME
+
+START_META = INSTRUMENT_DESCRIPTION
+    ENTRY = "This is a generic instrument description used for contextual data"
+    ENTRY = "provided in support of the Cluster observations. A generic description"
+    ENTRY = "is used in situations where the data cannot be described using the"
+    ENTRY = "existing metadata model enumerations and where extending the data model"
+    ENTRY = "is not appropriate due to the nature of the data (e.g. number of datasets"
+    ENTRY = "is small and the main long-term archive for the instrument is not the CAA)."
+END_META = INSTRUMENT_DESCRIPTION
+
+START_META = INSTRUMENT_TYPE
+    ENTRY = "Auxiliary"
+END_META = INSTRUMENT_TYPE
+
+START_META = MEASUREMENT_TYPE
+    ENTRY = "Context"
+END_META = MEASUREMENT_TYPE

@@ -1,0 +1,39 @@
+!
+!  C2_CH_OBS.ceh
+!  Global Cluster2 metadata provided by the CAA.
+!
+! Save to your own hard drive so this file can be
+! included as C2_CH_OBS.ceh in other cef files. 
+! 
+START_META     =   OBSERVATORY
+   ENTRY       =   "Cluster-2"
+END_META       =   OBSERVATORY
+!
+START_META     =   OBSERVATORY_CAVEATS
+   ENTRY       =   "*C2_CQ"
+END_META       =   OBSERVATORY_CAVEATS
+!
+START_META     = OBSERVATORY_DESCRIPTION  
+   ENTRY       = "Missing" 
+   ENTRY       = "Needs to be filled in." 
+END_META       = OBSERVATORY_DESCRIPTION 
+!
+START_META     = OBSERVATORY_TIME_SPAN
+   VALUE_TYPE  = ISO_TIME_RANGE
+   ENTRY       = 2000-07-16T12:39:00Z/2005-12-31T23:59:59Z 
+END_META       = OBSERVATORY_TIME_SPAN
+!
+START_META = OBSERVATORY_REGION 
+ ENTRY     = "Solar_Wind" 
+ ENTRY     = "Bow_Shock" 
+ ENTRY     = "Magnetosheath" 
+ ENTRY     = "Magnetopause" 
+ ENTRY     = "Magnetosphere" 
+ ENTRY     = "Magnetotail" 
+ ENTRY     = "Polar_Cap" 
+ ENTRY     = "Auroral_Region" 
+ ENTRY     = "Cusp" 
+ ENTRY     = "Radiation_Belt" 
+ ENTRY     = "Plasmasphere" 
+END_META   = OBSERVATORY_REGION
+
