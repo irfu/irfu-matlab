@@ -54,9 +54,17 @@ if isempty(index),
 	index=struct('dummy',[]);
 end
 %% Check inputs
+if nargin == 0,
+	help local.c_read;
+	return;
+end
 if nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'list')
 	list_indexed_datasets;
 	return;
+elseif nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'test')
+	out = false;
+	if exist(caaDir,'dir'), out = true; end
+	return
 elseif nargin>=2,
 	varName=varargin{1};
 	tint=varargin{2};
@@ -78,6 +86,11 @@ end
 if nargin > 3
 	irf_log('fcal','max 3 arguments supported');
 	return
+end
+%% Check if repository is there
+if ~exist(caaDir,'dir')
+	disp(['Local CAA data repository ' caaDir ' not available!']);
+	return;
 end
 %% Read in data
 out=[];dataobject=[]; % default return empty output
