@@ -1,9 +1,9 @@
-function export( cl_id, freqRange, timeVector,...
+function export(tint,cl_id, freqRange, timeVector,...
     BB_xxyyzz_fac,EESum_xxyy_isr2,EE_xxyyzz_fac,...
     Poynting_rThetaPhi_fac,k_thphSVD_fac,polSVD_fac,ellipticity)
 %EXPORT  Export data to CEF
 %
-% export( cl_id, freqRange, timeVector,BB_xxyyzz_fac,...
+% export( tint, cl_id, freqRange, timeVector,BB_xxyyzz_fac,...
 %          EESum_xxyy_isr2,EE_xxyyzz_fac,Poynting_rThetaPhi_fac,...
 %          k_thphSVD_fac,polSVD_fac,ellipticity)
 %
@@ -24,10 +24,34 @@ DATASET_VERSION = '0';
 % We do not track versions here, CAA will do this for us
 DATA_VERSION = '00';
 
-%% Prepare the data array
+%% Check the input
+switch lower(freqRange)
+    case 'pc12'
+        %DT2 = 0.5; % time resolution
+        datasetID = 'MAARBLE_ULF_PC12';
+        numberOfFreq = 21;
+    case 'pc35';
+        %DT2 = 30; % time resolution
+        datasetID = 'MAARBLE_ULF_PC35';
+        numberOfFreq = 21;
+    otherwise
+        error('freqRange must be ''pc12'' or ''pc35''')
+end
+
 nFreq = size(BB_xxyyzz_fac,2);
 nData = size(BB_xxyyzz_fac,1);
+if nFreq~=numberOfFreq
+    error('number of frequencies in BB_xxyyzz_fac must be %d (not %d!)',...
+        numberOfFreq,nFreq)
+end
+if length(timeVector)~=nData
+    error(...
+        'Different number of records in timeVector and BB_xxyyzz_fac (%d!=%d!)',...
+        length(timeVector),nData)
+end
+% TODO: add more checks
 
+%% Prepare data array
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
@@ -67,13 +91,14 @@ if strcmpi(freqRange,'pc35')
     % Reformat E matrix
     EE_2D = zeros(nData,nFreq*3);
     for comp=1:3,EE_2D(:,((1:nFreq)-1)*3+comp) = EE_xxyyzz_fac(:,:,comp); end
-    dataToExport = [dataToExport {formatExp, EE_2D}]; % EE_xxyyzz_fac
+    dataToExport = [dataToExport {{formatExp, EE_2D}}]; % EE_xxyyzz_fac
 end
     
 % Time array goes first
 out_CharArray = epoch2iso(timeVector,1); % Short ISO format: 2007-01-03T16:00:00.000Z
 out_CharArray(:,end+1)=',';
 
+% Write out data by columns and then combine into a common char matrix
 for i=1:length(dataToExport)
     tmp_CharArray = sprintf(dataToExport{i}{1},dataToExport{i}{2});
     tmp_CharArray = reshape(tmp_CharArray,length(tmp_CharArray)/nData,nData)';
@@ -87,17 +112,9 @@ out_CharArray = out_CharArray';
 out_CharArray=out_CharArray(:)';
 
 %% Prepare the file header
-switch lower(freqRange)
-    case 'pc12'
-        DT2 = 0.5;
-        datasetID = 'MAARBLE_ULF_PC12';
-    case 'pc35';
-        DT2 = 30;
-        datasetID = 'MAARBLE_ULF_PC35';
-    otherwise
-        error('freqRange must be ''pc12'' or ''pc35''')
-end
-fileName = sprintf('C%d_CP_AUX_%s', cl_id, datasetID);
+fileName = [sprintf('C%d_CP_AUX_%s', cl_id, datasetID)...
+    '__' irf_fname(tint,5) '_V' DATA_VERSION];
+   
 header = [...
     sprintf('!-------------------- CEF ASCII FILE --------------------|\n')...
     sprintf('! created on %s\n', datestr(now))...
@@ -113,7 +130,7 @@ header = [...
     sprintf('START_META     =   FILE_TIME_SPAN\n')...
 	sprintf('   VALUE_TYPE  =   ISO_TIME_RANGE\n')...
     sprintf('   ENTRY       =   %s/%s\n', ...
-        epoch2iso(timeVector(1)-DT2,1),epoch2iso(timeVector(end)+DT2,1))...
+        epoch2iso(tint(1),1),epoch2iso(tint(2),1))...
     sprintf('END_META       =   FILE_TIME_SPAN\n')...
     sprintf('START_META     =   GENERATION_DATE\n')...
     sprintf('   VALUE_TYPE  =   ISO_TIME\n')...
