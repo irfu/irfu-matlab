@@ -2,10 +2,11 @@ function varargout = c_desc(vs,v_info)
 %C_DESC  Provide a description of a Cluster variable
 %
 % C_DESC(V_S [,V_S_INFO]) 
-%        prints out a description of variable VS
+%		prints out a description of variable VS
 %
 % DESC = C_DESC(V_S [,V_S_INFO]) 
-%        returns a description of variable VS as structure DESC.
+%		returns a description of variable VS as structure DESC.
+%		returns empty cell string if variable name unknown
 %
 % Input:
 %	V_S      - string defining a variable
@@ -1844,7 +1845,7 @@ elseif strcmp(vs,'B') || strcmp(vs,'j') || strcmp(vs,'jz') || strcmp(vs,'jxB')
         v.label_1 = {'"JxBx", "JxBy", "JxBz"'};
     end
 else
-	irf_log('fcal',['Variable name not recognized: ' vs]);
+	%irf_log('fcal',['Variable name not recognized: ' vs]);
     varargout={[]};
     return
 end
