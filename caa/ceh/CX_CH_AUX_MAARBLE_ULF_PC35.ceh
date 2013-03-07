@@ -1,0 +1,338 @@
+!------------------- CEF ASCII File --------------------
+! Header file for Cluster Pc3-5 
+!-------------------------------------------------------
+INCLUDE        =   "CL_CH_MISSION.ceh"
+INCLUDE        =   "CXXX_CH_OBS.ceh"
+INCLUDE        =   "CL_CH_AUX_EXP.ceh"
+INCLUDE        =   "CL_CH_AUX_INST.ceh"
+!
+! DATASET LEVEL METADATA
+!
+START_META     =   DATASET_ID
+   ENTRY       =   "CXXX_CP_AUX_MAARBLE_ULF_PC35"
+END_META       =   DATASET_ID
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP>CAA_Parameter"
+END_META       =   DATA_TYPE
+!
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Polarization and Propagation Parameters"
+END_META       =   DATASET_TITLE
+!
+START_META     =   DATASET_DESCRIPTION !!! TODO: TO BE UPDATED
+   ENTRY       =  "BB is the spectrum of B produced using Morlet wavelet."
+   ENTRY       =  "Polarization and propagation parameters derived from singular value"
+   ENTRY       =  "decomposition (SVD) method of the cross-spectral matrix (sm)."   
+   ENTRY       =  "The SVD  method is described in Santolik et al (2003)."
+   ENTRY       =  "The parameters calculated from the three magnetic components are"
+   ENTRY       =  "BB, THSVD, PHSVD, ELLSVD and POLSVD." 
+   ENTRY       =  "The theta and phi variables are respectively the wave vector polar" 
+   ENTRY       =  "and azimuthal angles in FAC coordinate system."
+   ENTRY       =  "AMPV, THPV and PHPV are the magnitude, polar and azimuthal angles"
+   ENTRY       =  "in FAC coordinate system of the Poynting vector." 
+   ENTRY       =  "EE is the spectrum of 3D E produced using Morlet wavelet, where"
+   ENTRY       =  "E is computed using the zero parallel field assumption (E dot B = 0)."
+   ENTRY       =  "ESUM is the sum of the two electric auto-power spectra in"
+   ENTRY       =  "the spacecraft spin plain."
+   ENTRY       =  "The change of coordinate system has been done using FGM data."
+   ENTRY       =   " "
+   ENTRY       =  "EFW12-AI-14 to EFW: to describe in the MAARBLE dataset headers which of the 
+CAA datasets were used for their production"
+   ENTRY       =   " "
+   ENTRY       =   "This dataset was generated as part of European Union MARBLE project."
+   ENTRY       =   " "
+   ENTRY       =   "The contacts for the MAARBLE project are"
+   ENTRY       =   "  Ioannis A. Daglis, National Observatory of Athens"
+   ENTRY       =   "  Yuri Khotyaintsev, Swedish Institute of Space Physics"
+   ENTRY       =   "  Ondrej Santolik, Institute of Atmospheric Physics of"
+   ENTRY       =   "         the Academy of Sciences of the Czech Republic"
+   ENTRY       =   "  Sebastien Bourdarie, ONERA"
+   ENTRY       =   "  Richard B. Horne, The British Antarctic Survey"
+   ENTRY       =   "  Ian R. Mann, The University of Alberta"
+   ENTRY       =   "  Drew Turner, UCLA"
+END_META       =   DATASET_DESCRIPTION
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Meghan Mella>Cluster ULF data provider>meghan.mella@irfu.se"
+   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   TIME_RESOLUTION
+!
+START_META     =   MIN_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   MIN_TIME_RESOLUTION
+!
+START_META     =   MAX_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   MAX_TIME_RESOLUTION
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Derived"
+END_META       =   PROCESSING_LEVEL
+!
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "To be written"
+END_META       =   DATASET_CAVEATS
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the European Union Framework 7 Programme, the MAARBLE project"
+   ENTRY       =   " and the ESA Cluster Archive in any publications based upon the use of these data."
+END_META       =   ACKNOWLEDGEMENT
+!
+! PARAMETER LEVEL METADATA
+!
+START_VARIABLE  =  time_tags__CXXX_CP_AUX_MAARBLE_ULF_PC35
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "time tag"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = ISO_TIME
+    SIGNIFICANT_DIGITS  = 24
+    FILLVAL             = 9999-12-31T23:59:59Z
+    FIELDNAM            = "Universal Time"
+    LABLAXIS            = "UT"
+    DELTA_PLUS          = 0
+    DELTA_MINUS         = 0
+END_VARIABLE    =  time_tags__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Interval centred frequency tag"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 21
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 4
+   FILLVAL            = -999.9999
+   FIELDNAM           = "Frequency bin centres"
+   LABLAXIS           = "F"
+   LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F"
+   DELTA_PLUS         = Frequency_BHW__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DELTA_MINUS        = Frequency_BHW__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   SCALETYP           = Log
+   DATA               = 0.0020,0.0024,0.0030,0.0036,0.0044,0.0053,0.0065,0.0079,0.0096,0.0116, \
+                        0.0141,0.0172,0.0209,0.0254,0.0309,0.0376,0.0457,0.0556,0.0676,0.0822, \
+                        0.1000
+END_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = Frequency_BHW__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Frequency bin half widths"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 21
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -999.9999
+   FIELDNAM           = "Frequency bin half widths"
+   LABLAXIS           = "F_bhw"
+   LABEL_1            = "F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw"
+   SCALETYP           = Log
+   DATA               = 0.0002,0.0002,0.0003,0.0004,0.0004,0.0005,0.0006,0.0008,0.0009,0.0011, \
+                        0.0014,0.0017,0.0020,0.0025,0.0030,0.0037,0.0045,0.0054,0.0066,0.0081, \
+                        0.0097
+END_VARIABLE = Frequency_BHW__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = BB_xxyyzz_fac__CXXX_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Vector"
+   FLUCTUATIONS       = "Wavelet_Power-spectrum"
+   CATDESC            = "Power spectrum in the Pc 3-5 range of the B-field in the FAC system"
+   UNITS              = "nT^2 Hz^-1"
+   SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
+   TENSOR_ORDER       = 2
+   TENSOR_FRAME       = "FAC"
+   FRAME              = "FAC>xyz"
+   COORDINATE_SYSTEM  = "FAC"
+   SIZES              = 21,3     ! 21 frequency bins x 3 components
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Magnetic Power Spectral Density"
+   LABLAXIS           = "Magnetic Power Spectral Density"
+   REPRESENTATION_2   = "xx","yy","zz"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   LABEL_2            = "Bx^2","By^2","Bz^2"
+   QUALITY            = 3
+END_VARIABLE = BB_xxyyzz_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = THSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"   
+   PROPERTY           = "Direction"
+   CATDESC            = "Polar Angle of the direction of propagation in FAC system (SVD)."
+   UNITS              = "deg"
+   SI_CONVERSION      = "1>degree"
+   SIZES              = 21   ! 21 frequency bins
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -999.
+   FIELDNAM           = "Polar Angle (SVD) in FAC system"
+   LABLAXIS           = "THSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = THSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = PHSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"   
+   PROPERTY           = "Direction"
+   CATDESC            = "Azymuthal angle of the direction of propagation in FAC system (SVD)."
+   UNITS              = "deg"
+   SI_CONVERSION      = "1>degree"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT 
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -999.
+   FIELDNAM           = "Azimuthal Angle (SVD) in FAC system"
+   LABLAXIS           = "PHSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = PHSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = ELLSVD__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"        
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Ellipticity of the polarization (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Ellipticity of the polarization (SVD)."
+   LABLAXIS           = "ELLSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = ELLSVD__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = POLSVD__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"         
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Degree of polarization in the polarization plane (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
+   LABLAXIS           = "POLSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = POLSVD__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = AMPV__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"           
+   PROPERTY           = "Component"
+   CATDESC            = "Amplitude of the Poynting vector."
+   UNITS              = "W m^-2 Hz^-2"
+   SI_CONVERSION      = "1.0>W m^-2 Hz^-2"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3  
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Amplitude of the Poynting vector"
+   LABLAXIS           = "PFlux"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = AMPV__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = THPV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"   
+   PROPERTY           = "Direction"
+   CATDESC            = "Polar Angle of the Poynting vector in FAC system (SVD)."
+   UNITS              = "deg"
+   SI_CONVERSION      = "1>degree"
+   SIZES              = 21   ! 21 frequency bins
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -999.
+   FIELDNAM           = "Polar Angle (SVD) in FAC system"
+   LABLAXIS           = "THPV"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = THPV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = PHPV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"   
+   PROPERTY           = "Direction"
+   CATDESC            = "Azymuthal angle of the Poynting vector in FAC system (SVD)."
+   UNITS              = "deg"
+   SI_CONVERSION      = "1>degree"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT 
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -999.
+   FIELDNAM           = "Azimuthal Angle (SVD) in FAC system"
+   LABLAXIS           = "PHPV"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = PHPV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = ESUM__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Electric_Field"           
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Sum of the two electric auto-power spectra."
+   UNITS              = "mV^2 m^-2 Hz^-1"
+   SI_CONVERSION      = "1.0E-6>V^2 m^-2 Hz^-1"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3  
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Sum of the two electric auto-power spectra."
+   LABLAXIS           = "ESUM"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = ESUM__CXXX_CP_AUX_MAARBLE_ULF_PC35
+!
+START_VARIABLE = EE_xxyyzz_fac__CXXX_AUX_MAARBLE_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Electric_Field"
+   PROPERTY           = "Vector"
+   FLUCTUATIONS       = "Wavelet_Power-spectrum"
+   CATDESC            = "Power spectrum in the Pc 3-5 range of the E-field in the FAC system"
+   UNITS              = "nT^2 Hz^-1"
+   SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
+   TENSOR_ORDER       = 2
+   TENSOR_FRAME       = "FAC"
+   FRAME              = "FAC>xyz"
+   COORDINATE_SYSTEM  = "FAC"
+   SIZES              = 21,3     ! 21 frequency bins x 3 components
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Electric Power Spectral Density"
+   LABLAXIS           = "Electric Power Spectral Density"
+   REPRESENTATION_2   = "xx","yy","zz"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   LABEL_2            = "Ex^2","Ey^2","Ez^2"
+   QUALITY            = 3
+END_VARIABLE = EE_xxyyzz_fac__CXXX_CP_AUX_MAARBLE_ULF_PC35
+
+
