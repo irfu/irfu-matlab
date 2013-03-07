@@ -88,7 +88,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  time_tags__CXXX_CP_AUX_MAARBLE_ULF_PC35
+START_VARIABLE  =  Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -101,7 +101,7 @@ START_VARIABLE  =  time_tags__CXXX_CP_AUX_MAARBLE_ULF_PC35
     LABLAXIS            = "UT"
     DELTA_PLUS          = 0
     DELTA_MINUS         = 0
-END_VARIABLE    =  time_tags__CXXX_CP_AUX_MAARBLE_ULF_PC35
+END_VARIABLE    =  Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
 !
 START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
