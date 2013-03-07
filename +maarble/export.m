@@ -100,7 +100,7 @@ out_CharArray(:,end+1)=',';
 
 % Write out data by columns and then combine into a common char matrix
 for i=1:length(dataToExport)
-    tmp_CharArray = sprintf(dataToExport{i}{1},dataToExport{i}{2});
+    tmp_CharArray = sprintf(dataToExport{i}{1},dataToExport{i}{2}');
     tmp_CharArray = reshape(tmp_CharArray,length(tmp_CharArray)/nData,nData)';
     out_CharArray = [out_CharArray tmp_CharArray]; clear tmp_CharArray %#ok<AGROW>
 end
