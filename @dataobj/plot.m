@@ -365,29 +365,13 @@ elseif flag_spectrogram
       deltaplus= getv(dobj,timevar.DELTA_PLUS);
       dep.dt.plus=deltaplus.data(1,:);
     elseif isnumeric(timevar.DELTA_PLUS)
-      if ~strcmpi(timevar.UNITS,'s')
-        posSec=strfind(lower(timevar.SI_CONVERSION),'>s');
-        if isempty(posSec), error('wrong format for SI_CONVERSION for time'), end
-        toSec=str2double(timevar.SI_CONVERSION(1:posSec-1)); clear posSec
-        if isnan(toSec), error('wrong format for SI_CONVERSION for time'), end
-        dep.dt.plus=toSec*timevar.DELTA_PLUS;
-      else
-        dep.dt.plus=timevar.DELTA_PLUS;
-      end
+      dep.dt.plus=timevar.DELTA_PLUS;
     end
     if ischar(timevar.DELTA_MINUS)
       deltaminus= getv(dobj,timevar.DELTA_MINUS);
       dep.dt.minus=deltaminus.data(1,:);
     elseif isnumeric(timevar.DELTA_MINUS)
-      if ~strcmpi(timevar.UNITS,'s')
-        posSec=strfind(lower(timevar.SI_CONVERSION),'>s');
-        if isempty(posSec), error('wrong format for SI_CONVERSION for time'), end
-        toSec=str2double(timevar.SI_CONVERSION(1:posSec-1)); clear posSec
-        if isnan(toSec), error('wrong format for SI_CONVERSION for time'), end
-        dep.dt.minus=toSec*timevar.DELTA_MINUS;
-      else
-        dep.dt.minus=timevar.DELTA_MINUS;
-      end
+      dep.dt.minus=timevar.DELTA_MINUS;
     end
   end
   if flag_fill_spectrogram_gaps==1 && isfield(dep,'dt'), % fill gaps, disregard delta_plus and delta_minus for each data point

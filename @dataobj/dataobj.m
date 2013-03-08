@@ -80,15 +80,6 @@ switch action
 			% check if cdfepoch16
 			usingCdfepoch16=strcmpi('epoch16',info.Variables{1,4});
 			% initialize data object
-			dobj.FileModDate		= info.FileModDate;
-			dobj.VariableAttributes = info.VariableAttributes;
-			dobj.GlobalAttributes	= info.GlobalAttributes;
-			dobj.Variables			= info.Variables;
-			if usingCdfepoch16
-				update_variable_attributes_cdfepoch16;
-			else
-				update_variable_attributes_cdfepoch;
-			end
 			if usingNasaPatchCdf
 				[data,info] = cdfread(cdf_file,'CombineRecords',true);
 				if usingCdfepoch16
@@ -135,6 +126,11 @@ switch action
 			dobj.VariableAttributes = info.VariableAttributes;
 			dobj.GlobalAttributes	= info.GlobalAttributes;
 			dobj.Variables			= info.Variables;
+            if usingCdfepoch16
+                update_variable_attributes_cdfepoch16;
+            else
+                update_variable_attributes_cdfepoch;
+            end
 			% test if there are some data
 			if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
 					any(strcmpi(info.Variables(:,4),'epoch16')==1)),
