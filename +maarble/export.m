@@ -52,45 +52,63 @@ end
 % TODO: add more checks
 
 %% Prepare data array
+% convert radians to degrees
+toD = 180.0/pi;
+k_thphSVD_fac(:,:,1:2) = k_thphSVD_fac(:,:,1:2)*toD;
+Poynting_rThetaPhi_fac(:,:,2:3) = Poynting_rThetaPhi_fac(:,:,2:3)*toD;
+
+% fliplr to make frequencies ascending
+k_thphSVD_fac(:,:,1) = fliplr(k_thphSVD_fac(:,:,1));
+k_thphSVD_fac(:,:,2) = fliplr(k_thphSVD_fac(:,:,2));
+ellipticity = fliplr(ellipticity);
+polSVD_fac = fliplr(polSVD_fac);
+Poynting_rThetaPhi_fac(:,:,1) = fliplr(Poynting_rThetaPhi_fac(:,:,1));
+Poynting_rThetaPhi_fac(:,:,2) = fliplr(Poynting_rThetaPhi_fac(:,:,2));
+Poynting_rThetaPhi_fac(:,:,3) = fliplr(Poynting_rThetaPhi_fac(:,:,3));
+EESum_xxyy_isr2 = fliplr(EESum_xxyy_isr2);
+
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
 
-BB_xxyyzz_fac(isnan(BB_xxyyzz_fac)) = FILLVAL_EXP;
 k_thphSVD_fac(isnan(k_thphSVD_fac)) = FILLVAL;
 ellipticity(isnan(ellipticity)) = FILLVAL;
 polSVD_fac(isnan(polSVD_fac)) = FILLVAL;
 Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac(:,:,1))) = FILLVAL_EXP;
 Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac)) = FILLVAL;
 EESum_xxyy_isr2(isnan(EESum_xxyy_isr2)) = FILLVAL_EXP;
-EE_xxyyzz_fac(isnan(EE_xxyyzz_fac)) = FILLVAL_EXP;
+BB_xxyyzz_fac(isnan(BB_xxyyzz_fac)) = FILLVAL_EXP;
+% Reformat B matrix and fliplr to make frequencies ascending
+BB_2D = zeros(nData,nFreq*3);
+for comp=1:3
+    BB_2D(:,((1:nFreq)-1)*3+comp) = fliplr(BB_xxyyzz_fac(:,:,comp)); 
+end
 
 % Define formats for output
 formatExp = '%9.2e,'; % Amplitudes
 formatAng = '%6.0f,'; % Angles - integer values
 formatDeg = '%6.1f,'; % Degree of ... -1..1 or 0..1
 
-% Reformat B matrix
-BB_2D = zeros(nData,nFreq*3);
-for comp=1:3,BB_2D(:,((1:nFreq)-1)*3+comp) = BB_xxyyzz_fac(:,:,comp); end
-toD = 180.0/pi; % convert radians to degrees
 dataToExport = {...
-    {formatExp, BB_2D},...                             % BB_xxyyzz_fac
-    {formatAng, k_thphSVD_fac(:,:,1)*toD},...          % THSVD_fac
-    {formatAng, k_thphSVD_fac(:,:,2)*toD},...          % PHSVD_fac
-    {formatDeg, ellipticity},...                       % ELLSVD
-    {formatDeg, polSVD_fac},...                        % POLSVD
-    {formatExp, Poynting_rThetaPhi_fac(:,:,1)},...     % AMPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,2)*toD},... % THPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,3)*toD},... % PHPV
-    {formatExp, EESum_xxyy_isr2}                       % ESUM
+    {formatExp, BB_2D},...                         % BB_xxyyzz_fac
+    {formatAng, k_thphSVD_fac(:,:,1)},...          % THSVD_fac
+    {formatAng, k_thphSVD_fac(:,:,2)},...          % PHSVD_fac
+    {formatDeg, ellipticity},...                   % ELLSVD
+    {formatDeg, polSVD_fac},...                    % POLSVD
+    {formatExp, Poynting_rThetaPhi_fac(:,:,1)},... % AMPV
+    {formatAng, Poynting_rThetaPhi_fac(:,:,2)},... % THPV
+    {formatAng, Poynting_rThetaPhi_fac(:,:,3)},... % PHPV
+    {formatExp, EESum_xxyy_isr2}                   % ESUM
     };
 
 % For Pc3-5 we also add E spectrum in FAC
 if strcmpi(freqRange,'pc35')
-    % Reformat E matrix
+    EE_xxyyzz_fac(isnan(EE_xxyyzz_fac)) = FILLVAL_EXP;
+    % Reformat E matrix and fliplr to make frequencies ascending
     EE_2D = zeros(nData,nFreq*3);
-    for comp=1:3,EE_2D(:,((1:nFreq)-1)*3+comp) = EE_xxyyzz_fac(:,:,comp); end
+    for comp=1:3
+        EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(EE_xxyyzz_fac(:,:,comp)); 
+    end
     dataToExport = [dataToExport {{formatExp, EE_2D}}]; % EE_xxyyzz_fac
 end
     
@@ -100,7 +118,7 @@ out_CharArray(:,end+1)=',';
 
 % Write out data by columns and then combine into a common char matrix
 for i=1:length(dataToExport)
-    tmp_CharArray = sprintf(dataToExport{i}{1},flipud(dataToExport{i}{2}'));
+    tmp_CharArray = sprintf(dataToExport{i}{1},dataToExport{i}{2}');
     tmp_CharArray = reshape(tmp_CharArray,length(tmp_CharArray)/nData,nData)';
     out_CharArray = [out_CharArray tmp_CharArray]; clear tmp_CharArray %#ok<AGROW>
 end
@@ -144,6 +162,7 @@ header = [...
 
 %% Write the file
 if 0
+    % Write to plain CEF
     f = fopen([fileName '.cef'],'w');
     fwrite(f,header);
     fwrite(f,out_CharArray);
@@ -151,7 +170,7 @@ if 0
     fclose(f);
     return
 else
-    % Write directly GZIPed file
+    % Write directly GZIPed CEF file
     fileOutStream = java.io.FileOutputStream(java.io.File([fileName '.cef.gz']));
     gzipOutStream = java.util.zip.GZIPOutputStream( fileOutStream );
     gzipOutStream.write(java.lang.String(header).getBytes());
