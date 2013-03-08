@@ -67,23 +67,23 @@ EE_xxyyzz_fac(isnan(EE_xxyyzz_fac)) = FILLVAL_EXP;
 
 % Define formats for output
 formatExp = '%9.2e,'; % Amplitudes
-formatAng = '%4.0f,'; % Angles - integer values
+formatAng = '%6.0f,'; % Angles - integer values
 formatDeg = '%6.1f,'; % Degree of ... -1..1 or 0..1
 
 % Reformat B matrix
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3,BB_2D(:,((1:nFreq)-1)*3+comp) = BB_xxyyzz_fac(:,:,comp); end
-
+toD = 180.0/pi; % convert radians to degrees
 dataToExport = {...
-    {formatExp, BB_2D},...                         % BB_xxyyzz_fac
-    {formatAng, k_thphSVD_fac(:,:,1)},...          % THSVD_fac
-    {formatAng, k_thphSVD_fac(:,:,2)},...          % PHSVD_fac
-    {formatDeg, ellipticity},...                   % ELLSVD
-    {formatDeg, polSVD_fac},...                    % POLSVD
-    {formatExp, Poynting_rThetaPhi_fac(:,:,1)},... % AMPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,2)},... % THPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,3)},... % PHPV
-    {formatExp, EESum_xxyy_isr2}                   % ESUM
+    {formatExp, BB_2D},...                             % BB_xxyyzz_fac
+    {formatAng, k_thphSVD_fac(:,:,1)*toD},...          % THSVD_fac
+    {formatAng, k_thphSVD_fac(:,:,2)*toD},...          % PHSVD_fac
+    {formatDeg, ellipticity},...                       % ELLSVD
+    {formatDeg, polSVD_fac},...                        % POLSVD
+    {formatExp, Poynting_rThetaPhi_fac(:,:,1)},...     % AMPV
+    {formatAng, Poynting_rThetaPhi_fac(:,:,2)*toD},... % THPV
+    {formatAng, Poynting_rThetaPhi_fac(:,:,3)*toD},... % PHPV
+    {formatExp, EESum_xxyy_isr2}                       % ESUM
     };
 
 % For Pc3-5 we also add E spectrum in FAC
