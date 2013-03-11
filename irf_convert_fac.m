@@ -29,14 +29,12 @@ function [b_fac,e_fac]=irf_convert_fac(r,B,b,e)
   end
 
   % set to zero NaNs
-  ind_nan_r=isnan(r); r(ind_nan_r)=0;
-  ind_nan_B=isnan(B); B(ind_nan_B)=0;
-%  ind_nan_A=isnan(A); A(ind_nan_A)=0;
+  r(isnan(r))=0;
+  B(isnan(B))=0;
   
   
 %% the direction of background magnetic field
 bn=irf_norm(B);
-t=r(:,1);
 Rpar=bn;
 Rperpy=irf_norm(irf_cross(Rpar, r));
 Rperpx=irf_norm(irf_cross(Rperpy, B));
