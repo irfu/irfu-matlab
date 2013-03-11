@@ -81,7 +81,7 @@ switch action
 			usingCdfepoch16=strcmpi('epoch16',info.Variables{1,4});
 			% initialize data object
 			if usingNasaPatchCdf
-				[data,info] = cdfread(cdf_file,'CombineRecords',true);
+				[data,info] = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true);
 				if usingCdfepoch16
 					timeline = convert_cdfepoch16_string_to_isdat_epoch(data{1});
 				else
@@ -249,33 +249,8 @@ end
 		end
 	end
 	function t=convert_cdfepoch16_string_to_isdat_epoch(in) % nested function
-		epochData=vertcat(in{:});
-		DIn=epochData(:,1:20);
-		Dout=zeros(size(DIn,1),6);
-		Dx   = double(DIn - '0');        % For faster conversion of numbers
-		Dout(:,1)=Dx(:,8) * 1000 + Dx(:,9) * 100 + Dx(:,10) * 10 + Dx(:,11); % Year
-		monthN=sum(Dx(:,4:6),2)-143; % Apr,Sep ok
-		monthN(monthN==-6)=1; % jan
-		monthN(monthN==-18)=2; % feb
-		monthN(monthN==1)=3; % mar
-		monthN(monthN==8)=5; % may
-		monthN(monthN==14)=6; % jun
-		monthN(monthN==12)=7; % jul
-		monthN(monthN==-2)=8; % aug
-		monthN(monthN==7)=10; % oct
-		monthN(monthN==20)=11; % nov
-		monthN(monthN==-19)=12; % dec
-		Dout(:,2)=monthN;
-		Dout(:,3) = Dx(:,1)  * 10 + Dx(:,2);   % Day
-		Dout(:,4) = Dx(:,13) * 10 + Dx(:,14);  % Hour
-		Dout(:,5) = Dx(:,16) * 10 + Dx(:,17);  % Minute
-		Dout(:,6) = Dx(:,19) * 10 + Dx(:,20);     % Second
-		psStr=epochData(:,[22:24 26:28 30:32 34:36]); % ps
-		psVec=double(psStr-'0');
-		power=repmat(10.^(-1:-1:-12),size(psStr,1),1);
-		ps=sum(psVec.*power,2);
-		Dout(:,6)=Dout(:,6)+ps;
-		t=irf_time(Dout,'vector2epoch');
+		tcdfepoch=reshape(in,size(in,1),size(in,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+		t=irf_time(tcdfepoch,'cdfepoch162epoch');
 	end
 	function update_variable_attributes_cdfepoch16 % nested function
 		isFieldUnits        = isfield(dobj.VariableAttributes,'UNITS');
