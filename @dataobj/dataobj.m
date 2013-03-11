@@ -249,7 +249,14 @@ end
 		end
 	end
 	function t=convert_cdfepoch16_string_to_isdat_epoch(in) % nested function
-		tcdfepoch=reshape(in,size(in,1),size(in,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+		% the following if is because of the bug in CAA cdf files having EPOCH16
+		% sometimes time variable has dimension zero and sometimes one
+		% TODO: report bug to CAA team and if needed cdf team
+		if numel(size(in)) == 3,
+			tcdfepoch=reshape(in,size(in,1),size(in,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+		else 
+			tcdfepoch = in; % cdfread returns (Nsamples X 2) matrix
+		end
 		t=irf_time(tcdfepoch,'cdfepoch162epoch');
 	end
 	function update_variable_attributes_cdfepoch16 % nested function
