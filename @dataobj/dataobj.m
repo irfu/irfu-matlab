@@ -85,7 +85,8 @@ switch action
 				if usingCdfepoch16
 					timeline = convert_cdfepoch16_string_to_isdat_epoch(data{1});
 				else
-					timeline = irf_time(data{1},'date2epoch');
+					timeline = irf_time(data{1},'cdfepoch2epoch');
+                    timeline = timeline(:); % bug fix for cdfread (time comes out as row vector)
 				end
 				data{1}=timeline;
 				fix_order_of_array_dimensions;
