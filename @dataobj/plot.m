@@ -19,7 +19,7 @@ function res = plot(varargin)
 %
 %
 % for common cluster variables see: http://bit.ly/pKWVKh
-% $Id$
+% $Id: plot.m,v 1.64 2013/03/08 22:04:36 yuri Exp $
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -87,6 +87,7 @@ flag_colorbar_label_fit_to_colorbar_height_is_on=0;
 flag_fill_spectrogram_gaps=0;
 line_color=''; % default line color; can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
+flag_log = 1;
 
 arg_pos = 0;
 while ~isempty(args)
@@ -136,6 +137,8 @@ while ~isempty(args)
         flag_colorbar_label_fit_to_colorbar_height_is_on=1;
       case 'fillspectrogramgaps'
         flag_fill_spectrogram_gaps=1;
+      case 'lin'
+        flag_log = 0; % for spectrograms    
       case 'sum_dim1'
         sum_dim = 1;
       case 'sum_dim2'
@@ -381,8 +384,9 @@ elseif flag_spectrogram
     fprintf('Summing over dimension %d (%s)\n', ...
       sum_dim, dep_x{sum_dim}.lab)
   end
-  
-  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',dep_x{1}.units,'p',[],'df',dep_x{1}.df);
+  if flag_log, plot_type='log'; else plot_type='lin'; end 
+  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...
+      dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
   if isfield(dep,'dt'),
     specrec.dt=dep.dt;
   end
@@ -467,7 +471,8 @@ elseif flag_spectrogram
       if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
       if flag_labels_is_on || flag_colorbar_label_is_manually_specified,
           if ~flag_colorbar_label_is_manually_specified
-              colorbar_label=['Log ' lablaxis ' [' units ']' ];
+              colorbar_label=[lablaxis ' [' units ']' ];
+              if flag_log, colorbar_label = ['Log ' colorbar_label]; end
           end
           set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
           ylabel(hcb,colorbar_label);
