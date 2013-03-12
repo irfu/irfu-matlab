@@ -179,6 +179,7 @@ ndata2=size(t1);
             .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
         set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
             ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+        caxis([-1 3]);
       end
         if any(isnan(power2E_plot)),
             caxis([-3.5 3.5]);
@@ -253,16 +254,18 @@ ndata2=size(t1);
              .7 .8 .9 1 2 3 4 5]);
          set(gca,'YTickLabel',{'0.1',' ',' ',' ',...
              ' ',' ',' ',' ',' ','1',' ',' ',' ',' '});
+         caxis([-6.5 0.5]);
       end
       if pc35_range,
         set(gca,'YTick',[.002 .003 .004 .005 .006 ...
             .007 .008 .009 .01 .02 .03 .04 .05 .06 .07 .08 .09 .1]);
         set(gca,'YTickLabel',{' ',' ',' ',' ',' ',...
             ' ',' ',' ','.01',' ',' ',' ',' ',' ',' ',' ',' ','.1'});
+        caxis([-1 4]);
       end
     %caxis(floor(cmean)+[-3.5 3.5]);
   %  caxis(floor(cmean)+[-2.5 2.5]);
-    caxis([-6.5 0.5]);
+    
     %colormap(cmapCombo);
     %freezeColors;
     %hca2 = colorbar;
