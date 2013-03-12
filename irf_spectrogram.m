@@ -1,10 +1,11 @@
 function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
-%IRF_SPECTROGRAM  plot power spectrum in logarithimic scale
+%IRF_SPECTROGRAM  plot spectrogram
 %
 % [h] = irf_spectrogram([h],specrec)
 % [h] = irf_spectrogram([h],t,Pxx,[f],[dt],[df])
 %
 % Input:
+%          h - axis handle
 %    specrec - structure including spectra
 %              specrec.t  - time vector
 %              specrec.f - frequency vector (can be also matrix the size specrec.p)
@@ -13,14 +14,14 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.df - vector of dF interval for every frequency f point (can be ommitted)
 %                           df can be structure with two vectors df.plus and df.minus
 %                           (can be also matrix the size of specrec.p)
-%         specrec.f_label - label of f axis
-%         specrec.p_label - label of colorbar
+%              specrec.f_label - label of f axis
+%              specrec.p_label - label of colorbar
+%              specrec.plot_type - 'lin' or 'log'
 %
-%           h - axis handle
 %
 % See also IRF_POWERFFT
 %
-% $Id$
+% $Id: irf_spectrogram.m,v 1.10 2012/11/08 12:41:20 andris Exp $
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -32,7 +33,6 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 
 error(nargchk(1,6,nargin))
 f_multiplier=1; % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
-
 
 if nargin==1,    % irf_spectrogram(specrec)
 	specrec = h; h = [];
@@ -88,7 +88,11 @@ elseif	nargin==6 % irf_spectrogram(h,t,Pxx,F,dt,df)
 	specrec.dt = dt;
 	specrec.df = dF;
 end
-
+flagLog = 1; % want log10(data) dy default
+if isfield(specrec,'plot_type') && ...
+        strcmpi(specrec.plot_type,'lin')
+    flagLog = 0;
+end
 specrec.t = double(specrec.t);
 specrec.f = double(specrec.f);
 %specrec.dt = double(specrec.dt);
@@ -230,14 +234,14 @@ for comp=1:min(length(h),ncomp)
 	tag=get(h(comp),'tag'); % keep tag during plotting
 	ud=get(h(comp),'userdata'); % keep tag during plotting
 	if min(size(ff))==1, % frequency is vector
-		if any(min(pp)<0) % spectra include negative values linear spectrogram
+		if ~flagLog || any(min(pp)<0) % spectra include negative values linear spectrogram
 			pcolor(h(comp),double(tt-t_start_epoch),ff,double(pp'))
 		else
 			pcolor(h(comp),double(tt-t_start_epoch),ff,log10(double(pp')))
 		end
 	else % frequency is matrix
 		ttt = repmat(tt,1,size(ff,2));
-		if any(min(pp)<0) % spectra include negative values linear spectrogram
+		if ~flagLog || any(min(pp)<0) % spectra include negative values linear spectrogram
 			pcolor(h(comp),double(ttt-t_start_epoch),ff,double(pp))
 		else
 			pcolor(h(comp),double(ttt-t_start_epoch),ff,log10(double(pp)))
@@ -248,8 +252,6 @@ for comp=1:min(length(h),ncomp)
 	zoom_in_if_necessary(h(comp)); %
 	
 	shading(h(comp),'flat')
-	%	colorbar('vert')
-	%	set(gca,'TickDir','out','YScale','log')
 	set(h(comp),'TickDir','out')
 	%check ylabel
 	if ~isfield(specrec,'f_label')
