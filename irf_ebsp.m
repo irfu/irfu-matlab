@@ -230,6 +230,7 @@ S_plot_y = zeros(ndataOut,nfreq);
 thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
+censurPower = floor(2*a*outSampling/inSampling*2);
 for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
@@ -244,12 +245,14 @@ for ind_a=1:length(a), % Main loop over frequencies
   end
   
   % Remove data possibly influenced by edge effects
-  censur_indexes=[1:min(censur(ind_a),length(outTime)) max(1,length(outTime)-censur(ind_a)):length(outTime)];
-  
+  censurIdx=[1:min(censur(ind_a),length(outTime))...
+      max(1,length(outTime)-censur(ind_a)):length(outTime)];
+  censurPwrIdx=[1:min(censurPower(ind_a),length(outTime))...
+      max(1,length(outTime)-censurPower(ind_a)):length(outTime)];
+ 
   %% Get the wavelet transform by IFFT of the FFT
   mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  mWexp2 = repmat(mWexp,1,2);
-  mWexp = repmat(mWexp,1,3);
+  mWexp2 = repmat(mWexp,1,2); mWexp = repmat(mWexp,1,3);
   Wb = ifft(sqrt(1).*Swb.*mWexp,[],1); We = []; WeISR2 = []; 
   if wantEE
       Wwe = sqrt(1).*Swe.*mWexp;
@@ -262,14 +265,15 @@ for ind_a=1:length(a), % Main loop over frequencies
   newfreqmat=w0/a(ind_a);
   Sx = []; Sy = []; Spar = [];
   if wantEE
-      %% Calculate the power spectrum of E
+      %% Power spectrum of E
       if flag_want_fac && ~flag_dedotdb0
           % power = (2*pi)*conj(W).*W./newfreqmat;
           SUMpowerEISR2 = sum( 2*pi*(WeISR2.*conj(WeISR2))./newfreqmat ,2);
       else SUMpowerEISR2 = sum( 2*pi*(We.*conj(We))./newfreqmat ,2);
       end
-      SUMpowerEISR2 = irf_resamp([inTime SUMpowerEISR2],outTime,'window',avWindow);
+      SUMpowerEISR2 = irf_resamp([inTime SUMpowerEISR2],outTime);
       SUMpowerEISR2(:,1) = [];
+      SUMpowerEISR2(censurPwrIdx) = NaN;
       if flag_dedotdb0
           % Compute Ez from dE * dB = 0
           We(:,3) = -(We(:,1).*Wb(:,1)+We(:,2).*Wb(:,2))./Wb(:,3);
@@ -280,8 +284,9 @@ for ind_a=1:length(a), % Main loop over frequencies
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
       powerE(:,4) = sum(powerE,2);
       % XXX: Maybe we want always to resample power to outTime?
-      powerE = irf_resamp([inTime powerE],outTime,'window',avWindow);
+      powerE = irf_resamp([inTime powerE],outTime);
       powerE(:,1) = [];
+      powerE(censurPwrIdx) = NaN;
       
       %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
       coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
@@ -297,14 +302,21 @@ for ind_a=1:length(a), % Main loop over frequencies
       %    + We(:,[2 3 1]).*conjWb(:,[3 1 2]) + conjWe(:,[2 3 1]).*Wb(:,[3 1 2])...
       %    - We(:,[3 1 2]).*conjWb(:,[2 3 1]) - conjWe(:,[3 1 2]).*Wb(:,[2 3 1])...
       %    )./newfreqmat;
-      S = irf_resamp([inTime S],outTime,'window',avWindow); S(:,1) = [];
-      S(censur_indexes,:) = NaN;
+      % XXX: Maybe we want always to resample power to outTime?
+      S = irf_resamp([inTime S],outTime); S(:,1) = [];
+      S(censurPwrIdx,:) = NaN;
       if flag_want_fac, Sx=S(:,1); Sy=S(:,2); Spar=S(:,3);
       else Sx=S(:,1); Sy=S(:,2); Spar = sum(S.*bn,2);
       end 
   end
   
-  powerB = zeros(ndataOut,4);
+  %% Power spectrum of B
+  powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
+  powerB(:,4) = sum(powerB,2);
+  % XXX: Maybe we want always to resample power to outTime?
+  powerB = irf_resamp([inTime powerB],outTime); powerB(:,1) = [];
+  powerB(censurPwrIdx,:) = NaN;
+  
   if wantPolarization % Polarization parameters
       %% Construct spectral matrix and average it
       SM = zeros(3,3,ndata);
@@ -354,38 +366,19 @@ for ind_a=1:length(a), % Main loop over frequencies
       %  planarity(:,ind_a) = 1 - sqrt(wSingularValues(3,:)./wSingularValues(1,:)); %planarity of polarization
       %    polarizationEllipseRatio(:,ind_a) = wSingularValues(2,:)./wSingularValues(1,:); %ratio of two axes of polarization ellipse
       polElliRat = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
-      polElliRat(censur_indexes) = NaN;
+      polElliRat(censurIdx) = NaN;
       polarizationEllipseRatio(:,ind_a) = polElliRat;
       dop = zeros(1,ndataOut);
       for i = 1:ndataOut,
           SMsqueeze = squeeze(avSM(i,:,:));
           dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
       end
-      dop(censur_indexes) = NaN;
+      dop(censurIdx) = NaN;
       thetaSVD_fac(:,ind_a) = theta;
       phiSVD_fac(:,ind_a) = phi;
       polarizationSign(:,ind_a) = sign(imag(avSM(:,1,2))); %sign of polarization
       degreeOfPolarization(:,ind_a) = dop;
-      
-      avSM(censur_indexes,:,:) = NaN;
-      powerB(:,1) = avSM(:,1,1);
-      powerB(:,2) = avSM(:,2,2);
-      powerB(:,3) = avSM(:,3,3);
-      powerB(:,4) = sum(powerB,2);
-  else
-      powerBtmp = 2*pi*(Wb.*conj(Wb))./newfreqmat;
-      powerBtmp(:,4) = sum(powerBtmp,2);
-      % XXX: Maybe we want always to resample power to outTime?
-      powerBtmp = irf_resamp([inTime powerBtmp],outTime,'window',avWindow);
-      powerBtmp(censur_indexes,:) = NaN;
-      powerB = powerBtmp(:,2:5);
   end
-  
-  
-  %% Remove data possibly influenced by edge effects
-  powerE(censur_indexes,:) = NaN;
-  SUMpowerEISR2(censur_indexes,:) = NaN;
-  
   
   %% save power
   if wantEE,
