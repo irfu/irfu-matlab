@@ -740,6 +740,36 @@ if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles in specifie
     set(hca,'ytick',[ 45 90 135 ]);
     ylabel(hca,'\Theta [deg]');
 end
+if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram for given pitch angle
+	hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
+	varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
+	pea=c_caa_var_get(varname,'mat');
+	pitchMin=45;pitchMax=135; % pitch angle interval
+	pitchAnglesSelected=[]; % specify pitch angle indixes if you do not want to specify interval
+	pitchAngleValues=pea.dep_x{1}.data(1,:);
+	if numel(pitchAnglesSelected)==0, % pitch angle interval is specified
+		pitchAnglesSelected=find(pitchAngleValues>pitchMin & pitchAngleValues<pitchMax); % use only these energy chanels
+	end
+	pitchLabel=num2str(pitchAngleValues(pitchAnglesSelected),'%5.1f ');
+	specrec={};
+	specrec.p=squeeze(sum(pea.data(:,pitchAnglesSelected,:),2));
+	specrec.t=pea.t;
+	specrec.f=pea.dep_x{2}.data(1,:);
+	specrec.f_unit = 'eV';
+	specrec.dt=pea.dt;
+	specrec.df=pea.dep_x{2}.df;
+	varunits=irf_get_data(varname,'caa','units');
+	specrec.p_label=varunits;
+	%varunits='log_{10} dEF\newline keV/cm^2 s sr keV';
+	irf_spectrogram(hca,specrec);
+	caxis(hca,[5.9 8.9]);
+	set(hca,'yscale','log');
+	set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
+	ylabel(hca,'E [eV]');
+	irf_legend(hca,{['C' num2str(ic)]},[0.98 0.02],'color','k')
+	irf_legend(hca,['slected pitch angles: ' pitchLabel],[0.02 0.02],'color','k')
+end
+
 if 0,   % PANEL: RAPID/PEACE electron densities
   % requires that both RAPID and PEACE densities are calculated before
   hca=irf_panel('nonthermal_vs_thermal_e');
