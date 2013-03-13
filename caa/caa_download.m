@@ -108,12 +108,12 @@ expandWildcards			= true;			% default is to use wildcard
 checkIfDataAreAtCaa		= true;			% check if there are any data at caa
 urlNonotify				= '&nonotify=1';% default is not notify by email
 urlFileInterval='&file_interval=72hours'; % default time interval of returned files
-urlSchedule='';                           % default do not have schedule option
-urlFormat='&format=cdf';                  % default is CDF (3.3) format
-caaServer='http://caa.estec.esa.int/'; % default server
-urlIdentity='?uname=vaivads&pwd=caa';     % default identity
-downloadDirectory = 'CAA/';					% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-%urlInventory='';                          % default no inventory output (currently use different www link)
+urlSchedule='';							% default do not have schedule option
+urlFormat='&format=cdf';				% default is CDF (3.3) format
+caaServer='http://caa.estec.esa.int/';	% default server
+urlIdentity='?uname=vaivads&pwd=caa';	% default identity
+downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
+%urlInventory='';                       % default no inventory output (currently use different www link)
 %% load .caa file with status for all downloads
 if doLog,
 	if exist('.caa','file') == 0,
@@ -424,8 +424,8 @@ end
 					delete([datasetDirName filesep '*']);
 				end
 				irf_log('dsrc',['file:      ' filelist{jj}]);
-				irf_log('dsrc',['moving to: ' downloadDirectory	dataset '/']);
-				movefile(filelist{jj},[downloadDirectory dataset '/']);
+				irf_log('dsrc',['moving to directory: ' datasetDirName]);
+				movefile(filelist{jj},datasetDirName);
 			end
 		end
 	end
