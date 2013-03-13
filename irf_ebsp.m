@@ -4,19 +4,30 @@ function [outTime,frequencyVec,BB_xxyyzz_fac,...
     irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
-% irf_ebsp(e,b,B0,xyz,freq_int,[OPTIONS])
+% irf_ebsp(E,dB,fullB,B0,xyz,freq_int,[OPTIONS])
 % modified from irf_pl_ebs
 % assumes equidistant time spacing
 %
 % It uses a Morlet wavelet.
-% e = wave electric field, columns (t ex ey ez)
-% b = wave magnetic field, columns (t bx by bz)
+%
+% Input:
+%
+% E = wave electric field, columns (t ex ey ez)
+% dB = wave magnetic field, columns (t bx by bz)
+% fullB = high resolution background magnetic field, columns (t bx by bz)
 % B0 = background magnetic field, columns (t bx by bz)
 % xyz = position vector of spacecraft, columns (t x y z)
-%
 % freq_int = frequency interval: either 'pc12', 'pc35' or numeric [fmin fmax]
+%
+% Options:
+%   'noresamp' - no resampling, E and dB are given at the same timeline
+%   'fac'      - use FAC coordinate system, otherwise no coordinate system 
+%                transformation is performed
+%   'dEdotB=0' - compute dEz from dB dot B = 0
+%   'fullB=dB' - dB contains DC field
 % 
-% Returns calculated parameters:
+% Output:
+%
 %     timeVector
 %     frequencyVector
 %     BVector
@@ -30,13 +41,18 @@ function [outTime,frequencyVec,BB_xxyyzz_fac,...
 %     ellipticity
 %
 % Examples:
-%    [timeVector,frequencyVector,BVector,BB_xxyyzz_fac]=...
+%
+%    [timeVec,frequencyVector,BB_xxyyzz_fac]=...
 %        irf_ebsp(e,b,B,xyz,'pc12');
-%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-%        Poynting_xyz_FAC]=irf_ebsp(e,b,B,xyz,'pc35');
-%   [timeVector,frequencyVector,BVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-%        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity]=...
-%        irf_ebsp(e,b,B,xyz,'pc12');
+%
+%    [timeVec,frequencyVec,BB_xxyyzz_fac,...
+%        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC]=...
+%        irf_ebsp(e,b,[],B,xyz,'pc35','fullB=dB');
+%
+%    [timeVec,frequencyVec,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,...
+%        EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
+%        k_thphSVD_fac,polSVD_fac,ellipticity]=...
+%        irf_ebsp(e,b,[],B,xyz,'pc12','fullB=dB','dEdotB=0');
 %
 %  See also: IRF_PL_EBS, IRF_PL_EBSP
 
@@ -157,6 +173,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
     dB=dB(1:end-1,:);
     B0=B0(1:end-1,:);
     xyz=xyz(1:end-1,:);
+    Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
 end
 inTime = dB(:,1);
   
@@ -327,7 +344,7 @@ for ind_a=1:length(a), % Main loop over frequencies
       
       avSM = zeros(ndataOut,3,3); % Averaged SM
       for comp=1:3
-          avSM(:,:,comp) = averageData(squeeze(SM(:,:,comp)),...
+          avSM(:,:,comp) = averageData(SM(:,:,comp),...
               inTime,outTime,avWindow);
       end
       % Remove data possibly influenced by edge effects
@@ -369,8 +386,9 @@ for ind_a=1:length(a), % Main loop over frequencies
       polElliRat(censurIdx) = NaN;
       polarizationEllipseRatio(:,ind_a) = polElliRat;
       dop = zeros(1,ndataOut);
+      % XXX FIXME: this loop can be optimized/eliminated
       for i = 1:ndataOut,
-          SMsqueeze = squeeze(avSM(i,:,:));
+          SMsqueeze = reshape(avSM(i,:,:),3,3);
           dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
       end
       dop(censurIdx) = NaN;
