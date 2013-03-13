@@ -80,13 +80,13 @@ while have_options
 			else irf_log('fcal,','wrongArgType : WINDOW value is missing')
 			end
 		case {'thresh','threshold'}
-			if length(args)>1
-				if isnumeric(args{2})
-					thresh = args{2};
-					l = 2;
-				else irf_log('fcal,','wrongArgType : THRESHOLD must be numeric')
-				end
-			else irf_log('fcal,','wrongArgType : THRESHOLD value is missing')
+            if length(args)>1
+                if isnumeric(args{2})
+                    thresh = args{2};
+                    l = 2;
+                else irf_log('fcal,','wrongArgType : THRESHOLD must be numeric')
+                end
+            else irf_log('fcal,','wrongArgType : THRESHOLD value is missing')
             end
         case 'median'
             median_flag=1;
@@ -145,10 +145,10 @@ if strcmp(flag_do,'check'), % Check if interpolation or average
 				not_found = 1; cur = 3; MAXTRY = 10;
 				while (not_found && cur<=ndata && cur-3<MAXTRY)
 					sfy = 1/(t(cur) - t(cur-1));
-					if abs(sfy-sfy1)<sfy*0.001
-						not_found = 0;
-						sfy = (sfy+sfy1)/2;
-						break
+                    if abs(sfy-sfy1)<sfy*0.001
+                        not_found = 0;
+                        sfy = (sfy+sfy1)/2;
+                        break
                     end
                     sfy1=sfy;
 					cur = cur + 1;
@@ -206,7 +206,7 @@ if strcmp(flag_do,'average')
                     end
                 else
                     if median_flag, out(j,2:end) = median(x(ii,2:end));
-                    elseif max_flag out(j,2:end) = max(x(ii,2:end));
+                    elseif max_flag, out(j,2:end) = max(x(ii,2:end));
                     else out(j,2:end) = mean(x(ii,2:end));
                     end
                 end
