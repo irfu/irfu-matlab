@@ -1,6 +1,5 @@
-function [outTime,frequencyVector,BB_xxyyzz_fac,...
-    EESum_xxyy_ISR2,EE_xxyyzz_FAC,...
-    Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
+function [outTime,frequencyVec,BB_xxyyzz_fac,...
+    EESum_xxyy_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
     k_thphSVD_fac,polSVD_fac,ellipticity]=...
     irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
@@ -232,24 +231,20 @@ thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
 
 % Get the correct frequencies for the wavelet transform
-newfreq=w0./a;
+frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-for ind_a=1:length(a), % Main loop over frequencies
+parfor ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
   % average top frequencies to 1 second/1 minute
   % below will be an average over 4 wave periods. first find where one
   % sample is less than four wave periods
-  if newfreq(ind_a)/nWavePeriodToAverage > outSampling
+  if frequencyVec(ind_a)/nWavePeriodToAverage > outSampling
       avWindow = 1/outSampling;
   else
-      avWindow = nWavePeriodToAverage/newfreq(ind_a);
+      avWindow = nWavePeriodToAverage/frequencyVec(ind_a);
   end
-  
-  % Remove data possibly influenced by edge effects
-  censurIdx=[1:min(censur(ind_a),length(outTime))...
-      max(1,length(outTime)-censur(ind_a)):length(outTime)];
  
   %% Get the wavelet transform by IFFT of the FFT
   mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
@@ -265,8 +260,9 @@ for ind_a=1:length(a), % Main loop over frequencies
   end
   
   newfreqmat=w0/a(ind_a);
+  %% Power spectrum of E and Poynting flux
   if wantEE
-      %% Power spectrum of E
+      % Power spectrum of E
       if flag_want_fac && ~flag_dEdotB0
           % power = (2*pi)*conj(W).*W./newfreqmat;
           SUMpowerEISR2 = sum( 2*pi*(WeISR2.*conj(WeISR2))./newfreqmat ,2);
@@ -288,7 +284,7 @@ for ind_a=1:length(a), % Main loop over frequencies
       powerEz_plot(:,ind_a) = powerE(:,3);
       power2E_plot(:,ind_a) = powerE(:,4);
       
-      %% Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
+      % Poynting flux calculations, assume E and b units mV/m and nT, get  S in uW/m^2
       coef_poynt=10/4/pi*(1/4)*(4*pi); % 4pi from wavelets, see A. Tjulins power estimates a few lines above
       S = zeros(ndata,3);
       Wex=We(:,1);Wey=We(:,2);Wez=We(:,3);
@@ -337,6 +333,9 @@ for ind_a=1:length(a), % Main loop over frequencies
           avSM(:,:,comp) = averageData(squeeze(SM(:,:,comp)),...
               inTime,outTime,avWindow);
       end
+      % Remove data possibly influenced by edge effects
+      censurIdx=[1:min(censur(ind_a),length(outTime))...
+          max(1,length(outTime)-censur(ind_a)):length(outTime)];
       avSM(censurIdx,:,:) = NaN;
       
       %% compute singular value decomposition
@@ -419,11 +418,9 @@ Spar_plot_z = averageData(Spar_plot_z,inTime,outTime);
 
 if wantEE,
     [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,Spar_plot_z);
-    EtoB_plot=sqrt(power2E_plot./power2B_plot);
+    %EtoB_plot=sqrt(power2E_plot./power2B_plot);
 end
 
-%ind_lowpower = find(abs(power2B_plot) < .07); %for matching Pickett's 30 march 2002
-%ind_lowPower = find(abs(power2B_plot) < .05);
 if pc12_range || default_range,
   ind_lowPower = find(abs(power2B_plot) < .025);
 end
@@ -438,15 +435,12 @@ if wantPolarization,
     phiSVD_fac(ind_lowPower) = NaN;
     polarizationEllipseRatio(ind_lowPower) = NaN;
     polarizationSign(ind_lowPower) = NaN;
-    %Ls4(ind_lowpower) = NaN;
     degreeOfPolarization(ind_lowPower) = NaN;
 
     thetaSVD_fac(ind2_lowPower) = NaN;
     phiSVD_fac(ind2_lowPower) = NaN;
     polarizationEllipseRatio(ind2_lowPower) = NaN;
     polarizationSign(ind2_lowPower) = NaN;
-    %Ls4(ind2_lowpower) = NaN;
-    %degreeOfPolarization(ind2_lowPower) = NaN;
     
     %if the polarization is linear, there is a single equation and the
     %direction of the wave vector is not a unique solution
@@ -455,57 +449,24 @@ if wantPolarization,
     
 end
 
-if pc35_range,
-    outTime=fix(outTime/60);
-    outTime=outTime*60;
+BB_xxyyzz_fac = powerBx_plot;
+BB_xxyyzz_fac(:,:,2) = powerBy_plot;
+BB_xxyyzz_fac(:,:,3) = powerBz_plot;
+BB_xxyyzz_fac(:,:,4) = power2B_plot;
+if nargout>=7,
+    EESum_xxyy_ISR2 = power2E_ISR2_plot;
+    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
+    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
+    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
+    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
+    Poynting_xyz_FAC = S_plot_x;
+    Poynting_xyz_FAC(:,:,2) = S_plot_y;
+    Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
+    Poynting_rThetaPhi_FAC = S_r;
+    Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
+    Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
 end
-
-if nargout==3,
-	%timeVector = e(:,1);
-    outTime = fix(outTime);
-	frequencyVector = newfreq;
-    BB_xxyyzz_fac = powerBx_plot;
-    BB_xxyyzz_fac(:,:,2) = powerBy_plot;
-    BB_xxyyzz_fac(:,:,3) = powerBz_plot;
-	BB_xxyyzz_fac(:,:,4) = power2B_plot;
-elseif nargout==7,
-	%timeVector = e(:,1);
-    outTime = fix(outTime);
-	frequencyVector = newfreq;
-    BB_xxyyzz_fac = powerBx_plot;
-    BB_xxyyzz_fac(:,:,2) = powerBy_plot;
-    BB_xxyyzz_fac(:,:,3) = powerBz_plot;
-	BB_xxyyzz_fac(:,:,4) = power2B_plot;
-    EESum_xxyy_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
-    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
-    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
-    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
-    Poynting_xyz_FAC = S_plot_x;
-    Poynting_xyz_FAC(:,:,2) = S_plot_y;
-    Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
-    Poynting_rThetaPhi_FAC = S_r;
-    Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
-    Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
-else
- 	%timeVector = e(:,1);
-    outTime = fix(outTime);
-	frequencyVector = newfreq;
-    BB_xxyyzz_fac = powerBx_plot;
-    BB_xxyyzz_fac(:,:,2) = powerBy_plot;
-    BB_xxyyzz_fac(:,:,3) = powerBz_plot;
-	BB_xxyyzz_fac(:,:,4) = power2B_plot;
-    EESum_xxyy_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
-    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
-    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
-    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
-    Poynting_xyz_FAC = S_plot_x;
-    Poynting_xyz_FAC(:,:,2) = S_plot_y;
-    Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
-    Poynting_rThetaPhi_FAC = S_r;
-    Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
-    Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
+if nargout>=11
     k_thphSVD_fac = thetaSVD_fac;
     k_thphSVD_fac(:,:,2) = phiSVD_fac;
     polSVD_fac = degreeOfPolarization;
