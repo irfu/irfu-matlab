@@ -744,10 +744,10 @@ if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram for given pitch an
 	hca=irf_panel('C? PEACE DEFlux pitch spectra 2');
 	varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
 	pea=c_caa_var_get(varname,'mat');
-	pitchMin=45;pitchMax=135; % energy interval
-	pitchAnglesSelected=[]; % if do not want energy interval, specify energy channel
+	pitchMin=45;pitchMax=135; % pitch angle interval
+	pitchAnglesSelected=[]; % specify pitch angle indixes if you do not want to specify interval
 	pitchAngleValues=pea.dep_x{1}.data(1,:);
-	if numel(pitchAnglesSelected)==0, % specified energy interval
+	if numel(pitchAnglesSelected)==0, % pitch angle interval is specified
 		pitchAnglesSelected=find(pitchAngleValues>pitchMin & pitchAngleValues<pitchMax); % use only these energy chanels
 	end
 	pitchLabel=num2str(pitchAngleValues(pitchAnglesSelected),'%5.1f ');
