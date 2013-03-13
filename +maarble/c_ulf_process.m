@@ -50,14 +50,14 @@ B0_1MIN = irf_resamp(bf,t_1min); clear bf
 %% PC3-5
 if wantPC35
     t_4SEC = ((tint(1)+2):4:tint(end))';
-    E3D_4SEC = irf_edb(irf_resamp(E_4SEC,t_4SEC),B_5VPS,15); % Ez
+    E3D_4SEC = irf_edb(irf_resamp(E_4SEC,t_4SEC),B_5VPS,15,'Eperp+NaN'); % Ez
     B_4SEC = irf_resamp(B_5VPS,t_4SEC);
     
     %XXX: to construct inertial frame
     
     [timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
         Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity] = ...
-        irf_ebsp(E3D_4SEC,B_4SEC,B0_1MIN,R,'pc35','noresamp');
+        irf_ebsp(E3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35','noresamp','fullB=dB');
     BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
     h=irf_pl_ebsp(cl_id,R,timeVector,'pc35',BMAG,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
