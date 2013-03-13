@@ -5,7 +5,8 @@ function [ed,d]=irf_edb(e,b,angle_lim,flag)
 %          e - [Ex Ey] or [t Ex Ey] or [t Ex Ey Ez] (Ez whatever)
 %          b - [Bx By Bz] or [t Bx By Bz]
 %  angle_lim - B angle with respect to the spin plane should be at least
-%              angle_lim degrees otherwise Ez is set to 0.
+%              angle_lim degrees otherwise Ez is set to 0 or to NaN
+%              if flag 'Eperp+NaN' i sgiven.
 %         ed - E field output
 %          d - B elevation angle above spin plane
 %
@@ -17,6 +18,7 @@ function [ed,d]=irf_edb(e,b,angle_lim,flag)
 % $Id$
 
 flag_method='E.B=0'; % default method for Ez calculation
+defaultValue = 0;
 if nargin==0, help irf_edb;return;end
 if nargin == 2,
     angle_lim=20;
@@ -25,6 +27,8 @@ end
 if nargin==4,
     if strcmpi(flag,'epar'),
         flag_method='Epar';
+    elseif strcmpi(flag,'Eperp+NaN')
+        defaultValue = NaN;
     end
 end
 
@@ -38,11 +42,11 @@ end
 if le < 2
     disp('E has not enough components');return;
 elseif le == 2
-    ed=[e(:,1) e(:,2) e(:,1)*0];
+    ed=[e(:,1) e(:,2) e(:,1)*defaultValue];
 elseif le == 3
-    ed=[e(:,2) e(:,3) e(:,1)*0];
+    ed=[e(:,2) e(:,3) e(:,1)*defaultValue];
 else
-    ed=[e(:,2) e(:,3) e(:,1)*0];
+    ed=[e(:,2) e(:,3) e(:,1)*defaultValue];
 end
 
 if lb == 2
