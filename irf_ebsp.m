@@ -40,7 +40,9 @@ function [outTime,frequencyVec,BB_xxyyzz_fac,...
 %
 %  See also: IRF_PL_EBS, IRF_PL_EBSP
 
+%% Check the input
 nWavePeriodToAverage = 4; % Number of wave periods to average
+angleBElevationMax = 15;  % Below which we cannot apply E*B=0
 
 wantPolarization = 0;
 if nargout==3,
@@ -54,10 +56,7 @@ else
 	error('irf_ebsp: unknown number of output parameters');
 end
 
-flag_no_resamp = 0;
-flag_want_fac = 0;
-flag_dEdotB0 = 0;
-flag_fullB_dB = 0;
+flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 for i=1:length(varargin)
     switch lower(varargin{i})
         case 'noresamp'
@@ -84,10 +83,11 @@ end
 if flag_dEdotB0 && isempty(fullB)
     error('fullB must be given for option dEdotB=0')
 end
-
-pc12_range=0;
-pc35_range=0;
-default_range=0;
+Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
+angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
+idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
+        
+pc12_range=0; pc35_range=0; default_range=0;
 if ischar(freq_int)
     switch lower(freq_int)
         case {'pc12'}
@@ -151,7 +151,7 @@ if wantEE && size(e,2) <4 && flag_dEdotB0==0
     error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
 end
     
-%% Remove the last sample if the total number of samples is odd
+% Remove the last sample if the total number of samples is odd
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
     e=e(1:end-1,:);
     dB=dB(1:end-1,:);
@@ -160,7 +160,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
 end
 inTime = dB(:,1);
   
-%% If E has all three components, transform E and B waveforms to a 
+% If E has all three components, transform E and B waveforms to a 
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
@@ -175,17 +175,14 @@ else % Keep B direction for || Poynting flux
     bn = irf_norm(B0); bn(:,1) = [];
 end
 
-%% Find the frequencies for an FFT of all data
+%% Find the frequencies for an FFT of all data and set important parameters
 nd2=size(e,1)/2;
 nyq=1/2;
 freq=inSampling*(1:nd2)/(nd2)*nyq;
 w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
-%% Set some important parameters
 Morlet_width=5.36;
-
 freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12); %to get proper overlap for Morlet
-
 amin=log10(0.5*inSampling/freq_int(2));amax=log10(0.5*inSampling/freq_int(1));anumber=freq_number;
 %  amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
 %  amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax
@@ -233,7 +230,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-parfor ind_a=1:length(a), % Main loop over frequencies
+for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
@@ -270,12 +267,12 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       end
       power2E_ISR2_plot(:,ind_a) = SUMpowerEISR2;
       
-      if flag_dEdotB0
-          % Compute Ez from dE * dB = 0
-          We(:,3) = -(We(:,1).*Wb(:,1)+We(:,2).*Wb(:,2))./Wb(:,3);
-          if flag_want_fac
-              [Wb,We] = irf_convert_fac(xyz,B0,Wb,We);
-          end
+      if flag_dEdotB0 % Compute Ez from dE * dB = 0
+          rWe = real(We); iWe = imag(We);
+          wEz = -(rWe(:,1).*Bx+rWe(:,2).*By)./Bz-...
+              1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
+          wEz(idxBparSpinPlane,3) = NaN;
+          if flag_want_fac, We = irf_convert_fac(xyz,B0,[We(:,1:2); wEz]); end
       end
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
       powerE(:,4) = sum(powerE,2);
@@ -446,14 +443,14 @@ if wantPolarization,
     %direction of the wave vector is not a unique solution
     thetaSVD_fac(ind_single_eq) = NaN;
     phiSVD_fac(ind_single_eq) = NaN;
-    
 end
 
+%% Output
 BB_xxyyzz_fac = powerBx_plot;
 BB_xxyyzz_fac(:,:,2) = powerBy_plot;
 BB_xxyyzz_fac(:,:,3) = powerBz_plot;
 BB_xxyyzz_fac(:,:,4) = power2B_plot;
-if nargout>=7,
+if nargout>3 % E and Poyinting Flux
     EESum_xxyy_ISR2 = power2E_ISR2_plot;
     EE_xxyyzz_FAC(:,:,4) = power2E_plot;
     EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
@@ -466,13 +463,12 @@ if nargout>=7,
     Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
     Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
 end
-if nargout>=11
+if nargout>7 % Polarization parameters
     k_thphSVD_fac = thetaSVD_fac;
     k_thphSVD_fac(:,:,2) = phiSVD_fac;
     polSVD_fac = degreeOfPolarization;
     ellipticity = polarizationEllipseRatio.*polarizationSign;
 end
-
 end
 
 function out = averageData(data,x,y,avWindow)
