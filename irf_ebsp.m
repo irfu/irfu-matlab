@@ -230,11 +230,10 @@ polarizationSign = zeros(ndataOut,nfreq);
 degreeOfPolarization = zeros(ndataOut,nfreq);
 thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
-censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-censurPower = floor(2*a*outSampling/inSampling*2);
 
 % Get the correct frequencies for the wavelet transform
 newfreq=w0./a;
+censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
 for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
@@ -333,12 +332,12 @@ for ind_a=1:length(a), % Main loop over frequencies
       SM(3,3,:) = 2*pi*(Wb(:,3).*conj(Wb(:,3)))./newfreqmat;
       SM = permute(SM,[3,1,2]);
       
-      avSM = zeros(ndataOut,4,3); % Averaged SM
+      avSM = zeros(ndataOut,3,3); % Averaged SM
       for comp=1:3
-          avSM(:,:,comp) = irf_resamp([inTime squeeze(SM(:,:,comp))],...
-              outTime,'window',avWindow);
+          avSM(:,:,comp) = averageData(squeeze(SM(:,:,comp)),...
+              inTime,outTime,avWindow);
       end
-      avSM(:,1,:) = []; % get rid of the time columns
+      avSM(censurIdx,:,:) = NaN;
       
       %% compute singular value decomposition
       A = zeros(6,3,ndataOut); %real matrix which is superposition of real part of spectral matrix over imaginary part
