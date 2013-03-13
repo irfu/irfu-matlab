@@ -190,15 +190,16 @@ w0=inSampling/2; % The maximum frequency
 sigma=Morlet_width/w0; % The width of the Morlet wavelet
 
 %% Make the FFT of all data
+Swb=fft(b(:,2:4),[],1); Swe = []; SweISR2 = [];
 if wantEE
-    fprintf('irf_ebsp ... calculate E and B wavelet transform ....');
+    fprintf('irf_ebsp ... calculate E and B wavelet transform ... ');
     Swe=fft(e(:,2:end),[],1);
     if flag_want_fac && ~flag_dedotdb0
         SweISR2=fft(eISR2(:,2:3),[],1);
     end
-else fprintf('irf_ebsp ... calculate B wavelet transform ....');
+else
+    fprintf('irf_ebsp ... calculate B wavelet transform ....');
 end
-Swb=fft(b(:,2:4),[],1);
 
 %% Get the correct frequencies for the wavelet transform
 newfreq=w0./a;
@@ -228,7 +229,7 @@ S_plot_x = zeros(ndataOut,nfreq);
 S_plot_y = zeros(ndataOut,nfreq);
 thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
-censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage); % XXX : FIXME!!
+censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
 for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
@@ -247,21 +248,19 @@ for ind_a=1:length(a), % Main loop over frequencies
   
   %% Get the wavelet transform by IFFT of the FFT
   mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
+  mWexp2 = repmat(mWexp,1,2);
   mWexp = repmat(mWexp,1,3);
-  Wwb = sqrt(1).*Swb.*mWexp;
-  Wb = ifft(Wwb,[],1);
+  Wb = ifft(sqrt(1).*Swb.*mWexp,[],1); We = []; WeISR2 = []; 
   if wantEE
       Wwe = sqrt(1).*Swe.*mWexp;
       We = ifft(Wwe,[],1);
       if flag_want_fac && ~flag_dedotdb0
-          mWexp2 = repmat(mWexp,1,2);
-          WweISR2 = sqrt(1).*SweISR2.*mWexp2;
-          WeISR2 = ifft(WweISR2,[],1);
+          WeISR2 = ifft(sqrt(1).*SweISR2.*mWexp2,[],1);
       end
-  else We = [];
   end
   
   newfreqmat=w0/a(ind_a);
+  Sx = []; Sy = []; Spar = [];
   if wantEE
       %% Calculate the power spectrum of E
       if flag_want_fac && ~flag_dedotdb0
@@ -305,6 +304,7 @@ for ind_a=1:length(a), % Main loop over frequencies
       end 
   end
   
+  powerB = zeros(ndataOut,4);
   if wantPolarization % Polarization parameters
       %% Construct spectral matrix and average it
       SM = zeros(3,3,ndata);
@@ -353,8 +353,9 @@ for ind_a=1:length(a), % Main loop over frequencies
       %  Lp(:,ind_a) = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
       %  planarity(:,ind_a) = 1 - sqrt(wSingularValues(3,:)./wSingularValues(1,:)); %planarity of polarization
       %    polarizationEllipseRatio(:,ind_a) = wSingularValues(2,:)./wSingularValues(1,:); %ratio of two axes of polarization ellipse
-      polarizationEllipseRatio(:,ind_a) = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
-      polarizationEllipseRatio(censur_indexes,ind_a) = NaN;
+      polElliRat = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
+      polElliRat(censur_indexes) = NaN;
+      polarizationEllipseRatio(:,ind_a) = polElliRat;
       dop = zeros(1,ndataOut);
       for i = 1:ndataOut,
           SMsqueeze = squeeze(avSM(i,:,:));
@@ -372,12 +373,12 @@ for ind_a=1:length(a), % Main loop over frequencies
       powerB(:,3) = avSM(:,3,3);
       powerB(:,4) = sum(powerB,2);
   else
-      powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
-      powerB(:,4) = sum(powerB,2);
+      powerBtmp = 2*pi*(Wb.*conj(Wb))./newfreqmat;
+      powerBtmp(:,4) = sum(powerBtmp,2);
       % XXX: Maybe we want always to resample power to outTime?
-      powerB = irf_resamp([inTime powerB],outTime,'window',avWindow);
-      powerB(:,1) = [];
-      powerB(censur_indexes,:) = NaN;
+      powerBtmp = irf_resamp([inTime powerBtmp],outTime,'window',avWindow);
+      powerBtmp(censur_indexes,:) = NaN;
+      powerB = powerBtmp(:,2:5);
   end
   
   
