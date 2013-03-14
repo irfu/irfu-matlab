@@ -30,13 +30,14 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 % Input flags
-%   'file_interval' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
+%   'file_interval=..' - see command line manual http://goo.gl/VkkoI, default 'file_interval=72hours'
+%   'format=..'		- see command line manual http://goo.gl/VkkoI, default 'format=cdf'
 %   'nowildcard'	- download the dataset without any expansion in the name and not checking if data are there
 %   'overwrite'		- overwrite files in directory (to keep single cdf file)
 %   'schedule'		- schedule the download, (returns zip file link)
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %   'nolog'			- do not log into .caa file (good for batch processing)
-%   'downloadDirectory=...'	- define directory for downloaded datasets (instead of deaful 'CAA/')
+%   'downloadDirectory=..'	- define directory for downloaded datasets (instead of deaful 'CAA/')
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -149,6 +150,8 @@ if nargin>2, % cehck for additional flags
 			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
 			urlFileInterval = urlparameter(flag);
+		elseif any(strfind(flag,'format'))
+			urlFormat = urlparameter(flag);
 		elseif any(strcmpi('schedule',flag))
 			urlSchedule = '&schedule=1';
 		elseif any(strcmpi('nolog',flag))
