@@ -345,7 +345,7 @@ for ind_a=1:length(a), % Main loop over frequencies
       avSM = zeros(ndataOut,3,3); % Averaged SM
       for comp=1:3
           avSM(:,:,comp) = averageData(SM(:,:,comp),...
-              inTime,outTime,avWindow);
+              inTime,outTime,avWindow,1);
       end
       % Remove data possibly influenced by edge effects
       censurIdx=[1:min(censur(ind_a),length(outTime))...
@@ -495,10 +495,11 @@ if nargout>7 % Polarization parameters
 end
 end
 
-function out = averageData(data,x,y,avWindow)
+function out = averageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
     dtx = median(diff(x)); dty = median(diff(y));
     if nargin<4, avWindow = dty; end
+    if nargin<5, flagSerial = 0; end
     dt2 = avWindow/2;
     ndataOut = length(y);
     
@@ -510,8 +511,14 @@ function out = averageData(data,x,y,avWindow)
     x = [x(1)-fliplr(padTime)'; x; x(end)+padTime'];
     
     out = zeros(ndataOut,size(data,2));
-    parfor i=1:length(y)
+    if flagSerial % Serial execution
+        for i=1:length(y)
+            out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
+    else % Parallel execution
+        parfor i=1:length(y)
         out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
     end
 end
 function m = FastNanMean(x,idx)
