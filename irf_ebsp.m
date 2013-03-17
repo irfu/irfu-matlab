@@ -1,6 +1,6 @@
-function [outTime,frequencyVec,BB_xxyyzz_fac,...
-    EESum_xxyy_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
-    k_thphSVD_fac,polSVD_fac,ellipticity]=...
+function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
+    EESum_ISR2,EE_XXYYZZ_FAC,Poynting_XYZ_FAC,Poynting_RThPh_FAC,...
+    k_ThPhSVD_fac,degOfPolarization,ellipticity]=...
     irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
@@ -28,17 +28,16 @@ function [outTime,frequencyVec,BB_xxyyzz_fac,...
 % 
 % Output:
 %
-%     timeVector
-%     frequencyVector
-%     BVector
-%     BB_xxyyzz_fac
-%     EESum_xxyy_ISR2
-%     EE_xxyyzz_FAC,...
-%     Poynting_xyz_FAC
-%     Poynting_rThetaPhi_FAC
-%     k_thphSVD_fac
-%     polSVD_fac
-%     ellipticity
+%     timeVector         - Time
+%     frequencyVector    - Frequency
+%     BB_XXYYZZ_FAC      - B power spectrum (xx, yy, zz FAC)
+%     EESum_ISR2         - E power spectrum (xx+yy ISR2)
+%     EE_XXYYZZ_FAC      - E power spectrum (xx, yy, zz FAC)
+%     Poynting_XYZ_FAC   - Poynting flux (xyz FAC)
+%     Poynting_RThPh_FAC - Poynting flux (r, theta, phi FAC)
+%     k_ThPhSVD_FAC      - k-vector (theta, phi FAC)
+%     degOfPolarization  - 3D degree of polarization
+%     ellipticity        - ellipticity
 %
 % Examples:
 %
@@ -472,27 +471,27 @@ if wantPolarization,
 end
 
 %% Output
-BB_xxyyzz_fac = powerBx_plot;
-BB_xxyyzz_fac(:,:,2) = powerBy_plot;
-BB_xxyyzz_fac(:,:,3) = powerBz_plot;
-BB_xxyyzz_fac(:,:,4) = power2B_plot;
+BB_XXYYZZ_FAC = powerBx_plot;
+BB_XXYYZZ_FAC(:,:,2) = powerBy_plot;
+BB_XXYYZZ_FAC(:,:,3) = powerBz_plot;
+BB_XXYYZZ_FAC(:,:,4) = power2B_plot;
 if nargout>3 % E and Poyinting Flux
-    EESum_xxyy_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
-    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
-    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
-    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
-    Poynting_xyz_FAC = S_plot_x;
-    Poynting_xyz_FAC(:,:,2) = S_plot_y;
-    Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
-    Poynting_rThetaPhi_FAC = S_r;
-    Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
-    Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
+    EESum_ISR2 = power2E_ISR2_plot;
+    EE_XXYYZZ_FAC(:,:,4) = power2E_plot;
+    EE_XXYYZZ_FAC(:,:,1) = powerEx_plot;
+    EE_XXYYZZ_FAC(:,:,2) = powerEy_plot;
+    EE_XXYYZZ_FAC(:,:,3) = powerEz_plot;
+    Poynting_XYZ_FAC = S_plot_x;
+    Poynting_XYZ_FAC(:,:,2) = S_plot_y;
+    Poynting_XYZ_FAC(:,:,3) = Spar_plot_z;
+    Poynting_RThPh_FAC = S_r;
+    Poynting_RThPh_FAC(:,:,2) = pi/2-S_elevation;
+    Poynting_RThPh_FAC(:,:,3) = S_azimuth;
 end
 if nargout>7 % Polarization parameters
-    k_thphSVD_fac = thetaSVD_fac;
-    k_thphSVD_fac(:,:,2) = phiSVD_fac;
-    polSVD_fac = degreeOfPolarization;
+    k_ThPhSVD_fac = thetaSVD_fac;
+    k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
+    degOfPolarization = degreeOfPolarization;
     ellipticity = polarizationEllipseRatio.*polarizationSign;
 end
 end
