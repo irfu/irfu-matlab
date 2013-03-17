@@ -1,5 +1,5 @@
 !
-! $Id$
+! Source: C3_CH_EFW_INST_CAV.ceh
 !
 START_META     =   INSTRUMENT_CAVEATS
    ENTRY       =   "Events:"

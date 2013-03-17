@@ -1,5 +1,6 @@
 !
-! $Id$
+! Source : CX_CQ_EFW_INST.ceh
+! Generated: DDD
 !
 START_META = DATASET_ID
 	ENTRY = "CXXX_CQ_EFW_INST"
