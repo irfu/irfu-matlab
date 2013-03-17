@@ -247,7 +247,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-for ind_a=1:length(a), % Main loop over frequencies
+parfor ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
