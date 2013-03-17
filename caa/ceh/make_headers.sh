@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id$
+# Script to produce headers for C1..C4
 
 NOW=`date -u +20%y-%m-%dT%H:%M:%SZ\ UTC`
 
