@@ -385,18 +385,20 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       polElliRat = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
       polElliRat(censurIdx) = NaN;
       polarizationEllipseRatio(:,ind_a) = polElliRat;
-      % XXX FIXME: this loop can be optimized/eliminated
+      % XXX: this loop isreplaced by the code below
       %dop = zeros(1,ndataOut);
       %for i = 1:ndataOut,
       %    SMsqueeze = reshape(avSM(i,:,:),3,3);
       %    dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
       %end
       rA= real(avSM);
+      % DOP = (3/2.*trace(real(SM)^2)./(trace(SM))^2 - 1/2);
+      % XXX : Need a reference to this formula
       dop = (3/2*(...
           rA(:,1,1).*rA(:,1,1)+rA(:,2,1).*rA(:,1,2)+rA(:,3,1).*rA(:,1,3)+...
           rA(:,1,2).*rA(:,2,1)+rA(:,2,2).*rA(:,2,2)+rA(:,3,2).*rA(:,2,3)+...
           rA(:,1,3).*rA(:,3,1)+rA(:,2,3).*rA(:,3,2)+rA(:,3,3).*rA(:,3,3))./...
-          ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2); % XXX : Need a reference to this formula
+          ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2);
       dop(censurIdx) = NaN;
       thetaSVD_fac(:,ind_a) = theta;
       phiSVD_fac(:,ind_a) = phi;
