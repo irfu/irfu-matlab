@@ -1,7 +1,7 @@
-cl_id = 1;
-%tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; PC3-5 example
-tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600];
-freqRange = 'pc12';
+
+%freqRange = 'pc35';cl_id = 2; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600];
+
 outDir = '.';
 plotFlag = 1;
 
@@ -78,9 +78,10 @@ if wantPC35
     iE3D_4SEC = E3D_4SEC;
     iE3D_4SEC(:,2:4) = iE3D_4SEC(:,2:4) - evxb(:,2:4);
     
-    [timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
+    tic; [timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
         Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity] = ...
         irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35','noresamp','fullB=dB');
+    toc
     BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
     h=irf_pl_ebsp(cl_id,R,timeVector,'pc35',BMAG,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
