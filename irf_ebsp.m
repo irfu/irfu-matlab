@@ -504,9 +504,21 @@ function out = averageData(data,x,y,avWindow)
     x = [x(1)-fliplr(padTime)'; x; x(end)+padTime'];
     
     out = zeros(ndataOut,size(data,2));
-    for i=1:length(y)
-        out(i,:) = nanmean(data(x>=y(i)-dt2 & x<y(i)+dt2,:),1,0.75);
+    parfor i=1:length(y)
+        out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
     end
+end
+function m = FastNanMean(x,idx)
+% Faster version of nanmean()
+    xx = x(idx,:);
+    % Find NaNs and set them to zero
+    nans = isnan(xx); xx(nans) = 0;
+    % Count up non-NaNs.
+    n = sum(~nans,1);
+    n(n==0) = NaN; % prevent divideByZero warnings
+    % Sum up non-NaNs, and divide by the number of non-NaNs.
+    m = sum(xx,1) ./ n;
+    m(n<size(xx,1)*0.75) = NaN; % minDataFrac = .075
 end
 
 function m = nanmean(x,dim,minDataFrac)
