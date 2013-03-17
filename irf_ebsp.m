@@ -344,7 +344,7 @@ for ind_a=1:length(a), % Main loop over frequencies
       
       avSM = zeros(ndataOut,3,3); % Averaged SM
       for comp=1:3
-          avSM(:,:,comp) = averageData(SM(:,:,comp),...
+          avSM(:,:,comp) = AverageData(SM(:,:,comp),...
               inTime,outTime,avWindow,1);
       end
       % Remove data possibly influenced by edge effects
@@ -424,18 +424,18 @@ for ind_a=1:length(a)
     S_plot_y(censurIdx,ind_a) = NaN;
     Spar_plot_z(censurIdx,ind_a) = NaN;
 end
-powerBx_plot = averageData(powerBx_plot,inTime,outTime);
-powerBy_plot = averageData(powerBy_plot,inTime,outTime);
-powerBz_plot = averageData(powerBz_plot,inTime,outTime);
-power2B_plot = averageData(power2B_plot,inTime,outTime);
-powerEx_plot = averageData(powerEx_plot,inTime,outTime);
-powerEy_plot = averageData(powerEy_plot,inTime,outTime);
-powerEz_plot = averageData(powerEz_plot,inTime,outTime);
-power2E_plot = averageData(power2E_plot,inTime,outTime);
-power2E_ISR2_plot = averageData(power2E_ISR2_plot,inTime,outTime);
-S_plot_x = averageData(S_plot_x,inTime,outTime);
-S_plot_y = averageData(S_plot_y,inTime,outTime);
-Spar_plot_z = averageData(Spar_plot_z,inTime,outTime);
+powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
+powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
+powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
+power2B_plot = AverageData(power2B_plot,inTime,outTime);
+powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
+powerEy_plot = AverageData(powerEy_plot,inTime,outTime);
+powerEz_plot = AverageData(powerEz_plot,inTime,outTime);
+power2E_plot = AverageData(power2E_plot,inTime,outTime);
+power2E_ISR2_plot = AverageData(power2E_ISR2_plot,inTime,outTime);
+S_plot_x = AverageData(S_plot_x,inTime,outTime);
+S_plot_y = AverageData(S_plot_y,inTime,outTime);
+Spar_plot_z = AverageData(Spar_plot_z,inTime,outTime);
 
 if wantEE,
     [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,Spar_plot_z);
@@ -495,7 +495,7 @@ if nargout>7 % Polarization parameters
 end
 end
 
-function out = averageData(data,x,y,avWindow,flagSerial)
+function out = AverageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
     dtx = median(diff(x)); dty = median(diff(y));
     if nargin<4, avWindow = dty; end
