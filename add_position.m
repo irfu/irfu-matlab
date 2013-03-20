@@ -5,7 +5,7 @@ function add_position(h,r)
 %
 %   See also IRF_TIMEAXIS
 %
-% $Id$
+
 
 error(nargchk(2,2,nargin))
 
