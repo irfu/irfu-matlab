@@ -6,6 +6,10 @@ function [ax cb] = c_caa_plot_distribution_function(varargin)
 %       ax - axis handle, can be given, or not
 %       ax_cb - colorbar handle if plot_type is 'polar'
 %       tint - time interval or single time in epoch
+%           if [t1 t2] - averages over time for each energy and angle
+%           if t1 - takes the closest energy sweep
+%       t_display - 'given': diaplays given time(s) (default)
+%                   'tags': displays tagged time for relevant energy sweep(s)
 %       plot_type - 'polar' or 'cross-section' [0 90 180]
 %       data_structure - obtained from c_caa_distribution_data.m, 'polar'
 %           supports up to two data_structure, 'cross-section' one at the
@@ -28,6 +32,7 @@ original_nargs=nargs;
 emin=[];
 plot_type='polar';
 pitch_angles=[0 90 180];
+t_display='given';
 
 % Read input
 n_toplot=0;
@@ -52,6 +57,9 @@ while length(args)>0
                 args=args(3:end);
             case 'pitchangle'
                 pitch_angles=args{2};
+                args=args(3:end);
+            case 't_display'
+                t_display=args{2};
                 args=args(3:end);
             otherwise % additional input
                 eval([args{1},'=args{2};'])
@@ -100,8 +108,8 @@ for k=1:n_toplot
         [~,ind_t{k}]=irf_tlim(to_plot{k}.t,tint);
     elseif length(tint)==1; % only one time, take closest energy sweep
         [tt,ind_t{k}]=irf_tlim(to_plot{k}.t,[tint-1 tint+1]);
-        ind_min=find(abs((tt-tint))==min(abs((tt-tint))));
-        ind_t={ind_t{1}(ind_min)};   
+        ind_min{k}=find(abs((tt-tint))==min(abs((tt-tint))));
+        ind_t{k}=ind_t{k}(ind_min{k});   
     end
 end
 
@@ -132,7 +140,7 @@ switch plot_type
             r{k} = tocolumn(rlog{k}-r0log);
             X{k} = r{k}*cosd(theta{k});
             Y{k} = r{k}*sind(theta{k});
-            C{k} = squeeze(nanmean(log10(to_plot{k}.p(ind_t{k},:,:)),1))';
+            C{k} = squeeze(log10(nanmean(to_plot{k}.p(ind_t{k},:,:),1)))';
         end        
         
         % Plot data
@@ -203,25 +211,52 @@ switch plot_type
 end
 
 % Title
-switch length(tint) % First line is time
+% Time
+switch length(tint)
     case 1 % Only one time
-        t1str=datestr(epoch2date(to_plot{k}.t(ind_t{:})),'dd-mmm-yyyy  HH:MM:SS.FFF');        
-        titleStr{1}=[t1str,' UT'];
-    case 2 % Time interval
-        t1str=datestr(epoch2date(tint(1)),'dd-mmm-yyyy  HH:MM:SS.FFF');
-        t2str=datestr(epoch2date(tint(2)),'HH:MM:SS.FFF');
-        %t1str=datestr(epoch2date(to_plot{1}.t(ind_t{1}(1))),'dd-mmm-yyyy  HH:MM:SS.FFF');
-        %t2str=datestr(epoch2date(to_plot{1}.t(ind_t{1}(end))),'HH:MM:SS.FFF');
-        titleStr{1}=[t1str,'-',t2str,' UT'];
+        switch [t_display,num2str(n_toplot)]
+            case {'given1','given2'}
+                t1str=datestr(epoch2date(tint),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                titleStr{1}=[t1str,' UT'];
+            case 'tags1'                
+                t1str=datestr(epoch2date(to_plot{1}.t(ind_t{1}(1))),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                titleStr{1}=[t1str,' UT'];
+            case 'tags2'
+                t1str=datestr(epoch2date(to_plot{1}.t(ind_t{1})),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                t2str=datestr(epoch2date(to_plot{2}.t(ind_t{2})),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                titleStr{1}=['Left: ',t1str,' UT'];
+                titleStr{2}=['Right: ',t2str,' UT'];
+        end
+    case 2 % A time interval given        
+        switch [t_display,num2str(n_toplot)]
+            case {'given1','given2'}
+                t1str=datestr(epoch2date(tint(1)),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                t2str=datestr(epoch2date(tint(2)),'HH:MM:SS.FFF');
+                titleStr{1}=[t1str,'-',t2str,' UT'];
+            case 'tags1'  
+                t1str=datestr(epoch2date(to_plot{1}.t(ind_t{1}(1))),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                t2str=datestr(epoch2date(to_plot{1}.t(ind_t{1}(2))),'HH:MM:SS.FFF');
+                titleStr{1}=[t1str,'-',t2str,' UT'];
+            case 'tags2'
+                for k=1:2
+                    t1str{k}=datestr(epoch2date(to_plot{k}.t(ind_t{k}(1))),'dd-mmm-yyyy  HH:MM:SS.FFF');
+                    t2str{k}=datestr(epoch2date(to_plot{k}.t(ind_t{k}(2))),'HH:MM:SS.FFF');
+                end            
+                titleStr{1}=['Left: ',t1str{1},'-',t2str{1},' UT'];
+                titleStr{2}=['Right: ',t1str{2},'-',t2str{2},' UT'];
+        end
 end
-switch n_toplot % Second line is the product plotted
+
+% Product
+switch n_toplot % Next line is the product plotted
     case 1 % Only one product
-        titleStr{2}=[to_plot{1}.product,to_plot{1}.detector];
+        titleStr{end+1}=[to_plot{1}.product,to_plot{1}.detector];
     case 2 % Two products    
-        titleStr{2}=['Left: ',to_plot{1}.product,to_plot{1}.detector];            
-        titleStr{3}=['Right: ', to_plot{2}.product,to_plot{1}.detector];                   
+        titleStr{end+1}=['Left: ',to_plot{1}.product,to_plot{1}.detector];            
+        titleStr{end+1}=['Right: ', to_plot{2}.product,to_plot{1}.detector];                   
 end
-for k=1:(n_toplot+1) titleStr{k}(strfind(titleStr{k},'_'))=' '; end
+% Change underscores to spaces
+for k=1:length(titleStr) titleStr{k}(strfind(titleStr{k},'_'))=' '; end
 title(ax,titleStr);
 end
 
