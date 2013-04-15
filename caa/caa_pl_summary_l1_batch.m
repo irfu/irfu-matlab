@@ -47,8 +47,12 @@ for t=t0:3*3600:t1
 			irf_log('proc',...
 				'cannot join PDFs: /usr/local/bin/pdfjoin does not exist')
 		end
-	else
-		caa_pl_summary_l1(-1,-1,l1dir,'savepdf')
+    else
+%l1dir %nl
+        di=l1dir(length(l1dir)-12:end);
+        it=[di(1:4) '-' di(5:6) '-' di(7:8) 'T' di(10:11) ':' di(12:13) ':00Z'];
+		caa_pl_summary_l1(it,10800,l1dir,'savepdf')
+%		caa_pl_summary_l1(-1,-1,l1dir,'savepdf')
 	end
 end
 
