@@ -9,7 +9,5 @@
 %   isGetDataLite    - Get science data from ISDAT server.
 %
 % Utilities
-%   toepoch	- Convert a [YYYY MM DD hh mm ss] time format to seconds since 1970.
-%   fromepoch	- Convert seconds since 1970 to [YYYY MM DD hh mm dd] time format.
 %   isPartionIntervals - Partition time intervals.
 %   isAddISDATlogo     - Puts an ISDAT logo onto a plot.
