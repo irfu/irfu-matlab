@@ -4,7 +4,7 @@ function add_position(h,r)
 % ADD_POSITION(H,R)  Add position labels to axis with handle H
 %
 %   See also IRF_TIMEAXIS
-%
+
 
 
 error(nargchk(2,2,nargin))
