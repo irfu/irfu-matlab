@@ -24,7 +24,7 @@ if k==1 % ========================== k=1 ===
 	end
 	clear q;
 	disp('preparing p,z vectors and f,fim matrices')
-	[p,z,f,fim] = m2xyz(wh(:,1:4));
+	[p,z,f,fim] = whamp.m2xyz(wh(:,1:4));
 	plin=p;zlin=z;plog=log10(p);zlog=log10(z);
     p=plog;z=zlog;
     zlabel='log_{10} k_{par}';plabel='log_{10} k_{perp}';
@@ -42,7 +42,7 @@ if k==11 % ========================== k=11 ===
 	wh=wh_temp;
 	clear wh_temp;
 	disp('preparing p,z vectors and f,fim matrices')
-	[p,z,f,fim] = m2xyz(wh(:,1:4));
+	[p,z,f,fim] = whamp.m2xyz(wh(:,1:4));
 	plin=p;zlin=z;plog=log10(p);zlog=log10(z);p=plog;z=zlog;	
 end
 if k==2 % ========================== k=2 ===
@@ -64,13 +64,13 @@ if k==4 % ========================== k=4 ===
 	clear xx;
 	if q1 == 1
 		q2 = input('column number=');
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 q2]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 q2]));
 	end
 	if q1 == 2
 		q2 = input('column number=');
 		s = size(wh);
 		wh(:,s(2)+1)=log10(wh(:,q2));
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 s(2)+1]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end
 	if q1 == 3
 		q2 = input('Expression=','s');
@@ -78,12 +78,12 @@ if k==4 % ========================== k=4 ===
 		d1 = eval(q2);
 		s = size(wh);
 		wh(:,s(2)+1)=d1;
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 s(2)+1]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
 	if q1 == 4
 		s = size(wh);
 		wh(:,s(2)+1)=wh(:,3)./wh(:,2);
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 s(2)+1]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
 	if q1 == 5
 		s = size(wh);
@@ -92,7 +92,7 @@ if k==4 % ========================== k=4 ===
 		if ((q4 == 'H') | (q4 == 'h')) q3=q3*1836.2;end
 		if ((q4 == 'O') | (q4 == 'o')) q3=q3*1836.2*4;end
 		wh(:,s(2)+1)=log10((wh(:,3)./wh(:,2)).^2*q3);
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 s(2)+1]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
 	if q1 == 6
 		disp('Value to plot xx is calculated as')
@@ -101,7 +101,7 @@ if k==4 % ========================== k=4 ===
 		q2=input('MIN specifies the lowest power for gamma');
 		s = size(wh);
 		wh(:,s(2)+1) = sign(wh(:,4)).*(q2+max(-q2,log10(abs(wh(:,4)))));
-		[d1,d2,d3,xx]=m2xyz(wh(:,[1 2 3 s(2)+1]));
+		[d1,d2,d3,xx]=whamp.m2xyz(wh(:,[1 2 3 s(2)+1]));
 	end	
 	clear d1 d2 d3 s;
 	irf_whamp_contour(p,z,xx);
