@@ -183,13 +183,13 @@ if 0, % read RAPID data
   c_eval('[caaRAPID_J?,~,RAPID_J?]=c_caa_var_get(''Electron_Dif_flux__C?_CP_RAP_ESPCT6'');');
 end
 if 0, % read EFW data
-  c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E'');');
-  c_eval('[caaE?,~,diE?]=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'');');
-  c_eval('diE? =c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'',''mat'');');
-  c_eval('diEs?=c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L3_E3D_INERT'',''mat'');');
-  c_eval('[caaVps?,~,Vps?]=c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P'');');
-  c_eval('ExB?=c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE'',''mat'');');
-  c_eval('diExB?=c_caa_var_get(''v_drift_ISR2__C?_CP_EFW_L2_V3D_INERT'',''mat'');'); % use NASA cdfread! otherwise ages to read
+  c_eval('caaE? = c_caa_var_get(''E_Vec_xy_ISR2__C?_CP_EFW_L2_E''          ,''caa'');');
+  c_eval('caaE? = c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'' ,''caa'');');
+  c_eval('diE?  = c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L2_E3D_INERT'' ,''mat'');');
+  c_eval('diEs? = c_caa_var_get(''E_Vec_xyz_ISR2__C?_CP_EFW_L3_E3D_INERT'' ,''mat'');');
+  c_eval('Vps?  = c_caa_var_get(''Spacecraft_potential__C?_CP_EFW_L2_P''   ,''mat'');');
+  c_eval('ExB?  = c_caa_var_get(''v_drift_GSE__C?_CP_EFW_L2_V3D_GSE''      ,''mat'');');
+  c_eval('diExB?= c_caa_var_get(''v_drift_ISR2__C?_CP_EFW_L2_V3D_INERT''   ,''mat'');');
 end
 if 0, % PEACE calculate density nPEACE1..nPEACE4 [cc] from PITCH_SPIN_DPFlux products above given energy threshold
   for ic=1:4,
