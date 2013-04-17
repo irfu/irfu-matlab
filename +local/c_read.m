@@ -122,7 +122,11 @@ switch lower(varName)
 		varToRead={varName};
 		ok=readdata;
 		if ok && strcmpi(returnDataFormat,'mat'),
-			out=[data{1} double(data{2})];
+            if numel(data)==2,
+                out=[data{1} double(data{2})];
+            elseif numel(data)==1,
+                out = data{1};
+            end
 		end
 end
 
@@ -179,10 +183,20 @@ end
                                 'Variables',varToRead{iVar});
 						end
 						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
-					else
-						[tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
+                    else
+                        % remove time variable as it is already read in
+                        ii=numel(varToRead);
+                        while ii,
+                            if strcmp(varToRead{ii},cdflib.getVarName(cdfid,0)),
+                                varToRead(ii)=[];
+                            end
+                            ii=ii-1;
+                        end
+                        % read data
+                        [tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
-						timeVector = irf_time(tmpdata{1},'date2epoch');
+						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
+                        timeVector = irf_time(tmpdata{1},'date2epoch');
 						tmpdata{1} = timeVector;
 					end
 					if iFile==istart, data=cell(size(tmpdata));end
