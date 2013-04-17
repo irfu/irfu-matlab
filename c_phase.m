@@ -22,6 +22,14 @@ MIN_SPIN_PERIOD = 3.6;
 t=t(:); % t should be column vector
 phase_out = [];
 
+% Sanity check
+badt=find(phase_2(:,1)<iso2epoch('2000-01-01T00:00:00Z'));
+if ~isempty(badt)
+	irf_log('proc',['Bad time ignored ' epoch2iso(phase_2(badt(1),1))])
+	phase_2(badt,:) = [];
+	clear badt;
+end
+
 % interp1q sets points which are outside the time interval to NaN.
 % We must check for this.
 tt = t(t>=phase_2(1,1) & t<=phase_2(end,1));
