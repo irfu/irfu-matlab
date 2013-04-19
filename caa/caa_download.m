@@ -100,7 +100,7 @@ if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 end
 
 %% Defaults
-checkDownloadStatus	= false;
+checkDownloadStatus		= false;
 doLog					= true;			% log into .caa file
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 expandWildcards			= true;			% default is to use wildcard
@@ -112,7 +112,6 @@ urlFormat='&format=cdf';				% default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/';	% default server
 urlIdentity=get_url_identity;			% default identity
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-%urlInventory='';                       % default no inventory output (currently use different www link)
 %% load .caa file with status for all downloads
 if doLog,
 	if exist('.caa','file') == 0,
@@ -464,24 +463,24 @@ end
 			fclose(fid);
 		end
 	end
-	function get_url_identity
-		caaUser = datastore('caa','user');
-		if isempty(caaUser)
-			caaUser = irf_ask('Input caa username [default:vaivads]:','s');
-			if isempty(caaUser), 
-				disp('Please register at http://caa.estec.esa.int and later use your username and password.');
-				caaUser='vaivads';
-			end
-			datastore('caa','user',caaUser);
-		end
-		caaPwd = datastore('caa','pwd');
-		if isempty(caaPwd)
-			caaPwd = input('Input caa password [default:caa]:','s');
-			if isempty(caaPassword), caaPwd='caa';end
-			datastore('caa','pwd',caaPwd);
-		end
-		urlIdentity = ['uname=' caaUser '&pwd=' caaPassword];
+end
+function urlIdentity = get_url_identity
+caaUser = datastore('caa','user');
+if isempty(caaUser)
+	caaUser = input('Input caa username [default:vaivads]:','s');
+	if isempty(caaUser),
+		disp('Please register at http://caa.estec.esa.int and later use your username and password.');
+		caaUser='vaivads';
 	end
+	datastore('caa','user',caaUser);
+end
+caaPwd = datastore('caa','pwd');
+if isempty(caaPwd)
+	caaPwd = input('Input caa password [default:caa]:','s');
+	if isempty(caaPwd), caaPwd='caa';end
+	datastore('caa','pwd',caaPwd);
+end
+urlIdentity = ['uname=' caaUser '&pwd=' caaPwd];
 end
 function TT=construct_time_table(caalog,returnTimeTable)
 TT=irf.TimeTable;
