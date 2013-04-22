@@ -31,6 +31,8 @@ Lobe wake detected for SC1 far out in SW (X = +15). Happens now and again.
 110407
 Apparent jump backwards in time in offset for SC4
 
+2011-04-30 06:00 C2 goes to the ionosphere. Bias current has been lowere, but the data is still not good. Mark it HBIASSA in manual_problems.
+
 
 2a) Software bugs to be fixed
 =============================
