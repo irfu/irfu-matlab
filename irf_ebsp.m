@@ -406,8 +406,8 @@ for ind_a=1:length(a)
     censurIdx=[1:min(censur(ind_a),length(inTime))...
         max(1,length(inTime)-censur(ind_a)):length(inTime)];
     powerBx_plot(censurIdx,ind_a) = NaN;
-    powerBx_plot(censurIdx,ind_a) = NaN;
-    powerBx_plot(censurIdx,ind_a) = NaN;
+    powerBy_plot(censurIdx,ind_a) = NaN;
+    powerBz_plot(censurIdx,ind_a) = NaN;
     power2B_plot(censurIdx,ind_a) = NaN;
     powerEx_plot(censurIdx,ind_a) = NaN;
     powerEy_plot(censurIdx,ind_a) = NaN;
