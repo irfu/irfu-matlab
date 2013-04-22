@@ -5,6 +5,8 @@ function res = timeaxis(limit)
 
 dtime = limit(2)-limit(1);
 
+% dtickv - string or seconds between labeled time ticks
+% mtics - number of minor time intervals between ticks with labels
 % get the time difference between two ticks and the number of unlabeled ticks
 if dtime>3600*24*365*10
   dticv = '3years';
@@ -141,7 +143,7 @@ if ischar(dticv), % dticv = 'year','3years','month'
                 end
             end
         case 'year' % mtics is number of month
-            tictvtemp=zeros((tend(1)+1-tstart(1))*(12/mtics),1);
+            tictvtemp=zeros((tend(1)+2-tstart(1))*mtics+1,1);
             ticstrtemp=cell(size(tictvtemp));
             i=1;
             for iy=tstart(1):tend(1)+1

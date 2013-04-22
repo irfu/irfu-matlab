@@ -11,7 +11,7 @@ function ok=test(varargin)
 
 % $Id$
 
-testList={'irf_time','c_4'};
+testList={'irf_time','epoch','c_4'};
 
 if nargin == 0,
 	disp('Possible tests');
@@ -20,7 +20,7 @@ if nargin == 0,
 		disp([num2str(j) '. ' testList{j}]);
 	end
 	disp('--------------------------');
-	disp('Execute: irf.test(''testname'') or irf.test(number)');
+	disp('Execute: irf.test(''testname'') or irf.test(number) or irf.test(''full'')');
 	return
 else
 	testName = varargin{1};
@@ -75,6 +75,7 @@ if nargout == 1,
 end
 end
 
+% Tests
 function okTest=test_irf_time
 try
 	okTest = 1;
@@ -117,7 +118,8 @@ function okTest=test_c_4
 try
 	okTest = true; % default for all test
 	ok     = true; % default for subtest
-	% position of tetrahedron, base plane in xy
+	
+	%% SUBTEST: position of tetrahedron, base plane in xy
 	R1n=[1 0 0];
 	R2n=[cos(1/3*2*pi) sin(1/3*2*pi) 0];
 	R3n=[cos(2/3*2*pi) sin(2/3*2*pi) 0];
@@ -150,7 +152,7 @@ try
 	plusminus(ok); disp('curvature');	
 	okTest = okTest * ok;
 	
-	% Constant current in Z direction
+	%% SUBTEST: Constant current in Z direction
 	jz=10;
 	Bjz = @(x) [0 jz*x(1) 0];
 	c_eval('B?=Bjz(R?);');
@@ -173,7 +175,140 @@ catch
 	okTest=false;
 end
 end
+function okTest = test_epoch
+try 
+	okTest		= true; % default for all test
+	ntests=1e5;
+	disp('Testing ISDAT epoch conversion tools.')
+	disp([' Using ' num2str(ntests) ' times for random tests'])
+	
+	%% SUBTEST: roundoff error
+	okSubtest	= true; % default for subtest
+	tol=iso2epoch('2020-01-01T00:00:00Z')*eps;
+	t=1272094620.1;  % Known to cause problems on earlier Matlab versions
+	d=fromepoch(t);
+	if ~isequal(d(1:5),[2010 04 24 07 37]) || abs(d(6)-0.1)>tol
+		okSubtest = false;
+	end
+	plusminus(okSubtest); disp('known earlier roundoff error');	
+	okTest = okTest * okSubtest;
+	%% SUBTEST: roundoff errors from random times
+	okSubtest	= true; % default for subtest
+	t=rand(1,ntests)*iso2epoch('2020-01-01T00:00:00Z');
+	d=fromepoch(t);
+	if any(d(:,6)>60)
+		okSubtest = false;
+	end
+	plusminus(okSubtest); disp('random roundoff errors');	
+	okTest = okTest * okSubtest;
+	
+	%% SUBTEST: roundoff errors from times near second boundaries
+	okSubtest	= true; % default for subtest
+	t=rand(1,ntests)*iso2epoch('2020-01-01T00:00:00Z');
+	t=fix(t)+rand(1,ntests)*0.0001;
+	d=fromepoch(t);
+	if any(d(:,6)>60)
+		okSubtest = false;
+	end
+	plusminus(okSubtest); disp('roundoff errors near second boundaries');	
+	okTest = okTest * okSubtest;
+	%% SUBTEST: epoch2iso/iso2epoch round trip
+	okSubtest	= true; % default for subtest
+	year=fix(rand(ntests,1)*(2020-1970)+1970);
+	month=fix(rand(ntests,1)*12)+1;
+	day=fix(rand(ntests,1).*(eomday(year,month)))+1;
+	hour=fix(rand(ntests,1)*24);
+	minute=fix(rand(ntests,1)*60);
+	second=rand(ntests,1);
+	t=[year month day hour minute second];
+	ISO =sprintf('%04d-%02d-%02dT%02d:%02d:%09.6fZ',t');
+	ISO =reshape(ISO,27,ntests)';
+	ISO2=epoch2iso(iso2epoch(ISO));
+	if strcmp(ISO,ISO2)~=1
+		okSubtest = false;
+	end
+	plusminus(okSubtest); disp('epoch2iso/iso2epoch round trip');	
+	okTest = okTest * okSubtest;
+	if ~okSubtest
+		cnt=0;
+		for i=1:ntests
+			if strcmp(ISO(i,:),ISO2(i,:))~=1
+				disp(['  Failed for time ' ISO(i,:) ' --> ' ISO2(i,:)])
+				cnt=cnt+1;
+			end
+			if cnt > 5
+				disp('  ... and possibly more times (not listing all failures).')
+				break
+			end
+		end
+	end
+	
+	%% SUBTEST: leap seconds
+	okSubtest	= true; % default for subtest
+	stepdates = [...
+		'Jan 6 1980'
+		'Jul 1 1981'
+		'Jul 1 1982'
+		'Jul 1 1983'
+		'Jul 1 1985'
+		'Jan 1 1988'
+		'Jan 1 1990'
+		'Jan 1 1991'
+		'Jul 1 1992'
+		'Jul 1 1993'
+		'Jul 1 1994'
+		'Jan 1 1996'
+		'Jul 1 1997'
+		'Jan 1 1999'
+		'Jan 1 2006'
+		'Jan 1 2009'];
+	stepdates = datenum(stepdates)';
+	ISOtime=epoch2iso(date2epoch(stepdates)-0.5);
+	for i=1:length(stepdates)
+		leap_s=0;
+		if strcmp(ISOtime(1,18:19),'60')
+			okSubtest = false;
+			leap_s=1;
+			
+			break;
+		end
+	end
+	plusminus(okSubtest); disp('leap seconds');	
+	okTest = okTest * okSubtest;
+	if leap_s==0,disp('  Neither Matlab nor ISDAT uses leap seconds.'),end
+	if leap_s==1 && ~okSubtest, disp('ISDAT does not use leap seconds.'); end
 
+
+catch
+	okTest = false;
+end
+end
+function okTest = template_test
+try 
+	okTest		= true; % default for all test
+	okSubtest	= true; % default for subtest
+	
+	%% SUBTEST: description of subtest1
+	okSubtest	= true; % default for subtest
+	%
+	% Here comes the subtest1
+	%
+	plusminus(okSubtest); disp('subtest1 text');	
+	okTest = okTest * okSubtest;
+	%% SUBTEST: description of test2
+	okSubtest	= true; % default for subtest
+	%
+	% Here comes the subtest2
+	%
+	plusminus(okSubtest); disp('subtest2 text');	
+	okTest = okTest * okSubtest;
+	
+catch
+	okTest = false;
+end
+end
+
+% Subfunctions
 function plusminus(ok)
 if ok,
 	fprintf('+ ');

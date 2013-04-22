@@ -1,6 +1,6 @@
-function [outTime,frequencyVec,BB_xxyyzz_fac,...
-    EESum_xxyy_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
-    k_thphSVD_fac,polSVD_fac,ellipticity]=...
+function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
+    EESum_ISR2,EE_XXYYZZ_FAC,Poynting_XYZ_FAC,Poynting_RThPh_FAC,...
+    k_ThPhSVD_fac,degOfPolarization,ellipticity]=...
     irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
@@ -28,17 +28,16 @@ function [outTime,frequencyVec,BB_xxyyzz_fac,...
 % 
 % Output:
 %
-%     timeVector
-%     frequencyVector
-%     BVector
-%     BB_xxyyzz_fac
-%     EESum_xxyy_ISR2
-%     EE_xxyyzz_FAC,...
-%     Poynting_xyz_FAC
-%     Poynting_rThetaPhi_FAC
-%     k_thphSVD_fac
-%     polSVD_fac
-%     ellipticity
+%     timeVector         - Time
+%     frequencyVector    - Frequency
+%     BB_XXYYZZ_FAC      - B power spectrum (xx, yy, zz FAC)
+%     EESum_ISR2         - E power spectrum (xx+yy ISR2)
+%     EE_XXYYZZ_FAC      - E power spectrum (xx, yy, zz FAC)
+%     Poynting_XYZ_FAC   - Poynting flux (xyz FAC)
+%     Poynting_RThPh_FAC - Poynting flux (r, theta, phi FAC)
+%     k_ThPhSVD_FAC      - k-vector (theta, phi FAC)
+%     degOfPolarization  - 3D degree of polarization
+%     ellipticity        - ellipticity
 %
 % Examples:
 %
@@ -247,7 +246,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-for ind_a=1:length(a), % Main loop over frequencies
+parfor ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
@@ -344,8 +343,8 @@ for ind_a=1:length(a), % Main loop over frequencies
       
       avSM = zeros(ndataOut,3,3); % Averaged SM
       for comp=1:3
-          avSM(:,:,comp) = averageData(SM(:,:,comp),...
-              inTime,outTime,avWindow);
+          avSM(:,:,comp) = AverageData(SM(:,:,comp),...
+              inTime,outTime,avWindow,1);
       end
       % Remove data possibly influenced by edge effects
       censurIdx=[1:min(censur(ind_a),length(outTime))...
@@ -385,12 +384,20 @@ for ind_a=1:length(a), % Main loop over frequencies
       polElliRat = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
       polElliRat(censurIdx) = NaN;
       polarizationEllipseRatio(:,ind_a) = polElliRat;
-      dop = zeros(1,ndataOut);
-      % XXX FIXME: this loop can be optimized/eliminated
-      for i = 1:ndataOut,
-          SMsqueeze = reshape(avSM(i,:,:),3,3);
-          dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
-      end
+      % XXX: this loop isreplaced by the code below
+      %dop = zeros(1,ndataOut);
+      %for i = 1:ndataOut,
+      %    SMsqueeze = reshape(avSM(i,:,:),3,3);
+      %    dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
+      %end
+      rA= real(avSM);
+      % DOP = (3/2.*trace(real(SM)^2)./(trace(SM))^2 - 1/2);
+      % XXX : Need a reference to this formula
+      dop = (3/2*(...
+          rA(:,1,1).*rA(:,1,1)+rA(:,2,1).*rA(:,1,2)+rA(:,3,1).*rA(:,1,3)+...
+          rA(:,1,2).*rA(:,2,1)+rA(:,2,2).*rA(:,2,2)+rA(:,3,2).*rA(:,2,3)+...
+          rA(:,1,3).*rA(:,3,1)+rA(:,2,3).*rA(:,3,2)+rA(:,3,3).*rA(:,3,3))./...
+          ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2);
       dop(censurIdx) = NaN;
       thetaSVD_fac(:,ind_a) = theta;
       phiSVD_fac(:,ind_a) = phi;
@@ -418,18 +425,18 @@ for ind_a=1:length(a)
     S_plot_y(censurIdx,ind_a) = NaN;
     Spar_plot_z(censurIdx,ind_a) = NaN;
 end
-powerBx_plot = averageData(powerBx_plot,inTime,outTime);
-powerBy_plot = averageData(powerBy_plot,inTime,outTime);
-powerBz_plot = averageData(powerBz_plot,inTime,outTime);
-power2B_plot = averageData(power2B_plot,inTime,outTime);
-powerEx_plot = averageData(powerEx_plot,inTime,outTime);
-powerEy_plot = averageData(powerEy_plot,inTime,outTime);
-powerEz_plot = averageData(powerEz_plot,inTime,outTime);
-power2E_plot = averageData(power2E_plot,inTime,outTime);
-power2E_ISR2_plot = averageData(power2E_ISR2_plot,inTime,outTime);
-S_plot_x = averageData(S_plot_x,inTime,outTime);
-S_plot_y = averageData(S_plot_y,inTime,outTime);
-Spar_plot_z = averageData(Spar_plot_z,inTime,outTime);
+powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
+powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
+powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
+power2B_plot = AverageData(power2B_plot,inTime,outTime);
+powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
+powerEy_plot = AverageData(powerEy_plot,inTime,outTime);
+powerEz_plot = AverageData(powerEz_plot,inTime,outTime);
+power2E_plot = AverageData(power2E_plot,inTime,outTime);
+power2E_ISR2_plot = AverageData(power2E_ISR2_plot,inTime,outTime);
+S_plot_x = AverageData(S_plot_x,inTime,outTime);
+S_plot_y = AverageData(S_plot_y,inTime,outTime);
+Spar_plot_z = AverageData(Spar_plot_z,inTime,outTime);
 
 if wantEE,
     [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,Spar_plot_z);
@@ -464,35 +471,36 @@ if wantPolarization,
 end
 
 %% Output
-BB_xxyyzz_fac = powerBx_plot;
-BB_xxyyzz_fac(:,:,2) = powerBy_plot;
-BB_xxyyzz_fac(:,:,3) = powerBz_plot;
-BB_xxyyzz_fac(:,:,4) = power2B_plot;
+BB_XXYYZZ_FAC = powerBx_plot;
+BB_XXYYZZ_FAC(:,:,2) = powerBy_plot;
+BB_XXYYZZ_FAC(:,:,3) = powerBz_plot;
+BB_XXYYZZ_FAC(:,:,4) = power2B_plot;
 if nargout>3 % E and Poyinting Flux
-    EESum_xxyy_ISR2 = power2E_ISR2_plot;
-    EE_xxyyzz_FAC(:,:,4) = power2E_plot;
-    EE_xxyyzz_FAC(:,:,1) = powerEx_plot;
-    EE_xxyyzz_FAC(:,:,2) = powerEy_plot;
-    EE_xxyyzz_FAC(:,:,3) = powerEz_plot;
-    Poynting_xyz_FAC = S_plot_x;
-    Poynting_xyz_FAC(:,:,2) = S_plot_y;
-    Poynting_xyz_FAC(:,:,3) = Spar_plot_z;
-    Poynting_rThetaPhi_FAC = S_r;
-    Poynting_rThetaPhi_FAC(:,:,2) = pi/2-S_elevation;
-    Poynting_rThetaPhi_FAC(:,:,3) = S_azimuth;
+    EESum_ISR2 = power2E_ISR2_plot;
+    EE_XXYYZZ_FAC(:,:,4) = power2E_plot;
+    EE_XXYYZZ_FAC(:,:,1) = powerEx_plot;
+    EE_XXYYZZ_FAC(:,:,2) = powerEy_plot;
+    EE_XXYYZZ_FAC(:,:,3) = powerEz_plot;
+    Poynting_XYZ_FAC = S_plot_x;
+    Poynting_XYZ_FAC(:,:,2) = S_plot_y;
+    Poynting_XYZ_FAC(:,:,3) = Spar_plot_z;
+    Poynting_RThPh_FAC = S_r;
+    Poynting_RThPh_FAC(:,:,2) = pi/2-S_elevation;
+    Poynting_RThPh_FAC(:,:,3) = S_azimuth;
 end
 if nargout>7 % Polarization parameters
-    k_thphSVD_fac = thetaSVD_fac;
-    k_thphSVD_fac(:,:,2) = phiSVD_fac;
-    polSVD_fac = degreeOfPolarization;
+    k_ThPhSVD_fac = thetaSVD_fac;
+    k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
+    degOfPolarization = degreeOfPolarization;
     ellipticity = polarizationEllipseRatio.*polarizationSign;
 end
 end
 
-function out = averageData(data,x,y,avWindow)
+function out = AverageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
     dtx = median(diff(x)); dty = median(diff(y));
     if nargin<4, avWindow = dty; end
+    if nargin<5, flagSerial = 0; end
     dt2 = avWindow/2;
     ndataOut = length(y);
     
@@ -504,9 +512,27 @@ function out = averageData(data,x,y,avWindow)
     x = [x(1)-fliplr(padTime)'; x; x(end)+padTime'];
     
     out = zeros(ndataOut,size(data,2));
-    for i=1:length(y)
-        out(i,:) = nanmean(data(x>=y(i)-dt2 & x<y(i)+dt2,:),1,0.75);
+    if flagSerial % Serial execution
+        for i=1:length(y)
+            out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
+    else % Parallel execution
+        parfor i=1:length(y)
+        out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
     end
+end
+function m = FastNanMean(x,idx)
+% Faster version of nanmean()
+    xx = x(idx,:);
+    % Find NaNs and set them to zero
+    nans = isnan(xx); xx(nans) = 0;
+    % Count up non-NaNs.
+    n = sum(~nans,1);
+    n(n==0) = NaN; % prevent divideByZero warnings
+    % Sum up non-NaNs, and divide by the number of non-NaNs.
+    m = sum(xx,1) ./ n;
+    m(n<size(xx,1)*0.75) = NaN; % minDataFrac = .075
 end
 
 function m = nanmean(x,dim,minDataFrac)

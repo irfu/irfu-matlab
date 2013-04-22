@@ -1,8 +1,8 @@
 function [p,z,f,fim,P1] = m2xyz(m)
-%
-% [p,z,f,fim,P1] = m2xyz(m)
-%
 % M2XYZ orders the output from WHAMP into matrices
+%
+% 	[p,z,f,fim,P1] = WHAMP.M2XYZ(m)
+%
 % m  - matrix where the first and second column are wave vector components p and z
 %       normally the third column would be freqyency and
 %       the fourth would be imaginary part of frequency and later whatever
@@ -15,7 +15,7 @@ function [p,z,f,fim,P1] = m2xyz(m)
 % You can adopt routine to even more parameters if needed 
 %
 
-if nargin<1, help m2xyz;return;end
+if nargin<1, help whamp.m2xyz;return;end
 
 n = length(m);
 width = length(m(1,:));

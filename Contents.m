@@ -68,7 +68,6 @@
 %   c_pl_sc_conf_xyz - Plot the configuration of Cluster in GSE/GSM    
 %   c_pl_sc_orient  - Plots the orientation of the EFW probes
 %   c_pl_sc_pos_mf  - Plot spacecraft position in mean field coordinates
-%   c_peace_plot .. - plot PEACE data (also reading and spectra routines)
 %   c_staff_getsa   - read STAFF data
 %   c_wbd_read      - read Wideband data
 %   

@@ -1,7 +1,8 @@
-function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
+function hout = irf_spectrogram(varargin)
+%function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %IRF_SPECTROGRAM  plot spectrogram
 %
-% [h] = irf_spectrogram([h],specrec)
+% [h] = irf_spectrogram([h],specrec,'option1','option2',..)
 % [h] = irf_spectrogram([h],t,Pxx,[f],[dt],[df])
 %
 % Input:
@@ -17,11 +18,11 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 %              specrec.f_label - label of f axis
 %              specrec.p_label - label of colorbar
 %              specrec.plot_type - 'lin' or 'log'
-%
+%    options - 'lin' - plot spectrogram values in linear scale
+%              'log' - (default) plot spectrogram values in log10 scale
+%              'donotfitcolorbarlabel' - do not shrink colorbar label fonts to fit axes size
 %
 % See also IRF_POWERFFT
-%
-% $Id: irf_spectrogram.m,v 1.10 2012/11/08 12:41:20 andris Exp $
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -30,46 +31,52 @@ function hout = irf_spectrogram(h,t,Pxx,F,dt,dF)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+[h,args,nargs] = axescheck(varargin{:});
+if isempty(h),
+  h=gca;
+end
 
-error(nargchk(1,6,nargin))
-f_multiplier=1; % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
+%% Defaults
+flagLog = true;            % want log10(data) dy default
+f_multiplier=1;         % default value using Hz units when units not specified, can be overwritten later if kHz makes labels more reasonable
+fitColorbarLabel = true;% fit font size of colorbar label to fit into axes size
 
-if nargin==1,    % irf_spectrogram(specrec)
-	specrec = h; h = [];
+%% Check input
+if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
+	specrec = args{1}; 
 	if ~isfield(specrec,'dt'), specrec.dt=[];end
 	if ~isfield(specrec,'df'), specrec.df=[];end
-elseif nargin==2 % irf_spectrogram(h,specrec)
-	specrec = t;
-	if ~isfield(specrec,'dt'), specrec.dt=[];end
-	if ~isfield(specrec,'df'), specrec.df=[];end
-elseif nargin==3 % irf_spectrogram(t,Pxx,F)
-	if size(t,2) == length(h), t = t'; end
-	if iscell(t), specrec.p = t;
-	else specrec.p = {t};
-	end
-	specrec.f = Pxx;
-	specrec.t = h;
-	if length(specrec.t)>1 % assume equidistant times
-		specrec.dt=(specrec.t(2)-specrec.t(1))/2;
-	else
-		specrec.dt=[]; % will be calculated later
-	end
-	specrec.df=[];
-	h = [];
-elseif	nargin==4 % irf_spectrogram(h,t,Pxx,F)
-	specrec.t = t;
-	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
-	if iscell(Pxx),specrec.p = Pxx;
+    for iArgs = 2:numel(args)
+        flagValue = args{iArgs};
+        if ischar(flagValue),
+            switch lower(flagValue)
+                case 'donotfitcolorbarlabel'
+                    fitColorbarLabel = false;
+                case 'log'
+                    flagLog = true;
+                case 'lin'
+                    flagLog = false;
+                otherwise
+                    irf_log('fcal',['Unknown flag:' flagValue]);
+            end
+        end
+    end
+elseif nargs==3 % irf_spectrogram(t,Pxx,F)
+    t=args{1};Pxx=args{2};F=args{3};
+	if size(Pxx,2) == length(t), Pxx = Pxx'; end
+	if iscell(Pxx), specrec.p = Pxx;
 	else specrec.p = {Pxx};
 	end
 	specrec.f = F;
+	specrec.t = t;
 	if length(specrec.t)>1 % assume equidistant times
 		specrec.dt=(specrec.t(2)-specrec.t(1))/2;
 	else
 		specrec.dt=[]; % will be calculated later
 	end
 	specrec.df=[];
-elseif	nargin==5 % irf_spectrogram(h,t,Pxx,F,dt)
+elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
+    t=args{1};Pxx=args{2};F=args{3};dt=args{4};
 	specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
@@ -78,8 +85,9 @@ elseif	nargin==5 % irf_spectrogram(h,t,Pxx,F,dt)
 	specrec.f = F;
 	specrec.dt = dt;
 	specrec.df=[];
-elseif	nargin==6 % irf_spectrogram(h,t,Pxx,F,dt,df)
-	specrec.t = t;
+elseif	nargin==5 % irf_spectrogram(t,Pxx,F,dt,df)
+	t=args{1};Pxx=args{2};F=args{3};dt=args{4};df=args{5};
+    specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
 	else specrec.p = {Pxx};
@@ -88,7 +96,7 @@ elseif	nargin==6 % irf_spectrogram(h,t,Pxx,F,dt,df)
 	specrec.dt = dt;
 	specrec.df = dF;
 end
-flagLog = 1; % want log10(data) dy default
+
 if isfield(specrec,'plot_type') && ...
         strcmpi(specrec.plot_type,'lin')
     flagLog = 0;
@@ -265,7 +273,9 @@ for comp=1:min(length(h),ncomp)
 	if isfield(specrec,'p_label')
 		hcb = colorbar('peer',h(comp));
 		ylabel(hcb,specrec.p_label);
-		irf_colorbar_fit_label_height(hcb);
+        if fitColorbarLabel
+            irf_colorbar_fit_label_height(hcb);
+        end
 	end
 	if comp==min(length(h),ncomp), irf_timeaxis;
 	else set(h(comp),'XTicklabel','')

@@ -294,7 +294,8 @@ for cli=1:4
                 bitmask_column = quality_column - 1;
                 
                 % Identify and flag problem areas in data with bitmask and quality factor:
-                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
+                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, bitmask_column, quality_column);
+%                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
                 
                 % Delta offsets
                 Del_caa = c_efw_delta_off(spinFits.diEs(1,1),cli);
@@ -388,7 +389,6 @@ for cli=1:4
 		if ~isempty(spec), c_eval('spec?=spec;',cli), end, clear spec
 	end
 end
-
 ds = irf_fname(st);
 tit = ['EFW E and P 5Hz (' ds(1:4) '-' ds(5:6) '-' ds(7:8) ' ' ds(10:11) ':'...
 	ds(12:13) ', produced ' date ')'];

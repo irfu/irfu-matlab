@@ -1,5 +1,6 @@
 !
-! $Id$
+! Source : CX_CH_EFW_L1_IB.ceh 
+! Generated: DDD
 !
 START_META     =   DATA_TYPE
    ENTRY       =   "CP"

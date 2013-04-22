@@ -1,8 +1,13 @@
 function out=irf(varargin)
 % IRF general info on irfu-matlab
 %
-% to obtain help on IRFU matlab routines run "irf" or
+% to obtain general help on IRFU matlab routines run "irf" or
 %  >> help irfu-matlab
+%
+% out = irf('check') check if using latest version of irfu-matlab
+%	out is logical true if using latest and false if not. 
+%
+
 if nargin == 0,
 	irf('check');
 	help irfu-matlab;
@@ -36,6 +41,7 @@ switch action
 			logText      = urlread(logFileUrl);
 		catch
 			disp('Not connected to internet');
+			out = false;
 			return;
 		end
 		logTextArray = textscan(logText, '%s', 'delimiter', sprintf('\n'));

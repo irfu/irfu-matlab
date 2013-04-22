@@ -1,5 +1,5 @@
-function irf_whamp_contour(p,z,f)
-% irf_whamp_contour(p,z,f) 
+function contour(p,z,f)
+% WHAMP.CONTOUR(p,z,f) 
 %
 % plots contours with some options that are often used
 % 
@@ -15,8 +15,8 @@ if q2=='c'
 	q1 = input('');
 	if ((q1 == 1) | (q1==2))
 		q2=input('Number of levels?');
-		if q1==1,cs=contour(p,z,f,q2);
-		else cs=contour(p,z,log10(f),q2);
+		if q1==1,cs=whamp.contour(p,z,f,q2);
+		else cs=whamp.contour(p,z,log10(f),q2);
 		end
 	end
 	if q1 >2 
@@ -27,9 +27,9 @@ if q2=='c'
 			q2=input('level1 level2 ...=','s');
 			eval(['v=[' q2 ']']);
 		end
-		cs = contour(p,z,f,v);
+		cs = whamp.contour(p,z,f,v);
 	end
-	if (input('Label contours? y/n','s')=='y'), clabel(cs);end
+	if (input('Label whamp.contours? y/n','s')=='y'), clabel(cs);end
 	xlabel('k_{perp}');ylabel('k_{par}');
 else
 	pcolor(p,z,f);

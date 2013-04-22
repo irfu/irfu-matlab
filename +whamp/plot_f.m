@@ -1,8 +1,8 @@
-function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
+function [h,varargout]=plot_f_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
 % Usage:
-% [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
-% [h,f,vp,vz]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2);
-% [h,f,vtot]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
+% [h,varargout]=whamp.plot_f_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
+% [h,f,vp,vz]=whamp.plot_f_f(n,m,t,vd,d,a1,a2);
+% [h,f,vtot]=whamp.plot_f_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
 %
 % plot the distribution function, parameters as defined in whamp 
 %
@@ -34,16 +34,14 @@ function [h,varargout]=irf_whamp_plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,
 %		Etot - nxm matrix where n-# of pitchangles, m-length of vtot [eV].
 %
 % Examples:
-%	irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=irf_whamp_plot_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=irf_whamp_plot_f([4e6 1 0.3 0.9 1 1 0]);
-%	[h,f,vtot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
-%	[h,f,Etot]=irf_whamp_plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
+%	whamp.plot_f_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=whamp.plot_f_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=whamp.plot_f_f([4e6 1 0.3 0.9 1 1 0]);
+%	[h,f,vtot]=whamp.plot_f_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
+%	[h,f,Etot]=whamp.plot_f_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
 %
 % short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
-%
-% $Id$
 
 Me=9.1094e-31; % electron mass
 Mp=1.6726e-27; % proton mass
@@ -51,7 +49,7 @@ e=1.6022e-19; % elementary charge
 
 
 if nargin < 1 , 
-  help irf_whamp_plot_f;
+  help whamp.plot_f_f;
   return
 end
 if nargin == 1,
@@ -64,7 +62,7 @@ if nargin == 1,
 	a2=n(:,7);
 	n(:,2:end)=[];
   else
-	help irf_whamp_plot_f;
+	help whamp.plot_f_f;
 	return;
   end
 end
