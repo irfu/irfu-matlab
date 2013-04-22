@@ -5660,6 +5660,9 @@ Effect on the CAA processing:
         <desc>18 kHz internal burst rate. SPLIT sampling table caused bad p32 data</desc>
         <res><link href="split_mode_problem.txt">SPLIT mode problem</link></res>
     </operation>
+<operation start="2011-04-08T20:38:00Z" c2="yes" dt="14400" plan="no" sdesc="bad_data">
+        <desc>To be investigated by AIE</desc>
+    </operation>
 <operation c2="yes" start="2011-04-21T09:00:00Z" dt="769414" plan="no" sdesc ="bad_bias">
                 <desc>Probe contamination at extremely low perigee passes caused P2 data to become intolerably bad
 	from about this time (perigee at 09:35) until the problem was discovered, analyzed, tests were run in space, 

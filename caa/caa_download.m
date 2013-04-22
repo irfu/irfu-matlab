@@ -38,6 +38,11 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %   'nolog'			- do not log into .caa file (good for batch processing)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of deaful 'CAA/')
+%   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
+%
+%  To store your caa user & password as defaults (e.g. 'uuu'/'ppp'): 
+%		datastore('caa','user','uuu')
+%		datastore('caa','pwd','ppp')
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -84,25 +89,18 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 
 % Test flags
 %   'test'						- use caa test server instead
-% $Id$
 
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
 
 %% Check if latest irfu-matlab 
 % The check is appropriate to make when scientist is downloading data from CAA
-persistent usingLatestIrfuMatlab
+persistent usingLatestIrfuMatlab urlIdentity
 
 if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 	usingLatestIrfuMatlab=irf('check');
 end
 
 %% Defaults
-checkDownloadStatus	= false;
+checkDownloadStatus		= false;
 doLog					= true;			% log into .caa file
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 expandWildcards			= true;			% default is to use wildcard
@@ -112,9 +110,8 @@ urlFileInterval='&file_interval=72hours'; % default time interval of returned fi
 urlSchedule='';							% default do not have schedule option
 urlFormat='&format=cdf';				% default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/';	% default server
-urlIdentity='?uname=vaivads&pwd=caa';	% default identity
+urlIdentity=get_url_identity;			% default identity
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-%urlInventory='';                       % default no inventory output (currently use different www link)
 %% load .caa file with status for all downloads
 if doLog,
 	if exist('.caa','file') == 0,
@@ -154,6 +151,8 @@ if nargin>2, % cehck for additional flags
 			urlFormat = urlparameter(flag);
 		elseif any(strcmpi('schedule',flag))
 			urlSchedule = '&schedule=1';
+		elseif any(strfind(flag,'uname='))
+			urlIdentity = flag;
 		elseif any(strcmpi('nolog',flag))
 			doLog = false;
 		elseif any(strcmpi('inventory',flag))
@@ -200,8 +199,8 @@ if nargin>=1, % check if fist argument is not caa zip file link
 		return;
 	end
 end
-caaQuery=[caaServer 'caa_query/'];
-caaInventory=[caaServer 'cgi-bin/inventory.cgi/'];
+caaQuery=[caaServer 'caa_query/?'];
+caaInventory=[caaServer 'cgi-bin/inventory.cgi/?'];
 %% Check status of downloads if needed
 if doLog && checkDownloadStatus,    % check/show status of downloads from .caa file
 	disp('=== status of jobs (saved in file .caa) ====');
@@ -464,6 +463,24 @@ end
 			fclose(fid);
 		end
 	end
+end
+function urlIdentity = get_url_identity
+caaUser = datastore('caa','user');
+if isempty(caaUser)
+	caaUser = input('Input caa username [default:vaivads]:','s');
+	if isempty(caaUser),
+		disp('Please register at http://caa.estec.esa.int and later use your username and password.');
+		caaUser='vaivads';
+	end
+	datastore('caa','user',caaUser);
+end
+caaPwd = datastore('caa','pwd');
+if isempty(caaPwd)
+	caaPwd = input('Input caa password [default:caa]:','s');
+	if isempty(caaPwd), caaPwd='caa';end
+	datastore('caa','pwd',caaPwd);
+end
+urlIdentity = ['uname=' caaUser '&pwd=' caaPwd];
 end
 function TT=construct_time_table(caalog,returnTimeTable)
 TT=irf.TimeTable;
