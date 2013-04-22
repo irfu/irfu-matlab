@@ -1,6 +1,5 @@
-
-%freqRange = 'pc35';cl_id = 2; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
-freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600];
+freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+%freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 
 outDir = '.';
 plotFlag = 1;
@@ -38,9 +37,9 @@ end
 
 %% Load
 % Construct 1 min-B0 (lowpassed at 1/600 Hz)
-B_5VPS = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_5VPS_ISR2'],...
+gseB_5VPS = c_caa_var_get(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
     'mat','tint',tint+[-30 30]);
-R = c_caa_var_get(['sc_pos_xyz_isr2__C' cl_s '_CP_FGM_5VPS_ISR2'],...
+gseR = c_caa_var_get(['sc_pos_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
     'mat','tint',tint+[-30 30]);
 gseV = c_caa_var_get(['sc_v_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
     'mat','tint',tint+[-30 30]);
@@ -50,7 +49,9 @@ SAXlong = c_caa_var_get(['sc_at' cl_s '_long__CL_SP_AUX'],...
     'mat','tint',tint+[-30 30]);
 [xspin,yspin,zspin] = sph2cart(mean(SAXlong(:,2))*pi/180,...
     mean(SAXlat(:,2))*pi/180,1); SAX = [xspin yspin zspin];
+R = c_coord_trans('gse','isr2',gseR,'SAX',SAX);
 V = c_coord_trans('gse','isr2',gseV,'SAX',SAX);
+B_5VPS = c_coord_trans('gse','isr2',gseB_5VPS,'SAX',SAX);
                 
 if wantPC35
     E_4SEC = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L3_E'],...
@@ -59,15 +60,17 @@ end
 if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
         'mat','tint',tint+[-1 1]);
+    % XXX
+    % TODO: We need to check the bitmask here and not use any data with low
+    % quality.
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+[-1 1]);
 end
 
-%% Construct FAC
+%% Calculate and plot
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
 B0_1MIN = irf_resamp(bf,t_1min); clear bf
 
-%% PC3-5
 if wantPC35
     t_4SEC = ((tint(1)+2):4:tint(end))';
     B_4SEC = irf_resamp(B_5VPS,t_4SEC);
@@ -102,7 +105,7 @@ if wantPC12
         Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,k_thphSVD_fac,polSVD_fac,ellipticity] = ...
         irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12','noresamp','fullB=dB','dedotb=0');
     BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
-    h=irf_pl_ebsp(cl_id,R,timeVector,'pc35',BMAG,BB_xxyyzz_fac,...
+    h=irf_pl_ebsp(cl_id,R,timeVector,'pc12',BMAG,BB_xxyyzz_fac,...
         EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
         k_thphSVD_fac,polSVD_fac,ellipticity);
 end
