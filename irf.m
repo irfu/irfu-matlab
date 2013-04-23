@@ -11,9 +11,10 @@ function out=irf(varargin)
 %	out is logical true if using latest and false if not. 
 %
 % [out] = irf('mice') check if spice/mice routines are installed properly
-% and if necessary add to the path.
+% and if necessary add to the path. run irf('mice_help') if you want to see
+% more help on mice kernels. 
 % more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
-
+% 
 
 if nargin == 0,
 	irf('check');
@@ -63,6 +64,16 @@ switch action
 				disp('There are mice problems. Please, contact irfu!');
 			end
 		end
+	case ('mice_help')
+		disp('Kernel files at IRFU are located at spis:/share/SPICE');
+		disp('Kernels at irfu: general, Cassini, Rosetta, Solar Orbiter, JUICE');
+		disp('');
+		disp('At other locations if you want to get kernel files, create directory and run:');
+		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *a_old_versions* ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels');
+		disp('This will download all the latest versions of necessary general kernels.');
+		disp('If you want for example get all Rosetta kernels, execute:');
+		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
+		disp('');
 	case('path')
 			out = fileparts(which('irf.m'));	
 	case 'check'
