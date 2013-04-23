@@ -12,7 +12,7 @@
 1c) Data problems fixed
 =======================
 
-Why all red circles on SC1?
+Why all red circles on SC1? Fixed by refetching some data
 
 110301 Bad C3 offset 9-16. Updated offset routine.
 
@@ -31,6 +31,8 @@ Lobe wake detected for SC1 far out in SW (X = +15). Happens now and again.
 110407
 Apparent jump backwards in time in offset for SC4
 
+2011-04-30 06:00 C2 goes to the ionosphere. Bias current has been lowere, but the data is still not good. Mark it HBIASSA in manual_problems.
+
 
 2a) Software bugs to be fixed
 =============================
@@ -48,16 +50,9 @@ Apparent jump backwards in time in offset for SC4
 5) Unclassified
 ===============
 
-2011-03
-
 110331 SC1 05:04-15:13  No spectra or E-field but harmonics exist. Turns out to be missing P32 due to SPLIT mode problem (ns_ops). Should be fixed in new version which then should use LX. Check problem has gone after reprocessing.
 
 110408 2145-0040(reset)
 SC2 strange data, AIE check. So far we have put it into ns_ops.
 
-
-
-
-
-
-
+110430 06:00 Large Ex offset for C2 (4 mV/m), updated DSI off.
