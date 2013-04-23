@@ -211,7 +211,7 @@ if isfield(ud,'Status')
 		if ud(i).Status == 0 
 		  if ~isfield(ud,'Downloadfile')
 			break;
-		  elseif isempty(ud.(i).Downloadfile)
+		  elseif isempty(ud(i).Downloadfile)
 			break;
 		  end
 		end
