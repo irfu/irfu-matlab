@@ -50,7 +50,7 @@
 %
 % Cluster
 %   caa_load        - load data downloaded from CAA 
-%   caa_download    - download data from CAA in CDF format
+%   caa_download    - download data from CAA
 %   c_caa_var_get   - get variable from CAA files
 %   c_load          - load data from MAT files (caa_load for CAA cdf files)
 %   c_get_batch     - get Cluster data from ISDAT/CDF/DDS
@@ -73,10 +73,7 @@
 %   
 % Miscellaneous
 %   irf_ssub         - substitute ? ! and $ in string to number or variable
-%   irf_whamp_plot_f - plot the distribution function, parameters as defined in WHAMP
+%   whamp.           - different routines related to WHAMP
 %   irfnotes         - notes on using irfu-matlab
 %
-% Bug reports, feature requests - https://launchpad.net/irfu-matlab
-
-%
-% $Id$
+% Bug reports, feature requests - https://github.com/irfu/irfu-matlab
