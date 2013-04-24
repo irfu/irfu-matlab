@@ -318,8 +318,7 @@ end
 if ~exist('CAA','dir'), mkdir('CAA');end
 
 if checkIfDataAreAtCaa
-	url_line_list=['http://caa.estec.esa.int/cgi-bin/inventory.cgi/?uname=vaivads&pwd=caa'...
-		'&dataset_id=' dataset '&time_range=' tintiso];
+	url_line_list=[ caaInventory urlIdentity '&dataset_id=' dataset '&time_range=' tintiso];
 	disp(url_line_list);
 	disp('Be patient! Contacting CAA to see the list of files...');
 	caalist=urlread(url_line_list);

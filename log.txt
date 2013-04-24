@@ -1,3 +1,4 @@
+2013-04-24 use your own caa user/password when interacting with caa
 2013-03-11 irfu-matlab moved to git! https://github.com/irfu/irfu-matlab
 2013-03-04 caa_download - added option downloadDirectory=... 
 2013-02-25 c_4_r - added elipticity, planarity and scale outputs
