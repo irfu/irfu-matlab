@@ -49,13 +49,13 @@ switch action
 		newestVersion = logTextArray{1}(1:10);
 		currentVersion = irf('version');
 		if ~strcmp(newestVersion,currentVersion)
-			indices = find(cellfun(@(x) any(strcmp(x(1:10),currentVersion)),logTextArray));
+			indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
 			if indices > 1,
 				disp('NO!');
 				disp(' ');
 				disp(['Newest irfu-matlab is from: ' newestVersion]);
 				disp(['  Your irfu-matlab is from: ' currentVersion]);
-				disp('Please update, see <a href="https://launchpad.net/irfu-matlab">https://launchpad.net/irfu-matlab</a>');
+				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
 				disp(logTextArray(1:indices-1));
 				disp(' ');
