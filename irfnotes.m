@@ -820,7 +820,46 @@ if 0,   % PANEL: RAPID/PEACE electron densities
   ylabel(hca,'(n_{RAPID}/n_{PEACE})10^3')
   set(hca,'yscale','lin');
 end
+
 if 0,   % PANEL: RAPID PSD power law fit
+  hca=irf_panel('RAPID PSD power law fit omni')
+  Flux_RAP=c_caa_var_get('Electron_Dif_flux__C1_CP_RAP_ESPCT6','mat');
+  DPF2PSD=[5.369 4.487 3.872 3.517 (3.402 +3.556)/2 (4.080 +4.883)/2].*1e-9; % TODO check last 2 coef with RAPID team
+  clear PSD_RAP;
+  PSD_RAP.data=Flux_RAP(:,2:end);
+  PSD_RAP.t = Flux_RAP(:,1);
+  for ii=1:6,
+    PSD_RAP.data(:,ii)=Flux_RAP(:,ii+1) * DPF2PSD(ii);
+  end
+  nspins_to_average=1; % how many spins to average for fit
+  for jj=nspins_to_average:nspins_to_average:size(PSD_RAP.data,1),
+    ind=jj-nspins_to_average+1:jj;
+    xx=sum(PSD_RAP.data(ind,:),1)/nspins_to_average; % time average
+    PSD_RAP.data_av(jj/nspins_to_average,:)=xx;
+    PSD_RAP.tav(jj/nspins_to_average)=sum(PSD_RAP.t(ind))/nspins_to_average;
+  end
+  PSD_RAP.tav=PSD_RAP.tav(:); % to get column vector
+  PSD_RAP.data_av=log10(PSD_RAP.data_av);
+  PSD_RAP.k=zeros(size(PSD_RAP.data_av,1),1);   % allocate matrix
+  en=c_caa_var_get('Dimension_E__C1_CP_RAP_ESPCT6');
+  energy_levels=en.data(1,:)+0.5*en.DELTA_PLUS;
+  log10_energy_levels=log10(energy_levels);
+  for jj=1:size(PSD_RAP.data_av,1),
+    ind_noninf=~isinf(PSD_RAP.data_av(jj,:)); % use only point with counts (log(zero counts)=-Inf)
+    [p,s]=polyfit(log10_energy_levels(ind_noninf),PSD_RAP.data_av(jj,ind_noninf),1);
+    PSD_RAP.k(jj)=p(1);
+  end
+  irf_plot(hca,[PSD_RAP.tav PSD_RAP.k ]);
+  irf_zoom(hca,'y',[-6 -1]);
+  irf_legend(hca,{'k'},[0.95 0.85]);
+  ylabel(hca,'Power law slope');
+end
+
+
+
+
+
+if 0,   % PANEL: RAPID PSD power law fit for pitch angles
   hca=h(i_subplot); i_subplot=i_subplot+1;
   [caaFlux_RAP,~,Flux_RAP]=c_caa_var_get('PAD_Electron_Dif_flux__C2_CP_RAP_PAD_E3DD');
   DPF2PSD=[5.369 4.487 3.872 3.517 3.402 3.556 4.080 4.883].*1e-9;
@@ -861,6 +900,11 @@ if 0,   % PANEL: RAPID PSD power law fit
   irf_legend(hca,{'k_{par}','k_{perp}'},[0.95 0.85]);
   ylabel(hca,'Power law slope');
 end
+
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % subspin resolution panels
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
