@@ -14,7 +14,7 @@ Download the code and add to the Matlab path the directory 'irfu-matlab' and its
 
 To download the code from the command line run
 
-> git git://github.com/irfu/irfu-matlab.git
+> git clone git://github.com/irfu/irfu-matlab.git
 
 Any time you want to update the code to the latest version, run from the command line 
 
