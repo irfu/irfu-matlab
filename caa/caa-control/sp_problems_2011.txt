@@ -22,7 +22,7 @@ Why all red circles on SC1? Fixed by refetching some data
 
 110307-110321 Spin phase missing in DDS files for all but SC4. New data was fetched. 
 
-110330 08-11 SC12 strange harmonics, mark as bad. C1 marked as manual-quality and put to quality 1. 
+110330 08-11 SC12 strange harmonics, mark as bad. C1 marked as manual-quality (QRecord) and put to quality 1. 
 
 110402 07:30 - 22:30
 Lobe wake detected for SC1 far out in SW (X = +15). Happens now and again.
