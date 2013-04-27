@@ -79,9 +79,9 @@ end
 function okTest=test_irf_time
 try
 	okTest = 1;
-	% generate vector with 10000 times during last 20 years
+	% generate vector with 10000 times during last 500 years
 	a=rand(1000,1);
-	tDateArray = now - 365*20*a;
+	tDateArray = now - 365*500*a;
 	s1=irf_time(tDateArray,'date2iso');
 	t=irf_time(s1,'iso2epoch');
 	s2=irf_time(t,'epoch2iso');

@@ -1,3 +1,4 @@
+2013-04-27 implemented IGRF in model.igrf and Hapgood 1997 in irf.geocentric_coordinate_transformation
 2013-04-24 use your own caa user/password when interacting with caa
 2013-03-11 irfu-matlab moved to git! https://github.com/irfu/irfu-matlab
 2013-03-04 caa_download - added option downloadDirectory=... 

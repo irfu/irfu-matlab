@@ -26,6 +26,7 @@
 %   irf_disp_surf   - Interactively plot cold plasma dispersion surfaces
 %   irf_e_vxb       - Compute VxB and ExB/B^2
 %   irf_get_data    - Get different kind of data
+%   irf.geocentric... - geocentric coordinate transformation (Hapgood 1997)
 %   irf_gse2gsm     - GSE <> GSM
 %   irf_jz          - Estimate the current given velocity and magnetic field
 %   irf_mean        - put time series into mean field coordinates

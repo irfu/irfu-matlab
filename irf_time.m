@@ -32,8 +32,6 @@ function t_out = irf_time(t_in,flag)
 %  There are also commands to convert time intervals
 %   time_int=IRF_TIME(tint,'tint2iso')
 %           convert time interval to iso (first column epoch start time, 2nd epoch end time)  
-%
-% $Id$
 
 % 'tint2iso'
 
@@ -113,24 +111,33 @@ switch lower(flag)
         end
         
         years=x(:,1);hours=zeros(size(years));secs=hours;
-        for year=unique(x(:,1))'
-            daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
-            if rem(year,4)==0, daym(3)=29; end  % works up to 2100
-            days=cumsum(daym(1:12))';
-            
+		yearList = min(years):max(years);
+        for year=yearList
             ind=find(years==year);
-            hours(ind,1)=(days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4);
-            secs(ind,1)=(hours(ind)*60+x(ind,5))*60+x(ind,6);
-            plus=0;
-            diff_yr = year-1970;
-            for i = 1:diff_yr
-                if rem(1969+i,4)==0
-                    plus = plus + 31622400;
-                else
-                    plus = plus + 31536000;
-                end
-            end
-            secs(ind,1)=secs(ind,1)+plus;
+			if any(ind)
+				daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
+				if is_leap_year(year), daym(3)=29; end  % works up to 2100
+				days=cumsum(daym(1:12))';
+				
+				hours(ind,1)=(days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4);
+				secs(ind,1)=(hours(ind)*60+x(ind,5))*60+x(ind,6);
+				plus=0;
+				for iYear = 1971:year
+					if is_leap_year(iYear-1)
+						plus = plus + 31622400;
+					else
+						plus = plus + 31536000;
+					end
+				end
+				for iYear=1969:-1:year
+					if is_leap_year(iYear)
+						plus = plus - 31622400;
+					else
+						plus = plus - 31536000;
+					end
+				end
+				secs(ind,1)=secs(ind,1)+plus;
+			end
         end
         t_out=secs;
     case 'epoch2vector'
@@ -269,4 +276,11 @@ switch lower(flag)
     otherwise
         disp(['!!! irf_time: unknown flag ''' lower(flag) ''', not converting.'])
         t_out=t_in;
+end
+
+function ok=is_leap_year(year)
+ok=false;
+if rem(year,400)==0,     ok = true;
+elseif rem(year,100)==0, ok = false;
+elseif rem(year,4)==0,   ok = true;
 end
