@@ -2,20 +2,23 @@ function [ax cb] = c_caa_plot_distribution_function(varargin)
 % C_CAA_PLOT_DISTRIBUTION_FUNCTION Plot particle distribution.
 %
 %   [ax ax_cb] = C_CAA_PLOT_DSITRIBUTION_FUNTION(ax,'tint',tint,plot_type,...
-%           data_structure,'pitchangle',pitchangles)
+%           data_structure,'pitchangle',pitchangles,data_structure)
 %       ax - axis handle, can be given, or not
 %       ax_cb - colorbar handle if plot_type is 'polar'
-%       tint - time interval or single time in epoch
+%       data_structure - obtained from c_caa_distribution_data.m
+%       'tint' - time interval or single time in epoch
 %           if [t1 t2] - averages over time for each energy and angle
 %           if t1 - takes the closest energy sweep
-%       t_display - 'given': diaplays given time(s) (default)
+%       't_display' - 'given': displays given time(s) (default)
 %                   'tags': displays tagged time for relevant energy sweep(s)
-%       plot_type - 'polar' or 'cross-section' [0 90 180]
-%       data_structure - obtained from c_caa_distribution_data.m, 'polar'
-%           supports up to two data_structure, 'cross-section' one at the
-%           moment
-%       pitchangle - pitch angles to plot if 'cross-section' is chosen, 
+%       'plot_type' - 'polar' or 'cross-section' [0 90 180]
+%           supports up to two data_structure, 'cross-section' supports one
+%       'pitchangle' - pitch angles to plot if 'cross-section' is chosen, 
 %           [0 90 180] is default
+%       'emin' - will only plot values above given energy, in eV
+%       'emin_scale' - the scale will start at this value, in eV, must be 
+%                      above emin, if emin_scale>emin then emin_scale=emin
+%               
 %
 %   Examples:
 %       data_structure = c_caa_distribution_data('C3_CP_PEA_3DXPH_PSD');
@@ -30,6 +33,7 @@ original_nargs=nargs;
 
 % Default values
 emin=[];
+emin_scale=[];
 plot_type='polar';
 pitch_angles=[0 90 180];
 t_display='given';
@@ -54,6 +58,9 @@ while length(args)>0
                 args=args(2:end);
             case 'emin'            
                 emin=args{2};
+                args=args(3:end);                
+            case 'emin_scale'            
+                emin_scale=args{2};
                 args=args(3:end);
             case 'pitchangle'
                 pitch_angles=args{2};
@@ -113,6 +120,12 @@ for k=1:n_toplot
     end
 end
 
+% Scale must start below lowest value
+if emin_scale>emin
+    emin_scale=emin; 
+    % could also do emin=emin_scale;, but that possible cuts away data
+end
+
 % If no axes is given, initialize figure.
 if isempty(ax) 
     ax=irf_plot(1);
@@ -130,17 +143,32 @@ switch plot_type
             rlog{k} = log10(double(to_plot{k}.en_pol))';
             % Pitch angles, turn so that pitch angle 0 is on top
             theta{k} = double(to_plot{k}.f_pol)+90;                    
-        end                    
-        if isempty(emin) || log10(emin)>min(min(rlog{:})); % Take out r0
-            r0log = min(min([rlog{1};rlog{2}]));
+        end       
+        
+        % Take away all values below emin
+        if isempty(emin); % then set to lowest energy bin
+            emin=min([rlog{1};rlog{1}]);
         else
-            r0log = log10(emin);
+            emin=log10(emin);
+        end
+        if emin_scale==0;
+            emin_scale=1; % set to 1eV, because dont want log(0)            
+        end
+        if isempty(emin_scale) %|| log10(emin)>min([rlog{1};rlog{1}]); % Take out r0
+            r0log = emin;%min(min([rlog{1};rlog{2}]));
+        else
+            r0log = log10(emin_scale);
         end            
+
+        for k=1:2 % find all values > emin
+            ind_r{k}=find(log10(double(to_plot{k}.en_cs))>=emin);
+        end
+        
         for k=1:2 % Create surf grids  
-            r{k} = tocolumn(rlog{k}-r0log);
+            r{k} = tocolumn(rlog{k}(ind_r{k})-r0log);
             X{k} = r{k}*cosd(theta{k});
             Y{k} = r{k}*sind(theta{k});
-            C{k} = squeeze(log10(nanmean(to_plot{k}.p(ind_t{k},:,:),1)))';
+            C{k} = squeeze(log10(nanmean(to_plot{k}.p(ind_t{k},:,ind_r{k}),1)))';
         end        
         
         % Plot data
@@ -180,27 +208,41 @@ switch plot_type
     case 'cross-section' 
         k=1; % only one product supported
         % Pick out angles
-        n_pa=length(pitch_angles);
+        n_pa=length(pitch_angles);        
+        
+        if isempty(emin)
+            emin=min(to_plot{k}.en_cs);        
+        end
+        ind_r{k}=find(to_plot{k}.en_cs>emin);
+        
         for p=1:n_pa
             diff_pa=abs(to_plot{k}.f_cs-pitch_angles(p));
             ind_pa{k,p}=find(diff_pa==min(diff_pa));
-            pa_toplot{k,p}=squeeze(nanmean(to_plot{k}.p(ind_t{k},ind_pa{p},:),1));
+            pa_toplot{k,p}=squeeze(mean(nanmean(to_plot{k}.p(ind_t{k},ind_pa{p},ind_r{k}),1),2));
             pa_legends{k,p}=num2str(pitch_angles(p),'%.0f');
             disp(['Plotting average of bins: ',num2str(to_plot{k}.f_cs(ind_pa{k,p}))])
         end
         if ~isempty(to_plot{k}.p_bg)                
-            PAbg=squeeze(nanmean(nanmean(to_plot{k}.p_bg(ind_t{k},:,:),1),2)); % One common zero-count level for all levels
+            PAbg=squeeze(nanmean(nanmean(to_plot{k}.p_bg(ind_t{k},:,ind_r{k}),1),2)); % One common zero-count level for all levels
         else
             PAbg=NaN(size(to_plot{k}.en_cs));
         end
         pa_legends{end+1}='Bg';
 
-        % Plotting data, making string to adapt to varying pitch angles
+        % Plotting data, making string to adapt to varying # of pitch angles
         plt_str='loglog(ax';
-        for p=1:n_pa; eval(['plt_str=[plt_str,'',to_plot{1}.en_cs,pa_toplot{',num2str(p),'}''];']); end
-        plt_str=[plt_str,',to_plot{1}.en_cs,PAbg,''--'');'];
+        for p=1:n_pa; eval(['plt_str=[plt_str,'',to_plot{1}.en_cs(ind_r{k}),pa_toplot{',num2str(p),'}''];']); end
+        plt_str=[plt_str,',to_plot{1}.en_cs(ind_r{k}),PAbg,''--'');'];
         eval(plt_str);
-        set(ax,'xlim',[to_plot{1}.en_cs(1)*0.8 to_plot{1}.en_cs(end)*1.2])
+        
+        if ~isempty(emin_scale)
+            xlim(1)=emin_scale;
+        else
+            xlim(1)=to_plot{1}.en_cs(1)*0.8;
+        end
+        xlim(2)=to_plot{1}.en_cs(end)*1.2;
+        
+        set(ax,'xlim',xlim);%[to_plot{1}.en_cs(1)*0.8 to_plot{1}.en_cs(end)*1.2])
         % irf_legend(ax,{'0','90','180','-- Zero count'},[0.94 0.94])
         % irf_legend gets too big for box if box is small
         legend(ax,pa_legends,'edgecolor','w') 

@@ -1,11 +1,12 @@
 #
-# $Id$
+# Script to process ns_ops.xml
 #
 XSLTPROC=xsltproc
 
-all: check ns_ops_epo.xml txt cef
+all: html txt cef
+
+html: check ns_ops_epo.xml
 	${XSLTPROC} html.xsl ns_ops_epo.xml > ns_ops.html
-	rm -f ns_ops_epo.xml
 
 txt: ns_ops_epo.xml
 	${XSLTPROC} text.xsl ns_ops_epo.xml
@@ -24,9 +25,6 @@ clean:
 test: test_epoch.xml test_epoch.xsl
 	echo "Tesing iso2epoch..."
 	${XSLTPROC} test_epoch.xsl test_epoch.xml
-
-update: txt
-	scp ns_ops_c[1-4].dat ns_ops.xml yuri@db:/export/data/cluster/caa-control
 
 check:
 	@echo "Checking for incorrect ISO time..."

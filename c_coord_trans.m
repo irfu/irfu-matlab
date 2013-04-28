@@ -21,9 +21,6 @@ function y = c_coord_trans(from,to,x,varargin)
 % Examples:
 %     B1 = C_COORD_TRANS('DSI','GSE',diB1,'cl_id',1);
 %
-% $Id$
-
-% TODO: add option to use onera library 
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

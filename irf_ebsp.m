@@ -41,17 +41,17 @@ function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
 %
 % Examples:
 %
-%    [timeVec,frequencyVector,BB_xxyyzz_fac]=...
-%        irf_ebsp(e,b,B,xyz,'pc12');
+%    [timeVec,frequencyVec,BB_xxyyzz_fac]=...
+%        irf_ebsp(e,b,B,B0,xyz,'pc12');
 %
 %    [timeVec,frequencyVec,BB_xxyyzz_fac,...
 %        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC]=...
-%        irf_ebsp(e,b,[],B,xyz,'pc35','fullB=dB');
+%        irf_ebsp(e,b,[],B0,xyz,'pc35','fullB=dB');
 %
 %    [timeVec,frequencyVec,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,...
 %        EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
 %        k_thphSVD_fac,polSVD_fac,ellipticity]=...
-%        irf_ebsp(e,b,[],B,xyz,'pc12','fullB=dB','dEdotB=0');
+%        irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
 %
 %  See also: IRF_PL_EBS, IRF_PL_EBSP
 
@@ -192,9 +192,7 @@ else % Keep B direction for || Poynting flux
 end
 
 %% Find the frequencies for an FFT of all data and set important parameters
-nd2=size(e,1)/2;
-nyq=1/2;
-freq=inSampling*(1:nd2)/(nd2)*nyq;
+nd2=length(inTime)/2; nyq=1/2; freq=inSampling*(1:nd2)/(nd2)*nyq;
 w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
 Morlet_width=5.36;
@@ -413,8 +411,8 @@ for ind_a=1:length(a)
     censurIdx=[1:min(censur(ind_a),length(inTime))...
         max(1,length(inTime)-censur(ind_a)):length(inTime)];
     powerBx_plot(censurIdx,ind_a) = NaN;
-    powerBx_plot(censurIdx,ind_a) = NaN;
-    powerBx_plot(censurIdx,ind_a) = NaN;
+    powerBy_plot(censurIdx,ind_a) = NaN;
+    powerBz_plot(censurIdx,ind_a) = NaN;
     power2B_plot(censurIdx,ind_a) = NaN;
     powerEx_plot(censurIdx,ind_a) = NaN;
     powerEy_plot(censurIdx,ind_a) = NaN;

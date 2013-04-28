@@ -113,6 +113,7 @@ while 1
 		if iRequest > numel(TTRequest), break;end % no more jobs
 		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs, break; end % max allowed submitted jobs reached
 		if ~isfield(TTRequest.UserData(iRequest),'Status') || ...
+		  		~isfield(TTRequest.UserData(iRequest),'Downloadfile') || ...
 				isempty(TTRequest.UserData(iRequest).Status) || ...
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
@@ -203,16 +204,19 @@ if nargout==1, out=TTRequest;end
 
 function i=find_first_non_processed_time_interval(TT)
 ud=TT.UserData;
-i=numel(TT)+1; % default all is processed
+i=1;
 if isfield(ud,'Status')
-	for j=1:numel(ud),
-		if isempty(ud(j).Status)
-			i=j;
-			return;
+	while i < numel(TT) + 1
+		if isempty(ud(i).Status), break; end
+		if ud(i).Status == 0 
+		  if ~isfield(ud,'Downloadfile')
+			break;
+		  elseif isempty(ud(i).Downloadfile)
+			break;
+		  end
 		end
+		i = i + 1;
 	end
-else
-	i=1;
 end
 function i=find_first_submitted_time_interval(TT)
 ud=TT.UserData;
