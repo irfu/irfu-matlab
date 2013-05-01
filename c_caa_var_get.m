@@ -32,17 +32,17 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 
 %% Check input options and set dafaults
 getAllData = true;									% default read all data
-getCaa = true;										% default return variable in caa form 
+getCaa  = true;										% default return variable in caa form 
 getDobj = false; if nargout>1, getDobj = true;end	% whether to get dataobj
-getMat  = false; if nargout>2, getMat = true; end	% whether to calculate mat variable
+getMat  = false; if nargout>2, getMat  = true;end	% whether to calculate mat variable
 getUnit = false; if nargout>3, getUnit = true;end	% whether to get the unit of variable
 getMatOnly  = false;
 getDobjOnly = false;
 getUnitOnly = false;
 getFromFile = false;	% reads data from file only if dataobj not in memory
-varnames=varargin{1};
-args=varargin(2:end);
-nargs=length(args); % number of additional parameters
+varnames = varargin{1};
+args     = varargin(2:end);
+nargs    = length(args); % number of additional parameters
 while nargs
 	l = 1;
 	switch(lower(args{1}))
@@ -126,7 +126,7 @@ for j=1:length(varargin),
         jloaded=jloaded+1;
       else
         irf_log('dsrc',[dataobj_name ' could not be loaded!']);
-		if (getMat || getCaa) && ~getAllData && local.c_read('test')
+		if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 			testLocalCaaRepository = true;
 			irf_log('dsrc','will test if data are in local CAA data repository.');
 		else
@@ -141,7 +141,7 @@ for j=1:length(varargin),
 				irf_log('dsrc','NO DATA in repository!');
 			else
 				jloaded = jloaded + 1;
-				resmat{jloaded} = ttt;
+				res{jloaded} = ttt;
 			end
 		else
 			res{jloaded}=getv(dataobject,var_name);
@@ -164,7 +164,17 @@ for j=1:length(varargin),
       resunit{jloaded}=getunits(dataobject,var_name);
     end
     if getDobj,% save dataobject 
-      resdataobject{jloaded}=dataobject; 
+	  if testLocalCaaRepository
+		ttt = local.c_read(var_name,tint,'dobj');
+		if isempty(ttt),
+		  irf_log('dsrc','NO DATA in repository!');
+		else
+		  jloaded = jloaded + 1;
+		  resdataobject{jloaded} = ttt;
+		end
+	  else
+      	resdataobject{jloaded}=dataobject; 
+	  end
     end
   end
 end

@@ -36,8 +36,6 @@ function [out,dataobject]=c_read(varargin)
 %
 % to update file index run LOCAL.C_UPDATE
 
-% $Id$
-
 persistent index % to make fast access read only once
 persistent usingNasaPatchCdf
 
@@ -73,7 +71,9 @@ elseif nargin>=2,
 	end
 end
 if nargin ==3,
-	if ischar(varargin{3}) && any(strcmpi(varargin{3},'caa'))
+	if ischar(varargin{3}) && any(strcmpi(varargin{3},'dobj'))
+		returnDataFormat = 'dobj';
+	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'caa'))
 		returnDataFormat = 'caa';
 	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'mat'))
 		returnDataFormat = 'mat';
@@ -127,6 +127,8 @@ switch lower(varName)
             elseif numel(data)==1,
                 out = data{1};
             end
+		  elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
+			out = data;
 		end
 end
 
@@ -217,7 +219,7 @@ end
 						data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
 					end
 					cdflib.close(cdfid);
-				case 'caa'
+				case {'caa','dobj'}
 					if iFile==istart || iFile==iend % ends of interval
 						data_temp=dataobj(cdf_file,'tint',tint);
 					else
@@ -235,7 +237,9 @@ end
 			end
 		end
 		if strcmp(returnDataFormat,'caa') && ~isempty(dataobject) && ~isempty(dataobject.data)
-			out=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
+			data=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
+		  elseif strcmp(returnDataFormat,'dobj') && ~isempty(dataobject) && ~isempty(dataobject.data)
+			data=dataobject; % currently only 1 variable request implemented
 		end
 		status = true;
 	end
