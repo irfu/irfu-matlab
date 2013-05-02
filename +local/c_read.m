@@ -45,7 +45,11 @@ end
 
 %% Defaults
 returnDataFormat = 'mat'; % default matlab format
-caaDir='/data/caalocal/';
+if ispc
+    caaDir='Z:\';
+else
+    caaDir='/data/caalocal/';
+end
 %% Default index is empty, read in only those indees that are used
 
 if isempty(index), 
