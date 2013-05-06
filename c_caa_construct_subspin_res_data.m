@@ -203,7 +203,8 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
     enlabel=[enlabel ' [' enunits ']'];
     phi=rapid.dep_x{2}.data(1,:);
     theta=10:20:180; % pitch angles
-    en=rapid.dep_x{1}.data(1,:)+0.5*rapid.dep_x{1}.DELTA_PLUS(1,:); % DELTA_MINUS = 0
+    en=sqrt(rapid.dep_x{1}.data(1,:).*...
+		(rapid.dep_x{1}.data(1,:)+rapid.dep_x{1}.DELTA_PLUS(1,:))); % DELTA_MINUS = 0
 	nan_en=isnan(en);
 	en(nan_en)=[];
     rapid.data=permute(rapid.data,[1 4 3 2]); % permute in the order time, polar angle, azimuth angle, energy
