@@ -203,12 +203,15 @@ elseif any([strfind(variable_name,'RAP_L3DD') strfind(variable_name,'RAP_E3DD')]
     enlabel=[enlabel ' [' enunits ']'];
     phi=rapid.dep_x{2}.data(1,:);
     theta=10:20:180; % pitch angles
-    en=rapid.dep_x{1}.data(1,:);nan_en=isnan(en);en(nan_en)=[];
+    en=sqrt(rapid.dep_x{1}.data(1,:).*...
+		(rapid.dep_x{1}.data(1,:)+rapid.dep_x{1}.DELTA_PLUS(1,:))); % DELTA_MINUS = 0
+	nan_en=isnan(en);
+	en(nan_en)=[];
     rapid.data=permute(rapid.data,[1 4 3 2]); % permute in the order time, polar angle, azimuth angle, energy
     rapid.data(:,:,:,nan_en)=[]; % remove NaN energy data
     % read pitch angle information
     variable_pitch_name=['Electron_Pitch_' variable_name(regexp(variable_name,'_C?_')+(1:4)) 'CP_RAP_EPITCH'];
-    [variable_pitch,dataobject_pitch]=c_caa_var_get(variable_pitch_name);
+    variable_pitch=c_caa_var_get(variable_pitch_name);
     rapid_pitch=rapid.data;
     for j=1:size(rapid_pitch,4), rapid_pitch(:,:,:,j)=permute(variable_pitch.data,[1 3 2]);end
     dataraw=ftheta(rapid.data,rapid_pitch,theta);

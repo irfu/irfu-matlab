@@ -21,8 +21,8 @@ persistent usingNasaPatchCdf
 if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
-shouldReadAllData= true; % default read all data
-noDataReturned   = 0; % default expects data to be returned
+shouldReadAllData = true; % default read all data
+noDataReturned    = 0;    % default expects data to be returned
 if nargin==0, action='create_default_object'; end
 if nargin==1, action='read_data_from_file'; end
 if nargin==3 && ...
@@ -122,6 +122,12 @@ switch action
 					records=find((data{1} > tint(1)) & (data{1} < tint(2)));
 				end
 			end
+			%% check if number of records to read is zero
+			if sum(records)==0,
+				irf_log('dsrc','No data within specified time interval');
+				noDataReturned=1;
+			end
+
 			%% construct data object
 			dobj.FileModDate		= info.FileModDate;
 			dobj.VariableAttributes = info.VariableAttributes;
@@ -146,11 +152,12 @@ switch action
 				dobj.vars(:,2) = info.Variables(:,1); % original variables
 				for v=1:nVariables
 					make_variable_names_acceptable_for_matlab;
+					varName = dobj.vars{v,1};
 					data_all_records = data{v};
 					if shouldReadAllData || ...% return all data
 							(usingNasaPatchCdf && strcmpi(info.Variables{v,5}(1),'F')),% fixed variable with NASA cdf patch (matlab cdfread return fixed variable as time series) 
-						dobj.data.(dobj.vars{v,1}).data = data_all_records;
-						dobj.data.(dobj.vars{v,1}).nrec = info.Variables{v,3};
+						dobj.data.(varName).data = data_all_records;
+						dobj.data.(varName).nrec = info.Variables{v,3};
 					else
 						nDim=numel(size(data_all_records));
 						if nDim==2,
@@ -162,23 +169,15 @@ switch action
 						elseif nDim==5,
 							data_records_within_interval=data_all_records(records,:,:,:,:);
 						end
-						dobj.data.(dobj.vars{v,1}).data = data_records_within_interval;
-						dobj.data.(dobj.vars{v,1}).nrec = numel(records);
-						if numel(records)==0,
-							irf_log('dsrc','No data within specified time interval');
-							noDataReturned=1;
-							break;
-						end
+						dobj.data.(varName).data = data_records_within_interval;
+						dobj.data.(varName).nrec = sum(records);
+						dobj.Variables{v,3}      = sum(records);
 					end
-					dobj.data.(dobj.vars{v,1}).dim = info.Variables{v,2};
-					dobj.data.(dobj.vars{v,1}).type = info.Variables{v,4};
-					dobj.data.(dobj.vars{v,1}).variance = info.Variables{v,5};
-					dobj.data.(dobj.vars{v,1}).sparsity = info.Variables{v,6};
+					dobj.data.(varName).dim      = info.Variables{v,2};
+					dobj.data.(varName).type     = info.Variables{v,4};
+					dobj.data.(varName).variance = info.Variables{v,5};
+					dobj.data.(varName).sparsity = info.Variables{v,6};
 				end
-			end
-			if noDataReturned
-				dobj.data = [];
-				irf_log('dsrc','No data returned!')
 			end
 			dobj = class(dobj,'dataobj');
 		else

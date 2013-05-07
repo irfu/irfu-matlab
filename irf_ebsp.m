@@ -448,8 +448,8 @@ if pc35_range,
   ind_lowPower = find(abs(power2B_plot) < nanmean(nanmean(log10(abs(power2B_plot)))));
   %ind_lowPower = find(abs(power2B_SM_plot) < .005);
 end
-ind_single_eq = find(abs(polarizationEllipseRatio) < .4);
-ind2_lowPower = find(abs(degreeOfPolarization) < .4);
+ind_single_eq = polarizationEllipseRatio < .4;
+ind_unpolarized = degreeOfPolarization < .5;
 if wantPolarization,
     thetaSVD_fac(ind_lowPower) = NaN;
     phiSVD_fac(ind_lowPower) = NaN;
@@ -457,10 +457,10 @@ if wantPolarization,
     polarizationSign(ind_lowPower) = NaN;
     degreeOfPolarization(ind_lowPower) = NaN;
 
-    thetaSVD_fac(ind2_lowPower) = NaN;
-    phiSVD_fac(ind2_lowPower) = NaN;
-    polarizationEllipseRatio(ind2_lowPower) = NaN;
-    polarizationSign(ind2_lowPower) = NaN;
+    thetaSVD_fac(ind_unpolarized) = NaN;
+    phiSVD_fac(ind_unpolarized) = NaN;
+    polarizationEllipseRatio(ind_unpolarized) = NaN;
+    polarizationSign(ind_unpolarized) = NaN;
     
     %if the polarization is linear, there is a single equation and the
     %direction of the wave vector is not a unique solution

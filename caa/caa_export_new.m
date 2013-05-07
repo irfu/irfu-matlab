@@ -109,6 +109,7 @@ else
 			vs = irf_ssub('SFIT?',cl_id);
 			v_size = 4;
             nanfill = -1;
+            pnosfit = 0;
         else
 			disp('not implemented'), cd(old_pwd), return
 		end
@@ -1109,7 +1110,9 @@ buf = sprintf('%s%s',buf,'   VALUE_TYPE  =   ISO_TIME\n');
 buf = sprintf('%s%s',buf,['   ENTRY       =   ' epoch2iso(date2epoch(nnow)) '\n']);
 buf = sprintf('%s%s',buf,'END_META       =   GENERATION_DATE\n');
 if strcmp(caa_vs, 'SFIT')
-    if nanfill == 0
+    if pnosfit == 0
+        buf = pmeta(buf, 'FILE_CAVEATS', [ 'No data.' dsc.com ]);
+    elseif nanfill == 0
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P34 data only.' dsc.com ]);
     elseif nanfill == 1
         buf = pmeta(buf, 'FILE_CAVEATS', [ 'P' num2str(pnosfit) ' data only.' dsc.com ]);

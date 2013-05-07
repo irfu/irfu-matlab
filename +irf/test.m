@@ -11,7 +11,7 @@ function ok=test(varargin)
 
 % $Id$
 
-testList={'irf_time','epoch','c_4'};
+testList={'irf_time','epoch','c_4','coord_sys'};
 
 if nargin == 0,
 	disp('Possible tests');
@@ -76,7 +76,7 @@ end
 end
 
 % Tests
-function okTest=test_irf_time
+function okTest = test_irf_time
 try
 	okTest = 1;
 	% generate vector with 10000 times during last 500 years
@@ -114,7 +114,7 @@ catch
 	okTest=false;
 end
 end
-function okTest=test_c_4
+function okTest = test_c_4
 try
 	okTest = true; % default for all test
 	ok     = true; % default for subtest
@@ -279,6 +279,45 @@ try
 	if leap_s==1 && ~okSubtest, disp('ISDAT does not use leap seconds.'); end
 
 
+catch
+	okTest = false;
+end
+end
+function okTest = test_coord_sys
+try 
+	okTest		= true; % default for all test	
+	%% SUBTEST: conversion between geo/gei/gse/gsm/sm/mag
+	okSubtest	= true; % default for subtest
+	%
+	% Here comes the subtest1
+	%
+	coordsysList = {'gei','geo','gse','gsm','sm','mag'};
+	% generate vector with 1000 times during last 50 years
+	iTimes = 100;
+	a=rand(iTimes,1);a=a(:);
+	tDateArray = now - 365*50*a;
+	t=irf_time(tDateArray,'datenum2epoch');
+	for iT = 1:numel(t)
+		iCoord = [randi(numel(coordsysList),1,3) 0];
+		iCoord(end)=iCoord(1);
+		vecStart = rand(1,3)*rand(1)*1e4;
+		vec=[t(iT) vecStart];
+		for jCoord = 1:numel(iCoord)-1,
+			transformString = [coordsysList{iCoord(jCoord)} '>' coordsysList{iCoord(jCoord+1)}];
+			vec = irf.geocentric_coordinate_transformation(vec,transformString);
+		end
+		if abs(vec(2:4)-vecStart)>1e-10,
+			okSubtest = false;
+			disp(['failed time: ' irf_time(t(iT),'iso') ]);
+			disp(['failed conversion: ' coordsysList(iCoord) ]);
+			disp(['failed start vector: ' num2str(vecStart,'%9.2e')]);
+			disp(['failed end vector: ' num2str(vec(2:4),'%9.2e')]);
+			disp(['eps: ' num2str(abs(vec(2:4)-vecStart))]);
+			break;
+		end
+	end
+	plusminus(okSubtest); disp([num2str(iTimes) ' random cyclic transformations gei/geo/gse/gsm/sm/mag']);	
+	okTest = okTest * okSubtest;	
 catch
 	okTest = false;
 end

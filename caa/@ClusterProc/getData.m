@@ -1633,15 +1633,10 @@ elseif strcmp(quantity,'badbias')
 			t0 = efwt(ii(1),1) - efwt(ii(1),2);
 			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
 			c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
-		end
-
-		% 2006-06-16 23:30 bias current was lowered to 100 nA
-		if efwt(1,1)>iso2epoch('2006-06-16T00:00:00Z'), GOOD_BIAS = -95; end
-		if (cl_id == 2) && (efwt(1,1)>iso2epoch('2011-04-30T00:00:00Z')), GOOD_BIAS = -18; end
-		
+        end
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
-    clear t0 efwt ii
+    clear t0 ii
 	
 	% The reason we remove 300 seconds (DELTA_MINUS) of data before a bad
 	% bias is that we get rid of all the EFW resets in a clean way.
@@ -1650,18 +1645,30 @@ elseif strcmp(quantity,'badbias')
 	DELTA_MINUS = 300;
 	DELTA_PLUS = 64;
 	
+    startTime = [];
 	for pro=1:4
 		[ok,ibias] = c_load(irf_ssub('IBIAS?p!',cl_id,pro));
 		if ~ok
 			irf_log('load',	irf_ssub('Cannot load IBIAS?p!',cl_id,pro))
 			continue
 		end
-		if isempty(ibias)
-			irf_log('load',	irf_ssub('Empty IBIAS?p!',cl_id,pro))
-			continue
-		end
+        if isempty(ibias)
+            irf_log('load',	irf_ssub('Empty IBIAS?p!',cl_id,pro))
+            continue
+        end
 		
-		if ~efwtok, if ibias(1,1)>iso2epoch('2006-06-16T00:00:00Z'), GOOD_BIAS = -95; end; end
+        % Adjust GOOD_BIAS
+        if isempty(startTime)
+            if efwtok, startTime = efwt(1,1);
+            else startTime = ibias(1,1);
+            end
+              
+            if (cl_id == 2) && (startTime>iso2epoch('2011-04-30T00:00:00Z'))
+                GOOD_BIAS = -18;
+            elseif startTime>iso2epoch('2006-06-16T00:00:00Z')
+                GOOD_BIAS = -95;
+            end
+        end
         
         % Good & bad points
 		ii_bad = find(ibias(:,2)>GOOD_BIAS);
