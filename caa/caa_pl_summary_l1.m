@@ -231,6 +231,10 @@ for cli=1:4
                 for probepair=probepair_list
                     [ok,hbias,msg] = c_load(irf_ssub('HBIASSA?p!',cli,probepair));
                     if ok
+                        % Special trich for C2 after April 2011
+                        if ~isempty(hbias) && cli==2
+                            hbias(hbias(:,1)==iso2epoch('2011-04-30T06:00:00.00Z'),:)=[];
+                        end
                         if ~isempty(hbias)
                             irf_log('proc','blanking HB saturation')
                             spinFits.diEs = caa_rm_blankt(spinFits.diEs,hbias);
