@@ -56,3 +56,6 @@ SC2 strange data, AIE check. So far we have put it into ns_ops.
 5) Unclassified
 ===============
 
+2011-07-13 18:00-21:00 SPLIT mode for C1, C2 in NS_OPS, but data not removed. Rerun.
+
+2011-07-13 06:00-12:00 SPLIT mode for C1, C2 in NS_OPS, but data not removed. Rerun.
