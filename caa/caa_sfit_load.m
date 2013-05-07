@@ -2,8 +2,6 @@ function [res,msg] = caa_sfit_load(cl_id)
 %CAA_SFIT_LOAD  Load EFW spinfit data
 %
 % res = caa_sfit_load(cl_id)
-%cd ..
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
