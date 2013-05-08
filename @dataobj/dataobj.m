@@ -123,7 +123,7 @@ switch action
 				end
 			end
 			%% check if number of records to read is zero
-			if sum(records)==0,
+			if ~shouldReadAllData && sum(records)==0,
 				irf_log('dsrc','No data within specified time interval');
 				noDataReturned=1;
 			end
