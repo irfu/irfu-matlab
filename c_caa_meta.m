@@ -1,23 +1,23 @@
 function out=c_caa_meta(varargin)
-% LOCAL.C_CAA_META return meta data structure
+% C_CAA_META return meta data structure
 %
-%	LOCAL.C_CAA_META(string1,string2,..) returns name of datasets
+%	C_CAA_META(string1,string2,..) returns name of datasets
 %			matching string1,string2,..
 %
-%	LOCAL.C_CAA_META(dataset) displays dataset informations
+%	C_CAA_META(dataset) displays dataset informations
 %	out=LOCAL.C_CAA_META(dataset) returns dataset information in structure out
 %
-%	LOCAL.C_CAA_META(variableName) displays CAA variableName informations
+%	C_CAA_META(variableName) displays CAA variableName informations
 %	out=LOCAL.C_CAA_META(variableName) returns variable information in structure out
 %
 %
 %	Examples:
-%		LOCAL.C_CAA_META('C1','PEA')
-%       d=LOCAL.C_CAA_META('C4_CP_PEA_MOMENTS')
-%       LOCAL.C_CAA_META('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
+%		c_caa_meta('C1','PEA')
+%       d=c_caa_meta('C4_CP_PEA_MOMENTS')
+%       c_caa_meta('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
 %
 
-%	LOCAL.C_CAA_META('create') create file with all structures
+%	c_caa_meta('create') create file with all structures
 
 persistent s metaNames datasetNames indexFile
 linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
@@ -105,10 +105,10 @@ else
 	if sum(iSelected)>0
 		if nargout == 1,
 			if sum(iSelected)==1
-				load('index',metaNames{iSelected});
+				load(indexFile,metaNames{iSelected});
 				eval(['out = ' metaNames{iSelected} ';']);
 			elseif any(iEqual)
-				load('index',metaNames{iEqual});
+				load(indexFile,metaNames{iEqual});
 				eval(['out = ' metaNames{iEqual} ';']);
 			else
 				disp('Output not assigned. There are several choices:');
