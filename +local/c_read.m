@@ -224,25 +224,28 @@ end
 					end
 					cdflib.close(cdfid);
 				case {'caa','dobj'}
-					if iFile==istart || iFile==iend % ends of interval
+					if iFile==istart % start of interval, initiate dataobject
+                        dataobject=dataobj(cdf_file,'tint',tint);
+                    elseif iFile==iend % ends of interval
 						data_temp=dataobj(cdf_file,'tint',tint);
 					else
 						data_temp=dataobj(cdf_file);
 					end
-					if ~isempty(data_temp) && ~isempty(data_temp.data)
+					if exist('data_temp','var') && ~isempty(data_temp)
 						if isempty(dataobject)
 							dataobject=data_temp;
 						else
 							dataobject=append(dataobject,data_temp);
 						end
+						clear data_temp;
 					end
 				otherwise
 					error('unknown format');
 			end
 		end
-		if strcmp(returnDataFormat,'caa') && ~isempty(dataobject) && ~isempty(dataobject.data)
+		if strcmp(returnDataFormat,'caa')
 			data=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
-		  elseif strcmp(returnDataFormat,'dobj') && ~isempty(dataobject) && ~isempty(dataobject.data)
+		  elseif strcmp(returnDataFormat,'dobj') 
 			data=dataobject; % currently only 1 variable request implemented
 		end
 		status = true;
