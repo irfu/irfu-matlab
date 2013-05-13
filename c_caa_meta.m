@@ -22,7 +22,7 @@ function out=c_caa_meta(varargin)
 persistent s metaNames datasetNames indexFile
 linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
-if isempty(s), % first usage
+if isempty(indexFile) || ~exist(indexFile,'file'), % first usage
 	indexFile = 'indexCaaMeta.mat';
 	if ~exist(indexFile,'file');
 		temp = datastore('caa','indexCaaMetaFile');
@@ -31,6 +31,7 @@ if isempty(s), % first usage
 			if ~status, return; end
 		else
 			if ~exist(temp,'file'),
+				datastore('@delete','caa','indexCaaMetaFile');
 				[indexFile,status] = get_index_file(linkUrlFile);
 				if ~status, return; end
 			else
@@ -172,7 +173,8 @@ if strcmpi(reply,'y')
 		datastore('caa','indexCaaMetaFile',f);
 		status = true;
 		disp(['File downloaded to: ' indexFile]);
-		disp('I will remember it for future.');
+		disp('I will remember it, but it will be removed by system after some time.');
+		disp('If you want to keep it, move the file to somewhere on your matlab path.');
 	else
 		disp('Did not succeed. Maybe problems with internet connections.');
 		disp('Try again later or complain...');
@@ -180,6 +182,7 @@ if strcmpi(reply,'y')
 	end
 else
 	disp('OK! Download to matlab path and rerun the program.')
+	indexFile = [];
 	status = false;
 end
 end
