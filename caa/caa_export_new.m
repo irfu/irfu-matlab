@@ -1040,6 +1040,9 @@ if ~isempty(data)
         end
         indx=isfinite(data(:,1));
         data=data(indx,:);
+        if strcmp(caa_vs,'IB') && isempty(data)
+            ibsave=true;
+        end 
     end
 end
 
