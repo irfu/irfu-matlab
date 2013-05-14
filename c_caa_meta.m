@@ -1,42 +1,42 @@
 function out=c_caa_meta(varargin)
-% LOCAL.C_CAA_META return meta data structure
+% C_CAA_META return meta data structure
 %
-%	LOCAL.C_CAA_META(string1,string2,..) returns name of datasets 
+%	C_CAA_META(string1,string2,..) returns name of datasets
 %			matching string1,string2,..
 %
-%	LOCAL.C_CAA_META(dataset) displays dataset informations 
+%	C_CAA_META(dataset) displays dataset informations
 %	out=LOCAL.C_CAA_META(dataset) returns dataset information in structure out
 %
-%	LOCAL.C_CAA_META(variableName) displays CAA variableName informations 
+%	C_CAA_META(variableName) displays CAA variableName informations
 %	out=LOCAL.C_CAA_META(variableName) returns variable information in structure out
 %
 %
 %	Examples:
-%		LOCAL.C_CAA_META('C1','PEA')
-%       d=LOCAL.C_CAA_META('C4_CP_PEA_MOMENTS')
-%       LOCAL.C_CAA_META('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
+%		c_caa_meta('C1','PEA')
+%       d=c_caa_meta('C4_CP_PEA_MOMENTS')
+%       c_caa_meta('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
 %
 
-% $Id$
+%	c_caa_meta('create') create file with all structures
 
-%	LOCAL.C_CAA_META('create') create file with all structures
+persistent s metaNames datasetNames indexFile
+linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
-persistent s metaNames datasetNames
-indexFile = 'indexCaaMeta.mat';
-if isempty(s), % first usage 
+if isempty(indexFile) || ~exist(indexFile,'file'), % first usage
+	indexFile = 'indexCaaMeta.mat';
 	if ~exist(indexFile,'file');
-		indexFile = [];
-		p=tokenize(path,':');
-		for j=1:numel(p),
-			if exist([p{j} filesep 'indexCaaMeta.mat'],'file'),
-				indexFile = [p{j} filesep 'indexCaaMeta.mat'];
+		temp = datastore('caa','indexCaaMetaFile');
+		if isempty(temp)
+			[indexFile,status] = get_index_file(linkUrlFile);
+			if ~status, return; end
+		else
+			if ~exist(temp,'file'),
+				datastore('@delete','caa','indexCaaMetaFile');
+				[indexFile,status] = get_index_file(linkUrlFile);
+				if ~status, return; end
+			else
+				indexFile = temp;
 			end
-		end
-		if isempty(indexFile)
-			disp('You do not have indexCaaMat.mat file!')
-			disp('Please download it to some directory on your matlab path!');
-			disp('<a href="http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat">http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat</a>');
-			return
 		end
 	end
 end
@@ -106,10 +106,10 @@ else
 	if sum(iSelected)>0
 		if nargout == 1,
 			if sum(iSelected)==1
-				load('index',metaNames{iSelected});
+				load(indexFile,metaNames{iSelected});
 				eval(['out = ' metaNames{iSelected} ';']);
 			elseif any(iEqual)
-				load('index',metaNames{iEqual});
+				load(indexFile,metaNames{iEqual});
 				eval(['out = ' metaNames{iEqual} ';']);
 			else
 				disp('Output not assigned. There are several choices:');
@@ -126,7 +126,7 @@ else
 			end
 			s=load(indexFile,metaNames{ind});
 			fn=fieldnames(s);
-			dataSet=getfield(s,fn{1});
+			dataSet=s.(fn{1});
 			try
 				display_fields(dataSet);
 				parameters=dataSet.PARAMETERS.PARAMETER;
@@ -135,7 +135,7 @@ else
 					disp([num2str(j) '. ' parameters{j}.PARAMETER_ID.Text])
 				end
 			catch
-			end	
+			end
 			disp(' ');
 		end
 		if sum(iSelected) > 1,
@@ -144,14 +144,46 @@ else
 			disp(vertcat(datasetNames(iSelected)));
 			return;
 		end
-
+		
 	end
 end
+end
+%% Functions
 function display_fields(dataSet)
+disp(' ');
 fn=fieldnames(dataSet);
 for j=1:numel(fn)
 	if isfield(dataSet.(fn{j}),'Text'),
 		disp([fn{j} ': ' dataSet.(fn{j}).Text]);
 	end
+end
+end
+function [indexFile,status] = get_index_file(linkUrlFile)
+disp('You do not have indexCaaMat.mat file!');
+disp('The file is located at:');
+disp(['<a href="' linkUrlFile '">' linkUrlFile '</a>']);
+disp('You can download it to somewhere on your matlab path,');
+disp('or I can download it for you to some temporary path.');
+reply = irf_ask('Shall I download to temporary path? y/n [%]>','y','y');
+if strcmpi(reply,'y')
+	indexFile = [tempname '.mat'];
+	[f,status]=urlwrite(linkUrlFile,indexFile);
+	if status,
+		disp('Success!');
+		datastore('caa','indexCaaMetaFile',f);
+		status = true;
+		disp(['File downloaded to: ' indexFile]);
+		disp('I will remember it, but it will be removed by system after some time.');
+		disp('If you want to keep it, move the file to somewhere on your matlab path.');
+	else
+		disp('Did not succeed. Maybe problems with internet connections.');
+		disp('Try again later or complain...');
+		status = false;
+	end
+else
+	disp('OK! Download to matlab path and rerun the program.')
+	indexFile = [];
+	status = false;
+end
 end
 

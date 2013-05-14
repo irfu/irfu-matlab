@@ -130,6 +130,7 @@ end
 if isempty(ax) 
     ax=irf_plot(1);
 end
+axes(ax);
 
 % Plot
 switch plot_type
@@ -168,7 +169,7 @@ switch plot_type
             r{k} = tocolumn(rlog{k}(ind_r{k})-r0log);
             X{k} = r{k}*cosd(theta{k});
             Y{k} = r{k}*sind(theta{k});
-            C{k} = squeeze(log10(nanmean(to_plot{k}.p(ind_t{k},:,ind_r{k}),1)))';
+            C{k} = squeeze(log10(irf.nanmean(to_plot{k}.p(ind_t{k},:,ind_r{k}),1)))';
         end        
         
         % Plot data
@@ -198,7 +199,7 @@ switch plot_type
             xlabel(ax,'Energy  [keV]'); ylabel(ax,'Energy  [keV]')
         end
         if 1 % Pitch angle labels
-            rmax=max([max(r{1}) max(r{2})]);
+            rmax=max([max(r{1}) max(r{2})]);            
             text(0-0.2,rmax-0.5,0,'0^o')
             text(0-0.2,-rmax+0.5,0,'180^o')
             text(-0.2-rmax+0.5,0,0,'90^o')
@@ -218,12 +219,12 @@ switch plot_type
         for p=1:n_pa
             diff_pa=abs(to_plot{k}.f_cs-pitch_angles(p));
             ind_pa{k,p}=find(diff_pa==min(diff_pa));
-            pa_toplot{k,p}=squeeze(mean(nanmean(to_plot{k}.p(ind_t{k},ind_pa{p},ind_r{k}),1),2));
+            pa_toplot{k,p}=squeeze(mean(irf.nanmean(to_plot{k}.p(ind_t{k},ind_pa{p},ind_r{k}),1),2));
             pa_legends{k,p}=num2str(pitch_angles(p),'%.0f');
             disp(['Plotting average of bins: ',num2str(to_plot{k}.f_cs(ind_pa{k,p}))])
         end
         if ~isempty(to_plot{k}.p_bg)                
-            PAbg=squeeze(nanmean(nanmean(to_plot{k}.p_bg(ind_t{k},:,ind_r{k}),1),2)); % One common zero-count level for all levels
+            PAbg=squeeze(irf.nanmean(irf.nanmean(to_plot{k}.p_bg(ind_t{k},:,ind_r{k}),1),2)); % One common zero-count level for all levels
         else
             PAbg=NaN(size(to_plot{k}.en_cs));
         end
@@ -300,38 +301,4 @@ end
 % Change underscores to spaces
 for k=1:length(titleStr) titleStr{k}(strfind(titleStr{k},'_'))=' '; end
 title(ax,titleStr);
-end
-
-function m = nanmean(x,dim)
-%NANMEAN Mean value, ignoring NaNs.
-%   M = NANMEAN(X) returns the sample mean of X, treating NaNs as missing
-%   values.  For vector input, M is the mean value of the non-NaN elements
-%   in X.  For matrix input, M is a row vector containing the mean value of
-%   non-NaN elements in each column.  For N-D arrays, NANMEAN operates
-%   along the first non-singleton dimension.
-%
-%   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
-%
-%   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
-
-%   Copyright 1993-2004 The MathWorks, Inc.
-%   Revision: 1.1.8.1   Date: 2010/03/16 00:15:50 
-
-% Find NaNs and set them to zero
-nans = isnan(x);
-x(nans) = 0;
-
-if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    n = sum(~nans);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x) ./ n;
-else
-    % Count up non-NaNs.
-    n = sum(~nans,dim);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x,dim) ./ n;
-end
 end
