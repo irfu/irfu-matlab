@@ -5897,8 +5897,7 @@ plan="yes" sdesc ="tbd">
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="ye
-s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
+<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
