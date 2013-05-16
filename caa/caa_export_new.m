@@ -382,42 +382,53 @@ for dd = 1:length(dirs)
          end
          ASPOC = c_ct{1,cl_id}.aspoc;
 
-         % Export empty file if BB or EB data exist
-         % Check for B data
-         mfn='./mEFWburst.mat';
+         % Export empty file if TM, BB or EB data exist
+        % Check for TM data
+         mfn='./mEFWburstTM.mat'; % For tm
          if exist(mfn,'file')
-             bsc=load(mfn);
-             finbsc=fieldnames(bsc);
-             fnl=size(finbsc,1);
-             found=0;
-             for bscix=1:fnl % find BSC data
-%               finbsc{bscix}
-               if length(finbsc{bscix})<5
-                   continue;
-               end
-               if strcmp(finbsc{bscix}(1:5),'diBSC')
+             r=load(mfn);
+             data=eval(irf_ssub('r.iburst?',cl_id));
+             if ~isempty(data)
                  ibsave=true;
-                 break;
-               end
+                 clear data;
              end
-         end
-         if ~ibsave
-             % Check for E data
-             mfn='./mEFWburst.mat'; % For E
+         else
+              % Check for B data
+             mfn='./mEFWburst.mat';
              if exist(mfn,'file')
-                 e=load(mfn);
-                 fine=fieldnames(e);
-                 fnl=size(fine,1);
+                 bsc=load(mfn);
+                 finbsc=fieldnames(bsc);
+                 fnl=size(finbsc,1);
                  found=0;
-                 for eix=1:fnl % find dibE data
-    %               fine{eix}
-                   if length(fine{eix})<4
+                 for bscix=1:fnl % find BSC data
+        %               finbsc{bscix}
+                   if length(finbsc{bscix})<5
                        continue;
                    end
-                   if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                   if strcmp(finbsc{bscix}(1:5),'diBSC')
                      ibsave=true;
                      break;
                    end
+                 end
+             end
+             if ~ibsave
+                 % Check for E data
+                 mfn='./mEFWburst.mat'; % For E
+                 if exist(mfn,'file')
+                     e=load(mfn);
+                     fine=fieldnames(e);
+                     fnl=size(fine,1);
+                     found=0;
+                     for eix=1:fnl % find dibE data
+        %               fine{eix}
+                       if length(fine{eix})<4
+                           continue;
+                       end
+                       if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                         ibsave=true;
+                         break;
+                       end
+                     end
                  end
              end
          end
@@ -481,33 +492,42 @@ for dd = 1:length(dirs)
             global c_ct
          end
 
-         % Export empty file if PB or EB data exist. Ex 110227205958we.03
-         % Check for P data
-         pvar='bP?';
-         [ok,data,msg] = c_load(pvar,cl_id);
-         if ok && ~isempty(data)
-            ibsave=true;
+         % Export empty file if TM, PB or EB data exist. Ex 110227205958we.03
+         % Check for TM data
+         mfn='./mEFWburstTM.mat'; % For tm
+         if exist(mfn,'file')
+             r=load(mfn);
+             data=eval(irf_ssub('r.iburst?',cl_id));
+             if ~isempty(data)
+                 ibsave=true;
+             end
          else
-             % Check for E data
-             mfn='./mEFWburst.mat';
-             if exist(mfn,'file')
-                 e=load(mfn);
-                 fine=fieldnames(e);
-                 fnl=size(fine,1);
-                 found=0;
-                 for eix=1:fnl % find dibE data
-    %               fine{eix}
-                   if length(fine{eix})<4
-                       continue;
-                   end
-                   if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
-                     ibsave=true;
-                     break;
-                   end
+             % Check for P data
+             pvar='bP?';
+             [ok,data,msg] = c_load(pvar,cl_id);
+             if ok && ~isempty(data)
+                ibsave=true;
+             else
+                 % Check for E data
+                 mfn='./mEFWburst.mat';
+                 if exist(mfn,'file')
+                     e=load(mfn);
+                     fine=fieldnames(e);
+                     fnl=size(fine,1);
+                     found=0;
+                     for eix=1:fnl % find dibE data
+        %               fine{eix}
+                       if length(fine{eix})<4
+                           continue;
+                       end
+                       if strcmp(fine{eix}(1:4),'dibE') && ~strcmp(fine{eix}(end-3:end),'info')
+                         ibsave=true;
+                         break;
+                       end
+                     end
                  end
              end
          end
-
          data=[];
          ok=0;
          mfn='./mEFWburst.mat'; % Read Bx By Bz
@@ -560,33 +580,42 @@ for dd = 1:length(dirs)
             global c_ct
          end
 
-         % Export empty file if PB or BB data exist. Ex 110227205958we.03
-         % Check for P data
-         pvar='bP?';
-         [ok,data,msg] = c_load(pvar,cl_id);
-         if ok && ~isempty(data)
-            ibsave=true;
+         % Export empty file if TM, PB or BB data exist. Ex 110227205958we.03
+         % Check for TM data
+         mfn='./mEFWburstTM.mat'; % For tm
+         if exist(mfn,'file')
+             r=load(mfn);
+             data=eval(irf_ssub('r.iburst?',cl_id));
+             if ~isempty(data)
+                 ibsave=true;
+             end
          else
-             % Check for B data
-             mfn='./mEFWburst.mat';
-             if exist(mfn,'file')
-                 bsc=load(mfn);
-                 finbsc=fieldnames(bsc);
-                 fnl=size(finbsc,1);
-                 found=0;
-                 for bscix=1:fnl % find BSC data
-    %               finbsc{bscix}
-                   if length(finbsc{bscix})<5
-                       continue;
-                   end
-                   if strcmp(finbsc{bscix}(1:5),'diBSC')
-                     ibsave=true;
-                     break;
-                   end
+             % Check for P data
+             pvar='bP?';
+             [ok,data,msg] = c_load(pvar,cl_id);
+             if ok && ~isempty(data)
+                ibsave=true;
+             else
+                 % Check for B data
+                 mfn='./mEFWburst.mat';
+                 if exist(mfn,'file')
+                     bsc=load(mfn);
+                     finbsc=fieldnames(bsc);
+                     fnl=size(finbsc,1);
+                     found=0;
+                     for bscix=1:fnl % find BSC data
+        %               finbsc{bscix}
+                       if length(finbsc{bscix})<5
+                           continue;
+                       end
+                       if strcmp(finbsc{bscix}(1:5),'diBSC')
+                         ibsave=true;
+                         break;
+                       end
+                     end
                  end
              end
          end
- 
          data=[];
          ok=0;
          mfn='./mEFWburst.mat'; % For E
