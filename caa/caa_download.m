@@ -7,6 +7,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD('listdesc')- same with dataset description
 %       CAA_DOWNLOAD('listgui') - same presenting output in separate window
 %       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
+%       TT=CAA_DOWNLOAD('listdata:dataset') - return timetable with intervals when dataset has data
 %
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
@@ -269,11 +270,19 @@ if expandWildcards, % expand wildcards
 end
 
 %% list data if required
-if strfind(dataset,'list'),     % list  files
+if strfind(dataset,'list'),     % list files
 	if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc'), % list all files
 		filter='*';
 	else                        % list only filtered files
 		filter=dataset(strfind(dataset,':')+1:end);
+	end
+	if strfind(dataset,'listdata')
+		ttTemp = caa_download(['list:' filter]);
+		tint = ttTemp.TimeInterval(1,:);
+		ttTemp = caa_download(tint,['list:' filter]);
+		iData=find([ttTemp.UserData(:).number]);
+		download_status=select(ttTemp,iData);
+		return
 	end
 	if isempty(tint) % work on all datasets
 		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description

@@ -10,11 +10,11 @@ classdef TimeTable
 	% TT=irf.TimeTable(ascii_text) - load time table from cell string array ascii_text
 	%
     % Methods: (see also help irf.TimeTable.(method))
-	%   TT  = add(TT,..)	   add time interval to table, see help irf.TimeTable.add
+	%   TT  = add(TT,..)       add time interval to table, see help irf.TimeTable.add
 	%   out = ascii(TT)	       time table in ascii format
 	%   TT	= common(TT1,TT2)  return common elements
     %   TT  = intersect(T1,T2) intersection of two time tables
-	%   N   = numel(TT)		   number of time intervals
+	%   N   = numel(TT)        number of time intervals
     %   T2  = remove(T1,index) remove elements
     %   T2  = select(T1,index) select elements
 	%   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
@@ -180,9 +180,11 @@ classdef TimeTable
 			out(1:nHeaderLines)=header;
 			currentLine=nHeaderLines+1;
 			fmt='%s %s %s';
+			tstartIso = irf_time(tint(:,1),'iso');
+			tendIso = irf_time(tint(:,2),'iso');
 			for iTT=1:numel(tt)
-				out{currentLine}=sprintf(fmt,irf_time(tint(iTT,1),'iso'),...
-					irf_time(tint(iTT,2),'iso'),comment{iTT});
+				out{currentLine}=sprintf(fmt,tstartIso(iTT,:),...
+					tendIso(iTT,:),comment{iTT});
 				currentLine=currentLine+1;
 				for j=1:numel(description{iTT}),
 					out{currentLine}=description{iTT}{j};
@@ -220,26 +222,6 @@ classdef TimeTable
 				if nargout==0, clear ok, end;
 			end
 		end
-		function TTout  = select(TTin,index) % return index
-			TTout=irf.TimeTable;
-			if ~isnumeric(index)
-				irf_log('fcal','Index not number');
-				return;
-			elseif isempty(index)
-				irf_log('fcal','index empty');
-				return;
-			end
-			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
-				irf_log('fcal','Index out of range');
-				return;
-			end
-			TTout				= irf.TimeTable;
-			TTout.TimeInterval  = TTin.TimeInterval(index(:),:);
-			TTout.Comment		= TTin.Comment(index(:));
-			TTout.Description   = TTin.Description(index(:));
-			TTout.Header		= TTin.Header;
-			TTout.UserData		= TTin.UserData(index);
-		end
 		function TTout  = remove(TTin,index) % remove entries index
             % TTout  = remove(TTin,index) remove entries 
             if isempty(index),
@@ -268,6 +250,24 @@ classdef TimeTable
 			    TTout.UserData(index)          = [];
             end
 		end
+		function TTout = select(TTin,index) % return index
+			if ~isnumeric(index)
+				irf_log('fcal','Index not number');
+				return;
+			elseif isempty(index)
+				irf_log('fcal','index empty');
+				return;
+			end
+			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
+				irf_log('fcal','Index out of range');
+				return;
+			end
+			TTout				= irf.TimeTable(TTin.TimeInterval(index(:),:));
+			TTout.Header		= TTin.Header;
+			if ~isempty(TTout.Comment),		TTout.Comment		= TTin.Comment(index(:));		end
+			if ~isempty(TTout.Description),	TTout.Description   = TTin.Description(index(:));	end
+			if ~isempty(TTout.UserData),	TTout.UserData		= TTin.UserData(index);			end
+		end
 		function TTout	= sort(TTin) % sort according to start time
 			TTout=TTin;
 			[~,inew]=sort(TTin.TimeInterval(:,1));
@@ -294,10 +294,14 @@ classdef TimeTable
 				end
 			end
 			TTout.TimeInterval = ttnew;
-			com = com(inew);
-			TTout.Comment = com(~iJoinedLines);
-			desc = desc(inew);
-			TTout.Description = desc(~iJoinedLines);
+			if ~isempty(com),
+				com = com(inew);
+				TTout.Comment = com(~iJoinedLines);
+			end
+			if ~isempty(desc)
+				desc = desc(inew);
+				TTout.Description = desc(~iJoinedLines);
+			end
 		end
 		function TT		= intersect(TT1,TT2) % intersect of 2 time tables
 			TT1 = unique(TT1);
