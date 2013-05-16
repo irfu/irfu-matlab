@@ -323,8 +323,8 @@ classdef TimeTable
 			end
 			tout(iInterval+1:end,:)=[];
 			TT = irf.TimeTable;
-			TT.Header = [cellfun(@(x) {['# ' x]}, TT1.Header),...
-				'INTERSECT',cellfun(@(x) {['# ' x]}, TT2.Header)];
+			TT.Header = [cellfun(@(x) {['# ' x]}, TT1.Header);...
+				'INTERSECT';cellfun(@(x) {['# ' x]}, TT2.Header)];
 			TT.TimeInterval=tout;
 			TT.Comment=cell(1,size(tout,1));
 			TT.Description=cell(1,size(tout,1));
