@@ -255,7 +255,8 @@ classdef TimeTable
 				irf_log('fcal','Index not number');
 				return;
 			elseif isempty(index)
-				irf_log('fcal','index empty');
+				TTout=irf.TimeTable;
+				irf_log('fcal','index empty, returning empty timetable');
 				return;
 			end
 			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
