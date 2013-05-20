@@ -446,8 +446,8 @@ if wantPolarization,
     
     % Define parameters for which we cannot compute the wave vector
     indLowPolarization = degreeOfPolarization < .5;
-    indLowPlanarity = planarity < 0.3;
-    indLowEllipticity = abs(ellipticity) < .3;
+    indLowPlanarity = planarity < 0.5;
+    indLowEllipticity = abs(ellipticity) < .2;
     
     thetaSVD_fac(indLowPolarization) = NaN;
     phiSVD_fac(indLowPolarization) = NaN;
