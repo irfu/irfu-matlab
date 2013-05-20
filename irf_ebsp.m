@@ -390,8 +390,8 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2);
       dop(censurIdx) = NaN;
       degreeOfPolarization(:,ind_a) = dop;
-  end
-end
+  end % wantPolarization
+end % main loop
 fprintf('Done.\n');
 
 %% set data gaps to NaN and remove edge effects
