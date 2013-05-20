@@ -27,7 +27,7 @@ cl_s = int2str(cl_id);
 
 %% Download data
 if 0
-    caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_5VPS_ISR2'],'nowildcard');
+    caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
     caa_download(tint+[-30 30],'CL_SP_AUX','nowildcard');
@@ -81,14 +81,14 @@ if wantPC35
     iE3D_4SEC = E3D_4SEC;
     iE3D_4SEC(:,2:4) = iE3D_4SEC(:,2:4) - evxb(:,2:4);
     
-    tic; [timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,polSVD_fac,planarity,ellipticity,k_thphSVD_fac] = ...
-        irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35','noresamp','fullB=dB');
+    tic; res = ...
+        irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
+        'fac','polarization','noresamp','fullB=dB');
     toc
     BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
-    h=irf_pl_ebsp(cl_id,R,timeVector,'pc35',BMAG,BB_xxyyzz_fac,...
-        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
-        k_thphSVD_fac,polSVD_fac,ellipticity);
+    h=irf_pl_ebsp(cl_id,R,res.t,'pc35',BMAG,res.bb,...
+        res.eesum,res.ee,res.pf_xyz,res.pf_rtp,...
+        res.k,res.dop,res.ellipticity);
 end
 if wantPC12
     fFGM = 22.5;
@@ -101,11 +101,12 @@ if wantPC12
     iE3D_BASE = E3D_BASE;
     iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
     
-    [timeVector,frequencyVector,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,...
-        Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,polSVD_fac,planarity,ellipticity,k_thphSVD_fac] = ...
-        irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12','noresamp','fullB=dB','dedotb=0');
-    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
-    h=irf_pl_ebsp(cl_id,R,timeVector,'pc12',BMAG,BB_xxyyzz_fac,...
-        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
-        k_thphSVD_fac,polSVD_fac,ellipticity);
+    tic
+    res = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
+        'fac','polarization','noresamp','fullB=dB','dedotb=0');
+    toc
+    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,res.t);
+    h=irf_pl_ebsp(cl_id,R,res.t,'pc12',BMAG,res.bb,...
+        res.eesum,res.ee,res.pf_xyz,res.pf_rtp,...
+        res.k,res.dop,res.ellipticity);
 end
