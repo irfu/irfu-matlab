@@ -1,7 +1,4 @@
-function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
-    EESum_ISR2,EE_XXYYZZ_FAC,Poynting_XYZ_FAC,Poynting_RThPh_FAC,...
-    degreeOfPolarization,planarity,ellipticity,k_ThPhSVD_fac]=...
-    irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
+function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
 % irf_ebsp(E,dB,fullB,B0,xyz,freq_int,[OPTIONS])
@@ -20,39 +17,35 @@ function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
 % freq_int = frequency interval: either 'pc12', 'pc35' or numeric [fmin fmax]
 %
 % Options:
-%   'noresamp' - no resampling, E and dB are given at the same timeline
-%   'fac'      - use FAC coordinate system, otherwise no coordinate system 
-%                transformation is performed
-%   'dEdotB=0' - compute dEz from dB dot B = 0
-%   'fullB=dB' - dB contains DC field
+%   'polarization' - computer polarization parameters
+%   'noresamp'     - no resampling, E and dB are given at the same timeline
+%   'fac'          - use FAC coordinate system, otherwise no coordinate system 
+%                    transformation is performed
+%   'dEdotB=0'     - compute dEz from dB dot B = 0
+%   'fullB=dB'     - dB contains DC field
 % 
-% Output:
+% Output is a structure containing the following fields:
 %
-%     timeVector         - Time
-%     frequencyVector    - Frequency
-%     BB_XXYYZZ_FAC      - B power spectrum (xx, yy, zz FAC)
-%     EESum_ISR2         - E power spectrum (xx+yy ISR2)
-%     EE_XXYYZZ_FAC      - E power spectrum (xx, yy, zz FAC)
-%     Poynting_XYZ_FAC   - Poynting flux (xyz FAC)
-%     Poynting_RThPh_FAC - Poynting flux (r, theta, phi FAC)
-%     degOfPolarization  - 3D degree of polarization
-%     planarity          - planarity of polarization
-%     ellipticity        - ellipticity of polarization ellipse
-%     k_ThPhSVD_FAC      - k-vector (theta, phi FAC)
+%     t           - Time
+%     f           - Frequency
+%     bb          - B power spectrum (xx, yy, zz)
+%     eesum       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
+%     ee          - E power spectrum (xx, yy, zz)
+%     pf_xyz      - Poynting flux (xyz)
+%     pf_fac      - Poynting flux (r, theta, phi)
+%     pf_par      - Poynting flux || B
+%     dop         - 3D degree of polarization
+%     planarity   - planarity of polarization
+%     ellipticity - ellipticity of polarization ellipse
+%     k           - k-vector (theta, phi FAC)
 %
 % Examples:
 %
-%    [timeVec,frequencyVec,BB_xxyyzz_fac]=...
-%        irf_ebsp(e,b,B,B0,xyz,'pc12');
+%    res = irf_ebsp(e,b,B,B0,xyz,'pc12');
 %
-%    [timeVec,frequencyVec,BB_xxyyzz_fac,...
-%        EESum_xxyyzz_ISR2,EE_xxyyzz_FAC,Poynting_xyz_FAC]=...
-%        irf_ebsp(e,b,[],B0,xyz,'pc35','fullB=dB');
+%    res = irf_ebsp(e,b,[],B0,xyz,'polarization','pc35','fullB=dB');
 %
-%    [timeVec,frequencyVec,BB_xxyyzz_fac,EESum_xxyyzz_ISR2,...
-%        EE_xxyyzz_FAC,Poynting_xyz_FAC,Poynting_rThetaPhi_FAC,...
-%        k_thphSVD_fac,polSVD_fac,ellipticity]=...
-%        irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
+%    res = irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
 %
 %  See also: IRF_PL_EBS, IRF_PL_EBSP
 
@@ -61,20 +54,19 @@ nWavePeriodToAverage = 4; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
 
 wantPolarization = 0;
-if nargout==3,
-    wantEE = 0;
-elseif nargout==7,
-    wantEE = 1;
-elseif nargout==11,
-    wantEE = 1;
-    wantPolarization = 1;
-else
-	error('irf_ebsp: unknown number of output parameters');
+if isempty(e), wantEE = 0;
+else wantEE = 1;
 end
+
+res = struct('t',[],'f',[],'fac',0,'bb',[],'ee',[],'eesum',[],...
+    'pf_xyz',[],'pf_rtp',[],...
+    'dop',[],'planarity',[],'ellipticity',[],'k',[]);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 for i=1:length(varargin)
     switch lower(varargin{i})
+        case 'polarization' 
+            wantPolarization = 1;
         case 'noresamp'
             flag_no_resamp = 1;
         case 'fac'
@@ -99,9 +91,6 @@ end
 if flag_dEdotB0 && isempty(fullB)
     error('fullB must be given for option dEdotB=0')
 end
-Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
-angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
-idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
 
 if ischar(freq_int)
     switch lower(freq_int)
@@ -163,7 +152,9 @@ end
 if wantEE && size(e,2) <4 && flag_dEdotB0==0
     error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
 end
-    
+
+Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
+
 % Remove the last sample if the total number of samples is odd
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
     e=e(1:end-1,:);
@@ -172,6 +163,9 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
     xyz=xyz(1:end-1,:);
     Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
 end
+
+angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
+idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
 inTime = dB(:,1);
   
 % If E has all three components, transform E and B waveforms to a 
@@ -179,14 +173,15 @@ inTime = dB(:,1);
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
 if flag_want_fac
+    res.fac = 1;
      xyz = irf_resamp(xyz,dB);
     if ~flag_dEdotB0
         eISR2=e(:,1:3);
         [dB,e]=irf_convert_fac(xyz,B0,dB,e);
     else dB = irf_convert_fac(xyz,B0,dB);
     end
-else % Keep B direction for || Poynting flux
-    bn = irf_norm(B0); bn(:,1) = [];
+%else % Keep B direction for || Poynting flux
+%    bn = irf_norm(B0); bn(:,1) = [];
 end
 
 %% Find the frequencies for an FFT of all data and set important parameters
@@ -232,7 +227,7 @@ powerBy_plot = zeros(ndata,nfreq);
 powerBz_plot = zeros(ndata,nfreq);
 S_plot_x = zeros(ndata,nfreq);
 S_plot_y = zeros(ndata,nfreq);
-Spar_plot_z = zeros(ndata,nfreq);
+S_plot_z = zeros(ndata,nfreq);
 planarity = zeros(ndataOut,nfreq);
 ellipticity = zeros(ndataOut,nfreq);
 degreeOfPolarization = zeros(ndataOut,nfreq);
@@ -242,7 +237,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-parfor ind_a=1:length(a), % Main loop over frequencies
+for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
@@ -279,12 +274,12 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       end
       power2E_ISR2_plot(:,ind_a) = SUMpowerEISR2;
       
-      if flag_dEdotB0 % Compute Ez from dE * dB = 0
+      if flag_dEdotB0 % Compute Ez from dE * B = 0
           rWe = real(We); iWe = imag(We);
           wEz = -(rWe(:,1).*Bx+rWe(:,2).*By)./Bz-...
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
-          wEz(idxBparSpinPlane,3) = NaN;
-          if flag_want_fac, We = irf_convert_fac(xyz,B0,[We(:,1:2); wEz]); end
+          wEz(idxBparSpinPlane) = NaN;
+          if flag_want_fac, We = irf_convert_fac(xyz,B0,[B0(:,1) We(:,1:2) wEz]); end
       end
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
       powerE(:,4) = sum(powerE,2);
@@ -301,18 +296,10 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       S(:,1)= coef_poynt*real(Wey.*conj(Wbz)+conj(Wey).*Wbz-Wez.*conj(Wby)-conj(Wez).*Wby)./newfreqmat;
       S(:,2)= coef_poynt*real(Wez.*conj(Wbx)+conj(Wez).*Wbx-Wex.*conj(Wbz)-conj(Wex).*Wbz)./newfreqmat;
       S(:,3)= coef_poynt*real(Wex.*conj(Wby)+conj(Wex).*Wby-Wey.*conj(Wbx)-conj(Wey).*Wbx)./newfreqmat;
-      %For some reason this code works 20% slower than the above one
-      %conjWe = conj(We); conjWb = conj(Wb);
-      %S = coef_poynt*real( ...
-      %    + We(:,[2 3 1]).*conjWb(:,[3 1 2]) + conjWe(:,[2 3 1]).*Wb(:,[3 1 2])...
-      %    - We(:,[3 1 2]).*conjWb(:,[2 3 1]) - conjWe(:,[3 1 2]).*Wb(:,[2 3 1])...
-      %    )./newfreqmat;
-      if flag_want_fac, Sx=S(:,1); Sy=S(:,2); Spar=S(:,3);
-      else Sx=S(:,1); Sy=S(:,2); Spar = sum(S.*bn,2);
-      end
-      Spar_plot_z(:,ind_a) = Spar;
-      S_plot_x(:,ind_a) = Sx;
-      S_plot_y(:,ind_a) = Sy;
+      
+      S_plot_x(:,ind_a) = S(:,1);
+      S_plot_y(:,ind_a) = S(:,2);
+      S_plot_z(:,ind_a) = S(:,3);
   end
   
   %% Power spectrum of B
@@ -403,31 +390,59 @@ for ind_a=1:length(a)
     powerBy_plot(censurIdx,ind_a) = NaN;
     powerBz_plot(censurIdx,ind_a) = NaN;
     power2B_plot(censurIdx,ind_a) = NaN;
-    powerEx_plot(censurIdx,ind_a) = NaN;
-    powerEy_plot(censurIdx,ind_a) = NaN;
-    powerEz_plot(censurIdx,ind_a) = NaN;
-    power2E_plot(censurIdx,ind_a) = NaN;
-    power2E_ISR2_plot(censurIdx,ind_a) = NaN;
-    S_plot_x(censurIdx,ind_a) = NaN;
-    S_plot_y(censurIdx,ind_a) = NaN;
-    Spar_plot_z(censurIdx,ind_a) = NaN;
+    if wantEE
+        powerEx_plot(censurIdx,ind_a) = NaN;
+        powerEy_plot(censurIdx,ind_a) = NaN;
+        powerEz_plot(censurIdx,ind_a) = NaN;
+        power2E_plot(censurIdx,ind_a) = NaN;
+        power2E_ISR2_plot(censurIdx,ind_a) = NaN;
+        S_plot_x(censurIdx,ind_a) = NaN;
+        S_plot_y(censurIdx,ind_a) = NaN;
+        S_plot_z(censurIdx,ind_a) = NaN;
+    end
 end
+
 powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
 powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
 power2B_plot = AverageData(power2B_plot,inTime,outTime);
-powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
-powerEy_plot = AverageData(powerEy_plot,inTime,outTime);
-powerEz_plot = AverageData(powerEz_plot,inTime,outTime);
-power2E_plot = AverageData(power2E_plot,inTime,outTime);
-power2E_ISR2_plot = AverageData(power2E_ISR2_plot,inTime,outTime);
-S_plot_x = AverageData(S_plot_x,inTime,outTime);
-S_plot_y = AverageData(S_plot_y,inTime,outTime);
-Spar_plot_z = AverageData(Spar_plot_z,inTime,outTime);
+BB_XXYYZZ = powerBx_plot;
+BB_XXYYZZ(:,:,2) = powerBy_plot;
+BB_XXYYZZ(:,:,3) = powerBz_plot;
+BB_XXYYZZ(:,:,4) = power2B_plot;
 
-if wantEE,
-    [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,Spar_plot_z);
-    %EtoB_plot=sqrt(power2E_plot./power2B_plot);
+% Output
+res.t = outTime;
+res.f = frequencyVec;
+res.bb = BB_XXYYZZ;
+
+if wantEE
+    powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
+    powerEy_plot = AverageData(powerEy_plot,inTime,outTime);
+    powerEz_plot = AverageData(powerEz_plot,inTime,outTime);
+    power2E_plot = AverageData(power2E_plot,inTime,outTime);
+    power2E_ISR2_plot = AverageData(power2E_ISR2_plot,inTime,outTime);
+    S_plot_x = AverageData(S_plot_x,inTime,outTime);
+    S_plot_y = AverageData(S_plot_y,inTime,outTime);
+    S_plot_z = AverageData(S_plot_z,inTime,outTime);
+    [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,S_plot_z);
+    EESum_ISR2 = power2E_ISR2_plot;
+    EE_XXYYZZ(:,:,4) = power2E_plot;
+    EE_XXYYZZ(:,:,1) = powerEx_plot;
+    EE_XXYYZZ(:,:,2) = powerEy_plot;
+    EE_XXYYZZ(:,:,3) = powerEz_plot;
+    Poynting_XYZ = S_plot_x;
+    Poynting_XYZ(:,:,2) = S_plot_y;
+    Poynting_XYZ(:,:,3) = S_plot_z;
+    Poynting_RThPh = S_r;
+    Poynting_RThPh(:,:,2) = pi/2-S_elevation;
+    Poynting_RThPh(:,:,3) = S_azimuth;
+    
+    % Output
+    res.eesum = EESum_ISR2;
+    res.ee = EE_XXYYZZ;
+    res.pf_xyz = Poynting_XYZ;
+    res.pf_rtp = Poynting_RThPh;
 end
 
 if wantPolarization,
@@ -462,27 +477,14 @@ if wantPolarization,
     
     k_ThPhSVD_fac = thetaSVD_fac;
     k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
+    
+    % Output
+    res.dop = degreeOfPolarization;
+    res.planarity = planarity;
+    res.ellipticity = ellipticity;
+    res.k = k_ThPhSVD_fac;
 end
-
-%% Output
-BB_XXYYZZ_FAC = powerBx_plot;
-BB_XXYYZZ_FAC(:,:,2) = powerBy_plot;
-BB_XXYYZZ_FAC(:,:,3) = powerBz_plot;
-BB_XXYYZZ_FAC(:,:,4) = power2B_plot;
-if nargout>3 % E and Poyinting Flux
-    EESum_ISR2 = power2E_ISR2_plot;
-    EE_XXYYZZ_FAC(:,:,4) = power2E_plot;
-    EE_XXYYZZ_FAC(:,:,1) = powerEx_plot;
-    EE_XXYYZZ_FAC(:,:,2) = powerEy_plot;
-    EE_XXYYZZ_FAC(:,:,3) = powerEz_plot;
-    Poynting_XYZ_FAC = S_plot_x;
-    Poynting_XYZ_FAC(:,:,2) = S_plot_y;
-    Poynting_XYZ_FAC(:,:,3) = Spar_plot_z;
-    Poynting_RThPh_FAC = S_r;
-    Poynting_RThPh_FAC(:,:,2) = pi/2-S_elevation;
-    Poynting_RThPh_FAC(:,:,3) = S_azimuth;
-end
-end
+end % Main function
 
 function out = AverageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
