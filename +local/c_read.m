@@ -142,8 +142,9 @@ end
 		ii=strfind(varToRead{1},'__');
 		if ii,
 			dataset=varToRead{1}(ii+2:end);
-			if ~isfield(index,dataset) % index not yet read
-				indexVarName = ['index_' dataset];
+			datasetIndex = strrep(dataset,'CIS-','CIS_');
+			if ~isfield(index,datasetIndex) % index not yet read
+				indexVarName = ['index_' datasetIndex];
 				indexFile = [caaDir 'caa'];
 				indexFileInfo=whos('-file',indexFile,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
@@ -151,9 +152,9 @@ end
 					return;
 				end
 				s=load(indexFile,indexVarName);
-				index.(dataset)=s.(indexVarName);
+				index.(datasetIndex)=s.(indexVarName);
 			end
-			index=index.(dataset);
+			index=index.(datasetIndex);
 		else
 			irf_log('dsrc',['Do not know how to read variable: ' varToRead{1}]);
 			return
