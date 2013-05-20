@@ -264,9 +264,9 @@ classdef TimeTable
 			end
 			TTout				= irf.TimeTable(TTin.TimeInterval(index(:),:));
 			TTout.Header		= TTin.Header;
-			if ~isempty(TTout.Comment),		TTout.Comment		= TTin.Comment(index(:));		end
-			if ~isempty(TTout.Description),	TTout.Description   = TTin.Description(index(:));	end
-			if ~isempty(TTout.UserData),	TTout.UserData		= TTin.UserData(index);			end
+			if ~isempty(TTin.Comment),		TTout.Comment		= TTin.Comment(index(:));		end
+			if ~isempty(TTin.Description),	TTout.Description   = TTin.Description(index(:));	end
+			if ~isempty(TTin.UserData),	TTout.UserData		= TTin.UserData(index);			end
 		end
 		function TTout	= sort(TTin) % sort according to start time
 			TTout=TTin;

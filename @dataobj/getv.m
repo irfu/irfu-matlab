@@ -1,7 +1,6 @@
-function res = getv(dobj,var_s)
-%GETV(dobj, var_s)  get a variable
+function res = getv(dobj,varName)
+%GETV(dobj, varName)  get a variable 
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -12,36 +11,35 @@ function res = getv(dobj,var_s)
 
 error(nargchk(2,2,nargin))
 
-if ~ischar(var_s), error('VAR_S must be a stirng'), end
-
-% Take care of long variables (>63 symbols)
-if length(var_s)>63
-	var_s = [var_s(1:60) '...' var_s(end)];
-	disp('trying truncated variable name')
+if ~ischar(varName)
+	error('variable name must be a string')
 end
 
-nvars = size(dobj.vars,1);
-if nvars>0
-    ivar=find(sum(strcmp(var_s,dobj.vars(:,1:2)),2)>0); % find variable
-    if isempty(ivar)
-        disp(['No such variable : ' var_s])
+% fix variable in matlab format, remove minuses, dots ...
+varName = variable_mat_name(varName);
+
+nVars = size(dobj.vars,1);
+if nVars>0
+    iVar=find(sum(strcmp(varName,dobj.vars(:,1:2)),2)>0); % find variable
+    if isempty(iVar)
+        disp(['No such variable : ' varName])
         res = [];
         return;
     else
-        res = dobj.data.(dobj.vars{ivar,1});
-        res.name = var_s;
+        res = dobj.data.(dobj.vars{iVar,1});
+        res.name = varName;
         % Add Variable attributes to the returned variable
-        variable_attribute_names=fieldnames(dobj.VariableAttributes);
-        for j=1:length(variable_attribute_names),
-            iattr=find(strcmpi(dobj.vars{ivar,2},...
-                dobj.VariableAttributes.(variable_attribute_names{j})(:,1))==1);
+        variableAttributeNames=fieldnames(dobj.VariableAttributes);
+        for j=1:length(variableAttributeNames),
+            iattr=find(strcmpi(dobj.vars{iVar,2},...
+                dobj.VariableAttributes.(variableAttributeNames{j})(:,1))==1);
             if iattr,
-                res.(variable_attribute_names{j})=dobj.VariableAttributes.(variable_attribute_names{j}){iattr,2};
+                res.(variableAttributeNames{j})=dobj.VariableAttributes.(variableAttributeNames{j}){iattr,2};
             end
         end
         return
     end
 end
 
-disp(['No such variable : ' var_s])
+disp(['No such variable : ' varName])
 res = [];
