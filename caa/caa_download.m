@@ -494,8 +494,8 @@ function TT=construct_time_table(caalog,returnTimeTable)
 TT=irf.TimeTable;
 switch returnTimeTable
 	case 'inventory'
-		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
-		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
+		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
+		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
 		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
 		c=num2cell(str2num(strvcat(textLine(:).number)));
@@ -503,8 +503,8 @@ switch returnTimeTable
 		c=num2cell(str2num(strvcat(textLine(:).version)));
 		[TT.UserData(:).version]=deal(c{:});
 	case 'list'
-		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
-		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
+		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
+		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
 		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
 		[TT.UserData(:).title] = deal(textLine(:).title);
