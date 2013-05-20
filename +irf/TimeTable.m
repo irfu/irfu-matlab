@@ -308,22 +308,29 @@ classdef TimeTable
 			TT2 = unique(TT2);
 			t1=TT1.TimeInterval;
 			t2=TT2.TimeInterval;
-			tout=t1;
+			tout=zeros(max(size(t1,1),size(t2,1))+1,2);
 			iInterval=0;
 			i2=1;
+			endOfTT2 = false; % flag to know when end of time series 2
 			for j= 1:size(t1,1),
 				while (t1(j,1)>t2(i2,2))
 					i2=i2+1;
-					if i2>size(t2,1), break;end % end of 2nd time series
+					endOfTT2 = i2>size(t2,1); % check end of 2nd time series
 				end
-				if i2>size(t2,1), break;end % end of 2nd time series
+				if t1(j,2) < t2(i2,1),
+					continue;
+				end
 				while t2(i2,1)<t1(j,2)
 					iInterval=iInterval+1;
 					tout(iInterval,:)=[max(t1(j,1),t2(i2,1)) min(t1(j,2),t2(i2,2))];
-					i2=i2+1;
-					if i2>size(t2,1), break;end % end of 2nd time series
+					if t1(j,2) > t2(i2,2), % take next i2
+						i2=i2+1;
+						endOfTT2 = i2>size(t2,1); % check end of 2nd time series
+					else
+						break;
+					end
 				end
-				if i2>size(t2,1), break;end % end of 2nd time series
+				if endOfTT2, break; end % if end of 2nd time series stop
 			end
 			tout(iInterval+1:end,:)=[];
 			TT = irf.TimeTable;
