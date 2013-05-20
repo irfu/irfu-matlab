@@ -1,6 +1,6 @@
 function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
     EESum_ISR2,EE_XXYYZZ_FAC,Poynting_XYZ_FAC,Poynting_RThPh_FAC,...
-    k_ThPhSVD_fac,degOfPolarization,ellipticity]=...
+    degreeOfPolarization,planarity,ellipticity,k_ThPhSVD_fac]=...
     irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
@@ -35,9 +35,10 @@ function [outTime,frequencyVec,BB_XXYYZZ_FAC,...
 %     EE_XXYYZZ_FAC      - E power spectrum (xx, yy, zz FAC)
 %     Poynting_XYZ_FAC   - Poynting flux (xyz FAC)
 %     Poynting_RThPh_FAC - Poynting flux (r, theta, phi FAC)
-%     k_ThPhSVD_FAC      - k-vector (theta, phi FAC)
 %     degOfPolarization  - 3D degree of polarization
-%     ellipticity        - ellipticity
+%     planarity          - planarity of polarization
+%     ellipticity        - ellipticity of polarization ellipse
+%     k_ThPhSVD_FAC      - k-vector (theta, phi FAC)
 %
 % Examples:
 %
@@ -64,7 +65,7 @@ if nargout==3,
     wantEE = 0;
 elseif nargout==7,
     wantEE = 1;
-elseif nargout==10,
+elseif nargout==11,
     wantEE = 1;
     wantPolarization = 1;
 else
@@ -235,8 +236,8 @@ powerBz_plot = zeros(ndata,nfreq);
 S_plot_x = zeros(ndata,nfreq);
 S_plot_y = zeros(ndata,nfreq);
 Spar_plot_z = zeros(ndata,nfreq);
-polarizationEllipseRatio = zeros(ndataOut,nfreq);
-polarizationSign = zeros(ndataOut,nfreq);
+planarity = zeros(ndataOut,nfreq);
+ellipticity = zeros(ndataOut,nfreq);
 degreeOfPolarization = zeros(ndataOut,nfreq);
 thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
@@ -244,7 +245,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-parfor ind_a=1:length(a), % Main loop over frequencies
+for ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
@@ -368,20 +369,20 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       
       %% compute direction of propogation  
       theta=atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:));
-      %phi=zeros(ndata);
+      thetaSVD_fac(:,ind_a) = theta;
       if V(1,3,:) >= 0, phi=atan(V(2,3,:)./V(1,3,:));
       elseif V(1,3,:) < 0 & V(2,3,:) < 0, phi=atan(V(2,3,:)./V(1,3,:))-pi;
       else phi=atan(V(2,3,:)./V(1,3,:))+pi;
       end
+      phiSVD_fac(:,ind_a) = phi;
       
       %% Calculate polarization parameters    
-      %planarity(:,ind_a) = 1 - sqrt(W(3,3,:)./W(1,1,:)); %planarity of polarization
-      %  Lp(:,ind_a) = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
-      %  planarity(:,ind_a) = 1 - sqrt(wSingularValues(3,:)./wSingularValues(1,:)); %planarity of polarization
-      %    polarizationEllipseRatio(:,ind_a) = wSingularValues(2,:)./wSingularValues(1,:); %ratio of two axes of polarization ellipse
-      polElliRat = W(2,2,:)./W(1,1,:); %ratio of two axes of polarization ellipse
+      planarityLocal = 1 - sqrt(W(3,3,:)./W(1,1,:)); %planarity of polarization
+      planarityLocal(censurIdx) = NaN;
+      planarity(:,ind_a) = planarityLocal;
+      polElliRat = squeeze(W(2,2,:)./W(1,1,:)); %ratio of two axes of polarization ellipse
       polElliRat(censurIdx) = NaN;
-      polarizationEllipseRatio(:,ind_a) = polElliRat;
+      ellipticity(:,ind_a) = polElliRat.*sign(imag(avSM(:,1,2))); % *sign of polarization
       % XXX: this loop isreplaced by the code below
       %dop = zeros(1,ndataOut);
       %for i = 1:ndataOut,
@@ -390,16 +391,13 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       %end
       rA= real(avSM);
       % DOP = (3/2.*trace(real(SM)^2)./(trace(SM))^2 - 1/2);
-      % XXX : Need a reference to this formula
+      % XXX : Need a reference to this formula, Samson ???
       dop = (3/2*(...
           rA(:,1,1).*rA(:,1,1)+rA(:,2,1).*rA(:,1,2)+rA(:,3,1).*rA(:,1,3)+...
           rA(:,1,2).*rA(:,2,1)+rA(:,2,2).*rA(:,2,2)+rA(:,3,2).*rA(:,2,3)+...
           rA(:,1,3).*rA(:,3,1)+rA(:,2,3).*rA(:,3,2)+rA(:,3,3).*rA(:,3,3))./...
           ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2);
       dop(censurIdx) = NaN;
-      thetaSVD_fac(:,ind_a) = theta;
-      phiSVD_fac(:,ind_a) = phi;
-      polarizationSign(:,ind_a) = sign(imag(avSM(:,1,2))); %sign of polarization
       degreeOfPolarization(:,ind_a) = dop;
   end
 end
@@ -441,31 +439,38 @@ if wantEE,
     %EtoB_plot=sqrt(power2E_plot./power2B_plot);
 end
 
-if pc12_range || default_range,
-  ind_lowPower = find(abs(power2B_plot) < .025);
-end
-if pc35_range,
-  ind_lowPower = find(abs(power2B_plot) < nanmean(nanmean(log10(abs(power2B_plot)))));
-  %ind_lowPower = find(abs(power2B_SM_plot) < .005);
-end
-ind_single_eq = polarizationEllipseRatio < .4;
-ind_unpolarized = degreeOfPolarization < .5;
 if wantPolarization,
-    thetaSVD_fac(ind_lowPower) = NaN;
-    phiSVD_fac(ind_lowPower) = NaN;
-    polarizationEllipseRatio(ind_lowPower) = NaN;
-    polarizationSign(ind_lowPower) = NaN;
-    degreeOfPolarization(ind_lowPower) = NaN;
-
-    thetaSVD_fac(ind_unpolarized) = NaN;
-    phiSVD_fac(ind_unpolarized) = NaN;
-    polarizationEllipseRatio(ind_unpolarized) = NaN;
-    polarizationSign(ind_unpolarized) = NaN;
+%     if pc12_range || default_range,
+%         ind_lowPower = find(abs(power2B_plot) < .025);
+%     end
+%     if pc35_range,
+%         ind_lowPower = find(abs(power2B_plot) < nanmean(nanmean(log10(abs(power2B_plot)))));
+%         %ind_lowPower = find(abs(power2B_SM_plot) < .005);
+%     end
+%     thetaSVD_fac(ind_lowPower) = NaN;
+%     phiSVD_fac(ind_lowPower) = NaN;
+%     polarizationEllipseRatio(ind_lowPower) = NaN;
+%     polarizationSign(ind_lowPower) = NaN;
+%     degreeOfPolarization(ind_lowPower) = NaN;  
     
-    %if the polarization is linear, there is a single equation and the
-    %direction of the wave vector is not a unique solution
-    thetaSVD_fac(ind_single_eq) = NaN;
-    phiSVD_fac(ind_single_eq) = NaN;
+    % Define parameters for which we cannot compute the wave vector
+    indLowPolarization = degreeOfPolarization < .5;
+    indLowPlanarity = planarity < 0.3;
+    indLowEllipticity = abs(ellipticity) < .3;
+    
+    thetaSVD_fac(indLowPolarization) = NaN;
+    phiSVD_fac(indLowPolarization) = NaN;
+    ellipticity(indLowPolarization) = NaN;
+    
+    thetaSVD_fac(indLowPlanarity) = NaN;
+    phiSVD_fac(indLowPlanarity) = NaN;
+    ellipticity(indLowPlanarity) = NaN;
+    
+    thetaSVD_fac(indLowEllipticity) = NaN;
+    phiSVD_fac(indLowEllipticity) = NaN;
+    
+    k_ThPhSVD_fac = thetaSVD_fac;
+    k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
 end
 
 %% Output
@@ -485,12 +490,6 @@ if nargout>3 % E and Poyinting Flux
     Poynting_RThPh_FAC = S_r;
     Poynting_RThPh_FAC(:,:,2) = pi/2-S_elevation;
     Poynting_RThPh_FAC(:,:,3) = S_azimuth;
-end
-if nargout>7 % Polarization parameters
-    k_ThPhSVD_fac = thetaSVD_fac;
-    k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
-    degOfPolarization = degreeOfPolarization;
-    ellipticity = polarizationEllipseRatio.*polarizationSign;
 end
 end
 
