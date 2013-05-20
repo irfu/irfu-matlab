@@ -174,7 +174,7 @@ inTime = dB(:,1);
 %  transformation to FAC there.
 if flag_want_fac
     res.fac = 1;
-     xyz = irf_resamp(xyz,dB);
+    xyz = irf_resamp(xyz,dB);
     if ~flag_dEdotB0
         eISR2=e(:,1:3);
         [dB,e]=irf_convert_fac(xyz,B0,dB,e);
@@ -279,7 +279,10 @@ for ind_a=1:length(a), % Main loop over frequencies
           wEz = -(rWe(:,1).*Bx+rWe(:,2).*By)./Bz-...
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
           wEz(idxBparSpinPlane) = NaN;
-          if flag_want_fac, We = irf_convert_fac(xyz,B0,[B0(:,1) We(:,1:2) wEz]); end
+          if flag_want_fac
+              We = irf_convert_fac(xyz,B0,[B0(:,1) We(:,1:2) wEz]); 
+              We(:,1) = [];
+          end
       end
       powerE = 2*pi*(We.*conj(We))./newfreqmat;
       powerE(:,4) = sum(powerE,2);
