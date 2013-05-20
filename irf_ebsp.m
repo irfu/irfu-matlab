@@ -102,18 +102,15 @@ end
 Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
 angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
 idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
-        
-pc12_range=0; pc35_range=0; default_range=0;
+
 if ischar(freq_int)
     switch lower(freq_int)
         case {'pc12'}
             freq_int=[.1 5];
-            pc12_range=1;
             deltaT = 1;
             tint = round(dB([1 end],1));
         case {'pc35'}
             freq_int=[.002 .1];
-            pc35_range=1;
             deltaT = 60;
             tint = round(dB([1 end],1)/60)*60;
         otherwise
@@ -367,31 +364,25 @@ for ind_a=1:length(a), % Main loop over frequencies
           %wSingularValues(:,i) = svd(A(:,:,i),0);
       end
       
-      %% compute direction of propogation  
-      theta=atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:));
-      thetaSVD_fac(:,ind_a) = theta;
-      if V(1,3,:) >= 0, phi=atan(V(2,3,:)./V(1,3,:));
-      elseif V(1,3,:) < 0 & V(2,3,:) < 0, phi=atan(V(2,3,:)./V(1,3,:))-pi;
-      else phi=atan(V(2,3,:)./V(1,3,:))+pi;
-      end
-      phiSVD_fac(:,ind_a) = phi;
+      %% compute direction of propogation
+      thetaSVD_fac(:,ind_a) = ...
+          squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:)));
+      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
       
-      %% Calculate polarization parameters    
-      planarityLocal = 1 - sqrt(W(3,3,:)./W(1,1,:)); %planarity of polarization
+      %% Calculate polarization parameters 
+      planarityLocal = squeeze(1 - sqrt(W(3,3,:)./W(1,1,:)));
       planarityLocal(censurIdx) = NaN;
       planarity(:,ind_a) = planarityLocal;
-      polElliRat = squeeze(W(2,2,:)./W(1,1,:)); %ratio of two axes of polarization ellipse
-      polElliRat(censurIdx) = NaN;
-      ellipticity(:,ind_a) = polElliRat.*sign(imag(avSM(:,1,2))); % *sign of polarization
-      % XXX: this loop isreplaced by the code below
-      %dop = zeros(1,ndataOut);
-      %for i = 1:ndataOut,
-      %    SMsqueeze = reshape(avSM(i,:,:),3,3);
-      %    dop(:,i) = (3/2.*trace(real(SMsqueeze)^2)./(trace(SMsqueeze))^2 - 1/2);
-      %end
-      rA= real(avSM);
+      
+      %ellipticity: ratio of axes of polarization ellipse axes*sign of polarization
+      ellipticityLocal = ...
+          squeeze(W(2,2,:)./W(1,1,:)).*sign(imag(avSM(:,1,2))); 
+      ellipticityLocal(censurIdx) = NaN;
+      ellipticity(:,ind_a) = ellipticityLocal;
+      
       % DOP = (3/2.*trace(real(SM)^2)./(trace(SM))^2 - 1/2);
       % XXX : Need a reference to this formula, Samson ???
+      rA= real(avSM);
       dop = (3/2*(...
           rA(:,1,1).*rA(:,1,1)+rA(:,2,1).*rA(:,1,2)+rA(:,3,1).*rA(:,1,3)+...
           rA(:,1,2).*rA(:,2,1)+rA(:,2,2).*rA(:,2,2)+rA(:,3,2).*rA(:,2,3)+...
