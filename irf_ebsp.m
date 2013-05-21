@@ -18,8 +18,8 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % Options:
 %   'polarization' - compute polarization parameters
 %   'noresamp'     - no resampling, E and dB are given at the same timeline
-%   'fac'          - use FAC coordinate system, otherwise no coordinate system 
-%                    transformation is performed, uses B0
+%   'fac'          - use FAC coordinate system (defined by B0 and optionally xyz), 
+%					 otherwise no coordinate system transformation is performed
 %   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
 %   'fullB=dB'     - dB contains DC field
 % 
@@ -80,8 +80,14 @@ for i=1:length(varargin)
     end
 end
 
-if flag_want_fac && (isempty(B0) || isempty(xyz))
-    error('B0 and XYZ must be given for option FAC')
+if flag_want_fac 
+	if isempty(B0)
+		error('irf_ebsp(): at least B0 should be given for option FAC');
+	end
+	if  isempty(xyz)
+		irf_log('fcal','assuming s/c position [1 0 0] for estimating FAC');
+		xyz=[0 1 0 0];
+	end
 end
 B0 = irf_resamp(B0,dB);
 if flag_fullB_dB
@@ -170,7 +176,7 @@ end
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
-	xyz=xyz(1:end-1,:);
+%	xyz=xyz(1:end-1,:);
 end
 inTime = dB(:,1);
 
@@ -180,17 +186,16 @@ inTime = dB(:,1);
 %  transformation to FAC there.
 if flag_want_fac
     res.fac = 1;
-    xyz = irf_resamp(xyz,dB);
-    if ~flag_dEdotB0
-        eISR2=e(:,1:3);
-        if size(e,2)<4
-            error('E must be a 3D vector to be rotated to FAC')
-        end
-        [dB,e]=irf_convert_fac(xyz,B0,dB,e);
-    else dB = irf_convert_fac(xyz,B0,dB);
-    end
-%else % Keep B direction for || Poynting flux
-%    bn = irf_norm(B0); bn(:,1) = [];
+	if wantEE
+		if ~flag_dEdotB0
+			eISR2=e(:,1:3);
+			if size(e,2)<4
+				error('E must be a 3D vector to be rotated to FAC')
+			end
+		end
+		e=irf_convert_fac(e,B0,xyz);
+	end
+	dB = irf_convert_fac(dB,B0,xyz);
 end
 
 %% Find the frequencies for an FFT of all data and set important parameters
@@ -293,7 +298,7 @@ for ind_a=1:length(a), % Main loop over frequencies
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
           wEz(idxBparSpinPlane) = NaN;
           if flag_want_fac
-              We = irf_convert_fac(xyz,B0,[B0(:,1) We(:,1:2) wEz]); 
+              We = irf_convert_fac([B0(:,1) We(:,1:2) wEz],B0,xyz); 
               We(:,1) = [];
           end
       end
