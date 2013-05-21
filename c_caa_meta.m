@@ -22,24 +22,13 @@ function out=c_caa_meta(varargin)
 persistent s metaNames datasetNames indexFile
 linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
-if isempty(indexFile) || ~exist(indexFile,'file'), % first usage
-	indexFile = 'indexCaaMeta.mat';
+if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
+	indexFile = 'indexCaaMeta.mat'; % default file name
 	if ~exist(indexFile,'file');
-		temp = datastore('caa','indexCaaMetaFile');
-		if isempty(temp)
-			[indexFile,status] = get_index_file(linkUrlFile);
-			if ~status, return; end
-		else
-			if ~exist(temp,'file'),
-				datastore('@delete','caa','indexCaaMetaFile');
-				[indexFile,status] = get_index_file(linkUrlFile);
-				if ~status, return; end
-			else
-				indexFile = temp;
-			end
-		end
+		indexFile = irf.get_file(linkUrlFile,'caa','indexCaaMetaFile');
 	end
 end
+
 if nargin==0,
 	help local.c_caa_meta;
 	return;
@@ -132,7 +121,7 @@ else
 				parameters=dataSet.PARAMETERS.PARAMETER;
 				disp('PARAMETERS:');
 				for j=1:numel(parameters),
-					disp([num2str(j) '. ' parameters{j}.PARAMETER_ID.Text])
+					disp([num2str(j) '. ' mat_output(parameters{j}.PARAMETER_ID.Text)]);
 				end
 			catch
 			end
@@ -141,7 +130,7 @@ else
 		if sum(iSelected) > 1,
 			disp('----');
 			disp([num2str(sum(iSelected)) ' datasets correspond selection']);
-			disp(vertcat(datasetNames(iSelected)));
+			cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
 			return;
 		end
 		
@@ -154,36 +143,34 @@ disp(' ');
 fn=fieldnames(dataSet);
 for j=1:numel(fn)
 	if isfield(dataSet.(fn{j}),'Text'),
-		disp([fn{j} ': ' dataSet.(fn{j}).Text]);
+		if strfind(dataSet.(fn{j}).Text,' ') % text includes many words
+			disp([fn{j} ': ' dataSet.(fn{j}).Text]);
+		else
+			disp([fn{j} ': ' mat_output(dataSet.(fn{j}).Text)]);
+		end
 	end
 end
 end
-function [indexFile,status] = get_index_file(linkUrlFile)
-disp('You do not have indexCaaMat.mat file!');
-disp('The file is located at:');
-disp(['<a href="' linkUrlFile '">' linkUrlFile '</a>']);
-disp('You can download it to somewhere on your matlab path,');
-disp('or I can download it for you to some temporary path.');
-reply = irf_ask('Shall I download to temporary path? y/n [%]>','y','y');
-if strcmpi(reply,'y')
-	indexFile = [tempname '.mat'];
-	[f,status]=urlwrite(linkUrlFile,indexFile);
-	if status,
-		disp('Success!');
-		datastore('caa','indexCaaMetaFile',f);
-		status = true;
-		disp(['File downloaded to: ' indexFile]);
-		disp('I will remember it, but it will be removed by system after some time.');
-		disp('If you want to keep it, move the file to somewhere on your matlab path.');
-	else
-		disp('Did not succeed. Maybe problems with internet connections.');
-		disp('Try again later or complain...');
-		status = false;
+function outStr=mat_output(inStr,forceFlag)
+% if string is caa variable output link
+% if forceFlag defined and equal to one, force matlab linked output
+if nargin == 1, 
+	forceFlag = false;
+end
+if ~forceFlag && any(strfind(inStr,'__')),
+	forceFlag = true;
+end
+
+if forceFlag,
+	if ischar(inStr)
+		outStr=['<a href="matlab: c_caa_meta ' ...
+			inStr '">' inStr '</a>' ];
+	elseif iscell(inStr)
+		outStr = cellfun(@(x) ['<a href="matlab: c_caa_meta ' ...
+			x '">' x '</a>' ],inStr, 'UniformOutput',false);
 	end
 else
-	disp('OK! Download to matlab path and rerun the program.')
-	indexFile = [];
-	status = false;
+	outStr=inStr;
 end
 end
 

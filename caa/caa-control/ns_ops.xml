@@ -475,7 +475,7 @@ Effect on the CAA processing:
 			<link href="pal020821a.txt">Per-Arne 020821</link>
 		</res>
 	</operation>
-	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="no_tm">
+	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>
 			Latchup, SEU protection on ADC trigged, 
 			causing complete loss of data until power on/off cycle.
