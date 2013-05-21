@@ -1,7 +1,7 @@
-function [b_fac,e_fac]=irf_convert_fac(r,B0,b,e)
+function [out]=irf_convert_fac(inp,B0,r)
 %IRF_CONVERT_FAC transforms to a field-aligned coordinate (FAC) system
 %
-%  [b_fac,e_fac] = irf_convert_mfa(r,B0,b,[e])
+%  out = irf_convert_mfa(inp,B0,[r])
 %
 %  Transforms to a field-aligned coordinate (FAC) system defined as:
 %  R_parallel_z aligned with the background magnetic field
@@ -12,39 +12,47 @@ function [b_fac,e_fac]=irf_convert_fac(r,B0,b,e)
 %  Input:
 %    r  = position vector of spacecraft, columns (t x y z)
 %    B0 = background magnetic field, columns (t x y z)
-%    b  = vector that is to be transformed to FAC, columns (t x y z)
-%    e  = vector that is to be transformed to FAC, columns (t x y z)
-
+%    inp= vector that is to be transformed to FAC, columns (t x y z)
+%			or inp can be cell array of such vectors
+%    out= output in the same form as inp
+%
 % Note: all input parameters must be in the same coordinate system
 
-if nargin<4, e=[];
-elseif ~isempty(e) && (size(b,1) ~= size(e,1))
-    error('E and B must be of the same size')
+if nargin<3, r=[1 0 0];
 end
-if size(b,1) ~= size(B0,1), B0 = irf_resamp(B0,b); end
-if size(b,1) ~= size(B0,1), r = irf_resamp(r,b); end  
-  
+
+if size(inp,1) ~= size(B0,1), B0 = irf_resamp(B0,inp); end
+if size(inp,1) ~= size(r,1),   r = irf_resamp(r,inp);  end  
   
 %% the direction of background magnetic field
 bn=irf_norm(B0);
-Rpar=bn;
-Rperpy=irf_norm(irf_cross(Rpar, r));
-Rperpx=irf_norm(irf_cross(Rperpy, B0));
 
-%A_mfa=A;
-ndata=size(B0,1);
-b_fac=zeros(ndata,4);
-b_fac(:,1)=b(:,1);
-b_fac(:,4)=Rpar(:,2).*b(:,2)+Rpar(:,3).*b(:,3)+Rpar(:,4).*b(:,4);
-b_fac(:,2)=Rperpx(:,2).*b(:,2)+Rperpx(:,3).*b(:,3)+Rperpx(:,4).*b(:,4);
-b_fac(:,3)=Rperpy(:,2).*b(:,2)+Rperpy(:,3).*b(:,3)+Rperpy(:,4).*b(:,4);
-
-if ~isempty(e)
-    e_fac=zeros(ndata,4);
-    e_fac(:,1)=e(:,1);
-    e_fac(:,4)=Rpar(:,2).*e(:,2)+Rpar(:,3).*e(:,3)+Rpar(:,4).*e(:,4);
-    e_fac(:,2)=Rperpx(:,2).*e(:,2)+Rperpx(:,3).*e(:,3)+Rperpx(:,4).*e(:,4);
-    e_fac(:,3)=Rperpy(:,2).*e(:,2)+Rperpy(:,3).*e(:,3)+Rperpy(:,4).*e(:,4);
+if iscell(inp)
+	out=inp;
+	for j = 1:numel(inp),
+		if j>1 && size(inp{j},1) == size(inp{1},1) ...
+				&& ~all(inp{j}(:,1) == inp{1}(:,1)) % the same time axis
+			[Rpar,Rperpy,Rperpx]=define_ref_syst();
+		end
+		out{j}=calculate_out(inp{j});
+	end
+else
+	[Rpar,Rperpy,Rperpx]=define_ref_syst();
+	out=calculate_out(inp);
 end
 
+	function [Rpar,Rperpy,Rperpx]=define_ref_syst
+		Rpar=bn;
+		Rperpy=irf_norm(irf_cross(Rpar, r));
+		Rperpx=irf_norm(irf_cross(Rperpy, B0));
+	end
+	function out=calculate_out(inp)
+		%A_mfa=A;
+		ndata=size(B0,1);
+		out=zeros(ndata,4);
+		out(:,1)=inp(:,1);
+		out(:,4)=  Rpar(:,2).*inp(:,2)+  Rpar(:,3).*inp(:,3)+  Rpar(:,4).*inp(:,4);
+		out(:,2)=Rperpx(:,2).*inp(:,2)+Rperpx(:,3).*inp(:,3)+Rperpx(:,4).*inp(:,4);
+		out(:,3)=Rperpy(:,2).*inp(:,2)+Rperpy(:,3).*inp(:,3)+Rperpy(:,4).*inp(:,4);
+	end
 end
