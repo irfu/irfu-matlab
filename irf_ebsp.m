@@ -2,7 +2,6 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
 %
 % irf_ebsp(E,dB,fullB,B0,xyz,freq_int,[OPTIONS])
-% modified from irf_pl_ebs
 % assumes equidistant time spacing
 %
 % It uses a Morlet wavelet.
@@ -17,11 +16,11 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % freq_int = frequency interval: either 'pc12', 'pc35' or numeric [fmin fmax]
 %
 % Options:
-%   'polarization' - computer polarization parameters
+%   'polarization' - compute polarization parameters
 %   'noresamp'     - no resampling, E and dB are given at the same timeline
 %   'fac'          - use FAC coordinate system, otherwise no coordinate system 
-%                    transformation is performed
-%   'dEdotB=0'     - compute dEz from dB dot B = 0
+%                    transformation is performed, uses B0
+%   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
 %   'fullB=dB'     - dB contains DC field
 % 
 % Output is a structure containing the following fields:
@@ -35,6 +34,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     pf_fac      - Poynting flux (r, theta, phi)
 %     pf_par      - Poynting flux || B
 %     dop         - 3D degree of polarization
+%     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
 %     ellipticity - ellipticity of polarization ellipse
 %     k           - k-vector (theta, phi FAC)
@@ -60,7 +60,7 @@ end
 
 res = struct('t',[],'f',[],'fac',0,'bb',[],'ee',[],'eesum',[],...
     'pf_xyz',[],'pf_rtp',[],...
-    'dop',[],'planarity',[],'ellipticity',[],'k',[]);
+    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k',[]);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 for i=1:length(varargin)
@@ -239,7 +239,8 @@ S_plot_y = zeros(ndata,nfreq);
 S_plot_z = zeros(ndata,nfreq);
 planarity = zeros(ndataOut,nfreq);
 ellipticity = zeros(ndataOut,nfreq);
-degreeOfPolarization = zeros(ndataOut,nfreq);
+degreeOfPolarization3D = zeros(ndataOut,nfreq);
+degreeOfPolarization2D = zeros(ndataOut,nfreq);
 thetaSVD_fac = zeros(ndataOut,nfreq);
 phiSVD_fac = zeros(ndataOut,nfreq);
 
@@ -382,17 +383,27 @@ for ind_a=1:length(a), % Main loop over frequencies
       ellipticityLocal(censurIdx) = NaN;
       ellipticity(:,ind_a) = ellipticityLocal;
       
-      % DOP = (3/2.*trace(real(SM)^2)./(trace(SM))^2 - 1/2);
-      % XXX : Need a reference to this formula, Samson ???
-      rA= real(avSM);
-      dop = (3/2*(...
-          rA(:,1,1).*rA(:,1,1)+rA(:,2,1).*rA(:,1,2)+rA(:,3,1).*rA(:,1,3)+...
-          rA(:,1,2).*rA(:,2,1)+rA(:,2,2).*rA(:,2,2)+rA(:,3,2).*rA(:,2,3)+...
-          rA(:,1,3).*rA(:,3,1)+rA(:,2,3).*rA(:,3,2)+rA(:,3,3).*rA(:,3,3))./...
-          ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2);
+      % DOP = sqrt[(3/2.*trace(SM^2)./(trace(SM))^2 - 1/2)]; Samson, 1973, JGR
+      dop = sqrt((3/2*(...
+          avSM(:,1,1).*avSM(:,1,1)+avSM(:,2,1).*avSM(:,1,2)+avSM(:,3,1).*avSM(:,1,3)+...
+          avSM(:,1,2).*avSM(:,2,1)+avSM(:,2,2).*avSM(:,2,2)+avSM(:,3,2).*avSM(:,2,3)+...
+          avSM(:,1,3).*avSM(:,3,1)+avSM(:,2,3).*avSM(:,3,2)+avSM(:,3,3).*avSM(:,3,3))./...
+          ((avSM(:,1,1)+avSM(:,2,2)+avSM(:,3,3)).^2) - 1/2));
       dop(censurIdx) = NaN;
-      degreeOfPolarization(:,ind_a) = dop;
-  end % wantPolarization
+	  degreeOfPolarization3D(:,ind_a) = dop;
+	  
+	  % DOP in 2D = sqrt[2*trace(rA^2)/trace(rA)^2 - 1)]; Ulrich
+	  Vnew = permute(V,[3,1,2]);
+	  avSM2dim = mult_mat(Vnew,mult_mat(avSM,transpose_mat(Vnew)));
+	  avSM2dim = avSM2dim(:,1:2,1:2);
+	  avSM = avSM2dim;
+	  dop2dim = sqrt((2*(...
+		  avSM(:,1,1).*avSM(:,1,1)+avSM(:,2,1).*avSM(:,1,2)+...
+		  avSM(:,1,2).*avSM(:,2,1)+avSM(:,2,2).*avSM(:,2,2))./...
+		  ((avSM(:,1,1)+avSM(:,2,2)).^2) - 1));
+	  dop2dim(censurIdx) = NaN;
+	  degreeOfPolarization2D(:,ind_a) = dop2dim;
+   end % wantPolarization
 end % main loop
 fprintf('Done.\n');
 
@@ -460,32 +471,13 @@ if wantEE
     res.pf_rtp = Poynting_RThPh;
 end
 
-if wantPolarization,
-%     if pc12_range || default_range,
-%         ind_lowPower = find(abs(power2B_plot) < .025);
-%     end
-%     if pc35_range,
-%         ind_lowPower = find(abs(power2B_plot) < nanmean(nanmean(log10(abs(power2B_plot)))));
-%         %ind_lowPower = find(abs(power2B_SM_plot) < .005);
-%     end
-%     thetaSVD_fac(ind_lowPower) = NaN;
-%     phiSVD_fac(ind_lowPower) = NaN;
-%     polarizationEllipseRatio(ind_lowPower) = NaN;
-%     polarizationSign(ind_lowPower) = NaN;
-%     degreeOfPolarization(ind_lowPower) = NaN;  
-    
+if wantPolarization,    
     % Define parameters for which we cannot compute the wave vector
-    indLowPolarization = degreeOfPolarization < .5;
     indLowPlanarity = planarity < 0.5;
     indLowEllipticity = abs(ellipticity) < .2;
     
-    thetaSVD_fac(indLowPolarization) = NaN;
-    phiSVD_fac(indLowPolarization) = NaN;
-    ellipticity(indLowPolarization) = NaN;
-    
     thetaSVD_fac(indLowPlanarity) = NaN;
     phiSVD_fac(indLowPlanarity) = NaN;
-    ellipticity(indLowPlanarity) = NaN;
     
     thetaSVD_fac(indLowEllipticity) = NaN;
     phiSVD_fac(indLowEllipticity) = NaN;
@@ -494,7 +486,8 @@ if wantPolarization,
     k_ThPhSVD_fac(:,:,2) = phiSVD_fac;
     
     % Output
-    res.dop = degreeOfPolarization;
+    res.dop = degreeOfPolarization3D;
+    res.dop2d = degreeOfPolarization2D;
     res.planarity = planarity;
     res.ellipticity = ellipticity;
     res.k = k_ThPhSVD_fac;
@@ -539,43 +532,40 @@ function m = FastNanMean(x,idx)
     m = sum(xx,1) ./ n;
     m(n<size(xx,1)*0.75) = NaN; % minDataFrac = .075
 end
-
-function m = nanmean(x,dim,minDataFrac)
-%NANMEAN Mean value, ignoring NaNs.
-%   M = NANMEAN(X) returns the sample mean of X, treating NaNs as missing
-%   values.  For vector input, M is the mean value of the non-NaN elements
-%   in X.  For matrix input, M is a row vector containing the mean value of
-%   non-NaN elements in each column.  For N-D arrays, NANMEAN operates
-%   along the first non-singleton dimension.
-%
-%   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
-%
-%   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
-
-%   Copyright 1993-2004 The MathWorks, Inc.
-%   Revision: 1.1.8.1   Date: 2010/03/16 00:15:50 
-
-if nargin < 3, minDataFrac = 0; end
-
-% Find NaNs and set them to zero
-nans = isnan(x);
-x(nans) = 0;
-
-if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    n = sum(~nans);
-    if n<numel(x)*minDataFrac, m = NaN;
-    else
-        n(n==0) = NaN; % prevent divideByZero warnings
-        % Sum up non-NaNs, and divide by the number of non-NaNs.
-        m = sum(x) ./ n;
-    end
-else
-    % Count up non-NaNs.
-    n = sum(~nans,dim);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x,dim) ./ n;
-    m(n<size(x,dim)*minDataFrac) = NaN;
+function out=transpose_mat(inp)
+out = inp;
+if numel(size(inp))==2 || (size(inp,2)~=size(inp,3))
+	error('not impemented');
 end
+for ii=1:size(inp,2),
+	for jj=ii+1:size(inp,2),
+		out(:,ii,jj) = inp(:,jj,ii);
+		out(:,jj,ii) = inp(:,ii,jj);
+	end
+end
+end
+function out = mult_mat(inp1,inp2)
+dimInp1 = numel(size(inp1));
+dimInp2 = numel(size(inp2));
+if (dimInp1==dimInp2),
+	numOfMult=size(inp1,3);
+	T = zeros(size(inp1,1),size(inp1,2),size(inp2,3));
+	for ii=1:size(inp1,2),
+		for jj=1:size(inp2,3),
+			for kk=1:numOfMult,
+				T(:,ii,jj)=T(:,ii,jj)+inp1(:,ii,kk).*inp2(:,kk,jj);
+			end
+		end
+	end
+elseif (dimInp1==3) && (dimInp2==2)
+	numOfOutp=size(inp1,2);
+	numOfInp=size(inp2,2);
+	T = inp2(:,1)*zeros(1,numOfOutp);
+	for ii=1:numOfOutp,
+		for jj=1:numOfInp,
+			T(:,ii)=T(:,ii)+inp1(:,ii,jj).*inp2(:,jj);
+		end
+	end
+end
+out = T;
 end
