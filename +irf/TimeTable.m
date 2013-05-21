@@ -317,6 +317,7 @@ classdef TimeTable
 				while (t1(j,1)>t2(i2,2))
 					i2=i2+1;
 					endOfTT2 = i2>size(t2,1); % check end of 2nd time series
+					if endOfTT2, break; end % if end of 2nd time series stop
 				end
 				if t1(j,2) < t2(i2,1),
 					continue;
@@ -327,6 +328,7 @@ classdef TimeTable
 					if t1(j,2) > t2(i2,2), % take next i2
 						i2=i2+1;
 						endOfTT2 = i2>size(t2,1); % check end of 2nd time series
+						if endOfTT2, break; end % if end of 2nd time series stop
 					else
 						break;
 					end
