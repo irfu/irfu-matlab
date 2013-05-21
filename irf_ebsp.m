@@ -153,21 +153,26 @@ if wantEE && size(e,2) <4 && flag_dEdotB0==0
     error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
 end
 
-Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
-
-% Remove the last sample if the total number of samples is odd
-if size(dB,1)/2 ~= floor(size(dB,1)/2)
-    e=e(1:end-1,:);
-    dB=dB(1:end-1,:);
-    B0=B0(1:end-1,:);
-    xyz=xyz(1:end-1,:);
-    Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
+if flag_dEdotB0
+	Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
+	
+	% Remove the last sample if the total number of samples is odd
+	if size(dB,1)/2 ~= floor(size(dB,1)/2)
+		e=e(1:end-1,:);
+		Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
+	end
+	
+	angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
+	idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
 end
 
-angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
-idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
+if size(dB,1)/2 ~= floor(size(dB,1)/2)
+	dB=dB(1:end-1,:);
+	B0=B0(1:end-1,:);
+	xyz=xyz(1:end-1,:);
+end
 inTime = dB(:,1);
-  
+
 % If E has all three components, transform E and B waveforms to a 
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
