@@ -31,7 +31,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % initialize figure
-h=irf_plot(6,'newfigure'); % 5 subplots
+h=irf_plot(7,'newfigure'); % 5 subplots
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -51,18 +51,30 @@ diE  = irf_get_data('E_Vec_xy_ISR2__C1_CP_EFW_L2_E' ,'caa','mat');
 irf_plot(hca,diE(:,1:3));
 ylabel(hca,{'E EFW','[mV/m] ISR2'});
 irf_zoom(hca,'y');
-irf_legend(hca,{'E_X','E_Y'},[0.02 0.98])
+irf_legend(hca,{'E_X','E_Y'},[0.98 0.05])
 irf_legend(hca,{'C1'},[0.02 0.95],'color','k')
 
 % %%%%%%%%%%%%%%%%%%%%%%%
 % % new panel
-% hca=irf_panel('STAFF B');
+ hca=irf_panel('STAFF B x');
 % % read data
-% Bstaff=irf_get_data('B_vec_xyz_Instrument__C1_CP_STA_CWF_HBR_ISR2','caa','mat');
-% fmin=1;
-% Bstaff=irf_filt(Bstaff,fmin,0,[],5);
+Bstaff=irf_get_data('B_vec_xyz_Instrument__C1_CP_STA_CWF_HBR_ISR2','caa','mat');
+fmin=1;
+Bstaff=irf_filt(Bstaff,fmin,0,[],5);
+res=irf_ebsp([],Bstaff,[],B,[],[1 180],'polarization','fac');
+specrec = struct();
+specrec.t = res.t;
+specrec.f = res.f;
+specrec.p = res.ellipticity;specrec.p_label='ellipticity';
+specrec.p(res.dop < 0.7) = NaN;
+%specrec.p = res.dop;specrec.p_label=' ';
+%specrec.p = res.dop2d;specrec.p_label=' ';
+%specrec.p = res.planarity;specrec.p_label=' ';
+%specrec.p = squeeze(res.bb(:,:,1));specrec.p_label = 'nT^2/Hz';
 % % plot
-% irf_plot(hca,Bstaff);
+irf_spectrogram(hca,specrec,'lin');
+irf_colormap(hca,'poynting');
+irf_zoom(hca,'y',[0 200]);
 % ylabel(hca,{'B STAFF','[nT] ISR2'});
 % irf_legend(hca,{'B_X','B_Y','B_Z'},[0.98 0.05])
 % irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
@@ -80,25 +92,12 @@ specrec = irf_powerfft(Bstaff(:,[1 4]),256,450);
 specrec.p_label ='[nT]^2/Hz';
 % plot
 irf_spectrogram(hca,specrec);
+irf_zoom(hca,'y',[0 200]);
 caxis(hca,[-7.9 -4.1]);
 ylabel(hca,{'B STAFF','[nT] ISR2'});
 irf_legend(hca,{'B_Z'},[0.98 0.1])
 irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
-irf_colormap('default');
-
-% %%%%%%%%%%%%%%%%%%%%%%%
-% % new panel
-% hca=irf_panel('STAFF B polarization');
-% % read data
-% Bstaff=irf_get_data('B_vec_xyz_Instrument__C1_CP_STA_CWF_HBR_ISR2','caa','mat');
-% % construct spectra
-% polarplot(Bstaff(:,1),Bstaff(:,2),Bstaff(:,3),128,3,0.6)
-% % plot
-% irf_spectrogram(hca,specrec);
-% ylabel(hca,{'B STAFF','[nT] ISR2'});
-% irf_legend(hca,{'B_Z'},[0.98 0.1])
-% irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
-% irf_colormap('default');
+irf_colormap(hca,'default');
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
