@@ -137,6 +137,7 @@ if wantEE % Check the sampling rate
         else   inSampling=2*sampl_e;
             t=max(e(1,1),dB(1,1)):1/inSampling:min(e(end,1),dB(end,1)); t=t';
             e=irf_resamp(e,t); dB=irf_resamp(dB,t); B0=irf_resamp(B0,t);
+            fullB = irf_resamp(fullB,t);
             irf_log('proc','interpolating b and e to 2x e sampling');
         end
         disp(['Fs=' num2str(inSampling) ', Fs_e=' num2str(sampl_e)...
@@ -177,6 +178,9 @@ if flag_want_fac
     xyz = irf_resamp(xyz,dB);
     if ~flag_dEdotB0
         eISR2=e(:,1:3);
+        if size(e,2)<4
+            error('E must be a 3D vector to be rotated to FAC')
+        end
         [dB,e]=irf_convert_fac(xyz,B0,dB,e);
     else dB = irf_convert_fac(xyz,B0,dB);
     end
@@ -256,7 +260,10 @@ for ind_a=1:length(a), % Main loop over frequencies
   Wb = ifft(sqrt(1).*Swb.*mWexp,[],1); Wb(idxNanB) = NaN;
   We = []; WeISR2 = [];
   if wantEE
-      We = ifft(sqrt(1).*Swe.*mWexp,[],1); We(idxNanE) = NaN;
+      if size(Swe,2) == 2, We = ifft(sqrt(1).*Swe.*mWexp2,[],1);
+      else We = ifft(sqrt(1).*Swe.*mWexp,[],1);
+      end
+      We(idxNanE) = NaN;
       if flag_want_fac && ~flag_dEdotB0
           WeISR2 = ifft(sqrt(1).*SweISR2.*mWexp2,[],1);
           WeISR2(idxNanEISR2) = NaN;
