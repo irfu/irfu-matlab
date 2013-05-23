@@ -1,21 +1,26 @@
-freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+freqRange = 'pc35';cl_id = 2; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
+%freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
 
 outDir = '.';
 plotFlag = 1;
 
 wantPC12 = 0;
-wantPC35 = 0;
-switch lower(freqRange)
-    case 'all'
-        wantPC12 = 1;
-        wantPC35 = 1;
-    case 'pc12'
-        wantPC12 = 1;
-    case 'pc35'
-        wantPC35 = 1;
-    otherwise
-        error('Invalid value for freqRange')
+wantPC35 = 0; wantSCM = 0;
+if ischar(freqRange)
+    switch lower(freqRange)
+        case 'all'
+            wantPC12 = 1;
+            wantPC35 = 1;
+        case 'pc12'
+            wantPC12 = 1;
+        case 'pc35'
+            wantPC35 = 1;
+        otherwise
+            error('Invalid value for freqRange')
+    end
+else
+    if freqRange(1) > 1, wantSCM = 1; end
 end
 
 
@@ -33,6 +38,7 @@ if 0
     caa_download(tint+[-30 30],'CL_SP_AUX','nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_FULL_ISR2'],'nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_EFW_L2_E'],'nowildcard');
+    caa_download(tint+[-30 30],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
 end
 
 %% Load
@@ -56,8 +62,7 @@ B_5VPS = c_coord_trans('gse','isr2',gseB_5VPS,'SAX',SAX);
 if wantPC35
     E_4SEC = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L3_E'],...
         'mat','tint',tint+[-30 30]);
-end
-if wantPC12
+elseif wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
         'mat','tint',tint+[-1 1]);
     % XXX
@@ -65,6 +70,14 @@ if wantPC12
     % quality.
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+[-1 1]);
+else
+    E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
+        'mat','tint',tint+[-1 1]);
+    B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
+        'mat','tint',tint+[-1 1]);
+    if wantSCM
+        BSC = c_caa_var_get('B_vec_xyz_Instrument__C4_CP_STA_CWF_HBR_ISR2','mat');
+    end
 end
 
 %% Calculate and plot
@@ -85,12 +98,11 @@ if wantPC35
         irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
         'fac','polarization','noresamp','fullB=dB');
     toc
-    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,timeVector);
+    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,res.t);
     h=irf_pl_ebsp(cl_id,R,res.t,'pc35',BMAG,res.bb,...
         res.eesum,res.ee,res.pf_xyz,res.pf_rtp,...
         res.k,res.dop,res.ellipticity);
-end
-if wantPC12
+elseif wantPC12
     fFGM = 22.5;
     t_BASE = (fix(min(B_FULL(1,1),E_L2(1,1))):2.0/fFGM:ceil(max(B_FULL(end,1),E_L2(end,1))))';
     B_BASE = irf_resamp(B_FULL,t_BASE);
@@ -109,4 +121,9 @@ if wantPC12
     h=irf_pl_ebsp(cl_id,R,res.t,'pc12',BMAG,res.bb,...
         res.eesum,res.ee,res.pf_xyz,res.pf_rtp,...
         res.k,res.dop,res.ellipticity);
+else
+    if wantSCM
+        res = irf_ebsp(E_L2,BSC,B_FULL,B_5VPS,R,freqRange,...
+        'fac','polarization','dedotb=0');
+    end
 end
