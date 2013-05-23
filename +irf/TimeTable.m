@@ -336,6 +336,9 @@ classdef TimeTable
 				end
 				if endOfTT2, break; end % if end of 2nd time series stop
 			end
+			if iInterval == 0, 
+				irf_log('fcal','Warning: there were no intersecting intervals, returning empty time table.');
+			end
 			tout(iInterval+1:end,:)=[];
 			TT = irf.TimeTable;
 			TT.Header = [cellfun(@(x) {['# ' x]}, TT1.Header);...
