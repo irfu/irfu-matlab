@@ -20,7 +20,7 @@ ns_ops_epo.xml: ns_ops.xml
 	${XSLTPROC} addepoch.xsl ns_ops.xml > ns_ops_epo.xml
 
 clean:
-	rm -f ns_ops_epo.xml ns_ops_c[1-4].dat
+	rm -f ns_ops.html ns_ops_epo.xml ns_ops_c[1-4].dat C?_CQ_EFW_INST_V00.cef
 
 test: test_epoch.xml test_epoch.xsl
 	echo "Tesing iso2epoch..."
