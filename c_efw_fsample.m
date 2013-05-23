@@ -69,9 +69,9 @@ K_MINUS = .9;
 if f<K_PLUS*5 && f>K_MINUS*5 && (strcmp(mode,'any') || strcmp(mode,'lx'))
 	sf = 5;     % LX
 elseif f<K_PLUS*fdwp/36 && f>K_MINUS*fdwp/36 && (strcmp(mode,'any') || strcmp(mode,'hx'))
-	sf = 25;    % NM
+	sf = fdwp/36;    % NM
 elseif f<K_PLUS*fdwp/2 && f>K_MINUS*fdwp/2 && (strcmp(mode,'any') || strcmp(mode,'hx') || strcmp(mode,'ib'))
-	sf = 450;   % BM1/IB
+	sf = fdwp/2;   % BM1/IB
 elseif f<K_PLUS*2250 && f>K_MINUS*2250 && (strcmp(mode,'any') || strcmp(mode,'ib'))
     sf = 2250;  % IB
 elseif f<K_PLUS*4500 && f>K_MINUS*4500 && (strcmp(mode,'any') || strcmp(mode,'ib'))

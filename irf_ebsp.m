@@ -58,9 +58,9 @@ if isempty(e), wantEE = 0;
 else wantEE = 1;
 end
 
-res = struct('t',[],'f',[],'fac',0,'bb',[],'ee',[],'eesum',[],...
+res = struct('t',[],'f',[],'flagFac',0,'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
     'pf_xyz',[],'pf_rtp',[],...
-    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k',[]);
+    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[]);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 for i=1:length(varargin)
@@ -185,7 +185,7 @@ inTime = dB(:,1);
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
 if flag_want_fac
-    res.fac = 1;
+    res.flagFac = 1;
 	if wantEE
 		if ~flag_dEdotB0
 			eISR2=e(:,1:3);
@@ -221,7 +221,7 @@ if wantEE
     fprintf('irf_ebsp ... calculate E and B wavelet transform ... ');
     e(:,1) = []; idxNanE = isnan(e); e(idxNanE)=0; Swe=fft(e,[],1);
     if flag_want_fac && ~flag_dEdotB0
-        eISR2(:,1) = []; idxNanEISR2 = isnan(e); eISR2(idxNanEISR2)=0;
+        eISR2(:,1) = []; idxNanEISR2 = isnan(eISR2); eISR2(idxNanEISR2)=0;
         SweISR2=fft(eISR2,[],1);
     end
 else
@@ -284,9 +284,8 @@ for ind_a=1:length(a), % Main loop over frequencies
   newfreqmat=w0/a(ind_a);
   %% Power spectrum of E and Poynting flux
   if wantEE
-      % Power spectrum of E
+      % Power spectrum of E, power = (2*pi)*conj(W).*W./newfreqmat
       if flag_want_fac && ~flag_dEdotB0
-          % power = (2*pi)*conj(W).*W./newfreqmat;
           SUMpowerEISR2 = sum( 2*pi*(WeISR2.*conj(WeISR2))./newfreqmat ,2);
       else SUMpowerEISR2 = sum( 2*pi*(We.*conj(We))./newfreqmat ,2);
       end
@@ -437,15 +436,15 @@ powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
 powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
 power2B_plot = AverageData(power2B_plot,inTime,outTime);
-BB_XXYYZZ = powerBx_plot;
-BB_XXYYZZ(:,:,2) = powerBy_plot;
-BB_XXYYZZ(:,:,3) = powerBz_plot;
-BB_XXYYZZ(:,:,4) = power2B_plot;
+bb_xxyyzzss = powerBx_plot;
+bb_xxyyzzss(:,:,2) = powerBy_plot;
+bb_xxyyzzss(:,:,3) = powerBz_plot;
+bb_xxyyzzss(:,:,4) = power2B_plot;
 
 % Output
 res.t = outTime;
 res.f = frequencyVec;
-res.bb = BB_XXYYZZ;
+res.bb_xxyyzzss = bb_xxyyzzss;
 
 if wantEE
     powerEx_plot = AverageData(powerEx_plot,inTime,outTime);
@@ -457,11 +456,11 @@ if wantEE
     S_plot_y = AverageData(S_plot_y,inTime,outTime);
     S_plot_z = AverageData(S_plot_z,inTime,outTime);
     [S_azimuth,S_elevation,S_r]=cart2sph(S_plot_x,S_plot_y,S_plot_z);
-    EESum_ISR2 = power2E_ISR2_plot;
-    EE_XXYYZZ(:,:,4) = power2E_plot;
-    EE_XXYYZZ(:,:,1) = powerEx_plot;
-    EE_XXYYZZ(:,:,2) = powerEy_plot;
-    EE_XXYYZZ(:,:,3) = powerEz_plot;
+
+    ee_xxyyzzss(:,:,4) = power2E_plot;
+    ee_xxyyzzss(:,:,1) = powerEx_plot;
+    ee_xxyyzzss(:,:,2) = powerEy_plot;
+    ee_xxyyzzss(:,:,3) = powerEz_plot;
     Poynting_XYZ = S_plot_x;
     Poynting_XYZ(:,:,2) = S_plot_y;
     Poynting_XYZ(:,:,3) = S_plot_z;
@@ -470,8 +469,8 @@ if wantEE
     Poynting_RThPh(:,:,3) = S_azimuth;
     
     % Output
-    res.eesum = EESum_ISR2;
-    res.ee = EE_XXYYZZ;
+    res.ee_ss = power2E_ISR2_plot;
+    res.ee_xxyyzzss = ee_xxyyzzss;
     res.pf_xyz = Poynting_XYZ;
     res.pf_rtp = Poynting_RThPh;
 end
@@ -495,7 +494,7 @@ if wantPolarization,
     res.dop2d = degreeOfPolarization2D;
     res.planarity = planarity;
     res.ellipticity = ellipticity;
-    res.k = k_ThPhSVD_fac;
+    res.k_tp = k_ThPhSVD_fac;
 end
 end % Main function
 
