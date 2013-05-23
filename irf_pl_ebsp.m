@@ -1,4 +1,4 @@
-function irf_pl_ebsp_new(ebsp,params)
+function h = irf_pl_ebsp(ebsp,params)
 
 
 
