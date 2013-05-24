@@ -1,5 +1,6 @@
 freqRange = 'pc35';cl_id = 2; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
 
 outDir = '.';
@@ -38,7 +39,9 @@ if 0
     caa_download(tint+[-30 30],'CL_SP_AUX','nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_FULL_ISR2'],'nowildcard');
     caa_download(tint+[-30 30],['C' cl_s '_CP_EFW_L2_E'],'nowildcard');
-    caa_download(tint+[-30 30],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
+    if wantSCM
+      caa_download(tint+[-30 30],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
+    end
 end
 
 %% Load
@@ -115,7 +118,7 @@ elseif wantPC12
     
     tic
     res = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
-        'fac','polarization','noresamp','fullB=dB','dedotb=0');
+        'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12);
     toc
     BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,res.t);
     h=irf_pl_ebsp_old(cl_id,R,res.t,'pc12',BMAG,res.bb_xxyyzzss,...
