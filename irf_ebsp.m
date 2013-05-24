@@ -22,6 +22,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %					 otherwise no coordinate system transformation is performed
 %   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
 %   'fullB=dB'     - dB contains DC field
+%   'nAv'          - number of wave periods to average (default=8)
 % 
 % Output is a structure containing the following fields:
 %
@@ -50,7 +51,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %  See also: IRF_PL_EBS, IRF_PL_EBSP
 
 %% Check the input
-nWavePeriodToAverage = 4; % Number of wave periods to average
+nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
 
 wantPolarization = 0;
@@ -75,6 +76,13 @@ for i=1:length(varargin)
             flag_dEdotB0 = 1;
         case 'fullb=db'
             flag_fullB_dB = 1;
+        case 'nav' 
+              if i==length(varargin) || ~isnumeric(varargin{i+1}) || ...
+                  uint8(varargin{i+1})~=varargin{i+1}
+                error('NAV requires a second integer argument')
+              end
+              nWavePeriodToAverage = varargin{i+1};
+              %i = i+1; XXX: fixme
         otherwise
             irf_log('fcal',['Option ''' varargin{i} '''not recognized'])
     end
@@ -252,7 +260,7 @@ phiSVD_fac = zeros(ndataOut,nfreq);
 % Get the correct frequencies for the wavelet transform
 frequencyVec=w0./a;
 censur = floor(2*a*outSampling/inSampling*nWavePeriodToAverage);
-for ind_a=1:length(a), % Main loop over frequencies
+parfor ind_a=1:length(a), % Main loop over frequencies
   %disp([num2str(ind_a) '. frequency, ' num2str(newfreq(ind_a)) ' Hz.']);
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
