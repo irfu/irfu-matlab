@@ -37,7 +37,7 @@ end
 if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	irf_log('fcal','Creating structures');
 	d = dir('./*.XML');
-	isub = [d(:).isdir]; %# returns logical vector
+	isub = [d(:).isdir]; 
 	d(isub)=[];
 	nameFiles = {d.name}';
 	delme=[];
@@ -67,6 +67,7 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 elseif 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
 	varName=varargin{1};
 	dd=regexp(varName, '__', 'split');
+	dd{2}(strfind(dd{2},'-')) = '_';	
 	load(indexFile,['meta_' dd{2}]);
 	eval(['metaData=meta_' dd{2} ';']);
 	par=metaData.PARAMETERS.PARAMETER;
