@@ -1,4 +1,4 @@
-freqRange = 'pc35';cl_id = 2; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
@@ -97,14 +97,10 @@ if wantPC35
     iE3D_4SEC = E3D_4SEC;
     iE3D_4SEC(:,2:4) = iE3D_4SEC(:,2:4) - evxb(:,2:4);
     
-    tic; res = ...
+    tic; ebsp = ...
         irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
         'fac','polarization','noresamp','fullB=dB');
     toc
-    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,res.t);
-    h=irf_pl_ebsp_old(cl_id,R,res.t,'pc35',BMAG,res.bb_xxyyzzss,...
-        res.ee_ss,res.ee_xxyyzzss,res.pf_xyz,res.pf_rtp,...
-        res.k_tp,res.dop,res.ellipticity);
 elseif wantPC12
     fFGM = 22.5;
     t_BASE = (fix(min(B_FULL(1,1),E_L2(1,1))):2.0/fFGM:ceil(max(B_FULL(end,1),E_L2(end,1))))';
@@ -117,16 +113,20 @@ elseif wantPC12
     iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
     
     tic
-    res = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
+    ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
         'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12);
     toc
-    BMAG = irf_abs(B0_1MIN); BMAG(:,2:4) = []; BMAG = irf_resamp(BMAG,res.t);
-    h=irf_pl_ebsp_old(cl_id,R,res.t,'pc12',BMAG,res.bb_xxyyzzss,...
-        res.ee_ss,res.ee_xxyyzzss,res.pf_xyz,res.pf_rtp,...
-        res.k_tp,res.dop,res.ellipticity);
 else
-    if wantSCM
-        res = irf_ebsp(E_L2,BSC,B_FULL,B_5VPS,R,freqRange,...
-        'fac','polarization','dedotb=0');
-    end
+  tic
+  if wantSCM
+    ebsp = irf_ebsp(E_L2,BSC,B_FULL,B_5VPS,R,freqRange,...
+      'fac','polarization','dedotb=0');
+  else
+    ebsp = irf_ebsp(E_L2,B_FULL,[],B_5VPS,R,freqRange,...
+      'fac','polarization','dedotb=0','fullB=dB');
+  end
+  toc
 end
+h = irf_pl_ebsp(ebsp);
+irf_zoom(h,'x',tint)
+title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
