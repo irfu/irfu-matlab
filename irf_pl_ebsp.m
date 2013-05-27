@@ -64,7 +64,7 @@ if nargin==1 || isempty(params)
 end
 
 fieldsEBSP = fields(ebsp);
-IGNORE_FIELDS = {'t','f','fac'};
+IGNORE_FIELDS = {'t','f','fac','fullB','B0','r'};
 fieldsPlottable = setxor(fieldsEBSP,IGNORE_FIELDS);
 plotFields = ''; plotComps = ''; limFields = ''; nPanels = 0;
 GetPlotParams();
@@ -89,6 +89,11 @@ for idxField = 1:length(plotFields)
   end
 end
 irf_zoom(h,'x',ebsp.t([1 end])')
+
+if ~isempty(ebsp.r)
+  xlabel(h(end),''), add_position(h(end),ebsp.r)
+  title(h(1),irf_disp_iso_range(ebsp.t([1 end])',1))
+end
 if nargout, out = h; end % Return here
 
 %% Help functions
