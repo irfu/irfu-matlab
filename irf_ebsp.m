@@ -1,30 +1,27 @@
 function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
-%IRF_EBSP   Calculates E&B wavelet spectra, Poynting flux, polarization
+%IRF_EBSP   Calculates wavelet spectra, Poynting flux, polarization params
 %
-% irf_ebsp(E,dB,fullB,B0,xyz,freq_int,[OPTIONS])
-% assumes equidistant time spacing
+%  irf_ebsp(E,dB,fullB,B0,xyz,freq_int,[OPTIONS])
 %
-% It uses a Morlet wavelet.
+%  Calculates wavelet spectra of E&B and Poynting flux using wavelets 
+%  (Morlet wavelet). Also computes polarization parameters of B using SVD.
+%  SVD is performed on spectral matrices computed from the time series of B 
+%  using wavelets and then averaged over a number of wave periods.
 %
-% Input:
+%  Input:
 %
-% E = wave electric field, columns (t ex ey ez)
-% dB = wave magnetic field, columns (t bx by bz)
-% fullB = high resolution background magnetic field, columns (t bx by bz)
-% B0 = background magnetic field, columns (t bx by bz)
-% xyz = position vector of spacecraft, columns (t x y z)
-% freq_int = frequency interval: either 'pc12', 'pc35' or numeric [fmin fmax]
+%    E        - wave electric field, columns (t ex ey ez)
+%    dB       - wave magnetic field, columns (t bx by bz)
+%    fullB    - high resolution background magnetic field used for E*B=0,
+%               columns (t bx by bz)
+%    B0       - background magnetic field used for field-aligned
+%               coordinates (FAC Z), columns (t bx by bz)
+%    xyz      - position vector of spacecraft used for field-aligned
+%               coordinates (FAC X, Y), columns (t x y z)
+%    freq_int - frequency interval: either 'pc12', 'pc35' or 
+%               arbitrary interval [fmin fmax]
 %
-% Options:
-%   'polarization' - compute polarization parameters
-%   'noresamp'     - no resampling, E and dB are given at the same timeline
-%   'fac'          - use FAC coordinate system (defined by B0 and optionally xyz), 
-%					 otherwise no coordinate system transformation is performed
-%   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
-%   'fullB=dB'     - dB contains DC field
-%   'nAv'          - number of wave periods to average (default=8)
-% 
-% Output is a structure containing the following fields:
+%  Output is a structure containing the following fields:
 %
 %     t           - Time
 %     f           - Frequency
@@ -40,7 +37,17 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     ellipticity - ellipticity of polarization ellipse
 %     k           - k-vector (theta, phi FAC)
 %
-% Examples:
+%  Options:
+%   'polarization' - compute polarization parameters
+%   'noresamp'     - no resampling, E and dB are given at the same timeline
+%   'fac'          - use FAC coordinate system (defined by B0 and
+%                    optionally xyz), otherwise no coordinate system 
+%                    transformation is performed
+%   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
+%   'fullB=dB'     - dB contains DC field
+%   'nAv'          - number of wave periods to average (default=8)
+% 
+%  Examples:
 %
 %    res = irf_ebsp(e,b,B,B0,xyz,'pc12');
 %
@@ -48,7 +55,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %
 %    res = irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
 %
-%  See also: IRF_PL_EBS, IRF_PL_EBSP
+%  See also: IRF_PL_EBSP
 
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
