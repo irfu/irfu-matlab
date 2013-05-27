@@ -68,7 +68,8 @@ end
 
 res = struct('t',[],'f',[],'flagFac',0,'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
     'pf_xyz',[],'pf_rtp',[],...
-    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[]);
+    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[],...
+    'fullB',fullB,'B0',B0,'r',xyz);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 for i=1:length(varargin)
@@ -107,6 +108,7 @@ end
 B0 = irf_resamp(B0,dB);
 if flag_fullB_dB
     fullB = dB;
+    res.fullB = fullB;
     dB(:,2:4) = dB(:,2:4) - B0(:,2:4);
 end
 if flag_dEdotB0 && isempty(fullB)
