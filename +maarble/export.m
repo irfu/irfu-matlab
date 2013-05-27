@@ -1,15 +1,14 @@
 function export(tint,cl_id, freqRange, timeVector,...
     BB_xxyyzz_fac,EESum_xxyy_isr2,EE_xxyyzz_fac,...
-    Poynting_rThetaPhi_fac,k_thphSVD_fac,polSVD_fac,ellipticity)
+    Poynting_rThetaPhi_fac,k_thphSVD_fac,polSVD_fac,ellipticity,...
+    planarity,B0)
 %EXPORT  Export data to CEF
 %
 % export( tint, cl_id, freqRange, timeVector,BB_xxyyzz_fac,...
 %          EESum_xxyy_isr2,EE_xxyyzz_fac,Poynting_rThetaPhi_fac,...
-%          k_thphSVD_fac,polSVD_fac,ellipticity)
+%          k_thphSVD_fac,polSVD_fac,ellipticity,planarity,B0)
 %
 % Will create a gzipped CEF file in the current directory
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -61,6 +60,7 @@ Poynting_rThetaPhi_fac(:,:,2:3) = Poynting_rThetaPhi_fac(:,:,2:3)*toD;
 k_thphSVD_fac(:,:,1) = fliplr(k_thphSVD_fac(:,:,1));
 k_thphSVD_fac(:,:,2) = fliplr(k_thphSVD_fac(:,:,2));
 ellipticity = fliplr(ellipticity);
+planarity = fliplr(planarity);
 polSVD_fac = fliplr(polSVD_fac);
 Poynting_rThetaPhi_fac(:,:,1) = fliplr(Poynting_rThetaPhi_fac(:,:,1));
 Poynting_rThetaPhi_fac(:,:,2) = fliplr(Poynting_rThetaPhi_fac(:,:,2));
@@ -73,10 +73,12 @@ FILLVAL_EXP        = -1.00E+31;
 
 k_thphSVD_fac(isnan(k_thphSVD_fac)) = FILLVAL;
 ellipticity(isnan(ellipticity)) = FILLVAL;
+planarity(isnan(planarity)) = FILLVAL;
 polSVD_fac(isnan(polSVD_fac)) = FILLVAL;
 Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac(:,:,1))) = FILLVAL_EXP;
 Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac)) = FILLVAL;
-EESum_xxyy_isr2(isnan(EESum_xxyy_isr2)) = FILLVAL_EXP;
+B0(isnan(B0)) = FILLVAL_EXP;
+planarity(isnan(planarity)) = FILLVAL;
 BB_xxyyzz_fac(isnan(BB_xxyyzz_fac)) = FILLVAL_EXP;
 % Reformat B matrix and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
@@ -94,11 +96,13 @@ dataToExport = {...
     {formatAng, k_thphSVD_fac(:,:,1)},...          % THSVD_fac
     {formatAng, k_thphSVD_fac(:,:,2)},...          % PHSVD_fac
     {formatDeg, ellipticity},...                   % ELLSVD
+    {formatDeg, planarity},...                     % PLANSVD
     {formatDeg, polSVD_fac},...                    % POLSVD
     {formatExp, Poynting_rThetaPhi_fac(:,:,1)},... % AMPV
     {formatAng, Poynting_rThetaPhi_fac(:,:,2)},... % THPV
     {formatAng, Poynting_rThetaPhi_fac(:,:,3)},... % PHPV
-    {formatExp, EESum_xxyy_isr2}                   % ESUM
+    {formatExp, EESum_xxyy_isr2},...               % ESUM
+    {formatExp, B0}                                % BMAG
     };
 
 % For Pc3-5 we also add E spectrum in FAC
