@@ -177,6 +177,7 @@ if wantEE && size(e,2) <4 && flag_dEdotB0==0
     error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
 end
 
+Bx = []; By = []; Bz = []; idxBparSpinPlane = [];
 if flag_dEdotB0
 	Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
 	
@@ -208,9 +209,9 @@ if flag_want_fac
 			eISR2=e(:,1:3);
 			if size(e,2)<4
 				error('E must be a 3D vector to be rotated to FAC')
-			end
-		end
-		e=irf_convert_fac(e,B0,xyz);
+      end
+      e=irf_convert_fac(e,B0,xyz);
+    end
 	end
 	dB = irf_convert_fac(dB,B0,xyz);
 end
