@@ -50,7 +50,7 @@ function out = irf_pl_ebsp(ebsp,params)
 %% Main function
 % Default plot
 if nargin==1 || isempty(params)
-  limByDopStruct = struct('type','low','val',0.7,'param','dop','comp',1);
+  limByDopStruct = struct('type','low','val',0.6,'param','dop','comp',1);
   limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
   %limBSsumStruct = struct('type','low','val',.05,'param','bb_xxyyzzss','comp',4);
   
@@ -79,13 +79,13 @@ for idxField = 1:length(plotFields)
     if isempty(compStr), panelStr = paramStr;
     else panelStr = [paramStr '_' compStr]; 
     end
-    hca = irf_panel(panelStr);
+    hca = irf_panel(panelStr); 
     sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
     sr.p = LimitValues(sr.p);
     [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
-    irf_spectrogram(hca,sr)
-    set(hca,'YScale','log')
-    SetCaxis()
+    irf_spectrogram(hca,sr), PlotCyclotronFrequency()
+    set(hca,'YScale','log'), SetCaxis()
+    set(hca,'Color',0.6*[1 1 1]);
   end
 end
 irf_zoom(h,'x',ebsp.t([1 end])')
@@ -97,6 +97,16 @@ end
 if nargout, out = h; end % Return here
 
 %% Help functions
+  function [f,c] = GetCompStrings
+    a = tokenize(field,'_');
+    f = a{1}; c = '';
+    if length(a) ==1, return, end 
+    r = a{2};
+    if length(unique(r)) == length(r), c = r(comp);
+    else c = r((comp-1)*2+(1:2));
+    end
+    if strcmpi(c,'ss'), c = 'sum'; end
+  end
   function GetPlotParams
     for idx = 1:length(params)
       p = params{idx};
@@ -160,30 +170,7 @@ if nargout, out = h; end % Return here
       end
     end
   end
-  function data = LimitValues(data)
-    if isempty(lim), return, end
-    for idx = 1:length(lim)
-      limStruct = lim{idx};
-      limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
-      switch lower(limStruct.type)
-        case 'low'
-          data(limData < limStruct.val) = NaN;
-        case 'high'
-          data(limData > limStruct.val) = NaN;
-      end
-    end
-  end
-  function [f,c] = GetCompStrings
-    a = tokenize(field,'_');
-    f = a{1}; c = '';
-    if length(a) ==1, return, end 
-    r = a{2};
-    if length(unique(r)) == length(r), c = r(comp);
-    else c = r((comp-1)*2+(1:2));
-    end
-    if strcmpi(c,'ss'), c = 'sum'; end
-  end
-  function [t,s] = GetPlotTypeLabel  
+  function [t,s] = GetPlotTypeLabel
     t = 'lin';
     switch compStr
       case {'r','x','y','z','xx','yy','zz','sum'}
@@ -206,6 +193,31 @@ if nargout, out = h; end % Return here
           s = '[\mu W/m^2 Hz]^{1/2}';
       end
     end
+  end
+  function data = LimitValues(data)
+    if isempty(lim), return, end
+    for idx = 1:length(lim)
+      limStruct = lim{idx};
+      limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      switch lower(limStruct.type)
+        case 'low'
+          data(limData < limStruct.val) = NaN;
+        case 'high'
+          data(limData > limStruct.val) = NaN;
+      end
+    end
+  end
+  function PlotCyclotronFrequency
+    if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
+    if isempty(ebsp.fullB), B = ebsp.fullB; else B = ebsp.B0; end
+    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,5)*1e-9/units.me/2/pi];
+    mep = units.me/units.mp;
+    % F_ce, F_ce/2, F_cp, F_cHe, F, cO
+    fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
+    hold(hca,'on'), hp = irf_plot(hca,fc); hold(hca,'off')
+    set(hp,'Color',[1 1 1],'LineWidth',2), 
+    set(hp(2),'LineStyle','--'), set(hp(3),'LineStyle','-.')
+    set(hp(5),'LineStyle','--'), set(hp(6),'LineStyle','-.')
   end
   function SetCaxis
     switch paramStr
