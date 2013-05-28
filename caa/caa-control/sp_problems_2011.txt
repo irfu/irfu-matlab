@@ -46,6 +46,8 @@ SC2 strange data, AIE check. So far we have put it into ns_ops.
 
 2011-10-29 00:00-06:00 No data on C3, rerun fixed the problem.
 
+2011-11-21, 13:10-15:20. No data on C1. Asked PAL: WEC off above 80000 km due to power sharing with HPA. Se Misson Operations Report No 590 page 5..
+
 2a) Software bugs to be fixed
 =============================
 
@@ -63,8 +65,6 @@ SC2 strange data, AIE check. So far we have put it into ns_ops.
 ===============
 
 2011-11-04 from 03:43 to 2011-11-05 07:16. Strange data on C3. DWP problem, TM buffer overflow. Entered in NS_OPS. 
-
-2011-11-21, 13:10-15:20. No data on C1. Asked PAL.
 
 2011-11,12 C2 quality should be 1, but it is typically 2. Rerun C2.
 
