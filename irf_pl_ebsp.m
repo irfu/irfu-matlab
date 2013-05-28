@@ -83,7 +83,7 @@ for idxField = 1:length(plotFields)
     sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
     sr.p = LimitValues(sr.p);
     [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
-    irf_spectrogram(hca,sr), PlotCyclotronFrequency()
+    [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
     set(hca,'YScale','log'), SetCaxis()
     set(hca,'Color',0.6*[1 1 1]);
   end
@@ -230,9 +230,17 @@ if nargout, out = h; end % Return here
     end
     switch compStr
       case 't'
-        caxis(hca,[0 180])
+        if ~strcmpi(field,'k')
+          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180])
+        else
+          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90])
+        end
       case 'p'
-        caxis(hca,[-180 180])
+        if ~strcmpi(field,'k')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180])
+        else
+          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180])
+        end
       otherwise
         % do nothing
     end
