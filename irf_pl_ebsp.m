@@ -46,6 +46,7 @@ function out = irf_pl_ebsp(ebsp,params)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+flagCmap = 0;
 
 %% Main function
 % Default plot
@@ -70,9 +71,12 @@ plotFields = ''; plotComps = ''; limFields = ''; nPanels = 0;
 GetPlotParams();
     
 h = irf_plot(nPanels);
+hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
+yTickList = cell(nPanels,1); idxPanel = 0;
 sr = struct('t',ebsp.t,'f',ebsp.f);
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
+    flagCmapPoy = 0;
     field = plotFields{idxField}; comp = plotComps{idxField}(idxComp);
     lim = limFields{idxField};
     [paramStr,compStr] = GetCompStrings();
@@ -85,15 +89,22 @@ for idxField = 1:length(plotFields)
     [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
     [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
     set(hca,'YScale','log'), SetCaxis()
-    set(hca,'Color',0.6*[1 1 1]);
+    set(hca,'Color',0.7*[1 1 1]); % grey background
+    idxPanel = idxPanel + 1;
+    hcbList(idxPanel) = hcb; cmapPoyList(idxPanel) = flagCmapPoy;
+    yTickList(idxPanel) = {get(hcb,'YTick')};
   end
 end
+
 irf_zoom(h,'x',ebsp.t([1 end])')
 
 if ~isempty(ebsp.r)
   xlabel(h(end),''), add_position(h(end),ebsp.r)
   title(h(1),irf_disp_iso_range(ebsp.t([1 end])',1))
 end
+
+SetColorMap()
+
 if nargout, out = h; end % Return here
 
 %% Help functions
@@ -186,7 +197,7 @@ if nargout, out = h; end % Return here
     function s = GetUnits
       switch paramStr
         case 'bb'
-          s = '[nT^2/Hz';
+          s = '[nT^2/Hz]';
         case 'ee'
           s = '[(mV/m)^2/Hz]';
         otherwise
@@ -222,27 +233,50 @@ if nargout, out = h; end % Return here
   function SetCaxis
     switch paramStr
       case {'dop','dop2d','planarity'}
-        caxis(hca,[0 1])
+        caxis(hca,[0.3 1]), set(hcb,'YTick',[.4 .7 1],'TickDir','out')
       case 'ellipticity'
-        caxis(hca,[-1 1])
+        caxis(hca,[-1 1]), set(hcb,'TickDir','out')
+        flagCmapPoy = 1;
       otherwise
         % do nothing
     end
     switch compStr
       case 't'
-        if ~strcmpi(field,'k')
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180])
+        if ~strcmpi(paramStr,'k')
+          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
         else
-          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90])
+          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90],'TickDir','out')
         end
+        flagCmapPoy = 1; 
       case 'p'
-        if ~strcmpi(field,'k')
-          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180])
+        if ~strfind(paramStr,'k')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
         else
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180])
+          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
         end
+        flagCmapPoy = 1; 
       otherwise
         % do nothing
+    end
+  end
+  function SetColorMap
+    cmapPoy = irf_colormap('poynting'); cmapSpace = irf_colormap('space');
+    for iPanel = 1:nPanels
+      axes(h(iPanel)) %#ok<LAXES>
+      if cmapPoyList(iPanel), colormap(cmapPoy)
+      else colormap(cmapSpace)
+      end
+      freezeColors
+      set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
+      pos = get(hcbList(iPanel),'Position');
+      hYLabel = get(hcbList(iPanel),'ylabel');
+      yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
+      hcbNew = cbfreeze(hcbList(iPanel));
+      set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
+      hYLabel = get(hcbNew,'ylabel');
+      set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
+      l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
+      set(hcbNew,'YTickLabel',l);
     end
   end
   function a=UpdateUnits(a)
