@@ -126,10 +126,12 @@ switch lower(varName)
 		varToRead={varName};
 		ok=readdata;
 		if ok && strcmpi(returnDataFormat,'mat'),
-            if numel(data)==2,
+            if numel(data)==2 && numel(size(data{2}))==2,
                 out=[data{1} double(data{2})];
             elseif numel(data)==1,
                 out = data{1};
+			else
+				out=data;
             end
 		  elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
 			out = data;
@@ -202,6 +204,7 @@ end
                         % read data
                         [tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
+						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
                         timeVector = irf_time(tmpdata{1},'date2epoch');
 						tmpdata{1} = timeVector;
@@ -221,7 +224,16 @@ end
 					end
 					%% attach to result
 					for j=1:numel(data),
-						data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
+						nDim=numel(size(tmpdata{j}));
+						if nDim==2,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
+						elseif nDim==3,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:));
+						elseif nDim==4,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:));
+						elseif nDim==5,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:,:));
+						end
 					end
 					cdflib.close(cdfid);
 				case {'caa','dobj'}
@@ -287,4 +299,17 @@ end
 		end
 		if any(sind), ok=true; end
 	end
+	function data=fix_order_of_array_dimensions(data)
+		for iDimension=3:4,
+			indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
+			for iDataset=1:numel(indDatasets)
+				if iDimension==3,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
+				elseif iDimension==4,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
+				end
+			end
+		end
+	end
+
 end
