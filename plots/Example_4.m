@@ -148,7 +148,7 @@ irf_legend(h(1),'Example 4',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 % to print the figure uncomment the lines below
 %
 % set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
-% print -dpng -painters Example_1.png;
+% print -dpng -painters Example_4.png;
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % remove temporary directory

@@ -249,7 +249,7 @@ tint=[irf_time([2002 03 14 00 20 0]) irf_time([2002 03 14 00 25 0])];
 caa_download(tint,'C*_CP_FGM_SPIN','overwrite');	
 % C* to download all sc data, 'overwrite' to remove previous data
 
-c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_SPIN'',''mat'');');
+c_eval('B?=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_SPIN'',''mat'',''file'');');
 c_eval('B?=irf_abs(B?);');
 c_4_v_gui('B?')
 
