@@ -27,8 +27,8 @@ function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %   See also C_4_K
 %
 %  Reference: ISSI book  Eq. 14.16, 14.17
-%
-% $Id$
+
+% TODO fix that it works for vector inputs without time column!
 
 if nargin~=8 & nargin~=2
 	disp('Too few parameters. See usage:');

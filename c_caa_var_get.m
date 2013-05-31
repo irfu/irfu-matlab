@@ -43,6 +43,15 @@ getFromFile = false;	% reads data from file only if dataobj not in memory
 varnames = varargin{1};
 args     = varargin(2:end);
 nargs    = length(args); % number of additional parameters
+% Check if ? in varname, then loop through all s/c
+if ischar(varnames) && any(strfind(varnames,'?'))
+	for iSc = 1:4,
+		strSc = num2str(iSc);
+		varName = strrep(varnames,'?',strSc);
+		res.(['C' strSc]) = c_caa_var_get(varName,args{:});
+	end
+	return
+end
 while nargs
 	l = 1;
 	switch(lower(args{1}))
