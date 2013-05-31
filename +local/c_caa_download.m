@@ -49,17 +49,11 @@ if nargin==1 && ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
 	irf_log('dsrc','Checking list of available times');
-	tt=caa_download(['list:' dataSet]);
-	if numel(tt)==0,
+	TT=caa_download(['listdata:' dataSet]);
+	if numel(TT)==0,
 		disp('Dataset does not exist or there are no data');
 		return;
-	else
-		irf_log('dsrc',['Checking inventory: ' irf_time(tt.TimeInterval(1,:),'tint2iso')]);
-		ttInventory = caa_download(tt.TimeInterval(1,:),['list:' dataSet]);
 	end
-	
-	iData=find([ttInventory.UserData(:).number]);
-	TT=select(ttInventory,iData);
 	TTRequest=TT;
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 elseif nargin == 1 && isa(varargin{1},'irf.TimeTable')

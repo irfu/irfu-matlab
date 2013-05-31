@@ -475,7 +475,7 @@ Effect on the CAA processing:
 			<link href="pal020821a.txt">Per-Arne 020821</link>
 		</res>
 	</operation>
-	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="no_tm">
+	<operation start="2002-08-10T05:34:13Z" dt="194147" c2="yes" plan="no" sdesc="bad_tm">
 		<desc>
 			Latchup, SEU protection on ADC trigged, 
 			causing complete loss of data until power on/off cycle.
@@ -5897,8 +5897,7 @@ plan="yes" sdesc ="tbd">
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
-<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="ye
-s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
+<operation c1="yes" c2="yes" c4="yes" start="2011-11-03T03:45:24Z" dt="3600" plan="yes" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 </desc>
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
@@ -5909,6 +5908,9 @@ s" sdesc ="tbd"> <desc>Special burst targeting narrowband noise.
                 <res><link href="aie111011a.txt">Anders 111011</link>
                 </res>
         </operation>
+	<operation start="2011-11-04T03:42:00Z" dt="97980" c3="yes" plan="no" sdesc="bad_tm">
+		<desc>Bad WEC telemetry, DWP buffer overflow?</desc>
+	</operation>
 <operation c4="yes" start="2011-12-04T00:10:00Z" dt="136" plan="yes" sdesc ="bad_bias">
                 <desc>Bias stepping P34 from 8 to 380 nA in steps of 12 nA, 4 sec step rate. Start by setting 8 nA, 4 nA, 8 nA (to give time for any transient).  
                 </desc>

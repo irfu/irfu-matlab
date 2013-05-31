@@ -123,7 +123,7 @@ switch action
 				end
 			end
 			%% check if number of records to read is zero
-			if sum(records)==0,
+			if ~shouldReadAllData && sum(records)==0,
 				irf_log('dsrc','No data within specified time interval');
 				noDataReturned=1;
 			end
@@ -151,7 +151,7 @@ switch action
 				dobj.vars(:,1) = info.Variables(:,1); % new variables
 				dobj.vars(:,2) = info.Variables(:,1); % original variables
 				for v=1:nVariables
-					make_variable_names_acceptable_for_matlab;
+					dobj.vars{v,1}=variable_mat_name(dobj.vars{v,2});
 					varName = dobj.vars{v,1};
 					data_all_records = data{v};
 					if shouldReadAllData || ...% return all data
@@ -196,29 +196,6 @@ end
 					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
 				end
 			end
-		end
-	end
-	function make_variable_names_acceptable_for_matlab
-		% Replace minuses with underscores
-		dobj.vars{v,1}(strfind(dobj.vars{v,1},'-')) = '_';
-		% Remove training dots
-		while (dobj.vars{v,1}(end) == '.')
-			dobj.vars{v,1}(end) = [];
-		end
-		% Take care of '...'
-		d3 = strfind(dobj.vars{v,1},'...');
-		if d3, dobj.vars{v,1}( d3 + (1:2) ) = []; end
-		% Replace dots with underscores
-		dobj.vars{v,1}(strfind(dobj.vars{v,1},'.')) = '_';
-		% Add "x" if the varible name starts with a number
-		if ~isletter(dobj.vars{v,1}(1)),
-			dobj.vars{v,1}=['x' dobj.vars{v,1}];
-		end
-		% Take care of names longer than 63 symbols (Matlab limit)
-		if length(dobj.vars{v,1})>63
-			dobj.vars{v,1} = dobj.vars{v,1}(1:63);
-			disp(['orig var : ' dobj.vars{v,2}])
-			disp(['new var  : ' dobj.vars{v,1}])
 		end
 	end
 	function update_variable_attributes_cdfepoch % nested function

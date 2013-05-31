@@ -1,45 +1,34 @@
 function out=c_caa_meta(varargin)
-% LOCAL.C_CAA_META return meta data structure
+% C_CAA_META return meta data structure
 %
-%	LOCAL.C_CAA_META(string1,string2,..) returns name of datasets 
+%	C_CAA_META(string1,string2,..) returns name of datasets
 %			matching string1,string2,..
 %
-%	LOCAL.C_CAA_META(dataset) displays dataset informations 
+%	C_CAA_META(dataset) displays dataset informations
 %	out=LOCAL.C_CAA_META(dataset) returns dataset information in structure out
 %
-%	LOCAL.C_CAA_META(variableName) displays CAA variableName informations 
+%	C_CAA_META(variableName) displays CAA variableName informations
 %	out=LOCAL.C_CAA_META(variableName) returns variable information in structure out
 %
 %
 %	Examples:
-%		LOCAL.C_CAA_META('C1','PEA')
-%       d=LOCAL.C_CAA_META('C4_CP_PEA_MOMENTS')
-%       LOCAL.C_CAA_META('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
+%		c_caa_meta('C1','PEA')
+%       d=c_caa_meta('C4_CP_PEA_MOMENTS')
+%       c_caa_meta('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
 %
 
-% $Id$
+%	c_caa_meta('create') create file with all structures
 
-%	LOCAL.C_CAA_META('create') create file with all structures
+persistent s metaNames datasetNames indexFile
+linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
-persistent s metaNames datasetNames
-indexFile = 'indexCaaMeta.mat';
-if isempty(s), % first usage 
+if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
+	indexFile = 'indexCaaMeta.mat'; % default file name
 	if ~exist(indexFile,'file');
-		indexFile = [];
-		p=tokenize(path,':');
-		for j=1:numel(p),
-			if exist([p{j} filesep 'indexCaaMeta.mat'],'file'),
-				indexFile = [p{j} filesep 'indexCaaMeta.mat'];
-			end
-		end
-		if isempty(indexFile)
-			disp('You do not have indexCaaMat.mat file!')
-			disp('Please download it to some directory on your matlab path!');
-			disp('<a href="http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat">http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat</a>');
-			return
-		end
+		indexFile = irf.get_file(linkUrlFile,'caa','indexCaaMetaFile');
 	end
 end
+
 if nargin==0,
 	help local.c_caa_meta;
 	return;
@@ -48,7 +37,7 @@ end
 if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	irf_log('fcal','Creating structures');
 	d = dir('./*.XML');
-	isub = [d(:).isdir]; %# returns logical vector
+	isub = [d(:).isdir]; 
 	d(isub)=[];
 	nameFiles = {d.name}';
 	delme=[];
@@ -78,6 +67,7 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 elseif 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
 	varName=varargin{1};
 	dd=regexp(varName, '__', 'split');
+	dd{2}(strfind(dd{2},'-')) = '_';	
 	load(indexFile,['meta_' dd{2}]);
 	eval(['metaData=meta_' dd{2} ';']);
 	par=metaData.PARAMETERS.PARAMETER;
@@ -106,10 +96,10 @@ else
 	if sum(iSelected)>0
 		if nargout == 1,
 			if sum(iSelected)==1
-				load('index',metaNames{iSelected});
+				load(indexFile,metaNames{iSelected});
 				eval(['out = ' metaNames{iSelected} ';']);
 			elseif any(iEqual)
-				load('index',metaNames{iEqual});
+				load(indexFile,metaNames{iEqual});
 				eval(['out = ' metaNames{iEqual} ';']);
 			else
 				disp('Output not assigned. There are several choices:');
@@ -126,32 +116,62 @@ else
 			end
 			s=load(indexFile,metaNames{ind});
 			fn=fieldnames(s);
-			dataSet=getfield(s,fn{1});
+			dataSet=s.(fn{1});
 			try
 				display_fields(dataSet);
 				parameters=dataSet.PARAMETERS.PARAMETER;
 				disp('PARAMETERS:');
 				for j=1:numel(parameters),
-					disp([num2str(j) '. ' parameters{j}.PARAMETER_ID.Text])
+					disp([num2str(j) '. ' mat_output(parameters{j}.PARAMETER_ID.Text)]);
 				end
 			catch
-			end	
+			end
 			disp(' ');
 		end
 		if sum(iSelected) > 1,
 			disp('----');
 			disp([num2str(sum(iSelected)) ' datasets correspond selection']);
-			disp(vertcat(datasetNames(iSelected)));
+			cellfun(@(x) fprintf('%s\n',x),vertcat(mat_output(datasetNames(iSelected),1)), 'UniformOutput',false);
 			return;
 		end
-
+		
 	end
 end
+end
+%% Functions
 function display_fields(dataSet)
+disp(' ');
 fn=fieldnames(dataSet);
 for j=1:numel(fn)
 	if isfield(dataSet.(fn{j}),'Text'),
-		disp([fn{j} ': ' dataSet.(fn{j}).Text]);
+		if strfind(dataSet.(fn{j}).Text,' ') % text includes many words
+			disp([fn{j} ': ' dataSet.(fn{j}).Text]);
+		else
+			disp([fn{j} ': ' mat_output(dataSet.(fn{j}).Text)]);
+		end
 	end
+end
+end
+function outStr=mat_output(inStr,forceFlag)
+% if string is caa variable output link
+% if forceFlag defined and equal to one, force matlab linked output
+if nargin == 1, 
+	forceFlag = false;
+end
+if ~forceFlag && any(strfind(inStr,'__')),
+	forceFlag = true;
+end
+
+if forceFlag,
+	if ischar(inStr)
+		outStr=['<a href="matlab: c_caa_meta ' ...
+			inStr '">' inStr '</a>' ];
+	elseif iscell(inStr)
+		outStr = cellfun(@(x) ['<a href="matlab: c_caa_meta ' ...
+			x '">' x '</a>' ],inStr, 'UniformOutput',false);
+	end
+else
+	outStr=inStr;
+end
 end
 

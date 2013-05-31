@@ -57,19 +57,24 @@ The present ns ops list can also be viewed at http://www.cluster.irfu.se/efw/ops
 Matlab accesses a text version of this on db when processing the data.
 
 1. Check through ns_ops.xml (git controlled at irfu-matlab/caa/caa-control/), and make sure it's complete and OK.
-    a) Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related problems, and add any required to the list. In particular, some of the times are only approximate, and will need to be made more accurate. The most recent messages are at https://lists.shef.ac.uk/sympa/info/wec-ops . You'll need a password and also need to be a member of the mailing list to view the page. Older messages are at http://www.acse.shef.ac.uk/wec-ops/mail/ . Look in the directory for the appropriate subdirectory (labeled by most recent message as mail_YYMMDD). Within the subdirectory, open the file maillist.html or threads.html. Sometimes you need to sort by thread instead of date if you want to see all the messages.
-2. Edit the XML table locally, then commit to git.
-3. Update at hq:
-     cd /home/chris/devel/irfu-matlab/caa/caa-control
-     git pull
-     make all
-     make txt
-     git commit ns_ops_c?.dat
-     git push origin master
-     ssh hq 'cd /home/www/cluster/efw/ops; cvs up;' (What to do? Only a subdir of irfu-matlab and no git on hq yet)
-     ssh db 'cd /data/cluster/irfu-matlab; git pull'
+   Look through the WEC mail archive at http://www.acse.shef.ac.uk/wec-ops/ (wec, xdwp3000) for EFW-related
+   problems, and add any required to the list. In particular, some of the times are only approximate, and
+   will need to be made more accurate. The most recent messages are at https://lists.shef.ac.uk/sympa/info/wec-ops.
+   You'll need a password and also need to be a member of the mailing list to view the page. Older messages are
+   at http://www.acse.shef.ac.uk/wec-ops/mail/ . Look in the directory for the appropriate subdirectory (labeled
+   by most recent message as mail_YYMMDD). Within the subdirectory, open the file maillist.html or threads.html.
+   Sometimes you need to sort by thread instead of date if you want to see all the messages.
 
-4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops'). To force the runners to reload, either restart them all, or just run a pkill on all the MATLAB sessions:
+2. Edit the XML table locally in irfu-matlab/caa/caa-control, do a make to check and then commit ns_ops.xml to git.
+
+3. Update on db:
+     ssh db
+     cd /data/cluster/irfu-matlab/caa/caa-control
+     git pull
+     make
+
+4. Either restart Matlab to force the table to be reloaded, or do it manually with c_ctl('load_ns_ops').
+   To force the runners to reload, either restart them all, or just run a pkill on all the MATLAB sessions:
      ssh caa 'sudo pkill -9 MATLAB'
      ssh spis (Then kill all MATLAB processes for user caa using htop)
 

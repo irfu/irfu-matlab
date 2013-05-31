@@ -1,15 +1,9 @@
-function export(tint,cl_id, freqRange, timeVector,...
-    BB_xxyyzz_fac,EESum_xxyy_isr2,EE_xxyyzz_fac,...
-    Poynting_rThetaPhi_fac,k_thphSVD_fac,polSVD_fac,ellipticity)
+function export(ebsp,tint,cl_id,freqRange)
 %EXPORT  Export data to CEF
 %
-% export( tint, cl_id, freqRange, timeVector,BB_xxyyzz_fac,...
-%          EESum_xxyy_isr2,EE_xxyyzz_fac,Poynting_rThetaPhi_fac,...
-%          k_thphSVD_fac,polSVD_fac,ellipticity)
+% export( ebsp, tint, cl_id, freqRange)
 %
 % Will create a gzipped CEF file in the current directory
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -25,6 +19,7 @@ DATASET_VERSION = '0';
 DATA_VERSION = '00';
 
 %% Check the input
+if ~ebsp.flagFac, error('EBSP must be in FAC'), end
 switch lower(freqRange)
     case 'pc12'
         %DT2 = 0.5; % time resolution
@@ -37,51 +32,52 @@ switch lower(freqRange)
     otherwise
         error('freqRange must be ''pc12'' or ''pc35''')
 end
-
-nFreq = size(BB_xxyyzz_fac,2);
-nData = size(BB_xxyyzz_fac,1);
+nFreq = length(ebsp.f); nData = length(ebsp.t);
 if nFreq~=numberOfFreq
-    error('number of frequencies in BB_xxyyzz_fac must be %d (not %d!)',...
+    error('number of frequencies in ebsp.f must be %d (not %d!)',...
         numberOfFreq,nFreq)
 end
-if length(timeVector)~=nData
-    error(...
-        'Different number of records in timeVector and BB_xxyyzz_fac (%d!=%d!)',...
-        length(timeVector),nData)
-end
-% TODO: add more checks
 
 %% Prepare data array
+% B0
+if isempty(ebsp.fullB), magB = ebsp.B0; else magB = ebsp.fullB; end
+magB = irf_abs(magB); magB = magB(:,[1 4]); magB = irf_resamp(magB,ebsp.t);
+
 % convert radians to degrees
 toD = 180.0/pi;
-k_thphSVD_fac(:,:,1:2) = k_thphSVD_fac(:,:,1:2)*toD;
-Poynting_rThetaPhi_fac(:,:,2:3) = Poynting_rThetaPhi_fac(:,:,2:3)*toD;
+ebsp.k_tp(:,:,1:2) = ebsp.k_tp(:,:,1:2)*toD;
+ebsp.pf_rtp(:,:,2:3) = ebsp.pf_rtp(:,:,2:3)*toD;
 
 % fliplr to make frequencies ascending
-k_thphSVD_fac(:,:,1) = fliplr(k_thphSVD_fac(:,:,1));
-k_thphSVD_fac(:,:,2) = fliplr(k_thphSVD_fac(:,:,2));
-ellipticity = fliplr(ellipticity);
-polSVD_fac = fliplr(polSVD_fac);
-Poynting_rThetaPhi_fac(:,:,1) = fliplr(Poynting_rThetaPhi_fac(:,:,1));
-Poynting_rThetaPhi_fac(:,:,2) = fliplr(Poynting_rThetaPhi_fac(:,:,2));
-Poynting_rThetaPhi_fac(:,:,3) = fliplr(Poynting_rThetaPhi_fac(:,:,3));
-EESum_xxyy_isr2 = fliplr(EESum_xxyy_isr2);
+ebsp.k_tp(:,:,1) = fliplr(ebsp.k_tp(:,:,1));
+ebsp.k_tp(:,:,2) = fliplr(ebsp.k_tp(:,:,2));
+ebsp.ellipticity = fliplr(ebsp.ellipticity);
+ebsp.planarity = fliplr(ebsp.planarity);
+ebsp.dop = fliplr(ebsp.dop);
+ebsp.dop2d = fliplr(ebsp.dop2d);
+ebsp.pf_rtp(:,:,1) = fliplr(ebsp.pf_rtp(:,:,1));
+ebsp.pf_rtp(:,:,2) = fliplr(ebsp.pf_rtp(:,:,2));
+ebsp.pf_rtp(:,:,3) = fliplr(ebsp.pf_rtp(:,:,3));
+ebsp.ee_ss = fliplr(ebsp.ee_ss);
 
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
 FILLVAL_EXP        = -1.00E+31;
 
-k_thphSVD_fac(isnan(k_thphSVD_fac)) = FILLVAL;
-ellipticity(isnan(ellipticity)) = FILLVAL;
-polSVD_fac(isnan(polSVD_fac)) = FILLVAL;
-Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac(:,:,1))) = FILLVAL_EXP;
-Poynting_rThetaPhi_fac(isnan(Poynting_rThetaPhi_fac)) = FILLVAL;
-EESum_xxyy_isr2(isnan(EESum_xxyy_isr2)) = FILLVAL_EXP;
-BB_xxyyzz_fac(isnan(BB_xxyyzz_fac)) = FILLVAL_EXP;
+ebsp.k_tp(isnan(ebsp.k_tp)) = FILLVAL;
+ebsp.ellipticity(isnan(ebsp.ellipticity)) = FILLVAL;
+ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
+ebsp.dop(isnan(ebsp.dop)) = FILLVAL;
+ebsp.dop2d(isnan(ebsp.dop2d)) = FILLVAL;
+ebsp.pf_rtp(isnan(ebsp.pf_rtp(:,:,1))) = FILLVAL_EXP;
+ebsp.pf_rtp(isnan(ebsp.pf_rtp)) = FILLVAL;
+magB(isnan(magB)) = FILLVAL_EXP;
+ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
+ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
 % Reformat B matrix and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3
-    BB_2D(:,((1:nFreq)-1)*3+comp) = fliplr(BB_xxyyzz_fac(:,:,comp)); 
+    BB_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.bb_xxyyzzss(:,:,comp)); 
 end
 
 % Define formats for output
@@ -89,31 +85,35 @@ formatExp = '%9.2e,'; % Amplitudes
 formatAng = '%6.0f,'; % Angles - integer values
 formatDeg = '%6.1f,'; % Degree of ... -1..1 or 0..1
 
+% NOTE: This list must be consistent with the CEF header file
 dataToExport = {...
-    {formatExp, BB_2D},...                         % BB_xxyyzz_fac
-    {formatAng, k_thphSVD_fac(:,:,1)},...          % THSVD_fac
-    {formatAng, k_thphSVD_fac(:,:,2)},...          % PHSVD_fac
-    {formatDeg, ellipticity},...                   % ELLSVD
-    {formatDeg, polSVD_fac},...                    % POLSVD
-    {formatExp, Poynting_rThetaPhi_fac(:,:,1)},... % AMPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,2)},... % THPV
-    {formatAng, Poynting_rThetaPhi_fac(:,:,3)},... % PHPV
-    {formatExp, EESum_xxyy_isr2}                   % ESUM
+    {formatExp, BB_2D},...              % BB_xxyyzz_fac
+    {formatAng, ebsp.k_tp(:,:,1)},...   % THSVD_fac
+    {formatAng, ebsp.k_tp(:,:,2)},...   % PHSVD_fac
+    {formatDeg, ebsp.ellipticity},...   % ELLSVD
+    {formatDeg, ebsp.planarity},...     % PLANSVD
+    {formatDeg, ebsp.dop},...           % DOP
+    {formatDeg, ebsp.dop2d},...         % POLSVD
+    {formatExp, ebsp.pf_rtp(:,:,1)},... % AMPV
+    {formatAng, ebsp.pf_rtp(:,:,2)},... % THPV
+    {formatAng, ebsp.pf_rtp(:,:,3)},... % PHPV
+    {formatExp, ebsp.ee_ss},...         % ESUM
+    {formatExp, magB}                   % BMAG
     };
 
 % For Pc3-5 we also add E spectrum in FAC
 if strcmpi(freqRange,'pc35')
-    EE_xxyyzz_fac(isnan(EE_xxyyzz_fac)) = FILLVAL_EXP;
+    ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
     % Reformat E matrix and fliplr to make frequencies ascending
     EE_2D = zeros(nData,nFreq*3);
     for comp=1:3
-        EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(EE_xxyyzz_fac(:,:,comp)); 
+        EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp)); 
     end
     dataToExport = [dataToExport {{formatExp, EE_2D}}]; % EE_xxyyzz_fac
 end
     
 % Time array goes first
-out_CharArray = epoch2iso(timeVector,1); % Short ISO format: 2007-01-03T16:00:00.000Z
+out_CharArray = epoch2iso(ebsp.t,1); % Short ISO format: 2007-01-03T16:00:00.000Z
 out_CharArray(:,end+1)=',';
 
 % Write out data by columns and then combine into a common char matrix
@@ -163,7 +163,7 @@ header = [...
 %% Write the file
 if 0
     % Write to plain CEF
-    f = fopen([fileName '.cef'],'w');
+    f = fopen([fileName '.cef'],'w'); %#ok<UNRCH>
     fwrite(f,header);
     fwrite(f,out_CharArray);
     fwrite(f,sprintf('END_OF_DATA\n'));

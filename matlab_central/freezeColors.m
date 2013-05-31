@@ -231,6 +231,7 @@ function [h, nancolor] = checkArgs(args)
 
 nargs = length(args);
 error(nargchk(0,3,nargs,'struct'))
+nancolor = [nan nan nan];
 
 %grab handle from first argument if we have an odd number of arguments
 if mod(nargs,2),
@@ -257,7 +258,6 @@ else
 end
 
 %set nancolor if that option was specified
-nancolor = [nan nan nan];
 if nargs == 2,
     if strcmpi(args{end-1},'nancolor'),
         nancolor = args{end};

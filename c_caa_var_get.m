@@ -139,10 +139,9 @@ for j=1:length(varargin),
 			ttt = local.c_read(var_name,tint,'caa');
 			if isempty(ttt),
 				irf_log('dsrc','NO DATA in repository!');
-			else
-				jloaded = jloaded + 1;
-				res{jloaded} = ttt;
-			end
+            end
+            jloaded = jloaded + 1;
+            res{jloaded} = ttt;
 		else
 			res{jloaded}=getv(dataobject,var_name);
 		end
@@ -152,11 +151,10 @@ for j=1:length(varargin),
 			ttt = local.c_read(var_name,tint,'mat');
 			if isempty(ttt),
 				irf_log('dsrc','NO DATA in repository!');
-			else
-				jloaded = jloaded + 1;
-				resmat{jloaded} = ttt;
 			end
-		else
+			jloaded = jloaded + 1;
+            resmat{jloaded} = ttt;
+        else
 			resmat{jloaded}=getmat(dataobject,var_name);
 		end
     end
@@ -168,10 +166,9 @@ for j=1:length(varargin),
 		ttt = local.c_read(var_name,tint,'dobj');
 		if isempty(ttt),
 		  irf_log('dsrc','NO DATA in repository!');
-		else
-		  jloaded = jloaded + 1;
-		  resdataobject{jloaded} = ttt;
 		end
+		jloaded = jloaded + 1;
+		resdataobject{jloaded} = ttt;
 	  else
       	resdataobject{jloaded}=dataobject; 
 	  end

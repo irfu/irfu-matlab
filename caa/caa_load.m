@@ -25,8 +25,6 @@ function caa_load(varargin)
 %   tint=[irf_time([2007 9 2 14 25 0]) irf_time([2007 9 2 18 40 0])];
 %   caa_load('C1_CP_FGM','tint',tint);
 %   caa_load FGM list;
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -87,7 +85,7 @@ end
 
 nloaded = 0;
 for j = 1:numel(dirs)
-  if regexp(dirs(j).name,'^C[1-4,L]_(C|J|P|S)(P|Q)_')
+  if regexp(dirs(j).name,'^C[1-4,L]_(C|J|P|S)(P|Q|T)_')
     var_name = dirs(j).name;
     var_name(strfind(var_name,'-'))='_'; % substitute '-' to '_'
     flag_load_variable=1;
