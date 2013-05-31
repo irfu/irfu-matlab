@@ -1,16 +1,24 @@
 function out=irf(varargin)
 % IRF general info on irfu-matlab
 %
-% to obtain general help on IRFU matlab routines run "irf" or
-%  >> help irfu-matlab
+% IRF runs basic tests
 %
-% out = irf('check') check if using latest version of irfu-matlab
+% irf('help')
+% help irfu-matlab
+%		show general help on irfu-matlab.
+%
+% [out] = irf('check') check if using latest version of irfu-matlab
 %	out is logical true if using latest and false if not. 
 %
+% [out] = irf('mice') check if spice/mice routines are installed properly
+% and if necessary add to the path. run irf('mice_help') if you want to see
+% more help on mice kernels. 
+% more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
+% 
 
 if nargin == 0,
 	irf('check');
-	help irfu-matlab;
+	irf('mice');
 	return;
 else
 	if ischar(varargin{1}),
@@ -25,6 +33,8 @@ logFileUrl = 'http://www.space.irfu.se/~andris/irfu-matlab/log.txt';
 switch action
 	case 'demo'
 		echodemo irfdemo
+	case 'help'
+		help irfu-matlab
 	case 'version'
 		fid=fopen(log_file);
         tline = fgetl(fid);
@@ -35,6 +45,37 @@ switch action
 		else
 			out = versionTime;
 		end
+	case 'mice'
+		if exist('cspice_j2000','file') % mice is installed
+			if (cspice_j2000 == 2451545),
+				disp('SPICE/MICE is installed and working properly');
+				if nargout, out=true; end
+				return;
+			else
+				disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
+				if nargout, out=false; end
+				return;
+			end
+		else
+			disp('adding MICE path to matlab');
+			addpath([irf('path') filesep  'mice']);
+			ok=irf('mice');
+			if ~ok, 
+				disp('There are mice problems. Please, contact irfu!');
+			end
+		end
+	case ('mice_help')
+		disp('Kernel files at IRFU are located at spis:/share/SPICE');
+		disp('Kernels at irfu: general, Cassini, Rosetta, Solar Orbiter, JUICE');
+		disp('');
+		disp('At other locations if you want to get kernel files, create directory and run:');
+		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *a_old_versions* ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels');
+		disp('This will download all the latest versions of necessary general kernels.');
+		disp('If you want for example get all Rosetta kernels, execute:');
+		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
+		disp('');
+	case('path')
+			out = fileparts(which('irf.m'));	
 	case 'check'
 		fprintf('Checking if you have latest irfu-matlab...');
 		try

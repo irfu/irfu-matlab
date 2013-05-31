@@ -1,14 +1,16 @@
 function c_eval(ev_str,sc_list_1,sc_list_2)
-%C_EVAL evaluate expression for list of spacecraft
+%C_EVAL evaluate expression for lists of values
+%	most often used when different variables need to be constructed 
+%	for different spacecraft. 
 %
 % c_eval(ev_str,[sc_list_1],[sc_list_2])
 %
 % Input:
 % ev_str - string to evaluate.
-% '?' sign in ev_str is replaced by SC number from sc_list_1
-% '!' sign in ev_str is replaced by SC number from sc_list_2
-% sc_list - list of SC [optional], 1:4 is assumed when not given
-%           sc_list can be also cell vector
+% '?' sign in ev_str is replaced by values from list sc_list_1
+% '!' sign in ev_str is replaced by values from list sc_list_2
+% sc_list_1,sc_list_2 - list of values, when omitted then put to [1 2 3 4].
+%           sc_list can be also cell vector, e.g. {'a','b','c'}
 % 
 % Example:
 %   c_eval('R?=r?;C?=R?.^2;',2:4)
@@ -23,9 +25,6 @@ function c_eval(ev_str,sc_list_1,sc_list_2)
 %
 % See also IRF_SSUB, EVALIN
 
-% $Id$
-% Copyright 2004 Yuri Khotyaintsev
-
 if nargin==0,
     help c_eval;
 elseif nargin==1,
@@ -33,8 +32,8 @@ elseif nargin==1,
     sc_list_2=1:4;
 elseif nargin==2,
     sc_list_2=1:4;
-else
-	irf_log('fcal','cannot be more than 2 input arguments')
+elseif nargin > 3
+	irf_log('fcal','cannot be more than 3 input arguments')
 	return
 end
 
