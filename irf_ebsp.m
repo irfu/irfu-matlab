@@ -202,17 +202,17 @@ inTime = dB(:,1);
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
 if flag_want_fac
-    res.flagFac = 1;
-	if wantEE
-		if ~flag_dEdotB0
-			eISR2=e(:,1:3);
-			if size(e,2)<4
-				error('E must be a 3D vector to be rotated to FAC')
+  res.flagFac = 1;
+  if wantEE
+    if ~flag_dEdotB0
+      eISR2=e(:,1:3);
+      if size(e,2)<4
+        error('E must be a 3D vector to be rotated to FAC')
       end
       e=irf_convert_fac(e,B0,xyz);
     end
-	end
-	dB = irf_convert_fac(dB,B0,xyz);
+  end
+  dB = irf_convert_fac(dB,B0,xyz);
 end
 
 %% Find the frequencies for an FFT of all data and set important parameters

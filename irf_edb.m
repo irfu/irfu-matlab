@@ -40,7 +40,7 @@ if size(b,1) ~= size(e,1),
 end
 
 if le < 2
-    disp('E has not enough components');return;
+    error('E has not enough components');return;
 elseif le == 2
     ed=[e(:,1) e(:,2) e(:,1)*defaultValue];
 elseif le == 3
