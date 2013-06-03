@@ -26,11 +26,10 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     t           - Time
 %     f           - Frequency
 %     bb          - B power spectrum (xx, yy, zz)
-%     eesum       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
+%     ee_ss       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
 %     ee          - E power spectrum (xx, yy, zz)
 %     pf_xyz      - Poynting flux (xyz)
-%     pf_fac      - Poynting flux (r, theta, phi)
-%     pf_par      - Poynting flux || B
+%     pf_rtp      - Poynting flux (r, theta, phi)
 %     dop         - 3D degree of polarization
 %     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
