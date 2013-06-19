@@ -184,14 +184,20 @@ end
 					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
 					if useCdfepoch16,
 						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
-						tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
-						timeVector=irf_time(tmptime,'cdfepoch162epoch');
+						tName  = cdflib.getVarName(cdfid,0);
+						tData = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
+						if numel(size(tData)) == 3,
+							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+						else
+							tcdfepoch = tData; % cdfread returns (Nsamples X 2) matrix
+						end
+						timeVector=irf_time(tcdfepoch,'cdfepoch162epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
                             tmpdata{iVar}=cdfread(cdf_file,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
-						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
+						tmpdata = [{timeVector} tmpdata]; %
                     else
                         % remove time variable as it is already read in
                         ii=numel(varToRead);
