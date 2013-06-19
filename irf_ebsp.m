@@ -492,7 +492,7 @@ if wantEE
     res.pf_rtp = Poynting_RThPh;
 end
 
-if wantPolarization,    
+if wantPolarization
     % Define parameters for which we cannot compute the wave vector
     indLowPlanarity = planarity < 0.5;
     indLowEllipticity = abs(ellipticity) < .2;
