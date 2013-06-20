@@ -252,7 +252,7 @@ if nargout, out = h; end % Return here
         if ~strfind(paramStr,'k')
           caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
         else
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
         end
         flagCmapPoy = 1; 
       otherwise
