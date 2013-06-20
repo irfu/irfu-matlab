@@ -19,9 +19,22 @@ function out=c_caa_meta(varargin)
 
 %	c_caa_meta('create') create file with all structures
 
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+disp('PLEASE USE CAA_META')
+disp('It has newer & updated meta data index')
+disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+
+%% Defaults and variables
 persistent s metaNames datasetNames indexFile
 linkUrlFile = 'http://www.space.irfu.se/cluster/matlab/indexCaaMeta.mat';
 
+%% empty arguments > show help
+if nargin==0,
+	help c_caa_meta;
+	return;
+end
+	
+%% Locating index file
 if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
 	indexFile = 'indexCaaMeta.mat'; % default file name
 	if ~exist(indexFile,'file');
@@ -29,42 +42,8 @@ if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
 	end
 end
 
-if nargin==0,
-	help local.c_caa_meta;
-	return;
-end
 
-if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
-	irf_log('fcal','Creating structures');
-	d = dir('./*.XML');
-	isub = [d(:).isdir]; 
-	d(isub)=[];
-	nameFiles = {d.name}';
-	delme=[];
-	save -v7 index delme;
-	for iFile=1:numel(nameFiles)
-		fileName=nameFiles{iFile};
-		if fileName(1)==' ', disp(['Starts with space:' fileName]);continue;end % in case space in beginning of filename
-		nameDataset=fileName(1:find(fileName=='.',1)-1);
-		nameDataset(strfind(nameDataset,'-')) = '_';
-		disp(nameDataset);
-		try
-			s=xml2struct(fileName);
-		catch
-			irf_log('dsrc','Error reading!');
-			continue;
-		end
-		if isfield(s,'DATASETS'),
-			s=s.DATASETS;
-		end
-		if isfield(s,'DATASET_METADATA'),
-			s=s.DATASET_METADATA;
-		end
-		eval(['meta_' nameDataset '=s;']);
-		%			save(['meta_' nameDataset],'-v7',['meta_' nameDataset]);
-		save('index',['meta_' nameDataset],'-append');
-	end
-elseif 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
+if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
 	varName=varargin{1};
 	dd=regexp(varName, '__', 'split');
 	dd{2}(strfind(dd{2},'-')) = '_';	

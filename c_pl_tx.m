@@ -8,6 +8,7 @@ function out=c_pl_tx(varargin)
 % C_PL_TX(...,'sc_list',sc_list) specify list of spacecraft to plot
 % H=C_PL_TX(..) return handle to plot
 % C_PL_TX(AX,...) plot in the specified axis
+% C_PL_TX(X) where X is structure plots fields X.C1, X.C2, X.C3, X.C4
 %
 %   column - gives which column to plot. All columns will be plotted
 %            in separate panels if set to empty string or ommited.
@@ -31,8 +32,6 @@ function out=c_pl_tx(varargin)
 %      % linestyles for each sc
 %
 % See also IRF_PLOT, PLOT
-%
-% $Id$
 
 [ax,args,nargs] = axescheck(varargin{:});
 if isempty(ax), % if empty axes
@@ -56,7 +55,17 @@ if ischar(args{1})
     % Variables defined in form 'B?'
     getVariablesFromCaller = true;
     variableNameInCaller   = args{1};
-    args = args(2:end);
+    args(1) = [];
+elseif isstruct(args{1}) % format vector.C1, vector.C2,...
+	for cc = '1':'4'
+		if isfield(args{1},['C' cc])
+			eval(['x' cc '= args{1}.C' cc ';']);
+		else
+			eval(['x' cc '=[];']);
+		end
+	end
+    args(1) = [];	
+    getVariablesFromCaller = false;	
 else
     % Variables given as 4 input paramters
     if length(args)<4, error('use c_pl_tx(x1,x2,x3,x4) or c_pl_tx(''x?'')'), end

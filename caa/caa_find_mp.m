@@ -68,7 +68,10 @@ irf_log('proc',['X>0, R>7R_E: ' epoch2iso(start_time,1) ' -- ' ...
 		epoch2iso(start_time+dt,1)])
 
 % Fetch ACE data
-ISTP_PATH = '/data/istp';
+if ismac,  ISTP_PATH = '/Volumes/istp';
+else ISTP_PATH = '/data/istp';
+end
+
 ace_B = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'b');
 ace_V = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'v');
 ace_N = irf_istp_get(ISTP_PATH, start_time -120*60, dt +240*60, sc_source, 'n');
@@ -144,7 +147,7 @@ for t=st:1800:st+dt
 			
 	r_gsm = irf_gse2gsm([t r_tmp]);
 	r_gsm(2:4) = r_gsm(2:4)/R_E;
-	r_mp = irf_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2)); 
+	r_mp = r_shue_mp(r_gsm, bz_tmp, nv2press(n_tmp,vx_tmp^2)); 
 	%irf_log('proc',['r: ' num2str(r_gsm(2:4),'%.2f %.2f %.2f') ...
 	%		' mp:' num2str(r_mp,'%.2f') ' Re'])
 			
@@ -199,3 +202,40 @@ v2 = v2(:);
 % p=nmv^2 ;-)
 res = 1.6726*1e-6*v2.*n;
 return
+
+function r_mp = r_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
+%IRF_SHUE_MP  estimate distance to model(Shue) magnetopause
+%
+%  r_mp_Re = irf_shue_mp(pos_Re_gsm, bz_nT, swp_nPa)
+%
+% Input:
+%		pos_Re_gsm - GSM position in Re (3 or 4 components)
+%		bz_nT      - IMF Bz in nT
+%		swp_nPa    - Solar wind dynamic pressure in nPa
+%
+% References:
+%		Shue et. al., A new functional form to study the solar
+% 		wind control of the magnetopause size ans shape,
+%		JGR, 102, p.9497, 1997.
+%
+% See also IRF_GSE2GSM
+
+% Copyright 2006 Yuri Khotyaintsev
+
+if size(pos_Re_gsm,2)>3, pos_Re_gsm = pos_Re_gsm(:,2:4); end
+
+% Shue et. al., Eq. 13
+alpha = ( 0.58 -0.01*bz_nT )*( 1.0 +0.01*swp_nPa );
+
+% Shue et. al., Eq. 12
+if bz_nT>=0, r0 = ( 11.4 +0.013*bz_nT )*swp_nPa^( -1.0/6.6 );
+else         r0 = ( 11.4 +0.140*bz_nT )*swp_nPa^( -1.0/6.6 );
+end
+
+r = irf_abs(pos_Re_gsm,1);
+cosTheta = pos_Re_gsm(:,1)./r;
+% Shue et. al., Eq. 1
+r_mp = r0 *( 2.0./( 1.0 +cosTheta )).^alpha - r;
+
+return
+

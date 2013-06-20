@@ -2,8 +2,6 @@ function caa_sh_3h_int(st,et)
 %CAA_SH_3H_INT  create common 3h intervals
 %
 % caa_sh_3h_int(st,et)
-%
-% $Id$
 
 if ischar(st), st = iso2epoch(st); end
 if ischar(et), et = iso2epoch(et); end

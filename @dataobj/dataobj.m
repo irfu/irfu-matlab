@@ -85,6 +85,7 @@ switch action
 				if usingCdfepoch16
 					timeline = convert_cdfepoch16_string_to_isdat_epoch(data{1});
 				else
+					data{1}(data{1}==0)=NaN; % fillvalue timeline
 					timeline = irf_time(data{1},'cdfepoch2epoch');
                     timeline = timeline(:); % bug fix for cdfread (time comes out as row vector)
 				end
