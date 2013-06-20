@@ -389,9 +389,12 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       end
       
       %% compute direction of propogation
+      signKz = sign(V(3,3,:));
+      V(3,3,:) = V(3,3,:).*signKz; 
+      V(2,3,:) = V(2,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
-          squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:)));
-      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
+          abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
+      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));%-squeeze(pi*(V(3,3,:)<0));
       
       %% Calculate polarization parameters 
       planarityLocal = squeeze(1 - sqrt(W(3,3,:)./W(1,1,:)));
@@ -403,6 +406,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           squeeze(W(2,2,:)./W(1,1,:)).*sign(imag(avSM(:,1,2))); 
       ellipticityLocal(censurIdx) = NaN;
       ellipticity(:,ind_a) = ellipticityLocal;
+
       
       % DOP = sqrt[(3/2.*trace(SM^2)./(trace(SM))^2 - 1/2)]; Samson, 1973, JGR
       dop = sqrt((3/2*(...
@@ -424,10 +428,10 @@ parfor ind_a=1:length(a), % Main loop over frequencies
 		  ((avSM(:,1,1)+avSM(:,2,2)).^2) - 1));
 	  dop2dim(censurIdx) = NaN;
 	  degreeOfPolarization2D(:,ind_a) = dop2dim;
+      
    end % wantPolarization
 end % main loop
 fprintf('Done.\n');
-
 %% set data gaps to NaN and remove edge effects
 censur = floor(2*a);
 for ind_a=1:length(a)
