@@ -20,7 +20,7 @@ function c_ulf_process(tint,cl_id,freqRange)
 % This software was developed as part of the MAARBLE (Monitoring,
 % Analyzing and Assessing Radiation Belt Energization and Loss)
 % collaborative research project which has received funding from the
-% European Community's Seventh Framework Programme (FP7-SPACE-2010-1)
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
 % under grant agreement n. 284520.
 
 if nargin < 1

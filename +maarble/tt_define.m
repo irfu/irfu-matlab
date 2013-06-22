@@ -3,6 +3,11 @@
 % 3 RE< R <10 RE 
 % magnetic latitudes limited to 60 deg (to avoid the auroral zone).
 %
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
 
 Units=irf_units;
 tintIso='2001-01-01T00:00:00.000Z/2012-01-01T00:00:00.000Z';

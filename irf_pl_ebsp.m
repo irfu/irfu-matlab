@@ -46,6 +46,13 @@ function out = irf_pl_ebsp(ebsp,params)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+%
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
+
 flagCmap = 0;
 
 %% Main function
