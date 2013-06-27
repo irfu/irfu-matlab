@@ -105,6 +105,7 @@ if flag_want_fac
 	end
 end
 B0 = irf_resamp(B0,dB);
+xyz = irf_resamp(xyz,dB);
 if flag_fullB_dB
     fullB = dB;
     res.fullB = fullB;
@@ -193,7 +194,7 @@ end
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
-%	xyz=xyz(1:end-1,:);
+	xyz=xyz(1:end-1,:);
 end
 inTime = dB(:,1);
 
@@ -312,7 +313,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           rWe = real(We); iWe = imag(We);
           wEz = -(rWe(:,1).*Bx+rWe(:,2).*By)./Bz-...
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
-          wEz(idxBparSpinPlane) = NaN;
+          wEz(idxBparSpinPlane(1,:)) = NaN;
           if flag_want_fac
               We = irf_convert_fac([B0(:,1) We(:,1:2) wEz],B0,xyz); 
               We(:,1) = [];
@@ -394,7 +395,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       V(2,3,:) = V(2,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
           abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
-      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));%-squeeze(pi*(V(3,3,:)<0));
+      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
       
       %% Calculate polarization parameters 
       planarityLocal = squeeze(1 - sqrt(W(3,3,:)./W(1,1,:)));
