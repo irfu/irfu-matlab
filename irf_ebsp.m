@@ -56,6 +56,12 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %
 %  See also: IRF_PL_EBSP
 
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
+
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
@@ -497,7 +503,7 @@ if wantEE
     res.pf_rtp = Poynting_RThPh;
 end
 
-if wantPolarization,    
+if wantPolarization
     % Define parameters for which we cannot compute the wave vector
     indLowPlanarity = planarity < 0.5;
     indLowEllipticity = abs(ellipticity) < .2;
