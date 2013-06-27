@@ -202,7 +202,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	B0=B0(1:end-1,:);
 	xyz=xyz(1:end-1,:);
 end
-inTime = dB(:,1);
+inTime = dB(:,1); timeB0 = B0(:,1);
 
 % If E has all three components, transform E and B waveforms to a 
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
@@ -319,9 +319,9 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           rWe = real(We); iWe = imag(We);
           wEz = -(rWe(:,1).*Bx+rWe(:,2).*By)./Bz-...
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
-          wEz(idxBparSpinPlane(1,:)) = NaN;
+          wEz(idxBparSpinPlane) = NaN;
           if flag_want_fac
-              We = irf_convert_fac([B0(:,1) We(:,1:2) wEz],B0,xyz); 
+              We = irf_convert_fac([timeB0 We(:,1:2) wEz],B0,xyz); 
               We(:,1) = [];
           end
       end
