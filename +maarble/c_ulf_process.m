@@ -145,6 +145,7 @@ if wantPC35
     print('-dpng',['MAARBLE_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
+    export(ebsp,tint,cl_id,freqRange)
   end
 end
 if wantPC12
@@ -170,6 +171,7 @@ if wantPC12
     close(gcf)
   end
   if exportFlag
+    export(ebsp,tint,cl_id,freqRange)
   end
 end
 if ~wantPC35 && ~wantPC12
