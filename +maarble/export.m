@@ -79,7 +79,7 @@ ebsp.pf_rtp(isnan(ebsp.pf_rtp)) = FILLVAL;
 magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
 ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
-ebsp.ee_ss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
+ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
 % Reformat matrices/vectors and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3
