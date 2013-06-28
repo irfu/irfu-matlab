@@ -47,24 +47,13 @@ end
 %% Prepare data array
 % B0
 if isempty(ebsp.fullB), magB = ebsp.B0; else magB = ebsp.fullB; end
-magB = irf_abs(magB); magB = magB(:,[1 4]); magB = irf_resamp(magB,ebsp.t);
+magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
+magB = magB(:,2);
 
 % convert radians to degrees
 toD = 180.0/pi;
 ebsp.k_tp(:,:,1:2) = ebsp.k_tp(:,:,1:2)*toD;
 ebsp.pf_rtp(:,:,2:3) = ebsp.pf_rtp(:,:,2:3)*toD;
-
-% fliplr to make frequencies ascending
-ebsp.k_tp(:,:,1) = fliplr(ebsp.k_tp(:,:,1));
-ebsp.k_tp(:,:,2) = fliplr(ebsp.k_tp(:,:,2));
-ebsp.ellipticity = fliplr(ebsp.ellipticity);
-ebsp.planarity = fliplr(ebsp.planarity);
-ebsp.dop = fliplr(ebsp.dop);
-ebsp.dop2d = fliplr(ebsp.dop2d);
-ebsp.pf_rtp(:,:,1) = fliplr(ebsp.pf_rtp(:,:,1));
-ebsp.pf_rtp(:,:,2) = fliplr(ebsp.pf_rtp(:,:,2));
-ebsp.pf_rtp(:,:,3) = fliplr(ebsp.pf_rtp(:,:,3));
-ebsp.ee_ss = fliplr(ebsp.ee_ss);
 
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
@@ -76,10 +65,18 @@ ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
 ebsp.dop(isnan(ebsp.dop)) = FILLVAL;
 ebsp.dop2d(isnan(ebsp.dop2d)) = FILLVAL;
 ebsp.pf_rtp(isnan(ebsp.pf_rtp)) = FILLVAL;
-magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
+magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
 ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
+
+% fliplr to make frequencies ascending
+ebsp.ellipticity = fliplr(ebsp.ellipticity);
+ebsp.planarity = fliplr(ebsp.planarity);
+ebsp.dop = fliplr(ebsp.dop);
+ebsp.dop2d = fliplr(ebsp.dop2d);
+ebsp.ee_ss = fliplr(ebsp.ee_ss);
+
 % Reformat matrices/vectors and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3
@@ -104,7 +101,6 @@ formatExpAngAng = [formatExp formatAng formatAng];
 dataToExport = {...
     {formatExp, BB_2D},...              % BB_xxyyzz_fac
     {formatAng, K},...                  % KSVD_fac
-    {formatAng, ebsp.k_tp(:,:,2)},...   % PHSVD_fac
     {formatDeg, ebsp.ellipticity},...   % ELLSVD
     {formatDeg, ebsp.planarity},...     % PLANSVD
     {formatDeg, ebsp.dop},...           % DOP
