@@ -201,6 +201,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
 	xyz=xyz(1:end-1,:);
+  if wantEE, e=e(1:end-1,:); end
 end
 inTime = dB(:,1); timeB0 = B0(:,1);
 
