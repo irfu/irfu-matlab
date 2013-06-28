@@ -80,7 +80,7 @@ GetPlotParams();
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
-sr = struct('t',ebsp.t,'f',ebsp.f);
+sr = struct('t',ebsp.t,'f',ebsp.f); fc = [];
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
     flagCmapPoy = 0;
@@ -226,12 +226,15 @@ if nargout, out = h; end % Return here
     end
   end
   function PlotCyclotronFrequency
-    if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
-    if isempty(ebsp.fullB), B = ebsp.fullB; else B = ebsp.B0; end
-    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,5)*1e-9/units.me/2/pi];
-    mep = units.me/units.mp;
-    % F_ce, F_ce/2, F_cp, F_cHe, F, cO
-    fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
+    if ~isempty(fc) && all(all(fc)) < 0, return, end
+    if isempty(fc)
+      if isempty(ebsp.fullB) && isempty(ebsp.B0), fc = -1; return, end
+      if isempty(ebsp.fullB), B = ebsp.fullB; else B = ebsp.B0; end
+      units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,5)*1e-9/units.me/2/pi];
+      mep = units.me/units.mp;
+      % F_ce, F_ce/2, F_cp, F_cHe, F, cO
+      fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
+    end
     hold(hca,'on'), hp = irf_plot(hca,fc); hold(hca,'off')
     set(hp,'Color',[1 1 1],'LineWidth',2), 
     set(hp(2),'LineStyle','--'), set(hp(3),'LineStyle','-.')
