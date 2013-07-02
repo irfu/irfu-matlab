@@ -193,7 +193,7 @@ if flag_dEdotB0
 		Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
 	end
 	
-	angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
+	angleBElevation=atand(Bz./sqrt(Bx.^2+By.^2));
 	idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
 end
 
