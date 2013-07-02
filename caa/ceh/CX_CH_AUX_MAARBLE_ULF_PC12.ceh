@@ -182,8 +182,8 @@ START_VARIABLE = KSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Direction of propagation"
    LABLAXIS           = "THSVD"
-   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
-   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC12
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC12
    QUALITY            = 3
 END_VARIABLE = KSVD_fac__CXXX_CP_AUX_MAARBLE_ULF_PC12
 !
@@ -275,8 +275,8 @@ START_VARIABLE = PV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Poynting vector"
    LABLAXIS           = "PFlux"
-   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC35
-   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC35
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_ULF_PC12
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC12
    QUALITY            = 3
 END_VARIABLE = PV_fac__CXXX_CP_AUX_MAARBLE_ULF_PC12
 !
