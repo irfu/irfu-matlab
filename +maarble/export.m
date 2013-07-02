@@ -75,34 +75,41 @@ ebsp.ellipticity(isnan(ebsp.ellipticity)) = FILLVAL;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
 ebsp.dop(isnan(ebsp.dop)) = FILLVAL;
 ebsp.dop2d(isnan(ebsp.dop2d)) = FILLVAL;
-ebsp.pf_rtp(isnan(ebsp.pf_rtp(:,:,1))) = FILLVAL_EXP;
 ebsp.pf_rtp(isnan(ebsp.pf_rtp)) = FILLVAL;
 magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
 ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
-% Reformat B matrix and fliplr to make frequencies ascending
+ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
+% Reformat matrices/vectors and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3
     BB_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.bb_xxyyzzss(:,:,comp)); 
+end
+K = zeros(nData,nFreq*2);
+for comp=1:2
+    K(:,((1:nFreq)-1)*2+comp) = fliplr(ebsp.k_tp(:,:,comp)); 
+end
+PV = zeros(nData,nFreq*3);
+for comp=1:3
+    PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp)); 
 end
 
 % Define formats for output
 formatExp = '%9.2e,'; % Amplitudes
 formatAng = '%6.0f,'; % Angles - integer values
 formatDeg = '%6.1f,'; % Degree of ... -1..1 or 0..1
+formatExpAngAng = [formatExp formatAng formatAng];
 
 % NOTE: This list must be consistent with the CEF header file
 dataToExport = {...
     {formatExp, BB_2D},...              % BB_xxyyzz_fac
-    {formatAng, ebsp.k_tp(:,:,1)},...   % THSVD_fac
+    {formatAng, K},...                  % KSVD_fac
     {formatAng, ebsp.k_tp(:,:,2)},...   % PHSVD_fac
     {formatDeg, ebsp.ellipticity},...   % ELLSVD
     {formatDeg, ebsp.planarity},...     % PLANSVD
     {formatDeg, ebsp.dop},...           % DOP
     {formatDeg, ebsp.dop2d},...         % POLSVD
-    {formatExp, ebsp.pf_rtp(:,:,1)},... % AMPV
-    {formatAng, ebsp.pf_rtp(:,:,2)},... % THPV
-    {formatAng, ebsp.pf_rtp(:,:,3)},... % PHPV
+    {formatExpAngAng, PV},...           % PV
     {formatExp, ebsp.ee_ss},...         % ESUM
     {formatExp, magB}                   % BMAG
     };
