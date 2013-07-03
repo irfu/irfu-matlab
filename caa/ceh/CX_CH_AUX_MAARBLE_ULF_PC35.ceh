@@ -17,7 +17,7 @@ START_META     =   DATA_TYPE
 END_META       =   DATA_TYPE
 !
 START_META     =   DATASET_TITLE
-   ENTRY       =   "Wave Spectra, Polarization and Propagation Parameters"
+   ENTRY       =   "Pc 3-5 Wave Spectra, Polarization and Propagation Parameters"
 END_META       =   DATASET_TITLE
 !
 START_META     =   DATASET_DESCRIPTION
