@@ -244,6 +244,12 @@ if nargout, out = h; end % Return here
       case 'ellipticity'
         caxis(hca,[-1 1]), set(hcb,'TickDir','out')
         flagCmapPoy = 1;
+      case 'bb'        
+        cmax = max(max(log10(abs(ebsp.(field)(:,:,comp)))));
+        cmin = min(min(log10(abs(ebsp.(field)(:,:,comp)))));
+        if cmin < cmax-6.5
+          caxis(hca,floor(cmax)+[-6.5 0]), set(hcb,'TickDir','out')
+        end
       otherwise
         % do nothing
     end
