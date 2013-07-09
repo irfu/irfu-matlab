@@ -37,7 +37,7 @@ elseif nargin < 3
   freqRange = 'all';
 end
 
-outDir = '.';
+%outDir = '.';
 plotFlag = 1;
 exportFlag = 1;
 
@@ -62,8 +62,6 @@ end
 
 % Round time interval to minutes
 tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
-t_1min = (tint(1):60:tint(end))';
-
 cl_s = int2str(cl_id);
 
 %% Download data
@@ -80,17 +78,21 @@ if 0
 end
 
 %% Load
+
+% Extend time interval by these ranges to avoid edge effects 
+DT_PC5 = 80*60; DT_PC2 = 120; %
+
 % Construct 1 min-B0 (lowpassed at 1/600 Hz)
 gseB_5VPS = c_caa_var_get(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
-    'mat','tint',tint+[-30 30]);
+    'mat','tint',tint+DT_PC5*[-1 1]);
 gseR = c_caa_var_get(['sc_pos_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
-    'mat','tint',tint+[-30 30]);
+    'mat','tint',tint+DT_PC5*[-1 1]);
 gseV = c_caa_var_get(['sc_v_xyz_gse__C' cl_s '_CP_AUX_POSGSE_1M'],...
-    'mat','tint',tint+[-30 30]);
+    'mat','tint',tint+DT_PC5*[-1 1]);
 SAXlat = c_caa_var_get(['sc_at' cl_s '_lat__CL_SP_AUX'],...
-    'mat','tint',tint+[-30 30]);
+    'mat','tint',tint+DT_PC5*[-1 1]);
 SAXlong = c_caa_var_get(['sc_at' cl_s '_long__CL_SP_AUX'],...
-    'mat','tint',tint+[-30 30]);
+    'mat','tint',tint+DT_PC5*[-1 1]);
 [xspin,yspin,zspin] = sph2cart(mean(SAXlong(:,2))*pi/180,...
     mean(SAXlat(:,2))*pi/180,1); SAX = [xspin yspin zspin];
 R = c_coord_trans('gse','isr2',gseR,'SAX',SAX);
@@ -99,16 +101,16 @@ B_5VPS = c_coord_trans('gse','isr2',gseB_5VPS,'SAX',SAX);
                 
 if wantPC35
     E_4SEC = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L3_E'],...
-        'mat','tint',tint+[-30 30]);
+        'mat','tint',tint+DT_PC5*[-1 1]);
 end
 if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
-        'mat','tint',tint+[-1 1]);
+        'mat','tint',tint+DT_PC2*[-1 1]);
     % XXX
     % TODO: We need to check the bitmask here and not use any data with low
     % quality.
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
-        'mat','tint',tint+[-1 1]);
+        'mat','tint',tint+DT_PC2*[-1 1]);
 end
 if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
@@ -122,10 +124,11 @@ end
 
 %% Calculate and plot
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
+t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); clear bf
 
 if wantPC35
-  t_4SEC = ((tint(1)+2):4:tint(end))';
+  t_4SEC = ((tint(1)+2-DT_PC5):4:(tint(end)+DT_PC5))';
   B_4SEC = irf_resamp(B_5VPS,t_4SEC);
   E3D_4SEC = irf_edb(irf_resamp(E_4SEC,t_4SEC),B_4SEC,15,'Eperp+NaN'); % Ez
   
@@ -137,6 +140,7 @@ if wantPC35
   ebsp = ...
     irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
     'fac','polarization','noresamp','fullB=dB');
+  tlim_ebsp();
   if plotFlag
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
@@ -148,6 +152,7 @@ if wantPC35
     maarble.export(ebsp,tint,cl_id,'pc35')
   end
 end
+
 if wantPC12
   fFGM = 22.5;
   t_BASE = (fix(min(B_FULL(1,1),E_L2(1,1))):2.0/fFGM:ceil(max(B_FULL(end,1),E_L2(end,1))))';
@@ -162,6 +167,7 @@ if wantPC12
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
     'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12);
   toc
+  tlim_ebsp();
   if plotFlag
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
@@ -174,6 +180,7 @@ if wantPC12
     maarble.export(ebsp,tint,cl_id,'pc12')
   end
 end
+
 if ~wantPC35 && ~wantPC12
   tic
   if wantSCM
@@ -187,5 +194,25 @@ if ~wantPC35 && ~wantPC12
   h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
+end
+
+  function tlim_ebsp % Trim ebsp to tlim
+    IGNORE_FIELDS = {'f','flagFac','fullB','B0','r'};
+    fieldsEBSP = fields(ebsp);
+    tFields = setxor(fieldsEBSP,IGNORE_FIELDS);
+    %nData = length(ebsp.t);
+    [~,idx] = irf_tlim(ebsp.t,tint);
+    for fName = tFields'
+      s = size(ebsp.(fName{:}));
+      switch numel(s)
+        case 2
+          ebsp.(fName{:}) = ebsp.(fName{:})(idx,:);
+        case 3
+          ebsp.(fName{:}) = ebsp.(fName{:})(idx,:,:);
+        otherwise
+          error('wrong size!')
+      end
+    end
+  end
 end
 
