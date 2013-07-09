@@ -98,19 +98,24 @@ SAXlong = c_caa_var_get(['sc_at' cl_s '_long__CL_SP_AUX'],...
 R = c_coord_trans('gse','isr2',gseR,'SAX',SAX);
 V = c_coord_trans('gse','isr2',gseV,'SAX',SAX);
 B_5VPS = c_coord_trans('gse','isr2',gseB_5VPS,'SAX',SAX);
-                
+
+MIN_E_QUALITY=2; % disregard E with quality below this
 if wantPC35
     E_4SEC = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L3_E'],...
         'mat','tint',tint+DT_PC5*[-1 1]);
+    E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
+      'mat','tint',tint+DT_PC5*[-1 1]);
+    E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
 end
 if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-    % XXX
-    % TODO: We need to check the bitmask here and not use any data with low
-    % quality.
+    
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
+    E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
+        'mat','tint',tint+DT_PC2*[-1 1]);
+    E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;  
 end
 if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
@@ -174,7 +179,6 @@ if wantPC12
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
     set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_ULF_PC12_' irf_fname(tint,5)])
-    close(gcf)
   end
   if exportFlag
     maarble.export(ebsp,tint,cl_id,'pc12')
