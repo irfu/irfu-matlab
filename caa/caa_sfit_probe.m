@@ -45,8 +45,8 @@ else
 	if nargout>0
         if pp>100
             flag_lx = 1;
-            probeNum = pp/10;
-            probeStr = sprintf('%dLX',probeNum);
+            probeNum = pp;
+            probeStr = sprintf('%dLX',probeNum/10);
         else
             flag_lx = 0;
             probeNum = pp;
