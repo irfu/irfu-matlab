@@ -39,7 +39,7 @@ end
 
 outDir = '.';
 plotFlag = 1;
-exportFlag = 0;
+exportFlag = 1;
 
 wantPC12 = 0;
 wantPC35 = 0; wantSCM = 0;
@@ -61,7 +61,7 @@ end
 
 
 % Round time interval to minutes
-tint = round(tint/60)*60;
+tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 t_1min = (tint(1):60:tint(end))';
 
 cl_s = int2str(cl_id);
@@ -145,7 +145,7 @@ if wantPC35
     print('-dpng',['MAARBLE_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
-    export(ebsp,tint,cl_id,freqRange)
+    maarble.export(ebsp,tint,cl_id,'pc35')
   end
 end
 if wantPC12
@@ -171,7 +171,7 @@ if wantPC12
     close(gcf)
   end
   if exportFlag
-    export(ebsp,tint,cl_id,freqRange)
+    maarble.export(ebsp,tint,cl_id,'pc12')
   end
 end
 if ~wantPC35 && ~wantPC12
