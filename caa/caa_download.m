@@ -41,7 +41,8 @@ function [download_status,downloadfile]=caa_download_cfa(tint,dataset,varargin)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of deaful 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
 %   'cfa'           - download from CFA instead of CAA, basic functions are
-%                     implemented
+%                     implemented. Downloaded files go into './CFA/' folder.
+%                     This must be taken into account when loading data.
 %
 %
 %  To store your caa user & password as defaults (e.g. 'uuu'/'ppp'): 
@@ -424,7 +425,7 @@ switch downloadFromCFA
     case 1 % CFA
         url_line = [cfaServer cfaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
-            '&NON_BROWSER' urlNonotify urlFormat];
+             urlFormat '&NON_BROWSER' urlNonotify];
         disp('Be patient! Submitting data request to CFA...');
 end
 
@@ -489,7 +490,8 @@ switch downloadFromCFA
     case 1 % CFA
         fileName=tempname;
         gzFileName = [fileName '.gz'];
-        [downloadedFile,isZipFileReady]=urlwrite(urlLink,[tempname '.gz']);                
+        [gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);                
+        downloadedFile = gzFileName;
 end            		
 
 if isZipFileReady, %
@@ -503,7 +505,8 @@ if isZipFileReady, %
             case 0
                 filelist=unzip(downloadedFile,tempDirectory);
             case 1
-                filelist=untar(downloadedFile,tempDirectory);
+                gunzip(gzFileName);
+                filelist=untar(fileName,tempDirectory);                
         end
         if isempty(filelist)
             irf_log('dsrc','Returned zip file is empty');
@@ -579,7 +582,7 @@ function queryDataset = cfaQueryDataset
     if strfind(dataset,'list:')
         queryDataset = dataset(6:end); % assumes 5 first chars are 'list:'
     else
-        queryDataset = dataset
+        queryDataset = dataset;
     end
     wildcardIndex = strfind(queryDataset,'*');
     queryDataset(wildcardIndex) = '%';
