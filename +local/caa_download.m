@@ -1,5 +1,5 @@
-function out=c_caa_download(varargin)
-% LOCAL.C_CAA_DOWNLOAD download full datasets from CAA
+function out=caa_download(varargin)
+% LOCAL.CAA_DOWNLOAD download full datasets from CAA
 % Downloads all data from CAA database, in case data
 % already exists on disk, downloads only newer version files.
 % Dataset location - /data/caalocal
@@ -7,12 +7,12 @@ function out=c_caa_download(varargin)
 % Index location - /data/caalocal/index
 % Current request time table is accessible in variable TTRequest
 %
-%   LOCAL.C_CAA_DOWNLOAD(dataset) download all dataset
+%   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
 %
-%   LOCAL.C_CAA_DOWNLOAD(TTrequest) process request time table TTRequest
+%   LOCAL.CAA_DOWNLOAD(TTrequest) process request time table TTRequest
 %
 % Example:
-%		local.c_caa_download('C1_CP_PEA_MOMENTS')
+%		local.caa_download('C1_CP_PEA_MOMENTS')
 %
 % 	See also CAA_DOWNLOAD
 %
@@ -28,13 +28,52 @@ function out=c_caa_download(varargin)
 % TTRequest.UserData.number - number of entries
 % TTRequest.UserData.version - version of dataset
 
-% $Id$
-
 %% Defaults
 dataDirectory = '/data/caalocal';
 maxSubmittedJobs = 13;
 maxNumberOfAttempts = 20;
-isInputDatasetName = false; 
+isInputDatasetName = false;
+sendEmailWhenFinished = false;
+% so far undocumented feature
+% use datastore info in local to send email when finnished
+if exist('sendmail','file')==2,
+	if isempty(fields(datastore('local'))),
+		% nothing in datastore('local'), do not send email
+	else
+		sendEmailWhenFinished = true;
+		sendEmailFrom = datastore('local','sendEmailFrom');
+		if isempty(sendEmailFrom),
+			disp('Please define email from which MATLAB should send email');
+			disp('This should be your local email where you are running MATLAB.');
+			disp('For example in IRFU: username@irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailFrom'',''username@irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailSmtp = datastore('local','sendEmailSmtp');
+		if isempty(sendEmailSmtp),
+			disp('Please define your local SMTP server. ');
+			disp('For example in IRFU: sol.irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailSmtp'',''sol.irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailTo = datastore('local','email');
+		if isempty(sendEmailTo),
+			disp('Please define your local email.');
+			disp('For example: name@gmail.com');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''email'',''name@gmail.com'')');
+			disp(' ');
+			return;
+		end
+	end
+end
 %% change to data directory
 if exist(dataDirectory,'dir')
 	disp(['!!!! Changing directory to ' dataDirectory ' !!!']);
@@ -195,7 +234,13 @@ while 1
 end % going through all requests
 %% assign output
 if nargout==1, out=TTRequest;end
-
+%% send email when finnsihed
+if sendEmailWhenFinished
+	sendEmailTxt = ['local.caa_download: getting ' dataSet ' is ready ;)'];
+	setpref('Internet','E_mail',sendEmailTo);
+	setpref('Internet','SMTP_Server',sendEmailSmtp);
+	sendmail(sendEmailTo,sendEmailTxt);
+end
 function i=find_first_non_processed_time_interval(TT)
 ud=TT.UserData;
 i=1;
