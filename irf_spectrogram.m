@@ -118,9 +118,13 @@ end
 ndata = length(specrec.t);
 if ndata<1, if nargout>0, hout=h; end, return, end
 
+%% Plot spectrogram
 load caa/cmap.mat
 
-if isempty(h), clf, for comp=1:ncomp, h(comp) = irf_subplot(ncomp,1,-comp); end, end
+% Initiate figure if handles not given
+if isempty(h),
+	h=irf_plot(ncomp,'newfigure');
+end
 
 % If H is specified, but is shorter than NCOMP, we plot just first
 % length(H) spectra

@@ -9,8 +9,11 @@ function out=geocentric_coordinate_transformation(inp,flag)
 %	[T]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(t,'coord1>coord2')
 %		if only column vector with time given, return transformation matrix
 %
+%	[out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(t,'dipoledirectiongse')
+%		out - 1st column time, 2-4th column dipole direction in GSE 
+%
 %	Example:
-%		xgsm=irf.coordinate_transformation(xgse,'GSE>GSM');
+%		xgsm=irf.geocentric_coordinate_transformation(xgse,'GSE>GSM');
 %
 % Ref: Hapgood 1997 (corrected version of Hapgood 1992)
 % Planet. Space Sci.. Vol. 40, No. 5. pp. 71l-717, 1992

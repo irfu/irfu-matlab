@@ -1223,9 +1223,9 @@ elseif strcmp(quantity,'die') || strcmp(quantity,'dief') || ...
         else sfreq = c_efw_fsample(full_e(:,1),'hx');
         end
 		if ~sfreq, error('no sampling frequency'),end
-		if sfreq == 5, nfft = 128; %#ok<NASGU>
-        elseif  sfreq == 25, nfft = 512; %#ok<NASGU>
-        else nfft = 8192; %#ok<NASGU>
+		if sfreq < 6, nfft = 128; %#ok<NASGU>
+    elseif sfreq < 26, nfft = 512; %#ok<NASGU>
+    else nfft = 8192; %#ok<NASGU>
 		end
 		c_eval([var1_name...
             '=irf_powerfft(full_e(:,1:3),nfft,sfreq);save_list=[save_list '''...

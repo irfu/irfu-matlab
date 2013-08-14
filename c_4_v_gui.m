@@ -50,10 +50,11 @@ switch action,
 		hca=ud.h(1);
 		xl=get(ud.h(1),'XLim');
 		c_pl_tx(hca,ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(hca,'on');
-		ylabel(hca,var_label(ud.variable_str,ud.var_col));
+		ylabel(ud.h(1),var_label(ud.variable_str,ud.var_col));
 		axis(hca,[xl(1) xl(2) 0 1]);
 		irf_zoom(hca,'y');irf_timeaxis(hca)
 		c_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
+		ylabel(ud.h(2),var_label(ud.variable_str,ud.var_col));
 %		c_4_v_gui('dt');
 	case 'new_var_enter'
 		xx=inputdlg('Enter new variable mask. Examples: B? or R? or P?p1','**',1,{'B?'});
@@ -301,23 +302,24 @@ if nargout, out = ud.h; end
 end
 
 function label=var_label(var_str,var_col)
+iVecComponent = var_col - 1; % number of vector component
 dd=c_desc(irf_ssub(var_str,1));
 if isempty(dd)
-	label=[var_str '[' num2str(var_col) ']'];
+	label=[var_str '[' num2str(iVecComponent) ']'];
 else
 	if numel(dd.units)==1, 
 		labUnit = dd.units{1};
 	else
-		labUnit = dd.units{var_col};
+		labUnit = dd.units{iVecComponent};
 	end
 	if numel(dd.labels)==1, 
 		labVar = dd.labels{1};
 	else
-		labVar = dd.labels{var_col};
+		labVar = dd.labels{iVecComponent};
 	end
 	if isfield(dd,'col_labels')
 		colLabels=dd.col_labels{1};
-		labVar = [labVar colLabels{var_col}];
+		labVar = [labVar colLabels{iVecComponent}];
 	end	
 	label=[labVar '[' labUnit ']'];
 end

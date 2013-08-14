@@ -26,11 +26,10 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     t           - Time
 %     f           - Frequency
 %     bb          - B power spectrum (xx, yy, zz)
-%     eesum       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
+%     ee_ss       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
 %     ee          - E power spectrum (xx, yy, zz)
 %     pf_xyz      - Poynting flux (xyz)
-%     pf_fac      - Poynting flux (r, theta, phi)
-%     pf_par      - Poynting flux || B
+%     pf_rtp      - Poynting flux (r, theta, phi)
 %     dop         - 3D degree of polarization
 %     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
@@ -56,6 +55,12 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %    res = irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
 %
 %  See also: IRF_PL_EBSP
+
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
 
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
@@ -106,6 +111,7 @@ if flag_want_fac
 	end
 end
 B0 = irf_resamp(B0,dB);
+xyz = irf_resamp(xyz,dB);
 if flag_fullB_dB
     fullB = dB;
     res.fullB = fullB;
@@ -177,26 +183,26 @@ if wantEE && size(e,2) <4 && flag_dEdotB0==0
     error('E must have all 3 components or flag ''dEdotdB=0'' must be given')
 end
 
+if size(dB,1)/2 ~= floor(size(dB,1)/2)
+	dB=dB(1:end-1,:);
+	B0=B0(1:end-1,:);
+	xyz=xyz(1:end-1,:);
+  if wantEE, e=e(1:end-1,:); end
+end
+inTime = dB(:,1); timeB0 = B0(:,1);
+
 Bx = []; By = []; Bz = []; idxBparSpinPlane = [];
 if flag_dEdotB0
 	Bx = fullB(:,2); By = fullB(:,3); Bz = fullB(:,4); % Needed for parfor
 	
 	% Remove the last sample if the total number of samples is odd
-	if size(dB,1)/2 ~= floor(size(dB,1)/2)
-		e=e(1:end-1,:);
+	if size(fullB,1)/2 ~= floor(size(fullB,1)/2)
 		Bx = Bx(1:end-1,:); By = By(1:end-1,:); Bz = Bz(1:end-1,:);
 	end
 	
-	angleBElevation=atan2d(Bz,sqrt(Bx.^2+By.^2));
+	angleBElevation=atand(Bz./sqrt(Bx.^2+By.^2));
 	idxBparSpinPlane= abs(angleBElevation)<angleBElevationMax;
 end
-
-if size(dB,1)/2 ~= floor(size(dB,1)/2)
-	dB=dB(1:end-1,:);
-	B0=B0(1:end-1,:);
-%	xyz=xyz(1:end-1,:);
-end
-inTime = dB(:,1);
 
 % If E has all three components, transform E and B waveforms to a 
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
@@ -315,7 +321,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
           wEz(idxBparSpinPlane) = NaN;
           if flag_want_fac
-              We = irf_convert_fac([B0(:,1) We(:,1:2) wEz],B0,xyz); 
+              We = irf_convert_fac([timeB0 We(:,1:2) wEz],B0,xyz); 
               We(:,1) = [];
           end
       end
@@ -390,8 +396,11 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       end
       
       %% compute direction of propogation
+      signKz = sign(V(3,3,:));
+      V(3,3,:) = V(3,3,:).*signKz; 
+      V(2,3,:) = V(2,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
-          squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:)));
+          abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
       phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
       
       %% Calculate polarization parameters 
@@ -404,6 +413,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
           squeeze(W(2,2,:)./W(1,1,:)).*sign(imag(avSM(:,1,2))); 
       ellipticityLocal(censurIdx) = NaN;
       ellipticity(:,ind_a) = ellipticityLocal;
+
       
       % DOP = sqrt[(3/2.*trace(SM^2)./(trace(SM))^2 - 1/2)]; Samson, 1973, JGR
       dop = sqrt((3/2*(...
@@ -425,10 +435,10 @@ parfor ind_a=1:length(a), % Main loop over frequencies
 		  ((avSM(:,1,1)+avSM(:,2,2)).^2) - 1));
 	  dop2dim(censurIdx) = NaN;
 	  degreeOfPolarization2D(:,ind_a) = dop2dim;
+      
    end % wantPolarization
 end % main loop
 fprintf('Done.\n');
-
 %% set data gaps to NaN and remove edge effects
 censur = floor(2*a);
 for ind_a=1:length(a)
@@ -493,7 +503,7 @@ if wantEE
     res.pf_rtp = Poynting_RThPh;
 end
 
-if wantPolarization,    
+if wantPolarization
     % Define parameters for which we cannot compute the wave vector
     indLowPlanarity = planarity < 0.5;
     indLowEllipticity = abs(ellipticity) < .2;

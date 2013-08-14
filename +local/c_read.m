@@ -126,10 +126,12 @@ switch lower(varName)
 		varToRead={varName};
 		ok=readdata;
 		if ok && strcmpi(returnDataFormat,'mat'),
-            if numel(data)==2,
+            if numel(data)==2 && numel(size(data{2}))==2,
                 out=[data{1} double(data{2})];
             elseif numel(data)==1,
                 out = data{1};
+			else
+				out=data;
             end
 		  elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
 			out = data;
@@ -182,14 +184,20 @@ end
 					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
 					if useCdfepoch16,
 						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
-						tmptime=readCdfepoch16(cdfid,0); % read time which has variable number 0
-						timeVector=irf_time(tmptime,'cdfepoch162epoch');
+						tName  = cdflib.getVarName(cdfid,0);
+						tData = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
+						if numel(size(tData)) == 3,
+							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+						else
+							tcdfepoch = tData; % cdfread returns (Nsamples X 2) matrix
+						end
+						timeVector=irf_time(tcdfepoch,'cdfepoch162epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
                             tmpdata{iVar}=cdfread(cdf_file,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
-						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
+						tmpdata = [{timeVector} tmpdata]; %
                     else
                         % remove time variable as it is already read in
                         ii=numel(varToRead);
@@ -202,6 +210,7 @@ end
                         % read data
                         [tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
+						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
                         timeVector = irf_time(tmpdata{1},'date2epoch');
 						tmpdata{1} = timeVector;
@@ -221,7 +230,16 @@ end
 					end
 					%% attach to result
 					for j=1:numel(data),
-						data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
+						nDim=numel(size(tmpdata{j}));
+						if nDim==2,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:));
+						elseif nDim==3,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:));
+						elseif nDim==4,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:));
+						elseif nDim==5,
+							data{j}=vertcat(data{j},tmpdata{j}(iist:iien,:,:,:,:));
+						end
 					end
 					cdflib.close(cdfid);
 				case {'caa','dobj'}
@@ -287,4 +305,17 @@ end
 		end
 		if any(sind), ok=true; end
 	end
+	function data=fix_order_of_array_dimensions(data)
+		for iDimension=3:4,
+			indDatasets=find(cellfun(@(x) numel(size(x)),data(:))==iDimension); % find iDimension datasets
+			for iDataset=1:numel(indDatasets)
+				if iDimension==3,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[3 1 2]);
+				elseif iDimension==4,
+					data{indDatasets(iDataset)}=permute(data{indDatasets(iDataset)},[4 3 1 2]);
+				end
+			end
+		end
+	end
+
 end

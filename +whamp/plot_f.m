@@ -1,8 +1,8 @@
 function [h,varargout]=plot_f_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
 % Usage:
-% [h,varargout]=whamp.plot_f_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
-% [h,f,vp,vz]=whamp.plot_f_f(n,m,t,vd,d,a1,a2);
-% [h,f,vtot]=whamp.plot_f_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
+% [h,varargout]=whamp.plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
+% [h,f,vp,vz]=whamp.plot_f(n,m,t,vd,d,a1,a2);
+% [h,f,vtot]=whamp.plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption],[title_option]);
 %
 % plot the distribution function, parameters as defined in whamp 
 %
@@ -34,11 +34,11 @@ function [h,varargout]=plot_f_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_op
 %		Etot - nxm matrix where n-# of pitchangles, m-length of vtot [eV].
 %
 % Examples:
-%	whamp.plot_f_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=whamp.plot_f_f(4e6,1,0.3,0.9,1,1,0);
-%	[h,f,vp,vz]=whamp.plot_f_f([4e6 1 0.3 0.9 1 1 0]);
-%	[h,f,vtot]=whamp.plot_f_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
-%	[h,f,Etot]=whamp.plot_f_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
+%	whamp.plot_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=whamp.plot_f(4e6,1,0.3,0.9,1,1,0);
+%	[h,f,vp,vz]=whamp.plot_f([4e6 1 0.3 0.9 1 1 0]);
+%	[h,f,vtot]=whamp.plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180]);
+%	[h,f,Etot]=whamp.plot_f(20e6,0,0.025,0,1,1,0,[0 45 90 135 180],1);
 %
 % short WHAMP manual: http://www.space.irfu.se/~andris/whamp/whamp_manual.pdf
 % original WHAMP code: http://www.tp.umu.se/forskning/space/WHAMP/
@@ -49,7 +49,7 @@ e=1.6022e-19; % elementary charge
 
 
 if nargin < 1 , 
-  help whamp.plot_f_f;
+  help whamp.plot_f;
   return
 end
 if nargin == 1,
@@ -62,7 +62,7 @@ if nargin == 1,
 	a2=n(:,7);
 	n(:,2:end)=[];
   else
-	help whamp.plot_f_f;
+	help whamp.plot_f;
 	return;
   end
 end
@@ -189,7 +189,16 @@ elseif nargin==8
 	varargout(1)={f};
 	varargout(2)={vtot};
 elseif nargin==9
-	varargout(1)={f};
-	varargout(2)={Etot};
+    switch plotoption % returns what's plotted
+        case 0            
+            varargout(1)={f};
+            varargout(2)={vtot};
+        case 1
+            varargout(1)={f};
+            varargout(2)={Etot};
+        case 2
+            varargout(1)={F_reduced};
+            varargout(2)={vz_reduced};
+    end
 end
 	

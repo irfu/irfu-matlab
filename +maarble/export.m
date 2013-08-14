@@ -11,6 +11,12 @@ function export(ebsp,tint,cl_id,freqRange)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+%
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
 
 % This must be changed when we do any major changes to our processing software
 DATASET_VERSION = '0';
@@ -41,24 +47,13 @@ end
 %% Prepare data array
 % B0
 if isempty(ebsp.fullB), magB = ebsp.B0; else magB = ebsp.fullB; end
-magB = irf_abs(magB); magB = magB(:,[1 4]); magB = irf_resamp(magB,ebsp.t);
+magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
+magB = magB(:,2);
 
 % convert radians to degrees
 toD = 180.0/pi;
 ebsp.k_tp(:,:,1:2) = ebsp.k_tp(:,:,1:2)*toD;
 ebsp.pf_rtp(:,:,2:3) = ebsp.pf_rtp(:,:,2:3)*toD;
-
-% fliplr to make frequencies ascending
-ebsp.k_tp(:,:,1) = fliplr(ebsp.k_tp(:,:,1));
-ebsp.k_tp(:,:,2) = fliplr(ebsp.k_tp(:,:,2));
-ebsp.ellipticity = fliplr(ebsp.ellipticity);
-ebsp.planarity = fliplr(ebsp.planarity);
-ebsp.dop = fliplr(ebsp.dop);
-ebsp.dop2d = fliplr(ebsp.dop2d);
-ebsp.pf_rtp(:,:,1) = fliplr(ebsp.pf_rtp(:,:,1));
-ebsp.pf_rtp(:,:,2) = fliplr(ebsp.pf_rtp(:,:,2));
-ebsp.pf_rtp(:,:,3) = fliplr(ebsp.pf_rtp(:,:,3));
-ebsp.ee_ss = fliplr(ebsp.ee_ss);
 
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
@@ -69,34 +64,48 @@ ebsp.ellipticity(isnan(ebsp.ellipticity)) = FILLVAL;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
 ebsp.dop(isnan(ebsp.dop)) = FILLVAL;
 ebsp.dop2d(isnan(ebsp.dop2d)) = FILLVAL;
-ebsp.pf_rtp(isnan(ebsp.pf_rtp(:,:,1))) = FILLVAL_EXP;
 ebsp.pf_rtp(isnan(ebsp.pf_rtp)) = FILLVAL;
-magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
+magB(isnan(magB)) = FILLVAL_EXP;
 ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
-% Reformat B matrix and fliplr to make frequencies ascending
+ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
+
+% fliplr to make frequencies ascending
+ebsp.ellipticity = fliplr(ebsp.ellipticity);
+ebsp.planarity = fliplr(ebsp.planarity);
+ebsp.dop = fliplr(ebsp.dop);
+ebsp.dop2d = fliplr(ebsp.dop2d);
+ebsp.ee_ss = fliplr(ebsp.ee_ss);
+
+% Reformat matrices/vectors and fliplr to make frequencies ascending
 BB_2D = zeros(nData,nFreq*3);
 for comp=1:3
     BB_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.bb_xxyyzzss(:,:,comp)); 
+end
+K = zeros(nData,nFreq*2);
+for comp=1:2
+    K(:,((1:nFreq)-1)*2+comp) = fliplr(ebsp.k_tp(:,:,comp)); 
+end
+PV = zeros(nData,nFreq*3);
+for comp=1:3
+    PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp)); 
 end
 
 % Define formats for output
 formatExp = '%9.2e,'; % Amplitudes
 formatAng = '%6.0f,'; % Angles - integer values
 formatDeg = '%6.1f,'; % Degree of ... -1..1 or 0..1
+formatExpAngAng = [formatExp formatAng formatAng];
 
 % NOTE: This list must be consistent with the CEF header file
 dataToExport = {...
     {formatExp, BB_2D},...              % BB_xxyyzz_fac
-    {formatAng, ebsp.k_tp(:,:,1)},...   % THSVD_fac
-    {formatAng, ebsp.k_tp(:,:,2)},...   % PHSVD_fac
+    {formatAng, K},...                  % KSVD_fac
     {formatDeg, ebsp.ellipticity},...   % ELLSVD
     {formatDeg, ebsp.planarity},...     % PLANSVD
     {formatDeg, ebsp.dop},...           % DOP
     {formatDeg, ebsp.dop2d},...         % POLSVD
-    {formatExp, ebsp.pf_rtp(:,:,1)},... % AMPV
-    {formatAng, ebsp.pf_rtp(:,:,2)},... % THPV
-    {formatAng, ebsp.pf_rtp(:,:,3)},... % PHPV
+    {formatExpAngAng, PV},...           % PV
     {formatExp, ebsp.ee_ss},...         % ESUM
     {formatExp, magB}                   % BMAG
     };

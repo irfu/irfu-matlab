@@ -46,6 +46,13 @@ function out = irf_pl_ebsp(ebsp,params)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+%
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
+
 flagCmap = 0;
 
 %% Main function
@@ -237,6 +244,12 @@ if nargout, out = h; end % Return here
       case 'ellipticity'
         caxis(hca,[-1 1]), set(hcb,'TickDir','out')
         flagCmapPoy = 1;
+      case 'bb'        
+        cmax = max(max(log10(abs(ebsp.(field)(:,:,comp)))));
+        cmin = min(min(log10(abs(ebsp.(field)(:,:,comp)))));
+        if cmin < cmax-6.5
+          caxis(hca,floor(cmax)+[-6.5 0]), set(hcb,'TickDir','out')
+        end
       otherwise
         % do nothing
     end
@@ -252,7 +265,7 @@ if nargout, out = h; end % Return here
         if ~strfind(paramStr,'k')
           caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
         else
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
         end
         flagCmapPoy = 1; 
       otherwise
