@@ -58,7 +58,7 @@ if nargin==1 && ischar(varargin{1})
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 elseif nargin == 1 && isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
-	dataSet=TTRequest.UserData(1).dataset;
+	dataSet=dataset_mat_name(TTRequest.UserData(1).dataset);
 else
 	irf_log('fcal','See syntax: help local.c_caa_download');
 	return;
@@ -163,7 +163,7 @@ while 1
 			irf_log('dsrc',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
 			if mod(n_downloaded_jobs(TTRequest),10)==0 || ...%save after every 10th request
 					n_submitted_jobs(TTRequest)==0 % save after last job
-				varName=['TT_' TTRequest.UserData(iSubmitted).dataset ];
+				varName=['TT_' dataset_mat_name(TTRequest.UserData(iSubmitted).dataset) ];
 				irf_log('drsc',['Saving ' varName ' to matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
 				dirName='matCaaRequests';
@@ -268,4 +268,7 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 		ok=true;
 	end
 end
+function datasetMatName = dataset_mat_name(dataset)
+datasetMatName = strrep(dataset,'CIS-','CIS_');
+
 
