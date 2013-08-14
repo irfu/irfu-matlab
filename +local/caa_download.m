@@ -11,6 +11,11 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(TTrequest) process request time table TTRequest
 %
+% Dataset downloading takes long time. You will be informed by email when it is
+% finished if you have specified your information in datastore. Just execute in
+% matlab (substitute Your Name to your name):
+%		datastore('local','name','Your Name')
+% 
 % Example:
 %		local.caa_download('C1_CP_PEA_MOMENTS')
 %
@@ -64,7 +69,7 @@ if exist('sendmail','file')==2,
 		end
 		sendEmailTo = datastore('local','email');
 		if isempty(sendEmailTo),
-			disp('Please define your local email.');
+			disp('Please specify your email.');
 			disp('For example: name@gmail.com');
 			disp('Execute in matlab (adjust accordingly):')
 			disp(' ');
