@@ -1,4 +1,4 @@
-function [h,varargout]=plot_f_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
+function [h,varargout]=plot_f(n,m,t,vd,d,a1,a2,pitchangles,plotoption,title_option)
 % Usage:
 % [h,varargout]=whamp.plot_f(n,m,t,vd,d,a1,a2,[pitchangles],[plotoption]);
 % [h,f,vp,vz]=whamp.plot_f(n,m,t,vd,d,a1,a2);

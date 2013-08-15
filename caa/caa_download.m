@@ -1,4 +1,4 @@
-function [download_status,downloadfile]=caa_download_cfa(tint,dataset,varargin)
+function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 % CAA_DOWNLOAD Download CAA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
@@ -226,8 +226,10 @@ caaInventory=[caaServer 'cgi-bin/inventory.cgi/?'];
 if downloadFromCFA % change/add defaults, hasn't ad ded these to above flag checking
     % change
     urlNonotify = '&NO_NOTIFY';                % default is not notify by email        
-    urlFormat = '&DELIVERY_FORMAT=CDF';        % default is CDF (3.3) format
-    cfaServer = 'http://cfadev.esac.esa.int/'; % default server    
+    urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];
+	%urlFormat = '&DELIVERY_FORMAT=CDF';        % default is CDF (3.3) format
+    urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';
+	cfaServer = 'http://cfadev.esac.esa.int/'; % default server    
     downloadDirectory = './CFA/';              % local directory where to put downloaded data, default in current directory under 'CFA' subdirectory
     % add
     retrievalType = '&PRODUCT';         % default is to download, not check inventory, hmmmmmm
@@ -425,7 +427,7 @@ switch downloadFromCFA
     case 1 % CFA
         url_line = [cfaServer cfaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
-             urlFormat '&NON_BROWSER' urlNonotify];
+             urlFormat urlDeliveryInterval '&NON_BROWSER' urlNonotify];
         disp('Be patient! Submitting data request to CFA...');
 end
 
