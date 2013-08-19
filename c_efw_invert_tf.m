@@ -10,8 +10,6 @@ function eout = c_efw_invert_tf(einp,filt,tm)
 %      TM - optional, 'HX' or 'IB' (default).
 %           For HX we uncorrect the filter group delay which was put
 %           there by ISDAT.
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -26,7 +24,7 @@ if nargin == 2, tm = 'IB'; end
 
 nfft = size(einp,1);
 if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = nfft/2 + 1;
+else nf = (nfft+1)/2;
 end
 
 fsamp = c_efw_fsample(einp);
@@ -49,7 +47,7 @@ eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 
 % For HX data we uncorrect the filter delay put there by ISDAT
 if strcmpi(tm,'HX')
-    switch upper(tm)
+    switch upper(filt)
         case 'M'
             eout(:,1) = eout(:,1) + 4.44e-3;
         case 'L'
