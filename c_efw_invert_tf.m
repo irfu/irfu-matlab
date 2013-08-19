@@ -37,9 +37,9 @@ tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
 
 Pxx = fft(einp(:,2));
 if nfft/2==fix(nfft/2)
-    Pxy = Pxx./[tf;fliplr(tf)];
+    Pxy = Pxx./[tf;flipud(conj(tf))];
 else
-    Pxy = Pxx./[tf;fliplr(tf(1:end-1))];
+    Pxy = Pxx./[tf;flipud(conj(tf(1:end-1)))];
 end
 
 eout = einp;
