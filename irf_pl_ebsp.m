@@ -72,7 +72,7 @@ if nargin==1 || isempty(params)
 end
 
 fieldsEBSP = fields(ebsp);
-IGNORE_FIELDS = {'t','f','fac','fullB','B0','r'};
+IGNORE_FIELDS = {'t','f','flagFac','fullB','B0','r'};
 fieldsPlottable = setxor(fieldsEBSP,IGNORE_FIELDS);
 plotFields = ''; plotComps = ''; limFields = ''; nPanels = 0;
 GetPlotParams();
