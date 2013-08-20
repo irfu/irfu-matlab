@@ -1,7 +1,7 @@
-function eout = c_efw_invert_tf(einp,filt,tm)
+function eout = c_efw_invert_tf(einp,filt,tm,method,edge)
 %C_EFW_INVERT_TF  Invert EFW analogue filters response
 %
-% EOUT = C_EFW_INVERT_TF(EINP,FILT,[TM])
+% EOUT = C_EFW_INVERT_TF(EINP,FILT,[TM],[METHOD],[EDGE])
 %
 % Input:
 %    EINP - data in the spinning frame, e.g. wE1p34
@@ -9,7 +9,23 @@ function eout = c_efw_invert_tf(einp,filt,tm)
 %           'BP' (50 Hz - 8 kHz bandpass), 'U' (unfiltered)
 %      TM - optional, 'HX' or 'IB' (default).
 %           For HX we uncorrect the filter group delay which was put
-%           there by ISDAT.
+%           there by ISDAT. Note TM is mandetory if method is to be
+%           chosen.
+%  METHOD - optional, 'frequency' (default) or 'time'.
+%           For time we use time domain filtering and block convolution
+%           with "overlap save method". 
+%           If method other than default is to be used then parameter 
+%           TM must also be defined!
+%    EDGE - optional, for 'time' method only. Edge treatment can either
+%           be 'edge_zero'  (fill with zero outside of edges)
+%           or 'edge_wrap'  (wrap the edge around outside of edges)
+%           or 'edge_trunc' (truncate the edge outside of edges)
+%           or 'edge_non'   (do nothing about the edges).
+%           Default edge treatment is 'edge_wrap'.
+%           * Truncate is usually considered a bad treatment and it is
+%           therefor NOT recommended.
+%           * No edge treatment is also considered a bad treatment and
+%           it is also NOT recommended.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -18,32 +34,174 @@ function eout = c_efw_invert_tf(einp,filt,tm)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2, 3, nargin))
+% Updated input check
+narginchk(2, 5)
 
-if nargin == 2, tm = 'IB'; end
+% Default tm to 'IB' and method to 'frequency' if not set by user.
+if nargin == 2, tm = 'IB'; method = 'frequency'; end
 
-nfft = size(einp,1);
-if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = (nfft+1)/2;
+if nargin == 3
+    if strcmpi(tm,'HX')||strcmpi(tm,'IB')
+        % tm correct but no method, Default method to 'old'.
+        method='frequency';
+    else
+        % Optional tm is manditory and must be 'HX' or 'IB' if selecting method.
+        error('If you want to define method, you must also define the TM parameter correct first.');
+    end
 end
 
-fsamp = c_efw_fsample(einp);
-f = fsamp*((1:nf) -1)'/nfft;
+if nargin == 4
+    if strcmpi(method,'time')
+        % Default to wrap edges
+        edge='edge_wrap';
+    elseif strcmpi(method,'frequency')
+        %(old method, do nothing with edge).
+    else
+        % Unknown method was specified.
+        error('Unknown METHOD parameter was specified, valid is "frequency" (default) and "time".')
+    end
+end
 
-tfinp = get_efw_tf(filt);
+if nargin == 5
+    if strcmpi(method,'time')
+        switch(upper(edge)) % Simple check
+            case 'EDGE_ZERO'  % Ok
+            case 'EDGE_WRAP'  % Ok
+            case 'EDGE_TRUNC' % Usually bad and not recommended, but Ok
+            case 'EDGE_NON'   % Usually bad and not recommended, but Ok
+            otherwise
+                % Wrong input
+                error('If you define method as "time" and specify an edge treatment it must be a valid one.')
+        end
+    else
+        % (frequency method, no edge parameter).
+        error('EDGE treatment is only a valid parameter for "time" method.')
+    end
+end
+    
+if strcmpi(method,'frequency')
+        % Default method
+    nfft = size(einp,1);
+    if nfft/2==fix(nfft/2), nf = nfft/2;
+    else nf = (nfft+1)/2;
+    end
 
-tf = interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');
-tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
+    fsamp = c_efw_fsample(einp);
+    f = fsamp*((1:nf) -1)'/nfft;
 
-Pxx = fft(einp(:,2));
-if nfft/2==fix(nfft/2)
-    Pxy = Pxx./[tf;flipud(conj(tf))];
+    tfinp = get_efw_tf(filt);
+
+    tf = interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');
+    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
+
+    Pxx = fft(einp(:,2));
+    if nfft/2==fix(nfft/2)
+        Pxy = Pxx./[tf;flipud(conj(tf))];
+    else
+        Pxy = Pxx./[tf;flipud(conj(tf(1:end-1)))];
+    end
+
+    eout = einp;
+    eout(:,2) = ifft(Pxy,'symmetric')/14.8;
+elseif strcmpi(method,'time')
+    % Translated into Matlab code by T.Nilsson, IRFU, from IDL code by ?? 
+
+    fsamp = c_efw_fsample(einp);
+    nk = 512;
+    df = fsamp/nk;
+
+    nbp = size(einp,1); % Length of data seq.
+
+    tfinp = get_efw_tf(filt);
+
+
+    frq = (0:nk-1)*df;
+
+    frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
+
+    % Take absolute value: handle negative f  
+    myf = abs(frq);
+
+    % Interpolation of the filter to the fixed size (nk) of the kernel
+    % for positive frequencies myf
+    c = interp1(tfinp(:,1), complex(tfinp(:,4),tfinp(:,5)), myf,'linear','extrap');
+
+    take_conj = find(frq<0);
+    n_take_conj = numel(take_conj);
+    if(n_take_conj>0)
+        c(take_conj) = conj(c(take_conj));
+    else
+        c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));
+        warning('c filter had no negative freq. Not valid');
+    end
+
+    % FFT of real function must be real at f=0
+    c(1) = abs( c(1) ) * sign( real( c(1) ) );
+
+    s = complex(ones(1,nk),0);
+
+    s = s./c;
+
+    % ks = fft(s, 1) <- IDL "1" gives direction (+ => reverse, - => forward)
+    ks = ifft(s)*length(s);
+
+    % If we did everything right, the imaginary part truly is negligible
+    pr = sum(real(ks).*real(ks));    
+    pi = sum(imag(ks).*imag(ks));
+    
+    if(pi/pr>1e-5)
+        sprintf('*** cluster_efw_deconvo: Imag/Real for impulse reponse is = %d.',pi/pr);
+    end
+
+    kernel = real(ks);
+
+    % zero time of the kernel is at index 0. Now, shift that to index nk/2
+    % to get a kernel suitable for linear convolution and
+    % to allow application of the window.  
+    kernel = circshift(kernel, [0 nk/2]);
+
+    % As this is a continuous calibration, the window must be applied to the 
+    % kernel, rather than to the waveform.
+    % note: application of window introduces a slight offset, which must be 
+    % removed from the signal afterwards.  
+    % Correcting for the offset in the kernel itself 
+    % would nullify the benefit the of window.
+    kernel = kernel .* hann(nk,'periodic')';
+
+    % normalize the kernel
+    kernel = kernel/nk;
+
+    % Preallocate output (including column 1: time)
+    eout = einp;
+
+    % Before applying the filter remove any DC levels as the Hann window
+    % above could interfer with these and create an offset. The signal should
+    % be uncoupled before we let the Hann applied kernel do its thing.
+    einp_mean = mean(einp(:,2));
+    einp(:,2) = einp(:,2) - einp_mean;
+
+    % notes on edge behavior:
+    % default: zero output when kernel overlaps edge
+    % /edge_zero: usually good, but can emphasize low frequency trends, i.e.
+    %                           artifiacts of despin
+    % /edge_wrap; similar to edge zero (based on analysis of cal signal).
+    % /edge_truncate: usually bad
+
+    % Normalize with the 14.8322 which corresponds to the 23 dB at
+    % DC level.
+    eout(:,2) = cluster_staff_fastconvol(einp(:,2)', kernel, edge, 0)' / 14.8322;
+
+    % Remove any offset caused by Hann window and the kernel.
+    eout(:,2) = eout(:,2) - mean(eout(:,2));
+    
+    % We should now have completly removed any DC levels, inferred from the
+    % filter process. Then add the DC levels back again (the DC level were in
+    % effect untouched by the filter process).
+    eout(:,2) = eout(:,2) + einp_mean;
 else
-    Pxy = Pxx./[tf;flipud(conj(tf(1:end-1)))];
+    % Should not happen as we have done checks at input.
+    error('Method as defined in user input was incorrect. Method must be either "time" or "frequency", with "frequency" being default.')
 end
-
-eout = einp;
-eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 
 % For HX data we uncorrect the filter delay put there by ISDAT
 if strcmpi(tm,'HX')
@@ -58,6 +216,176 @@ if strcmpi(tm,'HX')
 end
 
 end
+
+
+function ao = cluster_staff_fastconvol(a, kernel, edge, blk_c)
+
+% This function is a translated version of cluster_eff_fastconvol
+% originally written in IDL by ???. Traslated into Matlab code by 
+% T.Nilsson, IRFU, 20130702
+% Input:
+%        a - data seq.
+%   kernel - normalized kernel of the filter
+%     edge - edge_zero, zero outside of edges
+%          - edge_wrap, wrap the edge outside of edges
+%          - edge_truncate, simply truncate the edges
+%          - edge_non, do nothing with edges.
+%    blk_c - block length factor (if not set it defaults to 8 times the
+%            filter length).
+
+% Number of elements in the input signal to be filtered.
+nbp = numel(a);
+
+% Number of elements in the kernel (aka filter) to be used.
+nk = numel(kernel);
+
+% If blk_c factor is set use this this, if not use a factor 8.
+if(blk_c~=0)
+    b_length = blk_c * nk;
+else
+    b_length = 8 * nk;
+end
+
+% Pad the edges 
+switch(upper(edge))
+    case 'EDGE_ZERO'
+        % Not optimal treatment.
+        ao = [zeros(1,nk/2), a, zeros(1,nk/2)];
+    case 'EDGE_WRAP'
+        % Default treatment
+        ao = [wrev(a(1:nk/2)), a, wrev(a(nbp-nk/2+1:nbp))];
+        % A possiblilty would be using fliplr but wrev is slightly quicker.
+    case 'EDGE_TRUNC'
+        % Not recommended treatment.
+        ao = [zeros(1,nk/2) + a(1), a, zeros(1,nk/2)+ a(nbp)];
+    case 'EDGE_NON'
+        % Not recommended treatment.
+        ao = a;
+    otherwise
+        % This should not happen as we have checked input already.
+        error('Unknown EDGE treatment parameter.')
+end
+
+% perform the convolution.
+if(b_length<nbp)
+    % Use fast convolution
+    ao = block_conv(kernel, ao, b_length);
+    % If no edge padding, then zero out the edge
+     if numel(ao)==nbp
+         %warning('Block convolution but with no edge treatment.');
+         ao(1:nk-1) = 0;
+     end
+else
+    % Use brute force convolution
+    ao = conv(ao, kernel,'valid');
+    % ONE IMPORTAN DIFFERENCE WITH IDL, MATLAB WILL NOT PROVIDE INITIAL
+    % ZEROS. Therefor append argument 'valid', and perform check
+    % if (length(ao) ~= nbp) and add zeros in order for the shift back to
+    % zero delay to be performed correctly regardless of lengths used.
+    if(nbp-length(ao)>0)
+        ao=[zeros(1,nbp-length(ao)), ao];
+    end
+end
+
+% shift back to zero delay 
+ao = circshift(ao, [0 -nk/2]);
+
+% trim any edge padding
+if(numel(ao)~=nbp)
+    ao = ao(nk/2+1:nbp+nk/2);
+end
+
+end
+
+
+
+function result = block_conv( filter, signal, blen )
+% Linear Convolution computation via the Overlap-and-Save method. Ver 2.
+% This function require: length(signal) > blen > length(filter).
+
+% This separate function was originaly created by Ilias Konsoulas who
+% REQUIRED that following copyright message remain intact, the code has
+% since been modified by T.Nilsson, IRFU, 20130802.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% Copyright (c) 2012, Ilias Konsoulas
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+% * Redistributions of source code must retain the above copyright
+%   notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above copyright
+%   notice, this list of conditions and the following disclaimer in
+%   the documentation and/or other materials provided with the distribution
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+% Make sure signal and filter are row vectors for subsequent processing:
+signal = signal(:).';
+filter = filter(:).';
+
+SignLen = length(signal);
+FiltLen = length(filter);
+
+if(FiltLen>=blen)
+    error('Block length must be longer than filter length.');
+end
+
+if(blen>=SignLen)
+    error('Block length must be shorter than the signal to be filtered.');
+end
+
+% Number of block segments
+m = ceil((SignLen+FiltLen-1)/blen);
+
+% Pad signal with zeros to the least integer multiple of 
+% blen greater than or equal to FiltLen+SignLen-1. 
+signal = [signal  zeros(1, m*blen-SignLen)];  
+
+% This is the pre-allocated size of the output sequence
+% result[n] where the convolution values will be stored.
+% result may be a large vector therefor use x(1:n)=0 instead of
+% x=zeros(1,n) which is not as quick for very large vectors.
+result(1, m*blen) = 0;                 
+y_current = zeros(1, blen+FiltLen);
+     
+for k=0:m-1       
+      if(k==0) 
+          % First x_block processing. We introduce some zeros in the 
+          % beginning of signal_block as necessary.
+          signal_block = [zeros(1,FiltLen) signal(1:blen)];  
+          % Compute the circular convolution of size (blen + FiltLen).
+          y_current = cconv(signal_block, filter, blen+FiltLen); 
+          result(1:blen) = y_current(FiltLen+1:end);
+      else
+          % Successive signal_blocks are of size blen+FiltLen overlapping
+          % by FiltLen samples.
+          signal_block = signal(k*blen - FiltLen+1:(k+1)*blen);      
+          % Compute the circular convolution of size blen+filtLen.
+          y_current = cconv(signal_block, filter, blen+FiltLen);
+          % Keep only the last blen samples of y_current.
+          result(k*blen+1:(k+1)*blen) = y_current(FiltLen+1:end) ;   
+      end      
+end
+
+% Finally, keep only the valid entries of result[n]:
+result = result(1:SignLen+FiltLen-1);
+end
+
 
 function tfinp = get_efw_tf(filt)
 % filt is one of 'L', 'M', 'H', 'BP', 'U'
