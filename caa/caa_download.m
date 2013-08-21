@@ -43,6 +43,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %   'cfa'           - download from CFA instead of CAA, basic functions are
 %                     implemented. Downloaded files go into './CFA/' folder.
 %                     This must be taken into account when loading data.
+%   'stream'        - donwload through CAA streaming (gzipped cef file)
 %
 %
 %  To store your caa user & password as defaults (e.g. 'uuu'/'ppp'): 
@@ -108,6 +109,7 @@ end
 %% Defaults
 checkDownloadStatus		= false;
 doLog					= true;			% log into .caa file
+doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 expandWildcards			= true;			% default is to use wildcard
 checkIfDataAreAtCaa		= true;			% check if there are any data at caa
@@ -180,6 +182,10 @@ if nargin>2, % check for additional flags
 			if downloadDirectory(end) ~= filesep,
 				downloadDirectory(end+1) = filesep;
 			end
+		elseif any(strcmpi('stream',flag)) % data streaming
+			checkIfDataAreAtCaa = false;
+			expandWildcards		= false;
+			doDataStreaming		= true;
 		else
 			irf_log('fcal',['Flag ''' flag ''' not recognized']);
 		end
@@ -218,6 +224,7 @@ if nargin>=1, % check if first argument is not caa zip file link
 	end
 end
 caaQuery=[caaServer 'caa_query/?'];
+caaStream=[caaServer 'cgi-bin/stream_caa.cgi/?'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/?'];
 
 %%%%%%%%% CFA stuff, 
@@ -420,10 +427,15 @@ end
  
 switch downloadFromCFA
     case 0 % CAA
-        url_line=[caaQuery urlIdentity '&dataset_id=' ...
-            dataset '&time_range=' tintiso urlFormat ... 
-            urlFileInterval urlNonotify urlSchedule];
-        disp('Be patient! Submitting data request to CAA...');
+		if doDataStreaming
+			url_line=[caaStream urlIdentity '&gzip=1&dataset_id=' ...
+				dataset '&time_range=' tintiso ];
+		else
+			url_line=[caaQuery urlIdentity '&dataset_id=' ...
+				dataset '&time_range=' tintiso urlFormat ...
+				urlFileInterval urlNonotify urlSchedule];
+		end
+		disp('Be patient! Submitting data request to CAA...');
     case 1 % CFA
         url_line = [cfaServer cfaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
@@ -488,6 +500,33 @@ function [status,downloadedFile]=get_zip_file(urlLink)
 status = 0; % default
 switch downloadFromCFA
     case 0 % CAA
+		if doDataStreaming
+			% define time interval for file name YYYYMMDD_hhmmss_YYYYMMDD_hhmmss from tintiso
+			tt = irf_time(tintiso,'iso2tint');
+			t1=[irf_time(tt(1),'epoch2yyyy-mm-dd hh:mm:ss') '_' irf_time(tt(2),'epoch2yyyy-mm-dd hh:mm:ss')];
+			t1=strrep(t1,':','');
+			t1=strrep(t1,'-','');
+			t1=strrep(t1,' ','_');
+			tintInFileName=t1;
+			% define filename
+			fileName = [dataset '__' tintInFileName '.cef.gz'];
+			datasetDirName = [downloadDirectory dataset];
+			if ~exist(datasetDirName,'dir'),
+				irf_log('dsrc',['Creating directory: ' datasetDirName]);
+				mkdir(datasetDirName);
+			end
+			filePath = [datasetDirName filesep fileName];
+			[downloadedFile,isReady]=urlwrite(urlLink,filePath);
+			if isReady,
+				irf_log('dsrc',['Downloaded: ' urlLink]);
+				irf_log('dsrc',['into ->' filePath]);
+				status = 1;
+			else
+				irf_log('dsrc',['Did not succed to download: ' urlLink]);
+				status = 0;
+			end
+			return;
+ 		end
         [downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
     case 1 % CFA
         fileName=tempname;
