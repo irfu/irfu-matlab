@@ -270,14 +270,18 @@ if(b_length<nbp)
      end
 else
     % Use brute force convolution
-    ao = conv(ao, kernel,'valid');
+    % If input signal is very short we end up here, use temporary ao_2 to
+    % hold valid convolution.
+    ao_2 = conv(ao, kernel,'valid');
     % ONE IMPORTAN DIFFERENCE WITH IDL, MATLAB WILL NOT PROVIDE INITIAL
     % ZEROS. Therefor append argument 'valid', and perform check
     % if (length(ao) ~= nbp) and add zeros in order for the shift back to
     % zero delay to be performed correctly regardless of lengths used.
-    if(nbp-length(ao)>0)
-        ao=[zeros(1,nbp-length(ao)), ao];
+    if(nbp-length(ao_2)>0)
+        ao=[zeros(1,nbp-length(ao_2)), ao_2];
+        warning('added zeros');
     end
+
 end
 
 % shift back to zero delay 
