@@ -9,7 +9,7 @@ function eout = c_efw_invert_tf(einp,filt,tm,method,edge)
 %           'BP' (50 Hz - 8 kHz bandpass), 'U' (unfiltered)
 %      TM - optional, 'HX' or 'IB' (default).
 %           For HX we uncorrect the filter group delay which was put
-%           there by ISDAT. Note TM is mandetory if method is to be
+%           there by ISDAT. Note TM is mandatory if method is to be
 %           chosen.
 %  METHOD - optional, 'frequency' (default) or 'time'.
 %           For time we use time domain filtering and block convolution
@@ -104,26 +104,19 @@ if strcmpi(method,'frequency')
     eout = einp;
     eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 elseif strcmpi(method,'time')
-    % Translated into Matlab code by T.Nilsson, IRFU, from IDL code by ?? 
+    % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berekeley IDL code 
 
     fsamp = c_efw_fsample(einp);
     nk = 512;
     df = fsamp/nk;
-
-    nbp = size(einp,1); % Length of data seq.
-
-    tfinp = get_efw_tf(filt);
-
-
-    frq = (0:nk-1)*df;
-
-    frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
+    frq = (0:nk-1)*df; frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
 
     % Take absolute value: handle negative f  
     myf = abs(frq);
 
     % Interpolation of the filter to the fixed size (nk) of the kernel
     % for positive frequencies myf
+    tfinp = get_efw_tf(filt);
     c = interp1(tfinp(:,1), complex(tfinp(:,4),tfinp(:,5)), myf,'linear','extrap');
 
     take_conj = find(frq<0);
@@ -360,7 +353,7 @@ signal = [signal  zeros(1, m*blen-SignLen)];
 % result[n] where the convolution values will be stored.
 % result may be a large vector therefor use x(1:n)=0 instead of
 % x=zeros(1,n) which is not as quick for very large vectors.
-result(1, m*blen) = 0;                 
+result(1, m*blen) = 0;
 y_current = zeros(1, blen+FiltLen);
      
 for k=0:m-1       
