@@ -79,10 +79,10 @@ if nargin == 5
     end
 end
 
-% Check if data is continuous, require 3 mus precision
-dt=diff(einp(:,1));
-if max(abs(dt-median(dt)))>3e-6
-  error('data is not evenly sampled')
+% Check if data is continuous, require 3 us precision
+dt=diff(einp(:,1)); maxJitter = max(abs(dt-median(dt)));
+if maxJitter>1e-5
+  error('data is not evenly sampled, max jitter %.2f us (>10 us)',maxJitter*1e6)
 end
 
 if strcmpi(method,'frequency')
