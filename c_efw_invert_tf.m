@@ -78,7 +78,13 @@ if nargin == 5
         error('EDGE treatment is only a valid parameter for "time" method.')
     end
 end
-    
+
+% Check if data is continuous, require 3 mus precision
+dt=diff(einp(:,1));
+if max(abs(dt-median(dt)))>3e-6
+  error('data is not evenly sampled')
+end
+
 if strcmpi(method,'frequency')
         % Default method
     nfft = size(einp,1);
