@@ -19,12 +19,10 @@ cluster_marker_small={{'ks','markersize',8},{'rd','markersize',8},...
 	{'go','markersize',8,'color',[0 0.6 0]},{'bv','markersize',8}};
 cluster_marker_shaded={{'ks','color',[0.3 0.3 0.3]},...
 	{'rd','color',[1 0.3 0.3]},{'go','color',[.3 1 .3]},{'bv','color',[.3 .3 1]}};
-R1=[];R2=[];R3=[];R4=[];
+R1=[];R2=[];R3=[];R4=[]; %#ok<NASGU>
 R.C1=[];R.C2=[];R.C3=[];R.C4=[];R.R=[]; % positions of each s/c and mass centrum
-x1=[];x2=[];x3=[];x4=[];
-rr1=[];rr2=[];rr3=[];rr4=[];
-dr1=[];dr2=[];dr3=[];dr4=[];
-tr=[];r=[];XRe=cell(1,4);
+tr=[];r=[]; %#ok<NASGU>
+XRe=cell(1,4);rr=cell(1,4);
 if       (nargin==1 && ischar(time)),
 	action=time;
 	%irf_log('fcal',['action=' action]);
@@ -92,13 +90,13 @@ switch lower(action)
 		data.coord_label=coord_label;
 		data.plot_type=plot_type;
 		data.sc_list=sc_list;
-		c_eval('data.r?=[];data.R?=[];');
+		c_eval('data.r.C?=[];data.R.C?=[];');
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz('read_position');
 		c_pl_sc_conf_xyz(plot_type);
 	case 'read_position'
 		data=get(gcf,'userdata');
-		c_eval('R.C?=data.R?;',data.sc_list);
+		R=data.R;
 		if ~is_R_ok,     % try reading from disk mat files
 			c_load('R?',sc_list);
 			c_eval('R.C?=R?;',sc_list);
@@ -130,13 +128,13 @@ switch lower(action)
 			irf_log('dsrc','Could not obtain position data!')
 			c_eval('R.C?=[];',data.sc_list);
 		end
-		c_eval('data.R?=R.C?;',data.sc_list);
+		data.R=R;
 		set(gcf,'userdata',data);
 		return;
 	case 'gse'
 		data=get(gcf,'userdata');
 		data.coord_label='GSE';
-		c_eval('data.r?=data.R?;',data.sc_list);
+		data.r=data.R;
 		set(gcf,'userdata',data);
 		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
 			c_pl_sc_conf_xyz('lmn');
@@ -146,7 +144,7 @@ switch lower(action)
 	case 'gsm'
 		data=get(gcf,'userdata');
 		data.coord_label='GSM';
-		c_eval('data.r?=irf_gse2gsm(data.R?);',data.sc_list);
+		c_eval('data.r.C?=irf_gse2gsm(data.R.C?);',data.sc_list);
 		set(gcf,'userdata',data);
 		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
 			c_pl_sc_conf_xyz('lmn');
@@ -284,15 +282,22 @@ switch lower(action)
 	case 'plot'
 		data=get(gcf,'userdata');
 		flag_using_omni_data=[]; % default that there is no plot involving OMNI data
-		c_eval('rr?=irf_resamp(data.r?,data.t);',data.sc_list);
-		R=0; c_eval('R=R+rr?/length(data.sc_list);',data.sc_list);
-		c_eval('dr{?}=rr?-R;dr{?}(1)=data.t;dr{?}=irf_abs(dr{?});',data.sc_list);
-		x=cell(1,4);
-		for ic=data.sc_list,
-			x{ic}=dr{ic};
-			XRe{ic}=irf_tappl(eval(['rr' num2str(ic)]),'/6372');
+		% estimate mass center
+		R.R=0; 
+		for ic = data.sc_list
+			rr{ic}=irf_resamp(data.r.(['C' num2str(ic)]),data.t);
+			R.R=R.R+rr{ic}/length(data.sc_list);
 		end
-		drref=0; c_eval('drref=max([drref dr{?}(5)]);',data.sc_list);
+		% estimate relative position wrt mass center
+		x=cell(1,4); % relative position
+		drref=0;     % scale for plots
+		for ic = data.sc_list
+			x{ic}=rr{ic}-R.R;
+			x{ic}(1)=data.t;
+			x{ic}=irf_abs(x{ic});
+			drref=max([drref x{ic}(5)]);
+			XRe{ic}=irf_tappl(rr{ic},'/6372');
+		end
 		if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
 		set(gcf,'userdata',data);
 		%%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
@@ -569,8 +574,8 @@ end
 		xtick_ax1=get(axis1,'XTick');ytick_ax1=get(axis1,'YTick');
 		xlabel(axis2,[plotAxes(1) ' [R_E] ' coord_label]);
 		ylabel(axis2,[plotAxes(2) ' [R_E] ' coord_label]);
-		xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
-		ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
+		xtlax2=num2str((xtick_ax1'+R.R(2))/6372,REform);
+		ytlax2=num2str((ytick_ax1'+R.R(4))/6372,REform);
 		set(axis2,'xdir',get(axis1,'xdir'));
 		set(axis2,'ydir',get(axis1,'ydir'));
 		set(axis2,'xlim',xlim_ax1,'xticklabel',xtlax2);
