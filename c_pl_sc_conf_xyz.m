@@ -20,11 +20,11 @@ cluster_marker_small={{'ks','markersize',8},{'rd','markersize',8},...
 cluster_marker_shaded={{'ks','color',[0.3 0.3 0.3]},...
 	{'rd','color',[1 0.3 0.3]},{'go','color',[.3 1 .3]},{'bv','color',[.3 .3 1]}};
 R1=[];R2=[];R3=[];R4=[];
+R.C1=[];R.C2=[];R.C3=[];R.C4=[];R.R=[]; % positions of each s/c and mass centrum
 x1=[];x2=[];x3=[];x4=[];
 rr1=[];rr2=[];rr3=[];rr4=[];
 dr1=[];dr2=[];dr3=[];dr4=[];
-XRe1=[];XRe2=[];XRe3=[];XRe4=[];
-tr=[];r=[];
+tr=[];r=[];XRe=cell(1,4);
 if       (nargin==1 && ischar(time)),
 	action=time;
 	%irf_log('fcal',['action=' action]);
@@ -96,29 +96,29 @@ switch lower(action)
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz('read_position');
 		c_pl_sc_conf_xyz(plot_type);
-		
 	case 'read_position'
 		data=get(gcf,'userdata');
-		c_eval('R?=data.R?;',data.sc_list);
+		c_eval('R.C?=data.R?;',data.sc_list);
 		if ~is_R_ok,     % try reading from disk mat files
 			c_load('R?',sc_list);
+			c_eval('R.C?=R?;',sc_list);
 		end
 		if ~is_R_ok,     % try reading from CAA files
 			irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M ...')
-			c_eval('R?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
+			c_eval('R.C?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
 		end
 		if ~is_R_ok,     % try reading from CAA files
 			irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
-			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-			if ~isempty(R)
+			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			if ~isempty(R.R)
 				c_eval('dR?=irf_get_data(''sc_dr1_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
-				c_eval('R?=irf_add(1,R,1,dR?);',sc_list);
+				c_eval('R.C?=irf_add(1,R,1,dR?);',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading from isdat server
 			irf_log('dsrc','Trying to obtain satellite position from isdat server...')
 			try
-				c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R?=[tr r];',data.sc_list);
+				c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R.C?=[tr r];',data.sc_list);
 				if ~is_R_ok,% no idea
 					disp('NO POSITION DATA!');
 				end
@@ -128,12 +128,11 @@ switch lower(action)
 		end
 		if ~is_R_ok,     % could not obtain
 			irf_log('dsrc','Could not obtain position data!')
-			c_eval('R?=[];',data.sc_list);
+			c_eval('R.C?=[];',data.sc_list);
 		end
-		c_eval('data.R?=R?;',data.sc_list);
+		c_eval('data.R?=R.C?;',data.sc_list);
 		set(gcf,'userdata',data);
 		return;
-		
 	case 'gse'
 		data=get(gcf,'userdata');
 		data.coord_label='GSE';
@@ -144,7 +143,6 @@ switch lower(action)
 		else
 			c_pl_sc_conf_xyz('plot');
 		end
-		
 	case 'gsm'
 		data=get(gcf,'userdata');
 		data.coord_label='GSM';
@@ -154,8 +152,7 @@ switch lower(action)
 			c_pl_sc_conf_xyz('lmn');
 		else
 			c_pl_sc_conf_xyz('plot');
-		end
-		
+		end	
 	case 'default'
 		data=get(gcf,'userdata');
 		ss=get(0,'screensize');
@@ -166,19 +163,18 @@ switch lower(action)
 		xsize=.35;ysize=.195;dx=.13;dy=.05;
 		for ix=1:2,
 			for iy=1:4,
-				h(iy*2-2+ix)=axes('position',[dx*ix+(ix-1)*xsize dy*(5-iy)+(4-iy)*ysize xsize ysize]);
+				h(iy*2-2+ix)=axes('position',[dx*ix+(ix-1)*xsize dy*(5-iy)+(4-iy)*ysize xsize ysize]); %#ok<LAXES>
 			end
 		end
 		axis(h(8),'off');
-		axis(h(1:3),[-20 20 -20 20]);
-		axis(h(4),[-20 20 0 20]);
+		axis(h(1:3),[-19.99 19.99 -19.99 19.99]);
+		axis(h(4),[-19.99 19.99 0 19.99]);
 		for ii=1:4, hold(h(ii),'on');daspect(h(ii),[1 1 1]);end
 		data.h=h;
 		data.flag_show_cluster_description=1; % show cluster description
 		data.plot_type='default';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
-		
 	case 'compact'
 		data=get(gcf,'userdata');
 		clf;menus;
@@ -211,7 +207,7 @@ switch lower(action)
 		initialize_figure;
 		h=[];
 		h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
-		h(2)=axes('position',[0 0 1 1]);            % for legends
+		h(2)=axes('position',[0.5 0.8 0.5 0.2]);    % for legends
 		data.h=h;
 		data.flag_show_cluster_description=1; % show cluster description
 		data.plot_type='config3d';
@@ -245,7 +241,6 @@ switch lower(action)
 			'Position',[0.55 0.1 .3 .05],'String',Nstr,'Callback',callbackStr);
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz('plot');
-		
 	case 'supercompact'
 		data=get(gcf,'userdata');
 		ss=get(0,'screensize');
@@ -264,7 +259,6 @@ switch lower(action)
 		data.plot_type='supercompact';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
-		
 	case 'supercompact2'
 		data=get(gcf,'userdata');
 		ss=get(0,'screensize');
@@ -287,18 +281,18 @@ switch lower(action)
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		%%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		
 	case 'plot'
 		data=get(gcf,'userdata');
 		flag_using_omni_data=[]; % default that there is no plot involving OMNI data
 		c_eval('rr?=irf_resamp(data.r?,data.t);',data.sc_list);
 		R=0; c_eval('R=R+rr?/length(data.sc_list);',data.sc_list);
-		c_eval('XRe?=irf_tappl(rr?,''/6372'');dr?=rr?-R;dr?(1)=data.t;dr?=irf_abs(dr?);x?=dr?;',data.sc_list);
-		x=[];
-		for ic=1:numel(data.sc_list),
-			eval(['x{ic}=x' num2str(data.sc_list(ic)) ';']);
+		c_eval('dr{?}=rr?-R;dr{?}(1)=data.t;dr{?}=irf_abs(dr{?});',data.sc_list);
+		x=cell(1,4);
+		for ic=data.sc_list,
+			x{ic}=dr{ic};
+			XRe{ic}=irf_tappl(eval(['rr' num2str(ic)]),'/6372');
 		end
-		drref=0; c_eval('drref=max([drref dr?(5)]);',data.sc_list);
+		drref=0; c_eval('drref=max([drref dr{?}(5)]);',data.sc_list);
 		if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
 		set(gcf,'userdata',data);
 		%%%%%%%%%%%%%%%%%%%%%%%% Plotting %%%%%%%%%%%%%%%%%%%
@@ -307,36 +301,27 @@ switch lower(action)
 		sc_list=data.sc_list;
 		switch data.plot_type
 			case 'default'
-				cla(h(1));
-				c_eval('plot(h(1),XRe?(2),XRe?(4),cluster_marker_small{?}{:});hold(h(1),''on'');',sc_list);
-				xlabel(h(1),['X [R_E] ' coord_label]);
-				ylabel(h(1),['Z [R_E] '  coord_label]);
-				grid(h(1),'on')
-				set(h(1),'xdir','reverse')
+				plotAxes = 'XZ';
+				plot_position(h(1));
 				[flag_using_omni_data,omni]=add_magnetopause(h(1));
 				add_bowshock(h(1));
 				add_Earth(h(1));
 				
-				%  axes(h(1));      title(titlestr);
-				cla(h(2));
-				c_eval('plot(h(2),XRe?(3),XRe?(4),cluster_marker_small{?}{:});hold(h(2),''on'');',sc_list);
-				xlabel(h(2),['Y [R_E] ' coord_label]);
-				ylabel(h(2),['Z [R_E] ' coord_label]);
-				grid(h(2),'on');
+				plotAxes = 'YZ';
+				plot_position(h(2));
+				add_Earth(h(2),'day');
 				
-				cla(h(3));
-				c_eval('plot(h(3),XRe?(2),XRe?(3),cluster_marker_small{?}{:});hold(h(3),''on'');',sc_list);
-				xlabel(h(3),['X [R_E] ' coord_label]);
-				ylabel(h(3),['Y [R_E] ' coord_label]);
-				grid(h(3),'on');
-				set(h(3),'xdir','reverse')
-				set(h(3),'ydir','reverse')
+				plotAxes = 'XY';
+				plot_position(h(3));
 				add_magnetopause(h(3));
 				add_bowshock(h(3));
 				add_Earth(h(3));
 				
 				cla(h(4));
-				c_eval('plot(h(4),XRe?(2),sqrt(XRe?(3)^2+XRe?(4)^2),cluster_marker_small{?}{:});hold(h(4),''on'');',sc_list);
+				for ic=sc_list
+				 plot(h(4),XRe{ic}(2),sqrt(XRe{ic}(3)^2+XRe{ic}(4)^2),cluster_marker_small{ic}{:});
+				 hold(h(4),'on');
+				end
 				xlabel(h(4),['X [R_E] ' coord_label]);
 				ylabel(h(4),['sqrt (Y^2+Z^2) [R_E] ' coord_label]);
 				grid(h(4),'on');
@@ -345,106 +330,64 @@ switch lower(action)
 				add_bowshock(h(4));
 				add_Earth(h(4));
 				
-				cla(h(5));
-				c_eval('plot(h(5),x?(2),x?(4),cluster_marker{?}{:});hold(h(5),''on'');',sc_list);
-				xlabel(h(5),['X [km] ' coord_label]);
-				ylabel(h(5),['Z [km] ' coord_label]);
-				grid(h(5),'on');
-				axis(h(5),[-drref drref -drref drref]);
-				set(h(5),'xdir','reverse')
+				plotAxes = 'XZ';
+				plot_relative_position(h(5));
 				
-				cla(h(6));
-				c_eval('plot(h(6),x?(3),x?(4),cluster_marker{?}{:});hold(h(6),''on'');',sc_list);
-				xlabel(h(6),['Y [km] ' coord_label]);
-				ylabel(h(6),['Z [km] ' coord_label]);
-				grid(h(6),'on');
-				axis(h(6),[-drref drref -drref drref]);
+				plotAxes = 'YZ';
+				plot_relative_position(h(6));
 				
-				cla(h(7));
-				c_eval('plot(h(7),x?(2),x?(3),cluster_marker{?}{:});hold(h(7),''on'');',sc_list);
-				xlabel(h(7),['X [km] ' coord_label]);
-				ylabel(h(7),['Y [km] ' coord_label]);
-				grid(h(7),'on');
-				axis(h(7),[-drref drref -drref drref]);
-				set(h(7),'xdir','reverse')
-				set(h(7),'ydir','reverse')
-				
+				plotAxes = 'XY';
+				plot_relative_position(h(7));
 			case 'compact'
 				
-				hold(h(1),'off');
-				c_eval('plot(h(1),x?(2),x?(4),cluster_marker{?}{:});hold(h(1),''on'');',sc_list);
-				xlabel(h(1),['{\Delta}X [km] ' coord_label]);
-				ylabel(h(1),['{\Delta}Z [km] ' coord_label]);
-				set(h(1),'xdir','reverse');
-				grid(h(1),'on');
-				axis(h(1),[-drref drref -drref drref]);
-				if drref>1000, REform='%6.1f';
-				elseif drref<100, REform='%6.3f';
-				else REform='%6.2f';
-				end
-				
-				xlim_ax1=get(h(1),'XLim');ylim_ax1=get(h(1),'YLim');
-				xtick_ax1=get(h(1),'XTick');ytick_ax1=get(h(1),'YTick');
-				xlabel(h(21),['X [R_E] ' coord_label]);
-				ylabel(h(21),['Z [R_E] ' coord_label]);
-				xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
-				ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
-				set(h(21),'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
+				cla(h(1));
+				plotAxes = 'XZ';
+				plot_relative_position(h(1));
+				fix_RE_axis(h(1),h(21));
 				
 				cla(h(2));
-				c_eval('plot(h(2),x?(3),x?(4),cluster_marker{?}{:});hold(h(2),''on'');',sc_list);
-				xlabel(h(2),['{\Delta}Y [km] ' coord_label]);
-				ylabel(h(2),['{\Delta}Z [km] ' coord_label]);
-				grid(h(2),'on');
-				axis(h(2),[-drref drref -drref drref]);
-				
-				xlim_ax1=get(h(2),'XLim');ylim_ax1=get(h(2),'YLim');
-				xtick_ax1=get(h(2),'XTick');ytick_ax1=get(h(2),'YTick');
-				xlabel(h(22),['Y [R_E] ' coord_label]);
-				ylabel(h(22),['Z [R_E] ' coord_label]);
-				set(h(22),'xlim',xlim_ax1,'ylim',ylim_ax1);
-				xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
-				ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
-				set(h(22),'xticklabel',xtlax2,'yticklabel',ytlax2);
+				plotAxes = 'YZ';
+				plot_relative_position(h(2));
+				fix_RE_axis(h(2),h(22));
 				
 				cla(h(3));
-				c_eval('plot(h(3),x?(2),x?(3),cluster_marker{?}{:});hold(h(3),''on'');',sc_list);
-				xlabel(h(3),['{\Delta}X [km] ' coord_label]);
-				ylabel(h(3),['{\Delta}Y [km] ' coord_label]);
-				grid(h(3),'on');
-				axis(h(3),[-drref drref -drref drref]);
-				set(h(3),'xdir','reverse')
-				set(h(3),'ydir','reverse')
-				
-				xlim_ax1=get(h(3),'XLim');ylim_ax1=get(h(3),'YLim');
-				xtick_ax1=get(h(3),'XTick');ytick_ax1=get(h(3),'YTick');
-				xlabel(h(23),['X [R_E] ' coord_label]);
-				ylabel(h(23),['Y [R_E] ' coord_label]);
-				set(h(23),'xlim',xlim_ax1,'ylim',ylim_ax1,'xdir','reverse')
-				xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
-				ytlax2=num2str((ytick_ax1'+R(3))/6372,REform);
-				set(h(23),'ydir','reverse','xticklabel',xtlax2,'yticklabel',ytlax2);
+				plotAxes = 'XY';
+				plot_relative_position(h(3));
+				fix_RE_axis(h(3),h(23));
+				%
 			case 'config3d'
 				
 				hold(h(1),'off');
-				c_eval('plot3(h(1),-drref,x?(3),x?(4),cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
-				c_eval('plot3(h(1),x?(2),-drref,x?(4),cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
-				c_eval('plot3(h(1),x?(2),x?(3),-drref,cluster_marker_shaded{?}{:});hold(h(1),''on'');',sc_list);
+				for ic=sc_list
+					% put Cluster markers
+					plot3(h(1),x{ic}(2),x{ic}(3),x{ic}(4),cluster_marker{ic}{:});
+					hold(h(1),'on');
+					% lines from sc to projection planes
+					lineProperties = {'parent',h(1),'linestyle',':','linewidth',0.6};
+					line([x{ic}(2) -drref],[x{ic}(3) x{ic}(3)],[x{ic}(4) x{ic}(4)],lineProperties{:});
+					line([x{ic}(2) x{ic}(2)],[x{ic}(3) -drref],[x{ic}(4) x{ic}(4)],lineProperties{:});
+					line([x{ic}(2) x{ic}(2)],[x{ic}(3) x{ic}(3)],[x{ic}(4) -drref],lineProperties{:});
+					% put Cluster markers on projections
+					plot3(h(1),-drref,x{ic}(3),x{ic}(4),cluster_marker_shaded{ic}{:});
+					plot3(h(1),x{ic}(2),-drref,x{ic}(4),cluster_marker_shaded{ic}{:});
+					plot3(h(1),x{ic}(2),x{ic}(3),-drref,cluster_marker_shaded{ic}{:});
+				end
 				axis(h(1),[-drref drref -drref drref -drref drref ]);
 				for ii=1:4,
 					for jj=ii+1:4,
 						if any(find(sc_list==ii)) && any(find(sc_list==jj)),
-							c_eval('line([x?(2) x!(2)],[x?(3) x!(3)],[x?(4) x!(4)],''parent'',h(1),''linewidth'',2,''linestyle'',''-'',''color'',[0.6 0.6 0.6])',ii,jj);
+							line([x{ii}(2) x{jj}(2)],...
+								[x{ii}(3) x{jj}(3)],...
+								[x{ii}(4) x{jj}(4)],...
+								'parent',h(1),'linewidth',2,'linestyle','-',...
+								'color',[0.6 0.6 0.6]);
 						end
 					end
 				end
-				c_eval('line([x?(2) -drref],[x?(3) x?(3)],[x?(4) x?(4)],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
-				c_eval('line([x?(2) x?(2)],[x?(3) -drref],[x?(4) x?(4)],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
-				c_eval('line([x?(2) x?(2)],[x?(3) x?(3)],[x?(4) -drref],''parent'',h(1),''linestyle'','':'',''linewidth'',0.6);',sc_list);
+				% draw origo axis
 				line([-drref drref],[-drref -drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref -drref],[-drref drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
-				c_eval('plot3(h(1),x?(2),x?(3),x?(4),cluster_marker{?}{:});hold(h(1),''on'');',sc_list);
 				text(0.1,1,0,irf_time(data.t,'isoshort'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
 				xlabel(h(1),['{\Delta}X [km] ' coord_label]);
 				ylabel(h(1),['{\Delta}Y [km] ' coord_label]);
@@ -453,11 +396,12 @@ switch lower(action)
 				set(h(1),'ydir','reverse');
 				grid(h(1),'on');
 				axis(h(1),[-drref drref -drref drref]);
+				hold(h(1),'off');
 				
 				hca=h(2);
 				hold(hca,'on');
 				axis(hca,[0 1 0 1]);
-				yy=.9;dxx=.1;xs=.55;
+				yy=.5;dxx=.15;xs=.3;
 				plot(hca,xs,yy,'ks',xs+1*dxx,yy,'rd',xs+2*dxx,yy,'go',xs+3*dxx,yy,'bv','LineWidth',1.5);
 				text(xs+0.03,yy,'C1','parent',hca);
 				text(xs+1*dxx+0.03,yy,'C2','parent',hca);
@@ -501,56 +445,28 @@ switch lower(action)
 				set(h(3),'ydir','reverse')
 				
 			case 'supercompact'
-				ax1=h(1);ax1_2=h(21);
-				hold(ax1,'off');
-				c_eval('plot(ax1,x?(2),x?(4),cluster_marker{?}{:},''LineWidth'',1.5);hold(ax1,''on'');',sc_list);
-				xlabel(ax1,['{\Delta}X [km] ' coord_label]);
-				ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
-				set(ax1,'xdir','reverse')
-				grid(ax1,'on');
-				axis(ax1,[-drref drref -drref drref]);
-				if drref>10000, REform='%6.1f';
-				elseif drref<100, REform='%6.3f';
-				else REform='%6.2f';
-				end
 				
-				xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
-				xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-				xlabel(ax1_2,['X [R_E] ' coord_label]);ylabel(ax1_2,['Z [R_E] ' coord_label]);
-				xtlax2=num2str((xtick_ax1'+R(2))/6372,REform);
-				ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
-				set(ax1_2,'xdir','reverse','xlim',xlim_ax1,'ylim',ylim_ax1,'xticklabel',xtlax2,'yticklabel',ytlax2);
+				plotAxes = 'XZ';
+				plot_relative_position(h(1));
+				fix_RE_axis(h(1),h(21));
+				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
-				%  axes(h(1));      title(titlestr);
-				ax1=h(2);ax1_2=h(22);
-				hold(ax1,'off');
-				c_eval('plot(ax1,x?(3),x?(4),cluster_marker{?}{:});hold(ax1,''on'');',sc_list);
-				xlabel(ax1,['{\Delta}Y [km] ' coord_label]);
-				ylabel(ax1,['{\Delta}Z [km] ' coord_label]);
-				grid(ax1,'on');
-				axis(ax1,[-drref drref -drref drref]);
-				c_eval('text(x?(3),x?(4),''   C?'',''parent'',ax1,''HorizontalAlignment'',''Left'');',sc_list);
-				text(0.02,0.94,irf_time(data.t,'isoshort'),'parent',ax1,'units','normalized','horizontalalignment','left','parent',h(1),'fontsize',9);
-				
-				xlim_ax1=get(ax1,'XLim');ylim_ax1=get(ax1,'YLim');
-				xtick_ax1=get(ax1,'XTick');ytick_ax1=get(ax1,'YTick');
-				xlabel(ax1_2,['Y [R_E] ' coord_label]);ylabel(ax1_2,['Z [R_E] ' coord_label]);
-				set(ax1_2,'xlim',xlim_ax1,'ylim',ylim_ax1);
-				xtlax2=num2str((xtick_ax1'+R(3))/6372,REform);
-				ytlax2=num2str((ytick_ax1'+R(4))/6372,REform);
-				set(ax1_2,'xticklabel',xtlax2,'yticklabel',ytlax2);
-				
+				plotAxes = 'YZ';
+				plot_relative_position(h(2));
+				text_Cluster_markers(h(2));
+				fix_RE_axis(h(2),h(22));
+				%
 			case 'supercompact2'
 				
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
-				fix_RE_axis(ax1,h(21));
+				fix_RE_axis(h(1),h(21));
 				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'XY';
 				plot_relative_position(h(2));
 				text_Cluster_markers(h(2));
-				fix_RE_axis(ax1,h(22));
+				fix_RE_axis(h(2),h(22));
 		end
 		if data.flag_show_cluster_description==1,
 			if strcmpi(data.plot_type,'compact') || ...
@@ -583,7 +499,6 @@ switch lower(action)
 				end
 			end
 		end
-		
 	case 'new_time'
 		data=get(gcf,'userdata');
 		xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'))});
@@ -613,8 +528,24 @@ else
 	clear hout;
 end
 
+	function plot_position(h)
+		ax1=h;
+		cla(ax1);
+		colX = plotAxes(1)-'W'+1;
+		colY = plotAxes(2)-'W'+1;
+		for iSc=sc_list
+			plot(ax1,XRe{iSc}(colX),XRe{iSc}(colY),cluster_marker_small{iSc}{:},'LineWidth',1.5);
+			hold(ax1,'on');
+		end
+		xlabel(ax1,[plotAxes(1) ' [RE] ' coord_label]);
+		ylabel(ax1,[plotAxes(2) ' [RE] ' coord_label]);
+		if colX == 2 , set(ax1,'xdir','reverse'); end
+		if colY == 3 , set(ax1,'ydir','reverse'); end
+		grid(ax1,'on');
+	end
 	function plot_relative_position(h)
 		ax1=h;
+		cla(ax1);
 		colX = plotAxes(1)-'W'+1;
 		colY = plotAxes(2)-'W'+1;
 		hold(ax1,'off');
@@ -624,7 +555,8 @@ end
 		end
 		xlabel(ax1,['{\Delta}' plotAxes(1) ' [km] ' coord_label]);
 		ylabel(ax1,['{\Delta}' plotAxes(2) ' [km] ' coord_label]);
-		set(ax1,'xdir','reverse')
+		if colX == 2 , set(ax1,'xdir','reverse'); end
+		if colY == 3 , set(ax1,'ydir','reverse'); end
 		grid(ax1,'on');
 		axis(ax1,[-drref drref -drref drref]);
 	end
@@ -645,13 +577,13 @@ end
 		set(axis2,'ylim',ylim_ax1,'yticklabel',ytlax2);
 	end
 	function text_Cluster_markers(ax1)
-		colX = plotAxes(1)-'W';
-		colY = plotAxes(2)-'W';
-		signX = sign(strcmp(get(gca,'xdir'),'reverse')-0.5);
-		signY = sign(strcmp(get(gca,'ydir'),'reverse')-0.5);
+		colX = plotAxes(1)-'W'+1;
+		colY = plotAxes(2)-'W'+1;
+		signX = sign(~strcmp(get(ax1,'xdir'),'reverse')-0.5);
+		signY = sign(~strcmp(get(ax1,'ydir'),'reverse')-0.5);
 		for iSc=sc_list
-			coordX = x{iSc}(colX+1);
-			coordY = x{iSc}(colY+1);
+			coordX = x{iSc}(colX);
+			coordY = x{iSc}(colY);
 			if coordX*signX > 0,
 				horAl = 'right';
 			else
@@ -678,7 +610,6 @@ end
 		set(gcf,'defaultAxesFontUnits', 'pixels');
 		set(gcf,'defaultAxesFontSize', 12);
 	end
-
 	function menus
 		% generate menus
 		if isempty(findobj(gcf,'type','uimenu','label','&Options'))
@@ -698,59 +629,67 @@ end
 			set(gcf,'userdata',user_data);
 		end
 	end
-
 	function answer=is_R_ok
-		data=get(gcf,'userdata');
-		sc_list=data.sc_list;
-		t=data.t;
-		for iSc=1:numel(sc_list)
-			stric=num2str(sc_list(iSc));
-			if evalin('caller',['numel(R' stric ')']) < 8 % less than 2 time points
-				answer=0;
+		for iSc=data.sc_list
+			strSc = ['C' num2str(iSc)];
+			if numel(R.(strSc)) < 8 % less than 2 time points
+				answer=false;
 				return;
 			else
-				tint=evalin('caller',['[' 'R' stric '(1,1) R' stric '(end,1)]']);
-				if (tint(1)>t) || (tint(2)<t),
-					answer=0;
+				tint=[R.(strSc)(1,1) R.(strSc)(end,1)];
+				if (tint(1)>data.t) || (tint(2)<data.t),
+					answer=false;
 					return;
 				end
 			end
 		end
-		answer=1;
+		answer=true;
 	end
 	function [flag_omni,omni]=add_magnetopause(h)
 		% flag_omni=1 - using OMNI, flag_omni=0 - using default values
-		t=getfield(get(gcf,'userdata'),'t');
-		[x,y,omni]=irf_magnetosphere('mp_shue1998',t);
-		if isempty(x),
+		tMP=getfield(get(gcf,'userdata'),'t');
+		[xMP,yMP,omni]=irf_magnetosphere('mp_shue1998',tMP);
+		if isempty(xMP),
 			flag_omni=0;
-			[x,y,omni]=irf_magnetosphere('mp_shue1998');
+			[xMP,yMP,omni]=irf_magnetosphere('mp_shue1998');
 		else
 			flag_omni=1;
 		end
-		x=[fliplr(x) x];
-		y=[fliplr(y) -y];
-		line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
+		xMP=[fliplr(xMP) xMP];
+		yMP=[fliplr(yMP) -yMP];
+		line(xMP,yMP,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
 	end
 	function [flag_omni,omni]=add_bowshock(h)
 		% flag_omni=1 - using OMNI, flag_omni=0 - using default values
 		t=getfield(get(gcf,'userdata'),'t');
-		[x,y,omni]=irf_magnetosphere('bs',t);
-		if isempty(x),
+		[xBS,yBS,omni]=irf_magnetosphere('bs',t);
+		if isempty(xBS),
 			flag_omni=0;
-			[x,y,omni]=irf_magnetosphere('bs');
+			[xBS,yBS,omni]=irf_magnetosphere('bs');
 		else
 			flag_omni=1;
 		end
-		x=[fliplr(x) x];
-		y=[fliplr(y) -y];
-		line(x,y,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
+		xBS=[fliplr(xBS) xBS];
+		yBS=[fliplr(yBS) -yBS];
+		line(xBS,yBS,'parent',h,'linewidth',0.5,'linestyle','-','color','k');
 	end
-	function add_Earth(h)
-		theta=0:pi/20:pi;
-		x=sin(theta);y=cos(theta);
-		patch(-x,y,'k','edgecolor','none','parent',h)
-		patch(x,y,'w','edgecolor','k','parent',h)
+	function add_Earth(h,flag)
+		if nargin == 1,
+			flag='terminator';
+		end
+		switch flag
+			case 'terminator'
+				theta=0:pi/20:pi;
+				xEarth=sin(theta);yEarth=cos(theta);
+				patch(-xEarth,yEarth,'k','edgecolor','none','parent',h)
+				patch(xEarth,yEarth,'w','edgecolor','k','parent',h)
+			case 'day'
+				theta=0:pi/20:2*pi;
+				xEarth=sin(theta);yEarth=cos(theta);
+				patch(xEarth,yEarth,'w','edgecolor','k','parent',h)
+			otherwise
+				error('unknown flag');
+		end
 	end
 	function y=get_in_lmn(x)
 		% get x in LMN reference frame
