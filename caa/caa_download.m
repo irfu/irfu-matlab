@@ -236,12 +236,15 @@ if downloadFromCFA % change/add defaults, hasn't ad ded these to above flag chec
     urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];
 	%urlFormat = '&DELIVERY_FORMAT=CDF';        % default is CDF (3.3) format
     urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';
-	cfaServer = 'http://cfadev.esac.esa.int/'; % default server    
+	cfaServer = 'http://cfadev.esac.esa.int/cfa/aio/'; % default server    
     downloadDirectory = './CFA/';              % local directory where to put downloaded data, default in current directory under 'CFA' subdirectory
+    if ~isempty(urlSchedule)
+        urlSchedule = 'async-';
+    end
     % add
     retrievalType = '&PRODUCT';         % default is to download, not check inventory, hmmmmmm
     noBrowser   = '&NO_BROWSER';        % default is to not download through browser    
-    cfaUrl = 'cfa/aio/product-action?'; % used for data retrieval
+    cfaUrl = 'product-action?'; % used for data retrieval
     selectedFields = 'SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY'; % for inventory checks    
     if ~exist('queryFormat','var'); queryFormat = '&RETURN_TYPE=CSV'; end % CFA query format, it is the most readable in Matlab with disp()
     % url encoding: urlencode.m gets ' ' wrong, so uses these instead
@@ -408,7 +411,7 @@ if checkIfDataAreAtCaa
                 return;
             end
         case 1 % CFA            
-            cfaAction = 'cfa/aio/metadata-action?';
+            cfaAction = 'metadata-action?';
             queryData = ['&QUERY=DATASET.DATASET_ID' space 'like' space '''' cfaQueryDataset ''''];
             queryTime = [and 'DATASET_INVENTORY.START_TIME' space '<=' space '''' t2iso '''',...
                          and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
@@ -437,7 +440,7 @@ switch downloadFromCFA
 		end
 		disp('Be patient! Submitting data request to CAA...');
     case 1 % CFA
-        url_line = [cfaServer cfaUrl urlIdentity ... 
+        url_line = [cfaServer urlSchedule cfaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
              urlFormat urlDeliveryInterval '&NON_BROWSER' urlNonotify];
         disp('Be patient! Submitting data request to CFA...');
@@ -457,8 +460,10 @@ if status == 0 && exist(downloadedFile,'file')
 		tline = fgetl(fid);
 		if ~ischar(tline), break, end
 		disp(tline)
-		if any(strfind(tline,'http:')) && any(strfind(tline,'zip')),
+		if any(strfind(tline,'http:')) && any(strfind(tline,'zip')), % CAA
 			downloadfile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
+        elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CFA
+            downloadfile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
 		end
 	end
 	fclose(fid);
@@ -497,6 +502,7 @@ function [status,downloadedFile]=get_zip_file(urlLink)
 % to data directory, downloadedFile is set to empty. If there is no zip
 % file or file is not zip file, status=0 and downloadedFile is set to
 % the downloaded file. 
+if strfind(urlLink,'gz'), downloadFromCFA = 1; end
 status = 0; % default
 switch downloadFromCFA
     case 0 % CAA
