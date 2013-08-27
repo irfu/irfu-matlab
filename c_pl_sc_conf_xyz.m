@@ -283,20 +283,22 @@ switch lower(action)
 		data=get(gcf,'userdata');
 		flag_using_omni_data=[]; % default that there is no plot involving OMNI data
 		% estimate mass center
-		R.R=0; 
-		for ic = data.sc_list
-			rr{ic}=irf_resamp(data.r.(['C' num2str(ic)]),data.t);
-			R.R=R.R+rr{ic}/length(data.sc_list);
-		end
-		% estimate relative position wrt mass center
-		x=cell(1,4); % relative position
-		drref=0;     % scale for plots
-		for ic = data.sc_list
-			x{ic}=rr{ic}-R.R;
-			x{ic}(1)=data.t;
-			x{ic}=irf_abs(x{ic});
-			drref=max([drref x{ic}(5)]);
-			XRe{ic}=irf_tappl(rr{ic},'/6372');
+		drref=0;      % scale for plots
+		R.R=[0 0 0 0];% default mass centrum in origo
+		if is_R_ok
+			for ic = data.sc_list
+				rr{ic}=irf_resamp(data.r.(['C' num2str(ic)]),data.t);
+				R.R=R.R+rr{ic}/length(data.sc_list);
+			end
+			% estimate relative position wrt mass center
+			x=cell(1,4); % relative position
+			for ic = data.sc_list
+				x{ic}=rr{ic}-R.R;
+				x{ic}(1)=data.t;
+				x{ic}=irf_abs(x{ic});
+				drref=max([drref x{ic}(5)]);
+				XRe{ic}=irf_tappl(rr{ic},'/6372');
+			end
 		end
 		if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
 		set(gcf,'userdata',data);
@@ -538,9 +540,11 @@ end
 		cla(ax1);
 		colX = plotAxes(1)-'W'+1;
 		colY = plotAxes(2)-'W'+1;
-		for iSc=sc_list
-			plot(ax1,XRe{iSc}(colX),XRe{iSc}(colY),cluster_marker_small{iSc}{:},'LineWidth',1.5);
-			hold(ax1,'on');
+		for iSc=data.sc_list
+			if is_R_ok(iSc),
+				plot(ax1,XRe{iSc}(colX),XRe{iSc}(colY),cluster_marker_small{iSc}{:},'LineWidth',1.5);
+				hold(ax1,'on');
+			end
 		end
 		xlabel(ax1,[plotAxes(1) ' [RE] ' coord_label]);
 		ylabel(ax1,[plotAxes(2) ' [RE] ' coord_label]);
@@ -554,9 +558,11 @@ end
 		colX = plotAxes(1)-'W'+1;
 		colY = plotAxes(2)-'W'+1;
 		hold(ax1,'off');
-		for iSc=sc_list
-			plot(ax1,x{iSc}(colX),x{iSc}(colY),cluster_marker{iSc}{:},'LineWidth',1.5);
-			hold(ax1,'on');
+		for iSc=data.sc_list
+			if is_R_ok(iSc)
+				plot(ax1,x{iSc}(colX),x{iSc}(colY),cluster_marker{iSc}{:},'LineWidth',1.5);
+				hold(ax1,'on');
+			end
 		end
 		xlabel(ax1,['{\Delta}' plotAxes(1) ' [km] ' coord_label]);
 		ylabel(ax1,['{\Delta}' plotAxes(2) ' [km] ' coord_label]);
@@ -586,21 +592,23 @@ end
 		colY = plotAxes(2)-'W'+1;
 		signX = sign(~strcmp(get(ax1,'xdir'),'reverse')-0.5);
 		signY = sign(~strcmp(get(ax1,'ydir'),'reverse')-0.5);
-		for iSc=sc_list
-			coordX = x{iSc}(colX);
-			coordY = x{iSc}(colY);
-			if coordX*signX > 0,
-				horAl = 'right';
-			else
-				horAl = 'left';
+		for iSc=data.sc_list
+			if is_R_ok(iSc)
+				coordX = x{iSc}(colX);
+				coordY = x{iSc}(colY);
+				if coordX*signX > 0,
+					horAl = 'right';
+				else
+					horAl = 'left';
+				end
+				if coordY*signY > 0,
+					verAl = 'top';
+				else
+					verAl = 'bottom';
+				end
+				text(coordX,coordY,[' C' num2str(iSc) ' '],'parent',ax1,...
+					'HorizontalAlignment',horAl,'VerticalAlignment',verAl);
 			end
-			if coordY*signY > 0,
-				verAl = 'top';
-			else
-				verAl = 'bottom';
-			end
-			text(coordX,coordY,[' C' num2str(iSc) ' '],'parent',ax1,...
-				'HorizontalAlignment',horAl,'VerticalAlignment',verAl);
 		end
 	end
 	function initialize_figure
@@ -634,8 +642,16 @@ end
 			set(gcf,'userdata',user_data);
 		end
 	end
-	function answer=is_R_ok
-		for iSc=data.sc_list
+	function answer=is_R_ok(sc)
+		% check if position data are ok for spacecraft number 'sc'
+		% if input argument not given check if ok for all spacecraft that needs
+		% to be plotted.
+		if nargin == 0, 
+			scList = data.sc_list;
+		else
+			scList = sc;
+		end
+		for iSc=scList
 			strSc = ['C' num2str(iSc)];
 			if numel(R.(strSc)) < 8 % less than 2 time points
 				answer=false;
