@@ -502,7 +502,7 @@ function [status,downloadedFile]=get_zip_file(urlLink)
 % to data directory, downloadedFile is set to empty. If there is no zip
 % file or file is not zip file, status=0 and downloadedFile is set to
 % the downloaded file. 
-if strfind(urlLink,'gz'), downloadFromCFA = 1; end
+if strfind(urlLink,'.gz'), downloadFromCFA = 1; end
 status = 0; % default
 switch downloadFromCFA
     case 0 % CAA
