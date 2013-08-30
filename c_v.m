@@ -10,7 +10,7 @@ function v=c_v(t,coord_sys)
 % v=[t vx vy vz]; t in isdat_epoch, v in GSE ref frame,
 % dt=[0 t2-t1 t3-t1 t4-t1];
 %
-% coord_sys='GSM' - when calculate in GSM reference frame 
+% coord_sys='GSM' - when calculate in GSM reference frame
 %
 persistent R
 if ~exist('R','var') || isempty(R)
@@ -18,21 +18,26 @@ if ~exist('R','var') || isempty(R)
 		'V1',[],'V2',[],'V3',[],'V4',[]);
 	tt=[];temp=[]; % needed because we have nested functions
 end
-if nargin==1, coord_sys='GSE'; end 
+if nargin==1, coord_sys='GSE'; end
 
-if t(2) > 1e8, 
-	flag='v_from_t'; 
+if t(2) > 1e8,
+	flag='v_from_t';
 else flag='dt_from_v';
 	v=t;
 	t=v(1);
 end
 
-if ~is_R_ok && exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
-    irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
-    c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
-    c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+if ~is_R_ok && exist('./mR.mat','file'),
+	load mR R1 R2 R3 R4 V1 V2 V3 V4;
+	c_eval('R.R?=R?;');
+	c_eval('R.V?=V?;');
 end
-if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,    
+if ~is_R_ok && exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
+	irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
+	c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+	c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+end
+if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 	irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
 	R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 	if ~isempty(R.R)
@@ -43,68 +48,69 @@ if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 		c_eval('R.V?=R.V;');
 	end
 end
-if ~is_R_ok && exist('./mR.mat','file'),
-    load mR R1 R2 R3 R4 V1 V2 V3 V4;
-	c_eval('R.R?=R?;');
-	c_eval('R.V?=V?;');
-end
 if ~is_R_ok
 	disp('loading position from isdat. Connecting ...');
-    tmin=min(t);tmax=max(t);
-    c_eval('[tt,temp] = irf_isdat_get([''Cluster/?/ephemeris/position''], tmin-30, tmax-tmin+30);R.R?=[tt temp];fprintf(''%s'',''R.R?'');');
-    c_eval('[tt,temp] = irf_isdat_get([''Cluster/?/ephemeris/velocity''], tmin-30, tmax-tmin+30);R.V?=[tt temp];fprintf(''%s'',''R.V?'');');
-    disp('');
+	tmin=min(t);tmax=max(t);
+	for ic='1234'
+		[tt,temp] = irf_isdat_get(['Cluster/' ic '/ephemeris/position'], tmin-30, tmax-tmin+30);
+		R.(['R' ic])=[tt temp];
+		fprintf('%s',R.(['R' ic]));
+		[tt,temp] = irf_isdat_get(['Cluster/' ic '/ephemeris/velocity'], tmin-30, tmax-tmin+30);
+		R.(['V' ic])=[tt temp];
+		fprintf('%s',R.(['V' ic]));
+	end
+	disp('');
 end
 if ~is_R_ok
 	irf_log('dsrc','!!! Could not obtain position data !!!');
 	return
 end
 switch coord_sys
-    case 'GSE'
-        % do nothing
-    case 'GSM'
-        c_eval('R.R?=irf_gse2gsm(R.R?);R.V?=irf_gse2gsm(R.V?);');
-    otherwise
-        % do nothing, i.e. assume GSE
+	case 'GSE'
+		% do nothing
+	case 'GSM'
+		c_eval('R.R?=irf_gse2gsm(R.R?);R.V?=irf_gse2gsm(R.V?);');
+	otherwise
+		% do nothing, i.e. assume GSE
 end
 
 if strcmp(flag,'v_from_t'),
-  t_center=0.5*t(1)+0.5*t;
-  for ic='1234',
-	  i=ic-'0';
-	  R.(['vsc'  ic]) = irf_resamp(R.(['V' ic]),t_center,'spline');
-	  R.(['drsc' ic]) = irf_resamp(irf_add(1,R.(['R' ic]),-1,R.R1),t(i),'spline');
-	  R.(['dr'   ic]) = R.(['drsc' ic])+[0 (t(i)-t(1))*R.(['vsc' ic])(1,2:4)];
-	  R.dt(i)         = t(i)-t(1);
-	  R.(['sdt' ic])  = num2str(R.dt(i),3);
-  end
-  D=[R.dr2(2:4);R.dr3(2:4);R.dr4(2:4)];
-  T=[R.dt(2),R.dt(3), R.dt(4)]';
-  m=D\T;
-  clear v
-  v=m/norm(m)/norm(m);v=v';	% velocity vector of the boundary
-
-  disp([ datestr(datenum(fromepoch(t(1))))])
-  strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
-  vn=irf_norm(v);
-  strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
-  disp(strdt);disp(strv);
+	t_center=0.5*t(1)+0.5*t;
+	for ic='1234',
+		i=ic-'0';
+		R.(['vsc'  ic]) = irf_resamp(R.(['V' ic]),t_center,'spline');
+		R.(['drsc' ic]) = irf_resamp(irf_add(1,R.(['R' ic]),-1,R.R1),t(i),'spline');
+		R.(['dr'   ic]) = R.(['drsc' ic])+[0 (t(i)-t(1))*R.(['vsc' ic])(1,2:4)];
+		R.dt(i)         = t(i)-t(1);
+		R.(['sdt' ic])  = num2str(R.dt(i),3);
+	end
+	D=[R.dr2(2:4);R.dr3(2:4);R.dr4(2:4)];
+	T=[R.dt(2),R.dt(3), R.dt(4)]';
+	m=D\T;
+	clear v
+	v=m/norm(m)/norm(m);v=v';	% velocity vector of the boundary
+	
+	disp([ datestr(datenum(fromepoch(t(1))))])
+	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
+	vn=irf_norm(v);
+	strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
+	disp(strdt);disp(strv);
 elseif strcmp(flag,'dt_from_v'),
-  t_center=0.5*t(1)+0.5*t;
-  for ic='1234',
-	  i=ic-'0';
-	  R.(['vsc' ic]) = irf_resamp(R.(['V' ic]),t_center,'spline');
-	  R.(['v' ic])   = v(2:4)-dot(R.(['vsc' ic])(2:4),v(2:4)).*v(2:4)./norm(v(2:4))^2;
-	  R.(['dr' ic])=irf_resamp(irf_add(1,R.(['R' ic]),-1,R.R1),t,'spline');
-	  R.dt(i)=irf_dot(R.(['dr' ic]),R.(['v' ic]),1)./norm(R.(['v' ic]))^2;
-  end  
-  % print result
-  disp([ datestr(datenum(fromepoch(t(1))))])
-  vn=irf_norm(v);
-  strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
-  strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
-  disp(strv);  disp(strdt);
-  v=R.dt; % output variable is v
+	t_center=0.5*t(1)+0.5*t;
+	for ic='1234',
+		i=ic-'0';
+		R.(['vsc' ic]) = irf_resamp(R.(['V' ic]),t_center,'spline');
+		R.(['v' ic])   = v(2:4)-dot(R.(['vsc' ic])(2:4),v(2:4)).*v(2:4)./norm(v(2:4))^2;
+		R.(['dr' ic])=irf_resamp(irf_add(1,R.(['R' ic]),-1,R.R1),t,'spline');
+		R.dt(i)=irf_dot(R.(['dr' ic]),R.(['v' ic]),1)./norm(R.(['v' ic]))^2;
+	end
+	% print result
+	disp([ datestr(datenum(fromepoch(t(1))))])
+	vn=irf_norm(v);
+	strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
+	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
+	disp(strv);  disp(strdt);
+	v=R.dt; % output variable is v
 end
 
 	function answer=is_R_ok(sc)
