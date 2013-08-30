@@ -1,0 +1,199 @@
+INCLUDE = "CL_CH_MISSION.ceh"
+INCLUDE = "C3_CH_OBS.ceh"
+INCLUDE = "CL_CH_FGM_EXP.ceh"
+
+START_META     =   INSTRUMENT_NAME
+   ENTRY       =   "FGM3"
+END_META       =   INSTRUMENT_NAME
+
+START_META     =   INSTRUMENT_DESCRIPTION
+   ENTRY       =   "FGM Experiment on Cluster C3"
+END_META       =   INSTRUMENT_DESCRIPTION
+
+START_META     =   INSTRUMENT_TYPE
+   ENTRY       =   "Flux_Feedback"
+END_META       =   INSTRUMENT_TYPE
+
+START_META     =   MEASUREMENT_TYPE
+   ENTRY       =   "Magnetic_Field"
+END_META       =   MEASUREMENT_TYPE
+
+START_META     =   INSTRUMENT_CAVEATS
+   ENTRY       =   "*C3_CQ_FGM_CAVF"
+END_META       =   INSTRUMENT_CAVEATS
+
+START_META     =   DATASET_ID
+   ENTRY       =   "C3_PP_FGM"
+END_META       =   DATASET_ID
+
+START_META     =   DATA_TYPE
+   ENTRY       =   "PP>CSDS_Prime_Parameter"
+END_META       =   DATA_TYPE
+
+START_META     =   DATASET_TITLE
+   ENTRY       =   "Preliminary (CSDS PP) Magnetic field, spin resolution"
+END_META       =   DATASET_TITLE
+
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =   "This dataset contains preliminary spin resolution measurements of the"
+   ENTRY       =   "magnetic field vector from the FGM experiment on the Cluster C3 spacecraft."
+   ENTRY       =   "These data have been converted into Cluster Exchange Format from the orignal"
+   ENTRY       =   "Cluster Science Data System Common Data Format (CDF) Prime Parameter files"
+   ENTRY       =   "that were made available through the Cluster Science Data System."
+   ENTRY       =   "The metadata has been updated from the CSDS/CDF standard to the CAA to aid"
+   ENTRY       =   "compatibility with tools developed for the Cluster Active Archive."
+   ENTRY       =   " "
+   ENTRY       =   "Version 01 of this dataset is the initial translation prepared for the "
+   ENTRY       =   "launch of the CAA during the second half of 2005. The file version is the"
+   ENTRY       =   "same as the file version number on the source CSDS PP CDF file."
+END_META       =   DATASET_DESCRIPTION
+
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Elizabeth Lucek>PI>e.lucek@imperial.ac.uk"
+END_META       =   CONTACT_COORDINATES
+
+START_META     =   TIME_RESOLUTION
+   ENTRY       =   4
+END_META       =   TIME_RESOLUTION
+
+START_META     =   MIN_TIME_RESOLUTION
+   ENTRY       =   4.412
+END_META       =   MIN_TIME_RESOLUTION
+
+START_META     =   MAX_TIME_RESOLUTION
+   ENTRY       =   3.636
+END_META       =   MAX_TIME_RESOLUTION
+
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Calibrated"
+END_META       =   PROCESSING_LEVEL
+
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the FGM team and ESA Cluster Active Archive in any publication based upon use of this data"
+END_META       =   ACKNOWLEDGEMENT
+
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "*C3_CQ_FGM_CAVF"
+END_META       =   DATASET_CAVEATS
+
+START_META     =   DATASET_VERSION
+   ENTRY       =   "01"
+END_META       =   DATASET_VERSION
+
+START_META     =   FILE_TYPE
+   ENTRY       =   "cef"
+END_META       =   FILE_TYPE
+
+START_META     =   METADATA_TYPE
+   ENTRY       =   "CAA"
+END_META       =   METADATA_TYPE
+
+START_META     =   METADATA_VERSION
+   ENTRY       =   "2.0"
+END_META       =   METADATA_VERSION
+
+START_VARIABLE  =  time_tags__C3_PP_FGM
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "Interval centred time tag"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = ISO_TIME
+    SIGNIFICANT_DIGITS  = 24
+    FILLVAL             = 9999-12-31T23:59:59Z
+    FIELDNAM            = "Universal Time"
+    LABLAXIS            = "UT"
+    DELTA_PLUS          = half_interval__C3_PP_FGM
+    DELTA_MINUS         = half_interval__C3_PP_FGM
+END_VARIABLE    =  time_tags__C3_PP_FGM
+
+START_VARIABLE  =  half_interval__C3_PP_FGM
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "Half averaging interval length"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = FLOAT
+    SIGNIFICANT_DIGITS  = 6
+    FILLVAL             = -1.0e28
+    FIELDNAM            = "Half width of averaging interval"
+    LABLAXIS            = "s"
+END_VARIABLE    =  half_interval__C3_PP_FGM
+
+START_VARIABLE = status__C3_PP_FGM
+    PARAMETER_TYPE      = "Data"
+    ENTITY              = "Instrument"
+    PROPERTY            = "Status"
+    CATDESC             = "Preliminary (CSDS PP) Cluster C3, FGM Status"
+    UNITS               = "unitless"
+    SI_CONVERSION       = "1>unitless"
+    SIZES               = 4
+    VALUE_TYPE          = INT
+    SIGNIFICANT_DIGITS  = 6
+    FILLVAL             = 255
+    QUALITY             = 2
+    FIELDNAM            = "Preliminary (CSDS PP) Cluster C3, FGM Status"
+    LABLAXIS            = "FGM Status"
+    DEPEND_0            = time_tags__C3_PP_FGM
+    LABEL_1             = "Status[0]", "Status[1]", "Status[2]","Status[3]"
+END_VARIABLE   = status__C3_PP_FGM
+
+START_VARIABLE  =  B_xyz_gse__C3_PP_FGM
+    PARAMETER_TYPE      = "Data"
+    ENTITY              = "Magnetic_Field"
+    PROPERTY            = "Vector"
+    FLUCTUATIONS        = "Waveform"
+    CATDESC             = "Preliminary (CSDS PP) Cluster C3, Magnetic Field Vector, spin resolution in GSE"
+    UNITS               = "nT"
+    SI_CONVERSION       = "1.0E-9>T"
+    TENSOR_ORDER        = "1"
+    COORDINATE_SYSTEM   = "GSE>Geocentric Solar Ecliptic"
+    REPRESENTATION_1    = "x", "y", "z"
+    SIZES               = 3
+    VALUE_TYPE          = FLOAT
+    SIGNIFICANT_DIGITS  = 6
+    FILLVAL             = -1.0e31
+    QUALITY             = 2
+    FIELDNAM            = "Preliminary (CSDS PP) Cluster C3, Magnetic Field Vector, spin resolution in GSE"
+    LABLAXIS            = "Mag Field"
+    DEPEND_0            = time_tags__C3_PP_FGM
+    LABEL_1             = "Bx", "By", "Bz"
+END_VARIABLE    =  B_xyz_gse__C3_PP_FGM
+
+START_VARIABLE = B_nsigma_t__C3_PP_FGM
+    PARAMETER_TYPE      = "Data"
+    ENTITY              = "Magnetic_Field"
+    PROPERTY            = "Magnitude"
+    FLUCTUATIONS        = "Fluctuation_Level"
+    CATDESC             = "Preliminary (CSDS PP) Cluster C3, Normalised magnetic variance: summed component variances"
+    UNITS               = "Unitless"
+    SI_CONVERSION       = "1.0>(variance)"
+    SIZES               = 1
+    VALUE_TYPE          = FLOAT
+    SIGNIFICANT_DIGITS  = 6
+    FILLVAL             = -1.0e31
+    QUALITY             = 2
+    FIELDNAM            = "Preliminary (CSDS PP) Cluster C3, Magnetic variance: summed"
+    LABLAXIS            = "dB_t^2/B^2"
+    DEPEND_0            = time_tags__C3_PP_FGM
+END_VARIABLE   = B_nsigma_t__C3_PP_FGM
+
+START_VARIABLE = B_nsigma_b__C3_PP_FGM
+    PARAMETER_TYPE      = "Data"
+    ENTITY              = "Magnetic_Field"
+    PROPERTY            = "Vector"
+    FLUCTUATIONS        = "Fluctuation_Level"
+    CATDESC             = "Preliminary (CSDS PP) Cluster C3, Normalised magnetic variance: magnitude"
+    UNITS               = "Unitless"
+    SI_CONVERSION       = "1.0>(variance)"
+    SIZES               = 1
+    VALUE_TYPE          = FLOAT
+    SIGNIFICANT_DIGITS  = 6
+    FILLVAL             = -1.0e31
+    QUALITY             = 2
+    FIELDNAM            = "Preliminary (CSDS PP) Cluster C3, Magnetic variance: magnitude"
+    LABLAXIS            = "dB_b^2/B^2"
+    DEPEND_0            = time_tags__C3_PP_FGM
+END_VARIABLE   = B_nsigma_b__C3_PP_FGM
+
+
