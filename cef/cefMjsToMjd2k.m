@@ -1,0 +1,3 @@
+function ret=cefMjsToMjd2k(mjs)
+
+ret=mjs/86400.00000000000000 - 18262.000000000000000000;

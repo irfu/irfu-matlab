@@ -1,0 +1,40 @@
+! CL_CH_FGM_EXP.ceh
+! EXPERIMENT metadata
+!
+START_META     =   EXPERIMENT
+   ENTRY       =   "FGM"
+END_META       =   EXPERIMENT
+!
+! Description of the experiment
+!
+START_META     =   EXPERIMENT_DESCRIPTION
+   ENTRY       =   "Fluxgate Magnetometer"
+END_META       =   EXPERIMENT_DESCRIPTION
+!
+! Name and coordinates of the PI, and possible earlier PIs
+!
+START_META     =   INVESTIGATOR_COORDINATES
+   ENTRY       =   "Andre Balogh>PI>a.balogh@imperial.ac.uk"
+   ENTRY       =   "Elizabeth Lucek>PI>e.lucek@imperial.ac.uk"
+END_META       =   INVESTIGATOR_COORDINATES
+!
+! List of standard reference documents for the experiment
+!
+START_META     =   EXPERIMENT_REFERENCES
+   ENTRY       =   "*CL_CD_CAA_FGM_ICD_0001_V0_1.pdf"
+   ENTRY       =   "*CL_CD_FGM_USERMAN.pdf"
+   ENTRY       =   "http://www.sp.ph.ic.ac.uk/Cluster/"
+END_META       =   EXPERIMENT_REFERENCES
+!
+! Name, role and coordinates of experiment key personnel
+!
+START_META     =   EXPERIMENT_KEY_PERSONNEL
+   ENTRY       =   "Andre Balogh>PI>a.balogh@imperial.ac.uk"
+   ENTRY	   =   "Elizabeth Lucek>PI>e.lucek@imperial.ac.uk"
+END_META       =   EXPERIMENT_KEY_PERSONNEL
+!
+! Miscellaneous information concerning the experiment
+!
+START_META     =   EXPERIMENT_CAVEATS
+   ENTRY       =   "*CL_CQ_FGM_CAVF.txt"
+END_META       =   EXPERIMENT_CAVEATS
