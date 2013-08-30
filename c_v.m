@@ -49,6 +49,10 @@ if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 	end
 end
 if ~is_R_ok
+	irf_log('dsrc','Getting s/c position from CAA');
+	read_RV_from_caa_stream;
+end
+if ~is_R_ok
 	disp('loading position from isdat. Connecting ...');
 	tmin=min(t);tmax=max(t);
 	for ic='1234'
@@ -136,6 +140,27 @@ end
 			end
 		end
 		answer=true;
+	end
+	function read_RV_from_caa_stream
+		currentDir = pwd;
+		tempDir = tempname;
+		mkdir(tempDir);
+		cd(tempDir);
+		caa_download([min(t)-60,max(t)+60],'CL_SP_AUX','stream');
+		cd('CAA/CL_SP_AUX');
+		gunzip('*.gz');
+		d=dir('*.cef');
+		c=cefRead(d.name);
+		tt=irf_time(cell2mat(c.time_tags__CL_SP_AUX(:)),'iso2epoch');
+		R.R=[tt cellfun(@double,c.sc_r_xyz_gse__CL_SP_AUX')];
+		for sc='1234'
+			R.(['R' sc])=R.R+[zeros(numel(tt),1) cellfun(@double,c.(['sc_dr' sc '_xyz_gse__CL_SP_AUX'])')];
+		end
+		R.V=[tt cellfun(@double,c.sc_v_xyz_gse__CL_SP_AUX')];
+		irf_log('dsrc','!!!! Assumes all s/c move with the same velocity !!!');
+		c_eval('R.V?=R.V;');
+		cd(currentDir);
+		rmdir(tempDir,'s');
 	end
 
 end

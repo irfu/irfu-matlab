@@ -113,6 +113,9 @@ switch lower(action)
 				c_eval('R.C?=irf_add(1,R,1,dR?);',sc_list);
 			end
 		end
+		if ~is_R_ok,     % try reading stream from CAA
+			read_R_from_caa_stream
+		end
 		if ~is_R_ok,     % try reading from isdat server
 			irf_log('dsrc','Trying to obtain satellite position from isdat server...')
 			try
@@ -281,6 +284,7 @@ switch lower(action)
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	case 'plot'
 		data=get(gcf,'userdata');
+		R=data.R;
 		flag_using_omni_data=[]; % default that there is no plot involving OMNI data
 		% estimate mass center
 		drref=0;      % scale for plots
@@ -665,6 +669,24 @@ end
 			end
 		end
 		answer=true;
+	end
+	function read_R_from_caa_stream
+		currentDir = pwd;
+		tempDir = tempname;
+		mkdir(tempDir);
+		cd(tempDir);
+		caa_download([data.t-60,data.t+60],'CL_SP_AUX','stream');
+		cd('CAA/CL_SP_AUX');
+		gunzip('*.gz');
+		d=dir('*.cef');
+		c=cefRead(d.name);
+		tt=irf_time(cell2mat(c.time_tags__CL_SP_AUX(:)),'iso2epoch');
+		R.R=[tt cellfun(@double,c.sc_r_xyz_gse__CL_SP_AUX')];
+		for sc='1234'
+			R.(['C' sc])=R.R+[zeros(numel(tt),1) cellfun(@double,c.(['sc_dr' sc '_xyz_gse__CL_SP_AUX']))'];
+		end
+		cd(currentDir);
+		rmdir(tempDir,'s');
 	end
 	function [flag_omni,omni]=add_magnetopause(h)
 		% flag_omni=1 - using OMNI, flag_omni=0 - using default values
