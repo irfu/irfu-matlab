@@ -109,7 +109,7 @@ switch lower(action)
 			irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
 			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 			if ~isempty(R.R)
-				c_eval('dR?=irf_get_data(''sc_dr1_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				c_eval('dR?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
 				c_eval('R.C?=irf_add(1,R,1,dR?);',sc_list);
 			end
 		end
