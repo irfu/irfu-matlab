@@ -21,18 +21,21 @@ classdef TimeArray < irf.Time
         ta.dt = inp.dt;
       elseif isa(inp,'double')
         if min(size(inp))>1
-          error('ISDAT epoch input (double) must be a columt or raw vector')
+          error('MATLAB:TimeArray:TimeArray:badInputs',...
+            'ISDAT epoch input (double) must be a columt or raw vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         ta.dt = int64((inp - inp(1)) * 1e9 );
       elseif isa(inp,'int64')
         if min(size(inp))>1
-          error('epoch2000 nano-seconds input (int64) must be a columt or raw vector')
+          error('MATLAB:TimeArray:TimeArray:badInputs',...
+            'epoch2000 nano-seconds input (int64) must be a column/row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         ta.dt = inp - inp(1);
       else
-        error('unknown input type')
+        error('MATLAB:TimeArray:TimeArray:badInputs',...
+          'unknown input type')
       end
     end
     
@@ -47,8 +50,8 @@ classdef TimeArray < irf.Time
         for i = 1:n, displayTime, end
       end
       function displayTime
-        fprintf('%s\n',epoch2iso(...
-          double(ta.tt2000+ta.dt(i))*1e-9 + 946728000.0))
+        s_ttt = encodett2000(ta.tt2000+ta.dt(i));
+        fprintf('%s\n',s_ttt{:})
       end
     end
     
@@ -66,8 +69,8 @@ classdef TimeArray < irf.Time
       e = double(ta.dt)*1e-9 + epoch0;
     end
     
-    function s = toISO(ta)
-      s = epoch2iso(ta.toEpoch());
+    function s = toUTC(ta)
+      s = encodett2000(ta.tt2000+ta.dt);
     end
   end % Methods
   
