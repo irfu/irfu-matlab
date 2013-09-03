@@ -452,7 +452,8 @@ disp(url_line);
 % implement this? They added this option now.
  
 [status,downloadedFile] = get_zip_file(url_line);
-if nargout==1, download_status=status;end
+if nargout>=1, download_status=status;end
+if nargout==2, downloadfile = ''; end % default return empty
 if status == 0 && exist(downloadedFile,'file')
 	irf_log('fcal','Could not find zip file with data! ');
 	fid=fopen(downloadedFile);
