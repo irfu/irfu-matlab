@@ -90,10 +90,11 @@ else
 	return;
 end
 %% check input: get inventory and construct time table if dataset
-if nargin == 2 && ischar(varargin{2}) && strcmpi(varargin{2},'cef')
-	streamData = true; 
+if nargin == 0,
+  help local.caa_download
+  return
 end
-if nargin==1 && ischar(varargin{1})
+if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
 	irf_log('dsrc','Checking list of available times');
@@ -104,12 +105,16 @@ if nargin==1 && ischar(varargin{1})
 	end
 	TTRequest=TT;
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
-elseif nargin == 1 && isa(varargin{1},'irf.TimeTable')
+elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
 	dataSet=dataset_mat_name(TTRequest.UserData(1).dataset);
 else
 	irf_log('fcal','See syntax: help local.c_caa_download');
 	return;
+end
+if nargin >= 2 && ischar(varargin{2}) && strcmpi(varargin{2},'stream')
+	streamData = true; 
+	irf_log('fcal','Streaming data from CAA.');
 end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
@@ -170,6 +175,7 @@ while 1
 			catch
 				download_status = -1; % something wrong with internet
 				irf_log('dsrc','**** DID NOT SUCCEED! ****');
+				keyboard;
 			end
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
