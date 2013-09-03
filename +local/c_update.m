@@ -1,13 +1,14 @@
-function c_update
+function c_update(datasetName)
 % LOCAL.C_UPDATE update index information in CAA directory
+%
+%    LOCAL.C_UPDATE update index for all datasets
+% 
+%    LOCAL.C_UPDATE(datasetName) update only the index of dataset datasetName 
 %
 % See also:
 %	LOCAL.C_READ
 
-% NEEDS to remake so that separate index files are created, matlab is slow at
-% reading many variables from the same mat file
-
-
+%% list all available datasets
 dirCaa='/data/caalocal';
 cd(dirCaa);
 tmp=dir(dirCaa);
@@ -15,6 +16,12 @@ iDir = [tmp(:).isdir]; % find directories
 dataSetArray = {tmp(iDir).name}';
 dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
 
+%% if index only selected datasetName, remove others
+if nargin == 1 && ischar(datasetName)
+  dataSetArray(~ismember(dataSetArray,{datasetName})) = []; 
+end
+
+%% go through all the datasets to be indexed
 for iDataSet=1:numel(dataSetArray)
 	%% list files in data set directory
 	dataSet=dataSetArray{iDataSet};

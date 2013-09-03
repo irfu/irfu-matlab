@@ -256,6 +256,8 @@ while 1
 end % going through all requests
 %% assign output
 if nargout==1, out=TTRequest;end
+%% index dataSet
+local.c_update(dataSet);
 %% send email when finnsihed
 if sendEmailWhenFinished
 	sendEmailTxt = ['local.caa_download: getting ' dataSet ' is ready ;)'];
