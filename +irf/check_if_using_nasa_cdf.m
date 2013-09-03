@@ -37,13 +37,11 @@ end
 if usingNasaCdfRead,
 		fprintf('\n\n\n');
 		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		disp(' You are using NASA cdf patch which within ')
-		disp(' irfu-matlab is still experimental. It should')
-		disp(' give you faster reading times but please report')
+		disp(' You are using NASA cdf patch. It gives')
+		disp(' you faster reading times but please report')
 		disp(' if you encounter some problems.');
 		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 		fprintf('\n\n\n');
-		irf_log('fcal','Using NASA cdf is still experimental!');
 		ok=true;
 else
 	addpath(irfNasaCdfDir);

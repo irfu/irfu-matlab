@@ -138,6 +138,7 @@ switch lower(varName)
 		end
 end
 
+%% Functions
 	function status=readdata
 		status = false; % default 
 		%% find index

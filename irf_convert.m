@@ -37,6 +37,8 @@ switch flag
         out=Units.h*Units.c/Units.e*1e9./in;
     case 'eV2K'
         out=Units.e/Units.kB.*in;
+    case 'eV2Hz'
+        out=Units.e/Units.h*in;
     case 'keV2K'
         out=Units.e*1e3/Units.kB.*in;
     case 'eV2MK'

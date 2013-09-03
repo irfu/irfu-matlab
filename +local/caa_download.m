@@ -39,6 +39,7 @@ maxSubmittedJobs = 13;
 maxNumberOfAttempts = 20;
 isInputDatasetName = false;
 sendEmailWhenFinished = false;
+streamData = false;               % download cdf files asynchronously
 % so far undocumented feature
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
@@ -89,6 +90,9 @@ else
 	return;
 end
 %% check input: get inventory and construct time table if dataset
+if nargin == 2 && ischar(varargin{2}) && strcmpi(varargin{2},'cef')
+	streamData = true; 
+end
 if nargin==1 && ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
@@ -158,7 +162,11 @@ while 1
 			irf_log('fcal',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
+				if streamData
+				[download_status,downloadfile]=caa_download(tint,dataSet,'stream');
+				else
 				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard');
+				end
 			catch
 				download_status = -1; % something wrong with internet
 				irf_log('dsrc','**** DID NOT SUCCEED! ****');
@@ -179,7 +187,7 @@ while 1
 		end
 		iRequest=iRequest+1;
 	end
-	while 1   % check submitted jobs
+	while 1 % check submitted jobs
 		irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
 		iSubmitted=find_first_submitted_time_interval(TTRequest);
 		if isempty(iSubmitted),
