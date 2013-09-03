@@ -7,8 +7,6 @@ function c_update
 % NEEDS to remake so that separate index files are created, matlab is slow at
 % reading many variables from the same mat file
 
-% $Id$
-
 
 dirCaa='/data/caalocal';
 cd(dirCaa);
@@ -32,7 +30,7 @@ for iDataSet=1:numel(dataSetArray)
 	%% read in file time intervals
 	listFileNames=vertcat(listFiles.name);
 	tmp=[listFileNames listFileNames(:,end)]; % add one more column at the end
-	tmp(:,end)='=';       % changfe end column to character = (used as separator)
+	tmp(:,end)='=';       % change end column to character = (used as separator)
 	tmp=tmp';
 	tt=textscan(regexprep(tmp(:)','__',' '),'%*[^ ] %4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
 	%% create index
@@ -40,7 +38,7 @@ for iDataSet=1:numel(dataSetArray)
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
 	eval(['index_' dataSet '=index;']);
-	save('caa',['index_' dataSet],'-append');
+	dirsave('index',['index_' dataSet]);
 end
 
 	function dataSetOut=replace_minus_in_cis_names(dataSet)

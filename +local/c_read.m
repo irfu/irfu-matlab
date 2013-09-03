@@ -148,13 +148,13 @@ end
 			datasetIndex = strrep(dataset,'CIS-','CIS_');
 			if ~isfield(index,datasetIndex) % index not yet read
 				indexVarName = ['index_' datasetIndex];
-				indexFile = [caaDir 'caa'];
-				indexFileInfo=whos('-file',indexFile,indexVarName);
+				indexFile = [caaDir 'index'];
+				indexFileInfo=dirwhos(indexFile,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
 					irf_log('dsrc',['There is no index file:' indexVarName]);
 					return;
 				end
-				s=load(indexFile,indexVarName);
+				s=dirload(indexFile,indexVarName);
 				index.(datasetIndex)=s.(indexVarName);
 			end
 			index=index.(datasetIndex);

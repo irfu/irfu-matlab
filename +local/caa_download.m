@@ -168,14 +168,13 @@ while 1
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
 				if streamData
-				[download_status,downloadfile]=caa_download(tint,dataSet,'stream');
+				[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDirectory]);
 				else
 				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard');
 				end
 			catch
 				download_status = -1; % something wrong with internet
 				irf_log('dsrc','**** DID NOT SUCCEED! ****');
-				keyboard;
 			end
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
@@ -195,6 +194,10 @@ while 1
 	end
 	while 1 % check submitted jobs
 		irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
+		if n_submitted_jobs(TTRequest) == 0, 
+		  irf_log('fcal','No more submitted jobs');
+		  break;
+		end
 		iSubmitted=find_first_submitted_time_interval(TTRequest);
 		if isempty(iSubmitted),
 			irf_log('fcal','No more submitted jobs');
