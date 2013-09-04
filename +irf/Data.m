@@ -21,15 +21,11 @@ classdef Data
       else
         da.data = inp;
       end
-      if nargin < 2 || isempty(dim)
-        if isempty(da.data), da.privateDimension = [];
-        elseif isscalar(da.data), da.privateDimension = 0;
-        elseif isrow(da.data), da.privateDimension = 1;
-        else  da.privateDimension = ndims(da.data);
-        end
-      else
-        da.dimension = dim;
+      if nargin < 2
+        dim = [];
       end
+      da.dimension = dim;
+
       if nargin < 3 || isempty(name)
         symbols = ['a':'z' 'A':'Z' '0':'9'];
         MAX_ST_LENGTH = 50;
@@ -47,7 +43,13 @@ classdef Data
       % 1 - vector
       % 2 - thensor
       
-      if dim==0 && isscalar(da.data) ||...
+      if isempty(dim)
+        if isempty(da.data), da.privateDimension = [];
+        elseif isscalar(da.data), da.privateDimension = 0;
+        elseif isrow(da.data), da.privateDimension = 1;
+        else  da.privateDimension = ndims(da.data);
+        end
+      elseif dim==0 && isscalar(da.data) ||...
           dim == 1 && isrow(da.data) || ...
           dim == ndims(da.data)
         da.privateDimension = dim;
