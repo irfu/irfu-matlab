@@ -19,14 +19,14 @@ classdef Time
       if isa(inp,'irf.Time')
         t.tt2000 = inp.tt2000;
       elseif isa(inp,'double') % ISDAT epoch
-        if all(size(1)==1) 
+        if all(size(inp)==1) 
           t.tt2000 = parsett2000(epoch2iso(inp));
         else
           error('MATLAB:Time:Time:badInputs',...
             'ISDAT epoch input (double) must be scalar')
         end
       elseif isa(inp,'int64')
-        if all(size(1)==1) % epoch2000 nano-seconds
+        if all(size(inp)==1) % epoch2000 nano-seconds
           t.tt2000 = inp;
         else
           error('MATLAB:Time:Time:badInputs',...
