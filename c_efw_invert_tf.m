@@ -1,7 +1,7 @@
-function eout = c_efw_invert_tf(einp,filt,tm)
+function eout = c_efw_invert_tf(einp,filt,tm,method,edge)
 %C_EFW_INVERT_TF  Invert EFW analogue filters response
 %
-% EOUT = C_EFW_INVERT_TF(EINP,FILT,[TM])
+% EOUT = C_EFW_INVERT_TF(EINP,FILT,[TM],[METHOD],[EDGE])
 %
 % Input:
 %    EINP - data in the spinning frame, e.g. wE1p34
@@ -9,9 +9,23 @@ function eout = c_efw_invert_tf(einp,filt,tm)
 %           'BP' (50 Hz - 8 kHz bandpass), 'U' (unfiltered)
 %      TM - optional, 'HX' or 'IB' (default).
 %           For HX we uncorrect the filter group delay which was put
-%           there by ISDAT.
-%
-% $Id$
+%           there by ISDAT. Note TM is mandatory if method is to be
+%           chosen.
+%  METHOD - optional, 'frequency' (default) or 'time'.
+%           For time we use time domain filtering and block convolution
+%           with "overlap save method". 
+%           If method other than default is to be used then parameter 
+%           TM must also be defined!
+%    EDGE - optional, for 'time' method only. Edge treatment can either
+%           be 'edge_zero'  (fill with zero outside of edges)
+%           or 'edge_wrap'  (wrap the edge around outside of edges)
+%           or 'edge_trunc' (truncate the edge outside of edges)
+%           or 'edge_non'   (do nothing about the edges).
+%           Default edge treatment is 'edge_wrap'.
+%           * Truncate is usually considered a bad treatment and it is
+%           therefor NOT recommended.
+%           * No edge treatment is also considered a bad treatment and
+%           it is also NOT recommended.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -20,36 +34,177 @@ function eout = c_efw_invert_tf(einp,filt,tm)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2, 3, nargin))
+% Updated input check
+narginchk(2, 5)
 
-if nargin == 2, tm = 'IB'; end
+% Default tm to 'IB' and method to 'frequency' if not set by user.
+if nargin == 2, tm = 'IB'; method = 'frequency'; end
 
-nfft = size(einp,1);
-if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = nfft/2 + 1;
+if nargin == 3
+    if strcmpi(tm,'HX')||strcmpi(tm,'IB')
+        % tm correct but no method, Default method to 'old'.
+        method='frequency';
+    else
+        % Optional tm is manditory and must be 'HX' or 'IB' if selecting method.
+        error('If you want to define method, you must also define the TM parameter correct first.');
+    end
 end
 
-fsamp = c_efw_fsample(einp);
-f = fsamp*((1:nf) -1)'/nfft;
+if nargin == 4
+    if strcmpi(method,'time')
+        % Default to wrap edges
+        edge='edge_wrap';
+    elseif strcmpi(method,'frequency')
+        %(old method, do nothing with edge).
+    else
+        % Unknown method was specified.
+        error('Unknown METHOD parameter was specified, valid is "frequency" (default) and "time".')
+    end
+end
 
-tfinp = get_efw_tf(filt);
+if nargin == 5
+    if strcmpi(method,'time')
+        switch(upper(edge)) % Simple check
+            case 'EDGE_ZERO'  % Ok
+            case 'EDGE_WRAP'  % Ok
+            case 'EDGE_TRUNC' % Usually bad and not recommended, but Ok
+            case 'EDGE_NON'   % Usually bad and not recommended, but Ok
+            otherwise
+                % Wrong input
+                error('If you define method as "time" and specify an edge treatment it must be a valid one.')
+        end
+    else
+        % (frequency method, no edge parameter).
+        error('EDGE treatment is only a valid parameter for "time" method.')
+    end
+end
 
-tf = interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');
-tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
+% Check if data is continuous, require 3 us precision
+dt=diff(einp(:,1)); maxJitter = max(abs(dt-median(dt)));
+if maxJitter>1e-5
+  error('data is not evenly sampled, max jitter %.2f us (>10 us)',maxJitter*1e6)
+end
 
-Pxx = fft(einp(:,2));
-if nfft/2==fix(nfft/2)
-    Pxy = Pxx./[tf;fliplr(tf)];
+if strcmpi(method,'frequency')
+        % Default method
+    nfft = size(einp,1);
+    if nfft/2==fix(nfft/2), nf = nfft/2;
+    else nf = (nfft+1)/2;
+    end
+
+    fsamp = c_efw_fsample(einp);
+    f = fsamp*((1:nf) -1)'/nfft;
+
+    tfinp = get_efw_tf(filt);
+
+    tf = interp1(tfinp(:,1),tfinp(:,4),f,'linear','extrap');
+    tf = tf + 1i*interp1(tfinp(:,1),tfinp(:,5),f,'linear','extrap');
+
+    Pxx = fft(einp(:,2));
+    if nfft/2==fix(nfft/2)
+        Pxy = Pxx./[tf;flipud(conj(tf))];
+    else
+        Pxy = Pxx./[tf;flipud(conj(tf(1:end-1)))];
+    end
+
+    eout = einp;
+    eout(:,2) = ifft(Pxy,'symmetric')/14.8;
+elseif strcmpi(method,'time')
+    % Translated to Matlab by T.Nilsson, IRFU, from LPP/Berekeley IDL code 
+
+    fsamp = c_efw_fsample(einp);
+    nk = 512;
+    df = fsamp/nk;
+    frq = (0:nk-1)*df; frq(nk/2+2:end) = frq(nk/2+2:end)-nk*df;
+
+    % Take absolute value: handle negative f  
+    myf = abs(frq);
+
+    % Interpolation of the filter to the fixed size (nk) of the kernel
+    % for positive frequencies myf
+    tfinp = get_efw_tf(filt);
+    c = interp1(tfinp(:,1), complex(tfinp(:,4),tfinp(:,5)), myf,'linear','extrap');
+
+    take_conj = find(frq<0);
+    n_take_conj = numel(take_conj);
+    if(n_take_conj>0)
+        c(take_conj) = conj(c(take_conj));
+    else
+        c = complex(ones(1,size(tfinp2,1)),zeros(1,size(tfinp2,1)));
+        warning('c filter had no negative freq. Not valid');
+    end
+
+    % FFT of real function must be real at f=0
+    c(1) = abs( c(1) ) * sign( real( c(1) ) );
+
+    s = complex(ones(1,nk),0);
+
+    s = s./c;
+
+    % ks = fft(s, 1) <- IDL "1" gives direction (+ => reverse, - => forward)
+    ks = ifft(s)*length(s);
+
+    % If we did everything right, the imaginary part truly is negligible
+    pr = sum(real(ks).*real(ks));    
+    pi = sum(imag(ks).*imag(ks));
+    
+    if(pi/pr>1e-5)
+        sprintf('*** cluster_efw_deconvo: Imag/Real for impulse reponse is = %d.',pi/pr);
+    end
+
+    kernel = real(ks);
+
+    % zero time of the kernel is at index 0. Now, shift that to index nk/2
+    % to get a kernel suitable for linear convolution and
+    % to allow application of the window.  
+    kernel = circshift(kernel, [0 nk/2]);
+
+    % As this is a continuous calibration, the window must be applied to the 
+    % kernel, rather than to the waveform.
+    % note: application of window introduces a slight offset, which must be 
+    % removed from the signal afterwards.  
+    % Correcting for the offset in the kernel itself 
+    % would nullify the benefit the of window.
+    kernel = kernel .* hann(nk,'periodic')';
+
+    % normalize the kernel
+    kernel = kernel/nk;
+
+    % Preallocate output (including column 1: time)
+    eout = einp;
+
+    % Before applying the filter remove any DC levels as the Hann window
+    % above could interfer with these and create an offset. The signal should
+    % be uncoupled before we let the Hann applied kernel do its thing.
+    einp_mean = mean(einp(:,2));
+    einp(:,2) = einp(:,2) - einp_mean;
+
+    % notes on edge behavior:
+    % default: zero output when kernel overlaps edge
+    % /edge_zero: usually good, but can emphasize low frequency trends, i.e.
+    %                           artifiacts of despin
+    % /edge_wrap; similar to edge zero (based on analysis of cal signal).
+    % /edge_truncate: usually bad
+
+    % Normalize with the 14.8322 which corresponds to the 23 dB at
+    % DC level.
+    eout(:,2) = cluster_staff_fastconvol(einp(:,2)', kernel, edge, 0)' / 14.8322;
+
+    % Remove any offset caused by Hann window and the kernel.
+    eout(:,2) = eout(:,2) - mean(eout(:,2));
+    
+    % We should now have completly removed any DC levels, inferred from the
+    % filter process. Then add the DC levels back again (the DC level were in
+    % effect untouched by the filter process).
+    eout(:,2) = eout(:,2) + einp_mean;
 else
-    Pxy = Pxx./[tf;fliplr(tf(1:end-1))];
+    % Should not happen as we have done checks at input.
+    error('Method as defined in user input was incorrect. Method must be either "time" or "frequency", with "frequency" being default.')
 end
-
-eout = einp;
-eout(:,2) = ifft(Pxy,'symmetric')/14.8;
 
 % For HX data we uncorrect the filter delay put there by ISDAT
 if strcmpi(tm,'HX')
-    switch upper(tm)
+    switch upper(filt)
         case 'M'
             eout(:,1) = eout(:,1) + 4.44e-3;
         case 'L'
@@ -60,6 +215,170 @@ if strcmpi(tm,'HX')
 end
 
 end
+
+
+function ao = cluster_staff_fastconvol(a, kernel, edge, blk_c)
+
+% This function is a translated version of cluster_eff_fastconvol
+% originally written in IDL by ???. Traslated into Matlab code by 
+% T.Nilsson, IRFU, 20130702
+% Input:
+%        a - data seq.
+%   kernel - normalized kernel of the filter
+%     edge - edge_zero, zero outside of edges
+%          - edge_wrap, wrap the edge outside of edges
+%          - edge_truncate, simply truncate the edges
+%          - edge_non, do nothing with edges.
+%    blk_c - block length factor (if not set it defaults to 8 times the
+%            filter length).
+
+% Number of elements in the input signal to be filtered.
+nbp = numel(a);
+
+% Number of elements in the kernel (aka filter) to be used.
+nk = numel(kernel);
+
+% If blk_c factor is set use this this, if not use a factor 8.
+if(blk_c~=0)
+    b_length = blk_c * nk;
+else
+    b_length = 8 * nk;
+end
+
+% Pad the edges 
+switch(upper(edge))
+    case 'EDGE_ZERO'
+        % Not optimal treatment.
+        ao = [zeros(1,nk/2), a, zeros(1,nk/2)];
+    case 'EDGE_WRAP'
+        % Default treatment
+        ao = [wrev(a(1:nk/2)), a, wrev(a(nbp-nk/2+1:nbp))];
+        % A possiblilty would be using fliplr but wrev is slightly quicker.
+    case 'EDGE_TRUNC'
+        % Not recommended treatment.
+        ao = [zeros(1,nk/2) + a(1), a, zeros(1,nk/2)+ a(nbp)];
+    case 'EDGE_NON'
+        % Not recommended treatment.
+        ao = a;
+    otherwise
+        % This should not happen as we have checked input already.
+        error('Unknown EDGE treatment parameter.')
+end
+
+% perform the convolution.
+if(b_length<nbp)
+    % Use fast convolution
+    ao = block_conv(kernel, ao, b_length);
+    % If no edge padding, then zero out the edge
+     if numel(ao)==nbp
+         %warning('Block convolution but with no edge treatment.');
+         ao(1:nk-1) = 0;
+     end
+else
+    % Use brute force convolution, with correct attribute.
+    ao = conv(ao, kernel,'full');
+
+end
+
+% shift back to zero delay 
+ao = circshift(ao, [0 -nk/2]);
+
+% trim any edge padding
+if(numel(ao)~=nbp)
+    ao = ao(nk/2+1:nbp+nk/2);
+end
+
+end
+
+
+
+function result = block_conv( filter, signal, blen )
+% Linear Convolution computation via the Overlap-and-Save method. Ver 2.
+% This function require: length(signal) > blen > length(filter).
+
+% This separate function was originaly created by Ilias Konsoulas who
+% REQUIRED that following copyright message remain intact, the code has
+% since been modified by T.Nilsson, IRFU, 20130802.
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+% Copyright (c) 2012, Ilias Konsoulas
+% All rights reserved.
+% 
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+% 
+% * Redistributions of source code must retain the above copyright
+%   notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above copyright
+%   notice, this list of conditions and the following disclaimer in
+%   the documentation and/or other materials provided with the distribution
+% 
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
+% IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+% THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+% PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR 
+% CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+% EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+% PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+% PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+% LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+% NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+% SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+% Make sure signal and filter are row vectors for subsequent processing:
+signal = signal(:).';
+filter = filter(:).';
+
+SignLen = length(signal);
+FiltLen = length(filter);
+
+if(FiltLen>=blen)
+    error('Block length must be longer than filter length.');
+end
+
+if(blen>=SignLen)
+    error('Block length must be shorter than the signal to be filtered.');
+end
+
+% Number of block segments
+m = ceil((SignLen+FiltLen-1)/blen);
+
+% Pad signal with zeros to the least integer multiple of 
+% blen greater than or equal to FiltLen+SignLen-1. 
+signal = [signal  zeros(1, m*blen-SignLen)];  
+
+% This is the pre-allocated size of the output sequence
+% result[n] where the convolution values will be stored.
+% result may be a large vector therefor use x(1:n)=0 instead of
+% x=zeros(1,n) which is not as quick for very large vectors.
+result(1, m*blen) = 0;
+y_current = zeros(1, blen+FiltLen);
+     
+for k=0:m-1       
+      if(k==0) 
+          % First x_block processing. We introduce some zeros in the 
+          % beginning of signal_block as necessary.
+          signal_block = [zeros(1,FiltLen) signal(1:blen)];  
+          % Compute the circular convolution of size (blen + FiltLen).
+          y_current = cconv(signal_block, filter, blen+FiltLen); 
+          result(1:blen) = y_current(FiltLen+1:end);
+      else
+          % Successive signal_blocks are of size blen+FiltLen overlapping
+          % by FiltLen samples.
+          signal_block = signal(k*blen - FiltLen+1:(k+1)*blen);      
+          % Compute the circular convolution of size blen+filtLen.
+          y_current = cconv(signal_block, filter, blen+FiltLen);
+          % Keep only the last blen samples of y_current.
+          result(k*blen+1:(k+1)*blen) = y_current(FiltLen+1:end) ;   
+      end      
+end
+
+% Finally, keep only the valid entries of result[n]:
+result = result(1:SignLen+FiltLen-1);
+end
+
 
 function tfinp = get_efw_tf(filt)
 % filt is one of 'L', 'M', 'H', 'BP', 'U'
@@ -469,140 +788,140 @@ switch upper(filt)
    98.295815   -105.6865228   -660.3489700      0.0000026      0.0000045];
     case 'M' % 180 Hz filters
         tfinp = [...
-    0.100017    -23.4112902     -0.1295992      0.0675203     -0.0001527
-    0.101759    -23.4116670     -0.1340603      0.0675174     -0.0001580
-    0.103531    -23.4125316     -0.1419485      0.0675106     -0.0001673
-    0.105335    -23.4150520     -0.1635753      0.0674910     -0.0001927
-    0.107170    -23.4188037     -0.1950671      0.0674617     -0.0002297
-    0.109036    -23.4213751     -0.2178955      0.0674416     -0.0002565
-    0.110936    -23.4218576     -0.2247939      0.0674379     -0.0002646
-    0.112868    -23.4193077     -0.2082812      0.0674577     -0.0002452
-    0.114834    -23.4154425     -0.1815843      0.0674879     -0.0002139
-    0.116835    -23.4126515     -0.1631201      0.0675096     -0.0001922
-    0.118870    -23.4112522     -0.1553689      0.0675205     -0.0001831
-    0.120940    -23.4112455     -0.1583307      0.0675206     -0.0001866
-    0.123047    -23.4112333     -0.1612734      0.0675207     -0.0001901
-    0.125190    -23.4112236     -0.1642458      0.0675207     -0.0001936
-    0.127371    -23.4112210     -0.1672811      0.0675207     -0.0001971
-    0.129590    -23.4112281     -0.1704001      0.0675207     -0.0002008
-    0.131847    -23.4112396     -0.1736063      0.0675206     -0.0002046
-    0.134144    -23.4112474     -0.1768407      0.0675205     -0.0002084
-    0.136480    -23.4112492     -0.1801294      0.0675205     -0.0002123
-    0.138858    -23.4112449     -0.1835189      0.0675205     -0.0002163
-    0.141277    -23.4112389     -0.1869882      0.0675205     -0.0002204
-    0.143738    -23.4112346     -0.1905262      0.0675205     -0.0002245
-    0.146241    -23.4112336     -0.1940903      0.0675205     -0.0002287
-    0.148789    -23.4112355     -0.1976411      0.0675205     -0.0002329
-    0.151380    -23.4112369     -0.2012274      0.0675205     -0.0002371
-    0.154017    -23.4112335     -0.2048626      0.0675205     -0.0002414
-    0.156700    -23.4112261     -0.2085818      0.0675205     -0.0002458
-    0.159430    -23.4112179     -0.2124156      0.0675206     -0.0002503
-    0.162207    -23.4112118     -0.2163159      0.0675206     -0.0002549
-    0.165032    -23.4112102     -0.2203269      0.0675206     -0.0002596
-    0.167907    -23.4112124     -0.2244210      0.0675206     -0.0002645
-    0.170832    -23.4112156     -0.2285759      0.0675205     -0.0002694
-    0.173808    -23.4112217     -0.2328380      0.0675205     -0.0002744
-    0.176835    -23.4112293     -0.2371702      0.0675204     -0.0002795
-    0.179916    -23.4112352     -0.2415856      0.0675203     -0.0002847
-    0.183050    -23.4112386     -0.2460926      0.0675203     -0.0002900
-    0.186238    -23.4112375     -0.2506449      0.0675202     -0.0002954
-    0.189482    -23.4112357     -0.2552397      0.0675202     -0.0003008
-    0.192783    -23.4112370     -0.2598669      0.0675202     -0.0003062
-    0.196141    -23.4112407     -0.2645158      0.0675201     -0.0003117
-    0.199558    -23.4112447     -0.2692838      0.0675201     -0.0003173
-    0.203034    -23.4112439     -0.2741749      0.0675201     -0.0003231
-    0.206570    -23.4112363     -0.2791899      0.0675201     -0.0003290
-    0.210169    -23.4112219     -0.2843270      0.0675202     -0.0003351
-    0.213830    -23.4112036     -0.2894919      0.0675203     -0.0003412
-    0.217554    -23.4111922     -0.2947441      0.0675203     -0.0003473
-    0.221344    -23.4111901     -0.3000922      0.0675203     -0.0003536
-    0.225200    -23.4111973     -0.3055344      0.0675202     -0.0003601
-    0.229122    -23.4112085     -0.3111055      0.0675201     -0.0003666
-    0.233114    -23.4112132     -0.3167436      0.0675200     -0.0003733
-    0.237174    -23.4112129     -0.3224590      0.0675200     -0.0003800
-    0.241306    -23.4112161     -0.3282689      0.0675199     -0.0003869
-    0.245509    -23.4112257     -0.3341358      0.0675198     -0.0003938
-    0.249785    -23.4112337     -0.3401669      0.0675197     -0.0004009
-    0.254137    -23.4112359     -0.3463526      0.0675197     -0.0004082
-    0.258563    -23.4112257     -0.3526644      0.0675197     -0.0004156
-    0.263067    -23.4112149     -0.3590835      0.0675197     -0.0004232
-    0.267650    -23.4112131     -0.3654914      0.0675197     -0.0004307
-    0.272312    -23.4112186     -0.3719561      0.0675196     -0.0004383
-    0.277055    -23.4112318     -0.3785573      0.0675195     -0.0004461
-    0.281881    -23.4112415     -0.3853094      0.0675193     -0.0004541
-    0.286792    -23.4112455     -0.3922724      0.0675192     -0.0004623
-    0.291787    -23.4112464     -0.3993660      0.0675192     -0.0004706
-    0.296870    -23.4112431     -0.4065313      0.0675191     -0.0004791
-    0.302041    -23.4112407     -0.4138439      0.0675191     -0.0004877
-    0.307302    -23.4112407     -0.4212593      0.0675190     -0.0004964
-    0.312655    -23.4112415     -0.4288124      0.0675190     -0.0005053
-    0.318102    -23.4112435     -0.4365339      0.0675189     -0.0005144
-    0.323643    -23.4112425     -0.4443482      0.0675188     -0.0005236
-    0.329280    -23.4112392     -0.4523267      0.0675188     -0.0005330
-    0.335016    -23.4112360     -0.4604429      0.0675187     -0.0005426
-    0.340852    -23.4112315     -0.4686667      0.0675187     -0.0005523
-    0.346789    -23.4112271     -0.4770720      0.0675186     -0.0005622
-    0.352830    -23.4112212     -0.4855885      0.0675186     -0.0005722
-    0.358976    -23.4112147     -0.4942521      0.0675185     -0.0005825
-    0.365229    -23.4112134     -0.5030987      0.0675185     -0.0005929
-    0.371591    -23.4112152     -0.5120539      0.0675184     -0.0006034
-    0.378064    -23.4112223     -0.5211912      0.0675182     -0.0006142
-    0.384649    -23.4112326     -0.5304758      0.0675180     -0.0006251
-    0.391349    -23.4112408     -0.5398805      0.0675179     -0.0006362
-    0.398166    -23.4112459     -0.5495140      0.0675177     -0.0006476
-    0.405102    -23.4112456     -0.5593068      0.0675176     -0.0006591
-    0.412159    -23.4112416     -0.5692749      0.0675175     -0.0006709
-    0.419338    -23.4112375     -0.5794254      0.0675174     -0.0006828
-    0.426643    -23.4112349     -0.5896599      0.0675173     -0.0006949
-    0.434074    -23.4112360     -0.6001112      0.0675172     -0.0007072
-    0.441636    -23.4112396     -0.6107764      0.0675170     -0.0007198
-    0.449329    -23.4112418     -0.6216426      0.0675169     -0.0007326
-    0.457155    -23.4112464     -0.6327805      0.0675167     -0.0007457
-    0.465119    -23.4112518     -0.6440546      0.0675165     -0.0007590
-    0.473221    -23.4112552     -0.6554941      0.0675163     -0.0007725
-    0.481464    -23.4112569     -0.6671351      0.0675162     -0.0007862
-    0.489850    -23.4112540     -0.6789029      0.0675160     -0.0008000
-    0.498383    -23.4112501     -0.6909221      0.0675159     -0.0008142
-    0.507065    -23.4112487     -0.7031597      0.0675157     -0.0008286
-    0.515897    -23.4112494     -0.7155846      0.0675155     -0.0008433
-    0.524884    -23.4112516     -0.7283165      0.0675153     -0.0008583
-    0.534027    -23.4112514     -0.7412331      0.0675151     -0.0008735
-    0.543329    -23.4112488     -0.7543729      0.0675149     -0.0008890
-    0.552793    -23.4112471     -0.7677747      0.0675147     -0.0009048
-    0.562423    -23.4112458     -0.7813228      0.0675145     -0.0009207
-    0.572220    -23.4112449     -0.7951454      0.0675143     -0.0009370
-    0.582187    -23.4112442     -0.8092069      0.0675141     -0.0009536
-    0.592328    -23.4112407     -0.8234727      0.0675139     -0.0009704
-    0.602646    -23.4112389     -0.8380772      0.0675137     -0.0009876
-    0.613144    -23.4112397     -0.8528886      0.0675134     -0.0010051
-    0.623824    -23.4112403     -0.8679582      0.0675131     -0.0010228
-    0.634691    -23.4112415     -0.8833425      0.0675128     -0.0010409
-    0.645746    -23.4112396     -0.8989035      0.0675126     -0.0010593
-    0.656995    -23.4112354     -0.9147938      0.0675123     -0.0010780
-    0.668439    -23.4112319     -0.9309601      0.0675120     -0.0010971
-    0.680083    -23.4112289     -0.9473539      0.0675117     -0.0011164
-    0.691929    -23.4112304     -0.9641223      0.0675114     -0.0011361
-    0.703982    -23.4112353     -0.9811181      0.0675110     -0.0011562
-    0.716245    -23.4112416     -0.9983994      0.0675106     -0.0011765
-    0.728721    -23.4112516     -1.0160200      0.0675102     -0.0011973
-    0.741415    -23.4112602     -1.0338361      0.0675097     -0.0012183
-    0.754330    -23.4112663     -1.0520472      0.0675093     -0.0012397
-    0.767469    -23.4112714     -1.0706020      0.0675088     -0.0012616
-    0.780838    -23.4112726     -1.0894508      0.0675084     -0.0012838
-    0.794440    -23.4112711     -1.1087339      0.0675080     -0.0013065
-    0.808278    -23.4112675     -1.1282466      0.0675076     -0.0013295
-    0.822358    -23.4112633     -1.1480797      0.0675071     -0.0013529
-    0.836682    -23.4112637     -1.1683228      0.0675066     -0.0013767
-    0.851257    -23.4112674     -1.1888322      0.0675061     -0.0014009
-    0.866085    -23.4112720     -1.2097755      0.0675056     -0.0014256
-    0.881171    -23.4112752     -1.2310652      0.0675050     -0.0014506
-    0.896521    -23.4112724     -1.2526224      0.0675045     -0.0014760
-    0.912137    -23.4112663     -1.2746707      0.0675040     -0.0015020
-    0.928026    -23.4112595     -1.2970480      0.0675034     -0.0015284
-    0.944191    -23.4112526     -1.3198367      0.0675029     -0.0015552
-    0.960638    -23.4112480     -1.3431194      0.0675023     -0.0015827
-    0.977372    -23.4112437     -1.3666723      0.0675016     -0.0016104
-    0.994397    -23.4112457     -1.3907336      0.0675009     -0.0016388
+    0.100017    -23.4240888     -0.1257509      0.0674209     -0.0001480
+    0.101759    -23.4240888     -0.1287127      0.0674209     -0.0001515
+    0.103531    -23.4240888     -0.1316745      0.0674209     -0.0001549
+    0.105335    -23.4240888     -0.1346363      0.0674209     -0.0001584
+    0.107170    -23.4240888     -0.1375981      0.0674209     -0.0001619
+    0.109036    -23.4240888     -0.1405599      0.0674209     -0.0001654
+    0.110936    -23.4240888     -0.1435217      0.0674208     -0.0001689
+    0.112868    -23.4240888     -0.1464835      0.0674208     -0.0001724
+    0.114834    -23.4240888     -0.1494453      0.0674208     -0.0001759
+    0.116835    -23.4240888     -0.1524071      0.0674208     -0.0001793
+    0.118870    -23.4240888     -0.1553689      0.0674208     -0.0001828
+    0.120940    -23.4240821     -0.1583307      0.0674209     -0.0001863
+    0.123047    -23.4240699     -0.1612734      0.0674209     -0.0001898
+    0.125190    -23.4240602     -0.1642458      0.0674210     -0.0001933
+    0.127371    -23.4240576     -0.1672811      0.0674210     -0.0001968
+    0.129590    -23.4240647     -0.1704001      0.0674209     -0.0002005
+    0.131847    -23.4240762     -0.1736063      0.0674208     -0.0002043
+    0.134144    -23.4240840     -0.1768407      0.0674208     -0.0002081
+    0.136480    -23.4240858     -0.1801294      0.0674207     -0.0002120
+    0.138858    -23.4240815     -0.1835189      0.0674208     -0.0002160
+    0.141277    -23.4240755     -0.1869882      0.0674208     -0.0002200
+    0.143738    -23.4240712     -0.1905262      0.0674208     -0.0002242
+    0.146241    -23.4240702     -0.1940903      0.0674208     -0.0002284
+    0.148789    -23.4240721     -0.1976411      0.0674208     -0.0002326
+    0.151380    -23.4240735     -0.2012274      0.0674208     -0.0002368
+    0.154017    -23.4240701     -0.2048626      0.0674208     -0.0002411
+    0.156700    -23.4240627     -0.2085818      0.0674208     -0.0002454
+    0.159430    -23.4240545     -0.2124156      0.0674209     -0.0002500
+    0.162207    -23.4240484     -0.2163159      0.0674209     -0.0002545
+    0.165032    -23.4240468     -0.2203269      0.0674209     -0.0002593
+    0.167907    -23.4240490     -0.2244210      0.0674208     -0.0002641
+    0.170832    -23.4240522     -0.2285759      0.0674208     -0.0002690
+    0.173808    -23.4240583     -0.2328380      0.0674207     -0.0002740
+    0.176835    -23.4240659     -0.2371702      0.0674207     -0.0002791
+    0.179916    -23.4240718     -0.2415856      0.0674206     -0.0002843
+    0.183050    -23.4240752     -0.2460926      0.0674205     -0.0002896
+    0.186238    -23.4240741     -0.2506449      0.0674205     -0.0002949
+    0.189482    -23.4240723     -0.2552397      0.0674205     -0.0003003
+    0.192783    -23.4240736     -0.2598669      0.0674205     -0.0003058
+    0.196141    -23.4240773     -0.2645158      0.0674204     -0.0003113
+    0.199558    -23.4240813     -0.2692838      0.0674204     -0.0003169
+    0.203034    -23.4240805     -0.2741749      0.0674203     -0.0003226
+    0.206570    -23.4240729     -0.2791899      0.0674204     -0.0003285
+    0.210169    -23.4240585     -0.2843270      0.0674205     -0.0003346
+    0.213830    -23.4240402     -0.2894919      0.0674206     -0.0003407
+    0.217554    -23.4240288     -0.2947441      0.0674206     -0.0003468
+    0.221344    -23.4240267     -0.3000922      0.0674206     -0.0003531
+    0.225200    -23.4240339     -0.3055344      0.0674205     -0.0003595
+    0.229122    -23.4240451     -0.3111055      0.0674204     -0.0003661
+    0.233114    -23.4240498     -0.3167436      0.0674203     -0.0003727
+    0.237174    -23.4240495     -0.3224590      0.0674203     -0.0003794
+    0.241306    -23.4240527     -0.3282689      0.0674202     -0.0003863
+    0.245509    -23.4240623     -0.3341358      0.0674201     -0.0003932
+    0.249785    -23.4240703     -0.3401669      0.0674200     -0.0004003
+    0.254137    -23.4240725     -0.3463526      0.0674200     -0.0004076
+    0.258563    -23.4240623     -0.3526644      0.0674200     -0.0004150
+    0.263067    -23.4240515     -0.3590835      0.0674200     -0.0004225
+    0.267650    -23.4240497     -0.3654914      0.0674200     -0.0004301
+    0.272312    -23.4240552     -0.3719561      0.0674199     -0.0004377
+    0.277055    -23.4240684     -0.3785573      0.0674197     -0.0004455
+    0.281881    -23.4240781     -0.3853094      0.0674196     -0.0004534
+    0.286792    -23.4240821     -0.3922724      0.0674195     -0.0004616
+    0.291787    -23.4240830     -0.3993660      0.0674195     -0.0004699
+    0.296870    -23.4240797     -0.4065313      0.0674194     -0.0004784
+    0.302041    -23.4240773     -0.4138439      0.0674194     -0.0004870
+    0.307302    -23.4240773     -0.4212593      0.0674193     -0.0004957
+    0.312655    -23.4240781     -0.4288124      0.0674193     -0.0005046
+    0.318102    -23.4240801     -0.4365339      0.0674192     -0.0005137
+    0.323643    -23.4240791     -0.4443482      0.0674191     -0.0005229
+    0.329280    -23.4240758     -0.4523267      0.0674191     -0.0005323
+    0.335016    -23.4240726     -0.4604429      0.0674190     -0.0005418
+    0.340852    -23.4240681     -0.4686667      0.0674190     -0.0005515
+    0.346789    -23.4240637     -0.4770720      0.0674189     -0.0005614
+    0.352830    -23.4240578     -0.4855885      0.0674189     -0.0005714
+    0.358976    -23.4240513     -0.4942521      0.0674188     -0.0005816
+    0.365229    -23.4240500     -0.5030987      0.0674188     -0.0005920
+    0.371591    -23.4240518     -0.5120539      0.0674187     -0.0006025
+    0.378064    -23.4240589     -0.5211912      0.0674185     -0.0006133
+    0.384649    -23.4240692     -0.5304758      0.0674183     -0.0006242
+    0.391349    -23.4240774     -0.5398805      0.0674182     -0.0006353
+    0.398166    -23.4240825     -0.5495140      0.0674180     -0.0006466
+    0.405102    -23.4240822     -0.5593068      0.0674179     -0.0006581
+    0.412159    -23.4240782     -0.5692749      0.0674178     -0.0006699
+    0.419338    -23.4240741     -0.5794254      0.0674177     -0.0006818
+    0.426643    -23.4240715     -0.5896599      0.0674176     -0.0006939
+    0.434074    -23.4240726     -0.6001112      0.0674175     -0.0007062
+    0.441636    -23.4240762     -0.6107764      0.0674173     -0.0007187
+    0.449329    -23.4240784     -0.6216426      0.0674172     -0.0007315
+    0.457155    -23.4240830     -0.6327805      0.0674170     -0.0007446
+    0.465119    -23.4240884     -0.6440546      0.0674168     -0.0007579
+    0.473221    -23.4240918     -0.6554941      0.0674166     -0.0007713
+    0.481464    -23.4240935     -0.6671351      0.0674165     -0.0007850
+    0.489850    -23.4240906     -0.6789029      0.0674163     -0.0007989
+    0.498383    -23.4240867     -0.6909221      0.0674162     -0.0008130
+    0.507065    -23.4240853     -0.7031597      0.0674160     -0.0008274
+    0.515897    -23.4240860     -0.7155846      0.0674158     -0.0008420
+    0.524884    -23.4240882     -0.7283165      0.0674156     -0.0008570
+    0.534027    -23.4240880     -0.7412331      0.0674154     -0.0008722
+    0.543329    -23.4240854     -0.7543729      0.0674152     -0.0008877
+    0.552793    -23.4240837     -0.7677747      0.0674150     -0.0009034
+    0.562423    -23.4240824     -0.7813228      0.0674148     -0.0009194
+    0.572220    -23.4240815     -0.7951454      0.0674146     -0.0009356
+    0.582187    -23.4240808     -0.8092069      0.0674144     -0.0009522
+    0.592328    -23.4240773     -0.8234727      0.0674142     -0.0009690
+    0.602646    -23.4240755     -0.8380772      0.0674139     -0.0009861
+    0.613144    -23.4240763     -0.8528886      0.0674137     -0.0010036
+    0.623824    -23.4240769     -0.8679582      0.0674134     -0.0010213
+    0.634691    -23.4240781     -0.8833425      0.0674131     -0.0010394
+    0.645746    -23.4240762     -0.8989035      0.0674129     -0.0010577
+    0.656995    -23.4240720     -0.9147938      0.0674126     -0.0010764
+    0.668439    -23.4240685     -0.9309601      0.0674123     -0.0010954
+    0.680083    -23.4240655     -0.9473539      0.0674120     -0.0011147
+    0.691929    -23.4240670     -0.9641223      0.0674117     -0.0011345
+    0.703982    -23.4240719     -0.9811181      0.0674113     -0.0011544
+    0.716245    -23.4240782     -0.9983994      0.0674109     -0.0011748
+    0.728721    -23.4240882     -1.0160200      0.0674105     -0.0011955
+    0.741415    -23.4240968     -1.0338361      0.0674100     -0.0012165
+    0.754330    -23.4241029     -1.0520472      0.0674096     -0.0012379
+    0.767469    -23.4241080     -1.0706020      0.0674091     -0.0012597
+    0.780838    -23.4241092     -1.0894508      0.0674087     -0.0012819
+    0.794440    -23.4241077     -1.1087339      0.0674083     -0.0013046
+    0.808278    -23.4241041     -1.1282466      0.0674079     -0.0013275
+    0.822358    -23.4240999     -1.1480797      0.0674074     -0.0013509
+    0.836682    -23.4241003     -1.1683228      0.0674070     -0.0013747
+    0.851257    -23.4241040     -1.1888322      0.0674064     -0.0013988
+    0.866085    -23.4241086     -1.2097755      0.0674059     -0.0014235
+    0.881171    -23.4241118     -1.2310652      0.0674053     -0.0014485
+    0.896521    -23.4241090     -1.2526224      0.0674048     -0.0014739
+    0.912137    -23.4241029     -1.2746707      0.0674043     -0.0014998
+    0.928026    -23.4240961     -1.2970480      0.0674037     -0.0015261
+    0.944191    -23.4240892     -1.3198367      0.0674032     -0.0015529
+    0.960638    -23.4240846     -1.3431194      0.0674026     -0.0015803
+    0.977372    -23.4240803     -1.3666723      0.0674019     -0.0016080
+    0.994397    -23.4240823     -1.3907336      0.0674012     -0.0016363
     1.011718    -23.4240955     -1.4206269      0.0674003     -0.0016715
     1.029342    -23.4241087     -1.4443881      0.0673995     -0.0016995
     1.047272    -23.4241163     -1.4698202      0.0673987     -0.0017294
