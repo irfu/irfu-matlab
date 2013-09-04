@@ -54,6 +54,26 @@ classdef Time
       s = s_tmp{:};
     end
     
+    function r = lt(t1,t2)
+      r = (t1.tt2000 < t2.tt2000);
+    end
+    
+    function r = gt(t1,t2)
+      r = (t1.tt2000 > t2.tt2000);
+    end
+    
+    function r = le(t1,t2)
+      r = (t1.tt2000 <= t2.tt2000);
+    end
+    
+    function r = ge(t1,t2)
+      r = (t1.tt2000 >= t2.tt2000);
+    end
+    
+    function r = ne(t1,t2)
+      r = (t1.tt2000 ~= t2.tt2000);
+    end
+    
     function r = eq(t1,t2)
       r = (t1.tt2000 == t2.tt2000);
     end
