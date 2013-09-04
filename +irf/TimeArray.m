@@ -35,7 +35,7 @@ classdef TimeArray < irf.Time
         ta.dt = inp - inp(1);
       else
         error('irf:TimeArray:TimeArray:badInputs',...
-          'unknown input type')
+          'Unknown input type')
       end
     end
     
