@@ -41,7 +41,7 @@ classdef Time
         t.tt2000 = parsett2000(inp);
       else
         error('MATLAB:Time:Time:badInputs',...
-          'unknown input type')
+          'Unknown input type')
       end
     end
     
