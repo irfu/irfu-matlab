@@ -60,6 +60,13 @@ classdef TimeArray < irf.Time
         all(ta1.dt==ta2.dt) );
     end
     
+    function ta = subsref(ta,idx)
+      if isstruct(idx)
+        idx = idx.subs{:};
+      end
+      ta.dt = ta.dt(idx);
+    end
+    
     function l = length(ta)
       l = length(ta.dt);
     end
