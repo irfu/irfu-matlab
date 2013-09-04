@@ -9,8 +9,6 @@ function [outspecrec,outPxx,outF] = irf_powerfft(data,nfft,sfreq,overlap)
 %		SPECREC.F - frequency
 %
 % See also FFT, IRF_SPECTROGRAM
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -43,7 +41,7 @@ if nint<1,
 end
 
 if nfft/2==fix(nfft/2), nf = nfft/2;
-else nf = nfft/2 + 1;
+else nf = (nfft+1)/2;
 end
 specrec.f = sfreq*((1:nf) -1)'/nfft;
 for jj=1:ncomp, specrec.p(jj) = {zeros(nint,nf)}; end
