@@ -131,6 +131,9 @@ bf = irf_filt(B_5VPS,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); clear bf
 facMatrix = irf_convert_fac([],B0_1MIN,R);
+if exportFlag
+  maarble.export(facMatrix,tint,cl_id)
+end
 
 if wantPC35
   t_4SEC = ((tint(1)+2-DT_PC5):4:(tint(end)+DT_PC5))';

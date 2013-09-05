@@ -1,7 +1,7 @@
 function [out]=irf_convert_fac(inp,B0,r)
 %IRF_CONVERT_FAC transforms to a field-aligned coordinate (FAC) system
 %
-%  out = irf_convert_mfa(inp,B0,[r])
+%  out = irf_convert_fac(inp,B0,[r])
 %
 %  Transforms to a field-aligned coordinate (FAC) system defined as:
 %  R_parallel_z aligned with the background magnetic field
@@ -10,12 +10,12 @@ function [out]=irf_convert_fac(inp,B0,r)
 %  R_perp_x defined by R_perp_y cross R_par
 %
 %
-%  rotMatrix = irf_convert_mfa([],B0,[r])
+%  rotMatrix = irf_convert_fac([],B0,[r])
 %
 %  Return only the rotation matrix to the FAC system
 %
 %
-%  out = irf_convert_mfa(inp,rotMatrix)
+%  out = irf_convert_fac(inp,rotMatrix)
 %
 %  Perform the roration defined by rotMatrix 
 %
