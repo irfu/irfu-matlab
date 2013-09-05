@@ -63,24 +63,23 @@ end
 % Round time interval to minutes
 tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 cl_s = int2str(cl_id);
+% Extend time interval by these ranges to avoid edge effects 
+DT_PC5 = 80*60; DT_PC2 = 120;
 
 %% Download data
 if 0
-    caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
-    caa_download(tint+[-30 30],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
-    caa_download(tint+[-30 30],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
-    caa_download(tint+[-30 30],'CL_SP_AUX','nowildcard');
-    caa_download(tint+[-30 30],['C' cl_s '_CP_FGM_FULL_ISR2'],'nowildcard');
-    caa_download(tint+[-30 30],['C' cl_s '_CP_EFW_L2_E'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],'CL_SP_AUX','nowildcard');
+    caa_download(tint+DT_PC2*[-1 1],['C' cl_s '_CP_FGM_FULL_ISR2'],'nowildcard');
+    caa_download(tint+DT_PC2*[-1 1],['C' cl_s '_CP_EFW_L2_E'],'nowildcard');
     if wantSCM
-      caa_download(tint+[-30 30],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
+      caa_download(tint+DT_PC2*[-1 1],['C' cl_s '_CP_STA_CWF_HBR_ISR2'],'nowildcard');
     end
 end
 
 %% Load
-
-% Extend time interval by these ranges to avoid edge effects 
-DT_PC5 = 80*60; DT_PC2 = 120; %
 
 % Construct 1 min-B0 (lowpassed at 1/600 Hz)
 gseB_5VPS = c_caa_var_get(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],...
@@ -131,6 +130,7 @@ end
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); clear bf
+facMatrix = irf_convert_fac([],B0_1MIN,R);
 
 if wantPC35
   t_4SEC = ((tint(1)+2-DT_PC5):4:(tint(end)+DT_PC5))';
@@ -144,7 +144,7 @@ if wantPC35
   
   ebsp = ...
     irf_ebsp(iE3D_4SEC,B_4SEC,[],B0_1MIN,R,'pc35',...
-    'fac','polarization','noresamp','fullB=dB');
+    'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
   tlim_ebsp();
   if plotFlag
     h = irf_pl_ebsp(ebsp);
@@ -170,7 +170,8 @@ if wantPC12
   iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
   tic
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
-    'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12);
+    'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
+    'facMatrix',facMatrix);
   toc
   tlim_ebsp();
   if plotFlag

@@ -45,6 +45,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %   'dEdotB=0'     - compute dEz from dB dot B = 0, uses fullB
 %   'fullB=dB'     - dB contains DC field
 %   'nAv'          - number of wave periods to average (default=8)
+%   'facMatrix'    - specify rotation matrix to FAC system 
 % 
 %  Examples:
 %
@@ -54,7 +55,7 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %
 %    res = irf_ebsp(e,b,[],B0,xyz,'pc12','fullB=dB','dEdotB=0');
 %
-%  See also: IRF_PL_EBSP
+%  See also: IRF_PL_EBSP, IRF_CONVERT_FAC
 
 % This software was developed as part of the MAARBLE (Monitoring,
 % Analyzing and Assessing Radiation Belt Energization and Loss)
@@ -65,50 +66,60 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
+facMatrix = []; % matrix for totation to FAC
 
 wantPolarization = 0;
 if isempty(e), wantEE = 0;
 else wantEE = 1;
 end
 
-res = struct('t',[],'f',[],'flagFac',0,'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
-    'pf_xyz',[],'pf_rtp',[],...
-    'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[],...
-    'fullB',fullB,'B0',B0,'r',xyz);
+res = struct('t',[],'f',[],'flagFac',0,...
+  'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
+  'pf_xyz',[],'pf_rtp',[],...
+  'dop',[],'dop2d',[],'planarity',[],'ellipticity',[],'k_tp',[],...
+  'fullB',fullB,'B0',B0,'r',xyz);
 
 flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
-for i=1:length(varargin)
-    switch lower(varargin{i})
-        case 'polarization' 
-            wantPolarization = 1;
-        case 'noresamp'
-            flag_no_resamp = 1;
-        case 'fac'
-            flag_want_fac = 1; % Use FAC coordinate system
-        case 'dedotb=0'
-            flag_dEdotB0 = 1;
-        case 'fullb=db'
-            flag_fullB_dB = 1;
-        case 'nav' 
-              if i==length(varargin) || ~isnumeric(varargin{i+1}) || ...
-                  uint8(varargin{i+1})~=varargin{i+1}
-                error('NAV requires a second integer argument')
-              end
-              nWavePeriodToAverage = varargin{i+1};
-              %i = i+1; XXX: fixme
-        otherwise
-            irf_log('fcal',['Option ''' varargin{i} '''not recognized'])
-    end
+args = varargin;
+while 1
+  l = 1;
+  switch lower(args{1})
+    case 'polarization'
+      wantPolarization = 1;
+    case 'noresamp'
+      flag_no_resamp = 1;
+    case 'fac'
+      flag_want_fac = 1; % Use FAC coordinate system
+    case 'dedotb=0'
+      flag_dEdotB0 = 1;
+    case 'fullb=db'
+      flag_fullB_dB = 1;
+    case 'nav'
+      if length(args)==1 || ~isnumeric(args{2}) || uint8(args{2})~=args{2}
+        error('NAV requires a second integer argument')
+      end
+      nWavePeriodToAverage = args{2}; l = 2;
+    case 'facmatrix'
+      if length(args)==1 || ~isstruct(args{2}) ||...
+          ~isfield(args{2},'t') || ~isfield(args{2},'rotMatrix')
+        error('FACMATRIX requires a second argument struct(t,rotMatrix)')
+      end
+      facMatrix = args{2}; l = 2;
+    otherwise
+      irf_log('fcal',['Option ''' args{1} '''not recognized'])
+  end
+  args = args(l+1:end);
+  if isempty(args), break, end
 end
 
-if flag_want_fac 
-	if isempty(B0)
-		error('irf_ebsp(): at least B0 should be given for option FAC');
-	end
-	if  isempty(xyz)
-		irf_log('fcal','assuming s/c position [1 0 0] for estimating FAC');
-		xyz=[0 1 0 0];
-	end
+if flag_want_fac && isempty(facMatrix)
+  if isempty(B0)
+    error('irf_ebsp(): at least B0 should be given for option FAC');
+  end
+  if isempty(xyz)
+    irf_log('fcal','assuming s/c position [1 0 0] for estimating FAC');
+    xyz=[0 1 0 0];
+  end
 end
 B0 = irf_resamp(B0,dB);
 xyz = irf_resamp(xyz,dB);
@@ -186,7 +197,11 @@ end
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
-	xyz=xyz(1:end-1,:);
+  xyz=xyz(1:end-1,:);
+  if ~isempty(facMatrix)
+    facMatrix.t = facMatrix.t(1:end-1,:);
+    facMatrix.rotMatrix = facMatrix.rotMatrix(1:end-1,:,:);
+  end
   if wantEE, e=e(1:end-1,:); end
 end
 inTime = dB(:,1); timeB0 = B0(:,1);
@@ -216,10 +231,14 @@ if flag_want_fac
       if size(e,2)<4
         error('E must be a 3D vector to be rotated to FAC')
       end
-      e=irf_convert_fac(e,B0,xyz);
+      if isempty(facMatrix), e=irf_convert_fac(e,B0,xyz);
+      else e=irf_convert_fac(e,facMatrix);
+      end
     end
   end
-  dB = irf_convert_fac(dB,B0,xyz);
+  if isempty(facMatrix), dB = irf_convert_fac(dB,B0,xyz);
+  else dB=irf_convert_fac(dB,facMatrix);
+  end
 end
 
 %% Find the frequencies for an FFT of all data and set important parameters
@@ -321,7 +340,11 @@ parfor ind_a=1:length(a), % Main loop over frequencies
               1j*(iWe(:,1).*Bx+iWe(:,2).*By)./Bz;
           wEz(idxBparSpinPlane) = NaN;
           if flag_want_fac
-              We = irf_convert_fac([timeB0 We(:,1:2) wEz],B0,xyz); 
+              if isempty(facMatrix)
+                We = irf_convert_fac([timeB0 We(:,1:2) wEz],B0,xyz);
+              else
+                We = irf_convert_fac([timeB0 We(:,1:2) wEz],facMatrix);
+              end
               We(:,1) = [];
           end
       end
