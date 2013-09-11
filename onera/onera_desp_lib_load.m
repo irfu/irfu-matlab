@@ -47,7 +47,7 @@ if ~libisloaded('onera_desp_lib'),
         if ~isempty(getenv('IRBEM_LIB_DLL')),
             libfile = getenv('IRBEM_LIB_DLL');
         else
-            libfile = ['onera_desp_lib.',libext];
+            libfile = ['onera_desp_lib_',lower(computer),'.',libext];
         end
     end
     if ~exist(libfile,'file'),
