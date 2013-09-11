@@ -50,7 +50,8 @@ function options  = onera_desp_lib_options(varargin)
 % 'ECD'  1 = Eccentric tilted dipole
 % 'JC'   2 = Jensen&Cain 1960
 % 'GSFC' 3 = GSFC 12/66 updated to 1970
-%
+% 'USER' 4 = user's own, compiled into library as myOwnMagField
+% 'DIPOLE' 5 = centered dipole
 
 options = zeros(5,1);
 if nargin==0,
@@ -89,6 +90,8 @@ while i <= length(inoptions),
             case {'ECD'}, options(5) = 1;
             case {'JC'}, options(5) = 2;
             case {'GSFC'}, options(5) = 3;
+            case {'USER'}, options(5) = 4;
+            case {'DIPOLE'}, options(5) = 5;
             otherwise
                 error('Unknown option word "%s" in %s',opt,mfilename);
         end

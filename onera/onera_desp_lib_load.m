@@ -23,21 +23,49 @@ function info = onera_desp_lib_load(libfile,headerfile)
 %function onera_desp_lib_load(libfile,headerfile);
 % checks for the presence of the onera_desp_lib dynamic library in memory
 % if not present, attempts to load it using a headerfile
+% checks environment variable IRBEM_LIB_DLL to specify the file to load
+%  (full file path, or a file name in the matlab search path)
+% otherwise, it guesses the file name
+% checks the environment variable IRBEM_THUNK_TMP_PATH to specify where to 
+% create the thunkfile (64-bit systems only), otherwise let's matlab decide
+
 if ~libisloaded('onera_desp_lib'),
     if nargin < 2,
         headerfile = 'onera_desp_lib.h';
     end
+    
+    % determine DLL extension
+    if ispc,
+        libext = 'dll';
+    elseif ismac,
+        libext = 'dylib';
+    else
+        libext = 'so';
+    end
+
     if nargin < 1,
-        if ispc,
-           libfile = 'onera_desp_lib.dll';
-        elseif ismac,
-           libfile = 'onera_desp_lib.dylib';
+        if ~isempty(getenv('IRBEM_LIB_DLL')),
+            libfile = getenv('IRBEM_LIB_DLL');
         else
-           libfile = 'onera_desp_lib.so';
+            libfile = ['onera_desp_lib.',libext];
         end
     end
-    loadlibrary(libfile,headerfile,'alias','onera_desp_lib');
+    if ~exist(libfile,'file'),
+        error('libfile %s not found',libfile);
+    end
+    fprintf('Loading %s\n',libfile);
+    if isempty(getenv('IRBEM_THUNK_TMP_PATH')),
+        loadlibrary(libfile,headerfile,'alias','onera_desp_lib'); % let matlab choose the thunkfile name and location
+    else % use user specifiedlocation
+        old_pwd = pwd; % current wd
+        cd(getenv('IRBEM_THUNK_TMP_PATH')); % cd into temp folder
+        tfile = ['onera_desp_lib_thunk_',lower(computer),'.',libext];
+        loadlibrary(libfile,headerfile,'alias','onera_desp_lib','thunkfilename',tfile); % load with named thunkfile
+        cd(old_pwd); % cd back into original wd
+    end
+    
 end
+
 
 % command to generate proto file -- don't do this anymore as it creates problems for 64-bit machines
 % loadlibrary('onera_desp_lib.dll','onera_desp_lib.h','alias','onera_desp_lib','mfilename','onera_desp_lib_proto.m'); disp('remember to move the proto file');
