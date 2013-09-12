@@ -16,6 +16,10 @@ To download the code from the command line run
 
 > git clone git://github.com/irfu/irfu-matlab.git
 
+If you want only the latest version and not the full repository run
+
+> git clone --depth=1 git://github.com/irfu/irfu-matlab.git
+
 Any time you want to update the code to the latest version, run from the command line 
 
 > git pull
