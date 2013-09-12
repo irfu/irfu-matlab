@@ -3,11 +3,7 @@
 %	--------------------------------
 %
 if not (libisloaded ('libcef'))
-  if ismac, dlExt = 'dylib';
-  elseif ispc,  dlExt = 'dll';
-  else dlExt = 'so';
-  end
-	loadlibrary (['libcef_' lower(computer) '.' dlExt], @libcef_mfile,'alias','libcef')
+	loadlibrary (['libcef_' lower(computer)], @libcef_mfile,'alias','libcef')
 end
 
 
