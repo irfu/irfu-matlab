@@ -53,7 +53,7 @@ if ~libisloaded('onera_desp_lib'),
     if ~exist(libfile,'file'),
         error('libfile %s not found',libfile);
     end
-    fprintf('Loading %s\n',libfile);
+    %fprintf('Loading %s\n',libfile);
     if isempty(getenv('IRBEM_THUNK_TMP_PATH')),
         loadlibrary(libfile,headerfile,'alias','onera_desp_lib'); % let matlab choose the thunkfile name and location
     else % use user specifiedlocation
