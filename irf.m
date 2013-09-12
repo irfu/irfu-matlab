@@ -13,7 +13,10 @@ function out=irf(varargin)
 % more help on mice kernels. 
 % more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
 % 
-% [out] = IRF('onera') check if onera library is installed
+% [out] = IRF('onera') check if ONERA IRBEM library is installed
+%
+% [out] = IRF('ceflib') check if IRAP CEFLIB is installed
+% http://ceflib.irap.omp.eu/
 %
 % version = IRF('version') return IRF version
 %
@@ -26,6 +29,7 @@ logFileUrl = 'http://www.space.irfu.se/~andris/irfu-matlab/log.txt';
 %% Input check
 if nargin == 0,
 	irf('check');
+  irf('ceflib');
 	irf('mice');
 	irf('onera');
 	irf('check_path');
@@ -139,7 +143,28 @@ switch lower(action)
 			if ~ok, 
 				disp('There are onera problems. Please, contact irfu!');
 			end
-		end
+    end
+  case 'ceflib'
+    if exist('cef_init','file') % CESR CEFLIB is installed
+      cef_init();
+      if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
+          numel(cef_date(cef_var ('time_tags'))) == 15 && ...
+          numel(cef_var('Spacecraft_potential')) == 15 )
+        disp('CEFLIB is installed and seems working');
+        if nargout, out = true; end
+      else
+        disp('There are CEFLIB problems. Please, contact irfu!');
+        if nargout, out = false; end
+      end
+    else
+      ceflibPath = [irf('path') filesep  'cef'];
+      disp(['adding CEFLIB path to matlab: ' ceflibPath]);
+      addpath(ceflibPath);
+      out=irf('ceflib');
+      if ~out,
+        disp('There are CEFLIB problems. Please, contact irfu!');
+      end
+    end
 	case 'path'
 			out = fileparts(which('irf.m'));	
 	case 'version'
