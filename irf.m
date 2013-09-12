@@ -28,7 +28,7 @@ function out=irf(varargin)
 
 %% Defaults
 % file to check version
-logFileUrl = 'http://www.space.irfu.se/~andris/irfu-matlab/log.txt';
+logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
