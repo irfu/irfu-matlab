@@ -130,7 +130,7 @@ switch lower(action)
         if nargout, out=true; end
         return;
       else
-        disp('onera is installed but NOT WORKING PROPERLY!');
+        disp('IRBEM is installed but NOT WORKING PROPERLY!');
         disp('gse>geo>gse differs by more than 0.1% from original vector');
         if nargout, out=false; end
         return;
