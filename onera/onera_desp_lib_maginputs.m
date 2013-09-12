@@ -20,12 +20,13 @@ function maginputs = onera_desp_lib_maginputs(varargin)
 %***************************************************************************************************
 %
 % maginputs = onera_desp_lib_maginputs(Kp,Dst,Nsw,Vsw,Psw,ByGSM,BzGSM,G1,G2,G3,W1,W2,W3,W4,W5,W6,AL);
+%  produces the correct maginputs matrix from the provided parameters
+% (NOTE: when using this syntax, Kp is expected in the 0-9 range)
 % maginputs = onera_desp_lib_maginputs(maginputs)
-% produces the correct structure for maginputs
-% from the provided parameters
+%  returns the input matrix maginputs, but replaces NaN's with the library's baddata flag -1E31.
 % maginput - [length(G1) x 25] provides inputs to dynamic external field models
 % (if maginput is omitted or empty, then a matrix of zeros is assumed)
-% maginput(1st element,*) =Kp: value of Kp as in OMNI2 files but has to be double instead of integer type
+% maginput(1st element,*) =Kp*10
 % maginput(2nd element,*) =Dst: Dst index (nT)
 % maginput(3rd element,*) =dens: Solar Wind density (cm-3)
 % maginput(4th element,*) =velo: Solar Wind velocity (km/s)

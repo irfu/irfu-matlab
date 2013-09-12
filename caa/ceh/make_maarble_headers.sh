@@ -7,7 +7,8 @@
 # under grant agreement n. 284520.
 
 flist="CX_CH_AUX_MAARBLE_ULF_PC12.ceh \
-CX_CH_AUX_MAARBLE_ULF_PC35.ceh"
+CX_CH_AUX_MAARBLE_ULF_PC35.ceh \
+CX_CH_AUX_MAARBLE_ULF_FACMATR.ceh"
 
 
 for f in $flist

@@ -31,7 +31,7 @@ function y = c_coord_trans(from,to,x,varargin)
 
 persistent lat long cl_id_saved
 
-error(nargchk(4,8,nargin))
+error(nargchk(3,8,nargin))
 if isempty(x), y=[]; return; end % if empty input, empty output
 
 allowed_coord_sys={'GSE','DSC','SR2','DSI','ISR2','GSM'};

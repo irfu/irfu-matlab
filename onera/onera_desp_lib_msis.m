@@ -50,21 +50,23 @@ function out = onera_desp_lib_msis(whichm,date,X,sysaxes,F107A,F107,Ap)
 out = [];
 
 sysaxes = onera_desp_lib_sysaxes(sysaxes);
-X = onera_desp_lib_coord_trans(X,[sysaxes 0],date); % get alt, lat, lon
+X = onera_desp_lib_coord_trans(X,[sysaxes 0],date); % get alt, lat, lon, sysaxes = 0!  GDZ
 
 Nmax = onera_desp_lib_ntime_max;
 N = length(date);
 if N > Nmax,
-    for i = 1:Nmax:ntime,
-        ii = (i:min(i+Nmax-1,ntime))';
-        tmpout = onera_desp_lib_msis(whichm,date(ii),X(ii,:),sysaxes,F107A(ii),F107(ii),Ap(ii,:));
+    for i = 1:Nmax:N,
+        ii = (i:min(i+Nmax-1,N))';
+        % change the call to sysaxes below to 'gdz', since we rotated to
+        % GDZ above.  
+        tmpout = onera_desp_lib_msis(whichm,date(ii),X(ii,:),'gdz',F107A(ii),F107(ii),Ap(ii,:));
         if isempty(out),
             out = tmpout;
         else
             fldnames = fieldnames(tmpout);
             for ifld = 1:length(fldnames),
                 var = fldnames{ifld};
-                if size(var,1)==length(ii),
+                if size(tmpout.(var),1)==length(ii),
                     out.(var) = [out.(var);tmpout.(var)];
                 end
             end

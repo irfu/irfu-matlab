@@ -85,7 +85,7 @@ end
 maginput = onera_desp_lib_maginputs(maginput); % NaN to baddata
 
 
-Nbounce = 1000; % maximum size of bounce array
+Nbounce = 20*150; % maximum size of bounce array
 Lm = nan;
 Blocal = repmat(nan,Nbounce,1);
 Bmin = Lm;
