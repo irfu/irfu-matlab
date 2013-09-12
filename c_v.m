@@ -148,15 +148,14 @@ end
 		cd(tempDir);
 		caa_download([min(t)-60,max(t)+60],'CL_SP_AUX','stream');
 		cd('CAA/CL_SP_AUX');
-		gunzip('*.gz');
-		d=dir('*.cef');
-		c=cefRead(d.name);
-		tt=irf_time(cell2mat(c.time_tags__CL_SP_AUX(:)),'iso2epoch');
-		R.R=[tt cellfun(@double,c.sc_r_xyz_gse__CL_SP_AUX')];
+		d=dir('*.cef.gz');
+		cefFile = d.name;
+		R.R = cef_get_data('sc_r_xyz_gse',cefFile);
 		for sc='1234'
-			R.(['R' sc])=R.R+[zeros(numel(tt),1) cellfun(@double,c.(['sc_dr' sc '_xyz_gse__CL_SP_AUX'])')];
+			tempR = cef_get_data(['sc_dr' sc '_xyz_gse'],cefFile);
+			R.(['R' sc])=R.R+[zeros(size(R.R,1),1) tempR(:,2:end)];
 		end
-		R.V=[tt cellfun(@double,c.sc_v_xyz_gse__CL_SP_AUX')];
+		R.V = cef_get_data('sc_v_xyz_gse',cefFile);
 		irf_log('dsrc','!!!! Assumes all s/c move with the same velocity !!!');
 		c_eval('R.V?=R.V;');
 		cd(currentDir);

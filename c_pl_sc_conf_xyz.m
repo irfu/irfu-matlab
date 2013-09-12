@@ -109,8 +109,8 @@ switch lower(action)
 			irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
 			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 			if ~isempty(R.R)
-				c_eval('dR?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
-				c_eval('R.C?=irf_add(1,R,1,dR?);',sc_list);
+				c_eval('R.C?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading stream from CAA
@@ -677,13 +677,12 @@ end
 		cd(tempDir);
 		caa_download([data.t-60,data.t+60],'CL_SP_AUX','stream');
 		cd('CAA/CL_SP_AUX');
-		gunzip('*.gz');
-		d=dir('*.cef');
-		c=cefRead(d.name);
-		tt=irf_time(cell2mat(c.time_tags__CL_SP_AUX(:)),'iso2epoch');
-		R.R=[tt cellfun(@double,c.sc_r_xyz_gse__CL_SP_AUX')];
+		d=dir('*.cef.gz');
+		cefFile = d.name;
+		R.R = cef_get_data('sc_r_xyz_gse',cefFile);
 		for sc='1234'
-			R.(['C' sc])=R.R+[zeros(numel(tt),1) cellfun(@double,c.(['sc_dr' sc '_xyz_gse__CL_SP_AUX']))'];
+			tempR = cef_get_data(['sc_dr' sc '_xyz_gse'],cefFile);
+			R.(['C' sc])=R.R+[zeros(size(R.R,1),1) tempR(:,2:end)];
 		end
 		cd(currentDir);
 		rmdir(tempDir,'s');
