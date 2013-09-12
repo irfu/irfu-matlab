@@ -147,6 +147,7 @@ switch lower(action)
   case 'ceflib'
     if exist('cef_init','file') % CESR CEFLIB is installed
       cef_init();
+	  cef_verbosity(0);
       if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
           numel(cef_date(cef_var ('time_tags'))) == 15 && ...
           numel(cef_var('Spacecraft_potential')) == 15 )
