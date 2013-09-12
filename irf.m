@@ -6,19 +6,19 @@ function out=irf(varargin)
 % IRF('help') or 'help irfu-matlab' shows general help on irfu-matlab.
 %
 % [out] = IRF('check') check if using latest version of irfu-matlab
-%	out is logical true if using latest and false if not. 
+%	out is logical true if using latest and false if not.
 %
 % [out] = IRF('mice') check if spice/mice routines are installed properly
 % and if necessary add to the path. run irf('mice_help') if you want to see
-% more help on mice kernels. 
+% more help on mice kernels.
 % more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
-% 
-% [out] = IRF('irbem') 
+%
+% [out] = IRF('irbem')
 %
 % Check if ONERA IRBEM library is installed
 % http://craterre.onecert.fr/prbem/irbem/description.html
 %
-% [out] = IRF('ceflib') 
+% [out] = IRF('ceflib')
 %
 % Check if IRAP CEFLIB is installed, http://ceflib.irap.omp.eu/
 %
@@ -33,7 +33,7 @@ logFileUrl = 'http://www.space.irfu.se/~andris/irfu-matlab/log.txt';
 %% Input check
 if nargin == 0,
 	irf('check');
-  irf('ceflib');
+	irf('ceflib');
 	irf('mice');
 	irf('irbem');
 	irf('check_path');
@@ -70,10 +70,12 @@ switch lower(action)
 				disp(['  Your irfu-matlab is from: ' currentVersion]);
 				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
-				disp(logTextArray(1:indices-1));
+				for iInd = 1 : indices -1
+					fprintf('%s\n',logTextArray{iInd})
+				end
 				disp(' ');
 			end
-			if nargout, out = false; end 
+			if nargout, out = false; end
 		else
 			disp('YES:)');
 			if nargout, out = true; end
@@ -110,7 +112,7 @@ switch lower(action)
 			disp(['adding MICE path to matlab: ' micePath]);
 			addpath(micePath);
 			ok=irf('mice');
-			if ~ok, 
+			if ~ok,
 				disp('There are mice problems. Please, contact irfu!');
 			end
 		end
@@ -124,58 +126,58 @@ switch lower(action)
 		disp('If you want for example get all Rosetta kernels, execute:');
 		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
 		disp('');
-  case 'irbem'
-    if exist('onera_desp_lib_coord_trans','file') % irbem is installed
-      x=[0 0 1];
-      y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-      yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
-      if (max(abs(yy-x))<1e-3),
-        disp('IRBEM is OK');
-        if nargout, out=true; end
-        return;
-      else
-        disp('IRBEM is installed but NOT WORKING PROPERLY!');
-        disp('gse>geo>gse differs by more than 0.1% from original vector');
-        if nargout, out=false; end
-        return;
-      end
-    else
-      oneraPath = [irf('path') filesep  'onera'];
-      disp(['adding IRBEM path to matlab: ' oneraPath]);
-      addpath(oneraPath);
-      ok=irf('irbem');
-      if ~ok,
-        disp('There are IRBEM problems. Please, contact irfu!');
-      end
-    end
-  case 'ceflib'
-    if exist('cef_init','file') % CESR CEFLIB is installed
-      cef_init();
-	  cef_verbosity(0);
-      if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
-          numel(cef_date(cef_var ('time_tags'))) == 15 && ...
-          numel(cef_var('Spacecraft_potential')) == 15 )
-        disp('CEFLIB is OK');
-        if nargout, out = true; end
-      else
-        disp('There are CEFLIB problems. Please, contact irfu!');
-        if nargout, out = false; end
-      end
-    else
-      ceflibPath = [irf('path') filesep  'cef'];
-      disp(['adding CEFLIB path to matlab: ' ceflibPath]);
-      addpath(ceflibPath);
-      out=irf('ceflib');
-      if ~out,
-        disp('There are CEFLIB problems. Please, contact irfu!');
-      end
-    end
+	case 'irbem'
+		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
+			x=[0 0 1];
+			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+			if (max(abs(yy-x))<1e-3),
+				disp('IRBEM is OK');
+				if nargout, out=true; end
+				return;
+			else
+				disp('IRBEM is installed but NOT WORKING PROPERLY!');
+				disp('gse>geo>gse differs by more than 0.1% from original vector');
+				if nargout, out=false; end
+				return;
+			end
+		else
+			oneraPath = [irf('path') filesep  'onera'];
+			disp(['adding IRBEM path to matlab: ' oneraPath]);
+			addpath(oneraPath);
+			ok=irf('irbem');
+			if ~ok,
+				disp('There are IRBEM problems. Please, contact irfu!');
+			end
+		end
+	case 'ceflib'
+		if exist('cef_init','file') % CESR CEFLIB is installed
+			cef_init();
+			cef_verbosity(0);
+			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
+					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
+					numel(cef_var('Spacecraft_potential')) == 15 )
+				disp('CEFLIB is OK');
+				if nargout, out = true; end
+			else
+				disp('There are CEFLIB problems. Please, contact irfu!');
+				if nargout, out = false; end
+			end
+		else
+			ceflibPath = [irf('path') filesep  'cef'];
+			disp(['adding CEFLIB path to matlab: ' ceflibPath]);
+			addpath(ceflibPath);
+			out=irf('ceflib');
+			if ~out,
+				disp('There are CEFLIB problems. Please, contact irfu!');
+			end
+		end
 	case 'path'
-			out = fileparts(which('irf.m'));	
+		out = fileparts(which('irf.m'));
 	case 'version'
 		logFile = [fileparts(which('irf_plot.m')) filesep 'log.txt'];
 		fid=fopen(logFile);
-        tline = fgetl(fid);
+		tline = fgetl(fid);
 		fclose(fid);
 		versionTime = tline(1:10);
 		if nargout == 0,
