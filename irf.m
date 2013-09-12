@@ -93,7 +93,7 @@ switch lower(action)
 	case 'mice'
 		if exist('cspice_j2000','file') % mice is installed
 			if (cspice_j2000 == 2451545),
-				disp('SPICE/MICE is installed and seems working');
+				disp('SPICE/MICE is OK');
 				if nargout, out=true; end
 				return;
 			else
@@ -120,29 +120,29 @@ switch lower(action)
 		disp('If you want for example get all Rosetta kernels, execute:');
 		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
 		disp('');
-	case 'onera'
-		if exist('onera_desp_lib_coord_trans','file') % onera is installed
-			x=[0 0 1];
-			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
-			if (max(abs(yy-x))<1e-3),
-				disp('onera is installed and seems working');
-				if nargout, out=true; end
-				return;
-			else
-				disp('onera is installed but NOT WORKING PROPERLY!');
-				disp('gse>geo>gse differs by more than 0.1% from original vector');
-				if nargout, out=false; end
-				return;
-			end
-		else
-			oneraPath = [irf('path') filesep  'onera'];
-			disp(['adding onera path to matlab: ' oneraPath]);
-			addpath(oneraPath);
-			ok=irf('onera');
-			if ~ok, 
-				disp('There are onera problems. Please, contact irfu!');
-			end
+  case 'onera'
+    if exist('onera_desp_lib_coord_trans','file') % onera is installed
+      x=[0 0 1];
+      y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+      yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+      if (max(abs(yy-x))<1e-3),
+        disp('IRBEM is OK');
+        if nargout, out=true; end
+        return;
+      else
+        disp('onera is installed but NOT WORKING PROPERLY!');
+        disp('gse>geo>gse differs by more than 0.1% from original vector');
+        if nargout, out=false; end
+        return;
+      end
+    else
+      oneraPath = [irf('path') filesep  'onera'];
+      disp(['adding IRBEM path to matlab: ' oneraPath]);
+      addpath(oneraPath);
+      ok=irf('onera');
+      if ~ok,
+        disp('There are IRBEM problems. Please, contact irfu!');
+      end
     end
   case 'ceflib'
     if exist('cef_init','file') % CESR CEFLIB is installed
@@ -150,7 +150,7 @@ switch lower(action)
       if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
           numel(cef_date(cef_var ('time_tags'))) == 15 && ...
           numel(cef_var('Spacecraft_potential')) == 15 )
-        disp('CEFLIB is installed and seems working');
+        disp('CEFLIB is OK');
         if nargout, out = true; end
       else
         disp('There are CEFLIB problems. Please, contact irfu!');
