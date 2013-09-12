@@ -13,10 +13,14 @@ function out=irf(varargin)
 % more help on mice kernels. 
 % more SPICE info: http://naif.jpl.nasa.gov/pub/naif/toolkit_docs/MATLAB/
 % 
-% [out] = IRF('onera') check if ONERA IRBEM library is installed
+% [out] = IRF('irbem') 
 %
-% [out] = IRF('ceflib') check if IRAP CEFLIB is installed
-% http://ceflib.irap.omp.eu/
+% Check if ONERA IRBEM library is installed
+% http://craterre.onecert.fr/prbem/irbem/description.html
+%
+% [out] = IRF('ceflib') 
+%
+% Check if IRAP CEFLIB is installed, http://ceflib.irap.omp.eu/
 %
 % version = IRF('version') return IRF version
 %
@@ -31,7 +35,7 @@ if nargin == 0,
 	irf('check');
   irf('ceflib');
 	irf('mice');
-	irf('onera');
+	irf('irbem');
 	irf('check_path');
 	return;
 else
@@ -120,8 +124,8 @@ switch lower(action)
 		disp('If you want for example get all Rosetta kernels, execute:');
 		disp('> wget  --timestamping -r -nH --cut-dirs=2 -X *former_versions* ftp://naif.jpl.nasa.gov/pub/naif/ROSETTA');
 		disp('');
-  case 'onera'
-    if exist('onera_desp_lib_coord_trans','file') % onera is installed
+  case 'irbem'
+    if exist('onera_desp_lib_coord_trans','file') % irbem is installed
       x=[0 0 1];
       y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
       yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
@@ -139,7 +143,7 @@ switch lower(action)
       oneraPath = [irf('path') filesep  'onera'];
       disp(['adding IRBEM path to matlab: ' oneraPath]);
       addpath(oneraPath);
-      ok=irf('onera');
+      ok=irf('irbem');
       if ~ok,
         disp('There are IRBEM problems. Please, contact irfu!');
       end
