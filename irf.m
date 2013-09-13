@@ -59,7 +59,8 @@ switch lower(action)
 		end
 		logTextArray = textscan(logText, '%s', 'delimiter', sprintf('\n'));
 		logTextArray = logTextArray{1};
-		newestVersion = logTextArray{1}(1:10);
+		iSpace = strfind(logTextArray{1},' ');
+		newestVersion = logTextArray{1}(iSpace(1):iSpace(2)-1);
 		currentVersion = irf('version');
 		if ~strcmp(newestVersion,currentVersion)
 			indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
@@ -83,8 +84,20 @@ switch lower(action)
 	case 'check_path'
 		irfPath = [irf('path') filesep];
 		notOnIrfPath = @(x) ~any(strfind(path, [irfPath x]));
-		strPath = {'plots','caa','isdat','cef',...
-			'matlab_central',['matlab_central' filesep 'cm_and_cb_utilities']};
+		contribDirectories = {...
+			['contrib' filesep 'isdat'],...
+			['contrib' filesep 'libirbem'],...
+			['contrib' filesep 'libcef'],...
+			['contrib' filesep 'matlab_central'],...
+			['contrib' filesep 'matlab_central' filesep 'cm_and_cb_utilities'],...
+			['contrib' filesep 'mice'],...
+			};
+		irfDirectories = {'plots',...
+			['mission' filesep 'cluster'],...
+			['mission' filesep 'solar_orbiter'],...
+			['mission' filesep 'cluster' filesep 'caa'],...
+			};
+		strPath = {contribDirectories{:},irfDirectories{:}}; %#ok<CCAT>
 		for iPath = 1:numel(strPath)
 			if notOnIrfPath(strPath{iPath}),
 				pathToAdd = [irfPath strPath{iPath}];
@@ -108,7 +121,7 @@ switch lower(action)
 				return;
 			end
 		else
-			micePath = [irf('path') filesep  'mice'];
+			micePath = [irf('path') filesep 'contrib' filesep  'mice'];
 			disp(['adding MICE path to matlab: ' micePath]);
 			addpath(micePath);
 			ok=irf('mice');
@@ -142,7 +155,7 @@ switch lower(action)
 				return;
 			end
 		else
-			oneraPath = [irf('path') filesep  'onera'];
+			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
 			addpath(oneraPath);
 			ok=irf('irbem');
@@ -164,7 +177,7 @@ switch lower(action)
 				if nargout, out = false; end
 			end
 		else
-			ceflibPath = [irf('path') filesep  'cef'];
+			ceflibPath = [irf('path') filesep 'contrib' filesep  'libcef'];
 			disp(['adding CEFLIB path to matlab: ' ceflibPath]);
 			addpath(ceflibPath);
 			out=irf('ceflib');
@@ -179,11 +192,13 @@ switch lower(action)
 		fid=fopen(logFile);
 		tline = fgetl(fid);
 		fclose(fid);
-		versionTime = tline(1:10);
+		iSpace = strfind(tline,' ');
+		versionTime   = tline(1:iSpace(1)-1);
+		versionNumber = tline(iSpace(1):iSpace(2)-1);
 		if nargout == 0,
-			disp(['You are using irfu-matlab version from ' versionTime]);
+			disp(['irfu-matlab version: ' versionTime ', ' versionNumber]);
 		else
-			out = versionTime;
+			out = versionNumber; % return only date
 		end
 	otherwise
 		irf_log('fcal','unknown argument');
