@@ -49,7 +49,7 @@ end
 %% Actions
 switch lower(action)
 	case 'check'
-		fprintf('Checking if you have latest irfu-matlab...');
+		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
 		catch
@@ -75,6 +75,8 @@ switch lower(action)
 					fprintf('%s\n',logTextArray{iInd})
 				end
 				disp(' ');
+      else
+        disp('You are at the bleeding edge :-)');
 			end
 			if nargout, out = false; end
 		else
@@ -91,6 +93,7 @@ switch lower(action)
 			['contrib' filesep 'matlab_central'],...
 			['contrib' filesep 'matlab_central' filesep 'cm_and_cb_utilities'],...
 			['contrib' filesep 'mice'],...
+      ['contrib' filesep 'nasa_cdf_patch'],...
 			};
 		irfDirectories = {'irf','plots',...
 			['mission' filesep 'cluster'],...
