@@ -16,39 +16,25 @@ function ok=check_if_using_nasa_cdf
 % http://cdf.gsfc.nasa.gov/html/matlab_cdf_patch.html
 
 cdfDir = fileparts(which('cdfread'));
-irfDir = fileparts(which('irf.m'));
-irfNasaCdfDir = [irfDir filesep 'matlab_cdf341_patch'];
-ok = false; % default
+irfNasaCdfDir = fileparts(which('tt2000todatenum.m'));
 
-if strfind(cdfDir,'patch')
-	usingNasaCdfRead = true;
-	if ~strcmp(cdfDir,irfNasaCdfDir),
-		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		disp('You are using NASA cdf patch but it is not located');
-		disp('in irfu-matlab directory. Please, check that it is');
-		disp('latest version NASA cdf patch!');
-		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		return
-	end
+if isempty(irfNasaCdfDir)
+  disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  disp('NASA cdf patch is not on your path !!!');
+  disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  ok = false;
 else
-	usingNasaCdfRead = false;
-end
-
-if usingNasaCdfRead,
-		fprintf('\n\n\n');
-		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		disp(' You are using NASA cdf patch. It gives')
-		disp(' you faster reading times but please report')
-		disp(' if you encounter some problems.');
-		disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-		fprintf('\n\n\n');
-		ok=true;
-else
-	addpath(irfNasaCdfDir);
-	ok = irf.check_if_using_nasa_cdf;
-	if ~ok,
-		disp(['ERROR: could not add to path: ' irfNasaCdfDir]);
-	end
+  if strcmp(cdfDir,irfNasaCdfDir), 
+    ok = true;
+    if nargout == 0, disp('NASA cdf patch is being used'), end
+  else
+    addpath(irfNasaCdfDir);
+    disp(['Added to path: ' irfNasaCdfDir]);
+    ok = irf.check_if_using_nasa_cdf;
+    if ~ok,
+      disp(['ERROR: could not add to path: ' irfNasaCdfDir]);
+    end
+  end
 end
 
 if nargout == 0, clear ok; end
