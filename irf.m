@@ -145,8 +145,14 @@ switch lower(action)
 	case 'irbem'
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
 			x=[0 0 1];
-			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+			try
+				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+				yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+			catch
+				disp('IRBEM is not properly installed!');
+				if nargout, out=false; end
+				return;
+			end
 			if (max(abs(yy-x))<1e-3),
 				disp('IRBEM is OK');
 				if nargout, out=true; end
