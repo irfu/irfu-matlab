@@ -1,3 +1,4 @@
+2013-09-13 v1.0.2 removed libcef/ and improved README.md
 2013-09-12 v1.0.1 new: cef_get_data() CEF file reading, add: caa_download() CFA reading, CAA streaming support 
 2013-06-19 name change c_caa_meta > caa_meta, caa metadata index updated, many other minor things
 2013-05-21 caa_download new option 'listdata', new: c_caa_meta(), many other minor bug fixes and improvements

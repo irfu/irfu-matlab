@@ -10,7 +10,7 @@ A few examples of irfu-matlab usage can be seen under web page https://sites.goo
 Instalation
 ------------
 
-Download the code and add to the Matlab path the directory 'irfu-matlab' and its subdirectories 'caa','isdat','plots','onera', 'matlab_central' and 'matlab_cnetral/cm_and_cb_utilities'.
+Download the code and add to the Matlab path the directory 'irfu-matlab'.
 
 To download the code from the command line run
 
@@ -29,11 +29,15 @@ If you do not use command line there are github programs for Windows and Mac, se
 Usage
 -----
 
-To see overview of some of the commonly used routines execute in Matlab:
+Each time starting new Matlab session exectue in Matlab:
 
 > irf
 
-To test if installation is functioning, execute in Matlab:
+To see help execute in Matlab 
+
+> help irfu-matlab
+
+To test some example execute in Matlab:
 
 > Example_1
 
