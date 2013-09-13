@@ -1,4 +1,4 @@
-function out = cef_get_data(varName,fileName)
+function out = c_caa_cef_var_get(varName,fileName)
 %CEF_GET_DATA read variable form CEF file
 %
 % Example:

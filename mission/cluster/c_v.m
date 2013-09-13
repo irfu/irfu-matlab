@@ -150,12 +150,12 @@ end
 		cd('CAA/CL_SP_AUX');
 		d=dir('*.cef.gz');
 		cefFile = d.name;
-		R.R = cef_get_data('sc_r_xyz_gse',cefFile);
+		R.R = c_caa_cef_var_get('sc_r_xyz_gse',cefFile);
 		for sc='1234'
-			tempR = cef_get_data(['sc_dr' sc '_xyz_gse'],cefFile);
+			tempR = c_caa_cef_var_get(['sc_dr' sc '_xyz_gse'],cefFile);
 			R.(['R' sc])=R.R+[zeros(size(R.R,1),1) tempR(:,2:end)];
 		end
-		R.V = cef_get_data('sc_v_xyz_gse',cefFile);
+		R.V = c_caa_cef_var_get('sc_v_xyz_gse',cefFile);
 		irf_log('dsrc','!!!! Assumes all s/c move with the same velocity !!!');
 		c_eval('R.V?=R.V;');
 		cd(currentDir);
