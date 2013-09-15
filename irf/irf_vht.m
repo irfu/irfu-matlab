@@ -13,14 +13,11 @@ function [vht,eht,dvht,p,cc]=irf_vht(e,b,flag)
 %  dvht - error of Hofmann Teller frame 
 %
 % See also IRF_VHT_PLOT
-%
-% $Id$
 
 if nargin==0, help irf_vht;return;end
 if nargin<3, flag=1;end
 
 if size(e,1) ~= size(b,1), b=irf_resamp(b,e);end
-%p=av_t_xx(b);
 p(1)=sum(b(:,2).*b(:,2))/size(b,1); % Bx*Bx
 p(2)=sum(b(:,2).*b(:,3))/size(b,1); % Bx*By
 p(3)=sum(b(:,2).*b(:,4))/size(b,1); % Bx*Bz
@@ -39,8 +36,8 @@ else
 end
 
 xxExB=irf_cross(e,b);
-ind_number=find(~isnan(xxExB(:,2))); % remove NaN from calculation
-ExB=sum(xxExB(ind_number,2:4),1)/size(xxExB,1);
+indData=find(~isnan(xxExB(:,2))); % exclude NaN from calculation
+ExB=sum(xxExB(indData,2:4),1)/size(xxExB,1);
 VHT=K\ ExB'.*1e3; % 9.12 in ISSI book 
 vht=VHT';
 strvht=['V_{HT}=' num2str(irf_abs(vht,1),3) ' [ ' num2str(irf_norm(vht),' %5.2f') '] =[' num2str(vht,' %5.2f') '] km/s'];
@@ -54,12 +51,12 @@ disp(strvht);
 eht=irf_e_vxb([0 vht],b); 
 
 if flag == 2,
-  ep=[e(ind_number,2);e(ind_number,3)];
-  ehtp=[eht(ind_number,2);eht(ind_number,3)];
+  ep=[e(indData,2);e(indData,3)];
+  ehtp=[eht(indData,2);eht(indData,3)];
   delta_e=[e(:,1) e(:,2)-eht(:,2) e(:,3)-eht(:,3) e(:,1)*0];
 else
-  ep=[e(ind_number,2);e(ind_number,3);e(ind_number,4)];
-  ehtp=[eht(ind_number,2);eht(ind_number,3);eht(ind_number,4)];
+  ep=[e(indData,2);e(indData,3);e(indData,4)];
+  ehtp=[eht(indData,2);eht(indData,3);eht(indData,4)];
   delta_e=[e(:,1) e(:,2)-eht(:,2) e(:,3)-eht(:,3) e(:,4)-eht(:,4)];
 end
 [p,s]=polyfit( ehtp,ep,1);
@@ -72,9 +69,9 @@ disp(['cc=' num2str(cc(1,2),3)]);
 % Calculate error in velocity estimate
 %
 % 9.16 in ISSI book
-DVHT=sum(irf_abs(delta_e(ind_number,:),1).^2)/length(ind_number);
+DVHT=sum(irf_abs(delta_e(indData,:),1).^2)/length(indData);
 lambda=eig(K);
-S=DVHT/(2*length(ind_number)-3)*inv(K);
+S=DVHT/(2*length(indData)-3)*inv(K);
 dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
 dvht(2)=sqrt([0 1 0]*S*[0;1;0])*1e3;
 dvht(3)=sqrt([0 0 1]*S*[0;0;1])*1e3;
