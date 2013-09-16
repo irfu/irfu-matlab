@@ -78,6 +78,19 @@ classdef Time
       r = (t1.tt2000 == t2.tt2000);
     end
     
+    function r = minus(t1,t2)
+        if isa(t2,'irf.Time')
+            r = t1.tt2000 - t2.tt2000;
+        elseif isa(t2,'int64')
+            r = irf.Time(t1.tt2000 - t2);
+        elseif isa(t2,'double')
+            r = irf.Time(t1.tt2000 - int64(t2*1e9));
+        else
+            error('MATLAB:Time:minus:badInputs',...
+                'Unknown input type')
+        end
+    end
+    
     function display(t)
       fprintf('irf.Time : %s\n',toUTC(t));
     end
