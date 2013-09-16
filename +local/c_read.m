@@ -50,6 +50,7 @@ if ispc
 else
     caaDir='/data/caalocal/';
 end
+indexDir = [caaDir 'index'];
 %% Default index is empty, read in only those indees that are used
 
 if isempty(index), 
@@ -138,6 +139,7 @@ switch lower(varName)
 		end
 end
 
+%% Functions
 	function status=readdata
 		status = false; % default 
 		%% find index
@@ -147,13 +149,12 @@ end
 			datasetIndex = strrep(dataset,'CIS-','CIS_');
 			if ~isfield(index,datasetIndex) % index not yet read
 				indexVarName = ['index_' datasetIndex];
-				indexFile = [caaDir 'caa'];
-				indexFileInfo=whos('-file',indexFile,indexVarName);
+				indexFileInfo=dirwhos(indexDir,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
 					irf_log('dsrc',['There is no index file:' indexVarName]);
 					return;
 				end
-				s=load(indexFile,indexVarName);
+				s=dirload(indexDir,indexVarName);
 				index.(datasetIndex)=s.(indexVarName);
 			end
 			index=index.(datasetIndex);
@@ -269,26 +270,6 @@ end
 		end
 		status = true;
 	end
-	function data = readCdfepoch16(cdfid,varName)
-		if isnumeric(varName),
-			varnum=varName;
-		elseif ischar(varName)
-			varnum  = cdflib.getVarNum(cdfid,varName);
-		else
-			error('varName should be variable number or name');
-		end
-		numrecs = cdflib.getVarNumRecsWritten(cdfid,varnum);
-		numElements = cdflib.inquireVar(cdfid,varnum).numElements;
-		data=zeros(1+numElements,numrecs);
-		
-		for j = 0:numrecs-1
-			% This reads in the data in raw epoch 16 format
-			% That implies each Epoch16 value is a 2-element double precision
-			% value in MATLAB
-			data(:,1+j) = cdflib.getVarRecordData(cdfid,varnum,j);
-		end
-		data=data';
-	end
 	function value=value_of_variable_attribute(cdfid,varName,attrName)
 		attrnum = cdflib.getAttrNum(cdfid,attrName);
 		varnum = cdflib.getVarNum(cdfid,varName);
@@ -296,11 +277,11 @@ end
 	end
 	function ok=list_indexed_datasets
 		ok=false;
-		s=whos('-file',[caaDir 'caa']);
+		s=dir(indexDir);
 		sind=arrayfun(@(x) any(strfind(x.name,'index_')),s);
 		for jj=1:numel(sind)
 			if sind(jj)
-				disp(s(jj).name(7:end));
+				disp(s(jj).name(7:end-4));
 			end
 		end
 		if any(sind), ok=true; end
