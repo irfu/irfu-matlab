@@ -132,13 +132,16 @@ if flag_dEdotB0 && isempty(fullB)
     error('fullB must be given for option dEdotB=0')
 end
 
+pc12_range=0; pc35_range=0; other_range=0;
 if ischar(freq_int)
     switch lower(freq_int)
         case {'pc12'}
+            pc12_range=1;
             freq_int=[.1 5];
             deltaT = 1;
             tint = round(dB([1 end],1));
         case {'pc35'}
+            pc35_range=1;
             freq_int=[.002 .1];
             deltaT = 60;
             tint = round(dB([1 end],1)/60)*60;
@@ -151,6 +154,7 @@ else
     if freq_int(2)<freq_int(1)
         error('FREQ_INT must be [f_min f_max], f_min<f_max')
     end
+    other_range=1;
     outSampling = freq_int(2)/5;
     deltaT = 1/outSampling;
     outTime = (dB(1,1):deltaT:dB(end,1))' + deltaT/2; outTime(end) = [];
@@ -376,7 +380,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
   powerBy_plot(:,ind_a) = powerB(:,2);
   powerBz_plot(:,ind_a) = powerB(:,3);
   power2B_plot(:,ind_a) = powerB(:,4);
-  
+
   if wantPolarization % Polarization parameters
       %% Construct spectral matrix and average it
       SM = zeros(3,3,ndata);
@@ -483,6 +487,35 @@ for ind_a=1:length(a)
     end
 end
 
+%% remove edge effects from data gaps
+idxNanE = sum(idxNanE,2)>0;
+idxNanB = sum(idxNanB,2)>0;
+
+ndata2=size(power2B_plot,1);
+if pc12_range || other_range,
+  censur3=floor(1.6*a);
+end
+if pc35_range,
+  censur3=floor(.4*a);
+end
+
+for i=1:length(idxNanB)-1,
+    if idxNanB(i) < idxNanB(i+1),
+        for j=1:length(a),
+            censur_index_front=[max(i-censur3(j),1):i];
+            power2B_plot(censur_index_front,j) = NaN;
+        end
+    end
+    if idxNanB(i) > idxNanB(i+1),
+        for j=1:length(a),
+            censur_index_back=[i:min(i+censur3(j),ndata2)];
+            power2B_plot(censur_index_back,j) = NaN;
+        end
+    end
+
+end
+
+%%
 powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);
 powerBz_plot = AverageData(powerBz_plot,inTime,outTime);
