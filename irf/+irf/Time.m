@@ -33,10 +33,64 @@ classdef Time
             'epoch2000 nano-seconds input (int64) must be scalar')
         end
       elseif ischar(inp)
-        if inp(end)=='z' || inp(end)=='Z', inp(end)=''; end
-        if length(inp)<21
+        if inp(end)=='Z' || inp(end)=='z', inp(end)=''; end
+        s='0123456789';
+        if length(inp)<19 || length(inp)>29 || ~all(inp([5 8])=='-') || ...
+            inp(11)~='T' || ~all(inp([14 17])==':') || ...
+            all(inp(1)~='12') || all(inp(2)~=s) || all(inp(3)~=s) || all(inp(4)~=s) || ...
+            all(inp(6)~='01') || all(inp(7)~=s) || all(inp(6:7)==0) || ...
+            all(inp(9)~='0123') || all(inp(10)~=s) || all(inp(9:10)==0) || ...
+            all(inp(12)~='012') || all(inp(13)~=s) || ...
+            all(inp(15)~='012345') || all(inp(16)~=s) || ...
+            all(inp(18)~='0123456') || all(inp(19)~=s) || ...
+            length(inp)>19 && ~all(double(inp(21:end))>47 & double(inp(21:end))<58)
           error('MATLAB:Time:Time:badInputs',...
-            'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnn')
+            'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+        else
+          yyyy = str2double(inp(1:4));
+          if yyyy>2050 || yyyy<1950
+            error('MATLAB:Time:Time:badInputs',...
+              'YEAR must be between 1950 and 2050')
+          end
+          mo = str2double(inp(6:7));
+          if mo > 12
+             error('MATLAB:Time:Time:badInputs',...
+               'MONTH must be between 1 and 12')
+          end
+          dd = str2double(inp(9:10));
+          if any(mo==[1,3,5,7,8,10,12]), maxDay = 31;
+          elseif any(mo==[4,6,9,11]),  maxDay = 30;
+          elseif any(mo==2)
+            if fix(yyyy/4)==yyyy/4, maxDay = 29; else maxDay = 28; end
+          else
+            maxDay = -1;
+          end
+          if dd>maxDay
+            error('MATLAB:Time:Time:badInputs','Bad value for DAY')
+          end
+          hh = str2double(inp(12:13));
+          if hh>23
+            error('MATLAB:Time:Time:badInputs','Bad value for HOURS')
+          end
+          mm = str2double(inp(15:16));
+          if mm>59
+            error('MATLAB:Time:Time:badInputs','Bad value for MINUTES')
+          end
+          ss = str2double(inp(18:19));
+          if ss>60
+            error('MATLAB:Time:Time:badInputs','Bad value for SEC')
+          elseif ss==60 && ~(hh==23 && mm==59 && (mo==6&&dd==30 || mo==12&&dd==31))
+            error('MATLAB:Time:Time:badInputs',...
+              'Bad value for SEC: Leap second can be only in the end of June of December')
+          end
+          if length(inp)==29
+            % skip
+          elseif length(inp)==19
+            inp = [inp '.000000000'];
+          else
+            zeroPad = '000000000';
+            inp = [inp zeroPad(29-length(inp))];
+          end
         end
         t.tt2000 = parsett2000(inp);
       else
