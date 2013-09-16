@@ -1,3 +1,4 @@
+2013-09-13 v1.1.1 checks for errors when testing libraries
 2013-09-13 v1.1.0 directory restructuring 
 2013-09-13 v1.0.3 checking version against github server instead irfu
 2013-09-13 v1.0.2 removed libcef/ and improved README.md
