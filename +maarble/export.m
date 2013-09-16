@@ -35,7 +35,7 @@ FORMAT_EXP = '%9.2e,'; % Amplitudes
 FORMAT_ANG = '%6.0f,'; % Angles - integer values
 FORMAT_DEG = '%6.1f,'; % Degree of ... -1..1 or 0..1
 FORMAT_EXP_ANG_ANG = [FORMAT_EXP FORMAT_ANG FORMAT_ANG];
-FORMAT_ROTMATR = '%10.6f,' ; % Rotation matrix, < 1
+FORMAT_ROTMATR = '%11.6f,' ; % Rotation matrix, < 1
 
 % Replace NaN with FILLVAL (specified in the CEF header)
 FILLVAL            = -999;
