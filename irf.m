@@ -172,7 +172,7 @@ switch lower(action)
 				cef_init();
 			catch
 				out = false; % problems loading library
-				irflog('fcal','Problems loading libcef library!');
+				irf_log('fcal','Problems loading libcef library!');
 				return;
 			end
 			cef_verbosity(0);
