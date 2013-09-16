@@ -91,6 +91,17 @@ classdef Time
         end
     end
     
+    function r = plus(t1,offset)
+        if isa(offset,'int64')
+            r = irf.Time(t1.tt2000 + offset);
+        elseif isa(offset,'double')
+            r = irf.Time(t1.tt2000 + int64(offset*1e9));
+        else
+            error('MATLAB:Time:minus:badInputs',...
+                'Unknown input type')
+        end
+    end
+    
     function display(t)
       fprintf('irf.Time : %s\n',toUTC(t));
     end
