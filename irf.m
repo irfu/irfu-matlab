@@ -32,11 +32,11 @@ logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
+	irf('check_path');
 	irf('check');
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
-	irf('check_path');
 	return;
 else
 	if ischar(varargin{1}),
@@ -114,6 +114,7 @@ switch lower(action)
 		help irfu-matlab
 	case 'mice'
 		if exist('cspice_j2000','file') % mice is installed
+			try 
 			if (cspice_j2000 == 2451545),
 				disp('SPICE/MICE is OK');
 				if nargout, out=true; end
@@ -123,13 +124,18 @@ switch lower(action)
 				if nargout, out=false; end
 				return;
 			end
+			catch
+				irf_log('fcal','There are problems with SPICE/MICE library installation!');
+				out = false;
+				return;
+			end
 		else
 			micePath = [irf('path') filesep 'contrib' filesep  'mice'];
 			disp(['adding MICE path to matlab: ' micePath]);
 			addpath(micePath);
 			ok=irf('mice');
 			if ~ok,
-				disp('There are mice problems. Please, contact irfu!');
+				disp('MICE  .. NOT OK. Please, contact irfu!');
 			end
 		end
 	case 'mice_help'
@@ -145,30 +151,42 @@ switch lower(action)
 	case 'irbem'
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
 			x=[0 0 1];
-			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
-			if (max(abs(yy-x))<1e-3),
-				disp('IRBEM is OK');
-				if nargout, out=true; end
+			try
+				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+				yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+				if (max(abs(yy-x))<1e-3),
+					disp('IRBEM is OK');
+					if nargout, out=true; end
+					return;
+				else
+					disp('IRBEM is installed but NOT WORKING PROPERLY!');
+					disp('gse>geo>gse differs by more than 0.1% from original vector');
+					if nargout, out=false; end
+					return;
+				end
+			catch
+				irf_log('fcal','IRBEM, problems with library installation!');
+				out = false;
 				return;
-			else
-				disp('IRBEM is installed but NOT WORKING PROPERLY!');
-				disp('gse>geo>gse differs by more than 0.1% from original vector');
-				if nargout, out=false; end
-				return;
-			end
+			end				
 		else
 			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
 			addpath(oneraPath);
 			ok=irf('irbem');
 			if ~ok,
-				disp('There are IRBEM problems. Please, contact irfu!');
+				disp('IRBEM .. NOT OK. Please, contact irfu!');
 			end
 		end
 	case 'ceflib'
 		if exist('cef_init','file') % CESR CEFLIB is installed
-			cef_init();
+			try
+				cef_init();
+			catch
+				out = false; % problems loading library
+				irf_log('fcal','Problems loading libcef library!');
+				return;
+			end
 			cef_verbosity(0);
 			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
 					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
