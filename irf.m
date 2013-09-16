@@ -168,7 +168,13 @@ switch lower(action)
 		end
 	case 'ceflib'
 		if exist('cef_init','file') % CESR CEFLIB is installed
-			cef_init();
+			try
+				cef_init();
+			catch
+				out = false; % problems loading library
+				irflog('fcal','Problems loading libcef library!');
+				return;
+			end
 			cef_verbosity(0);
 			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
 					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
