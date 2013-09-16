@@ -114,6 +114,7 @@ switch lower(action)
 		help irfu-matlab
 	case 'mice'
 		if exist('cspice_j2000','file') % mice is installed
+			try 
 			if (cspice_j2000 == 2451545),
 				disp('SPICE/MICE is OK');
 				if nargout, out=true; end
@@ -121,6 +122,11 @@ switch lower(action)
 			else
 				disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
 				if nargout, out=false; end
+				return;
+			end
+			catch
+				irf_log('fcal','There are problems with SPICE/MICE library installation!');
+				out = false;
 				return;
 			end
 		else
