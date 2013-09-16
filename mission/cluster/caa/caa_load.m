@@ -39,7 +39,6 @@ listFilesOnly=false;      % default list and load files
 filterNames = any(nargin);% if there is input, use it to filter names, otherwise load all
 useExactNameMatch = false;% default is to filter not according to exact match
 forceLoadFromFile = true; % if false, do not load object from file if it exists in memory
-useCFAFolder = 0;         % default is to search CAA folder to load data
 
 if nargin > 0, % filter which variables to load
   i=1;
@@ -61,8 +60,6 @@ if nargin > 0, % filter which variables to load
       listFilesOnly=1;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'nowildcard'), % load only specified names
       useExactNameMatch=1;  
-    elseif ischar(varargin{j}) && strcmpi(varargin{j},'cfa'), % load data from CFA folder
-      useCFAFolder=1;  
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'ifnotinmemory'), % load only specified names
       forceLoadFromFile=0;  
     elseif ischar(varargin{j})
@@ -80,16 +77,10 @@ if nargin > 0, % filter which variables to load
   variable_filter(i:end)=[];
 end
 
-if useCFAFolder % if CFA flag specified, check in CFA folder  
-  dirs = dir('CFA');
-  caa_data_directory='CFA/';  
-elseif isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
+if isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
   dirs = dir('CAA');
   caa_data_directory='CAA/';
-elseif isdir([pwd filesep 'CFA']), % if no CAA (and no CFA flag), check if exists CFA folder, then assume data are there
-  dirs = dir('CFA');
-  caa_data_directory='CFA/';  
-else % otherwise assume one is in the CAA/CFA data folder
+else % otherwise assume one is in the CAA data folder
   dirs = dir;
   caa_data_directory='';
 end
