@@ -32,11 +32,11 @@ logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
+	irf('check_path');
 	irf('check');
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
-	irf('check_path');
 	return;
 else
 	if ischar(varargin{1}),
