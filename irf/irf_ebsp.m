@@ -490,19 +490,31 @@ end
 %% remove edge effects from data gaps
 idxNanE = sum(idxNanE,2)>0;
 idxNanB = sum(idxNanB,2)>0;
+<<<<<<< HEAD
 idxNanEISR2 = sum(idxNanEISR2,2)>0;
 
 ndata2=size(power2B_plot,1);
 if pc12_range || other_range,
   censur3=floor(1.8*a);
+=======
+
+ndata2=size(power2B_plot,1);
+if pc12_range || other_range,
+  censur3=floor(1.6*a);
+>>>>>>> master
 end
 if pc35_range,
   censur3=floor(.4*a);
 end
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 for i=1:length(idxNanB)-1,
     if idxNanB(i) < idxNanB(i+1),
         for j=1:length(a),
             censur_index_front=[max(i-censur3(j),1):i];
+<<<<<<< HEAD
             powerBx_plot(censur_index_front,j) = NaN;
             powerBy_plot(censur_index_front,j) = NaN;
             powerBz_plot(censur_index_front,j) = NaN;
@@ -510,11 +522,15 @@ for i=1:length(idxNanB)-1,
             S_plot_x(censur_index_front,j) = NaN;
             S_plot_y(censur_index_front,j) = NaN;
             S_plot_z(censur_index_front,j) = NaN;
+=======
+            power2B_plot(censur_index_front,j) = NaN;
+>>>>>>> master
         end
     end
     if idxNanB(i) > idxNanB(i+1),
         for j=1:length(a),
             censur_index_back=[i:min(i+censur3(j),ndata2)];
+<<<<<<< HEAD
             powerBx_plot(censur_index_back,j) = NaN;
             powerBy_plot(censur_index_back,j) = NaN;
             powerBz_plot(censur_index_back,j) = NaN;
@@ -573,6 +589,14 @@ for i=1:length(idxNanEISR2)-1,
 end
 
 
+=======
+            power2B_plot(censur_index_back,j) = NaN;
+        end
+    end
+
+end
+
+>>>>>>> master
 %%
 powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);

@@ -32,7 +32,14 @@ if nargin < 1
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-07-16T12:03:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
+<<<<<<< HEAD
 freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T07:00:00Z') + [0 2*3600]; % PC1-2 example
+=======
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2001-11-02T21:10:00Z') + [0 1*3600]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-06-09T03:30:00Z') + [0 3*3600]; % PC1-2 example
+freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T06:00:00Z') + [0 3*3600]; % PC1-2 example
+%freqRange = 'pc35';cl_id = 3;tint=iso2epoch('2003-09-28T15:30:00Z') + [0 1*3600]; % PC1-2 example
+>>>>>>> master
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
 elseif nargin < 3
   freqRange = 'all';
