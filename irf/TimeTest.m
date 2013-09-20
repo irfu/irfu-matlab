@@ -5,8 +5,8 @@ end
 function test_leap_second(testCase)
 t1=irf.Time('2005-12-31T12:00:00Z');
 t2=irf.Time('2006-01-01T12:00:00Z');
-actSolution = t2-t1-int64((24*3600)*1e9);
-expSolution = int64(1e9);
+actSolution = t2-t1-(24*3600);
+expSolution = 1;
 verifyEqual(testCase,actSolution,expSolution);
 end
 

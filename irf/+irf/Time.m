@@ -16,6 +16,12 @@ classdef Time
   methods
     
     function t = Time(inp)
+      %Create a time object
+      %
+      % t = Time(time_t)
+      % t = Time(double_epoch)
+      % t = Time(int64_epoch_tt2000)
+      % t = Time(utc_string)
       if isa(inp,'irf.Time')
         t.tt2000 = inp.tt2000;
       elseif isa(inp,'double') % ISDAT epoch
@@ -100,10 +106,12 @@ classdef Time
     end
     
     function e = toEpoch(t)
+      % Convert time to ISDAT epoch
       e = iso2epoch2(toUTC(t));
     end
     
     function s = toUTC(t)
+      % Convert Time to UTC string
       s_tmp = encodett2000(t.tt2000);
       s = s_tmp{:};
     end
@@ -133,8 +141,19 @@ classdef Time
     end
     
     function r = minus(t1,t2)
+      %Subtract an offset
+      %
+      % t2 = t1 - int64_offset_ns
+      % t2 = t1 - double_offset_sec
+      %
+      % INT64 offset is treated as nano-seconds
+      % DOUBLE offset is treated as seconds
+      %
+      % offset_sec = t2 - t1
+      %
+      % Compute offset in sec betweeb two times
         if isa(t2,'irf.Time')
-            r = t1.tt2000 - t2.tt2000;
+            r = double((t1.tt2000 - t2.tt2000)*1e-9);
         elseif isa(t2,'int64')
             r = irf.Time(t1.tt2000 - t2);
         elseif isa(t2,'double')
@@ -146,6 +165,13 @@ classdef Time
     end
     
     function r = plus(t1,offset)
+      %Add an offset
+      %
+      % t2 = t1 + int64_offset_ns
+      % t2 = t1 + double_offset_sec
+      %
+      % INT64 offset is treated as nano-seconds
+      % DOUBLE offset is treated as seconds
         if isa(offset,'int64')
             r = irf.Time(t1.tt2000 + offset);
         elseif isa(offset,'double')
