@@ -34,6 +34,11 @@ classdef TimeSeriesData
     end
     
     function tsd = set.data(tsd,data)
+      if ndims(data)>4
+        error('irf:TimeSeriesData:setData:badInputs',...
+            'Number dimensions in data(%d) is larger than max supported(%d)',...
+          ndims(data),4)
+      end
       if length(tsd) == size(data,1)
         tsd.privateData = data;
       else
@@ -49,12 +54,28 @@ classdef TimeSeriesData
       else
         error('irf:TimeSeriesData:setT:badInputs',...
             'Number of points in data(%d) does not match the time vector(%d)',...
-          size(data,1),length(tsd))
+          length(timeArray),length(tsd))
       end
     end
     
     function r = length(tsd)
       r = length(tsd.privateTimeArray);
+    end
+    
+    function tsd = subsref(tsd,idx)
+      if isstruct(idx)
+        idx = idx.subs{:};
+      end
+      switch ndims(tsd.privateData)
+        case 2
+          tsd = irf.TimeSeriesData(tsd.privateTimeArray(idx),tsd.privateData(idx,:));
+        case 3
+          tsd = irf.TimeSeriesData(tsd.privateTimeArray(idx),tsd.privateData(idx,:,:));
+        case 4
+          tsd = irf.TimeSeriesData(tsd.privateTimeArray(idx),tsd.privateData(idx,:,:,:));
+        otherwise
+          error('should not be here')
+      end
     end
   end % methods
   
