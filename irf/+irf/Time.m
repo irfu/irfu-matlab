@@ -2,13 +2,13 @@ classdef Time
   %TIME Basic class describing time
   %   This is one time point
   
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-
+  % ----------------------------------------------------------------------------
+  % "THE BEER-WARE LICENSE" (Revision 42):
+  % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+  % can do whatever you want with this stuff. If we meet some day, and you think
+  % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+  % ----------------------------------------------------------------------------
+  
   properties
     tt2000 % int64 time in nanoseconds since 12:00, Jan 1, 2000
   end
@@ -21,11 +21,11 @@ classdef Time
       % t = Time(time_t)
       % t = Time(double_epoch)
       % t = Time(int64_epoch_tt2000)
-      % t = Time(utc_string)
+      % t = Time(string_utc)
       if isa(inp,'irf.Time')
         t.tt2000 = inp.tt2000;
       elseif isa(inp,'double') % ISDAT epoch
-        if all(size(inp)==1) 
+        if all(size(inp)==1)
           t.tt2000 = parsett2000(epoch2iso(inp));
         else
           error('MATLAB:Time:Time:badInputs',...
@@ -60,8 +60,8 @@ classdef Time
           end
           mo = str2double(inp(6:7));
           if mo > 12
-             error('MATLAB:Time:Time:badInputs',...
-               'MONTH must be between 1 and 12')
+            error('MATLAB:Time:Time:badInputs',...
+              'MONTH must be between 1 and 12')
           end
           dd = str2double(inp(9:10));
           if any(mo==[1,3,5,7,8,10,12]), maxDay = 31;
@@ -143,43 +143,55 @@ classdef Time
     function r = minus(t1,t2)
       %Subtract an offset
       %
-      % t2 = t1 - int64_offset_ns
-      % t2 = t1 - double_offset_sec
+      % time_t2 = time_t1 - int64_offset_ns
+      % time_t2 = time_t1 - double_offset_sec
       %
       % INT64 offset is treated as nano-seconds
       % DOUBLE offset is treated as seconds
       %
-      % offset_sec = t2 - t1
+      % offset_sec = time_t2 - time_t1
       %
       % Compute offset in sec betweeb two times
-        if isa(t2,'irf.Time')
-            r = double((t1.tt2000 - t2.tt2000)*1e-9);
-        elseif isa(t2,'int64')
-            r = irf.Time(t1.tt2000 - t2);
-        elseif isa(t2,'double')
-            r = irf.Time(t1.tt2000 - int64(t2*1e9));
-        else
-            error('MATLAB:Time:minus:badInputs',...
-                'Unknown input type')
-        end
+      if isa(t2,'irf.Time')
+        r = double((t1.tt2000 - t2.tt2000)*1e-9);
+      elseif isa(t2,'int64')
+        r = irf.Time(t1.tt2000 - t2);
+      elseif isa(t2,'double')
+        r = irf.Time(t1.tt2000 - int64(t2*1e9));
+      else
+        error('MATLAB:Time:minus:badInputs',...
+          'Unknown input type')
+      end
     end
     
     function r = plus(t1,offset)
       %Add an offset
       %
-      % t2 = t1 + int64_offset_ns
-      % t2 = t1 + double_offset_sec
+      % time_t2 = time_t1 + int64_offset_ns
+      % time_t2 = time_t1 + double_offset_sec
       %
-      % INT64 offset is treated as nano-seconds
-      % DOUBLE offset is treated as seconds
-        if isa(offset,'int64')
-            r = irf.Time(t1.tt2000 + offset);
-        elseif isa(offset,'double')
-            r = irf.Time(t1.tt2000 + int64(offset*1e9));
+      % INT64 OFFSET is treated as nano-seconds
+      % DOUBLE OFFSET is treated as seconds
+      %
+      % timearray_t2 = time_t1 + int64_offsetarray_ns
+      % timearray_t2 = time_t1 + double_offsetarray_sec
+      
+      if isa(offset,'int64')
+        if numel(offset)==1
+          r = irf.Time(t1.tt2000 + offset);
         else
-            error('MATLAB:Time:minus:badInputs',...
-                'Unknown input type')
+          r = irf.TimeArray(t1.tt2000 + offset);
         end
+      elseif isa(offset,'double')
+        if numel(offset)==1
+          r = irf.Time(t1.tt2000 + int64(offset*1e9));
+        else
+          r = irf.TimeArray(t1.tt2000 + int64(offset*1e9));
+        end
+      else
+        error('MATLAB:Time:minus:badInputs',...
+          'Unknown input type')
+      end
     end
     
     function display(t)
