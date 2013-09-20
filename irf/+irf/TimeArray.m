@@ -22,7 +22,7 @@ classdef TimeArray < irf.Time
       elseif isa(inp,'double')
         if min(size(inp))>1
           error('irf:TimeArray:TimeArray:badInputs',...
-            'ISDAT epoch input (double) must be a columt or raw vector')
+            'ISDAT epoch input (double) must be a columt or row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         ta.dt = int64((inp - inp(1)) * 1e9 );
