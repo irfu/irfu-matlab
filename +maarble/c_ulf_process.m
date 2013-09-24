@@ -25,13 +25,21 @@ function c_ulf_process(tint,cl_id,freqRange)
 
 if nargin < 1
   % These are example test intervals
-freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+%freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-30T15:00:00Z') + [0 4*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-28T09:30:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 4; tint=iso2epoch('2011-08-01T07:00:00Z') + [0 6*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-07-16T12:03:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
+<<<<<<< HEAD
+freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T07:00:00Z') + [0 2*3600]; % PC1-2 example
+=======
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2001-11-02T21:10:00Z') + [0 1*3600]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-06-09T03:30:00Z') + [0 3*3600]; % PC1-2 example
+freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T06:00:00Z') + [0 3*3600]; % PC1-2 example
+%freqRange = 'pc35';cl_id = 3;tint=iso2epoch('2003-09-28T15:30:00Z') + [0 1*3600]; % PC1-2 example
+>>>>>>> master
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
 elseif nargin < 3
   freqRange = 'all';
@@ -210,7 +218,7 @@ end
     tFields = setxor(fieldsEBSP,IGNORE_FIELDS);
     %nData = length(ebsp.t);
     [~,idx] = irf_tlim(ebsp.t,tint);
-    for fName = tFields'
+    for fName = tFields
       s = size(ebsp.(fName{:}));
       switch numel(s)
         case 2
