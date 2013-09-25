@@ -1,726 +1,369 @@
-function h=irf_wave_detection_algorithm(b,varargin)    
+function h=irf_wave_detection_algorithm2(tint,varargin)    
 %function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
- %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(b,varargin)    
+ %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
 
 % IRF_WAVE_DETECTION_ALGORITHM duplicates the method of Bortnik et al. 2007
 % to detect EMIC waves
 %
-% 	IRF_TEMPLATE(b) Produces a plot showing magnetic field spectrogram in the upper panel
+% 	IRF_WAVE_DETECTION_ALGORITHM(b) Produces a plot showing magnetic field spectrogram in the upper panel
 %    and the spectrogram with the background median removed in the lower
 %    panel. Overplotted are points picking out wave events, and also lines
 %    for the cyclotron frequency (H, solid) (He, dashed) (O dash-dot).
 %   A file of the time table is exported.
 %
-%   Currently the conditions are slightly relaxed, so more events are being
-%    chosen than are real. It is important to confirm any event by eye!
+%   The conditions for finding events are not always perfect. 
+%   It is important to confirm any event by eye!
 %
 %   Example:
-%    irf_wave_detection_algorithm(B,'freq',[.02 5]);
+%    irf_wave_detection_algorithm(tint,'freq',[.02 5]);
+%      OR (as used within c_ulf_process.m) give ebsp structure and
+%      background B field
+%    irf_wave_detection_algorithm2(ebsp, bf);
 %	
 
+save_plot=0;
+if isstruct(tint)
+    ebsp=tint;
+    powerCrossCov_SM_plot = ebsp.bb_xxyyzzss(:,:,4);
+    t = ebsp.t;
+    tint = [t(1) t(end)];
+    deltaT=30;
+    sampl=1/30;
+    outTime = (t(1):deltaT:t(end))' + deltaT/2; outTime(end) = [];
+    powerCrossCov_SM_plot = AverageData(powerCrossCov_SM_plot,t,outTime);
+    t = outTime;
+    newfreq = ebsp.f;
+    nfreq = length(newfreq);
+    ndata = length(t);
+    [~,args,nargs] = axescheck(varargin{:});
+    B=args{1};
+    display(size(B));
+    save_plot = 1;
+else
+
+      %% Check input 
+      [~,args,nargs] = axescheck(varargin{:});
+      b=local.c_read('B_vec_xyz_gse__C1_CP_FGM_5VPS',tint);
+
+      %% get background magnetic field
+      bf=irf_filt(b,1/600,0,[],5);
+      b0=b;
+      b0(:,2:4)=b(:,2:4)-bf(:,2:4);
+      B=b0;
+
+      sampl=10;
+      t=b(1,1):1/sampl:b(end,1); t=t'; 
+      B=irf_resamp(B,t);
+      b=irf_resamp(b,t); disp('resampling to 10 Hz');
+      b(:,2:4)=b(:,2:4)-B(:,2:4);
+
+      %% Remove the last sample if the total number of samples is odd
+
+      if size(b,1)/2 ~= floor(size(b,1)/2)
+        b=b(1:end-1,:);
+        B=B(1:end-1,:);
+        t=t(1:end-1,:);
+      end
+
+        % set to zero NaNs
+      ind_nan_b=isnan(b); b(ind_nan_b)=0;
+      ind_nan_B=isnan(B); B(ind_nan_B)=0;
 
 
-  %% Check input 
-  [ax,args,nargs] = axescheck(varargin{:});
-  %b=local.c_read('B_vec_xyz_gse__C1_CP_FGM_5VPS',tint);
-  
-  %% get background magnetic field
-  %sampl_low=5;
-  %t_low=b(1,1):1/sampl_low:b(end,1); t_low=t_low';
-  %b_low=irf_resamp(b,t_low); %low sample frequency to avoid filter issues
-  %bf=irf_filt(b_low,1/600,0,[],5);
-  bf=irf_filt(b,1/600,0,[],5);
-  %b0=b_low;
-  %b0(:,2:4)=b_low(:,2:4)-bf(:,2:4);
-  b0=b;
-  b0(:,2:4)=b(:,2:4)-bf(:,2:4);
-  %b=b_low;
-  %t=t_low;
-  B=b0;
-  %sampl=sampl_low;
-% %% resample to 25 Hz
-  sampl_b=1/(b(2,1)-b(1,1));
-  sampl=10;
-  t=b(1,1):1/sampl:b(end,1); t=t'; 
-  B=irf_resamp(B,t);
-  b=irf_resamp(b,t); disp('resampling to 10 Hz');
-  b(:,2:4)=b(:,2:4)-B(:,2:4);
+      %% Find the frequencies for an FFT of all data
+
+      nd2=size(b,1)/2;
+      nyq=1/2;
+      freq=sampl*(1:nd2)/(nd2)*nyq;
+      w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
+
+      %% Set some important parameters
+      freq_int=[.02 5];
+      freq_number=21;
+      Morlet_width=5.36;
+
+      if isnumeric(args{end})
+          freq_int=args{end};
+      elseif ismember({'freq'},args)
+          disp('frequency interval values missing. using default')
+      end
 
 
-  %% Remove the last sample if the total number of samples is odd
+      amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
+      a=logspace(amin,amax,anumber);
+      w0=sampl/2; % The maximum frequency
+      sigma=Morlet_width/w0; % The width of the Morlet wavelet
 
-  if size(b,1)/2 ~= floor(size(b,1)/2)
-    b=b(1:end-1,:);
-    B=B(1:end-1,:);
-  end
-  
-    % set to zero NaNs
-  ind_nan_b=isnan(b); b(ind_nan_b)=0;
-  ind_nan_B=isnan(B); B(ind_nan_B)=0;
+      Swb=fft(b(:,2:4),[],1);
 
 
-  %% Find the frequencies for an FFT of all data
+    %% Get the correct frequencies for the wavelet transform
+    newfreq=w0./a;
+    ndata = size(b,1); nfreq = length(a);
+    powerCrossCov_SM_plot = zeros(ndata,nfreq);
 
-  nd2=size(b,1)/2;
-  nyq=1/2;
-  freq=sampl*(1:nd2)/(nd2)*nyq;
-  w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
+    parfor ind_a=1:length(a),
+      mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
+      mWexp = repmat(mWexp,1,3);
+      Wwb = sqrt(1).*Swb.*mWexp;
 
-  %% Set some important parameters
-  freq_int=[.02 5];
-  freq_number=45;
-  Morlet_width=5.36;
+      %% Get the wavelet transform by IFFT of the FFT
+      Wb = ifft(Wwb,[],1);
 
-%   if isnumeric(args{end})
-%       freq_int=args{end};
-%   elseif ismember({'freq'},args)
-%       disp('frequency interval values missing. using default')
-%   end
-  
-% Btot=irf_resamp(B(:,1),t);
-% B2=irf_resamp(B,t);
-% Btot(:,2)=sqrt(B2(:,2).*B2(:,2)+B2(:,3).*B2(:,3)+B2(:,4).*B2(:,4));
-% %topCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
-% %middleCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
-% %bottomCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
-% hCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
-% heCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
-% oCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
-% freq_int=[min(oCyclFreq)-.1*min(oCyclFreq) max(heCyclFreq)+.1*max(heCyclFreq)];
-% freq_int=[.02 max(heCyclFreq)+.1*max(heCyclFreq)];
+      %% Calculate the power spectrum
+      newfreqmat=w0/a(ind_a);
+
+      %% spectral matrix
+      spectralMatrix = zeros(3,3,ndata); 
+
+      spectralMatrix(1,1,:) = 2*pi*(Wb(:,1).*conj(Wb(:,1)))./newfreqmat;
+      spectralMatrix(1,2,:) = 2*pi*(Wb(:,1).*conj(Wb(:,2)))./newfreqmat;
+      spectralMatrix(1,3,:) = 2*pi*(Wb(:,1).*conj(Wb(:,3)))./newfreqmat;
+      spectralMatrix(2,1,:) = 2*pi*(Wb(:,2).*conj(Wb(:,1)))./newfreqmat;
+      spectralMatrix(2,2,:) = 2*pi*(Wb(:,2).*conj(Wb(:,2)))./newfreqmat;
+      spectralMatrix(2,3,:) = 2*pi*(Wb(:,2).*conj(Wb(:,3)))./newfreqmat;
+      spectralMatrix(3,1,:) = 2*pi*(Wb(:,3).*conj(Wb(:,1)))./newfreqmat;
+      spectralMatrix(3,2,:) = 2*pi*(Wb(:,3).*conj(Wb(:,2)))./newfreqmat;
+      spectralMatrix(3,3,:) = 2*pi*(Wb(:,3).*conj(Wb(:,3)))./newfreqmat;
+
+      SMpermute = permute(spectralMatrix,[3,1,2]);
 
 
-  amin=log10(0.5*sampl/freq_int(2));amax=log10(0.5*sampl/freq_int(1));anumber=freq_number;
-  a=logspace(amin,amax,anumber);
-  w0=sampl/2; % The maximum frequency
-  sigma=Morlet_width/w0; % The width of the Morlet wavelet
+      %% power
+      powerCrossCov_SM_plot(:,ind_a) = SMpermute(:,3,3)+SMpermute(:,1,1)+SMpermute(:,2,2);
+    end
 
-  Swb=fft(b(:,2:4),[],1);
-  
-%   %frequency bin half width
-%   freqBins=w0./logspace(amin,amax,2*freq_number-1);
-%   fbhw=zeros(size(freq_number));
-%   j=2;
-%   for i=2:2:2*freq_number-3,
-%       fbhw(j)=(abs(freqBins(i)-freqBins(i+1))+abs(freqBins(i+1)-freqBins(i+2)))/2;
-%       j=j+1;
-%   end
-%   fbhw(1)=freqBins(1)-freqBins(3)-fbhw(2);
-%   fbhw(freq_number)=freqBins(end-2)-freqBins(end)-fbhw(freq_number-1);
-%   format shortE
-%   display(fbhw')
-%   
-%% Get the correct frequencies for the wavelet transform
-newfreq=w0./a;
-%display(newfreq')
-ndata = size(b,1); nfreq = length(a);
-powerBx_SM_plot = zeros(ndata,nfreq);
-powerBy_SM_plot = zeros(ndata,nfreq);
-powerBz_SM_plot = zeros(ndata,nfreq);
-powerCrossCov_SM_plot = zeros(ndata,nfreq);
 
-parfor ind_a=1:length(a),
-  mWexp = exp(-sigma*sigma*((a(ind_a).*w'-w0).^2)/2);
-  mWexp = repmat(mWexp,1,3);
-  Wwb = sqrt(1).*Swb.*mWexp;
-  
-  %% Get the wavelet transform by IFFT of the FFT
-  Wb = ifft(Wwb,[],1);
-  
-  %% Calculate the power spectrum
-  newfreqmat=w0/a(ind_a);
-  powerB = 2*pi*(Wb.*conj(Wb))./newfreqmat;
-  powerB(:,4) = sum(powerB,2);
-    
-  %% spectral matrix
-  spectralMatrix = zeros(3,3,ndata); 
+    %% average down the signal
 
-  spectralMatrix(1,1,:) = 2*pi*(Wb(:,1).*conj(Wb(:,1)))./newfreqmat;
-  spectralMatrix(1,2,:) = 2*pi*(Wb(:,1).*conj(Wb(:,2)))./newfreqmat;
-  spectralMatrix(1,3,:) = 2*pi*(Wb(:,1).*conj(Wb(:,3)))./newfreqmat;
-  spectralMatrix(2,1,:) = 2*pi*(Wb(:,2).*conj(Wb(:,1)))./newfreqmat;
-  spectralMatrix(2,2,:) = 2*pi*(Wb(:,2).*conj(Wb(:,2)))./newfreqmat;
-  spectralMatrix(2,3,:) = 2*pi*(Wb(:,2).*conj(Wb(:,3)))./newfreqmat;
-  spectralMatrix(3,1,:) = 2*pi*(Wb(:,3).*conj(Wb(:,1)))./newfreqmat;
-  spectralMatrix(3,2,:) = 2*pi*(Wb(:,3).*conj(Wb(:,2)))./newfreqmat;
-  spectralMatrix(3,3,:) = 2*pi*(Wb(:,3).*conj(Wb(:,3)))./newfreqmat;
-   
-  SMpermute = permute(spectralMatrix,[3,1,2]);
 
-%   %% average spectral matrix over one wave period
-% 
-%   sampl_av = fix(sampl/a(ind_a));
-%   if sampl_av/2 == floor(sampl_av/2)
-%     sampl_av=sampl_av+1;
-%   end
-% 
-%   for i = sampl_av:ndata-sampl_av,
-%       if sampl_av < 2
-%           SMpermute(i,:,:)=SMpermute(i,:,:);
-%       elseif sampl_av > 2 && sampl_av < 4
-%           SMpermute(i,:,:) = (SMpermute(i-1,:,:)+SMpermute(i,:,:)+...
-%               SMpermute(i+1,:,:))./sampl_av;
-%       else 
-%           SMpermute(i,:,:) = sum(SMpermute(i-((sampl_av-1)/2):i+...
-%               ((sampl_av-1)/2),:,:),1)./sampl_av;
-%       end
-%   end       
+    %% smooth data without decreasing sampling frequency
 
-  %% Remove data possibly influenced by edge effects
-  censur=floor(2*a);
-  censur_indexes=[1:min(censur(ind_a),size(b,1)) max(1,size(b,1)-censur(ind_a)):size(b,1)];
-  SMpermute(censur_indexes,:,:) = NaN;
-    
-  %% power
-  powerBx_SM_plot(:,ind_a) = SMpermute(:,1,1);
-  powerBy_SM_plot(:,ind_a) = SMpermute(:,2,2);
-  powerBz_SM_plot(:,ind_a) = SMpermute(:,3,3)+SMpermute(:,1,1)+SMpermute(:,2,2);
-  powerCrossCov_SM_plot(:,ind_a) = SMpermute(:,3,3)+SMpermute(:,1,1)+SMpermute(:,2,2);
-  %powerCrossCov_SM_plot(:,ind_a) = real(SMpermute(:,1,2))+real(SMpermute(:,1,3))+real(SMpermute(:,2,3));
-  %powerCrossCov_SM_plot(:,ind_a) = (SMpermute(:,1,2))+(SMpermute(:,1,3))+(SMpermute(:,2,3));
+    powerCrossCov_avg = zeros(ndata,nfreq);
+    smoothwidth = 200;
+    halfw = 100;
+    for j=1:nfreq,
+        sumPower = nansum(powerCrossCov_SM_plot(1:smoothwidth,j));
+        for i=1:ndata-smoothwidth,
+            powerCrossCov_avg(i+halfw-1,j) = sumPower;
+            sumPower=sumPower-powerCrossCov_SM_plot(i,j);
+            sumPower=sumPower+powerCrossCov_SM_plot(i+smoothwidth,j);
+        end
+    end
+
+    powerCrossCov_SM_plot = powerCrossCov_avg./smoothwidth;
+
+    %% put NaNs back in place
+
+    idx_nan_b = sum(ind_nan_b,2)>0;
+    powerCrossCov_SM_plot(idx_nan_b,:) = NaN;
+
+    %% Remove data possibly influenced by edge effects
+    for ind_a=1:length(a),  
+      censur=floor(2*a);
+      censur_indexes=[1:min(censur(ind_a),size(b,1)) max(1,size(b,1)-censur(ind_a)):size(b,1)];
+      SMpermute(censur_indexes,:,:) = NaN;
+      powerCrossCov_SM_plot(censur_indexes,:,:) = NaN;
+    end
+
+    %% down-sample
+
+    sampl1 = 1/30; %2 samples per minute
+    t1 = b(1,1):1/sampl1:b(end,1); t1=t1'; 
+    powerCrossCov_SM_plot = interp1(t,powerCrossCov_SM_plot,t1,'linear','extrap');
+    sampl = sampl1;
+    t = t1;
+    ndata = size(powerCrossCov_SM_plot,1);
+
 end
-
-idx_nan_b = sum(ind_nan_b,2)>0;
-powerCrossCov_SM_plot(idx_nan_b,:) = NaN;
-
-
-%% average down the signal
-ndata2=floor(ndata./300);
-powerCrossCov_avg = zeros(ndata2,nfreq);
-ind_nan_b_avg = zeros(size(powerCrossCov_avg,1));
-for i=1:ndata2,
-  powerCrossCov_avg(i,:) = mean(powerCrossCov_SM_plot(i.*300-299:i.*300,:),1);
-end
-%powerCrossCov_avg = powerCrossCov_SM_plot(1:ndata2,:);
-%powerCrossCov_avg = powerCrossCov_SM_plot(30:30:end,:);
-%powerCrossCov_SM_plot = flipdim(powerCrossCov_avg,2);
-powerCrossCov_SM_plot = powerCrossCov_avg;
-%powerCrossCov_SM_plot(40,:)
-ndata=ndata2;
-sampl=10/300;
-t=b(1,1):1/sampl:b(end,1); t=t';
 
 %% remove background median over a window
 toa = 4; %time (in hours) of average for background median
 
-if t(end)-t(1) <= toa*3600,
+toa = toa*3600;
+toaind = toa*sampl;
+halft = floor(toa/2);
+halftind = floor(toaind/2);
+totalt = t(end)-t(1);
+totaltind = ceil(totalt*sampl);
+
+if totalt <= halft,
     medianPower = nanmedian(powerCrossCov_SM_plot);
     medianPower = repmat(medianPower,ndata,1);
-elseif t(end)-t(1) <= (toa+.5*toa)*3600 & t(end)-t(1) > toa*3600,
+elseif totalt <= toa && totalt > halft,
+    edgetind = totaltind-halftind;
     medianPower = zeros(size(powerCrossCov_SM_plot));
-    medianPower(1:toa*3600*sampl,:) = repmat(nanmedian(...
-        powerCrossCov_SM_plot(1:toa*3600*sampl,:)),toa*3600*sampl,1);
-    medianPower(end-toa*3600*sampl:end,:) = repmat(nanmedian(...
-        powerCrossCov_SM_plot(end-toa*3600*sampl:end,:)),...
-        max(size(medianPower,1)-toa*3600*sampl-1:size(medianPower,1))...
-        -min(size(medianPower,1)-toa*3600*sampl-1:size(medianPower,1)),1);
+    medianPower(edgetind+1:ndata-edgetind,:) = repmat(nanmedian(powerCrossCov_SM_plot),ndata-2*edgetind,1);
+    for i = 1:edgetind,
+        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(1:i+halftind,:));
+    end
+    for i = ndata-edgetind+1:ndata,
+        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:end,:));
+    end
 else
     medianPower = zeros(size(powerCrossCov_SM_plot));
-    medianPower(1:.5*toa*3600*sampl,:) = repmat(nanmedian(...
-        powerCrossCov_SM_plot(1:toa*3600*sampl,:)),.5*toa*3600*sampl,1);
-%     medianPower(2*3600*sampl:end-2*3600*sampl,:) = repmat(nanmedian(...
-%         powerCrossCov_SM_plot(2*3600*sampl:end-2*3600*sampl,:)),...
-%         2*3600*sampl:size(powerCrossCov_SM_plot,1)-2*3600*sampl,1);
-    medianPower(end-.5*toa*3600*sampl+1:end,:) = repmat(nanmedian(...
-        powerCrossCov_SM_plot(end-toa*3600*sampl:end,:)),...
-        max(size(powerCrossCov_SM_plot,1)-.5*toa*3600*sampl:size(powerCrossCov_SM_plot,1))...
-        -min(size(powerCrossCov_SM_plot,1)-.5*toa*3600*sampl:size(powerCrossCov_SM_plot,1)),1);
-    for i = .5*toa*3600*sampl+1:size(powerCrossCov_SM_plot,1)-.5*toa*3600*sampl,
-        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-.5*toa*3600*sampl+1:i+.5*toa*3600*sampl,:));
+    for i = 1:halftind,
+        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(1:i+halftind,:));
     end
-        
-end
-power_median_removed = log10(abs(powerCrossCov_SM_plot)) - log10(abs(medianPower));
-
-%idx_nan_b = sum(ind_nan_b,2)>0;
-%powerCrossCov_SM_plot(idx_nan_b,:) = NaN;
-%power_median_removed(idx_nan_b,:) = NaN;
-powerBx_SM_plot(idx_nan_b,:) = NaN;
-powerBz_SM_plot(idx_nan_b,:) = NaN;
-peakInd = power_median_removed < ones(size(power_median_removed));
-%power_median_removed(peakInd) = NaN;
-
-% waveFrequencies=zeros(ndata,6);
-% for i=1:ndata,
-%     peakInd = power_median_removed(i,:)>1;
-%     peakFreq = newfreq(peakInd);
-%     spectralPeak = max(power_median_removed(i,peakInd));
-%     spectralPeakInd = power_median_removed(i,peakInd) == max(power_median_removed(i,peakInd));
-%     if numel(peakFreq) > 0,
-%       bottomFreq = peakFreq(1);
-%       maxPowerFreq = peakFreq(spectralPeakInd);
-%       topFreq = peakFreq(end);
-%       doublePeak = power_median_removed(i,min(find(peakInd)):max(find(peakInd)));
-%       if any(doublePeak < 1),
-%           topFreq2 = peakFreq(end);
-%           lowPoints = find(doublePeak < 1);
-%           topFreq = newfreq(lowPoints(1));
-%           bottomFreq2 = newfreq(lowPoints(end));
-%           maxPowerFreq2 = NaN;
-%       else
-%           bottomFreq2 = NaN;
-%           maxPowerFreq2 = NaN;
-%           topFreq2 = NaN;
-%       end    
-%     else
-%       bottomFreq = NaN;
-%       maxPowerFreq = NaN;
-%       topFreq = NaN;
-%     end
-%     waveFrequencies(i,1) = bottomFreq;
-%     waveFrequencies(i,2) = maxPowerFreq;
-%     waveFrequencies(i,3) = topFreq;
-%     waveFrequencies(i,4) = bottomFreq2;
-%     waveFrequencies(i,5) = maxPowerFreq2;
-%     waveFrequencies(i,6) = topFreq2;
-% end
-
-waveFrequencies=zeros(ndata,6);
-threshold=1;
-for i=1:ndata,
-    peakInd = power_median_removed(i,:)>threshold;
-    findIndices = find(peakInd);
-    peakFreq = newfreq(peakInd);
-    spectralPeak = max(power_median_removed(i,peakInd));
-    spectralPeakInd = power_median_removed(i,peakInd) == max(power_median_removed(i,peakInd));
-    if numel(peakFreq) > 0,
-      topFreq = peakFreq(1);
-      maxPowerFreq = peakFreq(spectralPeakInd);
-      bottomFreq = peakFreq(end);
-      if any(power_median_removed(i,findIndices(1):findIndices(end)) < threshold),
-          topFreq2 = topFreq;
-          bottomFreq2 = newfreq(min(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))-1+findIndices(1));
-          topFreq = newfreq(max(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))+findIndices(1));
-%           if maxPowerFreq > bottomFreq2,
-%               spectralPeak2 = max(power_median_removed(i,findIndices(1):min(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))-1+findIndices(1)));
-%               %%%spectralPeak2 = max(power_median_removed(i,bottomFreq:topFreq));
-%               maxPowerFreq2 = maxPowerFreq;
-%               spectralPeakInd2 = power_median_removed(i,findIndices(1):min(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))-1+findIndices(1)) == spectralPeak2;
-%               %%%spectralPeakInd2 = power_median_removed(i,bottomFreq:topFreq) == spectralPeak2;
-%               maxPowerFreq = peakFreq(spectralPeakInd2);
-%               %maxPowerFreq2 = peakFreq(spectralPeakInd2);
-%           else
-%               spectralPeak3 = max(power_median_removed(i,max(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))+findIndices(1)):findIndices(end));
-%               %spectralPeakInd3 = find(max(power_median_removed(i,max(find(power_median_removed(i,findIndices(1):findIndices(end)) < 1))+findIndices(1)):findIndices(end)));
-%               spectralPeakInd3 = (power_median_removed(i,max(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))+findIndices(1)):findIndices(end)) == spectralPeak3;
-%               %maxPowerFreq2 = peakFreq(spectralPeakInd3);
-%               %maxPowerFreq2 = maxPowerFreq;
-%               maxPowerFreq2 = newfreq(spectralPeakInd3);
-%               %maxPowerFreq = newfreq(spectralPeakInd3);
-%               %spectralPeak3 = power_median_removed(i,findIndices(1):min(find(power_median_removed(i,findIndices(1):findIndices(end)) < threshold))+findIndices(1));
-%               %spectralPeakInd3 = max(spectralPeak3) == spectralPeak3;
-%               %maxPowerFreq2 = newfreq(spectralPeakInd3);
-%               
-%           end
-          maxPowerFreq2 = NaN;
-      else
-          bottomFreq2 = NaN;
-          maxPowerFreq2 = NaN;
-          topFreq2 = NaN;
-      end    
-         
-    else
-      bottomFreq = NaN;
-      maxPowerFreq = NaN;
-      topFreq = NaN;
-      bottomFreq2 = NaN;
-      maxPowerFreq2 = NaN;
-      topFreq2 = NaN;
+    for i = halftind+1:ndata-halftind,
+        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:i+halftind,:));
     end
-    waveFrequencies(i,1) = bottomFreq;
-    waveFrequencies(i,2) = maxPowerFreq;
-    waveFrequencies(i,3) = topFreq;
-    waveFrequencies(i,4) = bottomFreq2;
-    waveFrequencies(i,5) = maxPowerFreq2;
-    waveFrequencies(i,6) = topFreq2;
+    for i = ndata-halftind+1:ndata,
+        medianPower(i,:) = nanmedian(powerCrossCov_SM_plot(i-halftind:end,:));
+    end
+    
 end
+    
+
+%power_median_removed = log10(abs(powerCrossCov_SM_plot)) - log10(abs(medianPower));
+power_median_removed = powerCrossCov_SM_plot - medianPower;
+
+ind_nan_pmr=isnan(power_median_removed); power_median_removed(ind_nan_pmr)=0;
+
 
 %% set cutoff frequencies and put a limit on the width of the emic event
 Btot=irf_resamp(B(:,1),t);
 B2=irf_resamp(B,t);
 Btot(:,2)=sqrt(B2(:,2).*B2(:,2)+B2(:,3).*B2(:,3)+B2(:,4).*B2(:,4));
-%topCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
-%middleCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
-%bottomCutoffFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
 hCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
 heCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
 oCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
-bottomCutoffFreq = heCyclFreq;   
-topCutoffFreq = hCyclFreq;  %or should I use 10?
-deltaPeak = .03;
 
-  %% Remove the last sample if waveFrequencies has one more sample than the Cutoffs
-  if size(waveFrequencies,1) ~= size(topCutoffFreq,1)
-    topCutoffFreq=topCutoffFreq(1:end-1,:);
-    bottomCutoffFreq=bottomCutoffFreq(1:end-1,:);
-    hCyclFreq=hCyclFreq(1:end-1,:);
-    heCyclFreq=heCyclFreq(1:end-1,:);
-    oCyclFreq=oCyclFreq(1:end-1,:);
-    t=t(1:end-1);
-  end
+%% wave detection
+P=[0 0 0 0 0]; %array for peaks [time, freq, peakValue, lowerBound, upperBound]
+peak = 1;
+for i=1:ndata,
+    Y = power_median_removed(i,:);
+    dY = zeros(size(Y));
+    for j=1:nfreq-1,
+        dY(j) = (Y(j+1)-Y(j))/(newfreq(j+1)-newfreq(j));
+    end 
+    for j=2:nfreq,
+        if sign(dY(j)) > sign(dY(j-1)),
+            peakValue = Y(j);
+            peakFreq = newfreq(j);
+            lowerBound = peakFreq;
+            upperBound = peakFreq;
+            k=0;
+            eventThresh = (powerCrossCov_SM_plot(i,:)./medianPower(i,:)) > 5;
+            while (j-k > 1) && eventThresh(j-k) == 1,
+                upperBound = newfreq((j-k));
+                k=k+1;
+            end
+            k=0;
+            while eventThresh(j+k) == 1 && j+k < nfreq,
+                lowerBound = newfreq((j+k));
+                k=k+1;
+                if j+k == nfreq,
+                    lowerBound = upperBound;
+                end
+            end
+            if j+k+1 < numel(eventThresh) && eventThresh(j+k+1) == 1,
+                lowerBound = upperBound;
+            end
+            if lowerBound == newfreq(end-1) && eventThresh(end) == 1,
+                lowerBound = upperBound;
+            end
 
- validInd = waveFrequencies(:,3) > topCutoffFreq;
- validInd2 = waveFrequencies(:,1) < bottomCutoffFreq;
-%validInd = waveFrequencies(:,3) > newfreq(2);
-%validInd2 = waveFrequencies(:,1) < newfreq(end-1);
- validInd3 = abs(waveFrequencies(:,1) - waveFrequencies(:,3)) < deltaPeak;
-% waveFrequencies(validInd3,1:3) = NaN;
-waveFrequencies(validInd2,1:3) = NaN;
-waveFrequencies(validInd,1:3) = NaN;
- validInd4 = waveFrequencies(:,6) > topCutoffFreq;
- validInd5 = waveFrequencies(:,4) < bottomCutoffFreq;
-%validInd4 = waveFrequencies(:,6) > newfreq(2);
-%validInd5 = waveFrequencies(:,4) < newfreq(end-1);
- validInd6 = abs(waveFrequencies(:,4) - waveFrequencies(:,6)) < deltaPeak;
-waveFrequencies(validInd4,4:6) = NaN;
-waveFrequencies(validInd5,4:6) = NaN;
-% waveFrequencies(validInd6,4:6) = NaN;
- validInd7 = waveFrequencies(:,3)./waveFrequencies(:,1) > 4;
- waveFrequencies(validInd7,1:3) = NaN;
- validInd8 = waveFrequencies(:,6)./waveFrequencies(:,4) > 4;
- waveFrequencies(validInd8,4:6) = NaN;
-
-nanmean(abs(waveFrequencies(:,1) - waveFrequencies(:,3)))
-nanmean(waveFrequencies(:,2))
-
-% %discard impulsive bursts
-% for i=4000:ndata-4000,
-%     if waveFrequencies(i,1) ~= NaN,
-%         samplesInWindow = length(find(waveFrequencies(i-3999:i+3999,1) ~= NaN));
-%         if samplesInWindow < 4000,
-%             waveFrequencies(i-3999:i+3999,:) = NaN;
-%         end
-%     end
-% end
-
-%check for association from one time step to the next
-% i=1;
-% while i < ndata,
-%     if waveFrequencies(i,1) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
-%         eventStartTime = t(i);
-%         j=1;
-%         while (i+j+4<ndata & waveFrequencies(i+j,1) < waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j,3) > waveFrequencies(i+j-1,1))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+1,1) < waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j+1,3) > waveFrequencies(i+j-1,1))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+2,1) < waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j+2,3) > waveFrequencies(i+j-1,1))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+3,1) < waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j+3,3) > waveFrequencies(i+j-1,1))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+4,1) < waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j+4,3) > waveFrequencies(i+j-1,1)), % | ...
-% %                 ...
-% %                 (i+j+4<ndata & waveFrequencies(i+j,1) < waveFrequencies(i+j-1,6)...
-% %                 & waveFrequencies(i+j,3) > waveFrequencies(i+j-1,4))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+1,1) < waveFrequencies(i+j-1,6)...
-% %                 & waveFrequencies(i+j+1,3) > waveFrequencies(i+j-1,4))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+2,1) < waveFrequencies(i+j-1,6)...
-% %                 & waveFrequencies(i+j+2,3) > waveFrequencies(i+j-1,4))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+3,1) < waveFrequencies(i+j-1,6)...
-% %                 & waveFrequencies(i+j+3,3) > waveFrequencies(i+j-1,4))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+4,1) < waveFrequencies(i+j-1,6)...
-% %                 & waveFrequencies(i+j+4,3) > waveFrequencies(i+j-1,4)),
-%             if (waveFrequencies(i+j,1) < waveFrequencies(i+j-1,3)) | ...
-%                     (waveFrequencies(i+j,1) < waveFrequencies(i+j-1,6)),
-%                 j=j+1;
-%             elseif (waveFrequencies(i+j+1,1) < waveFrequencies(i+j-1,3)) | ...
-%                     (waveFrequencies(i+j+1,1) < waveFrequencies(i+j-1,6))
-%                 j=j+2;
-%             elseif (waveFrequencies(i+j+2,1) < waveFrequencies(i+j-1,3)) | ...
-%                     (waveFrequencies(i+j+2,1) < waveFrequencies(i+j-1,6))
-%                 j=j+3;
-%             elseif (waveFrequencies(i+j+3,1) < waveFrequencies(i+j-1,3)) | ...
-%                     (waveFrequencies(i+j+3,1) < waveFrequencies(i+j-1,6))
-%                 j=j+4;
-%             else
-%                 j=j+5;
-%             end
-%         end
-% %         while (i+j<ndata & waveFrequencies(i+j,1) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j,3) < waveFrequencies(i+j-1,1)),
-% %             j=j+1;
-% %         end
-% % 
-%         eventEndTime = t(i+j);
-%         if j > 3,  %NOTE: CHANGE THIS IN TWO PLACES
-%             tint = [eventStartTime eventEndTime];
-%             TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
-%         end
-%         i=i+j;
-%     end
-%     i=i+1;
-% end
-% i=1
-% while i < ndata,
-%     if waveFrequencies(i,4) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
-%         eventStartTime = t(i);
-%         j=1;
-%         while (i+j+4<ndata & waveFrequencies(i+j,4) > waveFrequencies(i+j-1,6)...
-%                 & waveFrequencies(i+j,6) < waveFrequencies(i+j-1,4))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+1,4) > waveFrequencies(i+j-1,6)...
-%                 & waveFrequencies(i+j+1,6) < waveFrequencies(i+j-1,4))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+2,4) > waveFrequencies(i+j-1,6)...
-%                 & waveFrequencies(i+j+2,6) < waveFrequencies(i+j-1,4))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+3,4) > waveFrequencies(i+j-1,6)...
-%                 & waveFrequencies(i+j+3,6) < waveFrequencies(i+j-1,4))...
-%                 | (i+j+4<ndata & waveFrequencies(i+j+4,4) > waveFrequencies(i+j-1,6)...
-%                 & waveFrequencies(i+j+4,6) < waveFrequencies(i+j-1,4)),
-% %                 ...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j,4) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j,6) < waveFrequencies(i+j-1,1))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+1,4) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j+1,6) < waveFrequencies(i+j-1,1))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+2,4) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j+2,6) < waveFrequencies(i+j-1,1))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+3,4) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j+3,6) < waveFrequencies(i+j-1,1))...
-% %                 | (i+j+4<ndata & waveFrequencies(i+j+4,4) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j+4,6) < waveFrequencies(i+j-1,1)),
-%             if (waveFrequencies(i+j,4) > waveFrequencies(i+j-1,6)) | ...
-%                     (waveFrequencies(i+j,4) > waveFrequencies(i+j-1,3)),
-%                 j=j+1;
-%             elseif (waveFrequencies(i+j+1,4) > waveFrequencies(i+j-1,6)) | ...
-%                     (waveFrequencies(i+j+1,4) > waveFrequencies(i+j-1,3))
-%                 j=j+2;
-%             elseif (waveFrequencies(i+j+2,4) > waveFrequencies(i+j-1,6)) | ...
-%                     (waveFrequencies(i+j+2,4) > waveFrequencies(i+j-1,3))
-%                 j=j+3;
-%             elseif (waveFrequencies(i+j+3,4) > waveFrequencies(i+j-1,6)) | ...
-%                     (waveFrequencies(i+j+3,4) > waveFrequencies(i+j-1,3))
-%                 j=j+4;
-%             else
-%                 j=j+5;
-%             end
-%         end
-% %         while (i+j<ndata & waveFrequencies(i+j,1) > waveFrequencies(i+j-1,3)...
-% %                 & waveFrequencies(i+j,3) < waveFrequencies(i+j-1,1)),
-% %             j=j+1;
-% %         end
-% % 
-%         eventEndTime = t(i+j);
-%         if j > 3, %NOTE: CHANGE THIS IN TWO PLACES
-%             tint = [eventStartTime eventEndTime];
-%             TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
-%         end
-%         i=i+j;
-%     end
-%     i=i+1;
-% end
-
-
-TT = irf.TimeTable;
- 
-i=1;
-while i < ndata,
-    %if waveFrequencies(i,1) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
-    if  ~isnan(waveFrequencies(i,1)), %| waveFrequencies(i,4) ~= NaN,
-        eventStartTime = t(i);
-        j=1;
-        while (i+j+4<ndata & waveFrequencies(i+j,1) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j,3) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+1,1) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+1,3) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+2,1) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+2,3) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+3,1) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+3,3) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+4,1) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+4,3) > waveFrequencies(i,1))  | ...
-                ...
-                (i+j+4<ndata & waveFrequencies(i+j,4) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j,6) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+1,4) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+1,6) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+2,4) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+2,6) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+3,4) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+3,6) > waveFrequencies(i,1))...
-                | (i+j+4<ndata & waveFrequencies(i+j+4,4) < waveFrequencies(i,3)...
-                & waveFrequencies(i+j+4,6) > waveFrequencies(i,1)),
-            if (waveFrequencies(i+j,1) < waveFrequencies(i,3)) | ...
-                    (waveFrequencies(i+j,4) < waveFrequencies(i,3)),
-                j=j+1;
-            elseif (waveFrequencies(i+j+1,1) < waveFrequencies(i,3)) | ...
-                    (waveFrequencies(i+j+1,4) < waveFrequencies(i,3))
-                j=j+2;
-            elseif (waveFrequencies(i+j+2,1) < waveFrequencies(i,3)) | ...
-                    (waveFrequencies(i+j+2,4) < waveFrequencies(i,3))
-                j=j+3;
-            elseif (waveFrequencies(i+j+3,1) < waveFrequencies(i,3)) | ...
-                    (waveFrequencies(i+j+3,4) < waveFrequencies(i,3))
-                j=j+4;
-            else
-                j=j+5;
+            if eventThresh(j) == 1 && upperBound < 4*lowerBound && ...
+                    upperBound > 1.25*lowerBound && peakFreq < hCyclFreq(i) ...
+                    && peakFreq ~= newfreq(end) && peakFreq > oCyclFreq(i)/4,
+                P(peak,:) = [t(i) peakFreq peakValue lowerBound upperBound];
+                peak = peak+1;
             end
         end
-%         while (i+j<ndata & waveFrequencies(i+j,1) > waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j,3) < waveFrequencies(i+j-1,1)),
-%             j=j+1;
-%         end
-% 
-        eventEndTime = t(i+j);
-        minNumSampl = 4;
-        if j > minNumSampl,  
-            tint = [eventStartTime eventEndTime];
-            TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
-        end
-        i=i+j;
     end
-    i=i+1;
-end
-i=1;
-while i < ndata,
-    %if waveFrequencies(i,4) ~= NaN, %| waveFrequencies(i,4) ~= NaN,
-    if  ~isnan(waveFrequencies(i,4)), %| waveFrequencies(i,4) ~= NaN,
-        eventStartTime = t(i);
-        j=1;
-        while (i+j+4<ndata & waveFrequencies(i+j,4) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j,6) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+1,4) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+1,6) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+2,4) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+2,6) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+3,4) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+3,6) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+4,4) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+4,6) < waveFrequencies(i,4)) ...
-                ...
-                | (i+j+4<ndata & waveFrequencies(i+j,1) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j,3) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+1,1) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+1,3) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+2,1) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+2,3) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+3,1) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+3,3) < waveFrequencies(i,4))...
-                | (i+j+4<ndata & waveFrequencies(i+j+4,1) > waveFrequencies(i,6)...
-                & waveFrequencies(i+j+4,3) < waveFrequencies(i,4)),
-            if (waveFrequencies(i+j,4) > waveFrequencies(i+j-1,6)) | ...
-                    (waveFrequencies(i+j,1) > waveFrequencies(i,6)),
-                j=j+1;
-            elseif (waveFrequencies(i+j+1,4) > waveFrequencies(i,6)) | ...
-                    (waveFrequencies(i+j+1,1) > waveFrequencies(i,6))
-                j=j+2;
-            elseif (waveFrequencies(i+j+2,4) > waveFrequencies(i,6)) | ...
-                    (waveFrequencies(i+j+2,1) > waveFrequencies(i,6))
-                j=j+3;
-            elseif (waveFrequencies(i+j+3,4) > waveFrequencies(i,6)) | ...
-                    (waveFrequencies(i+j+3,1) > waveFrequencies(i,6))
-                j=j+4;
-            else
-                j=j+5;
-            end
-        end
-%         while (i+j<ndata & waveFrequencies(i+j,1) > waveFrequencies(i+j-1,3)...
-%                 & waveFrequencies(i+j,3) < waveFrequencies(i+j-1,1)),
-%             j=j+1;
-%         end
-% 
-        eventEndTime = t(i+j);
-        if j > minNumSampl, 
-            tint = [eventStartTime eventEndTime];
-            TT=add(TT,tint,{'EMIC events','for Maarble'},'test');
-        end
-        i=i+j;
-    end
-    i=i+1;
+    
 end
 
-numel(TT)
-ascii(TT)
-%TT.TimeInterval(4,:)
-%export_ascii(TT,'/Users/meghanmella/Documents/MATLAB/emic.txt')
-             
-% length(t)
-% size(powerCrossCov_SM_plot)
-% length(newfreq)
+power_median_removed(ind_nan_pmr)=NaN;
+
+
+%% wave association
+%less than 10 minutes between consecutive points, 
+%wave activity detected 15% of the time (at least 18 points per hour)
+%(or 20% of the time/ 24 points per hour), 
+%at least 5 points total
+
+nPeaks = size(P,1);
+waveEvent = [0 0]; %start time, end time
+nevents=1;
+counter=1;
+TTemic = irf.TimeTable;
+while counter < nPeaks,
+    startTime = P(counter,1);
+    endTime = P(counter,1);
+    npeaks=1;
+    while counter < nPeaks && P(counter+1,1)-P(counter,1) < 10*60,
+        endTime = P(counter+1,1);
+        counter=counter+1;
+        npeaks=npeaks+1;
+    end
+    if (npeaks)/(endTime-startTime) > 24/3600 && npeaks > 4,
+        waveEvent(nevents,:) = [startTime endTime];
+        timeInt = [startTime-300 endTime+300]; %include 5 minutes on either side for the time table
+        TTemic=add(TTemic,timeInt,{'EMIC events','for Maarble'});
+        nevents = nevents+1;
+    else
+        counter=counter+1;
+    end
+    
+end
+
+if waveEvent(1) > 0,
+ ascii(TTemic)
+ export_ascii(TTemic,['MAARBLE_PC12_wave_events_' irf_fname(tint,5)])
+end
   
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% plot
 
 figure(318), clf 
 clear h;
 npl=2;clf;
 ipl=1;
-   it2 = 0:.018:.9; it2=it2';
-   it3 = ones(size(it2)); 
-   it3(end)=.9;
-   it=0:.02:1;it=it'; 
-   xcm=[ [0*it flipud(it) it];[it2 it2 it3];...
-       [flipud(it3) flipud(it2) flipud(it2)]; [flipud(it) 0*it 0*it]];
-   xcm2=[ [it2 it2 it3];[flipud(it3) flipud(it2) flipud(it2)]];
-   clear it; clear it2; clear it3;
+cmapSpace = irf_colormap('space');
 
-   %t=b(:,1);
-   %t_start_epoch=get_t_start_epoch(t(1,1));
    t_start_epoch=get_t_start_epoch(t(1,1));
 
    
        %%%%% B spectra from spectral matrix
    
     h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-    %pcolor(t-t_start_epoch,newfreq,log10(abs(powerCrossCov_SM_plot.'))) 
     pcolor(t-t_start_epoch,newfreq,log10(abs(powerCrossCov_SM_plot.')))
-    %pcolor(log10(abs(powerCrossCov_SM_plot.'))) 
     shading flat
     ylabel('f [Hz]')
     set(gca,'yscale','log','tickdir','out');
-  %  set(gca,'tickdir','out');
-    cmean=nanmean(nanmean(log10(abs(powerCrossCov_SM_plot))));
     axis(axis)
     hold on
-    %plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1.6e-19./1.67e-27);
     plot(t-t_start_epoch,hCyclFreq,'color','k');
     plot(t-t_start_epoch,heCyclFreq,'--','color','k');
     plot(t-t_start_epoch,oCyclFreq,'-.','color','k');
-    %axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
     hold off
-    caxis(floor(cmean)+[-3.5 3.5]);
-    %caxis([-3.5 3.5]);
-    %caxis([-6.5 0.5]);
-    colormap(xcm);
+    caxis([-6.5 2.5]);
+    colormap(cmapSpace);
     hca2=colorbar('peer',h(1));
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
-           %%%%% B spectra from spectral matrix
+           %%%%% B spectra with median removed
    
-    h(ipl)=irf_subplot(npl,1,-ipl);ipl=ipl+1;
-    %pcolor(t-t_start_epoch,newfreq,log10(abs(powerCrossCov_SM_plot.'))) 
+    h(ipl)=irf_subplot(npl,1,-ipl);
     pcolor(t-t_start_epoch,newfreq,log10(abs(power_median_removed.'))) 
-    %pcolor(log10(abs(power_median_removed.'))) 
-    %pcolor(t-t_start_epoch,newfreq,log10(abs(medianPower.'))) 
     shading flat
     ylabel('f [Hz]')
     set(gca,'yscale','log','tickdir','out');
-  %  set(gca,'tickdir','out');
-    cmean=nanmean(nanmean(log10(abs(power_median_removed))));
-%     hold on
-%     %plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1.6e-19./1.67e-27);
-%     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi,'color','k');
-%     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4,'--','color','k');
-%     plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16,'-.','color','k');
-%     axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
-%     hold off
-    %caxis(floor(cmean)+[-3.5 3.5]);
     axis(axis)
     hold on
-    plot(t-t_start_epoch,waveFrequencies(:,1),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)    
-    plot(t-t_start_epoch,waveFrequencies(:,2),'d','markerfacecolor','k','markeredgecolor','k','markersize',6)    
-    plot(t-t_start_epoch,waveFrequencies(:,3),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)
-    plot(t-t_start_epoch,waveFrequencies(:,4),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)    
-    plot(t-t_start_epoch,waveFrequencies(:,5),'d','markerfacecolor','k','markeredgecolor','k','markersize',6)    
-    plot(t-t_start_epoch,waveFrequencies(:,6),'o','markerfacecolor','k','markeredgecolor','k','markersize',4)
+    plot(P(:,1)-t_start_epoch,P(:,2),'d','markerfacecolor','k','markeredgecolor','k','markersize',6) 
+    plot(P(:,1)-t_start_epoch,P(:,4),'o','markerfacecolor','k','markeredgecolor','k','markersize',4) 
+    plot(P(:,1)-t_start_epoch,P(:,5),'o','markerfacecolor','k','markeredgecolor','k','markersize',4) 
 
-    %plot(BVector(:,1)-t_start_epoch,BVector(:,2).*1.6e-19./1.67e-27);
     plot(t-t_start_epoch,hCyclFreq,'color','k');
     plot(t-t_start_epoch,heCyclFreq,'--','color','k');
     plot(t-t_start_epoch,oCyclFreq,'-.','color','k');
-    %axis([min(t-t_start_epoch) max(t-t_start_epoch) min(newfreq) max(newfreq)]);
 
     hold off
-    caxis([-2 2]);
-    colormap(xcm);
+    caxis([-3.5 2.5]);
+    colormap(cmapSpace);
     hca2=colorbar('peer',h(2));
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
@@ -730,45 +373,21 @@ ipl=1;
 
 
       axes(h(1));
-      %title(['Width Morlet wavelet = ' num2str(Morlet_width)]);
-      %ht=irf_pl_info([mfilename '  ' datestr(now)]); set(ht,'interpreter','none'); % add information to the plot
-      irf_zoom(h,'x',[min(t) max(t)]);
-      %irf_legend(h(1),'Figure reference',[0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
-      %following three lines from irf_timeaxis, because the date kept
-      %appearing under the position labels
+      if exist('timeInt')
+        irf_zoom(h,'x',[timeInt(1)-600 timeInt(2)+600]);
+      else
+        irf_zoom(h,'x',[min(t) max(t)]); 
+      end
       xlimlast=get(h(end),'xlim');
       start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
       time_label = datestr( datenum(start_time),1 );
       
       irf_legend(h(1),['C1           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
-%  %%%%%%%%%%%%%%%%%%%%%%%%%
-      
-      %irf_legend('C4', 'color','cluster');
-    %irf_figmenu;
-    
-%         figure(320), clf
-%         %%%%% Frequency spectrum at a given time
-% 
-%     %plot(log10(abs(power_median_removed(10330,:))),'--')
-%     plot(power_median_removed(110106,:),'--')
-%     hold on
-%     plot(ones(size(power_median_removed(110106,:))))
-%     plot(log10(abs(medianPower(110106,:))),'-.')
-%     plot(log10(abs(powerCrossCov_SM_plot(110106,:))))
-%     hold off
-%     ylabel('f [Hz]')
-%   %  set(gca,'yscale','log','tickdir','out');
-%     set(gca,'tickdir','out');
-%     
-%     
-%     figure(321), clf
-%     plot(waveFrequencies(:,1),'.','markerfacecolor','k','markersize',8)    
-%     ylabel('f [Hz]')
-%   %  set(gca,'yscale','log','tickdir','out');
-%     set(gca,'tickdir','out');
 
-
+  if save_plot,
+    print('-dpng',['MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
+  end
 
 end
 
@@ -802,40 +421,6 @@ else
 end
 end
 
-function m = nanmean(x,dim)
-%NANMEAN Mean value, ignoring NaNs.
-%   M = NANMEAN(X) returns the sample mean of X, treating NaNs as missing
-%   values.  For vector input, M is the mean value of the non-NaN elements
-%   in X.  For matrix input, M is a row vector containing the mean value of
-%   non-NaN elements in each column.  For N-D arrays, NANMEAN operates
-%   along the first non-singleton dimension.
-%
-%   NANMEAN(X,DIM) takes the mean along dimension DIM of X.
-%
-%   See also MEAN, NANMEDIAN, NANSTD, NANVAR, NANMIN, NANMAX, NANSUM.
-
-%   Copyright 1993-2004 The MathWorks, Inc.
-%   Revision: 1.1.8.1   Date: 2010/03/16 00:15:50 
-
-% Find NaNs and set them to zero
-nans = isnan(x);
-x(nans) = 0;
-
-if nargin == 1 % let sum deal with figuring out which dimension to use
-    % Count up non-NaNs.
-    n = sum(~nans);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x) ./ n;
-else
-    % Count up non-NaNs.
-    n = sum(~nans,dim);
-    n(n==0) = NaN; % prevent divideByZero warnings
-    % Sum up non-NaNs, and divide by the number of non-NaNs.
-    m = sum(x,dim) ./ n;
-end
-end
-
 
 function y = nanmedian(x)
 %NANMEDIAN NaN protected median value.
@@ -847,7 +432,7 @@ function y = nanmedian(x)
 %   See also NANMEAN, NANSTD, NANMIN, NANMAX, NANSUM.
 
 %   Copyright 1993-2002 The MathWorks, Inc. 
-%   $Revision$  $Date$
+%   $Revision: 1.2 $  $Date: 2013/02/07 09:13:00 $
 
 [m,n] = size(x);
 x = sort(x); % NaNs are forced to the bottom of each column
@@ -886,4 +471,67 @@ else
   i = find(n==0);
   y(i) = i + nan;
 end
+end
+
+function y = nansum(x)
+%NANSUM Sum ignoring NaNs.
+%   NANSUM(X) returns the sum treating NaNs as missing values.  
+%   For vectors, NANSUM(X) is the sum of the non-NaN elements in
+%   X. For matrices, NANSUM(X) is a row vector containing the sum 
+%   of the non-NaN elements in each column of X. 
+%
+%    See also NANMEDIAN, NANSTD, NANMIN, NANMAX, NANMEAN.
+
+%   Copyright 1993-2002 The MathWorks, Inc. 
+%   $Revision: 2.10 $  $Date: 2002/01/17 21:31:14 $
+
+% Replace NaNs with zeros.
+nans = isnan(x);
+i = find(nans);
+x(i) = zeros(size(i));
+
+% Protect against an entire column of NaNs
+y = sum(x);
+i = find(all(nans));
+y(i) = i + NaN;
+end
+
+
+function out = AverageData(data,x,y,avWindow,flagSerial)
+% average data with time x to time y using window
+    dtx = median(diff(x)); dty = median(diff(y));
+    if nargin<4, avWindow = dty; end
+    if nargin<5, flagSerial = 0; end
+    dt2 = avWindow/2;
+    ndataOut = length(y);
+    
+    % Pad data with NaNs from each side
+    nPointToAdd = ceil(dt2/dtx);
+    padNan = zeros(nPointToAdd,size(data,2))*NaN;
+    data = [padNan; data; padNan];
+    padTime = dtx*(1:nPointToAdd);
+    x = [x(1)-fliplr(padTime)'; x; x(end)+padTime'];
+    
+    out = zeros(ndataOut,size(data,2));
+    if flagSerial % Serial execution
+        for i=1:length(y)
+            out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
+    else % Parallel execution
+        parfor i=1:length(y)
+        out(i,:) = FastNanMean(data,x>=y(i)-dt2 & x<y(i)+dt2);
+        end
+    end
+end
+function m = FastNanMean(x,idx)
+% Faster version of nanmean()
+    xx = x(idx,:);
+    % Find NaNs and set them to zero
+    nans = isnan(xx); xx(nans) = 0;
+    % Count up non-NaNs.
+    n = sum(~nans,1);
+    n(n==0) = NaN; % prevent divideByZero warnings
+    % Sum up non-NaNs, and divide by the number of non-NaNs.
+    m = sum(xx,1) ./ n;
+    m(n<size(xx,1)*0.75) = NaN; % minDataFrac = .075
 end
