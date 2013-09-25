@@ -1,4 +1,4 @@
-function c_ulf_process(tint,cl_id,freqRange)
+function c_ulf_process(TT,cl_id,freqRange)
 % C_ULF_PROCESS  process Cluster ULF data
 %
 %  c_ulf_process(tint,cl_id,freqRange)
@@ -32,18 +32,19 @@ if nargin < 1
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-07-16T12:03:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
-<<<<<<< HEAD
-freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T07:00:00Z') + [0 2*3600]; % PC1-2 example
-=======
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T07:00:00Z') + [0 2*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2001-11-02T21:10:00Z') + [0 1*3600]; % PC1-2 example
-%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-06-09T03:30:00Z') + [0 3*3600]; % PC1-2 example
-freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T06:00:00Z') + [0 3*3600]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2002-03-30T04:00:00Z') + [0 8*3600]; % PC1-2 example
 %freqRange = 'pc35';cl_id = 3;tint=iso2epoch('2003-09-28T15:30:00Z') + [0 1*3600]; % PC1-2 example
->>>>>>> master
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
 elseif nargin < 3
   freqRange = 'all';
 end
+
+nevents=numel(TT);
+for ievent=1:nevents,
+tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
+
 
 %outDir = '.';
 plotFlag = 1;
@@ -137,7 +138,7 @@ end
 %% Calculate and plot
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
-B0_1MIN = irf_resamp(bf,t_1min); clear bf
+B0_1MIN = irf_resamp(bf,t_1min); %clear bf
 facMatrix = irf_convert_fac([],B0_1MIN,R);
 if exportFlag
   maarble.export(facMatrix,tint,cl_id)
@@ -185,7 +186,9 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
+  irf_wave_detection_algorithm2(ebsp, bf);
   if plotFlag
+    figure;
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
@@ -210,6 +213,7 @@ if ~wantPC35 && ~wantPC12
   h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
+end
 end
 
   function tlim_ebsp % Trim ebsp to tlim
