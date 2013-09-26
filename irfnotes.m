@@ -672,18 +672,6 @@ if 0,   % PANEL: C1..C4   PEACE density MOMENTS
   irf_legend(hca,{'C1','C2','C3','C4'},[0.98, 0.1],'color','cluster');
   ylabel(hca,'T_{e} [eV]');
 end
-if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram omni
-    hca=irf_panel('C? PEACE energy spectra');
-    varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
-    %varunits=irf_get_data(varname,'caa','units');
-    varunits={'log_{10} dEF','keV/cm^2 s sr keV'};
-    irf_plot(hca,varname,'sum_dim1','colorbarlabel',varunits,'fitcolorbarlabel','nolabels');
-    caxis(hca,[5.6 7.9]);
-    set(hca,'yscale','log');
-    set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
-    ylabel(hca,'E [eV]');
-    irf_legend(hca,{['C' num2str(ic)]},[0.98 0.2],'color','k')
-end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
     hca=irf_panel('C? PEACE DEFlux pitch spectra');
     varname=irf_ssub('Data__C?_CP_PEA_PITCH_SPIN_DEFlux',ic);
@@ -694,6 +682,19 @@ if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux spectrogram angles
     set(hca,'yscale','lin');
     set(hca,'ytick',[ 45 90 135 ]);
     ylabel(hca,'\Theta [deg]');
+end
+if 0,   % PANEL: C?       PEACE PITCH_SPIN_DEFlux OMNI pitch angle averaged
+    angles=[7.5000 22.5000 37.5000 52.5000 67.5000 82.5000...
+                        97.5000 112.5000 127.5000 142.5000 157.5000 172.5000];
+                    % Summing over pitch angles, with correct weighting due to
+                    % different solid angle.
+                    sp.p=squeeze(irf.pitch_angle_average(pea.data,angles,...
+                        [7.5 172.5],2));
+                    sp.f=pea.dep_x{2}.data(1,:); % energy levels
+                    sp.t=pea.t;
+                    sp.f_label='Energy [eV]';
+                    sp.p_label={'Electron DEF','keV/cm^2-s-str-keV'};
+                    irf_spectrogram(sp);
 end
 if 0,   % PANEL: C?       PEACE PITCH_SPIN_PSD spectrogram angles
     hca=irf_panel('C? PEACE PSD pitch spectra');
