@@ -186,7 +186,7 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
-  irf_wave_detection_algorithm2(ebsp, bf);
+  irf_wave_detection_algorithm(ebsp, bf);
   if plotFlag
     figure;
     h = irf_pl_ebsp(ebsp);
