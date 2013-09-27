@@ -113,7 +113,9 @@ if wantPC35
         'mat','tint',tint+DT_PC5*[-1 1]);
     E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
       'mat','tint',tint+DT_PC5*[-1 1]);
+  if size(E_4SEC_Quality) ~= [0,0],
     E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
+  end
 end
 if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
@@ -123,8 +125,14 @@ if wantPC12
         'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-    E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;  
+  if size(E_L2_Quality) ~= [0,0],
+    E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN; 
+  end
 end
+
+if (~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2) || ...
+        (~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2),
+
 if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+[-1 1]);
@@ -188,7 +196,7 @@ if wantPC12
   tlim_ebsp();
   irf_wave_detection_algorithm(ebsp, bf);
   if plotFlag
-    figure;
+    figure(1), clf
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
@@ -213,6 +221,9 @@ if ~wantPC35 && ~wantPC12
   h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
+end
+else
+    display(['No data available for times ' irf_disp_iso_range(tint,1)]);
 end
 end
 
