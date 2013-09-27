@@ -313,7 +313,7 @@ end
 if waveEvent(1) > 0,
  ascii(TTemic)
  export_ascii(TTemic,['MAARBLE_PC12_wave_events_' irf_fname(tint,5)])
-end
+
   
 %% plot
 
@@ -388,7 +388,7 @@ cmapSpace = irf_colormap('space');
   if save_plot,
     print('-dpng',['MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
   end
-
+end
 end
 
 
