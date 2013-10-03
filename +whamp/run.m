@@ -127,8 +127,50 @@ disp(['  varyKzFirst = ' num2str(InputParameters.varyKzFirst) ]);
 disp(['       useLog = ' num2str(InputParameters.useLog) ]);
 disp('-----------------------------------------');
 %% Define WHAMP matrices for mexwhamp
+% default values
+  nWHAMP = zeros(1,10);
+  tWHAMP = zeros(1,10);
+  dWHAMP = zeros(1,10)+1;
+  aWHAMP = zeros(1,10)+1;
+  bWHAMP = zeros(1,10);
+assWHAMP = zeros(1,10);
+ vdWHAMP = zeros(1,10);
+
+% plasma species matrices
+for iSpecies = 1:numel(PlasmaModel.Species)
+	  nWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.n;
+	  tWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.t;
+	  dWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.d;
+	  aWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.a;
+	  bWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.b;
+	assWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.m;
+	 vdWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.vd;
+end
+fceWHAMP = 0.0279928*PlasmaModel.B; % fce in kHz
+pzlWHAMP = InputParameters.varyKzFirst;
+
+% define p
+if numel(InputParameters.kperp) == 1,
+	pWHAMP = InputParameters.kperp;
+elseif numel(InputParameters.kperp) == 1,
+	pWHAMP = InputParameters.kperp([1 3 2]);
+else
+	disp('ERROR: InputParameters.kperp wrong format');
+	return;
+end
+
+% define z
+if numel(InputParameters.kpar) == 1,
+	zWHAMP = InputParameters.kpar;
+elseif numel(InputParameters.kpar) == 1,
+	zWHAMP = InputParameters.kpar([1 3 2]);
+else
+	disp('ERROR: InputParameters.kpar wrong format');
+	return;
+end
 
 %% call mexwhamp
+
 
 %% Define Output
 
