@@ -18,41 +18,31 @@ function Output = run(PlasmaModel,InputParameters)
 %
 % InputParameters is a structure: 
 %     InputParameters.fstart - start frequency
-%     InputParameters.kp     - kp (perpendicular wave vector) as scalar or
+%     InputParameters.kperp  - kp (perpendicular wave vector) as scalar or
 %                              [kp_start kp_step kp_end]
-%     InputParameters.kz     - kz (parallel wave vector) or 
+%     InputParameters.kpar   - kz (parallel wave vector) or 
 %                              [kz_start kz_step kz_end]
 %     InputParameters.varyKzFirst - 1 for each kp value, step through all kz values
 %                                 - 0 for each kz value, step through all kp values
 %     InputParameters.useLog - 1 input log10(p) and log10(z),(default)
 %                              0 input given as p and z
 %
-% Output.InputParameters
-% Output.PlasmaModel
-% Output.p
-% Output.z
-% Output.f
-% Output.E
-% Output.Ex
-% Output.Ey
-% Output.Ez
-% Output.B
-% Output.Bx
-% Output.By
-% Output.Bz
-% Output.EB
-% Output.VGP
-% Output.VGZ
-% Output.S
-% Output.Sx
-% Output.Sy
-% Output.Sz
-% Output.u
-% Output.SGP
-% Output.SGZ
+% Output is a structure:
+% Output.InputParameters   - copy of InputParameters
+% Output.PlasmaModel       - copy of PlasmaModel
+% Output.(results)         - scalars, vectors or matrices 
+%   (results) = kperp,kpar,f,E,Ex,Ey,Ez,B,Bx,By,Bz,EB,VGP,VGZ,
+%               S,Sx,Sy,Sz,u,SGP,SGZ
 %
 % Examples:
-%    Inp=struct('fstart',0.4,'kp',ad);Out=whamp.run(Plasma,Inp);
+%    Output = whamp.run([],[]); % default run
+%
+%        Electrons = struct('m',0,'n',1,'t',1);
+%           Oxygen = struct('m',16,'n',1,'t',2);
+%      PlasmaModel = struct('B',10,'Species',{Electrons,Oxygen});
+%  InputParameters = struct('fstart',0.4,'kperp',-1,'kpar',-1);
+%           Output = whamp.run(PlasmaModel,InputParameters);
+%
 
 %% Check input number
 if nargin==0
@@ -66,7 +56,8 @@ end
 %% Define defaults
 DefaultSpecies=struct('m',0,'n',1,'t',1,'a',1,'b',1,'d',1,'vd',0);
 defaultB = 10;
-DeafultInputParameter = struct('fstart',0.5,'kp',-1,'kz',-1,'varyKzFirst',1,'useLog',1);
+DefaultInputParameters = struct('fstart',0.5,'kperp',-1,'kpar',-1,'varyKzFirst',1,'useLog',1);
+Output = [];
 
 %% Define full PlasmaModel 
 % use defaults where needed
@@ -104,7 +95,7 @@ end
 if isempty(InputParameters)
 	InputParameters = DefaultInputParameters;
 else
-	inputParameterFields = fieldnames(DefaultInputParameter);
+	inputParameterFields = fieldnames(DefaultInputParameters);
 	for fieldName = inputParameterFields
 		if ~isfield(InputParameters,fieldName)
 			InputParameters.(fieldName) = DefaultInputParameters.(fieldName);
@@ -113,10 +104,28 @@ else
 end
 
 %% Summarize input
+disp('----------------- WHAMP run -------------');
+disp(' ');
 disp('PlasmaModel');
 disp('-----------');
-disp(['B=' PlasmaModel.B ' nT']);
-
+disp(['  B=' num2str(PlasmaModel.B) ' nT']);
+disp(['    Plasma consist of ' num2str(numel(PlasmaModel.Species)) ' components']);
+for iSpecies = 1:numel(PlasmaModel.Species)
+disp(['  ' num2str(iSpecies) '.' ...
+	' m[mp]=' num2str(PlasmaModel.Species{iSpecies}.m) ...
+	' n[cc]=' num2str(PlasmaModel.Species{iSpecies}.n) ...
+	' T[eV]=' num2str(PlasmaModel.Species{iSpecies}.t) ...
+	]);
+end
+disp(' ');
+disp('InputParameters');
+disp('---------------');
+disp(['       fstart = ' num2str(InputParameters.fstart) ]);
+disp(['        kperp = ' num2str(InputParameters.kperp) ]);
+disp(['         kpar = ' num2str(InputParameters.kpar) ]);
+disp(['  varyKzFirst = ' num2str(InputParameters.varyKzFirst) ]);
+disp(['       useLog = ' num2str(InputParameters.useLog) ]);
+disp('-----------------------------------------');
 %% Define WHAMP matrices for mexwhamp
 
 %% call mexwhamp
