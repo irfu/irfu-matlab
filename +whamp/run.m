@@ -171,6 +171,7 @@ else
 end
 
 %% call mexwhamp
+[kperpOUT,kparOUT,fOUT,ExOUT,EyOUT,EzOUT,BxOUT,ByOUT,BzOUT,SxOUT,SyOUT,SzOUT,EBOUT,VGPOUT,VGZOUT,SGPOUT,SGZOUT,uOUT,flagSolutionFoundOUT,flagTooHeavilyDampedOUT,flagNoConvergenceOUT]=mexwhamp(fceWHAMP,pzlWHAMP,zfirstWHAMP,nWHAMP,tWHAMP,dWHAMP,aWHAMP,bWHAMP,assWHAMP,vdWHAMP,pWHAMP,zWHAMP);
 
 
 %% Define Output
