@@ -146,8 +146,9 @@ for iSpecies = 1:numel(PlasmaModel.Species)
 	assWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.m;
 	 vdWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.vd;
 end
-fceWHAMP = 0.0279928*PlasmaModel.B; % fce in kHz
-pzlWHAMP = InputParameters.varyKzFirst;
+   fceWHAMP = 0.0279928*PlasmaModel.B; % fce in kHz
+   pzlWHAMP = InputParameters.useLog;
+zfirstWHAMP = InputParameters.varyKzFirst;
 
 % define p
 if numel(InputParameters.kperp) == 1,
