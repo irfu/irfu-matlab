@@ -131,8 +131,8 @@ disp('-----------------------------------------');
   nWHAMP = zeros(1,10);
   tWHAMP = zeros(1,10);
   dWHAMP = zeros(1,10)+1;
-  aWHAMP = zeros(1,10)+1;
-  bWHAMP = zeros(1,10);
+  aaWHAMP = zeros(10,2)+1;
+%  bWHAMP = zeros(1,10);
 assWHAMP = zeros(1,10);
  vdWHAMP = zeros(1,10);
 
@@ -141,8 +141,8 @@ for iSpecies = 1:numel(PlasmaModel.Species)
 	  nWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.n;
 	  tWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.t;
 	  dWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.d;
-	  aWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.a;
-	  bWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.b;
+   aaWHAMP(iSpecies,1) = PlasmaModel.Species{iSpecies}.a;
+   aaWHAMP(iSpecies,2) = PlasmaModel.Species{iSpecies}.b;
 	assWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.m;
 	 vdWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.vd;
 end
@@ -171,13 +171,48 @@ else
 end
 
 %% call mexwhamp
-[kperpOUT,kparOUT,fOUT,ExOUT,EyOUT,EzOUT,BxOUT,ByOUT,BzOUT,SxOUT,SyOUT,SzOUT,EBOUT,VGPOUT,VGZOUT,SGPOUT,SGZOUT,uOUT,flagSolutionFoundOUT,flagTooHeavilyDampedOUT,flagNoConvergenceOUT]=mexwhamp(fceWHAMP,pzlWHAMP,zfirstWHAMP,nWHAMP,tWHAMP,dWHAMP,aWHAMP,bWHAMP,assWHAMP,vdWHAMP,pWHAMP,zWHAMP);
+% [...
+% 	kperpOUT,...   %1
+% 	kparOUT,...    %2
+% 	fOUT,...       %3
+% 	ExOUT,...      %4
+% 	EyOUT,...      %5
+% 	EzOUT,...      %6
+% 	BxOUT,...      %7
+% 	ByOUT,...      %8
+% 	BzOUT,...      %9
+% 	SxOUT,...      %10
+% 	SyOUT,...      %11
+% 	SzOUT,...      %12
+% 	EBOUT,...      %13
+% 	VGPOUT,...     %14
+% 	VGZOUT,...     %15
+% 	SGPOUT,...     %16
+% 	SGZOUT,...     %17
+% 	uOUT,...       %18
+% 	flagSolutionFoundOUT,...      %19
+% 	flagTooHeavilyDampedOUT,...   %20
+%	flagNoConvergenceOUT...       %21
+[kperpOut ...
+	]=mexwhamp(...
+	fceWHAMP,...      %1
+	pzlWHAMP,...      %2
+	zfirstWHAMP,...   %3
+	nWHAMP,...        %4
+	tWHAMP,...        %5
+	dWHAMP,...        %6
+	aaWHAMP,...       %7
+	assWHAMP,...      %8
+	vdWHAMP,...       %9
+	pWHAMP,...        %10
+	zWHAMP...         %11
+	);
 
 
 %% Define Output
 
 
-
+Output = kperpOut
 
 
 
