@@ -130,12 +130,13 @@ disp(['    Plasma consist of ' num2str(numel(PlasmaModel.Species)) ' components'
 for iSpecies = 1:numel(PlasmaModel.Species)
 disp(['  ' num2str(iSpecies) '.' ...
 	' m[mp]=' num2str(PlasmaModel.Species{iSpecies}.m) ...
+	[' ' species_symbol(PlasmaModel.Species{iSpecies}.m) ' '] ...
 	' n[cc]=' num2str(PlasmaModel.Species{iSpecies}.n) ...
 	' T[eV]=' num2str(PlasmaModel.Species{iSpecies}.t) ...
 	' Tperp/Tpar=' num2str(PlasmaModel.Species{iSpecies}.a) ...
 	' d=' num2str(PlasmaModel.Species{iSpecies}.d) ...
 	' b=' num2str(PlasmaModel.Species{iSpecies}.b) ...
-	' vd=' num2str(PlasmaModel.Species{iSpecies}.vd) ...
+	' vdrift/vtpar=' num2str(PlasmaModel.Species{iSpecies}.vd) ...
 	]);
 end
 disp(' ');
@@ -216,7 +217,6 @@ end
  	flagSolutionFoundOUT,...      %19
  	flagTooHeavilyDampedOUT,...   %20
 	flagNoConvergenceOUT,...       %21
-	test...
 	]=whamp.mexwhamp(...
 	fceWHAMP,...      %1
 	pzlWHAMP,...      %2
@@ -237,27 +237,55 @@ end
 
 Output.InputParameters = InputParameters;
 Output.PlasmaModel     = PlasmaModel;
-Output.kperpOUT        = kperpOUT;
-Output.kparOUT         = kparOUT;
-Output.fOUT            = fOUT;
-Output.ExOUT           = ExOUT;
-Output.EyOUT           = EyOUT;
-Output.EzOUT           = EzOUT;
-Output.BxOUT           = BxOUT;
-Output.ByOUT           = ByOUT;
-Output.BzOUT           = BzOUT;
-Output.SxOUT           = SxOUT;
-Output.SyOUT           = SyOUT;
-Output.SzOUT           = SzOUT;
-Output.EBOUT           = EBOUT;
-Output.VGPOUT          = VGPOUT;
-Output.VGZOUT          = VGZOUT;
-Output.SGPOUT          = SGPOUT;
-Output.SGZOUT          = SGZOUT;
-Output.uOUT            = uOUT;
-Output.flagSolutionFoundOUT    = flagSolutionFoundOUT;
-Output.flagTooHeavilyDampedOUT = flagTooHeavilyDampedOUT;
-Output.flagNoConvergenceOUT    = flagNoConvergenceOUT;
+if InputParameters.useLog == 1
+	Output.kperp           = 10.^kperpOUT;
+	Output.kpar            = 10.^kparOUT;
+else
+	Output.kperp           = kperpOUT;
+	Output.kpar            = kparOUT;
+end
+Output.f               = fOUT;
+Output.Ex              = ExOUT;
+Output.Ey              = EyOUT;
+Output.Ez              = EzOUT;
+Output.Bx              = BxOUT;
+Output.By              = ByOUT;
+Output.Bz              = BzOUT;
+Output.Sx              = SxOUT;
+Output.Sy              = SyOUT;
+Output.Sz              = SzOUT;
+Output.EB              = EBOUT;
+Output.VGP             = VGPOUT;
+Output.VGZ             = VGZOUT;
+Output.SGP             = SGPOUT;
+Output.SGZ             = SGZOUT;
+Output.u               = uOUT;
+Output.flagSolutionFound    = flagSolutionFoundOUT;
+Output.flagTooHeavilyDamped = flagTooHeavilyDampedOUT;
+Output.flagNoConvergence    = flagNoConvergenceOUT;
 
-Output.test = test;
+% set to NaN output
+outFields = {'f','Ex','Ey','Ez','Bx','By','Bz',...
+	'Sx','Sy','Sz','EB','VGP','VGZ','SGP','SGZ','u'};
+indNaN = (Output.flagNoConvergence==1);
+if any(indNaN)
+	for i=1:numel(outFields)
+		Output.(outFields{i})(indNaN) = NaN;
+	end
+end
+
+function symbol = species_symbol(mass)
+if (mass==0)
+	symbol = 'e-';
+elseif (mass==1)
+	symbol = 'H+';
+elseif (mass==2)
+	symbol = 'He++';
+elseif (mass==4)
+	symbol = 'He+';
+elseif (mass==16)
+	symbol = 'O+';
+else
+	symbol=[];
+end
 
