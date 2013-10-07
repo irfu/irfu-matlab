@@ -120,7 +120,17 @@ urlFormat='&format=cdf';				% default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/';	% default server
 urlIdentity=get_url_identity('caa');	% default identity, default caa
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-downloadFromCFA = 0;                    % default is to download from CAA
+% CFA
+downloadFromCFA = 0;                    % cfa: default is to download from CAA
+cfaServer = 'http://cfadev.esac.esa.int/cfa/aio/'; % cfa: default server        
+urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% cfa                                        
+retrievalType = '&PRODUCT';             % cfa: default is to download, not check inventory
+noBrowser   = '&NO_BROWSER';            % cfa: default is to not download through browser    
+cfaUrl = 'product-action?';             % cfa: used for data retrieval
+queryFormat = '&RETURN_TYPE=CSV';       % cfa: query format, it is the most readable in Matlab with disp()
+selectedFields = 'SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY'; 
+                                        % cfa: for inventory checks    
+   
 %% load .caa file with status for all downloads
 if doLog,
 	if exist('.caa','file') == 0,
@@ -227,26 +237,17 @@ caaQuery=[caaServer 'caa_query/?'];
 caaStream=[caaServer 'cgi-bin/stream_caa.cgi/?'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/?'];
 
-%%%%%%%%% CFA stuff, 
+%%%%%%%%% CFA stuff, se also above 
 % CFA Archive Inter-Operability (AIO) System User's Manual: 
-%   http://cfadev.esac.esa.int/cfa/aio/html/CfaAIOUsersManual.pdf
-if downloadFromCFA % change/add defaults, hasn't ad ded these to above flag checking
-    % change
-    urlNonotify = '&NO_NOTIFY';                % default is not notify by email        
-    urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];
-	%urlFormat = '&DELIVERY_FORMAT=CDF';        % default is CDF (3.3) format
-    urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';
-	cfaServer = 'http://cfadev.esac.esa.int/cfa/aio/'; % default server    
-    downloadDirectory = './CFA/';              % local directory where to put downloaded data, default in current directory under 'CFA' subdirectory
+% http://cfadev.esac.esa.int/cfa/aio/html/CfaAIOUsersManual.pdf
+if downloadFromCFA % change/add defaults, hasn't added these to above flag checking
+    % change/overwrite
+    urlNonotify = '&NO_NOTIFY';      % default is not notify by email        
+    urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];	    
     if ~isempty(urlSchedule)
         urlSchedule = 'async-';
     end
     % add
-    retrievalType = '&PRODUCT';         % default is to download, not check inventory, hmmmmmm
-    noBrowser   = '&NO_BROWSER';        % default is to not download through browser    
-    cfaUrl = 'product-action?'; % used for data retrieval
-    selectedFields = 'SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY'; % for inventory checks    
-    if ~exist('queryFormat','var'); queryFormat = '&RETURN_TYPE=CSV'; end % CFA query format, it is the most readable in Matlab with disp()
     % url encoding: urlencode.m gets ' ' wrong, so uses these instead
     % some places '%' is written directly as '%25'
     space = '%20'; % space-sign: ' '
@@ -360,7 +361,7 @@ if strfind(dataset,'list'),     % list files
                 queryTime = [and 'DATASET_INVENTORY.START_TIME' space '<=' space '''' t2iso '''',...
                              and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
                 url_line_list = [cfaServer cfaAction selectedFields,...
-                         queryData queryTime queryFormat];                 
+                                 queryData queryTime queryFormat];                 
         end
 	end
 	disp('Be patient! Contacting CAA...');
@@ -390,13 +391,8 @@ if strfind(dataset,'list'),     % list files
 end
  
 %% download data
-% create CAA/CFA directory if needed
-switch downloadFromCFA
-    case 0
-        if ~exist('CAA','dir'), mkdir('CAA');end
-    case 1
-        if ~exist('CFA','dir'), mkdir('CFA');end
-end
+% create CAA directory if needed
+if ~exist('CAA','dir'), mkdir('CAA');end
 
 if checkIfDataAreAtCaa
     switch downloadFromCFA
@@ -416,7 +412,7 @@ if checkIfDataAreAtCaa
             queryTime = [and 'DATASET_INVENTORY.START_TIME' space '<=' space '''' t2iso '''',...
                          and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
             url_line_list = [cfaServer cfaAction selectedFields,...
-                         queryData queryTime queryFormat]; 
+                             queryData queryTime queryFormat]; 
             disp(url_line_list);
             disp('Be patient! Contacting CFA to see the list of files...');
             caalist=urlread(url_line_list);
@@ -447,9 +443,6 @@ switch downloadFromCFA
 end
 
 disp(url_line);
-
-% Problem with CFA, can only download one file at a time... How to
-% implement this? They added this option now.
  
 [status,downloadedFile] = get_zip_file(url_line);
 if nargout>=1, download_status=status;end
@@ -503,7 +496,9 @@ function [status,downloadedFile]=get_zip_file(urlLink)
 % to data directory, downloadedFile is set to empty. If there is no zip
 % file or file is not zip file, status=0 and downloadedFile is set to
 % the downloaded file. 
-if strfind(urlLink,'.gz'), downloadFromCFA = 1; end
+if     strfind(urlLink,'.gz');  downloadFromCFA = 1;
+elseif strfind(urlLink,'.zip'); downloadFromCFA = 0; end
+
 status = 0; % default
 switch downloadFromCFA
     case 0 % CAA
