@@ -35,14 +35,16 @@ function Output = run(PlasmaModel,InputParameters)
 %               S,Sx,Sy,Sz,u,SGP,SGZ
 %
 % Examples:
-%    Output = whamp.run([],[]); % default run
+%    Output = whamp.run([],[]) % default run (equivalent to below)
 %
-%        Electrons = struct('m',0,'n',1,'t',1);
-%           Oxygen = struct('m',16,'n',1,'t',2);
-%      PlasmaModel = struct('B',10,'Species',{Electrons,Oxygen});
-%  InputParameters = struct('fstart',0.4,'kperp',-1,'kpar',-1);
-%           Output = whamp.run(PlasmaModel,InputParameters);
+%            Oxygen = struct('m',16,'n',1,'t',10,'a',5,'vd',1);
+%         Electrons = struct('m',0,'n',1,'t',100);
+%       PlasmaModel = struct('B',100);
+%	   PlasmaModel.Species = {Oxygen,Electrons};
+%   InputParameters = struct('fstart',0.1,'kperp',0,'kpar',0.0022,'useLog',0);
+%            Output = whamp.run(PlasmaModel,InputParameters)
 %
+
 
 %% Check input number
 if nargin==0
@@ -54,9 +56,13 @@ elseif nargin ~= 2,
 end
 
 %% Define defaults
-DefaultSpecies=struct('m',0,'n',1,'t',1,'a',1,'b',1,'d',1,'vd',0);
-defaultB = 10;
-DefaultInputParameters = struct('fstart',0.5,'kperp',-1,'kpar',-1,'varyKzFirst',1,'useLog',1);
+DefaultSpecies={...
+	struct('m',16,'n',1,'t',10,'a',5,'b',0,'d',1,'vd',1),...
+	struct('m',0,'n',1,'t',100,'a',1,'b',0,'d',1,'vd',0),...
+	};
+DefaultSpeciesParameters = struct('m',0,'n',1,'t',1,'a',1,'b',0.1,'d',1,'vd',0);
+defaultB = 100;
+DefaultInputParameters = struct('fstart',0.1,'kperp',[0.0 10 0.0],'kpar',[0.0022 10 0.0022],'varyKzFirst',1,'useLog',0);
 Output = [];
 
 %% Define full PlasmaModel 
@@ -65,7 +71,7 @@ Output = [];
 % define plasma species
 if isempty(PlasmaModel)
 	PlasmaModel.B=defaultB;
-	PlasmaModel.Species = {DefaultSpecies};
+	PlasmaModel.Species = DefaultSpecies;
 else
 	if isfield(PlasmaModel,'Species')
 		if iscell(PlasmaModel.Species)
@@ -76,12 +82,22 @@ else
 			disp('whamp.run: input PlasmaModel not properly defined!');
 			disp('           using default model.');
 			PlasmaModel.B=defaultB;
-			PlasmaModel.Species = {DefaultSpecies};
+			PlasmaModel.Species = DefaultSpecies;
 		end
 	else
 		disp('whamp.run: input PlasmaModel does not define Species.');
 		disp('           using default species (electrons, 1eV, 1cc).');
-		PlasmaModel.Species = {DefaultSpecies};		
+		PlasmaModel.Species = DefaultSpecies;		
+	end
+	speciesParameterFields = fieldnames(DefaultSpeciesParameters);
+	for iSpecies = 1:numel(PlasmaModel.Species)
+		for iFieldName = 1:numel(speciesParameterFields)
+			fieldName = speciesParameterFields{iFieldName};
+			if ~isfield(PlasmaModel.Species{iSpecies},fieldName)
+				PlasmaModel.Species{iSpecies}.(fieldName) = ...
+					DefaultSpeciesParameters.(fieldName);
+			end
+		end
 	end
 end
 
@@ -96,7 +112,8 @@ if isempty(InputParameters)
 	InputParameters = DefaultInputParameters;
 else
 	inputParameterFields = fieldnames(DefaultInputParameters);
-	for fieldName = inputParameterFields
+	for iFieldName = 1:numel(inputParameterFields)
+		fieldName = inputParameterFields{iFieldName};
 		if ~isfield(InputParameters,fieldName)
 			InputParameters.(fieldName) = DefaultInputParameters.(fieldName);
 		end
@@ -115,6 +132,10 @@ disp(['  ' num2str(iSpecies) '.' ...
 	' m[mp]=' num2str(PlasmaModel.Species{iSpecies}.m) ...
 	' n[cc]=' num2str(PlasmaModel.Species{iSpecies}.n) ...
 	' T[eV]=' num2str(PlasmaModel.Species{iSpecies}.t) ...
+	' Tperp/Tpar=' num2str(PlasmaModel.Species{iSpecies}.a) ...
+	' d=' num2str(PlasmaModel.Species{iSpecies}.d) ...
+	' b=' num2str(PlasmaModel.Species{iSpecies}.b) ...
+	' vd=' num2str(PlasmaModel.Species{iSpecies}.vd) ...
 	]);
 end
 disp(' ');
@@ -126,6 +147,7 @@ disp(['         kpar = ' num2str(InputParameters.kpar) ]);
 disp(['  varyKzFirst = ' num2str(InputParameters.varyKzFirst) ]);
 disp(['       useLog = ' num2str(InputParameters.useLog) ]);
 disp('-----------------------------------------');
+
 %% Define WHAMP matrices for mexwhamp
 % default values
   nWHAMP = zeros(1,10);
@@ -138,8 +160,8 @@ assWHAMP = zeros(1,10);
 
 % plasma species matrices
 for iSpecies = 1:numel(PlasmaModel.Species)
-	  nWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.n;
-	  tWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.t;
+	  nWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.n*1e6;
+	  tWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.t/1e3;
 	  dWHAMP(iSpecies) = PlasmaModel.Species{iSpecies}.d;
    aaWHAMP(iSpecies,1) = PlasmaModel.Species{iSpecies}.a;
    aaWHAMP(iSpecies,2) = PlasmaModel.Species{iSpecies}.b;
@@ -149,11 +171,12 @@ end
    fceWHAMP = 0.0279928*PlasmaModel.B; % fce in kHz
    pzlWHAMP = InputParameters.useLog;
 zfirstWHAMP = InputParameters.varyKzFirst;
+fstartWHAMP = InputParameters.fstart;
 
 % define p
 if numel(InputParameters.kperp) == 1,
-	pWHAMP = InputParameters.kperp;
-elseif numel(InputParameters.kperp) == 1,
+	pWHAMP = [InputParameters.kperp*[1 1] 10];
+elseif numel(InputParameters.kperp) == 3,
 	pWHAMP = InputParameters.kperp([1 3 2]);
 else
 	disp('ERROR: InputParameters.kperp wrong format');
@@ -162,8 +185,8 @@ end
 
 % define z
 if numel(InputParameters.kpar) == 1,
-	zWHAMP = InputParameters.kpar;
-elseif numel(InputParameters.kpar) == 1,
+	zWHAMP = [InputParameters.kpar*[1 1] 10];
+elseif numel(InputParameters.kpar) == 3,
 	zWHAMP = InputParameters.kpar([1 3 2]);
 else
 	disp('ERROR: InputParameters.kpar wrong format');
@@ -171,29 +194,29 @@ else
 end
 
 %% call mexwhamp
-% [...
-% 	kperpOUT,...   %1
-% 	kparOUT,...    %2
-% 	fOUT,...       %3
-% 	ExOUT,...      %4
-% 	EyOUT,...      %5
-% 	EzOUT,...      %6
-% 	BxOUT,...      %7
-% 	ByOUT,...      %8
-% 	BzOUT,...      %9
-% 	SxOUT,...      %10
-% 	SyOUT,...      %11
-% 	SzOUT,...      %12
-% 	EBOUT,...      %13
-% 	VGPOUT,...     %14
-% 	VGZOUT,...     %15
-% 	SGPOUT,...     %16
-% 	SGZOUT,...     %17
-% 	uOUT,...       %18
-% 	flagSolutionFoundOUT,...      %19
-% 	flagTooHeavilyDampedOUT,...   %20
-%	flagNoConvergenceOUT...       %21
-[kperpOut ...
+[...
+	kperpOUT,...   %1
+ 	kparOUT,...    %2
+ 	fOUT,...       %3
+	ExOUT,...      %4
+	EyOUT,...      %5
+	EzOUT,...      %6
+	BxOUT,...      %7
+	ByOUT,...      %8
+	BzOUT,...      %9
+ 	SxOUT,...      %10
+ 	SyOUT,...      %11
+ 	SzOUT,...      %12
+ 	EBOUT,...      %13
+ 	VGPOUT,...     %14
+ 	VGZOUT,...     %15
+ 	SGPOUT,...     %16
+ 	SGZOUT,...     %17
+ 	uOUT,...       %18
+ 	flagSolutionFoundOUT,...      %19
+ 	flagTooHeavilyDampedOUT,...   %20
+	flagNoConvergenceOUT,...       %21
+	test...
 	]=mexwhamp(...
 	fceWHAMP,...      %1
 	pzlWHAMP,...      %2
@@ -205,14 +228,36 @@ end
 	assWHAMP,...      %8
 	vdWHAMP,...       %9
 	pWHAMP,...        %10
-	zWHAMP...         %11
+	zWHAMP,...        %11
+	fstartWHAMP...    %12
 	);
 
 
 %% Define Output
 
+Output.InputParameters = InputParameters;
+Output.PlasmaModel     = PlasmaModel;
+Output.kperpOUT        = kperpOUT;
+Output.kparOUT         = kparOUT;
+Output.fOUT            = fOUT;
+Output.ExOUT           = ExOUT;
+Output.EyOUT           = EyOUT;
+Output.EzOUT           = EzOUT;
+Output.BxOUT           = BxOUT;
+Output.ByOUT           = ByOUT;
+Output.BzOUT           = BzOUT;
+Output.SxOUT           = SxOUT;
+Output.SyOUT           = SyOUT;
+Output.SzOUT           = SzOUT;
+Output.EBOUT           = EBOUT;
+Output.VGPOUT          = VGPOUT;
+Output.VGZOUT          = VGZOUT;
+Output.SGPOUT          = SGPOUT;
+Output.SGZOUT          = SGZOUT;
+Output.uOUT            = uOUT;
+Output.flagSolutionFoundOUT    = flagSolutionFoundOUT;
+Output.flagTooHeavilyDampedOUT = flagTooHeavilyDampedOUT;
+Output.flagNoConvergenceOUT    = flagNoConvergenceOUT;
 
-Output = kperpOut
-
-
+Output.test = test;
 
