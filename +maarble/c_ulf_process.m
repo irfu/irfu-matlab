@@ -1,7 +1,8 @@
-function c_ulf_process(tint,cl_id,freqRange)
+function c_ulf_process(TT,cl_id,freqRange)
 % C_ULF_PROCESS  process Cluster ULF data
 %
-%  c_ulf_process(tint,cl_id,freqRange)
+%  c_ulf_process(timeTable,cl_id,[freqRange])
+%  c_ulf_process(tint,cl_id,[freqRange])
 %
 %  freqRange - 'all' (default), 'pc35', 'pc12'
 %
@@ -25,21 +26,29 @@ function c_ulf_process(tint,cl_id,freqRange)
 
 if nargin < 1
   % These are example test intervals
-%freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-30T15:00:00Z') + [0 4*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-28T09:30:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 4; tint=iso2epoch('2011-08-01T07:00:00Z') + [0 6*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-07-16T12:03:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2007-01-03T16:00:00Z') + [0 0.5*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2011-11-01T20:13:00Z') + [0 25*60]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T07:00:00Z') + [0 2*3600]; % PC1-2 example
 %freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2001-11-02T21:10:00Z') + [0 1*3600]; % PC1-2 example
-%freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-06-09T03:30:00Z') + [0 3*3600]; % PC1-2 example
-freqRange = 'pc12';cl_id = 3;tint=iso2epoch('2002-01-15T06:00:00Z') + [0 3*3600]; % PC1-2 example
+%freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2002-03-30T04:00:00Z') + [0 8*3600]; % PC1-2 example
 %freqRange = 'pc35';cl_id = 3;tint=iso2epoch('2003-09-28T15:30:00Z') + [0 1*3600]; % PC1-2 example
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
+TT=irf.TimeTable(tint);
 elseif nargin < 3
   freqRange = 'all';
 end
+
+% Still accept single time interval as input
+if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(tint); end
+
+for ievent=1:numel(TT),
+tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
+
 
 %outDir = '.';
 plotFlag = 1;
@@ -72,7 +81,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 %% Download data
 if 0
-    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard'); %#ok<UNRCH>
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],'CL_SP_AUX','nowildcard');
@@ -108,7 +117,9 @@ if wantPC35
         'mat','tint',tint+DT_PC5*[-1 1]);
     E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
       'mat','tint',tint+DT_PC5*[-1 1]);
+  if ~isempty(E_4SEC_Quality)
     E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
+  end
 end
 if wantPC12
     B_FULL = c_caa_var_get(['B_vec_xyz_isr2__C' cl_s '_CP_FGM_FULL_ISR2'],...
@@ -118,8 +129,14 @@ if wantPC12
         'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-    E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;  
+  if ~isempty(E_L2_Quality)
+    E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN; 
+  end
 end
+
+if (~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2) || ...
+        (~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2),
+
 if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+[-1 1]);
@@ -133,7 +150,7 @@ end
 %% Calculate and plot
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
-B0_1MIN = irf_resamp(bf,t_1min); clear bf
+B0_1MIN = irf_resamp(bf,t_1min); %clear bf
 facMatrix = irf_convert_fac([],B0_1MIN,R);
 if exportFlag
   maarble.export(facMatrix,tint,cl_id)
@@ -181,7 +198,9 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
+  irf_wave_detection_algorithm(ebsp, bf);
   if plotFlag
+    figure(1), clf
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
@@ -207,6 +226,10 @@ if ~wantPC35 && ~wantPC12
     irf_zoom(h,'x',tint)
     title(h(1),['Cluster ' cl_s ', ' irf_disp_iso_range(tint,1)])
 end
+else
+    display(['No data available for times ' irf_disp_iso_range(tint,1)]);
+end
+end
 
   function tlim_ebsp % Trim ebsp to tlim
     IGNORE_FIELDS = {'f','flagFac','fullB','B0','r'};
@@ -225,6 +248,6 @@ end
           error('wrong size!')
       end
     end
-  end
+  end % tlim_ebsp()
 end
 

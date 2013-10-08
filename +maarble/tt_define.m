@@ -2,7 +2,7 @@
 % The general datasets will include all the data for 
 % 3 RE< R <10 RE 
 % magnetic latitudes limited to 60 deg (to avoid the auroral zone).
-%
+
 % This software was developed as part of the MAARBLE (Monitoring,
 % Analyzing and Assessing Radiation Belt Energization and Loss)
 % collaborative research project which has received funding from the

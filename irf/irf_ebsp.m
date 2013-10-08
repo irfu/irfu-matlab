@@ -304,8 +304,8 @@ parfor ind_a=1:length(a), % Main loop over frequencies
   
   %% resample to 1 second sampling for Pc1-2 or 1 minute sampling for Pc3-5
   % average top frequencies to 1 second/1 minute
-  % below will be an average over 4 wave periods. first find where one
-  % sample is less than four wave periods
+  % below will be an average over 8 wave periods. first find where one
+  % sample is less than eight wave periods
   if frequencyVec(ind_a)/nWavePeriodToAverage > outSampling
       avWindow = 1/outSampling;
   else
@@ -490,30 +490,89 @@ end
 %% remove edge effects from data gaps
 idxNanE = sum(idxNanE,2)>0;
 idxNanB = sum(idxNanB,2)>0;
+idxNanEISR2 = sum(idxNanEISR2,2)>0;
 
 ndata2=size(power2B_plot,1);
 if pc12_range || other_range,
-  censur3=floor(1.6*a);
+  censur3=floor(1.8*a);
 end
 if pc35_range,
   censur3=floor(.4*a);
 end
-
 for i=1:length(idxNanB)-1,
     if idxNanB(i) < idxNanB(i+1),
         for j=1:length(a),
             censur_index_front=[max(i-censur3(j),1):i];
+            powerBx_plot(censur_index_front,j) = NaN;
+            powerBy_plot(censur_index_front,j) = NaN;
+            powerBz_plot(censur_index_front,j) = NaN;
             power2B_plot(censur_index_front,j) = NaN;
+            S_plot_x(censur_index_front,j) = NaN;
+            S_plot_y(censur_index_front,j) = NaN;
+            S_plot_z(censur_index_front,j) = NaN;
         end
     end
     if idxNanB(i) > idxNanB(i+1),
         for j=1:length(a),
             censur_index_back=[i:min(i+censur3(j),ndata2)];
+            powerBx_plot(censur_index_back,j) = NaN;
+            powerBy_plot(censur_index_back,j) = NaN;
+            powerBz_plot(censur_index_back,j) = NaN;
             power2B_plot(censur_index_back,j) = NaN;
+            S_plot_x(censur_index_back,j) = NaN;
+            S_plot_y(censur_index_back,j) = NaN;
+            S_plot_z(censur_index_back,j) = NaN;
         end
     end
-
 end
+
+ndata3=size(power2E_plot,1);
+for i=1:length(idxNanE)-1,
+    if idxNanE(i) < idxNanE(i+1),
+        for j=1:length(a),
+            censur_index_front=[max(i-censur3(j),1):i];
+            powerEx_plot(censur_index_front,j) = NaN;
+            powerEy_plot(censur_index_front,j) = NaN;
+            powerEz_plot(censur_index_front,j) = NaN;
+            power2E_plot(censur_index_front,j) = NaN;
+            power2E_ISR2_plot(censur_index_front,j) = NaN;
+            S_plot_x(censur_index_front,j) = NaN;
+            S_plot_y(censur_index_front,j) = NaN;
+            S_plot_z(censur_index_front,j) = NaN;
+        end
+    end
+    if idxNanE(i) > idxNanE(i+1),
+        for j=1:length(a),
+            censur_index_back=[i:min(i+censur3(j),ndata3)];
+            powerEx_plot(censur_index_back,j) = NaN;
+            powerEy_plot(censur_index_back,j) = NaN;
+            powerEz_plot(censur_index_back,j) = NaN;
+            power2E_plot(censur_index_back,j) = NaN;
+            power2E_ISR2_plot(censur_index_back,j) = NaN;
+            S_plot_x(censur_index_back,j) = NaN;
+            S_plot_y(censur_index_back,j) = NaN;
+            S_plot_z(censur_index_back,j) = NaN;
+        end
+    end
+end
+
+ndata4=size(power2E_ISR2_plot,1);
+for i=1:length(idxNanEISR2)-1,
+    if idxNanEISR2(i) < idxNanEISR2(i+1),
+        for j=1:length(a),
+            censur_index_front=[max(i-censur3(j),1):i];
+            power2E_ISR2_plot(censur_index_front,j) = NaN;
+        end
+    end
+    if idxNanEISR2(i) > idxNanEISR2(i+1),
+        for j=1:length(a),
+            censur_index_back=[i:min(i+censur3(j),ndata4)];
+            power2E_ISR2_plot(censur_index_back,j) = NaN;
+        end
+    end
+end
+
+
 
 %%
 powerBx_plot = AverageData(powerBx_plot,inTime,outTime);

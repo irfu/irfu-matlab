@@ -45,6 +45,12 @@ if ~isstruct(ebsp),
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
 
+if isnumeric(cl_id) % Cluster
+  flagCluster = true;
+else
+  flagCluster = false;
+end
+
 if isfield(ebsp,'rotMatrix')
   export_rotMatrix
 elseif isfield(ebsp,'flagFac')
@@ -72,7 +78,12 @@ out_CharArray = out_CharArray';
 out_CharArray=out_CharArray(:)';
 
 %% Prepare the file header
-fileName = [sprintf('C%d_CP_AUX_%s', cl_id, datasetID)...
+if flagCluster, filePrefix = sprintf('C%d', cl_id);
+else
+  filePrefix = 'CC';
+  datasetID = [upper(cl_id) '_' datasetID];
+end
+fileName = [filePrefix '_CP_AUX_MAARBLE_' datasetID...
     '__' irf_fname(tint,5) '_V' DATA_VERSION];
    
 header = [...
@@ -82,13 +93,13 @@ header = [...
     sprintf('FILE_NAME = "%s.cef"\n',fileName)...
     sprintf('FILE_FORMAT_VERSION = "CEF-2.0"\n')...
     sprintf('END_OF_RECORD_MARKER = "$"\n')...
-    sprintf('include = "C%d_CH_AUX_%s.ceh"\n', cl_id, datasetID)...
+    sprintf('include = "%s_CH_AUX_MAARBLE_%s.ceh"\n', filePrefix, datasetID)...
     sprintf(pmeta('FILE_TYPE','cef'))...
     sprintf(pmeta('DATASET_VERSION',DATASET_VERSION))...
     sprintf(pmeta('LOGICAL_FILE_ID',fileName))...
     sprintf(pmeta('VERSION_NUMBER',DATA_VERSION))...
     sprintf('START_META     =   FILE_TIME_SPAN\n')...
-	sprintf('   VALUE_TYPE  =   ISO_TIME_RANGE\n')...
+    sprintf('   VALUE_TYPE  =   ISO_TIME_RANGE\n')...
     sprintf('   ENTRY       =   %s/%s\n', ...
         epoch2iso(tint(1),1),epoch2iso(tint(2),1))...
     sprintf('END_META       =   FILE_TIME_SPAN\n')...
@@ -131,7 +142,7 @@ end
     end
     rm2d(isnan(rm2d)) = FILLVAL;
     dataToExport = { {FORMAT_ROTMATR, rm2d} };
-    datasetID = 'MAARBLE_ULF_FACMATR';
+    datasetID = 'ULF_FACMATR';
   end % export_rotMatrix()
 
   function export_ebsp
@@ -140,11 +151,11 @@ end
     switch lower(freqRange)
       case 'pc12'
         %DT2 = 0.5; % time resolution
-        datasetID = 'MAARBLE_ULF_PC12';
+        datasetID = 'ULF_PC12';
         numberOfFreq = 21;
       case 'pc35';
         %DT2 = 30; % time resolution
-        datasetID = 'MAARBLE_ULF_PC35';
+        datasetID = 'ULF_PC35';
         numberOfFreq = 21;
       otherwise
         error('freqRange must be ''pc12'' or ''pc35''')
