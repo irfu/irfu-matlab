@@ -1,15 +1,15 @@
 function c_ulf_process(TT,cl_id,freqRange)
 % C_ULF_PROCESS  process Cluster ULF data
 %
-%  c_ulf_process(timeTable,cl_id,[freqRange])
-%  c_ulf_process(tint,cl_id,[freqRange])
+%  c_ulf_process(tt,cl_id,freqRange)
 %
+%  tt - irf TimeTable
 %  freqRange - 'all' (default), 'pc35', 'pc12'
 %
 %  Reads CAA data from disk and computes wave spectra and polarization
 %  parameters.
 %
-%  See also IRF_EBSP
+%  See also IRF_EBSP, IRF.TIMETABLE, IRF.TT
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -26,7 +26,7 @@ function c_ulf_process(TT,cl_id,freqRange)
 
 if nargin < 1
   % These are example test intervals
-freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
+%freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-30T15:00:00Z') + [0 4*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 1; tint=iso2epoch('2011-08-28T09:30:00Z') + [0 3*3600]; % PC3-5 example
 %freqRange = 'pc35';cl_id = 4; tint=iso2epoch('2011-08-01T07:00:00Z') + [0 6*3600]; % PC3-5 example
@@ -38,17 +38,14 @@ freqRange = 'all';cl_id = 1; tint=iso2epoch('2010-10-13T12:00:00Z') + [0 3*3600]
 %freqRange = 'pc12';cl_id = 1;tint=iso2epoch('2002-03-30T04:00:00Z') + [0 8*3600]; % PC1-2 example
 %freqRange = 'pc35';cl_id = 3;tint=iso2epoch('2003-09-28T15:30:00Z') + [0 1*3600]; % PC1-2 example
 %freqRange = [10 180]; cl_id = 4;tint=iso2epoch('2001-02-26T05:18:00Z') + [0 60]; % VLF example
-TT=irf.TimeTable(tint);
 elseif nargin < 3
   freqRange = 'all';
 end
 
-% Still accept single time interval as input
-if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(tint); end
-
-for ievent=1:numel(TT),
+nevents=numel(TT);
+for ievent=1:nevents,
 tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
-
+try
 
 %outDir = '.';
 plotFlag = 1;
@@ -81,7 +78,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 %% Download data
 if 0
-    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard'); %#ok<UNRCH>
+    caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_FGM_5VPS'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_EFW_L3_E'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],['C' cl_s '_CP_AUX_POSGSE_1M'],'nowildcard');
     caa_download(tint+DT_PC5*[-1 1],'CL_SP_AUX','nowildcard');
@@ -117,7 +114,7 @@ if wantPC35
         'mat','tint',tint+DT_PC5*[-1 1]);
     E_4SEC_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L3_E'],...
       'mat','tint',tint+DT_PC5*[-1 1]);
-  if ~isempty(E_4SEC_Quality)
+  if size(E_4SEC_Quality) ~= [0,0],
     E_4SEC(E_4SEC_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN;
   end
 end
@@ -129,7 +126,7 @@ if wantPC12
         'mat','tint',tint+DT_PC2*[-1 1]);
     E_L2_Quality = c_caa_var_get(['E_quality__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+DT_PC2*[-1 1]);
-  if ~isempty(E_L2_Quality)
+  if size(E_L2_Quality) ~= [0,0],
     E_L2(E_L2_Quality(:,2)<MIN_E_QUALITY,2:end) = NaN; 
   end
 end
@@ -229,6 +226,10 @@ end
 else
     display(['No data available for times ' irf_disp_iso_range(tint,1)]);
 end
+clearvars -except TT cl_id freqRange nevents
+catch
+    display(['Error occurred for times ' irf_disp_iso_range(tint,1)]);
+end
 end
 
   function tlim_ebsp % Trim ebsp to tlim
@@ -248,6 +249,6 @@ end
           error('wrong size!')
       end
     end
-  end % tlim_ebsp()
+  end
 end
 

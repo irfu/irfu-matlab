@@ -29,12 +29,12 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     ee_ss       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
 %     ee          - E power spectrum (xx, yy, zz)
 %     pf_xyz      - Poynting flux (xyz)
-%     pf_rtp      - Poynting flux (r, theta, phi)
+%     pf_rtp      - Poynting flux (r, theta, phi) [angles in radians]
 %     dop         - 3D degree of polarization
 %     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
 %     ellipticity - ellipticity of polarization ellipse
-%     k           - k-vector (theta, phi FAC)
+%     k           - k-vector (theta, phi FAC) [angles in radians]
 %
 %  Options:
 %   'polarization' - compute polarization parameters
@@ -83,6 +83,7 @@ flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 args = varargin;
 while 1
   l = 1;
+  if isempty(args), break, end
   switch lower(args{1})
     case 'polarization'
       wantPolarization = 1;
@@ -109,7 +110,6 @@ while 1
       irf_log('fcal',['Option ''' args{1} '''not recognized'])
   end
   args = args(l+1:end);
-  if isempty(args), break, end
 end
 
 if flag_want_fac && isempty(facMatrix)
