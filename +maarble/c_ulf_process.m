@@ -1,14 +1,15 @@
 function c_ulf_process(TT,cl_id,freqRange)
 % C_ULF_PROCESS  process Cluster ULF data
 %
-%  c_ulf_process(tint,cl_id,freqRange)
+%  c_ulf_process(tt,cl_id,freqRange)
 %
+%  tt - irf TimeTable
 %  freqRange - 'all' (default), 'pc35', 'pc12'
 %
 %  Reads CAA data from disk and computes wave spectra and polarization
 %  parameters.
 %
-%  See also IRF_EBSP
+%  See also IRF_EBSP, IRF.TIMETABLE, IRF.TT
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -44,7 +45,7 @@ end
 nevents=numel(TT);
 for ievent=1:nevents,
 tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
-
+try
 
 %outDir = '.';
 plotFlag = 1;
@@ -224,6 +225,10 @@ if ~wantPC35 && ~wantPC12
 end
 else
     display(['No data available for times ' irf_disp_iso_range(tint,1)]);
+end
+clearvars -except TT cl_id freqRange nevents
+catch
+    display(['Error occurred for times ' irf_disp_iso_range(tint,1)]);
 end
 end
 
