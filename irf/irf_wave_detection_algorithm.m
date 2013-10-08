@@ -1,4 +1,4 @@
-function h=irf_wave_detection_algorithm2(tint,varargin)    
+function h=irf_wave_detection_algorithm(tint,varargin)    
 %function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
  %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
 
@@ -37,7 +37,6 @@ if isstruct(tint)
     ndata = length(t);
     [~,args,nargs] = axescheck(varargin{:});
     B=args{1};
-    display(size(B));
     save_plot = 1;
 else
 
