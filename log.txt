@@ -1,5 +1,6 @@
-2013-09-13 v1.1.2 checks for errors when testing libraries
+2013-10-08 v1.2.0 whamp mexfiles (Mac,Linus) are part of irfu-matlab and other bunch of changes
 2013-09-16 v1.1.3 modified caa_load caa_download for cfa
+2013-09-13 v1.1.2 checks for errors when testing libraries
 2013-09-13 v1.1.1 checks for errors when testing libraries
 2013-09-13 v1.1.0 directory restructuring 
 2013-09-13 v1.0.3 checking version against github server instead irfu
