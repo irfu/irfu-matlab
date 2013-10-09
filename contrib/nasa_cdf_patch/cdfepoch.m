@@ -14,7 +14,7 @@ function epochObj = cdfepoch(varargin)
 
 %    binky
 %    Copyright 2001-2006 The MathWorks, Inc.
-%    $Revision: 1.1.1.1 $  $Date: 2012/02/24 19:08:15 $
+%    $Revision: 1.1.1.1 $  $Date: 2012/05/17 14:33:09 $
 
 if (nargin == 0)
     s.date = [];
