@@ -48,7 +48,7 @@ else
         hca=findobj(h,'tag',tag);
         if numel(hca)>0, % has found subplot with tag
             hout=hca(1);
-            irf_log('fcal',['--SUBPLOT-- <' tag '> (Using existing panel)'])
+            irf.log(1,['--SUBPLOT-- <' tag '> (Using existing panel)'])
             hnumber=find(hout==subplot_handles);
             parent=get(hout,'parent');
             ud=get(parent,'userdata');
@@ -67,7 +67,7 @@ else
             end
             hout=h(current_panel);
             set(hout,'tag',tag);
-            irf_log('fcal',['--SUBPLOT-- <' tag '> (New panel)'])
+            irf.log(1,['--SUBPLOT-- <' tag '> (New panel)'])
             ud.current_panel=current_panel;
             set(parent,'userdata',ud); 
         end

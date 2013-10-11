@@ -74,7 +74,7 @@ switch action
 				error(['file ' cdf_file ' does not exist'])
 			end
 			%% read in file
-			irf_log('dsrc',['Reading: ' cdf_file]);
+			irf.log(2,['Reading: ' cdf_file]);
 			% get basic info
 			info   = cdfinfo(cdf_file);
 			% check if cdfepoch16
@@ -97,7 +97,7 @@ switch action
 			else
 				% read in file
 				if usingCdfepoch16,
-					irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+					irf.log(3,['EPOCH16 time in cdf file:' cdf_file]);
 					shouldReadAllData=1; % read all data
 					variableNames=info.Variables(:,1);
 					isCdfepoch16VariableArray=cellfun(@(x) strcmpi(x,'epoch16'), info.Variables(:,4));
@@ -125,7 +125,7 @@ switch action
 			end
 			%% check if number of records to read is zero
 			if ~shouldReadAllData && sum(records)==0,
-				irf_log('dsrc','No data within specified time interval');
+				irf.log(2,'No data within specified time interval');
 				noDataReturned=1;
 			end
 
@@ -143,7 +143,7 @@ switch action
 			if ~(any(strcmpi(info.Variables(:,4),'epoch')==1) || ...
 					any(strcmpi(info.Variables(:,4),'epoch16')==1)),
 				nVariables=0; % no time variable, return nothing
-				irf_log('dsrc','CDF FILE IS EMPTY!')
+				irf.log(2,'CDF FILE IS EMPTY!')
 			else
 				nVariables = size(info.Variables,1);
 			end
