@@ -127,9 +127,9 @@ while have_options
                 if isnumeric(args{2})
                     dt = args{2};
                     l = 2;
-                else irf_log('fcal,','wrongArgType : dt must be numeric')
+                else irf.log(1,'wrongArgType : dt must be numeric')
                 end
-            else irf_log('fcal,','wrongArgType : dt value is missing')
+            else irf.log(1,'wrongArgType : dt value is missing')
             end
         case 'tint'
             if nargs>1 && isnumeric(args{2})
@@ -137,7 +137,7 @@ while have_options
                     l = 2;
                     flag_plot_all_data=0;
                     original_args(find(strcmpi(original_args,'tint'))+ [0 1])=[]; % remove tint argument
-            else irf_log('fcal,','wrongArgType : dt must be numeric')
+            else irf.log(1,'wrongArgType : dt must be numeric')
             end
         case 'yy'
             if nargs>1
@@ -145,9 +145,9 @@ while have_options
                     flag_yy = 1;
                     scaleyy = args{2};
                     l = 2;
-                else irf_log('fcal,','wrongArgType : yy must be numeric')
+                else irf.log(1,'wrongArgType : yy must be numeric')
                 end
-            else irf_log('fcal,','wrongArgType : yy value is missing')
+            else irf.log(1,'wrongArgType : yy value is missing')
             end
         case 'linestyle'
             marker = args{2};
@@ -197,7 +197,7 @@ if ischar(x), % Try to get variable labels etc.
             if flag_ok
                 eval(['x{ix}=' var_names{ii} ';']);
             else
-                irf_log('load',...
+                irf.log(2,...
                     ['skipping, do not know where to get variable >'...
                     var_names{ii}]);
             end
@@ -378,7 +378,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
         else t_tmp = double(y(:,1));
         end
         if numel(t_tmp)==0
-            irf_log('proc',['Can not plot data ' num2str(ipl)]);
+            irf.log(1,['Can not plot data ' num2str(ipl)]);
             return;
         end
         t_tmp = t_tmp -double(ts) -double(dt(ipl));
@@ -533,7 +533,7 @@ elseif ~isempty(valid_time_stamp)
         t_st_e = double(valid_time_stamp);
         ud.t_start_epoch = t_st_e;
         set(gcf,'userdata',ud);
-        irf_log('proc',['user_data.t_start_epoch is set to ' ...
+        irf.log(2,['user_data.t_start_epoch is set to ' ...
             epoch2iso(t_st_e,1)]);
     else
         t_st_e = double(0);
@@ -608,7 +608,7 @@ function zoom_in_if_necessary(h)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ud=get(h,'userdata');
 if isfield(ud,'zoom_x'),
-    irf_log('fcal','zooming in the updated plot')
+    irf.log(3,'zooming in the updated plot')
     irf_zoom(h,'x',ud.zoom_x);
     if ud.zoom_x(1) > 1e8 && ud.zoom_x(1) < 1e10, % isdat epoch
         irf_timeaxis(h,'nolabel');

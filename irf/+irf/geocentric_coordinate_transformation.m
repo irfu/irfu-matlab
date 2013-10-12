@@ -79,7 +79,7 @@ switch lower(flag)
 		out = [inp(:,1) dipole_direction_gse];
 		return
 	otherwise
-		irf_log('fcal',['Transformation ''' flag ''' is unknown!']);
+		irf.log(1,['Transformation ''' flag ''' is unknown!']);
 		error('Fix transformation!');
 end
 if size(inp,2)>=4, % input is time and 3 components
@@ -88,7 +88,7 @@ elseif size(inp,2)==1, % input is time, return only transformation matrix
 	out=T(tInd);
 end
 if size(inp,2) > 4, % more columns than 3 components
-	irf_log('fcal','WARNING! input has more than 4 columns, replicating columns 5:end in output');
+	irf.log(2,'WARNING! input has more than 4 columns, replicating columns 5:end in output');
 	out(:,5:size(inp,2))=inp(:,5:end); % replicate last columns in output
 end
 

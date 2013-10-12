@@ -93,6 +93,7 @@ if ~strcmp(logOut,'screen')
 		irf.log(1,'Redirecting future output to screen.')
 	end
 else
-	dispStr = ['[' num2str(logLevel) '] ' logMsg];
+	dispStr = [repmat(' ',1,(logLevel-1)*2) ...% indentation space depending on level
+		'[' num2str(logLevel) '] ' logMsg];
 	disp(dispStr)
 end
