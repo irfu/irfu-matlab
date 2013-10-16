@@ -1,4 +1,4 @@
-function log(logLevel,logMsg)
+function r = log(logLevel,logMsg)
 %IRF.LOG   Configurable logging routine
 %
 % IRF.LOG(level) - set logging level. Default is 1, if zero do not show log.
@@ -31,8 +31,11 @@ if isempty(logOut)
 	logOut = 'screen';
 end
 
-if nargin == 0, 
-	irf.log(1,['Current logging level is ' num2str(loggingLevel)]);
+if nargin == 0,
+  if nargout, r = loggingLevel;
+  else
+    irf.log(1,['Current logging level is ' num2str(loggingLevel)]);
+  end
 	return;
 elseif nargin == 1, 
 	if isnumeric(logLevel),
