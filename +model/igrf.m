@@ -6,7 +6,7 @@ persistent hIGRF gIGRF yearsIGRF
 
 if isempty(hIGRF)
 	fileIGRF = [fileparts(which('irf.m')) '/+model/igrf11coeffs.txt'];
-	irf_log('dsrc',['Reading IGRF coeficients from file:' fileIGRF]);
+	irf.log(2,['Reading IGRF coeficients from file:' fileIGRF]);
 	%file reading
 	fid=fopen(fileIGRF);
 	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); % cell array with lines
