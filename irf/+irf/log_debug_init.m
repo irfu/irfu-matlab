@@ -31,7 +31,7 @@ elseif nargin > 1
 end
 
 if logLevel
-  f = @(x) irf.log(4,x);
+  f = @(x) irf.log('debug',x);
 else
   f = @(x) [];
 end

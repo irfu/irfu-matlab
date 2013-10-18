@@ -91,13 +91,13 @@ while nargs
 				if isnumeric(args{2})
 					tint = args{2};
 					l = 2;
-				else irf_log('fcal,','wrongArgType : tint must be numeric')
+				else irf.log('critical','wrongArgType : tint must be numeric')
 				end
-			else irf_log('fcal,','wrongArgType : tint value is missing')
+			else irf.log('critical','wrongArgType : tint value is missing')
 			end
 			getAllData=0;
 		otherwise
-			irf_log('fcal',['Unknown input parameter  ''' args{1} ''' !!!'])
+			irf.log('critical',['Unknown input parameter  ''' args{1} ''' !!!'])
 			l=1;
 	end
 	args = args(l+1:end);
@@ -123,7 +123,7 @@ for j=1:length(varargin),
     if getAllData && ~getFromFile &&	evalin('caller',['exist(''' dataobj_name ''',''var'')']),
       dataobject=evalin('caller',dataobj_name);
       jloaded=jloaded+1;
-      irf_log('dsrc',[dataobj_name ' exist in memory. NOT LOADING FROM FILE!'])
+      irf.log('warning',[dataobj_name ' exist in memory. NOT LOADING FROM FILE!'])
     else
       if getAllData,
         caa_load(dataobj_name,'nowildcard');
@@ -134,10 +134,10 @@ for j=1:length(varargin),
         eval(['dataobject=' dataobj_name ';']);
         jloaded=jloaded+1;
       else
-        irf_log('dsrc',[dataobj_name ' could not be loaded!']);
+        irf.log('warning',[dataobj_name ' could not be loaded!']);
 		if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 			testLocalCaaRepository = true;
-			irf_log('dsrc','will test if data are in local CAA data repository.');
+			irf.log('notice','will test if data are in local CAA data repository.');
 		else
 			continue;
 		end
@@ -147,7 +147,7 @@ for j=1:length(varargin),
 		if testLocalCaaRepository
 			ttt = local.c_read(var_name,tint,'caa');
 			if isempty(ttt),
-				irf_log('dsrc','NO DATA in repository!');
+				irf.log('warning','NO DATA in repository!');
             end
             jloaded = jloaded + 1;
             res{jloaded} = ttt;
@@ -159,7 +159,7 @@ for j=1:length(varargin),
 		if testLocalCaaRepository
 			ttt = local.c_read(var_name,tint,'mat');
 			if isempty(ttt),
-				irf_log('dsrc','NO DATA in repository!');
+				irf.log('warning','NO DATA in repository!');
 			end
 			jloaded = jloaded + 1;
             resmat{jloaded} = ttt;
@@ -174,7 +174,7 @@ for j=1:length(varargin),
 	  if testLocalCaaRepository
 		ttt = local.c_read(var_name,tint,'dobj');
 		if isempty(ttt),
-		  irf_log('dsrc','NO DATA in repository!');
+		  irf.log('warning','NO DATA in repository!');
 		end
 		jloaded = jloaded + 1;
 		resdataobject{jloaded} = ttt;
@@ -185,7 +185,7 @@ for j=1:length(varargin),
   end
 end
 if jloaded==0, % nothing is loaded, return empty
-  irf_log('load','Nothing is loaded')
+  irf.log('warning','Nothing is loaded')
   res=[];resdataobject=[];resmat=[];resunit=[];
 elseif jloaded ==1, % return variables and not cell arrays
   res=res{1};

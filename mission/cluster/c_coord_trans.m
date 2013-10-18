@@ -160,18 +160,18 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                 c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',cl_id);
                 cl_id_saved=cl_id;
             end
-            irf.log(3,irf_ssub('Trying to read SAX? from CAA dataset in memory or file',cl_id));
+            irf.log('notice',irf_ssub('Trying to read SAX? from CAA dataset in memory or file',cl_id));
             if ~isempty(lat) && (t(1) > lat(1,1)-60) && (t(end) < lat(end,1)+60), % check if latitude data within right time interval
                 latlong   = irf_resamp([lat long(:,2)],t(1));
                 [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
                 sax = [xspin yspin zspin];cl_id_saved=cl_id;
-                irf.log(3,'Success!');
+                irf.log('notice','Success!');
                 flag_read_lat=0;
             end
         end
         if flag_read_lat, % try to read from isdat served using ISDAT.jar
             lat = []; long = [];
-            irf.log(3,irf_ssub('Trying to read SAX? from isdat database through ISDAT.jar',cl_id));
+            irf.log('notice',irf_ssub('Trying to read SAX? from isdat database through ISDAT.jar',cl_id));
             try
                 c_eval('[tll,ll] = irf_isdat_get([''Cluster/?/ephemeris/sax_lat''], t(1)-60, t(end)-t(1)+120);lat=[tll ll];clear tl ll;',cl_id);
                 c_eval('[tll,ll] = irf_isdat_get([''Cluster/?/ephemeris/sax_long''], t(1)-60, t(end)-t(1)+120);long=[tll ll];clear tl ll;',cl_id);
@@ -180,11 +180,11 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
                     latlong   = irf_resamp([lat long(:,2)],t(1));
                     [xspin,yspin,zspin] = sph2cart(latlong(3)*pi/180,latlong(2)*pi/180,1);
                     sax = [xspin yspin zspin];cl_id_saved=cl_id;
-                    irf.log(3,'Success!');
+                    irf.log('notice','Success!');
                     flag_read_lat=0;
                 end
             catch
-                irf.log(2,'Could not read lat/long from isdat server. ');
+                irf.log('warning','Could not read lat/long from isdat server. ');
             end
         end
         if flag_read_lat==1,
@@ -197,22 +197,22 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
             tempv = getData(ClusterDB(c_ctl(0,'isdat_db'),c_ctl(0,'data_path')),...
                 t(1),120,cl_id,'sax','nosave');
             if isempty(tempv)
-                irf.log(2,irf_ssub('Cannot load SAX?',cl_id))
+                irf.log('warning',irf_ssub('Cannot load SAX?',cl_id))
                 sax = [];
             else
                 sax = tempv{2};
-                irf.log(2,irf_ssub('Loaded SAX? from local disk or local ISDAT database',cl_id))
+                irf.log('warning',irf_ssub('Loaded SAX? from local disk or local ISDAT database',cl_id))
             end
             clear tempv
         catch 
-            irf.log(2,'Could not read sax fgrom isdat database. ');
+            irf.log('warning','Could not read sax fgrom isdat database. ');
         end
     end
     
     if isempty(sax) % try to read from disk
         [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
         if ok
-            irf.log(2,irf_ssub('Loaded SAX? from ISDAT file',cl_id));
+            irf.log('warning',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
             % XXX TODO: check that the SAX is from the right time
             %[iso_t,dt] = caa_read_interval();
         else

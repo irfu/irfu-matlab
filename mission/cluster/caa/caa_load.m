@@ -120,9 +120,9 @@ for j = 1:numel(dirs)
 	if flag_load_variable,
 		try
 			if shouldReadAllData && ~forceLoadFromFile && evalin('caller',['exist(''' var_name ''',''var'')']),
-				irf.log(2,[var_name ' exist in memory. NOT LOADING FROM FILE!'])
+				irf.log('warning',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
 			else
-				irf.log(2,['loading ' var_name ' from location:' caa_data_directory dirs(j).name filesep '*.cdf']);
+				irf.log('warning',['loading ' var_name ' from location:' caa_data_directory dirs(j).name filesep '*.cdf']);
 				if shouldReadAllData,
 					evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
 				else
@@ -133,11 +133,11 @@ for j = 1:numel(dirs)
 			end
 			nloaded = nloaded + 1;
 		catch
-			irf.log(1,['Did not succeed! Error loading: ' var_name]);
+			irf.log('critical',['Did not succeed! Error loading: ' var_name]);
 		end
 	end
   end
 end
 if nloaded == 0 && ~listFilesOnly
-  irf.log(2,'CAA_LOAD : nothing to load')
+  irf.log('warning','CAA_LOAD : nothing to load')
 end

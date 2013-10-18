@@ -30,8 +30,8 @@ if ischar(tint), % tint not specified
   elseif nargin==3,
     format=database;database=parameter;parameter=tint;
   end
-  irf.log(2,['Reading ' parameter ' from database: ' database '.']);
-  irf.log(2,'tint not defined, reading all data.');
+  irf.log('notice',['Reading ' parameter ' from database: ' database '.']);
+  irf.log('notice','tint not defined, reading all data.');
 %   Possibility to be smart guessing tint (maybe not good idea, needs special flag?)   
 %	irf_log('fcal','Time interval not specified. Analyzing if tint exists.');
 %   if evalin('caller','exist(''tint'',''var'')'),
@@ -48,7 +48,7 @@ if nargs == 0,
   return;
 end
 if ~exist('database','var'),
-  irf.log(1,'Database not defined.');
+  irf.log('critical','Database not defined.');
   return;
 end
 if ~exist('format','var'),	% if format is not defined
@@ -59,7 +59,7 @@ if nargout==1, f=[];end % default return empty
 
 switch lower(database)
   case 'omni'
-    irf.log(2,'WARNING!!! Returning 1h OMNI2 data (use database omni_min if needed high res data)')
+    irf.log('warning','Returning 1h OMNI2 data (use database omni_min if needed high res data)')
     f=irf_get_data_omni(tint,parameter,'omni2');
   case 'omni2'
     f=irf_get_data_omni(tint,parameter,database);

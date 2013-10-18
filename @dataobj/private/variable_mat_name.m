@@ -33,8 +33,8 @@ end
 
 % if changes made write out log
 if ~strcmp(variableMatName,variableCdfName),
-	irf.log(2,['orig var : ' variableCdfName]);
-	irf.log(2,[' new var : ' variableMatName]);
+	irf.log('notice',['orig var : ' variableCdfName]);
+	irf.log('notice',[' new var : ' variableMatName]);
 end
 
 end
