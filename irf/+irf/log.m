@@ -33,7 +33,7 @@ function r = log(logLevel,logMsg)
 persistent logOut
 persistent loggingLevel
 if isempty(loggingLevel),
-    loggingLevel=1;
+    loggingLevel=2;
 end
 if isempty(logOut)
 	logOut = 'screen';
