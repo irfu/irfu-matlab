@@ -1,24 +1,31 @@
 function r = log(logLevel,logMsg)
 %IRF.LOG   Configurable logging routine
 %
-% IRF.LOG(level) - set logging level. Default is 1, if zero do not show log.
+% IRF.LOG(level) - set logging level. Default is 'warning'. Enough to
+%		specify only first letter of logging level.
 % 
 % IRF.LOG(logLevel,logMsg) - log message logMsg if current
 %		logging level is larger or equal to logLevel.
 %
-% logLevel - can have values 1,2,..
+% logLevel - 
+%       'critical' - encounters run time error situation
+%       'warning'  - important information
+%       'notice'   - notice information
+%       'debug'    - notice information
+%
 % logMsg   - message string
 %
 % IRF.LOG(logMsg) - log message logMsg with logLevel=1
 % 
 % Example:
-%   irf.log(2); % print level 1 & 2 messages
-%   irf.log(1,'Very important message')
-%   irf.log(2,'Less important message')
+%   irf.log('warning'); % print level 1 & 2 messages
+%   irf.log('critical','We should not end in this place of code.')
+%   irf.log('warning','Two signals are interpolated')
 %
 % IRF.LOG('log_out',file)     - log output to file.
 % IRF.LOG('log_out','screen') - log output to screen, default. 
 %
+% See also: LOG_DEBUG_INIT
 % Example:
 %	irf.log('log_out','/tmp/my_event.log')
 
