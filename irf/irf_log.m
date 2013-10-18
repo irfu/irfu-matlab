@@ -50,10 +50,19 @@ function irf_log(log_ids,log_msg)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+persistent encourageSwitchToIrfLog
 persistent d_out
 persistent d_out_prev
 persistent IRF_LOG IRF_LOG_OUT
 persistent flag_irf_log_ON
+if isempty(encourageSwitchToIrfLog)
+	disp('  ');
+	disp(' IRF.LOG prefered instead of IRF_LOG');
+	disp(' Syntax is slightly changed, see help');
+	disp('  ');
+	encourageSwitchToIrfLog = false;
+end
+	
 if isempty(flag_irf_log_ON),
     flag_irf_log_ON=1;
 end
