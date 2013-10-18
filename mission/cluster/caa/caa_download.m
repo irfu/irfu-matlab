@@ -336,6 +336,11 @@ if strfind(dataset,'list'),     % list files
 	end
 	if strfind(dataset,'listdata')
 		ttTemp = caa_download(['list:' filter]);
+		if isempty(ttTemp.TimeInterval), % no time intervals to download
+			irf_log('fcal','No datasets to download');
+			download_status = ttTemp;
+			return;
+		end
 		tint = ttTemp.TimeInterval(1,:);
 		ttTemp = caa_download(tint,['list:' filter]);
 		iData=find([ttTemp.UserData(:).number]);
@@ -686,6 +691,10 @@ switch returnTimeTable
 		[TT.UserData(:).version]=deal(c{:});
 	case 'list'
 		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
+		if isempty(textLine),
+			irf_log('fcal','Empty dataset list');
+			return;
+		end
 		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
 		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
