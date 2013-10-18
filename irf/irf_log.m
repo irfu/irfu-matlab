@@ -57,7 +57,7 @@ persistent IRF_LOG IRF_LOG_OUT
 persistent flag_irf_log_ON
 if isempty(encourageSwitchToIrfLog)
 	disp('  ');
-	disp(' IRF.LOG endorsed instead of IRF_LOG');
+	disp(' IRF.LOG prefered instead of IRF_LOG');
 	disp(' Syntax is slightly changed, see help');
 	disp('  ');
 	encourageSwitchToIrfLog = false;

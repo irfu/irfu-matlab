@@ -13,12 +13,10 @@ function hout=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,ve
 %   b  - magnetic field in GSE reference frame
 %   v  - velocity vector [vx vy vz] in GSE which will be marked in the
 %        plots, e.g. magnetopause velocity
-%
-% $Id$
 
 if nargin==1 && ischar(spacecraft)
     action=spacecraft;
-    irf_log('proc',['action=' action]);
+    irf.log('debug',['action=' action]);
 elseif   (nargin < 6)
     action='initialize';
 end
