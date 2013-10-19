@@ -11,6 +11,12 @@ function timeSeries=synthetic_time_series(varargin)
 %		components                [#]  (deafult 1)
 %       amplitude                 complex vector of length # (default 1)
 %
+%	Components tell how many components of signal to model.
+%	If amplitude is single scalar, all components are random with given
+%	amplitude. If amplitude is vector of the length equal to the number of 
+%	components then signal is generated with specified relation between 
+%	the amplitudes of separate signals but random phase. 
+%
 %	timeSeries = MODEL.SYNTHETIC_TIME_SERIES('field1',field1Value,...)
 %		InputParameters fields can be specified explicitely.
 %		Shortenings can be used: fs=samplingFrequency, t=timeInterval, 
@@ -19,8 +25,9 @@ function timeSeries=synthetic_time_series(varargin)
 %	Example:
 %		Inp = struct('samplingFrequency',10,'timeInterval',100,'peakFrequency',2,'peakHalfWidth',1);
 %		ts = model.synthetic_time_series(Inp);
-%		ts = model.synthetic_time_series('fs',100,'f',10);
-%
+%		ts = model.synthetic_time_series('fs',100,'f',10);   % sampling freq 100Hz, peak freq 10 Hz
+%       ts = model.synthetic_time_series('n',2);             % two random components
+%		ts = model.synthetic_time_series('n',2,'a',[1 -1i]); % right hand polarized
 
 %% Defaults
 samplingFrequency = 10;
@@ -29,6 +36,7 @@ peakFrequency = 1;
 peakHalfWidth = 0.1;
 components = 1;
 amplitude = 1;
+randomPhaseForEachComponent = false;
 
 if nargin == 0 && nargout == 0,
 	help model.synthetic_time_series;
@@ -64,10 +72,10 @@ elseif nargin > 1
 	end
 end
 
-ts = 0:1/samplingFrequency:timeInterval;
-fs = 0:1/timeInterval:samplingFrequency;
+ts = 0:1/samplingFrequency:timeInterval;ts=ts(:);
+fs = 0:1/timeInterval:samplingFrequency;fs=fs(:);
 timeSeries = zeros(numel(ts),components);
-timeSeries(:,1) = ts';
+timeSeries(:,1) = ts;
 
 if numel(amplitude) ~= components,
 	if numel(amplitude) == 1, % use the same amplitude for all components
@@ -76,15 +84,22 @@ if numel(amplitude) ~= components,
 		irf.log('critical','error in amplitude input');
 		return;
 	end
+else
+	randomPhaseForEachComponent = false; 
+end
+
+if randomPhaseForEachComponent
+	randPhase = exp(1i*rand(numel(fs),components)*2*pi);
+else
+	randPhase = exp(1i*rand(numel(fs),1)*2*pi)*ones(1,components);
 end
 
 for iComponent = 1:components
 	amplitudeComplex = amplitude(iComponent)*sqrt(2);
 	fftSignal = amplitudeComplex * ...
 		exp(-abs(fs-peakFrequency)/peakHalfWidth);
-	randPhase = exp(1i*rand(1,numel(fftSignal))*2*pi);
 	
-	fftSignalComplex = fftSignal.*randPhase;
+	fftSignalComplex = fftSignal.*randPhase(:,iComponent);
 	
 	timeSeries(:,iComponent+1) = real(ifft(fftSignalComplex))';
 end
