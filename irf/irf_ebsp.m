@@ -208,7 +208,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
   end
   if wantEE, e=e(1:end-1,:); end
 end
-inTime = dB(:,1); timeB0 = B0(:,1);
+inTime = dB(:,1);
 
 Bx = []; By = []; Bz = []; idxBparSpinPlane = [];
 if flag_dEdotB0
@@ -227,8 +227,10 @@ end
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
+timeB0 = 0;
 if flag_want_fac
   res.flagFac = 1;
+  timeB0 = B0(:,1);
   if wantEE
     if ~flag_dEdotB0
       eISR2=e(:,1:3);
