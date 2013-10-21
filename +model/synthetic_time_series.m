@@ -4,40 +4,50 @@ function timeSeries=synthetic_time_series(varargin)
 %	timeSeries = MODEL.SYNTHETIC_TIME_SERIES(InputParameters)
 %
 % 	InputParameters is a structure with fields 
-%		samplingFrequency         [Hz] (default 10)
-%		timeInterval              [s]  (default 3600)
-%		peakFrequency             [Hz] (default 1)
-%		peakHalfWidth             [Hz] (default 0.5)
-%		components                [#]  (deafult 1)
-%       amplitude                 complex vector of length # (default 1)
+%		samplingFrequency         [Hz]        (default 100)
+%		timeInterval              [s]         (default 100)
+%		peakFrequency             [Hz]        (default 10)
+%		peakHalfWidth             [Hz]        (default 1)
+%		components                [#]         (default 1)
+%       amplitude                 [s.u.^2/Hz] (default 1)
+%		gyrotropy                 true/false  (default false)
 %
 %	Components tell how many components of signal to model.
-%	If amplitude is single scalar, all components are random with given
-%	amplitude. If amplitude is vector of the length equal to the number of 
-%	components then signal is generated with specified relation between 
-%	the amplitudes of separate signals but random phase. 
+%	Amplitude unit is singal unit squared per hertz.
+%   Amplitude is a complex scalar or complex vector of length equal 
+%	to the number of componets. If amplitude is scalar, all components have the
+%	same amplitude but are random with respect to each other. If amplitude 
+%	is vector then signal is generated with specified relation between 
+%	the amplitudes of separate components but a random phase. 
+%	If signal is set to gyrotropic, then amplitude is randomly rotated
+%	in the plane spanned by 1st and 2nd component (x and y). 
 %
 %	timeSeries = MODEL.SYNTHETIC_TIME_SERIES('field1',field1Value,...)
 %		InputParameters fields can be specified explicitely.
 %		Shortenings can be used: fs=samplingFrequency, t=timeInterval, 
-%		f=peakFrequency, df=peakHalfWidth, c=components and a=amplitude.
+%		f=peakFrequency, df=peakHalfWidth, c=components, a=amplitude,
+%		g=gyrotropy.
 %
 %	Example:
-%		Inp = struct('samplingFrequency',10,'timeInterval',100,'peakFrequency',2,'peakHalfWidth',1);
+%		Inp = struct('samplingFrequency',666,'timeInterval',99.9,'peakFrequency',3.14,'peakHalfWidth',.1);
 %		ts = model.synthetic_time_series(Inp);
-%		ts = model.synthetic_time_series('fs',100,'f',10);   % sampling freq 100Hz, peak freq 10 Hz
+%			irf_plot(ts); % to visualize
+%		ts = model.synthetic_time_series('fs',25,'f',4);     % sampling freq 25Hz, peak freq 4 Hz
 %       ts = model.synthetic_time_series('n',2);             % two random components
 %		ts = model.synthetic_time_series('n',2,'a',[1 -1i]); % right hand polarized
+%		ts = model.synthetic_time_series('n',2,'a',[1 -.3i],'g',true); % gyrotropic elliptically polarized right hand wave
 
 %% Defaults
-samplingFrequency = 10;
-timeInterval = 3600;
-peakFrequency = 1;
-peakHalfWidth = 0.1;
+samplingFrequency = 100;
+timeInterval = 100;
+peakFrequency = 10;
+peakHalfWidth = 1;
 components = 1;
 amplitude = 1;
 randomPhaseForEachComponent = false;
+gyrotropicSignal = false;
 
+%% Input check
 if nargin == 0 && nargout == 0,
 	help model.synthetic_time_series;
 	return;
@@ -64,6 +74,8 @@ elseif nargin > 1
 				components = args{2};
 			case {'amplitude','a'}
 				amplitude = args{2};
+			case {'gyrotropy','g'}
+				gyrotropicSignal = args{2};
 			otherwise
 				irf.log('critical','unrecognized input');
 				return;
@@ -72,35 +84,61 @@ elseif nargin > 1
 	end
 end
 
+%% Initialization
 ts = 0:1/samplingFrequency:timeInterval;ts=ts(:);
 fs = 0:1/timeInterval:samplingFrequency;fs=fs(:);
-timeSeries = zeros(numel(ts),components);
-timeSeries(:,1) = ts;
+nPoints = numel(ts);
 
+%% Scale amplitude to get right units
+% Sso that amplitude corresponds to spectral density 
+% in units - [signal units ^2 / Hz]
+amplitude = sqrt(amplitude/timeInterval)*sqrt(2); 
+
+%% Initialize fftSignal
 if numel(amplitude) ~= components,
 	if numel(amplitude) == 1, % use the same amplitude for all components
-		amplitude = amplitude(ones(1,components));
+		fftSignal = amplitude(ones(nPoints,components));
 	else
 		irf.log('critical','error in amplitude input');
 		return;
 	end
 else
+	fftSignal = ones(nPoints,1)*amplitude;	
 	randomPhaseForEachComponent = false; 
 end
 
-if randomPhaseForEachComponent
-	randPhase = exp(1i*rand(numel(fs),components)*2*pi);
-else
-	randPhase = exp(1i*rand(numel(fs),1)*2*pi)*ones(1,components);
+%% Apply gyrotropization if needed
+if gyrotropicSignal
+	if components == 1,
+		irf.log('critical','should be at least 2 components for gyrotropic signal!');
+		error('should be at least 2 components for gyrotropic signal!');
+	end
+	randEllipseAngle = exp(1i*rand(nPoints,1)*2*pi);
+	realP = real(randEllipseAngle);
+	imagP = imag(randEllipseAngle);
+	newX = sum(fftSignal(:,1:2).*[realP -imagP],2);
+	newY = sum(fftSignal(:,1:2).*[imagP realP],2);
+	fftSignal(:,1:2)=[newX newY];
 end
 
-for iComponent = 1:components
-	amplitudeComplex = amplitude(iComponent)*sqrt(2);
-	fftSignal = amplitudeComplex * ...
-		exp(-abs(fs-peakFrequency)/peakHalfWidth);
-	
-	fftSignalComplex = fftSignal.*randPhase(:,iComponent);
-	
-	timeSeries(:,iComponent+1) = real(ifft(fftSignalComplex))';
+%% Apply exponential envelope
+fftSignal = fftSignal .* ...
+	(	sqrt(...
+		(1/sqrt(pi)) ...
+		* exp(-abs(fs-peakFrequency).^2/peakHalfWidth^2)...
+			) ...
+	* ones(1,components)...
+	);
+
+%% Apply random phase
+if randomPhaseForEachComponent
+	randomPhase = exp(1i*rand(nPoints,components)*2*pi);
+else
+	randomPhase = exp(1i*rand(nPoints,1)*2*pi)*ones(1,components);
 end
+fftSignal = fftSignal.*randomPhase;
+
+%% Construct time series
+timeSeries = nPoints * real(ifft(fftSignal,[],1));
+timeSeries = [ts timeSeries]; % add time axis as first column
 
