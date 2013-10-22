@@ -197,7 +197,7 @@ if nargin>2, % check for additional flags
 			expandWildcards		= false;
 			doDataStreaming		= true;
 		else
-			irf_log('fcal',['Flag ''' flag ''' not recognized']);
+			irf.log('critical',['Flag ''' flag ''' not recognized']);
 		end
 	end
 end
@@ -219,7 +219,7 @@ if nargin>=1, % check if first argument is not caa zip file link
 			zipFileLink=tint;
 			isJobFinished=get_zip_file(zipFileLink);
 			if ~isJobFinished, %
-				irf_log('dsrc','Job still not finished');
+				irf.log('warning','Job still not finished');
 			end
 			download_status = isJobFinished;
 			return;
@@ -336,6 +336,11 @@ if strfind(dataset,'list'),     % list files
 	end
 	if strfind(dataset,'listdata')
 		ttTemp = caa_download(['list:' filter]);
+		if isempty(ttTemp.TimeInterval), % no time intervals to download
+			irf_log('fcal','No datasets to download');
+			download_status = ttTemp;
+			return;
+		end
 		tint = ttTemp.TimeInterval(1,:);
 		ttTemp = caa_download(tint,['list:' filter]);
 		iData=find([ttTemp.UserData(:).number]);
@@ -364,8 +369,8 @@ if strfind(dataset,'list'),     % list files
                                  queryData queryTime queryFormat];                 
         end
 	end
-	disp('Be patient! Contacting CAA...');
-	disp(url_line_list);
+	irf.log('warning','Be patient! Contacting CAA...');
+	irf.log('warning',['requesting: ' url_line_list]);
 	caalog=urlread(url_line_list);
 	if strfind(dataset,'listgui'), % make gui window with results
 		B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
@@ -398,12 +403,12 @@ if checkIfDataAreAtCaa
     switch downloadFromCFA
         case 0 % CAA
             url_line_list=[ caaInventory urlIdentity '&dataset_id=' dataset '&time_range=' tintiso];
-            disp(url_line_list);
-            disp('Be patient! Contacting CAA to see the list of files...');
+            irf.log('warning','Be patient! Contacting CAA to see the list of files...');
+            irf.log('notice',['requesting. ' url_line_list]);
             caalist=urlread(url_line_list);
-            disp(caalist);
+            irf.log('debug',['returned: ' caalist]);
             if ~any(strfind(caalist,'Version')) % there are no CAA datasets available
-                disp('There are no CAA data sets available!');
+                irf.log('warning','There are no CAA data sets available!');
                 return;
             end
         case 1 % CFA            
@@ -413,12 +418,12 @@ if checkIfDataAreAtCaa
                          and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
             url_line_list = [cfaServer cfaAction selectedFields,...
                              queryData queryTime queryFormat]; 
-            disp(url_line_list);
-            disp('Be patient! Contacting CFA to see the list of files...');
+            irf.log('notice',['requesting: ' url_line_list]);
+            irf.log('warning','Be patient! Contacting CFA to see the list of files...');
             caalist=urlread(url_line_list);
-            disp(caalist);
+            irf.log('debug',['returned: ' caalist]);
             if isempty(caalist) % there are no CFA datasets available
-                disp('There are no CFA data sets available!');
+                irf.log('warning','There are no CFA data sets available!');
                 return;
             end
     end  
@@ -434,21 +439,21 @@ switch downloadFromCFA
 				dataset '&time_range=' tintiso urlFormat ...
 				urlFileInterval urlNonotify urlSchedule];
 		end
-		disp('Be patient! Submitting data request to CAA...');
+		irf.log('warning','Be patient! Submitting data request to CAA...');
     case 1 % CFA
         url_line = [cfaServer urlSchedule cfaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
              urlFormat urlDeliveryInterval '&NON_BROWSER' urlNonotify];
-        disp('Be patient! Submitting data request to CFA...');
+        irf.log('warning','Be patient! Submitting data request to CFA...');
 end
 
-disp(url_line);
+irf.log('notice',['requesting: ' url_line]);
  
 [status,downloadedFile] = get_zip_file(url_line);
 if nargout>=1, download_status=status;end
 if nargout==2, downloadfile = ''; end % default return empty
 if status == 0 && exist(downloadedFile,'file')
-	irf_log('fcal','Could not find zip file with data! ');
+	irf.log('critical','Could not find zip file with data! ');
 	fid=fopen(downloadedFile);
 	while 1
 		tline = fgetl(fid);
@@ -514,17 +519,17 @@ switch downloadFromCFA
 			fileName = [dataset '__' tintInFileName '.cef.gz'];
 			datasetDirName = [downloadDirectory dataset];
 			if ~exist(datasetDirName,'dir'),
-				irf_log('dsrc',['Creating directory: ' datasetDirName]);
+				irf.log('notice',['Creating directory: ' datasetDirName]);
 				mkdir(datasetDirName);
 			end
 			filePath = [datasetDirName filesep fileName];
 			[downloadedFile,isReady]=urlwrite(urlLink,filePath);
 			if isReady,
-				irf_log('dsrc',['Downloaded: ' urlLink]);
-				irf_log('dsrc',['into ->' filePath]);
+				irf.log('notice',['Downloaded: ' urlLink]);
+				irf.log('notice',['into ->' filePath]);
 				status = 1;
 			else
-				irf_log('dsrc',['Did not succed to download: ' urlLink]);
+				irf.log('warning',['Did not succed to download: ' urlLink]);
 				status = 0;
 			end
 			return;
@@ -538,8 +543,8 @@ switch downloadFromCFA
 end            		
 
 if isZipFileReady, %
-    irf_log('dsrc',['Downloaded: ' urlLink]);
-    irf_log('dsrc',['into ->' downloadedFile]);
+    irf.log('notice',['Downloaded: ' urlLink]);
+    irf.log('notice',['into ->' downloadedFile]);
     caa_log({'Zip file returned for request',urlLink});
     tempDirectory=tempname;
     mkdir(tempDirectory);
@@ -552,7 +557,7 @@ if isZipFileReady, %
                 filelist=untar(fileName,tempDirectory);                
         end
         if isempty(filelist)
-            irf_log('dsrc','Returned zip file is empty');
+            irf.log('warning','Returned zip file is empty');
             caa_log('Zip file empty.');
         else
             move_to_caa_directory(filelist);
@@ -561,11 +566,11 @@ if isZipFileReady, %
         delete(downloadedFile);
         downloadedFile = '';
     catch
-        irf_log('fcal','Invalid zip file')
+        irf.log('critical','Invalid zip file')
     end
     rmdir(tempDirectory,'s');
 else
-    irf_log('dsrc',['There is no zip file: ' urlLink]);
+    irf.log('warning',['There is no zip file: ' urlLink]);
 end
 end
 function move_to_caa_directory(filelist)
@@ -576,13 +581,13 @@ for jj=1:length(filelist),
         dataset=filelist{jj}(ii(end-1)+1:ii(end)-1);
         datasetDirName = [downloadDirectory dataset];
         if ~exist(datasetDirName,'dir'),
-            irf_log('dsrc',['Creating directory: ' datasetDirName]); 
+            irf.log('notice',['Creating directory: ' datasetDirName]); 
             mkdir(datasetDirName);
         elseif overwritePreviousData
             delete([datasetDirName filesep '*']);
         end
-        irf_log('dsrc',['file:      ' filelist{jj}]);
-        irf_log('dsrc',['moving to directory: ' datasetDirName]);
+        irf.log('notice',['file:      ' filelist{jj}]);
+        irf.log('notice',['moving to directory: ' datasetDirName]);
         movefile(filelist{jj},datasetDirName);
     end
 end
@@ -608,7 +613,7 @@ function caa_log(logText)
             end
             fid=fopen(logFileName,'a');
             if fid==-1,
-                irf_log('fcal','log file cannot be opened, no log entry');
+                irf.log('critical','log file cannot be opened, no log entry');
                 return;
             end
         end
@@ -686,6 +691,10 @@ switch returnTimeTable
 		[TT.UserData(:).version]=deal(c{:});
 	case 'list'
 		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
+		if isempty(textLine),
+			irf_log('fcal','Empty dataset list');
+			return;
+		end
 		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
 		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 		[TT.UserData(:).dataset]=deal(textLine(:).dataset);

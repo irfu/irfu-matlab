@@ -393,8 +393,8 @@ elseif flag_spectrogram
       dep=rmfield(dep,'dt');
   end
   if sum_dim > 0
-    fprintf('Summing over dimension %d (%s)\n', ...
-      sum_dim, dep_x{sum_dim}.lab)
+    irf.log('notice',sprintf('Summing over dimension %d (%s)\n', ...
+      sum_dim, dep_x{sum_dim}.lab));
   end
   if flag_log, plot_type='log'; else plot_type='lin'; end 
   specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...
