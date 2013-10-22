@@ -83,6 +83,7 @@ yTickList = cell(nPanels,1); idxPanel = 0;
 sr = struct('t',ebsp.t,'f',ebsp.f);
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
+    idxPanel = idxPanel + 1;
     flagCmapPoy = 0;
     field = plotFields{idxField}; comp = plotComps{idxField}(idxComp);
     lim = limFields{idxField};
@@ -91,15 +92,20 @@ for idxField = 1:length(plotFields)
     else panelStr = [paramStr '_' compStr]; 
     end
     hca = irf_panel(panelStr); 
-    sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
-    sr.p = LimitValues(sr.p);
-    [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
-    [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
-    set(hca,'YScale','log'), SetCaxis()
+    if ~isempty(ebsp.(field))
+      sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
+      sr.p = LimitValues(sr.p);
+      [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
+      yTickList(idxPanel) = {get(hcb,'YTick')};
+      SetCaxis()
+    else
+      hcb = -1; 
+      yTickList(idxPanel) = {''};
+    end
+    set(hca,'YScale','log')
     set(hca,'Color',0.7*[1 1 1]); % grey background
-    idxPanel = idxPanel + 1;
     hcbList(idxPanel) = hcb; cmapPoyList(idxPanel) = flagCmapPoy;
-    yTickList(idxPanel) = {get(hcb,'YTick')};
   end
 end
 
@@ -280,11 +286,13 @@ if nargout, out = h; end % Return here
       else colormap(cmapSpace)
       end
       freezeColors
-      set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
-      pos = get(hcbList(iPanel),'Position');
-      hYLabel = get(hcbList(iPanel),'ylabel');
-      yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
-      hcbNew = cbfreeze(hcbList(iPanel));
+      if ishandle(hcbList(iPanel))
+        set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
+        pos = get(hcbList(iPanel),'Position');
+        hYLabel = get(hcbList(iPanel),'ylabel');
+        yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
+        hcbNew = cbfreeze(hcbList(iPanel));
+      end
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
