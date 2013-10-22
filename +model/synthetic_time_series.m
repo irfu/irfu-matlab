@@ -92,12 +92,13 @@ nPoints = numel(ts);
 %% Scale amplitude to get right units
 % Sso that amplitude corresponds to spectral density 
 % in units - [signal units ^2 / Hz]
-amplitude = sqrt(amplitude/timeInterval)*sqrt(2); 
+amplitude = amplitude/sqrt(norm(amplitude))*sqrt(1/timeInterval)*sqrt(2); 
 
 %% Initialize fftSignal
 if numel(amplitude) ~= components,
 	if numel(amplitude) == 1, % use the same amplitude for all components
 		fftSignal = amplitude(ones(nPoints,components));
+		randomPhaseForEachComponent = true; 
 	else
 		irf.log('critical','error in amplitude input');
 		return;

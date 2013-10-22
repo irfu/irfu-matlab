@@ -428,6 +428,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       signKz = sign(V(3,3,:));
       V(3,3,:) = V(3,3,:).*signKz; 
       V(2,3,:) = V(2,3,:).*signKz;
+      V(1,3,:) = V(1,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
           abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
       phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
