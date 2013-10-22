@@ -290,6 +290,7 @@ waveEvent = [0 0]; %start time, end time
 nevents=1;
 counter=1;
 TTemic = irf.TimeTable;
+TTemic.Header={'EMIC events for Maarble'};
 while counter < nPeaks,
     startTime = P(counter,1);
     endTime = P(counter,1);
@@ -302,7 +303,7 @@ while counter < nPeaks,
     if (npeaks)/(endTime-startTime) > 24/3600 && npeaks > 4,
         waveEvent(nevents,:) = [startTime endTime];
         timeInt = [startTime-300 endTime+300]; %include 5 minutes on either side for the time table
-        TTemic=add(TTemic,timeInt,{'EMIC events','for Maarble'});
+        TTemic=add(TTemic,timeInt);
         nevents = nevents+1;
     else
         counter=counter+1;
