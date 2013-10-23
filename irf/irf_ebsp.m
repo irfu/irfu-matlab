@@ -29,12 +29,12 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     ee_ss       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
 %     ee          - E power spectrum (xx, yy, zz)
 %     pf_xyz      - Poynting flux (xyz)
-%     pf_rtp      - Poynting flux (r, theta, phi)
+%     pf_rtp      - Poynting flux (r, theta, phi) [angles in radians]
 %     dop         - 3D degree of polarization
 %     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
 %     ellipticity - ellipticity of polarization ellipse
-%     k           - k-vector (theta, phi FAC)
+%     k           - k-vector (theta, phi FAC) [angles in radians]
 %
 %  Options:
 %   'polarization' - compute polarization parameters
@@ -83,6 +83,7 @@ flag_no_resamp = 0; flag_want_fac = 0; flag_dEdotB0 = 0; flag_fullB_dB = 0;
 args = varargin;
 while 1
   l = 1;
+  if isempty(args), break, end
   switch lower(args{1})
     case 'polarization'
       wantPolarization = 1;
@@ -109,7 +110,6 @@ while 1
       irf_log('fcal',['Option ''' args{1} '''not recognized'])
   end
   args = args(l+1:end);
-  if isempty(args), break, end
 end
 
 if flag_want_fac && isempty(facMatrix)
@@ -208,7 +208,7 @@ if size(dB,1)/2 ~= floor(size(dB,1)/2)
   end
   if wantEE, e=e(1:end-1,:); end
 end
-inTime = dB(:,1); timeB0 = B0(:,1);
+inTime = dB(:,1);
 
 Bx = []; By = []; Bz = []; idxBparSpinPlane = [];
 if flag_dEdotB0
@@ -227,8 +227,10 @@ end
 %  magnetic field aligned coordinate (FAC) and save eISR for computation 
 %  of ESUM. Ohterwise we compute Ez within the main loop and do the 
 %  transformation to FAC there.
+timeB0 = 0;
 if flag_want_fac
   res.flagFac = 1;
+  timeB0 = B0(:,1);
   if wantEE
     if ~flag_dEdotB0
       eISR2=e(:,1:3);
@@ -426,6 +428,7 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       signKz = sign(V(3,3,:));
       V(3,3,:) = V(3,3,:).*signKz; 
       V(2,3,:) = V(2,3,:).*signKz;
+      V(1,3,:) = V(1,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
           abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
       phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
@@ -490,31 +493,19 @@ end
 %% remove edge effects from data gaps
 idxNanE = sum(idxNanE,2)>0;
 idxNanB = sum(idxNanB,2)>0;
-<<<<<<< HEAD
 idxNanEISR2 = sum(idxNanEISR2,2)>0;
 
 ndata2=size(power2B_plot,1);
 if pc12_range || other_range,
   censur3=floor(1.8*a);
-=======
-
-ndata2=size(power2B_plot,1);
-if pc12_range || other_range,
-  censur3=floor(1.6*a);
->>>>>>> master
 end
 if pc35_range,
   censur3=floor(.4*a);
 end
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 for i=1:length(idxNanB)-1,
     if idxNanB(i) < idxNanB(i+1),
         for j=1:length(a),
             censur_index_front=[max(i-censur3(j),1):i];
-<<<<<<< HEAD
             powerBx_plot(censur_index_front,j) = NaN;
             powerBy_plot(censur_index_front,j) = NaN;
             powerBz_plot(censur_index_front,j) = NaN;
@@ -522,15 +513,11 @@ for i=1:length(idxNanB)-1,
             S_plot_x(censur_index_front,j) = NaN;
             S_plot_y(censur_index_front,j) = NaN;
             S_plot_z(censur_index_front,j) = NaN;
-=======
-            power2B_plot(censur_index_front,j) = NaN;
->>>>>>> master
         end
     end
     if idxNanB(i) > idxNanB(i+1),
         for j=1:length(a),
             censur_index_back=[i:min(i+censur3(j),ndata2)];
-<<<<<<< HEAD
             powerBx_plot(censur_index_back,j) = NaN;
             powerBy_plot(censur_index_back,j) = NaN;
             powerBz_plot(censur_index_back,j) = NaN;
@@ -589,14 +576,7 @@ for i=1:length(idxNanEISR2)-1,
 end
 
 
-=======
-            power2B_plot(censur_index_back,j) = NaN;
-        end
-    end
 
-end
-
->>>>>>> master
 %%
 powerBx_plot = AverageData(powerBx_plot,inTime,outTime);
 powerBy_plot = AverageData(powerBy_plot,inTime,outTime);

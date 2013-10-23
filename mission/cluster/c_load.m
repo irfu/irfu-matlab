@@ -106,7 +106,7 @@ end
 
 if strcmp(mode_s,'var'), ret_var = 1;
 elseif strcmp(mode_s,'res'), ret_var = 0;
-else irf_log('fcal','Invalid value of MODE_S. Defaulting to ''res''')
+else irf.log('warning','Invalid value of MODE_S. Defaulting to ''res''')
 end
 
 kk = 1;
@@ -164,7 +164,7 @@ for cli=cl_id
             else res(kk) = 0;
 			end
 		case 0
-			irf_log('load',['cannot load ' vs_tmp])
+			irf.log('warning',['cannot load ' vs_tmp])
 		end
 	end
 	kk = kk + 1;

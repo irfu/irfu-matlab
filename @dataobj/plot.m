@@ -328,8 +328,20 @@ if flag_lineplot
   end
   ylabel(ax,sprintf('%s%s [%s]', flab, lab_1, units))
   
-  text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
-    dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+  if isfield(dobj.GlobalAttributes,'OBSERVATORY')
+    text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
+  elseif isfield(dobj.GlobalAttributes,'Source_name')
+    text_s = [dobj.GlobalAttributes.Source_name{1} ' > '];
+  else text_s = '';
+  end
+  if isfield(dobj.GlobalAttributes,'INSTRUMENT_NAME')
+    text_s = [text_s ...
+      dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > '];
+  elseif isfield(dobj.GlobalAttributes,'Data_type')
+     text_s = [text_s ...
+      dobj.GlobalAttributes.Data_type{1} ' > '];
+  end 
+  text_s = [text_s fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
   if flag_labels_is_on, 
       add_text(ax,text_s);
@@ -381,8 +393,8 @@ elseif flag_spectrogram
       dep=rmfield(dep,'dt');
   end
   if sum_dim > 0
-    fprintf('Summing over dimension %d (%s)\n', ...
-      sum_dim, dep_x{sum_dim}.lab)
+    irf.log('notice',sprintf('Summing over dimension %d (%s)\n', ...
+      sum_dim, dep_x{sum_dim}.lab));
   end
   if flag_log, plot_type='log'; else plot_type='lin'; end 
   specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...
@@ -406,8 +418,20 @@ elseif flag_spectrogram
     end
   end
   
-  text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > ' ...
-    dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > ' fieldnam];
+  if isfield(dobj.GlobalAttributes,'OBSERVATORY')
+    text_s = [dobj.GlobalAttributes.OBSERVATORY{1} ' > '];
+  elseif isfield(dobj.GlobalAttributes,'Source_name')
+    text_s = [dobj.GlobalAttributes.Source_name{1} ' > '];
+  else text_s = '';
+  end
+  if isfield(dobj.GlobalAttributes,'INSTRUMENT_NAME')
+    text_s = [text_s ...
+      dobj.GlobalAttributes.INSTRUMENT_NAME{1} ' > '];
+  elseif isfield(dobj.GlobalAttributes,'Data_type')
+     text_s = [text_s ...
+      dobj.GlobalAttributes.Data_type{1} ' > '];
+  end 
+  text_s = [text_s fieldnam];
   if ~isempty(cs), text_s = [text_s ' [' shorten_cs(cs) ']']; end
   
   if isempty(comp), comp = 1; end

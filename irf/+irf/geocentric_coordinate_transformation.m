@@ -38,39 +38,39 @@ Tzero         = (mjd -51544.5)/36525.0;
 UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
 
 switch lower(flag)
-	case 'gse>gsm', tInd = [3];
-	case 'gsm>gse', tInd = [-3];
+	case 'gse>gsm', tInd = 3;
+	case 'gsm>gse', tInd = -3;
 	
-	case 'gse>gei', tInd = [-2];
+	case 'gse>gei', tInd = -2;
 	case 'gse>geo', tInd = [1 -2];
 	case 'gse>sm',  tInd = [4 3];
 	case 'gse>mag', tInd = [5 1 -2];
 	
 	case 'gsm>gei', tInd = [-2 -3];
 	case 'gsm>geo', tInd = [1 -2 -3];
-	case 'gsm>sm',  tInd = [4];
+	case 'gsm>sm',  tInd = 4;
 	case 'gsm>mag', tInd = [5 1 -2 -3];
 
 	case 'sm>gei', tInd = [-2 -3 -4];
 	case 'sm>geo', tInd = [1 -2 -3 -4];
 	case 'sm>gse', tInd = [-3 -4];
-	case 'sm>gsm', tInd = [-4];
+	case 'sm>gsm', tInd = -4;
 	case 'sm>mag', tInd = [5 1 -2 -3 -4];
 
 	case 'mag>gei', tInd = [-1 -5];
-	case 'mag>geo', tInd = [-5];
+	case 'mag>geo', tInd = -5;
 	case 'mag>gse', tInd = [2 -1 -5];
 	case 'mag>gsm', tInd = [3 2 -1 -5];
 	case 'mag>sm',  tInd = [4 3 2 -1 -5];
 
-	case 'geo>gei', tInd = [-1];
+	case 'geo>gei', tInd = -1;
 	case 'geo>gse', tInd = [2 -1];
 	case 'geo>gsm', tInd = [3 2 -1];
 	case 'geo>sm',  tInd = [4 3 2 -1];
-	case 'geo>mag', tInd = [5];
+	case 'geo>mag', tInd = 5;
 	
-	case 'gei>geo', tInd = [1];
-	case 'gei>gse', tInd = [2];
+	case 'gei>geo', tInd = 1;
+	case 'gei>gse', tInd = 2;
 	case 'gei>gsm', tInd = [3 2];
 	case 'gei>sm',  tInd = [4 3 2];
 	case 'gei>mag', tInd = [5 1];
@@ -79,13 +79,17 @@ switch lower(flag)
 		out = [inp(:,1) dipole_direction_gse];
 		return
 	otherwise
-		irf_log('fcal',['Transformation ''' flag ''' is unknown!']);
-		error;
+		irf.log('critical',['Transformation ''' flag ''' is unknown!']);
+		error('Fix transformation!');
 end
 if size(inp,2)>=4, % input is time and 3 components
 	out = [inp(:,1) mult(T(tInd),inp(:,2:4))];
 elseif size(inp,2)==1, % input is time, return only transformation matrix
 	out=T(tInd);
+end
+if size(inp,2) > 4, % more columns than 3 components
+	irf.log('warning','Input has more than 4 columns, replicating columns 5:end in output');
+	out(:,5:size(inp,2))=inp(:,5:end); % replicate last columns in output
 end
 
 	function Tout=T(tInd)		
@@ -106,7 +110,7 @@ end
 					T = inverse(T);
 				end
 			elseif tNum == 3 || tNum == -3 % T3
-				if ~exist('dipoleDirectionGSE') || ...
+				if ~exist('dipoleDirectionGSE','var') || ...
 						numel(t) ~= size(dipoleDirectionGSE,1) || ...
 						~all(t == dipoleDirectionGSE(:,1))
 					dipoleDirectionGSE=dipole_direction_gse;
@@ -118,7 +122,7 @@ end
 %				disp(['  dipole tilt = ' num2str(asind(dipoleDirectionGSE(1))) ' deg']);
 				T  = triang(-psi*sign(tNum),1); % inverse if -3
 			elseif tNum == 4 || tNum == -4 % T4
-				if ~exist('dipoleDirectionGSE') || ...
+				if ~exist('dipoleDirectionGSE','var') || ...
 						numel(t) ~= size(dipoleDirectionGSE,1) || ...
 						any(t == dipoleDirectionGSE(:,1))
 					dipoleDirectionGSE=dipole_direction_gse;
