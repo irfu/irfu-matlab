@@ -42,7 +42,8 @@ else
 	if ischar(varargin{1}),
 		action = lower(varargin{1});
 	else
-		irf_log('fcal','unknown input parameters');
+		irf.log('critical','accepts only character input');
+		error('irf.log accepts only character input');
 	end
 end
 
@@ -125,7 +126,7 @@ switch lower(action)
 				return;
 			end
 			catch
-				irf_log('fcal','There are problems with SPICE/MICE library installation!');
+				irf.log('warning','There are problems with SPICE/MICE library installation!');
 				out = false;
 				return;
 			end
@@ -165,7 +166,7 @@ switch lower(action)
 					return;
 				end
 			catch
-				irf_log('fcal','IRBEM, problems with library installation!');
+				irf.log('warning','IRBEM, problems with library installation!');
 				out = false;
 				return;
 			end				
@@ -184,7 +185,7 @@ switch lower(action)
 				cef_init();
 			catch
 				out = false; % problems loading library
-				irf_log('fcal','Problems loading libcef library!');
+				irf.log('warning','Problems loading libcef library!');
 				return;
 			end
 			cef_verbosity(0);
@@ -222,7 +223,8 @@ switch lower(action)
 			out = versionNumber; % return only date
 		end
 	otherwise
-		irf_log('fcal','unknown argument');
+		irf.log('critical','unknown input argument');
+		error('unknown input argument');
 end
 
 
