@@ -46,7 +46,7 @@ classdef Time
     end
     
     function e = toEpoch(t)
-      e = iso2epoch2(toUTC(t));
+      e = iso2epoch(toUTC(t));
     end
     
     function s = toUTC(t)
