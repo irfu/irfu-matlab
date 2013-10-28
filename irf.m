@@ -145,19 +145,27 @@ switch lower(action)
 		disp('');
 	case 'irbem'
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
-			x=[0 0 1];
-			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
-			if (max(abs(yy-x))<1e-3),
-				disp('IRBEM is OK');
-				if nargout, out=true; end
-				return;
-			else
-				disp('IRBEM is installed but NOT WORKING PROPERLY!');
-				disp('gse>geo>gse differs by more than 0.1% from original vector');
-				if nargout, out=false; end
-				return;
-			end
+      x=[0 0 1];
+      try
+        y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+        yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+        
+        
+        if (max(abs(yy-x))<1e-3),
+          disp('IRBEM is OK');
+          if nargout, out=true; end
+          return;
+        else
+          disp('IRBEM is installed but NOT WORKING PROPERLY!');
+          disp('gse>geo>gse differs by more than 0.1% from original vector');
+          if nargout, out=false; end
+          return;
+        end
+      catch
+        disp('IRBEM .. not OK. Please, contact irfu!')
+        if nargout, out=false; end
+        return;
+      end
 		else
 			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
