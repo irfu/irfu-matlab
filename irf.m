@@ -42,8 +42,8 @@ else
 	if ischar(varargin{1}),
 		action = lower(varargin{1});
 	else
-		irf.log('critical','accepts only character input');
-		error('irf.log accepts only character input');
+		irf.log('critical','string input required');
+		error('string input required')
 	end
 end
 
@@ -115,7 +115,6 @@ switch lower(action)
 		help irfu-matlab
 	case 'mice'
 		if exist('cspice_j2000','file') % mice is installed
-			try 
 			if (cspice_j2000 == 2451545),
 				disp('SPICE/MICE is OK');
 				if nargout, out=true; end
@@ -123,11 +122,6 @@ switch lower(action)
 			else
 				disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
 				if nargout, out=false; end
-				return;
-			end
-			catch
-				irf.log('warning','There are problems with SPICE/MICE library installation!');
-				out = false;
 				return;
 			end
 		else
@@ -152,24 +146,18 @@ switch lower(action)
 	case 'irbem'
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
 			x=[0 0 1];
-			try
-				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-				yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
-				if (max(abs(yy-x))<1e-3),
-					disp('IRBEM is OK');
-					if nargout, out=true; end
-					return;
-				else
-					disp('IRBEM is installed but NOT WORKING PROPERLY!');
-					disp('gse>geo>gse differs by more than 0.1% from original vector');
-					if nargout, out=false; end
-					return;
-				end
-			catch
-				irf.log('warning','IRBEM, problems with library installation!');
-				out = false;
+			y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
+			yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+			if (max(abs(yy-x))<1e-3),
+				disp('IRBEM is OK');
+				if nargout, out=true; end
 				return;
-			end				
+			else
+				disp('IRBEM is installed but NOT WORKING PROPERLY!');
+				disp('gse>geo>gse differs by more than 0.1% from original vector');
+				if nargout, out=false; end
+				return;
+			end
 		else
 			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
@@ -181,13 +169,7 @@ switch lower(action)
 		end
 	case 'ceflib'
 		if exist('cef_init','file') % CESR CEFLIB is installed
-			try
-				cef_init();
-			catch
-				out = false; % problems loading library
-				irf.log('warning','Problems loading libcef library!');
-				return;
-			end
+			cef_init();
 			cef_verbosity(0);
 			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
 					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
@@ -223,8 +205,7 @@ switch lower(action)
 			out = versionNumber; % return only date
 		end
 	otherwise
-		irf.log('critical','unknown input argument');
-		error('unknown input argument');
+		error('unknown input argument')
 end
 
 
