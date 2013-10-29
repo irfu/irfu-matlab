@@ -1,4 +1,4 @@
-function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, modelflag) 
+function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, modelFlag) 
 
 % MODEL.MAGNETOPAUSE_NORMAL the distance and normal vector to the magnetopause 
 % for Shue et al., 1997 or Shue et al., 1998 model.
@@ -19,31 +19,34 @@ function [mindist,nvec] = magnetopause_normal(pos_Re_gsm, IMF_Bz_nT, swp_nPa, mo
 %       nvec    - normal vector to the magnetopause (pointing away from
 %       Earth).
 
-% $Id$
-
 % TODO: vectorize, so that input can be vectors
 
 if nargin == 0,
-	help model.magnetopause_normal;
-elseif nargin==3, modelflag=0;
+	help model.magnetopause_normal;return;
+elseif nargin==3, 
+	modelFlag = 0;
 elseif nargin ~=4
-	irf_log('fcal','Wrong number of input parameters, see help.');
+	irf.log('critical','Wrong number of input parameters, see help.');
 	return;
 end    
     
-if modelflag==1, shueex=1;else shueex =0;end
+if modelFlag==1, 
+	useShue1988 = true;
+else
+	useShue1988 = false;
+end
 
-if(shueex == 1)
+if useShue1988
     alpha = (0.58 -0.007*IMF_Bz_nT)*(1.0 +0.024*log(swp_nPa));
     r0 = (10.22 + 1.29*tanh(0.184*(IMF_Bz_nT + 8.14)))*swp_nPa^(-1.0/6.6);
-    display ('Shue et al., 1998 model used.')  
+    irf.log ('warning','Shue et al., 1998 model used.')  
 else    
     alpha = ( 0.58 -0.01*IMF_Bz_nT)*( 1.0 +0.01*swp_nPa);
 
     if IMF_Bz_nT>=0, r0 = (11.4 +0.013*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
     else             r0 = (11.4 +0.140*IMF_Bz_nT)*swp_nPa^(-1.0/6.6);
     end
-    display ('Shue et al., 1997 model used.')
+    irf.log ('warning','Shue et al., 1997 model used.')
 end
 
 %SC pos
