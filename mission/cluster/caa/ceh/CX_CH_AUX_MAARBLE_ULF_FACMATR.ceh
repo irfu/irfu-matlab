@@ -4,7 +4,7 @@
 INCLUDE        =   "CL_CH_MISSION.ceh"
 INCLUDE        =   "CXXX_CH_OBS.ceh"
 INCLUDE        =   "CL_CH_AUX_EXP.ceh"
-INCLUDE        =   "CL_CH_AUX_INST.ceh"
+INCLUDE        =   "CXXX_CH_AUX_INST.ceh"
 !
 ! DATASET LEVEL METADATA
 !
