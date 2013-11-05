@@ -25,7 +25,7 @@ tr=[];r=[]; %#ok<NASGU>
 XRe=cell(1,4);rr=cell(1,4);
 if       (nargin==1 && ischar(time)),
 	action=time;
-	%irf_log('fcal',['action=' action]);
+	irf.log('debug',['action=' action]);
 elseif   (nargin==3), plot_type=flag;action='initialize';
 elseif   (nargin==4), plot_type=flag;action='initialize';
 elseif   (nargin < 9),plot_type='default';action='initialize';
@@ -72,7 +72,7 @@ switch lower(action)
 		elseif length(time)==6, % time given as vector
 			t=irf_time(time);
 		else
-			irf_log('fcal','Wrong input format of time.');
+			irf.log('critical','Wrong input format of time.');
 			return;
 		end
 		% Open new figure
@@ -102,11 +102,11 @@ switch lower(action)
 			c_eval('R.C?=R?;',sc_list);
 		end
 		if ~is_R_ok,     % try reading from CAA files
-			irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M ...')
+			irf.log('notice','Trying to read CAA files C?_CP_AUX_POSGSE_1M ...')
 			c_eval('R.C?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
 		end
 		if ~is_R_ok,     % try reading from CAA files
-			irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
+			irf.log('notice','Trying to read CAA files CL_CP_AUX ...')
 			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 			if ~isempty(R.R)
 				c_eval('R.C?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
@@ -117,18 +117,18 @@ switch lower(action)
 			read_R_from_caa_stream
 		end
 		if ~is_R_ok,     % try reading from isdat server
-			irf_log('dsrc','Trying to obtain satellite position from isdat server...')
+			irf.log('notice','Trying to obtain satellite position from isdat server...')
 			try
 				c_eval('[tr,r] = irf_isdat_get([''Cluster/?/ephemeris/position''], data.t, 60);R.C?=[tr r];',data.sc_list);
 				if ~is_R_ok,% no idea
 					disp('NO POSITION DATA!');
 				end
 			catch
-				irf_log('dsrc','Did not succeed getting position data!');
+				irf.log('notice','Did not succeed getting position data!');
 			end
 		end
 		if ~is_R_ok,     % could not obtain
-			irf_log('dsrc','Could not obtain position data!')
+			irf.log('warning','Could not obtain position data!')
 			c_eval('R.C?=[];',data.sc_list);
 		end
 		data.R=R;
@@ -747,7 +747,7 @@ end
 		if numel(M)~=3, M=0; end
 		if numel(N)~=3, N=0; end
 		if numel(L)+numel(M)+numel(N) <= 5 % not enough information
-			irf_log('fcal','LMN not correctly defined');
+			irf.log('critical','LMN not correctly defined');
 			return
 		end
 		data.Lstr=Lstr;

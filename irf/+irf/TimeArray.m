@@ -65,7 +65,8 @@ classdef TimeArray < irf.Time
     end
     
     function e = toEpoch(ta)
-      epoch0 = toEpoch@irf.Time(ta);
+      s_tmp = encodett2000(ta.tt2000);
+      epoch0 = iso2epoch(s_tmp{:});
       e = double(ta.dt)*1e-9 + epoch0;
     end
     

@@ -1,41 +1,43 @@
-function [x,in]=irf_tlim(x,t1,t2,mode)
-%IRF_TLIM   Find a subinterval defined by time limits
+function [x,in]=irf_tlim(x,tStart,tEnd,mode)
+%IRF_TLIM   Returns data within specified time interval
 %
-% [Y, IN] = IRF_TLIM(X,T1,T2,[MODE])
-% [Y, IN] = IRF_TLIM(X,[T1 T2],[MODE])
-% Y is part of the X that is within interval T1 <= X(:,1) < T2
-% if MODE is nonzero, part of X outside the interval :
-% X(:,1) < T1 & X(:,1) > T2
+% Y = IRF_TLIM(X,tStart,tEnd,[MODE])
+% Y = IRF_TLIM(X,[tStart tEnd],[MODE])
+%
+% Y is part of the X that is within interval tStart <= X(:,1) < tEnd
+% if MODE is nonzero, Y is part of X outside the interval :
+% X(:,1) < tStart & X(:,1) > tEnd
 % 
-% [y,ind]=irf_tlim(x,t1,t2)
-% ind - returns inndexes of rows that were within interval
-%
-% $Id$
+% [Y,IND]=IRF_TLIM(...)
+%	IND contains indexes of rows that were returned 
 
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-
-error(nargchk(2,4,nargin))
+if nargin == 0, 
+	help irf_tlim;
+	return;
+end
 
 if isempty(x), in = []; return, end
 
-if nargin==2
-	mode = 0;
-	t2 = t1(2) + 1e-7; t1 = t1(1) - 1e-7;
-elseif nargin<4
-	if length(t1)==2 && length(t2)==1
-		mode = t2;
-		t2 = t1(2) + 1e-7; t1 = t1(1) - 1e-7;
-	else mode = 0;
-	end
+if ischar(tStart), % time interval specified as string
+	tStart=irf_time(tStart,'iso2tint');
 end
 
-[t1,dt] = irf_stdt(t1,t2);
-t2 = t1 + dt;
+if nargin==2
+	mode = 0;
+	tEnd = tStart(2) + 1e-7; tStart = tStart(1) - 1e-7;
+elseif nargin==3
+	if length(tStart)==2 && length(tEnd)==1
+		mode = tEnd;
+		tEnd = tStart(2) + 1e-7; tStart = tStart(1) - 1e-7;
+	else mode = 0;
+	end
+elseif nargin == 1 && nargin > 4
+	irf.log('critical','incorrect number of input arguments');
+	error('incorrect number of input arguments');
+end
+
+[tStart,dt] = irf_stdt(tStart,tEnd);
+tEnd = tStart + dt;
 
 if isstruct(x)
 	if ~isfield(x,'t'), error('struct X must have field ''t'''), end
@@ -44,8 +46,8 @@ else
 	t = x(:,1);
 end
 
-if mode==0, in = find((t >= t1) & (t < t2));
-else in = find((t < t1) | (t > t2));
+if mode==0, in = find((t >= tStart) & (t < tEnd));
+else in = find((t < tStart) | (t > tEnd));
 end
 
 if isstruct(x)

@@ -1,4 +1,4 @@
-function h=irf_wave_detection_algorithm(tint,varargin)    
+function h=irf_wave_detection_algorithm(tint,cl_id,varargin)    
 %function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
  %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
 
@@ -15,13 +15,14 @@ function h=irf_wave_detection_algorithm(tint,varargin)
 %   It is important to confirm any event by eye!
 %
 %   Example:
-%    irf_wave_detection_algorithm(tint,'freq',[.02 5]);
+%    irf_wave_detection_algorithm(tint,cl_id,'freq',[.02 5]);
 %      OR (as used within c_ulf_process.m) give ebsp structure and
 %      background B field
-%    irf_wave_detection_algorithm2(ebsp, bf);
+%    irf_wave_detection_algorithm2(ebsp,cl_id,bf);
 %	
 
 save_plot=0;
+cl_s = int2str(cl_id);
 if isstruct(tint)
     ebsp=tint;
     powerCrossCov_SM_plot = ebsp.bb_xxyyzzss(:,:,4);
@@ -42,7 +43,7 @@ else
 
       %% Check input 
       [~,args,nargs] = axescheck(varargin{:});
-      b=local.c_read('B_vec_xyz_gse__C1_CP_FGM_5VPS',tint);
+      b=local.c_read(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],tint);
 
       %% get background magnetic field
       bf=irf_filt(b,1/600,0,[],5);
@@ -381,7 +382,7 @@ cmapSpace = irf_colormap('space');
       start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
       time_label = datestr( datenum(start_time),1 );
       
-      irf_legend(h(1),['C1           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
+      irf_legend(h(1),['C' cl_s '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
 
   if save_plot,

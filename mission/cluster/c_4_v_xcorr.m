@@ -11,8 +11,7 @@ function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
 %  Output:
 %     V - velocity in GSE
 %    dV - error on velocity
-%
-% $Id$
+
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -20,6 +19,11 @@ function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
 % can do whatever you want with this stuff. If we meet some day, and you think
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
+
+if nargin == 0, help c_4_v_xcorr; return; end
+if ischar(tint), % assume time interval input in character format
+	tint=irf_time(tint,'iso2tint');
+end
 
 b1 = [];
 c_eval('b?=irf_tlim(B?(:,1:4),tint);')

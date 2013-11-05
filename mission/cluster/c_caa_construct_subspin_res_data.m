@@ -15,17 +15,15 @@ function res = c_caa_construct_subspin_res_data(variable_name)
 % res.enlabel - energy label
 % res.dataunits - dataunits (for colorbar)
 %
+% Supported dataset types:
+%	PEACE - PADLAR,PADMAR,PITCH_3DR,PITCH_3DX,3DXP
+%	RAPID - L3DD,E3DD
+%	  CIS - CODIF_HS,CODIF_LS,HIA_HS,HIA_LS
+%
 % Example:
 %   res=c_caa_construct_subspin_res_data('Data__C4_CP_PEA_PITCH_3DRH_PSD')
 %
-% $Id$
-
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <andris@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Andris Vaivads
-% ----------------------------------------------------------------------------
+% 
 
 if any([strfind(variable_name,'PADLAR') strfind(variable_name,'PADMAR') strfind(variable_name,'PADHAR')])  % PEACE variables PADMARL and PADMARH
     %% PADMARL and PADMARH need to be treated specially in order to recover 
