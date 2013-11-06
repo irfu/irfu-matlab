@@ -1,4 +1,4 @@
-function out=irf(varargin)
+function [out,out1]=irf(varargin)
 % IRF general info on irfu-matlab
 %
 % IRF checks version, installed libraries and sets up necessary pathes
@@ -22,7 +22,8 @@ function out=irf(varargin)
 %
 % Check if IRAP CEFLIB is installed, http://ceflib.irap.omp.eu/
 %
-% version = IRF('version') return IRF version
+% version = IRF('version') return IRF version number
+% [versionNumber, versionDate] = IRF('version') return also date
 %
 % IRF('demo') demonstration how to use IRF
 
@@ -50,11 +51,14 @@ end
 %% Actions
 switch lower(action)
 	case 'check'
+		[currentVersion,currentVersionDate] = irf('version');
 		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
 		catch
 			disp('Not connected to internet');
+			disp(['  Your irfu-matlab: ' currentVersion ...
+				' from ' currentVersionDate]);
 			out = false;
 			return;
 		end
@@ -62,22 +66,23 @@ switch lower(action)
 		logTextArray = logTextArray{1};
 		iSpace = strfind(logTextArray{1},' ');
 		newestVersion = logTextArray{1}(iSpace(1):iSpace(2)-1);
-		currentVersion = irf('version');
 		if ~strcmp(newestVersion,currentVersion)
 			indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
 			if indices > 1,
 				disp('NO!');
 				disp(' ');
-				disp(['Newest irfu-matlab is from: ' newestVersion]);
-				disp(['  Your irfu-matlab is from: ' currentVersion]);
+				disp(['Newest irfu-matlab: ' newestVersion]);
+				disp(['  Your irfu-matlab: ' currentVersion]);
 				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
 				for iInd = 1 : indices -1
 					fprintf('%s\n',logTextArray{iInd})
 				end
 				disp(' ');
-      else
-        disp('You are at the bleeding edge :-)');
+			else
+				disp('unclear! you are eiter the bleeding edge or have to update :-)');
+				disp(['Newest irfu-matlab is from: ' newestVersion]);
+				disp(['  Your irfu-matlab is from: ' currentVersion]);
 			end
 			if nargout, out = false; end
 		else
@@ -94,7 +99,7 @@ switch lower(action)
 			['contrib' filesep 'matlab_central'],...
 			['contrib' filesep 'matlab_central' filesep 'cm_and_cb_utilities'],...
 			['contrib' filesep 'mice'],...
-      ['contrib' filesep 'nasa_cdf_patch'],...
+			['contrib' filesep 'nasa_cdf_patch'],...
 			};
 		irfDirectories = {'irf','plots',...
 			['mission' filesep 'cluster'],...
@@ -145,26 +150,26 @@ switch lower(action)
 		disp('');
 	case 'irbem'
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
-      x=[0 0 1];
-      try
-        t0 = now;
-        y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', t0);
-        yy=onera_desp_lib_coord_trans(y,'geo2gse',t0);
-        if (max(abs(yy-x))<1e-3),
-          disp('IRBEM is OK');
-          if nargout, out=true; end
-          return;
-        else
-          disp('IRBEM is installed but NOT WORKING PROPERLY!');
-          disp('gse>geo>gse differs by more than 0.1% from original vector');
-          if nargout, out=false; end
-          return;
-        end
-      catch
-        disp('IRBEM .. not OK. Please, contact irfu!')
-        if nargout, out=false; end
-        return;
-      end
+			x=[0 0 1];
+			try
+				t0 = now;
+				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', t0);
+				yy=onera_desp_lib_coord_trans(y,'geo2gse',t0);
+				if (max(abs(yy-x))<1e-3),
+					disp('IRBEM is OK');
+					if nargout, out=true; end
+					return;
+				else
+					disp('IRBEM is installed but NOT WORKING PROPERLY!');
+					disp('gse>geo>gse differs by more than 0.1% from original vector');
+					if nargout, out=false; end
+					return;
+				end
+			catch
+				disp('IRBEM .. not OK. Please, contact irfu!')
+				if nargout, out=false; end
+				return;
+			end
 		else
 			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
@@ -210,6 +215,7 @@ switch lower(action)
 			disp(['irfu-matlab version: ' versionTime ', ' versionNumber]);
 		else
 			out = versionNumber; % return only date
+			out1 = versionTime;
 		end
 	otherwise
 		error('unknown input argument')
