@@ -1,4 +1,4 @@
-function out=irf(varargin)
+function [out,out1]=irf(varargin)
 % IRF general info on irfu-matlab
 %
 % IRF checks version, installed libraries and sets up necessary pathes
@@ -22,7 +22,8 @@ function out=irf(varargin)
 %
 % Check if IRAP CEFLIB is installed, http://ceflib.irap.omp.eu/
 %
-% version = IRF('version') return IRF version
+% version = IRF('version') return IRF version number
+% [versionNumber, versionDate] = IRF('version') return also date
 %
 % IRF('demo') demonstration how to use IRF
 
@@ -50,42 +51,46 @@ end
 %% Actions
 switch lower(action)
 	case 'check'
+		[currentVersion,currentVersionDate] = irf('version');
 		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
 		catch
 			disp('Not connected to internet');
+            disp(['  Your irfu-matlab: ' currentVersion ...
+                ' from ' currentVersionDate]);
 			out = false;
 			return;
 		end
 		logTextArray = textscan(logText, '%s', 'delimiter', sprintf('\n'));
 		logTextArray = logTextArray{1};
-		iSpace = strfind(logTextArray{1},' ');
-		newestVersion = logTextArray{1}(iSpace(1):iSpace(2)-1);
-		currentVersion = irf('version');
-		if ~strcmp(newestVersion,currentVersion)
-			indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
-			if indices > 1,
-				disp('NO!');
-				disp(' ');
-				disp(['Newest irfu-matlab is from: ' newestVersion]);
-				disp(['  Your irfu-matlab is from: ' currentVersion]);
-				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
-				disp('Log of updates: ');
-				for iInd = 1 : indices -1
-					fprintf('%s\n',logTextArray{iInd})
-				end
-				disp(' ');
-      else
-        disp('You are at the bleeding edge :-)');
-			end
-			if nargout, out = false; end
-		else
-			disp('YES:)');
-			if nargout, out = true; end
-		end
-	case 'check_path'
-		irfPath = [irf('path') filesep];
+        iSpace = strfind(logTextArray{1},' ');
+        newestVersion = logTextArray{1}(iSpace(1):iSpace(2)-1);
+        if ~strcmp(newestVersion,currentVersion)
+            indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
+            if indices > 1,
+                disp('NO!');
+                disp(' ');
+                disp(['Newest irfu-matlab: ' newestVersion]);
+                disp(['  Your irfu-matlab: ' currentVersion]);
+                disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
+                disp('Log of updates: ');
+                for iInd = 1 : indices -1
+                    fprintf('%s\n',logTextArray{iInd})
+                end
+                disp(' ');
+            else
+                disp('unclear! you are eiter the bleeding edge or have to update :-)');
+                disp(['Newest irfu-matlab is from: ' newestVersion]);
+                disp(['  Your irfu-matlab is from: ' currentVersion]);
+            end
+            if nargout, out = false; end
+        else
+            disp('YES:)');
+            if nargout, out = true; end
+        end
+    case 'check_path'
+        irfPath = [irf('path') filesep];
 		notOnIrfPath = @(x) ~any(strfind(path, [irfPath x]));
 		contribDirectories = {...
 			['contrib' filesep 'isdat'],...
@@ -210,6 +215,7 @@ switch lower(action)
 			disp(['irfu-matlab version: ' versionTime ', ' versionNumber]);
 		else
 			out = versionNumber; % return only date
+            out1 = versionTime;
 		end
 	otherwise
 		error('unknown input argument')
