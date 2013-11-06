@@ -207,7 +207,14 @@ elseif dim == 1
   else
     plot_data = {double(data.data)};
     if dim == 1
-      if isfield(data,'DEPEND_1')
+      if isfield(data,'TENSOR_ORDER')
+        if data.dim(str2double(data.TENSOR_ORDER)+1) > 1
+          flag_spectrogram = 1;
+          ydim = 1;
+        else
+          flag_lineplot = 1;
+        end
+      elseif isfield(data,'DEPEND_1')
         flag_spectrogram = 1;
         ydim = 1;
       else
@@ -322,7 +329,11 @@ if flag_lineplot
           legend(ax,'boxoff')
         end
       else
-        lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
+        if ~isempty(comp) && isfield(dep_x,'UNITS')
+          lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
+        else
+          lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') ')'];
+        end
       end
     end
   end
@@ -393,8 +404,8 @@ elseif flag_spectrogram
       dep=rmfield(dep,'dt');
   end
   if sum_dim > 0
-    fprintf('Summing over dimension %d (%s)\n', ...
-      sum_dim, dep_x{sum_dim}.lab)
+    irf.log('notice',sprintf('Summing over dimension %d (%s)\n', ...
+      sum_dim, dep_x{sum_dim}.lab));
   end
   if flag_log, plot_type='log'; else plot_type='lin'; end 
   specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...

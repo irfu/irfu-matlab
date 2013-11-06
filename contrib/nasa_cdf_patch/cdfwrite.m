@@ -130,9 +130,9 @@ function cdfwrite(filename, varcell, varargin)
 %   variable 'Epoch'. If TF is set to true, the passed data are actually CDF
 %   TT2000 values so they will be used as is- no conversion is needed. 
 %   The variable 'Epoch' will be written to the file as type CDF_TIME_TT2000.
-q
-q
-q
+%
+%
+%
 %   The CDF TT2000 values needs to be numeric of mxINT64_CLASS (int64).
 %   This option is mutually exclusive to ConvertDatenumToEpoch and
 %   EpochIsCDFEpoch.
@@ -277,7 +277,7 @@ q
 %            COMPUTETT2000, PARSETT2000, BREAKDOWNTT2000, CDFLEAPSECONDSINFO.
 
 %   Copyright 1984-2006 The MathWorks, Inc.
-%   $Revision: 1.2 $  $Date: 2012/02/24 21:52:49 $
+%   $Revision: 1.2 $  $Date: 2013/04/15 15:21:41 $
 
 % HISTORY:
 %   February 12, 2009  Mike Liu     The following changes have been made to

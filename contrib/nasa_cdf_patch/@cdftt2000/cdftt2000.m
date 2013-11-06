@@ -12,7 +12,7 @@ function tt2000Obj = cdftt2000(varargin)
 %    See also CDFWRITE, CDFREAD, CDFINFO, ENCODETT2000, COMPUTETT2000,
 %             PARSETT2000, BREAKDOWNTT2000, CDFLEAPSECONDSINFO.
 
-%    $Revision: 1.1.1.1 $  $Date: 2012/02/24 19:08:15 $
+%    $Revision: 1.1.1.1 $  $Date: 2012/05/17 14:33:09 $
 
 if (nargin == 0)
     s.date = [];

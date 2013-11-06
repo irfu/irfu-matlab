@@ -13,3 +13,7 @@ function res = getlablaxis(dobj,var_s)
 error(nargchk(2,2,nargin))
 
 res = findva(dobj,'LABLAXIS',var_s);
+
+if ~isempty(res), return, end
+
+res = findva(dobj,'FIELDNAM',var_s);

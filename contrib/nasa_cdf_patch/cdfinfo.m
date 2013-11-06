@@ -16,8 +16,8 @@ function info = cdfinfo(filename)
 %     FormatVersion        A string containing the version of the CDF
 %                          library used to create the file
 %
-%     FileSettings         A structure containing library settings used
-%                          to create the file
+%     FileSettings         A structure containing the file settings
+%                          describing the file
 %
 %     Subfiles             A cell array of filenames which contain the
 %                          CDF file's data if it is a multifile CDF
@@ -93,7 +93,7 @@ function info = cdfinfo(filename)
 %   See also CDFEPOCH, CDFTT2000, CDFREAD, CDFWRITE and CDFUPDATE.
 
 %   Copyright 1984-2006 The MathWorks, Inc.
-%   $Revision: 1.3 $  $Date: 2012/05/17 15:55:51 $
+%   $Revision: 1.5 $  $Date: 2013/08/22 15:46:51 $
 %
 % HISTORY:
 %   August 17, 2007   David Han      Modified to handle CDF_EPOCH16. Look for
@@ -143,7 +143,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.4.1.0';
+info.PatchVersion = '3.5.0.1';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
@@ -266,6 +266,12 @@ function out = parse_file_info(in)
     out.CompressionParam = comp_param;
     out.CompressionPercent = comp_pct;
 
+    % Checksum.
+    if (in.Checksum == 1)
+        out.Checksum = 'MD5';
+    else
+        out.Checksum = 'None';
+    end
 
 
 function str = find_datatype(num)

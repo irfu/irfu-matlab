@@ -2,6 +2,7 @@ function c_ulf_process(TT,cl_id,freqRange)
 % C_ULF_PROCESS  process Cluster ULF data
 %
 %  c_ulf_process(tt,cl_id,freqRange)
+%  c_ulf_process(tint,cl_id,freqRange)
 %
 %  tt - irf TimeTable
 %  freqRange - 'all' (default), 'pc35', 'pc12'
@@ -42,8 +43,10 @@ elseif nargin < 3
   freqRange = 'all';
 end
 
-nevents=numel(TT);
-for ievent=1:nevents,
+% Still accept single time interval as input
+if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
+
+for ievent=1:numel(TT),
 tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
 try
 
@@ -195,7 +198,7 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
-  irf_wave_detection_algorithm(ebsp, bf);
+  irf_wave_detection_algorithm(ebsp,cl_id,bf);
   if plotFlag
     figure(1), clf
     h = irf_pl_ebsp(ebsp);

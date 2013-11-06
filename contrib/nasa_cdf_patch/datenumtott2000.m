@@ -13,7 +13,7 @@ function tt2000 = datenumtott2000(varargin)
 
 %    binky
 %    Copyright 2001-2006 The MathWorks, Inc.
-%    $Revision: 1.1.1.1 $  $Date: 2012/02/24 19:08:15 $
+%    $Revision: 1.1.1.1 $  $Date: 2012/05/17 14:33:09 $
 
 if (nargin > 1)
     error('MATLAB:DATENUMtoTT2000:DATENUMtoTT2000:tooManyInput', ...
