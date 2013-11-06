@@ -109,6 +109,13 @@ switch lower(varName)
 			out.R=[data{1} double(data{2})];
 			c_eval('out.R?=[data{1} double(data{2}+data{2+?})];')
 		end
+	case {'b'}
+		varToRead={'B_vec_xyz_gse__C1_CP_FGM_FULL','B_vec_xyz_gse__C2_CP_FGM_FULL',...
+			'B_vec_xyz_gse__C3_CP_FGM_FULL','B_vec_xyz_gse__C4_CP_FGM_FULL'};
+		ok=readdata;
+		if ok && strcmpi(returnDataFormat,'mat')
+			c_eval('out.B?=[data{1} double(data{1+?})];')
+		end
 	case {'r1','r2','r3','r4'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX',['sc_dr' varName(2) '_xyz_gse__CL_SP_AUX']};
 		ok=readdata;

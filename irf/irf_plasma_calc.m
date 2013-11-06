@@ -23,31 +23,27 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 % space plasma paremeters with precision <5%
 %  units T[eV] B[nT] n[cc] E[mV/m]
 %
-%  Debye length [m]       = sqrt(200 T/n)
-%  e- plasma f. [kHz]     = 9 sqrt(n)
-%  e- gyrof. [Hz]         = 28 B
-%  e- gyrorad. [km]       = sqrt(10 T) / B
-%  e- inert. l [km]       = 5.3 / sqrt(n)
-%  e- veloc. [km/s]       = 600 sqrt(T)
-%  H+ plasma f. [Hz]      = 0.033 sqrt(n)
-%  H+ gyrof. [Hz]         = 0.015 B
-%  H+ veloc. [km/s]       = sqrt(200 T)
-%  H+ gyror. [km]         = 100 sqrt(2 T) / B
-%  H+ inert. l [km]       = 230 / sqrt(n)
-%  H+ veloc. [km/s]       = 13.8 sqrt(T)
-%  O+ gyrof. [mHz]        = B
-%  O+ veloc. [km/s]       = sqrt(10 T)
-%  O+ gyror. [km]         = 100 sqrt(33 T) / B
-%  low. hybr. f. [Hz]     = sqrt(0.427 (B)^2 /(1+ 9.7e-6 (B)^2)/n);
+%  Debye length       [m] = sqrt(200 T/n)
+%  e- plasma f.     [kHz] = 9 sqrt(n)
+%  e- gyrof.         [Hz] = 28 B
+%  e- gyrorad.       [km] = sqrt(10 T) / B
+%  e- inert. l       [km] = 5.3 / sqrt(n)
+%  e- veloc.       [km/s] = 600 sqrt(T)
+%  H+ plasma f.      [Hz] = 210 sqrt(n)
+%  H+ gyrof.         [Hz] = 0.015 B
+%  H+ veloc.       [km/s] = sqrt(200 T)
+%  H+ gyrorad.       [km] = 100 sqrt(2 T) / B
+%  H+ inert. l       [km] = 230 / sqrt(n)
+%  H+ veloc.       [km/s] = 13.8 sqrt(T)
+%  O+ gyrof.        [mHz] = B
+%  O+ veloc.       [km/s] = sqrt(10 T)
+%  O+ gyrorad.       [km] = 100 sqrt(33 T) / B
+%  lower hybr. f.    [Hz] = sqrt(0.427 B^2 /(1+ 9.7e-6 (B)^2)+2.3e-4 n);
 %  Alfven vel. V_A[km/s]  = 22 B /sqrt(n)
 %  Poynting fl. S[uW/m2]  = 0.8 E B
 %  Plasma beta = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2
 %  Magnetic pressure[nPa] = (B/50)^2
 %  E_corrotation  [mV/m]  = 0.6e-4 R[RE] B
-
-
-% $Id$
-% Copyright 1997-2005 Yuri Khotyaintsev
 
 persistent B np_cc no_rel Te Ti
 
@@ -128,13 +124,13 @@ n=np+no; % total plasma density  m^-3
 
 Units=irf_units; % read in standard units
 
-Me=Units.me; % electron mass
-Mp=Units.mp; % proton mass
-c=Units.c; % speed of light
-e=Units.e; % elementary charge
-epso=Units.eps0; % vacuum dielectric constant
-mu0=Units.mu0; % Mu_0
-Mp_Me = Mp/Me; % ratio of proton and electron mass 1836.15;
+Me=Units.me;
+Mp=Units.mp;
+c=Units.c;
+e=Units.e;
+epso=Units.eps0;
+mu0=Units.mu0;
+Mp_Me = Mp/Me; % ratio of proton and electron mass;
 
 % in formulas it is more convenient to use variables expresesd in SI units
 B_SI=B*1e-9; % [T]
@@ -143,7 +139,7 @@ Wpe = sqrt(n*e^2/Me/epso); % rad/s
 Wce = e*B_SI/Me;   % rad/s
 Wpp = sqrt(np*e^2/Mp/epso);
 WpO = sqrt(no*e^2/Mp/16/epso);
-Va = B_SI./sqrt(mu0*(np+16*no)*Mp);
+Va  = B_SI./sqrt(mu0*(np+16*no)*Mp);
 Vae = B_SI./sqrt(mu0*n*Me);
 Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct)
 Vtp = c*sqrt(1-1./(Ti.*e./(Mp*c^2)+1).^2);              % m/s
