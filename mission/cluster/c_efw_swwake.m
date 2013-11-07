@@ -40,7 +40,7 @@ function [data, n_corrected,wakedesc] = c_efw_swwake(e,pair,phase_2,whip,plotfla
 
 DEBUG=1;
 
-error(nargchk(3,6,nargin))
+narginchk(3,6)
 if nargin<6,extraparams=[]; end
 if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end

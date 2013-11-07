@@ -26,7 +26,7 @@ function [j_photo] = photocurrent( X_area, U_pot, R_sun ,flag)
 
 % Check # input/output parameters.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-error(nargchk(0,4,nargin))
+narginchk(0,4)
 
 surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV'};
 if nargin==0 && nargout ==0, 

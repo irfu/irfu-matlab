@@ -25,7 +25,7 @@ function [y] = c_gse2dsi( x, spin_axis, direction )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 debug_flag=0;
 
-error(nargchk(2,3,nargin))
+narginchk(2,3)
 
 lx=size(x,2);
 if lx > 3

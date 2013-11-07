@@ -24,7 +24,7 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks
-error(nargchk(4, 7, nargin))
+narginchk(4, 7)
 
 DEBUG = 0;
 

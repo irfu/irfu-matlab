@@ -63,7 +63,7 @@ function [Pxx, Pxxc, f] = irf_psd(varargin)
 %   See Page 556, A.V. Oppenheim and R.W. Schafer, Digital Signal
 %   Processing, Prentice-Hall, 1975.
 
-error(nargchk(1,7,nargin))
+narginchk(1,7)
 xx = varargin{1}; % xx because x will be later within the loop
 if min(size(xx))==1, xx=xx(:); end % make sure x is column vector
 

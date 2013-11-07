@@ -50,7 +50,7 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 % ----------------------------------------------------------------------------
 
 %error(nargchk(1,3,nargin))
-error(nargchk(1,4,nargin))
+narginchk(1,4)
 if nargout==2 && nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
 end

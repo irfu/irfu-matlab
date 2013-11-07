@@ -36,7 +36,7 @@ function data=c_csds_read(data_path,start_time,dt,cl_id,quantity)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(5,5,nargin))
+narginchk(5,5)
 
 cl_id_s = num2str(cl_id);
 pp_infix='PP';

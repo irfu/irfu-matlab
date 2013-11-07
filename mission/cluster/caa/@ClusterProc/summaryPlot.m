@@ -31,7 +31,7 @@ function out=summaryPlot(cp,cl_id,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,10,nargin))
+narginchk(2,10)
 
 if nargin>2, have_options = 1; args = varargin;
 else have_options = 0;

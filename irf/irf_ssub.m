@@ -19,7 +19,7 @@ function [output_string]=irf_ssub(input_string,varargin)
 %
 % $Id$
 
-error(nargchk(2,4,nargin))
+narginchk(2,4)
 
 output_string = input_string;
 symb = '?!$';

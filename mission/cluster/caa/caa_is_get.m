@@ -39,7 +39,7 @@ MAXOPENATTEMPTS = 10;  % Number of times to retry in case open fails
 MAXNRET = 2;  % Number of times to retry in case of internal server error
 SLEEPINT = 5; % Number of seconds to sleep when waiting for server restart
 
-error(nargchk(6,10,nargin))
+narginchk(6,10)
 if nargin < 10, units = ''; end
 if nargin < 9, par = ' '; end
 if nargin < 8, cha = ' '; end

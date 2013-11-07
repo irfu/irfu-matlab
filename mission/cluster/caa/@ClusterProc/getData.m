@@ -97,7 +97,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(3,15,nargin))
+narginchk(3,15)
 if nargin > 3, have_options = 1; args = varargin;
 else have_options = 0;
 end
