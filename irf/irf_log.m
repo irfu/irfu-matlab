@@ -70,7 +70,7 @@ if ~flag_irf_log_ON % if irf_log is off return
 	return;
 end
 
-error(nargchk(1,15,nargin))
+narginchk(1,15)
 
 switch lower(log_ids)
     case 'log_lev'

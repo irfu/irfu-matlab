@@ -40,7 +40,7 @@ function [timedat,reqdat,iserr]=isGetDataLite(db,starttime,duration,proj,mem,ins
 %
 % $Id$
 
-error(nargchk(4,11,nargin))
+narginchk(4,11)
 
 if nargin < 11, units = 'phys';
 else

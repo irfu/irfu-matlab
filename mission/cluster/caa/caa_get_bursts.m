@@ -17,7 +17,7 @@ function ret = caa_get_bursts(filename, plot_flag)
 %
 % $Id$
 
-error(nargchk(1,2,nargin));
+narginchk(1,2);
 
 flag_local = 0;
 if nargin < 2

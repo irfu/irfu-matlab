@@ -7,7 +7,7 @@ function caa_export_batch_lev(fname, out_path, lev_list)
 
 % Copyright 2008 Mikael Lundberg
 
-error(nargchk(1, 3, nargin))
+narginchk(1, 3)
 
 if nargin<2, out_path = '.'; lev_list = 2:3; 
 elseif nargin==2

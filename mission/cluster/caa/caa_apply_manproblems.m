@@ -11,7 +11,7 @@ function caa_apply_manproblems(st,dt,cli,extraprocessing,redo_sp_dir)
 %  redo_sp_dir: If this is not empty, summary plots are re-done for the
 %         affected intervals and put in the specified directory.
 %
-error(nargchk(2,5,nargin))
+narginchk(2,5)
 if nargin < 5,redo_sp_dir=[];end
 if (nargin < 4) || isempty(extraprocessing),varsproc='manproblems'; else varsproc=['manproblems|' extraprocessing]; end
 if nargin < 3, cli=1:4; end

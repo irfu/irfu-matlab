@@ -15,7 +15,7 @@ function [sc_distance]=c_sc_distance(tint,dt)
 %
 % $Id$
 
-error(nargchk(0,2,nargin))
+narginchk(0,2)
 if nargin==0,
     help c_sc_distance;
     disp('******************************************************')

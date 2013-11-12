@@ -21,7 +21,7 @@ function data = caa_corof_dsi(data,Dx,Dy,Da)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(3,4,nargin))
+narginchk(3,4)
 
 if length(Dx) == 1
 	if nargin ==3

@@ -81,7 +81,7 @@ function [data, n_corrected,wakedesc] = GRL2011_check_wakes(e,pair,phase_2,whip,
 
 DEBUG=0;
 
-error(nargchk(3,6,nargin))
+narginchk(3,6)
 if nargin<6,extraparams=[]; end
 if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end
