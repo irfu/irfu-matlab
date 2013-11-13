@@ -93,8 +93,7 @@ for idxField = 1:length(plotFields)
     end
     hca = irf_panel(panelStr); 
     if ~isempty(ebsp.(field))
-      sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
-      sr.p = LimitValues(sr.p);
+      sr.p = LimitValues(ebsp.(field)(:,:,comp));
       [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
       [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
       yTickList(idxPanel) = {get(hcb,'YTick')};
@@ -233,8 +232,15 @@ if nargout, out = h; end % Return here
   end
   function PlotCyclotronFrequency
     if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
-    if isempty(ebsp.fullB), B = ebsp.fullB; else B = ebsp.B0; end
-    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,5)*1e-9/units.me/2/pi];
+    if ~isempty(ebsp.fullB), B = ebsp.fullB; 
+    else B = ebsp.B0; 
+    end
+    if size(B,2) == 1, 
+      B = [ebsp.t B];
+    else
+      B = irf_abs(B);  B = [B(:,1) B(:,5)];
+    end
+    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,2)*1e-9/units.me/2/pi];
     mep = units.me/units.mp;
     % F_ce, F_ce/2, F_cp, F_cHe, F, cO
     fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
@@ -298,12 +304,6 @@ if nargout, out = h; end % Return here
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
       l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
       set(hcbNew,'YTickLabel',l);
-    end
-  end
-  function a=UpdateUnits(a)
-    switch compStr
-      case {'t','p'}
-        a = a*180/pi; % to degrees
     end
   end
 end

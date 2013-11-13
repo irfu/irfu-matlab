@@ -172,11 +172,6 @@ end
     magB = irf_abs(magB); magB = magB(:,[1 5]); magB = irf_resamp(magB,ebsp.t);
     magB = magB(:,2);
     
-    % convert radians to degrees
-    toD = 180.0/pi;
-    ebsp.k_tp(:,:,1:2) = ebsp.k_tp(:,:,1:2)*toD;
-    ebsp.pf_rtp(:,:,2:3) = ebsp.pf_rtp(:,:,2:3)*toD;
-    
     ebsp.k_tp(isnan(ebsp.k_tp)) = FILLVAL;
     ebsp.ellipticity(isnan(ebsp.ellipticity)) = FILLVAL;
     ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;

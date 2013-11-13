@@ -1,4 +1,4 @@
-function caa_proc_bursts(burstfile, ibplot)
+function caa_proc_bursts(burstfile, plotFlag)
 % Run caa_get_bursts on a list file with internal burst file names from
 % /data/cluster/burst.
 %
@@ -20,7 +20,7 @@ function caa_proc_bursts(burstfile, ibplot)
 %
     narginchk(1,2);
     if nargin < 2
-        ibplot = 0;
+        plotFlag = 0;
     end
 
     cd([getenv('HOME') '/matlab']);
@@ -43,7 +43,7 @@ function caa_proc_bursts(burstfile, ibplot)
         tline = fgetl(fid);
         if length(tline)>=17
             fn = tline(1:17)
-            ret = caa_get_bursts(fn,ibplot);
+            ret = caa_get_bursts(fn,plotFlag);
             if ret
                 fprintf(fout,'%s ret:%d\n',fn,ret);
                 irf_log('proc',['Burst file ' fn ' failed!']);
