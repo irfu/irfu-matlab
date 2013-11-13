@@ -2414,10 +2414,10 @@ elseif strcmp(quantity,'wake')
 		% Load required data
 		[ok,pha] = c_load('Atwo?',cl_id);
 		if ~ok, irf_log('load',msg), pha=[]; end
-        sfpp=spinFits.probePair;
-        if sfpp > 100
-            sfpp = sfpp/10;
-        end
+		sfpp=spinFits.probePair;
+		if sfpp > 100
+			sfpp = sfpp/10;
+		end
 		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,sfpp));
 		if ~ok, irf_log('load',msg), da=[]; end
 
