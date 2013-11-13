@@ -1,3 +1,4 @@
+2013-11-13 v1.4.0 updated support for CSA
 2013-11-06 v1.3.1 added *.m to .gitatributes to have LF endings in all *.m files
 2013-11-06 v1.3.0 updated CDF patch to v3.5.0.1, irf_log moved to irf.log, several bug fixes
 2013-10-08 v1.2.1 irf.geocentric_coordinate_transformation replicates columns 5:end in output
