@@ -113,7 +113,7 @@ kk = 1;
 for cli=cl_id
 	vs_tmp = irf_ssub(vs,cli);
 	d = c_desc(vs_tmp);
-	if isempty(d), error('Unknown variable'), end
+	if isempty(d), error(['Unknown variable: ' vs_tmp]), end
 	% Try to load from file
 	if exist(['./' d.file '.mat'],'file')
 		warning off %#ok<WNOFF>
