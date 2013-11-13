@@ -50,7 +50,7 @@ function [res,v,msg] = c_load(vs,cl_id,mode_s,probe_id)
 % ----------------------------------------------------------------------------
 
 %error(nargchk(1,3,nargin))
-error(nargchk(1,4,nargin))
+narginchk(1,4)
 if nargout==2 && nargin==3
 	error('Invalid number of input and output arguments. See HELP C_LOAD')
 end
@@ -113,7 +113,7 @@ kk = 1;
 for cli=cl_id
 	vs_tmp = irf_ssub(vs,cli);
 	d = c_desc(vs_tmp);
-	if isempty(d), error('Unknown variable'), end
+	if isempty(d), error(['Unknown variable: ' vs_tmp]), end
 	% Try to load from file
 	if exist(['./' d.file '.mat'],'file')
 		warning off %#ok<WNOFF>

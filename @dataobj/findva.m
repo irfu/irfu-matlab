@@ -10,7 +10,7 @@ function res = findva(dobj,field,var_s)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(3,3,nargin))
+narginchk(3,3)
 
 if ~ischar(var_s), error('VAR_S must be a stirng'), end
 

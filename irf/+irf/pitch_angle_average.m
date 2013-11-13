@@ -11,24 +11,26 @@ function fout=pitch_angle_average(fin,theta,thetaRange,deltaTheta,thetaDimension
 %	fout matrix has one dimension less than fin, the pitch angle dimension is removed. 
 % 
 
+if nargin < 3 || isempty(thetaRange)
+	thetaRange = [min(theta(:)) max(theta(:))];
+end
 if nargin < 4 || isempty(deltaTheta), % define dtheta
 	deltaTheta = (theta(2)-theta(1))/2;
 end
 if nargin < 5, % define theta dimension
 	szind = (size(fin) == numel(theta));
 	if ~any(szind),
-		irf_log('dsrc','Pitch angle dimension cannot be identified!');
-		fout = [];
-		return;
+		irf.log('error','Pitch angle dimension cannot be identified!');
+		error('irf.pitch_angle_average:Pitch angle dimension cannot be identified!');
 	elseif sum(szind) > 1, % more than 1 dimension corresponds theta vector size
-		irf_log('drsc','WARNING!!! More than 1 dimension is of the theta vector size, assuming last one is pitch angle');
+		irf.log('warning','WARNING!!! More than 1 dimension is of the theta vector size, assuming last one is pitch angle');
 		thetaDimension = find(szind,1,'last');
 	else
 		thetaDimension = find(szind);
 	end
 end
 
-indTheta = (theta > thetaRange(1) & theta < thetaRange(2));
+indTheta = (theta >= thetaRange(1) & theta <= thetaRange(2));
 dataExist = ~isnan(fin);
 thetaSteradian = bsxfun(@plus,zeros(size(fin)),...
 	indTheta.*(cosd(theta-deltaTheta)-cosd(theta+deltaTheta)));

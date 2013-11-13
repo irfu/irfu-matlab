@@ -27,7 +27,7 @@ disp('caa_powerfft will be removed in the near future');
 disp('');
 
 
-error(nargchk(3,4,nargin))
+narginchk(3,4)
 if nargin<4, overlap = 0; end
 if overlap<0 || overlap>100, error('OVERLAP must be in a range 0..99'), end
 

@@ -11,7 +11,7 @@ function caa_pl_summary_l1_batch(iso_st,iso_et,sp_dir)
 %
 % Plots always span 3 hours, although the interval may be as long as you
 % wish.
-error(nargchk(2,3,nargin))
+narginchk(2,3)
 old_pwd=pwd;
 if nargin<3
 	default_dir=1;

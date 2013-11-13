@@ -13,7 +13,7 @@ function showdep(dobj,var_s)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if ~ischar(var_s), error('VAR_S must be a string'), end
 

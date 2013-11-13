@@ -18,7 +18,7 @@ function caa_proc_bursts(burstfile, plotFlag)
 % :
 % :
 %
-    error(nargchk(1,2,nargin));
+    narginchk(1,2);
     if nargin < 2
         plotFlag = 0;
     end

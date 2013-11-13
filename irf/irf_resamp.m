@@ -25,7 +25,7 @@ function out = irf_resamp(x,y,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,8,nargin))
+narginchk(2,8)
 
 have_options = 0;
 args = varargin; 

@@ -40,15 +40,16 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %   'nolog'			- do not log into .caa file (good for batch processing)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of deaful 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
-%   'cfa'           - download from CFA instead of CAA, basic functions are
-%                     implemented. Downloaded files go into './CFA/' folder.
+%   'csa'           - download from CSA instead of CAA, basic functions are implemented.
 %                     This must be taken into account when loading data.
 %   'stream'        - donwload through CAA streaming (gzipped cef file)
 %
 %
-%  To store your caa user & password as defaults (e.g. 'uuu'/'ppp'): 
+%  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'): 
 %		datastore('caa','user','uuu')
 %		datastore('caa','pwd','ppp')
+%		datastore('csa','user','uuu')
+%		datastore('csa','pwd','ppp')
 %
 %  Examples:
 %   caa_download(tint,'list:*')       % list everything available from all sc
@@ -100,7 +101,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %% Check if latest irfu-matlab 
 % The check is appropriate to make when scientist is downloading data from CAA
 persistent usingLatestIrfuMatlab urlIdentity 
-global downloadFromCFA
+global downloadFromCSA
 
 if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 	usingLatestIrfuMatlab=irf('check');
@@ -120,16 +121,16 @@ urlFormat='&format=cdf';				% default is CDF (3.3) format
 caaServer='http://caa.estec.esa.int/';	% default server
 urlIdentity=get_url_identity('caa');	% default identity, default caa
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-% CFA
-downloadFromCFA = 0;                    % cfa: default is to download from CAA
-cfaServer = 'http://cfadev.esac.esa.int/cfa/aio/'; % cfa: default server        
-urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% cfa                                        
-retrievalType = '&PRODUCT';             % cfa: default is to download, not check inventory
-noBrowser   = '&NO_BROWSER';            % cfa: default is to not download through browser    
-cfaUrl = 'product-action?';             % cfa: used for data retrieval
-queryFormat = '&RETURN_TYPE=CSV';       % cfa: query format, it is the most readable in Matlab with disp()
+% CSA
+downloadFromCSA = 0;                    % csa: default is to download from CAA
+csaServer = 'http://csa.esac.esa.int/csa/aio/'; % csa: default server        
+urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% csa                                        
+retrievalType = '&PRODUCT';             % csa: default is to download, not check inventory
+noBrowser   = '&NO_BROWSER';            % csa: default is to not download through browser    
+csaUrl = 'product-action?';             % csa: used for data retrieval
+queryFormat = '&RETURN_TYPE=CSV';       % csa: query format, it is the most readable in Matlab with disp()
 selectedFields = 'SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY'; 
-                                        % cfa: for inventory checks    
+                                        % csa: for inventory checks    
    
 %% load .caa file with status for all downloads
 if doLog,
@@ -176,9 +177,9 @@ if nargin>2, % check for additional flags
 			doLog = false;
 		elseif any(strcmpi('inventory',flag))
 			urlSchedule = '&inventory=1';
-        elseif any(strcmpi('cfa',flag)) % download from CFA instead of CAA
-			downloadFromCFA = 1;
-            urlIdentity = get_url_identity('cfa');
+        elseif any(strcmpi('csa',flag)) % download from CSA instead of CAA
+			downloadFromCSA = 1;
+            urlIdentity = get_url_identity('csa');
 		elseif any(strfind(flag,'USERNAME='))
 			urlIdentity = flag;
         elseif any(strcmpi('json',flag)) % set query format to 
@@ -237,10 +238,10 @@ caaQuery=[caaServer 'caa_query/?'];
 caaStream=[caaServer 'cgi-bin/stream_caa.cgi/?'];
 caaInventory=[caaServer 'cgi-bin/inventory.cgi/?'];
 
-%%%%%%%%% CFA stuff, se also above 
-% CFA Archive Inter-Operability (AIO) System User's Manual: 
+%%%%%%%%% CSA stuff, se also above 
+% CSA Archive Inter-Operability (AIO) System User's Manual: 
 % http://cfadev.esac.esa.int/cfa/aio/html/CfaAIOUsersManual.pdf
-if downloadFromCFA % change/add defaults, hasn't added these to above flag checking
+if downloadFromCSA % change/add defaults, hasn't added these to above flag checking
     % change/overwrite
     urlNonotify = '&NO_NOTIFY';      % default is not notify by email        
     urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];	    
@@ -313,7 +314,7 @@ else
 	error('caa_download: unknown tint format');
 end
 
-if downloadFromCFA % need t1 and t2 instead of t1/t2
+if downloadFromCSA % need t1 and t2 instead of t1/t2
     divider=strfind(tintiso,'/');
     t1iso = tintiso(1:divider-1);
     t2iso = tintiso(divider+1:end);
@@ -322,7 +323,7 @@ end
 %% expand wildcards
 if expandWildcards, % expand wildcards
 	dataset(strfind(dataset,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
-	if (any(strfind(dataset,'CIS')) || any(strfind(dataset,'CCODIF')) || any(strfind(dataset,'HIA')))
+	if (any(strfind(dataset,'CIS')) || any(strfind(dataset,'CODIF')) || any(strfind(dataset,'HIA')))
 		dataset(strfind(dataset,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
     end   
 end
@@ -356,16 +357,16 @@ if strfind(dataset,'list'),     % list files
 			returnTimeTable='list';
 		end
     else
-        switch downloadFromCFA
+        switch downloadFromCSA
             case 0 % CAA
         		url_line_list=[caaInventory urlIdentity '&dataset_id=' filter '&time_range=' tintiso ];
                 returnTimeTable='inventory';
-            case 1 % CFA
-                cfaAction = 'cfa/aio/metadata-action?';
-                queryData = ['&QUERY=DATASET.DATASET_ID' space 'like' space '''' cfaQueryDataset ''''];
+            case 1 % CSA
+                csaAction = 'metadata-action?';
+                queryData = ['&QUERY=DATASET.DATASET_ID' space 'like' space '''' csaQueryDataset ''''];
                 queryTime = [and 'DATASET_INVENTORY.START_TIME' space '<=' space '''' t2iso '''',...
                              and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
-                url_line_list = [cfaServer cfaAction selectedFields,...
+                url_line_list = [csaServer csaAction selectedFields,...
                                  queryData queryTime queryFormat];                 
         end
 	end
@@ -400,7 +401,7 @@ end
 if ~exist('CAA','dir'), mkdir('CAA');end
 
 if checkIfDataAreAtCaa
-    switch downloadFromCFA
+    switch downloadFromCSA
         case 0 % CAA
             url_line_list=[ caaInventory urlIdentity '&dataset_id=' dataset '&time_range=' tintiso];
             irf.log('warning','Be patient! Contacting CAA to see the list of files...');
@@ -411,25 +412,25 @@ if checkIfDataAreAtCaa
                 irf.log('warning','There are no CAA data sets available!');
                 return;
             end
-        case 1 % CFA            
-            cfaAction = 'metadata-action?';
-            queryData = ['&QUERY=DATASET.DATASET_ID' space 'like' space '''' cfaQueryDataset ''''];
+        case 1 % CSA            
+            csaAction = 'metadata-action?';
+            queryData = ['&QUERY=DATASET.DATASET_ID' space 'like' space '''' csaQueryDataset ''''];
             queryTime = [and 'DATASET_INVENTORY.START_TIME' space '<=' space '''' t2iso '''',...
                          and 'DATASET_INVENTORY.END_TIME' space '>=' space '''' t1iso ''''];        
-            url_line_list = [cfaServer cfaAction selectedFields,...
+            url_line_list = [csaServer csaAction selectedFields,...
                              queryData queryTime queryFormat]; 
             irf.log('notice',['requesting: ' url_line_list]);
-            irf.log('warning','Be patient! Contacting CFA to see the list of files...');
+            irf.log('warning','Be patient! Contacting CSA to see the list of files...');
             caalist=urlread(url_line_list);
             irf.log('debug',['returned: ' caalist]);
-            if isempty(caalist) % there are no CFA datasets available
-                irf.log('warning','There are no CFA data sets available!');
+            if isempty(caalist) % there are no CSA datasets available
+                irf.log('warning','There are no CSA data sets available!');
                 return;
             end
     end  
 end
  
-switch downloadFromCFA
+switch downloadFromCSA
     case 0 % CAA
 		if doDataStreaming
 			url_line=[caaStream urlIdentity '&gzip=1&dataset_id=' ...
@@ -440,11 +441,11 @@ switch downloadFromCFA
 				urlFileInterval urlNonotify urlSchedule];
 		end
 		irf.log('warning','Be patient! Submitting data request to CAA...');
-    case 1 % CFA
-        url_line = [cfaServer urlSchedule cfaUrl urlIdentity ... 
+    case 1 % CSA
+        url_line = [csaServer urlSchedule csaUrl urlIdentity ... 
             '&DATASET_ID=' dataset '&START_DATE=' t1iso '&END_DATE=' t2iso ...
              urlFormat urlDeliveryInterval '&NON_BROWSER' urlNonotify];
-        irf.log('warning','Be patient! Submitting data request to CFA...');
+        irf.log('warning','Be patient! Submitting data request to CSA...');
 end
 
 irf.log('notice',['requesting: ' url_line]);
@@ -461,7 +462,7 @@ if status == 0 && exist(downloadedFile,'file')
 		disp(tline)
 		if any(strfind(tline,'http:')) && any(strfind(tline,'zip')), % CAA
 			downloadfile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
-        elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CFA
+        elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
             downloadfile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
 		end
 	end
@@ -501,11 +502,11 @@ function [status,downloadedFile]=get_zip_file(urlLink)
 % to data directory, downloadedFile is set to empty. If there is no zip
 % file or file is not zip file, status=0 and downloadedFile is set to
 % the downloaded file. 
-if     strfind(urlLink,'.gz');  downloadFromCFA = 1;
-elseif strfind(urlLink,'.zip'); downloadFromCFA = 0; end
+if     strfind(urlLink,'.gz');  downloadFromCSA = 1;
+elseif strfind(urlLink,'.zip'); downloadFromCSA = 0; end
 
 status = 0; % default
-switch downloadFromCFA
+switch downloadFromCSA
     case 0 % CAA
 		if doDataStreaming
 			% define time interval for file name YYYYMMDD_hhmmss_YYYYMMDD_hhmmss from tintiso
@@ -535,7 +536,7 @@ switch downloadFromCFA
 			return;
  		end
         [downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
-    case 1 % CFA
+    case 1 % CSA
         fileName=tempname;
         gzFileName = [fileName '.gz'];
         [gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);                
@@ -549,7 +550,7 @@ if isZipFileReady, %
     tempDirectory=tempname;
     mkdir(tempDirectory);
     try
-        switch downloadFromCFA
+        switch downloadFromCSA
             case 0
                 filelist=unzip(downloadedFile,tempDirectory);
             case 1
@@ -624,7 +625,7 @@ function caa_log(logText)
         fclose(fid);
     end
 end
-function queryDataset = cfaQueryDataset
+function queryDataset = csaQueryDataset
     % for wildcards, inventory requests use '%' as wildcard, 
     % while data requests use '*' (something that was not easy to implement)
     if strfind(dataset,'list:')
@@ -658,23 +659,23 @@ switch archive
             datastore('caa','pwd',caaPwd);
         end
         urlIdentity = ['uname=' caaUser '&pwd=' caaPwd];
-    case 'cfa' % just duplicate, but for cfa
-        cfaUser = datastore('cfa','user');
-        if isempty(cfaUser)
-            cfaUser = input('Input caa username [default:avaivads]:','s');
-            if isempty(cfaUser),
+    case 'csa' % just duplicate, but for csa
+        csaUser = datastore('csa','user');
+        if isempty(csaUser)
+            csaUser = input('Input csa username [default:avaivads]:','s');
+            if isempty(csaUser),
                 disp('Please register at ______? and later use your username and password.');
-                cfaUser='avaivads';
+                csaUser='avaivads';
             end
-            datastore('cfa','user',cfaUser);
+            datastore('csa','user',csaUser);
         end
-        cfaPwd = datastore('cfa','pwd');
-        if isempty(cfaPwd)
-            cfaPwd = input('Input cfa password [default:!kjUY88lm]:','s');
-            if isempty(cfaPwd), cfaPwd='!kjUY88lm';end
-            datastore('cfa','pwd',cfaPwd);
+        csaPwd = datastore('csa','pwd');
+        if isempty(csaPwd)
+            csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
+            if isempty(csaPwd), csaPwd='!kjUY88lm';end
+            datastore('csa','pwd',csaPwd);
         end
-        urlIdentity = ['USERNAME=' cfaUser '&PASSWORD=' cfaPwd];
+        urlIdentity = ['USERNAME=' csaUser '&PASSWORD=' csaPwd];
 end
 end
 function TT=construct_time_table(caalog,returnTimeTable)

@@ -48,7 +48,7 @@ function varargout = c_desc(vs,v_info)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,2,nargin))
+narginchk(1,2)
 if ~ischar(vs), error('VS must be a string'), end
 if nargin<2, v_info = []; end
 

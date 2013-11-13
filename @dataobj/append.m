@@ -21,7 +21,7 @@ if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
 
-error(nargchk(nargin,2,2))
+narginchk(2,2)
 
 if nargout==1, dataObject=[];end % default empty output
 

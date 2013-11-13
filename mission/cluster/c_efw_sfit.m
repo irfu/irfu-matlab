@@ -63,7 +63,7 @@ function spinfit = c_efw_sfit(pair,fout,maxit,minpts,te,data,tp,ph,method,tmmode
 %
 % Original version by Anders.Eriksson@irfu.se, 13 December 2002
 
-error(nargchk(8,10,nargin))
+narginchk(8,10)
 
 if pair~=12 && pair~=32 && pair~=34 && pair~=42, error('PAIR must be one of: 12, 34, 32, 42'), end
 
