@@ -9,9 +9,10 @@ disp(['Moving to temporary directory: ' tempdir_name]);
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
-%tint=[irf_time([2002 8 21 7 50 0]) irf_time([2002 8 21 8 0 0])]; % time interval
 tintIso='2002-08-21T07:50:00Z/2002-08-21T08:00:00Z';
 tint = irf_time(tintIso,'iso2tint');
+% time interval can be specified directly, uncomment below
+%tint=[irf_time([2002 8 21 7 50 0]) irf_time([2002 8 21 8 0 0])]; 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % download data from CAA or CSA (needed only once!!!!!)
@@ -26,7 +27,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % initialize figure
-h=irf_plot(3); % 5 subplots
+h=irf_plot(3); % 3 subplots
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
@@ -37,7 +38,7 @@ gsmB=irf_gse2gsm(B);
 % plot
 irf_plot(hca,gsmB(:,[1 4])); % select only Bz component
 hold(hca,'on');
-irf_plot(hca,[gsmB(1,1) 0;gsmB(end,1) 0],'b:');
+irf_plot(hca,[gsmB(1,1) 0;gsmB(end,1) 0],'b:'); % draw line at Y=0
 set(hca,'xgrid','off','ygrid','off');
 ylabel(hca,'B_Z [nT] GSM');
 irf_zoom(hca,'y',[-25 15])
@@ -46,6 +47,10 @@ irf_legend(hca,{'C1'},[0.98 0.98],'color','k')
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
 hca=irf_panel('PEACE spectrogram');
+% read data
+Vps = irf_get_data('Spacecraft_potential__C1_CP_EFW_L3_P','caa','mat');
+Vsat = [Vps(:,1) -Vps(:,2)]; % satellite potential is negative of 'probe ti sc' potential 
+% plot
 irf_plot(hca,'Data__C1_CP_PEA_PITCH_SPIN_DEFlux',...
 	'sum_dim1pitch',...% make average over 1 dimension, pitch angle average is not the same as simple average
 	'colorbarlabel',{'log10 dEF','keV/cm^2 s sr keV'});
@@ -53,8 +58,6 @@ caxis(hca,[5.1 7.9]);
 set(hca,'yscale','log','ylim',[10 3e4])
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
 hold(hca,'on');
-Vps = irf_get_data('Spacecraft_potential__C1_CP_EFW_L3_P','caa','mat');
-Vsat = [Vps(:,1) -Vps(:,2)]; % satellite potential is negative of 'probe ti sc' potential 
 irf_plot(hca,Vsat,'w-');
 irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
 ylabel(hca,'E [eV]');
@@ -62,14 +65,13 @@ ylabel(hca,'E [eV]');
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
 hca=irf_panel('STAFF spectrogram B and fce/flh lines');
-varname='BB_xxyyzz_sr2__C1_CP_STA_PSD';
-irf_plot(hca,varname,...
+irf_plot(hca,'BB_xxyyzz_sr2__C1_CP_STA_PSD',...
 	'colorbarlabel',{'log10 S',irf_get_data(varname,'caa','units')},...
-	'sum_dim2');
+	'sum_dim2'); % sum Bx^2, By^2, Bz^2
 hold(hca,'on');
 fce=irf_plasma_calc(B,0,0,0,0,'Fce'); % calculate electron gyrofrequency
 irf_plot(hca,fce,'-','linewidth',0.2,'color','w');
-flh=irf_plasma_calc(B,1,0,0,0,'Flh'); % calculate lower hybrid frequency (underdense case in puter magnetosphere)
+flh=irf_plasma_calc(B,1,0,0,0,'Flh'); % calculate lower hybrid frequency (underdense case in outer magnetosphere)
 irf_legend(hca,'f_{ce}',[0.02 0.9],'color','w');
 irf_plot(hca,flh,'-','linewidth',0.2,'color','k');
 irf_legend(hca,'f_{lh}',[0.02 0.1],'color','k');
@@ -107,10 +109,14 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-% to print the figure uncomment the lines below
+% to print the figure uncomment appropriate lines below
 %
-% set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
-% print -dpng -painters Example_1.png;
+% set(gcf,'paperpositionmode','auto')  % to get the same on paper as on screen
+% print -dpng -painters Example_1.png; % to print png file
+% print -depsc2 -painters delme.eps; % to print eps file with no white margins
+%	to obtain pdf without white margins execute on the system command one of:
+% ps2pdf -dEPSFitPage -dEPSCrop delme.eps
+% epstopdf delme.eps
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % remove temporary directory
@@ -119,5 +125,3 @@ disp('When finnished with the example, ');
 disp('remove the temporary directory in which you are located!')
 disp('>p=pwd;cd ..; rmdir(p,''s'');');
 disp('!!!!!!!!!!!!!!!!!!!!!!!!!!')
-
-
