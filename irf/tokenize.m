@@ -18,7 +18,7 @@ function tokens = tokenize(str, delimiter)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,2,nargin))
+narginchk(1,2)
 
 if nargin < 2
 	delimiter = ' ';

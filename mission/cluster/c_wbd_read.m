@@ -19,7 +19,7 @@ function data=c_wbd_read(start_time,dt,cl_id)
 
 % Copyright 2004 Yuri Khotyaintsev
 
-error(nargchk(3,3,nargin))
+narginchk(3,3)
 
 cl_id_s = num2str(cl_id);
 

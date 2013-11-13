@@ -25,7 +25,7 @@ function caa_reproc(fname,l0vars,l1vars,cfiles)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,4,nargin))
+narginchk(2,4)
 
 if nargin<4, cfiles = ''; end
 if nargin==2, l1vars = ''; end

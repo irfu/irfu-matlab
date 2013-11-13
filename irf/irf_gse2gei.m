@@ -25,7 +25,7 @@ function y = irf_gse2gei(x,flag_gse2gei)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,2,nargin))
+narginchk(1,2)
 
 if nargin==1, flag_gse2gei = 1; end
 

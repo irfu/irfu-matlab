@@ -15,7 +15,7 @@ function data = caa_append_data(data,app)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if size(data,2) ~= size(app,2), error('data has a different dimension'), end
 

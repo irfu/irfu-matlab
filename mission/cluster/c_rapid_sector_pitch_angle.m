@@ -7,7 +7,7 @@ function pitch_angles=c_rapid_sector_pitch_angle(diB,ic)
 % 
 % pitch_anglse - matrix with 10 columns. 1 column time and others are pitch angles for sectors 1..9
 
-error(nargchk(0,6,nargin))
+narginchk(0,6)
 if nargin==0, help c_rapid_sector_pitch_angle;return;end
 
 t=diB(:,1);

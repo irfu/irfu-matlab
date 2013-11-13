@@ -26,7 +26,7 @@ function data=irf_istp_get(data_path,start_time,dt_int,sc_id,quantity,lev)
 
 % Copyright 2006 Yuri Khotyaintsev
 
-error(nargchk(5,6,nargin))
+narginchk(5,6)
 
 switch (sc_id)
 case 'ace'

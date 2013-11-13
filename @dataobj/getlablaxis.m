@@ -10,7 +10,7 @@ function res = getlablaxis(dobj,var_s)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 res = findva(dobj,'LABLAXIS',var_s);
 

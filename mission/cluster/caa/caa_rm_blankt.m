@@ -21,7 +21,7 @@ function res = caa_rm_blankt(data,time_int,mode)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,3,nargin))
+narginchk(2,3)
 
 res = data;
 if isempty(data) || isempty(time_int), return, end
