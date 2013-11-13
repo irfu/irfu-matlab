@@ -5,7 +5,7 @@ function irf_plot_ylabels_align(h)
 %
 %   IRF_PLOT_YLABELS_ALIGN(h) align ylabels of axis with handles h
 
-error(nargchk(0,1,nargin))
+narginchk(0,1)
 
 if nargin==0, % get subplot handles and align all of them
     h=irf_plot_get_subplot_handles;

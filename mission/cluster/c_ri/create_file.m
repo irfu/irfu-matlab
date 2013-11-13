@@ -13,7 +13,7 @@ function output_file = create_file(time,cl_id,mode)
 
 %Written by Robert Isaksson in the summer of -03
 
-error(nargchk(3,3,nargin))
+narginchk(3,3)
 
 if ~(isnumeric(time) && time>0), error('TIME must be epoch'), end
 if ~(isnumeric(cl_id) && any(cl_id==(1:4))), error('CL_ID must be 1..4'), end

@@ -18,7 +18,7 @@ function caa_get_batch_l0(iso_t,dt,cl_id,sdir,srcvars)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(5,5,nargin))
+narginchk(5,5)
 sc_list = cl_id;
 
 REQ_INT = 60; % Intervals (sec) for which we request FDM

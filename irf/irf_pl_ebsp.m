@@ -83,6 +83,7 @@ yTickList = cell(nPanels,1); idxPanel = 0;
 sr = struct('t',ebsp.t,'f',ebsp.f);
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
+    idxPanel = idxPanel + 1;
     flagCmapPoy = 0;
     field = plotFields{idxField}; comp = plotComps{idxField}(idxComp);
     lim = limFields{idxField};
@@ -91,15 +92,19 @@ for idxField = 1:length(plotFields)
     else panelStr = [paramStr '_' compStr]; 
     end
     hca = irf_panel(panelStr); 
-    sr.p = UpdateUnits(ebsp.(field)(:,:,comp));
-    sr.p = LimitValues(sr.p);
-    [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
-    [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
-    set(hca,'YScale','log'), SetCaxis()
+    if ~isempty(ebsp.(field))
+      sr.p = LimitValues(ebsp.(field)(:,:,comp));
+      [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
+      yTickList(idxPanel) = {get(hcb,'YTick')};
+      SetCaxis()
+    else
+      hcb = -1; 
+      yTickList(idxPanel) = {''};
+    end
+    set(hca,'YScale','log')
     set(hca,'Color',0.7*[1 1 1]); % grey background
-    idxPanel = idxPanel + 1;
     hcbList(idxPanel) = hcb; cmapPoyList(idxPanel) = flagCmapPoy;
-    yTickList(idxPanel) = {get(hcb,'YTick')};
   end
 end
 
@@ -227,8 +232,15 @@ if nargout, out = h; end % Return here
   end
   function PlotCyclotronFrequency
     if isempty(ebsp.fullB) && isempty(ebsp.B0), return, end
-    if isempty(ebsp.fullB), B = ebsp.fullB; else B = ebsp.B0; end
-    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,5)*1e-9/units.me/2/pi];
+    if ~isempty(ebsp.fullB), B = ebsp.fullB; 
+    else B = ebsp.B0; 
+    end
+    if size(B,2) == 1, 
+      B = [ebsp.t B];
+    else
+      B = irf_abs(B);  B = [B(:,1) B(:,5)];
+    end
+    units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,2)*1e-9/units.me/2/pi];
     mep = units.me/units.mp;
     % F_ce, F_ce/2, F_cp, F_cHe, F, cO
     fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
@@ -280,22 +292,18 @@ if nargout, out = h; end % Return here
       else colormap(cmapSpace)
       end
       freezeColors
-      set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
-      pos = get(hcbList(iPanel),'Position');
-      hYLabel = get(hcbList(iPanel),'ylabel');
-      yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
-      hcbNew = cbfreeze(hcbList(iPanel));
+      if ishandle(hcbList(iPanel))
+        set(hcbList(iPanel),'YTick',yTickList{iPanel},'TickDir','out');
+        pos = get(hcbList(iPanel),'Position');
+        hYLabel = get(hcbList(iPanel),'ylabel');
+        yLabelStr = get(hYLabel,'string'); yLabelFontSize = get(hYLabel,'fontsize');
+        hcbNew = cbfreeze(hcbList(iPanel));
+      end
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
       l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
       set(hcbNew,'YTickLabel',l);
-    end
-  end
-  function a=UpdateUnits(a)
-    switch compStr
-      case {'t','p'}
-        a = a*180/pi; % to degrees
     end
   end
 end

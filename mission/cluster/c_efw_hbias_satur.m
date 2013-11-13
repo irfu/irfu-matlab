@@ -27,7 +27,7 @@ DEBUG = 0;
 HBIASSA = [];
 wakedesc=[];
 
-error(nargchk(3,5,nargin))
+narginchk(3,5)
 if nargin<5, plotflag = 0; end
 if nargin<4, whip = []; end
 

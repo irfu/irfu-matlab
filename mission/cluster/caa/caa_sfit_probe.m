@@ -17,7 +17,7 @@ function [probeNum,flag_lx,probeStr] = caa_sfit_probe(cl_id,probe)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,2,nargin))
+narginchk(1,2)
 if cl_id<1 || cl_id>4, error('CL_ID must be 1..4'), end
 
 if nargin>1

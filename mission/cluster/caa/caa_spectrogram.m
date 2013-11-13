@@ -33,7 +33,7 @@ disp('caa_spectrogram is replaced with irf_spectrogram');
 disp('caa_spectrogram will be removed in the near future');
 disp('');
 
-error(nargchk(1,6,nargin))
+narginchk(1,6)
 
 if nargin==1, 
     specrec = h; h = [];

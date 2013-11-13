@@ -107,7 +107,7 @@ classdef Time
     
     function e = toEpoch(t)
       % Convert time to ISDAT epoch
-      e = iso2epoch2(toUTC(t));
+      e = iso2epoch(toUTC(t));
     end
     
     function s = toUTC(t)

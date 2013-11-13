@@ -56,7 +56,7 @@ function c_get_batch(st,dt,varargin)
 
 persistent st_vector dt_sec;
 
-error(nargchk(0 ,15,nargin))
+narginchk(0 ,15)
 
 sc_list = 1:4;
 

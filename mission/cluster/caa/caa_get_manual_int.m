@@ -12,7 +12,7 @@ function [intervals, qualities] = caa_get_manual_int(st,dt,man_int)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.
 
-error(nargchk(3, 3, nargin))
+narginchk(3, 3)
 
 if isempty(man_int), error('Empty man_int'), end
 

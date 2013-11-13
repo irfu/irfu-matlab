@@ -82,7 +82,7 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(5,15,nargin))
+narginchk(5,15)
 
 warning off  'ISDAT:serverWarning'
 warning off  'ISDAT:serverMessage'

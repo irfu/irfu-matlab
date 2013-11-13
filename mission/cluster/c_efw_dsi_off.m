@@ -16,7 +16,7 @@ function [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,Ps)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(1,3,nargin))
+narginchk(1,3)
 
 SC_POT_LIM = -8;  % Above this we apply SW/SH correction, below - MS
 TAV = 300; % Averaging window for SC potential
