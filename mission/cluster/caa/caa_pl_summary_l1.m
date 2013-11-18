@@ -298,6 +298,9 @@ for cli=1:4
                 bitmask_column = quality_column - 1;
                 
                 % Identify and flag problem areas in data with bitmask and quality factor:
+		if probe_numeric == 420		% For C3 probe 420
+			probe_numeric = 42;
+		end
                 spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',probe_numeric), cli, bitmask_column, quality_column);
 %                spinFits.diEs = caa_identify_problems(spinFits.diEs, data_level, sprintf('%d',spinFits.probePair), cli, bitmask_column, quality_column);
                 
@@ -356,6 +359,9 @@ for cli=1:4
                 es = [es; spinFits.diEs]; %#ok<AGROW>
                 
                 % Load RSPEC
+		if spinFits.probePair == 420	% For C3 probe 420
+			spinFits.probePair = 42;
+		end
                 rspec_tmp = c_load(['RSPEC?p' num2str(spinFits.probePair)],cli,'var');
                 if ~isempty(rspec_tmp) && rspec_tmp(1,1)~=-157e8
                     rs = rspec_tmp;
