@@ -1708,8 +1708,10 @@ elseif strcmp(quantity,'badbias')
 							if ii
 								irf_log('proc',['bad bias after sweep on p' ...
 									num2str(pro) ':'])
-								irf_log('proc',[epoch2iso(bb_st(ii),1) ' -- ' ...
-									epoch2iso(bb_et(ii),1)])
+								for nn = ii
+									irf_log('proc',[epoch2iso(bb_st(nn),1) ' -- ' ...
+										epoch2iso(bb_et(nn),1)])
+								end
 								% Bad bias longer then 48 sec is not related to sweep.
 								% 48 = 32 + 32/2
 								if bb_et(ii) - bb_st(ii) >48
