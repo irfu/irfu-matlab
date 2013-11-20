@@ -219,7 +219,10 @@ elseif dim == 1
     plot_data = {double(data.data)};
     if dim == 1
       if isfield(data,'TENSOR_ORDER')
-        if data.dim(str2double(data.TENSOR_ORDER)+1) > 1
+        if ischar(data.TENSOR_ORDER), thensorOrder = str2double(data.TENSOR_ORDER);
+        else thensorOrder = data.TENSOR_ORDER;
+        end
+        if data.dim(thensorOrder+1) > 1
           flag_spectrogram = 1;
           ydim = 1;
         else
