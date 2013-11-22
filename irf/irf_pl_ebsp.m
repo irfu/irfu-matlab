@@ -115,8 +115,8 @@ for idxField = 1:length(plotFields)
         [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
       end
       [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
-      yTickList(idxPanel) = {get(hcb,'YTick')};
       SetCaxis()
+      yTickList(idxPanel) = {get(hcb,'YTick')};
     else
       hcb = -1; 
       yTickList(idxPanel) = {''};
