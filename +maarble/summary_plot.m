@@ -1,8 +1,28 @@
-%function res = summary_plot(fname)
+function summary_plot(fname,dataPath)
+%SUMMARY_PLOT  Make a summary plot from a CAA-CDF file
+%
+% summary_plot(fileName,dataPath)
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+%
+% This software was developed as part of the MAARBLE (Monitoring,
+% Analyzing and Assessing Radiation Belt Energization and Loss)
+% collaborative research project which has received funding from the
+% European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
+% under grant agreement n. 284520.
 
 %% Load data
-cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12
-fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
+if 0
+  cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12
+  fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
+end
+
+if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
 if isempty(iSep)
@@ -12,7 +32,7 @@ end
 
 
 productName = fname(1:iSep-1);
-d = dataobj(fname);
+d = dataobj([dataPath filesep fname]);
 
 %% Construct ebsp
 
@@ -49,6 +69,11 @@ for iField = 1:length(fields)
   end
 end
 
-%% plot
+%XXX TODO: add handling of position
 
-h = irf_pl_ebsp(ebsp);
+%% plot
+irf_pl_ebsp(ebsp);
+
+%% Save
+set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
+print('-r600','-dpng',fname(1:end-4))
