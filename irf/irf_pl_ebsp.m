@@ -80,7 +80,13 @@ GetPlotParams();
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
-sr = struct('t',ebsp.t,'f',ebsp.f);
+if isstruct(ebsp.t)
+  timeVec = ebsp.t.data;
+  sr = struct('t',timeVec,'f',ebsp.f.data);
+else
+  timeVec = ebsp.t;
+  sr = struct('t',timeVec,'f',ebsp.f);
+end
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
     idxPanel = idxPanel + 1;
@@ -93,8 +99,21 @@ for idxField = 1:length(plotFields)
     end
     hca = irf_panel(panelStr); 
     if ~isempty(ebsp.(field))
-      sr.p = LimitValues(ebsp.(field)(:,:,comp));
-      [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      if isstruct(ebsp.(field))
+        sr.p = LimitValues(ebsp.(field).data(:,:,comp));
+        if ischar(ebsp.(field).units), tmpUnits = ebsp.(field).units;
+        elseif isstruct(ebsp.(field).units)
+          tmpUnits = ebsp.(field).units.data(comp,:);
+        else error('cannot treat units')
+        end
+        while tmpUnits(end)==' ' && length(tmpUnits) > 1
+          tmpUnits(end) = []; % Remove trailing spaces
+        end
+        [sr.plot_type,sr.p_label] = GetPlotTypeLabel(tmpUnits);
+      else
+        sr.p = LimitValues(ebsp.(field)(:,:,comp));
+        [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      end
       [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
       yTickList(idxPanel) = {get(hcb,'YTick')};
       SetCaxis()
@@ -108,11 +127,11 @@ for idxField = 1:length(plotFields)
   end
 end
 
-irf_zoom(h,'x',ebsp.t([1 end])')
+irf_zoom(h,'x',timeVec([1 end])')
 
 if ~isempty(ebsp.r)
   xlabel(h(end),''), add_position(h(end),ebsp.r)
-  title(h(1),irf_disp_iso_range(ebsp.t([1 end])',1))
+  title(h(1),irf_disp_iso_range(timeVec([1 end])',1))
 end
 
 SetColorMap()
@@ -193,20 +212,24 @@ if nargout, out = h; end % Return here
       end
     end
   end
-  function [t,s] = GetPlotTypeLabel
+  function [t,s] = GetPlotTypeLabel(unitsStr)
+    if nargin<1, unitsStr = ''; end
     t = 'lin';
     switch compStr
       case {'r','x','y','z','xx','yy','zz','sum'}
         s = ['log(' paramStr '_{' upper(compStr) '}) \newline ' GetUnits()];
         t = 'log';
       case 't'
-        s = ['\Theta_{' paramStr '} [deg]'];
+        if isempty(unitsStr), unitsStr = 'deg'; end
+        s = ['\Theta_{' paramStr '} [' unitsStr ']'];
       case 'p'
-        s = ['\Phi_{' paramStr '} [deg]'];
+        if isempty(unitsStr), unitsStr = 'deg'; end
+        s = ['\Phi_{' paramStr '} [' unitsStr ']'];
       otherwise
         s = paramStr;
     end
     function s = GetUnits
+      if ~isempty(unitsStr), s = ['[' unitsStr ']']; return, end
       switch paramStr
         case 'bb'
           s = '[nT^2/Hz]';
@@ -221,7 +244,10 @@ if nargout, out = h; end % Return here
     if isempty(lim), return, end
     for idx = 1:length(lim)
       limStruct = lim{idx};
-      limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      if isstruct(ebsp.(limStruct.param)),
+        limData = ebsp.(limStruct.param).data(:,:,limStruct.comp);
+      else limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      end
       switch lower(limStruct.type)
         case 'low'
           data(limData < limStruct.val) = NaN;
@@ -235,8 +261,9 @@ if nargout, out = h; end % Return here
     if ~isempty(ebsp.fullB), B = ebsp.fullB; 
     else B = ebsp.B0; 
     end
-    if size(B,2) == 1, 
-      B = [ebsp.t B];
+    if isstruct(B), B = B.data; end
+    if size(B,2) == 1,
+      B = [timeVec B];
     else
       B = irf_abs(B);  B = [B(:,1) B(:,5)];
     end
@@ -256,9 +283,12 @@ if nargout, out = h; end % Return here
       case 'ellipticity'
         caxis(hca,[-1 1]), set(hcb,'TickDir','out')
         flagCmapPoy = 1;
-      case 'bb'        
-        cmax = max(max(log10(abs(ebsp.(field)(:,:,comp)))));
-        cmin = min(min(log10(abs(ebsp.(field)(:,:,comp)))));
+      case 'bb'
+        if isstruct(ebsp.(field)), data = ebsp.(field).data(:,:,comp);
+        else data = ebsp.(field)(:,:,comp);
+        end
+        cmax = max(max(log10(abs(data))));
+        cmin = min(min(log10(abs(data))));
         if cmin < cmax-6.5
           caxis(hca,floor(cmax)+[-6.5 0]), set(hcb,'TickDir','out')
         end

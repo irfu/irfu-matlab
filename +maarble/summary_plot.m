@@ -1,5 +1,6 @@
 %function res = summary_plot(fname)
 
+%% Load data
 cd /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/CAA-Test-Files-Cluster-ULF/C1_CP_AUX_MAARBLE_ULF_PC12
 fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
 
@@ -9,8 +10,11 @@ if isempty(iSep)
   error('invalid file name')
 end
 
+
 productName = fname(1:iSep-1);
 d = dataobj(fname);
+
+%% Construct ebsp
 
 ebsp = struct('t',[],'f',[],'flagFac',1,...
   'bb_xxyyzzss',[],'ee_xxyyzzss',[],'ee_ss',[],...
@@ -34,12 +38,17 @@ fields = {{'t','Time'},...
 for iField = 1:length(fields)
   fieldName = fields{iField}{1};
   varName = fields{iField}{2};
-  tmpVar = getv(d,[varName '__' productName]);
+  tmpVar = get_variable(d,[varName '__' productName]);
   if isempty(tmpVar), continue, end
-  ebsp.(fieldName) = tmpVar.data;
+  if isnumeric(tmpVar.FILLVAL)
+    tmpVar.data(tmpVar.data == tmpVar.FILLVAL) = NaN;
+  end
+  ebsp.(fieldName) = struct('data',tmpVar.data,'units',tmpVar.UNITS);
   if strcmp(fieldName,'bb_xxyyzzss')
-    ebsp.(fieldName)(:,:,4) = sum(ebsp.(fieldName)(:,:,1:3),3);
+    ebsp.(fieldName).data(:,:,4) = sum(ebsp.(fieldName).data(:,:,1:3),3);
   end
 end
 
-irf_pl_ebsp(ebsp)
+%% plot
+
+h = irf_pl_ebsp(ebsp);
