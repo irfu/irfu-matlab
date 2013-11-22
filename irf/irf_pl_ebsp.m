@@ -82,10 +82,11 @@ hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
 if isstruct(ebsp.t)
   timeVec = ebsp.t.data;
-  sr = struct('t',timeVec,'f',ebsp.f.data);
+  sr = struct('t',timeVec,'f',ebsp.f.data,...
+    'f_label',['Freq [' ebsp.f.units ']']);
 else
   timeVec = ebsp.t;
-  sr = struct('t',timeVec,'f',ebsp.f);
+  sr = struct('t',timeVec,'f',ebsp.f,'f_label','Freq [Hz]');
 end
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
