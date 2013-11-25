@@ -8,11 +8,10 @@ QTRAN=/usr/local/bin/Qtran
 if [ ! -x $QTRAN ]; then ("$QTRAN does not exist/not executable" && exit 1); fi
 
 BASEDIR=/data/caa/MAARBLE
+DBDIR="$BASEDIR/WaveDatabase"
 DELIVERY_DIR="$BASEDIR/Delivery"
 if [ ! -d $DELIVERY_DIR ]; then 
 	mkdir $DELIVERY_DIR || (echo "Cannot create DELIVERY dir" && exit 1)
-	mkdir $DELIVERY_DIR/CEF || (echo "Cannot create CEF DELIVERY dir" && exit 1)
-	mkdir $DELIVERY_DIR/CDF || (echo "Cannot create CDF DELIVERY dir" && exit 1)
 	echo Created DELIVERY_DIR : $DELIVERY_DIR
 fi
 LOGDIR="$BASEDIR/Log"
@@ -33,26 +32,73 @@ for inst in irf noa uofa iap; do
 	cp $BASEDIR/Upload/$inst/HEADERS/*.ceh $INCLUDES > /dev/null 2>&1 
 done
 
+STATUS=''
 while read fname; do
+	case $STATUS in
+		OK|Failed) echo $STATUS;;
+		*) ;;
+	esac
+	STATUS=Failed
 	NAME=`echo "$fname" | cut -d'.' -f1`
-	echo -n Processing $NAME ...
+	echo -n $NAME ...
 	LOG=$LOGDIR/$NAME.log
-	EXTENSION=`echo "$fname" | cut -d'.' -f2`
 	if [ ! -e $fname ]; then
-		echo Cannot find $fname
- 		continue
+		echo "Cannot find $fname" && continue
 	fi   
 	$CEFMERGE -I $INCLUDES -O $TMPDIR $fname >> $LOG 2>&1 || (cp $fname $FAILED && continue) 
 	newfile=`find $TMPDIR -name \*.cef` 
 	$QTRAN $newfile >> $LOG 2>&1
-	echo moving $newfile $DELIVERY_DIR/CEF >> $LOG
-	mv $newfile $DELIVERY_DIR/CEF 
+	
+	# Get destination directory fro the data
+	DATASET_NAME=`echo $NAME|awk -F'__' '{print $1}'`
+	case "$DATASET_NAME" in
+  		C[1-4]_CP_AUX_MAARBLE_*)
+  			SHORT_NAME=`echo $DATASET_NAME|awk -F'CP_AUX_MAARBLE' '{print $2}'`
+			PROJ=Cluster
+			MEMBER=C`echo $DATASET_NAME|cut -c2`
+		;;
+		CC_CP_AUX_MAARBLE_*)
+  			SHORT_NAME=`echo $DATASET_NAME|awk -F'CC_CP_AUX_MAARBLE_' '{print $2}'`
+  			echo SHORT_NAME : $SHORT_NAME
+  			case "$SHORT_NAME" in
+  				TH[A-E]_*) PROJ=THEMIS;;
+  				DOB_*|HOR_*|KEV_*|KIR_*|NUR_*|OUJ_*|RVK_*|SOD_*|UPS_*|TRO_*)
+  					PROJ=IMAGE;;
+  				*) echo "Unknown non-Cluster project" && exit 1;;
+  			esac
+  			MEMBER=`echo $SHORT_NAME|cut -d'_' -f1`
+  		;;
+  		*) echo "Unknown non-Cluster parameter" && exit 1;;
+	esac
+	case "$SHORT_NAME" in 
+		*_ULF_PC1) DB=ULF; DSET=PC1;;
+		*_ULF_PC12) DB=ULF; DSET=PC12;;
+		*_ULF_PC35) DB=ULF; DSET=PC35;;
+		*_VLF*) DB=VLF; DSET=VLF;;
+		*) echo "Unknown Cluster parameter" && exit 1;;
+	esac
+	DEST=$DBDIR/$DB/$PROJ/$MEMBER/$DSET
+	if [ ! -d $DEST ]; then
+		mkdir -p $DEST/CEF || (echo "Cannot create $DEST/CEF" && exit 1)
+		mkdir $DEST/CDF
+	fi
+	
+	echo moving $fname $DELIVERY_DIR >> $LOG
+	mv $fname $DELIVERY_DIR/CEF
+	
+	echo moving $newfile $DEST/CEF >> $LOG
+	mv $newfile $DEST/CEF 
+	 
 	newfile=`find $TMPDIR -name \*.cdf`	
 	if [ -n "$newfile" ]; then
-		echo moving $newfile to $DELIVERY_DIR/CDF >> $LOG
-		mv $newfile $DELIVERY_DIR/CDF
+		echo moving $newfile to $DEST/CDF >> $LOG
+		mv $newfile $DEST/CDF
 	fi
-	echo Done.
+	STATUS=OK
 done
+case $STATUS in
+	OK|Failed) echo $STATUS;;
+	*) ;;
+esac
 rm -rf $INCLUDES 
 rmdir $TMPDIR
