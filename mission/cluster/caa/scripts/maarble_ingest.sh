@@ -1,4 +1,6 @@
 #!/bin/sh
+#
+# Usage : ls *.cef | maarble_ingest.sh
 
 CEFMERGE=/usr/local/bin/cefmerge
 if [ ! -x $CEFMERGE ]; then ("$CEFMERGE does not exist/not executable" && exit 1); fi
@@ -31,7 +33,7 @@ for inst in irf noa uofa iap; do
 	cp $BASEDIR/Upload/$inst/HEADERS/*.ceh $INCLUDES > /dev/null 2>&1 
 done
 
-for fname in $1; do
+while read fname; do
 	NAME=`echo "$fname" | cut -d'.' -f1`
 	echo -n Processing $NAME ...
 	LOG=$LOGDIR/$NAME.log
