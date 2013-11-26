@@ -212,7 +212,7 @@ end
       {FORMAT_DEG, ebsp.planarity},...     % PLANSVD
       {FORMAT_DEG, ebsp.dop},...           % DOP
       {FORMAT_DEG, ebsp.dop2d},...         % POLSVD
-      {FORMAT_EXP_ANG_ANG, PV},...           % PV
+      {FORMAT_EXP_ANG_ANG, PV},...         % PV
       {FORMAT_EXP, ebsp.ee_ss},...         % ESUM
       {FORMAT_EXP, magB}                   % BMAG
       };
