@@ -11,7 +11,7 @@ BASEDIR=/data/caa/MAARBLE
 DBDIR="$BASEDIR/WaveDatabase"
 DELIVERY_DIR="$BASEDIR/Delivery"
 if [ ! -d $DELIVERY_DIR ]; then 
-	mkdir $DELIVERY_DIR || (echo "Cannot create DELIVERY dir" && exit 1)
+	mkdir -p $DELIVERY_DIR/CEF || (echo "Cannot create DELIVERY/CEF dir" && exit 1)
 	echo Created DELIVERY_DIR : $DELIVERY_DIR
 fi
 LOGDIR="$BASEDIR/Log"
@@ -40,7 +40,7 @@ while read fname; do
 	esac
 	STATUS=Failed
 	NAME=`echo "$fname" | cut -d'.' -f1`
-	echo -n $NAME ...
+	echo -n "$NAME  "
 	LOG=$LOGDIR/$NAME.log
 	if [ ! -e $fname ]; then
 		echo "Cannot find $fname" && continue
@@ -59,7 +59,6 @@ while read fname; do
 		;;
 		CC_CP_AUX_MAARBLE_*)
   			SHORT_NAME=`echo $DATASET_NAME|awk -F'CC_CP_AUX_MAARBLE_' '{print $2}'`
-  			echo SHORT_NAME : $SHORT_NAME
   			case "$SHORT_NAME" in
   				TH[A-E]_*) PROJ=THEMIS;;
   				DOB_*|HOR_*|KEV_*|KIR_*|NUR_*|OUJ_*|RVK_*|SOD_*|UPS_*|TRO_*)
@@ -84,15 +83,15 @@ while read fname; do
 	fi
 	
 	echo moving $fname $DELIVERY_DIR >> $LOG
-	mv $fname $DELIVERY_DIR/CEF
+	mv $fname $DELIVERY_DIR/CEF || (echo "Cannot move" && exit 1)
 	
 	echo moving $newfile $DEST/CEF >> $LOG
-	mv $newfile $DEST/CEF 
+	mv $newfile $DEST/CEF || (echo "Cannot move" && exit 1) 
 	 
 	newfile=`find $TMPDIR -name \*.cdf`	
 	if [ -n "$newfile" ]; then
 		echo moving $newfile to $DEST/CDF >> $LOG
-		mv $newfile $DEST/CDF
+		mv $newfile $DEST/CDF || (echo "Cannot move" && exit 1)
 	fi
 	STATUS=OK
 done
