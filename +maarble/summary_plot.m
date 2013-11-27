@@ -26,7 +26,7 @@ if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
 if isempty(iSep)
-  irf_log('error','invalid file name')
+  irf_log('critical','invalid file name')
   error('invalid file name')
 end
 
