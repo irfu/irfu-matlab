@@ -38,7 +38,8 @@ if nVars>0
         attr = dobj.VariableAttributes.(variableAttributeNames{j}){iattr,2};
         if ischar(attr), 
 			if strcmp(attr,varName),
-				error;
+        irf.log('error',['Variable depends on itself : ' varName])
+				error('Recursive variable dependence');
 			end
 			varTmp = get_variable(dobj,attr);
         else varTmp = [];
