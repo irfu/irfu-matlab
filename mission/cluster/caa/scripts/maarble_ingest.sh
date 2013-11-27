@@ -3,29 +3,33 @@
 # Usage : ls *.cef | maarble_ingest.sh
 
 CEFMERGE=/usr/local/bin/cefmerge
-if [ ! -x $CEFMERGE ]; then ("$CEFMERGE does not exist/not executable" && exit 1); fi
+if [ ! -x $CEFMERGE ]; then 
+	echo "$CEFMERGE does not exist/not executable" && exit 1; 
+fi
 QTRAN=/usr/local/bin/Qtran
-if [ ! -x $QTRAN ]; then ("$QTRAN does not exist/not executable" && exit 1); fi
+if [ ! -x $QTRAN ]; then 
+	echo "$QTRAN does not exist/not executable" && exit 1;
+fi
 
 BASEDIR=/data/caa/MAARBLE
 DBDIR="$BASEDIR/WaveDatabase"
 DELIVERY_DIR="$BASEDIR/Delivery"
 if [ ! -d $DELIVERY_DIR ]; then 
-	mkdir -p $DELIVERY_DIR/CEF || (echo "Cannot create DELIVERY/CEF dir" && exit 1)
+	mkdir -p $DELIVERY_DIR/CEF || exit 1
 	echo Created DELIVERY_DIR : $DELIVERY_DIR
 fi
 LOGDIR="$BASEDIR/Log"
 if [ ! -d $LOGDIR ]; then 
-	mkdir $LOGDIR || (echo "Cannot create LOG dir" && exit 1)
+	mkdir $LOGDIR || exit 1 
 	echo Created LOGDIR : $LOGDIR
 fi
 FAILED="$BASEDIR/Failed"
 if [ ! -d $FAILED ]; then 
-	mkdir $FAILED || (echo "Cannot create FAILED dir" && exit 1)
+	mkdir $FAILED || exit 1
 	echo Created FAILED_DIR : $FAILED
 fi
 
-TMPDIR=`mktemp -d -t MAARBLE.XXXXXX` || (echo "Cannot mktemp" && exit 1)
+TMPDIR=`mktemp -d -t MAARBLE.XXXXXX` || exit 1
 INCLUDES=$TMPDIR/include
 mkdir $INCLUDES
 for inst in irf noa uofa iap; do
@@ -78,20 +82,20 @@ while read fname; do
 	esac
 	DEST=$DBDIR/$DB/$PROJ/$MEMBER/$DSET
 	if [ ! -d $DEST ]; then
-		mkdir -p $DEST/CEF || (echo "Cannot create $DEST/CEF" && exit 1)
+		mkdir -p $DEST/CEF || exit 1
 		mkdir $DEST/CDF
 	fi
 	
 	echo moving $fname $DELIVERY_DIR >> $LOG
-	mv $fname $DELIVERY_DIR/CEF || (echo "Cannot move" && exit 1)
+	mv $fname $DELIVERY_DIR/CEF || exit 1
 	
 	echo moving $newfile $DEST/CEF >> $LOG
-	mv $newfile $DEST/CEF || (echo "Cannot move" && exit 1) 
+	mv $newfile $DEST/CEF || exit 1 
 	 
 	newfile=`find $TMPDIR -name \*.cdf`	
 	if [ -n "$newfile" ]; then
 		echo moving $newfile to $DEST/CDF >> $LOG
-		mv $newfile $DEST/CDF || (echo "Cannot move" && exit 1)
+		mv $newfile $DEST/CDF || exit 1
 	fi
 	STATUS=OK
 done
