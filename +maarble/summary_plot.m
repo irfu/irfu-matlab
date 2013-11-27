@@ -26,7 +26,7 @@ if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
 if isempty(iSep)
-  irf_log('error','invalid file name')
+  irf_log('critical','invalid file name')
   error('invalid file name')
 end
 
@@ -59,7 +59,16 @@ for iField = 1:length(fields)
   fieldName = fields{iField}{1};
   varName = fields{iField}{2};
   tmpVar = get_variable(d,[varName '__' productName]);
-  if isempty(tmpVar), continue, end
+  if isempty(tmpVar)
+    % Specially treat GB data which are not in FAC system
+    if strcmp(fieldName,'bb_xxyyzzss')
+      tmpVar = get_variable(d,['BB_xxyyzz__' productName]);
+      if isempty(tmpVar), continue
+      else ebsp.flagFac = 0;
+      end
+    else continue
+    end
+  end
   if isnumeric(tmpVar.FILLVAL)
     tmpVar.data(tmpVar.data == tmpVar.FILLVAL) = NaN;
   end
@@ -69,10 +78,35 @@ for iField = 1:length(fields)
   end
 end
 
-%XXX TODO: add handling of position
+% Handling of position
+if regexp(productName,'^C[1-4]_CP')==1
+  ebsp.r = local.c_read(['R' productName(2)],ebsp.t.data([1 end]));
+elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_VLF')==1
+  r=getmat(d,['POSITION__' productName])';
+  ebsp.r = [ebsp.t.data(1) r*6371.0];
+end
+
+flagNoE = 0;
+flagNoPolarization = 0;
+if isempty(ebsp.ee_ss), flagNoE = 1; end
+if isempty(ebsp.dop), flagNoPolarization = 1; end
 
 %% plot
-irf_pl_ebsp(ebsp);
+if flagNoE && flagNoPolarization
+  h = irf_pl_ebsp(ebsp,{{'bb_xxyyzzss',1:4}});
+elseif flagNoE
+  params = {{'bb_xxyyzzss',4},...
+    {'dop'},{'planarity'},...
+    {'ellipticity',[],{limByDopStruct,limByPlanarityStruct}},...
+    {'k_tp',[],{limByDopStruct,limByPlanarityStruct}},...
+    };
+  h = irf_pl_ebsp(ebsp,params);
+else
+  h = irf_pl_ebsp(ebsp);
+end
+
+ht=title(h(1),fname(1:end-4));
+set(ht,'FontSize',9)
 
 %% Save
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen

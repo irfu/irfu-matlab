@@ -137,6 +137,10 @@ end
 
 SetColorMap()
 
+% Check if we ended up with only one Y-tick and correct
+yTick = get(h(1),'YTick');
+if length(yTick)==1, set(h,'YTick',yTick*[.1 1 10]), end
+
 if nargout, out = h; end % Return here
 
 %% Help functions
