@@ -14,7 +14,7 @@ fi
 BASEDIR=/data/caa/MAARBLE
 DBDIR="$BASEDIR/WaveDatabase"
 DELIVERY_DIR="$BASEDIR/Delivery"
-if [ ! -d $DELIVERY_DIR ]; then 
+if [ ! -d $DELIVERY_DIR/CEF ]; then 
 	mkdir -p $DELIVERY_DIR/CEF || exit 1
 	echo Created DELIVERY_DIR : $DELIVERY_DIR
 fi
@@ -87,15 +87,15 @@ while read fname; do
 	fi
 	
 	echo moving $fname $DELIVERY_DIR >> $LOG
-	mv $fname $DELIVERY_DIR/CEF || exit 1
+	mv $fname $DELIVERY_DIR/CEF/ || exit 1
 	
 	echo moving $newfile $DEST/CEF >> $LOG
-	mv $newfile $DEST/CEF || exit 1 
+	mv $newfile $DEST/CEF/ || exit 1 
 	 
 	newfile=`find $TMPDIR -name \*.cdf`	
 	if [ -n "$newfile" ]; then
 		echo moving $newfile to $DEST/CDF >> $LOG
-		mv $newfile $DEST/CDF || exit 1
+		mv $newfile $DEST/CDF/ || exit 1
 	fi
 	STATUS=OK
 done
