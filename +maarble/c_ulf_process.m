@@ -48,7 +48,7 @@ if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
 for ievent=1:numel(TT),
 tint=[TT.TimeInterval(ievent) TT.TimeInterval(ievent+numel(TT))];
-try
+%try
 
 %outDir = '.';
 plotFlag = 1;
@@ -134,9 +134,6 @@ if wantPC12
   end
 end
 
-if (~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2) || ...
-        (~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2),
-
 if ~wantPC35 && ~wantPC12
     E_L2 = c_caa_var_get(['E_Vec_xy_ISR2__C' cl_s '_CP_EFW_L2_E'],...
         'mat','tint',tint+[-1 1]);
@@ -146,6 +143,16 @@ if ~wantPC35 && ~wantPC12
         BSC = c_caa_var_get('B_vec_xyz_Instrument__C4_CP_STA_CWF_HBR_ISR2','mat');
     end
 end
+
+if wantPC35,
+  checkDataExist=(~isempty(B_5VPS) && ~isempty(E_4SEC) && size(E_4SEC,2)>2);
+elseif wantPC12
+  checkDataExist=(~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2);
+elseif ~wantPC35 && ~wantPC12
+  checkDataExist=(~isempty(B_5VPS) && ~isempty(E_L2) && size(E_L2,2)>2);
+end
+
+if checkDataExist
 
 %% Calculate and plot
 bf = irf_filt(B_5VPS,0,1/600,1/5,5);
@@ -195,7 +202,7 @@ if wantPC12
   tic
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
     'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
-    'facMatrix',facMatrix);
+    'facMatrix',facMatrix); 
   toc
   tlim_ebsp();
   irf_wave_detection_algorithm(ebsp,cl_id,bf);
@@ -230,9 +237,9 @@ else
     display(['No data available for times ' irf_disp_iso_range(tint,1)]);
 end
 clearvars -except TT cl_id freqRange nevents
-catch
-    display(['Error occurred for times ' irf_disp_iso_range(tint,1)]);
-end
+% catch
+%     display(['Error occurred for times ' irf_disp_iso_range(tint,1)]);
+% end
 end
 
   function tlim_ebsp % Trim ebsp to tlim

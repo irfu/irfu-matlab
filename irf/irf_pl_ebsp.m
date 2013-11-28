@@ -60,7 +60,7 @@ flagCmap = 0;
 if nargin==1 || isempty(params)
   limByDopStruct = struct('type','low','val',0.6,'param','dop','comp',1);
   limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
-  %limBSsumStruct = struct('type','low','val',.05,'param','bb_xxyyzzss','comp',4);
+  %limBSsumStruct = struct('type','low','val',-1.0,'param','bb_xxyyzzss','comp',4);
   
   params = {{'bb_xxyyzzss',4},...
     {'ee_ss'},...

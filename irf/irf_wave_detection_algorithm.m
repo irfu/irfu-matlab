@@ -36,13 +36,13 @@ if isstruct(tint)
     newfreq = ebsp.f;
     nfreq = length(newfreq);
     ndata = length(t);
-    [~,args,nargs] = axescheck(varargin{:});
+    [~,args,~] = axescheck(varargin{:});
     B=args{1};
     save_plot = 1;
 else
 
       %% Check input 
-      [~,args,nargs] = axescheck(varargin{:});
+      [~,args,~] = axescheck(varargin{:});
       b=local.c_read(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],tint);
 
       %% get background magnetic field
@@ -178,7 +178,7 @@ else
 end
 
 %% remove background median over a window
-toa = 4; %time (in hours) of average for background median
+toa = .5; %time (in hours) of average for background median
 
 toa = toa*3600;
 toaind = toa*sampl;
@@ -245,7 +245,7 @@ for i=1:ndata,
             lowerBound = peakFreq;
             upperBound = peakFreq;
             k=0;
-            eventThresh = (powerCrossCov_SM_plot(i,:)./medianPower(i,:)) > 5;
+            eventThresh = (powerCrossCov_SM_plot(i,:)./medianPower(i,:)) > 4;
             while (j-k > 1) && eventThresh(j-k) == 1,
                 upperBound = newfreq((j-k));
                 k=k+1;
@@ -289,20 +289,37 @@ nPeaks = size(P,1);
 waveEvent = [0 0]; %start time, end time
 nevents=1;
 counter=1;
-TTemic = irf.TimeTable;
+try
+    TTemic=irf.TimeTable(['C' cl_s '_MAARBLE_PC12_wave_events']);
+    createTTemic = 0;
+catch
+    createTTemic = 1;   
+end
+if createTTemic,
+    TTemic = irf.TimeTable;
+    TTemic.Header={'C' cl_s ' EMIC events for Maarble'};
+end
 while counter < nPeaks,
     startTime = P(counter,1);
+    lowFreq = P(counter,4);
+    highFreq = P(counter,5);
     endTime = P(counter,1);
     npeaks=1;
     while counter < nPeaks && P(counter+1,1)-P(counter,1) < 10*60,
         endTime = P(counter+1,1);
+        if P(counter+1,4) < lowFreq,
+            lowFreq = P(counter+1,4);
+        end
+        if P(counter+1,5) > highFreq,
+            highFreq = P(counter+1,5);
+        end
         counter=counter+1;
         npeaks=npeaks+1;
     end
     if (npeaks)/(endTime-startTime) > 24/3600 && npeaks > 4,
         waveEvent(nevents,:) = [startTime endTime];
         timeInt = [startTime-300 endTime+300]; %include 5 minutes on either side for the time table
-        TTemic=add(TTemic,timeInt,{'EMIC events','for Maarble'});
+        TTemic=add(TTemic,timeInt,{num2str(lowFreq),num2str(highFreq)});
         nevents = nevents+1;
     else
         counter=counter+1;
@@ -312,7 +329,8 @@ end
 
 if waveEvent(1) > 0,
  ascii(TTemic)
- export_ascii(TTemic,['MAARBLE_PC12_wave_events_' irf_fname(tint,5)])
+ TTemic=unique(TTemic);
+ export_ascii(TTemic,['C' cl_s '_MAARBLE_PC12_wave_events'])
 
   
 %% plot
@@ -373,7 +391,7 @@ cmapSpace = irf_colormap('space');
 
 
       axes(h(1));
-      if exist('timeInt')
+      if exist('timeInt','var')
         irf_zoom(h,'x',[timeInt(1)-600 timeInt(2)+600]);
       else
         irf_zoom(h,'x',[min(t) max(t)]); 
