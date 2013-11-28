@@ -18,8 +18,8 @@ function [st,dt] = irf_stdt(st_in,dt_in)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
-error(nargoutchk(2,2,nargout))
+narginchk(2,2)
+nargoutchk(2,2)
 
 if isnumeric(st_in), st = st_in;
 elseif ischar(st_in), st = iso2epoch(st_in); 

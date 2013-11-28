@@ -9,7 +9,7 @@ function caa_sh_pl_xoff(dE, dAmp, dt_int, weight, tint)
 
 % Copyright 2007 Yuri Khotyaintsev
 
-error(nargchk(4,5,nargin))
+narginchk(4,5)
 
 if nargin==5
 	if ~all( size([1 2]) == [1 2] )

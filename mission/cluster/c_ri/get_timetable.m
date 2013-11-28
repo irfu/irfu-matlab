@@ -20,7 +20,7 @@ function timetable = get_timetable(from,to,p_f)
 %Written by Robert Isaksson in the summer of -03
 
 %--------------------- the beginning --------------------------
-error(nargchk(3,3,nargin))
+narginchk(3,3)
 if ~(isnumeric(from) && from >0), error('FROM must be epoch'), end
 if ~(isnumeric(to) && to>from), error('TO must be larger then FROM'), end
 if ~ischar(p_f), error('P_F must be a file path'), end

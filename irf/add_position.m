@@ -7,7 +7,7 @@ function add_position(h,r)
 
 
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if ~ishandle(h), error('H is not an axis handle'), end
 if isempty(r), irf_log('func','empty position'), return, end 

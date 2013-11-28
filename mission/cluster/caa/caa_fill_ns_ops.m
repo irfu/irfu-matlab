@@ -9,7 +9,7 @@ function result = caa_fill_ns_ops(data, ns_ops, bitmask_col, fillval)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.
 
-error(nargchk(2, 3, nargin))
+narginchk(2, 3)
 
 if size(data,1)<2
 	irf_log('proc','cannot fill gaps (not enough samples)')

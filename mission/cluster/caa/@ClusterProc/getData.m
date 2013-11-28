@@ -97,7 +97,7 @@ function data = getData(cp,cl_id,quantity,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(3,15,nargin))
+narginchk(3,15)
 if nargin > 3, have_options = 1; args = varargin;
 else have_options = 0;
 end
@@ -1329,9 +1329,9 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		case 34
 			irf_log('proc','using p34')
 			var_s = irf_ssub('diEs?p34',cl_id);
-        case 420
+    case 420
 			irf_log('proc','using p42LX')
-			var_s = irf_ssub('diELXs?p34',cl_id);
+			var_s = irf_ssub('diELXs?p42',cl_id);
 		otherwise
 			error(['Invalid probe pair ' num2str(probe_p)])
 		end
@@ -2414,7 +2414,11 @@ elseif strcmp(quantity,'wake')
 		% Load required data
 		[ok,pha] = c_load('Atwo?',cl_id);
 		if ~ok, irf_log('load',msg), pha=[]; end
-		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,spinFits.probePair));
+		sfpp=spinFits.probePair;
+		if sfpp > 100
+			sfpp = sfpp/10;
+		end
+		[ok,da] = c_load(irf_ssub('wE?p!',cl_id,sfpp));
 		if ~ok, irf_log('load',msg), da=[]; end
 
 		if ~isempty(da) && ~isempty(pha)

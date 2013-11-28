@@ -8,8 +8,10 @@ function res = plot(varargin)
 % OPTIONS - one of the following:
 %	'AX'         - axis handles to use
 %   'COMP'       - components to plot
-%   'SUM_DIM1'   - sum over first dimension (frequency, pitch angle)
+%   'SUM_DIM1'   - average over first dimension (frequency, azimuthal angle, energy)
+%   'SUM_DIM1PITCH'   - average over first dimension (pitch angle)
 %   'COMP_DIM1'  - form subplots from that component
+%					similar 'SUM_DIM2','SUM_DIM3','SUM_DIM2PITCH',....
 %   'nolabels'   - only plot data, do not add any labels or text
 %   'NoColorbar' - do not plot colorbar 
 %   'ColorbarLabel' - specify colorbar label
@@ -17,9 +19,10 @@ function res = plot(varargin)
 %   'FillSpectrogramGaps' - fill data gaps with previous value (makes spectrograms look nice on screen)
 %   'ClusterColors' - use Cluster colors C1-black, C2-red, C3-green, C4-blue
 %
+% See also
+%		CAA_META
 %
 % for common cluster variables see: http://bit.ly/pKWVKh
-% $Id: plot.m,v 1.64 2013/03/08 22:04:36 yuri Exp $
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -88,6 +91,8 @@ flag_fill_spectrogram_gaps=0;
 line_color=''; % default line color; can be changed with flags, e.g. clustercolors
 flag_use_cluster_colors=0;
 flag_log = 1;
+flagPitchAngleAverage = false; % default averages are simple means, pitch angle average 
+%			has to take into account the size of spherical angle for each pitch angle
 
 arg_pos = 0;
 while ~isempty(args)
@@ -145,6 +150,12 @@ while ~isempty(args)
         sum_dim = 2;
       case 'sum_dim3'
         sum_dim = 3;
+      case 'sum_dim1pitch'
+        sum_dim = 1;flagPitchAngleAverage = true;
+      case 'sum_dim2pitch'
+        sum_dim = 2;flagPitchAngleAverage = true;
+      case 'sum_dim3pitch'
+        sum_dim = 3;flagPitchAngleAverage = true;
       case 'comp_dim1'
         comp_dim = 1;
       case 'comp_dim2'
@@ -207,7 +218,17 @@ elseif dim == 1
   else
     plot_data = {double(data.data)};
     if dim == 1
-      if isfield(data,'DEPEND_1')
+      if isfield(data,'TENSOR_ORDER')
+        if ischar(data.TENSOR_ORDER), thensorOrder = str2double(data.TENSOR_ORDER);
+        else thensorOrder = data.TENSOR_ORDER;
+        end
+        if data.dim(thensorOrder+1) > 1
+          flag_spectrogram = 1;
+          ydim = 1;
+        else
+          flag_lineplot = 1;
+        end
+      elseif isfield(data,'DEPEND_1')
         flag_spectrogram = 1;
         ydim = 1;
       else
@@ -218,13 +239,14 @@ elseif dim == 1
   
 elseif dim == 2
   if sum_dim > 0
-    % Do not count NaNs when summing
-    tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
-    data.data(isnan(data.data)) = 0;
-    data.data = sum(data.data,sum_dim+1,'double')./...
-      sum(tt,sum_dim+1,'double'); % The data is 2D from now on
-    clear tt
-    
+	  if flagPitchAngleAverage
+		  irf.log('notice','Using pitch angle average!');
+		  pitchAngles=getfield(get(dobj,dep.DEPEND_X{sum_dim}),'data');
+		  data.data = irf.pitch_angle_average(double(data.data),...
+			  pitchAngles,[],[],sum_dim+1);
+	  else 
+		  data.data = irf.nanmean(double(data.data),sum_dim+1);
+	  end
     if sum_dim == 1, comp_dim = 2;
     else  comp_dim = 1;
     end
@@ -269,12 +291,8 @@ elseif dim == 3
     end
   end
   
-  % Do not count NaNs when summing
-  tt = data.data; tt(~isnan(tt)) = 1; tt(isnan(tt)) = 0;
-  data.data(isnan(data.data)) = 0;
-  data.data = sum(data.data,sum_dim+1,'double')./...
-    sum(tt,sum_dim+1,'double'); % The data is 2D from now on
-  clear tt
+  % ignore NaNs when averaging
+  data.data = irf.nanmean(double(data.data),sum_dim+1);
   
   ndim = data.dim(comp_dim);
   if ~use_comp, comp=1:ndim; end
@@ -322,7 +340,11 @@ if flag_lineplot
           legend(ax,'boxoff')
         end
       else
-        lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
+        if ~isempty(comp) && isfield(dep_x,'UNITS')
+          lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') dep_x.UNITS ')'];
+        else
+          lab_1 = ['(' num2str(dep_x.data(1,comp),'%6.2f') ')'];
+        end
       end
     end
   end
@@ -348,7 +370,7 @@ if flag_lineplot
   end
   
 elseif flag_spectrogram
-  %% PLOT -- SPECTRPGRAM
+  %% PLOT -- SPECTROGRAM
   
   dep_x=cell(size(dep.DEPEND_X,1));
   for d = 1:length(dep_x)
@@ -489,24 +511,32 @@ elseif flag_spectrogram
   if flag_colorbar_is_on,
       i=fix(ncomp/2)+1;
       hcb = colorbar('peer',h(i));
-      hcbl = get(hcb,'ylabel');
-      dy = get(ax(i),'Position'); dy = dy(3);
-      pcb = get(hcb,'Position');
-      if ncomp>1, set(hcb,'Position',[pcb(1) pcb(2)-pcb(4)*(ncomp-fix(ncomp/2)-1) pcb(3) pcb(4)*ncomp]); end
-      if flag_labels_is_on || flag_colorbar_label_is_manually_specified,
-          if ~flag_colorbar_label_is_manually_specified
-              colorbar_label=[lablaxis ' [' units ']' ];
-              if flag_log, colorbar_label = ['Log ' colorbar_label]; end
-          end
-          set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
-          ylabel(hcb,colorbar_label);
-          if flag_colorbar_label_fit_to_colorbar_height_is_on
-              irf_colorbar_fit_label_height(hcb);
-          end
-          set(hcb,'yticklabelmode','auto');
-      else
-          ylabel(hcb,'');
-      end
+      posAx = get(ax(i),'Position');
+	  dy = posAx(3);
+	  posCb = get(hcb,'Position');
+	  if ncomp>1,
+		  set(hcb,'Position',...
+			  [posCb(1) posCb(2)-posCb(4)*(ncomp-fix(ncomp/2)-1) ...
+			  posCb(3) posCb(4)*ncomp]);
+	  else
+		  set(hcb,'TickDir','out','Position',...
+			  [posCb(1) posCb(2)+posCb(4)*0.05 posCb(3)*.75 posCb(4)*0.9])
+	  end
+	  set(ax(i),'Position',posAx)
+	  if flag_labels_is_on || flag_colorbar_label_is_manually_specified,
+		  if ~flag_colorbar_label_is_manually_specified
+			  colorbar_label=[lablaxis ' [' units ']' ];
+			  if flag_log, colorbar_label = ['Log ' colorbar_label]; end
+		  end
+		  set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+		  ylabel(hcb,colorbar_label);
+		  if flag_colorbar_label_fit_to_colorbar_height_is_on
+			  irf_colorbar_fit_label_height(hcb);
+		  end
+		  set(hcb,'yticklabelmode','auto');
+	  else
+		  ylabel(hcb,'');
+	  end
       % Resize all panels after addition of the colorbar
       if ~isempty(dy)
           for i=1:ncomp

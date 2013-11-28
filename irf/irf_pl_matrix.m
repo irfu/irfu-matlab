@@ -20,7 +20,7 @@ function hout = irf_pl_matrix(x,y,F,dx,dy,Flab,xlab,ylab)
 %
 % $Id$
 
-error(nargchk(1,6,nargin))
+narginchk(1,6)
 
 if nargin==1,
     specrec = x; x = [];

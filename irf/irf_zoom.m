@@ -30,8 +30,6 @@ function irf_zoom(varargin)
 %  t_ref is isdat_epoch of time=0 point
 %
 
-% $Id$
-
 flag_use_t_start_epoch=0; % if 1 use userdata.t_start_epoch as tref
 if nargin==0, help irf_zoom, return; end
 t_ref=0;flag_tref=0; % default value
@@ -96,13 +94,8 @@ end
 
 axis_handles = reshape(ax,1,numel(ax));
 
-if ~isempty(interval) && size(interval,2) ~= 2, % check if interval input is ok
-    disp('zooming interval in wrong format');
-    return;
-end
-
 if strcmpi(c,'x'),
-    if iscell(interval),  % Simplified time zooming
+	if iscell(interval),  % Simplified time zooming
         ax=get(axis_handles(1),'xlim');
         if ( ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10 ),
             int_min=fromepoch(ax(1)+t_ref);
@@ -110,13 +103,18 @@ if strcmpi(c,'x'),
             int_min(7-size(interval{1},2):6)=interval{1};
             int_max(7-size(interval{2},2):6)=interval{2};
             clear interval;
-            interval=[toepoch(int_min) toepoch(int_max)]-t_ref;
+            interval=[toepoch(int_min) toepoch(int_max)];
         end
-    else % Interval must be vector with two values
-        if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
-            interval=interval-t_ref;
-        end
-    end
+	elseif isnumeric(interval) && size(interval,2) == 2 % Interval must be vector with two values
+	elseif ischar(interval) % assume interval is specified in ISO format
+		interval = irf_time(interval,'iso2tint');
+	else
+		irf.log('error','zooming interval in wrong format');
+		error('irf_zoom: zooming interval in wrong format.');
+	end
+	if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
+		interval=interval-t_ref;
+	end
 end
 
 % Make interval finite if it has only one point

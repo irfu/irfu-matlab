@@ -1,4 +1,4 @@
-function out=irf(varargin)
+function [out,out1]=irf(varargin)
 % IRF general info on irfu-matlab
 %
 % IRF checks version, installed libraries and sets up necessary pathes
@@ -22,7 +22,8 @@ function out=irf(varargin)
 %
 % Check if IRAP CEFLIB is installed, http://ceflib.irap.omp.eu/
 %
-% version = IRF('version') return IRF version
+% version = IRF('version') return IRF version number
+% [versionNumber, versionDate] = IRF('version') return also date
 %
 % IRF('demo') demonstration how to use IRF
 
@@ -42,18 +43,22 @@ else
 	if ischar(varargin{1}),
 		action = lower(varargin{1});
 	else
-		irf_log('fcal','unknown input parameters');
+		irf.log('critical','string input required');
+		error('string input required')
 	end
 end
 
 %% Actions
 switch lower(action)
 	case 'check'
+		[currentVersion,currentVersionDate] = irf('version');
 		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
 		catch
 			disp('Not connected to internet');
+			disp(['  Your irfu-matlab: ' currentVersion ...
+				' from ' currentVersionDate]);
 			out = false;
 			return;
 		end
@@ -61,22 +66,23 @@ switch lower(action)
 		logTextArray = logTextArray{1};
 		iSpace = strfind(logTextArray{1},' ');
 		newestVersion = logTextArray{1}(iSpace(1):iSpace(2)-1);
-		currentVersion = irf('version');
 		if ~strcmp(newestVersion,currentVersion)
 			indices = find(cellfun(@(x) any(strfind(x,currentVersion)),logTextArray));
 			if indices > 1,
 				disp('NO!');
 				disp(' ');
-				disp(['Newest irfu-matlab is from: ' newestVersion]);
-				disp(['  Your irfu-matlab is from: ' currentVersion]);
+				disp(['Newest irfu-matlab: ' newestVersion]);
+				disp(['  Your irfu-matlab: ' currentVersion]);
 				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
 				for iInd = 1 : indices -1
 					fprintf('%s\n',logTextArray{iInd})
 				end
 				disp(' ');
-      else
-        disp('You are at the bleeding edge :-)');
+			else
+				disp('unclear! you are eiter the bleeding edge or have to update :-)');
+				disp(['Newest irfu-matlab is from: ' newestVersion]);
+				disp(['  Your irfu-matlab is from: ' currentVersion]);
 			end
 			if nargout, out = false; end
 		else
@@ -93,7 +99,7 @@ switch lower(action)
 			['contrib' filesep 'matlab_central'],...
 			['contrib' filesep 'matlab_central' filesep 'cm_and_cb_utilities'],...
 			['contrib' filesep 'mice'],...
-      ['contrib' filesep 'nasa_cdf_patch'],...
+			['contrib' filesep 'nasa_cdf_patch'],...
 			};
 		irfDirectories = {'irf','plots',...
 			['mission' filesep 'cluster'],...
@@ -114,7 +120,6 @@ switch lower(action)
 		help irfu-matlab
 	case 'mice'
 		if exist('cspice_j2000','file') % mice is installed
-			try 
 			if (cspice_j2000 == 2451545),
 				disp('SPICE/MICE is OK');
 				if nargout, out=true; end
@@ -122,11 +127,6 @@ switch lower(action)
 			else
 				disp('SPICE/MICE is installed but NOT WORKING PROPERLY!');
 				if nargout, out=false; end
-				return;
-			end
-			catch
-				irf_log('fcal','There are problems with SPICE/MICE library installation!');
-				out = false;
 				return;
 			end
 		else
@@ -152,8 +152,9 @@ switch lower(action)
 		if exist('onera_desp_lib_coord_trans','file') % irbem is installed
 			x=[0 0 1];
 			try
-				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', now);
-				yy=onera_desp_lib_coord_trans(y,'geo2gse',now);
+				t0 = now;
+				y=onera_desp_lib_coord_trans([0 0 1],'gse2geo', t0);
+				yy=onera_desp_lib_coord_trans(y,'geo2gse',t0);
 				if (max(abs(yy-x))<1e-3),
 					disp('IRBEM is OK');
 					if nargout, out=true; end
@@ -165,10 +166,19 @@ switch lower(action)
 					return;
 				end
 			catch
-				irf_log('fcal','IRBEM, problems with library installation!');
-				out = false;
+				if ismac
+					disp('IRBEM .. not OK. Please check that:');
+					disp('1) you have Xcode installed');
+					disp('2) open /Applications/MATLAB_R2013b.app/bin/mexopts.sh');
+					disp('   check that in maci64 section MAC OS version number');
+					disp('   corresponds to your OS version, e.g. 10.9 for Mavericks.');
+					disp('   run in matlab > mex -setup');
+				else
+					disp('IRBEM .. not OK. Please, contact irfu!')
+				end
+				if nargout, out=false; end
 				return;
-			end				
+			end
 		else
 			oneraPath = [irf('path') filesep 'contrib' filesep  'libirbem'];
 			disp(['adding IRBEM path to matlab: ' oneraPath]);
@@ -180,13 +190,7 @@ switch lower(action)
 		end
 	case 'ceflib'
 		if exist('cef_init','file') % CESR CEFLIB is installed
-			try
-				cef_init();
-			catch
-				out = false; % problems loading library
-				irf_log('fcal','Problems loading libcef library!');
-				return;
-			end
+			cef_init();
 			cef_verbosity(0);
 			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
 					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
@@ -220,9 +224,10 @@ switch lower(action)
 			disp(['irfu-matlab version: ' versionTime ', ' versionNumber]);
 		else
 			out = versionNumber; % return only date
+			out1 = versionTime;
 		end
 	otherwise
-		irf_log('fcal','unknown argument');
+		error('unknown input argument')
 end
 
 

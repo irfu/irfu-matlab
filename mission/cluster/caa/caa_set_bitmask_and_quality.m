@@ -23,7 +23,7 @@ function result = caa_set_bitmask_and_quality(result, time_int, bitmask, quality
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Input argument checks.
 
-error(nargchk(4,6,nargin))
+narginchk(4,6)
 
 if isempty(result) || isempty(time_int), return, end
 

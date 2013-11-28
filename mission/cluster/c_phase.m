@@ -11,7 +11,7 @@ function phase_out = c_phase(t,phase_2)
 %
 % $Id$
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if size(t,1)>1 && size(t,2)>1, error('t must be a vector'), end
 if size(phase_2,1)<2, error('not enough points in phase_2'), end

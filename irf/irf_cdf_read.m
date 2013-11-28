@@ -126,7 +126,7 @@ elseif ischar(var_name) % one specifies the name of variable
       end
   end
   if strcmp(var_name,'*')
-      flag_while=1;
+      flag_while=1; var_name=[];
       while flag_while
           disp('======== Options ========')
           disp('q) quit, dont return anything')

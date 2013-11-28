@@ -43,6 +43,10 @@ function cdfupdate(filename, varargin)
 %   The CDF is set to use GZIP compression if TF is true. If TF is
 %   is false, the CDF is set to be a uncompressed file.
 %
+%   CDFUPDATE(..., 'CDFChecksum', TF, ...) resets the CDF checksum.
+%   The CDF is set to use MD5 checksum if TF is true. If TF is
+%   is false, the CDF is set not to use checksum.
+%
 %   Notes:
 %
 %     CDFUPDATE only updates the data values for the existing variables.
@@ -91,12 +95,17 @@ function cdfupdate(filename, varargin)
 %
 %   cdfupdate('example', 'cdfcompression', true);
 %
+%   % Set the CDF file, 'example.cdf', to use the MD5 checksum:
+%
+%   cdfupdate('example', 'cdfchecksum', true);
+%
 %   See also CDFREAD, CDFINFO, CDFEPOCH, CDFWRITE, CDFTT2000.
 
 %   Copyright 1984-2008 The MathWorks, Inc.
 
 % HISTORY:
 %   January 13, 2009  Mike Liu      The new function was created.
+%   August  23, 2013  Mike Liu      Added setting checksum operation.
 
 %
 % Process arguments.
@@ -140,7 +149,7 @@ end
 
 cdfupdatec(filename, args.VarNames, args.VarRecs, args.VarIndices, ...
            args.VarDataVals, varAttribStruct, globalAttribStruct, ...
-           args.isCDFCompressed);
+           args.isCDFCompressed, args.CDFchecksum);
 
 %%%
 %%% Function parse_inputs
@@ -159,6 +168,7 @@ globalAttribStruct = struct([]);
 exception.msg = '';
 exception.id = '';
 args.isCDFCompressed = int32(0);
+args.CDFchecksum = int32(0);
 
 % Parse arguments based on their number.
 if (nargin > 0)
@@ -166,7 +176,8 @@ if (nargin > 0)
     paramStrings = {'variabledata'
                     'globalattributes'
                     'variableattributes'
-                    'cdfcompression'};
+                    'cdfcompression'
+                    'cdfchecksum'};
     % For each pair
     for k = 1:2:length(varargin)
         param = lower(varargin{k});
@@ -303,6 +314,21 @@ if (nargin > 0)
                exception.msg = 'CDF compression value must be a scalar logical.';
                exception.id = 'MATLAB:cdfupdate:cdfcompression';
                return
+           end
+        case 'cdfchecksum'
+           args.CDFchecksum = varargin{k+1};
+           if (numel(args.CDFchecksum) ~= 1)
+               exception.msg = 'CDF checksum value must be a scalar logical.';
+               exception.id = 'MATLAB:cdfupdate:cdfchecksum';
+               return
+           end
+
+           if (islogical(args.CDFchecksum))
+               if (args.CDFchecksum)
+                 args.CDFchecksum = int32(2);
+               else
+                 args.CDFchecksum = int32(1);
+               end
            end
         end % switch
     end  % for

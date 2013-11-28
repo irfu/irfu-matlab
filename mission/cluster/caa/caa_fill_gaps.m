@@ -13,7 +13,7 @@ function [data, filldata] = caa_fill_gaps(data,te,max_gaps)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,3,nargin))
+narginchk(2,3)
 
 if size(data,1)<2
 	irf_log('proc','cannot fill gaps (not enough samples)')

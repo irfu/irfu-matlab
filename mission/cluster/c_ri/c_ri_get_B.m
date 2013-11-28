@@ -33,7 +33,7 @@ function B=c_ri_get_B(from,to,cl_id,mode,path_output)
 
 %Written by Robert Isaksson in the summer of -03
 
-error(nargchk(4,5,nargin))
+narginchk(4,5)
 
 %--------------------- the beginning --------------------------
 B=[]; % return nothing if no data available

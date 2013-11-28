@@ -7,7 +7,7 @@ function dir_list = caa_get_subdirs(iso_t, dt, cl_id)
 
 % Copyright 2008 Mikael Lundberg
 
-nargchk(3,3,nargin);
+narginchk(3,3);
 
 if ~isnumeric(cl_id) || cl_id < 1 || cl_id > 4
    error('Wrong Cluster id. Valid values are: [1-4]')
