@@ -266,7 +266,7 @@ if nargout, out = h; end % Return here
     if ~isempty(ebsp.fullB), B = ebsp.fullB; 
     else B = ebsp.B0; 
     end
-    if isstruct(B), B = B.data; end
+    if isstruct(B), B = double(B.data); end
     if size(B,2) == 1,
       B = [timeVec B];
     else
