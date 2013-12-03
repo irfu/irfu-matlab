@@ -85,12 +85,16 @@ while read fname; do
 		mkdir -p $DEST/CEF || exit 1
 		mkdir $DEST/CDF
 	fi
-	
-	echo moving $fname $DELIVERY_DIR >> $LOG
-	mv $fname $DELIVERY_DIR/CEF/ || exit 1
-	
-	echo moving $newfile $DEST/CEF >> $LOG
-	mv $newfile $DEST/CEF/ || exit 1 
+
+	echo compressing $fname >> $LOG
+	gzip $fname || exit 1	
+	echo moving $fname.gz $DELIVERY_DIR >> $LOG
+	mv $fname.gz $DELIVERY_DIR/CEF/ || exit 1
+
+	echo compressing $newfile >> $LOG
+	gzip $newfile || exit 1	
+	echo moving $newfile.gz $DEST/CEF >> $LOG
+	mv $newfile.gz $DEST/CEF/ || exit 1 
 	 
 	newfile=`find $TMPDIR -name \*.cdf`	
 	if [ -n "$newfile" ]; then
