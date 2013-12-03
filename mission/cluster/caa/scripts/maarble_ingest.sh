@@ -84,6 +84,7 @@ while read fname; do
 	if [ ! -d $DEST ]; then
 		mkdir -p $DEST/CEF || exit 1
 		mkdir $DEST/CDF
+		mkdir $DEST/PNG
 	fi
 
 	echo compressing $fname >> $LOG
