@@ -222,7 +222,7 @@ if nargout, out = h; end % Return here
     t = 'lin';
     switch compStr
       case {'r','x','y','z','xx','yy','zz','sum'}
-        s = ['log(' paramStr '_{' upper(compStr) '}) \newline ' GetUnits()];
+        s = {['log(' paramStr '_{' upper(compStr) '})'],GetUnits()};
         t = 'log';
       case 't'
         if isempty(unitsStr), unitsStr = 'deg'; end
