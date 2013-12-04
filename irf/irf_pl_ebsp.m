@@ -225,10 +225,10 @@ if nargout, out = h; end % Return here
         s = ['log(' paramStr '_{' upper(compStr) '}) \newline ' GetUnits()];
         t = 'log';
       case 't'
-        if isempty(unitsStr), unitsStr = 'deg'; end
+        if isempty(unitsStr), unitsStr = 'rad'; end
         s = ['\Theta_{' paramStr '} [' unitsStr ']'];
       case 'p'
-        if isempty(unitsStr), unitsStr = 'deg'; end
+        if isempty(unitsStr), unitsStr = 'rad'; end
         s = ['\Phi_{' paramStr '} [' unitsStr ']'];
       otherwise
         s = paramStr;
@@ -303,16 +303,16 @@ if nargout, out = h; end % Return here
     switch compStr
       case 't'
         if ~strcmpi(paramStr,'k')
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
+          caxis(hca,[0 pi]), set(hcb,'YTick',[0 pi/2 pi],'YTickLabel',{'0','p/2','p'},'fontname','symbol','TickDir','out')
         else
-          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90],'TickDir','out')
+          caxis(hca,[0 pi/2]), set(hcb,'YTick',[0 pi/4 pi/2],'YTickLabel',{'0','p/4','p/2'},'fontname','symbol','TickDir','out')
         end
         flagCmapPoy = 1; 
       case 'p'
         if ~strfind(paramStr,'k')
-          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
+          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi 0 pi],'YTickLabel',{'-p','0','p'},'fontname','symbol','TickDir','out')
         else
-          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
+          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi -pi/2 0 pi/2 pi],'YTickLabel',{'-p','-p/2','0','p/2','p'},'fontname','symbol','TickDir','out')
         end
         flagCmapPoy = 1; 
       otherwise
@@ -337,7 +337,10 @@ if nargout, out = h; end % Return here
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
-      l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
+      l = get(hcbNew,'YTickLabel'); 
+      if ischar(l);
+          l=[l(:,1) l]; l(:,1)=' ';
+      end
       set(hcbNew,'YTickLabel',l);
     end
   end
