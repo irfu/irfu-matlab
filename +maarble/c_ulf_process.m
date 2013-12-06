@@ -235,6 +235,18 @@ if ~wantPC35 && ~wantPC12
 end
 else
     display(['No data available for times ' irf_disp_iso_range(tint,1)]);
+    try
+        TTnodata=irf.TimeTable(['C' cl_s '_MAARBLE_no_data']);
+        createTTnodata = 0;
+    catch
+        createTTnodata = 1;   
+    end
+    if createTTnodata,
+        TTnodata = irf.TimeTable;
+        TTnodata.Header={'C' cl_s ' Maarble time with no data'};
+    end
+    TTnodata=add(TTnodata,tint);
+    export_ascii(TTnodata,['C' cl_s '_MAARBLE_no_data'])
 end
 clearvars -except TT cl_id freqRange nevents
 % catch
