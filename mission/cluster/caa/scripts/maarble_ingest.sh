@@ -81,10 +81,14 @@ while read fname; do
 		*) echo "Unknown Cluster parameter" && exit 1;;
 	esac
 	DEST=$DBDIR/$DB/$PROJ/$MEMBER/$DSET
-	if [ ! -d $DEST ]; then
+	if [ ! -d $DEST/CEF ]; then
 		mkdir -p $DEST/CEF || exit 1
-		mkdir $DEST/CDF
-		mkdir $DEST/PNG
+	fi
+	if [ ! -d $DEST/CDF ]; then
+		mkdir -p $DEST/CDF || exit 1
+	fi
+	if [ ! -d $DEST/PNG ]; then
+		mkdir -p $DEST/PNG || exit 1
 	fi
 
 	echo compressing $fname >> $LOG
