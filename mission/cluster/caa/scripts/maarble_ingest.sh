@@ -91,10 +91,16 @@ while read fname; do
 		mkdir -p $DEST/PNG || exit 1
 	fi
 
-	echo compressing $fname >> $LOG
-	gzip $fname || exit 1	
-	echo moving $fname.gz $DELIVERY_DIR >> $LOG
-	mv $fname.gz $DELIVERY_DIR/CEF/ || exit 1
+	isGzipped=`file $fname | grep gzip`
+	if [ -z "$isGzipped" ]; then
+		echo compressing $fname >> $LOG
+		gzip $fname || exit 1	
+		echo moving $fname.gz $DELIVERY_DIR >> $LOG
+		mv $fname.gz $DELIVERY_DIR/CEF/ || exit 1
+	else
+		echo moving $fname $DELIVERY_DIR >> $LOG
+		mv $fname $DELIVERY_DIR/CEF/ || exit 1
+	fi
 
 	echo compressing $newfile >> $LOG
 	gzip $newfile || exit 1	
