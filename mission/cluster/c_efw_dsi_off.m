@@ -26,7 +26,7 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2012 01 01 00 00 0]), Ddsi = [ 0.25  1.27  2.04  0.18 ];
+if t>=toepoch([2012 01 01 00 00 0]), Ddsi = [ 0.31  1.28  2.04  0.10 ];
 elseif t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 05 02 21 00 0]), Ddsi = [ 0.03  3.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 04 30 06 40 0]), Ddsi = [ 0.03  4.0+0.65+0.25i  2.04  0.51 ];
@@ -106,7 +106,7 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.38  2.13  1.19  0.75 ];
+if t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.1  2.4  0.47  0.45 ];
 elseif t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
 elseif t>=toepoch([2011 06 01 00 0 0]), Ddsi = [ 0.49  0.78-2.78  1.18  0.84 ];
 elseif t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ]; % C2 strange curve limited data
