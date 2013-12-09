@@ -26,7 +26,8 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
+if t>=toepoch([2012 01 01 00 00 0]), Ddsi = [ 0.25  1.27  2.04  0.18 ];
+elseif t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 05 02 21 00 0]), Ddsi = [ 0.03  3.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 04 30 06 40 0]), Ddsi = [ 0.03  4.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 03 01 16 50 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
@@ -38,8 +39,8 @@ elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Forc
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
 elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offsets.
 elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
-elseif t>=toepoch([2010 02 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
-elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
+elseif t>=toepoch([2010 02 01 00 00 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
+elseif t>=toepoch([2010 01 01 00 00 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
 elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.12    0.46 2.0 0.05];   % Increase C3 offset to bring in line with C124
 elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05];  % Back to variable offsets
 elseif t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];  % Force MS offset for months when don't enter SW.
@@ -105,7 +106,8 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
+if t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.38  2.13  1.19  0.75 ];
+elseif t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
 elseif t>=toepoch([2011 06 01 00 0 0]), Ddsi = [ 0.49  0.78-2.78  1.18  0.84 ];
 elseif t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ]; % C2 strange curve limited data
 elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
