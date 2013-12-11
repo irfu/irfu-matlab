@@ -219,7 +219,15 @@ elseif dim == 1
     plot_data = {double(data.data)};
     if dim == 1
       if isfield(data,'TENSOR_ORDER')
-        if data.dim(str2double(data.TENSOR_ORDER)+1) > 1
+		  if isnumeric(data.TENSOR_ORDER)
+			  tensorOrder = data.TENSOR_ORDER;
+		  elseif ischar(data.TENSOR_ORDER);
+			  tensorOrder = str2double(data.TENSOR_ORDER); % TODO TENSOR_ORDER should be defined numeric
+		  else
+			  irf.log('critical','data.TENSOR_ORDER of unknown type!');
+			  error('dataobj/plot: data.TENSOR_ORDER of unknown type!');
+		  end
+        if data.dim(tensorOrder+1) > 1 
           flag_spectrogram = 1;
           ydim = 1;
         else
