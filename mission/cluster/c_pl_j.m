@@ -96,7 +96,7 @@ ylabel(hca,[' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 hca=irf_panel('J_||');
 jpar(:,2:end) = jpar(:,2:end)*1e9;
 irf_plot(hca,jpar);
-ylabel('j_{||} [nA/m^2]')
+ylabel(hca,'j_{||} [nA/m^2]')
 
 hca=irf_panel('J perp');
 jperp(:,2:end) = jperp(:,2:end)*1e9;
