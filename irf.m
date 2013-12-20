@@ -119,6 +119,7 @@ switch lower(action)
 	case 'help'
 		help irfu-matlab
 	case 'mice'
+        if ~ispc
 		if exist('cspice_j2000','file') % mice is installed
 			if (cspice_j2000 == 2451545),
 				disp('SPICE/MICE is OK');
@@ -137,7 +138,8 @@ switch lower(action)
 			if ~ok,
 				disp('MICE  .. NOT OK. Please, contact irfu!');
 			end
-		end
+        end
+        end
 	case 'mice_help'
 		disp('Kernel files at IRFU are located at spis:/share/SPICE');
 		disp('Kernels at irfu: general, Cassini, Rosetta, Solar Orbiter, JUICE');
@@ -189,6 +191,7 @@ switch lower(action)
 			end
 		end
 	case 'ceflib'
+        if ~ispc
 		if exist('cef_init','file') % CESR CEFLIB is installed
 			cef_init();
 			cef_verbosity(0);
@@ -209,7 +212,8 @@ switch lower(action)
 			if ~out,
 				disp('There are CEFLIB problems. Please, contact irfu!');
 			end
-		end
+        end
+        end
 	case 'path'
 		out = fileparts(which('irf.m'));
 	case 'version'
