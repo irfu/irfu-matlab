@@ -79,6 +79,7 @@ while read fname; do
 		*_ULF_PC1) DB=ULF; DSET=PC1;;
 		*_ULF_PC12) DB=ULF; DSET=PC12;;
 		*_ULF_PC35) DB=ULF; DSET=PC35;;
+		*_ULF_FACMATR) DB=ULF; DSET=FACMATR;;
 		*_VLF*) DB=VLF; DSET=VLF;;
 		*) echo "Unknown Cluster parameter" && exit 1;;
 	esac
