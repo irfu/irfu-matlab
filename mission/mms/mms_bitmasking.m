@@ -12,8 +12,9 @@ narginchk(1,2);
 % Get times for first priority, (tt2000 times are at varTTsrc1.data(1:end))
 varTTsrc1 = getv(sourceCDFobj1, sourceCDFobj1.vars{1,1});
 
+bitmask = zeros(varTTsrc1.nrec,2);
 % Bitmask should cover the entire time of src1
-bitmask = varTTsrc1.data;
+bitmask(:,1) = varTTsrc1.data;
 
 if(nargin==1)
     % If only one source file mark all times with having only one source.

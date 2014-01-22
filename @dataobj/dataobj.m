@@ -5,10 +5,13 @@ function dobj = dataobj(varargin)
 %    Construct dataobj form file FILENAME. FILENAME can also contain
 %    wildcards ('*').
 %
-% DATAOBJ(FILENAME,'tint',tint)
+% DATAOBJ(FILENAME,'tint',tint,KeepTT2000)
 %       tint - limit dataobject to time interval (good for large files)
+%       KeepTT2000 - For missions like MMS do not convert TT2000 to epoch.
 %
 % $Id$
+
+% Note for now 'tint' is ignored when using KeepTT2000.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -23,6 +26,7 @@ if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 end
 shouldReadAllData = true; % default read all data
 noDataReturned    = 0;    % default expects data to be returned
+KeepTT2000 = false; % default for Cluster etc is not to keep TT2000
 if nargin==0, action='create_default_object'; end
 if nargin==1, action='read_data_from_file'; end
 if nargin==3 && ...
@@ -32,6 +36,11 @@ if nargin==3 && ...
 	action='read_data_from_file';
 	shouldReadAllData=false;
 end
+if(nargin==4)
+    KeepTT2000 = varargin{4};
+    action='read_data_from_file';
+end
+    
 switch action
 	case 'create_default_object'
 		% if no input arguments, create a default object
@@ -133,18 +142,20 @@ switch action
           end
         end
 				isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
-        if any(isCdfEpochTT2000VariableArray)
-          iVar = find(isCdfEpochTT2000VariableArray);
-          for i=1:length(iVar)
-            if is_virtual(iVar(i))
-              keyboard
-            else
-              ta = irf.TimeArray(data{iVar(i)});
-              data{iVar(i)} = ta.toEpoch();
+        if (any(isCdfEpochTT2000VariableArray))
+            if(~KeepTT2000)
+                iVar = find(isCdfEpochTT2000VariableArray);
+                for i=1:length(iVar)
+                    if is_virtual(iVar(i))
+                        keyboard
+                    else
+                        ta = irf.TimeArray(data{iVar(i)});
+                        data{iVar(i)} = ta.toEpoch();
+                    end
+                timeVariable = info.Variables{iVar(i),1};
+                update_variable_attributes_time;
+                end
             end
-            timeVariable = info.Variables{iVar(i),1};
-            update_variable_attributes_time;
-          end
         end
         
 				fix_order_of_array_dimensions;

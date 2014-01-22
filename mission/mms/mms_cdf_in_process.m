@@ -58,7 +58,8 @@ if(strcmp(sci_or_ancillary,'sci'))
     if(~exist(strcat(dirToInput,filename),'file'))
         irf.log('critical','mms_cdf_process CDF file not found');
     else
-        outObj = dataobj(strcat(dirToInput,filename));
+        % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
+        outObj = dataobj(strcat(dirToInput,filename),'tint',0,true);
     end
 
 elseif(strcmp(sci_or_ancillary,'ancillary'))
