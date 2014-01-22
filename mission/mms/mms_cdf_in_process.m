@@ -57,6 +57,7 @@ if(strcmp(sci_or_ancillary,'sci'))
 
     if(~exist(strcat(dirToInput,filename),'file'))
         irf.log('critical','mms_cdf_process CDF file not found');
+        error('MATLAB:MMS:mms_cdf_in_process','inputfile not found: %s', strcat(dirToInput,filename));
     else
         % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
         outObj = dataobj(strcat(dirToInput,filename),'tint',0,true);

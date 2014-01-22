@@ -43,8 +43,7 @@ if(remoteSDC==1)
     ENVIR.DATA_PATH_ROOT = getenv('DATA_PATH_ROOT'); % Get path to data.
     ENVIR.LOG_PATH_ROOT = getenv('LOG_PATH_ROOT'); % Get path to logs.
     ENVIR.DROPBOX_ROOT = getenv('DROPBOX_ROOT'); % Get path to output location, (temporary location, other scripts then move it once fully written and our script is done). 
-    %ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal. (NOTE
-    % Points to ~/cal for now which does not exist by default.
+    ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 
     % Setup logging.
     % Create a logfile at log_path_root, named after current run date and IRFU.log
@@ -59,6 +58,7 @@ elseif(remoteSDC==0)
     ENVIR.LOG_PATH_ROOT = '/home/thoni/MMS/log';
     ENVIR.DROPBOX_ROOT = '/home/thoni/MMS/fileoutput';
     %ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT');
+    addpath(genpath('/home/thoni/MMS/irfu-matlab'));
 
     % Setup logging.
     % Create a logfile at log_path_root, named after current run date and IRFU.log
