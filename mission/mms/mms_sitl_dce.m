@@ -14,7 +14,7 @@ function filename_output = mms_sitl_dce(filename_dce_source_file, filename_dcv_s
 narginchk(1,2);
 
 % FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
-remoteRun = 0;
+remoteRun = 1;
 
 global ENVIR;
 global MMS_CONST;
@@ -52,7 +52,7 @@ if(nargin==1)
     HeaderInfo.numberOfSources = 1;
     HeaderInfo.parents_1 = filename_dce_source_file;
    
-    filename_output = mms_cdf_writing(dce_source, bitmask, HeaderInfo);
+    filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     
     
@@ -91,7 +91,7 @@ elseif(nargin==2)
     HeaderInfo.parents_1 = filename_dce_source_file;
     HeaderInfo.parents_2 = filename_dcv_source_file;
    
-    filename_output = mms_cdf_writing(dce_source, bitmask, HeaderInfo);
+    filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     
 elseif(nargin>2)
