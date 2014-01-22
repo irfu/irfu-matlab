@@ -91,8 +91,48 @@ switch(HeaderInfo.calledBy)
         epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
-        
         irfu_cdfwrite_quicklook_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask), uint32(qualityMark));
+
+    case('usc')
+        %disp('usc');
+        % List existing files.
+        % FIXME: CHECK IF IT REALLY SHOULD BE PUT IN 'ql' (or 'l1a', or 'l1b',
+        % or 'l2pre').
+        preExistingFiles = dir([ENVIR.DATA_PATH_ROOT, '/science/', HeaderInfo.scId, ...
+            '/',HeaderInfo.instrumentId, '/', HeaderInfo.dataMode, '/l2/', ...
+            HeaderInfo.startTime(1:4), '/', HeaderInfo.startTime(5:6), '/', ...
+            HeaderInfo.startTime(7:8), '/', HeaderInfo.scId, '_', ...
+            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, '_usc_dce_', ...
+            HeaderInfo.startTime, '_v*.cdf']);
+
+        if(size(preExistingFiles,1)>0)
+            % Next version number is number of preExistingFiles + 1 (one).
+            versionNum = strcat('v',num2str(MMS_CONST.Version.X),'.',num2str(MMS_CONST.Version.Y),'.',num2str(size(preExistingFiles,1), '%u'));
+        else
+            versionNum = strcat('v',num2str(MMS_CONST.Version.X),'.',num2str(MMS_CONST.Version.Y),'.',num2str(MMS_CONST.Version.Z));
+        end
+
+        % Create the new output filename. (excl extension).
+        filename_output = [HeaderInfo.scId, '_', HeaderInfo.instrumentId, ...
+            '_', HeaderInfo.dataMode, '_usc_dce_', HeaderInfo.startTime, ...
+            '_', versionNum];
+        
+        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
+        % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
+        % DIRECTORY WHEN EXECUTING.
+
+        cd(ENVIR.DROPBOX_ROOT);
+
+        % FIXME: DUMMY DATA FOR NOW.
+        % For now store data temporarly
+        epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
+        data1 = getv(dataOut, dataOut.vars{5,1}); % The data
+     %%%%%   
+     
+        psp_p = [data1.data, data1.data];
+        irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint32(bitmask));
+        %irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
+
     
     otherwise
         irf.log('notice','MATLAB:mms_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql" or "sitl" exists.');
