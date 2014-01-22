@@ -13,7 +13,7 @@ function filename_output = mms_usc(filename_dcv_source_file)
 narginchk(1,1);
 
 % FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
-remoteRun =0;% 1;
+remoteRun =1;
 
 global ENVIR;
 global MMS_CONST;
