@@ -54,8 +54,9 @@ switch(HeaderInfo.calledBy)
         epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
-        
+        irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         irfu_cdfwrite_sitl_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
+        
         
     case('ql')
         % List existing files.
@@ -91,6 +92,7 @@ switch(HeaderInfo.calledBy)
         epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
+        irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         irfu_cdfwrite_quicklook_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask), uint32(qualityMark));
 
     case('usc')
@@ -130,12 +132,13 @@ switch(HeaderInfo.calledBy)
      %%%%%   
      
         psp_p = [data1.data, data1.data];
+        irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint32(bitmask));
         %irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
 
     
     otherwise
-        irf.log('notice','MATLAB:mms_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');
+        irf.log('warning','MATLAB:mms_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');
 end
 
 
@@ -156,17 +159,13 @@ end
 
 
 
-
-% Actually write to file. Using hard coded write function.
+% Update some of the global parameters that are not static.
 
 % Generation date is today (when script runs).
 GATTRIB.Generation_date = {0, 'CDF_CHAR', datestr(now,'yyyymmdd')};
 
 % Data version is the version number. Version number should be "X.Y.Z"
 GATTRIB.Data_version = {0, 'CDF_CHAR', versionNum};
-
-% Source name should be same as data from source.
-GATTRIB.Source_name = {0, 'CDF_CHAR', dataOut.GlobalAttributes.Source_name{1,1}};
 
 % Parents is the source file logical id, if multiple sources add subsequent
 % entries for each source file. 
@@ -188,6 +187,7 @@ elseif(HeaderInfo.numberOfSources == 2)
 end
 
 % Update all the new values to GlobalAttributes
+irf.log('debug','MATLABM:mms_cdf_writing:UpdatingGlobalAttributes');
 cdfupdate(filename_output,'GlobalAttributes',GATTRIB);
 
 

@@ -39,6 +39,12 @@ void UserStatusHandler(int status)
 {
 // FIXME: This should have a proper handling of error messages, see manual but for now:
 // Dont care about actual error handling at this time.. Just print status.. Most likely caused by existing file with identical name.
+if (status == -2013)
+{
+ mexErrMsgIdAndTxt( "MATLAB:irfu_cdfwrite:filename_output:exists",
+            "A file with requested filename already exists in the output dir DROPBOX_ROOT/. Can occur if rerun before other scripts have moved it to its final destination.");
+}
+
  mexPrintf ("Error found as: %d\n",status);
 //  return;
 }

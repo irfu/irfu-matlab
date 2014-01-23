@@ -49,7 +49,7 @@ if(remoteSDC==1)
     % Create a logfile at log_path_root, named after current run date and IRFU.log
     irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
     % Set log level to debug initially.
-    irf.log('loggingLevel',4);
+    irf.log('debug');
 
 elseif(remoteSDC==0)
     % For local code running on IRFU computers
@@ -64,7 +64,7 @@ elseif(remoteSDC==0)
     % Create a logfile at log_path_root, named after current run date and IRFU.log
     irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
     % Set log level to debug initially.
-    irf.log('loggingLevel',4);
+    irf.log('debug');
 
 else
     error('Could not setup environment or log');
