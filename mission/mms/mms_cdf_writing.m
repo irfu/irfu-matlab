@@ -55,7 +55,19 @@ switch(HeaderInfo.calledBy)
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
         irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        irfu_cdfwrite_sitl_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
+        try
+            irfu_cdfwrite_sitl_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
+        catch err
+            % An error occured.
+            % Give more information for mismatch.
+            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                irf.log('critical',err.message);
+                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+            else
+                % Display any other errors as usual.
+                rethrow(err);
+            end
+        end % End of try
         
         
     case('ql')
@@ -93,7 +105,19 @@ switch(HeaderInfo.calledBy)
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
         irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        irfu_cdfwrite_quicklook_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask), uint32(qualityMark));
+        try
+            irfu_cdfwrite_quicklook_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask), uint32(qualityMark));
+        catch err
+            % An error occured.
+            % Give more information for mismatch.
+            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                irf.log('critical',err.message);
+                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+            else
+                % Display any other errors as usual.
+                rethrow(err);
+            end
+        end % End of try
 
     case('usc')
         %disp('usc');
@@ -133,8 +157,19 @@ switch(HeaderInfo.calledBy)
      
         psp_p = [data1.data, data1.data];
         irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint32(bitmask));
-        %irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data, data1.data, uint32(bitmask));
+        try
+            irfu_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint32(bitmask));
+        catch err
+            % An error occured.
+            % Give more information for mismatch.
+            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                irf.log('critical',err.message);
+                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+            else
+                % Display any other errors as usual.
+                rethrow(err);
+            end
+        end % End of try
 
     
     otherwise
