@@ -13,6 +13,9 @@ function filename_output = mms_sitl_dce(filename_dce_source_file, filename_dcv_s
 % narginchk - Min 1 (dce), max 2 (dcv)
 narginchk(1,2);
 
+% Store runTime when script was called.
+runTime = datestr(now,'yyyymmddHHMMSS');
+
 % FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
 remoteRun = 1;
 
@@ -55,6 +58,10 @@ if(nargin==1)
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     
+    % Write out filename as an empty logfile so it can be easily found by
+    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
+    
+    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
     
     
     
@@ -93,6 +100,11 @@ elseif(nargin==2)
    
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
+    
+    % Write out filename as an empty logfile so it can be easily found by
+    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
+    
+    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
     
 elseif(nargin>2)
     % Log message so we know it went wrong... Should not happen as

@@ -12,6 +12,9 @@ function filename_output = mms_usc(filename_dcv_source_file)
 % narginchk - Min 1 (dcv), max 1 (dcv)
 narginchk(1,1);
 
+% Store runTime when script was called.
+runTime = datestr(now,'yyyymmddHHMMSS');
+
 % FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
 remoteRun =1;
 
@@ -50,4 +53,9 @@ global MMS_CONST;
    
     filename_output = mms_cdf_writing(dcv_source, bitmask(:,2), HeaderInfo, quality(:,2));
     
+    
+    % Write out filename as an empty logfile so it can be easily found by
+    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
+    
+    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
     
