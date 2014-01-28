@@ -222,7 +222,7 @@ elseif(HeaderInfo.numberOfSources == 2)
 end
 
 % Update all the new values to GlobalAttributes
-irf.log('debug','MATLABM:mms_cdf_writing:UpdatingGlobalAttributes');
+irf.log('debug','MATLAB:mms_cdf_writing:UpdatingGlobalAttributes');
 cdfupdate(filename_output,'GlobalAttributes',GATTRIB);
 
 

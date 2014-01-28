@@ -24,7 +24,7 @@ global MMS_CONST;
 % ENVIR & MMS_CONST structs created by init script.
 [ENVIR, MMS_CONST] = mms_init(remoteRun);
 
-    
+    irf.log('debug',['mms_usc trying mms_cdf_in_process on input file: ', filename_dcv_source_file]);
     [dcv_source, dcv_source_fileData] = mms_cdf_in_process(filename_dcv_source_file,'sci');
     
     % Set bitmask for all times in dce_source.
@@ -51,6 +51,7 @@ global MMS_CONST;
     HeaderInfo.numberOfSources = 1;
     HeaderInfo.parents_1 = filename_dcv_source_file;
    
+    irf.log('debug', 'mms_usc trying mms_cdf_write');
     filename_output = mms_cdf_writing(dcv_source, bitmask(:,2), HeaderInfo, quality(:,2));
     
     

@@ -32,6 +32,8 @@ if(nargin==1)
     % Log message so we know we only got one input.
     irf.log('warning','mms_sitl_dce recieved only one input argument. Can perform some but not all processing.');
     
+    irf.log('debug',['mms_sitl_dce trying mms_cdf_in_process on input file :', filename_dce_source_file]);
+
     [dce_source, dce_source_fileData] = mms_cdf_in_process(filename_dce_source_file,'sci');
     
     % Set bitmask for all times in dce_source.
@@ -54,7 +56,8 @@ if(nargin==1)
     HeaderInfo.vXYZ = dce_source_fileData.vXYZ;
     HeaderInfo.numberOfSources = 1;
     HeaderInfo.parents_1 = filename_dce_source_file;
-   
+
+    irf.log('debug', 'mms_sitl_dce trying mms_cdf_write');
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     
@@ -70,9 +73,11 @@ elseif(nargin==2)
     irf.log('notice','mms_sitl_dce recieved two input arguments. Can perform full processing.');
     
     % First get dce data
+    irf.log('debug',['mms_sitl_dce trying mms_cdf_in_process on input file :', filename_dce_source_file]);
     [dce_source, dce_source_fileData] = mms_cdf_in_process(filename_dce_source_file,'sci');
     
     % Then get dcv data
+    irf.log('debug',['mms_sitl_dce trying mms_cdf_in_process on input file :', filename_dcv_source_file]);
     [dcv_source, dcv_source_fileData] = mms_cdf_in_process(filename_dcv_source_file,'sci');
     
     % Set bitmask for all times that dcv_source do not match dce_source,
@@ -97,7 +102,8 @@ elseif(nargin==2)
     HeaderInfo.numberOfSources = 2;
     HeaderInfo.parents_1 = filename_dce_source_file;
     HeaderInfo.parents_2 = filename_dcv_source_file;
-   
+
+    irf.log('debug', 'mms_sitl_dce trying mms_cdf_write');
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     

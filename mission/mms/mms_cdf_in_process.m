@@ -12,13 +12,15 @@ if(strcmp(sci_or_ancillary,'sci'))
     % instrument folder, mode folder, datalevel folder, start time (as year and
     % day of year) folder.
     % 
-
+    
+    irf.log('debug',['mms_cdf_in_process recived input filename: ',filename]);
+    
     outObj = [];
     filenameData = [];
     
     pos = strfind(filename,'_');
     if length(pos)<5
-        irf.log('warning','mms_cdf_process sci filename has too few parts seperated by underscore.');
+        irf.log('warning',['mms_cdf_process sci filename has too few parts seperated by underscore.']);
     end
 
     
@@ -54,10 +56,13 @@ if(strcmp(sci_or_ancillary,'sci'))
     dirDOY = strcat(filenameData.startTime(1:4),'/',filenameData.startTime(5:6),'/',filenameData.startTime(7:8),'/');
 
     dirToInput = strcat(ENVIR.DATA_PATH_ROOT,'/','science','/',filenameData.scId,'/',filenameData.instrumentId,'/',filenameData.dataMode,'/',filenameData.dataLevel,'/',dirDOY);
+    
+    % Add debug message to know where we are trying to look for file.
+    irf.log('debug',['mms_cdf_process CDF file decoded as located here: ',strcat(dirToInput,filename)]);
 
     if(~exist(strcat(dirToInput,filename),'file'))
-        irf.log('critical','mms_cdf_process CDF file not found: %s',strcat(dirToInput,filename));
-        error('MATLAB:MMS:mms_cdf_in_process','inputfile not found: %s', strcat(dirToInput,filename));
+        irf.log('critical',['mms_cdf_process CDF file not found: ',strcat(dirToInput,filename)]);
+        error('MATLAB:MMS:mms_cdf_in_process',['inputfile not found:', strcat(dirToInput,filename)]);
     else
         % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
         outObj = dataobj(strcat(dirToInput,filename),'tint',0,true);
