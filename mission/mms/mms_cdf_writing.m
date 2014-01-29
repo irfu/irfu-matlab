@@ -61,10 +61,15 @@ switch(HeaderInfo.calledBy)
             % An error occured.
             % Give more information for mismatch.
             if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
-                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+                % Then end with MATLAB:SDCcode and numberical error code to
+                % be fetched by bash script.
+                error('MATLAB:SDCcode', '143');
             else
                 % Display any other errors as usual.
+                % It was an unkown error..
+                irf.log('critical',['Error when writing CDF file', err.identifier, err.message]);
                 rethrow(err);
             end
         end % End of try
@@ -111,8 +116,11 @@ switch(HeaderInfo.calledBy)
             % An error occured.
             % Give more information for mismatch.
             if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
-                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+                % Then end with MATLAB:SDCcode and numberical error code to
+                % be fetched by bash script.
+                error('MATLAB:SDCcode', '143');
             else
                 % Display any other errors as usual.
                 rethrow(err);
@@ -163,8 +171,11 @@ switch(HeaderInfo.calledBy)
             % An error occured.
             % Give more information for mismatch.
             if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+                % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
-                error('MATLAB:mms_cdf_writing:filename_output:exists', err.message);
+                % Then end with MATLAB:SDCcode and numberical error code to
+                % be fetched by bash script.
+                error('MATLAB:SDCcode', '143');
             else
                 % Display any other errors as usual.
                 rethrow(err);
