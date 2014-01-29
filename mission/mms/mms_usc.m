@@ -15,14 +15,11 @@ narginchk(1,1);
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS');
 
-% FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
-remoteRun =1;
-
 global ENVIR;
 global MMS_CONST;
 
 % ENVIR & MMS_CONST structs created by init script.
-[ENVIR, MMS_CONST] = mms_init(remoteRun);
+[ENVIR, MMS_CONST] = mms_init();
 
     irf.log('debug',['mms_usc trying mms_cdf_in_process on input file: ', filename_dcv_source_file]);
     [dcv_source, dcv_source_fileData] = mms_cdf_in_process(filename_dcv_source_file,'sci');

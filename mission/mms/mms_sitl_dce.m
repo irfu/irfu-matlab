@@ -16,14 +16,11 @@ narginchk(1,2);
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS');
 
-% FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
-remoteRun = 1;
-
 global ENVIR;
 global MMS_CONST;
 
 % ENVIR & MMS_CONST structs created by init script.
-[ENVIR, MMS_CONST] = mms_init(remoteRun);
+[ENVIR, MMS_CONST] = mms_init();
 
 
 
