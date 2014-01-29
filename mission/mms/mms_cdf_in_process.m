@@ -1,10 +1,10 @@
-function [outObj, filenameData] = mms_cdf_in_process( filename, sci_or_ancillary )
+function [outObj, filenameData] = mms_cdf_in_process( fullFilename, sci_or_ancillary )
 % Process input arguments to find data file (in CDF format) and read this
 % file as dataobj, return the dataobj containing all data and info from the
 % CDF file.
 % Latest modification: 2014/01/16
 
-global ENVIR;
+%global ENVIR;
 
 if(strcmp(sci_or_ancillary,'sci'))
     % Convert input file name to parameters, use this to go down through the
@@ -13,10 +13,12 @@ if(strcmp(sci_or_ancillary,'sci'))
     % day of year) folder.
     % 
     
-    irf.log('debug',['mms_cdf_in_process recived input filename: ',filename]);
+    irf.log('debug',['mms_cdf_in_process recived input filename: ', fullFilename]);
     
     outObj = [];
     filenameData = [];
+    
+    [pathstr, filename, ext] = fileparts(fullFilename); 
     
     pos = strfind(filename,'_');
     if length(pos)<5
@@ -53,21 +55,19 @@ if(strcmp(sci_or_ancillary,'sci'))
             irf.log('warning','mms_cdf_process something went wrong in reading startTime from filename input.');
     end
 
-    dirDOY = strcat(filenameData.startTime(1:4),'/',filenameData.startTime(5:6),'/',filenameData.startTime(7:8),'/');
-
-    dirToInput = strcat(ENVIR.DATA_PATH_ROOT,'/','science','/',filenameData.scId,'/',filenameData.instrumentId,'/',filenameData.dataMode,'/',filenameData.dataLevel,'/',dirDOY);
-    
+    %dirDOY = strcat(filenameData.startTime(1:4),'/',filenameData.startTime(5:6),'/',filenameData.startTime(7:8),'/');
+    %dirToInput = strcat(ENVIR.DATA_PATH_ROOT,'/','science','/',filenameData.scId,'/',filenameData.instrumentId,'/',filenameData.dataMode,'/',filenameData.dataLevel,'/',dirDOY);
     % Add debug message to know where we are trying to look for file.
-    irf.log('debug',['mms_cdf_process CDF file decoded as located here: ',strcat(dirToInput,filename)]);
+    %irf.log('debug',['mms_cdf_process CDF file decoded as located here: ',strcat(dirToInput,filename)]);
 
-    if(~exist(strcat(dirToInput,filename),'file'))
-        irf.log('critical',['mms_cdf_process CDF file not found: ',strcat(dirToInput,filename)]);
-        error('MATLAB:SDCcode',['143']);
+    if(~exist(fullFilename,'file'))
+        irf.log('critical',['mms_cdf_process CDF file not found: ',fullFilename]);
+        error('MATLAB:SDCcode','143');
 
 %        error('MATLAB:MMS:mms_cdf_in_process',['inputfile not found:', strcat(dirToInput,filename)]);
     else
         % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
-        outObj = dataobj(strcat(dirToInput,filename),'tint',0,true);
+        outObj = dataobj(fullFilename,'tint',0,true);
     end
 
 elseif(strcmp(sci_or_ancillary,'ancillary'))

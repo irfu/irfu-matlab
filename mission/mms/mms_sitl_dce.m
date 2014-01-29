@@ -1,4 +1,4 @@
-function filename_output = mms_sitl_dce(filename_dce_source_file, filename_dcv_source_file)
+function mms_sitl_dce(filename_dce_source_file, filename_dcv_source_file)
 % This is the main file to be run at SDC, from this file all other substeps
 % are performed.
 % Input(s):
