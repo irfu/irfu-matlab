@@ -128,6 +128,7 @@ for idxField = 1:length(plotFields)
   end
 end
 
+irf_plot_axis_align(h)
 irf_zoom(h,'x',timeVec([1 end])')
 
 if ~isempty(ebsp.r)
