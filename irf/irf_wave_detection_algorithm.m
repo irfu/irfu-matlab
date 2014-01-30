@@ -36,8 +36,7 @@ if isstruct(tint)
     newfreq = ebsp.f;
     nfreq = length(newfreq);
     ndata = length(t);
-    [~,args,~] = axescheck(varargin{:});
-    B=args{1};
+    Btot = ebsp.B0;
     save_plot = 1;
 else
 
@@ -64,11 +63,15 @@ else
         B=B(1:end-1,:);
         t=t(1:end-1,:);
       end
+      
 
         % set to zero NaNs
       ind_nan_b=isnan(b); b(ind_nan_b)=0;
       ind_nan_B=isnan(B); B(ind_nan_B)=0;
 
+      B2=irf_resamp(B,t);
+      Btot = B2(:,1:2);
+      Btot(:,2)=sqrt(B2(:,2).*B2(:,2)+B2(:,3).*B2(:,3)+B2(:,4).*B2(:,4));
 
       %% Find the frequencies for an FFT of all data
 
@@ -222,9 +225,6 @@ ind_nan_pmr=isnan(power_median_removed); power_median_removed(ind_nan_pmr)=0;
 
 
 %% set cutoff frequencies and put a limit on the width of the emic event
-Btot=irf_resamp(B(:,1),t);
-B2=irf_resamp(B,t);
-Btot(:,2)=sqrt(B2(:,2).*B2(:,2)+B2(:,3).*B2(:,3)+B2(:,4).*B2(:,4));
 hCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
 heCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
 oCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
