@@ -26,7 +26,7 @@ if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
 if isempty(iSep)
-  irf_log('critical','invalid file name')
+  irf.log('critical','invalid file name')
   error('invalid file name')
 end
 
@@ -82,8 +82,6 @@ end
 if regexp(productName,'^C[1-4]_CP')==1
   ebsp.r = local.c_read(['R' productName(2)],ebsp.t.data([1 end]));
 elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_VLF')==1
-  r=getmat(d,['POSITION__' productName])';
-  ebsp.r = [ebsp.t.data(1) r*6371.0];
 end
 
 flagNoE = 0;
