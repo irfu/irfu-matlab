@@ -1,4 +1,4 @@
-function filename_output = mms_sitl_dce(filename_dce_source_file, filename_dcv_source_file)
+function mms_sitl_dce(filename_dce_source_file, filename_dcv_source_file)
 % This is the main file to be run at SDC, from this file all other substeps
 % are performed.
 % Input(s):
@@ -16,14 +16,11 @@ narginchk(1,2);
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS');
 
-% FIXME: Set to 0 if running locally at IRFU, set to 1 if running at SDC.
-remoteRun = 1;
-
 global ENVIR;
 global MMS_CONST;
 
 % ENVIR & MMS_CONST structs created by init script.
-[ENVIR, MMS_CONST] = mms_init(remoteRun);
+[ENVIR, MMS_CONST] = mms_init();
 
 
 

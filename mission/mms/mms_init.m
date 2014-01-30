@@ -1,4 +1,4 @@
-function [ENVIR, MMS_CONST] = mms_init(remoteSDC)
+function [ENVIR, MMS_CONST] = mms_init()
 % Function to return environment variables in a struct:
 % 
 % ENVIR
@@ -15,9 +15,7 @@ function [ENVIR, MMS_CONST] = mms_init(remoteSDC)
 %
 %        ? - Something more perhaps..
 %
-% Input: remoteSDC == 1, if run at SDC, == 0 if run locally.
-%
-% Date of latest modification: 2014/01/16
+% Date of latest modification: 2014/01/29
 %
 
 
@@ -36,37 +34,15 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Bitmask constant values
 MMS_CONST.Bitmask.OnlyDCE = 1; % Bits 0x01.
 
-% FIXME: SET PATH TO IRFU CODE (add path ../irfu-matlab/...)
+ENVIR.CDF_BASE = getenv('CDF_BASE'); % get environment variable.
+ENVIR.DATA_PATH_ROOT = getenv('DATA_PATH_ROOT'); % Get path to data.
+ENVIR.LOG_PATH_ROOT = getenv('LOG_PATH_ROOT'); % Get path to logs.
+ENVIR.DROPBOX_ROOT = getenv('DROPBOX_ROOT'); % Get path to output location, (temporary location, other scripts then move it once fully written and our script is done). 
+ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 
-if(remoteSDC==1)
-    ENVIR.CDF_BASE = getenv('CDF_BASE'); % get environment variable.
-    ENVIR.DATA_PATH_ROOT = getenv('DATA_PATH_ROOT'); % Get path to data.
-    ENVIR.LOG_PATH_ROOT = getenv('LOG_PATH_ROOT'); % Get path to logs.
-    ENVIR.DROPBOX_ROOT = getenv('DROPBOX_ROOT'); % Get path to output location, (temporary location, other scripts then move it once fully written and our script is done). 
-    ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
+% Setup logging.
+% Create a logfile at log_path_root, named after current run date and IRFU.log
+irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
+% Set log level to debug initially.
+irf.log('debug');
 
-    % Setup logging.
-    % Create a logfile at log_path_root, named after current run date and IRFU.log
-    irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
-    % Set log level to debug initially.
-    irf.log('debug');
-
-elseif(remoteSDC==0)
-    % For local code running on IRFU computers
-    ENVIR.CDF_BASE = '/home/thoni/MMS/cdf35_0-dist';
-    ENVIR.DATA_PATH_ROOT = '/home/thoni/MMS/MMS_cdf';
-    ENVIR.LOG_PATH_ROOT = '/home/thoni/MMS/log';
-    ENVIR.DROPBOX_ROOT = '/home/thoni/MMS/fileoutput';
-    %ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT');
-    addpath(genpath('/home/thoni/MMS/irfu-matlab'));
-
-    % Setup logging.
-    % Create a logfile at log_path_root, named after current run date and IRFU.log
-    irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
-    % Set log level to debug initially.
-    irf.log('debug');
-
-else
-    error('Could not setup environment or log');
-    %irf.log('warning','mms_init recived input. Was remoteSDC set?');
-end
