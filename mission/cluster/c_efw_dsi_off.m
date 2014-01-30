@@ -86,14 +86,17 @@ Damp = Damp(cl_id);
 
 if nargin == 2 || isempty(Ps), return, end 
 
-
-ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
-ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
-Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
-if isempty(Psr), return, end
-
-ii = find(Psr(:,2) < SC_POT_LIM);
-if isempty(ii), return, end
+if size(Ps,1)==1
+  ii=1; TAV=0; Psr = Ps;
+else
+  ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
+  ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
+  Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
+  if isempty(Psr), return, end
+  
+  ii = find(Psr(:,2) < SC_POT_LIM);
+  if isempty(ii), return, end
+end
 
 % Table of MS offsets
 if t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
