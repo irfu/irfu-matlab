@@ -19,6 +19,7 @@ Date of latest mod: 2014/01/22
 
 Maj.Rev:
 0.1 (2013/12/21) Created first outline.
+0.1.1 (2014/02/03) Flip matrix in Matlab instead.
 
 Note:
 Use a modern compiler or there might be issues with FillVal for CDF_TIME_TT2000 as it is a rather large number. 
@@ -72,7 +73,7 @@ if(nrhs!=8)
   int8_t sc_id;
  
 // Seventh parameters mmsX_probes_to_sc (CDF_Float[6]) are read as a single column vector in Mex, re-shape it to matrix to write with CDF lib.
-  float buffer7[mxGetM(prhs[6])][mxGetN(prhs[6])];
+//  float buffer7[mxGetM(prhs[6])][mxGetN(prhs[6])];
 
 
 // First input argument, filename
@@ -112,7 +113,8 @@ if(nrhs!=8)
    // mexPrintf("Buffer3[1]: %ld\n", buffer3[1]);
 
 // Seventh input argument, mmsX_probes_to_sc (N*6, cdf_float[6])
-  float *xValues;
+/* 20140202 start
+float *xValues;
 
   xValues = (float *)mxGetData(prhs[6]);
 
@@ -128,7 +130,7 @@ if(nrhs!=8)
   // mexPrintf("Buffer7[1][0]: %g\n", buffer7[1][0]);
   // mexPrintf("Buffer7[1][1]: %g\n", buffer7[1][1]);
   // mexPrintf("Buffer7[M-1][N-1]: %g\n", buffer7[M-1][N-1]);
-
+20140202 end */
 // Sixth input, bitmask
   
 
@@ -987,9 +989,13 @@ status = CDFputzVarAllRecordsByVarID (id, PSPvarNum, mxGetM(prhs[4]), (float *)m
 status = CDFputzVarAllRecordsByVarID (id, SENSORvarNum, mxGetM(prhs[5]), (float *)mxGetData(prhs[5]));
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFputzVarAllRecordsByVarID (id, SENSORINDvarNum, mxGetM(prhs[6]), (float *)buffer7);
+status = CDFputzVarAllRecordsByVarID (id, SENSORINDvarNum, mxGetN(prhs[6]), (float *)mxGetData(prhs[6]));
   if (status != CDF_OK) UserStatusHandler (status);
 
+/* 20140203 start
+status = CDFputzVarAllRecordsByVarID (id, SENSORINDvarNum, mxGetM(prhs[6]), (float *)buffer7);
+  if (status != CDF_OK) UserStatusHandler (status);
+20140203 end */
 
 status = CDFputzVarAllRecordsByVarID (id, BITMASKvarNum, mxGetM(prhs[7]), (uint32_t *)mxGetData(prhs[7]));
   if (status != CDF_OK) UserStatusHandler (status);

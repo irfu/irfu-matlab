@@ -70,8 +70,8 @@ if(nrhs!=7)
   int8_t sc_id;
  
 // Fourth & Fifth parameters mmsX_sdp_dce_xyz (CDF_Float[3]) are read as a single column vector in Mex, re-shape it to matrix to write with CDF lib.
-  float buffer4[mxGetM(prhs[3])][mxGetN(prhs[3])];
-  float buffer5[mxGetM(prhs[4])][mxGetN(prhs[4])];
+//  float buffer4[mxGetM(prhs[3])][mxGetN(prhs[3])];
+//  float buffer5[mxGetM(prhs[4])][mxGetN(prhs[4])];
 
 
 // First input argument, filename
@@ -111,7 +111,7 @@ if(nrhs!=7)
    // mexPrintf("Buffer3[1]: %ld\n", buffer3[1]);
 
 // Forth input argument, mmsX_sdp_dce_xyz_pgse (N*3, cdf_float[3])
-  float *xValues;
+/*  float *xValues;
 
   xValues = (float *)mxGetData(prhs[3]);
 
@@ -138,7 +138,8 @@ if(nrhs!=7)
        buffer5[j][i] = *xValues++;
     }
   }
- // Debug message
+*/
+// Debug message
   // mexPrintf("Buffer5[1][0]: %f\n", buffer5[1][0]);
   // mexPrintf("Buffer5[1][1]: %f\n", buffer5[1][1]);
   // mexPrintf("Buffer5[M-1][N-1]: %f\n", buffer4[mxGetM(prhs[4])-1][mxGetN(prhs[4])-1]);
@@ -888,12 +889,19 @@ status = CDFputzVarAllRecordsByVarID (id, EPOCHvarNum, mxGetM(prhs[2]), (int64_t
 status = CDFputzVarAllRecordsByVarID (id, LABELvarNum, 1, buffer[0]);
   if (status != CDF_OK) UserStatusHandler (status);
 
+status = CDFputzVarAllRecordsByVarID (id, SENSORvarNum, mxGetN(prhs[3]), (float *)mxGetData(prhs[3]));
+  if (status != CDF_OK) UserStatusHandler (status);
 
+status = CDFputzVarAllRecordsByVarID (id, SENSORvarNumDSL, mxGetN(prhs[4]), (float *)mxGetData(prhs[4]));
+  if (status != CDF_OK) UserStatusHandler (status);
+
+/*
 status = CDFputzVarAllRecordsByVarID (id, SENSORvarNum, mxGetM(prhs[3]), (float *)buffer4);
   if (status != CDF_OK) UserStatusHandler (status);
 
 status = CDFputzVarAllRecordsByVarID (id, SENSORvarNumDSL, mxGetM(prhs[4]), (float *)buffer5);
   if (status != CDF_OK) UserStatusHandler (status);
+*/
 
 status = CDFputzVarAllRecordsByVarID (id, BITMASKvarNum, mxGetM(prhs[5]), (uint32_t *)mxGetData(prhs[5]));
   if (status != CDF_OK) UserStatusHandler (status);
