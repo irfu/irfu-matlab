@@ -11,6 +11,8 @@ if [ ! -x $QTRAN ]; then
 	echo "$QTRAN does not exist/not executable" && exit 1;
 fi
 
+umask 002
+
 BASEDIR=/data/caa/MAARBLE
 DBDIR="$BASEDIR/WaveDatabase"
 DELIVERY_DIR="$BASEDIR/Delivery"
@@ -49,6 +51,7 @@ while read fname; do
 	if [ ! -e $fname ]; then
 		echo "Cannot find $fname" && continue
 	fi   
+	rm -f $LOG
 	$CEFMERGE -I $INCLUDES -O $TMPDIR $fname >> $LOG 2>&1 || (cp $fname $FAILED && continue) 
 	newfile=`find $TMPDIR -name \*.cef` 
 	$QTRAN $newfile >> $LOG 2>&1
@@ -90,7 +93,7 @@ while read fname; do
 	if [ ! -d $DEST/CDF ]; then
 		mkdir -p $DEST/CDF || exit 1
 	fi
-	if [ ! -d $DEST/PNG ]; then
+	if [ $DSET != "FACMATR" ] && [ ! -d $DEST/PNG ]; then
 		mkdir -p $DEST/PNG || exit 1
 	fi
 
