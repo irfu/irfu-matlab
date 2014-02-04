@@ -13,7 +13,7 @@ if(strcmp(sci_or_ancillary,'sci'))
     % day of year) folder.
     % 
     
-    irf.log('debug',['mms_cdf_in_process recived input filename: ', fullFilename]);
+    irf.log('debug',['mms_cdf_in_process received input filename: ', fullFilename]);
     
     outObj = [];
     filenameData = [];

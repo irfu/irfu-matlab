@@ -27,7 +27,7 @@ global MMS_CONST;
 % If only one is found we cannot do all data processing
 if(nargin==1)
     % Log message so we know we only got one input.
-    irf.log('warning','mms_sitl_dce recieved only one input argument. Can perform some but not all processing.');
+    irf.log('warning','mms_sitl_dce received only one input argument. Can perform some but not all processing.');
     
     irf.log('debug',['mms_sitl_dce trying mms_cdf_in_process on input file :', filename_dce_source_file]);
 
@@ -67,7 +67,7 @@ if(nargin==1)
     
 elseif(nargin==2)
     % Log message so we know we got both.
-    irf.log('notice','mms_sitl_dce recieved two input arguments. Can perform full processing.');
+    irf.log('notice','mms_sitl_dce received two input arguments. Can perform full processing.');
     
     % First get dce data
     irf.log('debug',['mms_sitl_dce trying mms_cdf_in_process on input file :', filename_dce_source_file]);
