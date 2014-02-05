@@ -1329,9 +1329,9 @@ elseif strcmp(quantity,'edb') || strcmp(quantity,'edbs') || ...
 		case 34
 			irf_log('proc','using p34')
 			var_s = irf_ssub('diEs?p34',cl_id);
-        case 420
+    case 420
 			irf_log('proc','using p42LX')
-			var_s = irf_ssub('diELXs?p34',cl_id);
+			var_s = irf_ssub('diELXs?p42',cl_id);
 		otherwise
 			error(['Invalid probe pair ' num2str(probe_p)])
 		end

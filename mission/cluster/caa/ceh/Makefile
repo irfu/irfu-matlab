@@ -8,3 +8,9 @@ clean:
 	C[1-4]_CH_EFW_L2_EB.ceh C[1-4]_CH_EFW_L2_BB.ceh \
 	C[1-4]_CH_AUX_MAARBLE_ULF_PC12.ceh C[1-4]_CH_AUX_MAARBLE_ULF_PC35.ceh \
 	C[1-4]_CH_AUX_MAARBLE_ULF_FACMATR.ceh
+
+upload-maarble:
+	ls *.ceh| grep -v CX | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
+
+update-dropbox:
+	x-line:ceh yuri$ ls *.ceh| grep -v CX | xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/

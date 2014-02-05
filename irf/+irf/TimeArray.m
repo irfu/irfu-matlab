@@ -21,21 +21,21 @@ classdef TimeArray < irf.Time
         ta.dt = inp.dt;
       elseif isa(inp,'double')
         if min(size(inp))>1
-          error('MATLAB:TimeArray:TimeArray:badInputs',...
-            'ISDAT epoch input (double) must be a columt or raw vector')
+          error('irf:TimeArray:TimeArray:badInputs',...
+            'ISDAT epoch input (double) must be a columt or row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         ta.dt = int64((inp - inp(1)) * 1e9 );
       elseif isa(inp,'int64')
         if min(size(inp))>1
-          error('MATLAB:TimeArray:TimeArray:badInputs',...
+          error('irf:TimeArray:TimeArray:badInputs',...
             'epoch2000 nano-seconds input (int64) must be a column/row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
         ta.dt = inp - inp(1);
       else
-        error('MATLAB:TimeArray:TimeArray:badInputs',...
-          'unknown input type')
+        error('irf:TimeArray:TimeArray:badInputs',...
+          'Unknown input type')
       end
     end
     
@@ -60,8 +60,19 @@ classdef TimeArray < irf.Time
         all(ta1.dt==ta2.dt) );
     end
     
+    function ta = subsref(ta,idx)
+      if isstruct(idx)
+        idx = idx.subs{:};
+      end
+      ta.dt = ta.dt(idx);
+    end
+    
     function l = length(ta)
       l = length(ta.dt);
+    end
+    
+    function n = size(ta)
+      n = length(ta);
     end
     
     function e = toEpoch(ta)
