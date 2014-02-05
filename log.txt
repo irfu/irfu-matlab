@@ -1,3 +1,5 @@
+2013-12-11 v1.4.2 fixed launchpad bug 1258510
+2013-11-13 v1.4.1 minor updates
 2013-11-13 v1.4.0 updated support for CSA
 2013-11-06 v1.3.1 added *.m to .gitatributes to have LF endings in all *.m files
 2013-11-06 v1.3.0 updated CDF patch to v3.5.0.1, irf_log moved to irf.log, several bug fixes

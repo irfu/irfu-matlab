@@ -3,11 +3,12 @@ function [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,Ps)
 %
 % [Ddsi,Damp] = c_efw_dsi_off(t,[cl_id,Ps])
 %
+% [Ddsi,Damp] = c_efw_dsi_off(t,cl_id,'magnetosphere')
+%    Get the magnetospheric offsets
+%
 % Ddsi is complex: Dx = real(Ddsi), Dy = imag(Ddsi)
 %
 % See also CAA_COROF_DSI
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -25,7 +26,8 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
+if t>=toepoch([2012 01 01 00 00 0]), Ddsi = [ 0.31  1.28  2.04  0.10 ];
+elseif t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 05 02 21 00 0]), Ddsi = [ 0.03  3.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 04 30 06 40 0]), Ddsi = [ 0.03  4.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 03 01 16 50 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
@@ -37,8 +39,8 @@ elseif t>=toepoch([2010 07 12 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Forc
 elseif t>=toepoch([2010 07 08 18 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ]; % These orbits need the variable offset
 elseif t>=toepoch([2010 07 01 00 00 0]), Ddsi = [ 0.4  1.6  1.22 0.84  ]; % Force MS offsets.
 elseif t>=toepoch([2010 06 01 00 00 0]), Ddsi = [ -0.27 0.8  1.66 0.25 ];
-elseif t>=toepoch([2010 02 01 00 0 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
-elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
+elseif t>=toepoch([2010 02 01 00 00 0]), Ddsi = [ -0.34  0.67 1.50  0.17 ];
+elseif t>=toepoch([2010 01 01 00 00 0]), Ddsi = [ -0.34  0.67 2.00  0.17 ];
 elseif t>=toepoch([2009 12 01 00 00 0]), Ddsi = [-0.12    0.46 2.0 0.05];   % Increase C3 offset to bring in line with C124
 elseif t>=toepoch([2009 11 13 00 00 0]), Ddsi = [-0.12    0.46 1.53 0.05];  % Back to variable offsets
 elseif t>=toepoch([2009 07 01 00 00 0]), Ddsi = [ 0.46  1.33 1.27  0.65 ];  % Force MS offset for months when don't enter SW.
@@ -86,20 +88,26 @@ Damp = Damp(cl_id);
 
 if nargin == 2 || isempty(Ps), return, end 
 
-if size(Ps,1)==1
-  ii=1; TAV=0; Psr = Ps;
-else
-  ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
-  ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
-  Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
-  if isempty(Psr), return, end
-  
-  ii = find(Psr(:,2) < SC_POT_LIM);
-  if isempty(ii), return, end
+flagAlwaysMagnetosphere = 0;
+if isnumeric(Ps)
+ndata = ceil((Ps(end,1) - Ps(1,1))/TAV);
+ta = Ps(1,1) + (1:ndata)*TAV - TAV/2; ta = ta';
+Psr = irf_resamp( Ps( ~isnan(Ps(:,2)) ,:), ta, 'window',TAV);
+if isempty(Psr), return, end
+
+ii = find(Psr(:,2) < SC_POT_LIM);
+if isempty(ii), return, end
+elseif ischar(Ps)
+  if strcmpi(Ps, 'magnetosphere')
+    flagAlwaysMagnetosphere = 1;
+  else
+    error('Unrecognazed value of region')
+  end
 end
 
 % Table of MS offsets
-if t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
+if t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.1  2.4  0.47  0.45 ];
+elseif t>=toepoch([2011 11 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ];
 elseif t>=toepoch([2011 06 01 00 0 0]), Ddsi = [ 0.49  0.78-2.78  1.18  0.84 ];
 elseif t>=toepoch([2011 01 01 00 0 0]), Ddsi = [ 0.49  0.78  1.18  0.84 ]; % C2 strange curve limited data
 elseif t>=toepoch([2010 01 01 00 0 0]), Ddsi = [ 0.4  1.6  1.22 0.84 ];
@@ -125,7 +133,9 @@ else
 end
 
 % SC pot is all the time below SC_POT_LIM
-if ~any(Psr(:,2) >= SC_POT_LIM), Ddsi = Ddsi(cl_id); return, end
+if flagAlwaysMagnetosphere || ~any(Psr(:,2) >= SC_POT_LIM)
+  Ddsi = Ddsi(cl_id); return
+end
 
 DdsiMS = Ddsi;
 
