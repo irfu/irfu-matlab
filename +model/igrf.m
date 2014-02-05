@@ -8,22 +8,23 @@ if isempty(hIGRF)
 	fileIGRF = [fileparts(which('irf.m')) '/+model/igrf11coeffs.txt'];
 	irf.log('warning',['Reading IGRF coeficients from file:' fileIGRF]);
 	%file reading
-	fid=fopen(fileIGRF);
+	fid = fopen(fileIGRF);
 	out = textscan(fid, '%s', 'delimiter',sprintf('\n')); % cell array with lines
-	out=out{1};
+	out = out{1};
 	fclose(fid);
-	% construct igrf_coef
+	% construct IGRF coefficient matrices
 	% g(i,[n m years]) 0
 	% h(i,[n,m,years]) 1
-	numberCoefIGRF = numel(out) - 4;
-	a=textscan(out{4},'%s');a=a{1};
-	numYears = numel(a)-3;
-	formatYears=repmat('%f',1,numYears);
-	yearsIGRF = textscan(out{4},['%*s%*s%*s' formatYears]);
-	yearsIGRF = horzcat(yearsIGRF{:});
+	nCoefIGRF = numel(out) - 4;
+	a = textscan(out{4},'%s');
+	a = a{1};
+	nYears      = numel(a)-3;
+	formatYears = repmat('%f',1,nYears);
+	yearsIGRF   = textscan(out{4},['%*s%*s%*s' formatYears]);
+	yearsIGRF   = horzcat(yearsIGRF{:});
 	yearsIGRF(end)=yearsIGRF(end-1)+5;
 	% read in all IGRF coefficients from file
-	iIGRF=zeros(numberCoefIGRF,numYears+3);
+	iIGRF=zeros(nCoefIGRF,nYears+3);
 	ii=1;
 	for iLine=5:numel(out)
 		d=textscan(out{iLine},['%s%f%f' formatYears]);
@@ -37,15 +38,17 @@ if isempty(hIGRF)
 	gIGRF=iIGRF(iIGRF(:,1)==0,2:end);
 end
 
-timeVec       = irf_time(t,'vector');
-yearRef       = timeVec(:,1);
+timeVec = irf_time(t,'vector');
+yearRef = timeVec(:,1);
 if min(yearRef) < min(yearsIGRF),
-	irf_log('fcal','requested time before available IGRF');
-	return;
+	irf.log('warning',...
+		['requested time is earlier than the first available IGRF model from ' ...
+		num2str(min(yearRef)) ', extrapolating in past.. ']);
 end
 
-year        = yearRef + ...
-	(t - irf_time([yearRef (yearRef*0+1)*[1 1] yearRef*[0 0 0]],'vector2epoch'))/(365.25*86400);
+year = yearRef + ...
+	(t - irf_time([yearRef 1 1 yearRef*[0 0 0]],'vector2epoch'))...
+	/(365.25*86400);
 
 switch flag
 	case 'dipole'
@@ -61,5 +64,7 @@ switch flag
 			disp(['lamda = ' num2str(lambda) ' deg']);
 			disp(['  phi = ' num2str(phi) ' deg']);
 		end
+	otherwise
+		irf.log('critical','input flag is not recognized');
+		error('model.igrf() input flag not recognized');
 end
-
