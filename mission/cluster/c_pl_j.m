@@ -87,34 +87,34 @@ jpar = []; jperp = [];
 c_eval('[jpar,jperp]=irf_dec_parperp(B?,jj);',ref_sc)
 
 NPLOTS = 6;
-h = 1:NPLOTS;
+h=irf_plot(NPLOTS);
 
-h(1) = irf_subplot(NPLOTS, 1, -1);
-c_eval('irf_plot(irf_abs(B?));',ref_sc)
-ylabel([' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
+hca=irf_panel('B filt');
+c_eval('irf_plot(hca,irf_abs(B?));',ref_sc)
+ylabel(hca,[' B_{<' num2str(fcut) 'Hz} GSE [nT]'])
 
-h(2) = irf_subplot(NPLOTS, 1, -2);
+hca=irf_panel('J_||');
 jpar(:,2:end) = jpar(:,2:end)*1e9;
-irf_plot(jpar);
-ylabel('j_{||} [nA/m^2]')
+irf_plot(hca,jpar);
+ylabel(hca,'j_{||} [nA/m^2]')
 
-h(3) = irf_subplot(NPLOTS, 1, -3);
+hca=irf_panel('J perp');
 jperp(:,2:end) = jperp(:,2:end)*1e9;
-irf_plot(jperp);
-ylabel('j_{\perp} GSE [nA/m^2]')
+irf_plot(hca,jperp);
+ylabel(hca,'j_{\perp} GSE [nA/m^2]')
 
-h(4) = irf_subplot(NPLOTS, 1, -4);
-irf_plot(jxB);
-ylabel('jxB [A/m^2 T]')
+hca=irf_panel('JxB');
+irf_plot(hca,jxB);
+ylabel(hca,'jxB [A/m^2 T]')
 
-h(5) = irf_subplot(NPLOTS, 1, -5);
-irf_plot(irf_integrate(jxB));
-ylabel('Int jxB [A/m^2 T s]')
+hca=irf_panel('int JxB');
+irf_plot(hca,irf_integrate(jxB));
+ylabel(hca,'Int jxB [A/m^2 T s]')
 
-h(6) = irf_subplot(NPLOTS, 1, -6);
+hca=irf_panel('divB');
 divB(:,2:end) = divB(:,2:end)*1e9;
-irf_plot(divB);
-ylabel('div(B) [nA/m^2]')
+irf_plot(hca,divB);
+ylabel(hca,'div(B) [nA/m^2]')
 
 for j=1:6,set(h(j),'YLim',get(h(j),'YLim')*.99),end
 

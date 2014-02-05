@@ -4325,7 +4325,7 @@ Effect on the CAA processing:
 		<desc>Single event upset corrupted the DWP application code for Whisper, caused serious DWP problems.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01194.html">Keith 090430</link></res>
         </operation>
-	<operation c1="yes" start="2009-04-19T07:29:00Z" dt="-1" plan="no" sdesc="no_p4">
+	<operation c1="yes" start="2009-04-19T07:28:59Z" dt="1592126" plan="no" sdesc="no_p4">
 		<desc>P4 failed on C1. It mysteriously came back to life on 2009-05-07, before failing for good on 2009-10-14.</desc>
 		<res><link href="http://www.acse.shef.ac.uk/wec-ops/mail/msg01206.html">Per-Arne 090504</link></res>
         </operation>

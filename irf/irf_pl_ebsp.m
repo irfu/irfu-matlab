@@ -60,7 +60,7 @@ flagCmap = 0;
 if nargin==1 || isempty(params)
   limByDopStruct = struct('type','low','val',0.6,'param','dop','comp',1);
   limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
-  %limBSsumStruct = struct('type','low','val',.05,'param','bb_xxyyzzss','comp',4);
+  %limBSsumStruct = struct('type','low','val',-1.0,'param','bb_xxyyzzss','comp',4);
   
   params = {{'bb_xxyyzzss',4},...
     {'ee_ss'},...
@@ -80,7 +80,14 @@ GetPlotParams();
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
-sr = struct('t',ebsp.t,'f',ebsp.f);
+if isstruct(ebsp.t)
+  timeVec = ebsp.t.data;
+  sr = struct('t',timeVec,'f',ebsp.f.data,...
+    'f_label',['Freq [' ebsp.f.units ']']);
+else
+  timeVec = ebsp.t;
+  sr = struct('t',timeVec,'f',ebsp.f,'f_label','Freq [Hz]');
+end
 for idxField = 1:length(plotFields)
   for idxComp = 1:length(plotComps{idxField})
     idxPanel = idxPanel + 1;
@@ -93,11 +100,24 @@ for idxField = 1:length(plotFields)
     end
     hca = irf_panel(panelStr); 
     if ~isempty(ebsp.(field))
-      sr.p = LimitValues(ebsp.(field)(:,:,comp));
-      [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      if isstruct(ebsp.(field))
+        sr.p = LimitValues(ebsp.(field).data(:,:,comp));
+        if ischar(ebsp.(field).units), tmpUnits = ebsp.(field).units;
+        elseif isstruct(ebsp.(field).units)
+          tmpUnits = ebsp.(field).units.data(comp,:);
+        else error('cannot treat units')
+        end
+        while tmpUnits(end)==' ' && length(tmpUnits) > 1
+          tmpUnits(end) = []; % Remove trailing spaces
+        end
+        [sr.plot_type,sr.p_label] = GetPlotTypeLabel(tmpUnits);
+      else
+        sr.p = LimitValues(ebsp.(field)(:,:,comp));
+        [sr.plot_type,sr.p_label] = GetPlotTypeLabel();
+      end
       [~,hcb] = irf_spectrogram(hca,sr); PlotCyclotronFrequency()
-      yTickList(idxPanel) = {get(hcb,'YTick')};
       SetCaxis()
+      yTickList(idxPanel) = {get(hcb,'YTick')};
     else
       hcb = -1; 
       yTickList(idxPanel) = {''};
@@ -108,14 +128,19 @@ for idxField = 1:length(plotFields)
   end
 end
 
-irf_zoom(h,'x',ebsp.t([1 end])')
+irf_plot_axis_align(h)
+irf_zoom(h,'x',timeVec([1 end])')
 
 if ~isempty(ebsp.r)
   xlabel(h(end),''), add_position(h(end),ebsp.r)
-  title(h(1),irf_disp_iso_range(ebsp.t([1 end])',1))
+  title(h(1),irf_disp_iso_range(timeVec([1 end])',1))
 end
 
 SetColorMap()
+
+% Check if we ended up with only one Y-tick and correct
+yTick = get(h(1),'YTick');
+if length(yTick)==1, set(h,'YTick',yTick*[.1 1 10]), end
 
 if nargout, out = h; end % Return here
 
@@ -193,20 +218,24 @@ if nargout, out = h; end % Return here
       end
     end
   end
-  function [t,s] = GetPlotTypeLabel
+  function [t,s] = GetPlotTypeLabel(unitsStr)
+    if nargin<1, unitsStr = ''; end
     t = 'lin';
     switch compStr
       case {'r','x','y','z','xx','yy','zz','sum'}
-        s = ['log(' paramStr '_{' upper(compStr) '}) \newline ' GetUnits()];
+        s = {['log(' paramStr '_{' upper(compStr) '})'],GetUnits()};
         t = 'log';
       case 't'
-        s = ['\Theta_{' paramStr '} [deg]'];
+        if isempty(unitsStr), unitsStr = 'rad'; end
+        s = ['\Theta_{' paramStr '} [' unitsStr ']'];
       case 'p'
-        s = ['\Phi_{' paramStr '} [deg]'];
+        if isempty(unitsStr), unitsStr = 'rad'; end
+        s = ['\Phi_{' paramStr '} [' unitsStr ']'];
       otherwise
         s = paramStr;
     end
     function s = GetUnits
+      if ~isempty(unitsStr), s = ['[' unitsStr ']']; return, end
       switch paramStr
         case 'bb'
           s = '[nT^2/Hz]';
@@ -221,7 +250,10 @@ if nargout, out = h; end % Return here
     if isempty(lim), return, end
     for idx = 1:length(lim)
       limStruct = lim{idx};
-      limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      if isstruct(ebsp.(limStruct.param)),
+        limData = ebsp.(limStruct.param).data(:,:,limStruct.comp);
+      else limData = ebsp.(limStruct.param)(:,:,limStruct.comp);
+      end
       switch lower(limStruct.type)
         case 'low'
           data(limData < limStruct.val) = NaN;
@@ -235,8 +267,9 @@ if nargout, out = h; end % Return here
     if ~isempty(ebsp.fullB), B = ebsp.fullB; 
     else B = ebsp.B0; 
     end
-    if size(B,2) == 1, 
-      B = [ebsp.t B];
+    if isstruct(B), B = double(B.data); end
+    if size(B,2) == 1,
+      B = [timeVec B];
     else
       B = irf_abs(B);  B = [B(:,1) B(:,5)];
     end
@@ -256,9 +289,12 @@ if nargout, out = h; end % Return here
       case 'ellipticity'
         caxis(hca,[-1 1]), set(hcb,'TickDir','out')
         flagCmapPoy = 1;
-      case 'bb'        
-        cmax = max(max(log10(abs(ebsp.(field)(:,:,comp)))));
-        cmin = min(min(log10(abs(ebsp.(field)(:,:,comp)))));
+      case 'bb'
+        if isstruct(ebsp.(field)), data = ebsp.(field).data(:,:,comp);
+        else data = ebsp.(field)(:,:,comp);
+        end
+        cmax = max(max(log10(abs(data))));
+        cmin = min(min(log10(abs(data))));
         if cmin < cmax-6.5
           caxis(hca,floor(cmax)+[-6.5 0]), set(hcb,'TickDir','out')
         end
@@ -268,16 +304,16 @@ if nargout, out = h; end % Return here
     switch compStr
       case 't'
         if ~strcmpi(paramStr,'k')
-          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
+          caxis(hca,[0 pi]), set(hcb,'YTick',[0 pi/2 pi],'YTickLabel',{'0','p/2','p'},'fontname','symbol','TickDir','out')
         else
-          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90],'TickDir','out')
+          caxis(hca,[0 pi/2]), set(hcb,'YTick',[0 pi/4 pi/2],'YTickLabel',{'0','p/4','p/2'},'fontname','symbol','TickDir','out')
         end
         flagCmapPoy = 1; 
       case 'p'
         if ~strfind(paramStr,'k')
-          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
+          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi 0 pi],'YTickLabel',{'-p','0','p'},'fontname','symbol','TickDir','out')
         else
-          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
+          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi -pi/2 0 pi/2 pi],'YTickLabel',{'-p','-p/2','0','p/2','p'},'fontname','symbol','TickDir','out')
         end
         flagCmapPoy = 1; 
       otherwise
@@ -302,7 +338,10 @@ if nargout, out = h; end % Return here
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
-      l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
+      l = get(hcbNew,'YTickLabel'); 
+      if ischar(l);
+          l=[l(:,1) l]; l(:,1)=' ';
+      end
       set(hcbNew,'YTickLabel',l);
     end
   end
