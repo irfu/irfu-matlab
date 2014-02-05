@@ -181,6 +181,9 @@ end
     ebsp.planarity(isnan(ebsp.planarity)) = FILLVAL;
     magB(isnan(magB)) = FILLVAL_EXP;
     ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
+    if isempty(ebsp.ee_ss)
+      ebsp.ee_ss = zeros(nData,nFreq)*FILLVAL;
+    end
     ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
     
     % fliplr to make frequencies ascending
@@ -199,9 +202,11 @@ end
     for comp=1:2
       K(:,((1:nFreq)-1)*2+comp) = fliplr(ebsp.k_tp(:,:,comp));
     end
-    PV = zeros(nData,nFreq*3);
-    for comp=1:3
-      PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp));
+    PV = zeros(nData,nFreq*3)*FILLVAL;
+    if ~isempty(ebsp.pf_rtp)
+      for comp=1:3
+        PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp));
+      end
     end
     
     % NOTE: This list must be consistent with the CEF header file
@@ -212,7 +217,7 @@ end
       {FORMAT_DEG, ebsp.planarity},...     % PLANSVD
       {FORMAT_DEG, ebsp.dop},...           % DOP
       {FORMAT_DEG, ebsp.dop2d},...         % POLSVD
-      {FORMAT_EXP_ANG_ANG, PV},...           % PV
+      {FORMAT_EXP_ANG_ANG, PV},...         % PV
       {FORMAT_EXP, ebsp.ee_ss},...         % ESUM
       {FORMAT_EXP, magB}                   % BMAG
       };
@@ -221,9 +226,11 @@ end
     if strcmpi(freqRange,'pc35')
       ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
       % Reformat E matrix and fliplr to make frequencies ascending
-      EE_2D = zeros(nData,nFreq*3);
-      for comp=1:3
-        EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp));
+      EE_2D = zeros(nData,nFreq*3)*FILLVAL;
+      if ~isempty(ebsp.ee_xxyyzzss)
+        for comp=1:3
+          EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp));
+        end
       end
       dataToExport = [dataToExport {{FORMAT_EXP, EE_2D}}]; % EE_xxyyzz_fac
     end
