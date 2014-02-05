@@ -28,116 +28,110 @@ function caa_load(varargin)
 %   caa_load('C1_CP_FGM','tint',tint);
 %   caa_load FGM list;
 
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-shouldReadAllData=true;   % default load everything
-listFilesOnly=false;      % default list and load files
-filterNames = any(nargin);% if there is input, use it to filter names, otherwise load all
-useExactNameMatch = false;% default is to filter not according to exact match
-forceLoadFromFile = true; % if false, do not load object from file if it exists in memory
+shouldOnlyListFiles = false; % default list and load files
+shouldReadAllData   = true;  % default load everything
+shouldLoadFromFile  = true;  % if false, do not load object from file if it exists in memory
+useExactNameMatch   = false; % default is to filter not according to exact match
+shouldFilterNames = any(nargin);   % if there is input, use it to filter names, otherwise load all
 
-if nargin > 0, % filter which variables to load
+if nargin > 0, % filter which datasets to load
   i=1;
-  variable_filter=cell(nargin,1);
+  datasetFilter=cell(nargin,1);
   for j=1:length(varargin),
     if ischar(varargin{j}) && ~isempty(strfind(varargin{j},'tint=')),
       shouldReadAllData=false;
-      tint=eval(varargin{j});
-      variable_filter(j:end)=[]; % remove last cells from variable file
+      tint = eval(varargin{j});
+      datasetFilter(j:end)=[]; % remove last cells from variable file
       break;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'tint') ...
         && length(varargin)>j && isnumeric(varargin{j+1}),
       shouldReadAllData=false;
       tint=varargin{j+1};
-      variable_filter(j:end)=[]; % remove last cells from variable file
+      datasetFilter(j:end)=[]; % remove last cells from variable file
       break;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'list'), % only list whats available
-      shouldReadAllData=false;
-      listFilesOnly=1;
+      shouldReadAllData   = false;
+      shouldOnlyListFiles = true;
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'nowildcard'), % load only specified names
-      useExactNameMatch=1;  
+      useExactNameMatch = true;  
     elseif ischar(varargin{j}) && strcmpi(varargin{j},'ifnotinmemory'), % load only specified names
-      forceLoadFromFile=0;  
+      shouldLoadFromFile = false;  
     elseif ischar(varargin{j})
       if strfind(varargin{j},'__') % variable name specified as input
         dd=regexp(varargin{j}, '__', 'split');
-        variable_filter{i}=dd{end};
+        datasetFilter{i}=dd{end};
       else
-        variable_filter{i}=varargin{j};
+        datasetFilter{i}=varargin{j};
       end
-      variable_filter{i}(strfind(variable_filter{i},'-'))='_'; % substitute '-' to '_'
+      datasetFilter{i}(strfind(datasetFilter{i},'-'))='_'; % substitute '-' to '_'
       i=i+1;
     end
   end
-  if i==1, filterNames=0;end % no names found
-  variable_filter(i:end)=[];
+  if i==1, shouldFilterNames=0;end % no names found
+  datasetFilter(i:end)=[];
 end
 
 if isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
   dirs = dir('CAA');
-  caa_data_directory='CAA/';
+  caaDataDirectory='CAA/';
 else % otherwise assume one is in the CAA data folder
   dirs = dir;
-  caa_data_directory='';
+  caaDataDirectory='';
 end
 
 nloaded = 0;
 for j = 1:numel(dirs)
   if regexp(dirs(j).name,'^C[1-4,L]_(C|J|P|S)(P|Q|T)_')
-    var_name = dirs(j).name;
-    var_name(strfind(var_name,'-'))='_'; % substitute '-' to '_'
-    flag_load_variable=1;
-    if filterNames==1, % if there is name filtering required check if to load variable
-      for jj=1:length(variable_filter),
-        if useExactNameMatch==1,
-            if strcmpi(var_name,variable_filter{jj}),
-                flag_load_variable=1;
+    datasetName = dirs(j).name;
+    datasetName(strfind(datasetName,'-'))='_'; % substitute '-' to '_'
+    shouldLoadVariable = true;
+    if shouldFilterNames, % if there is name filtering required check if to load variable
+      for jj=1:length(datasetFilter),
+        if useExactNameMatch,
+            if strcmpi(datasetName,datasetFilter{jj}),
+                shouldLoadVariable = true;
                 break; % exact match found, read the variable
             else
-                flag_load_variable=0;
+                shouldLoadVariable = false;
             end
-        elseif isempty(strfind(var_name,variable_filter{jj})),
-          flag_load_variable=0;
+        elseif isempty(strfind(datasetName,datasetFilter{jj})),
+          shouldLoadVariable = false;
         end
       end
-      if flag_load_variable && listFilesOnly
-        disp(var_name);
-        flag_load_variable=0;
+      if shouldLoadVariable && shouldOnlyListFiles
+        disp(datasetName);
+        shouldLoadVariable = false;
       end
     else % work on all variables 
-        if listFilesOnly,
-            flag_load_variable=0;
-            disp(var_name);
+        if shouldOnlyListFiles,
+            shouldLoadVariable = false;
+            disp(datasetName);
         else
-            flag_load_variable=1; 
+            shouldLoadVariable = true; 
         end
     end
 
-	if flag_load_variable,
+	if shouldLoadVariable,
 		try
-			if shouldReadAllData && ~forceLoadFromFile && evalin('caller',['exist(''' var_name ''',''var'')']),
-				irf.log('warning',[var_name ' exist in memory. NOT LOADING FROM FILE!'])
+			if shouldReadAllData && ~shouldLoadFromFile && evalin('caller',['exist(''' datasetName ''',''var'')']),
+				irf.log('warning',[datasetName ' exist in memory. NOT LOADING FROM FILE!'])
 			else
-				irf.log('warning',['loading ' var_name ' from location:' caa_data_directory dirs(j).name filesep '*.cdf']);
+				irf.log('warning',['loading ' datasetName ' from location:' caaDataDirectory dirs(j).name filesep '*.cdf']);
 				if shouldReadAllData,
-					evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'');']);
+					evalin('caller',[datasetName '=dataobj(''' caaDataDirectory dirs(j).name filesep '*.cdf'');']);
 				else
 					assignin('caller','caa_load_tint_temp',tint);
-					evalin('caller',[var_name '=dataobj(''' caa_data_directory dirs(j).name filesep '*.cdf'',''tint'',caa_load_tint_temp);']);
+					evalin('caller',[datasetName '=dataobj(''' caaDataDirectory dirs(j).name filesep '*.cdf'',''tint'',caa_load_tint_temp);']);
 					evalin('caller','clear caa_load_tint_temp');
 				end
 			end
 			nloaded = nloaded + 1;
 		catch
-			irf.log('critical',['Did not succeed! Error loading: ' var_name]);
+			irf.log('critical',['Did not succeed! Error loading: ' datasetName]);
 		end
 	end
   end
 end
-if nloaded == 0 && ~listFilesOnly
+if nloaded == 0 && ~shouldOnlyListFiles
   irf.log('warning','CAA_LOAD : nothing to load')
 end
