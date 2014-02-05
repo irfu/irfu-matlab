@@ -30,14 +30,14 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % initialize figure
-h=irf_plot(5); % 5 subplots
+h=irf_plot(5,'newfigure'); % initialize new figure with 5 subplots
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % new panel
 hca=irf_panel('FGM B GSM');
 % read data
-B=irf_get_data('B_vec_xyz_gse__C1_CP_FGM_5VPS','caa','mat');
-gsmB=irf_gse2gsm(B);
+B    = irf_get_data('B_vec_xyz_gse__C1_CP_FGM_5VPS','caa','mat');
+gsmB = irf_gse2gsm(B);
 % plot
 irf_plot(hca,gsmB);
 ylabel(hca,'B [nT] GSM');
@@ -86,14 +86,14 @@ caxis([5.9 7.6]);
 set(hca,'yscale','log','ylim',[100 3e4])
 set(hca,'ytick',[1 1e1 1e2 1e3 1e4 1e5])
 irf_legend(hca,{'C1'},[0.98 0.05],'color','k')
-ylabel('E [eV]');
+ylabel(hca,'E [eV]');
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % changes to all figure
-irf_plot_axis_align
-irf_zoom(h,'x',tint);
-irf_pl_number_subplots(h);
-irf_timeaxis(h);
+irf_plot_axis_align         % align the width of all panels
+irf_zoom(h,'x',tint);       % zoom all panels to the same time interval 
+irf_pl_number_subplots(h);  % add a), b), c) to panels
+irf_timeaxis(h);            % add timeaxis ticksmarks and labels
 irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,7 +102,7 @@ irf_legend(h(1),'Example 1',[1.0 1.001],'fontsize',8,'color',[0.5 0.5 0.5]);
 tmarks=irf_time([2006 9 27 17 17 30;2006 9 27 17 18 20;2006 9 27 17 19 45;2006 9 27 17 21 0;2006 9 27 17 23 0]);
 irf_pl_mark(h,tmarks,'black','LineWidth',0.5)
 text_tmarks={'A','B','C','D','E'};
-ypos=ylim(h(1));ypos(2)=ypos(2);ypos(1)=[];
+ypos=get(h(1),'ylim');ypos(1)=[];
 for j=1:length(tmarks)
     irf_legend(h(1),text_tmarks{j},[tmarks(j) ypos],'horizontalalignment','center');
 end
