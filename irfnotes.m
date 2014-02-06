@@ -41,7 +41,7 @@ print -dpng delme.png
 print -depsc2 -painters delme.eps
 %print -dpdf -painters delme.pdf
 % to convert to pdf on the system command line execute some of
-% ps2pdf -dEPSFitPage -dEPSCrop delme.eps
+% ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme.eps
 % epstopdf delme.eps
 %% Add information to figures
 %

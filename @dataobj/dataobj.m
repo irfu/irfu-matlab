@@ -104,8 +104,8 @@ switch action
                   info.Variables{iVar(i),3} = length(data{iVar(i)});
                 otherwise
                   errStr = sprintf('Function ''%s'' not implemented',virtFunc);
-                  irf.log('error',strErr)
-                  error('IRF:dataobj:dataobj:functionNotImplemented',strErr)
+                  irf.log('error',errStr)
+                  error('IRF:dataobj:dataobj:functionNotImplemented',errStr)
               end
             else
               data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
@@ -131,8 +131,8 @@ switch action
                   info.Variables{iVar(i),3} = length(data{iVar(i)});
                 otherwise
                   errStr = sprintf('Function ''%s'' not implemented',virtFunc);
-                  irf.log('error',strErr)
-                  error('IRF:dataobj:dataobj:functionNotImplemented',strErr)
+                  irf.log('error',errStr)
+                  error('IRF:dataobj:dataobj:functionNotImplemented',errStr)
               end
               timeVariable = info.Variables{iVar(i),1};
               update_variable_attributes_time;

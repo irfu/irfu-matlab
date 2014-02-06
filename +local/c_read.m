@@ -183,7 +183,13 @@ end
 			if specialCaseCis,
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
-			end
+            end
+            % Get the correct CDF variables for vars>64 symbols
+            for  iVar=1:numel(varToRead),
+                if length(varToRead{iVar})>64,
+                    varToRead{iVar}=[varToRead{iVar}(1:54) '...' varToRead{iVar}(end-6:end)];
+                end
+            end
 			switch lower(returnDataFormat)
 				case 'mat'
 					irf_log('dsrc',['Reading: ' cdf_file]);

@@ -193,6 +193,9 @@ for hii=axis_handles
             else
                 interval_to_use(2)=interval_to_use(2)*(1+1e-9);
             end
+            if interval_to_use(1) > interval_to_use(2) && interval_to_use(1) < 0
+                interval_to_use(2)=interval_to_use(2)+.001;
+            end
             set(h,'Ylim',interval_to_use);
     end
 end
