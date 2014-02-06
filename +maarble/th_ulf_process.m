@@ -1,7 +1,7 @@
-function th_ulf_process(tint,thId,freqRange)
+function th_ulf_process(TT,thId,freqRange)
 %TH_ULF_PROCESS  process THEMIS ULF data
 %
-%  th_ulf_process(tint,thId,freqRange)
+%  th_ulf_process(TT,thId,freqRange)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -20,8 +20,10 @@ function th_ulf_process(tint,thId,freqRange)
 
 %% defaults
 if nargin < 1
-  %tint = [iso2epoch('2008-04-20T17:40:00Z') iso2epoch('2008-04-20T23:30:00Z')]; thId = 'e'; freqRange = 'pc35';
-  tint = [iso2epoch('2008-04-20T22:20:00Z') iso2epoch('2008-04-20T23:30:00Z')]; thId = 'e'; freqRange = 'pc12';
+  %TT = [iso2epoch('2008-04-20T17:40:00Z') iso2epoch('2008-04-20T23:30:00Z')]; thId = 'e'; freqRange = 'pc35';
+  TT = [iso2epoch('2008-04-20T22:20:00Z') iso2epoch('2008-04-20T23:30:00Z')]; thId = 'e'; freqRange = 'pc12';
+elseif nargin < 3
+  freqRange = 'all';
 end
 
 %% setup
@@ -47,6 +49,15 @@ else
   if freqRange(1) > 1, wantSCM = 1; end
 end
 
+tmpR = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat', ['Rth' thId]);
+
+if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
+
+for ievent=1:numel(TT),
+tint=TT.TimeInterval(ievent,:);
+sprintf('processing %s\n',irf_disp_iso_range(tint,1))
+
+
 %% Load data
 % Round time interval to minutes
 tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
@@ -54,6 +65,9 @@ tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
+if isempty(bs), 
+    disp('skipping, no BS data'),continue, 
+end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
 end
@@ -61,8 +75,8 @@ if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
 end
-tmpR = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat', ['Rth' thId]);
-gseR = tmpR.(['Rth' thId]); clear tmpR
+
+gseR = tmpR.(['Rth' thId]);
 gseR = irf_tlim(gseR,tint+DT_PC5*[-1 1]);
 R = gseR; % XXX FIXME: this must be a real transformation to DSL
 
@@ -104,6 +118,10 @@ if wantPC35
   end
 end
 if wantPC12
+  if isempty(bl), 
+    disp('skipping PC12, no BL data'),continue, 
+  end
+    
   baseFreq = 16;
   fSampB = 1/median(diff(bl(:,1))); 
   if isempty(ef)
@@ -146,6 +164,8 @@ if wantPC12
   if exportFlag
     maarble.export(ebsp,tint,['th' thId],'pc12')
   end
+end
+
 end
 
   function tlim_ebsp % Trim ebsp to tlim
