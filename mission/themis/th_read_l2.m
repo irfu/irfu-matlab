@@ -45,12 +45,14 @@ while true
   if ~isempty(fileToRead)
     irf.log('notice',['reading ' fileToRead])
     varTmp = read_var();
-    if isempty(res)
-      res =  varTmp(varTmp(:,1)>tint(1) & varTmp(:,1)<tint(end),:);
-    else
-      % join time intervals
-      res = [res; ...
-        varTmp(varTmp(:,1)>res(end,1) & varTmp(:,1)<tint(end),:)]; %#ok<AGROW>
+    if ~isempty(varTmp)
+      if isempty(res)
+        res =  varTmp(varTmp(:,1)>tint(1) & varTmp(:,1)<tint(end),:);
+      else
+        % join time intervals
+        res = [res; ...
+          varTmp(varTmp(:,1)>res(end,1) & varTmp(:,1)<tint(end),:)]; %#ok<AGROW>
+      end
     end
   end
   epochFileStart = epochFileStart + 3600*24;
