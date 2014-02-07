@@ -1,0 +1,18 @@
+Writing code for irfu-matlab
+============================
+
+Coding style
+------------
+1. According to http://www.datatool.com/prod02.htm
+2. Help follows matlab style, see irf_template
+
+Git
+---
+1. Workflow according to http://nvie.com/posts/a-successful-git-branching-model/
+2. Semantic release numbering http://semver.org/
+
+Data conventions
+----------------
+DataObject - the same as dataset in CAA, equal to cdf file representation in matlab
+.....
+
