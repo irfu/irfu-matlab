@@ -9,10 +9,18 @@ Coding style
 Git
 ---
 1. Workflow according to http://nvie.com/posts/a-successful-git-branching-model/
-2. Semantic release numbering http://semver.org/
+2. Routines in 'master' branch should do not less and not more than written in their help!
+3. Semantic release numbering http://semver.org/
 
-Data conventions
-----------------
-DataObject - the same as dataset in CAA, equal to cdf file representation in matlab
-.....
-
+Common data types
+-----------------
+DataObject     - the same as dataset in CAA, equal to cdf file representation in matlab
+VariableStruct - Structure including all variable data in original format and metadata,
+                 usually extracted from DataObject.
+VariableIrf    - Variable as a simple structure in a default format for irfu-matlab
+                 Variable.t - TimeArray
+                 Variable.[data] - data matrix of dimension [t x dim1 x dim2]... (typical example energy spectrograms)
+                 Variable.[unit,label,dimunit,dimlabel,dimvec]
+                 Variable.[vec] - data matrix of dimension [t x ndim], (for example ndim=3 for field vector)
+                 Variable.[abs] - absolute value of vector in case exists Variable.vec
+VariableMat    - matrix where first column is time and the other columns are data
