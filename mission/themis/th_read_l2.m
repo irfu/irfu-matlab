@@ -59,6 +59,9 @@ while true
   if epochFileStart>=epochFileEnd, break, end
   timeVecStart = fromepoch(epochFileStart);
 end
+% Remove repeating points. 
+% Example, THE bs&es 2007-07-07T04:11:30.000000Z -- 2007-07-07T08:39:30.000000Z
+res(diff(res(:,1))==0,:) = []; 
 
   function res = read_var
     tmpData = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
