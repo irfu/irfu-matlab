@@ -85,9 +85,6 @@ bf = irf_filt(bs,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); %clear bf
 facMatrix = irf_convert_fac([],B0_1MIN,R);
-if exportFlag
-  maarble.export(facMatrix,tint,['th' thId])
-end
 
 if wantPC35
   t_1SEC = ((tint(1)+2-DT_PC5):1:(tint(end)+DT_PC5))';
@@ -107,10 +104,12 @@ if wantPC35
     'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
   tlim_ebsp();
   if plotFlag
+    close all
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    set(gcf,'paperpositionmode','auto')
+    orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
@@ -151,19 +150,27 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
-  irf_wave_detection_algorithm(ebsp, bf);
+  irf_wave_detection_algorithm(ebsp, thId);
   flim_ebsp(fSampB,fSampE);
   if plotFlag
-    figure(1), clf
+    close all
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    set(gcf,'paperpositionmode','auto')
+    orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
   end
   if exportFlag
     maarble.export(ebsp,tint,['th' thId],'pc12')
   end
+end
+
+% Export FAC matrix
+[facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
+facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+if exportFlag
+  maarble.export(facMatrix,tint,['th' thId])
 end
 
 end
