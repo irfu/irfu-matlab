@@ -55,7 +55,7 @@ if(nargin==1)
     HeaderInfo.startTime = dce_source_fileData.startTime;
     HeaderInfo.vXYZ = dce_source_fileData.vXYZ;
     HeaderInfo.numberOfSources = 1;
-    HeaderInfo.parents_1 = filename_dce_source_file;
+    HeaderInfo.parents_1 = dce_source_fileData.filename;
    
     irf.log('debug', 'mms_ql_dce trying mms_cdf_write');
 
@@ -102,8 +102,8 @@ elseif(nargin==2)
     HeaderInfo.startTime = dce_source_fileData.startTime;
     HeaderInfo.vXYZ = dce_source_fileData.vXYZ;
     HeaderInfo.numberOfSources = 2;
-    HeaderInfo.parents_1 = filename_dce_source_file;
-    HeaderInfo.parents_2 = filename_dcv_source_file;
+    HeaderInfo.parents_1 = dce_source_fileData.filename;
+    HeaderInfo.parents_2 = dcv_source_fileData.filename;
    
     irf.log('debug', 'mms_ql_dce trying mms_cdf_write');
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo, quality(:,2));

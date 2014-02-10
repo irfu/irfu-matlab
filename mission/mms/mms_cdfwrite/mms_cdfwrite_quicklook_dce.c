@@ -217,8 +217,8 @@ status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_epoch_dce"), CDF_T
 //status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_timetag_dce"), CDF_TIME_TT2000, 1, 0L, EPOCHdimSizes, EPOCHrecVary, EPOCHdimVarys, &TIMETAGvarNum);
 //  if (status != CDF_OK) UserStatusHandler (status);
 
-/* Possibly FIXME: Possible wrong format, according to skeleton CDF_UINT4 but according to Ref2 it should only be CDF_INT2 or CDF_REAL4. */ 
-//status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"), CDF_UINT4, 1, 0L, SAMPLERATEdimSizes, SAMPLERATErecVary, SAMPLERATEdimVarys, &SAMPLERATEvarNum);
+/* Possibly FIXME: Possible wrong format, according to skeleton CDF_UINT4 but according to Ref2 it should only be CDF_INT2 CDF_UINT2 or CDF_REAL4. */ 
+//status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"), CDF_UINT2, 1, 0L, SAMPLERATEdimSizes, SAMPLERATErecVary, SAMPLERATEdimVarys, &SAMPLERATEvarNum);
 //  if (status != CDF_OK) UserStatusHandler (status);
 
 status = CDFcreatezVar (id, "DCE_LABL_1", CDF_CHAR, 4, 1L, LABELdimSizes, LABELrecVary, LABELdimVarys, &LABELvarNum);
@@ -230,10 +230,10 @@ status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_xyz_pgse"), CD
 status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_xyz_dsl"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &SENSORvarNumDSL);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT4, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_quality"), CDF_UINT4, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &QUALITYvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_quality"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &QUALITYvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
   //printf("SENSOR var num found as: %ld\n",SENSORvarNum);
@@ -344,7 +344,7 @@ status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Source_name"), 0, CDF_CHAR, str
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Data_type"), 0, CDF_CHAR, strlen("DCE>DC Double Probe Electric Field"), "DCE>DC Double Probe Electric Field");
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Descriptor"), 0, CDF_CHAR, strlen("ADP-SDP>Axial Double Probe- Spin Plane Double Probe"), "ADP-SDP>Axial Double Probe- Spin Plane Double Probe");
+status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Descriptor"), 0, CDF_CHAR, strlen("SDP>Spin-plane Double Probe"), "SDP>Spin-plane Double Probe");
   if (status != CDF_OK) UserStatusHandler (status);
  
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Data_version"), 0, CDF_CHAR, strlen("v.0.0.0"), "v.0.0.0");
@@ -369,7 +369,7 @@ status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Mission_group"), 0, CDF_CHAR, s
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_name"), 0, CDF_CHAR, strlen("Burch, J., Ergun, R., Lindqvist, P."), "Burch, J., Ergun, R., Lindqvist, P.");
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_affiliation"), 0, CDF_CHAR, strlen("SwRI, LASP, KTH"), "SwRI, LASP, KTH");
+status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_affiliation"), 0, CDF_CHAR, strlen("SWRI, LASP, KTH"), "SWRI, LASP, KTH");
   if (status != CDF_OK) UserStatusHandler (status);
 
 //static char Acknowledgement[] = {" "};
@@ -612,11 +612,11 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), SAMPLERATEvarNum, C
   if (status != CDF_OK) UserStatusHandler(status);
 
 unsigned int ValidMin_3[1] = { 1 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), SAMPLERATEvarNum, CDF_UINT4, 1, ValidMin_3);
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), SAMPLERATEvarNum, CDF_UINT2, 1, ValidMin_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
 unsigned int ValidMax_3[1] = { 262144 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), SAMPLERATEvarNum, CDF_UINT4, 1, ValidMax_3);
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), SAMPLERATEvarNum, CDF_UINT2, 1, ValidMax_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"LABLAXIS"), SAMPLERATEvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce")), strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"));
@@ -629,7 +629,7 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), SAMPLERATEvarNum, CDF
   if (status != CDF_OK) UserStatusHandler(status);
 
 unsigned int Fillval_3[1] = { 4294967295 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), SAMPLERATEvarNum, CDF_UINT4, 1, Fillval_3);
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), SAMPLERATEvarNum, CDF_UINT2, 1, Fillval_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), SAMPLERATEvarNum, CDF_CHAR, strlen("support_data"), "support_data");
@@ -653,7 +653,7 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), LABELvarNum, CDF_CH
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), LABELvarNum, CDF_CHAR, strlen("A23"), "A23");
   if (status != CDF_OK) UserStatusHandler(status);
 
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), LABELvarNum, CDF_CHAR, strlen("meta_data"), "meta_data");
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), LABELvarNum, CDF_CHAR, strlen("metadata"), "metadata");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"CATDESC"), LABELvarNum, CDF_CHAR, strlen("DCE_LABL_1"), "DCE_LABL_1");
@@ -800,12 +800,12 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"DISPLAY_TYPE"), SENSORvarNumDSL
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), BITMASKvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask")), strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMin_7[1] = { 1 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), BITMASKvarNum, CDF_UINT4, 1, ValidMin_7);
+unsigned int ValidMin_7[1] = { 0 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), BITMASKvarNum, CDF_UINT2, 1, ValidMin_7);
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMax_7[1] = { 262144 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), BITMASKvarNum, CDF_UINT4, 1, ValidMax_7);
+unsigned int ValidMax_7[1] = { 65534 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), BITMASKvarNum, CDF_UINT2, 1, ValidMax_7);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"LABLAXIS"), BITMASKvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask")), strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"));
@@ -817,8 +817,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS"), BITMASKvarNum, CDF_CHA
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), BITMASKvarNum, CDF_CHAR, strlen("I7"), "I7");
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int Fillval_7[1] = { 4294967295 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), BITMASKvarNum, CDF_UINT4, 1, Fillval_7);
+unsigned int Fillval_7[1] = { 65535 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), BITMASKvarNum, CDF_UINT2, 1, Fillval_7);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), BITMASKvarNum, CDF_CHAR, strlen("support_data"), "support_data");
@@ -841,12 +841,12 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"DEPEND_0"), BITMASKvarNum, CDF_
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), QUALITYvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_dce_quality")), strcat(strcpy(tmp_string,sc),"sdp_dce_quality"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMin_8[1] = { 1 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), QUALITYvarNum, CDF_UINT4, 1, ValidMin_8);
+unsigned int ValidMin_8[1] = { 0 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), QUALITYvarNum, CDF_UINT2, 1, ValidMin_8);
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMax_8[1] = { 262144 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), QUALITYvarNum, CDF_UINT4, 1, ValidMax_8);
+unsigned int ValidMax_8[1] = { 65534 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), QUALITYvarNum, CDF_UINT2, 1, ValidMax_8);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"LABLAXIS"), QUALITYvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_dce_quality")), strcat(strcpy(tmp_string,sc),"sdp_dce_quality"));
@@ -858,8 +858,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS"), QUALITYvarNum, CDF_CHA
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), QUALITYvarNum, CDF_CHAR, strlen("I7"), "I7");
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int Fillval_8[1] = { 4294967295 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), QUALITYvarNum, CDF_UINT4, 1, Fillval_8);
+unsigned int Fillval_8[1] = { 65535 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), QUALITYvarNum, CDF_UINT2, 1, Fillval_8);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), QUALITYvarNum, CDF_CHAR, strlen("support_data"), "support_data");

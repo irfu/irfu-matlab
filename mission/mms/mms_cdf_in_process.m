@@ -33,6 +33,8 @@ if(strcmp(sci_or_ancillary,'sci'))
     % filenameData.optional, ignored.
     filenameData.startTime = filename(pos(end-1)+1:pos(end)-1);
     filenameData.vXYZ = filename(pos(end)+2:end-4);
+    % Also store the filename, used as Parents reference for output files.
+    filenameData.filename = filename;
 
     switch(length(filenameData.startTime))
         % If length has been shortened, padd it so we can find day of year and
@@ -62,7 +64,7 @@ if(strcmp(sci_or_ancillary,'sci'))
 
     if(~exist(fullFilename,'file'))
         irf.log('critical',['mms_cdf_process CDF file not found: ',fullFilename]);
-        error('MATLAB:SDCcode','143');
+        error('MATLAB:SDCcode','184');
 
 %        error('MATLAB:MMS:mms_cdf_in_process',['inputfile not found:', strcat(dirToInput,filename)]);
     else
