@@ -66,7 +66,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
 if isempty(bs), 
-    disp('skipping, no BS data'),continue, 
+    irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
@@ -74,6 +74,17 @@ end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
+  % Remove backward time jumps in EF
+  % Example THE 2007-08-11T09:40:02.489975Z (3 points)
+  while true
+    idxJump = find(diff(ef(:,1))<=0);
+    if isempty(idxJump), break, end
+    idxJump = idxJump(1);
+    irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
+    ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
+    irf.log('warning',sprintf('Disregarging %d points',length(ii)))
+    ef(ii,:) = [];
+  end
 end
 
 gseR = tmpR.(['Rth' thId]);
