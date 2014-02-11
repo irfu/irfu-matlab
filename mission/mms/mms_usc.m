@@ -46,7 +46,7 @@ global MMS_CONST;
     HeaderInfo.startTime = dcv_source_fileData.startTime;
     HeaderInfo.vXYZ = dcv_source_fileData.vXYZ;
     HeaderInfo.numberOfSources = 1;
-    HeaderInfo.parents_1 = filename_dcv_source_file;
+    HeaderInfo.parents_1 = dcv_source_fileData.filename;
    
     irf.log('debug', 'mms_usc trying mms_cdf_write');
     filename_output = mms_cdf_writing(dcv_source, bitmask(:,2), HeaderInfo, quality(:,2));

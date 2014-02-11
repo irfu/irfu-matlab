@@ -170,9 +170,9 @@ long EPOCHdimSizes[1] = {3};          /* EPOCH dimension sizes. */
 //long TIMETAGdimSizes[1] = {3};      /* TIMETAG dimension sizes. */
 //long SAMPLERATEdimSizes[1] = {3};     /* SAMPLERATE dimension sizes.*/
 long LABELdimSizes[1] = {6};          /* LON dimension sizes. */
-long SENSORdimSizes[1] = {1}; 
+long SENSORdimSizes[1] = {3}; 
 long SENSORINDdimSizes[1] = {6};            /* TMP dimension sizes. */
-long BITMASKdimSizes[1] = {1};
+long BITMASKdimSizes[1] = {3};
 
 //////////////////////////
 // Create the new CDF file
@@ -209,8 +209,8 @@ status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_epoch_dcv"), CDF_T
 //status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_timetag_dce"), CDF_TIME_TT2000, 1, 0L, EPOCHdimSizes, EPOCHrecVary, EPOCHdimVarys, &TIMETAGvarNum);
 //  if (status != CDF_OK) UserStatusHandler (status);
 
-/* Possibly FIXME: Possible wrong format, according to skeleton CDF_UINT4 but according to Ref2 it should only be CDF_INT2 or CDF_REAL4. */ 
-//status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"), CDF_UINT4, 1, 0L, SAMPLERATEdimSizes, SAMPLERATErecVary, SAMPLERATEdimVarys, &SAMPLERATEvarNum);
+/* Possibly FIXME: Possible wrong format, according to skeleton CDF_UINT4 but according to Ref2 it should only be CDF_INT2 or CDF_UINT2 or CDF_REAL4. */ 
+//status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"), CDF_UINT2, 1, 0L, SAMPLERATEdimSizes, SAMPLERATErecVary, SAMPLERATEdimVarys, &SAMPLERATEvarNum);
 //  if (status != CDF_OK) UserStatusHandler (status);
 
 status = CDFcreatezVar (id, "DCE_LABL_1", CDF_CHAR, 4, 1L, LABELdimSizes, LABELrecVary, LABELdimVarys, &LABELvarNum);
@@ -228,7 +228,7 @@ status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_delta_dcv"), CDF_R
 status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_psp_probes_dcv"), CDF_REAL4, 1, 1L, SENSORINDdimSizes, SENSORINDrecVary, SENSORINDdimVarys, &SENSORINDvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"), CDF_UINT4, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
   //printf("SENSOR var num found as: %ld\n",SENSORvarNum);
@@ -339,7 +339,7 @@ status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Source_name"), 0, CDF_CHAR, str
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Data_type"), 0, CDF_CHAR, strlen("DCE>DC Double Probe Electric Field"), "DCE>DC Double Probe Electric Field");
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Descriptor"), 0, CDF_CHAR, strlen("ADP-SDP>Axial Double Probe- Spin Plane Double Probe"), "ADP-SDP>Axial Double Probe- Spin Plane Double Probe");
+status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Descriptor"), 0, CDF_CHAR, strlen("SDP>Spin-plane Double Probe"), "SDP>Spin-plane Double Probe");
   if (status != CDF_OK) UserStatusHandler (status);
  
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Data_version"), 0, CDF_CHAR, strlen("v.0.0.0"), "v.0.0.0");
@@ -364,7 +364,7 @@ status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"Mission_group"), 0, CDF_CHAR, s
 status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_name"), 0, CDF_CHAR, strlen("Burch, J., Ergun, R., Lindqvist, P."), "Burch, J., Ergun, R., Lindqvist, P.");
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_affiliation"), 0, CDF_CHAR, strlen("SwRI, LASP, KTH"), "SwRI, LASP, KTH");
+status = CDFputAttrgEntry (id, CDFgetAttrNum(id,"PI_affiliation"), 0, CDF_CHAR, strlen("SWRI, LASP, KTH"), "SWRI, LASP, KTH");
   if (status != CDF_OK) UserStatusHandler (status);
 
 //static char Acknowledgement[] = {" "};
@@ -608,11 +608,11 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), SAMPLERATEvarNum, C
   if (status != CDF_OK) UserStatusHandler(status);
 
 unsigned int ValidMin_3[1] = { 1 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), SAMPLERATEvarNum, CDF_UINT4, 1, ValidMin_3);
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), SAMPLERATEvarNum, CDF_UINT2, 1, ValidMin_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMax_3[1] = { 262144 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), SAMPLERATEvarNum, CDF_UINT4, 1, ValidMax_3);
+unsigned int ValidMax_3[1] = { 65535 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), SAMPLERATEvarNum, CDF_UINT2, 1, ValidMax_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"LABLAXIS"), SAMPLERATEvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce")), strcat(strcpy(tmp_string,sc),"sdp_samplerate_dce"));
@@ -624,8 +624,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS"), SAMPLERATEvarNum, CDF_
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), SAMPLERATEvarNum, CDF_CHAR, strlen("I7"), "I7");
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int Fillval_3[1] = { 4294967295 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), SAMPLERATEvarNum, CDF_UINT4, 1, Fillval_3);
+unsigned int Fillval_3[1] = { 65536 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), SAMPLERATEvarNum, CDF_UINT2, 1, Fillval_3);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), SAMPLERATEvarNum, CDF_CHAR, strlen("support_data"), "support_data");
@@ -650,7 +650,7 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), LABELvarNum, CDF_CH
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), LABELvarNum, CDF_CHAR, strlen("A23"), "A23");
   if (status != CDF_OK) UserStatusHandler(status);
 
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), LABELvarNum, CDF_CHAR, strlen("meta_data"), "meta_data");
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), LABELvarNum, CDF_CHAR, strlen("metadata"), "metadata");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"CATDESC"), LABELvarNum, CDF_CHAR, strlen("DCE_LABL_1"), "DCE_LABL_1");
@@ -662,11 +662,11 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"CATDESC"), LABELvarNum, CDF_CHA
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), ESCPvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_escp_dcv")), strcat(strcpy(tmp_string,sc),"sdp_escp_dcv"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMin_5[1] = { -500000.14 };
+float ValidMin_5[1] = { -60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), ESCPvarNum, CDF_REAL4, 1, ValidMin_5);
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMax_5[1] = { 500000.14 };
+float ValidMax_5[1] = { 60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), ESCPvarNum, CDF_REAL4, 1, ValidMax_5);
   if (status != CDF_OK) UserStatusHandler(status);
 
@@ -706,8 +706,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_software"), ESCPvarNum, C
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_input"), ESCPvarNum, CDF_CHAR, strlen(" "), " ");
   if (status != CDF_OK) UserStatusHandler(status);
-//FIXME: FIXME: Scalar? At least not vector
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), ESCPvarNum, CDF_CHAR, strlen("vector>xyz"), "vector>xyz");
+
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), ESCPvarNum, CDF_CHAR, strlen("scalar>na"), "scalar>na");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"SI_conversion"), ESCPvarNum, CDF_CHAR, strlen(" "), " ");
@@ -728,11 +728,11 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"DISPLAY_TYPE"), ESCPvarNum, CDF
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), PSPvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_psp_dcv")), strcat(strcpy(tmp_string,sc),"sdp_psp_dcv"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMin_6[1] = { -500000.14 };
+float ValidMin_6[1] = { -60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), PSPvarNum, CDF_REAL4, 1, ValidMin_6);
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMax_6[1] = { 500000.14 };
+float ValidMax_6[1] = { 60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), PSPvarNum, CDF_REAL4, 1, ValidMax_6);
   if (status != CDF_OK) UserStatusHandler(status);
 
@@ -772,8 +772,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_software"), PSPvarNum, CD
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_input"), PSPvarNum, CDF_CHAR, strlen(" "), " ");
   if (status != CDF_OK) UserStatusHandler(status);
-//FIXME: FIXME: Scalar? At least not vector
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), PSPvarNum, CDF_CHAR, strlen("vector>xyz"), "vector>xyz");
+
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), PSPvarNum, CDF_CHAR, strlen("scalar>na"), "scalar>na");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"SI_conversion"), PSPvarNum, CDF_CHAR, strlen(" "), " ");
@@ -795,11 +795,11 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"DISPLAY_TYPE"), PSPvarNum, CDF_
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), SENSORvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_delta_dcv")), strcat(strcpy(tmp_string,sc),"sdp_delta_dcv"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMin_7[1] = { -500000.14 };
+float ValidMin_7[1] = { -60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), SENSORvarNum, CDF_REAL4, 1, ValidMin_7);
   if (status != CDF_OK) UserStatusHandler(status);
 
-float ValidMax_7[1] = { 500000.14 };
+float ValidMax_7[1] = { 60.14 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), SENSORvarNum, CDF_REAL4, 1, ValidMax_7);
   if (status != CDF_OK) UserStatusHandler(status);
 
@@ -839,8 +839,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_software"), SENSORvarNum,
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_input"), SENSORvarNum, CDF_CHAR, strlen(" "), " ");
   if (status != CDF_OK) UserStatusHandler(status);
-//FIXME: FIXME: Scalar? At least not vector
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), SENSORvarNum, CDF_CHAR, strlen("vector>xyz"), "vector>xyz");
+
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), SENSORvarNum, CDF_CHAR, strlen("scalar>na"), "scalar>na");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"SI_conversion"), SENSORvarNum, CDF_CHAR, strlen(" "), " ");
@@ -909,7 +909,7 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_software"), SENSORINDvarN
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Calib_input"), SENSORINDvarNum, CDF_CHAR, strlen(" "), " ");
   if (status != CDF_OK) UserStatusHandler(status);
 
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), SENSORINDvarNum, CDF_CHAR, strlen("vector>xyz"), "vector>xyz");
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"Frame"), SENSORINDvarNum, CDF_CHAR, strlen("scalar>na"), "scalar>na");
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"SI_conversion"), SENSORINDvarNum, CDF_CHAR, strlen(" "), " ");
@@ -932,12 +932,12 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"DISPLAY_TYPE"), SENSORINDvarNum
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), BITMASKvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv")), strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"));
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMin_9[1] = { 1 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), BITMASKvarNum, CDF_UINT4, 1, ValidMin_9);
+unsigned int ValidMin_9[1] = { 0 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), BITMASKvarNum, CDF_UINT2, 1, ValidMin_9);
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int ValidMax_9[1] = { 262144 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), BITMASKvarNum, CDF_UINT4, 1, ValidMax_9);
+unsigned int ValidMax_9[1] = { 65534 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMAX"), BITMASKvarNum, CDF_UINT2, 1, ValidMax_9);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"LABLAXIS"), BITMASKvarNum, CDF_CHAR, strlen(strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv")), strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"));
@@ -949,8 +949,8 @@ status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS"), BITMASKvarNum, CDF_CHA
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FORMAT"), BITMASKvarNum, CDF_CHAR, strlen("I7"), "I7");
   if (status != CDF_OK) UserStatusHandler(status);
 
-unsigned int Fillval_9[1] = { 4294967295 };
-status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), BITMASKvarNum, CDF_UINT4, 1, Fillval_9);
+unsigned int Fillval_9[1] = { 65535 };
+status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FILLVAL"), BITMASKvarNum, CDF_UINT2, 1, Fillval_9);
   if (status != CDF_OK) UserStatusHandler(status);
 
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VAR_TYPE"), BITMASKvarNum, CDF_CHAR, strlen("support_data"), "support_data");
