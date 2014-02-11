@@ -66,7 +66,7 @@ DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
 if isempty(bs), 
-    disp('skipping, no BS data'),continue, 
+    irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
@@ -74,6 +74,17 @@ end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
+  % Remove backward time jumps in EF
+  % Example THE 2007-08-11T09:40:02.489975Z (3 points)
+  while true
+    idxJump = find(diff(ef(:,1))<=0);
+    if isempty(idxJump), break, end
+    idxJump = idxJump(1);
+    irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
+    ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
+    irf.log('warning',sprintf('Disregarging %d points',length(ii)))
+    ef(ii,:) = [];
+  end
 end
 
 gseR = tmpR.(['Rth' thId]);
@@ -85,9 +96,6 @@ bf = irf_filt(bs,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); %clear bf
 facMatrix = irf_convert_fac([],B0_1MIN,R);
-if exportFlag
-  maarble.export(facMatrix,tint,['th' thId])
-end
 
 if wantPC35
   t_1SEC = ((tint(1)+2-DT_PC5):1:(tint(end)+DT_PC5))';
@@ -107,10 +115,12 @@ if wantPC35
     'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
   tlim_ebsp();
   if plotFlag
+    close all
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    set(gcf,'paperpositionmode','auto')
+    orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
@@ -151,19 +161,27 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
-  irf_wave_detection_algorithm(ebsp, bf);
+  irf_wave_detection_algorithm(ebsp, thId);
   flim_ebsp(fSampB,fSampE);
   if plotFlag
-    figure(1), clf
+    close all
     h = irf_pl_ebsp(ebsp);
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    set(gcf,'paperpositionmode','auto')
+    orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
   end
   if exportFlag
     maarble.export(ebsp,tint,['th' thId],'pc12')
   end
+end
+
+% Export FAC matrix
+[facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
+facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+if exportFlag
+  maarble.export(facMatrix,tint,['th' thId])
 end
 
 end
