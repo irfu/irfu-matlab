@@ -517,7 +517,7 @@ status = CDFattrCreate (id, "SCAL_PTR", VARIABLE_SCOPE, &TEMPattrNum);          
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), EPOCHvarNum, CDF_CHAR, strlen("Time tags"), "Time tags");
   if (status != CDF_OK) UserStatusHandler(status);
 
-signed long long ValidMin_1[1] = { -431358160000000 };
+signed long long ValidMin_1[1] = { -43135816000000 };
 status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"VALIDMIN"), EPOCHvarNum, CDF_TIME_TT2000, 1, ValidMin_1);
   if (status != CDF_OK) UserStatusHandler(status);
 
