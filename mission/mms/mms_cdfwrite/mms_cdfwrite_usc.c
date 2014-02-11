@@ -152,7 +152,7 @@ long EPOCHdimVarys[1] = {NOVARY};     /* EPOCH dimension variances. */
 //long TIMETAGdimVarys[1] = {NOVARY}; /* TIMETAG dimension variances. */
 //long SAMPLERATEdimVarys[1] = {NOVARY};    /* SAMPLERATE dimension variances. */
 long LABELdimVarys[1] = {VARY};    /* LON dimension variances. */
-long SENSORdimVarys[1] = {VARY};    /* TMP dimension variances. */
+long SENSORdimVarys[1] = {NOVARY};    /* TMP dimension variances. */
 long SENSORINDdimVarys[1] = {VARY};
 long BITMASKdimVarys[1] = {VARY};
 
@@ -216,13 +216,13 @@ status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_epoch_dcv"), CDF_T
 status = CDFcreatezVar (id, "DCE_LABL_1", CDF_CHAR, 4, 1L, LABELdimSizes, LABELrecVary, LABELdimVarys, &LABELvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_escp_dcv"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &ESCPvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_escp_dcv"), CDF_REAL4, 1, 0L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &ESCPvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_psp_dcv"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &PSPvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_psp_dcv"), CDF_REAL4, 1, 0L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &PSPvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
-status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_delta_dcv"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &SENSORvarNum);
+status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_delta_dcv"), CDF_REAL4, 1, 0L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &SENSORvarNum);
   if (status != CDF_OK) UserStatusHandler (status);
 
 status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_psp_probes_dcv"), CDF_REAL4, 1, 1L, SENSORINDdimSizes, SENSORINDrecVary, SENSORINDdimVarys, &SENSORINDvarNum);
