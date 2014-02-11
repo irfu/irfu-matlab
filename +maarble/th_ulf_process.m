@@ -74,16 +74,20 @@ end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
-  % Remove backward time jumps in EF
-  % Example THE 2007-08-11T09:40:02.489975Z (3 points)
-  while true
-    idxJump = find(diff(ef(:,1))<=0);
-    if isempty(idxJump), break, end
-    idxJump = idxJump(1);
-    irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
-    ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
-    irf.log('warning',sprintf('Disregarging %d points',length(ii)))
-    ef(ii,:) = [];
+  if isempty(ef)
+    irf.log('warning','no EF data')
+  else
+    % Remove backward time jumps in EF
+    % Example THE 2007-08-11T09:40:02.489975Z (3 points)
+    while true
+      idxJump = find(diff(ef(:,1))<=0);
+      if isempty(idxJump), break, end
+      idxJump = idxJump(1);
+      irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
+      ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
+      irf.log('warning',sprintf('Disregarging %d points',length(ii)))
+      ef(ii,:) = [];
+    end
   end
 end
 
@@ -129,7 +133,7 @@ if wantPC35
 end
 if wantPC12
   if isempty(bl), 
-    disp('skipping PC12, no BL data'),continue, 
+    irf.log('warning','skipping PC12, no BL data'),continue, 
   end
     
   baseFreq = 16;
@@ -161,6 +165,9 @@ if wantPC12
     'facMatrix',facMatrix);
   toc
   tlim_ebsp();
+  if isempty(ebsp.t)
+    irf.log('warning','No result for PC12'),continue 
+  end
   irf_wave_detection_algorithm(ebsp, thId);
   flim_ebsp(fSampB,fSampE);
   if plotFlag
