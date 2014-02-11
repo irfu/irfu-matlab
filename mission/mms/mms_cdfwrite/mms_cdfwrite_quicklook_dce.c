@@ -180,7 +180,7 @@ long EPOCHdimSizes[1] = {3};          /* EPOCH dimension sizes. */
 //long SAMPLERATEdimSizes[1] = {3};     /* SAMPLERATE dimension sizes.*/
 long LABELdimSizes[1] = {3};          /* LON dimension sizes. */
 long SENSORdimSizes[1] = {3};            /* TMP dimension sizes. */
-long BITMASKdimSizes[1] = {1};
+long BITMASKdimSizes[1] = {3};
 
 //////////////////////////
 // Create the new CDF file
