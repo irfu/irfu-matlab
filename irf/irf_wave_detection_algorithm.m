@@ -1,4 +1,4 @@
-function h=irf_wave_detection_algorithm(tint,cl_id,varargin)    
+function h=irf_wave_detection_algorithm(tint,scId,varargin)    
 %function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
  %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
 
@@ -22,7 +22,9 @@ function h=irf_wave_detection_algorithm(tint,cl_id,varargin)
 %	
 
 save_plot=0;
-cl_s = int2str(cl_id);
+if isnumeric(scId), scId_s = sprintf('C%d',scId);
+else scId_s = ['TH' upper(scId)];
+end
 if isstruct(tint)
     ebsp=tint;
     powerCrossCov_SM_plot = ebsp.bb_xxyyzzss(:,:,4);
@@ -42,7 +44,7 @@ else
 
       %% Check input 
       [~,args,~] = axescheck(varargin{:});
-      b=local.c_read(['B_vec_xyz_gse__C' cl_s '_CP_FGM_5VPS'],tint);
+      b=local.c_read(['B_vec_xyz_gse__' scId_s '_CP_FGM_5VPS'],tint);
 
       %% get background magnetic field
       bf=irf_filt(b,1/600,0,[],5);
@@ -69,9 +71,8 @@ else
       ind_nan_b=isnan(b); b(ind_nan_b)=0;
       ind_nan_B=isnan(B); B(ind_nan_B)=0;
 
-      B2=irf_resamp(B,t);
-      Btot = B2(:,1:2);
-      Btot(:,2)=sqrt(B2(:,2).*B2(:,2)+B2(:,3).*B2(:,3)+B2(:,4).*B2(:,4));
+      Btot = B(:,1:2);
+      Btot(:,2)=sqrt(B(:,2).*B(:,2)+B(:,3).*B(:,3)+B(:,4).*B(:,4));
 
       %% Find the frequencies for an FFT of all data
 
@@ -225,9 +226,10 @@ ind_nan_pmr=isnan(power_median_removed); power_median_removed(ind_nan_pmr)=0;
 
 
 %% set cutoff frequencies and put a limit on the width of the emic event
-hCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
-heCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
-oCyclFreq = Btot(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
+magB = irf_resamp(Btot,t);
+hCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi;
+heCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./4;
+oCyclFreq = magB(:,2).*1e-9.*1.6e-19./1.67e-27./2./pi./16;
 
 %% wave detection
 P=[0 0 0 0 0]; %array for peaks [time, freq, peakValue, lowerBound, upperBound]
@@ -290,14 +292,14 @@ waveEvent = [0 0]; %start time, end time
 nevents=1;
 counter=1;
 try
-    TTemic=irf.TimeTable(['C' cl_s '_MAARBLE_PC12_wave_events']);
+    TTemic=irf.TimeTable([scId_s '_MAARBLE_PC12_wave_events']);
     createTTemic = 0;
 catch
     createTTemic = 1;   
 end
 if createTTemic,
     TTemic = irf.TimeTable;
-    TTemic.Header={'C' cl_s ' EMIC events for Maarble'};
+    TTemic.Header={[scId_s ' EMIC events for Maarble']};
 end
 while counter < nPeaks,
     startTime = P(counter,1);
@@ -330,7 +332,7 @@ end
 if waveEvent(1) > 0,
  ascii(TTemic)
  TTemic=unique(TTemic);
- export_ascii(TTemic,['C' cl_s '_MAARBLE_PC12_wave_events'])
+ export_ascii(TTemic,[scId_s '_MAARBLE_PC12_wave_events'])
 
   
 %% plot
@@ -400,11 +402,11 @@ cmapSpace = irf_colormap('space');
       start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
       time_label = datestr( datenum(start_time),1 );
       
-      irf_legend(h(1),['C' cl_s '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
+      irf_legend(h(1),[scId_s '           ' time_label],[0 1.05],'fontsize',10,'color','cluster');
       irf_pl_number_subplots(h,[0.02,0.97],'fontsize',14);
 
   if save_plot,
-    print('-dpng',['MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
+    print('-dpng',[scId_s '_MAARBLE_PC12_wave_detection_' irf_fname(tint,5)])
   end
 end
 end
