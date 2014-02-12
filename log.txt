@@ -1,3 +1,4 @@
+2014-02-12 v1.4.4 crlf fixes, minor improvements to some routines
 2014-02-05 v1.4.3 added errorbar_tick, +maarble updates, several improvements
 2013-12-11 v1.4.2 fixed launchpad bug 1258510
 2013-11-13 v1.4.1 minor updates
