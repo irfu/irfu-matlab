@@ -3,26 +3,31 @@ function out=caa_meta(varargin)
 %
 %	CAA_META(string1,string2,..) returns name of datasets
 %			matching string1,string2,..
+%           If index file with all metadata is not accessible, it is
+%           downloaded from the irfu server.
 %
 %	CAA_META(dataset) displays dataset informations
-%	out=LOCAL.C_CAA_META(dataset) returns dataset information in structure out
+%	out=CAA_META(dataset) returns dataset information in structure out
 %
 %	CAA_META(variableName) displays CAA variableName informations
-%	out=LOCAL.C_CAA_META(variableName) returns variable information in structure out
+%	out=CAA_META(variableName) returns variable information in structure out
 %
+%	CAA_META('create') create new index file downloading all the meta data 
+%	from CAA. This may take time! If you want to generate new index file
+%	for the irfu-matlab server, please see the comments inside the file. 
 %
 %	Examples:
 %		caa_meta('C1','PEA')
 %		caa_meta C1 PEA 
-%       d=caa_meta('C4_CP_PEA_MOMENTS')
-%       caa_meta('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
+%		d=caa_meta('C4_CP_PEA_MOMENTS')
+%		caa_meta('B_Vec_xyz_ISR2__C1_CP_EFW_L2_BB')
 %
-
-%	c_caa_meta('create') create file with all structures
 
 %% Defaults and variables
 persistent s datasetNames indexFile
-indexFileDefault = 'indexCaaMeta_v2'; % default file name, v2 added in 20130618
+% If you are generating new index file for the irfu server
+%   then please increase the version number
+indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
 linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
 
@@ -34,7 +39,7 @@ end
 
 %% Create index file
 if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
-	irf_log('fcal','Getting all metadata from CAA, be very patient...');
+	irf.log('warning','Getting all metadata from CAA, be very patient...');
 	urlMetaData = 'http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=*&metadata=1';
 	%urlMetaData = 'http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=C*_CP_PEA_3DXPH_DEFLUX&metadata=1';
 	tempDir = tempname;
@@ -43,7 +48,7 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 	tempFile = [tempname(tempDir) '.zip'];
 	tempFile = urlwrite(urlMetaData,tempFile);
 	unzip(tempFile);
-	irf_log('fcal','Creating structures');
+	irf.log('warning','Creating structures');
 	d = dir;
 	ii=arrayfun(@(x) any(strfind(x.name,'CAA')),d);
 	xmlDir = d(ii).name;
@@ -58,7 +63,7 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 		if fileName(1)==' ', disp(['Starts with space:' fileName]);continue;end % in case space in beginning of filename
 		nameDataset=fileName(1:find(fileName=='.',1)-1);
 		nameDataset(strfind(nameDataset,'-')) = '_';
-		datasetList{iFile} = [nameDataset]; % need to add space at end because it is used concatenating for save
+		datasetList{iFile} = nameDataset; 
 		nameDatasetList{iFile} = [nameDataset ' ']; % need to add space at end because it is used concatenating for save
 		disp(nameDataset);
 		s=xml2struct([xmlDir '/' fileName]);
@@ -68,26 +73,47 @@ if nargin==1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 		if isfield(s,'DATASET_METADATA'),
 			s=s.DATASET_METADATA;
 		end
-		meta.(nameDataset) = s; 
+		meta.(nameDataset) = s;  %#ok<STRNU>
 	end
 	cd ..;
 	rmdir(tempDir,'s')
 	eval(['save -v7 ' indexFileDefault ' -struct meta ', horzcat(nameDatasetList{:})])
-	eval(['save -v7 ' indexFileDefault ' datasetList -append'])
+	eval(['save     ' indexFileDefault ' datasetList -append'])
+	indexFileName = indexFileDefault; %#ok<NASGU> % save also indexFileName for version control 
+	save(indexFileDefault,'indexFileName','-append');	
 	disp(['Please move ''' indexFileDefault '.mat'' file from the current directory to']);
-	disp(linkUrlFile);
+	disp('somewhere on your MATLAB path.');
+	disp('If you are updating the version accessible by everybody, then')
+	disp(['move file to: ' linkUrlFile]);
 	return
 end
 	
 %% Locating index file
-if isempty(indexFile) || ~exist(indexFile,'file'), % first usage or file removed
-	indexFile = [indexFileDefault '.mat']; % default file name
-	if ~exist(indexFile,'file');
-		indexFile = irf.get_file(linkUrlFile,'caa',indexFileDefault);
+if isempty(indexFile), % first time calling the routine during matlab session 
+	if exist(indexFile,'file'), % first usage
+		indexFileName = load(indexFile,'indexFileName');
+		if isempty(indexFileName) ...% indexFileName is not save (old version)
+				|| ~strcmpi(indexFileName,indexFileDefault) % file is not the newest version
+			disp('WARNING!!! There is newer index file for caa_meta available.');
+			reply = input('Shall I download? Y/N [Y]:','s');
+			if isempty(reply)
+				reply = 'Y';
+			end
+			if strcmpi(reply,'Y');
+				indexFile = irf.get_file(linkUrlFile,'caa',indexFileDefault);
+			else
+				irf.log('warning','Using old verison of index file');
+			end
+		end
+	else % file does not exist and has to be downloaded
+		indexFile = [indexFileDefault '.mat']; % default file name
+		if ~exist(indexFile,'file');
+			indexFile = irf.get_file(linkUrlFile,'caa',indexFileDefault);
+		end
 	end
 end
 
-
+%% Read metadata
 if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
 	varName=varargin{1};
 	dd=regexp(varName, '__', 'split');
@@ -99,7 +125,7 @@ if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA var
 	parVar=par{iVar};
 	display_fields(parVar);
 	if nargout==1, out=parVar;end
-else
+else % dataset
 	if isempty(s),
 		datasetNames = getfield(load(indexFile,'datasetList'),'datasetList');
 	end
