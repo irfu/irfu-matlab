@@ -1,11 +1,9 @@
-function out=timetable_cluster(varargin)
+function timetable_cluster(varargin)
 % LOCAL.TIMETABLE_CLUSTER generate different Cluster time tables
 %
 % 	LOCAL.TIMETABLE_CLUSTER('tailbox')
 %		generate time tables when Cluster is in tailbox
 %
-
-% $Id$
 
 if nargin == 0,
 	help local.timetable_cluster;
@@ -44,7 +42,7 @@ switch timetableToGenerate
 		sclist={'','1','2','3','4'}; % include also center of configuration
 		c_eval('R?(izero,:)=[];',sclist);
 		c_eval('R?=irf_abs(R?);',sclist);
-		c_eval('R?=irf_gse2gsm(R?);',sclist); % TODO: needs to be substituted by onera conversion which is a bit more correct
+		c_eval('R?=irf_gse2gsm(R?);',sclist);
 		c_eval('RRE?=irf_tappl(R?,''*Units.km/Units.RE'');clear R?;',sclist);
 		
 		% tailbox definition
@@ -74,7 +72,9 @@ switch timetableToGenerate
 		% to download data, see aagetdata.m under spis:data/cluster/tailbox
 		
 	otherwise
-		irf_log('fcal',['unknown timetable:' timetableToGenerate]);
+		errStr = ['local.timetable_cluster() unknown timetable:' timetableToGenerate];
+		irf.log('critical',errStr);
+		error(errStr);
 end
 
 
