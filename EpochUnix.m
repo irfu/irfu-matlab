@@ -2,16 +2,12 @@ classdef EpochUnix < GenericTimeArray
   %EpochUnix Class representing UNIX epoch, double seconds since 1970.
   %   Detailed explanation goes here
   
-  properties
-    epoch
-  end
-  
   methods
     function obj = EpochUnix(inp)
       if nargin==0, return, end
       if isa(inp,'double'), 
         if min(size(inp))>1
-          error('MATLAB:EpochUnix:EpochUnix:badInputs',...
+          error('irf:EpochUnix:EpochUnix:badInputs',...
             'Double input (seconds since 1970) must be a columt or row vector')
         end
         if size(inp,2)~=1, inp = inp'; end % to column
@@ -20,11 +16,11 @@ classdef EpochUnix < GenericTimeArray
         if validate_iso_time_str(inp)
           obj.epoch = iso2epoch(inp);
         else
-          error('MATLAB:EpochUnix:EpochUnix:badInputs',...
+          error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
       else
-        error('MATLAB:EpochUnix:EpochUnix:badInputs',...
+        error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
       end
     end
