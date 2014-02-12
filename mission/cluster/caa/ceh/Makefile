@@ -15,5 +15,8 @@ upload-maarble-irf:
 upload-maarble-iap:
 	ls *.ceh| grep -v CX | grep -v ULF | grep -v _TH | grep -v EFW | xargs -I % scp % yuri@db:/data/caa/MAARBLE/Upload/iap/HEADERS/
 
+upload-maarble-caa:
+	scp C[1-4]_CH_AUX_MAARBLE_*.ceh maarble@caa-delivery.estec.esa.int:HEADERS/ 
+
 update-dropbox:
 	ls Makefile make_maarble_headers.sh *.ceh| grep -v CX | xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/
