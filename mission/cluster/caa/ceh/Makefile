@@ -13,4 +13,4 @@ upload-maarble:
 	ls *.ceh| grep -v CX | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
 
 update-dropbox:
-	x-line:ceh yuri$ ls *.ceh| grep -v CX | xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/
+	ls Makefile make_maarble_headers.sh *.ceh| grep -v CX | xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/
