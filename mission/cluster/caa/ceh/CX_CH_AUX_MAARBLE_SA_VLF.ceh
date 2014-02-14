@@ -105,8 +105,8 @@ START_VARIABLE  =  Time__CXXX_CP_AUX_MAARBLE_SA_VLF
     FILLVAL             = 9999-12-31T23:59:59Z
     FIELDNAM            = "Universal Time"
     LABLAXIS            = "UT"
-    DELTA_PLUS          = 4
-    DELTA_MINUS         = 0
+    DELTA_PLUS          = 2
+    DELTA_MINUS         = 2
 END_VARIABLE    =  Time__CXXX_CP_AUX_MAARBLE_SA_VLF
 !
 START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
