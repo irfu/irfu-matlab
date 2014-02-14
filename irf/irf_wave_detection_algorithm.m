@@ -33,7 +33,7 @@ if isstruct(tint)
     deltaT=30;
     sampl=1/30;
     outTime = (t(1):deltaT:t(end))' + deltaT/2; outTime(end) = [];
-    powerCrossCov_SM_plot = AverageData(powerCrossCov_SM_plot,t,outTime);
+    powerCrossCov_SM_plot = AverageData(powerCrossCov_SM_plot,t,outTime,deltaT);
     t = outTime;
     newfreq = ebsp.f;
     nfreq = length(newfreq);
@@ -519,8 +519,8 @@ end
 
 function out = AverageData(data,x,y,avWindow,flagSerial)
 % average data with time x to time y using window
-    dtx = median(diff(x)); dty = median(diff(y));
-    if nargin<4, avWindow = dty; end
+    dtx = median(diff(x));
+    if nargin<4, avWindow = median(diff(y)); end
     if nargin<5, flagSerial = 0; end
     dt2 = avWindow/2;
     ndataOut = length(y);
