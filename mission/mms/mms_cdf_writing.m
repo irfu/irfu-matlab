@@ -30,7 +30,7 @@ switch(HeaderInfo.calledBy)
             '/',HeaderInfo.instrumentId, '/', 'sitl/', HeaderInfo.dataLevel, '/'...
             HeaderInfo.startTime(1:4), '/', HeaderInfo.startTime(5:6), '/', ...
 	    HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_sitl_',HeaderInfo.dataLevel,'_dce_', ...
+            HeaderInfo.instrumentId, '_sitl_',HeaderInfo.dataLevel,'_dce2d_', ...
             HeaderInfo.startTime, '_v*.cdf']);
 
         if(size(preExistingFiles,1)>0)
@@ -42,7 +42,7 @@ switch(HeaderInfo.calledBy)
 
         % Create the new output filename. (excl extension).
         filename_output = [HeaderInfo.scId, '_', HeaderInfo.instrumentId, ...
-            '_sitl_',HeaderInfo.dataLevel,'_dce_', HeaderInfo.startTime, ...
+            '_sitl_',HeaderInfo.dataLevel,'_dce2d_', HeaderInfo.startTime, ...
             '_', versionNum];
         
         % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
@@ -58,11 +58,11 @@ switch(HeaderInfo.calledBy)
         
         irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_sitl_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data', data1.data', uint32(bitmask));
+            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data', data1.data', uint16(bitmask));
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to
@@ -86,7 +86,7 @@ switch(HeaderInfo.calledBy)
 	    HeaderInfo.calledBy ,'/', ...
             HeaderInfo.startTime(1:4), '/', HeaderInfo.startTime(5:6), '/', ...
 	    HeaderInfo.scId, '_', HeaderInfo.instrumentId, '_', ...
-	    HeaderInfo.dataMode, '_ql_dce_', ...
+	    HeaderInfo.dataMode, '_ql_dce2d_', ...
             HeaderInfo.startTime, '_v*.cdf']);
 	else
            preExistingFiles = dir([ENVIR.DATA_PATH_ROOT, '/science/', HeaderInfo.scId, ...
@@ -94,7 +94,7 @@ switch(HeaderInfo.calledBy)
 	    HeaderInfo.calledBy ,'/', ...
             HeaderInfo.startTime(1:4), '/', HeaderInfo.startTime(5:6), '/', ...
             HeaderInfo.startTime(7:8), '/', HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, '_ql_dce_', ...
+            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, '_ql_dce2d_', ...
             HeaderInfo.startTime, '_v*.cdf']);
 	end
 
@@ -107,7 +107,7 @@ switch(HeaderInfo.calledBy)
 
         % Create the new output filename. (excl extension).
         filename_output = [HeaderInfo.scId, '_', HeaderInfo.instrumentId, ...
-            '_', HeaderInfo.dataMode, '_ql_dce_', HeaderInfo.startTime, ...
+            '_', HeaderInfo.dataMode, '_ql_dce2d_', HeaderInfo.startTime, ...
             '_', versionNum];
         
         % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
@@ -123,11 +123,11 @@ switch(HeaderInfo.calledBy)
         
         irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_quicklook_dce(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data', data1.data', uint32(bitmask), uint32(qualityMark));
+            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data', data1.data', uint16(bitmask), uint16(qualityMark));
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to
@@ -186,11 +186,11 @@ switch(HeaderInfo.calledBy)
         psp_p = [data1.data, data1.data];
         irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_usc(filename_output, int8(str2num(HeaderInfo.scId(end))), epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p', uint32(bitmask));
+            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p', uint16(bitmask));
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:irfu_cdfwrite:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to

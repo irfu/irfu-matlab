@@ -1,0 +1,331 @@
+!------------------- CEF ASCII File --------------------
+! Header file for Cluster VLF
+!-------------------------------------------------------
+!
+INCLUDE        =   "CL_CH_MISSION.ceh"
+INCLUDE        =   "CXXX_CH_OBS.ceh"
+INCLUDE        =   "CL_CH_AUX_EXP.ceh"
+INCLUDE        =   "CXXX_CH_AUX_INST.ceh"
+!
+!               DATASET LEVEL METADATA
+!
+START_META = DATA_TYPE
+   ENTRY = "CP>CAA_Parameter"
+END_META = DATA_TYPE
+!
+START_META = DATASET_ID
+   ENTRY = "CXXX_CP_AUX_MAARBLE_SA_VLF"
+END_META = DATASET_ID
+!
+START_META = DATASET_TITLE
+   ENTRY = "VLF Wave Spectra, Polarization and Propagation Parameters"
+END_META = DATASET_TITLE
+!
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =  "BB is the spectrum of B produced using FFT in FAC system."
+   ENTRY       =  "Polarization and propagation parameters derived from singular"
+   ENTRY       =  "value decomposition (SVD) method of the cross-spectral"
+   ENTRY       =  "matrix (sm)."
+   ENTRY       =  "The SVD  method is described in Santolik et al (2003)."
+   ENTRY       =  "The parameters calculated from the three magnetic components"
+   ENTRY       =  "are BB, KSVD, ELLSVD, PLANSVD, DOP and POLSVD."
+   ENTRY       =  "KSVD is polar and azimuthal angles of k in FAC system."
+   ENTRY       =  "DOP is the degree of polarization defined in Samson (1973)."
+   ENTRY       =  "PV is the Poynting vector (magnitude, polar and azimuthal"
+   ENTRY       =  "angles) in FAC coordinate system."
+   ENTRY       =  "ESUM is the sum of the two electric auto-power spectra in"
+   ENTRY       =  "the spacecraft spin plain."
+   ENTRY       =  "BMAG is the magnitude of DC magnetic field measured by FGM."
+   ENTRY       =   " "
+   ENTRY       =  "The parameters are derived from STAFF_SA l2 products."
+   ENTRY       =  "The change of coordinate system has been done using FGM"
+   ENTRY       =   " data (5Hz)."
+   ENTRY       =   "This dataset was generated as part of the MAARBLE "
+   ENTRY       =   "(Monitoring, Analyzing and Assessing Radiation Belt "
+   ENTRY       =   "Energization and Loss) collaborative research project "
+   ENTRY       =   "which has received funding from the European Community's"
+   ENTRY       =   " Seventh Framework Programme (FP7-SPACE-2011-1)"
+   ENTRY       =   "under grant agreement n. 284520."
+   ENTRY       =   " "
+   ENTRY       =   "The contacts for the MAARBLE project are"
+   ENTRY       =   "  Ioannis A. Daglis, National Observatory of Athens"
+   ENTRY       =   "  Yuri Khotyaintsev, Swedish Institute of Space Physics"
+   ENTRY       =   "  Ondrej Santolik, Institute of Atmospheric Physics of"
+   ENTRY       =   "         the Academy of Sciences of the Czech Republic"
+   ENTRY       =   "  Sebastien Bourdarie, ONERA"
+   ENTRY       =   "  Richard B. Horne, The British Antarctic Survey"
+   ENTRY       =   "  Ian R. Mann, The University of Alberta"
+   ENTRY       =   "  Drew Turner, UCLA"
+END_META       =   DATASET_DESCRIPTION
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Ondrej Santolik>Cluster VLF data provider>os@ufa.cas.cz"
+   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   4.0
+END_META       =   TIME_RESOLUTION
+!
+START_META     =   MIN_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   1.0
+END_META       =   MIN_TIME_RESOLUTION
+!
+START_META     =   MAX_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   4.0
+END_META       =   MAX_TIME_RESOLUTION
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Derived"
+END_META       =   PROCESSING_LEVEL
+!
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   ""
+END_META       =   DATASET_CAVEATS
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the European Union Framework 7 Programme,"
+   ENTRY       =   "the MAARBLE project and the ESA Cluster Archive "
+   ENTRY       =   "in any publications based upon the use of these data."
+END_META       =   ACKNOWLEDGEMENT
+!
+! PARAMETER LEVEL METADATA
+!
+START_VARIABLE  =  Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "time tag"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = ISO_TIME
+    SIGNIFICANT_DIGITS  = 24
+    FILLVAL             = 9999-12-31T23:59:59Z
+    FIELDNAM            = "Universal Time"
+    LABLAXIS            = "UT"
+    DELTA_PLUS          = 2
+    DELTA_MINUS         = 2
+END_VARIABLE    =  Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Interval centred frequency tag"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 27
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 4
+   FILLVAL            = -999.99
+   FIELDNAM           = "Frequency bin centres"
+   LABLAXIS           = "F"
+   LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F" \
+                        ,"F","F","F","F","F","F","F","F","F","F","F","F","F"
+   DELTA_PLUS         = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DELTA_MINUS        = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
+   SCALETYP           = Log
+   DATA               = 8.7692,11.0485,13.9203,17.5385,22.0971,27.8406,35.0769, \
+                        44.1942,55.6812,70.1539,88.3883,111.3623,140.3078, \
+                        176.7767,222.7247,280.6155,353.5534,445.4493,561.2310, \
+                        707.1068,890.8987,1122.4620,1414.2135,1781.7975, \
+                        2244.9243,2828.4270,3563.5945
+END_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Frequency bin half widths"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 27
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -999.99
+   FIELDNAM           = "Frequency bin half widths"
+   LABLAXIS           = "F_bhw"
+  LABEL_1            = "F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw" 
+   SCALETYP           = Log
+   DATA               = 1.0085,1.2706,1.6008,2.0169,2.5412,3.2017,4.0338, \
+                        5.0823,6.4033,8.0677,10.1647,12.8067,16.1354,20.3293, \
+                        25.6133,32.2708,40.6586,51.2267,64.5416,81.3173, \
+                        102.4534,129.0831,162.6346,204.9067,258.1663,325.2691, \
+                        409.8134
+END_VARIABLE = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = BB_xxyyzz_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Vector"
+   FLUCTUATIONS       = "Fourier_Power-spectrum"
+   CATDESC            = "Power spectrum (VLF range) of the B-field in FAC CS"
+   UNITS              = "nT^2 Hz^-1"
+   SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
+   TENSOR_ORDER       = 2
+   TENSOR_FRAME       = "FAC"
+   FRAME              = "FAC>xyz"
+   COORDINATE_SYSTEM  = "FAC"
+   SIZES              = 27,3     ! 27 frequency bins x 3 components
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Magnetic Power Spectral Density"
+   LABLAXIS           = "Magnetic Power Spectral Density"
+   REPRESENTATION_2   = "xx","yy","zz"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   LABEL_2            = "Bx^2","By^2","Bz^2"
+   QUALITY            = 3
+END_VARIABLE = BB_xxyyzz_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = KSVD_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"
+   PROPERTY           = "Vector"
+   CATDESC            = "Direction of propagation in FAC system (SVD)."
+   UNITS              = "deg","deg"
+   SI_CONVERSION      = "1>degree","1>degree"
+   SIZES              = 27,2   ! 27 frequency bins x 2 comp (theta,phi)
+   TENSOR_ORDER       = 1
+   REPRESENTATION_2   = "t", "p"
+   LABEL_2            = "theta","phi"
+   COORDINATE_SYSTEM  = "FAC"
+   FRAME              = "FAC>rtp"
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Direction of propagation"
+   LABLAXIS           = "THSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = KSVD_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = ELLSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Ellipticity of the polarization (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 27     ! 27 frequency bins
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Ellipticity of the polarization (SVD)."
+   LABLAXIS           = "ELLSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = ELLSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = PLANSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Planarity of the polarization (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 27     ! 27 frequency bins
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3 
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Planarity of the polarization (SVD)."
+   LABLAXIS           = "PLANSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = PLANSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = POLSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Degree of polarization in the polarization plane (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 27     ! 27 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3 
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
+   LABLAXIS           = "POLSVD"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = POLSVD__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = DOP__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "3D Degree of polarization."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 27     ! 27 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "3D Degree of polarization."
+   LABLAXIS           = "DOP"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = DOP__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = BMAG__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Magnitude of the DC B-field"
+   UNITS              = "nT"
+   SI_CONVERSION      = "1.0E-9>T"
+   SIZES              = 1
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "DC Magnetic Field Magnutude"
+   LABLAXIS           = "B"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = BMAG__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = ESUM__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Electric_Field"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Sum of the two electric auto-power spectra."
+   UNITS              = "mV^2 m^-2 Hz^-1"
+   SI_CONVERSION      = "1.0E-6>V^2 m^-2 Hz^-1"
+   SIZES              = 27     ! 27 frequency bins
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Sum of the two electric auto-power spectra."
+   LABLAXIS           = "ESUM"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = ESUM__CXXX_CP_AUX_MAARBLE_SA_VLF
+!
+START_VARIABLE = PV_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound" 
+   PROPERTY           = "Component"
+   CATDESC            = "Poynting vector in FAC system."
+   UNITS              = "W m^-2 Hz^-2","deg","deg"
+   SI_CONVERSION      = "1.0>W m^-2 Hz^-2","1>degree","1>degree"
+   SIZES              = 27,3     ! 27 frequency bins x 3 comp (r,theta,phi)
+   COORDINATE_SYSTEM  = "FAC"
+   FRAME              = "FAC>xyz"
+   VALUE_TYPE         = FLOAT  
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Poynting vector"
+   TENSOR_ORDER       = 1
+   REPRESENTATION_2   = "r","t","p"
+   LABEL_2            = "PV(amp)", "PV(theta)", "PV(phi)"
+   LABLAXIS           = "PFlux"
+   DEPEND_0           = Time__CXXX_CP_AUX_MAARBLE_SA_VLF
+   DEPEND_1           = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
+   QUALITY            = 3
+END_VARIABLE = PV_fac__CXXX_CP_AUX_MAARBLE_SA_VLF
