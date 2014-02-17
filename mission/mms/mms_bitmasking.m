@@ -1,9 +1,19 @@
 function bitmask = mms_bitmasking( sourceCDFobj1, sourceCDFobj2 )
-% Bitmasking 
-% For now, bitmasking returns bitmask = MMS_CONST.Bitmask.OnlyDCE for any
-% times when the sourceCDFobj1 is not covered by sourceCDFobj2.
-% 
-% Date of latest change: 2014/01/14
+% MMS_BITMASKING compares time intervall of the two dataobj and returns status code bitmask indicating overlap or not.
+%	bitmask=MMS_BITMASKING( sourceCDFobj1, sourceCDFobj2 ) return a bitmask array of same length as sourceCDFobj1's 
+%	number of datapoints. First column of bitmask corresponds to timestamps in sourceCDFobj1 and the second column 
+%	indicate if sourceCDFobj1's time stamp is within the range of sourceCDFobj2s time.
+%	If the times do not match bitmask value MMS_CONST.Bitmask.OnlyDCE will be retured.
+%
+%	MMS_BITMASKING( sourceCDFobj1 ) return a bitmask indicating only a single source for all timestamps and no overlap.
+%
+%       MMS_BITMASKING( sourceCDFobj1, sourceCDFobj1 ) return a bitmask indication full overlap. (i.e. times are identical).
+%
+%	Example:
+%		bitmask = mms_bitmasking(sourceCDFobj1);
+%		bitmask = mms_bitmasking(sourceCDFobj1, sourceCDFobj2);
+%
+% 	See also DATAOBJ, MMS_INIT.
 
 global MMS_CONST;
 
