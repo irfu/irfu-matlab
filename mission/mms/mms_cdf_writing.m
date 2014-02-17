@@ -74,7 +74,7 @@ switch(HeaderInfo.calledBy)
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to
@@ -139,7 +139,7 @@ switch(HeaderInfo.calledBy)
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to
@@ -202,7 +202,7 @@ switch(HeaderInfo.calledBy)
         catch err
             % An error occured.
             % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_cdfwrite_combined:filename_output:exists'))
+            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
                 % If our cdfwrite code resulted in error write proper log message.
                 irf.log('critical',err.message);
                 % Then end with MATLAB:SDCcode and numberical error code to
