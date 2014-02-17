@@ -50,6 +50,10 @@ else
 end
 
 tmpR = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat', ['Rth' thId]);
+gseR = tmpR.(['Rth' thId]);
+gseV=gseR(1:end-1,:); dtR = diff(gseR(:,1));
+for iComp=2:4, gseV(:,iComp)=diff(gseR(:,iComp))./dtR; end
+clear tmpR dtR
 
 if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
@@ -65,11 +69,13 @@ tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
+  [bs,~,ttGap] = th_clean_eb(bs);
 if isempty(bs), 
     irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
+  es=th_clean_eb(es,'NaN');
 end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
@@ -91,28 +97,49 @@ if wantPC12
   end
 end
 
-gseR = tmpR.(['Rth' thId]);
-gseR = irf_tlim(gseR,tint+DT_PC5*[-1 1]);
 R = gseR; % XXX FIXME: this must be a real transformation to DSL
+R = irf_tlim(R,tint+DT_PC5*[-1 1]);
+V = gseV;
+V = irf_tlim(V,tint+DT_PC5*[-1 1]);
 
 %% Calculate and plot
 bf = irf_filt(bs,0,1/600,1/5,5);
 t_1min = ((tint(1)-DT_PC5):60:(tint(end)+DT_PC5))';
 B0_1MIN = irf_resamp(bf,t_1min); %clear bf
+nGaps = size(ttGap.TimeInterval,1);
+if nGaps>0
+  for iGap=1:nGaps
+    tintGap = ttGap.TimeInterval(iGap,:);
+    if diff(tintGap)>300
+      irf.log('warning',['Long ' ttGap.Comment{iGap} ' in BS at '...
+        irf_disp_iso_range(tintGap,1) ' > 5 min'])
+      B0_1MIN = irf_tlim(B0_1MIN,tintGap+[-30 30],1);
+    end
+  end
+end
 facMatrix = irf_convert_fac([],B0_1MIN,R);
 
 if wantPC35
   t_1SEC = ((tint(1)+2-DT_PC5):1:(tint(end)+DT_PC5))';
   B_1SEC = irf_resamp(bs,t_1SEC);
   
-  %E3D_4SEC = irf_edb(irf_resamp(E_4SEC,t_1SEC),B_1SEC,15,'Eperp+NaN'); % Ez
+  % Set Gaps to NaN. for safety we set both E and B
+  if nGaps>0
+    for iGap=1:nGaps
+      tintGap = ttGap.TimeInterval(iGap,:);
+      B_1SEC(B_1SEC(:,1)>=tintGap(1)-0.5 & B_1SEC(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+      es(es(:,1)>=tintGap(1)-0.5 & es(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+    end
+  end
+  
+  E3D_1SEC = irf_resamp(es,t_1SEC);
   
   % Construct the inertial frame
-  %evxb = irf_tappl(irf_cross(B_4SEC,irf_resamp(V,t_4SEC)),'*1e-3*(-1)');
-  %iE3D_4SEC = E3D_4SEC;
-  %iE3D_4SEC(:,2:4) = iE3D_4SEC(:,2:4) - evxb(:,2:4);
-  
-  iE3D_1SEC = irf_resamp(es,t_1SEC); % XXX FIXME: need to implement inetrial frame
+  evxb = irf_tappl(irf_cross(B_1SEC,irf_resamp(V,t_1SEC)),'*1e-3*(-1)');
+  iE3D_1SEC = E3D_1SEC;
+  iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
+  % Remove all E-fields > 10 mV/m in inertial frame
+  for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
   
   ebsp = ...
     irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,R,'pc35',...
@@ -148,16 +175,27 @@ if wantPC12
   
   
   B_BASE = irf_resamp(bl,t_BASE);
-  
-  %E3D_BASE = irf_edb(irf_resamp(E_L2,t_BASE),B_BASE,15,'Eperp+NaN'); % Ez
+  ii = find(diff(bl(:,1))>2/fSampB);
+  if ~isempty(ii)
+    for iGap=ii
+      irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
+      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN;
+    end
+  end
+    
+  E3D_BASE = irf_resamp(ef,t_BASE);
+  ii = find(diff(ef(:,1))>2/fSampE);
+  if ~isempty(ii)
+    for iGap=ii
+      irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
+      E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
+    end
+  end
   
   % Construct the inertial frame
-  %evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
-  %iE3D_BASE = E3D_BASE;
-  %iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
-  
-  %XXX FIXME: need to do real transformation here
-  iE3D_BASE = irf_resamp(ef,t_BASE);
+  evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
+  iE3D_BASE = E3D_BASE;
+  iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
   
   tic
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...

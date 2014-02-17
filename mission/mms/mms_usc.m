@@ -1,13 +1,15 @@
 function mms_usc(filename_dcv_source_file)
-% This is the main file to be run at SDC, from this file all other substeps
-% are performed.
-% Input(s):
-%    filename_dcv_source_file = filename of DCV data cdf file. Not required
-%    for basic processing but if not included it is assumed this file does
-%    not yet exist and only partial processing can be done.
-% Output(s):
-%    cdf files created containing Usc potential DCV data.
+% MMS_USC startpoint and main function for MMS SDC USC processing. 
+%	MMS_USC(filename_dcv_source_file) takes input fullpath filename of DCV file and runs processing to determine SC potential for MMS.
 %
+% 	MMS_USC(filename_dcv_source_file) using various subroutines the input file is read, processed and then the final output is written
+%	to a corresponding CDF file in accordiance with MMS CDF Format Guide and MMS SDC Developer Guide.
+%
+%	Example:
+%		mms_usc('/full/path/to/source_dcv_file.cdf');
+%
+% 	See also MMS_INIT, MMS_CDF_IN_PROCESS. MMS_CDF_WRITE.
+
 
 % narginchk - Min 1 (dcv), max 1 (dcv)
 narginchk(1,1);

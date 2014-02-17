@@ -1,5 +1,5 @@
 /*
-Filename: mms_cdfwrite_combined.c 
+Filename: mms_sdc_cdfwrite.c 
 
 Purpose: To be used with MatLab to write CDF files according to specifications for MMS.
 This file will, when completed be able to write all three types of CDF files user for MMS FIELDS SDP.
@@ -35,14 +35,14 @@ void UserStatusHandler(int status)
 if (status == -2013)
 {
 	// Error is caused by pre-existing file in output directory, return and exit.
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:filename_output:exists",
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:filename_output:exists",
        	"A file with requested filename already exists in the output dir DROPBOX_ROOT/. Can occur if rerun before other scripts have moved it to its final destination.");
 }
 else
 {
 	//mexPrintf("Error found as: %d\n",status);
 	// An unknown error was returned from some CDF lib function, return error and exit.
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:unknown_error",
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:unknown_error",
 	"Error found as CDF status code: %d",status);
 }	
 
@@ -85,7 +85,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 if(nrhs<=6)
 {
-  mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+  mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
      "At least seven input arguments are required (possibly more for various output). 'Filename', 'SC_id', 'DataProductOut', 'Epoch_times', 'mmsX_dataXX', 'mmsX_dataYY', 'bitmask'"); 
 }
 
@@ -104,7 +104,7 @@ if(mxGetClassID(prhs[0])==4)
 } 
 else
 {
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 	"First input was identified as not a string but as ClassID: %s\n",mxGetClassName(prhs[0])); 
 }
 
@@ -114,13 +114,13 @@ if((mxGetClassID(prhs[1])==8))
 	sc_id = mxGetScalar(prhs[1]);
 	if((sc_id>4)||(sc_id<1))
 	{
-		mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+		mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 		"SC id incorrectly found as: %d.\nAllowed values are only 1, 2, 3 and 4.",sc_id);
 	}
 }
 else
 {
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 	"Second input was identified as ClassID: %s\nShould be only be int8().",mxGetClassName(prhs[1]));
 }
 
@@ -135,7 +135,7 @@ if(mxGetClassID(prhs[2])==4)
 		if(nrhs!=9)
 		{
 			// USC require 9 input arguments.
-			mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+			mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 		  	"Nine input arguments are required for USC. 'Filename', 'SC_id', 'DataProductOut', 'Epoch_times', 'mmsX_dataXX', 'mmsX_dataYY', 'mmsX_dataZZ', mms_dataAA, 'bitmask'."); 
 		}
 	}
@@ -145,7 +145,7 @@ if(mxGetClassID(prhs[2])==4)
 		if(nrhs!=8)
 		{
 			// QuickLook require 8 input arguments.
-			mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+			mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 		  	"Eight input arguments are required for QL. 'Filename', 'SC_id', 'DataProductOut', 'Epoch_times', 'mmsX_dataXX', 'mmsX_dataYY', 'bitmask', 'quality'."); 
 		}
 	}
@@ -155,20 +155,20 @@ if(mxGetClassID(prhs[2])==4)
 		if(nrhs!=7)
 		{
 			// SITL require 7 input arguments.
-			mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+			mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 		  	"Seven input arguments are required for SITL. 'Filename', 'SC_id', 'DataProductOut', 'Epoch_times', 'mmsX_dataXX', 'mmsX_dataYY', 'bitmask'."); 
 		}
 	}
 	else
 	{
 		// NOT ok, it was non of the above
-		mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:DataProductOut:NotKnown",
+		mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:DataProductOut:NotKnown",
        		"The selected DataProductOut is not defined and known. Accepted and known DataProductOut values are 'usc', 'sitl', 'ql'.");
 	}
 }	
 else
 {
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:inputarg",
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:inputarg",
 	"Third input was identified as not a string but as ClassID: %s\n",mxGetClassName(prhs[2])); 
 }
 
@@ -514,7 +514,7 @@ status = CDFattrCreate (id, "SCAL_PTR", VARIABLE_SCOPE, &TEMPattrNum);          
 // NOTE: MEX uses C/C++ style strcmp which returns 0 when matching and 1 if not matching.
 if( !strcmp(DataProductOut, "usc") )
 {
-	// mms_cdfwrite_combined was called with "usc" as DataProductOut. Create variables required for Usc CDF.
+	// mms_sdc_cdfwrite was called with "usc" as DataProductOut. Create variables required for Usc CDF.
 
 	// Variable setting unique for Usc.
 	
@@ -995,7 +995,7 @@ if( !strcmp(DataProductOut, "usc") )
 }
 else if( !strcmp(DataProductOut, "sitl") )
 {
-	// mms_cdfwrite_combined was called with "sitl" as DataProductOut. Create variables required for STIL CDF.
+	// mms_sdc_cdfwrite was called with "sitl" as DataProductOut. Create variables required for STIL CDF.
 
 	// Variable setting unique for SITL.
 	
@@ -1310,7 +1310,7 @@ else if( !strcmp(DataProductOut, "sitl") )
 }
 else if( !strcmp(DataProductOut, "ql" ) )
 {
-	// mms_cdfwrite_combined was called with "ql" as DataProductOut. Create variables required for QuickLook CDF.
+	// mms_sdc_cdfwrite was called with "ql" as DataProductOut. Create variables required for QuickLook CDF.
 
 	// Variable setting unique for QuickLook.
 
@@ -1674,8 +1674,8 @@ else if( !strcmp(DataProductOut, "ql" ) )
 }
 else
 {
-	// mms_cdfwrite_combined was called with "somethingElse" as DataProductOut. Return error code, we should not end up here but in any case...
-	mexErrMsgIdAndTxt("MATLAB:mms_cdfwrite_combined:DataProductOut:NotKnown",
+	// mms_sdc_cdfwrite was called with "somethingElse" as DataProductOut. Return error code, we should not end up here but in any case...
+	mexErrMsgIdAndTxt("MATLAB:mms_sdc_cdfwrite:DataProductOut:NotKnown",
        	"The selected DataProductOut is not defined and known. Accepted and known DataProductOut values are 'usc', 'sitl', 'ql'.");
 }
 

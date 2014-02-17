@@ -1,10 +1,18 @@
 function [outObj, filenameData] = mms_cdf_in_process( fullFilename, sci_or_ancillary )
-% Process input arguments to find data file (in CDF format) and read this
-% file as dataobj, return the dataobj containing all data and info from the
-% CDF file.
-% Latest modification: 2014/01/16
+% MMS_CDF_IN_PROCESS reads a MMS CDF files and return a corresponding dataobj with decoded filename.
+%	[outObj, filenameData] = MMS_CDF_IN_PROCESS( fullFilename, sci_or_ancillary) read the CDF file found as fullFilename 
+% 	depending on datatype sci_or_ancillary ('sci' for ordinary science data and 'ancillary' for other data such as sunpulse).
+%
+%	[outObj, filenameData] = MMS_CDF_IN_PROCESS(fullFilename, sci_or_ancillary) returns a dataobj of the CDF file and 
+%	decoded filename information in the struct filenameData. Information such as scId, instrumentId, dataMode, dataLevel.
+%
+%	Example:
+%		[outObj, filenameData] = mms_cdf_in_process('/full/data/path/2015/04/10/mms2_sdp_fast_l1b_20150410_v0.0.0.cdf','sci');
+%
+% 	See also DATAOBJ.
 
-%global ENVIR;
+% narginchk - Min 2 Max 2 ('full/path/filename.cdf', 'sci_or_ancillary').
+narginchk(2,2);
 
 if(strcmp(sci_or_ancillary,'sci'))
     % Convert input file name to parameters, use this to go down through the
