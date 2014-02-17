@@ -44,7 +44,7 @@ classdef (Abstract) GenericTimeArray
       res = length(obj.epoch);
     end
     
-    function res = end(obj,k,n)
+    function res = end(obj,k,~)
       %END last index in array
       switch k
         case 1
@@ -74,15 +74,15 @@ classdef (Abstract) GenericTimeArray
       res = subsref(obj,S);
     end
     
-    function sref = subsref(obj,idx)
+    function [varargout] = subsref(obj,idx)
       %SUBSREF handle indexing
         switch idx(1).type
           % Use the built-in subsref for dot notation
           case '.'
-            sref = builtin('subsref',obj,idx);
+            [varargout{1:nargout}] = builtin('subsref',obj,idx);
           case '()'
             tmpEpoch = builtin('subsref',obj.epoch,idx);
-            sref = feval(class(obj),tmpEpoch);
+            [varargout{1:nargout}] = feval(class(obj),tmpEpoch);
             % No support for indexing using '{}'
           case '{}'
             error('irf:GenericTimeArray:subsref',...
@@ -111,6 +111,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:tlim:badInputs',...
             'empty limiting array')
       end
+      if nargin<3, mode = 0; end
       if ischar(mode)
         switch lower(mode)
           case 'and'
@@ -132,7 +133,9 @@ classdef (Abstract) GenericTimeArray
       end
       className = class(obj);
       lim = inp.(['to' className]);
-      [idxLim,res] = tlimPrivate(obj,lim,mode);
+      if nargout>1, [idxLim,res] = tlimPrivate(obj,lim,mode);
+      else idxLim = tlimPrivate(obj,lim,mode);
+      end
     end
     
     % Anstract methods
@@ -141,15 +144,29 @@ classdef (Abstract) GenericTimeArray
   end
   
   methods (Access = private)
-    tlimPrivate(obj,inp,mode)
+    function [idxLim,res] = tlimPrivate(obj,inp,mode)
+      % Private version of tLim, can be reloaded
+      if mode==0
+        idxLim = find((obj.epoch >= inp.epoch(1)) & (obj.epoch < inp.epoch(end)));
+      else
+        idxLim = find((obj.epoch < inp.epoch(1)) | (obj.epoch > inp.epoch(end)));
+      end
+      if nargout>1,
+        S.type = '()'; S.subs={idxLim};
+        tmpEpoch = builtin('subsref',obj.epoch,S);
+        res = feval(class(obj),tmpEpoch);
+      end
+    end
   end
   
   methods (Static)
-    function [ output_args ] = validate_iso_time_str( input_args )
+    function [ output_args ] = validate_iso_time_str( str )
       %verify_iso_time_str Summary of this function goes here
       %   Detailed explanation goes here
       
       output_args = true;
+     
+      if isempty(str), output_args = false; end
     end
   end
 end
