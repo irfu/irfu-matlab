@@ -1,4 +1,23 @@
 function [bout,ii,ttGap] = th_clean_eb(bs,mode)
+%TH_CLEAN_EB  Basic leaning of data (spikes)
+%
+%  [bCleaned,idxGap,ttGap] = th_clean_eb(bs,mode)
+%
+%  Input: 
+%         bs - time series
+%       mode - mode for filling the spikes LINEAR(default), ZERO, NaN
+%
+%  Output:
+%      bCleaned - data with filled spikes
+%        idxGap - indeces of the spikes
+%         ttGap - time table corresponding to the spikes
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if nargin<2, mode = 'linear'; end
 if nargout==3, ttGap=irf.TimeTable(); end
