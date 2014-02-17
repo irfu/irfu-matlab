@@ -1,14 +1,26 @@
 function [ filename_output ] = mms_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark )
-% Write out data in dataOut (currently a dataObj) along with bitmask using
-% HeaderInfo to determine which write function to use and what data is
-% expected in dataOut.
-
-% Quality/error is used for SDP_L1B to Quicklook otherwise it is almost
-% identical with SDP_L1B to SITL.
-
-% Note: 20140204 Update regarding SITL names, for FIELDS SITL is considered
-% a dataLevel even if SDC Guide is unclear about that issue. Therefor for
-% SITL check folder /sitl/ and write filenames accordingly.
+% MMS_CDF_WRITING writes the dataobj dataOut to the corresponding CDF file.
+%	[filename_output] = MMS_CDF_WRITING( dataOut, bitmask, HeaderInfo, qualityMark) will
+%       write an MMS CDF file containing the dataobj dataOut's data to a temporary output folder
+%	defined by ENVIR.DROPBOX_ROOT. The struct HeaderInfo will help determine which output
+%	file is to be created.
+%
+%	Example:
+%		filename_output = mms_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark);
+%
+%	Note 1: It is assumed that other SDC processing scripts will move the created output
+%	file to its final destination (from /ENIVR.DROPBOX_ROOT/ to /path/as/defined/by/
+%	SDC Developer Guide, v1.7).
+%	Note 2: 20140204, FIELDS consider SITL to be a dataLevel even if the
+%	SDC Developer Guide is unclear about that issue. Therefor when running
+%	MMS SDP SITL processing this script will check corresponding folder structure
+%	and write filenames accordingly.
+%
+%       NOTE 3: The number of input arguments must be altered when the processing actually takes
+%       place in previous functions. For now it will only multiply the input dataObj data to fill
+%       CDF files of various types.
+%
+% 	See also MMS_CDF_IN_PROCESS, MMS_BITMASKING, MMS_INIT.
 
 % Verify that we have all information requried.
 narginchk(3,4);
@@ -45,7 +57,7 @@ switch(HeaderInfo.calledBy)
             '_sitl_',HeaderInfo.dataLevel,'_dce2d_', HeaderInfo.startTime, ...
             '_', versionNum];
         
-        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
+        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYImms2_sdp_slow_l2_uscdcv_20150410000000_v0.0.0NG TO WRITE ANYTHING AS 
         % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
         % DIRECTORY WHEN EXECUTING.
 
@@ -58,7 +70,7 @@ switch(HeaderInfo.calledBy)
         
         irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data', data1.data', uint16(bitmask));
+            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data', data1.data', uint16(bitmask));
         catch err
             % An error occured.
             % Give more information for mismatch.
@@ -123,7 +135,7 @@ switch(HeaderInfo.calledBy)
         
         irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data', data1.data', uint16(bitmask), uint16(qualityMark));
+            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data', data1.data', uint16(bitmask), uint16(qualityMark));
         catch err
             % An error occured.
             % Give more information for mismatch.
@@ -186,7 +198,7 @@ switch(HeaderInfo.calledBy)
         psp_p = [data1.data, data1.data];
         irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         try
-            mms_cdfwrite_combined(filename_output, int8(str2num(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p', uint16(bitmask));
+            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p', uint16(bitmask));
         catch err
             % An error occured.
             % Give more information for mismatch.

@@ -1,14 +1,21 @@
 function mms_ql_dce(filename_dce_source_file, filename_dcv_source_file)
-% This is the main file to be run at SDC, from this file all other substeps
-% are performed.
-% Input(s):
-%    filename_dce_source_file = filename of DCE data cdf file, required.
-%    filename_dcv_source_file = filename of DCV data cdf file. Not required
-%    for basic processing but if not included it is assumed this file does
-%    not yet exist and only partial processing can be done.
-% Output(s):
-%    cdf files created containing QuickLook DCE data.
+% MMS_QL_DCE start point and main function for MMS SDC QuickLook DCE processing.
+%	MMS_QL_DCE(filename_dce_source_file, filename_dcv_source_file) takes input fullpath filenames 
+%	of one DCE and one DCV file for corresponding time period and runs processing to determine 
+%	electric field for MMS SITL.
 %
+% 	MMS_QL_DCE(filename_dce_source_file, filename_dcv_source_file) using various subroutines 
+%	the input files are read, processed and then the final output is written
+%	to a corresponding CDF file in accordiance with MMS CDF Format Guide and MMS SDC Developer Guide.
+%	Bitmask information is added to the output file to mark if the two datasources do not fully overlap
+%	in time. And compared with mms_sitl_dce a quality flag is also added.
+%	MMS_QL_DCE can perform some of the processsing if only provided with the DCE file but not all.
+%
+%	Example:
+%		mms_ql_dce('/full/path/to/source_dce_file.cdf');
+%		mms_ql_dce('/full/path/to/source_dce_file.cdf', '/full/path/to/source_dcv_file.cdf');
+%
+% 	See also MMS_INIT, MMS_CDF_IN_PROCESS. MMS_CDF_WRITING, MMS_SITL_DCE.
 
 % narginchk - Min 1 (dce), max 2 (dcv)
 narginchk(1,2);

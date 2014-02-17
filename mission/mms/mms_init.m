@@ -1,23 +1,24 @@
 function [ENVIR, MMS_CONST] = mms_init()
-% Function to return environment variables in a struct:
-% 
-% ENVIR
-%      .DATA_PATH_ROOT  - Root dir of data files
-%      .CDF_BASE        - Root dir of CDF tools
-%      .DROPBOX_ROOT    - Root dir of our output files (temporary location)
-%      .LOG_PATH_ROOT   - Root dir of log files
-%      .CAL_PATH_ROOT   - Root dir of calibration files
-% MMS_CONST
-%      .Version.X       - Major Software version used.
-%              .Y       - Major Calibration version used.
-%              .Z       - File version (should perhaps be removed).
-%      .Bitmask.OnlyDCE = 0x01 - Only DCE was found at these points in time. 
+% MMS_INIT reads initial environment and constants for MMS FIELDS processing
+% 	[ENVIR, MMS_CONST] = MMS_INIT() returns environment variables 
+%       and constants useful for MMS processing.
 %
-%        ? - Something more perhaps..
+%       The struct ENVIR will contain the following:
+%	  .DATA_PATH_ROOT	  - Root dir of data files
+%	  .CDF_BASE		  - Root dir of CDF tools
+%	  .DROPBOX_ROOT		  - Root dir of our output files (temporary location)
+%	  .LOG_PATH_ROOT	  - Root dir of log files
+% 	  .CAL_PATH_ROOT	  - Root dir of calibration files
 %
-% Date of latest modification: 2014/01/29
+%	The struct MMS_CONST will contain the following:
+%	  .Version.X		  - Major Software version used.
+%		  .Y		  - Major Calibration version used.
+%		  .Z		  - File version (should perhaps be removed).
+%	  .Bitmask.OnlyDCE = 0x01 - Only DCE was found at these points in time. 
 %
-
+%	Example:
+%		[ENVIR, MMS_CONST] = MMS_INIT();
+%
 
 ENVIR = [];
 MMS_CONST = [];
@@ -46,3 +47,22 @@ irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
 % Set log level to debug initially.
 irf.log('debug');
 
+if(~exist('mms_sdc_cdfwrite.mexa64','file'))
+    irf.log('warning','MMS_SDC_CDFWRITE.MEXA64 file does not exist');
+    
+    % NOW creating the mex file can be done in directly with mex command in
+    % bash if it is defined, as:
+    %!mex CFLAGS='$CFLAGS -std=c99' -I$CDF_BASE/include/ -L$CDF_BASE/lib/
+    %-Wl,-rpath,$CDF_BASE/lib/ -lcdf mms_cdfwrite_combined.c
+    
+    % One important thing is: CFLAGS='$CFLAGS -std=c99' should be included,
+    % or set in the mexopts.sh file.
+    
+    
+    % If mex is not a command in bash then run the full path to mex as:
+    % However this requires 'CFLAGS' set up in default mexoptions.sh
+    oldDir=pwd;
+    cd('irfu-matlab/mission/mms');
+    [status,cmdout]=unix([matlabroot,'/bin/mex -I$CDF_BASE/include/ -L$CDF_BASE/lib/ -Wl,-rpath,$CDF_BASE/lib/ -lcdf mms_sdc_cdfwrite.c']);
+    cd(oldDir);
+end
