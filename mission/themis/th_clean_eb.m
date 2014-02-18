@@ -21,6 +21,7 @@ function [bout,ii,ttGap] = th_clean_eb(bs,mode)
 
 if nargin<2, mode = 'linear'; end
 if nargout==3, ttGap=irf.TimeTable(); end
+if isempty(bs), bout = []; ii = []; return, end
 
 DT2=60;
 DEV_MAX = 60;
