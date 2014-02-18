@@ -133,6 +133,14 @@ if wantPC35
       end
     end
   end
+  ii = find(diff(bs(:,1))>3*median(diff(bs(:,1))));
+    if ~isempty(ii)
+      for iGap=ii'
+        irf.log('warning',['Long gap in BS ' irf_disp_iso_range(bs(iGap+[0 1],1)')])
+        B_1SEC(t_1SEC(:,1)>bs(iGap,1) & t_1SEC(:,1)<bs(iGap+1,1),2:4) = NaN;
+      end
+    end
+  B_1SEC(t_1SEC(:,1)<bs(1,1),2:4) = NaN; B_1SEC(t_1SEC(:,1)>bs(end,1),2:4) = NaN;
   
   if isempty(es), iE3D_1SEC = [];
   else
@@ -143,6 +151,14 @@ if wantPC35
     iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
     % Remove all E-fields > 10 mV/m in inertial frame
     for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
+    ii = find(diff(es(:,1))>3*median(diff(es(:,1))));
+    if ~isempty(ii)
+      for iGap=ii'
+        irf.log('warning',['Long gap in ES ' irf_disp_iso_range(es(iGap+[0 1],1)')])
+        iE3D_1SEC(t_1SEC(:,1)>es(iGap,1) & t_1SEC(:,1)<es(iGap+1,1),2:4) = NaN;
+      end
+    end
+    iE3D_1SEC(t_1SEC(:,1)<es(1,1),2:4) = NaN; iE3D_1SEC(t_1SEC(:,1)>es(end,1),2:4) = NaN;
   end
   
   ebsp = ...
@@ -183,9 +199,10 @@ if wantPC12
   if ~isempty(ii)
     for iGap=ii
       irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
-      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN;
+      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN; 
     end
   end
+  B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
     
   E3D_BASE = irf_resamp(ef,t_BASE);
   ii = find(diff(ef(:,1))>2/fSampE);
@@ -195,11 +212,23 @@ if wantPC12
       E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
     end
   end
+  E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN; 
   
   % Construct the inertial frame
   evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
   iE3D_BASE = E3D_BASE;
   iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
+  
+  % Set Gaps to NaN. for safety we set both E and B
+  if nGaps>0
+    for iGap=1:nGaps
+      tintGap = ttGap.TimeInterval(iGap,:);
+      B_BASE(B_BASE(:,1)>=tintGap(1)-0.5 & B_BASE(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+      if ~isempty(ef)
+        iE3D_BASE(iE3D_BASE(:,1)>=tintGap(1)-0.5 & iE3D_BASE(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+      end
+    end
+  end
   
   tic
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
