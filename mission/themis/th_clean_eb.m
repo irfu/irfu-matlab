@@ -36,6 +36,31 @@ for i=2:nData-1
   bMedian(i,2:4) = median(bs(t>=tMin & t<=tMax,2:4));
 end
 
+% Find Range change between 200 and 500 nT using polyfit
+bTmp = irf_abs(bs);
+ii = find(bTmp(:,5)>200 & bTmp(:,5)<500);
+t0 = bTmp(ii(1),1); X = bs(ii,1)-t0; idxModeCh = [];
+for iComp=2:4
+  Y = bs(ii,iComp);
+  P = polyfit(X,Y,3);
+  F = polyval(P,X); E=abs(Y-F); idxModeCh = [idxModeCh; find(E>5*median(E))];
+end
+if ~isempty(idxModeCh)
+  idxModeCh = sort(idxModeCh);
+  % Leave only the jumps ocurring in at least two components
+  idxModeCh = unique(idxModeCh(diff(idxModeCh)==0));
+  idxJ = find(diff(idxModeCh)>1);
+  idxModeCh = ii(idxModeCh);
+  % Display info
+  idxEnd = unique([idxModeCh(idxJ+1); idxModeCh(end)]);
+  idxSt  = unique([idxModeCh(1); idxModeCh(idxJ)]);
+  for iChunk=1:length(idxSt)
+    irf.log('warning',...
+      sprintf('Range change jump at %s (%.1f nT, %d points)',...
+      epoch2iso(bs(idxSt(iChunk),1)),bTmp(idxSt(iChunk),5),idxEnd(iChunk)-idxSt(iChunk)))
+  end
+end
+
 % Clean spikes
 db = bMedian(:,2:4)-bs(:,2:4);
 normb=db(:,1).^2+db(:,2).^2+db(:,3).^2;
@@ -44,7 +69,9 @@ ii = find(normb>DEV_MAX);
 if ~isempty(ii)
   ii = sort(unique([ii; ii-1; ii-2; ii+1; ii+2; ii+3; ii+4; ii+5]));
   ii(ii<1) = []; ii(ii>nData) = [];
-  
+end
+ii = sort(unique([ii; idxModeCh]));
+if ~isempty(ii)  
   switch lower(mode)
     case 'linear'
       % Fill gaps
