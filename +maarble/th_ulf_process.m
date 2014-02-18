@@ -128,18 +128,22 @@ if wantPC35
     for iGap=1:nGaps
       tintGap = ttGap.TimeInterval(iGap,:);
       B_1SEC(B_1SEC(:,1)>=tintGap(1)-0.5 & B_1SEC(:,1)<=tintGap(2)+0.5,2:end) = NaN;
-      es(es(:,1)>=tintGap(1)-0.5 & es(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+      if ~isempty(es)
+        es(es(:,1)>=tintGap(1)-0.5 & es(:,1)<=tintGap(2)+0.5,2:end) = NaN;
+      end
     end
   end
   
-  E3D_1SEC = irf_resamp(es,t_1SEC);
-  
-  % Construct the inertial frame
-  evxb = irf_tappl(irf_cross(B_1SEC,irf_resamp(V,t_1SEC)),'*1e-3*(-1)');
-  iE3D_1SEC = E3D_1SEC;
-  iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
-  % Remove all E-fields > 10 mV/m in inertial frame
-  for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
+  if isempty(es), iE3D_1SEC = [];
+  else
+    E3D_1SEC = irf_resamp(es,t_1SEC);  
+    % Construct the inertial frame
+    evxb = irf_tappl(irf_cross(B_1SEC,irf_resamp(V,t_1SEC)),'*1e-3*(-1)');
+    iE3D_1SEC = E3D_1SEC;
+    iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
+    % Remove all E-fields > 10 mV/m in inertial frame
+    for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
+  end
   
   ebsp = ...
     irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,R,'pc35',...
