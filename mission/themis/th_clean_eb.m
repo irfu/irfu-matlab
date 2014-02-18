@@ -38,20 +38,28 @@ end
 
 % Find Range change between 200 and 500 nT using polyfit
 bTmp = irf_abs(bs);
-ii = find(bTmp(:,5)>200 & bTmp(:,5)<500);
+ii = find(bTmp(:,5)>150 & bTmp(:,5)<800);
 t0 = bTmp(ii(1),1); X = bs(ii,1)-t0; idxModeCh = [];
+warning('off','MATLAB:polyfit:RepeatedPointsOrRescale')
 for iComp=2:4
   Y = bs(ii,iComp);
-  P = polyfit(X,Y,3);
-  F = polyval(P,X); E=abs(Y-F); idxModeCh = [idxModeCh; find(E>5*median(E))];
+  P = polyfit(X,Y,3); F = polyval(P,X); E=abs(Y-F); 
+  idxTmp = find(E<2*median(E));
+  P = polyfit(X(idxTmp),Y(idxTmp),3); F = polyval(P,X); E=abs(Y-F); 
+  idxModeCh = [idxModeCh; find(E>3*median(E))];
 end
+warning('on','MATLAB:polyfit:RepeatedPointsOrRescale')
 if ~isempty(idxModeCh)
   idxModeCh = sort(idxModeCh);
   % Leave only the jumps ocurring in at least two components
   idxModeCh = unique(idxModeCh(diff(idxModeCh)==0));
-  idxJ = find(diff(idxModeCh)>1);
   idxModeCh = ii(idxModeCh);
+  % select only walues at expected B value
+  ii = find(bTmp(:,5)>250 & bTmp(:,5)<450);
+  idxModeCh = intersect(ii,idxModeCh);
+  clear ii
   % Display info
+  idxJ = find(diff(idxModeCh)>1);
   idxEnd = unique([idxModeCh(idxJ+1); idxModeCh(end)]);
   idxSt  = unique([idxModeCh(1); idxModeCh(idxJ)]);
   for iChunk=1:length(idxSt)
