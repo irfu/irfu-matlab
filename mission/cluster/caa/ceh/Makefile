@@ -7,10 +7,16 @@ clean:
 	C[1-4]_CQ_EFW_INST.ceh C[1-4]_CH_EFW_L1_IB.ceh C[1-4]_CH_EFW_L2_PB.ceh \
 	C[1-4]_CH_EFW_L2_EB.ceh C[1-4]_CH_EFW_L2_BB.ceh \
 	C[1-4]_CH_AUX_MAARBLE_ULF_PC12.ceh C[1-4]_CH_AUX_MAARBLE_ULF_PC35.ceh \
-	C[1-4]_CH_AUX_MAARBLE_ULF_FACMATR.ceh
+	C[1-4]_CH_AUX_MAARBLE_ULF_FACMATR.ceh C[1-4]_CH_AUX_MAARBLE_SA_VLF.ceh
 
-upload-maarble:
+upload-maarble-irf:
 	ls *.ceh| grep -v CX | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
 
+upload-maarble-iap:
+	ls *.ceh| grep -v CX | grep -v ULF | grep -v _TH | grep -v EFW | xargs -I % scp % yuri@db:/data/caa/MAARBLE/Upload/iap/HEADERS/
+
+upload-maarble-caa:
+	scp C[1-4]_CH_AUX_MAARBLE_*.ceh maarble@caa-delivery.estec.esa.int:HEADERS/ 
+
 update-dropbox:
-	ls Makefile make_maarble_headers.sh *.ceh| grep -v CX | xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/
+	ls Makefile make_maarble_headers.sh *.ceh| xargs -I % cp % /Users/yuri/Dropbox/Projects/MAARBLE/WP3/HeadersAndExamples/Headers/

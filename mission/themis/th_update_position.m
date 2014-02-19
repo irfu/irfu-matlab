@@ -24,7 +24,9 @@ for thId=thIds,
         clear tmpData tmpEpoch
       end
     end
-  end,
+  end
+  % remove repeating points at month boundary
+  ii = find(diff(R(:,1))==0); R(ii,:) = []; 
   eval(['Rth' thId '=R;'])
   fprintf('Rth%s >> mRth.mat\n',thId);
   if exist('./mRth.mat','file'),
