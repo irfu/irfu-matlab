@@ -2,14 +2,14 @@
 ! Header file for Cluster Pc3-5 
 !-------------------------------------------------------
 INCLUDE        =   "CL_CH_MISSION.ceh"
-INCLUDE        =   "CXXX_CH_OBS.ceh"
+INCLUDE        =   "CC_CH_OBS.ceh"
 INCLUDE        =   "CL_CH_AUX_EXP.ceh"
-INCLUDE        =   "CXXX_CH_AUX_INST.ceh"
+INCLUDE        =   "CC_CH_AUX_INST.ceh"
 !
 ! DATASET LEVEL METADATA
 !
 START_META     =   DATASET_ID
-   ENTRY       =   "CXXX_CP_AUX_MAARBLE_ULF_FACMATR"
+   ENTRY       =   "CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR"
 END_META       =   DATASET_ID
 !
 START_META     =   DATA_TYPE
@@ -17,7 +17,7 @@ START_META     =   DATA_TYPE
 END_META       =   DATA_TYPE
 !
 START_META     =   DATASET_TITLE
-   ENTRY       =   "Transformation from ISR2 to FAC coordinate system"
+   ENTRY       =   "THEMIS-XXX Transformation from DSL to FAC coordinate system"
 END_META       =   DATASET_TITLE
 !
 START_META     =   DATASET_DESCRIPTION
@@ -45,7 +45,7 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Meghan Mella>Cluster ULF data provider>meghan.mella@irfu.se"
+   ENTRY       =   "Meghan Mella>THEMIS ULF data provider>meghan.mella@irfu.se"
    ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
@@ -79,7 +79,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
+START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -92,9 +92,9 @@ START_VARIABLE  =  Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
     LABLAXIS            = "UT"
     DELTA_PLUS          = 30 ! integration interval
     DELTA_MINUS         = 30
-END_VARIABLE    =  Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
+END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
 !
-START_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
+START_VARIABLE = DSL2FAC__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
     ENTITY            = "Transformation"
     PROPERTY          = "Coordinate_rotation"
     SIZES             = 3, 3
@@ -102,7 +102,7 @@ START_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
     COORDINATE_SYSTEM = "ISR2"
     FRAME             = "ISR2>xyz"
     TARGET_SYSTEM     = "FAC"
-    FIELDNAM          = "Rot Matrix from ISR2 to FAC"
+    FIELDNAM          = "Rot Matrix from DSL to FAC"
     REPRESENTATION_1  = "x","y","z"
     REPRESENTATION_2  = "x","y","z"
     LABEL_1           = "x","y","z"
@@ -112,6 +112,6 @@ START_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
     UNITS             = "unitless"
     FILLVAL           = -999.
     PARAMETER_TYPE    = "Support_Data"
-    CATDESC           = "Transformation from ISR2 to FAC coordinate system"
-    DEPEND_0          = Time__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
-END_VARIABLE = ISR22FAC__CXXX_CP_AUX_MAARBLE_ULF_FACMATR
+    CATDESC           = "Transformation from DSL to FAC coordinate system"
+    DEPEND_0          = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
+END_VARIABLE = DSL2FAC__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
