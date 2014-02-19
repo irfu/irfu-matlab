@@ -171,7 +171,6 @@ if wantPC35
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
     orient tall
-    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
@@ -239,7 +238,6 @@ if wantPC12
   if isempty(ebsp.t)
     irf.log('warning','No result for PC12'),continue 
   end
-  irf_wave_detection_algorithm(ebsp, thId);
   flim_ebsp(fSampB,fSampE);
   if plotFlag
     close all
@@ -247,7 +245,6 @@ if wantPC12
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
     orient tall
-    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
   end
   if exportFlag
