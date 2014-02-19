@@ -6,8 +6,6 @@ function y=irf_ask(question,variable_name_of_old_value, default_value, seconds_t
 %   y=irf_ask('How many 1/0? [%]>','y',0)
 %   y=irf_ask('Large? yes/no [%]>','y','yes')
 %   y=irf_ask('How much? [%]>','y',10)
-%
-% $Id$
 
 useWaitInput=0;
 if nargin < 3, disp('ERROR using irf_ask');help irf_ask;return;end

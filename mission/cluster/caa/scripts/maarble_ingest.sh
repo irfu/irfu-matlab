@@ -54,9 +54,9 @@ while read fname; do
 	rm -f $LOG
 	$CEFMERGE -I $INCLUDES -O $TMPDIR $fname >> $LOG 2>&1 || (cp $fname $FAILED && continue) 
 	newfile=`find $TMPDIR -name \*.cef` 
-	$QTRAN $newfile >> $LOG 2>&1
+	$QTRAN $newfile >> $LOG 2>&1 || (cp $fname $FAILED && continue)
 	
-	# Get destination directory fro the data
+	# Get destination directory for the data
 	DATASET_NAME=`echo $NAME|awk -F'__' '{print $1}'`
 	case "$DATASET_NAME" in
   		C[1-4]_CP_AUX_MAARBLE_*)
@@ -117,6 +117,8 @@ while read fname; do
 	if [ -n "$newfile" ]; then
 		echo moving $newfile to $DEST/CDF >> $LOG
 		mv $newfile $DEST/CDF/ || exit 1
+	else
+		continue
 	fi
 	STATUS=OK
 done

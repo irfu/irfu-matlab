@@ -45,18 +45,23 @@ while true
   if ~isempty(fileToRead)
     irf.log('notice',['reading ' fileToRead])
     varTmp = read_var();
-    if isempty(res)
-      res =  varTmp(varTmp(:,1)>tint(1) & varTmp(:,1)<tint(end),:);
-    else
-      % join time intervals
-      res = [res; ...
-        varTmp(varTmp(:,1)>res(end,1) & varTmp(:,1)<tint(end),:)]; %#ok<AGROW>
+    if ~isempty(varTmp)
+      if isempty(res)
+        res =  varTmp(varTmp(:,1)>tint(1) & varTmp(:,1)<tint(end),:);
+      else
+        % join time intervals
+        res = [res; ...
+          varTmp(varTmp(:,1)>res(end,1) & varTmp(:,1)<tint(end),:)]; %#ok<AGROW>
+      end
     end
   end
   epochFileStart = epochFileStart + 3600*24;
   if epochFileStart>=epochFileEnd, break, end
   timeVecStart = fromepoch(epochFileStart);
 end
+% Remove repeating points. 
+% Example, THE bs&es 2007-07-07T04:11:30.000000Z -- 2007-07-07T08:39:30.000000Z
+if ~isempty(res), res(diff(res(:,1))==0,:) = []; end 
 
   function res = read_var
     tmpData = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
