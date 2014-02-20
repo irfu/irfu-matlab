@@ -173,7 +173,9 @@ if nargout, out = h; end % Return here
         end
         nComps = length(comps);
       else
-        nComps = size(ebsp.(p{1}),3);
+        if isstruct(ebsp.(p{1})), nComps = size(ebsp.(p{1}).data,3);
+        else nComps = size(ebsp.(p{1}),3);
+        end
         comps = 1:nComps;
       end
       plotComps = [plotComps {comps}]; %#ok<AGROW>
