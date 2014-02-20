@@ -45,6 +45,11 @@ if ~isstruct(ebsp),
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
 
+if any( ebsp.t<tint(1) | ebsp.t>tint(end) )
+  irf.log('critical','data outside TINT')
+  error('data outside TINT')
+end
+
 if isnumeric(cl_id) % Cluster
   flagCluster = true;
 else
