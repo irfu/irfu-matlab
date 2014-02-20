@@ -187,11 +187,11 @@ if wantPC12
   if isempty(ef)
     fSampE = NaN; 
     t_BASE = (fix(bl(1,1)):1/baseFreq:ceil(bl(end,1)))';
+    iE3D_BASE = [];
   else
     fSampE = 1/median(diff(ef(:,1)));
     t_BASE = (fix(min(bl(1,1),ef(1,1))):1/baseFreq:ceil(max(bl(end,1),ef(end,1))))';
   end
-  
   
   B_BASE = irf_resamp(bl,t_BASE);
   ii = find(diff(bl(:,1))>2/fSampB);
@@ -202,21 +202,23 @@ if wantPC12
     end
   end
   B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
-    
-  E3D_BASE = irf_resamp(ef,t_BASE);
-  ii = find(diff(ef(:,1))>2/fSampE);
-  if ~isempty(ii)
-    for iGap=ii
-      irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
-      E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
-    end
-  end
-  E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN; 
   
-  % Construct the inertial frame
-  evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
-  iE3D_BASE = E3D_BASE;
-  iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
+  if ~isempty(ef)
+    E3D_BASE = irf_resamp(ef,t_BASE);
+    ii = find(diff(ef(:,1))>2/fSampE);
+    if ~isempty(ii)
+      for iGap=ii
+        irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
+        E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
+      end
+    end
+    E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN;
+    
+    % Construct the inertial frame
+    evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
+    iE3D_BASE = E3D_BASE;
+    iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
+  end
   
   % Set Gaps to NaN. for safety we set both E and B
   if nGaps>0
