@@ -196,7 +196,7 @@ if wantPC12
   B_BASE = irf_resamp(bl,t_BASE);
   ii = find(diff(bl(:,1))>2/fSampB);
   if ~isempty(ii)
-    for iGap=ii
+    for iGap=ii'
       irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
       B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN; 
     end
@@ -207,7 +207,7 @@ if wantPC12
     E3D_BASE = irf_resamp(ef,t_BASE);
     ii = find(diff(ef(:,1))>2/fSampE);
     if ~isempty(ii)
-      for iGap=ii
+      for iGap=ii'
         irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
         E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
       end
