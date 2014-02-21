@@ -218,15 +218,15 @@ for comp=1:min(length(h),ncomp)
 	ppnew(:,jj*2-1)=pp;
 	ppnew(:,jj*2)=NaN;
 	pp=ppnew;
-	if ~isempty(specrec.dt) % if time steps are not given
+	if ~isempty(specrec.dt) % if time steps are given
 		if isstruct(specrec.dt) % dt.plus and dt.minus should be specified
-			dtplus=torow(double(specrec.dt.plus(:))); % if dt vector make it row vector
-			dtminus=torow(double(specrec.dt.minus(:))); % if dt vector make it row vector
+			dtplus=double(specrec.dt.plus(:)); % if dt vector make it column vector
+			dtminus=double(specrec.dt.minus(:)); % if dt vector make it column vector
 		else
-			dtplus=torow(double(specrec.dt(:))); % if dt vector make it row vector
+			dtplus=double(specrec.dt(:)); % if dt vector make it column vector
 			dtminus=dtplus;
 		end
-		ttnew=[tt; tt];
+		ttnew=zeros(numel(tt),1); 
 		jj=1:length(tt);
 		ttnew(jj*2-1)=tt-dtminus;
 		ttnew(jj*2)=tt+dtplus;
