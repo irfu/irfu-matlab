@@ -60,11 +60,26 @@ classdef TimeArray < irf.Time
         all(ta1.dt==ta2.dt) );
     end
     
-    function ta = subsref(ta,idx)
-      if isstruct(idx)
-        idx = idx.subs{:};
-      end
-      ta.dt = ta.dt(idx);
+    function sref = subsref(obj,idx)
+        switch idx(1).type
+            % Use the built-in subsref for dot notation
+            case '.'
+                sref = builtin('subsref',obj,idx);
+            case '()'
+                if length(idx.subs{:})<2
+                    % Note that obj.Data is passed to subsref
+                    dtTmp = builtin('subsref',obj.dt,idx);
+                    sref = irf.Time(obj.tt2000+dtTmp);
+                    return
+                else
+                    dtTmp = builtin('subsref',obj.dt,idx);
+                    sref = irf.TimeArray(obj.tt2000+dtTmp);
+                end
+                % No support for indexing using '{}'
+            case '{}'
+                error('MYDataClass:subsref',...
+                    'Not a supported subscripted reference')
+        end
     end
     
     function l = length(ta)
