@@ -12,7 +12,6 @@ CX_CH_AUX_MAARBLE_ULF_PC1.ceh \
 CX_CH_AUX_MAARBLE_ULF_FACMATR.ceh \
 CX_CH_AUX_MAARBLE_SA_VLF.ceh"
 
-
 for f in $flist
 do
    CLI=1
@@ -22,5 +21,21 @@ do
       echo "Writing $fout"
       cat $f|sed -e "s=XXX=${CLI}=" > $fout
       CLI=$(($CLI+1))
+   done
+done
+
+#THEMIS
+flist="CC_CH_AUX_MAARBLE_THZ_ULF_PC12.ceh \
+CC_CH_AUX_MAARBLE_THZ_ULF_PC35.ceh \
+CC_CH_AUX_MAARBLE_THZ_ULF_FACMATR.ceh"
+
+for f in $flist
+do
+   THLIST="A B C D E"
+   for CLI in $THLIST 
+   do
+      fout=`echo $f| sed -e "s=Z=${CLI}="`
+      echo "Writing $fout"
+      cat $f|sed -e "s=XXX=${CLI}=" > $fout
    done
 done

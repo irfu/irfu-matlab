@@ -29,12 +29,12 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %     ee_ss       - E power spectrum (xx+yy spacecraft coords, e.g. ISR2)
 %     ee          - E power spectrum (xx, yy, zz)
 %     pf_xyz      - Poynting flux (xyz)
-%     pf_rtp      - Poynting flux (r, theta, phi) [angles in radians]
+%     pf_rtp      - Poynting flux (r, theta, phi) [angles in degrees]
 %     dop         - 3D degree of polarization
 %     dop2d       - 2D degree of polarization in the polarization plane
 %     planarity   - planarity of polarization
 %     ellipticity - ellipticity of polarization ellipse
-%     k           - k-vector (theta, phi FAC) [angles in radians]
+%     k           - k-vector (theta, phi FAC) [angles in degrees]
 %
 %  Options:
 %   'polarization' - compute polarization parameters
@@ -430,8 +430,8 @@ parfor ind_a=1:length(a), % Main loop over frequencies
       V(2,3,:) = V(2,3,:).*signKz;
       V(1,3,:) = V(1,3,:).*signKz;
       thetaSVD_fac(:,ind_a) = ...
-          abs(squeeze(atan(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
-      phiSVD_fac(:,ind_a) = squeeze(atan2(V(2,3,:),V(1,3,:)));
+          abs(squeeze(atand(sqrt(V(1,3,:).*V(1,3,:)+V(2,3,:).*V(2,3,:))./V(3,3,:))));
+      phiSVD_fac(:,ind_a) = squeeze(atan2d(V(2,3,:),V(1,3,:)));
       
       %% Calculate polarization parameters 
       planarityLocal = squeeze(1 - sqrt(W(3,3,:)./W(1,1,:)));
@@ -613,6 +613,7 @@ if wantEE
     Poynting_RThPh = S_r;
     Poynting_RThPh(:,:,2) = pi/2-S_elevation;
     Poynting_RThPh(:,:,3) = S_azimuth;
+    Poynting_RThPh(:,:,2:3) = Poynting_RThPh(:,:,2:3)*180/pi;
     
     % Output
     res.ee_ss = power2E_ISR2_plot;

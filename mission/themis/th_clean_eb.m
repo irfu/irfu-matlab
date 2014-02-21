@@ -21,6 +21,7 @@ function [bout,ii,ttGap] = th_clean_eb(bs,mode)
 
 if nargin<2, mode = 'linear'; end
 if nargout==3, ttGap=irf.TimeTable(); end
+if isempty(bs), bout = []; ii = []; return, end
 
 DT2=60;
 DEV_MAX = 60;
@@ -35,6 +36,68 @@ for i=2:nData-1
   bMedian(i,2:4) = median(bs(t>=tMin & t<=tMax,2:4));
 end
 
+% Find Range change between 200 and 500 nT using polyfit
+idxModeCh = [];
+bTmp = irf_abs(bs);
+ii = find(bTmp(:,5)>150 & bTmp(:,5)<650);
+if ~isempty(ii)
+  t0 = bTmp(ii(1),1); X = bs(ii,1)-t0; idxModeCh = [];
+  warning('off','MATLAB:polyfit:RepeatedPointsOrRescale')
+  for iComp=2:4
+    Y = bs(ii,iComp);
+    P = polyfit(X,Y,3); F = polyval(P,X); E=abs(Y-F);
+    idxTmp = find(E<2*median(E));
+    P = polyfit(X(idxTmp),Y(idxTmp),3); F = polyval(P,X); E=abs(Y-F);
+    idxModeCh = [idxModeCh; find(E>3*median(E))];
+  end
+  warning('on','MATLAB:polyfit:RepeatedPointsOrRescale')
+  if ~isempty(idxModeCh)
+    idxModeCh = sort(idxModeCh);
+    % Leave only the jumps ocurring in at least two components
+    idxModeCh = unique(idxModeCh(diff(idxModeCh)==0));
+    if ~isempty(idxModeCh)
+      idxModeCh = ii(idxModeCh);
+      % select only walues at expected B value
+      ii = find(bTmp(:,5)>250 & bTmp(:,5)<450);
+      idxModeCh = intersect(ii,idxModeCh);
+      clear ii
+      %leave only ints with 3 consequtive points
+      MIN_COUNT = 3;
+      if length(idxModeCh)<MIN_COUNT, idxModeCh = [];
+      else
+        idx = 1; count = 0;
+        while ~isempty(idxModeCh)
+          if idx==length(idxModeCh),
+            if count<MIN_COUNT, idxModeCh((idx-count):idx) = []; end
+            break
+          end
+          if idxModeCh(idx+1)-idxModeCh(idx)>1
+            if count>=MIN_COUNT, idx = idx + 1;
+            else
+              idxModeCh((idx-count):idx) = []; idx = idx - count;
+            end
+            count = 0;
+          else count = count + 1; idx = idx + 1;
+          end
+          %fprintf('idx:%d count:%d \n',idx,count)
+        end
+      end
+      if ~isempty(idxModeCh)
+        % Display info
+        idxJ = find(diff(idxModeCh)>1);
+        idxEnd = unique([idxModeCh(idxJ+1)-1; idxModeCh(end)]);
+        idxSt  = unique([idxModeCh(1); idxModeCh(idxJ)]);
+        for iChunk=1:length(idxSt)
+          irf.log('warning',...
+            sprintf('Range change jump at %s (%.1f nT, %d points)',...
+            epoch2iso(bs(idxSt(iChunk),1)),bTmp(idxSt(iChunk),5),...
+            idxEnd(iChunk)-idxSt(iChunk)))
+        end
+      end
+    end
+  end
+end
+
 % Clean spikes
 db = bMedian(:,2:4)-bs(:,2:4);
 normb=db(:,1).^2+db(:,2).^2+db(:,3).^2;
@@ -43,7 +106,9 @@ ii = find(normb>DEV_MAX);
 if ~isempty(ii)
   ii = sort(unique([ii; ii-1; ii-2; ii+1; ii+2; ii+3; ii+4; ii+5]));
   ii(ii<1) = []; ii(ii>nData) = [];
-  
+end
+ii = sort(unique([ii; idxModeCh]));
+if ~isempty(ii)  
   switch lower(mode)
     case 'linear'
       % Fill gaps

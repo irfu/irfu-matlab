@@ -8,10 +8,13 @@ clean:
 	C[1-4]_CH_EFW_L2_EB.ceh C[1-4]_CH_EFW_L2_BB.ceh \
 	C[1-4]_CH_AUX_MAARBLE_ULF_PC1.ceh \
 	C[1-4]_CH_AUX_MAARBLE_ULF_PC12.ceh C[1-4]_CH_AUX_MAARBLE_ULF_PC35.ceh \
-	C[1-4]_CH_AUX_MAARBLE_ULF_FACMATR.ceh C[1-4]_CH_AUX_MAARBLE_SA_VLF.ceh
+	C[1-4]_CH_AUX_MAARBLE_ULF_FACMATR.ceh C[1-4]_CH_AUX_MAARBLE_SA_VLF.ceh \
+        CC_CH_AUX_MAARBLE_TH[A-E]_ULF_PC12.ceh \
+        CC_CH_AUX_MAARBLE_TH[A-E]_ULF_PC35.ceh \
+        CC_CH_AUX_MAARBLE_TH[A-E]_ULF_FACMATR.ceh
 
 upload-maarble-irf:
-	ls *.ceh| grep -v CX | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
+	ls *.ceh| grep -v CX | grep -v THZ | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
 
 upload-maarble-iap:
 	ls *.ceh| grep -v CX | grep -v ULF_PC12 | grep -v ULF_PC35 | grep -v _TH | grep -v EFW | xargs -I % scp % yuri@db:/data/caa/MAARBLE/Upload/iap/HEADERS/
