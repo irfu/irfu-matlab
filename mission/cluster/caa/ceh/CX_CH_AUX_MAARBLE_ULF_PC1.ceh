@@ -125,7 +125,7 @@ START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC1
    LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F"
    DELTA_PLUS         = 0.1953
    DELTA_MINUS        = 0.1953
-   SCALETYP           = Linear
+   SCALETYP           = "Linear"
    DATA               = 1.0742, 1.4649 , 1.8555, 2.2461, 2.6368, 3.0274, 3.4180, 3.8087, 4.1993, 4.5900, 4.9806
  END_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_ULF_PC1
 !

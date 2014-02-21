@@ -124,7 +124,7 @@ START_VARIABLE = Frequency__CXXX_CP_AUX_MAARBLE_SA_VLF
                         ,"F","F","F","F","F","F","F","F","F","F","F","F","F"
    DELTA_PLUS         = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
    DELTA_MINUS        = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
-   SCALETYP           = Log
+   SCALETYP           = "Log"
    DATA               = 8.7692,11.0485,13.9203,17.5385,22.0971,27.8406,35.0769, \
                         44.1942,55.6812,70.1539,88.3883,111.3623,140.3078, \
                         176.7767,222.7247,280.6155,353.5534,445.4493,561.2310, \
@@ -144,7 +144,7 @@ START_VARIABLE = Frequency_BHW__CXXX_CP_AUX_MAARBLE_SA_VLF
    FIELDNAM           = "Frequency bin half widths"
    LABLAXIS           = "F_bhw"
   LABEL_1            = "F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw" 
-   SCALETYP           = Log
+   SCALETYP           = "Log"
    DATA               = 1.0085,1.2706,1.6008,2.0169,2.5412,3.2017,4.0338, \
                         5.0823,6.4033,8.0677,10.1647,12.8067,16.1354,20.3293, \
                         25.6133,32.2708,40.6586,51.2267,64.5416,81.3173, \

@@ -80,10 +80,19 @@ GetPlotParams();
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
+yScale = 'Log';
 if isstruct(ebsp.t)
   timeVec = ebsp.t.data;
   sr = struct('t',timeVec,'f',ebsp.f.data,...
     'f_label',['Freq [' ebsp.f.units ']']);
+  if isfield(ebsp.f,'scale')
+    switch lower(ebsp.f.scale)
+      case {'lin','linear'}, yScale = 'linear';
+      case 'log', yScale = 'log';
+      otherwise
+        irf.log('warning',['Illegal value of freq scale : ' ebsp.f.scale])
+    end
+  end
 else
   timeVec = ebsp.t;
   sr = struct('t',timeVec,'f',ebsp.f,'f_label','Freq [Hz]');
@@ -122,7 +131,7 @@ for idxField = 1:length(plotFields)
       hcb = -1; 
       yTickList(idxPanel) = {''};
     end
-    set(hca,'YScale','log')
+    set(hca,'YScale',yScale)
     set(hca,'Color',0.7*[1 1 1]); % grey background
     hcbList(idxPanel) = hcb; cmapPoyList(idxPanel) = flagCmapPoy;
   end
@@ -173,7 +182,9 @@ if nargout, out = h; end % Return here
         end
         nComps = length(comps);
       else
-        nComps = size(ebsp.(p{1}),3);
+        if isstruct(ebsp.(p{1})), nComps = size(ebsp.(p{1}).data,3);
+        else nComps = size(ebsp.(p{1}),3);
+        end
         comps = 1:nComps;
       end
       plotComps = [plotComps {comps}]; %#ok<AGROW>
@@ -226,10 +237,10 @@ if nargout, out = h; end % Return here
         s = {['log(' paramStr '_{' upper(compStr) '})'],GetUnits()};
         t = 'log';
       case 't'
-        if isempty(unitsStr), unitsStr = 'rad'; end
+        if isempty(unitsStr), unitsStr = 'deg'; end
         s = ['\Theta_{' paramStr '} [' unitsStr ']'];
       case 'p'
-        if isempty(unitsStr), unitsStr = 'rad'; end
+        if isempty(unitsStr), unitsStr = 'deg'; end
         s = ['\Phi_{' paramStr '} [' unitsStr ']'];
       otherwise
         s = paramStr;
@@ -304,16 +315,16 @@ if nargout, out = h; end % Return here
     switch compStr
       case 't'
         if ~strcmpi(paramStr,'k')
-          caxis(hca,[0 pi]), set(hcb,'YTick',[0 pi/2 pi],'YTickLabel',{'0','p/2','p'},'fontname','symbol','TickDir','out')
+          caxis(hca,[0 180]), set(hcb,'YTick',[0 90 180],'TickDir','out')
         else
-          caxis(hca,[0 pi/2]), set(hcb,'YTick',[0 pi/4 pi/2],'YTickLabel',{'0','p/4','p/2'},'fontname','symbol','TickDir','out')
+          caxis(hca,[0 90]), set(hcb,'YTick',[0 45 90],'TickDir','out')
         end
         flagCmapPoy = 1; 
       case 'p'
         if ~strfind(paramStr,'k')
-          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi 0 pi],'YTickLabel',{'-p','0','p'},'fontname','symbol','TickDir','out')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 0 180],'TickDir','out')
         else
-          caxis(hca,[-pi pi]), set(hcb,'YTick',[-pi -pi/2 0 pi/2 pi],'YTickLabel',{'-p','-p/2','0','p/2','p'},'fontname','symbol','TickDir','out')
+          caxis(hca,[-180 180]), set(hcb,'YTick',[-180 -90 0 90 180],'TickDir','out')
         end
         flagCmapPoy = 1; 
       otherwise
@@ -338,10 +349,7 @@ if nargout, out = h; end % Return here
       set(hcbNew,'Position',[pos(1)-pos(3)*0.25 pos(2:4)])
       hYLabel = get(hcbNew,'ylabel');
       set(hYLabel,'string',yLabelStr,'fontsize',yLabelFontSize);
-      l = get(hcbNew,'YTickLabel'); 
-      if ischar(l);
-          l=[l(:,1) l]; l(:,1)=' ';
-      end
+      l = get(hcbNew,'YTickLabel'); l=[l(:,1) l]; l(:,1)=' ';
       set(hcbNew,'YTickLabel',l);
     end
   end
