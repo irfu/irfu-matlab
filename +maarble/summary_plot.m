@@ -75,7 +75,13 @@ for iField = 1:length(fields)
   end
   ebsp.(fieldName) = struct('data',tmpVar.data,'units',tmpVar.UNITS);
   if strcmp(fieldName,'bb_xxyyzzss')
-    ebsp.(fieldName).data(:,:,4) = sum(ebsp.(fieldName).data(:,:,1:3),3);
+    if numel(size(ebsp.(fieldName).data))==2 && all(all(isnan(ebsp.(fieldName).data)))
+      % For no data Qtran produces one record with fill values
+      irf.log('warning',sprintf('No B data for %s',fname))
+      return
+    else
+      ebsp.(fieldName).data(:,:,4) = sum(ebsp.(fieldName).data(:,:,1:3),3);
+    end
   end
   notValid = notValid + validate_data();
 end

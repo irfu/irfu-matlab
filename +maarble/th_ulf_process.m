@@ -128,38 +128,18 @@ if wantPC35
     for iGap=1:nGaps
       tintGap = ttGap.TimeInterval(iGap,:);
       B_1SEC(B_1SEC(:,1)>=tintGap(1)-0.5 & B_1SEC(:,1)<=tintGap(2)+0.5,2:end) = NaN;
-      if ~isempty(es)
-        es(es(:,1)>=tintGap(1)-0.5 & es(:,1)<=tintGap(2)+0.5,2:end) = NaN;
-      end
+      es(es(:,1)>=tintGap(1)-0.5 & es(:,1)<=tintGap(2)+0.5,2:end) = NaN;
     end
   end
-  ii = find(diff(bs(:,1))>3*median(diff(bs(:,1))));
-    if ~isempty(ii)
-      for iGap=ii'
-        irf.log('warning',['Long gap in BS ' irf_disp_iso_range(bs(iGap+[0 1],1)')])
-        B_1SEC(t_1SEC(:,1)>bs(iGap,1) & t_1SEC(:,1)<bs(iGap+1,1),2:4) = NaN;
-      end
-    end
-  B_1SEC(t_1SEC(:,1)<bs(1,1),2:4) = NaN; B_1SEC(t_1SEC(:,1)>bs(end,1),2:4) = NaN;
   
-  if isempty(es), iE3D_1SEC = [];
-  else
-    E3D_1SEC = irf_resamp(es,t_1SEC);  
-    % Construct the inertial frame
-    evxb = irf_tappl(irf_cross(B_1SEC,irf_resamp(V,t_1SEC)),'*1e-3*(-1)');
-    iE3D_1SEC = E3D_1SEC;
-    iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
-    % Remove all E-fields > 10 mV/m in inertial frame
-    for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
-    ii = find(diff(es(:,1))>3*median(diff(es(:,1))));
-    if ~isempty(ii)
-      for iGap=ii'
-        irf.log('warning',['Long gap in ES ' irf_disp_iso_range(es(iGap+[0 1],1)')])
-        iE3D_1SEC(t_1SEC(:,1)>es(iGap,1) & t_1SEC(:,1)<es(iGap+1,1),2:4) = NaN;
-      end
-    end
-    iE3D_1SEC(t_1SEC(:,1)<es(1,1),2:4) = NaN; iE3D_1SEC(t_1SEC(:,1)>es(end,1),2:4) = NaN;
-  end
+  E3D_1SEC = irf_resamp(es,t_1SEC);
+  
+  % Construct the inertial frame
+  evxb = irf_tappl(irf_cross(B_1SEC,irf_resamp(V,t_1SEC)),'*1e-3*(-1)');
+  iE3D_1SEC = E3D_1SEC;
+  iE3D_1SEC(:,2:4) = iE3D_1SEC(:,2:4) - evxb(:,2:4);
+  % Remove all E-fields > 10 mV/m in inertial frame
+  for iComp=2:4, iE3D_1SEC(abs(iE3D_1SEC(:,iComp))>10, 2:4) = NaN; end
   
   ebsp = ...
     irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,R,'pc35',...
@@ -171,6 +151,7 @@ if wantPC35
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
     orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC35_' irf_fname(tint,5)])
   end
   if exportFlag
@@ -196,40 +177,25 @@ if wantPC12
   B_BASE = irf_resamp(bl,t_BASE);
   ii = find(diff(bl(:,1))>2/fSampB);
   if ~isempty(ii)
-    for iGap=ii'
+    for iGap=ii
       irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
-      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN; 
+      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN;
     end
   end
-  B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
-  
-  if ~isempty(ef)
-    E3D_BASE = irf_resamp(ef,t_BASE);
-    ii = find(diff(ef(:,1))>2/fSampE);
-    if ~isempty(ii)
-      for iGap=ii'
-        irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
-        E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
-      end
-    end
-    E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN;
     
-    % Construct the inertial frame
-    evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
-    iE3D_BASE = E3D_BASE;
-    iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
-  end
-  
-  % Set Gaps to NaN. for safety we set both E and B
-  if nGaps>0
-    for iGap=1:nGaps
-      tintGap = ttGap.TimeInterval(iGap,:);
-      B_BASE(B_BASE(:,1)>=tintGap(1)-0.5 & B_BASE(:,1)<=tintGap(2)+0.5,2:end) = NaN;
-      if ~isempty(ef)
-        iE3D_BASE(iE3D_BASE(:,1)>=tintGap(1)-0.5 & iE3D_BASE(:,1)<=tintGap(2)+0.5,2:end) = NaN;
-      end
+  E3D_BASE = irf_resamp(ef,t_BASE);
+  ii = find(diff(ef(:,1))>2/fSampE);
+  if ~isempty(ii)
+    for iGap=ii
+      irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
+      E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
     end
   end
+  
+  % Construct the inertial frame
+  evxb = irf_tappl(irf_cross(B_BASE,irf_resamp(V,t_BASE)),'*1e-3*(-1)');
+  iE3D_BASE = E3D_BASE;
+  iE3D_BASE(:,2:4) = iE3D_BASE(:,2:4) - evxb(:,2:4);
   
   tic
   ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
@@ -240,6 +206,7 @@ if wantPC12
   if isempty(ebsp.t)
     irf.log('warning','No result for PC12'),continue 
   end
+  irf_wave_detection_algorithm(ebsp, thId);
   flim_ebsp(fSampB,fSampE);
   if plotFlag
     close all
@@ -247,6 +214,7 @@ if wantPC12
     irf_zoom(h,'x',tint)
     title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
     orient tall
+    %set(gcf,'paperpositionmode','auto')
     print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
   end
   if exportFlag
