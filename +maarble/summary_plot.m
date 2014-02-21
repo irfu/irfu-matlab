@@ -73,7 +73,10 @@ for iField = 1:length(fields)
   if isnumeric(tmpVar.FILLVAL)
     tmpVar.data(tmpVar.data == tmpVar.FILLVAL) = NaN;
   end
-  ebsp.(fieldName) = struct('data',tmpVar.data,'units',tmpVar.UNITS);
+  ebsp.(fieldName) = struct('data',tmpVar.data,'units',tmpVar.UNITS,'scale','');
+  if isfield(tmpVar,'SCALETYP') && ischar(tmpVar.SCALETYP)
+    ebsp.(fieldName).scale = tmpVar.SCALETYP;
+  end
   if strcmp(fieldName,'bb_xxyyzzss')
     if numel(size(ebsp.(fieldName).data))==2 && all(all(isnan(ebsp.(fieldName).data)))
       % For no data Qtran produces one record with fill values

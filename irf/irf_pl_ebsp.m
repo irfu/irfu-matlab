@@ -80,10 +80,19 @@ GetPlotParams();
 h = irf_plot(nPanels);
 hcbList = zeros(nPanels,1); cmapPoyList = zeros(nPanels,1);
 yTickList = cell(nPanels,1); idxPanel = 0;
+yScale = 'Log';
 if isstruct(ebsp.t)
   timeVec = ebsp.t.data;
   sr = struct('t',timeVec,'f',ebsp.f.data,...
     'f_label',['Freq [' ebsp.f.units ']']);
+  if isfield(ebsp.f,'scale')
+    switch lower(ebsp.f.scale)
+      case {'lin','linear'}, yScale = 'linear';
+      case 'log', yScale = 'log';
+      otherwise
+        irf.log('warning',['Illegal value of freq scale : ' ebsp.f.scale])
+    end
+  end
 else
   timeVec = ebsp.t;
   sr = struct('t',timeVec,'f',ebsp.f,'f_label','Freq [Hz]');
@@ -122,7 +131,7 @@ for idxField = 1:length(plotFields)
       hcb = -1; 
       yTickList(idxPanel) = {''};
     end
-    set(hca,'YScale','log')
+    set(hca,'YScale',yScale)
     set(hca,'Color',0.7*[1 1 1]); % grey background
     hcbList(idxPanel) = hcb; cmapPoyList(idxPanel) = flagCmapPoy;
   end
