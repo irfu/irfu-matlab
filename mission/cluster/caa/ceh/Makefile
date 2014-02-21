@@ -17,7 +17,7 @@ upload-maarble-irf:
 	ls *.ceh| grep -v CX | grep -v THZ | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
 
 upload-maarble-iap:
-	ls *.ceh| grep -v CX | grep -v ULF_PC12 | grep -v ULF_PC35 | grep -v _TH | grep -v EFW | xargs -I % scp % yuri@db:/data/caa/MAARBLE/Upload/iap/HEADERS/
+	ls *.ceh| grep -v CX | grep -v ULF_PC12 | grep -v ULF_PC35 | grep -v _TH | grep -v EFW | grep -v FACMATR | xargs -I % cp % /data/caa/MAARBLE/Upload/iap/HEADERS/
 
 upload-maarble-caa:
 	scp C[1-4]_CH_AUX_MAARBLE_*.ceh maarble@caa-delivery.estec.esa.int:HEADERS/ 
