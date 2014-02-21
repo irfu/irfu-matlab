@@ -11,7 +11,7 @@ function [b]=c_fgm_staff_combine(bFgm,bStaff,varargin)
 % STAFF spectra have lower amplitude than FGM spectra just below the cut
 % frequency of 1.3Hz, there maybe problems in the merged time series. The
 % actual cut off frequency is at ~1.2 Hz (in NM) and ~1.1 Hz (in BM) due to
-% filtering twice (filtfilt) to fix time delays .
+% filtering twice (filtfilt).
 
 %
 
