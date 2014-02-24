@@ -48,21 +48,25 @@ irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
 irf.log('debug');
 
 if(~exist('mms_sdc_cdfwrite.mexa64','file'))
-    irf.log('warning','MMS_SDC_CDFWRITE.MEXA64 file does not exist');
+    irf.log('warning','MMS_SDC_CDFWRITE.MEXA64 file does not exist. Building it.');
     
-    % NOW creating the mex file can be done in directly with mex command in
-    % bash if it is defined, as:
-    %!mex CFLAGS='$CFLAGS -std=c99' -I$CDF_BASE/include/ -L$CDF_BASE/lib/
-    %-Wl,-rpath,$CDF_BASE/lib/ -lcdf mms_cdfwrite_combined.c
+    % Set important CFLAGS and Includes here. Linking to the CDF_BASE cdf.h
+    % and on the currect system built version of libcdf.so. If a local
+    % version of mexopts.sh is set which does not link to Matlabs lib then
+    % they must also be included here. (Version 7.11 of Matlab had this
+    % issue).
+    irf.log('warning',['Working dir is: ',pwd]);
     
-    % One important thing is: CFLAGS='$CFLAGS -std=c99' should be included,
-    % or set in the mexopts.sh file.
+    s=pwd;
     
-    
-    % If mex is not a command in bash then run the full path to mex as:
-    % However this requires 'CFLAGS' set up in default mexoptions.sh
-    oldDir=pwd;
-    cd('irfu-matlab/mission/mms');
-    [status,cmdout]=unix([matlabroot,'/bin/mex -I$CDF_BASE/include/ -L$CDF_BASE/lib/ -Wl,-rpath,$CDF_BASE/lib/ -lcdf mms_sdc_cdfwrite.c']);
-    cd(oldDir);
+    mex(['CFLAGS=-fPIC -fno-omit-frame-pointer -std=c99 -D_GNU_SOURCE -pthread -fexceptions'], ...
+        ['-I',ENVIR.CDF_BASE,'/include/'] ,['-L',ENVIR.CDF_BASE,'/lib/'], ['-Wl,-rpath,',ENVIR.CDF_BASE,'/lib/'],...
+        '-outdir',[s,'/irfu-matlab/mission/mms/'],'-lcdf', [s,'/irfu-matlab/mission/mms/mms_sdc_cdfwrite.c']);
+
+%     % Another way would be to call on the external mex in bash. But this
+%     require CFLAGS -std=c99 to be configured beforehand in mexopts.sh.
+%     oldDir=pwd;
+%     cd('irfu-matlab/mission/mms');
+%     [status,cmdout]=unix([matlabroot,'/bin/mex -I$CDF_BASE/include/ -L$CDF_BASE/lib/ -Wl,-rpath,$CDF_BASE/lib/ -lcdf mms_sdc_cdfwrite.c']);
+%     cd(oldDir);
 end
