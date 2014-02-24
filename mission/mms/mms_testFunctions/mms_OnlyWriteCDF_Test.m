@@ -50,11 +50,38 @@ function testUscProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT,'/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'],'tint',0,'true');
-    %% TODO FILL WITH MORE PRECISE TESTS, each value perhaps?
+    
     % Do some checks that the written output and subsequent reading was
     % as expected.
     actSolution = dataObjIn.data.mms2_sdp_escp_dcv.nrec;
     expSolution = 10;
+    verifyEqual(testCase,actSolution,expSolution);
+    
+    % Verify exactly same output as input.
+    
+    % EstimatedSpaceCraftPotential, ESCP
+    actSolution = dataObjIn.data.mms2_sdp_escp_dcv.data;
+    expSolution = data1Tmp;
+    verifyEqual(testCase,actSolution,expSolution);
+    
+    % ProbetoSpacecraftPotential, PSP
+    actSolution = dataObjIn.data.mms2_sdp_psp_dcv.data;
+    expSolution = data2Tmp;
+    verifyEqual(testCase,actSolution,expSolution);
+    
+    % Delta 
+    actSolution = dataObjIn.data.mms2_sdp_delta_dcv.data;
+    expSolution = data3Tmp;
+    verifyEqual(testCase,actSolution,expSolution);
+    
+    % Probe to Spacecraft Potential individual Probe, PSP_P
+    actSolution = dataObjIn.data.mms2_sdp_psp_probes_dcv.data;
+    expSolution = psp_p;
+    verifyEqual(testCase,actSolution,expSolution);
+    
+    % Bitmask
+    actSolution = dataObjIn.data.mms2_sdp_bitmask_dcv.data;
+    expSolution = bitmask;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
