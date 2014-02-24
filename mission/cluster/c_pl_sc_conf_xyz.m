@@ -98,17 +98,46 @@ switch lower(action)
 		data=get(gcf,'userdata');
 		R=data.R;
 		if ~is_R_ok,     % try reading from disk mat files
-			c_load('R?',sc_list);
-			c_eval('R.C?=R?;',sc_list);
+			irf.log('notice','===>>> Readng R? from mR.mat file')
+			for numSc = sc_list,
+				strSc = ['C' num2str(numSc)];
+				strRsc = ['R' num2str(numSc)];
+				ok = c_load(strRsc,numSc);
+				if ~ok, 
+					irf.log('notice','--->>> did not succeed.')
+					break; 
+				else
+					R.(strSc) = eval(strSc);
+				end
+			end
 		end
-		if ~is_R_ok,     % try reading from CAA files
-			irf.log('notice','Trying to read CAA files C?_CP_AUX_POSGSE_1M ...')
-			c_eval('R.C?=irf_get_data(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''caa'',''mat'');',sc_list);
+		if ~is_R_ok,     % try reading from CAA files CP_AUX_POSGSE_1M
+			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M ...')
+			for numSc = sc_list,
+				strSc = ['C' num2str(numSc)];
+				R.(strSc) = irf_get_data(['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
+				if isempty(R.(strSc)),
+					irf.log('notice','--->>> did not succeed.')
+					break;
+				end
+			end
+			tint = data.t + [-60 60];
+			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M only 2min interval, checks also local.c_read...')
+			for numSc = sc_list,
+				strSc = ['C' num2str(numSc)];
+				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
+				if isempty(R.(strSc)),
+					irf.log('notice','--->>> did not succeed.')
+					break;
+				end
+			end
 		end
-		if ~is_R_ok,     % try reading from CAA files
-			irf.log('notice','Trying to read CAA files CL_CP_AUX ...')
+		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
+			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
 			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-			if ~isempty(R.R)
+			if isempty(R.R)
+				irf.log('notice','--->>> did not succeed.')
+			else
 				c_eval('R.C?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
 				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
 			end
