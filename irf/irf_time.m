@@ -193,7 +193,7 @@ switch lower(flag)
 		a = sscanf(s,mask);
 		N = numel(a)/6;
 		if N~=fix(N) || N~=size(s,2),
-			irf_log('fcal','something is wrong with iso input format'),
+			irf.log('warning','something is wrong with iso input format, returning empty!'),
 			t_out=[];
 			return;
 		end
