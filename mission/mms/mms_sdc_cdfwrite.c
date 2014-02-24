@@ -501,7 +501,7 @@ status = CDFattrCreate (id, "SCAL_PTR", VARIABLE_SCOPE, &TEMPattrNum);          
 	//long TIMETAGdimVarys[1] = {NOVARY}; 	/* TIMETAG dimension variances. */
 	//long SAMPLERATEdimVarys[1] = {NOVARY};/* SAMPLERATE dimension variances. */
 	long LABELdimVarys[1] = {VARY};    	/* Label dimension variances. */
-	long BITMASKdimVarys[1] = {VARY};
+	long BITMASKdimVarys[1] = {NOVARY};
 
 	long EPOCHvarNum;                       /* EPOCH zVariable number. */
 	//long TIMETAGvarNum;                   /* TIMETAG zVariable number. */
@@ -567,7 +567,7 @@ if( !strcmp(DataProductOut, "usc") )
 	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_psp_probes_dcv"), CDF_REAL4, 1, 1L, SENSORINDdimSizes, SENSORINDrecVary, SENSORINDdimVarys, &SENSORINDvarNum);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
-	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
+	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_bitmask_dcv"), CDF_UINT2, 1, 0L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
 
@@ -1029,7 +1029,7 @@ else if( !strcmp(DataProductOut, "sitl") )
 	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_xyz_dsl"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &SENSORvarNumDSL);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
-	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
+	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT2, 1, 0L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
 
@@ -1346,10 +1346,10 @@ else if( !strcmp(DataProductOut, "ql" ) )
 	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_xyz_dsl"), CDF_REAL4, 1, 1L, SENSORdimSizes, SENSORrecVary, SENSORdimVarys, &SENSORvarNumDSL);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
-	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
+	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_bitmask"), CDF_UINT2, 1, 0L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &BITMASKvarNum);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
-	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_quality"), CDF_UINT2, 1, 1L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &QUALITYvarNum);
+	status = CDFcreatezVar (id, strcat(strcpy(tmp_string,sc),"sdp_dce_quality"), CDF_UINT2, 1, 0L, BITMASKdimSizes, BITMASKrecVary, BITMASKdimVarys, &QUALITYvarNum);
 	  if (status != CDF_OK) UserStatusHandler (status);
 
 
