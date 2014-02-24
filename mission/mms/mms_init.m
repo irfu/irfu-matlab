@@ -55,13 +55,13 @@ if(~exist('mms_sdc_cdfwrite.mexa64','file'))
     % version of mexopts.sh is set which does not link to Matlabs lib then
     % they must also be included here. (Version 7.11 of Matlab had this
     % issue).
-    irf.log('warning',['Working dir is: ',pwd]);
     
-    s=pwd;
-    
+    % Locate the path to source and output
+    pathToINIT=which('mms_init');
+    [s, filename, ext]=fileparts(pathToINIT);
     mex(['CFLAGS=-fPIC -fno-omit-frame-pointer -std=c99 -D_GNU_SOURCE -pthread -fexceptions'], ...
         ['-I',ENVIR.CDF_BASE,'/include/'] ,['-L',ENVIR.CDF_BASE,'/lib/'], ['-Wl,-rpath,',ENVIR.CDF_BASE,'/lib/'],...
-        '-outdir',[s,'/irfu-matlab/mission/mms/'],'-lcdf', [s,'/irfu-matlab/mission/mms/mms_sdc_cdfwrite.c']);
+        '-outdir',[s,'/'],'-lcdf', [s,'/mms_sdc_cdfwrite.c']);
 
 %     % Another way would be to call on the external mex in bash. But this
 %     require CFLAGS -std=c99 to be configured beforehand in mexopts.sh.
