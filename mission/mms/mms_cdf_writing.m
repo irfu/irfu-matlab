@@ -69,24 +69,7 @@ switch(HeaderInfo.calledBy)
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
         irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        try
-            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data', data1.data', uint16(bitmask));
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                irf.log('critical',err.message);
-                % Then end with MATLAB:SDCcode and numberical error code to
-                % be fetched by bash script.
-                error('MATLAB:SDCcode', '183');
-            else
-                % Display any other errors as usual.
-                % It was an unkown error..
-                irf.log('critical',['Error when writing CDF file', err.identifier, err.message]);
-                rethrow(err);
-            end
-        end % End of try
+        mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data, data1.data, uint16(bitmask));
         
         
     case('ql')
@@ -134,23 +117,10 @@ switch(HeaderInfo.calledBy)
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
         irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        try
-            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data', data1.data', uint16(bitmask), uint16(qualityMark));
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                irf.log('critical',err.message);
-                % Then end with MATLAB:SDCcode and numberical error code to
-                % be fetched by bash script.
-                error('MATLAB:SDCcode', '183');
-            else
-                % Display any other errors as usual.
-                rethrow(err);
-            end
-        end % End of try
-
+        
+        mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data, data1.data, uint16(bitmask), uint16(qualityMark));
+        
+        
     case('usc')
         %disp('usc');
         % List existing files.
@@ -197,23 +167,9 @@ switch(HeaderInfo.calledBy)
      
         psp_p = [data1.data, data1.data];
         irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        try
-            mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p', uint16(bitmask));
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                irf.log('critical',err.message);
-                % Then end with MATLAB:SDCcode and numberical error code to
-                % be fetched by bash script.
-                error('MATLAB:SDCcode', '183');
-            else
-                % Display any other errors as usual.
-                rethrow(err);
-            end
-        end % End of try
-
+        
+        mms_sdc_cdfwrite(filename_output, int8(str2num(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint16(bitmask));
+        
     
     otherwise
         irf.log('warning','MATLAB:mms_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');

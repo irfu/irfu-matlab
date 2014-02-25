@@ -34,19 +34,7 @@ function testUscWriteCDF(testCase)
     oldDir=pwd;
     cd(DROPBOX_ROOT);
     
-    try
-            mms_sdc_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p', bitmask);
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                error('MATLAB:SDCcode', '183.. Matlab:MMS_sdc_cdfwrite:filename_output:exist a file with the requested filename already exist in the output dir. Not going to overwrite it!');
-            else
-                % Display any other errors as usual.
-                rethrow(err);
-            end
-    end % End of try
+    mms_sdc_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
@@ -108,24 +96,12 @@ function testQuickLookWriteCDF(testCase)
     data5Tmp = [data3Tmp, data2Tmp, data1Tmp];
     
     bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
-    qualityMark= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
+    qualityMark= [uint16(10); uint16(9); uint16(8); uint16(7); uint16(6); uint16(5); uint16(4); uint16(3); uint16(2); uint16(10)];
     
     oldDir = pwd;
     cd(DROPBOX_ROOT);
     
-    try
-            mms_sdc_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp', data5Tmp', bitmask, qualityMark);
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                error('MATLAB:SDCcode', '183.. Matlab:MMS_sdc_cdfwrite:filename_output:exist a file with the requested filename already exist in the output dir. Not going to overwrite it!');
-            else
-                % Display any other errors as usual.
-                rethrow(err);
-            end
-    end % End of try
+    mms_sdc_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
@@ -192,19 +168,7 @@ function testSITLwriteCDF(testCase)
     oldDir = pwd;
     cd(DROPBOX_ROOT);
     
-    try
-            mms_sdc_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp', data5Tmp', bitmask);
-        catch err
-            % An error occured.
-            % Give more information for mismatch.
-            if (strcmp(err.identifier,'MATLAB:mms_sdc_cdfwrite:filename_output:exists'))
-                % If our cdfwrite code resulted in error write proper log message.
-                error('MATLAB:SDCcode', '183.. Matlab:MMS_sdc_cdfwrite:filename_output:exist a file with the requested filename already exist in the output dir. Not going to overwrite it!');
-            else
-                % Display any other errors as usual.
-                rethrow(err);
-            end
-    end % End of try
+    mms_sdc_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
