@@ -125,7 +125,7 @@ switch lower(action)
 			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M only 2min interval, checks also local.c_read...')
 			for numSc = sc_list,
 				strSc = ['C' num2str(numSc)];
-				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
+				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
 				if isempty(R.(strSc)),
 					irf.log('notice','--->>> did not succeed.')
 					break;
