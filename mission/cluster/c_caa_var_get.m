@@ -93,7 +93,7 @@ while numel(args)
 		case 'mat' % return matlab format only
 			getMatOnly = true;
 			getMat     = true;
-			getCaa     = true;
+			getCaa     = false;
 			args(1)    = [];
 		case 'dobj' % return matlab format only
 			getDobjOnly = true;
