@@ -98,7 +98,7 @@ switch lower(action)
 		data=get(gcf,'userdata');
 		R=data.R;
 		if ~is_R_ok,     % try reading from disk mat files
-			irf.log('notice','===>>> Readng R? from mR.mat file')
+			irf.log('notice','===>>> Reading R? from mR.mat file')
 			for numSc = sc_list,
 				strSc = ['C' num2str(numSc)];
 				strRsc = ['R' num2str(numSc)];
@@ -121,8 +121,8 @@ switch lower(action)
 					break;
 				end
 			end
-			tint = data.t + [-60 60];
-			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M only 2min interval, checks also local.c_read...')
+			tint = data.t + [-120 120];
+			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M only +-2min interval, checks also local.c_read...')
 			for numSc = sc_list,
 				strSc = ['C' num2str(numSc)];
 				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
