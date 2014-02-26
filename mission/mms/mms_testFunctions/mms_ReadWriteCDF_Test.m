@@ -2,7 +2,7 @@
 % Matlab script functions.
 %       results = MMS_READWRITECDF_TEST creates a unit testing framework of
 %       several test. Each designed to test various parts of the MMS
-%       processing.
+%       processing. These functions require Matlab R2013b or later.
 %
 %       Example:
 %               results = MMS_READWRITECDF_TEST
@@ -12,6 +12,12 @@
 
 
 function tests = mms_ReadWriteCDF_Test
+    ve=version;
+    if( str2double(ve(1))<8 )
+        error('Require at least R2013b to run this test. Please upgrade.');
+    elseif( (str2double(ve(3))<2) && (str2double(ve(1))==8) )
+        error('Require at least R2013b to run this test. Please upgrade.');
+    end
     tests = functiontests(localfunctions);
 end
 

@@ -2,7 +2,8 @@
 % CDF functions only.
 %       results = MMS_ONLYWRITECDF_TEST creates a unit testing framework
 %       for testing writing to MMS specific CDF files. And make sure that
-%       they are readable as expected afterwards..
+%       they are readable as expected afterwards. 
+%       These functions require Matlab R2013b or later.
 %
 %       Example:
 %               results = MMS_ONLYWRITECDF_TEST
@@ -12,6 +13,12 @@
 
 
 function tests = mms_OnlyWriteCDF_Test
+    ve=version;
+    if(str2double(ve(1))<8)
+        error('Require at least R2013b to run this test. Please upgrade.');
+    elseif(str2double(ve(3))<2 && (str2double(ve(1))==8))
+        error('Require at least R2013b to run this test. Please upgrade.');
+    end
     tests = functiontests(localfunctions);
 end
 

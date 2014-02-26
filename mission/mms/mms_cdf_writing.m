@@ -33,6 +33,7 @@ global MMS_CONST;
 % contains information about source files used ("Parents") and what data
 % type (fast / slow / burst) etc.
 
+oldDir = pwd;
 
 switch(HeaderInfo.calledBy)
     case('sitl_dce')
@@ -60,7 +61,7 @@ switch(HeaderInfo.calledBy)
         % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYImms2_sdp_slow_l2_uscdcv_20150410000000_v0.0.0NG TO WRITE ANYTHING AS 
         % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
         % DIRECTORY WHEN EXECUTING.
-
+        
         cd(ENVIR.DROPBOX_ROOT);
 
         % FIXME: DUMMY DATA FOR NOW.
@@ -156,7 +157,7 @@ switch(HeaderInfo.calledBy)
         % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
         % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
         % DIRECTORY WHEN EXECUTING.
-
+        
         cd(ENVIR.DROPBOX_ROOT);
 
         % FIXME: DUMMY DATA FOR NOW.
@@ -228,5 +229,7 @@ end
 irf.log('debug','MATLAB:mms_cdf_writing:UpdatingGlobalAttributes');
 cdfupdate(filename_output,'GlobalAttributes',GATTRIB);
 
+% Return to previous working directory.
+cd(oldDir);
 
 end
