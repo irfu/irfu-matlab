@@ -20,8 +20,14 @@ runTime = datestr(now,'yyyymmddHHMMSS');
 global ENVIR;
 global MMS_CONST;
 
+% Quickly try to find which spacecraft, in order to place log correctly.
+[pathFile, nameFile, extensionFile] = fileparts(filename_dcv_source_file);
+HeaderInfo = [];
+HeaderInfo.numberStr = nameFile(4);
+clear pathFile nameFile extensionFile
+
 % ENVIR & MMS_CONST structs created by init script.
-[ENVIR, MMS_CONST] = mms_init();
+[ENVIR, MMS_CONST] = mms_init(HeaderInfo.numberStr);
 
     irf.log('debug',['mms_usc trying mms_cdf_in_process on input file: ', filename_dcv_source_file]);
     [dcv_source, dcv_source_fileData] = mms_cdf_in_process(filename_dcv_source_file,'sci');
@@ -38,8 +44,7 @@ global MMS_CONST;
     
     %FIXME Do some processing... Actually De-filter, De-spin, etc.
     
-    %
-    HeaderInfo = [];
+    
     HeaderInfo.calledBy = 'usc'; % or 'sitl_dce' if running sitl instead of 'ql'.
     HeaderInfo.scId = dcv_source_fileData.scId;
     HeaderInfo.instrumentId = dcv_source_fileData.instrumentId;
@@ -54,8 +59,8 @@ global MMS_CONST;
     filename_output = mms_cdf_writing(dcv_source, bitmask(:,2), HeaderInfo, quality(:,2));
     
     
-    % Write out filename as an empty logfile so it can be easily found by
-    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
-    
-    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
+% Write out filename as empty logfile so it can be easily found by SDC
+% scripts.
+unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/mms',HeaderInfo.numberStr,'/sdp/',filename_output,'_',runTime,'.log']);
+
     

@@ -25,10 +25,14 @@ runTime = datestr(now,'yyyymmddHHMMSS');
 global ENVIR;
 global MMS_CONST;
 
+% Quickly try to find which spacecraft, in order to place log correctly.
+[pathFile, nameFile, extensionFile] = fileparts(filename_dce_source_file);
+HeaderInfo = [];
+HeaderInfo.numberStr = nameFile(4);
+clear pathFile nameFile extensionFile
+
 % ENVIR & MMS_CONST structs created by init script.
-[ENVIR, MMS_CONST] = mms_init();
-
-
+[ENVIR, MMS_CONST] = mms_init(HeaderInfo.numberStr);
 
 % If only one is found we cannot do all data processing
 if(nargin==1)
@@ -48,8 +52,6 @@ if(nargin==1)
     
     %FIXME Do some processing... Actually De-filter, De-spin, etc.
     
-    %
-    HeaderInfo = [];
     HeaderInfo.calledBy = 'sitl_dce'; % Or = 'ql' if running ql instead of 'sitl'.
     HeaderInfo.scId = dce_source_fileData.scId;
     HeaderInfo.instrumentId = dce_source_fileData.instrumentId;
@@ -62,13 +64,6 @@ if(nargin==1)
 
     irf.log('debug', 'mms_sitl_dce trying mms_cdf_write');
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
-    
-    
-    % Write out filename as an empty logfile so it can be easily found by
-    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
-    
-    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
-    
     
     
 elseif(nargin==2)
@@ -94,7 +89,6 @@ elseif(nargin==2)
     %FIXME Do some processing... Actually De-filter, De-spin, etc.
     
     
-    HeaderInfo = [];
     HeaderInfo.calledBy = 'sitl_dce';
     HeaderInfo.scId = dce_source_fileData.scId;
     HeaderInfo.instrumentId = dce_source_fileData.instrumentId;
@@ -110,14 +104,13 @@ elseif(nargin==2)
     filename_output = mms_cdf_writing(dce_source, bitmask(:,2), HeaderInfo);
     
     
-    % Write out filename as an empty logfile so it can be easily found by
-    % SDC scripts.  scId_instrumentId_mode_dataLevel_optionalDataProductDescriptor_startTime_vX.Y.Z_runTime.log
-    
-    unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/',filename_output,'_',runTime,'.log']);
-    
 elseif(nargin>2)
     % Log message so we know it went wrong... Should not happen as
     % narginchk(1,2) has check it. But if we add more input arguments
     % later..
     irf.log('warning','mms_sitl_dce received more then two input. What is what?');
 end
+
+% Write out filename as empty logfile so it can be easily found by SDC
+% scripts.
+unix(['touch',' ', ENVIR.LOG_PATH_ROOT,'/mms',HeaderInfo.numberStr,'/sdp/',filename_output,'_',runTime,'.log']);

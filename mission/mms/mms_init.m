@@ -1,7 +1,8 @@
-function [ENVIR, MMS_CONST] = mms_init()
+function [ENVIR, MMS_CONST] = mms_init(scNumber)
 % MMS_INIT reads initial environment and constants for MMS FIELDS processing
-% 	[ENVIR, MMS_CONST] = MMS_INIT() returns environment variables 
-%       and constants useful for MMS processing.
+% 	[ENVIR, MMS_CONST] = MMS_INIT(scNumber) returns environment variables 
+%       and constants useful for MMS processing. Input argument should be
+%       the sc number (as a string), i.e. '1' for mms1 and '2' for mms2 etc.
 %
 %       The struct ENVIR will contain the following:
 %	  .DATA_PATH_ROOT	  - Root dir of data files
@@ -17,8 +18,10 @@ function [ENVIR, MMS_CONST] = mms_init()
 %	  .Bitmask.OnlyDCE = 0x01 - Only DCE was found at these points in time. 
 %
 %	Example:
-%		[ENVIR, MMS_CONST] = MMS_INIT();
+%		[ENVIR, MMS_CONST] = MMS_INIT('1');
 %
+
+narginchk(1,1); % SC number to ensure log is put in right place.
 
 ENVIR = [];
 MMS_CONST = [];
@@ -42,7 +45,15 @@ ENVIR.DROPBOX_ROOT = getenv('DROPBOX_ROOT'); % Get path to output location, (tem
 ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 
 % Setup logging.
-% Create a logfile at log_path_root, named after current run date and IRFU.log
-irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',date,'_IRFU.log'));
-% Set log level to debug initially.
-irf.log('debug');
+% Create a logfile at $LOG_PATH_ROOT / mmsX / sdp /
+% named after current run day yyyymmdd and _IRFU.log. If this fails
+% create it at $LOG_PATH_ROOT and include full date with seconds.
+if(str2double(scNumber)>1||str2double(scNumber)<4)
+    irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/mms',scNumber,'/sdp/',datestr(now,'yyyymmdd'),'_IRFU.log'));
+    % Set log level to debug initially.
+    irf.log('debug');
+else
+    irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',datestr(now,'yyyymmddTHHMMSS'),'_IRFU.log'));
+    irf.log('debug');
+    irf.log('warning',['Matlab:MMS_INIT:InputArg scNumber incorrectly determined as: ',scNumber]);
+end
