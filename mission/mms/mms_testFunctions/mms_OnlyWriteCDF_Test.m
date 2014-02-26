@@ -19,6 +19,8 @@ function tests = mms_OnlyWriteCDF_Test
     elseif(str2double(ve(3))<2 && (str2double(ve(1))==8))
         error('Require at least R2013b to run this test. Please upgrade.');
     end
+    global ENVIR;
+    ENVIR=mms_init('2'); % dummy scNumber used for this test..
     tests = functiontests(localfunctions);
 end
 
@@ -27,7 +29,7 @@ function testUscWriteCDF(testCase)
     % Test to write one Usc CDF file to $DROPBOX_ROOT. The output file is 
     % removed afterwards to ensure it does not interfer with future
     % writing.
-    DROPBOX_ROOT = getenv('DROPBOX_ROOT');
+    global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
     epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
@@ -39,13 +41,13 @@ function testUscWriteCDF(testCase)
     psp_p=[data1Tmp, data2Tmp, data3Tmp, data1Tmp, data2Tmp, data3Tmp];
     bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
     oldDir=pwd;
-    cd(DROPBOX_ROOT);
+    cd(ENVIR.DROPBOX_ROOT);
     
     mms_sdc_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([DROPBOX_ROOT,'/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'],'tint',0,'true');
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -90,7 +92,7 @@ function testQuickLookWriteCDF(testCase)
     % Test to write one SITL CDF file to $DROPBOX_ROOT. The output file is 
     % removed afterwards to ensure it does not interfer with future
     % writing.
-    DROPBOX_ROOT = getenv('DROPBOX_ROOT');
+    global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
     epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
@@ -106,13 +108,13 @@ function testQuickLookWriteCDF(testCase)
     qualityMark= [uint16(10); uint16(9); uint16(8); uint16(7); uint16(6); uint16(5); uint16(4); uint16(3); uint16(2); uint16(10)];
     
     oldDir = pwd;
-    cd(DROPBOX_ROOT);
+    cd(ENVIR.DROPBOX_ROOT);
     
     mms_sdc_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([DROPBOX_ROOT,'/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -158,7 +160,7 @@ function testSITLwriteCDF(testCase)
      % Test to write one SITL CDF file to $DROPBOX_ROOT. The output file is 
     % removed afterwards to ensure it does not interfer with future
     % writing.
-    DROPBOX_ROOT = getenv('DROPBOX_ROOT');
+    global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
     epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
@@ -173,13 +175,13 @@ function testSITLwriteCDF(testCase)
     bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
     
     oldDir = pwd;
-    cd(DROPBOX_ROOT);
+    cd(ENVIR.DROPBOX_ROOT);
     
     mms_sdc_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([DROPBOX_ROOT,'/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
