@@ -9,7 +9,7 @@ function res = get_variable(dobj,varName)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if ~ischar(varName)
   error('variable name must be a string')
