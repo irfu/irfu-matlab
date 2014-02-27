@@ -37,7 +37,15 @@ function testUscProcessAndReadCDF(testCase)
     % writing.
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
-    mms_usc([DATA_PATH_ROOT,'/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf']);
+    mms_sdc_sdp_proc('usc', ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
+        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
+
+    % Or to force an error, simply do not provide all required inputs.
+%   mms_sdc_sdp_proc('usc', ...
+%       [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
+   
+
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = mms_cdf_in_process([DROPBOX_ROOT,'/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'],'sci');
@@ -56,7 +64,10 @@ function testSITLprocessAndReadCDF(testCase)
     % writing.end
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
-    mms_sitl_dce([DATA_PATH_ROOT,'/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'],[DATA_PATH_ROOT,'/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf']);
+    mms_sdc_sdp_proc('sitl', ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'], ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
+        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = mms_cdf_in_process([DROPBOX_ROOT,'/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'],'sci');
@@ -75,7 +86,10 @@ function testQuickLookProcessAndReadCDF(testCase)
     % writing.
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
-    mms_ql_dce([DATA_PATH_ROOT,'/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'], [DATA_PATH_ROOT,'/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf']);
+    mms_sdc_sdp_proc('ql', ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'], ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
+        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = mms_cdf_in_process([DROPBOX_ROOT,'/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'],'sci');
