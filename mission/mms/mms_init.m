@@ -55,5 +55,6 @@ if(str2double(scNumber)>1||str2double(scNumber)<4)
 else
     irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',datestr(now,'yyyymmddTHHMMSS'),'_IRFU.log'));
     irf.log('debug');
-    irf.log('warning',['Matlab:MMS_INIT:InputArg scNumber incorrectly determined as: ',scNumber]);
+    irf.log('critical',['Matlab:MMS_INIT:InputArg scNumber incorrectly determined as: ',scNumber]);
+    error('Matlab:MMS_INIT','MMS_INIT recieved an unexpected sc number string. Input to processing should be fullpath/filename.cdf according to MMS standard, mmsX_whatever where X = 1, 2, 3 or 4.');
 end

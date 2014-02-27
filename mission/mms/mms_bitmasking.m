@@ -28,12 +28,14 @@ bitmask(:,1) = varTTsrc1.data;
 
 if(nargin==1)
     % If only one source file mark all times with having only one source.
+    irf.log('debug','Only one input to bitmasking. All of bitmask is OnlyDCE');
     bitmask(:,2) = MMS_CONST.Bitmask.OnlyDCE;
 
 elseif(nargin == 2)
     % Get times for source 2.
     varTTsrc2 = getv(sourceCDFobj2, sourceCDFobj2.vars{1,1});
     
+    irf.log('debug','Two inputs to bitmasking. Compare both time series and set OnlyDCE on relevant times.');
     % Check if second data source begins after first and if so set bitmask
     % to only DCE for all of these data packet times.
     j = 1;
