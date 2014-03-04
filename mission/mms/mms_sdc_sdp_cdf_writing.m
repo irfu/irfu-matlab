@@ -1,12 +1,12 @@
-function [ filename_output ] = mms_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark )
-% MMS_CDF_WRITING writes the dataobj dataOut to the corresponding CDF file.
-%	[filename_output] = MMS_CDF_WRITING( dataOut, bitmask, HeaderInfo, qualityMark) will
+function [ filename_output ] = mms_sdc_sdp_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark )
+% MMS_SDC_SDP_CDF_WRITING writes the dataobj dataOut to the corresponding CDF file.
+%	[filename_output] = MMS_SDC_SDP_CDF_WRITING( dataOut, bitmask, HeaderInfo, qualityMark) will
 %       write an MMS CDF file containing the dataobj dataOut's data to a temporary output folder
 %	defined by ENVIR.DROPBOX_ROOT. The struct HeaderInfo will help determine which output
 %	file is to be created.
 %
 %	Example:
-%		filename_output = mms_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark);
+%		filename_output = mms_sdc_sdp_cdf_writing( dataOut, bitmask, HeaderInfo, qualityMark);
 %
 %	Note 1: It is assumed that other SDC processing scripts will move the created output
 %	file to its final destination (from /ENIVR.DROPBOX_ROOT/ to /path/as/defined/by/
@@ -20,7 +20,7 @@ function [ filename_output ] = mms_cdf_writing( dataOut, bitmask, HeaderInfo, qu
 %       place in previous functions. For now it will only multiply the input dataObj data to fill
 %       CDF files of various types.
 %
-% 	See also MMS_CDF_IN_PROCESS, MMS_BITMASKING, MMS_INIT.
+% 	See also MMS_SDC_SDP_CDF_IN_PROCESS, MMS_SDC_SDP_BITMASKING, MMS_SDC_SDP_INIT.
 
 % Verify that we have all information requried.
 narginchk(3,4);
@@ -69,8 +69,8 @@ switch(HeaderInfo.calledBy)
         epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
-        irf.log('debug',['MATLAB:mms_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
-        mms_sdc_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data, data1.data, uint16(bitmask));
+        irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:sitl Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
+        mms_sdc_sdp_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'sitl', epochTT.data, data1.data, data1.data, uint16(bitmask));
         
         
     case('ql')
@@ -117,9 +117,9 @@ switch(HeaderInfo.calledBy)
         epochTT = getv(dataOut, dataOut.vars{1,1}); % The epoch times
         data1 = getv(dataOut, dataOut.vars{5,1}); % The data
         
-        irf.log('debug',['MATLAB:mms_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
+        irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:ql Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         
-        mms_sdc_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data, data1.data, uint16(bitmask), uint16(qualityMark));
+        mms_sdc_sdp_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'ql', epochTT.data, data1.data, data1.data, uint16(bitmask), uint16(qualityMark));
         
         
     case('usc')
@@ -167,13 +167,13 @@ switch(HeaderInfo.calledBy)
      %%%%%   
      
         psp_p = [data1.data, data1.data];
-        irf.log('debug',['MATLAB:mms_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
+        irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:usc Ready to write data to temporary file in DROPBOX_ROOT/', filename_output,'.cdf']);
         
-        mms_sdc_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint16(bitmask));
+        mms_sdc_sdp_cdfwrite(filename_output, int8(str2double(HeaderInfo.scId(end))), 'usc', epochTT.data, data1.data(:,1), data1.data(:,2), data1.data(:,3), psp_p, uint16(bitmask));
         
     
     otherwise
-        irf.log('warning','MATLAB:mms_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');
+        irf.log('warning','MATLAB:mms_sdc_sdp_cdf_writing:HeaderInfo.calledBy unknown or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');
 end
 
 
@@ -226,7 +226,7 @@ elseif(HeaderInfo.numberOfSources == 2)
 end
 
 % Update all the new values to GlobalAttributes
-irf.log('debug','MATLAB:mms_cdf_writing:UpdatingGlobalAttributes');
+irf.log('debug','MATLAB:mms_sdc_sdp_cdf_writing:UpdatingGlobalAttributes');
 cdfupdate(filename_output,'GlobalAttributes',GATTRIB);
 
 % Return to previous working directory.

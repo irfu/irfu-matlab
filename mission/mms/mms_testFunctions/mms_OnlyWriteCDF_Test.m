@@ -20,7 +20,7 @@ function tests = mms_OnlyWriteCDF_Test
         error('Require at least R2013b to run this test. Please upgrade.');
     end
     global ENVIR;
-    ENVIR=mms_init('2'); % dummy scNumber used for this test..
+    ENVIR=mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
     tests = functiontests(localfunctions);
 end
 
@@ -43,7 +43,7 @@ function testUscWriteCDF(testCase)
     oldDir=pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
+    mms_sdc_sdp_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
@@ -110,7 +110,7 @@ function testQuickLookWriteCDF(testCase)
     oldDir = pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
+    mms_sdc_sdp_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
@@ -177,7 +177,7 @@ function testSITLwriteCDF(testCase)
     oldDir = pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
+    mms_sdc_sdp_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.

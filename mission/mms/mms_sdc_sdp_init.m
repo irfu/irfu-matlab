@@ -1,6 +1,6 @@
-function [ENVIR, MMS_CONST] = mms_init(scNumber)
-% MMS_INIT reads initial environment and constants for MMS FIELDS processing
-% 	[ENVIR, MMS_CONST] = MMS_INIT(scNumber) returns environment variables 
+function [ENVIR, MMS_CONST] = mms_sdc_sdp_init(scNumber)
+% MMS_SDC_SDP_INIT reads initial environment and constants for MMS FIELDS processing
+% 	[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT(scNumber) returns environment variables 
 %       and constants useful for MMS processing. Input argument should be
 %       the sc number (as a string), i.e. '1' for mms1 and '2' for mms2 etc.
 %
@@ -18,7 +18,7 @@ function [ENVIR, MMS_CONST] = mms_init(scNumber)
 %	  .Bitmask.OnlyDCE = 0x01 - Only DCE was found at these points in time. 
 %
 %	Example:
-%		[ENVIR, MMS_CONST] = MMS_INIT('1');
+%		[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT('1');
 %
 
 narginchk(1,1); % SC number to ensure log is put in right place.
@@ -49,12 +49,17 @@ ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 % named after current run day yyyymmdd and _IRFU.log. If this fails
 % create it at $LOG_PATH_ROOT and include full date with seconds.
 if(str2double(scNumber)>1||str2double(scNumber)<4)
+    % Check to verify that output dir exists for logging. If not, create
+    % it.
+    if(~exist([ENVIR.LOG_PATH_ROOT, '/mms',scNumber,'/sdp'],'dir'))
+        mkdir([ENVIR.LOG_PATH_ROOT, '/mms',scNumber],'sdp');
+    end
     irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/mms',scNumber,'/sdp/',datestr(now,'yyyymmdd'),'_IRFU.log'));
     % Set log level to debug initially.
     irf.log('debug');
 else
     irf.log('log_out',strcat(ENVIR.LOG_PATH_ROOT,'/',datestr(now,'yyyymmddTHHMMSS'),'_IRFU.log'));
     irf.log('debug');
-    irf.log('critical',['Matlab:MMS_INIT:InputArg scNumber incorrectly determined as: ',scNumber]);
-    error('Matlab:MMS_INIT','MMS_INIT recieved an unexpected sc number string. Input to processing should be fullpath/filename.cdf according to MMS standard, mmsX_whatever where X = 1, 2, 3 or 4.');
+    irf.log('critical',['Matlab:MMS_SDC_SDP_INIT:InputArg scNumber incorrectly determined as: ',scNumber]);
+    error('Matlab:MMS_SDC_SDP_INIT','MMS_SDC_SDP_INIT recieved an unexpected sc number string. Input to processing should be fullpath/filename.cdf according to MMS standard, mmsX_whatever where X = 1, 2, 3 or 4.');
 end
