@@ -164,9 +164,12 @@ for iVar = 1: numel(varNameList)
 			noDataReturned = false;
 		else
 			dataobjName=caa_get_dataset_name(varName,'_');
-			if getAllData && ~getFromFile && evalin('caller',['exist(''' dataobjName ''',''var'')']),
+			if getAllData && ~getFromFile ...
+					&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
+					&& evalin('caller',['isa(' dataobjName ',''dataobj'')'])
 				Dataobject=evalin('caller',dataobjName);
 				noDataReturned = false;
+				existDataobject = true;
 				irf.log('warning',[dataobjName ' exist in memory. NOT LOADING FROM FILE!'])
 			else
 				if getAllData,
@@ -177,7 +180,9 @@ for iVar = 1: numel(varNameList)
 				if exist(dataobjName,'var'), % success loading data
 					eval(['Dataobject=' dataobjName ';']);
 					noDataReturned = false;
+					existDataobject = true;
 				else
+					existDataobject = false;
 					irf.log('warning',[dataobjName ' could not be loaded!']);
 					if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 						testLocalCaaRepository = true;
@@ -197,7 +202,7 @@ for iVar = 1: numel(varNameList)
 				end
 				noDataReturned = false;
 				res{iVar} = ttt;
-			else
+			elseif existDataobject
 				res{iVar}=getv(Dataobject,varName);
 			end
 		end
@@ -216,7 +221,7 @@ for iVar = 1: numel(varNameList)
 				end
 				resmat{iVar} = ttt;
 				noDataReturned = false;
-			else
+			elseif existDataobject
 				resmat{iVar}=getmat(Dataobject,varName);
 			end
 		end
