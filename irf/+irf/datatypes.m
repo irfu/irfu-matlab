@@ -11,4 +11,8 @@
 %	Variable.[unit,label,dimunit,dimlabel,dimvec]
 %	Variable.[vec]    - data matrix of dimension [t x ndim], (for example ndim=3 for field vector)
 %	Variable.[abs]    - absolute value of vector in case exists Variable.vec
-% VariableMat    - matrix where first column is time and the other columns are data [DEPRECATED]
+% variableMat    - matrix where first column is time and the other columns are data [DEPRECATED]
+
+if nargin == 0,
+	help irf.datatypes;
+end
