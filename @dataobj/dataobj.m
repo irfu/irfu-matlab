@@ -8,8 +8,6 @@ function dobj = dataobj(varargin)
 % DATAOBJ(FILENAME,'tint',tint,KeepTT2000)
 %       tint - limit dataobject to time interval (good for large files)
 %       KeepTT2000 - For missions like MMS do not convert TT2000 to epoch.
-%
-% $Id$
 
 % Note for now 'tint' is ignored when using KeepTT2000.
 
@@ -161,7 +159,8 @@ switch action
 				fix_order_of_array_dimensions;
         % XXX: FIXME
 				if ~shouldReadAllData
-          error('Time interval not supported')
+          shouldReadAllData = 1;
+          irf.log('warning','Time interval not supported yet')
 					%records=(timeline > tint(1)) & (timeline < tint(2));
 				end
       else
