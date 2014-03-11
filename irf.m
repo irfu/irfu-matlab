@@ -27,6 +27,9 @@ function [out,out1]=irf(varargin)
 %
 % IRF('demo') demonstration how to use IRF
 
+%this is an edit to load BLAS
+ones(10)*ones(10);
+
 %% Defaults
 % file to check version
 logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
