@@ -15,8 +15,8 @@ narginchk(2,2);
 global MMS_CONST;
 
 % Nominal spinrate is expected to be 3 rpm +/- 0.2 rpm.
-sunpulse_limit_low  = int64(60*10^9/MMS_CONST.Spinrate.min); % One pulse every 18'750'000'000 ns, = 60/(3-0.2).
-sunpulse_limit_high = int64(60*10^9/MMS_CONST.Spinrate.max); % One pulse every 21'428'571'429 ns, = 60/(3+0.2).
+sunpulse_limit_low  = int64(60*10^9/MMS_CONST.Spinrate.max); % One pulse every 18'750'000'000 ns, = 60/(3-0.2).
+sunpulse_limit_high = int64(60*10^9/MMS_CONST.Spinrate.min); % One pulse every 21'428'571'429 ns, = 60/(3+0.2).
 
 % Get each new sunpulse. (SunpulseTimeStampIn comes from CDF with HK, the
 % rate of HK is different from Sunpulse rate, some pulses are repeated in
@@ -28,8 +28,8 @@ if( (all( diff(sunpulseTimeStamp) < sunpulse_limit_high ) ) && ...
     % Ok, sunpulse times are as expected.
     % Reduce the size by subtracting the time corresponding to the first
     % datapacket, then transform it to double. (interp() - can't handle int64). 
-    sunpulseTimeStamp = double( sunpulseTimeStamp - DataTimeStamp(1) );
-    DataTimeStamp = double( DataTimeStamp - DataTimeStamp(1) );
+    sunpulseTimeStamp = double( sunpulseTimeStamp - sunpulseTimeStamp(1) );
+    DataTimeStamp = double( DataTimeStamp -sunpulseTimeStamp(1) );
 
     % For each new sunpulse, add 360 degrees to the total phase. or should it
     % be radian 0 - 2*pi?
