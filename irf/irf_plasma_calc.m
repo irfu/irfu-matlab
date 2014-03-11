@@ -112,7 +112,7 @@ if strcmp(flag_time_series,'yes'), % check that other variables are time series,
 		elseif eval(['prod(size(' variables_to_check{j} '))==1']), % only one number
 			eval([variables_to_check{j} '=repmat(' variables_to_check{j} ',size(t));']);
 		else
-			c_eval('irf_log(''proc'',''do not understand input <?>'');',variables_to_check{j});
+			c_eval('irf.log(''warning'',''do not understand input <?>'');',variables_to_check{j});
 			return;
 		end
 	end

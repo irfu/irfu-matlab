@@ -29,8 +29,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'ae'    - AE index
 %               'al'    - AL index
 %               'au'    - AL index
-% 
-% f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database 
+%
+% f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
 % database:  'omni2'    - 1h resolution OMNI2 data (default)
 %            'omni_min' - 1min resolution OMNI data
@@ -66,7 +66,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 % Bz, nT (GSE)		        F8.2
 % By, nT (GSM)	                F8.2	Determined from post-shift GSE components
 % Bz, nT (GSM)	                F8.2	Determined from post-shift GSE components
-% RMS SD B scalar, nT	        F8.2	
+% RMS SD B scalar, nT	        F8.2
 % RMS SD field vector, nT	        F8.2	See  footnote E below
 % Flow speed, km/s		F8.1
 % Vx Velocity, km/s, GSE	        F8.1
@@ -74,7 +74,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 % Vz Velocity, km/s, GSE	        F8.1
 % Proton Density, n/cc		F7.2
 % Temperature, K		        F9.0
-% Flow pressure, nPa		F6.2	See  footnote G below		
+% Flow pressure, nPa		F6.2	See  footnote G below
 % Electric field, mV/m		F7.2	See  footnote G below
 % Plasma beta		        F7.2	See  footnote G below
 % Alfven mach number		F6.1	See  footnote G below
@@ -84,7 +84,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 % BSN location, Xgse, Re	        F8.2	BSN = bow shock nose
 % BSN location, Ygse, Re	        F8.2
 % BSN location, Zgse, Re 	        F8.2
-% 
+%
 % AE-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
 % AL-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
 % AU-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
@@ -95,114 +95,116 @@ function f = irf_get_data_omni( tint, parameter , database)
 % PC(N) index,                    F7.2    See World Data Center for Geomagnetism, Copenhagen
 
 if nargin < 3, % database not specified defaulting to omni2
-  datasource='omni2';
-  dateformat='yyyymmdd';
+	dataSource='omni2';
+	dateFormat='yyyymmdd';
 elseif nargin == 3, % database specified
-  if strcmpi(database,'omni2')
-    datasource='omni2';
-    dateformat='yyyymmdd';
-  elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
-    datasource='omni_min';
-    dateformat='yyyymmddhh';
-  else
-    irf_log('fcal','Unknown database, using omni2.');
-    datasource='omni2';
-    dateformat='yyyymmdd';
-  end
+	if strcmpi(database,'omni2')
+		dataSource='omni2';
+		dateFormat='yyyymmdd';
+	elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
+		dataSource='omni_min';
+		dateFormat='yyyymmddhh';
+	else
+		irf_log('fcal','Unknown database, using omni2.');
+		dataSource='omni2';
+		dateFormat='yyyymmdd';
+	end
 end
-httpreq=['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' datasource '&'];
-start_date=irf_time(tint(1),dateformat);
-end_date=irf_time(tint(2),dateformat);
+httpRequest=['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
+startDate=irf_time(tint(1),dateFormat);
+endDate=irf_time(tint(2),dateFormat);
 
 i=strfind(parameter,',');
-iend=[i-1 length(parameter)];
-istart=[1 i+1];
-vars='';number_var=0;
-for jj=1:length(istart)
-    variable=parameter(istart(jj):iend(jj));
-    switch lower(variable)
-        case 'b', var_number_omni2=8;var_number_omni1min=13;
-        case 'avgb', var_number_omni2=9;var_number_omni1min=-1;
-        case 'blat', var_number_omni2=10;var_number_omni1min=-1;
-        case 'blong', var_number_omni2=11;var_number_omni1min=-1;
-        case {'bx','bxgse','bxgsm'}, var_number_omni2=12;var_number_omni1min=14;
-        case {'by','bygse'}, var_number_omni2=13;var_number_omni1min=15;
-        case {'bz','bzgse'}, var_number_omni2=14;var_number_omni1min=16;
-        case 'bygsm', var_number_omni2=14;var_number_omni1min=17;
-        case 'bzgsm', var_number_omni2=15;var_number_omni1min=18;
-        case 't', var_number_omni2=22;var_number_omni1min=26;
-        case 'n', var_number_omni2=23;var_number_omni1min=25;
-        case 'nanp', var_number_omni2=27;var_number_omni1min=-1;
-        case 'v', var_number_omni2=24;var_number_omni1min=21;
-        case 'p', var_number_omni2=28;var_number_omni1min=27;
-        case 'e', var_number_omni2=35;var_number_omni1min=28;
-        case 'beta', var_number_omni2=36;var_number_omni1min=29;
-        case 'ma', var_number_omni2=37;var_number_omni1min=30;
-        case 'ssn', var_number_omni2=39;var_number_omni1min=-1;
-        case 'dst', var_number_omni2=40;var_number_omni1min=-1;
-        case 'ae', var_number_omni2=41;var_number_omni1min=37;
-        case 'al', var_number_omni2=52;var_number_omni1min=38;
-        case 'au', var_number_omni2=53;var_number_omni1min=39;
-        case 'kp', var_number_omni2=38;var_number_omni1min=-1;
-        case 'pc', var_number_omni2=51;var_number_omni1min=44;
-        case 'f10.7', var_number_omni2=50;var_number_omni1min=-1;
-        otherwise, var_number_omni2=0;var_number_omni1min=-1;
-    end
-    if strcmp(datasource,'omni2'),
-      if var_number_omni2>0,
-        vars=[vars '&vars=' num2str(var_number_omni2)];
-        number_var=number_var+1;
-      end
-    else % datasource omni_min
-      if var_number_omni1min>0,
-        vars=[vars '&vars=' num2str(var_number_omni1min)];
-        number_var=number_var+1;
-      end
-    end
+iEnd=[i-1 length(parameter)];
+iStart=[1 i+1];
+vars='';nVar=0;
+for jj=1:length(iStart)
+	variable=parameter(iStart(jj):iEnd(jj));
+	switch lower(variable)
+		case 'b', varNumberOmni2=8;varNumberOmni1min=13;
+		case 'avgb', varNumberOmni2=9;varNumberOmni1min=-1;
+		case 'blat', varNumberOmni2=10;varNumberOmni1min=-1;
+		case 'blong', varNumberOmni2=11;varNumberOmni1min=-1;
+		case {'bx','bxgse','bxgsm'}, varNumberOmni2=12;varNumberOmni1min=14;
+		case {'by','bygse'}, varNumberOmni2=13;varNumberOmni1min=15;
+		case {'bz','bzgse'}, varNumberOmni2=14;varNumberOmni1min=16;
+		case 'bygsm', varNumberOmni2=14;varNumberOmni1min=17;
+		case 'bzgsm', varNumberOmni2=15;varNumberOmni1min=18;
+		case 't', varNumberOmni2=22;varNumberOmni1min=26;
+		case 'n', varNumberOmni2=23;varNumberOmni1min=25;
+		case 'nanp', varNumberOmni2=27;varNumberOmni1min=-1;
+		case 'v', varNumberOmni2=24;varNumberOmni1min=21;
+		case 'p', varNumberOmni2=28;varNumberOmni1min=27;
+		case 'e', varNumberOmni2=35;varNumberOmni1min=28;
+		case 'beta', varNumberOmni2=36;varNumberOmni1min=29;
+		case 'ma', varNumberOmni2=37;varNumberOmni1min=30;
+		case 'ssn', varNumberOmni2=39;varNumberOmni1min=-1;
+		case 'dst', varNumberOmni2=40;varNumberOmni1min=-1;
+		case 'ae', varNumberOmni2=41;varNumberOmni1min=37;
+		case 'al', varNumberOmni2=52;varNumberOmni1min=38;
+		case 'au', varNumberOmni2=53;varNumberOmni1min=39;
+		case 'kp', varNumberOmni2=38;varNumberOmni1min=-1;
+		case 'pc', varNumberOmni2=51;varNumberOmni1min=44;
+		case 'f10.7', varNumberOmni2=50;varNumberOmni1min=-1;
+		otherwise, varNumberOmni2=0;varNumberOmni1min=-1;
+	end
+	if strcmp(dataSource,'omni2'),
+		if varNumberOmni2>0,
+			vars=[vars '&vars=' num2str(varNumberOmni2)];
+			nVar=nVar+1;
+		end
+	else % datasource omni_min
+		if varNumberOmni1min>0,
+			vars=[vars '&vars=' num2str(varNumberOmni1min)];
+			nVar=nVar+1;
+		end
+	end
 end
 
-url=[httpreq 'start_date=' start_date '&end_date=' end_date vars];
+url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
 disp(['url:' url]);
 [c,status]=urlread(url);
 
 if status==1, % success in downloading from internet
-    cstart=strfind(c,'YEAR'); % returned by omni2 databse
-    if isempty(cstart), 
-      cstart=strfind(c,'YYYY'); % returned by omni_min database
-    end
-    if isempty(cstart), % no data returned
-      irf_log('fcal','Can not get OMNI data from internet!');
-      f=[];
-      return
-    end
-    cend=strfind(c,'</pre>')-1;
-    if strcmp(datasource,'omni2')
-      fmt=['%f %f %f' repmat(' %f',1,number_var)];
-      cc=textscan(c(cstart:cend),fmt,'headerlines',1);
-      xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
-      f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
-      for jj=1:number_var,
-        f(:,jj+1)=cc{jj+3};
-      end
-    else
-      fmt=['%f %f %f %f' repmat(' %f',1,number_var)];
-      cc=textscan(c(cstart:cend),fmt,'headerlines',1);
-      xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
-      f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600+cc{4}*60;
-      for jj=1:number_var,
-        f(:,jj+1)=cc{jj+4};
-      end
-    end
-    f(f==9999999.)=NaN;
-    f(f==999999.9)=NaN;
-    f(f==99999.9)=NaN;
-    f(f==9999.99)=NaN;
-    f(f==999.99)=NaN;
-    f(f==999.9)=NaN;
-    f(f==999)=NaN;
-    f(f==99.99)=NaN;
+	cstart=strfind(c,'YEAR'); % returned by omni2 databse
+	if isempty(cstart),
+		cstart=strfind(c,'YYYY'); % returned by omni_min database
+	end
+	if isempty(cstart), % no data returned
+		irf.log('warning','Can not get OMNI data from internet!');
+		f=[];
+		return
+	end
+	cend=strfind(c,'</pre>')-1;
+	if strcmp(dataSource,'omni2')
+		fmt=['%f %f %f' repmat(' %f',1,nVar)];
+		cc=textscan(c(cstart:cend),fmt,'headerlines',1);
+		xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
+		f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600;
+		for jj=1:nVar,
+			f(:,jj+1)=cc{jj+3};
+		end
+	else
+		fmt=['%f %f %f %f' repmat(' %f',1,nVar)];
+		cc=textscan(c(cstart:cend),fmt,'headerlines',1);
+		xx=double([cc{1} repmat(cc{1}.*0+1,1,2) repmat(cc{1}.*0,1,3)]);
+		f(:,1)=irf_time(xx)+(cc{2}-1)*3600*24+cc{3}*3600+cc{4}*60;
+		for jj=1:nVar,
+			f(:,jj+1)=cc{jj+4};
+		end
+	end
+	% Remove FILLVAL, however not good solution. TODO: improve, so that
+	% only FILLVAL for the corresponding variable is used
+	f(f==9999999.)=NaN;
+	f(f==999999.9)=NaN;
+	f(f==99999.9)=NaN;
+	f(f==9999.99)=NaN;
+	f(f==999.99)=NaN;
+	f(f==999.9)=NaN;
+	f(f==999)=NaN;
+	f(f==99.99)=NaN;
 else % no success in getting data from internet
-    irf_log('fcal','Can not get OMNI data form internet!');
-    f=[];
+	irf.log('warning','Can not get OMNI data form internet!');
+	f=[];
 end
 

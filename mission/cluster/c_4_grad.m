@@ -68,7 +68,7 @@ elseif nargin==8 || nargin == 2,
 elseif nargin==3, % if 3 input arguments, the 3rd is option
 	flag_option=r3;
 else
-	irf_log('fcal','Too many input parameters.');
+	irf.log('warning','Too many input parameters.');
 	return;
 end
 
@@ -84,7 +84,7 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 		end
 		clear bs rs
 	else
-		irf_log('fcal','For two input parameters, both should be strings');
+		irf.log('warning','For two input parameters, both should be strings');
 		return;
 	end
 end
@@ -106,11 +106,11 @@ elseif size(b1,2) == 3, % assume vector components, time not specified
 			end
 			c_eval('b?=[t b?];');
 		else
-			irf_log('fcal','ERROR: input vectors not equal');
+			irf.log('critical','ERROR: input vectors not equal');
 			return
 		end
 	else
-		irf_log('fcal','ERROR: input vectors not equal');
+		irf.log('critical','ERROR: input vectors not equal');
 		return
 	end
 end
@@ -146,7 +146,7 @@ if strcmp(flag_option,'grad')||strcmp(flag_option,'curvature')||strcmp(flag_opti
 		grad_b(:,9) = K1(:,4).*B1(:,3)+K2(:,4).*B2(:,3)+K3(:,4).*B3(:,3)+K4(:,4).*B4(:,3);%dzBy
 		grad_b(:,10)= K1(:,4).*B1(:,4)+K2(:,4).*B2(:,4)+K3(:,4).*B3(:,4)+K4(:,4).*B4(:,4);%dzBz
 	else
-		irf_log('fcal','error: input vector is neither scalar or vector');
+		irf.log('critical','error: input vector is neither scalar or vector');
 		return
 	end
 end
@@ -202,7 +202,7 @@ switch flag_option
 			result=div_T;
 		end
 	otherwise
-		irf_log('fcal','warning: unknown input option');
+		irf.log('warning','warning: unknown input option');
 end
 
 if ~isTimeSpecified % remove time column if time was not given

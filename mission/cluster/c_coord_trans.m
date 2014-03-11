@@ -134,7 +134,7 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
 %     if 0, % isempty(sax) % try to read SAX? form matlab file, NOT USED currently
 %         [ok,sax] = c_load('SAX?',cl_id); % Load from saved ISDAT files or fetch from ISDAT
 %         if ok
-%             irf_log('dsrc',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
+%             irf.log('notice',irf_ssub('Loaded SAX? from ISDAT file',cl_id));
 %             % XXX TODO: check that the SAX is from the right time
 %             %[iso_t,dt] = caa_read_interval();
 %         else

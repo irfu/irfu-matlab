@@ -26,9 +26,9 @@ if       (nargin<=2 && ischar(x1)), % either action as parameter or string varia
 		ud=get(gcf,'userdata');
 	end
 elseif   (nargin ==4) || (nargin == 5),
-	if nargin ==4, irf_log('fcal','Using second column');column=2;end
+	if nargin ==4, irf.log('notice','Using second column');column=2;end
 	if isempty(x1) &&  isempty(x2) && isempty(x3) && isempty(x4)
-		irf_log('fcal','Empty input');
+		irf.log('warning','Empty input');
 		if nargout, out=[];end
 		return
 	end
@@ -40,7 +40,7 @@ elseif   (nargin ==4) || (nargin == 5),
 else      help c_4_v_gui
 end
 
-irf_log('fcal',['action=' action]);
+irf.log('debug',['action=' action]);
 switch action,
 	case {'c1','c2','c3','c4','c5','c6'}
 		ud.var_col=str2double(action(2:end));
