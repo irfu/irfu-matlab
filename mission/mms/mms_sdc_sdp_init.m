@@ -35,6 +35,10 @@ MMS_CONST.Version.X = 0; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 
+% Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
+MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
+MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
+
 % Bitmask constant values
 MMS_CONST.Bitmask.OnlyDCE = 1; % Bits 0x01.
 
