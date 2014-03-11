@@ -30,9 +30,16 @@ fi
 #find `pwd` -type d \( -name '@*' -o -name '+*' -o -name '.git' \) -prune -o \( -path "*irfu-matlab*" -type d \) -printf %p:
 export MATLABPATH="$(find `pwd` -type d \( -name '@*' -o -name '+*' -o -name '.git' \) -prune -o \( -path "*irfu-matlab*" -type d \) -printf %p:)$MATLABPATH"
 
+# SET ENVIRONMENT LD_LIBRARY_PATH in order for the linking to CDF.h and cdflib.so to properly work.
+if [ "X$LD_LIBRARY_PATH" = "X" ]; then
+	export LD_LIBRARY_PATH="$CDF_BASE/lib"
+else
+	export LD_LIBRARY_PATH="$CDF_BASE/lib:$LD_LIBRARY_PATH"
+fi
+
 # RUN THIS ONLY IF DCE and Sunpulse file inputs are given
 if [ ${#} -eq 2 ] ;  then
-   matlab -nodesktop -nosplash -nodisplay -nojvm -r "try, mms_sdc_sdp_proc('usc','$1','$2'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
+   /tools/matlab/R2013b/bin/matlab -nodesktop -nosplash -nodisplay -nojvm -r "try, mms_sdc_sdp_proc('usc','$1','$2'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
 fi
 
 # For debug: display message 'all done'.
