@@ -83,13 +83,13 @@ if nargin ==3,
 	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'mat'))
 		returnDataFormat = 'mat';
 	else
-		irf_log('fcal','output data format unknown');
+		irf.log('critical','output data format unknown');
 		out=[];
 		return;
 	end
 end
 if nargin > 3
-	irf_log('fcal','max 3 arguments supported');
+	irf.log('critical','max 3 arguments supported');
 	return
 end
 %% Check if repository is there
@@ -129,7 +129,7 @@ switch lower(varName)
 			out=[data{1} double(data{2})];
 		end
 	otherwise
-		irf_log('fcal',['Reading variable (assume to exist): ' varName]);
+		irf.log('warning',['Reading variable (assume to exist): ' varName]);
 		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
 		ok=readdata;
@@ -158,7 +158,7 @@ end
 				indexVarName = ['index_' datasetIndex];
 				indexFileInfo=dirwhos(indexDir,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
-					irf_log('dsrc',['There is no index file:' indexVarName]);
+					irf.log('critical',['There is no index file:' indexVarName]);
 					return;
 				end
 				s=dirload(indexDir,indexVarName);
@@ -166,13 +166,13 @@ end
 			end
 			index=index.(datasetIndex);
 		else
-			irf_log('dsrc',['Do not know how to read variable: ' varToRead{1}]);
+			irf.log('critical',['Do not know how to read variable: ' varToRead{1}]);
 			return
 		end
 		%% find files within time interval
 		istart=find(index.tend>tint(1),1);
 		iend=find(index.tstart<tint(2),1,'last');
-		irf_log('dsrc',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
+		irf.log('notice',['Dataset: ' dataset '. Index files: ' num2str(istart) '-' num2str(iend)]);
 
 		if isempty(istart) || isempty(iend) || istart > iend,
 			return
@@ -192,12 +192,12 @@ end
             end
 			switch lower(returnDataFormat)
 				case 'mat'
-					irf_log('dsrc',['Reading: ' cdf_file]);
+					irf.log('notice',['Reading: ' cdf_file]);
 					%% check if epoch16
 					cdfid=cdflib.open(cdf_file);
 					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
 					if useCdfepoch16,
-						irf_log('dsrc',['EPOCH16 time in cdf file:' cdf_file]);
+						irf.log('debug',['EPOCH16 time in cdf file:' cdf_file]);
 						tName  = cdflib.getVarName(cdfid,0);
 						tData = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
 						if numel(size(tData)) == 3,

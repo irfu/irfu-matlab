@@ -16,29 +16,39 @@ function hout=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,ve
 
 if nargin==1 && ischar(spacecraft)
     action=spacecraft;
-    irf.log('debug',['action=' action]);
 elseif   (nargin < 6)
     action='initialize';
 end
 if nargin==0, 
     spacecraft=1;
-    if evalin('caller','exist(''tint'')'),
-        time=irf_time(evalin('caller','tint(1)'),'vector');
-    elseif exist('CAA','dir')
-        R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
-        if numel(R)==0,
-            time=[2010 12 31 01 01 01];
-        else
-            time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
-        end
-    else
-        time=[2010 12 31 01 01 01];
-    end
+	if evalin('caller','exist(''tint'')')
+		ttt = evalin('caller','tint(1)');
+		if ttt > irf_time([2001 1 1 0 0 0])
+			isTimeOK = true;
+			time=irf_time(ttt,'vector');
+		else
+			isTimeOK = false;
+		end
+	end
+	if ~isTimeOK % define default time
+		time=[2010 12 31 01 01 01];
+	end
+	if ~isTimeOK && exist('CAA','dir')
+		R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+		if numel(R)
+			time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
+		end
+	end
 end
-if ~exist('ic','var') || isempty(ic), ic=spacecraft; end
+if isempty(spacecraft), 
+	ic=1; 
+else
+	ic=spacecraft;
+end
 
+irf.log('debug',['action=' action]);
 switch lower(action)
-    case 'initialize'
+	case 'initialize'
         % See if spacecraft orientation figures is open
         figNumber=figure( ...
             'Name',['Cluster s/c' num2str(ic) ' orientation'], ...
@@ -48,8 +58,8 @@ switch lower(action)
         h=[];
         data.figNumber=figNumber;
         data.ic=ic;
-        data.flag_get_phase_data=1;
-        data.flag_get_b_data=1;
+        data.getScPhase=1;
+        data.getB=1;
         if length(time)==1, % define time of interest when initializing
             data.t=time;
         elseif length(time)==6,
@@ -57,7 +67,8 @@ switch lower(action)
         elseif exist('t','var'),
             % use existing t
         else
-            irf_log('fcal','Check time format');return;
+            irf.log('critical','unknown time format');
+			return;
         end
         if nargin<6, data.flag_v=1; end
         if nargin<5, data.flag_v=0; end
@@ -91,7 +102,6 @@ switch lower(action)
             'Callback',callbackStr);
         %====================================
         % The B field reading 
-        labelStr='0';
         callbackStr='c_pl_sc_orient(''read_phase_and_b'')';
         data.bflag=uicontrol('style','checkbox','units','normalized','Position',[0.5 0.3 .2 .05],'string','read B field','Callback',callbackStr);
         %====================================
@@ -141,87 +151,91 @@ switch lower(action)
         c_pl_sc_orient('read_phase_and_b');
     case 'read_phase_and_b'
         data=get(gcf,'userdata');
+		tint = data.t + [-120 120]; % read in 4min data
         if get(data.bflag,'value')==1,
-            data.flag_get_b_data=1;
+            data.getB = true;
             if ~isfield(data,'b'),
                 data.b=[1 0 0 NaN]; % first col is time
             end
             if ~isempty(data.b), % use existing b if there is one
                 if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
-                    data.flag_get_b_data=0;
+                    data.getB = false;
                 elseif strcmp(get(data.bflag,'value'),1) % get B data
-                    data.flag_get_b_data=1;
+                    data.getB = true;
                 else
                     data.b=[1 0 0 NaN]; % first col is time
                 end
             end
-            if data.flag_get_b_data % try to get B data from disk mat files
+            if data.getB % try to get B data from disk mat files
+				irf.log('debug','Trying to to read B from disk as diB?');
                 [ok,b]=c_load('diB?',data.ic);
-                if any(ok) % B loaded
-                    data.b=b;
-                    data.b(:,3)=-b(:,3);data.b(:,4)=-b(:,4); % go to DS reference frame instead of DSI
-                    if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
-                        data.flag_get_b_data=0;
-                    end
+                if any(ok) && data.t>=b(1,1) && data.t<=b(end,1), % b loaded and time within interval of B
+					data.b = b;
+					data.b(:,3)=-b(:,3);data.b(:,4)=-b(:,4); % go to DS reference frame instead of DSI
+					data.getB = false;
                 end
             end
-            if data.flag_get_b_data % try to get B data from caa files full resolution
-                c_eval('[~,~,b]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'');',data.ic);
+            if data.getB % try to get B data from caa files full resolution
+				irf.log('debug','Trying to get full resolution B');
+                c_eval('b=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'',''tint'',tint);',data.ic);
                 if ~isempty(b),
                     data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
                     if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
-                        data.flag_get_b_data=0;
+                        data.getB = false;
                     end
                 end
             end
-            if data.flag_get_b_data % try to get B data from caa files 5S/s resolution
-                c_eval('[~,~,b]=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'');',data.ic);
+            if data.getB % try to get B data from caa files 5S/s resolution
+                c_eval('b=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_5VPS'',''mat'',''tint'',tint);',data.ic);
                 if ~isempty(b),
                     data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
                     if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
-                        data.flag_get_b_data=0;
+                        data.getB = false;
                     end
                 end
             end
-            if data.flag_get_b_data, % try to read B in ISR2 ref frame from isdat (use CSDD PP data)
+            if data.getB, % try to read B in ISR2 ref frame from isdat (use CSDD PP data)
                 DATABASE=c_ctl(0,'isdat_db');
                 isdatdata = getData(ClusterDB(DATABASE,c_ctl(0,'data_path')),data.t-5,5,data.ic,'b','nosave');
                 if ~isempty(isdatdata),
                     b=isdatdata{3};
                     data.b=c_coord_trans('GSE','DSC',b,'cl_id',data.ic);
                     if data.t>=data.b(1,1) && data.t<=data.b(end,1), % time within interval of B
-                        data.flag_get_b_data=0;
+                        data.getB = false;
                     end
                 end
             end
-            if data.flag_get_b_data, % did not succeed to read B data
-                irf_log('load','Could not read B field data');
+            if data.getB, % did not succeed to read B data
+                irf.log('warning','Could not read B field data');
                 data.b=[1 0 0 NaN]; % first col is time
             end
         end
-        if ~data.flag_get_phase_data, % can use old phase data if they are valid
+        if ~data.getScPhase, % can use old phase data if they are valid
                 if data.t<=data.a(1,1) || data.t>=data.a(end,1), % time outside interval of phase
-                    data.flag_get_phase_data=1;
+                    data.getScPhase = true;
                 end
         end
-        if data.flag_get_phase_data % try to read phase data from disk matlab files
+        if data.getScPhase % try to read phase data from disk matlab files
+			irf.log('debug','Trying to to read phase from disk as Atwo?');
             [ok,phase_time_series]=c_load('Atwo?',data.ic);
             if any(ok), % check if phase info is on disk
                 data.a=phase_time_series;
                 if data.t>=data.a(1,1) && data.t<=data.a(end,1), % time within phase interval of B
-                    data.flag_get_phase_data=0;
+                    data.getScPhase = false;
                 end
             end
         end
-        if data.flag_get_phase_data % try to read caa phase if exists
-            sp=c_caa_var_get(['spin_period__C' num2str(data.ic) '_CP_AUX_SPIN_TIME']);
-            if ~isempty(sp), % could not read
-                tsp=c_caa_var_get(['time_tags__C' num2str(data.ic) '_CP_AUX_SPIN_TIME']);
-                ref_times=[-.5 .5]; % part of spin
-                ref_phase=ref_times*360+180; % spin period center corresponds to phase 0
-                dt=repmat(ref_times,length(tsp.data),1).*repmat(double(sp.data),1,length(ref_times));
-                tmat=repmat(tsp.data,1,length(ref_times))+dt;
-                amat=repmat(ref_phase,length(tsp.data),1);
+        if data.getScPhase % try to read caa phase if exists
+			irf.log('debug','Trying to to read phase from CP_AUX_SPIN_TIME');
+            spinPeriod=c_caa_var_get(['spin_period__C' num2str(data.ic) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
+            if ~isempty(spinPeriod), % could not read
+                spinTime=c_caa_var_get(['time_tags__C' num2str(data.ic) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
+                refTime=[-.5 .5]; % part of spin
+                refPhase=refTime*360+180; % spin period center corresponds to phase 0
+                dt= repmat(refTime,size(spinTime,1),1).*...
+					repmat(double(spinPeriod(:,2)),1,length(refTime));
+                tmat=repmat(spinTime(:,1),1,length(refTime))+dt;
+                amat=repmat(refPhase,size(spinTime,1),1);
                 tmat=reshape(tmat',numel(tmat),1);
                 difftmat=diff(tmat);
                 ii=find(difftmat<0);
@@ -229,11 +243,11 @@ switch lower(action)
                 amat=reshape(amat',numel(amat),1);
                 data.a=[tmat amat];
                 if data.t>=data.a(1,1) && data.t<=data.a(end,1), % time within phase interval of B
-                    data.flag_get_phase_data=0;
+                    data.getScPhase = false;
                 end
             end
         end
-        if data.flag_get_phase_data % try to read phase data from isdat server
+        if data.getScPhase % try to read phase data from isdat server
             try 
                 c_eval('[tt,phase_data] = irf_isdat_get([''Cluster/?/ephemeris/phase_2''], data.t-5, 10);',data.ic);
             %                [tt,phase_data] = caa_is_get('db.irfu.se:0',t-5,10,ic,'ephemeris','phase_2');
@@ -242,11 +256,11 @@ switch lower(action)
                 phase_time_series=[]; % cannot connect to internet
             end
             if ~isempty(phase_time_series),
-                data.flag_get_phase_data=0;
+                data.getScPhase = false;
                 data.a=phase_time_series;
             end
         end
-        if data.flag_get_phase_data % still no phase info, use default 0
+        if data.getScPhase % still no phase info, use default 0
             data.phase=0; % default using 0 phase
         else
             data.phase=c_phase(data.t,data.a);data.phase(1)=[];
@@ -435,7 +449,7 @@ switch lower(action)
     case 'c1'
         data=get(gcf,'userdata');
         if ic~=1,
-            data.flag_get_phase_data=1;data.flag_get_b_data=1;data.b=[];data.ic=1;
+            data.getScPhase=1;data.getB=1;data.b=[];data.ic=1;
             set(gcf,'Name',['Cluster s/c' num2str(data.ic) ' orientation']);
             set(gcf,'userdata',data);
             c_pl_sc_orient('read_phase_and_b');
@@ -443,7 +457,7 @@ switch lower(action)
     case 'c2'
         data=get(gcf,'userdata');
         if ic~=2
-            data.flag_get_phase_data=1;data.flag_get_b_data=1;data.b=[];data.ic=2;
+            data.getScPhase=1;data.getB=1;data.b=[];data.ic=2;
             set(gcf,'Name',['Cluster s/c' num2str(data.ic) ' orientation']);
             set(gcf,'userdata',data);
             c_pl_sc_orient('read_phase_and_b');
@@ -451,7 +465,7 @@ switch lower(action)
     case 'c3'
         data=get(gcf,'userdata');
         if ic~=3
-            data.flag_get_phase_data=1;data.flag_get_b_data=1;data.b=[];data.ic=3;
+            data.getScPhase=1;data.getB=1;data.b=[];data.ic=3;
             set(gcf,'Name',['Cluster s/c' num2str(data.ic) ' orientation']);
             set(gcf,'userdata',data);
             c_pl_sc_orient('read_phase_and_b');
@@ -459,7 +473,7 @@ switch lower(action)
     case 'c4'
         data=get(gcf,'userdata');
         if ic~=4
-            data.flag_get_phase_data=1;data.flag_get_b_data=1;data.b=[];data.ic=4;
+            data.getScPhase=1;data.getB=1;data.b=[];data.ic=4;
             set(gcf,'Name',['Cluster s/c' num2str(ic) ' orientation']);
             set(gcf,'userdata',data);
             c_pl_sc_orient('read_phase_and_b');

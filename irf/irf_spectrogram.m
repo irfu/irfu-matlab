@@ -56,8 +56,10 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
                     flagLog = true;
                 case 'lin'
                     flagLog = false;
-                otherwise
-                    irf_log('fcal',['Unknown flag:' flagValue]);
+				otherwise
+					errStr= ['irf_spectrogram(), unknown flag:' flagValue];
+                    irf.log('critical',errStr);
+					error('irf_spectrogram:unknown_flag',errStr);
             end
         end
     end
@@ -141,7 +143,7 @@ for comp=1:min(length(h),ncomp)
 		% Warn about changing t_start_epoch
 		t_start_epoch = double(specrec.t(ii(1)));
 		ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-		irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+		irf.log('notice',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
 	else
 		t_start_epoch = double(0);
 	end

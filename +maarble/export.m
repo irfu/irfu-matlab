@@ -45,6 +45,11 @@ if ~isstruct(ebsp),
   error('expecting sturcture output of irf_ebsp or irf_convert_fac')
 end
 
+if any( ebsp.t<tint(1) | ebsp.t>tint(end) )
+  irf.log('critical','data outside TINT')
+  error('data outside TINT')
+end
+
 if isnumeric(cl_id) % Cluster
   flagCluster = true;
 else
@@ -182,9 +187,10 @@ end
     magB(isnan(magB)) = FILLVAL_EXP;
     ebsp.bb_xxyyzzss(isnan(ebsp.bb_xxyyzzss)) = FILLVAL_EXP;
     if isempty(ebsp.ee_ss)
-      ebsp.ee_ss = zeros(nData,nFreq)*FILLVAL;
+      ebsp.ee_ss = ones(nData,nFreq)*FILLVAL_EXP;
+    else
+      ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
     end
-    ebsp.ee_ss(isnan(ebsp.ee_ss)) = FILLVAL_EXP;
     
     % fliplr to make frequencies ascending
     ebsp.ellipticity = fliplr(ebsp.ellipticity);
@@ -202,7 +208,7 @@ end
     for comp=1:2
       K(:,((1:nFreq)-1)*2+comp) = fliplr(ebsp.k_tp(:,:,comp));
     end
-    PV = zeros(nData,nFreq*3)*FILLVAL;
+    PV = ones(nData,nFreq*3)*FILLVAL;
     if ~isempty(ebsp.pf_rtp)
       for comp=1:3
         PV(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.pf_rtp(:,:,comp));
@@ -226,7 +232,7 @@ end
     if strcmpi(freqRange,'pc35')
       ebsp.ee_xxyyzzss(isnan(ebsp.ee_xxyyzzss)) = FILLVAL_EXP;
       % Reformat E matrix and fliplr to make frequencies ascending
-      EE_2D = zeros(nData,nFreq*3)*FILLVAL;
+      EE_2D = ones(nData,nFreq*3)*FILLVAL;
       if ~isempty(ebsp.ee_xxyyzzss)
         for comp=1:3
           EE_2D(:,((1:nFreq)-1)*3+comp) = fliplr(ebsp.ee_xxyyzzss(:,:,comp));
