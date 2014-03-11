@@ -1,3 +1,4 @@
+2014-03-11 v1.5.0 many bug fixes, c_caa_cef_var_get() can stream data from CAA
 2014-02-21 v1.4.6 minor fixes in different routines
 2014-02-19 v1.4.5 caa_meta() update, irf_spectrogram() bug fix, other minor fixes
 2014-02-12 v1.4.4 crlf fixes, minor improvements to some routines
