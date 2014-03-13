@@ -22,6 +22,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 %               'P'     - flow pressure (nPa)
 %               'beta'  - plasma beta
 %               'Ma'    - Alfven Mach number
+%               'Ms'    - 1 AU IP Magnetosonic Mach number
 %               'ssn'   - daily sunspot number
 %               'dst'   - DST index
 %               'f10.7' - F10.7 flux
@@ -93,6 +94,7 @@ function f = irf_get_data_omni( tint, parameter , database)
 % ASY/D index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
 % ASY/H index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
 % PC(N) index,                    F7.2    See World Data Center for Geomagnetism, Copenhagen
+% Magnetosonic mach number        F5.1    See  footnote G below
 
 if nargin < 3, % database not specified defaulting to omni2
 	dataSource='omni2';
@@ -138,6 +140,7 @@ for jj=1:length(iStart)
 		case 'e', varNumberOmni2=35;varNumberOmni1min=28;
 		case 'beta', varNumberOmni2=36;varNumberOmni1min=29;
 		case 'ma', varNumberOmni2=37;varNumberOmni1min=30;
+        case 'ms', varNumberOmni2=56;varNumberOmni1min=45;
 		case 'ssn', varNumberOmni2=39;varNumberOmni1min=-1;
 		case 'dst', varNumberOmni2=40;varNumberOmni1min=-1;
 		case 'ae', varNumberOmni2=41;varNumberOmni1min=37;

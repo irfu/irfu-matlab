@@ -13,9 +13,22 @@ function out = c_caa_cef_var_get(varName,fileName,varargin)
 % from CAA as data type VariableMat.
 %
 % Example:
-%   R = CEF_GET_DATA('sc_r_xyz_gse','CL_SP_AUX__20101231_010001_20101231_010201.cef.gz')
+%   R = C_CAA_CEF_GET_DATA('sc_r_xyz_gse','CL_SP_AUX__20101231_010001_20101231_010201.cef.gz')
 %
 % See also: CEF_INIT, CEF_READ, IRF.DATATYPES
+
+persistent okCeflib 
+
+if isempty(okCeflib), 
+	% check whether ceflib is properly installed
+	okCeflib = datastore('irfu_matlab','okCeflib');
+end
+
+if ~okCeflib,
+	irf.log('critical','ceflib is not installed properly!');
+	if nargout > 0, out = []; end
+	return
+end
 
 if nargin == 0, help c_caa_cef_var_get; return; end
 if nargin == 1,

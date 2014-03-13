@@ -189,7 +189,9 @@ for iVar = 1: numel(varNameList)
 						irf.log('notice','will test if data are in local CAA data repository.');
 					end
 					if getMat && ~getAllData,
-						testDataStreaming = true;
+						if datastore('irfu_matlab','okCeflib'),
+							testDataStreaming = true;
+						end
 					end
 				end
 			end
