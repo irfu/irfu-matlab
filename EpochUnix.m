@@ -28,8 +28,6 @@ classdef EpochUnix < GenericTimeArray
       if nargin<2, format = 0; end
       s = epoch2iso(obj.epoch, format);
     end
-    function obj = toEpochUnix(obj)
-    end
   end
 end
 

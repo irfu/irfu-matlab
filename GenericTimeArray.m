@@ -138,6 +138,17 @@ classdef (Abstract) GenericTimeArray
       end
     end
     
+    function res = toEpochUnix(obj)
+      if strcmp(class(obj),'EpochUnix'), res = obj;
+      else res = EpochUnix(toUtc(obj));
+      end
+    end
+    function res = toEpochTT2000(obj)
+      if strcmp(class(obj),'EpochTT2000'), res = obj;
+      else res = EpochTT2000(toUtc(obj));
+      end
+    end
+    
     % Anstract methods
     toUtc(obj)
     %toUtc  convert to UTC time string
