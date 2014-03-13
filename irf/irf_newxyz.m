@@ -38,5 +38,7 @@ elseif size(out,2)>3,
   out(:,3)=inp(:,2:4)*y';
   out(:,4)=inp(:,2:4)*z';
 else
-  irf_log('fcal','!!!!!! Coordinate transformation not possible !!!!!!!!!');
+	errStr = 'Coordinate transformation not possible when input has less than 3 columns';
+	irf.log('critical',errStr);
+	error('irf_newxyz:too_few_components',errStr);
 end
