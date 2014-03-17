@@ -23,37 +23,48 @@
 #
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
 
+# User definable constants
+MATLAB_EXE=/tools/matlab/R2013b/bin/matlab
+MATLAB_FLAGS="-nodesktop -nosplash -nodisplay -nojvm"
+IRFU_MATLAB=/home/spd/irfu-matlab # XXXX: change this
+
+# No need to edit after this line
+export MATLABPATH=$IRFU_MATLAB
+
+PROCESS_NAME=
+case "$0" in
+	*mms_dce_ql_script_tryCatch*) PROCESS_NAME=ql ;;
+	*mms_dce_sitl_script_tryCatch*) PROCESS_NAME=sitl ;;
+	*mms_dcv_usc_script_tryCatch*) PROCESS_NAME=usc ;;
+	*)
+	echo "ERROR: urecognized name of the caller routine"
+	exit 166
+	;;
+esac
+echo $PROCESS_NAME
+
 # make sure that the correct number of arguments are provided
 if [ ${#} -lt 2 ] || [ ${#} -gt 3 ] ; then
-  exit 166  # SDC-defined error code for "incorrect usage"
+	echo "ERROR: Wrong number of input parameters: min: 2, max: 3"
+	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
-# For debug: display input arguments to terminal
-#echo $1 # First argument
-#echo $2 # Second argument
-#echo $3 # Third argument
-
-# SET ENVIRONMENT MATLABPATH by finding all dir and subdir of 'irfu-matlab' with full path.
-#find `pwd` -type d \( -name '@*' -o -name '+*' -o -name '.git' \) -prune -o \( -path "*irfu-matlab*" -type d \) -printf %p:
-export MATLABPATH="$(find `pwd` -type d \( -name '@*' -o -name '+*' -o -name '.git' \) -prune -o \( -path "*irfu-matlab*" -type d \) -printf %p:)$MATLABPATH"
+# test that Matlab binary (startup script) is executable
+if [ ! -x $MATLAB_EXE ] ; then 
+	echo "ERROR: Matlab [$MATLAB_EXE] not found/not executable"
+	exit 166  # SDC-defined error code for "incorrect usage"
+fi
 
 # SET ENVIRONMENT LD_LIBRARY_PATH in order for the linking to CDF.h and cdflib.so to properly work.
+if [ ! -e $CDF_BASE/lib/libcdf.so ]; then
+	echo "ERROR: no libcdf.so in CDF_BASE ($CDF_BASE)"
+	exit 166  # SDC-defined error code for "incorrect usage"
+fi
 if [ "X$LD_LIBRARY_PATH" = "X" ]; then
 	export LD_LIBRARY_PATH="$CDF_BASE/lib"
 else
 	export LD_LIBRARY_PATH="$CDF_BASE/lib:$LD_LIBRARY_PATH"
 fi
 
-
 # RUN THIS IF ONLY ONE FILE EXISTS (DCE)
-if [ ${#} -eq 2 ] ;  then
-# Run if two input files (DCE and sunpulse)
-   /tools/matlab/R2013b/bin/matlab -nodesktop -nosplash -nodisplay -nojvm -r "try, mms_sdc_sdp_proc('xyz','$1','$2'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
-elif [ ${#} -eq 3 ] ; then
-# RUN THIS IF three FILES EXISTS (DCE and DCV and sunpulse)
-   /tools/matlab/R2013b/bin/matlab -nodesktop -nosplash -nodisplay -nojvm -r "try, mms_sdc_sdp_proc('xyz','$1','$2','$3'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
-fi
-
-# For debug: display message 'all done'.
-#echo $? # Status code 0 if ok, 100-199 if error occured.
-#echo 'Back in bash, all done.'
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
