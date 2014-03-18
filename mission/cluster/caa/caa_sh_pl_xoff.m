@@ -4,8 +4,6 @@ function caa_sh_pl_xoff(dE, dAmp, dt_int, weight, tint)
 % caa_sh_pl_xoff(dE, dAmp, dt_int, weight,[tint])
 %
 % See also CAA_SH_XOFF_BATCH
-%
-% $Id$
 
 % Copyright 2007 Yuri Khotyaintsev
 
@@ -49,7 +47,7 @@ for cli=1:4
 		abs( dE(:,cli+1) - mean( dE(ii,cli+1) ) ) < std( dE(ii,cli+1) ) ));
 	ci = dt_int(ii).*weight(ii)/sum(dt_int(ii).*weight(ii));
 	ddE(cli) = sum( dE(ii,cli+1).*ci );
-	irf_plot([dE(:,1) dE(:,cli+1)-ddE(cli)],[clrs(cli) '.'])
+	irf_plot([dE(:,1) dE(:,cli+1)-ddE(cli)],[clrs(cli) 'x'])
 	if cli==1, hold on, end
 	irf_plot([dE(ii,1) dE(ii,cli+1)-ddE(cli)],[clrs(cli) 'O'])
 end
@@ -60,7 +58,7 @@ ylabel('dE-<dE> [mV/m]')
 subplot(3,2,5)
 for cli=1:4
 	di = dist_dE(dE(:,cli+1),ddE(cli));
-	plot(di(:,1),di(:,2), [clrs(cli) '.'])
+	plot(di(:,1),di(:,2), [clrs(cli) 'x'])
 	if cli==1, hold on, end
 end
 hold off, grid on
