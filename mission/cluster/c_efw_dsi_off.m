@@ -26,7 +26,9 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2012 01 01 00 00 0]), Ddsi = [ 0.31  1.28  2.04  0.10 ];
+if     t>=toepoch([2012 03 03 00 00 0]), Ddsi = [ -0.28  1.28  0.7  0.11 ];
+elseif t>=toepoch([2012 01 06 12 00 0]), Ddsi = [ -0.28  1.28  1.0  0.11 ];
+elseif t>=toepoch([2011 11 01 00 00 0]), Ddsi = [ -0.28   0.1  1.1  0.11 ];
 elseif t>=toepoch([2011 05 09 15 00 0]), Ddsi = [ 0.03  0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 05 02 21 00 0]), Ddsi = [ 0.03  3.0+0.65+0.25i  2.04  0.51 ];
 elseif t>=toepoch([2011 04 30 06 40 0]), Ddsi = [ 0.03  4.0+0.65+0.25i  2.04  0.51 ];
