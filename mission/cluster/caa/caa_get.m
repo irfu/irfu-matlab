@@ -3,7 +3,6 @@ function [data, ok, msg] = caa_get(iso_t,dt,cl_id,var_name,ops_s,varargin)
 %
 % data = caa_get(start_t,dt/stop_t,cl_id,var_name,ops_s)
 %
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -144,13 +143,7 @@ for j = ii;
 	
 	if isempty(data), data = tt;
    elseif ~(isstruct(data) || isstruct(tt))
-%      try
          data = caa_append_data(data,tt);
-%      catch
-%         disp('!!!!! ERROR: ')
-%         disp(lasterr)
-%         keyboard
-%      end
    elseif (isstruct(data) && isstruct(tt))
       if ~isfield(data, 'int1')
          temp.int1 = data;
