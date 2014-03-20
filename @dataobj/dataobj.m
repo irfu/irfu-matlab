@@ -20,17 +20,17 @@ persistent usingNasaPatchCdf
 if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 	usingNasaPatchCdf=irf.check_if_using_nasa_cdf;
 end
-shouldReadAllData = true; % default read all data
-noDataReturned    = 0;    % default expects data to be returned
-KeepTT2000 = false; % default for Cluster etc is not to keep TT2000
-if nargin==0, action='create_default_object';
+shouldReadAllData = true;  % default read all data
+isDataReturned    = true; % default expects data to be returned
+keepTT2000        = false; % default for Cluster etc is not to keep TT2000
+if     nargin==0, action='create_default_object';
 elseif nargin==1, action='read_data_from_file';
 else
 	action='read_data_from_file';
 	if nargin==2 || nargin==4
-		if isnumeric(varargin{nargin}), KeepTT2000 = varargin{nargin};
+		if isnumeric(varargin{nargin}), keepTT2000 = varargin{nargin};
 		elseif ischar(varargin{nargin}) && strcmpi(varargin{nargin},'KeepTT2000')
-			KeepTT2000 = true;
+			keepTT2000 = true;
 		end
 	end
 	if nargin >=3
@@ -146,7 +146,7 @@ switch action
 				end
 				isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
 				if (any(isCdfEpochTT2000VariableArray))
-					if(~KeepTT2000)
+					if(~keepTT2000)
 						iVar = find(isCdfEpochTT2000VariableArray);
 						for i=1:length(iVar)
 							if is_virtual(iVar(i))
@@ -170,11 +170,15 @@ switch action
 				
 				if ~shouldReadAllData
 					nVariables = size(info.Variables,1);
-					records = cell(nVariables,1); recsTmp = {};
+					records = cell(nVariables,1); 
+					recsTmp = {}; % cell array, 
 					for i=1:nVariables
 						% Time dependent variables
 						timeVarName = get_key('DEPEND_0',i);
-						if isempty(timeVarName), continue, end
+						if isempty(timeVarName),
+							% not explicitely dependant time variable
+							continue,
+						end
 						timeVarName = timeVarName{:};
 						if ~isempty(recsTmp)
 							isRecArray=cellfun(@(x) strcmpi(x,timeVarName), recsTmp(:,1));
@@ -183,17 +187,42 @@ switch action
 						end
 						iTimeVar = get_var_idx(timeVarName);
 						timeline = data{iTimeVar};
-						if KeepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
+						if keepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
 							tintTmp(1) = parsett2000(epoch2iso(tint(1)));
 							tintTmp(2) = parsett2000(epoch2iso(tint(2)));
-						else tintTmp = tint;
+						else
+							tintTmp = tint;
 						end
 						records{i} = (timeline >= tintTmp(1)) & (timeline <= tintTmp(2));
 						recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
 					end
 					% Time variables
 					if ~isempty(recsTmp)
-						for i = 1:size(recsTmp,1), records{recsTmp{i,2}} = recsTmp{i,3}; end
+						for i = 1:size(recsTmp,1), 
+							records{recsTmp{i,2}} = recsTmp{i,3};
+							isDeltaPlus = cellfun(@(x) strcmpi(x,recsTmp{i,1}),info.VariableAttributes.DELTA_PLUS(:,1));
+							idx = find(isDeltaPlus == 1);
+							if ~isempty(idx),
+								variableDeltaPlus = info.VariableAttributes.DELTA_PLUS{idx,2};
+								isVariableDeltaPlus = cellfun(@(x) strcmpi(x,variableDeltaPlus),info.Variables(:,1));
+								idx = find(isVariableDeltaPlus == 1);
+								recsTmp{idx,1} = recsTmp{i,1};
+								recsTmp{idx,2} = recsTmp{i,2};
+								recsTmp{idx,3} = recsTmp{i,3};
+								records{idx}   = records{i};
+							end
+							isDeltaMinus = cellfun(@(x) strcmpi(x,recsTmp{i,1}),info.VariableAttributes.DELTA_MINUS(:,1));
+							idx = find(isDeltaMinus == 1);
+							if ~isempty(idx),
+								variableDeltaMinus = info.VariableAttributes.DELTA_MINUS{idx,2};
+								isVariableDeltaMinus = cellfun(@(x) strcmpi(x,variableDeltaMinus),info.Variables(:,1));
+								idx = find(isVariableDeltaMinus == 1);
+								recsTmp{idx,1} = recsTmp{i,1};
+								recsTmp{idx,2} = recsTmp{i,2};
+								recsTmp{idx,3} = recsTmp{i,3};
+								records{idx}   = records{i};
+							end
+						end
 					end
 				end
 			else
@@ -240,15 +269,15 @@ switch action
 			%% check if number of records to read is zero
 			if ~shouldReadAllData
 				if iscell(records)
-					noDataReturned = 1;
+					isDataReturned = false;
 					for i=1:length(records)
 						if ~isempty(records{i}) && sum(records{i}) > 0
-							noDataReturned = 0; break
+							isDataReturned = true; break
 						end
 					end
-				elseif sum(records)==0, noDataReturned = 1;
+				elseif sum(records)==0, isDataReturned = false;
 				end
-				if noDataReturned
+				if ~isDataReturned
 					irf.log('warning','No data within specified time interval');
 				end
 			end
@@ -274,25 +303,25 @@ switch action
 				for v=1:nVariables
 					dobj.vars{v,1}=variable_mat_name(dobj.vars{v,2});
 					varName = dobj.vars{v,1};
-					data_all_records = data{v};
+					dataAllRecords = data{v};
 					if shouldReadAllData || ...% return all data
 							(usingNasaPatchCdf && strcmpi(info.Variables{v,5}(1),'F')),% fixed variable with NASA cdf patch (matlab cdfread return fixed variable as time series)
-						dobj.data.(varName).data = data_all_records;
+						dobj.data.(varName).data = dataAllRecords;
 						dobj.data.(varName).nrec = info.Variables{v,3};
 					else
 						if iscell(records), recsTmp = records{v}; else recsTmp = records; end
-						nDim=numel(size(data_all_records));
+						nDim=numel(size(dataAllRecords));
 						switch nDim
 							case 2,
-								data_records_within_interval=data_all_records(recsTmp,:);
+								dataSelectedRecords=dataAllRecords(recsTmp,:);
 							case 3,
-								data_records_within_interval=data_all_records(recsTmp,:,:);
+								dataSelectedRecords=dataAllRecords(recsTmp,:,:);
 							case 4,
-								data_records_within_interval=data_all_records(recsTmp,:,:,:);
+								dataSelectedRecords=dataAllRecords(recsTmp,:,:,:);
 							case 5,
-								data_records_within_interval=data_all_records(recsTmp,:,:,:,:);
+								dataSelectedRecords=dataAllRecords(recsTmp,:,:,:,:);
 						end
-						dobj.data.(varName).data = data_records_within_interval;
+						dobj.data.(varName).data = dataSelectedRecords;
 						dobj.data.(varName).nrec = sum(recsTmp);
 						dobj.Variables{v,3}      = sum(recsTmp);
 					end
