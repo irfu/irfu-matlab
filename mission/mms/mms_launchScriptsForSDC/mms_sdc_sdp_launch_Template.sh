@@ -24,9 +24,9 @@
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
 
 # User definable constants
-MATLAB_EXE=/tools/matlab/R2013b/bin/matlab
+MATLAB_EXE=/tools/matlab/R2013b/bin/matlab # SDC location of installed Matlab. # XXX: change this to whereever matlab is located.
 MATLAB_FLAGS="-nodesktop -nosplash -nodisplay -nojvm"
-IRFU_MATLAB=/home/mms-spd/software/irfu-matlab # XXXX: change this to whereever irfu-matlab is located.
+IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-matlab. # XXX: change this to whereever irfu-matlab is located.
 
 # No need to edit after this line
 # add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
