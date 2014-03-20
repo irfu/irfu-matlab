@@ -50,6 +50,7 @@ if( (all( diff(sunpulseTimeStamp) < sunpulse_limit_high ) ) && ...
         'linear', 'extrap' );
 
     % Wrap it to the default 0-360 degrees or should it be radian 0-2*pi?
+    % Or should it be continous?
     phase = wrapTo360(phase);
     
 else
@@ -61,3 +62,10 @@ else
     irf.log('critical', err_str);
     error('MATLAB:mms_sdc_sdp_phase', err_str);
 end
+
+
+function lon = wrapTo360(lon)
+% Wrap positive angles to the [0 - 360] interval.
+positiveInput = (lon > 0);
+lon = mod(lon, 360);
+lon((lon == 0) & positiveInput) = 360;
