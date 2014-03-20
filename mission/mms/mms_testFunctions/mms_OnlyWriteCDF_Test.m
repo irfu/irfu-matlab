@@ -20,7 +20,7 @@ function tests = mms_OnlyWriteCDF_Test
         error('Require at least R2013b to run this test. Please upgrade.');
     end
     global ENVIR;
-    ENVIR=mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
+    mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
     tests = functiontests(localfunctions);
 end
 
@@ -32,22 +32,36 @@ function testUscWriteCDF(testCase)
     global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
-    epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
+    epochTmp = [int64(481907669295761138); int64(481907669327011502); ...
+        int64(481907669358261866); int64(481907669389512230); ...
+        int64(481907669420762594); int64(481907669452012958); ...
+        int64(481907669483263323); int64(481907669514513687); ...
+        int64(481907669545764051); int64(481907669577014415)];
     % Fill data with easily identifiable numerical values.
-    data1Tmp = [single(0.1); single(2); single(3); single(4); single(5); single(6); single(7); single(8); single(9); single(10)];
-    data2Tmp = [single(1); single(0.12); single(13); single(14); single(15); single(16); single(17); single(18); single(19); single(20)];
-    data3Tmp = [single(1); single(22); single(0.23); single(24); single(25); single(26); single(27); single(28); single(29); single(30)];
+    data1Tmp = [single(0.1); single(2); single(3); single(4); ...
+        single(5); single(6); single(7); single(8); single(9); single(10)];
+    data2Tmp = [single(1); single(0.12); single(13); single(14); ...
+        single(15); single(16); single(17); single(18); single(19); ...
+        single(20)];
+    data3Tmp = [single(1); single(22); single(0.23); single(24); ...
+        single(25); single(26); single(27); single(28); single(29); ...
+        single(30)];
     
     psp_p=[data1Tmp, data2Tmp, data3Tmp, data1Tmp, data2Tmp, data3Tmp];
-    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
+    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); ...
+        uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
     oldDir=pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_sdp_cdfwrite('mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), 'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
+    mms_sdc_sdp_cdfwrite( ...
+        'mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf', int8(2), ...
+        'usc', epochTmp, data1Tmp, data2Tmp, data3Tmp, psp_p, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
+        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'], 'tint', ...
+        0, 'true' );
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -95,26 +109,41 @@ function testQuickLookWriteCDF(testCase)
     global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
-    epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
+    epochTmp = [int64(481907669295761138); int64(481907669327011502); ...
+        int64(481907669358261866); int64(481907669389512230); ...
+        int64(481907669420762594); int64(481907669452012958); ...
+        int64(481907669483263323); int64(481907669514513687); ...
+        int64(481907669545764051); int64(481907669577014415)];
     % Fill data with easily identifiable numerical values.
-    data1Tmp = [single(0.1); single(2); single(3); single(4); single(5); single(6); single(7); single(8); single(9); single(10)];
-    data2Tmp = [single(1); single(0.12); single(13); single(14); single(15); single(16); single(17); single(18); single(19); single(20)];
-    data3Tmp = [single(1); single(22); single(0.23); single(24); single(25); single(26); single(27); single(28); single(29); single(30)];
+    data1Tmp = [single(0.1); single(2); single(3); single(4); ...
+        single(5); single(6); single(7); single(8); single(9); single(10)];
+    data2Tmp = [single(1); single(0.12); single(13); single(14); ...
+        single(15); single(16); single(17); single(18); single(19); ...
+        single(20)];
+    data3Tmp = [single(1); single(22); single(0.23); single(24); ...
+        single(25); single(26); single(27); single(28); single(29); ...
+        single(30)];
     
     data4Tmp = [data1Tmp, data2Tmp, data3Tmp];
     data5Tmp = [data3Tmp, data2Tmp, data1Tmp];
     
-    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
-    qualityMark= [uint16(10); uint16(9); uint16(8); uint16(7); uint16(6); uint16(5); uint16(4); uint16(3); uint16(2); uint16(10)];
+    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); ...
+        uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
+    qualityMark= [uint16(10); uint16(9); uint16(8); uint16(7); ...
+        uint16(6); uint16(5); uint16(4); uint16(3); uint16(2); uint16(10)];
     
     oldDir = pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_sdp_cdfwrite('mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
+    mms_sdc_sdp_cdfwrite( ...
+        'mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf', int8(2), ...
+        'ql', epochTmp,  data4Tmp, data5Tmp, bitmask, qualityMark);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
+        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'], 'tint', ...
+        0, 'true');
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -163,25 +192,39 @@ function testSITLwriteCDF(testCase)
     global ENVIR;
     % Fill data with at least 10 points as we have experienced issues with
     % 3x3 data in output file.
-    epochTmp = [int64(481907669295761138); int64(481907669327011502); int64(481907669358261866); int64(481907669389512230); int64(481907669420762594); int64(481907669452012958); int64(481907669483263323); int64(481907669514513687); int64(481907669545764051); int64(481907669577014415)];
+    epochTmp = [int64(481907669295761138); int64(481907669327011502); ...
+        int64(481907669358261866); int64(481907669389512230); ...
+        int64(481907669420762594); int64(481907669452012958); ...
+        int64(481907669483263323); int64(481907669514513687); ...
+        int64(481907669545764051); int64(481907669577014415)];
     % Fill data with easily identifiable numerical values.
-    data1Tmp = [single(0.1); single(2); single(3); single(4); single(5); single(6); single(7); single(8); single(9); single(10)];
-    data2Tmp = [single(1); single(0.12); single(13); single(14); single(15); single(16); single(17); single(18); single(19); single(20)];
-    data3Tmp = [single(1); single(22); single(0.23); single(24); single(25); single(26); single(27); single(28); single(29); single(30)];
+    data1Tmp = [single(0.1); single(2); single(3); single(4); ...
+        single(5); single(6); single(7); single(8); single(9); single(10)];
+    data2Tmp = [single(1); single(0.12); single(13); single(14); ...
+        single(15); single(16); single(17); single(18); single(19); ...
+        single(20)];
+    data3Tmp = [single(1); single(22); single(0.23); single(24); ...
+        single(25); single(26); single(27); single(28); single(29); ...
+        single(30)];
     
     data4Tmp = [data1Tmp, data2Tmp, data3Tmp];
     data5Tmp = [data3Tmp, data2Tmp, data1Tmp];
     
-    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
+    bitmask= [uint16(1); uint16(2); uint16(3); uint16(4); uint16(5); ...
+        uint16(6); uint16(7); uint16(8); uint16(9); uint16(10)];
     
     oldDir = pwd;
     cd(ENVIR.DROPBOX_ROOT);
     
-    mms_sdc_sdp_cdfwrite('mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), 'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
+    mms_sdc_sdp_cdfwrite( ...
+        'mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf', int8(2), ...
+        'sitl', epochTmp,  data4Tmp, data5Tmp, bitmask);
     
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
-    dataObjIn = dataobj([ENVIR.DROPBOX_ROOT,'/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'],'tint',0,'true');
+    dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
+        '/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'], 'tint', ...
+        0, 'true');
     
     % Do some checks that the written output and subsequent reading was
     % as expected.

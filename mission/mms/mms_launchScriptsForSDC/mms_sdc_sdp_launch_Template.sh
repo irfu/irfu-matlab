@@ -26,10 +26,11 @@
 # User definable constants
 MATLAB_EXE=/tools/matlab/R2013b/bin/matlab
 MATLAB_FLAGS="-nodesktop -nosplash -nodisplay -nojvm"
-IRFU_MATLAB=/home/spd/irfu-matlab # XXXX: change this
+IRFU_MATLAB=/home/mms-spd/software/irfu-matlab # XXXX: change this to whereever irfu-matlab is located.
 
 # No need to edit after this line
-export MATLABPATH=$IRFU_MATLAB
+# add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
+export MATLABPATH=$IRFU_MATLAB:$IRFU_MATLAB/mission/mms
 
 PROCESS_NAME=
 case "$0" in

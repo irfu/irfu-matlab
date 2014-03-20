@@ -1,8 +1,18 @@
 function [ VarOut ] = mms_sdc_sdp_datamanager( varargin )
-% MMS_SDC_SDP_DATAMANAGER load data into variables and then retrive them as
-% needed. FIXME: ADD MORE HELP. Includes two small verification functions
-% to ensure time is increasing and variables are not stuck at one single
-% value.
+% mms_sdc_sdp_datamanager will store and retrive data for
+%  	mms_sdc_sdp_datamanager( dataObj, dataType ) will store
+%  	appropriate data variables related to dataType in the global variable
+%  	DataInMemory for later retrival.
+%  
+%   [varOut] = mms_sdc_sdp_datamanager( variable ) will return the variable
+%   requested to varOut, if no such variable has been created already it
+%   will try and calculate it using the stored data.
+%   
+%  	Example:
+%  		mms_sdc_sdp_datamanager(dceDataObj, 'dce')
+%  		mms_sdc_sdp_datamanager('phase')
+%  
+%   	See also DATAOBJ, MMS_SDC_SDP_CDF_IN_PROCESS.
 
 narginchk(1,2); % One argument is simply retreive variable, Two arguments
 % store "dataObj" as "dataType".
@@ -67,7 +77,7 @@ if(nargin==2)
                 DataInMemory.dcv.time = timeVar.data;
                 % FIXME: ADD CHECKS TO SEE WHICH PROBES ARE IN USE.
                 % Also change variable number to match actual variable
-                % name! Is now, 'mmsX_sdp_dce_sensors'.
+                % name! Is now, 'mmsX_sdp_dcv_sensors'.
                 tmp = getv(dataObj, dataObj.vars{5,1});
                 % FIXME: apply check if stuck.
                 %check_stuck_variable(tmp.data(:,1), 'dcv.p1');
@@ -177,7 +187,7 @@ end
 function check_monoton_timeincrease(time, dataType)
     
 if(any(diff(time)<=0))
-        err_str = ['MMS_SDC_SDP_DATAMANAGER Time is not monotonically increasing for the datatype ', dataType];
+        err_str = ['MMS_SDC_SDP_DATAMANAGER Time is NOT increasing for the datatype ', dataType];
         irf.log('critical', err_str);
         error('MATLAB:MMS_SDC_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
 end
@@ -189,8 +199,8 @@ end
 % PRELIMINARY CDF FILES ARE STUCK.
 function check_stuck_variable(var, varName)
 
-% FIXME: A NUMBER OF DIFF(VAR) must be stuck, not just a sinlge value. But
-% for now source file have all(diff(var)) == 0.
+% FIXME: Some values should perhaps be allowed to be the same for a limited
+% number of datapoints, but for now check if ALL points in time are fixed.
 if( all(diff(var))==0 )
     err_str = ['MMS_SDC_SDP_DATAMANAGER Variable ' varName,...
         ' appears to be stuck.'];

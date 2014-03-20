@@ -1,18 +1,19 @@
-function [outObj, filenameData] = mms_sdc_sdp_cdf_in_process( fullFilename, sci_or_ancillary )
-% MMS_SDC_SDP_CDF_IN_PROCESS reads a MMS CDF files and return a corresponding dataobj with decoded filename.
-%	[outObj, filenameData] = MMS_SDC_SDP_CDF_IN_PROCESS( fullFilename, sci_or_ancillary) read the CDF file found as fullFilename 
-% 	depending on datatype sci_or_ancillary ('sci' for ordinary science data and 'ancillary' for other data such as sunpulse).
-%
-%	[outObj, filenameData] = MMS_SDC_SDP_CDF_IN_PROCESS(fullFilename, sci_or_ancillary) returns a dataobj of the CDF file and 
-%	decoded filename information in the struct filenameData. Information such as scId, instrumentId, dataMode, dataLevel.
+function filenameData = mms_sdc_sdp_cdf_in_process( fullFilename, sci_or_ancillary, dataType )
+% MMS_SDC_SDP_CDF_IN_PROCESS reads a MMS CDF files or ancillary data files
+% and store them in memory using the MMS_SDC_SDP_DATAMANAGER.
+%	MMS_SDC_SDP_CDF_IN_PROCESS( fullFilename, sci_or_ancillary, datatype) 
+%   read the CDF file or (Ancillary ASCII?) found as fullFilename and send
+%   the data along to the DATAMANAGER to be stored as datatype. And return
+%   some decoded information about the file in filenameData.
 %
 %	Example:
-%		[outObj, filenameData] = mms_sdc_sdp_cdf_in_process('/full/data/path/2015/04/10/mms2_sdp_fast_l1b_20150410_v0.0.0.cdf','sci');
+%		filenameData = mms_sdc_sdp_cdf_in_process(...
+%     '/full/path/2015/04/10/mms2_sdp_fast_l1b_20150410_v0.0.0.cdf',...
+%     'sci', 'dce');
 %
-% 	See also DATAOBJ.
+% 	See also MMS_SDC_SDP_PROC, MMS_SDC_SDP_DATAMANAGER.
 
-% narginchk - Min 2 Max 2 ('full/path/filename.cdf', 'sci_or_ancillary').
-narginchk(2,2);
+narginchk(2,3);
 
 if(strcmp(sci_or_ancillary,'sci'))
     % Convert input file name to parameters, use this to go down through the
@@ -21,16 +22,18 @@ if(strcmp(sci_or_ancillary,'sci'))
     % day of year) folder.
     % 
     
-    irf.log('debug',['mms_sdc_sdp_cdf_in_process received input filename: ', fullFilename]);
+    irf.log('debug',...
+        ['mms_sdc_sdp_cdf_in_process received input filename: ', ...
+        fullFilename]);
     
-    outObj = [];
     filenameData = [];
     
-    [pathstr, filename, ext] = fileparts(fullFilename); 
+    [~, filename, ~] = fileparts(fullFilename); 
     
     pos = strfind(filename,'_');
     if length(pos)<5
-        irf.log('warning',['mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.']);
+        irf.log('warning',...
+            ['mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.']);
     end
 
     
@@ -48,46 +51,47 @@ if(strcmp(sci_or_ancillary,'sci'))
         % If length has been shortened, padd it so we can find day of year and
         % proper startTime.
         case 8 % = yyyymmdd
-            filenameData.startTime = strcat(filenameData.startTime,'000000');
+            filenameData.startTime = [filenameData.startTime,'000000'];
         case 9 % = yyyymmddh ?
-            filenameData.startTime = strcat(filenameData.startTime,'00000');
+            filenameData.startTime = [filenameData.startTime,'00000'];
         case 10 % = yyyymmddhh
-            filenameData.startTime = strcat(filenameData.startTime,'0000');
+            filenameData.startTime = [filenameData.startTime,'0000'];
         case 11 % = yyyymmddhhm
-            filenameData.startTime = strcat(filenameData.startTime,'000');
+            filenameData.startTime = [filenameData.startTime,'000'];
         case 12 % = yyyymmddhhmm
-            filenameData.startTime = strcat(filenameData.startTime,'00');
+            filenameData.startTime = [filenameData.startTime,'00'];
         case 13 % = yyyymmddhhmms
-            filenameData.startTime = strcat(filenameData.startTime,'0');
+            filenameData.startTime = [filenameData.startTime,'0'];
         case 14 % = yyyymmddhhmmss, fine
         otherwise
             % Something went wrong in reading startTime from filename.
-            irf.log('warning','mms_sdc_sdp_cdf_process something went wrong in reading startTime from filename input.');
+            irf.log('warning',...
+                'mms_sdc_sdp_cdf_process something went wrong in reading startTime from filename input.');
     end
-
-    %dirDOY = strcat(filenameData.startTime(1:4),'/',filenameData.startTime(5:6),'/',filenameData.startTime(7:8),'/');
-    %dirToInput = strcat(ENVIR.DATA_PATH_ROOT,'/','science','/',filenameData.scId,'/',filenameData.instrumentId,'/',filenameData.dataMode,'/',filenameData.dataLevel,'/',dirDOY);
-    % Add debug message to know where we are trying to look for file.
-    %irf.log('debug',['mms_sdc_sdp_cdf_process CDF file decoded as located here: ',strcat(dirToInput,filename)]);
-
+    
     if(~exist(fullFilename,'file'))
-        irf.log('critical',['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
+        irf.log('critical', ...
+            ['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
         error('MATLAB:SDCcode','184');
-
-%        error('MATLAB:MMS:mms_sdc_sdp_cdf_in_process',['inputfile not found:', strcat(dirToInput,filename)]);
     else
         % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
-        outObj = dataobj(fullFilename,'tint',0,true);
+        tmpDataObj = dataobj(fullFilename,'tint',0,true);
+        % Store it using the DataManager as dataType
+        mms_sdc_sdp_datamanager(tmpDataObj, dataType);
     end
 
 elseif(strcmp(sci_or_ancillary,'ancillary'))
-    % HouseKeeping and Ancillary data, named differently and stored
-    % differently.
-    
+    % Ancillary data, named differently and stored differently. At first
+    % glance it appears it is stored as simply ASCII files in folders by
+    % DOY.
+    % FIXME: Implement reading of these files and store the data in
+    % DATAMANAGER.
 
 else
     % Processing cdf files req. either SCIENCE or ANCILLARY data files.
-    irf.log('warning','Input to mms_sdc_sdp_cdf_process must contain "sci" or "ancillary" information.');
+    err_str = 'Input must be either "sci" or "ancillary" information';
+    irf.log('critical', err_str);
+    error('MATLAB:MMS_SDC_SDP_CDF_IN_PROCESSS', err_str);
 
 end
 
