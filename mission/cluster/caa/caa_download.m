@@ -38,15 +38,16 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %   'schedule'		- schedule the download, (returns zip file link)
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
 %   'nolog'			- do not log into .caa file (good for batch processing)
-%   'downloadDirectory=..'	- define directory for downloaded datasets (instead of deaful 'CAA/')
+%   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
 %   'csa'           - download from CSA instead of CAA, basic functions are implemented.
-%                     This must be taken into account when loading data.
-%   'stream'        - donwload through CAA streaming (gzipped cef file)
-%
+%	'json'			- return csa query in JSON format
+%	'csv'			- return csa query in CSV format
+%	'votable'		- return csa query in VOTABLE format
+%   'stream'        - donwload using streaming interface (gzipped cef file)
 %
 %  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'): 
-%		datastore('caa','user','uuu')
+%		datastore('caa','user','uuu')   % TODO are caa and csauser/password not the same???
 %		datastore('caa','pwd','ppp')
 %		datastore('csa','user','uuu')
 %		datastore('csa','pwd','ppp')
@@ -101,19 +102,21 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %% Check if latest irfu-matlab 
 % The check is appropriate to make when scientist is downloading data from CAA
 persistent usingLatestIrfuMatlab urlIdentity 
-global downloadFromCSA
+global downloadFromCSA  % we should not use globals, better persistent!
 
 if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 	usingLatestIrfuMatlab=irf('check');
 end
 
 %% Defaults
+
+%% Defaults that can be overwritten by input parameters
 checkDownloadStatus		= false;
 doLog					= true;			% log into .caa file
 doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 expandWildcards			= true;			% default is to use wildcard
-checkIfDataAreAtCaa		= true;			% check if there are any data at caa
+checkDataInventory		= true;			% check if there are any data at caa
 urlNonotify				= '&nonotify=1';% default is not notify by email
 urlFileInterval='&file_interval=72hours'; % default time interval of returned files
 urlSchedule='';							% default do not have schedule option
@@ -122,7 +125,7 @@ caaServer='http://caa.estec.esa.int/';	% default server
 urlIdentity=get_url_identity('caa');	% default identity, default caa
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 % CSA
-downloadFromCSA = 0;                    % csa: default is to download from CAA
+downloadFromCSA			= true;			% default to download from CSA
 csaServer = 'http://csa.esac.esa.int/csa/aio/'; % csa: default server        
 urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% csa                                        
 retrievalType = '&PRODUCT';             % csa: default is to download, not check inventory
@@ -160,15 +163,15 @@ if nargin>2, % check for additional flags
 			caaServer='http://caa5.estec.esa.int/caa_query/';
 			urlNonotify='';           % notify also by email
 		elseif strcmpi(flag,'nowildcard'),
-			expandWildcards = false;
-			checkIfDataAreAtCaa = false;
-			urlNonotify = '&nonotify=1';
+			expandWildcards			= false;
+			checkDataInventory	= false;
+			urlNonotify				= '&nonotify=1';
 		elseif strcmpi(flag,'overwrite'),
 			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
-			urlFileInterval = urlparameter(flag);
+			urlFileInterval = url_parameter(flag);
 		elseif any(strfind(flag,'format'))
-			urlFormat = urlparameter(flag);
+			urlFormat = url_parameter(flag);
 		elseif any(strcmpi('schedule',flag))
 			urlSchedule = '&schedule=1';
 		elseif any(strfind(flag,'uname='))
@@ -178,23 +181,27 @@ if nargin>2, % check for additional flags
 		elseif any(strcmpi('inventory',flag))
 			urlSchedule = '&inventory=1';
         elseif any(strcmpi('csa',flag)) % download from CSA instead of CAA
-			downloadFromCSA = 1;
+			downloadFromCSA = true;
             urlIdentity = get_url_identity('csa');
+        elseif any(strcmpi('caa',flag)) % download from CSA instead of CAA
+			downloadFromCSA = false;
+            urlIdentity = get_url_identity('caa');
 		elseif any(strfind(flag,'USERNAME='))
 			urlIdentity = flag;
-        elseif any(strcmpi('json',flag)) % set query format to 
+        elseif strcmpi('json',flag) % set query format to 
 			queryFormat = '&RETURN_TYPE=JSON';
-        elseif any(strcmpi('csv',flag)) % set query format to 
+        elseif any(strcmpi('csv',flag) % set query format to 
 			queryFormat = '&RETURN_TYPE=CSV';
-        elseif any(strcmpi('votable',flag)) % set query format to 
+        elseif strcmpi('votable',flag) % set query format to 
 			queryFormat = '&RETURN_TYPE=votable';
-		elseif any(strfind(lower(flag),'downloaddirectory='))
+		elseif strfind(lower(flag),'downloaddirectory='))
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
-			if downloadDirectory(end) ~= filesep,
+			if downloadDirectory(end) ~= filesep... 
+				|| ~strcmp(downloadDirectory(end),'/'),
 				downloadDirectory(end+1) = filesep;
 			end
 		elseif any(strcmpi('stream',flag)) % data streaming
-			checkIfDataAreAtCaa = false;
+			checkDataInventory = false;
 			expandWildcards		= false;
 			doDataStreaming		= true;
 		else
@@ -400,7 +407,7 @@ end
 % create CAA directory if needed
 if ~exist('CAA','dir'), mkdir('CAA');end
 
-if checkIfDataAreAtCaa
+if checkDataInventory
     switch downloadFromCSA
         case 0 % CAA
             url_line_list=[ caaInventory urlIdentity '&dataset_id=' dataset '&time_range=' tintiso];
@@ -593,7 +600,7 @@ for jj=1:length(filelist),
     end
 end
 end
-function paramOut=urlparameter(paramIn)
+function paramOut=url_parameter(paramIn)
     if paramIn(1)~= '&'
         paramOut=['&' paramIn];
     else
