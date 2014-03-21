@@ -46,6 +46,7 @@ function [download_status,downloadfile]=caa_download(tint,dataset,varargin)
 %	'csv'			- return csa query in CSV format
 %	'votable'		- return csa query in VOTABLE format
 %   'stream'        - donwload using streaming interface (gzipped cef file)
+%	'testcsa'		- test CSA interface
 %
 %  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'): 
 %		datastore('caa','user','uuu')   % TODO are caa and csauser/password not the same???
@@ -110,6 +111,7 @@ if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 end
 
 %% Defaults and parameters
+
 % CAA
 Default.Caa.urlQuery		= 'caa_query/?';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?';
@@ -118,35 +120,41 @@ Default.Caa.urlNotifyOn		= '';
 Default.Caa.urlNotifyOff	= '&nonotify=1';
 Default.Caa.urlScheduleOn	= '&schedule=1';
 Default.Caa.urlScheduleOff	= '';
+Default.Caa.urlInventoryOn	= '&inventory=1';
+Default.Caa.urlInventoryOff	= '';
+Default.Caa.urlServer		= 'http://caa.estec.esa.int/';      
+Default.Caa.urlIdentity		= get_url_identity('caa');
+
 % CSA
+% CSA Archive Inter-Operability (AIO) System User's Manual: 
+% http://cfadev.esac.esa.int/cfa/aio/html/CfaAIOUsersManual.pdf
 Default.Caa.urlQuery		= 'caa_query/?';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?';
 Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
-Default.Csa.urlNotify		= '';
-Default.Csa.urlNonotify		= '&NO_NOTIFY';
+Default.Csa.urlNotifyOn		= '';
+Default.Csa.urlNotifyOff	= '&NO_NOTIFY';
 Default.Csa.urlScheduleOn	= 'async-';
 Default.Csa.urlScheduleOff	= '';
+Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';      
+Default.Csa.urlIdentity		= get_url_identity('csa');
 
 %% Defaults that can be overwritten by input parameters
 checkDownloadStatus		= false;
+checkDataInventory		= true;			% check if there are any data at caa
 doLog					= true;			% log into .caa file
 doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
 doDownloadScheduling	= false;        % default download directly files
-overwritePreviousData	= false;		% continue adding cdf files to CAA directory
-expandWildcards			= true;			% default is to use wildcard
-checkDataInventory		= true;			% check if there are any data at caa
 doNotifyByEmail			= false;		% default, do not notify
+downloadFromCSA			= true;			% default to download from CSA
+expandWildcards			= true;			% default is to use wildcard
+overwritePreviousData	= false;		% continue adding cdf files to CAA directory
+
 urlFileInterval='&file_interval=72hours'; % default time interval of returned files
 urlFormat='&format=cdf';				% default is CDF (3.3) format
-caaServer='http://caa.estec.esa.int/';	% default server
-urlIdentity=get_url_identity('caa');	% default identity, default caa
 downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
+
 % CSA
-downloadFromCSA			= true;			% default to download from CSA
-csaServer = 'http://csa.esac.esa.int/csa/aio/'; % csa: default server        
 urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% csa                                        
-retrievalType = '&PRODUCT';             % csa: default is to download, not check inventory
-noBrowser   = '&NO_BROWSER';            % csa: default is to not download through browser    
 csaUrl = 'product-action?';             % csa: used for data retrieval
 queryFormat = '&RETURN_TYPE=CSV';       % csa: query format, it is the most readable in Matlab with disp()
 selectedFields = 'SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY'; 
@@ -173,11 +181,17 @@ if nargout>0 && nargin>0,
 	checkDownloadStatus=false; 
 	doLog = false;
 end
+% check caa_download('test_csa') syntax
+if nargin == 1 && ischar(tint) && strcmpi('testcsa',tint)
+	download_status = test_csa;
+	return
+end
+
 if nargin>2, % check for additional flags
 	for iFlag=1:numel(varargin)
 		flag=varargin{iFlag};
 		if strcmpi(flag,'nowildcard'),
-			expandWildcards			= false;
+			expandWildcards		= false;
 			checkDataInventory	= false;
 			doNotifyByEmail		= false;
 		elseif strcmpi(flag,'overwrite'),
@@ -194,24 +208,19 @@ if nargin>2, % check for additional flags
 			doLog = false;
 		elseif strcmpi('notify',flag)
 			doNotifyByEmail = true;
-		elseif any(strcmpi('inventory',flag))
-			checkDataInventory = true;
-			urlSchedule = '&inventory=1';
         elseif any(strcmpi('csa',flag)) % download from CSA instead of CAA
 			downloadFromCSA = true;
-            urlIdentity = get_url_identity('csa');
         elseif any(strcmpi('caa',flag)) % download from CSA instead of CAA
 			downloadFromCSA = false;
-            urlIdentity = get_url_identity('caa');
 		elseif any(strfind(flag,'USERNAME='))
 			urlIdentity = flag;
-        elseif strcmpi('json',flag) % set query format to 
+        elseif strcmpi('json',flag) % set query format to JSON
 			queryFormat = '&RETURN_TYPE=JSON';
-        elseif any(strcmpi('csv',flag) % set query format to 
+        elseif strcmpi('csv',flag) % set query format to CSV 
 			queryFormat = '&RETURN_TYPE=CSV';
-        elseif strcmpi('votable',flag) % set query format to 
+        elseif strcmpi('votable',flag) % set query format to VOTABLE
 			queryFormat = '&RETURN_TYPE=votable';
-		elseif strfind(lower(flag),'downloaddirectory='))
+		elseif strfind(lower(flag),'downloaddirectory=')
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
 			if downloadDirectory(end) ~= filesep... 
 				|| ~strcmp(downloadDirectory(end),'/'),
@@ -258,15 +267,13 @@ if nargin>=1, % check if first argument is not caa zip file link
 		return;
 	end
 end
-caaQuery	= [caaServer Default.Caa.urlQuery];
-caaStream	= [caaServer Default.Caa.urlStream];
-caaInventory= [caaServer Default.Caa.urlInventory];
 
 if downloadFromCSA
 	Caa = Default.Csa;
 else
 	Caa = Default.Caa;
 end
+urlIdentity = Caa.urlIdentity;
 if doNotifyByEmail
 	urlNonotify = Caa.urlNotifyOn;
 else
@@ -277,10 +284,8 @@ if doDownloadScheduling
 else
 	urlSchedule = Caa.urlScheduleOff;
 end	
-%%%%%%%%% CSA stuff, se also above 
-% CSA Archive Inter-Operability (AIO) System User's Manual: 
-% http://cfadev.esac.esa.int/cfa/aio/html/CfaAIOUsersManual.pdf
 if downloadFromCSA % change/add defaults, hasn't added these to above flag checking
+	csaServer = Caa.urlServer;
     % change/overwrite
     urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];	    
     % add
@@ -288,6 +293,10 @@ if downloadFromCSA % change/add defaults, hasn't added these to above flag check
     % some places '%' is written directly as '%25'
     space = '%20'; % space-sign: ' '
     and = [space 'AND' space]; % ' AND '
+else
+	caaQuery	= [Caa.urlServer Caa.urlQuery];
+	caaStream	= [Caa.urlServer Caa.urlStream];
+	caaInventory= [Caa.urlServer Caa.urlInventory];
 end
 
 %% Check status of downloads if needed
@@ -751,4 +760,23 @@ TT.TimeInterval=tint;
 TT.Header = strread(caalog(1:startIndices(1)-1), '%s', 'delimiter', sprintf('\n'));
 TT.Comment=cell(numel(TT),1);
 TT.Description=cell(numel(TT),1);
+end
+function ok = test_csa
+ok=false;
+disp('--- TESTING CSA ---');
+currentDir = pwd;
+c1 = onCleanup(@()cd(currentDir));
+tempDir=tempname;
+mkdir(tempDir);
+cd(tempDir);
+disp(['Moving to temporary directory: ' tempDir]); 
+c2 = onCleanup(@() rmdir(tempDir,'s'));
+
+% 30s of data
+tintIso = '2005-01-01T05:00:00.000Z/2005-01-01T05:00:30.000Z';
+caa_download(tintIso,'C3_CP_FGM_5VPS')
+caa_download(tintIso,'C3_CP_FGM_5VPS','stream')
+caa_download(tintIso,'C?_CP_FGM_5VPS')
+disp('--- TEST PASSED! ---');
+ok=true;
 end
