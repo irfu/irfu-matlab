@@ -9,6 +9,17 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
 %
+%   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
+%
+%		TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
+%		TTRequest.UserData.Downloadfile zip file to download (important if status=0)
+%		TTRequest.UserData.TimeOfRequest
+%		TTRequest.UserData.TimeOfDownload
+%		TTRequest.UserData.NumberOfAttemptsToDownload
+%		TTRequest.UserData.dataset
+%		TTRequest.UserData.number - number of entries
+%		TTRequest.UserData.version - version of dataset
+%
 %   LOCAL.CAA_DOWNLOAD(TTrequest) process request time table TTRequest
 %
 % Dataset downloading takes long time. You will be informed by email when it is
@@ -20,27 +31,15 @@ function out=caa_download(varargin)
 %		local.caa_download('C1_CP_PEA_MOMENTS')
 %
 % 	See also CAA_DOWNLOAD
-%
-
-% Request time table TTRequest structure
-%
-% TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
-% TTRequest.UserData.Downloadfile zip file to download (important if status=0)
-% TTRequest.UserData.TimeOfRequest
-% TTRequest.UserData.TimeOfDownload
-% TTRequest.UserData.NumberOfAttemptsToDownload
-% TTRequest.UserData.dataset
-% TTRequest.UserData.number - number of entries
-% TTRequest.UserData.version - version of dataset
 
 %% Defaults
-dataDirectory = '/data/caalocal';
-maxSubmittedJobs = 13;
-maxNumberOfAttempts = 20;
-isInputDatasetName = false;
-sendEmailWhenFinished = false;
-streamData = false;               % download cdf files asynchronously
-% so far undocumented feature
+dataDirectory			= '/data/caalocal';
+maxSubmittedJobs		= 13;
+maxNumberOfAttempts		= 20;
+isInputDatasetName		= false;
+sendEmailWhenFinished	= false;
+streamData				= false; % download cdf files asynchronously
+
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
 	if isempty(fields(datastore('local'))),
