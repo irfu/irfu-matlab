@@ -204,23 +204,27 @@ switch action
 							idx = find(isDeltaPlus == 1);
 							if ~isempty(idx),
 								variableDeltaPlus = info.VariableAttributes.DELTA_PLUS{idx,2};
-								isVariableDeltaPlus = cellfun(@(x) strcmpi(x,variableDeltaPlus),info.Variables(:,1));
-								idx = find(isVariableDeltaPlus == 1);
-								recsTmp{idx,1} = recsTmp{i,1};
-								recsTmp{idx,2} = recsTmp{i,2};
-								recsTmp{idx,3} = recsTmp{i,3};
-								records{idx}   = records{i};
+								if ischar(variableDeltaPlus) % delta plus is variable name
+									isVariableDeltaPlus = cellfun(@(x) strcmpi(x,variableDeltaPlus),info.Variables(:,1));
+									idx = find(isVariableDeltaPlus == 1);
+									recsTmp{idx,1} = recsTmp{i,1};
+									recsTmp{idx,2} = recsTmp{i,2};
+									recsTmp{idx,3} = recsTmp{i,3};
+									records{idx}   = records{i};
+								end
 							end
 							isDeltaMinus = cellfun(@(x) strcmpi(x,recsTmp{i,1}),info.VariableAttributes.DELTA_MINUS(:,1));
 							idx = find(isDeltaMinus == 1);
 							if ~isempty(idx),
 								variableDeltaMinus = info.VariableAttributes.DELTA_MINUS{idx,2};
-								isVariableDeltaMinus = cellfun(@(x) strcmpi(x,variableDeltaMinus),info.Variables(:,1));
-								idx = find(isVariableDeltaMinus == 1);
-								recsTmp{idx,1} = recsTmp{i,1};
-								recsTmp{idx,2} = recsTmp{i,2};
-								recsTmp{idx,3} = recsTmp{i,3};
-								records{idx}   = records{i};
+								if ischar(variableDeltaMinus), % delta minus is variable name
+									isVariableDeltaMinus = cellfun(@(x) strcmpi(x,variableDeltaMinus),info.Variables(:,1));
+									idx = find(isVariableDeltaMinus == 1);
+									recsTmp{idx,1} = recsTmp{i,1};
+									recsTmp{idx,2} = recsTmp{i,2};
+									recsTmp{idx,3} = recsTmp{i,3};
+									records{idx}   = records{i};
+								end
 							end
 						end
 					end
