@@ -179,7 +179,7 @@ switch action
             if ~isempty(recsTmp)
               isRecArray=cellfun(@(x) strcmpi(x,timeVarName), recsTmp(:,1));
               idx = find(isRecArray==1);
-              if ~isempty(idx), records{i} = recsTmp(idx,3); continue, end
+              if ~isempty(idx), records(i) = recsTmp(idx,3); continue, end
             end
             iTimeVar = get_var_idx(timeVarName);
             timeline = data{iTimeVar};
@@ -190,6 +190,13 @@ switch action
             end
             records{i} = (timeline >= tintTmp(1)) & (timeline < tintTmp(2));
             recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
+            % Theat DELTA_PLUS/DELTA_MINUS for time variables
+            for deltaParam={'DELTA_PLUS','DELTA_MINUS'}
+              deltaVar = get_key(deltaParam{:},iTimeVar);
+              if isempty(deltaVar) || ~ischar(deltaVar{:}), continue, end
+              deltaVar = deltaVar{:}; iDelta = get_var_idx(deltaVar);
+              recsTmp = [recsTmp; {deltaVar,iDelta,records{i}}]; %#ok<AGROW>
+            end
           end
           % Time variables
           if ~isempty(recsTmp)
