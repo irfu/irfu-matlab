@@ -9,6 +9,21 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,indexStart) start from the given index
+%
+%   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
+%
+%   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
+%
+%		TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
+%		TTRequest.UserData.Downloadfile zip file to download (important if status=0)
+%		TTRequest.UserData.TimeOfRequest
+%		TTRequest.UserData.TimeOfDownload
+%		TTRequest.UserData.NumberOfAttemptsToDownload
+%		TTRequest.UserData.dataset
+%		TTRequest.UserData.number - number of entries
+%		TTRequest.UserData.version - version of dataset
+%
 %   LOCAL.CAA_DOWNLOAD(TTrequest) process request time table TTRequest
 %
 % Dataset downloading takes long time. You will be informed by email when it is
@@ -20,27 +35,16 @@ function out=caa_download(varargin)
 %		local.caa_download('C1_CP_PEA_MOMENTS')
 %
 % 	See also CAA_DOWNLOAD
-%
-
-% Request time table TTRequest structure
-%
-% TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
-% TTRequest.UserData.Downloadfile zip file to download (important if status=0)
-% TTRequest.UserData.TimeOfRequest
-% TTRequest.UserData.TimeOfDownload
-% TTRequest.UserData.NumberOfAttemptsToDownload
-% TTRequest.UserData.dataset
-% TTRequest.UserData.number - number of entries
-% TTRequest.UserData.version - version of dataset
 
 %% Defaults
-dataDirectory = '/data/caalocal';
-maxSubmittedJobs = 13;
-maxNumberOfAttempts = 20;
-isInputDatasetName = false;
-sendEmailWhenFinished = false;
-streamData = false;               % download cdf files asynchronously
-% so far undocumented feature
+dataDirectory			= '/data/caalocal';
+maxSubmittedJobs		= 13;
+maxNumberOfAttempts		= 20;
+isInputDatasetName		= false;
+sendEmailWhenFinished	= false;
+streamData				= false; % download cdf files asynchronously
+indexStart				= 1; 
+
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
 	if isempty(fields(datastore('local'))),
@@ -112,9 +116,15 @@ else
 	irf.log('critical','See syntax: help local.c_caa_download');
 	return;
 end
-if nargin >= 2 && ischar(varargin{2}) && strcmpi(varargin{2},'stream')
-	streamData = true; 
-	irf.log('notice','Streaming data from CAA.');
+if nargin >= 2 
+	for j=2:numel(varargin),
+		if ischar(varargin{j}) && strcmpi(varargin{j},'stream')
+			streamData = true;
+			irf.log('notice','Streaming data from CAA.');
+		elseif isnumeric(varargin{j})
+			indexStart = varargin{j};
+		end
+	end
 end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
@@ -153,7 +163,7 @@ end
 
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 %% loop through request time table
-iRequest=find_first_non_processed_time_interval(TTRequest);
+iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
 nRequest=numel(TTRequest)-iRequest+1;
 while 1
 	while 1 % submit next unsubmitted job
@@ -174,7 +184,7 @@ while 1
 				end
 			catch
 				download_status = -1; % something wrong with internet
-				irf.log('notice','**** DID NOT SUCCEED! ****');
+				irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
 			end
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
