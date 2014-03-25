@@ -183,7 +183,7 @@ switch action
             end
             iTimeVar = get_var_idx(timeVarName);
             timeline = data{iTimeVar};
-            if KeepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
+            if keepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
               tintTmp(1) = parsett2000(epoch2iso(tint(1)));
               tintTmp(2) = parsett2000(epoch2iso(tint(2)));
             else tintTmp = tint;
