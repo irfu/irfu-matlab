@@ -77,7 +77,7 @@ if(strcmp(sci_or_ancillary,'sci'))
         % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
         tmpDataObj = dataobj(fullFilename,'tint',0,true);
         % Store it using the DataManager as dataType
-        mms_sdc_sdp_datamanager(tmpDataObj, dataType);
+        mms_sdc_sdp_datamanager(dataType,tmpDataObj);
     end
 
 elseif(strcmp(sci_or_ancillary,'ancillary'))

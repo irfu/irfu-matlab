@@ -1,6 +1,6 @@
-function [ VarOut ] = mms_sdc_sdp_datamanager( varargin )
+function [ VarOut ] = mms_sdc_sdp_datamanager( parameter, dataObj )
 % mms_sdc_sdp_datamanager will store and retrive data for
-%  	mms_sdc_sdp_datamanager( dataObj, dataType ) will store
+%  	mms_sdc_sdp_datamanager( dataType, dataObj ) will store
 %  	appropriate data variables related to dataType in the global variable
 %  	DataInMemory for later retrival.
 %  
@@ -9,7 +9,7 @@ function [ VarOut ] = mms_sdc_sdp_datamanager( varargin )
 %   will try and calculate it using the stored data.
 %   
 %  	Example:
-%  		mms_sdc_sdp_datamanager(dceDataObj, 'dce')
+%  		mms_sdc_sdp_datamanager('dce',dceDataObj)
 %  		mms_sdc_sdp_datamanager('phase')
 %  
 %   	See also DATAOBJ, MMS_SDC_SDP_CDF_IN_PROCESS.
@@ -20,105 +20,88 @@ narginchk(1,2); % One argument is simply retreive variable, Two arguments
 global DataInMemory; % Here we store read data.
 global MMS_CONST; % Here we have Bitmask values for probes used.
 
+if ~ischar(parameter),
+  err_str = 'PARAM must be a string';
+  irf.log('critical', err_str);
+  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+end
+parameter = lower(parameter);
 
-if(nargin==2)
-    
+if(nargin==2)   
     % Make sure first argument is a dataobject (of a read cdf file).
-    if( isa(varargin{1},'dataobj') )
-        dataObj= varargin{1};
-        
-    elseif( ischar(varargin{1}) && exists(varargin{1}, 'file') && ...
-            ischar(varargin{2}) )
+    if isa(dataObj,'dataobj') % do nothing
+    elseif ischar(dataObj) && exists(dataObj, 'file')
         % If it is not a read cdf file, is it an unread cdf file? Read it.
         irf.log('warning',['First argument was not a dataobj but a file,'...
-            ' trying to load with dataobj that file: ', varargin{1}, ...
-            ', and store its data as: ',varargin{2},'.']);
-        dataObj = dataobj(varargin{1}, 'tint', 0, 'true');
-    
+            ' trying to load with dataobj that file: ', dataObj, ...
+            ', and store its data as: ',parameter,'.']);
+        dataObj = dataobj(dataObj, 'tint', 0, 'true');
     else
         err_str = 'MMS_SDC_SDP_DATAMANAGER unknown input arguments.';
         irf.log('critical', err_str);
+        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);  
+    end
+     
+    % Get first variable of CDF file, named mmsX_sdp_Epoch or similar.
+    timeVar = getv( dataObj, dataObj.vars{1,1});
+    check_monoton_timeincrease(timeVar.data, parameter);
+    
+    if( isfield(DataInMemory, parameter) )
+      % Error, Warning or Notice for replacing the data variable?
+      msg_str = ['MMS_SDC_SDP_DATAMANAGER replacing existing ', ...
+        'variable with new data in ' parameter];
+      irf.log('notice', msg_str);
+      % warning('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', msg_str);;
+    end
+    
+    switch(parameter)
+      case('dce')
+        DataInMemory.dce = [];
+        DataInMemory.dce.time = timeVar.data;
+        % FIXME: ADD CHECKS TO SEE WHICH PROBES ARE IN USE.
+        % Also change variable number to match actual variable
+        % name! Is now, 'mmsX_sdp_dce_sensors'.
+        tmp = getv(dataObj, dataObj.vars{5,1});
+        % FIXME: apply check if stuck.
+        %check_stuck_variable(tmp.data(:,1), 'dce.p12');
+        %check_stuck_variable(tmp.data(:,2), 'dce.p34');
+        DataInMemory.dce.p12 = tmp.data(:,1);
+        DataInMemory.dce.p34 = tmp.data(:,2);
+        DataInMemory.dce.p56 = tmp.data(:,3);
+        
+      case('dcv')
+        DataInMemory.dcv = [];
+        DataInMemory.dcv.time = timeVar.data;
+        % FIXME: ADD CHECKS TO SEE WHICH PROBES ARE IN USE.
+        % Also change variable number to match actual variable
+        % name! Is now, 'mmsX_sdp_dcv_sensors'.
+        tmp = getv(dataObj, dataObj.vars{5,1});
+        % FIXME: apply check if stuck.
+        %check_stuck_variable(tmp.data(:,1), 'dcv.p1');
+        %check_stuck_variable(tmp.data(:,2), 'dcv.p3');
+        DataInMemory.dcv.p1 = tmp.data(:,1);
+        DataInMemory.dcv.p3 = tmp.data(:,2);
+        DataInMemory.dcv.p5 = tmp.data(:,3);
+        
+      case('sunpulse')
+        DataInMemory.sunpulse = [];
+        % Also change variable number to match actual variable
+        % name! Is now, 'mmsX_101_sunpulse'.
+        tmp = getv( dataObj, dataObj.vars{19,1} );
+        DataInMemory.sunpulse.timestamp = tmp.data;
+        
+      otherwise
+        % Not yet implemented.
+        err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
+          'parameter. The datatype ', parameter, ...
+          ' is not yet implemented'];
+        irf.log('critical',err_str);
         error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
         
     end
     
-    
-    if( ischar(varargin{2}) )
-        dataType = lower( varargin{2} );
-        % Get first variable of CDF file, named mmsX_sdp_Epoch or similar.
-        timeVar = getv( dataObj, dataObj.vars{1,1});
-        check_monoton_timeincrease(timeVar.data, dataType);
-        
-        if( isfield(DataInMemory, dataType) )
-            % Error, Warning or Notice for replacing the data variable?
-            msg_str = ['MMS_SDC_SDP_DATAMANAGER replacing existing ', ...
-                'variable with new data in ' dataType];
-            irf.log('notice', msg_str);
-            % warning('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', msg_str);;
-        end
-        
-        switch(dataType)
-            case('dce')
-                DataInMemory.dce = [];
-                DataInMemory.dce.time = timeVar.data;
-                % FIXME: ADD CHECKS TO SEE WHICH PROBES ARE IN USE.
-                % Also change variable number to match actual variable
-                % name! Is now, 'mmsX_sdp_dce_sensors'.
-                tmp = getv(dataObj, dataObj.vars{5,1});
-                % FIXME: apply check if stuck.
-                %check_stuck_variable(tmp.data(:,1), 'dce.p12');
-                %check_stuck_variable(tmp.data(:,2), 'dce.p34');
-                DataInMemory.dce.p12 = tmp.data(:,1);
-                DataInMemory.dce.p34 = tmp.data(:,2);
-                DataInMemory.dce.p56 = tmp.data(:,3);
-
-            case('dcv')
-                DataInMemory.dcv = [];
-                DataInMemory.dcv.time = timeVar.data;
-                % FIXME: ADD CHECKS TO SEE WHICH PROBES ARE IN USE.
-                % Also change variable number to match actual variable
-                % name! Is now, 'mmsX_sdp_dcv_sensors'.
-                tmp = getv(dataObj, dataObj.vars{5,1});
-                % FIXME: apply check if stuck.
-                %check_stuck_variable(tmp.data(:,1), 'dcv.p1');
-                %check_stuck_variable(tmp.data(:,2), 'dcv.p3');
-                DataInMemory.dcv.p1 = tmp.data(:,1);
-                DataInMemory.dcv.p3 = tmp.data(:,2);
-                DataInMemory.dcv.p5 = tmp.data(:,3);
-
-            case('sunpulse')
-                DataInMemory.sunpulse = [];
-                % Also change variable number to match actual variable
-                % name! Is now, 'mmsX_101_sunpulse'.
-                tmp = getv( dataObj, dataObj.vars{19,1} );
-                DataInMemory.sunpulse.timestamp = tmp.data;
-                
-            otherwise
-                % Not yet implemented.
-                err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
-                    'parameter. The datatype ', dataType, ...
-                    ' is not yet implemented'];
-                irf.log('critical',err_str);
-                error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-        
-        end
-        
-    else
-        err_str = 'MMS_SDC_SDP_DATAMANAGER second argument was not a string.';
-        irf.log('critical', err_str);
-        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-    
-    end
-    
-end
-
-
-if(nargin==1)
-    % Should be name of Variable to return.
-    if( ischar(varargin{1}) )
-        varName = lower( varargin{1} );
-        
-        switch( varName )
+elseif nargin==1
+        switch( parameter )
             case('phase')
                 % Phase, from sunpulse for now.
                 if( isfield(DataInMemory.sunpulse,'phase') && ...
@@ -144,7 +127,7 @@ if(nargin==1)
                     VarOut = DataInMemory.dce.time;
                 else
                     % Error
-                    err_str = ['The requested variable ', varName, ...
+                    err_str = ['The requested variable ', parameter, ...
                         'does not exist.'];
                     irf.log('critical',err_str);
                     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
@@ -157,7 +140,7 @@ if(nargin==1)
                     VarOut = DataInMemory.dcv.time;
                 else
                     % Error
-                    err_str = ['The requested variable ', varName, ...
+                    err_str = ['The requested variable ', parameter, ...
                         'does not exist.'];
                     irf.log('critical',err_str);
                     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
@@ -172,12 +155,6 @@ if(nargin==1)
                 irf.log('critical', err_str);
                 error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
         end
-    else
-        err_str = 'MMS_SDC_SDP_DATAMANAGER unknown input argument. If only one argument is given it should be a string.';
-        irf.log('critical', err_str);
-        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-    end
-    
 end
 
 end
