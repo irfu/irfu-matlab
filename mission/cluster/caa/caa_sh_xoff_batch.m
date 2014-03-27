@@ -33,7 +33,7 @@ for yy=tt1(1):tt2(1)
 		eval([ 'MP_tmp=' v_s ';'])
 		% Check if years overlap
 		if MP(end,2) == MP_tmp(1,2), MP_tmp(1,:) = []; end
-		MP = [MP; MP_tmp]; clear MP_tmp
+		MP = [MP; MP_tmp]; clear MP_tmp %#ok<AGROW>
 	end
 end
 clear tt1 tt2

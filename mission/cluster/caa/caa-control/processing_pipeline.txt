@@ -341,19 +341,22 @@ Special processing files are under git control in: irfu-matlab/caa/caa-control/2
 (Can be done before step 8 if wanted)
 The DSI offsets are constant offsets applied to the despun data.
 They are computed on a statistical basis and applied on a roughly per-year basis.
-1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Example:
+1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wing season 
+lasts from the ened of November to June, therefore we run the code from 1st of September 
+to the end of August. Example:
      cp /data/cluster/irfu-matlab/caa/mPlan.mat /home/chris/caa/test-mp
      cp /data/cluster/irfu-matlab/caa/deltaoff.mat /home/chris/caa/test-mp
      matlab
      cd /home/chris/caa/test-mp
-     [dE,dAmp,dt,weight] = caa_sh_xoff_batch('2008-01-01T00:00:00Z','2008-12-31T23:59:59.99Z',0);
+     [dE,dAmp,dt,weight] = caa_sh_xoff_batch('2007-09-01T00:00:00Z','2008-08-31T23:59:59.99Z',0);
      save OffAmp2008.mat dE dAmp dt weight
 2. Plot the offsets:
     caa_sh_pl_xoff(dE,dAmp,dt,weight)
    and read out the mean offsets for all 4 spacecraft. (Under Table of SW/SH offsets)
-3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft: 
-   (Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox)
-     DdsiX1=caa_get('2008-01-01T00:00:00Z','2008-12-31T23:59:59Z',1,'DdsiX?');
+3. Determine the DSI offsets in the magnetosphere for all 4 spacecraft. Note: we run the 
+code from 1st of April to the end of March next year.
+(Note that caa_ms_pl_xoff_stats uses a function from the curve-fitting toolbox)
+     DdsiX1=caa_get('2008-04-01T00:00:00Z','2009-03-31T23:59:59Z',1,'DdsiX?');
      save Ddsi2008.mat DdsiX1 DdsiX2 DdsiX3 DdsiX4
      (Edit line 18 of caa_ms_pl_xoff_stats)
      caa_ms_pl_xoff_stats(DdsiX1)
