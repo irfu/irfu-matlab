@@ -1,33 +1,41 @@
 function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
-%C_CAA_VAR_GET(varName)  load CAA variable varName
-%	Dataobject name is derived from the name of varName. If dataobject is in the
-%	memory then variable is loaded from there, otherwise it is loaded from the
-%	cdf file in CAA directory.
+%C_CAA_VAR_GET  load CAA variables
+% out=C_CAA_VAR_GET(varName,parameters)
+%	Returns variable varName in the format specified by parameters.
+%	Dataobject name from which to read variable is derived from the name of
+%	varName. If varName is cell array, output is also cell array. The
+%	dataobject itself is attempted to obtain in priority order from the
+%	following locations:
+%		- memory
+%		- cdf file in ./CAA directory
+%		- using local.c_read()
+%		- streaming from CAA data base (if parameters 'mat' and 'tint' specified)
 %
-%C_CAA_VAR_GET(dobj,varName)  load from dataobject 'dobj'. If dobj is empty 
-%	the output is the same as from C_CAA_VAR_GET(varName)
+% C_CAA_VAR_GET(Dataobj,varName)  load from dataobject Dataobj. If Dataobj
+%	is empty the output is the same as from C_CAA_VAR_GET(varName).
 %
-%  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
-%  caa=C_CAA_VAR_GET(varName)         return only in the caa format
-%  caa=C_CAA_VAR_GET(varname,'caa')   return only in the caa format
-%  var=C_CAA_VAR_GET(varname,'mat')   return only in matlab matrix format
-%  dobj=C_CAA_VAR_GET(varname,'dobj') return only data object
-%  unit=C_CAA_VAR_GET(varname,'unit') return only units
+% Output variable types are defined in IRF.DATATYPES.
+%  caa=C_CAA_VAR_GET(varName)         returns VariableStruct
+%  caa=C_CAA_VAR_GET(varname,'caa')   returns VariableStruct
+%  var=C_CAA_VAR_GET(varname,'mat')   returns variableMat
+%  dobj=C_CAA_VAR_GET(varname,'dobj') returns DataObject
+%  unit=C_CAA_VAR_GET(varname,'unit') returns only units
 %
 %  [caa,dobj,var,unit]=C_CAA_VAR_GET(varName)
 %
-%  var=C_CAA_VAR_GET(varname,option,'file') force to read dataobject from file
-%			even if it is already in memory
+%  var=C_CAA_VAR_GET(varname,option,'file') force to read dataobject from
+%	file even if it is already in memory.
 %
-%  C_CAA_VAR_GET(varname,'tint',tint) get only the interval specified by tint
-%  (always reads from file in this case, good option for large files)
+%  C_CAA_VAR_GET(varname,'tint',tint) get only the interval specified by
+%	tint (always reads from file in this case, good option for large files)
 %
-%   If input is cell array, output is also cell array.
-%
+%  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
+%  
 % Example:
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
 %   xm=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF','mat');
-
+%
+% See also: IRF.DATATYPES
 
 %% Check input options and set dafaults
 if nargin == 0, help c_caa_var_get;return;end
@@ -41,11 +49,12 @@ getDobjOnly = false;
 getUnitOnly = false;
 getFromFile = false;	% reads data from file only if dataobj not in memory
 dobjSpecified = false;  % default dataobject is not given as input
-dataobject = [];        % default dataobject is empty
+Dataobject = [];        % default dataobject is empty
 args = varargin;        % input argument list
+testDataStreaming = false; % default do not get data by data streaming
 %% Define varName
 if isa(args{1},'dataobj'), % dataobject specified as first input argument
-	dataobject = args{1};
+	Dataobject = args{1};
 	dobjSpecified = true;
 	args(1)=[];
 elseif isempty(args{1}) % dataobject is specified empty
@@ -65,24 +74,24 @@ if ischar(varNameList) && any(strfind(varNameList,'?'))
 	for iSc = 1:4,
 		strSc = num2str(iSc);
 		tempVarName = strrep(varNameList,'?',strSc);
-		res.(['C' strSc]) = c_caa_var_get(dataobject,tempVarName,args{:});
+		res.(['C' strSc]) = c_caa_var_get(Dataobject,tempVarName,args{:});
 	end
 	return
 end
 while numel(args)
 	switch(lower(args{1}))
 		case {'show_dependencies','showdep'} % only show dependencies
-			if isempty(dataobject)
-				dobjName=get_dataobj_name(varNameList);
+			if isempty(Dataobject)
+				dobjName=caa_get_dataset_name(varNameList,'_');
 				existsDobjInCaller = evalin('caller',['exist(''' dobjName ''',''var'')']);
 				if existsDobjInCaller,
-					dataobject=evalin('caller',dobjName);
+					Dataobject=evalin('caller',dobjName);
 				else
 					caa_load(dobjName,'nowildcard');
-					dataobject=eval(dobjName);
+					Dataobject=eval(dobjName);
 				end
 			end
-			showdep(dataobject,varNameList)
+			showdep(Dataobject,varNameList)
 			return;
 		case 'file' % force reading from file
 			getFromFile = true;
@@ -93,7 +102,7 @@ while numel(args)
 		case 'mat' % return matlab format only
 			getMatOnly = true;
 			getMat     = true;
-			getCaa     = true;
+			getCaa     = false;
 			args(1)    = [];
 		case 'dobj' % return matlab format only
 			getDobjOnly = true;
@@ -120,7 +129,7 @@ while numel(args)
 				irf.log('critical','wrongArgType : tint value is missing')
 				error('tint value missing');
 			end
-			getAllData=0;
+			getAllData = false;
 		otherwise
 			irf.log('critical',['Unknown input parameter  ''' args{1} ''' !!!'])
 			error('unknown input parameter');
@@ -154,27 +163,35 @@ for iVar = 1: numel(varNameList)
 		if dobjSpecified
 			noDataReturned = false;
 		else
-			dataobj_name=get_dataobj_name(varName);
-			if getAllData && ~getFromFile &&	evalin('caller',['exist(''' dataobj_name ''',''var'')']),
-				dataobject=evalin('caller',dataobj_name);
+			dataobjName=caa_get_dataset_name(varName,'_');
+			if getAllData && ~getFromFile ...
+					&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
+					&& evalin('caller',['isa(' dataobjName ',''dataobj'')'])
+				Dataobject=evalin('caller',dataobjName);
 				noDataReturned = false;
-				irf.log('warning',[dataobj_name ' exist in memory. NOT LOADING FROM FILE!'])
+				existDataobject = true;
+				irf.log('warning',[dataobjName ' exist in memory. NOT LOADING FROM FILE!'])
 			else
 				if getAllData,
-					caa_load(dataobj_name,'nowildcard');
+					caa_load(dataobjName,'nowildcard');
 				else
-					caa_load(dataobj_name,'tint',tint,'nowildcard');
+					caa_load(dataobjName,'tint',tint,'nowildcard');
 				end
-				if exist(dataobj_name,'var'), % success loading data
-					eval(['dataobject=' dataobj_name ';']);
+				if exist(dataobjName,'var'), % success loading data
+					eval(['Dataobject=' dataobjName ';']);
 					noDataReturned = false;
+					existDataobject = true;
 				else
-					irf.log('warning',[dataobj_name ' could not be loaded!']);
+					existDataobject = false;
+					irf.log('warning',[dataobjName ' could not be loaded!']);
 					if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 						testLocalCaaRepository = true;
 						irf.log('notice','will test if data are in local CAA data repository.');
-					else
-						continue;
+					end
+					if getMat && ~getAllData,
+						if datastore('irfu_matlab','okCeflib'),
+							testDataStreaming = true;
+						end
 					end
 				end
 			end
@@ -187,24 +204,31 @@ for iVar = 1: numel(varNameList)
 				end
 				noDataReturned = false;
 				res{iVar} = ttt;
-			else
-				res{iVar}=getv(dataobject,varName);
+			elseif existDataobject
+				res{iVar}=getv(Dataobject,varName);
 			end
 		end
 		if getMat % save variable in matlab matrix format
 			if testLocalCaaRepository
 				ttt = local.c_read(varName,tint,'mat');
 				if isempty(ttt),
-					irf.log('warning','NO DATA in repository!');
+					irf.log('warning','NO DATA in local repository!');
 				end
 				noDataReturned = false;
 				resmat{iVar} = ttt;
-			else
-				resmat{iVar}=getmat(dataobject,varName);
+			elseif testDataStreaming
+				ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in CAA to stream!');
+				end
+				resmat{iVar} = ttt;
+				noDataReturned = false;
+			elseif existDataobject
+				resmat{iVar}=getmat(Dataobject,varName);
 			end
 		end
 		if getUnit % save variable unit
-			resunit{iVar}=getunits(dataobject,varName);
+			resunit{iVar}=getunits(Dataobject,varName);
 		end
 		if getDobj,% save dataobject
 			if testLocalCaaRepository
@@ -215,7 +239,7 @@ for iVar = 1: numel(varNameList)
 				noDataReturned = false;
 				resdataobject{iVar} = ttt;
 			else
-				resdataobject{iVar}=dataobject;
+				resdataobject{iVar}=Dataobject;
 			end
 		end
 	end
@@ -239,25 +263,3 @@ end
 if getUnitOnly,
 	res=resunit; return
 end
-
-
-function dataobj_name=get_dataobj_name(varName)
-% obtain data object name from full variable name
-dd=regexp(varName, '__', 'split');
-if length(dd)==2, % data object can be properly identifide
-	dataobj_name=dd{end};
-	if strcmp(dataobj_name,'C3_CP_PEA_'), % the bad case of PEACE
-		dataobj_name='C3_CP_PEA_MOMENTS';
-	elseif strcmp(dataobj_name,'C2_CP_PEA_'), % the bad case of PEACE
-		dataobj_name='C2_CP_PEA_MOMENTS';
-	elseif strcmp(dataobj_name,'C1_CP_PEA_'), % the bad case of PEACE
-		dataobj_name='C1_CP_PEA_MOMENTS';
-	elseif strcmp(dataobj_name,'C4_CP_PEA_'), % the bad case of PEACE
-		dataobj_name='C4_CP_PEA_MOMENTS';
-	end
-elseif length(dd)==3, % the case of PEACE moments
-	if strcmp(dd{3},'MOMENTS'),
-		dataobj_name=[dd{2}(1:2) '_CP_PEA_' dd{3}];
-	end
-end
-dataobj_name(strfind(dataobj_name,'-'))='_'; % substitute '-' with '_'

@@ -70,7 +70,7 @@ while read fname; do
   				TH[A-E]_*) PROJ=THEMIS;;
   				DOB_*|HOR_*|KEV_*|KIR_*|NUR_*|OUJ_*|RVK_*|SOD_*|UPS_*|TRO_*)
   					PROJ=IMAGE;;
-  				FCHU_*|GILL_*|ISLL_*|PINA_*|RANK_*)
+  				FCHU_*|GILL_*|ISLL_*|MCMU_*|PINA_*|RANK_*)
   					PROJ=CARISMA;;
   				*) echo "Unknown non-Cluster project" && exit 1;;
   			esac

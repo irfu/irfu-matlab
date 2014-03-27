@@ -33,23 +33,23 @@ if ~is_R_ok && exist('./mR.mat','file'),
 	c_eval('R.V?=V?;');
 end
 if ~is_R_ok && exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
-	irf_log('dsrc','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
+	irf.log('warning','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
 	c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
 	c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
 end
 if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
-	irf_log('dsrc','Trying to read CAA files CL_CP_AUX ...')
+	irf.log('warning','Trying to read CAA files CL_CP_AUX ...')
 	R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
 	if ~isempty(R.R)
 		c_eval('R.dR?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');');
 		c_eval('R.R?=irf_add(1,R.R,1,R.dR?);');
 		R.V=irf_get_data('sc_v_xyz_gse__CL_SP_AUX','caa','mat');
-		irf_log('dsrc','!!!! Assumes all s/c move with the same velocity !!!');
+		irf.log('warning','!!!! Assumes all s/c move with the same velocity !!!');
 		c_eval('R.V?=R.V;');
 	end
 end
 if ~is_R_ok
-	irf_log('dsrc','Getting s/c position from CAA');
+	irf.log('warning','Getting s/c position from CAA');
 	read_RV_from_caa_stream;
 end
 if ~is_R_ok
@@ -66,7 +66,7 @@ if ~is_R_ok
 	disp('');
 end
 if ~is_R_ok
-	irf_log('dsrc','!!! Could not obtain position data !!!');
+	irf.log('warning','!!! Could not obtain position data !!!');
 	return
 end
 switch coord_sys
@@ -156,7 +156,7 @@ end
 			R.(['R' sc])=R.R+[zeros(size(R.R,1),1) tempR(:,2:end)];
 		end
 		R.V = c_caa_cef_var_get('sc_v_xyz_gse',cefFile);
-		irf_log('dsrc','!!!! Assumes all s/c move with the same velocity !!!');
+		irf.log('warning','!!!! Assumes all s/c move with the same velocity !!!');
 		c_eval('R.V?=R.V;');
 		cd(currentDir);
 		rmdir(tempDir,'s');

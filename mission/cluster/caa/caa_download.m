@@ -338,7 +338,7 @@ if strfind(dataset,'list'),     % list files
 	if strfind(dataset,'listdata')
 		ttTemp = caa_download(['list:' filter]);
 		if isempty(ttTemp.TimeInterval), % no time intervals to download
-			irf_log('fcal','No datasets to download');
+			irf.log('warning','No datasets to download');
 			download_status = ttTemp;
 			return;
 		end
@@ -693,7 +693,7 @@ switch returnTimeTable
 	case 'list'
 		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
 		if isempty(textLine),
-			irf_log('fcal','Empty dataset list');
+			irf.log('warning','Empty dataset list');
 			return;
 		end
 		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');

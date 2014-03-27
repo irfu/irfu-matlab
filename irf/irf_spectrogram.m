@@ -56,8 +56,10 @@ if nargs==1 || ischar(args{2})    % irf_spectrogram(specrec,[options])
                     flagLog = true;
                 case 'lin'
                     flagLog = false;
-                otherwise
-                    irf_log('fcal',['Unknown flag:' flagValue]);
+				otherwise
+					errStr= ['irf_spectrogram(), unknown flag:' flagValue];
+                    irf.log('critical',errStr);
+					error('irf_spectrogram:unknown_flag',errStr);
             end
         end
     end
@@ -141,7 +143,7 @@ for comp=1:min(length(h),ncomp)
 		% Warn about changing t_start_epoch
 		t_start_epoch = double(specrec.t(ii(1)));
 		ud.t_start_epoch = t_start_epoch; set(gcf,'userdata',ud);
-		irf_log('proc',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
+		irf.log('notice',['user_data.t_start_epoch is set to ' epoch2iso(t_start_epoch,1)]);
 	else
 		t_start_epoch = double(0);
 	end
@@ -218,15 +220,15 @@ for comp=1:min(length(h),ncomp)
 	ppnew(:,jj*2-1)=pp;
 	ppnew(:,jj*2)=NaN;
 	pp=ppnew;
-	if ~isempty(specrec.dt) % if time steps are not given
+	if ~isempty(specrec.dt) % if time steps are given
 		if isstruct(specrec.dt) % dt.plus and dt.minus should be specified
-			dtplus=torow(double(specrec.dt.plus(:))); % if dt vector make it row vector
-			dtminus=torow(double(specrec.dt.minus(:))); % if dt vector make it row vector
+			dtplus=double(specrec.dt.plus(:)); % if dt vector make it column vector
+			dtminus=double(specrec.dt.minus(:)); % if dt vector make it column vector
 		else
-			dtplus=torow(double(specrec.dt(:))); % if dt vector make it row vector
+			dtplus=double(specrec.dt(:)); % if dt vector make it column vector
 			dtminus=dtplus;
 		end
-		ttnew=[tt; tt];
+		ttnew=zeros(numel(tt),1); 
 		jj=1:length(tt);
 		ttnew(jj*2-1)=tt-dtminus;
 		ttnew(jj*2)=tt+dtplus;

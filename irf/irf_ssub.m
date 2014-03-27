@@ -5,7 +5,9 @@ function [output_string]=irf_ssub(input_string,varargin)
 % to some number (numbers can be also strings or cells with string)
 %
 % [OUTPUT_STRING]=IRF_SSUB(INPUT_STRING,NUM) change all appearence of '?' 
-% in INPUT_STRING to NUM. NUM is converted to string using NUM2STR function
+% in INPUT_STRING to NUM. NUM can be string. If NUM is numeric it is
+% converted to string using NUM2STR function. If NUM is cell then the first
+% cell is used if it is string.
 %
 % [OUTPUT_STRING]=IRF_SSUB(INPUT_STRING,NUM1,[NUM2],[NUM3])
 %  change all appearences of '?' to NUM1, '!' to NUM2, and '$' to NUM3
@@ -16,8 +18,7 @@ function [output_string]=irf_ssub(input_string,varargin)
 %
 % See also:
 %       C_EVAL
-%
-% $Id$
+
 
 narginchk(2,4)
 
@@ -31,7 +32,9 @@ for j=nargin-1:-1:1
         output_string=strrep(output_string,symb(j),num2str(varargin{j}));
     elseif iscell(varargin{j}), % use only the first cell
         output_string=strrep(output_string,symb(j),varargin{j}{1});
-    else
-        irf_log('fcal','Cannot understand input, see help!');
+	else
+		errStr = 'irf_ssub() cannot understand input, see help!';
+        irf.log('critical',errStr);
+		error('irf_ssub:syntaxWrong',errStr);
     end
 end

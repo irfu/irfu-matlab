@@ -1,3 +1,10 @@
+2014-03-24 v1.5.4 bug fix for dataobj() tint when delta_plus/minus are values and not variables
+2014-03-20 v1.5.3 bug fix for dataobj() tint with delta_plus/delta_minus, minor updates
+2014-03-18 v1.5.2 minor bug fix for dataobj() tint 
+2014-03-11 v1.5.1 checks whether ceflib is working
+2014-03-11 v1.5.0 many bug fixes, c_caa_cef_var_get() can stream data from CAA
+2014-02-21 v1.4.6 minor fixes in different routines
+2014-02-19 v1.4.5 caa_meta() update, irf_spectrogram() bug fix, other minor fixes
 2014-02-12 v1.4.4 crlf fixes, minor improvements to some routines
 2014-02-05 v1.4.3 added errorbar_tick, +maarble updates, several improvements
 2013-12-11 v1.4.2 fixed launchpad bug 1258510

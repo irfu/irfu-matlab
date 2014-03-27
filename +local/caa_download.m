@@ -9,6 +9,21 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,indexStart) start from the given index
+%
+%   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
+%
+%   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
+%
+%		TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
+%		TTRequest.UserData.Downloadfile zip file to download (important if status=0)
+%		TTRequest.UserData.TimeOfRequest
+%		TTRequest.UserData.TimeOfDownload
+%		TTRequest.UserData.NumberOfAttemptsToDownload
+%		TTRequest.UserData.dataset
+%		TTRequest.UserData.number - number of entries
+%		TTRequest.UserData.version - version of dataset
+%
 %   LOCAL.CAA_DOWNLOAD(TTrequest) process request time table TTRequest
 %
 % Dataset downloading takes long time. You will be informed by email when it is
@@ -20,27 +35,16 @@ function out=caa_download(varargin)
 %		local.caa_download('C1_CP_PEA_MOMENTS')
 %
 % 	See also CAA_DOWNLOAD
-%
-
-% Request time table TTRequest structure
-%
-% TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
-% TTRequest.UserData.Downloadfile zip file to download (important if status=0)
-% TTRequest.UserData.TimeOfRequest
-% TTRequest.UserData.TimeOfDownload
-% TTRequest.UserData.NumberOfAttemptsToDownload
-% TTRequest.UserData.dataset
-% TTRequest.UserData.number - number of entries
-% TTRequest.UserData.version - version of dataset
 
 %% Defaults
-dataDirectory = '/data/caalocal';
-maxSubmittedJobs = 13;
-maxNumberOfAttempts = 20;
-isInputDatasetName = false;
-sendEmailWhenFinished = false;
-streamData = false;               % download cdf files asynchronously
-% so far undocumented feature
+dataDirectory			= '/data/caalocal';
+maxSubmittedJobs		= 13;
+maxNumberOfAttempts		= 20;
+isInputDatasetName		= false;
+sendEmailWhenFinished	= false;
+streamData				= false; % download cdf files asynchronously
+indexStart				= 1; 
+
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
 	if isempty(fields(datastore('local'))),
@@ -97,7 +101,7 @@ end
 if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
-	irf_log('dsrc','Checking list of available times');
+	irf.log('warning','Checking list of available times');
 	TT=caa_download(['listdata:' dataSet]);
 	if numel(TT)==0,
 		disp('Dataset does not exist or there are no data');
@@ -109,12 +113,18 @@ elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
 	dataSet=dataset_mat_name(TTRequest.UserData(1).dataset);
 else
-	irf_log('fcal','See syntax: help local.c_caa_download');
+	irf.log('critical','See syntax: help local.c_caa_download');
 	return;
 end
-if nargin >= 2 && ischar(varargin{2}) && strcmpi(varargin{2},'stream')
-	streamData = true; 
-	irf_log('fcal','Streaming data from CAA.');
+if nargin >= 2 
+	for j=2:numel(varargin),
+		if ischar(varargin{j}) && strcmpi(varargin{j},'stream')
+			streamData = true;
+			irf.log('notice','Streaming data from CAA.');
+		elseif isnumeric(varargin{j})
+			indexStart = varargin{j};
+		end
+	end
 end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
@@ -126,13 +136,13 @@ else % merge request lists
 	if exist(requestListVariableFile,'file'),
 		load(requestListVariableFile,requestListVariableName);
 		TTRequest_old=eval(requestListVariableName);
-		irf_log('fcal','Previous request list exists, merging...');
+		irf.log('warning','Previous request list exists, merging...');
 		[~,iiobsolete]=setdiff(TTRequest_old,TTRequest); % those intervals that are not anymore in inventory
-		irf_log('fcal',['Obselete intervals in old requests list: ' num2str(iiobsolete)]);
+		irf.log('notice',['Obselete intervals in old requests list: ' num2str(iiobsolete)]);
 		remove_datafiles(TTRequest_old,iiobsolete);
 		TTRequest_old=remove(TTRequest_old,iiobsolete);
 		[~,iinew]=setdiff(TTRequest,TTRequest_old); % new time intervals
-		irf_log('fcal',['New time intervals, not in old requests list: ' num2str(iinew)]);
+		irf.log('notice',['New time intervals, not in old requests list: ' num2str(iinew)]);
 		[~,iiold,iinew]=common(TTRequest_old,TTRequest); % common time intervals
 		updateFields={'Status','TimeOfRequest','TimeOfDownload','NumberOfAttemptsToDownload'};
 		for ii=1:numel(iiold),
@@ -145,7 +155,7 @@ else % merge request lists
 				end
 			else
 				remove_datafiles(TTRequest_old,iiold(ii));
-				irf_log('fcal',['Request download for interval ' iinew(ii)]);
+				irf.log('notice',['Request download for interval ' iinew(ii)]);
 			end
 		end
 	end
@@ -153,7 +163,7 @@ end
 
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 %% loop through request time table
-iRequest=find_first_non_processed_time_interval(TTRequest);
+iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
 nRequest=numel(TTRequest)-iRequest+1;
 while 1
 	while 1 % submit next unsubmitted job
@@ -164,7 +174,7 @@ while 1
 				isempty(TTRequest.UserData(iRequest).Status) || ...
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
-			irf_log('fcal',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
+			irf.log('notice',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
 				if streamData
@@ -174,7 +184,7 @@ while 1
 				end
 			catch
 				download_status = -1; % something wrong with internet
-				irf_log('dsrc','**** DID NOT SUCCEED! ****');
+				irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
 			end
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
@@ -193,39 +203,39 @@ while 1
 		iRequest=iRequest+1;
 	end
 	while 1 % check submitted jobs
-		irf_log('dsrc',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
+		irf.log('notice',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
 		if n_submitted_jobs(TTRequest) == 0, 
-		  irf_log('fcal','No more submitted jobs');
+		  irf.log('notice','No more submitted jobs');
 		  break;
 		end
 		iSubmitted=find_first_submitted_time_interval(TTRequest);
 		if isempty(iSubmitted),
-			irf_log('fcal','No more submitted jobs');
+			irf.log('notice','No more submitted jobs');
 			break;
 		end
 		timeSinceDownloadSec	= (now-TTRequest.UserData(iSubmitted).TimeOfDownload)/24/3600;
 		numberOfAttempts		= TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload;
 		waitTimeSec				= numberOfAttempts*60 - timeSinceDownloadSec ; % 'number of attempts' * minutes is expected wait time before next check
-		irf_log('dsrc',['Job #' num2str(iSubmitted) ', attempt #' num2str(TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload+1)]);
+		irf.log('warning',['Job #' num2str(iSubmitted) ', attempt #' num2str(TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload+1)]);
 		if waitTimeSec>0,
-			irf_log('dsrc',['pause ' num2str(waitTimeSec) ' s']);
+			irf.log('notice',['pause ' num2str(waitTimeSec) ' s']);
 			pause(waitTimeSec);
 		end
 		try
-			irf_log('dsrc',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
+			irf.log('warning',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
 			download_status=caa_download(TTRequest.UserData(iSubmitted).Downloadfile,'nolog',['downloadDirectory=' dataDirectory]);
 			TTRequest.UserData(iSubmitted).TimeOfDownload=now;
 		catch
 			download_status = -1; % something wrong with internet
-			irf_log('dsrc','**** DID NOT SUCCEED! ****');
+			irf.log('warning','**** DID NOT SUCCEED! ****');
 		end
 		if download_status==1,
 			TTRequest.UserData(iSubmitted).Status=1; % submitted > downloaded
-			irf_log('dsrc',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
+			irf.log('warning',['Jobs downloaded so far: ' num2str(n_downloaded_jobs(TTRequest))]);
 			if mod(n_downloaded_jobs(TTRequest),10)==0 || ...%save after every 10th request
 					n_submitted_jobs(TTRequest)==0 % save after last job
 				varName=['TT_' dataset_mat_name(TTRequest.UserData(iSubmitted).dataset) ];
-				irf_log('drsc',['Saving ' varName ' to matCaaRequests/' varName]);
+				irf.log('notice',['Saving ' varName ' to matCaaRequests/' varName]);
 				eval([varName '= TTRequest;']);
 				dirName='matCaaRequests';
 				if ~exist(dirName,'dir'), mkdir(dirName);end
@@ -234,14 +244,14 @@ while 1
 		else
 			TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload=TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload+1;
 			if TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload > maxNumberOfAttempts
-				irf_log('dsrc',['*** Request #' num2str(iSubmitted) ' failed, more than 10 attempts to download ***']);
+				irf.log('warning',['*** Request #' num2str(iSubmitted) ' failed, more than 10 attempts to download ***']);
 				TTRequest.UserData(iSubmitted).Status=-1;
 				TTRequest.UserData(iSubmitted).Downloadfile=[];
 				TTRequest.UserData(iSubmitted).TimeOfRequest=now;
 				continue;
 			end
 			if n_submitted_jobs(TTRequest) > maxSubmittedJobs
-				irf_log('proc',['More than ' num2str(maxSubmittedJobs) ' jobs sumitted, none ready, waiting 1min ....']);
+				irf.log('warning',['More than ' num2str(maxSubmittedJobs) ' jobs sumitted, none ready, waiting 1min ....']);
 				pause(60)
 			end
 		end
@@ -311,7 +321,7 @@ function ok=remove_datafiles(TT,ii)
 ok=false; % default
 if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	if numel(TT)==0,
-		irf_log('fcal','No time intervals in request');
+		irf.log('warning','No time intervals in request');
 		return;
 	elseif isempty(ii)
 		ok=true;
@@ -330,7 +340,7 @@ if isa(TT,'irf.TimeTable') && isnumeric(ii)
 	[~,iTT,iIndex]=common(TTremove,indexTT);
 	for j=1:numel(iIndex)
 		fileToDelete=indexTT.UserData(iIndex(j)).filename;
-		irf_log('fcal',['Deleting #' num2str(iIndex(j)) ': ' fileToDelete]);
+		irf.log('warning',['Deleting #' num2str(iIndex(j)) ': ' fileToDelete]);
 		eval(['!mv ' fileToDelete ' ' fileToDelete '.delme']);
 	end
 	if numel(iTT) == numel(TTremove)
