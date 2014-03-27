@@ -2,9 +2,15 @@ classdef mms_sdc_sdp_db
   %MMS_DSC_SDP_DB Class containing raw data 
   %   Detailed explanation goes here
   
+  properties (Constant)
+    % Files of valid/supported files
+    files = {'bdcv','bdce','dcv','dce','hk101','hk105','hk10d','hk10e'};
+  end
   properties
     % All these are cell arrays, as generally there can be multiple files
     % spanning a burst. For survey and HK data these must be daily files.
+    % Empty variables mean no attempt to load, NaN means failed load (no
+    % file).
     bdcv  % Burst files
     bdce
     dcv   % Survey files fast/slow
@@ -17,16 +23,31 @@ classdef mms_sdc_sdp_db
   properties (SetAccess = private)
     scId
     fastSurvey % fast=1, slow=0
-  end
-  properties (Dependent, SetAccess = private)
-    tint
+    tint % time interval defined by input file(s)
   end
   
   methods
-    function dbObj = mms_sdc_sdp_db(dcvFile,dceFile)
+    function obj = mms_sdc_sdp_db()
     % Constructor
-      narginchk(2,2)
-      dbObj.scId = []; dbObj.fastSurvey = [];
+      narginchk(0,0)
+      obj.scId = []; 
+      obj.fastSurvey = [];
+      obj.tint = [];
+      for f=mms_sdc_sdp_db.files
+        obj.(f{:}) = {};
+      end
+    end
+    
+    function res = get.bdcv(obj)
+      fileId = 'bdcv';
+      if isempty(obj.(fileId)), load_files(obj,fileId);end
+      res = obj.(fileId);
+    end
+    
+    function load_files(obj,fileId)
+    end
+    
+    function load_file_ttt(obj)
       modeTmp = '';
       props = {'dcv','dce'}; files = {dcvFile,dceFile};
       for i=1:length(props)
@@ -39,11 +60,11 @@ classdef mms_sdc_sdp_db
               irf.log('critical',errMsg)
               error(errMsg) %#ok<SPERR>
             end
-            if isempty(dbObj.scId), dbObj.scId = mmsId;
+            if isempty(obj.scId), dbOobjbj.scId = mmsId;
             else
-              if mmsId~=dbObj.scId
+              if mmsId~=dbOobjbj.scId
                 errMsg = sprintf('invalid %s filename: %s, expecting : mms%d',...
-                  props{i},fileName,dbObj.scId);
+                  props{i},fileName,obj.scId);
                 irf.log('critical',errMsg)
                 error(errMsg) %#ok<SPERR>
               end
@@ -58,7 +79,7 @@ classdef mms_sdc_sdp_db
                 error(errMsg) %#ok<SPERR>
               end
             end
-            dbObj.(props{i}).data = dataobj(files{i});
+            obj.(props{i}).data = dataobj(files{i});
           catch err
             errMsg = sprintf('failed to load %s file: %s',props{i},files{i});
             irf.log('critical',errMsg)
@@ -66,20 +87,7 @@ classdef mms_sdc_sdp_db
           end
         end
       end
-      function [ok,mmsId,mode] = validate_file_name(prod)
-        ok = false; mmsId = 0; mode = '';
-        toks = tokenize(fileName,'_');
-        if ~strcmp(toks{1}(1:3),'mms'), return, end
-        mmsId =  str2double(toks{1}(4));
-        if mmsId>4 || mmsId<1, return, end
-        if ~strcmp(toks{2},'sdp'), return, end
-        mode = toks{3};
-        if isempty(intersect(mode,{'slow','fast','burst'}))
-          return
-        end
-        if ~strcmp(toks{4},'l1b'), return, end
-        if ~strcmp(toks{5},prod), return, end
-      end
+      
     end
     function res = get.tint(obj)
     % Return time interval spanning the files
@@ -96,7 +104,21 @@ classdef mms_sdc_sdp_db
         end
       end
     end
-  end
   
+    function [ok,mmsId,mode] = validate_file_name(obj,prod)
+      ok = false; mmsId = 0; mode = '';
+      toks = tokenize(fileName,'_');
+      if ~strcmp(toks{1}(1:3),'mms'), return, end
+      mmsId =  str2double(toks{1}(4));
+      if mmsId>4 || mmsId<1, return, end
+      if ~strcmp(toks{2},'sdp'), return, end
+      mode = toks{3};
+      if isempty(intersect(mode,{'slow','fast','burst'}))
+        return
+      end
+      if ~strcmp(toks{4},'l1b'), return, end
+      if ~strcmp(toks{5},prod), return, end
+    end
+  end
 end
 
