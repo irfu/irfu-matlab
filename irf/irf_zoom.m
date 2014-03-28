@@ -109,8 +109,9 @@ if strcmpi(c,'x'),
 	elseif ischar(interval) % assume interval is specified in ISO format
 		interval = irf_time(interval,'iso2tint');
 	else
-		irf.log('error','zooming interval in wrong format');
-		error('irf_zoom: zooming interval in wrong format.');
+		errStr = 'zooming interval in wrong format';
+		irf.log('critical',errStr);
+		error('irf_zoom:time_zoom:wrong_format',errStr);
 	end
 	if flag_use_t_start_epoch, % Account for reference time from userdata.t_start_epoch
 		interval=interval-t_ref;
