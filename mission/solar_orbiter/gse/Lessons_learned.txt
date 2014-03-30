@@ -17,4 +17,5 @@ Data cdf files
 7	For time strings use ISO formatted time.
 	e.g. 2014-03-30T08:01:15.084297Z  (comma after seconds is optional and 
 there can be any number of digits behind comma) 
-
+8	The same information should be kept in one location only.
+	Other instances should refer to that location. For example, in Cluster, spacecraft position was also kept in the file of magnetometer data which just wastes disk space and at the end it appeared also has less precision than needed.
