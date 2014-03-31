@@ -557,35 +557,35 @@ end
 		status = 0; % default
 		if doDataStreaming
 			% define filename
-			fileName = 'delme.cef';
+			tempFileName = 'delme.cef';
 			datasetDirName = [downloadDirectory dataset filesep];
 			if ~exist(datasetDirName,'dir'),
 				irf.log('notice',['Creating directory: ' datasetDirName]);
 				mkdir(datasetDirName);
 			end
-			filePath =   [datasetDirName fileName];
-			filePathGz = [filePath '.gz'];
-			[downloadedFile,isReady]=urlwrite(urlLink,filePathGz);
+			tempFilePath =   [datasetDirName tempFileName];
+			tempFilePathGz = [tempFilePath '.gz'];
+			[downloadedFile,isReady]=urlwrite(urlLink,tempFilePathGz);
 			if isReady,
-				gunzip(filePathGz);
-				delete(filePathGz);
+				gunzip(tempFilePathGz);
 				% find the file name
-				fid = fopen(filePath); % remove .gz at the end
+				fid = fopen(tempFilePath); % remove .gz at the end
 				tline = fgetl(fid);
 				while ischar(tline)
 					if strfind(tline,'FILE_NAME')
 						i=strfind(tline,'"');
-						fileNameCef = tline(i(1)+1:i(2)-1);
-						irf.log('debug',['CEF file name: ' fileNameCef]);
+						fileNameCefGz = [tline(i(1)+1:i(2)-1) '.gz'];
+						irf.log('debug',['CEF.gz file name: ' fileNameCefGz]);
 						break;
 					end
 					tline = fgetl(fid);
 				end
 				fclose(fid);
-				movefile(filePath,[datasetDirName fileNameCef]);
+				movefile(tempFilePathGz,[datasetDirName fileNameCefGz]);
+				delete(tempFilePath); % remove gunzipped file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
 
 				irf.log('notice',['Downloaded: ' urlLink]);
-				irf.log('notice',['into ->' datasetDirName fileNameCef]);
+				irf.log('notice',['into ->' datasetDirName fileNameCefGz]);
 				status = 1;
 			else
 				irf.log('warning',['Did not succed to download: ' urlLink]);
@@ -598,8 +598,8 @@ end
 			case 0 % CAA
 				[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
 			case 1 % CSA
-				fileName=tempname;
-				gzFileName = [fileName '.gz'];
+				tempFileName=tempname;
+				gzFileName = [tempFileName '.gz'];
 				[gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);
 				downloadedFile = gzFileName;
 		end
@@ -616,7 +616,7 @@ end
 						filelist=unzip(downloadedFile,tempDirectory);
 					case 1
 						gunzip(gzFileName);
-						filelist=untar(fileName,tempDirectory);
+						filelist=untar(tempFileName,tempDirectory);
 				end
 				if isempty(filelist)
 					irf.log('warning','Returned zip file is empty');
