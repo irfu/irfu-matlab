@@ -117,6 +117,8 @@ Default.Caa.urlServer		= 'http://caa.estec.esa.int/';
 Default.Caa.urlQuery		= 'caa_query/?';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?&gzip=1';
 Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
+Default.Caa.urlListDataset	= 'caa_query/?dataset_list=1';
+Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1';
 Default.Caa.urlNotifyOn		= '';
 Default.Caa.urlNotifyOff	= '&nonotify=1';
 Default.Caa.urlScheduleOn	= '&schedule=1';
@@ -133,6 +135,8 @@ Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
 Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1'; 
 Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
+Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
+Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
 Default.Csa.urlNotifyOn		= '';
 Default.Csa.urlNotifyOff	= '&NO_NOTIFY';
 Default.Csa.urlScheduleOn	= 'async-';
@@ -298,13 +302,15 @@ else
 end
 if downloadFromCSA % change/add defaults, hasn't added these to above flag checking
 	urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];
-	caaQuery	= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity];
-	caaStream	= [Caa.urlServer Caa.urlStream    urlIdentity];
-	caaInventory= [Caa.urlServer Caa.urlInventory queryFormat];
+	caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity];
+	caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
+	caaInventory	= [Caa.urlServer Caa.urlInventory queryFormat];
+	caaListDataset	= [Caa.urlServer Caa.urlListDataset queryFormat];
 else
-	caaQuery	= [Caa.urlServer Caa.urlQuery     urlIdentity];
-	caaStream	= [Caa.urlServer Caa.urlStream    urlIdentity];
-	caaInventory= [Caa.urlServer Caa.urlInventory urlIdentity];
+	caaQuery		= [Caa.urlServer Caa.urlQuery     urlIdentity];
+	caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
+	caaInventory	= [Caa.urlServer Caa.urlInventory urlIdentity];
+	caaListDataset	= [Caa.urlServer Caa.urlListDataset urlIdentity];
 end
 
 %% Check status of downloads if needed
@@ -401,23 +407,21 @@ if strfind(dataset,'list'),     % list files
 		return
 	end
 	if specifiedTimeInterval
+		urlListDatasets = [caaInventory queryDatasetInventory queryTimeInventory];
+		returnTimeTable='inventory';
 		if downloadFromCSA % CSA
-			urlListDatasets = [caaInventory queryDatasetInventory queryTimeInventory queryFormat];
 			urlListDatasets = csa_parse_url(urlListDatasets);
-		else % CAA
-			urlListDatasets=[caaInventory urlIdentity queryDatasetInventory queryTime];
-			returnTimeTable='inventory';
 		end
 	else % work on all datasets
-		if downloadFromCSA
-			urlListDatasets = [caaInventory queryDatasetInventory queryFormat];
+		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
+			urlListDatasets=[caaListDatasetDesc queryDatasetInventory];
+			returnTimeTable='listdesc';
 		else
-			urlListDatasets=[caaQuery urlIdentity queryDatasetInventory '&dataset_list=1'];
+			urlListDatasets = [caaListDataset queryDatasetInventory];
 			returnTimeTable='list';
-			if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
-				urlListDatasets=[urlListDatasets '&desc=1'];
-				returnTimeTable='listdesc';
-			end
+		end
+		if downloadFromCSA
+			urlListDatasets = csa_parse_url(urlListDatasets);
 		end
 	end
 	irf.log('warning','Be patient! Contacting CAA...');
