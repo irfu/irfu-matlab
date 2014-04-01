@@ -110,7 +110,7 @@ if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 	usingLatestIrfuMatlab=irf('check');
 end
 
-%% Defaults and parameters
+%% Server defaults
 
 % CAA
 Default.Caa.urlServer		= 'http://caa.estec.esa.int/';
@@ -118,7 +118,8 @@ Default.Caa.urlQuery		= 'caa_query/?';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?&gzip=1';
 Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
 Default.Caa.urlListDataset	= 'caa_query/?dataset_list=1';
-Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1';
+Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1&desc=1';
+Default.Caa.urlListFormat   = ''; % no such option in CAA
 Default.Caa.urlNotifyOn		= '';
 Default.Caa.urlNotifyOff	= '&nonotify=1';
 Default.Caa.urlScheduleOn	= '&schedule=1';
@@ -126,7 +127,8 @@ Default.Caa.urlScheduleOff	= '';
 Default.Caa.urlInventoryOn	= '&inventory=1';
 Default.Caa.urlInventoryOff	= '';
 Default.Caa.urlDataset      = '&dataset_id='; 
-Default.Caa.urlFormat       = ''; % not needed for CAA
+Default.Caa.urlDataFormat   = '&format=cdf'; % default is CDF (3.3) format
+Default.Caa.urlFileInterval = '&file_interval=72hours';
 
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
@@ -137,12 +139,14 @@ Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
 Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
 Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
+Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
 Default.Csa.urlNotifyOn		= '';
 Default.Csa.urlNotifyOff	= '&NO_NOTIFY';
 Default.Csa.urlScheduleOn	= 'async-';
 Default.Csa.urlScheduleOff	= '';
 Default.Csa.urlDataset      = '&DATASET_ID=';
-Default.Csa.urlFormat       = '&RETURN_TYPE=CSV';
+Default.Csa.urlDataFormat   = '&DELIVERY_FORMAT=CDF';
+Default.Csa.urlFileInterval = '&DELIVERY_INTERVAL=ALL';
 
 %% Defaults that can be overwritten by input parameters
 checkDownloadStatus		= false;
@@ -156,12 +160,7 @@ expandWildcards			= true;			% default is to use wildcard
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 specifiedTimeInterval   = false;        
 
-urlFileInterval='&file_interval=72hours'; % default time interval of returned files
-urlFormat='&format=cdf';				% default is CDF (3.3) format
-downloadDirectory = './CAA/';			% local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
-
-% CSA
-urlDeliveryInterval = '&DELIVERY_INTERVAL=ALL';	% csa
+downloadDirectory       = './CAA/';     % local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 
 %% load .caa file with status for all downloads
 if doLog,
@@ -238,8 +237,10 @@ if ~isempty(varargin), % check for additional flags
 			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
 			urlFileInterval = url_parameter(flag);
+		elseif any(strfind(flag,'DELIVERY_INTERVAL'))
+			urlFileInterval = url_parameter(flag);
 		elseif any(strfind(flag,'format'))
-			urlFormat = url_parameter(flag);
+			urlDataFormat = url_parameter(flag);
 		elseif any(strcmpi('schedule',flag))
 			doDownloadScheduling = true;
 		elseif any(strfind(flag,'uname='))
@@ -255,13 +256,13 @@ if ~isempty(varargin), % check for additional flags
 		elseif any(strfind(flag,'USERNAME='))
 			urlIdentity = flag;
 		elseif strcmpi('json',flag) % set query format to JSON
-			queryFormat = '&RETURN_TYPE=JSON';
+			urlListFormat = '&RETURN_TYPE=JSON';
 			downloadFromCSA = true;
 		elseif strcmpi('csv',flag) % set query format to CSV
-			queryFormat = '&RETURN_TYPE=CSV';
+			urlListFormat = '&RETURN_TYPE=CSV';
 			downloadFromCSA = true;
 		elseif strcmpi('votable',flag) % set query format to VOTABLE
-			queryFormat = '&RETURN_TYPE=votable';
+			urlListFormat = '&RETURN_TYPE=votable';
 			downloadFromCSA = true;
 		elseif strfind(lower(flag),'downloaddirectory=')
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
@@ -287,8 +288,11 @@ end
 if ~exist('urlIdentity','var') || isempty(urlIdentity) % if not set by input parameters use default
 	urlIdentity = get_url_identity;
 end
-if ~exist('queryFormat','var') % if not set by input parameters use default
-	queryFormat = Caa.urlFormat;
+% if variables not changed by input parameters, set them to default values
+for varName = {'urlListFormat','urlDataFormat','urlFileInterval'}
+	if ~exist(varName{1},'var') % if not set by input parameters use default
+		eval([varName{1} ' = Caa.' varName{1} ';']);
+	end
 end
 if doNotifyByEmail
 	urlNonotify = Caa.urlNotifyOn;
@@ -301,17 +305,19 @@ else
 	urlSchedule = Caa.urlScheduleOff;
 end
 if downloadFromCSA % change/add defaults, hasn't added these to above flag checking
-	urlFormat = ['&DELIVERY_' upper(urlFormat(2:end))];
-	caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity];
-	caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
-	caaInventory	= [Caa.urlServer Caa.urlInventory queryFormat];
-	caaListDataset	= [Caa.urlServer Caa.urlListDataset queryFormat];
-else
-	caaQuery		= [Caa.urlServer Caa.urlQuery     urlIdentity];
-	caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
-	caaInventory	= [Caa.urlServer Caa.urlInventory urlIdentity];
-	caaListDataset	= [Caa.urlServer Caa.urlListDataset urlIdentity];
+	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
+caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity urlDataFormat urlNonotify];
+caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
+caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
+caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
+caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc  urlListFormat];
+if ~downloadFromCSA % CAA requires uname and password also for metadata
+	caaInventory      = [caaInventory       urlIdentity];
+	caaListDataset    = [caaListDataset     urlIdentity];
+	caaListDatasetDesc= [caaListDatasetDesc urlIdentity];
+end
+
 
 %% Check status of downloads if needed
 if doLog && checkDownloadStatus,    % check/show status of downloads from .caa file
@@ -459,47 +465,26 @@ end
 if ~exist('CAA','dir'), mkdir('CAA');end
 
 if checkDataInventory
-	switch downloadFromCSA
-		case 0 % CAA
-			urlListDatasets=[ caaInventory  queryDatasetInventory queryTimeInventory];
-			irf.log('warning','Be patient! Contacting CAA to see the list of files...');
-			irf.log('notice',['requesting. ' urlListDatasets]);
-			caalist=urlread(urlListDatasets);
-			irf.log('debug',['returned: ' caalist]);
-			if ~any(strfind(caalist,'Version')) % there are no CAA datasets available
-				irf.log('warning','There are no CAA data sets available!');
-				return;
-			end
-		case 1 % CSA
-			urlListDatasets = [caaInventory queryDatasetInventory queryTimeInventory];
-			urlListDatasets = csa_parse_url(urlListDatasets);
-			irf.log('notice',['requesting: ' urlListDatasets]);
-			irf.log('warning','Be patient! Contacting CSA to see the list of files...');
-			caalist=urlread(urlListDatasets);
-			irf.log('debug',['returned: ' caalist]);
-			if isempty(caalist) % there are no CSA datasets available
-				irf.log('warning','There are no CSA data sets available!');
-				return;
-			end
+	urlListDatasets=[ caaInventory  queryDatasetInventory queryTimeInventory];
+	if downloadFromCSA % CSA
+		urlListDatasets = csa_parse_url(urlListDatasets);
+	end
+	irf.log('warning','Be patient! Contacting to see the list of files...');
+	irf.log('notice',['requesting: ' urlListDatasets]);
+	caalist=urlread(urlListDatasets);
+	irf.log('debug',['returned: ' caalist]);
+	if (~downloadFromCSA && ~any(strfind(caalist,'Version'))) || ...%  no CAA datasets available
+		(downloadFromCSA && isempty(caalist)) % no CSA datasets available
+		irf.log('warning','There are no data sets available!');
+		return;
 	end
 end
 
-if downloadFromCSA
-	if doDataStreaming
-		urlLine=[caaStream queryDataset queryTime];
-	else
-		urlLine = [caaQuery queryDataset queryTime ...
-			urlFormat urlDeliveryInterval urlNonotify];
-		irf.log('warning','Be patient! Submitting data request to CSA...');
-	end
-else % CAA
-	if doDataStreaming
-		urlLine=[caaStream queryDataset queryTime];
-	else
-		urlLine=[caaQuery queryDataset queryTime ...
-			urlFormat urlFileInterval urlNonotify urlSchedule];
-	end
-	irf.log('warning','Be patient! Submitting data request to CAA...');
+if doDataStreaming
+	urlLine=[caaStream queryDataset queryTime];
+else
+	urlLine = [caaQuery queryDataset queryTime];
+	irf.log('warning','Be patient! Submitting data request ...');
 end
 
 irf.log('notice',['requesting: ' urlLine]);
