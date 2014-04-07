@@ -259,3 +259,45 @@ function testSITLwriteCDF(testCase)
     !rm $DROPBOX_ROOT/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf
     cd(oldDir);
 end
+
+
+function testPhaseFromSunpulse(testCase)
+    % Verify that the phase calculation from sunpulse works as expected.
+
+    % Fill data with at least 10 points.
+    epochData = [...
+        int64(481907549000000000); int64(481907550000000000); ...
+        int64(481907551000000000); int64(481907552000000000); ...
+        int64(481907553000000000); int64(481907554000000000); ...
+        int64(481907555000000000); int64(481907556000000000); ...
+        int64(481907557000000000); int64(481907558000000000)];
+    
+    % Fill sunpulse data with at least 10 points, 20 seconds between each
+    % (corresponding to 3 rpm).
+    epochSunpulse = [...
+        int64(481907509000000000); int64(481907529000000000); ...
+        int64(481907549000000000); int64(481907569000000000); ...
+        int64(481907589000000000); int64(481907609000000000); ...
+        int64(481907629000000000); int64(481907649000000000); ...
+        int64(481907669000000000); int64(481907689000000000)];
+    
+    phase = mms_sdc_sdp_phase(epochData, epochSunpulse);
+    
+    % Compare results with expected results.
+    actSolution = phase;
+    
+    expSolution = [...
+        162
+        180
+        198
+        216
+        234
+        252
+        270
+        288
+        306
+        324];
+    
+    verifyEqual(testCase, actSolution, expSolution);
+
+end
