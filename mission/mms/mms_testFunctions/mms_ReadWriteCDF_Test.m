@@ -27,7 +27,7 @@ function testReadCDF(testCase)
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     dataObj = dataobj( [DATA_PATH_ROOT, ...
         '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'],...
-        'tint', 0, 'true');
+        'KeepTT2000');
     actSolution = dataObj.data.mms2_sdp_dce_sensor.nrec;
     expSolution = 445919;
     verifyEqual(testCase,actSolution,expSolution);
@@ -52,8 +52,7 @@ function testUscProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'], 'tint', ...
-        0, true);
+        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
     actSolution = dataObjIn.data.mms2_sdp_escp_dcv.nrec;
     expSolution = 445919;
     verifyEqual(testCase,actSolution,expSolution);
@@ -76,8 +75,7 @@ function testSITLprocessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_sitl_dce2d_20150410000000_v0.0.0.cdf'], 'tint', ...
-        0, true);
+        '/mms2_sdp_fast_sitl_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
     actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
     expSolution = 445919;
     verifyEqual(testCase,actSolution,expSolution);
@@ -100,8 +98,7 @@ function testQuickLookProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'], 'tint', ...
-        0, true);
+        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
     actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
     expSolution = 445919;
     verifyEqual(testCase,actSolution,expSolution);

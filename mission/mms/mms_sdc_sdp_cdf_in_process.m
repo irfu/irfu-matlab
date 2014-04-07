@@ -74,8 +74,7 @@ if(strcmp(sci_or_ancillary,'sci'))
             ['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
         error('MATLAB:SDCcode','184');
     else
-        % FIXME: tint is ignored with 4 arguments, but KeepTT2000 for MMS.
-        tmpDataObj = dataobj(fullFilename,'tint',0,true);
+        tmpDataObj = dataobj(fullFilename,'KeepTT2000');
         % Store it using the DataManager as dataType
         mms_sdc_sdp_datamanager(dataType,tmpDataObj);
     end

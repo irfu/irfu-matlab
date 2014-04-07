@@ -35,7 +35,7 @@ if(nargin==2)
         irf.log('warning',['First argument was not a dataobj but a file,'...
             ' trying to load with dataobj that file: ', dataObj, ...
             ', and store its data as: ',parameter,'.']);
-        dataObj = dataobj(dataObj, 'tint', 0, 'true');
+        dataObj = dataobj(dataObj, 'KeepTT2000');
     else
         err_str = 'MMS_SDC_SDP_DATAMANAGER unknown input arguments.';
         irf.log('critical', err_str);
