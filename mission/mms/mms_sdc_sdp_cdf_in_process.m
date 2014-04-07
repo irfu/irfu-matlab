@@ -84,8 +84,26 @@ elseif(strcmp(sci_or_ancillary,'ancillary'))
     % Ancillary data, named differently and stored differently. At first
     % glance it appears it is stored as simply ASCII files in folders by
     % DOY.
-    % FIXME: Implement reading of these files and store the data in
-    % DATAMANAGER.
+    % Ancillary data, named differently and stored differently. At first
+    % glance it appears it is stored as simply ASCII files in folders by
+    % DOY.
+    
+    % FIXME: Check number of headers in other files.
+    % FIXME: Call upon DataManager to store read values in global memory.
+    
+    % DEFATT has 48 lines of header and delimiter is either ' ', or '  '.
+    % and times as a string in the first column and then numerical values.
+%     fileID = fopen(fullFilename);
+%     tmpData = textscan( fileID, ...
+%         '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %s',...
+%         'delimiter', ' ', 'MultipleDelimsAsOne', 1, 'HeaderLines', 48 );
+%     fclose(fileID);
+% FIXME: CONVERT TIME and SAVE DATA of interest.
+% convert time column 1 (time with dayOfYear and time of day,
+% i.e. 2015-099T23:47:38.250) or column 2 also time but TAI (seconds since
+% 1958-001T00:00:00 UTC) to appropriate format (TT2000 ?). 
+% and store data columns of interest in datamanager.
+
 
 else
     % Processing cdf files req. either SCIENCE or ANCILLARY data files.
@@ -94,4 +112,3 @@ else
     error('MATLAB:MMS_SDC_SDP_CDF_IN_PROCESSS', err_str);
 
 end
-
