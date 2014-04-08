@@ -148,7 +148,7 @@ classdef mms_sdc_sdp_db < handle
         
       try 
         % Create dataobj
-        res = {struct('fileName',fileName,'data',dataobj(fullFileName))};
+        res = {struct('fileName',fileName,'data',dataobj(fullFileName, 'KeepTT2000'))};
         % Update time
         if fileId(1)=='b'
           epochVar = sprintf('mms%d_sdp_epoch_dc%s',obj.scId,fileId(end));
