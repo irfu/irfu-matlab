@@ -97,10 +97,9 @@ if wantPC12
   end
 end
 
-R = gseR; % XXX FIXME: this must be a real transformation to DSL
-R = irf_tlim(R,tint+DT_PC5*[-1 1]);
-V = gseV;
-V = irf_tlim(V,tint+DT_PC5*[-1 1]);
+
+R = irf_tlim(gseR,tint+DT_PC5*[-1 1]); R = th_gse2dsl(R,thId);
+V = irf_tlim(gseV,tint+DT_PC5*[-1 1]); V = th_gse2dsl(V,thId);
 
 %% Calculate and plot
 bf = irf_filt(bs,0,1/600,1/5,5);
@@ -255,9 +254,10 @@ if wantPC12
 end
 
 % Export FAC matrix
-[facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
-facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
 if exportFlag
+  [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
+  facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+  facMatrix.r = facMatrix.r(idxTlim,:);
   maarble.export(facMatrix,tint,['th' thId])
 end
 
