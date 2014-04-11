@@ -1,5 +1,10 @@
 function out = th_gse2dsl(inp,thId)
 %TH_GSE2DSL  Trasform THEMIS data from GSE to DSL
+%
+%  vec_DSL = th_gse2dsl(vec_GSE,thId)
+
+if ~any(thId=='abcde'), error('THEMIS ID must be a, b, c, d, e'), end
+
 
 t = inp(:,1);
 
