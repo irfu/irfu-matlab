@@ -71,7 +71,8 @@ if iscell(inp)
 	end
 else
 	if isempty(inp)  % return the transformation matrix instead
-    out = struct('t',B0(:,1),'rotMatrix',zeros(length(B0(:,1)),3,3));
+    out = struct('t',B0(:,1),'rotMatrix',zeros(length(B0(:,1)),3,3),...
+      'b',B0(:,2:4),'r',r(:,2:4));
     out.rotMatrix(:,1,:) = Rperpx(:,2:4);
     out.rotMatrix(:,2,:) = Rperpy(:,2:4);
     out.rotMatrix(:,3,:) = Rpar(:,2:4);
