@@ -98,8 +98,8 @@ if wantPC12
 end
 
 
-gseR = irf_tlim(gseR,tint+DT_PC5*[-1 1]); R = th_gse2dsl(gseR,thId);
-gseV = irf_tlim(gseV,tint+DT_PC5*[-1 1]); V = th_gse2dsl(gseV,thId);
+R = th_gse2dsl(irf_tlim(gseR,tint+DT_PC5*[-1 1]),thId);
+V = th_gse2dsl(irf_tlim(gseV,tint+DT_PC5*[-1 1]),thId);
 
 %% Calculate and plot
 bf = irf_filt(bs,0,1/600,1/5,5);
