@@ -195,29 +195,34 @@ switch lower(action)
 			end
 		end
 	case 'ceflib'
-        if ~ispc
-		if exist('cef_init','file') % CESR CEFLIB is installed
-			cef_init();
-			cef_verbosity(0);
-			if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
-					numel(cef_date(cef_var ('time_tags'))) == 15 && ...
-					numel(cef_var('Spacecraft_potential')) == 15 )
-				disp('CEFLIB is OK');
-				if nargout, out = true; end
+		if ~ispc
+			if exist('cef_init','file') % CESR CEFLIB is installed
+				cef_init();
+				cef_verbosity(0);
+				if ( cef_read(which('C1_CP_EFW_L3_P__20010201_120000_20010201_120100_V110503.cef.gz'))==0 && ...
+						numel(cef_date(cef_var ('time_tags'))) == 15 && ...
+						numel(cef_var('Spacecraft_potential')) == 15 )
+					disp('CEFLIB is OK');
+					if nargout, out = true; end
+					datastore('irfu_matlab','okCeflib',true);
+				else
+					disp('There are CEFLIB problems. Please, contact irfu!');
+					if nargout, out = false; end
+					datastore('irfu_matlab','okCeflib',false);
+				end
 			else
-				disp('There are CEFLIB problems. Please, contact irfu!');
-				if nargout, out = false; end
+				ceflibPath = [irf('path') filesep 'contrib' filesep  'libcef'];
+				disp(['adding CEFLIB path to matlab: ' ceflibPath]);
+				addpath(ceflibPath);
+				out=irf('ceflib');
+				if ~out,
+					disp('There are CEFLIB problems. Please, contact irfu!');
+					datastore('irfu_matlab','okCeflib',false);
+				end
 			end
 		else
-			ceflibPath = [irf('path') filesep 'contrib' filesep  'libcef'];
-			disp(['adding CEFLIB path to matlab: ' ceflibPath]);
-			addpath(ceflibPath);
-			out=irf('ceflib');
-			if ~out,
-				disp('There are CEFLIB problems. Please, contact irfu!');
-			end
-        end
-        end
+			datastore('irfu_matlab','okCeflib',false);
+		end
 	case 'path'
 		out = fileparts(which('irf.m'));
 	case 'version'

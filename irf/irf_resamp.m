@@ -221,7 +221,7 @@ if strcmp(flag_do,'average')
         end
     end
 elseif strcmp(flag_do,'interpolation'),
-  if nargin < 3, method = 'linear'; end
+  if nargin < 3 || isempty(method), method = 'linear'; end
 
   % If time series agree, no interpolation is necessary.
   if size(x,1)==size(y,1), if x(:,1)==y(:,1), out = x; return, end, end
