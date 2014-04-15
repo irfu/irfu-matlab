@@ -260,7 +260,8 @@ if exportFlag
   [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
   facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
   % Position is exported in GSE
-  facMatrix.r = irf_resamp(gseR,facMatrix.t);
+  gseR_tmp = irf_resamp(gseR,facMatrix.t);
+  facMatrix.r = gseR_tmp(:,2:4);
   maarble.export(facMatrix,tint,['th' thId])
 end
 
