@@ -13,6 +13,9 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'DataDirectory',dataDir) use dataDir as
+%   location for data (default dataDir is '/data/caalocal') 
+%
 %   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
 %
 %		TTRequest.UserData.Status = 1 - downloaded, 0 - submitted, empty - not processed
@@ -98,6 +101,7 @@ if nargin == 0,
   help local.caa_download
   return
 end
+args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
@@ -116,16 +120,32 @@ else
 	irf.log('critical','See syntax: help local.c_caa_download');
 	return;
 end
-if nargin >= 2 
-	for j=2:numel(varargin),
-		if ischar(varargin{j}) && strcmpi(varargin{j},'stream')
-			streamData = true;
-			irf.log('notice','Streaming data from CAA.');
-		elseif isnumeric(varargin{j})
-			indexStart = varargin{j};
+args(1)=[];
+
+while ~isempty(args)
+    if ischar(args{1}) && strcmpi(args{1},'stream')
+		streamData = true;
+		irf.log('notice','Streaming data from CAA.');
+        args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
+		if numel(args) > 2 && isnumeric(args{2})
+			indexStart = args{2};
+			args(1:2)=[];
+		else
+			irf.log('warning','indexstart not given');
+			args(1)=[];
 		end
-	end
+	elseif ischar(args{1}) && strcmpi(args{1},'datadirectory')
+		if numel(args) > 2 && ischar(args{2})
+			dataDirectory = args{2};
+			args(1:2)=[];
+		else
+			irf.log('warning','data directory not given');
+			args(1)=[];
+		end
+    end
 end
+
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVariableName=['TT_' dataSet ];
 requestListDirectory='matCaaRequests';
