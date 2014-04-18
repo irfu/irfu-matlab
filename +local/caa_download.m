@@ -199,7 +199,7 @@ assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
 if isempty(indexList),
 	nRequest	= numel(TTRequest)-iRequest+1;
-	indexList	= iRequest:nume(TTRequest);
+	indexList	= iRequest:numel(TTRequest);
 else
 	nRequest	= numel(indexList);
 end
@@ -218,7 +218,7 @@ while 1
 				isempty(TTRequest.UserData(iRequest).Status) || ...
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
-			irf.log('notice',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-(numel(indexList)+1) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
+			irf.log('notice',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
 				if streamData
