@@ -9,7 +9,11 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
 %
-%   LOCAL.CAA_DOWNLOAD(dataset,indexStart) start from the given index
+%   LOCAL.CAA_DOWNLOAD(dataset,'indexStart',indexStart) start from the
+%   specified index indexStart
+%
+%   LOCAL.CAA_DOWNLOAD(dataset,'indexList',indexList) download only indexes
+%   specified in indexList 
 %
 %   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
 %
@@ -41,12 +45,13 @@ function out=caa_download(varargin)
 
 %% Defaults
 dataDirectory			= '/data/caalocal';
-maxSubmittedJobs		= 13;
-maxNumberOfAttempts		= 20;
+maxSubmittedJobs		= 10;
+maxNumberOfAttempts		= 30;
 isInputDatasetName		= false;
 sendEmailWhenFinished	= false;
 streamData				= false; % download cdf files asynchronously
 indexStart				= 1; 
+indexList				= []; 
 
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
@@ -87,15 +92,6 @@ if exist('sendmail','file')==2,
 		end
 	end
 end
-%% change to data directory
-if exist(dataDirectory,'dir')
-	disp(['!!!! Changing directory to ' dataDirectory ' !!!']);
-	cd(dataDirectory);
-else
-	disp(['DOES NOT EXIST data directory: ' dataDirectory ' !!!']);
-	out=[];
-	return;
-end
 %% check input: get inventory and construct time table if dataset
 if nargin == 0,
   help local.caa_download
@@ -128,15 +124,23 @@ while ~isempty(args)
 		irf.log('notice','Streaming data from CAA.');
         args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
-		if numel(args) > 2 && isnumeric(args{2})
+		if numel(args) > 1 && isnumeric(args{2})
 			indexStart = args{2};
 			args(1:2)=[];
 		else
 			irf.log('warning','indexstart not given');
 			args(1)=[];
 		end
+	elseif ischar(args{1}) && strcmpi(args{1},'indexlist')
+		if numel(args) > 1 && isnumeric(args{2})
+			indexList = args{2};
+			args(1:2)=[];
+		else
+			irf.log('warning','indexList not given');
+			args(1)=[];
+		end
 	elseif ischar(args{1}) && strcmpi(args{1},'datadirectory')
-		if numel(args) > 2 && ischar(args{2})
+		if numel(args) > 1 && ischar(args{2})
 			dataDirectory = args{2};
 			args(1:2)=[];
 		else
@@ -144,6 +148,15 @@ while ~isempty(args)
 			args(1)=[];
 		end
     end
+end
+%% change to data directory
+if exist(dataDirectory,'dir')
+	disp(['!!!! Changing directory to ' dataDirectory ' !!!']);
+	cd(dataDirectory);
+else
+	irf.log('critical',['DOES NOT EXIST data directory: ' dataDirectory ' !!!']);
+	out=[];
+	return;
 end
 
 %% check which time intervals are already downloaded, remove obsolete ones
@@ -184,17 +197,28 @@ end
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 %% loop through request time table
 iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
-nRequest=numel(TTRequest)-iRequest+1;
+if isempty(indexList),
+	nRequest	= numel(TTRequest)-iRequest+1;
+	indexList	= iRequest:nume(TTRequest);
+else
+	nRequest	= numel(indexList);
+end
 while 1
 	while 1 % submit next unsubmitted job
-		if iRequest > numel(TTRequest), break;end % no more jobs
-		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs, break; end % max allowed submitted jobs reached
+		if isempty(indexList), break; end % no more jobs
+		if n_submitted_jobs(TTRequest)>=maxSubmittedJobs, 
+			break; % max allowed submitted jobs reached 
+		else
+			% define the next job to submit
+			iRequest = indexList(1);
+			indexList(1) = [];
+		end 
 		if ~isfield(TTRequest.UserData(iRequest),'Status') || ...
 		  		~isfield(TTRequest.UserData(iRequest),'Downloadfile') || ...
 				isempty(TTRequest.UserData(iRequest).Status) || ...
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
-			irf.log('notice',['Requesting interval ' num2str(iRequest) '(' num2str(nRequest-(numel(TTRequest)-iRequest)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
+			irf.log('notice',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-(numel(indexList)+1) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
 				if streamData
@@ -212,7 +236,6 @@ while 1
 				TTRequest.UserData(iRequest).TimeOfRequest=now;
 				TTRequest.UserData(iRequest).TimeOfDownload=now;
 				TTRequest.UserData(iRequest).NumberOfAttemptsToDownload=0;
-				iRequest=iRequest+1;
 				break
 			elseif download_status == -1,
 				TTRequest.UserData(iRequest).Status=-1;
@@ -220,7 +243,6 @@ while 1
 				TTRequest.UserData(iRequest).TimeOfRequest=now;
 			end
 		end
-		iRequest=iRequest+1;
 	end
 	while 1 % check submitted jobs
 		irf.log('notice',['Checking downloads. ' num2str(n_submitted_jobs(TTRequest)) ' jobs submitted.']);
@@ -233,16 +255,17 @@ while 1
 			irf.log('notice','No more submitted jobs');
 			break;
 		end
-		timeSinceDownloadSec	= (now-TTRequest.UserData(iSubmitted).TimeOfDownload)/24/3600;
+		timeSinceDownloadSec	= (now-TTRequest.UserData(iSubmitted).TimeOfDownload)*24*3600;
 		numberOfAttempts		= TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload;
-		waitTimeSec				= numberOfAttempts*60 - timeSinceDownloadSec ; % 'number of attempts' * minutes is expected wait time before next check
-		irf.log('warning',['Job #' num2str(iSubmitted) ', attempt #' num2str(TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload+1)]);
-		if waitTimeSec>0,
+		waitTimeSec				= numberOfAttempts*30 - timeSinceDownloadSec ; % 'number of attempts' * minutes is expected wait time before next check
+		irf.log('warning',['Interval index #' num2str(iSubmitted) ', attempt #' num2str(TTRequest.UserData(iSubmitted).NumberOfAttemptsToDownload+1)]);
+		if waitTimeSec>0 ...
+				&& (isempty(indexList) || n_submitted_jobs(TTRequest) >= maxSubmittedJobs)
 			irf.log('notice',['pause ' num2str(waitTimeSec) ' s']);
 			pause(waitTimeSec);
 		end
 		try
-			irf.log('warning',['File #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
+			irf.log('warning',['Interval index #' num2str(iSubmitted) ': ' TTRequest.UserData(iSubmitted).Downloadfile]);
 			download_status=caa_download(TTRequest.UserData(iSubmitted).Downloadfile,'nolog',['downloadDirectory=' dataDirectory]);
 			TTRequest.UserData(iSubmitted).TimeOfDownload=now;
 		catch
@@ -287,7 +310,7 @@ end % going through all requests
 %% assign output
 if nargout==1, out=TTRequest;end
 %% index dataSet
-local.c_update(dataSet);
+local.c_update(dataSet,'datadirectory',dataDirectory);
 %% send email when finnsihed
 if sendEmailWhenFinished
 	sendEmailTxt = ['local.caa_download: getting ' dataSet ' is ready ;)'];

@@ -155,11 +155,15 @@ doLog					= true;			% log into .caa file
 doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
 doDownloadScheduling	= false;        % default download directly files
 doNotifyByEmail			= false;		% default, do not notify
-downloadFromCSA			= true;			% default to download from CSA
 expandWildcards			= true;			% default is to use wildcard
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 specifiedTimeInterval   = false;        
-
+caaServer = datastore('caa','defaultServer');
+if isempty(caaServer) || strcmpi(caaServer,'csa'),
+	downloadFromCSA			= true;			% default to download from CSA
+else
+	downloadFromCSA			= false;
+end
 downloadDirectory       = './CAA/';     % local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 
 %% load .caa file with status for all downloads
@@ -282,8 +286,10 @@ end
 
 if downloadFromCSA
 	Caa = Default.Csa;
+	dataSource = 'csa';
 else
 	Caa = Default.Caa;
+	dataSource = 'caa';
 end
 if ~exist('urlIdentity','var') || isempty(urlIdentity) % if not set by input parameters use default
 	urlIdentity = get_url_identity;
@@ -395,19 +401,19 @@ if specifiedTimeInterval
 end
 
 %% define queryDataset and queryDatasetInventory
-[queryDataset,queryDatasetInventory] = query_dataset;
+[queryDataset,queryDatasetInventory,filter] = query_dataset;
 
 %% list data if required
 if strfind(dataset,'list'),     % list files
 	if strfind(dataset,'listdata')
-		ttTemp = caa_download(['list:' queryDataset]);
+		ttTemp = caa_download(['list:' filter],dataSource);
 		if isempty(ttTemp.TimeInterval), % no time intervals to download
 			irf.log('warning','No datasets to download');
 			downloadStatus = ttTemp;
 			return;
 		end
 		tint = ttTemp.TimeInterval(1,:);
-		ttTemp = caa_download(tint,['list:' queryDataset]);
+		ttTemp = caa_download(tint,['list:' filter],dataSource);
 		iData=find([ttTemp.UserData(:).number]);
 		downloadStatus=select(ttTemp,iData);
 		return
@@ -500,7 +506,7 @@ if status == 0 && exist(downloadedFile,'file')
 		if ~ischar(tline), break, end
 		disp(tline)
 		if any(strfind(tline,'http:')) && any(strfind(tline,'zip')), % CAA
-			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'zip')+3);
+			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'zip')+2);
 		elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
 			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
 		end
@@ -508,7 +514,7 @@ if status == 0 && exist(downloadedFile,'file')
 	fclose(fid);
 	delete(downloadedFile);
 	
-	if exist('downloadfile','var'),
+	if exist('downloadFile','var'),
 		if doLog
 			j=length(caa)+1;
 			caa{j}.url=urlLine;
@@ -680,7 +686,7 @@ end
 		out = strrep(in,'*','%25');
 		out = strrep(out,' ','%20');
 	end
-	function [queryDataset,queryDatasetInventory] = query_dataset
+	function [queryDataset,queryDatasetInventory,filter] = query_dataset
 		% for wildcards, inventory requests use '%' as wildcard,
 		% while data requests use '*' (something that was not easy to implement)
 		if strfind(dataset,'list'),     % list files

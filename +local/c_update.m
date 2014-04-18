@@ -1,24 +1,43 @@
-function c_update(datasetName)
+function c_update(varargin)
 % LOCAL.C_UPDATE update index information in CAA directory
 %
 %    LOCAL.C_UPDATE update index for all datasets
 % 
 %    LOCAL.C_UPDATE(datasetName) update only the index of dataset datasetName 
 %
+%    LOCAL.C_UPDATE(..,'datadirectory',dataDir) look for data in directory
+%    dataDir (default /data/caalocal)
+%
 % See also:
 %	LOCAL.C_READ
 
 %% list all available datasets
-dirCaa='/data/caalocal';
+dirCaa='/data/caalocal';	% default
+%% Check inputs
+args=varargin;
+while ~isempty(args)
+	if ischar(args{1}) && strcmpi(args{1},'datadirectory')
+		if numel(args) > 1 && ischar(args{2})
+			dirCaa = args{2};
+			args(1:2)=[];
+		else
+			irf.log('warning','data directory not given');
+			args(1)=[];
+		end
+	elseif ischar(args{1}) % given dataset name
+		dataSetFilter = args{1};
+		filterDataSet = true; 
+		args(1)=[];
+	end
+end
+%% Create dataSetArray to update
 cd(dirCaa);
 tmp=dir(dirCaa);
 iDir = [tmp(:).isdir]; % find directories
 dataSetArray = {tmp(iDir).name}';
 dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
-
-%% if index only selected datasetName, remove others
-if nargin == 1 && ischar(datasetName)
-  dataSetArray(~ismember(dataSetArray,{datasetName})) = []; 
+if filterDataSet 
+	dataSetArray(~ismember(dataSetArray,{dataSetFilter})) = [];
 end
 
 %% go through all the datasets to be indexed

@@ -45,6 +45,9 @@ end
 
 %% Defaults
 returnDataFormat = 'mat'; % default matlab format
+caaDirDefault = '/data/caalocal';
+
+
 if ispc
     caaDir='Z:\';
 else
@@ -91,6 +94,22 @@ end
 if nargin > 3
 	irf.log('critical','max 3 arguments supported');
 	return
+end
+%% Define data directory
+if isempty(caaDir) % not defined by input arguments
+	caaDir = datastore('caa','localDataDirectory');
+end
+if isempty(caaDir) % not saved in datastore
+	caaDir = input(['Input local caa directory [default:' ...
+		caaDirDefault ']:'],'s');
+	if isempty(caaDir),
+		disp(['Using default data directory: ' caaDirDefault]);
+		caaDir=caaDirDefault;
+	end
+	ok = input('Shall I save the directory location for future sessions [y/n]?','s');
+	if strcmpi(ok,'y'),
+		datastore('caa','localDataDirectory',caaDir);
+	end
 end
 %% Check if repository is there
 if ~exist(caaDir,'dir')
