@@ -10,6 +10,9 @@ function [out,dataobject]=c_read(varargin)
 %	LOCAL.C_READ('list') list all datasets that are locally available and indexed
 %		To see variables for any data set see LOCAL.C_CAA_META
 %
+%	ok = LOCAL.C_READ('test') test if local data directory exists, output
+%	is true or false.
+%
 % Variable can be CAA variable or shortcuts
 %  'R1'  - Cluster 1 position
 %  'dR1' - Cluster 1 relative position wrt center
@@ -45,15 +48,12 @@ end
 
 %% Defaults
 returnDataFormat = 'mat'; % default matlab format
-caaDirDefault = '/data/caalocal';
+listIndexedDatasets = false; 
 
+% assign default caaDir value from datastore 
+caaDir = datastore('caa','localDataDirectory');
+caaDirDefault = '/data/caalocal';  % value to suggest if caaDir not defined
 
-if ispc
-    caaDir='Z:\';
-else
-    caaDir='/data/caalocal/';
-end
-indexDir = [caaDir 'index'];
 %% Default index is empty, read in only those indees that are used
 
 if isempty(index), 
@@ -65,8 +65,7 @@ if nargin == 0,
 	return;
 end
 if nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'list')
-	list_indexed_datasets;
-	return;
+	listIndexedDatasets = true;
 elseif nargin == 1 && ischar(varargin{1}) && strcmp(varargin{1},'test')
 	out = false;
 	if exist(caaDir,'dir'), out = true; end
@@ -95,10 +94,7 @@ if nargin > 3
 	irf.log('critical','max 3 arguments supported');
 	return
 end
-%% Define data directory
-if isempty(caaDir) % not defined by input arguments
-	caaDir = datastore('caa','localDataDirectory');
-end
+%% Check if data directory exists
 if isempty(caaDir) % not saved in datastore
 	caaDir = input(['Input local caa directory [default:' ...
 		caaDirDefault ']:'],'s');
@@ -111,9 +107,17 @@ if isempty(caaDir) % not saved in datastore
 		datastore('caa','localDataDirectory',caaDir);
 	end
 end
+indexDir = [caaDir filesep 'index'];
+
 %% Check if repository is there
 if ~exist(caaDir,'dir')
 	disp(['Local CAA data repository ' caaDir ' not available!']);
+	return;
+end
+
+%% Check if we have to only list and return
+if listIndexedDatasets
+	list_indexed_datasets;
 	return;
 end
 %% Read in data
@@ -198,11 +202,11 @@ end
 		end
 		%% read in records
 		for iFile=istart:iend
-			cdf_file=[caaDir index.filename(iFile,:)];
+			cdfFile=[caaDir filesep index.filename(iFile,:)];
 			if specialCaseCis,
 				dataset=strrep(dataset,'CIS_','CIS-');
 				varToRead=strrep(varToRead,'CIS_','CIS-');
-            end
+			end
             % Get the correct CDF variables for vars>64 symbols
             for  iVar=1:numel(varToRead),
                 if length(varToRead{iVar})>64,
@@ -211,14 +215,14 @@ end
             end
 			switch lower(returnDataFormat)
 				case 'mat'
-					irf.log('notice',['Reading: ' cdf_file]);
+					irf.log('notice',['Reading: ' cdfFile]);
 					%% check if epoch16
-					cdfid=cdflib.open(cdf_file);
+					cdfid=cdflib.open(cdfFile);
 					useCdfepoch16=strcmpi(cdflib.inquireVar(cdfid,0).datatype,'cdf_epoch16');
 					if useCdfepoch16,
-						irf.log('debug',['EPOCH16 time in cdf file:' cdf_file]);
+						irf.log('debug',['EPOCH16 time in cdf file:' cdfFile]);
 						tName  = cdflib.getVarName(cdfid,0);
-						tData = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
+						tData = cdfread(cdfFile,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
 						if numel(size(tData)) == 3,
 							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % cdfread returns (Nsamples X 1 X 2) matrix
 						else
@@ -227,7 +231,7 @@ end
 						timeVector=irf_time(tcdfepoch,'cdfepoch162epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
-                            tmpdata{iVar}=cdfread(cdf_file,'CombineRecords',true,...
+                            tmpdata{iVar}=cdfread(cdfFile,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
 						tmpdata = [{timeVector} tmpdata]; %
@@ -241,7 +245,7 @@ end
                             ii=ii-1;
                         end
                         % read data
-                        [tmpdata,~] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true,...
+                        [tmpdata,~] = cdfread(cdfFile,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
 						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
@@ -277,11 +281,11 @@ end
 					cdflib.close(cdfid);
 				case {'caa','dobj'}
 					if iFile==istart % start of interval, initiate dataobject
-                        dataobject=dataobj(cdf_file,'tint',tint);
+                        dataobject=dataobj(cdfFile,'tint',tint);
                     elseif iFile==iend % ends of interval
-						data_temp=dataobj(cdf_file,'tint',tint);
+						data_temp=dataobj(cdfFile,'tint',tint);
 					else
-						data_temp=dataobj(cdf_file);
+						data_temp=dataobj(cdfFile);
 					end
 					if exist('data_temp','var') && ~isempty(data_temp)
 						if isempty(dataobject)

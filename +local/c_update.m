@@ -11,8 +11,13 @@ function c_update(varargin)
 % See also:
 %	LOCAL.C_READ
 
+%% Defaults
+filterDataSet = false; % default assume datasetName not given as input
 %% list all available datasets
-dirCaa='/data/caalocal';	% default
+dirCaa = datastore('caa','localDataDirectory');
+if isempty(dirCaa),
+	dirCaa='/data/caalocal';	% default
+end
 %% Check inputs
 args=varargin;
 while ~isempty(args)

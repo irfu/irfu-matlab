@@ -224,7 +224,7 @@ while 1
 				if streamData
 				[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDirectory]);
 				else
-				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard');
+				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard',['downloadDirectory=' dataDirectory]);
 				end
 			catch
 				download_status = -1; % something wrong with internet
