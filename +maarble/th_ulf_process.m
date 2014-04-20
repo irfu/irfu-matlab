@@ -69,31 +69,27 @@ tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
-  [bs,~,ttGap] = th_clean_eb(bs);
+% Clean backward time jumps, example THD 
+bs = clear_backward_jump(bs,'BS');
+[bs,~,ttGap] = th_clean_eb(bs);
 if isempty(bs), 
     irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
+  es = clear_backward_jump(es,'ES');
   es=th_clean_eb(es,'NaN');
 end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
+  bl = clear_backward_jump(bl,'BL');
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
   if isempty(ef)
     irf.log('warning','no EF data')
   else
     % Remove backward time jumps in EF
     % Example THE 2007-08-11T09:40:02.489975Z (3 points)
-    while true
-      idxJump = find(diff(ef(:,1))<=0);
-      if isempty(idxJump), break, end
-      idxJump = idxJump(1);
-      irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
-      ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
-      irf.log('warning',sprintf('Disregarging %d points',length(ii)))
-      ef(ii,:) = [];
-    end
+    ef = clear_backward_jump(ef,'EF');
   end
 end
 
@@ -310,4 +306,17 @@ end
       end
     end
   end % flim_ebsp()
+end
+
+function data = clear_backward_jump(data,name)
+if nargin <2, name = ''; else name = [' in ' name]; end
+while true
+  if isempty(data), break, end
+  iJump = find( diff(data(:,1))<=0 );
+  if isempty(iJump), break, end
+  iJump = iJump(1)+1;
+  irf.log('warning',['backward time jump' name ' at ' epoch2iso(data(iJump,1))])
+  ii = find(data(:,1)>=data(iJump,1)); ii(ii>=iJump) = []; data(ii,:) = [];
+  irf.log('warning',sprintf('Disregarging %d points',length(ii)))
+end
 end
