@@ -32,7 +32,7 @@ plotFlag = 1;
 exportFlag = 1;
 
 wantPC12 = 0;
-wantPC35 = 0; wantSCM = 0;
+wantPC35 = 0;
 if ischar(freqRange)
   switch lower(freqRange)
     case 'all'
@@ -46,7 +46,7 @@ if ischar(freqRange)
       error('Invalid value for freqRange')
   end
 else
-  if freqRange(1) > 1, wantSCM = 1; end
+  error('frequency range must be one of: pc12, pc35, all')
 end
 
 tmpR = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat', ['Rth' thId]);
@@ -97,10 +97,9 @@ if wantPC12
   end
 end
 
-R = gseR; % XXX FIXME: this must be a real transformation to DSL
-R = irf_tlim(R,tint+DT_PC5*[-1 1]);
-V = gseV;
-V = irf_tlim(V,tint+DT_PC5*[-1 1]);
+
+R = th_gse2dsl(irf_tlim(gseR,tint+DT_PC5*[-1 1]),thId);
+V = th_gse2dsl(irf_tlim(gseV,tint+DT_PC5*[-1 1]),thId);
 
 %% Calculate and plot
 bf = irf_filt(bs,0,1/600,1/5,5);
@@ -162,8 +161,9 @@ if wantPC35
   end
   
   ebsp = ...
-    irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,R,'pc35',...
+    irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,[],'pc35',...
     'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
+  ebsp.r = gseR; % add position for plotting
   tlim_ebsp();
   if plotFlag
     close all
@@ -232,10 +232,11 @@ if wantPC12
   end
   
   tic
-  ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
+  ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,[],'pc12',...
     'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
     'facMatrix',facMatrix);
   toc
+  ebsp.r = gseR; % add position for plotting
   tlim_ebsp();
   if isempty(ebsp.t)
     irf.log('warning','No result for PC12'),continue 
@@ -255,9 +256,12 @@ if wantPC12
 end
 
 % Export FAC matrix
-[facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
-facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
 if exportFlag
+  [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
+  facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+  % Position is exported in GSE
+  gseR_tmp = irf_resamp(gseR,facMatrix.t);
+  facMatrix.r = gseR_tmp(:,2:4);
   maarble.export(facMatrix,tint,['th' thId])
 end
 
