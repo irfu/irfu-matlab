@@ -154,21 +154,21 @@ else
 	return;
 end
 
-noDataReturned = true;
+isDataReturned = false;
 
 for iVar = 1: numel(varNameList)
 	varName = varNameList{iVar};
 	testLocalCaaRepository = false; % default test local CAA directory and not local repository
 	if any(strfind(varName,'__'))   % variable name specified as input
 		if dobjSpecified
-			noDataReturned = false;
+			isDataReturned = true;
 		else
 			dataobjName=caa_get_dataset_name(varName,'_');
 			if getAllData && ~getFromFile ...
 					&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
 					&& evalin('caller',['isa(' dataobjName ',''dataobj'')'])
 				Dataobject=evalin('caller',dataobjName);
-				noDataReturned = false;
+				isDataReturned = true;
 				existDataobject = true;
 				irf.log('warning',[dataobjName ' exist in memory. NOT LOADING FROM FILE!'])
 			else
@@ -179,7 +179,7 @@ for iVar = 1: numel(varNameList)
 				end
 				if exist(dataobjName,'var'), % success loading data
 					eval(['Dataobject=' dataobjName ';']);
-					noDataReturned = false;
+					isDataReturned = true;
 					existDataobject = true;
 				else
 					existDataobject = false;
@@ -204,7 +204,7 @@ for iVar = 1: numel(varNameList)
 				if isempty(ttt),
 					irf.log('warning','NO DATA in repository!');
 				end
-				noDataReturned = false;
+				isDataReturned = true;
 				res{iVar} = ttt;
 			end
 		end
@@ -217,17 +217,17 @@ for iVar = 1: numel(varNameList)
 					if isempty(ttt),
 						irf.log('warning','NO DATA in local repository!');
 					else
-						noDataReturned = false;
+						isDataReturned = true;
 						resmat{iVar} = ttt;
 					end
 				end
-				if isempty(ttt) && testDataStreaming
+				if ~isDataReturned && testDataStreaming
 					ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
 					if isempty(ttt),
 						irf.log('warning','NO DATA in CAA to stream!');
 					else
 						resmat{iVar} = ttt;
-						noDataReturned = false;
+						isDataReturned = true;
 					end
 				end
 			end
@@ -243,14 +243,14 @@ for iVar = 1: numel(varNameList)
 				if isempty(ttt),
 					irf.log('warning','NO DATA in repository!');
 				end
-				noDataReturned = false;
+				isDataReturned = true;
 				resdataobject{iVar} = ttt;
 			end
 		end
 	end
 end
 
-if noDataReturned, % nothing is loaded, return empty
+if ~isDataReturned, % nothing is loaded, return empty
 	irf.log('warning','Nothing is loaded')
 	res=[];resdataobject=[];resmat=[];resunit=[];
 elseif numel(varNameList) == 1, % return variables and not cell arrays
