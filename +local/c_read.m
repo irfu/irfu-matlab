@@ -152,7 +152,7 @@ switch lower(varName)
 			out=[data{1} double(data{2})];
 		end
 	otherwise
-		irf.log('warning',['Reading variable (assume to exist): ' varName]);
+		irf.log('warning',['local.c_read() reading variable: ' varName]);
 		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
 		ok=readdata;
