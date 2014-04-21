@@ -169,65 +169,39 @@ switch action
 				fix_order_of_array_dimensions;
 				
 				if ~shouldReadAllData
-					nVariables = size(info.Variables,1);
-					records = cell(nVariables,1); 
-					recsTmp = {}; % cell array, 
-					for i=1:nVariables
-						% Time dependent variables
-						timeVarName = get_key('DEPEND_0',i);
-						if isempty(timeVarName),
-							% not explicitely dependant time variable
-							continue,
-						end
-						timeVarName = timeVarName{:};
-						if ~isempty(recsTmp)
-							isRecArray=cellfun(@(x) strcmpi(x,timeVarName), recsTmp(:,1));
-							idx = find(isRecArray==1);
-							if ~isempty(idx), records{i} = recsTmp{idx,3}; continue, end
-						end
-						iTimeVar = get_var_idx(timeVarName);
-						timeline = data{iTimeVar};
-						if keepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
-							tintTmp(1) = parsett2000(epoch2iso(tint(1)));
-							tintTmp(2) = parsett2000(epoch2iso(tint(2)));
-						else
-							tintTmp = tint;
-						end
-						records{i} = (timeline >= tintTmp(1)) & (timeline <= tintTmp(2));
-						recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
-					end
-					% Time variables
-					if ~isempty(recsTmp)
-						for i = 1:size(recsTmp,1), 
-							records{recsTmp{i,2}} = recsTmp{i,3};
-							isDeltaPlus = cellfun(@(x) strcmpi(x,recsTmp{i,1}),info.VariableAttributes.DELTA_PLUS(:,1));
-							idx = find(isDeltaPlus == 1);
-							if ~isempty(idx),
-								variableDeltaPlus = info.VariableAttributes.DELTA_PLUS{idx,2};
-								if ischar(variableDeltaPlus) % delta plus is variable name
-									isVariableDeltaPlus = cellfun(@(x) strcmpi(x,variableDeltaPlus),info.Variables(:,1));
-									idx = find(isVariableDeltaPlus == 1);
-									recsTmp{idx,1} = recsTmp{i,1};
-									recsTmp{idx,2} = recsTmp{i,2};
-									recsTmp{idx,3} = recsTmp{i,3};
-									records{idx}   = records{i};
-								end
-							end
-							isDeltaMinus = cellfun(@(x) strcmpi(x,recsTmp{i,1}),info.VariableAttributes.DELTA_MINUS(:,1));
-							idx = find(isDeltaMinus == 1);
-							if ~isempty(idx),
-								variableDeltaMinus = info.VariableAttributes.DELTA_MINUS{idx,2};
-								if ischar(variableDeltaMinus), % delta minus is variable name
-									isVariableDeltaMinus = cellfun(@(x) strcmpi(x,variableDeltaMinus),info.Variables(:,1));
-									idx = find(isVariableDeltaMinus == 1);
-									recsTmp{idx,1} = recsTmp{i,1};
-									recsTmp{idx,2} = recsTmp{i,2};
-									recsTmp{idx,3} = recsTmp{i,3};
-									records{idx}   = records{i};
-								end
-							end
-						end
-					end
+          nVariables = size(info.Variables,1);
+          records = cell(nVariables,1); recsTmp = {};
+          for i=1:nVariables
+            % Time dependent variables
+            timeVarName = get_key('DEPEND_0',i);
+            if isempty(timeVarName), continue, end
+            timeVarName = timeVarName{:};
+            if ~isempty(recsTmp)
+              isRecArray=cellfun(@(x) strcmpi(x,timeVarName), recsTmp(:,1));
+              idx = find(isRecArray==1);
+              if ~isempty(idx), records(i) = recsTmp(idx,3); continue, end
+            end
+            iTimeVar = get_var_idx(timeVarName);
+            timeline = data{iTimeVar};
+            if keepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
+              tintTmp(1) = parsett2000(epoch2iso(tint(1)));
+              tintTmp(2) = parsett2000(epoch2iso(tint(2)));
+            else tintTmp = tint;
+            end
+            records{i} = (timeline >= tintTmp(1)) & (timeline < tintTmp(2));
+            recsTmp = [recsTmp; {timeVarName,iTimeVar,records{i}}]; %#ok<AGROW>
+            % Theat DELTA_PLUS/DELTA_MINUS for time variables
+            for deltaParam={'DELTA_PLUS','DELTA_MINUS'}
+              deltaVar = get_key(deltaParam{:},iTimeVar);
+              if isempty(deltaVar) || ~ischar(deltaVar{:}), continue, end
+              deltaVar = deltaVar{:}; iDelta = get_var_idx(deltaVar);
+              recsTmp = [recsTmp; {deltaVar,iDelta,records{i}}]; %#ok<AGROW>
+            end
+          end
+          % Time variables
+          if ~isempty(recsTmp)
+            for i = 1:size(recsTmp,1), records{recsTmp{i,2}} = recsTmp{i,3}; end
+          end
 				end
 			else
 				% get basic info

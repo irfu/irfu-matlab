@@ -29,6 +29,9 @@ switch lower(varName(5:6))
   case 'sc'
     instrumentId = 'scm';
     levelId = 'l2';
+  case 'sp'
+    instrumentId = 'state';
+    levelId = 'l1';
   otherwise
     error('This instrument is not implemented')
 end
@@ -89,9 +92,9 @@ if ~isempty(res), res(diff(res(:,1))==0,:) = []; end
     res = '';
     fullPath = sprintf('%s%sth%s%s%s%s%s%s%02d',dataDir,filesep,...
       thId,filesep,levelId,filesep,instrumentId,filesep,timeVecStart(1));
-    files = dir(sprintf('%s%sth%s_l2_%s_%d%02d%02d_v*.cdf',...
+    files = dir(sprintf('%s%sth%s_%s_%s_%d%02d%02d_v*.cdf',...
       fullPath,filesep,...
-      thId,instrumentId,timeVecStart(1),timeVecStart(2),timeVecStart(3)));
+      thId,levelId,instrumentId,timeVecStart(1),timeVecStart(2),timeVecStart(3)));
     if ~isempty(files)
       maxVer = 0; fileIdx = 1;
       for iFile = length(files)
