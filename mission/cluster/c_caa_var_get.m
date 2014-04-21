@@ -197,49 +197,54 @@ for iVar = 1: numel(varNameList)
 			end
 		end
 		if getCaa, % save variable
-			if testLocalCaaRepository
+			if existDataobject
+				res{iVar}=getv(Dataobject,varName);
+			elseif testLocalCaaRepository
 				ttt = local.c_read(varName,tint,'caa');
 				if isempty(ttt),
 					irf.log('warning','NO DATA in repository!');
 				end
 				noDataReturned = false;
 				res{iVar} = ttt;
-			elseif existDataobject
-				res{iVar}=getv(Dataobject,varName);
 			end
 		end
 		if getMat % save variable in matlab matrix format
-			if testLocalCaaRepository
-				ttt = local.c_read(varName,tint,'mat');
-				if isempty(ttt),
-					irf.log('warning','NO DATA in local repository!');
-				end
-				noDataReturned = false;
-				resmat{iVar} = ttt;
-			elseif testDataStreaming
-				ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
-				if isempty(ttt),
-					irf.log('warning','NO DATA in CAA to stream!');
-				end
-				resmat{iVar} = ttt;
-				noDataReturned = false;
-			elseif existDataobject
+			if existDataobject
 				resmat{iVar}=getmat(Dataobject,varName);
+			else
+				if testLocalCaaRepository
+					ttt = local.c_read(varName,tint,'mat');
+					if isempty(ttt),
+						irf.log('warning','NO DATA in local repository!');
+					else
+						noDataReturned = false;
+						resmat{iVar} = ttt;
+					end
+				end
+				if isempty(ttt) && testDataStreaming
+					ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
+					if isempty(ttt),
+						irf.log('warning','NO DATA in CAA to stream!');
+					else
+						resmat{iVar} = ttt;
+						noDataReturned = false;
+					end
+				end
 			end
 		end
 		if getUnit % save variable unit
 			resunit{iVar}=getunits(Dataobject,varName);
 		end
 		if getDobj,% save dataobject
-			if testLocalCaaRepository
+			if existDataobject
+				resdataobject{iVar}=Dataobject;
+			elseif testLocalCaaRepository
 				ttt = local.c_read(varName,tint,'dobj');
 				if isempty(ttt),
 					irf.log('warning','NO DATA in repository!');
 				end
 				noDataReturned = false;
 				resdataobject{iVar} = ttt;
-			else
-				resdataobject{iVar}=Dataobject;
 			end
 		end
 	end
