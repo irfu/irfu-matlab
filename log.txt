@@ -1,3 +1,4 @@
+2014-04-21 v1.5.5 several bug fixes
 2014-03-24 v1.5.4 bug fix for dataobj() tint when delta_plus/minus are values and not variables
 2014-03-20 v1.5.3 bug fix for dataobj() tint with delta_plus/delta_minus, minor updates
 2014-03-18 v1.5.2 minor bug fix for dataobj() tint 
