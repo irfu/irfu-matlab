@@ -49,13 +49,13 @@ end
 for iDataSet=1:numel(dataSetArray)
 	%% list files in data set directory
 	dataSet=dataSetArray{iDataSet};
-	irf_log('fcal',['Indexing data set: ' dataSet]);
+	irf.log('warning',['Indexing data set: ' dataSet]);
 	dataSet=replace_minus_in_cis_names(dataSet);
 	listFiles=dir([dataSet '/*.cdf']);
 	iDir = [listFiles(:).isdir]; %# returns logical vector
 	listFiles(iDir)=[];
 	if numel(listFiles)==0, 
-		irf_log('dsrc','No data files');
+		irf.log('warning',[dataSet ': no data files']);
 		continue;
 	end
 	%% read in file time intervals
@@ -75,9 +75,9 @@ end
 	function dataSetOut=replace_minus_in_cis_names(dataSet)
 		if strfind(dataSet,'CIS'),
 			if strfind(dataSet,'-'),
-			irf_log('dsrc',['Replacing minus signs in dataset: ' dataSet]),
+			irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
 			dataSetNew=strrep(dataSet,'-','_');
-			irf_log('dsrc',['New data set: ' dataSetNew]);
+			irf.log('debug',['New data set: ' dataSetNew]);
 			eval(['!mv ' dataSet ' ' dataSetNew]);
 			dataSet=dataSetNew;
 			end
@@ -93,7 +93,7 @@ end
 					if strfind(fileName,'-'),
 						fileNameNew=strrep(fileName,'-','_');
 						evalStr=['!mv ' fileName ' ' fileNameNew];
-						irf_log('fcal',evalStr);
+						irf.log('debug',evalStr);
 						eval(evalStr);
 					end
 				end
