@@ -207,7 +207,7 @@ switch lower(action)
 		axis(h(4),[-19.99 19.99 0 19.99]);
 		for ii=1:4, hold(h(ii),'on');daspect(h(ii),[1 1 1]);end
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='default';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -229,7 +229,7 @@ switch lower(action)
 		h(23) = axes('Position',get(h(3),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(4),'off');hold(h(4),'on');
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='compact';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -245,9 +245,9 @@ switch lower(action)
 		h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
 		h(2)=axes('position',[0.5 0.8 0.5 0.2]);    % for legends
 		data.h=h;
-		data.flag_show_cluster_description=1; % show cluster description
+		data.showClusterDescription = true; % show cluster description
 		data.plot_type='config3d';
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
 	case 'lmn'
@@ -291,7 +291,7 @@ switch lower(action)
 		h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(3),'off');
 		data.h=h;
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		data.plot_type='supercompact';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -309,7 +309,7 @@ switch lower(action)
 		h(22)=axes('Position',get(h(2),'Position'),'XAxisLocation','top','YAxisLocation','right','Color','none','XColor','k','YColor','k');
 		axis(h(3),'off');
 		data.h=h;
-		data.flag_show_cluster_description=0;
+		data.showClusterDescription = false;
 		data.plot_type='supercompact2';
 		set(gcf,'userdata',data);
 		c_pl_sc_conf_xyz(data.coord_label);
@@ -514,7 +514,7 @@ switch lower(action)
 				text_Cluster_markers(h(2));
 				fix_RE_axis(h(2),h(22));
 		end
-		if data.flag_show_cluster_description==1,
+		if data.showClusterDescription,
 			if strcmpi(data.plot_type,'compact') || ...
 					strcmpi(data.plot_type,'lmn')  % decide in which axes write labels
 				hca=h(4);
@@ -611,6 +611,8 @@ end
 		axis(ax1,[-drref drref -drref drref]);
 	end
 	function fix_RE_axis(axis1,axis2)
+		colX = plotAxes(1)-'W'+1;
+		colY = plotAxes(2)-'W'+1;
 		if drref>10000, REform='%6.1f';
 		elseif drref<100, REform='%6.3f';
 		else REform='%6.2f';
@@ -619,8 +621,8 @@ end
 		xtick_ax1=get(axis1,'XTick');ytick_ax1=get(axis1,'YTick');
 		xlabel(axis2,[plotAxes(1) ' [R_E] ' coord_label]);
 		ylabel(axis2,[plotAxes(2) ' [R_E] ' coord_label]);
-		xtlax2=num2str((xtick_ax1'+R.R(2))/6372,REform);
-		ytlax2=num2str((ytick_ax1'+R.R(4))/6372,REform);
+		xtlax2=num2str((xtick_ax1'+R.R(colX))/6372,REform);
+		ytlax2=num2str((ytick_ax1'+R.R(colY))/6372,REform);
 		set(axis2,'xdir',get(axis1,'xdir'));
 		set(axis2,'ydir',get(axis1,'ydir'));
 		set(axis2,'xlim',xlim_ax1,'xticklabel',xtlax2);
