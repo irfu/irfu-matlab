@@ -34,11 +34,16 @@ if nargin==0, % default time (with time can make smarter solution)
 	if evalin('caller','exist(''tint'') && isnumeric(''tint'')') ,
 		time=irf_time(evalin('caller','tint(1)'),'vector');
 	elseif exist('CAA','dir')
-		R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
-		if isempty(R),
-			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+		ok = caa_load('list','C1_CP_AUX_POSGSE_1M');
+		if ok,
+			R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
+		else
+			ok = caa_load('list','CL_SP_AUX');
+			if ok,
+				R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			end
 		end
-		if numel(R)==0,
+		if ~ok,
 			time=[2010 12 31 01 01 01];
 		else
 			time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
@@ -97,6 +102,7 @@ switch lower(action)
 	case 'read_position'
 		data=get(gcf,'userdata');
 		R=data.R;
+		tint = [data.t-120 data.t+120];
 		if ~is_R_ok,     % try reading from disk mat files
 			irf.log('notice','===>>> Reading R? from mR.mat file')
 			for numSc = sc_list,
@@ -111,11 +117,21 @@ switch lower(action)
 				end
 			end
 		end
+		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
+			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
+			R.R=irf_get_data(tint,'sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			if isempty(R.R)
+				irf.log('notice','--->>> did not succeed.')
+			else
+				c_eval('R.C?=irf_get_data(tint,''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
+			end
+		end
 		if ~is_R_ok,     % try reading from CAA files CP_AUX_POSGSE_1M
 			irf.log('notice','===>>> Reading CAA files C?_CP_AUX_POSGSE_1M ...')
 			for numSc = sc_list,
 				strSc = ['C' num2str(numSc)];
-				R.(strSc) = irf_get_data(['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
+				R.(strSc) = irf_get_data(tint,['sc_r_xyz_gse__C' strSc '_CP_AUX_POSGSE_1M'],'caa','mat');
 				if isempty(R.(strSc)),
 					irf.log('notice','--->>> did not succeed.')
 					break;
@@ -130,16 +146,6 @@ switch lower(action)
 					irf.log('notice','--->>> did not succeed.')
 					break;
 				end
-			end
-		end
-		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
-			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
-			R.R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-			if isempty(R.R)
-				irf.log('notice','--->>> did not succeed.')
-			else
-				c_eval('R.C?=irf_get_data(''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
-				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading stream from CAA
@@ -690,8 +696,8 @@ end
 				answer=false;
 				return;
 			else
-				tint=[R.(strSc)(1,1) R.(strSc)(end,1)];
-				if (tint(1)>data.t) || (tint(2)<data.t),
+				tintR=[R.(strSc)(1,1) R.(strSc)(end,1)];
+				if (tintR(1)>data.t) || (tintR(2)<data.t),
 					answer=false;
 					return;
 				end
