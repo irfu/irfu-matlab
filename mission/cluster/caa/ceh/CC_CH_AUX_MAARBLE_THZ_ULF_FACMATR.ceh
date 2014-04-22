@@ -127,6 +127,7 @@ START_VARIABLE = sc_pos_xyz_GSE__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
     SI_CONVERSION     = "1.0e-3>m"
     UNITS             = "km"
     FILLVAL           = -1000000000.000
+    QUALITY           = 3
     SIGNIFICANT_DIGITS= 6
     COORDINATE_SYSTEM = "GSE"
     FRAME             = "GSE>xyz"
