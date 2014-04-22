@@ -53,6 +53,7 @@ end
 		disp(['<a href="' fileUrlLink '">' fileUrlLink '</a>']);
 		disp('You can download it to somewhere on your matlab path,');
 		disp('or I can download it for you to some temporary path.');
+		disp('WARNING!!! Files from temporary path may be removed by system after some time.');
 		reply = irf_ask('Shall I download to temporary path? y/n [%]>','y','y');
 		if strcmpi(reply,'y')
 			fileDir = tempname;
