@@ -1,10 +1,10 @@
 function out=caa_download(varargin)
 % LOCAL.CAA_DOWNLOAD download full datasets from CAA
-% Downloads all data from CAA database, in case data
-% already exists on disk, downloads only newer version files.
-% Dataset location - /data/caalocal
-% Dataset request timetable information - /data/caalocal/matCaaRequests
-% Index location - /data/caalocal/index
+% In case data already exists on disk, downloads only newer version files.
+% Dataset location - default is /data/caalocal but can be specified as
+% input parameter or set by datastore('caa','localDataDirectory','/new/directory/location')
+% Dataset request timetable information - directory matCaaRequests
+% Index location - inside the directory of each dataset
 % Current request time table is accessible in variable TTRequest
 %
 %   LOCAL.CAA_DOWNLOAD(dataset) download all dataset
@@ -19,6 +19,10 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset,'DataDirectory',dataDir) use dataDir as
 %   location for data (default dataDir is '/data/caalocal') 
+%
+%   LOCAL.CAA_DOWNLOAD(...,inputParamCaaDownload) any unrecognized input
+%   parameter is parsed to caa_download when downloading data. See help
+%   caa_download.
 %
 %   TTrequest = LOCAL.CAA_DOWNLOAD() return resulting time table TTrequest, where
 %
@@ -55,7 +59,9 @@ sendEmailWhenFinished	= false;
 streamData				= false; % download cdf files asynchronously
 indexStart				= 1; 
 indexList				= []; 
+inputParamCaaDownload   = {};
 
+%% Send email when done
 % use datastore info in local to send email when finnished
 if exist('sendmail','file')==2,
 	if isempty(fields(datastore('local'))),
@@ -105,7 +111,7 @@ if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
 	irf.log('warning','Checking list of available times');
-	TT=caa_download(['listdata:' dataSet]);
+	TT=caa_download(['inventory:' dataSet]);
 	if numel(TT)==0,
 		disp('Dataset does not exist or there are no data');
 		return;
@@ -150,6 +156,9 @@ while ~isempty(args)
 			irf.log('warning','data directory not given');
 			args(1)=[];
 		end
+	else
+		inputParamCaaDownload{end+1} = args{1};
+		args(1) = [];
     end
 end
 %% change to data directory
@@ -225,9 +234,9 @@ while 1
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try
 				if streamData
-				[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDirectory]);
+				[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDirectory],inputParamCaaDownload{:});
 				else
-				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard',['downloadDirectory=' dataDirectory]);
+				[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard',['downloadDirectory=' dataDirectory],inputParamCaaDownload{:});
 				end
 			catch
 				download_status = -1; % something wrong with internet

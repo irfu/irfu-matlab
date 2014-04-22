@@ -310,10 +310,10 @@ if doDownloadScheduling
 else
 	urlSchedule = Caa.urlScheduleOff;
 end
-if downloadFromCSA % change/add defaults, hasn't added these to above flag checking
+if downloadFromCSA && ~strfind(urlDataFormat,'&'),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity urlDataFormat urlNonotify];
+caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity urlDataFormat urlFileInterval urlNonotify];
 caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
 caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
 caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
@@ -419,8 +419,12 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		end
 		tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
 		ttTemp = caa_download(tint,['inventory:' filter],dataSource);
-		iData=find([ttTemp.UserData(:).number]);
-		downloadStatus=select(ttTemp,iData);
+		if isfield(ttTemp.UserData(1),'number')
+			iData=find([ttTemp.UserData(:).number]);
+			downloadStatus=select(ttTemp,iData);
+		else
+			downloadStatus=ttTemp;
+		end
 		return
 	end
 	if specifiedTimeInterval
@@ -444,6 +448,10 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 	irf.log('warning','Be patient! Contacting CAA...');
 	irf.log('warning',['requesting: ' urlListDatasets]);
 	caalog=urlread(urlListDatasets);
+	if isempty(caalog), % return empty output
+		downloadStatus = [];
+		return
+	end
 	if any(strfind(dataset,'listgui')) && ~downloadFromCSA, % make gui window with results
 		B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
 		list={B.dataset};

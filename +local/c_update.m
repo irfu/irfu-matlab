@@ -36,6 +36,7 @@ while ~isempty(args)
 	else
 		errStr = 'local.c_update: unknown input parameter';
 		irf.log('critical',errStr);
+		disp(args{1});
 		error('local.c_update:input',errStr);
 	end
 end
