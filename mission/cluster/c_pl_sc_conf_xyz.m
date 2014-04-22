@@ -113,7 +113,7 @@ switch lower(action)
 					irf.log('notice','--->>> did not succeed.')
 					break; 
 				else
-					R.(strSc) = eval(strSc);
+					R.(strSc) = eval(strRsc);
 				end
 			end
 		end
@@ -327,6 +327,7 @@ switch lower(action)
 		if is_R_ok
 			for ic = data.sc_list
 				rr{ic}=irf_resamp(data.r.(['C' num2str(ic)]),data.t);
+				rr{ic}=rr{ic}(1:4); % remove magnitude in 5th col if present
 				R.R=R.R+rr{ic}/length(data.sc_list);
 			end
 			% estimate relative position wrt mass center
