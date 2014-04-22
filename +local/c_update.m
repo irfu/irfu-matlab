@@ -63,13 +63,14 @@ for iDataSet=1:numel(dataSetArray)
 	tmp=[listFileNames listFileNames(:,end)]; % add one more column at the end
 	tmp(:,end)='=';       % change end column to character = (used as separator)
 	tmp=tmp';
-	tt=textscan(regexprep(tmp(:)','__',' '),'%*[^ ] %4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f%*s','delimiter','=');
+	tt=textscan(regexprep(tmp(:)','__',' '),'%*[^ ] %4f%2f%2f_%2f%2f%2f_%4f%2f%2f_%2f%2f%2f_V%6s%*s','delimiter','=');
 	%% create index
 	index.filename=[repmat([dataSet filesep],numel(listFiles),1) listFileNames];
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
+	index.version=tt{13};
 	eval(['index_' dataSet '=index;']);
-	dirsave('index',['index_' dataSet]);
+	dirsave(dataSet,['index_' dataSet]);
 end
 
 	function dataSetOut=replace_minus_in_cis_names(dataSet)
@@ -78,7 +79,7 @@ end
 			irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
 			dataSetNew=strrep(dataSet,'-','_');
 			irf.log('debug',['New data set: ' dataSetNew]);
-			eval(['!mv ' dataSet ' ' dataSetNew]);
+			movefile(dataSet,dataSetNew);
 			dataSet=dataSetNew;
 			end
 			listFiles=dir(dataSet);
@@ -92,9 +93,8 @@ end
 					fileName=listFileNames(j,:);
 					if strfind(fileName,'-'),
 						fileNameNew=strrep(fileName,'-','_');
-						evalStr=['!mv ' fileName ' ' fileNameNew];
-						irf.log('debug',evalStr);
-						eval(evalStr);
+						irf.log('debug',['moving: ' fileName ' >> ' fileNameNew]);
+						movefile(fileName,fileNameNew);
 					end
 				end
 				cd('..');

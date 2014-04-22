@@ -127,7 +127,7 @@ switch lower(varName)
 	case {'r'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX','sc_dr1_xyz_gse__CL_SP_AUX',...
 			'sc_dr2_xyz_gse__CL_SP_AUX','sc_dr3_xyz_gse__CL_SP_AUX','sc_dr4_xyz_gse__CL_SP_AUX'};
-		ok=readdata;
+		ok=read_data;
 		if ok && strcmpi(returnDataFormat,'mat')
 			out.R=[data{1} double(data{2})];
 			c_eval('out.R?=[data{1} double(data{2}+data{2+?})];')
@@ -135,19 +135,19 @@ switch lower(varName)
 	case {'b'}
 		varToRead={'B_vec_xyz_gse__C1_CP_FGM_FULL','B_vec_xyz_gse__C2_CP_FGM_FULL',...
 			'B_vec_xyz_gse__C3_CP_FGM_FULL','B_vec_xyz_gse__C4_CP_FGM_FULL'};
-		ok=readdata;
+		ok=read_data;
 		if ok && strcmpi(returnDataFormat,'mat')
 			c_eval('out.B?=[data{1} double(data{1+?})];')
 		end
 	case {'r1','r2','r3','r4'}
 		varToRead={'sc_r_xyz_gse__CL_SP_AUX',['sc_dr' varName(2) '_xyz_gse__CL_SP_AUX']};
-		ok=readdata;
+		ok=read_data;
 		if ok && strcmpi(returnDataFormat,'mat'),
 			out=[data{1} double(data{2}+data{3})];
 		end
 	case {'dr1','dr2','dr3','dr4'}
 		varToRead={['sc_dr' varName(3) '_xyz_gse__CL_SP_AUX']};
-		ok=readdata;
+		ok=read_data;
 		if ok && strcmpi(returnDataFormat,'mat'),
 			out=[data{1} double(data{2})];
 		end
@@ -155,7 +155,7 @@ switch lower(varName)
 		irf.log('warning',['local.c_read() reading variable: ' varName]);
 		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
-		ok=readdata;
+		ok=read_data;
 		if ok && strcmpi(returnDataFormat,'mat'),
             if numel(data)==2 && numel(size(data{2}))==2,
                 out=[data{1} double(data{2})];
@@ -170,21 +170,22 @@ switch lower(varName)
 end
 
 %% Functions
-	function status=readdata
+	function status=read_data
 		status = false; % default 
 		%% find index
 		ii=strfind(varToRead{1},'__');
 		if ii,
 			dataset=varToRead{1}(ii+2:end);
 			datasetIndex = strrep(dataset,'CIS-','CIS_');
+			datasetDir = [caaDir filesep dataset];
 			if ~isfield(index,datasetIndex) % index not yet read
 				indexVarName = ['index_' datasetIndex];
-				indexFileInfo=dirwhos(indexDir,indexVarName);
+				indexFileInfo=dirwhos(datasetDir,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
 					irf.log('critical',['There is no index file:' indexVarName]);
 					return;
 				end
-				s=dirload(indexDir,indexVarName);
+				s=dirload(datasetDir,indexVarName);
 				index.(datasetIndex)=s.(indexVarName);
 			end
 			index=index.(datasetIndex);
@@ -313,14 +314,19 @@ end
 	end
 	function ok=list_indexed_datasets
 		ok=false;
-		s=dir(indexDir);
-		sind=arrayfun(@(x) any(strfind(x.name,'index_')),s);
-		for jj=1:numel(sind)
-			if sind(jj)
-				disp(s(jj).name(7:end-4));
+		tmp=dir(caaDir);
+		iDir = [tmp(:).isdir]; % find directories
+		dataSetArray = {tmp(iDir).name}';
+		dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
+		for iDataSet=1:numel(dataSetArray)
+			%% list files in data set directory
+			dataSet=dataSetArray{iDataSet};
+			dataSetDir = [caaDir filesep dataSet];
+			if ~isempty(dirwhos(dataSetDir,['index_' dataSet]))
+				disp(dataSet);
+				ok = true;
 			end
 		end
-		if any(sind), ok=true; end
 	end
 	function data=fix_order_of_array_dimensions(data)
 		for iDimension=3:4,
