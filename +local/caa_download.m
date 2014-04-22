@@ -44,7 +44,10 @@ function out=caa_download(varargin)
 % 	See also CAA_DOWNLOAD
 
 %% Defaults
-dataDirectory			= '/data/caalocal';
+dataDirectory = datastore('caa','localDataDirectory');
+if isempty(dataDirectory)
+	dataDirectory			= '/data/caalocal';
+end
 maxSubmittedJobs		= 10;
 maxNumberOfAttempts		= 30;
 isInputDatasetName		= false;

@@ -33,6 +33,10 @@ while ~isempty(args)
 		dataSetFilter = args{1};
 		filterDataSet = true; 
 		args(1)=[];
+	else
+		errStr = 'local.c_update: unknown input parameter';
+		irf.log('critical',errStr);
+		error('local.c_update:input',errStr);
 	end
 end
 %% Create dataSetArray to update

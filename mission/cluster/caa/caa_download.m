@@ -7,13 +7,13 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD('listdesc')- same with dataset description
 %       CAA_DOWNLOAD('listgui') - same presenting output in separate window
 %       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
-%       TT=CAA_DOWNLOAD('listdata:dataset') - return timetable with intervals when dataset has data
+%       TT=CAA_DOWNLOAD('inventory:dataset') - return timetable with intervals when dataset has data
 %
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
 %
-%       TT=CAA_DOWNLOAD(tint,'list') - inventory of all datasets available, can return time table TT
-%       TT=CAA_DOWNLOAD(tint,'list:dataset') - only inventory datasets matching 'dataset'
+%       TT=CAA_DOWNLOAD(tint,'inventory') - inventory of all datasets available, can return time table TT
+%       TT=CAA_DOWNLOAD(tint,'inventory:dataset') - only inventory datasets matching 'dataset'
 %
 %       downloadStatus=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download
 %				returns 0 if request is put in the queue,
@@ -126,7 +126,7 @@ Default.Caa.urlScheduleOn	= '&schedule=1';
 Default.Caa.urlScheduleOff	= '';
 Default.Caa.urlInventoryOn	= '&inventory=1';
 Default.Caa.urlInventoryOff	= '';
-Default.Caa.urlDataset      = '&dataset_id='; 
+Default.Caa.urlDataset      = '&dataset_id=';
 Default.Caa.urlDataFormat   = '&format=cdf'; % default is CDF (3.3) format
 Default.Caa.urlFileInterval = '&file_interval=72hours';
 
@@ -135,8 +135,8 @@ Default.Caa.urlFileInterval = '&file_interval=72hours';
 % http://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
 Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
-Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1'; 
-Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
+Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
+Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.VERSION_NUMBER&RESOURCE_CLASS=FILE';
 Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
@@ -157,7 +157,7 @@ doDownloadScheduling	= false;        % default download directly files
 doNotifyByEmail			= false;		% default, do not notify
 expandWildcards			= true;			% default is to use wildcard
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
-specifiedTimeInterval   = false;        
+specifiedTimeInterval   = false;
 caaServer = datastore('caa','defaultServer');
 if isempty(caaServer) || strcmpi(caaServer,'csa'),
 	downloadFromCSA			= true;			% default to download from CSA
@@ -191,7 +191,7 @@ end
 % check caa_download('testcsa') syntax
 if nargin == 1 && ischar(tint) && strcmpi('testcsa',tint)
 	downloadStatus = test_csa;
-	if nargout == 0, clear downloadStatus;end		
+	if nargout == 0, clear downloadStatus;end
 	return
 end
 
@@ -392,8 +392,13 @@ if specifiedTimeInterval
 		t1iso = tintiso(1:divider-1);
 		t2iso = tintiso(divider+1:end);
 		queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
-		queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
-			' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
+		%		if strfind(dataset,'inventory') % file inventory
+		queryTimeInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
+			' AND FILE.END_DATE >= ''' t1iso ''''];
+		%		else %dataset inventory
+		%			queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
+		%				' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
+		%		end
 	else
 		queryTime = ['&time_range=' tintiso];
 		queryTimeInventory = queryTime;
@@ -404,16 +409,16 @@ end
 [queryDataset,queryDatasetInventory,filter] = query_dataset;
 
 %% list data if required
-if strfind(dataset,'list'),     % list files
-	if strfind(dataset,'listdata')
+if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list files
+	if any(strfind(dataset,'inventory')) && ~specifiedTimeInterval
 		ttTemp = caa_download(['list:' filter],dataSource);
 		if isempty(ttTemp.TimeInterval), % no time intervals to download
 			irf.log('warning','No datasets to download');
 			downloadStatus = ttTemp;
 			return;
 		end
-		tint = ttTemp.TimeInterval(1,:);
-		ttTemp = caa_download(tint,['list:' filter],dataSource);
+		tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
+		ttTemp = caa_download(tint,['inventory:' filter],dataSource);
 		iData=find([ttTemp.UserData(:).number]);
 		downloadStatus=select(ttTemp,iData);
 		return
@@ -439,28 +444,24 @@ if strfind(dataset,'list'),     % list files
 	irf.log('warning','Be patient! Contacting CAA...');
 	irf.log('warning',['requesting: ' urlListDatasets]);
 	caalog=urlread(urlListDatasets);
-	if downloadFromCSA
-		disp(caalog);
+	if any(strfind(dataset,'listgui')) && ~downloadFromCSA, % make gui window with results
+		B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
+		list={B.dataset};
+		values=cell(numel(B),3);
+		values(:,1)={B.tint}';
+		values(:,2)={B.title}';
+		values(:,3)={B.description}';
+		caa_gui_list(list,values)
 	else
-		if strfind(dataset,'listgui'), % make gui window with results
-			B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
-			list={B.dataset};
-			values=cell(numel(B),3);
-			values(:,1)={B.tint}';
-			values(:,2)={B.title}';
-			values(:,3)={B.description}';
-			caa_gui_list(list,values)
-		else
-			if nargout == 1,
-				if isempty(returnTimeTable),
-					out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
-					downloadStatus = out{1};
-				else
-					downloadStatus = construct_time_table(caalog,returnTimeTable);
-				end
+		if nargout == 1,
+			if isempty(returnTimeTable),
+				out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
+				downloadStatus = out{1};
 			else
-				disp(caalog);
+				downloadStatus = construct_time_table(caalog,returnTimeTable);
 			end
+		else
+			disp(caalog);
 		end
 	end
 	return;
@@ -480,7 +481,7 @@ if checkDataInventory
 	caalist=urlread(urlListDatasets);
 	irf.log('debug',['returned: ' caalist]);
 	if (~downloadFromCSA && ~any(strfind(caalist,'Version'))) || ...%  no CAA datasets available
-		(downloadFromCSA && isempty(caalist)) % no CSA datasets available
+			(downloadFromCSA && isempty(caalist)) % no CSA datasets available
 		irf.log('warning','There are no data sets available!');
 		return;
 	end
@@ -578,7 +579,7 @@ end
 				fclose(fid);
 				movefile(tempFilePathGz,[datasetDirName fileNameCefGz]);
 				delete(tempFilePath); % remove gunzipped file that was used only to learn the file name, otherwise cef files are kept gzipped on disc
-
+				
 				irf.log('notice',['Downloaded: ' urlLink]);
 				irf.log('notice',['into ->' datasetDirName fileNameCefGz]);
 				status = 1;
@@ -689,7 +690,7 @@ end
 	function [queryDataset,queryDatasetInventory,filter] = query_dataset
 		% for wildcards, inventory requests use '%' as wildcard,
 		% while data requests use '*' (something that was not easy to implement)
-		if strfind(dataset,'list'),     % list files
+		if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list files
 			if strcmpi(dataset,'list') && strcmpi(dataset,'listdesc'), % list all files
 				filter='*';
 			else                        % list only filtered files
@@ -698,7 +699,7 @@ end
 		else
 			filter = dataset;
 		end
-		if expandWildcards, 
+		if expandWildcards,
 			filter(strfind(filter,'?'))='*'; % substitute  ? to * (to have the same convention as in irf_ssub)
 			if (any(strfind(filter,'CIS')) || any(strfind(filter,'CODIF')) || any(strfind(filter,'HIA')))
 				filter(strfind(filter,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
@@ -749,47 +750,78 @@ end
 			urlIdentity = ['&uname=' caaUser '&pwd=' caaPwd];
 		end
 	end
+	function TT=construct_time_table(caalog,returnTimeTable)
+		TT=irf.TimeTable;
+		if downloadFromCSA
+			switch returnTimeTable
+				case 'inventory'
+					%"DATASET.DATASET_ID","FILE.START_DATE","FILE.END_DATE","FILE.FILE_NAME","FILE.VERSION_NUMBER"
+					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
+					TT.UserData(numel(textLine{1})-1).dataset = [];
+					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+					[TT.UserData(:).version]=deal(textLine{5}{2:end});
+				case 'list'
+					%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
+					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
+					TT.UserData(numel(textLine{1})-1).dataset = [];
+					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+				case 'listdesc'
+					%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
+					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
+					TT.UserData(numel(textLine{1})-1).dataset = [];
+					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+					[TT.UserData(:).description] = deal(textLine(:).description);
+				otherwise
+					return;
+			end
+			tStart = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{2}(2:end));
+			tEnd   = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{3}(2:end));
+			tint = [tStart tEnd];
+			TT.TimeInterval=tint;
+			TT.Header = {};
+			TT.Comment=cell(numel(TT),1);
+			TT.Description=cell(numel(TT),1);
+		else
+			switch returnTimeTable
+				case 'inventory'
+					textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
+					startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
+					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+					c=num2cell(str2num(strvcat(textLine(:).number)));
+					[TT.UserData(:).number]=deal(c{:});
+					c=num2cell(str2num(strvcat(textLine(:).version)));
+					[TT.UserData(:).version]=deal(c{:});
+				case 'list'
+					textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
+					if isempty(textLine),
+						irf.log('warning','Empty dataset list');
+						return;
+					end
+					startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
+					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+					[TT.UserData(:).title] = deal(textLine(:).title);
+				case 'listdesc'
+					textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t]*)\t(?<description>[^\n]*)','names');
+					startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t])*\t(?<description>[^\n]*)','start');
+					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
+					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
+					[TT.UserData(:).title] = deal(textLine(:).title);
+					[TT.UserData(:).description] = deal(textLine(:).description);
+				otherwise
+					return;
+			end
+			tintiso=[vertcat(textLine(:).start) repmat('/',numel(startIndices),1) vertcat(textLine(:).end)];
+			tint=irf_time(tintiso,'iso2tint');
+			TT.TimeInterval=tint;
+			TT.Header = strread(caalog(1:startIndices(1)-1), '%s', 'delimiter', sprintf('\n'));
+			TT.Comment=cell(numel(TT),1);
+			TT.Description=cell(numel(TT),1);
+		end
+	end
 end
 %% Functions (not nested)
-function TT=construct_time_table(caalog,returnTimeTable)
-TT=irf.TimeTable;
-switch returnTimeTable
-	case 'inventory'
-		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
-		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
-		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-		c=num2cell(str2num(strvcat(textLine(:).number)));
-		[TT.UserData(:).number]=deal(c{:});
-		c=num2cell(str2num(strvcat(textLine(:).version)));
-		[TT.UserData(:).version]=deal(c{:});
-	case 'list'
-		textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
-		if isempty(textLine),
-			irf.log('warning','Empty dataset list');
-			return;
-		end
-		startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
-		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-		[TT.UserData(:).title] = deal(textLine(:).title);
-	case 'listdesc'
-		textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t]*)\t(?<description>[^\n]*)','names');
-		startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t])*\t(?<description>[^\n]*)','start');
-		TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-		[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-		[TT.UserData(:).title] = deal(textLine(:).title);
-		[TT.UserData(:).description] = deal(textLine(:).description);
-	otherwise
-		return;
-end
-tintiso=[vertcat(textLine(:).start) repmat('/',numel(startIndices),1) vertcat(textLine(:).end)];
-tint=irf_time(tintiso,'iso2tint');
-TT.TimeInterval=tint;
-TT.Header = strread(caalog(1:startIndices(1)-1), '%s', 'delimiter', sprintf('\n'));
-TT.Comment=cell(numel(TT),1);
-TT.Description=cell(numel(TT),1);
-end
 function ok = test_csa
 ok=false;
 disp('--- TESTING CSA ---');
