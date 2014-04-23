@@ -189,7 +189,7 @@ if nargout>0 && nargin>0,
 	doLog = false;
 end
 % check caa_download('testcsa') syntax
-if nargin == 1 && ischar(tint) && strcmpi('testcsa',tint)
+if nargin == 1 && ischar(tint) && strcmpi('test',tint)
 	downloadStatus = test_csa;
 	if nargout == 0, clear downloadStatus;end
 	return
@@ -843,8 +843,8 @@ c2 = onCleanup(@() rmdir(tempDir,'s'));
 
 % 30s of data
 tintIso = '2005-01-01T05:00:00.000Z/2005-01-01T05:00:30.000Z';
-ok = caa_download(tintIso,'list:C3_CP_FGM*');
-if ~ok, disp('FAILED!'); return; end
+tt = caa_download(tintIso,'list:C3_CP_FGM*');
+if isempty(tt), disp('FAILED!'); return; end
 ok = caa_download(tintIso,'C3_CP_FGM_5VPS');
 if ~ok, disp('FAILED!'); return; end
 ok = caa_download(tintIso,'C3_CP_FGM_5VPS','stream');
