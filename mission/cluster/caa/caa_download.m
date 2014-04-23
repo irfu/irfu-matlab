@@ -602,10 +602,9 @@ end
 			case 0 % CAA
 				[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
 			case 1 % CSA
-				tempFileName=tempname;
-				gzFileName = [tempFileName '.gz'];
+				downloadedFile =tempname;
+				gzFileName = [downloadedFile '.gz'];
 				[gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);
-				downloadedFile = gzFileName;
 		end
 		
 		if isZipFileReady, %
@@ -620,7 +619,8 @@ end
 						filelist=unzip(downloadedFile,tempDirectory);
 					case 1
 						gunzip(gzFileName);
-						filelist=untar(tempFileName,tempDirectory);
+						delete(gzFileName);
+						filelist=untar(downloadedFile,tempDirectory);
 				end
 				if isempty(filelist)
 					irf.log('warning','Returned zip file is empty');
