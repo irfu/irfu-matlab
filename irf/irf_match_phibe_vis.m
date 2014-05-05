@@ -171,13 +171,13 @@ case 'velocity/density' % 2D plot of correlation=f(v,n)
     n=args{1};
     v=args{2};
     corr_v=args{3};
-    pcolor(ax,v,n,log10(corr_v)); 
+    pcolor(ax,v,n,log10(abs(corr_v))); 
     shading(ax,'flat')
     title(ax,'Correlation')
     xlabel(ax,'Velocity')
     ylabel(ax,'Density')
     axc=colorbar('peer',ax);               
-    ylabel(axc,'log10(sum((\phi_E-\phi_B)^2))')    
+    ylabel(axc,'log_{10}|sum(log_{10}|\phi_E.\phi_B|)|')    
     vis.ax=ax;
     vis.axc=axc;
 end

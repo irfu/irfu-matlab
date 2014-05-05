@@ -42,7 +42,7 @@ function [x y z correlation intEdt Bz B0 dEk dEn Ek En] = irf_match_phibe_dir(B,
 %       velocity=v(i_v);
 %   
 %       % Figures
-%       gif_stuff_dir = irf_match_phibe_vis('direction',x,y,z,corr_dir,intEdt,Bz,En,Ek);      
+%       gif_stuff_dir = irf_match_phibe_vis('direction',x,y,z,corr_dir,intEdt,Bz,Ek,En);      
 %       imwrite(gif_stuff_dir.im,gif_stuff_dir.map,'mygif_dir.gif','DelayTime',0.01,'LoopCount',inf);
 %
 %       i_n=50; % if more than one densitiy, choose one by specifying index
