@@ -55,7 +55,6 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Meghan Mella>THEMIS ULF data provider>meghan.mella@irfu.se"
    ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
