@@ -68,6 +68,7 @@ while read fname; do
   			SHORT_NAME=`echo $DATASET_NAME|awk -F'CC_CP_AUX_MAARBLE_' '{print $2}'`
   			case "$SHORT_NAME" in
   				TH[A-E]_*) PROJ=THEMIS;;
+  				G1[1-2]_*) PROJ=GOES;;
   				DOB_*|HOR_*|KEV_*|KIR_*|NUR_*|OUJ_*|RVK_*|SOD_*|UPS_*|TRO_*)
   					PROJ=IMAGE;;
   				FCHU_*|GILL_*|ISLL_*|MCMU_*|PINA_*|RANK_*)
