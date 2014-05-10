@@ -119,12 +119,17 @@ switch lower(action)
 		end
 		if ~is_R_ok,     % try reading from CAA files CL_SP_AUX
 			irf.log('notice','===>>> Reading CAA files CL_CP_AUX ...')
-			R.R=irf_get_data(tint,'sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-			if isempty(R.R)
+			rVarCaaNames = {'sc_r_xyz_gse__CL_SP_AUX',...
+				'sc_dr1_xyz_gse__CL_SP_AUX','sc_dr2_xyz_gse__CL_SP_AUX',...
+				'sc_dr3_xyz_gse__CL_SP_AUX','sc_dr4_xyz_gse__CL_SP_AUX'};
+			rTmp = irf_get_data(tint,rVarCaaNames([1 sc_list+1]),'caa','mat');
+			%R.R=irf_get_data(tint,'sc_r_xyz_gse__CL_SP_AUX','caa','mat');
+			if isempty(rTmp)
 				irf.log('notice','--->>> did not succeed.')
 			else
-				c_eval('R.C?=irf_get_data(tint,''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
-				c_eval('R.C?=irf_add(1,R.R,1,R.C?);',sc_list);
+				%c_eval('R.C?=irf_get_data(tint,''sc_dr?_xyz_gse__CL_SP_AUX'',''caa'',''mat'');',sc_list);
+				R.R=rTmp{1};
+				c_eval('R.C?=irf_add(1,R.R,1,rTmp{?+1});',sc_list);
 			end
 		end
 		if ~is_R_ok,     % try reading from CAA files CP_AUX_POSGSE_1M
