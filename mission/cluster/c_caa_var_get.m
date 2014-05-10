@@ -30,7 +30,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %	tint (always reads from file in this case, good option for large files)
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
-%  
+%
 % Example:
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
 %   xm=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF','mat');
@@ -58,7 +58,7 @@ if isa(args{1},'dataobj'), % dataobject specified as first input argument
 	dobjSpecified = true;
 	args(1)=[];
 elseif isempty(args{1}) % dataobject is specified empty
-	args(1)=[];         
+	args(1)=[];
 end
 
 if ~isempty(args)
@@ -157,7 +157,7 @@ end
 isDataReturned = false;
 
 [datasetNameList,varShortNameList]=caa_get_dataset_name(varNameList);
-[datasetNameUniqueList,~,indDatasetUniqueToName] ... 
+[datasetNameUniqueList,~,indDatasetUniqueToName] ...
 	= unique(datasetNameList);
 for iDataset = 1:numel(datasetNameUniqueList)
 	dataobjName = datasetNameUniqueList{iDataset};
@@ -198,59 +198,59 @@ for iDataset = 1:numel(datasetNameUniqueList)
 			end
 		end
 	end
-	for iVar = indVarNameList(:)'
-		varName = varNameList{iVar};
-		if any(strfind(varName,'__'))   % variable name specified as input
-			if getCaa, % save variable
-				if existDataobject
-					res{iVar}=getv(Dataobject,varName);
-				elseif testLocalCaaRepository
-					ttt = local.c_read(varName,tint,'caa');
-					if isempty(ttt),
-						irf.log('warning','NO DATA in repository!');
-					end
-					isDataReturned = true;
-					res{iVar} = ttt;
-				end
+	varTmpList = varNameList(indVarNameList);
+	if getCaa, % save variable
+		if existDataobject
+			res(indVarNameList) = cellfun(@(x) getv(Dataobject,x),varTmpList);
+		elseif testLocalCaaRepository
+			ttt = local.c_read(varTmpList,tint,'caa');
+			if isempty(ttt),
+				irf.log('warning','NO DATA in repository!');
 			end
-			if getMat % save variable in matlab matrix format
-				if existDataobject
-					resmat{iVar}=getmat(Dataobject,varName);
+			isDataReturned = true;
+			res(indVarNameList) = ttt;
+		end
+	end
+	if getMat % save variable in matlab matrix format
+		if existDataobject
+			res(indVarNameList) = cellfun(@(x) getmat(Dataobject,x),varTmpList);
+		else
+			if testLocalCaaRepository
+				ttt = local.c_read(varTmpList{1},tint,'mat');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in local repository!');
 				else
-					if testLocalCaaRepository
-						ttt = local.c_read(varName,tint,'mat');
-						if isempty(ttt),
-							irf.log('warning','NO DATA in local repository!');
-						else
-							isDataReturned = true;
-							resmat{iVar} = ttt;
-						end
-					end
-					if ~isDataReturned && testDataStreaming
-						ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
-						if isempty(ttt),
-							irf.log('warning','NO DATA in CAA to stream!');
-						else
-							resmat{iVar} = ttt;
-							isDataReturned = true;
-						end
-					end
-				end
-			end
-			if getUnit % save variable unit
-				resunit{iVar}=getunits(Dataobject,varName);
-			end
-			if getDobj,% save dataobject
-				if existDataobject
-					resdataobject{iVar}=Dataobject;
-				elseif testLocalCaaRepository
-					ttt = local.c_read(varName,tint,'dobj');
-					if isempty(ttt),
-						irf.log('warning','NO DATA in repository!');
-					end
+					res{indVarNameList(1)} = ttt;
+					res(indVarNameList(2:end)) = cellfun(@(x) {getmat(Dataobject,x)},varTmpList{2:end});
 					isDataReturned = true;
-					resdataobject{iVar} = ttt;
 				end
+			end
+			if ~isDataReturned && testDataStreaming
+				ttt = c_caa_cef_var_get(varTmpList,'tint',tint,'stream');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in CAA to stream!');
+				else
+					resmat(indVarNameList) = ttt;
+					isDataReturned = true;
+				end
+			end
+		end
+	end
+	if getUnit % save variable unit
+		res(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList);
+	end
+	if getDobj,% save dataobject TODO: call to stream data object
+		for iVar = indVarNameList(:)'
+			varName = varNameList{iVar};
+			if existDataobject
+				resdataobject{iVar}=Dataobject;
+			elseif testLocalCaaRepository
+				ttt = local.c_read(varName,tint,'dobj');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in repository!');
+				end
+				isDataReturned = true;
+				resdataobject{iVar} = ttt;
 			end
 		end
 	end
