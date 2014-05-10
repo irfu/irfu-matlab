@@ -56,8 +56,8 @@ if ischar(fileName)
 		mkdir(tempDir);
 		cd(tempDir);
 		[datasetName,varName]=caa_get_dataset_name(varName);
-		caa_download(tint,datasetName,'stream');
-		cd(['CAA/' datasetName]);
+		caa_download(tint,datasetName{1},'stream'); % TODO: assumes all variables from the same dataset
+		cd(['CAA/' datasetName{1}]);
 		d=dir('*.cef.gz');
 		cefFile = d.name;
 		cef_init();
