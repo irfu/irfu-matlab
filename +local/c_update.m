@@ -74,12 +74,12 @@ for iDataSet=1:numel(dataSetArray)
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
 	index.versionFile=tt{13};
-	index.version = index.tstart*NaN;
-	for iCdf = 1:size(listFileNames,1)
-		fileCdf = listFileNames(iCdf,:);
-		infoCdf = cdfinfo([dataSet filesep fileCdf]);
-		index.version(iCdf) =  str2double(infoCdf.GlobalAttributes.DATASET_VERSION{2}(end-1:end));
-	end
+%	index.version = index.tstart*NaN;
+%	for iCdf = 1:size(listFileNames,1)
+%		fileCdf = listFileNames(iCdf,:);
+%		infoCdf = cdfinfo([dataSet filesep fileCdf]);
+%		index.version(iCdf) =  str2double(infoCdf.GlobalAttributes.DATASET_VERSION{2}(end-1:end));
+%	end
 	eval(['index_' dataSet '=index;']);
 	dirsave(dataSet,['index_' dataSet]);
 end
