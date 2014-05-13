@@ -201,7 +201,7 @@ for iDataset = 1:numel(datasetNameUniqueList)
 	varTmpList = varNameList(indVarNameList);
 	if getCaa, % save variable
 		if existDataobject
-			res(indVarNameList) = cellfun(@(x) getv(Dataobject,x),varTmpList);
+			res(indVarNameList) = cellfun(@(x) getv(Dataobject,x),varTmpList,'uniformoutput',false);
 		elseif testLocalCaaRepository
 			ttt = local.c_read(varTmpList,tint,'caa');
 			if isempty(ttt),
@@ -213,15 +213,15 @@ for iDataset = 1:numel(datasetNameUniqueList)
 	end
 	if getMat % save variable in matlab matrix format
 		if existDataobject
-			res(indVarNameList) = cellfun(@(x) getmat(Dataobject,x),varTmpList);
+			resmat(indVarNameList) = cellfun(@(x) getmat(Dataobject,x),varTmpList,'uniformoutput',false);
 		else
 			if testLocalCaaRepository
 				ttt = local.c_read(varTmpList{1},tint,'mat');
 				if isempty(ttt),
 					irf.log('warning','NO DATA in local repository!');
 				else
-					res{indVarNameList(1)} = ttt;
-					res(indVarNameList(2:end)) = cellfun(@(x) {getmat(Dataobject,x)},varTmpList{2:end});
+					resmat{indVarNameList(1)} = ttt;
+					resmat(indVarNameList(2:end)) = cellfun(@(x) {getmat(Dataobject,x)},varTmpList{2:end},'uniformoutput',false);
 					isDataReturned = true;
 				end
 			end
@@ -237,7 +237,7 @@ for iDataset = 1:numel(datasetNameUniqueList)
 		end
 	end
 	if getUnit % save variable unit
-		res(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList);
+		resunit(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList,'uniformoutput',false);
 	end
 	if getDobj,% save dataobject TODO: call to stream data object
 		for iVar = indVarNameList(:)'
