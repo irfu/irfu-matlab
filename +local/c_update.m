@@ -6,14 +6,15 @@ function c_update(varargin)
 %    LOCAL.C_UPDATE(datasetName) update only the index of dataset datasetName 
 %
 %    LOCAL.C_UPDATE(..,'datadirectory',dataDir) look for data in directory
-%    dataDir (default /data/caalocal)
+%    dataDir. The default data directory is /data/caalocal unless set by 
+%		datastore('caa','localDataDirectory','/new/path')
 %
 % See also:
 %	LOCAL.C_READ
 
 %% Defaults
 filterDataSet = false; % default assume datasetName not given as input
-%% list all available datasets
+%% define local data directory
 dirCaa = datastore('caa','localDataDirectory');
 if isempty(dirCaa),
 	dirCaa='/data/caalocal';	% default
@@ -37,7 +38,7 @@ while ~isempty(args)
 		errStr = 'local.c_update: unknown input parameter';
 		irf.log('critical',errStr);
 		disp(args{1});
-		error('local.c_update:input',errStr);
+		error('local:c_update:input',errStr);
 	end
 end
 %% Create dataSetArray to update
@@ -74,13 +75,8 @@ for iDataSet=1:numel(dataSetArray)
 	index.tstart=irf_time([tt{1} tt{2} tt{3} tt{4} tt{5} tt{6}],'vector2epoch');
 	index.tend=irf_time([tt{7} tt{8} tt{9} tt{10} tt{11} tt{12}],'vector2epoch');
 	index.versionFile=tt{13};
-%	index.version = index.tstart*NaN;
-%	for iCdf = 1:size(listFileNames,1)
-%		fileCdf = listFileNames(iCdf,:);
-%		infoCdf = cdfinfo([dataSet filesep fileCdf]);
-%		index.version(iCdf) =  str2double(infoCdf.GlobalAttributes.DATASET_VERSION{2}(end-1:end));
-%	end
 	eval(['index_' dataSet '=index;']);
+	%% save index
 	dirsave(dataSet,['index_' dataSet]);
 end
 
