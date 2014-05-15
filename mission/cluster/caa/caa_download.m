@@ -41,8 +41,10 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'nolog'			- do not log into .caa file (good for batch processing)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
-%   'csa'           - download data from CSA (default)
 %   'caa'           - download data from CAA
+%	'cdf'           - alias of 'format=cdf'
+%	'cef'           - alias of 'format=cef'
+%   'csa'           - download data from CSA (default)
 %	'json'			- return csa query in JSON format
 %	'csv'			- return csa query in CSV format
 %	'votable'		- return csa query in VOTABLE format
@@ -136,7 +138,7 @@ Default.Caa.urlFileInterval = '&file_interval=72hours';
 Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
 Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
-Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.VERSION_NUMBER&RESOURCE_CLASS=FILE';
+Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
 Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
@@ -245,6 +247,10 @@ if ~isempty(varargin), % check for additional flags
 			urlFileInterval = url_parameter(flag);
 		elseif any(strfind(flag,'format'))
 			urlDataFormat = url_parameter(flag);
+		elseif strcmpi('cdf',flag)
+			urlDataFormat = url_parameter('format=cdf');
+		elseif strcmpi('cef',flag)
+			urlDataFormat = url_parameter('format=cef');
 		elseif any(strcmpi('schedule',flag))
 			doDownloadScheduling = true;
 		elseif any(strfind(flag,'uname='))
@@ -272,7 +278,7 @@ if ~isempty(varargin), % check for additional flags
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
 			if downloadDirectory(end) ~= filesep...
 					|| ~strcmp(downloadDirectory(end),'/'),
-				downloadDirectory(end+1) = filesep;
+				downloadDirectory(end+1) = filesep; %#ok<AGROW>
 			end
 		elseif any(strcmpi('stream',flag)) % data streaming
 			checkDataInventory = false;
@@ -427,23 +433,21 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		end
 		return
 	end
-	if specifiedTimeInterval
-		urlListDatasets = [caaInventory queryDatasetInventory queryTimeInventory];
+	if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
+		urlListDatasets=[caaListDatasetDesc queryDatasetInventory];
+		returnTimeTable='listdesc';
+	elseif any(strfind(dataset,'list'))
+		urlListDatasets = [caaListDataset queryDatasetInventory];
+		returnTimeTable='list';
+	elseif any(strfind(dataset,'inventory'))
+		urlListDatasets = [caaInventory queryDatasetInventory ];
 		returnTimeTable='inventory';
-		if downloadFromCSA % CSA
-			urlListDatasets = csa_parse_url(urlListDatasets);
-		end
-	else % work on all datasets
-		if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
-			urlListDatasets=[caaListDatasetDesc queryDatasetInventory];
-			returnTimeTable='listdesc';
-		else
-			urlListDatasets = [caaListDataset queryDatasetInventory];
-			returnTimeTable='list';
-		end
-		if downloadFromCSA
-			urlListDatasets = csa_parse_url(urlListDatasets);
-		end
+	end
+	if specifiedTimeInterval
+		urlListDatasets = [urlListDatasets queryTimeInventory];
+	end
+	if downloadFromCSA
+		urlListDatasets = csa_parse_url(urlListDatasets);
 	end
 	irf.log('warning','Be patient! Contacting CAA...');
 	irf.log('warning',['requesting: ' urlListDatasets]);
@@ -763,7 +767,7 @@ end
 		if downloadFromCSA
 			switch returnTimeTable
 				case 'inventory'
-					%"DATASET.DATASET_ID","FILE.START_DATE","FILE.END_DATE","FILE.FILE_NAME","FILE.VERSION_NUMBER"
+					%"DATASET.DATASET_ID","FILE.START_DATE","FILE.END_DATE","FILE.FILE_NAME","FILE.CAA_INGESTION_DATE"
 					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
 					TT.UserData(numel(textLine{1})-1).dataset = [];
 					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
