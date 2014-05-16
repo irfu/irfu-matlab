@@ -568,19 +568,24 @@ elseif strcmp(quantity,'e') || strcmp(quantity,'eburst')
 				irf_log('dsrc',sprintf('  !Too high bias current on p34 for sc%d',cl_id));
 			end
 		case 3
-			if start_time>toepoch([2011 6 01 09 30 0])
-				pl = [];
-				irf_log('dsrc',sprintf('            !No diff measurement on sc%d',cl_id));
-			elseif start_time>toepoch([2003 9 29 00 27 0]) || ...
-					(start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
-					(start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
-					(start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0])) 
-				pl = [32, 34];
-				irf_log('dsrc',sprintf('  !Using p32 on sc%d',cl_id));
-			elseif start_time>toepoch([2002 07 29 09 06 59])
-				pl = 34;
-				irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
-			end
+      if start_time>toepoch([2011 6 01 09 30 0])
+        pl = [];
+        irf_log('dsrc',sprintf('            !No diff measurement on sc%d',cl_id));
+      elseif start_time>toepoch([2003 9 29 00 27 0]) || ...
+          (start_time>toepoch([2003 3 27 03 50 0]) && start_time<toepoch([2003 3 28 04 55 0])) ||...
+          (start_time>toepoch([2003 4 08 01 25 0]) && start_time<toepoch([2003 4 09 02 25 0])) ||...
+          (start_time>toepoch([2003 5 25 15 25 0]) && start_time<toepoch([2003 6 08 22 10 0]))
+        pl = [32, 34];
+        irf_log('dsrc',sprintf('  !Using p32 on sc%d',cl_id));
+      elseif start_time>toepoch([2002 07 29 09 06 59])
+        pl = 34;
+        irf_log('dsrc',sprintf('  !Only p34 exists on sc%d',cl_id));
+      end
+    case 4
+      if start_time>=toepoch([2013 07 01 13 30 00]) % 2013 07 01 14 43 44
+        pl = 12;
+				irf_log('dsrc',sprintf('  !Only p12 exists on sc%d',cl_id));
+      end
 	end
 	if isempty(pl), out_data = []; cd(old_pwd), return, end
 
@@ -701,15 +706,20 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
 			end
 		case 3
-			if start_time>toepoch([2011 6 01 09 30 0])
-				% p3 failure
-				probe_list = [2 4];
-				irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
-			elseif start_time>toepoch([2002 07 29 09 06 59 ])
-				% p1 failure
-				probe_list = 2:4;
-				irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
-			end
+      if start_time>toepoch([2011 6 01 09 30 0])
+        % p3 failure
+        probe_list = [2 4];
+        irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
+      elseif start_time>toepoch([2002 07 29 09 06 59 ])
+        % p1 failure
+        probe_list = 2:4;
+        irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
+      end
+    case 4
+      if start_time>=toepoch([2013 07 01 13 30 00]) % 2013 07 01 14 43 44
+        probe_list = 1:3;
+				irf_log('dsrc',sprintf('p4 is BAD on sc%d',cl_id));
+      end
 	end
 	%%%%%%%%%%%%%%%%%%%%%%% END PROBE MAGIC %%%%%%%%%%%%%%%%%%%%
 	
@@ -782,7 +792,7 @@ elseif strcmp(quantity,'a')
 	
 	% We ask for 2 sec more from each side 
 	% to avoid problems with interpolation.
-	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');%#ok<ASGLU>
+	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
 	if ~isempty(data) && length(t)>1
 		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
 		n_ok = n_ok + 1;
@@ -801,7 +811,7 @@ elseif strcmp(quantity,'r')
 	save_file = './mR.mat';
 	
 	[t,data] = caa_is_get(cdb.db, start_time, dt, ...
-		cl_id, 'ephemeris', 'position'); %#ok<ASGLU>
+		cl_id, 'ephemeris', 'position');
 	if ~isempty(data)
 		% Remove points exactly equal to the end time
 		% to avoid duplicate time at the start of the next interval
