@@ -39,3 +39,20 @@ do
       cat $f|sed -e "s=XXX=${CLI}=" > $fout
    done
 done
+
+#GOES
+flist="CC_CH_AUX_MAARBLE_GZZ_ULF_PC12.ceh \
+CC_CH_AUX_MAARBLE_GZZ_ULF_PC35.ceh \
+CC_CH_AUX_MAARBLE_GZZ_ULF_FACMATR.ceh"
+
+for f in $flist
+do
+   GOESLIST="11 12"
+   for CLI in $GOESLIST 
+   do
+      fout=`echo $f| sed -e "s=ZZ=${CLI}="`
+      echo "Writing $fout"
+      cat $f|sed -e "s=XXX=${CLI}=" > $fout
+   done
+done
+

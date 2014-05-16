@@ -1,5 +1,5 @@
 !------------------- CEF ASCII File --------------------
-! Header file for THEMIS Pc3-5 
+! Header file for GOES Pc3-5 
 !-------------------------------------------------------
 INCLUDE        =   "CL_CH_MISSION.ceh"
 INCLUDE        =   "CC_CH_OBS.ceh"
@@ -9,7 +9,7 @@ INCLUDE        =   "CC_CH_AUX_INST.ceh"
 ! DATASET LEVEL METADATA
 !
 START_META     =   DATASET_ID
-   ENTRY       =   "CC_CH_AUX_MAARBLE_THXXX_ULF_PC35"
+   ENTRY       =   "CC_CH_AUX_MAARBLE_GXXX_ULF_PC35"
 END_META       =   DATASET_ID
 !
 START_META     =   DATA_TYPE
@@ -17,7 +17,7 @@ START_META     =   DATA_TYPE
 END_META       =   DATA_TYPE
 !
 START_META     =   DATASET_TITLE
-   ENTRY       =   "THEMIS-XXX Pc 3-5 Wave Spectra, Polarization and Propagation Parameters"
+   ENTRY       =   "GOES-XXX Pc 3-5 Wave Spectra, Polarization and Propagation Parameters"
 END_META       =   DATASET_TITLE
 !
 START_META     =   DATASET_DESCRIPTION
@@ -26,18 +26,11 @@ START_META     =   DATASET_DESCRIPTION
    ENTRY       =  "decomposition (SVD) method of the cross-spectral matrix (sm)."   
    ENTRY       =  "The SVD  method is described in Santolik et al (2003)."
    ENTRY       =  "The parameters calculated from the three magnetic components are"
-   ENTRY       =  "BB, KSVD, ELLSVD, PLANSVD and POLSVD." 
-   ENTRY       =  "KSVD is the wave vector (polar and azimuthal angles) in FAC system."
+   ENTRY       =  "BB, ELLSVD, PLANSVD and POLSVD." 
    ENTRY       =  "DOP is the 3D degree of polarization defined in Samson (1973)."
-   ENTRY       =  "PV is the Poynting vector (magnitude, polar and azimuthal angles)"
-   ENTRY       =  "in FAC coordinate system." 
-   ENTRY       =  "EE is the spectrum of 3D E produced using Morlet wavelet, where"
-   ENTRY       =  "E is computed using the zero parallel field assumption (E dot B = 0)."
-   ENTRY       =  "ESUM is the sum of the two electric auto-power spectra in"
-   ENTRY       =  "the spacecraft spin plain."
    ENTRY       =  "BMAG is the magnitude of DC magnetic field measured by FGM."
    ENTRY       =   " "
-   ENTRY       =  "The parameters are derived from the L2 FGM and EFI datasets."
+   ENTRY       =  "The parameters are derived from the L2 FGM dataset."
    ENTRY       =   " "
    ENTRY       =   "This dataset was generated as part of the MAARBLE (Monitoring,"
    ENTRY       =   "Analyzing and Assessing Radiation Belt Energization and Loss)"
@@ -90,7 +83,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -103,9 +96,9 @@ START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
     LABLAXIS            = "UT"
     DELTA_PLUS          = 30 ! integration interval
     DELTA_MINUS         = 30
-END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Interval centred frequency tag"
    UNITS              = "Hz"
@@ -117,15 +110,15 @@ START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FIELDNAM           = "Frequency bin centres"
    LABLAXIS           = "F"
    LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F"
-   DELTA_PLUS         = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DELTA_MINUS        = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DELTA_PLUS         = Frequency_BHW__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DELTA_MINUS        = Frequency_BHW__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    SCALETYP           = "Log"
    DATA               = 0.0020,0.0024,0.0030,0.0036,0.0044,0.0053,0.0065,0.0079,0.0096,0.0116, \
                         0.0141,0.0172,0.0209,0.0254,0.0309,0.0376,0.0457,0.0556,0.0676,0.0822, \
                         0.1000
-END_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Frequency bin half widths"
    UNITS              = "Hz"
@@ -141,9 +134,9 @@ START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    DATA               = 0.0002,0.0002,0.0003,0.0004,0.0004,0.0005,0.0006,0.0008,0.0009,0.0011, \
                         0.0014,0.0017,0.0020,0.0025,0.0030,0.0037,0.0045,0.0054,0.0066,0.0081, \
                         0.0097
-END_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Vector"
@@ -161,36 +154,13 @@ START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FIELDNAM           = "Magnetic Power Spectral Density"
    LABLAXIS           = "B PSD"
    REPRESENTATION_2   = "xx","yy","zz"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    LABEL_2            = "Bx^2","By^2","Bz^2"
    QUALITY            = 3
-END_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   PARAMETER_TYPE     = "Data"
-   ENTITY             = "Compound"   
-   PROPERTY           = "Vector"
-   CATDESC            = "Direction of propagation in FAC system (SVD)."
-   UNITS              = "deg","deg"
-   SI_CONVERSION      = "1>degree","1>degree"
-   SIZES              = 21,2   ! 21 frequency bins x 2 comp (theta,phi) 
-   TENSOR_ORDER       = 1
-   REPRESENTATION_2   = "t", "p"
-   LABEL_2            = "theta","phi"
-   COORDINATE_SYSTEM  = "FAC"
-   FRAME              = "FAC>xyz"
-   VALUE_TYPE         = FLOAT
-   SIGNIFICANT_DIGITS = 3   
-   FILLVAL            = -999.
-   FIELDNAM           = "Direction of propagation"
-   LABLAXIS           = "THSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   QUALITY            = 3
-END_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-!
-START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -203,12 +173,12 @@ START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Ellipticity of the polarization (SVD)."
    LABLAXIS           = "ELLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -221,12 +191,12 @@ START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Planarity of the polarization (SVD)."
    LABLAXIS           = "PLANSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -239,12 +209,12 @@ START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "3D Degree of polarization."
    LABLAXIS           = "DOP"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = DOP__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -257,92 +227,33 @@ START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
    FILLVAL            = -999.
    FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
    LABLAXIS           = "POLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    PARAMETER_TYPE     = "Data"
-   ENTITY             = "Compound"           
-   PROPERTY           = "Component"
-   CATDESC            = "Poynting vector in FAC system."
-   UNITS              = "W m^-2 Hz^-2","deg","deg"
-   SI_CONVERSION      = "1.0>W m^-2 Hz^-2","1>degree","1>degree"
-   SIZES              = 21,3     ! 21 frequency bins x 3 comp (r,theta,phi)
+   ENTITY             = "Compound"   
+   PROPERTY           = "Vector"
+   CATDESC            = "Direction of propagation in FAC system (SVD)."
+   UNITS              = "deg","deg"
+   SI_CONVERSION      = "1>degree","1>degree"
+   SIZES              = 21,2   ! 21 frequency bins x 2 comp (theta,phi) 
+   TENSOR_ORDER       = 1
+   REPRESENTATION_2   = "t", "p"
+   LABEL_2            = "theta","phi"
    COORDINATE_SYSTEM  = "FAC"
    FRAME              = "FAC>rtp"
    VALUE_TYPE         = FLOAT
-   SIGNIFICANT_DIGITS = 3  
+   SIGNIFICANT_DIGITS = 3   
    FILLVAL            = -999.
-   FIELDNAM           = "Poynting vector"
-   TENSOR_ORDER       = 1
-   REPRESENTATION_2   = "r","t","p"
-   LABEL_2            = "PV(amp)", "PV(theta)", "PV(phi)"
-   LABLAXIS           = "PFlux"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+   FIELDNAM           = "Direction of propagation"
+   LABLAXIS           = "THSVD"
+   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
    QUALITY            = 3
-END_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
+END_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_GXXX_ULF_PC35
 !
-START_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   PARAMETER_TYPE     = "Data"
-   ENTITY             = "Electric_Field"           
-   PROPERTY           = "Magnitude"
-   FLUCTUATIONS       = "Wavelet_Power-spectrum"
-   CATDESC            = "Sum of the two electric auto-power spectra."
-   UNITS              = "mV^2 m^-2 Hz^-1"
-   SI_CONVERSION      = "1.0E-6>V^2 m^-2 Hz^-1"
-   SIZES              = 21     ! 21 frequency bins 
-   VALUE_TYPE         = FLOAT
-   SIGNIFICANT_DIGITS = 3  
-   FILLVAL            = -1.00E+31
-   FIELDNAM           = "Sum of the two electric auto-power spectra."
-   LABLAXIS           = "ESUM"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   QUALITY            = 3
-END_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-!
-START_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   PARAMETER_TYPE     = "Data"
-   ENTITY             = "Magnetic_Field"
-   PROPERTY           = "Magnitude"
-   CATDESC            = "Magnitude of the DC B-field"
-   UNITS              = "nT"
-   SI_CONVERSION      = "1.0E-9>T"
-   SIZES              = 1
-   VALUE_TYPE         = FLOAT
-   SIGNIFICANT_DIGITS = 3
-   FILLVAL            = -1.00E+31
-   FIELDNAM           = "DC Magnetic Field Magnutude"
-   LABLAXIS           = "B"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   QUALITY            = 3
-END_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-!
-START_VARIABLE = EE_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   PARAMETER_TYPE     = "Data"
-   ENTITY             = "Electric_Field"
-   PROPERTY           = "Vector"
-   FLUCTUATIONS       = "Wavelet_Power-spectrum"
-   CATDESC            = "Power spectrum in the Pc 3-5 range of the E-field in the FAC system"
-   UNITS              = "nT^2 Hz^-1"
-   SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
-   TENSOR_ORDER       = 2
-   COORDINATE_SYSTEM  = "FAC"
-   FRAME              = "FAC>xyz"
-   SIZES              = 21,3     ! 21 frequency bins x 3 components
-   VALUE_TYPE         = FLOAT
-   SIGNIFICANT_DIGITS = 3
-   FILLVAL            = -1.00E+31
-   FIELDNAM           = "Electric Power Spectral Density"
-   LABLAXIS           = "E PSD"
-   REPRESENTATION_2   = "xx","yy","zz"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
-   LABEL_2            = "Ex^2","Ey^2","Ez^2"
-   QUALITY            = 3
-END_VARIABLE = EE_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC35
 
 
