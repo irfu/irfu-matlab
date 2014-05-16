@@ -24,6 +24,8 @@ if 0
   fname='C1_CP_AUX_MAARBLE_ULF_PC12__20101013_120000_20101013_150000_V130628.cdf';
 end
 
+dataDir='/data/themis';
+
 if nargin<2, dataPath = '.'; end
 
 iSep=strfind(fname,'__');
@@ -97,10 +99,10 @@ end
 if regexp(productName,'^C[1-4]_CP')==1
   ebsp.r = local.c_read(['R' productName(2)],ebsp.t.data([1 end]));
 elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_[U,V]LF')==1
-  if iesmptty(Rth)
+  if isempty(Rth)
     Rth = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat'); 
   end
-  ebsp.r =Rth.(['Rth' lower(s(21))]);
+  ebsp.r =Rth.(['Rth' lower(productName(21))]);
 end
 
 flagNoE = 0;
