@@ -254,11 +254,13 @@ end
 % Export FAC matrix
 if exportFlag
   [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
-  facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
-  % Position is exported in GSE
-  gseR_tmp = irf_resamp(gseR,facMatrix.t);
-  facMatrix.r = gseR_tmp(:,2:4);
-  maarble.export(facMatrix,tint,['th' thId])
+  if ~isempty(facMatrix.t)
+    facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+    % Position is exported in GSE
+    gseR_tmp = irf_resamp(gseR,facMatrix.t);
+    facMatrix.r = gseR_tmp(:,2:4);
+    maarble.export(facMatrix,tint,['th' thId])
+  end
 end
 
 end
