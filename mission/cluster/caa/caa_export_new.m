@@ -158,6 +158,15 @@ for dd = 1:length(dirs)
       [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
       irf_log('proc',sprintf('using %s',probeS))
       if lev == 3
+          if sfit_probe == 320
+              sfit_probe = 32;
+          end
+          if sfit_probe == 340
+              sfit_probe = 34;
+          end
+          if sfit_probe == 420
+              sfit_probe = 42;
+          end
           if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
           else vs = irf_ssub('diEs?p!',cl_id,sfit_probe);
           end
