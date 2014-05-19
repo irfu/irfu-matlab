@@ -5,5 +5,5 @@ START_META     =   INSTRUMENT_NAME
    ENTRY       =   "EFWXXX"
 END_META       =   INSTRUMENT_NAME
 START_META     =   INSTRUMENT_DESCRIPTION
-   ENTRY       =   "EFW Experiment on Cluster CXXX"
+   ENTRY       =   "Electric Field and Wave (EFW) Experiment on Cluster CXXX"
 END_META       =   INSTRUMENT_DESCRIPTION
