@@ -173,11 +173,9 @@ if wantPC35
     maarble.export(ebsp,tint,['th' thId],'pc35')
   end
 end
-if wantPC12
-  if isempty(bl), 
-    irf.log('warning','skipping PC12, no BL data'),continue, 
-  end
-    
+if wantPC12 && isempty(bl) 
+  irf.log('warning','skipping PC12, no BL data')
+elseif wantPC12 && ~isempty(bl)   
   baseFreq = 16;
   fSampB = 1/median(diff(bl(:,1))); 
   if isempty(ef)
