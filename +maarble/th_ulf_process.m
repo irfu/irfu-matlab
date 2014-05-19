@@ -112,6 +112,7 @@ if nGaps>0
     end
   end
 end
+if isempty(B0_1MIN), irf.log('warning','no BS data, skipping interval'), continue, end
 facMatrix = irf_convert_fac([],B0_1MIN,R);
 
 if wantPC35
