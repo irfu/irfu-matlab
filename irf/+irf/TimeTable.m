@@ -9,18 +9,18 @@ classdef TimeTable
 	% TT=irf.TimeTable(filename) - load ascii time table from file
 	% TT=irf.TimeTable(ascii_text) - load time table from cell string array ascii_text
 	%
-    % Methods: (see also help irf.TimeTable.(method))
-	%   TT  = add(TT,..)       add time interval to table, see help irf.TimeTable.add
-	%   out = ascii(TT)	       time table in ascii format
-	%   TT	= common(TT1,TT2)  return common elements
-    %   TT  = intersect(T1,T2) intersection of two time tables
-	%   N   = numel(TT)        number of time intervals
-    %   T2  = remove(T1,index) remove elements
-    %   T2  = select(T1,index) select elements
-	%   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
-	%	T2  = sort(T1)         sort according to start times
-    %   T2  = unique(T1)       return unique time table (sorted nonoverlapping intervals)
-    %    export_ascii(TT,filename)   export time table to ascii file
+  % Methods: (see also help irf.TimeTable.(method))
+  %   TT  = add(TT,..)       add time interval to table, see help irf.TimeTable.add
+  %   out = ascii(TT)	       time table in ascii format
+  %   TT	= common(TT1,TT2)  return common elements
+  %   TT  = intersect(T1,T2) intersection of two time tables
+  %   N   = numel(TT)        number of time intervals
+  %   T2  = remove(T1,index) remove elements
+  %   T2  = select(T1,index) select elements
+  %   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
+  %	  T2  = sort(T1)         sort according to start times
+  %   T2  = unique(T1)       return unique time table (sorted nonoverlapping intervals)
+  %    export_ascii(TT,filename)   export time table to ascii file
 	% 
 	% Examples:
 	%	TT = irf.TimeTable % initialize empty time table
