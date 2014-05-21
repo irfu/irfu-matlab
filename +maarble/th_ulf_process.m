@@ -59,7 +59,7 @@ if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
 for ievent=1:numel(TT),
 tint=TT.TimeInterval(ievent,:);
-sprintf('processing %s\n',irf_disp_iso_range(tint,1))
+irf.log('warning',sprintf('processing %s\n',irf_disp_iso_range(tint,1)))
 
 
 %% Load data
@@ -161,7 +161,7 @@ if wantPC35
     irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,[],'pc35',...
     'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
   ebsp.r = gseR; % add position for plotting
-  tlim_ebsp();
+  tlim_ebsp(tint);
   if plotFlag
     close all
     h = irf_pl_ebsp(ebsp);
@@ -188,23 +188,38 @@ elseif wantPC12 && ~isempty(bl)
     t_BASE = (fix(min(bl(1,1),ef(1,1))):1/baseFreq:ceil(max(bl(end,1),ef(end,1))))';
   end
   
-  B_BASE = irf_resamp(bl,t_BASE);
+  B_BASE = irf_resamp(bl,t_BASE); 
+  T_TMP = t_BASE(t_BASE(:,1)>=bl(1,1) & t_BASE(:,1)<=bl(end,1)); ttB = T_TMP([1 end],1)';
   ii = find(diff(bl(:,1))>2/fSampB);
   if ~isempty(ii)
     for iGap=ii'
       irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
-      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN; 
+      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN;
+      if bl(iGap+1,1)-bl(iGap,1)>DT_PC2
+        irf.log('warning','splitting BL')
+        T_TMP = t_BASE(t_BASE(:,1)>=bl(iGap,1) & t_BASE(:,1)<=bl(iGap+1,1));
+        tint_TMP = [T_TMP(end) ttB(end,2)];
+        ttB(end,2) = T_TMP(1); ttB = [ttB; tint_TMP];
+      end
     end
   end
   B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
   
+  ttE = [];
   if ~isempty(ef)
     E3D_BASE = irf_resamp(ef,t_BASE);
+    T_TMP = t_BASE(t_BASE(:,1)>=ef(1,1) & t_BASE(:,1)<=ef(end,1)); ttE = T_TMP([1 end],1)';
     ii = find(diff(ef(:,1))>2/fSampE);
     if ~isempty(ii)
       for iGap=ii'
         irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
         E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
+        if ef(iGap+1,1)-ef(iGap,1)>DT_PC2
+          irf.log('warning','splitting BL')
+          T_TMP = t_BASE(t_BASE(:,1)>=ef(iGap,1) & t_BASE(:,1)<=ef(iGap+1,1));
+          tint_TMP = [T_TMP(end) ttE(end,2)];
+          ttB(end,2) = T_TMP(1); ttE = [ttE; tint_TMP];
+        end
       end
     end
     E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN;
@@ -226,27 +241,48 @@ elseif wantPC12 && ~isempty(bl)
     end
   end
   
-  tic
-  ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,[],'pc12',...
-    'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
-    'facMatrix',facMatrix);
-  toc
-  ebsp.r = gseR; % add position for plotting
-  tlim_ebsp();
-  if isempty(ebsp.t)
-    irf.log('warning','No result for PC12'),continue 
+  tt = [ttE; ttB]; 
+  [~,ii] = sort(tt(:,1)); tt = tt(ii,:); 
+  idx = 1;
+  while size(tt,1)>1
+    ii = find(tt(:,1)>=tt(idx,1) & tt(:,1)<=tt(idx,2)); ii(ii==idx) = [];
+    if isempty(ii), idx = idx+1;
+      if idx>=size(tt,1), break, end
+      continue,
+    end
+    ii = ii(1); if tt(ii,2)>tt(idx,2), tt(idx,2) = tt(ii,2); end
+    tt(ii,:) = [];
   end
-  flim_ebsp(fSampB,fSampE);
-  if plotFlag
-    close all
-    h = irf_pl_ebsp(ebsp);
-    irf_zoom(h,'x',tint)
-    title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    orient tall
-    print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
-  end
-  if exportFlag
-    maarble.export(ebsp,tint,['th' thId],'pc12')
+  
+  for iChunk = 1:size(tt,1)
+    tintChunk = tt(iChunk,:);
+    irf.log('warning',...
+      sprintf('PC12 chunk #%d : %s',iChunk,irf_disp_iso_range(tintChunk,1)))
+    idxChunk = (t_BASE(:,1)>=tintChunk(1) & t_BASE(:,1)<=tintChunk(end));
+    iE3D_TMP = []; if ~isempty(iE3D_BASE), iE3D_TMP = iE3D_BASE(idxChunk,:); end
+    tic
+    ebsp = irf_ebsp(iE3D_TMP,B_BASE(idxChunk,:),[],B0_1MIN,[],'pc12','fac',...
+      'polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
+      'facMatrix',facMatrix);
+    toc
+    
+    ebsp.r = gseR; % add position for plotting
+    tlim_ebsp(tintChunk);
+    if isempty(ebsp.t)
+      irf.log('warning','No result for PC12'),continue
+    end
+    flim_ebsp(fSampB,fSampE);
+    if plotFlag
+      close all
+      h = irf_pl_ebsp(ebsp);
+      irf_zoom(h,'x',tintChunk)
+      title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tintChunk,1)])
+      orient tall
+      print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tintChunk,5)])
+    end
+    if exportFlag
+      maarble.export(ebsp,tintChunk,['th' thId],'pc12')
+    end
   end
 end
 
@@ -264,12 +300,12 @@ end
 
 end
 
-  function tlim_ebsp % Trim ebsp to tlim
+  function tlim_ebsp(timeLim) % Trim ebsp to tlim
     IGNORE_FIELDS = {'f','flagFac','fullB','B0','r'};
     fieldsEBSP = fields(ebsp);
     tFields = setxor(fieldsEBSP,IGNORE_FIELDS);
     %nData = length(ebsp.t);
-    [~,idx] = irf_tlim(ebsp.t,tint);
+    [~,idx] = irf_tlim(ebsp.t,timeLim);
     for fName = tFields'
       if isempty(ebsp.(fName{:})), continue, end
       s = size(ebsp.(fName{:}));
