@@ -274,5 +274,21 @@ START_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
    DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
    QUALITY            = 3
 END_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
-
+!
+START_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Magnitude of the DC B-field"
+   UNITS              = "nT"
+   SI_CONVERSION      = "1.0E-9>T"
+   SIZES              = 1
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "DC Magnetic Field Magnutude"
+   LABLAXIS           = "B"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
+   QUALITY            = 3
+END_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC12
 
