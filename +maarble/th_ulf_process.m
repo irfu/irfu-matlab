@@ -215,7 +215,7 @@ elseif wantPC12 && ~isempty(bl)
         irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
         E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
         if ef(iGap+1,1)-ef(iGap,1)>DT_PC2
-          irf.log('warning','splitting BL')
+          irf.log('warning','splitting EF')
           T_TMP = t_BASE(t_BASE(:,1)>=ef(iGap,1) & t_BASE(:,1)<=ef(iGap+1,1));
           tint_TMP = [T_TMP(end) ttE(end,2)];
           ttB(end,2) = T_TMP(1); ttE = [ttE; tint_TMP];
@@ -241,6 +241,7 @@ elseif wantPC12 && ~isempty(bl)
     end
   end
   
+  % Join intervals for BL and EF
   tt = [ttE; ttB]; 
   [~,ii] = sort(tt(:,1)); tt = tt(ii,:); 
   idx = 1;
