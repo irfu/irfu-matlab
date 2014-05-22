@@ -63,6 +63,7 @@ irf.log('warning',sprintf('processing %s\n',irf_disp_iso_range(tint,1)))
 
 
 %% Load data
+axxx = ls('/data/caalocal'); axxx = ls('/data/themis');
 % Round time interval to minutes
 tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 % Extend time interval by these ranges to avoid edge effects 
@@ -218,7 +219,7 @@ elseif wantPC12 && ~isempty(bl)
           irf.log('warning','splitting EF')
           T_TMP = t_BASE(t_BASE(:,1)>=ef(iGap,1) & t_BASE(:,1)<=ef(iGap+1,1));
           tint_TMP = [T_TMP(end) ttE(end,2)];
-          ttB(end,2) = T_TMP(1); ttE = [ttE; tint_TMP];
+          ttE(end,2) = T_TMP(1); ttE = [ttE; tint_TMP];
         end
       end
     end
@@ -243,6 +244,8 @@ elseif wantPC12 && ~isempty(bl)
   
   % Join intervals for BL and EF
   tt = [ttE; ttB]; 
+  irf.log('warning',sprintf('starting with %d chunks',size(tt,1)))
+  irf_disp_iso_range(tt);
   [~,ii] = sort(tt(:,1)); tt = tt(ii,:); 
   idx = 1;
   while size(tt,1)>1
@@ -254,6 +257,8 @@ elseif wantPC12 && ~isempty(bl)
     ii = ii(1); if tt(ii,2)>tt(idx,2), tt(idx,2) = tt(ii,2); end
     tt(ii,:) = [];
   end
+  irf.log('warning',sprintf('total %d chunks',size(tt,1)))
+  irf_disp_iso_range(tt);
   
   for iChunk = 1:size(tt,1)
     tintChunk = tt(iChunk,:);
