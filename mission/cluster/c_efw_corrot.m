@@ -53,7 +53,8 @@ end
 geiOM = diBr;
 geiOM(:,2:3) = 0; 
 geiOM(:,4) = 1;
-om = irf_gse2gei(geiOM,-1);
+%om = irf_gse2gei(geiOM,-1);
+om = irf.geocentric_coordinate_transformation(geiOM,'gse>gei');
 om(:,2:4) = om(:,2:4)*2*pi/86400;
 diOMr = c_gse2dsi(om,SAX);
 
