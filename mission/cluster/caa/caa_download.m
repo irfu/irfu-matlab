@@ -138,7 +138,8 @@ Default.Caa.urlFileInterval = '&file_interval=72hours';
 Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
 Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
-Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
+%Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
+Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY.DATASET_ID,DATASET_INVENTORY.START_DATE,DATASET_INVENTORY.END_DATE&RESOURCE_CLASS=DATASET_INVENTORY';
 Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
@@ -316,7 +317,7 @@ if doDownloadScheduling
 else
 	urlSchedule = Caa.urlScheduleOff;
 end
-if downloadFromCSA && ~strfind(urlDataFormat,'&'),% change/add defaults, hasn't added these to above flag checking
+if downloadFromCSA && any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
 caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity urlDataFormat urlFileInterval urlNonotify];
@@ -399,11 +400,11 @@ if specifiedTimeInterval
 		t2iso = tintiso(divider+1:end);
 		queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
 		%		if strfind(dataset,'inventory') % file inventory
-		queryTimeInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
-			' AND FILE.END_DATE >= ''' t1iso ''''];
+%		queryTimeInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
+%			' AND FILE.END_DATE >= ''' t1iso ''''];
 		%		else %dataset inventory
-		%			queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
-		%				' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
+					queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
+						' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
 		%		end
 	else
 		queryTime = ['&time_range=' tintiso];
