@@ -52,6 +52,7 @@ dobjSpecified = false;  % default dataobject is not given as input
 Dataobject = [];        % default dataobject is empty
 args = varargin;        % input argument list
 testDataStreaming = false; % default do not get data by data streaming
+% returnOutputAsCellArray  - set later in code, if true output should be cell array
 %% Define varName
 if isa(args{1},'dataobj'), % dataobject specified as first input argument
 	Dataobject = args{1};
@@ -139,10 +140,11 @@ end
 %%
 
 if ischar(varNameList),
+	returnOutputAsCellArray = false;
 	varNameList = {varNameList};
-end
-
-if ~iscellstr(varNameList)
+elseif iscellstr(varNameList)
+	returnOutputAsCellArray = true;
+else
 	irf.log('critical','varName incorrect format');
 	error('varName incorrect format');
 end
@@ -221,7 +223,10 @@ for iDataset = 1:numel(datasetNameUniqueList)
 					irf.log('warning','NO DATA in local repository!');
 				else
 					resmat{indVarNameList(1)} = ttt;
-					resmat(indVarNameList(2:end)) = cellfun(@(x) {getmat(Dataobject,x)},varTmpList{2:end},'uniformoutput',false);
+					for j=2:numel(varTmpList)
+						ttt = local.c_read(varTmpList{j},tint,'mat');
+						resmat{indVarNameList(j)} = ttt;
+					end
 					isDataReturned = true;
 				end
 			end
@@ -259,7 +264,7 @@ end
 if ~isDataReturned, % nothing is loaded, return empty
 	irf.log('warning','Nothing is loaded')
 	res=[];resdataobject=[];resmat=[];resunit=[];
-elseif numel(varNameList) == 1, % return variables and not cell arrays
+elseif numel(varNameList) == 1 && ~returnOutputAsCellArray, % return variables and not cell arrays
 	res=res{1};
 	resdataobject=resdataobject{1};
 	resmat=resmat{1};
