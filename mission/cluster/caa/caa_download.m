@@ -117,6 +117,7 @@ end
 % CAA
 Default.Caa.urlServer		= 'http://caa.estec.esa.int/';
 Default.Caa.urlQuery		= 'caa_query/?';
+Default.Caa.urlQueryAsync	= 'caa_query/?schedule=1';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?&gzip=1';
 Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
 Default.Caa.urlListDataset	= 'caa_query/?dataset_list=1';
@@ -124,8 +125,6 @@ Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1&desc=1';
 Default.Caa.urlListFormat   = ''; % no such option in CAA
 Default.Caa.urlNotifyOn		= '';
 Default.Caa.urlNotifyOff	= '&nonotify=1';
-Default.Caa.urlScheduleOn	= '&schedule=1';
-Default.Caa.urlScheduleOff	= '';
 Default.Caa.urlInventoryOn	= '&inventory=1';
 Default.Caa.urlInventoryOff	= '';
 Default.Caa.urlDataset      = '&dataset_id=';
@@ -137,6 +136,7 @@ Default.Caa.urlFileInterval = '&file_interval=72hours';
 % http://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
 Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
 Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
+Default.Csa.urlQueryAsync	= 'async-product-action?&NON_BROWSER';
 Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
 %Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
 Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY.DATASET_ID,DATASET_INVENTORY.START_DATE,DATASET_INVENTORY.END_DATE&RESOURCE_CLASS=DATASET_INVENTORY';
@@ -145,8 +145,6 @@ Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=
 Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
 Default.Csa.urlNotifyOn		= '';
 Default.Csa.urlNotifyOff	= '&NO_NOTIFY';
-Default.Csa.urlScheduleOn	= 'async-';
-Default.Csa.urlScheduleOff	= '';
 Default.Csa.urlDataset      = '&DATASET_ID=';
 Default.Csa.urlDataFormat   = '&DELIVERY_FORMAT=CDF';
 Default.Csa.urlFileInterval = '&DELIVERY_INTERVAL=ALL';
@@ -313,14 +311,14 @@ else
 	urlNonotify = Caa.urlNotifyOff;
 end
 if doDownloadScheduling
-	urlSchedule = Caa.urlScheduleOn;
+	urlQuery = Caa.urlQueryAsync;
 else
-	urlSchedule = Caa.urlScheduleOff;
+	urlQuery = Caa.urlQuery;
 end
 if downloadFromCSA && any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery		= [Caa.urlServer Caa.urlQuery urlSchedule  urlIdentity urlDataFormat urlFileInterval urlNonotify];
+caaQuery		= [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify];
 caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
 caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
 caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
@@ -607,8 +605,9 @@ end
 			case 0 % CAA
 				[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
 			case 1 % CSA
-				downloadedFile =tempname;
-				gzFileName = [downloadedFile '.gz'];
+				fileName =tempname;
+				gzFileName = [fileName '.gz'];
+				downloadedFile = gzFileName;
 				[gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);
 		end
 		
@@ -625,7 +624,7 @@ end
 					case 1
 						gunzip(gzFileName);
 						delete(gzFileName);
-						filelist=untar(downloadedFile,tempDirectory);
+						filelist=untar(fileName,tempDirectory);
 				end
 				if isempty(filelist)
 					irf.log('warning','Returned zip file is empty');
@@ -634,7 +633,7 @@ end
 					move_to_caa_directory(filelist);
 				end
 				status=1;
-				delete(downloadedFile);
+				delete(fileName);
 				downloadedFile = '';
 			catch
 				irf.log('critical','Invalid zip file')
