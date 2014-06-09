@@ -197,7 +197,8 @@ if nargin == 1 && ischar(tint) && strcmpi('test',tint)
 end
 
 if nargin>=1, % check if first argument is not caa zip file link
-	if ischar(tint) && any(regexp(tint,'\.zip'))% tint zip file link
+	if ischar(tint) && ...
+			(any(regexp(tint,'\.zip')) || any(regexp(tint,'\.tar.gz'))) % tint is file link
 		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
 			doLog=false;
 		end
@@ -527,6 +528,8 @@ if status == 0 && exist(downloadedFile,'file')
 	delete(downloadedFile);
 	
 	if exist('downloadFile','var'),
+		irf.log('warning',['Request put in queue    : ' urlLine]);
+		irf.log('warning',['When ready download from: ' downloadFile]);
 		if doLog
 			j=length(caa)+1;
 			caa{j}.url=urlLine;
