@@ -38,7 +38,8 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'schedule'		- schedule the download, (returns zip file link)
 %	'notify'        - notify by email when scheduled work is ready
 %						check the readiness by executing CAA_DOWNLOAD from the same direcotry
-%   'nolog'			- do not log into .caa file (good for batch processing)
+%   'nolog'			- [default] do not log into .caa file (good for batch processing)
+%   'log'			- do log into .caa file (more for interactive work)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
 %   'caa'           - download data from CAA
@@ -152,13 +153,15 @@ Default.Csa.urlFileInterval = '&DELIVERY_INTERVAL=ALL';
 %% Defaults that can be overwritten by input parameters
 checkDownloadStatus		= false;
 checkDataInventory		= true;			% check if there are any data at caa
-doLog					= true;			% log into .caa file
+doLog					= false;		% do not log into .caa file
 doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
 doDownloadScheduling	= false;        % default download directly files
 doNotifyByEmail			= false;		% default, do not notify
 expandWildcards			= true;			% default is to use wildcard
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 specifiedTimeInterval   = false;
+specifiedFileLink       = false;
+
 caaServer = datastore('caa','defaultServer');
 if isempty(caaServer) || strcmpi(caaServer,'csa'),
 	downloadFromCSA			= true;			% default to download from CSA
@@ -167,21 +170,6 @@ else
 end
 downloadDirectory       = './CAA/';     % local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 
-%% load .caa file with status for all downloads
-if doLog,
-	if ~exist('.caa','file'),
-		caa=cell(0);
-		save -mat .caa caa;
-	end
-	load -mat .caa caa
-end
-
-% caa.url - links to download
-% caa.dataset - dataset to download
-% caa.tintiso - time interval
-% caa.zip - zip files to download
-% caa.status - status ('submitted','downloaded','finnished')
-% caa.timeofrequest - in matlab time units
 %% check input
 if nargin==0, checkDownloadStatus=true; end
 if nargout>0 && nargin>0,
@@ -196,29 +184,12 @@ if nargin == 1 && ischar(tint) && strcmpi('test',tint)
 	return
 end
 
-if nargin>=1, % check if first argument is not caa zip file link
+if nargin>=1, % check if first argument is not caa zip or tar.gz file link
 	if ischar(tint) && ...
 			(any(regexp(tint,'\.zip')) || any(regexp(tint,'\.tar.gz'))) % tint is file link
-		if nargin>1 && ischar(dataset) && strcmpi(dataset,'nolog')
-			doLog=false;
-		end
-		if doLog
-			j=numel(caa)+1;
-			caa{j}.url		= '*';
-			caa{j}.dataset	= '*';
-			caa{j}.tintiso	= '*';
-			caa{j}.zip		= tint;
-			caa{j}.status	= 'submitted';
-			caa{j}.timeofrequest= now;
-			checkDownloadStatus = true;
-		else
-			zipFileLink=tint;
-			isJobFinished=get_zip_file(zipFileLink);
-			if ~isJobFinished, %
-				irf.log('warning','Job still not finished');
-			end
-			downloadStatus = isJobFinished;
-			return;
+		specifiedFileLink = true;
+		if nargin > 1
+			varargin=[dataset varargin];
 		end
 	elseif ischar(tint) && any(irf_time(tint,'iso2tint')) % tint is tintiso
 	elseif ischar(tint) % tint is dataset
@@ -257,6 +228,8 @@ if ~isempty(varargin), % check for additional flags
 			urlIdentity = flag;
 		elseif strcmpi('nolog',flag)
 			doLog = false;
+		elseif strcmpi('log',flag)
+			doLog = true;
 		elseif strcmpi('notify',flag)
 			doNotifyByEmail = true;
 		elseif any(strcmpi('csa',flag)) % download from CSA instead of CAA
@@ -287,6 +260,44 @@ if ~isempty(varargin), % check for additional flags
 		else
 			irf.log('critical',['Flag ''' flag ''' not recognized']);
 		end
+	end
+end
+
+%% if needed load .caa file with status for all downloads
+if doLog,
+	if ~exist('.caa','file'),
+		caa=cell(0);
+		save -mat .caa caa;
+	end
+	load -mat .caa caa
+end
+
+% caa.url - links to download
+% caa.dataset - dataset to download
+% caa.tintiso - time interval
+% caa.zip - zip files to download
+% caa.status - status ('submitted','downloaded','finnished')
+% caa.timeofrequest - in matlab time units
+
+%%
+if specifiedFileLink,
+	if doLog % add to the submission list in caa log
+		j=numel(caa)+1;
+		caa{j}.url		= '*';
+		caa{j}.dataset	= '*';
+		caa{j}.tintiso	= '*';
+		caa{j}.zip		= tint;
+		caa{j}.status	= 'submitted';
+		caa{j}.timeofrequest= now;
+		checkDownloadStatus = true;
+	else % download directly the file
+		zipFileLink=tint;
+		isJobFinished=get_zip_file(zipFileLink);
+		if ~isJobFinished, %
+			irf.log('warning','Job still not finished');
+		end
+		downloadStatus = isJobFinished;
+		return;
 	end
 end
 
