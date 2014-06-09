@@ -297,6 +297,14 @@ if specifiedFileLink,
 			irf.log('warning','Job still not finished');
 		end
 		downloadStatus = isJobFinished;
+		if nargout == 0,
+			if downloadStatus
+				disp('success!');
+			else
+				disp('failed!');
+			end
+			clear downloadStatus;
+		end
 		return;
 	end
 end
