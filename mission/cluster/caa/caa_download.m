@@ -50,6 +50,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %	'csv'			- return csa query in CSV format
 %	'votable'		- return csa query in VOTABLE format
 %   'stream'        - donwload using streaming interface (gzipped cef file)
+%	'ingestedsince=YYYYMMDD' - download only data ingested since YYYY MM DD
 %	'testcsa'		- test CSA interface
 %
 %  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'):
@@ -161,6 +162,7 @@ expandWildcards			= true;			% default is to use wildcard
 overwritePreviousData	= false;		% continue adding cdf files to CAA directory
 specifiedTimeInterval   = false;
 specifiedFileLink       = false;
+specifiedIngestedSince  = false;
 
 caaServer = datastore('caa','defaultServer');
 if isempty(caaServer) || strcmpi(caaServer,'csa'),
@@ -253,6 +255,9 @@ if ~isempty(varargin), % check for additional flags
 					|| ~strcmp(downloadDirectory(end),'/'),
 				downloadDirectory(end+1) = filesep; %#ok<AGROW>
 			end
+		elseif strfind(lower(flag),'ingestedsince=')
+			specifiedIngestedSince = true;
+			ingestedSinceYYYYMMDD = flag(strfind(flag,'=')+1:end);
 		elseif any(strcmpi('stream',flag)) % data streaming
 			checkDataInventory = false;
 			expandWildcards		= false;
@@ -335,11 +340,25 @@ if doDownloadScheduling
 else
 	urlQuery = Caa.urlQuery;
 end
+if specifiedIngestedSince
+	YYYY  = str2num(ingestedSinceYYYYMMDD(1:4));
+	MM    = str2num(ingestedSinceYYYYMMDD(5:6));
+	DD    = str2num(ingestedSinceYYYYMMDD(7:8));
+	tIngestedSince = irf_time([YYYY MM DD 0 0 0]);
+	if downloadFromCSA
+		urlIngestedSince = ...
+			['&INGESTED_SINCE=' irf_time(tIngestedSince,'iso')];
+	else
+		urlIngestedSince = '';
+	end
+else
+	urlIngestedSince = '';
+end
 if downloadFromCSA && any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery		= [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify];
-caaStream		= [Caa.urlServer Caa.urlStream    urlIdentity];
+caaQuery		= [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify urlIngestedSince];
+caaStream		= [Caa.urlServer Caa.urlStream  urlIdentity urlIngestedSince];
 caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
 caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
 caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc  urlListFormat];
