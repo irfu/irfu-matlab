@@ -399,6 +399,7 @@ classdef TimeTable
 					if tList(i,2) == 1, % interval start
 						i1Open(ind)=true;
 					else % interval end
+						i1Open(ind)=false;
 						if tList(i,6) > 0, i1(ind)=true;end
 					end					
 				end
