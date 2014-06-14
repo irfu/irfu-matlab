@@ -189,6 +189,10 @@ end
 				index.(datasetIndex)=s.(indexVarName);
 			end
 			index=index.(datasetIndex);
+			if isempty(index),
+				irf_log('warning',['local.c_read: no data for dataset ' dataset]);
+				return;
+			end
 		else
 			irf.log('critical',['Do not know how to read variable: ' varToRead{1}]);
 			return
