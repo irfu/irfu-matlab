@@ -244,6 +244,7 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['Old intervals to update  : ' num2str(sum(indOldToUpdateIntervals))])
 		% Removing old obsolete files
 		remove_datafiles(TTindex,indOldObsoleteIntervals,dataDir);
+		local.c_update(dataSet); % so that index is as soon as files are removed
 		% find new intervals that do not overlap with old ones
 		TTindexUnchanged = select(TTindex,~indOldObsoleteIntervals & ~indOldToUpdateIntervals);
 		[~,ii]=overlap(TTRequest,TTindexUnchanged);
