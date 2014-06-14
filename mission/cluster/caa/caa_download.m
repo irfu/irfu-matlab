@@ -12,8 +12,9 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
 %       CAA_DOWNLOAD(tint,dataset,flags) - see different flags below
 %
-%       TT=CAA_DOWNLOAD(tint,'inventory') - inventory of all datasets available, can return time table TT
-%       TT=CAA_DOWNLOAD(tint,'inventory:dataset') - only inventory datasets matching 'dataset'
+%       TT=CAA_DOWNLOAD(tint,'inventory') - inventory of all datasets available, return time table TT
+%       TT=CAA_DOWNLOAD(tint,'inventory:dataset') - inventory of datasets matching 'dataset'
+%       TT=CAA_DOWNLOAD(tint,'fileinventory:dataset') - file inventory of datasets matching 'dataset'
 %
 %       downloadStatus=CAA_DOWNLOAD(tint,dataset) - returns 1 if sucessfull download
 %				returns 0 if request is put in the queue,
@@ -142,6 +143,7 @@ Default.Csa.urlQueryAsync	= 'async-product-action?&NON_BROWSER';
 Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
 %Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
 Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY.DATASET_ID,DATASET_INVENTORY.START_DATE,DATASET_INVENTORY.END_DATE&RESOURCE_CLASS=DATASET_INVENTORY';
+Default.Csa.urlFileInventory= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
 Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
@@ -360,18 +362,27 @@ end
 caaQuery		= [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify urlIngestedSince];
 caaStream		= [Caa.urlServer Caa.urlStream  urlIdentity urlIngestedSince];
 caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
+caaFileInventory= [Caa.urlServer Caa.urlFileInventory  urlListFormat];
 caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
 caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc  urlListFormat];
 if ~downloadFromCSA % CAA requires uname and password also for metadata
 	caaInventory      = [caaInventory       urlIdentity];
+	caaFileInventory  = [caaFileInventory   urlIdentity];
 	caaListDataset    = [caaListDataset     urlIdentity];
 	caaListDatasetDesc= [caaListDatasetDesc urlIdentity];
 end
 
 
 %% Check status of downloads if needed
-if doLog && checkDownloadStatus,    % check/show status of downloads from .caa file
+if checkDownloadStatus,    % check/show status of downloads from .caa file
 	disp('=== status of jobs (saved in file .caa) ====');
+	if ~exist('.caa','file'),
+		disp('No active downloads');
+		if nargout==1, downloadStatus=1; end
+		return;
+	else
+		load -mat .caa caa
+	end
 	if ~isempty(caa),
 		for j=1:length(caa), % go through jobs
 			disp([num2str(j) '.' caa{j}.status ' ' caa{j}.dataset '-' caa{j}.tintiso]);
@@ -436,13 +447,10 @@ if specifiedTimeInterval
 		t1iso = tintiso(1:divider-1);
 		t2iso = tintiso(divider+1:end);
 		queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
-		%		if strfind(dataset,'inventory') % file inventory
-%		queryTimeInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
-%			' AND FILE.END_DATE >= ''' t1iso ''''];
-		%		else %dataset inventory
-					queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
-						' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
-		%		end
+		queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
+			' AND FILE.END_DATE >= ''' t1iso ''''];
+		queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
+			' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
 	else
 		queryTime = ['&time_range=' tintiso];
 		queryTimeInventory = queryTime;
@@ -462,7 +470,11 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 			return;
 		end
 		tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
-		ttTemp = caa_download(tint,['inventory:' filter],dataSource);
+		if any(strfind(dataset,'fileinventory'))
+			ttTemp = caa_download(tint,['fileinventory:' filter],dataSource);
+		else
+			ttTemp = caa_download(tint,['inventory:' filter],dataSource);
+		end
 		if isfield(ttTemp.UserData(1),'number')
 			iData=find([ttTemp.UserData(:).number]);
 			downloadStatus=select(ttTemp,iData);
@@ -477,12 +489,19 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 	elseif any(strfind(dataset,'list'))
 		urlListDatasets = [caaListDataset queryDatasetInventory];
 		returnTimeTable='list';
+	elseif any(strfind(dataset,'fileinventory'))
+		urlListDatasets = [caaFileInventory queryDatasetInventory ];
+		returnTimeTable='fileinventory';
 	elseif any(strfind(dataset,'inventory'))
 		urlListDatasets = [caaInventory queryDatasetInventory ];
 		returnTimeTable='inventory';
 	end
 	if specifiedTimeInterval
-		urlListDatasets = [urlListDatasets queryTimeInventory];
+		if any(strfind(dataset,'fileinventory'))
+			urlListDatasets = [urlListDatasets queryTimeFileInventory];
+		else
+			urlListDatasets = [urlListDatasets queryTimeInventory];
+		end
 	end
 	if downloadFromCSA
 		urlListDatasets = csa_parse_url(urlListDatasets);
@@ -808,11 +827,17 @@ end
 		if downloadFromCSA
 			switch returnTimeTable
 				case 'inventory'
-					%"DATASET.DATASET_ID","FILE.START_DATE","FILE.END_DATE","FILE.FILE_NAME","FILE.CAA_INGESTION_DATE"
+					%"DATASET_INVENTORY.DATASET_ID","DATASET_INVENTORY.START_DATE","DATASET_INVENTORY.END_DATE"
 					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
 					TT.UserData(numel(textLine{1})-1).dataset = [];
 					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
 					[TT.UserData(:).version]=deal(textLine{5}{2:end});
+				case 'fileinventory'
+					%"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
+					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
+					TT.UserData(numel(textLine{1})-1).dataset = [];
+					[TT.UserData(:).filename]=deal(textLine{1}{2:end});
+					[TT.UserData(:).caaIngestionDate]=deal(textLine{4}{2:end});
 				case 'list'
 					%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
 					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
