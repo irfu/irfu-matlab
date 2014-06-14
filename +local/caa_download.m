@@ -58,7 +58,6 @@ isInputDatasetName		= false;
 sendEmailWhenFinished	= false;
 streamData				= false; % download cdf files asynchronously
 indexStart				= 1;
-indexList				= [];
 inputParamCaaDownload   = {};
 
 %% Send email when done
@@ -268,7 +267,7 @@ irf.log('warning', ['New intervals to download: ' num2str(sum(indNewIntervals))]
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 %% loop through request time table
 iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
-if isempty(indexList),
+if ~exist('indexList','var'),
 	nRequest	= numel(TTRequest)-iRequest+1;
 	indexList	= iRequest:numel(TTRequest);
 else
