@@ -43,10 +43,10 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'log'			- do log into .caa file (more for interactive work)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
-%   'caa'           - download data from CAA
+%   'caa'           - download data from CAA at ESTEC
 %	'cdf'           - alias of 'format=cdf'
 %	'cef'           - alias of 'format=cef'
-%   'csa'           - download data from CSA (default)
+%   'csa'           - download data from CSA at ESAC (default)
 %	'json'			- return csa query in JSON format
 %	'csv'			- return csa query in CSV format
 %	'votable'		- return csa query in VOTABLE format
