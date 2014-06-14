@@ -246,6 +246,7 @@ if exist(dataSetDir,'dir'),
 					if jIndex==0, break; end
 				end
 			end
+			if jIndex==0, break; end
 		end
 		% Work to do
 		irf.log('warning', ['Old intervals to remove  : ' num2str(sum(indOldObsoleteIntervals))])
