@@ -20,6 +20,9 @@ function out=caa_download(varargin)
 %   LOCAL.CAA_DOWNLOAD(dataset,'DataDirectory',dataDir) use dataDir as
 %   location for data (default dataDir is '/data/caalocal')
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'simulate') show statistics on how many
+%   intervals would be deleted and downloaded but do not do anything.
+%
 %   LOCAL.CAA_DOWNLOAD(...,inputParamCaaDownload) any unrecognized input
 %   parameter is parsed to caa_download when downloading data. See help
 %   caa_download.
@@ -59,6 +62,7 @@ sendEmailWhenFinished	= false;
 streamData				= false; % download cdf files asynchronously
 indexStart				= 1;
 inputParamCaaDownload   = {};
+doSimulateDownload      = false; % takes care of flag 'simulate'
 
 %% Send email when done
 % use datastore info in local to send email when finnished
@@ -129,7 +133,11 @@ args(1)=[];
 while ~isempty(args)
 	if ischar(args{1}) && strcmpi(args{1},'stream')
 		streamData = true;
-		irf.log('notice','Streaming data from CAA.');
+		irf.log('notice','Streaming data.');
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'simulate')
+		irf.log('notice','Only simulate the download');
+		doSimulateDownload = true;
 		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
 		if numel(args) > 1 && isnumeric(args{2})
@@ -243,8 +251,10 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['Old intervals to remove  : ' num2str(sum(indOldObsoleteIntervals))])
 		irf.log('warning', ['Old intervals to update  : ' num2str(sum(indOldToUpdateIntervals))])
 		% Removing old obsolete files
-		remove_datafiles(TTindex,indOldObsoleteIntervals,dataDir);
-		local.c_update(dataSet); % so that index is as soon as files are removed
+		if ~doSimulateDownload
+			remove_datafiles(TTindex,indOldObsoleteIntervals,dataDir);
+			local.c_update(dataSet); % so that index is as soon as files are removed
+		end
 		% find new intervals that do not overlap with old ones
 		TTindexUnchanged = select(TTindex,~indOldObsoleteIntervals & ~indOldToUpdateIntervals);
 		[~,ii]=overlap(TTRequest,TTindexUnchanged);
@@ -266,6 +276,9 @@ end
 %% Work to do
 irf.log('warning', ['New intervals to download: ' num2str(sum(indNewIntervals))])
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
+if doSimulateDownload,
+	return;
+end
 %% loop through request time table
 iRequest=max(indexStart,find_first_non_processed_time_interval(TTRequest));
 if ~exist('indexList','var'),
