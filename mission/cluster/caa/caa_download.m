@@ -104,7 +104,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
 % Test flags
-%   'test'						- use caa test server instead
+%   'test'						- test downloading for a few different intervals
 
 
 %% Check if latest irfu-matlab
