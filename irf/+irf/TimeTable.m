@@ -12,13 +12,14 @@ classdef TimeTable
     % Methods: (see also help irf.TimeTable.(method))
 	%   TT  = add(TT,..)       add time interval to table, see help irf.TimeTable.add
 	%   out = ascii(TT)	       time table in ascii format
-	%   TT	= common(TT1,TT2)  return common elements
+	%   TT	= common(T1,T2)    return common elements
     %   TT  = intersect(T1,T2) intersection of two time tables
 	%   N   = numel(TT)        number of time intervals
+	%   TT  = overlap(T1,T2)   returns elements in T1 that overlap with T2
     %   T2  = remove(T1,index) remove elements
     %   T2  = select(T1,index) select elements
 	%   TT  = setdiff(T1,T2)   returns elements of T1 that are not in T2
-	%	T2  = sort(T1)         sort according to start times
+	%   T2  = sort(T1)         sort according to start times
     %   T2  = unique(T1)       return unique time table (sorted nonoverlapping intervals)
     %    export_ascii(TT,filename)   export time table to ascii file
 	% 
@@ -222,7 +223,7 @@ classdef TimeTable
 				if nargout==0, clear ok, end;
 			end
 		end
-		function TTout  = remove(TTin,index) % remove entries index
+		function TTout  = remove(TTin,index) % remove entries
             % TTout  = remove(TTin,index) remove entries 
             if isempty(index),
                 TTout=TTin;
@@ -251,6 +252,13 @@ classdef TimeTable
             end
 		end
 		function TTout = select(TTin,index) % return index
+			if islogical(index)
+				if numel(index) == size(TTin.TimeInterval,1),
+					index = find(index);
+				else
+					error('select(TTin,index): index wrong size');
+				end
+			end
 			if ~isnumeric(index)
 				irf_log('fcal','Index not number');
 				return;
@@ -357,6 +365,46 @@ classdef TimeTable
 			ia=intersect(ia1,ia2); % ia intervals are common in both series
 			i=setdiff(1:size(t1,1),ia);
 			TT=select(TT1,i);
+		end
+		function [TT,i1]	= overlap(TT1,TT2) % returns elements in TT1 which overlap with elements in TT2
+			% [TT,i] = overlap(TT1,TT2) % returns elements in TT1 which overlap with elements in TT2
+			% i is indices of overlapping intervals of TT1
+			t1=TT1.TimeInterval;
+			t2=TT2.TimeInterval;
+			if isempty(t1) || isempty(t2), 
+				TT=irf.TimeTable; 
+				i1=[]; 
+				return;
+			end
+			i1 = false(1,size(t1,1));
+			i1Open = i1;
+			indt1 = (1:size(t1,1))';
+			t1List = [t1(:,1) 0*indt1+1 0*indt1 indt1;...
+				      t1(:,2) 0*indt1-1 0*indt1 indt1];
+			indt2 = (1:size(t2,1))';
+			t2List = [t2(:,1) 0*indt2 0*indt2+1 indt2;...
+				      t2(:,2) 0*indt2 0*indt2-1 indt2];
+			tList = sortrows([t1List;t2List]);
+			tList(:,5) = cumsum(tList(:,2)); % number of open TT1 intervals
+			tList(:,6) = cumsum(tList(:,3)); % number of open TT2 intervals
+			for i = 1:size(tList,1),
+				if tList(i,2) == 0, % TT2 interval
+					if tList(i,3) == -1 && tList(i,6) == 0, % all TT2 intervals are closed
+						if tList(i,5) > 0, % there are open TT1 intervals
+							i1(i1Open) = true; % all open TT1 intervals are overlapping
+						end
+					end
+				else %% TT1 interval
+					ind=tList(i,4);
+					if tList(i,2) == 1, % interval start
+						i1Open(ind)=true;
+					else % interval end
+						if tList(i,6) > 0, i1(ind)=true;end
+					end					
+				end
+			end
+			i1=find(i1);
+			TT=select(TT1,i1);
 		end
 		function [TT,ii1,ii2]	= common(TT1,TT2) % returns TT1 elements that are commmon in TT2			% TT=common(TT1,TT2) 
 			% [TT,ii1,ii2]=common(TT1,TT2) returns also indexes of those elements 
