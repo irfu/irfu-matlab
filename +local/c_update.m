@@ -47,6 +47,9 @@ tmp=dir(dirCaa);
 iDir = [tmp(:).isdir]; % find directories
 dataSetArray = {tmp(iDir).name}';
 dataSetArray(ismember(dataSetArray,{'.','..'})) = []; % remove '.' and '..'
+% dataset name should start with character C
+indOkDatasets = cellfun(@(x) (numel(x)>0 && (x(1) == 'C')), dataSetArray);
+dataSetArray = dataSetArray(indOkDatasets);
 if filterDataSet 
 	dataSetArray(~ismember(dataSetArray,{dataSetFilter})) = [];
 end
