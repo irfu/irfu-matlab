@@ -569,7 +569,7 @@ irf.log('notice',['requesting: ' urlLine]);
 if nargout>=1, downloadStatus=status;end
 if nargout==2, downloadFile = ''; end % default return empty
 if status == 0 && exist(downloadedFile,'file')
-	irf.log('critical','Could not find zip file with data! ');
+	irf.log('warning','zip or gz file is not returned! ');
 	fid=fopen(downloadedFile);
 	while 1
 		tline = fgetl(fid);
@@ -579,6 +579,12 @@ if status == 0 && exist(downloadedFile,'file')
 			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'zip')+2);
 		elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
 			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
+		elseif any(strfind(tline,'LOGIN_REQUESTED')), % 
+			disp('**ERROR**');
+			disp('Your username or password are incorrect, please double check!')
+			disp('See the help of caa_download on how to updated your user credentials!');
+			fclose(fid);
+			return;
 		end
 	end
 	fclose(fid);
