@@ -107,11 +107,12 @@ if isempty(caaDir) % not saved in datastore
 		datastore('caa','localDataDirectory',caaDir);
 	end
 end
-indexDir = [caaDir filesep 'index'];
 
 %% Check if repository is there
 if ~exist(caaDir,'dir')
 	disp(['Local CAA data repository ' caaDir ' not available!']);
+	disp('If you want to use other directory as default, execute:');
+	disp('datastore(''caa'',''localDataDirectory'',''/your/data/directory'');');
 	return;
 end
 
