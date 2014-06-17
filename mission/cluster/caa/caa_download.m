@@ -123,6 +123,7 @@ Default.Caa.urlQuery		= 'caa_query/?';
 Default.Caa.urlQueryAsync	= 'caa_query/?schedule=1';
 Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?&gzip=1';
 Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
+Default.Caa.urlFileInventory= '';
 Default.Caa.urlListDataset	= 'caa_query/?dataset_list=1';
 Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1&desc=1';
 Default.Caa.urlListFormat   = ''; % no such option in CAA
