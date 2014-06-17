@@ -183,13 +183,13 @@ end
 		if ii,
 			dataset=varToRead{1}(ii+2:end);
 			datasetIndex = strrep(dataset,'CIS-','CIS_');
-			datasetDir = [caaDir filesep dataset];
+			datasetDir = [caaDir filesep datasetIndex];
 			if ~isfield(index,datasetIndex) % index not yet read
 				indexVarName = ['index_' datasetIndex];
 				indexFileInfo=dirwhos(datasetDir,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
 					irf.log('critical',['There is no index file:' indexVarName]);
-					disp('Check that your localDataPath is correct, see help.');
+					irf.log('critical','Check that your localDataPath is correct, see help!');
 					return;
 				end
 				s=dirload(datasetDir,indexVarName);
