@@ -31,6 +31,11 @@ function [out,dataobject]=c_read(varargin)
 % Mag_Local_time__C1_JP_PMP
 % L_value__C1_JP_PMP
 %
+% The data are loaded from local data directory. By default it is
+% '/data/caalocal' but you can set it to different path by running in
+% matlab:
+%	> datastore('caa','localDataDirectory','/local/data/path');
+%
 %	Examples:
 %		tint = '2005-01-01T05:00:00.000Z/2005-01-05T05:10:00.000Z';
 %		   R = local.c_read('r',tint);
@@ -184,6 +189,7 @@ end
 				indexFileInfo=dirwhos(datasetDir,indexVarName);
 				if numel(indexFileInfo)==0, % there is no index
 					irf.log('critical',['There is no index file:' indexVarName]);
+					disp('Check that your localDataPath is correct, see help.');
 					return;
 				end
 				s=dirload(datasetDir,indexVarName);
