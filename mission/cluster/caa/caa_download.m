@@ -672,10 +672,8 @@ end
 			case 0 % CAA
 				[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
 			case 1 % CSA
-				fileName =tempname;
-				gzFileName = [fileName '.gz'];
-				downloadedFile = gzFileName;
-				[gzFileName,isZipFileReady]=urlwrite(urlLink,gzFileName);
+				downloadedFile = [tempname '.gz'];
+				[downloadedFile,isZipFileReady]=urlwrite(urlLink,downloadedFile);
 		end
 		
 		if isZipFileReady, %
@@ -689,9 +687,10 @@ end
 					case 0
 						filelist=unzip(downloadedFile,tempDirectory);
 					case 1
-						gunzip(gzFileName);
-						delete(gzFileName);
-						filelist=untar(fileName,tempDirectory);
+						gunzip(downloadedFile);
+						delete(downloadedFile);
+						downloadedFile = downloadedFile(1:end-3); % remove '.gz'
+						filelist=untar(downloadedFile,tempDirectory);
 				end
 				if isempty(filelist)
 					irf.log('warning','Returned zip file is empty');
@@ -700,7 +699,7 @@ end
 					move_to_caa_directory(filelist);
 				end
 				status=1;
-				delete(fileName);
+				delete(downloadedFile);
 				downloadedFile = '';
 			catch
 				irf.log('critical','Invalid zip file')
