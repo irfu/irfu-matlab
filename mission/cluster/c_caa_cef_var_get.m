@@ -17,6 +17,7 @@ function out = c_caa_cef_var_get(varName,fileName,varargin)
 %
 % See also: CEF_INIT, CEF_READ, IRF.DATATYPES
 
+%% Check CEFlib status
 persistent okCeflib 
 
 if isempty(okCeflib), 
@@ -29,6 +30,11 @@ if ~okCeflib,
 	if nargout > 0, out = []; end
 	return
 end
+%% Define defaults
+
+% returnOutputAsCellArray  - set later in code, if true output should be cell array
+
+%% Check inputs
 
 if nargin == 0, help c_caa_cef_var_get; return; end
 if nargin == 1,
@@ -56,8 +62,8 @@ if ischar(fileName)
 		mkdir(tempDir);
 		cd(tempDir);
 		[datasetName,varName]=caa_get_dataset_name(varName);
-		caa_download(tint,datasetName,'stream');
-		cd(['CAA/' datasetName]);
+		caa_download(tint,datasetName{1},'stream'); % TODO: assumes all variables from the same dataset
+		cd(['CAA/' datasetName{1}]);
 		d=dir('*.cef.gz');
 		cefFile = d.name;
 		cef_init();
@@ -84,6 +90,12 @@ tt=irf_time( cef_date(tt),'datenum2epoch');
 % make variable cell array if it is string
 if ischar(varName)
 	varName = {varName};
+	returnOutputAsCellArray = false;
+elseif iscellstr(varName)
+	returnOutputAsCellArray = true;
+else
+	irf.log('critical','varName incorrect format');
+	error('varName incorrect format');
 end
 if iscell(varName)
 	out = cell(size(varName));
@@ -99,7 +111,7 @@ end
 
 
 % define output
-if numel(out) == 1,
+if numel(out) == 1 && ~returnOutputAsCellArray,
 	out = out{1}; % return only matrix if one variable requested
 end
 
