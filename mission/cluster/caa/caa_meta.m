@@ -155,7 +155,8 @@ end
 if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
 	varName=varargin{1};
 	dd=regexp(varName, '__', 'split');
-	dd{2}(strfind(dd{2},'-')) = '_';	
+	dd{2}(strfind(dd{2},'-')) = '_';
+	if numel(varName)>2 && strcmp(varName(1:2),'x3'), varName(1)=[];end
 	dd{2} = upper(dd{2});
 	metaData = getfield(load(indexFile,dd{2}),dd{2});
 	par=metaData.PARAMETERS.PARAMETER;
@@ -171,6 +172,7 @@ else % dataset
 	iEqual    = false(numel(datasetNames),1);
 	for jInp=1:numel(varargin)
 		filter=varargin{jInp};
+		filter(strfind(filter,'-')) = '_';
 		if ischar(filter)
 			iFind=cellfun(@(x) any(strfind(lower(x),lower(filter))),datasetNames);
 			iSelected=iSelected & iFind(:);
