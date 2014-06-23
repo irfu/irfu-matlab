@@ -22,9 +22,11 @@ if nargin==1, coord_sys='GSE'; end
 
 if t(2) > 1e8,
 	flag='v_from_t';
+	tint = [min(t) max(t)];
 else flag='dt_from_v';
 	v=t;
 	t=v(1);
+	tint = [t-61 t+61];
 end
 
 if ~is_R_ok && exist('./mR.mat','file'),
@@ -32,10 +34,15 @@ if ~is_R_ok && exist('./mR.mat','file'),
 	c_eval('R.R?=R?;');
 	c_eval('R.V?=V?;');
 end
-if ~is_R_ok && exist('CAA/C1_CP_AUX_POSGSE_1M','dir')==7, % checks if exist CAA data (STUPID SOLUTION)
+if ~is_R_ok
 	irf.log('warning','Trying to read CAA files C?_CP_AUX_POSGSE_1M...')
-	c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
-	c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+	var = {'sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C2_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C3_CP_AUX_POSGSE_1M','sc_r_xyz_gse__C4_CP_AUX_POSGSE_1M',...
+		'sc_v_xyz_gse__C1_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C2_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C3_CP_AUX_POSGSE_1M','sc_v_xyz_gse__C4_CP_AUX_POSGSE_1M'};
+	ttt=c_caa_var_get(var,'mat','tint',tint);
+	R.R1 = ttt{1}; R.R2 = ttt{2}; R.R3 = ttt{3}; R.R4 = ttt{4}; 
+	R.V1 = ttt{5}; R.V2 = ttt{6}; R.V3 = ttt{7}; R.V4 = ttt{8}; 
+%	c_eval('R.R?=c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
+%	c_eval('R.V?=c_caa_var_get(''sc_v_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');');
 end
 if ~is_R_ok && exist('CAA/CL_SP_AUX','dir')==7,
 	irf.log('warning','Trying to read CAA files CL_CP_AUX ...')
