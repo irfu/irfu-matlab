@@ -465,6 +465,11 @@ end
 if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list files
 	if any(strfind(dataset,'inventory')) && ~specifiedTimeInterval
 		ttTemp = caa_download(['list:' filter],dataSource);
+		if isempty(ttTemp) % no dataset found
+			errStr = ['Dataset ' filter ' does not exist!'];
+			irf.log('critical',errStr);
+			error('caa_download:dataset:doesnotexist',errStr);
+		end
 		if isempty(ttTemp.TimeInterval), % no time intervals to download
 			irf.log('warning','No datasets to download');
 			downloadStatus = ttTemp;
