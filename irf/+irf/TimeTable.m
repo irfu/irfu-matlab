@@ -53,7 +53,7 @@ classdef TimeTable
 			elseif numel(varargin)==0,
 				return;
 			else
-				irf_log('fcal','max 1 argument supported');
+				irf.log('critical','max 1 argument supported');
 				return
 			end
 			if ischar(source) && size(source,1)==1
@@ -123,7 +123,7 @@ classdef TimeTable
 				TT.Comment		= cell(size(source,1),1);
 				TT.Description	= cell(size(source,1),1);
 			else
-				irf_log('fcal','Unknown argument.');
+				irf.log('critical','Unknown argument.');
 				return;
 			end
 		end
@@ -140,11 +140,11 @@ classdef TimeTable
 			%				located on the same line)
 			if nargin<4, comment='';end
 			if nargin<3, description={};end
-			if nargin<2, irf_log('fcal','not enough arguments');return;end
+			if nargin<2, irf.log('critical','not enough arguments');return;end
 			nElement=size(TT.TimeInterval,1)+1;
 			if isnumeric(tint),
 				if numel(tint)==0,
-					irf_log('fcal','Time interval not specified. Returning.');
+					irf.log('critical','Time interval not specified. Returning.');
 					return;
 				elseif numel(tint)==1, % only time instant give, end the same as start time
 					tint(2)=tint(1);
@@ -211,7 +211,7 @@ classdef TimeTable
 			if ischar(filename) % read from file
 				fid = fopen(filename,'w');
 				if fid == -1,
-					irf_log('fcal',['Cannot open file:' filename]);
+					irf.log('critical',['Cannot open file:' filename]);
 					ok=0;
 					return;
 				end
@@ -231,11 +231,11 @@ classdef TimeTable
             end
             TTout=[];
 			if ~isnumeric(index)
-				irf_log('fcal','Index not number');
+				irf.log('critical','Index not number');
 				return;
 			end
 			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
-				irf_log('fcal','Index out of range');
+				irf.log('critical','Index out of range');
 				return;
 			end
 			TTout				           = TTin;
@@ -260,15 +260,15 @@ classdef TimeTable
 				end
 			end
 			if ~isnumeric(index)
-				irf_log('fcal','Index not number');
+				irf.log('critical','Index not number');
 				return;
 			elseif isempty(index)
 				TTout=irf.TimeTable;
-				irf_log('fcal','index empty, returning empty timetable');
+				irf.log('critical','index empty, returning empty timetable');
 				return;
 			end
 			if max(index(:)) > numel(TTin) || min(index(:)) < 1,
-				irf_log('fcal','Index out of range');
+				irf.log('critical','Index out of range');
 				return;
 			end
 			TTout				= irf.TimeTable(TTin.TimeInterval(index(:),:));
@@ -345,7 +345,7 @@ classdef TimeTable
 				if endOfTT2, break; end % if end of 2nd time series stop
 			end
 			if iInterval == 0, 
-				irf_log('fcal','Warning: there were no intersecting intervals, returning empty time table.');
+				irf.log('warning','There were no intersecting intervals, returning empty time table.');
 			end
 			tout(iInterval+1:end,:)=[];
 			TT = irf.TimeTable;
