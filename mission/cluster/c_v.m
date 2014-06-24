@@ -137,8 +137,8 @@ end
 				answer=false;
 				return;
 			else
-				tint=[R.(strSc)(1,1) R.(strSc)(end,1)];
-				if (tint(1)>min(t)) || (tint(2)<max(t)),
+				tintR=[R.(strSc)(1,1) R.(strSc)(end,1)];
+				if (tintR(1)>min(t)) || (tintR(2)<max(t)),
 					answer=false;
 					return;
 				end
