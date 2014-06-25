@@ -165,7 +165,9 @@ end
       case 'pc12'
         %DT2 = 0.5; % time resolution
         datasetID = 'ULF_PC12';
-        numberOfFreq = 21;
+        if ischar(cl_id) && cl_id(1)=='g', numberOfFreq = 12; % GOES
+        else numberOfFreq = 21; % Cluster and THEMIS
+        end
       case 'pc35';
         %DT2 = 30; % time resolution
         datasetID = 'ULF_PC35';

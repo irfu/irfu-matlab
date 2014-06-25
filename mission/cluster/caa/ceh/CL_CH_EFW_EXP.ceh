@@ -15,14 +15,11 @@ END_META       =   EXPERIMENT_DESCRIPTION
 !
 START_META     =   INVESTIGATOR_COORDINATES
    ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
-   ENTRY       =   "Georg Gustafsson>former PI(-2000)>Georg.Gustafsson@irfu.se"
 END_META       =   INVESTIGATOR_COORDINATES
 !
 ! List of standard reference documents for the experiment
 !
 START_META     =   EXPERIMENT_REFERENCES
-   ENTRY       =   "*CL_CD_EFW_CAAICD"
-   ENTRY       =   "*CL_CD_EFW_USERMAN"
    ENTRY       =   "http://www.cluster.irfu.se/"
 END_META       =   EXPERIMENT_REFERENCES
 !
@@ -31,9 +28,10 @@ END_META       =   EXPERIMENT_REFERENCES
 START_META     =   EXPERIMENT_KEY_PERSONNEL
    ENTRY       =   "Mats Andre>PI>Mats.Andre@irfu.se"
    ENTRY       =   "Yuri Khotyaintsev>Archive manager>Yuri.Khotyaintsev@irfu.se"
-   ENTRY       =   "Chris Cully>Archive scientist>Chris.Cully@irfu.se"
    ENTRY       =   "Anders Eriksson>Operations manager>Anders.Eriksson@irfu.se"
-   ENTRY       =   "Per-Arne Lindqvist>former archive manager>Per-Arne.Lindqvist@alfvenlab.kth.se"
+   ENTRY       =   "Georg Gustafsson>former PI(-2000)>Georg.Gustafsson@irfu.se"
+   ENTRY       =   "Chris Cully>Former archive scientist (2009-2012)>Chris.Cully@irfu.se"
+   ENTRY       =   "Per-Arne Lindqvist>Former archive manager (-2009)>Per-Arne.Lindqvist@alfvenlab.kth.se"
 END_META       =   EXPERIMENT_KEY_PERSONNEL
 !
 ! Miscellaneous information concerning the experiment
