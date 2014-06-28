@@ -40,9 +40,9 @@ function [Fpe_out,Fce,Fuh,Fpp,Fcp,FpO,FcO,Va,Vte,Le] = irf_plasma_calc(B_inp,n_i
 %  O+ veloc.       [km/s] = 3.46 sqrt(T)
 %  O+ gyrorad.       [km] = 578 sqrt(T) / B
 %  lower hybr. f.    [Hz] = sqrt(0.427 B^2 /(1+ 9.7e-6 (B)^2)+2.3e-4 n);
-%  Alfven vel. V_A[km/s]  = 22 B /sqrt(n)
-%  Poynting fl. S[uW/m2]  = 0.8 E B
-%  Plasma beta = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2
+%  Alfven veloc.   [km/s] = 22 B /sqrt(n)
+%  Poynting flux  [uW/m2] = 0.8 E B
+%  Plasma beta            = 0.4 n T / B^2 = ([gyroradius]/[inertial length])^2
 %  Magnetic pressure[nPa] = (B/50)^2
 %  E_corrotation  [mV/m]  = 0.6e-4 R[RE] B
 
@@ -168,6 +168,8 @@ Rop = Mp*c./(e*B_SI).*sqrt(gamma_p.^2-1); % m, relativistically correct
 RoO = Mp*16*c./(e*B_SI).*sqrt(gamma_O.^2-1); % m, relativistically correct
 Ros = Vts./Fcp/2/pi; % m
 
+magneticPressure = B_SI.^2/2/Units.mu0;
+
 % Collision stuff
 Fcol = (n*e^4) ./ (16*pi*epso^2*Me^2*Vte.^3);	% oollision frequency e-/ions
 eta = (pi*e^2*sqrt(Me)) ./ ...
@@ -244,16 +246,18 @@ format_output(l(1,:),ls,'m');
 % etc
 
 fprintf('\n\nOther parameters\n');
-fprintf('\nN_deb  = %7.2e  / number of particle in Debye sphere',Nd);
-fprintf('\n  eta  = %7.2e Ohm m  / Spitzer resistivity',eta);
+fprintf('\nN_deb  = %7.2e        %% number of particle in Debye sphere',Nd);
+fprintf('\n  eta  = %7.2e Ohm m  %% Spitzer resistivity',eta);
+fprintf('\n  P_B  = %7.2e nPa    %% Magnetic pressure ',magneticPressure*1e9);
 
 fprintf('\n\nDimensionless parameters\n');
 
 beta  = Vtp.^2./Va.^2;
-fprintf('\n            beta = %1.2e',beta(1));
+fprintf('\n            beta = %1.2e %% H+ beta',beta(1));
 fprintf('\nbeta*sqrt(Mp/Me) = %1.2e',beta(1)*sqrt(Mp_Me));
 fprintf('\n    beta*(Mp/Me) = %1.2e',beta(1)*Mp_Me);
-fprintf('\n         Gamma_e = %1.2e  / 1./sqrt(1-(Vte/c).^2)\n',gamma_e);
+fprintf('\n         Gamma_e = %1.2e %% 1./sqrt(1-(Vte/c).^2)',gamma_e);
+fprintf('\n');
 
 if nargout>0, Fpe_out = Fpe; end
 
