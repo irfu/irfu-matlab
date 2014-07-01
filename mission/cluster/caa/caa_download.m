@@ -842,6 +842,9 @@ end
 					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
 					TT.UserData(numel(textLine{1})-1).dataset = [];
 					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+					for jj = 1:numel(TT.UserData),
+						TT.UserData(jj).number = str2double(textLine{4}{1+jj});
+					end
 					[TT.UserData(:).version]=deal(textLine{5}{2:end});
 				case 'fileinventory'
 					%"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
