@@ -217,15 +217,18 @@ if exist(dataSetDir,'dir'),
 	end
 	dirload(dataSetDir,indexDataSetName);
 	indexDataSet = eval(indexDataSetName);
-	TTindex = irf.TimeTable([indexDataSet.tstart indexDataSet.tend]);
-	lastVersion = 0;
-	for ii = numel(indexDataSet.versionFile):-1:1
-		version = str2num(indexDataSet.versionFile{ii});
-		if version > lastVersion, lastVersion = version; end
-		TTindex.UserData(ii).version  = version;
-		TTindex.UserData(ii).filename = indexDataSet.filename(ii,:);
+	if isempty(indexDataSet)
+		TTindex = [];
+	else
+		TTindex = irf.TimeTable([indexDataSet.tstart indexDataSet.tend]);
+		lastVersion = 0;
+		for ii = numel(indexDataSet.versionFile):-1:1
+			version = str2num(indexDataSet.versionFile{ii});
+			if version > lastVersion, lastVersion = version; end
+			TTindex.UserData(ii).version  = version;
+			TTindex.UserData(ii).filename = indexDataSet.filename(ii,:);
+		end
 	end
-	
 	% define request
 	if numel(TTindex)>0
 		irf.log('warning','Previous data exist, merging...');
