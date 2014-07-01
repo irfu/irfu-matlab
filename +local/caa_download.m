@@ -63,6 +63,7 @@ streamData				= false; % download cdf files asynchronously
 indexStart				= 1;
 inputParamCaaDownload   = {};
 doSimulateDownload      = false; % takes care of flag 'simulate'
+doDailyFileDownload     = false; % default is to go by inventory time
 
 %% Send email when done
 % use datastore info in local to send email when finnished
@@ -113,16 +114,9 @@ args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
-	irf.log('warning','Checking list of available times');
-	TT=caa_download(['inventory:' dataSet]);
-	if numel(TT)==0,
-		disp('Dataset does not exist or there are no data');
-		return;
-	end
-	TTRequest=TT;
-	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
+	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 	dataSet=dataset_mat_name(TTRequest.UserData(1).dataset);
 else
 	irf.log('critical','See syntax: help local.c_caa_download');
@@ -138,6 +132,10 @@ while ~isempty(args)
 	elseif ischar(args{1}) && strcmpi(args{1},'simulate')
 		irf.log('notice','Only simulate the download');
 		doSimulateDownload = true;
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'daily')
+		irf.log('notice','Download as daily files');
+		doDailyFileDownload = true;
 		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
 		if numel(args) > 1 && isnumeric(args{2})
@@ -178,6 +176,33 @@ else
 	return;
 end
 
+%% Check inventory when input is dataset name
+%  check also if daily files are downloaded
+if isInputDatasetName
+	irf.log('warning','Checking list of available times');
+	if doDailyFileDownload,
+		TT=caa_download(['list:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2datenum');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2datenum');
+		tminDatenum = floor(tminDatenum);
+		tmaxDatenum = floor(tmaxDatenum) + 1;
+		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
+		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
+		TTRequest   = irf.TimeTable([tStart tEnd]);
+	else
+		TT=caa_download(['inventory:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		TTRequest=TT;
+	end
+	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
+end
 %% check which time intervals are already downloaded, remove obsolete ones
 requestListVarName=['TT_' dataSet ];
 dataSetDir = [dataDir filesep dataSet];
