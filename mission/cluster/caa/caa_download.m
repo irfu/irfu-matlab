@@ -344,9 +344,9 @@ else
 	urlQuery = Caa.urlQuery;
 end
 if specifiedIngestedSince
-	YYYY  = str2num(ingestedSinceYYYYMMDD(1:4));
-	MM    = str2num(ingestedSinceYYYYMMDD(5:6));
-	DD    = str2num(ingestedSinceYYYYMMDD(7:8));
+	YYYY  = str2double(ingestedSinceYYYYMMDD(1:4));
+	MM    = str2double(ingestedSinceYYYYMMDD(5:6));
+	DD    = str2double(ingestedSinceYYYYMMDD(7:8));
 	tIngestedSince = irf_time([YYYY MM DD 0 0 0]);
 	if downloadFromCSA
 		urlIngestedSince = ...
@@ -880,9 +880,9 @@ end
 					startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
 					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
 					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-					c=num2cell(str2num(strvcat(textLine(:).number)));
+					c=num2cell(str2num(char(textLine(:).number))); %#ok<ST2NM>
 					[TT.UserData(:).number]=deal(c{:});
-					c=num2cell(str2num(strvcat(textLine(:).version)));
+					c=num2cell(str2num(char(textLine(:).version))); %#ok<ST2NM>
 					[TT.UserData(:).version]=deal(c{:});
 				case 'list'
 					textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
