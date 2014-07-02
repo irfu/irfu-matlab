@@ -17,6 +17,9 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'daily') download daily files
+%   LOCAL.CAA_DOWNLOAD(dataset,'monthly') download monthly files
+%
 %   LOCAL.CAA_DOWNLOAD(dataset,'DataDirectory',dataDir) use dataDir as
 %   location for data (default dataDir is '/data/caalocal')
 %
@@ -64,6 +67,7 @@ indexStart				= 1;
 inputParamCaaDownload   = {};
 doSimulateDownload      = false; % takes care of flag 'simulate'
 doDailyFileDownload     = false; % default is to go by inventory time
+doMonthlyFileDownload   = false; % default is to go by inventory time
 
 %% Send email when done
 % use datastore info in local to send email when finnished
@@ -137,6 +141,10 @@ while ~isempty(args)
 		irf.log('notice','Download as daily files');
 		doDailyFileDownload = true;
 		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'monthly')
+		irf.log('notice','Download as monthly files');
+		doMonthlyFileDownload = true;
+		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
 		if numel(args) > 1 && isnumeric(args{2})
 			indexStart = args{2};
@@ -180,7 +188,32 @@ end
 %  check also if daily files are downloaded
 if isInputDatasetName
 	irf.log('warning','Checking list of available times');
-	if doDailyFileDownload,
+	if doMonthlyFileDownload,
+		TT=caa_download(['list:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2vector');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2vector');
+		startYear   = tminDatenum(1);
+		startMonth  = tminDatenum(2);
+		endYear     = tmaxDatenum(1);
+		endMonth    = tmaxDatenum(2)+1;
+		if endMonth == 13,
+			endYear  = endYear + 1;
+			endMonth = 1;
+		end
+		tVec = zeros((1 + endYear - startYear)*12,1);
+		for iYear = startYear:endYear,
+			for iMonth = 1:12,
+				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector2epoch');
+			end
+		end
+		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
+		tEnd        = tVec(startMonth+1:end-(12-endMonth)  );
+		TTRequest   = irf.TimeTable([tStart tEnd]);
+	elseif doDailyFileDownload,
 		TT=caa_download(['list:' dataSet]);
 		if numel(TT)==0,
 			disp('Dataset does not exist or there are no data');
