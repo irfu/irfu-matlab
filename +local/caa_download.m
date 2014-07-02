@@ -237,9 +237,7 @@ if isInputDatasetName
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 end
 %% check which time intervals are already downloaded, remove obsolete ones
-requestListVarName=['TT_' dataSet ];
 dataSetDir = [dataDir filesep dataSet];
-requestListVarFile=[dataSetDir filesep requestListVarName '.mat'];
 indNewIntervals = true( numel(TTRequest),1); % default
 if exist(dataSetDir,'dir'),
 	% read index of already present dataset files
@@ -256,7 +254,7 @@ if exist(dataSetDir,'dir'),
 		TTindex = irf.TimeTable([indexDataSet.tstart indexDataSet.tend]);
 		lastVersion = 0;
 		for ii = numel(indexDataSet.versionFile):-1:1
-			version = str2num(indexDataSet.versionFile{ii});
+			version = str2double(indexDataSet.versionFile{ii});
 			if version > lastVersion, lastVersion = version; end
 			TTindex.UserData(ii).version  = version;
 			TTindex.UserData(ii).filename = indexDataSet.filename(ii,:);
@@ -271,7 +269,7 @@ if exist(dataSetDir,'dir'),
 		TTfileList=caa_download(['fileinventory:' dataSet]);
 		indNewFiles = false(1,numel(TTfileList));
 		for j = 1:numel(indNewFiles),
-			if str2num(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
+			if str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
 				indNewFiles(j) = true;
 			end
 		end
@@ -283,8 +281,6 @@ if exist(dataSetDir,'dir'),
 		indNewIntervals(ii) = true;
 		
 		% check which old intervals to be removed/updated
-		indOldObsoleteIntervals = true(numel(TTindex),1);
-		
 		tintInd = TTindex.TimeInterval;
 		tintReq = TTRequest.TimeInterval;
 		indOldObsoleteIntervals = false(numel(TTindex),1);
