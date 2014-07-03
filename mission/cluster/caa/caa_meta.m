@@ -153,14 +153,14 @@ end
 
 %% Read metadata
 if 	nargin==1 && ischar(varargin{1}) && any(strfind(varargin{1},'__')) % CAA variable
-	varName=varargin{1};
+	varName=strrep(varargin{1},'-','_');
 	dd=regexp(varName, '__', 'split');
-	dd{2}(strfind(dd{2},'-')) = '_';
+%	dd{2}=strrep(dd{2},'-','_');
 	if numel(varName)>2 && strcmp(varName(1:2),'x3'), varName(1)=[];end
 	dd{2} = upper(dd{2});
 	metaData = getfield(load(indexFile,dd{2}),dd{2});
 	par=metaData.PARAMETERS.PARAMETER;
-	iVar= cellfun(@(x) strcmp(x.PARAMETER_ID.Text,varName),par);
+	iVar= cellfun(@(x) strcmp(strrep(x.PARAMETER_ID.Text,'-','_'),varName),par);
 	parVar=par{iVar};
 	display_fields(parVar);
 	if nargout==1, out=parVar;end
