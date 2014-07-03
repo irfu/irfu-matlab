@@ -65,7 +65,7 @@ return;
 			end
 		end
 		if doSubstituteUnderscoreToMinus
-			datasetName(strfind(dName,'-'))='_'; % substitute '-' with '_'
+			dName(strfind(dName,'-'))='_'; % substitute '-' with '_'
 		end
 	end
 end

@@ -158,7 +158,7 @@ end
 
 isDataReturned = false;
 
-[datasetNameList,varShortNameList]=caa_get_dataset_name(varNameList);
+[datasetNameList,varShortNameList]=caa_get_dataset_name(varNameList,'_');
 [datasetNameUniqueList,~,indDatasetUniqueToName] ...
 	= unique(datasetNameList);
 for iDataset = 1:numel(datasetNameUniqueList)
