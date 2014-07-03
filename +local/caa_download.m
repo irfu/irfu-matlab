@@ -17,6 +17,9 @@ function out=caa_download(varargin)
 %
 %   LOCAL.CAA_DOWNLOAD(dataset,'stream') stream the data
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'daily') download daily files
+%   LOCAL.CAA_DOWNLOAD(dataset,'monthly') download monthly files
+%
 %   LOCAL.CAA_DOWNLOAD(dataset,'DataDirectory',dataDir) use dataDir as
 %   location for data (default dataDir is '/data/caalocal')
 %
@@ -63,6 +66,8 @@ streamData				= false; % download cdf files asynchronously
 indexStart				= 1;
 inputParamCaaDownload   = {};
 doSimulateDownload      = false; % takes care of flag 'simulate'
+doDailyFileDownload     = false; % default is to go by inventory time
+doMonthlyFileDownload   = false; % default is to go by inventory time
 
 %% Send email when done
 % use datastore info in local to send email when finnished
@@ -113,16 +118,9 @@ args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
 	isInputDatasetName = true;
-	irf.log('warning','Checking list of available times');
-	TT=caa_download(['inventory:' dataSet]);
-	if numel(TT)==0,
-		disp('Dataset does not exist or there are no data');
-		return;
-	end
-	TTRequest=TT;
-	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
+	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 	dataSet=dataset_mat_name(TTRequest.UserData(1).dataset);
 else
 	irf.log('critical','See syntax: help local.c_caa_download');
@@ -138,6 +136,14 @@ while ~isempty(args)
 	elseif ischar(args{1}) && strcmpi(args{1},'simulate')
 		irf.log('notice','Only simulate the download');
 		doSimulateDownload = true;
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'daily')
+		irf.log('notice','Download as daily files');
+		doDailyFileDownload = true;
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'monthly')
+		irf.log('notice','Download as monthly files');
+		doMonthlyFileDownload = true;
 		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'indexstart')
 		if numel(args) > 1 && isnumeric(args{2})
@@ -178,10 +184,60 @@ else
 	return;
 end
 
+%% Check inventory when input is dataset name
+%  check also if daily files are downloaded
+if isInputDatasetName
+	irf.log('warning','Checking list of available times');
+	if doMonthlyFileDownload,
+		TT=caa_download(['list:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2vector');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2vector');
+		startYear   = tminDatenum(1);
+		startMonth  = tminDatenum(2);
+		endYear     = tmaxDatenum(1);
+		endMonth    = tmaxDatenum(2)+1;
+		if endMonth == 13,
+			endYear  = endYear + 1;
+			endMonth = 1;
+		end
+		tVec = zeros((1 + endYear - startYear)*12,1);
+		for iYear = startYear:endYear,
+			for iMonth = 1:12,
+				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector2epoch');
+			end
+		end
+		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
+		tEnd        = tVec(startMonth+1:end-(12-endMonth)  );
+		TTRequest   = irf.TimeTable([tStart tEnd]);
+	elseif doDailyFileDownload,
+		TT=caa_download(['list:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2datenum');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2datenum');
+		tminDatenum = floor(tminDatenum);
+		tmaxDatenum = floor(tmaxDatenum) + 1;
+		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
+		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
+		TTRequest   = irf.TimeTable([tStart tEnd]);
+	else
+		TT=caa_download(['inventory:' dataSet]);
+		if numel(TT)==0,
+			disp('Dataset does not exist or there are no data');
+			return;
+		end
+		TTRequest=TT;
+	end
+	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
+end
 %% check which time intervals are already downloaded, remove obsolete ones
-requestListVarName=['TT_' dataSet ];
 dataSetDir = [dataDir filesep dataSet];
-requestListVarFile=[dataSetDir filesep requestListVarName '.mat'];
 indNewIntervals = true( numel(TTRequest),1); % default
 if exist(dataSetDir,'dir'),
 	% read index of already present dataset files
@@ -192,15 +248,18 @@ if exist(dataSetDir,'dir'),
 	end
 	dirload(dataSetDir,indexDataSetName);
 	indexDataSet = eval(indexDataSetName);
-	TTindex = irf.TimeTable([indexDataSet.tstart indexDataSet.tend]);
-	lastVersion = 0;
-	for ii = numel(indexDataSet.versionFile):-1:1
-		version = str2num(indexDataSet.versionFile{ii});
-		if version > lastVersion, lastVersion = version; end
-		TTindex.UserData(ii).version  = version;
-		TTindex.UserData(ii).filename = indexDataSet.filename(ii,:);
+	if isempty(indexDataSet)
+		TTindex = [];
+	else
+		TTindex = irf.TimeTable([indexDataSet.tstart indexDataSet.tend]);
+		lastVersion = 0;
+		for ii = numel(indexDataSet.versionFile):-1:1
+			version = str2double(indexDataSet.versionFile{ii});
+			if version > lastVersion, lastVersion = version; end
+			TTindex.UserData(ii).version  = version;
+			TTindex.UserData(ii).filename = indexDataSet.filename(ii,:);
+		end
 	end
-	
 	% define request
 	if numel(TTindex)>0
 		irf.log('warning','Previous data exist, merging...');
@@ -210,7 +269,7 @@ if exist(dataSetDir,'dir'),
 		TTfileList=caa_download(['fileinventory:' dataSet]);
 		indNewFiles = false(1,numel(TTfileList));
 		for j = 1:numel(indNewFiles),
-			if str2num(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
+			if str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
 				indNewFiles(j) = true;
 			end
 		end
@@ -222,8 +281,6 @@ if exist(dataSetDir,'dir'),
 		indNewIntervals(ii) = true;
 		
 		% check which old intervals to be removed/updated
-		indOldObsoleteIntervals = true(numel(TTindex),1);
-		
 		tintInd = TTindex.TimeInterval;
 		tintReq = TTRequest.TimeInterval;
 		indOldObsoleteIntervals = false(numel(TTindex),1);

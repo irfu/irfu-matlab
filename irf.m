@@ -36,6 +36,7 @@ logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 
 %% Input check
 if nargin == 0,
+	setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix http://goo.gl/Sq1it7
 	irf('check_path');
 	irf('check');
 	irf('ceflib');
