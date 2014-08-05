@@ -35,6 +35,9 @@ if strcmpi(param, 'init')
   end
   DataInMemory = [];
   DataInMemory.scId = dataObj;
+  DataInMemory.dce = [];
+  DataInMemory.dcv = [];
+  DataInMemory.hk_101 = [];
   return
 end
 if ~isfield(DataInMemory, 'scId')
@@ -72,9 +75,12 @@ if(nargin==2)
     switch(param)
       case('dce')
         init_param()
-        DataInMemory.(param).p12 = sensorData(:,1);
-        DataInMemory.(param).p34 = sensorData(:,2);
-        DataInMemory.(param).p56 = sensorData(:,3);
+        DataInMemory.(param).e12 = sensorData(:,1);
+        DataInMemory.(param).e34 = sensorData(:,2);
+        DataInMemory.(param).e56 = sensorData(:,3);
+        if isProbeDisabled('e12'), DataInMemory.(param).e12 = DataInMemory.(param).e12*NaN; end
+        if isProbeDisabled('e34'), DataInMemory.(param).e34 = DataInMemory.(param).e34*NaN; end
+        if isProbeDisabled('e56'), DataInMemory.(param).e56 = DataInMemory.(param).e56*NaN; end
       case('dcv')
         init_param()
         DataInMemory.(param).p1 = sensorData(:,1);
@@ -83,6 +89,35 @@ if(nargin==2)
         DataInMemory.(param).p4 = sensorData(:,4);
         DataInMemory.(param).p5 = sensorData(:,5);
         DataInMemory.(param).p6 = sensorData(:,6);
+        
+        p1_off = isProbeDisabled('p1');
+        p2_off = isProbeDisabled('p2');
+        p3_off = isProbeDisabled('p3');
+        p4_off = isProbeDisabled('p4');
+        p5_off = isProbeDisabled('p5');
+        p6_off = isProbeDisabled('p6');
+        
+        if p1_off && p2_off
+          DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
+          DataInMemory.(param).p2 = DataInMemory.(param).p1;
+        elseif p1_off
+          if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
+            % Compute 
+            % TODO:  implement real computation instead of this
+          else
+            DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
+          end
+        elseif p2_off
+          if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
+            % Compute 
+            % TODO implement real computation instead of this
+          else
+            DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
+          end
+        end
+        
+        % TODO: implement similar for p3-6
+        
       case('hk_101')
         varPrefix = sprintf('mms%d_101_',DataInMemory.scId);
         DataInMemory.(param) = [];
@@ -171,6 +206,16 @@ end
     DataInMemory.(param).time = x.DEPEND_O;
     check_monoton_timeincrease(DataInMemory.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
+  end
+
+  function res = isProbeDisabled(probe)
+    flag = dataObj.data.([varPrefix probe '_enable']).data;
+    if ~all(diff(flag))==0
+      err_str = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
+      irf.log('critical', err_str);
+      error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+    end
+    res = flag(1);
   end
 end
 

@@ -132,9 +132,9 @@ switch(HeaderInfo.calledBy)
         %% FIXME: DUMMY DATA FOR NOW.
         % For now store data temporarly
         epochTT = DataInMemory.dce.time;
-        data1(:,1) = DataInMemory.dce.p12;
-        data1(:,2) = DataInMemory.dce.p34;
-        data1(:,3) = DataInMemory.dce.p56;
+        data1(:,1) = DataInMemory.dce.e12;
+        data1(:,2) = DataInMemory.dce.e34;
+        data1(:,3) = DataInMemory.dce.e56;
         %%%
         irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:ql Ready to',...
             ' write data to temporary file in DROPBOX_ROOT/', ...
