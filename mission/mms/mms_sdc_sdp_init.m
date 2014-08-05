@@ -90,8 +90,9 @@ if( str2double(scNumber)>1 || str2double(scNumber)<4 )
     irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, 'mms', ...
         scNumber, filesep, 'sdp', filesep, datestr(now,'yyyymmdd'),...
         '_IRFU.log']);
-    % Set log level to debug initially.
-    irf.log('debug');
+    mms_sdc_sdp_datamanager('init',str2double(scNumber))
+    % Set log level
+    irf.log('notice');
 else
     irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, ...
         datestr(now,'yyyymmddTHHMMSS'), '_IRFU.log']);

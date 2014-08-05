@@ -34,7 +34,7 @@ narginchk(4,4);
 
 init_matlab_path()
 
-HK_SunpulseFile = '';
+HK_101_File = '';
 DCV_File = '';
 DCE_File = '';
 
@@ -56,7 +56,7 @@ irf.log('notice', ['MMS_SDC_SDP_PROC process name: ', procName]);
 for i=1:nargin-1
     if isempty(varargin{i}), continue, end
     
-    % Go through each input argument and find if it is a HK_SunpulseFile,
+    % Go through each input argument and find if it is a HK_101_File,
     % DCV_File or DCE_File.
     if ~ischar(varargin{i})
       error('Matlab:MMS_SDC_SDP_PROC:Input', ...
@@ -91,16 +91,16 @@ for i=1:nargin-1
     end
 
     if regexpi(fileIn, '_101_') % 101, mmsX_fields_hk_l1b_101_20150410_v0.0.1.cdf
-        if ~isempty(HK_SunpulseFile)
-            err_str = ['Received multiple HK_Sunpulse files in input (',...
-                HK_SunpulseFile, ', ', varargin{i} ')'];
+        if ~isempty(HK_101_File)
+            err_str = ['Received multiple HK_101 files in input (',...
+                HK_101_File, ', ', varargin{i} ')'];
             irf.log('critical', err_str);
             error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
         end
-        % It is the HK_Sunpulse file
-        HK_SunpulseFile = varargin{i};
-        irf.log('notice', ['HK_Sunpulse file identified as: ', ...
-            HK_SunpulseFile]);
+        % It is the HK_101 file
+        HK_101_File = varargin{i};
+        irf.log('notice', ['HK_101 file identified as: ', ...
+            HK_101_File]);
         
     elseif regexpi(fileIn, '_dcv_') %DCV
         if ~isempty(DCV_File)
@@ -132,7 +132,7 @@ for i=1:nargin-1
 end
 
 % All input arguments read. All files required identified correct?
-if any(isempty([HK_SunpulseFile, DCE_File, DCV_File]))
+if any(isempty([HK_101_File, DCE_File, DCV_File]))
     irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
     for i=1:nargin-1
         irf.log('warning',...
@@ -140,8 +140,8 @@ if any(isempty([HK_SunpulseFile, DCE_File, DCV_File]))
     end
 end
 
-if isempty(HK_SunpulseFile)
-    errMsg = 'MMS_SDC_SDP_PROC missing required input: HK_SunpulseFile';
+if isempty(HK_101_File)
+    errMsg = 'MMS_SDC_SDP_PROC missing required input: HK_101_File';
     irf.log('critical', errMsg);
     error('Matlab:MMS_SDC_SDP_PROC:Input', errMsg);
 end
@@ -158,9 +158,9 @@ switch(procName)
         irf.log('debug', ['MMS_SDC_SDP_PROC input DCV file: ', DCV_File]);
         dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
 
-        irf.log('debug',['MMS_SDC_SDP_PROC input HK_Sunpulse file: ',...
-            HK_SunpulseFile]);
-        mms_sdc_sdp_cdf_in_process(HK_SunpulseFile, 'sci', 'sunpulse');
+        irf.log('debug',['MMS_SDC_SDP_PROC input HK_101 file: ',...
+            HK_101_File]);
+        mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
 
         
         % Set bitmask
@@ -190,12 +190,12 @@ switch(procName)
 
         % Check if all required and needed files are sent as input and have
         % been identified properly.
-        if( all( [~isempty(DCE_File), ~isempty(HK_SunpulseFile), ...
+        if( all( [~isempty(DCE_File), ~isempty(HK_101_File), ...
                 isempty(DCV_File)] ) )
             
             % Log message so we know we are missing one input.
             irf.log('warning', ...
-                'MMS_SDC_SDP_PROC SITL received DCE and HK_Sunpulse but no DCV file argument. Can perform some but not all processing.');
+                'MMS_SDC_SDP_PROC SITL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
 
             irf.log('debug',...
                 ['MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_in_process on input file: ',...
@@ -206,11 +206,11 @@ switch(procName)
             % Then the sunpulse file
             irf.log('debug', ...
                 ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_SunpulseFile]);
-            mms_sdc_sdp_cdf_in_process(HK_SunpulseFile, 'sci', 'sunpulse');
+                HK_101_File]);
+            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
             
             irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            thephase = mms_sdc_sdp_datamanager('phase');
+            dcephase = mms_sdc_sdp_datamanager('dcephase');
             
             % Set bitmask
             bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'));
@@ -222,11 +222,11 @@ switch(procName)
                 'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
             filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), HeaderInfo);
 
-        elseif( all( [~isempty(HK_SunpulseFile), ...
+        elseif( all( [~isempty(HK_101_File), ...
                 ~isempty(DCE_File), ~isempty(DCV_File)] ) )
             
             % Log message so we know we got both.
-            irf.log('notice', 'MMS_SDC_SDP_PROC SITL received all expected input arguments, DCE, DCV and HK_Sunpulse file arguments. Can perform full processing.');
+            irf.log('notice', 'MMS_SDC_SDP_PROC SITL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
 
             % First get dce data
             irf.log('debug', ...
@@ -243,10 +243,10 @@ switch(procName)
             % Then the sunpulse file
             irf.log('debug', ...
                 ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_SunpulseFile]);
-            mms_sdc_sdp_cdf_in_process(HK_SunpulseFile, 'sci', 'sunpulse');
+                HK_101_File]);
+            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
             irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            thephase = mms_sdc_sdp_datamanager('phase');
+            dcephase = mms_sdc_sdp_datamanager('dcephase');
             
             % Set bitmask for overlap or not
             bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'), mms_sdc_sdp_datamanager('dcvtime'));
@@ -265,10 +265,10 @@ switch(procName)
         else
             
             irf.log('critical',...
-                'MMS_SDC_SDP_PROC SITL received some unclear input arguments. DCE and HK_Sunpulse CDF files are required, DCV needed for some but not all processing.');
+                'MMS_SDC_SDP_PROC SITL received some unclear input arguments. DCE and HK_101 CDF files are required, DCV needed for some but not all processing.');
             irf.log('warning',...
-                ['Variable HK_SunpulseFile exists: ', ...
-                num2str(exist('HK_SunpulseFile','var')), ...
+                ['Variable HK_101_File exists: ', ...
+                num2str(exist('HK_101_File','var')), ...
                 ', variable DCE_File exists: ', ...
                 num2str(exist('DCE_File','var')), ...
                 ', variable DCV_File exists: ', ...
@@ -283,12 +283,12 @@ switch(procName)
 
         % Check if all required and needed files are sent as input and have
         % been identified properly.
-        if( all( [~isempty(DCE_File), ~isempty(HK_SunpulseFile), ...
+        if( all( [~isempty(DCE_File), ~isempty(HK_101_File), ...
                 isempty(DCV_File)] ) )
             
             % Log message so we know we are missing one input.
             irf.log('warning',...
-                'MMS_SDC_SDP_PROC QL received DCE and HK_Sunpulse but no DCV file argument. Can perform some but not all processing.');
+                'MMS_SDC_SDP_PROC QL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
 
             irf.log('debug',...
                 ['MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_in_process on input file: ',...
@@ -297,10 +297,10 @@ switch(procName)
 
             irf.log('debug',...
                 ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_SunpulseFile]);
-            mms_sdc_sdp_cdf_in_process(HK_SunpulseFile, 'sci', 'sunpulse');
+                HK_101_File]);
+            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
             irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            thephase = mms_sdc_sdp_datamanager('phase');
+            dcephase = mms_sdc_sdp_datamanager('dcephase');
             
             % Set bitmask for all times in dcetime.
             bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'));
@@ -317,11 +317,11 @@ switch(procName)
                 HeaderInfo, quality(:,2));
 
             
-        elseif( all( [~isempty(HK_SunpulseFile), ~isempty(DCE_File), ...
+        elseif( all( [~isempty(HK_101_File), ~isempty(DCE_File), ...
                 ~isempty(DCV_File)] ) )
             
             % Log message so we know we got both.
-            irf.log('notice','MMS_SDC_SDP_PROC QL received all expected input arguments, DCE, DCV and HK_Sunpulse file arguments. Can perform full processing.');
+            irf.log('notice','MMS_SDC_SDP_PROC QL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
 
             % First get dce data
             irf.log('debug', ...
@@ -337,10 +337,10 @@ switch(procName)
 
             irf.log('debug', ...
                 ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ', ...
-                HK_SunpulseFile]);
-            mms_sdc_sdp_cdf_in_process(HK_SunpulseFile, 'sci', 'sunpulse');
+                HK_101_File]);
+            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
             irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            thephase = mms_sdc_sdp_datamanager('phase');
+            dcephase = mms_sdc_sdp_datamanager('dcephase');
             
             % Set bitmask for overlap or not.
             bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'), mms_sdc_sdp_datamanager('dcvtime'));
@@ -361,10 +361,10 @@ switch(procName)
         else
             
             irf.log('critical',...
-                'MMS_SDC_SDP_PROC QL received some unclear input arguments. DCE and HK_Sunpulse CDF files are required, DCV needed for some but not all processing.');
+                'MMS_SDC_SDP_PROC QL received some unclear input arguments. DCE and HK_101 CDF files are required, DCV needed for some but not all processing.');
             irf.log('warning',...
-                ['Variable HK_SunpulseFile exists: ', ...
-                num2str(~isempty(HK_SunpulseFile)), ...
+                ['Variable HK_101_File exists: ', ...
+                num2str(~isempty(HK_101_File)), ...
                 ', variable DCE_File exists: ', ...
                 num2str(~isempty(DCE_File)), ...
                 ', variable DCV_File exists: ', ...
