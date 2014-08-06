@@ -41,8 +41,12 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
 
-% Bitmask constant values
-MMS_CONST.Bitmask.OnlyDCE = 1; % Bit 0x00.
+% Bitmask values; 2^(bit_number - 1):
+MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
+MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2
+MMS_CONST.Bitmask.PROBE_SATURATION         =  4;       % Bit 3
+MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  8;       % Bit 4
+MMS_CONST.Bitmask.SWEEP_DATA               =  16;      % Bit 5
 
 % % DC V source bitmasks
 % %for 16 ks/s channels, up to 6 channels at the same time:

@@ -74,28 +74,24 @@ if(nargin==2)
     
     switch(param)
       case('dce')
-        init_param()
-        DataInMemory.(param).e12 = sensorData(:,1);
-        DataInMemory.(param).e34 = sensorData(:,2);
-        DataInMemory.(param).e56 = sensorData(:,3);
-        if isProbeDisabled('e12'), DataInMemory.(param).e12 = DataInMemory.(param).e12*NaN; end
-        if isProbeDisabled('e34'), DataInMemory.(param).e34 = DataInMemory.(param).e34*NaN; end
-        if isProbeDisabled('e56'), DataInMemory.(param).e56 = DataInMemory.(param).e56*NaN; end
-      case('dcv')
-        init_param()
-        DataInMemory.(param).p1 = sensorData(:,1);
-        DataInMemory.(param).p2 = sensorData(:,2);
-        DataInMemory.(param).p3 = sensorData(:,3);
-        DataInMemory.(param).p4 = sensorData(:,4);
-        DataInMemory.(param).p5 = sensorData(:,5);
-        DataInMemory.(param).p6 = sensorData(:,6);
+        sig = {'e12','e34','e56'};
+        init_param(sig)
+        for iSig=1:length(sig)
+          if isProbeDisabled(sig{iSig})
+            DataInMemory.(param).(sig{iSig}).data = DataInMemory.(param).(sig{iSig}).data*NaN;
+          end
+        end
         
-        p1_off = isProbeDisabled('p1');
-        p2_off = isProbeDisabled('p2');
-        p3_off = isProbeDisabled('p3');
-        p4_off = isProbeDisabled('p4');
-        p5_off = isProbeDisabled('p5');
-        p6_off = isProbeDisabled('p6');
+      case('dcv')
+        sig = {'v1','v2','v3','v4','v5','v6'};
+        init_param(sig)
+        
+        p1_off = isProbeDisabled('v1');
+        p2_off = isProbeDisabled('v2');
+        p3_off = isProbeDisabled('v3');
+        p4_off = isProbeDisabled('v4');
+        p5_off = isProbeDisabled('v5');
+        p6_off = isProbeDisabled('v6');
         
         if p1_off && p2_off
           DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
@@ -194,7 +190,7 @@ elseif nargin==1
         end
 end
 
-  function init_param
+  function init_param(fields)
     DataInMemory.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
       err_str = 'MMS_SDC_SDP_DATAMANAGER changing sampling rate not yet implemented.';
@@ -206,6 +202,12 @@ end
     DataInMemory.(param).time = x.DEPEND_O;
     check_monoton_timeincrease(DataInMemory.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
+    if isempty(fields), return, end
+    for iField=1:length(fields)
+      DataInMemory.(param).(fields{iField}) = struct(...
+        'data',sensorData(:,iField), ...
+        'bitmask',zeros(size(sensorData(:,iField))));
+    end
   end
 
   function res = isProbeDisabled(probe)

@@ -52,7 +52,8 @@ if isempty(intersect(procName,{'usc','ql','sitl'}))
 end
 
 irf.log('notice', ['MMS_SDC_SDP_PROC process name: ', procName]);
-    
+
+%% Process inpit
 for i=1:nargin-1
     if isempty(varargin{i}), continue, end
     
@@ -146,7 +147,7 @@ if isempty(HK_101_File)
     error('Matlab:MMS_SDC_SDP_PROC:Input', errMsg);
 end
 
-% Begin actual processing for Usc or QL or SITL.
+%% Processing for Usc or QL or SITL.
 switch(procName)
     case('usc')
         if isempty(DCV_File)
@@ -155,22 +156,12 @@ switch(procName)
             error('Matlab:MMS_SDC_SDP_PROC:Input', errMsg);
         end
 
-        irf.log('debug', ['MMS_SDC_SDP_PROC input DCV file: ', DCV_File]);
+        irf.log('notice', ['MMS_SDC_SDP_PROC input DCV file: ', DCV_File]);
         dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
 
-        irf.log('debug',['MMS_SDC_SDP_PROC input HK_101 file: ',...
+        irf.log('notice',['MMS_SDC_SDP_PROC input HK_101 file: ',...
             HK_101_File]);
         mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-
-        
-        % Set bitmask
-        bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcvtime'));
-
-        % FIXME: Do some proper quality assesment.
-        quality = bitmask;
-
-
-        %FIXME Do some processing... Actually De-filter, De-spin, etc.
 
         %copy_header(1)
         HeaderInfo.scId = dcv_source_fileData.scId;
@@ -181,10 +172,9 @@ switch(procName)
         HeaderInfo.numberOfSources = 1;
         HeaderInfo.parents_1 = dcv_source_fileData.filename;
     
-        irf.log('debug', ...
+        irf.log('notice', ...
             'MMS_SDC_SDP_PROC Usc using mms_sdc_sdp_cdf_writing');
-        filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), ...
-          HeaderInfo, quality(:,2));
+        filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
   
     case('sitl')
 
@@ -197,30 +187,23 @@ switch(procName)
             irf.log('warning', ...
                 'MMS_SDC_SDP_PROC SITL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
 
-            irf.log('debug',...
+            irf.log('notice',...
                 ['MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_in_process on input file: ',...
                 DCE_File]);
             dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, ...
                 'sci', 'dce');
             
             % Then the sunpulse file
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
                 HK_101_File]);
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-            
-            irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            dcephase = mms_sdc_sdp_datamanager('dcephase');
-            
-            % Set bitmask
-            bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'));
-            
-            % FIXME Do some processing... Actually De-filter, De-spin, etc.
 
+            % Write the output
             copy_header(1)
-            irf.log('debug', ...
+            irf.log('notice', ...
                 'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), HeaderInfo);
+            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
 
         elseif( all( [~isempty(HK_101_File), ...
                 ~isempty(DCE_File), ~isempty(DCV_File)] ) )
@@ -229,38 +212,28 @@ switch(procName)
             irf.log('notice', 'MMS_SDC_SDP_PROC SITL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
 
             % First get dce data
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_in_process on input file: ',...
                 DCE_File]);
             dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
 
             % Then get dcv data
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
                 DCV_File]);
             dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
 
             % Then the sunpulse file
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
                 HK_101_File]);
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-            irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            dcephase = mms_sdc_sdp_datamanager('dcephase');
-            
-            % Set bitmask for overlap or not
-            bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'), mms_sdc_sdp_datamanager('dcvtime'));
-
-            
-            % FIXME Do some processing... Actually De-filter, De-spin, etc.
           
-            
+            % Write the output
             copy_header(2)
-       
-            
-            irf.log('debug', ...
+            irf.log('notice', ...
                 'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), HeaderInfo);
+            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
 
         else
             
@@ -290,31 +263,21 @@ switch(procName)
             irf.log('warning',...
                 'MMS_SDC_SDP_PROC QL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
 
-            irf.log('debug',...
+            irf.log('notice',...
                 ['MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_in_process on input file: ',...
                 DCE_File]);
             dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
 
-            irf.log('debug',...
+            irf.log('notice',...
                 ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ',...
                 HK_101_File]);
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-            irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            dcephase = mms_sdc_sdp_datamanager('dcephase');
-            
-            % Set bitmask for all times in dcetime.
-            bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'));
-            
-            % FIXME Do some processing... Actually De-filter, De-spin, etc.
 
-            % FIXME: Do some proper quality assesment.
-            quality = bitmask; 
-
+            % Write the output
             copy_header(1)
-            irf.log('debug', ...
+            irf.log('notice', ...
                 'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), ...
-                HeaderInfo, quality(:,2));
+            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
 
             
         elseif( all( [~isempty(HK_101_File), ~isempty(DCE_File), ...
@@ -324,39 +287,27 @@ switch(procName)
             irf.log('notice','MMS_SDC_SDP_PROC QL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
 
             % First get dce data
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_in_process on input file: ', ...
                 DCE_File]);
             dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
 
             % Then get dcv data
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ', ...
                 DCV_File]);
             dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
 
-            irf.log('debug', ...
+            irf.log('notice', ...
                 ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ', ...
                 HK_101_File]);
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-            irf.log('debug', 'MMS_SDC_SDP_PROC Request the phase');
-            dcephase = mms_sdc_sdp_datamanager('dcephase');
             
-            % Set bitmask for overlap or not.
-            bitmask = mms_sdc_sdp_bitmasking(mms_sdc_sdp_datamanager('dcetime'), mms_sdc_sdp_datamanager('dcvtime'));
-
-            
-            % FIXME Do some processing... Actually De-filter, De-spin, etc.
-
-            % FIXME: Do some proper quality assesment.
-            quality = bitmask; 
-            
-            
+            % Write the output
             copy_header(2)
-            irf.log('debug', ...
+            irf.log('notice', ...
                 'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(bitmask(:,2), ...
-                HeaderInfo, quality(:,2));
+            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
 
         else
             

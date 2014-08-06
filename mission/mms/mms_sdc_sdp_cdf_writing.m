@@ -1,12 +1,13 @@
-function [ filename_output ] = mms_sdc_sdp_cdf_writing( bitmask, HeaderInfo, qualityMark )
+function [ filename_output ] = mms_sdc_sdp_cdf_writing( HeaderInfo )
 % MMS_SDC_SDP_CDF_WRITING writes the data to the corresponding CDF file.
-%	filename_output = MMS_SDC_SDP_CDF_WRITING( bitmask, HeaderInfo, qualityMark)
+%
+%	filename_output = MMS_SDC_SDP_CDF_WRITING( HeaderInfo)
 %   will write an MMS CDF file containing the data stored to a temporary 
 %   output folder defined by ENVIR.DROPBOX_ROOT. The struct HeaderInfo will
 %   help determine which output file is to be created.
 %
 %   Example:
-%   filename_output = mms_sdc_sdp_cdf_writing( bitmask, HeaderInfo, qualityMark);
+%   filename_output = mms_sdc_sdp_cdf_writing( HeaderInfo);
 %
 %	Note 1: It is assumed that other SDC processing scripts will move the
 %   created output file to its final destination (from /ENIVR.DROPBOX_ROOT/
@@ -15,7 +16,7 @@ function [ filename_output ] = mms_sdc_sdp_cdf_writing( bitmask, HeaderInfo, qua
 % 	See also MMS_SDC_SDP_CDF_IN_PROCESS, MMS_SDC_SDP_INIT.
 
 % Verify that we have all information requried.
-narginchk(2,3);
+narginchk(1,1);
 
 global ENVIR;
 global MMS_CONST;
@@ -67,9 +68,11 @@ switch(HeaderInfo.calledBy)
         %% FIXME: DUMMY DATA FOR NOW.
         % For now store data temporarly
         epochTT = DataInMemory.dce.time;
-        data1(:,1) = DataInMemory.dce.p12;
-        data1(:,2) = DataInMemory.dce.p34;
-        data1(:,3) = DataInMemory.dce.p56;
+        data1(:,1) = DataInMemory.dce.e12.data;
+        data1(:,2) = DataInMemory.dce.e34.data;
+        data1(:,3) = DataInMemory.dce.e56.data;
+        bitmask = DataInMemory.dce.e12.bitmask;
+        
         %%%
         irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:sitl Ready to',...
             ' write data to temporary file in DROPBOX_ROOT/', ...
@@ -132,9 +135,10 @@ switch(HeaderInfo.calledBy)
         %% FIXME: DUMMY DATA FOR NOW.
         % For now store data temporarly
         epochTT = DataInMemory.dce.time;
-        data1(:,1) = DataInMemory.dce.e12;
-        data1(:,2) = DataInMemory.dce.e34;
-        data1(:,3) = DataInMemory.dce.e56;
+        data1(:,1) = DataInMemory.dce.e12.data;
+        data1(:,2) = DataInMemory.dce.e34.data;
+        data1(:,3) = DataInMemory.dce.e56.data;
+        bitmask = DataInMemory.dce.e12.bitmask;
         %%%
         irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:ql Ready to',...
             ' write data to temporary file in DROPBOX_ROOT/', ...
@@ -142,7 +146,8 @@ switch(HeaderInfo.calledBy)
         
         mms_sdc_sdp_cdfwrite( filename_output, ...
             int8(str2double(HeaderInfo.scId(end))), 'ql', epochTT, ...
-            data1, data1, uint16(bitmask), uint16(qualityMark) );
+            data1, data1, uint16(bitmask), ...
+            uint16(mms_sdc_sdp_bitmask2quality('e',bitmask)) );
         
         
     case('usc')
@@ -195,10 +200,11 @@ switch(HeaderInfo.calledBy)
         %% FIXME: DUMMY DATA FOR NOW.
         % For now store data temporarly
         epochTT = DataInMemory.dcv.time;
-        data1(:,1) = DataInMemory.dcv.p1;
-        data1(:,2) = DataInMemory.dcv.p3;
-        data1(:,3) = DataInMemory.dcv.p5;     
+        data1(:,1) = DataInMemory.dcv.v1.data;
+        data1(:,2) = DataInMemory.dcv.v3.data;
+        data1(:,3) = DataInMemory.dcv.v5.data;     
         psp_p = [data1, data1];
+        bitmask = DataInMemory.dce.v1.bitmask;
         %%%%
         
         irf.log('debug', ['MATLAB:mms_sdc_sdp_cdf_writing:usc Ready to',...
