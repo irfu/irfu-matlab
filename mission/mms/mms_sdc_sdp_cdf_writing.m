@@ -204,7 +204,7 @@ switch(HeaderInfo.calledBy)
         data1(:,2) = DataInMemory.dcv.v3.data;
         data1(:,3) = DataInMemory.dcv.v5.data;     
         psp_p = [data1, data1];
-        bitmask = DataInMemory.dce.v1.bitmask;
+        bitmask = DataInMemory.dcv.v1.bitmask;
         %%%%
         
         irf.log('debug', ['MATLAB:mms_sdc_sdp_cdf_writing:usc Ready to',...
