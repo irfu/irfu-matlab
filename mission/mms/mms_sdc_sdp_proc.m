@@ -44,14 +44,13 @@ if ~ischar(procName)
     error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be a string');
 end
-procName = lower(procName);
-HeaderInfo = []; HeaderInfo.calledBy = procName;
-if isempty(intersect(procName,{'usc','ql','sitl'}))
+procName = upper(procName);
+HeaderInfo = []; HeaderInfo.calledBy = lower(procName);
+if isempty(intersect(procName,{'USC','QL','SITL'}))
     error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be one of: "ql", "sitl" or "usc"');
 end
-
-irf.log('notice', ['MMS_SDC_SDP_PROC process name: ', procName]);
+irf.log('notice', ['Starting process: ', procName]);
 
 %% Process inpit
 for i=1:nargin-1
@@ -100,7 +99,7 @@ for i=1:nargin-1
         end
         % It is the HK_101 file
         HK_101_File = varargin{i};
-        irf.log('notice', ['HK_101 file identified as: ', ...
+        irf.log('notice', ['HK_101 input file: ', ...
             HK_101_File]);
         
     elseif regexpi(fileIn, '_dcv_') %DCV
@@ -111,7 +110,7 @@ for i=1:nargin-1
             error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
         end
         DCV_File = varargin{i};
-        irf.log('notice', ['DCV file identified as: ', DCV_File]);
+        irf.log('notice', ['DCV input file: ', DCV_File]);
         
     elseif regexpi(fileIn, '_dce_') % DCE
         if ~isempty(DCE_File)
@@ -121,7 +120,7 @@ for i=1:nargin-1
             error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
         end
         DCE_File = varargin{i};
-        irf.log('notice', ['DCE file identified as: ', DCE_File]);
+        irf.log('notice', ['DCE input file: ', DCE_File]);
         
     else
         % Unidentified input argument
@@ -148,184 +147,62 @@ if isempty(HK_101_File)
 end
 
 %% Processing for Usc or QL or SITL.
-switch(procName)
-    case('usc')
-        if isempty(DCV_File)
-            errMsg = 'MMS_SDC_SDP_PROC missing required input for USC: DCV';
-            irf.log('critical', errMsg);
-            error('Matlab:MMS_SDC_SDP_PROC:Input', errMsg);
-        end
-
-        irf.log('notice', ['MMS_SDC_SDP_PROC input DCV file: ', DCV_File]);
-        dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
-
-        irf.log('notice',['MMS_SDC_SDP_PROC input HK_101 file: ',...
-            HK_101_File]);
-        mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-        
-        % Write the output
-        copy_header('dcv',1)
-        irf.log('notice', ...
-            'MMS_SDC_SDP_PROC Usc using mms_sdc_sdp_cdf_writing');
-        filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-  
-    case('sitl')
-
-        % Check if all required and needed files are sent as input and have
-        % been identified properly.
-        if( all( [~isempty(DCE_File), ~isempty(HK_101_File), ...
-                isempty(DCV_File)] ) )
-            
-            % Log message so we know we are missing one input.
-            irf.log('warning', ...
-                'MMS_SDC_SDP_PROC SITL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
-
-            irf.log('notice',...
-                ['MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_in_process on input file: ',...
-                DCE_File]);
-            dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, ...
-                'sci', 'dce');
-            
-            % Then the sunpulse file
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_101_File]);
-            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-
-            % Write the output
-            copy_header('dce',1)
-            irf.log('notice', ...
-                'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-
-        elseif( all( [~isempty(HK_101_File), ...
-                ~isempty(DCE_File), ~isempty(DCV_File)] ) )
-            
-            % Log message so we know we got both.
-            irf.log('notice', 'MMS_SDC_SDP_PROC SITL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
-
-            % First get dce data
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_in_process on input file: ',...
-                DCE_File]);
-            dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
-
-            % Then get dcv data
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                DCV_File]);
-            dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
-
-            % Then the sunpulse file
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC SITL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_101_File]);
-            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-          
-            % Write the output
-            copy_header('dce',2)
-            irf.log('notice', ...
-                'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-
-        else
-            
-            irf.log('critical',...
-                'MMS_SDC_SDP_PROC SITL received some unclear input arguments. DCE and HK_101 CDF files are required, DCV needed for some but not all processing.');
-            irf.log('warning',...
-                ['Variable HK_101_File exists: ', ...
-                num2str(exist('HK_101_File','var')), ...
-                ', variable DCE_File exists: ', ...
-                num2str(exist('DCE_File','var')), ...
-                ', variable DCV_File exists: ', ...
-                num2str(exist('DCV_File','var'))]);
-            error('Matlab:MMS_SDC_SDP_PROC:Input',...
-                'MMS_SDC_SDP_PROC SITL did not recieve all required input file arguments or was unsuccesful in identifying them. Please see log file.');
-        
-        end
-        
-        
-    case('ql')
-
-        % Check if all required and needed files are sent as input and have
-        % been identified properly.
-        if( all( [~isempty(DCE_File), ~isempty(HK_101_File), ...
-                isempty(DCV_File)] ) )
-            
-            % Log message so we know we are missing one input.
-            irf.log('warning',...
-                'MMS_SDC_SDP_PROC QL received DCE and HK_101 but no DCV file argument. Can perform some but not all processing.');
-
-            irf.log('notice',...
-                ['MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_in_process on input file: ',...
-                DCE_File]);
-            dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
-
-            irf.log('notice',...
-                ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ',...
-                HK_101_File]);
-            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-
-            % Write the output
-            copy_header('dce',1)
-            irf.log('notice', ...
-                'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-
-            
-        elseif( all( [~isempty(HK_101_File), ~isempty(DCE_File), ...
-                ~isempty(DCV_File)] ) )
-            
-            % Log message so we know we got both.
-            irf.log('notice','MMS_SDC_SDP_PROC QL received all expected input arguments, DCE, DCV and HK_101 file arguments. Can perform full processing.');
-
-            % First get dce data
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_in_process on input file: ', ...
-                DCE_File]);
-            dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File, 'sci', 'dce');
-
-            % Then get dcv data
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ', ...
-                DCV_File]);
-            dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File, 'sci', 'dcv');
-
-            irf.log('notice', ...
-                ['MMS_SDC_SDP_PROC QL trying mms_sdc_sdp_cdf_in_process on input file: ', ...
-                HK_101_File]);
-            mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-            
-            % Write the output
-            copy_header('dce',2)
-            irf.log('notice', ...
-                'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
-            filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-
-        else
-            
-            irf.log('critical',...
-                'MMS_SDC_SDP_PROC QL received some unclear input arguments. DCE and HK_101 CDF files are required, DCV needed for some but not all processing.');
-            irf.log('warning',...
-                ['Variable HK_101_File exists: ', ...
-                num2str(~isempty(HK_101_File)), ...
-                ', variable DCE_File exists: ', ...
-                num2str(~isempty(DCE_File)), ...
-                ', variable DCV_File exists: ', ...
-                num2str(~isempty(DCV_File))]);
-            error('Matlab:MMS_SDC_SDP_PROC:Input',...
-                'MMS_SDC_SDP_PROC QL did not recieve all required input file arguments or was unsuccesful in identifying them. Please see log file.');
-        
-        end
-
-        
-    otherwise
-        % Should not be here
-        error('Matlab:MMS_SDC_SDP_PROC:Input', 'wrong process name');
+switch lower(procName)
+  case 'usc'
+    if isempty(DCV_File)
+      errStr = ['missing reqired input for ' procName ': DCV_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    
+    irf.log('notice', [procName ' proc using: ' DCV_File]);
+    dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+    
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    
+    % Write the output
+    copy_header('dcv',1)
+    filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+    
+  case {'sitl','ql'}
+    % Check if have all the necessary input
+    if isempty(DCE_File)
+      errStr = ['missing reqired input for ' procName ': DCE_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    if isempty(HK_101_File)
+      errStr = ['missing reqired input for ' procName ': HK_101_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+    
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    
+    if isempty(DCV_File)
+      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
+        'received no DCV file argument.']);
+      copy_header('dce',1)
+    else
+      irf.log('notice', [procName ' proc using: ' DCV_File]);
+      dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+      copy_header('dce',2)
+    end
+    
+    % Write the output
+    filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+  otherwise
+    % Should not be here
+    error('Matlab:MMS_SDC_SDP_PROC:Input', 'wrong process name');
 end
 
 
-% Write out filename as empty logfile so it can be easily found by SDC
+%% Write out filename as empty logfile so it can be easily found by SDC
 % scripts.
 unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
     HeaderInfo.numberStr, filesep, 'sdp', filesep, filename_output, ...
