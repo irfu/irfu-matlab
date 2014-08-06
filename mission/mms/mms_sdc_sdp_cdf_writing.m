@@ -215,10 +215,10 @@ switch(HeaderInfo.calledBy)
             int8(str2double(HeaderInfo.scId(end))), 'usc', epochTT, ...
             data1(:,1), data1(:,2), data1(:,3), psp_p, uint16(bitmask) );    
     
-    otherwise
-        irf.log('warning', ...
-            'MATLAB:mms_sdc_sdp_cdf_writing:HeaderInfo.calledBy unknown',...
-            ' or not implemented yet. As of now, "ql", "sitl" and "usc" exists.');
+  otherwise
+    errStr = 'unrecognized HeaderInfo.calledBy';
+    irf.log('critical', errStr);
+    error(errStr)
 end
 
 
