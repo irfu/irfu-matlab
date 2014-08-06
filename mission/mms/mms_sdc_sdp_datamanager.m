@@ -94,21 +94,21 @@ if(nargin==2)
         p6_off = isProbeDisabled('v6');
         
         if p1_off && p2_off
-          DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
-          DataInMemory.(param).p2 = DataInMemory.(param).p1;
+          DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+          DataInMemory.(param).v2.data = DataInMemory.(param).v1.data;
         elseif p1_off
           if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
             % Compute 
             % TODO:  implement real computation instead of this
           else
-            DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
+            DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
           end
         elseif p2_off
           if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
             % Compute 
             % TODO implement real computation instead of this
           else
-            DataInMemory.(param).p1 = DataInMemory.(param).p1*NaN;
+            DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
           end
         end
         
