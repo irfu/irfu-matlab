@@ -162,16 +162,9 @@ switch(procName)
         irf.log('notice',['MMS_SDC_SDP_PROC input HK_101 file: ',...
             HK_101_File]);
         mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
-
-        %copy_header(1)
-        HeaderInfo.scId = dcv_source_fileData.scId;
-        HeaderInfo.instrumentId = dcv_source_fileData.instrumentId;
-        HeaderInfo.dataMode = dcv_source_fileData.dataMode;
-        HeaderInfo.dataLevel = dcv_source_fileData.dataLevel;
-        HeaderInfo.startTime = dcv_source_fileData.startTime;
-        HeaderInfo.numberOfSources = 1;
-        HeaderInfo.parents_1 = dcv_source_fileData.filename;
-    
+        
+        % Write the output
+        copy_header('dcv',1)
         irf.log('notice', ...
             'MMS_SDC_SDP_PROC Usc using mms_sdc_sdp_cdf_writing');
         filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -200,7 +193,7 @@ switch(procName)
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
 
             % Write the output
-            copy_header(1)
+            copy_header('dce',1)
             irf.log('notice', ...
                 'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
             filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -230,7 +223,7 @@ switch(procName)
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
           
             % Write the output
-            copy_header(2)
+            copy_header('dce',2)
             irf.log('notice', ...
                 'MMS_SDC_SDP_PROC SITL using mms_sdc_sdp_cdf_writing');
             filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -274,7 +267,7 @@ switch(procName)
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
 
             % Write the output
-            copy_header(1)
+            copy_header('dce',1)
             irf.log('notice', ...
                 'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
             filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -304,7 +297,7 @@ switch(procName)
             mms_sdc_sdp_cdf_in_process(HK_101_File, 'sci', 'hk_101');
             
             % Write the output
-            copy_header(2)
+            copy_header('dce',2)
             irf.log('notice', ...
                 'MMS_SDC_SDP_PROC QL using mms_sdc_sdp_cdf_writing');
             filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -352,15 +345,26 @@ unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
     end
   end
 
-  function copy_header(nSrc)
+  function copy_header(dataType,nSrc)
     if nSrc>2 || nSrc<1, error('nSrc must be 1 or 2'), end
-    HeaderInfo.scId = dce_source_fileData.scId;
-    HeaderInfo.instrumentId = dce_source_fileData.instrumentId;
-    HeaderInfo.dataMode = dce_source_fileData.dataMode;
-    HeaderInfo.dataLevel = dce_source_fileData.dataLevel;
-    HeaderInfo.startTime = dce_source_fileData.startTime;
+    switch dataType
+      case 'dcv'
+        src = dcv_source_fileData;
+        if nSrc==2
+          error('Invalid nSrc=2 for DATA_TYPE=dcv')
+        end
+      case 'dce'
+        src = dce_source_fileData;
+      otherwise
+        error('Invalid DATA_TYPE (dce or dcv)')
+    end
+    HeaderInfo.scId = src.scId;
+    HeaderInfo.instrumentId = src.instrumentId;
+    HeaderInfo.dataMode = src.dataMode;
+    HeaderInfo.dataLevel = src.dataLevel;
+    HeaderInfo.startTime = src.startTime;
     HeaderInfo.numberOfSources = nSrc;
-    HeaderInfo.parents_1 = dce_source_fileData.filename;
+    HeaderInfo.parents_1 = src.filename;
     if nSrc==2
       HeaderInfo.parents_2 = dcv_source_fileData.filename;
     end
