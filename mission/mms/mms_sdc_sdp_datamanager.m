@@ -77,7 +77,7 @@ if(nargin==2)
         sig = {'e12','e34','e56'};
         init_param(sig)
         for iSig=1:length(sig)
-          if isProbeDisabled(sig{iSig})
+          if ~isProbeEnabled(sig{iSig})
             DataInMemory.(param).(sig{iSig}).data = DataInMemory.(param).(sig{iSig}).data*NaN;
           end
         end
@@ -86,29 +86,29 @@ if(nargin==2)
         sig = {'v1','v2','v3','v4','v5','v6'};
         init_param(sig)
         
-        p1_off = isProbeDisabled('v1');
-        p2_off = isProbeDisabled('v2');
-        p3_off = isProbeDisabled('v3');
-        p4_off = isProbeDisabled('v4');
-        p5_off = isProbeDisabled('v5');
-        p6_off = isProbeDisabled('v6');
+        p1_off = ~isProbeEnabled('v1');
+        p2_off = ~isProbeEnabled('v2');
+        p3_off = ~isProbeEnabled('v3');
+        p4_off = ~isProbeEnabled('v4');
+        p5_off = ~isProbeEnabled('v5');
+        p6_off = ~isProbeEnabled('v6');
         
         if p1_off && p2_off
-          DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
-          DataInMemory.(param).v2.data = DataInMemory.(param).v1.data;
+          %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+          %DataInMemory.(param).v2.data = DataInMemory.(param).v1.data;
         elseif p1_off
           if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
             % Compute 
             % TODO:  implement real computation instead of this
           else
-            DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+            %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
           end
         elseif p2_off
           if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
             % Compute 
             % TODO implement real computation instead of this
           else
-            DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+            %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
           end
         end
         
@@ -194,8 +194,8 @@ end
     DataInMemory.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
       err_str = 'MMS_SDC_SDP_DATAMANAGER changing sampling rate not yet implemented.';
-      irf.log('critical', err_str);
-      error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+      irf.log('warning', err_str);
+      %error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
     end
     DataInMemory.(param).dataObj = dataObj;
     x = getdep(dataObj,[varPrefix param '_sensor']);
@@ -210,7 +210,7 @@ end
     end
   end
 
-  function res = isProbeDisabled(probe)
+  function res = isProbeEnabled(probe)
     flag = dataObj.data.([varPrefix probe '_enable']).data;
     if ~all(diff(flag))==0
       err_str = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
