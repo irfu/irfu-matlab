@@ -36,3 +36,5 @@ END_META       =   FILE_CAVEATS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !     Data - THIS FILE IS INTENTIONALLY EMPTY         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+DATA_UNTIL = "END_OF_DATA"
+END_OF_DATA

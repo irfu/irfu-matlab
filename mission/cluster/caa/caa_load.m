@@ -1,4 +1,4 @@
-function caa_load(varargin)
+function out=caa_load(varargin)
 %CAA_LOAD Script to load data downloaded from the CAA in CDF format.
 %Downloaded zip file must be unpacked, and script must be run
 % from a CAA_Download_YYYYMMDD_hhmm directory  
@@ -15,8 +15,8 @@ function caa_load(varargin)
 %   load from disk the data objects whos name are exactly string1, string2 etc.
 % CAA_LOAD('string1','string2',...,'ifnotinmemory')
 %   load from disk only those data that are not in memory
-% CAA_LOAD('string1','string2',...,'cfa')
-%   load data primarily from CFA folder if it exists instead of CAA folder
+% ok = CAA_LOAD(..) returns true if data loaded or lister and returns false
+% if nothing loaded or listed
 %
 %  Examples:
 %   caa_load
@@ -28,12 +28,16 @@ function caa_load(varargin)
 %   caa_load('C1_CP_FGM','tint',tint);
 %   caa_load FGM list;
 
+%% Defaults
+ok                  = false; % default routine did not succeed
+%% Defaults that can be changed by input parameters
 shouldOnlyListFiles = false; % default list and load files
 shouldReadAllData   = true;  % default load everything
 shouldLoadFromFile  = true;  % if false, do not load object from file if it exists in memory
 useExactNameMatch   = false; % default is to filter not according to exact match
 shouldFilterNames = any(nargin);   % if there is input, use it to filter names, otherwise load all
 
+%% Check input parameters
 if nargin > 0, % filter which datasets to load
   i=1;
   datasetFilter=cell(nargin,1);
@@ -71,6 +75,7 @@ if nargin > 0, % filter which datasets to load
   datasetFilter(i:end)=[];
 end
 
+%% Check data directory
 if isdir([pwd filesep 'CAA']), % check if is CAA folder, then assume data are there
   dirs = dir('CAA');
   caaDataDirectory='CAA/';
@@ -79,6 +84,7 @@ else % otherwise assume one is in the CAA data folder
   caaDataDirectory='';
 end
 
+%% Load the data
 nloaded = 0;
 for j = 1:numel(dirs)
   if regexp(dirs(j).name,'^C[1-4,L]_(C|J|P|S)(P|Q|T)_')
@@ -101,11 +107,13 @@ for j = 1:numel(dirs)
       if shouldLoadVariable && shouldOnlyListFiles
         disp(datasetName);
         shouldLoadVariable = false;
+		ok=true;
       end
     else % work on all variables 
         if shouldOnlyListFiles,
             shouldLoadVariable = false;
             disp(datasetName);
+			if ~isempty(datasetName), ok = true; end
         else
             shouldLoadVariable = true; 
         end
@@ -132,6 +140,8 @@ for j = 1:numel(dirs)
 	end
   end
 end
+if nloaded > 0, ok = true; end
 if nloaded == 0 && ~shouldOnlyListFiles
   irf.log('warning','CAA_LOAD : nothing to load')
 end
+if nargout > 0, out = ok; end

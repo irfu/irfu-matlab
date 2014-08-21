@@ -308,7 +308,7 @@ The delta offsets must be computed before L2 processing.
 2. Enter into the delta offsets database. Example:
    Remove old delta offsets for this year first if it exists. Check with epoch2iso().
      (edit SY in caa_update_deltaoff. Plot time is one year.)
-     cd /home/chris/devel/irfu-matlab/caa
+     cd /homteste/chris/devel/irfu-matlab/caa
      caa_update_deltaoff(D2p12p34,2)
 3. Commit the new caa/deltaoff.mat to git, and update it on db:/data/cluster/irfu-matlab.
 
@@ -341,8 +341,8 @@ Special processing files are under git control in: irfu-matlab/caa/caa-control/2
 (Can be done before step 8 if wanted)
 The DSI offsets are constant offsets applied to the despun data.
 They are computed on a statistical basis and applied on a roughly per-year basis.
-1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wing season 
-lasts from the ened of November to June, therefore we run the code from 1st of September 
+1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wind season 
+lasts from the end of November to June, therefore we run the code from 1st of September 
 to the end of August. Example:
      cp /data/cluster/irfu-matlab/caa/mPlan.mat /home/chris/caa/test-mp
      cp /data/cluster/irfu-matlab/caa/deltaoff.mat /home/chris/caa/test-mp

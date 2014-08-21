@@ -5,7 +5,7 @@
 
 %% Define flags
 % mR.mat file has all positions, not needed if only apogee/perigee values needed
-flag_get_all_Cluster_positions_from_isdat=1; % construct mR.mat file with Cluster position for all mission
+flag_get_all_Cluster_positions_from_isdat=0; % construct mR.mat file with Cluster position for all mission
 flag_get_all_Cluster_positions_from_www=0;   % get mR.mat file from internet
 % mRcluster.mat file, includes all information on perigee/apogee/separation
 flag_get_Cluster_file_from_www=0; % get mRcluster.mat from www
@@ -24,7 +24,7 @@ end
 
 %% Defined time interval and stepping
 %tint=[[2000 01 01 00 0 0 ];irf_time(now,'date2vector')]; % vector first row start time, 2nd row end time
-tint=[[2000 10 01 00 0 0 ];[2012 06 01 00 0 0]];
+tint=[[2000 10 01 00 0 0 ];irf_time(now,'date2vector')];
 step_request=3600*100; % step with 10h, seems largest possible (why?)
 step_save=3600;       % how often save points
 tstart=irf_time(tint(1,:),'vector2epoch');

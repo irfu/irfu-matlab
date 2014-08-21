@@ -30,7 +30,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %	tint (always reads from file in this case, good option for large files)
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
-%  
+%
 % Example:
 %   temp=C_CAA_VAR_GET('Data__C4_CP_PEA_PITCH_SPIN_PSD');
 %   xm=c_caa_var_get('Differential_Particle_Flux__C3_CP_CIS_HIA_PAD_HS_MAG_IONS_PF','mat');
@@ -52,13 +52,14 @@ dobjSpecified = false;  % default dataobject is not given as input
 Dataobject = [];        % default dataobject is empty
 args = varargin;        % input argument list
 testDataStreaming = false; % default do not get data by data streaming
+% returnOutputAsCellArray  - set later in code, if true output should be cell array
 %% Define varName
 if isa(args{1},'dataobj'), % dataobject specified as first input argument
 	Dataobject = args{1};
 	dobjSpecified = true;
 	args(1)=[];
 elseif isempty(args{1}) % dataobject is specified empty
-	args(1)=[];         
+	args(1)=[];
 end
 
 if ~isempty(args)
@@ -139,10 +140,11 @@ end
 %%
 
 if ischar(varNameList),
+	returnOutputAsCellArray = false;
 	varNameList = {varNameList};
-end
-
-if ~iscellstr(varNameList)
+elseif iscellstr(varNameList)
+	returnOutputAsCellArray = true;
+else
 	irf.log('critical','varName incorrect format');
 	error('varName incorrect format');
 end
@@ -156,86 +158,97 @@ end
 
 isDataReturned = false;
 
-for iVar = 1: numel(varNameList)
-	varName = varNameList{iVar};
+datasetNameList = caa_get_dataset_name(varNameList,'_');
+[datasetNameUniqueList,~,indDatasetUniqueToName] ...
+	= unique(datasetNameList);
+for iDataset = 1:numel(datasetNameUniqueList)
+	dataobjName = datasetNameUniqueList{iDataset};
+	indVarNameList = find(indDatasetUniqueToName == iDataset);
 	testLocalCaaRepository = false; % default test local CAA directory and not local repository
-	if any(strfind(varName,'__'))   % variable name specified as input
-		if dobjSpecified
+	if dobjSpecified
+		isDataReturned = true;
+	else
+		if getAllData && ~getFromFile ...
+				&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
+				&& evalin('caller',['isa(' dataobjName ',''dataobj'')'])
+			Dataobject=evalin('caller',dataobjName);
 			isDataReturned = true;
+			existDataobject = true;
+			irf.log('warning',[dataobjName ' exist in memory. NOT LOADING FROM FILE!'])
 		else
-			dataobjName=caa_get_dataset_name(varName,'_');
-			if getAllData && ~getFromFile ...
-					&& evalin('caller',['exist(''' dataobjName ''',''var'')'])...
-					&& evalin('caller',['isa(' dataobjName ',''dataobj'')'])
-				Dataobject=evalin('caller',dataobjName);
+			if getAllData,
+				caa_load(dataobjName,'nowildcard');
+			else
+				caa_load(dataobjName,'tint',tint,'nowildcard');
+			end
+			if exist(dataobjName,'var'), % success loading data
+				eval(['Dataobject=' dataobjName ';']);
 				isDataReturned = true;
 				existDataobject = true;
-				irf.log('warning',[dataobjName ' exist in memory. NOT LOADING FROM FILE!'])
 			else
-				if getAllData,
-					caa_load(dataobjName,'nowildcard');
-				else
-					caa_load(dataobjName,'tint',tint,'nowildcard');
+				existDataobject = false;
+				irf.log('warning',[dataobjName ' could not be loaded!']);
+				if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
+					testLocalCaaRepository = true;
+					irf.log('notice','will test if data are in local CAA data repository.');
 				end
-				if exist(dataobjName,'var'), % success loading data
-					eval(['Dataobject=' dataobjName ';']);
-					isDataReturned = true;
-					existDataobject = true;
-				else
-					existDataobject = false;
-					irf.log('warning',[dataobjName ' could not be loaded!']);
-					if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
-						testLocalCaaRepository = true;
-						irf.log('notice','will test if data are in local CAA data repository.');
-					end
-					if getMat && ~getAllData,
-						if datastore('irfu_matlab','okCeflib'),
-							testDataStreaming = true;
-						end
+				if getMat && ~getAllData,
+					if datastore('irfu_matlab','okCeflib'),
+						testDataStreaming = true;
 					end
 				end
 			end
 		end
-		if getCaa, % save variable
-			if existDataobject
-				res{iVar}=getv(Dataobject,varName);
-			elseif testLocalCaaRepository
-				ttt = local.c_read(varName,tint,'caa');
+	end
+	varTmpList = varNameList(indVarNameList);
+	if getCaa, % save variable
+		if existDataobject
+			res(indVarNameList) = cellfun(@(x) getv(Dataobject,x),varTmpList,'uniformoutput',false);
+		elseif testLocalCaaRepository
+			ttt = local.c_read(varTmpList,tint,'caa');
+			if isempty(ttt),
+				irf.log('warning','NO DATA in repository!');
+			end
+			isDataReturned = true;
+			res(indVarNameList) = ttt;
+		end
+	end
+	if getMat % save variable in matlab matrix format
+		if existDataobject
+			resmat(indVarNameList) = cellfun(@(x) getmat(Dataobject,x),varTmpList,'uniformoutput',false);
+		else
+			if testLocalCaaRepository
+				ttt = local.c_read(varTmpList{1},tint,'mat');
 				if isempty(ttt),
-					irf.log('warning','NO DATA in repository!');
+					irf.log('warning','NO DATA in local repository!');
+				else
+					resmat{indVarNameList(1)} = ttt;
+					for j=2:numel(varTmpList)
+						ttt = local.c_read(varTmpList{j},tint,'mat');
+						resmat{indVarNameList(j)} = ttt;
+					end
+					isDataReturned = true;
 				end
-				isDataReturned = true;
-				res{iVar} = ttt;
 			end
-		end
-		if getMat % save variable in matlab matrix format
-			if existDataobject
-				resmat{iVar}=getmat(Dataobject,varName);
-			else
-				if testLocalCaaRepository
-					ttt = local.c_read(varName,tint,'mat');
-					if isempty(ttt),
-						irf.log('warning','NO DATA in local repository!');
-					else
-						isDataReturned = true;
-						resmat{iVar} = ttt;
-					end
-				end
-				if ~isDataReturned && testDataStreaming
-					ttt = c_caa_cef_var_get(varName,'tint',tint,'stream');
-					if isempty(ttt),
-						irf.log('warning','NO DATA in CAA to stream!');
-					else
-						resmat{iVar} = ttt;
-						isDataReturned = true;
-					end
+			if ~isDataReturned && testDataStreaming
+				ttt = c_caa_cef_var_get(varTmpList,'tint',tint,'stream');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in CAA to stream!');
+				else
+					resmat(indVarNameList) = ttt;
+					isDataReturned = true;
 				end
 			end
 		end
-		if getUnit % save variable unit
-			resunit{iVar}=getunits(Dataobject,varName);
+	end
+	if getUnit % save variable unit TODO: implement local.c_read and streaming
+		if existDataobject
+			resunit(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList,'uniformoutput',false);
 		end
-		if getDobj,% save dataobject
+	end
+	if getDobj,% save dataobject TODO: call to stream data object
+		for iVar = indVarNameList(:)'
+			varName = varNameList{iVar};
 			if existDataobject
 				resdataobject{iVar}=Dataobject;
 			elseif testLocalCaaRepository
@@ -253,7 +266,7 @@ end
 if ~isDataReturned, % nothing is loaded, return empty
 	irf.log('warning','Nothing is loaded')
 	res=[];resdataobject=[];resmat=[];resunit=[];
-elseif numel(varNameList) == 1, % return variables and not cell arrays
+elseif numel(varNameList) == 1 && ~returnOutputAsCellArray, % return variables and not cell arrays
 	res=res{1};
 	resdataobject=resdataobject{1};
 	resmat=resmat{1};

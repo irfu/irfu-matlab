@@ -2,6 +2,15 @@ function out = th_gse2dsl(inp,thId)
 %TH_GSE2DSL  Trasform THEMIS data from GSE to DSL
 %
 %  vec_DSL = th_gse2dsl(vec_GSE,thId)
+%
+% NOTE: requires l1/state files in /data/themis
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
 
 if ~any(thId=='abcde'), error('THEMIS ID must be a, b, c, d, e'), end
 

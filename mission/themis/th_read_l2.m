@@ -67,13 +67,14 @@ end
 if ~isempty(res), res(diff(res(:,1))==0,:) = []; end 
 
   function res = read_var
-    tmpData = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
+    res = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
+    if isempty(res), return, end
     depTimeVar = find_depend_time();
     if ~isempty(depTimeVar)
       tmpTime = cdfread(fileToRead,'CombineRecords',true,'Variable',depTimeVar);
-      tmpData = [tmpTime double(tmpData)];
+      res = [tmpTime double(res)];
     end
-    res = tmpData;
+    res = res;
     
     function res = find_depend_time
       res = '';

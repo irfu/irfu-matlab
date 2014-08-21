@@ -20,6 +20,9 @@ clean:
 upload-maarble-irf:
 	ls *.ceh| grep -v CX | grep -v THZ | xargs -I % cp % /data/caa/MAARBLE/Upload/irf/HEADERS/
 
+upload-maarble-irf-scp:
+	ls *.ceh| grep -v CX | grep -v THZ | xargs -I % scp % yuri@db.irfu.se:/data/caa/MAARBLE/Upload/irf/HEADERS/
+
 upload-maarble-iap:
 	ls *.ceh| grep -v CX | grep -v ULF_PC12 | grep -v ULF_PC35 | grep -v _TH | grep -v EFW | grep -v FACMATR | xargs -I % cp % /data/caa/MAARBLE/Upload/iap/HEADERS/
 

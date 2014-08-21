@@ -2,7 +2,7 @@
 folder='/Users/yuri/Documents/MATLAB/MAARBLE/GOES/';
 scId = 'g12'; % Spacecraft ID
 flagPlot = true;
-flagPC12 = false;
+flagPC12 = true;
 flagPC35 = true;
 flagExport = true;
 
@@ -49,10 +49,15 @@ for month=1:1
       for prod=[12 35]
         if (prod==12 && flagPC12) || (prod==35 && flagPC35)
           prodStr = num2str(prod);
-          disp(['processing PC' prodStr])
-          ebsp = ...
-            irf_ebsp([],B,[],B0_1MIN,R,['pc' prodStr],...
-            'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
+          disp(['GOES: processing PC' prodStr])
+          if prod==12
+            ebsp =irf_ebsp([],B,[],B0_1MIN,R,[.1 .95],...
+              'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
+          else
+            ebsp = ...
+              irf_ebsp([],B,[],B0_1MIN,R,['pc' prodStr],...
+              'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
+          end
           if flagPlot
             limByDopStruct = struct('type','low','val',0.7,'param','dop','comp',1);
             limByPlanarityStruct = struct('type','low','val',0.6,'param','planarity','comp',1);
@@ -64,9 +69,9 @@ for month=1:1
             
             h = irf_pl_ebsp(ebsp,params);
             irf_zoom(h,'x',tint)
-            title(h(1),['GOES-' scId ', ' irf_disp_iso_range(tint,1)])
+            title(h(1),['GOES-' scId(2:3) ', ' irf_disp_iso_range(tint,1)])
             set(gcf,'paperpositionmode','auto')
-            print('-dpng',['GOES_' scId '_MAARBLE_ULF_PC' prodStr '_' irf_fname(tint,5)])
+            print('-dpng',['GOES' scId(2:3) '_MAARBLE_ULF_PC' prodStr '_' irf_fname(tint,5)])
           end
           if flagExport
             maarble.export(ebsp,tint,scId,['pc' prodStr])
