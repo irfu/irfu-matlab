@@ -103,6 +103,13 @@ elseif regexp(productName,'^CC_CP_AUX_MAARBLE_TH[A-E]_[U,V]LF')==1
     Rth = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat'); 
   end
   ebsp.r =Rth.(['Rth' lower(productName(21))]);
+elseif regexp(productName,'^CC_CP_AUX_MAARBLE_G1[1-2]_ULF')==1
+  try 
+    dd=dataobj([dataPath '/../../FACMATR/CDF/CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR__' fname(33:47) '*.cdf']);
+    ebsp.r = getmat(dd,['sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_G1' fname(21) '_ULF_FACMATR']);
+  catch
+    irf.log('warning','No FACMART file found')
+  end
 end
 
 flagNoE = 0;
