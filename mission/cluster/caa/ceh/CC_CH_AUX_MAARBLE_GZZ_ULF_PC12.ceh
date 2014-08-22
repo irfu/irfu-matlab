@@ -1,5 +1,5 @@
 !------------------- CEF ASCII File --------------------
-! Header file for Cluster Pc1-2
+! Header file for GOES Pc1-2
 !-------------------------------------------------------
 INCLUDE        =   "CL_CH_MISSION.ceh"
 INCLUDE        =   "CC_CH_OBS.ceh"
