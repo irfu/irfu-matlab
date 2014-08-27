@@ -29,7 +29,9 @@ function y = c_coord_trans(from,to,x,varargin)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-persistent lat long cl_id_saved CL_SP_AUX
+persistent lat long cl_id_saved
+
+CL_SP_AUX = [];
 
 narginchk(3,8)
 if isempty(x), y=[]; return; end % if empty input, empty output
