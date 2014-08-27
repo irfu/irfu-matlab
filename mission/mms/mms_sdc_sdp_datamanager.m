@@ -121,7 +121,12 @@ if(nargin==2)
         x = getdep(dataObj,[varPrefix 'cmdexec']);
         DataInMemory.(param).time = x.DEPEND_O;
         check_monoton_timeincrease(DataInMemory.(param).time, param);
+        % Add sunpulse times (TT2000) of last recieved sunpulse.
         DataInMemory.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
+        % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
+        DataInMemory.(param).sunsps = dataObj.data.([varPrefix 'sunssps']).data;
+        % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
+        DataInMemory.(param).iifsunper = dataObj.data([varPrefix 'iifsunper']).data;
       otherwise
         % Not yet implemented.
         err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
