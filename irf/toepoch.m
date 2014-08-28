@@ -28,13 +28,18 @@ elseif n==6,
 end 
 
 years=x(:,1);
+
+if isnan(years)
+   secs=NaN;
+   return
+end
 for year=unique(x(:,1))'
   daym=[0 31 28 31 30 31 30 31 31 30 31 30 31];
   if rem(year,4)==0, daym(3)=29; end  % works up to 2100
   days=cumsum(daym(1:12))';
    
   ind=find(years==year);
-  hours(ind,1)=(days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4);
+  hours(ind,1)=(days(x(ind,2))+(x(ind,3)-1))*24+x(ind,4); 
   secs(ind,1)=(hours(ind)*60+x(ind,5))*60+x(ind,6);
 plus=0;
 diff_yr = year-1970;
