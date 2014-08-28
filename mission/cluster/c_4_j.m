@@ -30,7 +30,7 @@ function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 
 % TODO fix that it works for vector inputs without time column!
 
-if nargin~=8 & nargin~=2
+if nargin~=8 && nargin~=2
 	disp('Too few parameters. See usage:');
 	help c_4_j;     
 	return
@@ -67,9 +67,9 @@ divPb=irf_add(-1,jxB,1,divTshear);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  OUTPUT %%%%%%%%%%%%%%%%%%%%%%%%%
-if nargout==0&size(B1,1)==1,
-       strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A '];
-       strdivB=['divB= ' num2str(divB(1,2),3) '] A '];
+if nargout==0 && size(b1,1)==1,
+       strj=['j= ' num2str(norm(j(1,2:4)),3) ' [ ' num2str(j(1,2:4)/norm(j(1,2:4)),' %5.2f') '] A/m^2 '];
+       strdivB=['divB/mu0 = ' num2str(divB(1,2),3) ' A/m^2 '];
        disp(strj);disp(strdivB);
 end
 
