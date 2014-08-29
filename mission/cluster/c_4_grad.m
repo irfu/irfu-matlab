@@ -148,6 +148,7 @@ for iC=1:4
 	id=idC{iC};
 	if isTimeSpecified
 		K.(id) = irf_resamp([tR K.(id)],tB);
+    K.(id)(:,1) = [];
 	end
 end
 
