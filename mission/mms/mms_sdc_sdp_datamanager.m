@@ -124,7 +124,7 @@ if(nargin==2)
         % Add sunpulse times (TT2000) of last recieved sunpulse.
         DataInMemory.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
         % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
-        DataInMemory.(param).sunsps = dataObj.data.([varPrefix 'sunssps']).data;
+        DataInMemory.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
         % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
         DataInMemory.(param).iifsunper = dataObj.data([varPrefix 'iifsunper']).data;
       otherwise
