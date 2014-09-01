@@ -158,7 +158,7 @@ if strcmp(toCalculate,'grad')||strcmp(toCalculate,'curvature')||strcmp(toCalcula
 		gradB=B.C1(:,1)*[0 0 0];
 		for iC=1:4
 			id=idC{iC};
-			gradB = gradB + K.(id).*B.(id)(:,1)*[1 1 1];
+			gradB = gradB + K.(id).*(B.(id)(:,1)*[1 1 1]);
 		end
 		result=gradB;
 	elseif isFieldVector, % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...
