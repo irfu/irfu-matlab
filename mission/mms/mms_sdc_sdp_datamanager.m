@@ -126,7 +126,7 @@ if(nargin==2)
         % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
         DataInMemory.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
         % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
-        DataInMemory.(param).iifsunper = dataObj.data([varPrefix 'iifsunper']).data;
+        DataInMemory.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
       otherwise
         % Not yet implemented.
         err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
