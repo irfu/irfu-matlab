@@ -98,11 +98,11 @@ end
 isFieldScalar = false; % default everything false
 isFieldVector = false;
 isTimeSpecified = false;
-if size(B.C1,2)>=4 || size(B.C1,2)==2 && size(R.C1,2)>3 % input is vector using only columns 2,3,4
+if (size(B.C1,2)>=4 || size(B.C1,2)==2) && size(R.C1,2)>3 % input is vector using only columns 2,3,4
 	isTimeSpecified = true; % default assume first column is time
 	tB = B.C1(:,1); % time vector
 	tR = R.C1(:,1); % time vector
-	if  size(B.C1,2)>=4, 
+	if  size(B.C1,2)>=4,
 		isFieldVector = true;
 	else
 		isFieldScalar = true;
@@ -110,8 +110,7 @@ if size(B.C1,2)>=4 || size(B.C1,2)==2 && size(R.C1,2)>3 % input is vector using 
 	for iC=1:4
 		id=idC{iC};
 		ttt      = irf_resamp(B.(id),tB);
-		ttt(:,1) = []; % remove time column, keep the rest
-		B.(id)   = ttt;
+		B.(id)   = ttt(:,2:min(4,size(ttt,2))); % remove time column, keep the rest
 		ttt      = irf_resamp(R.(id),tR,'spline');
 		R.(id)   = ttt(:,2:4);  % remove time column, keep only X,Y,Z coordinates
 	end
