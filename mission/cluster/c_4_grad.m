@@ -109,10 +109,11 @@ if size(B.C1,2)>=4 || size(B.C1,2)==2 && size(R.C1,2)>3 % input is vector using 
 	end
 	for iC=1:4
 		id=idC{iC};
-		ttt    = irf_resamp(B.(id),tB);
-		B.(id) = ttt(:,2:4); % remove time column		
-		ttt = irf_resamp(R.(id),tR,'spline');
-		R.(id) = ttt(:,2:4);
+		ttt      = irf_resamp(B.(id),tB);
+		ttt(:,1) = []; % remove time column, keep the rest
+		B.(id)   = ttt;
+		ttt      = irf_resamp(R.(id),tR,'spline');
+		R.(id)   = ttt(:,2:4);  % remove time column, keep only X,Y,Z coordinates
 	end
 elseif (size(B.C1,2) == 3 || size(B.C1,2) == 1) ...
 		&& size(R.C1,2) == 3 % assume  time not specified
