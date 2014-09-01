@@ -93,7 +93,7 @@ end
 			movefile(dataSet,dataSetNew);
 			dataSet=dataSetNew;
 			end
-			listFiles=dir(dataSet);
+			listFiles=dir([dataSet '/*.cdf']);
 			iDir = [listFiles(:).isdir]; %# returns logical vector
 			listFiles(iDir)=[];
 			%% read in file time intervals

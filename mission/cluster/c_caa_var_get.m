@@ -158,7 +158,7 @@ end
 
 isDataReturned = false;
 
-[datasetNameList,varShortNameList]=caa_get_dataset_name(varNameList);
+datasetNameList = caa_get_dataset_name(varNameList,'_');
 [datasetNameUniqueList,~,indDatasetUniqueToName] ...
 	= unique(datasetNameList);
 for iDataset = 1:numel(datasetNameUniqueList)
@@ -241,8 +241,10 @@ for iDataset = 1:numel(datasetNameUniqueList)
 			end
 		end
 	end
-	if getUnit % save variable unit
-		resunit(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList,'uniformoutput',false);
+	if getUnit % save variable unit TODO: implement local.c_read and streaming
+		if existDataobject
+			resunit(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList,'uniformoutput',false);
+		end
 	end
 	if getDobj,% save dataobject TODO: call to stream data object
 		for iVar = indVarNameList(:)'

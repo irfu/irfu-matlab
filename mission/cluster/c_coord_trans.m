@@ -31,6 +31,8 @@ function y = c_coord_trans(from,to,x,varargin)
 
 persistent lat long cl_id_saved
 
+CL_SP_AUX = [];
+
 narginchk(3,8)
 if isempty(x), y=[]; return; end % if empty input, empty output
 
@@ -131,11 +133,13 @@ if strcmpi(from,'GSE') || strcmpi(to,'GSE')
 		[ok,sax] = sax_from_lat_long;
 		if ~ok, flagReadLat = 1; else flagReadLat = 0; end
 		if flagReadLat, % try to read lat and long from CAA files
-			caa_load CL_SP_AUX % Load CAA data files
-			if exist('CL_SP_AUX','var')
+      if isempty(CL_SP_AUX)
+				caa_load CL_SP_AUX % Load CAA data files
+      end
+			if ~isempty(CL_SP_AUX)
 				lat = []; long = [];
-				c_eval('lat=getmat(CL_SP_AUX,''sc_at?_lat__CL_SP_AUX'');',cl_id);
-				c_eval('long=getmat(CL_SP_AUX,''sc_at?_long__CL_SP_AUX'');',cl_id);
+				lat = getmat(CL_SP_AUX,sprintf('sc_at%d_lat__CL_SP_AUX',cl_id));
+				long = getmat(CL_SP_AUX,sprintf('sc_at%d_long__CL_SP_AUX',cl_id));
 				cl_id_saved=cl_id;
 			end
 			[ok,sax] = sax_from_lat_long;
