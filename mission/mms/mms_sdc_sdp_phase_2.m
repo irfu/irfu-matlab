@@ -145,7 +145,7 @@ period_flag = zeros(size(period), 'int16');
 
 if( valid_iifsunper(1) )
     pulse = [pulse(1) - iifsunper(1); pulse];
-    period = [iifsunper(1); period];
+    period = [double(iifsunper(1)); period];
     period_flag = [0; period_flag];
     iifsunper = [0; iifsunper];
     valid_iifsunper = [0; valid_iifsunper];
@@ -171,7 +171,7 @@ for i = 1:ngap
         % insert into pulse, period, and period_flag arrays.
         pseudopulse = pulse(segstart) - iifsunper(segstart);
         pulse = [pulse(1:segstart); pseudopulse; pulse(segstart+1:end)];
-        period = [period(1:segstart); iifsunper(segstart); period(segstart+1:end)];
+        period = [period(1:segstart); double(iifsunper(segstart)); period(segstart+1:end)];
         period_flag = [period_flag(1:segstart); 0; period_flag(segstart+1:end)];
         % insert 0 into iifsunper and valid_iifsunper arrays, 3 into ssps
         iifsunper = [iifsunper(1:segstart); 0; iifsunper(segstart+1:end)];
@@ -238,9 +238,9 @@ for i = 1:ngap+1
     
     % Number of spins between each pulse is time between pulse divided by
     % the best guess at the actual period.
-    nspins1 = double(segperiod)./mperiod;
+    nspins1 = segperiod./mperiod;
 
-    period_flag_seg = nspins1 * 0;
+    period_flag_seg = zeros(size(nspins1), 'int16');
     
     % nspins1 should be nearly an integer value. If not, issue a warning
     % and set a flag.
@@ -276,7 +276,7 @@ for i = 1:ngap+1
     % TODO (mabye) end   %%%%%%%%%%%%%%%%%%%%
     
     % Calculate the average period between pulses.
-    period(segind) = double(period(segind)) ./ round(nspins1);
+    period(segind) = period(segind) ./ round(nspins1);
     period_flag(segind) = period_flag_seg;
     
 end
@@ -296,7 +296,7 @@ for i = 1:ngap
     if valid_iifsunper(gapidx)
         period1 = double(iifsunper(gapidx));
     elseif (gapidx > 1)
-        period1 = double(period(gapidx-1));
+        period1 = period(gapidx-1);
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at beginning of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
@@ -308,7 +308,7 @@ for i = 1:ngap
     % 1b) Find period at end of gap: IIFSUNPER (from pseudopulse) or 
     %     average period to next pulse.
     if( gapidx + 1 ~= segs(i+2) )
-        period2 = double(period(gapidx+1));
+        period2 = period(gapidx+1);
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at end of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
@@ -318,8 +318,8 @@ for i = 1:ngap
     end
 
     % 2) Determine number of spins in gap, working forwards and backwards.
-    nspins1 = double(period(gapidx)) / period1;
-    nspins2 = double(period(gapidx)) / period2;
+    nspins1 = period(gapidx) / period1;
+    nspins2 = period(gapidx) / period2;
 
     if( isfinite(nspins1) && isfinite(nspins2) && round(nspins1) == round(nspins2) )
         nspins = nspins1;
@@ -358,7 +358,7 @@ for i = 1:ngap
         end
 
     end
-    period(gapidx) = double(period(gapidx)) ./ round(nspins);
+    period(gapidx) = period(gapidx) ./ round(nspins);
 end
 
 %% Step 3: Calculate spin phase
@@ -366,17 +366,22 @@ end
 % input epoch.
 %
 
+% Transform to 'double'. It is possible to do this earlier but perhaps best
+% to keep int64 until all TT2000 specific calls are done (breakdowntt2000).
+pulse = double(pulse);
+epoch = double(epoch);
+
 %per = value_locate(pulse, epoch)
-per = interp1(double(pulse), 1:length(pulse), double(epoch), 'nearest');
+per = interp1(pulse, 1:length(pulse), epoch, 'nearest');
 
 % Pre allocate output
-phase = double(epoch);
+phase = epoch;
 flag = int16(epoch);
 
 inrange = find( ~isnan(per) & per < length(pulse) );
 
 if( ~isempty(inrange) )
-    phase(inrange) = (double(epoch(inrange)) - double(pulse(per(inrange))))./double(period(per(inrange)))*360;
+    phase(inrange) = (epoch(inrange) - pulse(per(inrange)))./period(per(inrange))*360;
     flag(inrange) = period_flag(per(inrange));
     % phase in the interval 0-360 deg.
     phase(inrange) = mod(phase(inrange), 360);
@@ -388,9 +393,9 @@ if( ~isempty(inrange) )
         % IIFSUNPER, if available. Otherwise, it will be the first pulse
         % from the CDIP, with spin period calculated between first and 
         % second pulses.
-        period0 = double(period(1));
+        period0 = period(1);
         period_flag0 = 10 + period_flag(1);
-        phase(beforefirst) = (double(epoch(beforefirst))-double(pulse(1)))/period0*360;
+        phase(beforefirst) = (epoch(beforefirst)-pulse(1))/period0*360;
         flag(beforefirst) = period_flag0;
 
         warn = find(phase < -360*3);
@@ -400,7 +405,7 @@ if( ~isempty(inrange) )
             flag(warn) = flag(warn) + 20;
         end
 
-        phase(beforefirst) = phase(beforefirst)+ceil(-min(double(phase)/360))*360;
+        phase(beforefirst) = phase(beforefirst)+ceil(-min(phase/360))*360;
 
         % phase in the interval 0-360 deg.
         phase(beforefirst) = mod(phase(beforefirst), 360);
@@ -414,9 +419,9 @@ if( ~isempty(inrange) )
         % To calculate phase after last pulse, use spin period calculated
         % between last and second to last pulses (which will actually be
         % IIFSUNPER if there was a gap before the last pulse)
-        period0 = double(period(end));
+        period0 = period(end);
         flag(afterlast) = 10 + period_flag(end);
-        phase(afterlast) = (double(epoch(afterlast))-double(pulse(end)))/period0*360;    
+        phase(afterlast) = (epoch(afterlast)-pulse(end))/period0*360;
 
         warn = find(phase > 360*3);
         
