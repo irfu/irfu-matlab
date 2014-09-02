@@ -394,7 +394,7 @@ if( ~isempty(inrange) )
         % from the CDIP, with spin period calculated between first and 
         % second pulses.
         period0 = period(1);
-        period_flag0 = 10 + period_flag(1);
+        period_flag0 = 10 + period_flag(1); % Add initial 10 to flag.
         phase(beforefirst) = (epoch(beforefirst)-pulse(1))/period0*360;
         flag(beforefirst) = period_flag0;
 
@@ -402,7 +402,7 @@ if( ~isempty(inrange) )
         if( ~isempty(warn) )
             log_str='Warning: extrapolating more than 3 spin periods before first sun pulse.';
             irf.log('warning', log_str);
-            flag(warn) = flag(warn) + 20;
+            flag(warn) = flag(warn) + 10; % Add another 10 to flag (atleast 10 has already been added).
         end
 
         phase(beforefirst) = phase(beforefirst)+ceil(-min(phase/360))*360;
