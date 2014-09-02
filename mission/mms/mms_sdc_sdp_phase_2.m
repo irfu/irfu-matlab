@@ -160,7 +160,7 @@ mingap = 4;
 gap = find( period > medianperiod*mingap ); ngap = length(gap);
 
 %segs = [-1, gap, length(period)];
-segs = [0, gap, length(period)];
+segs = [0, gap', length(period)];
 
 % Insert a pseudo sun pulse time and period based on IIFSUNPER at the
 % beginning of each segment (except the first one, because that has been 
