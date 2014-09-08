@@ -200,11 +200,16 @@ switch(HeaderInfo.calledBy)
         %% FIXME: DUMMY DATA FOR NOW.
         % For now store data temporarly
         epochTT = DataInMemory.dcv.time;
-        data1(:,1) = DataInMemory.dcv.v1.data;
-        data1(:,2) = DataInMemory.dcv.v3.data;
-        data1(:,3) = DataInMemory.dcv.v5.data;     
-        psp_p = [data1, data1];
+        psp_p(:,1) = DataInMemory.dcv.v1.data;
+        psp_p(:,2) = DataInMemory.dcv.v2.data;
+        psp_p(:,3) = DataInMemory.dcv.v3.data;
+        psp_p(:,4) = DataInMemory.dcv.v4.data;
+        psp_p(:,5) = DataInMemory.dcv.v5.data;
+        psp_p(:,6) = DataInMemory.dcv.v6.data;
         bitmask = DataInMemory.dcv.v1.bitmask;
+        ESCP = DataInMemory.dcv.v1.data;
+        PSP = DataInMemory.dcv.v2.data;
+        Delta = DataInMemory.dcv.v3.data;
         %%%%
         
         irf.log('debug', ['MATLAB:mms_sdc_sdp_cdf_writing:usc Ready to',...
@@ -213,7 +218,7 @@ switch(HeaderInfo.calledBy)
         
         mms_sdc_sdp_cdfwrite( filename_output, ...
             int8(str2double(HeaderInfo.scId(end))), 'usc', epochTT, ...
-            data1(:,1), data1(:,2), data1(:,3), psp_p, uint16(bitmask) );    
+            ESCP, PSP, Delta, psp_p, uint16(bitmask) );
     
   otherwise
     errStr = 'unrecognized HeaderInfo.calledBy';
