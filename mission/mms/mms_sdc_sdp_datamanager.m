@@ -28,8 +28,8 @@ if ~ischar(param),
 end
 if strcmpi(param, 'init')
   % Initialize
-  if ~isnumeric(dataObj) || isempty(intersect(1:4,dataObj))
-    err_str = 'second argument for INIT must be MMS_ID 1..4';
+  if nargin==1 || ~isnumeric(dataObj) || isempty(intersect(1:4,dataObj))
+    err_str = 'INIT requires second argument: MMS_ID 1..4';
     irf.log('critical', err_str);
     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
   end
@@ -48,9 +48,10 @@ end
 param = lower(param);
 
 if(nargin==2)   
-    % Make sure first argument is a dataobject (of a read cdf file).
+    % Make sure first argument is a dataobj class object, 
+    % otherwise a read cdf file.
     if isa(dataObj,'dataobj') % do nothing
-    elseif ischar(dataObj) && exists(dataObj, 'file')
+    elseif ischar(dataObj) && exist(dataObj, 'file')
         % If it is not a read cdf file, is it an unread cdf file? Read it.
         irf.log('warning',['First argument was not a dataobj but a file,'...
             ' trying to load with dataobj that file: ', dataObj, ...
