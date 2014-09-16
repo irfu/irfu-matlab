@@ -1,5 +1,16 @@
 classdef (Abstract) GenericTimeArray
-  %GenericTimeArray Generic (Abstract) class describing a time array
+%GenericTimeArray Generic (Abstract) class describing a time array
+%
+%  Methods:
+%     disp()
+%     end()
+%     isempty()
+%     length()
+%     start() first point of the time array
+%     stop() last point of the time array
+%     tlim() Returns index and records within specified time interval
+%     toEpochUnix()
+%     toEpochTT2000()
   
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

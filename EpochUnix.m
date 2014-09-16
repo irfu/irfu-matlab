@@ -1,7 +1,16 @@
 classdef EpochUnix < GenericTimeArray
-  %EpochUnix Class representing UNIX epoch, double seconds since 1970.
-  %   Detailed explanation goes here
+%EpochUnix Class representing UNIX epoch, double seconds since 1970.
+%   Detailed explanation goes here
+%
+% See also GenericTimeArray
   
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
   methods
     function obj = EpochUnix(inp)
       if nargin==0, return, end
@@ -25,6 +34,7 @@ classdef EpochUnix < GenericTimeArray
       end
     end
     function s = toUtc(obj,format)
+      %toUtc  convert to UTC string
       if nargin<2, format = 0; end
       s = epoch2iso(obj.epoch, format);
     end
