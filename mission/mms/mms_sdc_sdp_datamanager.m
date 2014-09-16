@@ -204,6 +204,11 @@ end
       %error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
     end
     DataInMemory.(param).dataObj = dataObj;
+    fileVersion = DataInMemory.dce.dataObj.GlobalAttributes.Data_version{:};
+    DataInMemory.(param).fileVersion = struct(...
+      'major', str2double(fileVersion(2)),...
+      'minor', str2double(fileVersion(4)),...
+      'revision', str2double(fileVersion(4)));
     x = getdep(dataObj,[varPrefix param '_sensor']);
     DataInMemory.(param).time = x.DEPEND_O;
     check_monoton_timeincrease(DataInMemory.(param).time, param);
