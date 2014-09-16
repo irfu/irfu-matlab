@@ -1,6 +1,9 @@
 %% Init
-data_root='/Users/yuri/Dropbox/Projects/MMS/DataProcessing/Data/MRT9/';
+data_root='/data/mms/MRT9/';
+%data_root='/Users/yuri/Dropbox/Projects/MMS/DataProcessing/Data/MRT9/';
 cd(data_root)
+if ~exist('log','dir'), mkdir('log'), end
+if ~exist('out','dir'), mkdir('out'), end
 setenv('LOG_PATH_ROOT',[data_root 'log'])
 setenv('DROPBOX_ROOT',[data_root 'out'])
 
