@@ -160,6 +160,8 @@ switch action
 								error('IRF:dataobj:dataobj:functionNotImplemented',errStr) %#ok<SPERR>
 							else
 								tt2000 = data{iVar(i)};
+                % XXX : this is a hack for speed, will not work correctly
+                % is there is a leap second during the time interval
 								s_tmp = encodett2000(tt2000(1));
 								epoch0 = iso2epoch(s_tmp{:});
 								data{iVar(i)} = double(tt2000 - tt2000(1))*1e-9 + epoch0;
@@ -308,9 +310,14 @@ switch action
 						dobj.Variables{v,3}      = sum(recsTmp);
 					end
 					dobj.data.(varName).dim      = info.Variables{v,2};
-					dobj.data.(varName).type     = info.Variables{v,4};
 					dobj.data.(varName).variance = info.Variables{v,5};
 					dobj.data.(varName).sparsity = info.Variables{v,6};
+          typeTmp = info.Variables{v,4};
+          % Update time types to catch up with conversion to unix epoch
+          if strcmpi(typeTmp,'epoch16') || ...
+              (strcmpi(typeTmp,'tt2000') && ~keepTT2000), typeTmp = 'epoch';
+          end
+          dobj.data.(varName).type     = typeTmp;
 				end
 			end
 			dobj = class(dobj,'dataobj');

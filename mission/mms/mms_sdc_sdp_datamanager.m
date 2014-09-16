@@ -120,7 +120,7 @@ if(nargin==2)
         DataInMemory.(param) = [];
         DataInMemory.(param).dataObj = dataObj;
         x = getdep(dataObj,[varPrefix 'cmdexec']);
-        DataInMemory.(param).time = x.DEPEND_O;
+        DataInMemory.(param).time = x.DEPEND_O.data;
         check_monoton_timeincrease(DataInMemory.(param).time, param);
         % Add sunpulse times (TT2000) of last recieved sunpulse.
         DataInMemory.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
@@ -210,7 +210,7 @@ end
       'minor', str2double(fileVersion(4)),...
       'revision', str2double(fileVersion(4)));
     x = getdep(dataObj,[varPrefix param '_sensor']);
-    DataInMemory.(param).time = x.DEPEND_O;
+    DataInMemory.(param).time = x.DEPEND_O.data;
     check_monoton_timeincrease(DataInMemory.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(fields), return, end
