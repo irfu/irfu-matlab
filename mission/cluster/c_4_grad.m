@@ -98,21 +98,21 @@ end
 isFieldScalar = false; % default everything false
 isFieldVector = false;
 isTimeSpecified = false;
-if size(B.C1,2)>=4 || size(B.C1,2)==2 && size(R.C1,2)>3 % input is vector using only columns 2,3,4
+if (size(B.C1,2)>=4 || size(B.C1,2)==2) && size(R.C1,2)>3 % input is vector using only columns 2,3,4
 	isTimeSpecified = true; % default assume first column is time
 	tB = B.C1(:,1); % time vector
 	tR = R.C1(:,1); % time vector
-	if  size(B.C1,2)>=4, 
+	if  size(B.C1,2)>=4,
 		isFieldVector = true;
 	else
 		isFieldScalar = true;
 	end
 	for iC=1:4
 		id=idC{iC};
-		ttt    = irf_resamp(B.(id),tB);
-		B.(id) = ttt(:,2:4); % remove time column		
-		ttt = irf_resamp(R.(id),tR,'spline');
-		R.(id) = ttt(:,2:4);
+		ttt      = irf_resamp(B.(id),tB);
+		B.(id)   = ttt(:,2:min(4,size(ttt,2))); % remove time column, keep the rest
+		ttt      = irf_resamp(R.(id),tR,'spline');
+		R.(id)   = ttt(:,2:4);  % remove time column, keep only X,Y,Z coordinates
 	end
 elseif (size(B.C1,2) == 3 || size(B.C1,2) == 1) ...
 		&& size(R.C1,2) == 3 % assume  time not specified
@@ -148,6 +148,7 @@ for iC=1:4
 	id=idC{iC};
 	if isTimeSpecified
 		K.(id) = irf_resamp([tR K.(id)],tB);
+		K.(id)(:,1) = []; % remove time column
 	end
 end
 
@@ -157,7 +158,7 @@ if strcmp(toCalculate,'grad')||strcmp(toCalculate,'curvature')||strcmp(toCalcula
 		gradB=B.C1(:,1)*[0 0 0];
 		for iC=1:4
 			id=idC{iC};
-			gradB = gradB + K.(id).*B.(id)(:,1)*[1 1 1];
+			gradB = gradB + K.(id).*(B.(id)(:,1)*[1 1 1]);
 		end
 		result=gradB;
 	elseif isFieldVector, % vector field, gradient is matrix 1->(1,1),2->(1,2),3>(1,3),...

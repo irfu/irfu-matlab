@@ -15,9 +15,7 @@ function [out,l,v]=irf_minvar(inp,flag)
 % [out,l,v]=irf_minvar(inp,'<Bn>=0') minimum variance under constraint <Bn>=0
 %                                      see Eq. 8.17 ISSI book
 %
-% See also IRF_MINVAR_GUI, IRF_MINVAR_NESTED, IRF_MINVAR_NESTED_GUI
-%
-% $Id$
+% See also IRF_MINVAR_GUI, IRF_MINVAR_NEST, IRF_MINVAR_NEST_GUI
 
 if nargin==1,
     flag='mvar'; % default is to do unconstrained minimum variance

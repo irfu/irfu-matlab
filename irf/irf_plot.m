@@ -50,9 +50,6 @@ function c=irf_plot(varargin)
 %
 % See also DATAOBJ/PLOT, C_PL_TX, C_DESC
 
-%
-% $Id$
-
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array

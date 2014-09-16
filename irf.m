@@ -56,6 +56,7 @@ end
 switch lower(action)
 	case 'check'
 		[currentVersion,currentVersionDate] = irf('version');
+		disp(['irfu-matlab version: ' currentVersion]);
 		fprintf('Checking if you have latest irfu-matlab... ');
 		try
 			logText      = urlread(logFileUrl);
@@ -75,8 +76,7 @@ switch lower(action)
 			if indices > 1,
 				disp('NO!');
 				disp(' ');
-				disp(['Newest irfu-matlab: ' newestVersion]);
-				disp(['  Your irfu-matlab: ' currentVersion]);
+				disp(['Newest irfu-matlab version: ' newestVersion]);
 				disp('Please update, see <a href="https://github.com/irfu/irfu-matlab">https://github.com/irfu/irfu-matlab</a>');
 				disp('Log of updates: ');
 				for iInd = 1 : indices -1
