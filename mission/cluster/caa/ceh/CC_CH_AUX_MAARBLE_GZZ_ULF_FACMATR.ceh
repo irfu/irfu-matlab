@@ -1,0 +1,138 @@
+!------------------- CEF ASCII File --------------------
+! Header file for Cluster Pc3-5 
+!-------------------------------------------------------
+INCLUDE        =   "CL_CH_MISSION.ceh"
+INCLUDE        =   "CC_CH_OBS.ceh"
+INCLUDE        =   "CL_CH_AUX_EXP.ceh"
+INCLUDE        =   "CC_CH_AUX_INST.ceh"
+!
+! DATASET LEVEL METADATA
+!
+START_META     =   DATASET_ID
+   ENTRY       =   "CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR"
+END_META       =   DATASET_ID
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP>CAA_Parameter"
+END_META       =   DATA_TYPE
+!
+START_META     =   DATASET_TITLE
+   ENTRY       =   "GOES-XXX position and transformation from DSL to FAC coordinates"
+END_META       =   DATASET_TITLE
+!
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =  "Transforms to a field-aligned coordinate (FAC) system defined as:"
+   ENTRY       =  "R_parallel_z aligned with the background magnetic field"
+   ENTRY       =  "R_perp_y defined by R_parallel cross the position vector of the"
+   ENTRY       =  "spacecraft (nominally eastward at the equator);"
+   ENTRY       =  "R_perp_x defined by R_perp_y cross R_par."
+   ENTRY       =   " "
+   ENTRY       =   "This dataset was generated as part of the MAARBLE (Monitoring,"
+   ENTRY       =   "Analyzing and Assessing Radiation Belt Energization and Loss)"
+   ENTRY       =   "collaborative research project which has received funding from the"
+   ENTRY       =   "European Community's Seventh Framework Programme (FP7-SPACE-2011-1)"
+   ENTRY       =   "under grant agreement n. 284520."
+   ENTRY       =   " "
+   ENTRY       =   "The contacts for the MAARBLE project are"
+   ENTRY       =   "  Ioannis A. Daglis, National Observatory of Athens"
+   ENTRY       =   "  Yuri Khotyaintsev, Swedish Institute of Space Physics"
+   ENTRY       =   "  Ondrej Santolik, Institute of Atmospheric Physics of"
+   ENTRY       =   "         the Academy of Sciences of the Czech Republic"
+   ENTRY       =   "  Sebastien Bourdarie, ONERA"
+   ENTRY       =   "  Richard B. Horne, The British Antarctic Survey"
+   ENTRY       =   "  Ian R. Mann, The University of Alberta"
+   ENTRY       =   "  Drew Turner, UCLA"
+END_META       =   DATASET_DESCRIPTION
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   60.0
+END_META       =   TIME_RESOLUTION
+!
+START_META     =   MIN_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   60.0
+END_META       =   MIN_TIME_RESOLUTION
+!
+START_META     =   MAX_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   60.0
+END_META       =   MAX_TIME_RESOLUTION
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Derived"
+END_META       =   PROCESSING_LEVEL
+!
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "To be written"
+END_META       =   DATASET_CAVEATS
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the European Union Framework 7 Programme, the MAARBLE project"
+   ENTRY       =   " and the ESA Cluster Archive in any publications based upon the use of these data."
+END_META       =   ACKNOWLEDGEMENT
+!
+! PARAMETER LEVEL METADATA
+!
+START_VARIABLE  =  Time__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "time tag"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = ISO_TIME
+    SIGNIFICANT_DIGITS  = 24
+    FILLVAL             = 9999-12-31T23:59:59Z
+    FIELDNAM            = "Universal Time"
+    LABLAXIS            = "UT"
+    DELTA_PLUS          = 30 ! integration interval
+    DELTA_MINUS         = 30
+END_VARIABLE    =  Time__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+!
+START_VARIABLE = DSL2FAC__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+    ENTITY            = "Transformation"
+    PROPERTY          = "Coordinate_rotation"
+    SIZES             = 3, 3
+    VALUE_TYPE        = FLOAT
+    COORDINATE_SYSTEM = "ISR2"
+    FRAME             = "ISR2>xyz"
+    TARGET_SYSTEM     = "FAC"
+    FIELDNAM          = "Rot Matrix from DSL to FAC"
+    REPRESENTATION_1  = "x","y","z"
+    REPRESENTATION_2  = "x","y","z"
+    LABEL_1           = "x","y","z"
+    LABEL_2           = "x","y","z"
+    TENSOR_ORDER      = 2
+    SI_CONVERSION     = "1>unitless"
+    UNITS             = "unitless"
+    FILLVAL           = -999.
+    PARAMETER_TYPE    = "Support_Data"
+    CATDESC           = "Transformation from DSL to FAC coordinate system"
+    DEPEND_0          = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+END_VARIABLE = DSL2FAC__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+START_VARIABLE = sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+    PARAMETER_TYPE    = "Data"
+    SIZES             = 3
+    VALUE_TYPE        = FLOAT
+    ENTITY            = "Observatory"
+    PROPERTY          = "Vector"
+    FLUCTUATIONS      = "Waveform"
+    CATDESC           = "Spacecraft position"
+    FIELDNAM          = "Spacecraft position"
+    SI_CONVERSION     = "1.0e-3>m"
+    UNITS             = "km"
+    FILLVAL           = -1000000000.000
+    QUALITY           = 3
+    SIGNIFICANT_DIGITS= 6
+    COORDINATE_SYSTEM = "GSE"
+    FRAME             = "GSE>xyz"
+    TENSOR_ORDER      = 1
+    REPRESENTATION_1  = "x", "y", "z"
+    LABEL_1           = "Rx", "Ry", "Rz"
+    LABLAXIS          = "R"
+    DEPEND_0          = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR
+END_VARIABLE = sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_GXXX_ULF_FACMATR

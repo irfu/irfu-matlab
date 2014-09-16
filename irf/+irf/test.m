@@ -20,7 +20,7 @@ if nargin == 0,
 		disp([num2str(j) '. ' testList{j}]);
 	end
 	disp('--------------------------');
-	disp('Execute: irf.test(''testname'') or irf.test(number) or irf.test(''full'')');
+	disp('Execute: irf.test(''testname'') or irf.test(number) or irf.test(''all'')');
 	return
 else
 	testName = varargin{1};
@@ -28,7 +28,7 @@ else
 		isTest = strcmpi(testList,testName);
 		if any(isTest)
 			testNumber = find(isTest);
-		elseif strcmpi('full',testName)
+		elseif strcmpi('all',testName)
 			testNumber=1:numel(testList);
 		else
 			disp(['!!! Test ''' testName ''' not in list!!!']);

@@ -9,7 +9,7 @@ INCLUDE        =   "CC_CH_AUX_INST.ceh"
 ! DATASET LEVEL METADATA
 !
 START_META     =   DATASET_ID
-   ENTRY       =   "CC_CH_AUX_MAARBLE_THXXX_ULF_PC12"
+   ENTRY       =   "CC_CP_AUX_MAARBLE_THXXX_ULF_PC12"
 END_META       =   DATASET_ID
 !
 START_META     =   DATA_TYPE
@@ -55,7 +55,6 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Meghan Mella>THEMIS ULF data provider>meghan.mella@irfu.se"
    ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
@@ -89,7 +88,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE  =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -102,9 +101,9 @@ START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
     LABLAXIS            = "UT"
     DELTA_PLUS          = 0.5
     DELTA_MINUS         = 0.5
-END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE    =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Interval centred frequency tag"
    UNITS              = "Hz"
@@ -116,15 +115,15 @@ START_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FIELDNAM           = "Frequency bin centres"
    LABLAXIS           = "F"
    LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F"
-   DELTA_PLUS         = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DELTA_MINUS        = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DELTA_PLUS         = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DELTA_MINUS        = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    SCALETYP           = "Log"
    DATA               = 0.1000,0.1216,0.1479,0.1798,0.2187,0.2659,0.3234,0.3932,0.4782,0.5815, \
                         0.7071,0.8599,1.0456,1.2715,1.5462,1.8803,2.2865,2.7805,3.3812,4.1117, \
                         5.0000
-END_VARIABLE = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Support_Data"
    CATDESC            = "Frequency bin half widths"
    UNITS              = "Hz"
@@ -140,9 +139,9 @@ START_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    DATA               = 0.0097,0.0119,0.0145,0.0176,0.0214,0.0260,0.0317,0.0385,0.0468,0.0570, \
                         0.0693,0.0842,0.1024,0.1246,0.1515,0.1842,0.2240,0.2724,0.3312,0.4028, \
                         0.4855
-END_VARIABLE = Frequency_BHW__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Vector"
@@ -160,13 +159,13 @@ START_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FIELDNAM           = "Magnetic Power Spectral Density"
    LABLAXIS           = "B PSD"
    REPRESENTATION_2   = "xx","yy","zz"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    LABEL_2            = "Bx^2","By^2","Bz^2"
    QUALITY            = 3
-END_VARIABLE = BB_xxyyzz_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"   
    PROPERTY           = "Vector"
@@ -184,12 +183,12 @@ START_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Direction of propagation"
    LABLAXIS           = "THSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = KSVD_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -202,12 +201,12 @@ START_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Ellipticity of the polarization (SVD)."
    LABLAXIS           = "ELLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = ELLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"        
    PROPERTY           = "Magnitude"
@@ -220,12 +219,12 @@ START_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Planarity of the polarization (SVD)."
    LABLAXIS           = "PLANSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = PLANSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = DOP__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -238,12 +237,12 @@ START_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "3D Degree of polarization."
    LABLAXIS           = "DOP"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = DOP__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = DOP__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"         
    PROPERTY           = "Magnitude"
@@ -256,12 +255,12 @@ START_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -999.
    FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
    LABLAXIS           = "POLSVD"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = POLSVD__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = PV_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Compound"           
    PROPERTY           = "Component"
@@ -279,12 +278,12 @@ START_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    REPRESENTATION_2   = "r","t","p"
    LABEL_2            = "PV(amp)", "PV(theta)", "PV(phi)"
    LABLAXIS           = "PFlux"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = PV_fac__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = PV_fac__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = ESUM__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Electric_Field"           
    PROPERTY           = "Magnitude"
@@ -297,12 +296,12 @@ START_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -1.00E+31
    FIELDNAM           = "Sum of the two electric auto-power spectra."
    LABLAXIS           = "ESUM"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
-   DEPEND_1           = Frequency__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = ESUM__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = ESUM__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 !
-START_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+START_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    PARAMETER_TYPE     = "Data"
    ENTITY             = "Magnetic_Field"
    PROPERTY           = "Magnitude"
@@ -315,8 +314,8 @@ START_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
    FILLVAL            = -1.00E+31
    FIELDNAM           = "DC Magnetic Field Magnutude"
    LABLAXIS           = "B"
-   DEPEND_0           = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
    QUALITY            = 3
-END_VARIABLE = BMAG__CC_CH_AUX_MAARBLE_THXXX_ULF_PC12
+END_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_THXXX_ULF_PC12
 
 

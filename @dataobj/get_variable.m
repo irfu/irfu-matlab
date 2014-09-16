@@ -9,7 +9,7 @@ function res = get_variable(dobj,varName)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-error(nargchk(2,2,nargin))
+narginchk(2,2)
 
 if ~ischar(varName)
   error('variable name must be a string')
@@ -38,7 +38,7 @@ if nVars>0
         attr = dobj.VariableAttributes.(variableAttributeNames{j}){iattr,2};
         if ischar(attr), 
 			if strcmp(attr,varName),
-        irf.log('error',['Variable depends on itself : ' varName])
+        irf.log('critical',['Variable depends on itself : ' varName])
 				error('Recursive variable dependence');
 			end
 			varTmp = get_variable(dobj,attr);

@@ -120,9 +120,9 @@ if flag_want_fac && isempty(facMatrix)
     irf_log('fcal','assuming s/c position [1 0 0] for estimating FAC');
     xyz=[0 1 0 0];
   end
+  xyz = irf_resamp(xyz,dB);
 end
 B0 = irf_resamp(B0,dB);
-xyz = irf_resamp(xyz,dB);
 if flag_fullB_dB
     fullB = dB;
     res.fullB = fullB;
@@ -201,8 +201,9 @@ end
 if size(dB,1)/2 ~= floor(size(dB,1)/2)
 	dB=dB(1:end-1,:);
 	B0=B0(1:end-1,:);
-  xyz=xyz(1:end-1,:);
-  if ~isempty(facMatrix)
+  if isempty(facMatrix)
+    xyz=xyz(1:end-1,:);
+  else
     facMatrix.t = facMatrix.t(1:end-1,:);
     facMatrix.rotMatrix = facMatrix.rotMatrix(1:end-1,:,:);
   end

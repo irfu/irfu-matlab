@@ -89,6 +89,7 @@ switch action
 			irf.log('notice',['Reading: ' cdf_file]);
 			% initialize data object
 			if usingNasaPatchCdf
+        timeVariable = [];
 				[data,info] = cdfread(cdf_file,'CombineRecords',true,'KeepEpochAsIs',true);
 				
 				% Convert epoch/epoch16/tt2000 to ISDAT epoch
@@ -113,9 +114,12 @@ switch action
 						else
 							data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
 							data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch2epoch');
-							data{iVar(i)} = data{iVar(i)}(:); % bug fix for cdfread (time comes out as row vector)
-						end
-						timeVariable = info.Variables{iVar(i),1};
+              % bug fix for cdfread (time comes out as row vector)
+              if size(data{iVar(i)},1)~=info.Variables{iVar(i),3}
+                data{iVar(i)} = data{iVar(i)}';
+              end
+            end
+            timeVariable = info.Variables{iVar(i),1};
 						update_variable_attributes_time;
 					end
 				end
@@ -405,13 +409,13 @@ end % Main function
 		% XXX: FIXME - update for VIRTUAL variables
 		if isFieldDeltaPlus,
 			iattr=find(strcmpi(info.VariableAttributes.DELTA_PLUS(:,1),timeVariable)); % to convert DELTA_PLUS
-			if iattr && isnumeric(info.VariableAttributes.DELTA_PLUS{iattr,2}),
+			if any(iattr) && isnumeric(info.VariableAttributes.DELTA_PLUS{iattr,2}),
 				info.VariableAttributes.DELTA_PLUS{iattr,2}=info.VariableAttributes.DELTA_PLUS{iattr,2}/factor;
 			end
 		end
 		if isFieldDeltaMinus,
 			iattr=find(strcmpi(info.VariableAttributes.DELTA_MINUS(:,1),timeVariable)); % to convert DELTA_PLUS
-			if iattr && isnumeric(info.VariableAttributes.DELTA_MINUS{iattr,2}),
+			if any(iattr) && isnumeric(info.VariableAttributes.DELTA_MINUS{iattr,2}),
 				info.VariableAttributes.DELTA_MINUS{iattr,2}=info.VariableAttributes.DELTA_MINUS{iattr,2}/factor;
 			end
 		end

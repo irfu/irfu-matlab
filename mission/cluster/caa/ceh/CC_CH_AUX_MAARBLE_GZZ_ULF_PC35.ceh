@@ -1,0 +1,274 @@
+!------------------- CEF ASCII File --------------------
+! Header file for GOES Pc3-5 
+!-------------------------------------------------------
+INCLUDE        =   "CL_CH_MISSION.ceh"
+INCLUDE        =   "CC_CH_OBS.ceh"
+INCLUDE        =   "CL_CH_AUX_EXP.ceh"
+INCLUDE        =   "CC_CH_AUX_INST.ceh"
+!
+! DATASET LEVEL METADATA
+!
+START_META     =   DATASET_ID
+   ENTRY       =   "CC_CP_AUX_MAARBLE_GXXX_ULF_PC35"
+END_META       =   DATASET_ID
+!
+START_META     =   DATA_TYPE
+   ENTRY       =   "CP>CAA_Parameter"
+END_META       =   DATA_TYPE
+!
+START_META     =   DATASET_TITLE
+   ENTRY       =   "GOES-XXX Pc 3-5 Wave Spectra, Polarization and Propagation Parameters"
+END_META       =   DATASET_TITLE
+!
+START_META     =   DATASET_DESCRIPTION
+   ENTRY       =  "BB is the spectrum of B produced using Morlet wavelet in FAC system."
+   ENTRY       =  "Polarization and propagation parameters derived from singular value"
+   ENTRY       =  "decomposition (SVD) method of the cross-spectral matrix (sm)."   
+   ENTRY       =  "The SVD  method is described in Santolik et al (2003)."
+   ENTRY       =  "The parameters calculated from the three magnetic components are"
+   ENTRY       =  "BB, ELLSVD, PLANSVD and POLSVD." 
+   ENTRY       =  "DOP is the 3D degree of polarization defined in Samson (1973)."
+   ENTRY       =  "BMAG is the magnitude of DC magnetic field measured by FGM."
+   ENTRY       =   " "
+   ENTRY       =  "The parameters are derived from the L2 FGM dataset."
+   ENTRY       =   " "
+   ENTRY       =   "This dataset was generated as part of the MAARBLE (Monitoring,"
+   ENTRY       =   "Analyzing and Assessing Radiation Belt Energization and Loss)"
+   ENTRY       =   "collaborative research project which has received funding from the"
+   ENTRY       =   "European Community's Seventh Framework Programme (FP7-SPACE-2011-1)"
+   ENTRY       =   "under grant agreement n. 284520."
+   ENTRY       =   " "
+   ENTRY       =   "The contacts for the MAARBLE project are"
+   ENTRY       =   "  Ioannis A. Daglis, National Observatory of Athens"
+   ENTRY       =   "  Yuri Khotyaintsev, Swedish Institute of Space Physics"
+   ENTRY       =   "  Ondrej Santolik, Institute of Atmospheric Physics of"
+   ENTRY       =   "         the Academy of Sciences of the Czech Republic"
+   ENTRY       =   "  Sebastien Bourdarie, ONERA"
+   ENTRY       =   "  Richard B. Horne, The British Antarctic Survey"
+   ENTRY       =   "  Ian R. Mann, The University of Alberta"
+   ENTRY       =   "  Drew Turner, UCLA"
+END_META       =   DATASET_DESCRIPTION
+!
+START_META     =   CONTACT_COORDINATES
+   ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
+END_META       =   CONTACT_COORDINATES
+!
+START_META     =   TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   TIME_RESOLUTION
+!
+START_META     =   MIN_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   MIN_TIME_RESOLUTION
+!
+START_META     =   MAX_TIME_RESOLUTION
+   VALUE_TYPE  =   FLOAT
+   ENTRY       =   300.0
+END_META       =   MAX_TIME_RESOLUTION
+!
+START_META     =   PROCESSING_LEVEL
+   ENTRY       =   "Derived"
+END_META       =   PROCESSING_LEVEL
+!
+START_META     =   DATASET_CAVEATS
+   ENTRY       =   "To be written"
+END_META       =   DATASET_CAVEATS
+!
+START_META     =   ACKNOWLEDGEMENT
+   ENTRY       =   "Please acknowledge the European Union Framework 7 Programme, the MAARBLE project"
+   ENTRY       =   " and the ESA Cluster Archive in any publications based upon the use of these data."
+END_META       =   ACKNOWLEDGEMENT
+!
+! PARAMETER LEVEL METADATA
+!
+START_VARIABLE  =  Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+    PARAMETER_TYPE      = "Support_Data"
+    CATDESC             = "time tag"
+    UNITS               = "s"
+    SI_CONVERSION       = "1.0>s"
+    SIZES               = 1
+    VALUE_TYPE          = ISO_TIME
+    SIGNIFICANT_DIGITS  = 24
+    FILLVAL             = 9999-12-31T23:59:59Z
+    FIELDNAM            = "Universal Time"
+    LABLAXIS            = "UT"
+    DELTA_PLUS          = 30 ! integration interval
+    DELTA_MINUS         = 30
+END_VARIABLE    =  Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Interval centred frequency tag"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 21
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 4
+   FILLVAL            = -999.9999
+   FIELDNAM           = "Frequency bin centres"
+   LABLAXIS           = "F"
+   LABEL_1            = "F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F"
+   DELTA_PLUS         = Frequency_BHW__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DELTA_MINUS        = Frequency_BHW__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   SCALETYP           = "Log"
+   DATA               = 0.0020,0.0024,0.0030,0.0036,0.0044,0.0053,0.0065,0.0079,0.0096,0.0116, \
+                        0.0141,0.0172,0.0209,0.0254,0.0309,0.0376,0.0457,0.0556,0.0676,0.0822, \
+                        0.1000
+END_VARIABLE = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Support_Data"
+   CATDESC            = "Frequency bin half widths"
+   UNITS              = "Hz"
+   SI_CONVERSION      = "1.0>Hz"
+   SIZES              = 21
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -999.9999
+   FIELDNAM           = "Frequency bin half widths"
+   LABLAXIS           = "F_bhw"
+   LABEL_1            = "F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw","F_bhw"
+   SCALETYP           = "Log"
+   DATA               = 0.0002,0.0002,0.0003,0.0004,0.0004,0.0005,0.0006,0.0008,0.0009,0.0011, \
+                        0.0014,0.0017,0.0020,0.0025,0.0030,0.0037,0.0045,0.0054,0.0066,0.0081, \
+                        0.0097
+END_VARIABLE = Frequency_BHW__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Vector"
+   FLUCTUATIONS       = "Wavelet_Power-spectrum"
+   CATDESC            = "Power spectrum in the Pc 3-5 range of the B-field in the FAC system"
+   UNITS              = "nT^2 Hz^-1"
+   SI_CONVERSION      = "1.0E-18>T^2 Hz^-1"
+   TENSOR_ORDER       = 2
+   COORDINATE_SYSTEM  = "FAC"
+   FRAME              = "FAC>xyz"
+   SIZES              = 21,3     ! 21 frequency bins x 3 components
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "Magnetic Power Spectral Density"
+   LABLAXIS           = "B PSD"
+   REPRESENTATION_2   = "xx","yy","zz"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   LABEL_2            = "Bx^2","By^2","Bz^2"
+   QUALITY            = 3
+END_VARIABLE = BB_xxyyzz_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"   
+   PROPERTY           = "Vector"
+   CATDESC            = "Direction of propagation in FAC system (SVD)."
+   UNITS              = "deg","deg"
+   SI_CONVERSION      = "1>degree","1>degree"
+   SIZES              = 21,2   ! 21 frequency bins x 2 comp (theta,phi) 
+   TENSOR_ORDER       = 1
+   REPRESENTATION_2   = "t", "p"
+   LABEL_2            = "theta","phi"
+   COORDINATE_SYSTEM  = "FAC"
+   FRAME              = "FAC>rtp"
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3   
+   FILLVAL            = -999.
+   FIELDNAM           = "Direction of propagation"
+   LABLAXIS           = "THSVD"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = KSVD_fac__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"        
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Ellipticity of the polarization (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -999.
+   FIELDNAM           = "Ellipticity of the polarization (SVD)."
+   LABLAXIS           = "ELLSVD"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = ELLSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"        
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Planarity of the polarization (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -999.
+   FIELDNAM           = "Planarity of the polarization (SVD)."
+   LABLAXIS           = "PLANSVD"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = PLANSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = DOP__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"         
+   PROPERTY           = "Magnitude"
+   CATDESC            = "3D Degree of polarization."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -999.
+   FIELDNAM           = "3D Degree of polarization."
+   LABLAXIS           = "DOP"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = DOP__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Compound"         
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Degree of polarization in the polarization plane (SVD)."
+   UNITS              = "Unitless"
+   SI_CONVERSION      = "1.0>unitless"
+   SIZES              = 21     ! 21 frequency bins 
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 2   
+   FILLVAL            = -999.
+   FIELDNAM           = "Degree of polarization in the polarization plane (SVD)."
+   LABLAXIS           = "POLSVD"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   DEPEND_1           = Frequency__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = POLSVD__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+!
+START_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   PARAMETER_TYPE     = "Data"
+   ENTITY             = "Magnetic_Field"
+   PROPERTY           = "Magnitude"
+   CATDESC            = "Magnitude of the DC B-field"
+   UNITS              = "nT"
+   SI_CONVERSION      = "1.0E-9>T"
+   SIZES              = 1
+   VALUE_TYPE         = FLOAT
+   SIGNIFICANT_DIGITS = 3
+   FILLVAL            = -1.00E+31
+   FIELDNAM           = "DC Magnetic Field Magnutude"
+   LABLAXIS           = "B"
+   DEPEND_0           = Time__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+   QUALITY            = 3
+END_VARIABLE = BMAG__CC_CP_AUX_MAARBLE_GXXX_ULF_PC35
+

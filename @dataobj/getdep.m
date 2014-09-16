@@ -37,9 +37,11 @@ if nvars>0
                 field = sprintf('DEPEND_%d',d);
                 tt = findva(dobj,field,v1_s);
                 if ~isempty(tt)
-                    if found, error('found both LABEL_X and DEPEND_X'), end
+                    if found, warning('found both LABEL_X and DEPEND_X'),
+                    else
                     dep_x(d,:) = {tt,field};
                     found_any = 1;
+                    end
                 end
             end
             if dobj.data.(dobj.vars{v,1}).variance(1) == 'T'

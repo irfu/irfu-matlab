@@ -9,7 +9,7 @@ INCLUDE        =   "CC_CH_AUX_INST.ceh"
 ! DATASET LEVEL METADATA
 !
 START_META     =   DATASET_ID
-   ENTRY       =   "CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR"
+   ENTRY       =   "CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR"
 END_META       =   DATASET_ID
 !
 START_META     =   DATA_TYPE
@@ -17,7 +17,7 @@ START_META     =   DATA_TYPE
 END_META       =   DATA_TYPE
 !
 START_META     =   DATASET_TITLE
-   ENTRY       =   "THEMIS-XXX Transformation from DSL to FAC coordinate system"
+   ENTRY       =   "THEMIS-XXX position and transformation from DSL to FAC coordinates"
 END_META       =   DATASET_TITLE
 !
 START_META     =   DATASET_DESCRIPTION
@@ -45,7 +45,6 @@ START_META     =   DATASET_DESCRIPTION
 END_META       =   DATASET_DESCRIPTION
 !
 START_META     =   CONTACT_COORDINATES
-   ENTRY       =   "Meghan Mella>THEMIS ULF data provider>meghan.mella@irfu.se"
    ENTRY       =   "Yuri Khotyaitsev>MAARBLE Wave Database leader>yuri@irfu.se"
 END_META       =   CONTACT_COORDINATES
 !
@@ -79,7 +78,7 @@ END_META       =   ACKNOWLEDGEMENT
 !
 ! PARAMETER LEVEL METADATA
 !
-START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
+START_VARIABLE  =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
     PARAMETER_TYPE      = "Support_Data"
     CATDESC             = "time tag"
     UNITS               = "s"
@@ -92,9 +91,9 @@ START_VARIABLE  =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
     LABLAXIS            = "UT"
     DELTA_PLUS          = 30 ! integration interval
     DELTA_MINUS         = 30
-END_VARIABLE    =  Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
+END_VARIABLE    =  Time__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
 !
-START_VARIABLE = DSL2FAC__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
+START_VARIABLE = DSL2FAC__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
     ENTITY            = "Transformation"
     PROPERTY          = "Coordinate_rotation"
     SIZES             = 3, 3
@@ -113,5 +112,27 @@ START_VARIABLE = DSL2FAC__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
     FILLVAL           = -999.
     PARAMETER_TYPE    = "Support_Data"
     CATDESC           = "Transformation from DSL to FAC coordinate system"
-    DEPEND_0          = Time__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
-END_VARIABLE = DSL2FAC__CC_CH_AUX_MAARBLE_THXXX_ULF_FACMATR
+    DEPEND_0          = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
+END_VARIABLE = DSL2FAC__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
+START_VARIABLE = sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
+    PARAMETER_TYPE    = "Data"
+    SIZES             = 3
+    VALUE_TYPE        = FLOAT
+    ENTITY            = "Observatory"
+    PROPERTY          = "Vector"
+    FLUCTUATIONS      = "Waveform"
+    CATDESC           = "Spacecraft position"
+    FIELDNAM          = "Spacecraft position"
+    SI_CONVERSION     = "1.0e-3>m"
+    UNITS             = "km"
+    FILLVAL           = -1000000000.000
+    QUALITY           = 3
+    SIGNIFICANT_DIGITS= 6
+    COORDINATE_SYSTEM = "GSE"
+    FRAME             = "GSE>xyz"
+    TENSOR_ORDER      = 1
+    REPRESENTATION_1  = "x", "y", "z"
+    LABEL_1           = "Rx", "Ry", "Rz"
+    LABLAXIS          = "R"
+    DEPEND_0          = Time__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR
+END_VARIABLE = sc_pos_xyz_GSE__CC_CP_AUX_MAARBLE_THXXX_ULF_FACMATR

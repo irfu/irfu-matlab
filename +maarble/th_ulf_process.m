@@ -32,7 +32,7 @@ plotFlag = 1;
 exportFlag = 1;
 
 wantPC12 = 0;
-wantPC35 = 0; wantSCM = 0;
+wantPC35 = 0;
 if ischar(freqRange)
   switch lower(freqRange)
     case 'all'
@@ -46,7 +46,7 @@ if ischar(freqRange)
       error('Invalid value for freqRange')
   end
 else
-  if freqRange(1) > 1, wantSCM = 1; end
+  error('frequency range must be one of: pc12, pc35, all')
 end
 
 tmpR = load(sprintf('%s%smRth.mat',dataDir,filesep), '-mat', ['Rth' thId]);
@@ -59,48 +59,44 @@ if ~isa(TT,'irf.TimeTable'), TT=irf.TimeTable(TT); end
 
 for ievent=1:numel(TT),
 tint=TT.TimeInterval(ievent,:);
-sprintf('processing %s\n',irf_disp_iso_range(tint,1))
+irf.log('warning',sprintf('processing %s\n',irf_disp_iso_range(tint,1)))
 
 
 %% Load data
+axxx = ls('/data/caalocal'); axxx = ls('/data/themis');
 % Round time interval to minutes
 tint = [floor(tint(1)/60) ceil(tint(2)/60)]*60;
 % Extend time interval by these ranges to avoid edge effects 
 DT_PC5 = 80*60; DT_PC2 = 120;
 
 bs = th_read_l2(['th' thId '_fgs_dsl'],tint+DT_PC5*[-1 1]);
-  [bs,~,ttGap] = th_clean_eb(bs);
+% Clean backward time jumps, example THD 
+bs = clear_backward_jump(bs,'BS');
+[bs,~,ttGap] = th_clean_eb(bs);
 if isempty(bs), 
     irf.log('warning','skipping, no BS data'),continue, 
 end
 if wantPC35
   es = th_read_l2(['th' thId '_efs_dot0_dsl'],tint+DT_PC5*[-1 1]);
+  es = clear_backward_jump(es,'ES');
   es=th_clean_eb(es,'NaN');
 end
 if wantPC12
   bl = th_read_l2(['th' thId '_fgl_dsl'],tint+DT_PC2*[-1 1]);
+  bl = clear_backward_jump(bl,'BL');
   ef = th_read_l2(['th' thId '_eff_dot0_dsl'],tint+DT_PC2*[-1 1]);
   if isempty(ef)
     irf.log('warning','no EF data')
   else
     % Remove backward time jumps in EF
     % Example THE 2007-08-11T09:40:02.489975Z (3 points)
-    while true
-      idxJump = find(diff(ef(:,1))<=0);
-      if isempty(idxJump), break, end
-      idxJump = idxJump(1);
-      irf.log('warning',['EF time jumps back at ' epoch2iso(ef(idxJump,1))])
-      ii = find(ef(:,1)<=ef(idxJump,1)); ii(ii<=idxJump) = [];
-      irf.log('warning',sprintf('Disregarging %d points',length(ii)))
-      ef(ii,:) = [];
-    end
+    ef = clear_backward_jump(ef,'EF');
   end
 end
 
-R = gseR; % XXX FIXME: this must be a real transformation to DSL
-R = irf_tlim(R,tint+DT_PC5*[-1 1]);
-V = gseV;
-V = irf_tlim(V,tint+DT_PC5*[-1 1]);
+
+R = th_gse2dsl(irf_tlim(gseR,tint+DT_PC5*[-1 1]),thId);
+V = th_gse2dsl(irf_tlim(gseV,tint+DT_PC5*[-1 1]),thId);
 
 %% Calculate and plot
 bf = irf_filt(bs,0,1/600,1/5,5);
@@ -117,6 +113,7 @@ if nGaps>0
     end
   end
 end
+if isempty(B0_1MIN), irf.log('warning','no BS data, skipping interval'), continue, end
 facMatrix = irf_convert_fac([],B0_1MIN,R);
 
 if wantPC35
@@ -162,9 +159,10 @@ if wantPC35
   end
   
   ebsp = ...
-    irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,R,'pc35',...
+    irf_ebsp(iE3D_1SEC,B_1SEC,[],B0_1MIN,[],'pc35',...
     'fac','polarization','noresamp','fullB=dB','facMatrix',facMatrix);
-  tlim_ebsp();
+  ebsp.r = gseR; % add position for plotting
+  tlim_ebsp(tint);
   if plotFlag
     close all
     h = irf_pl_ebsp(ebsp);
@@ -177,11 +175,9 @@ if wantPC35
     maarble.export(ebsp,tint,['th' thId],'pc35')
   end
 end
-if wantPC12
-  if isempty(bl), 
-    irf.log('warning','skipping PC12, no BL data'),continue, 
-  end
-    
+if wantPC12 && isempty(bl) 
+  irf.log('warning','skipping PC12, no BL data')
+elseif wantPC12 && ~isempty(bl)   
   baseFreq = 16;
   fSampB = 1/median(diff(bl(:,1))); 
   if isempty(ef)
@@ -193,23 +189,38 @@ if wantPC12
     t_BASE = (fix(min(bl(1,1),ef(1,1))):1/baseFreq:ceil(max(bl(end,1),ef(end,1))))';
   end
   
-  B_BASE = irf_resamp(bl,t_BASE);
+  B_BASE = irf_resamp(bl,t_BASE); 
+  T_TMP = t_BASE(t_BASE(:,1)>=bl(1,1) & t_BASE(:,1)<=bl(end,1)); ttB = T_TMP([1 end],1)';
   ii = find(diff(bl(:,1))>2/fSampB);
   if ~isempty(ii)
     for iGap=ii'
       irf.log('warning',['Long gap in BL ' irf_disp_iso_range(bl(iGap+[0 1],1)')])
-      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN; 
+      B_BASE(t_BASE(:,1)>bl(iGap,1) & t_BASE(:,1)<bl(iGap+1,1),2:4) = NaN;
+      if bl(iGap+1,1)-bl(iGap,1)>DT_PC2
+        irf.log('warning','splitting BL')
+        T_TMP = t_BASE(t_BASE(:,1)>=bl(iGap,1) & t_BASE(:,1)<=bl(iGap+1,1));
+        tint_TMP = [T_TMP(end) ttB(end,2)];
+        ttB(end,2) = T_TMP(1); ttB = [ttB; tint_TMP];
+      end
     end
   end
   B_BASE(t_BASE(:,1)<bl(1,1),2:4) = NaN; B_BASE(t_BASE(:,1)>bl(end,1),2:4) = NaN;
   
+  ttE = [];
   if ~isempty(ef)
     E3D_BASE = irf_resamp(ef,t_BASE);
+    T_TMP = t_BASE(t_BASE(:,1)>=ef(1,1) & t_BASE(:,1)<=ef(end,1)); ttE = T_TMP([1 end],1)';
     ii = find(diff(ef(:,1))>2/fSampE);
     if ~isempty(ii)
       for iGap=ii'
         irf.log('warning',['Long gap in EF ' irf_disp_iso_range(ef(iGap+[0 1],1)')])
         E3D_BASE(t_BASE(:,1)>ef(iGap,1) & t_BASE(:,1)<ef(iGap+1,1),2:4) = NaN;
+        if ef(iGap+1,1)-ef(iGap,1)>DT_PC2
+          irf.log('warning','splitting EF')
+          T_TMP = t_BASE(t_BASE(:,1)>=ef(iGap,1) & t_BASE(:,1)<=ef(iGap+1,1));
+          tint_TMP = [T_TMP(end) ttE(end,2)];
+          ttE(end,2) = T_TMP(1); ttE = [ttE; tint_TMP];
+        end
       end
     end
     E3D_BASE(t_BASE(:,1)<ef(1,1),2:4) = NaN; E3D_BASE(t_BASE(:,1)>ef(end,1),2:4) = NaN;
@@ -231,44 +242,76 @@ if wantPC12
     end
   end
   
-  tic
-  ebsp = irf_ebsp(iE3D_BASE,B_BASE,[],B0_1MIN,R,'pc12',...
-    'fac','polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
-    'facMatrix',facMatrix);
-  toc
-  tlim_ebsp();
-  if isempty(ebsp.t)
-    irf.log('warning','No result for PC12'),continue 
+  % Join intervals for BL and EF
+  tt = [ttE; ttB]; 
+  irf.log('warning',sprintf('starting with %d chunks',size(tt,1)))
+  irf_disp_iso_range(tt);
+  [~,ii] = sort(tt(:,1)); tt = tt(ii,:); 
+  idx = 1;
+  while size(tt,1)>1
+    ii = find(tt(:,1)>=tt(idx,1) & tt(:,1)<=tt(idx,2)); ii(ii==idx) = [];
+    if isempty(ii), idx = idx+1;
+      if idx>=size(tt,1), break, end
+      continue,
+    end
+    ii = ii(1); if tt(ii,2)>tt(idx,2), tt(idx,2) = tt(ii,2); end
+    tt(ii,:) = [];
   end
-  flim_ebsp(fSampB,fSampE);
-  if plotFlag
-    close all
-    h = irf_pl_ebsp(ebsp);
-    irf_zoom(h,'x',tint)
-    title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tint,1)])
-    orient tall
-    print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tint,5)])
-  end
-  if exportFlag
-    maarble.export(ebsp,tint,['th' thId],'pc12')
+  irf.log('warning',sprintf('total %d chunks',size(tt,1)))
+  irf_disp_iso_range(tt);
+  
+  for iChunk = 1:size(tt,1)
+    tintChunk = tt(iChunk,:);
+    irf.log('warning',...
+      sprintf('PC12 chunk #%d : %s',iChunk,irf_disp_iso_range(tintChunk,1)))
+    idxChunk = (t_BASE(:,1)>=tintChunk(1) & t_BASE(:,1)<=tintChunk(end));
+    iE3D_TMP = []; if ~isempty(iE3D_BASE), iE3D_TMP = iE3D_BASE(idxChunk,:); end
+    tic
+    ebsp = irf_ebsp(iE3D_TMP,B_BASE(idxChunk,:),[],B0_1MIN,[],'pc12','fac',...
+      'polarization','noresamp','fullB=dB','dedotb=0','nav',12,...
+      'facMatrix',facMatrix);
+    toc
+    
+    ebsp.r = gseR; % add position for plotting
+    tlim_ebsp(tintChunk);
+    if isempty(ebsp.t)
+      irf.log('warning','No result for PC12'),continue
+    end
+    flim_ebsp(fSampB,fSampE);
+    if plotFlag
+      close all
+      h = irf_pl_ebsp(ebsp);
+      irf_zoom(h,'x',tintChunk)
+      title(h(1),['THEMIS ' upper(thId) ', ' irf_disp_iso_range(tintChunk,1)])
+      orient tall
+      print('-dpng',['MAARBLE_TH' upper(thId) '_ULF_PC12_' irf_fname(tintChunk,5)])
+    end
+    if exportFlag
+      maarble.export(ebsp,tintChunk,['th' thId],'pc12')
+    end
   end
 end
 
 % Export FAC matrix
-[facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
-facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
 if exportFlag
-  maarble.export(facMatrix,tint,['th' thId])
+  [facMatrix.t,idxTlim]=irf_tlim(facMatrix.t,tint);
+  if ~isempty(facMatrix.t)
+    facMatrix.rotMatrix = facMatrix.rotMatrix(idxTlim,:,:);
+    % Position is exported in GSE
+    gseR_tmp = irf_resamp(gseR,facMatrix.t);
+    facMatrix.r = gseR_tmp(:,2:4);
+    maarble.export(facMatrix,tint,['th' thId])
+  end
 end
 
 end
 
-  function tlim_ebsp % Trim ebsp to tlim
+  function tlim_ebsp(timeLim) % Trim ebsp to tlim
     IGNORE_FIELDS = {'f','flagFac','fullB','B0','r'};
     fieldsEBSP = fields(ebsp);
     tFields = setxor(fieldsEBSP,IGNORE_FIELDS);
     %nData = length(ebsp.t);
-    [~,idx] = irf_tlim(ebsp.t,tint);
+    [~,idx] = irf_tlim(ebsp.t,timeLim);
     for fName = tFields'
       if isempty(ebsp.(fName{:})), continue, end
       s = size(ebsp.(fName{:}));
@@ -306,4 +349,17 @@ end
       end
     end
   end % flim_ebsp()
+end
+
+function data = clear_backward_jump(data,name)
+if nargin <2, name = ''; else name = [' in ' name]; end
+while true
+  if isempty(data), break, end
+  iJump = find( diff(data(:,1))<=0 );
+  if isempty(iJump), break, end
+  iJump = iJump(1)+1;
+  irf.log('warning',['backward time jump' name ' at ' epoch2iso(data(iJump,1))])
+  ii = find(data(:,1)>=data(iJump,1)); ii(ii>=iJump) = []; data(ii,:) = [];
+  irf.log('warning',sprintf('Disregarging %d points',length(ii)))
+end
 end
