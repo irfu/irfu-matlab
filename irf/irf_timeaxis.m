@@ -20,8 +20,6 @@ function irf_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
 % numerical values and time is in isdat_epoch. Program then interpolates
 % to the time of labels xlabeltitle = {'LAB1' 'LAB2' ..}; is the str
 % for labels.
-%
-% $Id$
 
 flag_labels=1; % default is to add labels to the last axis handle, can be changed by 'nolabels' argument
 flag_date=1;   % default is to add date labels
