@@ -1,5 +1,6 @@
 function ENVIR = mms_sdc_sdp_init(scNumberStr)
-% MMS_SDC_SDP_INIT reads initial environment and constants for MMS FIELDS processing
+% MMS_SDC_SDP_INIT  initialize environment for MMS FIELDS processing
+%
 % 	[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT(scNumberStr) returns environment
 %   variables and constants useful for MMS processing. Input argument 
 %   should be the sc number (as a string), i.e. '1' for mms1 and '2' for 
@@ -20,12 +21,9 @@ function ENVIR = mms_sdc_sdp_init(scNumberStr)
 %	  .Bitmask.OnlyDCE  - Only DCE was found at these points in time. 
 %
 %	Example:
-%		[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT('1');
-%
+%		ENVIR = MMS_SDC_SDP_INIT('1');
 
 narginchk(1,1); % SC number to ensure log is put in right place.
-
-ENVIR = [];
 
 ENVIR.CDF_BASE = getenv('CDF_BASE'); % Get path to CDF tools.
 ENVIR.DATA_PATH_ROOT = getenv('DATA_PATH_ROOT'); % The final path of data.
