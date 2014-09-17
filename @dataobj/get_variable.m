@@ -36,17 +36,21 @@ if nVars>0
         dobj.VariableAttributes.(variableAttributeNames{j})(:,1))==1);
       if iattr,
         attr = dobj.VariableAttributes.(variableAttributeNames{j}){iattr,2};
-        if ischar(attr), 
-			if strcmp(attr,varName),
-        irf.log('critical',['Variable depends on itself : ' varName])
-				error('Recursive variable dependence');
-			end
-			varTmp = get_variable(dobj,attr);
+        if ischar(attr),
+          if strcmp(attr,varName),
+            if strcmp(attr,dobj.VariableAttributes.(variableAttributeNames{j}){iattr,1})
+              varTmp = []; % bug in some files which have identical key/value
+            else
+              irf.log('critical',['Variable depends on itself : ' varName])
+              error('Recursive variable dependence');
+            end
+          else varTmp = get_variable(dobj,attr);
+          end
         else varTmp = [];
         end
         if isempty(varTmp), res.(variableAttributeNames{j})= attr;
         else res.(variableAttributeNames{j}) = varTmp;
-        end
+        end 
       end
     end
     return
