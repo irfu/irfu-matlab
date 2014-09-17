@@ -222,6 +222,8 @@ end
   end
 
   function res = isProbeEnabled(probe)
+    flag = get_variable(dataObj,[varPrefix probe '_enable']);
+    
     flag = dataObj.data.([varPrefix probe '_enable']).data;
     if ~all(diff(flag))==0
       err_str = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
@@ -230,6 +232,10 @@ end
     end
     res = flag(1);
   end
+end
+
+function res = resample_bitmask(time,bmTime,bmData)
+
 end
 
 

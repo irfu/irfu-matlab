@@ -38,6 +38,8 @@ HK_101_File = '';
 DCV_File = '';
 DCE_File = '';
 
+if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+
 % First argument is and should always be which mode to run.
 % QuickLook, Usc or SITL. (Is static in the bash script that starts Matlab)
 if ~ischar(procName)
@@ -76,7 +78,7 @@ for i=1:nargin-1
         HeaderInfo.numberStr = numberStr; % Store S/C Number X from mmsX_... as a string in HeaderInfo
         % If fileIn(4) is not as expected {1, 2, 3, or 4} log file will
         % be placed in LOG_PATH_ROOT and an error will be issued.
-        [ENVIR, MMS_CONST] = mms_sdc_sdp_init(HeaderInfo.numberStr);
+        ENVIR = mms_sdc_sdp_init(HeaderInfo.numberStr);
     else
         if ~strcmp(HeaderInfo.numberStr, fileIn(4))
             err_str = ['MMS_SDC_SDP_PROC was called with one file from SC number ',...

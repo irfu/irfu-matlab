@@ -22,7 +22,8 @@ function tests = mms_phaseFromSunpulse_2_Test
     
     % Setup basics, such as logging.
     global ENVIR MMS_CONST;
-    [ENVIR, MMS_CONST] = mms_sdc_sdp_init('2');
+    if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+    ENVIR = mms_sdc_sdp_init('2');
     
     % Run the tests
     tests = functiontests(localfunctions);
