@@ -12,15 +12,24 @@ MMS_CONST.Version.X = 0; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 
+MMS_CONST.MMSids = 1:4;
+
 % Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
 MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
 
 % Telemetry mode
-MMS_CONST.TmMode.srvy = 0;
-MMS_CONST.TmMode.slow = 1;
-MMS_CONST.TmMode.fast = 2;
+MMS_CONST.TmModes = {'srvy','slow','fast','brst'};
+MMS_CONST.TmMode.srvy = 1; % Number must corrspond to position in the list
+MMS_CONST.TmMode.slow = 2;
+MMS_CONST.TmMode.fast = 3;
 MMS_CONST.TmMode.brst = 4;
+
+% SDC process names
+MMS_CONST.SDCProcs = {'sitl','ql','usc'};
+MMS_CONST.SDCProc.sitl = 1; % Number must corrspond to position in the list
+MMS_CONST.SDCProc.ql   = 2;
+MMS_CONST.SDCProc.usc  = 3;
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
