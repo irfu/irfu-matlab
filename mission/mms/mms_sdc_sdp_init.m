@@ -23,7 +23,9 @@ function ENVIR = mms_sdc_sdp_init(scNumberStr)
 %	Example:
 %		ENVIR = MMS_SDC_SDP_INIT('1');
 
-narginchk(1,1); % SC number to ensure log is put in right place.
+global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+
+narginchk(1,3); % SC number to ensure log is put in right place.
 
 ENVIR.CDF_BASE = getenv('CDF_BASE'); % Get path to CDF tools.
 ENVIR.DATA_PATH_ROOT = getenv('DATA_PATH_ROOT'); % The final path of data.
@@ -38,11 +40,12 @@ ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 % named after current run day yyyymmdd and _IRFU.log. If this fails
 % create it at $LOG_PATH_ROOT and include full date with seconds.
 if ~ischar(scNumberStr) || ...
-    str2double(scNumberStr)<1 || str2double(scNumberStr)>4
+    isempty(intersect(str2double(scNumberStr), MMS_CONST.MMSids))
+  
   irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, ...
         datestr(now,'yyyymmddTHHMMSS'), '_IRFU.log']);
-    err_str = ['invalid input: scNumber idetermined as: ',scNumberStr];
-    irf.log('critical', err_str);
+    errStr = ['invalid input: scNumber idetermined as: ',scNumberStr];
+    irf.log('critical', errStr);
     error('Matlab:MMS_SDC_SDP_INIT',['MMS_SDC_SDP_INIT recieved an ', ...
         'unexpected sc number string. Input to processing should be ', ...
         'fullpath/filename.cdf according to MMS standard, mmsX_whatever',...
@@ -53,9 +56,11 @@ end
 % it.
 if isempty(ENVIR.LOG_PATH_ROOT)
   irf.log('warning','Environment var LOG_PATH_ROOT not set: logging to screen')
+  irf.log('log_out','screen')
 elseif ~exist(ENVIR.LOG_PATH_ROOT,'dir')
   irf.log('warning',['Logging directory LOG_PATH_ROOT (' ...
     ENVIR.LOG_PATH_ROOT ') doest not exist: logging to screen'])
+  irf.log('log_out','screen')
 else
   logDir = [ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, 'sdp'];
   if ~exist(logDir, 'dir')
@@ -69,8 +74,6 @@ else
     [logDir, filesep, datestr(now,'yyyymmdd'), '_IRFU.log']);
 end
 irf.log('notice'); % XXX: Set log level to notice
-
-mms_sdc_sdp_datamanager('init',str2double(scNumberStr))
 
 % Store information in the log file about which version of Matlab is used
 % and which version of IRFU-MATLAB.

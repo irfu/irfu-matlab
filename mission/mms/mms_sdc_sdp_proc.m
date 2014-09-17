@@ -37,6 +37,7 @@ init_matlab_path()
 HK_101_File = '';
 DCV_File = '';
 DCE_File = '';
+HeaderInfo = [];
 
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
@@ -46,13 +47,15 @@ if ~ischar(procName)
     error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be a string');
 end
-procName = upper(procName);
-HeaderInfo = []; HeaderInfo.calledBy = lower(procName);
-if isempty(intersect(procName,{'USC','QL','SITL'}))
-    error('Matlab:MMS_SDC_SDP_PROC:Input', ...
-    'MMS_SDC_SDP_PROC first argument must be one of: "ql", "sitl" or "usc"');
+procName = lower(procName); 
+[~,procId] = intersect( MMS_CONST.SDCProcs, procName);
+if isempty(procId)
+  error('Matlab:MMS_SDC_SDP_PROC:Input', ...
+    'MMS_SDC_SDP_PROC first argument must be one of: %s',...
+    mms_constants2string('SDCProcs'));
 end
 irf.log('notice', ['Starting process: ', procName]);
+HeaderInfo.procName = procName;
 
 %% Process inpit
 for i=1:nargin-1
@@ -74,11 +77,20 @@ for i=1:nargin-1
       
     if i==1
         % Setup log and environment.
-        numberStr = fileIn(4);
-        HeaderInfo.numberStr = numberStr; % Store S/C Number X from mmsX_... as a string in HeaderInfo
-        % If fileIn(4) is not as expected {1, 2, 3, or 4} log file will
-        % be placed in LOG_PATH_ROOT and an error will be issued.
-        ENVIR = mms_sdc_sdp_init(HeaderInfo.numberStr);
+        scNumberStr = fileIn(4);
+        ENVIR = mms_sdc_sdp_init(scNumberStr);
+        scId = str2double(scNumberStr);
+        HeaderInfo.numberStr = scNumberStr;
+        tmModeStr = fileIn(10:13);
+        [~,tmMode] = intersect( MMS_CONST.TmModes, tmModeStr);
+        if isempty(tmMode)
+          errStr = ['Invalid file name: unrecognized tmMode( ' tmModeStr ...
+            '), must be one of: ' mms_constants2string('TmModes')];
+          irf.log('critical', errStr);
+          error(errStr)
+        end
+        mms_sdc_sdp_datamanager('init',...
+          struct('scId',scId,'tmMode',tmMode,'procId',procId))
     else
         if ~strcmp(HeaderInfo.numberStr, fileIn(4))
             err_str = ['MMS_SDC_SDP_PROC was called with one file from SC number ',...
@@ -206,9 +218,11 @@ end
 
 %% Write out filename as empty logfile so it can be easily found by SDC
 % scripts.
-unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
+if ~isempty(ENVIR.LOG_PATH_ROOT)
+  unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
     HeaderInfo.numberStr, filesep, 'sdp', filesep, filename_output, ...
     '_',runTime,'.log']);
+end
 
   function init_matlab_path()
     irfPath = [irf('path') filesep];
@@ -239,7 +253,7 @@ unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
     end
     HeaderInfo.scId = src.scId;
     HeaderInfo.instrumentId = src.instrumentId;
-    HeaderInfo.dataMode = src.dataMode;
+    HeaderInfo.tmMode = src.tmMode;
     HeaderInfo.dataLevel = src.dataLevel;
     HeaderInfo.startTime = src.startTime;
     HeaderInfo.numberOfSources = nSrc;

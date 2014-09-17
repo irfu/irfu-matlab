@@ -2,14 +2,14 @@ function [ VarOut ] = mms_sdc_sdp_datamanager( param, dataObj )
 % mms_sdc_sdp_datamanager will store and retrive data for
 %  	mms_sdc_sdp_datamanager( dataType, dataObj ) will store
 %  	appropriate data variables related to dataType in the global variable
-%  	DataInMemory for later retrival.
+%  	DATAC for later retrival.
 %  
 %   [varOut] = mms_sdc_sdp_datamanager( variable ) will return the variable
 %   requested to varOut, if no such variable has been created already it
 %   will try and calculate it using the stored data.
 %   
 %  	Example:
-%.scId
+%
 %  		mms_sdc_sdp_datamanager('dce',dceDataObj)
 %  		mms_sdc_sdp_datamanager('phase')
 %  
@@ -18,33 +18,60 @@ function [ VarOut ] = mms_sdc_sdp_datamanager( param, dataObj )
 narginchk(1,2); % One argument is simply retreive variable, Two arguments
 % store "dataObj" as "dataType".
 
-global DataInMemory; % Here we store read data.
-global MMS_CONST; % Here we have Bitmask values for probes used.
+global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+global DATAC; % Here we store read data.
 
 if ~ischar(param),
-  err_str = 'PARAM must be a string';
-  irf.log('critical', err_str);
-  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+  errStr = 'PARAM must be a string';
+  irf.log('critical', errStr); error(err_str);
 end
+
 if strcmpi(param, 'init')
   % Initialize
-  if nargin==1 || ~isnumeric(dataObj) || isempty(intersect(1:4,dataObj))
-    err_str = 'INIT requires second argument: MMS_ID 1..4';
-    irf.log('critical', err_str);
-    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+  if nargin==1
+    errStr = 'INIT requires second input argument';
+    irf.log('critical', errStr); error(errStr);
+  elseif ~isstruct(dataObj)
+    errStr = 'Second input argument for INIT must be a structure';
+    irf.log('critical', errStr); error(errStr);
+  elseif ~isfield(dataObj,'scId') || ~isnumeric(dataObj.scId) || ...
+      isempty(intersect(dataObj.scId, MMS_CONST.MMSids))
+    errStr = 'Invalid input for init_struct.scId';
+    irf.log('critical', errStr); error(errStr);
   end
-  DataInMemory = [];
-  DataInMemory.scId = dataObj;
-  DataInMemory.dce = [];
-  DataInMemory.dcv = [];
-  DataInMemory.hk_101 = [];
+  DATAC.scId = dataObj.scId;
+  if ~isfield(dataObj,'tmMode')
+    DATAC.tmMode = 1;
+    irf.log('warining',['init_struct.tmMode not specified, defaulting to '''...
+      MMS_CONST.TmModes{DATAC.tmMode} ''''])
+  elseif ~isnumeric(dataObj.tmMode) || ...
+      isempty(intersect(dataObj.tmMode, 1:numel(MMS_CONST.TmModes)))
+    errStr = 'Invalid input for init_struct.tmMode';
+    irf.log('critical', errStr); error(errStr);
+  else DATAC.tmMode = dataObj.tmMode;
+  end
+  if ~isfield(dataObj,'procId')
+    DATAC.procId = 1;
+    irf.log('warining',['init_struct.procId not specified, defaulting to '''...
+      MMS_CONST.SDCProcs{DATAC.procId} ''''])
+  elseif ~isnumeric(dataObj.procId) || ...
+      isempty(intersect(dataObj.procId, 1:numel(MMS_CONST.SDCProcs)))
+    errStr = 'Invalid input for init_struct.tmMode';
+    irf.log('critical', errStr); error(errStr);
+  else DATAC.procId = dataObj.procId;
+  end
+  DATAC.dce = [];
+  DATAC.dcv = [];
+  DATAC.hk_101 = [];
   return
 end
-if ~isfield(DataInMemory, 'scId')
-  err_str = 'Data mamager not initialized! Run: mms_sdc_sdp_datamanager(''init'',scId)';
+
+if ~isfield(DATAC, 'scId')
+  err_str = 'Data mamager not initialized! Run: mms_sdc_sdp_datamanager(''init'',init_struct)';
   irf.log('critical', err_str);
   error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
 end
+
 param = lower(param);
 
 if(nargin==2)   
@@ -63,7 +90,7 @@ if(nargin==2)
         error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);  
     end
     
-    if( isfield(DataInMemory, param) ) && ~isempty(DataInMemory.(param))
+    if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
       % Error, Warning or Notice for replacing the data variable?
       err_str = ['MMS_SDC_SDP_DATAMANAGER replacing existing ', ...
         'variable with new data in ' param];
@@ -71,7 +98,7 @@ if(nargin==2)
       error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
     end
     
-    varPrefix = sprintf('mms%d_sdp_',DataInMemory.scId);
+    varPrefix = sprintf('mms%d_sdp_',DATAC.scId);
     
     switch(param)
       case('dce')
@@ -79,7 +106,7 @@ if(nargin==2)
         init_param(sig)
         for iSig=1:length(sig)
           if ~isProbeEnabled(sig{iSig})
-            DataInMemory.(param).(sig{iSig}).data = DataInMemory.(param).(sig{iSig}).data*NaN;
+            DATAC.(param).(sig{iSig}).data = DATAC.(param).(sig{iSig}).data*NaN;
           end
         end
         
@@ -95,39 +122,39 @@ if(nargin==2)
         p6_off = ~isProbeEnabled('v6');
         
         if p1_off && p2_off
-          %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
-          %DataInMemory.(param).v2.data = DataInMemory.(param).v1.data;
+          %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
+          %DATAC.(param).v2.data = DATAC.(param).v1.data;
         elseif p1_off
-          if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
+          if isfield(DATAC.dce,'e12') && ~isempty(DATAC.dce.e12)
             % Compute 
             % TODO:  implement real computation instead of this
           else
-            %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+            %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
           end
         elseif p2_off
-          if isfield(DataInMemory.dce,'e12') && ~isempty(DataInMemory.dce.e12)
+          if isfield(DATAC.dce,'e12') && ~isempty(DATAC.dce.e12)
             % Compute 
             % TODO implement real computation instead of this
           else
-            %DataInMemory.(param).v1.data = DataInMemory.(param).v1.data*NaN;
+            %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
           end
         end
         
         % TODO: implement similar for p3-6
         
       case('hk_101')
-        varPrefix = sprintf('mms%d_101_',DataInMemory.scId);
-        DataInMemory.(param) = [];
-        DataInMemory.(param).dataObj = dataObj;
+        varPrefix = sprintf('mms%d_101_',DATAC.scId);
+        DATAC.(param) = [];
+        DATAC.(param).dataObj = dataObj;
         x = getdep(dataObj,[varPrefix 'cmdexec']);
-        DataInMemory.(param).time = x.DEPEND_O.data;
-        check_monoton_timeincrease(DataInMemory.(param).time, param);
+        DATAC.(param).time = x.DEPEND_O.data;
+        check_monoton_timeincrease(DATAC.(param).time, param);
         % Add sunpulse times (TT2000) of last recieved sunpulse.
-        DataInMemory.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
+        DATAC.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
         % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
-        DataInMemory.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
+        DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
         % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
-        DataInMemory.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
+        DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
       otherwise
         % Not yet implemented.
         err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
@@ -142,16 +169,16 @@ elseif nargin==1
         switch( param )
             case('dcephase')
                 % Phase, from sunpulse for now.
-                if isfield(DataInMemory,'dce') && ...
-                    isfield(DataInMemory.dce,'phase') && ...
-                    ~isempty(DataInMemory.dce.phase)
-                  VarOut = DataInMemory.dce.phase;
+                if isfield(DATAC,'dce') && ...
+                    isfield(DATAC.dce,'phase') && ...
+                    ~isempty(DATAC.dce.phase)
+                  VarOut = DATAC.dce.phase;
                 else
                     % Calculate it, store it and return variable.
-                    DataInMemory.dce.phase = mms_sdc_sdp_phase( ...
-                        DataInMemory.dce.time, ...
-                        DataInMemory.hk_101.sunpulse);
-                    VarOut = DataInMemory.dce.phase;
+                    DATAC.dce.phase = mms_sdc_sdp_phase( ...
+                        DATAC.dce.time, ...
+                        DATAC.hk_101.sunpulse);
+                    VarOut = DATAC.dce.phase;
                 end
                 
                 
@@ -161,9 +188,9 @@ elseif nargin==1
                 %CHANGED.
             case('dcetime')
                 % Timestamp of dce
-                if( isfield(DataInMemory.dce, 'time') && ...
-                        ~isempty(DataInMemory.dce.time) )
-                    VarOut = DataInMemory.dce.time;
+                if( isfield(DATAC.dce, 'time') && ...
+                        ~isempty(DATAC.dce.time) )
+                    VarOut = DATAC.dce.time;
                 else
                     % Error
                     err_str = ['The requested variable ', param, ...
@@ -174,9 +201,9 @@ elseif nargin==1
                 
             case('dcvtime')
                 % Timestamp of dce
-                if( isfield(DataInMemory.dcv, 'time') && ...
-                        ~isempty(DataInMemory.dcv.time) )
-                    VarOut = DataInMemory.dcv.time;
+                if( isfield(DATAC.dcv, 'time') && ...
+                        ~isempty(DATAC.dcv.time) )
+                    VarOut = DATAC.dcv.time;
                 else
                     % Error
                     err_str = ['The requested variable ', param, ...
@@ -197,25 +224,25 @@ elseif nargin==1
 end
 
   function init_param(fields)
-    DataInMemory.(param) = [];
+    DATAC.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
       err_str = 'MMS_SDC_SDP_DATAMANAGER changing sampling rate not yet implemented.';
       irf.log('warning', err_str);
       %error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
     end
-    DataInMemory.(param).dataObj = dataObj;
-    fileVersion = DataInMemory.(param).dataObj.GlobalAttributes.Data_version{:};
-    DataInMemory.(param).fileVersion = struct(...
+    DATAC.(param).dataObj = dataObj;
+    fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
+    DATAC.(param).fileVersion = struct(...
       'major', str2double(fileVersion(2)),...
       'minor', str2double(fileVersion(4)),...
       'revision', str2double(fileVersion(4)));
     x = getdep(dataObj,[varPrefix param '_sensor']);
-    DataInMemory.(param).time = x.DEPEND_O.data;
-    check_monoton_timeincrease(DataInMemory.(param).time, param);
+    DATAC.(param).time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(fields), return, end
     for iField=1:length(fields)
-      DataInMemory.(param).(fields{iField}) = struct(...
+      DATAC.(param).(fields{iField}) = struct(...
         'data',sensorData(:,iField), ...
         'bitmask',zeros(size(sensorData(:,iField))));
     end
