@@ -20,10 +20,7 @@ narginchk(1,1);
 
 global ENVIR;
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-
 global DATAC; % Simply recall all data from memory.
-
-oldDir = pwd;
 
 instrumentId = 'sdp';
 scId = DATAC.scId;
@@ -32,7 +29,7 @@ procId = DATAC.procId; procName =  MMS_CONST.SDCProcs{procId};
 % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS
 % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING
 % DIRECTORY WHEN EXECUTING.
-cd(ENVIR.DROPBOX_ROOT);
+oldDir = pwd; cd(ENVIR.DROPBOX_ROOT);
 outFileName = get_file_name();
 irf.log('notice',['Writing to DROPBOX_ROOT/',outFileName,'.cdf']);
 
@@ -73,7 +70,7 @@ switch procId
     mms_sdc_sdp_cdfwrite( outFileName, int8(scId), procName, epochTT, ...
       ESCP, PSP, Delta, psp_p, uint16(bitmask) );  
   otherwise
-    errStr = 'unrecognized DATAC.procId';
+    errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
 end
 

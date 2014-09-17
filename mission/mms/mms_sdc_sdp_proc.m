@@ -20,15 +20,13 @@ function mms_sdc_sdp_proc( procName, varargin)
 %
 % 	See also MMS_SDC_SDP_INIT, MMS_SDC_SDP_BITMASKING.
 
-
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
 % find output file created. An empty file is to be created with its
 % filename being the same as that of the dataproduct created appended with
 % _runTime.txt and placed in ENVIR.LOG_PATH_ROOT.
 
-global ENVIR;
-global MMS_CONST;
+global ENVIR MMS_CONST;
 
 narginchk(4,4);
 
@@ -161,8 +159,8 @@ if isempty(HK_101_File)
 end
 
 %% Processing for Usc or QL or SITL.
-switch lower(procName)
-  case 'usc'
+switch procId
+  case MMS_CONST.SDCProc.usc
     if isempty(DCV_File)
       errStr = ['missing reqired input for ' procName ': DCV_File'];
       irf.log('critical',errStr)
@@ -179,7 +177,7 @@ switch lower(procName)
     copy_header('dcv',1)
     filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     
-  case {'sitl','ql'}
+  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
     % Check if have all the necessary input
     if isempty(DCE_File)
       errStr = ['missing reqired input for ' procName ': DCE_File'];
@@ -211,10 +209,9 @@ switch lower(procName)
     % Write the output
     filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
   otherwise
-    % Should not be here
-    error('Matlab:MMS_SDC_SDP_PROC:Input', 'wrong process name');
+    errStr = 'unrecognized procId';
+    irf.log('critical', errStr); error(errStr)
 end
-
 
 %% Write out filename as empty logfile so it can be easily found by SDC
 % scripts.
