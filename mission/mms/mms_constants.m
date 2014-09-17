@@ -16,6 +16,12 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
 
+% Telemetry mode
+MMS_CONST.TmMode.srvy = 0;
+MMS_CONST.TmMode.slow = 1;
+MMS_CONST.TmMode.fast = 2;
+MMS_CONST.TmMode.brst = 4;
+
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
 MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2
