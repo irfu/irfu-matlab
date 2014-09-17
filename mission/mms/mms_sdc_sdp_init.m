@@ -39,31 +39,40 @@ ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 % Create a logfile at $LOG_PATH_ROOT / mmsX / sdp /
 % named after current run day yyyymmdd and _IRFU.log. If this fails
 % create it at $LOG_PATH_ROOT and include full date with seconds.
-if( str2double(scNumberStr)>1 || str2double(scNumberStr)<4 )
-    % Check to verify that output dir exists for logging. If not, create
-    % it.
-    if(~exist([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, ...
-            'sdp'], 'dir'))
-        mkdir([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr], 'sdp');
-    end
-    irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, 'mms', ...
-        scNumberStr, filesep, 'sdp', filesep, datestr(now,'yyyymmdd'),...
-        '_IRFU.log']);
-    mms_sdc_sdp_datamanager('init',str2double(scNumberStr))
-    % Set log level
-    irf.log('notice');
-else
-    irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, ...
+if ~ischar(scNumberStr) || ...
+    str2double(scNumberStr)<1 || str2double(scNumberStr)>4
+  irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, ...
         datestr(now,'yyyymmddTHHMMSS'), '_IRFU.log']);
-    irf.log('debug');
-    err_str = ['Matlab:MMS_SDC_SDP_INIT:InputArg scNumber incorrectly ',...
-        'determined as: ',scNumberStr];
+    err_str = ['invalid input: scNumber idetermined as: ',scNumberStr];
     irf.log('critical', err_str);
     error('Matlab:MMS_SDC_SDP_INIT',['MMS_SDC_SDP_INIT recieved an ', ...
         'unexpected sc number string. Input to processing should be ', ...
         'fullpath/filename.cdf according to MMS standard, mmsX_whatever',...
         ' where X = 1, 2, 3 or 4.']);
 end
+
+% Check to verify that output dir exists for logging. If not, create
+% it.
+if isempty(ENVIR.LOG_PATH_ROOT)
+  irf.log('warning','Environment var LOG_PATH_ROOT not set: logging to screen')
+elseif ~exist(ENVIR.LOG_PATH_ROOT,'dir')
+  irf.log('warning',['Logging directory LOG_PATH_ROOT (' ...
+    ENVIR.LOG_PATH_ROOT ') doest not exist: logging to screen'])
+else
+  logDir = [ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, 'sdp'];
+  if ~exist(logDir, 'dir')
+    [s,m] = mkdir(logDir);
+    if ~s
+      error('Matlab:MMS_SDC_SDP_INIT:io',...
+        ['Cannot create log directory ' logDir ': ' m])
+    end
+  end
+  irf.log('log_out',...
+    [logDir, filesep, datestr(now,'yyyymmdd'), '_IRFU.log']);
+end
+irf.log('notice'); % XXX: Set log level to notice
+
+mms_sdc_sdp_datamanager('init',str2double(scNumberStr))
 
 % Store information in the log file about which version of Matlab is used
 % and which version of IRFU-MATLAB.
