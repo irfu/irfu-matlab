@@ -204,7 +204,7 @@ end
       %error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
     end
     DataInMemory.(param).dataObj = dataObj;
-    fileVersion = DataInMemory.dce.dataObj.GlobalAttributes.Data_version{:};
+    fileVersion = DataInMemory.(param).dataObj.GlobalAttributes.Data_version{:};
     DataInMemory.(param).fileVersion = struct(...
       'major', str2double(fileVersion(2)),...
       'minor', str2double(fileVersion(4)),...
@@ -222,7 +222,7 @@ end
   end
 
   function res = isProbeEnabled(probe)
-    flag = get_variable(dataObj,[varPrefix probe '_enable']);
+    %flag = get_variable(dataObj,[varPrefix probe '_enable']);
     
     flag = dataObj.data.([varPrefix probe '_enable']).data;
     if ~all(diff(flag))==0
