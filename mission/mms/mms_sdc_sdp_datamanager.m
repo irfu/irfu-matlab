@@ -104,42 +104,28 @@ if(nargin==2)
       case('dce')
         sig = {'e12','e34','e56'};
         init_param(sig)
-        for iSig=1:length(sig)
-          if ~isProbeEnabled(sig{iSig})
-            DATAC.(param).(sig{iSig}).data = DATAC.(param).(sig{iSig}).data*NaN;
-          end
-        end
         
       case('dcv')
         sig = {'v1','v2','v3','v4','v5','v6'};
         init_param(sig)
         
-        p1_off = ~isProbeEnabled('v1');
-        p2_off = ~isProbeEnabled('v2');
-        p3_off = ~isProbeEnabled('v3');
-        p4_off = ~isProbeEnabled('v4');
-        p5_off = ~isProbeEnabled('v5');
-        p6_off = ~isProbeEnabled('v6');
-        
-        if p1_off && p2_off
-          %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
-          %DATAC.(param).v2.data = DATAC.(param).v1.data;
-        elseif p1_off
-          if isfield(DATAC.dce,'e12') && ~isempty(DATAC.dce.e12)
-            % Compute 
-            % TODO:  implement real computation instead of this
-          else
-            %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
+        % Compute V from E and the other V
+        % typical situation is V2 off, V1 on
+        MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
+        v1Off = bitand(DATAC.dcv.v1.bitmask, MSK_OFF);
+        v2Off = bitand(DATAC.dcv.v2.bitmask, MSK_OFF);
+        idxOneSig = xor(v1Off,v2Off);
+        if any(idxOneSig)
+          iV1 = idxOneSig & ~v1Off;
+          if any(iV1),
+            DATAC.dcv.v2.data(iV1) = DATAC.dcv.v1.data(iV1) - DATAC.dce.e12.data(iV1);
           end
-        elseif p2_off
-          if isfield(DATAC.dce,'e12') && ~isempty(DATAC.dce.e12)
-            % Compute 
-            % TODO implement real computation instead of this
-          else
-            %DATAC.(param).v1.data = DATAC.(param).v1.data*NaN;
+          iV2 = idxOneSig & ~v2Off;
+          if any(iV2),
+            DATAC.dcv.v2.data(iV2) = DATAC.dcv.v2.data(iV2) + DATAC.dce.e12.data(iV2);
           end
         end
-        
+        % XXX: check that time for E is the same as for V
         % TODO: implement similar for p3-6
         
       case('hk_101')
@@ -241,28 +227,74 @@ end
     check_monoton_timeincrease(DATAC.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(fields), return, end
-    for iField=1:length(fields)
+    probeEnabled = resample_probe_enable(fields);
+    for iField=1:numel(fields)
       DATAC.(param).(fields{iField}) = struct(...
         'data',sensorData(:,iField), ...
         'bitmask',zeros(size(sensorData(:,iField))));
+      %Set disabled bit
+      idxDisabled = probeEnabled(:,iField)==0;
+      DATAC.(param).(fields{iField}).bitmask(idxDisabled) = ...
+        bitor(DATAC.(param).(fields{iField}).bitmask(idxDisabled), ...
+        MMS_CONST.Bitmask.SIGNAL_OFF);
+      DATAC.(param).(fields{iField}).data(idxDisabled,:) = NaN;
     end
   end
 
-  function res = isProbeEnabled(probe)
-    %flag = get_variable(dataObj,[varPrefix probe '_enable']);
-    
-    flag = dataObj.data.([varPrefix probe '_enable']).data;
-    if ~all(diff(flag))==0
-      err_str = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
-      irf.log('critical', err_str);
-      error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+  function res = resample_probe_enable(fields)
+  % resample probe_enabled data to E-field cadense
+    probe = fields{1};
+    flag = get_variable(dataObj,[varPrefix probe '_enable']);
+    dtSampling = median(diff(flag.DEPEND_0.data))*1e-9;
+    switch DATAC.tmMode
+      case MMS_CONST.TmMode.srvy, error('kaboom')
+      case  MMS_CONST.TmMode.slow, dtNominal = 20;
+      case  MMS_CONST.TmMode.fast, dtNominal = 5;
+      case  MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229];
+      otherwise
+        errS = 'Unrecognized tmMode';
+        irf.log('critical',errS), error(errS)
     end
-    res = flag(1);
+    flagOK = false;
+    for i=1:numel(dtNominal)
+      if dtSampling > dtNominal(i)*.95 && dtSampling < dtNominal(i)*1.05
+        dtSampling = dtNominal(i); flagOK = true; break
+      end
+    end
+    if ~flagOK
+      errS = ['bad sampling for ' varPrefix probe '_enable'];
+      irf.log('critical',errS), error(errS)
+    end
+    enabled.time = flag.DEPEND_0.data;
+    nData = numel(enabled.time);
+    enabled.data = zeros(nData,numel(fields));
+    enabled.data(:,1) = flag.data;
+    for iF=2:numel(fields)
+      probe = fields{iF};
+      flag = getv(dataObj,[varPrefix probe '_enable']);
+      if isempty(flag)
+        errS = ['cannot get ' varPrefix probe '_enable'];
+        irf.log('critical',errS), error(errS)
+      elseif numel(flag.data) ~= nData
+        errS = ['bad size for ' varPrefix probe '_enable'];
+        irf.log('critical',errS), error(errS)
+      end
+      enabled.data(:,iF) = flag.data;
+    end
+    newT = DATAC.(param).time;
+    % Default to zero - probe disabled
+    res = zeros(numel(newT), numel(fields));
+    if all(diff(enabled.data))==0,
+      ii = newT>enabled.time(1)-dtSampling & newT<=enabled.time(end);
+      for iF=1:numel(fields), 
+        res(ii,iF) = enabled.data(1,iF); 
+      end
+    else
+      % TODO: implements some smart logic.
+      errS = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
+      irf.log('critical', errS); error(errS);
+    end
   end
-end
-
-function res = resample_bitmask(time,bmTime,bmData)
-
 end
 
 
@@ -270,7 +302,7 @@ end
 function check_monoton_timeincrease(time, dataType)
     
 if(any(diff(time)<=0))
-        err_str = ['MMS_SDC_SDP_DATAMANAGER Time is NOT increasing for the datatype ', dataType];
+        err_str = ['Time is NOT increasing for the datatype ', dataType];
         irf.log('critical', err_str);
         error('MATLAB:MMS_SDC_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
 end
