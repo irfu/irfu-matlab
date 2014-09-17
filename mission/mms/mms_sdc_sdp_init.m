@@ -1,6 +1,6 @@
-function ENVIR = mms_sdc_sdp_init(scNumber)
+function ENVIR = mms_sdc_sdp_init(scNumberStr)
 % MMS_SDC_SDP_INIT reads initial environment and constants for MMS FIELDS processing
-% 	[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT(scNumber) returns environment
+% 	[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT(scNumberStr) returns environment
 %   variables and constants useful for MMS processing. Input argument 
 %   should be the sc number (as a string), i.e. '1' for mms1 and '2' for 
 %   mms2 etc. It also configures logging to "$LOG_PATH_ROOT/ mmsX/ sdp/
@@ -39,17 +39,17 @@ ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 % Create a logfile at $LOG_PATH_ROOT / mmsX / sdp /
 % named after current run day yyyymmdd and _IRFU.log. If this fails
 % create it at $LOG_PATH_ROOT and include full date with seconds.
-if( str2double(scNumber)>1 || str2double(scNumber)<4 )
+if( str2double(scNumberStr)>1 || str2double(scNumberStr)<4 )
     % Check to verify that output dir exists for logging. If not, create
     % it.
-    if(~exist([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumber, filesep, ...
+    if(~exist([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, ...
             'sdp'], 'dir'))
-        mkdir([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumber], 'sdp');
+        mkdir([ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr], 'sdp');
     end
     irf.log('log_out', [ENVIR.LOG_PATH_ROOT, filesep, 'mms', ...
-        scNumber, filesep, 'sdp', filesep, datestr(now,'yyyymmdd'),...
+        scNumberStr, filesep, 'sdp', filesep, datestr(now,'yyyymmdd'),...
         '_IRFU.log']);
-    mms_sdc_sdp_datamanager('init',str2double(scNumber))
+    mms_sdc_sdp_datamanager('init',str2double(scNumberStr))
     % Set log level
     irf.log('notice');
 else
@@ -57,7 +57,7 @@ else
         datestr(now,'yyyymmddTHHMMSS'), '_IRFU.log']);
     irf.log('debug');
     err_str = ['Matlab:MMS_SDC_SDP_INIT:InputArg scNumber incorrectly ',...
-        'determined as: ',scNumber];
+        'determined as: ',scNumberStr];
     irf.log('critical', err_str);
     error('Matlab:MMS_SDC_SDP_INIT',['MMS_SDC_SDP_INIT recieved an ', ...
         'unexpected sc number string. Input to processing should be ', ...
