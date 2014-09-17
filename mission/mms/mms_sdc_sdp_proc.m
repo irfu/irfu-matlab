@@ -220,7 +220,7 @@ unix(['touch', ' ', ENVIR.LOG_PATH_ROOT, filesep 'mms', ...
     for iPath = 1:numel(irfDirectories)
       pathToAdd = [irfPath irfDirectories{iPath}];
       addpath(pathToAdd);
-      disp(['Added to path: ' pathToAdd]);
+      irf.log('notice',['Added to path: ' pathToAdd]);
     end
   end
 
