@@ -4,11 +4,12 @@ data_root='/data/mms/MRT9';
 cd(data_root)
 if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
-setenv('LOG_PATH_ROOT',[data_root filesep 'log'])
+%setenv('LOG_PATH_ROOT',[data_root filesep 'log'])
+setenv('LOG_PATH_ROOT','')
 setenv('DROPBOX_ROOT',[data_root filesep 'out'])
 setenv('DATA_PATH_ROOT',[data_root filesep 'out'])
 
-modes={'fast','slow','srvy'};
+modes={'fast','slow','brst'};
 procs={'usc','ql','sitl'};
 
 %% Tests
