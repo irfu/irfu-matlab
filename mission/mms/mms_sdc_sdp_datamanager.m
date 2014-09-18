@@ -80,9 +80,7 @@ if(nargin==2)
     if isa(dataObj,'dataobj') % do nothing
     elseif ischar(dataObj) && exist(dataObj, 'file')
         % If it is not a read cdf file, is it an unread cdf file? Read it.
-        irf.log('warning',['First argument was not a dataobj but a file,'...
-            ' trying to load with dataobj that file: ', dataObj, ...
-            ', and store its data as: ',param,'.']);
+        irf.log('warning',['Loading ' param ' from file: ', dataObj]);
         dataObj = dataobj(dataObj, 'KeepTT2000');
     else
         err_str = 'MMS_SDC_SDP_DATAMANAGER unknown input arguments.';
@@ -111,6 +109,8 @@ if(nargin==2)
         
         % Compute V from E and the other V
         % typical situation is V2 off, V1 on
+        % E12[mV/m] = ( V1[V] - V2[V] ) / L[km]
+        NOM_BOOM_L = .12; % 120 m
         MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
         v1Off = bitand(DATAC.dcv.v1.bitmask, MSK_OFF);
         v2Off = bitand(DATAC.dcv.v2.bitmask, MSK_OFF);
@@ -118,11 +118,19 @@ if(nargin==2)
         if any(idxOneSig)
           iV1 = idxOneSig & ~v1Off;
           if any(iV1),
-            DATAC.dcv.v2.data(iV1) = DATAC.dcv.v1.data(iV1) - DATAC.dce.e12.data(iV1);
+            irf.log('notice',...
+              sprintf('Computing %s from %s and %s for %d data points',...
+              'V2','V1','E12',sum(iV1)))
+            DATAC.dcv.v2.data(iV1) = DATAC.dcv.v1.data(iV1) - ...
+              NOM_BOOM_L*DATAC.dce.e12.data(iV1);
           end
           iV2 = idxOneSig & ~v2Off;
           if any(iV2),
-            DATAC.dcv.v2.data(iV2) = DATAC.dcv.v2.data(iV2) + DATAC.dce.e12.data(iV2);
+            irf.log('notice',...
+              sprintf('Computing %s from %s and %s for %d data points',...
+              'V1','V2','E12',sum(iV1)))
+            DATAC.dcv.v1.data(iV2) = DATAC.dcv.v2.data(iV2) + ...
+              NOM_BOOM_L*DATAC.dce.e12.data(iV2);
           end
         end
         % XXX: check that time for E is the same as for V
