@@ -22,7 +22,7 @@ nVars = size(dobj.vars,1);
 if nVars>0
   iVar=find(sum(strcmp(varName,dobj.vars(:,1:2)),2)>0); % find variable
   if isempty(iVar)
-    irf.log('notice',['No such variable : ' varName])
+    %irf.log('notice',['No such variable : ' varName])
     res = [];
     return;
   else
