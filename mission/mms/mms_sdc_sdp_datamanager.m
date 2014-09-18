@@ -100,41 +100,13 @@ if(nargin==2)
     
     switch(param)
       case('dce')
-        sig = {'e12','e34','e56'};
-        init_param(sig)
+        sensors = {'e12','e34','e56'};
+        init_param()
         
       case('dcv')
-        sig = {'v1','v2','v3','v4','v5','v6'};
-        init_param(sig)
-        
-        % Compute V from E and the other V
-        % typical situation is V2 off, V1 on
-        % E12[mV/m] = ( V1[V] - V2[V] ) / L[km]
-        NOM_BOOM_L = .12; % 120 m
-        MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
-        v1Off = bitand(DATAC.dcv.v1.bitmask, MSK_OFF);
-        v2Off = bitand(DATAC.dcv.v2.bitmask, MSK_OFF);
-        idxOneSig = xor(v1Off,v2Off);
-        if any(idxOneSig)
-          iV1 = idxOneSig & ~v1Off;
-          if any(iV1),
-            irf.log('notice',...
-              sprintf('Computing %s from %s and %s for %d data points',...
-              'V2','V1','E12',sum(iV1)))
-            DATAC.dcv.v2.data(iV1) = DATAC.dcv.v1.data(iV1) - ...
-              NOM_BOOM_L*DATAC.dce.e12.data(iV1);
-          end
-          iV2 = idxOneSig & ~v2Off;
-          if any(iV2),
-            irf.log('notice',...
-              sprintf('Computing %s from %s and %s for %d data points',...
-              'V1','V2','E12',sum(iV1)))
-            DATAC.dcv.v1.data(iV2) = DATAC.dcv.v2.data(iV2) + ...
-              NOM_BOOM_L*DATAC.dce.e12.data(iV2);
-          end
-        end
-        % XXX: check that time for E is the same as for V
-        % TODO: implement similar for p3-6
+        sensors = {'v1','v2','v3','v4','v5','v6'};
+        init_param()
+        v_from_e_and_v()
         
       case('hk_101')
         varPrefix = sprintf('mms%d_101_',DATAC.scId);
@@ -217,7 +189,39 @@ elseif nargin==1
         end
 end
 
-  function init_param(fields)
+  function v_from_e_and_v
+    % Compute V from E and the other V
+    % typical situation is V2 off, V1 on
+    % E12[mV/m] = ( V1[V] - V2[V] ) / L[km]
+    NOM_BOOM_L = .12; % 120 m
+    MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen}; senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)]; % E-field sensor
+      senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
+      senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
+      idxOneSig = xor(senA_off,senB_off);
+      if ~any(idxOneSig), return, end
+      iVA = idxOneSig & ~senA_off;
+      if any(iVA),
+        irf.log('notice',...
+          sprintf('Computing %s from %s and %s for %d data points',...
+          senB,senA,senE,sum(iVA)))
+        DATAC.dcv.(senB).data(iVA) = DATAC.dcv.(senA).data(iVA) - ...
+          NOM_BOOM_L*DATAC.dce.(senE).data(iVA);
+      end
+      iVB = idxOneSig & ~senB_off;
+      if any(iVB),
+        irf.log('notice',...
+          sprintf('Computing %s from %s and %s for %d data points',...
+          senA,senB,senE,sum(iVA)))
+        DATAC.dcv.(senA).data(iVB) = DATAC.dcv.(senB).data(iVB) + ...
+          NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
+      end
+    end
+  end
+
+  function init_param
     DATAC.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
       err_str = 'MMS_SDC_SDP_DATAMANAGER changing sampling rate not yet implemented.';
@@ -234,18 +238,18 @@ end
     DATAC.(param).time = x.DEPEND_O.data;
     check_monoton_timeincrease(DATAC.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
-    if isempty(fields), return, end
-    probeEnabled = resample_probe_enable(fields);
-    for iField=1:numel(fields)
-      DATAC.(param).(fields{iField}) = struct(...
-        'data',sensorData(:,iField), ...
-        'bitmask',zeros(size(sensorData(:,iField))));
+    if isempty(sensors), return, end
+    probeEnabled = resample_probe_enable(sensors);
+    for iSen=1:numel(sensors)
+      DATAC.(param).(sensors{iSen}) = struct(...
+        'data',sensorData(:,iSen), ...
+        'bitmask',zeros(size(sensorData(:,iSen))));
       %Set disabled bit
-      idxDisabled = probeEnabled(:,iField)==0;
-      DATAC.(param).(fields{iField}).bitmask(idxDisabled) = ...
-        bitor(DATAC.(param).(fields{iField}).bitmask(idxDisabled), ...
+      idxDisabled = probeEnabled(:,iSen)==0;
+      DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
+        bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...
         MMS_CONST.Bitmask.SIGNAL_OFF);
-      DATAC.(param).(fields{iField}).data(idxDisabled,:) = NaN;
+      DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
     end
   end
 
