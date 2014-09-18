@@ -12,6 +12,8 @@ MMS_CONST.Version.X = 0; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 
+MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
+
 MMS_CONST.MMSids = 1:4;
 
 % Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
@@ -37,6 +39,8 @@ MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2
 MMS_CONST.Bitmask.PROBE_SATURATION         =  4;       % Bit 3
 MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  8;       % Bit 4
 MMS_CONST.Bitmask.SWEEP_DATA               =  16;      % Bit 5
+
+MMS_CONST.Error = -Inf; % Indicates error in computation
 
 % % DC V source bitmasks
 % %for 16 ks/s channels, up to 6 channels at the same time:

@@ -1,4 +1,4 @@
-function [ VarOut ] = mms_sdc_sdp_datamanager( param, dataObj )
+function [ varOut ] = mms_sdc_sdp_datamanager( param, dataObj )
 % mms_sdc_sdp_datamanager will store and retrive data for
 %  	mms_sdc_sdp_datamanager( dataType, dataObj ) will store
 %  	appropriate data variables related to dataType in the global variable
@@ -21,9 +21,11 @@ narginchk(1,2); % One argument is simply retreive variable, Two arguments
 global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 global DATAC; % Here we store read data.
 
+if nargout, varOut = []; end
+
 if ~ischar(param),
   errStr = 'PARAM must be a string';
-  irf.log('critical', errStr); error(err_str);
+  irf.log('critical', errStr); error(errStr);
 end
 
 if strcmpi(param, 'init')
@@ -63,130 +65,89 @@ if strcmpi(param, 'init')
   DATAC.dce = [];
   DATAC.dcv = [];
   DATAC.hk_101 = [];
+  DATAC.phase = [];
+  DATAC.probe2ScPot = [];
   return
 end
 
 if ~isfield(DATAC, 'scId')
-  err_str = 'Data mamager not initialized! Run: mms_sdc_sdp_datamanager(''init'',init_struct)';
-  irf.log('critical', err_str);
-  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+  errStr = 'Data mamager not initialized! Run: mms_sdc_sdp_datamanager(''init'',init_struct)';
+  irf.log('critical', errStr);
+  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
 end
 
-param = lower(param);
+% If one input is give, we give the parameter back if it is already there,
+% otherwise we compute it
+if nargin==1
+  if ~isfield(DATAC,param)
+    errStr = ['unknown parameter (' param ')'];
+    irf.log('critical',errStr), error(errStr)
+  end
+  
+  if ~isempty(DATAC.(param)), varOut = DATAC.(param); return, end
+  
+  % Check for function fo compute param
+  funcName = ['mms_sdc_sdp_comp_' param];
+  if ~( exist(funcName)==2 )
+    irf.log('warning',...
+      ['Cannot find function (' funcName ') to compute param(' param ')'])
+    DATAC.(param) = MMS_CONST.Error; varOut = DATAC.(param); return
+  end
+  % Run the function
+  DATAC.(param) = feval(funcName); varOut = DATAC.(param); return
+end
 
-if(nargin==2)   
-    % Make sure first argument is a dataobj class object, 
-    % otherwise a read cdf file.
-    if isa(dataObj,'dataobj') % do nothing
-    elseif ischar(dataObj) && exist(dataObj, 'file')
-        % If it is not a read cdf file, is it an unread cdf file? Read it.
-        irf.log('warning',['Loading ' param ' from file: ', dataObj]);
-        dataObj = dataobj(dataObj, 'KeepTT2000');
-    else
-        err_str = 'MMS_SDC_SDP_DATAMANAGER unknown input arguments.';
-        irf.log('critical', err_str);
-        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);  
-    end
+%% nargin==2   
+% Make sure first argument is a dataobj class object,
+% otherwise a read cdf file.
+if isa(dataObj,'dataobj') % do nothing
+elseif ischar(dataObj) && exist(dataObj, 'file')
+  % If it is not a read cdf file, is it an unread cdf file? Read it.
+  irf.log('warning',['Loading ' param ' from file: ', dataObj]);
+  dataObj = dataobj(dataObj, 'KeepTT2000');
+else
+  errStr = 'Unrecognized input argument';
+  irf.log('critical', errStr);
+  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+end
+
+if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
+  % Error, Warning or Notice for replacing the data variable?
+  errStr = ['replacing existing variable (' param ') with new data'];
+  irf.log('critical', errStr);
+  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+end
+
+varPrefix = sprintf('mms%d_sdp_',DATAC.scId);
+
+switch(param)
+  case('dce')
+    sensors = {'e12','e34','e56'};
+    init_param()
     
-    if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
-      % Error, Warning or Notice for replacing the data variable?
-      err_str = ['MMS_SDC_SDP_DATAMANAGER replacing existing ', ...
-        'variable with new data in ' param];
-      irf.log('critical', err_str);
-      error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-    end
+  case('dcv')
+    sensors = {'v1','v2','v3','v4','v5','v6'};
+    init_param()
+    v_from_e_and_v()
     
-    varPrefix = sprintf('mms%d_sdp_',DATAC.scId);
-    
-    switch(param)
-      case('dce')
-        sensors = {'e12','e34','e56'};
-        init_param()
-        
-      case('dcv')
-        sensors = {'v1','v2','v3','v4','v5','v6'};
-        init_param()
-        v_from_e_and_v()
-        
-      case('hk_101')
-        varPrefix = sprintf('mms%d_101_',DATAC.scId);
-        DATAC.(param) = [];
-        DATAC.(param).dataObj = dataObj;
-        x = getdep(dataObj,[varPrefix 'cmdexec']);
-        DATAC.(param).time = x.DEPEND_O.data;
-        check_monoton_timeincrease(DATAC.(param).time, param);
-        % Add sunpulse times (TT2000) of last recieved sunpulse.
-        DATAC.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
-        % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
-        DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
-        % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
-        DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
-      otherwise
-        % Not yet implemented.
-        err_str = ['MMS_SDC_SDP_DATAMANAGER unknown second ', ...
-          'parameter. The datatype ', param, ...
-          ' is not yet implemented'];
-        irf.log('critical',err_str);
-        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-        
-    end
-    
-elseif nargin==1
-        switch( param )
-            case('dcephase')
-                % Phase, from sunpulse for now.
-                if isfield(DATAC,'dce') && ...
-                    isfield(DATAC.dce,'phase') && ...
-                    ~isempty(DATAC.dce.phase)
-                  VarOut = DATAC.dce.phase;
-                else
-                    % Calculate it, store it and return variable.
-                    DATAC.dce.phase = mms_sdc_sdp_phase( ...
-                        DATAC.dce.time, ...
-                        DATAC.hk_101.sunpulse);
-                    VarOut = DATAC.dce.phase;
-                end
-                
-                
-                %%
-                %THIS SHOULD BE CHANGED BUT FOR TESTING AND VERIFICATION
-                %PURPOSES IT IS DONE THIS WAY. THE FOLLOWING MUST BE
-                %CHANGED.
-            case('dcetime')
-                % Timestamp of dce
-                if( isfield(DATAC.dce, 'time') && ...
-                        ~isempty(DATAC.dce.time) )
-                    VarOut = DATAC.dce.time;
-                else
-                    % Error
-                    err_str = ['The requested variable ', param, ...
-                        'does not exist.'];
-                    irf.log('critical',err_str);
-                    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-                end
-                
-            case('dcvtime')
-                % Timestamp of dce
-                if( isfield(DATAC.dcv, 'time') && ...
-                        ~isempty(DATAC.dcv.time) )
-                    VarOut = DATAC.dcv.time;
-                else
-                    % Error
-                    err_str = ['The requested variable ', param, ...
-                        'does not exist.'];
-                    irf.log('critical',err_str);
-                    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-                end
-                
-                %% END OF TESTING AND VERIFICATION CODE TO BE CHANGED
-                
-                
-            otherwise
-                % FIXME: Not yet implemented.
-                err_str = 'MMS_SDC_SDP_DATAMANAGER variable not yet implemented.';
-                irf.log('critical', err_str);
-                error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
-        end
+  case('hk_101')
+    varPrefix = sprintf('mms%d_101_',DATAC.scId);
+    DATAC.(param) = [];
+    DATAC.(param).dataObj = dataObj;
+    x = getdep(dataObj,[varPrefix 'cmdexec']);
+    DATAC.(param).time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.(param).time, param);
+    % Add sunpulse times (TT2000) of last recieved sunpulse.
+    DATAC.(param).sunpulse = dataObj.data.([varPrefix 'sunpulse']).data;
+    % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
+    DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
+    % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
+    DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
+  otherwise
+    % Not yet implemented.
+    errStr = [' unknown parameter (' param ')'];
+    irf.log('critical',errStr);
+    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
 end
 
   function v_from_e_and_v
@@ -235,9 +196,15 @@ end
     end
     DATAC.(param).dataObj = dataObj;
     fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
+    majorVer = str2double(fileVersion(2));
+    if majorVer < MMS_CONST.MinFileVer
+      err_str = sprintf('File too old: major version %d < %d',...
+        majorVer, MMS_CONST.MinFileVer);
+      irf.log('critical',err_str), error(err_str);
+    end
+      
     DATAC.(param).fileVersion = struct(...
-      'major', str2double(fileVersion(2)),...
-      'minor', str2double(fileVersion(4)),...
+      'major', majorVer,'minor', str2double(fileVersion(4)),...
       'revision', str2double(fileVersion(4)));
     x = getdep(dataObj,[varPrefix param '_sensor']);
     DATAC.(param).time = x.DEPEND_O.data;
@@ -262,16 +229,18 @@ end
   % resample probe_enabled data to E-field cadense
     probe = fields{1};
     flag = get_variable(dataObj,[varPrefix probe '_enable']);
-    dtSampling = median(diff(flag.DEPEND_0.data))*1e-9;
+    dtSampling = median(diff(flag.DEPEND_0.data));
     switch DATAC.tmMode
       case MMS_CONST.TmMode.srvy, error('kaboom')
-      case  MMS_CONST.TmMode.slow, dtNominal = [20, 160];
+      case  MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case  MMS_CONST.TmMode.fast, dtNominal = 5;
-      case  MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229];
+      case  MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)
     end
+    dtNominal = int64(dtNominal*1e9); % convert to ns
+    
     flagOK = false;
     for i=1:numel(dtNominal)
       if dtSampling > dtNominal(i)*.95 && dtSampling < dtNominal(i)*1.05
@@ -340,4 +309,4 @@ if( all(diff(var))==0 )
     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:VARIABLE:STUCK', err_str);
 end
 
-end
+end % check_stuck_variable
