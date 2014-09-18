@@ -193,6 +193,11 @@ end
     % Compute V from E and the other V
     % typical situation is V2 off, V1 on
     % E12[mV/m] = ( V1[V] - V2[V] ) / L[km]
+    if isempty(DATAC.dce),
+      irf.log('warning','Empty DCE, cannot proceed')
+      return
+    end
+    
     NOM_BOOM_L = .12; % 120 m
     MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
     for iSen = 1:2:numel(sensors)
@@ -260,7 +265,7 @@ end
     dtSampling = median(diff(flag.DEPEND_0.data))*1e-9;
     switch DATAC.tmMode
       case MMS_CONST.TmMode.srvy, error('kaboom')
-      case  MMS_CONST.TmMode.slow, dtNominal = 20;
+      case  MMS_CONST.TmMode.slow, dtNominal = [20, 160];
       case  MMS_CONST.TmMode.fast, dtNominal = 5;
       case  MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229];
       otherwise
