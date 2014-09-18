@@ -196,16 +196,16 @@ end
     end
     DATAC.(param).dataObj = dataObj;
     fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
-    majorVer = str2double(fileVersion(2));
-    if majorVer < MMS_CONST.MinFileVer
+    % Skip the intial "v" and split it into [major minor revision].
+    fileVersion = str2double(strsplit(fileVersion(2:end),'.'));
+    DATAC.(param).fileVersion = struct('major', fileVersion(1), 'minor',...
+        fileVersion(2), 'revision', fileVersion(3));
+    % Make sure it is not too old to work properly.
+    if DATAC.(param).fileVersion.major < MMS_CONST.MinFileVer
       err_str = sprintf('File too old: major version %d < %d',...
-        majorVer, MMS_CONST.MinFileVer);
+        DATAC.(param).fileVersion.major, MMS_CONST.MinFileVer);
       irf.log('critical',err_str), error(err_str);
     end
-      
-    DATAC.(param).fileVersion = struct(...
-      'major', majorVer,'minor', str2double(fileVersion(4)),...
-      'revision', str2double(fileVersion(4)));
     x = getdep(dataObj,[varPrefix param '_sensor']);
     DATAC.(param).time = x.DEPEND_O.data;
     check_monoton_timeincrease(DATAC.(param).time, param);
