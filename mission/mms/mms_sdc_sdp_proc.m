@@ -52,8 +52,9 @@ if isempty(procId)
     'MMS_SDC_SDP_PROC first argument must be one of: %s',...
     mms_constants2string('SDCProcs'));
 end
-irf.log('notice', ['Starting process: ', procName]);
 HeaderInfo.procName = procName;
+procName = upper(procName);
+irf.log('notice', ['Starting process: ', procName]);
 
 %% Process inpit
 for i=1:nargin-1
@@ -167,8 +168,20 @@ switch procId
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
     
+    if isempty(DCE_File)
+      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
+        'received no DCE file argument.']);
+    else
+      irf.log('notice', [procName ' proc using: ' DCE_File]);
+      dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+    end
+    
     irf.log('notice', [procName ' proc using: ' DCV_File]);
     dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+    
+    if isempty(DCE_File), copy_header('dcv',1)
+    else copy_header('dcv',2)
+    end
     
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
     mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
@@ -193,9 +206,6 @@ switch procId
     irf.log('notice', [procName ' proc using: ' DCE_File]);
     dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
     
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
-    
     if isempty(DCV_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
         'received no DCV file argument.']);
@@ -205,6 +215,9 @@ switch procId
       dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
       copy_header('dce',2)
     end
+    
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
     
     % Write the output
     filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
@@ -239,12 +252,11 @@ end
     if nSrc>2 || nSrc<1, error('nSrc must be 1 or 2'), end
     switch dataType
       case 'dcv'
-        src = dcv_source_fileData;
-        if nSrc==2
-          error('Invalid nSrc=2 for DATA_TYPE=dcv')
-        end
+        src  = dcv_source_fileData;
+        src2 = dce_source_fileData;
       case 'dce'
-        src = dce_source_fileData;
+        src  = dce_source_fileData;
+        src2 = dcv_source_fileData;
       otherwise
         error('Invalid DATA_TYPE (dce or dcv)')
     end
@@ -256,7 +268,7 @@ end
     HeaderInfo.numberOfSources = nSrc;
     HeaderInfo.parents_1 = src.filename;
     if nSrc==2
-      HeaderInfo.parents_2 = dcv_source_fileData.filename;
+      HeaderInfo.parents_2 = src2.filename;
     end
   end
 end
