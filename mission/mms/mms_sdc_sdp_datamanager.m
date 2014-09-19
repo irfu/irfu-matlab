@@ -129,6 +129,10 @@ switch(param)
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
     v_from_e_and_v()
+    chk_latched_pr()
+    chk_bias_guard()
+    chk_sweep_on()
+    chk_sdp_v_vals()
     
   case('hk_101')
     varPrefix = sprintf('mms%d_101_',DATAC.scId);
@@ -149,6 +153,34 @@ switch(param)
     irf.log('critical',errStr);
     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
 end
+
+  function chk_latched_pr()
+    % Check that probe values are varying. If there are 3 identical points,
+    % mark this as latched data, and set bit in both V and E bitmask
+    
+    %XXX: Does nothing at the moment
+  end
+
+  function chk_bias_guard()
+    % Check that bias/guard setting are nominal.
+    % If not, set bit in both V and E bitmask
+    
+    %XXX: Does nothing at the moment
+  end
+
+  function chk_sweep_on()
+    % Check if wseep is on for all probes
+    % if yes, set bit in both V and E bitmask
+    
+    %XXX: Does nothing at the moment
+  end
+  function chk_sdp_v_vals()
+    % check if probe-to-spacecraft potentials  averaged over one spin for 
+    % all probes are similar (within TBD %, or V). 
+    % If not, set bit in both V and E bitmask.
+    
+    %XXX: Does nothing at the moment
+  end
 
   function v_from_e_and_v
     % Compute V from E and the other V
