@@ -21,11 +21,10 @@ MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
 
 % Telemetry mode
-MMS_CONST.TmModes = {'srvy','slow','fast','brst'};
-MMS_CONST.TmMode.srvy = 1; % Number must corrspond to position in the list
-MMS_CONST.TmMode.slow = 2;
-MMS_CONST.TmMode.fast = 3;
-MMS_CONST.TmMode.brst = 4;
+MMS_CONST.TmModes = {'slow','fast','brst'};
+MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
+MMS_CONST.TmMode.fast = 2;
+MMS_CONST.TmMode.brst = 3;
 
 % SDC process names
 MMS_CONST.SDCProcs = {'sitl','ql','usc'};
