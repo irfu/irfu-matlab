@@ -32,6 +32,9 @@ MMS_CONST.SDCProc.sitl = 1; % Number must corrspond to position in the list
 MMS_CONST.SDCProc.ql   = 2;
 MMS_CONST.SDCProc.usc  = 3;
 
+% Limits used in processing
+MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
+
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
 MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2

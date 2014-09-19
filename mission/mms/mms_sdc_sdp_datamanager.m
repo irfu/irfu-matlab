@@ -156,9 +156,76 @@ end
 
   function chk_latched_pr()
     % Check that probe values are varying. If there are 3 identical points,
-    % mark this as latched data, and set bit in both V and E bitmask
+    % or more, after each other mark this as latched data. If it is latched
+    % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
+    % it will be Bitmasked with Low density saturation otherwise it will be
+    % bitmasked with just Probe saturation.
     
-    %XXX: Does nothing at the moment
+    % For each sensor, check each pair, i.e. V_1 & V_2 and E_12.
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen};  senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)]; % E-field sensor
+
+      % Check all probes
+      irf.log('notice', ...
+        sprintf('Checking for latched probes on %s, %s and %s.', senA, ...
+        senB, senE));
+
+      %% REMOVE ME, (debug) force Stuck at low values
+      %DATAC.dcv.(senA).data(50:100)=-200;
+      %% END OF REMOVE ME
+
+      DATAC.dcv.(senA).bitmask = DATAC.dcv.(senA).bitmask + ...
+          chk_latched_subfunc(DATAC.dcv.(senA).data);
+      DATAC.dcv.(senB).bitmask = DATAC.dcv.(senB).bitmask + ...
+          chk_latched_subfunc(DATAC.dcv.(senB).data);
+      DATAC.dcv.(senE).bitmask = DATAC.dce.(senE).bitmask + ...
+          chk_latched_subfunc(DATAC.dce.(senE).data);
+
+      %% TODO, Check overlapping stuck values, if senA stuck but not senB..
+      
+    end
+    
+      function latchBitmask = chk_latched_subfunc( data )
+        % Calculate what bitmask to add to present bitmask for data based
+        % on if the probe is latched or not for 3 or more consecutative
+        % data points.
+        
+        % Return zero to add, if no latched probes was found.
+        latchBitmask = zeros(length(data), 1, 'uint16');
+        % Get all points where diff == 0.
+        stuck = find(diff(data)==0);
+        % Locate continously stuck segments.
+        dsig = diff([0; diff(stuck)==1; 0]);
+        startInd = find(dsig > 0);
+        endInd = find(dsig < 0);
+        duration = endInd-startInd+1;
+        % Locate at least 3 consecutive stuck values.
+        contInd = (duration >= 3);
+        startInd = startInd(contInd);
+        endInd = endInd(contInd);
+        % Get the indices of these segments of stuck
+        indices = zeros(1,max(endInd)+1);
+        indices(startInd) = 1;
+        indices(endInd+1) = indices(endInd+1)-1;
+        indices = find(cumsum(indices));
+
+        if(max(indices)>0)
+          latchBitmask(stuck(indices)) = MMS_CONST.Bitmask.PROBE_SATURATION;
+          % Locate any of these stuck at negative value, i.e. low density
+          % saturation, instead of just plain probe saturation. And set a
+          % proper bitmask for these values.
+           LowA = find(data(stuck(indices))<MMS_CONST.Limit.LOW_DENSITY_SATURATION);
+           if(any(LowA))
+             tmp=latchBitmask(stuck(indices));
+             tmp(LowA) = tmp(LowA) + ...
+               MMS_CONST.Bitmask.LOW_DENSITY_SATURATION - ...
+               MMS_CONST.Bitmask.PROBE_SATURATION;
+             latchBitmask(stuck(indices))=tmp;
+           end
+        end
+
+      end
   end
 
   function chk_bias_guard()
@@ -249,7 +316,7 @@ end
     for iSen=1:numel(sensors)
       DATAC.(param).(sensors{iSen}) = struct(...
         'data',sensorData(:,iSen), ...
-        'bitmask',zeros(size(sensorData(:,iSen))));
+        'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
       %Set disabled bit
       idxDisabled = probeEnabled(:,iSen)==0;
       DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
@@ -266,9 +333,9 @@ end
     dtSampling = median(diff(flag.DEPEND_0.data));
     switch DATAC.tmMode
       case MMS_CONST.TmMode.srvy, error('kaboom')
-      case  MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
-      case  MMS_CONST.TmMode.fast, dtNominal = 5;
-      case  MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
+      case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
+      case MMS_CONST.TmMode.fast, dtNominal = 5;
+      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)
