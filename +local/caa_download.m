@@ -225,6 +225,7 @@ if isInputDatasetName
 		tmaxDatenum = floor(tmaxDatenum) + 1;
 		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
 		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
+		tEnd        = tEnd - eps(tEnd(1)); % the exact midnigth data point belongs to the start of the day but not end
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	else
 		TT=caa_download(['inventory:' dataSet]);
