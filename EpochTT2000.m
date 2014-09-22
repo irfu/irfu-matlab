@@ -1,6 +1,13 @@
 classdef EpochTT2000 < GenericTimeArray
   %EpochTT2000 Class representing T2000 epoch, nanoseconds since 2000.
-  %   Detailed explanation goes here
+  
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
   methods
     function obj = EpochTT2000(inp)
       if nargin==0, return, end
