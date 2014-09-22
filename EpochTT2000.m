@@ -12,9 +12,8 @@ classdef EpochTT2000 < GenericTimeArray
         if size(inp,2)~=1, inp = inp'; end % to column
         obj.epoch = inp;
       elseif isa(inp,'char')
-        if GenericTimeArray.validate_iso_time_str(inp)
-          obj.epoch = parsett2000(inp);
-        else
+        obj.epoch = parsett2000(inp);
+        if obj.epoch==int64(-9223372036854775805)
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
@@ -37,6 +36,23 @@ classdef EpochTT2000 < GenericTimeArray
       end
       s_tmp(:,end+1) = 'Z';
       s = s_tmp;
+    end
+    
+    function res = toEpochUnix(obj)
+      s_tmp = encodett2000(obj.epoch(1)); epoch0 = iso2epoch(s_tmp{:});
+      epoch = double(obj.epoch - obj.epoch(1))*1e-9 + epoch0;
+      if numel(epoch) == 1, res = EpochUnix(epoch); return; end
+      
+      % Check for leap seconds during the time interval of interest
+      lSecs = GenericTimeArray.LeapSeconds();
+      yyyy = str2double(s_tmp{:}(1:4));
+      lSecs = lSecs(lSecs(:,1)>=yyyy,:); lSecs(:,4:6) = 0;
+      lSecsEpoch = toepoch(lSecs);
+      if any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
+        % Found: convert via UTC string
+        res = EpochUnix(toUtc(obj));
+      else res = EpochUnix(epoch);
+      end
     end
   end
 end
