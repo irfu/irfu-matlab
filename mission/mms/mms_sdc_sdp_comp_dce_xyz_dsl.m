@@ -36,7 +36,7 @@ switch procId
     % FIXME: need to compute from 
     bitmask = dce.e12.bitmask;
 
-    dce_xyz_dsl = struct('data',dE,'bitmask',bitmask);
+    dce_xyz_dsl = struct('data',[dE dce.e56.data],'bitmask',bitmask);
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
