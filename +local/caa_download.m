@@ -212,6 +212,7 @@ if isInputDatasetName
 		end
 		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
 		tEnd        = tVec(startMonth+1:end-(12-endMonth)  );
+		tEnd        = tEnd - eps(tEnd(1)); % the exact midnight data point belongs to the start of the day but not the end
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	elseif doDailyFileDownload,
 		TT=caa_download(['list:' dataSet]);
@@ -225,7 +226,7 @@ if isInputDatasetName
 		tmaxDatenum = floor(tmaxDatenum) + 1;
 		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
 		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
-		tEnd        = tEnd - eps(tEnd(1)); % the exact midnigth data point belongs to the start of the day but not end
+		tEnd        = tEnd - eps(tEnd(1)); % the exact midnight data point belongs to the start of the day but not the end
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	else
 		TT=caa_download(['inventory:' dataSet]);
@@ -233,6 +234,11 @@ if isInputDatasetName
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
+		% to avoid a situation where the end point in one interval is the
+		% same as the start point in the following interval and thus the
+		% same data appears in two different files, we remove eps() from
+		% the end point, because it should be regarded as upper bound
+		TT.TimeInterval(:,2)=TT.TimeInterval(:,2)-eps(TT.TimeInterval(1));
 		TTRequest=TT;
 	end
 	assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
