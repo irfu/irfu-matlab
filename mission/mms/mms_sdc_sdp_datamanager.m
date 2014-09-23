@@ -67,6 +67,7 @@ if strcmpi(param, 'init')
   DATAC.hk_101 = [];
   DATAC.phase = [];
   DATAC.probe2ScPot = [];
+  DATAC.dce_xyz_dsl = [];
   return
 end
 
