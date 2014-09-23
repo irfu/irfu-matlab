@@ -1,7 +1,7 @@
 function dE = mms_sdp_despin(e12,e34,phaseDeg)
 %MMS_SDP_DESPIN  despin SDP data
 %
-% function dE = c_efw_despin(e12,e34,phaseDeg)
+% function dE = mms_sdp_despin(e12,e34,phaseDeg)
 %
 % Despin SDP data using phaseDeg [degrees]
 %
