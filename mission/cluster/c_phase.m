@@ -74,7 +74,7 @@ if ~isempty(ii)
         else
             kk = [ii(ii_jump(i)) ii(ii_jump(i+1))-1];
         end
-        if kk(1,2)==0 kk(1,2)=1; end;
+        if kk(1,2)==0, kk(1,2)=1; end;
         irf_log('proc',['bad phase at ' irf_disp_iso_range(phase_out(kk,1)',1)])
     end
     phase_out(ii,:) = [];
