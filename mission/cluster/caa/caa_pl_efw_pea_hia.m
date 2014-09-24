@@ -213,7 +213,7 @@ else
 		irf_ssub('Data_Temperature_ComponentParallelToMagField__C?_CP_PEA_MOMENTS',cl_id) );
 	try
 		T_PEA_PERP = getmat(pea, ...
-			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?_CP_PEA_',cl_id) );
+			irf_ssub('Data_Temperature_ComponentPerpendicularToMagField__C?__MOMENTS',cl_id) );
 	catch
 		disp('trying alternative for Te_perp')
 		try
