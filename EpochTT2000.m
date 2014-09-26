@@ -54,8 +54,9 @@ classdef EpochTT2000 < GenericTimeArray
       lSecs = GenericTimeArray.LeapSeconds();
       yyyy = str2double(s_tmp{:}(1:4));
       lSecs = lSecs(lSecs(:,1)>=yyyy,:); lSecs(:,4:6) = 0;
-      lSecsEpoch = toepoch(lSecs);
-      if any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
+      lSecsEpoch = [];
+      if ~isempty(lSecs), lSecsEpoch = toepoch(lSecs); end
+      if ~isempty(lSecsEpoch) && any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
         % Found: convert via UTC string
         res = EpochUnix(toUtc(obj));
       else res = EpochUnix(epoch);
