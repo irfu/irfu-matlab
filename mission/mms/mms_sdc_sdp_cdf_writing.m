@@ -136,7 +136,7 @@ cd(oldDir);
       scIdStr, filesep, instrumentId, filesep, tmModeStr, filesep, ...
       subDir, filesep, startTime(1:4), filesep, startTime(5:6), filesep];
 %     if tmMode ~= MMS_CONST.TmMode.srvy
-%       dataPathPref = [dataPathPref,startTime(7:8), filesep];
+    dataPathPref = [dataPathPref,startTime(7:8), filesep];
 %     end
     
     preExistingFiles = dir([dataPathPref fileName verStr '*.cdf']);
