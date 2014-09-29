@@ -161,6 +161,9 @@ end
     % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
     % it will be Bitmasked with Low density saturation otherwise it will be
     % bitmasked with just Probe saturation.
+
+    % Bits used for Saturation
+    Bits=[MMS_CONST.Bitmask.PROBE_SATURATION, MMS_CONST.Bitmask.LOW_DENSITY_SATURATION];
     
     % For each sensor, check each pair, i.e. V_1 & V_2 and E_12.
     for iSen = 1:2:numel(sensors)
@@ -171,13 +174,6 @@ end
       irf.log('notice', ...
         sprintf('Checking for latched probes on %s, %s and %s.', senA, ...
         senB, senE));
-
-      %% REMOVE ME, (debug) force Stuck at low values
-      %DATAC.dcv.(senA).data(50:100)=-200;
-      %% END OF REMOVE ME
-
-      % Bits used for Saturation
-      Bits=[MMS_CONST.Bitmask.PROBE_SATURATION, MMS_CONST.Bitmask.LOW_DENSITY_SATURATION];
 
       indA = irf_latched_idx(DATAC.dcv.(senA).data);
       indB = irf_latched_idx(DATAC.dcv.(senB).data);
