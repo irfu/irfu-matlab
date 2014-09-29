@@ -307,7 +307,7 @@ end
     flag = get_variable(dataObj,[varPrefix probe '_enable']);
     dtSampling = median(diff(flag.DEPEND_0.data));
     switch DATAC.tmMode
-      case MMS_CONST.TmMode.srvy, error('kaboom')
+%      case MMS_CONST.TmMode.srvy, error('kaboom')
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
       case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
