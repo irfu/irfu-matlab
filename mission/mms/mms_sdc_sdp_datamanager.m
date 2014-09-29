@@ -176,56 +176,34 @@ end
       %DATAC.dcv.(senA).data(50:100)=-200;
       %% END OF REMOVE ME
 
-      DATAC.dcv.(senA).bitmask = DATAC.dcv.(senA).bitmask + ...
-          chk_latched_subfunc(DATAC.dcv.(senA).data);
-      DATAC.dcv.(senB).bitmask = DATAC.dcv.(senB).bitmask + ...
-          chk_latched_subfunc(DATAC.dcv.(senB).data);
-      DATAC.dcv.(senE).bitmask = DATAC.dce.(senE).bitmask + ...
-          chk_latched_subfunc(DATAC.dce.(senE).data);
+      % Bits used for Saturation
+      Bits=[MMS_CONST.Bitmask.PROBE_SATURATION, MMS_CONST.Bitmask.LOW_DENSITY_SATURATION];
+
+      indA = irf_latched_idx(DATAC.dcv.(senA).data);
+      indB = irf_latched_idx(DATAC.dcv.(senB).data);
+      indE = irf_latched_idx(DATAC.dce.(senE).data);
+
+      % Add appropriate value to bitmask, leaving other 16 bits untouched.
+      DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), hex2dec('FFFF')-sum(Bits)) + ...
+        bitand(chk_latched_subfunc(DATAC.dcv.(senA).data(indA)), sum(Bits));
+      DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), hex2dec('FFFF')-sum(Bits)) + ...
+        bitand(chk_latched_subfunc(DATAC.dcv.(senB).data(indB)), sum(Bits));
+      DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), hex2dec('FFFF')-sum(Bits)) + ...
+        bitand(chk_latched_subfunc(DATAC.dce.(senE).data(indE)), sum(Bits));
 
       %% TODO, Check overlapping stuck values, if senA stuck but not senB..
       
     end
     
       function latchBitmask = chk_latched_subfunc( data )
-        % Calculate what bitmask to add to present bitmask for data based
-        % on if the probe is latched or not for 3 or more consecutative
-        % data points.
-        
-        % Return zero to add, if no latched probes was found.
-        latchBitmask = zeros(length(data), 1, 'uint16');
-        % Get all points where diff == 0.
-        stuck = find(diff(data)==0);
-        % Locate continously stuck segments.
-        dsig = diff([0; diff(stuck)==1; 0]);
-        startInd = find(dsig > 0);
-        endInd = find(dsig < 0);
-        duration = endInd-startInd+1;
-        % Locate at least 3 consecutive stuck values.
-        contInd = (duration >= 3);
-        startInd = startInd(contInd);
-        endInd = endInd(contInd);
-        % Get the indices of these segments of stuck
-        indices = zeros(1,max(endInd)+1);
-        indices(startInd) = 1;
-        indices(endInd+1) = indices(endInd+1)-1;
-        indices = find(cumsum(indices));
-
-        if(max(indices)>0)
-          latchBitmask(stuck(indices)) = MMS_CONST.Bitmask.PROBE_SATURATION;
-          % Locate any of these stuck at negative value, i.e. low density
-          % saturation, instead of just plain probe saturation. And set a
-          % proper bitmask for these values.
-           LowA = find(data(stuck(indices))<MMS_CONST.Limit.LOW_DENSITY_SATURATION);
-           if(any(LowA))
-             tmp=latchBitmask(stuck(indices));
-             tmp(LowA) = tmp(LowA) + ...
-               MMS_CONST.Bitmask.LOW_DENSITY_SATURATION - ...
-               MMS_CONST.Bitmask.PROBE_SATURATION;
-             latchBitmask(stuck(indices))=tmp;
-           end
+        % Return value to add to bitmask, for latched probe data.
+        if(~isempty(data))
+          irf.log('notice', 'Some latched data found, marking them with bitmask.');
+          latchBitmask = Bits(1)*ones(size(data),'uint16');
+          % Check if any of these are data with values below limit, then
+          % use different latched bitmask.
+          latchBitmask(data<MMS_CONST.Limit.LOW_DENSITY_SATURATION) = Bits(2);
         end
-
       end
   end
 
@@ -396,19 +374,3 @@ if(any(diff(time)<=0))
 end
 
 end
-
-
-% Short function for verifying variable is not stuck. DO NOT USE YET AS
-% PRELIMINARY CDF FILES ARE STUCK.
-function check_stuck_variable(var, varName)
-
-% FIXME: Some values should perhaps be allowed to be the same for a limited
-% number of datapoints, but for now check if ALL points in time are fixed.
-if( all(diff(var))==0 )
-    err_str = ['MMS_SDC_SDP_DATAMANAGER Variable ' varName,...
-        ' appears to be stuck.'];
-    irf.log('critical', err_str);
-    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:VARIABLE:STUCK', err_str);
-end
-
-end % check_stuck_variable
