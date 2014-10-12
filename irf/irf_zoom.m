@@ -125,7 +125,7 @@ end
 
 % Remove XTickLabel and XLabel from all panels but the last one
 if strcmpi(c,'x') && numel(axis_handles)>1
-    if strcmp(get(axis_handles(1),'Type'),'line')
+    if isgraphics(axis_handles( 1 ),'line')
         parent_handles = cell2mat(get(axis_handles,'Parent'));
         p = cell2mat(get(parent_handles,'Position'));
     else %axis
@@ -135,7 +135,7 @@ if strcmpi(c,'x') && numel(axis_handles)>1
 end
 
 for hii=axis_handles
-    if strcmp(get(hii,'Type'),'line')
+    if isgraphics(hii,'line')
         h = get(hii,'Parent');
     else
         h = hii;
@@ -143,7 +143,7 @@ for hii=axis_handles
     switch lower(c)
         case 'x'
             set(h,'XLim',interval);
-            if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
+            if t_ref>1e8 && t_ref<1e10
                 if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
                     p = get(h,'position');
                     if numel(axis_handles)>1, % in case of multiple handles only last handle gets date label

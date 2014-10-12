@@ -79,7 +79,7 @@ c_bar=colorbar;shading flat;irf_timeaxis(gca,t0);
 ylabel('Frequency [kHz]');
 set(gca,'tickdir','out')
 
-hh=get(c_bar,'ylabel');
+hh=get(c_bar,'Label');
 
 if k==3
 	set(hh,'string',['(pT)^2/Hz']);

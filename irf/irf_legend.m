@@ -116,7 +116,7 @@ if strcmpi(value_horizontal_alignment,'left'),
 else
     label_order=length(labels):-1:1;
 end
-ht=zeros(1,length(labels)); % allocate handles
+ht=gobjects(1,length(labels)); % allocate handles
 tmp_ref_pos=position(1);
 for i=label_order, % start with first label first
     ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi');
