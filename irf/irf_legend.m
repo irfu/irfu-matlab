@@ -119,7 +119,7 @@ end
 ht=gobjects(1,length(labels)); % allocate handles
 tmp_ref_pos=position(1);
 for i=label_order, % start with first label first
-    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi');
+    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','normal');
     set(ht(i),'color',colord(i,:));
     set(ht(i),'verticalalignment',value_vertical_alignment);
     set(ht(i),'horizontalalignment',value_horizontal_alignment);

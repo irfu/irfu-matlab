@@ -81,7 +81,7 @@ end
 specFlux=struct('t',ttt,'f',Pitang,'p',Flux,'f_unit','Pitch angle [deg]');
 if nargout == 0, % no output, just plot the spectrogram
     irf_spectrogram(ax, specFlux);
-    hcb=colorbar('peer',ax);
+    hcb=colorbar(ax);
 	colormap(hcb,jet);
     ylabel(hcb,Fluxunits);
 	clear specFlux; % do not return anything

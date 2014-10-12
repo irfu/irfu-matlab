@@ -361,7 +361,7 @@ cmapSpace = irf_colormap('space');
     hold off
     caxis([-6.5 2.5]);
     colormap(cmapSpace);
-    hca2=colorbar('peer',h(1));
+    hca2=colorbar(h(1));
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
            %%%%% B spectra with median removed
@@ -384,7 +384,7 @@ cmapSpace = irf_colormap('space');
     hold off
     caxis([-3.5 2.5]);
     colormap(cmapSpace);
-    hca2=colorbar('peer',h(2));
+    hca2=colorbar(h(2));
     ylabel(hca2,{'log(B)'; '[nT^2/Hz]'});
 
    

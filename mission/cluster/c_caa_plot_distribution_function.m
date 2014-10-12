@@ -193,7 +193,7 @@ switch plot_type
         axis(ax,'equal','tight'); 
         shading(ax,'flat');
         grid(ax,'off');
-        cb=colorbar('peer',ax);
+        cb=colorbar(ax);
         ylabel(cb,to_plot{1}.p_label)
         
         if 1 % Energy ticks

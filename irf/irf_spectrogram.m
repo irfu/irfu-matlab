@@ -277,7 +277,7 @@ for comp=1:min(length(h),ncomp)
 	ylabel(h(comp),specrec.f_label)
 	
 	if isfield(specrec,'p_label')
-		hcb = colorbar('peer',h(comp));
+		hcb = colorbar(h(comp));
 		posAx = get(h(comp),'Position'); 
 		posCb = get(hcb,'Position');
 		set(hcb,'TickDir','out','Position',...
