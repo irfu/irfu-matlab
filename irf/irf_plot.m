@@ -271,7 +271,7 @@ if flag_subplot==0,  % One subplot
     if isstruct(x)
         % Plot a spectrogram
         irf_spectrogram(ax,x);
-		if flag_colorbar, hcbar = colorbar('peer',ax); end
+		if flag_colorbar, hcbar = colorbar(ax); end
         if ~isempty(var_desc{1})
             lab = cell(1,length(var_desc{1}.size));
             for v = 1:length(var_desc{1}.size)
