@@ -544,7 +544,7 @@ elseif flag_spectrogram
 			  colorbar_label=[lablaxis ' [' units ']' ];
 			  if flag_log, colorbar_label = ['Log ' colorbar_label]; end
 		  end
-		  set(hcb,'TickLabels','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+		  set(hcb,'YTickLabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
 		  ylabel(hcb,colorbar_label);
 		  if flag_colorbar_label_fit_to_colorbar_height_is_on
 			  irf_colorbar_fit_label_height(hcb);
