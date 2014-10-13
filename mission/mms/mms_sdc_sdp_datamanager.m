@@ -211,11 +211,16 @@ end
   end
 
   function chk_sweep_on()
-    % Check if wseep is on for all probes
+    % Check if sweep is on for all probes
     % if yes, set bit in both V and E bitmask
-    
+
     %XXX: Does nothing at the moment
+
+    % Notes: cdf files (dcv/dce) will contain mmsX_sdp_sweepstatus (uint8)
+    % and corresponding timestamps in mmsX_sdp_epoch_sweep (tt2000)
+    % indicating if sweep is ongoing at that particular epoch time or not.
   end
+
   function chk_sdp_v_vals()
     % check if probe-to-spacecraft potentials  averaged over one spin for 
     % all probes are similar (within TBD %, or V). 
