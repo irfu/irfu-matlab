@@ -189,6 +189,8 @@ switch procId
     % Write the output
     copy_header('dcv',1)
     filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+    % Test the new cdf_patch:
+    %filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
     % Check if have all the necessary input
@@ -221,6 +223,8 @@ switch procId
     
     % Write the output
     filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+    % Test the new cdf_patch:
+    %filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
@@ -241,6 +245,9 @@ end
       ['mission' filesep 'cluster'],...
       ['contrib' filesep 'nasa_cdf_patch'],...
       };
+    % For testing with new cdf_patch include also the following:
+    % ['contrib' filesep 'nasa_cdf_patch_beta'],...
+    % ['mission' filesep 'mms' filesep 'skeletons'],...
     for iPath = 1:numel(irfDirectories)
       pathToAdd = [irfPath irfDirectories{iPath}];
       addpath(pathToAdd);
