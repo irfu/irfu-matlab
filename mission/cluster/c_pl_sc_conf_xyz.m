@@ -200,7 +200,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 10 600/sfactor 1000/sfactor]);
 		delete(findall(gcf,'Type','axes'))
-		data.h=[];h=zeros(1,8);
+		data.h=[];h=gobjects(1,8);
 		xsize=.35;ysize=.195;dx=.13;dy=.05;
 		for ix=1:2,
 			for iy=1:4,
@@ -224,7 +224,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-700/sfactor 700/sfactor 700/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.1  0.56 0.3 0.36]); % [x y dx dy]
 		h(2)=axes('position',[0.59 0.56 0.3 0.36]); % [x y dx dy]
 		h(3)=axes('position',[0.1  0.06 0.3 0.36]); % [x y dx dy]
@@ -246,7 +246,7 @@ switch lower(action)
 		sfactor=max([1 700/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-500/sfactor 500/sfactor 500/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.15  0.16 0.7 0.7]); % [x y dx dy]
 		h(2)=axes('position',[0.5 0.8 0.5 0.2]);    % for legends
 		data.h=h;
@@ -288,7 +288,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-350/sfactor 750/sfactor 350/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(1)=axes('position',[0.09 0.13 0.32 0.74]); % [x y dx dy]
 		h(2)=axes('position',[0.59 0.13 0.32 0.74]); % [x y dx dy]
 		h(3)=axes('position',[0 0 1 1]);
@@ -306,7 +306,7 @@ switch lower(action)
 		sfactor=max([1 600/(ss(3)-80) 1000/(ss(4)-80)]);
 		set(gcf,'Position',[10 ss(4)-80-650/sfactor 350/sfactor 650/sfactor]);
 		initialize_figure;
-		h=[];
+		h=gobjects(0);
 		h(2)=axes('position',[0.18 0.06 0.63 0.36]); % [x y dx dy]
 		h(1)=axes('position',[0.18 0.57 0.63 0.36]); % [x y dx dy]
 		h(3)=axes('position',[0 0 1 1]);axis off;
