@@ -75,7 +75,7 @@ switch lower(flag)
         j_photo = ones(size(U_pot)); %
         j_photo = j_photo*j_photo_ref(1)*X_area/R_sun^2; % negative potentials
         pos_ind = find( U_pot >= U_ref(1) );        
-        j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'cubic','extrap'))*X_area/R_sun^2;
+        j_photo(pos_ind) = exp(interp1(logU,logj,log(U_pot(pos_ind)),'pchip','extrap'))*X_area/R_sun^2;
     case 'cassini'        
         % Cassini material is 25 uA/m2 at 1AU
         j0=lp.photocurrent(1,0,1,'themis');
