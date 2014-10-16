@@ -24,26 +24,29 @@ global DATAC; % Simply recall all data from memory.
 
 instrumentId = 'sdp';  scId = DATAC.scId;
 procId = DATAC.procId; procName = MMS_CONST.SDCProcs{procId};
+tmMode = DATAC.tmMode; tmModeStr = MMS_CONST.TmModes{tmMode};
 
 % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS
 % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING
 % DIRECTORY WHEN EXECUTING.
 oldDir = pwd; cd(ENVIR.DROPBOX_ROOT);
-outFileName = get_file_name();
+[outFileName, verFileName] = get_file_name();
 irf.log('notice',['Writing to DROPBOX_ROOT/',outFileName,'.cdf']);
 
 
 GATTRIB = getGlobalAttributes;
 VATTRIB = getVariableAttributes;
+% Update some dynamic GlobalAttributes common to all data products.
 if(HeaderInfo.numberOfSources==1)
   GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]};
 elseif(HeaderInfo.numberOfSources==2)
   GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]; ['CDF>',HeaderInfo.parents_2]};
 end
-GATTRIB.Logical_file_id = {outFileName};
+GATTRIB.Logical_file_id = {outFileName};    % Filename, except '.cdf'
+GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 
 switch procId
-  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2e}
     % Create an almost empty cdf file from skeleton, (have properly
     % formatted LABL_1 and static VATTIB and GATTRIB).
     skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf ',...
@@ -61,13 +64,13 @@ switch procId
     end
     % FIXME DUMMY DATA FOR NOW.
     % For now store data temporarly
-    epochTT = num2cell(DATAC.dce.time(1:10));
-    data1(:,1) = DATAC.dce.e12.data(1:10);
-    data1(:,2) = DATAC.dce.e34.data(1:10);
-    data1(:,3) = DATAC.dce.e56.data(1:10);
+    epochTT = num2cell(DATAC.dce.time);
+    data1(:,1) = DATAC.dce.e12.data;
+    data1(:,2) = DATAC.dce.e34.data;
+    data1(:,3) = DATAC.dce.e56.data;
     pgse = num2cell(data1,2);
     dsl = num2cell(data1,2);
-    bitmask = num2cell(uint16(DATAC.dce.e12.bitmask(1:10)));
+    bitmask = num2cell(uint16(DATAC.dce.e12.bitmask));
     
     name.epoch   = sprintf('mms%i_%s_dce_epoch',scId,instrumentId);
     name.pgse    = sprintf('mms%i_%s_dce_xyz_pgse',scId,instrumentId);
@@ -75,6 +78,18 @@ switch procId
     name.bitmask = sprintf('mms%i_%s_dce_bitmask',scId,instrumentId);
     name.label   = 'LABL_1';
     %label = {'DCE_X';'DCE_Y';'DCE_Z'};
+
+    % Update GlobalAttributes specific to ql/sitl or l2e.
+    switch (procId)
+      case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+        GATTRIB.Data_type = {sprintf('%s_l1b_dce2d',tmModeStr)}; % 'fast_l1b_dce2d', 'slow_l1b_dce2d' or 'brst_l1b_dce2d'.
+        GATTRIB.Logical_source = {sprintf('mms%i_%s_%s_l1b_dce2d',scId,instrumentId,tmModeStr)}; % ie. mms2_sdp_fast_l1b_OptDesc FIXME...
+        GATTRIB.Logical_source_description = {sprintf('MMS %i spin dual probe %s mode, level 1b, two dimensional electric field.',scId,tmModeStr)}; % in full words.
+      case {MMS_CONST.SDCProc.l2e}
+        GATTRIB.Data_type = {sprintf('%s_l2_dce2d',tmModeStr)}; % fast_l2_dce2d, slow_l2_dce2d or brst_l2_dce2d.
+        GATTRIB.Logical_source = {sprintf('mms%i_%s_%s_l2_dce2d',scId,instrumentId,tmModeStr)}; % ie. mms2_sdp_fast_l2_dce2d
+        GATTRIB.Logical_source_description = {sprintf('MMS %i spin dual probe %s mode, level 2, two dimensional electric field.',scId,tmModeStr)}; % in full words.
+    end
     
     % Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
@@ -132,7 +147,8 @@ switch procId
          'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
          'WriteMode', 'append');
     else
-      % Add Quality.
+      % QL or L2e
+      % Add Quality
       quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',DATAC.dce.e12.bitmask)));
       name.quality = sprintf('mms%i_sdp_dce_quality',scId);
       VATTRIB.CATDESC  = [VATTRIB.CATDESC;  {name.quality, 'Bitmask of quality'}];
@@ -171,18 +187,18 @@ switch procId
       irf.log('notice', mesg);
     end
     % For now store data temporarly
-    epochTT = num2cell(DATAC.dcv.time(1:10));
-    psp_p(:,1) = DATAC.dcv.v1.data(1:10);
-    psp_p(:,2) = DATAC.dcv.v2.data(1:10);
-    psp_p(:,3) = DATAC.dcv.v3.data(1:10);
-    psp_p(:,4) = DATAC.dcv.v4.data(1:10);
-    psp_p(:,5) = DATAC.dcv.v5.data(1:10);
-    psp_p(:,6) = DATAC.dcv.v6.data(1:10);
+    epochTT = num2cell(DATAC.dcv.time);
+    psp_p(:,1) = DATAC.dcv.v1.data;
+    psp_p(:,2) = DATAC.dcv.v2.data;
+    psp_p(:,3) = DATAC.dcv.v3.data;
+    psp_p(:,4) = DATAC.dcv.v4.data;
+    psp_p(:,5) = DATAC.dcv.v5.data;
+    psp_p(:,6) = DATAC.dcv.v6.data;
     psp_p = num2cell(psp_p,2);
-    bitmask = num2cell(uint16(DATAC.dcv.v1.bitmask(1:10)));
-    ESCP = num2cell(DATAC.dcv.v1.data(1:10));
-    PSP = num2cell(DATAC.dcv.v2.data(1:10));
-    Delta = num2cell(DATAC.dcv.v3.data(1:10));
+    bitmask = num2cell(uint16(DATAC.dcv.v1.bitmask));
+    ESCP = num2cell(DATAC.dcv.v1.data);
+    PSP = num2cell(DATAC.dcv.v2.data);
+    Delta = num2cell(DATAC.dcv.v3.data);
 
     name.epoch   = sprintf('mms%i_%s_epoch_dcv',scId,instrumentId); % Timestamp in TT2000
     name.escp    = sprintf('mms%i_%s_escp_dcv',scId,instrumentId); % Estimated Spacecraft potential
@@ -196,6 +212,11 @@ switch procId
     %label = {'PSP_P1','PSP_P2','PSP_P3','PSP_P4','PSP_P5','PSP_P6'}; % NOT correct, 6 records..
     %label = {'"PSP_P1","PSP_P2","PSP_P3","PSP_P4","PSP_P5","PSP_P6"'}; % Cannot determine proper cdf datatype from matlab value
     
+    % Update GlobalAttributes specific to Usc.
+    GATTRIB.Data_type = {sprintf('%s_l2_uscdcv',tmModeStr)}; % fast_l2_uscdcv, slow_l2_uscdcv or brst_l2_uscdcv.
+    GATTRIB.Logical_source = {sprintf('mms%i_%s_%s_%s_l2_uscdcv',scId,instrumentId,tmModeStr)}; % ie. mms2_sdp_fast_l2_uscdcv
+    GATTRIB.Logical_source_description = {sprintf('MMS %i spin dual probe %s mode spacecraft potential estimates.',scId,tmModeStr)}; % in full words.
+
     % Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
       name.escp,    'Estimated spacecraft potential';...
@@ -285,11 +306,13 @@ end
 % Return to previous working directory.
 cd(oldDir);
 
-  function fileName = get_file_name
+  function [fileName, verStr] = get_file_name
     % Generate output file name incrementing the file version if necessary
     switch procId
       case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
         subDir = procName; suf = 'dce2d';
+      case MMS_CONST.SDCProc.l2e
+        subDir = 'l2'; suf = 'dce2d';
       case MMS_CONST.SDCProc.usc
         subDir = 'l2'; suf = 'uscdcv';
       otherwise
@@ -306,8 +329,8 @@ cd(oldDir);
     % Check for preexisting files and increment file version
     dataPathPref = [ENVIR.DATA_PATH_ROOT, filesep,'science',filesep, ...
       scIdStr, filesep, instrumentId, filesep, tmModeStr, filesep, ...
-      subDir, filesep, startTime(1:4), filesep, startTime(5:6), filesep];
-    dataPathPref = [dataPathPref,startTime(7:8), filesep];
+      subDir, filesep, startTime(1:4), filesep, startTime(5:6), filesep, ...
+      startTime(7:8), filesep];
     
     preExistingFiles = dir([dataPathPref fileName verStr '*.cdf']);
     if numel(preExistingFiles)
@@ -361,12 +384,12 @@ cd(oldDir);
 %    GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'}; % FIXME should point to data
 %    GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
 %    GATTRIB.LINK_TITLE = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
-%    GATTRIB.MODS = cell(0,1);
+%    GATTRIB.MODS = cell(0,1); % Text describing major version changes, ie. "vX" changes.
     % Global Attributes RECOMMENDED:
 %    GATTRIB.Acknowledgement = cell(0,1);
     GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};
     % Global Attributes OPTIONAL:
-%    GATTRIB.Parents = cell(0,1);
+%    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
 %    GATTRIB.Skeleton_version = cell(0,1);
 %    GATTRIB.Rules_of_use = cell(0,1);
 %    GATTRIB.Time_resolution = cell(0,1);

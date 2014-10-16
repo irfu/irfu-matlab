@@ -188,9 +188,9 @@ switch procId
     
     % Write the output
     copy_header('dcv',1)
-    filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+    %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     % Test the new cdf_patch:
-    %filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+    filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2e}
     % Check if have all the necessary input
@@ -222,9 +222,9 @@ switch procId
     mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
     
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
+    %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     % Test the new cdf_patch:
-    %filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+    filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
