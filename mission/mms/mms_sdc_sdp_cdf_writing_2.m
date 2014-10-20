@@ -20,11 +20,17 @@ narginchk(1,1);
 
 global ENVIR;
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-global DATAC; % Simply recall all data from memory.
 
-instrumentId = 'sdp';  scId = DATAC.scId;
-procId = DATAC.procId; procName = MMS_CONST.SDCProcs{procId};
-tmMode = DATAC.tmMode; tmModeStr = MMS_CONST.TmModes{tmMode};
+instrumentId = 'sdp';  
+procId = mms_sdc_sdp_datamanager('procId');
+if procId==MMS_CONST.Error
+    errStr = 'mms_sdc_sdp_datamanager not properly initialized';
+    irf.log('critical',errStr), error(errStr)
+end
+procName = MMS_CONST.SDCProcs{procId};
+scId = mms_sdc_sdp_datamanager('scId');
+tmMode = mms_sdc_sdp_datamanager('tmMode'); 
+tmModeStr = MMS_CONST.TmModes{tmMode};
 
 % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS
 % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING
@@ -152,7 +158,7 @@ switch procId
     else
       % QL or L2e
       % Add Quality
-      quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',DATAC.dce.e12.bitmask)));
+      quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask)));
       name.quality = sprintf('mms%i_sdp_dce_quality',scId);
       VATTRIB.CATDESC  = [VATTRIB.CATDESC;  {name.quality, 'Bitmask of quality'}];
       VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.quality, name.epoch}];
@@ -190,18 +196,34 @@ switch procId
       irf.log('notice', mesg);
     end
     % For now store data temporarly
+    dcv = mms_sdc_sdp_datamanager('dcv');
+    if ~isstruct(dcv) && dcv == MMS_CONST.Error
+      errStr = 'Cannot output ''dcv''';
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    end
+    probe2sc_pot = mms_sdc_sdp_datamanager('probe2sc_pot');
+    if ~isstruct(probe2sc_pot) && probe2sc_pot == MMS_CONST.Error
+      errStr = 'Cannot output ''probe2sc_pot''';
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    end
+    sc_pot = mms_sdc_sdp_datamanager('sc_pot');
+    if ~isstruct(sc_pot) && sc_pot == MMS_CONST.Error
+      errStr = 'Cannot output ''sc_pot''';
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    end
+    
     epochTT = num2cell(dcv.time);
-    psp_p(:,1) = DATAC.dcv.v1.data;
-    psp_p(:,2) = DATAC.dcv.v2.data;
-    psp_p(:,3) = DATAC.dcv.v3.data;
-    psp_p(:,4) = DATAC.dcv.v4.data;
-    psp_p(:,5) = DATAC.dcv.v5.data;
-    psp_p(:,6) = DATAC.dcv.v6.data;
+    psp_p = [dcv.v1.data, dcv.v2.data, dcv.v3.data, ...
+      dcv.v4.data, dcv.v5.data, dcv.v6.data];
     psp_p = num2cell(psp_p,2);
-    bitmask = num2cell(uint16(DATAC.dcv.v1.bitmask));
-    ESCP = num2cell(DATAC.dcv.v1.data);
-    PSP = num2cell(DATAC.dcv.v2.data);
-    Delta = num2cell(DATAC.dcv.v3.data);
+    PSP = num2cell(probe2sc_pot.data);
+    ESCP = num2cell(sc_pot.data);
+    bitmask = num2cell(uint16(sc_pot.bitmask));
+    % XXX: What is this????
+    Delta = num2cell(dcv.v3.data);
 
     name.epoch   = sprintf('mms%i_%s_epoch_dcv',scId,instrumentId); % Timestamp in TT2000
     name.escp    = sprintf('mms%i_%s_escp_dcv',scId,instrumentId); % Estimated Spacecraft potential
@@ -323,7 +345,6 @@ cd(oldDir);
         irf.log('critical', errStr); error(errStr)
     end
     scIdStr = sprintf('mms%d',scId);
-    tmMode = DATAC.tmMode; tmModeStr = MMS_CONST.TmModes{tmMode};
     startTime =  HeaderInfo.startTime;
     verStr = sprintf('%d.%d.',MMS_CONST.Version.X,MMS_CONST.Version.Y);
     fileName = [scIdStr '_' instrumentId, '_' tmModeStr '_' subDir '_' ...
