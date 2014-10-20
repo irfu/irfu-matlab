@@ -63,11 +63,12 @@ if strcmpi(param, 'init')
   else DATAC.procId = dataObj.procId;
   end
   DATAC.dce = [];
+  DATAC.dce_xyz_dsl = [];
   DATAC.dcv = [];
   DATAC.hk_101 = [];
   DATAC.phase = [];
-  DATAC.probe2ScPot = [];
-  DATAC.dce_xyz_dsl = [];
+  DATAC.probe2sc_pot = [];
+  DATAC.sc_pot = [];
   return
 end
 
