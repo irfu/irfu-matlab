@@ -62,15 +62,18 @@ switch procId
     else
       irf.log('notice', mesg);
     end
-    % FIXME DUMMY DATA FOR NOW.
-    % For now store data temporarly
-    epochTT = num2cell(DATAC.dce.time);
-    data1(:,1) = DATAC.dce.e12.data;
-    data1(:,2) = DATAC.dce.e34.data;
-    data1(:,3) = DATAC.dce.e56.data;
-    pgse = num2cell(data1,2);
-    dsl = num2cell(data1,2);
-    bitmask = num2cell(uint16(DATAC.dce.e12.bitmask));
+    
+    dce_xyz_dsl = mms_sdc_sdp_datamanager('dce_xyz_dsl');
+    if ~isstruct(dce_xyz_dsl) && dce_xyz_dsl == MMS_CONST.Error
+      errStr = 'Cannot output ''dce_xyz_dsl''';
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    end
+    epochTT = num2cell(dce_xyz_dsl.time);
+    dsl = num2cell(dce_xyz_dsl.data,2);
+    bitmask = num2cell(uint16(dce_xyz_dsl.bitmask));
+    % XXX: FIXME Just assume PGSE==DSL, Do we need PGSE at all?
+    pgse = num2cell(dce_xyz_dsl.data,2);
     
     name.epoch   = sprintf('mms%i_%s_dce_epoch',scId,instrumentId);
     name.pgse    = sprintf('mms%i_%s_dce_xyz_pgse',scId,instrumentId);
@@ -187,7 +190,7 @@ switch procId
       irf.log('notice', mesg);
     end
     % For now store data temporarly
-    epochTT = num2cell(DATAC.dcv.time);
+    epochTT = num2cell(dcv.time);
     psp_p(:,1) = DATAC.dcv.v1.data;
     psp_p(:,2) = DATAC.dcv.v2.data;
     psp_p(:,3) = DATAC.dcv.v3.data;
