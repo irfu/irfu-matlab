@@ -34,8 +34,10 @@ switch procId
     
     dE = mms_sdp_despin(dce.e12.data,dce.e34.data,phase.data);
     
-    % FIXME: need to compute from 
+    % FIXME: need to compute from respective bitmasks
     bitmask = dce.e12.bitmask;
+    
+    % FIXME: apply DSL offsets here 
 
     dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...
       'bitmask',bitmask);
