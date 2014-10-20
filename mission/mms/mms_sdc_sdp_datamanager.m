@@ -58,7 +58,7 @@ if strcmpi(param, 'init')
       MMS_CONST.SDCProcs{DATAC.procId} ''''])
   elseif ~isnumeric(dataObj.procId) || ...
       isempty(intersect(dataObj.procId, 1:numel(MMS_CONST.SDCProcs)))
-    errStr = 'Invalid input for init_struct.tmMode';
+    errStr = 'Invalid input for init_struct.procId';
     irf.log('critical', errStr); error(errStr);
   else DATAC.procId = dataObj.procId;
   end

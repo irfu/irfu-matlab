@@ -1,6 +1,6 @@
 %% Init
 data_root='/data/mms/MRT9';
-%data_root='/Users/yuri/Dropbox/Projects/MMS/DataProcessing/Data/MRT9';
+%data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
 cd(data_root)
 if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
@@ -11,7 +11,7 @@ setenv('DATA_PATH_ROOT',[data_root filesep 'out'])
 
 modes    ={'slow', 'fast', 'brst' };
 versions ={'2.0.1','2.0.1','2.0.0'};
-procs={'usc','ql','sitl'};
+procs={'usc','ql','sitl','l2e'};
 dates = {'20150410', '20160101'};
 
 %% Tests

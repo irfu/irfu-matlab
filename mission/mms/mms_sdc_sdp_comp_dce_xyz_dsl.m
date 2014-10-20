@@ -15,7 +15,8 @@ dce_xyz_dsl = MMS_CONST.Error;
 
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+  case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
+      MMS_CONST.SDCProc.l2e}
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
     if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
       irf.log('warning','Bad hk_101 input'); return
@@ -36,7 +37,8 @@ switch procId
     % FIXME: need to compute from 
     bitmask = dce.e12.bitmask;
 
-    dce_xyz_dsl = struct('data',[dE dce.e56.data],'bitmask',bitmask);
+    dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...
+      'bitmask',bitmask);
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
