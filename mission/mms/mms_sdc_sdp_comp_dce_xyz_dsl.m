@@ -1,7 +1,9 @@
 function dce_xyz_dsl = mms_sdc_sdp_comp_dce_xyz_dsl
 %MMS_SDC_SDP_COMP_DCE_XYZ_DSL  compute DCE_XYZ_DSL for datamanager
 %
-%  phase = mms_sdc_sdp_comp_dce_xyz_dsl()
+%  probe2sc_pot = mms_sdc_sdp_comp_dce_xyz_dsl()
+%
+%  Compute the electric field in DSL (despun)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
