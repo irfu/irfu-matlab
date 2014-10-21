@@ -8,7 +8,7 @@ function MMS_CONST = mms_constants
 % these numbers. 
 % When simply re-running a dataset, the Z value should be increased by one.
 
-MMS_CONST.Version.X = 0; % Major new Software version
+MMS_CONST.Version.X = 1; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 
