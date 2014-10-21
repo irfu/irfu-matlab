@@ -54,7 +54,7 @@ GATTRIB.Logical_file_id = {outFileName};    % Filename, except '.cdf'
 GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 
 switch procId
-  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2e}
+  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     % Create an almost empty cdf file from skeleton, (have properly
     % formatted LABL_1 and static VATTIB and GATTRIB).
     skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf ',...
@@ -311,7 +311,7 @@ cd(oldDir);
     switch procId
       case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
         subDir = procName; suf = 'dce2d';
-      case MMS_CONST.SDCProc.l2e
+      case MMS_CONST.SDCProc.l2pre
         subDir = 'l2'; suf = 'dce2d';
       case MMS_CONST.SDCProc.usc
         subDir = 'l2'; suf = 'uscdcv';

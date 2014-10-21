@@ -18,7 +18,7 @@ sc_pot = MMS_CONST.Error;
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
-      MMS_CONST.SDCProc.l2e}
+      MMS_CONST.SDCProc.l2pre}
     probe2sc_pot = mms_sdc_sdp_datamanager('probe2sc_pot');
     if isnumeric(probe2sc_pot) && numel(probe2sc_pot)==1 &&...
         probe2sc_pot==MMS_CONST.Error,

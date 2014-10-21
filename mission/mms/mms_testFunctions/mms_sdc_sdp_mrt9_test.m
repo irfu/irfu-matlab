@@ -11,7 +11,7 @@ setenv('DATA_PATH_ROOT',[data_root filesep 'out'])
 
 modes    ={'slow', 'fast', 'brst' };
 versions ={'2.0.1','2.0.1','2.0.0'};
-procs={'usc','ql','sitl','l2e'};
+procs={'usc','ql','sitl','l2pre'};
 dates = {'20150410', '20160101'};
 
 %% Tests

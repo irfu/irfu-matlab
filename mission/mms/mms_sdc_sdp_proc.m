@@ -192,7 +192,7 @@ switch procId
     % Test the new cdf_patch:
     filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
     
-  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2e}
+  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     % Check if have all the necessary input
     if isempty(DCE_File)
       errStr = ['missing reqired input for ' procName ': DCE_File'];

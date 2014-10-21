@@ -18,7 +18,7 @@ probe2sc_pot = MMS_CONST.Error;
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
-      MMS_CONST.SDCProc.l2e}
+      MMS_CONST.SDCProc.l2pre}
     dcv = mms_sdc_sdp_datamanager('dcv');
     if isnumeric(dcv) && numel(dcv)==1 && dcv==MMS_CONST.Error,
       irf.log('warning','Bad DCV input'); return

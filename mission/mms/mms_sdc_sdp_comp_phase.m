@@ -26,7 +26,7 @@ switch procId
     end
     [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
     phase = struct('data',dcephase,'bitmask',dcephase_flag);
-  case MMS_CONST.SDCProc.l2e
+  case MMS_CONST.SDCProc.l2pre
     %XXX: this needs to be replaced with definitive attitude!!!
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
     if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
