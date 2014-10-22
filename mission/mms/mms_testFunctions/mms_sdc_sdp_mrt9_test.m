@@ -1,6 +1,7 @@
 %% Init
 data_root='/data/mms/MRT9';
 %data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
+%data_root='/home/thoni/MMS/MMS_cdf/MRT9';
 cd(data_root)
 if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end

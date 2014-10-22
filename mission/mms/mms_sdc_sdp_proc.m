@@ -45,14 +45,12 @@ if ~ischar(procName)
     error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be a string');
 end
-procName = lower(procName); 
-[~,procId] = intersect( MMS_CONST.SDCProcs, procName);
+[~,procId] = intersect( MMS_CONST.SDCProcs, lower(procName));
 if isempty(procId)
   error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be one of: %s',...
     mms_constants2string('SDCProcs'));
 end
-HeaderInfo.procName = procName;
 procName = upper(procName);
 irf.log('notice', ['Starting process: ', procName]);
 
@@ -173,21 +171,22 @@ switch procId
         'received no DCE file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCE_File]);
-      dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+      dce_src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
     end
     
     irf.log('notice', [procName ' proc using: ' DCV_File]);
-    dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+    dcv_src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+    update_header(dcv_src_fileData,1) % Update header with primary file dcv
     
-    if isempty(DCE_File), copy_header('dcv',1)
-    else copy_header('dcv',2)
+    if(~isempty(DCE_File))
+      update_header(dce_src_fileData,2); % Update header with extra file dce
     end
     
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    hk_src_fileData = mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    update_header(hk_src_fileData,2) % Update header with extra file hk
     
     % Write the output
-    copy_header('dcv',1)
     %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     % Test the new cdf_patch:
     filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
@@ -206,21 +205,22 @@ switch procId
     end
     
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    dce_source_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
-    
+    dce_src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+    update_header(dce_src_fileData,1) % Update header with primary file dce
+
     if isempty(DCV_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
         'received no DCV file argument.']);
-      copy_header('dce',1)
     else
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      dcv_source_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
-      copy_header('dce',2)
+      dcv_src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+      update_header(dcv_src_fileData,2) % Update header with extra file dcv
     end
     
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
-    
+    hk_src_fileData=mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    update_header(hk_src_fileData,2) % Update header with extra file hk
+
     % Write the output
     %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     % Test the new cdf_patch:
@@ -257,27 +257,18 @@ end
     end
   end
 
-  function copy_header(dataType,nSrc)
-    if nSrc>2 || nSrc<1, error('nSrc must be 1 or 2'), end
-    switch dataType
-      case 'dcv'
-        src  = dcv_source_fileData;
-        src2 = dce_source_fileData;
-      case 'dce'
-        src  = dce_source_fileData;
-        src2 = dcv_source_fileData;
-      otherwise
-        error('Invalid DATA_TYPE (dce or dcv)')
-    end
-    HeaderInfo.scId = src.scId;
-    HeaderInfo.instrumentId = src.instrumentId;
-    HeaderInfo.tmMode = src.tmMode;
-    HeaderInfo.dataLevel = src.dataLevel;
-    HeaderInfo.startTime = src.startTime;
-    HeaderInfo.numberOfSources = nSrc;
-    HeaderInfo.parents_1 = src.filename;
-    if nSrc==2
-      HeaderInfo.parents_2 = src2.filename;
+  function update_header(src,updateRun)
+    % Update header info
+    if updateRun>2 || updateRun<1, error('updateRun must be 1 or 2'), end
+    if(updateRun==1) % Initialization. Store startTime and first filename as parents_1.
+      HeaderInfo.startTime = src.startTime;
+      HeaderInfo.parents_1 = src.filename;
+      HeaderInfo.numberOfSources = 1;
+    elseif(updateRun==2) % Next run.
+      % Increase number of sources and new parent information.
+      HeaderInfo.numberOfSources = HeaderInfo.numberOfSources + 1;
+      eval(sprintf('HeaderInfo.parents_%i=''%s'';', HeaderInfo.numberOfSources, src.filename))
     end
   end
+
 end
