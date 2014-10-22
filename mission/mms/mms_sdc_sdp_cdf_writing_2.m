@@ -59,22 +59,7 @@ GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 
 switch procId
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
-    % Create an almost empty cdf file from skeleton, (have properly
-    % formatted LABL_1 and static VATTIB and GATTRIB).
-    skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf ',...
-      pwd, filesep, outFileName,' ', which('mms_sdp_sitl_dce2d.skt')];
-    [status, mesg] = system(skel);
-    if(status)
-      % Error in creating CDF file, could be caused by existing file or
-      % skeletoncdf command not found or read/write permission issues or
-      % something else.
-      errStr=['Error in creating CDF from skeleton. ',mesg];
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:SKELETON', errStr);
-    else
-      irf.log('notice', mesg);
-    end
-    
+    %% SITL/QL/L2PRE DCE2D - get data
     dce_xyz_dsl = mms_sdc_sdp_datamanager('dce_xyz_dsl');
     if ~isstruct(dce_xyz_dsl) && dce_xyz_dsl == MMS_CONST.Error
       errStr = 'Cannot output ''dce_xyz_dsl''';
@@ -96,6 +81,7 @@ switch procId
     name.bitmask = [datasetPrefix '_dce_bitmask'];
     name.label   = 'LABL_1';
 
+    %% Create matadata
     % Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
       name.dsl,     'DC E field in DSL frame of reference'; ...
@@ -132,6 +118,7 @@ switch procId
     
     if procId==MMS_CONST.SDCProc.sitl
       % Write to file, No QUALITY for SITL 
+      create_skel('sitl_dce2d')
        spdfcdfwrite(outFileName, ...
         {name.epoch, epochTT, ...
          name.dsl, dsl, ...
@@ -155,7 +142,8 @@ switch procId
       
       update_GATTRIB();
       
-      % Write to file.
+      %% Write to file.
+      create_skel('sitl_dce2d')
       spdfcdfwrite(outFileName, ...
        {name.epoch, epochTT, ...
         name.dsl, dsl, ...
@@ -166,21 +154,7 @@ switch procId
     end
     
   case MMS_CONST.SDCProc.usc
-    %% FIXME: DUMMY DATA FOR NOW.
-    skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf ',...
-      pwd, filesep, outFileName,' ', which('mms_sdp_l2_usc.skt')];
-    [status, mesg] = system(skel);
-    if(status)
-      % Error in creating CDF file, could be caused by existing file or
-      % skeletoncdf command not found or read/write permission issues or
-      % something else.
-      errStr=['Error in creating CDF from skeleton. ',mesg];
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:SKELETON', errStr);
-    else
-      irf.log('notice', mesg);
-    end
-    % For now store data temporarly
+    %% ScPot - get data
     dcv = mms_sdc_sdp_datamanager('dcv');
     if ~isstruct(dcv) && dcv == MMS_CONST.Error
       errStr = 'Cannot output ''dcv''';
@@ -208,6 +182,7 @@ switch procId
     ESCP = num2cell(sc_pot.data);
     bitmask = num2cell(uint16(sc_pot.bitmask));
 
+    %% Create Metadata
     datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
     dataType = [tmModeStr '_l2_uscdcv'];
     dataDesc = sprintf(...
@@ -290,7 +265,8 @@ switch procId
     
     update_GATTRIB()
     
-    % Write to file, using new spdfcdfwrite.
+    %% Write to file, using new spdfcdfwrite.
+    create_skel('l2_usc')
     spdfcdfwrite(outFileName, {name.epoch, epochTT, ...
       name.scpot, ESCP, ...
       name.psp, PSP, ...
@@ -362,6 +338,24 @@ cd(oldDir);
       r = str2double(s(idxDot(2)+1:idxDot(3)-1));
     end % GET_REV
   end % get_file_name
+
+  function create_skel(skelName)
+    % Create an almost empty cdf file from skeleton, (have properly
+    % formatted LABL_1 and static VATTIB and GATTRIB).
+    skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf "',...
+      pwd, filesep, outFileName,'" ', which(['mms_sdp_' skelName '.skt'])];
+    [status, mesg] = system(skel);
+    if(status)
+      % Error in creating CDF file, could be caused by existing file or
+      % skeletoncdf command not found or read/write permission issues or
+      % something else.
+      errStr=['Error in creating CDF from skeleton. ',mesg];
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDFWRITE:SKELETON', errStr);
+    else
+      irf.log('notice', mesg);
+    end
+  end
 
   function GATTRIB = getGlobalAttributes
     %% Create GlobalAttribute struct
