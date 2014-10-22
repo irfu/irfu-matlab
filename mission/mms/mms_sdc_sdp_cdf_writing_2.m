@@ -220,7 +220,11 @@ switch procId
     name.psp_p   = [datasetPrefix '_dcv']; % Probe to spacecraft potential, indiv probes
     name.bitmask = [datasetPrefix '_scpot_bitmask']; % Bitmask
     name.label   = 'LABL_1';
-    %label = 'PSP_P1,PSP_P2,PSP_P3,PSP_P4,PSP_P5,PSP_P6'; NOT correct
+    % According to Mike, the following should work to write ISTP complient
+    % multidimensional label with the new beta cdf patch. TBC.
+    %label = ['PSP_P1'; 'PSP_P2'; 'PSP_P3'; 'PSP_P4'; 'PSP_P5'; 'PSP_P6'];
+    % the following however does not work correctly:
+    %label = 'PSP_P1,PSP_P2,PSP_P3,PSP_P4,PSP_P5,PSP_P6'; %NOT correct
     %label = '["PSP_P1","PSP_P2","PSP_P3","PSP_P4","PSP_P5","PSP_P6"]'; % NOT entirely correct either.
     %label = {'PSP_P1','PSP_P2','PSP_P3','PSP_P4','PSP_P5','PSP_P6'}; % NOT correct, 6 records..
     %label = {'"PSP_P1","PSP_P2","PSP_P3","PSP_P4","PSP_P5","PSP_P6"'}; % Cannot determine proper cdf datatype from matlab value
@@ -387,7 +391,7 @@ cd(oldDir);
 %    GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'}; % FIXME should point to data
 %    GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
 %    GATTRIB.LINK_TITLE = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
-%    GATTRIB.MODS = cell(0,1); % Text describing major version changes, ie. "vX" changes.
+    GATTRIB.MODS = MMS_CONST.Version.MODS; % Text describing major version changes, ie. "vX" changes.
     % Global Attributes RECOMMENDED:
 %    GATTRIB.Acknowledgement = cell(0,1);
     GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};

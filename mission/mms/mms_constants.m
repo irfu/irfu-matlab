@@ -11,6 +11,14 @@ function MMS_CONST = mms_constants
 MMS_CONST.Version.X = 1; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
+% Version.MODS - MODS cdf GlobalAttribute should contain a description of
+% all significant changes to the data set, essentially capturing a log of
+% high-level release notes. Can have as many entries as necessary and
+% should be updated if the "X" value of the version number changes.
+% Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
+MMS_CONST.Version.MODS = {'V.0. Initial interface tests.'};
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable names, added some processing.'}];
+
 
 MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
 
