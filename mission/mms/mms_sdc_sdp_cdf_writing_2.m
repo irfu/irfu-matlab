@@ -46,10 +46,14 @@ GATTRIB = getGlobalAttributes;
 VATTRIB = getVariableAttributes;
 % Update some dynamic GlobalAttributes common to all data products.
 if(HeaderInfo.numberOfSources==1)
-  GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]};
-elseif(HeaderInfo.numberOfSources==2)
-  GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]; ['CDF>',HeaderInfo.parents_2]};
+  GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]}; % Add the only parent
+elseif(HeaderInfo.numberOfSources>=2)
+  GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]}; % Add first parent
+  for i=2:HeaderInfo.numberOfSources % Add each extra parent source
+    GATTRIB.Parents = [GATTRIB.Parents; {['CDF>',eval(sprintf('HeaderInfo.parents_%i',i))]}];
+  end
 end
+
 GATTRIB.Logical_file_id = {outFileName};    % Filename, except '.cdf'
 GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 
@@ -138,7 +142,7 @@ switch procId
       % QL or L2e
       % Add Quality
       quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask)));
-      name.quality = sprintf('mms%i_sdp_dce_quality',scId);
+      name.quality = [datasetPrefix '_dce_quality'];
       VATTRIB.CATDESC  = [VATTRIB.CATDESC;  {name.quality, 'Bitmask of quality'}];
       VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.quality, name.epoch}];
       VATTRIB.FIELDNAM = [VATTRIB.FIELDNAM; {name.quality, 'Bitmask'}];
