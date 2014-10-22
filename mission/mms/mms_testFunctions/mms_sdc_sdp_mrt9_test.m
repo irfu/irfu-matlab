@@ -9,6 +9,9 @@ if ~exist('out','dir'), mkdir('out'), end
 setenv('LOG_PATH_ROOT','')
 setenv('DROPBOX_ROOT',[data_root filesep 'out'])
 setenv('DATA_PATH_ROOT',[data_root filesep 'out'])
+if ismac,
+  setenv('CDF_BASE','/Applications/cdf35_0-dist/')
+end
 
 modes    ={'slow', 'fast', 'brst' };
 versions ={'2.0.1','2.0.1','2.0.0'};
