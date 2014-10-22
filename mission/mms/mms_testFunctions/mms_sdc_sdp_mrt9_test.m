@@ -38,7 +38,7 @@ for scId=2:-1:1
       end
       if isempty(dcvFile) && isempty(dceFile), continue, end
       for iProc=1:length(procs)
-        fprintf('TEST: MMS%d %s %s\n',scId,modes{iMode},procs{iProc})
+        fprintf('TEST: MMS%d %s %s %s\n',scId,modes{iMode},procs{iProc},dates{iDate})
         mms_sdc_sdp_proc(procs{iProc},dceFile,dcvFile,hk_101File)
       end
     end
