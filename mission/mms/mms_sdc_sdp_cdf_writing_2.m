@@ -143,11 +143,11 @@ switch procId
         name.bitmask, 'support_data';...
         name.quality, 'support_data'}];
     end
-  case MMS_CONST.SDCProc.usc
+  case MMS_CONST.SDCProc.scpot
     %% ScPot - get data
-    skeletonName = 'l2_usc';
+    skeletonName = 'l2_scpot';
     datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
-    dataType = [tmModeStr '_l2_uscdcv'];
+    dataType = [tmModeStr '_l2_scpot'];
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), Spacecraft potential',...
       scId,procName,tmModeStr);
@@ -292,8 +292,8 @@ cd(oldDir);
         subDir = procName; suf = 'dce2d';
       case MMS_CONST.SDCProc.l2pre
         subDir = 'l2'; suf = 'dce2d';
-      case MMS_CONST.SDCProc.usc
-        subDir = 'l2'; suf = 'uscdcv';
+      case MMS_CONST.SDCProc.scpot
+        subDir = 'l2'; suf = 'scpot';
       otherwise
         errStr = 'unrecognized procId';
         irf.log('critical', errStr); error(errStr)

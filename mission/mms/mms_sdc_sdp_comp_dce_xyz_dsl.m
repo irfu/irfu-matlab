@@ -17,7 +17,7 @@ dce_xyz_dsl = MMS_CONST.Error;
 
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
+  case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre}
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
     if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,

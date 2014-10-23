@@ -2,7 +2,7 @@ function mms_sdc_sdp_proc( procName, varargin)
 % MMS_SDC_SDP_PROC main starting point for MMS SDC processing.
 %	MMS_SDC_SDP_PROC('processingType', '/pathTo/input/file1.cdf', ...
 %   '/pathTo/input/file2.cdf', ...); will start the MMS processing for
-%   processing types "ql", "sitl" and "usc" which is to be performed at
+%   processing types "ql", "sitl" and "scpot" which is to be performed at
 %   SDC. If not all needed cdf files are provided, but all required cdf 
 %   required cdf files are only some parts of the processing can occur. 
 %
@@ -40,7 +40,7 @@ HeaderInfo = [];
 if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
 % First argument is and should always be which mode to run.
-% QuickLook, Usc or SITL. (Is static in the bash script that starts Matlab)
+% QuickLook, SCPOT or SITL. (Is static in the bash script that starts Matlab)
 if ~ischar(procName)
     error('Matlab:MMS_SDC_SDP_PROC:Input', ...
     'MMS_SDC_SDP_PROC first argument must be a string');
@@ -157,9 +157,9 @@ if isempty(HK_101_File)
     error('Matlab:MMS_SDC_SDP_PROC:Input', errMsg);
 end
 
-%% Processing for Usc or QL or SITL.
+%% Processing for SCPOT or QL or SITL.
 switch procId
-  case MMS_CONST.SDCProc.usc
+  case MMS_CONST.SDCProc.scpot
     if isempty(DCV_File)
       errStr = ['missing reqired input for ' procName ': DCV_File'];
       irf.log('critical',errStr)
@@ -187,7 +187,6 @@ switch procId
     update_header(hk_src_fileData,2) % Update header with extra file hk
     
     % Write the output
-    %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
     % Test the new cdf_patch:
     filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
     

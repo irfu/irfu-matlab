@@ -35,10 +35,10 @@ MMS_CONST.TmMode.fast = 2;
 MMS_CONST.TmMode.brst = 3;
 
 % SDC process names
-MMS_CONST.SDCProcs = {'sitl','ql','usc','l2pre'};
+MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre'};
 MMS_CONST.SDCProc.sitl = 1; % Number must corrspond to position in the list
 MMS_CONST.SDCProc.ql   = 2;
-MMS_CONST.SDCProc.usc  = 3;
+MMS_CONST.SDCProc.scpot  = 3;
 MMS_CONST.SDCProc.l2pre  = 4;
 
 % Limits used in processing
