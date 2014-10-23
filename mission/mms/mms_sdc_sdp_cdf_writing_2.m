@@ -62,7 +62,6 @@ GATTRIB.Data_version = {['v' verFileName]}; % 'vX.Y.Z'
 switch procId
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     %% SITL/QL/L2PRE DCE2D - get data
-    skeletonName = 'sitl_dce2d';
     datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
     dataType = [tmModeStr '_' procName '_' DCE_FILE];
     dataDesc = sprintf(...
@@ -75,33 +74,42 @@ switch procId
       irf.log('critical', errStr);
       error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
-    epochTT = num2cell(dce_xyz_dsl.time);
-    dsl = num2cell(dce_xyz_dsl.data,2);
-    bitmask = num2cell(uint16(dce_xyz_dsl.bitmask));
+
+    epochTT = dce_xyz_dsl.time;
+    dsl = dce_xyz_dsl.data;
+    bitmask = uint16(dce_xyz_dsl.bitmask);
     
     name.epoch   = [datasetPrefix '_dce_epoch'];
     name.dsl     = [datasetPrefix '_dce_xyz_dsl'];
     name.bitmask = [datasetPrefix '_dce_bitmask'];
     name.label   = 'LABL_1';
-    outVars = {name.epoch, epochTT, name.dsl, dsl};
+    label = ['DSL_X'; 'DSL_Y'; 'DSL_Z'];
+    outVars = {name.epoch, epochTT, name.label, label, name.dsl, dsl};
+    % RecordBound, ie individual cdf records for each row.
+    recBound = {name.epoch, name.dsl};
     
     if procId~=MMS_CONST.SDCProc.sitl
       % Add Quality and Bitmask for QL or L2PRE
-      quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask)));
+      %quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask)));
+      quality = uint16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask));
       name.quality = [datasetPrefix '_dce_quality'];
       outVars = [outVars {name.bitmask bitmask name.quality quality}];
+      recBound = [recBound {name.quality}];
     end
 
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
+      name.label,   'Label'; ...
       name.dsl,     'DC E field in DSL frame of reference'};
     VATTRIB.DEPEND_0 = {name.dsl,     name.epoch};
     VATTRIB.DISPLAY_TYPE = {name.dsl,     'time_series'};
     VATTRIB.FIELDNAM = {name.epoch, 'Time tags'; ...
+      name.label,   'Label'; ...
       name.dsl,     'DC E field (dsl)'};
     VATTRIB.FILLVAL = {name.epoch, int64(-9223372036854775808); ...
       name.dsl,     single(-1.0E31)};
-    VATTRIB.FORMAT = {name.dsl,     'F8.3'};
+    VATTRIB.FORMAT = {name.label,   'A23'; ...
+      name.dsl,     'F8.3'};
     VATTRIB.LABL_PTR_1 = {name.dsl, name.label};
     VATTRIB.SI_CONVERSION = {name.dsl,     '1.0e3>V/m'};
     VATTRIB.UNITS = {name.dsl,     'mV/m'};
@@ -111,6 +119,7 @@ switch procId
     VATTRIB.VALIDMAX = {name.epoch, int64(946728067183999999); ...
       name.dsl,     EFIELD_MAX};
     VATTRIB.VAR_TYPE = {name.epoch, 'support_data'; ...
+      name.label,   'metadata'; ...
       name.dsl,     'data'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
     if procId~=MMS_CONST.SDCProc.sitl
@@ -145,7 +154,6 @@ switch procId
     end
   case MMS_CONST.SDCProc.scpot
     %% ScPot - get data
-    skeletonName = 'l2_scpot';
     datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
     dataType = [tmModeStr '_l2_scpot'];
     dataDesc = sprintf(...
@@ -171,14 +179,13 @@ switch procId
       error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
     
-    epochTT = num2cell(dcv.time);
+    epochTT = dcv.time;
     psp_p = [dcv.v1.data, dcv.v2.data, dcv.v3.data, ...
       dcv.v4.data, dcv.v5.data, dcv.v6.data];
-    psp_p = num2cell(psp_p,2);
-    PSP = num2cell(probe2sc_pot.data);
-    ESCP = num2cell(sc_pot.data);
-    bitmask = num2cell(uint16(sc_pot.bitmask));
-    quality = num2cell(uint16(mms_sdc_sdp_bitmask2quality('e',sc_pot.bitmask)));
+    PSP = probe2sc_pot.data;
+    ESCP = sc_pot.data;
+    bitmask = uint16(sc_pot.bitmask);
+    quality = uint16(mms_sdc_sdp_bitmask2quality('e',sc_pot.bitmask));
 
     name.epoch   = [datasetPrefix '_scpot_epoch']; % Timestamp in TT2000
     name.scpot   = [datasetPrefix '_scpot']; % Estimated Spacecraft potential
@@ -187,24 +194,23 @@ switch procId
     name.bitmask = [datasetPrefix '_scpot_bitmask']; % Bitmask
     name.quality = [datasetPrefix '_scpot_quality']; % Quality
     name.label   = 'LABL_1';
-    % According to Mike, the following should work to write ISTP complient
-    % multidimensional label with the new beta cdf patch. TBC.
-    %label = ['PSP_P1'; 'PSP_P2'; 'PSP_P3'; 'PSP_P4'; 'PSP_P5'; 'PSP_P6'];
-    % the following however does not work correctly:
-    %label = 'PSP_P1,PSP_P2,PSP_P3,PSP_P4,PSP_P5,PSP_P6'; %NOT correct
-    %label = '["PSP_P1","PSP_P2","PSP_P3","PSP_P4","PSP_P5","PSP_P6"]'; % NOT entirely correct either.
-    %label = {'PSP_P1','PSP_P2','PSP_P3','PSP_P4','PSP_P5','PSP_P6'}; % NOT correct, 6 records..
-    %label = {'"PSP_P1","PSP_P2","PSP_P3","PSP_P4","PSP_P5","PSP_P6"'}; % Cannot determine proper cdf datatype from matlab value
+    label = ['PSP_P1'; 'PSP_P2'; 'PSP_P3'; 'PSP_P4'; 'PSP_P5'; 'PSP_P6'];
     
     outVars = {name.epoch, epochTT, ...
+      name.label, label, ...
       name.scpot, ESCP, ...
       name.psp, PSP, ...
       name.psp_p, psp_p, ...
       name.bitmask, bitmask,...
       name.quality, quality};
+
+    % RecordBound, ie individual cdf records for each row.
+    recBound = {name.epoch, name.scpot, name.psp, name.psp_p, ...
+      name.bitmask, name.quality};
     
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
+      name.label,   'Label'; ...
       name.scpot,   'Spacecraft potential';...
       name.psp,     'Probe to spacecraft potential, averaged'; ...
       name.psp_p,   'Probe to spacecraft potential, individual probes'; ...
@@ -220,7 +226,8 @@ switch procId
       name.psp_p,   'time_series';...
       name.quality, 'time_series'};
     VATTRIB.FIELDNAM = {name.epoch, 'Time tags'; ...
-      name.scpot,    'Spacecraft potential'; ...
+      name.label,   'Label'; ...
+      name.scpot,   'Spacecraft potential'; ...
       name.psp,     'Probe to spacecraft potential'; ...
       name.psp_p,   'Probe to spacecraft potential individual probe'; ...
       name.bitmask, 'Status bitmask';...
@@ -232,10 +239,11 @@ switch procId
       name.bitmask, uint16(hex2dec('FFFF'));...
       name.quality, uint8(255)};
     VATTRIB.FORMAT = {name.scpot, 'F8.3'; ...
+      name.label,   'A23'; ...
       name.psp,     'F8.3'; ...
       name.psp_p,   'F8.3'; ...
       name.bitmask, 'I7';...
-      name.quality, 'I1'};
+      name.quality, 'I7'};
     VATTRIB.LABLAXIS = {name.scpot, 'Spacecraft potential';
       name.psp,     'Probe to spacecraft potential';...
       name.quality, 'ScPot quality'};
@@ -262,6 +270,7 @@ switch procId
       name.bitmask, uint16(hex2dec('FFFE'));...
       name.quality, QUALITY_MAX};
     VATTRIB.VAR_TYPE = {name.epoch, 'support_data'; ...
+      name.label,   'metadata'; ...
       name.scpot,   'data'; ...
       name.psp,     'data'; ...
       name.psp_p,   'data'; ...
@@ -280,6 +289,12 @@ GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_sdp_fast_l1b
 GATTRIB.Logical_source_description = {dataDesc}; % in full words.
 
 write_file()
+
+% Update to ensure MD5 checksum is turned on.
+irf.log('notice', 'Updating file to ensure MD5 checksum is enabled');
+spdfcdfupdate(outFileName, 'CDFChecksum', true);
+% A similar command could be used for compression but according to Mike
+% @NASA, this is not fully developed yet. FIXME when notified by Mike.
 
 % Return to previous working directory.
 cd(oldDir);
@@ -335,24 +350,9 @@ cd(oldDir);
   end % get_file_name
 
   function write_file
-    % Create an almost empty cdf file from skeleton, (have properly
-    % formatted LABL_1 and static VATTIB and GATTRIB).
-    skel = [ENVIR.CDF_BASE, filesep, 'bin', filesep, 'skeletoncdf -cdf "',...
-      pwd, filesep, outFileName,'" ', which(['mms_sdp_' skeletonName '.skt'])];
-    [status, mesg] = system(skel);
-    if(status)
-      % Error in creating CDF file, could be caused by existing file or
-      % skeletoncdf command not found or read/write permission issues or
-      % something else.
-      errStr=['Error in creating CDF from skeleton. ',mesg];
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:SKELETON', errStr);
-    else
-      irf.log('notice', mesg);
-    end
     spdfcdfwrite(outFileName, outVars, 'EpochType', {name.epoch}, ...
       'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
-      'WriteMode', 'append');
+      'RecordBound', recBound);
   end
 
   function GATTRIB = getGlobalAttributes
@@ -360,38 +360,38 @@ cd(oldDir);
     % Source: MMS_CDF_Format_Guide, v1.5, issued 2013/11/19.
     GATTRIB=[];
     % Global Attributes REQUIRED:
-%    GATTRIB.Data_type = cell(0,1); % mode_dataLevel_optionalDescriptor
-%    GATTRIB.Data_version = cell(0,1); % Same as version number in filename.
-%    GATTRIB.Descriptor = {'SDP>Spin-plane Double Probe'};
-%    GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
+    GATTRIB.Data_type = cell(0,1); % mode_dataLevel_optionalDescriptor
+    GATTRIB.Data_version = cell(0,1); % Same as version number in filename.
+    GATTRIB.Descriptor = {'SDP>Spin-plane Double Probe'};
+    GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
     GATTRIB.Generation_date = {datestr(now,'yyyymmdd')};
-%    GATTRIB.Instrument_type = {'Electric Fields (space)'};
-%    GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
-%    GATTRIB.Logical_source = cell(0,1); % Ex: mms3_sdp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
-%    GATTRIB.Logical_source_description = cell(0,1); % Description in full words..
-%    GATTRIB.Mission_group = {'MMS'};
-%    GATTRIB.PI_affiliation = {'SWRI, LASP, KTH'};
-%    GATTRIB.PI_name = {'Burch, J, Ergun, R., Lindqvist, P.'};
-%    GATTRIB.Project = {'STP>Solar-Terrestrial Physics'};
+    GATTRIB.Instrument_type = {'Electric Fields (space)'};
+    GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
+    GATTRIB.Logical_source = cell(0,1); % Ex: mms3_sdp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
+    GATTRIB.Logical_source_description = cell(0,1); % Description in full words..
+    GATTRIB.Mission_group = {'MMS'};
+    GATTRIB.PI_affiliation = {'SWRI, LASP, KTH'};
+    GATTRIB.PI_name = {'Burch, J, Ergun, R., Lindqvist, P.'};
+    GATTRIB.Project = {'STP>Solar-Terrestrial Physics'};
     GATTRIB.Source_name = {sprintf('MMS%i>MMS Satellite Number %i',scId,scId)}; % Or possibly 'MMS>MMS Constellation'.
-%    GATTRIB.TEXT = cell(0,1);  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
+    GATTRIB.TEXT = {'http://mms.gsfc.nasa.gov/'};  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
       %experiment whose data is included in the CDF. A reference to a journal article(s) or to a
       %World Wide Web page describing the experiment is essential, and constitutes the
       %minimum requirement. A written description of the data set is also desirable. This
       %attribute can have as many entries as necessary to contain the desired information.
       %Typically, this attribute is about a paragraph in length and is not shown on CDAWeb.
-%    GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'}; % FIXME should point to data
-%    GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
-%    GATTRIB.LINK_TITLE = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
+    GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'}; % FIXME should point to data
+    GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
+    GATTRIB.LINK_TITLE = {'Magnetospheric Multiscale (MMS) Mission - NASA'}; % FIXME as well
     GATTRIB.MODS = MMS_CONST.Version.MODS; % Text describing major version changes, ie. "vX" changes.
     % Global Attributes RECOMMENDED:
-%    GATTRIB.Acknowledgement = cell(0,1);
+    GATTRIB.Acknowledgement = cell(0,1);
     GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};
     % Global Attributes OPTIONAL:
 %    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
-%    GATTRIB.Skeleton_version = cell(0,1);
-%    GATTRIB.Rules_of_use = cell(0,1);
-%    GATTRIB.Time_resolution = cell(0,1);
+    GATTRIB.Skeleton_version = {'v.0.0.2'};
+    GATTRIB.Rules_of_use = cell(0,1);
+    GATTRIB.Time_resolution = cell(0,1);
   end
 
   function VATTRIB = getVariableAttributes
