@@ -56,7 +56,11 @@ function info = spdfcdfinfo(filename)
 %         values vary at each dimension.
 %
 %     (6) The sparsity of the variables records.  Allowable values are
-%         'Full', 'Sparse (padded)', and 'Sparse (nearest)'.
+%         'Full', 'Sparse(padded)', and 'Sparse(previous)'.
+%
+%     (7) The compression of the variables.  Allowable values are
+%         'None', 'RLE', 'HUFF', 'AHUFF', and 'GZIP.x'i where x is the 
+%         GZIP compression level..
 %
 %   The "GlobalAttributes" and "VariableAttributes" structures contain a
 %   field for each attribute.  Each field's name corresponds to the name
@@ -145,7 +149,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.5.1.1';
+info.PatchVersion = '3.5.1.2';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
@@ -198,7 +202,9 @@ else
         filename((end-3):end) = '';
     end
     % Get the attribute, variable, and library details.
+
     tmp = spdfcdfinfoc(filename);
+
     % Process file attributes.
     info.FileSettings = parse_file_info(tmp.File);
     info.FormatVersion = info.FileSettings.Version;
@@ -217,12 +223,15 @@ else
     vars = tmp.Variables;
     types = vars(:, 4);
     sp = vars(:, 6);
+    cp = vars(:, 7);
     for p = 1:length(types)
         types{p} = find_datatype(types{p});
         sp{p} = find_sparsity(sp{p});
+        cp{p} = find_varcompression(cp{p});
     end
     vars(:, 4) = types;
     vars(:, 6) = sp;
+    vars(:, 7) = cp;
 
     info.Variables = vars;
 
@@ -313,9 +322,26 @@ switch (num)
   case 0
     str = 'Full';
   case 1
-    str = 'Sparse (padded)';
+    str = 'Sparse(padded)';
   case 2
-    str = 'Sparse (nearest)';
+    str = 'Sparse(previous)';
+end
+
+function str = find_varcompression(num)
+
+switch (num)
+  case 0
+    str = 'None';
+  case 1
+    str = 'RLE';
+  case 2
+    str = 'HUFF';
+  case 3
+    str = 'AHUFF';
+  otherwise
+    gzip = int32((num+5)/10-1);
+    lvl = num-(10*gzip);
+    str = strcat('GZIP.',num2str(lvl));
 end
 
 

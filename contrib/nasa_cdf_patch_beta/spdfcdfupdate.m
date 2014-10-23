@@ -1,8 +1,8 @@
 function spdfcdfupdate(filename, varargin)
 %SPDFCDFUPDATE Update data in an existing CDF file.
 % 
-%   SPDFCDFUPDATE(FILE, 'VariableData', VARIABLELIST, ...) updates variable data 
-%   in a %   CDF file whose name is specified by FILE.  VARIABLELIST is a 
+%   SPDFCDFUPDATE(FILE, 'VariableData', VARIABLELIST, ...) updates variable 
+%   data in a CDF file whose name is specified by FILE.  VARIABLELIST is a 
 %   cell array of ordered pairs, which are comprised of a CDF variable name 
 %   (a string) and a corresponding value cell array. The value cell array 
 %   is comprised of a number of cells, each cell consisting of a record number,

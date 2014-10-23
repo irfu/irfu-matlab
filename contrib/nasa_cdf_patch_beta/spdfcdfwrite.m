@@ -5,8 +5,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   is specified by FILE.  VARIABLELIST is a cell array of ordered
 %   pairs, which are comprised of a CDF variable name (a string) and
 %   the corresponding CDF variable value.  To write out multiple records
-%   for a variable, put the variable values in a cell array, where each
-%   element in the cell array represents a record.
+%   for a variable, there are two ways of doing it. One way is putting the
+%   variable values in a cell array, where each element in the cell array
+%   represents a record. Another way, the better one, is to place the
+%   values in an array (single or multi-dimensional) with the option
+%   'RecordBound' being specified.  
 %
 %   SPDFCDFWRITE(..., 'PadValues', PADVALS) writes out pad values for given
 %   variable names.  PADVALS is a cell array of ordered pairs, which
@@ -33,7 +36,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   SPDFCDFWRITE(..., 'VariableAttributes', VATTRIB, ...) writes the
 %   structure VATTRIB as variable meta-data for the CDF.  Each
 %   field of the struct is the name of a variable attribute.  The
-%   value of each field should be an mx2 cell array where m is the
+%   value of each field should be an Mx2 cell array where M is the
 %   number of variables with attributes.  The first element in the
 %   cell array should be the name of the variable and the second
 %   element should be the value of the attribute for that variable.
@@ -71,69 +74,48 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   versions of MATLAB before R2006b will not be able to read files 
 %   which were written with CDF versions greater than 3.0.
 %
-%   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) indicates whether
-%   data values are written into "records" for the given variable
-%   names. RECBNDVARS is a cell array of variable names.
-%   This option applies to data values in 1-by-N or N-by-1 vector that
-%   normally will be written into a simple record of N elements. With
-%   this option, N records are written, each record being a scalar, instead. 
-%   Previously, cell arrays are the only way to create multiple records. 
-%   These two commands should write out the data values identically:
-%      SPDFCDFWRITE('example', {'Epoch', num2cell(1:100)}, ...
-%               'epochiscdfepoch', true);
-%      SPDFCDFWRITE('example', {'Epoch', 1:100}, 'recordbound', {'Epoch'}, ...
-%               'epochiscdfepoch', true);
+%   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) controls how data values in 
+%   arrays (1-D or multi-dimensional) are written into "records" for the given
+%   variable names. RECBNDVARS is a cell array of variable names. The 2-D
+%   array of M-by-N will create M rows (records), while each row having N
+%   elements. For examples, 5-by-1 array will create 5 scalar records and
+%   1-by-5 array will write 1 record with 5 elements. For 3-D array of
+%   M-by-N-by-R, R records will be written, and each record being 2-D with
+%   M-by-N elements. See sample codes for its usage.
 %
 %   SPDFCDFWRITE(..., 'ConvertDatenumToEpoch', TF, ...) converts MATLAB datenum
 %   values to CDF epoch data if TF is true. This option works with the
-%   designated variable 'Epoch' (case sensitive) in a CDF, which is epoch. 
-%   There are two ways to write data for 'Epoch' variable of CDF_EPOCH into
+%   variable(s) that is of CDF_EPOCH type in a CDF. 
+%   There are two ways to write data for epoch variable(s) of CDF_EPOCH into
 %   a CDF. First, uses cdfepoch objects, each of which is from a datenum,
 %   datestr, or even cdfepoch object, to pass data to spdfcdfwrite: 
 %      SPDFCDFWRITE(..., {'Epoch',cdfepoch([...], ...)}, ...) 
 %   This option is time and space consuming if large datasets are involved. 
 %   The second way uses 'ConvertDatenumToEpoch':
-%      SPDFCDFWRITE(..., {'Epoch',[...], ...}, 'ConvertDatenumToEpoch', TF, ...) 
+%     SPDFCDFWRITE(..., {'Epoch',[...], ...}, 'ConvertDatenumToEpoch', TF, ...) 
 %   If TF is set to true, the passed data are assumed as MATLAB datenum
 %   values and a data conversion to CDF epoch values is performed. 
-%   Setting it to false (the default), 'Epoch' is treated just like a normal
-%   variable, not an epoch type any more. 
+%   Setting it to false (the default), All data will be considered already in
+%   CDF_EPOCH form and will be filled, as is, to
+%   CDF_EPOCH data type variable(s). The CDF_EPOCH data need to be nemeric of
+%   mxDouble_CLASS (double).
 %
 %   SPDFCDFWRITE(..., 'ConvertDatenumToTT2000', TF, ...) converts MATLAB datenum
-%   values to CDF TT2000 data if TF is true. This option works with the same
-%   variable 'Epoch' as CDF Epoch for epoch values.
-%   There are two ways to write data for 'Epoch' variable of CDF_TIME_TT2000
+%   values to CDF TT2000 data if TF is true. This option works with the
+%   variable(s) that is of CDF_TIME_TT2000 type in a CDF.
+%   There are two ways to write data for epoch variable (s) of CDF_TIME_TT2000
 %   into a CDF. First, uses cdftt2000 objects, each of which is from a datenum,
 %   datestr, or even cdftt2000 object, to pass data to spdfcdfwrite:
 %      SPDFCDFWRITE(..., {'Epoch',cdftt2000([...], ...)}, ...)
 %   This option is also time and space consuming if large datasets are involved.
 %   The second way uses 'ConvertDatenumToTT2000':
-%      SPDFCDFWRITE(..., {'Epoch',[...], ...}, 'ConvertDatenumToTT2000', TF, ...)
+%     SPDFCDFWRITE(..., {'Epoch',[...], ...}, 'ConvertDatenumToTT2000', TF, ...)
 %   If TF is set to true, the passed data are assumed as MATLAB datenum
 %   values and a data conversion to CDF TT2000 values is performed.
-%   Setting it to false (the default), 'Epoch' is treated just like a normal
-%   variable, not an epoch type any more. This option is mutually exclusive
-%   to ConvertDatenumToEpoch.
-%
-%   SPDFCDFWRITE(..., 'EpochIsCDFEpoch', TF, ...) controls whether the passed
-%   data are actually CDF epoch values. This option applies only to the
-%   designated variable 'Epoch'. If TF is set to true, the passed data are
-%   actually CDF_EPOCH values so a CDF_EPOCH is to be created and all values
-%   will be used as is - no MATLAB datenum to CDF epoch conversion is needed.
-%   Without the option or the option is false, the 'Epoch' will be treated as
-%   a regular variable, and written as of CDF_DOUBLE, data type, instead of 
-%   CDF_EPOCH. This option is mutually exclusive to ConvertDatenumToEpoch 
-%   and TT2000.
-%
-%   SPDFCDFWRITE(..., 'TT2000', TF, ...) controls whether the passed data are
-%   actually CDF TT2000 values. This option applies only to the designated
-%   variable 'Epoch'. If TF is set to true, the passed data are actually CDF
-%   TT2000 values so they will be used as is- no conversion is needed. 
-%   The variable 'Epoch' will be written to the file as type CDF_TIME_TT2000.
-%
-%   The CDF TT2000 values needs to be numeric of mxINT64_CLASS (int64).
-%   This option is mutually exclusive to ConvertDatenumToEpoch and
-%   EpochIsCDFEpoch.
+%   Setting it to false (the default), All data will be considered already in
+%   CDF_TIME_TT2000 form and will be filled, as is, to
+%   CDF_TIME_TT2000 data type variable(s). The CDF TT2000 values needs to be
+%   numeric of mxINT64_CLASS (int64).
 %
 %   SPDFCDFWRITE(..., 'EpochType', EPOCHTYVARS) indicates which variable(s)
 %   is to be created as one of the CDF epoch types, either CDF_EPOCH or 
@@ -178,21 +160,28 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % 'Latitude' has one record of a vector with 11 elements.
 %
 %   spdfcdfwrite('example', {'Longitude', 0:360, 'Latitude', 10:20}, ...
-%            'PadValues', {'Latitude', 10});
+%                'PadValues', {'Latitude', 10});
 %
 %   % Write out a file 'example.cdf', containing a variable 'Longitude'
-%   % with the value [0:360], and with a variable attribute of
-%   % 'validmin' with the value 10:
+%   % with the value [0:360] (one record of 361 values), and with a variable
+%   % attribute of 'validmin' with the value 10:
 %
 %   varAttribStruct.validmin = {'Longitude' [10]};
 %   spdfcdfwrite('example', {'Longitude' 0:360}, ...
-%            'VariableAttributes', varAttribStruct);
+%                'VariableAttributes', varAttribStruct);
 %
 %   % Write out a file 'example.cdf' containing variables 'Longitude'
-%   % and 'Latitude' with the variable 'Latitude' being a Record-bound:
+%   % and 'Latitude' with the variable 'Latitude' being a Record-bound
+%   % (361 records to be written)::
 %
-%   spdfcdfwrite('example', {'Longitude', 0:360, 'Latitude', 10:20}, ...
-%            'RecordBound', {'Latitude'});
+%   spdfcdfwrite('example', {'Longitude', (0:360)', 'Latitude', 10:20}, ...
+%                'RecordBound', {'Latitude'});
+%
+%   % These two commands should write out the data values identically:
+%      SPDFCDFWRITE('example', {'Epoch', num2cell(1:100)}, ...
+%                   'epochiscdfepoch', true);
+%      SPDFCDFWRITE('example', {'Epoch', (1:100)'}, 'recordbound', {'Epoch'}, ...
+%                   'epochiscdfepoch', true);
 %
 %   % Write out a file 'example.cdf', with multiple rows of time series data.
 %   % Each row has a time and a sampled data, both being scalar. 
@@ -202,11 +191,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % Each sampled value starts from 0.0, with 5.0 stride. 
 %
 %   epoch=utc2cdfepoch(2010,1,1,0,0,0,0);
-%   epochvalues = epoch+[0:99]*1000;
-%   values = [0:99]*5.0;
+%   epochvalues = (epoch+[0:99]*1000)';
+%   values = ([0:99]*5.0)';
 %   spdfcdfwrite('example', {'Epoch', epochvalues, 'Samples', values}, ...
-%            'EpochisCDFEpoch', true, ...
-%            'RecordBound', {'Epoch', 'Samples'});
+%                'EpochisCDFEpoch', true, ...
+%                'RecordBound', {'Epoch', 'Samples'});
 %
 %   % 'EpochisCDFEpoch' option is needed as 'Epoch' is to be created of
 %   % CDF_EPOCH type.
@@ -215,8 +204,8 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % 'EpochType' option:
 %
 %   spdfcdfwrite('example', {'Epoch', epochvalues, 'Samples', values}, ...
-%            'EpochType', {'Epoch'}, ...
-%            'RecordBound', {'Epoch', 'Samples'});
+%                'EpochType', {'Epoch'}, ...
+%                'RecordBound', {'Epoch', 'Samples'});
 %
 %   % Alternatively, the same result can be accomplished by making the epoch
 %   % vector to cell. No 'RECORDBOUND' option is needed.
@@ -225,30 +214,38 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   epochscell = num2cell(epochvalues);
 %   values = num2cell([0:99]*5.0);
 %   spdfcdfwrite('example', {'Epoch', epochvalues, 'Samples', values}, ...
-%            'EpochType', {'Epoch'});
+%                'EpochType', {'Epoch'});
 %
-%   % Write out a file 'example.cdf', with multiple rows of time sequenced,
-%   % vectorized data. 
+%   % Write out a file 'example.cdf', with single or multiple rows of
+%   % vectorized data. Variable 'one0' will have one record with 5 elements.
+%   % Variable 'one1' has five records, each record having 1 value. Variable
+%   % 'two0' has one 5-by-2 record, while Variable 'two2' has five (5) 
+%   % records, each record having 2 elements. Variable 'three0' has a
+%   % single 3-D (3-by-2-by-2) record, while Variable 'three3' has two (2)
+%   % records, each record being a 3-by-2 matrix. 
+%
+%   data0=1:5;
+%   data1=data0';
+%   data2=[10 20;30 40;50 60;70 80;90 100];
+%   data2a=data2+100;
+%   data3=[1 2;3 4;5 6];
+%   data3(:,:,2)=[11 22; 33 44; 55 66];
+%   data3a=data3+100;
+%   spdfcdfwrite('example',{'one0',data0,'one1',data1,'two0',data2, ...
+%                'two2',data2a,'three0',data3,'three3',data3a}, ...          
+%                'recordbound',{'one1','two2','three3'});
+%
+%   % For writing out two variables: 'Epoch' of CDF_EPOCH type, and
+%   % 'Sample' of CDF_DOUBLE type. Four records are written for each. Epoch's
+%   % record is a scalar, while Sample's is an 1-D with 4 elements.
 %
 %   epoch=utc2cdfepoch(2010,1,1,0,0,0,0);
-%   epochvalues = epoch+[0:2]*1000;
+%   epochvalues = (epoch+[0:3]*1000)';
 %   value = [0:3]*5.0;
-%   values = [value; value+10; value+20];
-%   spdfcdfwrite('example', {'Epoch', epochvalues, 'Samples', values}, ...
-%            'EpochType', {'Epoch'}, ...
-%            'RecordBound', {'Epoch', 'Samples'});
-%
-%   % For writing out multi-dimensional epoch variable records, the following
-%   % sample will write two records, each with a 2-dimension (2x3) array:
-%
-%   epoch=utc2cdfepoch(2010,1,1,0,0,0,0);
-%   epochvalue1 = [[epoch epoch+1];[epoch+1000 epoch+1001];...
-%                  [epoch+2000 epoch+2001]];
-%   epochvalue2 = [[epoch+5000 epoch+5001];[epoch+6000 epoch+6001];...
-%                  [epoch+7000 epoch+7001]];
-%   epochs={epochvalue1;epochvalue2};
-%   spdfcdfwrite('example', {'Epoch', epochvalues}, ...
-%            'EpochType', {'Epoch'});
+%   values = [value; value+10; value+20; value+30];
+%   spdfcdfwrite('example', {'Epoch', epochvalues, 'Sample', values}, ...
+%                'EpochType', {'Epoch'}, ...
+%                'RecordBound', {'Epoch', 'Sample'});
 %
 %   % Write out a file 'example.cdf', with 100 MATLAB datenum values,
 %   % starting from 2010-01-01T00:00:00.000 with 1 second stride, 
@@ -259,11 +256,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % 'Epoch' has a pad value of 01-Jan-0000 00:00:00.001.
 %
 %   datenum1=datenum(2010,1,1,0,0,0);
-%   datenumvalues = datanum1+[0:99]/86400;
+%   datenumvalues = (datanum1+[0:99]/86400)';
 %   spdfcdfwrite('example', {'Epoch', datenumvalues}, ...
-%            'ConvertDatenumToEpoch', true, ...
-%            'RecordBound', {'Epoch'}, ...
-%            'PadValue', {'Epoch', 1});
+%                'ConvertDatenumToEpoch', true, ...
+%                'RecordBound', {'Epoch'}, ...
+%                'PadValue', {'Epoch', 1});
 %
 %   % Write out a file 'example.cdf', with three records for the variable
 %   % 'Epoch' of CDF_TIME_TT2000 type. The first record has a date:
@@ -272,25 +269,25 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   dates = datenum([2010 10 10 1 2 3.456; 2010 11 11 2 4 6.789; ...
 %                    2010 12 12 3 4 5.123]);
-%   spdfcdfwrite('example', {'Epoch', dates}, ...
-%            'ConvertDatenumToTT2000', true, ...
-%            'RecordBound', {'Epoch'});
+%   spdfcdfwrite('example', {'Epoch', dates'}, ...
+%                'ConvertDatenumToTT2000', true, ...
+%                'RecordBound', {'Epoch'});
 %
 %   % Write out a file 'example.cdf', with 6 records for the variable 
 %   % 'Epoch', which will be of CDF_TIME_TT2000 data type. The data
 %   $ crosses over a leap second. Convert the epoch in UTC string
 %   $ to their TT2000 values before write out to the CDF file.
 %
-%   time = {'2008-12-31T23:59:58.123456789';
-%           '2008-12-31T23:59:59.123456789';
-%           '2008-12-31T23:59:60.123456789';
-%           '2009-01-01T00:00:00.123456789';
-%           '2009-01-01T00:00:01.123456789';
+%   time = {'2008-12-31T23:59:58.123456789'; ...
+%           '2008-12-31T23:59:59.123456789'; ...
+%           '2008-12-31T23:59:60.123456789'; ...
+%           '2009-01-01T00:00:00.123456789'; ...
+%           '2009-01-01T00:00:01.123456789'; ...
 %           '2009-01-01T00:00:02.123456789'};
 %   values = spdfparsett2000(time);          
 %   spdfcdfwrite('example', {'Epoch', values}, ...
-%            'TT2000', true, ...
-%            'RecordBound', {'Epoch'});
+%                'EpochType', {'Epoch'}, ...
+%                'RecordBound', {'Epoch'});
 %
 %   See also SPDFCDFREAD, SPDFCDFUPDATE, SPDFCDFINFO, CDFEPOCH, CDFTT2000,
 %            SPDFENCODEEPOCH, SPDFCOMPUTEEPOCH, SPDFPARSEEPOCH,
@@ -422,9 +419,8 @@ if ~isempty(args.VarVals)
             end
         else
             % If it isn't a cell array, then it is an array and
-            % all elements are of the same type.  This is a single
-            % record value and must be placed in a cell array.
-            args.VarVals{i} = {args.VarVals{i}};
+            % all elements are of the same type. 
+            args.VarVals{i} = (args.VarVals{i});
         end
     end
 end
@@ -722,13 +718,13 @@ if (nargin > 0)
         exception.id = 'MATLAB:spdfcdfwrite:sanityCheckMismatch';
         return    
     end
-    validate_inputs(args);
+%    validate_inputs(args);
 
 end  % if (nargin > 1)
 
 function validate_inputs(args)
 %VALIDATE_INPUTS   Ensure that the mutually exclusive options weren't provided.
-
+%
 if ((args.TT2000) && (args.EpochIsCDFEpoch))
     error('MATLAB:spdfcdfwrite:TT2000', '%s\n%s', ...
           'You cannot currently specify these two options.', ...

@@ -10,19 +10,20 @@ function [out, info] = spdfcdfread(filename, varargin)
 %
 %   DATA = SPDFCDFREAD(FILE, 'CombineRecords', TF, ...) combines all of the
 %   records from each variable into a cell array with one row (1-by-N), where
-%   N is the number of variables, if TF is true (the default). For epoch data 
-%   of CDF_EPOCH, CDF_EPOCH16 and CDF_TIME_TT2000 types, their values are
-%   automatically converted into MATLAB's datenum. (To overwrite the conversion,
-%   use 'KeepEpochAsIs' option.) Each cell may contain a different number of
-%   data elements. For example, a single value(s) is returned for a variable of
-%   non-record variant, while multi-dimensional array of data is returned for
-%   record-variant of scalar or dimensional variables.
+%   N is the number of variables, if TF is true (the default). Each cell in
+%   the cell array is either a scalar value or an array. Each cell may contain
+%   a different number of data elements. For example, a single value(s) is
+%   returned for a variable of non-record variant, while a multi-dimensional
+%   array of data is returned for record-variant of scalar or dimensional
+%   variables. For epoch data of CDF_EPOCH, CDF_EPOCH16 and CDF_TIME_TT2000
+%   types, their values are automatically converted into MATLAB's datenum.
+%   (To overwrite the conversion, use 'KeepEpochAsIs' option.)
 %
 %   If the option 'Combinerecords' is specified as false, DATA will be a cell
 %   array of M-by-N, where M is the maximum number of record among the variables
 %   and N is the number of variables. Each row corresponds to a record while
 %   each column to a variable. This is the default output from MATLAB's
-%   distributed CDFREAD module. The data from scalar variables is
+%   distributed CDFREAD module. The data from scalar variables are
 %   imported into a column array.  Importing dimensional and string data
 %   extends the dimensionality of the variable.  For example,
 %   reading 1000 records of a 1-byte variable with dimensions of 20-by-30
