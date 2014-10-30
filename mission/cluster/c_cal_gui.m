@@ -132,7 +132,7 @@ case 'init'
 	
 	% Load data
 	
-	c_Edata = {'diE?p1234','diEs?p12','diEs?p32','diEs?p34'};
+	c_Edata = {'diE?p1234','diEs?p12','diEs?p32','diEs?p34', 'diELXs?p42'};
 	c_Ddata = {'diEDI?'};
 	c_Vdata = {'diVCp?','diVCh?'};
 	c_AUXdata = {'P?','NCp?','NCh?'};
@@ -217,7 +217,9 @@ case 'init'
 					data.inst = dsc.inst;
 					data.sig = dsc.sig;
 					data.label = [dsc.inst ' ' dsc.sig];
-					if dsc.sen, data.label = [data.label ' (' dsc.sen ')']; end
+          senStr = dsc.sen;
+          if length(vs)>5 && strcmpi(vs(4:5),'LX'), senStr = [senStr ' LX']; end
+					if dsc.sen, data.label = [data.label ' (' senStr ')']; end
 					data.sen = dsc.sen;
 					[data.plot_style,data.plot_color] =...
 						p_style(data.cl_id, data.inst,data.sen);
