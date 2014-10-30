@@ -55,7 +55,7 @@ echo ""
 echo "Downloading DATA ..."
 echo ""
 
-(cd $TMPFILE && wget "http://caa.estec.esa.int/caa_query/?uname=Khotyaintsev&pwd=varona&dataset_id=$1&time_range=$2/$3&format=cdf")
+(cd $TMPFILE && wget "http://caa.estec.esa.int/caa_query/?uname=Khotyaintsev&pwd=xxx&dataset_id=$1&time_range=$2/$3&format=cdf")
 
 echo ""
 if [ $? -ne 0 ]; then
