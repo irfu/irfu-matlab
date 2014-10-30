@@ -546,7 +546,7 @@ else
        
         args.Slices = fill_slice_vals([], info.Variables(p,:));
         if (info.Variables{p, 5}(1) == 'F')
-
+% Non-record variant
             % Special case for variables which don't vary by record.
             [xdata, dummy] = cdfreadc(filename, args.Variables{p}, 0, ...
                                       args.Slices, ...
@@ -568,12 +568,12 @@ else
                 data(:,p) = repmat(epoch16todatenum(xdata{1,1}), ...
                                    length(args.Records), 1);
               else
-                data{p} = xdata;
+                data(:,p) = repmat(xdata, length(args.Records), 1);
               end
             end
 
         else
-
+% Record variant
             [xdata, dummy] = cdfreadc(filename, args.Variables{p}, ...
                                       args.Records, args.Slices, ...
                                       args.CombineRecords, ...

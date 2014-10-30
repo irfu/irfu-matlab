@@ -15,7 +15,6 @@ function out=caa_meta(varargin)
 %	CAA_META('create') create new index file downloading all the meta data 
 %	from CAA. This may take time! If you want to generate new index file
 %	for the irfu-matlab server, please see the comments inside the file. 
-%	CAA_META('create','caa') use CAA server instead of  CSA.
 %
 %
 %	Examples:
@@ -32,7 +31,6 @@ persistent s datasetNames indexFile
 indexFileDefault = 'indexCaaMeta_v3'; % default file name, v2 added in 20130618
 linkUrlFile = ['http://www.space.irfu.se/cluster/matlab/' ...
 	indexFileDefault '.mat'];
-useCaaServer = false;
 %% empty arguments > show help
 if nargin==0,
 	help caa_meta;
@@ -41,51 +39,29 @@ end
 
 %% Create index file
 if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
-	if nargin == 2 && ischar(varargin{2}) && strcmpi(varargin{2},'caa')
-		useCaaServer = true;
-	end
 	irf.log('warning','Getting all metadata from CAA, be very patient...');
-	if useCaaServer,
-		urlMetaData = 'http://caa.estec.esa.int/caa_query/?uname=vaivads&pwd=caa&dataset_id=*&metadata=1';
-	else
-		urlMetaData = 'http://csaint.esac.esa.int/csa/aio/product-action?USERNAME=avaivads&PASSWORD=!kjUY88lm&RETRIEVALTYPE=HEADER&DATASET_ID=*&NON_BROWSER';
-	end
+	urlMetaData = 'http://csaint.esac.esa.int/csa/aio/product-action?USERNAME=avaivads&PASSWORD=!kjUY88lm&RETRIEVALTYPE=HEADER&DATASET_ID=*&NON_BROWSER';
 
 	% Create temporary directory, download and unpack files
 	tempDir = tempname;
 	mkdir(tempDir);
 	cd(tempDir);
 	tempFileName  = tempname(tempDir);
-	if useCaaServer
-		tempFileZip   = [tempFileName '.zip'];
-		[tempFileZip,isOk] = urlwrite(urlMetaData,tempFileZip);
-		if isOk
-			unzip(tempFileZip);
-		else
-			irf.log('critical','Did not succeed downloading file');
-			return;
-		end
+	tempFileTarGz = [tempFileName '.tar.gz'];
+	tempFileTar   = [tempFileName '.tar'];
+	[tempFileTarGz,isOk] = urlwrite(urlMetaData,tempFileTarGz);
+	if isOk,
+		gunzip(tempFileTarGz);
+		untar(tempFileTar,'./');
 	else
-		tempFileTarGz = [tempFileName '.tar.gz'];
-		tempFileTar   = [tempFileName '.tar'];
-		[tempFileTarGz,isOk] = urlwrite(urlMetaData,tempFileTarGz);
-		if isOk,
-			gunzip(tempFileTarGz);
-			untar(tempFileTar,'./');
-		else
-			irf.log('critical','Did not succeed downloading file');
-			return;
-		end
+		irf.log('critical','Did not succeed downloading file');
+		return;
 	end
 
 	% Create structures with all the metadata
 	irf.log('warning','Creating structures');
 	d = dir;
-	if useCaaServer
-		ii=arrayfun(@(x) any(strfind(x.name,'CAA')),d);
-	else
-		ii=arrayfun(@(x) any(strfind(x.name,'CSA')),d);
-	end
+	ii=arrayfun(@(x) any(strfind(x.name,'CSA')),d);
 	xmlDir = d(ii).name;
 	d = dir([xmlDir '/*.XML']);
 	isub = [d(:).isdir]; 
@@ -258,4 +234,3 @@ else
 	outStr=inStr;
 end
 end
-

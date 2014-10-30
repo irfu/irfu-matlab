@@ -20,7 +20,8 @@ function tests = mms_OnlyWriteCDF_Test
         error('Require at least R2013b to run this test. Please upgrade.');
     end
     global ENVIR MMS_CONST;
-    [ENVIR, MMS_CONST] = mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
+    if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+    ENVIR = mms_sdc_sdp_init('2'); % dummy scNumber used for this test..
     tests = functiontests(localfunctions);
 end
 

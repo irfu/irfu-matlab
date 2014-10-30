@@ -363,6 +363,7 @@ while 1
 				isempty(TTRequest.UserData(iRequest).Status) || ...
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
+			tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^5 from the end time
 			irf.log('warning',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
 			try

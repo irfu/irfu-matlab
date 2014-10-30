@@ -39,7 +39,7 @@ if(strcmp(sci_or_ancillary,'sci'))
     
     filenameData.scId = filename(1:pos(1)-1);
     filenameData.instrumentId = filename(pos(1)+1:pos(2)-1);
-    filenameData.dataMode = filename(pos(2)+1:pos(3)-1);
+    filenameData.tmMode = filename(pos(2)+1:pos(3)-1);
     filenameData.dataLevel = filename(pos(3)+1:pos(4)-1);
     % filenameData.optional, ignored.
     filenameData.startTime = filename(pos(end-1)+1:pos(end)-1);

@@ -45,6 +45,7 @@ while read fname; do
 		*) ;;
 	esac
 	STATUS=Failed
+	STATUS_CODE=0
 	NAME=`echo "$fname" | cut -d'.' -f1`
 	echo -n "$NAME  "
 	LOG=$LOGDIR/$NAME.log
@@ -54,7 +55,13 @@ while read fname; do
 	rm -f $LOG
 	$CEFMERGE -I $INCLUDES -O $TMPDIR $fname >> $LOG 2>&1 || (cp $fname $FAILED && continue) 
 	newfile=`find $TMPDIR -name \*.cef` 
-	$QTRAN $newfile >> $LOG 2>&1 || (cp $fname $FAILED && continue)
+	echo -n "$QTRAN $newfile ... " >> $LOG
+	QTRAN_OUT=`$QTRAN $newfile 2>&1`
+	STATUS_CODE=`echo $QTRAN_OUT | grep Done`
+	if [ -z "$STATUS_CODE" ]; then
+		echo Failed >> $LOG && echo $QTRAN_OUT >> $LOG && cp $fname $FAILED && continue
+	else echo $STATUS_CODE >> $LOG
+	fi
 	
 	# Get destination directory for the data
 	DATASET_NAME=`echo $NAME|awk -F'__' '{print $1}'`

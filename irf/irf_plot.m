@@ -50,9 +50,6 @@ function c=irf_plot(varargin)
 %
 % See also DATAOBJ/PLOT, C_PL_TX, C_DESC
 
-%
-% $Id$
-
 % flag_subplot 0 - one plot
 %              1 - separate subplots for every component
 %              2 - separate subplots for all variables in the cell array
@@ -254,9 +251,9 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     else
         ax = plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
     end
-    if isstruct(x), tt=x.t(1);
-    elseif iscell(x), tt=x{1}(1,1);
-    else tt=x(1,1);
+    if isstruct(x), firstTimeStamp=x.t(1);
+    elseif iscell(x), firstTimeStamp=x{1}(1,1);
+    else firstTimeStamp=x(1,1);
     end
     c=ax; % axis to which apply irf_timeaxis
     flag_subplot=-1; % dont make more plots
@@ -284,8 +281,8 @@ if flag_subplot==0,  % One subplot
             ylabel(hcbar, lab);
         end
         
-        tt = x.t(~isnan(x.t),1);
-        tt = tt(1);
+        firstTimeStamp = x.t(~isnan(x.t),1);
+        firstTimeStamp = firstTimeStamp(1);
     elseif ~isempty(x) % x is nonempty matrix
         ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
         ii = 2:length(x(1,:));
@@ -315,8 +312,8 @@ if flag_subplot==0,  % One subplot
         c=h;
 %        c = get(h(1),'Parent');
         
-        tt = x(~isnan(x(:,1)),1);
-        tt = tt(1);
+        firstTimeStamp = x(~isnan(x(:,1)),1);
+        firstTimeStamp = firstTimeStamp(1);
     else % empty matrix or does not know what to do
         return
     end
@@ -364,8 +361,8 @@ elseif flag_subplot==1, % Separate subplot for each component
         end
     end
     
-    tt = x(~isnan(x(:,1)),1);
-    tt = tt(1);
+    firstTimeStamp = x(~isnan(x(:,1)),1);
+    firstTimeStamp = firstTimeStamp(1);
     
 elseif flag_subplot==2, % Separate subplot for each variable
     if isempty(x), return, end
@@ -390,12 +387,12 @@ elseif flag_subplot==2, % Separate subplot for each variable
             return;
         end
         t_tmp = t_tmp -double(ts) -double(dt(ipl));
-        tt = t_tmp(~isnan(t_tmp));
-        if isempty(t_st), t_st = tt(1);
-        else if tt(1)<t_st, t_st = tt(1); end
+        firstTimeStamp = t_tmp(~isnan(t_tmp));
+        if isempty(t_st), t_st = firstTimeStamp(1);
+        else if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
         end
-        if isempty(t_end), t_end = tt(end);
-        else if tt(end)>t_end, t_end = tt(end); end
+        if isempty(t_end), t_end = firstTimeStamp(end);
+        else if firstTimeStamp(end)>t_end, t_end = firstTimeStamp(end); end
         end
         clear tt
         
@@ -411,7 +408,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
                 ylabel(hcbar, lab);
                 disp(lab)
             end
-            tt = y.t(~isnan(y.t),1);
+            firstTimeStamp = y.t(~isnan(y.t),1);
             % Save panel width to resize the rest of the panels accordingly
             if isempty(xlen)
                 xlen = get(c(ipl),'Position');
@@ -438,7 +435,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
                 end
                 ylabel(c(ipl),lab); clear lab
             end
-            tt = y(~isnan(y(:,1)),1);
+            firstTimeStamp = y(~isnan(y(:,1)),1);
         end
     end
     % Set common XLim
@@ -451,7 +448,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
     end
     clear t_st t_end
     
-    tt = tt(1);
+    firstTimeStamp = firstTimeStamp(1);
     
 elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
@@ -495,8 +492,8 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
         
     end
-    tt = y(~isnan(y(:,1)),1);
-    tt = tt(1);
+    firstTimeStamp = y(~isnan(y(:,1)),1);
+    firstTimeStamp = firstTimeStamp(1);
 end
 
 %% Add figure menu
@@ -508,7 +505,7 @@ irf_figmenu;
 %set(gcf,'userdata',user_data);
 
 %% In case time is in isdat_epoch add time axis
-if ((tt > 1e8) && (tt < 1e10))
+if ((firstTimeStamp > 1e8) && (firstTimeStamp < 1e10))
     if flag_subplot == 0, irf_timeaxis(ax);
 	elseif strcmp(get(c(1),'type'),'axes')
 		irf_timeaxis(c);
