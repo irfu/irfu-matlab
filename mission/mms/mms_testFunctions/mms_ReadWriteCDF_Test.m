@@ -12,11 +12,9 @@
 
 
 function tests = mms_ReadWriteCDF_Test
-    ve=version;
-    if( str2double(ve(1))<8 )
-        error('Require at least R2013b to run this test. Please upgrade.');
-    elseif( (str2double(ve(3))<2) && (str2double(ve(1))==8) )
-        error('Require at least R2013b to run this test. Please upgrade.');
+    % Verify Matlab R2013b or later.
+    if( verLessThan('matlab', '8.3') )
+        error('Require R2013b or later to run this test. Please upgrade.');
     end
     tests = functiontests(localfunctions);
 end
@@ -26,39 +24,39 @@ function testReadCDF(testCase)
     % source file for processing.
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     dataObj = dataobj( [DATA_PATH_ROOT, ...
-        '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'],...
+        '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf'],...
         'KeepTT2000');
     actSolution = dataObj.data.mms2_sdp_dce_sensor.nrec;
-    expSolution = 445919;
+    expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
 end
 
-function testUscProcessAndReadCDF(testCase)
+function testSCpotProcessAndReadCDF(testCase)
     % Test to write one Usc CDF file to $DROPBOX_ROOT. The output file is 
     % removed afterwards to ensure it does not interfer with future
     % writing.
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
-    mms_sdc_sdp_proc('usc', ...
-       [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
-       [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf'], ...
-       [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf']);
+    mms_sdc_sdp_proc('scpot', ...
+       [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dcv_20160101_v2.0.1.cdf'], ...
+       [DATA_PATH_ROOT, '/hk/mms2/fields/2016/01/mms2_fields_hk_l1b_101_20160101_v0.1.0.cdf'], ...
+       [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf']);
 
 % Or to force an error, simply do not provide all required inputs.
 %  mms_sdc_sdp_proc('usc', ...
-%        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf'],...
-%        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'],'');
-%    
+%        [DATA_PATH_ROOT, '/hk/mms2/fields/2015/04/mms2_fields_hk_l1b_101_20150410_v0.1.0.cdf'],...
+%        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v1.0.1.cdf'],'');
+%
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
-    actSolution = dataObjIn.data.mms2_sdp_escp_dcv.nrec;
-    expSolution = 445919;
+        '/mms2_sdp_fast_l2_scpot_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_sdp_scpot.nrec;
+    expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_sdp_fast_l2_scpot_20160101000000_v1.0.0.cdf
 end
 
 
@@ -69,19 +67,19 @@ function testSITLprocessAndReadCDF(testCase)
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
     mms_sdc_sdp_proc('sitl', ...
-        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'], ...
-        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
-        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dcv_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/hk/mms2/fields/2016/01/mms2_fields_hk_l1b_101_20160101_v0.1.0.cdf']);
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_sitl_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
+        '/mms2_sdp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
     actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
-    expSolution = 445919;
+    expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT//mms2_sdp_fast_sitl_dce2d_20150410000000_v0.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_sdp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf
 end
 
 
@@ -92,17 +90,39 @@ function testQuickLookProcessAndReadCDF(testCase)
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     DROPBOX_ROOT = getenv('DROPBOX_ROOT');
     mms_sdc_sdp_proc('ql', ...
-        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dce_20150410_v0.1.3.cdf'], ...
-        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2015/04/10/mms2_sdp_fast_l1b_dcv_20150410_v0.1.3.cdf'], ...
-        [DATA_PATH_ROOT, '/tmp_HK/mms2_fields_hk_l1b_101_20150410_v0.0.1.cdf']);
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dcv_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/hk/mms2/fields/2016/01/mms2_fields_hk_l1b_101_20160101_v0.1.0.cdf']);
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
+        '/mms2_sdp_fast_ql_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
     actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
-    expSolution = 445919;
+    expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_sdp_fast_ql_dce2d_20160101000000_v1.0.0.cdf
+end
+
+function testL2PRErocessAndReadCDF(testCase)
+    % Test to write one QuickLook CDFend file to $DROPBOX_ROOT. The output
+    % file is removed afterwards to ensure it does not interfer with future
+    % writing.
+    DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
+    DROPBOX_ROOT = getenv('DROPBOX_ROOT');
+    mms_sdc_sdp_proc('l2pre', ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dcv_20160101_v2.0.1.cdf'], ...
+        [DATA_PATH_ROOT, '/hk/mms2/fields/2016/01/mms2_fields_hk_l1b_101_20160101_v0.1.0.cdf']);
+    % If no error was return for full processing try reading the output
+    % file created and verify number of record is correct.
+    dataObjIn = dataobj([DROPBOX_ROOT, ...
+        '/mms2_sdp_fast_l2_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
+    expSolution = 1605920;
+    verifyEqual(testCase,actSolution,expSolution);
+    % Delete the output file created, or next run will automatically have
+    % errors when trying to write to the same file.
+    !rm $DROPBOX_ROOT/mms2_sdp_fast_l2_dce2d_20160101000000_v1.0.0.cdf
 end

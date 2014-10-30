@@ -1,17 +1,18 @@
-function [res] = c_efw_wash_scp(data,method)
+function [res] = c_efw_wash_scp(data,method,fillGap)
 %C_EFW_WASH_SCP  Make SC Potential look prettier
 %
-% RES = C_EFW_WASH_SCP(DATA,[METHOD]) 
+% RES = C_EFW_WASH_SCP(DATA,[METHOD,GAPFILL]) 
 %   returns RES that is washed satellite potential DATA  
 %
-% METHOD of filling the gaps can be 
+% Washing requires filling the data gaps defined by METHOD:
 %           'PREVSPIN' - copy data from previous spin [default]
 %           'LINEAR'   - linear interpolation through the gap
-% 
-% C_EFW_WASH_SCP(DATA,[METHOD]) 
-%   when nargout==0 plot the data
 %
-% $Id$
+% RES contains washed data with original gaps preserved unless GAPFILL=1
+% specified.
+% 
+% C_EFW_WASH_SCP(DATA,[METHOD,GAPFILL]) 
+%   when nargout==0 plot the data
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -21,7 +22,10 @@ function [res] = c_efw_wash_scp(data,method)
 % ----------------------------------------------------------------------------
 
 if nargin < 2, method = 'prevspin'; end
-	
+if nargin < 3, fillGapFlag = false;
+else
+  fillGapFlag = any(fillGap);
+end
 
 res = data;
 jj = [];
@@ -74,9 +78,9 @@ res = clean_spec(res,4,0.75,nargout);
 res = clean_spec(res,4,0.2,nargout);
 res = clean_spec(res,4,0.2,nargout);
 
-%resnan = res;
-%resnan(isnan(data(:,2)),2) = NaN;
-res(isnan(data(:,2)),2) = NaN;
+if ~fillGapFlag
+  res(isnan(data(:,2)),2) = NaN;
+end
 
 function res = clean_spec(res,k1,k2,nn)
 % nn if nn=0, do not plot, if nn=1 plot (nn is nargout of calling c_efw_wash_scp)

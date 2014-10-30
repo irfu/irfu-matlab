@@ -22,10 +22,13 @@
 
 % For running examples we disable showing additional log information
 
-irf_log off
+irf.log('off')
 
-% Enable it afterwards by 
-% > irf_log on
+% Enable it afterwards by choosing log level, e.g. 
+% > irf.log('critical')
+
+% Other levels are 'warning','notice','debug'
+
 
 %% Some basic routines and basic usage
 % To see general help execute:

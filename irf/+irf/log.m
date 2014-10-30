@@ -49,6 +49,8 @@ if nargin == 0,
 elseif nargin == 1, 
 	if ischar(logLevel),
 		switch lower(logLevel(1))
+			case 'o'
+				loggingLevel = 0;
 			case 'c'
 				loggingLevel = 1;
 			case 'w'

@@ -3,13 +3,10 @@ function [secs]=toepoch(x)
 [m,n]=size(x);
 if n~=2 && n~=3 && n~=6,
   if m==2 || m==3 || n==6,
-     x=x'; [m,n]=size(x);
+     x=x'; n=size(x,2);
   else
-%    fprintf('Illegal argument:\n')
-%    disp(x)
-%    error('')
+    irf.log('warning','Illegal argument:\n')
    secs=NaN;
-   years=NaN;
    return
   end
 end

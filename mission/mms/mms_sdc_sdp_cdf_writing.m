@@ -1,10 +1,10 @@
-function [ filename_output ] = mms_sdc_sdp_cdf_writing( HeaderInfo )
+function [ outFileName ] = mms_sdc_sdp_cdf_writing( HeaderInfo )
 % MMS_SDC_SDP_CDF_WRITING writes the data to the corresponding CDF file.
 %
 %	filename_output = MMS_SDC_SDP_CDF_WRITING( HeaderInfo)
 %   will write an MMS CDF file containing the data stored to a temporary 
-%   output folder defined by ENVIR.DROPBOX_ROOT. The struct HeaderInfo will
-%   help determine which output file is to be created.
+%   output folder defined by ENVIR.DROPBOX_ROOT. HeaderInfo contains start 
+%   time as well as information about source files ("Parents").
 %
 %   Example:
 %   filename_output = mms_sdc_sdp_cdf_writing( HeaderInfo);
@@ -19,208 +19,60 @@ function [ filename_output ] = mms_sdc_sdp_cdf_writing( HeaderInfo )
 narginchk(1,1);
 
 global ENVIR;
-global MMS_CONST;
+global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+global DATAC; % Simply recall all data from memory.
 
-% Simply recall all data from memory.
-global DataInMemory; % TO BE CHANGED LATER ON! ! ! !
+instrumentId = 'sdp';
+scId = DATAC.scId;
+procId = DATAC.procId; procName =  MMS_CONST.SDCProcs{procId};
 
-% HeaderInfo contains information about what is to be written, as if it is
-% SDP_L1B to SITL_DCE or SDP_L1B to Quicklook or DCV_L1B to Usc. It also
-% contains information about source files used ("Parents") and what data
-% type (fast / slow / burst) etc.
+% NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS
+% CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING
+% DIRECTORY WHEN EXECUTING.
+oldDir = pwd; cd(ENVIR.DROPBOX_ROOT);
+outFileName = get_file_name();
+irf.log('notice',['Writing to DROPBOX_ROOT/',outFileName,'.cdf']);
 
-oldDir = pwd;
-
-switch(HeaderInfo.calledBy)
-    case('sitl')
-        % List existing files.
-        % SITL is has it bottom most level as monthly directories.
-        preExistingFiles = dir([ENVIR.DATA_PATH_ROOT, filesep,'science',...
-            filesep, HeaderInfo.scId, filesep, HeaderInfo.instrumentId, ...
-            filesep, HeaderInfo.dataMode, filesep, 'sitl', filesep, ...
-            HeaderInfo.startTime(1:4), filesep, ...
-            HeaderInfo.startTime(5:6), filesep, HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-            '_sitl_dce2d_', HeaderInfo.startTime, '_v*.cdf']);
-
-        if(size(preExistingFiles,1)>0)
-            % Next version number is number of preExistingFiles + 1 (one).
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(size(preExistingFiles,1), '%u') ];
-        else
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(MMS_CONST.Version.Z) ];
-        end
-
-        % Create the new output filename. (excl extension).
-        filename_output = [ HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-            '_sitl_dce2d_', HeaderInfo.startTime, '_', versionNum ];
-        
-        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
-        % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
-        % DIRECTORY WHEN EXECUTING.
-        
-        cd(ENVIR.DROPBOX_ROOT);
-
-        %% FIXME: DUMMY DATA FOR NOW.
-        % For now store data temporarly
-        epochTT = DataInMemory.dce.time;
-        data1(:,1) = DataInMemory.dce.e12.data;
-        data1(:,2) = DataInMemory.dce.e34.data;
-        data1(:,3) = DataInMemory.dce.e56.data;
-        bitmask = DataInMemory.dce.e12.bitmask;
-        
-        %%%
-        irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:sitl Ready to',...
-            ' write data to temporary file in DROPBOX_ROOT/', ...
-            filename_output,'.cdf']);
-        mms_sdc_sdp_cdfwrite( filename_output, ...
-            int8(str2double(HeaderInfo.scId(end))), 'sitl', epochTT, ...
-            data1, data1, uint16(bitmask) );
-        
-        
-    case('ql')
-        % List existing files.
-        % Quicklook may have its bottommost level as monthly or daily 
-        % directories depending on which dataproduct it is. For SRVY and/or
-        % SITL bottommost are monthly, for brst (and fast and slow?) they 
-        % are daily. Note SITL is run with sitl_dce as HeaderInfo.calledby
-        % and should not end up here.
-        if( strcmp(HeaderInfo.dataMode,'srvy') )
-           preExistingFiles = dir( [ENVIR.DATA_PATH_ROOT, filesep, ...
-               'science', filesep, HeaderInfo.scId, filesep, ...
-               HeaderInfo.instrumentId, filesep, HeaderInfo.dataMode, ...
-               filesep, HeaderInfo.calledBy, filesep, ...
-               HeaderInfo.startTime(1:4), filesep, ...
-               HeaderInfo.startTime(5:6), filesep, HeaderInfo.scId, ...
-               '_', HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-               '_ql_dce2d_', HeaderInfo.startTime, '_v*.cdf'] );
-        else
-           preExistingFiles = dir( [ENVIR.DATA_PATH_ROOT, filesep, ...
-               'science', filesep, HeaderInfo.scId, filesep, ...
-               HeaderInfo.instrumentId, filesep, HeaderInfo.dataMode, ...
-               filesep, HeaderInfo.calledBy, filesep, ...
-               HeaderInfo.startTime(1:4), filesep, ...
-               HeaderInfo.startTime(5:6), filesep, ...
-               HeaderInfo.startTime(7:8), filesep, HeaderInfo.scId, ...
-               '_', HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-               '_ql_dce2d_', HeaderInfo.startTime, '_v*.cdf'] );
-        end
-
-        if(size(preExistingFiles,1)>0)
-            % Next version number is number of preExistingFiles + 1 (one).
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(size(preExistingFiles,1), '%u') ];
-        else
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(MMS_CONST.Version.Z) ];
-        end
-
-        % Create the new output filename. (excl extension).
-        filename_output = [ HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-            '_ql_dce2d_', HeaderInfo.startTime, '_', versionNum ];
-        
-        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
-        % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
-        % DIRECTORY WHEN EXECUTING.
-
-        cd(ENVIR.DROPBOX_ROOT);
-
-        %% FIXME: DUMMY DATA FOR NOW.
-        % For now store data temporarly
-        epochTT = DataInMemory.dce.time;
-        data1(:,1) = DataInMemory.dce.e12.data;
-        data1(:,2) = DataInMemory.dce.e34.data;
-        data1(:,3) = DataInMemory.dce.e56.data;
-        bitmask = DataInMemory.dce.e12.bitmask;
-        %%%
-        irf.log('debug',['MATLAB:mms_sdc_sdp_cdf_writing:ql Ready to',...
-            ' write data to temporary file in DROPBOX_ROOT/', ...
-            filename_output,'.cdf']);
-        
-        mms_sdc_sdp_cdfwrite( filename_output, ...
-            int8(str2double(HeaderInfo.scId(end))), 'ql', epochTT, ...
-            data1, data1, uint16(bitmask), ...
-            uint16(mms_sdc_sdp_bitmask2quality('e',bitmask)) );
-        
-        
-    case('usc')
-        %disp('usc');
-        % List existing files.
-        % Survey have the bottommost level as month while Burst (fast, 
-        % slow?) have their as day directories.
-        if(strcmp(HeaderInfo.dataMode,'srvy'))
-            preExistingFiles = dir( [ENVIR.DATA_PATH_ROOT, filesep, ...
-                'science', filesep, HeaderInfo.scId, filesep, ...
-                HeaderInfo.instrumentId, filesep, HeaderInfo.dataMode, ...
-                filesep, 'l2', filesep, HeaderInfo.startTime(1:4), ...
-                filesep, HeaderInfo.startTime(5:6), filesep, ...
-                HeaderInfo.scId, '_', HeaderInfo.instrumentId, '_', ...
-                HeaderInfo.dataMode, '_l2_uscdcv_', ...
-                HeaderInfo.startTime, '_v*.cdf'] );
-        else
-            preExistingFiles = dir( [ENVIR.DATA_PATH_ROOT, filesep, ...
-                'science', filesep, HeaderInfo.scId, filesep, ...
-                HeaderInfo.instrumentId, filesep, HeaderInfo.dataMode, ...
-                filesep, 'l2', filesep, HeaderInfo.startTime(1:4), ...
-                filesep, HeaderInfo.startTime(5:6), filesep, ...
-                HeaderInfo.startTime(7:8), filesep, HeaderInfo.scId, ...
-                '_', HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-                '_l2_uscdcv_', HeaderInfo.startTime, '_v*.cdf'] );
-        end
-
-        if(size(preExistingFiles,1)>0)
-            % Next version number is number of preExistingFiles + 1 (one).
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(size(preExistingFiles,1), '%u') ];
-        else
-            versionNum = [ 'v', num2str(MMS_CONST.Version.X), '.', ...
-                num2str(MMS_CONST.Version.Y), '.', ...
-                num2str(MMS_CONST.Version.Z) ];
-        end
-
-        % Create the new output filename. (excl extension).
-        filename_output = [HeaderInfo.scId, '_', ...
-            HeaderInfo.instrumentId, '_', HeaderInfo.dataMode, ...
-            '_l2_uscdcv_', HeaderInfo.startTime, '_', versionNum];
-        
-        % NOTE MOVE TO DROPBOX FOLDER BEFORE TRYING TO WRITE ANYTHING AS 
-        % CDF MAY TRY TO WRITE TEMPORARY FILES IN THE CURRENT WORKING 
-        % DIRECTORY WHEN EXECUTING.
-        
-        cd(ENVIR.DROPBOX_ROOT);
-
-        %% FIXME: DUMMY DATA FOR NOW.
-        % For now store data temporarly
-        epochTT = DataInMemory.dcv.time;
-        data1(:,1) = DataInMemory.dcv.v1.data;
-        data1(:,2) = DataInMemory.dcv.v3.data;
-        data1(:,3) = DataInMemory.dcv.v5.data;     
-        psp_p = [data1, data1];
-        bitmask = DataInMemory.dcv.v1.bitmask;
-        %%%%
-        
-        irf.log('debug', ['MATLAB:mms_sdc_sdp_cdf_writing:usc Ready to',...
-            ' write data to temporary file in DROPBOX_ROOT/', ...
-            filename_output,'.cdf']);
-        
-        mms_sdc_sdp_cdfwrite( filename_output, ...
-            int8(str2double(HeaderInfo.scId(end))), 'usc', epochTT, ...
-            data1(:,1), data1(:,2), data1(:,3), psp_p, uint16(bitmask) );    
+switch procId
+  case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+    %% FIXME: DUMMY DATA FOR NOW.
+    % For now store data temporarly
+    epochTT = DATAC.dce.time;
+    data1(:,1) = DATAC.dce.e12.data;
+    data1(:,2) = DATAC.dce.e34.data;
+    data1(:,3) = DATAC.dce.e56.data;
+    bitmask = DATAC.dce.e12.bitmask;
     
+    if procId==MMS_CONST.SDCProc.sitl
+      % No QUALITY for SITL
+      mms_sdc_sdp_cdfwrite( outFileName, int8(scId), procName, epochTT, ...
+        data1, data1, uint16(bitmask) );
+    else
+      mms_sdc_sdp_cdfwrite( outFileName, int8(scId), procName, epochTT, ...
+        data1, data1, uint16(bitmask), ...
+        uint16(mms_sdc_sdp_bitmask2quality('e',bitmask)) );
+    end
+  case MMS_CONST.SDCProc.usc
+    %% FIXME: DUMMY DATA FOR NOW.
+    % For now store data temporarly
+    epochTT = DATAC.dcv.time;
+    psp_p(:,1) = DATAC.dcv.v1.data;
+    psp_p(:,2) = DATAC.dcv.v2.data;
+    psp_p(:,3) = DATAC.dcv.v3.data;
+    psp_p(:,4) = DATAC.dcv.v4.data;
+    psp_p(:,5) = DATAC.dcv.v5.data;
+    psp_p(:,6) = DATAC.dcv.v6.data;
+    bitmask = DATAC.dcv.v1.bitmask;
+    ESCP = DATAC.dcv.v1.data;
+    PSP = DATAC.dcv.v2.data;
+    Delta = DATAC.dcv.v3.data;
+    
+    mms_sdc_sdp_cdfwrite( outFileName, int8(scId), procName, epochTT, ...
+      ESCP, PSP, Delta, psp_p, uint16(bitmask) );  
   otherwise
-    errStr = 'unrecognized HeaderInfo.calledBy';
-    irf.log('critical', errStr);
-    error(errStr)
+    errStr = 'unrecognized procId';
+    irf.log('critical', errStr); error(errStr)
 end
-
 
 % Update some of the global parameters that are not static.
 
@@ -228,7 +80,7 @@ end
 GATTRIB.Generation_date = {0, 'CDF_CHAR', datestr(now,'yyyymmdd')};
 
 % Data version is the version number. Version number should be "X.Y.Z"
-GATTRIB.Data_version = {0, 'CDF_CHAR', versionNum};
+GATTRIB.Data_version = {0, 'CDF_CHAR', verStr};
 
 % FIXME: ADD Generated by as gitversion of software.
 irfVersion = irf('version');
@@ -255,9 +107,59 @@ end
 
 % Update all the new values to GlobalAttributes
 irf.log('debug','MATLAB:mms_sdc_sdp_cdf_writing:UpdatingGlobalAttributes');
-cdfupdate(filename_output,'GlobalAttributes',GATTRIB);
+cdfupdate(outFileName,'GlobalAttributes',GATTRIB);
 
 % Return to previous working directory.
 cd(oldDir);
 
+  function fileName = get_file_name
+    % Generate output file name incrementing the file version if necessary
+    
+    switch procId
+      case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+        subDir = procName; suf = 'dce2d';
+      case MMS_CONST.SDCProc.usc
+        subDir = 'l2'; suf = 'uscdcv';
+      otherwise
+        errStr = 'unrecognized procId';
+        irf.log('critical', errStr); error(errStr)
+    end
+    scIdStr = sprintf('mms%d',scId);
+    tmMode = DATAC.tmMode; tmModeStr = MMS_CONST.TmModes{tmMode};
+    startTime =  HeaderInfo.startTime;
+    verStr = sprintf('%d.%d.',MMS_CONST.Version.X,MMS_CONST.Version.Y);
+    fileName = [scIdStr '_' instrumentId, '_' tmModeStr '_' subDir '_' ...
+      suf '_' startTime '_v' ];
+    
+    % Check for preexisting files and increment file version
+    dataPathPref = [ENVIR.DATA_PATH_ROOT, filesep,'science',filesep, ...
+      scIdStr, filesep, instrumentId, filesep, tmModeStr, filesep, ...
+      subDir, filesep, startTime(1:4), filesep, startTime(5:6), filesep];
+%     if tmMode ~= MMS_CONST.TmMode.srvy
+    dataPathPref = [dataPathPref,startTime(7:8), filesep];
+%     end
+    
+    preExistingFiles = dir([dataPathPref fileName verStr '*.cdf']);
+    if numel(preExistingFiles)
+      maxRev = 0;
+      for iFile = 1:numel(preExistingFiles)
+        rev = get_rev(preExistingFiles(iFile).name);
+        if rev>maxRev, maxRev = rev; end
+      end
+      newVer = maxRev + 1;
+    else newVer = 0;
+    end
+    verStr = [verStr num2str(newVer)];
+    fileName = [fileName verStr];
+    
+    function r = get_rev(s)
+      % Find revision (Z) from version string in a file name xxx_vX.Y.Z.cdf
+      idxDot = find(s=='.');
+      if numel(idxDot)~=3
+        irf.log('warning',['Bad file name: ' s])
+        r = 0; return
+      end
+      r = str2double(s(idxDot(2)+1:idxDot(3)-1));
+    end % GET_REV
+  end % get_file_name
 end

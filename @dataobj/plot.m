@@ -327,7 +327,12 @@ end
 if flag_lineplot
   %% PLOTTING -- LINE PLOT
   if isfield(dep,'DEPEND_O')
-    h = irf_plot(ax,[dep.DEPEND_O plot_data{:}],line_color,plot_properties{:});
+    if strcmpi(dep.DEPEND_O.type,'tt2000')
+      epochUnix = toEpochUnix(EpochTT2000(dep.DEPEND_O.data));
+      timeLine = epochUnix.epoch;
+    else timeLine = dep.DEPEND_O.data;
+    end
+    h = irf_plot(ax,[timeLine plot_data{:}],line_color,plot_properties{:});
   else
     h = plot(ax,data.data,line_color,plot_properties{:});
   end
@@ -399,21 +404,28 @@ elseif flag_spectrogram
     else dep_x{d}.df=[];
     end
   end
-  % add time DELTA_PLUS and  DELTA_MINUS if given
+  
+  % Obtain time DELTA_PLUS and  DELTA_MINUS if given
+  % Also do necessary tome conversion if needed
+  if strcmpi(dep.DEPEND_O.type,'tt2000')
+    epochUnix = toEpochUnix(EpochTT2000(dep.DEPEND_O.data));
+    timeLine = epochUnix.epoch; factor = 1e9;
+  else timeLine = dep.DEPEND_O.data; factor = 1;
+  end
   timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});
   if isfield(timevar,'DELTA_PLUS') && isfield(timevar,'DELTA_MINUS')
     dep.dt=struct('plus',timevar.DELTA_PLUS,'minus',timevar.DELTA_MINUS);
     if ischar(timevar.DELTA_PLUS)
-      deltaplus= getv(dobj,timevar.DELTA_PLUS);
-      dep.dt.plus=deltaplus.data(1,:);
+      deltaplus = getv(dobj,timevar.DELTA_PLUS);
+      dep.dt.plus = double(deltaplus.data(1,:))/factor;
     elseif isnumeric(timevar.DELTA_PLUS)
-      dep.dt.plus=timevar.DELTA_PLUS;
+      dep.dt.plus = double(timevar.DELTA_PLUS)/factor;
     end
     if ischar(timevar.DELTA_MINUS)
-      deltaminus= getv(dobj,timevar.DELTA_MINUS);
-      dep.dt.minus=deltaminus.data(1,:);
+      deltaminus = getv(dobj,timevar.DELTA_MINUS);
+      dep.dt.minus = double(deltaminus.data(1,:))/factor;
     elseif isnumeric(timevar.DELTA_MINUS)
-      dep.dt.minus=timevar.DELTA_MINUS;
+      dep.dt.minus = double(timevar.DELTA_MINUS)/factor;
     end
   end
   if flag_fill_spectrogram_gaps==1 && isfield(dep,'dt'), % fill gaps, disregard delta_plus and delta_minus for each data point
@@ -424,7 +436,7 @@ elseif flag_spectrogram
       sum_dim, dep_x{sum_dim}.lab));
   end
   if flag_log, plot_type='log'; else plot_type='lin'; end 
-  specrec = struct('t',dep.DEPEND_O,'f',dep_x{1}.data,'f_unit',...
+  specrec = struct('t',timeLine,'f',dep_x{1}.data,'f_unit',...
       dep_x{1}.units,'p',[],'df',dep_x{1}.df,'plot_type',plot_type);
   if isfield(dep,'dt'),
     specrec.dt=dep.dt;

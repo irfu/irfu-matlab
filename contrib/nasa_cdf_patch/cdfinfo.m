@@ -93,7 +93,7 @@ function info = cdfinfo(filename)
 %   See also CDFEPOCH, CDFTT2000, CDFREAD, CDFWRITE and CDFUPDATE.
 
 %   Copyright 1984-2006 The MathWorks, Inc.
-%   $Revision: 1.5 $  $Date: 2013/08/22 15:46:51 $
+%   $Revision: 1.7 $  $Date: 2014/05/12 14:41:02 $
 %
 % HISTORY:
 %   August 17, 2007   David Han      Modified to handle CDF_EPOCH16. Look for
@@ -143,7 +143,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.5.0.1';
+info.PatchVersion = '3.5.0.2a';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info

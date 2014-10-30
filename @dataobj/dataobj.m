@@ -97,23 +97,23 @@ switch action
 				if any(isCdfEpochVariableArray)
 					iVar = find(isCdfEpochVariableArray);
 					for i=1:length(iVar)
-						if is_virtual(iVar(i))
-							virtFunc = get_key('FUNCT',iVar(i));
-							switch lower(virtFunc{:})
-								case 'comp_themis_epoch'
-									depVarName = get_key('COMPONENT_1',iVar(i));
-									idx = get_var_idx(depVarName{:});
-									data{iVar(i)} = data{idx}(:);
-									data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
-									info.Variables{iVar(i),3} = length(data{iVar(i)});
-								otherwise
-									errStr = sprintf('Function ''%s'' not implemented',virtFunc);
-									irf.log('error',errStr)
-									error('IRF:dataobj:dataobj:functionNotImplemented',errStr) %#ok<SPERR>
-							end
-						else
-							data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
-							data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch2epoch');
+            if is_virtual(iVar(i))
+              virtFunc = get_key('FUNCT',iVar(i));
+              switch lower(virtFunc{:})
+                case 'comp_themis_epoch'
+                  depVarName = get_key('COMPONENT_1',iVar(i));
+                  idx = get_var_idx(depVarName{:});
+                  data{iVar(i)} = data{idx}(:);
+                  data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
+                  info.Variables{iVar(i),3} = length(data{iVar(i)});
+                otherwise
+                  errStr = sprintf('Function ''%s'' not implemented',virtFunc);
+                  irf.log('error',errStr)
+                  error('IRF:dataobj:dataobj:functionNotImplemented',errStr) %#ok<SPERR>
+              end
+            else
+              data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
+              data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch2epoch');
               % bug fix for cdfread (time comes out as row vector)
               if size(data{iVar(i)},1)~=info.Variables{iVar(i),3}
                 data{iVar(i)} = data{iVar(i)}';
@@ -158,11 +158,9 @@ switch action
 								errStr = sprintf('Function ''%s'' not implemented',virtFunc);
 								irf.log('error',errStr)
 								error('IRF:dataobj:dataobj:functionNotImplemented',errStr) %#ok<SPERR>
-							else
-								tt2000 = data{iVar(i)};
-								s_tmp = encodett2000(tt2000(1));
-								epoch0 = iso2epoch(s_tmp{:});
-								data{iVar(i)} = double(tt2000 - tt2000(1))*1e-9 + epoch0;
+              else
+								unixEpochTmp = toEpochUnix(EpochTT2000(data{iVar(i)}));
+								data{iVar(i)} = unixEpochTmp.epoch;
 							end
 							timeVariable = info.Variables{iVar(i),1};
 							update_variable_attributes_time;
@@ -308,9 +306,14 @@ switch action
 						dobj.Variables{v,3}      = sum(recsTmp);
 					end
 					dobj.data.(varName).dim      = info.Variables{v,2};
-					dobj.data.(varName).type     = info.Variables{v,4};
 					dobj.data.(varName).variance = info.Variables{v,5};
 					dobj.data.(varName).sparsity = info.Variables{v,6};
+          typeTmp = info.Variables{v,4};
+          % Update time types to catch up with conversion to unix epoch
+          if strcmpi(typeTmp,'epoch16') || ...
+              (strcmpi(typeTmp,'tt2000') && ~keepTT2000), typeTmp = 'epoch';
+          end
+          dobj.data.(varName).type     = typeTmp;
 				end
 			end
 			dobj = class(dobj,'dataobj');
