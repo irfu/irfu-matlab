@@ -50,7 +50,10 @@ for iName=1:length(varAttNames),
   % Some buggy files may have identical key/value pairs, we ignore those
   if ~ischar(attr), continue, end  
   if ~strcmp(attr,varName)
-    res.(varAttNames{iName}) = get_variable(dobj,attr);
+    varTmp = get_variable(dobj,attr);
+    if ~isempty(varTmp)
+      res.(varAttNames{iName}) = get_variable(dobj,attr);
+    end
   end
 end % for
 
