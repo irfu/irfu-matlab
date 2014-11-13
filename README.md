@@ -29,7 +29,7 @@ If you do not use command line there are github programs for Windows and Mac, se
 Usage
 -----
 
-Each time starting new Matlab session exectue in Matlab:
+Each time starting new Matlab session execute in Matlab:
 
 > irf
 
