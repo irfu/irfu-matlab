@@ -23,7 +23,12 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   struct is the name of a global attribute.  The value of each
 %   field contains the value of the attribute.  To write out
 %   multiple values for an attribute, the field value should be a
-%   cell array.
+%   cell array. 
+%
+%   If there is a master CDF that has all the meta-data that the new CDF needs,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The
+%   'GlobalAttributes' field from the returned structure can be
+%   passed in for the GATTRIB.
 %
 %   In order to specify a global attribute name that is illegal in
 %   MATLAB, create a field called "CDFAttributeRename" in the 
@@ -40,6 +45,11 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   number of variables with attributes.  The first element in the
 %   cell array should be the name of the variable and the second
 %   element should be the value of the attribute for that variable.
+%
+%   If there is a master CDF that has all the meta-data that the new CDF needs,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The 
+%   'VariableAttributes' field from the returned structure can
+%   be passed in for the VATTRIB.
 %
 %   In order to specify a variable attribute name that is illegal in
 %   MATLAB, create a field called "CDFAttributeRename" in the 
@@ -74,14 +84,87 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   versions of MATLAB before R2006b will not be able to read files 
 %   which were written with CDF versions greater than 3.0.
 %
-%   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) controls how data values in 
-%   arrays (1-D or multi-dimensional) are written into "records" for the given
-%   variable names. RECBNDVARS is a cell array of variable names. The 2-D
-%   array of M-by-N will create M rows (records), while each row having N
-%   elements. For examples, 5-by-1 array will create 5 scalar records and
-%   1-by-5 array will write 1 record with 5 elements. For 3-D array of
-%   M-by-N-by-R, R records will be written, and each record being 2-D with
-%   M-by-N elements. See sample codes for its usage.
+%   SPDFCDFWRITE(..., 'RecordBound', RECBNDVARS) specifies data values in arrays
+%   (1-D or multi-dimensional) are to be written into "records" for the given
+%   variable. RECBNDVARS is a cell array of variable names. The M-by-N array
+%   data will create M rows (records), while each row having N elements. For
+%   examples, 5-by-1 array will create five (5) scalar records and 1-by-5 array
+%   will write out just one (1) record with 5 elements. For 3-D array of
+%   M-by-N-by-R, R records will be written, and each record with M-by-N
+%   elements. Without this option, array of M-by-N will be written into a single
+%   record of 2-dimensions. See sample codes for its usage.
+%
+%   SPDFCDFWRITE(..., 'Vardatatypes', VARDATATYPE) specifies the variable's
+%   data types. By default, this module uses each variable's passed data to
+%   determine its corresponding CDF data type. While it is fine for the most
+%   cases, this will not work for the CDF epoch types, i.e., CDF_EPOCH (a double),
+%   CDF_EPOCH16 (an array of 2 doubles) and CDF_TIME_TT2000 (an int64). This
+%   option can be used to address such issue. VARDATATYPE is a cell array of
+%   variable names and their respective data types (in string). This option will
+%   overwrite the 'EpochType' option.
+%   The following table shows the valid type strings, either in CDF defined
+%   forms, or alternatively in the forms presented at column 4 in the Variables
+%   field of the structure returned from a SPDFCDFINFO module call to an
+%   existing CDF or master CDF.  
+%       type             CDF Types
+%       -----            ---------
+%       int8             CDF_INT1 or CDF_BYTE
+%       int16            CDF_INT2
+%       int32            CDF_INT4
+%       int64            CDF_INT8
+%       uint8            CDF_UINT1
+%       uint16           CDF_UINT2
+%       uint32           CDF_UINT4
+%       single           CDF_FLOAT or CDF_REAL4
+%       double           CDF_DOUBLE or CDF_REAL8
+%       epoch            CDF_EPOCH
+%       epoch16          CDF_EPOCH16
+%       tt2000           CDF_TIME_TT2000
+%       char             CDF_CHAR or CDF_UCHAR
+%
+%   Note: Make sure variable's data match to the defined type.
+%
+%   SPDFCDFWRITE(..., 'VarCompress', COMPRESSVARS) specifies which variables
+%   will be compressed by what compression method (and level for GZIP).
+%   COMPRESSVARS is a cell array of variable names and their respective
+%   compression methods. For examples, to set the compression for 'var1' and
+%   'var2' with AHUFF and GZIP.6 respectively, COMPRESSVARS should be given
+%   as {'var1', 'ahuff', 'var2', 'gzip.6'}. GZIP.6 compression provides the
+%   best compression rate and performance.
+%
+%   If there is a master CDF that has all the same variable info as the new CDF,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The 
+%   'Variables' field from the returned structure contain the compression info
+%   (at element 7) for each variable,  Set up a cell to use such compression
+%   info.
+%
+%   SPDFCDFWRITE(..., 'VarSparse', SPARSEVARS) specifies which variables have
+%   sparse records. SPARSEVARS is a cell array of variable names and their
+%   respective values. The valid values should be 'full', 'Sparse(padded)' or
+%   'Sparse(previous)' (the 6th column from Variables field from spdfcdfinfo).
+%   Value 'full' is the default if a variable does not have the sparse records.
+%   For examples, to set the sparse record for 'var1' and 'var2' with 'full'
+%   and 'Sparse(previous)', SPARSEVARS should be specified as {'var1', 'full',
+%   'var2', 'Sparse(padded)'}. (Actually, there is no need for 'var1'.) 
+%   Variable's record data should be provided in cell form for the sparse record
+%   variables. Data for any virtual records should be presented as []s. See the
+%   sample code for its usage.  
+%
+%   SPDFCDFWRITE(..., 'BlockingFactor', BFVARS) specifies the blocking factor
+%   for the variables. The blocking factor is the number of variable records
+%   that will be pre-allocated when a new record is to be written. The default 
+%   value could be too small for variables that have large record size or
+%   number. A large blocking factor (up to a variable's maximum record number)
+%   can make access to the full variable data more efficient as less blocks
+%   are involved (thus less I/Os). It can also make the file less fragmented.
+%   BFVARS is a cell array of variable names and their respective values.
+%   The value should be a numeric.
+%
+%   If there is a master CDF that has all the same variable info as the new CDF,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The 
+%  'Variables' field from the returned structure contain the record sparseness
+%   info (at element 6) for each variable,  Set up a cell to use such sparseness
+%   info.
 %
 %   SPDFCDFWRITE(..., 'ConvertDatenumToEpoch', TF, ...) converts MATLAB datenum
 %   values to CDF epoch data if TF is true. This option works with the
@@ -97,7 +180,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   values and a data conversion to CDF epoch values is performed. 
 %   Setting it to false (the default), All data will be considered already in
 %   CDF_EPOCH form and will be filled, as is, to
-%   CDF_EPOCH data type variable(s). The CDF_EPOCH data need to be nemeric of
+%   CDF_EPOCH data type variable(s). The CDF_EPOCH data need to be numeric of
 %   mxDouble_CLASS (double).
 %
 %   SPDFCDFWRITE(..., 'ConvertDatenumToTT2000', TF, ...) converts MATLAB datenum
@@ -125,11 +208,12 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   (nanoseconds since 2000-01-01T12:00:00 with leap seconds). Data values will
 %   be written as is. Tools to convert the date of various forms, e.g., in UTC 
 %   or MATLAB's datenum, to CDF_EPOCH or CDF_TIME_TT2000 are available from
-%   SPDF's distribution. Improper data type or values will result in a
+%   SPDF's distribution. Improper data type or values will result in an
 %   unexpected output. EPOCHTPVARS is a cell array of variable name(s). This
 %   option provides an easier way to create a single or multiple epoch
 %   variable(s) in a CDF file. This option is mutually exclusive with
-%   'EpochIsCDFEpoch' and 'TT2000'. 
+%   'EpochIsCDFEpoch' and 'TT2000'. This option is being replaced by
+%   'Vardatatypes' option.
 %
 %   Notes:
 %
@@ -153,15 +237,6 @@ function spdfcdfwrite(filename, varcell, varargin)
 %
 %   spdfcdfwrite('example', {'Longitude', 0:360});
 %
-%   % Write out a file 'example.cdf' containing variables 'Longitude'
-%   % and 'Latitude' with the variable 'Latitude' having a pad value
-%   % of 10 for all out-of-bounds records that are accessed. The
-%   % 'Longitude' variable has one record (row) of a vector with 361 elements
-%   % 'Latitude' has one record of a vector with 11 elements.
-%
-%   spdfcdfwrite('example', {'Longitude', 0:360, 'Latitude', 10:20}, ...
-%                'PadValues', {'Latitude', 10});
-%
 %   % Write out a file 'example.cdf', containing a variable 'Longitude'
 %   % with the value [0:360] (one record of 361 values), and with a variable
 %   % attribute of 'validmin' with the value 10:
@@ -180,8 +255,19 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % These two commands should write out the data values identically:
 %      SPDFCDFWRITE('example', {'Epoch', num2cell(1:100)}, ...
 %                   'epochiscdfepoch', true);
-%      SPDFCDFWRITE('example', {'Epoch', (1:100)'}, 'recordbound', {'Epoch'}, ...
+%      SPDFCDFWRITE('example', {'Epoch', (1:100)'}, ...
+%                   'recordbound', {'Epoch'}, ...
 %                   'epochiscdfepoch', true);
+%
+%   % Write out a file 'example.cdf' containing variables 'Longitude'
+%   % and 'Latitude' with the variable 'Latitude' having a pad value
+%   % of 10 for all out-of-bounds records that are accessed. The
+%   % 'Longitude' variable has one record (row) of a vector with 361 elements
+%   % 'Latitude' has one record of a vector with 11 elements.
+%
+%   spdfcdfwrite('example', {'Longitude', (0:360)', 'Latitude', (10:20)'}, ...
+%                'RecordBound', {'Latitude', 'Longitude'}, ...
+%                'PadValues', {'Latitude', 10});
 %
 %   % Write out a file 'example.cdf', with multiple rows of time series data.
 %   % Each row has a time and a sampled data, both being scalar. 
@@ -256,7 +342,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   % 'Epoch' has a pad value of 01-Jan-0000 00:00:00.001.
 %
 %   datenum1=datenum(2010,1,1,0,0,0);
-%   datenumvalues = (datanum1+[0:99]/86400)';
+%   datenumvalues = (datenum1+[0:99]/86400)';
 %   spdfcdfwrite('example', {'Epoch', datenumvalues}, ...
 %                'ConvertDatenumToEpoch', true, ...
 %                'RecordBound', {'Epoch'}, ...
@@ -288,6 +374,84 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   spdfcdfwrite('example', {'Epoch', values}, ...
 %                'EpochType', {'Epoch'}, ...
 %                'RecordBound', {'Epoch'});
+%
+%   % Write out a file 'sample.cdf', with two variables. One variable, 'var2'.
+%   % is compressed with GZIP.6.
+%
+%   var1data=......;
+%   var2data=......;
+%   spdfcdfwrite('sample',{'Epoch',var1data,'var2',var2data}, ...
+%                'recordbound',{'Epoch','var2'}, ...
+%                'varcompress',{'var2','gzip.6'});
+%
+%   % Write out a file 'sparse.cdf', with a variable that has sparse records.
+%   % The variable 'one' only has two (2) physical data: at record 0 and
+%   % record 4. 
+%
+%   spdata={[123 321];[];[];[];[-321 -123]};
+%   spdfcdfwrite('sparse',{'one',spdata}, ...
+%                'varsparse', {'one','Sparse(previous)'});
+%
+%   % Write out a file 'real.cdf', based on the master cdf, which provides the
+%   % meta-data for all of the global and variable attribute information.  It
+%   % also provides the variable spec, e.g., data type, record variance, record
+%   % sparseness, blocking factor, pad value and compression, for each variable.
+%   % 'Recordbound' option is used for specifying record-variant (RV) variables.
+%   % Among the variables, Variable number 15, a single floating point array, has
+%   % sparse records [at record 1 and 5]. Its data has to be in the cell array.
+%
+%   info=spdfcdfinfo('master.cdf');
+%   for p = 1:length(info.Variables(:,1))
+%     compress{(2*p)-1} = info.Variables(p,1); 	% Variable name
+%     compress{2*p} = info.Variables(p,7);	% Variable compression
+%     sparse{(2*p)-1} = info.Variables(p,1);	% Variable name
+%     sparse{2*p} = info.Variables(p,6);	% Variable sparseness
+%     bf{2*p-1} = info.Variables{p,1};		% Variable name
+%     bf{2*p} = info.Variables{p,8};		% Variable blocking factor
+%     pad{2*p-1} = info.Variables{p,1};		% Variable name
+%     pad{2*p} = info.Variables{p,9};		% Variable pad value
+%     datatypes{2*p-1} = info.Variables{p,1};	% Variable name
+%     datatypes{2*p} = info.Variables{p,4};	% Variable data type
+%   end
+%   rbvars = {info.Variables{:,1}};		% Variable names for recordbound
+%   for p = length(vars):-1:1
+%     if (strncmpi(info.Variables{p,5},'f',1)==1)	% NRV variable
+%       rbvars(:,p)=[]; 	  		% Remove it
+%     end
+%   end
+%   % fill data
+%   for p = 1:length(info.Variables(:,1))
+%     varsdata{2*p-1} = info.Variables(p,1);
+%     if (p == 15)				% A sparse record variable 
+%       var15data={single([123 321]);[];[];[];single([-321 -123])};
+%       varsdata{(2*15)} = var15data;		% Sparse record data
+%     else
+%       varsdata{(2*p)} = [...];		% Normal data
+%     end
+%   end
+%   spdfcdfwrite('real',varsdata, ...
+%                'GlobalAttributes', info.GlobalAttributes, ...
+%                'VariableAttributes', info.VariableAttributes, ...
+%                'RecordBound', rbvars, ...
+%                'varcompress',compress, ...
+%                'varsparse', sparse, ...
+%                'blockingfactor', bf, ...
+%                'padvalues', pad, ...
+%                'VarDatatypes', datatypes);
+%
+%   Note: The compatible data types between MATLAB and CDF are as follows:
+%         MATLAB                  CDF
+%         ------                --------
+%         int8                  CDF_BYTE or CDF_INT1
+%         int16                 CDF_INT2
+%         int32                 CDF_INT4
+%         int64                 CDF_INT8 or CDF_TIME_TT2000
+%         uint8                 CDF_UINT1
+%         uint16                CDF_UINT2
+%         uint32                CDF_UINT4
+%         single                CDF_FLOAT
+%         double                CDF_DOUBLE or CDF_EPOCH or CDF_EPOCH16
+%         char/string           CDF_UCHAR or CDF_CHAR
 %
 %   See also SPDFCDFREAD, SPDFCDFUPDATE, SPDFCDFINFO, CDFEPOCH, CDFTT2000,
 %            SPDFENCODEEPOCH, SPDFCOMPUTEEPOCH, SPDFPARSEEPOCH,
@@ -360,7 +524,8 @@ spdfcdfwritec(filename, args.VarNames, args.VarVals, args.PadVals, ...
           globalAttribStruct, varAttribStruct, isAppending, ...
           isMultifile, CDFversion, args.ConvertDatenum, args.RecBnd, ...
           args.EpochIsCDFEpoch, args.TT2000, args.ConvertDatenum2, ...
-          args.EpochTp);
+          args.EpochTp, args.VarCompVals, args.SparseVarVals, ...
+          args.BFVarVals, args.DTVarVals);
 
 %%%
 %%% Function parse_inputs
@@ -372,6 +537,9 @@ function [args, isAppending, isMultifile, CDFversion, varAttribStruct, ...
 % Set default values
 args.PadVals = {};
 args.RecBnd = {};
+args.VarCompVals = {};
+args.SparseVarVals = {};
+args.BFVarVals = {};
 args.EpochTp = {};
 args.EpochIsCDFEpoch = false;
 args.TT2000 = false;
@@ -392,9 +560,10 @@ args.VarNames = {varcell{1:2:end}};
 args.VarVals = {varcell{2:2:end}};
 % Wrap the scalars non-empties in cell arrays.
 for i = 1:length(args.VarVals)
-    if ~isempty(args.VarVals{i}) && (ischar(args.VarVals{i}) || (numel(args.VarVals{i}) == 1))
-        args.VarVals{i} = {args.VarVals{i}};    
-    end
+%     if ~isempty(args.VarVals{i}) && (ischar(args.VarVals{i}) || (numel(args.VarVals{i}) == 1))
+     if ~isempty(args.VarVals{i}) && ischar(args.VarVals{i})
+         args.VarVals{i} = {args.VarVals{i}};    
+     end
 end
 
 if length(args.VarNames) ~= length(args.VarVals)
@@ -417,10 +586,10 @@ if ~isempty(args.VarVals)
                     exception.id = 'MATLAB:spdfcdfwrite:inconsistentRecordTypes';
                 end
             end
-        else
+%        else
             % If it isn't a cell array, then it is an array and
             % all elements are of the same type. 
-            args.VarVals{i} = (args.VarVals{i});
+%            args.VarVals{i} = (args.VarVals{i});
         end
     end
 end
@@ -428,11 +597,19 @@ end
 args.PadVals = cell(1,length(args.VarNames));
 args.RecBnd = cell(1,length(args.VarNames));
 args.EpochTp = cell(1,length(args.VarNames));
+args.VarCompVals = cell(1,length(args.VarNames));
+args.SparseVarVals = cell(1,length(args.VarNames));
+args.BFVarVals = cell(1,length(args.VarNames));
+args.DTVarVals = cell(1,length(args.VarNames));
 
 % Parse arguments based on their number.
 if (nargin > 0)
     
     paramStrings = {'padvalues'
+                    'varcompress'
+                    'varsparse'
+                    'blockingfactor'
+                    'vardatatypes'
                     'globalattributes'
                     'variableattributes'
                     'writemode'
@@ -476,13 +653,13 @@ if (nargin > 0)
                exception.msg = ['Number of variables to write out with ' ...
                       'padding does not match number of pad values.'];
                exception.id = 'MATLAB:spdfcdfwrite:paddingMismatch';
-               return;
+               return
            end
            vars = {padCell{1:2:end}};
            padVals = {padCell{2:2:end}};
            % Check that vars are in the list above.
            if ~iscellstr(vars)
-               exception.msg = 'All variable names must be strings.';
+               exception.msg = 'All variable names 1 must be strings.';
                exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
                return
            end
@@ -495,12 +672,57 @@ if (nargin > 0)
            end
            for i = 1:length(padVals)
                padVal = padVals{i};
+               if (isempty(padVal)) 
+                   continue
+               end
                if isnumeric(padVal) || ischar(padVal) || isa(padVal,'cdfepoch') || ...
-                  isa(padVal,'cdfepoch16')
+                  isa(padVal,'cdftt2000')
                    args.PadVals{strcmp(args.VarNames,vars{i})} = padVals{i};
                else
-                   exception.msg = 'Pad values must be numbers, strings, cdfepochs or cdfepoch16s.';
+                   exception.msg = 'Pad values must be numbers, strings, cdfepoch or cdftt2000.';
                    exception.id = 'MATLAB:spdfcdfwrite:badPadValue';
+                   return
+               end
+           end
+        case 'varcompress'
+           varCompCell = varargin{k+1};
+           % If we weren't passed an even pair, then a variable
+           % name or value was left out.
+           if rem(length(varCompCell), 2)
+               exception.msg = ['Number of variables to compress ' ...
+                      'does not match number of compression values.'];
+               exception.id = 'MATLAB:spdfcdfwrite:compressingMismatch';
+               return
+           end
+	   if iscell(varCompCell{1})
+	       vars = varCompCell{1:2:end};
+	   else
+               vars = {varCompCell{1:2:end}};
+	   end
+           varCompVals = {varCompCell{2:2:end}};
+           % Check that vars are in the list above.
+           if ~iscellstr(vars)
+               exception.msg = 'All variable names 2 must be strings.';
+               exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
+               return
+           end
+           if ~all(ismember(vars, args.VarNames))
+               exception.msg = ['Variables listed in the VarCompValues ' ...
+                      'cell must be on the list of variables ' ...
+                      'to save.'];
+               exception.id = 'MATLAB:spdfcdfwrite:notSavingVarForVarCompValue';
+               return
+           end
+           for i = 1:length(varCompVals)
+               varCompVal = varCompVals{i};
+               if (isempty(varCompVal))
+                   continue
+               end
+               if ischar(varCompVal) ...
+                   args.VarCompVals{strcmp(args.VarNames,vars{i})} = varCompVal;
+               else
+                   exception.msg = 'Compression 3 must be strings.';
+                   exception.id = 'MATLAB:spdfcdfwrite:badVarCompValue';
                    return
                end
            end
@@ -599,7 +821,7 @@ if (nargin > 0)
            RecBndCell = varargin{k+1};
            % Check that vars are in the list above.
            if ~iscellstr(RecBndCell)
-               exception.msg = 'All variable names must be strings.';
+               exception.msg = 'All variable names for recordbound must be strings.';
                exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
                return
            end
@@ -614,11 +836,124 @@ if (nargin > 0)
                RecBndVar = RecBndCell{i};
                args.RecBnd{strcmp(args.VarNames,RecBndCell{i})} = RecBndVar;
            end
+        case 'varsparse'
+           SparseVarsCell = varargin{k+1};
+           % If we weren't passed an even pair, then a variable
+           % name or value was left out.
+           if rem(length(SparseVarsCell), 2)
+               exception.msg = ['Number of variables to sparse records ' ...
+                      'does not match number of their values.'];
+               exception.id = 'MATLAB:spdfcdfwrite:sparserecordMismatch';
+               return
+           end
+           vars = {SparseVarsCell{1:2:end}};
+           sparseVals = {SparseVarsCell{2:2:end}};
+           % Check that vars are in the list above.
+           if ~iscellstr(vars)
+               exception.msg = 'All variable names must be strings.';
+               exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
+               return
+           end
+           if ~all(ismember(vars, args.VarNames))
+               exception.msg = ['Variables listed in the SparseValues ' ...
+                      'cell must be on the list of variables ' ...
+                      'to save.'];
+               exception.id = 'MATLAB:spdfcdfwrite:notSavingVarForSparseValue';
+               return
+           end
+           for i = 1:length(sparseVals)
+               sparseVal = sparseVals{i};
+               if (isempty(sparseVal))
+                   continue
+               end
+               if ischar(sparseVal)
+                   args.SparseVarVals{strcmp(args.VarNames,vars{i})} = sparseVal;
+               else
+                   exception.msg = 'Sparse Record must be strings.';
+                   exception.id = 'MATLAB:spdfcdfwrite:badSparseValue';
+                   return
+               end
+           end
+        case 'blockingfactor'
+           BFVarsCell = varargin{k+1};
+           % If we weren't passed an even pair, then a variable
+           % name or value was left out.
+           if rem(length(BFVarsCell), 2)
+               exception.msg = ['Number of variables to blocking factors ' ...
+                      'does not match number of their values.'];
+               exception.id = 'MATLAB:spdfcdfwrite:blockingfactorMismatch';
+               return
+           end
+           vars = {BFVarsCell{1:2:end}};
+           bfVals = {BFVarsCell{2:2:end}};
+           % Check that vars are in the list above.
+           if ~iscellstr(vars)
+               exception.msg = 'All variable names must be strings.';
+               exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
+               return
+           end
+           if ~all(ismember(vars, args.VarNames))
+               exception.msg = ['Variables listed in the BFValues ' ...
+                      'cell must be on the list of variables ' ...
+                      'to save.'];
+               exception.id = 'MATLAB:spdfcdfwrite:notSavingVarForBFValue';
+               return
+           end
+           for i = 1:length(bfVals)
+               bfVal = bfVals{i};
+               if (isempty(bfVal))
+		   continue
+	       end
+               if isnumeric(bfVal)
+                   args.BFVarVals{strcmp(args.VarNames,vars{i})} = int32(bfVal);
+               else
+                   exception.msg = 'Blocking factor must be numeric.';
+                   exception.id = 'MATLAB:spdfcdfwrite:badBlockingFactor';
+                   return
+               end
+           end
+        case 'vardatatypes'
+           DTVarsCell = varargin{k+1};
+           % If we weren't passed an even pair, then a variable
+           % name or value was left out.
+           if rem(length(DTVarsCell), 2)
+               exception.msg = ['Number of variables to blocking factors ' ...
+                      'does not match number of their values.'];
+               exception.id = 'MATLAB:spdfcdfwrite:blockingfactorMismatch';
+               return
+           end
+           vars = {DTVarsCell{1:2:end}};
+           dtVals = {DTVarsCell{2:2:end}};
+           % Check that vars are in the list above.
+           if ~iscellstr(vars)
+               exception.msg = 'All variable names must be strings.';
+               exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
+               return
+           end
+           if ~iscellstr(dtVals)
+               exception.msg = 'All variable data types must be strings.';
+               exception.id = 'MATLAB:spdfcdfwrite:vardatatypeNotString';
+               return
+           end
+           if ~all(ismember(vars, args.VarNames))
+               exception.msg = ['Variables listed in the DTValues ' ...
+                      'cell must be on the list of variables ' ...
+                      'to save.'];
+               exception.id = 'MATLAB:spdfcdfwrite:notSavingVarForDTValue';
+               return
+           end
+           for i = 1:length(dtVals)
+               dtVal = dtVals{i};
+               if (~isempty(dtVal))
+                   args.DTVarVals{strcmp(args.VarNames,vars{i})} = ...
+                                 int32(find_datatype(dtVal));
+               end
+           end
         case 'epochtype'
            EpochTpCell = varargin{k+1};
            % Check that vars are in the list above.
            if ~iscellstr(EpochTpCell)
-               exception.msg = 'All variable names must be strings.';
+               exception.msg = 'All variable names 7 must be strings.';
                exception.id = 'MATLAB:spdfcdfwrite:varNameNotString';
                return
            end
@@ -741,7 +1076,7 @@ if ((args.ConvertDatenum) && (args.ConvertDatenum2))
     error('MATLAB:spdfcdfwrite:convertdatenum', '%s\n%s', ...
           'You cannot currently specify these two options.', ...
           'Specify only one of ''ConvertDatenumToEpoch'' and ''ConvertDatenumToTT2000''.')
-
+end
 if (((args.epochtype) && (args.EpochIsCDFEpoch)) || ...
     ((args.epochtype) && (args.TT2000)))
     error('MATLAB:spdfcdfwrite:epochtype', '%s\n%s', ...
@@ -749,5 +1084,42 @@ if (((args.epochtype) && (args.EpochIsCDFEpoch)) || ...
           'Specify only one of ''TT2000'', ''EpochIsCDFEpoch'' and ''EpochType''.')
 
 end
+
+function num = find_datatype(str)
+if (strcmp(str,'double') == 1 || strcmp(str,'cdf_double') == 1 || ...
+    strcmp(str,'cdf_real8') == 1)
+  num = 45;
+elseif (strcmp(str,'single') == 1 || strcmp(str,'cdf_float') == 1 || ...
+    strcmp(str,'cdf_real4') == 1)
+  num = 44;
+elseif (strcmp(str,'int8') == 1 || strcmp(str,'cdf_int1') == 1 || ...
+    strcmp(str,'cdf_byte') == 1)
+  num = 1;
+elseif (strcmp(str,'int16') == 1 || strcmp(str,'cdf_int2') == 1)
+  num = 2;
+elseif (strcmp(str,'int32') == 1 || strcmp(str,'cdf_int4') == 1)
+  num = 4;
+elseif (strcmp(str,'int64') == 1 || strcmp(str,'cdf_int8') == 1)
+  num = 8;
+elseif (strcmp(str,'uint8') == 1 || strcmp(str,'cdf_uint1') == 1)
+  num = 11;
+elseif (strcmp(str,'uint16') == 1 || strcmp(str,'cdf_uint2') == 1)
+  num = 12;
+elseif (strcmp(str,'uint32') == 1 || strcmp(str,'cdf_uint4') == 1)
+  num = 14;
+elseif (strcmp(str,'epoch') == 1 || strcmp(str,'cdf_epoch') == 1)
+  num = 31;
+elseif (strcmp(str,'epoch16') == 1 || strcmp(str,'cdf_epoch16') == 1)
+  num = 32;
+elseif (strcmp(str,'tt2000') == 1 || strcmp(str,'cdf_time_tt2000') == 1)
+  num = 33;
+elseif (strcmp(str,'char') == 1 || strcmp(str,'cdf_char') == 1 || ...
+        strcmp(str,'cdf_uchar') == 1)
+  num = 52;
+else
+  error('MATLAB:spdfcdfwrite:enteredvardatatype', '%s:%s\n', ...
+          'One of the entered variable data types is not valid. ', str);
+
 end
+
 
