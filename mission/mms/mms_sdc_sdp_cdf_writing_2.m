@@ -27,6 +27,7 @@ EFIELD_MAX = single(700); % Max value of E-field in mV/m with shortening factor 
 VOLTAGE_MIN = single(-120); % Min voltage
 VOLTAGE_MAX = single(50); % Max voltage
 QUALITY_MAX = int16(4);  % Max value of quality.
+COMPRESS_LEVEL = 'gzip.6'; % Default compression level to be used for variables.
 
 procId = mms_sdc_sdp_datamanager('procId');
 if procId==MMS_CONST.Error
@@ -91,6 +92,8 @@ switch procId
     %Variable Datatypes
     varDatatype = {name.epoch, 'cdf_time_tt2000', name.label, 'cdf_char', ...
       name.dsl,'cdf_real4'};
+    % Compression level for each variable. Note: Not for TT2000 epoch.
+    compressVars = {name.label, COMPRESS_LEVEL, name.dsl, COMPRESS_LEVEL};
 
     if procId~=MMS_CONST.SDCProc.sitl
       % Add Quality and Bitmask for QL or L2PRE
@@ -98,8 +101,9 @@ switch procId
       quality = int16(mms_sdc_sdp_bitmask2quality('e',dce_xyz_dsl.bitmask));
       name.quality = [datasetPrefix '_dce_quality'];
       outVars = [outVars {name.bitmask bitmask name.quality quality}];
-      recBound = [recBound {name.quality}];
+      recBound = [recBound {name.bitmask name.quality}];
       varDatatype = [varDatatype {name.bitmask, 'cdf_uint1', name.quality, 'cdf_int2'}];
+      compressVars = [compressVars {name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL}];
     end
 
     %% Update VariableAttributes
@@ -217,6 +221,11 @@ switch procId
       name.scpot, 'cdf_real4', name.psp, 'cdf_real4', name.psp_p, 'cdf_real4',...
       name.bitmask, 'cdf_uint1', name.quality, 'cdf_int2'};
 
+    % Compression
+    compressVars = {name.label, COMPRESS_LEVEL, name.scpot, COMPRESS_LEVEL, ...
+      name.psp, COMPRESS_LEVEL, name.psp_p, COMPRESS_LEVEL, ...
+      name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL};
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
       name.label,   'Label'; ...
@@ -302,8 +311,6 @@ write_file()
 % Update to ensure MD5 checksum is turned on.
 irf.log('notice', 'Updating file to ensure MD5 checksum is enabled');
 spdfcdfupdate(outFileName, 'CDFChecksum', true);
-% A similar command could be used for compression but according to Mike
-% @NASA, this is not fully developed yet. FIXME when notified by Mike.
 
 % Return to previous working directory.
 cd(oldDir);
@@ -359,9 +366,9 @@ cd(oldDir);
   end % get_file_name
 
   function write_file
-    spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
-      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
-      'RecordBound', recBound);
+   spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
+     'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
+     'RecordBound', recBound, 'VarCompress', compressVars);
   end
 
   function GATTRIB = getGlobalAttributes
@@ -386,12 +393,14 @@ cd(oldDir);
     GATTRIB.TEXT = {'http://mms.gsfc.nasa.gov/'; ...
       ['The full name of PI affiliations: SWRI - Southwest Research Institute. ',...
       'LASP - Laboratory for Atmospheric and Space Physics. ',...
-      'KTH - Kungliga Tekniska Högskolan (Swedish Royal Institute of Technology). ']};  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
+      'KTH - Kungliga Tekniska Hogskolan (Swedish Royal Institute of Technology). ']};  % FIXME This attribute is an SPDF standard global attribute, which is a text description of the
       %experiment whose data is included in the CDF. A reference to a journal article(s) or to a
       %World Wide Web page describing the experiment is essential, and constitutes the
       %minimum requirement. A written description of the data set is also desirable. This
       %attribute can have as many entries as necessary to contain the desired information.
       %Typically, this attribute is about a paragraph in length and is not shown on CDAWeb.
+      % Note: Matlab & spdcdfwrite to cdf files result in issues with ASCII
+      % for the charachter "ö", therefor replace ö with o.
     GATTRIB.HTTP_LINK = {'http://mms.gsfc.nasa.gov/'; 'http://mms.space.swri.edu/'}; % FIXME should point to data
     GATTRIB.LINK_TEXT = {'Magnetospheric Multiscale (MMS) mission home page'; 'SMART package home page'}; % FIXME as well
     GATTRIB.LINK_TITLE = {'At NASA GSFC'; 'At SWRI'}; % FIXME as well
