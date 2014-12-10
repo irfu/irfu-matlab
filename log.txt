@@ -1,3 +1,4 @@
+2014-11-05 v1.7.1 bug fix in dataobj.get_variable()
 2014-10-30 v1.7.0 CAA @ESTEC is closed, now data downloaded from @ESAC, new NASA CDF patch, many minor bug fixes
 2014-08-30 v1.6.2 different minor bug fixes
 2014-07-03 v1.6.1 bug fix reading datasets with '-' in name. If problems with git get a new copy of irfu-matlab!
