@@ -262,6 +262,7 @@ end
   function tlim_ebsp % Trim ebsp to tlim
     IGNORE_FIELDS = {'f','flagFac','fullB','B0','r'};
     fieldsEBSP = fields(ebsp);
+    if size(fieldsEBSP,2)==1, fieldsEBSP = fieldsEBSP'; end
     tFields = setxor(fieldsEBSP,IGNORE_FIELDS);
     %nData = length(ebsp.t);
     [~,idx] = irf_tlim(ebsp.t,tint);
