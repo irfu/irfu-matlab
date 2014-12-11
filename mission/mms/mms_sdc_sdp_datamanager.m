@@ -69,6 +69,7 @@ if strcmpi(param, 'init')
   DATAC.phase = [];
   DATAC.probe2sc_pot = [];
   DATAC.sc_pot = [];
+  DATAC.spinfits = [];
   return
 end
 
@@ -137,6 +138,7 @@ switch(param)
     chk_sdp_v_vals()
     
   case('hk_101')
+    % HK 101, contains sunpulses.
     varPrefix = sprintf('mms%d_101_',DATAC.scId);
     DATAC.(param) = [];
     DATAC.(param).dataObj = dataObj;
@@ -149,6 +151,7 @@ switch(param)
     DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
     % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
     DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
+
   otherwise
     % Not yet implemented.
     errStr = [' unknown parameter (' param ')'];

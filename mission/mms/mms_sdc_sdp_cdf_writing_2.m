@@ -29,6 +29,7 @@ VOLTAGE_MAX = single(50); % Max voltage
 QUALITY_MAX = int16(4);  % Max value of quality.
 COMPRESS_LEVEL = 'gzip.6'; % Default compression level to be used for variables.
 
+
 procId = mms_sdc_sdp_datamanager('procId');
 if procId==MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
@@ -106,6 +107,24 @@ switch procId
       compressVars = [compressVars {name.bitmask, COMPRESS_LEVEL, name.quality, COMPRESS_LEVEL}];
     end
 
+    if procId==MMS_CONST.SDCProc.l2pre
+      % Add Spinfits to output
+      spinfits = mms_sdc_sdp_datamanager('spinfits');
+      if ~isstruct(spinfits) && spinfits == MMS_CONST.Error
+        errStr = 'Cannot output ''spinfits''';
+        irf.log('critical', errStr);
+        error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+      end
+      name.sfitsEpoch = [datasetPrefix '_spinfits_epoch'];
+      name.sfits = [datasetPrefix '_spinfits'];
+      name.label2 = 'LABL_2';
+      label2 = ['Fit y=A        '; 'Fit y=B*sin(wt)'; 'Fit y=C*cos(wt)'];
+      outVars = [outVars {name.sfitsEpoch, spinfits.time, name.label2, label2, name.sfits, spinfits.sfit}];
+      recBound = [recBound {name.sfitsEpoch name.sfits}];
+      varDatatype = [varDatatype {name.sfitsEpoch, 'cdf_time_tt2000', name.label2, 'cdf_char', name.sfits, 'cdf_real4'}];
+      compressVars = [compressVars {name.label2, COMPRESS_LEVEL, name.sfits, COMPRESS_LEVEL}];
+    end
+
     %% Update VariableAttributes
     VATTRIB.CATDESC = {name.epoch, 'Time tags, UTC in TT2000'; ...
       name.label,   'Label'; ...
@@ -160,6 +179,34 @@ switch procId
         name.bitmask, 'support_data';...
         name.quality, 'support_data'}];
     end
+
+    if(procId==MMS_CONST.SDCProc.l2pre)
+      % Update VATTRIB specific for l2pre (spinfits)
+      VATTRIB.CATDESC = [VATTRIB.CATDESC; {name.sfitsEpoch, 'Time tags, UTC in TT2000'; ...
+        name.label2,   'Label'; ...
+        name.sfits,    'Spinfit coefficients'}];
+      VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.sfits,     name.sfitsEpoch}];
+      VATTRIB.DISPLAY_TYPE = [VATTRIB.DISPLAY_TYPE; {name.sfits,     'time_series'}];
+      VATTRIB.FIELDNAM = [VATTRIB.FIELDNAM; {name.sfitsEpoch, 'Time tags'; ...
+        name.label2,   'Label'; ...
+        name.sfits,    'Spinfits'}];
+      VATTRIB.FILLVAL = [VATTRIB.FILLVAL; {name.sfitsEpoch, int64(-9223372036854775808); ...
+        name.sfits,     single(-1.0E31)}];
+      VATTRIB.FORMAT = [VATTRIB.FORMAT; {name.label2,   'A23'; ...
+        name.sfits,    'F8.3'}];
+      VATTRIB.LABL_PTR_1 = [VATTRIB.LABL_PTR_1; {name.sfits, name.label2}];
+      VATTRIB.SI_CONVERSION = [VATTRIB.SI_CONVERSION; {name.sfits,     '1.0e3>V/m'}];
+      VATTRIB.UNITS = [VATTRIB.UNITS; {name.sfits,     'mV/m'}];
+      VATTRIB.VALIDMIN = [VATTRIB.VALIDMIN; {name.sfitsEpoch, spdfcomputett2000([1990,01,01,0,0,0,0,0,0]); ...
+        name.sfits,     -EFIELD_MAX}];
+      VATTRIB.VALIDMAX = [VATTRIB.VALIDMAX; {name.sfitsEpoch, spdfcomputett2000([2100,01,01,0,0,0,0,0,0]); ...
+        name.sfits,     EFIELD_MAX}];
+      VATTRIB.VAR_TYPE = [VATTRIB.VAR_TYPE; {name.sfitsEpoch, 'support_data'; ...
+        name.label2,   'metadata'; ...
+        name.sfits,     'data'}];
+      VATTRIB.MONOTON = [VATTRIB.MONOTON; {name.sfitsEpoch, 'INCREASE'}];
+    end
+
   case MMS_CONST.SDCProc.scpot
     %% ScPot - get data
     datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
@@ -308,10 +355,6 @@ GATTRIB.Logical_source_description = {dataDesc}; % in full words.
 
 write_file()
 
-% Update to ensure MD5 checksum is turned on.
-irf.log('notice', 'Updating file to ensure MD5 checksum is enabled');
-spdfcdfupdate(outFileName, 'CDFChecksum', true);
-
 % Return to previous working directory.
 cd(oldDir);
 
@@ -366,9 +409,11 @@ cd(oldDir);
   end % get_file_name
 
   function write_file
+   % write file with arguments obtained above, also include md5 checksum.
    spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
-     'RecordBound', recBound, 'VarCompress', compressVars);
+     'RecordBound', recBound, 'VarCompress', compressVars, ...
+     'Checksum', 'md5');
   end
 
   function GATTRIB = getGlobalAttributes
