@@ -82,6 +82,8 @@ if (isa(epoch,'cdfepoch'))
       end
     end
     out = dataaa;
+  else
+    out = epoch;
   end
 else
   out = spdfencodeepochc(epoch, args.Format);

@@ -390,13 +390,6 @@ if (length(args.Variables) == 1)
       out = [];
       return;
     end
-%    if (isequal(lower(info.Variables{4}), 'epoch16') && ...
-%        (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%         ~args.ConvertEpochToDatenum && ~args.KeepEpochAsIs))
-%      error('MATLAB:spdfcdfread:Epoch16', ...
-%            'Variable "%s", a CDF_EPOCH16, is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d', ...
-%            info.Variables{1}); 
-%    end
     if (~isempty(args.Slices))
         [args.Slices, msg] = parse_slice_vals(args.Slices, info.Variables);
         if (~isempty(msg))
@@ -421,7 +414,8 @@ if (length(args.Variables) == 1)
 
     if (~structure)
       if (isequal(lower(info.Variables{4}), 'tt2000'))
-        if (args.CombineRecords || args.ConvertEpochToDatenum)
+        if (args.CombineRecords || args.ConvertEpochToDatenum || ...
+            args.KeepEpochAsIs || args.ConvertEpochToDatestr) 
           out = data;
         else
           if (length(data) > 1)
@@ -496,13 +490,6 @@ else
         if (info.Variables{p, 3} == 0)
           continue;
         end
-%        if (isequal(lower(info.Variables{p, 4}), 'epoch16') && ...
-%            (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%             ~args.ConvertEpochToDatenum))
-%          warning('MATLAB:spdfcdfread:Epoch16', ...
-%                  'Variable "%s" is a CDF_EPOCH16 is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d', ...
-%                  args.Variables{p}, p);
-%        end
  
         args.Slices = fill_slice_vals([], info.Variables(p,:));
         out1{p,1} = args.Variables{p};
@@ -553,14 +540,6 @@ else
           continue;
         end
 
-%        if (isequal(lower(info.Variables{p, 4}), 'epoch16') && ...
-%            (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%             ~args.ConvertEpochToDatenum && ~args.KeepEpochAsIs))
-%          warning('MATLAB:spdfcdfread:Epoch16', ...
-%                  'Variable "%s" is a CDF_EPOCH16 is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d ', ...
-%                  args.Variables{p}, p);
-%        end
-       
         args.Slices = fill_slice_vals([], info.Variables(p,:));
         if (info.Variables{p, 5}(1) == 'F')
 % Non-record variant
@@ -607,10 +586,9 @@ else
               % M-by-N cell array....
               % Convert epoch data.
               if (isequal(lower(info.Variables{p, 4}), 'tt2000'))
-                if (args.ConvertEpochToDatenum)
-                  for q = 1:length(xdata)
-                    data(q,p) = xdata(q);
-                  end
+                if (args.CombineRecords || args.ConvertEpochToDatenum || ...
+                    args.KeepEpochAsIs || args.ConvertEpochToDatestr)
+                  data(:,p) = xdata;
                 else
                   for q = 1:length(xdata)
                     if (length(xdata{q}) > 1)
@@ -874,8 +852,8 @@ if (nargin > 0)
                    msg = 'Record list must be a vector of integers.';
                    
                end
-               
                args.Records = records;
+               args.CombineRecords = false;	
            end
            
        case 'slices'

@@ -82,12 +82,6 @@ if (iscell(epoch16(1,1)))
   else
     if (iscellstr(epoch16))
       epoch16 = char(epoch16);
-    else
-      if (s(2) == 1)
-        for x=1:s(1)
-        epoch16(x,1) = epoch16{x,1};
-        end
-      end
     end
   end
 end

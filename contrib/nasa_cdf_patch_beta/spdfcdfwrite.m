@@ -100,8 +100,8 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   cases, this will not work for the CDF epoch types, i.e., CDF_EPOCH (a double),
 %   CDF_EPOCH16 (an array of 2 doubles) and CDF_TIME_TT2000 (an int64). This
 %   option can be used to address such issue. VARDATATYPE is a cell array of
-%   variable names and their respective data types (in string). This option will
-%   overwrite the 'EpochType' option.
+%   variable names and their respective data types (in string).
+%
 %   The following table shows the valid type strings, either in CDF defined
 %   forms, or alternatively in the forms presented at column 4 in the Variables
 %   field of the structure returned from a SPDFCDFINFO module call to an
@@ -137,6 +137,20 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   'Variables' field from the returned structure contain the compression info
 %   (at element 7) for each variable,  Set up a cell to use such compression
 %   info.
+%
+%   SPDFCDFWRITE(..., 'CDFCompress', COMPRESSVALUE) specifies the CDF will be
+%   compressed at the file level by what compression method (and level for GZIP).
+%   COMPRESSVALUE is a string of a valid compression method and level.
+%
+%   If there is a master CDF that can be used to define the new CDF's settings,
+%   then SPDFCDFINFO module can be used to retrieve the infomation. The 
+%   'Compression' and 'CompressionParam' fields from the returned structure's
+%   'FileSettings' structure field contain the compression info. Combining these 
+%   fields will make a valid compression. See the example.
+%   Alternatively, COMPRESSVALUE can be provided as one of the following strings:
+%   'none', 'gzip.x', 'rle' (Run-length encoding), 'huff' (Huffman), 'ahuff'
+%   (Adaptive Huffman), where 'x' in 'gzip.x' is the level of 1-9 (6 being the
+%   preferable). 
 %
 %   SPDFCDFWRITE(..., 'VarSparse', SPARSEVARS) specifies which variables have
 %   sparse records. SPARSEVARS is a cell array of variable names and their
@@ -200,20 +214,9 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   CDF_TIME_TT2000 data type variable(s). The CDF TT2000 values needs to be
 %   numeric of mxINT64_CLASS (int64).
 %
-%   SPDFCDFWRITE(..., 'EpochType', EPOCHTYVARS) indicates which variable(s)
-%   is to be created as one of the CDF epoch types, either CDF_EPOCH or 
-%   CDF_TIME_TT2000, instead of the numeric type. To use this option, the data 
-%   values have to be passed in as an array of values of proper MATLAB type:
-%   double for CDF_EPOCH (milliseconds since 0AD) or int64 for CDF_TIME_TT2000
-%   (nanoseconds since 2000-01-01T12:00:00 with leap seconds). Data values will
-%   be written as is. Tools to convert the date of various forms, e.g., in UTC 
-%   or MATLAB's datenum, to CDF_EPOCH or CDF_TIME_TT2000 are available from
-%   SPDF's distribution. Improper data type or values will result in an
-%   unexpected output. EPOCHTPVARS is a cell array of variable name(s). This
-%   option provides an easier way to create a single or multiple epoch
-%   variable(s) in a CDF file. This option is mutually exclusive with
-%   'EpochIsCDFEpoch' and 'TT2000'. This option is being replaced by
-%   'Vardatatypes' option.
+%   SPDFCDFWRITE(..., 'Checksum', CHECKSUMVAL, ...) specifies whether the output
+%   CDF should have its checksum computed. The valid values are 'MD5' or 'none'.
+%   The default is 'none'.
 %
 %   Notes:
 %
@@ -393,6 +396,7 @@ function spdfcdfwrite(filename, varcell, varargin)
 %                'varsparse', {'one','Sparse(previous)'});
 %
 %   % Write out a file 'real.cdf', based on the master cdf, which provides the
+%   % file settings info, i.e., checksum, CDF file level compression, as well as
 %   % meta-data for all of the global and variable attribute information.  It
 %   % also provides the variable spec, e.g., data type, record variance, record
 %   % sparseness, blocking factor, pad value and compression, for each variable.
@@ -419,6 +423,14 @@ function spdfcdfwrite(filename, varcell, varargin)
 %       rbvars(:,p)=[]; 	  		% Remove it
 %     end
 %   end
+%   if isnumeric(info.FileSettings.CompressionParam) % A number for Gzip parameter 
+%     cdfcompress=strcat(info.FileSettings.Compression, '.', ... % Make it 'gzip.x'
+%                        num2str(info.FileSettings.CompressionParam));
+%   else
+%     cdfcompress=strcat(info.FileSettings.Compression, '.', ... % None or non-gzip
+%                        info.FileSettings.CompressionParam);
+%   end
+%
 %   % fill data
 %   for p = 1:length(info.Variables(:,1))
 %     varsdata{2*p-1} = info.Variables(p,1);
@@ -430,14 +442,16 @@ function spdfcdfwrite(filename, varcell, varargin)
 %     end
 %   end
 %   spdfcdfwrite('real',varsdata, ...
-%                'GlobalAttributes', info.GlobalAttributes, ...
-%                'VariableAttributes', info.VariableAttributes, ...
-%                'RecordBound', rbvars, ...
-%                'varcompress',compress, ...
-%                'varsparse', sparse, ...
-%                'blockingfactor', bf, ...
-%                'padvalues', pad, ...
-%                'VarDatatypes', datatypes);
+%                'GlobalAttributes', info.GlobalAttributes, ...	% Global attributes
+%                'VariableAttributes', info.VariableAttributes, ... %Variable attributes
+%                'RecordBound', rbvars, ...			% Var record bound
+%                'varcompress',compress, ...			% Var compression 
+%                'varsparse', sparse, ...			% Var sparseness
+%                'blockingfactor', bf, ...			% Var blocking factors 
+%                'padvalues', pad, ...				% Var Pad values
+%                'cdfcompress',cdfcompress, ...			% CDF compression
+%                'checksum', info.FileSettings.Checksum, ... 	% Checsum
+%                'VarDatatypes', datatypes);			% Var data types
 %
 %   Note: The compatible data types between MATLAB and CDF are as follows:
 %         MATLAB                  CDF
@@ -525,7 +539,7 @@ spdfcdfwritec(filename, args.VarNames, args.VarVals, args.PadVals, ...
           isMultifile, CDFversion, args.ConvertDatenum, args.RecBnd, ...
           args.EpochIsCDFEpoch, args.TT2000, args.ConvertDatenum2, ...
           args.EpochTp, args.VarCompVals, args.SparseVarVals, ...
-          args.BFVarVals, args.DTVarVals);
+          args.BFVarVals, args.DTVarVals, args.MD5, args.CDFComp);
 
 %%%
 %%% Function parse_inputs
@@ -545,6 +559,8 @@ args.EpochIsCDFEpoch = false;
 args.TT2000 = false;
 args.ConvertDatenum = false;
 args.ConvertDatenum2 = false;
+args.MD5 = false;
+args.CDFComp = '';
 isAppending = 0;
 isMultifile = 0;
 varAttribStruct = struct([]);
@@ -607,6 +623,7 @@ if (nargin > 0)
     
     paramStrings = {'padvalues'
                     'varcompress'
+                    'cdfcompress'
                     'varsparse'
                     'blockingfactor'
                     'vardatatypes'
@@ -620,6 +637,7 @@ if (nargin > 0)
                     'epochiscdfepoch'
                     'version'
                     'tt2000'
+                    'checksum'
                     'epochtype'};
     
     % For each pair
@@ -807,6 +825,9 @@ if (nargin > 0)
                 exception.id = 'MATLAB:spdfcdfwrite:badFormatValue';
                 return
             end
+        case 'cdfcompress'
+            compression = varargin{k+1};
+            args.CDFComp = find_compression(compression);
         case 'version'
             version = varargin{k+1};
             if ischar(version) && ...
@@ -835,6 +856,19 @@ if (nargin > 0)
            for i = 1:length(RecBndCell)
                RecBndVar = RecBndCell{i};
                args.RecBnd{strcmp(args.VarNames,RecBndCell{i})} = RecBndVar;
+           end
+       case 'checksum'
+           if (k == length(varargin))
+               msg = 'Missing "checksum" value.';
+               return
+           else
+               checksum = varargin{k + 1};
+               if ~isstr(checksum)
+                 exception.msg = 'Checksum value must be a string.';
+                 exception.id = 'MATLAB:spdfcdfwrite:checksumvalue';
+                 return
+               end
+               args.MD5 = logical(find_checksum(checksum));
            end
         case 'varsparse'
            SparseVarsCell = varargin{k+1};
@@ -946,7 +980,7 @@ if (nargin > 0)
                dtVal = dtVals{i};
                if (~isempty(dtVal))
                    args.DTVarVals{strcmp(args.VarNames,vars{i})} = ...
-                                 int32(find_datatype(dtVal));
+                                           int32(find_datatype(dtVal));
                end
            end
         case 'epochtype'
@@ -1082,44 +1116,100 @@ if (((args.epochtype) && (args.EpochIsCDFEpoch)) || ...
     error('MATLAB:spdfcdfwrite:epochtype', '%s\n%s', ...
           'You cannot currently specify these two options.', ...
           'Specify only one of ''TT2000'', ''EpochIsCDFEpoch'' and ''EpochType''.')
-
 end
 
 function num = find_datatype(str)
-if (strcmp(str,'double') == 1 || strcmp(str,'cdf_double') == 1 || ...
-    strcmp(str,'cdf_real8') == 1)
+if (strcmpi(str,'double') == 1 || strcmpi(str,'cdf_double') == 1 || ...
+    strcmpi(str,'cdf_real8') == 1)
   num = 45;
-elseif (strcmp(str,'single') == 1 || strcmp(str,'cdf_float') == 1 || ...
-    strcmp(str,'cdf_real4') == 1)
+elseif (strcmpi(str,'single') == 1 || strcmpi(str,'cdf_float') == 1 || ...
+        strcmpi(str,'cdf_real4') == 1)
   num = 44;
-elseif (strcmp(str,'int8') == 1 || strcmp(str,'cdf_int1') == 1 || ...
-    strcmp(str,'cdf_byte') == 1)
+elseif (strcmpi(str,'int8') == 1 || strcmpi(str,'cdf_int1') == 1 || ...
+        strcmpi(str,'cdf_byte') == 1)
   num = 1;
-elseif (strcmp(str,'int16') == 1 || strcmp(str,'cdf_int2') == 1)
+elseif (strcmpi(str,'int16') == 1 || strcmpi(str,'cdf_int2') == 1)
   num = 2;
-elseif (strcmp(str,'int32') == 1 || strcmp(str,'cdf_int4') == 1)
+elseif (strcmpi(str,'int32') == 1 || strcmpi(str,'cdf_int4') == 1)
   num = 4;
-elseif (strcmp(str,'int64') == 1 || strcmp(str,'cdf_int8') == 1)
+elseif (strcmpi(str,'int64') == 1 || strcmpi(str,'cdf_int8') == 1)
   num = 8;
-elseif (strcmp(str,'uint8') == 1 || strcmp(str,'cdf_uint1') == 1)
+elseif (strcmpi(str,'uint8') == 1 || strcmpi(str,'cdf_uint1') == 1)
   num = 11;
-elseif (strcmp(str,'uint16') == 1 || strcmp(str,'cdf_uint2') == 1)
+elseif (strcmpi(str,'uint16') == 1 || strcmpi(str,'cdf_uint2') == 1)
   num = 12;
-elseif (strcmp(str,'uint32') == 1 || strcmp(str,'cdf_uint4') == 1)
+elseif (strcmpi(str,'uint32') == 1 || strcmpi(str,'cdf_uint4') == 1)
   num = 14;
-elseif (strcmp(str,'epoch') == 1 || strcmp(str,'cdf_epoch') == 1)
+elseif (strcmpi(str,'epoch') == 1 || strcmpi(str,'cdf_epoch') == 1)
   num = 31;
-elseif (strcmp(str,'epoch16') == 1 || strcmp(str,'cdf_epoch16') == 1)
+elseif (strcmpi(str,'epoch16') == 1 || strcmpi(str,'cdf_epoch16') == 1)
   num = 32;
-elseif (strcmp(str,'tt2000') == 1 || strcmp(str,'cdf_time_tt2000') == 1)
+elseif (strcmpi(str,'tt2000') == 1 || strcmpi(str,'cdf_time_tt2000') == 1)
   num = 33;
-elseif (strcmp(str,'char') == 1 || strcmp(str,'cdf_char') == 1 || ...
-        strcmp(str,'cdf_uchar') == 1)
+elseif (strcmpi(str,'char') == 1 || strcmpi(str,'cdf_char') == 1 || ...
+        strcmpi(str,'cdf_uchar') == 1)
   num = 52;
 else
   error('MATLAB:spdfcdfwrite:enteredvardatatype', '%s:%s\n', ...
           'One of the entered variable data types is not valid. ', str);
-
 end
+
+function num = find_checksum(str)
+if (strcmpi(str,'none') == 1)
+  num = 0;
+elseif (strcmpi(str,'md5') == 1)
+  num = 1;
+else
+  error('MATLAB:spdfcdfwrite:checksumvalue', '%s:%s\n', ...
+          'The checksum value is not valid. ', str);
+end
+
+function compress = find_compression(str)
+compress = '';
+lstr=lower(str);
+item1=findstr(lstr, 'uncompressed');
+item2=findstr(lstr, 'none');
+if ~isempty(item1) || ~isempty(item2)
+   compress = 'none';
+else
+  item1=findstr(lstr, 'gzip');
+  if ~isempty(item1)
+     len = length(lstr);
+     if (isstrprop(lstr(len),'digit') && len < 7)
+       level = str2num(lstr(len));
+       if (level > 0 && level < 10) 
+         if (len == 6)
+           compress = lstr;
+         elseif (len == 5)
+           compress = strcat(lstr(1,4), ',', lstr(5));
+         end
+       end
+     end
+  else
+    item1=findstr(lstr, 'run-length');
+    item2=findstr(lstr, 'rle');
+    if ~isempty(item1) || ~isempty(item2)
+       compress = 'rle';
+    else
+      item1=findstr(lstr, 'adaptive');
+      item2=findstr(lstr, 'ahuff');
+      if ~isempty(item1) || ~isempty(item2)
+        compress = 'ahuff';
+      else
+        item1=findstr(lstr, 'huffman');
+        item2=findstr(lstr, 'huff');
+        if ~isempty(item1) || ~isempty(item2)
+          compress = 'huff';
+        end
+      end
+    end
+  end
+end
+if (length(compress) == 0)
+  error('MATLAB:spdfcdfwrite:compression', '%s:%s\n', ...
+          'The compression value is not valid. ', str);
+end
+
+
 
 
