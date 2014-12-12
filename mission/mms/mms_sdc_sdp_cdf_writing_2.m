@@ -115,14 +115,35 @@ switch procId
         irf.log('critical', errStr);
         error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
       end
-      name.sfitsEpoch = [datasetPrefix '_spinfits_epoch'];
-      name.sfits = [datasetPrefix '_spinfits'];
+      name.sfitsEpoch = [datasetPrefix '_dce_spinfits_epoch'];
+      name.sfits = [datasetPrefix '_dce_spinfits'];
+      name.sdev = [datasetPrefix '_dce_spinfits_sdev'];
       name.label2 = 'LABL_2';
-      label2 = ['Fit y=A        '; 'Fit y=B*sin(wt)'; 'Fit y=C*cos(wt)'];
-      outVars = [outVars {name.sfitsEpoch, spinfits.time, name.label2, label2, name.sfits, spinfits.sfit}];
-      recBound = [recBound {name.sfitsEpoch name.sfits}];
-      varDatatype = [varDatatype {name.sfitsEpoch, 'cdf_time_tt2000', name.label2, 'cdf_char', name.sfits, 'cdf_real4'}];
-      compressVars = [compressVars {name.label2, COMPRESS_LEVEL, name.sfits, COMPRESS_LEVEL}];
+      switch (size(spinfits.sfit,2))
+        case 3
+          % A, B & C, 15 char each.
+          label2 = ['Fit y=A        '; 'Fit y=B*sin(wt)'; 'Fit y=C*cos(wt)'];
+        case 5
+          % A, B, C, D & E, 16 char each.
+          label2 = ['Fit y=A         '; 'Fit y=B*sin(wt) ';...
+            'Fit y=C*cos(wt) '; 'Fit y=D*sin(2wt)'; 'Fit y=E*cos(2wt)'];
+        case 7
+          % A, B, C, D, E, F & G, 16 char each.
+          label2 = ['Fit y=A         '; 'Fit y=B*sin(wt) ';...
+            'Fit y=C*cos(wt) '; 'Fit y=D*sin(2wt)'; 'Fit y=E*cos(2wt)';...
+            'Fit y=F*sin(3wt)'; 'Fit y=G*cos(3wt)'];
+        otherwise
+          errStr = 'Number of terms in spinfit incorrect, must be 3, 5 or 7.';
+          irf.log('critical', errStr);
+          error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+      end
+      outVars = [outVars {name.sfitsEpoch, spinfits.time, name.label2, ...
+        label2, name.sfits, spinfits.sfit, name.sdev, spinfits.sdev}];
+      recBound = [recBound {name.sfitsEpoch name.sfits name.sdev}];
+      varDatatype = [varDatatype {name.sfitsEpoch, 'cdf_time_tt2000', ...
+        name.label2, 'cdf_char', name.sfits, 'cdf_real4', name.sdev, 'cdf_real4'}];
+      compressVars = [compressVars {name.label2, COMPRESS_LEVEL, ...
+        name.sfits, COMPRESS_LEVEL, name.sdev, COMPRESS_LEVEL}];
     end
 
     %% Update VariableAttributes
@@ -184,26 +205,35 @@ switch procId
       % Update VATTRIB specific for l2pre (spinfits)
       VATTRIB.CATDESC = [VATTRIB.CATDESC; {name.sfitsEpoch, 'Time tags, UTC in TT2000'; ...
         name.label2,   'Label'; ...
-        name.sfits,    'Spinfit coefficients'}];
-      VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.sfits,     name.sfitsEpoch}];
-      VATTRIB.DISPLAY_TYPE = [VATTRIB.DISPLAY_TYPE; {name.sfits,     'time_series'}];
+        name.sfits,    'Spinfit coefficients';...
+        name.sdev      'Standard deviation of spinfit coefficients'}];
+      VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {name.sfits, ...
+        name.sfitsEpoch; name.sdev, name.sfitsEpoch}];
+      VATTRIB.DISPLAY_TYPE = [VATTRIB.DISPLAY_TYPE; ...
+        {name.sfits, 'time_series'; name.sdev, 'time_series'}];
       VATTRIB.FIELDNAM = [VATTRIB.FIELDNAM; {name.sfitsEpoch, 'Time tags'; ...
         name.label2,   'Label'; ...
-        name.sfits,    'Spinfits'}];
+        name.sfits,    'Spinfits';...
+        name.sdev,     'Sdev spinfits'}];
       VATTRIB.FILLVAL = [VATTRIB.FILLVAL; {name.sfitsEpoch, int64(-9223372036854775808); ...
-        name.sfits,     single(-1.0E31)}];
+        name.sfits,     single(-1.0E31);...
+        name.sdev,      single(-1.0E31)}];
       VATTRIB.FORMAT = [VATTRIB.FORMAT; {name.label2,   'A23'; ...
-        name.sfits,    'F8.3'}];
+        name.sfits,    'F8.3'; ...
+        name.sdev,     'F8.3'}];
       VATTRIB.LABL_PTR_1 = [VATTRIB.LABL_PTR_1; {name.sfits, name.label2}];
       VATTRIB.SI_CONVERSION = [VATTRIB.SI_CONVERSION; {name.sfits,     '1.0e3>V/m'}];
       VATTRIB.UNITS = [VATTRIB.UNITS; {name.sfits,     'mV/m'}];
       VATTRIB.VALIDMIN = [VATTRIB.VALIDMIN; {name.sfitsEpoch, spdfcomputett2000([1990,01,01,0,0,0,0,0,0]); ...
-        name.sfits,     -EFIELD_MAX}];
+        name.sfits,     -EFIELD_MAX;...
+        name.sdev,      -EFIELD_MAX}];
       VATTRIB.VALIDMAX = [VATTRIB.VALIDMAX; {name.sfitsEpoch, spdfcomputett2000([2100,01,01,0,0,0,0,0,0]); ...
-        name.sfits,     EFIELD_MAX}];
+        name.sfits,     EFIELD_MAX;...
+        name.sdev,      EFIELD_MAX}];
       VATTRIB.VAR_TYPE = [VATTRIB.VAR_TYPE; {name.sfitsEpoch, 'support_data'; ...
         name.label2,   'metadata'; ...
-        name.sfits,     'data'}];
+        name.sfits,    'data';...
+        name.sdev,     'data'}];
       VATTRIB.MONOTON = [VATTRIB.MONOTON; {name.sfitsEpoch, 'INCREASE'}];
     end
 
