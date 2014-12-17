@@ -66,6 +66,7 @@ if strcmpi(param, 'init')
   DATAC.dce_xyz_dsl = [];
   DATAC.dcv = [];
   DATAC.hk_101 = [];
+  DATAC.hk_10e = [];
   DATAC.phase = [];
   DATAC.probe2sc_pot = [];
   DATAC.sc_pot = [];
@@ -152,6 +153,32 @@ switch(param)
     % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
     DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
 
+  case('hk_10e')
+    % HK 10E, contains bias.
+    varPrefix = sprintf('mms%d_10e_',DATAC.scId);
+    DATAC.(param) = [];
+    DATAC.(param).dataObj = dataObj;
+    x = getdep(dataObj,[varPrefix 'seqcnt']);
+    DATAC.(param).time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.(param).time, param);
+    % Go through each probe and store values for easy access,
+    % for instance prpbe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+    hk10eParam = {'dac','ig','og','stub'}; % DAC, InnerGuard, OuterGuard & Stub
+    for iParam=1:length(hk10eParam)
+      for jj=1:6
+        % stub only exist if probe is 5 or 6.
+        if( ~strcmp(hk10eParam{iParam},'stub') || (strcmp(hk10eParam{iParam},'stub') && jj>=5))
+          tmpStruct = getv(dataObj,[varPrefix 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+          if isempty(tmpStruct)
+            errS = ['cannot get ' varPrefix 'beb' num2str(jj,'%i') hk10eParam{iParam}];
+            irf.log('warning',errS), warning(errS);
+          else
+            eval(sprintf('DATAC.(param).beb.(hk10eParam{iParam}).v%i=tmpStruct.data;',jj));
+          end
+        end
+      end % for jj=1:6
+    end % for iParam=1:length(hk10eParam)
+
   otherwise
     % Not yet implemented.
     errStr = [' unknown parameter (' param ')'];
@@ -184,11 +211,12 @@ end
       indE = irf_latched_idx(DATAC.dce.(senE).data);
 
       % Add appropriate value to bitmask, leaving other 16 bits untouched.
-      DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), hex2dec('FFFF')-sum(Bits)) + ...
+      bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - sum(Bits);
+      DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + ...
         bitand(latched_mask(DATAC.dcv.(senA).data(indA)), sum(Bits));
-      DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), hex2dec('FFFF')-sum(Bits)) + ...
+      DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + ...
         bitand(latched_mask(DATAC.dcv.(senB).data(indB)), sum(Bits));
-      DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), hex2dec('FFFF')-sum(Bits)) + ...
+      DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + ...
         bitand(latched_mask(DATAC.dce.(senE).data(indE)), sum(Bits));
 
       %% TODO, Check overlapping stuck values, if senA stuck but not senB..
@@ -208,10 +236,64 @@ end
   end
 
   function chk_bias_guard()
-    % Check that bias/guard setting are nominal.
-    % If not, set bit in both V and E bitmask
-    
-    %XXX: Does nothing at the moment
+    % Check that bias/guard setting, found in HK_10E, are nominal. If any
+    % are found to be non nominal set bitmask value in both V and E.
+
+
+    if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
+
+      NomBias = uint32(32768); % FIXME, read from a table file
+
+      %DATAC.hk_10e.beb.ig.v1(600:630) = uint32(10); % FIXME, forced to non-moninal, for debug.
+      %DATAC.hk_10e.beb.og.v2(600) = uint32(0); % FIXME, forced to non-nominal
+
+      for iSen = 1:2:numel(sensors)
+        senA = sensors{iSen};  senB = sensors{iSen+1};
+        senE = ['e' senA(2) senB(2)]; % E-field sensor
+
+        hk10eParam = {'ig','og'}; % InnerGuard, OuterGuard, FIXME: Stub & DAC?
+        for iiParam = 1:length(hk10eParam);
+
+          % FIXME, proper test of existing fields?
+          if( ~isempty(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senA)) && ...
+            ~isempty(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)) );
+
+            % Interpolate HK_10E to match with DCV timestamps, using the
+            % previous HK value.
+            interp_DCVa = interp1(double(DATAC.hk_10e.time), ...
+              double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senA)), ...
+              double(DATAC.dcv.time), 'previous', 'extrap');
+
+            interp_DCVb = interp1(double(DATAC.hk_10e.time), ...
+              double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)), ...
+              double(DATAC.dcv.time), 'previous', 'extrap');
+
+            % Locate Non Nominal values
+            indA = interp_DCVa ~= NomBias;
+            indB = interp_DCVb ~= NomBias;
+            indE = or(indA,indB); % Either senA or senB => senE non nominal.
+
+            if(any(indE))
+              irf.log('notice',['Non-nominal bias settings found on pair ',...
+                senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
+
+              % Add bitmask values to SenA, SenB and SenE for these ind.
+              bitBadBias = MMS_CONST.Bitmask.BAD_BIAS;
+              % Add appropriate value to bitmask, leaving other bits untouched.
+              bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - bitBadBias;
+              DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + bitBadBias;
+              DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + bitBadBias;
+              DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + bitBadBias;
+            end
+          else
+            irf.log('Warning',['HK_10E file was loaded, but did not contain proper values for ',...
+              senA,' and ',senB,'.']);
+          end % if ~isempty()
+        end % for iiParam
+      end % for iSen
+    else
+      irf.log('Warning','No HK_10E file loaded, can not perform check for non nominal guard bias settings.');
+    end % if ~isempty(hk_10e)
   end
 
   function chk_sweep_on()

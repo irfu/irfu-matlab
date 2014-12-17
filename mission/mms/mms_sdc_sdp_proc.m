@@ -28,11 +28,12 @@ runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
 
 global ENVIR MMS_CONST;
 
-narginchk(4,4);
+narginchk(4,5);
 
 init_matlab_path()
 
-HK_101_File = '';
+HK_101_File = ''; % HK with sunpulse, etc.
+HK_10E_File = ''; % HK with bias guard settings etc.
 DCV_File = '';
 DCE_File = '';
 HeaderInfo = [];
@@ -66,7 +67,7 @@ for i=1:nargin-1
     end
     
     [pathIn, fileIn, extIn] = fileparts(varargin{i});
-    if any(isempty([pathIn, fileIn, extIn]))
+    if any([isempty(pathIn), isempty(fileIn), isempty(extIn)])
         error('Matlab:MMS_SDC_SDP_PROC', ...
             ['MMS_SDC_SDP_PROC expecting cdf file (full path), got: ', ...
             varargin{i}]);
@@ -112,7 +113,19 @@ for i=1:nargin-1
         HK_101_File = varargin{i};
         irf.log('notice', ['HK_101 input file: ', ...
             HK_101_File]);
-        
+
+    elseif regexpi(fileIn, '_10e_') % 10E, mmsX_fields_hk_l1b_10e_20150410_v0.0.1.cdf
+        if ~isempty(HK_10E_File)
+            err_str = ['Received multiple HK_10E files in input (',...
+                HK_10E_File, ', ', varargin{i} ')'];
+            irf.log('critical', err_str);
+            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
+        end
+        % It is the HK_10E file
+        HK_10E_File = varargin{i};
+        irf.log('notice', ['HK_10E input file: ', ...
+            HK_10E_File]);
+
     elseif regexpi(fileIn, '_dcv_') %DCV
         if ~isempty(DCV_File)
             err_str = ['Received multiple DC V files in input (',...
@@ -143,7 +156,7 @@ for i=1:nargin-1
 end
 
 % All input arguments read. All files required identified correct?
-if any(isempty([HK_101_File, DCE_File, DCV_File]))
+if any([isempty(HK_101_File), isempty(DCE_File), isempty(DCV_File), isempty(HK_10E_File)])
     irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
     for i=1:nargin-1
         irf.log('warning',...
@@ -158,36 +171,44 @@ if isempty(HK_101_File)
 end
 
 %% Processing for SCPOT or QL or SITL.
+% Load and process identified files in the following order first any of the
+% available files out of "DCE", "HK_10E", "HK_101", then lastly the "DCV".
+% Reason: DCV in data manager calls on other subfunctions which may require
+% DCE, HK_101 and HK_10E files to already be loaded into memory.
+
 switch procId
   case MMS_CONST.SDCProc.scpot
+    % Verify inputs
     if isempty(DCV_File)
       errStr = ['missing reqired input for ' procName ': DCV_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
-    
+
     if isempty(DCE_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
         'received no DCE file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCE_File]);
-      dce_src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+      src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+      update_header(src_fileData); % Update header with file info.
     end
+
+    if(~isempty(HK_10E_File))
+      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
+      src_fileData = mms_sdc_sdp_cdf_in_process(HK_10E_File,'sci','hk_10e');
+      update_header(src_fileData); % Update header with file info.
+    end
+
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    src_fileData = mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    update_header(src_fileData) % Update header with file info.
     
     irf.log('notice', [procName ' proc using: ' DCV_File]);
-    dcv_src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
-    update_header(dcv_src_fileData,1) % Update header with primary file dcv
-    
-    if(~isempty(DCE_File))
-      update_header(dce_src_fileData,2); % Update header with extra file dce
-    end
-    
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    hk_src_fileData = mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
-    update_header(hk_src_fileData,2) % Update header with extra file hk
-    
+    src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+    update_header(src_fileData) % Update header with file info.
+
     % Write the output
-    % Test the new cdf_patch:
     filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
@@ -202,27 +223,31 @@ switch procId
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
-    
+
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    dce_src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
-    update_header(dce_src_fileData,1) % Update header with primary file dce
+    src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
+    update_header(src_fileData) % Update header with file info.
+
+    if(~isempty(HK_10E_File))
+      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
+      src_fileData = mms_sdc_sdp_cdf_in_process(HK_10E_File,'sci','hk_10e');
+      update_header(src_fileData) % Update header with file info.
+    end
+
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    src_fileData=mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+    update_header(src_fileData) % Update header with file info.
 
     if isempty(DCV_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
         'received no DCV file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      dcv_src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
-      update_header(dcv_src_fileData,2) % Update header with extra file dcv
+      src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
+      update_header(src_fileData) % Update header with file info.
     end
     
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    hk_src_fileData=mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
-    update_header(hk_src_fileData,2) % Update header with extra file hk
-
     % Write the output
-    %filename_output = mms_sdc_sdp_cdf_writing(HeaderInfo);
-    % Test the new cdf_patch:
     filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
   otherwise
     errStr = 'unrecognized procId';
@@ -239,15 +264,11 @@ end
 
   function init_matlab_path()
     irfPath = [irf('path') filesep];
-    % For testing and transition to new cdf patch at nasa_cdf_patch_beta
-    % and skeletons (the latter is req for beta to write proper
-    % multidimensional labels).
     irfDirectories = {'irf',...
       ['mission' filesep 'mms'],...
       ['mission' filesep 'cluster'],...
       ['contrib' filesep 'nasa_cdf_patch'],...
       ['contrib' filesep 'nasa_cdf_patch_beta'],...
-      ['mission' filesep 'mms' filesep 'skeletons'],...
       };
     for iPath = 1:numel(irfDirectories)
       pathToAdd = [irfPath irfDirectories{iPath}];
@@ -256,14 +277,14 @@ end
     end
   end
 
-  function update_header(src,updateRun)
+  function update_header(src)
     % Update header info
-    if updateRun>2 || updateRun<1, error('updateRun must be 1 or 2'), end
-    if(updateRun==1) % Initialization. Store startTime and first filename as parents_1.
+    % Initialization. Store startTime and first filename as parents_1.
+    if(~isfield(HeaderInfo,'parents_1'))
       HeaderInfo.startTime = src.startTime;
       HeaderInfo.parents_1 = src.filename;
       HeaderInfo.numberOfSources = 1;
-    elseif(updateRun==2) % Next run.
+    else % Next run.
       % Increase number of sources and new parent information.
       HeaderInfo.numberOfSources = HeaderInfo.numberOfSources + 1;
       eval(sprintf('HeaderInfo.parents_%i=''%s'';', HeaderInfo.numberOfSources, src.filename))
