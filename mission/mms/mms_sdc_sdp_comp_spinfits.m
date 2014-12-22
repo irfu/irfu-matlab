@@ -38,14 +38,33 @@ switch procId
       irf.log('warning','Bad phase input'); return
     end
     
+    % Calculate first timestamp of spinfits to be after start of dce time 
+    % and evenly divisable with fitEvery. 
+    % I.e. if fitEvery = 5 s, then spinfit timestamps would be like 
+    % [00.00.00; 00.00.05; 00.00.10; 00.00.15;] etc.
+    % For this one must rely on breakdowntt2000 as the TT2000 (int64)
+    % includes things like leap seconds.
+    t1 = spdfbreakdowntt2000(dce.time(1)); % Start time in format [YYYY MM DD HH MM ss mm uu nn]
+    % Evenly divisable timestamp with fitEvery after t1, in ns.
+    t2 = ceil((t1(6)*10^9+t1(7)*10^6+t1(8)*10^3+t1(9))/fitEvery)*fitEvery;
+    % Note; spdfcomputett2000 can handle any column greater than expected,
+    % ie "62 seconds" are re-calculated to "1 minute and 2 sec".
+    t3.sec = floor(t2/10^9);
+    t3.ms  = floor((t2-t3.sec*10^9)/10^6);
+    t3.us  = floor((t2-t3.sec*10^9-t3.ms*10^6)/10^3);
+    t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
+    % Compute what TT2000 time that corresponds to, using computeTT2000.
+    t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
+
     % Call mms_spinfit_mx mex file with loaded data
     [time, sfit, sdev, iter, nBad] = mms_spinfit_mx(maxIt, ...
-      minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data', fitEvery, fitInterv);
-    
+      minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data',...
+      fitEvery, fitInterv, double(t0));
+
     % Store output. BUGFIX REMEMBER TO CHANGE ROW / COLUMNS in
     % mms_spinfit_mx
-    fits = struct('time', int64(time'), 'sfit', single(sfit'), 'sdev', single(sdev'), 'iter', single(iter'),...
-      'nBad', single(nBad'));
+    fits = struct('time', int64(time'), 'sfit', single(sfit'),...
+      'sdev', single(sdev'), 'iter', single(iter'), 'nBad', single(nBad'));
     
   otherwise
     irf.log('warning','Only L2Pre supported for spinfits calculation.'); return

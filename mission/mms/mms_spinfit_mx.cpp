@@ -247,12 +247,12 @@ void spinfit(const int maxIt, const int minPts, const int nTerms, const double t
 	// Fill output time, ts, as each fitEvery interval and default other outputs to NaN.
 	for ( int i=0; i<nSegments; i++){
 		ts[i] = (double)(i+1.0)*fitEvery + (double)t0;
-        // NaN = default for all other output
+		// NaN = default for all other output
 		sdev[i] = NaN;
 		iter[i] = NaN;
 		nout[i] = NaN;
 		for (int j=0; j<nTerms; j++){
-          sfit[j*nSegments +i] = NaN;
+			sfit[j*nSegments +i] = NaN;
 		} // End of for loop, j
 	} // End of for loop, i
 
@@ -266,46 +266,55 @@ void spinfit(const int maxIt, const int minPts, const int nTerms, const double t
 	int idx = 0;
 	for ( int i=0; i<nSegments; i++)
 	{
-        double startT = 0;
+		double startT = 0;
 		//mexPrintf("\nSegment: %i, t0: %f, tEnd: %f, ts[i]: %f, fitInterv: %f.", i,t0,tEnd,ts[i],fitInterv );
 		if ( te[0] >= (ts[i] - fitInterv/2.0) ) {
-            startT = te[0];
+			startT = te[0];
 		} else if ( ((ts[i] - fitInterv/2.0)>=te[0]) && (ts[i]+fitInterv/2.0<=tEnd) ){
 			startT = ts[i] - fitInterv/2.0;
 		} else {
 			startT = tEnd - fitInterv;
 		}
 
-        bool foundStart = false;
+		bool foundStart = false;
 		int idxs = 0; // Index of start, for spinfit, i.
 		int idxe = 0; // Index of end, for spinfit, i.
-        //mexPrintf("\nSegment: %i, startT: %f.", i,startT);
+
+		//mexPrintf("\nSegment: %i, startT: %f.", i,startT);
 
 		while (idxe == 0)
 		{
 			//mexPrintf("\nSegment: %i, startT: %f, idx: %i, idxs: %i, idxe: %i.", i,startT,idx,idxs,idxe);
 
 			// first point alredy more then one spin later then the first one <-- Wait, WHAT??
-			if ( (idxs == 0) && (te[idx] >= (startT+fitInterv) ) && !foundStart )
+			if ( (idxs == 0) && (te[idx] >= (startT+fitInterv) ) && !foundStart ) {
 				idxe = -1; // Provides exit out of while loop. No points to do spinfit on.
+			}
 			else
 			{
 				if (idxs == 0 && te[idx] >= startT && !foundStart){
 					// idx is the first data point in spinStart interval (spinStart to spinStart+fitInterv)
 					idxs = idx;
-                    foundStart = true;
+					foundStart = true;
 				}
 				if (idx==nData-1 || te[idx+1] > startT+fitInterv){
 					// idx is the last data point in data or just outside interval (spinStart+fitInterv)
-					idxe = idx; // Provides exit out of while loop.
-					idx = idxs-1; // Resume next iteration at the start point of previous start point.
+					if(foundStart) {
+						idxe = idx; // Provides exit out of while loop.
+						idx = idxs-1; // Resume next iteration at the start point of previous start point.
+					}
+					else
+					{
+						// Gap in time series, no start was found but next value was well after fitInterv
+						idxe = -1; // Provides exit out of while loop.
+					}
 				}
 				// Else check next index idx.
 				idx++;
 			}
 		} // End of while loop, idxe==0
 		
-        //mexPrintf("\nEnded while loop with values:\nSegment i: %i, idx: %i, startT: %f, idxs: %i, idxe: %i.", i,idx,startT,idxs,idxe);
+		//mexPrintf("\nEnded while loop with values:\nSegment i: %i, idx: %i, startT: %f, idxs: %i, idxe: %i.", i,idx,startT,idxs,idxe);
 		//mexPrintf("\n te[idxs]: %f, te[idxe]: %f, fitInterv: %f",te[idxs],te[idxe],fitInterv);
 
 		// check number of data points in interval idxs to idxe, and verify they are at least minPts.
@@ -313,7 +322,7 @@ void spinfit(const int maxIt, const int minPts, const int nTerms, const double t
 
 		//mexPrintf("\n Got nn: %i, while min was: %i",nn,minPts);
 		
-		if ( nn > minPts)
+		if ( (nn > minPts) && foundStart )
 		{
 			double lim, x[MAXTERMS_FIT];
 			int nIter, nBad, ierr;
@@ -322,7 +331,7 @@ void spinfit(const int maxIt, const int minPts, const int nTerms, const double t
 			{
 				for (int j=0; j<nTerms; j++){
 					// Store each term.
-                    sfit[i*nTerms+j] = x[j];
+					sfit[i*nTerms+j] = x[j];
 				} // End of for loop, j
 				iter[i] = (double)nIter;
 				nout[i] = (double)nBad;
@@ -340,9 +349,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
     
  	/* Check for proper number of arguments. */
-	if ( nrhs != 8) {
+	if ( nrhs != 9) {
 		mexErrMsgIdAndTxt("MATLAB:mms_spinfit_mx:rhs",
-		"This function requires 8 input arguments.");
+		"This function requires 9 input arguments.");
 	}
 	if ( nlhs != 5) {
 		mexErrMsgIdAndTxt("MATLAB:mms_spinfit_mx:lhs",
@@ -449,17 +458,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		"Input FITINTERV must be larger than equal to FITEVERY.");
 	}
     
+	// t00		argument #9
+	if (!mxIsDouble(prhs[8]) || mxIsComplex(prhs[8]) ||
+		mxGetN(prhs[8])*mxGetM(prhs[8]) != 1 ) {
+		mexErrMsgIdAndTxt("MATLAB:mms_spinfit_mx:t00NotScalar",
+		"Input t00 must be a scalar.");
+	}
+	double t0 = mxGetScalar(prhs[8]);
+
 	//mexPrintf("\n Input arguments... fitInterv: %f, fitEvery: %f, te[0]: %f, nData: %i",fitInterv,fitEvery,te[0],nData);
 	
     
 	// Get the number of complete segments from start of data to the end and first timestamp.
 	const double tEnd = te[nData-1];
-    double t0 = floor( te[0]/fitEvery )*fitEvery;
-    int nSegments = (int)(floor(te[nData-1]/fitEvery) - floor(te[0]/fitEvery));
+	int nSegments = (int)(floor((te[nData-1]-t0)/fitEvery));
 
-    //mexPrintf("\n Calculated... nSegments: %i, t0: %f, nData: %i, tEnd: %f",nSegments,t0,nData,tEnd);
-	
-    
+	//mexPrintf("\n Calculated... nSegments: %i, t0: %f, nData: %i, tEnd: %f",nSegments,t0,nData,tEnd);
+
 	// Pre allocate double matricies of required size.
 	plhs[0] = mxCreateDoubleMatrix((mwSize)1, (mwSize)nSegments, mxREAL);
 	plhs[1] = mxCreateDoubleMatrix((mwSize)nTerms, (mwSize)nSegments, mxREAL);
