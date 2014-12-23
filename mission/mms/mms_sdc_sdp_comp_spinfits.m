@@ -61,8 +61,11 @@ switch procId
       minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data',...
       fitEvery, fitInterv, double(t0));
 
-    % Store output. BUGFIX REMEMBER TO CHANGE ROW / COLUMNS in
-    % mms_spinfit_mx
+    % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
+    % with NaN in Matlab.
+    sfit(sfit==-159e7)=NaN;    sdev(sdev==-159e7)=NaN;
+    iter(iter==-159e7)=NaN;    nBad(nBad==-159e7)=NaN;
+    % Store output. BUGFIX REMEMBER TO CHANGE ROW / COLUMNS in mms_spinfit_mx
     fits = struct('time', int64(time'), 'sfit', single(sfit'),...
       'sdev', single(sdev'), 'iter', single(iter'), 'nBad', single(nBad'));
     

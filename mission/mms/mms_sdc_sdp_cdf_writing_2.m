@@ -383,6 +383,9 @@ GATTRIB.Data_type = {dataType}; % 'fast_l1b_dce2d', 'slow_l1b_dce2d' or 'brst_l1
 GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_sdp_fast_l1b_OptDesc FIXME...
 GATTRIB.Logical_source_description = {dataDesc}; % in full words.
 
+% Replace any NaN with correct FILLVAL
+replaceNaN()
+
 write_file()
 
 % Return to previous working directory.
@@ -437,6 +440,22 @@ cd(oldDir);
       r = str2double(s(idxDot(2)+1:idxDot(3)-1));
     end % GET_REV
   end % get_file_name
+
+  function replaceNaN
+    % NaN is not ISTP compliant in CDF files and should not be used for the
+    % MMS mission, however it can be written/created in CDF files therefor
+    % replace any found NaN with the corresponding correct FillValue as
+    % specified for that variable.
+    for ii=1:2:size(outVars,2)
+      % outVars = {'varName', data}, but may include variables without
+      % FillVal (such as labels).
+      ind = find(strcmp(VATTRIB.FILLVAL(:,1), outVars{1,ii})>0);
+      if ind
+        % Variable (ind) has a FILLVAL, locate any NaN and replace them
+        outVars{1,ii+1}(isnan(outVars{1,ii+1}))=VATTRIB.FILLVAL{ind,2};
+      end
+    end
+  end
 
   function write_file
    % write file with arguments obtained above, also include md5 checksum.
