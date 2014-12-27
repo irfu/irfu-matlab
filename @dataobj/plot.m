@@ -526,7 +526,9 @@ elseif flag_spectrogram
   % Add colorbar
   if flag_colorbar_is_on,
       i=fix(ncomp/2)+1;
-      hcb = colorbar(h(i));
+      if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
+      else hcb = colorbar('peer',h(i));
+      end
       posCb = get(hcb,'Position');
       posAx = get(ax(i),'Position');
       dy = posAx(3);

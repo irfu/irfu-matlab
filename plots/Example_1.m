@@ -29,7 +29,7 @@ if 1, % put to 0 if data already downloaded !!!!
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
-% initialize figure
+%% initialize figure
 h=irf_plot(5,'newfigure'); % initialize new figure with 5 subplots
 
 %%%%%%%%%%%%%%%%%%%%%%%
