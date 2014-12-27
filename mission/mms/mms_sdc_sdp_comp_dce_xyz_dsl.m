@@ -1,7 +1,9 @@
 function dce_xyz_dsl = mms_sdc_sdp_comp_dce_xyz_dsl
 %MMS_SDC_SDP_COMP_DCE_XYZ_DSL  compute DCE_XYZ_DSL for datamanager
 %
-%  phase = mms_sdc_sdp_comp_dce_xyz_dsl()
+%  probe2sc_pot = mms_sdc_sdp_comp_dce_xyz_dsl()
+%
+%  Compute the electric field in DSL (despun)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -15,7 +17,8 @@ dce_xyz_dsl = MMS_CONST.Error;
 
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.usc,MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
+  case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
+      MMS_CONST.SDCProc.l2pre}
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
     if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
       irf.log('warning','Bad hk_101 input'); return
@@ -33,10 +36,13 @@ switch procId
     
     dE = mms_sdp_despin(dce.e12.data,dce.e34.data,phase.data);
     
-    % FIXME: need to compute from 
+    % FIXME: need to compute from respective bitmasks
     bitmask = dce.e12.bitmask;
+    
+    % FIXME: apply DSL offsets here 
 
-    dce_xyz_dsl = struct('data',[dE dce.e56.data],'bitmask',bitmask);
+    dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...
+      'bitmask',bitmask);
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)

@@ -14,14 +14,14 @@ function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %         column 2-4   is magnetic field components in nT
 %  j      is row vector,
 %         column 1     time
-%         column 2-4   current, units A
+%         column 2-4   current, units A/m^2
 %  divB   column 1     time
-%         column 2     div(B)/mu0, units A
+%         column 2     div(B)/mu0, units A/m^2
 %  B      - average magnetic field, sampled at b1 time steps [nT]
 %  jxB    - j x B force [T A]
 %         - jxB=(1/muo) ( (B div)B + grad (B^2/2) )= divTshear+divPb
 %  divTshear = (1/muo) (B div) B.  the part of the divergence of stress 
-%                                   associated with curvature units [T A]
+%                                   associated with curvature units [T A/m^2]
 %  divPb = (1/muo) grad(B^2/2). gradient of magnetic pressure
 % 
 %   See also C_4_K

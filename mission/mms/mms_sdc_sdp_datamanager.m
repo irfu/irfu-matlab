@@ -58,16 +58,17 @@ if strcmpi(param, 'init')
       MMS_CONST.SDCProcs{DATAC.procId} ''''])
   elseif ~isnumeric(dataObj.procId) || ...
       isempty(intersect(dataObj.procId, 1:numel(MMS_CONST.SDCProcs)))
-    errStr = 'Invalid input for init_struct.tmMode';
+    errStr = 'Invalid input for init_struct.procId';
     irf.log('critical', errStr); error(errStr);
   else DATAC.procId = dataObj.procId;
   end
   DATAC.dce = [];
+  DATAC.dce_xyz_dsl = [];
   DATAC.dcv = [];
   DATAC.hk_101 = [];
   DATAC.phase = [];
-  DATAC.probe2ScPot = [];
-  DATAC.dce_xyz_dsl = [];
+  DATAC.probe2sc_pot = [];
+  DATAC.sc_pot = [];
   return
 end
 
@@ -130,7 +131,7 @@ switch(param)
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
     v_from_e_and_v()
-    chk_latched_pr()
+    chk_latched_p()
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
@@ -155,7 +156,7 @@ switch(param)
     error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
 end
 
-  function chk_latched_pr()
+  function chk_latched_p()
     % Check that probe values are varying. If there are 3 identical points,
     % or more, after each other mark this as latched data. If it is latched
     % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
@@ -181,20 +182,20 @@ end
 
       % Add appropriate value to bitmask, leaving other 16 bits untouched.
       DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), hex2dec('FFFF')-sum(Bits)) + ...
-        bitand(chk_latched_subfunc(DATAC.dcv.(senA).data(indA)), sum(Bits));
+        bitand(latched_mask(DATAC.dcv.(senA).data(indA)), sum(Bits));
       DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), hex2dec('FFFF')-sum(Bits)) + ...
-        bitand(chk_latched_subfunc(DATAC.dcv.(senB).data(indB)), sum(Bits));
+        bitand(latched_mask(DATAC.dcv.(senB).data(indB)), sum(Bits));
       DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), hex2dec('FFFF')-sum(Bits)) + ...
-        bitand(chk_latched_subfunc(DATAC.dce.(senE).data(indE)), sum(Bits));
+        bitand(latched_mask(DATAC.dce.(senE).data(indE)), sum(Bits));
 
       %% TODO, Check overlapping stuck values, if senA stuck but not senB..
       
     end
     
-      function latchBitmask = chk_latched_subfunc( data )
+      function latchBitmask = latched_mask( data )
         % Return value to add to bitmask, for latched probe data.
         if(~isempty(data))
-          irf.log('notice', 'Some latched data found, marking them with bitmask.');
+          irf.log('notice', 'Latched data found');
           latchBitmask = Bits(1)*ones(size(data),'uint16');
           % Check if any of these are data with values below limit, then
           % use different latched bitmask.
@@ -211,11 +212,16 @@ end
   end
 
   function chk_sweep_on()
-    % Check if wseep is on for all probes
+    % Check if sweep is on for all probes
     % if yes, set bit in both V and E bitmask
-    
+
     %XXX: Does nothing at the moment
+
+    % Notes: cdf files (dcv/dce) will contain mmsX_sdp_sweepstatus (uint8)
+    % and corresponding timestamps in mmsX_sdp_epoch_sweep (tt2000)
+    % indicating if sweep is ongoing at that particular epoch time or not.
   end
+
   function chk_sdp_v_vals()
     % check if probe-to-spacecraft potentials  averaged over one spin for 
     % all probes are similar (within TBD %, or V). 

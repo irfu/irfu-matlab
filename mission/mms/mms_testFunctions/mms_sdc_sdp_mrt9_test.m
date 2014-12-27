@@ -1,17 +1,25 @@
 %% Init
 data_root='/data/mms/MRT9';
-%data_root='/Users/yuri/Dropbox/Projects/MMS/DataProcessing/Data/MRT9';
-cd(data_root)
+%data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
+%data_root='/home/thoni/MMS/MMS_cdf/MRT9';
+
+if ismac,
+  setenv('CDF_BASE','/Applications/cdf35_0-dist/')
+  outDir = '/Users/yuri/tmp_out';
+else
+  outDir = data_root;
+end
+
+cd(outDir)
 if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
-%setenv('LOG_PATH_ROOT',[data_root filesep 'log'])
-setenv('LOG_PATH_ROOT','')
-setenv('DROPBOX_ROOT',[data_root filesep 'out'])
-setenv('DATA_PATH_ROOT',[data_root filesep 'out'])
+setenv('DROPBOX_ROOT',[outDir filesep 'out'])
+setenv('DATA_PATH_ROOT',[outDir filesep 'out'])
+setenv('LOG_PATH_ROOT',[outDir filesep 'log'])
 
 modes    ={'slow', 'fast', 'brst' };
 versions ={'2.0.1','2.0.1','2.0.0'};
-procs={'usc','ql','sitl'};
+procs={'scpot','ql','sitl','l2pre'};
 dates = {'20150410', '20160101'};
 
 %% Tests
@@ -34,7 +42,8 @@ for scId=2:-1:1
       end
       if isempty(dcvFile) && isempty(dceFile), continue, end
       for iProc=1:length(procs)
-        fprintf('TEST: MMS%d %s %s\n',scId,modes{iMode},procs{iProc})
+        fprintf('TEST: %s MMS%d %s %s\n',...
+          dates{iDate},scId,modes{iMode},procs{iProc})
         mms_sdc_sdp_proc(procs{iProc},dceFile,dcvFile,hk_101File)
       end
     end

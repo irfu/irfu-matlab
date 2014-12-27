@@ -13,6 +13,7 @@ function v=c_v(t,coord_sys)
 % coord_sys='GSM' - when calculate in GSM reference frame
 %
 persistent R
+
 if ~exist('R','var') || isempty(R)
 	R=struct('R1',[],'R2',[],'R3',[],'R4',[],...
 		'V1',[],'V2',[],'V3',[],'V4',[]);
@@ -74,14 +75,6 @@ if ~is_R_ok
 	irf.log('warning','!!! Could not obtain position data !!!');
 	return
 end
-switch coord_sys
-	case 'GSE'
-		% do nothing
-	case 'GSM'
-		c_eval('R.R?=irf_gse2gsm(R.R?);R.V?=irf_gse2gsm(R.V?);');
-	otherwise
-		% do nothing, i.e. assume GSE
-end
 
 if strcmp(flag,'v_from_t'),
 	t_center=0.5*t(1)+0.5*t;
@@ -98,13 +91,15 @@ if strcmp(flag,'v_from_t'),
 	m=D\T;
 	clear v
 	v=m/norm(m)/norm(m);v=v';	% velocity vector of the boundary
-	
+	if strcmpi(coord_sys,'gsm'), v = irf_gse2gsm([t(1) v]); v(1) = []; end
 	disp([ datestr(datenum(fromepoch(t(1))))])
 	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
 	vn=irf_norm(v);
 	strv=['V=' num2str(irf_abs(v,1),3) ' [ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
 	disp(strdt);disp(strv);
 elseif strcmp(flag,'dt_from_v'),
+  vOrig = v;
+  if strcmpi(coord_sys,'gsm'), v = irf_gse2gsm([t(1) v], -1); v(1)=[]; end 
 	t_center=0.5*t(1)+0.5*t;
 	for ic='1234',
 		i=ic-'0';
@@ -115,8 +110,8 @@ elseif strcmp(flag,'dt_from_v'),
 	end
 	% print result
 	disp([ datestr(datenum(fromepoch(t(1))))])
-	vn=irf_norm(v);
-	strv=['V=' num2str(irf_abs(v,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
+	vn=irf_norm(vOrig);
+	strv=['V=' num2str(irf_abs(vOrig,1),3) '*[ ' num2str(vn(end-2:end),' %5.2f') '] km/s ' coord_sys];
 	strdt=['dt=[' , num2str(R.dt,' %5.2f') '] s. dt=[t1-t1 t2-t1 ...]'];
 	disp(strv);  disp(strdt);
 	v=R.dt; % output variable is v

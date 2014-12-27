@@ -14,14 +14,10 @@ function ENVIR = mms_sdc_sdp_init(scNumberStr)
 %	  .LOG_PATH_ROOT        - Root dir of log files
 % 	  .CAL_PATH_ROOT        - Root dir of calibration files
 %
-%	The struct MMS_CONST will contain the following:
-%	  .Version.X		- Major Software version used.
-%		  .Y		    - Major Calibration version used.
-%		  .Z		    - File version (should perhaps be removed).
-%	  .Bitmask.OnlyDCE  - Only DCE was found at these points in time. 
-%
 %	Example:
 %		ENVIR = MMS_SDC_SDP_INIT('1');
+%
+% 	See also MMS_CONSTANTS.
 
 global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 

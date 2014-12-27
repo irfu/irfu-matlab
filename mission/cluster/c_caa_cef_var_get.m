@@ -65,6 +65,7 @@ if ischar(fileName)
 		caa_download(tint,datasetName{1},'stream'); % TODO: assumes all variables from the same dataset
 		cd(['CAA/' datasetName{1}]);
 		d=dir('*.cef.gz');
+    if isempty(d), out = []; return, end % No data
 		cefFile = d.name;
 		cef_init();
 		cef_read(cefFile);
