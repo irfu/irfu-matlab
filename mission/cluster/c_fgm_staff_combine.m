@@ -67,11 +67,10 @@ else fsStaff = c_efw_fsample(bStaff,'hx',cl_id);
 end
 if fsStaff < 400 % STAFF in normal mode, not implemented
     N = 127;  % FIR filter order (have to be odd number!!!)
-    fprintf('\n STAFF data in normal mode [%.2f Hz]! Cut-off at %f Hz\n',fsStaff, fCut);
-    %         fprintf('Adjust cut-off frequency if coincides with a kink in the power spectrum');
+    irf.log('notice',sprintf('STAFF data in normal mode [%.2f Hz]',fsStaff));
 else
     N = 1023;  % FIR filter order (have to be odd number!!!)
-    fprintf('\n STAFF data in burst mode [%.2f Hz]! Cut-off at %f Hz\n', fsStaff, fCut);    
+    irf.log('notice',sprintf('STAFF data in burst mode [%.2f Hz]',fsStaff)); 
 end
 
 if 1/mean(diff(bFgm(1:min(end,100),1))) < 60 % FGM in normal mode
@@ -82,9 +81,9 @@ else
     errS = 'FGM sample rate is higher than STAFF''!';
     irf.log('critical',errS), error(errS)
   end
-  disp('FGM data in burst mode!');
+  irf.log('notice','FGM data in burst mode!');
 end
-fprintf('\n Adjust cut-off frequency if needed\n')
+irf.log('warning',sprintf('fCut = %.2f Hz, adjust cut-off frequency if needed',fCut))
 %% design filters
 % low pass filter for FGM
 % higpass filter for STAFF
