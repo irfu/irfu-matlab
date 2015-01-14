@@ -21,7 +21,7 @@ narginchk(1,1);
 global ENVIR;
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 
-INST_NAME = 'sdp';
+INST_NAME = 'edp'; % Electric double probe
 DCE_FILE = 'dce2d';
 EFIELD_MAX = single(700); % Max value of E-field in mV/m with shortening factor applied
 VOLTAGE_MIN = single(-120); % Min voltage
@@ -372,6 +372,12 @@ switch procId
       name.bitmask, 'support_data';...
       name.quality, 'support_data'};
     VATTRIB.MONOTON = {name.epoch, 'INCREASE'};
+
+  case MMS_CONST.SDCProc.l2a
+    %% L2A (DCE DSL, Offsets, etc)
+    errStr='L2A process not fully supported yet';
+    irf.log('critical',errStr); error(errStr);
+
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
@@ -380,7 +386,7 @@ end
 %% Write to file.
 % Update GlobalAttributes specific to ql/sitl or l2pre.
 GATTRIB.Data_type = {dataType}; % 'fast_l1b_dce2d', 'slow_l1b_dce2d' or 'brst_l1b_dce2d'.
-GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_sdp_fast_l1b_OptDesc FIXME...
+GATTRIB.Logical_source = {[datasetPrefix '_' dataType]}; % ie. mms2_edp_fast_l1b_OptDesc FIXME...
 GATTRIB.Logical_source_description = {dataDesc}; % in full words.
 
 % Replace any NaN with correct FILLVAL
@@ -401,6 +407,8 @@ cd(oldDir);
         subDir = 'l2'; suf = 'dce2d';
       case MMS_CONST.SDCProc.scpot
         subDir = 'l2'; suf = 'scpot';
+      case MMS_CONST.SDCProc.l2a
+        subDir = 'l2'; suf = 'Adce2d';
       otherwise
         errStr = 'unrecognized procId';
         irf.log('critical', errStr); error(errStr)
@@ -472,12 +480,12 @@ cd(oldDir);
     % Global Attributes REQUIRED:
     GATTRIB.Data_type = cell(0,1); % mode_dataLevel_optionalDescriptor
     GATTRIB.Data_version = cell(0,1); % Same as version number in filename.
-    GATTRIB.Descriptor = {'SDP>Spin-plane Double Probe'};
+    GATTRIB.Descriptor = {'EDP>Electric Double Probe'};
     GATTRIB.Discipline = {'Space Physics>Magnetospheric Science'};
     GATTRIB.Generation_date = {datestr(now,'yyyymmdd')};
     GATTRIB.Instrument_type = {'Electric Fields (space)'};
     GATTRIB.Logical_file_id = cell(0,1); % Same as filename without ".cdf".
-    GATTRIB.Logical_source = cell(0,1); % Ex: mms3_sdp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
+    GATTRIB.Logical_source = cell(0,1); % Ex: mms3_edp_fast_ql_swd (mmsSC_instrument_mode_dataLevel_optionalDescriptor)
     GATTRIB.Logical_source_description = cell(0,1); % Description in full words..
     GATTRIB.Mission_group = {'MMS'};
     GATTRIB.PI_affiliation = {'SWRI, LASP, KTH'};
@@ -504,7 +512,7 @@ cd(oldDir);
     GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};
     % Global Attributes OPTIONAL:
 %    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
-    GATTRIB.Skeleton_version = {'v0.0.3'};
+    GATTRIB.Skeleton_version = {'v0.0.4'};
     GATTRIB.Rules_of_use = cell(0,1);
     GATTRIB.Time_resolution = cell(0,1);
   end
