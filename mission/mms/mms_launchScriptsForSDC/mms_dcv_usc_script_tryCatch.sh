@@ -36,7 +36,7 @@ PROCESS_NAME=
 case "$0" in
 	*mms_dce_ql_script_tryCatch*) PROCESS_NAME=ql ;;
 	*mms_dce_sitl_script_tryCatch*) PROCESS_NAME=sitl ;;
-	*mms_dcv_usc_script_tryCatch*) PROCESS_NAME=usc ;;
+	*mms_dcv_usc_script_tryCatch*) PROCESS_NAME=scpot ;;
 	*)
 	echo "ERROR: urecognized name of the caller routine"
 	exit 166
