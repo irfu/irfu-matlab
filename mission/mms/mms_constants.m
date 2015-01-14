@@ -8,7 +8,7 @@ function MMS_CONST = mms_constants
 % these numbers. 
 % When simply re-running a dataset, the Z value should be increased by one.
 
-MMS_CONST.Version.X = 1; % Major new Software version
+MMS_CONST.Version.X = 2; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Version.MODS - MODS cdf GlobalAttribute should contain a description of
@@ -18,6 +18,7 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
 MMS_CONST.Version.MODS = {'V.0. Initial interface tests.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable names, added some processing.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
 
 
 MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
@@ -35,11 +36,12 @@ MMS_CONST.TmMode.fast = 2;
 MMS_CONST.TmMode.brst = 3;
 
 % SDC process names
-MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre'};
-MMS_CONST.SDCProc.sitl = 1; % Number must corrspond to position in the list
-MMS_CONST.SDCProc.ql   = 2;
-MMS_CONST.SDCProc.scpot  = 3;
-MMS_CONST.SDCProc.l2pre  = 4;
+MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre','l2a'};
+MMS_CONST.SDCProc.sitl  = 1; % Number must corrspond to position in the list
+MMS_CONST.SDCProc.ql    = 2;
+MMS_CONST.SDCProc.scpot = 3;
+MMS_CONST.SDCProc.l2pre = 4;
+MMS_CONST.SDCProc.l2a   = 5;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.

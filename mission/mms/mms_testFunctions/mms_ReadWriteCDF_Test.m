@@ -51,13 +51,13 @@ function testSCpotProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_l2_scpot_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
-    actSolution = dataObjIn.data.mms2_sdp_scpot.nrec;
+        '/mms2_edp_fast_l2_scpot_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_edp_scpot.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_l2_scpot_20160101000000_v1.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_edp_fast_l2_scpot_20160101000000_v1.0.0.cdf
 end
 
 
@@ -74,13 +74,13 @@ function testSITLprocessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
-    actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
+        '/mms2_edp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_edp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf
 end
 
 
@@ -97,13 +97,13 @@ function testQuickLookProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_ql_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
-    actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
+        '/mms2_edp_fast_ql_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_ql_dce2d_20160101000000_v1.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_edp_fast_ql_dce2d_20160101000000_v1.0.0.cdf
 end
 
 function testL2PRErocessAndReadCDF(testCase)
@@ -119,11 +119,11 @@ function testL2PRErocessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_l2_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
-    actSolution = dataObjIn.data.mms2_sdp_dce_xyz_dsl.nrec;
+        '/mms2_edp_fast_l2_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+    actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
     % Delete the output file created, or next run will automatically have
     % errors when trying to write to the same file.
-    !rm $DROPBOX_ROOT/mms2_sdp_fast_l2_dce2d_20160101000000_v1.0.0.cdf
+    !rm $DROPBOX_ROOT/mms2_edp_fast_l2_dce2d_20160101000000_v1.0.0.cdf
 end

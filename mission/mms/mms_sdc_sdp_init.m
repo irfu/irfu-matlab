@@ -4,7 +4,7 @@ function ENVIR = mms_sdc_sdp_init(scNumberStr)
 % 	[ENVIR, MMS_CONST] = MMS_SDC_SDP_INIT(scNumberStr) returns environment
 %   variables and constants useful for MMS processing. Input argument 
 %   should be the sc number (as a string), i.e. '1' for mms1 and '2' for 
-%   mms2 etc. It also configures logging to "$LOG_PATH_ROOT/ mmsX/ sdp/
+%   mms2 etc. It also configures logging to "$LOG_PATH_ROOT/ mmsX/ edp/
 %   date_IRFU.log".
 %
 %       The struct ENVIR will contain the following:
@@ -32,7 +32,7 @@ ENVIR.DROPBOX_ROOT = getenv('DROPBOX_ROOT'); % Get path to output location,
 ENVIR.CAL_PATH_ROOT = getenv('CAL_PATH_ROOT'); % Get path to cal.
 
 % Setup logging.
-% Create a logfile at $LOG_PATH_ROOT / mmsX / sdp /
+% Create a logfile at $LOG_PATH_ROOT / mmsX / edp /
 % named after current run day yyyymmdd and _IRFU.log. If this fails
 % create it at $LOG_PATH_ROOT and include full date with seconds.
 if ~ischar(scNumberStr) || ...
@@ -58,7 +58,7 @@ elseif ~exist(ENVIR.LOG_PATH_ROOT,'dir')
     ENVIR.LOG_PATH_ROOT ') doest not exist: logging to screen'])
   irf.log('log_out','screen')
 else
-  logDir = [ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, 'sdp'];
+  logDir = [ENVIR.LOG_PATH_ROOT, filesep, 'mms', scNumberStr, filesep, 'edp'];
   if ~exist(logDir, 'dir')
     [s,m] = mkdir(logDir);
     if ~s

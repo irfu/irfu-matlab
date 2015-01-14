@@ -67,6 +67,7 @@ if strcmpi(param, 'init')
   DATAC.dcv = [];
   DATAC.hk_101 = [];
   DATAC.hk_10e = [];
+  DATAC.l2pre = [];
   DATAC.phase = [];
   DATAC.probe2sc_pot = [];
   DATAC.sc_pot = [];
@@ -122,7 +123,7 @@ if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
   error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
 end
 
-varPrefix = sprintf('mms%d_sdp_',DATAC.scId);
+varPrefix = sprintf('mms%d_edp_',DATAC.scId);
 
 switch(param)
   case('dce')
@@ -162,7 +163,7 @@ switch(param)
     DATAC.(param).time = x.DEPEND_O.data;
     check_monoton_timeincrease(DATAC.(param).time, param);
     % Go through each probe and store values for easy access,
-    % for instance prpbe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+    % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
     hk10eParam = {'dac','ig','og','stub'}; % DAC, InnerGuard, OuterGuard & Stub
     for iParam=1:length(hk10eParam)
       for jj=1:6
@@ -178,6 +179,11 @@ switch(param)
         end
       end % for jj=1:6
     end % for iParam=1:length(hk10eParam)
+
+  case('l2pre')
+    % L2Pre, contain dce data, spinfits, etc.
+    DATAC.(param) = [];
+    DATAC.(param).dataObj = dataObj;
 
   otherwise
     % Not yet implemented.
@@ -247,6 +253,7 @@ end
       %DATAC.hk_10e.beb.ig.v1(600:630) = uint32(10); % FIXME, forced to non-moninal, for debug.
       %DATAC.hk_10e.beb.og.v2(600) = uint32(0); % FIXME, forced to non-nominal
 
+      irf.log('notice','Checking for non nominal bias settings.');
       for iSen = 1:2:numel(sensors)
         senA = sensors{iSen};  senB = sensors{iSen+1};
         senE = ['e' senA(2) senB(2)]; % E-field sensor
