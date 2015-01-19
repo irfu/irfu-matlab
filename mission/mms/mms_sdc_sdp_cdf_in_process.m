@@ -81,28 +81,48 @@ if(strcmp(sci_or_ancillary,'sci'))
 
 elseif(strcmp(sci_or_ancillary,'ancillary'))
     % Ancillary data, named differently and stored differently. At first
-    % glance it appears it is stored as simply ASCII files in folders by
-    % DOY.
-    % Ancillary data, named differently and stored differently. At first
-    % glance it appears it is stored as simply ASCII files in folders by
-    % DOY.
-    
-    % FIXME: Check number of headers in other files.
-    % FIXME: Call upon DataManager to store read values in global memory.
-    
-    % DEFATT has 48 lines of header and delimiter is either ' ', or '  '.
-    % and times as a string in the first column and then numerical values.
-%     fileID = fopen(fullFilename);
-%     tmpData = textscan( fileID, ...
-%         '%s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %s',...
-%         'delimiter', ' ', 'MultipleDelimsAsOne', 1, 'HeaderLines', 48 );
-%     fclose(fileID);
-% FIXME: CONVERT TIME and SAVE DATA of interest.
-% convert time column 1 (time with dayOfYear and time of day,
-% i.e. 2015-099T23:47:38.250) or column 2 also time but TAI (seconds since
-% 1958-001T00:00:00 UTC) to appropriate format (TT2000 ?). 
-% and store data columns of interest in datamanager.
+    % glance it appears it is stored as simply ASCII files.
+    % MMS SDC Developer Guide list these as stored in folders structure:
+    % $DATA_PATH_ROOT/ancillary/mmsX/defatt/YYYY/
 
+    % FIXME: Call upon DataManager to store the values in global memory (DATAC).
+
+    irf.log('debug', ['Received input filename: ', fullFilename, ' for ancillary data.']);
+
+    if(exist(fullFilename,'file'))
+      % DEFATT File start with header, number of lines with header is not
+      % constant nor do all header lines beging with "COMMENT", but the
+      % last header line does. Also last line in file contain only one
+      % column, "DATA_STOP". In order to import the data use textscan with
+      % format specified (doesn't match "DATA_STOP") and skip all headers.
+
+      % Get number of last line with COMMENT using unix commands grep, tail and cut.
+      [~, numHeaders] = unix(['grep -onr COMMENT ',fullFilename,' | tail -n1 | cut -d'':'' -f1']);
+      numHeaders = str2double(numHeaders);
+      % or using AWK (not allways installed)
+      % [~, numHeaders] = unix(['awk ''$1=="COMMENT"{a=NR}END{print a}'' ',fullFilename])
+
+      fileID = fopen(fullFilename, 'r');
+      % DEFATT file:
+      % Column 1 time in format YYYY-DOYTHH:mm:ss.SSS (where DOY is day of year and SSS is milliseconds)
+      % Column 10 Z-Phase (in degrees).
+      formatSpec='%f-%f%s %*f %*f %*f %*f %*f %*f %*f %*f %f %*[^\n]';
+      tmpData = textscan( fileID, formatSpec,...
+        'delimiter', ' ', 'MultipleDelimsAsOne', 1, 'HeaderLines', numHeaders );
+      fclose(fileID);
+
+      % Convert time to format YYYY-MM-DDTHH:mm:ss.mmmuuunnn (where mmm = ms, uu = us, nnn = ns)
+      timeFullStr=[irf_time([tmpData{1,1}, tmpData{1,2}],'doy2yyyy-mm-dd'), ...
+        cell2mat(tmpData{1,3}), repmat('000000',size(tmpData{1,3},1),1)];
+      % Convert time to TT2000 and store as struct (for now)
+      DEFATT.time = spdfparsett2000(timeFullStr);
+      DEFATT.zphase = tmpData{1,4};
+
+    else
+      errStr = ['File not found. ', fullFilename];
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDF_IN_PROCESS:INPUTFILE', errStr);
+    end
 
 else
     % Processing cdf files req. either SCIENCE or ANCILLARY data files.
