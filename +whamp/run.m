@@ -26,6 +26,8 @@ function Output = run(PlasmaModel,InputParameters)
 %                                 - 0 for each kz value, step through all kp values
 %     InputParameters.useLog - 1 input log10(p) and log10(z),(default)
 %                              0 input given as p and z
+%     InputParameters.maxIterations - maximum number of iterations when
+%                              searching for solution (default 50)
 %
 % Output is a structure:
 % Output.InputParameters   - copy of InputParameters
@@ -62,7 +64,7 @@ DefaultSpecies={...
 	};
 DefaultSpeciesParameters = struct('m',0,'n',1,'t',1,'a',1,'b',0.1,'d',1,'vd',0);
 defaultB = 100;
-DefaultInputParameters = struct('fstart',0.1,'kperp',[0.0 10 0.0],'kpar',[0.0022 10 0.0022],'varyKzFirst',1,'useLog',0);
+DefaultInputParameters = struct('fstart',0.1,'kperp',[0.0 10 0.0],'kpar',[0.0022 10 0.0022],'varyKzFirst',1,'useLog',0,'maxIterations',50);
 Output = [];
 
 %% Define full PlasmaModel 
@@ -147,6 +149,7 @@ disp(['        kperp = ' num2str(InputParameters.kperp) ]);
 disp(['         kpar = ' num2str(InputParameters.kpar) ]);
 disp(['  varyKzFirst = ' num2str(InputParameters.varyKzFirst) ]);
 disp(['       useLog = ' num2str(InputParameters.useLog) ]);
+disp(['maxIterations = ' num2str(InputParameters.maxIterations) ]);
 disp('-----------------------------------------');
 
 %% Define WHAMP matrices for mexwhamp
@@ -194,6 +197,10 @@ else
 	return;
 end
 
+% define root finding parameters
+maxIterationsWHAMP = int32(InputParameters.maxIterations);
+
+
 %% call mexwhamp
 [...
 	kperpOUT,...   %1
@@ -229,7 +236,8 @@ end
 	vdWHAMP,...       %9
 	pWHAMP,...        %10
 	zWHAMP,...        %11
-	fstartWHAMP...    %12
+	fstartWHAMP,...   %12
+    maxIterationsWHAMP...%13
 	);
 
 
