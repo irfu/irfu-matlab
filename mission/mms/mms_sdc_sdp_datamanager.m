@@ -72,6 +72,7 @@ if strcmpi(param, 'init')
   DATAC.probe2sc_pot = [];
   DATAC.sc_pot = [];
   DATAC.spinfits = [];
+  DATAC.defatt = [];
   return
 end
 
@@ -110,6 +111,9 @@ elseif ischar(dataObj) && exist(dataObj, 'file')
   % If it is not a read cdf file, is it an unread cdf file? Read it.
   irf.log('warning',['Loading ' param ' from file: ', dataObj]);
   dataObj = dataobj(dataObj, 'KeepTT2000');
+elseif isstruct(dataObj) && strcmp(param, 'defatt')
+  % Is it the special case of DEFATT (read as a struct into dataObj). Do
+  % nothing..
 else
   errStr = 'Unrecognized input argument';
   irf.log('critical', errStr);
@@ -179,6 +183,11 @@ switch(param)
         end
       end % for jj=1:6
     end % for iParam=1:length(hk10eParam)
+
+  case('defatt')
+    % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase')
+    DATAC.(param) = dataObj;
+    check_monoton_timeincrease(DATAC.(param).time);
 
   case('l2pre')
     % L2Pre, contain dce data, spinfits, etc.

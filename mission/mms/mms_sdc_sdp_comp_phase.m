@@ -36,8 +36,30 @@ switch procId
     if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
       irf.log('warning','Bad dce input'); return
     end
+
+%   % DEFATT
+%   defatt = mms_sdc_sdp_datamanager('defatt');
+%   if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
+%     irf.log('warning','Bad DEFATT input'); return
+%   end
+%
+%   % Every time differance is less than 180 degrees assume it wrap'ed once
+%   % and add 360 degrees, cumulatively.
+%   % Assumption, DEFATT datapoints at least every 10 second
+%   % (nominal spinrate once every 20 seconds) and all s/c spinning in +Z
+%   % direction.
+%   phase_jumps = [0; diff(defatt.zphase)<-180]*360;
+%   defatt.zphase = defatt.zphase + cumsum(phase_jumps);
+%
+%   % Linear interpol, with extrapolation. (convert int64 time to double).
+%   dcephase = interp1(double(defatt.time), defatt.zphase, double(dce.time), 'linear', 'extrap');
+%   % Then wrap to interval [0 - 360) degrees.
+%   dcephase = mod(phase, 360); % interval [0 to 360)
+
     [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
     phase = struct('data',dcephase,'bitmask',dcephase_flag);
+
+
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
