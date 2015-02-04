@@ -8,9 +8,6 @@ function out=c_4_v_gui(x1,x2,x3,x4,column)
 %  H = C_4_V_GUI(..)				return axis handles
 %
 % See also: C_4_V
-%
-
-% $Id$
 
 flag_first_call=0;
 
