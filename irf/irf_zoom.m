@@ -143,6 +143,7 @@ for hii=axis_handles
     switch lower(c)
         case 'x'
             set(h,'XLim',interval);
+            ax = get(axis_handles(1),'XLim');
             if ax(1)+t_ref>1e8 && ax(1)+t_ref<1e10
                 if flag_use_t_start_epoch % Read t_ref from userdata.t_start_epoch
                     p = get(h,'position');
