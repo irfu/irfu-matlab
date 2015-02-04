@@ -35,8 +35,12 @@ if isempty(axis_handle),
         if args{1}==0, % add to the whole figure
             axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                 'Tag','BackgroundAxes', 'HitTest','off');
-            c=get(gcf,'children');
-            set(gcf,'children', [c(2:end) ;c(1)]); % move axis to background
+            % move axis to background
+            if isa(axis_handle,'handle'), uistack(axis_handle,'bottom') % HG2 - NEW
+            else
+                c=get(gcf,'children');
+                set(gcf,'children', [c(2:end) ;c(1)]);
+            end
         else
             axis_handle=args{1};
         end
