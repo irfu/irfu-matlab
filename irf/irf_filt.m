@@ -24,8 +24,6 @@ function [out] = irf_filt(inp,fmin,fmax,Fs,order)
 % Example: 
 %    def=irf_filt(de,0,.1,25,3); 
 %    lowpass filter E at .1Hz
-%
-% $Id$
 
 if ((nargin < 4) || (isempty(Fs))), 
  Fs=1/(inp(2,1)-inp(1,1));
