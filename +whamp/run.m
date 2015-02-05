@@ -32,19 +32,19 @@ function Output = run(PlasmaModel,InputParameters)
 % Output is a structure:
 % Output.InputParameters   - copy of InputParameters
 % Output.PlasmaModel       - copy of PlasmaModel
-% Output.(results)         - scalars, vectors or matrices 
+% Output.(results)         - scalars, vectors or matrices [size(kpar) x size(kperp)]
 %   (results) = kperp,kpar,f,E,Ex,Ey,Ez,B,Bx,By,Bz,EB,VGP,VGZ,
 %               S,Sx,Sy,Sz,u,SGP,SGZ
 %
 % Examples:
 %    Output = whamp.run([],[]) % default run (equivalent to below)
 %
-%            Oxygen = struct('m',16,'n',1,'t',10,'a',5,'vd',1);
-%         Electrons = struct('m',0,'n',1,'t',100);
-%       PlasmaModel = struct('B',100);
-%	   PlasmaModel.Species = {Oxygen,Electrons};
-%   InputParameters = struct('fstart',0.1,'kperp',0,'kpar',0.0022,'useLog',0);
-%            Output = whamp.run(PlasmaModel,InputParameters)
+%              Oxygen = struct('m',16,'n',1,'t',10,'a',5,'vd',1);
+%           Electrons = struct('m',0,'n',1,'t',100);
+%         PlasmaModel = struct('B',100);
+%	PlasmaModel.Species = {Oxygen,Electrons};
+%     InputParameters = struct('fstart',0.1,'kperp',0,'kpar',0.0022,'useLog',0);
+%              Output = whamp.run(PlasmaModel,InputParameters)
 %
 
 
@@ -62,7 +62,7 @@ DefaultSpecies={...
 	struct('m',16,'n',1,'t',10,'a',5,'b',0,'d',1,'vd',1),...
 	struct('m',0,'n',1,'t',100,'a',1,'b',0,'d',1,'vd',0),...
 	};
-DefaultSpeciesParameters = struct('m',0,'n',1,'t',1,'a',1,'b',0.1,'d',1,'vd',0);
+DefaultSpeciesParameters = struct('m',0,'n',1,'t',1,'a',1,'b',0.0,'d',1,'vd',0);
 defaultB = 100;
 DefaultInputParameters = struct('fstart',0.1,'kperp',[0.0 10 0.0],'kpar',[0.0022 10 0.0022],'varyKzFirst',1,'useLog',0,'maxIterations',50);
 Output = [];
@@ -252,25 +252,25 @@ else
 	Output.kperp           = kperpOUT;
 	Output.kpar            = kparOUT;
 end
-Output.f               = fOUT;
-Output.Ex              = ExOUT;
-Output.Ey              = EyOUT;
-Output.Ez              = EzOUT;
-Output.Bx              = BxOUT;
-Output.By              = ByOUT;
-Output.Bz              = BzOUT;
-Output.Sx              = SxOUT;
-Output.Sy              = SyOUT;
-Output.Sz              = SzOUT;
-Output.EB              = EBOUT;
-Output.VGP             = VGPOUT;
-Output.VGZ             = VGZOUT;
-Output.SGP             = SGPOUT;
-Output.SGZ             = SGZOUT;
-Output.u               = uOUT;
-Output.flagSolutionFound    = flagSolutionFoundOUT;
-Output.flagTooHeavilyDamped = flagTooHeavilyDampedOUT;
-Output.flagNoConvergence    = flagNoConvergenceOUT;
+Output.f               = fOUT';
+Output.Ex              = ExOUT';
+Output.Ey              = EyOUT';
+Output.Ez              = EzOUT';
+Output.Bx              = BxOUT';
+Output.By              = ByOUT';
+Output.Bz              = BzOUT';
+Output.Sx              = SxOUT';
+Output.Sy              = SyOUT';
+Output.Sz              = SzOUT';
+Output.EB              = EBOUT';
+Output.VGP             = VGPOUT';
+Output.VGZ             = VGZOUT';
+Output.SGP             = SGPOUT';
+Output.SGZ             = SGZOUT';
+Output.u               = uOUT';
+Output.flagSolutionFound    = flagSolutionFoundOUT';
+Output.flagTooHeavilyDamped = flagTooHeavilyDampedOUT';
+Output.flagNoConvergence    = flagNoConvergenceOUT';
 
 % set to NaN output
 outFields = {'f','Ex','Ey','Ez','Bx','By','Bz',...

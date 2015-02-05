@@ -256,16 +256,16 @@ elseif plotPitchangles
         legend(h,M)
     end
 else
-	contour3(h,vp/unitsVelocity,vz/unitsVelocity,log10(f),30);view(0,90);
+	contour3(h,vp/unitsVelocity,vz/unitsVelocity,f,30);view(0,90);
 	axis(h,'equal');
 	grid(h,'on');
-	xlabel(h,['Vperp [' labelVelocity ']']);
-	ylabel(h,['Vpar [' labelVelocity ']']);
+	xlabel(h,['V_{\perp} [' labelVelocity ']']);
+	ylabel(h,['V_{||} [' labelVelocity ']']);
 end
 if printTitle
-	title(h,['vt(1)=' num2str(vt(1)/unitsVelocity,3) ' ' labelVelocity...
-		', vd(1)/vt(1)=' num2str(vd(1))...
-		', Tperp(1)/Tpar(1)=' num2str(a(1)) ', d(1)=' num2str(d(1)) ', b(1)=' num2str(b(1)) ]);
+	title(h,['1st comp: T=' num2str(t(1),3) 'keV'...
+		', vd/vt=' num2str(vd(1))...
+		', Tperp/Tpar=' num2str(a(1)) ', d=' num2str(d(1)) ', b=' num2str(b(1)) ]);
 end
 
 %% Output definition
