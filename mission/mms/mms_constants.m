@@ -35,6 +35,11 @@ MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
 MMS_CONST.TmMode.fast = 2;
 MMS_CONST.TmMode.brst = 3;
 
+% Sample rates
+MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
+MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.brst = 8092; % Or 1024? TM mode burst
+
 % SDC process names
 MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre','l2a'};
 MMS_CONST.SDCProc.sitl  = 1; % Number must corrspond to position in the list
@@ -45,6 +50,7 @@ MMS_CONST.SDCProc.l2a   = 5;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
+MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
