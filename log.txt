@@ -1,3 +1,4 @@
+2015-02-06 v1.7.3 WHAMP calling script bug fix: change complex transpose to normal transpose
 2015-02-06 v1.7.2 HG1,2 compatibility, WHAMP updates
 2014-11-05 v1.7.1 bug fix in dataobj.get_variable()
 2014-10-30 v1.7.0 CAA @ESTEC is closed, now data downloaded from @ESAC, new NASA CDF patch, many minor bug fixes
