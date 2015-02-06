@@ -106,7 +106,7 @@ function [ii1,ii2]=irf_find_comm_idx(d1,d2)
             end
         end
         n_loop = n_loop + 1;
-        if DEBUG, disp(sprintf('gap # %d',n_loop)), end    
+        if DEBUG, fprintf('gap # %d\n',n_loop), end
     end
 end
 

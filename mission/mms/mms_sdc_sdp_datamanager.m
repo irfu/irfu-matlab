@@ -137,6 +137,7 @@ switch(param)
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
+    chk_timeline()
     v_from_e_and_v()
     chk_latched_p()
     chk_bias_guard()
@@ -248,6 +249,45 @@ end
           latchBitmask(data<MMS_CONST.Limit.LOW_DENSITY_SATURATION) = Bits(2);
         end
       end
+  end
+
+  function chk_timeline()
+    % Check that DCE time and DCV time overlap and are measured at the same
+    % time (within insturument delays). Throw away datapoint which does not
+    % overlap between DCE and DCV.
+    if isempty(DATAC.dce),
+      irf.log('warning','Empty DCE, cannot proceed')
+      return
+    end
+    % 3.8 us per channel and 7 channels between DCV (probe 1) and DCE (12).
+    % A total shift of 26600 ns is therefor to be expected, add this then
+    % convert to seconds before comparing times.
+    [dce_ind, dcv_ind] = irf_find_comm_idx(double(DATAC.dce.time)/10^9, (double(DATAC.dcv.time)+26600)/10^9);
+    % If any datapoint don't overlap, log then remove them.
+    diff_ind = length(DATAC.dce.time) - length(dce_ind);
+    if(diff_ind)
+      logStr = sprintf('DCE was shortened by %i datapoints.',diff_ind);
+      irf.log('notice', logStr);
+      DATAC.dce.time = DATAC.dce.time(dce_ind);
+      % For loop of e12, e34, e56
+      for iSen = 1:2:numel(sensors)
+        senA = sensors{iSen};  senB = sensors{iSen+1};
+        senE = ['e' senA(2) senB(2)]; % E-field sensor
+        DATAC.dce.(senE).data = DATAC.dce.(senE).data(dce_ind);
+        DATAC.dce.(senE).bitmask = DATAC.dce.(senE).bitmask(dce_ind);
+      end
+    end
+    diff_ind = length(DATAC.dcv.time) - length(dcv_ind);
+    if(diff_ind)
+      logStr = sprintf('DCV was shortened by %i datapoints.',diff_ind);
+      irf.log('notice', logStr);
+      DATAC.dcv.time = DATAC.dcv.time(dcv_ind);
+      for iSen = 1:numel(sensors)
+        senA = sensors{iSen};
+        DATAC.dcv.(senA).data = DATAC.dcv.(senA).data(dcv_ind);
+        DATAC.dcv.(senA).bitmask = DATAC.dcv.(senA).bitmask(dcv_ind);
+      end
+    end
   end
 
   function chk_bias_guard()
