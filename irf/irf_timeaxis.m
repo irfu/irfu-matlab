@@ -99,7 +99,7 @@ for j=1:numel(h)
         set( h(j), 'XTickLabel','');
         lab    = res{2};
         xcoord = res{1};
-        h_xlabels=zeros(size(res{1},2),size(xlabels,2)); % allocated handles for text labels
+        h_xlabels=gobjects(size(res{1},2),size(xlabels,2)); % allocated handles for text labels
         remove_extra_xlabel_handles(h(j))
         for ii = 1:size(res{1},2)
             if ~strcmp(lab(ii),' ')

@@ -233,7 +233,9 @@ for comp=1:min(length(h),ncomp)
     ylabel(h(comp),specrec.f_label)
     
     if isfield(specrec,'p_label')
-      hcb = colorbar('peer',h(comp));
+      if isa(h(comp),'handle'), hcb = colorbar(h(comp)); % HG2
+      else hcb = colorbar('peer',h(comp));
+      end
       ylabel(hcb,specrec.p_label);
       irf_colorbar_fit_label_height(hcb);
     end

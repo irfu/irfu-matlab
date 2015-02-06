@@ -14,24 +14,27 @@ function hout=c_pl_sc_orient(spacecraft,time,phase_time_series,magnetic_field,ve
 %   v  - velocity vector [vx vy vz] in GSE which will be marked in the
 %        plots, e.g. magnetopause velocity
 
-if nargin==1 && ischar(spacecraft)
-    action=spacecraft;
+%% Default values
+defaultTime = [2010 12 31 01 01 01];
+defaultSC   = 1;
+%% Check inputs
+if nargin==1 && isnumeric(spacecraft)
+        time = defaultTime;
+        action='initialize';
+elseif nargin==1 && ischar(spacecraft)
+        action=spacecraft;
 elseif   (nargin < 6)
     action='initialize';
 end
 if nargin==0, 
-    spacecraft=1;
+    spacecraft=defaultSC;
+    isTimeOK = false;
 	if evalin('caller','exist(''tint'')')
 		ttt = evalin('caller','tint(1)');
 		if ttt > irf_time([2001 1 1 0 0 0])
 			isTimeOK = true;
 			time=irf_time(ttt,'vector');
-		else
-			isTimeOK = false;
 		end
-	end
-	if ~isTimeOK % define default time
-		time=[2010 12 31 01 01 01];
 	end
 	if ~isTimeOK && exist('CAA','dir')
 		R=irf_get_data('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
@@ -39,13 +42,17 @@ if nargin==0,
 			time=0.5*(R(1,1)+R(end,1)); % first point in center of position time series
 		end
 	end
+	if ~isTimeOK % define default time
+		time=defaultTime;
+	end
 end
 if isempty(spacecraft), 
-	ic=1; 
+	ic=defaultSC;
 else
 	ic=spacecraft;
 end
 
+%% Choose action
 irf.log('debug',['action=' action]);
 switch lower(action)
 	case 'initialize'

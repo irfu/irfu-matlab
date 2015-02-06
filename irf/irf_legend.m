@@ -35,8 +35,7 @@ if isempty(axis_handle),
         if args{1}==0, % add to the whole figure
             axis_handle = axes('Units','normalized', 'Position',[0 0 1 1], 'Visible','off', ...
                 'Tag','BackgroundAxes', 'HitTest','off');
-            c=get(gcf,'children');
-            set(gcf,'children', [c(2:end) ;c(1)]); % move axis to background
+            uistack(axis_handle,'bottom')
         else
             axis_handle=args{1};
         end
@@ -116,10 +115,10 @@ if strcmpi(value_horizontal_alignment,'left'),
 else
     label_order=length(labels):-1:1;
 end
-ht=zeros(1,length(labels)); % allocate handles
+ht=gobjects(1,length(labels)); % allocate handles
 tmp_ref_pos=position(1);
 for i=label_order, % start with first label first
-    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','demi');
+    ht(i)=text(position(1),position(2),labels{i},'parent',axis_handle,'units',unit_format,'fontweight','normal');
     set(ht(i),'color',colord(i,:));
     set(ht(i),'verticalalignment',value_vertical_alignment);
     set(ht(i),'horizontalalignment',value_horizontal_alignment);

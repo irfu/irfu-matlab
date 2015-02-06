@@ -75,7 +75,7 @@ if narg == 1
     % number with a fractional part can only be an identifier:
     if(rem(code,1) > 0)
         handle = code;
-        if ~strcmp(get(handle,'type'),'axes')
+        if ~isgraphics(handle,'axes')
             error('Requires valid axes handle for input.')
         end
         create_axis = 0;
@@ -193,7 +193,7 @@ if(kill_siblings)
     for i = 1:length(sibs)
         % Be aware that handles in this list might be destroyed before
         % we get to them, because of other objects' DeleteFcn callbacks...
-        if(ishandle(sibs(i)) & strcmp(get(sibs(i),'Type'),'axes'))
+        if(isgraphics(sibs( i ),'axes')  )
             units = get(sibs(i),'Units');
             set(sibs(i),'Units','normalized')
             sibpos = get(sibs(i),'Position');
