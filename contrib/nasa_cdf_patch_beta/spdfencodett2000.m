@@ -70,6 +70,8 @@ if (isa(tt2000,'cdftt2000'))
       end
     end
     out = dataaa;
+  else
+    out = tt2000;
   end
 elseif (isa(tt2000,'double'))
   out = datestr(tt2000);

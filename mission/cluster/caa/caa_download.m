@@ -5,8 +5,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %       CAA_DOWNLOAD('list')    - list all datasets and their available times
 %       TT=CAA_DOWNLOAD('list')- return time table with datasets and available times
 %       CAA_DOWNLOAD('listdesc')- same with dataset description
-%       CAA_DOWNLOAD('listgui') - same presenting output in separate window
-%       CAA_DOWNLOAD('list:dataset')- list:/listdesc:/listgui:  filter datasets 'dataset'
+%       CAA_DOWNLOAD('list:dataset')- list:/listdesc:  filter datasets 'dataset'
 %       TT=CAA_DOWNLOAD('inventory:dataset') - return timetable with intervals when dataset has data
 %
 %       CAA_DOWNLOAD(tint,dataset) - download datasets matching 'dataset'
@@ -43,20 +42,16 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'log'			- do log into .caa file (more for interactive work)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
 %   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
-%   'caa'           - download data from CAA at ESTEC
 %	'cdf'           - alias of 'format=cdf'
 %	'cef'           - alias of 'format=cef'
-%   'csa'           - download data from CSA at ESAC (default)
 %	'json'			- return csa query in JSON format
 %	'csv'			- return csa query in CSV format
 %	'votable'		- return csa query in VOTABLE format
 %   'stream'        - donwload using streaming interface (gzipped cef file)
 %	'ingestedsince=YYYYMMDD' - download only data ingested since YYYY MM DD
-%	'testcsa'		- test CSA interface
+%	'test'		    - test downloading some example datasets
 %
 %  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'):
-%		datastore('caa','user','uuu')   % TODO are caa and csauser/password not the same???
-%		datastore('caa','pwd','ppp')
 %		datastore('csa','user','uuu')
 %		datastore('csa','pwd','ppp')
 %
@@ -103,9 +98,6 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   caa_download(tint,'C?_CP_AUX_SPIN_TIME');  % spin period, sun pulse time,..
 %   caa_download(tint,'C?_JP_PMP');            % invariant latitude, MLT, L shell.
 
-% Test flags
-%   'test'						- test downloading for a few different intervals
-
 
 %% Check if latest irfu-matlab
 % The check is appropriate to make when scientist is downloading data from CAA
@@ -116,24 +108,6 @@ if isempty(usingLatestIrfuMatlab), % check only once if using NASA cdf
 end
 
 %% Server defaults
-
-% CAA
-Default.Caa.urlServer		= 'http://caa.estec.esa.int/';
-Default.Caa.urlQuery		= 'caa_query/?';
-Default.Caa.urlQueryAsync	= 'caa_query/?schedule=1';
-Default.Caa.urlStream		= 'cgi-bin/stream_caa.cgi/?&gzip=1';
-Default.Caa.urlInventory	= 'cgi-bin/inventory.cgi/?';
-Default.Caa.urlFileInventory= '';
-Default.Caa.urlListDataset	= 'caa_query/?dataset_list=1';
-Default.Caa.urlListDatasetDesc	= 'caa_query/?dataset_list=1&desc=1';
-Default.Caa.urlListFormat   = ''; % no such option in CAA
-Default.Caa.urlNotifyOn		= '';
-Default.Caa.urlNotifyOff	= '&nonotify=1';
-Default.Caa.urlInventoryOn	= '&inventory=1';
-Default.Caa.urlInventoryOff	= '';
-Default.Caa.urlDataset      = '&dataset_id=';
-Default.Caa.urlDataFormat   = '&format=cdf'; % default is CDF (3.3) format
-Default.Caa.urlFileInterval = '&file_interval=72hours';
 
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
@@ -167,12 +141,6 @@ specifiedTimeInterval   = false;
 specifiedFileLink       = false;
 specifiedIngestedSince  = false;
 
-caaServer = datastore('caa','defaultServer');
-if isempty(caaServer) || strcmpi(caaServer,'csa'),
-	downloadFromCSA			= true;			% default to download from CSA
-else
-	downloadFromCSA			= false;
-end
 downloadDirectory       = './CAA/';     % local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
 
 %% check input
@@ -238,20 +206,17 @@ if ~isempty(varargin), % check for additional flags
 		elseif strcmpi('notify',flag)
 			doNotifyByEmail = true;
 		elseif any(strcmpi('csa',flag)) % download from CSA instead of CAA
-			downloadFromCSA = true;
+			irf.log('warning','caa_download(): flag ''csa'' is not needed anymore, only CSA download available');
 		elseif any(strcmpi('caa',flag)) % download from CAA instead of CAA
-			downloadFromCSA = false;
+			irf.log('warning','caa_download(): flag ''caa'' is not supported anymore. CAA interface is closed and only CSA download is available');
 		elseif any(strfind(flag,'USERNAME='))
 			urlIdentity = flag;
 		elseif strcmpi('json',flag) % set query format to JSON
 			urlListFormat = '&RETURN_TYPE=JSON';
-			downloadFromCSA = true;
 		elseif strcmpi('csv',flag) % set query format to CSV
 			urlListFormat = '&RETURN_TYPE=CSV';
-			downloadFromCSA = true;
 		elseif strcmpi('votable',flag) % set query format to VOTABLE
 			urlListFormat = '&RETURN_TYPE=votable';
-			downloadFromCSA = true;
 		elseif strfind(lower(flag),'downloaddirectory=')
 			downloadDirectory = flag(strfind(flag,'=')+1:end);
 			if downloadDirectory(end) ~= filesep...
@@ -317,13 +282,8 @@ if specifiedFileLink,
 	end
 end
 
-if downloadFromCSA
-	Caa = Default.Csa;
-	dataSource = 'csa';
-else
-	Caa = Default.Caa;
-	dataSource = 'caa';
-end
+Caa = Default.Csa;
+dataSource = 'csa';
 if ~exist('urlIdentity','var') || isempty(urlIdentity) % if not set by input parameters use default
 	urlIdentity = get_url_identity;
 end
@@ -348,31 +308,20 @@ if specifiedIngestedSince
 	MM    = str2double(ingestedSinceYYYYMMDD(5:6));
 	DD    = str2double(ingestedSinceYYYYMMDD(7:8));
 	tIngestedSince = irf_time([YYYY MM DD 0 0 0]);
-	if downloadFromCSA
-		urlIngestedSince = ...
-			['&INGESTED_SINCE=' irf_time(tIngestedSince,'iso')];
-	else
-		urlIngestedSince = '';
-	end
+	urlIngestedSince = ...
+		['&INGESTED_SINCE=' irf_time(tIngestedSince,'iso')];
 else
 	urlIngestedSince = '';
 end
-if downloadFromCSA && any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
+if any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery		= [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify urlIngestedSince];
-caaStream		= [Caa.urlServer Caa.urlStream  urlIdentity urlIngestedSince];
-caaInventory	= [Caa.urlServer Caa.urlInventory  urlListFormat];
-caaFileInventory= [Caa.urlServer Caa.urlFileInventory  urlListFormat];
-caaListDataset	= [Caa.urlServer Caa.urlListDataset  urlListFormat];
-caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc  urlListFormat];
-if ~downloadFromCSA % CAA requires uname and password also for metadata
-	caaInventory      = [caaInventory       urlIdentity];
-	caaFileInventory  = [caaFileInventory   urlIdentity];
-	caaListDataset    = [caaListDataset     urlIdentity];
-	caaListDatasetDesc= [caaListDatasetDesc urlIdentity];
-end
-
+caaQuery		    = [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify urlIngestedSince];
+caaStream		    = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
+caaInventory	    = [Caa.urlServer Caa.urlInventory       urlListFormat ];
+caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
+caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
+caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
 
 %% Check status of downloads if needed
 if checkDownloadStatus,    % check/show status of downloads from .caa file
@@ -443,19 +392,14 @@ else
 end
 
 if specifiedTimeInterval
-	if downloadFromCSA % need t1 and t2 instead of t1/t2
-		divider=strfind(tintiso,'/');
-		t1iso = tintiso(1:divider-1);
-		t2iso = tintiso(divider+1:end);
-		queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
-		queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
-			' AND FILE.END_DATE >= ''' t1iso ''''];
-		queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
-			' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
-	else
-		queryTime = ['&time_range=' tintiso];
-		queryTimeInventory = queryTime;
-	end
+	divider=strfind(tintiso,'/');
+	t1iso = tintiso(1:divider-1);
+	t2iso = tintiso(divider+1:end);
+	queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
+	queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
+		' AND FILE.END_DATE >= ''' t1iso ''''];
+	queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
+		' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
 end
 
 %% define queryDataset and queryDatasetInventory
@@ -489,7 +433,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		end
 		return
 	end
-	if any(strfind(dataset,'listdesc')) || any(strfind(dataset,'listgui'))	% get also description
+	if any(strfind(dataset,'listdesc'))	% get also description
 		urlListDatasets=[caaListDatasetDesc queryDatasetInventory];
 		returnTimeTable='listdesc';
 	elseif any(strfind(dataset,'list'))
@@ -509,9 +453,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 			urlListDatasets = [urlListDatasets queryTimeInventory];
 		end
 	end
-	if downloadFromCSA
-		urlListDatasets = csa_parse_url(urlListDatasets);
-	end
+	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning','Be patient! Contacting CAA...');
 	irf.log('warning',['requesting: ' urlListDatasets]);
 	caalog=urlread(urlListDatasets);
@@ -519,25 +461,15 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		downloadStatus = [];
 		return
 	end
-	if any(strfind(dataset,'listgui')) && ~downloadFromCSA, % make gui window with results
-		B=regexp(caalog,'(?<dataset>[C][-\w]*)\s+(?<tint>\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d\s\d\d\d\d-\d\d-\d\d\s\d\d:\d\d:\d\d)\t(?<title>[^\n\t]*)\t(?<description>[^\n\t]*)\n','names');
-		list={B.dataset};
-		values=cell(numel(B),3);
-		values(:,1)={B.tint}';
-		values(:,2)={B.title}';
-		values(:,3)={B.description}';
-		caa_gui_list(list,values)
-	else
-		if nargout == 1,
-			if isempty(returnTimeTable),
-				out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
-				downloadStatus = out{1};
-			else
-				downloadStatus = construct_time_table(caalog,returnTimeTable);
-			end
+	if nargout == 1,
+		if isempty(returnTimeTable),
+			out = textscan(caalog, '%s', 'delimiter', '\n'); % cell array with lines
+			downloadStatus = out{1};
 		else
-			disp(caalog);
+			downloadStatus = construct_time_table(caalog,returnTimeTable);
 		end
+	else
+		disp(caalog);
 	end
 	return;
 end
@@ -548,15 +480,12 @@ if ~exist('CAA','dir'), mkdir('CAA');end
 
 if checkDataInventory
 	urlListDatasets=[ caaInventory  queryDatasetInventory queryTimeInventory];
-	if downloadFromCSA % CSA
-		urlListDatasets = csa_parse_url(urlListDatasets);
-	end
+	urlListDatasets = csa_parse_url(urlListDatasets);
 	irf.log('warning','Be patient! Contacting to see the list of files...');
 	irf.log('notice',['requesting: ' urlListDatasets]);
 	caalist=urlread(urlListDatasets);
 	irf.log('debug',['returned: ' caalist]);
-	if (~downloadFromCSA && ~any(strfind(caalist,'Version'))) || ...%  no CAA datasets available
-			(downloadFromCSA && isempty(caalist)) % no CSA datasets available
+	if isempty(caalist) % no datasets available
 		irf.log('warning','There are no data sets available!');
 		return;
 	end
@@ -575,15 +504,13 @@ irf.log('notice',['requesting: ' urlLine]);
 if nargout>=1, downloadStatus=status;end
 if nargout==2, downloadFile = ''; end % default return empty
 if status == 0 && exist(downloadedFile,'file')
-	irf.log('warning','zip or gz file is not returned! ');
+	irf.log('warning','gz file is not returned! ');
 	fid=fopen(downloadedFile);
 	while 1
 		tline = fgetl(fid);
 		if ~ischar(tline), break, end
 		disp(tline)
-		if any(strfind(tline,'http:')) && any(strfind(tline,'zip')), % CAA
-			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'zip')+2);
-		elseif any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
+		if any(strfind(tline,'http:')) && any(strfind(tline,'gz')), % CSA
 			downloadFile = tline(strfind(tline,'http:'):strfind(tline,'gz')+1);
 		elseif any(strfind(tline,'LOGIN_REQUESTED')), % 
 			disp('**ERROR**');
@@ -629,9 +556,8 @@ end
 	function [status,downloadedFile]=get_zip_file(urlLink)
 		% download data file, if success status=1 and file is uncompressed and moved
 		% to data directory, downloadedFile is set to empty. If there is no
-		% zip- or gz- data file , status=0 and downloadedFile is set to the downloaded file.
-		if     strfind(urlLink,'.gz');  downloadFromCSA = 1;
-		elseif strfind(urlLink,'.zip'); downloadFromCSA = 0; end
+		% gz- data file , status=0 and downloadedFile is set to the downloaded file.
+		if     ~strfind(urlLink,'.gz');  error; end
 		
 		status = 0; % default
 		if doDataStreaming
@@ -673,33 +599,24 @@ end
 			return;
 		end
 		
-		switch downloadFromCSA
-			case 0 % CAA
-				[downloadedFile,isZipFileReady]=urlwrite(urlLink,tempname);
-			case 1 % CSA
-				downloadedFile = [tempname '.gz'];
-				[downloadedFile,isZipFileReady]=urlwrite(urlLink,downloadedFile);
-		end
+		downloadedFile = [tempname '.gz'];
+		[downloadedFile,isZipFileReady]=urlwrite(urlLink,downloadedFile);
 		
 		if isZipFileReady, %
 			irf.log('notice',['Downloaded: ' urlLink]);
 			irf.log('notice',['into ->' downloadedFile]);
-			caa_log({'Zip file returned for request',urlLink});
+			caa_log({'Gz file returned for request',urlLink});
 			tempDirectory=tempname;
 			mkdir(tempDirectory);
 			try
-				switch downloadFromCSA
-					case 0
-						filelist=unzip(downloadedFile,tempDirectory);
-					case 1
-						gunzip(downloadedFile);
-						delete(downloadedFile);
-						downloadedFile = downloadedFile(1:end-3); % remove '.gz'
-						filelist=untar(downloadedFile,tempDirectory);
-				end
+				gunzip(downloadedFile);
+				delete(downloadedFile);
+				downloadedFile = downloadedFile(1:end-3); % remove '.gz'
+				filelist=untar(downloadedFile,tempDirectory);
+				
 				if isempty(filelist)
-					irf.log('warning','Returned zip file is empty');
-					caa_log('Zip file empty.');
+					irf.log('warning','Returned gz file is empty');
+					caa_log('gz file empty.');
 				else
 					move_to_caa_directory(filelist);
 				end
@@ -707,11 +624,11 @@ end
 				delete(downloadedFile);
 				downloadedFile = '';
 			catch
-				irf.log('critical','Invalid zip file')
+				irf.log('critical','Invalid gz file')
 			end
 			rmdir(tempDirectory,'s');
 		else
-			irf.log('warning',['There is no zip file: ' urlLink]);
+			irf.log('warning',['There is no gz file: ' urlLink]);
 		end
 	end
 	function move_to_caa_directory(filelist)
@@ -788,129 +705,66 @@ end
 				filter(strfind(filter,'_'))='*'; % substitute  _ to * (to handle CIS products that can have - instead of _)
 			end
 		end
-		if downloadFromCSA
-			queryDataset = ['&DATASET_ID=' filter];
-			queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
-		else
-			queryDataset = [Caa.urlDataset filter];
-			queryDatasetInventory = queryDataset;
-		end
+		queryDataset = ['&DATASET_ID=' filter];
+		queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
 	end
 	function urlIdentity = get_url_identity % Make nested function
-		if downloadFromCSA
-			csaUser = datastore('csa','user');
-			if isempty(csaUser)
-				csaUser = input('Input csa username [default:avaivads]:','s');
-				if isempty(csaUser),
-					disp('Please register at ______? and later use your username and password.');
-					csaUser='avaivads';
-				end
-				datastore('csa','user',csaUser);
+		csaUser = datastore('csa','user');
+		if isempty(csaUser)
+			csaUser = input('Input csa username [default:avaivads]:','s');
+			if isempty(csaUser),
+				disp('Please register at ______? and later use your username and password.');
+				csaUser='avaivads';
 			end
-			csaPwd = datastore('csa','pwd');
-			if isempty(csaPwd)
-				csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
-				if isempty(csaPwd), csaPwd='!kjUY88lm';end
-				datastore('csa','pwd',csaPwd);
-			end
-			urlIdentity = ['&USERNAME=' csaUser '&PASSWORD=' csaPwd];
-		else
-			caaUser = datastore('caa','user');
-			if isempty(caaUser)
-				caaUser = input('Input caa username [default:vaivads]:','s');
-				if isempty(caaUser),
-					disp('Please register at http://caa.estec.esa.int and later use your username and password.');
-					caaUser='vaivads';
-				end
-				datastore('caa','user',caaUser);
-			end
-			caaPwd = datastore('caa','pwd');
-			if isempty(caaPwd)
-				caaPwd = input('Input caa password [default:caa]:','s');
-				if isempty(caaPwd), caaPwd='caa';end
-				datastore('caa','pwd',caaPwd);
-			end
-			urlIdentity = ['&uname=' caaUser '&pwd=' caaPwd];
+			datastore('csa','user',csaUser);
 		end
+		csaPwd = datastore('csa','pwd');
+		if isempty(csaPwd)
+			csaPwd = input('Input csa password [default:!kjUY88lm]:','s');
+			if isempty(csaPwd), csaPwd='!kjUY88lm';end
+			datastore('csa','pwd',csaPwd);
+		end
+		urlIdentity = ['&USERNAME=' csaUser '&PASSWORD=' csaPwd];
 	end
 	function TT=construct_time_table(caalog,returnTimeTable)
 		TT=irf.TimeTable;
-		if downloadFromCSA
-			switch returnTimeTable
-				case 'inventory'
-					%"DATASET_INVENTORY.DATASET_ID","DATASET_INVENTORY.START_DATE","DATASET_INVENTORY.END_DATE"
-					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-					TT.UserData(numel(textLine{1})-1).dataset = [];
-					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
-					for jj = 1:numel(TT.UserData),
-						TT.UserData(jj).number = str2double(textLine{4}{1+jj});
-					end
-					[TT.UserData(:).version]=deal(textLine{5}{2:end});
-				case 'fileinventory'
-					%"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
-					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-					TT.UserData(numel(textLine{1})-1).dataset = [];
-					[TT.UserData(:).filename]=deal(textLine{1}{2:end});
-					[TT.UserData(:).caaIngestionDate]=deal(textLine{4}{2:end});
-				case 'list'
-					%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
-					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
-					TT.UserData(numel(textLine{1})-1).dataset = [];
-					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
-				case 'listdesc'
-					%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
-					textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
-					TT.UserData(numel(textLine{1})-1).dataset = [];
-					[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
-					[TT.UserData(:).description] = deal(textLine(:).description);
-				otherwise
-					return;
-			end
-			tStart = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{2}(2:end));
-			tEnd   = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{3}(2:end));
-			tint = [tStart tEnd];
-			TT.TimeInterval=tint;
-			TT.Header = {};
-			TT.Comment=cell(numel(TT),1);
-			TT.Description=cell(numel(TT),1);
-		else
-			switch returnTimeTable
-				case 'inventory'
-					textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','names');
-					startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<number>\d+)\s*(?<version>[-\d]+)','start');
-					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-					c=num2cell(str2num(char(textLine(:).number))); %#ok<ST2NM>
-					[TT.UserData(:).number]=deal(c{:});
-					c=num2cell(str2num(char(textLine(:).version))); %#ok<ST2NM>
-					[TT.UserData(:).version]=deal(c{:});
-				case 'list'
-					textLine=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','names');
-					if isempty(textLine),
-						irf.log('warning','Empty dataset list');
-						return;
-					end
-					startIndices=regexp(caalog,'(?<dataset>[\w-]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n]*)','start');
-					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-					[TT.UserData(:).title] = deal(textLine(:).title);
-				case 'listdesc'
-					textLine=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t]*)\t(?<description>[^\n]*)','names');
-					startIndices=regexp(caalog,'(?<dataset>[\w]*)\s+(?<start>[\d-]{10}\s[\d:]+)\s*(?<end>[\d-]+\s[\d:]+)\s*(?<title>[^\n\t])*\t(?<description>[^\n]*)','start');
-					TT.UserData(numel(textLine)).dataset = textLine(end).dataset;
-					[TT.UserData(:).dataset]=deal(textLine(:).dataset);
-					[TT.UserData(:).title] = deal(textLine(:).title);
-					[TT.UserData(:).description] = deal(textLine(:).description);
-				otherwise
-					return;
-			end
-			tintiso=[vertcat(textLine(:).start) repmat('/',numel(startIndices),1) vertcat(textLine(:).end)];
-			tint=irf_time(tintiso,'iso2tint');
-			TT.TimeInterval=tint;
-			TT.Header = strread(caalog(1:startIndices(1)-1), '%s', 'delimiter', sprintf('\n'));
-			TT.Comment=cell(numel(TT),1);
-			TT.Description=cell(numel(TT),1);
+		switch returnTimeTable
+			case 'inventory'
+				%"DATASET_INVENTORY.DATASET_ID","DATASET_INVENTORY.START_DATE","DATASET_INVENTORY.END_DATE"
+				textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
+				TT.UserData(numel(textLine{1})-1).dataset = [];
+				[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+				for jj = 1:numel(TT.UserData),
+					TT.UserData(jj).number = str2double(textLine{4}{1+jj});
+				end
+				[TT.UserData(:).version]=deal(textLine{5}{2:end});
+			case 'fileinventory'
+				%"FILE.LOGICAL_FILE_ID","FILE.START_DATE","FILE.END_DATE","FILE.CAA_INGESTION_DATE"
+				textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
+				TT.UserData(numel(textLine{1})-1).dataset = [];
+				[TT.UserData(:).filename]=deal(textLine{1}{2:end});
+				[TT.UserData(:).caaIngestionDate]=deal(textLine{4}{2:end});
+			case 'list'
+				%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE
+				textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]"');
+				TT.UserData(numel(textLine{1})-1).dataset = [];
+				[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+			case 'listdesc'
+				%DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION
+				textLine=textscan(caalog,'"%[^"]","%[^"]","%[^"]","%[^"]","%[^"]"');
+				TT.UserData(numel(textLine{1})-1).dataset = [];
+				[TT.UserData(:).dataset]=deal(textLine{1}{2:end});
+				[TT.UserData(:).description] = deal(textLine(:).description);
+			otherwise
+				return;
 		end
+		tStart = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{2}(2:end));
+		tEnd   = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{3}(2:end));
+		tint = [tStart tEnd];
+		TT.TimeInterval=tint;
+		TT.Header = {};
+		TT.Comment=cell(numel(TT),1);
+		TT.Description=cell(numel(TT),1);
 	end
 end
 %% Functions (not nested)

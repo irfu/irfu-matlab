@@ -10,19 +10,20 @@ function [out, info] = spdfcdfread(filename, varargin)
 %
 %   DATA = SPDFCDFREAD(FILE, 'CombineRecords', TF, ...) combines all of the
 %   records from each variable into a cell array with one row (1-by-N), where
-%   N is the number of variables, if TF is true (the default). For epoch data 
-%   of CDF_EPOCH, CDF_EPOCH16 and CDF_TIME_TT2000 types, their values are
-%   automatically converted into MATLAB's datenum. (To overwrite the conversion,
-%   use 'KeepEpochAsIs' option.) Each cell may contain a different number of
-%   data elements. For example, a single value(s) is returned for a variable of
-%   non-record variant, while multi-dimensional array of data is returned for
-%   record-variant of scalar or dimensional variables.
+%   N is the number of variables, if TF is true (the default). Each cell in
+%   the cell array is either a scalar value or an array. Each cell may contain
+%   a different number of data elements. For example, a single value(s) is
+%   returned for a variable of non-record variant, while a multi-dimensional
+%   array of data is returned for record-variant of scalar or dimensional
+%   variables. For epoch data of CDF_EPOCH, CDF_EPOCH16 and CDF_TIME_TT2000
+%   types, their values are automatically converted into MATLAB's datenum.
+%   (To overwrite the conversion, use 'KeepEpochAsIs' option.)
 %
 %   If the option 'Combinerecords' is specified as false, DATA will be a cell
 %   array of M-by-N, where M is the maximum number of record among the variables
 %   and N is the number of variables. Each row corresponds to a record while
 %   each column to a variable. This is the default output from MATLAB's
-%   distributed CDFREAD module. The data from scalar variables is
+%   distributed CDFREAD module. The data from scalar variables are
 %   imported into a column array.  Importing dimensional and string data
 %   extends the dimensionality of the variable.  For example,
 %   reading 1000 records of a 1-byte variable with dimensions of 20-by-30
@@ -54,14 +55,14 @@ function [out, info] = spdfcdfread(filename, varargin)
 %   time, so the 'Variables' parameter must be used.
 % 
 %   DATA = SPDFCDFREAD(FILE, 'ConvertEpochToDatenum', TF, ...) converts CDF 
-%   epoch data values to MATLAB datenum if TF is true. Normally, it is used 
-%   with the parameter 'CombineRecords' to return an array. If not, a N-by-1
-%   cell is returned. If TF is false (the default), CDF_EPOCH data type values
-%   are wrapped in CDFEPOCH objects and CDF_TIME_TT2000 in CDFTT2000 objects,
-%   which can hurt performance for large datasets. For CDF_EPOCH16 data type,
-%   time in picoseconds, and CDF_TIME_TT2000, time in nanoseconds with leap
-%   seconds, this option  will cause the loss of the high time resolution and
-%   not properly present the time at a leap second time.
+%   epoch data values to MATLAB datenum if TF is true (the default if the 
+%   'CombineRecords' is true). In this case, variable data will be presented in
+%   an array of datenum. If TF is false (the default if 'CombineRecords' is
+%   false), data of CDF_EPOCH type are wrapped in CDFEPOCH objects and
+%   CDF_TIME_TT2000 in CDFTT2000 objects, which can hurt performance for large
+%   datasets. For higher time resolution types as CDF_EPOCH16 and CDF_TIME_TT2000,
+%   this option will cause the loss of sub-milliseconds resolution and not 
+%   properly present the time at a leap second time.
 %
 %   DATA = SPDFCDFREAD(FILE, 'ConvertEpochToDatestr', TF, ...) converts CDF
 %   epoch data values to MATLAB datestr if TF is true. This option is
@@ -75,7 +76,10 @@ function [out, info] = spdfcdfread(filename, varargin)
 %   be written back to CDF later again without MATLAB datenum to CDF epoch
 %   conversion. Each epoch will be kept as a double for CDF_EPOCH data, array
 %   of doubles for CDF_EPOCH16 data, or an INT64 (mxINT64_CLASS) for
-%   CDF_TIME_TT2000..
+%   CDF_TIME_TT2000. If false, the default, all CDF epoch data will be converted
+%   to MATLAB's datenum. CDF epoch values can be encoded, broken down, etc, by
+%   epoch handling modules, e.g., spdfencodeepoch, spdfencodett2000, 
+%   spdfbreakdownepoch, spdfbreakdowntt2000, etc.
 %
 %   DATA = SPDFCDFREAD(FILE, 'CDFEpochToString', TF, ...) whether to return 
 %   CDF Epoch data values in strings, instead of numeric values. If TF
@@ -250,6 +254,54 @@ end
 
 validate_inputs(args);
 
+if (args.CombineRecords)
+  if (args.epochtodatenum == 1)
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  elseif (args.epochtodatestr == 1)
+      args.ConvertEpochToDatenum = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  elseif (args.keepepoch == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.CDFEpochToString = false;
+  elseif (args.epochtostring == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+  else
+      args.ConvertEpochToDatenum = true;
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  end
+else
+  if (args.epochtodatenum == 1)
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  elseif (args.epochtodatestr == 1)
+      args.ConvertEpochToDatenum = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  elseif (args.keepepoch == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.CDFEpochToString = false;
+  elseif (args.epochtostring == 1)
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+  else
+      args.ConvertEpochToDatenum = false;
+      args.ConvertEpochToDatestr = false;
+      args.KeepEpochAsIs = false;
+      args.CDFEpochToString = false;
+  end
+end
+
 %
 % Verify existence of filename.
 %
@@ -338,13 +390,6 @@ if (length(args.Variables) == 1)
       out = [];
       return;
     end
-%    if (isequal(lower(info.Variables{4}), 'epoch16') && ...
-%        (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%         ~args.ConvertEpochToDatenum && ~args.KeepEpochAsIs))
-%      error('MATLAB:spdfcdfread:Epoch16', ...
-%            'Variable "%s", a CDF_EPOCH16, is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d', ...
-%            info.Variables{1}); 
-%    end
     if (~isempty(args.Slices))
         [args.Slices, msg] = parse_slice_vals(args.Slices, info.Variables);
         if (~isempty(msg))
@@ -369,7 +414,8 @@ if (length(args.Variables) == 1)
 
     if (~structure)
       if (isequal(lower(info.Variables{4}), 'tt2000'))
-        if (args.CombineRecords || args.ConvertEpochToDatenum)
+        if (args.CombineRecords || args.ConvertEpochToDatenum || ...
+            args.KeepEpochAsIs || args.ConvertEpochToDatestr) 
           out = data;
         else
           if (length(data) > 1)
@@ -444,13 +490,6 @@ else
         if (info.Variables{p, 3} == 0)
           continue;
         end
-%        if (isequal(lower(info.Variables{p, 4}), 'epoch16') && ...
-%            (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%             ~args.ConvertEpochToDatenum))
-%          warning('MATLAB:spdfcdfread:Epoch16', ...
-%                  'Variable "%s" is a CDF_EPOCH16 is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d', ...
-%                  args.Variables{p}, p);
-%        end
  
         args.Slices = fill_slice_vals([], info.Variables(p,:));
         out1{p,1} = args.Variables{p};
@@ -501,14 +540,6 @@ else
           continue;
         end
 
-%        if (isequal(lower(info.Variables{p, 4}), 'epoch16') && ...
-%            (~args.CDFEpochToString && ~args.ConvertEpochToDatestr && ...
-%             ~args.ConvertEpochToDatenum && ~args.KeepEpochAsIs))
-%          warning('MATLAB:spdfcdfread:Epoch16', ...
-%                  'Variable "%s" is a CDF_EPOCH16 is retrieved into UTC-string.\nUse epoch16todatenum to convert to MATLAB datenum at index %d ', ...
-%                  args.Variables{p}, p);
-%        end
-       
         args.Slices = fill_slice_vals([], info.Variables(p,:));
         if (info.Variables{p, 5}(1) == 'F')
 % Non-record variant
@@ -555,10 +586,9 @@ else
               % M-by-N cell array....
               % Convert epoch data.
               if (isequal(lower(info.Variables{p, 4}), 'tt2000'))
-                if (args.ConvertEpochToDatenum)
-                  for q = 1:length(xdata)
-                    data(q,p) = xdata(q);
-                  end
+                if (args.CombineRecords || args.ConvertEpochToDatenum || ...
+                    args.KeepEpochAsIs || args.ConvertEpochToDatestr)
+                  data(:,p) = xdata;
                 else
                   for q = 1:length(xdata)
                     if (length(xdata{q}) > 1)
@@ -738,14 +768,17 @@ function [args, msg, structure, show_progress] = parse_inputs(varargin)
 show_progress = false;
 structure = false;
 args.CombineRecords = true;
-args.ConvertEpochToDatenum = false;
+args.ConvertEpochToDatenum = true;
 args.ConvertEpochToDatestr = false;
 args.KeepEpochAsIs = false;
 args.CDFEpochToString = false;
 args.Records = [];
 args.Slices = [];
 args.Variables = {};
-
+args.epochtodatenum = 0;
+args.epochtodatestr = 0;
+args.keepepoch = 0;
+args.epochtostring = 0;
 msg = '';
 
 % Parse arguments based on their number.
@@ -819,8 +852,8 @@ if (nargin > 0)
                    msg = 'Record list must be a vector of integers.';
                    
                end
-               
                args.Records = records;
+               args.CombineRecords = false;	
            end
            
        case 'slices'
@@ -861,6 +894,9 @@ if (nargin > 0)
                else
                    msg = 'Epoch conversion value must be a scalar logical.';
                end
+               if (args.ConvertEpochToDatenum == 1)
+                 args.epochtodatenum=1;
+               end
            end
 
        case 'convertepochtodatestr'
@@ -880,6 +916,9 @@ if (nargin > 0)
                    args.ConvertEpochToDatestr = logical(convert);
                else
                    msg = 'Epoch conversion value must be a scalar logical.';
+               end
+               if (args.ConvertEpochToDatestr == 1)
+                 args.epochtodatestr=1;
                end
            end
 
@@ -953,13 +992,15 @@ if (nargin > 0)
                if (numel(keepasis) ~= 1)
                    msg = 'KeepEpochAsIs value must be a scalar logical.';
                end
-
                if (islogical(keepasis))
                    args.KeepEpochAsIs = keepasis;
                elseif (isnumeric(keepasis))
                    args.KeepEpochAsIs = logical(keepasis);
                else
                    msg = 'KeepEpochAsIs value must be a scalar logical.';
+               end
+               if (args.KeepEpochAsIs ==1)
+                 args.keepepoch=1;
                end
            end
  
@@ -980,6 +1021,9 @@ if (nargin > 0)
                    args.CDFEpochToString = logical(epochtostring);
                else
                    msg = 'CDFEpochToString value must be a scalar logical.';
+               end
+               if (args.CDFEpochToString == 1)
+                 args.epochtostring=1;
                end
            end
  
@@ -1017,33 +1061,33 @@ if ((args.CombineRecords) && (~isempty(args.Records)))
           'Specify only one of ''CombineRecords'' and ''Records''.')
 end
 
-if (args.ConvertEpochToDatenum && args.ConvertEpochToDatestr)
+if ((args.epochtodatenum == 1) && (args.epochtodatestr == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''ConvertEpochToDatenum'' and ''ConvertEpochToDatestr''.')
+          'Specify only one of ''ConvertEpochToDatenum'' and ''ConvertEpochToDatestr'' to true.')
 end
 
-if (args.ConvertEpochToDatenum && args.KeepEpochAsIs)
+if ((args.epochtodatenum == 1) && (args.keepepoch == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''ConvertEpochToDatenum'' and ''KeepEpochAsIs''.')
+          'Specify only one of ''ConvertEpochToDatenum'' and ''KeepEpochAsIs'' to true.')
 end
 
-if (args.ConvertEpochToDatestr && args.KeepEpochAsIs)
+if ((args.epochtodatestr == 1) && (args.keepepoch == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''ConvertEpochToDatestr'' and ''KeepEpochAsIs''.')
+          'Specify only one of ''ConvertEpochToDatestr'' and ''KeepEpochAsIs'' to true.')
 end
 
-if (args.CDFEpochToString && args.KeepEpochAsIs)
+if ((args.epochtostring == 1) && (args.keepepoch == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''CDFEpochToString'' and ''KeepEpochAsIs''.')
+          'Specify only one of ''CDFEpochToString'' and ''KeepEpochAsIs'' to true.')
 end
 
-if (args.CDFEpochToString && args.ConvertEpochToDatenum)
+if ((args.epochtostring == 1) && (args.epochtodatenum == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''CDFEpochToString'' and ''ConvertEpochToDatenum''.')
+          'Specify only one of ''CDFEpochToString'' and ''ConvertEpochToDatenum'' to true.')
 end
 
-if (args.CDFEpochToString && args.ConvertEpochToDatestr)
+if ((args.epochtostring == 1) && (args.epochtodatestr == 1))
     error('MATLAB:spdfcdfread:Epochmutualexclusive', '%s\n', ...
-          'Specify only one of ''CDFEpochToString'' and ''ConvertEpochToDatestr''.')
+          'Specify only one of ''CDFEpochToString'' and ''ConvertEpochToDatestr'' to true.')
 end
 

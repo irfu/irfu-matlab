@@ -61,36 +61,37 @@ switch action,
         clear xSize sLeft ySize yTop
         %        set(fn,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
         ud.h(1)=axes('position',[0.1 0.3 0.5 0.3]); % [x y dx dy]
-        ud.h(2)=axes('position',[0.1 0.7 0.5 0.3]); % [x y dx dy]
+        ud.h(2)=axes('position',[0.1 0.67 0.5 0.3]); % [x y dx dy]
         ud.h(3)=axes('position',[0.1 0.0 0.5 0.13]); % [x y dx dy]
         linkaxes(ud.h(1:2),'x');
         axis(ud.h(3),'off');
         ud.ht=text(0,1,'','parent',ud.h(3));
         set(fn,'userdata',ud);        
         %% initialize probe menu
-        hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .37]);
-        inp.probe.type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 250 150 30],'backgroundcolor','white','Callback', @setprobetype);
+        hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .39]);
+        inp.probe.type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 230 150 30],'backgroundcolor','white','Callback', @setprobetype);
         surf=lp.photocurrent;probtxt='probe surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
-        inp.probe.surface                    = uicontrol('Parent',hp,'String',probtxt,                 'Position',[2 225 150 30],'style','popup','backgroundcolor','white');
-        inp.probe.total_vs_sunlit_area_text  = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   200 120 30]);
-        inp.probe.total_vs_sunlit_area_value = uicontrol('Parent',hp,'String',num2str(ud.probe.total_vs_sunlit_area),'style','text','Position',[120 200 70 30],'backgroundcolor','white');
-        inp.probe.length_text                = uicontrol('Parent',hp,'String','probe length [cm]',     'Position',[0   175 120 30]);
-        inp.probe.length_value               = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 175 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-        inp.probe.radius_text                = uicontrol('Parent',hp,'String','probe radius [cm]',     'Position',[0   150 120 30]);
-        inp.probe.radius_value               = uicontrol('Parent',hp,'String',num2str(ud.probe.radius),'Position',[120 150 70 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-        inp.probe.bias_current_text          = uicontrol('Parent',hp,'String','bias current [uA]',     'Position',[0   125 120 30]);
-        inp.probe.bias_current_value         = uicontrol('Parent',hp,'String','0','style','edit',      'Position',[120 125 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.probe.surface                    = uicontrol('Parent',hp,'String',probtxt,                 'Position',[2 210 150 30],'style','popup','backgroundcolor','white');
+        inp.probe.total_vs_sunlit_area_text  = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   185 120 30]);
+        inp.probe.total_vs_sunlit_area_value = uicontrol('Parent',hp,'String',num2str(ud.probe.total_vs_sunlit_area),'style','text',...
+                                                                                                       'Position',[120 185 70 30],'backgroundcolor','white');
+        inp.probe.length_text                = uicontrol('Parent',hp,'String','probe length [cm]',     'Position',[0   160 120 30]);
+        inp.probe.length_value               = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 160 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.probe.radius_text                = uicontrol('Parent',hp,'String','probe radius [cm]',     'Position',[0   135 120 30]);
+        inp.probe.radius_value               = uicontrol('Parent',hp,'String',num2str(ud.probe.radius),'Position',[120 135 70 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.probe.bias_current_text          = uicontrol('Parent',hp,'String','bias current [uA]',     'Position',[0   110 120 30]);
+        inp.probe.bias_current_value         = uicontrol('Parent',hp,'String','0','style','edit',      'Position',[120 110 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
 
-        inp.UV_factor_text                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   75 60 30]);
-        inp.UV_factor_value                  = uicontrol('Parent',hp,'String',num2str(ud.UV_factor),   'Position',[70  75 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-        inp.Rsun_text                        = uicontrol('Parent',hp,'String','Rsun [AU]',             'Position',[0   50 60 30]);
-        inp.Rsun_value                       = uicontrol('Parent',hp,'String',num2str(ud.R_sun),       'Position',[70  50 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-        inp.U_text                           = uicontrol('Parent',hp,'String','U [V]',                 'Position',[0   25 60 30]);
-        inp.U_value                          = uicontrol('Parent',hp,'String',ud.U_string,             'Position',[70  25 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.UV_factor_text                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   80 60 30]);
+        inp.UV_factor_value                  = uicontrol('Parent',hp,'String',num2str(ud.UV_factor),   'Position',[70  80 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.Rsun_text                        = uicontrol('Parent',hp,'String','Rsun [AU]',             'Position',[0   55 60 30]);
+        inp.Rsun_value                       = uicontrol('Parent',hp,'String',num2str(ud.R_sun),       'Position',[70  55 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
+        inp.U_text                           = uicontrol('Parent',hp,'String','U [V]',                 'Position',[0   30 60 30]);
+        inp.U_value                          = uicontrol('Parent',hp,'String',ud.U_string,             'Position',[70  30 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
         inp.update                           = uicontrol('Parent',hp,'String','Update',                'Position',[0   0 60 30],'Callback','lp.sweep_gui(''update'')');
         inp.reset                            = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30],'callback','lp.sweep_gui(''initialize'')');       
         %% initialize s/c menu
-        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .37 .3 .31]);
+        hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .39 .3 .35]);
         inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0   205 120 25]);
         inp.sc.example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0   180 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
         surf=lp.photocurrent;probtxt='spacecraft surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
@@ -108,7 +109,7 @@ switch action,
         inp.sc.probe_distance_to_spacecraft_text       = uicontrol('Parent',hsc,'String','distance probe-sc [m]',                                  'Position',[0   10 120 25]);
         inp.sc.probe_distance_to_spacecraft_value      = uicontrol('Parent',hsc,'String',num2str(ud.sc.probe_distance_to_spacecraft),              'Position',[120 10 50 25],'style','edit','backgroundcolor','white');        
         %% initialize plasma menu
-        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .68 .3 .2]);
+        hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .74 .3 .2]);
         inp.n         = uicontrol('Parent',hpl,'String','Ne [cc]','Position',[0 0 80 25]);
         inp.n_value   = uicontrol('Parent',hpl,'String','1','style','edit','Position',[80 0 90 25],'backgroundcolor','white');
         inp.T         = uicontrol('Parent',hpl,'String','T [eV]','Position',[0 25 80 25]);
@@ -120,7 +121,7 @@ switch action,
         inp.vsc       = uicontrol('Parent',hpl,'String','Vsc [m/s]','Position',[0 100 80 25]);
         inp.vsc_value = uicontrol('Parent',hpl,'String','0','style','edit','Position',[80 100 90 25],'backgroundcolor','white');        
         %% initialize plot menu
-        hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .88 .3 .12]);
+        hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
         inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
         
         ud.inp=inp;
@@ -412,7 +413,7 @@ switch action,
             ylabel(h(2),'I [\mu A/m^2]');
             linkaxes(ud.h(1:2),'x');
         elseif ud.toppanel==3, % plot probe noise levels
-            E_int_range=[1e-19 1e-9]; % range of E intensity
+            E_int_range=[1e-18 1e-8]; % range of E intensity
             f_range=[1e-3 9.9e5];      % frequencies in Hz
             f_noise_range=10.^(log10(f_range(1)):.1:log10(f_range(2)));
             f=f_noise_range';
@@ -465,9 +466,9 @@ switch action,
                 hold(h(2),'on');
                 ax=h(2);
                 if exist('Rfloat','var'),
-                    plot(h(2),f,noise_shot_plasma_nobias,'k:', ...
-                        f,noise_shot_photoelectrons_nobias,'g:', ...
-                        f,noise_thermal_nobias,'b:', ...
+                    plot(h(2),f,noise_shot_plasma_nobias,'k:')
+                    plot(h(2),f,noise_shot_photoelectrons_nobias,'LineStyle',':','Color',[0 .5 0])
+                    plot(h(2),f,noise_thermal_nobias,'b:', ...
                         f,noise_total_nobias,'r:')
                     ht=text(2e2,noise_thermal_nobias(1)*1.5,'plasma thermal noise (nobias)','parent',ax);set(ht,'fontsize',14,'color','b');
                     ht=text(f_range(1),noise_shot_plasma_nobias(1),'shot noise plasma (nobias)','parent',ax);
@@ -491,9 +492,9 @@ switch action,
                     set(ht,'fontsize',14,'verticalalignment','bottom','horizontalalignment','left','color','r');
                 end
                 
-                ylabel('Electric field intensity [V^2/m^2/Hz]');
+                ylabel(h(2),'Electric field intensity [V^2/m^2/Hz]');
                 %ylabel('Electric field intensity [dB V/m/Hz^{1/2}]');
-                xlabel('Frequency [Hz]');
+                xlabel(h(2),'Frequency [Hz]');
                 hold(h(2),'off');
             end
         end

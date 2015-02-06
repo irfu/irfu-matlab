@@ -81,6 +81,7 @@ classdef mms_sdc_sdp_db < handle
       % validate L1b CDF file names
       % HK: mms1_fields_hk_l1b_101_20130904_v0.0.0.cdf	
       % B:  mms1_sdp_brst_l1b_dcv_20130904212500_v0.0.2.cdf
+      % or possibly mms1_edp_fast_l1b_dce_20160101_v2.0.1.cdf (sdp->edp)
       if isempty(intersect(prod,mms_sdc_sdp_db.files))
         irf.log('critical','Invalid fileId')
         error('irf:mms_sdc_sdp_db:validate_file_name','Invalid fileId')
@@ -102,8 +103,8 @@ classdef mms_sdc_sdp_db < handle
         if ~strcmp(toks{5},prod(3:5)), return, end
         ok = true; return
       end
-      % now DCE & DCV  
-      if ~strcmp(toks{2},'sdp'), return, end
+      % now DCE & DCV
+      if ~strcmp(toks{2},'sdp') && ~strcmp(toks{2},'edp'), return, end
       if ~strcmp(toks{4},'l1b'), return, end
       
       if strcmp(prod(1:3),'bdc')

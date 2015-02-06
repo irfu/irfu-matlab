@@ -29,9 +29,9 @@ elseif lx < 3,
 end
 
 
-inp_m=mean(inp);
+inp_m=irf.nanmean(inp);
 Mm2=inp_m([1 2 3 1 1 2]).*inp_m([1 2 3 2 3 3]);
-Mm1=mean(inp(:,[1 2 3 1 1 2]).*inp(:,[1 2 3 2 3 3])); % all 6 elements of triagonal matrix
+Mm1=irf.nanmean(inp(:,[1 2 3 1 1 2]).*inp(:,[1 2 3 2 3 3])); % all 6 elements of triagonal matrix
 
 switch lower(flag) % define matrix M for which calculate eigenvalues and vectors
     case {'mvar','<bn>=0'}
@@ -59,7 +59,7 @@ v(3,:)=cross(v(1,:),v(2,:));
 l(3)=max(ll);
 
 if strcmpi(flag,'<bn>=0') % <Bn>=0 requires further calculations
-    c_eval('inp_mvar_?_mean=mean(dot(inp,repmat(v(?,:),size(inp,1),1)));',1:3);
+    c_eval('inp_mvar_?_mean=mean(dot(inp,repmat(v(?,:),size(inp,1),1)));',1:3); % TODO get rid of c_eval for speed
     % polynom roots
     a=inp_mvar_1_mean.^2+inp_mvar_2_mean.^2+inp_mvar_3_mean.^2;
     b=-inp_mvar_1_mean.^2*(l(2)+l(3))- inp_mvar_2_mean.^2*(l(1)+l(3))- inp_mvar_3_mean.^2*(l(1)+l(2));

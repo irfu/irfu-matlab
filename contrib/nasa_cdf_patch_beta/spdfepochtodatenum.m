@@ -83,12 +83,6 @@ if (iscell(epoch(1,1)))
   else
     if (iscellstr(epoch))
       epoch = char(epoch);
-    else
-      if (s(2) == 1)
-        for x=1:s(1)
-        epoch(x,1) = epoch{x,1};
-        end
-      end
     end
   end
 end

@@ -13,7 +13,7 @@ function tt2000Obj = cdftt2000(varargin)
 %             SPDFCOMPUTETT2000, SPDFPARSETT2000, SPDFBREAKDOWNTT2000,
 %             SPDFCDFLEAPSECONDSINFO.
 
-%    $Revision: 1.2 $  $Date: 2014/09/24 16:26:58 $
+%    $Revision: 1.3 $  $Date: 2014/12/01 19:47:13 $
 
 if (nargin == 0)
     s.date = [];
@@ -46,20 +46,26 @@ s.date = [];
 if ischar(input)
 
     % Convert to TT2000 values. 
-    n = int64(parsett2000(input));
+    n = spdfparsett2000(input);
 else
     % It's numeric, so if it's a matrix, go element by element
     % and convert each and then reshape.
     if iscell(input)
-%     n = int64(input{:});
-      n = input{:};
+      if (isa(input, 'int64'))
+        n = int64(input{:});
+      else
+        n = input{:};
+      end
     else
-%     n = int64(input(:));
-      n = input(:);
+      if (isa(input, 'int64'))
+        n = int64(input(:));
+      else
+        n = input(:);
+      end
     end
 end
 
-s = struct('date',num2cell(n));
+s = struct('date',n);
 s = s';
 if isnumeric(input) & ~isempty(input)
     s = reshape(s, size(input));

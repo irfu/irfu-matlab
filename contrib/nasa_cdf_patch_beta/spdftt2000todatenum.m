@@ -78,12 +78,6 @@ if (iscell(tt2000(1,1)))
   else
     if (iscellstr(tt2000))
       tt2000 = char(tt2000);
-    else
-      if (s(2) == 1)
-        for x=1:s(1)
-        tt2000(x,1) = tt2000{x,1};
-        end
-      end
     end
   end
 end

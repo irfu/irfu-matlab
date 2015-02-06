@@ -25,9 +25,9 @@ function info = spdfcdfinfo(filename)
 %     Variables            A cell array containing details about the
 %                          variables in the file (see below)
 %
-%     GlobalAttributes     A structure containing the global metadata
+%     GlobalAttributes     A structure containing the global meta-data
 %
-%     VariableAttributes   A structure containing metadata for the
+%     VariableAttributes   A structure containing meta-data for the
 %                          variables
 %
 %     LibVersion           A string containing the library version of 
@@ -36,6 +36,9 @@ function info = spdfcdfinfo(filename)
 %     PatchVersion         A string containing the patch version of 
 %                          the MATLAB-CDF modules, e.g., spdfcdfinfo,
 %                          spdfcdfread, spdfcdfwrite, and its release
+%
+%   Note: The CDF file name can be passed in as a null. In this case, INFO
+%         contains only the CDF library version and MATLAB-CDF version.  
 %
 %   The "Variables" field contains a cell array of details about the
 %   variables in the CDF file.  Each row represents a variable in the
@@ -56,7 +59,21 @@ function info = spdfcdfinfo(filename)
 %         values vary at each dimension.
 %
 %     (6) The sparsity of the variables records.  Allowable values are
-%         'Full', 'Sparse (padded)', and 'Sparse (nearest)'.
+%         'Full', 'Sparse(padded)', and 'Sparse(previous)'.
+%
+%     (7) The compression of the variables.  Allowable values are
+%         'None', 'RLE', 'HUFF', 'AHUFF', and 'GZIP.x' where x is the 
+%         GZIP compression level.
+%
+%     (8) The blocking factors of the variables, if set.  A blocking factor is
+%         the chunk of records to be pre-allocated for a standard variable when
+%         a record being written does not already exist, or the number of
+%         records to be compressed together for a compressed variable. For 
+%         variables with large record size or number, providing a large 
+%         blocking factor would have a significant impact on I/O performance
+%         over the defaults.
+%
+%     (9) The pad values of the variables, if set. 
 %
 %   The "GlobalAttributes" and "VariableAttributes" structures contain a
 %   field for each attribute.  Each field's name corresponds to the name
@@ -145,7 +162,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.5.1.1';
+info.PatchVersion = '3.5.1.2';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
@@ -198,7 +215,9 @@ else
         filename((end-3):end) = '';
     end
     % Get the attribute, variable, and library details.
+
     tmp = spdfcdfinfoc(filename);
+
     % Process file attributes.
     info.FileSettings = parse_file_info(tmp.File);
     info.FormatVersion = info.FileSettings.Version;
@@ -216,13 +235,17 @@ else
     % Process variable table.
     vars = tmp.Variables;
     types = vars(:, 4);
+    otypes = vars(:, 4);
     sp = vars(:, 6);
+    pv = vars(:, 9);
     for p = 1:length(types)
         types{p} = find_datatype(types{p});
         sp{p} = find_sparsity(sp{p});
+	pv{p} = find_padvalue(otypes{p}, pv{p});
     end
     vars(:, 4) = types;
     vars(:, 6) = sp;
+    vars(:, 9) = pv;
 
     info.Variables = vars;
 
@@ -306,6 +329,36 @@ switch (num)
     str = 'char';
 end
 
+function str = find_padvalue(num, value)
+if (isempty(value)) str = [];
+else
+  switch (num)
+    case {1, 41}
+      str = int8(value);
+    case {2}
+      str = int16(value);
+    case {11}
+      str = uint8(value);
+    case {12}
+      str = uint16(value);
+    case {21, 44}
+      str = single(value);
+    case {22, 45}
+      str = double(value);
+    case {51, 52}
+      str = value;
+    case {8, 33}
+      str = int64(value);
+    case {4}
+      str = int32(value);
+    case {14}
+      str = uint32(value);
+    case {31}
+      str = double(value);
+    case {32}
+      str = value;
+  end
+end
 
 function str = find_sparsity(num)
 
@@ -313,12 +366,10 @@ switch (num)
   case 0
     str = 'Full';
   case 1
-    str = 'Sparse (padded)';
+    str = 'Sparse(padded)';
   case 2
-    str = 'Sparse (nearest)';
+    str = 'Sparse(previous)';
 end
-
-
 
 function str = find_encoding(num)
 

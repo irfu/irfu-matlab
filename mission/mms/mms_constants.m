@@ -8,7 +8,7 @@ function MMS_CONST = mms_constants
 % these numbers. 
 % When simply re-running a dataset, the Z value should be increased by one.
 
-MMS_CONST.Version.X = 1; % Major new Software version
+MMS_CONST.Version.X = 2; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Version.MODS - MODS cdf GlobalAttribute should contain a description of
@@ -18,6 +18,7 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
 MMS_CONST.Version.MODS = {'V.0. Initial interface tests.'};
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable names, added some processing.'}];
+MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
 
 
 MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
@@ -34,15 +35,22 @@ MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
 MMS_CONST.TmMode.fast = 2;
 MMS_CONST.TmMode.brst = 3;
 
+% Sample rates
+MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
+MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.brst = 8092; % Or 1024? TM mode burst
+
 % SDC process names
-MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre'};
-MMS_CONST.SDCProc.sitl = 1; % Number must corrspond to position in the list
-MMS_CONST.SDCProc.ql   = 2;
-MMS_CONST.SDCProc.scpot  = 3;
-MMS_CONST.SDCProc.l2pre  = 4;
+MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre','l2a'};
+MMS_CONST.SDCProc.sitl  = 1; % Number must corrspond to position in the list
+MMS_CONST.SDCProc.ql    = 2;
+MMS_CONST.SDCProc.scpot = 3;
+MMS_CONST.SDCProc.l2pre = 4;
+MMS_CONST.SDCProc.l2a   = 5;
 
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
+MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
