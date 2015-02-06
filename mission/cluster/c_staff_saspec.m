@@ -12,7 +12,7 @@ function h=c_staff_saspec(time,dat)
 %Last change: 2005-06-16
 
 
-if nargin==0 | nargin==1
+if nargin==0 || nargin==1
 	help c_staff_saspec;return;
 end
 
@@ -78,8 +78,9 @@ c_bar=colorbar;shading flat;irf_timeaxis(gca,t0);
 
 ylabel('Frequency [kHz]');
 set(gca,'tickdir','out')
-
-hh=get(c_bar,'ylabel');
+if isa(c_bar,'handle'), hh=get(c_bar,'Label'); % HG2
+else hh=get(c_bar,'ylabel');
+end
 
 if k==3
 	set(hh,'string',['(pT)^2/Hz']);

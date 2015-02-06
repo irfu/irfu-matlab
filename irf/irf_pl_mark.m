@@ -89,7 +89,7 @@ tpoints = [tlim(:,1) tlim(:,2) tlim(:,2) tlim(:,1)];
 %tlim = reshape( tlim, 1, prod(size(tlim)) );
 
 h = reshape( ax, 1, numel(ax) );
-hp=zeros(length(h),size(tlim,1)); % predefine patch handles
+hp=gobjects(length(h),size(tlim,1)); % predefine patch handles
 for j=1:length(h)
     ylim=get(h(j),'ylim');
     ypoints=zeros(size(tpoints));
@@ -107,7 +107,7 @@ for j=1:length(h)
             % spectrograms, patches or surface plots (except irf_pl_mark marking
             % itself)
             %
-            if any(findobj(h(j),'tag','irf_pl_mark')) || ~any(any([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')])), % put mark under everything
+            if ~isempty(findobj(h(j),'tag','irf_pl_mark')) || ~any(~isempty([findobj(h(j),'Type','surface') findobj(h(j),'Type','patch')])), % put mark under everything
                 hp(j,jj)=patch(tpoints(jj,:)', ypoints(jj,:)', zpoints(jj,:)', color(jj,:),'edgecolor','none','parent',h(j),'facealpha',1,'tag','irf_pl_mark',pvpairs{:});
                 set(h(j),'children',circshift(get(h(j),'children'),-1)); % move patch to be the first children (below other plots)
                 fc=get(hp(j,jj),'facecolor');

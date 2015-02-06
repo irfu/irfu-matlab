@@ -249,7 +249,7 @@ if ~isempty(caa_dataobject{1}) % plot CAA variable
     if isempty(ax)
         ax = plot(caa_dataobject{1},caa_varname{1},original_args{:});
     else
-        ax = plot(ax,caa_dataobject{1},caa_varname{1},original_args{:});
+        ax = plot(caa_dataobject{1},ax,caa_varname{1},original_args{:});
     end
     if isstruct(x), firstTimeStamp=x.t(1);
     elseif iscell(x), firstTimeStamp=x{1}(1,1);
@@ -271,7 +271,7 @@ if flag_subplot==0,  % One subplot
     if isstruct(x)
         % Plot a spectrogram
         irf_spectrogram(ax,x);
-		if flag_colorbar, hcbar = colorbar('peer',ax); end
+		if flag_colorbar, hcbar = colorbar(ax); end
         if ~isempty(var_desc{1})
             lab = cell(1,length(var_desc{1}.size));
             for v = 1:length(var_desc{1}.size)
@@ -325,7 +325,7 @@ elseif flag_subplot==1, % Separate subplot for each component
     ts = t_start_epoch(x(:,1));
     
     npl = size(x,2) -1;
-    c = zeros(1,npl);
+    c = gobjects(1,npl);
     for ipl=1:npl
         c(ipl) = subplot(npl,1,ipl);
         
@@ -507,9 +507,9 @@ irf_figmenu;
 %% In case time is in isdat_epoch add time axis
 if ((firstTimeStamp > 1e8) && (firstTimeStamp < 1e10))
     if flag_subplot == 0, irf_timeaxis(ax);
-	elseif strcmp(get(c(1),'type'),'axes')
+	elseif isgraphics(c( 1 ),'axes')
 		irf_timeaxis(c);
-	elseif strcmp(get(get(c(1),'parent'),'type'),'axes')
+	elseif isgraphics(get( c( 1 ), 'parent' ),'axes')
 		irf_timeaxis(get(c(1),'parent'));
 	else % do nothing
     end
@@ -560,7 +560,7 @@ elseif isempty(get(gcf,'children')) && ~strcmpi(flag,'newfigure') && ~strcmpi(fl
 end
 if number_of_subplots>=1 && number_of_subplots<=20,
     number_of_subplots=floor(number_of_subplots);
-    c=zeros(1,number_of_subplots);
+    c=gobjects(1,number_of_subplots);
 	if strcmpi(flag,'newfigure'), % if to open new figure
 		hcf = figure;
 		xSize = 11;

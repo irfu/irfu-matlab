@@ -144,7 +144,7 @@ Va  = B_SI./sqrt(mu0*(np+16*no)*Mp);
 Vae = B_SI./sqrt(mu0*n*Me);
 Vte = c*sqrt(1-1./(Te.*e./(Me*c^2)+1).^2);              % m/s (relativ. correct), particle with Vte has energy e*Te
 Vtp = c*sqrt(1-1./(Ti.*e./(Mp*c^2)+1).^2);              % m/s
-Vts = Vtp.*sqrt(Te./Ti); Vts=Vts(:);                    % ? what is relativistic formula???
+Vts = Vtp.*sqrt(Te./Ti+3); Vts=Vts(:);                    % ? what is relativistic formula???
 VtO = c*sqrt(1-1./(To.*e./(16*Mp*c^2)+1).^2);           % m/s
 gamma_e=1./sqrt(1-(Vte/c).^2);
 gamma_p=1./sqrt(1-(Vtp/c).^2);
