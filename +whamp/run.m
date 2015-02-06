@@ -252,25 +252,25 @@ else
 	Output.kperp           = kperpOUT;
 	Output.kpar            = kparOUT;
 end
-Output.f               = fOUT';
-Output.Ex              = ExOUT';
-Output.Ey              = EyOUT';
-Output.Ez              = EzOUT';
-Output.Bx              = BxOUT';
-Output.By              = ByOUT';
-Output.Bz              = BzOUT';
-Output.Sx              = SxOUT';
-Output.Sy              = SyOUT';
-Output.Sz              = SzOUT';
-Output.EB              = EBOUT';
-Output.VGP             = VGPOUT';
-Output.VGZ             = VGZOUT';
-Output.SGP             = SGPOUT';
-Output.SGZ             = SGZOUT';
-Output.u               = uOUT';
-Output.flagSolutionFound    = flagSolutionFoundOUT';
-Output.flagTooHeavilyDamped = flagTooHeavilyDampedOUT';
-Output.flagNoConvergence    = flagNoConvergenceOUT';
+Output.f               = fOUT.';
+Output.Ex              = ExOUT.';
+Output.Ey              = EyOUT.';
+Output.Ez              = EzOUT.';
+Output.Bx              = BxOUT.';
+Output.By              = ByOUT.';
+Output.Bz              = BzOUT.';
+Output.Sx              = SxOUT.';
+Output.Sy              = SyOUT.';
+Output.Sz              = SzOUT.';
+Output.EB              = EBOUT.';
+Output.VGP             = VGPOUT.';
+Output.VGZ             = VGZOUT.';
+Output.SGP             = SGPOUT.';
+Output.SGZ             = SGZOUT.';
+Output.u               = uOUT.';
+Output.flagSolutionFound    = flagSolutionFoundOUT.';
+Output.flagTooHeavilyDamped = flagTooHeavilyDampedOUT.';
+Output.flagNoConvergence    = flagNoConvergenceOUT.';
 
 % set to NaN output
 outFields = {'f','Ex','Ey','Ez','Bx','By','Bz',...
