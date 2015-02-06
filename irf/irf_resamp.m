@@ -181,7 +181,7 @@ end
 if strcmp(flag_do,'average')
     dt2 = .5/sfy; % Half interval
     if median_flag || max_flag || (exist('irf_average_mx','file')~=3)
-        if (~median_flag && ~max_flag), irf.log('fcal','cannot find mex file, defaulting to Matlab code.')
+        if (~median_flag && ~max_flag), irf.log('warning','cannot find mex file, defaulting to Matlab code.')
         end
         out = zeros(ndata,size(x,2));
         out(:,1) = t;
