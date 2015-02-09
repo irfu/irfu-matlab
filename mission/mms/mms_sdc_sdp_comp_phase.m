@@ -50,11 +50,24 @@ switch procId
 %   % direction.
 %   phase_jumps = [0; diff(defatt.zphase)<-180]*360;
 %   defatt.zphase = defatt.zphase + cumsum(phase_jumps);
-%
-%   % Linear interpol, with extrapolation. (convert int64 time to double).
+
+% FIXME phase calculation primarly from polyfit() and polyval if fit was
+% good, otherwise use interp1(). S gives normal residual (ie indicator of
+% quality), mu is scaling and centering.
+% [p, S, mu] = polyfit(double(defatt.time), defatt.zphase, 1);
+% if (S.normr <= 5)
+%  % "Good" fit, ie almost constant spin rate. Use polyval.
+%  [dcephase, delta] = polyval(p, double(dce.time), S, mu);
+%  % FIXME Set bitmask to indicate phase from DEFATT and polyval, possibly
+%  % use delta for indicating quality of phase.
+% else
+%   % "Bad" fit, somewhat changing spin rate. Use table lookup via
+%   % interp1(), linear interpolation with extrapolation.
 %   dcephase = interp1(double(defatt.time), defatt.zphase, double(dce.time), 'linear', 'extrap');
-%   % Then wrap to interval [0 - 360) degrees.
-%   dcephase = mod(phase, 360); % interval [0 to 360)
+%   % FIXME Set bitmask to indicate phase from DEFATT but with interp1.
+% end
+% % Then wrap to interval [0 - 360) degrees.
+% dcephase = mod(phase, 360); % interval [0 to 360)
 
     [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
     phase = struct('data',dcephase,'bitmask',dcephase_flag);
