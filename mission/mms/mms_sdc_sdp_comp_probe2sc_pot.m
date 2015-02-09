@@ -15,7 +15,7 @@ function probe2sc_pot = mms_sdc_sdp_comp_probe2sc_pot(filterInterval)
 % ----------------------------------------------------------------------------
 
 % Default to 10 seconds interval, if not specified.
-if nargin==0,  filterInterval = 10; end
+if nargin==0,  filterInterval = 20; end
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 probe2sc_pot = MMS_CONST.Error;
@@ -34,8 +34,8 @@ switch procId
     tmMode = mms_sdc_sdp_datamanager('tmMode');
     switch tmMode
       case {MMS_CONST.TmMode.slow, MMS_CONST.TmMode.fast, MMS_CONST.TmMode.brst}
-        % Filter window size, default 10 s * Samplerate = 80 samples (slow),
-        % 320 samples (fast), 81920 samples (brst).
+        % Filter window size, default 20 s * Samplerate = 160 samples (slow),
+        % 640 samples (fast), 163'840 samples (brst).
         windowSize = MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode})*filterInterval;
       otherwise
         errStr = 'Unrecognized tmMode';
