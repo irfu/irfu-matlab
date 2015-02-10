@@ -285,7 +285,8 @@ if exist(dataSetDir,'dir'),
 		tintReq = TTRequest.TimeInterval;
 		indOldObsoleteIntervals = false(numel(TTindex),1);
 		indOldToUpdateIntervals = false(numel(TTindex),1);
-		jIndex = numel(TTindex);
+		nOldIntervals = numel(TTindex);
+		jIndex        = nOldIntervals;
 		for iReq=numel(TTRequest):-1:1,
 			if tintInd(jIndex,2) < tintReq(iReq,1), % new time interval
 				continue;
@@ -305,9 +306,8 @@ if exist(dataSetDir,'dir'),
 			end
 			if jIndex==0, break; end
 		end
-		% Work to do
-		irf.log('warning', ['Old intervals to remove  : ' num2str(sum(indOldObsoleteIntervals))])
-		irf.log('warning', ['Old intervals to update  : ' num2str(sum(indOldToUpdateIntervals))])
+		nOldObsoleteIntervals = sum(indOldObsoleteIntervals);
+		nOldToUpdateInterval  = sum(indOldToUpdateIntervals);
 		% Removing old obsolete files
 		if ~doSimulateDownload
 			remove_datafiles(TTindex,indOldObsoleteIntervals,dataDir);
@@ -319,6 +319,12 @@ if exist(dataSetDir,'dir'),
 		indNonOverlap = ~(false.*indNewIntervals);
 		indNonOverlap(ii) = false; 
 		indNewIntervals(indNonOverlap) = true;
+		% Work to do
+		irf.log('warning', ['Old intervals total        : ' num2str(nOldIntervals)])
+		irf.log('warning', ['Old intervals to remove    : ' num2str(nOldObsoleteIntervals)])
+		irf.log('warning', ['Old intervals to update    : ' num2str(nOldToUpdateInterval)])
+		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
+		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
 end
 for j=find(indNewIntervals)'
@@ -331,8 +337,7 @@ if ~exist('indexList','var') % if indexList not give, all intervals should be do
 	indexList = find(indNewIntervals);
 end
 
-%% Work to do
-irf.log('warning', ['New intervals to download: ' num2str(sum(indNewIntervals))])
+%% Assign work
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 if doSimulateDownload,
 	return;

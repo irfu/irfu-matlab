@@ -1,5 +1,5 @@
 function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
-% CAA_DOWNLOAD Download CAA data in CDF format
+% CAA_DOWNLOAD Download CSA data in CDF format
 %       CAA_DOWNLOAD - check the status of jobs in current directory
 %
 %       CAA_DOWNLOAD('list')    - list all datasets and their available times
@@ -51,7 +51,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %	'ingestedsince=YYYYMMDD' - download only data ingested since YYYY MM DD
 %	'test'		    - test downloading some example datasets
 %
-%  To store your caa or csa user & password as defaults (e.g. 'uuu'/'ppp'):
+%  To store your CSA user & password as defaults (e.g. 'uuu'/'ppp'):
 %		datastore('csa','user','uuu')
 %		datastore('csa','pwd','ppp')
 %
@@ -283,7 +283,6 @@ if specifiedFileLink,
 end
 
 Caa = Default.Csa;
-dataSource = 'csa';
 if ~exist('urlIdentity','var') || isempty(urlIdentity) % if not set by input parameters use default
 	urlIdentity = get_url_identity;
 end
@@ -408,7 +407,7 @@ end
 %% list data if required
 if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list files
 	if any(strfind(dataset,'inventory')) && ~specifiedTimeInterval
-		ttTemp = caa_download(['list:' filter],dataSource);
+		ttTemp = caa_download(['list:' filter]);
 		if isempty(ttTemp) % no dataset found
 			errStr = ['Dataset ' filter ' does not exist!'];
 			irf.log('critical',errStr);
@@ -421,9 +420,9 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		end
 		tint = [min(ttTemp.TimeInterval(:)) max(ttTemp.TimeInterval(:))];
 		if any(strfind(dataset,'fileinventory'))
-			ttTemp = caa_download(tint,['fileinventory:' filter],dataSource);
+			ttTemp = caa_download(tint,['fileinventory:' filter]);
 		else
-			ttTemp = caa_download(tint,['inventory:' filter],dataSource);
+			ttTemp = caa_download(tint,['inventory:' filter]);
 		end
 		if isfield(ttTemp.UserData(1),'number')
 			iData=find([ttTemp.UserData(:).number]);
@@ -454,8 +453,7 @@ if any(strfind(dataset,'list')) || any(strfind(dataset,'inventory')),     % list
 		end
 	end
 	urlListDatasets = csa_parse_url(urlListDatasets);
-	irf.log('warning','Be patient! Contacting CAA...');
-	irf.log('warning',['requesting: ' urlListDatasets]);
+	irf.log('warning',['Patience! Requesting "' dataset '" ' urlListDatasets]);
 	caalog=urlread(urlListDatasets);
 	if isempty(caalog), % return empty output
 		downloadStatus = [];
@@ -481,8 +479,8 @@ if ~exist('CAA','dir'), mkdir('CAA');end
 if checkDataInventory
 	urlListDatasets=[ caaInventory  queryDatasetInventory queryTimeInventory];
 	urlListDatasets = csa_parse_url(urlListDatasets);
-	irf.log('warning','Be patient! Contacting to see the list of files...');
-	irf.log('notice',['requesting: ' urlListDatasets]);
+	irf.log('warning','Patience! Requesting list of files.');
+	irf.log('notice',['URL: ' urlListDatasets]);
 	caalist=urlread(urlListDatasets);
 	irf.log('debug',['returned: ' caalist]);
 	if isempty(caalist) % no datasets available
