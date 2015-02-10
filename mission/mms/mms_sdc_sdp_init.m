@@ -75,3 +75,6 @@ irf.log('notice'); % XXX: Set log level to notice
 % and which version of IRFU-MATLAB.
 irf.log('notice', ['Matlab version used is: ' version]);
 irf.log('notice', ['irfu-matlab version used is:', irf('version')]);
+% Store information in log about the leapsecond table used.
+leapsStatus = evalc('spdfcdfleapsecondsinfo');
+irf.log('notice', leapsStatus(1:end-1)); % Skip the "\n".
