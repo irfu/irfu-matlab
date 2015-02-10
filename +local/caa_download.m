@@ -376,18 +376,24 @@ while 1
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
 			tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^5 from the end time
-			irf.log('warning',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
+			
+			irf.log('warning',['Requesting ' dataset ' interval #' num2str(iRequest) ...
+				'(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' ...
+				irf_time(tint,'tint2iso')]);
 			try
 				if streamData
-					[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
+					[download_status,downloadfile]=caa_download(tint,dataSet,...
+						'stream',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
 				else
-					[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
+					[download_status,downloadfile]=caa_download(tint,dataSet,...
+						'schedule','nolog','nowildcard',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
 				end
 			catch
 				download_status = -1; % something wrong with internet
 				irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
 			end
+			
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
 				TTRequest.UserData(iRequest).Downloadfile=downloadfile;
