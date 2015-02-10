@@ -269,8 +269,11 @@ if exist(dataSetDir,'dir'),
 		TTfileList=caa_download(['fileinventory:' dataSet]);
 		indNewFiles = false(1,numel(TTfileList));
 		for j = 1:numel(indNewFiles),
-			if str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
+			newVersion = str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10]));
+			if newVersion > lastVersion,
 				indNewFiles(j) = true;
+				irf.log('debug',['Ingested since last #' num2str(j) ...
+					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint2iso')]);
 			end
 		end
 		TTfileList = select(TTfileList,find(indNewFiles));
@@ -296,9 +299,13 @@ if exist(dataSetDir,'dir'),
 							abs(tintInd(jIndex,1)-tintReq(iReq,1))<=5
 						if indNewIntervals(iReq), % new files available for interval
 							indOldToUpdateIntervals(jIndex) = true;
+							irf.log('debug',['Old interval to update #' num2str(jIndex) ' '...
+								irf_time(tintInd(jIndex,:),'tint2iso')]);
 						end
 					else
 						indOldObsoleteIntervals(jIndex) = true;
+						irf.log('debug',['Obsolete interval #' num2str(jIndex) ' '...
+							irf_time(tintInd(jIndex,:),'tint2iso')]);
 					end
 					jIndex = jIndex-1;
 					if jIndex==0, break; end
