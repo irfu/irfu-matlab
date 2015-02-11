@@ -26,6 +26,8 @@ function out=caa_download(varargin)
 %   LOCAL.CAA_DOWNLOAD(dataset,'simulate') show statistics on how many
 %   intervals would be deleted and downloaded but do not do anything.
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'email') send email when finnished
+%
 %   LOCAL.CAA_DOWNLOAD(...,inputParamCaaDownload) any unrecognized input
 %   parameter is parsed to caa_download when downloading data. See help
 %   caa_download.
@@ -58,57 +60,17 @@ dataDir = datastore('caa','localDataDirectory');
 if isempty(dataDir)
 	dataDir			= '/data/caalocal';
 end
-maxSubmittedJobs		= 10;
-maxNumberOfAttempts		= 30;
-isInputDatasetName		= false;
-sendEmailWhenFinished	= false;
-streamData				= false; % download cdf files asynchronously
-indexStart				= 1;
-inputParamCaaDownload   = {};
-doSimulateDownload      = false; % takes care of flag 'simulate'
-doDailyFileDownload     = false; % default is to go by inventory time
-doMonthlyFileDownload   = false; % default is to go by inventory time
+maxSubmittedJobs      = 10;
+maxNumberOfAttempts   = 30;
+isInputDatasetName    = false;
+sendEmailWhenFinished = false;
+streamData            = false; % download cdf files asynchronously
+indexStart            = 1;
+inputParamCaaDownload = {};
+doSimulateDownload    = false; % takes care of flag 'simulate'
+doDailyFileDownload   = false; % default is to go by inventory time
+doMonthlyFileDownload = false; % default is to go by inventory time
 
-%% Send email when done
-% use datastore info in local to send email when finnished
-if exist('sendmail','file')==2,
-	if isempty(fields(datastore('local'))),
-		% nothing in datastore('local'), do not send email
-	else
-		sendEmailWhenFinished = true;
-		sendEmailFrom = datastore('local','sendEmailFrom');
-		if isempty(sendEmailFrom),
-			disp('Please define email from which MATLAB should send email');
-			disp('This should be your local email where you are running MATLAB.');
-			disp('For example in IRFU: username@irfu.se');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''sendEmailFrom'',''username@irfu.se'')');
-			disp(' ');
-			return;
-		end
-		sendEmailSmtp = datastore('local','sendEmailSmtp');
-		if isempty(sendEmailSmtp),
-			disp('Please define your local SMTP server. ');
-			disp('For example in IRFU: sol.irfu.se');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''sendEmailSmtp'',''sol.irfu.se'')');
-			disp(' ');
-			return;
-		end
-		sendEmailTo = datastore('local','email');
-		if isempty(sendEmailTo),
-			disp('Please specify your email.');
-			disp('For example: name@gmail.com');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''email'',''name@gmail.com'')');
-			disp(' ');
-			return;
-		end
-	end
-end
 %% check input: get inventory and construct time table if dataset
 if nargin == 0,
 	help local.caa_download
@@ -136,6 +98,9 @@ while ~isempty(args)
 	elseif ischar(args{1}) && strcmpi(args{1},'simulate')
 		irf.log('notice','Only simulate the download');
 		doSimulateDownload = true;
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'email')
+		sendEmailWhenFinished = true;
 		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'daily')
 		irf.log('notice','Download as daily files');
@@ -172,6 +137,47 @@ while ~isempty(args)
 	else
 		inputParamCaaDownload{end+1} = args{1}; %#ok<AGROW>
 		args(1) = [];
+	end
+end
+%% If sending email check that all servers and addresses defined
+% datastore('local',..) keeps info on email and servers
+if sendEmailWhenFinished,
+	if exist('sendmail','file')==2,
+		sendEmailFrom = datastore('local','sendEmailFrom');
+		if isempty(sendEmailFrom),
+			disp('Please define email from which MATLAB should send email');
+			disp('This should be your local email where you are running MATLAB.');
+			disp('For example in IRFU: username@irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailFrom'',''username@irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailSmtp = datastore('local','sendEmailSmtp');
+		if isempty(sendEmailSmtp),
+			disp('Please define your local SMTP server. ');
+			disp('For example in IRFU: sol.irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailSmtp'',''sol.irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailTo = datastore('local','email');
+		if isempty(sendEmailTo),
+			disp('Please specify your email.');
+			disp('For example: name@gmail.com');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''email'',''name@gmail.com'')');
+			disp(' ');
+			return;
+		end
+	else
+		disp('Your system does not allow sending emails');
+		disp('"sendmail" command does not exist.')
+		sendEmailWhenFinished = false;
 	end
 end
 %% change to data directory
