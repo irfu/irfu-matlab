@@ -374,7 +374,7 @@ end
       irf.log('notice', ['Checking for sweep status on probe pair ', senE]);
 
       % Get sweep status and sweep timestamp
-      varName = sprintf('mms%d_edp_sweep%s%s', DATAC.scId, senE(2:3));
+      varName = sprintf('mms%d_edp_sweep%s', DATAC.scId, senE(2:3));
       sweepStatus = DATAC.dce.dataObj.data.(varName).data;
       x = getdep(DATAC.dce.dataObj,varName);
       sweepTimestamp = x.DEPEND_O.data;
@@ -383,6 +383,14 @@ end
       % major file version 2 this was empty and for version 1 it did not
       % exist. In version 3 it exist and is no longer empty.
       if(~isempty(sweepStatus))
+        % 4 second resolution means we might have sweep starting 4 seconds
+        % before first non-zero sweepStatus. Locate all nonzero sweepStatus
+        % and set force the previous packet to non-zero as well.
+        nonZero = sweepStatus > 0;
+        diffA = [0; diff(nonZero)];
+        % Non zero start identified with diffA==1, set the preceeding
+        % value as non zero.
+        sweepStatus(find(diffA==1)-1) = uint8(1);
         % Interpolate, each sweep status is valid until the next sweep status
         % packet. Use timestamp from DC E and sweep status timestamp, convert
         % all to double (for interp1 to work).
