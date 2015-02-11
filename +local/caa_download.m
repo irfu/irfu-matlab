@@ -79,6 +79,10 @@ end
 args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
+	if isempty(dataSet),
+		irf.log('warning','local.caa_download: dataset name empty!')
+		return;
+	end
 	isInputDatasetName = true;
 elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
