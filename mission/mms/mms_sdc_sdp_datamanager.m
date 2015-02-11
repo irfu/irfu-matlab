@@ -356,11 +356,51 @@ end
     % Check if sweep is on for all probes
     % if yes, set bit in both V and E bitmask
 
-    %XXX: Does nothing at the moment
+    % Notes: cdf files (dce) will contain sweep status in mmsX_edp_sweep12,
+    % ...sweep34, ...sweep56 (uint8) indicating sweep on each pair and
+    % thier corresponding timestamps in mmsX_edp_epoch_sweep (tt2000).
+    % Typically provided with 4 second resolution.
 
-    % Notes: cdf files (dcv/dce) will contain mmsX_sdp_sweepstatus (uint8)
-    % and corresponding timestamps in mmsX_sdp_epoch_sweep (tt2000)
-    % indicating if sweep is ongoing at that particular epoch time or not.
+    if isempty(DATAC.dce),
+      irf.log('warning','Empty DCE, cannot proceed')
+      return
+    end
+
+    % For pair, E_12, E_34, E_56.
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen};  senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)]; % E-field sensor
+
+      irf.log('notice', ['Checking for sweep status on probe pair ', senE]);
+
+      % Get sweep status and sweep timestamp
+      varName = sprintf('mms%d_edp_sweep%s%s', DATAC.scId, senE(2:3));
+      sweepStatus = DATAC.dce.dataObj.data.(varName).data;
+      x = getdep(DATAC.dce.dataObj,varName);
+      sweepTimestamp = x.DEPEND_O.data;
+
+      % Do we have any sweepStatus (from mmsX_edp_sweep12 etc). For MMS CDF
+      % major file version 2 this was empty and for version 1 it did not
+      % exist. In version 3 it exist and is no longer empty.
+      if(~isempty(sweepStatus))
+        % Interpolate, each sweep status is valid until the next sweep status
+        % packet. Use timestamp from DC E and sweep status timestamp, convert
+        % all to double (for interp1 to work).
+        % Status: 0 = no sweep and 1 = sweep.
+        interp_status = interp1(double(sweepTimestamp), double(sweepStatus), ...
+          double(DATAC.dce.time), 'previous', 'extrap');
+        ind = interp_status > 0; % Logical true when sweeping
+        % Set bitmask on the corresponding pair, leaving the other 16 bits
+        % untouched.
+        bits = MMS_CONST.Bitmask.SWEEP_DATA;
+        bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - bits;
+        DATAC.dcv.(senA).bitmask(ind) = bitand(DATAC.dcv.(senA).bitmask(ind), bitsUntouched) + bits;
+        DATAC.dcv.(senB).bitmask(ind) = bitand(DATAC.dcv.(senB).bitmask(ind), bitsUntouched) + bits;
+        DATAC.dce.(senE).bitmask(ind) = bitand(DATAC.dce.(senE).bitmask(ind), bitsUntouched) + bits;
+      else
+        irf.log('notice',['Did not find any sweep status for probe pair ', senE]);
+      end % if ~isempty(sweepStatus)
+    end % for iSen
   end
 
   function chk_sdp_v_vals()
