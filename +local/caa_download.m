@@ -343,6 +343,9 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
 		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
+else
+		irf.log('warning', ['Dataset ' dataSet ' directory does not exist.'])
+		irf.log('warning', ['Total intervals to download: ' num2str(numel(TTRequest))])	
 end
 for j=find(indNewIntervals)'
 	TTRequest.UserData(j).Status = [];
