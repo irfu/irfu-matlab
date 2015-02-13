@@ -10,7 +10,7 @@ function result = caa_identify_problems(result, data_level, probe, spacecraft_id
 %     bitmask_column    the number of the column in 'data' which holds the bitmask.
 %     quality_column    the number of the column in 'data' which holds the quality flag.
 %     mask_type         0=default
-%                       1=spacecraft potential P caa_export_new() L2/3 processing
+%                       1=spacecraft potential P caa_export_cef() L2/3 processing
 %                       2=internal burst PBurst L2
 %                       3=internal burst EBurst L2
 %                       4=internal burst BBurst L2 (BITMASK_RESET & BITMASK_PROBE_SATURATION only)
