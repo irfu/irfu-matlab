@@ -4,8 +4,6 @@
 %
 % Input: signal,probe,cl_id,problems
 % Output: res
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -16,21 +14,16 @@
 
 res = signal;
 if probe>10
+  allProbes = [12 34 32 42];
 	switch probe
-		case 12
-			p_list = [1,2];
-		case 32
-			p_list = [3,2];
-		case 34
-			p_list = [3,4];
-        case 42
-			p_list = [4,2];
-		otherwise
-			error('Unknown probe')
+		case 12, p_list = [1,2];
+		case 32, p_list = [3,2];
+		case 34, p_list = [3,4];
+    case 42, p_list = [4,2];
+    otherwise, error('Unknown probe')
 	end
 elseif probe>0 && probe <=4, p_list = probe;
-else
-	error('Unknown probe')
+else error('Unknown probe')
 end
 
 param = tokenize(problems,'|');
@@ -76,8 +69,26 @@ for i=1:length(param)
 			end
 			clear ok wake msg
 
-		case 'probesa'
-			% Remove probe saturation
+		case 'saasa'
+			% Remove probe saturation due to SAA
+      if probe>10,
+        [ok,saasa,msg] = c_load('SAASADI?',cl_id);
+        if ~isempty(saasa)
+          saasa = saasa(:,2*find(probe==allProbes) -[1 0]);
+          irf_log('proc',['blanking SAA saturation on P' num2str(probe)])
+						res = caa_rm_blankt(res,saasa);
+        end
+      else
+        [ok,saasa,msg] = c_load('SAASASE?',cl_id);
+        if ~isempty(saasa), 
+          saasa = saasa(:,2*probe-[1 0]);
+          irf_log('proc',['blanking SAA saturation on P' num2str(probe)])
+						res = caa_rm_blankt(res,saasa);
+        end
+      end
+      
+    case 'probesa'
+      % Remove probe saturation
 			for kk = p_list
 				[ok,sa,msg] = c_load(irf_ssub('PROBESA?p!',cl_id,kk));
 				if ok

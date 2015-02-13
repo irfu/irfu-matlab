@@ -47,7 +47,8 @@ function data = getData(cp,cl_id,quantity,varargin)
 %   sweep: SWEEP{cl_id} -> mEFW	// Sweep + dump present
 %   badbias: BADBIASRESET{cl_id}, BADBIAS{cl_id}p[1..4] -> mEFW	
 %          // Bad bias settings
-%   probesa: PROBESA{cl_id}p[1..4] -> mEFW	// Probe saturation
+%   probesa: PROBESA{cl_id}p[1..4], SAASASE{cl_id}, SAASADI{cl_id} -> mEFW	
+%          // Probe saturation, including due to shadow for SAA=90 deg 
 %   hbiassa: HBIASSA{cl_id}p{12/32,34}, HBSATDSC{cl_id}p{12/32,34} -> mEFW
 %          // Saturation due to high bias current
 %   rawspec: RSPEC{cl_id}p{12/32,34} -> mEFW // Spectrum of raw signal (1,2..5 omega)
@@ -87,8 +88,6 @@ function data = getData(cp,cl_id,quantity,varargin)
 %       ec_extraparams : extra paramters to pass to c_efw_swwake (affects ec)
 %
 % See also C_GET, C_CTL
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -1759,12 +1758,18 @@ elseif strcmp(quantity,'probesa')
 	% Delta = .1 sec, half sampling interval for P.
 	DELTA = .1;
 	
+  % Src quantities: Atwo?, wE?p12/wE?p32, wE?p34
+  [ok,pha,msg] = c_load('Atwo?',cl_id);
+  if ~ok || isempty(pha)
+    irf_log('load',msg);data = []; cd(old_pwd); return
+  end
+  [ok,SAX,msg] = c_load('SAX?',cl_id);
+  if ~ok, irf_log('load',msg), data = []; cd(old_pwd); return, end
 	[ok, sweep] = c_load('SWEEP?',cl_id);
 	if ~ok
 		sweep = [];
 		irf_log('load',irf_ssub('cannot load SWEEP? needed for bad bias',cl_id))
-	end
-	
+  end
 	ns_ops = c_ctl('get',cl_id,'ns_ops');
 	if isempty(ns_ops)
 		c_ctl('load_ns_ops',[c_ctl('get',5,'data_path') '/caa-control'])
@@ -1773,6 +1778,59 @@ elseif strcmp(quantity,'probesa')
 	
 	[iso_t,dt] = caa_read_interval;
 	start_time = iso2epoch(iso_t);
+  
+  % SAA saturation
+  shadow_2 = atand(8/150); % 8 cm puch, 150 cm thin wire
+  SAA_MIN = 90 - shadow_2;
+  saa = atan2d(-SAX(3),SAX(1));
+  if saa<SAA_MIN,
+    irf_log('proc','no shadow (SAA)'), ssasa_se = []; ssasa_di = []; %#ok<NASGU>
+  else
+    irf_log('proc',sprintf('Probe shadow (SAA=%.1f > %.1f)',saa,SAA_MIN))
+    [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(pha);
+    if isempty(spin_period)
+      irf_log('proc','cannot find spin period'),data = [];cd(old_pwd); return
+    end
+    if err_angle>1 || err_angle_mean>1,
+      irf_log('proc','This is not yet implemented, need to do spin-by-spin');
+      error('This is not yet implemented, need to do spin-by-spin')
+    end
+    
+    dt_minus = 3*spin_period*shadow_2/360;
+    %XXX FIXME
+    if cl_id==2, filt=180;
+    else filt=10;
+    end
+    if filt==180, dt_plus = dt_minus;
+    else dt_plus = 10/25;
+    end
+    
+    nSpins=ceil(dt/spin_period)+2; spinN = (1:nSpins)-2;
+    probes = [1 3 2 4]; ssasa = zeros(nSpins,4);
+    % Shadow times
+    for iProbe=1:4
+      ssasa(:,probes(iProbe)) = ...
+        (pi/4 + pi/2*(iProbe-1) + spinN*2*pi)/phc_coef(1) + pha(1,1);
+    end
+    % LX Shadows
+    ssasa_se = zeros(nSpins,8);
+    for iProbe=1:4
+      ssasa_se(:,iProbe*2-1) = ssasa(:,iProbe) - dt_minus;
+      ssasa_se(:,iProbe*2) = ssasa(:,iProbe) + dt_plus;
+    end
+    % HX Shadows
+    probes = [12 34 32 42]; ssasa_di = zeros(nSpins*2,8);
+    for iProbe=1:4
+      pA = fix(probes(iProbe)/10); pB = probes(iProbe) - pA*10;
+      tmpT = sort([ssasa(:,pA); ssasa(:,pB)]);
+      ssasa_di(:,iProbe*2-1) = tmpT - dt_minus;
+      ssasa_di(:,iProbe*2) = tmpT + dt_plus;
+    end
+    clear tmpT
+  end % SAA saturation
+  c_eval(['SAASASE?=ssasa_se;SAASADI?=ssasa_di;'...
+      'save_list=[save_list '' SAASASE? '' '' SAASADI? '' ];'],cl_id);
+  
 	c_eval('sa_int_p?=[];')
 	for pro=1:4
 		[ok,p] = c_load(irf_ssub('P10Hz?p!',cl_id,pro));
@@ -2018,8 +2076,7 @@ elseif strcmp(quantity,'probesa')
 			'save_list=[save_list '' HBIASSA' num2str(cl_id) 'p? ''];'],pro);
 			clear ii res
 		end
-	end
-	
+  end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HBIASSA - saturation due to high bias current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%	
@@ -2067,7 +2124,7 @@ elseif strcmp(quantity,'hbiassa')
 			
 		fsamp = c_efw_fsample(da,'hx');
 		
-		problems = 'reset|bbias|probeld|sweep|bdump|nsops';
+		problems = 'reset|bbias|probeld|sweep|bdump|saasa|nsops';
 		nsops_errlist = [caa_str2errid('bad_bias') caa_str2errid('bad_hx')];%#ok<NASGU>
 		
 		% Always remove Whisper when we use 180Hz filter
@@ -2642,185 +2699,123 @@ elseif strcmp(quantity,'br') || strcmp(quantity,'brs')
 % P averaged from several probes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
-	
-    if strcmp(quantity,'pburst')
-        save_file = './mEFWburst.mat';
-        do_burst = 1;
-    else
-        do_burst = 0;
-        save_file = './mP.mat';
+  if strcmp(quantity,'pburst') 
+    do_burst = 1; save_file = './mEFWburst.mat';
+    param={'180Hz','4kHz','32kHz'};
+  else do_burst = 0; save_file = './mP.mat'; param={'10Hz'};
+  end
+  P = struct('p1',[],'p2',[],'p3',[],'p4',[]);
+	n_ok = 0; loaded = 0;
+  for k=1:length(param)
+    for iProbe=1:4
+      [ok,p] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,iProbe));
+      if ~ok || isempty(p)
+        irf_log('load', irf_ssub(['No/empty P' param{k} '?p!'],cl_id,iProbe));
+        continue
+      end
+      if ~loaded && ok, loaded=1; loaded_param = param{k}; end
+      P.(probeS(iProbe)) = p;
+      n_ok = n_ok + 1;
+      clear ok p
     end
-    
-	n_ok = 0;
-    if do_burst, param={'180Hz','4kHz','32kHz'};
-    else param={'10Hz'};
-    end
-        
-    loaded = 0;
-    for k=1:length(param)
-        for probe=1:4
-            [ok,p] = c_load(irf_ssub(['P' param{k} '?p!'],cl_id,probe));
-            if ~loaded && ok, loaded=1; loaded_param = param{k}; end
-            c_eval('p?=p;',probe)
-            if ~ok || isempty(p)
-                irf_log('load', irf_ssub(['No/empty P' param{k} '?p!'],cl_id,probe));
-                continue
-            end
-            n_ok = n_ok + 1;
-            clear ok p
-        end
-        if loaded, break, end
-    end
-	if ~n_ok, data = []; cd(old_pwd), return, end
-	
-    % Remove probe saturation
-    for probe = 1:4
-        if eval(irf_ssub('~isempty(p?)',probe))
-            [ok,sa] = c_load(irf_ssub('PROBESA?p!',cl_id,probe));
-            if ~ok
-                irf_log('load',irf_ssub('Cannot load PROBESA?p!',cl_id,probe))
-                continue
-            end
-            if ~isempty(sa)
-                irf_log('proc',['blanking saturated P' num2str(probe)])
-                c_eval('if ~isempty(p?), p? = caa_rm_blankt(p?,sa); end',probe)
-            end
-            clear ok sa
-        end
-    end
+    if loaded, break, end
+  end
+  if ~n_ok, data = []; cd(old_pwd), return, end
 
-%    c_eval('if ~isempty(p?), p?=p?(find(~isnan(p?(:,2))),:); end')
+  if do_burst, problems = 'reset|bbias|sweep|probesa|nsops|spike';
+  else problems = 'reset|bbias|sweep|saasa|probesa|nsops';
+  end
+  if flag_rmwhip, problems = [problems '|whip']; end %#ok<NASGU>
 
-    if do_burst
-        problems = 'reset|bbias|sweep|nsops|spike'; %#ok<NASGU>
-    else
-        problems = 'reset|bbias|sweep|nsops'; %#ok<NASGU>
+  n_ok = 0; res = [];
+  for probe=1:4
+    signal = P.(probeS(probe));
+    if ~isempty(signal)
+      if ~do_burst
+        nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx')...
+          caa_str2errid(irf_ssub('no_p?',probe))];%#ok<NASGU>
+      end
+      remove_problems
+      P.(probeS(probe)) = res;
+      n_ok = n_ok + 1;
     end
-
-    n_ok = 0;
-    for probe=1:4
-        c_eval('signal=p?;',probe)
-        if ~isempty(signal) %#ok<NODEF>
-			if ~do_burst
-				nsops_errlist = [caa_str2errid('hxonly') caa_str2errid('bad_lx') caa_str2errid(irf_ssub('no_p?',probe))];%#ok<NASGU>
-			end
-			remove_problems
-            %res(isnan(res(:,2)),:) = []; %#ok<AGROW>
-            c_eval('p?=res;',probe)
-            n_ok = n_ok + 1;
-        end
-    end
-    clear res signal problems probe
-    if ~n_ok
-        data = [];
-        irf_log('proc','No P data remaining after blanking.')
-        if exist(save_file,'file'), delete(save_file); end
-        cd(old_pwd);
-        return
-    end
-	
-	if flag_rmwhip
-		problems = 'whip'; %#ok<NASGU>
-		for probe=1:4
-			c_eval('signal=p?;',probe)
-			if ~isempty(signal)
-				remove_problems
-				c_eval('p?=res;',probe)
-			end
-		end
-	end
-
-	% Check for problem with one probe pair
-	MAX_CUT = .1;
-	if isempty(p1), l1=0; else l1 = length(find(~isnan(p1(:,2)))); end %#ok<NODEF>
-	if isempty(p2), l2=0; else l2 = length(find(~isnan(p2(:,2)))); end %#ok<NODEF>
-	if ~isempty(p1) && ~isempty(p2)
-		if abs(l1-l2) > MAX_CUT*( max([p1(end,1) p2(end,1)]) - max([p1(1,1) p2(1,1)]) )*5
-			if l1>l2, p2=[]; irf_log('proc','throwing away p2')
-			else p1=[]; irf_log('proc','throwing away p1')
-			end
-		end
-	end
-	if isempty(p3), l3=0; else l3 = length(find(~isnan(p3(:,2)))); end %#ok<NODEF>
-	if isempty(p4), l4=0; else l4 = length(find(~isnan(p4(:,2)))); end %#ok<NODEF>
-	if ~isempty(p3) && ~isempty(p4)
-		if abs(l3-l4)> MAX_CUT*( max([p3(end,1) p4(end,1)]) - max([p3(1,1) p4(1,1)]) )*5
-			if l3>l4, p4=[]; irf_log('proc','throwing away p4')
-			else p3=[]; irf_log('proc','throwing away p3')
-			end
-		end
-	end
+  end
+  clear res signal problems probe
+  if ~n_ok
+    irf_log('proc','No P data remaining after blanking.')
+    data = []; cd(old_pwd); return
+  end
 	
 	%Check for problem with bad DAC
 	[ok,badDAC] = c_load('BADDAC?p34',cl_id);
 	if ok || ~isempty(badDAC)
 		irf_log('proc',irf_ssub('Bad DAC C?p34',cl_id))
-		p3=[];p4=[];
+		P.p3=[];P.p4=[];
 	end
 	[ok,badDAC] = c_load('BADDAC?p12',cl_id);
 	if ok || ~isempty(badDAC)
 		irf_log('proc',irf_ssub('Bad DAC C?p12',cl_id))
-		p1=[];p2=[];
-	end
+		P.p1=[];P.p2=[];
+  end
 
-	if ~isempty(p1) && all(size(p1)==size(p2)) && all(size(p1)==size(p3)) && ...
-            all(size(p1)==size(p4) )
-		p = [p1(:,1) (p1(:,2)+p2(:,2)+p3(:,2)+p4(:,2))/4];
-		Pinfo.probe = 1234;
-		irf_log('proc','computing from p1234')
-	elseif ~isempty(p3) && all(size(p3)==size(p4)) && ~(all(size(p1)==size(p2)) && l1>l3)
-		p = [p3(:,1) (p3(:,2)+p4(:,2))/2];
-		Pinfo.probe = 34;
-		irf_log('proc','computing from p34')
-	elseif ~isempty(p1) && all(size(p1)==size(p2))
-		p = [p1(:,1) (p1(:,2)+p2(:,2))/2];
-		Pinfo.probe = 12;
-		irf_log('proc','computing from p12')
-	elseif ~isempty(p4) && l4>=max([l1 l2 l3])
-		p = p4;
-		Pinfo.probe = 4;
-		irf_log('proc','computing from p4')
-	elseif ~isempty(p2) && l2>=max([l1 l3])
-		p = p2;
-		Pinfo.probe = 2;
-		irf_log('proc','computing from p2')
-	elseif ~isempty(p3) && l3>=l1
-		p = p3;
-		Pinfo.probe = 3;
-		irf_log('proc','computing from p3')
-	elseif ~isempty(p1)
-		p = p1;
-		Pinfo.probe = 1;
-		irf_log('proc','computing from p1')
-    else irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
-	end
-	
+  if isempty([P.p1; P.p2; P.p3; P.p4])
+    irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
+  end
+  tComb = []; pList = [];
+  for iProbe = 1:4, 
+    ps = probeS(iProbe);
+    if isempty(P.(ps)), continue, end
+    tComb = [tComb; P.(ps)(:,1)]; pList = [pList; iProbe]; %#ok<AGROW>
+  end
+  if length(pList)==1,
+    Pinfo.probe = pList; ps = probeS(pList);
+		irf_log('proc',['computing from ' ps])
+    p = P.(ps);
+  else
+    tComb = sort(unique(tComb));
+    for iProbe = 1:4,
+      ps = probeS(iProbe); pTmp = zeros(1,length(tComb))*NaN;
+      if ~isempty(P.(ps))
+        [~,ia,ib] = intersect(tComb,P.(ps)(:,1)); pTmp(ia) = P.(ps)(ib,2);
+      end
+      P.(ps) = pTmp;
+    end
+    clear pTmp ia ib
     % Fix periods of high bias saturation
-    sa12=[]; sa34=[];
-    if Pinfo.probe == 1234 || Pinfo.probe == 12
-        [ok,sa12] = c_load(irf_ssub('HBIASSA?p12',cl_id));
-        if ~ok, irf_log('load',irf_ssub('Cannot load HBIASSA?p12',cl_id)); end
+    % from the two affected probes, we use only the one with the max value
+    saProbes = [12 34 32];
+    for iP = saProbes
+      pr1 = fix(iP/10); pr2 = iP-pr1*10;
+      if isempty(intersect([pr1 pr2],pList)), continue, end
+      [ok,sa] = c_load(sprintf('HBIASSA%dp%d',cl_id,iP));
+      if ~ok
+        irf_log('load',sprintf('Cannot load HBIASSA%dp%d',cl_id,iP));
+        continue
+      end
+      if isempty(sa), continue, end
+      for j=1:size(sa,1)
+        indx = tComb>=(sa(j,1)-10) & tComb<=(sa(j,2)+10);
+        V1 = P.(probeS(pr1))(indx); V2 = P.(probeS(pr2))(indx);
+        maxP = max([V1; V2],[],2); V1(V1~=maxP) = NaN; V2(V2~=maxP) = NaN;
+        P.(probeS(pr1))(indx) = V1; P.(probeS(pr2))(indx) = V2;
+      end
+    end % hbiassa
+    % We prefer to use the opposing ones  
+    if ~all(isnan(P.p1) == (isnan(P.p2) & isnan(P.p3) & isnan(P.p4)))
+      ii12 = ~isnan(P.p1) & ~isnan(P.p2); ii34 = ~isnan(P.p3) & ~isnan(P.p4);
+      fix12 = ii34 & ~ii12; fix34 = ii12 & ~ii34;
+      P.p1(fix12) = NaN; P.p2(fix12) = NaN; 
+      P.p3(fix34) = NaN; P.p4(fix34) = NaN;
     end
-    if Pinfo.probe == 1234 || Pinfo.probe == 34
-        [ok,sa34] = c_load(irf_ssub('HBIASSA?p34',cl_id));
-        if ~ok, irf_log('load',irf_ssub('Cannot load HBIASSA?p34',cl_id)); end
+    % Delete empty probes from the list
+    for iProbe = pList'
+      if all(isnan(P.(probeS(iProbe)))), pList(pList==iProbe) = []; end %#ok<AGROW>
     end
-    time_int=[sa12' sa34']';
-    if ~isempty(time_int) && ~isempty(p)
-        irf_log('proc','Fixing high bias saturation. Using maximum probe potential in affected intervals.')
-        Pinfo.useMax4hbiassa=1; %#ok<STRNU>
-        time_int = sort(time_int,1);
-        for j=1:size(time_int,1)
-            indx=p(:,1)>=(time_int(j,1)-10) & p(:,1)<=(time_int(j,2)+10);
-            ptmp=zeros(sum(indx),4)+NaN;
-            if ~isempty(p1) && all(size(p1)==size(p)), ptmp(:,1)=p1(indx,2); end
-            if ~isempty(p2) && all(size(p2)==size(p)), ptmp(:,2)=p2(indx,2); end
-            if ~isempty(p3) && all(size(p3)==size(p)), ptmp(:,3)=p3(indx,2); end
-            if ~isempty(p4) && all(size(p4)==size(p)), ptmp(:,4)=p4(indx,2); end
-            p(indx,2:end) = max(ptmp,[],2);
-        end
-    end
-   
+    ps = sprintf('%d',pList);
+    Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps])
+    p = [tComb, irf.nanmean([P.p1; P.p2; P.p3; P.p4])']; %#ok<NASGU>
+  end
+  
 	c_eval(['P' loaded_param '?=p;save_list=[save_list ''P' loaded_param '? ''];'],cl_id);
     if do_burst
         c_eval('bP?=p;bP?_info=Pinfo;bNVps?=c_efw_scp2ne(p);bNVps?(:,end+1)=p(:,2); save_list=[save_list '' bP? bP?_info bNVps?''];',cl_id)
@@ -2828,7 +2823,6 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         c_eval('P?=p;P?_info=Pinfo;NVps?=c_efw_scp2ne(p);NVps?(:,end+1)=p(:,2); save_list=[save_list '' P? P?_info NVps?''];',cl_id)
     end
 	clear p p1 p2 p3 p4 ptmp
-	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % P spin resolution
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3170,4 +3164,8 @@ if nargout > 0
 end
 
 cd(old_pwd)
+end
 
+function s = probeS(p)
+s = sprintf('p%d',p);
+end
