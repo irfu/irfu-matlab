@@ -112,49 +112,46 @@ end
 % CSA
 % CSA Archive Inter-Operability (AIO) System User's Manual:
 % http://csa.esac.esa.int/csa/aio/html/CsaAIOUsersManual.pdf
-Default.Csa.urlServer		= 'http://csa.esac.esa.int/csa/aio/';
-Default.Csa.urlQuery		= 'product-action?&NON_BROWSER';
-Default.Csa.urlQueryAsync	= 'async-product-action?&NON_BROWSER';
-Default.Csa.urlStream		= 'streaming-action?&NON_BROWSER&gzip=1';
-%Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,FILE.START_DATE,FILE.END_DATE,FILE.FILE_NAME,FILE.CAA_INGESTION_DATE&RESOURCE_CLASS=FILE';
-Default.Csa.urlInventory	= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
-Default.Csa.urlFileInventory= 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';
-Default.Csa.urlListDataset  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
+Default.Csa.urlServer           = 'http://csa.esac.esa.int/csa/aio/';
+Default.Csa.urlQuery            = 'product-action?&NON_BROWSER';
+Default.Csa.urlQueryAsync       = 'async-product-action?&NON_BROWSER';
+Default.Csa.urlStream           = 'streaming-action?&NON_BROWSER&gzip=1';
+Default.Csa.urlInventory        = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET_INVENTORY&RESOURCE_CLASS=DATASET_INVENTORY';
+Default.Csa.urlFileInventory    = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=FILE.LOGICAL_FILE_ID,FILE.START_DATE,FILE.END_DATE,FILE.CAA_INGESTION_DATE&FILE.ACTIVE=1&RESOURCE_CLASS=FILE';
+Default.Csa.urlListDataset      = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE&RESOURCE_CLASS=DATASET';
 Default.Csa.urlListDatasetDesc  = 'metadata-action?&NON_BROWSER&SELECTED_FIELDS=DATASET.DATASET_ID,DATASET.START_DATE,DATASET.END_DATE,DATASET.TITLE,DATASET.DESCRIPTION&RESOURCE_CLASS=DATASET';
-Default.Csa.urlListFormat   = '&RETURN_TYPE=CSV';
-Default.Csa.urlNotifyOn		= '';
-Default.Csa.urlNotifyOff	= '&NO_NOTIFY';
-Default.Csa.urlDataset      = '&DATASET_ID=';
-Default.Csa.urlDataFormat   = '&DELIVERY_FORMAT=CDF';
-Default.Csa.urlFileInterval = '&DELIVERY_INTERVAL=ALL';
+Default.Csa.urlListFormat       = '&RETURN_TYPE=CSV';
+Default.Csa.urlNotifyOn         = '';
+Default.Csa.urlNotifyOff        = '&NO_NOTIFY';
+Default.Csa.urlDataset          = '&DATASET_ID=';
+Default.Csa.urlDataFormat       = '&DELIVERY_FORMAT=CDF';
+Default.Csa.urlFileInterval     = '&DELIVERY_INTERVAL=ALL';
 
 %% Defaults that can be overwritten by input parameters
-checkDownloadStatus		= false;
-checkDataInventory		= true;			% check if there are any data at caa
-doLog					= false;		% do not log into .caa file
-doDataStreaming         = false;        % data streaming is in beta and supports only one dataset
-doDownloadScheduling	= false;        % default download directly files
-doNotifyByEmail			= false;		% default, do not notify
-expandWildcards			= true;			% default is to use wildcard
-overwritePreviousData	= false;		% continue adding cdf files to CAA directory
+checkDownloadStatus     = false;
+checkDataInventory      = true;   % check if there are any data at caa
+doLog                   = false;  % do not log into .caa file
+doDataStreaming         = false;  % data streaming is in beta and supports only one dataset
+doDownloadScheduling    = false;  % default download directly files
+doNotifyByEmail         = false;  % default, do not notify
+expandWildcards         = true;   % default is to use wildcard
+overwritePreviousData   = false;  % continue adding cdf files to CAA directory
 specifiedTimeInterval   = false;
 specifiedFileLink       = false;
 specifiedIngestedSince  = false;
-
-downloadDirectory       = './CAA/';     % local directory where to put downloaded data, default in current directory under 'CAA' subdirectory
+downloadDirectory       = './CAA/';% local directory where to put downloaded data
 
 %% check input
-if nargin==0, checkDownloadStatus=true; end
-if nargout>0 && nargin>0,
+if nargin==0, % [..]=caa_download
+	checkDownloadStatus=true; 
+elseif  nargin == 1 && ischar(tint) && strcmpi('test',tint),  % [..]=caa_download('testcsa')
+	downloadStatus = test_csa;
+	if nargout == 0, clear downloadStatus;end
+	return;
+elseif nargout>0 && nargin>0, % [..]=caa_download(..)
 	checkDownloadStatus=false;
 	downloadStatus = []; % default
 	doLog = false;
-end
-% check caa_download('testcsa') syntax
-if nargin == 1 && ischar(tint) && strcmpi('test',tint)
-	downloadStatus = test_csa;
-	if nargout == 0, clear downloadStatus;end
-	return
 end
 
 if nargin>=1, % check if first argument is not caa zip or tar.gz file link
@@ -180,9 +177,9 @@ if ~isempty(varargin), % check for additional flags
 	for iFlag=1:numel(varargin)
 		flag=varargin{iFlag};
 		if strcmpi(flag,'nowildcard'),
-			expandWildcards		= false;
-			checkDataInventory	= false;
-			doNotifyByEmail		= false;
+			expandWildcards    = false;
+			checkDataInventory = false;
+			doNotifyByEmail    = false;
 		elseif strcmpi(flag,'overwrite'),
 			overwritePreviousData = true;
 		elseif any(strfind(flag,'file_interval'))
@@ -315,12 +312,13 @@ end
 if any(strfind(urlDataFormat,'&format')),% change/add defaults, hasn't added these to above flag checking
 	urlDataFormat = ['&DELIVERY_' upper(urlDataFormat(2:end))];
 end
-caaQuery		    = [Caa.urlServer urlQuery urlIdentity urlDataFormat urlFileInterval urlNonotify urlIngestedSince];
-caaStream		    = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
-caaInventory	    = [Caa.urlServer Caa.urlInventory       urlListFormat ];
+caaQuery            = [Caa.urlServer urlQuery urlIdentity urlDataFormat...
+	                     urlFileInterval urlNonotify urlIngestedSince];
+caaStream           = [Caa.urlServer Caa.urlStream urlIdentity urlIngestedSince];
+caaInventory        = [Caa.urlServer Caa.urlInventory       urlListFormat ];
 caaFileInventory    = [Caa.urlServer Caa.urlFileInventory   urlListFormat ];
 caaListDataset	    = [Caa.urlServer Caa.urlListDataset     urlListFormat ];
-caaListDatasetDesc	= [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
+caaListDatasetDesc  = [Caa.urlServer Caa.urlListDatasetDesc urlListFormat ];
 
 %% Check status of downloads if needed
 if checkDownloadStatus,    % check/show status of downloads from .caa file
@@ -555,28 +553,28 @@ end
 		% download data file, if success status=1 and file is uncompressed and moved
 		% to data directory, downloadedFile is set to empty. If there is no
 		% gz- data file , status=0 and downloadedFile is set to the downloaded file.
-		if     ~strfind(urlLink,'.gz');  error; end
+		if  ~strfind(urlLink,'.gz');  error('urlLink is not gz file!') ; end
 		
 		status = 0; % default
 		if doDataStreaming
 			% define filename
-			tempFileName = 'delme.cef';
+			tempFileName   = 'delme.cef';
 			datasetDirName = [downloadDirectory dataset filesep];
 			if ~exist(datasetDirName,'dir'),
 				irf.log('notice',['Creating directory: ' datasetDirName]);
 				mkdir(datasetDirName);
 			end
-			tempFilePath =   [datasetDirName tempFileName];
+			tempFilePath   = [datasetDirName tempFileName];
 			tempFilePathGz = [tempFilePath '.gz'];
 			[downloadedFile,isReady]=urlwrite(urlLink,tempFilePathGz);
 			if isReady,
 				gunzip(tempFilePathGz);
 				% find the file name
-				fid = fopen(tempFilePath); % remove .gz at the end
+				fid   = fopen(tempFilePath); % remove .gz at the end
 				tline = fgetl(fid);
 				while ischar(tline)
 					if strfind(tline,'FILE_NAME')
-						i=strfind(tline,'"');
+						i = strfind(tline,'"');
 						fileNameCefGz = [tline(i(1)+1:i(2)-1) '.gz'];
 						irf.log('debug',['CEF.gz file name: ' fileNameCefGz]);
 						break;
@@ -629,6 +627,8 @@ end
 			irf.log('warning',['There is no gz file: ' urlLink]);
 		end
 	end
+
+	% Nested function
 	function move_to_caa_directory(filelist)
 		for jj=1:length(filelist),
 			isDataSet = ~any(strfind(filelist{jj},'log'));
@@ -648,6 +648,8 @@ end
 			end
 		end
 	end
+
+	% Nested function. Check url parameter syntax in string
 	function paramOut=url_parameter(paramIn)
 		if paramIn(1)~= '&'
 			paramOut=['&' paramIn];
@@ -655,6 +657,8 @@ end
 			paramOut=paramIn;
 		end;
 	end
+
+	% Nested function. Save text to log file
 	function caa_log(logText)
 		tt=irf_time;
 		if ischar(logText), logText={logText};end
@@ -680,11 +684,15 @@ end
 			fclose(fid);
 		end
 	end
+
+	% Nested function. Parse url line syntax before requesting from www
 	function out = csa_parse_url(in)
 		% replace all space and stars with %20 and %25 correspondingly
 		out = strrep(in,'*','%25');
 		out = strrep(out,' ','%20');
 	end
+
+	% Nested function.
 	function [queryDataset,queryDatasetInventory,filter] = query_dataset
 		% for wildcards, inventory requests use '%' as wildcard,
 		% while data requests use '*' (something that was not easy to implement)
@@ -706,7 +714,9 @@ end
 		queryDataset = ['&DATASET_ID=' filter];
 		queryDatasetInventory = ['&QUERY=DATASET.DATASET_ID like ''' csa_parse_url(filter) ''''];
 	end
-	function urlIdentity = get_url_identity % Make nested function
+
+	% Nested function. Get CSA identity
+	function urlIdentity = get_url_identity
 		csaUser = datastore('csa','user');
 		if isempty(csaUser)
 			csaUser = input('Input csa username [default:avaivads]:','s');
@@ -724,6 +734,8 @@ end
 		end
 		urlIdentity = ['&USERNAME=' csaUser '&PASSWORD=' csaPwd];
 	end
+
+	% Nested function. 
 	function TT=construct_time_table(caalog,returnTimeTable)
 		TT=irf.TimeTable;
 		switch returnTimeTable
