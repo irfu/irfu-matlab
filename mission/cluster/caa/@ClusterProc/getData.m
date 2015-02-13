@@ -1795,14 +1795,25 @@ elseif strcmp(quantity,'probesa')
       irf_log('proc','This is not yet implemented, need to do spin-by-spin');
       error('This is not yet implemented, need to do spin-by-spin')
     end
-    
-    dt_minus = 3*spin_period*shadow_2/360;
-    %XXX FIXME
-    if cl_id==2, filt=180;
-    else filt=10;
+    fsamp = [];
+    for probe = [12 32 34]
+      [ok,da] = c_load(irf_ssub('wE?p!',cl_id,probe));
+      if ~ok || isempty(da)
+        irf_log('load', irf_ssub('No/empty wE?p!',cl_id,probe));
+        continue
+      end
+      fsamp = c_efw_fsample(da,'hx');
+      if ~isempty(fsamp), break; end
     end
-    if filt==180, dt_plus = dt_minus;
-    else dt_plus = 10/25;
+		
+		% Determine if we use 180Hz filter
+    if (fix(fsamp) == 450) || ...
+        ( cl_id == 2 && da(1,1)>toepoch([2001 07 23 13 54 18]) )
+      dt_minus = 2*spin_period*shadow_2/360;
+      dt_plus = 1.6*dt_minus;
+    else % 10 Hz filter
+      dt_minus = 3*spin_period*shadow_2/360;
+      dt_plus = 10/25;
     end
     
     nSpins=ceil(dt/spin_period)+2; spinN = (1:nSpins)-2;
