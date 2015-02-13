@@ -364,13 +364,13 @@ end
     % mmsX_sweep_start, mmsX_sweep_stop and mmsX_sweep_swept are new as
     % per 2015/02/12 and does not exist in older source files. If not
     % found abort with log message, not with error.
-    varPrefix = sprintf('mms%d_sweep_', DATAC.scId);
+    varPref = sprintf('mms%d_sweep_', DATAC.scId);
     varSuffix = {'start', 'stop', 'swept'};
     for ii=1:numel(varSuffix)
-      if(isfield(DATAC.dce.dataObj.data,[varPrefix varSuffix{ii}]))
-        eval(sprintf('sweep_%s=DATAC.dce.dataObj.data.%s%s.data',varSuffix{ii}, varPrefix, varSuffix{ii}));
+      if(isfield(DATAC.dce.dataObj.data,[varPref varSuffix{ii}]))
+        eval(sprintf('sweep_%s=DATAC.dce.dataObj.data.%s%s.data',varSuffix{ii}, varPref, varSuffix{ii}));
       else
-        irf.log('warning','Did not find DCE field ',varPrefix, varSuffix{ii},'. Aborting sweep check.');
+        irf.log('warning',['Did not find DCE field ',varPref, varSuffix{ii},'. Aborting sweep check.']);
         return;
       end
     end
@@ -433,7 +433,7 @@ end
       senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
       senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
       idxOneSig = xor(senA_off,senB_off);
-      if ~any(idxOneSig), return, end
+%      if ~any(idxOneSig), return, end
       iVA = idxOneSig & ~senA_off;
       if any(iVA),
         irf.log('notice',...
@@ -450,7 +450,21 @@ end
         DATAC.dcv.(senA).data(iVB) = DATAC.dcv.(senB).data(iVB) + ...
           NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
       end
-    end
+      % For comissioning data we will have all DCE/DCV, verify consistency.
+      idxBoth = and(~senA_off, ~senB_off);
+      if any(idxBoth)
+        irf.log('notice',...
+          sprintf('Verifying %s = (%s - %s)/NominalLength for %d data points',...
+          senE, senA, senB, sum(idxBoth)));
+        remaining = abs(NOM_BOOM_L*DATAC.dce.(senE).data(idxBoth) - ...
+          DATAC.dcv.(senA).data(idxBoth) + ...
+          DATAC.dcv.(senB).data(idxBoth));
+        if(any(remaining>MMS_CONST.Limit.DCE_DCV_DISCREPANCY))
+          irf.log('critical','Datapoints show a discrepancy between DCE and DCV!');
+          % FIXME: Bitmasking them or exit with Error?
+        end
+      end % if any(idxBoth)
+    end % for iSen
   end
 
   function init_param
