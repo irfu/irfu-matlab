@@ -1784,10 +1784,12 @@ elseif strcmp(quantity,'probesa')
   SAA_MIN = 90 - shadow_2;
   saa = atan2d(-SAX(3),SAX(1));
   if saa<SAA_MIN,
-    irf_log('proc','no shadow (SAA)'), ssasa_se = []; ssasa_di = []; %#ok<NASGU>
+    irf_log('proc','no shadow (SAA)'), saasa_se = []; saasa_di = []; %#ok<NASGU>
   else
     irf_log('proc',sprintf('Probe shadow (SAA=%.1f > %.1f)',saa,SAA_MIN))
-    [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(pha);
+    tTmp = fix(start_time):0.5:(ceil(start_time)+ceil(dt));
+    phaTmp = c_phase(tTmp', pha);
+    [spin_period,err_angle,err_angle_mean,phc_coef] = c_spin_period(phaTmp,1);
     if isempty(spin_period)
       irf_log('proc','cannot find spin period'),data = [];cd(old_pwd); return
     end
@@ -1806,40 +1808,47 @@ elseif strcmp(quantity,'probesa')
       if ~isempty(fsamp), break; end
     end
 		
+    DT_MINUS_M = 2*spin_period*shadow_2/360;
+    DT_PLUS_M = 1.6*DT_MINUS_M;
+    DT_MINUS_L = 3*spin_period*shadow_2/360;
+    DT_PLUS_L = 10/25;
 		% Determine if we use 180Hz filter
-    if (fix(fsamp) == 450) || ...
-        ( cl_id == 2 && da(1,1)>toepoch([2001 07 23 13 54 18]) )
-      dt_minus = 2*spin_period*shadow_2/360;
-      dt_plus = 1.6*dt_minus;
+    if cl_id == 2 && start_time>toepoch([2001 07 23 13 54 18]) 
+      dt_lx = [DT_MINUS_M DT_PLUS_M];
+      dt_hx = dt_lx;
+    elseif fix(fsamp) == 450
+      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_hx = [DT_MINUS_M DT_PLUS_M];
     else % 10 Hz filter
-      dt_minus = 3*spin_period*shadow_2/360;
-      dt_plus = 10/25;
+      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_hx = [DT_MINUS_L DT_PLUS_L];
     end
     
     nSpins=ceil(dt/spin_period)+2; spinN = (1:nSpins)-2;
-    probes = [1 3 2 4]; ssasa = zeros(nSpins,4);
+    probes = [1 3 2 4]; saasa = zeros(nSpins,4);
     % Shadow times
     for iProbe=1:4
-      ssasa(:,probes(iProbe)) = ...
-        (pi/4 + pi/2*(iProbe-1) + spinN*2*pi)/phc_coef(1) + pha(1,1);
+      saasa(:,probes(iProbe)) = ...
+        (pi/4 + pi/2*(iProbe-1) + spinN*2*pi - phc_coef(2))/phc_coef(1)...
+        + phaTmp(1,1);
     end
     % LX Shadows
-    ssasa_se = zeros(nSpins,8);
+    saasa_se = zeros(nSpins,8);
     for iProbe=1:4
-      ssasa_se(:,iProbe*2-1) = ssasa(:,iProbe) - dt_minus;
-      ssasa_se(:,iProbe*2) = ssasa(:,iProbe) + dt_plus;
+      saasa_se(:,iProbe*2-1) = saasa(:,iProbe) - dt_lx(1);
+      saasa_se(:,iProbe*2) = saasa(:,iProbe) + dt_lx(2);
     end
     % HX Shadows
-    probes = [12 34 32 42]; ssasa_di = zeros(nSpins*2,8);
+    probes = [12 34 32 42]; saasa_di = zeros(nSpins*2,8);
     for iProbe=1:4
       pA = fix(probes(iProbe)/10); pB = probes(iProbe) - pA*10;
-      tmpT = sort([ssasa(:,pA); ssasa(:,pB)]);
-      ssasa_di(:,iProbe*2-1) = tmpT - dt_minus;
-      ssasa_di(:,iProbe*2) = tmpT + dt_plus;
+      tmpT = sort([saasa(:,pA); saasa(:,pB)]);
+      saasa_di(:,iProbe*2-1) = tmpT - dt_hx(1);
+      saasa_di(:,iProbe*2) = tmpT + dt_hx(2);
     end
     clear tmpT
   end % SAA saturation
-  c_eval(['SAASASE?=ssasa_se;SAASADI?=ssasa_di;'...
+  c_eval(['SAASASE?=saasa_se;SAASADI?=saasa_di;'...
       'save_list=[save_list '' SAASASE? '' '' SAASADI? '' ];'],cl_id);
   
 	c_eval('sa_int_p?=[];')
