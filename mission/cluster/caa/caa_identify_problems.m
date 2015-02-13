@@ -1,4 +1,4 @@
-function result = caa_identify_problems(data, data_level, probe, spacecraft_id, bitmask_column, quality_column, mask_type)
+function result = caa_identify_problems(result, data_level, probe, spacecraft_id, bitmask_column, quality_column, mask_type)
 %CAA_IDENTIFY_PROBLEMS  identifies problem areas in data, and sets appropriate bitmask and
 %                       quality flag for these areas.
 %
@@ -17,7 +17,8 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 %
 % Output:
 %     result            the set of data from input, with bitmask and quality flag added.
-%
+
+
 %  Author:     Mikael Lundberg, Swedish Institute of Space Physics, <milu@irfu.se>
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -25,12 +26,11 @@ function result = caa_identify_problems(data, data_level, probe, spacecraft_id, 
 narginchk(4, 7)
 if nargin < 7, mask_type = 0; end
 
-result = data;    % TODO: Change function input to call-by-reference?! (ML)
-if isempty(data)
+if isempty(result)
   warning('Data is empty: Cannot identify problems in empty data set.'), 
   return, 
 end
-[rows, columns] = size(data);
+[rows, columns] = size(result);
 [data_start_time, data_time_span] = irf_stdt(result(1,1), result(end,1));
                       
 % For nonzero MASK_TYPE only some of the bitmask values 
@@ -147,7 +147,7 @@ QUALITY_LOW_DENSITY_SATURATION   =  [ 0 1 ]; % PQuality 1
 QUALITY_SWEEP_DATA               =  0;
 QUALITY_BURST_DUMP               =  0;
 QUALITY_NS_OPS                   =  0;
-QUALITY_MANUAL_INTERVAL          =  1;    % NOTE: Not used! Instead read from file and set on per-interval basis!
+%QUALITY_MANUAL_INTERVAL          =  1;   % NOTE: Not used! Instead read from file and set on per-interval basis!
 QUALITY_SINGLE_PROBE_PAIR        =  1;    % NOTE: Applies to L2 only.
 QUALITY_ASYMMETRIC_MODE          =  2;    % NOTE: Applies to L2 only.
 QUALITY_SOLAR_WIND_WAKE          =  3;
