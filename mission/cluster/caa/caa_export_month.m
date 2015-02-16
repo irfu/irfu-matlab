@@ -112,13 +112,13 @@ function caa_export_month(year,month,startday,stopday,sats,varargin)
                   end
               end
               if excepted==1, continue, end
-              ret=caa_export_new(level, datatype, sat, 3,'00','Null', start_time, 3600*24);
+              ret=caa_export_cef(level, datatype, sat, 3,'00','Null', start_time, 3600*24);
               if ret ~=0
-                  fprintf(1,'caa_export_new failed for %s for lev=%1.1i. C%1.1i %s\n',datatype,level,sat,datetxt);
+                  fprintf(1,'caa_export_cef failed for %s for lev=%1.1i. C%1.1i %s\n',datatype,level,sat,datetxt);
 				  failed=1;
 				  fid = fopen(failfile,'a');
 				  if fid > 0
-					  fprintf(fid,'caa_export_new failed: %s level %1.1i C%1.1i %s\n',datatype,level,sat,datetxt);
+					  fprintf(fid,'caa_export_cef failed: %s level %1.1i C%1.1i %s\n',datatype,level,sat,datetxt);
 					  fclose(fid);
 				  else
 					  error(['Cannot open file' failfile])

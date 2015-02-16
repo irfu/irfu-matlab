@@ -8,8 +8,6 @@ function phase_out = c_phase(t,phase_2)
 % t - column vector with time in isdat epoch
 % phase_2 - column vector [time phase_2]
 % phase_out - column vector [t phase]
-%
-% $Id$
 
 narginchk(2,2)
 

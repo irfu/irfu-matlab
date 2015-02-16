@@ -26,6 +26,8 @@ function out=caa_download(varargin)
 %   LOCAL.CAA_DOWNLOAD(dataset,'simulate') show statistics on how many
 %   intervals would be deleted and downloaded but do not do anything.
 %
+%   LOCAL.CAA_DOWNLOAD(dataset,'email') send email when finnished
+%
 %   LOCAL.CAA_DOWNLOAD(...,inputParamCaaDownload) any unrecognized input
 %   parameter is parsed to caa_download when downloading data. See help
 %   caa_download.
@@ -58,57 +60,17 @@ dataDir = datastore('caa','localDataDirectory');
 if isempty(dataDir)
 	dataDir			= '/data/caalocal';
 end
-maxSubmittedJobs		= 10;
-maxNumberOfAttempts		= 30;
-isInputDatasetName		= false;
-sendEmailWhenFinished	= false;
-streamData				= false; % download cdf files asynchronously
-indexStart				= 1;
-inputParamCaaDownload   = {};
-doSimulateDownload      = false; % takes care of flag 'simulate'
-doDailyFileDownload     = false; % default is to go by inventory time
-doMonthlyFileDownload   = false; % default is to go by inventory time
+maxSubmittedJobs      = 10;
+maxNumberOfAttempts   = 30;
+isInputDatasetName    = false;
+sendEmailWhenFinished = false;
+streamData            = false; % download cdf files asynchronously
+indexStart            = 1;
+inputParamCaaDownload = {};
+doSimulateDownload    = false; % takes care of flag 'simulate'
+doDailyFileDownload   = false; % default is to go by inventory time
+doMonthlyFileDownload = false; % default is to go by inventory time
 
-%% Send email when done
-% use datastore info in local to send email when finnished
-if exist('sendmail','file')==2,
-	if isempty(fields(datastore('local'))),
-		% nothing in datastore('local'), do not send email
-	else
-		sendEmailWhenFinished = true;
-		sendEmailFrom = datastore('local','sendEmailFrom');
-		if isempty(sendEmailFrom),
-			disp('Please define email from which MATLAB should send email');
-			disp('This should be your local email where you are running MATLAB.');
-			disp('For example in IRFU: username@irfu.se');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''sendEmailFrom'',''username@irfu.se'')');
-			disp(' ');
-			return;
-		end
-		sendEmailSmtp = datastore('local','sendEmailSmtp');
-		if isempty(sendEmailSmtp),
-			disp('Please define your local SMTP server. ');
-			disp('For example in IRFU: sol.irfu.se');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''sendEmailSmtp'',''sol.irfu.se'')');
-			disp(' ');
-			return;
-		end
-		sendEmailTo = datastore('local','email');
-		if isempty(sendEmailTo),
-			disp('Please specify your email.');
-			disp('For example: name@gmail.com');
-			disp('Execute in matlab (adjust accordingly):')
-			disp(' ');
-			disp('>  datastore(''local'',''email'',''name@gmail.com'')');
-			disp(' ');
-			return;
-		end
-	end
-end
 %% check input: get inventory and construct time table if dataset
 if nargin == 0,
 	help local.caa_download
@@ -117,6 +79,10 @@ end
 args=varargin;
 if ischar(varargin{1})
 	dataSet=varargin{1};
+	if isempty(dataSet),
+		irf.log('warning','local.caa_download: dataset name empty!')
+		return;
+	end
 	isInputDatasetName = true;
 elseif isa(varargin{1},'irf.TimeTable')
 	TTRequest=varargin{1};
@@ -136,6 +102,9 @@ while ~isempty(args)
 	elseif ischar(args{1}) && strcmpi(args{1},'simulate')
 		irf.log('notice','Only simulate the download');
 		doSimulateDownload = true;
+		args(1) = [];
+	elseif ischar(args{1}) && strcmpi(args{1},'email')
+		sendEmailWhenFinished = true;
 		args(1) = [];
 	elseif ischar(args{1}) && strcmpi(args{1},'daily')
 		irf.log('notice','Download as daily files');
@@ -172,6 +141,47 @@ while ~isempty(args)
 	else
 		inputParamCaaDownload{end+1} = args{1}; %#ok<AGROW>
 		args(1) = [];
+	end
+end
+%% If sending email check that all servers and addresses defined
+% datastore('local',..) keeps info on email and servers
+if sendEmailWhenFinished,
+	if exist('sendmail','file')==2,
+		sendEmailFrom = datastore('local','sendEmailFrom');
+		if isempty(sendEmailFrom),
+			disp('Please define email from which MATLAB should send email');
+			disp('This should be your local email where you are running MATLAB.');
+			disp('For example in IRFU: username@irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailFrom'',''username@irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailSmtp = datastore('local','sendEmailSmtp');
+		if isempty(sendEmailSmtp),
+			disp('Please define your local SMTP server. ');
+			disp('For example in IRFU: sol.irfu.se');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''sendEmailSmtp'',''sol.irfu.se'')');
+			disp(' ');
+			return;
+		end
+		sendEmailTo = datastore('local','email');
+		if isempty(sendEmailTo),
+			disp('Please specify your email.');
+			disp('For example: name@gmail.com');
+			disp('Execute in matlab (adjust accordingly):')
+			disp(' ');
+			disp('>  datastore(''local'',''email'',''name@gmail.com'')');
+			disp(' ');
+			return;
+		end
+	else
+		disp('Your system does not allow sending emails');
+		disp('"sendmail" command does not exist.')
+		sendEmailWhenFinished = false;
 	end
 end
 %% change to data directory
@@ -269,8 +279,11 @@ if exist(dataSetDir,'dir'),
 		TTfileList=caa_download(['fileinventory:' dataSet]);
 		indNewFiles = false(1,numel(TTfileList));
 		for j = 1:numel(indNewFiles),
-			if str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10])) > lastVersion,
+			newVersion = str2double(TTfileList.UserData(j).caaIngestionDate([3 4 6 7 9 10]));
+			if newVersion > lastVersion,
 				indNewFiles(j) = true;
+				irf.log('debug',['Ingested since last #' num2str(j) ...
+					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint2iso')]);
 			end
 		end
 		TTfileList = select(TTfileList,find(indNewFiles));
@@ -285,7 +298,8 @@ if exist(dataSetDir,'dir'),
 		tintReq = TTRequest.TimeInterval;
 		indOldObsoleteIntervals = false(numel(TTindex),1);
 		indOldToUpdateIntervals = false(numel(TTindex),1);
-		jIndex = numel(TTindex);
+		nOldIntervals = numel(TTindex);
+		jIndex        = nOldIntervals;
 		for iReq=numel(TTRequest):-1:1,
 			if tintInd(jIndex,2) < tintReq(iReq,1), % new time interval
 				continue;
@@ -295,9 +309,13 @@ if exist(dataSetDir,'dir'),
 							abs(tintInd(jIndex,1)-tintReq(iReq,1))<=5
 						if indNewIntervals(iReq), % new files available for interval
 							indOldToUpdateIntervals(jIndex) = true;
+							irf.log('debug',['Old interval to update #' num2str(jIndex) ' '...
+								irf_time(tintInd(jIndex,:),'tint2iso')]);
 						end
 					else
 						indOldObsoleteIntervals(jIndex) = true;
+						irf.log('debug',['Obsolete interval #' num2str(jIndex) ' '...
+							irf_time(tintInd(jIndex,:),'tint2iso')]);
 					end
 					jIndex = jIndex-1;
 					if jIndex==0, break; end
@@ -305,9 +323,8 @@ if exist(dataSetDir,'dir'),
 			end
 			if jIndex==0, break; end
 		end
-		% Work to do
-		irf.log('warning', ['Old intervals to remove  : ' num2str(sum(indOldObsoleteIntervals))])
-		irf.log('warning', ['Old intervals to update  : ' num2str(sum(indOldToUpdateIntervals))])
+		nOldObsoleteIntervals = sum(indOldObsoleteIntervals);
+		nOldToUpdateInterval  = sum(indOldToUpdateIntervals);
 		% Removing old obsolete files
 		if ~doSimulateDownload
 			remove_datafiles(TTindex,indOldObsoleteIntervals,dataDir);
@@ -319,7 +336,16 @@ if exist(dataSetDir,'dir'),
 		indNonOverlap = ~(false.*indNewIntervals);
 		indNonOverlap(ii) = false; 
 		indNewIntervals(indNonOverlap) = true;
+		% Work to do
+		irf.log('warning', ['Old intervals total        : ' num2str(nOldIntervals)])
+		irf.log('warning', ['Old intervals to remove    : ' num2str(nOldObsoleteIntervals)])
+		irf.log('warning', ['Old intervals to update    : ' num2str(nOldToUpdateInterval)])
+		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
+		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
+else
+		irf.log('warning', ['Dataset ' dataSet ' directory does not exist.'])
+		irf.log('warning', ['Total intervals to download: ' num2str(numel(TTRequest))])	
 end
 for j=find(indNewIntervals)'
 	TTRequest.UserData(j).Status = [];
@@ -331,8 +357,7 @@ if ~exist('indexList','var') % if indexList not give, all intervals should be do
 	indexList = find(indNewIntervals);
 end
 
-%% Work to do
-irf.log('warning', ['New intervals to download: ' num2str(sum(indNewIntervals))])
+%% Assign work
 assignin('base','TTRequest',TTRequest); % TTRequest assign so that one can work
 if doSimulateDownload,
 	return;
@@ -364,18 +389,24 @@ while 1
 				TTRequest.UserData(iRequest).Status==-1 % request not yet submitted or processed or did not succeed before
 			tint=TTRequest.TimeInterval(iRequest,:);
 			tint(2) = tint(2) - 1e-5; % the end is an upper boundary, to avoid the data point being in two intervals as the start and the end point we remove 10^5 from the end time
-			irf.log('warning',['Requesting interval #' num2str(iRequest) '(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' irf_time(tint,'tint2iso')]);
 			dataSet = TTRequest.UserData(iRequest).dataset;
+			
+			irf.log('warning',['Requesting ' dataSet ' interval #' num2str(iRequest) ...
+				'(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' ...
+				irf_time(tint,'tint2iso')]);
 			try
 				if streamData
-					[download_status,downloadfile]=caa_download(tint,dataSet,'stream',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
+					[download_status,downloadfile]=caa_download(tint,dataSet,...
+						'stream',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
 				else
-					[download_status,downloadfile]=caa_download(tint,dataSet,'schedule','nolog','nowildcard',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
+					[download_status,downloadfile]=caa_download(tint,dataSet,...
+						'schedule','nolog','nowildcard',['downloadDirectory=' dataDir],inputParamCaaDownload{:});
 				end
 			catch
 				download_status = -1; % something wrong with internet
 				irf.log('notice','**** caa_download() DID NOT SUCCEED! ****');
 			end
+			
 			if download_status == 0, % scheduling succeeded
 				TTRequest.UserData(iRequest).Status=0;
 				TTRequest.UserData(iRequest).Downloadfile=downloadfile;
