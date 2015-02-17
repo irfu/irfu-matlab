@@ -45,15 +45,16 @@ end
 pos = 1; idxS = {};
 while pos < size(phase_2,1)
   % Search for gaps
-  ii = find( diff(phase_2(pos:end,1)) > MAX_SPIN_PERIOD );
+  idx = pos:size(phase_2,1);
+  ii = find( diff(phase_2(idx,1)) > MAX_SPIN_PERIOD );
   if isempty(ii), idxS = [idxS {pos:size(phase_2,1)}]; break, end %#ok<AGROW>
-  if ii(1)==pos
-    irf_log('proc',...
-      ['throwing away 1 bad point at ' epoch2iso(phase_2(ii(1),1),1)])
-    phase_2(1,:) = [];
+  irf_log('proc',...
+      ['Gap in phase at ' epoch2iso(phase_2(idx(ii(1)),1),1)])
+  if idx(ii(1))==pos
+    irf_log('proc','throwing away 1 bad point'), phase_2(1,:) = [];
     continue
   end
-  idxS = [idxS {pos:ii(1)}]; pos = ii(1)+1; %#ok<AGROW>
+  idxS = [idxS {pos:idx(ii(1))}]; pos = idx(ii(1))+1; %#ok<AGROW>
 end
 
 nChunks = length(idxS); fits = cell(nChunks,1);
