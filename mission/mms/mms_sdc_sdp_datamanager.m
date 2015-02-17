@@ -246,10 +246,11 @@ end
     % 3.8 us per channel and 7 channels between DCV (probe 1) and DCE (12).
     % A total shift of 26600 ns is therefor to be expected, add this then
     % convert to seconds before comparing times.
-    [~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
+    %[~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
     % XXX: The above line is faster, but we cannot be sure it works, as it
     % requires exact mathcing of integer numbers
-    %[dce_ind, dcv_ind] = irf_find_comm_idx(double(DATAC.dce.time)/10^9, (double(DATAC.dcv.time)+26600)/10^9);
+    [dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
+      DATAC.dcv.time+26600,int64(1000)); % tolerate 1 us jitter
     
     % If any datapoint don't overlap, log then remove them.
     diff_ind = length(DATAC.dce.time) - length(dce_ind);
