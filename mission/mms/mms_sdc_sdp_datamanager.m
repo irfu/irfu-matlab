@@ -138,8 +138,8 @@ switch(param)
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
     chk_timeline()
-    v_from_e_and_v()
     chk_latched_p()
+    v_from_e_and_v()
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
@@ -208,47 +208,31 @@ end
     % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
     % it will be Bitmasked with Low density saturation otherwise it will be
     % bitmasked with just Probe saturation.
-
-    % Bits used for Saturation
-    Bits=[MMS_CONST.Bitmask.PROBE_SATURATION, MMS_CONST.Bitmask.LOW_DENSITY_SATURATION];
     
     % For each sensor, check each pair, i.e. V_1 & V_2 and E_12.
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
-
-      % Check all probes
       irf.log('notice', ...
         sprintf('Checking for latched probes on %s, %s and %s.', senA, ...
         senB, senE));
-
-      indA = irf_latched_idx(DATAC.dcv.(senA).data);
-      indB = irf_latched_idx(DATAC.dcv.(senB).data);
-      indE = irf_latched_idx(DATAC.dce.(senE).data);
-
-      % Add appropriate value to bitmask, leaving other 16 bits untouched.
-      bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - sum(Bits);
-      DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dcv.(senA).data(indA)), sum(Bits));
-      DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dcv.(senB).data(indB)), sum(Bits));
-      DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dce.(senE).data(indE)), sum(Bits));
-
-      %% TODO, Check overlapping stuck values, if senA stuck but not senB..
-      
+      DATAC.dcv.(senA) = latched_mask(DATAC.dcv.(senA));
+      DATAC.dcv.(senB) = latched_mask(DATAC.dcv.(senB));
+      DATAC.dce.(senE) = latched_mask(DATAC.dce.(senE));
+      % TODO: Check overlapping stuck values, if senA stuck but not senB..  
     end
-    
-      function latchBitmask = latched_mask( data )
-        % Return value to add to bitmask, for latched probe data.
-        if(~isempty(data))
-          irf.log('notice', 'Latched data found');
-          latchBitmask = Bits(1)*ones(size(data),'uint16');
-          % Check if any of these are data with values below limit, then
-          % use different latched bitmask.
-          latchBitmask(data<MMS_CONST.Limit.LOW_DENSITY_SATURATION) = Bits(2);
-        end
+    function sen = latched_mask(sen)
+      idx = irf_latched_idx(sen.data);
+      if ~isempty(idx)
+        sen.bitmask = bitor(sen.bitmask,...
+          MMS_CONST.Bitmask.PROBE_SATURATION);
       end
+      idx = sen.data<MMS_CONST.Limit.LOW_DENSITY_SATURATION;
+      if any(idx)
+        sen.bitmask(idx) = bitor(sen.bitmask(idx), ...
+          MMS_CONST.Bitmask.LOW_DENSITY_SATURATION);
+      end
+    end
   end
 
   function chk_timeline()
