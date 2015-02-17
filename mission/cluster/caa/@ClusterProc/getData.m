@@ -2816,7 +2816,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       for j=1:size(sa,1)
         indx = tComb>=(sa(j,1)-10) & tComb<=(sa(j,2)+10);
         V1 = P.(probeS(pr1))(indx); V2 = P.(probeS(pr2))(indx);
-        maxP = max([V1; V2],[],2); V1(V1~=maxP) = NaN; V2(V2~=maxP) = NaN;
+        maxP = max([V1; V2],[],1); V1(V1~=maxP) = NaN; V2(V2~=maxP) = NaN;
         P.(probeS(pr1))(indx) = V1; P.(probeS(pr2))(indx) = V2;
       end
     end % hbiassa
