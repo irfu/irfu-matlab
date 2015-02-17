@@ -120,16 +120,28 @@ if n_out>0, irf_log('proc',['throwing away ' num2str(n_out) ' points']), end
       'errAngle',[],'errAngleMean',[],'phcCoef',[],'tRef',tRef);   
     ph = phase(:,2); tp = phase(:,1) - tRef;
     
-    tTmp = (ceil(tp(1)*2):fix(tp(end)*2))'/2; % new time with 0.5 sec step
+    tTmp = (ceil(phase(1,1)*2):fix(phase(end,1)*2))'/2 - tRef; % new time with 0.5 sec step
     pTmp = interp1q(tp,ph,tTmp);
     phc = unwrap(pTmp/180*pi); res.phcCoef = polyfit(tTmp,phc,1);
     if isnan(res.phcCoef(1))
       irf_log('proc','Cannot determine spin period!'), return
     end
-    diffangle = mod(ph - polyval(res.phcCoef,tp)*180/pi,360);
-    diffangle = abs(diffangle); diffangle = min([diffangle';360-diffangle']);
+    diffangle = calc_diffangle();
+    % Throw away erroneous points, we suppose these correspond to a single 
+    % error in sun pulse
+    iJump = find(diffangle>1);
+    if ~isempty(iJump) && length(iJump)<4
+      irf_log('proc','Throwing away erroneous points')
+      ph(iJump) = []; tp(iJump) = [];
+      diffangle = calc_diffangle();
+    end
     res.errAngleMean = mean(diffangle); res.errAngle = std(diffangle);
     res.spinPeriod = 2*pi/res.phcCoef(1);
+    function diffangle = calc_diffangle
+      diffangle = mod(ph - polyval(res.phcCoef,tp)*180/pi,360);
+      diffangle = abs(diffangle); 
+      diffangle = min([diffangle';360-diffangle']);
+    end
   end % fit_spin
 end
 
