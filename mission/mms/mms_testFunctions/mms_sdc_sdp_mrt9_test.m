@@ -17,10 +17,12 @@ setenv('DROPBOX_ROOT',[outDir filesep 'out'])
 setenv('DATA_PATH_ROOT',[outDir filesep 'out'])
 setenv('LOG_PATH_ROOT',[outDir filesep 'log'])
 
-modes    ={'slow', 'fast' };
+modes    ={'slow'};
+%modes    ={'slow','fast'};
 versions ={'3.5.0'};
 procs={'scpot','ql','sitl','l2pre'};
-dates = {'20150410'};
+dates = {'20160101'};
+%dates = {'20150410','20160101'};
 scList=[2];
 
 %% Tests
