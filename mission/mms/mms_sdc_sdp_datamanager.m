@@ -318,12 +318,11 @@ end
                 senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
 
               % Add bitmask values to SenA, SenB and SenE for these ind.
-              bitBadBias = MMS_CONST.Bitmask.BAD_BIAS;
+              bits = MMS_CONST.Bitmask.BAD_BIAS;
               % Add appropriate value to bitmask, leaving other bits untouched.
-              bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - bitBadBias;
-              DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + bitBadBias;
-              DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + bitBadBias;
-              DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + bitBadBias;
+              DATAC.dcv.(senA).bitmask(indA) = bitor(DATAC.dcv.(senA).bitmask(indA), bits);
+              DATAC.dcv.(senB).bitmask(indB) = bitor(DATAC.dcv.(senB).bitmask(indB), bits);
+              DATAC.dce.(senE).bitmask(indE) = bitor(DATAC.dce.(senE).bitmask(indE), bits);
             end
           else
             irf.log('Warning',['HK_10E file was loaded, but did not contain proper values for ',...
@@ -380,10 +379,9 @@ end
         % untouched.
         irf.log('notice','Sweeping found, bitmasking it.');
         bits = MMS_CONST.Bitmask.SWEEP_DATA;
-        bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - bits;
-        DATAC.dcv.(senA).bitmask(sweeping) = bitand(DATAC.dcv.(senA).bitmask(sweeping), bitsUntouched) + bits;
-        DATAC.dcv.(senB).bitmask(sweeping) = bitand(DATAC.dcv.(senB).bitmask(sweeping), bitsUntouched) + bits;
-        DATAC.dce.(senE).bitmask(sweeping) = bitand(DATAC.dce.(senE).bitmask(sweeping), bitsUntouched) + bits;
+        DATAC.dcv.(senA).bitmask(sweeping) = bitor(DATAC.dcv.(senA).bitmask(sweeping), bits);
+        DATAC.dcv.(senB).bitmask(sweeping) = bitor(DATAC.dcv.(senB).bitmask(sweeping), bits);
+        DATAC.dce.(senE).bitmask(sweeping) = bitor(DATAC.dce.(senE).bitmask(sweeping), bits);
       else
         irf.log('debug',['Did not find any sweep for probe pair ', senE]);
       end % if any(sweeping)
