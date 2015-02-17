@@ -246,7 +246,11 @@ end
     % 3.8 us per channel and 7 channels between DCV (probe 1) and DCE (12).
     % A total shift of 26600 ns is therefor to be expected, add this then
     % convert to seconds before comparing times.
-    [dce_ind, dcv_ind] = irf_find_comm_idx(double(DATAC.dce.time)/10^9, (double(DATAC.dcv.time)+26600)/10^9);
+    [~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
+    % XXX: The above line is faster, but we cannot be sure it works, as it
+    % requires exact mathcing of integer numbers
+    %[dce_ind, dcv_ind] = irf_find_comm_idx(double(DATAC.dce.time)/10^9, (double(DATAC.dcv.time)+26600)/10^9);
+    
     % If any datapoint don't overlap, log then remove them.
     diff_ind = length(DATAC.dce.time) - length(dce_ind);
     if(diff_ind)
@@ -343,20 +347,24 @@ end
       irf.log('warning','Empty DCE, cannot proceed')
       return
     end
-    % Get sweep status and sweep timestamp
+    
+    % XXX: FIXME this code should be deleted as soon as we get proper ver 3
+    % files
     % mmsX_sweep_start, mmsX_sweep_stop and mmsX_sweep_swept are new as
     % per 2015/02/12 and does not exist in older source files. If not
     % found abort with log message, not with error.
     varPref = sprintf('mms%d_sweep_', DATAC.scId);
-    varSuffix = {'start', 'stop', 'swept'};
-    for ii=1:numel(varSuffix)
-      if(isfield(DATAC.dce.dataObj.data,[varPref varSuffix{ii}]))
-        eval(sprintf('sweep_%s=DATAC.dce.dataObj.data.%s%s.data',varSuffix{ii}, varPref, varSuffix{ii}));
-      else
-        irf.log('warning',['Did not find DCE field ',varPref, varSuffix{ii},'. Aborting sweep check.']);
-        return;
-      end
+    if ~isfield(DATAC.dce.dataObj.data,[varPref 'start'])
+      irf.log('warning',...
+        ['Did not find DCE field ',varPref,'start. Aborting sweep check.']);
+      return
     end
+    
+    % Get sweep status and sweep timestamp
+    sweep_start = DATAC.dce.dataObj.data.([varPref 'start']).data;
+    sweep_stop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
+    sweep_swept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    
     % For each pair, E_12, E_34, E_56.
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen};  senB = sensors{iSen+1};
