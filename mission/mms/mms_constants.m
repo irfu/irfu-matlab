@@ -21,7 +21,7 @@ MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
 
 
-MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
+MMS_CONST.MinFileVer = 3; % min version of l1b files accepted 
 
 MMS_CONST.MMSids = 1:4;
 
