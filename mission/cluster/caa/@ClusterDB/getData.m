@@ -72,8 +72,6 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	CDF files in /data/cluster.
 %
 % See also C_GET, TOEPOCH
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -788,21 +786,39 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	
-	n_ok = 0;
-	
-	% We ask for 2 sec more from each side 
-	% to avoid problems with interpolation.
-	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
-	if ~isempty(data) && length(t)>1
-		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
-		n_ok = n_ok + 1;
-	else
-		c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
-		irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
-	end
-	clear t data
-	
-	if ~n_ok, out_data = []; end
+  irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME');
+  tint = start_time +[-5 dt+10];
+  spinPeriod = c_caa_var_get(['spin_period__C' num2str(cl_id) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
+  if ~isempty(spinPeriod), % could not read
+    spinTime=c_caa_var_get(['time_tags__C' num2str(cl_id) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
+    refTime=[-.5 .5]; % part of spin
+    refPhase=refTime*360+180; % spin period center corresponds to phase 0
+    deltaT= repmat(refTime,size(spinTime,1),1).*...
+      repmat(double(spinPeriod(:,2)),1,length(refTime));
+    tmat=repmat(spinTime(:,1),1,length(refTime))+deltaT;
+    amat=repmat(refPhase,size(spinTime,1),1);
+    tmat=reshape(tmat',numel(tmat),1);
+    difftmat=diff(tmat);
+    ii=find(difftmat<0);
+    tmat(ii)=tmat(ii+1);
+    amat=reshape(amat',numel(amat),1);
+    pha = [tmat amat]; %#ok<NASGU>
+    c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
+  else % read from isdat
+    n_ok = 0;
+    % We ask for 2 sec more from each side
+    % to avoid problems with interpolation.
+    [t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
+    if ~isempty(data) && length(t)>1
+      c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
+      n_ok = n_ok + 1;
+    else
+      c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
+      irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
+    end
+    clear t data
+    if ~n_ok, out_data = []; end
+  end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
