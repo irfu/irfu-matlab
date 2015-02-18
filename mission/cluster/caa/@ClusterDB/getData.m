@@ -791,11 +791,11 @@ elseif strcmp(quantity,'a')
   mkdir(tempDir); cd(tempDir);
   tint = start_time +[-5 dt+10];
   datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
-  %try 
+  try
     caa_download(tint,datasetName,...
       '&USERNAME=avaivads&PASSWORD=%21kjUY88lm','stream');
-  %catch, irf_log('dsrc','Error streaming from CSA')
-  %end
+  catch, irf_log('dsrc','Error streaming from CSA')
+  end
   d = dir(['CAA/' datasetName '/*.cef.gz']);
   if ~isempty(d)
     cefFile = ['CAA/' datasetName '/' d.name];
