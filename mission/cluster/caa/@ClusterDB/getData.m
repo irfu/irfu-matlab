@@ -787,10 +787,10 @@ elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
+  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));	
+  mkdir(tempDir); cd(tempDir);
   tint = start_time +[-5 dt+10];
-  
   datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
-  currentDir = pwd;	tempDir = tempname;	mkdir(tempDir); cd(tempDir);
   %try 
     caa_download(tint,datasetName,...
       '&USERNAME=avaivads&PASSWORD=%21kjUY88lm','stream');
@@ -801,8 +801,7 @@ elseif strcmp(quantity,'a')
     cefFile = ['CAA/' datasetName '/' d.name];
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
-    c2 = onCleanup(@() cd(currentDir));
-    c3 = onCleanup(@() rmdir(tempDir,'s'));
+    c2 = onCleanup(@() rmdir(tempDir,'s'));
     tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum2epoch');
     spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
     refTime = [-.5 .5]; % part of spin
@@ -816,6 +815,7 @@ elseif strcmp(quantity,'a')
     amat = reshape(amat',numel(amat),1);
     pha = [tmat amat]; %#ok<NASGU>
     c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
+    cd(currentDir)
   else % read from isdat
     irf_log('dsrc','did not suceed');
     cd(currentDir), rmdir(tempDir,'s')
