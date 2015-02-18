@@ -2187,7 +2187,7 @@ elseif strcmp(quantity,'hbiassa')
             irf_log('proc','Removing Vsc x B at perigee')
         end
 		
-		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
+		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); 
         
         % Below 2RE we can have real large fields
         if ~isempty(HBIASSA) && ~isempty(r)
