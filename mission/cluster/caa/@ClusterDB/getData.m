@@ -786,7 +786,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	
-  irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME');
+  irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
   tint = start_time +[-5 dt+10];
   spinPeriod = c_caa_var_get(['spin_period__C' num2str(cl_id) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
   if ~isempty(spinPeriod), % could not read
@@ -805,6 +805,8 @@ elseif strcmp(quantity,'a')
     pha = [tmat amat]; %#ok<NASGU>
     c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
   else % read from isdat
+    irf_log('dsrc','did not suceed');
+    irf_log('dsrc','Reading phase from ISDAT instead');
     n_ok = 0;
     % We ask for 2 sec more from each side
     % to avoid problems with interpolation.
