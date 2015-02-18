@@ -788,24 +788,36 @@ elseif strcmp(quantity,'a')
 	
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
   tint = start_time +[-5 dt+10];
-  spinPeriod = c_caa_var_get(['spin_period__C' num2str(cl_id) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
-  if ~isempty(spinPeriod), % could not read
-    spinTime=c_caa_var_get(['time_tags__C' num2str(cl_id) '_CP_AUX_SPIN_TIME'],'mat','tint',tint);
-    refTime=[-.5 .5]; % part of spin
-    refPhase=refTime*360+180; % spin period center corresponds to phase 0
-    deltaT= repmat(refTime,size(spinTime,1),1).*...
-      repmat(double(spinPeriod(:,2)),1,length(refTime));
-    tmat=repmat(spinTime(:,1),1,length(refTime))+deltaT;
-    amat=repmat(refPhase,size(spinTime,1),1);
-    tmat=reshape(tmat',numel(tmat),1);
-    difftmat=diff(tmat);
-    ii=find(difftmat<0);
-    tmat(ii)=tmat(ii+1);
-    amat=reshape(amat',numel(amat),1);
+  
+  datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
+  currentDir = pwd;	tempDir = tempname;	mkdir(tempDir); cd(tempDir);
+  try caa_download(tint,datasetName,...
+      '&USERNAME=avaivads&PASSWORD=%21kjUY88lm','stream');
+  catch, irf_log('dsrc','Error streaming from CSA')
+  end
+  d = dir(['CAA/' datasetName '/*.cef.gz']);
+  if ~isempty(d)
+    cefFile = ['CAA/' datasetName '/' d.name];
+    cef_init(); cef_read(cefFile);
+    c1 = onCleanup(@() cef_close());
+    c2 = onCleanup(@() cd(currentDir));
+    c3 = onCleanup(@() rmdir(tempDir,'s'));
+    tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum2epoch');
+    spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
+    refTime = [-.5 .5]; % part of spin
+    refPhase = refTime*360+180; % spin period center corresponds to phase 0
+    deltaT = repmat(refTime,size(tt,1),1).*...
+      repmat(double(spinPeriod),1,length(refTime));
+    tmat = repmat(tt(:,1),1,length(refTime))+deltaT;
+    amat = repmat(refPhase,size(tt,1),1);
+    tmat = reshape(tmat',numel(tmat),1);
+    difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
+    amat = reshape(amat',numel(amat),1);
     pha = [tmat amat]; %#ok<NASGU>
     c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
   else % read from isdat
     irf_log('dsrc','did not suceed');
+    cd(currentDir), rmdir(tempDir,'s')
     irf_log('dsrc','Reading phase from ISDAT instead');
     n_ok = 0;
     % We ask for 2 sec more from each side
