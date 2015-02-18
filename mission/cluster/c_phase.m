@@ -78,7 +78,8 @@ for iChunk=1:nChunks
     continue
   end
   tStart = phase_2(idx(1),1);
-  if iChunk==1, tStart = tStart-MAX_SPINS_EXTRAP*lFit.spinPeriod;
+  if iChunk==1 || isempty(phase_out)
+    tStart = tStart-MAX_SPINS_EXTRAP*lFit.spinPeriod;
   else
     % If the phase did not change, we extrapolate via the data gap
     if abs(lFit.spinPeriod-fits{iChunk-1}.spinPeriod)/4*360<MAX_ERR_PHA && ...
