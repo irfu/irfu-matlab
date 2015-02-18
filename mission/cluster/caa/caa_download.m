@@ -41,7 +41,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 %   'nolog'			- [default] do not log into .caa file (good for batch processing)
 %   'log'			- do log into .caa file (more for interactive work)
 %   'downloadDirectory=..'	- define directory for downloaded datasets (instead of default 'CAA/')
-%   'uname=uuu&pwd=ppp'	- load data from caa using username 'uuu' and password 'ppp'
+%   '&USERNAME=csaUser&PASSWORD=csaPassword'	- load data from csa using username 'uuu' and password 'ppp'
 %	'cdf'           - alias of 'format=cdf'
 %	'cef'           - alias of 'format=cef'
 %	'json'			- return csa query in JSON format
