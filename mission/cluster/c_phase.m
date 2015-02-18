@@ -138,7 +138,7 @@ if n_out>0, irf_log('proc',['throwing away ' num2str(n_out) ' points']), end
       % Throw away erroneous points, we suppose these correspond to a single
       % error in sun pulse
       iJump = find(diffangle>5);
-      if ~isempty(iJump) && length(iJump)<6
+      if ~isempty(iJump) && length(iJump)<10
         if all(diff(iJump)==1),
           irf_log('proc', sprintf('Throwing away %d erroneous points at %s',...
             length(iJump),epoch2iso(tp(iJump(1))+tRef)))
