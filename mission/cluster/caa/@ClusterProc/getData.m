@@ -1774,13 +1774,11 @@ elseif strcmp(quantity,'probesa')
 	if isempty(ns_ops)
 		c_ctl('load_ns_ops',[c_ctl('get',5,'data_path') '/caa-control'])
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
-	end
-	
-	[iso_t,dt] = caa_read_interval;
-	start_time = iso2epoch(iso_t);
+  end
+	[iso_t,dt] = caa_read_interval; start_time = iso2epoch(iso_t);
   
   % SAA saturation
-  shadow_2 = atand(8/150); % 8 cm puch, 150 cm thin wire
+  shadow_2 = atand(8/150); % angular width with 8 cm puck, 150 cm thin wire
   SAA_MIN = 90 - shadow_2;
   saa = atan2d(-SAX(3),SAX(1));
   if saa<SAA_MIN,
@@ -1812,15 +1810,16 @@ elseif strcmp(quantity,'probesa')
     DT_PLUS_M = 1.6*DT_MINUS_M;
     DT_MINUS_L = 3*spin_period*shadow_2/360;
     DT_PLUS_L = 10/25;
-		% Determine if we use 180Hz filter
+    DT_MINUS_LX = 2/5; DT_PLUS_LX = 3/5;
+    % Determine if we use 180Hz filter
     if cl_id == 2 && start_time>toepoch([2001 07 23 13 54 18]) 
       dt_lx = [DT_MINUS_M DT_PLUS_M];
       dt_hx = dt_lx;
     elseif fix(fsamp) == 450
-      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_lx = [DT_MINUS_LX DT_PLUS_LX];
       dt_hx = [DT_MINUS_M DT_PLUS_M];
     else % 10 Hz filter
-      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_lx = [DT_MINUS_LX DT_PLUS_LX];
       dt_hx = [DT_MINUS_L DT_PLUS_L];
     end
     
@@ -2869,7 +2868,7 @@ elseif strcmp(quantity,'ps')
     if isfield(P_info,'useMax4hbiassa') && P_info.useMax4hbiassa==1
         P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'max'); clear tvec %#ok<NASGU>
     else
-        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec %#ok<NASGU>
+        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'median'); clear tvec %#ok<NASGU>
     end
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	
