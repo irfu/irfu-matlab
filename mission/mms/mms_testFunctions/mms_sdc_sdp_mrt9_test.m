@@ -17,9 +17,9 @@ setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 
-modes    = {'slow'};
+modes    = {'slow','brst'};
 %modes   = {'slow','fast'};
-versions = {'3.5.0'};
+versions = {'3.5.0'}; % if multiple: add extra for loop below.
 procs    = {'scpot','ql','sitl','l2pre'};
 dates    = {'20160101'};
 %dates   = {'20150410','20160101'};
@@ -30,9 +30,9 @@ for scId = scList
   for iMode=1:length(modes)
     for iDate = 1:numel(dates)
       dceFile = sprintf('%s/mms%d/mms%d_edp_%s_l1b_dce_%s*_v%s.cdf',...
-        data_root, scId, scId,modes{iMode}, dates{iDate}, versions{iMode});
+        data_root, scId, scId, modes{iMode}, dates{iDate}, versions{1});
       dcvFile = sprintf('%s/mms%d/mms%d_edp_%s_l1b_dcv_%s*_v%s.cdf',...
-        data_root, scId, scId, modes{iMode}, dates{iDate}, versions{iMode});
+        data_root, scId, scId, modes{iMode}, dates{iDate}, versions{1});
       hk_101File = sprintf('%s/mms%d/mms%d_fields_hk_l1b_101_%s*_v*.cdf',...
         data_root, scId, scId, dates{iDate});
       hk_10eFile = sprintf('%s/mms%d/mms%d_fields_hk_l1b_10e_%s*_v*.cdf',...
