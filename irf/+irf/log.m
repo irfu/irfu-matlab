@@ -10,6 +10,9 @@ function r = log(logLevel,logMsg)
 %
 % IRF.LOG('log_out',file)     - log output to file.
 % IRF.LOG('log_out','screen') - log output to screen, default. 
+% IRF.LOG('short') - output short messages, without debug information
+% except when in the debug mode.
+% IRF.LOG('full') - output full messages with debug information [default]
 %
 % Example:
 %   irf.log('warning'); % set active log level to 'warning'
@@ -30,13 +33,16 @@ function r = log(logLevel,logMsg)
 % notice = 3
 % debug = 4
 
-persistent logOut
-persistent loggingLevel
+persistent logOut loggingLevel outputShort
+
 if isempty(loggingLevel),
     loggingLevel=2;
 end
 if isempty(logOut)
 	logOut = 'screen';
+end
+if isempty(outputShort)
+	outputShort = false;
 end
 
 if nargin == 0,
@@ -48,7 +54,7 @@ if nargin == 0,
   return;
 elseif nargin == 1, 
 	if ischar(logLevel),
-		switch lower(logLevel(1))
+		switch logLevel(1)
 			case 'o'
 				loggingLevel = 0;
 			case 'c'
@@ -59,6 +65,10 @@ elseif nargin == 1,
 				loggingLevel = 3;
 			case 'd'
 				loggingLevel = 4;
+			case 's'
+				outputShort = true;
+			case 'f'
+				outputShort = false;
 			otherwise
 				irf.log('critical','Error! Unrecognized input, see help.');
 				error('Unrecognized input.');
@@ -113,16 +123,18 @@ else
 	error('Unrecognized input, max 2 input parameters.');
 end	
 
-[sta,curr] = dbstack;
-% if irf.log is called from the main env, then use curr,
-% otherwise we are interested in callers name (curr+1)
-if curr == length(sta), idx = curr;
-else idx = curr +1;
+if ~outputShort || ~strcmp(logOut,'screen') || (outputShort && logLevel==4),
+	[sta,curr] = dbstack;
+	% if irf.log is called from the main env, then use curr,
+	% otherwise we are interested in callers name (curr+1)
+	if curr == length(sta), idx = curr;
+	else idx = curr +1;
+	end
+	logMarker = sprintf('%s(%d)',...
+		sta(idx).name,...
+		sta(idx).line);
+	clear sta curr
 end
-logMarker = sprintf('%s(%d)',...
-	sta(idx).name,...
-	sta(idx).line);
-clear sta curr
 
 if ~strcmp(logOut,'screen')
 	fid = fopen(logOut,'a');
@@ -136,9 +148,13 @@ if ~strcmp(logOut,'screen')
 		irf.log('critical','Redirecting future output to screen.')
 	end
 else
-	dispStr = [repmat(' ',1,(logLevel-1)*2) ...% indentation space depending on level
-		'[' log_level_to_msg(logLevel,'short') ': ' logMarker '] ' logMsg];
-	disp(dispStr)
+	if outputShort && (logLevel ~= 4)
+		debugStr = '';
+	else
+		debugStr = ['[' log_level_to_msg(logLevel,'short') ': ' logMarker '] '];
+	end
+	disp([repmat(' ',1,(logLevel-1)*2) ...% indentation space depending on level
+		debugStr logMsg]);
 end
 end
 
