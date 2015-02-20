@@ -56,15 +56,21 @@ switch procId
     % Compute what TT2000 time that corresponds to, using computeTT2000.
     t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
 
-    % Call mms_spinfit_mx mex file with loaded data
-    [time, sfit, sdev, iter, nBad] = mms_spinfit_mx(maxIt, ...
-      minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data',...
-      fitEvery, fitInterv, double(t0));
+    if( (dce.time(1)<=t0) && (t0<=dce.time(end)))
+      % Call mms_spinfit_mx mex file with loaded data
+      [time, sfit, sdev, iter, nBad] = mms_spinfit_mx(maxIt, ...
+        minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data',...
+        fitEvery, fitInterv, double(t0));
 
-    % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
-    % with NaN in Matlab.
-    sfit(sfit==-159e7)=NaN;    sdev(sdev==-159e7)=NaN;
-    iter(iter==-159e7)=NaN;    nBad(nBad==-159e7)=NaN;
+      % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
+      % with NaN in Matlab.
+      sfit(sfit==-159e7)=NaN;    sdev(sdev==-159e7)=NaN;
+      iter(iter==-159e7)=NaN;    nBad(nBad==-159e7)=NaN;
+    else
+      warnStr = sprintf('Too short time series, no data cover first spinfit timestamp (t0=%i)',t0);
+      irf.log('warning', warnStr);
+      sfit=[]; time=[]; sdev=[]; iter=[]; nBad=[];
+    end
     % Store output. BUGFIX REMEMBER TO CHANGE ROW / COLUMNS in mms_spinfit_mx
     fits = struct('time', int64(time'), 'sfit', single(sfit'),...
       'sdev', single(sdev'), 'iter', single(iter'), 'nBad', single(nBad'));
