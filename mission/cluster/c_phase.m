@@ -57,9 +57,13 @@ while pos < size(phase_2,1)
   idxS = [idxS {pos:idx(ii(1))}]; pos = idx(ii(1))+1; %#ok<AGROW>
 end
 
-nChunks = length(idxS); fits = cell(nChunks,1);
+nChunks = length(idxS); fits = cell(nChunks,1); iPrevGoodChunk = 0;
 for iChunk=1:nChunks
   idx = idxS{iChunk};
+  if length(idx)==2 && abs(diff(phase_2(idx,2)))==360
+    irf_log('proc',['Bad point at ' epoch2iso(phase_2(idx(1),1))])
+    continue
+  end
   lFit = fit_spin(phase_2(idx,:)); fits{iChunk} = lFit;
   if isempty(lFit.spinPeriod) || ...
       lFit.errAngle>MAX_ERR_PHA || lFit.errAngle>MAX_ERR_PHA
@@ -78,20 +82,21 @@ for iChunk=1:nChunks
     continue
   end
   tStart = phase_2(idx(1),1);
-  if iChunk==1 || isempty(phase_out)
+  if iPrevGoodChunk==0
     tStart = tStart-MAX_SPINS_EXTRAP*lFit.spinPeriod;
   else
     % If the phase did not change, we extrapolate via the data gap
-    if abs(lFit.spinPeriod-fits{iChunk-1}.spinPeriod)/4*360<MAX_ERR_PHA && ...
+    if abs(lFit.spinPeriod-fits{iPrevGoodChunk}.spinPeriod)/4*360<MAX_ERR_PHA && ...
         abs(mod(polyval(lFit.phcCoef,phase_out(end,1)-tRef)*180/pi,360)-...
         phase_out(end,2))<MAX_ERR_PHA
-      tStart = phase_2(idxS{iChunk-1}(end),1);
+      tStart = phase_2(idxS{iPrevGoodChunk}(end),1);
     end
   end
   tEnd = phase_2(idx(end),1);
   if iChunk==nChunks, tEnd = tEnd + MAX_SPINS_EXTRAP*lFit.spinPeriod; end 
   tt = t(t>=tStart & t<tEnd);
   phase_out = [phase_out; tt mod(polyval(lFit.phcCoef,tt-tRef)*180/pi,360)];  %#ok<AGROW>
+  iPrevGoodChunk = iChunk;
 end
 
 % Sanity check
@@ -127,6 +132,7 @@ if n_out>0, irf_log('proc',['throwing away ' num2str(n_out) ' points']), end
     tTmp = (ceil(phase(1,1)*2):fix(phase(end,1)*2))'/2 - tRef; % new time with 0.5 sec step
     while 1
       tTmp(tTmp<tp(1)) = []; % Avoid NaNs
+      if isempty(tTmp), return, end
       pTmp = interp1q(tp,ph,tTmp);
       phc = unwrap(pTmp/180*pi); res.phcCoef = polyfit(tTmp,phc,1);
       if isnan(res.phcCoef(1))
