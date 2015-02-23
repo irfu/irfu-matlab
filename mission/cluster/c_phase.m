@@ -95,6 +95,7 @@ for iChunk=1:nChunks
   tEnd = phase_2(idx(end),1);
   if iChunk==nChunks, tEnd = tEnd + MAX_SPINS_EXTRAP*lFit.spinPeriod; end 
   tt = t(t>=tStart & t<tEnd);
+  if isempty(tt), continue, end
   phase_out = [phase_out; tt mod(polyval(lFit.phcCoef,tt-tRef)*180/pi,360)];  %#ok<AGROW>
   iPrevGoodChunk = iChunk;
 end
