@@ -804,6 +804,16 @@ elseif strcmp(quantity,'a')
     c2 = onCleanup(@() rmdir(tempDir,'s'));
     tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum2epoch');
     spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
+    % find errors
+    iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));
+    if length(iJump) < min(4,length( spinPeriod ))
+      if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'; end
+      for i = iJump'
+        irf_log('proc',['removing erroneous point at ' epoch2iso(tt(i))])
+      end
+      spinPeriod(iJump) = [];
+      tt(iJump) = [];
+    end
     refTime = [-.5 .5]; % part of spin
     refPhase = refTime*360+180; % spin period center corresponds to phase 0
     deltaT = repmat(refTime,size(tt,1),1).*...
