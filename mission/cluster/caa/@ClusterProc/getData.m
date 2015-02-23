@@ -283,7 +283,7 @@ if strcmp(quantity,'ec')
 		if correct_sw_wake
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
-			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip,0,ec_extraparams); %#ok<NASGU,ASGLU>
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip,0,ec_extraparams); %#ok<ASGLU>
 			
 			if n_corrected>0
 				eval(irf_ssub(...
@@ -1628,11 +1628,11 @@ elseif strcmp(quantity,'badbias')
 			'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
 				
 		ii = find(efwt(:,2)<DELTA_PLUS);
-		if ~isempty(ii)
-			t0 = efwt(ii(1),1) - efwt(ii(1),2);
-			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
-			c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
-        end
+    if ~isempty(ii)
+      t0 = efwt(ii(1),1) - efwt(ii(1),2);
+      irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
+      c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
+    end
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
     clear t0 ii
