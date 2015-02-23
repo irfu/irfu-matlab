@@ -704,7 +704,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
 			end
 		case 3
-      if start_time>toepoch([2011 6 01 09 30 0])
+      if start_time>toepoch([2014 11 03 20 58 16.7])
+        % p2 failure
+        probe_list = 4;
+        irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));
+      elseif start_time>toepoch([2011 6 01 09 30 0])
         % p3 failure
         probe_list = [2 4];
         irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
