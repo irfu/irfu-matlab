@@ -23,7 +23,8 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 status = 0;
 
 % This must be changed when we do any major changes to our processing software
-EFW_DATASET_VERSION = '4';
+% Version 5: new algorithm to compute ScPot from several probes, median
+EFW_DATASET_VERSION = '5';
 
 if nargin~=8 && nargin~=3, error('3 or 8 input parameters are needed'); end
 if nargin ==3
