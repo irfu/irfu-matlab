@@ -1743,6 +1743,10 @@ elseif strcmp(quantity,'badbias')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'probesa')
 	save_file = './mEFW.mat';
+  
+  if ~exist('mER.mat','file') && ~exist('mPR.mat','file')
+    irf_log('load','No EFW data');data = []; cd(old_pwd); return
+  end
 	
 	% Saturation level nA
 	SA_LEVEL = 66; %#ok<NASGU>
