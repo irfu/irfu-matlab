@@ -1148,7 +1148,8 @@ elseif strcmp(quantity,'sax')
 	% first try ISDAT (fast) then files
 	lat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
-	
+	if ~isempty(lat), lat(isnan(lat(:,2)),:) = []; end
+  if ~isempty(long), long(isnan(long(:,2)),:) = []; end
 	if isempty(lat) || isempty(long)
 		% Try ISDAT which does not handle data gaps
 		[t,data] = caa_is_get(cdb.db, start_time, dt, ...
@@ -1162,10 +1163,20 @@ elseif strcmp(quantity,'sax')
 			irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
 			out_data = []; cd(old_pwd), return
 		end
-	end
-	
+  end
+  if ~all(lat(:,1)==long(:,1))
+    [ii1,ii2]=irf_find_comm_idx(lat,long);
+    lat = lat(ii1,:); long = long(ii2,:);
+  end
+  if isempty(lat) || isempty(long)
+    irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
+    out_data = []; cd(old_pwd), return
+  end
+  % XXX: TODO here we definitely need to check if the attitude is changing 
+  % with time instead of doing mean()
+	lat = mean(lat(:,2)); long = mean(long(:,2));
 	% Take first point only. This is OK according to AV
-	[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
+	[xspin,yspin,zspin] = sph2cart(long*pi/180,lat*pi/180,1);
 	sax = [xspin yspin zspin]; %#ok<NASGU>
 
 	eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
