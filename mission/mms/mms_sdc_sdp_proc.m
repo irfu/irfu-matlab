@@ -259,7 +259,8 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      mms_sdc_sdp_cdf_in_process(DEFATT_File,'ancillary','defatt');
+      src_fileData=mms_sdc_sdp_cdf_in_process(DEFATT_File,'ancillary','defatt');
+      update_header(src_fileData); % Update header with file info.
     else
       % HK101 file => phase
       if isempty(HK_101_File)

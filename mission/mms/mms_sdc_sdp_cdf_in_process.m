@@ -118,6 +118,10 @@ elseif(strcmp(sci_or_ancillary,'ancillary'))
       DEFATT.time = spdfparsett2000(timeFullStr);
       DEFATT.zphase = tmpData{1,4};
 
+      % Return filename (to be stored in CDF GATTRIB Parents)
+      filenameData = [];
+      [~, filenameData.filename, ~] = fileparts(fullFilename);
+
       % Store it using the DataManager as dataType
       mms_sdc_sdp_datamanager(dataType,DEFATT);
 
