@@ -21,13 +21,17 @@ MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
 
 
-MMS_CONST.MinFileVer = 3; % min version of l1b files accepted 
+MMS_CONST.MinFileVer = 3; % min version of l1b files accepted
 
 MMS_CONST.MMSids = 1:4;
 
 % Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
 MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
+
+% Angles when phase=0 (X BSC direction)
+MMS_CONST.Phaseshift.e12 = pi/6;
+MMS_CONST.Phaseshift.e34 = 2*pi/3;
 
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst'};

@@ -3,10 +3,15 @@ function fits = mms_sdc_sdp_comp_spinfits
 %
 % output: fits     - struct with the following fields
 %           .epoch - Timestamps (in TT2000)
-%           .sfit  - Spinfits (matrix with one fit per column or row) <--           CHECK which is which.
-%           .sdev  - Standard deviation of each fit
-%           .iter  - Numer of iterations required for each fit
-%           .nBad  - Number of bad fits.
+%              and for each sdp pair (e12 or e34)
+%           .sfit.e12  - Spinfits (matrix with one fit per row) for e12
+%           .sfit.e34  - Same for pair e34
+%           .sdev.e12  - Standard deviation of each fit for e12
+%           .sdev.e34  - Same for pair e34
+%           .iter.e12  - Numer of iterations required for each fit for e12
+%           .iter.e34  - Same for pair e34
+%           .nBad.e12  - Number of bad fits for e12.
+%           .nBad.e34  - Same for pair e34
 %
 
 % No arguments in, as of yet.
@@ -22,9 +27,17 @@ minPts = 4;     % Minumum of points for one fit
 fitEvery = 5*10^9;   % Fit every X nanoseconds.
 fitInterv = 20*10^9; % Fit over X nanoseconds interval.
 
+sdpPair = {'e12', 'e34'};
+time=[];
+sfit = struct(sdpPair{1}, [],sdpPair{2}, []);
+sdev = struct(sdpPair{1}, [],sdpPair{2}, []);
+iter = struct(sdpPair{1}, [],sdpPair{2}, []);
+nBad = struct(sdpPair{1}, [],sdpPair{2}, []);
+
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.l2pre}
+    % FIXME: REPLACE HK 101 with DEFATT for L2pre/L2a etc.
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
     if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
       irf.log('warning','Bad hk_101 input'); return
@@ -57,23 +70,34 @@ switch procId
     t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
 
     if( (dce.time(1)<=t0) && (t0<=dce.time(end)))
-      % Call mms_spinfit_mx mex file with loaded data
-      [time, sfit, sdev, iter, nBad] = mms_spinfit_mx(maxIt, ...
-        minPts, nTerms, double(dce.time)', double(dce.e12.data)', phase.data',...
-        fitEvery, fitInterv, double(t0));
+      for iPair=1:numel(sdpPair)
+        % Call mms_spinfit_mx mex file with loaded data
+        [time, sfit.(sdpPair{iPair}), sdev.(sdpPair{iPair}), ...
+          iter.(sdpPair{iPair}), nBad.(sdpPair{iPair})] = mms_spinfit_mx(maxIt, ...
+          minPts, nTerms, double(dce.time)', double(dce.(sdpPair{iPair}).data)', ...
+          phase.data' + rad2deg(MMS_CONST.Phaseshift.(sdpPair{iPair})) ,...
+          fitEvery, fitInterv, double(t0));
 
-      % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
-      % with NaN in Matlab.
-      sfit(sfit==-159e7)=NaN;    sdev(sdev==-159e7)=NaN;
-      iter(iter==-159e7)=NaN;    nBad(nBad==-159e7)=NaN;
+        % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
+        % with NaN in Matlab.
+        sfit.(sdpPair{iPair})(sfit.(sdpPair{iPair})==-159e7)=NaN;
+        sdev.(sdpPair{iPair})(sdev.(sdpPair{iPair})==-159e7)=NaN;
+        iter.(sdpPair{iPair})(iter.(sdpPair{iPair})==-159e7)=NaN;
+        nBad.(sdpPair{iPair})(nBad.(sdpPair{iPair})==-159e7)=NaN;
+
+        % Change row/column written in mms_spinfit_mx and convert to single
+        sfit.(sdpPair{iPair})=single(sfit.(sdpPair{iPair}))';
+        sdev.(sdpPair{iPair})=single(sdev.(sdpPair{iPair}))';
+        iter.(sdpPair{iPair})=single(iter.(sdpPair{iPair}))';
+        nBad.(sdpPair{iPair})=single(nBad.(sdpPair{iPair}))';
+      end
     else
       warnStr = sprintf('Too short time series, no data cover first spinfit timestamp (t0=%i)',t0);
       irf.log('warning', warnStr);
-      sfit=[]; time=[]; sdev=[]; iter=[]; nBad=[];
     end
-    % Store output. BUGFIX REMEMBER TO CHANGE ROW / COLUMNS in mms_spinfit_mx
-    fits = struct('time', int64(time'), 'sfit', single(sfit'),...
-      'sdev', single(sdev'), 'iter', single(iter'), 'nBad', single(nBad'));
+    % Store output.
+    fits = struct('time', int64(time'), 'sfit', sfit,...
+      'sdev', sdev, 'iter', iter, 'nBad', nBad);
     
   otherwise
     irf.log('warning','Only L2Pre supported for spinfits calculation.'); return
