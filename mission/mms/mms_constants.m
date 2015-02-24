@@ -33,6 +33,9 @@ MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
 MMS_CONST.Phaseshift.e12 = pi/6;
 MMS_CONST.Phaseshift.e34 = 2*pi/3;
 
+% Nominal Amplitude Correction factor multiplied to DCV & DCE data.
+MMS_CONST.NominalAmpCorr = 1.1;
+
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst'};
 MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list

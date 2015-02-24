@@ -139,10 +139,12 @@ switch(param)
     init_param()
     chk_timeline()
     chk_latched_p()
+    %apply_transfer_function()
     v_from_e_and_v()
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
+    apply_nom_amp_corr()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -403,6 +405,21 @@ end
     % If not, set bit in both V and E bitmask.
     
     %XXX: Does nothing at the moment
+  end
+
+  function apply_nom_amp_corr()
+    % Apply a nominal amplitude correction factor to DCE & DCV values after
+    % cleanup but before any major processing has occured.
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen}; senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)];
+      logStr = sprintf('Applying nominal amplitude correction factor, %d, to probes %s, %s and %s',...
+        MMS_CONST.NominalAmpCorr, senA, senB, senE);
+      irf.log('notice',logStr);
+      DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * MMS_CONST.NominalAmpCorr;
+      DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * MMS_CONST.NominalAmpCorr;
+      DATAC.dce.(senE).data = DATAC.dce.(senE).data * MMS_CONST.NominalAmpCorr;
+    end
   end
 
   function v_from_e_and_v
