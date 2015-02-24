@@ -1,7 +1,7 @@
 %% Init
-data_root='/data/mms/MRT9';
+%data_root='/data/mms/MRT9';
 %data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
-%data_root='/home/thoni/MMS/MMS_cdf/MRT9';
+data_root='/home/thoni/MMS/MMS_cdf/MRT9';
 
 if ismac,
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
@@ -22,6 +22,7 @@ modes    = {'slow','brst'};
 versions = {'3.5.0'}; % if multiple: add extra for loop below.
 procs    = {'scpot','ql','sitl','l2pre'};
 dates    = {'20160101'};
+defattdate = {'2015365_2016001'}; % Defatt Date corresponding to each date in "dates".
 %dates   = {'20150410','20160101'};
 scList   = [1];
 
@@ -37,6 +38,8 @@ for scId = scList
         data_root, scId, scId, dates{iDate});
       hk_10eFile = sprintf('%s/mms%d/mms%d_fields_hk_l1b_10e_%s*_v*.cdf',...
         data_root, scId, scId, dates{iDate});
+      defattFile = sprintf('%s/mms%d/MMS%d_DEFATT_%s.V*', ...
+        data_root, scId, scId, defattdate{iDate});
       d = dir(dceFile);
       if isempty(d), dceFile = '';
       else dceFile = sprintf('%s/mms%d/%s', data_root, scId, d(1).name);
@@ -53,11 +56,21 @@ for scId = scList
       if isempty(d), hk_10eFile='';
       else hk_10eFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
       end
+      d = dir(defattFile); % Defatt, used in L2pre, use highest version found.
+      if isempty(d), defattFile = '';
+      else defattFile = sprintf('%s/mms%d/%s', data_root, scId, d(end).name);
+      end
       if isempty(dcvFile) && isempty(dceFile), continue, end
       for iProc=1:length(procs)
         fprintf('TEST: %s MMS%d %s %s\n',...
           dates{iDate}, scId, modes{iMode}, procs{iProc})
-        mms_sdc_sdp_proc(procs{iProc}, dceFile, dcvFile, hk_101File, hk_10eFile);
+        if(strcmp(procs{iProc},'l2pre'))
+          % L2/L2pre use defatt
+          mms_sdc_sdp_proc(procs{iProc}, dceFile, dcvFile, hk_10eFile, defattFile);
+        else
+          % L1B use hk_101 sunpulse
+          mms_sdc_sdp_proc(procs{iProc}, dceFile, dcvFile, hk_10eFile, hk_101File);
+        end
       end
     end
   end

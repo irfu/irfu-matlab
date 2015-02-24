@@ -36,6 +36,7 @@ HK_101_File = ''; % HK with sunpulse, etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
 DCV_File = '';
 DCE_File = '';
+DEFATT_File = ''; % Defatt file used for l2pre
 L2Pre_File = ''; % L2Pre file (output from L2pre process is input in L2A?)
 HeaderInfo = [];
 
@@ -147,6 +148,16 @@ for i=1:nargin-1
         DCE_File = varargin{i};
         irf.log('notice', ['DCE input file: ', DCE_File]);
 
+    elseif regexpi(fileIn, '_DEFATT_') % DEFATT
+        if ~isempty(DEFATT_File)
+            err_str = ['Received multiple DEFATT files in input (',...
+                DEFATT_File, ', ', varargin{i} ')'];
+            irf.log('critical', err_str);
+            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
+        end
+        DEFATT_File = varargin{i};
+        irf.log('notice', ['DEFATT input file: ', DEFATT_File]);
+
     elseif regexpi(fileIn, '_l2pre_') % L2Pre, used for L2A process.
         if ~isempty(L2Pre_File)
             err_str = ['Received multiple L2Pre files in input (',...
@@ -167,7 +178,7 @@ for i=1:nargin-1
 end
 
 % All input arguments read. All files required identified correct?
-if any([isempty(HK_101_File), isempty(DCE_File), isempty(DCV_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
+if any([(isempty(HK_101_File) && isempty(DEFATT_File)), isempty(DCE_File), isempty(DCV_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
     irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
     for i=1:nargin-1
         irf.log('warning',...
@@ -214,7 +225,7 @@ switch procId
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
     src_fileData = mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
     update_header(src_fileData) % Update header with file info.
-    
+
     irf.log('notice', [procName ' proc using: ' DCV_File]);
     src_fileData = mms_sdc_sdp_cdf_in_process(DCV_File,'sci','dcv');
     update_header(src_fileData) % Update header with file info.
@@ -229,11 +240,6 @@ switch procId
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
-    if isempty(HK_101_File)
-      errStr = ['missing reqired input for ' procName ': HK_101_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
-    end
 
     irf.log('notice', [procName ' proc using: ' DCE_File]);
     src_fileData = mms_sdc_sdp_cdf_in_process(DCE_File,'sci','dce');
@@ -245,9 +251,26 @@ switch procId
       update_header(src_fileData) % Update header with file info.
     end
 
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData=mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
-    update_header(src_fileData) % Update header with file info.
+    if(procId == MMS_CONST.SDCProc.l2pre)
+      % Defatt file => phase
+      if isempty(DEFATT_File)
+        errStr = ['missing reqired input for ' procName ': DEFATT_File'];
+        irf.log('critical',errStr)
+        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      end
+      irf.log('notice', [procName ' proc using: ' DEFATT_File]);
+      mms_sdc_sdp_cdf_in_process(DEFATT_File,'ancillary','defatt');
+    else
+      % HK101 file => phase
+      if isempty(HK_101_File)
+        errStr = ['missing reqired input for ' procName ': HK_101_File'];
+        irf.log('critical',errStr)
+        error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      end
+      irf.log('notice', [procName ' proc using: ' HK_101_File]);
+      src_fileData=mms_sdc_sdp_cdf_in_process(HK_101_File,'sci','hk_101');
+      update_header(src_fileData) % Update header with file info.
+    end
 
     if isempty(DCV_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...

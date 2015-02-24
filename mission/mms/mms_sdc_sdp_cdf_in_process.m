@@ -118,6 +118,9 @@ elseif(strcmp(sci_or_ancillary,'ancillary'))
       DEFATT.time = spdfparsett2000(timeFullStr);
       DEFATT.zphase = tmpData{1,4};
 
+      % Store it using the DataManager as dataType
+      mms_sdc_sdp_datamanager(dataType,DEFATT);
+
     else
       errStr = ['File not found. ', fullFilename];
       irf.log('critical', errStr);
