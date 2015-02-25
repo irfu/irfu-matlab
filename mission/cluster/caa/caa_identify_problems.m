@@ -30,7 +30,7 @@ if isempty(result)
   warning('Data is empty: Cannot identify problems in empty data set.'), 
   return, 
 end
-[rows, columns] = size(result);
+columns = size(result,2);
 [data_start_time, data_time_span] = irf_stdt(result(1,1), result(end,1));
                       
 % For nonzero MASK_TYPE only some of the bitmask values 
@@ -64,11 +64,15 @@ if ( (bitmask_column <= 0 || bitmask_column > columns) ||...
    error('Wrong column index(es) given.')
 end
 
-if ( spacecraft_id <= 0 || spacecraft_id > 4 )
+if ( data_level <= 0 || data_level > 3 )
+   error('Incorrect level of data.')
+end
+
+if ~isempty(intersect(spacecraft_id,1:4))
    error('Wrong spacecraft ID given.')
 end
 
-if ~( isa(probe, 'char') ) %|| isa(probe, 'numeric') )
+if ~isa(probe, 'char') || isempty(probe)
    error('PROBE must be a string')
 end
 
@@ -76,44 +80,17 @@ if ~regexp(probe, '^([1-4]|12|32|34|1234|3234)$')
    error('Wrong probe combination.')
 end
 
-if ( (ischar(probe) && length(probe) > 1) || (isnumeric(probe) && probe > 10) )
-	switch probe
-		case {12, '12'}
-			probe_list = [1, 2];
-			probe_pair_list = 12;
-		case {32, '32'}
-			probe_list = [3, 2];
-			probe_pair_list = 32;
-		case {34, '34'}
-			probe_list = [3, 4];
-			probe_pair_list = 34;
-        case {42, '42'}
-			probe_list = [2, 4];
-			probe_pair_list = 42;
-		case {1234, '1234'}              % Do nothing?
-		   probe_list = [1, 2, 3, 4];
-		   probe_pair_list = [12, 34];
-		case {3234, '3234'}              % Do nothing?
-		   probe_list = [2, 3, 4];
-		   probe_pair_list = [32, 34];
-		case {123234, '123234'}          % Special hack for version of caa_export
-		   probe_list = [1, 2, 3, 4];    % that is using caa_get for 3h-intervals!
-		   probe_pair_list = [12, 32, 34];
-		otherwise
-			error('Unknown probe.')
+if length(probe) > 1
+  pTmp = probe; probe_list = [];
+  while ~isempty(pTmp)
+    probe_list = [probe_list str2double(pTmp(1))]; pTmp(1) = []; %#ok<AGROW>
   end
-elseif ischar(probe) && (regexp(probe, '^[1-4]$') == 1)
-   probe_list = str2double(probe);
-   probe_pair_list = [];
-else
-	error('Unknown probe.')
-end
-
-if ( data_level <= 0 || data_level > 3 )
-   error('Incorrect level of data.')
-end
-if ( sc_potential < 0 || sc_potential > 1 )
-   error('Wrong spacecraft potential flag given. Must be 0 or 1.')
+  probe_list = sort(unique(probe_list));
+  pTmp = probe; probe_pair_list = [];
+  while ~isempty(pTmp)
+    if length(pTmp)<2, break, end
+    probe_pair_list = [probe_pair_list str2double(pTmp(1:2))]; pTmp(1:2) = []; %#ok<AGROW>
+  end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
