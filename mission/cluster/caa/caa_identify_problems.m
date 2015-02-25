@@ -80,6 +80,7 @@ if ~regexp(probe, '^([1-4]|12|32|34|1234|3234)$')
    error('Wrong probe combination.')
 end
 
+EFW_PROBE_PAIRS = [12,32,34,42];
 if length(probe) > 1
   pTmp = probe; probe_list = [];
   while ~isempty(pTmp)
@@ -92,6 +93,7 @@ if length(probe) > 1
     probe_pair_list = [probe_pair_list str2double(pTmp(1:2))]; pTmp(1:2) = []; %#ok<AGROW>
   end
 end
+probe_pair_list = intersect(probe_pair_list,EFW_PROBE_PAIRS);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
