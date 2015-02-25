@@ -295,8 +295,9 @@ new group=201012_L012 st=2010-12-01T00:00:00Z dt=2678400 lev=0 maxlev=2 ddt=1080
 =========================
 7. Find the delta offsets
 =========================
-Updated to 2011-12-28T00:00:00. No update on C1 possible since 2009-10-14 (no p4).
+Updated to 2013-12-31. No update on C1 possible since 2009-10-14 (no p4).
 No data on C3 from 2011-03-05 -> ???
+No data on C4 from 2013-06-30 -> ???
 The delta offsets are the difference between the spin fits for pair 12 vs. pair 34.
 The delta offsets must be computed before L2 processing.
 1. Load the delta offsets computed during the runs. Example for C2 (D2p12p34 from mEDSI.mat):
@@ -339,6 +340,7 @@ Special processing files are under git control in: irfu-matlab/caa/caa-control/2
 10. Find the DSI offsets (Yuri?)
 ========================
 (Can be done before step 8 if wanted)
+Make sure /data/cluster is mounted. ns_ops_c?.dat files are needed.
 The DSI offsets are constant offsets applied to the despun data.
 They are computed on a statistical basis and applied on a roughly per-year basis.
 1. Use caa_sh_xoff_batch() to find the offsets in the solar wind. Note: Solar wind season 

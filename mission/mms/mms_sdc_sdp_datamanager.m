@@ -137,11 +137,14 @@ switch(param)
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
-    v_from_e_and_v()
+    chk_timeline()
     chk_latched_p()
+    %apply_transfer_function()
+    v_from_e_and_v()
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
+    apply_nom_amp_corr()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -207,47 +210,75 @@ end
     % and the data has a value below MMS_CONST.Limit.LOW_DENSITY_SATURATION
     % it will be Bitmasked with Low density saturation otherwise it will be
     % bitmasked with just Probe saturation.
-
-    % Bits used for Saturation
-    Bits=[MMS_CONST.Bitmask.PROBE_SATURATION, MMS_CONST.Bitmask.LOW_DENSITY_SATURATION];
     
     % For each sensor, check each pair, i.e. V_1 & V_2 and E_12.
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
-
-      % Check all probes
       irf.log('notice', ...
         sprintf('Checking for latched probes on %s, %s and %s.', senA, ...
         senB, senE));
-
-      indA = irf_latched_idx(DATAC.dcv.(senA).data);
-      indB = irf_latched_idx(DATAC.dcv.(senB).data);
-      indE = irf_latched_idx(DATAC.dce.(senE).data);
-
-      % Add appropriate value to bitmask, leaving other 16 bits untouched.
-      bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - sum(Bits);
-      DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dcv.(senA).data(indA)), sum(Bits));
-      DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dcv.(senB).data(indB)), sum(Bits));
-      DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + ...
-        bitand(latched_mask(DATAC.dce.(senE).data(indE)), sum(Bits));
-
-      %% TODO, Check overlapping stuck values, if senA stuck but not senB..
-      
+      DATAC.dcv.(senA) = latched_mask(DATAC.dcv.(senA));
+      DATAC.dcv.(senB) = latched_mask(DATAC.dcv.(senB));
+      DATAC.dce.(senE) = latched_mask(DATAC.dce.(senE));
+      % TODO: Check overlapping stuck values, if senA stuck but not senB..  
     end
-    
-      function latchBitmask = latched_mask( data )
-        % Return value to add to bitmask, for latched probe data.
-        if(~isempty(data))
-          irf.log('notice', 'Latched data found');
-          latchBitmask = Bits(1)*ones(size(data),'uint16');
-          % Check if any of these are data with values below limit, then
-          % use different latched bitmask.
-          latchBitmask(data<MMS_CONST.Limit.LOW_DENSITY_SATURATION) = Bits(2);
-        end
+    function sen = latched_mask(sen)
+      idx = irf_latched_idx(sen.data);
+      if ~isempty(idx)
+        sen.bitmask = bitor(sen.bitmask,...
+          MMS_CONST.Bitmask.PROBE_SATURATION);
       end
+      idx = sen.data<MMS_CONST.Limit.LOW_DENSITY_SATURATION;
+      if any(idx)
+        sen.bitmask(idx) = bitor(sen.bitmask(idx), ...
+          MMS_CONST.Bitmask.LOW_DENSITY_SATURATION);
+      end
+    end
+  end
+
+  function chk_timeline()
+    % Check that DCE time and DCV time overlap and are measured at the same
+    % time (within insturument delays). Throw away datapoint which does not
+    % overlap between DCE and DCV.
+    if isempty(DATAC.dce),
+      irf.log('warning','Empty DCE, cannot proceed')
+      return
+    end
+    % 3.8 us per channel and 7 channels between DCV (probe 1) and DCE (12).
+    % A total shift of 26600 ns is therefor to be expected, add this then
+    % convert to seconds before comparing times.
+    %[~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
+    % XXX: The above line is faster, but we cannot be sure it works, as it
+    % requires exact mathcing of integer numbers
+    [dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
+      DATAC.dcv.time+26600,int64(1000)); % tolerate 1 us jitter
+    
+    % If any datapoint don't overlap, log then remove them.
+    diff_ind = length(DATAC.dce.time) - length(dce_ind);
+    if(diff_ind)
+      logStr = sprintf('DCE was shortened by %i datapoints.',diff_ind);
+      irf.log('notice', logStr);
+      DATAC.dce.time = DATAC.dce.time(dce_ind);
+      % For loop of e12, e34, e56
+      for iSen = 1:2:numel(sensors)
+        senA = sensors{iSen};  senB = sensors{iSen+1};
+        senE = ['e' senA(2) senB(2)]; % E-field sensor
+        DATAC.dce.(senE).data = DATAC.dce.(senE).data(dce_ind);
+        DATAC.dce.(senE).bitmask = DATAC.dce.(senE).bitmask(dce_ind);
+      end
+    end
+    diff_ind = length(DATAC.dcv.time) - length(dcv_ind);
+    if(diff_ind)
+      logStr = sprintf('DCV was shortened by %i datapoints.',diff_ind);
+      irf.log('notice', logStr);
+      DATAC.dcv.time = DATAC.dcv.time(dcv_ind);
+      for iSen = 1:numel(sensors)
+        senA = sensors{iSen};
+        DATAC.dcv.(senA).data = DATAC.dcv.(senA).data(dcv_ind);
+        DATAC.dcv.(senA).bitmask = DATAC.dcv.(senA).bitmask(dcv_ind);
+      end
+    end
   end
 
   function chk_bias_guard()
@@ -294,12 +325,11 @@ end
                 senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
 
               % Add bitmask values to SenA, SenB and SenE for these ind.
-              bitBadBias = MMS_CONST.Bitmask.BAD_BIAS;
+              bits = MMS_CONST.Bitmask.BAD_BIAS;
               % Add appropriate value to bitmask, leaving other bits untouched.
-              bitsUntouched = intmax(class(DATAC.dcv.(senA).bitmask)) - bitBadBias;
-              DATAC.dcv.(senA).bitmask(indA) = bitand(DATAC.dcv.(senA).bitmask(indA), bitsUntouched) + bitBadBias;
-              DATAC.dcv.(senB).bitmask(indB) = bitand(DATAC.dcv.(senB).bitmask(indB), bitsUntouched) + bitBadBias;
-              DATAC.dce.(senE).bitmask(indE) = bitand(DATAC.dce.(senE).bitmask(indE), bitsUntouched) + bitBadBias;
+              DATAC.dcv.(senA).bitmask(indA) = bitor(DATAC.dcv.(senA).bitmask(indA), bits);
+              DATAC.dcv.(senB).bitmask(indB) = bitor(DATAC.dcv.(senB).bitmask(indB), bits);
+              DATAC.dce.(senE).bitmask(indE) = bitor(DATAC.dce.(senE).bitmask(indE), bits);
             end
           else
             irf.log('Warning',['HK_10E file was loaded, but did not contain proper values for ',...
@@ -316,11 +346,57 @@ end
     % Check if sweep is on for all probes
     % if yes, set bit in both V and E bitmask
 
-    %XXX: Does nothing at the moment
-
-    % Notes: cdf files (dcv/dce) will contain mmsX_sdp_sweepstatus (uint8)
-    % and corresponding timestamps in mmsX_sdp_epoch_sweep (tt2000)
-    % indicating if sweep is ongoing at that particular epoch time or not.
+    if isempty(DATAC.dce),
+      irf.log('warning','Empty DCE, cannot proceed')
+      return
+    end
+    
+    % XXX: FIXME this code should be deleted as soon as we get proper ver 3
+    % files
+    % mmsX_sweep_start, mmsX_sweep_stop and mmsX_sweep_swept are new as
+    % per 2015/02/12 and does not exist in older source files. If not
+    % found abort with log message, not with error.
+    varPref = sprintf('mms%d_sweep_', DATAC.scId);
+    if ~isfield(DATAC.dce.dataObj.data,[varPref 'start'])
+      irf.log('warning',...
+        ['Did not find DCE field ',varPref,'start. Aborting sweep check.']);
+      return
+    end
+    
+    % Get sweep status and sweep timestamp
+    sweep_start = DATAC.dce.dataObj.data.([varPref 'start']).data;
+    sweep_stop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
+    sweep_swept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    
+    % For each pair, E_12, E_34, E_56.
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen};  senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)]; % E-field sensor
+      irf.log('notice', ['Checking for sweep status on probe pair ', senE]);
+      % Locate probe pair senA and senB, sweep_swept = 1 (for pair 12),
+      % = 3 (for pair 34) and = 5 (for pair 56).
+      ind = find(sweep_swept==str2double(senA(2)));
+      sweeping = false(size(DATAC.dce.time)); % First assume no sweeping.
+      for ii = 1:length(ind)
+        % Each element in ind correspond to a sweep_start and sweep_stop
+        % with the requested probe pair. Identify which index these times
+        % correspond to in DATAC.dce.time. Each new segment, where
+        % (sweep_start<=dce.time<=sweep_stop), is added with 'or' to the
+        % previous segments.
+        sweeping = or( and(DATAC.dce.time>=sweep_start(ind(ii)), DATAC.dce.time<=sweep_stop(ind(ii))), sweeping);
+      end
+      if(any(sweeping))
+        % Set bitmask on the corresponding pair, leaving the other 16 bits
+        % untouched.
+        irf.log('notice','Sweeping found, bitmasking it.');
+        bits = MMS_CONST.Bitmask.SWEEP_DATA;
+        DATAC.dcv.(senA).bitmask(sweeping) = bitor(DATAC.dcv.(senA).bitmask(sweeping), bits);
+        DATAC.dcv.(senB).bitmask(sweeping) = bitor(DATAC.dcv.(senB).bitmask(sweeping), bits);
+        DATAC.dce.(senE).bitmask(sweeping) = bitor(DATAC.dce.(senE).bitmask(sweeping), bits);
+      else
+        irf.log('debug',['Did not find any sweep for probe pair ', senE]);
+      end % if any(sweeping)
+    end % for iSen
   end
 
   function chk_sdp_v_vals()
@@ -329,6 +405,21 @@ end
     % If not, set bit in both V and E bitmask.
     
     %XXX: Does nothing at the moment
+  end
+
+  function apply_nom_amp_corr()
+    % Apply a nominal amplitude correction factor to DCE & DCV values after
+    % cleanup but before any major processing has occured.
+    for iSen = 1:2:numel(sensors)
+      senA = sensors{iSen}; senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)];
+      logStr = sprintf('Applying nominal amplitude correction factor, %d, to probes %s, %s and %s',...
+        MMS_CONST.NominalAmpCorr, senA, senB, senE);
+      irf.log('notice',logStr);
+      DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * MMS_CONST.NominalAmpCorr;
+      DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * MMS_CONST.NominalAmpCorr;
+      DATAC.dce.(senE).data = DATAC.dce.(senE).data * MMS_CONST.NominalAmpCorr;
+    end
   end
 
   function v_from_e_and_v
@@ -350,7 +441,7 @@ end
       senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
       senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
       idxOneSig = xor(senA_off,senB_off);
-      if ~any(idxOneSig), return, end
+%      if ~any(idxOneSig), return, end
       iVA = idxOneSig & ~senA_off;
       if any(iVA),
         irf.log('notice',...
@@ -367,7 +458,21 @@ end
         DATAC.dcv.(senA).data(iVB) = DATAC.dcv.(senB).data(iVB) + ...
           NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
       end
-    end
+      % For comissioning data we will have all DCE/DCV, verify consistency.
+      idxBoth = and(~senA_off, ~senB_off);
+      if any(idxBoth)
+        irf.log('notice',...
+          sprintf('Verifying %s = (%s - %s)/NominalLength for %d data points',...
+          senE, senA, senB, sum(idxBoth)));
+        remaining = abs(NOM_BOOM_L*DATAC.dce.(senE).data(idxBoth) - ...
+          DATAC.dcv.(senA).data(idxBoth) + ...
+          DATAC.dcv.(senB).data(idxBoth));
+        if(any(remaining>MMS_CONST.Limit.DCE_DCV_DISCREPANCY))
+          irf.log('critical','Datapoints show a discrepancy between DCE and DCV!');
+          % FIXME: Bitmasking them or exit with Error?
+        end
+      end % if any(idxBoth)
+    end % for iSen
   end
 
   function init_param

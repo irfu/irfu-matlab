@@ -19,9 +19,18 @@ procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre}
-    hk_101 = mms_sdc_sdp_datamanager('hk_101');
-    if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
-      irf.log('warning','Bad hk_101 input'); return
+    if(procId ~= MMS_CONST.SDCProc.l2pre)
+      % SCpot, SITL, QL etc depend on Sunpulse (HK_101)
+      hk_101 = mms_sdc_sdp_datamanager('hk_101');
+      if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
+        irf.log('warning','Bad hk_101 input'); return
+      end
+    else
+      % L2pre, L2a etc. depend on DEFATT
+      defatt = mms_sdc_sdp_datamanager('defatt');
+      if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
+        irf.log('warning','Bad DEFATT input'); return
+      end
     end
     dce = mms_sdc_sdp_datamanager('dce');
     if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,

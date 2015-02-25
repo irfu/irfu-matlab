@@ -21,13 +21,20 @@ MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable
 MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
 
 
-MMS_CONST.MinFileVer = 2; % min version of l1b files accepted 
+MMS_CONST.MinFileVer = 3; % min version of l1b files accepted
 
 MMS_CONST.MMSids = 1:4;
 
 % Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
 MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
+
+% Angles when phase=0 (X BSC direction)
+MMS_CONST.Phaseshift.e12 = pi/6;
+MMS_CONST.Phaseshift.e34 = 2*pi/3;
+
+% Nominal Amplitude Correction factor multiplied to DCV & DCE data.
+MMS_CONST.NominalAmpCorr = 1.1;
 
 % Telemetry mode
 MMS_CONST.TmModes = {'slow','fast','brst'};
@@ -37,7 +44,9 @@ MMS_CONST.TmMode.brst = 3;
 
 % Sample rates
 MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
-MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.fast = 32; % TM mode fast & commissioning "I&T" phase
+MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
+MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
 MMS_CONST.Samplerate.brst = 8092; % Or 1024? TM mode burst
 
 % SDC process names
@@ -51,6 +60,7 @@ MMS_CONST.SDCProc.l2a   = 5;
 % Limits used in processing
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
 MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
+MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
 
 % Bitmask values; 2^(bit_number - 1):
 MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1

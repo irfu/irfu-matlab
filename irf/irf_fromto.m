@@ -28,7 +28,7 @@ else
   % Do not assume that subplots are the only children of figure
   ii = [];
   for j=1:length(SUBPLOT_HANDLES)
-  	if ~strcmp(get(SUBPLOT_HANDLES(j),'Type'),'axes'), ii = [ii j]; end
+  	if ~isgraphics(SUBPLOT_HANDLES( j ),'axes'), ii = [ii j]; end
   end
   if ~isempty(ii), SUBPLOT_HANDLES(ii) = []; clear ii, end
 end
@@ -101,7 +101,7 @@ switch fromto
     %if length(hc)>1, for ii=2:length(hc), xd=get(hc(1),'XData');minx=min([minx xd]);maxx=max([maxx xd]);clear xd;end;end
     minx=[];maxx=[];
     for ii=1:length(hc), 
-      if strcmp(get(hc(ii),'Type'),'axes') || strcmp(get(hc(ii),'Type'),'line')
+      if isgraphics(hc( ii ),'axes') || isgraphics(hc( ii ),'line')
         minx=[minx min(get(hc(ii),'xdata'))];
         maxx=[maxx max(get(hc(ii),'xdata'))];
       end

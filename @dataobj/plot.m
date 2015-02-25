@@ -1,4 +1,4 @@
-function res = plot(varargin)
+function res = plot(dobj,varargin)
 %PLOT([H], dobj, var, [comp], [options])  plot a variable 'var' in dataobj 'dobj'
 %   dobj - data object, see also CAA_LOAD
 %   var  - can be a string of variable name in data object
@@ -40,9 +40,8 @@ if isempty(ax),
 else
   create_axes = 0;
 end
-dobj=args{1};
-var_s=args{2};
-args=args(3:end);
+var_s=args{1};
+args=args(2:end);
 
 LCOMP = 3;
 
@@ -475,8 +474,8 @@ elseif flag_spectrogram
   
   if isempty(comp), comp = 1; end
   ncomp = length(comp);
-  h = zeros(1,ncomp);
-  if create_axes, ax = zeros(1, ncomp); end
+  h = gobjects(1,ncomp);
+  if create_axes, ax = gobjects(1, ncomp); end
   
   
   if ydim > 1
@@ -527,10 +526,12 @@ elseif flag_spectrogram
   % Add colorbar
   if flag_colorbar_is_on,
       i=fix(ncomp/2)+1;
-      hcb = colorbar('peer',h(i));
+      if isa(h(i),'handle'), hcb = colorbar(h(i)); % HG2
+      else hcb = colorbar('peer',h(i));
+      end
+      posCb = get(hcb,'Position');
       posAx = get(ax(i),'Position');
-	  dy = posAx(3);
-	  posCb = get(hcb,'Position');
+      dy = posAx(3);
 	  if ncomp>1,
 		  set(hcb,'Position',...
 			  [posCb(1) posCb(2)-posCb(4)*(ncomp-fix(ncomp/2)-1) ...
@@ -545,7 +546,7 @@ elseif flag_spectrogram
 			  colorbar_label=[lablaxis ' [' units ']' ];
 			  if flag_log, colorbar_label = ['Log ' colorbar_label]; end
 		  end
-		  set(hcb,'yticklabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
+		  set(hcb,'YTickLabel','0.0'); % the distance to colorlabel defined by width of 0.0 (stupid workaround to nonfunctioning automatic distance)
 		  ylabel(hcb,colorbar_label);
 		  if flag_colorbar_label_fit_to_colorbar_height_is_on
 			  irf_colorbar_fit_label_height(hcb);

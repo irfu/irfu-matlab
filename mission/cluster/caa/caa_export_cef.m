@@ -1,5 +1,5 @@
-function status = caa_export_new(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
-%CAA_EXPORT  export data to CAA CEF files
+function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
+%CAA_EXPORT_CEF  export data to CAA CEF files
 %
 % STATUS = caa_export(data_level,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 %
@@ -12,8 +12,6 @@ function status = caa_export_new(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 % STATUS = 0 means everything went OK
 %
 % See also C_EXPORT_ASCII
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):

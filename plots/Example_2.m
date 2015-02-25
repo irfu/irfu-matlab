@@ -28,7 +28,7 @@ if 1, % put to 0 if data already downloaded !!!!
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%
-% initialize figure
+%% initialize figure
 h=irf_plot(6); % 5 subplots
 irf_colormap('space');
 

@@ -1,9 +1,6 @@
 function status = irf_tm(h)
 % IRF_TM  change the time intervals for plots with several subplots
 %   h is the array with all subplot graphics handles
-%
-% $Id$
-
 
 if nargin == 0, h=gca; end
 
@@ -15,9 +12,9 @@ tlim = [];
   xl=get(hh,'XLim');
   hc=get(hh,'Children');
   for last=length(hc):-1:1
-  	if strcmp(get(hc(last),'Type'),'axes'), break, end
-  	if strcmp(get(hc(last),'Type'),'line'), break, end
-  	if strcmp(get(hc(last),'Type'),'surface'), break, end
+  	if isgraphics(hc( last ),'axes'), break, end
+  	if isgraphics(hc( last ),'line'), break, end
+  	if isgraphics(hc( last ),'surface'), break, end
   end
   try % if axes had data
       xd=get(hc(last),'XData');

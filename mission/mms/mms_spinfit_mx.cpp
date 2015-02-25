@@ -246,7 +246,7 @@ void spinfit(const int maxIt, const int minPts, const int nTerms, const double t
 {
 	// Fill output time, ts, as each fitEvery interval and default other outputs to NaN.
 	for ( int i=0; i<nSegments; i++){
-		ts[i] = (double)(i+1.0)*fitEvery + (double)t0;
+		ts[i] = (double)(i)*fitEvery + (double)t0;
 		// NaN = default for all other output
 		sdev[i] = NaN;
 		iter[i] = NaN;
@@ -471,7 +471,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     
 	// Get the number of complete segments from start of data to the end and first timestamp.
 	const double tEnd = te[nData-1];
-	int nSegments = (int)(floor((te[nData-1]-t0)/fitEvery));
+	int nSegments = (int)(floor((te[nData-1]-t0)/fitEvery)+1);
 
 	//mexPrintf("\n Calculated... nSegments: %i, t0: %f, nData: %i, tEnd: %f",nSegments,t0,nData,tEnd);
 

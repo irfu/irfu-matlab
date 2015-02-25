@@ -38,8 +38,6 @@ function varargout = c_desc(vs,v_info)
 % Examples:
 % c_desc('diE2')
 %	desc = c_desc('diE2');
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -985,6 +983,19 @@ elseif regexp(vs,'^PROBESA[1-4]p[1-4]$')==1
 	v.com = 'Probe saturation';
 	v.file = 'mEFW';
 	v.file_old = 'mFDM';
+	v.quant = 'probesa';
+	v.lev = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Saturation due to probe shadow for SAA=90 deg
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+elseif regexp(vs,'^SAASA(SE|DI)[1-4]$')==1
+	v.data = 0;
+	v.cl_id = vs(end);
+	v.sen = '';
+	v.inst = 'EFW';
+  if vs(6)=='S', sTmp = 'Single ended'; else sTmp = 'Differential'; end
+	v.com = ['Saturation due to high SAA (' sTmp ' signals)'];
+	v.file = 'mEFW';
 	v.quant = 'probesa';
 	v.lev = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
