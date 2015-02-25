@@ -253,7 +253,7 @@ for dd = 1:length(dirs)
               irf_log('load',msg)
           end
           % Load P12/32
-          if exist('./mEDSI.mat')
+          if exist('./mEDSI.mat','file')
               pnosfit = 12;
               ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
               if isempty(ret)
