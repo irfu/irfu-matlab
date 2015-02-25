@@ -128,7 +128,7 @@ for i=1:nargin-1
         irf.log('notice', ['HK_10E input file: ', ...
             HK_10E_File]);
 
-    elseif regexpi(fileIn, '_dcv_') %DCV
+    elseif regexpi(fileIn, '_dcv\d{0,3}_') % _dcv_ or _dcv32_ or _dcv128_
         if ~isempty(DCV_File)
             err_str = ['Received multiple DC V files in input (',...
                 DCV_File, ', ', varargin{i} ')'];
@@ -138,7 +138,7 @@ for i=1:nargin-1
         DCV_File = varargin{i};
         irf.log('notice', ['DCV input file: ', DCV_File]);
         
-    elseif regexpi(fileIn, '_dce_') % DCE
+    elseif regexpi(fileIn, '_dce\d{0,3}_') % _dce_ or _dce32_ or _dce128_
         if ~isempty(DCE_File)
             err_str = ['Received multiple DC E files in input (',...
                 DCE_File, ', ', varargin{i} ')'];
