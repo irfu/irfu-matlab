@@ -68,7 +68,7 @@ if ( data_level <= 0 || data_level > 3 )
    error('Incorrect level of data.')
 end
 
-if ~isempty(intersect(spacecraft_id,1:4))
+if isempty(intersect(spacecraft_id,1:4))
    error('Wrong spacecraft ID given.')
 end
 
