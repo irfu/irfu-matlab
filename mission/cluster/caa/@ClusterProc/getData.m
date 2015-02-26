@@ -2834,6 +2834,9 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     for iProbe = pList'
       if all(isnan(P.(probeS(iProbe)))), pList(pList==iProbe) = []; end %#ok<AGROW>
     end
+    if isempty(pList)
+      irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
+    end
     ps = sprintf('%d',pList);
     Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps])
     p = [tComb, irf.nanmean([P.p1; P.p2; P.p3; P.p4])']; %#ok<NASGU>
