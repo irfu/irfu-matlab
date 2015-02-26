@@ -30,10 +30,16 @@ classdef TimeVar
       if  nargin > 0
         if nargin<2, error('2 inputs required'), end
         if ~isa(t,'GenericTimeArray')
-          error('T must be of GenericTimeArray type or derived from it')
+          error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+            'T must be of GenericTimeArray type or derived from it')
         end
+        if ~isnumeric(data)
+          error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+            'DATA must be numeric')
+        end  
         if size(data,1) ~= t.length()
-          error('T and DATA must have the same number of records')
+          error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+            'T and DATA must have the same number of records')
         end
         obj.data_ = data; obj.t_ = t;
       else obj.data_ = []; obj.t_ = [];
@@ -51,16 +57,19 @@ classdef TimeVar
     function obj = set.data(obj,value)
       if all(size(value) == size(obj.data_)), obj.data_ = value;
       else
-        error('size of DATA cannot be changed')
+        error('irf:GenericTimeArray:setdata:badInputs',...
+          'size of DATA cannot be changed')
       end
     end
     
     function obj = set.t(obj,value)
       if ~isa(t,'GenericTimeArray')
-        error('T must be of GenericTimeArray type or derived from it')
+        error('irf:GenericTimeArray:sett:badInputs',...
+          'T must be of GenericTimeArray type or derived from it')
       end
       if value.length() ~= obj.length()
-        error('T must have the same number of records')
+        error('irf:GenericTimeArray:sett:badInputs',...
+          'T must have the same number of records')
       end
       obj.t_ = value;
     end
