@@ -1,11 +1,11 @@
-classdef TimeVar
-  %TimeVar Generic time dependent variable
+classdef TSeries
+  %TSeries Generic time dependent variable
   %   Time varibale has 2 fields: T - time [GenericTimeArray] and DATA 
   %
-  %   a = TimeVar(t,data)
+  %   a = TSeries(t,data)
   %
   %  Example:
-  %  a = TimeVar(EpochUnix(iso2epoch('2002-03-04T09:30:00Z')+(0:3)),(1:4)')
+  %  a = TwEpochUnix(iso2epoch('2002-03-04T09:30:00Z')+(0:3)),(1:4)')
   
   
 % ----------------------------------------------------------------------------
@@ -26,7 +26,7 @@ classdef TimeVar
   end
   
   methods
-    function obj = TimeVar(t,data,varargin)
+    function obj = TSeries(t,data,varargin)
       if  nargin > 0
         if nargin<2, error('2 inputs required'), end
         if ~isa(t,'GenericTimeArray')
