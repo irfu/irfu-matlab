@@ -149,6 +149,9 @@ classdef TSeries
         end
       end
       
+      % XXX: TODO Validate if we have non-empty Representation set for
+      % number of dimensions corresponding to tensor order
+      
       function [ok,msg] = validate_representation(x)
         ok = ''; msg = '';
         sDim = size(obj.data,iDim);
