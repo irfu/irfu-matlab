@@ -16,6 +16,8 @@ classdef TSeries
   %           SphericalColatitude -> rtp
   %             SphericalLatitude -> rlp
   %                   Cylindrical -> rpz
+  %      See: Cluster Metadata Dictionary at
+  %           http://caa.estec.esa.int/caa/doc_format_meta.xml
   %
   %  Example:
   %
