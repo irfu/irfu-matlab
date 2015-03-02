@@ -159,8 +159,10 @@ switch action
 								irf.log('error',errStr)
 								error('IRF:dataobj:dataobj:functionNotImplemented',errStr) %#ok<SPERR>
               else
-								unixEpochTmp = toEpochUnix(EpochTT2000(data{iVar(i)}));
-								data{iVar(i)} = unixEpochTmp.epoch;
+                if ~isempty(data{iVar(i)})
+                  unixEpochTmp = toEpochUnix(EpochTT2000(data{iVar(i)}));
+                  data{iVar(i)} = unixEpochTmp.epoch;
+                end
 							end
 							timeVariable = info.Variables{iVar(i),1};
 							update_variable_attributes_time;
