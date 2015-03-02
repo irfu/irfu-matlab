@@ -37,14 +37,16 @@ MMS_CONST.Phaseshift.e34 = 2*pi/3;
 MMS_CONST.NominalAmpCorr = 1.1;
 
 % Telemetry mode
-MMS_CONST.TmModes = {'slow','fast','brst'};
+MMS_CONST.TmModes = {'slow','fast','brst', 'comm'};
 MMS_CONST.TmMode.slow = 1; % Number must corrspond to position in the list
 MMS_CONST.TmMode.fast = 2;
 MMS_CONST.TmMode.brst = 3;
+MMS_CONST.TmMode.comm = 4; % Commissioning data.
 
 % Sample rates
 MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
-MMS_CONST.Samplerate.fast = 32; % TM mode fast & commissioning "I&T" phase
+MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
 MMS_CONST.Samplerate.brst = 8092; % Or 1024? TM mode burst
