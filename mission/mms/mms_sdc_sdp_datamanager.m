@@ -62,6 +62,21 @@ if strcmpi(param, 'init')
     irf.log('critical', errStr); error(errStr);
   else DATAC.procId = dataObj.procId;
   end
+  if( ~isfield(dataObj,'samplerate') )
+    % Normal operations, samplerate identified from TmMode
+    if(~isfield(MMS_CONST.Samplerate,MMS_CONST.TmModes{DATAC.tmMode}))
+      irf.log('warning', ['init_struct.samplerate not specified,'...
+        'nor found in MMS_CONST for ',MMS_CONST.TmModes{DATAC.tmMode}]);
+      irf.log('warning', ['Defaulting samplerate to ', MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
+      DATAC.samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
+    else
+      % Automatic, determined by tmMode.
+      DATAC.samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode});
+    end
+  else
+    % Commissioning, sample rate identified previously.
+    DATAC.samplerate = dataObj.samplerate;
+  end
   DATAC.dce = [];
   DATAC.dce_xyz_dsl = [];
   DATAC.dcv = [];
@@ -252,8 +267,12 @@ end
     % XXX: The above line is faster, but we cannot be sure it works, as it
     % requires exact mathcing of integer numbers
     [dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
-      DATAC.dcv.time+26600,int64(1000)); % tolerate 1 us jitter
-    
+      DATAC.dcv.time+26600,int64(40000)); % tolerate 40 us jitter
+    % Highest bitrate is to be 8192 samples/s, which correspond to about
+    % 122 us between consecutive measurements. The maximum theoretically
+    % allowed jitter would be half of this (60us) for the dcv & dce
+    % measurements to be completely unambiguous, use 1/3 margin on this.
+
     % If any datapoint don't overlap, log then remove them.
     diff_ind = length(DATAC.dce.time) - length(dce_ind);
     if(diff_ind)
@@ -523,6 +542,7 @@ end
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
       case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
+      case MMS_CONST.TmMode.comm, dtNominal = [0.500, 1.250, 2.500, 5.000];
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)

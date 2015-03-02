@@ -32,16 +32,13 @@ switch procId
     
     % FIXME: see what signals do we actually have
 
-    tmMode = mms_sdc_sdp_datamanager('tmMode');
-    switch tmMode
-      case {MMS_CONST.TmMode.slow, MMS_CONST.TmMode.fast, MMS_CONST.TmMode.brst}
-        % Filter window size, default 20 s * Samplerate = 160 samples (slow),
-        % 640 samples (fast), 163'840 samples (brst).
-        windowSize = MMS_CONST.Samplerate.(MMS_CONST.TmModes{tmMode})*filterInterval;
-      otherwise
-        errStr = 'Unrecognized tmMode';
-        irf.log('critical', errStr); error(errStr);
+    samplerate = mms_sdc_sdp_datamanager('samplerate');
+    if isnumeric(samplerate) && numel(samplerate)==1 && samplerate==MMS_CONST.Error,
+      irf.log('warning','Unknown samplerate input'); return
     end
+    % Filter window size, default 20 s * Samplerate = 160 samples (slow),
+    % 640 samples (fast), 163'840 samples (brst).
+    windowSize = samplerate*filterInterval;
     % Create filter coefficients for moving average filter.
     a = 1; b = (1/windowSize)*ones(1,windowSize);
     % Apply moving average filter (a,b) on spin plane probes 1, 2, 3 & 4.
