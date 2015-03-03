@@ -60,7 +60,8 @@ classdef mms_edp_Sweep
         obj.sweep.data.([obj.varPref '_sweep_stop']).data(iSweep)]);
       [idx, epoch] = EpochTT2000(obj.sweep.data.Epoch.data).tlim(lim);
       p1 = obj.sweep.data.([obj.varPref '_sweep_swept']).data(iSweep);
-      p2 = p1 + 1;
+      % The "other probe" is the other probe in the pair 1-2, 3-4, 5-6
+      if fix(p1/2)*2==p1, p2 = p1 - 1; else p2 = p1 + 1; end
       s1 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p1);
       s2 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p2);
       [idxBias,eBias] = EpochTT2000(obj.sweep.data.epoch_sweepsamp.data).tlim(lim);
