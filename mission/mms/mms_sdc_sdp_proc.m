@@ -223,7 +223,7 @@ switch procId
   case MMS_CONST.SDCProc.scpot
     % Verify inputs
     if isempty(DCV_File)
-      errStr = ['missing reqired input for ' procName ': DCV_File'];
+      errStr = ['missing required input for ' procName ': DCV_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
@@ -262,7 +262,7 @@ switch procId
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     % Check if have all the necessary input
     if isempty(DCE_File)
-      errStr = ['missing reqired input for ' procName ': DCE_File'];
+      errStr = ['missing required input for ' procName ': DCE_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
@@ -280,7 +280,7 @@ switch procId
     if(procId == MMS_CONST.SDCProc.l2pre)
       % Defatt file => phase
       if isempty(DEFATT_File)
-        errStr = ['missing reqired input for ' procName ': DEFATT_File'];
+        errStr = ['missing required input for ' procName ': DEFATT_File'];
         irf.log('critical',errStr)
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
@@ -290,7 +290,7 @@ switch procId
     else
       % HK101 file => phase
       if isempty(HK_101_File)
-        errStr = ['missing reqired input for ' procName ': HK_101_File'];
+        errStr = ['missing required input for ' procName ': HK_101_File'];
         irf.log('critical',errStr)
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
@@ -314,7 +314,7 @@ switch procId
   case {MMS_CONST.SDCProc.l2a}
     % L2A process with L2Pre file as input
     if isempty(L2Pre_File)
-      errStr = ['missing reqired input for ' procName ': L2Pre_File'];
+      errStr = ['missing required input for ' procName ': L2Pre_File'];
       irf.log('critical',errStr)
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
     end
