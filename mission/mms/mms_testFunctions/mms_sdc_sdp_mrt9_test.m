@@ -1,7 +1,7 @@
 %% Init
-%data_root='/data/mms/MRT9';
+data_root='/data/mms/MRT9';
 %data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
-data_root='/home/thoni/MMS/MMS_cdf/MRT9';
+%data_root='/home/thoni/MMS/MMS_cdf/MRT9';
 
 if ismac,
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
