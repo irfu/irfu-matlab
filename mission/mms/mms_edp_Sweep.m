@@ -27,15 +27,15 @@ classdef mms_edp_Sweep
       if nargin==0, 
         obj.nSweeps = []; obj.sweep = []; obj.varPref = ''; return
       end
-      if ~regexp(fileName,'^mms[1-4]_edp_srvy_l1b_sweeps_')
+      if isempty(regexp(fileName,'mms[1-4]_edp_srvy_l1b_sweeps_', 'once'))
         msg = 'File name must be mms[1-4]_edp_srvy_l1b_sweeps_*.cdf';
         irf.log('critical',msg),error(msg)
       end
-      obj.varPref = ['mms' fileName(4)];
       obj.sweep = dataobj(fileName,'KeepTT2000');
       if isempty(obj.sweep),
         msg = 'No data loaded'; irf.log('critical',msg),error(msg)
       end
+      obj.varPref = lower(obj.sweep.GlobalAttributes.Source_name{:}(1:4));
       obj.nSweeps = obj.sweep.data.([obj.varPref '_sweep_start']).nrec;
     end
     
@@ -83,8 +83,8 @@ classdef mms_edp_Sweep
       else
         plot(h,s1,biasRes1,c(p1),s2,biasRes2,[c(p2) '--']);
       end
-      yl = h.YLim; h.YLim = yl*1.05;
-      t=title(h,[obj.varPref ' ' toUtc(lim(1),1)]); t.FontSize=8;
+      yl = get(h,'YLim'); set(h,'YLim',yl*1.05);
+      t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]); set(t,'FontSize',8);
       ylabel(h,...
         ['Bias [' getunits(obj.sweep,[obj.varPref '_sweep_bias1']) ']'])
       xlabel(h,...
