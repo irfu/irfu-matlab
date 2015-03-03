@@ -33,7 +33,7 @@ if(strcmp(sci_or_ancillary,'sci'))
     pos = strfind(filename,'_');
     if length(pos)<5
         irf.log('warning',...
-            ['mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.']);
+            'mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.');
     end
 
     
