@@ -21,23 +21,22 @@ switch lower(sci_or_ancillary)
     % data folder structure. (if not "HK" then "science" folder, mms1 folder,
     % instrument folder, mode folder, datalevel folder, start time (as year and
     % day of year) folder.
-    % 
-    
-    irf.log('debug',...
-        ['mms_sdc_sdp_cdf_in_process received input filename: ', ...
-        fullFilename]);
-    
-    filenameData = [];
-    
+    irf.log('notice',...
+      ['mms_sdc_sdp_cdf_in_process received input filename: ', ...
+      fullFilename]);
+    if(~exist(fullFilename,'file'))
+      irf.log('critical', ...
+        ['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
+      error('MATLAB:SDCcode','184');
+    end
     [~, filename, ~] = fileparts(fullFilename); 
-    
     pos = strfind(filename,'_');
     if length(pos)<5
         irf.log('warning',...
             'mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.');
     end
 
-    
+    filenameData = [];
     filenameData.scId = filename(1:pos(1)-1);
     filenameData.instrumentId = filename(pos(1)+1:pos(2)-1);
     filenameData.tmMode = filename(pos(2)+1:pos(3)-1);
@@ -48,33 +47,19 @@ switch lower(sci_or_ancillary)
     % Also store the filename, used as Parents reference for output files.
     filenameData.filename = filename;
 
-    switch(length(filenameData.startTime))
+    lST = length(filenameData.startTime);
+    if lST == 14, % = yyyymmddhhmmss, fine
+    elseif lST<14 && lST>7
         % If length has been shortened, padd it so we can find day of year and
         % proper startTime.
-        case 8 % = yyyymmdd
-            filenameData.startTime = [filenameData.startTime,'000000'];
-        case 9 % = yyyymmddh ?
-            filenameData.startTime = [filenameData.startTime,'00000'];
-        case 10 % = yyyymmddhh
-            filenameData.startTime = [filenameData.startTime,'0000'];
-        case 11 % = yyyymmddhhm
-            filenameData.startTime = [filenameData.startTime,'000'];
-        case 12 % = yyyymmddhhmm
-            filenameData.startTime = [filenameData.startTime,'00'];
-        case 13 % = yyyymmddhhmms
-            filenameData.startTime = [filenameData.startTime,'0'];
-        case 14 % = yyyymmddhhmmss, fine
-        otherwise
-            % Something went wrong in reading startTime from filename.
-            irf.log('warning',...
-                'mms_sdc_sdp_cdf_process something went wrong in reading startTime from filename input.');
+        filenameData.startTime((lST+1):14) = '0';
+    else
+      % Something went wrong in reading startTime from filename.
+      errStr = ['unexpected format of startTime from ', fullFilename];
+      irf.log('critical', errStr);
+      error('MATLAB:MMS_SDC_SDP_CDF_IN_PROCESS:INPUTFILE', errStr);
     end
     
-    if(~exist(fullFilename,'file'))
-        irf.log('critical', ...
-            ['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
-        error('MATLAB:SDCcode','184');
-    end
     tmpDataObj = dataobj(fullFilename,'KeepTT2000');
     % Store it using the DataManager as dataType
     mms_sdc_sdp_datamanager(dataType,tmpDataObj);
@@ -87,7 +72,7 @@ switch lower(sci_or_ancillary)
 
     % FIXME: Call upon DataManager to store the values in global memory (DATAC).
 
-    irf.log('debug', ['Received input filename: ', fullFilename, ' for ancillary data.']);
+    irf.log('notice', ['Received input filename: ', fullFilename, ' for ancillary data.']);
 
     if(~exist(fullFilename,'file'))
       errStr = ['File not found. ', fullFilename];
@@ -99,12 +84,16 @@ switch lower(sci_or_ancillary)
     % last header line does. Also last line in file contain only one
     % column, "DATA_STOP". In order to import the data use textscan with
     % format specified (doesn't match "DATA_STOP") and skip all headers.
-    
+    %
     % Get number of last line with COMMENT using unix commands grep, tail and cut.
-    [~, numHeaders] = unix(['grep -onr COMMENT ',fullFilename,' | tail -n1 | cut -d'':'' -f1']);
+    if ismac
+      [~, numHeaders] = unix(['grep -onr COMMENT ',fullFilename,...
+        ' | tail -n1 | cut -d'':'' -f2']);
+    else
+      [~, numHeaders] = unix(['grep -onr COMMENT ',fullFilename,...
+        ' | tail -n1 | cut -d'':'' -f1']);
+    end
     numHeaders = str2double(numHeaders);
-    % or using AWK (not allways installed)
-    % [~, numHeaders] = unix(['awk ''$1=="COMMENT"{a=NR}END{print a}'' ',fullFilename])
     
     fileID = fopen(fullFilename, 'r');
     % DEFATT file:
