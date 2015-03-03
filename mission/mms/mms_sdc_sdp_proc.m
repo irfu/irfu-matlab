@@ -257,7 +257,7 @@ switch procId
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     % Check if have all the necessary input
@@ -309,7 +309,7 @@ switch procId
     end
     
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
 
   case {MMS_CONST.SDCProc.l2a}
     % L2A process with L2Pre file as input
@@ -324,7 +324,7 @@ switch procId
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
 
   otherwise
     errStr = 'unrecognized procId';
@@ -364,7 +364,8 @@ end
     else % Next run.
       % Increase number of sources and new parent information.
       HeaderInfo.numberOfSources = HeaderInfo.numberOfSources + 1;
-      eval(sprintf('HeaderInfo.parents_%i=''%s'';', HeaderInfo.numberOfSources, src.filename))
+      HeaderInfo.(sprintf('parents_%i', HeaderInfo.numberOfSources)) = ...
+        src.filename;
     end
   end
 

@@ -109,7 +109,7 @@ if nargin==1
   
   % Check for function fo compute param
   funcName = ['mms_sdc_sdp_comp_' param];
-  if ~( exist(funcName)==2 )
+  if ~( exist(funcName)==2 ) %#ok<EXIST>
     irf.log('warning',...
       ['Cannot find function (' funcName ') to compute param(' param ')'])
     DATAC.(param) = MMS_CONST.Error; varOut = DATAC.(param); return
@@ -190,13 +190,16 @@ switch(param)
     for iParam=1:length(hk10eParam)
       for jj=1:6
         % stub only exist if probe is 5 or 6.
-        if( ~strcmp(hk10eParam{iParam},'stub') || (strcmp(hk10eParam{iParam},'stub') && jj>=5))
-          tmpStruct = getv(dataObj,[varPrefix 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+        if( ~strcmp(hk10eParam{iParam},'stub') || ...
+            (strcmp(hk10eParam{iParam},'stub') && jj>=5))
+          tmpStruct = getv(dataObj,...
+            [varPrefix 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
           if isempty(tmpStruct)
-            errS = ['cannot get ' varPrefix 'beb' num2str(jj,'%i') hk10eParam{iParam}];
-            irf.log('warning',errS), warning(errS);
+            errS = ['cannot get ' varPrefix 'beb' num2str(jj,'%i') ...
+              hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
           else
-            eval(sprintf('DATAC.(param).beb.(hk10eParam{iParam}).v%i=tmpStruct.data;',jj));
+            DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+              tmpStruct.data;
           end
         end
       end % for jj=1:6
@@ -402,7 +405,8 @@ end
         % correspond to in DATAC.dce.time. Each new segment, where
         % (sweep_start<=dce.time<=sweep_stop), is added with 'or' to the
         % previous segments.
-        sweeping = or( and(DATAC.dce.time>=sweep_start(ind(ii)), DATAC.dce.time<=sweep_stop(ind(ii))), sweeping);
+        sweeping = or( and(DATAC.dce.time>=sweep_start(ind(ii)), ...
+          DATAC.dce.time<=sweep_stop(ind(ii))), sweeping);
       end
       if(any(sweeping))
         % Set bitmask on the corresponding pair, leaving the other 16 bits
@@ -511,7 +515,7 @@ end
     if DATAC.(param).fileVersion.major < MMS_CONST.MinFileVer
       err_str = sprintf('File too old: major version %d < %d',...
         DATAC.(param).fileVersion.major, MMS_CONST.MinFileVer);
-      irf.log('critical',err_str), error(err_str);
+      irf.log('critical',err_str), error(err_str); %#ok<SPERR>
     end
     x = getdep(dataObj,[varPrefix param '_sensor']);
     DATAC.(param).time = x.DEPEND_O.data;
