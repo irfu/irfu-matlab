@@ -1,25 +1,36 @@
 classdef mms_edp_Sweep
   %MMS_EDP_SWEEP MMS EDP Sweep
-  %   Detailed explanation goes here
+  %   
+  % To construct new object use:
+  %
+  %   obj = mms_edp_Sweep(fileName)
+  %
+  %   where fileName is a L1b sweep CDF file name
+
+% ----------------------------------------------------------------------------
+% "THE BEER-WARE LICENSE" (Revision 42):
+% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
+% can do whatever you want with this stuff. If we meet some day, and you think
+% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
+% ----------------------------------------------------------------------------
+
   
   properties (SetAccess = immutable)
     sweep
-    mmsId
     varPref
     nSweeps
   end
   
   methods
     function obj = mms_edp_Sweep(fileName)
+      % obj = mms_edp_Sweep(fileName)
       if nargin==0, 
-        obj.mmsId = []; obj.nSweeps = []; obj.sweep = []; obj.varPref = '';
-        return
+        obj.nSweeps = []; obj.sweep = []; obj.varPref = ''; return
       end
       if ~regexp(fileName,'^mms[1-4]_edp_srvy_l1b_sweeps_')
         msg = 'File name must be mms[1-4]_edp_srvy_l1b_sweeps_*.cdf';
         irf.log('critical',msg),error(msg)
       end
-      obj.mmsId = str2double(fileName(4));
       obj.varPref = ['mms' fileName(4)];
       obj.sweep = dataobj(fileName,'KeepTT2000');
       if isempty(obj.sweep),
@@ -29,12 +40,19 @@ classdef mms_edp_Sweep
     end
     
     function hout = plot(obj,h,iSweep)
+      % Plot sweep
+      %
+      % hout = plot(obj,[h],iSweep)
+      % 
+      % Input: 
+      %    iSweep - sweep number in the file
+      %    h - axes handle [optional]
       if nargin==2, iSweep = h; h = []; 
       elseif ~isgraphics(h,'axes')
         msg = 'H bist be an axes handle'; irf.log('critical',msg),error(msg)
       end  
       if 1>iSweep || iSweep>obj.nSweeps || int8(iSweep)~=iSweep
-        msg = sprintf('ISWEEP must be 1..%s',obj.nSweeps);
+        msg = sprintf('ISWEEP must be 1..%d',obj.nSweeps);
         irf.log('critical',msg),error(msg) %#ok<SPERR>
       end
       lim = EpochTT2000([...
@@ -66,7 +84,7 @@ classdef mms_edp_Sweep
         plot(h,s1,biasRes1,c(p1),s2,biasRes2,[c(p2) '--']);
       end
       yl = h.YLim; h.YLim = yl*1.05;
-      t=title(h,[toUtc(lim(1),1) ' -- ' toUtc(lim(2),1)]); t.FontSize=8;
+      t=title(h,[obj.varPref ' ' toUtc(lim(1),1)]); t.FontSize=8;
       ylabel(h,...
         ['Bias [' getunits(obj.sweep,[obj.varPref '_sweep_bias1']) ']'])
       xlabel(h,...
