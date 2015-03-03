@@ -13,7 +13,7 @@ function [ outFileName ] = mms_sdc_sdp_cdf_write( HeaderInfo )
 %   created output file to its final destination (from /ENIVR.DROPBOX_ROOT/
 %   to /path/as/defined/by/	SDC Developer Guide, v1.7).
 %
-% 	See also MMS_SDC_SDP_CDF_IN_PROCESS, MMS_SDC_SDP_INIT.
+% 	See also MMS_SDC_SDP_LOAD, MMS_SDC_SDP_INIT.
 
 % Verify that we have all information requried.
 narginchk(1,1);

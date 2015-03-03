@@ -13,7 +13,7 @@ function [ varOut ] = mms_sdc_sdp_datamanager( param, dataObj )
 %  		mms_sdc_sdp_datamanager('dce',dceDataObj)
 %  		mms_sdc_sdp_datamanager('phase')
 %  
-%   	See also DATAOBJ, MMS_SDC_SDP_CDF_IN_PROCESS.
+%   	See also DATAOBJ, MMS_SDC_SDP_LOAD.
 
 narginchk(1,2); % One argument is simply retreive variable, Two arguments
 % store "dataObj" as "dataType".
