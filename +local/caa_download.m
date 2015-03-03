@@ -340,7 +340,7 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['Old intervals total        : ' num2str(nOldIntervals)])
 		irf.log('warning', ['Old intervals to remove    : ' num2str(nOldObsoleteIntervals)])
 		irf.log('warning', ['Old intervals to update    : ' num2str(nOldToUpdateInterval)])
-		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
+		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldToUpdateInterval)])
 		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
 else
