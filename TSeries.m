@@ -19,21 +19,36 @@ classdef TSeries
   %      with other independent variables of the data product, such and a 
   %      particle energy or a spectral frequency channel.
   %
-  %      Fpr more infor on representation see Cluster Metadata Dictionary
+  %      For more infor on representation see Cluster Metadata Dictionary
   %           http://caa.estec.esa.int/caa/doc_format_meta.xml
+  %
+  %  ARGS MACROs:
+  %      'vec_xyz','vec_rtp','vec_rlp','vec_rpz' - 3D vectors
+  %      'vec_xy','vec_rt'                       - 2D vectors
   %
   %  Example:
   %
   %  epoch = EpochUnix(iso2epoch('2002-03-04T09:30:00Z')+(0:3));
   %  data4x2 = [1 2; 3 4; 5 6; 7 8];
+  %  data4x3 = [1 2 3; 4 5 6; 7 8 9; 10 11 12];
   %  data4x3x3 = rand(4,3,3);
   %
-  %  % TensorOrder=1, 2 components of imcomplete vector (2D)
-  %  TsVec = TSeries(epoch,data4x2,'TensorOrder',1,'TensorBasis','xy',...
+  %  % TensorOrder=1, 2 components of 2D vector
+  %  TsVec2DXY = TSeries(epoch,data4x2,'TensorOrder',1,'TensorBasis','xy',...
   %          'repres',{'x','y'})
+  %
+  %  % Or using equvivalent macro
+  %  TsVec2DXY = TSeries(epoch,data4x2,'vec_xy')
+  %
+  %  % TensorOrder=1, 3 components of 3D vector
+  %  TsVec3DRTP = TSeries(epoch,data4x3,'vec_rtp')
+  %
+  %  % TensorOrder=1, 2 components (x,z) of incomplete 3D vector
+  %  TsVec3DXZ = TSeries(epoch,data4x2,'TensorOrder',1,'TensorBasis','xyz',...
+  %          'repres',{'x','z'})
   %  
   %  % TensorOrder=2, 3x3 components of tensor (3D, default basis=xyz)
-  %  TsTen = TSeries(epoch,data4x3x3,'TensorOrder',2,...
+  %  TsTen3D = TSeries(epoch,data4x3x3,'TensorOrder',2,...
   %          'repres',{'x','y','z'},'repres',{'x','y','z'})
   %
   %  % TensorOrder=1, 3 energies x 3 components of vector (3D, spherical)
@@ -107,6 +122,30 @@ classdef TSeries
       while ~isempty(args)
         x = args{1}; args(1) = [];
         switch lower(x)
+          case {'vec_xyz','vec_rtp','vec_rlp','vec_rpz'}
+            if ndims(obj.data_)>2, %#ok<ISMAT>
+              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+                'DATA has more than 2 dimentions (needed for 3D vec)')
+            elseif size(obj.data_,2)~=3
+              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+                'size(DATA,2) must be 3 for 3D vec')
+            end
+            obj.tensorOrder_ = 1; flagTensorOrderSet = true;
+            [~,iB] = intersect(obj.BASIS,x(5:7));
+            obj.tensorBasis_ = iB; flagTensorBasisSet = true;
+            obj.representation{2} = {x(5), x(6), x(7)};
+          case {'vec_xy','vec_rt'}
+            if ndims(obj.data_)>2, %#ok<ISMAT>
+              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+                'DATA has more than 2 dimentions (needed for 2D vec)')
+            elseif size(obj.data_,2)~=2
+              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+                'size(DATA,2) must be 2 for 2D vec')
+            end
+            obj.tensorOrder_ = 1; flagTensorOrderSet = true;
+            [~,iB] = intersect(obj.BASIS,x(5:6));
+            obj.tensorBasis_ = iB; flagTensorBasisSet = true;
+            obj.representation{2} = {x(5), x(6)};
           case {'to','tensororder'}
             if flagTensorOrderSet
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
