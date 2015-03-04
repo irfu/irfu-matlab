@@ -51,7 +51,7 @@ classdef TSeries
   properties (Access=protected)
     data_
     t_ % GenericTimeArray
-    rep_
+    fullDim_
     tensorOrder_ = 0;
     tensorBasis_ = '';
   end
@@ -96,7 +96,7 @@ classdef TSeries
           'T and DATA must have the same number of records')
       end
       obj.data_ = data; obj.t_ = t;
-      obj.rep_ = cell(ndims(data),1);
+      obj.fullDim_ = cell(ndims(data),1);
       obj.representation = cell(ndims(data),1); iDim = 1;
       if ~isempty(obj.t_)
         obj.representation{iDim} = obj.t_; iDim = iDim + 1;
@@ -176,7 +176,7 @@ classdef TSeries
             else
               [ok,msg] = validate_representation(y);
               if ~isempty(ok),
-                obj.rep_{iDim}=ok; obj.representation{iDim} = y;
+                obj.fullDim_{iDim}=ok; obj.representation{iDim} = y;
                 iDim = iDim + 1;
               else
                 error('irf:GenericTimeArray:GenericTimeArray:badInputs',msg)
@@ -193,7 +193,7 @@ classdef TSeries
       % number of dimensions corresponding to tensor order
       
       function [ok,msg] = validate_representation(x)
-        ok = ''; msg = '';
+        ok = []; msg = '';
         sDim = size(obj.data,iDim); tb = obj.BASIS{obj.tensorBasis_};
         if sDim>length(tb),
           msg = sprintf(...
@@ -223,8 +223,8 @@ classdef TSeries
         s = unique(s); 
         c = length((intersect(tb,s)));
         if c == 0, msg = sprintf('Unrecognized representation');
-        elseif length(s) == c, ok = 1; % complete dim
-        elseif length(s) < c, ok = -1; % incomplete dim
+        elseif length(s) == c, ok = true; % complete dim
+        elseif length(s) < c, ok = false; % incomplete dim
         elseif length(s) > c
           d = setdiff(s,tb); s1 = sprintf('%s',char(d)');
           msg = sprintf(...
