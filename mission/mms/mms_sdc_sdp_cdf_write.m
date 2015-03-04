@@ -1,19 +1,19 @@
-function [ outFileName ] = mms_sdc_sdp_cdf_writing_2( HeaderInfo )
+function [ outFileName ] = mms_sdc_sdp_cdf_write( HeaderInfo )
 % MMS_SDC_SDP_CDF_WRITING writes the data to the corresponding CDF file.
 %
-%	filename_output = MMS_SDC_SDP_CDF_WRITING_2( HeaderInfo)
+%	filename_output = MMS_SDC_SDP_CDF_WRITE( HeaderInfo)
 %   will write an MMS CDF file containing the data stored to a temporary 
 %   output folder defined by ENVIR.DROPBOX_ROOT. HeaderInfo contains start 
 %   time as well as information about source files ("Parents").
 %
 %   Example:
-%   filename_output = mms_sdc_sdp_cdf_writing_2(HeaderInfo);
+%   filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
 %
 %	Note 1: It is assumed that other SDC processing scripts will move the
 %   created output file to its final destination (from /ENIVR.DROPBOX_ROOT/
 %   to /path/as/defined/by/	SDC Developer Guide, v1.7).
 %
-% 	See also MMS_SDC_SDP_CDF_IN_PROCESS, MMS_SDC_SDP_INIT.
+% 	See also MMS_SDC_SDP_LOAD, MMS_SDC_SDP_INIT.
 
 % Verify that we have all information requried.
 narginchk(1,1);
@@ -55,7 +55,8 @@ if(HeaderInfo.numberOfSources==1)
 elseif(HeaderInfo.numberOfSources>=2)
   GATTRIB.Parents = {['CDF>',HeaderInfo.parents_1]}; % Add first parent
   for i=2:HeaderInfo.numberOfSources % Add each extra parent source
-    GATTRIB.Parents = [GATTRIB.Parents; {['CDF>',eval(sprintf('HeaderInfo.parents_%i',i))]}];
+    GATTRIB.Parents = [GATTRIB.Parents; {['CDF>',...
+      HeaderInfo.(sprintf('parents_%i',i))]}];
   end
 end
 GATTRIB.Logical_file_id = {outFileName};    % Filename, except '.cdf'
