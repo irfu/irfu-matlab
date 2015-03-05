@@ -4,7 +4,6 @@ classdef EpochTT2000 < GenericTimeArray
 	% EpochTT2000(t) - initialize class, where t can be:
 	%                   - vector of integer number (int64) of nanoseconds as TT2000
 	%                   - UTC string array
-	%                   - vector of seconds (double) corresponding to TT2000
 	
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -22,12 +21,6 @@ classdef EpochTT2000 < GenericTimeArray
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
         end
         obj.epoch = inp(:); % column vector
-			elseif isa(inp,'double'),
-        if min(size(inp))>1
-          error('irf:EpochTT2000:EpochTT2000:badInputsDouble',...
-            'double input must be a columt or row vector')
-        end
-        obj.epoch = int64(inp(:)*1e9); % column vector
       elseif isa(inp,'char')
         obj.epoch = parsett2000(inp);
         if obj.epoch==int64(-9223372036854775805)
