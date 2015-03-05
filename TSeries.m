@@ -73,7 +73,7 @@ classdef TSeries
   
   properties (Dependent = true)
     data
-    t
+    time
   end
   
   properties (SetAccess = immutable,Dependent = true)
@@ -133,7 +133,8 @@ classdef TSeries
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(5:7));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(5), x(6), x(7)};
+            obj.representation{2} = {x(5), x(6), x(7)}; 
+            obj.fullDim_{2} = true;
           case {'vec_xy','vec_rt'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
@@ -145,7 +146,7 @@ classdef TSeries
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(5:6));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(5), x(6)};
+            obj.representation{2} = {x(5), x(6)}; obj.fullDim_{2} = true;
           case {'to','tensororder'}
             if flagTensorOrderSet
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
@@ -277,7 +278,7 @@ classdef TSeries
       value = obj.data_;
     end
     
-    function value = get.t(obj)
+    function value = get.time(obj)
       value = obj.t_;
     end
     
@@ -294,6 +295,36 @@ classdef TSeries
       end
     end
     
+    %Components
+    function y = x(obj)
+      %access X component
+      y = getComponent(obj,'x'); if isempty(y), error('cannot get X'), end
+    end
+    function y = y(obj)
+      %access Y component
+      y = getComponent(obj,'y'); if isempty(y), error('cannot get Y'), end
+    end
+    function y = z(obj)
+      %access Z component
+      y = getComponent(obj,'z'); if isempty(y), error('cannot get Z'), end
+    end
+    function y = r(obj)
+      %access R component
+      y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
+    end
+    function y = t(obj)
+      %access T(theta) component
+      y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
+    end
+    function y = p(obj)
+      %access P(phi) component
+      y = getComponent(obj,'p'); if isempty(y), error('cannot get P'), end
+    end
+    function y = l(obj)
+      %access L(lambda) component
+      y = getComponent(obj,'l'); if isempty(y), error('cannot get L'), end
+    end
+    
     function obj = set.data(obj,value)
       if all(size(value) == size(obj.data_)), obj.data_ = value;
       else
@@ -302,7 +333,7 @@ classdef TSeries
       end
     end
     
-    function obj = set.t(obj,value)
+    function obj = set.time(obj,value)
       if ~isa(t,'GenericTimeArray')
         error('irf:GenericTimeArray:sett:badInputs',...
           'T must be of GenericTimeArray type or derived from it')
@@ -321,6 +352,61 @@ classdef TSeries
     function l = length(obj)
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
+      end
+    end
+  end
+  
+  methods (Access=protected)
+    function res = getComponent(obj,comp)
+      res = [];
+      nd = ndims(obj.data_);
+      if nd>6, return, end % we cannot support more than 5 dimensions
+      teno = obj.tensorOrder_;
+      if length(comp)~=teno, return, end
+      basis = obj.BASIS{teno};
+      if ~any(basis==comp(1)), return
+      elseif length(comp)==2 && ~any(obj.BASIS(obj.tensorBasis_)==comp(2))
+        return
+      end
+      switch obj.tensorOrder_
+        case 0, error('should no be here')
+        case 1
+          iDim = find((~cellfun(@isempty,obj.fullDim_)));
+          iComp = find_iComp(comp);
+          if isempty(iComp), return, end
+          idx = cell(nd,1);
+          for i = 1:nd
+            idx{i} = 1:size(obj.data_,i);
+            if i==iDim, idx{i} = iComp; end
+          end
+          % XXX: This is ugly, what is a better way of doing this?
+          switch nd
+            case 2, dataNew = obj.data_(idx{1},idx{2});
+            case 3, dataNew = obj.data_(idx{1},idx{2},idx{3});
+            case 4, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4});
+            case 5, dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5});
+            case 6
+              dataNew = obj.data_(idx{1},idx{2},idx{3},idx{4},idx{5},idx{6});
+            otherwise, error('should no be here')
+          end
+          args = {obj.t_,dataNew,'TensorOrder',teno,'TensorBasis',basis};
+          for i=2:nd
+            if i==iDim, args = [args {'repres',{comp}}]; %#ok<AGROW>
+            else args = [args {'repres',{}}]; %#ok<AGROW>
+            end
+          end
+          res = TSeries(args{:});
+        case 2
+          error('not implemented')
+        otherwise, error('should no be here')
+      end
+      function res = find_iComp(c)
+        rep = obj.representation{iDim}; lRep = length(rep);
+        if rep{1}==c, res = 1;
+        elseif lRep>1 && rep{2}==c, res = 2;
+        elseif lRep>2 && rep{3}==c, res = 3;
+        else res = [];
+        end
       end
     end
   end
