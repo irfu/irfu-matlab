@@ -9,8 +9,7 @@ classdef EpochCdf < GenericTimeArray
           error('irf:EpochCdf:EpochCdf:badInputs',...
             'double input (CDF epoch) must be a columt or row vector')
         end
-        if size(inp,2)~=1, inp = inp'; end % to column
-        obj.epoch = inp;
+        obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')
         if GenericTimeArray.validate_iso_time_str(inp)
           epochTmp = iso2epoch(inp);
