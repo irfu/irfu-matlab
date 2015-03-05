@@ -52,12 +52,32 @@ switch procId
 
     dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...
       'bitmask',bitmask);
+
+  case MMS_CONST.SDCProc.l2a
+    % ADC offsets should have already been applied, remainging processing
+    % full despin (from spinfits) and DSL offset.
+    dce = mms_sdc_sdp_datamanager('dce');
+    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
+      irf.log('warning','Bad dce input'); return
+    end
+    spinfits = mms_sdc_sdp_datamanager('spinfits');
+    if isnumeric(spinfits) && numel(spinfits)==1 && spinfits==MMS_CONST.Error,
+      irf.log('warning','Bad spinfits input'); return
+    end
+
+    irf.log('critical', 'DCE_XYZ_DSL calculation for L2A not performed using spinfits from L2pre. FIXME!');
+    bitmask = dce.e12.bitmask;
+    % FIXME: apply DSL offsets here
+    dce_xyz_dsl = struct('time',dce.time,'data',[dce.e12.data, dce.e34.data, dce.e56.data],...
+      'bitmask',bitmask);
+
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
-    irf.log('critical',errStr), error(errStr)
+    irf.log('critical',errStr), error(errStr);
+
   otherwise
     errStr = 'unrecognized procId';
-    irf.log('critical', errStr); error(errStr)
+    irf.log('critical', errStr); error(errStr);
 end
 
 end

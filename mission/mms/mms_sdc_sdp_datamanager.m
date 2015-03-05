@@ -211,9 +211,32 @@ switch(param)
     check_monoton_timeincrease(DATAC.(param).time);
 
   case('l2pre')
-    % L2Pre, contain dce data, spinfits, etc.
+    % L2Pre, contain dce data, spinfits, etc. for L2a processing.
     DATAC.(param) = [];
     DATAC.(param).dataObj = dataObj;
+    % Split up the various parts (spinfits, dce data [e12, e34, e56],
+    % dce bitmask [e12, e34, e56] from the l2pre file to their expected
+    % locations in DATAC. (so that remaining processing can use same syntax).
+    varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
+    varPre2 = '_spinfits_';
+    DATAC.spinfits = [];
+    sdpPair = {'e12', 'e34'};
+    for iPair=1:numel(sdpPair)
+      DATAC.spinfits.sfit.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data;
+      DATAC.spinfits.sdev.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, 'sdev_', sdpPair{iPair}]).data;
+    end
+    x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
+    DATAC.spinfits.time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.spinfits.time, 'L2Pre spinfits'); % Check our own time.
+    sensors = {'e12', 'e34', 'e56'};
+    DATAC.dce = [];
+    x = getdep(dataObj,[varPre, '_data']);
+    DATAC.dce.time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.dce.time, 'L2Pre dce'); % Check our own time.
+    for iPair=1:numel(sensors);
+      DATAC.dce.(sensors{iPair}).data = dataObj.data.([varPre, '_data']).data(:,iPair);
+      DATAC.dce.(sensors{iPair}).bitmask = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+    end
 
   otherwise
     % Not yet implemented.
