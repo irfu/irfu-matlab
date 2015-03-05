@@ -3,6 +3,10 @@ data_root='/data/mms/MRT9';
 %data_root='/Users/yuri/Dropbox (IRFU)/Projects/MMS/DataProcessing/Data/MRT9';
 %data_root='/home/thoni/MMS/MMS_cdf/MRT9';
 
+if ~exist(data_root,'dir')
+  error('DATA_ROOT(%s) does not exist',data_root)
+end
+
 if ismac,
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
   outDir = '/Users/yuri/tmp_out';
