@@ -459,9 +459,9 @@ end
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen}; senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)];
-      logStr = sprintf('Applying nominal amplitude correction factor, %d, to probes %s, %s and %s',...
-        MMS_CONST.NominalAmpCorr, senA, senB, senE);
-      irf.log('notice',logStr);
+      irf.log('notice',...
+        sprintf('Nominal amplitude factor, %.2f, to %s, %s and %s',...
+        MMS_CONST.NominalAmpCorr, senA, senB, senE));
       DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * MMS_CONST.NominalAmpCorr;
       DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * MMS_CONST.NominalAmpCorr;
       DATAC.dce.(senE).data = DATAC.dce.(senE).data * MMS_CONST.NominalAmpCorr;
