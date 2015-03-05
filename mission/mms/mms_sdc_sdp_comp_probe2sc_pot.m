@@ -26,14 +26,12 @@ switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre}
     dcv = mms_sdc_sdp_datamanager('dcv');
-    if isnumeric(dcv) && numel(dcv)==1 && dcv==MMS_CONST.Error,
-      irf.log('warning','Bad DCV input'); return
-    end
+    if mms_is_error(dcv), irf.log('warning','Bad DCV input'); return, end
     
     % FIXME: see what signals do we actually have
 
     samplerate = mms_sdc_sdp_datamanager('samplerate');
-    if isnumeric(samplerate) && numel(samplerate)==1 && samplerate==MMS_CONST.Error,
+    if mms_is_error(samplerate)
       irf.log('warning','Unknown samplerate input'); return
     end
     % Filter window size, default 20 s * Samplerate = 160 samples (slow),

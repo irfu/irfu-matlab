@@ -18,28 +18,11 @@ dce_xyz_dsl = MMS_CONST.Error;
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
-      MMS_CONST.SDCProc.l2pre}
-    if(procId ~= MMS_CONST.SDCProc.l2pre)
-      % SCpot, SITL, QL etc depend on Sunpulse (HK_101)
-      hk_101 = mms_sdc_sdp_datamanager('hk_101');
-      if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
-        irf.log('warning','Bad hk_101 input'); return
-      end
-    else
-      % L2pre, L2a etc. depend on DEFATT
-      defatt = mms_sdc_sdp_datamanager('defatt');
-      if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
-        irf.log('warning','Bad DEFATT input'); return
-      end
-    end
+      MMS_CONST.SDCProc.l2pre} 
     dce = mms_sdc_sdp_datamanager('dce');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
-      irf.log('warning','Bad dce input'); return
-    end
+    if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
     phase = mms_sdc_sdp_datamanager('phase');
-    if isnumeric(phase) && numel(phase)==1 && phase==MMS_CONST.Error,
-      irf.log('warning','Bad phase input'); return
-    end
+    if mms_is_error(phase), irf.log('warning','Bad phase input'); return, end
 
     % FIXME: add ADC offsets here
 
@@ -57,11 +40,11 @@ switch procId
     % ADC offsets should have already been applied, remainging processing
     % full despin (from spinfits) and DSL offset.
     dce = mms_sdc_sdp_datamanager('dce');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
+    if mms_is_error(dce)
       irf.log('warning','Bad dce input'); return
     end
     spinfits = mms_sdc_sdp_datamanager('spinfits');
-    if isnumeric(spinfits) && numel(spinfits)==1 && spinfits==MMS_CONST.Error,
+    if mms_is_error(spinfits)
       irf.log('warning','Bad spinfits input'); return
     end
 

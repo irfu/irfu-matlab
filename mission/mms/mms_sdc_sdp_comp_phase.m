@@ -17,31 +17,17 @@ procId = mms_sdc_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
     hk_101 = mms_sdc_sdp_datamanager('hk_101');
-    if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
-      irf.log('warning','Bad hk_101 input'); return
-    end
+    if mms_is_error(hk_101), irf.log('warning','Bad hk_101 input');return,end
     dce = mms_sdc_sdp_datamanager('dce');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
-      irf.log('warning','Bad dce input'); return
-    end
+    if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
     [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
     phase = struct('data',dcephase,'bitmask',dcephase_flag);
-  case MMS_CONST.SDCProc.l2pre
-    %XXX: this needs to be replaced with definitive attitude!!!
-    %hk_101 = mms_sdc_sdp_datamanager('hk_101');
-    %if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
-    %  irf.log('warning','Bad hk_101 input'); return
-    %end
+    
+  case {MMS_CONST.SDCProc.l2pre,MMS_CONST.SDCProc.l2a}   
     dce = mms_sdc_sdp_datamanager('dce');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
-      irf.log('warning','Bad dce input'); return
-    end
-
-    % DEFATT
+    if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
     defatt = mms_sdc_sdp_datamanager('defatt');
-    if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
-      irf.log('warning','Bad DEFATT input'); return
-    end
+    if mms_is_error(defatt),irf.log('warning','Bad DEFATT input');return,end
 
     % Every time differance is less than 180 degrees assume it wrap'ed once
     % and add 360 degrees, cumulatively.
@@ -57,22 +43,20 @@ switch procId
     [p, S, mu] = polyfit(double(defatt.time), defatt.zphase, 1);
     if (S.normr <= 5)
       % "Good" fit, ie almost constant spin rate. Use polyval.
-      [dcephase, delta] = polyval(p, double(dce.time), S, mu);
+      [dcephase, ~] = polyval(p, double(dce.time), S, mu);
       % FIXME Set bitmask to indicate phase from DEFATT and polyval, possibly
       % use delta for indicating quality of phase.
     else
       % "Bad" fit, somewhat changing spin rate. Use table lookup via
       % interp1(), linear interpolation with extrapolation.
-      dcephase = interp1(double(defatt.time), defatt.zphase, double(dce.time), 'linear', 'extrap');
+      dcephase = interp1(double(defatt.time),defatt.zphase,double(dce.time),...
+        'linear','extrap');
       % FIXME Set bitmask to indicate phase from DEFATT but with interp1.
     end
     % Then wrap to interval [0 - 360) degrees.
     dcephase = mod(dcephase, 360); % interval [0 to 360)
     dcephase_flag = zeros(size(dcephase)); % FIXME BETTER FLAG & BITMASKING!
-
-%    [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
     phase = struct('data', dcephase, 'bitmask', dcephase_flag);
-
 
   case MMS_CONST.Error
     errStr = 'mms_sdc_sdp_datamanager not properly initialized';
