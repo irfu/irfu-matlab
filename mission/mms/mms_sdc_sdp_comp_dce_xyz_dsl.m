@@ -37,17 +37,17 @@ switch procId
       irf.log('warning','Bad dce input'); return
     end
     phase = mms_sdc_sdp_datamanager('phase');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
+    if isnumeric(phase) && numel(phase)==1 && phase==MMS_CONST.Error,
       irf.log('warning','Bad phase input'); return
     end
-    
+
     % FIXME: add ADC offsets here
-    
+
     dE = mms_sdp_despin(dce.e12.data,dce.e34.data,phase.data);
-    
+
     % FIXME: need to compute from respective bitmasks
     bitmask = dce.e12.bitmask;
-    
+
     % FIXME: apply DSL offsets here 
 
     dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...

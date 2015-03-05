@@ -36,25 +36,29 @@ nBad = struct(sdpPair{1}, [],sdpPair{2}, []);
 
 procId = mms_sdc_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.l2pre}
-    % FIXME: REPLACE HK 101 with DEFATT for L2pre/L2a etc.
-    %hk_101 = mms_sdc_sdp_datamanager('hk_101');
-    %if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
-    %  irf.log('warning','Bad hk_101 input'); return
-    %end
-    defatt = mms_sdc_sdp_datamanager('defatt');
-    if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
-      irf.log('warning','Bad defatt input'); return
+  case {MMS_CONST.SDCProc.l2pre, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.sitl}
+    if( procId == MMS_CONST.SDCProc.l2pre )
+      % L2Pre use DEFATT
+      defatt = mms_sdc_sdp_datamanager('defatt');
+      if isnumeric(defatt) && numel(defatt)==1 && defatt==MMS_CONST.Error,
+        irf.log('warning','Bad defatt input'); return
+      end
+    else
+      % SITL/QL use HK_101 (sunpulses)
+      hk_101 = mms_sdc_sdp_datamanager('hk_101');
+      if isnumeric(hk_101) && numel(hk_101)==1 && hk_101==MMS_CONST.Error,
+        irf.log('warning','Bad hk_101 input'); return
+      end
     end
     dce = mms_sdc_sdp_datamanager('dce');
     if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
       irf.log('warning','Bad dce input'); return
     end
     phase = mms_sdc_sdp_datamanager('phase');
-    if isnumeric(dce) && numel(dce)==1 && dce==MMS_CONST.Error,
+    if isnumeric(phase) && numel(phase)==1 && phase==MMS_CONST.Error,
       irf.log('warning','Bad phase input'); return
     end
-    
+
     % Calculate first timestamp of spinfits to be after start of dce time 
     % and evenly divisable with fitEvery. 
     % I.e. if fitEvery = 5 s, then spinfit timestamps would be like 
@@ -104,7 +108,7 @@ switch procId
       'sdev', sdev, 'iter', iter, 'nBad', nBad);
     
   otherwise
-    irf.log('warning','Only L2Pre supported for spinfits calculation.'); return
+    irf.log('warning','Only L2Pre, QL, SITL are supported for spinfits calculation.'); return
 end
 
 end

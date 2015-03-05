@@ -21,12 +21,15 @@ function dE = mms_sdp_despin(e12,e34,phaseDeg)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
+global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+
 if ~(all(size(e12)==size(e34)) && all(size(e12)==size(phaseDeg)))
   errS = 'e12, e34 and phaseDeg must be of the same size';
   irf.log('critical',errS), error(errS)
 end
   
-phi_12 = pi/6; phi_34 = 2*pi/3; % Angles when phase=0 (X BSC direction)
+phi_12 = MMS_CONST.Phaseshift.e12;
+phi_34 = MMS_CONST.Phaseshift.e34; % Angles when phase=0 (X BSC direction)
 
 compE = (e12*exp(1i*phi_12) + e34*exp(1i*phi_34)).*exp(1i*phaseDeg*pi/180);
 dE = [real(compE) imag(compE)];
