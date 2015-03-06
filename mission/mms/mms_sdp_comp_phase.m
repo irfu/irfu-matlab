@@ -1,7 +1,7 @@
-function phase = mms_sdc_sdp_comp_phase
-%MMS_SDC_SDP_COMP_PHASE  compute phase for datamanager
+function phase = mms_sdp_comp_phase
+%MMS_SDP_COMP_PHASE  compute phase for datamanager
 %
-%  phase = mms_sdc_sdp_comp_phase()
+%  phase = mms_sdp_comp_phase()
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -13,20 +13,20 @@ function phase = mms_sdc_sdp_comp_phase
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 phase = MMS_CONST.Error;
 
-procId = mms_sdc_sdp_datamanager('procId');
+procId = mms_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql}
-    hk_101 = mms_sdc_sdp_datamanager('hk_101');
+    hk_101 = mms_sdp_datamanager('hk_101');
     if mms_is_error(hk_101), irf.log('warning','Bad hk_101 input');return,end
-    dce = mms_sdc_sdp_datamanager('dce');
+    dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
-    [dcephase, dcephase_flag] = mms_sdc_sdp_phase_2(hk_101, dce.time);
+    [dcephase, dcephase_flag] = mms_sdp_phase_2(hk_101, dce.time);
     phase = struct('data',dcephase,'bitmask',dcephase_flag);
     
   case {MMS_CONST.SDCProc.l2pre,MMS_CONST.SDCProc.l2a}   
-    dce = mms_sdc_sdp_datamanager('dce');
+    dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
-    defatt = mms_sdc_sdp_datamanager('defatt');
+    defatt = mms_sdp_datamanager('defatt');
     if mms_is_error(defatt),irf.log('warning','Bad DEFATT input');return,end
 
     % Every time differance is less than 180 degrees assume it wrap'ed once
@@ -59,7 +59,7 @@ switch procId
     phase = struct('data', dcephase, 'bitmask', dcephase_flag);
 
   case MMS_CONST.Error
-    errStr = 'mms_sdc_sdp_datamanager not properly initialized';
+    errStr = 'mms_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
   otherwise
     errStr = 'unrecognized procId';

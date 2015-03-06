@@ -1,19 +1,19 @@
-function [ varOut ] = mms_sdc_sdp_datamanager( param, dataObj )
-% mms_sdc_sdp_datamanager will store and retrive data for
-%  	mms_sdc_sdp_datamanager( dataType, dataObj ) will store
+function [ varOut ] = mms_sdp_datamanager( param, dataObj )
+% mms_sdp_datamanager will store and retrive data for
+%  	mms_sdp_datamanager( dataType, dataObj ) will store
 %  	appropriate data variables related to dataType in the global variable
 %  	DATAC for later retrival.
 %  
-%   [varOut] = mms_sdc_sdp_datamanager( variable ) will return the variable
+%   [varOut] = mms_sdp_datamanager( variable ) will return the variable
 %   requested to varOut, if no such variable has been created already it
 %   will try and calculate it using the stored data.
 %   
 %  	Example:
 %
-%  		mms_sdc_sdp_datamanager('dce',dceDataObj)
-%  		mms_sdc_sdp_datamanager('phase')
+%  		mms_sdp_datamanager('dce',dceDataObj)
+%  		mms_sdp_datamanager('phase')
 %  
-%   	See also DATAOBJ, MMS_SDC_SDP_LOAD.
+%   	See also DATAOBJ, MMS_SDP_LOAD.
 
 narginchk(1,2); % One argument is simply retreive variable, Two arguments
 % store "dataObj" as "dataType".
@@ -92,9 +92,9 @@ if strcmpi(param, 'init')
 end
 
 if ~isfield(DATAC, 'scId')
-  errStr = 'Data mamager not initialized! Run: mms_sdc_sdp_datamanager(''init'',init_struct)';
+  errStr = 'Data mamager not initialized! Run: mms_sdp_datamanager(''init'',init_struct)';
   irf.log('critical', errStr);
-  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+  error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
 end
 
 % If one input is give, we give the parameter back if it is already there,
@@ -108,7 +108,7 @@ if nargin==1
   if ~isempty(DATAC.(param)), varOut = DATAC.(param); return, end
   
   % Check for function fo compute param
-  funcName = ['mms_sdc_sdp_comp_' param];
+  funcName = ['mms_sdp_comp_' param];
   if ~( exist(funcName)==2 ) %#ok<EXIST>
     irf.log('warning',...
       ['Cannot find function (' funcName ') to compute param(' param ')'])
@@ -132,14 +132,14 @@ elseif isstruct(dataObj) && strcmp(param, 'defatt')
 else
   errStr = 'Unrecognized input argument';
   irf.log('critical', errStr);
-  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+  error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
 end
 
 if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
   % Error, Warning or Notice for replacing the data variable?
   errStr = ['replacing existing variable (' param ') with new data'];
   irf.log('critical', errStr);
-  error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+  error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
 end
 
 varPrefix = sprintf('mms%d_edp_',DATAC.scId);
@@ -242,7 +242,7 @@ switch(param)
     % Not yet implemented.
     errStr = [' unknown parameter (' param ')'];
     irf.log('critical',errStr);
-    error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', errStr);
+    error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
 end
 
   function chk_latched_p()
@@ -524,9 +524,9 @@ end
   function init_param
     DATAC.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
-      err_str = 'MMS_SDC_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+      err_str = 'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
       irf.log('warning', err_str);
-      %error('MATLAB:MMS_SDC_SDP_DATAMANAGER:INPUT', err_str);
+      %error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
     end
     DATAC.(param).dataObj = dataObj;
     fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
@@ -612,7 +612,7 @@ end
       end
     else
       % TODO: implements some smart logic.
-      errS = 'MMS_SDC_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
+      errS = 'MMS_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
       irf.log('critical', errS); error(errS);
     end
   end
@@ -625,7 +625,7 @@ function check_monoton_timeincrease(time, dataType)
 if(any(diff(time)<=0))
         err_str = ['Time is NOT increasing for the datatype ', dataType];
         irf.log('critical', err_str);
-        error('MATLAB:MMS_SDC_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
+        error('MATLAB:MMS_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
 end
 
 end

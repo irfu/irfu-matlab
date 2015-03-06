@@ -1,5 +1,5 @@
-function [phase, flag, pulse, period, period_flag] = mms_sdc_sdp_phase_2(sps, epoch)
-% MMS_SDC_SDP_PHASE_2 takes sun pulse data (from HK 101) and
+function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
+% MMS_SDP_PHASE_2 takes sun pulse data (from HK 101) and
 % return an array of spin phases (degrees) for each input time epoch
 % (TT2000).
 %
@@ -52,9 +52,9 @@ function [phase, flag, pulse, period, period_flag] = mms_sdc_sdp_phase_2(sps, ep
 % written by Ken Bromund, NASA, 2014 for the MMS mission.
 %
 % Example:
-%  [dcephase, dcephase_flag] = MMS_SDC_SDP_PHASE_2(DataInMemory.hk_101, DataInMemory.dce.time);
+%  [dcephase, dcephase_flag] = MMS_SDP_PHASE_2(DataInMemory.hk_101, DataInMemory.dce.time);
 %
-% See also MMS_SDC_SDP_DATAMANAGER.
+% See also MMS_SDP_DATAMANAGER.
 
 
 % Verify number of inputs and outputs
@@ -451,7 +451,7 @@ if(length(sigIn)<width || width<1 || mod(width,2)==0 || floor(width)~=width)
     % Incorrect input arguments.
     err_str = 'Wrong input(-s) to IDL_MEDIAN';
     irf.log('critical', err_str);
-    error('MATLAB:MMS_SDC_SDP_PHASE_IDLCONVERTED:IDL_MEDIAN:INPUT', err_str);
+    error('MATLAB:MMS_SDP_PHASE_2:IDL_MEDIAN:INPUT', err_str);
 end
 
 % Preallocate output
