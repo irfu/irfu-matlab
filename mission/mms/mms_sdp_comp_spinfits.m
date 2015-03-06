@@ -1,4 +1,4 @@
-function fits = mms_sdc_sdp_comp_spinfits
+function fits = mms_sdp_comp_spinfits
 % Function to calculate spinfits from data found in datamanager (DATAC).
 %
 % output: fits     - struct with the following fields
@@ -34,12 +34,12 @@ sdev = struct(sdpPair{1}, [],sdpPair{2}, []);
 iter = struct(sdpPair{1}, [],sdpPair{2}, []);
 nBad = struct(sdpPair{1}, [],sdpPair{2}, []);
 
-procId = mms_sdc_sdp_datamanager('procId');
+procId = mms_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.l2pre, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.sitl}
-    dce = mms_sdc_sdp_datamanager('dce');
+    dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
-    phase = mms_sdc_sdp_datamanager('phase');
+    phase = mms_sdp_datamanager('phase');
     if mms_is_error(phase),irf.log('warning','Bad phase input'); return,end
 
     % Calculate first timestamp of spinfits to be after start of dce time 

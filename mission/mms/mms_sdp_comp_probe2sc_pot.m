@@ -1,7 +1,7 @@
-function probe2sc_pot = mms_sdc_sdp_comp_probe2sc_pot(filterInterval)
-%MMS_SDC_SDP_COMP_PROBE2SC_POT  compute PROBE2SC_POT for datamanager
+function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
+%MMS_SDP_COMP_PROBE2SC_POT  compute PROBE2SC_POT for datamanager
 %
-%  probe2sc_pot = mms_sdc_sdp_comp_probe2sc_pot(filterInterval)
+%  probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 %
 %  Compute probe-to-spacecraft potential averaged from several probes using
 %  the mean value of moving average filtered data over filterInterval (in
@@ -21,16 +21,16 @@ if nargin==0,  filterInterval = 20; end
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 probe2sc_pot = MMS_CONST.Error;
 
-procId = mms_sdc_sdp_datamanager('procId');
+procId = mms_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre}
-    dcv = mms_sdc_sdp_datamanager('dcv');
+    dcv = mms_sdp_datamanager('dcv');
     if mms_is_error(dcv), irf.log('warning','Bad DCV input'); return, end
     
     % FIXME: see what signals do we actually have
 
-    samplerate = mms_sdc_sdp_datamanager('samplerate');
+    samplerate = mms_sdp_datamanager('samplerate');
     if mms_is_error(samplerate)
       irf.log('warning','Unknown samplerate input'); return
     end
@@ -112,7 +112,7 @@ switch procId
     probe2sc_pot = struct('time',dcv.time,'data',avPot,'bitmask',bitmask);
     
   case MMS_CONST.Error
-    errStr = 'mms_sdc_sdp_datamanager not properly initialized';
+    errStr = 'mms_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
   otherwise
     errStr = 'unrecognized procId';

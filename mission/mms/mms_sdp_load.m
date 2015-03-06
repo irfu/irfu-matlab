@@ -1,17 +1,17 @@
-function filenameData = mms_sdc_sdp_load( fullFilename, sci_or_ancillary, dataType )
-% MMS_SDC_SDP_LOAD reads a MMS CDF files or ancillary data files
-% and store them in memory using the MMS_SDC_SDP_DATAMANAGER.
-%	MMS_SDC_SDP_LOAD( fullFilename, sci_or_ancillary, datatype) 
+function filenameData = mms_sdp_load( fullFilename, sci_or_ancillary, dataType )
+% MMS_SDP_LOAD reads a MMS CDF files or ancillary data files
+% and store them in memory using the MMS_SDP_DATAMANAGER.
+%	MMS_SDP_LOAD( fullFilename, sci_or_ancillary, datatype) 
 %   read the CDF file or (Ancillary ASCII?) found as fullFilename and send
 %   the data along to the DATAMANAGER to be stored as datatype. And return
 %   some decoded information about the file in filenameData.
 %
 %	Example:
-%		filenameData = mms_sdc_sdp_load(...
+%		filenameData = mms_sdp_load(...
 %     '/full/path/2015/04/10/mms2_sdp_fast_l1b_20150410_v0.0.0.cdf',...
 %     'sci', 'dce');
 %
-% 	See also MMS_SDC_SDP_PROC, MMS_SDC_SDP_DATAMANAGER.
+% 	See also MMS_SDP_PROC, MMS_SDP_DATAMANAGER.
 
 narginchk(2,3);
 
@@ -22,18 +22,18 @@ switch lower(sci_or_ancillary)
     % instrument folder, mode folder, datalevel folder, start time (as year and
     % day of year) folder.
     irf.log('notice',...
-      ['MMS_SDC_SDP_LOAD received input filename: ', ...
+      ['MMS_SDP_LOAD received input filename: ', ...
       fullFilename]);
     if(~exist(fullFilename,'file'))
       irf.log('critical', ...
-        ['mms_sdc_sdp_cdf_process CDF file not found: ',fullFilename]);
+        ['mms_sdp_load CDF file not found: ',fullFilename]);
       error('MATLAB:SDCcode','184');
     end
     [~, filename, ~] = fileparts(fullFilename); 
     pos = strfind(filename,'_');
     if length(pos)<5
         irf.log('warning',...
-            'mms_sdc_sdp_cdf_process sci filename has too few parts seperated by underscore.');
+            'mms_sdp_load sci filename has too few parts seperated by underscore.');
     end
 
     filenameData = [];
@@ -57,12 +57,12 @@ switch lower(sci_or_ancillary)
       % Something went wrong in reading startTime from filename.
       errStr = ['unexpected format of startTime from ', fullFilename];
       irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_LOAD:INPUTFILE', errStr);
+      error('MATLAB:MMS_SDP_LOAD:INPUTFILE', errStr);
     end
     
     tmpDataObj = dataobj(fullFilename,'KeepTT2000');
     % Store it using the DataManager as dataType
-    mms_sdc_sdp_datamanager(dataType,tmpDataObj);
+    mms_sdp_datamanager(dataType,tmpDataObj);
 
   case 'ancillary'
     % Ancillary data, named differently and stored differently. At first
@@ -77,7 +77,7 @@ switch lower(sci_or_ancillary)
     if(~exist(fullFilename,'file'))
       errStr = ['File not found. ', fullFilename];
       irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_LOAD:INPUTFILE', errStr);
+      error('MATLAB:MMS_SDP_LOAD:INPUTFILE', errStr);
     end
     % DEFATT File start with header, number of lines with header is not
     % constant nor do all header lines beging with "COMMENT", but the
@@ -116,11 +116,11 @@ switch lower(sci_or_ancillary)
     [~, filenameData.filename, ~] = fileparts(fullFilename);
     
     % Store it using the DataManager as dataType
-    mms_sdc_sdp_datamanager(dataType,DEFATT);
+    mms_sdp_datamanager(dataType,DEFATT);
   otherwise
     % Processing cdf files req. either SCIENCE or ANCILLARY data files.
     err_str = 'Input must be either "sci" or "ancillary" information';
     irf.log('critical', err_str);
-    error('MATLAB:MMS_SDC_SDP_LOADS', err_str);
+    error('MATLAB:MMS_SDP_LOADS', err_str);
 end
 end

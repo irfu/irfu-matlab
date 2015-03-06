@@ -1,7 +1,7 @@
-function dce_xyz_dsl = mms_sdc_sdp_comp_dce_xyz_dsl
-%MMS_SDC_SDP_COMP_DCE_XYZ_DSL  compute DCE_XYZ_DSL for datamanager
+function dce_xyz_dsl = mms_sdp_comp_dce_xyz_dsl
+%MMS_SDP_COMP_DCE_XYZ_DSL  compute DCE_XYZ_DSL for datamanager
 %
-%  probe2sc_pot = mms_sdc_sdp_comp_dce_xyz_dsl()
+%  probe2sc_pot = mms_sdp_comp_dce_xyz_dsl()
 %
 %  Compute the electric field in DSL (despun)
 
@@ -15,13 +15,13 @@ function dce_xyz_dsl = mms_sdc_sdp_comp_dce_xyz_dsl
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 dce_xyz_dsl = MMS_CONST.Error;
 
-procId = mms_sdc_sdp_datamanager('procId');
+procId = mms_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre} 
-    dce = mms_sdc_sdp_datamanager('dce');
+    dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
-    phase = mms_sdc_sdp_datamanager('phase');
+    phase = mms_sdp_datamanager('phase');
     if mms_is_error(phase), irf.log('warning','Bad phase input'); return, end
 
     % FIXME: add ADC offsets here
@@ -39,11 +39,11 @@ switch procId
   case MMS_CONST.SDCProc.l2a
     % ADC offsets should have already been applied, remainging processing
     % full despin (from spinfits) and DSL offset.
-    dce = mms_sdc_sdp_datamanager('dce');
+    dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce)
       irf.log('warning','Bad dce input'); return
     end
-    spinfits = mms_sdc_sdp_datamanager('spinfits');
+    spinfits = mms_sdp_datamanager('spinfits');
     if mms_is_error(spinfits)
       irf.log('warning','Bad spinfits input'); return
     end
@@ -55,7 +55,7 @@ switch procId
       'bitmask',bitmask);
 
   case MMS_CONST.Error
-    errStr = 'mms_sdc_sdp_datamanager not properly initialized';
+    errStr = 'mms_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr);
 
   otherwise

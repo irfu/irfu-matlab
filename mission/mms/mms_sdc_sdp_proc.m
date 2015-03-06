@@ -109,11 +109,11 @@ for i=1:nargin-1
               MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
             samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
           end
-          mms_sdc_sdp_datamanager('init',...
+          mms_sdp_datamanager('init',...
             struct('scId',scId,'tmMode',tmMode,'procId',procId,...
             'samplerate',samplerate));
         else
-          mms_sdc_sdp_datamanager('init',...
+          mms_sdp_datamanager('init',...
             struct('scId',scId,'tmMode',tmMode,'procId',procId))
         end
     else
@@ -238,26 +238,26 @@ switch procId
         'received no DCE file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = mms_sdc_sdp_load(DCE_File,'sci','dce');
+      src_fileData = mms_sdp_load(DCE_File,'sci','dce');
       update_header(src_fileData); % Update header with file info.
     end
 
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdc_sdp_load(HK_10E_File,'sci','hk_10e');
+      src_fileData = mms_sdp_load(HK_10E_File,'sci','hk_10e');
       update_header(src_fileData); % Update header with file info.
     end
 
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData = mms_sdc_sdp_load(HK_101_File,'sci','hk_101');
+    src_fileData = mms_sdp_load(HK_101_File,'sci','hk_101');
     update_header(src_fileData) % Update header with file info.
 
     irf.log('notice', [procName ' proc using: ' DCV_File]);
-    src_fileData = mms_sdc_sdp_load(DCV_File,'sci','dcv');
+    src_fileData = mms_sdp_load(DCV_File,'sci','dcv');
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
+    filename_output = mms_sdp_cdfwrite(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     % Check if have all the necessary input
@@ -268,12 +268,12 @@ switch procId
     end
 
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = mms_sdc_sdp_load(DCE_File,'sci','dce');
+    src_fileData = mms_sdp_load(DCE_File,'sci','dce');
     update_header(src_fileData) % Update header with file info.
 
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdc_sdp_load(HK_10E_File,'sci','hk_10e');
+      src_fileData = mms_sdp_load(HK_10E_File,'sci','hk_10e');
       update_header(src_fileData) % Update header with file info.
     end
 
@@ -285,7 +285,7 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      src_fileData=mms_sdc_sdp_load(DEFATT_File,'ancillary','defatt');
+      src_fileData=mms_sdp_load(DEFATT_File,'ancillary','defatt');
       update_header(src_fileData); % Update header with file info.
     else
       % HK101 file => phase
@@ -295,7 +295,7 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' HK_101_File]);
-      src_fileData=mms_sdc_sdp_load(HK_101_File,'sci','hk_101');
+      src_fileData=mms_sdp_load(HK_101_File,'sci','hk_101');
       update_header(src_fileData) % Update header with file info.
     end
 
@@ -304,12 +304,12 @@ switch procId
         'received no DCV file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      src_fileData = mms_sdc_sdp_load(DCV_File,'sci','dcv');
+      src_fileData = mms_sdp_load(DCV_File,'sci','dcv');
       update_header(src_fileData) % Update header with file info.
     end
     
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
+    filename_output = mms_sdp_cdfwrite(HeaderInfo);
 
   case {MMS_CONST.SDCProc.l2a}
     % L2A process with L2Pre file as input
@@ -320,11 +320,11 @@ switch procId
     end
 
     irf.log('notice', [procName ' proc using: ' L2Pre_File]);
-    src_fileData = mms_sdc_sdp_load(L2Pre_File,'sci','l2pre');
+    src_fileData = mms_sdp_load(L2Pre_File,'sci','l2pre');
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
-    filename_output = mms_sdc_sdp_cdf_write(HeaderInfo);
+    filename_output = mms_sdp_cdfwrite(HeaderInfo);
 
   otherwise
     errStr = 'unrecognized procId';
