@@ -215,10 +215,11 @@ switch(param)
     DATAC.(param) = [];
     DATAC.(param).dataObj = dataObj;
     % Split up the various parts (spinfits, dce data [e12, e34, e56],
-    % dce bitmask [e12, e34, e56] from the l2pre file to their expected
-    % locations in DATAC. (so that remaining processing can use same syntax).
+    % dce bitmask [e12, e34, e56], phase from the l2pre file to their
+    % expected locations in DATAC. (so that remaining processing can use
+    % same syntax).
     varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-    varPre2 = '_spinfits_';
+    varPre2 = '_spinfit_';
     DATAC.spinfits = [];
     sdpPair = {'e12', 'e34'};
     for iPair=1:numel(sdpPair)
@@ -237,6 +238,7 @@ switch(param)
       DATAC.dce.(sensors{iPair}).data = dataObj.data.([varPre, '_data']).data(:,iPair);
       DATAC.dce.(sensors{iPair}).bitmask = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
     end
+    DATAC.phase.data = dataObj.data.([varPre, '_phase']).data;
 
   otherwise
     % Not yet implemented.
