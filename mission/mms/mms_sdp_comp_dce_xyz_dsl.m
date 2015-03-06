@@ -20,9 +20,15 @@ switch procId
   case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
       MMS_CONST.SDCProc.l2pre} 
     dce = mms_sdp_datamanager('dce');
-    if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
+    if mms_is_error(dce)
+      errStr='Bad DCE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
     phase = mms_sdp_datamanager('phase');
-    if mms_is_error(phase), irf.log('warning','Bad phase input'); return, end
+    if mms_is_error(phase)
+      errStr='Bad PHASE intput, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
 
     % FIXME: add ADC offsets here
 
@@ -41,11 +47,13 @@ switch procId
     % full despin (from spinfits) and DSL offset.
     dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce)
-      irf.log('warning','Bad dce input'); return
+      errStr='Bad DCE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
     end
     spinfits = mms_sdp_datamanager('spinfits');
     if mms_is_error(spinfits)
-      irf.log('warning','Bad spinfits input'); return
+      errStr='Bad SPINFITS input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
     end
 
     irf.log('critical', 'DCE_XYZ_DSL calculation for L2A not performed using spinfits from L2pre. FIXME!');
