@@ -78,19 +78,17 @@ switch procId
       % Replace GATTRIB.Parents with source cdf (l2pre) parents (ie only
       % official data products listed as parents not internal (FIELDS) file.
       l2pre = mms_sdc_sdp_datamanager('l2pre');
-      if( ~isstruct(l2pre) && l2pre == MMS_CONST.Error)
-        errStr = 'Cannot output ''l2pre''';
-        irf.log('critical', errStr);
-        error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+      if mms_is_error(l2pre)
+        errStr='Cannot output ''l2pre''';
+        irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
       end
       GATTRIB.Parents = l2pre.dataObj.GlobalAttributes.Parents;
     end
     
     dce_xyz_dsl = mms_sdc_sdp_datamanager('dce_xyz_dsl');
-    if ~isstruct(dce_xyz_dsl) && dce_xyz_dsl == MMS_CONST.Error
-      errStr = 'Cannot output ''dce_xyz_dsl''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(dce_xyz_dsl)
+      errStr='Cannot output ''dce_xyz_dsl''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
 
     epochTT = dce_xyz_dsl.time;
@@ -188,16 +186,14 @@ switch procId
     % Spinfits [e12, e34], bitmask of DCE [e12, e34, e56] and a quality.
     % (and corresponding epoch and labels).
     dce = mms_sdc_sdp_datamanager('dce');
-    if ~isstruct(dce) && dce == MMS_CONST.Error
-      errStr = 'Cannot output ''dce''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(dce)
+      errStr='Cannot output ''dce''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
     spinfits = mms_sdc_sdp_datamanager('spinfits');
-    if ~isstruct(spinfits) && spinfits == MMS_CONST.Error
-      errStr = 'Cannot output ''spinfits''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(spinfits)
+      errStr='Cannot output ''spinfits''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
 
     epochTT = dce.time;
@@ -366,22 +362,19 @@ switch procId
       scId,procName,tmModeStr);
     
     dcv = mms_sdc_sdp_datamanager('dcv');
-    if ~isstruct(dcv) && dcv == MMS_CONST.Error
-      errStr = 'Cannot output ''dcv''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(dcv)
+      errStr='Cannot output ''dcv''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
     probe2sc_pot = mms_sdc_sdp_datamanager('probe2sc_pot');
-    if ~isstruct(probe2sc_pot) && probe2sc_pot == MMS_CONST.Error
-      errStr = 'Cannot output ''probe2sc_pot''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(probe2sc_pot)
+      errStr='Cannot output ''probe2sc_pot''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
     sc_pot = mms_sdc_sdp_datamanager('sc_pot');
-    if ~isstruct(sc_pot) && sc_pot == MMS_CONST.Error
-      errStr = 'Cannot output ''sc_pot''';
-      irf.log('critical', errStr);
-      error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
+    if mms_is_error(sc_pot)
+      errStr='Cannot output ''sc_pot''';
+      irf.log('critical', errStr); error('MATLAB:MMS_SDC_SDP_CDFWRITE:OUT', errStr);
     end
     
     epochTT = dcv.time;
