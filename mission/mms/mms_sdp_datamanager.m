@@ -223,8 +223,8 @@ switch(param)
     DATAC.spinfits = [];
     sdpPair = {'e12', 'e34'};
     for iPair=1:numel(sdpPair)
-      DATAC.spinfits.sfit.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data;
-      DATAC.spinfits.sdev.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, 'sdev_', sdpPair{iPair}]).data;
+      DATAC.spinfits.sfit.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+      DATAC.spinfits.sdev.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
     end
     x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
     DATAC.spinfits.time = x.DEPEND_O.data;
