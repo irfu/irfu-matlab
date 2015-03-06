@@ -11,7 +11,7 @@ function filenameData = mms_sdp_load(fullFilename,sci_or_ancillary,dataType)
 %     '/full/path/2015/04/10/mms2_sdp_fast_l1b_20150410_v0.0.0.cdf',...
 %     'sci', 'dce');
 %
-% 	See also MMS_SDP_PROC, MMS_SDP_DATAMANAGER.
+% 	See also MMS_SDC_SDP_PROC, MMS_SDP_DATAMANAGER.
 
 narginchk(2,3);
 

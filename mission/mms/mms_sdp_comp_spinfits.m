@@ -38,9 +38,15 @@ procId = mms_sdp_datamanager('procId');
 switch procId
   case {MMS_CONST.SDCProc.l2pre, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.sitl}
     dce = mms_sdp_datamanager('dce');
-    if mms_is_error(dce), irf.log('warning','Bad dce input'); return, end
+    if mms_is_error(dce)
+      errStr='Bad DCE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
     phase = mms_sdp_datamanager('phase');
-    if mms_is_error(phase),irf.log('warning','Bad phase input'); return,end
+    if mms_is_error(phase)
+      errStr='Bad PHASE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
 
     % Calculate first timestamp of spinfits to be after start of dce time 
     % and evenly divisable with fitEvery. 
