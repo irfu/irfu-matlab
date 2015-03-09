@@ -79,21 +79,22 @@ end
 if ~regexp(probe, '^([1-4]|12|32|34|1234|3234)$')
    error('Wrong probe combination.')
 end
-
+probe_list = [];
+probe_pair_list = [];
 EFW_PROBE_PAIRS = [12,32,34,42];
 if length(probe) > 1
-  pTmp = probe; probe_list = [];
+  pTmp = probe;
   while ~isempty(pTmp)
     probe_list = [probe_list str2double(pTmp(1))]; pTmp(1) = []; %#ok<AGROW>
   end
   probe_list = sort(unique(probe_list));
-  pTmp = probe; probe_pair_list = [];
+  pTmp = probe;
   while ~isempty(pTmp)
     if length(pTmp)<2, break, end
     probe_pair_list = [probe_pair_list str2double(pTmp(1:2))]; pTmp(1:2) = []; %#ok<AGROW>
   end
+  probe_pair_list = intersect(probe_pair_list,EFW_PROBE_PAIRS);
 end
-probe_pair_list = intersect(probe_pair_list,EFW_PROBE_PAIRS);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -230,7 +231,7 @@ for probe_id = probe_list
   end
   clear ok problem_intervals msg
 end
-			
+
 if mask_type==4, return, end
 
 % Mark probe saturation due to low density
