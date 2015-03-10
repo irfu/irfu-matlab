@@ -555,10 +555,14 @@ end
         'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
       %Set disabled bit
       idxDisabled = probeEnabled(:,iSen)==0;
-      DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
-        bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...
-        MMS_CONST.Bitmask.SIGNAL_OFF);
-      DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
+      if(any(idxDisabled>0))
+        irf.log('notcie', ['Probe ',sensors{iSen}, ' disabled for ',...
+          num2str(sum(idxDisabled)),' datapoints. Bitmask them and set to NaN.']);
+        DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
+          bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...40248
+          MMS_CONST.Bitmask.SIGNAL_OFF);
+        DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
+      end
     end
   end
 
