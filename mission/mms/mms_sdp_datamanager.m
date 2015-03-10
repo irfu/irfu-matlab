@@ -77,17 +77,18 @@ if strcmpi(param, 'init')
     % Commissioning, sample rate identified previously.
     DATAC.samplerate = dataObj.samplerate;
   end
-  DATAC.dce = [];
-  DATAC.dce_xyz_dsl = [];
-  DATAC.dcv = [];
-  DATAC.hk_101 = [];
-  DATAC.hk_10e = [];
-  DATAC.l2pre = [];
-  DATAC.phase = [];
-  DATAC.probe2sc_pot = [];
-  DATAC.sc_pot = [];
-  DATAC.spinfits = [];
-  DATAC.defatt = [];
+  DATAC.adc_off = [];     % comp ADC offsets
+  DATAC.dce = [];         % src DCE file
+  DATAC.dce_xyz_dsl = []; % comp E-field xyz DSL-coord
+  DATAC.dcv = [];         % src DCV file
+  DATAC.defatt = [];      % src DEFATT file
+  DATAC.hk_101 = [];      % src HK_101 file
+  DATAC.hk_10e = [];      % src HK_10E file
+  DATAC.l2pre = [];       % src L2Pre file
+  DATAC.phase = [];       % comp phase
+  DATAC.probe2sc_pot = [];% comp probe to sc potential
+  DATAC.sc_pot = [];      % comp sc potential
+  DATAC.spinfits = [];    % comp spinfits
   return
 end
 
