@@ -29,10 +29,19 @@ switch procId
       errStr='Bad PHASE intput, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
+    adc_off = mms_sdp_datamanager('adc_off');
+    if mms_is_error(adc_off)
+      errStr='Bad ADC_OFF intput, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
 
-    % FIXME: add ADC offsets here
+    sdpProbes = fieldnames(adc_off); % default {'e12', 'e34'}
+    for iProbe=1:numel(sdpProbes)
+      % Remove ADC offset
+      dce.(sdpProbes{iProbe}).data = dce.(sdpProbes{iProbe}).data - adc_off.(sdpProbes{iProbe});
+    end
 
-    dE = mms_sdp_despin(dce.e12.data,dce.e34.data,phase.data);
+    dE = mms_sdp_despin(dce.e12.data, dce.e34.data, phase.data);
 
     % FIXME: need to compute from respective bitmasks
     bitmask = dce.e12.bitmask;
@@ -50,15 +59,22 @@ switch procId
       errStr='Bad DCE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
+    phase = mms_sdp_datamanager('phase');
+    if mms_is_error(phase)
+      errStr='Bad PHASE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
     spinfits = mms_sdp_datamanager('spinfits');
     if mms_is_error(spinfits)
       errStr='Bad SPINFITS input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
 
-    irf.log('critical', 'DCE_XYZ_DSL calculation for L2A not performed using spinfits from L2pre. FIXME!');
+    dE = mms_sdp_despin(dce.e12.data, dce.e34.data, phase.data);
+
     bitmask = dce.e12.bitmask;
     % FIXME: apply DSL offsets here
+
     dce_xyz_dsl = struct('time',dce.time,'data',[dce.e12.data, dce.e34.data, dce.e56.data],...
       'bitmask',bitmask);
 
