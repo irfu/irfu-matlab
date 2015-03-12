@@ -548,7 +548,8 @@ end
     check_monoton_timeincrease(DATAC.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(sensors), return, end
-    probeEnabled = resample_probe_enable(sensors);
+    %probeEnabled = resample_probe_enable(sensors);
+    probeEnabled = are_probes_enabled;
     for iSen=1:numel(sensors)
       DATAC.(param).(sensors{iSen}) = struct(...
         'data',sensorData(:,iSen), ...
@@ -559,10 +560,24 @@ end
         irf.log('notcie', ['Probe ',sensors{iSen}, ' disabled for ',...
           num2str(sum(idxDisabled)),' datapoints. Bitmask them and set to NaN.']);
         DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
-          bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...40248
+          bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...
           MMS_CONST.Bitmask.SIGNAL_OFF);
         DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
       end
+    end
+  end
+
+  function res = are_probes_enabled
+    % Use FILLVAL of each sensor to determine if probes are enabled or not.
+    % Returns logical of size correspondig to sensor.
+    sensorData = dataObj.data.([varPrefix param '_sensor']).data;
+    FILLVAL = getfillval(dataObj, [varPrefix, param, '_sensor']);
+    if( ~ischar(FILLVAL) )
+      % Return 'true' for all data not equal to specified FILLVAL
+      res = (sensorData ~= FILLVAL);
+    else
+      errStr = 'Unable to get FILLVAL.';
+      irf.log('critical',errStr); error(errStr);
     end
   end
 
