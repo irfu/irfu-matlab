@@ -17,8 +17,7 @@ dce_xyz_dsl = MMS_CONST.Error;
 
 procId = mms_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql,...
-      MMS_CONST.SDCProc.l2pre} 
+  case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql}
     dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce)
       errStr='Bad DCE input, cannot proceed.';
@@ -50,6 +49,12 @@ switch procId
 
     dce_xyz_dsl = struct('time',dce.time,'data',[dE dce.e56.data],...
       'bitmask',bitmask);
+
+  case MMS_CONST.SDCProc.l2pre
+    % L2Pre is a special case should not apply despin and should not output DSL (despun),
+    % but output only DCE (in instrument frame) with ADC offset removed.
+    errStr='DCE_XYZ_DSL should not be calculated for L2Pre, it should only have ADC offsets removed. Should not be here.';
+    irf.log('critical', errStr); error(errStr);
 
   case MMS_CONST.SDCProc.l2a
     % ADC offsets should have already been applied, remainging processing
