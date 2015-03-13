@@ -23,7 +23,8 @@ fits = MMS_CONST.Error;
 % Some default settings
 maxIt = 3;      % Maximum of iterations to run fit
 nTerms = 3;     % Number of terms to fit, Y = A + B*sin(wt) + C*cos(wt) +..., must be odd.
-minPts = 4;     % Minumum of points for one fit
+%minPts = 4;     % Minumum of points for one fit
+minFraction = 0.20; % Minumum fraction of points required for one fit (minPts = minFraction * fitInterv [s] * samplerate [smpl/s] )
 fitEvery = 5*10^9;   % Fit every X nanoseconds.
 fitInterv = 20*10^9; % Fit over X nanoseconds interval.
 
@@ -47,6 +48,13 @@ switch procId
       errStr='Bad PHASE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
+    samplerate = mms_sdp_datamanager('samplerate');
+    if mms_is_error(samplerate)
+      errStr='Bad SAMPLERATE input, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
+    % Calculate minumum number of points req. for one fit covering fitInterv
+    minPts = minFraction * samplerate * fitInterv/10^9; % "/10^9" as fitInterv is in [ns].
 
     % Calculate first timestamp of spinfits to be after start of dce time 
     % and evenly divisable with fitEvery. 
