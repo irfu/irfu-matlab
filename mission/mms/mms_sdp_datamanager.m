@@ -548,8 +548,8 @@ end
     check_monoton_timeincrease(DATAC.(param).time, param);
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(sensors), return, end
-    %probeEnabled = resample_probe_enable(sensors);
-    probeEnabled = are_probes_enabled;
+    probeEnabled = resample_probe_enable(sensors);
+    %probeEnabled = are_probes_enabled;
     for iSen=1:numel(sensors)
       DATAC.(param).(sensors{iSen}) = struct(...
         'data',sensorData(:,iSen), ...
