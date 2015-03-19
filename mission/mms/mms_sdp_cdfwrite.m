@@ -45,7 +45,7 @@ datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
 % DIRECTORY WHEN EXECUTING.
 oldDir = pwd; cd(ENVIR.DROPBOX_ROOT);
 [outFileName, verFileName] = get_file_name();
-irf.log('notice',['Writing to DROPBOX_ROOT/',outFileName,'.cdf']);
+irf.log('notice',['Prepairing to write file to DROPBOX_ROOT/',outFileName,'.cdf']);
 
 GATTRIB = getGlobalAttributes;
 VATTRIB = getVariableAttributes;
@@ -610,6 +610,7 @@ cd(oldDir);
 
   function write_file
    % write file with arguments obtained above, also include md5 checksum.
+   irf.log('notice',['Writing file DROPBOX_ROOT/',outFileName,'.cdf']);
    spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
      'RecordBound', recBound, 'VarCompress', compressVars, ...
