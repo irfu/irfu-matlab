@@ -9,18 +9,18 @@ function r = log(logLevel,logMsg)
 %		log level is larger or equal to logLevel. logMsg should be string.
 %
 % IRF.LOG('log_out',file)     - log output to file.
-% IRF.LOG('log_out','screen') - log output to screen, default. 
+% IRF.LOG('log_out','screen') - log output to screen, default.
+% IRF.LOG('log_out')          - return previously specified file or 'screen'.
 %
 % Example:
+%   irf.log('log_out','/tmp/my_event.log'); % Log to '/tmp/my_event.log'.
 %   irf.log('warning'); % set active log level to 'warning'
 %                       % prints 'critical' and 'warning' messages
 %   irf.log('critical','We should not end in this place of code.')
 %   irf.log('warning','Two signals are interpolated')
+%   logFile = irf.log('log_out'); % Get name of log file (or 'screen').
 %
 % See also: LOG_DEBUG_INIT
-%
-% Example:
-%	irf.log('log_out','/tmp/my_event.log')
 
 % internally log levels are represented by numbers
 % 
@@ -60,8 +60,14 @@ elseif nargin == 1,
 			case 'd'
 				loggingLevel = 4;
 			otherwise
+              if(strcmp(logLevel, 'log_out'))
+                % Return log_out (previously specified 'file' or 'screen')
+                r = logOut;
+                return;
+              else
 				irf.log('critical','Error! Unrecognized input, see help.');
 				error('Unrecognized input.');
+              end
 		end
 		irf.log('warning',['Active log level set to ''' ...
 			log_level_to_msg(loggingLevel,'short') '''. ' ...
