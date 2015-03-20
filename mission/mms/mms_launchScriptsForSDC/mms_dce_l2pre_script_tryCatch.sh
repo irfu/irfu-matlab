@@ -7,12 +7,12 @@
 # Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename>", with the following
-#  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_10e_" or "_101_").
-#    <mmsX_***_dce_filename.cdf> = Filename of DC E data to be processed for 'xyz'. Including path and extension.
-#    <mmsX_***_dcv_filename.cdf> = Filename of DC V data to be processed for 'xyz'. Including path and extention.
-#    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention.
-#    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
+#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <MMSX_DEFATT_filename> <mmsX_10e_filename>", with the following
+#  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_DEFATT_" or "_10e_").
+#    <mmsX_***_dce_filename.cdf>    = Filename of DC E data to be processed for 'xyz'. Including path and extension.
+#    <mmsX_***_dcv_filename.cdf>    = Filename of DC V data to be processed for 'xyz'. Including path and extention.
+#    <MMSX_***_DEFATT_filename.V01> = Filename of DEFATT data to be processed for 'xyz'. Including path and extention.
+#    <mmsX_***_10e_filename.cdf>    = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
 #  output files created:
 #    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z.cdf>         = File placed in $DROPBOX_ROOT
 #    <DATE_IRFU.log>                                  = Logfile of run, placed in $LOG_PATH_ROOT/mmsX/edp/.
@@ -48,8 +48,8 @@ esac
 echo $PROCESS_NAME
 
 # make sure that the correct number of arguments are provided
-if [ ${#} -lt 2 ] || [ ${#} -gt 4 ] ; then
-	echo "ERROR: Wrong number of input parameters: min: 2, max: 4"
+if [ ${#} -lt 3 ] || [ ${#} -gt 4 ] ; then
+	echo "ERROR: Wrong number of input parameters: min: 3, max: 4"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 

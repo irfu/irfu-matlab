@@ -40,6 +40,8 @@ case "$0" in
 	*mms_dce_ql_script_tryCatch*) PROCESS_NAME=ql ;;
 	*mms_dce_sitl_script_tryCatch*) PROCESS_NAME=sitl ;;
 	*mms_dcv_usc_script_tryCatch*) PROCESS_NAME=scpot ;;
+	*mms_dce_l2pre_script_tryCatch*) PROCESS_NAME=l2pre ;;
+	*mms_dce_l2a_script_tryCatch*) PROCESS_NAME=l2a ;;
 	*)
 	echo "ERROR: urecognized name of the caller routine"
 	exit 166
