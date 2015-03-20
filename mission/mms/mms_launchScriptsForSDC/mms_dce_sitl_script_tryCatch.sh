@@ -4,6 +4,7 @@
 # Author: T. Nilsson, IRFU
 # Date: 2014/03/04
 # Updated: 2015/01/14, change comments to reflect change SDP->EDP and add new input argument HK 10E file.
+# Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename>", with the following
@@ -17,9 +18,9 @@
 #    <DATE_IRFU.log>                                  = Logfile of run, placed in $LOG_PATH_ROOT/mmsX/edp/.
 #    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z_runTime.log> = File to identify output file, as per e-mail of 2013/11/22. Also placed in $LOG_PATH_ROOT/mmsX/edp/.
 #
-#  return code 0 if ok.
-#  return code 199 if built in Matlab error.
-#  return code 100-198 if MMS Matlab specific code error.
+#  return code 0, if ok.
+#  return code 166, if error caused by incorrect usage.
+#  return code 199, if error during Matlab process.
 #
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
 
@@ -56,16 +57,10 @@ if [ ! -x $MATLAB_EXE ] ; then
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
-# SET ENVIRONMENT LD_LIBRARY_PATH in order for the linking to CDF.h and cdflib.so to properly work.
-if [ ! -e $CDF_BASE/lib/libcdf.so ]; then
-	echo "ERROR: no libcdf.so in CDF_BASE ($CDF_BASE)"
-	exit 166  # SDC-defined error code for "incorrect usage"
-fi
-if [ "X$LD_LIBRARY_PATH" = "X" ]; then
-	export LD_LIBRARY_PATH="$CDF_BASE/lib"
-else
-	export LD_LIBRARY_PATH="$CDF_BASE/lib:$LD_LIBRARY_PATH"
-fi
+# RUN Matlab and try to run mms_sdc_sdp_proc, and if any errors are caught
+# get file name of log file created, check if that file exist,
+# if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
+# then exit with 199 (if errors occurred) or with 0 (if no errors).
+#$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
 
-# RUN THIS IF ONLY ONE FILE EXISTS (DCE)
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4'), catch ME, logFile=irf.log('log_out'); if(exist(logFile,'file')), unix(['echo ''''Error occured at SDC! Please see the attached log file. Causing error was: ',ME.identifier,' with message: ',ME.message,''''' | mail --encoding=8BIT --attach=', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''Error occured at SDC. And for some reason no log file was identified, manually log into SDC and have a look! Perhaps the error occured before log file was created. Causing error was: ',ME.identifier,' with message: ',ME.message,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
