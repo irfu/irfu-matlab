@@ -149,7 +149,23 @@ switch lower(flag)
 		if any(strfind(flag,'iso')),
 			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
 		end
-		t_out = parsett2000(t_in);
+		if any(strfind(t_in(1,:),'T'))
+			t_out = parsett2000(t_in);
+		else
+			mask = '%4d-%2d-%2d %2d:%2d:%f%*c';
+			s=t_in';
+			s(end+1,:)=sprintf(' ');
+			a = sscanf(s,mask);
+			N = numel(a)/6;
+			if N~=fix(N) || N~=size(s,2),
+				irf.log('warning','something is wrong with iso input format, returning empty!'),
+				t_out=[];
+				return;
+			end
+			a = reshape(a,6,N);
+			a = a';
+			t_out = irf_time(a);
+		end
 	case 'ttns>epoch'
 		t_out = toepoch(irf_time(t_in,'ttns>vector'));
 	case 'epoch>ttns'
@@ -191,8 +207,8 @@ switch lower(flag)
 		if any(strfind(flag,'iso')),
 			irf.log('warning','irf_time(..,''tint>iso'') is depreciated and will be removed, please use irf_time(..,''tint>utc'').');
 		end
-		t1iso=irf_time(t_in(:,1),'epoch>iso');
-		t2iso=irf_time(t_in(:,2),'epoch>iso');
+		t1iso=irf_time(t_in(:,1),'epoch>utc');
+		t2iso=irf_time(t_in(:,2),'epoch>utc');
 		t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 	case {'utc>tint','iso>tint'}
 		if any(strfind(flag,'iso')),
@@ -200,8 +216,8 @@ switch lower(flag)
 		end
 		% assume column array where each row is interval in iso format
 		ii=strfind(t_in(1,:),'/');
-		t1=irf_time(t_in(:,1:ii-1),'iso>epoch');
-		t2=irf_time(t_in(:,ii+1:end),'iso>epoch');
+		t1=irf_time(t_in(:,1:ii-1),'utc>epoch');
+		t2=irf_time(t_in(:,ii+1:end),'utc>epoch');
 		if isempty(t1) || isempty(t2)
 			t_out=[];
 		else

@@ -27,7 +27,7 @@ function [downloadStatus,downloadFile]=caa_download(tint,dataset,varargin)
 % Downloads CAA data in CDF format into subdirectory "CAA/"
 %
 %   tint   - time interval in epoch  [tint_start tint_stop]
-%            or in ISO format, ex. '2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z'
+%            or in UTC format, ex. '2005-01-01T05:00:00.000Z/2005-01-01T05:10:00.000Z'
 %  dataset - dataset name, can uses also wildcard * (? is changed to *)
 %
 % Input flags
@@ -161,7 +161,7 @@ if nargin>=1, % check if first argument is not caa zip or tar.gz file link
 		if nargin > 1
 			varargin=[dataset varargin];
 		end
-	elseif ischar(tint) && any(irf_time(tint,'utc>tint')) % tint is tintiso
+	elseif ischar(tint) && any(irf_time(tint,'utc>tint')) % tint is UTC string
 	elseif ischar(tint) % tint is dataset
 		if nargin > 1
 			varargin=[dataset varargin];
@@ -377,10 +377,10 @@ end
 
 %% check if time interval specified and define queryTime and queryTimeInventory
 if isnumeric(tint) && (size(tint,2)==2), % assume tint is 2 column epoch
-	tintiso=irf_time(tint,'tint>utc_yyyy-mm-ddTHH:MM:SSZ');
+	tintUTC=irf_time(tint,'tint>utc_yyyy-mm-ddTHH:MM:SSZ');
 	specifiedTimeInterval = true;
-elseif ischar(tint), % tint is in isoformat
-	tintiso=tint;
+elseif ischar(tint), % tint is in UTC format
+	tintUTC=tint;
 	specifiedTimeInterval = true;
 elseif isempty(tint) % will only list products
 else
@@ -389,14 +389,14 @@ else
 end
 
 if specifiedTimeInterval
-	divider=strfind(tintiso,'/');
-	t1iso = tintiso(1:divider-1);
-	t2iso = tintiso(divider+1:end);
-	queryTime = ['&START_DATE=' t1iso '&END_DATE=' t2iso];
-	queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2iso '''',...
-		' AND FILE.END_DATE >= ''' t1iso ''''];
-	queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2iso '''',...
-		' AND DATASET_INVENTORY.END_TIME >= ''' t1iso ''''];
+	divider=strfind(tintUTC,'/');
+	t1UTC = tintUTC(1:divider-1);
+	t2UTC = tintUTC(divider+1:end);
+	queryTime = ['&START_DATE=' t1UTC '&END_DATE=' t2UTC];
+	queryTimeFileInventory = [' AND FILE.START_DATE <= ''' t2UTC '''',...
+		' AND FILE.END_DATE >= ''' t1UTC ''''];
+	queryTimeInventory = [' AND DATASET_INVENTORY.START_TIME <= ''' t2UTC '''',...
+		' AND DATASET_INVENTORY.END_TIME >= ''' t1UTC ''''];
 end
 
 %% define queryDataset and queryDatasetInventory
@@ -526,7 +526,7 @@ if status == 0 && exist(downloadedFile,'file')
 			j=length(caa)+1;
 			caa{j}.url=urlLine;
 			caa{j}.dataset=dataset;
-			caa{j}.tintiso=tintiso;
+			caa{j}.tintiso=tintUTC;
 			caa{j}.zip = downloadFile;
 			caa{j}.status = 'SUBMITTED';
 			caa{j}.timeofrequest = now;
@@ -790,14 +790,14 @@ disp(['Moving to temporary directory: ' tempDir]);
 c2 = onCleanup(@() rmdir(tempDir,'s'));
 
 % 30s of data
-tintIso = '2005-01-01T05:00:00.000Z/2005-01-01T05:00:30.000Z';
-tt = caa_download(tintIso,'list:C3_CP_FGM*');
+tintUTC = '2005-01-01T05:00:00.000Z/2005-01-01T05:00:30.000Z';
+tt = caa_download(tintUTC,'list:C3_CP_FGM*');
 if isempty(tt), disp('FAILED!'); return; end
-ok = caa_download(tintIso,'C3_CP_FGM_5VPS');
+ok = caa_download(tintUTC,'C3_CP_FGM_5VPS');
 if ~ok, disp('FAILED!'); return; end
-ok = caa_download(tintIso,'C3_CP_FGM_5VPS','stream');
+ok = caa_download(tintUTC,'C3_CP_FGM_5VPS','stream');
 if ~ok, disp('FAILED!'); return; end
-ok = caa_download(tintIso,'C?_CP_FGM_5VPS');
+ok = caa_download(tintUTC,'C?_CP_FGM_5VPS');
 if ~ok, disp('FAILED!'); return; end
 disp('--- TEST PASSED! ---');
 ok=true;
