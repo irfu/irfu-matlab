@@ -214,7 +214,13 @@ switch lower(flag)
 		t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 		
 	otherwise
-		if numel(flag)>9 && strcmp(flag(1:9),'ttns>utc_')
+		if numel(flag)>9 && strcmp(flag(1:9),'tint>utc_')
+			fmt = flag(10:end);
+			t1iso = irf_time(t_in(:,1),['epoch>utc_' fmt]);
+			t2iso = irf_time(t_in(:,2),['epoch>utc_' fmt]);
+			t1iso(:,end+1)='/';
+			t_out = [t1iso t2iso];
+		elseif numel(flag)>9 && strcmp(flag(1:9),'ttns>utc_')
 			fmt = flag(10:end);
 			iyyyy = strfind(fmt,'yyyy');
 			imm   = strfind(fmt,'mm');

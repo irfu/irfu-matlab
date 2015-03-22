@@ -161,7 +161,7 @@ if nargin>=1, % check if first argument is not caa zip or tar.gz file link
 		if nargin > 1
 			varargin=[dataset varargin];
 		end
-	elseif ischar(tint) && any(irf_time(tint,'iso2tint')) % tint is tintiso
+	elseif ischar(tint) && any(irf_time(tint,'utc>tint')) % tint is tintiso
 	elseif ischar(tint) % tint is dataset
 		if nargin > 1
 			varargin=[dataset varargin];
@@ -305,7 +305,7 @@ if specifiedIngestedSince
 	DD    = str2double(ingestedSinceYYYYMMDD(7:8));
 	tIngestedSince = irf_time([YYYY MM DD 0 0 0]);
 	urlIngestedSince = ...
-		['&INGESTED_SINCE=' irf_time(tIngestedSince,'iso')];
+		['&INGESTED_SINCE=' irf_time(tIngestedSince,'epoch>utc_yyyy-mm-ddTHH:MM:ssZ')];
 else
 	urlIngestedSince = '';
 end
@@ -377,7 +377,7 @@ end
 
 %% check if time interval specified and define queryTime and queryTimeInventory
 if isnumeric(tint) && (size(tint,2)==2), % assume tint is 2 column epoch
-	tintiso=irf_time(tint,'tint2iso');
+	tintiso=irf_time(tint,'tint>utc_yyyy-mm-ddTHH:MM:SSZ');
 	specifiedTimeInterval = true;
 elseif ischar(tint), % tint is in isoformat
 	tintiso=tint;
@@ -768,8 +768,8 @@ end
 			otherwise
 				return;
 		end
-		tStart = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{2}(2:end));
-		tEnd   = arrayfun(@(x) irf_time(x{1},'iso2epoch'),textLine{3}(2:end));
+		tStart = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{2}(2:end));
+		tEnd   = arrayfun(@(x) irf_time(x{1},'utc>epoch'),textLine{3}(2:end));
 		tint = [tStart tEnd];
 		TT.TimeInterval=tint;
 		TT.Header = {};
