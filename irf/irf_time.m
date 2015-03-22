@@ -83,6 +83,12 @@ if isempty(flagTint),          % default transformation
 		t_out=irf_time(t_temp,['ttns>' format_out]);
 		return
 	end
+else
+	flag2=strfind(flag,'2');   % see if flag has number 2 in it
+	if ~isempty(flag2)
+		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is depreciated, please use irf_time(..,''in>out'')']);
+		flag(flag2)='>';
+	end
 end
 
 
