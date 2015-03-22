@@ -31,8 +31,8 @@ end
 
 t=inp(:,1);
 timeVec       = irf_time(t,'vector');
-dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector2epoch');
-mjdRefEpoch   = irf_time([1858 11 17 0 0 0],'vector2epoch');
+dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
+mjdRefEpoch   = irf_time([1858 11 17 0 0 0],'vector>epoch');
 mjd           = floor((dayStartEpoch - mjdRefEpoch)/86400);
 Tzero         = (mjd -51544.5)/36525.0;
 UT            = timeVec(:,4)+timeVec(:,5)/60+timeVec(:,6)/3600;
