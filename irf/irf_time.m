@@ -164,7 +164,7 @@ switch lower(flag)
 			end
 			a = reshape(a,6,N);
 			a = a';
-			t_out = irf_time(a);
+			t_out = irf_time(a,'vector6>ttns');
 		end
 	case 'ttns>epoch'
 		t_out = toepoch(irf_time(t_in,'ttns>vector'));
