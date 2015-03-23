@@ -113,7 +113,9 @@ switch lower(sci_or_ancillary)
     
     % Return filename (to be stored in CDF GATTRIB Parents)
     filenameData = [];
-    [~, filenameData.filename, ~] = fileparts(fullFilename);
+    [~, filename, fileext] = fileparts(fullFilename);
+    filenameData.filename = [filename, fileext]; % DEFATT/DEFEPH has extension
+    %'V00', 'V01' etc being the version number, store this as well.
     
     % Store it using the DataManager as dataType
     mms_sdp_datamanager(dataType,DEFATT);
