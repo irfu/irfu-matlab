@@ -2,7 +2,7 @@ function [out,dataobject]=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
 %	[out]=LOCAL.C_READ(variable,tint)
 %		read variable for given time interval tint in matlab format (matrix)
-%		tint - [tstart tend] or ISO format, see example
+%		tint - [tstart tend] or UTC format, see example
 %	[var,dataobj]=LOCAL.C_READ(variable,tint,'caa')
 %		read variable in CAA format.
 %		var - variable, dataobj - dataobject
@@ -79,7 +79,7 @@ elseif nargin>=2,
 	varName=varargin{1};
 	tint=varargin{2};
 	if ischar(tint),
-		tint=irf_time(tint,'iso2tint');
+		tint=irf_time(tint,'utc>tint');
 	end
 end
 if nargin ==3,

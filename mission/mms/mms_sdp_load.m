@@ -105,7 +105,7 @@ switch lower(sci_or_ancillary)
     fclose(fileID);
     
     % Convert time to format YYYY-MM-DDTHH:mm:ss.mmmuuunnn (where mmm = ms, uu = us, nnn = ns)
-    timeFullStr=[irf_time([tmpData{1,1}, tmpData{1,2}],'doy2yyyy-mm-dd'), ...
+    timeFullStr=[irf_time([tmpData{1,1}, tmpData{1,2}],'doy>utc_yyyy-mm-dd'), ...
       cell2mat(tmpData{1,3}), repmat('000000',size(tmpData{1,3},1),1)];
     % Convert time to TT2000 and store as struct (for now)
     DEFATT.time = spdfparsett2000(timeFullStr);

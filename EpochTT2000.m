@@ -1,6 +1,10 @@
 classdef EpochTT2000 < GenericTimeArray
   %EpochTT2000 Class representing T2000 epoch, nanoseconds since 2000.
-  
+  %
+	% EpochTT2000(t) - initialize class, where t can be:
+	%                   - vector of integer number (int64) of nanoseconds as TT2000
+	%                   - UTC string array
+	
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
 % <yuri@irfu.se> wrote this file.  As long as you retain this notice you
@@ -11,13 +15,12 @@ classdef EpochTT2000 < GenericTimeArray
   methods
     function obj = EpochTT2000(inp)
       if nargin==0, return, end
-      if isa(inp,'int64'), 
+      if isa(inp,'int64'),
         if min(size(inp))>1
           error('irf:EpochTT2000:EpochTT2000:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
         end
-        if size(inp,2)~=1, inp = inp'; end % to column
-        obj.epoch = inp;
+        obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')
         obj.epoch = parsett2000(inp);
         if obj.epoch==int64(-9223372036854775805)

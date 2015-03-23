@@ -23,7 +23,8 @@ function status = caa_export_cef(lev,caa_vs,cl_id,QUALITY,DATA_VERSION,sp,st,dt)
 status = 0;
 
 % This must be changed when we do any major changes to our processing software
-EFW_DATASET_VERSION = '4';
+% Version 5: new algorithm to compute ScPot from several probes, median
+EFW_DATASET_VERSION = '5';
 
 if nargin~=8 && nargin~=3, error('3 or 8 input parameters are needed'); end
 if nargin ==3
@@ -149,20 +150,20 @@ end
 for dd = 1:length(dirs)
    d = dirs{dd};
    cd(d);
-   
+
    % Set up spin fit related information.
    % Probe pair used can vary for each subinterval!
    if strcmp(caa_vs, 'E')
       [sfit_probe,flag_lx,probeS] = caa_sfit_probe(cl_id);
       irf_log('proc',sprintf('using %s',probeS))
       if lev == 3
-          if sfit_probe == 320
+          if sfit_probe == 120
+              sfit_probe = 12;
+          elseif sfit_probe == 320
               sfit_probe = 32;
-          end
-          if sfit_probe == 340
+          elseif sfit_probe == 340
               sfit_probe = 34;
-          end
-          if sfit_probe == 420
+          elseif sfit_probe == 420
               sfit_probe = 42;
           end
           if flag_lx, vs = irf_ssub('diELXs?p!',cl_id,sfit_probe);
@@ -180,7 +181,7 @@ for dd = 1:length(dirs)
       if numel(probe_pairs) > 0
          vs = irf_ssub(vs, probe_pairs(1));
       end
-   elseif strcmp(caa_vs, 'P')      
+   elseif strcmp(caa_vs, 'P')
       if ~exist('c_ct','var')
          global c_ct % includes aspoc active values
       end
@@ -195,7 +196,7 @@ for dd = 1:length(dirs)
       elseif lev == 3
           pvar = 'Ps?';
       end
-      
+
       [ok,probe_info,msg] = c_load([ pvar '_info'],cl_id);
       if ~ok || isempty(probe_info)
          irf_log('load',msg)
@@ -252,7 +253,7 @@ for dd = 1:length(dirs)
               irf_log('load',msg)
           end
           % Load P12/32
-          if exist('./mEDSI.mat')
+          if exist('./mEDSI.mat','file')
               pnosfit = 12;
               ret=whos('-file','./mEDSI.mat',irf_ssub('diEs?p!',cl_id,pnosfit));
               if isempty(ret)
@@ -692,7 +693,7 @@ for dd = 1:length(dirs)
    if ~ok || isempty(d_info), dsc = c_desc(vs);
    else dsc = c_desc(vs,d_info);
    end
-   
+
    if lev==3
    	TIME_RESOLUTION = 4;
    elseif (lev==1 && ~isempty(regexp(caa_vs,'^P(1|2|3|4)?$','once'))) || ...

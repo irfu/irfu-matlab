@@ -9,7 +9,6 @@ function ok=test(varargin)
 %   IRF.TEST('irf_time')  - test irf_time
 %
 
-% $Id$
 
 testList={'irf_time','epoch','c_4','coord_sys'};
 
@@ -82,32 +81,31 @@ try
 	% generate vector with 10000 times during last 500 years
 	a=rand(1000,1);
 	tDateArray = now - 365*500*a;
-	s1=irf_time(tDateArray,'date2iso');
-	t=irf_time(s1,'iso2epoch');
-	s2=irf_time(t,'epoch2iso');
+	s1=irf_time(tDateArray,'date>iso');
+	t=irf_time(s1,'iso>ttns');
+	s2=irf_time(t,'ttns>iso');
 	ok = strcmp(s1,s2);
-	plusminus(ok); disp('1000 random iso>epoch>iso ');	
+	plusminus(ok); disp('1000 random utc>ttns>utc');
 	okTest = okTest * ok;
 	% next test
-	tint=[t t+a*1000];
-	s1=irf_time(tint,'tint2iso');
-	tt=irf_time(s1,'iso2tint');
-	s2=irf_time(tt,'tint2iso');
-	ok = strcmp(s1,s2);
-	plusminus(ok); disp('1000 random iso>tint>iso ');	
+	tEpoch = irf_time(t,'ttns>epoch');
+	tint=[tEpoch tEpoch+a*1000];
+	s1=irf_time(tint,'tint>iso');
+	tt=irf_time(s1,'iso>tint');
+	ok = any(any(abs(tt-tint)<1e-6));
+	plusminus(ok); disp('1000 random tint>utc>tint');
 	okTest = okTest * ok;
 	% next test. different iso formats should be recognized
-	s1=irf_time(tDateArray,'date2iso');
-	t=irf_time(s1,'iso2epoch');
-	t1=irf_time(s1(:,1:end-1),'iso2epoch');
-	t2=irf_time(reshape(strrep(s1(:)','T',' '),size(s1)),'iso2epoch');
-	t3=irf_time(reshape(strrep(s1(:)','Z',' '),size(s1)),'iso2epoch');
-	if all(t==t1) && all(t==t2) && all(t==t3)
+	s1=irf_time(tDateArray,'date>utc');
+	t=irf_time(s1,'utc>ttns');
+	t1=irf_time(s1(:,1:end-1),'utc>ttns');
+	t2=irf_time(reshape(strrep(s1(:)','Z',' '),size(s1)),'utc>ttns');
+	if all(t==t1) && all(t==t2)
 		ok=1;
 	else
 		ok=0;
 	end
-	plusminus(ok); disp('1000 random iso (4 formats) > tint');	
+	plusminus(ok); disp('1000 random utc (3 formats) > tint');
 	okTest = okTest * ok;
 	% next test
 catch
@@ -296,7 +294,7 @@ try
 	iTimes = 100;
 	a=rand(iTimes,1);a=a(:);
 	tDateArray = now - 365*50*a;
-	t=irf_time(tDateArray,'datenum2epoch');
+	t=irf_time(tDateArray,'datenum>tt');
 	for iT = 1:numel(t)
 		iCoord = [randi(numel(coordsysList),1,3) 0];
 		iCoord(end)=iCoord(1);
@@ -308,7 +306,7 @@ try
 		end
 		if abs(vec(2:4)-vecStart)>1e-10,
 			okSubtest = false;
-			disp(['failed time: ' irf_time(t(iT),'iso') ]);
+			disp(['failed time: ' irf_time(t(iT),'ttns>utc') ]);
 			disp(['failed conversion: ' coordsysList(iCoord) ]);
 			disp(['failed start vector: ' num2str(vecStart,'%9.2e')]);
 			disp(['failed end vector: ' num2str(vec(2:4),'%9.2e')]);

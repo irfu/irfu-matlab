@@ -283,7 +283,7 @@ if strcmp(quantity,'ec')
 		if correct_sw_wake
 			irf_log('proc',...
 				sprintf('correcting solar wind wake on p%d',probe))
-			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip,0,ec_extraparams); %#ok<NASGU,ASGLU>
+			[da, n_corrected,wake_dsc] = c_efw_swwake(da,probe,pha,whip,0,ec_extraparams); %#ok<ASGLU>
 			
 			if n_corrected>0
 				eval(irf_ssub(...
@@ -1628,11 +1628,11 @@ elseif strcmp(quantity,'badbias')
 			'save_list=[save_list '' BADBIASRESET? ''];'],cl_id);
 				
 		ii = find(efwt(:,2)<DELTA_PLUS);
-		if ~isempty(ii)
-			t0 = efwt(ii(1),1) - efwt(ii(1),2);
-			irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
-			c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
-        end
+    if ~isempty(ii)
+      t0 = efwt(ii(1),1) - efwt(ii(1),2);
+      irf_log('proc', ['EFW reset at ' epoch2iso(t0,1)]);
+      c_eval('BADBIASRESET?=[double(t0-DELTA_MINUS)'' double(t0+DELTA_PLUS)''];',cl_id);
+    end
     else irf_log('dsrc',irf_ssub('Cannot load EFWT?',cl_id))
 	end
     clear t0 ii
@@ -1743,6 +1743,10 @@ elseif strcmp(quantity,'badbias')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'probesa')
 	save_file = './mEFW.mat';
+  
+  if ~exist('mER.mat','file') && ~exist('mPR.mat','file')
+    irf_log('load','No EFW data');data = []; cd(old_pwd); return
+  end
 	
 	% Saturation level nA
 	SA_LEVEL = 66; %#ok<NASGU>
@@ -1774,13 +1778,11 @@ elseif strcmp(quantity,'probesa')
 	if isempty(ns_ops)
 		c_ctl('load_ns_ops',[c_ctl('get',5,'data_path') '/caa-control'])
 		ns_ops = c_ctl('get',cl_id,'ns_ops');
-	end
-	
-	[iso_t,dt] = caa_read_interval;
-	start_time = iso2epoch(iso_t);
+  end
+	[iso_t,dt] = caa_read_interval; start_time = iso2epoch(iso_t);
   
   % SAA saturation
-  shadow_2 = atand(8/150); % 8 cm puch, 150 cm thin wire
+  shadow_2 = atand(8/150); % angular width with 8 cm puck, 150 cm thin wire
   SAA_MIN = 90 - shadow_2;
   saa = atan2d(-SAX(3),SAX(1));
   if saa<SAA_MIN,
@@ -1812,15 +1814,16 @@ elseif strcmp(quantity,'probesa')
     DT_PLUS_M = 1.6*DT_MINUS_M;
     DT_MINUS_L = 3*spin_period*shadow_2/360;
     DT_PLUS_L = 10/25;
-		% Determine if we use 180Hz filter
+    DT_MINUS_LX = 2/5; DT_PLUS_LX = 3/5;
+    % Determine if we use 180Hz filter
     if cl_id == 2 && start_time>toepoch([2001 07 23 13 54 18]) 
       dt_lx = [DT_MINUS_M DT_PLUS_M];
       dt_hx = dt_lx;
     elseif fix(fsamp) == 450
-      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_lx = [DT_MINUS_LX DT_PLUS_LX];
       dt_hx = [DT_MINUS_M DT_PLUS_M];
     else % 10 Hz filter
-      dt_lx = [DT_MINUS_L DT_PLUS_L];
+      dt_lx = [DT_MINUS_LX DT_PLUS_LX];
       dt_hx = [DT_MINUS_L DT_PLUS_L];
     end
     
@@ -2187,7 +2190,7 @@ elseif strcmp(quantity,'hbiassa')
             irf_log('proc','Removing Vsc x B at perigee')
         end
 		
-		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); %#ok<NASGU>
+		[HBIASSA,wakedesc] = c_efw_hbias_satur(da,probe,pha); 
         
         % Below 2RE we can have real large fields
         if ~isempty(HBIASSA) && ~isempty(r)
@@ -2816,7 +2819,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
       for j=1:size(sa,1)
         indx = tComb>=(sa(j,1)-10) & tComb<=(sa(j,2)+10);
         V1 = P.(probeS(pr1))(indx); V2 = P.(probeS(pr2))(indx);
-        maxP = max([V1; V2],[],2); V1(V1~=maxP) = NaN; V2(V2~=maxP) = NaN;
+        maxP = max([V1; V2],[],1); V1(V1~=maxP) = NaN; V2(V2~=maxP) = NaN;
         P.(probeS(pr1))(indx) = V1; P.(probeS(pr2))(indx) = V2;
       end
     end % hbiassa
@@ -2830,6 +2833,9 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
     % Delete empty probes from the list
     for iProbe = pList'
       if all(isnan(P.(probeS(iProbe)))), pList(pList==iProbe) = []; end %#ok<AGROW>
+    end
+    if isempty(pList)
+      irf_log('dsrc','Cannot compute P'), data=[]; cd(old_pwd); return
     end
     ps = sprintf('%d',pList);
     Pinfo.probe = str2double(ps); irf_log('proc',['computing from ' ps])
@@ -2869,7 +2875,7 @@ elseif strcmp(quantity,'ps')
     if isfield(P_info,'useMax4hbiassa') && P_info.useMax4hbiassa==1
         P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'max'); clear tvec %#ok<NASGU>
     else
-        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25); clear tvec %#ok<NASGU>
+        P_tmp = irf_resamp(P_tmp,tvec','fsample',0.25,'median'); clear tvec %#ok<NASGU>
     end
 	c_eval('Ps?=P_tmp;save_list=[save_list ''Ps? '' ];',cl_id);
 	

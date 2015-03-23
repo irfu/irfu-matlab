@@ -155,6 +155,12 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
      /usr/local/etc/rc.d/dbhIRFU.sh restart
      /usr/local/etc/rc.d/dbhWORLD.sh restart
 
+3.5 Get recent FRGM calibration files
+=====================================
+ssh db
+cd /data/cluster/cal/fgm
+scp -r yurik@xanthus.sp.ph.ic.ac.uk:/cluster/operations/calibration/tubs_mirror/2014 .
+mv 2014/*/C*_2014*.fgmcal .
 
 ======================================================
 4. Find intervals of EFW-DWP synchronization failures (Per-Arne or other)

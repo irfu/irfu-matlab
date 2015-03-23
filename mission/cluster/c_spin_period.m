@@ -18,7 +18,7 @@ ph = phase; tref = phase(1,1); ph(:,1) = ph(:,1) - tref;
 if flag
   phc = unwrap(ph(:,2)/180*pi); phc_coef = polyfit(ph(:,1),phc,1);
 else
-  phc = unwrap(ph(:,2)/180*pi); phc_coef = polyfit(ph(:,1),phc,1);
+  phc = unwrap(ph(1:2,2)/180*pi); phc_coef = polyfit(ph(:,1),phc,1);
 end
 if isnan(phc_coef(1))
     irf_log('proc','Cannot determine spin period!');

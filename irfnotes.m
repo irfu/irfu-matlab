@@ -37,12 +37,14 @@ clear xLeft xSize sLeft ySize yTop
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % to get bitmap file
 print -dpng delme.png
-% to get pdf file with no white margins
+% to get pdf file with no white margins:
+% 1) print eps file from matlab
 print -depsc2 -painters delme.eps
-%print -dpdf -painters delme.pdf
-% to convert to pdf on the system command line execute some of
-% ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme.eps
-% epstopdf delme.eps
+% 2) from terminal convert to eps file without white margins
+% epstool routine can be installed, e.g. on mac >brew install epstool
+% > epstool --copy --bbox delme.eps delme_crop.eps
+% 3) convert eps file to pdf, result is in delme_crop.pdf
+% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme_crop.eps
 %% Add information to figures
 %
 % text and legends

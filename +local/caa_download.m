@@ -283,7 +283,7 @@ if exist(dataSetDir,'dir'),
 			if newVersion > lastVersion,
 				indNewFiles(j) = true;
 				irf.log('debug',['Ingested since last #' num2str(j) ...
-					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint2iso')]);
+					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint>utc_yyyy-mm-dd')]);
 			end
 		end
 		TTfileList = select(TTfileList,find(indNewFiles));
@@ -310,12 +310,12 @@ if exist(dataSetDir,'dir'),
 						if indNewIntervals(iReq), % new files available for interval
 							indOldToUpdateIntervals(jIndex) = true;
 							irf.log('debug',['Old interval to update #' num2str(jIndex) ' '...
-								irf_time(tintInd(jIndex,:),'tint2iso')]);
+								irf_time(tintInd(jIndex,:),'tint>utc')]);
 						end
 					else
 						indOldObsoleteIntervals(jIndex) = true;
 						irf.log('debug',['Obsolete interval #' num2str(jIndex) ' '...
-							irf_time(tintInd(jIndex,:),'tint2iso')]);
+							irf_time(tintInd(jIndex,:),'tint>utc')]);
 					end
 					jIndex = jIndex-1;
 					if jIndex==0, break; end
@@ -340,7 +340,7 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['Old intervals total        : ' num2str(nOldIntervals)])
 		irf.log('warning', ['Old intervals to remove    : ' num2str(nOldObsoleteIntervals)])
 		irf.log('warning', ['Old intervals to update    : ' num2str(nOldToUpdateInterval)])
-		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
+		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldToUpdateInterval)])
 		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
 else
@@ -393,7 +393,7 @@ while 1
 			
 			irf.log('warning',['Requesting ' dataSet ' interval #' num2str(iRequest) ...
 				'(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' ...
-				irf_time(tint,'tint2iso')]);
+				irf_time(tint,'tint>utc')]);
 			try
 				if streamData
 					[download_status,downloadfile]=caa_download(tint,dataSet,...

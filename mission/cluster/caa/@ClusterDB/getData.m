@@ -72,8 +72,6 @@ function out_data = getData(cdb,start_time,dt,cl_id,quantity,varargin)
 %	CDF files in /data/cluster.
 %
 % See also C_GET, TOEPOCH
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -706,7 +704,11 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 				irf_log('dsrc',sprintf('Too high bias current on p3&p4 sc%d',cl_id));
 			end
 		case 3
-      if start_time>toepoch([2011 6 01 09 30 0])
+      if start_time>toepoch([2014 11 03 20 58 16.7])
+        % p2 failure
+        probe_list = 4;
+        irf_log('dsrc',sprintf('p1, p2 & p3 are BAD on sc%d',cl_id));
+      elseif start_time>toepoch([2011 6 01 09 30 0])
         % p3 failure
         probe_list = [2 4];
         irf_log('dsrc',sprintf('p1 & p3 are BAD on sc%d',cl_id));
@@ -788,21 +790,64 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
 	
-	n_ok = 0;
-	
-	% We ask for 2 sec more from each side 
-	% to avoid problems with interpolation.
-	[t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
-	if ~isempty(data) && length(t)>1
-		c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
-		n_ok = n_ok + 1;
-	else
-		c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
-		irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
-	end
-	clear t data
-	
-	if ~n_ok, out_data = []; end
+  irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
+  currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));	
+  mkdir(tempDir); cd(tempDir);
+  tint = start_time +[-5 dt+10];
+  datasetName = sprintf('C%d_CP_AUX_SPIN_TIME',cl_id);
+  try
+    caa_download(tint,datasetName,...
+      '&USERNAME=avaivads&PASSWORD=%21kjUY88lm','stream');
+  catch, irf_log('dsrc','Error streaming from CSA')
+  end
+  d = dir(['CAA/' datasetName '/*.cef.gz']);
+  if ~isempty(d)
+    cefFile = ['CAA/' datasetName '/' d.name];
+    cef_init(); cef_read(cefFile);
+    c1 = onCleanup(@() cef_close());
+    c2 = onCleanup(@() rmdir(tempDir,'s'));
+    tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum2epoch');
+    spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
+    % find errors
+    iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));
+    if length(iJump) < min(4,length( spinPeriod ))
+      if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'; end
+      for i = iJump'
+        irf_log('proc',['removing erroneous point at ' epoch2iso(tt(i))])
+      end
+      spinPeriod(iJump) = [];
+      tt(iJump) = [];
+    end
+    refTime = [-.5 .5]; % part of spin
+    refPhase = refTime*360+180; % spin period center corresponds to phase 0
+    deltaT = repmat(refTime,size(tt,1),1).*...
+      repmat(double(spinPeriod),1,length(refTime));
+    tmat = repmat(tt(:,1),1,length(refTime))+deltaT;
+    amat = repmat(refPhase,size(tt,1),1);
+    tmat = reshape(tmat',numel(tmat),1);
+    difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
+    amat = reshape(amat',numel(amat),1);
+    pha = [tmat amat]; %#ok<NASGU>
+    c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
+    cd(currentDir)
+  else % read from isdat
+    irf_log('dsrc','did not suceed');
+    cd(currentDir), rmdir(tempDir,'s')
+    irf_log('dsrc','Reading phase from ISDAT instead');
+    n_ok = 0;
+    % We ask for 2 sec more from each side
+    % to avoid problems with interpolation.
+    [t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
+    if ~isempty(data) && length(t)>1
+      c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
+      n_ok = n_ok + 1;
+    else
+      c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
+      irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
+    end
+    clear t data
+    if ~n_ok, out_data = []; end
+  end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % aux data - Position
@@ -1103,7 +1148,8 @@ elseif strcmp(quantity,'sax')
 	% first try ISDAT (fast) then files
 	lat = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slat');
 	long = c_csds_read([cdb.db '|' cdb.dp],start_time,dt,cl_id,'slong');
-	
+	if ~isempty(lat), lat(isnan(lat(:,2)),:) = []; end
+  if ~isempty(long), long(isnan(long(:,2)),:) = []; end
 	if isempty(lat) || isempty(long)
 		% Try ISDAT which does not handle data gaps
 		[t,data] = caa_is_get(cdb.db, start_time, dt, ...
@@ -1117,10 +1163,20 @@ elseif strcmp(quantity,'sax')
 			irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
 			out_data = []; cd(old_pwd), return
 		end
-	end
-	
+  end
+  if ~all(lat(:,1)==long(:,1))
+    [ii1,ii2]=irf_find_comm_idx(lat,long);
+    lat = lat(ii1,:); long = long(ii2,:);
+  end
+  if isempty(lat) || isempty(long)
+    irf_log('dsrc',irf_ssub('No data for SAX?',cl_id))
+    out_data = []; cd(old_pwd), return
+  end
+  % XXX: TODO here we definitely need to check if the attitude is changing 
+  % with time instead of doing mean()
+	lat = mean(lat(:,2)); long = mean(long(:,2));
 	% Take first point only. This is OK according to AV
-	[xspin,yspin,zspin] = sph2cart(long(1,2)*pi/180,lat(1,2)*pi/180,1);
+	[xspin,yspin,zspin] = sph2cart(long*pi/180,lat*pi/180,1);
 	sax = [xspin yspin zspin]; %#ok<NASGU>
 
 	eval(irf_ssub('SAX?=sax;save_list=[save_list '' SAX?''];',cl_id));
