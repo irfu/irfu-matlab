@@ -112,7 +112,7 @@ switch lower(flag)
 			defValues = [2000 1 1 0 0 0 0 0 0];
 			t_in = [t_in repmat(defValues(nCol+1:9),size(t_in,1),1)];
 		end
-		t_out = computett2000(t_in);
+		t_out = spdfcomputett2000(t_in);
 	case 'vector6>ttns'
 		% Convert a [YYYY MM DD hh mm ss.xxxx] to TT2000 in int64 ns
 		nCol = size(t_in,2);
@@ -127,22 +127,22 @@ switch lower(flag)
 		tmicroSecRound = floor(tmicroSec);
 		tnSecRound = floor(1e3*(tmicroSec - tmicroSecRound));
 		t_in(:,6:9) = [tSecRound tmSecRound tmicroSecRound tnSecRound];
-		t_out = computett2000(t_in);
+		t_out = spdfcomputett2000(t_in);
 	case {'ttns>utc','ttns>iso'}
 		if any(strfind(flag,'iso')),
 			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
 		end
-		tCellArray =  encodett2000(int64(t_in));
+		tCellArray =  spdfencodett2000(int64(t_in));
 		t_out = vertcat(tCellArray{:});
 		t_out(:,end+1)='Z';
 	case 'tt>ttns'
-		t_out = double(t_in)*1e9;
+		t_out = int64(t_in)*1e9;
 	case 'ttns>tt'
 		t_out = double(t_in)/1e9;
 	case 'ttns>vector9'
-		t_out = breakdowntt2000(t_in);
+		t_out = spdfbreakdowntt2000(t_in);
 	case 'ttns>vector'
-		tVec9 = breakdowntt2000(t_in);
+		tVec9 = spdfbreakdowntt2000(t_in);
 		t_out = tVec9(:,1:6);
 		t_out(:,6) = tVec9(:,6)+1e-3*tVec9(:,7)+1e-6*tVec9(:,8)+1e-9*tVec9(:,9);
 	case {'utc>ttns','iso>ttns'}
@@ -150,7 +150,7 @@ switch lower(flag)
 			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(t_in(1,:),'T'))
-			t_out = parsett2000(t_in);
+			t_out = spdfparsett2000(t_in);
 		else
 			mask = '%4d-%2d-%2d %2d:%2d:%f%*c';
 			s=t_in';
@@ -171,9 +171,9 @@ switch lower(flag)
 	case 'epoch>ttns'
 		t_out = irf_time(fromepoch(t_in),'vector6>ttns');
 	case {'ttns>date','ttns>datenum'} % matlab date
-		t_out = datenum(irf_time(t_in,'ttns>vector6'));
+		t_out = spdftt2000todatenum(t_in);
 	case {'date>ttns','datenum>ttns'}
-		t_out = irf_time(datevec(t_in),'vector6>ttns');
+		t_out = spdfdatenumtott2000(t_in);
 	case 'ttns>doy'
 		t_first_january_vector=irf_time(t_in,'ttns>vector');
 		t_first_january_vector(:,2:end)=1;
@@ -186,18 +186,23 @@ switch lower(flag)
 			t_in(:,2).*24-12 t_in(:,1).*0 t_in(:,1).*0],'vector6>ttns');
 		
 	case 'cdfepoch>ttns'
-		tEpoch = (t_in-62167219200000)/1000;
-		t_out = irf_time(tEpoch,'epoch>ttns');
+        ttBreak = spdfbreakdownepoch(t_in); % cdfepoch, not other "epoch"
+        % Assume 0 microsec and 0 nanosec.
+        t_out = spdfcomputett2000([ttBreak zeros(size(ttBreak,1),2)]);
 	case 'ttns>cdfepoch'
-		tEpoch = irf_time(ttns,'ttns>epoch');
-		t_out = tEpoch*1000+62167219200000;
+        ttBreak = spdfbreakdowntt2000(t_in);
+        % Should round up/down column 7, depending on column 8 to 9
+        ttBreak(:,7) = round(ttBreak(:,7)+ttBreak(:,8)/10^3+ttBreak(:,9)/10^6);
+        t_out = spdfcomputeepoch(ttBreak(:,1:7)); % cdfepoch, not other "epoch"
 	case 'cdfepoch16>ttns'
-		t_out = irf_time(t_in(:,1)*1e3,'cdfepoch>ttns');
-		t_out = t_out + int64(t_in(:,2));		
+        ttBreak = spdfbreakdownepoch16(t_in);
+        % Should round up/down column 9, depending on column 10
+        ttBreak(:,9) = round(ttBreak(:,9)+ttBreak(:,10)/10^3);
+        t_out = spdfcomputett2000(ttBreak(:,1:9));
 	case 'ttns>cdfepoch16'
-		tCdfepoch = irf_time(fix(t_in/1e9),'ttns>cdfepoch');
-		tPs = double((ttns-1e9*fix(ttns/1e9))*1e3);
-		t_out = [tCdfepoch tPs];
+        ttBreak = spdfbreakdowntt2000(t_in);
+        % Assume 0 picoseconds.
+        t_out = spdfcomputeepoch16([ttBreak zeros(size(ttBreak,1),1)]);
 
 		%
 		% Time interval conversions

@@ -51,7 +51,7 @@ end
 ss=size(datetime);
 if (ss(1) < 1 || ss(2) ~= 7)
     error('MATLAB:SPDFCOMPUTEEPOCH:inputArguments', ...
-          'SPDFCOMPUTEEPOCH requires each row to have nine (9) date/time fields.')
+          'SPDFCOMPUTEEPOCH requires each row to have seven (7) date/time fields.')
 end
 
 out = spdfcomputeepochc (datetime);
