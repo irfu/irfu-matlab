@@ -82,6 +82,7 @@ if strcmpi(param, 'init')
   DATAC.dce_xyz_dsl = []; % comp E-field xyz DSL-coord
   DATAC.dcv = [];         % src DCV file
   DATAC.defatt = [];      % src DEFATT file
+  DATAC.defeph = [];      % src DEFEPH file
   DATAC.hk_101 = [];      % src HK_101 file
   DATAC.hk_10e = [];      % src HK_10E file
   DATAC.l2pre = [];       % src L2Pre file
@@ -127,9 +128,9 @@ elseif ischar(dataObj) && exist(dataObj, 'file')
   % If it is not a read cdf file, is it an unread cdf file? Read it.
   irf.log('warning',['Loading ' param ' from file: ', dataObj]);
   dataObj = dataobj(dataObj, 'KeepTT2000');
-elseif isstruct(dataObj) && strcmp(param, 'defatt')
-  % Is it the special case of DEFATT (read as a struct into dataObj). Do
-  % nothing..
+elseif isstruct(dataObj) && any(strcmp(param, {'defatt', 'defeph'}))
+  % Is it the special case of DEFATT/DEFEPH (read as a struct into dataObj).
+  % Do nothing..
 else
   errStr = 'Unrecognized input argument';
   irf.log('critical', errStr);
@@ -208,6 +209,12 @@ switch(param)
 
   case('defatt')
     % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase')
+    DATAC.(param) = dataObj;
+    check_monoton_timeincrease(DATAC.(param).time);
+
+  case('defeph')
+    % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
+    % and 'Pos_Z')
     DATAC.(param) = dataObj;
     check_monoton_timeincrease(DATAC.(param).time);
 
