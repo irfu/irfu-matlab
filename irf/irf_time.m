@@ -175,11 +175,10 @@ switch lower(flag)
 	case {'date>ttns','datenum>ttns'}
 		t_out = spdfdatenumtott2000(t_in);
 	case 'ttns>doy'
-		t_first_january_vector=irf_time(t_in,'ttns>vector');
-		t_first_january_vector(:,2:end)=1;
-		t_out=[t_first_january_vector(:,1) ...
-			floor(irf_time(t_in,'ttns>datenum')) ...
-			-floor(irf_time(t_first_january_vector,'vector>datenum'))+1];
+		ttBreak = irf_time(t_in,'ttns>vector');
+		ttBreak(:,2:end) = 1;
+		t_out = [ttBreak(:,1) ...
+			floor(irf_time(t_in,'ttns>datenum'))-floor(irf_time(ttBreak,'vector>datenum'))+1];
 		
 	case 'doy>ttns'
 		t_out=irf_time([t_in(:,1) t_in(:,1).*0+1 t_in(:,1).*0+1 ...
