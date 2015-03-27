@@ -105,7 +105,7 @@ ylabel(dcePlot(1), {'Electric field, Instrument ref. frame','[mV/m]'})
 ylabel(dcePlot(2), {'Z-Phase, from DEFATT file','[deg]'})
 legend(dcePlot(1), ['MMS',scID,' DCE12'],...
   ['MMS',scID,' DCE34']);
-legend(dcePlot(2), 'Z-Phase (0 deg when sun is along DCS-X axis)');
+legend(dcePlot(2), 'Z-Phase (0 deg when sun is along BCS-X axis)');
 
 % DCV & ZPhase
 figure; dcvPlot = irf_plot({V1234, ZPHASE});
@@ -117,7 +117,7 @@ legend(dcvPlot(1), ['MMS',scID,' DCV1'],...
   ['MMS',scID,' DCV2'],...
   ['MMS',scID,' DCV3'],...
   ['MMS',scID,' DCV4']);
-legend(dcvPlot(2), 'Z-Phase (0 deg when sun is along DCS-X axis)');
+legend(dcvPlot(2), 'Z-Phase (0 deg when sun is along BCS-X axis)');
 
 
 %% Verify input file
