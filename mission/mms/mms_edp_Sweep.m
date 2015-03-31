@@ -85,7 +85,7 @@ classdef mms_edp_Sweep
         plot(h,s1,biasRes1,c(p1),s2,biasRes2,[c(p2) '--']);
       end
       yl = get(h,'YLim'); set(h,'YLim',yl*1.05);
-      t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]); set(t,'FontSize',8);
+      t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]); set(t,'FontSize',12);
       ylabel(h,...
         ['Bias [' getunits(obj.sweep,[obj.varPref '_sweep_bias1']) ']'])
       xlabel(h,...
