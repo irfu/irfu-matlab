@@ -113,64 +113,16 @@ catch
 end
 end
 function okTest = test_c_4
-try
-	okTest = true; % default for all test
-	ok     = true; % default for subtest
-	
-	%% SUBTEST: position of tetrahedron, base plane in xy
-	R1n=[1 0 0];
-	R2n=[cos(1/3*2*pi) sin(1/3*2*pi) 0];
-	R3n=[cos(2/3*2*pi) sin(2/3*2*pi) 0];
-	R4n=[0 0 sqrt(norm(R2n-R1n)^2-1)];
-	zMassCenter=R4n(3)/4;
-	c_eval('R?n(3)=R?n(3)-zMassCenter;');
-	c_eval('R?=R?n;');
-	
-	% construction of field
-	Bconst	=@(x) [0 0 1]; %
-	
-	% Cylindrical field with symmetry axis along z and center at rc
-	% such field gives curvature equal to 1/R where R is distance to
-	% the cylinder symmetry axis
-	Bcircle	=@(x,rc) [(x(:,2)-rc(2))./sqrt((x(:,1)-rc(1)).^2 +(x(:,2)-rc(2)).^2) ...
-		-(x(:,1)-rc(1))./sqrt((x(:,1)-rc(1)).^2 +(x(:,2)-rc(2)).^2) 0];
-	rc=[10 10 0]; % cylinder symmetry axis location, B field is clockwise
-	%disp('Test curvature')
-	%disp([' should be: [' num2str(1/norm(rc)^2*rc,'%5.2f') ']']);
-	c_eval('B?=Bcircle(R?,rc);');
-	curv=c_4_grad('R?','B?','curvature');
-	%disp(['        is: [' num2str(curv,'%5.2f') ']'])
-	if norm(1/norm(rc)^2*rc - curv) > 1e-1
-		disp('!!!! Curvature failed!!!!')
-		disp([' should be: [' num2str(1/norm(rc)^2*rc,'%5.2f') ']']);
-		disp(['        is: [' num2str(curv,'%5.2f') ']'])
-		disp(['     error: ' num2str(norm(1/norm(rc)^2*rc - curv))])
-		ok = false;
+testResults = run(testC4);
+okTest = true;
+for iTest = 1:length(testResults)
+	if testResults(iTest).Failed
+		okTest = false;
+		testResults(iTest);
+	elseif testResults(iTest).Incomplete
+		okTest = false;
+		testResults(iTest);
 	end
-	plusminus(ok); disp('curvature');	
-	okTest = okTest * ok;
-	
-	%% SUBTEST: Constant current in Z direction
-	jz=10;
-	Bjz = @(x) [0 jz*x(1) 0];
-	c_eval('B?=Bjz(R?);');
-	testCurl=c_4_grad('R?','B?','curl');
-	if norm([0 0 jz] - testCurl) > 1e-10
-		disp('!!!! Curl failed!!!!')
-		disp([' should be: [0 0 ' num2str(jz) ']']);
-		disp(['        is: [' num2str(testCurl,'%6.2f') ']'])
-		disp(['     error: ' num2str(norm([0 0 jz] - testCurl))])
-		ok = false;
-	end
-	plusminus(ok); disp('curl');	
-	okTest = okTest * ok;
-	
-	% Test drift gradient
-	% Fitzpatrick book page 30
-	% V=mv^2/2/e B x gradB / B^3
-
-catch
-	okTest=false;
 end
 end
 function okTest = test_epoch
