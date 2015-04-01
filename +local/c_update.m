@@ -87,11 +87,16 @@ end
 	function dataSetOut=replace_minus_in_cis_names(dataSet)
 		if strfind(dataSet,'CIS'),
 			if strfind(dataSet,'-'),
-			irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
-			dataSetNew=strrep(dataSet,'-','_');
-			irf.log('debug',['New data set: ' dataSetNew]);
-			movefile(dataSet,dataSetNew);
-			dataSet=dataSetNew;
+				irf.log('debug',['Replacing minus signs in dataset: ' dataSet]),
+				dataSetNew=strrep(dataSet,'-','_');
+				irf.log('debug',['New data set: ' dataSetNew]);
+				if ~exist(dataSetNew, 'dir')
+					movefile(dataSet,dataSetNew);
+				else
+					movefile([dataSet '/*.cdf'],dataSetNew);
+					rmdir(dataSet); %% can fail that is ok if dir is not empty
+				end
+				dataSet=dataSetNew;
 			end
 			listFiles=dir([dataSet '/*.cdf']);
 			iDir = [listFiles(:).isdir]; %# returns logical vector
@@ -112,5 +117,3 @@ end
 			end
 		end
 		dataSetOut=dataSet;
-
-
