@@ -1,9 +1,10 @@
 classdef testC4 < matlab.unittest.TestCase
+	% TESTC4 test c_4_grad routine
 	
 	properties
 	end
 	
-	methods (Static,Access=private)
+	methods (Static)
 		function R=defineSatellitePosition(scSeparation)
 			% 
 			R1 = scSeparation * [1 0 0];

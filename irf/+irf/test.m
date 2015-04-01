@@ -38,7 +38,7 @@ else
 		testNumber=testName;
 	else
 		irf_log('fcal','Unknown test');
-		return;		
+		return;
 	end
 end
 nTests = numel(testNumber);
@@ -54,7 +54,7 @@ for j=1:nTests
 	end
 	disp('*********************');
 	tic;
-	functionName = ['test_' testList{iTest}];
+	functionName = ['test_of_' testList{iTest}];
 	okArray(j)=eval(functionName);
 	tElapsed = toc;
 	disp(['Test ended. Elapsed time: ' num2str(tElapsed) 's.']);
@@ -69,64 +69,22 @@ else
 	end
 end
 
-if nargout == 1, 
+if nargout == 1,
 	ok = okArray;
 end
 end
 
 % Tests
-function okTest = test_irf_time
-try
-	okTest = 1;
-	% generate vector with 10000 times during last 500 years
-	a=rand(1000,1);
-	tDateArray = now - 365*500*a;
-	s1=irf_time(tDateArray,'date>iso');
-	t=irf_time(s1,'iso>ttns');
-	s2=irf_time(t,'ttns>iso');
-	ok = strcmp(s1,s2);
-	plusminus(ok); disp('1000 random utc>ttns>utc');
-	okTest = okTest * ok;
-	% next test
-	tEpoch = irf_time(t,'ttns>epoch');
-	tint=[tEpoch tEpoch+a*1000];
-	s1=irf_time(tint,'tint>iso');
-	tt=irf_time(s1,'iso>tint');
-	ok = any(any(abs(tt-tint)<1e-6));
-	plusminus(ok); disp('1000 random tint>utc>tint');
-	okTest = okTest * ok;
-	% next test. different iso formats should be recognized
-	s1=irf_time(tDateArray,'date>utc');
-	t=irf_time(s1,'utc>ttns');
-	t1=irf_time(s1(:,1:end-1),'utc>ttns');
-	t2=irf_time(reshape(strrep(s1(:)','Z',' '),size(s1)),'utc>ttns');
-	if all(t==t1) && all(t==t2)
-		ok=1;
-	else
-		ok=0;
-	end
-	plusminus(ok); disp('1000 random utc (3 formats) > tint');
-	okTest = okTest * ok;
-	% next test
-catch
-	okTest=false;
+function okTest = test_of_irf_time
+testResults = run(test_irf_time);
+okTest = check_test_results(testResults);
 end
-end
-function okTest = test_c_4
+function okTest = test_of_c_4
 testResults = run(testC4);
-okTest = true;
-for iTest = 1:length(testResults)
-	if testResults(iTest).Failed
-		okTest = false;
-		testResults(iTest);
-	elseif testResults(iTest).Incomplete
-		okTest = false;
-		testResults(iTest);
-	end
+okTest = check_test_results(testResults);
 end
-end
-function okTest = test_epoch
-try 
+function okTest = test_of_epoch
+try
 	okTest		= true; % default for all test
 	ntests=1e5;
 	disp('Testing ISDAT epoch conversion tools.')
@@ -140,7 +98,7 @@ try
 	if ~isequal(d(1:5),[2010 04 24 07 37]) || abs(d(6)-0.1)>tol
 		okSubtest = false;
 	end
-	plusminus(okSubtest); disp('known earlier roundoff error');	
+	plusminus(okSubtest); disp('known earlier roundoff error');
 	okTest = okTest * okSubtest;
 	%% SUBTEST: roundoff errors from random times
 	okSubtest	= true; % default for subtest
@@ -149,7 +107,7 @@ try
 	if any(d(:,6)>60)
 		okSubtest = false;
 	end
-	plusminus(okSubtest); disp('random roundoff errors');	
+	plusminus(okSubtest); disp('random roundoff errors');
 	okTest = okTest * okSubtest;
 	
 	%% SUBTEST: roundoff errors from times near second boundaries
@@ -160,7 +118,7 @@ try
 	if any(d(:,6)>60)
 		okSubtest = false;
 	end
-	plusminus(okSubtest); disp('roundoff errors near second boundaries');	
+	plusminus(okSubtest); disp('roundoff errors near second boundaries');
 	okTest = okTest * okSubtest;
 	%% SUBTEST: epoch2iso/iso2epoch round trip
 	okSubtest	= true; % default for subtest
@@ -177,7 +135,7 @@ try
 	if strcmp(ISO,ISO2)~=1
 		okSubtest = false;
 	end
-	plusminus(okSubtest); disp('epoch2iso/iso2epoch round trip');	
+	plusminus(okSubtest); disp('epoch2iso/iso2epoch round trip');
 	okTest = okTest * okSubtest;
 	if ~okSubtest
 		cnt=0;
@@ -223,19 +181,19 @@ try
 			break;
 		end
 	end
-	plusminus(okSubtest); disp('leap seconds');	
+	plusminus(okSubtest); disp('leap seconds');
 	okTest = okTest * okSubtest;
 	if leap_s==0,disp('  Neither Matlab nor ISDAT uses leap seconds.'),end
 	if leap_s==1 && ~okSubtest, disp('ISDAT does not use leap seconds.'); end
-
-
+	
+	
 catch
 	okTest = false;
 end
 end
-function okTest = test_coord_sys
-try 
-	okTest		= true; % default for all test	
+function okTest = test_of_coord_sys
+try
+	okTest		= true; % default for all test
 	%% SUBTEST: conversion between geo/gei/gse/gsm/sm/mag
 	okSubtest	= true; % default for subtest
 	%
@@ -266,14 +224,14 @@ try
 			break;
 		end
 	end
-	plusminus(okSubtest); disp([num2str(iTimes) ' random cyclic transformations gei/geo/gse/gsm/sm/mag']);	
-	okTest = okTest * okSubtest;	
+	plusminus(okSubtest); disp([num2str(iTimes) ' random cyclic transformations gei/geo/gse/gsm/sm/mag']);
+	okTest = okTest * okSubtest;
 catch
 	okTest = false;
 end
 end
 function okTest = template_test
-try 
+try
 	okTest		= true; % default for all test
 	okSubtest	= true; % default for subtest
 	
@@ -282,14 +240,14 @@ try
 	%
 	% Here comes the subtest1
 	%
-	plusminus(okSubtest); disp('subtest1 text');	
+	plusminus(okSubtest); disp('subtest1 text');
 	okTest = okTest * okSubtest;
 	%% SUBTEST: description of test2
 	okSubtest	= true; % default for subtest
 	%
 	% Here comes the subtest2
 	%
-	plusminus(okSubtest); disp('subtest2 text');	
+	plusminus(okSubtest); disp('subtest2 text');
 	okTest = okTest * okSubtest;
 	
 catch
@@ -303,6 +261,18 @@ if ok,
 	fprintf('+ ');
 else
 	fprintf('- ');
+end
+end
+function okTest = check_test_results(testResults)
+okTest = true;
+for iTest = 1:length(testResults)
+	if testResults(iTest).Failed
+		okTest = false;
+		testResults(iTest);
+	elseif testResults(iTest).Incomplete
+		okTest = false;
+		testResults(iTest);
+	end
 end
 end
 
