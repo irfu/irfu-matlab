@@ -35,20 +35,17 @@ end
 
 	function Lprobe = lp_sphere
 		Lprobe = lp.lprobe;
-		Lprobe.type = 'sphere';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusSphere = 0.04; % 4cm
 	end
 	function Lprobe = lp_wire
 		Lprobe = lp.lprobe;
-		Lprobe.type = 'wire';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusWire = 1e-3;
 		Lprobe.lengthWire = 1;
 	end
 	function Lprobe = lp_sphere_wire
 		Lprobe = lp.lprobe;
-		Lprobe.type = 'sphere';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusSphere = 0.04; % 4cm
 		Lprobe.radiusWire = 1e-3;
@@ -56,18 +53,25 @@ end
 	end
 	function Lprobe = lp_Cluster
 		Lprobe = lp.lprobe;
-		Lprobe.type = 'sphere';
-		Lprobe.surface = 'themis';
+		Lprobe.name = 'Cluster';
+		Lprobe.surface = 'cluster';
 		Lprobe.radiusSphere = 0.04; % 4cm
 		Lprobe.radiusWire = 1e-3;
 		Lprobe.lengthWire = 1;
 	end
 	function Lprobe = lp_MMS_SDP
 		Lprobe = lp.lprobe;
-		Lprobe.type = 'sphere';
+		Lprobe.name = 'MMS SDP';
 		Lprobe.surface = 'TiN';
 		Lprobe.radiusSphere = 0.04; % 4cm
 		Lprobe.radiusWire = 1e-3;
+		Lprobe.lengthWire = 1;
+	end
+	function Lprobe = lp_MMS_ADP
+		Lprobe = lp.lprobe;
+		Lprobe.name = 'MMS ADP';
+		Lprobe.surface = '??';
+		Lprobe.radiusWire = 1e-2;
 		Lprobe.lengthWire = 1;
 	end
 

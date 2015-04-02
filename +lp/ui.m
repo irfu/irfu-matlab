@@ -11,7 +11,7 @@ end
 
 %% Defaults
 SpacecraftList = lp.default_spacecraft;
-ProbeList      = lp.default_probes;
+ProbeList      = lp.default_lprobe;
 PlasmaList     = lp.default_plasma_models;
 
 %% Check input

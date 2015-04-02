@@ -3,23 +3,31 @@ classdef lprobe
 	
 	properties
 		name
-		type
 		surface
 		radiusSphere
 		radiusWire     % if radius wire is two numbers than use stazer formula
 		lengthWire
 	end
 	properties (Dependent)
+		type
 		Area           % structure with fields total, sunlit
 		capacitance
 	end
-	%     data.probe.surface='themis';
-%     set(data.inp.probe.surface,'Value',find(strcmp('cluster',lp.photocurrent))+1);
-%     set(data.inp.probe.length_value,'style','text','string','');
-%     set(data.inp.probe.radius_value,'string','4');
-%     set(data.inp.sc.surface,'Value',find(strcmp('solar cells',lp.photocurrent))+1); % solar cells
 
 	methods
+		
+		function type = get.type(Lp)
+			if ~isempty(Lp.radiusSphere) && ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire),
+				type = 'sphere+wire';
+			elseif ~isempty(Lp.radiusWire) && ~isempty(Lp.lengthWire),
+				type = 'wire';
+			elseif ~isempty(Lp.radiusWire),
+				type = 'sphere';
+			else
+				type =[];
+			end
+		end
+		
 		function Area = get.Area(Lp)
 			Area.total = 0;
 			Area.sunlit = 0;
@@ -32,6 +40,7 @@ classdef lprobe
 				Area.sunlit = Area.sunlit + Lp.radiusWire*Lp.lengthWire;
 			end
 		end
+		
 		function capacitance = get.capacitance(Lp)
 			cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
 			if isnumeric(Lp.radiusWire) && isnumeric(Lp.lengthWire),
@@ -46,6 +55,7 @@ classdef lprobe
 			end
 			capacitance = sum([ cSphere cWire]);
 		end
+		
 	end
 	
 end
