@@ -500,9 +500,9 @@ end
 irf_figmenu;
 
 %% Add information about subplot handles to userdata of figure
-%user_data = get(gcf,'userdata');
-%if flag_subplot>0, user_data.subplot_handles = c; end
-%set(gcf,'userdata',user_data);
+user_data = get(gcf,'userdata');
+if flag_subplot>0, user_data.subplot_handles = c; end
+set(gcf,'userdata',user_data);
 
 %% In case time is in isdat_epoch add time axis
 if ((firstTimeStamp > 1e8) && (firstTimeStamp < 1e10))
