@@ -238,22 +238,22 @@ switch procId
         'received no DCE file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = mms_sdp_load(DCE_File,'sci','dce');
+      src_fileData = mms_sdp_load(DCE_File,'dce');
       update_header(src_fileData); % Update header with file info.
     end
 
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdp_load(HK_10E_File,'sci','hk_10e');
+      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
       update_header(src_fileData); % Update header with file info.
     end
 
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData = mms_sdp_load(HK_101_File,'sci','hk_101');
+    src_fileData = mms_sdp_load(HK_101_File,'hk_101');
     update_header(src_fileData) % Update header with file info.
 
     irf.log('notice', [procName ' proc using: ' DCV_File]);
-    src_fileData = mms_sdp_load(DCV_File,'sci','dcv');
+    src_fileData = mms_sdp_load(DCV_File,'dcv');
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
@@ -268,12 +268,12 @@ switch procId
     end
 
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = mms_sdp_load(DCE_File,'sci','dce');
+    src_fileData = mms_sdp_load(DCE_File,'dce');
     update_header(src_fileData) % Update header with file info.
 
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdp_load(HK_10E_File,'sci','hk_10e');
+      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
       update_header(src_fileData) % Update header with file info.
     end
 
@@ -285,7 +285,8 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      src_fileData=mms_sdp_load(DEFATT_File,'ancillary','defatt');
+      [dataTmp,src_fileData]=mms_load_ancillary(DEFATT_File,'defatt');
+      mms_sdp_datamanager('defatt',dataTmp);
       update_header(src_fileData); % Update header with file info.
     else
       % HK101 file => phase
@@ -295,7 +296,7 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' HK_101_File]);
-      src_fileData=mms_sdp_load(HK_101_File,'sci','hk_101');
+      src_fileData=mms_sdp_load(HK_101_File,'hk_101');
       update_header(src_fileData) % Update header with file info.
     end
 
@@ -304,7 +305,7 @@ switch procId
         'received no DCV file argument.']);
     else
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      src_fileData = mms_sdp_load(DCV_File,'sci','dcv');
+      src_fileData = mms_sdp_load(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
     
@@ -320,7 +321,7 @@ switch procId
     end
 
     irf.log('notice', [procName ' proc using: ' L2Pre_File]);
-    src_fileData = mms_sdp_load(L2Pre_File,'sci','l2pre');
+    src_fileData = mms_sdp_load(L2Pre_File,'l2pre');
     update_header(src_fileData) % Update header with file info.
 
     % Write the output
