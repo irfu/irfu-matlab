@@ -78,14 +78,16 @@ classdef mms_edp_Sweep
       end
       
       c = 'kkrrbb';
+      lStyleP1 = [c(p1) 'x-']; lStyleP2 = [c(p2) 'o-'];
       if isempty(h),
-        plot(s1,biasRes1,c(p1),s2,biasRes2,[c(p2) '--']);
+        plot(s1,biasRes1,lStyleP1,s2,biasRes2,lStyleP2);
         h = gca;
       else
-        plot(h,s1,biasRes1,c(p1),s2,biasRes2,[c(p2) '--']);
+        plot(h,s1,biasRes1,lStyleP1,s2,biasRes2,lStyleP2);
       end
       yl = get(h,'YLim'); set(h,'YLim',yl*1.05);
-      t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]); set(t,'FontSize',12);
+      t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]);
+      if isa(h,'handle'), set(t,'FontSize',12); end % Needed for HG2
       ylabel(h,...
         ['Bias [' getunits(obj.sweep,[obj.varPref '_sweep_bias1']) ']'])
       xlabel(h,...
