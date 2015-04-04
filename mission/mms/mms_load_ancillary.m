@@ -1,4 +1,9 @@
 function [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
+%MMS_LOAD_ANCILLARY  load DEFATT/DEFEPH file
+%
+% [dataIN,filenameData] = mms_load_ancillary(fullFilename,dataType)
+%
+% dataType is one of : 'defatt','defeph'
 
 if(~exist(fullFilename,'file'))
   errStr = ['File not found. ', fullFilename];
