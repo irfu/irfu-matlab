@@ -25,9 +25,16 @@ MMS_CONST.MinFileVer = 3; % min version of l1b files accepted
 
 MMS_CONST.MMSids = 1:4;
 
-% Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
-MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
-MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
+% Spin rate max and min, nominally 3.05 rpm +/-0.05 rpm.
+% After June 18, 2015
+MMS_CONST.Spinrate.max = 3.1; % Rev per Minute.
+MMS_CONST.Spinrate.min = 3.0; % Rev per Minute.
+% Spin rate nominally 3.1 rpm +/-0.1 rpm.
+% After May 1, 2015
+MMS_CONST.Spinrate.max_comm = 3.2; % Rev per Minute.
+% Spin rate max 7.3 rpm +/-0.1 rpm during thin wire deployments
+% Until May 1, 2015
+MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 
 % Angles when phase=0 (X BSC direction)
 MMS_CONST.Phaseshift.e12 = pi/6;
