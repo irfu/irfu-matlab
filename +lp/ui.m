@@ -1,10 +1,13 @@
-classdef ui
+classdef ui < handle
 	%LP.UI User interface to +lp package
 	%   LP.UI(spacecraft,probe,plasma,parameters)
-	properties
+	properties (SetAccess = protected)
 		SpacecraftList
+		SpacecraftUserDefined
 		ProbeList
+		ProbeUserDefined
 		PlasmaList
+		PlasmaUserDefined
 		figHandle
 		ud % user data
 		InputParameters
@@ -33,7 +36,21 @@ classdef ui
 			end
 			%% Initialize IDE
 			[obj.figHandle,obj.ud] = lp.ui.new_ide();
-			lp.gui_initialize(SpacecraftList, ProbeList, PlasmaList);
+			if ~isa(obj.SpacecraftList,'lp.spacecraft'),
+				obj.SpacecraftList = lp.default_spacecraft;
+			end
+			if ~isa(obj.ProbeList,'lp.probe'),
+				obj.ProbeList = lp.default_lprobe;
+			end
+			if ~isa(obj.PlasmaList,'lp.plasma'),
+				obj.PlasmaList = lp.default_plasma;
+			end
+			obj.SpacecraftUserDefined = obj.SpacecraftList(1);
+			obj.ProbeUserDefined = obj.ProbeList(1);
+			obj.PlasmaUserDefined = obj.PlasmaList(1);
+		end
+		function set.PlasmaUserDefined(obj,PlasmaModel)
+			obj.PlasmaUserDefined = PlasmaModel;
 		end
 	end
 	methods (Static)
@@ -62,8 +79,7 @@ classdef ui
 			linkaxes(ud.h(1:2),'x');
 			axis(ud.h(3),'off');
 			ud.ht=text(0,1,'','parent',ud.h(3));
-			set(figH,'userdata',ud);
-			
+			set(figH,'userdata',ud);			
 			%% initialize probe menu
 			hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .39]);
 			inp.probe.type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 230 150 30],'backgroundcolor','white','Callback', @setprobetype);
@@ -77,7 +93,6 @@ classdef ui
 			inp.probe.radius_value               = uicontrol('Parent',hp,'String','',                      'Position',[120 135 70 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
 			inp.probe.bias_current_text          = uicontrol('Parent',hp,'String','bias current [uA]',     'Position',[0   110 120 30]);
 			inp.probe.bias_current_value         = uicontrol('Parent',hp,'String','0','style','edit',      'Position',[120 110 70 30],'backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-			
 			%% initialize parameters menu
 			inp.UV_factor_text                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   80 60 30]);
 			inp.UV_factor_value                  = uicontrol('Parent',hp,'String',num2str(1),              'Position',[70  80 100 30],'style','edit','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
@@ -124,7 +139,7 @@ classdef ui
 			ud.inp=inp;
 			
 		end
-
+		
 	end
 end
 
