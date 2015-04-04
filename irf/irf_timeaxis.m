@@ -155,13 +155,13 @@ for j=1:numel(h), % clean extra xlabels if present
     ud=get(hca,'UserData');
     if isfield(ud,'h_xlabels'), % remove old handles
         for jj=1:numel(ud.h_xlabels)
-            if ishandle(ud.h_xlabels(jj)) && ud.h_xlabels(jj)~=0 delete(ud.h_xlabels(jj));end
+            if ishandle(ud.h_xlabels(jj)) && ud.h_xlabels(jj)~=0, delete(ud.h_xlabels(jj));end
         end
         ud=rmfield(ud,'h_xlabels');
     end
     if isfield(ud,'h_xlabeltitle'), % remove old handles
         for jj=1:numel(ud.h_xlabeltitle)
-            if ishandle(ud.h_xlabeltitle(jj)) && ud.h_xlabeltitle(jj)~=0 delete(ud.h_xlabeltitle(jj));end
+            if ishandle(ud.h_xlabeltitle(jj)) && ud.h_xlabeltitle(jj)~=0, delete(ud.h_xlabeltitle(jj));end
         end
         ud=rmfield(ud,'h_xlabeltitle');
     end
