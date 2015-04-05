@@ -74,11 +74,12 @@ res = TSeries(EpochTT2000(time),phaseOut);
     diffangle = abs(diffangle);
     diffangle = min([diffangle';360-diffangle']);
     if median(diffangle)>ERR_PHA_MAX, flagSpinRateStable = 0; 
-    fprintf('Median eff: %.4f \n',median(diffangle)), end
+      %fprintf('Median diff: %.4f \n',median(diffangle)), 
+    end
     spinRate  = 60/fitCoef(1);
   end
   function interp_phase()
-    disp('    >>>>>>>    interpolating >>>>>   -----')
+    %disp('    >>>>>>>    interpolating >>>>>   -----')
     phaseOut(iOutTmp) = interp1(tPhaTmp,phaTmpUnwrapped,...
       targetTime(iOutTmp),'linear','extrap');
     phaseOut(iOutTmp) = mod(phaseOut(iOutTmp),360);
