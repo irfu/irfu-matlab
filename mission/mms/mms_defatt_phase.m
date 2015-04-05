@@ -36,15 +36,15 @@ while tStart<=targetTime(end)
   tStop = tStart + tStep;
   iPhaTmp = tDefatt>=tStart-tStep/2 & tDefatt<tStart+tStep*3/2;
   tPhaTmp = tDefatt(iPhaTmp); phaTmp = phaseDefatt(iPhaTmp);
-  phaTmpUnwrapped = unwrap(phaTmp*pi/180)*180/pi;
-  
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
+  phaTmpUnwrapped = unwrap(phaTmp*pi/180)*180/pi;
   
   if isempty(iLastOkPoint), iOutTmp = targetTime < tStop;
   else iOutTmp = targetTime<tStop & targetTime>targetTime(iLastOkPoint);
   end
   if ~any(iOutTmp), tStart = tStop; continue; end
   
+  %XXX TODO: add handling of gaps
   gaps = find(diff(tPhaTmp)>60/SPIN_RATE_MAX);
   if ~isempty(gaps), error('gaps'), end
   
@@ -80,6 +80,7 @@ res = TSeries(EpochTT2000(time),phaseOut);
   end
   function interp_phase()
     %disp('    >>>>>>>    interpolating >>>>>   -----')
+    iOutTmp = targetTime<tStop & targetTime>=tStart;
     phaseOut(iOutTmp) = interp1(tPhaTmp,phaTmpUnwrapped,...
       targetTime(iOutTmp),'linear','extrap');
     phaseOut(iOutTmp) = mod(phaseOut(iOutTmp),360);
