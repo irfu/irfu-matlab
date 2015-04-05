@@ -1,8 +1,11 @@
 function res = mms_defatt_phase(defatt,time)
 %MMS_DEFATT_PHASE  compute spin phase from DEFATT
 %
-% PHA = MMS_DEFATT_PHASE(DEFATT)
+% PHA = MMS_DEFATT_PHASE(DEFATT,TIME)
+%
+% Returns TSeries
 
+%% Constants
 global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 if time(1) > EpochTT2000('2015-06-18T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max;
@@ -11,63 +14,80 @@ elseif time(1) > EpochTT2000('2015-01-01T00:00:00.000000Z').epoch
 else SPIN_RATE_MAX = MMS_CONST.Spinrate.max_deploy;
 end
 SPIN_RATE_NOMINAL = 3.1; % rpm
-DT_MAX = 2*60/SPIN_RATE_NOMINAL; % allow extrapolation for max DT_MAX seconds
-STEP_NSPINS_DEF = 30;
+DT_MAX = 60/SPIN_RATE_NOMINAL; % allow extrapolation for max DT_MAX seconds
+STEP_NSPINS_DEF = 30;  TSTEP_MAX = STEP_NSPINS_DEF*60/SPIN_RATE_NOMINAL;
 MAX_SPIN_RATE_CHANGE = SPIN_RATE_NOMINAL*0.001;
+ERR_PHA_MAX = 0.05; % Error in phase (deg) from fitting
 
+%% Prepare
 verify_input();
 
-t0 = defatt.time(1); targetTime = double(time-t0)*1e-9;
-phaseOut = zeros(size(targetTime))*NaN;
+t0 = defatt.time(1); 
+targetTime = double(time-t0)*1e-9; tStart = targetTime(1);
 tDefatt = double(defatt.time-t0)*1e-9; phaseDefatt = defatt.zphase;
 
+phaseOut = zeros(size(targetTime))*NaN;
 iOut = ( tDefatt<targetTime(1)-DT_MAX | tDefatt>targetTime(end)+DT_MAX );
 tDefatt(iOut) = []; phaseDefatt(iOut) = []; 
 
-spinRateLast = []; iLastGoodPoint = [];
-tStep = STEP_NSPINS_DEF*60/SPIN_RATE_NOMINAL; tStart = 0;
+%% Main loop
+spinRateLast = []; iLastOkPoint = []; fitCoef = []; tStep = TSTEP_MAX; 
 while tStart<=targetTime(end)
-  tStop = tStart+tStep/2;
-  iPhaTmp = tDefatt>=tStart-tStep/2 & tDefatt<tStop;
+  tStop = tStart + tStep;
+  iPhaTmp = tDefatt>=tStart-tStep/2 & tDefatt<tStart+tStep*3/2;
   tPhaTmp = tDefatt(iPhaTmp); phaTmp = phaseDefatt(iPhaTmp);
+  phaTmpUnwrapped = unwrap(phaTmp*pi/180)*180/pi;
   
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
+  
+  if isempty(iLastOkPoint), iOutTmp = targetTime < tStop;
+  else iOutTmp = targetTime<tStop & targetTime>targetTime(iLastOkPoint);
+  end
+  if ~any(iOutTmp), tStart = tStop; continue; end
   
   gaps = find(diff(tPhaTmp)>60/SPIN_RATE_MAX);
   if ~isempty(gaps), error('gaps'), end
   
-  comp_spin_rate();
-  if ~flagSpinRateStable
-    error('spinup')
-  end
-  if ~isempty(spinRateLast) &&...
+  comp_spin_rate()
+  if ~flagSpinRateStable || ~isempty(spinRateLast) &&...
       abs(spinRate-spinRateLast) > MAX_SPIN_RATE_CHANGE
-    error('slow spinup')
+    if tStep > DT_MAX, tStep = tStep/2; continue % Reduce the time step
+    else
+      interp_phase()
+    end  
+  else % All good
+    polyfit_phase()
   end
-  
-  % Polyfit
-  if isempty(iLastGoodPoint), iOutTmp = targetTime < tStop;
-  else iOutTmp = targetTime<tStop & targetTime>targetTime(iLastGoodPoint);
-  end
-  phaseOut(iOutTmp) = polyval(fitCoef, targetTime(iOutTmp));
-  phaseOut(iOutTmp) = mod(phaseOut(iOutTmp),360);
-  iLastGoodPoint = find(iOutTmp,1,'last'); tStart = tStop;
-end
-
+  iLastOkPoint = find(iOutTmp,1,'last'); tStep = TSTEP_MAX; tStart = tStop;
+end % Main loop
 res = TSeries(EpochTT2000(time),phaseOut);
 
+%% Help functions
   function comp_spin_rate()
     flagSpinRateStable = 1;
-    
-    phc = unwrap(phaTmp*pi/180)*180/pi; fitCoef = polyfit(tPhaTmp,phc,1);
+    fitCoef = polyfit(tPhaTmp,phaTmpUnwrapped,1);
     if isnan(fitCoef(1))
-      irf_log('proc','Cannot determine spin period!'), return
+      errS = 'Cannot determine spin period!';
+      irf.log('critical',errS), error(errS)
     end
     diffangle = mod(phaTmp - polyval(fitCoef,tPhaTmp),360);
     diffangle = abs(diffangle);
     diffangle = min([diffangle';360-diffangle']);
-    if max(diffangle)>0.001, flagSpinRateStable = 0; end
+    if median(diffangle)>ERR_PHA_MAX, flagSpinRateStable = 0; 
+    fprintf('Median eff: %.4f \n',median(diffangle)), end
     spinRate  = 60/fitCoef(1);
+  end
+  function interp_phase()
+    disp('    >>>>>>>    interpolating >>>>>   -----')
+    phaseOut(iOutTmp) = interp1(tPhaTmp,phaTmpUnwrapped,...
+      targetTime(iOutTmp),'linear','extrap');
+    phaseOut(iOutTmp) = mod(phaseOut(iOutTmp),360);
+    spinRateLast = [];
+  end
+  function polyfit_phase()
+    phaseOut(iOutTmp) = polyval(fitCoef, targetTime(iOutTmp));
+    phaseOut(iOutTmp) = mod(phaseOut(iOutTmp),360);
+    spinRateLast = spinRate;
   end
   function verify_input()
     if ~isa(time,'int64'), 

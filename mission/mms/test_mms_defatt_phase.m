@@ -1,5 +1,5 @@
 classdef test_mms_defatt_phase < matlab.unittest.TestCase
-  %TEST_IRF_TIME
+  %TEST_MMS_DEFATT_PHASE
   
   properties
   end
@@ -16,7 +16,9 @@ classdef test_mms_defatt_phase < matlab.unittest.TestCase
       timeEpochTT200Req = int64(timeSecReq*1e9);
       phaseExpected = mod(360*timeSecReq*spinRate/60,360);
       phaseComputed= mms_defatt_phase(defatt,timeEpochTT200Req);
-      testCase.verifyEqual(phaseComputed.data,phaseExpected,'AbsTol',1e-6);
+      diffangle = phaseComputed.data - phaseExpected;
+      diffangle = min([diffangle';360-diffangle']);
+      testCase.verifyEqual(diffangle,diffangle*0,'AbsTol',1e-6);
     end
   end
 end
