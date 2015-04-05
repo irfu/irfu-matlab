@@ -35,17 +35,20 @@ end
 
 	function Lprobe = lp_sphere
 		Lprobe = lp.lprobe;
+		Lprobe.name = 'sphere';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusSphere = 0.04; % 4cm
 	end
 	function Lprobe = lp_wire
 		Lprobe = lp.lprobe;
+		Lprobe.name = 'cylinder/wire';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusWire = 1e-3;
 		Lprobe.lengthWire = 1;
 	end
 	function Lprobe = lp_sphere_wire
 		Lprobe = lp.lprobe;
+		Lprobe.name = 'sphere+wire';
 		Lprobe.surface = 'themis';
 		Lprobe.radiusSphere = 0.04; % 4cm
 		Lprobe.radiusWire = 1e-3;
@@ -70,7 +73,7 @@ end
 	function Lprobe = lp_MMS_ADP
 		Lprobe = lp.lprobe;
 		Lprobe.name = 'MMS ADP';
-		Lprobe.surface = '??';
+		Lprobe.surface = 'TiN';
 		Lprobe.radiusWire = 1e-2;
 		Lprobe.lengthWire = 1;
 	end

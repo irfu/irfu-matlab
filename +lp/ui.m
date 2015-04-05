@@ -9,7 +9,7 @@ classdef ui < handle
 		PlasmaList
 		PlasmaUserDefined
 		figHandle
-		ud % user data
+		UserData % user data
 		InputParameters
 	end
 	methods
@@ -31,11 +31,9 @@ classdef ui < handle
 					obj.PlasmaList = args{1};
 					args(1) =[];
 				else
-					
+					error('lp.ui input unknown!');
 				end
 			end
-			%% Initialize IDE
-			[obj.figHandle,obj.ud] = lp.ui.new_ide();
 			if ~isa(obj.SpacecraftList,'lp.spacecraft'),
 				obj.SpacecraftList = lp.default_spacecraft;
 			end
@@ -45,6 +43,8 @@ classdef ui < handle
 			if ~isa(obj.PlasmaList,'lp.plasma'),
 				obj.PlasmaList = lp.default_plasma;
 			end
+			%% Initialize IDE
+			obj.new_ide();
 			obj.SpacecraftUserDefined = obj.SpacecraftList(1);
 			obj.ProbeUserDefined = obj.ProbeList(1);
 			obj.PlasmaUserDefined = obj.PlasmaList(1);
@@ -52,25 +52,24 @@ classdef ui < handle
 		function set.PlasmaUserDefined(obj,PlasmaModel)
 			obj.PlasmaUserDefined = PlasmaModel;
 		end
-	end
-	methods (Static)
-		function [figH,ud] = new_ide()
+		function new_ide(obj)
 			%% initialize figure
 			set(0,'defaultLineLineWidth', 1.5);
 			figH=figure;
+			obj.figHandle=figH;
 			clf reset;
 			clear h;
 			set(figH,'color','white'); % white background for figures (default is grey)
-			set(gcf,'PaperUnits','centimeters')
-			set(gcf,'defaultAxesFontSize',14);
-			set(gcf,'defaultTextFontSize',14);
-			set(gcf,'defaultAxesFontUnits','pixels');
-			set(gcf,'defaultTextFontUnits','pixels');
+			set(figH,'PaperUnits','centimeters')
+			set(figH,'defaultAxesFontSize',14);
+			set(figH,'defaultTextFontSize',14);
+			set(figH,'defaultAxesFontUnits','pixels');
+			set(figH,'defaultTextFontUnits','pixels');
 			xSize = 13; ySize = 16;
 			xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-			set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-			set(gcf,'Position',[100 300 xSize*50 ySize*50])
-			set(gcf,'paperpositionmode','auto') % to get the same printing as on screen
+			set(figH,'PaperPosition',[xLeft yTop xSize ySize])
+			set(figH,'Position',[100 300 xSize*50 ySize*50])
+			set(figH,'paperpositionmode','auto') % to get the same printing as on screen
 			clear xSize sLeft ySize yTop
 			%        set(fn,    'windowbuttondownfcn', 'irf_minvar_gui(''ax'')');zoom off;
 			ud.h(1)=axes('position',[0.1 0.3 0.5 0.3]); % [x y dx dy]
@@ -79,12 +78,12 @@ classdef ui < handle
 			linkaxes(ud.h(1:2),'x');
 			axis(ud.h(3),'off');
 			ud.ht=text(0,1,'','parent',ud.h(3));
-			set(figH,'userdata',ud);			
+			set(figH,'userdata',ud);
 			%% initialize probe menu
 			hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',[1 0.95 1],'Position',[.7 .0 .3 .39]);
-			inp.probe.type                       = uicontrol('Parent',hp,'String','spherical probe|cylindrical probe|specify probe area','style','popup','Position',[2 230 150 30],'backgroundcolor','white','Callback', @setprobetype);
-			surf=lp.photocurrent;probtxt='probe surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
-			inp.probe.surface                    = uicontrol('Parent',hp,'String',probtxt,                 'Position',[2 210 150 30],'style','popup','backgroundcolor','white');
+			popuptxt = obj.popup_list(obj.ProbeList);
+			inp.probe.type                       = uicontrol('Parent',hp,'String',popuptxt,'style','popup','Position',[2 230 150 30],'backgroundcolor','white','Callback',@(src,ev)obj.setprobetype(src,ev));
+			inp.probe.surface                    = uicontrol('Parent',hp,'String',lp.photocurrent,         'Position',[2 210 150 30],'style','popup','backgroundcolor','white');
 			inp.probe.total_vs_sunlit_area_text  = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   185 120 30]);
 			inp.probe.total_vs_sunlit_area_value = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 185 70 30],'backgroundcolor','white');
 			inp.probe.length_text                = uicontrol('Parent',hp,'String','probe length [cm]',     'Position',[0   160 120 30]);
@@ -137,9 +136,45 @@ classdef ui < handle
 			inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
 			
 			ud.inp=inp;
+			obj.figHandle = figH;
+			obj.UserData = ud;
 			
 		end
+		function setprobetype(obj,hEvent,event) 
+			disp(event);
+			idProbe = get(hEvent,'Value');
+			probeParameters = obj.ProbeList(idProbe);
+			indSurface = find(strcmp(probeParameters.surface,lp.photocurrent));
+			if indSurface,
+				set(obj.UserData.inp.probe.surface,'Value',indSurface);
+			else
+				irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
+			end
+%		radiusSphere
+%		radiusWire     % if radius wire is two numbers than use stazer formula
+%		lengthWire
+
+		end
 		
+	end
+	methods (Static)
+		function popupText = popup_list(inp)
+			if iscell(inp) && (numel(inp) > 0)
+				popupText =inp{1};
+				for ii=2:numel(inp),
+					popupText(end+1:end+1+numel(inp{ii}))=['|' inp{ii}];
+				end
+			elseif numel(inp) > 0 && all(isprop(inp,'name'))
+				popupText ='';
+				for ii=1:numel(inp),
+					probeName = inp(ii).name;
+					if ~isempty(probeName)
+						popupText(end+1:end+1+numel(probeName))=[probeName '|'];
+					end
+				end
+				popupText(end) =[];
+			end
+		end
 	end
 end
 
