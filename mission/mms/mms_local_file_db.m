@@ -126,6 +126,11 @@ classdef mms_local_file_db < mms_file_db
             fileList(iSame) = add_ss(entry);
           end
           function entry = add_ss(entry)
+            data = cdfread([entry.dir filesep entry.name],'Variables',...
+              'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
+            if isempty(data), return, end
+            entry.start = EpochTT2000(data(1));
+            entry.stop = EpochTT2000(data(end));
           end
         end
       end % END LOAD_SCI
