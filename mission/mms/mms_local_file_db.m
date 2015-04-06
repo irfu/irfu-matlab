@@ -40,9 +40,9 @@ classdef mms_local_file_db < mms_file_db
         filePref = [upper(C{1}) '_' upper(C{3})];
         listing = dir([fileDir filesep filePref '*.V*']);
         if isempty(listing), return, end
-        arrayfun(@(x) addToList(x.name), listing)
+        arrayfun(@(x) add2list(x.name), listing)
  
-        function addToList(name)
+        function add2list(name)
           [~,fName,fExt] = fileparts(name);
           ver = str2double(fExt(3:4));
           entry = struct('name',name,'ver',fExt(3:4),'dir',fileDir,...
@@ -72,9 +72,9 @@ classdef mms_local_file_db < mms_file_db
                 'doy>utc_yyyy-mm-dd') 'T' out(10:21) '000000Z'];
               epoch = EpochTT2000(sss);
             end
-          end
-        end
-      end
+          end % ADD_SS
+        end % ADD2LIST
+      end % LOAD_ANCILLARY
       %% LOAD SCI
       function fileList = load_sci()
         fileList = [];
@@ -102,10 +102,10 @@ classdef mms_local_file_db < mms_file_db
             curDir = [fileDir filesep dNameY filesep dNameM];
             listingD = dir([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
-            arrayfun(@(x) addToList(x.name), listingD)
+            arrayfun(@(x) add2list(x.name), listingD)
           end
         end
-        function addToList(name)
+        function add2list(name)
           fnd = mms_fields_file_info(name);
           entry = struct('name',name,'ver',fnd.vXYZ,'dir',curDir,...
             'start',[],'stop',[]);
@@ -131,10 +131,10 @@ classdef mms_local_file_db < mms_file_db
             if isempty(data), return, end
             entry.start = EpochTT2000(data(1));
             entry.stop = EpochTT2000(data(end));
-          end
-        end
-      end % END LOAD_SCI
-    end
+          end % ADD_SS
+        end % ADD2LIST
+      end % LOAD_SCI
+    end % LIST_FILES
   end
   
 end
