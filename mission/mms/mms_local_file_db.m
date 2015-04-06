@@ -40,9 +40,8 @@ classdef mms_local_file_db < mms_file_db
         filePref = [upper(C{1}) '_' upper(C{3})];
         listing = dir([fileDir filesep filePref '*.V*']);
         if isempty(listing), return, end
-        for iFile = 1:length(listing)
-          addToList(listing(iFile).name)
-        end
+        arrayfun(@(x) addToList(x.name), listing)
+ 
         function addToList(name)
           [~,fName,fExt] = fileparts(name);
           ver = str2double(fExt(3:4));
@@ -78,7 +77,7 @@ classdef mms_local_file_db < mms_file_db
       end
       %% LOAD SCI
       function fileList = load_sci()
-        fileList = {};
+        fileList = [];
         fileDir = obj.dbRoot;
         for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
         if exist(fileDir,'dir')~=7, return, end
@@ -103,12 +102,33 @@ classdef mms_local_file_db < mms_file_db
             curDir = [fileDir filesep dNameY filesep dNameM];
             listingD = dir([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
-            for iFile = 1:length(listingD)
-              fileList = [fileList {[curDir filesep listingD(iFile).name]}]; %#ok<AGROW>
-            end
+            arrayfun(@(x) addToList(x.name), listingD)
           end
         end
-      end
+        function addToList(name)
+          fnd = mms_fields_file_info(name);
+          entry = struct('name',name,'ver',fnd.vXYZ,'dir',curDir,...
+            'start',[],'stop',[]);
+          if isempty(fileList), fileList = add_ss(entry); return, end
+          fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
+            fnd.dataLevel];
+          if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
+          fName = [fName '_' fnd.date];
+          hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
+          if ~any(hasFile), fileList = [fileList add_ss(entry)]; return, end
+          iSame = find(hasFile);
+          if length(iSame) > 1, error('multiple files with same name'),end
+          v = strsplit(fileList(iSame).ver,'.'); 
+          for idxTmp=1:length(v), v{idxTmp} = str2double(v{idxTmp}); end
+          myv = strsplit(fnd.vXYZ,'.'); 
+          for idxTmp=1:length(myv), myv{idxTmp} = str2double(myv{idxTmp}); end
+          if myv{1}>=v{1} && myv{2}>=v{2} && myv{3}>=v{3}  
+            fileList(iSame) = add_ss(entry);
+          end
+          function entry = add_ss(entry)
+          end
+        end
+      end % END LOAD_SCI
     end
   end
   
