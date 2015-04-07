@@ -67,14 +67,14 @@ end
 		Lprobe.name = 'MMS SDP';
 		Lprobe.surface = 'TiN';
 		Lprobe.radiusSphere = 0.04; % 4cm
-		Lprobe.radiusWire = 1e-3;
-		Lprobe.lengthWire = 1;
+		Lprobe.radiusWire = 0.12e-3;
+		Lprobe.lengthWire = 1.75;
 	end
 	function Lprobe = lp_MMS_ADP
 		Lprobe = lp.lprobe;
 		Lprobe.name = 'MMS ADP';
-		Lprobe.surface = 'TiN';
-		Lprobe.radiusWire = 1e-2;
+		Lprobe.surface = 'cluster';
+		Lprobe.radiusWire = 0.5e-2;
 		Lprobe.lengthWire = 1;
 	end
 
