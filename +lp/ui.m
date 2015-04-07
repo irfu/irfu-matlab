@@ -11,6 +11,7 @@ classdef ui < handle
 		figHandle
 		UserData % user data
 		InputParameters % factorUV, rSunAU, vectorU
+		Output
 	end
 	methods
 		function obj = ui(varargin)
@@ -89,7 +90,7 @@ classdef ui < handle
 			inp.probe.typeText                   = uicontrol('Parent',hp,'String','type','style','text',   'Position',[0   230 60   20],'backgroundcolor',colPanelBg);
 			inp.probe.typeValue                  = uicontrol('Parent',hp,'String',popuptxt,'style','popup','Position',[60  230 130  20],'backgroundcolor','white','Callback',@(src,evt)obj.set_probe_type(src,evt));
 			inp.probe.srufaceText                = uicontrol('Parent',hp,'String','surface','style','text','Position',[0   210 60   20],'backgroundcolor',colPanelBg);
-			inp.probe.surfaceValue               = uicontrol('Parent',hp,'String',[{'User defined'} lp.photocurrent],'Position',[60  210 130  20],'style','popup','backgroundcolor','white');
+			inp.probe.surfaceValue               = uicontrol('Parent',hp,'String',[{'user defined'} lp.photocurrent],'Position',[60  210 130  20],'style','popup','backgroundcolor','white');
 			inp.probe.areaTotalVsSunliText       = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   190 120 20],'style','text');
 			inp.probe.areaTotalVsSunlitValue     = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 190 70  20],'backgroundcolor','white');
 			inp.probe.radiusSphereText           = uicontrol('Parent',hp,'String','sphere radius [cm]',    'Position',[0   170 120 20]);
