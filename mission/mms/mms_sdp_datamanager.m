@@ -209,6 +209,9 @@ switch(param)
 
   case('defatt')
     % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase')
+    idxBad = find(diff(dataObj.time)==0)+1;
+    fs = fields(dataObj);
+    for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
     DATAC.(param) = dataObj;
     check_monoton_timeincrease(DATAC.(param).time);
 
@@ -302,12 +305,33 @@ end
     %[~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
     % XXX: The above line is faster, but we cannot be sure it works, as it
     % requires exact mathcing of integer numbers
-    [dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
-      DATAC.dcv.time+26600,int64(40000)); % tolerate 40 us jitter
+    % XXX: The code below should work in principle, but id does not
+    %[dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
+    %  DATAC.dcv.time+26600,int64(40000)); % tolerate 40 us jitter
     % Highest bitrate is to be 8192 samples/s, which correspond to about
     % 122 us between consecutive measurements. The maximum theoretically
     % allowed jitter would be half of this (60us) for the dcv & dce
     % measurements to be completely unambiguous, use 1/3 margin on this.
+    
+    %This is a HACK. We just take the nearest time, assuming times in DCE
+    %and DCV must be identical.
+    tE = DATAC.dce.time; tV = DATAC.dcv.time;
+    if all(median(diff(tE))==diff(tE)) && all(median(diff(tV))==diff(tV))
+      % No gaps
+      dce_ind = find(tE>=tV(1) & tE<=tV(end));
+      if isempty(dce_ind)
+        errStr1 = 'No overlap between DCE and DCV';
+        irf.log('critical',errStr1), error(errStr1)
+      end
+      iDcvStart = find( tV >= tE(dce_ind(1)) ); iDcvStart = iDcvStart(1);
+      nData = min(length(dce_ind),length(tV)-iDcvStart+1);
+      newIdx = (1:nData)' -1; 
+      dce_ind = dce_ind(1) + newIdx;
+      dcv_ind = iDcvStart + newIdx;
+    else
+      errStr1 = 'Do not know how to handle gaps';
+      irf.log('critical',errStr1), error(errStr1)
+    end
 
     % If any datapoint don't overlap, log then remove them.
     diff_ind = length(DATAC.dce.time) - length(dce_ind);
@@ -327,7 +351,8 @@ end
     if(diff_ind)
       logStr = sprintf('DCV was shortened by %i datapoints.',diff_ind);
       irf.log('notice', logStr);
-      DATAC.dcv.time = DATAC.dcv.time(dcv_ind);
+      % XXX : Substitute DCV time by DCE time
+      DATAC.dcv.time = DATAC.dce.time;
       for iSen = 1:numel(sensors)
         senA = sensors{iSen};
         DATAC.dcv.(senA).data = DATAC.dcv.(senA).data(dcv_ind);
