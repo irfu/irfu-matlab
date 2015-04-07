@@ -10,7 +10,7 @@ classdef lprobe
 	end
 	properties (Dependent)
 		type
-		Area           % structure with fields total, sunlit
+		Area           % structure with fields total, sunlit, totalVsSunlit, sunlitVsTotal
 		capacitance
 	end
 
@@ -31,14 +31,17 @@ classdef lprobe
 		function Area = get.Area(Lp)
 			Area.total = 0;
 			Area.sunlit = 0;
-			if isnumeric(Lp.radiusSphere),
+			if isnumeric(Lp.radiusSphere) && ~isempty(Lp.radiusSphere),
 				Area.total  = Area.total  + 4*pi*Lp.radiusSphere^2;
 				Area.sunlit = Area.sunlit + pi*Lp.radiusSphere^2;
 			end
-			if isnumeric(Lp.radiusWire) && isnumeric(Lp.lengthWire),
+			if isnumeric(Lp.radiusWire) && ~isempty(Lp.radiusWire) ...
+					&& isnumeric(Lp.lengthWire) && ~isempty(Lp.lengthWire),
 				Area.total  = Area.total  + pi*Lp.radiusWire*Lp.lengthWire;
 				Area.sunlit = Area.sunlit + Lp.radiusWire*Lp.lengthWire;
 			end
+			Area.totalVsSunlit = Area.total / Area.sunlit;
+			Area.sunlitVsTotal = Area.sunlit / Area.total;
 		end
 		
 		function capacitance = get.capacitance(Lp)
