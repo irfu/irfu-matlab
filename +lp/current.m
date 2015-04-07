@@ -1,6 +1,6 @@
 function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 % LP.CURRENT calculate current to the probe
-% J=LP.CURRENT(probe,U_probe,R_sun,UV_factor,plasma)
+% J=LP.CURRENT(Probe,vectorU,rSunAU,factorUV,Plasma,vSc)
 %
 %   Calculates the total probe current to/from a Lanmuir probe
 %   consisting of cylinder/wire and sphere. Return current contributions:
@@ -21,7 +21,7 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %    plasma.m - mass of species in proton masses (0 corresponds to e- mass)
 %    plasma.n - density of species [cc]
 %    plasma.T - temperature [eV]
-%    plasma.vsc - velocity of probe wrt. mmedia [m/s]
+%    plasma.v - velocity of probe wrt. mmedia [m/s]
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
@@ -29,7 +29,7 @@ Units=irf_units;
 
 nPlasmaSpecies=numel(Plasma.q);
 J.plasma=cell(nPlasmaSpecies,1);
-Plasma.TK=Plasma.T*Units.e/Units.kB;
+%Plasma.TK=Plasma.T*Units.e/Units.kB;
 
 %if strcmpi(Probe.type,'spherical'), probe_type=1;end
 %if strcmpi(Probe.type,'cylindrical'), probe_type=2;end
@@ -47,10 +47,10 @@ for ii=1:nPlasmaSpecies,
 		n=Plasma.n(ii);
 	end
 	% temperature T
-	if numel(Plasma.TK)<nPlasmaSpecies && ii > numel(Plasma.TK)
-		T=Plasma.TK(end);
+	if numel(Plasma.T)<nPlasmaSpecies && ii > numel(Plasma.T)
+		T=Plasma.T(end);
 	else
-		T=Plasma.TK(ii);
+		T=Plasma.T(ii);
 	end
 	% mass m
 	if numel(Plasma.m)<nPlasmaSpecies && ii > numel(Plasma.m)
@@ -58,18 +58,13 @@ for ii=1:nPlasmaSpecies,
 	else
 		m=Plasma.m(ii);
 	end
-	if m==0,
-		m=Units.me;
-	else
-		m=Units.mp*m;
-	end
 	% velocity with respect to media
-	if numel(Plasma.vsc)<nPlasmaSpecies && ii > numel(Plasma.vsc)
-		vsc=Plasma.vsc(end);
+	if numel(Plasma.v)<nPlasmaSpecies && ii > numel(Plasma.v)
+		v=Plasma.v(end);
 	else
-		vsc=Plasma.vsc(ii);
+		v=Plasma.v(ii);
 	end
-	J_thi = thermal_current(Lprobe,n,T,m,vsc,q,vectorU);
+	J_thi = thermal_current(Probe,n,T,m,v,q,vectorU);
 	J.plasma{ii}=-sign(q)*J_thi; % positive current away from probe
 	J.probe=J.probe+J.plasma{ii};
 end
@@ -105,7 +100,7 @@ jThermalWire   = jThermal;
 
 % If zero density return zero current
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if N==0,    return;end
+if n==0,    return;end
 
 % Is the body moving with a velocity, V, with
 % respect to the plasma ?
@@ -126,13 +121,13 @@ else
 end
 
 
+indPositiveU = find( vectorU >= 0 );
+indNegativeU = find( vectorU < 0 );
+
 % Spherical body case.
 %%%%%%%%%%%%%%%%%%%%%%
 A = Lprobe.Area.sphere;
 Ip = A*fluxIp;
-
-indPositiveU = find( U >= 0 );
-indNegativeU = find( U < 0 );
 
 if q > 0,
 	jThermalSphere(indPositiveU) = Ip .* exp(-X(indPositiveU));
@@ -148,9 +143,6 @@ end
 
 A = Lprobe.Area.wire;
 Ip = A*fluxIp;
-
-indPositiveU = find( U >= 0 );
-indNegativeU = find( U < 0 );
 
 sq         = zeros(size(vectorU));
 %     erfv       = zeros( U_pts, 1 );
