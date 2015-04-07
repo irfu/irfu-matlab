@@ -69,7 +69,10 @@ classdef mms_local_file_db < mms_file_db
                 [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
               end
               sss = [irf_time([str2double(out(1:4)), str2double(out(6:8))],...
-                'doy>utc_yyyy-mm-dd') 'T' out(10:21) '000000Z'];
+                'doy>utc_yyyy-mm-dd') 'T'];
+              if length(out) == 19, sss = [sss out(10:17) '.000000000Z'];
+              else sss = [sss out(10:21) '000000Z'];
+              end
               epoch = EpochTT2000(sss);
             end
           end % ADD_SS
