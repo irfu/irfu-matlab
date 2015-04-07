@@ -13,7 +13,7 @@ classdef mms_local_file_db < mms_file_db
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
       end
-      obj.dbRoot = rootPath;
+      [obj.dbRoot, ~, ~] = fileparts(rootPath); % path only, excluding last filesep
     end
     %% LIST FILES
     function fileList = list_files(obj,filePrefix)
@@ -35,7 +35,7 @@ classdef mms_local_file_db < mms_file_db
       %% LOAD ANCILLARY
       function fileList = load_ancillary()
         fileList = [];
-        fileDir = [obj.dbRoot filesep 'ancillary' filesep C{1} filesep C{3}];
+        fileDir = [obj.dbRoot filesep C{2} filesep C{1} filesep C{3}];
         if exist(fileDir,'dir')~=7, return, end
         filePref = [upper(C{1}) '_' upper(C{3})];
         listing = dir([fileDir filesep filePref '*.V*']);
@@ -70,8 +70,8 @@ classdef mms_local_file_db < mms_file_db
               end
               sss = [irf_time([str2double(out(1:4)), str2double(out(6:8))],...
                 'doy>utc_yyyy-mm-dd') 'T'];
-              if length(out) == 17, sss = [sss out(10:17) '.000000000Z'];
-              else sss = [sss out(10:21) '000000Z'];
+              if length(out) == 19, sss = [sss out(10:17) '.000000000Z']; % ie. predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
+              else sss = [sss out(10:21) '000000Z']; % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
               end
               epoch = EpochTT2000(sss);
             end
@@ -125,8 +125,16 @@ classdef mms_local_file_db < mms_file_db
           for idxTmp=1:length(v), v{idxTmp} = str2double(v{idxTmp}); end
           myv = strsplit(fnd.vXYZ,'.'); 
           for idxTmp=1:length(myv), myv{idxTmp} = str2double(myv{idxTmp}); end
-          if myv{1}>=v{1} && myv{2}>=v{2} && myv{3}>=v{3}  
+          if(myv{1}>v{1})
+            % Newer major version, replace file regardless
             fileList(iSame) = add_ss(entry);
+          elseif(myv{1}==v{1} && myv{2}>v{2})
+            % Same major version, newer calibration, replace file
+            fileList(iSame) = add_ss(entry);
+          elseif(myv{1}==v{1} && myv{2}==v{2} && myv{3}>v{3})
+            % Same major and calib. but newer revision, replace file
+            fileList(iSame) = add_ss(entry);
+          %else, older file.
           end
           function entry = add_ss(entry)
             data = cdfread([entry.dir filesep entry.name],'Variables',...
