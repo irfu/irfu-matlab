@@ -16,9 +16,7 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % high-level release notes. Can have as many entries as necessary and
 % should be updated if the "X" value of the version number changes.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
-MMS_CONST.Version.MODS = {'V.0. Initial interface tests.'};
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable names, added some processing.'}];
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
+MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 
 
 MMS_CONST.MinFileVer = 0; % min version of l1b files accepted
