@@ -2,6 +2,7 @@ classdef plasma
 	%LP.PLASMA Define plasma models
 	
 	properties
+		name
 		q
 		n
 		mp
