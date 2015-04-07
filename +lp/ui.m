@@ -12,7 +12,7 @@ classdef ui < handle
 		Axes     % top,bottom,infotext
 		UserData % user data
 		InputParameters =struct('factorUV',1,'rSunAU',1,...
-			'vectorUString','-5:2:40','vectorU',-5:2:40,'biasCurrent',0) 
+			'vectorUString','-5:0.2:40','vectorU',-5:0.2:40,'biasCurrent',0) 
 		Output
 	end
 	methods
@@ -54,6 +54,7 @@ classdef ui < handle
 			obj.probeUsed = 2;
 			obj.plasmaUsed = 2;
 			obj.set_plasma_model(obj.plasmaUsed);
+			obj.set_probe_type(  obj.probeUsed);
 		end
 		function new_ide(obj)
 			%% initialize figure
@@ -152,32 +153,6 @@ classdef ui < handle
 			obj.UserData = ud;
 			
 		end
-		function set_probe_type(obj,varargin)
-			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_type(obj,'user defined')
-				obj.probeUsed = 1;
-				set(obj.UserData.inp.probe.typeValue,'Value',1);
-				obj.get_probe_radius_sphere
-				obj.get_probe_radius_wire
-				obj.get_probe_length_wire
-				obj.update_probe_area_total_vs_sunlit;
-			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
-				hEvent = varargin{1};
-				event = varargin{2};
-				disp(event);
-				idProbe = get(hEvent,'Value');
-				obj.probeUsed = idProbe;
-				probeParameters = obj.ProbeList(idProbe);
-				indSurface = find(strcmp(probeParameters.surface,lp.photocurrent))+1;
-				if indSurface,
-					set(obj.UserData.inp.probe.surfaceValue,'Value',indSurface);
-				else
-					irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
-				end
-				obj.set_probe_radius_sphere(obj.ProbeList(idProbe).radiusSphere);
-				obj.set_probe_radius_wire(  obj.ProbeList(idProbe).radiusWire);
-				obj.set_probe_length_wire(  obj.ProbeList(idProbe).lengthWire);
-			end
-		end
 		function set_plasma_model(obj,varargin)
 			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_plasma_model(obj,'user defined')
 				obj.plasmaUsed = 1;
@@ -206,71 +181,58 @@ classdef ui < handle
 			qeStr = get(obj.UserData.inp.plasma.qeValue,'String'); % in [e]
 			if isempty(qeStr), qeStr = '-1'; end
 			qe = eval(['[' qeStr ']']);
-			if (obj.plasmaUsed ~= 1) ...
-					&& numel(qe) == numel(obj.PlasmaList(obj.plasmaUsed).qe) ...
-					&& all(qe == obj.PlasmaList(obj.plasmaUsed).qe)
-				return
-			else
-				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
-				obj.set_plasma_model('user defined');
-			end
-			obj.PlasmaList(obj.plasmaUsed).qe = qe;
+			obj.set_user_defined_if_plasma_changes('qe',qe)
 		end
 		function get_plasma_mp(obj)
 			mpStr = get(obj.UserData.inp.plasma.mpValue,'String'); % in [e]
 			if isempty(mpStr), mpStr = '-1'; end
 			mp = eval(['[' mpStr ']']);
-			if (obj.plasmaUsed ~= 1) ...
-					&& numel(mp) == numel(obj.PlasmaList(obj.plasmaUsed).mp) ...
-					&& all(mp == obj.PlasmaList(obj.plasmaUsed).mp)
-				return
-			else
-				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
-				obj.set_plasma_model('user defined');
-			end
-			obj.PlasmaList(obj.plasmaUsed).mp = mp;
+			obj.set_user_defined_if_plasma_changes('mp',mp)
 		end
 		function get_plasma_n(obj)
 			nStr = get(obj.UserData.inp.plasma.nValue,'String'); % in [e]
 			if isempty(nStr), nStr = '-1'; end
 			n = eval(['[' nStr ']'])*1e6;
-			if (obj.plasmaUsed ~= 1) ...
-					&& numel(n) == numel(obj.PlasmaList(obj.plasmaUsed).n) ...
-					&& all(n == obj.PlasmaList(obj.plasmaUsed).n)
-				return;
-			else
-				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
-				obj.set_plasma_model('user defined');
-			end
-			obj.PlasmaList(obj.plasmaUsed).n = n;
+			obj.set_user_defined_if_plasma_changes('n',n)
 		end
 		function get_plasma_t(obj)
 			tStr = get(obj.UserData.inp.plasma.TValue,'String'); % in [e]
 			if isempty(tStr), tStr = '-1'; end
 			T = eval(['[' tStr ']']);
-			if (obj.plasmaUsed ~= 1) ...
-					&& numel(T) == numel(obj.PlasmaList(obj.plasmaUsed).T) ...
-					&& all(T == obj.PlasmaList(obj.plasmaUsed).T)
-				return;
-			else
-				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
-				obj.set_plasma_model('user defined');
-			end
-			obj.PlasmaList(obj.plasmaUsed).T = T;
+			obj.set_user_defined_if_plasma_changes('T',T)
 		end
 		function get_plasma_v(obj)
 			vStr = get(obj.UserData.inp.plasma.vValue,'String'); % in [e]
 			if isempty(vStr), vStr = '-1'; end
 			v = eval(['[' vStr ']'])*1e3; % [km/s] > [m/s]
-			if (obj.plasmaUsed ~= 1) ...
-					&& numel(v) == numel(obj.PlasmaList(obj.plasmaUsed).v) ...
-					&& all(v == obj.PlasmaList(obj.plasmaUsed).v)
-				return
-			else
-				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
-				obj.set_plasma_model('user defined');
+			obj.set_user_defined_if_plasma_changes('v',v)
+		end
+		function set_probe_type(obj,varargin)
+			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_type(obj,'user defined')
+				obj.probeUsed = 1;
+				set(obj.UserData.inp.probe.typeValue,'Value',1);
+				obj.update_probe_area_total_vs_sunlit;
+				return;
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_type(obj,numberOfProbe)
+				idProbe = varargin{1};
+			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
+				hEvent = varargin{1};
+				event = varargin{2};
+				disp(event);
+				idProbe = get(hEvent,'Value');
 			end
-			obj.PlasmaList(obj.plasmaUsed).v = v;
+			obj.probeUsed = idProbe;
+			probeParameters = obj.ProbeList(idProbe);
+			indSurface = find(strcmp(probeParameters.surface,lp.photocurrent))+1;
+			if indSurface,
+				set(obj.UserData.inp.probe.surfaceValue,'Value',indSurface);
+			else
+				irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
+			end
+			obj.set_probe_radius_sphere(obj.ProbeList(idProbe).radiusSphere);
+			obj.set_probe_radius_wire(  obj.ProbeList(idProbe).radiusWire);
+			obj.set_probe_length_wire(  obj.ProbeList(idProbe).lengthWire);
+			set(obj.UserData.inp.probe.typeValue,'Value',idProbe);
 		end
 		function set_probe_radius_sphere(obj,radiusSphere)
 			set(obj.UserData.inp.probe.radiusSphereValue,'String',num2str(radiusSphere*100,2)); % in cm
@@ -280,31 +242,19 @@ classdef ui < handle
 			radiusSphereCm = get(obj.UserData.inp.probe.radiusSphereValue,'String'); % in cm
 			if isempty(radiusSphereCm), radiusSphereCm = 0; end
 			radiusSphere = str2double(radiusSphereCm)*1e-2;
-			if (obj.probeUsed ~= 1) && (radiusSphere ~= obj.ProbeList(obj.probeUsed).radiusSphere)
-				obj.set_probe_type('user defined');
-			end
-			obj.ProbeList(obj.probeUsed).radiusSphere = radiusSphere;
-			obj.update_probe_area_total_vs_sunlit;
+			obj.set_user_defined_if_probe_changes('radiusSphere',radiusSphere)
 		end
 		function get_probe_radius_wire(obj)
 			radiusWireCm = get(obj.UserData.inp.probe.radiusWireValue,'String'); % in cm
 			if isempty(radiusWireCm), radiusWireCm = 0; end
 			radiusWire = str2double(radiusWireCm)*1e-2;
-			if (obj.probeUsed ~= 1) && (radiusWire ~= obj.ProbeList(obj.probeUsed).radiusWire)
-				obj.set_probe_type('user defined');
-			end
-			obj.ProbeList(obj.probeUsed).radiusWire = radiusWire;
-			obj.update_probe_area_total_vs_sunlit;
+			obj.set_user_defined_if_probe_changes('radiusWire',radiusWire)
 		end
 		function get_probe_length_wire(obj)
 			lengthWireCm = get(obj.UserData.inp.probe.lengthWireValue,'String'); % in cm
 			if isempty(lengthWireCm), lengthWireCm = 0; end
 			lengthWire = str2double(lengthWireCm)*1e-2;
-			if (obj.probeUsed ~= 1) && (lengthWire ~= obj.ProbeList(obj.probeUsed).lengthWire)
-				obj.set_probe_type('user defined');
-			end
-			obj.ProbeList(obj.probeUsed).lengthWire = lengthWire;
-			obj.update_probe_area_total_vs_sunlit;
+			obj.set_user_defined_if_probe_changes('lengthWire',lengthWire)
 		end
 		function get_factor_uv(obj)
 			factorUvString = get(obj.UserData.inp.factorUvValue,'String'); % in cm
@@ -391,6 +341,29 @@ classdef ui < handle
 			end
 			hold(h,'off');
 			
+		end
+		function set_user_defined_if_plasma_changes(obj,idString,vector)
+			if (obj.plasmaUsed ~= 1) ...
+					&& numel(vector) == numel(obj.PlasmaList(obj.plasmaUsed).(idString)) ...
+					&& all(vector == obj.PlasmaList(obj.plasmaUsed).(idString))
+				return
+			else
+				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
+				obj.set_plasma_model('user defined');
+			end
+			obj.PlasmaList(obj.plasmaUsed).(idString) = vector;
+		end
+		function set_user_defined_if_probe_changes(obj,idString,vector)
+			if (obj.probeUsed ~= 1) ...
+					&& numel(vector) == numel(obj.ProbeList(obj.probeUsed).(idString)) ...
+					&& all(vector == obj.ProbeList(obj.probeUsed).(idString))
+				return
+			else
+				obj.ProbeList(1) = obj.ProbeList(obj.probeUsed);
+				obj.set_probe_type('user defined');
+			end
+			obj.ProbeList(obj.probeUsed).(idString) = vector;
+			obj.update_probe_area_total_vs_sunlit;
 		end
 	end
 	methods (Static)
