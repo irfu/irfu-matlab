@@ -24,10 +24,10 @@ if nargin==2, threshold = 1e-5; end
     t1 = d1(:,1); t2 = d2(:,1);
     s1 = 1; s2 = 1; % start index
     if min(t1(2:end)-t1(1:end-1))<0 % check for negative time jumps
-        t1 = remnegtimejumps(t1);
+        t1 = rem_neg_time_jumps(t1);
     end
     if min(t2(2:end)-t2(1:end-1))<0 % check for negative time jumps
-        t2 = remnegtimejumps(t2);
+        t2 = rem_neg_time_jumps(t2);
     end
     
     n_loop = 0;
@@ -103,7 +103,7 @@ if nargin==2, threshold = 1e-5; end
     end
 end
 
-function tv=remnegtimejumps(tv)
+function tv=rem_neg_time_jumps(tv)
     curralen=length(tv);
     i=1;
     while i<curralen
