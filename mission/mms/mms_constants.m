@@ -8,7 +8,7 @@ function MMS_CONST = mms_constants
 % these numbers. 
 % When simply re-running a dataset, the Z value should be increased by one.
 
-MMS_CONST.Version.X = 2; % Major new Software version
+MMS_CONST.Version.X = 0; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Version.MODS - MODS cdf GlobalAttribute should contain a description of
@@ -37,8 +37,8 @@ MMS_CONST.Spinrate.max_comm = 3.2; % Rev per Minute.
 MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 
 % Angles when phase=0 (X BSC direction)
-MMS_CONST.Phaseshift.e12 = pi/6;
-MMS_CONST.Phaseshift.e34 = 2*pi/3;
+MMS_CONST.Phaseshift.e12 =  pi*5/6;
+MMS_CONST.Phaseshift.e34 =  pi/3;
 
 % Nominal Amplitude Correction factor multiplied to DCV & DCE data.
 MMS_CONST.NominalAmpCorr = 1.1;
