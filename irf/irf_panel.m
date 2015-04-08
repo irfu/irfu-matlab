@@ -8,8 +8,6 @@ function hout=irf_panel(handles,tag)
 %   handles - handles of figures subplots
 %   tag - unique string (for example current date) identifying subplot
 %   subplotnumber  - number of subplot
-%
-% $Id$
 
 flag_tag_defined=0;
 if nargin==1 && ischar(handles)
