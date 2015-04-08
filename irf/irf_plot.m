@@ -462,7 +462,6 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         c=initialize_figure(npl);
     end
     for ipl=1:npl
-        
         line_colors=get(c(ipl),'ColorOrder');
         for jj=1:size(x,2)
             use_color = 1;
@@ -490,7 +489,6 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         % multipanel plots)
         set(c(ipl),'YLim',...
             mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
-        
     end
     firstTimeStamp = y(~isnan(y(:,1)),1);
     firstTimeStamp = firstTimeStamp(1);
@@ -501,7 +499,9 @@ irf_figmenu;
 
 %% Add information about subplot handles to userdata of figure
 user_data = get(gcf,'userdata');
-if flag_subplot>0, user_data.subplot_handles = c; end
+if flag_subplot>0 && isempty(user_data.subplot_handles)
+  user_data.subplot_handles = c; 
+end
 set(gcf,'userdata',user_data);
 
 %% In case time is in isdat_epoch add time axis
