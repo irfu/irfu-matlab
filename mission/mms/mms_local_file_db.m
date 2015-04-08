@@ -1,6 +1,6 @@
 classdef mms_local_file_db < mms_file_db
-  %UNTITLED3 Summary of this class goes here
-  %   Detailed explanation goes here
+  %MMS_LOCAL_FILE_DB  Local file database for MMS
+  %   Class handling a database of local MMS files
   
   properties (SetAccess = immutable)
     dbRoot 
@@ -13,7 +13,8 @@ classdef mms_local_file_db < mms_file_db
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
       end
-      [obj.dbRoot, ~, ~] = fileparts(rootPath); % path only, excluding last filesep
+      if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
+      obj.dbRoot = rootPath;
     end
     %% LIST FILES
     function fileList = list_files(obj,filePrefix)
