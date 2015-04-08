@@ -208,8 +208,11 @@ switch(param)
     end % for iParam=1:length(hk10eParam)
 
   case('defatt')
-    % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase')
-    idxBad = find(diff(dataObj.time)==0)+1;
+    % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase' etc)
+    % As per e-mail discussion of 2015/04/07, duplicated timestamps can
+    % occur in Defatt (per design). If any are found, use the last data
+    % point and disregard the first duplicate.
+    idxBad = find(diff(dataObj.time)==0); % Identify first duplicate
     fs = fields(dataObj);
     for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
     DATAC.(param) = dataObj;
