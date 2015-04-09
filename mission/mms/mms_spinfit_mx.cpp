@@ -87,8 +87,8 @@ int onesfit (const int nTerms, const int maxIter, int nIter, int flim,
 Function name: ONESFIT
 
 Description:
-Fit x(1)+x(2)*sin(pha)+x(3)*cos(pha)
-         +x(4)*sin(2*pha)+x(5)*cos(2*pha)+... to data
+Fit x(1)+x(2)*cos(pha)+x(3)*sin(pha)
+         +x(4)*cos(2*pha)+x(5)*sin(2*pha)+... to data
 
 Input:
 	nTerms		- number of terms to fit
@@ -133,8 +133,8 @@ Returns:
 		w[0] = 1;
 		for ( int row=2; row<nTerms; row+=2 ) {
 			double arg = (double)(row/2) * phaseArray[i];
-			w[row-1] = sin(arg);
-			w[row] = cos(arg);
+			w[row-1] = cos(arg);
+			w[row] = sin(arg);
 		}
 		w[nTerms] = dataArray[i];
 
@@ -183,8 +183,8 @@ Returns:
 			w[0] = 1;
 			for ( int row=2; row<=nTerms; row+=2 ) {
 				double arg = (double)(row/2) * phaseArray[i];
-				w[row-1] = sin(arg);
-				w[row] = cos(arg);
+				w[row-1] = cos(arg);
+				w[row] = sin(arg);
 			}
 			double y = 0.0;
 			for ( int row=0; row<nTerms; row++ )
@@ -208,8 +208,8 @@ Returns:
 					w[0] = 1;
 					for ( int row=2; row<=nTerms; row+=2 ) {
 						double arg = (double)(row/2) * phaseArray[i];
-						w[row-1] = sin(arg);
-						w[row] = cos(arg);
+						w[row-1] = cos(arg);
+						w[row] = sin(arg);
 					}
 					w[nTerms] = dataArray[i];
 					for ( int row=0; row<nTerms; row++ ) {
