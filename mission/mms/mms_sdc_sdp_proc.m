@@ -221,18 +221,29 @@ end
 
 switch procId
   case MMS_CONST.SDCProc.scpot
-    % Verify inputs
-    if isempty(DCV_File)
-      errStr = ['missing required input for ' procName ': DCV_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    if(~isempty(HK_10E_File))
+      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
+      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
+      update_header(src_fileData); % Update header with file info.
     end
     if isempty(HK_101_File)
       errStr = ['missing required input for ' procName ': HK_101_File'];
       irf.log('critical', errStr);
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
-
+    irf.log('notice', [procName ' proc using: ' HK_101_File]);
+    src_fileData = mms_sdp_load(HK_101_File,'hk_101');
+    update_header(src_fileData) % Update header with file info.
+    
+    if isempty(DCV_File)
+      errStr = ['missing required input for ' procName ': DCV_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    irf.log('notice', [procName ' proc using: ' DCV_File]);
+    src_fileData = mms_sdp_load(DCV_File,'dcv');
+    update_header(src_fileData) % Update header with file info.
+    
     if isempty(DCE_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
         'received no DCE file argument.']);
@@ -242,41 +253,16 @@ switch procId
       update_header(src_fileData); % Update header with file info.
     end
 
-    if(~isempty(HK_10E_File))
-      irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
-      update_header(src_fileData); % Update header with file info.
-    end
-
-    irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData = mms_sdp_load(HK_101_File,'hk_101');
-    update_header(src_fileData) % Update header with file info.
-
-    irf.log('notice', [procName ' proc using: ' DCV_File]);
-    src_fileData = mms_sdp_load(DCV_File,'dcv');
-    update_header(src_fileData) % Update header with file info.
-
     % Write the output
     filename_output = mms_sdp_cdfwrite(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
-    % Check if have all the necessary input
-    if isempty(DCE_File)
-      errStr = ['missing required input for ' procName ': DCE_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
-    end
-
-    irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = mms_sdp_load(DCE_File,'dce');
-    update_header(src_fileData) % Update header with file info.
-
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
       src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
       update_header(src_fileData) % Update header with file info.
     end
-
+    % Phase
     if(procId == MMS_CONST.SDCProc.l2pre)
       % Defatt file => phase
       if isempty(DEFATT_File)
@@ -299,6 +285,15 @@ switch procId
       src_fileData=mms_sdp_load(HK_101_File,'hk_101');
       update_header(src_fileData) % Update header with file info.
     end
+
+    if isempty(DCE_File)
+      errStr = ['missing required input for ' procName ': DCE_File'];
+      irf.log('critical',errStr)
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    end
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    src_fileData = mms_sdp_load(DCE_File,'dce');
+    update_header(src_fileData) % Update header with file info.
 
     if isempty(DCV_File)
       irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
