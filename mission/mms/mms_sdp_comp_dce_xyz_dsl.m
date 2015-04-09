@@ -35,12 +35,14 @@ switch procId
     end
 
     sdpProbes = fieldnames(adc_off); % default {'e12', 'e34'}
+    Etmp = struct('e12',dce.e12.data,'e34',dce.e34.data);
     for iProbe=1:numel(sdpProbes)
       % Remove ADC offset
-      dce.(sdpProbes{iProbe}).data = dce.(sdpProbes{iProbe}).data - adc_off.(sdpProbes{iProbe});
+      Etmp.(sdpProbes{iProbe}) = ...
+        Etmp.(sdpProbes{iProbe}) - adc_off.(sdpProbes{iProbe});
     end
 
-    dE = mms_sdp_despin(dce.e12.data, dce.e34.data, phase.data);
+    dE = mms_sdp_despin(Etmp.e12, Etmp.e34, phase.data);
 
     % FIXME: need to compute from respective bitmasks
     bitmask = dce.e12.bitmask;
