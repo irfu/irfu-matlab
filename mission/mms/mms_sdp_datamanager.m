@@ -492,9 +492,9 @@ end
   end
 
   function apply_nom_amp_corr()
-    % Apply a nominal amplitude correction factor to DCE & DCV values after
-    % cleanup but before any major processing has occured.
-    for iSen = 1:2:numel(sensors)
+    % Apply a nominal amplitude correction factor to DCE & DCV for p1..4
+    % values after cleanup but before any major processing has occured.
+    for iSen = 1:2:min(numel(sensors),4)
       senA = sensors{iSen}; senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)];
       logStr = sprintf('Applying nominal amplitude correction factor, %d, to probes %s, %s and %s',...
