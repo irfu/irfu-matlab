@@ -37,7 +37,7 @@ classdef mms_edp_Sweep
       end
       obj.varPref = lower(obj.sweep.GlobalAttributes.Source_name{:}(1:4));
       obj.nSweeps = obj.sweep.data.([obj.varPref '_sweep_start']).nrec;
-    end
+    end % CONSTRUCTOR
     
     function hout = plot(obj,h,iSweep)
       % Plot sweep
@@ -62,13 +62,14 @@ classdef mms_edp_Sweep
       p1 = obj.sweep.data.([obj.varPref '_sweep_swept']).data(iSweep);
       % The "other probe" is the other probe in the pair 1-2, 3-4, 5-6
       if fix(p1/2)*2==p1, p2 = p1 - 1; else p2 = p1 + 1; end
-      s1 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p1);
-      s2 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p2);
-      [idxBias,eBias] = EpochTT2000(obj.sweep.data.epoch_sweepsamp.data).tlim(lim);
+      voltage1 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p1);
+      voltage2 =  obj.sweep.data.([obj.varPref '_edp_sweeps']).data(idx,p2);
+      [idxBias,eBias] = ...
+        EpochTT2000(obj.sweep.data.epoch_sweepsamp.data).tlim(lim);
       bias1 =  obj.sweep.data.([obj.varPref '_sweep_bias1']).data(idxBias);
       bias2 =  obj.sweep.data.([obj.varPref '_sweep_bias1']).data(idxBias);
-      
-      biasRes1 = zeros(size(s1))*NaN; biasRes2 = biasRes1;
+      % Find current values (biasRes) corresponding to voltages
+      biasRes1 = zeros(size(voltage1))*NaN; biasRes2 = biasRes1;
       for i=1:length(idxBias)
         if i == length(idxBias)
         else
@@ -76,14 +77,14 @@ classdef mms_edp_Sweep
           biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i); 
         end
       end
-      
+      % Plot
       c = 'kkrrbb';
-      lStyleP1 = [c(p1) 'x-']; lStyleP2 = [c(p2) 'o-'];
+      lineStyleP1 = [c(p1) 'x-']; lineStyleP2 = [c(p2) 'o-'];
       if isempty(h),
-        plot(s1,biasRes1,lStyleP1,s2,biasRes2,lStyleP2);
+        plot(voltage1,biasRes1,lineStyleP1,voltage2,biasRes2,lineStyleP2);
         h = gca;
       else
-        plot(h,s1,biasRes1,lStyleP1,s2,biasRes2,lStyleP2);
+        plot(h,voltage1,biasRes1,lineStyleP1,voltage2,biasRes2,lineStyleP2);
       end
       yl = get(h,'YLim'); set(h,'YLim',yl*1.05);
       t = title(h,[obj.varPref ' ' toUtc(lim(1),1)]);
@@ -95,7 +96,7 @@ classdef mms_edp_Sweep
       legend(h,sprintf('V%d',p1),sprintf('V%d',p2))
       grid(h,'on')
       if nargout, hout = h; end
-    end
+    end % PLOT
   end
   
 end
