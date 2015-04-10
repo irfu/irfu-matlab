@@ -81,31 +81,24 @@ switch procId
         dataIn = double(dce.(sdpPair{iPair}).data(enabledIdx)); % Data, when enabled
         timeIn = double(dce.time(enabledIdx)); % Time, when enabled
         
-        % Call mms_spinfit_mx mex file with loaded data
+        % Call mms_spinfit_m, .m interface file for the mex compiled file
         [time, sfit.(sdpPair{iPair}), sdev.(sdpPair{iPair}), ...
           iter.(sdpPair{iPair}), nBad.(sdpPair{iPair})] = ...
-        mms_spinfit_mx(maxIt, minPts, nTerms, timeIn', dataIn', ...
-          phaseRadCorrected', fitEvery, fitInterv, double(t0));
+        mms_spinfit_m(maxIt, minPts, nTerms, timeIn, dataIn, ...
+          phaseRadCorrected, fitEvery, fitInterv, t0);
 
-        % Replace non valid values -159e7 (hardcoded in sfit.h used by C/mex)
-        % with NaN in Matlab.
-        sfit.(sdpPair{iPair})(sfit.(sdpPair{iPair})==-159e7)=NaN;
-        sdev.(sdpPair{iPair})(sdev.(sdpPair{iPair})==-159e7)=NaN;
-        iter.(sdpPair{iPair})(iter.(sdpPair{iPair})==-159e7)=NaN;
-        nBad.(sdpPair{iPair})(nBad.(sdpPair{iPair})==-159e7)=NaN;
-
-        % Change row/column written in mms_spinfit_mx and convert to single
-        sfit.(sdpPair{iPair})=single(sfit.(sdpPair{iPair}))';
-        sdev.(sdpPair{iPair})=single(sdev.(sdpPair{iPair}))';
-        iter.(sdpPair{iPair})=single(iter.(sdpPair{iPair}))';
-        nBad.(sdpPair{iPair})=single(nBad.(sdpPair{iPair}))';
+        % Change to single
+        sfit.(sdpPair{iPair})=single(sfit.(sdpPair{iPair}));
+        sdev.(sdpPair{iPair})=single(sdev.(sdpPair{iPair}));
+        iter.(sdpPair{iPair})=single(iter.(sdpPair{iPair}));
+        nBad.(sdpPair{iPair})=single(nBad.(sdpPair{iPair}));
       end
     else
       warnStr = sprintf('Too short time series, no data cover first spinfit timestamp (t0=%i)',t0);
       irf.log('warning', warnStr);
     end
     % Store output.
-    fits = struct('time', int64(time'), 'sfit', sfit,...
+    fits = struct('time', int64(time), 'sfit', sfit,...
       'sdev', sdev, 'iter', iter, 'nBad', nBad);
     
   otherwise

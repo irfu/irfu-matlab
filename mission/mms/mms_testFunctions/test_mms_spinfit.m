@@ -77,10 +77,11 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       expected_C = 1;
       % Data = A + B*cos(wt) + C*sin(wt)
       dataInput = expected_A + expected_B*cos(radPhase) + expected_C*sin(radPhase);
-      [~, sfit, ~, ~, ~] = mms_spinfit_mx( maxIt, minPts, nTerms, ...
-        timeTT2000', dataInput', radPhase', fitEvery, fitInterv, t0 );
+      % Call mms_spinfit_m, which in turn call the mex function.
+      [~, sfit, ~, ~, ~] = mms_spinfit_m( maxIt, minPts, nTerms, ...
+        timeTT2000, dataInput, radPhase, fitEvery, fitInterv, t0 );
       % Remove bad values
-      sfit(sfit==-1.5900e+09)=NaN; sfit = sfit'; sfit(isnan(sfit(:,1)),:)=[];
+      sfit(isnan(sfit(:,1)),:) = [];
       diffA = median(sfit(:,1)) - expected_A;
       diffB = median(sfit(:,2)) - expected_B;
       diffC = median(sfit(:,3)) - expected_C;
