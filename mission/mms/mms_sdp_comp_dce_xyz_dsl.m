@@ -41,11 +41,12 @@ switch procId
       Etmp.(sdpProbes{iProbe}) = ...
         Etmp.(sdpProbes{iProbe}) - adc_off.(sdpProbes{iProbe});
     end
+    
+    bitmask = bitand(dce.e12.bitmask,dce.e34.bitmask);
+    Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
+    Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
 
     dE = mms_sdp_despin(Etmp.e12, Etmp.e34, phase.data);
-
-    % FIXME: need to compute from respective bitmasks
-    bitmask = dce.e12.bitmask;
 
     % FIXME: apply DSL offsets here 
 
