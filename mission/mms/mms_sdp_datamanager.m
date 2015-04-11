@@ -440,16 +440,10 @@ end
       return
     end
     
-    % XXX: FIXME this code should be deleted as soon as we get proper ver 3
-    % files
-    % mmsX_sweep_start, mmsX_sweep_stop and mmsX_sweep_swept are new as
-    % per 2015/02/12 and does not exist in older source files. If not
-    % found abort with log message, not with error.
     varPref = sprintf('mms%d_sweep_', DATAC.scId);
     if ~isfield(DATAC.dce.dataObj.data,[varPref 'start'])
-      irf.log('warning',...
-        ['Did not find DCE field ',varPref,'start. Aborting sweep check.']);
-      return
+      errS = ['Did not find ',varPref,'start'];
+      irf.log('critical',errS); error(errS)
     end
     
     % Get sweep status and sweep timestamp
