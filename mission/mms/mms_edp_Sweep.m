@@ -67,7 +67,7 @@ classdef mms_edp_Sweep
       [idxBias,eBias] = ...
         EpochTT2000(obj.sweep.data.epoch_sweepsamp.data).tlim(lim);
       bias1 =  obj.sweep.data.([obj.varPref '_sweep_bias1']).data(idxBias);
-      bias2 =  obj.sweep.data.([obj.varPref '_sweep_bias1']).data(idxBias);
+      bias2 =  obj.sweep.data.([obj.varPref '_sweep_bias2']).data(idxBias);
       % Find current values (biasRes) corresponding to voltages
       biasRes1 = zeros(size(voltage1))*NaN; biasRes2 = biasRes1;
       for i=1:length(idxBias)
