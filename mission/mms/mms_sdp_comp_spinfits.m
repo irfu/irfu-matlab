@@ -77,7 +77,7 @@ switch procId
     if( (dce.time(1)<=t0) && (t0<=dce.time(end)))
       for iPair=1:numel(sdpPair)
         enabledIdx = ~bitand(dce.(sdpPair{iPair}).bitmask, MMS_CONST.Bitmask.SIGNAL_OFF);
-        phaseRadCorrected = unwrap(phase.data(enabledIdx)*pi/180) + MMS_CONST.Phaseshift.(sdpPair{iPair}); % Rad, when enabled and shifted phase
+        phaseRadCorrected = unwrap(phase.data(enabledIdx)*pi/180) - MMS_CONST.Phaseshift.(sdpPair{iPair}); % Rad, when enabled and shifted phase
         dataIn = double(dce.(sdpPair{iPair}).data(enabledIdx)); % Data, when enabled
         timeIn = double(dce.time(enabledIdx)); % Time, when enabled
         
