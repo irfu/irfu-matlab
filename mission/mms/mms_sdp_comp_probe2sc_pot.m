@@ -100,7 +100,14 @@ switch procId
     dcv.v2.data(badBits(:,2)) = NaN;
     dcv.v3.data(badBits(:,3)) = NaN;
     dcv.v4.data(badBits(:,4)) = NaN;
-
+    
+    % Blank sweeps
+    sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
+    dcv.v1.data = mask_bits(dcv.v1.data, dcv.v1.bitmask, sweepBit);
+    dcv.v2.data = mask_bits(dcv.v2.data, dcv.v2.bitmask, sweepBit);
+    dcv.v3.data = mask_bits(dcv.v3.data, dcv.v3.bitmask, sweepBit);
+    dcv.v4.data = mask_bits(dcv.v4.data, dcv.v4.bitmask, sweepBit);
+    
     % Compute average of all spin plane probes, ignoring data identified as
     % bad (NaN).
     avPot = irf.nanmean([dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data], 2);
