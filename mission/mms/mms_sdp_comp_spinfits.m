@@ -76,7 +76,7 @@ if( (dce.time(1)<=t0) && (t0<=dce.time(end)))
     sigE = sdpPair{iPair};
     probePhaseRad = unwrap(phase.data*pi/180) - MMS_CONST.Phaseshift.(sigE);
     dataIn = dce.(sigE).data;
-    bits = bitand(MMS_CONST.Bitmask.SIGNAL_OFF,MMS_CONST.Bitmask.SWEEP_DATA);
+    bits = bitor(MMS_CONST.Bitmask.SIGNAL_OFF,MMS_CONST.Bitmask.SWEEP_DATA);
     dataIn = mask_bits(dataIn, dce.(sigE).bitmask, bits);
     idxBad = isnan(dataIn); dataIn(idxBad) = [];
     timeIn = dce.time; timeIn(idxBad) = [];
