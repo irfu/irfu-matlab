@@ -46,26 +46,31 @@ mms_sdp_load(DCV_File,'dcv');
 
 %% Test plot
 dce = mms_sdp_datamanager('dce');
-dcv = mms_sdp_datamanager('dcv');
+%dcv = mms_sdp_datamanager('dcv');
 sc_pot = mms_sdp_datamanager('sc_pot');
 phase = mms_sdp_datamanager('phase');
-dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
 spinfits = mms_sdp_datamanager('spinfits');
+dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
 
 %%
-ALPHA = 3;
-figure(71), clf
-h = irf_plot(5);
-hca = irf_panel('E');
+ALPHA = 3; E_YLIM = 7;
 epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
 epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
+
+figure(71), clf
+h = irf_plot(5);
+
+hca = irf_panel('E');
 irf_plot(hca,[epochE double(dce.e12.data) double(dce.e34.data)])
 hold(hca,'on'), comp = 1;
 irf_plot(hca,[epochS double(spinfits.sfit.e12(:,comp)) double(spinfits.sfit.e34(:,comp))])
 ylabel(hca,'E spin [mV/m]')
+title(hca,mmsId), set(hca,'YLim',49*[-1 1])
+
 hca = irf_panel('Phase');
 irf_plot(hca,[epochE double(phase.data)])
-ylabel(hca,'Phase [deg]')
+ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
+
 hca = irf_panel('Ex'); comp = 1;
 %irf_plot(hca,[epochE double(dce_xyz_dsl.data(:,comp))*ALPHA])
 irf_plot(hca,{...
@@ -73,7 +78,8 @@ irf_plot(hca,{...
   [epochS double(spinfits.sfit.e12(:,comp+1))],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
-ylabel(hca,'Ex DSL [mV/m]')
+ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
+
 hca = irf_panel('Ey'); comp = 2;
 %irf_plot(hca,[epochE double(dce_xyz_dsl.data(:,comp))*ALPHA])
 irf_plot(hca,{...
@@ -81,12 +87,38 @@ irf_plot(hca,{...
   [epochS double(spinfits.sfit.e12(:,comp+1))],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
-ylabel(hca,'Ey DSL [mV/m]')
+ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
+
 hca = irf_panel('V');
 irf_plot(hca,[epochE double(sc_pot.data)])
-ylabel(hca,'ScPot [V]')
-irf_plot_ylabels_align(h)
-irf_zoom(h,'x',epochE([1 end])')
+ylabel(hca,'ScPot [V]'), set(hca,'YLim',[0 14])
+
+irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
+
+%% Delta offsets
+Delta_p12_p34 = double(spinfits.sfit.e12(:,1:2)) - ...
+  double(spinfits.sfit.e34(:,1:2));
+
+figure(72), clf
+h = irf_plot(3);
+hca = irf_panel('Ex'); 
+irf_plot(hca,[epochS Delta_p12_p34(:,1)])
+ylabel(hca,'\Delta_{p12,p34}_x [mV/m]')
+set(hca,'YLim',[-1.9 0]), title(hca,mmsId)
+
+hca = irf_panel('Ey'); 
+irf_plot(hca,[epochS Delta_p12_p34(:,2)])
+ylabel(hca,'\Delta_{p12,p34}_y [mV/m]')
+set(hca,'YLim',[-.9 .9])
+
+hca = irf_panel('V');
+irf_plot(hca,[epochE double(sc_pot.data)])
+ylabel(hca,'ScPot [V]'), set(hca,'YLim',[0 14])
+
+irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
+
+
+
 
 %% test files
 dce = dataobj([data_root DCE_File],'KeepTT2000');
