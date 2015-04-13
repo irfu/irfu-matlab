@@ -179,6 +179,17 @@ switch(param)
     DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
     % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
     DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
+    
+  case('hk_105')
+    % HK 101, contains sunpulses.
+    varPrefix = sprintf('mms%d_105_',DATAC.scId);
+    DATAC.(param) = [];
+    DATAC.(param).dataObj = dataObj;
+    x = getdep(dataObj,[varPrefix 'sweepstatus']);
+    DATAC.(param).time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.(param).time, param);
+    % Add sweepstatus which indicates if any of the probes is sweeping
+    DATAC.(param).sweepstatus = dataObj.data.([varPrefix 'sweepstatus']).data;
 
   case('hk_10e')
     % HK 10E, contains bias.
