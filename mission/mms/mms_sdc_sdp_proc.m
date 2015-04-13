@@ -28,11 +28,12 @@ runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
 
 global ENVIR MMS_CONST;
 
-narginchk(2,5);
+narginchk(2,6);
 
 init_matlab_path()
 
 HK_101_File = ''; % HK with sunpulse, etc.
+HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
 DCV_File = '';
 DCE_File = '';
@@ -153,6 +154,18 @@ for i=1:nargin-1
         irf.log('notice', ['HK_10E input file: ', ...
             HK_10E_File]);
 
+    elseif regexpi(fileIn, '_105_') % 105, mmsX_fields_hk_l1b_105_20150410_v0.0.1.cdf
+        if ~isempty(HK_105_File)
+            err_str = ['Received multiple HK_105 files in input (',...
+                HK_10E_File, ', ', varargin{i} ')'];
+            irf.log('critical', err_str);
+            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
+        end
+        % It is the HK_105 file
+        HK_105_File = varargin{i};
+        irf.log('notice', ['HK_105 input file: ', ...
+            HK_105_File]);
+
     elseif regexpi(fileIn, '_dcv\d{0,3}_') % _dcv_ or _dcv32_ or _dcv128_
         if ~isempty(DCV_File)
             err_str = ['Received multiple DC V files in input (',...
@@ -215,15 +228,21 @@ end
 
 %% Processing for SCPOT or QL or SITL.
 % Load and process identified files in the following order first any of the
-% available files out of "DCE", "HK_10E", "HK_101", then lastly the "DCV".
+% available files out of "DCE", "HK_10E", "HK_101", "HK_105", then lastly
+% the "DCV".
 % Reason: DCV in data manager calls on other subfunctions which may require
-% DCE, HK_101 and HK_10E files to already be loaded into memory.
+% DCE, HK_101, HK_105 and HK_10E files to already be loaded into memory.
 
 switch procId
   case MMS_CONST.SDCProc.scpot
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
       src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
+      update_header(src_fileData); % Update header with file info.
+    end
+    if(~isempty(HK_105_File))
+      irf.log('notice', [procName ' proc using: ' HK_105_File]);
+      src_fileData = mms_sdp_load(HK_105_File,'hk_105');
       update_header(src_fileData); % Update header with file info.
     end
     if isempty(HK_101_File)
@@ -261,6 +280,11 @@ switch procId
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
       src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
       update_header(src_fileData) % Update header with file info.
+    end
+    if(~isempty(HK_105_File))
+      irf.log('notice', [procName ' proc using: ' HK_105_File]);
+      src_fileData = mms_sdp_load(HK_105_File,'hk_105');
+      update_header(src_fileData); % Update header with file info.
     end
     % Phase
     if(procId == MMS_CONST.SDCProc.l2pre)
