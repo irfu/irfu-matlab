@@ -86,6 +86,7 @@ if strcmpi(param, 'init')
   DATAC.defatt = [];      % src DEFATT file
   DATAC.defeph = [];      % src DEFEPH file
   DATAC.hk_101 = [];      % src HK_101 file
+  DATAC.hk_105 = [];      % src HK_105 file
   DATAC.hk_10e = [];      % src HK_10E file
   DATAC.l2pre = [];       % src L2Pre file
   DATAC.phase = [];       % comp phase
@@ -369,7 +370,7 @@ end
     function save_restore(sig,sen,idxOn,idxOff)
       % Save old values, expand the variables and restore the old values
       if isempty(idxOff), return, end
-      newData = zeros(size(newTime))*NaN;
+      newData = NaN(size(newTime));
       SV = DATAC.(sig).(sen);
       DATAC.(sig).(sen).data = newData; DATAC.(sig).(sen).bitmask = newData;
       DATAC.(sig).(sen).data(idxOn)    = SV.data;
