@@ -465,22 +465,28 @@ end
     
     if isempty(sweepStart)
       % Alternative approach for finding sweep times using hk_105
-      sweepStatus = logical(DATAC.hk_105.sweepstatus);
-      sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
-      if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
-        sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
+      if(~isempty(DATAC.hk_105))
+        sweepStatus = logical(DATAC.hk_105.sweepstatus);
+        sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
+        if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
+          sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
+        end
+        sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
+        if sweepStatus(end)  % Last point has sweep ON, stop at t(end)+4s
+          sweepStop = [sweepStop DATAC.hk_105.time(end)+int64(4e9)];
+        end
+        if length(sweepStop)~=length(sweepStart)
+          % Sanity check, should never be here
+          errSt = 'length(sweepStop) != length(sweepStart)!!';
+          irf.log('critical',errSt), error(errSt)
+        end
+        % No info on which probe is swept in hk_105, can be any pair
+        sweepSwept = zeros(size(sweepStart));
+      else
+        logStr='No sweep status in DCE file and no HK105 file loaded. Cannot identify any sweeping.';
+        irf.log('warning',logStr);
+        return;
       end
-      sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
-      if sweepStatus(end)  % Last point has sweep ON, stop at t(end)+4s
-        sweepStop = [sweepStop DATAC.hk_105.time(end)+int64(4e9)];
-      end
-      if length(sweepStop)~=length(sweepStart)
-        % Sanity check, should never be here
-        errSt = 'length(sweepStop) != length(sweepStart)!!';
-        irf.log('critical',errSt), error(errSt)
-      end
-      % No info on which probe is swept in hk_105, can be any pair
-      sweepSwept = zeros(size(sweepStart));
     end
     
     % For each pair, E_12, E_34, E_56.
