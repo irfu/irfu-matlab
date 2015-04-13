@@ -151,6 +151,10 @@ switch lower(flag)
 		end
 		if any(strfind(t_in(1,:),'T'))
 			t_out = spdfparsett2000(t_in);
+      if t_out==int64(-9223372036854775805)
+        error('irf:EpochUnix:EpochUnix:badInputs',...
+          'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+      end
 		else
 			mask = '%4d-%2d-%2d %2d:%2d:%f%*c';
 			s=t_in';
