@@ -467,9 +467,8 @@ end
       irf.log('warning','No sweep status in DCE file');
       % Alternative approach for finding sweep times using hk_105
       if isempty(DATAC.hk_105)
-        logStr='No HK105 file loaded. Cannot identify any sweeping.';
-        irf.log('warning',logStr);
-        return;
+        irf.log('warning','No HK_105 file loaded: cannot identify sweeps.');
+        return
       end
       sweepStatus = logical(DATAC.hk_105.sweepstatus);
       sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
