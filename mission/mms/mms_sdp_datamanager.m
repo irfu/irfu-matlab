@@ -225,7 +225,7 @@ switch(param)
     % As per e-mail discussion of 2015/04/07, duplicated timestamps can
     % occur in Defatt (per design). If any are found, use the last data
     % point and disregard the first duplicate.
-    idxBad = find(diff(dataObj.time)==0); % Identify first duplicate
+    idxBad = diff(dataObj.time)==0; % Identify first duplicate
     fs = fields(dataObj);
     for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
     DATAC.(param) = dataObj;
@@ -458,18 +458,38 @@ end
     end
     
     % Get sweep status and sweep timestamp
-    sweep_start = DATAC.dce.dataObj.data.([varPref 'start']).data;
-    sweep_stop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
-    sweep_swept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
+    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
+    sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    
+    if isempty(sweepStart)
+      % Alternative approach for finding sweep times using hk_105
+      sweepStatus = logical(DATAC.hk_105.sweepstatus);
+      sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
+      if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
+        sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
+      end
+      sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
+      if sweepStatus(end)  % Last point has sweep ON, stop at t(end)+4s
+        sweepStop = [sweepStop DATAC.hk_105.time(end)+int64(4e9)];
+      end
+      if length(sweepStop)~=length(sweepStart)
+        % Sanity check, should never be here
+        errSt = 'length(sweepStop) != length(sweepStart)!!';
+        irf.log('critical',errSt), error(errSt)
+      end
+      % No info on which probe is swept in hk_105, can be any pair
+      sweepSwept = zeros(size(sweepStart));
+    end
     
     % For each pair, E_12, E_34, E_56.
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
       irf.log('notice', ['Checking for sweep status on probe pair ', senE]);
-      % Locate probe pair senA and senB, sweep_swept = 1 (for pair 12),
-      % = 3 (for pair 34) and = 5 (for pair 56).
-      ind = find(sweep_swept==str2double(senA(2)));
+      % Locate probe pair senA and senB, SweepSwept = 1 (for pair 12), etc.
+      if all(sweepSwept==0), senN = 0; else senN = str2double(senA(2)); end
+      ind = find(sweepSwept==senN);
       sweeping = false(size(DATAC.dce.time)); % First assume no sweeping.
       for ii = 1:length(ind)
         % Each element in ind correspond to a sweep_start and sweep_stop
@@ -477,8 +497,8 @@ end
         % correspond to in DATAC.dce.time. Each new segment, where
         % (sweep_start<=dce.time<=sweep_stop), is added with 'or' to the
         % previous segments.
-        sweeping = or( and(DATAC.dce.time>=sweep_start(ind(ii)), ...
-          DATAC.dce.time<=sweep_stop(ind(ii))), sweeping);
+        sweeping = or( and(DATAC.dce.time>=sweepStart(ind(ii)), ...
+          DATAC.dce.time<=sweepStop(ind(ii))), sweeping);
       end
       if(any(sweeping))
         % Set bitmask on the corresponding pair, leaving the other 16 bits
