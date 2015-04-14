@@ -150,9 +150,9 @@ switch lower(flag)
 			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(t_in(1,:),'T'))
-			t_out = spdfparsett2000(t_in);
+			t_out = spdfparsett2000(irf.utc_validate_and_pad(t_in));
       if t_out==int64(-9223372036854775805)
-        error('irf:EpochUnix:EpochUnix:badInputs',...
+        error('irf:irf_time',...
           'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
       end
 		else
