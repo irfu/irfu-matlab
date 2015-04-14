@@ -301,7 +301,7 @@ end
     function sen = latched_mask(sen)
       idx = irf_latched_idx(sen.data);
       if ~isempty(idx)
-        sen.bitmask = bitor(sen.bitmask,...
+        sen.bitmask(idx) = bitor(sen.bitmask(idx),...
           MMS_CONST.Bitmask.PROBE_SATURATION);
       end
       idx = sen.data<MMS_CONST.Limit.LOW_DENSITY_SATURATION;
