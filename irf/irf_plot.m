@@ -96,10 +96,7 @@ original_args=args;
 
 var_desc{1} = '';
 flag_subplot = 0;
-have_options = 0;
 caa_dataobject={[]}; % by default assume we are not working with CAA variables
-
-if nargs > 1, have_options = 1; end
 
 %% Default values that can be override by options
 dt = 0;
@@ -109,69 +106,12 @@ plot_type = '';
 marker = '-';
 flag_plot_all_data=1;
 flag_colorbar=1;
-%% Check input options
-while have_options
-    l = 1;
-    switch(lower(args{1}))
-        case 'newfigure'
-            c=initialize_figure(x);
-        case 'subplot'
-            plot_type = 'subplot';
-        case 'comp'
-            plot_type = 'comp';
-        case 'dt'
-            if nargs>1
-                if isnumeric(args{2})
-                    dt = args{2};
-                    l = 2;
-                else 
-					irf.log('critical','wrongArgType : dt must be numeric')
-					error('dt must be numeric');
-                end
-            else irf.log('critical','wrongArgType : dt value is missing')
-				error('dt value missing');
-            end
-        case 'tint'
-            if nargs>1 && isnumeric(args{2})
-                    tint = args{2};
-                    l = 2;
-                    flag_plot_all_data=0;
-                    original_args(find(strcmpi(original_args,'tint'))+ [0 1])=[]; % remove tint argument
-            else % TODO implement string tint
-				irf.log('critical','wrongArgType : tint must be numeric')
-				error('tint must be numeric')
-            end
-        case 'yy'
-            if nargs>1
-                if isnumeric(args{2})
-                    flag_yy = 1;
-                    scaleyy = args{2};
-                    l = 2;
-                else 
-					irf.log('critical','wrongArgType : yy must be numeric')
-					error('yy must be numeric');
-                end
-            else 
-				irf.log('critical','wrongArgType : yy value is missing')
-				error('yy value missing');
-            end
-        case 'linestyle'
-            marker = args{2};
-            l = 2;
-        case 'nocolorbar'
-            flag_colorbar=0;
-            l = 1;
-        otherwise
-            marker = args{1};
-            args = args(2:end);
-            break
-    end
-    args = args(l+1:end);
-    if isempty(args), break, end
-end
+check_input_options()
 
 %% Plot separate subplots for all x components
-if strcmp(plot_type,'subplot') && isnumeric(x), flag_subplot = 1; end
+if (strcmp(plot_type,'subplot') || strcmp(plot_type,'comp') ) && ...
+    (isnumeric(x) || isa(x,'TSeries')), flag_subplot = 1; 
+end
 if ischar(x), % Try to get variable labels etc.
     var_nam = tokenize(x); % White space separates variables
     jj = 1;var_names=cell(1,4*length(var_nam));
@@ -188,29 +128,31 @@ if ischar(x), % Try to get variable labels etc.
     var_desc=x;                    % preallocate non-caa variable description
     ix = 1;
     for ii=1:length(var_names) % get variables
-        if evalin('caller',['exist(''' var_names{ii} ''')']), % Try to get variable from calling workspace
-            x{ix} = evalin('caller',var_names{ii});
-        elseif strfind(var_names{ii},'__') % CAA variable
-                    caa_varname{ix}=var_names{ii};
-                    if flag_plot_all_data,
-                      [tmp,caa_dataobject{ix},x{ix}]=evalin('caller',['c_caa_var_get(''' var_names{ii} ''')']);
-                    else
-                      [tmp,caa_dataobject{ix},x{ix}]=c_caa_var_get(var_names{ii},'tint',tint);
-                    end
+      if evalin('caller',['exist(''' var_names{ii} ''')']), % Try to get variable from calling workspace
+        x{ix} = evalin('caller',var_names{ii});
+      elseif strfind(var_names{ii},'__') % CAA variable
+        caa_varname{ix}=var_names{ii};
+        if flag_plot_all_data,
+          [tmp,caa_dataobject{ix},x{ix}]=evalin('caller',...
+            ['c_caa_var_get(''' var_names{ii} ''')']);
         else
-            flag_ok=c_load(var_names{ii});
-            if flag_ok
-                eval(['x{ix}=' var_names{ii} ';']);
-            else
-                irf.log('warning',...
-                    ['skipping, do not know where to get variable >'...
-                    var_names{ii}]);
-            end
+          [tmp,caa_dataobject{ix},x{ix}]=...
+            c_caa_var_get(var_names{ii},'tint',tint);
         end
-        if ~isempty(x{ix}), % has succeeded to get new variable
-            var_desc{ix} = c_desc(var_names{ii});
-            ix = ix +1;
+      else
+        flag_ok=c_load(var_names{ii});
+        if flag_ok
+          eval(['x{ix}=' var_names{ii} ';']);
+        else
+          irf.log('warning',...
+            ['skipping, do not know where to get variable >'...
+            var_names{ii}]);
         end
+      end
+      if ~isempty(x{ix}), % has succeeded to get new variable
+        var_desc{ix} = c_desc(var_names{ii});
+        ix = ix +1;
+      end
     end
     x(ix:end)=[]; % remove unused variables
     caa_varname(ix:end)=[];
@@ -268,102 +210,59 @@ end
 
 %% One subplot only
 if flag_subplot==0,  % One subplot
-    if isstruct(x)
-        % Plot a spectrogram
-        irf_spectrogram(ax,x);
-		if flag_colorbar, hcbar = colorbar(ax); end
-        if ~isempty(var_desc{1})
-            lab = cell(1,length(var_desc{1}.size));
-            for v = 1:length(var_desc{1}.size)
-                lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-                    '] sc' var_desc{1}.cl_id];
-            end
-            ylabel(hcbar, lab);
-        end
-        
-        firstTimeStamp = x.t(~isnan(x.t),1);
-        firstTimeStamp = firstTimeStamp(1);
-    elseif ~isempty(x) % x is nonempty matrix
-        ts = t_start_epoch(x(:,1)); % t_start_epoch is saved in figures user_data variable
-        ii = 2:length(x(1,:));
-        tag=get(ax,'tag');
-        ud=get(ax,'userdata'); % keep userdata during plotting
-        if flag_yy == 0,
-            h = plot(ax,(x(:,1)-ts-dt),x(:,ii),marker,args{:});
-        else
-            h = plotyy(ax,(x(:,1)-ts),x(:,ii),(x(:,1)-ts),x(:,ii).*scaleyy);
-        end
-        grid(ax,'on');
-        set(ax,'tag',tag);
-        set(ax,'userdata',ud);
-        zoom_in_if_necessary(ax);
-        
-        % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
-        if ~ishold(ax), irf_zoom(ax,'y'); end % automatic zoom only if hold is not on
-        
-        if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
-            lab = cell(1,length(var_desc{1}.size));
-            for v = 1:length(var_desc{1}.size)
-                lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-                    '] sc' var_desc{1}.cl_id];
-            end
-            ylabel(ax,lab);
-        end
-        c=h;
-%        c = get(h(1),'Parent');
-        
-        firstTimeStamp = x(~isnan(x(:,1)),1);
-        firstTimeStamp = firstTimeStamp(1);
-    else % empty matrix or does not know what to do
-        return
+  if isstruct(x)
+    % Plot a spectrogram
+    irf_spectrogram(ax,x);
+    if flag_colorbar, hcbar = colorbar(ax); end
+    if ~isempty(var_desc{1})
+      lab = cell(1,length(var_desc{1}.size));
+      for v = 1:length(var_desc{1}.size)
+        lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+          '] sc' var_desc{1}.cl_id];
+      end
+      ylabel(hcbar, lab);
     end
+    firstTimeStamp = x.t(~isnan(x.t),1);firstTimeStamp = firstTimeStamp(1);
+  elseif ~isempty(x) % x is nonempty matrix
+    if isa(x,'TSeries'), time = x.time.toEpochUnix().epoch; data = x.data;
+    else time = x(:,1); data = x(:,2:end);
+    end
+    ts = t_start_epoch(time); % t_start_epoch is saved in figures user_data variable
+    hca = ax;
+    tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
+    if flag_yy == 0, h = plot(hca, time-ts-dt, data, marker, args{:});
+    else h = plotyy(hca, time-ts, data, time-ts, data.*scaleyy);
+    end
+    grid(hca,'on');
+    set(hca,'tag',tag); set(hca,'userdata',ud); % restore
+    zoom_in_if_necessary(hca);
+    % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
+    if ~ishold(hca), irf_zoom(hca,'y'); end % automatic zoom only if hold is not on
+    ylabel(hca,get_label());
+    c=h;
+    firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
+  else return % empty matrix or does not know what to do
+  end
     
 elseif flag_subplot==1, % Separate subplot for each component
-    if isstruct(x), error('cannot plot spectra in COMP mode'), end
-    
-    % t_start_epoch is saved in figures user_data variable
-    ts = t_start_epoch(x(:,1));
-    
-    npl = size(x,2) -1;
-    c = gobjects(1,npl);
-    for ipl=1:npl
-        c(ipl) = subplot(npl,1,ipl);
-        
-        if iscell(marker)
-            if length(marker)==npl, marker_cur = marker{ipl};
-            else marker_cur = marker{1};
-            end
-        else marker_cur = marker;
-        end
-        
-        plot((x(:,1)-ts-dt),x(:,ipl+1),marker_cur,args{:}); grid on;
-        
-        % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
-        irf_zoom(c(ipl),'y');
-        
-        if ~isempty(var_desc) && ~isempty(var_desc{1})
-            scu = cumsum(var_desc{1}.size);
-            isz = find( scu == min(scu(ipl<=scu)) );
-            sz = var_desc{1}.size(isz); % Size of a data vector
-            if sz == 1 % Scalar data
-                lab = [var_desc{1}.labels{isz} ' ['...
-                    var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
-            else % Vector data
-                % Vector component
-                if isz==1, comp = ipl;
-                else comp = ipl -scu(isz-1);
-                end
-                lab = [var_desc{1}.labels{isz} ...
-                    '_{' var_desc{1}.col_labels{isz}{comp} '} ['...
-                    var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
-            end
-            ylabel(lab);
-        end
-    end
-    
-    firstTimeStamp = x(~isnan(x(:,1)),1);
-    firstTimeStamp = firstTimeStamp(1);
-    
+  if isstruct(x), error('cannot plot spectra in COMP mode'), end
+  if isa(x,'TSeries'), time = x.time.toEpochUnix().epoch; data = x.data;
+  else time = x(:,1); data = x(:,2:end);
+  end
+  ts = t_start_epoch(time); npl = size(data,2);
+  % We make new figure with subplots only if more than 1 component to plot
+  if npl==1, c = ax; else c=initialize_figure(npl); end
+  for ipl=1:npl
+    hca = c(ipl);
+    tag=get(hca,'tag'); ud=get(hca,'userdata');     % save
+    plot(hca, time-ts-dt, data(:,ipl), get_marker(),args{:}); 
+    grid(hca,'on');
+    set(hca,'tag',tag); set(hca,'userdata',ud); % restore
+    zoom_in_if_necessary(hca);
+    ylabel(hca,get_label())  
+  end
+  firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
+  
 elseif flag_subplot==2, % Separate subplot for each variable
     if isempty(x), return, end
     
@@ -415,12 +314,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
                 xlen = xlen(3);
             end
         else
-            if iscell(marker)
-                if length(marker)==npl, marker_cur = marker{ipl};
-                else marker_cur = marker{1};
-                end
-            else marker_cur = marker;
-            end
+            marker_cur = get_marker();
             plot(c(ipl),t_tmp,y(:,2:end),marker_cur); 
             grid(c(ipl),'on');
             zoom_in_if_necessary(c(ipl));
@@ -517,6 +411,112 @@ end
 
 %% Do not give axis handle as answer if not asked for
 if nargout==0, clear c; end
+
+%% Help functions
+  function marker_cur = get_marker()
+    if iscell(marker)
+      if length(marker)==npl, marker_cur = marker{ipl};
+      else marker_cur = marker{1};
+      end
+    else marker_cur = marker;
+    end
+  end
+  function lab = get_label()
+    lab = '';
+    
+    switch flag_subplot
+      case 0
+        if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
+          lab = cell(1,length(var_desc{1}.size));
+          for v = 1:length(var_desc{1}.size)
+            lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
+              '] sc' var_desc{1}.cl_id];
+          end
+        end
+      case 1
+        if ~isempty(var_desc) && ~isempty(var_desc{1})
+          scu = cumsum(var_desc{1}.size);
+          isz = find( scu == min(scu(ipl<=scu)) );
+          sz = var_desc{1}.size(isz); % Size of a data vector
+          if sz == 1 % Scalar data
+            lab = [var_desc{1}.labels{isz} ' ['...
+              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
+          else % Vector data
+            % Vector component
+            if isz==1, comp = ipl;
+            else comp = ipl -scu(isz-1);
+            end
+            lab = [var_desc{1}.labels{isz} ...
+              '_{' var_desc{1}.col_labels{isz}{comp} '} ['...
+              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
+          end
+        end
+      otherwise, error('not implemented')
+    end
+  end
+  function check_input_options()
+    have_options = 0;
+    if nargs > 1, have_options = 1; end
+    while have_options
+      l = 1;
+      switch(lower(args{1}))
+        case 'newfigure'
+          c=initialize_figure(x);
+        case 'subplot'
+          plot_type = 'subplot';
+        case 'comp'
+          plot_type = 'comp';
+        case 'dt'
+          if nargs>1
+            if isnumeric(args{2})
+              dt = args{2};
+              l = 2;
+            else
+              irf.log('critical','wrongArgType : dt must be numeric')
+              error('dt must be numeric');
+            end
+          else irf.log('critical','wrongArgType : dt value is missing')
+            error('dt value missing');
+          end
+        case 'tint'
+          if nargs>1 && isnumeric(args{2})
+            tint = args{2};
+            l = 2;
+            flag_plot_all_data=0;
+            original_args(find(strcmpi(original_args,'tint'))+ [0 1])=[]; % remove tint argument
+          else % TODO implement string tint
+            irf.log('critical','wrongArgType : tint must be numeric')
+            error('tint must be numeric')
+          end
+        case 'yy'
+          if nargs>1
+            if isnumeric(args{2})
+              flag_yy = 1;
+              scaleyy = args{2};
+              l = 2;
+            else
+              irf.log('critical','wrongArgType : yy must be numeric')
+              error('yy must be numeric');
+            end
+          else
+            irf.log('critical','wrongArgType : yy value is missing')
+            error('yy value missing');
+          end
+        case 'linestyle'
+          marker = args{2};
+          l = 2;
+        case 'nocolorbar'
+          flag_colorbar=0;
+          l = 1;
+        otherwise
+          marker = args{1};
+          args = args(2:end);
+          break
+      end
+      args = args(l+1:end);
+      if isempty(args), break, end
+    end
+  end
 
 end
 
