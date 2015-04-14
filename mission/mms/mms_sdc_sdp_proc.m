@@ -253,6 +253,15 @@ switch procId
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
     src_fileData = mms_sdp_load(HK_101_File,'hk_101');
     update_header(src_fileData) % Update header with file info.
+
+    if isempty(DCE_File)
+      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
+        'received no DCE file argument.']);
+    else
+      irf.log('notice', [procName ' proc using: ' DCE_File]);
+      src_fileData = mms_sdp_load(DCE_File,'dce');
+      update_header(src_fileData); % Update header with file info.
+    end
     
     if isempty(DCV_File)
       errStr = ['missing required input for ' procName ': DCV_File'];
@@ -262,15 +271,6 @@ switch procId
     irf.log('notice', [procName ' proc using: ' DCV_File]);
     src_fileData = mms_sdp_load(DCV_File,'dcv');
     update_header(src_fileData) % Update header with file info.
-    
-    if isempty(DCE_File)
-      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
-        'received no DCE file argument.']);
-    else
-      irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = mms_sdp_load(DCE_File,'dce');
-      update_header(src_fileData); % Update header with file info.
-    end
 
     % Write the output
     filename_output = mms_sdp_cdfwrite(HeaderInfo);
