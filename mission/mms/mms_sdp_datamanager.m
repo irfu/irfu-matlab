@@ -343,39 +343,49 @@ end
       irf.log('critical',errStr1), error(errStr1)
     end
     
-    % No gaps allowed below this line
+    % Bring together the DCE and DCV time series
+    % NOTE: No gaps allowed below this line
     dt = median(diff(tE));
     if tV(1)>tE(1), tStart = tE(1);
-    else tStart = tE(1) - ceil((tV(1)-tE(1))/dt)*dt;
+    else tStart = tE(1) - ceil((tE(1)-tV(1))/dt)*dt;
     end
     if tE(end)>tV(end), tStop = tE(end);
     else tStop = tE(end) + ceil((tV(end)-tE(end))/dt)*dt;
     end
     nData = (tStop - tStart)/dt + 1;
     newTime = int64((1:nData) - 1)'*dt + tStart;
-    [~,idxEon] = intersect(tE,newTime); [~,~,idxEoff] = setxor(tE,newTime);
-    tDiff = abs(newTime-tV(1));
-    iDcvStart = find( tDiff == min(tDiff) ); iDcvStart = iDcvStart(1);
-    idxVon = (1:length(tV))'-1 +iDcvStart; idxVoff = setxor(1:nData,idxVon);
- 
+    [~,idxEonOld,idxEonNew] = intersect(tE,newTime); 
+    idxEoffNew = setxor(1:length(newTime),idxEonNew);
+    tDiffNew = abs(newTime-tV(1)); tDiffOld = abs(newTime(1)-tV);
+    if min(min(tDiffNew),min(tDiffOld))==min(tDiffOld),
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+      tDiffNew = abs(newTime-tV(iDcvStartOld));
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+    else
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+      tDiffOld = abs(newTime(iDcvStartNew)-tV);
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+    end
+    idxVonOld = (1:length(tV))'-1 +iDcvStartOld;
+    idxVonNew = (1:length(tV))'-1 +iDcvStartNew;
+    idxVoffNew = setxor(1:length(tV),idxVonNew);
+    
     for iSen = 1:2:numel(sensors)  % Loop over e12, e34, e56
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
-      save_restore('dce',senE,idxEon,idxEoff)
-      save_restore('dcv',senA,idxVon,idxVoff)
-      save_restore('dcv',senB,idxVon,idxVoff)
+      save_restore('dce',senE,idxEonOld,idxEonNew,idxEoffNew)
+      save_restore('dcv',senA,idxVonOld,idxVonNew,idxVoffNew)
+      save_restore('dcv',senB,idxVonOld,idxVonNew,idxVoffNew)
     end
     DATAC.dce.time = newTime; DATAC.dcv.time = newTime;
     
-    function save_restore(sig,sen,idxOn,idxOff)
+    function save_restore(sig,sen,idxOnOld,idxOnNew,idxOffNew)
       % Save old values, expand the variables and restore the old values
-      if isempty(idxOff), return, end
-      newData = NaN(size(newTime));
-      SV = DATAC.(sig).(sen);
+      newData = NaN(size(newTime)); SV = DATAC.(sig).(sen);
       DATAC.(sig).(sen).data = newData; DATAC.(sig).(sen).bitmask = newData;
-      DATAC.(sig).(sen).data(idxOn)    = SV.data;
-      DATAC.(sig).(sen).bitmask(idxOn) = SV.bitmask;
-      DATAC.(sig).(sen).bitmask(idxOff) = MMS_CONST.Bitmask.SIGNAL_OFF;
+      DATAC.(sig).(sen).data(idxOnNew)    = SV.data(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOnNew) = SV.bitmask(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;
     end
   end % CHK_TIMELINE
 
