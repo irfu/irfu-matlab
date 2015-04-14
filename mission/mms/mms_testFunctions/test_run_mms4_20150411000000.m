@@ -96,8 +96,8 @@ ylabel(hca,'-ScPot [V]'), set(hca,'YLim',[-14 0])
 irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
 
 %% Delta offsets
-Delta_p12_p34 = double(spinfits.sfit.e12(:,1:2)) - ...
-  double(spinfits.sfit.e34(:,1:2));
+Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
+  double(spinfits.sfit.e34(:,2:3));
 
 figure(72), clf
 h = irf_plot(3);
@@ -112,8 +112,8 @@ ylabel(hca,'\Delta_{p12,p34}_y [mV/m]')
 set(hca,'YLim',[-.9 .9])
 
 hca = irf_panel('V');
-irf_plot(hca,[epochE double(sc_pot.data)])
-ylabel(hca,'ScPot [V]'), set(hca,'YLim',[0 14])
+irf_plot(hca,[epochE -double(sc_pot.data)])
+ylabel(hca,'-ScPot [V]'), set(hca,'YLim',[-14 0])
 
 irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
 
