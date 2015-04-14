@@ -21,12 +21,12 @@ setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 
 MMS_CONST=mms_constants;
 
-%% Define files 20150408
-mmsId = 'mms1'; prf = [data_root filesep mmsId];
-DCE_File = [prf '/edp/comm/l1b/dce128/2015/04/mms1_edp_comm_l1b_dce128_20150408060000_v0.8.0.cdf'];
-DCV_File = [prf '/edp/comm/l1b/dcv128/2015/04/mms1_edp_comm_l1b_dcv128_20150408060000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms1_fields_hk_l1b_101_20150408_v0.3.0.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms1_fields_hk_l1b_10e_20150408_v0.1.0.cdf'];
+%% Define files 20150411
+mmsId = 'mms3'; prf = [data_root filesep mmsId];
+DCE_File = [prf '/edp/comm/l1b/dce128/2015/04/mms3_edp_comm_l1b_dce128_20150411000000_v0.8.0.cdf'];
+DCV_File = [prf '/edp/comm/l1b/dcv128/2015/04/mms3_edp_comm_l1b_dcv128_20150411000000_v0.8.0.cdf'];
+HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms3_fields_hk_l1b_101_20150411_v0.3.1.cdf'];
+HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms3_fields_hk_l1b_10e_20150411_v0.1.1.cdf'];
 DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
 
 %% Test QL
