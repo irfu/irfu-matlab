@@ -469,9 +469,10 @@ end
       irf.log('critical',errS); error(errS)
     end
     
-    % Get sweep status and sweep timestamp
+    % Get sweep status and sweep Start/Stop
+    % Add extra 0.2 sec to Stop for safety
     sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
-    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
+    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
     sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
     
     if isempty(sweepStart)
