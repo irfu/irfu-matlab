@@ -59,6 +59,19 @@ classdef (Abstract) GenericTimeArray
       res = length(obj.epoch);
     end
     
+    function res = minus(obj, obj1)
+      %MINUS  time difference is seconds
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:minus:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      if length(obj) ~= length(obj1),
+        error('irf:GenericTimeArray:minus:badInputs',...
+            'inpus have different length')
+      end
+      res = obj.toEpochUnix().epoch - obj1.toEpochUnix().epoch;
+    end
+    
     function res = end(obj,k,~)
       %END last index in array
       switch k
