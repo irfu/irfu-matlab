@@ -4,7 +4,7 @@ function utcNew = utc_validate_and_pad(utc)
 % utcNew = utc_validate_and_pad(utc)
 %
 %  Validates that string is compliand with the UTC format:
-%  yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]' and pads with missing zeros and Z.
+%  yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ] and pads with missing zeros and Z.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
