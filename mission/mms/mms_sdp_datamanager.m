@@ -430,8 +430,8 @@ end
             indE = or(indA,indB); % Either senA or senB => senE non nominal.
 
             if(any(indE))
-              irf.log('notice',['Non-nominal bias settings found on pair ',...
-                senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
+              irf.log('notice',['Non-nominal bias on ',...
+                senE,' from ',hk10eParam{iiParam}]);
 
               % Add bitmask values to SenA, SenB and SenE for these ind.
               bits = MMS_CONST.Bitmask.BAD_BIAS;
@@ -550,12 +550,12 @@ end
     Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
     if length(Blen)==1
       senDist = sensor_dist(Blen.len);
-      irf_log('notice',['Adjusting sensor dist to : [ '...
+      irf.log('notice',['Adjusting sensor dist to : [ '...
         num2str(senDist,'%.1f ') '] meters'])
     else
       boomLen = zeros(length(t),4);
       for i=1:length(Blen)
-        irf_log('notice',['Adjusting sensor dist to : [ '...
+        irf.log('notice',['Adjusting sensor dist to : [ '...
         num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
         Blen(i).time.toUtc(1)])
         idx = find(t>=Blen(i).time.epoch);
