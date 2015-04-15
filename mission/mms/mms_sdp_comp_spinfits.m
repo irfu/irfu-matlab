@@ -18,7 +18,7 @@ function fits = mms_sdp_comp_spinfits
 narginchk(0,0);
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-fits = MMS_CONST.Error;
+fits = MMS_CONST.Error; %#ok<NASGU>
 
 % Some default settings
 maxIt = 3;      % Maximum of iterations to run fit

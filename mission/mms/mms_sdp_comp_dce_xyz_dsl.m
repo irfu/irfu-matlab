@@ -13,7 +13,7 @@ function dce_xyz_dsl = mms_sdp_comp_dce_xyz_dsl
 % ----------------------------------------------------------------------------
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-dce_xyz_dsl = MMS_CONST.Error;
+dce_xyz_dsl = MMS_CONST.Error; %#ok<NASGU>
 
 procId = mms_sdp_datamanager('procId');
 switch procId
