@@ -1,24 +1,19 @@
 %% Init
 data_root='/data/mms';
-  
 if ~exist(data_root,'dir')
   error('DATA_ROOT(%s) does not exist',data_root)
 end
-
 if ismac,
   setenv('CDF_BASE','/Applications/cdf35_0-dist/')
   outDir = '/Users/yuri/Documents/MATLAB/MMS/test_proc/';
-else
-  outDir = data_root;
+else outDir = data_root;
 end
-
 cd(outDir)
 if ~exist('log','dir'), mkdir('log'), end
 if ~exist('out','dir'), mkdir('out'), end
 setenv('DROPBOX_ROOT', [outDir filesep 'out'])
 setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
-
 MMS_CONST=mms_constants;
 
 if 0
@@ -32,7 +27,7 @@ HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms1_fields_hk_l1b_10e_20150408_v
 DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
 end
 if 0
-%% Define files 20150411
+%% Define files 20150411-00:00
 mmsId = 'mms3'; prf = [data_root filesep mmsId];  %#ok<UNRCH>
 DCE_File = [prf '/edp/comm/l1b/dce128/2015/04/mms3_edp_comm_l1b_dce128_20150411000000_v0.8.0.cdf'];
 DCV_File = [prf '/edp/comm/l1b/dcv128/2015/04/mms3_edp_comm_l1b_dcv128_20150411000000_v0.8.0.cdf'];
@@ -42,7 +37,37 @@ HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms3_fields_hk_l1b_10e_20150411_v
 DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
 end
 if 0
-%% Define files 20150413
+%% Define files 20150413-00:00
+mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
+DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413000000_v0.8.0.cdf'];
+DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413000000_v0.8.0.cdf'];
+HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
+HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
+HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
+DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
+end
+if 0
+%% Define files 20150413-06:00
+mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
+DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413060000_v0.8.0.cdf'];
+DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413060000_v0.8.0.cdf'];
+HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
+HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
+HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
+DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
+end
+if 0
+%% Define files 20150413-12:00
+mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
+DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413120000_v0.8.0.cdf'];
+DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413120000_v0.8.0.cdf'];
+HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
+HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
+HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
+DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
+end
+if 0
+%% Define files 20150413-18:00
 mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
 DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413180000_v0.8.0.cdf'];
 DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413180000_v0.8.0.cdf'];
@@ -53,10 +78,8 @@ DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
 end
 %% Test QL
 irf.log('log_out','screen'), irf.log('notice')
-
-procId = MMS_CONST.SDCProc.ql; procName = 'QL';
+procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
 tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
-scId = str2double(mmsId(end));
 
 mms_sdp_datamanager('init',...
   struct('scId',scId,'tmMode',tmMode,'procId',procId,...
@@ -67,16 +90,15 @@ mms_sdp_load(HK_101_File,'hk_101');
 mms_sdp_load(DCE_File,'dce');
 mms_sdp_load(DCV_File,'dcv');
 
-%% Test plot
+%% Additional processing
 dce = mms_sdp_datamanager('dce');
-%dcv = mms_sdp_datamanager('dcv');
 probe2sc_pot = mms_sdp_datamanager('probe2sc_pot');
 phase = mms_sdp_datamanager('phase');
 spinfits = mms_sdp_datamanager('spinfits');
 dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
 
-%%
-ALPHA = 3; E_YLIM = 7;
+%% Summary plot
+E_YLIM = 7;
 epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
 epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
 
@@ -95,18 +117,14 @@ irf_plot(hca,[epochE double(phase.data)])
 ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
 
 hca = irf_panel('Ex'); comp = 1;
-%irf_plot(hca,[epochE double(dce_xyz_dsl.data(:,comp))*ALPHA])
-irf_plot(hca,{...
-  [epochE double(dce_xyz_dsl.data(:,comp))],...
+irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
   [epochS double(spinfits.sfit.e12(:,comp+1))],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
 ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
 hca = irf_panel('Ey'); comp = 2;
-%irf_plot(hca,[epochE double(dce_xyz_dsl.data(:,comp))*ALPHA])
-irf_plot(hca,{...
-  [epochE double(dce_xyz_dsl.data(:,comp))],...
+irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
   [epochS double(spinfits.sfit.e12(:,comp+1))],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
@@ -139,8 +157,6 @@ irf_plot(hca,[epochE double(probe2sc_pot.data)])
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
 irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
-
-
 
 
 %% test files
