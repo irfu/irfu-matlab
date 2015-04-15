@@ -234,7 +234,7 @@ classdef (Abstract) GenericTimeArray
       end
       if any( utc(:,6)=='1' & ~(utc(:,7)=='0' | utc(:,7)=='1' | utc(:,7)=='2')) || ... % month > 12
           ~all( utc(:,9)=='0' | utc(:,9)=='1' | utc(:,9)=='2' | utc(:,9)=='3') || ...
-          any( utc(:,10)=='0' & utc(:,10)=='0' ) || ... % no day 00
+          any( utc(:,9)=='0' & utc(:,10)=='0' ) || ... % no day 00
           any( utc(:,9)=='3' & ~(utc(:,10)=='0' | utc(:,10)=='1' ))
         return
       end
