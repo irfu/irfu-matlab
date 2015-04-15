@@ -153,6 +153,7 @@ switch(param)
   case('dce')
     sensors = {'e12','e34','e56'};
     init_param()
+    apply_nom_amp_corr()
     
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -164,7 +165,6 @@ switch(param)
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
-    apply_nom_amp_corr()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -544,18 +544,39 @@ end
   end
 
   function apply_nom_amp_corr()
-    % Apply a nominal amplitude correction factor to DCE & DCV for p1..4
+    % Apply a nominal amplitude correction factor to DCE for p1..4
     % values after cleanup but before any major processing has occured.
-    factor = MMS_CONST.NominalAmpCorr;
-    for iSen = 1:2:min(numel(sensors),4)
-      senA = sensors{iSen}; senB = sensors{iSen+1};
-      senE = ['e' senA(2) senB(2)];
+    
+    Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
+    if length(Blen)==1
+      senDist = sensor_dist(Blen.len);
+      irf_log('notice',['Adjusting sensor dist to : [ '...
+        num2str(senDist,'%.1f ') '] meters'])
+    else
+      boomLen = zeros(length(t),4);
+      for i=1:length(Blen)
+        irf_log('notice',['Adjusting sensor dist to : [ '...
+        num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+        Blen(i).time.toUtc(1)])
+        idx = find(t>=Blen(i).time.epoch);
+        boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
+      end
+      senDist = sensor_dist(boomLen);
+    end
+    
+    factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
+    for iSen = 1:min(numel(sensors),2)
+      senE = sensors{iSen};
+      nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
       logStr = sprintf(['Applying nominal amplitude correction factor, '...
-        '%d, to probes %s, %s and %s'], factor, senA, senB, senE);
+        '%.2f, to %s'], factor, senE);
       irf.log('notice',logStr);
-      DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * factor;
-      DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * factor;
-      DATAC.dce.(senE).data = DATAC.dce.(senE).data * factor;
+      distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
+      DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor;
+    end
+
+    function l = sensor_dist(len)
+      l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
     end
   end
 
