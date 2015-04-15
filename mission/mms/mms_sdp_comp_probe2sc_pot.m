@@ -19,7 +19,7 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 if nargin==0,  filterInterval = 20; end
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-probe2sc_pot = MMS_CONST.Error;
+probe2sc_pot = MMS_CONST.Error; %#ok<NASGU>
 
 procId = mms_sdp_datamanager('procId');
 switch procId
