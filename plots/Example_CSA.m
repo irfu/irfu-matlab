@@ -10,7 +10,7 @@ disp(['Moving to temporary directory: ' tempdir_name]);
 %%%%%%%%%%%%%%%%%%%%%%%
 % specify time interval
 tintIso='2002-08-21T07:50:00Z/2002-08-21T08:00:00Z';
-tint = irf_time(tintIso,'iso2tint');
+tint = irf_time(tintIso,'utc>tint');
 % time interval can be specified directly, uncomment below
 %tint=[irf_time([2002 8 21 7 50 0]) irf_time([2002 8 21 8 0 0])]; 
 

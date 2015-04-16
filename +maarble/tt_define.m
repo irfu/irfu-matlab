@@ -12,7 +12,7 @@
 %% Cluster
 Units=irf_units;
 tintIso='2001-01-01T00:00:00.000Z/2013-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'iso2tint');
+tint=irf_time(tintIso,'utc>tint');
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading Cluster 1-min positions');
@@ -57,7 +57,7 @@ end
 %% THEMIS
 Units=irf_units;
 tintIso='2007-01-01T00:00:00.000Z/2012-01-01T00:00:00.000Z';
-tint=irf_time(tintIso,'iso2tint');
+tint=irf_time(tintIso,'utc>tint');
 disp(['Using time interval: ' tintIso]);
 
 disp('Loading THEMIS 1-min positions');

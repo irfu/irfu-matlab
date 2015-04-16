@@ -70,11 +70,11 @@ MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scp
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
 
 % Bitmask values; 2^(bit_number - 1):
-MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
-MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2
-MMS_CONST.Bitmask.PROBE_SATURATION         =  4;       % Bit 3
-MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  8;       % Bit 4
-MMS_CONST.Bitmask.SWEEP_DATA               =  16;      % Bit 5
+MMS_CONST.Bitmask.SIGNAL_OFF               =  uint16(1);       % Bit 1
+MMS_CONST.Bitmask.BAD_BIAS                 =  uint16(2);       % Bit 2
+MMS_CONST.Bitmask.PROBE_SATURATION         =  uint16(4);       % Bit 3
+MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  uint16(8);       % Bit 4
+MMS_CONST.Bitmask.SWEEP_DATA               =  uint16(16);      % Bit 5
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 

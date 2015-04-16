@@ -47,7 +47,7 @@ if ischar(fileName)
 		assert(nargin == 4 && ischar(varargin{2}) && strcmpi(varargin{2},'stream'),...
 			'Syntax not correct');
 		if ischar(varargin{1}) % tint in iso format
-			tint = irf_time(varargin{1},'iso2tint');
+			tint = irf_time(varargin{1},'utc>tint');
 		elseif isnumeric(varargin{1}) ...
 				&& numel(varargin{1}) == 2 % tint as vector [tstart tend]
 			tint = varargin{1};
@@ -86,7 +86,7 @@ end
 % get time
 tt=cef_var('time_tags');
 tt=tt';
-tt=irf_time( cef_date(tt),'datenum2epoch');
+tt=irf_time( cef_date(tt),'datenum>epoch');
 
 % make variable cell array if it is string
 if ischar(varName)

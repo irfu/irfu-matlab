@@ -171,7 +171,7 @@ else
 		t_start_epoch = double(min(tt)); clear tt
 		ud.t_start_epoch = t_start_epoch; set(hcf,'userdata',ud);
 		irf_log('proc',['user_data.t_start_epoch is set to ' ...
-			irf_time(t_start_epoch,'iso')]);
+			irf_time(t_start_epoch,'utc')]);
 	end
 end
 if isempty(delta_t), delta_t = [0 0 0 0]; end

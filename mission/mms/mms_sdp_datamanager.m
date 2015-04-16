@@ -382,8 +382,8 @@ end
     function save_restore(sig,sen,idxOnOld,idxOnNew,idxOffNew)
       % Save old values, expand the variables and restore the old values
       SAVE = DATAC.(sig).(sen);
-      DATAC.(sig).(sen).data = NaN(size(newTime));
-      DATAC.(sig).(sen).bitmask = zeros(size(newTime));
+      DATAC.(sig).(sen).data = NaN(size(newTime),'like',DATAC.(sig).(sen).data);
+      DATAC.(sig).(sen).bitmask = zeros(size(newTime),'like',DATAC.(sig).(sen).bitmask);
       DATAC.(sig).(sen).data(idxOnNew)    = SAVE.data(idxOnOld);
       DATAC.(sig).(sen).bitmask(idxOnNew) = SAVE.bitmask(idxOnOld);
       DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;

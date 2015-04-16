@@ -240,7 +240,7 @@ end
 						else
 							tcdfepoch = tData; % cdfread returns (Nsamples X 2) matrix
 						end
-						timeVector=irf_time(tcdfepoch,'cdfepoch162epoch');
+						timeVector=irf_time(tcdfepoch,'cdfepoch16>epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
                             tmpdata{iVar}=cdfread(cdfFile,'CombineRecords',true,...
@@ -261,7 +261,7 @@ end
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
 						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
-                        timeVector = irf_time(tmpdata{1},'date2epoch');
+                        timeVector = irf_time(tmpdata{1},'date>epoch');
 						tmpdata{1} = timeVector;
 					end
 					if iFile==istart, data=cell(size(tmpdata));end

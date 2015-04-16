@@ -103,7 +103,7 @@ irf_zoom(h,'y');
 
 h=irf_plot({B2,Bnew},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(B2(1,1),'epoch2yyyy-mm-dd'));
+title(h(1),irf_time(B2(1,1),'epoch>yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 
