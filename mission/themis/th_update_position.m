@@ -19,7 +19,7 @@ for thId=thIds,
         tmpData = tmpData*6371.2; % comvert to kilometers
         tmpEpoch = cdfread(fileToRead,'CombineRecords',true,...
           'KeepEpochAsIs',true,'Variable','Epoch');
-        tmpEpoch = irf_time(tmpEpoch,'cdfepoch2epoch');
+        tmpEpoch = irf_time(tmpEpoch,'cdfepoch>epoch');
         R = [R; tmpEpoch tmpData]; %#ok<AGROW>
         clear tmpData tmpEpoch
       end

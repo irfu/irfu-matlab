@@ -19,7 +19,7 @@ end
 if isempty(x), in = []; return, end
 
 if ischar(tStart), % time interval specified as string
-	tStart=irf_time(tStart,'iso2tint');
+	tStart=irf_time(tStart,'utc>tint');
 end
 
 if nargin==2

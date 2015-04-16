@@ -806,7 +806,7 @@ elseif strcmp(quantity,'a')
     cef_init(); cef_read(cefFile);
     c1 = onCleanup(@() cef_close());
     c2 = onCleanup(@() rmdir(tempDir,'s'));
-    tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum2epoch');
+    tt = cef_var('time_tags'); tt = irf_time( cef_date(tt'),'datenum>epoch');
     spinPeriod = cef_var('spin_period'); spinPeriod = double(spinPeriod');
     % find errors
     iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));

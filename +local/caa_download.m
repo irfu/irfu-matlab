@@ -204,8 +204,8 @@ if isInputDatasetName
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
-		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2vector');
-		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2vector');
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch>vector');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch>vector');
 		startYear   = tminDatenum(1);
 		startMonth  = tminDatenum(2);
 		endYear     = tmaxDatenum(1);
@@ -217,7 +217,7 @@ if isInputDatasetName
 		tVec = zeros((1 + endYear - startYear)*12,1);
 		for iYear = startYear:endYear,
 			for iMonth = 1:12,
-				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector2epoch');
+				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector>epoch');
 			end
 		end
 		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
@@ -229,12 +229,12 @@ if isInputDatasetName
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
-		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2datenum');
-		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2datenum');
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch>datenum');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch>datenum');
 		tminDatenum = floor(tminDatenum);
 		tmaxDatenum = floor(tmaxDatenum) + 1;
-		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
-		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
+		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum>epoch');
+		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum>epoch');
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	else
 		TT=caa_download(['inventory:' dataSet]);

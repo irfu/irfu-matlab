@@ -32,10 +32,10 @@ for cl_id=1,
     tint=[tt.TimeInterval(iEvent) tt.TimeInterval(iEvent+numel(tt))];
     disp('=================================');
     disp(['  ' num2str(iEvent) '. event']);
-    disp(irf_time(tint,'tint2iso'));
+    disp(irf_time(tint,'tint>utc'));
     disp('=================================');
 
-    dirName=[sprintf('maarble_emic_',iEvent) irf_time(tint(1),'epoch2iso')];
+    dirName=[sprintf('maarble_emic_',iEvent) irf_time(tint(1),'epoch>utc')];
     emic.dirName{iEvent}=dirName;
     if(~exist(dirName,'dir')),
     disp(['creating directory - ' dirName]);

@@ -95,7 +95,7 @@ classdef TimeTable
 					if ~isempty(timeInterval) && isfield(timeInterval,'start') && isfield(timeInterval,'end')
 						isHeader=0;
 						nTimeInterval=nTimeInterval+1;
-						TT.TimeInterval(nTimeInterval,:) = [irf_time(timeInterval.start,'iso2epoch') irf_time(timeInterval.end,'iso2epoch')];
+						TT.TimeInterval(nTimeInterval,:) = [irf_time(timeInterval.start,'utc>epoch') irf_time(timeInterval.end,'utc>epoch')];
 						if isfield(timeInterval,'comment'),
 							TT.Comment{nTimeInterval}	= timeInterval.comment;
 						else
@@ -150,7 +150,7 @@ classdef TimeTable
 					tint(2)=tint(1);
 				end
 			elseif ischar(tint) % assume iso format
-				tint=irf_time(tint,'iso2tint');
+				tint=irf_time(tint,'utc>tint');
 			end
 			TT.TimeInterval(nElement,:)=tint;
 			if ~iscellstr(description), % description should be cellstr
@@ -181,8 +181,8 @@ classdef TimeTable
 			out(1:nHeaderLines)=header;
 			currentLine=nHeaderLines+1;
 			fmt='%s %s %s';
-			tstartIso = irf_time(tint(:,1),'iso');
-			tendIso = irf_time(tint(:,2),'iso');
+			tstartIso = irf_time(tint(:,1),'utc');
+			tendIso = irf_time(tint(:,2),'utc');
 			for iTT=1:numel(tt)
 				out{currentLine}=sprintf(fmt,tstartIso(iTT,:),...
 					tendIso(iTT,:),comment{iTT});

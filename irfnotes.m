@@ -117,8 +117,8 @@ ylabel(h(2),'sqrt(data)')
 %file reading
 [t1,t2,tint_comments]=textread('Events_reconnection.txt','%s%s%[^\n]');
 for j=1:size(t1,1),
-  tint(j,1)=irf_time(t1{j},'iso2epoch');
-  tint(j,2)=irf_time(t2{j},'iso2epoch');
+  tint(j,1)=irf_time(t1{j},'utc>epoch');
+  tint(j,2)=irf_time(t2{j},'utc>epoch');
 end
 clear t1 t2 j;
 
