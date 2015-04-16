@@ -1,5 +1,5 @@
 function TS = ts_scalar(time,data)
-%TS_SCALAR  Factory for scalar (TSeries)
+%IRF.TS_SCALAR  Factory for scalar (TSeries)
 %
 % TsScalar = irf.ts_scalar(time,data)
 %
