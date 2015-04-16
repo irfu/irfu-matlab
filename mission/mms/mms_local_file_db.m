@@ -21,6 +21,7 @@ classdef mms_local_file_db < mms_file_db
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
       narginchk(2,3)
+      fileList = [];
       if nargin==3 && ~isa(tint,'GenericTimeArray'),
         error('Expecting TINT (GenericTimeArray)')
       elseif nargin==2, tint = [];
@@ -35,14 +36,14 @@ classdef mms_local_file_db < mms_file_db
         irf.log('critical',errStr), error(errStr)
       end
       if strcmp(C{2},'ancillary'),
-        fileList = list_ancillary();
+        list_ancillary();
         if isempty(fileList) || isempty(tint), return, end
         pick_ancillary();
       else
-        if ~iesmpty(int); fileList = list_sci_tint();
+        if ~isempty(tint), list_sci_tint()
         else
           irf.log('warning','THIS MAY TAKE SOME TIME')
-          fileList = list_sci();
+          list_sci()
         end
       end
       % END LIST_FILES
@@ -52,8 +53,7 @@ classdef mms_local_file_db < mms_file_db
           arrayfun(@(x) x.stop>=tint.start,fileList));
       end
       %% LIST ANCILLARY
-      function fileList = list_ancillary()
-        fileList = [];
+      function list_ancillary()
         fileDir = [obj.dbRoot filesep C{2} filesep C{1} filesep C{3}];
         if exist(fileDir,'dir')~=7, return, end
         filePref = [upper(C{1}) '_' upper(C{3})];
@@ -97,9 +97,56 @@ classdef mms_local_file_db < mms_file_db
           end % ADD_SS
         end % ADD2LIST
       end % LOAD_ANCILLARY
-      %% LOAD SCI
-      function fileList = list_sci()
-        fileList = [];
+      
+      %% LIST_SCI_TINT
+      function list_sci_tint()
+        fDir = get_prefix();
+        TStart = get_times(tint.start); TStop = get_times(tint.stop);
+        for year = TStart.year:TStop.year
+          moStart = 1; moStop = 12;
+          if year==TStart.year, moStart = TStart.month; end
+          if year==TStop.year, moStop = TStop.month; end
+          for mo = moStart:moStop
+            curDir = sprintf('%s%s%d%s%02d',fDir,filesep,year,filesep,mo);
+            if (year==TStart.year && mo==TStart.month) || ...
+                (year==TStop.year && mo==TStop.month)
+              dStart = 1; dStop = 31;
+              if year==TStart.year && mo==TStart.month
+                dStart = TStart.day;
+              end
+              if year==TStop.year && mo==TStop.month, dStop = TStop.day;end
+              for day = dStart:dStop
+                dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                listingD = dir([curDir filesep dPref '*.cdf']);
+                if isempty(listingD), continue, end
+                arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+              end
+            else % List all files
+              dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+              listingD = dir([curDir filesep dPref '*.cdf']);
+              if isempty(listingD), continue, end
+              arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+            end
+          end
+        end
+        
+        function p = get_prefix()
+          p = obj.dbRoot;
+          for ix=1:length(C), p = [p filesep C{ix}]; end %#ok<AGROW>
+        end
+        function t = get_times(tt)
+          utc = tt.toUtc();
+          t.year  = str2double(utc(1:4));
+          t.month = str2double(utc(6:7));
+          t.day   = str2double(utc(9:10));
+          t.hour  = str2double(utc(12:13));
+          t.min   = str2double(utc(15:16));
+          t.sec   = str2double(utc(18:end-1));
+        end
+      end
+      
+      %% LIST SCI
+      function list_sci()
         fileDir = obj.dbRoot;
         for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
         if exist(fileDir,'dir')~=7, return, end
@@ -124,48 +171,55 @@ classdef mms_local_file_db < mms_file_db
             curDir = [fileDir filesep dNameY filesep dNameM];
             listingD = dir([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
-            arrayfun(@(x) add2list(x.name), listingD)
+            arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
           end
         end
-        function add2list(name)
-          fnd = mms_fields_file_info(name);
-          entry = struct('name',name,'ver',fnd.vXYZ,'dir',curDir,...
-            'start',[],'stop',[]);
-          if isempty(fileList), fileList = add_ss(entry); return, end
-          fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
-            fnd.dataLevel];
-          if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
-          fName = [fName '_' fnd.date '_'];
-          hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
-          if ~any(hasFile), fileList = [fileList add_ss(entry)]; return, end
-          iSame = find(hasFile);
-          if length(iSame) > 1, 
-            error('multiple files with same name'),
-          end
-          v = strsplit(fileList(iSame).ver,'.'); 
-          for idxTmp=1:length(v), v{idxTmp} = str2double(v{idxTmp}); end
-          myv = strsplit(fnd.vXYZ,'.'); 
-          for idxTmp=1:length(myv), myv{idxTmp} = str2double(myv{idxTmp}); end
-          if(myv{1}>v{1})
-            % Newer major version, replace file regardless
-            fileList(iSame) = add_ss(entry);
-          elseif(myv{1}==v{1} && myv{2}>v{2})
-            % Same major version, newer calibration, replace file
-            fileList(iSame) = add_ss(entry);
-          elseif(myv{1}==v{1} && myv{2}==v{2} && myv{3}>v{3})
-            % Same major and calib. but newer revision, replace file
-            fileList(iSame) = add_ss(entry);
-          %else, older file.
-          end
-          function entry = add_ss(entry)
-            data = cdfread([entry.dir filesep entry.name],'Variables',...
-              'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
-            if isempty(data), return, end
-            entry.start = EpochTT2000(data(1));
-            entry.stop = EpochTT2000(data(end));
-          end % ADD_SS
-        end % ADD2LIST
       end % LOAD_SCI
+      %% ADD2LIST_SCI
+      function add2list_sci(name,curDir)
+        fnd = mms_fields_file_info(name);
+        Entry = struct('name',name,'ver',fnd.vXYZ,'dir',curDir,...
+          'start',[],'stop',[]);
+        Entry = add_ss(Entry);
+        % Check time limits of the file
+        if ~isempty(tint)&&(Entry.start>tint.stop || Entry.stop<tint.start)
+            return
+        end
+        if isempty(fileList), fileList = Entry; return, end
+        fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
+          fnd.dataLevel];
+        if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
+        fName = [fName '_' fnd.date '_'];
+        
+        hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
+        if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
+        iSame = find(hasFile);
+        if length(iSame) > 1,
+          error('multiple files with same name'),
+        end
+        
+        Ver = get_ver(fileList(iSame)); fVer = get_ver(fnd.vXYZ);
+        if(fVer.maj>Ver.maj) || ... % Newer major version
+            (fVer.maj==Ver.maj && fVer.min>Ver.min) || ... % Same major version, newer calibration
+            (fVer.maj==Ver.maj && fVer.min==Ver.min && fVer.rev>Ver.rev) % Same major and calib. but newer revision, replace file
+          fileList(iSame) = add_ss(Entry); % replace file
+        %else, older file.
+        end
+        function ver = get_ver(verS)
+           vT = strsplit(verS,'.');
+           for iTmp=1:length(vT), vT{iTmp} = str2double(vT{iTmp}); end
+           ver = struct('maj',vT{1},'min',0,'rev',0);
+           if isempty(vT{2}), return, end, ver.min = vT{2};
+           if isempty(vT{3}), return, end, ver.rev = vT{3};
+        end
+        function entry = add_ss(entry)
+          data = cdfread([entry.dir filesep entry.name],'Variables',...
+            'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
+          if isempty(data), return, end
+          entry.start = EpochTT2000(data(1));
+          entry.stop = EpochTT2000(data(end));
+        end % ADD_SS
+      end % ADD2LIST
     end % LIST_FILES
     %% LOAD FILES
     function res = load_file(obj,fileName)
