@@ -170,26 +170,15 @@ classdef mms_local_file_db < mms_file_db
     %% LOAD FILES
     function res = load_file(obj,fileName)
       narginchk(2,3)
- 
-      if strcmpi(fileName(end-3:end),'cdf'), flagSci = true;
-      else flagSci = false; 
-      end
-      
-      fileType = '';
-      if flagSci, res = dataobj([get_path() filesep fileName]);
-      else
-        [res,~] = mms_load_ancillary([get_path() filesep fileName],fileType);
-      end
-      function p = get_path()
-        C = strsplit(lower(fileName),'_');
-        if flagSci
-          fileType = C{end-2};
-          p = [];
-        else
-          fileType = C{2};
-          p = ['ancillary' filesep C{1} filesep fileType];
-        end
-        p = [obj.dbRoot filesep p];
+      C = strsplit(lower(fileName),'_');
+      if strcmpi(fileName(end-3:end),'.cdf'),
+        d =  C{end-1}; p = obj.dbRoot;
+        for ix=1:(length(C)-2), p = [p filesep C{ix}]; end %#ok<AGROW>
+        p = [p filesep d(1:4) filesep d(5:6)];
+        res = dataobj([p filesep fileName]);
+      else % ancillary
+        p = [obj.dbRoot filesep 'ancillary' filesep C{1} filesep C{2}];
+        [res,~] = mms_load_ancillary([p filesep fileName],C{2});     
       end
     end % LOAD_FILES
   end
