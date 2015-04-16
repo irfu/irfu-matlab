@@ -8,16 +8,23 @@ classdef mms_local_file_db < mms_file_db
   
   methods
     function obj = mms_local_file_db(rootPath)
-      if nargin == 0, obj.dbRoot = '.'; return, end
+      if nargin == 0, rootPath = pwd; end
+      if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
+      
+      obj@mms_file_db(rootPath); obj.dbRoot = rootPath;
+      if nargin == 0, return, end
       if ~ischar(rootPath) || exist(rootPath,'dir')~=7
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
       end
-      if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
-      obj.dbRoot = rootPath;
     end
     %% LIST FILES
-    function fileList = list_files(obj,filePrefix)
+    function fileList = list_files(obj,filePrefix,tint)
+      narginchk(2,3)
+      if nargin==3 && ~isa(tint,'GenericTimeArray'),
+        error('Expecting TINT (GenericTimeArray)')
+      elseif nargin==2, tint = [];
+      end
       if length(filePrefix) < 3 || ~strcmp(filePrefix(1:3),'mms')
         errStr = 'filePrefix must begin with mms*';
         irf.log('critical',errStr), error(errStr)
@@ -28,13 +35,24 @@ classdef mms_local_file_db < mms_file_db
         irf.log('critical',errStr), error(errStr)
       end
       if strcmp(C{2},'ancillary'),
-        fileList = load_ancillary();
+        fileList = list_ancillary();
+        if isempty(fileList) || isempty(tint), return, end
+        pick_ancillary();
       else
-        fileList = load_sci();
+        if ~iesmpty(int); fileList = list_sci_tint();
+        else
+          irf.log('warning','THIS MAY TAKE SOME TIME')
+          fileList = list_sci();
+        end
       end
       % END LIST_FILES
-      %% LOAD ANCILLARY
-      function fileList = load_ancillary()
+      %% PICK ANCILLARY
+      function pick_ancillary()
+        fileList = fileList(arrayfun(@(x) x.start<=tint.stop,fileList) &...
+          arrayfun(@(x) x.stop>=tint.start,fileList));
+      end
+      %% LIST ANCILLARY
+      function fileList = list_ancillary()
         fileList = [];
         fileDir = [obj.dbRoot filesep C{2} filesep C{1} filesep C{3}];
         if exist(fileDir,'dir')~=7, return, end
@@ -80,7 +98,7 @@ classdef mms_local_file_db < mms_file_db
         end % ADD2LIST
       end % LOAD_ANCILLARY
       %% LOAD SCI
-      function fileList = load_sci()
+      function fileList = list_sci()
         fileList = [];
         fileDir = obj.dbRoot;
         for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
@@ -117,11 +135,13 @@ classdef mms_local_file_db < mms_file_db
           fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
             fnd.dataLevel];
           if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
-          fName = [fName '_' fnd.date];
+          fName = [fName '_' fnd.date '_'];
           hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
           if ~any(hasFile), fileList = [fileList add_ss(entry)]; return, end
           iSame = find(hasFile);
-          if length(iSame) > 1, error('multiple files with same name'),end
+          if length(iSame) > 1, 
+            error('multiple files with same name'),
+          end
           v = strsplit(fileList(iSame).ver,'.'); 
           for idxTmp=1:length(v), v{idxTmp} = str2double(v{idxTmp}); end
           myv = strsplit(fnd.vXYZ,'.'); 
