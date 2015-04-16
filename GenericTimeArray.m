@@ -72,6 +72,84 @@ classdef (Abstract) GenericTimeArray
       res = obj.toEpochUnix().epoch - obj1.toEpochUnix().epoch;
     end
     
+    function res = le(obj,obj1)
+      %LE  less than of equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:le:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:le:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch <= objTmp.epoch;
+    end
+    
+    function res = ge(obj,obj1)
+      %GE  greater than of equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:ge:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:ge:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch >= objTmp.epoch;
+    end
+    
+    function res = lt(obj,obj1)
+      %LT  less than
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:le:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:le:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch < objTmp.epoch;
+    end
+    
+    function res = gt(obj,obj1)
+      %GT  greater than
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch > objTmp.epoch;
+    end
+    
+    function res = eq(obj,obj1)
+      %EQ  equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      len = obj.length(); len1 = obj1.length();
+      if len==0 && len1==0, res = true; return, end
+      
+      objTmp = feval(['to' class(obj)],obj1);
+      if len1==1,
+        res = obj.epoch == objTmp.epoch;
+      else
+        res = obj.epoch == objTmp.epoch; 
+      end
+    end
+    
+    function res = ne(obj,obj1)
+      %NE  not equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      res = ~(obj.eq(obj1));
+    end
+    
     function res = end(obj,k,~)
       %END last index in array
       switch k
