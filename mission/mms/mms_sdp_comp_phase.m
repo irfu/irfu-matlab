@@ -11,7 +11,7 @@ function phase = mms_sdp_comp_phase
 % ----------------------------------------------------------------------------
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-phase = MMS_CONST.Error;
+phase = MMS_CONST.Error; %#ok<NASGU>
 
 procId = mms_sdp_datamanager('procId');
 switch procId
