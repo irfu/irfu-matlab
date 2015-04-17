@@ -42,12 +42,12 @@ switch lower(dataType)
     % identify the last header line by looking for a string which only
     % should appear as a unit.
     % Last header is identified by the existence of "Km/Sec"
-    headerGrep = 'Km/Sec';
+    headerGrep = 'Kg';
     
     % Column 1 time in format yyyy-doy/HH:MM:SS.mmm
     % (where doy is day of year and mmm is milliseconds),
     % Column 3, 4, 5 is position in X,Y,Z (in some ref.frame, TBC which)
-    formatSpec='%f-%f%s %f %f %f %*[^\n]';
+    formatSpec='%f-%f%s %f %f %f %f %f %f %f %*[^\n]';
   otherwise
     errStr = ['Unknown dataType: ',dataType,' for ancillary data. ', ...
       'Valid values are "defatt" and "defeph".'];
@@ -56,8 +56,8 @@ end
 
 % Get number of last header line using unix commands grep, tail and cut.
 if ismac, cutArgs = '-d'':'' -f2'; else cutArgs = '-d: -f1'; end
-[~, nHeaders] = unix(['grep -onr ',headerGrep,' ',fullFilename,...
-  ' | tail -n1 | cut ' cutArgs]);
+[~, nHeaders] = unix(['grep -onr "' headerGrep '" "' fullFilename,...
+  '" | tail -n1 | cut ' cutArgs]);
 nHeaders = str2double(nHeaders);
 
 fileID = fopen(fullFilename, 'r');
@@ -94,8 +94,7 @@ switch lower(dataType)
       tmpStr(:,2:end)],'utc>ttns');
     % And simply include the position in X, Y, Z (which ref.syst. used is
     % still TBC)
-    dataIN.Pos_X = tmpData{1,4};
-    dataIN.Pos_Y = tmpData{1,5};
-    dataIN.Pos_Z = tmpData{1,6};
+    dataIN.r = [tmpData{1,5} tmpData{1,6} tmpData{1,7}];
+    dataIN.v = [tmpData{1,8} tmpData{1,9} tmpData{1,10}];
   otherwise
 end

@@ -31,7 +31,7 @@ function t_out = irf_time(t_in,flag)
 %  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch>out');
 %  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector>epoch');
 %
-%  Example: t_out=irf_time('2011-09-13T01:23:19.000000Z','iso2epoch');
+%  Example: t_out=irf_time('2011-09-13T01:23:19.000000Z','utc>epoch');
 %
 %  There are also commands to convert time intervals
 %   time_int=IRF_TIME(tint,'tint>utc')
@@ -100,13 +100,13 @@ switch lower(flag)
 	case 'vector>tt'
 		% Convert a [YYYY MM DD hh mm ss ms micros ns] to TT2000 in double s
 		% the last columns can be ommitted, default values MM=1,DD=1,other=0
-		t_out = double(irf_time(t_in,'vector2ttns')/1e9);
+		t_out = double(irf_time(t_in,'vector>ttns')/1e9);
 	case 'vector>ttns'
 		% Convert a [YYYY MM DD hh mm ss ms micros ns] to TT2000 in int64 ns
 		% the last columns can be ommitted, default values MM=1,DD=1,other=0
 		nCol = size(t_in,2);
 		if nCol > 9,
-			error('irf_time:vector2tt:badInputs',...
+			error('irf_time:vector>tt:badInputs',...
 				'input should be column vector [YYYY MM DD hh mm ss ms micros ns], last columns can be ommitted.')
 		elseif nCol < 9
 			defValues = [2000 1 1 0 0 0 0 0 0];

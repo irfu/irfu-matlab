@@ -59,7 +59,7 @@ if isa(varargin{1},'irf.TimeTable'),
 		handles.dirNames=cell(1,numel(tt));
 	end
 	tint=tt.TimeInterval;
-	handles.timeInterval = irf_time(tint,'tint2iso');
+	handles.timeInterval = irf_time(tint,'tint>utc');
 	handles.tt=tint;
 	handles.userdata.figure=figure;
 	handles.userdata.TTselected=irf.TimeTable;
@@ -256,11 +256,11 @@ switch iSelected
 		tint_add=tStart+get(hf(1),'xlim');
 		handles.userdata.TTselected=add(handles.userdata.TTselected,tint_add);
 		%handles.userdata.TTselected=unique(handles.userdata.TTselected); % if only unique events wanted
-		irf_log('fcal',['Added to time table of interest: ' irf_time(tint_add,'tint2iso')]);
+		irf_log('fcal',['Added to time table of interest: ' irf_time(tint_add,'tint>utc')]);
 	case 2 % remove event
 		iRemove=get(handles.time_table_interesting_events,'value');
 		irf_log('fcal',['Removing interval #' num2str(iRemove) ': ' ...
-			irf_time(handles.userdata.TTselected.TimeInterval(iRemove,:),'tint2iso')]);
+			irf_time(handles.userdata.TTselected.TimeInterval(iRemove,:),'tint>utc')]);
 		handles.userdata.TTselected=remove(handles.userdata.TTselected,iRemove);
 		set(handles.time_table_interesting_events,'value',max(iRemove-1,1));
 	case 3 % sort events
@@ -268,7 +268,7 @@ switch iSelected
 		handles.userdata.TTselected=sort(handles.userdata.TTselected);
 end
 ttsel=handles.userdata.TTselected.TimeInterval;
-timeInterval_InterestingEvents=irf_time(ttsel,'tint2iso');
+timeInterval_InterestingEvents=irf_time(ttsel,'tint>utc');
 set(handles.time_table_interesting_events,'string',timeInterval_InterestingEvents);
 irf_log('fcal',['Together ' num2str(numel(handles.userdata.TTselected)) ' events']);
 % Update handles structure
@@ -293,7 +293,7 @@ switch iSelected
 			handles.userdata.TTselected=irf.TimeTable([PathName FileName]);
 			irf_log('dsrc',['Imported time table from file:' PathName FileName]);
 		end
-		set(handles.time_table_interesting_events,'string',irf_time(handles.userdata.TTselected.TimeInterval,'tint2iso'));
+		set(handles.time_table_interesting_events,'string',irf_time(handles.userdata.TTselected.TimeInterval,'tint>utc'));
 		set(handles.time_table_interesting_events,'value',1);
 	case 3 % assign to base 
 		assignin('base','TT_selected',handles.userdata.TTselected);

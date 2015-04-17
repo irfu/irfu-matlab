@@ -120,7 +120,7 @@ while numel(args)
 				if isnumeric(args{2})
 					tint = args{2};
 				elseif ischar(args{2})
-					tint = irf_time(args{2},'iso2tint');
+					tint = irf_time(args{2},'utc>tint');
 				else
 					irf.log('critical','wrongArgType : tint must be numeric or iso')
 					error('tint must be numeric or iso');

@@ -153,6 +153,7 @@ switch(param)
   case('dce')
     sensors = {'e12','e34','e56'};
     init_param()
+    apply_nom_amp_corr()
     
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -164,7 +165,6 @@ switch(param)
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
-    apply_nom_amp_corr()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -301,7 +301,7 @@ end
     function sen = latched_mask(sen)
       idx = irf_latched_idx(sen.data);
       if ~isempty(idx)
-        sen.bitmask = bitor(sen.bitmask,...
+        sen.bitmask(idx) = bitor(sen.bitmask(idx),...
           MMS_CONST.Bitmask.PROBE_SATURATION);
       end
       idx = sen.data<MMS_CONST.Limit.LOW_DENSITY_SATURATION;
@@ -343,39 +343,50 @@ end
       irf.log('critical',errStr1), error(errStr1)
     end
     
-    % No gaps allowed below this line
+    % Bring together the DCE and DCV time series
+    % NOTE: No gaps allowed below this line
     dt = median(diff(tE));
     if tV(1)>tE(1), tStart = tE(1);
-    else tStart = tE(1) - ceil((tV(1)-tE(1))/dt)*dt;
+    else tStart = tE(1) - ceil((tE(1)-tV(1))/dt)*dt;
     end
     if tE(end)>tV(end), tStop = tE(end);
     else tStop = tE(end) + ceil((tV(end)-tE(end))/dt)*dt;
     end
     nData = (tStop - tStart)/dt + 1;
     newTime = int64((1:nData) - 1)'*dt + tStart;
-    [~,idxEon] = intersect(tE,newTime); [~,~,idxEoff] = setxor(tE,newTime);
-    tDiff = abs(newTime-tV(1));
-    iDcvStart = find( tDiff == min(tDiff) ); iDcvStart = iDcvStart(1);
-    idxVon = (1:length(tV))'-1 +iDcvStart; idxVoff = setxor(1:nData,idxVon);
- 
+    [~,idxEonOld,idxEonNew] = intersect(tE,newTime); 
+    idxEoffNew = setxor(1:length(newTime),idxEonNew);
+    tDiffNew = abs(newTime-tV(1)); tDiffOld = abs(newTime(1)-tV);
+    if min(min(tDiffNew),min(tDiffOld))==min(tDiffOld),
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+      tDiffNew = abs(newTime-tV(iDcvStartOld));
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+    else
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+      tDiffOld = abs(newTime(iDcvStartNew)-tV);
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+    end
+    idxVonOld = (1:length(tV))'-1 +iDcvStartOld;
+    idxVonNew = (1:length(tV))'-1 +iDcvStartNew;
+    idxVoffNew = setxor(1:length(tV),idxVonNew);
+    
     for iSen = 1:2:numel(sensors)  % Loop over e12, e34, e56
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
-      save_restore('dce',senE,idxEon,idxEoff)
-      save_restore('dcv',senA,idxVon,idxVoff)
-      save_restore('dcv',senB,idxVon,idxVoff)
+      save_restore('dce',senE,idxEonOld,idxEonNew,idxEoffNew)
+      save_restore('dcv',senA,idxVonOld,idxVonNew,idxVoffNew)
+      save_restore('dcv',senB,idxVonOld,idxVonNew,idxVoffNew)
     end
     DATAC.dce.time = newTime; DATAC.dcv.time = newTime;
     
-    function save_restore(sig,sen,idxOn,idxOff)
+    function save_restore(sig,sen,idxOnOld,idxOnNew,idxOffNew)
       % Save old values, expand the variables and restore the old values
-      if isempty(idxOff), return, end
-      newData = NaN(size(newTime));
-      SV = DATAC.(sig).(sen);
-      DATAC.(sig).(sen).data = newData; DATAC.(sig).(sen).bitmask = newData;
-      DATAC.(sig).(sen).data(idxOn)    = SV.data;
-      DATAC.(sig).(sen).bitmask(idxOn) = SV.bitmask;
-      DATAC.(sig).(sen).bitmask(idxOff) = MMS_CONST.Bitmask.SIGNAL_OFF;
+      SAVE = DATAC.(sig).(sen);
+      DATAC.(sig).(sen).data = NaN(size(newTime),'like',DATAC.(sig).(sen).data);
+      DATAC.(sig).(sen).bitmask = zeros(size(newTime),'like',DATAC.(sig).(sen).bitmask);
+      DATAC.(sig).(sen).data(idxOnNew)    = SAVE.data(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOnNew) = SAVE.bitmask(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;
     end
   end % CHK_TIMELINE
 
@@ -419,8 +430,8 @@ end
             indE = or(indA,indB); % Either senA or senB => senE non nominal.
 
             if(any(indE))
-              irf.log('notice',['Non-nominal bias settings found on pair ',...
-                senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
+              irf.log('notice',['Non-nominal bias on ',...
+                senE,' from ',hk10eParam{iiParam}]);
 
               % Add bitmask values to SenA, SenB and SenE for these ind.
               bits = MMS_CONST.Bitmask.BAD_BIAS;
@@ -458,9 +469,10 @@ end
       irf.log('critical',errS); error(errS)
     end
     
-    % Get sweep status and sweep timestamp
+    % Get sweep status and sweep Start/Stop
+    % Add extra 0.2 sec to Stop for safety
     sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
-    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
+    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
     sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
     
     if isempty(sweepStart)
@@ -532,18 +544,39 @@ end
   end
 
   function apply_nom_amp_corr()
-    % Apply a nominal amplitude correction factor to DCE & DCV for p1..4
+    % Apply a nominal amplitude correction factor to DCE for p1..4
     % values after cleanup but before any major processing has occured.
-    factor = MMS_CONST.NominalAmpCorr;
-    for iSen = 1:2:min(numel(sensors),4)
-      senA = sensors{iSen}; senB = sensors{iSen+1};
-      senE = ['e' senA(2) senB(2)];
+    
+    Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
+    if length(Blen)==1
+      senDist = sensor_dist(Blen.len);
+      irf.log('notice',['Adjusting sensor dist to [ '...
+        num2str(senDist,'%.1f ') '] meters'])
+    else
+      boomLen = zeros(length(DATAC.dce.time),4);
+      for i=1:length(Blen)
+        irf.log('notice',['Adjusting sensor dist to [ '...
+        num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+        Blen(i).time.toUtc(1)])
+        idx = find(DATAC.dce.time>=Blen(i).time.epoch);
+        boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
+      end
+      senDist = sensor_dist(boomLen);
+    end
+    
+    factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
+    for iSen = 1:min(numel(sensors),2)
+      senE = sensors{iSen};
+      nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
       logStr = sprintf(['Applying nominal amplitude correction factor, '...
-        '%d, to probes %s, %s and %s'], factor, senA, senB, senE);
+        '%.2f, to %s'], factor, senE);
       irf.log('notice',logStr);
-      DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * factor;
-      DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * factor;
-      DATAC.dce.(senE).data = DATAC.dce.(senE).data * factor;
+      distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
+      DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor;
+    end
+
+    function l = sensor_dist(len)
+      l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
     end
   end
 

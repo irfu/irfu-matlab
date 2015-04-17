@@ -32,7 +32,7 @@ eventSubCode = local.c_read(['event_sub_code__' dataObj],tint,'caa');
 orbitNumber = local.c_read(['orbit_num__' dataObj],tint);
 %timeEpoch = local.c_read(['time_tags__' dataObj],tint,'caa');
 timeEpoch = orbitNumber(:,1);
-tIso = irf_time(timeEpoch,'epoch2iso');
+tIso = irf_time(timeEpoch,'epoch>utc');
 
 eventCode = eventCode.data;
 eventCode = squeeze(eventCode);

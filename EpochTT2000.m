@@ -34,7 +34,7 @@ classdef EpochTT2000 < GenericTimeArray
         end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
-          'Expected inputs: double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
+          'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
       end
       function utcNew = pad_utc(utc)
         MAX_NUM_IDX = 29; IDX_DOT = 20;

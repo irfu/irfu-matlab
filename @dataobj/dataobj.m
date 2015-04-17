@@ -113,7 +113,7 @@ switch action
               end
             else
               data{iVar(i)}(data{iVar(i)}==0) = NaN; % fillvalue timeline
-              data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch2epoch');
+              data{iVar(i)} = irf_time(data{iVar(i)},'cdfepoch>epoch');
               % bug fix for cdfread (time comes out as row vector)
               if size(data{iVar(i)},1)~=info.Variables{iVar(i),3}
                 data{iVar(i)} = data{iVar(i)}';
@@ -236,11 +236,11 @@ switch action
 							tc(:,jj) = cdflib.getVarRecordData(cdfid,iCdf16Variable(i)-1,jj-1);
 						end
 						cdflib.close(cdfid);
-						data(iCdf16Variable(i))={irf_time(tc','cdfepoch162epoch')};
+						data(iCdf16Variable(i))={irf_time(tc','cdfepoch16>epoch')};
 					end
 				else
 					[data,info] = cdfread(cdf_file,'ConvertEpochToDatenum',true,'CombineRecords',true);
-					data{1} = irf_time([data{:,1}],'date2epoch');
+					data{1} = irf_time([data{:,1}],'date>epoch');
 				end
 				if ~shouldReadAllData,
 					records=find((data{1} >= tint(1)) & (data{1} <= tint(2)));
@@ -435,7 +435,7 @@ end % Main function
 		else
 			tcdfepoch = in; % cdfread returns (Nsamples X 2) matrix
 		end
-		t=irf_time(tcdfepoch,'cdfepoch162epoch');
+		t=irf_time(tcdfepoch,'cdfepoch16>epoch');
 	end
 end % end of main functions
 

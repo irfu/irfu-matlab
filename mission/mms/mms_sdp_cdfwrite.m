@@ -92,7 +92,8 @@ switch procId
     end
 
     epochTT = dce_xyz_dsl.time;
-    dsl = dce_xyz_dsl.data;
+    % Data, defined as CDF_REAL4 (single in Matlab)
+    dsl = single(dce_xyz_dsl.data);
     % Bitmask, defined as CDF_UINT1 (uint8 in Matlab)
     bitmask = uint8(dce_xyz_dsl.bitmask);
     
@@ -212,7 +213,8 @@ switch procId
     end
 
     epochTT = dce.time;
-    dcedata = [dce.e12.data, dce.e34.data, dce.e56.data];
+    % adcdata & dcedata, defined as CDF_REAL4 (single in Matlab)
+    dcedata = single([dce.e12.data, dce.e34.data, dce.e56.data]);
     adcdata = single([adc_off.(sdpPair{1}), adc_off.(sdpPair{2})]);
     % Bitmask, defined as CDF_UINT1 (uint8 in Matlab)
     bitmask = [uint8(dce.e12.bitmask), uint8(dce.e34.bitmask), uint8(dce.e56.bitmask)];
@@ -355,13 +357,13 @@ switch procId
       name.sfits.(sdpPair{iPair}) = [datasetPrefix '_dce_spinfit_' sdpPair{iPair}];
       % Update output variables
       outVars = [outVars {...
-        name.sfits.(sdpPair{iPair}), [spinfit.sdev.(sdpPair{iPair}), spinfit.sfit.(sdpPair{iPair})]}];
+        name.sfits.(sdpPair{iPair}), [spinfit.sdev.(sdpPair{iPair}), spinfit.sfit.(sdpPair{iPair})]}]; %#okagrow
       recBound = [recBound {...
-        name.sfits.(sdpPair{iPair})}];
+        name.sfits.(sdpPair{iPair})}]; %#okagrow
       varDatatype = [varDatatype {...
-        name.sfits.(sdpPair{iPair}), 'cdf_real4'}];
+        name.sfits.(sdpPair{iPair}), 'cdf_real4'}]; %#okagrow
       compressVars = [compressVars {...
-        name.sfits.(sdpPair{iPair}), COMPRESS_LEVEL}];
+        name.sfits.(sdpPair{iPair}), COMPRESS_LEVEL}]; %#okagrow
       % Update VATTRIB
       VATTRIB.CATDESC = [VATTRIB.CATDESC; {...
         name.sfits.(sdpPair{iPair}), ['Spinfit standard deviation and coefficients probes ', sdpPair{iPair}]}];
@@ -413,10 +415,11 @@ switch procId
     end
     
     epochTT = dcv.time;
-    psp_p = [dcv.v1.data, dcv.v2.data, dcv.v3.data, ...
-      dcv.v4.data, dcv.v5.data, dcv.v6.data];
-    PSP = probe2sc_pot.data;
-    ESCP = sc_pot.data;
+    % psp_p, PSP, ESCP stored as CDF_REAL4 (single in Matlab)
+    psp_p = single([dcv.v1.data, dcv.v2.data, dcv.v3.data, ...
+      dcv.v4.data, dcv.v5.data, dcv.v6.data]);
+    PSP = single(probe2sc_pot.data);
+    ESCP = single(sc_pot.data);
     bitmask = uint8(sc_pot.bitmask);
     quality = int16(mms_sdp_bitmask2quality('e',sc_pot.bitmask));
 

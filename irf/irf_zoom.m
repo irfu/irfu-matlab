@@ -107,7 +107,7 @@ if strcmpi(c,'x'),
         end
 	elseif isnumeric(interval) && size(interval,2) == 2 % Interval must be vector with two values
 	elseif ischar(interval) % assume interval is specified in ISO format
-		interval = irf_time(interval,'iso2tint');
+		interval = irf_time(interval,'utc>tint');
 	else
 		errStr = 'zooming interval in wrong format';
 		irf.log('critical',errStr);

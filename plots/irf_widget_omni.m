@@ -77,10 +77,10 @@ switch lower(action)
     tint=[data.t data.t+data.dt];
     omni2=irf_get_data(tint,'dst,f10.7','omni2');
     if diff(tint)< 48*3600 % interval larger than 48 h use 1h resolution
-    disp(['Reading OMNI_MIN 1min data :' irf_time(tint,'tint2iso')]);
+    disp(['Reading OMNI_MIN 1min data :' irf_time(tint,'tint>utc')]);
       ff=irf_get_data(tint,'b,bx,bygsm,bzgsm,T,n,v,P,beta,pc,ae,al,au','omni_min');
     else
-    disp(['Reading OMNI2 1h data :' irf_time(tint,'tint2iso')]);
+    disp(['Reading OMNI2 1h data :' irf_time(tint,'tint>utc')]);
       ff=irf_get_data(tint,'b,bx,bygsm,bzgsm,T,n,v,P,beta,pc,ae,al,au','omni2');
     end
     data.ff=ff;

@@ -7,8 +7,8 @@
 % $Id$
 
 
-tint=[irf_time([2001,1,1,0,0,0]) irf_time(now,'date2epoch')];
-irf_log('dsrc',['Checking interval: ' irf_time(tint,'tint2iso')]);
+tint=[irf_time([2001,1,1,0,0,0]) irf_time(now,'date>epoch')];
+irf_log('dsrc',['Checking interval: ' irf_time(tint,'tint>utc')]);
 c_eval('disp(''Downloading inventory for Cluster ?'');s?=caa_download(tint,''list:C?_CP_EFW_L2_PB'');');
 disp('You can choose to save on server the final lists.')
 disp('If you choose not to save then locally will be created')

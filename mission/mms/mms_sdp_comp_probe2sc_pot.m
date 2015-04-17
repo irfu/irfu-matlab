@@ -19,7 +19,7 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 if nargin==0,  filterInterval = 20; end
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-probe2sc_pot = MMS_CONST.Error;
+probe2sc_pot = MMS_CONST.Error; %#ok<NASGU>
 
 procId = mms_sdp_datamanager('procId');
 switch procId
@@ -118,7 +118,8 @@ switch procId
     % bitand(0x04, bitmask) probe 3 bad, bitand(0x08, bitmask) probe 4 bad.
     % And any combination thereof, ie. bitand(0x03, bitmask) probe 1 & 2
     % bad and probe 3 & 4 was used.
-    bitmask = 1*badBits(:,1) + 2*badBits(:,2) + 4*badBits(:,3) + 8*badBits(:,4);
+    bitmask = uint16(1*isnan(dcv.v1.data) + 2*isnan(dcv.v2.data) + ...
+      4*isnan(dcv.v3.data) + 8*isnan(dcv.v4.data));
 
     probe2sc_pot = struct('time',dcv.time,'data',avPot,'bitmask',bitmask);
     

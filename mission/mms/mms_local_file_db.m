@@ -8,16 +8,24 @@ classdef mms_local_file_db < mms_file_db
   
   methods
     function obj = mms_local_file_db(rootPath)
-      if nargin == 0, obj.dbRoot = '.'; return, end
+      if nargin == 0, rootPath = pwd; end
+      if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
+      
+      obj@mms_file_db(rootPath); obj.dbRoot = rootPath;
+      if nargin == 0, return, end
       if ~ischar(rootPath) || exist(rootPath,'dir')~=7
         errStr = 'rootPath must be a directory path name';
         irf.log('critical',errStr), error(errStr)
       end
-      if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
-      obj.dbRoot = rootPath;
     end
     %% LIST FILES
-    function fileList = list_files(obj,filePrefix)
+    function fileList = list_files(obj,filePrefix,tint)
+      narginchk(2,3)
+      fileList = [];
+      if nargin==3 && ~isa(tint,'GenericTimeArray'),
+        error('Expecting TINT (GenericTimeArray)')
+      elseif nargin==2, tint = [];
+      end
       if length(filePrefix) < 3 || ~strcmp(filePrefix(1:3),'mms')
         errStr = 'filePrefix must begin with mms*';
         irf.log('critical',errStr), error(errStr)
@@ -28,14 +36,24 @@ classdef mms_local_file_db < mms_file_db
         irf.log('critical',errStr), error(errStr)
       end
       if strcmp(C{2},'ancillary'),
-        fileList = load_ancillary();
+        list_ancillary();
+        if isempty(fileList) || isempty(tint), return, end
+        pick_ancillary();
       else
-        fileList = load_sci();
+        if ~isempty(tint), list_sci_tint()
+        else
+          irf.log('warning','THIS MAY TAKE SOME TIME')
+          list_sci()
+        end
       end
       % END LIST_FILES
-      %% LOAD ANCILLARY
-      function fileList = load_ancillary()
-        fileList = [];
+      %% PICK ANCILLARY
+      function pick_ancillary()
+        fileList = fileList(arrayfun(@(x) x.start<=tint.stop,fileList) &...
+          arrayfun(@(x) x.stop>=tint.start,fileList));
+      end
+      %% LIST ANCILLARY
+      function list_ancillary()
         fileDir = [obj.dbRoot filesep C{2} filesep C{1} filesep C{3}];
         if exist(fileDir,'dir')~=7, return, end
         filePref = [upper(C{1}) '_' upper(C{3})];
@@ -46,15 +64,15 @@ classdef mms_local_file_db < mms_file_db
         function add2list(name)
           [~,fName,fExt] = fileparts(name);
           ver = str2double(fExt(3:4));
-          entry = struct('name',name,'ver',fExt(3:4),'dir',fileDir,...
-            'start',[],'stop',[]);
-          if isempty(fileList), fileList = add_ss(entry); return, end
+          Entry = struct('name',name,'ver',fExt(3:4),'start',[],'stop',[],...
+            'path',fileDir,'dbId',obj.id);
+          if isempty(fileList), fileList = add_ss(Entry); return, end
           hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
-          if ~any(hasFile), fileList = [fileList add_ss(entry)]; return, end
+          if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
           iSame = find(hasFile);
           if length(iSame) > 1, error('multiple files with same name'),end
           if ver>str2double(fileList(iSame).ver)
-            fileList(iSame) = add_ss(entry);
+            fileList(iSame) = add_ss(Entry);
           end
           function e = add_ss(e)
             e.start = get_time('start');
@@ -62,11 +80,11 @@ classdef mms_local_file_db < mms_file_db
             function epoch = get_time(s)
               epoch = [];
               cmd = sprintf('grep -m1 -i %s_time %s/%s | awk ''{print $3}''',...
-                s,e.dir,e.name);
+                s,e.path,e.name);
               [sta,out] = unix(cmd); if sta>0, return, end
               if isempty(out)
                 cmd = sprintf('grep -m1 -i %stime %s/%s | awk ''{print $3}''',...
-                  s,e.dir,e.name);
+                  s,e.path,e.name);
                 [sta,out] = unix(cmd); if sta>0 || isempty(out), return, end
               end
               sss = [irf_time([str2double(out(1:4)), str2double(out(6:8))],...
@@ -79,9 +97,56 @@ classdef mms_local_file_db < mms_file_db
           end % ADD_SS
         end % ADD2LIST
       end % LOAD_ANCILLARY
-      %% LOAD SCI
-      function fileList = load_sci()
-        fileList = [];
+      
+      %% LIST_SCI_TINT
+      function list_sci_tint()
+        fDir = get_prefix();
+        TStart = get_times(tint.start); TStop = get_times(tint.stop);
+        for year = TStart.year:TStop.year
+          moStart = 1; moStop = 12;
+          if year==TStart.year, moStart = TStart.month; end
+          if year==TStop.year, moStop = TStop.month; end
+          for mo = moStart:moStop
+            curDir = sprintf('%s%s%d%s%02d',fDir,filesep,year,filesep,mo);
+            if (year==TStart.year && mo==TStart.month) || ...
+                (year==TStop.year && mo==TStop.month)
+              dStart = 1; dStop = 31;
+              if year==TStart.year && mo==TStart.month
+                dStart = TStart.day;
+              end
+              if year==TStop.year && mo==TStop.month, dStop = TStop.day;end
+              for day = dStart:dStop
+                dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
+                listingD = dir([curDir filesep dPref '*.cdf']);
+                if isempty(listingD), continue, end
+                arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+              end
+            else % List all files
+              dPref = sprintf('%s_%d%02d',filePrefix,year,mo);
+              listingD = dir([curDir filesep dPref '*.cdf']);
+              if isempty(listingD), continue, end
+              arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
+            end
+          end
+        end
+        
+        function p = get_prefix()
+          p = obj.dbRoot;
+          for ix=1:length(C), p = [p filesep C{ix}]; end %#ok<AGROW>
+        end
+        function t = get_times(tt)
+          utc = tt.toUtc();
+          t.year  = str2double(utc(1:4));
+          t.month = str2double(utc(6:7));
+          t.day   = str2double(utc(9:10));
+          t.hour  = str2double(utc(12:13));
+          t.min   = str2double(utc(15:16));
+          t.sec   = str2double(utc(18:end-1));
+        end
+      end
+      
+      %% LIST SCI
+      function list_sci()
         fileDir = obj.dbRoot;
         for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
         if exist(fileDir,'dir')~=7, return, end
@@ -106,47 +171,125 @@ classdef mms_local_file_db < mms_file_db
             curDir = [fileDir filesep dNameY filesep dNameM];
             listingD = dir([curDir filesep filePrefix '*.cdf']);
             if isempty(listingD), continue, end
-            arrayfun(@(x) add2list(x.name), listingD)
+            arrayfun(@(x) add2list_sci(x.name,curDir), listingD)
           end
         end
-        function add2list(name)
-          fnd = mms_fields_file_info(name);
-          entry = struct('name',name,'ver',fnd.vXYZ,'dir',curDir,...
-            'start',[],'stop',[]);
-          if isempty(fileList), fileList = add_ss(entry); return, end
-          fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
-            fnd.dataLevel];
-          if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
-          fName = [fName '_' fnd.date];
-          hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
-          if ~any(hasFile), fileList = [fileList add_ss(entry)]; return, end
-          iSame = find(hasFile);
-          if length(iSame) > 1, error('multiple files with same name'),end
-          v = strsplit(fileList(iSame).ver,'.'); 
-          for idxTmp=1:length(v), v{idxTmp} = str2double(v{idxTmp}); end
-          myv = strsplit(fnd.vXYZ,'.'); 
-          for idxTmp=1:length(myv), myv{idxTmp} = str2double(myv{idxTmp}); end
-          if(myv{1}>v{1})
-            % Newer major version, replace file regardless
-            fileList(iSame) = add_ss(entry);
-          elseif(myv{1}==v{1} && myv{2}>v{2})
-            % Same major version, newer calibration, replace file
-            fileList(iSame) = add_ss(entry);
-          elseif(myv{1}==v{1} && myv{2}==v{2} && myv{3}>v{3})
-            % Same major and calib. but newer revision, replace file
-            fileList(iSame) = add_ss(entry);
-          %else, older file.
-          end
-          function entry = add_ss(entry)
-            data = cdfread([entry.dir filesep entry.name],'Variables',...
-              'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
-            if isempty(data), return, end
-            entry.start = EpochTT2000(data(1));
-            entry.stop = EpochTT2000(data(end));
-          end % ADD_SS
-        end % ADD2LIST
-      end % LOAD_SCI
+      end % LIST_SCI
+      %% ADD2LIST_SCI
+      function add2list_sci(name,curDir)
+        fnd = mms_fields_file_info(name);
+        Entry = struct('name',name,'ver',fnd.vXYZ,'start',[],'stop',[],...
+          'path',curDir,'dbId',obj.id);
+        Entry = add_ss(Entry);
+        % Check time limits of the file
+        if ~isempty(tint)&&(Entry.start>tint.stop || Entry.stop<tint.start)
+            return
+        end
+        if isempty(fileList), fileList = Entry; return, end
+        fName = [fnd.scId '_' fnd.instrumentId '_' fnd.tmMode '_' ...
+          fnd.dataLevel];
+        if ~isempty(fnd.dataType), fName = [fName '_' fnd.dataType]; end
+        fName = [fName '_' fnd.date '_'];
+        
+        hasFile = arrayfun(@(x) ~isempty(strfind(x.name,fName)),fileList);
+        if ~any(hasFile), fileList = [fileList add_ss(Entry)]; return, end
+        iSame = find(hasFile);
+        if length(iSame) > 1,
+          error('multiple files with same name'),
+        end
+        
+        Ver = get_ver(fileList(iSame).ver); fVer = get_ver(fnd.vXYZ);
+        if(fVer.maj>Ver.maj) || ... % Newer major version
+            (fVer.maj==Ver.maj && fVer.min>Ver.min) || ... % Same major version, newer calibration
+            (fVer.maj==Ver.maj && fVer.min==Ver.min && fVer.rev>Ver.rev) % Same major and calib. but newer revision, replace file
+          fileList(iSame) = add_ss(Entry); % replace file
+        %else, older file.
+        end
+        function ver = get_ver(verS)
+           vT = strsplit(verS,'.');
+           for iTmp=1:length(vT), vT{iTmp} = str2double(vT{iTmp}); end
+           ver = struct('maj',vT{1},'min',0,'rev',0);
+           if isempty(vT{2}), return, end, ver.min = vT{2};
+           if isempty(vT{3}), return, end, ver.rev = vT{3};
+        end
+        function entry = add_ss(entry)
+          data = cdfread([entry.path filesep entry.name],'Variables',...
+            'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
+          if isempty(data), return, end
+          entry.start = EpochTT2000(data(1));
+          entry.stop = EpochTT2000(data(end));
+        end % ADD_SS
+      end % ADD2LIST
     end % LIST_FILES
+    %% LOAD FILES
+    function res = load_file(obj,fileName)
+      narginchk(2,3)
+      
+      irf.log('notice',['loading ' fileName])
+      p = obj.get_path_to_file(fileName);
+      
+      if mms_local_file_db.is_cdf_file(fileName)
+        res = dataobj([p filesep fileName],'KeepTT2000');
+        return
+      end
+      
+      % ancillary
+      [res,~] = mms_load_ancillary([p filesep fileName],...
+        mms_local_file_db.get_anc_type(fileName));
+    end % LOAD_FILES
+    
+    %% FILE_HAS_VAR
+    function res = file_has_var(obj,fileName,varName)
+      narginchk(3,3)
+      res = false; if isempty(varName) || isempty(fileName), return, end
+      
+      p = obj.get_path_to_file(fileName); fullPath = [p filesep fileName];
+      if ~exist(fullPath,'file')
+        irf.log('warning', ['Fies does not exist: ' fullPath])
+        return
+      end
+      
+      if ~mms_local_file_db.is_cdf_file(fileName) % ancillary
+        ANC_VARS.defatt = {'wphase','zra','zdec','zphase','lra','ldec',...
+          'lphase','pra','pdec','pphase'};
+        ANC_VARS.defeph = {'r','v'};
+        if ~isempty(intersect(varName,...
+            ANC_VARS.(mms_local_file_db.get_anc_type(fileName)))) 
+          res = true;
+        end
+        return
+      end
+      % cdf
+      info = spdfcdfinfo(fullPath);
+      res = any(cellfun(@(x) strcmp(x,varName), info.Variables(:,1)));
+    end
+  end
+  
+  methods (Access=private)
+    function p = get_path_to_file(obj,fileName)
+      C = strsplit(lower(fileName),'_');
+      if strcmpi(fileName(end-3:end),'.cdf'),
+        d =  C{end-1}; p = obj.dbRoot;
+        for ix=1:(length(C)-2), p = [p filesep C{ix}]; end %#ok<AGROW>
+        p = [p filesep d(1:4) filesep d(5:6)];
+      else % ancillary
+        p = [obj.dbRoot filesep 'ancillary' filesep C{1} filesep C{2}];
+      end
+    end
+  end
+  
+  methods (Static, Access=private)
+    function res = is_cdf_file(fileName)
+      res = false;
+      if length(fileName) < 4, return, end
+      res = strcmpi(fileName(end-3:end),'.cdf');
+    end
+    function res= get_anc_type(fileName)
+      res = false;
+      C = strsplit(lower(fileName),'_');
+      if length(C)<3, return, end
+      res = C{2};
+    end
   end
   
 end

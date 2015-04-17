@@ -108,7 +108,7 @@ while have_options
 					l = 2;
 				elseif ischar(args{2})
 					try
-						t = irf_time(args{2},'iso2epoch');
+						t = irf_time(args{2},'utc>epoch');
 						l = 2;
 					catch
 						error('T is not a valid ISO time string. ')

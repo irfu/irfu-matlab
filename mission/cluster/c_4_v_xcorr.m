@@ -22,7 +22,7 @@ function [iV, dV] = c_4_v_xcorr(tint,B1,B2,B3,B4,R1,R2,R3,R4)
 
 if nargin == 0, help c_4_v_xcorr; return; end
 if ischar(tint), % assume time interval input in character format
-	tint=irf_time(tint,'iso2tint');
+	tint=irf_time(tint,'utc>tint');
 end
 
 b1 = [];
