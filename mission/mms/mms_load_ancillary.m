@@ -94,7 +94,7 @@ switch lower(dataType)
       tmpStr(:,2:end)],'utc>ttns');
     % And simply include the position in X, Y, Z (which ref.syst. used is
     % still TBC)
-    dataIN.R = [tmpData{1,5} tmpData{1,6} tmpData{1,7}];
-    dataIN.V = [tmpData{1,8} tmpData{1,9} tmpData{1,10}];
+    dataIN.r = [tmpData{1,5} tmpData{1,6} tmpData{1,7}];
+    dataIN.v = [tmpData{1,8} tmpData{1,9} tmpData{1,10}];
   otherwise
 end
