@@ -34,9 +34,21 @@ MMS_CONST.Spinrate.max_comm = 3.2; % Rev per Minute.
 % Until May 1, 2015
 MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 
+% Spin phase is zero when BSC x-axis points sunward, and
+% increases monotonically. As the spacecraft spins, the order in
+% which the probes and BCS axes point sunward is the following:
+% at   0 degrees, BSC +X is sunward
+% at  60 degrees, probe 4 is sunward
+% at  90 degrees, BSC -Y is sunward
+% at 150 degrees, probe 2 is sunward
+% at 180 degrees, BSC -X is sunward
+% at 240 degrees, probe 3 is sunward
+% at 270 degrees, BSC +Y is sunward
+% at 330 degrees, probe 1 is sunward
+%
 % Angles when phase=0 (X BSC direction)
-MMS_CONST.Phaseshift.e12 =  pi*5/6;
-MMS_CONST.Phaseshift.e34 =  pi/3;
+MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
+MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCV & DCE data.
 MMS_CONST.NominalAmpCorr = 1.1;
