@@ -2,7 +2,7 @@ function t_out = irf_time(t_in,flag)
 %IRF_TIME  Convert time between different formats
 %
 %   t_out=IRF_TIME(t_in,'in>out');
-%   t_out=IRF_TIME(t_in,'in2out');  % depreciated
+%   t_out=IRF_TIME(t_in,'in2out');  % deprecated
 %
 %   Input:
 %       t_in: column vector of input time in format 'in'
@@ -14,7 +14,7 @@ function t_out = irf_time(t_in,flag)
 %     vector: [year month date hour min sec] in each row, last five columns optional
 %    vector6: [year month date hour min sec] in each row
 %    vector9: [year month date hour min sec msec micros nanosec] in each row
-%        iso: depreciated, same as 'utc' 
+%        iso: deprecated, same as 'utc' 
 %       date: MATLAB datenum format
 %    datenum: same as 'date'
 %        doy: [year, doy]
@@ -61,7 +61,7 @@ if isempty(flagTint),          % default transformation
 	if isempty(flag2)
 		flag2=strfind(flag,'>');   % see if flag has '>' in it
 	else
-		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is depreciated, please use irf_time(..,''in>out'')']);
+		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is deprecated, please use irf_time(..,''in>out'')']);
 		flag(flag2)='>';
 	end
 	if isempty(flag2),         % if no '2' convert from epoch
@@ -86,7 +86,7 @@ if isempty(flagTint),          % default transformation
 else
 	flag2=strfind(flag,'2');   % see if flag has number 2 in it
 	if ~isempty(flag2)
-		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is depreciated, please use irf_time(..,''in>out'')']);
+		irf.log('warning',['irf_time(..,''' flag '''): irf_time(..,''in2out'') is deprecated, please use irf_time(..,''in>out'')']);
 		flag(flag2)='>';
 	end
 end
@@ -130,7 +130,7 @@ switch lower(flag)
 		t_out = spdfcomputett2000(t_in);
 	case {'ttns>utc','ttns>iso'}
 		if any(strfind(flag,'iso')),
-			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
+			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		tCellArray =  spdfencodett2000(int64(t_in));
 		t_out = vertcat(tCellArray{:});
@@ -147,7 +147,7 @@ switch lower(flag)
 		t_out(:,6) = tVec9(:,6)+1e-3*tVec9(:,7)+1e-6*tVec9(:,8)+1e-9*tVec9(:,9);
 	case {'utc>ttns','iso>ttns'}
 		if any(strfind(flag,'iso')),
-			irf.log('warning','irf_time: ''iso'' is depreciated and will be removed, please use ''utc'', see help.');
+			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(t_in(1,:),'T'))
 			t_out = spdfparsett2000(irf.utc_validate_and_pad(t_in));
@@ -213,14 +213,14 @@ switch lower(flag)
 		
 	case {'tint>utc','tint>iso'}
 		if any(strfind(flag,'iso')),
-			irf.log('warning','irf_time(..,''tint>iso'') is depreciated and will be removed, please use irf_time(..,''tint>utc'').');
+			irf.log('warning','irf_time(..,''tint>iso'') is deprecated and will be removed, please use irf_time(..,''tint>utc'').');
 		end
 		t1iso=irf_time(t_in(:,1),'epoch>utc');
 		t2iso=irf_time(t_in(:,2),'epoch>utc');
 		t_out=[t1iso repmat('/',size(t1iso,1),1) t2iso];
 	case {'utc>tint','iso>tint'}
 		if any(strfind(flag,'iso')),
-			irf.log('warning','irf_time(..,''iso>tint'') is depreciated and will be removed, please use irf_time(..,''utc>tint'').');
+			irf.log('warning','irf_time(..,''iso>tint'') is deprecated and will be removed, please use irf_time(..,''utc>tint'').');
 		end
 		% assume column array where each row is interval in iso format
 		ii=strfind(t_in(1,:),'/');
