@@ -8,7 +8,18 @@ END_META       =   EXPERIMENT
 ! Description of the experiment
 !
 START_META     =   EXPERIMENT_DESCRIPTION
-   ENTRY       =   "Electric Field and Wave Experiment"
+   ENTRY       =   "The EFW (Electric Field and Wave) instrument consists of four spherical"
+   ENTRY       =   "probes deployed orthogonally on 44-meter-long wire booms in the spin"
+   ENTRY       =   "plane of the spacecraft. The potential differences between opposing"
+   ENTRY       =   "probes, separated by 88 m tip-to-tip, are measured to provide electric"
+   ENTRY       =   "field measurements in two directions, thus providing the full electric"
+   ENTRY       =   "field vector in the spin plane of the spacecraft. Additionally, the"
+   ENTRY       =   "potential differences between each of the probes and the spacecraft are"
+   ENTRY       =   "measured, providing an estimate of the spacecraft potential relative"
+   ENTRY       =   "to the plasma, which can be used as a proxy for the ambient electron"
+   ENTRY       =   "density. The output analogue signals from the preamplifiers connected"
+   ENTRY       =   "to the spherical probes are also provided to the wave instruments"
+   ENTRY       =   "(STAFF, WHISPER and WBD) for analysis of high frequency wave phenomena."
 END_META       =   EXPERIMENT_DESCRIPTION
 !
 ! Name and coordinates of the PI, and possible earlier PIs
@@ -38,22 +49,17 @@ END_META       =   EXPERIMENT_KEY_PERSONNEL
 !
 START_META     =   EXPERIMENT_CAVEATS
    ENTRY       =   "Caveats for the Cluster EFW experiment:"
-   ENTRY       =   "Author: Per-Arne Lindqvist"
-   ENTRY       =   "Last modified: 2008-11-25"
    ENTRY       =   ""
    ENTRY       =   "For general information on EFW, please visit the EFW home page"
-   ENTRY       =   ""
    ENTRY       =   "http://www.cluster.irfu.se"
    ENTRY       =   ""
    ENTRY       =   "For general information on EFW operations, both standard operations and"
    ENTRY       =   "anomalies, please visit the EFW operations home page"
-   ENTRY       =   ""
    ENTRY       =   "http://www.cluster.irfu.se/efw/ops"
    ENTRY       =   ""
    ENTRY       =   "For a chronological table of all non-standard operations and known"
    ENTRY       =   "instrument anomalies, please visit the EFW non-standard operations home"
    ENTRY       =   "page"
-   ENTRY       =   ""
    ENTRY       =   "http://www.cluster.irfu.se/efw/ops/ns_ops.html"
    ENTRY       =   ""
    ENTRY       =   "For more information on data quality and how the CAA data are processed"
