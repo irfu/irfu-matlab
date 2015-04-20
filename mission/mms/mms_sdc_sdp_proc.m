@@ -376,9 +376,9 @@ end
 
   function update_header(src)
     % Update header info
+    if(regexpi(src.filename,'dce')), HeaderInfo.startTime = src.startTime; end;
     % Initialization. Store startTime and first filename as parents_1.
     if(~isfield(HeaderInfo,'parents_1'))
-      HeaderInfo.startTime = src.startTime;
       HeaderInfo.parents_1 = src.filename;
       HeaderInfo.numberOfSources = 1;
     else % Next run.
