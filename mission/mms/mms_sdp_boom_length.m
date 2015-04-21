@@ -17,6 +17,9 @@ switch scId
     Blen(6).time=get_tt([2015 04 09 14 09 50]); Blen(6).len=[ 17 17 22 22 ];
     Blen(7).time=get_tt([2015 04 13 01 11 13]); Blen(7).len=[ 22 22 22 22 ];
     Blen(8).time=get_tt([2015 04 13 14 22 32]); Blen(8).len=[ 22 22 41 41 ];   
+    Blen(9).time=get_tt([2015 04 20 23 21 06]); Blen(9).len=[ 22 22 57 57 ];   
+%    Blen(10).time=get_tt([2015 04 22 22 25 00]); Blen(10).len=[ 41 41 57 57 ];   
+%    Blen(11).time=get_tt([2015 04 24 04 35 00]); Blen(11).len=[ 57 57 57 57 ];   
   case 2
     Blen(1).time=get_tt([2015 03 13 00 00 00]); Blen(1).len=[ 00 00 00 00 ];
     Blen(2).time=get_tt([2015 04 06 10 49 15]); Blen(2).len=[ 00 00 03 03 ];
@@ -26,6 +29,10 @@ switch scId
     Blen(6).time=get_tt([2015 04 09 16 23 38]); Blen(6).len=[ 17 17 22 22 ];
     Blen(7).time=get_tt([2015 04 13 03 20 36]); Blen(7).len=[ 22 22 22 22 ];
     Blen(8).time=get_tt([2015 04 13 04 07 12]); Blen(8).len=[ 22 22 41 41 ];
+    Blen(9).time=get_tt([2015 04 21 01 05 21]); Blen(9).len=[ 22 22 42.5 42.5 ];
+    Blen(10).time=get_tt([2015 04 21 01 39 52]); Blen(10).len=[ 22 22 57 57 ];
+%    Blen(11).time=get_tt([2015 04 23 00 40 00]); Blen(11).len=[ 41 41 57 57 ];
+%    Blen(12).time=get_tt([2015 04 24 08 50 00]); Blen(12).len=[ 57 57 57 57 ];
   case 3
     Blen(1).time=get_tt([2015 03 13 00 00 00]); Blen(1).len=[ 00 00 00 00 ];
     Blen(2).time=get_tt([2015 04 07 06 24 26]); Blen(2).len=[ 00 00 03 03 ];
@@ -36,6 +43,9 @@ switch scId
     Blen(7).time=get_tt([2015 04 10 14 13 18]); Blen(7).len=[ 17 17 22 22 ];
     Blen(8).time=get_tt([2015 04 12 14 04 22]); Blen(8).len=[ 22 22 22 22 ];
     Blen(9).time=get_tt([2015 04 14 14 23 18]); Blen(9).len=[ 22 22 41 41 ];
+    Blen(10).time=get_tt([2015 04 19 23 37 15]); Blen(10).len=[ 41 41 41 41 ];
+%    Blen(11).time=get_tt([2015 04 21 22 40 00]); Blen(11).len=[ 41 41 57 57 ];
+%    Blen(12).time=get_tt([2015 04 24 00 15 00]); Blen(12).len=[ 57 57 57 57 ];
   case 4
     Blen(1).time=get_tt([2015 03 13 00 00 00]); Blen(1).len=[ 00 00 00 00 ];
     Blen(2).time=get_tt([2015 04 05 10 50 56]); Blen(2).len=[ 00 00 03 03 ];
@@ -45,6 +55,9 @@ switch scId
     Blen(6).time=get_tt([2015 04 10 16 22 20]); Blen(6).len=[ 17 17 22 22 ];
     Blen(7).time=get_tt([2015 04 12 16 16 49]); Blen(7).len=[ 22 22 22 22 ];
     Blen(8).time=get_tt([2015 04 14 16 39 13]); Blen(8).len=[ 22 22 41 41 ];
+    Blen(9).time=get_tt([2015 04 20 01 48 52]); Blen(9).len=[ 41 41 41 41 ];
+%    Blen(10).time=get_tt([2015 04 22 00 55 00]); Blen(10).len=[ 41 41 57 57 ];
+%    Blen(11).time=get_tt([2015 04 24 02 30 00]); Blen(11).len=[ 57 57 57 57 ];
   otherwise
     error('Invalid scId')
 end
