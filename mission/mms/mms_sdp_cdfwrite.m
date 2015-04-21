@@ -656,10 +656,18 @@ cd(oldDir);
     GATTRIB.MODS = MMS_CONST.Version.MODS; % Text describing major version changes, ie. "vX" changes.
     % Global Attributes RECOMMENDED:
     GATTRIB.Acknowledgement = cell(0,1);
-    GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};
+    % System used (IRFU: "spis"/"brain", SDC: "sdc", other)
+    [~, sysName] = system('hostname');
+    if(regexpi(sysName,'spis|brain|thonilaptop'))
+      GATTRIB.Generated_by = {['IRFU Matlab', irf('version'), ' while running at IRFU.']};
+    elseif(regexpi(sysName,'sdc'))
+      GATTRIB.Generated_by = {['IRFU Matlab', irf('version'), ' while running at SDC.']};
+    else
+      GATTRIB.Generated_by = {['IRFU Matlab', irf('version')]};
+    end
     % Global Attributes OPTIONAL:
 %    GATTRIB.Parents = cell(0,1); % Req if number of source cdf >= 2.
-    GATTRIB.Skeleton_version = {'v0.0.4'};
+    GATTRIB.Skeleton_version = {'v0.0.5'};
     GATTRIB.Rules_of_use = cell(0,1);
     GATTRIB.Time_resolution = cell(0,1);
   end
