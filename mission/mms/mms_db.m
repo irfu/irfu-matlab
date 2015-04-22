@@ -58,7 +58,7 @@ classdef mms_db < handle
        % check for overlapping time records
        [~,idxUnique] = unique(res.time); 
        idxDuplicate = setdiff(1:length(res.time), idxUnique);
-       res.time(idxDuplicate) = []; res.(varName)(idxDuplicate) = [];
+       res.time(idxDuplicate) = []; res.(varName)(idxDuplicate,:) = [];
        irf.log('warning',...
          sprintf('Discarded %d data points',length(idxDuplicate)))
      end
