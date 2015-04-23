@@ -393,7 +393,8 @@ irf_figmenu;
 
 %% Add information about subplot handles to userdata of figure
 user_data = get(gcf,'userdata');
-if flag_subplot>0 && isempty(user_data.subplot_handles)
+if (flag_subplot>0 && isfield(user_data,'subplot_handles') && isempty(user_data.subplot_handles)) || ...
+    (flag_subplot>0 && ~isfield(user_data,'subplot_handles'))
   user_data.subplot_handles = c; 
 end
 set(gcf,'userdata',user_data);
