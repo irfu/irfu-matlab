@@ -123,6 +123,9 @@ switch procId
     % output in data). The other bits are a bitor comination of those
     % probes that were used (i.e. bitmask = 2 (dec), would mean at least
     % one probe that was used for that point in time had "bad bias").
+    % Update badBits due to blanking of sweep.
+    badBits(:,1) = isnan(dcv.v1.data); badBits(:,2) = isnan(dcv.v2.data);
+    badBits(:,3) = isnan(dcv.v3.data); badBits(:,4) = isnan(dcv.v4.data);
     % Start with bit 0
     bitmask = uint16(sum(badBits,2)>=3); % Three or more badBits on each row.
     % Extract probe bitmask, excluding the lowest bit (signal off)
@@ -132,9 +135,6 @@ switch procId
     vBit(:,2) = bitand(dcv.v2.bitmask, bits);
     vBit(:,3) = bitand(dcv.v3.bitmask, bits);
     vBit(:,4) = bitand(dcv.v4.bitmask, bits);
-    % Update badBits due to blanking of sweep.
-    badBits(:,1) = isnan(dcv.v1.data); badBits(:,2) = isnan(dcv.v2.data);
-    badBits(:,3) = isnan(dcv.v3.data); badBits(:,4) = isnan(dcv.v4.data);
     % Combine bitmasks with bitor of times when probe was used to derive
     % mean. (I.e. not marked by badBits).
     for ii=1:4
