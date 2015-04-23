@@ -397,17 +397,16 @@ end
 
     if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
 
-      NomBias = uint32(32768); % FIXME, read from a table file
-
-      %DATAC.hk_10e.beb.ig.v1(600:630) = uint32(10); % FIXME, forced to non-moninal, for debug.
-      %DATAC.hk_10e.beb.og.v2(600) = uint32(0); % FIXME, forced to non-nominal
+      % Get limit struct with primary fields 'ig', 'og' and 'dac',
+      % subfields 'max' and 'min'.
+      NomBias = MMS_CONST.Limit.NOM_BIAS;
 
       irf.log('notice','Checking for non nominal bias settings.');
       for iSen = 1:2:numel(sensors)
         senA = sensors{iSen};  senB = sensors{iSen+1};
         senE = ['e' senA(2) senB(2)]; % E-field sensor
 
-        hk10eParam = {'ig','og'}; % InnerGuard, OuterGuard
+        hk10eParam = {'ig','og','dac'}; % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
         for iiParam = 1:length(hk10eParam);
 
           % FIXME, proper test of existing fields?
@@ -425,8 +424,8 @@ end
               double(DATAC.dcv.time), 'previous', 'extrap');
 
             % Locate Non Nominal values
-            indA = interp_DCVa ~= NomBias;
-            indB = interp_DCVb ~= NomBias;
+            indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
+            indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
             indE = or(indA,indB); % Either senA or senB => senE non nominal.
 
             if(any(indE))
