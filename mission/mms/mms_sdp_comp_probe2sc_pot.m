@@ -7,6 +7,12 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 %  the mean value of moving average filtered data over filterInterval (in
 %  seconds) to determine which probe(-s) are possibly bad. For each
 %  timestamp either all four, two or one probe(-s) are used.
+%  Each datapoint is given a corresponding bitmask where
+%   bit 0 = 0, only one probe or no probe at all was used. If no probe at
+%              all was available the output is NaN for that point in time.
+%   bit 0 = 1, either two or four probes was used.
+%   bits 1-16, are a bitor comination of the corresponding bitmasks of the
+%              individual probes used for that point in time.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -112,14 +118,28 @@ switch procId
     % bad (NaN).
     avPot = irf.nanmean([dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data], 2);
 
-    % Compute bitmask of which probes was used so that:
-    % bitmask == 0 all probes useful.
-    % bitand(0x01, bitmask) probe 1 bad, bitand(0x02, bitmask) probe 2 bad,
-    % bitand(0x04, bitmask) probe 3 bad, bitand(0x08, bitmask) probe 4 bad.
-    % And any combination thereof, ie. bitand(0x03, bitmask) probe 1 & 2
-    % bad and probe 3 & 4 was used.
-    bitmask = uint16(1*isnan(dcv.v1.data) + 2*isnan(dcv.v2.data) + ...
-      4*isnan(dcv.v3.data) + 8*isnan(dcv.v4.data));
+    % Combine bitmask so that bit 0 = 0 (either four or two probes was
+    % used), bit 0 = 1 (either one probe or no probe (if no probe => NaN
+    % output in data). The other bits are a bitor comination of those
+    % probes that were used (i.e. bitmask = 2 (dec), would mean at least
+    % one probe that was used for that point in time had "bad bias").
+    % Start with bit 0
+    bitmask = uint16(sum(badBits,2)>=3); % Three or more badBits on each row.
+    % Extract probe bitmask, excluding the lowest bit (signal off)
+    bits = intmax(class(bitmask)) - MMS_CONST.Bitmask.SIGNAL_OFF;
+    vBit = zeros(length(dcv.v1.bitmask),4,'like',MMS_CONST.Bitmask.SIGNAL_OFF);
+    vBit(:,1) = bitand(dcv.v1.bitmask, bits);
+    vBit(:,2) = bitand(dcv.v2.bitmask, bits);
+    vBit(:,3) = bitand(dcv.v3.bitmask, bits);
+    vBit(:,4) = bitand(dcv.v4.bitmask, bits);
+    % Update badBits due to blanking of sweep.
+    badBits(:,1) = isnan(dcv.v1.data); badBits(:,2) = isnan(dcv.v2.data);
+    badBits(:,3) = isnan(dcv.v3.data); badBits(:,4) = isnan(dcv.v4.data);
+    % Combine bitmasks with bitor of times when probe was used to derive
+    % mean. (I.e. not marked by badBits).
+    for ii=1:4
+      bitmask(~badBits(:,ii)) = bitor(bitmask(~badBits(:,ii)), vBit(~badBits(:,ii),ii));
+    end
 
     probe2sc_pot = struct('time',dcv.time,'data',avPot,'bitmask',bitmask);
     
