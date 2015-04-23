@@ -1,4 +1,7 @@
 function res = db_get_variable(filePrefix,varName,tint)
+%MMS.DB_GET_VARIABLE  get variable from a file DB
+%
+% res = mms.db_get_variable(filePrefix,varName,tint)
 
 narginchk(3,3)
 
