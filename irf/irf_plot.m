@@ -177,7 +177,7 @@ if iscell(x), % Plot several variables
             flag_subplot = 2;
     end
 else
-    if isempty(inp_name)
+    if isempty(inp_name) || isa(x,'TSeries')
         var_desc{1} = {};
     else    
         try % try to obtain variable description
