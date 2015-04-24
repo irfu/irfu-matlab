@@ -267,7 +267,8 @@ elseif flag_subplot==2, % Separate subplot for each variable
     if isempty(x), return, end
     
     %   t_start_epoch is saved in figures user_data variable
-    if isstruct(x{1}), ts = t_start_epoch(x{1}.t);
+    if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.toEpochUnix().epoch);
+    elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
     else ts = t_start_epoch(x{1}(:,1));
     end
     
@@ -278,14 +279,16 @@ elseif flag_subplot==2, % Separate subplot for each variable
     c=initialize_figure(npl);
     for ipl=1:npl
         y = x{ipl};
-        if isstruct(y), t_tmp = double(y.t);
-        else t_tmp = double(y(:,1));
+        if isa(y,'TSeries')
+          time = y.time.toEpochUnix().epoch; data = y.data;
+        elseif isstruct(y), time = double(y.t); data = y(:,2:end);
+        else time = double(y(:,1)); data = y(:,2:end);
         end
-        if numel(t_tmp)==0
+        if numel(time)==0
             irf.log('critical',['Can not plot data ' num2str(ipl)]);
             return;
         end
-        t_tmp = t_tmp -double(ts) -double(dt(ipl));
+        t_tmp = time -double(ts) -double(dt(ipl));
         firstTimeStamp = t_tmp(~isnan(t_tmp));
         if isempty(t_st), t_st = firstTimeStamp(1);
         else if firstTimeStamp(1)<t_st, t_st = firstTimeStamp(1); end
@@ -315,7 +318,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
             end
         else
             marker_cur = get_marker();
-            plot(c(ipl),t_tmp,y(:,2:end),marker_cur); 
+            plot(c(ipl),t_tmp,data,marker_cur); 
             grid(c(ipl),'on');
             zoom_in_if_necessary(c(ipl));
             
@@ -329,7 +332,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
                 end
                 ylabel(c(ipl),lab); clear lab
             end
-            firstTimeStamp = y(~isnan(y(:,1)),1);
+            firstTimeStamp = time(~isnan(time),1);
         end
     end
     % Set common XLim
@@ -347,9 +350,15 @@ elseif flag_subplot==2, % Separate subplot for each variable
 elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
     % t_start_epoch is saved in figures user_data variable
-    ts = t_start_epoch(x{1}(:,1));
+    if isa(x{1},'TSeries')
+      ts = t_start_epoch(x{1}.time.toEpochUnix().epoch);
+      npl = size(x{1}.data,2);
+    elseif isstruct(x{1})
+      ts = t_start_epoch(x{1}.t); npl = size(x{1}.data,2);
+    else ts = t_start_epoch(x{1}(:,1)); npl = size(x{1},2) -1;
+    end
     
-    npl = size(x{1},2) -1;
+    
     if npl==1,     % We make new figure with subplots only if more than 1 component to plot
         c = ax;
     else
@@ -365,14 +374,16 @@ elseif flag_subplot==3,  % components of vectors in separate panels
                 end
             else marker_cur = marker;
             end
-            
-            if size(x{jj},2)>=ipl+1
-                y = x{jj};
+            if isa(x{jj},'TSeries'), 
+              time = x{jj}.time.toEpochUnix().epoch; data = x{jj}.data;
+            else time = x{jj}(:,1); data = x{jj}(:,2:end);
+            end
+            if size(data,2)>=ipl
                 if use_color
-                    plot(c(ipl),(y(:,1)-ts-dt(jj)), y(:,ipl+1),...
+                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),...
                         'Color', line_colors(jj,:), 'LineStyle',marker_cur)
                 else
-                    plot(c(ipl),(y(:,1)-ts-dt(jj)), y(:,ipl+1),marker_cur)
+                    plot(c(ipl),(time-ts-dt(jj)), data(:,ipl),marker_cur)
                 end
                 hold(c(ipl),'on');
             end
@@ -384,7 +395,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         set(c(ipl),'YLim',...
             mean(get(c(ipl),'YLim'))+diff(get(c(ipl),'YLim'))*[-.499999 .499999])
     end
-    firstTimeStamp = y(~isnan(y(:,1)),1);
+    firstTimeStamp = time(~isnan(time(:,1)),1);
     firstTimeStamp = firstTimeStamp(1);
 end
 
