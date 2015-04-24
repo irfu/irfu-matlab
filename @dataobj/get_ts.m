@@ -31,16 +31,26 @@ else
 end
 
 tensorOrder = length(data.variance(3:end));
-
+repres = [];
 switch tensorOrder
   case 0 % scalar
   case 1 % vector
+    if data.dim(1)==2,
+      repres = {'x','y'};
+    elseif data.dim(1)==3
+      repres = {'x','y','z'};
+    end
   case 2 % tensor
   otherwise
     error('TensorOrder>2 not supported')
 end
 
-res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
+if isempty(repres)
+  res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
+else
+  res = TSeries(Time,data.data,'TensorOrder',tensorOrder,...
+    'repres',repres);
+end
 res.name = data.name;
 ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
 ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
