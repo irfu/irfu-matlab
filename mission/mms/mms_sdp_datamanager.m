@@ -299,7 +299,9 @@ end
       % TODO: Check overlapping stuck values, if senA stuck but not senB..  
     end
     function sen = latched_mask(sen)
-      idx = irf_latched_idx(sen.data);
+      %idx = irf_latched_idx(sen.data);
+       % Locate data latched for at least 1 second (=1*samplerate).
+      idx = irf_latched_idx(sen.data, 1*DATAC.samplerate);
       if ~isempty(idx)
         sen.bitmask(idx) = bitor(sen.bitmask(idx),...
           MMS_CONST.Bitmask.PROBE_SATURATION);
