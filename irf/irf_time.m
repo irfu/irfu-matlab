@@ -268,7 +268,7 @@ switch lower(flag)
 			elseif iHH,
 				dtRound = 30*60e9;
 			elseif idd,
-				dtRound = 12*30*60e9;
+				dtRound = 0;
 			else
 				dtRound = 0;
 			end
