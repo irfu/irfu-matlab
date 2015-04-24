@@ -93,6 +93,11 @@ classdef TSeries
     representation
   end
   
+  properties 
+    name = '';
+    userData = [];
+  end
+  
   methods
     function obj = TSeries(t,data,varargin)
       if  nargin == 0, obj.data_ = []; obj.t_ = []; return, end
