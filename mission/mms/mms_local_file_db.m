@@ -214,7 +214,7 @@ classdef mms_local_file_db < mms_file_db
            if isempty(vT{3}), return, end, ver.rev = vT{3};
         end
         function entry = add_ss(entry)
-          data = sdpfcdfread([entry.path filesep entry.name],'Variables',...
+          data = spdfcdfread([entry.path filesep entry.name],'Variables',...
             'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
           if isempty(data), entry = []; return, end
           entry.start = EpochTT2000(data(1));
