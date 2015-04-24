@@ -1,15 +1,11 @@
 function res = get_ts(dobj,var_s)
-%GETMAT(dobj, var_s)  get a variable in the matlab format
+%GET_TS(dobj, var_s)  get a variable in as TSeries object
 %
 % Output:
-%			empty		if variable does not exist
-%			matrix		if variable depends only on time (e.g. fields, position,..)
-%						first column time, other columns variable values
-%			structure 	if variable has additional dependencies (e.g. spectra)
-%						res.t - time 
-%						res.dt - time step (can be also defined res.dt.plus, res.dt.minus)
-%						res.data - data
-%						res.dep_x - additional dependencies
+%			empty, if variable does not exist
+%			otherwise TSeries object
+%
+%  See also: TSeries
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
