@@ -401,13 +401,13 @@ set(gcf,'userdata',user_data);
 
 %% In case time is in isdat_epoch add time axis
 if ((firstTimeStamp > 1e8) && (firstTimeStamp < 1e10))
-    if flag_subplot == 0, irf_timeaxis(ax);
-	elseif isgraphics(c( 1 ),'axes')
-		irf_timeaxis(c);
-	elseif isgraphics(get( c( 1 ), 'parent' ),'axes')
-		irf_timeaxis(get(c(1),'parent'));
-	else % do nothing
-    end
+  if flag_subplot == 0, irf_timeaxis(ax);
+  elseif isgraphics(c( 1 ),'axes')
+    irf_timeaxis(c);
+  elseif isgraphics(get( c( 1 ), 'parent' ),'axes')
+    irf_timeaxis(get(c(1),'parent'));
+  else % do nothing
+  end
 end
 
 %% Do not give axis handle as answer if not asked for
