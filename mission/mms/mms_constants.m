@@ -80,8 +80,8 @@ MMS_CONST.SDCProc.l2a   = 5;
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
 MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
-MMS_CONST.Limit.NOM_BIAS.dac.max = uint16(37910); % DAC, 37910TM=-130nA. Usually running at -160nA (26438TM)
-MMS_CONST.Limit.NOM_BIAS.dac.min = uint16(25252); % 25252TN=-190nA.
+MMS_CONST.Limit.NOM_BIAS.dac.max = uint16(27625); % DAC, 27626TM=-130nA. Usually running at -160nA (26439TM)
+MMS_CONST.Limit.NOM_BIAS.dac.min = uint16(25252); % 25252TM=-190nA.
 MMS_CONST.Limit.NOM_BIAS.ig.max = uint16(32767); % Inner Guard, 32768TM=0V. Usually running at -8V (7571TM)
 MMS_CONST.Limit.NOM_BIAS.ig.min = uint16(0); % 0TM=-10.4V
 MMS_CONST.Limit.NOM_BIAS.og.max = uint16(32767); % Outer Guard, 32768TM=0V. Usually running at -4V (20170TM)
