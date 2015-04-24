@@ -182,7 +182,8 @@ classdef mms_local_file_db < mms_file_db
           'path',curDir,'dbId',obj.id);
         Entry = add_ss(Entry);
         % Check time limits of the file
-        if ~isempty(tint)&&(Entry.start>tint.stop || Entry.stop<tint.start)
+        if isempty(Entry) || ~isempty(tint) && ...
+            (Entry.start>tint.stop || Entry.stop<tint.start)
             return
         end
         if isempty(fileList), fileList = Entry; return, end
@@ -213,9 +214,9 @@ classdef mms_local_file_db < mms_file_db
            if isempty(vT{3}), return, end, ver.rev = vT{3};
         end
         function entry = add_ss(entry)
-          data = cdfread([entry.path filesep entry.name],'Variables',...
+          data = sdpfcdfread([entry.path filesep entry.name],'Variables',...
             'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
-          if isempty(data), return, end
+          if isempty(data), entry = []; return, end
           entry.start = EpochTT2000(data(1));
           entry.stop = EpochTT2000(data(end));
         end % ADD_SS
