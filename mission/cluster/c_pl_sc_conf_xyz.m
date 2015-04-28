@@ -544,9 +544,9 @@ switch lower(action)
 			if ~isempty(flag_using_omni_data)
 				if ~strcmpi(data.plot_type,'lmn'),
 					if flag_using_omni_data==1, % succeeded downloading OMNI
-						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					elseif flag_using_omni_data==0, % did not succeeded downloading OMNI
-						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					end
 				end
 			end

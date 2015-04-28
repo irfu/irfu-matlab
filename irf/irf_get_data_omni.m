@@ -98,18 +98,18 @@ function f = irf_get_data_omni( tint, parameter , database)
 
 if nargin < 3, % database not specified defaulting to omni2
 	dataSource='omni2';
-	dateFormat='yyyymmdd';
+	dateFormat='utc_yyyymmdd';
 elseif nargin == 3, % database specified
 	if strcmpi(database,'omni2')
 		dataSource='omni2';
-		dateFormat='yyyymmdd';
+		dateFormat='utc_yyyymmdd';
 	elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
 		dataSource='omni_min';
-		dateFormat='yyyymmddhh';
+		dateFormat='utc_yyyymmddhh';
 	else
 		irf_log('fcal','Unknown database, using omni2.');
 		dataSource='omni2';
-		dateFormat='yyyymmdd';
+		dateFormat='utc_yyyymmdd';
 	end
 end
 httpRequest=['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];

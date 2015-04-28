@@ -17,7 +17,7 @@ function [x,y,omni] = irf_magnetosphere(model,Dp,Bz)
 %       use default parameters, Dp=2nPa, Bz=0nT
 % 
 %  [X,Y,OMNI]=IRF_MAGNETOSPHERE(model,time) 
-%       return OMNI data used in variable OMNI
+%       return OMNI data used in structure OMNI (omni.Dp and omni.Bx, By, Bz in GSM)
 %
 % Examples:
 %  [x,y] = irf_magnetosphere('mp_shue1998',10,-2)
