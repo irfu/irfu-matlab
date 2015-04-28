@@ -1,6 +1,6 @@
 function out = SPDFCOMPUTETT2000(datetime)
 %SPDFCOMPUTETT2000 converts the UTC date/time components to CDF TT2000 time,
-%              in nanoseconds since 2000-01-01T12:00:00 with leap seconds.
+%              in nanoseconds since 2000-01-01 12:00:00 with leap seconds.
 %
 %   OUT = SPDFCOMPUTETT2000(datetime) returns the CDF TT2000 time. OUT is
 %   a vector of integer values of mxINT64_CLASS (int64).

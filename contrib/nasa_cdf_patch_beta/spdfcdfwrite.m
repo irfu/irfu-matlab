@@ -218,6 +218,14 @@ function spdfcdfwrite(filename, varcell, varargin)
 %   CDF should have its checksum computed. The valid values are 'MD5' or 'none'.
 %   The default is 'none'.
 %
+%   SPDFCDFWRITE(..., 'CDFLeapSecondLastUpdated', value, ...) resets the CDF's
+%   leap second last updated date.  For CDFs created prior to V 3.6.0, this 
+%   field is not set. It is set to indicate what leap second table this CDF is
+%   based upon. The value, in YYYYMMDD form, must be a valid entry in the
+%   currently used leap second table, or zero (0) if the table is not used. 
+%   CDF will automatically fill the value with the last entry date in the leap
+%   second table if this option is not specified. 
+%
 %   Notes:
 %
 %     SPDFCDFWRITE creates temporary files when writing CDF files.  Both the
@@ -539,7 +547,8 @@ spdfcdfwritec(filename, args.VarNames, args.VarVals, args.PadVals, ...
           isMultifile, CDFversion, args.ConvertDatenum, args.RecBnd, ...
           args.EpochIsCDFEpoch, args.TT2000, args.ConvertDatenum2, ...
           args.EpochTp, args.VarCompVals, args.SparseVarVals, ...
-          args.BFVarVals, args.DTVarVals, args.MD5, args.CDFComp);
+          args.BFVarVals, args.DTVarVals, args.MD5, args.CDFComp, ...
+          args.CDFleapsecondlastupdated);
 
 %%%
 %%% Function parse_inputs
@@ -561,6 +570,7 @@ args.ConvertDatenum = false;
 args.ConvertDatenum2 = false;
 args.MD5 = false;
 args.CDFComp = '';
+args.CDFleapsecondlastupdated = int32(-999);
 isAppending = 0;
 isMultifile = 0;
 varAttribStruct = struct([]);
@@ -638,6 +648,7 @@ if (nargin > 0)
                     'version'
                     'tt2000'
                     'checksum'
+                    'cdfleapsecondlastupdated'
                     'epochtype'};
     
     % For each pair
@@ -857,7 +868,7 @@ if (nargin > 0)
                RecBndVar = RecBndCell{i};
                args.RecBnd{strcmp(args.VarNames,RecBndCell{i})} = RecBndVar;
            end
-       case 'checksum'
+        case 'checksum'
            if (k == length(varargin))
                msg = 'Missing "checksum" value.';
                return
@@ -869,6 +880,15 @@ if (nargin > 0)
                  return
                end
                args.MD5 = logical(find_checksum(checksum));
+           end
+        case 'cdfleapsecondlastupdated'
+           args.CDFleapsecondlastupdated = varargin{k+1};
+           if (isnumeric(args.CDFleapsecondlastupdated))
+               args.CDFleapsecondlastupdated = int32(args.CDFleapsecondlastupdated);
+           else
+               exception.msg = 'CDF leapsecondlastupdated value must be a numeric value (in YYYYMMDD form).';
+               exception.id = 'MATLAB:spdfcdfwrite:cdfleapsecondlastupdated';
+               return
            end
         case 'varsparse'
            SparseVarsCell = varargin{k+1};

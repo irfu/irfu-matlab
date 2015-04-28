@@ -1,6 +1,6 @@
 function out = SPDFBREAKDOWNTT2000(tt2000)
 %SPDFBREAKDOWNTT2000 converts the CDF TT2000 time, nanoseconds since
-%             2000-01-01T12:00:00 with leap seconds to UTC date/time.
+%             2000-01-01 12:00:00 to UTC date/time.
 %
 %   OUT = SPDFBREAKDOWNTT2000(tt2000) returns the UTC date/time from CDF TT2000
 %   time. OUT is an array with each row having nine (9) numerical values

@@ -47,6 +47,14 @@ function spdfcdfupdate(filename, varargin)
 %   The CDF is set to use MD5 checksum if TF is true. If TF is
 %   is false, the CDF is set not to use checksum.
 %
+%   SPDFCDFUPDATE(..., 'CDFLeapSecondLastUpdated', value, ...) resets the CDF's
+%   leap second last updated date.  For CDFs created prior to V 3.6.0, this 
+%   field is not set. It is set to indicate what leap second table this CDF is
+%   based upon. The value, in YYYYMMDD form, must be a valid entry in the
+%   currently used leap second table, or zero (0) if the table is not used. 
+%   CDF will automatically fill the value with the last entry date in the leap
+%   second table if this option is not specified. 
+%
 %   Notes:
 %
 %     SPDFCDFUPDATE only updates the data values for the existing variables.
@@ -153,7 +161,8 @@ end
 
 spdfcdfupdatec(filename, args.VarNames, args.VarRecs, args.VarIndices, ...
            args.VarDataVals, varAttribStruct, globalAttribStruct, ...
-           args.isCDFCompressed, args.CDFchecksum);
+           args.isCDFCompressed, args.CDFchecksum, ...
+           args.CDFleapsecondlastupdated);
 
 %%%
 %%% Function parse_inputs
@@ -173,6 +182,7 @@ exception.msg = '';
 exception.id = '';
 args.isCDFCompressed = int32(0);
 args.CDFchecksum = int32(0);
+args.CDFleapsecondlastupdated = int32(-999);
 
 % Parse arguments based on their number.
 if (nargin > 0)
@@ -181,7 +191,8 @@ if (nargin > 0)
                     'globalattributes'
                     'variableattributes'
                     'cdfcompression'
-                    'cdfchecksum'};
+                    'cdfchecksum'
+                    'cdfleapsecondlastupdated'};
     % For each pair
     for k = 1:2:length(varargin)
         param = lower(varargin{k});
@@ -326,13 +337,21 @@ if (nargin > 0)
                exception.id = 'MATLAB:spdfcdfupdate:cdfchecksum';
                return
            end
-
            if (islogical(args.CDFchecksum))
                if (args.CDFchecksum)
                  args.CDFchecksum = int32(2);
                else
                  args.CDFchecksum = int32(1);
                end
+           end
+        case 'cdfleapsecondlastupdated'
+           args.CDFleapsecondlastupdated = varargin{k+1};
+           if (isnumeric(args.CDFleapsecondlastupdated))
+               args.CDFleapsecondlastupdated = int32(args.CDFleapsecondlastupdated);
+           else
+               exception.msg = 'CDF leapsecondlastupdated value must be a numeric value (in YYYYMMDD form).';
+               exception.id = 'MATLAB:spdfcdfupdate:cdfleapsecondlastupdated';
+               return
            end
         end % switch
     end  % for

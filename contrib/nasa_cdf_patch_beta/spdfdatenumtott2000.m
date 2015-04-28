@@ -5,7 +5,7 @@ function tt2000 = spdfdatenumtott2000(varargin)
 %        number (datenum) representing a date, to CDF TT2001 value.
 %
 %    Note that a CDF TT2000 is the number of nanoseconds since 
-%    1-Jan-2000T12:00:00 with leap seconds included and that MATLAB
+%    1-Jan-0000T12:00:00 with leap seconds included and that MATLAB
 %    datenums are the number of days since 0-Jan-0000.
 %
 %    See also CDFTT2000, SPDFTT2000TODATENUM, SPDFCOMPUTETT2000, SPDFENCODETT2000,

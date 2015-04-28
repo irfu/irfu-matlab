@@ -162,7 +162,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.5.1.2';
+info.PatchVersion = '3.6.0.0';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
@@ -298,6 +298,12 @@ function out = parse_file_info(in)
         out.Checksum = 'None';
     end
 
+    % LeapSecondLastUpdated.
+    if (in.LeapSecondLastUpdated >= 0)
+      out.LeapSecondLastUpdated = in.LeapSecondLastUpdated;
+    else
+      out.LeapSecondLastUpdated = 'Not set';
+    end
 
 function str = find_datatype(num)
 switch (num)
