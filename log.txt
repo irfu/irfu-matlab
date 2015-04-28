@@ -1,3 +1,4 @@
+2015-04-28 v1.8.0 MMS first release after boom deployed, new NASA CDF patch, irf_time use TT2000 internally, many minor bug fixes.
 2015-02-06 v1.7.3 WHAMP calling script bug fix: change complex transpose to normal transpose
 2015-02-06 v1.7.2 HG1,2 compatibility, WHAMP updates
 2014-11-05 v1.7.1 bug fix in dataobj.get_variable()
