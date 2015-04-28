@@ -105,7 +105,7 @@ elseif nargin == 3, % database specified
 		dateFormat='utc_yyyymmdd';
 	elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
 		dataSource='omni_min';
-		dateFormat='utc_yyyymmddhh';
+		dateFormat='utc_yyyymmddHH';
 	else
 		irf_log('fcal','Unknown database, using omni2.');
 		dataSource='omni2';
