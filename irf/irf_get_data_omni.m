@@ -154,8 +154,8 @@ for jj=1:length(iStart)
 		case 'bygse',  varOmni2=13;varOmni1min=15;
 		case 'bz',     varOmni2=14;varOmni1min=16;
 		case 'bzgse',  varOmni2=14;varOmni1min=16;
-		case 'bygsm',  varOmni2=14;varOmni1min=17;
-		case 'bzgsm',  varOmni2=15;varOmni1min=18;
+		case 'bygsm',  varOmni2=15;varOmni1min=17;
+		case 'bzgsm',  varOmni2=16;varOmni1min=18;
 		case 't',      varOmni2=22;varOmni1min=26;
 		case 'n',      varOmni2=23;varOmni1min=25;
 		case 'nanp',   varOmni2=27;varOmni1min=-1;
