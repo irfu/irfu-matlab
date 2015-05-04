@@ -37,13 +37,13 @@ logFileUrl = 'https://raw.github.com/irfu/irfu-matlab/master/log.txt';
 %% Input check
 if nargin == 0,
 	setenv('LC_ALL','C'); % temporar fix for R2014a problems on Unix http://goo.gl/Sq1it7
-    irf('spdf_path'); % NASA's compiled mex spdf* patch should be in library path.
 	irf('check_path');
 	irf('check');
 	irf('ceflib');
 	irf('mice');
 	irf('irbem');
 	irf('cdf_leapsecondstable');
+	irf('check_os');
 	return;
 else
 	if ischar(varargin{1}),
@@ -291,37 +291,20 @@ switch lower(action)
           end
         end
       end
-    case 'spdf_path'
-      % THIS IS A HOPEFULLY TEMPORARY FIX, added 2015/04/29, bug report has
-      % been sent to NASA SPDF. The compiled mex code requires
-      % nasa_cdf_patch_beta (where libcdf.so is located) to be included in
-      % PATH (for windows) or LD_LIBRARY_PATH (for linux).
-      irfPath = [irf('path') filesep];
-      libPath = [irfPath, 'contrib' filesep 'nasa_cdf_patch_beta'];
-      compStr = computer;
-      switch(compStr)
-        case('GLNXA64')
-          % Linux use LD_LIBRARY_PATH
-          LD_LIB_PATH = getenv('LD_LIBRARY_PATH');
-          LD_PATHS = strsplit(LD_LIB_PATH,':');
-          if(isempty(intersect(LD_PATHS,libPath)))
-            % Try to add libPath to LD_LIBRARY_PATH in order for SPDF mex
-            % to work
-            setenv('LD_LIBRARY_PATH',[LD_LIB_PATH,':',libPath]);
-          end
-        case('PCWIN64')
-          % Windows use PATH
-          LD_LIB_PATH = getenv('PATH');
-          LD_PATHS = strsplit(LD_LIB_PATH,';');
-          if(isempty(intersect(LD_PATHS,libPath)))
-            % Try to add libPath to PATH in order for SPDF mex to work
-            setenv('PATH',[LD_LIB_PATH,';',libPath]);
-          end
-        case('MACI64')
-          % Mac use ??
+    case 'check_os'
+      % NASA's SPDF cdf patch use complied mex files. For irfu-matlab only
+      % Linux, Mac and Windows (all of which 64 bit) OS are included.
+      switch(computer)
+        case({'GLNXA64','PCWIN64','MACI64'})
+          % OK, system is supported.
+          disp('Operating system is OK');
+          if(nargout), out=true; end;
+            datastore('irfu_matlab','okCheckOS',true);
         otherwise
           disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
           disp('If running on other system, please contact IRFU for help.');
+          if(nargout), out=false; end;
+            datastore('irfu_matlab','okCheckOS',false);
       end
 	case 'path'
 		out = fileparts(which('irf.m'));
