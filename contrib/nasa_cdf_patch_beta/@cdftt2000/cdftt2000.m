@@ -9,10 +9,11 @@ function tt2000Obj = cdftt2000(varargin)
 %    using CDFWRITE.  Note that a CDF TT2000 is the number of nanoseconds
 %    since 1-Jan-2000 at 12:00:00.
 %
-%    See also CDFWRITE, CDFREAD, CDFINFO, ENCODETT2000, COMPUTETT2000,
-%             PARSETT2000, BREAKDOWNTT2000, CDFLEAPSECONDSINFO.
+%    See also SPDFCDFWRITE, SPDFCDFREAD, SPDFCDFINFO, SPDFENCODETT2000,
+%             SPDFCOMPUTETT2000, SPDFPARSETT2000, SPDFBREAKDOWNTT2000,
+%             SPDFCDFLEAPSECONDSINFO.
 
-%    $Revision: 1.1 $  $Date: 2014/06/20 15:51:03 $
+%    $Revision: 1.1 $  $Date: 2015/02/26 16:50:20 $
 
 if (nargin == 0)
     s.date = [];
@@ -45,20 +46,26 @@ s.date = [];
 if ischar(input)
 
     % Convert to TT2000 values. 
-    n = int64(parsett2000(input));
+    n = spdfparsett2000(input);
 else
     % It's numeric, so if it's a matrix, go element by element
     % and convert each and then reshape.
     if iscell(input)
-%     n = int64(input{:});
-      n = input{:};
+      if (isa(input, 'int64'))
+        n = int64(input{:});
+      else
+        n = input{:};
+      end
     else
-%     n = int64(input(:));
-      n = input(:);
+      if (isa(input, 'int64'))
+        n = int64(input(:));
+      else
+        n = input(:);
+      end
     end
 end
 
-s = struct('date',num2cell(n));
+s = struct('date',n);
 s = s';
 if isnumeric(input) & ~isempty(input)
     s = reshape(s, size(input));
