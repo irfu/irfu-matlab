@@ -259,7 +259,7 @@ for i = 1:ngap+1
         irf.log('warning','spin rate data may be changing too quickly to uniquely determine phase at: ');
         for mi = 1:min(9,n_spin_warn)
             log_str = sprintf('%04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.',...
-                breakdowntt2000(segpulse(spin_warn(mi))));
+                spdfbreakdowntt2000(segpulse(spin_warn(mi))));
             irf.log('warning', log_str);
         end
         if(n_spin_warn > 10)
@@ -307,7 +307,7 @@ for i = 1:ngap
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at beginning of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-         i, breakdowntt2000(pulse(gapidx)));
+         i, spdfbreakdowntt2000(pulse(gapidx)));
         irf.log('warning', log_str);
         period1 = NaN;
     end
@@ -319,7 +319,7 @@ for i = 1:ngap
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at end of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-         i, breakdowntt2000(pulse(gapidx)));
+         i, spdfbreakdowntt2000(pulse(gapidx)));
         irf.log('warning', log_str);
         period2 = NaN;
     end
@@ -334,7 +334,7 @@ for i = 1:ngap
         if( abs(nspins1 - nspins2) > 0.5)
             log_str=sprintf(['Processing gap %i spin rate interpolation ',...
               'questionable: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 3;
         end
@@ -345,21 +345,21 @@ for i = 1:ngap
             nspins = nspins1;
             log_str=sprintf(['Processing gap %i accepting spin period from ',...
               'beginning of gap at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 4;
         elseif( isfinite(nspins2) && abs(nspins2-round(nspins2)) < 0.25*0.111 )
             nspins = nspins2;
             log_str=sprintf(['Processing gap %i accepting spin period from ',...
               'end of gap at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 5;
         else
             nspins = (nspins1+nspins2)/2;
             log_str=sprintf(['Processing gap %i using average spin period',...
               ' as best giess at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 6;
         end
@@ -374,7 +374,7 @@ end
 %
 
 % Transform to 'double'. It is possible to do this earlier but perhaps best
-% to keep int64 until all TT2000 specific calls are done (breakdowntt2000).
+% to keep int64 until all TT2000 specific calls are done (spdfbreakdowntt2000).
 pulse = double(pulse);
 epoch = double(epoch);
 

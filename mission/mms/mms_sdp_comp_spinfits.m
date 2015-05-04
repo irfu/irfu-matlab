@@ -57,7 +57,7 @@ minPts = minFraction * samplerate * fitInterv/10^9; % "/10^9" as fitInterv is in
 % and evenly divisable with fitEvery.
 % I.e. if fitEvery = 5 s, then spinfit timestamps would be like
 % [00.00.00; 00.00.05; 00.00.10; 00.00.15;] etc.
-% For this one must rely on breakdowntt2000 as the TT2000 (int64)
+% For this one must rely on spdfbreakdowntt2000 as the TT2000 (int64)
 % includes things like leap seconds.
 t1 = spdfbreakdowntt2000(dce.time(1)); % Start time in format [YYYY MM DD HH MM ss mm uu nn]
 % Evenly divisable timestamp with fitEvery after t1, in ns.
@@ -68,7 +68,7 @@ t3.sec = floor(t2/10^9);
 t3.ms  = floor((t2-t3.sec*10^9)/10^6);
 t3.us  = floor((t2-t3.sec*10^9-t3.ms*10^6)/10^3);
 t3.ns  = floor(t2-t3.sec*10^9-t3.ms*10^6-t3.us*10^3);
-% Compute what TT2000 time that corresponds to, using computeTT2000.
+% Compute what TT2000 time that corresponds to, using spdfcomputeTT2000.
 t0 = spdfcomputett2000([t1(1) t1(2) t1(3) t1(4) t1(5) t3.sec t3.ms t3.us t3.ns]);
 
 if( (dce.time(1)<=t0) && (t0<=dce.time(end)))

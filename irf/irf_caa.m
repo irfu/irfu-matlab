@@ -1,6 +1,6 @@
 %IRF_CAA   Work with CAA files
 %
-% See also CDFREAD
+% See also SPDFCDFREAD
 %
 % $Id$
 
@@ -211,7 +211,7 @@ if 1
                             disp('======================================')
                             disp(cdf_var);
                             disp('======================================')
-                            dd=cdfread(cdf_file,'Variables',{cdf_var});
+                            dd=spdfcdfread(cdf_file,'Variables',{cdf_var});
                             if size(dd,1)>10,
                                 disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
                                 if iscell(dd), disp(dd{1}), else, disp(dd(1,:)), end
@@ -221,7 +221,7 @@ if 1
                         end
               case 'r'
                   var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
-                  eval([var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
+                  eval([var_to_read '= spdfcdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
               case 't'
                   if i_time_series_variable == 0,
                       irf_log('load','there are no time variables identified')
@@ -264,7 +264,7 @@ end
 if ischar(var_name), var_name={var_name};end
 variables=[epoch_variable var_name];
 
-DATA = cdfread(cdf_file, 'VARIABLES', variables);
+DATA = spdfcdfread(cdf_file, 'VARIABLES', variables);
 
 temp=struct([DATA{:,1}]);
 t = [temp.date]; t = t(:);

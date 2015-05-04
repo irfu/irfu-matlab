@@ -15,9 +15,9 @@ for thId=thIds,
       for iFile=1:length(files)
         fileToRead = [fullPath,filesep,files(iFile).name];
         fprintf('reading %s\n',fileToRead)
-        tmpData = cdfread(fileToRead,'CombineRecords',true,'Variable','XYZ_GSE');
+        tmpData = spdfcdfread(fileToRead,'CombineRecords',true,'Variable','XYZ_GSE');
         tmpData = tmpData*6371.2; % comvert to kilometers
-        tmpEpoch = cdfread(fileToRead,'CombineRecords',true,...
+        tmpEpoch = spdfcdfread(fileToRead,'CombineRecords',true,...
           'KeepEpochAsIs',true,'Variable','Epoch');
         tmpEpoch = irf_time(tmpEpoch,'cdfepoch>epoch');
         R = [R; tmpEpoch tmpData]; %#ok<AGROW>
