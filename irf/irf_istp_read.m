@@ -15,13 +15,13 @@ function [time,data] = irf_istp_read(filename)
 %
 %   K* data are preliminary, H* data are final.
 %
-%   See also CDFREAD, DATENUM, DATESTR
+%   See also SPDFCDFREAD, DATENUM, DATESTR
 %
 % $Id$
 
 % Copyright Yuri Khotyaintsev, 2003
 
-[dt,info]=cdfread(filename);
+[dt,info]=spdfcdfread(filename);
 
 ndata = length(dt(:,1));
 

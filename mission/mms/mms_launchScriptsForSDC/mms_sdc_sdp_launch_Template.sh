@@ -36,6 +36,8 @@ IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-mat
 # No need to edit after this line
 # add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
 export MATLABPATH=$IRFU_MATLAB:$IRFU_MATLAB/mission/mms
+# Add IRFU_MATLAB/contrib/nasa_cdf_patch_beta (where cdflib.so is located)
+export LD_LIBRARY_PATH=$IRFU_MATLAB/contrib/nasa_cdf_patch_beta:$LD_LIBRARY_PATH
 
 PROCESS_NAME=
 case "$0" in
@@ -68,4 +70,4 @@ fi
 # if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
 # then exit with 199 (if errors occurred) or with 0 (if no errors).
 
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error occured at SDC! Please see the attached log file. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail --encoding=8BIT --attach=', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''Error occured at SDC. And for some reason no log file was identified, manually log into SDC and have a look! Perhaps the error occured before log file was created. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error occured at SDC! Please see the attached log file. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''Error occured at SDC. And for some reason no log file was identified, manually log into SDC and have a look! Perhaps the error occured before log file was created. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"

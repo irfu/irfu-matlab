@@ -67,18 +67,18 @@ end
 if ~isempty(res), res(diff(res(:,1))==0,:) = []; end 
 
   function res = read_var
-    res = cdfread(fileToRead,'CombineRecords',true,'Variable',varName);
+    res = spdfcdfread(fileToRead,'CombineRecords',true,'Variable',varName);
     if isempty(res), return, end
     depTimeVar = find_depend_time();
     if ~isempty(depTimeVar)
-      tmpTime = cdfread(fileToRead,'CombineRecords',true,'Variable',depTimeVar);
+      tmpTime = spdfcdfread(fileToRead,'CombineRecords',true,'Variable',depTimeVar);
       res = [tmpTime double(res)];
     end
     res = res;
     
     function res = find_depend_time
       res = '';
-      info = cdfinfo(fileToRead);
+      info = spdfcdfinfo(fileToRead);
       for iVar = 1:length(info.VariableAttributes.DEPEND_TIME)
         if strcmpi(info.VariableAttributes.DEPEND_TIME{iVar,1},varName)
           res = info.VariableAttributes.DEPEND_TIME{iVar,2};

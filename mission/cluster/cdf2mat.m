@@ -25,7 +25,7 @@ end
 
 for i_file=1:n_cdf_files,
     irf_log('load',['Loading ' num2str(i_file) '. cdf file>' cdf_file{i_file}]);
-    cdf_file_info=cdfinfo(cdf_file{i_file});
+    cdf_file_info=spdfcdfinfo(cdf_file{i_file});
     variable_names=cdf_file_info.Variables(:,1);
     % keep only variables that have time axis
 
@@ -45,7 +45,7 @@ for i_file=1:n_cdf_files,
         end
     end
 
-    [DATA, INFO] = cdfread(cdf_file{i_file}, 'VARIABLES', variables_time_vectors);
+    [DATA, INFO] = spdfcdfread(cdf_file{i_file}, 'VARIABLES', variables_time_vectors);
 
     temp=struct([DATA{:,1}]);
     t=[temp.date];t=t(:);

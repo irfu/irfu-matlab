@@ -43,6 +43,7 @@ if nargin == 0,
 	irf('mice');
 	irf('irbem');
 	irf('cdf_leapsecondstable');
+	irf('check_os');
 	return;
 else
 	if ischar(varargin{1}),
@@ -105,7 +106,6 @@ switch lower(action)
 			['contrib' filesep 'matlab_central' filesep 'cm_and_cb_utilities'],...
 			['contrib' filesep 'mice'],...
 			['contrib' filesep 'nasa_cdf_patch'],...
-            ['contrib' filesep 'nasa_cdf_patch_beta'],...
 			};
 		irfDirectories = {'irf','plots',...
 			['mission' filesep 'cluster'],...
@@ -289,6 +289,21 @@ switch lower(action)
             datastore('irfu_matlab','okLeapsecondstable',false);
           end
         end
+      end
+    case 'check_os'
+      % NASA's SPDF cdf patch use complied mex files. For irfu-matlab only
+      % Linux, Mac and Windows (all of which 64 bit) OS are included.
+      switch(computer)
+        case({'GLNXA64','PCWIN64','MACI64'})
+          % OK, system is supported.
+          disp('Operating system is OK');
+          if(nargout), out=true; end;
+            datastore('irfu_matlab','okCheckOS',true);
+        otherwise
+          disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
+          disp('If running on other system, please contact IRFU for help.');
+          if(nargout), out=false; end;
+            datastore('irfu_matlab','okCheckOS',false);
       end
 	case 'path'
 		out = fileparts(which('irf.m'));
