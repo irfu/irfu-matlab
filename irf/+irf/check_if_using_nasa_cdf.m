@@ -23,7 +23,7 @@ if isempty(irfNasaCdfDir)
   disp('NASA cdf patch is not on your path !!!');
   disp('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
   ok = false;
-  patchPath = [irfDir, filesep, 'contrib', filesep, 'nasa_cdf_patch_beta']; % FIXME: remove beta when switch is done.
+  patchPath = [irfDir, filesep, 'contrib', filesep, 'nasa_cdf_patch'];
   addpath(patchPath);
   disp(['Added to path: ' patchPath]);
   ok = irf.check_if_using_nasa_cdf;
