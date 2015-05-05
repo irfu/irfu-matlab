@@ -243,18 +243,20 @@ switch(param)
     DATAC.(param) = [];
     DATAC.(param).dataObj = dataObj;
     % Split up the various parts (spinfits, dce data [e12, e34, e56],
-    % dce bitmask [e12, e34, e56], phase from the l2pre file to their
-    % expected locations in DATAC. (so that remaining processing can use
-    % same syntax).
+    % dce bitmask [e12, e34, e56], phase, adc offset from the l2pre file to
+    % their expected locations in DATAC. (so that remaining processing can
+    % use same syntax).
     varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-    varPre2 = '_spinfit_';
-    DATAC.spinfits = [];
+    varPre2 = '_spinfit_'; varPre3 = '_adc_offset';
+    DATAC.spinfits = []; DATAC.adc_off = [];
     sdpPair = {'e12', 'e34'};
     for iPair=1:numel(sdpPair)
       DATAC.spinfits.sfit.(sdpPair{iPair}) = ...
         dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
       DATAC.spinfits.sdev.(sdpPair{iPair}) = ...
         dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+      DATAC.adc_off.(sdpPair{iPair}) = ...
+        dataObj.data.([varPre, varPre3]).data(:,1);
     end
     x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
     DATAC.spinfits.time = x.DEPEND_O.data;
@@ -299,7 +301,6 @@ end
       % TODO: Check overlapping stuck values, if senA stuck but not senB..  
     end
     function sen = latched_mask(sen)
-      %idx = irf_latched_idx(sen.data);
        % Locate data latched for at least 1 second (=1*samplerate).
       idx = irf_latched_idx(sen.data, 1*DATAC.samplerate);
       if ~isempty(idx)
