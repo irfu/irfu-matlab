@@ -546,19 +546,6 @@ end
   end
 
   function apply_nom_amp_corr()
-<<<<<<< HEAD
-    % Apply a nominal amplitude correction factor to DCE & DCV values after
-    % cleanup but before any major processing has occured.
-    for iSen = 1:2:numel(sensors)
-      senA = sensors{iSen}; senB = sensors{iSen+1};
-      senE = ['e' senA(2) senB(2)];
-      irf.log('notice',...
-        sprintf('Nominal ampFactor=%.2f for %s, %s and %s',...
-        MMS_CONST.NominalAmpCorr, senA, senB, senE));
-      DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * MMS_CONST.NominalAmpCorr;
-      DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * MMS_CONST.NominalAmpCorr;
-      DATAC.dce.(senE).data = DATAC.dce.(senE).data * MMS_CONST.NominalAmpCorr;
-=======
     % Apply a nominal amplitude correction factor to DCE for p1..4
     % values after cleanup but before any major processing has occured.
     
@@ -592,7 +579,6 @@ end
 
     function l = sensor_dist(len)
       l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
->>>>>>> a6c6c67b3d7679fc81659fd1ff4565a1637690b1
     end
   end
 
