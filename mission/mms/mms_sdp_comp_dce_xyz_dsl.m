@@ -17,7 +17,9 @@ dce_xyz_dsl = MMS_CONST.Error; %#ok<NASGU>
 
 procId = mms_sdp_datamanager('procId');
 switch procId
-  case {MMS_CONST.SDCProc.scpot,MMS_CONST.SDCProc.sitl,MMS_CONST.SDCProc.ql}
+  case {MMS_CONST.SDCProc.scpot, MMS_CONST.SDCProc.sitl, ...
+    MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2a}
+
     dce = mms_sdp_datamanager('dce');
     if mms_is_error(dce)
       errStr='Bad DCE input, cannot proceed.';
@@ -42,7 +44,7 @@ switch procId
         Etmp.(sdpProbes{iProbe}) - adc_off.(sdpProbes{iProbe});
     end
     
-    bitmask = bitor(dce.e12.bitmask,dce.e34.bitmask);
+    bitmask = uint16(bitor(dce.e12.bitmask,dce.e34.bitmask));
     Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
     Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
 
@@ -55,36 +57,9 @@ switch procId
 
   case MMS_CONST.SDCProc.l2pre
     % L2Pre is a special case should not apply despin and should not output DSL (despun),
-    % but output only DCE (in instrument frame) with ADC offset removed.
-    errStr='DCE_XYZ_DSL should not be calculated for L2Pre, it should only have ADC offsets removed. Should not be here.';
+    % but output only DCE (in instrument frame).
+    errStr='DCE_XYZ_DSL should not be calculated for L2Pre, it should only have spinfits and ADC offset calculated. Should not be here.';
     irf.log('critical', errStr); error(errStr);
-
-  case MMS_CONST.SDCProc.l2a
-    % ADC offsets should have already been applied, remainging processing
-    % full despin (from spinfits) and DSL offset.
-    dce = mms_sdp_datamanager('dce');
-    if mms_is_error(dce)
-      errStr='Bad DCE input, cannot proceed.';
-      irf.log('critical',errStr); error(errStr);
-    end
-    phase = mms_sdp_datamanager('phase');
-    if mms_is_error(phase)
-      errStr='Bad PHASE input, cannot proceed.';
-      irf.log('critical',errStr); error(errStr);
-    end
-    spinfits = mms_sdp_datamanager('spinfits');
-    if mms_is_error(spinfits)
-      errStr='Bad SPINFITS input, cannot proceed.';
-      irf.log('critical',errStr); error(errStr);
-    end
-
-    dE = mms_sdp_despin(dce.e12.data, dce.e34.data, phase.data);
-
-    bitmask = dce.e12.bitmask;
-    % FIXME: apply DSL offsets here
-
-    dce_xyz_dsl = struct('time',dce.time,'data',[dce.e12.data, dce.e34.data, dce.e56.data],...
-      'bitmask',bitmask);
 
   case MMS_CONST.Error
     errStr = 'mms_sdp_datamanager not properly initialized';

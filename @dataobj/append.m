@@ -45,7 +45,7 @@ dataObject = dataObject1;
 variableNameArray=fieldnames(dataObject.data);
 for iVariable=1:numel(variableNameArray)
 	variableName=variableNameArray{iVariable};
-	if usingNasaPatchCdf && strcmp(dataObject.data.(variableName).variance(1),'F') % NASA cdfread reads correctly 'F' variables
+	if usingNasaPatchCdf && strcmp(dataObject.data.(variableName).variance(1),'F') % NASA spdfcdfread reads correctly 'F' variables
         % do nothing, assume that second object has the same values 
         % TODO: check in future this assumption
     else % Time variable, or matlab cdfread for 'F' variables gives also 'F' variables as time vectors

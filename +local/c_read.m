@@ -234,16 +234,16 @@ end
 					if useCdfepoch16,
 						irf.log('debug',['EPOCH16 time in cdf file:' cdfFile]);
 						tName  = cdflib.getVarName(cdfid,0);
-						tData = cdfread(cdfFile,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
+						tData = spdfcdfread(cdfFile,'CombineRecords',true,'KeepEpochAsIs',true,'Variables',{tName});
 						if numel(size(tData)) == 3,
-							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % cdfread returns (Nsamples X 1 X 2) matrix
+							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % spdfcdfread returns (Nsamples X 1 X 2) matrix
 						else
-							tcdfepoch = tData; % cdfread returns (Nsamples X 2) matrix
+							tcdfepoch = tData; % spdfcdfread returns (Nsamples X 2) matrix
 						end
 						timeVector=irf_time(tcdfepoch,'cdfepoch16>epoch');
 						tmpdata=cell(1,numel(varToRead));
 						for iVar=1:numel(varToRead),
-                            tmpdata{iVar}=cdfread(cdfFile,'CombineRecords',true,...
+                            tmpdata{iVar}=spdfcdfread(cdfFile,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
 						tmpdata = [{timeVector} tmpdata]; %
@@ -257,7 +257,7 @@ end
                             ii=ii-1;
                         end
                         % read data
-                        [tmpdata,~] = cdfread(cdfFile,'ConvertEpochToDatenum',true,'CombineRecords',true,...
+                        [tmpdata,~] = spdfcdfread(cdfFile,'ConvertEpochToDatenum',true,'CombineRecords',true,...
 							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
 						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned

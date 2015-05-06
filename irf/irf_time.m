@@ -20,7 +20,7 @@ function t_out = irf_time(t_in,flag)
 %        doy: [year, doy]
 %         tt: Terrestrial Time, seconds past  January 1, 2000, 11:58:55.816 (UTC)
 %       ttns: Terrestrial Time, nanoseconds past  January 1, 2000, 11:58:55.816 (UTC)
-%        utc: UTC string (see help parsett2000 for supported formats)
+%        utc: UTC string (see help spdfparsett2000 for supported formats)
 % utc_format: only output, where 'format' can be any string where 'yyyy' is
 %             changed to year, 'mm' month, 'dd' day, 'HH' hour, 'MM'
 %             minute, 'SS' second, 'mmm' milisceonds, 'uuu' microseconds,

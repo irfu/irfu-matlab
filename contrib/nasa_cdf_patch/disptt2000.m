@@ -6,5 +6,5 @@ s = size(obj);
 if ~isequal(s,[1 1])
     disp(sprintf(['     [%dx%d cdftt2000]'], s(1), s(2)));
 else
-    disp( [encodett2000(obj)]);
+    disp( [spdfencodett2000(obj)]);
 end
