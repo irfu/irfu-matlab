@@ -11,6 +11,10 @@ classdef (Abstract) GenericTimeArray
 %     tlim() Returns index and records within specified time interval
 %     toEpochUnix()
 %     toEpochTT2000()
+% 
+%     Static:
+%     validate_utc_time_str()
+%     LeapSeconds()
   
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -53,6 +57,97 @@ classdef (Abstract) GenericTimeArray
     function res = length(obj)
       %LENGTH number of records in array.
       res = length(obj.epoch);
+    end
+    
+    function res = minus(obj, obj1)
+      %MINUS  time difference is seconds
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:minus:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      if length(obj) ~= length(obj1),
+        error('irf:GenericTimeArray:minus:badInputs',...
+            'inpus have different length')
+      end
+      res = obj.toEpochUnix().epoch - obj1.toEpochUnix().epoch;
+    end
+    
+    function res = le(obj,obj1)
+      %LE  less than of equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:le:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:le:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch <= objTmp.epoch;
+    end
+    
+    function res = ge(obj,obj1)
+      %GE  greater than of equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:ge:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:ge:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch >= objTmp.epoch;
+    end
+    
+    function res = lt(obj,obj1)
+      %LT  less than
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:le:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:le:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch < objTmp.epoch;
+    end
+    
+    function res = gt(obj,obj1)
+      %GT  greater than
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      elseif length(obj1)~=1,
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'second argument must have length 1')
+      end
+      objTmp = feval(['to' class(obj)],obj1);
+      res = obj.epoch > objTmp.epoch;
+    end
+    
+    function res = eq(obj,obj1)
+      %EQ  equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      len = obj.length(); len1 = obj1.length();
+      if len==0 && len1==0, res = true; return, end
+      
+      objTmp = feval(['to' class(obj)],obj1);
+      if len1==1,
+        res = obj.epoch == objTmp.epoch;
+      else
+        res = obj.epoch == objTmp.epoch; 
+      end
+    end
+    
+    function res = ne(obj,obj1)
+      %NE  not equal to
+      if ~isa(obj1,'GenericTimeArray')
+        error('irf:GenericTimeArray:gt:badInputs',...
+            'inpus must be subclasses of GenericTimeArray')
+      end
+      res = ~(obj.eq(obj1));
     end
     
     function res = end(obj,k,~)
@@ -181,17 +276,49 @@ classdef (Abstract) GenericTimeArray
     end
   end
   
-  % XXX : Implement real checking
   methods (Static)
-    function [ output_args ] = validate_iso_time_str( str )
-      %verify_iso_time_str Summary of this function goes here
-      %   Detailed explanation goes here
+    function [ output_args ] = validate_utc_time_str( utc )
+      %verify_iso_time_str validate UTC string
+      %   validate UTC string : yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]'
       
-      output_args = true;
+      MAX_NUM_IDX = 29;
+      output_args = false;
      
-      if isempty(str), output_args = false; end
+      if isempty(utc), return, end
+      if ~ismatrix(utc), return, end
+      
+      lUtc = size(utc,2); if all(all(utc(:,end)=='Z')), lUtc = lUtc-1; end
+      idxDash = [5 8]; idxColon = [14 17]; idxT = 11; idxDot = 20;
+      idxNonDigit = [idxDash idxT idxColon];
+      if lUtc>=idxDot, idxNonDigit = [idxNonDigit idxDot]; end
+      
+      if lUtc < 19 || lUtc > MAX_NUM_IDX+1 || lUtc == idxDot || ...
+          ~all(all(utc(:,idxT)=='T')) || ...
+          ~all(all(utc(:,idxDash)=='-')) || ~all(all(utc(:,idxColon)==':')) || ...
+          (lUtc>=idxDot && ~all(all(utc(:,idxDot)=='.')))
+        return
+      end
+      
+      idxTmp = 1:lUtc;
+      idxDigit = setxor(idxNonDigit,idxTmp);
+      if ~all(all(isstrprop(utc(:,idxDigit),'digit')))
+        return
+      end
+      
+      if  ~all( utc(:,1)=='1' | utc(:,1)=='2' ) || ... % year starts with 1 or 2
+          ~all( utc(:,6)=='0' | utc(:,6)=='1' ) || ... % month starts with 0 or 1
+          any( utc(:,6)=='0' & utc(:,7)=='0' )         % no month 00
+        return
+      end
+      if any( utc(:,6)=='1' & ~(utc(:,7)=='0' | utc(:,7)=='1' | utc(:,7)=='2')) || ... % month > 12
+          ~all( utc(:,9)=='0' | utc(:,9)=='1' | utc(:,9)=='2' | utc(:,9)=='3') || ...
+          any( utc(:,9)=='0' & utc(:,10)=='0' ) || ... % no day 00
+          any( utc(:,9)=='3' & ~(utc(:,10)=='0' | utc(:,10)=='1' ))
+        return
+      end
+      output_args = true;
     end
-    function res = LeapSeconds()
+    function res = leap_seconds()
       % Try to read CDFLeapSeconds.txt (from NASA_cdf_patch). If not found
       % revert to hard coded values.
       % Source of both: <http://maia.usno.navy.mil/ser7/tai-utc.dat>

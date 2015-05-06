@@ -22,7 +22,7 @@ classdef EpochUnix < GenericTimeArray
         if size(inp,2)~=1, inp = inp'; end % to column
         obj.epoch = inp;
       elseif isa(inp,'char')
-        if GenericTimeArray.validate_iso_time_str(inp)
+        if GenericTimeArray.validate_utc_time_str(inp)
           obj.epoch = iso2epoch(inp);
         else
           error('irf:EpochUnix:EpochUnix:badInputs',...

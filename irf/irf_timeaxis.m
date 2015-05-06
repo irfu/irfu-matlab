@@ -140,8 +140,7 @@ for j=1:numel(h)
 end
 
 xlimlast=get(h(end),'xlim');
-start_time = irf_time(xlimlast(1) + t_start_epoch,'vector');
-time_label = datestr( datenum(start_time),1 );
+time_label = irf_time(xlimlast(1) + t_start_epoch,'epoch>utc_yyyy-mm-dd UTC');
 if flag_date == 1 && flag_add_extra_xlabels ~= 1 && diff(xlimlast)<=3600*24*100, 
     xlabel(h(end),time_label);  % add data only if no extra xlabels
 end
@@ -156,13 +155,13 @@ for j=1:numel(h), % clean extra xlabels if present
     ud=get(hca,'UserData');
     if isfield(ud,'h_xlabels'), % remove old handles
         for jj=1:numel(ud.h_xlabels)
-            if ishandle(ud.h_xlabels(jj)) && ud.h_xlabels(jj)~=0 delete(ud.h_xlabels(jj));end
+            if ishandle(ud.h_xlabels(jj)) && ud.h_xlabels(jj)~=0, delete(ud.h_xlabels(jj));end
         end
         ud=rmfield(ud,'h_xlabels');
     end
     if isfield(ud,'h_xlabeltitle'), % remove old handles
         for jj=1:numel(ud.h_xlabeltitle)
-            if ishandle(ud.h_xlabeltitle(jj)) && ud.h_xlabeltitle(jj)~=0 delete(ud.h_xlabeltitle(jj));end
+            if ishandle(ud.h_xlabeltitle(jj)) && ud.h_xlabeltitle(jj)~=0, delete(ud.h_xlabeltitle(jj));end
         end
         ud=rmfield(ud,'h_xlabeltitle');
     end

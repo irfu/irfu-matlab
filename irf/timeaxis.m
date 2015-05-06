@@ -128,8 +128,8 @@ end
 % tbeg = dticv*ceil(limit(1)/dticv);
 
 if ischar(dticv), % dticv = 'year','3years','month'
-    tstart=irf_time(limit(1),'epoch2vector');
-    tend=irf_time(limit(2),'epoch2vector');
+    tstart=irf_time(limit(1),'epoch>vector');
+    tend=irf_time(limit(2),'epoch>vector');
     switch dticv
         case '3years' % mtics is number of month
             tictv=zeros((tend(1)-tstart(1)),1);

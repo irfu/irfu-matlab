@@ -8,7 +8,7 @@ function MMS_CONST = mms_constants
 % these numbers. 
 % When simply re-running a dataset, the Z value should be increased by one.
 
-MMS_CONST.Version.X = 2; % Major new Software version
+MMS_CONST.Version.X = 0; % Major new Software version
 MMS_CONST.Version.Y = 0; % New Calibration version
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Version.MODS - MODS cdf GlobalAttribute should contain a description of
@@ -16,22 +16,39 @@ MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % high-level release notes. Can have as many entries as necessary and
 % should be updated if the "X" value of the version number changes.
 % Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
-MMS_CONST.Version.MODS = {'V.0. Initial interface tests.'};
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.1. Updated output variable names, added some processing.'}];
-MMS_CONST.Version.MODS = [MMS_CONST.Version.MODS; {'V.2. Change SDP to EDP, perform spinfit.'}];
+MMS_CONST.Version.MODS = {'V.0. Initial release.'};
 
 
-MMS_CONST.MinFileVer = 3; % min version of l1b files accepted
+MMS_CONST.MinFileVer = 0; % min version of l1b files accepted
 
 MMS_CONST.MMSids = 1:4;
 
-% Spin rate max and min, nominally 3.0 rpm +/-0.2 rpm.
-MMS_CONST.Spinrate.max = 3.2; % Rev per Minute.
-MMS_CONST.Spinrate.min = 2.8; % Rev per Minute.
+% Spin rate max and min, nominally 3.05 rpm +/-0.05 rpm.
+% After June 18, 2015
+MMS_CONST.Spinrate.max = 3.1; % Rev per Minute.
+MMS_CONST.Spinrate.min = 3.0; % Rev per Minute.
+% Spin rate nominally 3.1 rpm +/-0.1 rpm.
+% After May 1, 2015
+MMS_CONST.Spinrate.max_comm = 3.2; % Rev per Minute.
+% Spin rate max 7.3 rpm +/-0.1 rpm during thin wire deployments
+% Until May 1, 2015
+MMS_CONST.Spinrate.max_deploy = 7.4; % Rev per Minute.
 
+% Spin phase is zero when BSC x-axis points sunward, and
+% increases monotonically. As the spacecraft spins, the order in
+% which the probes and BCS axes point sunward is the following:
+% at   0 degrees, BSC +X is sunward
+% at  60 degrees, probe 4 is sunward
+% at  90 degrees, BSC -Y is sunward
+% at 150 degrees, probe 2 is sunward
+% at 180 degrees, BSC -X is sunward
+% at 240 degrees, probe 3 is sunward
+% at 270 degrees, BSC +Y is sunward
+% at 330 degrees, probe 1 is sunward
+%
 % Angles when phase=0 (X BSC direction)
-MMS_CONST.Phaseshift.e12 = pi/6;
-MMS_CONST.Phaseshift.e34 = 2*pi/3;
+MMS_CONST.Phaseshift.e12 =  2*pi*150/360; % probe 2 sunward
+MMS_CONST.Phaseshift.e34 =  2*pi* 60/360; % probe 4 sunward
 
 % Nominal Amplitude Correction factor multiplied to DCV & DCE data.
 MMS_CONST.NominalAmpCorr = 1.1;
@@ -49,7 +66,7 @@ MMS_CONST.Samplerate.fast = 32; % TM mode fast
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
-MMS_CONST.Samplerate.brst = 8092; % Or 1024? TM mode burst
+MMS_CONST.Samplerate.brst = 8192; % Or 1024? TM mode burst
 
 % SDC process names
 MMS_CONST.SDCProcs = {'sitl','ql','scpot','l2pre','l2a'};
@@ -63,13 +80,19 @@ MMS_CONST.SDCProc.l2a   = 5;
 MMS_CONST.Limit.LOW_DENSITY_SATURATION = -100; % Probe stuck and below limit.
 MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN = 1.5; % Probe not used for probe2scpot if moving average is off by this from the mean of all probes moving average, in V.
 MMS_CONST.Limit.DCE_DCV_DISCREPANCY = 0.28; % Max discrepancy DCE{12,34}=(DCV{1,3}-DCV{2,4})/NominalLength, for data with all probes.
+MMS_CONST.Limit.NOM_BIAS.dac.max = uint16(27625); % DAC, 27626TM=-130nA. Usually running at -160nA (26439TM)
+MMS_CONST.Limit.NOM_BIAS.dac.min = uint16(25252); % 25252TM=-190nA.
+MMS_CONST.Limit.NOM_BIAS.ig.max = uint16(32767); % Inner Guard, 32768TM=0V. Usually running at -8V (7571TM)
+MMS_CONST.Limit.NOM_BIAS.ig.min = uint16(0); % 0TM=-10.4V
+MMS_CONST.Limit.NOM_BIAS.og.max = uint16(32767); % Outer Guard, 32768TM=0V. Usually running at -4V (20170TM)
+MMS_CONST.Limit.NOM_BIAS.og.min = uint16(0); % 0TM=-10.4V
 
 % Bitmask values; 2^(bit_number - 1):
-MMS_CONST.Bitmask.SIGNAL_OFF               =  1;       % Bit 1
-MMS_CONST.Bitmask.BAD_BIAS                 =  2;       % Bit 2
-MMS_CONST.Bitmask.PROBE_SATURATION         =  4;       % Bit 3
-MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  8;       % Bit 4
-MMS_CONST.Bitmask.SWEEP_DATA               =  16;      % Bit 5
+MMS_CONST.Bitmask.SIGNAL_OFF               =  uint16(1);       % Bit 1
+MMS_CONST.Bitmask.BAD_BIAS                 =  uint16(2);       % Bit 2
+MMS_CONST.Bitmask.PROBE_SATURATION         =  uint16(4);       % Bit 3
+MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  uint16(8);       % Bit 4
+MMS_CONST.Bitmask.SWEEP_DATA               =  uint16(16);      % Bit 5
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 

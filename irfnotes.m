@@ -37,12 +37,14 @@ clear xLeft xSize sLeft ySize yTop
 set(gcf,'paperpositionmode','auto') % to get the same on paper as on screen
 % to get bitmap file
 print -dpng delme.png
-% to get pdf file with no white margins
+% to get pdf file with no white margins:
+% 1) print eps file from matlab
 print -depsc2 -painters delme.eps
-%print -dpdf -painters delme.pdf
-% to convert to pdf on the system command line execute some of
-% ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme.eps
-% epstopdf delme.eps
+% 2) from terminal convert to eps file without white margins
+% epstool routine can be installed, e.g. on mac >brew install epstool
+% > epstool --copy --bbox delme.eps delme_crop.eps
+% 3) convert eps file to pdf, result is in delme_crop.pdf
+% > ps2pdf -dEPSFitPage -dEPSCrop -dAutoRotatePages=/None delme_crop.eps
 %% Add information to figures
 %
 % text and legends
@@ -115,8 +117,8 @@ ylabel(h(2),'sqrt(data)')
 %file reading
 [t1,t2,tint_comments]=textread('Events_reconnection.txt','%s%s%[^\n]');
 for j=1:size(t1,1),
-  tint(j,1)=irf_time(t1{j},'iso2epoch');
-  tint(j,2)=irf_time(t2{j},'iso2epoch');
+  tint(j,1)=irf_time(t1{j},'utc>epoch');
+  tint(j,2)=irf_time(t2{j},'utc>epoch');
 end
 clear t1 t2 j;
 
@@ -1111,10 +1113,10 @@ if 1,   % PANEL: PEACE PADH high resolution pitch C4 (cdf files from QJAS)
   tt=t(:,1);
   dtsampling=0.06;
   dtsampling=0.26;
-  psd=cdfread(qjas_file,'VARIABLES','psd');
-  theta=cdfread(qjas_file,'VARIABLES','theta');
-  phi=cdfread(qjas_file,'VARIABLES','phi');
-  level=cdfread(qjas_file,'VARIABLES','level');
+  psd=spdfcdfread(qjas_file,'VARIABLES','psd');
+  theta=spdfcdfread(qjas_file,'VARIABLES','theta');
+  phi=spdfcdfread(qjas_file,'VARIABLES','phi');
+  level=spdfcdfread(qjas_file,'VARIABLES','level');
   [delmett,ind]=irf_tlim(tt,tint);
   specrec=struct('t',tt(ind),'dt',dtsampling,'p_label','Log PSD [s^6/km^6]');
   psdnew=zeros(length(psd),size(psd{1},1),size(psd{1},2));

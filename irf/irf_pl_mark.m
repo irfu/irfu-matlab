@@ -48,7 +48,7 @@ end
 tlim=args{1};
 % if mark time instants instead of time intervals (only one time given)
 if ischar(tlim), % time interval specified in iso format
-    tlim=irf_time(tlim, 'iso2tint');
+    tlim=irf_time(tlim, 'utc>tint');
 end
 if size(tlim,2) == 1, tlim(:,2)=tlim(:,1); end
 

@@ -67,32 +67,37 @@ if strcmpi(param, 'init')
     if(~isfield(MMS_CONST.Samplerate,MMS_CONST.TmModes{DATAC.tmMode}))
       irf.log('warning', ['init_struct.samplerate not specified,'...
         'nor found in MMS_CONST for ',MMS_CONST.TmModes{DATAC.tmMode}]);
-      irf.log('warning', ['Defaulting samplerate to ', MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
+      irf.log('warning', ['Defaulting samplerate to ',...
+        MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
       DATAC.samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
     else
       % Automatic, determined by tmMode.
-      DATAC.samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode});
+      DATAC.samplerate = ...
+        MMS_CONST.Samplerate.(MMS_CONST.TmModes{DATAC.tmMode});
     end
   else
     % Commissioning, sample rate identified previously.
     DATAC.samplerate = dataObj.samplerate;
   end
-  DATAC.dce = [];
-  DATAC.dce_xyz_dsl = [];
-  DATAC.dcv = [];
-  DATAC.hk_101 = [];
-  DATAC.hk_10e = [];
-  DATAC.l2pre = [];
-  DATAC.phase = [];
-  DATAC.probe2sc_pot = [];
-  DATAC.sc_pot = [];
-  DATAC.spinfits = [];
-  DATAC.defatt = [];
+  DATAC.adc_off = [];     % comp ADC offsets
+  DATAC.dce = [];         % src DCE file
+  DATAC.dce_xyz_dsl = []; % comp E-field xyz DSL-coord
+  DATAC.dcv = [];         % src DCV file
+  DATAC.defatt = [];      % src DEFATT file
+  DATAC.defeph = [];      % src DEFEPH file
+  DATAC.hk_101 = [];      % src HK_101 file
+  DATAC.hk_105 = [];      % src HK_105 file
+  DATAC.hk_10e = [];      % src HK_10E file
+  DATAC.l2pre = [];       % src L2Pre file
+  DATAC.phase = [];       % comp phase
+  DATAC.probe2sc_pot = [];% comp probe to sc potential
+  DATAC.sc_pot = [];      % comp sc potential
+  DATAC.spinfits = [];    % comp spinfits
   return
 end
 
 if ~isfield(DATAC, 'scId')
-  errStr = 'Data mamager not initialized! Run: mms_sdp_datamanager(''init'',init_struct)';
+  errStr = 'Not initialized! Run: mms_sdp_datamanager(''init'',init_struct)';
   irf.log('critical', errStr);
   error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
 end
@@ -126,9 +131,9 @@ elseif ischar(dataObj) && exist(dataObj, 'file')
   % If it is not a read cdf file, is it an unread cdf file? Read it.
   irf.log('warning',['Loading ' param ' from file: ', dataObj]);
   dataObj = dataobj(dataObj, 'KeepTT2000');
-elseif isstruct(dataObj) && strcmp(param, 'defatt')
-  % Is it the special case of DEFATT (read as a struct into dataObj). Do
-  % nothing..
+elseif isstruct(dataObj) && any(strcmp(param, {'defatt', 'defeph'}))
+  % Is it the special case of DEFATT/DEFEPH (read as a struct into dataObj).
+  % Do nothing..
 else
   errStr = 'Unrecognized input argument';
   irf.log('critical', errStr);
@@ -148,6 +153,7 @@ switch(param)
   case('dce')
     sensors = {'e12','e34','e56'};
     init_param()
+    apply_nom_amp_corr()
     
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -159,7 +165,6 @@ switch(param)
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
-    apply_nom_amp_corr()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -175,6 +180,17 @@ switch(param)
     DATAC.(param).sunssps = dataObj.data.([varPrefix 'sunssps']).data;
     % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
     DATAC.(param).iifsunper = dataObj.data.([varPrefix 'iifsunper']).data;
+    
+  case('hk_105')
+    % HK 101, contains sunpulses.
+    varPrefix = sprintf('mms%d_105_',DATAC.scId);
+    DATAC.(param) = [];
+    DATAC.(param).dataObj = dataObj;
+    x = getdep(dataObj,[varPrefix 'sweepstatus']);
+    DATAC.(param).time = x.DEPEND_O.data;
+    check_monoton_timeincrease(DATAC.(param).time, param);
+    % Add sweepstatus which indicates if any of the probes is sweeping
+    DATAC.(param).sweepstatus = dataObj.data.([varPrefix 'sweepstatus']).data;
 
   case('hk_10e')
     % HK 10E, contains bias.
@@ -206,7 +222,19 @@ switch(param)
     end % for iParam=1:length(hk10eParam)
 
   case('defatt')
-    % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase')
+    % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase' etc)
+    % As per e-mail discussion of 2015/04/07, duplicated timestamps can
+    % occur in Defatt (per design). If any are found, use the last data
+    % point and disregard the first duplicate.
+    idxBad = diff(dataObj.time)==0; % Identify first duplicate
+    fs = fields(dataObj);
+    for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
+    DATAC.(param) = dataObj;
+    check_monoton_timeincrease(DATAC.(param).time);
+
+  case('defeph')
+    % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
+    % and 'Pos_Z')
     DATAC.(param) = dataObj;
     check_monoton_timeincrease(DATAC.(param).time);
 
@@ -215,28 +243,34 @@ switch(param)
     DATAC.(param) = [];
     DATAC.(param).dataObj = dataObj;
     % Split up the various parts (spinfits, dce data [e12, e34, e56],
-    % dce bitmask [e12, e34, e56], phase from the l2pre file to their
-    % expected locations in DATAC. (so that remaining processing can use
-    % same syntax).
+    % dce bitmask [e12, e34, e56], phase, adc offset from the l2pre file to
+    % their expected locations in DATAC. (so that remaining processing can
+    % use same syntax).
     varPre = ['mms', num2str(DATAC.scId), '_edp_dce'];
-    varPre2 = '_spinfit_';
-    DATAC.spinfits = [];
+    varPre2 = '_spinfit_'; varPre3 = '_adc_offset';
+    DATAC.spinfits = []; DATAC.adc_off = [];
     sdpPair = {'e12', 'e34'};
     for iPair=1:numel(sdpPair)
-      DATAC.spinfits.sfit.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
-      DATAC.spinfits.sdev.(sdpPair{iPair}) = dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+      DATAC.spinfits.sfit.(sdpPair{iPair}) = ...
+        dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,2:end);
+      DATAC.spinfits.sdev.(sdpPair{iPair}) = ...
+        dataObj.data.([varPre, varPre2, sdpPair{iPair}]).data(:,1);
+      DATAC.adc_off.(sdpPair{iPair}) = ...
+        dataObj.data.([varPre, varPre3]).data(:,1);
     end
     x = getdep(dataObj,[varPre, varPre2, sdpPair{iPair}]);
     DATAC.spinfits.time = x.DEPEND_O.data;
-    check_monoton_timeincrease(DATAC.spinfits.time, 'L2Pre spinfits'); % Check our own time.
+    check_monoton_timeincrease(DATAC.spinfits.time, 'L2Pre spinfits');
     sensors = {'e12', 'e34', 'e56'};
     DATAC.dce = [];
     x = getdep(dataObj,[varPre, '_data']);
     DATAC.dce.time = x.DEPEND_O.data;
-    check_monoton_timeincrease(DATAC.dce.time, 'L2Pre dce'); % Check our own time.
+    check_monoton_timeincrease(DATAC.dce.time, 'L2Pre dce');
     for iPair=1:numel(sensors);
-      DATAC.dce.(sensors{iPair}).data = dataObj.data.([varPre, '_data']).data(:,iPair);
-      DATAC.dce.(sensors{iPair}).bitmask = dataObj.data.([varPre, '_bitmask']).data(:,iPair);
+      DATAC.dce.(sensors{iPair}).data = ...
+        dataObj.data.([varPre, '_data']).data(:,iPair);
+      DATAC.dce.(sensors{iPair}).bitmask = ...
+        dataObj.data.([varPre, '_bitmask']).data(:,iPair);
     end
     DATAC.phase.data = dataObj.data.([varPre, '_phase']).data;
 
@@ -267,9 +301,10 @@ end
       % TODO: Check overlapping stuck values, if senA stuck but not senB..  
     end
     function sen = latched_mask(sen)
-      idx = irf_latched_idx(sen.data);
+       % Locate data latched for at least 1 second (=1*samplerate).
+      idx = irf_latched_idx(sen.data, 1*DATAC.samplerate);
       if ~isempty(idx)
-        sen.bitmask = bitor(sen.bitmask,...
+        sen.bitmask(idx) = bitor(sen.bitmask(idx),...
           MMS_CONST.Bitmask.PROBE_SATURATION);
       end
       idx = sen.data<MMS_CONST.Limit.LOW_DENSITY_SATURATION;
@@ -294,39 +329,69 @@ end
     %[~, dce_ind, dcv_ind] = intersect(DATAC.dce.time, DATAC.dcv.time+26001);
     % XXX: The above line is faster, but we cannot be sure it works, as it
     % requires exact mathcing of integer numbers
-    [dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
-      DATAC.dcv.time+26600,int64(40000)); % tolerate 40 us jitter
+    % XXX: The code below should work in principle, but id does not
+    %[dce_ind, dcv_ind] = irf_find_comm_idx(DATAC.dce.time,...
+    %  DATAC.dcv.time+26600,int64(40000)); % tolerate 40 us jitter
     % Highest bitrate is to be 8192 samples/s, which correspond to about
     % 122 us between consecutive measurements. The maximum theoretically
     % allowed jitter would be half of this (60us) for the dcv & dce
     % measurements to be completely unambiguous, use 1/3 margin on this.
-
-    % If any datapoint don't overlap, log then remove them.
-    diff_ind = length(DATAC.dce.time) - length(dce_ind);
-    if(diff_ind)
-      logStr = sprintf('DCE was shortened by %i datapoints.',diff_ind);
-      irf.log('notice', logStr);
-      DATAC.dce.time = DATAC.dce.time(dce_ind);
-      % For loop of e12, e34, e56
-      for iSen = 1:2:numel(sensors)
-        senA = sensors{iSen};  senB = sensors{iSen+1};
-        senE = ['e' senA(2) senB(2)]; % E-field sensor
-        DATAC.dce.(senE).data = DATAC.dce.(senE).data(dce_ind);
-        DATAC.dce.(senE).bitmask = DATAC.dce.(senE).bitmask(dce_ind);
-      end
+    
+    %This is a HACK. We just take the nearest time, assuming times in DCE
+    %and DCV must be identical.
+    tE = DATAC.dce.time; tV = DATAC.dcv.time;
+     
+    if ~(all(median(diff(tE))==diff(tE)) && all(median(diff(tV))==diff(tV)))
+      errStr1 = 'Do not know how to handle gaps';
+      irf.log('critical',errStr1), error(errStr1)
     end
-    diff_ind = length(DATAC.dcv.time) - length(dcv_ind);
-    if(diff_ind)
-      logStr = sprintf('DCV was shortened by %i datapoints.',diff_ind);
-      irf.log('notice', logStr);
-      DATAC.dcv.time = DATAC.dcv.time(dcv_ind);
-      for iSen = 1:numel(sensors)
-        senA = sensors{iSen};
-        DATAC.dcv.(senA).data = DATAC.dcv.(senA).data(dcv_ind);
-        DATAC.dcv.(senA).bitmask = DATAC.dcv.(senA).bitmask(dcv_ind);
-      end
+    
+    % Bring together the DCE and DCV time series
+    % NOTE: No gaps allowed below this line
+    dt = median(diff(tE));
+    if tV(1)>tE(1), tStart = tE(1);
+    else tStart = tE(1) - ceil((tE(1)-tV(1))/dt)*dt;
     end
-  end
+    if tE(end)>tV(end), tStop = tE(end);
+    else tStop = tE(end) + ceil((tV(end)-tE(end))/dt)*dt;
+    end
+    nData = (tStop - tStart)/dt + 1;
+    newTime = int64((1:nData) - 1)'*dt + tStart;
+    [~,idxEonOld,idxEonNew] = intersect(tE,newTime); 
+    idxEoffNew = setxor(1:length(newTime),idxEonNew);
+    tDiffNew = abs(newTime-tV(1)); tDiffOld = abs(newTime(1)-tV);
+    if min(min(tDiffNew),min(tDiffOld))==min(tDiffOld),
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+      tDiffNew = abs(newTime-tV(iDcvStartOld));
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+    else
+      iDcvStartNew = find(tDiffNew==min(tDiffNew));
+      tDiffOld = abs(newTime(iDcvStartNew)-tV);
+      iDcvStartOld = find(tDiffOld==min(tDiffOld));
+    end
+    idxVonOld = (1:length(tV))'-1 +iDcvStartOld;
+    idxVonNew = (1:length(tV))'-1 +iDcvStartNew;
+    idxVoffNew = setxor(1:length(tV),idxVonNew);
+    
+    for iSen = 1:2:numel(sensors)  % Loop over e12, e34, e56
+      senA = sensors{iSen};  senB = sensors{iSen+1};
+      senE = ['e' senA(2) senB(2)]; % E-field sensor
+      save_restore('dce',senE,idxEonOld,idxEonNew,idxEoffNew)
+      save_restore('dcv',senA,idxVonOld,idxVonNew,idxVoffNew)
+      save_restore('dcv',senB,idxVonOld,idxVonNew,idxVoffNew)
+    end
+    DATAC.dce.time = newTime; DATAC.dcv.time = newTime;
+    
+    function save_restore(sig,sen,idxOnOld,idxOnNew,idxOffNew)
+      % Save old values, expand the variables and restore the old values
+      SAVE = DATAC.(sig).(sen);
+      DATAC.(sig).(sen).data = NaN(size(newTime),'like',DATAC.(sig).(sen).data);
+      DATAC.(sig).(sen).bitmask = zeros(size(newTime),'like',DATAC.(sig).(sen).bitmask);
+      DATAC.(sig).(sen).data(idxOnNew)    = SAVE.data(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOnNew) = SAVE.bitmask(idxOnOld);
+      DATAC.(sig).(sen).bitmask(idxOffNew) = MMS_CONST.Bitmask.SIGNAL_OFF;
+    end
+  end % CHK_TIMELINE
 
   function chk_bias_guard()
     % Check that bias/guard setting, found in HK_10E, are nominal. If any
@@ -335,17 +400,16 @@ end
 
     if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
 
-      NomBias = uint32(32768); % FIXME, read from a table file
-
-      %DATAC.hk_10e.beb.ig.v1(600:630) = uint32(10); % FIXME, forced to non-moninal, for debug.
-      %DATAC.hk_10e.beb.og.v2(600) = uint32(0); % FIXME, forced to non-nominal
+      % Get limit struct with primary fields 'ig', 'og' and 'dac',
+      % subfields 'max' and 'min'.
+      NomBias = MMS_CONST.Limit.NOM_BIAS;
 
       irf.log('notice','Checking for non nominal bias settings.');
       for iSen = 1:2:numel(sensors)
         senA = sensors{iSen};  senB = sensors{iSen+1};
         senE = ['e' senA(2) senB(2)]; % E-field sensor
 
-        hk10eParam = {'ig','og'}; % InnerGuard, OuterGuard, FIXME: Stub & DAC?
+        hk10eParam = {'ig','og','dac'}; % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
         for iiParam = 1:length(hk10eParam);
 
           % FIXME, proper test of existing fields?
@@ -363,29 +427,32 @@ end
               double(DATAC.dcv.time), 'previous', 'extrap');
 
             % Locate Non Nominal values
-            indA = interp_DCVa ~= NomBias;
-            indB = interp_DCVb ~= NomBias;
+            indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
+            indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
             indE = or(indA,indB); % Either senA or senB => senE non nominal.
 
             if(any(indE))
-              irf.log('notice',['Non-nominal bias settings found on pair ',...
-                senE,' from ',hk10eParam{iiParam},'. Setting bitmask.']);
+              irf.log('notice',['Non-nominal bias on ',...
+                senE,' from ',hk10eParam{iiParam}]);
 
               % Add bitmask values to SenA, SenB and SenE for these ind.
               bits = MMS_CONST.Bitmask.BAD_BIAS;
-              % Add appropriate value to bitmask, leaving other bits untouched.
-              DATAC.dcv.(senA).bitmask(indA) = bitor(DATAC.dcv.(senA).bitmask(indA), bits);
-              DATAC.dcv.(senB).bitmask(indB) = bitor(DATAC.dcv.(senB).bitmask(indB), bits);
-              DATAC.dce.(senE).bitmask(indE) = bitor(DATAC.dce.(senE).bitmask(indE), bits);
+              % Add value to the bitmask, leaving other bits untouched.
+              DATAC.dcv.(senA).bitmask(indA) = ...
+                bitor(DATAC.dcv.(senA).bitmask(indA), bits);
+              DATAC.dcv.(senB).bitmask(indB) = ...
+                bitor(DATAC.dcv.(senB).bitmask(indB), bits);
+              DATAC.dce.(senE).bitmask(indE) = ...
+                bitor(DATAC.dce.(senE).bitmask(indE), bits);
             end
           else
-            irf.log('Warning',['HK_10E file was loaded, but did not contain proper values for ',...
+            irf.log('Warning',['HK_10E : no proper values for ',...
               senA,' and ',senB,'.']);
           end % if ~isempty()
         end % for iiParam
       end % for iSen
     else
-      irf.log('Warning','No HK_10E file loaded, can not perform check for non nominal guard bias settings.');
+      irf.log('Warning','No HK_10E file : cannot perform bias/guard check');
     end % if ~isempty(hk_10e)
   end
 
@@ -398,31 +465,51 @@ end
       return
     end
     
-    % XXX: FIXME this code should be deleted as soon as we get proper ver 3
-    % files
-    % mmsX_sweep_start, mmsX_sweep_stop and mmsX_sweep_swept are new as
-    % per 2015/02/12 and does not exist in older source files. If not
-    % found abort with log message, not with error.
     varPref = sprintf('mms%d_sweep_', DATAC.scId);
     if ~isfield(DATAC.dce.dataObj.data,[varPref 'start'])
-      irf.log('warning',...
-        ['Did not find DCE field ',varPref,'start. Aborting sweep check.']);
-      return
+      errS = ['Did not find ',varPref,'start'];
+      irf.log('critical',errS); error(errS)
     end
     
-    % Get sweep status and sweep timestamp
-    sweep_start = DATAC.dce.dataObj.data.([varPref 'start']).data;
-    sweep_stop = DATAC.dce.dataObj.data.([varPref 'stop']).data;
-    sweep_swept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    % Get sweep status and sweep Start/Stop
+    % Add extra 0.2 sec to Stop for safety
+    sweepStart = DATAC.dce.dataObj.data.([varPref 'start']).data;
+    sweepStop = DATAC.dce.dataObj.data.([varPref 'stop']).data + 1e8;
+    sweepSwept = DATAC.dce.dataObj.data.([varPref 'swept']).data;
+    
+    if isempty(sweepStart)
+      irf.log('warning','No sweep status in DCE file');
+      % Alternative approach for finding sweep times using hk_105
+      if isempty(DATAC.hk_105)
+        irf.log('warning','No HK_105 file loaded: cannot identify sweeps.');
+        return
+      end
+      sweepStatus = logical(DATAC.hk_105.sweepstatus);
+      sweepStart = DATAC.hk_105.time([diff(sweepStatus)==1; false]);
+      if sweepStatus(1) % First point nas sweep ON, start at t(0)-4s
+        sweepStart = [DATAC.hk_105.time(1)-int64(4e9) sweepStart];
+      end
+      sweepStop = DATAC.hk_105.time([false; diff(sweepStatus)==-1]);
+      if sweepStatus(end)  % Last point has sweep ON, stop at t(end)+4s
+        sweepStop = [sweepStop DATAC.hk_105.time(end)+int64(4e9)];
+      end
+      if length(sweepStop)~=length(sweepStart)
+        % Sanity check, should never be here
+        errSt = 'length(sweepStop) != length(sweepStart)!!';
+        irf.log('critical',errSt), error(errSt)
+      end
+      % No info on which probe is swept in hk_105, can be any pair
+      sweepSwept = zeros(size(sweepStart));
+    end
     
     % For each pair, E_12, E_34, E_56.
     for iSen = 1:2:numel(sensors)
       senA = sensors{iSen};  senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
       irf.log('notice', ['Checking for sweep status on probe pair ', senE]);
-      % Locate probe pair senA and senB, sweep_swept = 1 (for pair 12),
-      % = 3 (for pair 34) and = 5 (for pair 56).
-      ind = find(sweep_swept==str2double(senA(2)));
+      % Locate probe pair senA and senB, SweepSwept = 1 (for pair 12), etc.
+      if all(sweepSwept==0), senN = 0; else senN = str2double(senA(2)); end
+      ind = find(sweepSwept==senN);
       sweeping = false(size(DATAC.dce.time)); % First assume no sweeping.
       for ii = 1:length(ind)
         % Each element in ind correspond to a sweep_start and sweep_stop
@@ -430,17 +517,20 @@ end
         % correspond to in DATAC.dce.time. Each new segment, where
         % (sweep_start<=dce.time<=sweep_stop), is added with 'or' to the
         % previous segments.
-        sweeping = or( and(DATAC.dce.time>=sweep_start(ind(ii)), ...
-          DATAC.dce.time<=sweep_stop(ind(ii))), sweeping);
+        sweeping = or( and(DATAC.dce.time>=sweepStart(ind(ii)), ...
+          DATAC.dce.time<=sweepStop(ind(ii))), sweeping);
       end
       if(any(sweeping))
         % Set bitmask on the corresponding pair, leaving the other 16 bits
         % untouched.
         irf.log('notice','Sweeping found, bitmasking it.');
         bits = MMS_CONST.Bitmask.SWEEP_DATA;
-        DATAC.dcv.(senA).bitmask(sweeping) = bitor(DATAC.dcv.(senA).bitmask(sweeping), bits);
-        DATAC.dcv.(senB).bitmask(sweeping) = bitor(DATAC.dcv.(senB).bitmask(sweeping), bits);
-        DATAC.dce.(senE).bitmask(sweeping) = bitor(DATAC.dce.(senE).bitmask(sweeping), bits);
+        DATAC.dcv.(senA).bitmask(sweeping) = ...
+          bitor(DATAC.dcv.(senA).bitmask(sweeping), bits);
+        DATAC.dcv.(senB).bitmask(sweeping) = ....
+          bitor(DATAC.dcv.(senB).bitmask(sweeping), bits);
+        DATAC.dce.(senE).bitmask(sweeping) = ...
+          bitor(DATAC.dce.(senE).bitmask(sweeping), bits);
       else
         irf.log('debug',['Did not find any sweep for probe pair ', senE]);
       end % if any(sweeping)
@@ -456,6 +546,7 @@ end
   end
 
   function apply_nom_amp_corr()
+<<<<<<< HEAD
     % Apply a nominal amplitude correction factor to DCE & DCV values after
     % cleanup but before any major processing has occured.
     for iSen = 1:2:numel(sensors)
@@ -467,6 +558,41 @@ end
       DATAC.dcv.(senA).data = DATAC.dcv.(senA).data * MMS_CONST.NominalAmpCorr;
       DATAC.dcv.(senB).data = DATAC.dcv.(senB).data * MMS_CONST.NominalAmpCorr;
       DATAC.dce.(senE).data = DATAC.dce.(senE).data * MMS_CONST.NominalAmpCorr;
+=======
+    % Apply a nominal amplitude correction factor to DCE for p1..4
+    % values after cleanup but before any major processing has occured.
+    
+    Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
+    if length(Blen)==1
+      senDist = sensor_dist(Blen.len);
+      irf.log('notice',['Adjusting sensor dist to [ '...
+        num2str(senDist,'%.1f ') '] meters'])
+    else
+      boomLen = zeros(length(DATAC.dce.time),4);
+      for i=1:length(Blen)
+        irf.log('notice',['Adjusting sensor dist to [ '...
+        num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+        Blen(i).time.toUtc(1)])
+        idx = find(DATAC.dce.time>=Blen(i).time.epoch);
+        boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
+      end
+      senDist = sensor_dist(boomLen);
+    end
+    
+    factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
+    for iSen = 1:min(numel(sensors),2)
+      senE = sensors{iSen};
+      nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
+      logStr = sprintf(['Applying nominal amplitude correction factor, '...
+        '%.2f, to %s'], factor, senE);
+      irf.log('notice',logStr);
+      distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
+      DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor;
+    end
+
+    function l = sensor_dist(len)
+      l = 1.67 + len + .07 + 1.75  + .04; % meters, sc+boom+preAmp+wire+probe
+>>>>>>> a6c6c67b3d7679fc81659fd1ff4565a1637690b1
     end
   end
 
@@ -488,6 +614,7 @@ end
       senE = ['e' senA(2) senB(2)]; % E-field sensor
       senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
       senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
+      senE_off = bitand(DATAC.dce.(senE).bitmask, MSK_OFF);
       idxOneSig = xor(senA_off,senB_off);
 %      if ~any(idxOneSig), return, end
       iVA = idxOneSig & ~senA_off;
@@ -507,16 +634,17 @@ end
           NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
       end
       % For comissioning data we will have all DCE/DCV, verify consistency.
-      idxBoth = and(~senA_off, ~senB_off);
+      idxBoth = and(and(~senA_off, ~senB_off), ~senE_off);
       if any(idxBoth)
         irf.log('notice',...
-          sprintf('Verifying %s = (%s - %s)/NominalLength for %d data points',...
+          sprintf('Verifying %s = (%s - %s)/NominalLength for %d points',...
           senE, senA, senB, sum(idxBoth)));
         remaining = abs(NOM_BOOM_L*DATAC.dce.(senE).data(idxBoth) - ...
           DATAC.dcv.(senA).data(idxBoth) + ...
           DATAC.dcv.(senB).data(idxBoth));
         if(any(remaining>MMS_CONST.Limit.DCE_DCV_DISCREPANCY))
-          irf.log('critical','Datapoints show a discrepancy between DCE and DCV!');
+          irf.log('critical',...
+            'Datapoints show a discrepancy between DCE and DCV!');
           % FIXME: Bitmasking them or exit with Error?
         end
       end % if any(idxBoth)
@@ -526,7 +654,8 @@ end
   function init_param
     DATAC.(param) = [];
     if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
-      err_str = 'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+      err_str = ...
+        'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
       irf.log('warning', err_str);
       %error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
     end
@@ -548,16 +677,35 @@ end
     sensorData = dataObj.data.([varPrefix param '_sensor']).data;
     if isempty(sensors), return, end
     probeEnabled = resample_probe_enable(sensors);
+    %probeEnabled = are_probes_enabled;
     for iSen=1:numel(sensors)
       DATAC.(param).(sensors{iSen}) = struct(...
         'data',sensorData(:,iSen), ...
         'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
       %Set disabled bit
       idxDisabled = probeEnabled(:,iSen)==0;
-      DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
-        bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...
-        MMS_CONST.Bitmask.SIGNAL_OFF);
-      DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
+      if(any(idxDisabled>0))
+        irf.log('notcie', ['Probe ',sensors{iSen}, ' disabled for ',...
+          num2str(sum(idxDisabled)),' points. Bitmask them and set to NaN.']);
+        DATAC.(param).(sensors{iSen}).bitmask(idxDisabled) = ...
+          bitor(DATAC.(param).(sensors{iSen}).bitmask(idxDisabled), ...
+          MMS_CONST.Bitmask.SIGNAL_OFF);
+        DATAC.(param).(sensors{iSen}).data(idxDisabled,:) = NaN;
+      end
+    end
+  end
+
+  function res = are_probes_enabled
+    % Use FILLVAL of each sensor to determine if probes are enabled or not.
+    % Returns logical of size correspondig to sensor.
+    sensorData = dataObj.data.([varPrefix param '_sensor']).data;
+    FILLVAL = getfillval(dataObj, [varPrefix, param, '_sensor']);
+    if( ~ischar(FILLVAL) )
+      % Return 'true' for all data not equal to specified FILLVAL
+      res = (sensorData ~= FILLVAL);
+    else
+      errStr = 'Unable to get FILLVAL.';
+      irf.log('critical',errStr); error(errStr);
     end
   end
 

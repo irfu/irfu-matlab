@@ -14,7 +14,7 @@ else
 end
 % tintiso='2003-09-17T08:00:00Z/2003-09-17T10:00:00Z';
 % tintiso='2003-09-24T15:30:00Z/2003-09-24T16:30:00Z';
-% tint=irf_time(tintiso,'iso2tint');
+% tint=irf_time(tintiso,'utc>tint');
 % h=irf_plot(4,'newfigure');
 ic=4;
 pwd
@@ -42,7 +42,7 @@ if 1,   % PANEL: C?       FGM Bx,By,Bz,B GSM
 	irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.1])
 	irf_legend(hca,{['C' num2str(ic)]},[0.98 0.98],'color','k')
 end
-dd=irf_time(tint(1),'epoch2yyyy-mm-dd hh:mm:ss');
+dd=irf_time(tint(1),'epoch>yyyy-mm-dd hh:mm:ss');
 title(hca,dd(1:10));
 if 1,   % PANEL: C?       CIS Vx,Vy,Vz,V CODIF(HIA) GSM
   hca=irf_panel('C? CIS V GSM');

@@ -4,7 +4,7 @@ function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
 % (TT2000).
 %
 % Inputs:
-%   sps    struct of HK_101 input (Corresponds to 'DataInMemory.hk_101')
+%   sps    struct of HK_101 input (Corresponds to 'DATAC.hk_101')
 %      .time      - Timestamp of HK packet in TT2000
 %      .sunpulse  - Latest sunpulse in TT2000
 %      .sunssps   - Sunpulse indicator
@@ -52,9 +52,9 @@ function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
 % written by Ken Bromund, NASA, 2014 for the MMS mission.
 %
 % Example:
-%  [dcephase, dcephase_flag] = MMS_SDP_PHASE_2(DataInMemory.hk_101, DataInMemory.dce.time);
+%  [dcephase, dcephase_flag] = MMS_SDP_PHASE_2(DATAC.k_101, DATAC.dce.time);
 %
-% See also MMS_SDP_DATAMANAGER.
+% See also MMS_SDP_DATAMANAGER and MMS_SDP_COMP_PHASE.
 
 
 % Verify number of inputs and outputs
@@ -109,7 +109,14 @@ nargoutchk(2,5); % At least the outputs 'phase' and 'flag'.
 %     of spins during the gap.
 % 2b) Large data gaps, where spin period might have changed enough that
 %     there is uncertainty in the number of spins during the gap.
-% 3) Calculate phase,
+% 3) Calculate phase, assuming 0.0 degrees when sunpulse occurs. (As per
+% e-mail discussion of 2014/09/23).
+% 3b) Correct for the sunpulse sensor being +76 degrees of from the {DCS-X,
+% DCS-Z} plane (measured along + DCS-Z axis). Correction; subtract 76
+% degrees from the calculated value, as per e-mail of 2015/03/20. This way
+% the derived phase could be used interchangable with the one derived from
+% DEFATT files, as the angle around positive DCS-Z axis, measured from the
+% {DCS-X, DCS-Z} plane.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -252,7 +259,7 @@ for i = 1:ngap+1
         irf.log('warning','spin rate data may be changing too quickly to uniquely determine phase at: ');
         for mi = 1:min(9,n_spin_warn)
             log_str = sprintf('%04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.',...
-                breakdowntt2000(segpulse(spin_warn(mi))));
+                spdfbreakdowntt2000(segpulse(spin_warn(mi))));
             irf.log('warning', log_str);
         end
         if(n_spin_warn > 10)
@@ -300,7 +307,7 @@ for i = 1:ngap
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at beginning of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-         i, breakdowntt2000(pulse(gapidx)));
+         i, spdfbreakdowntt2000(pulse(gapidx)));
         irf.log('warning', log_str);
         period1 = NaN;
     end
@@ -312,7 +319,7 @@ for i = 1:ngap
     else
         log_str=sprintf(['Processing gap %i cannot determine spin period',...
          ' at end of gap: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-         i, breakdowntt2000(pulse(gapidx)));
+         i, spdfbreakdowntt2000(pulse(gapidx)));
         irf.log('warning', log_str);
         period2 = NaN;
     end
@@ -327,7 +334,7 @@ for i = 1:ngap
         if( abs(nspins1 - nspins2) > 0.5)
             log_str=sprintf(['Processing gap %i spin rate interpolation ',...
               'questionable: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 3;
         end
@@ -338,21 +345,21 @@ for i = 1:ngap
             nspins = nspins1;
             log_str=sprintf(['Processing gap %i accepting spin period from ',...
               'beginning of gap at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 4;
         elseif( isfinite(nspins2) && abs(nspins2-round(nspins2)) < 0.25*0.111 )
             nspins = nspins2;
             log_str=sprintf(['Processing gap %i accepting spin period from ',...
               'end of gap at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 5;
         else
             nspins = (nspins1+nspins2)/2;
             log_str=sprintf(['Processing gap %i using average spin period',...
               ' as best giess at: %04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.'],...
-              i, breakdowntt2000(pulse(gapidx)));
+              i, spdfbreakdowntt2000(pulse(gapidx)));
             irf.log('warning', log_str);
             period_flag(gapidx) = 6;
         end
@@ -367,7 +374,7 @@ end
 %
 
 % Transform to 'double'. It is possible to do this earlier but perhaps best
-% to keep int64 until all TT2000 specific calls are done (breakdowntt2000).
+% to keep int64 until all TT2000 specific calls are done (spdfbreakdowntt2000).
 pulse = double(pulse);
 epoch = double(epoch);
 
@@ -436,6 +443,15 @@ if( ~isempty(inrange) )
     end
 
 end
+
+%% Step 3b)
+% 2015/03/20 Mail from Ken, changing standpoint from 2014/09/23, sunpulse
+% timestamp is when sensor see sun. This is not in the {BCS-X, BCS-Z} plane
+% but at the +76 degrees of from BCS-X where the sensor is located.
+% Therefor, in order to give correct phase, shift the calculated value by
+% negative 76 deg. Then remap to interval [0-360) degrees.
+
+phase = mod(phase-76, 360);
 
 end
 

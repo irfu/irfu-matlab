@@ -103,7 +103,7 @@ if nargin>=1 && ischar(varargin{1}) && strcmp(varargin{1},'create')
 end
 	
 %% Locating index file
-if isempty(indexFile), % first time calling the routine during matlab session 
+if isempty(indexFile) || ~exist(indexFile,'file')
 	if exist(indexFile,'file'), % first usage
 		indexFileName = load(indexFile,'indexFileName');
 		if isempty(indexFileName) ...% indexFileName is not save (old version)

@@ -20,7 +20,7 @@ function [varargout]=irf_cdf_read(cdf_file,var_name,flag)
 % Example: 
 %   irf_cdf_read('*','*.cdf')
 %
-% See also CDFREAD
+% See also SPDFCDFREAD
 %
 % $Id$
 
@@ -87,7 +87,7 @@ end
 
 irf_log('load',['cdf file: ' cdf_file]);
 
-cdf_file_info = cdfinfo(cdf_file);
+cdf_file_info = spdfcdfinfo(cdf_file);
 variable_names = cdf_file_info.Variables(:,1);
 epoch_column=0; % default there is no epoch variable
 for j=1:size(variable_names,1),
@@ -150,7 +150,7 @@ elseif ischar(var_name) % one specifies the name of variable
                       disp('======================================')
                       disp(cdf_var);
                       disp('======================================')
-                      dd=cdfread(cdf_file,'Variables',{cdf_var});
+                      dd=spdfcdfread(cdf_file,'Variables',{cdf_var});
                       if size(dd,1)>10,
                           disp([num2str(size(dd,1)) ' samples. 1st sample below.']);
                           if iscell(dd), disp(dd{1}), else disp(dd(1,:)), end
@@ -160,7 +160,7 @@ elseif ischar(var_name) % one specifies the name of variable
                   end
               case 'r'
                   var_to_read=irf_ask('Variable name? [%]>','var_to_read','');
-                  evalin('caller',[var_to_read '= cdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
+                  evalin('caller',[var_to_read '= spdfcdfread(''' cdf_file ''', ''VARIABLES'', ''' var_to_read ''');']);
               case 'fa'
                   cdf_file_info.VariableAttributes
               case 'fav'
@@ -227,8 +227,8 @@ if numel(variables)==2 && strcmp(variables{1},variables{2}), variables(2)=[];end
 
 if isempty(old_cdfread_call)
   try
-    % New, faster call (requires Matlab R2008b or higher, or the CDF patch from Goddard):
-    DATA = cdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true);
+    % New, faster call (requires Matlab R2008b or higher and the CDF patch from Goddard):
+    DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true);
     old_cdfread_call=0;
   catch %#ok<CTCH>
       % Old, slow call:
@@ -239,7 +239,7 @@ if isempty(old_cdfread_call)
   end
 else
   if(old_cdfread_call), DATA = cdfread(cdf_file, 'VARIABLES', variables);
-  else DATA = cdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
+  else DATA = spdfcdfread(cdf_file, 'VARIABLES', variables,'CombineRecords', true,'ConvertEpochToDatenum', true); end
 end
 
 if(old_cdfread_call)

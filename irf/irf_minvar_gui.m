@@ -79,14 +79,14 @@ switch action,
 		xp=0.2;yp=0.2;
 		ud.fromtext=uicontrol('style', 'text', 'string', 'From:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','red');
 		ud.fromh = uicontrol('style', 'edit', ...
-			'string', irf_time(ud.tlim(1),'iso'), ...
+			'string', irf_time(ud.tlim(1),'utc'), ...
 			'callback', 'irf_minvar_gui(''from'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.11 yp 0.25 0.05]);
 		
 		yp=0.15;
 		ud.totext=uicontrol('style', 'text', 'string', 'To:','units','normalized', 'position', [xp yp 0.1 0.04],'backgroundcolor','white');
 		ud.toh=uicontrol('style', 'edit', ...
-			'string', irf_time(ud.tlim(2),'iso'), ...
+			'string', irf_time(ud.tlim(2),'utc'), ...
 			'callback', 'irf_minvar_gui(''from'')','backgroundcolor','white','units','normalized', 'position', [xp+0.11 yp 0.25 0.05]);
 		
 		
@@ -144,8 +144,8 @@ switch action,
 		irf_minvar_gui('update_mva_axis');
 	case 'from'
 		ud=get(gcf,'userdata');
-		tlim(1) = irf_time(get(ud.fromh,'string'),'iso2epoch');
-		tlim(2) = irf_time(get(ud.toh,'string'),'iso2epoch');
+		tlim(1) = irf_time(get(ud.fromh,'string'),'utc>epoch');
+		tlim(2) = irf_time(get(ud.toh,'string'),'utc>epoch');
 		set(ud.patch_mvar_intervals,'xdata',[tlim(1) tlim(2) tlim(2) tlim(1)]-ud.t0);
 		ud.tlim=tlim;
 		set(gcf,'userdata',ud);

@@ -204,8 +204,8 @@ if isInputDatasetName
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
-		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2vector');
-		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2vector');
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch>vector');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch>vector');
 		startYear   = tminDatenum(1);
 		startMonth  = tminDatenum(2);
 		endYear     = tmaxDatenum(1);
@@ -217,7 +217,7 @@ if isInputDatasetName
 		tVec = zeros((1 + endYear - startYear)*12,1);
 		for iYear = startYear:endYear,
 			for iMonth = 1:12,
-				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector2epoch');
+				tVec((iYear-startYear)*12+iMonth) = irf_time([iYear iMonth 1 0 0 0],'vector>epoch');
 			end
 		end
 		tStart      = tVec(startMonth  :end-(12-endMonth)-1);
@@ -229,12 +229,12 @@ if isInputDatasetName
 			disp('Dataset does not exist or there are no data');
 			return;
 		end
-		tminDatenum = irf_time(TT.TimeInterval(1),'epoch2datenum');
-		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch2datenum');
+		tminDatenum = irf_time(TT.TimeInterval(1),'epoch>datenum');
+		tmaxDatenum = irf_time(TT.TimeInterval(2),'epoch>datenum');
 		tminDatenum = floor(tminDatenum);
 		tmaxDatenum = floor(tmaxDatenum) + 1;
-		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum2epoch');
-		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum2epoch');
+		tStart      = irf_time((tminDatenum : tmaxDatenum)'  ,'datenum>epoch');
+		tEnd        = irf_time((tminDatenum : tmaxDatenum)'+1,'datenum>epoch');
 		TTRequest   = irf.TimeTable([tStart tEnd]);
 	else
 		TT=caa_download(['inventory:' dataSet]);
@@ -283,7 +283,7 @@ if exist(dataSetDir,'dir'),
 			if newVersion > lastVersion,
 				indNewFiles(j) = true;
 				irf.log('debug',['Ingested since last #' num2str(j) ...
-					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint2iso')]);
+					' time interval: ' irf_time(TTfileList.TimeInterval(j,:),'tint>utc_yyyy-mm-dd')]);
 			end
 		end
 		TTfileList = select(TTfileList,find(indNewFiles));
@@ -310,12 +310,12 @@ if exist(dataSetDir,'dir'),
 						if indNewIntervals(iReq), % new files available for interval
 							indOldToUpdateIntervals(jIndex) = true;
 							irf.log('debug',['Old interval to update #' num2str(jIndex) ' '...
-								irf_time(tintInd(jIndex,:),'tint2iso')]);
+								irf_time(tintInd(jIndex,:),'tint>utc')]);
 						end
 					else
 						indOldObsoleteIntervals(jIndex) = true;
 						irf.log('debug',['Obsolete interval #' num2str(jIndex) ' '...
-							irf_time(tintInd(jIndex,:),'tint2iso')]);
+							irf_time(tintInd(jIndex,:),'tint>utc')]);
 					end
 					jIndex = jIndex-1;
 					if jIndex==0, break; end
@@ -340,7 +340,7 @@ if exist(dataSetDir,'dir'),
 		irf.log('warning', ['Old intervals total        : ' num2str(nOldIntervals)])
 		irf.log('warning', ['Old intervals to remove    : ' num2str(nOldObsoleteIntervals)])
 		irf.log('warning', ['Old intervals to update    : ' num2str(nOldToUpdateInterval)])
-		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldObsoleteIntervals-nOldToUpdateInterval)])
+		irf.log('warning', ['New intervals              : ' num2str(sum(indNewIntervals)-nOldToUpdateInterval)])
 		irf.log('warning', ['Total intervals to download: ' num2str(sum(indNewIntervals))])
 	end
 else
@@ -393,7 +393,7 @@ while 1
 			
 			irf.log('warning',['Requesting ' dataSet ' interval #' num2str(iRequest) ...
 				'(' num2str(nRequest-numel(indexList)) '/' num2str(nRequest) '): ' ...
-				irf_time(tint,'tint2iso')]);
+				irf_time(tint,'tint>utc')]);
 			try
 				if streamData
 					[download_status,downloadfile]=caa_download(tint,dataSet,...

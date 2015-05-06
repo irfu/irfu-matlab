@@ -440,7 +440,7 @@ switch lower(action)
 				line([-drref drref],[-drref -drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref drref],[-drref -drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
 				line([-drref -drref],[-drref -drref],[-drref drref],'parent',h(1),'linestyle','-','color','k','linewidth',0.6);
-				text(0.1,1,0,irf_time(data.t,'isoshort'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
+				text(0.1,1,0,irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm'),'parent',h(1),'units','normalized','horizontalalignment','center','fontsize',9);
 				xlabel(h(1),['{\Delta}X [km] ' coord_label]);
 				ylabel(h(1),['{\Delta}Y [km] ' coord_label]);
 				zlabel(h(1),['{\Delta}Z [km] ' coord_label]);
@@ -501,7 +501,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'YZ';
 				plot_relative_position(h(2));
@@ -513,7 +513,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch2yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'XY';
 				plot_relative_position(h(2));
@@ -539,14 +539,14 @@ switch lower(action)
 			axis(hca,'off');
 			ht=irf_legend(hca,['c_pl_sc_conf_xyz() ' datestr(now)],[0,0],'fontsize',8);
 			set(ht,'interpreter','none');
-			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'isoshort')],[0,.95]);
+			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
 			set(htime,'fontsize',12);
 			if ~isempty(flag_using_omni_data)
 				if ~strcmpi(data.plot_type,'lmn'),
 					if flag_using_omni_data==1, % succeeded downloading OMNI
-						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF from OMNI 1h database:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bx=' num2str(omni.Bx,'%6.1f') ',By=' num2str(omni.By,'%6.1f') ',Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					elseif flag_using_omni_data==0, % did not succeeded downloading OMNI
-						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(fft(5),'%6.1f') '[nT] GSM' ],[0,0.7]);
+						irf_legend(hca,['IMF using assumed model:\newline P=' num2str(omni.Dp,'%6.1f') '[nPa],\newline Bz=' num2str(omni.Bz,'%6.1f') '[nT] GSM' ],[0,0.7]);
 					end
 				end
 			end

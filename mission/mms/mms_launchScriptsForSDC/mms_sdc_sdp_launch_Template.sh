@@ -6,22 +6,25 @@
 # Author: T. Nilsson, IRFU
 # Date: 2014/03/04
 # Updated: 2015/01/14, change comments to reflect change SDP->EDP and add new input argument HK 10E file.
+# Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
+# Updated: 2015/04/14, add hk_105 as possible input argument.
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
-#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename>", with the following
-#  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_10e_" or "_101_").
+#  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <mmsX_101_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
+#  input arguments: (order is irrelevant as long as the OptionalDataDescriptor is "_dce_", "_dcv_","_10e_", "_105_" or "_101_").
 #    <mmsX_***_dce_filename.cdf> = Filename of DC E data to be processed for 'xyz'. Including path and extension.
 #    <mmsX_***_dcv_filename.cdf> = Filename of DC V data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_101_filename.cdf> = Filename of HK 101 data (with sunpulse) to be processed for 'xyz'. Including path and extention.
+#    <mmsX_***_105_filename.cdf> = Filename of HK 105 data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_10e_filename.cdf> = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
 #  output files created:
 #    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z.cdf>         = File placed in $DROPBOX_ROOT
 #    <DATE_IRFU.log>                                  = Logfile of run, placed in $LOG_PATH_ROOT/mmsX/edp/.
 #    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z_runTime.log> = File to identify output file, as per e-mail of 2013/11/22. Also placed in $LOG_PATH_ROOT/mmsX/edp/.
 #
-#  return code 0 if ok.
-#  return code 199 if built in Matlab error.
-#  return code 100-198 if MMS Matlab specific code error.
+#  return code 0, if ok.
+#  return code 166, if error caused by incorrect usage.
+#  return code 199, if error during Matlab process.
 #
 # Note: The script assumes it is located in the folder which has irfu-matlab as a subfolder.
 
@@ -33,12 +36,16 @@ IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-mat
 # No need to edit after this line
 # add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
 export MATLABPATH=$IRFU_MATLAB:$IRFU_MATLAB/mission/mms
+# Add IRFU_MATLAB/contrib/nasa_cdf_patch_beta (where cdflib.so is located)
+export LD_LIBRARY_PATH=$IRFU_MATLAB/contrib/nasa_cdf_patch_beta:$LD_LIBRARY_PATH
 
 PROCESS_NAME=
 case "$0" in
 	*mms_dce_ql_script_tryCatch*) PROCESS_NAME=ql ;;
 	*mms_dce_sitl_script_tryCatch*) PROCESS_NAME=sitl ;;
 	*mms_dcv_usc_script_tryCatch*) PROCESS_NAME=scpot ;;
+	*mms_dce_l2pre_script_tryCatch*) PROCESS_NAME=l2pre ;;
+	*mms_dce_l2a_script_tryCatch*) PROCESS_NAME=l2a ;;
 	*)
 	echo "ERROR: urecognized name of the caller routine"
 	exit 166
@@ -47,8 +54,8 @@ esac
 echo $PROCESS_NAME
 
 # make sure that the correct number of arguments are provided
-if [ ${#} -lt 2 ] || [ ${#} -gt 4 ] ; then
-	echo "ERROR: Wrong number of input parameters: min: 2, max: 4"
+if [ ${#} -lt 2 ] || [ ${#} -gt 5 ] ; then
+	echo "ERROR: Wrong number of input parameters: min: 2, max: 5"
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
@@ -58,16 +65,9 @@ if [ ! -x $MATLAB_EXE ] ; then
 	exit 166  # SDC-defined error code for "incorrect usage"
 fi
 
-# SET ENVIRONMENT LD_LIBRARY_PATH in order for the linking to CDF.h and cdflib.so to properly work.
-if [ ! -e $CDF_BASE/lib/libcdf.so ]; then
-	echo "ERROR: no libcdf.so in CDF_BASE ($CDF_BASE)"
-	exit 166  # SDC-defined error code for "incorrect usage"
-fi
-if [ "X$LD_LIBRARY_PATH" = "X" ]; then
-	export LD_LIBRARY_PATH="$CDF_BASE/lib"
-else
-	export LD_LIBRARY_PATH="$CDF_BASE/lib:$LD_LIBRARY_PATH"
-fi
+# RUN Matlab and try to run mms_sdc_sdp_proc, and if any errors are caught
+# get file name of log file created, check if that file exist,
+# if so attach it (8 Bit ASCII encoded) to a mail sent to mms-ops@irfu.se.
+# then exit with 199 (if errors occurred) or with 0 (if no errors).
 
-# RUN THIS IF ONLY ONE FILE EXISTS (DCE)
-$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4'), catch err, if(strcmp(err.identifier,'MATLAB:SDCcode')) irf.log('critical',['Bash error catch worked: ', err.identifier, '. With message: ', err.message]); exit(str2num(err.message)); else irf.log('critical',['Bash error catch: ', err.identifier, '. With message: ', err.message]); exit(199); end; end, exit(0)"
+$MATLAB_EXE $MATLAB_FLAGS -r "try, mms_sdc_sdp_proc('$PROCESS_NAME','$1','$2','$3','$4','$5'), catch ME, logFile=irf.log('log_out'); errStr=[]; for k=1:length(ME.stack), errStr=[errStr,' Error in file: ',ME.stack(k).file,' in function: ',ME.stack(k).name,' at line: ',num2str(ME.stack(k).line),'. ']; end; if(exist(logFile,'file')), unix(['echo ''''Error occured at SDC! Please see the attached log file. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -a', logFile,' -s MMS_SDC_Error mms-ops@irfu.se']); else unix(['echo ''''Error occured at SDC. And for some reason no log file was identified, manually log into SDC and have a look! Perhaps the error occured before log file was created. Causing error was: ',ME.identifier,' with message: ',ME.message,errStr,''''' | mail -s MMS_SDC_Error mms-ops@irfu.se']); end; exit(199); end, exit(0)"

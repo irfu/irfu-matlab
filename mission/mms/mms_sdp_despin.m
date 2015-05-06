@@ -31,7 +31,7 @@ end
 phi_12 = MMS_CONST.Phaseshift.e12;
 phi_34 = MMS_CONST.Phaseshift.e34; % Angles when phase=0 (X BSC direction)
 
-compE = (e12*exp(1i*phi_12) + e34*exp(1i*phi_34)).*exp(1i*phaseDeg*pi/180);
+compE = (e12*exp(-1i*phi_12) + e34*exp(-1i*phi_34)).*exp(1i*phaseDeg*pi/180);
 dE = [real(compE) imag(compE)];
 
 end

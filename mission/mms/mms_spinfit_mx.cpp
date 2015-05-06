@@ -372,7 +372,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 	}
 
 	//	nTerms		argument #3
-	// Number of terms to compute fit to, A + Bsin(w) + Ccos(w) + Dsin(2w) + Econ(2w) etc..
+	// Number of terms to compute fit to, A + Bcos(w) + Csin(w) + Dcos(2w) + Esin(2w) etc..
 	if( !mxIsDouble(prhs[2]) || mxIsComplex(prhs[2]) || 
 	    mxGetN(prhs[2])*mxGetM(prhs[2]) != 1 ) {
 		mexErrMsgIdAndTxt("MATLAB:mms_spinfit_mx:ntermsNotScalar",
