@@ -216,13 +216,18 @@ for i=1:nargin-1
 end
 
 % All input arguments read. All files required identified correct?
+% QL, SITL, SCPOT use: hk101, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
+% L2PRE use: defatt, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
+% L2A use: l2pre.
 if any([(isempty(HK_101_File) && isempty(DEFATT_File)), isempty(DCE_File),...
-    isempty(DCV_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
+    isempty(HK_105_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
     irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
     for i=1:nargin-1
         irf.log('warning',...
             ['MMS_SDC_SDP_PROC received input argument: ', varargin{i}]);
     end
+elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2a )
+  irf.log('debug','It appears we are running with the dcv data combined into dce file.');
 end
 
 
@@ -255,22 +260,24 @@ switch procId
     update_header(src_fileData) % Update header with file info.
 
     if isempty(DCE_File)
-      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
-        'received no DCE file argument.']);
-    else
-      irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = mms_sdp_load(DCE_File,'dce');
-      update_header(src_fileData); % Update header with file info.
+      errStr = ['missing required input for ' procName ': DCE_File'];
+      irf.log('critical',errStr);
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    src_fileData = mms_sdp_load(DCE_File,'dce');
+    update_header(src_fileData); % Update header with file info.
     
-    if isempty(DCV_File)
-      errStr = ['missing required input for ' procName ': DCV_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    if isempty(DCV_File) && ~isempty(DCE_File)
+      % Combined DCE and DCV file
+      %% FIXME
+      % src_filedata = mms_sdp_load(DCE_File,'dcv'); % load and store combined dce/dcv file as dcv?
+    else
+      % Separate DCV file
+      irf.log('notice', [procName ' proc using: ' DCV_File]);
+      src_fileData = mms_sdp_load(DCV_File,'dcv');
+      update_header(src_fileData) % Update header with file info.
     end
-    irf.log('notice', [procName ' proc using: ' DCV_File]);
-    src_fileData = mms_sdp_load(DCV_File,'dcv');
-    update_header(src_fileData) % Update header with file info.
 
     % Write the output
     filename_output = mms_sdp_cdfwrite(HeaderInfo);
@@ -312,17 +319,19 @@ switch procId
 
     if isempty(DCE_File)
       errStr = ['missing required input for ' procName ': DCE_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      irf.log('critical',errStr);
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
     irf.log('notice', [procName ' proc using: ' DCE_File]);
     src_fileData = mms_sdp_load(DCE_File,'dce');
     update_header(src_fileData) % Update header with file info.
 
-    if isempty(DCV_File)
-      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
-        'received no DCV file argument.']);
+    if isempty(DCV_File) && ~isempty(DCE_File)
+      % Combined DCE and DCV file
+      %% FIXME
+      %src_filedata = mms_sdp_load(DCE_File,'dcv'); % load and store combined dce/dcv file as dcv?
     else
+      % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);
       src_fileData = mms_sdp_load(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
