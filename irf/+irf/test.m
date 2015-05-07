@@ -2,8 +2,8 @@ function ok=test(varargin)
 % IRF.TEST test different irfu-matlab routines
 %
 %   IRF.TEST show list of possible tests
-%   IRF.TEST('full')  - make full test
-%	IRF.TEST(testname) - make test 'testname'
+%   IRF.TEST('all')  - make all tests
+%   IRF.TEST(testname) - make test 'testname'
 %
 %	Example:
 %   IRF.TEST('irf_time')  - test irf_time
