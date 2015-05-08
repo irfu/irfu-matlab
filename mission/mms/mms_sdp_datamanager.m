@@ -154,7 +154,23 @@ switch(param)
     sensors = {'e12','e34','e56'};
     init_param()
     apply_nom_amp_corr()
-    
+    if(isfield(dataObj.data, [varPrefix, 'dcv_sensor']))
+      % It appears to be a combined file, extract DCV variables.
+      irf.log('notice','Combined DCE & DCV file.');
+      param = 'dcv';
+      sensors = {'v1','v2','v3','v4','v5','v6'};
+      init_param()
+      chk_timeline()
+      chk_latched_p()
+      %apply_transfer_function()
+      v_from_e_and_v()
+      chk_bias_guard()
+      chk_sweep_on()
+      chk_sdp_v_vals()
+    elseif(DATAC.dce.fileVersion.major>=1)
+      irf.log('warning','DCE major version >= 1 but not combined DCE & DCV data?');
+    end
+
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
     init_param()
