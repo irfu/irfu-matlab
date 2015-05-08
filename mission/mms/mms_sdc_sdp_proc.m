@@ -269,9 +269,9 @@ switch procId
     update_header(src_fileData); % Update header with file info.
     
     if isempty(DCV_File) && ~isempty(DCE_File)
-      % Combined DCE and DCV file
-      %% FIXME
-      % src_filedata = mms_sdp_load(DCE_File,'dcv'); % load and store combined dce/dcv file as dcv?
+      % Combined DCE and DCV file, load and store the DCV parts as 'dcv'.
+      % But do not update header with the same file info.
+      mms_sdp_load(DCE_File,'dcv');
     else
       % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);
@@ -327,9 +327,9 @@ switch procId
     update_header(src_fileData) % Update header with file info.
 
     if isempty(DCV_File) && ~isempty(DCE_File)
-      % Combined DCE and DCV file
-      %% FIXME
-      %src_filedata = mms_sdp_load(DCE_File,'dcv'); % load and store combined dce/dcv file as dcv?
+      % Combined DCE and DCV file, load and store the DCV parts as 'dcv'.
+      % But do not update header with the same file info.
+      mms_sdp_load(DCE_File,'dcv');
     else
       % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);

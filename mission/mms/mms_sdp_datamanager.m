@@ -602,7 +602,6 @@ end
       senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
       senE_off = bitand(DATAC.dce.(senE).bitmask, MSK_OFF);
       idxOneSig = xor(senA_off,senB_off);
-%      if ~any(idxOneSig), return, end
       iVA = idxOneSig & ~senA_off;
       if any(iVA),
         irf.log('notice',...
@@ -639,11 +638,23 @@ end
 
   function init_param
     DATAC.(param) = [];
-    if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
-      err_str = ...
-        'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
-      irf.log('warning', err_str);
-      %error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
+    if(isfield(dataObj.data, [varPrefix 'samplerate_' param]))
+      if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
+        err_str = ...
+          'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+        irf.log('warning', err_str);
+        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
+      end
+    elseif(isfield(dataObj.data,[varPrefix 'samplerate_dce']))
+      % Combined DCE & DCV file have only "[varPrefix samplerate_dce]".
+      if ~all(diff(dataObj.data.([varPrefix 'samplerate_dce']).data)==0)
+        err_str = ...
+          'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+        irf.log('warning', err_str);
+        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
+      end
+    else
+      irf.log('warning','No samplerate variable present in cdf file.');
     end
     DATAC.(param).dataObj = dataObj;
     fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
@@ -664,10 +675,25 @@ end
     if isempty(sensors), return, end
     probeEnabled = resample_probe_enable(sensors);
     %probeEnabled = are_probes_enabled;
+    columnIn = 1;
     for iSen=1:numel(sensors)
-      DATAC.(param).(sensors{iSen}) = struct(...
-        'data',sensorData(:,iSen), ...
-        'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
+      if(size(sensorData,2)==numel(sensors))
+        DATAC.(param).(sensors{iSen}) = struct(...
+          'data',sensorData(:,iSen), ...
+          'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
+      else
+        irf.log('warning','Trying to identify enabled/disabled probes.');
+        DATAC.(param).(sensors{iSen}) = struct(...
+          'data', NaN(size(sensorData,1),1,'like',sensorData), ...
+          'bitmask', zeros(size(sensorData,1),1,'uint16'));
+        if(~all(probeEnabled(:,iSen)==0))
+          % One of the not completely disabled probes, store columnIn from
+          % sensorData in corresponding DATAC location. FIXME when allowing
+          % for switching enabled/disabled probes.
+          DATAC.(param).(sensors{iSen}).data = sensorData(:,columnIn);
+          columnIn = columnIn+1;
+        end
+      end
       %Set disabled bit
       idxDisabled = probeEnabled(:,iSen)==0;
       if(any(idxDisabled>0))
@@ -701,10 +727,9 @@ end
     flag = get_variable(dataObj,[varPrefix probe '_enable']);
     dtSampling = median(diff(flag.DEPEND_0.data));
     switch DATAC.tmMode
-%      case MMS_CONST.TmMode.srvy, error('kaboom')
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
-      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
+      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763]; %0.0391 in Marks sample file sent 2015/05/06.
       case MMS_CONST.TmMode.comm, dtNominal = [0.500, 1.250, 2.500, 5.000];
       otherwise
         errS = 'Unrecognized tmMode';
@@ -732,9 +757,12 @@ end
       if isempty(flag)
         errS = ['cannot get ' varPrefix probe '_enable'];
         irf.log('critical',errS), error(errS)
+      elseif numel(flag.data) == 0
+        irf.log('warning',['Empty variable ' varPrefix probe '_enable. Assuming disabled.']);
+        flag.data = zeros(nData,1);
       elseif numel(flag.data) ~= nData
         errS = ['bad size for ' varPrefix probe '_enable'];
-        irf.log('critical',errS), error(errS)
+        irf.log('critical',errS); error(errS);
       end
       enabled.data(:,iF) = flag.data;
     end
