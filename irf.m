@@ -299,6 +299,12 @@ switch lower(action)
           disp('Operating system is OK');
           if(nargout), out=true; end;
             datastore('irfu_matlab','okCheckOS',true);
+	case('PCWIN')
+	  % Untested, no guarantee it will work.
+	  disp('Operating system, Windows 32 bit, is not fully tested with IRFU-MATLAB.');
+	  disp('Recommended OS are: Linux, Mac and Windows (all 64 bit).');
+	  if(nargout), out=true; end;
+            datastore('irfu_matlab','okCheckOS',true);
         otherwise
           disp('Currently only compiled SPDF* mex files for the Linux, Windows and Mac operating systems (all 64bit) are included.');
           disp('If running on other system, please contact IRFU for help.');
