@@ -25,15 +25,8 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
-Units=irf_units;
-
 nPlasmaSpecies=numel(Plasma.q);
 J.plasma=cell(nPlasmaSpecies,1);
-%Plasma.TK=Plasma.T*Units.e/Units.kB;
-
-%if strcmpi(Probe.type,'spherical'), probe_type=1;end
-%if strcmpi(Probe.type,'cylindrical'), probe_type=2;end
-%if strcmpi(Probe.type,'arbitrary'), probe_type=1;end
 
 J.photo = -lp.photocurrent(Probe.Area.sunlit, vectorU, rSunAU,Probe.surface);
 J.photo = J.photo .* factorUV;
@@ -69,6 +62,7 @@ for ii=1:nPlasmaSpecies,
 	J.probe=J.probe+J.plasma{ii};
 end
 end
+
 function jThermal = thermal_current(Lprobe,n,T,m,vsc,q,vectorU)
 % calculates thermal current to Langmuir probe
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
