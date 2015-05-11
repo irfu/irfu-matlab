@@ -154,7 +154,7 @@ switch(param)
     sensors = {'e12','e34','e56'};
     init_param()
     apply_nom_amp_corr()
-    if(isfield(dataObj.data, [varPrefix, 'dcv_sensor']))
+    if(isfield(dataObj.data, [varPrefix, 'dcv_sensor']) && DATAC.dce.fileVersion.major>=1)
       % It appears to be a combined file, extract DCV variables.
       irf.log('notice','Combined DCE & DCV file.');
       param = 'dcv';
@@ -745,7 +745,7 @@ end
     switch DATAC.tmMode
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
-      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763]; %0.0391 in Marks sample file sent 2015/05/06.
+      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
       case MMS_CONST.TmMode.comm, dtNominal = [0.500, 1.250, 2.500, 5.000];
       otherwise
         errS = 'Unrecognized tmMode';
