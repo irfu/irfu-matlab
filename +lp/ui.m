@@ -262,7 +262,7 @@ classdef ui < handle
 				factorUvString = '1';
 				set(obj.UserData.inp.factorUvValue,'String','1')
 			end
-			obj.InputParameters.factorUV = num2str(factorUvString);
+			obj.InputParameters.factorUV = str2double(factorUvString);
 		end
 		function get_distance_to_sun_au(obj)
 			rSunString = get(obj.UserData.inp.rSunValue,'String'); % in cm
@@ -308,7 +308,7 @@ classdef ui < handle
 				obj.InputParameters.factorUV,...
 				obj.PlasmaList(obj.plasmaUsed));
 			obj.Output.J = jProbe;
-			obj.Output.dUdI=gradient(obj.InputParameters.factorUV,obj.Output.J.probe);
+			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.probe);
 		end
 		function plot_UI_probe(obj)
 			% plot IU curve
