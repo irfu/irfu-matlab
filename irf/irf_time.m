@@ -11,9 +11,9 @@ function t_out = irf_time(t_in,flag)
 %
 %   Formats 'in' and 'out' can be (default 'in' is 'epoch'):%
 %      epoch: seconds since the epoch 1 Jan 1970, default, used by the ISDAT system.
-%     vector: [year month date hour min sec] in each row, last five columns optional
-%    vector6: [year month date hour min sec] in each row
-%    vector9: [year month date hour min sec msec micros nanosec] in each row
+%     vector: [year month date hour min sec] last five columns optional
+%    vector6: [year month date hour min sec] 
+%    vector9: [year month date hour min sec msec micros nanosec]
 %        iso: deprecated, same as 'utc' 
 %       date: MATLAB datenum format
 %    datenum: same as 'date'
@@ -25,6 +25,8 @@ function t_out = irf_time(t_in,flag)
 %             changed to year, 'mm' month, 'dd' day, 'HH' hour, 'MM'
 %             minute, 'SS' second, 'mmm' milisceonds, 'uuu' microseconds,
 %             'nnn' nanoseconds. E.g. 'utc_yyyy-mm-dd HH:MM:SS.mmm'
+%             Values exceeding the requested precision are truncated,
+%             e.g. 10:40.99 is returned as "10:40" using format "utc_HH:MM".
 %   cdfepoch: miliseconds since 1-Jan-0000
 % cdfepoch16: [seconds since 1-Jan-0000, picoseconds within the second]
 %
@@ -255,24 +257,7 @@ switch lower(flag)
 			immm  = strfind(fmt,'mmm');
 			iuuu  = strfind(fmt,'uuu');
 			innn  = strfind(fmt,'nnn');
-			if innn,
-				dtRound = 0;
-			elseif iuuu,
-				dtRound = 0.5e3; % ns
-			elseif immm,
-				dtRound = 0.5e6;
-			elseif iSS,
-				dtRound = 0.5e9;
-			elseif iMM,
-				dtRound = 30e9;
-			elseif iHH,
-				dtRound = 30*60e9;
-			elseif idd,
-				dtRound = 0;
-			else
-				dtRound = 0;
-			end
-			tVec9 = irf_time(t_in+int64(dtRound),'ttns>vector9');
+			tVec9 = irf_time(t_in,'ttns>vector9');
 			t_out = repmat(fmt,size(t_in,1),1);
 			if iyyyy, t_out(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
 			if imm,   t_out(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
