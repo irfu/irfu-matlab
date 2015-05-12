@@ -569,12 +569,12 @@ end
     if length(Blen)==1
       senDist = sensor_dist(Blen.len);
       irf.log('notice',['Adjusting sensor dist to [ '...
-        num2str(senDist,'%.1f ') '] meters'])
+        num2str(senDist,'%.2f ') '] meters'])
     else
       boomLen = zeros(length(DATAC.dce.time),4);
       for i=1:length(Blen)
         irf.log('notice',['Adjusting sensor dist to [ '...
-        num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+        num2str(sensor_dist(Blen(i).len),'%.2f ') '] meters from ' ...
         Blen(i).time.toUtc(1)])
         idx = find(DATAC.dce.time>=Blen(i).time.epoch);
         boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
