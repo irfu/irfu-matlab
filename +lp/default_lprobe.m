@@ -1,9 +1,25 @@
-function lprobeList = default_lprobe( lprobeNames )
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
+function lprobeListOutput = default_lprobe( lprobeNames )
+%LP.DEFAULT_LPROBE select default Langmuir probes
+% 
+% Langmuir probes are defined by class LP.LPROBE
+%
+%  LP.DEFAULT_LPROBE print the list of available probes
+%
+%  OUT = LP.DEAFAULT_LPROBE return all Langmuir probes
+%
+%  OUT = LP.DEAFAULT_LPROBE({name1,name2,..}) return selectec Langmuir probes
+%
 
-lprobeNamesList = {'sphere',   'wire',  'sphere+wire',  'Cluster', 'MMS_SDP', 'MMS_ADP'};
-LpFunc          = {@lp_sphere @lp_wire @lp_sphere_wire @lp_Cluster @lp_MMS_SDP @lp_MMS_ADP};
+lprobeList = {'sphere',       @lp_sphere;...
+	            'wire',         @lp_wire;...
+	            'sphere+wire',  @lp_sphere_wire;...
+	            'Cluster',      @lp_Cluster;...
+	            'MMS_SDP',      @lp_MMS_SDP;...
+	            'MMS_ADP',      @lp_MMS_ADP;...
+	            'Solar_Orbiter',@lp_Solar_Orbiter...
+	            };
+lprobeNamesList = lprobeList(:,1);
+lprobeLpFunc    = lprobeList(:,2);
 
 if nargin == 0 && nargout == 0
 	for iLprobe = 1:numel(lprobeNamesList),
@@ -21,9 +37,9 @@ for iLprobe = 1:numel(lprobeNames),
 end
 
 if iFoundLprobe
-	lprobeList = LpFunc{iFoundLprobe(1)}();
+	lprobeListOutput = lprobeLpFunc{iFoundLprobe(1)}();
 	for j=2:numel(iFoundLprobe)
-		lprobeList(j) = LpFunc{iFoundLprobe(j)}();
+		lprobeListOutput(j) = lprobeLpFunc{iFoundLprobe(j)}();
 	end
 end
 
@@ -76,6 +92,13 @@ end
 		Lprobe.surface = 'cluster';
 		Lprobe.radiusWire = 0.5e-2;
 		Lprobe.lengthWire = 1;
+	end
+	function Lprobe = lp_Solar_Orbiter
+		Lprobe = lp.lprobe;
+		Lprobe.name = 'Solar Orbiter';
+		Lprobe.surface = 'elgiloy';
+		Lprobe.radiusWire = (0.01887+0.0314)/2/2;
+		Lprobe.lengthWire = 6.1604;
 	end
 
 end
