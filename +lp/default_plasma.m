@@ -1,13 +1,13 @@
-function plasmaList = default_plasma( plasmaNames )
+function plasmaListOutput = default_plasma( plasmaNames )
 %LP.DEFAULT_PLASMA different default plasma environments
 %
 % Plasma models are defined by class LP.PLASMA
 %
-%  LP.DEFAULT_LPROBE print the list of available probes
+%  LP.DEFAULT_PLASMA print the list of available plasma models
 %
-%  OUT = LP.DEAFAULT_LPROBE return all Langmuir probes
+%  OUT = LP.DEFAULT_PLASMA return cell array with all plasma models
 %
-%  OUT = LP.DEAFAULT_LPROBE({name1,name2,..}) return selectec Langmuir probes
+%  OUT = LP.DEFAULT_PLASMA({name1,name2,..}) return selected plasma models
 %
 
 plasmaList = {'sw@1AU',       @p_sw_1AU;...
@@ -35,9 +35,9 @@ for iPlasma = 1:numel(plasmaNames),
 end
 
 if iFoundPlasma
-	plasmaList = PlasmaFunc{iFoundPlasma(1)}();
+	plasmaListOutput = PlasmaFunc{iFoundPlasma(1)}();
 	for j=2:numel(iFoundPlasma)
-		plasmaList(j) = PlasmaFunc{iFoundPlasma(j)}();
+		plasmaListOutput(j) = PlasmaFunc{iFoundPlasma(j)}();
 	end
 end
 
