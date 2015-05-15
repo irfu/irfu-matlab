@@ -358,7 +358,30 @@ classdef TSeries
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
-    end
+		end
+		function obj = plus(obj,inp)
+			if isnumeric(inp) && ...
+					((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
+				obj.data_ = obj.data_ + inp;
+			else
+				error('Plus not defined');
+			end
+		end
+		function obj = minus(obj,inp)
+			if isnumeric(inp) && ...
+					((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
+				obj.data_ = obj.data_ - inp;
+			else
+				error('Plus not defined');
+			end
+		end
+		function obj = mtimes(obj,inp)
+			if isnumeric(inp) && numel(inp) == 1,
+				obj.data_ = obj.data_ * inp;
+			else
+				error('mtimes not defined');
+			end
+		end
   end
   
   methods (Access=protected)
