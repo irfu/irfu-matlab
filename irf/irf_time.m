@@ -29,6 +29,7 @@ function t_out = irf_time(t_in,flag)
 %             e.g. 10:40.99 is returned as "10:40" using format "utc_HH:MM".
 %   cdfepoch: miliseconds since 1-Jan-0000
 % cdfepoch16: [seconds since 1-Jan-0000, picoseconds within the second]
+%    epochtt: return class EPOCHTT
 %
 %  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch>out');
 %  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector>epoch');
@@ -209,6 +210,10 @@ switch lower(flag)
         % Assume 0 picoseconds.
         t_out = spdfcomputeepoch16([ttBreak zeros(size(ttBreak,1),1)]);
 
+	case 'ttns>epochtt'
+		t_out = EpochTT(t_in);
+	case 'epochtt>ttns'
+		t_out = t_in.ttns;
 		%
 		% Time interval conversions
 		%
