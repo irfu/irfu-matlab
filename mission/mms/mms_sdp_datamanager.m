@@ -154,22 +154,31 @@ switch(param)
     sensors = {'e12','e34','e56'};
     init_param()
     apply_nom_amp_corr()
-    if(isfield(dataObj.data, [varPrefix, 'dcv_sensor']) && DATAC.dce.fileVersion.major>=1)
-      % It appears to be a combined file, extract DCV variables.
-      irf.log('notice','Combined DCE & DCV file.');
-      param = 'dcv';
-      sensors = {'v1','v2','v3','v4','v5','v6'};
-      init_param()
-      chk_timeline()
-      chk_latched_p()
-      %apply_transfer_function()
-      v_from_e_and_v()
-      chk_bias_guard()
-      chk_sweep_on()
-      chk_sdp_v_vals()
-    elseif(DATAC.dce.fileVersion.major>=1)
-      irf.log('warning','DCE major version >= 1 but not combined DCE & DCV data?');
+    
+    if ~isfield(dataObj.data, [varPrefix, 'dcv_sensor']) || ...
+        DATAC.dce.fileVersion.major<1
+      if DATAC.dce.fileVersion.major>=1 
+        irf.log('warning',...
+          'DCE major version >= 1 but not combined DCE & DCV data?');
+      end
+      return
     end
+      
+    % It appears to be a combined file, extract DCV variables.
+    irf.log('notice','Combined DCE & DCV file.');
+    
+    param = 'dcv';
+    sensors = {'v1','v2','v3','v4','v5','v6'};
+    init_param()
+    chk_timeline()
+    chk_latched_p()
+    apply_transfer_function()
+    v_from_e_and_v()
+    chk_bias_guard()
+    chk_sweep_on()
+    chk_sdp_v_vals()
+    sensors = {'e12','e34'};
+    corr_adp_spikes()
 
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -181,6 +190,8 @@ switch(param)
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
+    sensors = {'e12','e34'};
+    corr_adp_spikes()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -559,6 +570,29 @@ end
     % If not, set bit in both V and E bitmask.
     
     %XXX: Does nothing at the moment
+  end
+
+  function corr_adp_spikes()
+    % correct ADP shadow spikes
+    MODEL_THRESHOLD = .01;
+    MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
+    
+    phase = mms_sdp_datamanager('phase');
+    if mms_is_error(phase)
+      errStr='Bad PHASE intput, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
+    irf.log('notice','Removing ADP spikes');
+    model = mms_sdp_model_adp_shadow(DATAC.dce,phase);
+    
+    for iSen = 1:min(numel(sensors),2)
+      sen = sensors{iSen};
+      DATAC.dce.(sen).data = ...
+        single(double(DATAC.dce.(sen).data) - model.(sen));
+      idx = abs(model.(sen))>MODEL_THRESHOLD;
+      DATAC.dce.(sen).bitmask(idx) = ...
+        bitand(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+    end
   end
 
   function apply_nom_amp_corr()
