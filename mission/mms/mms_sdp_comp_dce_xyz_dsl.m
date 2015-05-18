@@ -35,6 +35,12 @@ switch procId
       errStr='Bad ADC_OFF intput, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
+    
+    delta_off = mms_sdp_datamanager('delta_off');
+    if mms_is_error(delta_off)
+      errStr='Bad ADC_OFF intput, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
 
     sdpProbes = fieldnames(adc_off); % default {'e12', 'e34'}
     Etmp = struct('e12',dce.e12.data,'e34',dce.e34.data);
@@ -48,7 +54,7 @@ switch procId
     Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
     Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
 
-    dE = mms_sdp_despin(Etmp.e12, Etmp.e34, phase.data);
+    dE = mms_sdp_despin(Etmp.e12, Etmp.e34, phase.data, delta_off);
 
     % FIXME: apply DSL offsets here 
 

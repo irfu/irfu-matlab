@@ -85,6 +85,7 @@ if strcmpi(param, 'init')
   DATAC.dcv = [];         % src DCV file
   DATAC.defatt = [];      % src DEFATT file
   DATAC.defeph = [];      % src DEFEPH file
+  DATAC.delta_off = [];   % comp delta offsets
   DATAC.hk_101 = [];      % src HK_101 file
   DATAC.hk_105 = [];      % src HK_105 file
   DATAC.hk_10e = [];      % src HK_10E file
