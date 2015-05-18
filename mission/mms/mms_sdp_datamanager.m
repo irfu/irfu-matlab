@@ -569,12 +569,12 @@ end
     if length(Blen)==1
       senDist = sensor_dist(Blen.len);
       irf.log('notice',['Adjusting sensor dist to [ '...
-        num2str(senDist,'%.1f ') '] meters'])
+        num2str(senDist,'%.2f ') '] meters'])
     else
       boomLen = zeros(length(DATAC.dce.time),4);
       for i=1:length(Blen)
         irf.log('notice',['Adjusting sensor dist to [ '...
-        num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+        num2str(sensor_dist(Blen(i).len),'%.2f ') '] meters from ' ...
         Blen(i).time.toUtc(1)])
         idx = find(DATAC.dce.time>=Blen(i).time.epoch);
         boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
@@ -746,7 +746,7 @@ end
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
       case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
-      case MMS_CONST.TmMode.comm, dtNominal = [0.500, 1.250, 2.500, 5.000];
+      case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0];
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)
