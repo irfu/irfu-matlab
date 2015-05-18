@@ -24,4 +24,4 @@ end
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
   double(spinfits.sfit.e34(:,2:3));
 
-delta_off = median(Delta_p12_p34(:,1)) - median(Delta_p12_p34(:,2))*1j;
+delta_off = median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;

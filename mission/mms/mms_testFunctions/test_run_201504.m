@@ -19,7 +19,7 @@ MMS_CONST=mms_constants;
 %% Define time
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
-tint = irf.tint('2015-05-15T18:00:00Z/2015-05-15T23:59:59Z');
+tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
 mmsId = 'mms4'; 
 
@@ -89,7 +89,7 @@ ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
 hca = irf_panel('Ey'); comp = 2;
 irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))+imag(delta_off)],...
+  [epochS double(spinfits.sfit.e12(:,comp+1))-imag(delta_off)],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
 ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
