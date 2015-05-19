@@ -116,12 +116,13 @@ end
 %% Define parameters for selected database
 switch omniDatabase
 	case 'omni_hour'
-		dataSource       = 'omni2';
-		dateFormat       = 'utc_yyyymmdd';
-		dtAtIntervalEnds = 0;
+		dataSource  = 'omni2';
+		dateFormat  = 'utc_yyyymmdd';
+		dtMin       = 24*3600;
 	case 'omni_min'
-		dataSource       = 'omni_min';
-		dateFormat       = 'utc_yyyymmddHH';
+		dataSource  = 'omni_min';
+		dateFormat  = 'utc_yyyymmddHH';
+		dtMin       = 3600;
 		dtAtIntervalEnds = 0.5*3600;
 	otherwise
 		errStr = ['no such source: '  omniDatabase];
@@ -131,8 +132,8 @@ end
 
 %% Define request url and time interval
 httpRequest = ['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
-startDate   = irf_time(tint(1) - dtAtIntervalEnds,dateFormat);
-endDate     = irf_time(tint(2) - dtAtIntervalEnds,dateFormat);
+startDate   = irf_time(tint(1)        ,dateFormat);
+endDate     = irf_time(tint(2) + dtMin,dateFormat);
 
 %% Define variables to be requested
 ii     = strfind(parameter,',');
