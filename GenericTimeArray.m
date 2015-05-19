@@ -187,8 +187,12 @@ classdef (Abstract) GenericTimeArray
           case '.'
             [varargout{1:nargout}] = builtin('subsref',obj,idx);
           case '()'
-            tmpEpoch = builtin('subsref',obj.epoch,idx);
-            [varargout{1:nargout}] = feval(class(obj),tmpEpoch);
+            tmpEpoch = builtin('subsref',obj.epoch,idx(1));
+						out = feval(class(obj),tmpEpoch);
+						if numel(idx) > 1,
+							out = builtin('subsref',out,idx(2:end));
+						end
+						[varargout{1:nargout}] = out;
             % No support for indexing using '{}'
           case '{}'
             error('irf:GenericTimeArray:subsref',...

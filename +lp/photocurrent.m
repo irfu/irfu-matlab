@@ -28,7 +28,7 @@ function [jPhoto] = photocurrent( iluminatedArea, U, distanceSunAU ,flag)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 narginchk(0,4)
 
-surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV','TiN'};
+surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV','TiN','elgiloy'};
 if nargin==0 && nargout ==0,
 	for ii=1:numel(surface_materials)
 		surf=surface_materials{ii};
@@ -113,6 +113,12 @@ switch lower(flag)
 		
 	case {'solar cells','solar cell'}
 		jZero       = 20e-6;
+		jZeroThemis = lp.photocurrent(1,0,1,'themis');
+		jPhoto      = jZero/jZeroThemis ...
+			            * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');
+		
+	case 'elgiloy'
+		jZero       = 30e-6;
 		jZeroThemis = lp.photocurrent(1,0,1,'themis');
 		jPhoto      = jZero/jZeroThemis ...
 			            * lp.photocurrent(iluminatedArea,U,distanceSunAU,'themis');

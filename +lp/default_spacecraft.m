@@ -1,7 +1,21 @@
-function ScList = default_spacecraft(scNames)
+function ScListOutput = default_spacecraft(scNames)
 %LP.DEFAULT_SPACECRAFT return existing default spacecraft
-scNamesList = {'Cluster','THEMIS'};
-ScFunc      = {@sc_Cluster @sc_THEMIS};
+%
+% Spacecraft parameters are defined by LP.SPACECRAFT
+%
+%  LP.SPACECRAFT print the list of available spacecraft
+%
+%  OUT = LP.SPACECRAFT return all cell array with all spacecraft
+%
+%  OUT = LP.SPACECRAFT({name1,name2,..}) return selected spacecraft
+%
+
+scList = {'Cluster',       @sc_Cluster,...
+          'THEMIS',        @sc_THEMIS;...
+          'Solar_Orbiter', @sc_Solar_Orbiter;...
+					};
+scNamesList = scList(:,1);
+ScFunc      = scList(:,2);
 
 if nargin == 0 && nargout == 0
 	for iSc = 1:numel(scNamesList),
@@ -19,9 +33,9 @@ for iSc = 1:numel(scNames),
 end
 
 if iFoundSc
-	ScList = ScFunc{iFoundSc(1)}();
+	ScListOutput = ScFunc{iFoundSc(1)}();
 	for j=2:numel(iFoundSc)
-		ScList(j) = ScFunc{iFoundSc(j)}();
+		ScListOutput(j) = ScFunc{iFoundSc(j)}();
 	end
 end
 
@@ -40,6 +54,18 @@ end
 	function Sc = sc_THEMIS
 		Sc = lp.spacecraft;
 		Sc.probe = lp.default_lprobe('Cluster'); %data.probe.type='spherical';
+	end
+	function Sc = sc_Solar_Orbiter
+		Sc = lp.spacecraft;
+		Sc.name  = 'Solar Orbiter';
+		Sc.probe = lp.default_lprobe('Solar_Orbiter');
+		Sc.surface = 'solar cells';% 
+		Sc.areaTotal = 10; %  
+		Sc.areaSunlit = 3; % 
+		Sc.areaSunlitGuard = 0; 
+		Sc.probeRefPotvsSatPot = 0.2;	
+		Sc.nProbes = 3; %    
+		Sc.probeDistanceToSpacecraft = 6;
 	end
 end
 

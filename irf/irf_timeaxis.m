@@ -1,7 +1,8 @@
 function irf_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
-%ADD_TIMEAXIS  add time axis
+%IRF_TIMEAXIS  add time axis
 %
 % function irf_timeaxis( h, t_start_epoch, xlabels, xlabeltitle );
+% function irf_timeaxis( h, xlabels, xlabeltitle );
 % function irf_timeaxis( h, t_start_epoch );
 % function irf_timeaxis( h, 'usefig' );      % to use t_start_epoch from the figure
 % function irf_timeaxis( h, 'date' );        % to add xlabel with date
@@ -21,15 +22,25 @@ function irf_timeaxis( h, t_start_epoch, xlabels, xlabeltitle )
 % to the time of labels xlabeltitle = {'LAB1' 'LAB2' ..}; is the str
 % for labels.
 
-flag_labels=1; % default is to add labels to the last axis handle, can be changed by 'nolabels' argument
-flag_date=1;   % default is to add date labels
-flag_add_extra_xlabels=0; % default add only time labels on x axis
+addLabelsToLastHandle = true;  % can be changed by 'nolabels' argument
+addDateLabel          = true;  % default is to add date label to last handle
+addXtraXlabels        = false; % default add only time labels on x axis
+useFiguresTEpochStart = false;
 
 if nargin == 0
     h = gca;
 end
 if nargin > 2,
-    flag_add_extra_xlabels=1;
+    addXtraXlabels = true;
+		if nargin == 3,
+			xlabeltitle = xlabels; % TODO bad style, redo all input with varargin
+			xlabels = t_start_epoch;
+			t_start_epoch =[];
+			if isa(xlabels,'TSeries'),
+				xlabels = [xlabels.time.epochUnix xlabels.data];
+			end
+			useFiguresTEpochStart = true;
+		end
     for j=1:numel(h)
         ud=get(h,'UserData');
         if ~isstruct(ud), clear ud; ud=struct; end
@@ -43,16 +54,14 @@ hh = reshape( h, 1, numel(h) );
 clear h;
 h = hh;
 
-flag_usefig = 0;
-
 if (nargin >= 2) && (ischar(t_start_epoch))
     if strcmp(t_start_epoch,'date')
-        flag_date = 1;
+        addDateLabel = true;
     elseif strcmp(t_start_epoch,'nodate')
-        flag_date = 0;
+        addDateLabel = false;
     elseif strcmp(t_start_epoch,'nolabels')
-        flag_labels = 0;
-        flag_date = 0;
+        addLabelsToLastHandle = false;
+        addDateLabel = true;
         remove_extra_xlabel_handles(h);
         for j=1:numel(h), % clean extra xlabels if present
             ud=get(h(j),'UserData');
@@ -61,11 +70,11 @@ if (nargin >= 2) && (ischar(t_start_epoch))
             set(h(j),'UserData',ud);
         end
     elseif strcmp(t_start_epoch,'usefig')
-        flag_usefig = 1;
+        useFiguresTEpochStart = 1;
     end
 end
 
-if ~exist('t_start_epoch','var') || ischar(t_start_epoch) || flag_usefig
+if ~exist('t_start_epoch','var') || ischar(t_start_epoch) || useFiguresTEpochStart
     user_data = get(gcf,'userdata');
     if isfield(user_data,'t_start_epoch')
         t_start_epoch = double(user_data.t_start_epoch);
@@ -76,15 +85,15 @@ end
 
 for j=1:numel(h)
 %    xlabel(h(j),'');
-	if flag_date==0, xlabel(h(j),''); end
+	if addDateLabel==0, xlabel(h(j),''); end
     tint = get(h(j),'xlim') + t_start_epoch;
     res  = timeaxis(tint);
     set( h(j), 'XTick', res{1} - t_start_epoch );
     if j == numel(h),
-        if ~flag_add_extra_xlabels,
+        if ~addXtraXlabels,
             ud=get(h(j),'UserData');
             if isfield(ud,'xlabels'), % add extra labels
-                flag_add_extra_xlabels=1;
+                addXtraXlabels = true;
                 xlabels=ud.xlabels;
                 xlabeltitle=ud.xlabeltitle;
             else                                 % add only time labels
@@ -95,7 +104,7 @@ for j=1:numel(h)
         set( h(j), 'XTickLabel','');
     end
     
-    if flag_add_extra_xlabels,  % xlabels should be added
+    if addXtraXlabels,  % xlabels should be added
         set( h(j), 'XTickLabel','');
         lab    = res{2};
         xcoord = res{1};
@@ -126,7 +135,7 @@ for j=1:numel(h)
         str = 'UT      ';
         for jj = 0:size(xlabeltitle,2),
             if jj>0,
-                flag_date=0; % if more than one line in xlabels, remove date
+                addDateLabel=0; % if more than one line in xlabels, remove date
                 str      = [repmat(' \newline',1,jj) xlabeltitle{jj} '     '];
             end
             h_xlabeltitle(jj+1) = text( ax(1),ax(3), str, 'parent',h(j));
@@ -141,10 +150,10 @@ end
 
 xlimlast=get(h(end),'xlim');
 time_label = irf_time(xlimlast(1) + t_start_epoch,'epoch>utc_yyyy-mm-dd UTC');
-if flag_date == 1 && flag_add_extra_xlabels ~= 1 && diff(xlimlast)<=3600*24*100, 
+if addDateLabel == 1 && addXtraXlabels ~= 1 && diff(xlimlast)<=3600*24*100, 
     xlabel(h(end),time_label);  % add data only if no extra xlabels
 end
-if flag_labels == 0, 
+if addLabelsToLastHandle == 0, 
     set(h(end),'XTickLabel',' ');
 end
 return;

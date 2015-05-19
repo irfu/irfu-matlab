@@ -270,7 +270,7 @@ classdef ui < handle
 				rSunString = '1';
 				set(obj.UserData.inp.rSunValue,'String','1')
 			end
-			obj.InputParameters.rSunAU = num2str(rSunString);
+			obj.InputParameters.rSunAU = str2double(rSunString);
 		end
 		function get_u_interval(obj)
 			vectorUString = get(obj.UserData.inp.vectorUValue,'String'); % in cm
