@@ -39,7 +39,7 @@ for iSig = 1:length(signals)
   for iS = 1:length(expShadow)
     sha = expShadow(iS);
     idxFirst = 1;
-    while idxFirst<nData-winPoints+stepPoints
+    while true
       idxLast = idxFirst + winPoints -1;
       if idxLast>nData
         idxLast = nData; idxFirst = idxLast - winPoints;
@@ -66,6 +66,7 @@ for iSig = 1:length(signals)
         %end
       end
       idxFirst = idxFirst+stepPoints;
+      if idxFirst>=nData-winPoints+stepPoints, break, end
     end
   end
   modelOut.(sig) = interp1(timeTmp,model,epochTmp,'spline');
