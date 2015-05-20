@@ -643,7 +643,7 @@ end
     end
     
     % Nominal boom length used in L1b processor
-    NOM_BOOM_L = .001; % 1m, XXX the tru value should be 120 m
+    NOM_BOOM_L = .12; % 120 m
     
     MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
     for iSen = 1:2:numel(sensors)
