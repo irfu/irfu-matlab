@@ -44,11 +44,6 @@ switch procId
       errStr='Bad SAMPLERATE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
-    % Filter window size, default 20 s * Samplerate = 160 samples (slow),
-    % 640 samples (fast), 163'840 samples (brst).
-    windowSize = samplerate*filterInterval;
-    % Create filter coefficients for moving average filter.
-    a = 1; b = (1/windowSize)*ones(1,windowSize);
     % Blank sweeps
     sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
     dcv.v1.data = mask_bits(dcv.v1.data, dcv.v1.bitmask, sweepBit);
@@ -56,7 +51,11 @@ switch procId
     dcv.v3.data = mask_bits(dcv.v3.data, dcv.v3.bitmask, sweepBit);
     dcv.v4.data = mask_bits(dcv.v4.data, dcv.v4.bitmask, sweepBit);
     % Apply moving average filter (a,b) on spin plane probes 1, 2, 3 & 4.
-    MAfilt = filter(b, a, [dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data], [], 1);
+    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
+    MAfilt = irf_filt([epo...
+      double([dcv.v1.data dcv.v1.data dcv.v1.data dcv.v1.data])],...
+      0,1/filterInterval,samplerate,filtOr);
+    MAfilt(:,1) = [];
     % For each timestamp get median value of the moving average.
     MAmedian = median(MAfilt, 2);
     % For each probe check if it is too far off from the median
