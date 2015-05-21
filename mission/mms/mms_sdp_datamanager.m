@@ -644,9 +644,11 @@ end
     
     % Nominal boom length used in L1b processor
     NOM_BOOM_L = .12; % 120 m
+    NOM_BOOM_L_ADP = .0292; % 29.2m
     
     MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
     for iSen = 1:2:numel(sensors)
+      if iSen == 5, NOM_BOOM_L = NOM_BOOM_L_ADP; end
       senA = sensors{iSen}; senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
       senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
