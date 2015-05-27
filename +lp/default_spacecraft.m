@@ -47,7 +47,7 @@ end
 		Sc.areaTotal = 25.66; %   set(data.inp.sc.total_area_value,'string','25.66');
 		Sc.areaSunlit = 3.87; %   set(data.inp.sc.sunlit_area_value,'string','3.87');
 		Sc.areaSunlitGuard = 0.039; %    set(data.inp.sc.antenna_guard_area_value,'string','0.039');
-		Sc.probeRefPotvsSatPot = 0.2;		%     set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
+		Sc.probeRefPotVsSatPot = 0.2;		%     set(data.inp.sc.probe_refpot_as_fraction_of_scpot_value,'string','.2');
 		Sc.nProbes = 4; %     set(data.inp.sc.number_of_probes_value,'string','4');
 		Sc.probeDistanceToSpacecraft = 44; %     set(data.inp.sc.probe_distance_to_spacecraft_value,'string','44');
 	end
@@ -63,7 +63,7 @@ end
 		Sc.areaTotal = 10; %  
 		Sc.areaSunlit = 3; % 
 		Sc.areaSunlitGuard = 0; 
-		Sc.probeRefPotvsSatPot = 0.2;	
+		Sc.probeRefPotVsSatPot = 0.2;	
 		Sc.nProbes = 3; %    
 		Sc.probeDistanceToSpacecraft = 6;
 	end

@@ -91,8 +91,8 @@ classdef ui < handle
 			inp.probe.typeValue                  = uicontrol('Parent',hp,'String',popuptxt,'style','popup','Position',[60  230 130  20],'backgroundcolor','white','Callback',@(src,evt)obj.set_probe_type(src,evt));
 			inp.probe.srufaceText                = uicontrol('Parent',hp,'String','surface','style','text','Position',[0   210 60   20],'backgroundcolor',colPanelBg);
 			inp.probe.surfaceValue               = uicontrol('Parent',hp,'String',[{'user defined'} lp.photocurrent],'Position',[60  210 130  20],'style','popup','backgroundcolor','white');
-			inp.probe.areaTotalVsSunliText       = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   190 120 20],'style','text');
-			inp.probe.areaTotalVsSunlitValue     = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 190 70  20],'backgroundcolor','white');
+			inp.probe.areaTotalVsSunliText       = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   190 120 20],'style','text','backgroundcolor',colPanelBg);
+			inp.probe.areaTotalVsSunlitValue     = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 190 70  20],'backgroundcolor',colPanelBg);
 			inp.probe.radiusSphereText           = uicontrol('Parent',hp,'String','sphere radius [cm]',    'Position',[0   170 120 20]);
 			inp.probe.radiusSphereValue          = uicontrol('Parent',hp,'String','','style','edit',       'Position',[120 170 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_radius_sphere);
 			inp.probe.lengthWireText             = uicontrol('Parent',hp,'String','cyl/wire length [cm]',  'Position',[0   150 120 20]);
@@ -111,23 +111,27 @@ classdef ui < handle
 			inp.update                         = uicontrol('Parent',hp,'String','Update',                'Position',[0   0 60 30],'Callback',@(src,evt)obj.calculate_ui);
 			inp.reset                          = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30],'callback','lp.sweep_gui(''initialize'')');
 			%% initialize s/c menu
-			hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',[.95 1 1],'Position',[.7 .39 .3 .35]);
-			inp.flag_sc                                    = uicontrol('Parent',hsc,'style','radio','String','Model spacecraft','Value',0,             'Position',[0   205 120 25]);
-			inp.sc.example                                 = uicontrol('Parent',hsc,'String','Example spacecraft|Cluster|Solar Orbiter|THEMIS|Cassini','Position',[0   180 150 25],'style','popup','backgroundcolor','white','Callback', @setscexample);
-			surf=lp.photocurrent;probtxt='spacecraft surface';for ii=1:numel(surf),probtxt(end+1:end+1+numel(surf{ii}))=['|' surf{ii}];end
-			inp.sc.surface                                 = uicontrol('Parent',hsc,'String',probtxt,                                                  'Position',[0   155 150 30],'style','popup','backgroundcolor','white');
-			inp.sc.total_area_text                         = uicontrol('Parent',hsc,'String','Total area [m2]',                                        'Position',[0   135 120 25]);
-			inp.sc.total_area_value                        = uicontrol('Parent',hsc,'String',num2str(0),'style','edit',                 'Position',[120 135 50 25],'backgroundcolor','white');
-			inp.sc.sunlit_area_text                        = uicontrol('Parent',hsc,'String','Sunlit area [m2]',                                       'Position',[0   110 120 25]);
-			inp.sc.sunlit_area_value                       = uicontrol('Parent',hsc,'String',num2str(0),'style','edit',                'Position',[120 110 50 25],'backgroundcolor','white');
-			inp.sc.antenna_guard_area_text                 = uicontrol('Parent',hsc,'String','Sunlit guard area [m2]',                                 'Position',[0   85 120 25],'Tooltipstring','Cross section area of pucks and guards, assuming similar photoelectron emission as antenna');
-			inp.sc.antenna_guard_area_value                = uicontrol('Parent',hsc,'String','0','style','edit',                                       'Position',[120 85 50 25],'backgroundcolor','white');
-			inp.sc.probe_refpot_as_fraction_of_scpot_text  = uicontrol('Parent',hsc,'String','Probe refpot/scpot',                                     'Position',[0   60 120 25],'Tooltipstring','The ratio between the probe reference potential and satellite potential');
-			inp.sc.probe_refpot_as_fraction_of_scpot_value = uicontrol('Parent',hsc,'String',num2str(0),         'Position',[120 60 50 25],'style','edit','backgroundcolor','white');
-			inp.sc.number_of_probes_text                   = uicontrol('Parent',hsc,'String','Number of probes',                                       'Position',[0   35 120 25]);
-			inp.sc.number_of_probes_value                  = uicontrol('Parent',hsc,'String',num2str(0),                          'Position',[120 35 50 25],'style','edit','backgroundcolor','white');
-			inp.sc.probe_distance_to_spacecraft_text       = uicontrol('Parent',hsc,'String','distance probe-sc [m]',                                  'Position',[0   10 120 25]);
-			inp.sc.probe_distance_to_spacecraft_value      = uicontrol('Parent',hsc,'String',num2str(0),              'Position',[120 10 50 25],'style','edit','backgroundcolor','white');
+			colPanelBg = [.95 1 1];
+			hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .39 .3 .35]);
+			popuptxt = obj.popup_list(obj.SpacecraftList);
+			uiPar = {'Parent',hsc,'backgroundcolor',colPanelBg,'style','text'};
+			inp.flag_sc                            = uicontrol(uiPar{:},'String','Model spacecraft','Value',0,      'Position',[0   205 120 25],'style','radio');
+			inp.sc.name.text                       = uicontrol(uiPar{:},'String','spacecraft',                      'Position',[0   180 60  20]);
+			inp.sc.name.value                      = uicontrol(uiPar{:},'String',popuptxt,                          'Position',[60  180 150 20],'style','popup','Callback',@(src,evt)obj.set_sc_model(src,evt));
+			inp.sc.surface.text                    = uicontrol(uiPar{:},'String','surface',                         'Position',[0   160 60  20]);
+			inp.sc.surface.value                   = uicontrol(uiPar{:},'String',[{'user defined'} lp.photocurrent],'Position',[60  160 150 20],'style','popup');
+			inp.sc.areaTotal.text                  = uicontrol(uiPar{:},'String','Total area [m2]',                 'Position',[0   140 120 20]);
+			inp.sc.areaTotal.value                 = uicontrol(uiPar{:},'String',num2str(0),'style','edit',         'Position',[120 140 50  20]);
+			inp.sc.areaSunlit.text                 = uicontrol(uiPar{:},'String','Sunlit area [m2]',                'Position',[0   120 120 20],'Callback',@(src,evt)obj.get_sc_area_sunlit);
+			inp.sc.areaSunlit.value                = uicontrol(uiPar{:},'String',num2str(0),'style','edit',         'Position',[120 120 50  20],'backgroundcolor','white');
+			inp.sc.areaSunlitGuard.text            = uicontrol(uiPar{:},'String','Sunlit guard area [m2]',          'Position',[0   100 120  20],'Tooltipstring','Cross section area of pucks and guards, assuming similar photoelectron emission as antenna');
+			inp.sc.areaSunlitGuard.value           = uicontrol(uiPar{:},'String','0','style','edit',                'Position',[120 100  50  20],'backgroundcolor','white');
+			inp.sc.probeRefPotVsSatPot.text        = uicontrol(uiPar{:},'String','Probe refpot/scpot',              'Position',[0   80 120  20],'Tooltipstring','The ratio between the probe reference potential and satellite potential');
+			inp.sc.probeRefPotVsSatPot.value       = uicontrol(uiPar{:},'String',num2str(0),                        'Position',[120 80  50  20],'style','edit','backgroundcolor','white');
+			inp.sc.nProbes.text                    = uicontrol(uiPar{:},'String','Number of probes',                'Position',[0   60 120  20]);
+			inp.sc.nProbes.value                   = uicontrol(uiPar{:},'String',num2str(0),                        'Position',[120 60  50  20],'style','edit','backgroundcolor','white');
+			inp.sc.probeDistanceToSpacecraft.text  = uicontrol(uiPar{:},'String','distance probe-sc [m]',           'Position',[0   40 120  20]);
+			inp.sc.probeDistanceToSpacecraft.value = uicontrol(uiPar{:},'String',num2str(0),                        'Position',[120 40  50  20],'style','edit','backgroundcolor','white');
 			%% initialize plasma menu
 			colPanelBg = [1 1 .95];
 			hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .74 .3 .2]);
@@ -256,6 +260,33 @@ classdef ui < handle
 			lengthWire = str2double(lengthWireCm)*1e-2;
 			obj.set_user_defined_if_probe_changes('lengthWire',lengthWire)
 		end
+		function set_sc_model(obj,varargin)
+			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_plasma_model(obj,'user defined')
+				obj.spacecraftUsed = 1;
+				set(obj.UserData.inp.spacecraft.typeValue,'Value',1);
+				return;
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_plasma_model(obj,numberInPlasmaList)
+				idSpacecraft = varargin{1};
+			elseif nargin == 3, %set_plasma_type(obj,hEvent,event)
+				hEvent = varargin{1};
+				event = varargin{2};
+				disp(event);
+				idSpacecraft = get(hEvent,'Value');
+			else
+				error('lp.ui.set_sc_model unknown input');
+			end
+			set(obj.UserData.inp.sc.name.value,'Value',idSpacecraft);
+			obj.spacecraftUsed = idSpacecraft;
+			spacecraft = obj.SpacecraftList(idSpacecraft);
+			fieldsToUpdate = {'areaTotal','areaSunlit','areaSunlitGuard','probeRefPotVsSatPot','nProbes','probeDistanceToSpacecraft'};
+			obj.UserData.inp.sc = obj.update_input_fields(obj.UserData.inp.sc,fieldsToUpdate,spacecraft);
+		end
+		function get_sc_area_sunlit(obj)
+			areaSunlitStr = get(obj.UserData.inp.sc.areaSunlitValue,'String'); % in m^2
+			if isempty(areaSunlitStr), areaSunlitStr = '0'; end
+			areaSunlit = str2double(areaSunlitStr)*1e-2;
+			obj.set_user_defined_if_sc_changes('areaSunlit',areaSunlit)
+		end
 		function get_factor_uv(obj)
 			factorUvString = get(obj.UserData.inp.factorUvValue,'String'); % in cm
 			if isempty(factorUvString), 
@@ -365,6 +396,18 @@ classdef ui < handle
 			obj.ProbeList(obj.probeUsed).(idString) = vector;
 			obj.update_probe_area_total_vs_sunlit;
 		end
+		function set_user_defined_if_sc_changes(obj,idString,vector)
+			if (obj.spacecraftUsed ~= 1) ...
+					&& numel(vector) == numel(obj.SpacecraftList(obj.spacecraftUsed).(idString)) ...
+					&& all(vector == obj.SpacecraftList(obj.spacecraftUsed).(idString))
+				return
+			else
+				obj.SpacecraftList(1) = obj.SpacecraftList(obj.spacecraftUsed);
+				obj.set_sc_model('user defined');
+			end
+			obj.SpacecratList(obj.spacecraftUsed).(idString) = vector;
+			obj.update_sc_area_total_vs_sunlit;
+		end
 	end
 	methods (Static)
 		function popupText = popup_list(inp)
@@ -393,6 +436,18 @@ classdef ui < handle
 				str = [str num2str(o(ii).(field)*multFactor) ' ']; %#ok<AGROW>
 			end
 			str(end) = [];
+		end
+		function OutputGui = update_input_fields(InputGui,fieldsToUpdate,InputObject)
+			for iField = 1:numel(fieldsToUpdate),
+				field = fieldsToUpdate{iField};
+				if isfield(InputGui.(field),'SIconversion')
+					SIconversion = InputGui.(field).('SIconversion');
+				else
+					SIconversion = 1;
+				end
+				set(InputGui.(field).value,'String',lp.ui.field_to_vector_string(InputObject,field,SIconversion));
+			end
+			OutputGui = InputGui;
 		end
 	end
 end
