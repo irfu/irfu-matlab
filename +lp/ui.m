@@ -6,6 +6,8 @@ classdef ui < handle
 		spacecraftUsed
 		ProbeList % Nr 1 is always user defined  
 		probeUsed % 1..N from ProbeList
+		ProbeSurfaceList % Nr 1 is always user defined  
+		probeSurfaceUsed % 1..N from ProbeSurfaceList
 		PlasmaList
 		plasmaUsed
 		figHandle
@@ -48,6 +50,8 @@ classdef ui < handle
 			obj.ProbeList(1).name = 'user defined';
 			obj.PlasmaList = [obj.PlasmaList(1) obj.PlasmaList];
 			obj.PlasmaList(1).name = 'user defined';
+			obj.ProbeSurfaceList = [{'user defined'} lp.photocurrent];
+			
 			%% Initialize IDE
 			obj.new_ide();
 			obj.spacecraftUsed = 2;
@@ -85,22 +89,28 @@ classdef ui < handle
 			obj.Axes.infoTextHandle = text(0,1,'','parent',obj.Axes.infotext);
 			%% initialize probe menu
 			colPanelBg = [1 0.95 1];
-			hp = uipanel('Title','Probe','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .0 .3 .39]);
-			popuptxt = obj.popup_list(obj.ProbeList);
-			inp.probe.typeText                   = uicontrol('Parent',hp,'String','type','style','text',   'Position',[0   230 60   20],'backgroundcolor',colPanelBg);
-			inp.probe.typeValue                  = uicontrol('Parent',hp,'String',popuptxt,'style','popup','Position',[60  230 130  20],'backgroundcolor','white','Callback',@(src,evt)obj.set_probe_type(src,evt));
-			inp.probe.srufaceText                = uicontrol('Parent',hp,'String','surface','style','text','Position',[0   210 60   20],'backgroundcolor',colPanelBg);
-			inp.probe.surfaceValue               = uicontrol('Parent',hp,'String',[{'user defined'} lp.photocurrent],'Position',[60  210 130  20],'style','popup','backgroundcolor','white');
-			inp.probe.areaTotalVsSunliText       = uicontrol('Parent',hp,'String','total/sunlit area',     'Position',[0   190 120 20],'style','text','backgroundcolor',colPanelBg);
-			inp.probe.areaTotalVsSunlitValue     = uicontrol('Parent',hp,'String','','style','text',       'Position',[120 190 70  20],'backgroundcolor',colPanelBg);
-			inp.probe.radiusSphereText           = uicontrol('Parent',hp,'String','sphere radius [cm]',    'Position',[0   170 120 20]);
-			inp.probe.radiusSphereValue          = uicontrol('Parent',hp,'String','','style','edit',       'Position',[120 170 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_radius_sphere);
-			inp.probe.lengthWireText             = uicontrol('Parent',hp,'String','cyl/wire length [cm]',  'Position',[0   150 120 20]);
-			inp.probe.lengthWireValue            = uicontrol('Parent',hp,'String','','style','edit',       'Position',[120 150 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_length_wire);
-			inp.probe.radiusWireText             = uicontrol('Parent',hp,'String','cyl/wire radius [cm]',  'Position',[0   130 120 20]);
-			inp.probe.radiusWireValue            = uicontrol('Parent',hp,'String','',                      'Position',[120 130 70  20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_probe_radius_wire);
-			inp.probe.biasCurrentText            = uicontrol('Parent',hp,'String','bias current [uA]',     'Position',[0   110 120 20]);
-			inp.probe.biasCurrentValue           = uicontrol('Parent',hp,'String','0','style','edit',      'Position',[120 110 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_bias);
+			hp         = uipanel('Title','Probe','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .0 .3 .39]);
+			uiPar      = {'Parent',hp,'backgroundcolor',colPanelBg,'style','text'};
+			popupProbeTxt        = obj.popup_list(obj.ProbeList);
+			popupProbeSurfaceTxt = obj.popup_list(obj.ProbeSurfaceList);
+			inp.probe.type.text                 = uicontrol(uiPar{:},'String','type','style','text',   'Position',[0   230 60   20]);
+			inp.probe.type.value                = uicontrol(uiPar{:},'String',popupProbeTxt,           'Position',[60  230 130  20],'style','popup','Callback',@(src,evt)obj.set_probe_type(src,evt));
+			inp.probe.surface.text              = uicontrol(uiPar{:},'String','surface',               'Position',[0   210 60   20]);
+			inp.probe.surface.value             = uicontrol(uiPar{:},'String',popupProbeSurfaceTxt,    'Position',[60  210 130  20],'style','popup','Callback',@(src,evt)obj.set_probe_surface(src,evt));
+			inp.probe.areaTotalVsSunlit.text    = uicontrol(uiPar{:},'String','total/sunlit area',     'Position',[0   190 120 20],'style','text');
+			inp.probe.areaTotalVsSunlit.value   = uicontrol(uiPar{:},'String','',                      'Position',[120 190 70  20]);
+			inp.probe.radiusSphere.text         = uicontrol(uiPar{:},'String','sphere radius [cm]',    'Position',[0   170 120 20]);
+			inp.probe.radiusSphere.value        = uicontrol(uiPar{:},'String','','style','edit',       'Position',[120 170 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_radius_sphere);
+			inp.probe.radiusSphere.SIconversion = 1e-2;
+			inp.probe.lengthWire.text           = uicontrol(uiPar{:},'String','cyl/wire length [cm]',  'Position',[0   150 120 20]);
+			inp.probe.lengthWire.value          = uicontrol(uiPar{:},'String','','style','edit',       'Position',[120 150 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_length_wire);
+			inp.probe.lengthWire.SIconversion   = 1e-2;
+			inp.probe.radiusWire.text           = uicontrol(uiPar{:},'String','cyl/wire radius [cm]',  'Position',[0   130 120 20]);
+			inp.probe.radiusWire.value          = uicontrol(uiPar{:},'String','',                      'Position',[120 130 70  20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_probe_radius_wire);
+			inp.probe.radiusWire.SIconversion   = 1e-2;
+			inp.probe.biasCurrent.text          = uicontrol(uiPar{:},'String','bias current [uA]',     'Position',[0   110 120 20]);
+			inp.probe.biasCurrent.value         = uicontrol(uiPar{:},'String','0','style','edit',      'Position',[120 110 70  20],'backgroundcolor','white','Callback',@(src,evt)obj.get_probe_bias);
+			inp.probe.biasCurrent.SIconversion  = 1e-6;
 			%% initialize parameters menu
 			inp.factorUvText                   = uicontrol('Parent',hp,'String','UV factor',             'Position',[0   70 60 20]);
 			inp.factorUvValue                  = uicontrol('Parent',hp,'String',num2str(obj.InputParameters.factorUV),'Position',[70  70 100 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_factor_uv);
@@ -109,7 +119,7 @@ classdef ui < handle
 			inp.vectorUText                    = uicontrol('Parent',hp,'String','U [V]',                 'Position',[0   30 60 20]);
 			inp.vectorUValue                   = uicontrol('Parent',hp,'String',num2str(obj.InputParameters.vectorUString),                      'Position',[70  30 100 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_u_interval);
 			inp.update                         = uicontrol('Parent',hp,'String','Update',                'Position',[0   0 60 30],'Callback',@(src,evt)obj.calculate_ui);
-			inp.reset                          = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30],'callback','lp.sweep_gui(''initialize'')');
+			inp.reset                          = uicontrol('Parent',hp,'String','Reset',                 'Position',[70  0 60 30]); % TODO
 			%% initialize s/c menu
 			colPanelBg = [.95 1 1];
 			hsc = uipanel('Title','Spacecraft','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .39 .3 .35]);
@@ -149,12 +159,12 @@ classdef ui < handle
 			inp.plasma.vString  = uicontrol('Parent',hpl,'String','Vsc [km/s]',       'Position',[0 80 80 20]);
 			inp.plasma.vValue   = uicontrol('Parent',hpl,'String','','style','edit','Position',[80 80 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_v);
 			%% initialize plot menu
-			hpl= uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
-			inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise','Position',[0 0 150 25],'style','popup','backgroundcolor','white','Callback','lp.sweep_gui(''update'')');
-			
-			ud.inp=inp;
-			obj.figHandle = figH;
-			obj.UserData = ud;
+			hpl               = uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
+			inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise',...
+				                  'Position',[0 0 150 25],'style','popup','backgroundcolor','white');%TODO			
+			ud.inp            = inp;
+			obj.figHandle     = figH;
+			obj.UserData      = ud;
 			
 		end
 		function set_plasma_model(obj,varargin)
@@ -214,32 +224,50 @@ classdef ui < handle
 		function set_probe_type(obj,varargin)
 			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_type(obj,'user defined')
 				obj.probeUsed = 1;
-				set(obj.UserData.inp.probe.typeValue,'Value',1);
+				set(obj.UserData.inp.probe.type.value,'Value',1);
 				obj.update_probe_area_total_vs_sunlit;
 				return;
 			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_type(obj,numberOfProbe)
 				idProbe = varargin{1};
 			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
 				hEvent = varargin{1};
-				event = varargin{2};
-				disp(event);
 				idProbe = get(hEvent,'Value');
 			end
 			obj.probeUsed = idProbe;
 			probeParameters = obj.ProbeList(idProbe);
-			indSurface = find(strcmp(probeParameters.surface,lp.photocurrent))+1;
+			indSurface = find(strcmp(probeParameters.surface,obj.ProbeSurfaceList));
 			if indSurface,
-				set(obj.UserData.inp.probe.surfaceValue,'Value',indSurface);
+				set(obj.UserData.inp.probe.surface.value,'Value',indSurface);
 			else
 				irf.log('critical',[surface '''' probeParameters.surface ''' is unknown by lp.photocurrent.']);
 			end
 			obj.set_probe_radius_sphere(obj.ProbeList(idProbe).radiusSphere);
 			obj.set_probe_radius_wire(  obj.ProbeList(idProbe).radiusWire);
 			obj.set_probe_length_wire(  obj.ProbeList(idProbe).lengthWire);
-			set(obj.UserData.inp.probe.typeValue,'Value',idProbe);
+			set(obj.UserData.inp.probe.type.value,'Value',idProbe);
+		end
+		function set_probe_surface(obj,varargin)
+			if nargin == 2 && any(strcmpi('user defined',varargin{1})),  %set_probe_type(obj,'user defined')
+				obj.ProbeList(1) = obj.ProbeList(obj.probeUsed);
+				obj.probeSurfaceUsed = 1;
+				obj.set_probe_type(1);
+				return;
+			elseif nargin == 2 && isnumeric(varargin{1}), %set_probe_type(obj,numberOfSurface)
+				obj.probeSurfaceUsed = varargin{1};
+			elseif nargin == 3, %set_probe_type(obj,hEvent,event)
+				hEvent = varargin{1};
+				idProbeSurface = get(hEvent,'Value');
+				if ~any(strcmp( obj.ProbeList(obj.probeUsed).surface,obj.ProbeSurfaceList(idProbeSurface) ))
+					obj.ProbeList(1) = obj.ProbeList(obj.probeUsed);
+					obj.probeSurfaceUsed = idProbeSurface;
+					obj.ProbeList(1).surface = obj.ProbeSurfaceList{idProbeSurface};
+					obj.set_probe_type('user defined');
+				end
+			end
 		end
 		function set_probe_radius_sphere(obj,radiusSphere)
-			set(obj.UserData.inp.probe.radiusSphereValue,'String',num2str(radiusSphere*100,2)); % in cm
+			set(obj.UserData.inp.probe.radiusSphere.value,...
+				'String',num2str( radiusSphere/obj.UserData.inp.probe.radiusSphere.SIconversion,2 ));
 			obj.update_probe_area_total_vs_sunlit;
 		end
 		function get_probe_radius_sphere(obj)
@@ -313,11 +341,13 @@ classdef ui < handle
 			obj.InputParameters.vectorU = eval(vectorUString);
 		end
 		function set_probe_radius_wire(obj,radiusWire)
-			set(obj.UserData.inp.probe.radiusWireValue,'String',num2str(radiusWire*1e3,2)); % in mm
+			set(obj.UserData.inp.probe.radiusWire.value,...
+				'String',num2str(radiusWire/obj.UserData.inp.probe.radiusWire.SIconversion,2));
 			obj.update_probe_area_total_vs_sunlit;
 		end
-		function set_probe_length_wire(obj,lengthWire) % input in [m]
-			set(obj.UserData.inp.probe.lengthWireValue,'String',num2str(lengthWire*1e2,3)); % in [cm]
+		function set_probe_length_wire(obj,lengthWire)
+			set(obj.UserData.inp.probe.lengthWire.value,...
+				'String',num2str(lengthWire/obj.UserData.inp.probe.lengthWire.SIconversion,3));
 			obj.update_probe_area_total_vs_sunlit;
 		end
 		function get_probe_bias(obj) % input in [A]
@@ -325,7 +355,7 @@ classdef ui < handle
 			obj.InputParameters.biasCurrent = str2double(biasCurrenMicroA) / 1e6;
 		end
 		function update_probe_area_total_vs_sunlit(obj)
-			set(obj.UserData.inp.probe.areaTotalVsSunlitValue,...
+			set(obj.UserData.inp.probe.areaTotalVsSunlit.value,...
 				'String',num2str(obj.ProbeList(obj.probeUsed).Area.totalVsSunlit,3));
 		end	
 		function calculate_ui(obj)
