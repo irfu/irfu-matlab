@@ -197,7 +197,7 @@ end
 			end
 			index=index.(datasetIndex);
 			if isempty(index),
-				irf_log('warning',['local.c_read: no data for dataset ' dataset]);
+				irf.log('warning',['local.c_read: no data for dataset ' dataset]);
 				return;
 			end
 		else
@@ -238,7 +238,7 @@ end
 						if numel(size(tData)) == 3,
 							tcdfepoch=reshape(tData,size(tData,1),size(tData,3)); % spdfcdfread returns (Nsamples X 1 X 2) matrix
 						else
-							tcdfepoch = tData; % spdfcdfread returns (Nsamples X 2) matrix
+							tcdfepoch = tData'; % spdfcdfread returns (2 x Nsamples) matrix
 						end
 						timeVector=irf_time(tcdfepoch,'cdfepoch16>epoch');
 						tmpdata=cell(1,numel(varToRead));
@@ -246,7 +246,7 @@ end
                             tmpdata{iVar}=spdfcdfread(cdfFile,'CombineRecords',true,...
                                 'Variables',varToRead{iVar});
 						end
-						tmpdata = [{timeVector} tmpdata]; %
+						tmpdata = [{timeVector} tmpdata]; %#ok<AGROW>
                     else
                         % remove time variable as it is already read in
                         ii=numel(varToRead);
