@@ -146,21 +146,24 @@ classdef ui < handle
 			colPanelBg = [1 1 .95];
 			hpl= uipanel('Title','Plasma','FontSize',12,'BackgroundColor',colPanelBg,'Position',[.7 .74 .3 .2]);
 			popuptxt = obj.popup_list(obj.PlasmaList);
-			inp.plasma.typeText = uicontrol('Parent',hpl,'String','model','style','text',  'Position',[0   100 60   20],'backgroundcolor',colPanelBg);
-			inp.plasma.typeValue= uicontrol('Parent',hpl,'String',popuptxt,'style','popup','Position',[60  100 130  20],'backgroundcolor','white','Callback',@(src,evt)obj.set_plasma_model(src,evt));
-			inp.plasma.nString  = uicontrol('Parent',hpl,'String','Ne [cc]',              'Position',[0 0 80 20]);
-			inp.plasma.nValue   = uicontrol('Parent',hpl,'String','','style','edit',     'Position',[80 0 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_n);
-			inp.plasma.TString  = uicontrol('Parent',hpl,'String','T [eV]',          'Position',[0 20 80 20]);
-			inp.plasma.TValue   = uicontrol('Parent',hpl,'String','','style','edit','Position',[80 20 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_t);
-			inp.plasma.mpString = uicontrol('Parent',hpl,'String','m [mp],0=me',     'Position',[0 40 80 20]);
-			inp.plasma.mpValue  = uicontrol('Parent',hpl,'String','','style','edit','Position',[80 40 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_mp);
-			inp.plasma.qeString = uicontrol('Parent',hpl,'String','q [e]',           'Position',[0 60 80 20]);
-			inp.plasma.qeValue  = uicontrol('Parent',hpl,'String','','style','edit','Position',[80 60 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_qe);
-			inp.plasma.vString  = uicontrol('Parent',hpl,'String','Vsc [km/s]',       'Position',[0 80 80 20]);
-			inp.plasma.vValue   = uicontrol('Parent',hpl,'String','','style','edit','Position',[80 80 90 20],'backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_v);
+			uiPar = {'Parent',hpl,'backgroundcolor',colPanelBg,'style','text'};
+			inp.plasma.typeText = uicontrol(uiPar{:},'String','model',      'Position',[0  100 60  20],'style','text');
+			inp.plasma.typeValue= uicontrol(uiPar{:},'String',popuptxt,     'Position',[60 100 130 20],'style','popup','backgroundcolor','white','Callback',@(src,evt)obj.set_plasma_model(src,evt));
+			inp.plasma.nString  = uicontrol(uiPar{:},'String','Ne [cc]',    'Position',[0 0 80 20]);
+			inp.plasma.nValue   = uicontrol(uiPar{:},'String','',           'Position',[80 0 90 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_n);
+			inp.plasma.TString  = uicontrol(uiPar{:},'String','T [eV]',     'Position',[0 20 80 20]);
+			inp.plasma.TValue   = uicontrol(uiPar{:},'String','',           'Position',[80 20 90 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_t);
+			inp.plasma.mpString = uicontrol(uiPar{:},'String','m [mp],0=me','Position',[0 40 80 20]);
+			inp.plasma.mpValue  = uicontrol(uiPar{:},'String','',           'Position',[80 40 90 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_mp);
+			inp.plasma.qeString = uicontrol(uiPar{:},'String','q [e]',      'Position',[0 60 80 20]);
+			inp.plasma.qeValue  = uicontrol(uiPar{:},'String','',           'Position',[80 60 90 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_qe);
+			inp.plasma.vString  = uicontrol(uiPar{:},'String','Vsc [km/s]', 'Position',[0 80 80 20]);
+			inp.plasma.vValue   = uicontrol(uiPar{:},'String','',           'Position',[80 80 90 20],'style','edit','backgroundcolor','white','Callback',@(src,evt)obj.get_plasma_v);
 			%% initialize plot menu
+			inp.toppanel.plotTypes = {'-','Resistance','Satellite IU','Antenna noise'};
+			popuptxt = inp.toppanel.plotTypes;
 			hpl               = uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
-			inp.toppanel.plot = uicontrol('Parent',hpl,'String','Resistance|Satellite IU|Antenna noise',...
+			inp.toppanel.plot = uicontrol('Parent',hpl,'String',popuptxt,...
 				                  'Position',[0 0 150 25],'style','popup','backgroundcolor','white');%TODO			
 			ud.inp            = inp;
 			obj.figHandle     = figH;
@@ -360,8 +363,8 @@ classdef ui < handle
 		end	
 		function calculate_ui(obj)
 			obj.get_probe_current;
-			obj.plot_UI_probe;
-		end
+			obj.plot_ui;
+	end
 		function get_probe_current(obj)
 			jProbe = lp.current(obj.ProbeList(obj.probeUsed),...
 				obj.InputParameters.vectorU,...
@@ -370,6 +373,37 @@ classdef ui < handle
 				obj.PlasmaList(obj.plasmaUsed));
 			obj.Output.J = jProbe;
 			obj.Output.dUdI=gradient(obj.InputParameters.vectorU,obj.Output.J.probe);
+		end
+		function plot_ui(obj)
+			% Bottom axes
+			obj.plot_UI_probe;
+			
+			%Top axes
+			toppanelPlotType = get(obj.UserData.inp.toppanel.plot,'Value');
+			switch toppanelPlotType
+				case 1 % Nothing
+				case 2 % Probe Resistance
+					obj.plot_resistance;
+					linkaxes([obj.Axes.bottom, obj.Axes.top],'x');
+			end
+		end
+		function plot_resistance(obj)
+			h=obj.Axes.top;
+			vecU = obj.InputParameters.vectorU;
+			dUdI = obj.Output.dUdI;
+			plot(h,vecU,dUdI,'k');
+			set(h,'xlim',[min(vecU) max(vecU)]);
+			grid(h,'on');
+			xlabel(h,'U [V]');
+			ylabel(h,'dU/dI [\Omega]');
+			if 0%ud.flag_use_sc, % add probe resistance wrt plasma and s/c
+				hold(h(2),'on');
+				plot(h(2),Uprobe2plasma,dUdI_probe2plasma,'r','linewidth',1.5);
+				plot(h(2),Uprobe2sc,dUdI_probe2sc,'b','linewidth',1.5);
+				hold(h(2),'off');
+			end
+			axis(h,'auto y');
+			set(h,'yscale','log')
 		end
 		function plot_UI_probe(obj)
 			% plot IU curve
