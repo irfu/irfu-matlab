@@ -97,5 +97,14 @@ classdef EpochTT < GenericTimeArray
 				out = double(obj.epoch - arg.epoch)/1e9;
 			end
 		end
+		function outObj = colon(obj,varargin)
+			if nargin == 2 && isa(varargin{1},'EpochTT')
+				tns = obj.start.ttns:int64(1e9):varargin{1}.stop.ttns;
+				outObj = EpochTT(tns);
+			elseif nargin == 3 && isa(varargin{2},'EpochTT') && isnumeric(varargin{1})
+				tns = obj.start.ttns:int64(varargin{1}*1e9):varargin{2}.stop.ttns;
+				outObj = EpochTT(tns);
+			end
+		end
 	end
 end
