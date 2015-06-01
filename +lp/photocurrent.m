@@ -20,6 +20,9 @@ function [jPhoto] = photocurrent( iluminatedArea, U, distanceSunAU ,flag)
 %       'cassini' - saturation current based on experimental data
 %   for a full list execute LP.PHOTOCURRENT without arguments
 %
+% j_photo = LP.PHOTOCURRENT( iluminatedArea, U, distanceSunAU, surfacePhotoemission )
+%   surfacePhotoemission should be given at 1AU distance in units [A/m^2]
+%
 % surface_materials=LP.PHOTOCURRENT
 %   returns cell array with implemented surface materials
 %
@@ -29,7 +32,7 @@ function [jPhoto] = photocurrent( iluminatedArea, U, distanceSunAU ,flag)
 narginchk(0,4)
 
 surface_materials={'default','cluster','themis','cassini','aluminium','aquadag','gold','graphite','solar cells','1eV','TiN','elgiloy'};
-if nargin==0 && nargout ==0,
+if nargin==0 && nargout == 0,
 	for ii=1:numel(surface_materials)
 		surf=surface_materials{ii};
 		j0=lp.photocurrent(1,0,1,surf);
@@ -42,8 +45,19 @@ if nargin==0 && nargout == 1,
 	return
 end
 if nargin==3, flag='default';end
-
+if nargin == 4 && isnumeric(flag) % specified photemission
+	photoemission = flag;
+	flag = 'photoemission given';
+end
 switch lower(flag)
+	case 'photoemission given'
+		
+		jPhoto         = zeros(size(U)); % initialize
+		jPhoto(:)      = photoemission*iluminatedArea/distanceSunAU^2; % initialize to current valid for negative potentials
+		jPhoto(U >= 0) = photoemission*(iluminatedArea/distanceSunAU^2) .* ...
+			               ( 5.0e-5/5.6e-5 .* exp( - U(U>=0) ./ 2.74 ) ...
+			               + 1.2e-5/5.6e-5 .* exp( - (U(U>=0) + 10.0) ./ 14.427 ) );
+		
 	case 'default'
 		% The Photo-current emitted depends on if the potential of the body is
 		% positive or negative. Reference needed TODO

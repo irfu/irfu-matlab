@@ -28,7 +28,7 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 nPlasmaSpecies=numel(Plasma.q);
 J.plasma=cell(nPlasmaSpecies,1);
 
-J.photo = -lp.photocurrent(Probe.Area.sunlit, vectorU, rSunAU,Probe.surface);
+J.photo = -lp.photocurrent(Probe.Area.sunlit, vectorU, rSunAU,Probe.surfacePhotoemission);
 J.photo = J.photo .* factorUV;
 J.probe=J.photo; % initialize
 for ii=1:nPlasmaSpecies,

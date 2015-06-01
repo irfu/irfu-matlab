@@ -7,6 +7,7 @@ classdef lprobe
 		radiusSphere
 		radiusWire     % if radius wire is two numbers than use stazer formula
 		lengthWire
+		surfacePhotoemission = []; % if not specified, obtain from lp.photocurrent
 	end
 	properties (Dependent)
 		type
@@ -55,19 +56,28 @@ classdef lprobe
 		
 		function capacitance = get.capacitance(Lp)
 			cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
-			if isnumeric(Lp.radiusWire) && isnumeric(Lp.lengthWire),
+			if isnumeric(Lp.radiusWire) && any(Lp.radiusWire) ...
+					&& isnumeric(Lp.lengthWire) && any(Lp.lengthWire),
 				if Lp.lengthWire > 10*Lp.radiusWire
 					cWire    = irf_estimate('capacitance_wire',  Lp.radiusWire,Lp.lengthWire);
 				elseif Lp.lengthWire > Lp.radiusWire
 					cWire    = irf_estimate('capacitance_cylinder',  Lp.radiusWire,Lp.lengthWire);
 				else
-					irf.log('error','estiamte of capacitance for cylinder requires length > radius');
+					irf.log('critical','estiamte of capacitance for cylinder requires length > radius');
 					cWire = [];
 				end
 			end
 			capacitance = sum([ cSphere cWire]);
 		end
-		
+
+		function surfacePhotoemission = get.surfacePhotoemission(Lp)
+			if any(strcmp(Lp.surface,'user defined')) || ~isempty(Lp.surfacePhotoemission)
+				surfacePhotoemission = Lp.surfacePhotoemission;
+			else
+				surfacePhotoemission = lp.photocurrent(1,0,1,Lp.surface);
+			end
+		end
+
 	end
 	
 end
