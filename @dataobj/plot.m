@@ -450,7 +450,7 @@ elseif flag_spectrogram
     elseif strcmp(dep_x{comp_dim}.type,'single') && ...
         (strcmp(dep_x{comp_dim}.variance,'F/T') || ...
         strcmp(dep_x{comp_dim}.variance,'T/T'))
-      lab_2 = num2str(dep_x{comp_dim}.data(1,comp)',['%.2f ' dep_x{comp_dim}.units '\n']);
+      lab_2 = num2str(dep_x{comp_dim}.data(comp,1)',['%.2f ' dep_x{comp_dim}.units '\n']);
     else
       error('BAD type for DEPEND_X')
     end
