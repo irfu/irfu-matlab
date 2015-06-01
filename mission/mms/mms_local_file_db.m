@@ -20,6 +20,12 @@ classdef mms_local_file_db < mms_file_db
     end
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
+      % fileList = list_files(obj, filePrefix, [tint]);
+      % List files from Database "obj", wich match "filePrefix" and cover
+      % optional time period "tint".
+      % Example:
+      %  DB = mms_local_file_db('/path/to/mms/root/');
+      %  fileList = list_files(DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
       if nargin==3 && ~isa(tint,'GenericTimeArray'),

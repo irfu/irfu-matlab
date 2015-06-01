@@ -85,6 +85,7 @@ if strcmpi(param, 'init')
   DATAC.dcv = [];         % src DCV file
   DATAC.defatt = [];      % src DEFATT file
   DATAC.defeph = [];      % src DEFEPH file
+  DATAC.delta_off = [];   % comp delta offsets
   DATAC.hk_101 = [];      % src HK_101 file
   DATAC.hk_105 = [];      % src HK_105 file
   DATAC.hk_10e = [];      % src HK_10E file
@@ -154,22 +155,31 @@ switch(param)
     sensors = {'e12','e34','e56'};
     init_param()
     apply_nom_amp_corr()
-    if(isfield(dataObj.data, [varPrefix, 'dcv_sensor']) && DATAC.dce.fileVersion.major>=1)
-      % It appears to be a combined file, extract DCV variables.
-      irf.log('notice','Combined DCE & DCV file.');
-      param = 'dcv';
-      sensors = {'v1','v2','v3','v4','v5','v6'};
-      init_param()
-      chk_timeline()
-      chk_latched_p()
-      %apply_transfer_function()
-      v_from_e_and_v()
-      chk_bias_guard()
-      chk_sweep_on()
-      chk_sdp_v_vals()
-    elseif(DATAC.dce.fileVersion.major>=1)
-      irf.log('warning','DCE major version >= 1 but not combined DCE & DCV data?');
+    
+    if ~isfield(dataObj.data, [varPrefix, 'dcv_sensor']) || ...
+        DATAC.dce.fileVersion.major<1
+      if DATAC.dce.fileVersion.major>=1 
+        irf.log('warning',...
+          'DCE major version >= 1 but not combined DCE & DCV data?');
+      end
+      return
     end
+      
+    % It appears to be a combined file, extract DCV variables.
+    irf.log('notice','Combined DCE & DCV file.');
+    
+    param = 'dcv';
+    sensors = {'v1','v2','v3','v4','v5','v6'};
+    init_param()
+    chk_timeline()
+    chk_latched_p()
+    %apply_transfer_function()
+    v_from_e_and_v()
+    chk_bias_guard()
+    chk_sweep_on()
+    chk_sdp_v_vals()
+    sensors = {'e12','e34'};
+    corr_adp_spikes()
 
   case('dcv')
     sensors = {'v1','v2','v3','v4','v5','v6'};
@@ -181,6 +191,8 @@ switch(param)
     chk_bias_guard()
     chk_sweep_on()
     chk_sdp_v_vals()
+    sensors = {'e12','e34'};
+    corr_adp_spikes()
     
   case('hk_101')
     % HK 101, contains sunpulses.
@@ -561,6 +573,29 @@ end
     %XXX: Does nothing at the moment
   end
 
+  function corr_adp_spikes()
+    % correct ADP shadow spikes
+    MODEL_THRESHOLD = .01;
+    MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
+    
+    phase = mms_sdp_datamanager('phase');
+    if mms_is_error(phase)
+      errStr='Bad PHASE intput, cannot proceed.';
+      irf.log('critical',errStr); error(errStr);
+    end
+    irf.log('notice','Removing ADP spikes');
+    model = mms_sdp_model_adp_shadow(DATAC.dce,phase);
+    
+    for iSen = 1:min(numel(sensors),2)
+      sen = sensors{iSen};
+      DATAC.dce.(sen).data = ...
+        single(double(DATAC.dce.(sen).data) - model.(sen));
+      idx = abs(model.(sen))>MODEL_THRESHOLD;
+      DATAC.dce.(sen).bitmask(idx) = ...
+        bitand(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+    end
+  end
+
   function apply_nom_amp_corr()
     % Apply a nominal amplitude correction factor to DCE for p1..4
     % values after cleanup but before any major processing has occured.
@@ -608,10 +643,12 @@ end
     end
     
     % Nominal boom length used in L1b processor
-    NOM_BOOM_L = .001; % 1m, XXX the tru value should be 120 m
+    NOM_BOOM_L = .12; % 120 m
+    NOM_BOOM_L_ADP = .0292; % 29.2m
     
     MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
     for iSen = 1:2:numel(sensors)
+      if iSen == 5, NOM_BOOM_L = NOM_BOOM_L_ADP; end
       senA = sensors{iSen}; senB = sensors{iSen+1};
       senE = ['e' senA(2) senB(2)]; % E-field sensor
       senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
@@ -623,16 +660,18 @@ end
         irf.log('notice',...
           sprintf('Computing %s from %s and %s for %d data points',...
           senB,senA,senE,sum(iVA)))
-        DATAC.dcv.(senB).data(iVA) = DATAC.dcv.(senA).data(iVA) - ...
-          NOM_BOOM_L*DATAC.dce.(senE).data(iVA);
+        DATAC.dcv.(senB).data(iVA) = single(...
+          double(DATAC.dcv.(senA).data(iVA)) - ...
+          NOM_BOOM_L*double(DATAC.dce.(senE).data(iVA)));
       end
       iVB = idxOneSig & ~senB_off;
       if any(iVB),
         irf.log('notice',...
           sprintf('Computing %s from %s and %s for %d data points',...
           senA,senB,senE,sum(iVA)))
-        DATAC.dcv.(senA).data(iVB) = DATAC.dcv.(senB).data(iVB) + ...
-          NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
+        DATAC.dcv.(senA).data(iVB) = single(...
+          double(DATAC.dcv.(senB).data(iVB)) + ...
+          NOM_BOOM_L*double(DATAC.dce.(senE).data(iVB)));
       end
       % For comissioning data we will have all DCE/DCV, verify consistency.
       idxBoth = and(and(~senA_off, ~senB_off), ~senE_off);

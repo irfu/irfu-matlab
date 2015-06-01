@@ -1,6 +1,5 @@
 classdef (Abstract) mms_file_db
-  %UNTITLED2 Summary of this class goes here
-  %   Detailed explanation goes here
+  %MMS_FILE_DB  Interface class for MMS file databses
   
   properties (SetAccess = immutable)
     id 
