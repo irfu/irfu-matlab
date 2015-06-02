@@ -61,8 +61,7 @@ irf_legend(h(1),{'X','Y'},[0.02 0.98],'fontsize',20)
 irf_plot(h(2),TS3);
 ylabel(h(2),'TS3 = TS2 * 1.2 +2 [nT]');
 
-tintZoom = [EpochTT('2002-03-04T09:50:00Z') ...
-            EpochTT('2002-03-04T10:01:00Z')]'; % 11 min interval
+tintZoom = irf.tint('2002-03-04T09:50:00Z/2002-03-04T10:01:00Z'); % 11 min interval
 irf_zoom(h,'x',tintZoom);
 irf_zoom(h,'y');
 %% Example  4 Compare two data  
