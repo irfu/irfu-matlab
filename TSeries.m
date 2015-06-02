@@ -358,7 +358,8 @@ classdef TSeries
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
-		end
+    end
+    
 		function obj = plus(obj,inp)
 			if isnumeric(inp) && ...
 					((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
@@ -366,29 +367,45 @@ classdef TSeries
 			else
 				error('Plus not defined');
 			end
-		end
-		function obj = minus(obj,inp)
+    end
+    
+    function obj = minus(obj,inp)
 			if isnumeric(inp) && ...
 					((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
 				obj.data_ = obj.data_ - inp;
 			else
 				error('Plus not defined');
 			end
-		end
+    end
+    
 		function obj = mtimes(obj,inp)
 			if isnumeric(inp) && numel(inp) == 1,
 				obj.data_ = obj.data_ * inp;
 			else
 				error('mtimes not defined');
 			end
-		end
+    end
+    
+    function obj = tlim(obj,tint)
+      [idx,obj.t_] = obj.time.tlim(tint);
+      nd = ndims(obj.data_);
+      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
+      switch nd
+        case 2, obj.data_ = obj.data_(idx,:);
+        case 3, obj.data_ = obj.data_(idx,:,:,:);
+        case 4, obj.data_ = obj.data_(idx,:,:,:,:);
+        case 5, obj.data_ = obj.data_(idx,:,:,:,:,:);
+        case 6, obj.data_ = obj.data_(idx,:,:,:,:,:,:);
+        otherwise, error('should no be here')
+      end
+    end
   end
   
   methods (Access=protected)
     function res = getComponent(obj,comp)
       res = [];
       nd = ndims(obj.data_);
-      if nd>6, return, end % we cannot support more than 5 dimensions
+      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       teno = obj.tensorOrder_;
       if length(comp)~=teno, return, end
       basis = obj.BASIS{teno};
