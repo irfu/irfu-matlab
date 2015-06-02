@@ -4,9 +4,9 @@ classdef ui < handle
 	properties (SetAccess = protected)
 		SpacecraftList % Nr 1 is always user defined
 		spacecraftUsed
-		ProbeList % Nr 1 is always user defined  
+		ProbeList % Nr 1 is always user defined
 		probeUsed % 1..N from ProbeList
-		ProbeSurfaceList % Nr 1 is always user defined  
+		ProbeSurfaceList % Nr 1 is always user defined
 		ProbeSurfacePhotoemission % in A/m^2 units
 		probeSurfaceUsed % 1..N from ProbeSurfaceList
 		PlasmaList
@@ -15,7 +15,7 @@ classdef ui < handle
 		Axes     % top,bottom,infotext
 		UserData % user data
 		InputParameters =struct('factorUV',1,'rSunAU',1,...
-			'vectorUString','-5:0.2:40','vectorU',-5:0.2:40,'biasCurrent',0) 
+			'vectorUString','-5:0.2:40','vectorU',-5:0.2:40,'biasCurrent',0)
 		Output
 	end
 	methods
@@ -88,7 +88,7 @@ classdef ui < handle
 			obj.Axes.bottom = axes('position',[0.1 0.3 0.5 0.3]); % [x y dx dy]
 			obj.Axes.top    = axes('position',[0.1 0.67 0.5 0.3]); % [x y dx dy]
 			linkaxes([obj.Axes.top obj.Axes.bottom],'x');
-		
+			
 			obj.Axes.infotext = axes('position',[0.1 0.0 0.5 0.13]); % [x y dx dy]
 			axis(obj.Axes.infotext,'off');
 			obj.Axes.infoTextHandle = text(0,1,'','parent',obj.Axes.infotext);
@@ -171,7 +171,7 @@ classdef ui < handle
 			popuptxt = inp.toppanel.plotTypes;
 			hpl               = uipanel('Title','Top panel','FontSize',12,'BackgroundColor',[1 1 .95],'Position',[.7 .94 .3 .06]);
 			inp.toppanel.plot = uicontrol('Parent',hpl,'String',popuptxt,...
-				                  'Position',[0 0 150 25],'style','popup','backgroundcolor','white');%TODO			
+				'Position',[0 0 150 25],'style','popup','backgroundcolor','white');%TODO
 			ud.inp            = inp;
 			obj.figHandle     = figH;
 			obj.UserData      = ud;
@@ -329,7 +329,7 @@ classdef ui < handle
 		end
 		function get_factor_uv(obj)
 			factorUvString = get(obj.UserData.inp.factorUvValue,'String'); % in cm
-			if isempty(factorUvString), 
+			if isempty(factorUvString),
 				factorUvString = '1';
 				set(obj.UserData.inp.factorUvValue,'String','1')
 			end
@@ -337,7 +337,7 @@ classdef ui < handle
 		end
 		function get_distance_to_sun_au(obj)
 			rSunString = get(obj.UserData.inp.rSunValue,'String'); % in cm
-			if isempty(rSunString), 
+			if isempty(rSunString),
 				rSunString = '1';
 				set(obj.UserData.inp.rSunValue,'String','1')
 			end
@@ -345,7 +345,7 @@ classdef ui < handle
 		end
 		function get_u_interval(obj)
 			vectorUString = get(obj.UserData.inp.vectorUValue,'String'); % in cm
-			if isempty(vectorUString), 
+			if isempty(vectorUString),
 				vectorUString = '-5:10';
 				set(obj.UserData.inp.vectorUValue,'String',vectorUString)
 			end
@@ -369,11 +369,11 @@ classdef ui < handle
 		function update_probe_area_total_vs_sunlit(obj)
 			set(obj.UserData.inp.probe.areaTotalVsSunlit.value,...
 				'String',num2str(obj.ProbeList(obj.probeUsed).Area.totalVsSunlit,3));
-		end	
+		end
 		function calculate_ui(obj)
 			obj.get_probe_current;
 			obj.plot_ui;
-	end
+		end
 		function get_probe_current(obj)
 			ProbeToUse = obj.ProbeList(obj.probeUsed);
 			ProbeToUse.surfacePhotoemission = obj.ProbeSurfacePhotoemission(obj.probeSurfaceUsed);
@@ -397,6 +397,9 @@ classdef ui < handle
 					obj.plot_resistance;
 					linkaxes([obj.Axes.bottom, obj.Axes.top],'x');
 			end
+			
+			% Information panel
+			obj.plot_UI_information_panel;
 		end
 		function plot_resistance(obj)
 			h=obj.Axes.top;
@@ -447,6 +450,85 @@ classdef ui < handle
 			end
 			hold(h,'off');
 			
+		end
+		function plot_UI_information_panel(obj)
+			% prepare informationa panel
+			
+			% Calculate all required values
+			dUdI = obj.Output.dUdI;
+			vecU = obj.InputParameters.vectorU;
+			J = obj.Output.J;
+			probe = obj.ProbeList(obj.probeUsed);
+			Rmin = min(abs(dUdI)); % minimum resistance
+			fcr=1/2/pi/Rmin/probe.capacitance;
+			disp(['Rmin=' num2str(Rmin,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, f_{CR}=' num2str(fcr,3) 'Hz.']);
+			InfoTxt = struct();
+			if 0%ud.flag_use_sc,
+				info_txt=[info_txt '\newline probe to plasma Rmin=' num2str(min(abs(dUdI_probe2plasma)),3) ' Ohm'];
+				info_txt=[info_txt '\newline probe to reference Rmin=' num2str(min(abs(dUdI)),3) ' Ohm'];
+				info_txt=[info_txt '\newline probe to spacecraft Rmin=' num2str(min(abs(dUdI_probe2sc)),3) ' Ohm'];
+			else
+				InfoTxt.probe=['Probe at minimum R: R =' num2str(Rmin,3) ' Ohm,'...
+					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
+					' fcr =' num2str(fcr,3) 'Hz.'];
+			end
+			
+			if min(J.probe)<0 && max(J.probe)>0, % display information on Ufloat
+				Ufloat=interp1(J.probe,vecU,0);    % floating potential
+				ii=isfinite(vecU);
+				Rfloat=interp1(vecU(ii),dUdI(ii),Ufloat);
+				fcr=1/2/pi/Rfloat/probe.capacitance;
+				InfoTxt.probeFloat =['Floating probe: U =' num2str(Ufloat,3) 'V,' ...
+					' R = ' num2str(Rfloat,3) ' Ohm,' ...
+					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
+					' fcr=' num2str(fcr,3) 'Hz.'];
+				disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
+			end
+			if 0%flag_add_bias_point_values,
+				Ubias=interp1(J_probe,Upot,-ud.probe.bias_current); % floating potential
+				ii=isfinite(Upot);
+				Rbias=interp1(Upot(ii),dUdI(ii),Ubias);
+				fcr=1/2/pi/Rbias/probe.capacitance;
+				disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
+				info_txt=[info_txt '\newline Probe: (without s/c) Ubias=' num2str(Ubias,3)  ', Rbias=' num2str(Rbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
+				if ud.flag_use_sc,
+					Uscbias=interp1(J_probe,Usatsweep,-ud.probe.bias_current); % floating potential
+					ii=isfinite(Upot);
+					Rscbias=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscbias);
+					fcr=1/2/pi/Rscbias/ud.sc.capacitance;
+					disp(['Spacecraft (biased): Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
+					info_txt=[info_txt '\newline Spacecraft (biased): Ubias=' num2str(Uscbias,3)  ', Rbias=' num2str(Rscbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
+					Usp=-interp1(Ibias,Uprobe2sc,-ud.probe.bias_current); % floating potential
+					disp(['Spacecraft to Probe: Usp=' num2str(Usp,3) 'V.']);
+					info_txt=[info_txt '\newline Spacecraft to Probe: Usp=' num2str(Usp,3)  ' V.'];
+				end
+			end
+			if 0%ud.flag_use_sc && min(ud.I_sc)<0 && max(ud.I_sc)>0, % display information on Ufloat
+				Uscfloat=interp1(ud.I_sc,ud.U_sc,0); % floating potential
+				ii=isfinite(ud.U_sc);Rscfloat=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscfloat);
+				info_txt=[info_txt '\newline Spacecraft: Ufloat=' num2str(Uscfloat,3) 'V, Rfloat= ' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF'];
+				disp(['Spacecraft: Ufloat=' num2str(Uscfloat,3) ' V, Rfloat=' num2str(Rscfloat,3) ' Ohm, C=' num2str(ud.sc.capacitance*1e12,3) 'pF']);
+			end
+			if 0%ud.UV_factor>0,                                     % display photoelectron saturation current
+				infoTxt=[info_txt '\newline Probe: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.probe.surface)*1e6,3) '[\mu A/m^2]'];
+				if ud.R_sun~=1,
+					info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.probe.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
+				end
+				if ud.flag_use_sc,
+					info_txt=[info_txt '\newline Spacecraft: photo e- Io = ' num2str(ud.UV_factor*lp.photocurrent(1,-1,ud.R_sun,ud.sc.surface)*1e6,3) '[\mu A/m^2]'];
+					if ud.R_sun~=1,
+						info_txt=[info_txt '  (' num2str(ud.UV_factor*lp.photocurrent(1,-1,1,ud.sc.surface)*1e6,3) ' \mu A/m^2 at 1 AU)'];
+					end
+				end
+			end
+			
+			% Write out all required output
+			fieldsInfo = fieldnames(InfoTxt);
+			infoText = '';
+			for iField = 1:numel(fieldsInfo)
+				infoText = [infoText InfoTxt.(fieldsInfo{iField}) '\newline']; %#ok<AGROW>
+			end
+			set(obj.Axes.infoTextHandle,'string',infoText,'fontsize',11);
 		end
 		function set_user_defined_if_plasma_changes(obj,idString,vector)
 			if (obj.plasmaUsed ~= 1) ...
