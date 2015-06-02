@@ -243,7 +243,7 @@ classdef mms_local_file_db < mms_file_db
       p = obj.get_path_to_file(fileName);
       
       if mms_local_file_db.is_cdf_file(fileName)
-        res = dataobj([p filesep fileName],'KeepTT2000');
+        res = dataobj([p filesep fileName]);
         return
       end
       
