@@ -751,12 +751,12 @@ classdef mms_sdp_dmgr < handle
       end
       Phase = DATAC.phase;
       if isempty(Phase)
-        errStr='Bad PHASE intput, cannot proceed.';
+        errStr='Bad PHASE input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
       Adc_off = DATAC.adc_off;
       if isempty(Adc_off)
-        errStr='Bad ADC_OFF intput, cannot proceed.';
+        errStr='Bad ADC_OFF input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
       
@@ -951,7 +951,7 @@ classdef mms_sdp_dmgr < handle
       end
       Phase = DATAC.phase;
       if isempty(Phase)
-        errStr='Bad PHASE intput, cannot proceed.';
+        errStr='Bad PHASE input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
       sampleRate = DATAC.samplerate;

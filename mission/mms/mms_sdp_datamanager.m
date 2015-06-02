@@ -580,7 +580,7 @@ end
     
     phase = mms_sdp_datamanager('phase');
     if mms_is_error(phase)
-      errStr='Bad PHASE intput, cannot proceed.';
+      errStr='Bad PHASE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
     irf.log('notice','Removing ADP spikes');
