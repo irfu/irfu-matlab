@@ -363,7 +363,7 @@ classdef ui < handle
 			obj.update_probe_area_total_vs_sunlit;
 		end
 		function get_probe_bias(obj) % input in [A]
-			biasCurrenMicroA = get(obj.UserData.inp.probe.biasCurrentValue,'String'); % in [uA]
+			biasCurrenMicroA = get(obj.UserData.inp.probe.biasCurrent.value,'String'); % in [uA]
 			obj.InputParameters.biasCurrent = str2double(biasCurrenMicroA) / 1e6;
 		end
 		function update_probe_area_total_vs_sunlit(obj)
