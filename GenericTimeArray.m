@@ -60,16 +60,18 @@ classdef (Abstract) GenericTimeArray
     end
     
     function res = minus(obj, obj1)
-      %MINUS  time difference is seconds
+      %MINUS  time difference in seconds
+			% T2 - T1 returns time difference between T2 and T1 in seconds
+			%         T1 or T2 can be also of length 1
       if ~isa(obj1,'GenericTimeArray')
         error('irf:GenericTimeArray:minus:badInputs',...
             'inpus must be subclasses of GenericTimeArray')
       end
-      if length(obj) ~= length(obj1),
+      if length(obj1) ~= 1 && length(obj) ~= 1 && length(obj) ~= length(obj1)
         error('irf:GenericTimeArray:minus:badInputs',...
             'inpus have different length')
       end
-      res = obj.toEpochUnix().epoch - obj1.toEpochUnix().epoch;
+      res = obj.tts - obj1.tts;
     end
     
     function res = le(obj,obj1)
@@ -262,9 +264,14 @@ classdef (Abstract) GenericTimeArray
       end
     end
     
-    % Anstract methods
-    toUtc(obj)
-    %toUtc  convert to UTC time string
+    % Abstract methods
+    utc(obj)
+		%utc  convert to UTC time string
+    tts(obj,index)
+		ttns(obj,index)
+		plus(obj,arg)
+		colon(obj,varargin)
+		
   end
   
   methods (Access = private)
