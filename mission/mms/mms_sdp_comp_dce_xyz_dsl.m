@@ -27,18 +27,18 @@ switch procId
     end
     phase = mms_sdp_datamanager('phase');
     if mms_is_error(phase)
-      errStr='Bad PHASE intput, cannot proceed.';
+      errStr='Bad PHASE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
     adc_off = mms_sdp_datamanager('adc_off');
     if mms_is_error(adc_off)
-      errStr='Bad ADC_OFF intput, cannot proceed.';
+      errStr='Bad ADC_OFF input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
     
     delta_off = mms_sdp_datamanager('delta_off');
     if mms_is_error(delta_off)
-      errStr='Bad ADC_OFF intput, cannot proceed.';
+      errStr='Bad DELTA_OFF input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
 
