@@ -55,6 +55,7 @@ classdef lprobe
 		end
 		
 		function capacitance = get.capacitance(Lp)
+			cWire = 0;
 			cSphere  = irf_estimate('capacitance_sphere',Lp.radiusSphere);
 			if isnumeric(Lp.radiusWire) && any(Lp.radiusWire) ...
 					&& isnumeric(Lp.lengthWire) && any(Lp.lengthWire),
