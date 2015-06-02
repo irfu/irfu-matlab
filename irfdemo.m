@@ -1,16 +1,12 @@
 %% Examples of IRFU-MATLAB usage
-% These examples demonstrate our intenation that 
-% irfu-matlab should help you with the following:
-% 1. Maximize time spent on science
-% 2. Make data analysis easy and natural
-% 3. Combine all instrument data in the same plot
-% 4. Simplify data analysis
-% 5. Create publishing quality figures
+% IRFU-MATLAB helps:
+% 1. To maximize time spent on science.
+% 2. To make data analysis simple and natural.
+% 3. To combine all spacecraft/instrument data in the same plot.
+% 4. To create publishing quality figures.
 % 
-% IRFU-MATLAB is mainly used for Cluster and therefore
-% there are many routines to work with Cluster Active Archive data.
-% 
-% This is simple demo, for more advanced examples see https://sites.google.com/site/irfumatlab/
+% This is simple demo.
+% For more advanced examples: https://sites.google.com/site/irfumatlab/
 %
 % To execute demo run irf('demo') or 
 % > echodemo irfdemo
