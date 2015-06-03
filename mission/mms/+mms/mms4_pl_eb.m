@@ -4,7 +4,8 @@ tint = irf.tint('2015-05-15T00:40:00Z/2015-05-15T01:10:00Z');
 
 %% Load data
 load /data/mms/irfu/mmsR.mat
-gsmR1 = [EpochTT2000(R.time).toEpochUnix().epoch R.gsmR1];
+epoTmp = EpochTT2000(R.time);
+gsmR1 = [epoTmp.toEpochUnix().epoch R.gsmR1];
 
 %E1 = mms.db_get_ts('mms1_edp_comm_ql_dce2d','mms1_edp_dce_xyz_dsl',tint);
 %P1 = mms.db_get_ts('mms1_edp_comm_l2_scpot','mms1_edp_psp',tint);
