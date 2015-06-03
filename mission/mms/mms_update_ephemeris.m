@@ -5,9 +5,10 @@ function [R, V] = mms_update_ephemeris
 %
 % Read DEFEPH files from the start of the mission and up to current time
 % and compute spacecrfat position (R) and velocity (V) in GSE and GSM
-
-save /data/mms/ancillary/mmsR.mat R
-save /data/mms/ancillary/mmsV.mat V
+%
+% To save the data use:
+% save /data/mms/irfu/mmsR.mat R
+% save /data/mms/irfu/mmsV.mat V
 
 [~,nowUtc] = unix('TZ=UTC date "+%Y-%m-%dT%H:%M:%SZ"');
 nowUtc(end)=[]; % clip the cr in the end

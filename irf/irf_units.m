@@ -17,6 +17,10 @@ function Units=irf_units(varargin)
 %   T_in_eV = Units.kB*T_in_MK*1e6 / Units.e    % to convert from MK to eV
 %
 
+% Sources used:
+%   CODATA 2010 - http://physics.nist.gov/cuu/pdf/RevModPhysCODATA2010.pdf
+%   IAU 2012    - http://www.iau.org/static/resolutions/IAU2012_English.pdf
+
 if nargin==1, % display matching units
     fid=fopen(which('irf_units'));
     while 1
@@ -143,7 +147,7 @@ Units.gm = 1e-3*Units.kg;
 Units.mg = 1e-3*Units.gm;
 Units.lb = 0.45359237*Units.kg;
 Units.oz = (1/16)*Units.lb;
-Units.amu = 1.66e-27*Units.kg;
+Units.amu = 1.660538921e-27*Units.kg; 			% Src: CODATA 2010 - Table XLV
 
 %---- time -------
 Units.s = 1;
@@ -175,7 +179,7 @@ Units.kJ = 1e3*Units.J;
 Units.mJ = 1e-3*Units.J;
 Units.uJ = 1e-6*Units.J;
 Units.nJ = 1e-9*Units.J;
-Units.eV = 1.6022e-19*Units.J;
+Units.eV = 1.602176565e-19*Units.J; 			% Src: CODATA 2010 - Table XLV
 Units.BTU = 1.0550559e3*Units.J;
 Units.kWh = 3.6e6*Units.J;
 Units.cal = 4.1868*Units.J;
@@ -210,7 +214,7 @@ Units.hp = 745.69987*Units.W;
 
 %------ charge ------
 Units.coul = 1;
-Units.e = 1.6022e-19*Units.coul;					% elementary charge
+Units.e = 1.602176565e-19*Units.coul;			% elementary charge, Src: CODATA 2010 - Table XLI
 
 
 %------ Voltage -----
@@ -233,18 +237,17 @@ Units.gauss = 1e-4*Units.T;
 
 
 %----fundamental constants ----
-Units.g = 9.80665*Units.m/Units.s^2;				% gravitational acceleration
-Units.G = 6.67384e-11*Units.m^3/Units.kg/Units.s^2; % graviational constants
-Units.kB = 1.38e-23*Units.J/Units.K;				% Boltzman constant
-Units.sigma_SB = 5.670e-8 * Units.W/(Units.m^2 * Units.K^4);
-Units.h = 6.62607e-34 * Units.J*Units.s;			% Planck constant
-Units.hbar = Units.h/(2*pi);						% Planck constant
-Units.mu_B = 9.274e-24 * Units.J/Units.T;
-Units.mu_N = 5.0507866e-27 * Units.J/Units.T;
-Units.c = 2.99792458e8*Units.m/Units.s;				% speed of light
-Units.eps0 = 8.8541878176204e-12* Units.coul/(Units.V*Units.m);
-Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
-
+Units.g = 9.80665*Units.m/Units.s^2;			% gravitational acceleration
+Units.G = 6.67384e-11*Units.m^3/Units.kg/Units.s^2; 	% Newtonian graviational constant, Src: CODATA 2010 - Table XLI
+Units.kB = 1.3806488e-23*Units.J/Units.K;		% Boltzman constant, Src: CODATA 2010 - Table XLI
+Units.sigma_SB = 5.670373e-8 * Units.W/(Units.m^2 * Units.K^4); % Stefan-Boltzmann constant, Src: CODATA 2010 - Table XLI
+Units.h = 6.62606957e-34 * Units.J*Units.s;		% Planck constant, Src: CODATA 2010 - Table XLI
+Units.hbar = Units.h/(2*pi);				% Planck constant
+Units.mu_B = 9.27400968e-24 * Units.J/Units.T;  	% Bohr magneton, Src: CODATA 2010 - Table XLI
+Units.mu_N = 5.05078353e-27 * Units.J/Units.T;		% Nuclear magneton, Src: CODATA 2010 - Table XLI
+Units.c = 2.99792458e8*Units.m/Units.s;			% speed of light exact, Src: CODATA 2010 - Table XLI
+Units.mu0 = (4*pi)*10^-7 * Units.J/(Units.m*Units.A^2); % Magnetic constant, Src: CODATA 2010 - Table XLI
+Units.eps0 = 1/(Units.mu0*Units.c^2);			% Vacuum permittivity, Src: CODATA 2010 - Table XLI
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -254,7 +257,7 @@ Units.mu0 = 1.2566370614359e-6 * Units.J/(Units.m*Units.A^2);
 
 %-------- UNITS ------------------------------
 %------- length ----
-Units.AU = 149597870700*Units.m;					% astronomical unit, exact
+Units.AU = 149597870700*Units.m;			% astronomical unit, exact, Src: IAU 2012
 Units.R_Sun = 6.96e8*Units.m;                       % Solar radius 
 Units.Sun.radius=Units.R_Sun;
 Units.pc = 3.0857e16*Units.m;                       % parsec
@@ -266,8 +269,8 @@ Units.M_Earth = 5.9742e24*Units.kg;                 % Mass of the Earth
 Units.Earth.mass=Units.M_Earth;
 Units.M_Sun = 1.98892e30*Units.kg;                  % Mass of the Sun
 Units.Sun.mass=Units.M_Sun;
-Units.me = 9.1094e-31*Units.kg;                     % electron mass
-Units.mp = 1.6726e-27*Units.kg;                     % proton mass
+Units.me = 9.10938291e-31*Units.kg;			% electron mass, Src: CODATA 2010 - Table XLI
+Units.mp = 1.672621777e-27*Units.kg;			% proton mass, Src: CODATA 2010 - Table XLI
 
 %---- frequency ---- 
 Units.mHz = 1e-3*Units.Hz;
@@ -293,24 +296,24 @@ Units.Mercury.radius		= 2439.7*Units.km;		% Mercury radius (mean)
 
 %---- MARS -----
 Units.Mars.distanceToSun	= 1.5273*Units.AU;		% Mars orbit, semimajor axis
-Units.Mars.radius			= 3396.2*Units.km;		% Mars radius (equatorial)
+Units.Mars.radius		= 3396.2*Units.km;		% Mars radius (equatorial)
 Units.Mars.radiusEquatorial	= 3396.2*Units.km;		% Mars radius (equatorial)
 Units.Mars.radiusPolar		= 3376.2*Units.km;		% Mars radius (polar)
 
 %---- EARTH -----
 Units.Earth.semiMajorAxis	= 149598261*Units.km;	% Earth semimajor axis
 Units.Earth.distanceToSun	= 149598261*Units.km;	% Earth distance to Sun (=semimajor axis)
-Units.Earth.radius			= 6371.2e3*Units.m;		% Earth radius
-Units.R_Earth				= 6371.2e3*Units.m;		% Earth radius
-Units.RE					= Units.R_Earth;		% Earth radius
+Units.Earth.radius		= 6371.2e3*Units.m;		% Earth radius
+Units.R_Earth			= 6371.2e3*Units.m;		% Earth radius
+Units.RE			= Units.R_Earth;		% Earth radius
 
 %---- VENUS -----
 Units.Venus.distanceToSun	= 0.7233*Units.AU;      % Venus orbit, semimajor axis
-Units.Venus.radius			= 6051.8*Units.km;
+Units.Venus.radius		= 6051.8*Units.km;
 
 %---- SATURN -----
 Units.Saturn.distanceToSun	= 9.5388*Units.AU;		% Saturn orbit, semimajor axis
-Units.Saturn.radius			= 60268*Units.km;		% Saturn equatorial radius
+Units.Saturn.radius		= 60268*Units.km;		% Saturn equatorial radius
 
 %---- JUPITER -----
 Units.Jupiter.radius		= 69911*Units.km;		% Jupiter mean radius

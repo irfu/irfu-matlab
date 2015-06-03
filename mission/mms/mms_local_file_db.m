@@ -20,6 +20,12 @@ classdef mms_local_file_db < mms_file_db
     end
     %% LIST FILES
     function fileList = list_files(obj,filePrefix,tint)
+      % fileList = list_files(obj, filePrefix, [tint]);
+      % List files from Database "obj", wich match "filePrefix" and cover
+      % optional time period "tint".
+      % Example:
+      %  DB = mms_local_file_db('/path/to/mms/root/');
+      %  fileList = list_files(DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
       if nargin==3 && ~isa(tint,'GenericTimeArray'),
@@ -214,8 +220,15 @@ classdef mms_local_file_db < mms_file_db
            if isempty(vT{3}), return, end, ver.rev = vT{3};
         end
         function entry = add_ss(entry)
+          info = spdfcdfinfo([entry.path filesep entry.name]);
+          isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
+          if ~any(isCdfEpochTT2000VariableArray)
+            errS = ['no TT2000 vars in:' entry.path filesep entry.name]; 
+            irf.log('critical',errS), error(errS)
+          end
+          iVar = find(isCdfEpochTT2000VariableArray,1);
           data = spdfcdfread([entry.path filesep entry.name],'Variables',...
-            'Epoch','CombineRecords',true,'KeepEpochAsIs',true);
+            info.Variables(iVar,1),'CombineRecords',true,'KeepEpochAsIs',true);
           if isempty(data), entry = []; return, end
           entry.start = EpochTT2000(data(1));
           entry.stop = EpochTT2000(data(end));
@@ -230,7 +243,7 @@ classdef mms_local_file_db < mms_file_db
       p = obj.get_path_to_file(fileName);
       
       if mms_local_file_db.is_cdf_file(fileName)
-        res = dataobj([p filesep fileName],'KeepTT2000');
+        res = dataobj([p filesep fileName]);
         return
       end
       

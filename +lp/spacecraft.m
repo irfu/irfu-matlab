@@ -7,7 +7,7 @@ classdef spacecraft
 		areaSunlit
 		areaSunlitGuard
 		surface
-		probeRefPotvsSatPot
+		probeRefPotVsSatPot
 		probeDistanceToSpacecraft
 		nProbes
 		probe

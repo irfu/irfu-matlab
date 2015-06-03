@@ -1113,10 +1113,10 @@ if 1,   % PANEL: PEACE PADH high resolution pitch C4 (cdf files from QJAS)
   tt=t(:,1);
   dtsampling=0.06;
   dtsampling=0.26;
-  psd=cdfread(qjas_file,'VARIABLES','psd');
-  theta=cdfread(qjas_file,'VARIABLES','theta');
-  phi=cdfread(qjas_file,'VARIABLES','phi');
-  level=cdfread(qjas_file,'VARIABLES','level');
+  psd=spdfcdfread(qjas_file,'VARIABLES','psd');
+  theta=spdfcdfread(qjas_file,'VARIABLES','theta');
+  phi=spdfcdfread(qjas_file,'VARIABLES','phi');
+  level=spdfcdfread(qjas_file,'VARIABLES','level');
   [delmett,ind]=irf_tlim(tt,tint);
   specrec=struct('t',tt(ind),'dt',dtsampling,'p_label','Log PSD [s^6/km^6]');
   psdnew=zeros(length(psd),size(psd{1},1),size(psd{1},2));

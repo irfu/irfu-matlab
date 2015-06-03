@@ -93,6 +93,7 @@ MMS_CONST.Bitmask.BAD_BIAS                 =  uint16(2);       % Bit 2
 MMS_CONST.Bitmask.PROBE_SATURATION         =  uint16(4);       % Bit 3
 MMS_CONST.Bitmask.LOW_DENSITY_SATURATION   =  uint16(8);       % Bit 4
 MMS_CONST.Bitmask.SWEEP_DATA               =  uint16(16);      % Bit 5
+MMS_CONST.Bitmask.ADP_SHADOW               =  uint16(32);      % Bit 6
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 

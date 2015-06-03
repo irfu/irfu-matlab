@@ -6,15 +6,11 @@ function epochObj = cdfepoch(varargin)
 %    date.  DATE may also be a cdfepoch object.
 %
 %    CDFEPOCH objects should be constructed to create EPOCH data in CDF's.
-%    using CDFWRITE.  Note that a CDF epoch is the number of milliseconds
+%    using SPDFCDFWRITE.  Note that a CDF epoch is the number of milliseconds
 %    since 1-Jan-0000 and that MATLAB datenums are the number of days
 %    since 0-Jan-0000.
 %
-%    See also CDFWRITE, DATENUM, CDFREAD, CDFINFO.
-
-%    binky
-%    Copyright 2001-2006 The MathWorks, Inc.
-%    $Revision: 1.1.1.1 $  $Date: 2012/05/17 14:33:09 $
+%    See also SPDFCDFWRITE, DATENUM, SPDFCDFREAD, SPDFCDFINFO.
 
 if (nargin == 0)
     s.date = [];

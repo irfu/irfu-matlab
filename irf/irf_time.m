@@ -11,22 +11,25 @@ function t_out = irf_time(t_in,flag)
 %
 %   Formats 'in' and 'out' can be (default 'in' is 'epoch'):%
 %      epoch: seconds since the epoch 1 Jan 1970, default, used by the ISDAT system.
-%     vector: [year month date hour min sec] in each row, last five columns optional
-%    vector6: [year month date hour min sec] in each row
-%    vector9: [year month date hour min sec msec micros nanosec] in each row
+%     vector: [year month date hour min sec] last five columns optional
+%    vector6: [year month date hour min sec] 
+%    vector9: [year month date hour min sec msec micros nanosec]
 %        iso: deprecated, same as 'utc' 
 %       date: MATLAB datenum format
 %    datenum: same as 'date'
 %        doy: [year, doy]
 %         tt: Terrestrial Time, seconds past  January 1, 2000, 11:58:55.816 (UTC)
 %       ttns: Terrestrial Time, nanoseconds past  January 1, 2000, 11:58:55.816 (UTC)
-%        utc: UTC string (see help parsett2000 for supported formats)
+%        utc: UTC string (see help spdfparsett2000 for supported formats)
 % utc_format: only output, where 'format' can be any string where 'yyyy' is
 %             changed to year, 'mm' month, 'dd' day, 'HH' hour, 'MM'
 %             minute, 'SS' second, 'mmm' milisceonds, 'uuu' microseconds,
 %             'nnn' nanoseconds. E.g. 'utc_yyyy-mm-dd HH:MM:SS.mmm'
+%             Values exceeding the requested precision are truncated,
+%             e.g. 10:40.99 is returned as "10:40" using format "utc_HH:MM".
 %   cdfepoch: miliseconds since 1-Jan-0000
 % cdfepoch16: [seconds since 1-Jan-0000, picoseconds within the second]
+%    epochtt: return class EPOCHTT
 %
 %  t_out=IRF_TIME(t_in,'out') equivalent to t_out=IRF_TIME(t_in,'epoch>out');
 %  t_out=IRF_TIME(t_in) equivalent to t_out=IRF_TIME(t_in,'vector>epoch');
@@ -207,6 +210,10 @@ switch lower(flag)
         % Assume 0 picoseconds.
         t_out = spdfcomputeepoch16([ttBreak zeros(size(ttBreak,1),1)]);
 
+	case 'ttns>epochtt'
+		t_out = EpochTT(t_in);
+	case 'epochtt>ttns'
+		t_out = t_in.ttns;
 		%
 		% Time interval conversions
 		%
@@ -255,24 +262,7 @@ switch lower(flag)
 			immm  = strfind(fmt,'mmm');
 			iuuu  = strfind(fmt,'uuu');
 			innn  = strfind(fmt,'nnn');
-			if innn,
-				dtRound = 0;
-			elseif iuuu,
-				dtRound = 0.5e3; % ns
-			elseif immm,
-				dtRound = 0.5e6;
-			elseif iSS,
-				dtRound = 0.5e9;
-			elseif iMM,
-				dtRound = 30e9;
-			elseif iHH,
-				dtRound = 30*60e9;
-			elseif idd,
-				dtRound = 0;
-			else
-				dtRound = 0;
-			end
-			tVec9 = irf_time(t_in+int64(dtRound),'ttns>vector9');
+			tVec9 = irf_time(t_in,'ttns>vector9');
 			t_out = repmat(fmt,size(t_in,1),1);
 			if iyyyy, t_out(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
 			if imm,   t_out(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end

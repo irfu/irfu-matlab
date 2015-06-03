@@ -33,8 +33,8 @@ function f = irf_get_data_omni( tint, parameter , database)
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
-% database:  'omni2'    - 1h resolution OMNI2 data (default)
-%            'omni_min' - 1min resolution OMNI data
+% database:  'omni_hour' or 'omni2' - 1h resolution OMNI data (default)
+%            'omni_min'             - 1min resolution OMNI data
 %
 % Examples:
 %   tint=[irf_time([2006 01 01 1 1 0]) irf_time([2006 12 31 23 59 0])];
@@ -48,127 +48,154 @@ function f = irf_get_data_omni( tint, parameter , database)
 % http://omniweb.gsfc.nasa.gov/html/omni_min_data.html#4b
 % %
 % %
-% Year			        I4	      1995 ... 2006
-% Day			        I4	1 ... 365 or 366
-% Hour			        I3	0 ... 23
-% Minute			        I3	0 ... 59 at start of average
-% ID for IMF spacecraft	        I3	See  footnote D below
-% ID for SW Plasma spacecraft	I3	See  footnote D below
+% Year                        I4 1995 ... 2006
+% Day                         I4 1 ... 365 or 366
+% Hour                        I3 0 ... 23
+% Minute                      I3 0 ... 59 at start of average
+% ID for IMF spacecraft	      I3 See  footnote D below
+% ID for SW Plasma spacecraft	I3 See  footnote D below
 % # of points in IMF averages	I4
 % # of points in Plasma averages	I4
-% Percent interp		        I4	See  footnote A above
-% Timeshift, sec		        I7
-% RMS, Timeshift		        I7
-% RMS, Phase front normal	        F6.2	See Footnotes E, F below
-% Time btwn observations, sec	I7	DBOT1, See  footnote C above
+% Percent interp		          I4 See  footnote A above
+% Timeshift, sec		          I7
+% RMS, Timeshift		          I7
+% RMS, Phase front normal	    F6.2 See Footnotes E, F below
+% Time btwn observations, sec	I7 DBOT1, See  footnote C above
 % Field magnitude average, nT	F8.2
-% Bx, nT (GSE, GSM)		F8.2
-% By, nT (GSE)		        F8.2
-% Bz, nT (GSE)		        F8.2
-% By, nT (GSM)	                F8.2	Determined from post-shift GSE components
-% Bz, nT (GSM)	                F8.2	Determined from post-shift GSE components
+% Bx, nT (GSE, GSM)		        F8.2
+% By, nT (GSE)		            F8.2
+% Bz, nT (GSE)		            F8.2
+% By, nT (GSM)	              F8.2 Determined from post-shift GSE components
+% Bz, nT (GSM)	              F8.2 Determined from post-shift GSE components
 % RMS SD B scalar, nT	        F8.2
-% RMS SD field vector, nT	        F8.2	See  footnote E below
-% Flow speed, km/s		F8.1
-% Vx Velocity, km/s, GSE	        F8.1
-% Vy Velocity, km/s, GSE	        F8.1
-% Vz Velocity, km/s, GSE	        F8.1
-% Proton Density, n/cc		F7.2
-% Temperature, K		        F9.0
-% Flow pressure, nPa		F6.2	See  footnote G below
-% Electric field, mV/m		F7.2	See  footnote G below
-% Plasma beta		        F7.2	See  footnote G below
-% Alfven mach number		F6.1	See  footnote G below
-% X(s/c), GSE, Re		        F8.2
-% Y(s/c), GSE, Re		        F8.2
-% Z(s/c), GSE, Re		        F8.2
-% BSN location, Xgse, Re	        F8.2	BSN = bow shock nose
-% BSN location, Ygse, Re	        F8.2
-% BSN location, Zgse, Re 	        F8.2
+% RMS SD field vector, nT	    F8.2 See  footnote E below
+% Flow speed, km/s		        F8.1
+% Vx Velocity, km/s, GSE	    F8.1
+% Vy Velocity, km/s, GSE      F8.1
+% Vz Velocity, km/s, GSE      F8.1
+% Proton Density, n/cc    		F7.2
+% Temperature, K		          F9.0
+% Flow pressure, nPa	       	F6.2 See  footnote G below
+% Electric field, mV/m		    F7.2 See  footnote G below
+% Plasma beta		              F7.2 See  footnote G below
+% Alfven mach number          F6.1 See  footnote G below
+% X(s/c), GSE, Re		          F8.2
+% Y(s/c), GSE, Re		          F8.2
+% Z(s/c), GSE, Re		          F8.2
+% BSN location, Xgse, Re      F8.2 BSN = bow shock nose
+% BSN location, Ygse, Re	    F8.2
+% BSN location, Zgse, Re 	    F8.2
 %
-% AE-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
-% AL-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
-% AU-index, nT                    I6      See World Data Center for Geomagnetism, Kyoto
-% SYM/D index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
-% SYM/H index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
-% ASY/D index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
-% ASY/H index, nT                 I6      See World Data Center for Geomagnetism, Kyoto
-% PC(N) index,                    F7.2    See World Data Center for Geomagnetism, Copenhagen
-% Magnetosonic mach number        F5.1    See  footnote G below
+% AE-index, nT                I6      See World Data Center for Geomagnetism, Kyoto
+% AL-index, nT                I6      See World Data Center for Geomagnetism, Kyoto
+% AU-index, nT                I6      See World Data Center for Geomagnetism, Kyoto
+% SYM/D index, nT             I6      See World Data Center for Geomagnetism, Kyoto
+% SYM/H index, nT             I6      See World Data Center for Geomagnetism, Kyoto
+% ASY/D index, nT             I6      See World Data Center for Geomagnetism, Kyoto
+% ASY/H index, nT             I6      See World Data Center for Geomagnetism, Kyoto
+% PC(N) index,                F7.2    See World Data Center for Geomagnetism, Copenhagen
+% Magnetosonic mach number    F5.1    See  footnote G below
 
+%% Define selected database
 if nargin < 3, % database not specified defaulting to omni2
-	dataSource='omni2';
-	dateFormat='yyyymmdd';
-elseif nargin == 3, % database specified
-	if strcmpi(database,'omni2')
-		dataSource='omni2';
-		dateFormat='yyyymmdd';
+	omniDatabase    = 'omni_hour';
+elseif nargin == 3 && ischar(database), % database specified
+	if strcmpi(database,'omni2') || strcmpi(database,'omni_hour')
+		omniDatabase  = 'omni_hour';
 	elseif strcmpi(database,'omni_min') || strcmpi(database,'min')
-		dataSource='omni_min';
-		dateFormat='yyyymmddhh';
+		omniDatabase  ='omni_min';
 	else
-		irf_log('fcal','Unknown database, using omni2.');
-		dataSource='omni2';
-		dateFormat='yyyymmdd';
+		errStr = ['Unknown database: ' database];
+		irf.log('critical',errStr); error(errStr);
 	end
+else
+	errStr = 'Unknown syntax!';
+	irf.log('critical',errStr);	error(errStr);
 end
-httpRequest=['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
-startDate=irf_time(tint(1),dateFormat);
-endDate=irf_time(tint(2),dateFormat);
 
-i=strfind(parameter,',');
-iEnd=[i-1 length(parameter)];
-iStart=[1 i+1];
-vars='';nVar=0;
+%% Define parameters for selected database
+switch omniDatabase
+	case 'omni_hour'
+		dataSource  = 'omni2';
+		dateFormat  = 'utc_yyyymmdd';
+		dtMin       = 24*3600;
+	case 'omni_min'
+		dataSource  = 'omni_min';
+		dateFormat  = 'utc_yyyymmddHH';
+		dtMin       = 3600;
+		dtAtIntervalEnds = 0.5*3600;
+	otherwise
+		errStr = ['no such source: '  omniDatabase];
+		irf.log('critical',errStr);
+		error(errStr);
+end
+
+%% Define request url and time interval
+httpRequest = ['http://omniweb.gsfc.nasa.gov/cgi/nx1.cgi?activity=retrieve&spacecraft=' dataSource '&'];
+startDate   = irf_time(tint(1)        ,dateFormat);
+endDate     = irf_time(tint(2) + dtMin,dateFormat);
+
+%% Define variables to be requested
+ii     = strfind(parameter,',');
+iEnd   = [ii-1 length(parameter)];
+iStart = [1 ii+1];
+vars='';
+nVar=0;
 for jj=1:length(iStart)
 	variable=parameter(iStart(jj):iEnd(jj));
 	switch lower(variable)
-		case 'b', varNumberOmni2=8;varNumberOmni1min=13;
-		case 'avgb', varNumberOmni2=9;varNumberOmni1min=-1;
-		case 'blat', varNumberOmni2=10;varNumberOmni1min=-1;
-		case 'blong', varNumberOmni2=11;varNumberOmni1min=-1;
-		case {'bx','bxgse','bxgsm'}, varNumberOmni2=12;varNumberOmni1min=14;
-		case {'by','bygse'}, varNumberOmni2=13;varNumberOmni1min=15;
-		case {'bz','bzgse'}, varNumberOmni2=14;varNumberOmni1min=16;
-		case 'bygsm', varNumberOmni2=14;varNumberOmni1min=17;
-		case 'bzgsm', varNumberOmni2=15;varNumberOmni1min=18;
-		case 't', varNumberOmni2=22;varNumberOmni1min=26;
-		case 'n', varNumberOmni2=23;varNumberOmni1min=25;
-		case 'nanp', varNumberOmni2=27;varNumberOmni1min=-1;
-		case 'v', varNumberOmni2=24;varNumberOmni1min=21;
-		case 'p', varNumberOmni2=28;varNumberOmni1min=27;
-		case 'e', varNumberOmni2=35;varNumberOmni1min=28;
-		case 'beta', varNumberOmni2=36;varNumberOmni1min=29;
-		case 'ma', varNumberOmni2=37;varNumberOmni1min=30;
-        case 'ms', varNumberOmni2=56;varNumberOmni1min=45;
-		case 'ssn', varNumberOmni2=39;varNumberOmni1min=-1;
-		case 'dst', varNumberOmni2=40;varNumberOmni1min=-1;
-		case 'ae', varNumberOmni2=41;varNumberOmni1min=37;
-		case 'al', varNumberOmni2=52;varNumberOmni1min=38;
-		case 'au', varNumberOmni2=53;varNumberOmni1min=39;
-		case 'kp', varNumberOmni2=38;varNumberOmni1min=-1;
-		case 'pc', varNumberOmni2=51;varNumberOmni1min=44;
-		case 'f10.7', varNumberOmni2=50;varNumberOmni1min=-1;
-		otherwise, varNumberOmni2=0;varNumberOmni1min=-1;
+		case 'b',      varOmni2=8 ;varOmni1min=13;
+		case 'avgb',   varOmni2=9 ;varOmni1min=-1;
+		case 'blat',   varOmni2=10;varOmni1min=-1;
+		case 'blong',  varOmni2=11;varOmni1min=-1;
+		case 'bx',     varOmni2=12;varOmni1min=14;
+		case 'bxgse',  varOmni2=12;varOmni1min=14;
+		case 'bxgsm',  varOmni2=12;varOmni1min=14;
+		case 'by',     varOmni2=13;varOmni1min=15;
+		case 'bygse',  varOmni2=13;varOmni1min=15;
+		case 'bz',     varOmni2=14;varOmni1min=16;
+		case 'bzgse',  varOmni2=14;varOmni1min=16;
+		case 'bygsm',  varOmni2=15;varOmni1min=17;
+		case 'bzgsm',  varOmni2=16;varOmni1min=18;
+		case 't',      varOmni2=22;varOmni1min=26;
+		case 'n',      varOmni2=23;varOmni1min=25;
+		case 'nanp',   varOmni2=27;varOmni1min=-1;
+		case 'v',      varOmni2=24;varOmni1min=21;
+		case 'p',      varOmni2=28;varOmni1min=27;
+		case 'e',      varOmni2=35;varOmni1min=28;
+		case 'beta',   varOmni2=36;varOmni1min=29;
+		case 'ma',     varOmni2=37;varOmni1min=30;
+		case 'ms',     varOmni2=56;varOmni1min=45;
+		case 'ssn',    varOmni2=39;varOmni1min=-1;
+		case 'dst',    varOmni2=40;varOmni1min=-1;
+		case 'ae',     varOmni2=41;varOmni1min=37;
+		case 'al',     varOmni2=52;varOmni1min=38;
+		case 'au',     varOmni2=53;varOmni1min=39;
+		case 'kp',     varOmni2=38;varOmni1min=-1;
+		case 'pc',     varOmni2=51;varOmni1min=44;
+		case 'f10.7',  varOmni2=50;varOmni1min=-1;
+		otherwise,     varOmni2=0 ;varOmni1min=-1;
 	end
 	if strcmp(dataSource,'omni2'),
-		if varNumberOmni2>0,
-			vars=[vars '&vars=' num2str(varNumberOmni2)];
+		if varOmni2>0,
+			vars=[vars '&vars=' num2str(varOmni2)]; %#ok<AGROW>
 			nVar=nVar+1;
 		end
 	else % datasource omni_min
-		if varNumberOmni1min>0,
-			vars=[vars '&vars=' num2str(varNumberOmni1min)];
+		if varOmni1min>0,
+			vars=[vars '&vars=' num2str(varOmni1min)]; %#ok<AGROW>
 			nVar=nVar+1;
 		end
 	end
 end
 
+%% Request data
 url=[httpRequest 'start_date=' startDate '&end_date=' endDate vars];
 disp(['url:' url]);
-[c,status]=urlread(url);
+[c,getDataSuccess]=urlread(url);
 
-if status==1, % success in downloading from internet
+%% Analyze returned data
+if getDataSuccess, % success in downloading from internet
 	cstart=strfind(c,'YEAR'); % returned by omni2 databse
 	if isempty(cstart),
 		cstart=strfind(c,'YYYY'); % returned by omni_min database
@@ -196,6 +223,7 @@ if status==1, % success in downloading from internet
 			f(:,jj+1)=cc{jj+4};
 		end
 	end
+	f = irf_tlim(f,tint); % leave only data within the time interval
 	% Remove FILLVAL, however not good solution. TODO: improve, so that
 	% only FILLVAL for the corresponding variable is used
 	f(f==9999999.)=NaN;
@@ -210,4 +238,3 @@ else % no success in getting data from internet
 	irf.log('warning','Can not get OMNI data form internet!');
 	f=[];
 end
-

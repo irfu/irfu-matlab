@@ -35,6 +35,7 @@ init_matlab_path()
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
+ACE_File = '';
 DCV_File = '';
 DCE_File = '';
 DEFATT_File = ''; % Defatt file used for l2pre
@@ -186,6 +187,16 @@ for i=1:nargin-1
         DCE_File = varargin{i};
         irf.log('notice', ['DCE input file: ', DCE_File]);
 
+    elseif regexpi(fileIn, '_ace_') % _ace_
+        if ~isempty(ACE_File)
+            err_str = ['Received multiple AC E files in input (',...
+                ACE_File, ', ', varargin{i} ')'];
+            irf.log('critical', err_str);
+            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
+        end
+        ACE_File = varargin{i};
+        irf.log('notice', ['ACE input file: ', ACE_File]);
+
     elseif regexpi(fileIn, '_DEFATT_') % DEFATT
         if ~isempty(DEFATT_File)
             err_str = ['Received multiple DEFATT files in input (',...
@@ -216,13 +227,18 @@ for i=1:nargin-1
 end
 
 % All input arguments read. All files required identified correct?
+% QL, SITL, SCPOT use: hk101, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
+% L2PRE use: defatt, hk10e, hk105, dce and possibly dcv (if not incl. in dce).
+% L2A use: l2pre.
 if any([(isempty(HK_101_File) && isempty(DEFATT_File)), isempty(DCE_File),...
-    isempty(DCV_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
+    isempty(HK_105_File), isempty(HK_10E_File)]) && isempty(L2Pre_File)
     irf.log('warning', 'MMS_SDC_SDP_PROC missing some input.');
     for i=1:nargin-1
         irf.log('warning',...
             ['MMS_SDC_SDP_PROC received input argument: ', varargin{i}]);
     end
+elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2a )
+  irf.log('debug','It appears we are running with the dcv data combined into dce file.');
 end
 
 
@@ -255,22 +271,20 @@ switch procId
     update_header(src_fileData) % Update header with file info.
 
     if isempty(DCE_File)
-      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
-        'received no DCE file argument.']);
-    else
-      irf.log('notice', [procName ' proc using: ' DCE_File]);
-      src_fileData = mms_sdp_load(DCE_File,'dce');
-      update_header(src_fileData); % Update header with file info.
+      errStr = ['missing required input for ' procName ': DCE_File'];
+      irf.log('critical',errStr);
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
+    irf.log('notice', [procName ' proc using: ' DCE_File]);
+    src_fileData = mms_sdp_load(DCE_File,'dce');
+    update_header(src_fileData); % Update header with file info.
     
-    if isempty(DCV_File)
-      errStr = ['missing required input for ' procName ': DCV_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+    if ~isempty(DCV_File)
+      % Separate DCV file
+      irf.log('notice', [procName ' proc using: ' DCV_File]);
+      src_fileData = mms_sdp_load(DCV_File,'dcv');
+      update_header(src_fileData) % Update header with file info.
     end
-    irf.log('notice', [procName ' proc using: ' DCV_File]);
-    src_fileData = mms_sdp_load(DCV_File,'dcv');
-    update_header(src_fileData) % Update header with file info.
 
     % Write the output
     filename_output = mms_sdp_cdfwrite(HeaderInfo);
@@ -312,17 +326,15 @@ switch procId
 
     if isempty(DCE_File)
       errStr = ['missing required input for ' procName ': DCE_File'];
-      irf.log('critical',errStr)
-      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
+      irf.log('critical',errStr);
+      error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
     irf.log('notice', [procName ' proc using: ' DCE_File]);
     src_fileData = mms_sdp_load(DCE_File,'dce');
     update_header(src_fileData) % Update header with file info.
 
-    if isempty(DCV_File)
-      irf.log('warning', ['MMS_SDC_SDP_PROC ' procName...
-        'received no DCV file argument.']);
-    else
+    if ~isempty(DCV_File)
+      % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);
       src_fileData = mms_sdp_load(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
@@ -365,7 +377,6 @@ end
       ['mission' filesep 'mms'],...
       ['mission' filesep 'cluster'],...
       ['contrib' filesep 'nasa_cdf_patch'],...
-      ['contrib' filesep 'nasa_cdf_patch_beta'],...
       };
     for iPath = 1:numel(irfDirectories)
       pathToAdd = [irfPath irfDirectories{iPath}];

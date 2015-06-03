@@ -16,71 +16,12 @@ setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 MMS_CONST=mms_constants;
 
-if 0
-%% Define files 20150408
-mmsId = 'mms1'; prf = [data_root filesep mmsId];  %#ok<UNRCH>
-DCE_File = [prf '/edp/comm/l1b/dce128/2015/04/mms1_edp_comm_l1b_dce128_20150408060000_v0.8.0.cdf'];
-DCV_File = [prf '/edp/comm/l1b/dcv128/2015/04/mms1_edp_comm_l1b_dcv128_20150408060000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms1_fields_hk_l1b_101_20150408_v0.3.0.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms1_fields_hk_l1b_105_20150408_v0.1.0.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms1_fields_hk_l1b_10e_20150408_v0.1.0.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
-if 0
-%% Define files 20150411-00:00
-mmsId = 'mms3'; prf = [data_root filesep mmsId];  %#ok<UNRCH>
-DCE_File = [prf '/edp/comm/l1b/dce128/2015/04/mms3_edp_comm_l1b_dce128_20150411000000_v0.8.0.cdf'];
-DCV_File = [prf '/edp/comm/l1b/dcv128/2015/04/mms3_edp_comm_l1b_dcv128_20150411000000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms3_fields_hk_l1b_101_20150411_v0.3.1.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms3_fields_hk_l1b_105_20150411_v0.1.1.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms3_fields_hk_l1b_10e_20150411_v0.1.1.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
-if 0
-%% Define files 20150413-00:00
-mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
-DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413000000_v0.8.0.cdf'];
-DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413000000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
-if 0
-%% Define files 20150413-06:00
-mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
-DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413060000_v0.8.0.cdf'];
-DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413060000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
-if 0
-%% Define files 20150413-12:00
-mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
-DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413120000_v0.8.0.cdf'];
-DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413120000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
-if 0
-%% Define files 20150413-18:00
-mmsId = 'mms2'; prf = [data_root filesep mmsId]; %#ok<UNRCH>
-DCE_File  = [prf '/edp/comm/l1b/dce128/2015/04/mms2_edp_comm_l1b_dce128_20150413180000_v0.8.0.cdf'];
-DCV_File  = [prf '/edp/comm/l1b/dcv128/2015/04/mms2_edp_comm_l1b_dcv128_20150413180000_v0.8.0.cdf'];
-HK_101_File = [prf '/fields/hk/l1b/101/2015/04/mms2_fields_hk_l1b_101_20150413_v0.3.1.cdf'];
-HK_105_File = [prf '/fields/hk/l1b/105/2015/04/mms2_fields_hk_l1b_105_20150413_v0.1.1.cdf'];
-HK_10E_File = [prf '/fields/hk/l1b/10e/2015/04/mms2_fields_hk_l1b_10e_20150413_v0.1.1.cdf'];
-DEFATT_File = []; %'ancillary/mms4/defatt/MMS4_DEFATT_2015097_2015098.V00';
-end
 %% Define time
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
-tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
+%tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
+tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
-mmsId = 'mms1'; 
+mmsId = 'mms4'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
@@ -114,6 +55,7 @@ dce = mms_sdp_datamanager('dce');
 probe2sc_pot = mms_sdp_datamanager('probe2sc_pot');
 phase = mms_sdp_datamanager('phase');
 spinfits = mms_sdp_datamanager('spinfits');
+delta_off = mms_sdp_datamanager('delta_off');
 dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
 
 epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
@@ -140,14 +82,14 @@ end
 
 hca = irf_panel('Ex'); comp = 1;
 irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))],...
+  [epochS double(spinfits.sfit.e12(:,comp+1))-real(delta_off)],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
 ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
 hca = irf_panel('Ey'); comp = 2;
 irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))],...
+  [epochS double(spinfits.sfit.e12(:,comp+1))-imag(delta_off)],...
   [epochS double(spinfits.sfit.e34(:,comp+1))]...
   },'comp')
 ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
@@ -191,7 +133,7 @@ mms_sdc_sdp_proc('l2pre', DCE_File,  DCV_File, HK_10E_File, DEFATT_File);
 mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150405000000_v0.0.0.cdf')
 
 %% Plot
-dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf','KeepTT2000');
+dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf');
 e12=getmat(dce2d,'mms4_edp_dce_spinfit_e12');
 e34=getmat(dce2d,'mms4_edp_dce_spinfit_e34');
 h = irf_plot({e12,e34},'comp');
@@ -207,7 +149,7 @@ title(h(1),'MMS4')
 li = mms.db_list_files([mmsId '_dfg_srvy_ql'],tint);
 if length(li)>1, error('li>1'), end
 DFG_File = [li.path filesep li.name];
-dfg = dataobj(DFG_File,'KeepTT2000');
+dfg = dataobj(DFG_File);
 B = getmat(dfg,[mmsId '_dfg_srvy_gsm_dmpa']);
 
 c_eval('B?=B;',mmsId);

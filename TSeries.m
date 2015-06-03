@@ -1,12 +1,12 @@
 classdef TSeries
   %TSeries Generic time dependent variable
-  %   Time varibale has 2 fields: T - time [GenericTimeArray] and DATA 
+  %   Time varibale has 2 fields: T - time [GenericTimeArray] and DATA
   %
   %   TS = TSeries(T,DATA,[ARGS])
   %
   %   ARGS:
   %      'to','TensorOrder' - 0 (scalar-default), 1 (vector), 2 (tensor)
-  %      'tb','TensorBasis' - 
+  %      'tb','TensorBasis' -
   %                           xyz (Cartesian)
   %                           rtp (Spherical,colatitude)
   %                           rlp (Spherical,latitude)
@@ -15,8 +15,8 @@ classdef TSeries
   %                           tp (Polar 2D)
   %      'repres' - Representation for each of the dimensions of the DATA
   %      as a cell array containing description of tensor dimensionality
-  %      or {} if the DATA dimension correspond to variables associated 
-  %      with other independent variables of the data product, such and a 
+  %      or {} if the DATA dimension correspond to variables associated
+  %      with other independent variables of the data product, such and a
   %      particle energy or a spectral frequency channel.
   %
   %      For more infor on representation see Cluster Metadata Dictionary
@@ -46,7 +46,7 @@ classdef TSeries
   %  % TensorOrder=1, 2 components (x,z) of incomplete 3D vector
   %  TsVec3DXZ = TSeries(epoch,data4x2,'TensorOrder',1,'TensorBasis','xyz',...
   %          'repres',{'x','z'})
-  %  
+  %
   %  % TensorOrder=2, 3x3 components of tensor (3D, default basis=xyz)
   %  TsTen3D = TSeries(epoch,data4x3x3,'TensorOrder',2,...
   %          'repres',{'x','y','z'},'repres',{'x','y','z'})
@@ -93,7 +93,7 @@ classdef TSeries
     representation
   end
   
-  properties 
+  properties
     name = '';
     userData = [];
   end
@@ -138,7 +138,7 @@ classdef TSeries
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
             [~,iB] = intersect(obj.BASIS,x(5:7));
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
-            obj.representation{2} = {x(5), x(6), x(7)}; 
+            obj.representation{2} = {x(5), x(6), x(7)};
             obj.fullDim_{2} = true;
           case {'vec_xy','vec_rt'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
@@ -162,7 +162,7 @@ classdef TSeries
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
                 'tensorOrder requires a second argument')
             end
-            if ~isempty(intersect(y,(0:1:obj.MAX_TENSOR_ORDER)))  
+            if ~isempty(intersect(y,(0:1:obj.MAX_TENSOR_ORDER)))
               obj.tensorOrder_ = y; flagTensorOrderSet = true;
               if y>0,
                 % Check if we have any data dimension with 1..3 elements
@@ -211,7 +211,7 @@ classdef TSeries
             if iDim>ndims(data),
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
                 'Representation already set for all DATA dimensions')
-            end 
+            end
             if ~isempty(args), y = args{1}; args(1) = [];
             else
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
@@ -230,7 +230,7 @@ classdef TSeries
           case 'depend'
           otherwise
             error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
-                'Unknown parameter')
+              'Unknown parameter')
         end
       end
       
@@ -246,10 +246,10 @@ classdef TSeries
             iDim,sDim,length(tb),tb);
           return
         end
-        if ~iscell(x), 
+        if ~iscell(x)
           msg = 'Representation requires a cell input'; return
         end
-        if sDim~=length(x), 
+        if sDim~=length(x)
           msg = sprintf('Representation requires a cell(%d) input',sDim);
           return
         end
@@ -265,7 +265,7 @@ classdef TSeries
             'Representation (%s) contains repeating attributes',s);
           return
         end
-        s = unique(s); 
+        s = unique(s);
         c = length((intersect(tb,s)));
         if c == 0, msg = sprintf('Unrecognized representation');
         elseif length(s) == c, ok = true; % complete dim
@@ -286,7 +286,10 @@ classdef TSeries
     function value = get.time(obj)
       value = obj.t_;
     end
-    
+    function value = t(obj)
+      value = obj.t_;
+    end
+   
     function value = get.tensorBasis(obj)
       value = [obj.BASIS{obj.tensorBasis_}...
         ' (' obj.BASIS_NAMES{obj.tensorBasis_} ')'];
@@ -317,10 +320,10 @@ classdef TSeries
       %access R component
       y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
     end
-    function y = t(obj)
+%    function y = t(obj)
       %access T(theta) component
-      y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
-    end
+%      y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
+%    end
     function y = p(obj)
       %access P(phi) component
       y = getComponent(obj,'p'); if isempty(y), error('cannot get P'), end
@@ -359,13 +362,80 @@ classdef TSeries
       else l = obj.t_.length();
       end
     end
+    function obj = plus(obj,inp)
+      if isnumeric(inp) 
+        if numel(inp) == 1
+          obj.data_ = obj.data_ + inp;
+        else
+          sizeInp = size(inp);
+          sizeObj = size(obj.data);
+          if numel(sizeInp) == numel(sizeObj) && ...
+              sizeInp(1) == 1 && ...
+              all(sizeInp(2:end) == sizeObj(2:end))
+            obj.data_ = obj.data_ + repmat(inp,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+          end
+        end
+      else
+        error('Plus not defined');
+      end
+    end
+    function obj = minus(obj,inp)
+      if isnumeric(inp) && ...
+          ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
+        obj.data_ = obj.data_ - inp;
+      else
+        error('Plus not defined');
+      end
+    end
+    function obj = mtimes(obj,inp)
+      if isnumeric(inp) && numel(inp) == 1,
+        obj.data_ = obj.data_ * inp;
+      else
+        error('mtimes not defined');
+      end
+    end
+    function [varargout] = subsref(obj,idx)
+      %SUBSREF handle indexing
+      switch idx(1).type
+        % Use the built-in subsref for dot notation
+        case '.'
+          [varargout{1:nargout}] = builtin('subsref',obj,idx);
+        case '()'
+          tmpEpoch = builtin('subsref',obj.time,idx(1));
+          obj.t_ = tmpEpoch;
+          idxTmp = repmat({':'}, ndims(obj.data), 1);
+          idxTmp(1) = idx(1).subs;
+          obj.data_ = obj.data_(idxTmp{:});
+          if numel(idx) > 1,
+            obj = builtin('subsref',obj,idx(2:end));
+          end
+          [varargout{1:nargout}] = obj;
+        case '{}'
+          error('irf:GenericTimeArray:subsref',...
+            'Not a supported subscripted reference')
+      end
+    end
+
+    function obj = tlim(obj,tint)
+      [idx,obj.t_] = obj.time.tlim(tint);
+      nd = ndims(obj.data_);
+      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
+      switch nd
+        case 2, obj.data_ = obj.data_(idx,:);
+        case 3, obj.data_ = obj.data_(idx,:,:,:);
+        case 4, obj.data_ = obj.data_(idx,:,:,:,:);
+        case 5, obj.data_ = obj.data_(idx,:,:,:,:,:);
+        case 6, obj.data_ = obj.data_(idx,:,:,:,:,:,:);
+        otherwise, error('should no be here')
+      end
+    end
   end
   
   methods (Access=protected)
     function res = getComponent(obj,comp)
       res = [];
       nd = ndims(obj.data_);
-      if nd>6, return, end % we cannot support more than 5 dimensions
+      if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
       teno = obj.tensorOrder_;
       if length(comp)~=teno, return, end
       basis = obj.BASIS{teno};

@@ -30,7 +30,7 @@ classdef test_irf_time < matlab.unittest.TestCase
 			s1=irf_time(tDateArray,'date>utc');
 			t=irf_time(s1,'utc>ttns');
 			t1=irf_time(s1(:,1:end-1),'utc>ttns');
-			t2=irf_time(reshape(strrep(s1(:)','Z',' '),size(s1)),'utc>ttns');
+			t2=irf_time(reshape(strrep(s1(:)','Z',''),size(s1)-[0 1]),'utc>ttns');
 			testCase.verifyEqual(t,t1,'AbsTol',2e-9); % 2ns precision
 			testCase.verifyEqual(t,t2,'AbsTol',2e-9); % 2ns precision
 		end

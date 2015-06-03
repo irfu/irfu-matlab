@@ -110,15 +110,9 @@ function irf_disp_surfplot(kc_x_max,kc_z_max,wfinal,extraparam,surfchoice,colorc
   axis([temp(1:4),0,temp(6)]);
 
   % Print the color explanations
+	xlabel(h_cbar,colorstring);
   
-  h_text=text( ...
-      'Units','normalized', ...
-      'HorizontalAlignment','center', ...	
-      'Parent',h_cbar, ...
-      'Position',[0.5 -0.8], ...
-      'String',colorstring);
-
-  % Set the view as it was
+	% Set the view as it was
   
   view(az,el);
   

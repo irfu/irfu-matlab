@@ -61,7 +61,7 @@ function testUscWriteCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
+        '/mms2_sdp_fast_l2_uscdcv_20150410000000_v0.0.0.cdf']);
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -142,7 +142,7 @@ function testQuickLookWriteCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
-        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
+        '/mms2_sdp_fast_ql_dce2d_20150410000000_v0.0.0.cdf']);
     
     % Do some checks that the written output and subsequent reading was
     % as expected.
@@ -222,7 +222,7 @@ function testSITLwriteCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj( [ENVIR.DROPBOX_ROOT, ...
-        '/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf'], 'KeepTT2000');
+        '/mms2_sdp_sitl_l1b_dce2d_20150410000000_v0.0.0.cdf']);
     
     % Do some checks that the written output and subsequent reading was
     % as expected.

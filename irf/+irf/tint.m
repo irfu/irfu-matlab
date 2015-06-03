@@ -48,7 +48,7 @@ switch nargin
   otherwise % should not be here
 end
 
-if TintTT2000(2) - TintTT2000(1) <= 0,
+if TintTT2000(2) <= TintTT2000(1),
   errStr = 'TINT has negative or zero duration';
   irf.log('critical',errStr), error(errStr)
 end

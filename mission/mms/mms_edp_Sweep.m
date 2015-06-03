@@ -44,7 +44,7 @@ classdef mms_edp_Sweep < handle
         msg = 'File name must be mms[1-4]_edp_srvy_l1b_sweeps_*.cdf';
         irf.log('critical',msg),error(msg)
       end
-      obj.sweep = dataobj(fileName,'KeepTT2000');
+      obj.sweep = dataobj(fileName);
       if isempty(obj.sweep),
         msg = 'No data loaded'; irf.log('critical',msg),error(msg)
       end
