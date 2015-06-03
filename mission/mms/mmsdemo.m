@@ -33,7 +33,7 @@ irf.log('off')
 
 T   = EpochTT('2002-03-04T09:30:00Z'):.2...
      :EpochTT('2002-03-04T10:30:00Z');      % define time line as EpochTT object
-t   = T.tt - T.tt(1);                       % define relative time in s from start
+t   = T.tts - T.tts(1);                     % define relative time in s from start
 x   = exp(0.001*(t)).*sin(2*pi*t/180);      % define function x(t)=exp(0.001(t-to))*sin(t-to)
 TS1 = TSeries(T,x);                         % define TSeries object
 
@@ -61,21 +61,21 @@ irf_legend(h(1),{'X','Y'},[0.02 0.98],'fontsize',20)
 irf_plot(h(2),TS3);
 ylabel(h(2),'TS3 = TS2 * 1.2 +2 [nT]');
 
-tintZoom = irf.tint('2002-03-04T09:50:00Z/2002-03-04T10:01:00Z'); % 11 min interval
+tintZoom = irf_time('2002-03-04T09:50:00Z/2002-03-04T10:01:00Z','utc>tint'); % 11 min interval
 irf_zoom(h,'x',tintZoom);
 irf_zoom(h,'y');
 %% Example  4 Compare two data  
 % Compare component-wise two datasets.
 % Add one more label row with hours from the beginning of time interval
 
-h=irf_plot({B2,Bnew},'comp');
+h=irf_plot({TS2,TS3},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(B2(1,1),'epoch>yyyy-mm-dd'));
+title(h(1),irf_time(TS2.t.tts(1),'tt>utc_yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 
-hours=[t (t-t(1))/3600]; % hours from beginning of time interval
-irf_timeaxis(h(2),t(1),hours,{'hours'})
+TShours =TSeries(T,t/3600); % hours from beginning of time interval
+irf_timeaxis(h(2),t(1),TShours,{'hours'})
 irf_timeaxis(h(end),'nodate');
 %% Example  5 Plot, different markers, mark intervals
 % Plot using different markers or just some components of data. 
@@ -83,10 +83,10 @@ irf_timeaxis(h(end),'nodate');
 % Mark some interesting time interval.
 
 tint2=[irf_time([2008 03 01 10 11 0]) irf_time([2008 03 01 10 15 0])];
-h=irf_plot(2,'newfigure');
-irf_plot(h(1),B2);
-irf_plot(h(2),B2(:,1:2),'r.','markersize',12);
-ylabel(h(2),'B [nT]?sc2');
+h=irf_plot(2,'reset');
+irf_plot(h(1),TS2);
+irf_plot(h(2),TS2,'r.','markersize',12);
+ylabel(h(2),'B [nT] sc2');
 irf_zoom(h,'y');
 irf_pl_mark(h(2),tint2);
 irf_legend(0,'Some additional info',[0,1],'color','r')

@@ -286,6 +286,9 @@ classdef TSeries
 		function value = get.time(obj)
 			value = obj.t_;
 		end
+		function value = t(obj)
+			value = obj.t_;
+		end
 		
 		function value = get.tensorBasis(obj)
 			value = [obj.BASIS{obj.tensorBasis_}...
@@ -317,10 +320,10 @@ classdef TSeries
 			%access R component
 			y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
 		end
-		function y = t(obj)
+%		function y = t(obj)
 			%access T(theta) component
-			y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
-		end
+%			y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
+%		end
 		function y = p(obj)
 			%access P(phi) component
 			y = getComponent(obj,'p'); if isempty(y), error('cannot get P'), end
@@ -360,9 +363,18 @@ classdef TSeries
 			end
 		end
 		function obj = plus(obj,inp)
-			if isnumeric(inp) && ...
-					((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
-				obj.data_ = obj.data_ + inp;
+			if isnumeric(inp) 
+				if numel(inp) == 1
+					obj.data_ = obj.data_ + inp;
+				else
+					sizeInp = size(inp);
+					sizeObj = size(obj.data);
+					if numel(sizeInp) == numel(sizeObj) && ...
+							sizeInp(1) == 1 && ...
+							all(sizeInp(2:end) == sizeObj(2:end))
+						obj.data_ = obj.data_ + repmat(inp,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+					end
+				end
 			else
 				error('Plus not defined');
 			end
