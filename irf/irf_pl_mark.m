@@ -22,7 +22,6 @@ function [outhandle colr]=irf_pl_mark(varargin)
 % WARNING!!! IRF_PL_MARK has changed (2011-03-30) the order of input parameters
 %  now more compliant to MATLAB
 
-% $Id$
 
 [ax,args,nargs] = axescheck(varargin{:});
 

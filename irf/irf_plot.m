@@ -224,7 +224,7 @@ if flag_subplot==0,  % One subplot
     end
     firstTimeStamp = x.t(~isnan(x.t),1);firstTimeStamp = firstTimeStamp(1);
   elseif ~isempty(x) % x is nonempty matrix
-    if isa(x,'TSeries'), time = x.time.toEpochUnix().epoch; data = x.data;
+    if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
     else time = x(:,1); data = x(:,2:end);
     end
     ts = t_start_epoch(time); % t_start_epoch is saved in figures user_data variable

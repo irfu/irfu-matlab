@@ -113,6 +113,9 @@ for j=1:numel(h)
         for ii = 1:size(res{1},2)
             if ~strcmp(lab(ii),' ')
                 ax = axis(h(j));
+								if isa(xlabels,'TSeries')
+									xlabels = [xlabels.t.epochUnix xlabels.data];
+								end
                 mm = irf_resamp( xlabels, xcoord(ii));
                 for jj = 1:length(mm)
                     if jj==1, % the first line is time
