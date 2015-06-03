@@ -414,7 +414,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd HH:MM:SS'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'YZ';
 				plot_relative_position(h(2));
@@ -426,7 +426,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd HH:MM:SS'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'XY';
 				plot_relative_position(h(2));
