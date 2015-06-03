@@ -13,6 +13,9 @@ R1=[];R2=[];R3=[];R4=[]; %#ok<NASGU>
 R.C1=[];R.C2=[];R.C3=[];R.C4=[];R.R=[]; % positions of each s/c and mass centrum
 tr=[];r=[]; %#ok<NASGU>
 XRe=cell(1,4);rr=cell(1,4);
+action = 'initialize'; % default
+plot_type='default';
+
 if       (nargin==1 && ischar(time)),
 	action=time;
 	irf.log('debug',['action=' action]);
@@ -21,6 +24,11 @@ if nargin==0, % default time
 	time=[2015 05 15 01 01 01];
 	t=irf_time(time);
 end
+if (nargin==1 && ischar(time)),
+	action=time;
+	irf.log('debug',['action=' action]);
+end
+
 sc_list=1:4;
 if exist('coord_label','var'), % define coord label if not defined so far
 	if isempty(coord_label),
@@ -62,24 +70,16 @@ switch lower(action)
 	case 'read_position'
 		data=get(gcf,'userdata');
 		R=data.R;
-		tint = [data.t-120 data.t+120]; % interval to read position
+%		tint = [data.t-120 data.t+120]; % interval to read position
 		if ~is_R_ok,     % try reading from disk mat files
+			load('/data/mms/irfu/mmsR.mat');
+			RR=R;clear R;
+			timeLine = irf_time(RR.time,'ttns>epoch');
+			R.C1 = [timeLine RR.gseR1];
+			R.C2 = [timeLine RR.gseR2];
+			R.C3 = [timeLine RR.gseR3];
+			R.C4 = [timeLine RR.gseR4];
 			irf.log('notice','===>>> Reading R? from mR.mat file')
-			for numSc = sc_list,
-				strSc = ['C' num2str(numSc)];
-				strRsc = ['R' num2str(numSc)];
-				ok = c_load(strRsc,numSc);
-				if ~ok, 
-					irf.log('notice','--->>> did not succeed.')
-					break; 
-				else
-					R.(strSc) = eval(strRsc);
-				end
-			end
-		end
-		if ~is_R_ok,     % could not obtain
-			irf.log('warning','Could not obtain position data!')
-			c_eval('R.C?=[];',data.sc_list);
 		end
 		data.R=R;
 		set(gcf,'userdata',data);
@@ -254,6 +254,9 @@ switch lower(action)
 				drref=max([drref x{ic}(5)]);
 				XRe{ic}=irf_tappl(rr{ic},'/6372');
 			end
+		else 
+			%
+			disp('');
 		end
 		if drref==0, drref=1; end % in case 1 satellite or satellites in the same location:)
 		set(gcf,'userdata',data);
@@ -411,7 +414,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'YZ';
 				plot_relative_position(h(2));
@@ -423,7 +426,7 @@ switch lower(action)
 				plotAxes = 'XZ';
 				plot_relative_position(h(1));
 				fix_RE_axis(h(1),h(21));
-				irf_legend(h(1),irf_time(data.t,'epoch>yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
+				irf_legend(h(1),irf_time(data.t,'epoch>utc_yyyy-mm-dd hh:mm:ss'),[0.02 0.98],'fontsize',9);
 				
 				plotAxes = 'XY';
 				plot_relative_position(h(2));
