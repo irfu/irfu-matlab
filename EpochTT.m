@@ -35,11 +35,11 @@ classdef EpochTT < GenericTimeArray
 		function out = epochUnix(obj)
 			out = irf_time(obj.epoch,'ttns>epoch');
 		end
-		function s = toUtc(obj)
-			s = utc(obj);
+		function s = toUtc(obj,varargin)
+			s = utc(obj,varargin{:});
 		end
 		function s = utc(obj,format)
-			% s = toUtc(obj,format)
+			% s = utc(obj,format)
 			if nargin<2,
 				format = '';
 			else
@@ -47,11 +47,7 @@ classdef EpochTT < GenericTimeArray
 			end
 			s = irf_time(obj.epoch,['ttns>utc' format]);
 		end
-		function s = t(obj,varargin)
-			% s = t(obj,index) same as tt(obj,index)
-			s = tt(obj,varargin{:});
-		end
-		function s = tt(obj,index)
+		function s = tts(obj,index)
 			% s = tt(obj,index)
 			% return index points, if not given return all
 			if nargin == 1,
@@ -73,28 +69,13 @@ classdef EpochTT < GenericTimeArray
 			if isnumeric(arg)
 				if isa(arg,'double'),
 					inp = int64(arg*1e9);
-				elseif isa(arg,'integer'),
+				elseif isa(arg,'int64'),
 					inp = arg;
 				else
 					error('Input type not defined');
 				end
 				objOut = obj;
 				objOut.epoch = obj.epoch + inp(:);
-			end
-		end
-		function out = minus(obj,arg)
-			if isnumeric(arg),
-				if isa(arg,'double'),
-					inp = int64(arg*1e9);
-				elseif isa(arg,'integer'),
-					inp = arg;
-				else
-					error('Input type not defined');
-				end
-				out = obj;
-				out.epoch = obj.epoch - inp(:);
-			elseif isa(arg,'EpochTT'),
-				out = double(obj.epoch - arg.epoch)/1e9;
 			end
 		end
 		function outObj = colon(obj,varargin)
