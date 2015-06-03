@@ -32,6 +32,8 @@ elseif  isnumeric(x),
 		if size(x,2)>3, column=[2 3 4];end
 	end
 	action='initialize';
+elseif isa(x,'TSeries') && x.tensorOrder == 1
+	
 end
 
 switch action,

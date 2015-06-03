@@ -296,11 +296,7 @@ classdef TSeries
 		end
 		
 		function value = get.tensorOrder(obj)
-			switch obj.tensorOrder_
-				case 0, value = '0 (Scalar)';
-				case 1, value = '1 (Vector)';
-				case 2, value = '2 (Tensor)';
-			end
+			value = obj.tensorOrder_;
 		end
 		
 		%Components

@@ -78,6 +78,10 @@ classdef EpochTT2000 < GenericTimeArray
         res = EpochUnix(toUtc(obj));
       else res = EpochUnix(epoch);
       end
-    end
+		end
+		function out = epochUnix(obj)
+			out = irf_time(obj.epoch,'ttns>epoch');
+		end
+
   end
 end
