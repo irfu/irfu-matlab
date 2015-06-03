@@ -131,7 +131,7 @@ if isa(dataObj,'dataobj') % do nothing
 elseif ischar(dataObj) && exist(dataObj, 'file')
   % If it is not a read cdf file, is it an unread cdf file? Read it.
   irf.log('warning',['Loading ' param ' from file: ', dataObj]);
-  dataObj = dataobj(dataObj, 'KeepTT2000');
+  dataObj = dataobj(dataObj);
 elseif isstruct(dataObj) && any(strcmp(param, {'defatt', 'defeph'}))
   % Is it the special case of DEFATT/DEFEPH (read as a struct into dataObj).
   % Do nothing..
@@ -580,7 +580,7 @@ end
     
     phase = mms_sdp_datamanager('phase');
     if mms_is_error(phase)
-      errStr='Bad PHASE intput, cannot proceed.';
+      errStr='Bad PHASE input, cannot proceed.';
       irf.log('critical',errStr); error(errStr);
     end
     irf.log('notice','Removing ADP spikes');

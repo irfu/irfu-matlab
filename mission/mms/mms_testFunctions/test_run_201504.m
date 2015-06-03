@@ -133,7 +133,7 @@ mms_sdc_sdp_proc('l2pre', DCE_File,  DCV_File, HK_10E_File, DEFATT_File);
 mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150405000000_v0.0.0.cdf')
 
 %% Plot
-dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf','KeepTT2000');
+dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf');
 e12=getmat(dce2d,'mms4_edp_dce_spinfit_e12');
 e34=getmat(dce2d,'mms4_edp_dce_spinfit_e34');
 h = irf_plot({e12,e34},'comp');
@@ -149,7 +149,7 @@ title(h(1),'MMS4')
 li = mms.db_list_files([mmsId '_dfg_srvy_ql'],tint);
 if length(li)>1, error('li>1'), end
 DFG_File = [li.path filesep li.name];
-dfg = dataobj(DFG_File,'KeepTT2000');
+dfg = dataobj(DFG_File);
 B = getmat(dfg,[mmsId '_dfg_srvy_gsm_dmpa']);
 
 c_eval('B?=B;',mmsId);

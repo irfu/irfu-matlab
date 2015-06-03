@@ -5,9 +5,8 @@ function dobj = dataobj(varargin)
 %    Construct dataobj form file FILENAME. FILENAME can also contain
 %    wildcards ('*').
 %
-% DATAOBJ(FILENAME,'tint',tint,'KeepTT2000')
+% DATAOBJ(FILENAME,'tint',tint)
 %       tint         - limit dataobj to time interval
-%       'KeepTT2000' - do not convert TT2000 to epoch.
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -22,15 +21,14 @@ if isempty(usingNasaPatchCdf), % check only once if using NASA cdf
 end
 shouldReadAllData = true;  % default read all data
 isDataReturned    = true; % default expects data to be returned
-keepTT2000        = false; % default for Cluster etc is not to keep TT2000
 if     nargin==0, action='create_default_object';
 elseif nargin==1, action='read_data_from_file';
 else
   action='read_data_from_file';
   if nargin==2 || nargin==4
-    if isnumeric(varargin{nargin}), keepTT2000 = varargin{nargin};
-    elseif ischar(varargin{nargin}) && strcmpi(varargin{nargin},'KeepTT2000')
-      keepTT2000 = true;
+    if isnumeric(varargin{nargin}) ||...
+        ischar(varargin{nargin}) && strcmpi(varargin{nargin},'KeepTT2000')
+      irf.log('warning','KeepTT2000 is deprecated (always TRUE)')
     end
   end
   if nargin >=3
@@ -150,22 +148,13 @@ switch action
         end
         isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
         if (any(isCdfEpochTT2000VariableArray))
-          if(~keepTT2000)
-            iVar = find(isCdfEpochTT2000VariableArray);
-            for i=1:length(iVar)
-              if is_virtual(iVar(i))
-                virtFunc = get_key('FUNCT',iVar(i));
-                errStr = sprintf('Function ''%s'' not implemented',virtFunc);
-                irf.log('error',errStr);
-                error('IRF:dataobj:dataobj:functionNotImplemented',errStr); %#ok<SPERR>
-              else
-                if ~isempty(data{iVar(i)})
-                  unixEpochTmp = toEpochUnix(EpochTT2000(data{iVar(i)}));
-                  data{iVar(i)} = unixEpochTmp.epoch;
-                end
-              end
-              timeVariable = info.Variables{iVar(i),1};
-              update_variable_attributes_time;
+          iVar = find(isCdfEpochTT2000VariableArray);
+          for i=1:length(iVar)
+            if is_virtual(iVar(i))
+              virtFunc = get_key('FUNCT',iVar(i));
+              errStr = sprintf('Function ''%s'' not implemented',virtFunc);
+              irf.log('error',errStr);
+              error('IRF:dataobj:dataobj:functionNotImplemented',errStr); %#ok<SPERR>
             end
           end
         end
@@ -187,7 +176,7 @@ switch action
             end
             iTimeVar = get_var_idx(timeVarName);
             timeline = data{iTimeVar};
-            if keepTT2000 && strcmpi(info.Variables(iTimeVar,4),'tt2000')
+            if strcmpi(info.Variables(iTimeVar,4),'tt2000')
               tintTmp(1) = spdfparsett2000(epoch2iso(tint(1)));
               tintTmp(2) = spdfparsett2000(epoch2iso(tint(2)));
             else tintTmp = tint;
@@ -312,9 +301,7 @@ switch action
           dobj.data.(varName).sparsity = info.Variables{v,6};
           typeTmp = info.Variables{v,4};
           % Update time types to catch up with conversion to unix epoch
-          if strcmpi(typeTmp,'epoch16') || ...
-              (strcmpi(typeTmp,'tt2000') && ~keepTT2000), typeTmp = 'epoch';
-          end
+          if strcmpi(typeTmp,'epoch16'), typeTmp = 'epoch'; end
           dobj.data.(varName).type     = typeTmp;
         end
       end

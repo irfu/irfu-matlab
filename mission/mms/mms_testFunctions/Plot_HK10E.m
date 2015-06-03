@@ -42,7 +42,7 @@ for id=1:length(SCid)
     warning(['No ',SCid{id},' HK_10E file found for this day.']);
   else
     % Load files
-    hk10eDB.(SCid{id}).obj = dataobj([hk10eDB.(SCid{id}).path, filesep, hk10eDB.(SCid{id}).name],'KeepTT2000');
+    hk10eDB.(SCid{id}).obj = dataobj([hk10eDB.(SCid{id}).path, filesep, hk10eDB.(SCid{id}).name]);
     % Convert to epoch times (for irf_plot)
     hk10eDB.(SCid{id}).time = irf_time(hk10eDB.(SCid{id}).obj.data.Epoch.data,'ttns>epoch');
     for ii=1:length(probes)

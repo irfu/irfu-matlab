@@ -167,6 +167,15 @@ classdef mms_db < handle
      idx = arrayfun(@(x) strcmp(x.id,id),obj.databases);
      res = obj.databases(idx);
    end
+   
+   function res = get_ts(obj,filePrefix,varName,tint)
+     narginchk(4,4)
+     res = [];
+     v = get_variable(obj,filePrefix,varName,tint);
+     if isempty(v), return, end
+     res = mms.variable2ts(v);
+     res = res.tlim(tint);
+   end
   end
   
 end

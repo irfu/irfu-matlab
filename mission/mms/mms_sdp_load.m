@@ -29,7 +29,7 @@ end
 [~, fileName, ~] = fileparts(fullFilename);
 filenameData = mms_fields_file_info(fileName);
 
-tmpDataObj = dataobj(fullFilename,'KeepTT2000');
+tmpDataObj = dataobj(fullFilename);
 % Store it using the DataManager as dataType
 mms_sdp_datamanager(dataType,tmpDataObj);
 

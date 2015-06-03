@@ -35,6 +35,7 @@ init_matlab_path()
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
+ACE_File = '';
 DCV_File = '';
 DCE_File = '';
 DEFATT_File = ''; % Defatt file used for l2pre
@@ -185,6 +186,16 @@ for i=1:nargin-1
         end
         DCE_File = varargin{i};
         irf.log('notice', ['DCE input file: ', DCE_File]);
+
+    elseif regexpi(fileIn, '_ace_') % _ace_
+        if ~isempty(ACE_File)
+            err_str = ['Received multiple AC E files in input (',...
+                ACE_File, ', ', varargin{i} ')'];
+            irf.log('critical', err_str);
+            error('Matlab:MMS_SDC_SDP_PROC:Input', err_str);
+        end
+        ACE_File = varargin{i};
+        irf.log('notice', ['ACE input file: ', ACE_File]);
 
     elseif regexpi(fileIn, '_DEFATT_') % DEFATT
         if ~isempty(DEFATT_File)
