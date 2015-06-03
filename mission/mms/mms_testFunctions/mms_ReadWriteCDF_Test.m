@@ -24,8 +24,7 @@ function testReadCDF(testCase)
     % source file for processing.
     DATA_PATH_ROOT = getenv('DATA_PATH_ROOT');
     dataObj = dataobj( [DATA_PATH_ROOT, ...
-        '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf'],...
-        'KeepTT2000');
+        '/science/mms2/sdp/fast/l1b/2016/01/01/mms2_sdp_fast_l1b_dce_20160101_v2.0.1.cdf']);
     actSolution = dataObj.data.mms2_sdp_dce_sensor.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
@@ -51,7 +50,7 @@ function testSCpotProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_edp_fast_l2_scpot_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+        '/mms2_edp_fast_l2_scpot_20160101000000_v1.0.0.cdf']);
     actSolution = dataObjIn.data.mms2_edp_scpot.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
@@ -74,7 +73,7 @@ function testSITLprocessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_edp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+        '/mms2_edp_fast_sitl_dce2d_20160101000000_v1.0.0.cdf']);
     actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
@@ -97,7 +96,7 @@ function testQuickLookProcessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_edp_fast_ql_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+        '/mms2_edp_fast_ql_dce2d_20160101000000_v1.0.0.cdf']);
     actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
@@ -119,7 +118,7 @@ function testL2PRErocessAndReadCDF(testCase)
     % If no error was return for full processing try reading the output
     % file created and verify number of record is correct.
     dataObjIn = dataobj([DROPBOX_ROOT, ...
-        '/mms2_edp_fast_l2_dce2d_20160101000000_v1.0.0.cdf'], 'KeepTT2000');
+        '/mms2_edp_fast_l2_dce2d_20160101000000_v1.0.0.cdf']);
     actSolution = dataObjIn.data.mms2_edp_dce_xyz_dsl.nrec;
     expSolution = 1605920;
     verifyEqual(testCase,actSolution,expSolution);
