@@ -445,14 +445,14 @@ switch lower(action)
 			hold(hca,'on');
 			yy=1;
 			plot(hca,0,yy,'ks',.2,yy,'rd',.4,yy,'go',.6,yy,'bv','LineWidth',1.5);
-			text(0.03,yy,'C1','parent',hca);
-			text(.23,yy,'C2','parent',hca);
-			text(.43,yy,'C3','parent',hca);
-			text(.63,yy,'C4','parent',hca);
+			text(0.03,yy,'MMS1','parent',hca);
+			text(.23,yy,'MMS2','parent',hca);
+			text(.43,yy,'MMS3','parent',hca);
+			text(.63,yy,'MMS4','parent',hca);
 			axis(hca,'off');
 			ht=irf_legend(hca,['mms_configuration() ' datestr(now)],[0,0],'fontsize',8);
 			set(ht,'interpreter','none');
-			htime=irf_legend(hca,['Cluster configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
+			htime=irf_legend(hca,['MMS configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
 			set(htime,'fontsize',12);
 			if ~isempty(flag_using_omni_data)
 				if ~strcmpi(data.plot_type,'lmn'),
