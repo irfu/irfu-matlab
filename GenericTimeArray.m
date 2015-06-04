@@ -187,22 +187,19 @@ classdef (Abstract) GenericTimeArray
 			switch idx(1).type
 				% Use the built-in subsref for dot notation
 				case '.'
-					out = builtin('subsref',obj,idx(1));
-					if numel(idx) > 1,
-						out = builtin('subsref',out,idx(2:end));
-					end
+					[varargout{1:nargout}] = builtin('subsref',obj,idx);
 				case '()'
 					tmpEpoch = builtin('subsref',obj.epoch,idx(1));
 					out = feval(class(obj),tmpEpoch);
 					if numel(idx) > 1,
 						out = builtin('subsref',out,idx(2:end));
-					end
+          end
+          [varargout{1:nargout}] = out;
 					% No support for indexing using '{}'
 				case '{}'
 					error('irf:GenericTimeArray:subsref',...
 						'Not a supported subscripted reference')
-			end
-			[varargout{1:nargout}] = out;
+      end
     end
     
     function [idxLim,res] = tlim(obj,inp,mode)
