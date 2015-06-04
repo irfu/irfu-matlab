@@ -61,7 +61,15 @@ classdef EpochTT2000 < GenericTimeArray
       s_tmp(:,end+1) = 'Z';
       s = s_tmp;
     end
-    
+    function s = tts(obj,index)
+      % s = tts(obj,index), convert to seconds.
+      % return index points, if not given return all
+      if nargin == 1
+        s = double(obj.epoch)/1e9;
+      elseif nargin == 2 && isnumeric(index)
+        s = double(obj.epoch(index))/1e9;
+      end
+    end
     function res = toEpochUnix(obj)
       s_tmp = spdfencodett2000(obj.epoch(1)); epoch0 = iso2epoch(s_tmp{:});
       epoch = double(obj.epoch - obj.epoch(1))*1e-9 + epoch0;
