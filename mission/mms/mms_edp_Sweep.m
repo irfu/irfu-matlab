@@ -80,7 +80,7 @@ classdef mms_edp_Sweep < handle
           type = '**';
         end
         if printStatus
-          if length(biasRes1(isnan(biasRes1))) > 0
+          if ~isempty(biasRes1(isnan(biasRes1)))
             nanstr = [num2str(length(biasRes1(isnan(biasRes1)))) ' NaNs '];
           else
             nanstr = '';
@@ -589,13 +589,13 @@ classdef mms_edp_Sweep < handle
       sweepTime = EpochTT2000([...
         obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128 ...
         obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
-      [idx, Epoch] = EpochTT2000(obj.sweep.data.Epoch.data).tlim(sweepTime);
+      [idx, Epoch] = tlim(EpochTT2000(obj.sweep.data.Epoch.data), sweepTime);
       prb1 = obj.sweep.data.([obj.scId '_sweep_swept']).data(iSweep);
       % The "other probe" is the other probe in the pair 1-2, 3-4, 5-6
       if fix(prb1/2)*2==prb1, prb2 = prb1 - 1; else prb2 = prb1 + 1; end
       voltage1 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb1);
       voltage2 =  obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx,prb2);
-      if length(voltage1) > 0
+      if ~isempty(voltage1)
         v01 = obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx(1)-1,prb1);
         v02 = obj.sweep.data.([obj.scId '_edp_sweeps']).data(idx(1)-1,prb2);
       else
@@ -605,8 +605,10 @@ classdef mms_edp_Sweep < handle
 %      sweepTime = EpochTT2000([...
 %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-1e5 ...
 %        obj.sweep.data.([obj.scId '_sweep_stop']).data(iSweep)+0e9/128]);
+      %[idxBias,eBias] = ...
+      %  EpochTT2000(obj.sweep.data.epoch_sweepsamp.data+0e9/128).tlim(sweepTime);
       [idxBias,eBias] = ...
-        EpochTT2000(obj.sweep.data.epoch_sweepsamp.data+0e9/128).tlim(sweepTime);
+        tlim(EpochTT2000(obj.sweep.data.epoch_sweepsamp.data+0e9/128), sweepTime);
 % for debugging 2015-06-02
 %      sweepTime = EpochTT2000([...
 %        obj.sweep.data.([obj.scId '_sweep_start']).data(iSweep)+0e9/128-0e5 ...
@@ -614,12 +616,12 @@ classdef mms_edp_Sweep < handle
       bias1 =  obj.sweep.data.([obj.scId '_sweep_bias1']).data(idxBias);
       bias2 =  obj.sweep.data.([obj.scId '_sweep_bias2']).data(idxBias);
       % Find current values (biasRes) corresponding to voltages
-      biasRes1 = zeros(size(voltage1))*NaN; biasRes2 = biasRes1;
+      biasRes1 = NaN(size(voltage1)); biasRes2 = biasRes1;
       for i=1:length(idxBias)
         if i == length(idxBias)
-          ii = Epoch.tlim(EpochTT2000(...
-            [eBias.stop().epoch sweepTime.stop().epoch]));
-        else ii = Epoch.tlim(eBias(i+[0 1]));
+          ii = tlim(Epoch, EpochTT2000(...
+            [eBias.stop().epoch, sweepTime.stop().epoch]));
+        else ii = tlim(Epoch, eBias(i+[0 1]));
         end
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
       end
