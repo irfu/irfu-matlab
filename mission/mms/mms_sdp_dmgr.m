@@ -861,6 +861,22 @@ classdef mms_sdp_dmgr < handle
       res = DATAC.dce_xyz_dsl;
     end
     
+    function res = get.delta_off(DATAC)
+      if ~isempty(DATAC.delta_off), res = DATAC.delta_off; return, end
+      
+      Spinfits = DATAC.spinfits;
+      if isempty(Spinfits)
+        errStr='Bad SPINFITS input, cannot proceed.';
+        irf.log('critical',errStr); error(errStr);
+      end
+      
+      Delta_p12_p34 = double(Spinfits.sfit.e12(:,2:3)) - ...
+        double(Spinfits.sfit.e34(:,2:3));
+      
+      DATAC.delta_off = ...
+        median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
+    end
+    
     function res = get.phase(DATAC)
       if ~isempty(DATAC.phase), res = DATAC.phase; return, end
       
