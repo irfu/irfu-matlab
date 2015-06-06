@@ -37,7 +37,8 @@ DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
 DCV_File  = [prf '/edp/comm/l1b/dcv128/' yyyy '/' mo '/' mmsId ...
   '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
 
-%% Test QL
+%% Test QL - DATAMANAGER
+if 0
 irf.log('log_out','screen'), irf.log('notice')
 procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
 tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
@@ -57,6 +58,29 @@ phase = mms_sdp_datamanager('phase');
 spinfits = mms_sdp_datamanager('spinfits');
 delta_off = mms_sdp_datamanager('delta_off');
 dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
+
+epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
+epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
+end
+
+%% Test QL - DMNGR
+irf.log('log_out','screen'), irf.log('notice')
+procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
+tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
+
+Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
+Dmgr.set_param('hk_10e',HK_10E_File);
+Dmgr.set_param('hk_105',HK_105_File);
+Dmgr.set_param('hk_101',HK_101_File);
+Dmgr.set_param('dce',DCE_File);
+Dmgr.set_param('dcv',DCV_File);
+
+dce = Dmgr.dce;
+probe2sc_pot = Dmgr.probe2sc_pot;
+phase = Dmgr.phase;
+spinfits = Dmgr.spinfits;
+delta_off = Dmgr.delta_off;
+dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 
 epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
 epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
