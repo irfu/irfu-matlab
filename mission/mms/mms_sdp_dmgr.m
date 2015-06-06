@@ -13,6 +13,7 @@ classdef mms_sdp_dmgr < handle
     dcv = [];         % src DCV file
     defatt = [];      % src DEFATT file
     defeph = [];      % src DEFEPH file
+    delta_off = [];   % comp delta offsets
     hk_101 = [];      % src HK_101 file
     hk_105 = [];      % src HK_105 file
     hk_10e = [];      % src HK_10E file
@@ -125,6 +126,32 @@ classdef mms_sdp_dmgr < handle
           init_param()
           apply_nom_amp_corr()
           
+          % Since v1.0.0 DCE files contain also DCV data
+          if ~isfield(dataObj.data, [varPrefix, 'dcv_sensor']) || ...
+              DATAC.dce.fileVersion.major<1
+            if DATAC.dce.fileVersion.major>=1
+              irf.log('warning',...
+                'DCE major version >= 1 but not combined DCE & DCV data?');
+            end
+            return
+          end
+          
+          % It appears to be a combined file, extract DCV variables.
+          irf.log('notice','Combined DCE & DCV file.');
+          
+          param = 'dcv';
+          sensors = {'v1','v2','v3','v4','v5','v6'};
+          init_param()
+          chk_timeline()
+          chk_latched_p()
+          %apply_transfer_function()
+          v_from_e_and_v()
+          chk_bias_guard()
+          chk_sweep_on()
+          chk_sdp_v_vals()
+          sensors = {'e12','e34'};
+          corr_adp_spikes()
+          
         case('dcv')
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
@@ -135,6 +162,8 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_sweep_on()
           chk_sdp_v_vals()
+          sensors = {'e12','e34'};
+          corr_adp_spikes()
           
         case('hk_101')
           % HK 101, contains sunpulses.
@@ -513,6 +542,29 @@ classdef mms_sdp_dmgr < handle
         %XXX: Does nothing at the moment
       end
       
+      function corr_adp_spikes()
+        % correct ADP shadow spikes
+        MODEL_THRESHOLD = .01;
+        MSK_SHADOW = MMS_CONST.Bitmask.ADP_SHADOW;
+        
+        Phase = DATAC.phase;
+        if isempty(Phase)
+          errStr='Bad PHASE input, cannot proceed.';
+          irf.log('critical',errStr); error(errStr);
+        end
+        irf.log('notice','Removing ADP spikes');
+        model = mms_sdp_model_adp_shadow(DATAC.dce,Phase);
+        
+        for iSen = 1:min(numel(sensors),2)
+          sen = sensors{iSen};
+          DATAC.dce.(sen).data = ...
+            single(double(DATAC.dce.(sen).data) - model.(sen));
+          idx = abs(model.(sen))>MODEL_THRESHOLD;
+          DATAC.dce.(sen).bitmask(idx) = ...
+            bitand(DATAC.dce.(sen).bitmask(idx), MSK_SHADOW);
+        end
+      end
+      
       function apply_nom_amp_corr()
         % Apply a nominal amplitude correction factor to DCE for p1..4
         % values after cleanup but before any major processing has occured.
@@ -521,12 +573,12 @@ classdef mms_sdp_dmgr < handle
         if length(Blen)==1
           senDist = sensor_dist(Blen.len);
           irf.log('notice',['Adjusting sensor dist to [ '...
-            num2str(senDist,'%.1f ') '] meters'])
+            num2str(senDist,'%.2f ') '] meters'])
         else
           boomLen = zeros(length(DATAC.dce.time),4);
           for i=1:length(Blen)
             irf.log('notice',['Adjusting sensor dist to [ '...
-              num2str(sensor_dist(Blen(i).len),'%.1f ') '] meters from ' ...
+              num2str(sensor_dist(Blen(i).len),'%.2f ') '] meters from ' ...
               Blen(i).time.toUtc(1)])
             idx = find(DATAC.dce.time>=Blen(i).time.epoch);
             boomLen(idx,:) = repmat(Blen(i).len,length(idx),1);
@@ -560,32 +612,35 @@ classdef mms_sdp_dmgr < handle
         end
         
         % Nominal boom length used in L1b processor
-        NOM_BOOM_L = .001; % 1m, XXX the tru value should be 120 m
+        NOM_BOOM_L = .12; % 120 m
+        NOM_BOOM_L_ADP = .0292; % 29.2m
         
         MSK_OFF = MMS_CONST.Bitmask.SIGNAL_OFF;
         for iSen = 1:2:numel(sensors)
+          if iSen == 5, NOM_BOOM_L = NOM_BOOM_L_ADP; end
           senA = sensors{iSen}; senB = sensors{iSen+1};
           senE = ['e' senA(2) senB(2)]; % E-field sensor
           senA_off = bitand(DATAC.dcv.(senA).bitmask, MSK_OFF);
           senB_off = bitand(DATAC.dcv.(senB).bitmask, MSK_OFF);
           senE_off = bitand(DATAC.dce.(senE).bitmask, MSK_OFF);
           idxOneSig = xor(senA_off,senB_off);
-          %      if ~any(idxOneSig), return, end
           iVA = idxOneSig & ~senA_off;
           if any(iVA),
             irf.log('notice',...
               sprintf('Computing %s from %s and %s for %d data points',...
               senB,senA,senE,sum(iVA)))
-            DATAC.dcv.(senB).data(iVA) = DATAC.dcv.(senA).data(iVA) - ...
-              NOM_BOOM_L*DATAC.dce.(senE).data(iVA);
+            DATAC.dcv.(senB).data(iVA) = single(...
+              double(DATAC.dcv.(senA).data(iVA)) - ...
+              NOM_BOOM_L*double(DATAC.dce.(senE).data(iVA)));
           end
           iVB = idxOneSig & ~senB_off;
           if any(iVB),
             irf.log('notice',...
               sprintf('Computing %s from %s and %s for %d data points',...
               senA,senB,senE,sum(iVA)))
-            DATAC.dcv.(senA).data(iVB) = DATAC.dcv.(senB).data(iVB) + ...
-              NOM_BOOM_L*DATAC.dce.(senE).data(iVB);
+            DATAC.dcv.(senA).data(iVB) = single(...
+              double(DATAC.dcv.(senB).data(iVB)) + ...
+              NOM_BOOM_L*double(DATAC.dce.(senE).data(iVB)));
           end
           % For comissioning data we will have all DCE/DCV, verify consistency.
           idxBoth = and(and(~senA_off, ~senB_off), ~senE_off);
@@ -607,11 +662,21 @@ classdef mms_sdp_dmgr < handle
       
       function init_param
         DATAC.(param) = [];
-        if ~all(diff(dataObj.data.([vPfx 'samplerate_' param]).data)==0)
-          err_str = ...
-            'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
-          irf.log('warning', err_str);
-          %error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', err_str);
+        if(isfield(dataObj.data, [varPrefix 'samplerate_' param]))
+          if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
+            err_str = ...
+              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+            irf.log('critical', err_str); error(err_str);
+          end
+        elseif(isfield(dataObj.data,[varPrefix 'samplerate_dce']))
+          % Combined DCE & DCV file have only "[varPrefix samplerate_dce]".
+          if ~all(diff(dataObj.data.([varPrefix 'samplerate_dce']).data)==0)
+            err_str = ...
+              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+            irf.log('critical', err_str); error(err_str);
+          end
+        else
+          irf.log('warning','No samplerate variable present in DATAOBJ.');
         end
         DATAC.(param).dataObj = dataObj;
         fileVersion = DATAC.(param).dataObj.GlobalAttributes.Data_version{:};
@@ -632,10 +697,25 @@ classdef mms_sdp_dmgr < handle
         if isempty(sensors), return, end
         probeEnabled = resample_probe_enable(sensors);
         %probeEnabled = are_probes_enabled;
+        columnIn = 1;
         for iSen=1:numel(sensors)
-          DATAC.(param).(sensors{iSen}) = struct(...
-            'data',sensorData(:,iSen), ...
-            'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
+          if(size(sensorData,2)==numel(sensors))
+            DATAC.(param).(sensors{iSen}) = struct(...
+              'data',sensorData(:,iSen), ...
+              'bitmask',zeros(size(sensorData(:,iSen)),'uint16'));
+          else
+            irf.log('warning','Trying to identify enabled/disabled probes.');
+            DATAC.(param).(sensors{iSen}) = struct(...
+              'data', NaN(size(sensorData,1),1,'like',sensorData), ...
+              'bitmask', zeros(size(sensorData,1),1,'uint16'));
+            if(~all(probeEnabled(:,iSen)==0))
+              % One of the not completely disabled probes, store columnIn from
+              % sensorData in corresponding DATAC location. FIXME when allowing
+              % for switching enabled/disabled probes.
+              DATAC.(param).(sensors{iSen}).data = sensorData(:,columnIn);
+              columnIn = columnIn+1;
+            end
+          end
           %Set disabled bit
           idxDisabled = probeEnabled(:,iSen)==0;
           if(any(idxDisabled>0))
@@ -669,11 +749,10 @@ classdef mms_sdp_dmgr < handle
         flag = get_variable(dataObj,[vPfx probe '_enable']);
         dtSampling = median(diff(flag.DEPEND_0.data));
         switch DATAC.tmMode
-          %      case MMS_CONST.TmMode.srvy, error('kaboom')
           case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
           case MMS_CONST.TmMode.fast, dtNominal = 5;
-          case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229 0.0763];
-          case MMS_CONST.TmMode.comm, dtNominal = [0.500, 1.250, 2.500, 5.000];
+          case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
+          case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0];
           otherwise
             errS = 'Unrecognized tmMode';
             irf.log('critical',errS), error(errS)
@@ -700,6 +779,10 @@ classdef mms_sdp_dmgr < handle
           if isempty(flag)
             errS = ['cannot get ' vPfx probe '_enable'];
             irf.log('critical',errS), error(errS)
+          elseif numel(flag.data) == 0
+            irf.log('warning',...
+              ['Empty variable ' vPfx probe '_enable. Assuming disabled.']);
+            flag.data = zeros(nData,1);
           elseif numel(flag.data) ~= nData
             errS = ['bad size for ' vPfx probe '_enable'];
             irf.log('critical',errS), error(errS)
