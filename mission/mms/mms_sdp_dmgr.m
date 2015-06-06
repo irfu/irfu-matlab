@@ -127,7 +127,7 @@ classdef mms_sdp_dmgr < handle
           apply_nom_amp_corr()
           
           % Since v1.0.0 DCE files contain also DCV data
-          if ~isfield(dataObj.data, [varPrefix, 'dcv_sensor']) || ...
+          if ~isfield(dataObj.data, [vPfx, 'dcv_sensor']) || ...
               DATAC.dce.fileVersion.major<1
             if DATAC.dce.fileVersion.major>=1
               irf.log('warning',...
@@ -662,15 +662,15 @@ classdef mms_sdp_dmgr < handle
       
       function init_param
         DATAC.(param) = [];
-        if(isfield(dataObj.data, [varPrefix 'samplerate_' param]))
-          if ~all(diff(dataObj.data.([varPrefix 'samplerate_' param]).data)==0)
+        if(isfield(dataObj.data, [vPfx 'samplerate_' param]))
+          if ~all(diff(dataObj.data.([vPfx 'samplerate_' param]).data)==0)
             err_str = ...
               'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
           end
-        elseif(isfield(dataObj.data,[varPrefix 'samplerate_dce']))
-          % Combined DCE & DCV file have only "[varPrefix samplerate_dce]".
-          if ~all(diff(dataObj.data.([varPrefix 'samplerate_dce']).data)==0)
+        elseif(isfield(dataObj.data,[vPfx 'samplerate_dce']))
+          % Combined DCE & DCV file have only "[vPfx samplerate_dce]".
+          if ~all(diff(dataObj.data.([vPfx 'samplerate_dce']).data)==0)
             err_str = ...
               'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
