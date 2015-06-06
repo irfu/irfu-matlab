@@ -904,6 +904,7 @@ classdef mms_sdp_dmgr < handle
     function res = get.probe2sc_pot(DATAC)
       if ~isempty(DATAC.probe2sc_pot), res = DATAC.probe2sc_pot; return, end
       
+      MMS_CONST = DATAC.CONST;
       Dcv = DATAC.dcv;
       if isempty(Dcv)
         errStr='Bad DCV input, cannot proceed.';
@@ -918,6 +919,7 @@ classdef mms_sdp_dmgr < handle
       
       % Filter window size, default 20 s * Samplerate = 160 samples (slow),
       % 640 samples (fast), 163'840 samples (brst).
+      filterInterval = 20;
       windowSize = sampleRate*filterInterval;
       % Create filter coefficients for moving average filter.
       a = 1; b = (1/windowSize)*ones(1,windowSize);
