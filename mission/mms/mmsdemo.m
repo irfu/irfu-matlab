@@ -71,7 +71,7 @@ irf_zoom(h,'y');
 
 h=irf_plot({TS2,TS3},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(TS2.t.tts(1),'tt>utc_yyyy-mm-dd'));
+title(h(1),irf_time(TS2.time.tts(1),'tt>utc_yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 
