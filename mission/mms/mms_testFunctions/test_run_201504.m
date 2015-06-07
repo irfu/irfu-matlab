@@ -67,14 +67,14 @@ end
 irf.log('log_out','screen'), irf.log('notice')
 procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
 tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
-
+% Initialize DMGR
 Dmgr = mms_sdp_dmgr(scId,procId,tmMode,samplerate);
 Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
 Dmgr.set_param('dce',DCE_File);
 Dmgr.set_param('dcv',DCV_File);
-
+% Process
 dce = Dmgr.dce;
 probe2sc_pot = Dmgr.probe2sc_pot;
 phase = Dmgr.phase;
@@ -82,8 +82,15 @@ spinfits = Dmgr.spinfits;
 delta_off = Dmgr.delta_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 
-epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
-epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
+%% Construct TSeries
+DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
+DceDSL = irf.ts_vec_xyz(dce_xyz_dsl.time,dce_xyz_dsl.data);
+Phase = irf.ts_scalar(dce_xyz_dsl.time,phase.data);
+AdcOff12 = irf.ts_scalar(spinfits.time,spinfits.sfit.e12(:,1));
+AdcOff34 = irf.ts_scalar(spinfits.time,spinfits.sfit.e34(:,1));
+Es12 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e12(:,2:3));
+Es34 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e34(:,2:3));
+P2scPot = irf.ts_scalar(probe2sc_pot.time,probe2sc_pot.data);
 
 %% Summary plot
 E_YLIM = 7;
@@ -92,34 +99,28 @@ figure(71), clf
 h = irf_plot(4);
 
 hca = irf_panel('E');
-irf_plot(hca,[epochE double(dce.e12.data) double(dce.e34.data)])
-hold(hca,'on'), comp = 1;
-irf_plot(hca,[epochS double(spinfits.sfit.e12(:,comp)) double(spinfits.sfit.e34(:,comp))])
-ylabel(hca,'E spin [mV/m]')
+irf_plot(hca,DceSL)
+hold(hca,'on') 
+irf_plot(hca,{AdcOff12,AdcOff34},'comp')
+ylabel(hca,'E SL [mV/m]')
 title(hca,mmsId), set(hca,'YLim',49*[-1 1])
 
 if 0
 hca = irf_panel('Phase');
-irf_plot(hca,[epochE double(phase.data)])
+irf_plot(hca,Phase)
 ylabel(hca,'Phase [deg]'), set(hca,'YLim',[0 360])
 end
 
-hca = irf_panel('Ex'); comp = 1;
-irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))-real(delta_off)],...
-  [epochS double(spinfits.sfit.e34(:,comp+1))]...
-  },'comp')
+hca = irf_panel('Ex');
+irf_plot(hca,{DceDSL.x,Es12.x-real(delta_off),Es34.x},'comp')
 ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
-hca = irf_panel('Ey'); comp = 2;
-irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))-imag(delta_off)],...
-  [epochS double(spinfits.sfit.e34(:,comp+1))]...
-  },'comp')
+hca = irf_panel('Ey');
+irf_plot(hca,{DceDSL.y,Es12.y-imag(delta_off),Es34.y},'comp')
 ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
 hca = irf_panel('V');
-irf_plot(hca,[epochE double(probe2sc_pot.data)])
+irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
 irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
@@ -127,6 +128,7 @@ irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
   double(spinfits.sfit.e34(:,2:3));
+epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
 
 figure(73), clf
 h = irf_plot(3);
@@ -170,16 +172,7 @@ irf_plot_ylabels_align(h)
 title(h(1),'MMS4')
 
 %% Load B
-li = mms.db_list_files([mmsId '_dfg_srvy_ql'],tint);
-if length(li)>1, error('li>1'), end
-DFG_File = [li.path filesep li.name];
-dfg = dataobj(DFG_File);
-B = getmat(dfg,[mmsId '_dfg_srvy_gsm_dmpa']);
-
-c_eval('B?=B;',mmsId);
-c_eval('diEs?p12=[epochS double(spinfits.sfit.e12)];',mmsId);
-c_eval('diEs?p34=[epochS double(spinfits.sfit.e34)];',mmsId);
-c_eval('P?=[epochE double(probe2sc_pot.data)];',mmsId);
+B = mms.db_get_ts([mmsId '_dfg_srvy_ql'],[mmsId '_dfg_srvy_gsm_dmpa'],tint);
 
 %% Plot with B
 
@@ -189,28 +182,22 @@ h = irf_plot(4,'newfigure');
 hca = irf_panel('B');
 hTmp = irf_plot(hca,B);
 hTmp(1).Color=[0 0 0]; hTmp(2).Color=[0 0.5 0]; hTmp(3).Color=[1 0 0];
-hTmp(4).Color=[.5 .5 .5];
+%hTmp(4).Color=[.5 .5 .5];
 set(hca,'ColorOrder',[[0 0 0];[0 0.5 0];[1 0 0];[.5 .5 .5]])
 irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.1])
 ylabel(hca,'B [nT]')
 title(hca,mmsId), set(hca,'YLim',64*[-1 1])
 
-hca = irf_panel('Ex'); comp = 1;
-irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))],...
-  [epochS double(spinfits.sfit.e34(:,comp+1))]...
-  },'comp')
+hca = irf_panel('Ex');
+irf_plot(hca,{DceDSL.x,Es12.x,Es34.x},'comp')
 ylabel(hca,'Ex DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
-hca = irf_panel('Ey'); comp = 2;
-irf_plot(hca,{[epochE double(dce_xyz_dsl.data(:,comp))],...
-  [epochS double(spinfits.sfit.e12(:,comp+1))],...
-  [epochS double(spinfits.sfit.e34(:,comp+1))]...
-  },'comp')
+hca = irf_panel('Ey');
+irf_plot(hca,{DceDSL.y,Es12.y,Es34.y},'comp')
 ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 
 hca = irf_panel('V');
-irf_plot(hca,[epochE double(probe2sc_pot.data)])
+irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
 irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
