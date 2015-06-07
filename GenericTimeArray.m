@@ -83,7 +83,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch <= objTmp.epoch;
     end
     
@@ -96,7 +96,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:ge:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch >= objTmp.epoch;
     end
     
@@ -109,7 +109,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch < objTmp.epoch;
     end
     
@@ -122,8 +122,8 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:gt:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
-      res = obj.epoch > objTmp.epoch;
+      objTmp = convert_epoch(obj1,class(obj));
+			res = obj.epoch > objTmp.epoch;
     end
     
     function res = eq(obj,obj1)
@@ -133,14 +133,14 @@ classdef (Abstract) GenericTimeArray
             'inpus must be subclasses of GenericTimeArray')
       end
       len = obj.length(); len1 = obj1.length();
-      if len==0 && len1==0, res = true; return, end
-      
-      objTmp = feval(['to' class(obj)],obj1);
-      if len1==1,
-        res = obj.epoch == objTmp.epoch;
-      else
-        res = obj.epoch == objTmp.epoch; 
-      end
+			if len==0 && len1==0, res = true; return, end
+			
+			objTmp = convert_epoch(obj1,class(obj));
+			if len1==1,
+				res = obj.epoch == objTmp.epoch;
+			else
+				res = obj.epoch == objTmp.epoch;
+			end
     end
     
     function res = ne(obj,obj1)
@@ -187,22 +187,19 @@ classdef (Abstract) GenericTimeArray
 			switch idx(1).type
 				% Use the built-in subsref for dot notation
 				case '.'
-					out = builtin('subsref',obj,idx(1));
-					if numel(idx) > 1,
-						out = builtin('subsref',out,idx(2:end));
-					end
+					[varargout{1:nargout}] = builtin('subsref',obj,idx);
 				case '()'
 					tmpEpoch = builtin('subsref',obj.epoch,idx(1));
 					out = feval(class(obj),tmpEpoch);
 					if numel(idx) > 1,
 						out = builtin('subsref',out,idx(2:end));
 					end
+					[varargout{1:nargout}] = out;
 					% No support for indexing using '{}'
 				case '{}'
 					error('irf:GenericTimeArray:subsref',...
 						'Not a supported subscripted reference')
 			end
-			[varargout{1:nargout}] = out;
     end
     
     function [idxLim,res] = tlim(obj,inp,mode)
@@ -247,29 +244,45 @@ classdef (Abstract) GenericTimeArray
           'MODE can be 0 (''and'', default) of 1 (''xor''')
       end
       className = class(obj);
-      lim = inp.(['to' className]);
+      lim = convert_epoch(inp,className);
       if nargout>1, [idxLim,res] = tlimPrivate(obj,lim,mode);
       else idxLim = tlimPrivate(obj,lim,mode);
       end
     end
     
-    function res = toEpochUnix(obj)
-      if isa(obj,'EpochUnix'), res = obj;
-      else res = EpochUnix(toUtc(obj));
-      end
-    end
-    function res = toEpochTT2000(obj)
-      if isa(obj,'EpochTT2000'), res = obj;
-      else res = EpochTT2000(toUtc(obj));
-      end
-    end
+		function res = convert_epoch(obj,className)
+			if isa(obj,className), 
+				res = obj;
+			else
+				res = feval(className,obj.ttns);
+			end
+		end
+		
+		function out = epochUnix(obj)
+			out = EpochUnix.from_ttns(obj.ttns);
+		end
+		function s = utc(obj,varargin)
+			% s = utc(obj,format)
+			s = EpochUTC.from_ttns(obj.ttns,varargin{:});
+		end
+		function s = toUtc(obj,varargin)
+			s = obj.utc(varargin{:});
+		end
+
+    % Abstract time operation methods
+    to_ttns(epoch,index)   % static function to convert epoch to ttns
+    from_ttns(obj,index)   % static function to convert ttns to epoch
     
-    % Abstract methods
-    utc(obj)
-		%utc  convert to UTC time string
-    tts(obj,index)
-		ttns(obj,index)
-		epochUnix(obj)
+		function s = ttns(obj,varargin)
+			% s = ttns(obj,[index]) return index points
+			s = obj.to_ttns(obj.epoch,varargin{:});
+		end
+		function s = tts(obj,varargin)
+			% s = tts(obj,[index]) return index points
+			s = double(obj.ttns(varargin{:}))/1e9;
+		end
+
+		% Abstract operations
 		plus(obj,arg)
 		colon(obj,varargin)
 		

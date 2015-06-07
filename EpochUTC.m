@@ -44,28 +44,10 @@ classdef EpochUTC < GenericTimeArray
 		end
 		function s = utc(obj,format)
 			% s = utc(obj,format)
-			if nargin<2,
-				format = '';
-			else
-				format = ['_' format];
-			end
-			s = irf_time(obj.epoch,['ttns>utc' format]);
-		end
-		function s = tts(obj,index)
-			% s = tt(obj,index)
-			% return index points, if not given return all
-			if nargin == 1,
-				s = double(obj.epoch)/1e9;
-			elseif nargin == 2 && isnumeric(index),
-				s = double(obj.epoch(index))/1e9;
-			end
-		end
-		function s = ttns(obj,index)
-			% s = ttns(obj,index)
-			if nargin == 1,
+			if nargin == 1
 				s = obj.epoch;
-			elseif nargin == 2 && isnumeric(index),
-				s = obj.epoch(index);
+			elseif nargin == 2
+				s = EpochUTC.from_ttns(obj.ttns,format);
 			end
 		end
 		
@@ -93,7 +75,10 @@ classdef EpochUTC < GenericTimeArray
 		end
 	end
 	methods (Static)
-		function ttns = to_ttns(utc)
+		function ttns = to_ttns(utc,index)
+			if nargin == 2
+				utc = utc(index,:);
+			end
 			ttns = spdfparsett2000(irf.utc_validate_and_pad(utc));
 			if ttns==int64(-9223372036854775805)
 				error('EpochUTC:to_ttns',...

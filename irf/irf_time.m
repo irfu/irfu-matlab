@@ -135,9 +135,7 @@ switch lower(flag)
 		if any(strfind(flag,'iso')),
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
-		tCellArray =  spdfencodett2000(int64(t_in));
-		t_out = vertcat(tCellArray{:});
-		t_out(:,end+1)='Z';
+		t_out = EpochUTC.from_ttns(t_in);
 	case 'tt>ttns'
 		t_out = int64(t_in)*1e9;
 	case 'ttns>tt'
@@ -153,11 +151,7 @@ switch lower(flag)
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(t_in(1,:),'T'))
-			t_out = spdfparsett2000(irf.utc_validate_and_pad(t_in));
-      if t_out==int64(-9223372036854775805)
-        error('irf:irf_time',...
-          'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
-      end
+			t_out = EpochUTC.to_ttns(t_in);
 		else
 			mask = '%4d-%2d-%2d %2d:%2d:%f%*c';
 			s=t_in';
@@ -176,7 +170,7 @@ switch lower(flag)
 	case 'ttns>epoch'
 		t_out = toepoch(irf_time(t_in,'ttns>vector'));
 	case 'epoch>ttns'
-		t_out = irf_time(fromepoch(t_in),'vector6>ttns');
+		t_out = EpochUnix.to_ttns(t_in);
 	case {'ttns>date','ttns>datenum'} % matlab date
 		t_out = spdftt2000todatenum(t_in);
 	case {'date>ttns','datenum>ttns'}
@@ -253,26 +247,7 @@ switch lower(flag)
 			t_out = [t1iso t2iso];
 		elseif numel(flag)>9 && strcmp(flag(1:9),'ttns>utc_')
 			fmt = flag(10:end);
-			iyyyy = strfind(fmt,'yyyy');
-			imm   = strfind(fmt,'mm');
-			idd   = strfind(fmt,'dd');
-			iHH   = strfind(fmt,'HH');
-			iMM   = strfind(fmt,'MM');
-			iSS   = strfind(fmt,'SS');
-			immm  = strfind(fmt,'mmm');
-			iuuu  = strfind(fmt,'uuu');
-			innn  = strfind(fmt,'nnn');
-			tVec9 = irf_time(t_in,'ttns>vector9');
-			t_out = repmat(fmt,size(t_in,1),1);
-			if iyyyy, t_out(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
-			if imm,   t_out(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
-			if idd,   t_out(:,idd:idd+1)    = num2str(tVec9(:,3),'%02u'); end
-			if iHH,   t_out(:,iHH:iHH+1)    = num2str(tVec9(:,4),'%02u'); end
-			if iMM,   t_out(:,iMM:iMM+1)    = num2str(tVec9(:,5),'%02u'); end
-			if iSS,   t_out(:,iSS:iSS+1)    = num2str(tVec9(:,6),'%02u'); end
-			if immm,  t_out(:,immm:immm+2)  = num2str(tVec9(:,7),'%03u'); end
-			if iuuu,  t_out(:,iuuu:iuuu+2)  = num2str(tVec9(:,8),'%03u'); end
-			if innn,  t_out(:,innn:innn+2)  = num2str(tVec9(:,9),'%03u'); end
+			t_out = EpochUTC.from_ttns(t_in,fmt);
 		else
 		disp(['!!! irf_time: unknown flag ''' lower(flag) ''', not converting.'])
 		t_out=t_in;

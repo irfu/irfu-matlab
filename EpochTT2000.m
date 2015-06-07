@@ -28,10 +28,16 @@ classdef EpochTT2000 < GenericTimeArray
         end
         tmpStr = pad_utc(inp);
         obj.epoch = spdfparsett2000(tmpStr);
-        if obj.epoch==int64(-9223372036854775805)
-          error('irf:EpochUnix:EpochUnix:badInputs',...
-            'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
-        end
+				if obj.epoch==int64(-9223372036854775805)
+					error('irf:EpochUnix:EpochUnix:badInputs',...
+						'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+				end
+			elseif isa(inp,'GenericTimeArray')
+				if isa(inp,'EpochTT2000'),
+					obj = inp;
+				else
+					obj = EpochTT2000(inp.ttns);
+				end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
@@ -45,51 +51,24 @@ classdef EpochTT2000 < GenericTimeArray
         if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
         utcNew(:,MAX_NUM_IDX+1) = 'Z';
       end
-    end
-    function s = toUtc(obj,format)
-      % s = toUtc(obj,format)
-      if nargin<2, format = 2; end
-      s_tmp = char(spdfencodett2000(obj.epoch));
-      switch format
-        case 0, s_tmp = s_tmp(:,1:26);
-        case 1, s_tmp = s_tmp(:,1:23);
-        case 2,
-        otherwise
-          error('irf:EpochUnix:toUtc:badInputs',...
-            'wrong format value')
-      end
-      s_tmp(:,end+1) = 'Z';
-      s = s_tmp;
-    end
-    function s = tts(obj,index)
-      % s = tts(obj,index), convert to seconds.
-      % return index points, if not given return all
-      if nargin == 1
-        s = double(obj.epoch)/1e9;
-      elseif nargin == 2 && isnumeric(index)
-        s = double(obj.epoch(index))/1e9;
-      end
-    end
-    function res = toEpochUnix(obj)
-      s_tmp = spdfencodett2000(obj.epoch(1)); epoch0 = iso2epoch(s_tmp{:});
-      epoch = double(obj.epoch - obj.epoch(1))*1e-9 + epoch0;
-      if numel(epoch) == 1, res = EpochUnix(epoch); return; end
-      
-      % Check for leap seconds during the time interval of interest
-      lSecs = GenericTimeArray.leap_seconds();
-      yyyy = str2double(s_tmp{:}(1:4));
-      lSecs = lSecs(lSecs(:,1)>=yyyy,:); lSecs(:,4:6) = 0;
-      lSecsEpoch = [];
-      if ~isempty(lSecs), lSecsEpoch = toepoch(lSecs); end
-      if ~isempty(lSecsEpoch) && any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
-        % Found: convert via UTC string
-        res = EpochUnix(toUtc(obj));
-      else res = EpochUnix(epoch);
-      end
+		end  
+	end
+	
+	methods (Static)
+		function output = from_ttns(input,index) % for consistency with other EpochXX routines
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
+			end
 		end
-		function out = epochUnix(obj)
-			out = irf_time(obj.epoch,'ttns>epoch');
+		function output = to_ttns(input,index)
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
+			end
 		end
-
-  end
+	end
+	
 end

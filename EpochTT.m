@@ -26,42 +26,16 @@ classdef EpochTT < GenericTimeArray
 					error('irf:EpochUnix:EpochUnix:badInputs',...
 						'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
 				end
-				obj.epoch = irf_time(inp,'utc>ttns');
+				obj.epoch = EpochUTC.to_ttns(inp);
+			elseif isa(inp,'GenericTimeArray')
+				if isa(inp,'EpochTT'),
+					obj = inp;
+				else
+					obj = EpochTT(inp.ttns);
+				end
 			else
 				error('irf:EpochUnix:EpochUnix:badInputs',...
 					'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
-			end
-		end
-		function out = epochUnix(obj)
-			out = irf_time(obj.epoch,'ttns>epoch');
-		end
-		function s = toUtc(obj,varargin)
-			s = utc(obj,varargin{:});
-		end
-		function s = utc(obj,format)
-			% s = utc(obj,format)
-			if nargin<2,
-				format = '';
-			else
-				format = ['_' format];
-			end
-			s = irf_time(obj.epoch,['ttns>utc' format]);
-		end
-		function s = tts(obj,index)
-			% s = tt(obj,index)
-			% return index points, if not given return all
-			if nargin == 1,
-				s = double(obj.epoch)/1e9;
-			elseif nargin == 2 && isnumeric(index),
-				s = double(obj.epoch(index))/1e9;
-			end
-		end
-		function s = ttns(obj,index)
-			% s = ttns(obj,index)
-			if nargin == 1,
-				s = obj.epoch;
-			elseif nargin == 2 && isnumeric(index),
-				s = obj.epoch(index);
 			end
 		end
 		
@@ -85,6 +59,22 @@ classdef EpochTT < GenericTimeArray
 			elseif nargin == 3 && isa(varargin{2},'EpochTT') && isnumeric(varargin{1})
 				tns = obj.start.ttns:int64(varargin{1}*1e9):varargin{2}.stop.ttns;
 				outObj = EpochTT(tns);
+			end
+		end
+	end
+	methods (Static)
+		function output = from_ttns(input,index) % for consistency with other EpochXX routines
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
+			end
+		end
+		function output = to_ttns(input,index)
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
 			end
 		end
 	end
