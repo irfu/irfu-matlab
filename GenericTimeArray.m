@@ -346,6 +346,16 @@ classdef (Abstract) GenericTimeArray
       end
       output_args = true;
     end
+    function utcNew = pad_utc( utc )
+      %Add missing Z and zeros to comply with yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]
+      MAX_NUM_IDX = 29; idxDotIDX_DOT = 20;
+      utcNew = utc; lUtc = size(utc,2); flagAddZ = true;
+      if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
+      if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
+      if lUtc == idxDotIDX_DOT-1, utcNew(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; end
+      if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
+      utcNew(:,MAX_NUM_IDX+1) = 'Z';
+    end
     function res = leap_seconds()
       % Try to read CDFLeapSeconds.txt (from NASA_cdf_patch). If not found
       % revert to hard coded values.

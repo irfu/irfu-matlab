@@ -26,7 +26,7 @@ classdef EpochTT2000 < GenericTimeArray
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
-        tmpStr = pad_utc(inp);
+        tmpStr = GenericTimeArray.pad_utc(inp);
         obj.epoch = spdfparsett2000(tmpStr);
 				if obj.epoch==int64(-9223372036854775805)
 					error('irf:EpochUnix:EpochUnix:badInputs',...
@@ -41,15 +41,6 @@ classdef EpochTT2000 < GenericTimeArray
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
-      end
-      function utcNew = pad_utc(utc)
-        MAX_NUM_IDX = 29; IDX_DOT = 20;
-        utcNew = utc; lUtc = size(utc,2); flagAddZ = true;
-        if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
-        if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
-        if lUtc == IDX_DOT-1, utcNew(:,IDX_DOT) = '.'; lUtc = lUtc + 1; end
-        if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
-        utcNew(:,MAX_NUM_IDX+1) = 'Z';
       end
 		end  
 	end

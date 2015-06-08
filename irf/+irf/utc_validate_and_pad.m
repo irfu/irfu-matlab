@@ -13,19 +13,10 @@ function utcNew = utc_validate_and_pad(utc)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-MAX_NUM_IDX = 29; idxDotIDX_DOT = 20;
-
 if ~GenericTimeArray.validate_utc_time_str(utc)
   errStr = 'UTC must be a string: yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]';
   irf.log('critical',errStr), error(errStr)
 end
 
-utcNew = utc; lUtc = size(utc,2); flagAddZ = true;
-if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
-
-if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
-if lUtc == idxDotIDX_DOT-1, utcNew(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; end
-if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
-utcNew(:,MAX_NUM_IDX+1) = 'Z';
-
+utcNew = GenericTimeArray.pad_utc(utc);
 end
