@@ -299,6 +299,33 @@ classdef TSeries
       value = obj.tensorOrder_;
     end
     
+    function y = tranform(obj, flag)
+      % Tranform from one coordinate system to another and return new
+      % TimeSeries.
+      % flag: = 'xyz>rlp' - Cartesian XYZ to spherical latitude
+      %         'rlp>xyz' - Spherical latitude to cartesian XYZ
+      %         'xyz>rpz' - Cartesian XYZ to cylindrical
+      %         'rpz>xyz' - Cylidrical to cartesian XYZ
+      y = [];
+      switch lower(flag)
+        case 'xyz>rlp'
+          [p, l, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          y = TSeries(obj.time, [r, l, p], 'vec_rlp');
+        case 'rlp>xyz'
+          [x, y, z] = sph2cart(obj.p.data, obj.l.data, obj.r.data);
+          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rpz'
+          [p, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
+          y = TSeries(obj.time, [r, p, z], 'vec_rpz');
+        case 'rpz>xyz'
+          [x, y, z] = pol2cart(obj.p.data, obj.r.data, obj.z.data);
+          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        otherwise
+          errStr='Incorrect usage or conversion not yet implemented!';
+          error(errStr);
+      end
+    end
+
     %Components
     function y = x(obj)
       %access X component
