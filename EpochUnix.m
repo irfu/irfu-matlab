@@ -21,6 +21,12 @@ classdef EpochUnix < GenericTimeArray
 				end
 				if size(inp,2)~=1, inp = inp'; end % to column
 				obj.epoch = inp;
+      elseif isa(inp,'int64'),
+        if min(size(inp))>1
+          error('irf:EpochUnix:EpochTT2000:badInputs',...
+            'int64 input (nanoseconds since 2000) must be a columt or row vector')
+        end
+        obj.epoch = EpochUnix.from_ttns(inp(:)); % column vector
 			elseif isa(inp,'char')
 				if GenericTimeArray.validate_utc(inp)
 					obj.epoch = iso2epoch(inp);
@@ -36,7 +42,7 @@ classdef EpochUnix < GenericTimeArray
 				end
 			else
 				error('irf:EpochUnix:EpochUnix:badInputs',...
-					'Expected inputs: double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
+					'Expected inputs: double (seconds since 1970), int64 (nanoseconds since 2000), or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
 			end
 		end
 	end
