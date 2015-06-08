@@ -135,7 +135,7 @@ switch lower(flag)
 		if any(strfind(flag,'iso')),
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
-		t_out = EpochUTC.from_ttns(t_in);
+		t_out = GenericTimeArray.ttns2utc(t_in);
 	case 'tt>ttns'
 		t_out = int64(t_in)*1e9;
 	case 'ttns>tt'
@@ -151,7 +151,7 @@ switch lower(flag)
 			irf.log('warning','irf_time: ''iso'' is deprecated and will be removed, please use ''utc'', see help.');
 		end
 		if any(strfind(t_in(1,:),'T'))
-			t_out = EpochUTC.to_ttns(t_in);
+			t_out = GenericTimeArray.utc2ttns(t_in);
 		else
 			mask = '%4d-%2d-%2d %2d:%2d:%f%*c';
 			s=t_in';
@@ -247,7 +247,7 @@ switch lower(flag)
 			t_out = [t1iso t2iso];
 		elseif numel(flag)>9 && strcmp(flag(1:9),'ttns>utc_')
 			fmt = flag(10:end);
-			t_out = EpochUTC.from_ttns(t_in,fmt);
+			t_out = GenericTimeArray.ttns2utc(t_in,fmt);
 		else
 		disp(['!!! irf_time: unknown flag ''' lower(flag) ''', not converting.'])
 		t_out=t_in;

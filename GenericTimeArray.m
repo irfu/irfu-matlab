@@ -264,7 +264,7 @@ classdef (Abstract) GenericTimeArray
 		end
 		function s = utc(obj,varargin)
 			% s = utc(obj,format)
-			s = EpochUTC.from_ttns(obj.ttns,varargin{:});
+			s = GenericTimeArray.ttns2utc(obj.ttns,varargin{:});
 		end
 		function s = toUtc(obj,varargin)
 			s = obj.utc(varargin{:});
@@ -347,16 +347,80 @@ classdef (Abstract) GenericTimeArray
       end
       res = true;
     end
-    function utcNew = pad_utc( utc )
+    function res = pad_utc( utc )
       %Add missing Z and zeros to comply with yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]
       MAX_NUM_IDX = 29; idxDotIDX_DOT = 20;
-      utcNew = utc; lUtc = size(utc,2); flagAddZ = true;
+      res = utc; lUtc = size(utc,2); flagAddZ = true;
       if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
       if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
-      if lUtc == idxDotIDX_DOT-1, utcNew(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; end
-      if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
-      utcNew(:,MAX_NUM_IDX+1) = 'Z';
+      if lUtc == idxDotIDX_DOT-1
+        res(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; 
+      end
+      if lUtc < MAX_NUM_IDX, res(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
+      res(:,MAX_NUM_IDX+1) = 'Z';
     end
+    function res = validate_and_pad_utc(utc)
+      % UTC_VALIDATE  validate UTC string and pad with zeros
+      %
+      % utcNew = validate_and_pad_utc(utc)
+      %
+      %  Validates that string is compliand with the UTC format:
+      %  yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ] and pads with missing zeros and Z.
+      if ~GenericTimeArray.validate_utc(utc)
+        error('GenericTimeArray:validate_and_pad_utc',...
+          'UTC must be a string: yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]');
+      end
+      res = GenericTimeArray.pad_utc(utc);
+    end
+    function ttns = utc2ttns(utc,index)
+      % Convert UTC to TT nanoseconds 
+			if nargin == 2
+				utc = utc(index,:);
+			end
+			ttns = spdfparsett2000(GenericTimeArray.validate_and_pad_utc(utc));
+			if ttns==int64(-9223372036854775805)
+				error('GenericTimeArray:utc2ttns',...
+					'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+			end
+		end
+		function utc = ttns2utc(ttns,format)
+      % Convert TT nanoseconds to UTC
+      if nargin<2, format = 2; end
+			utc =  char(spdfencodett2000(int64(ttns)));
+			if isnumeric(format)
+				switch format
+					case 0, utc = utc(:,1:26);
+					case 1, utc = utc(:,1:23);
+					case 2,
+					otherwise
+						error('irf:EpochUnix:toUtc:badInputs',...
+							'wrong format value')
+				end
+				utc(:,end+1)='Z';
+			elseif ischar(format)
+				fmt = format;
+				iyyyy = strfind(fmt,'yyyy');
+				imm   = strfind(fmt,'mm');
+				idd   = strfind(fmt,'dd');
+				iHH   = strfind(fmt,'HH');
+				iMM   = strfind(fmt,'MM');
+				iSS   = strfind(fmt,'SS');
+				immm  = strfind(fmt,'mmm');
+				iuuu  = strfind(fmt,'uuu');
+				innn  = strfind(fmt,'nnn');
+				tVec9 = irf_time(ttns,'ttns>vector9');
+				utc = repmat(fmt,size(ttns,1),1);
+				if iyyyy, utc(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
+				if imm,   utc(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
+				if idd,   utc(:,idd:idd+1)    = num2str(tVec9(:,3),'%02u'); end
+				if iHH,   utc(:,iHH:iHH+1)    = num2str(tVec9(:,4),'%02u'); end
+				if iMM,   utc(:,iMM:iMM+1)    = num2str(tVec9(:,5),'%02u'); end
+				if iSS,   utc(:,iSS:iSS+1)    = num2str(tVec9(:,6),'%02u'); end
+				if immm,  utc(:,immm:immm+2)  = num2str(tVec9(:,7),'%03u'); end
+				if iuuu,  utc(:,iuuu:iuuu+2)  = num2str(tVec9(:,8),'%03u'); end
+				if innn,  utc(:,innn:innn+2)  = num2str(tVec9(:,9),'%03u'); end
+			end
+		end
     function res = leap_seconds()
       % Try to read CDFLeapSeconds.txt (from NASA_cdf_patch). If not found
       % revert to hard coded values.
