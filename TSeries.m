@@ -310,31 +310,31 @@ classdef TSeries
       y = [];
       switch lower(flag)
         case 'xyz>rlp'
-          [p, l, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, l, p], 'vec_rlp');
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          y = TSeries(obj.time, [r, lambda, phi], 'vec_rlp');
         case 'rlp>xyz'
-          [x, y, z] = sph2cart(obj.p.data, obj.l.data, obj.r.data);
+          [x, y, z] = sph2cart(obj.phi.data, obj.lambda.data, obj.r.data);
           y = TSeries(obj.time, [x, y, z], 'vec_xyz');
         case 'xyz>rpz'
-          [p, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, p, z], 'vec_rpz');
+          [phi, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
+          y = TSeries(obj.time, [r, phi, z], 'vec_rpz');
         case 'rpz>xyz'
-          [x, y, z] = pol2cart(obj.p.data, obj.r.data, obj.z.data);
+          [x, y, z] = pol2cart(obj.phi.data, obj.r.data, obj.z.data);
           y = TSeries(obj.time, [x, y, z], 'vec_xyz');
         case 'xyz>rtp'
-          [p, l, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          t = pi/2 - l;
-          y = TSeries(obj.time, [r, t, p], 'vec_rtp');
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          theta = pi/2 - lambda;
+          y = TSeries(obj.time, [r, theta, phi], 'vec_rtp');
         case 'rtp>xyz'
-          l = pi/2 - obj.t.data;
-          [x, y, z] = sph2cart(obj.p.data, l, obj.r.data);
+          lambda = pi/2 - obj.theta.data;
+          [x, y, z] = sph2cart(obj.phi.data, lambda, obj.r.data);
           y = TSeries(obj.time, [x, y, z], 'vec_xyz');
         case 'rtp>rlp'
-          l = pi/2 - obj.t.data;
-          y = TSeries(obj.time, [obj.r.data, l, obj.p.data], 'vec_rlp');
+          lambda = pi/2 - obj.theta.data;
+          y = TSeries(obj.time, [obj.r.data, lambda, obj.phi.data], 'vec_rlp');
         case 'rlp>rtp'
-          t = pi/2 - obj.l.data;
-          y = TSeries(obj.time, [obj.r.data, t, obj.p.data], 'vec_rtp');
+          theta = pi/2 - obj.lambda.data;
+          y = TSeries(obj.time, [obj.r.data, theta, obj.phi.data], 'vec_rtp');
         otherwise
           errStr='Incorrect usage or conversion not yet implemented!';
           error(errStr);
