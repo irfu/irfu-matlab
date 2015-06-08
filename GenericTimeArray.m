@@ -200,7 +200,7 @@ classdef (Abstract) GenericTimeArray
 				case '{}'
 					error('irf:GenericTimeArray:subsref',...
 						'Not a supported subscripted reference')
-      end
+			end
     end
     
     function [idxLim,res] = tlim(obj,inp,mode)
