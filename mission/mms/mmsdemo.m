@@ -35,7 +35,7 @@ T   = EpochTT('2002-03-04T09:30:00Z'):.2...
      :EpochTT('2002-03-04T10:30:00Z');      % define time line as EpochTT object
 t   = T.tts - T.tts(1);                     % define relative time in s from start
 x   = exp(0.001*(t)).*sin(2*pi*t/180);      % define function x(t)=exp(0.001(t-to))*sin(t-to)
-TS1 = TSeries(T,x);                         % define TSeries object
+TS1 = irf.ts_scalar(T,x);                   % define clalar TSeries object
 
 h   = irf_plot(1,'newfigure');			        % initialize figure
 irf_plot(h,TS1);						                % plot times series  
@@ -44,7 +44,7 @@ irf_plot(h,TS1);						                % plot times series
 % Add legend text in lower left corner.
 
 y   = exp(0.001*(t)).*cos(2*pi*t/180);	      % y(t)=exp(0.001(t-to))*cos(t-to)
-TS2 = TSeries(T,[x y]);                       % define TSeries object
+TS2 = irf.ts_vec_xy(T,[x y]);                 % define vector TSeries object
 
 irf_plot(h,TS2)                               % plot in the same axis
 irf_legend(h,{'X','Y'},[0.02 0.02])           % add legend text with the same colors as lines
@@ -71,11 +71,11 @@ irf_zoom(h,'y');
 
 h=irf_plot({TS2,TS3},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(TS2.t.tts(1),'tt>utc_yyyy-mm-dd'));
+title(h(1),irf_time(TS2.time.tts(1),'tt>utc_yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 
-TShours =TSeries(T,t/3600); % hours from beginning of time interval
+TShours =irf.ts_scalar(T,t/3600); % hours from beginning of time interval
 irf_timeaxis(h(2),t(1),TShours,{'hours'})
 irf_timeaxis(h(end),'nodate');
 %% Example  5 Plot, different markers, mark intervals
@@ -92,7 +92,7 @@ irf_zoom(h,'y');
 irf_pl_mark(h(2),tint2);
 irf_legend(0,'Some additional info',[0,1],'color','r')
 %% Generate vector times series
-TS2 = TSeries(T,[x y y],'vec_xyz');                       % define TSeries object
+TS2 = irf.ts_vec_xyz(T,[x y y]);             % define TSeries object
 irf_minvar_gui(TS2)
 
 %% MMS data structure

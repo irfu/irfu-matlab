@@ -2,6 +2,7 @@ classdef EpochTT2000 < GenericTimeArray
   %EpochTT2000 Class representing T2000 epoch, nanoseconds since 2000.
   %
 	% EpochTT2000(t) - initialize class, where t can be:
+  %                   - vector of seconds (double)
 	%                   - vector of integer number (int64) of nanoseconds as TT2000
 	%                   - UTC string array
 	
@@ -15,81 +16,74 @@ classdef EpochTT2000 < GenericTimeArray
   methods
     function obj = EpochTT2000(inp)
       if nargin==0, return, end
-      if isa(inp,'int64'),
+      if isa(inp,'double'),
+        if min(size(inp))>1
+          error('irf:EpochTT2000:EpochTT:badInputs',...
+            'input must be a column or row vector')
+        end
+        obj.epoch = int64(inp(:)*1e9); % column vector
+      elseif isa(inp,'int64'),
         if min(size(inp))>1
           error('irf:EpochTT2000:EpochTT2000:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
         end
         obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')
-        if ~GenericTimeArray.validate_utc_time_str(inp)
+        if ~GenericTimeArray.validate_utc(inp)
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end
-        tmpStr = pad_utc(inp);
-        obj.epoch = spdfparsett2000(tmpStr);
-        if obj.epoch==int64(-9223372036854775805)
-          error('irf:EpochUnix:EpochUnix:badInputs',...
-            'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
-        end
+				obj.epoch = GenericTimeArray.utc2ttns(inp);
+			elseif isa(inp,'GenericTimeArray')
+				if isa(inp,'EpochTT2000'),
+					obj = inp;
+				else
+					obj = EpochTT2000(inp.ttns);
+				end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
           'Expected inputs: int64 (nanoseconds since 2000), double (seconds since 1970) or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
       end
-      function utcNew = pad_utc(utc)
-        MAX_NUM_IDX = 29; IDX_DOT = 20;
-        utcNew = utc; lUtc = size(utc,2); flagAddZ = true;
-        if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
-        if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
-        if lUtc == IDX_DOT-1, utcNew(:,IDX_DOT) = '.'; lUtc = lUtc + 1; end
-        if lUtc < MAX_NUM_IDX, utcNew(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
-        utcNew(:,MAX_NUM_IDX+1) = 'Z';
+    end
+    function objOut = plus(obj,arg)
+      if isnumeric(arg)
+        if isa(arg,'double'),
+          inp = int64(arg*1e9);
+        elseif isa(arg,'int64'),
+          inp = arg;
+        else
+          error('Input type not defined');
+        end
+        objOut = obj;
+        objOut.epoch = obj.epoch + inp(:);
       end
     end
-    function s = toUtc(obj,format)
-      % s = toUtc(obj,format)
-      if nargin<2, format = 2; end
-      s_tmp = char(spdfencodett2000(obj.epoch));
-      switch format
-        case 0, s_tmp = s_tmp(:,1:26);
-        case 1, s_tmp = s_tmp(:,1:23);
-        case 2,
-        otherwise
-          error('irf:EpochUnix:toUtc:badInputs',...
-            'wrong format value')
-      end
-      s_tmp(:,end+1) = 'Z';
-      s = s_tmp;
-    end
-    function s = tts(obj,index)
-      % s = tts(obj,index), convert to seconds.
-      % return index points, if not given return all
-      if nargin == 1
-        s = double(obj.epoch)/1e9;
-      elseif nargin == 2 && isnumeric(index)
-        s = double(obj.epoch(index))/1e9;
+    function outObj = colon(obj,varargin)
+      if nargin == 2 && isa(varargin{1},'EpochTT2000')
+        tns = obj.start.ttns:int64(1e9):varargin{1}.stop.ttns;
+        outObj = EpochTT2000(tns);
+      elseif nargin == 3 && isa(varargin{2},'EpochTT2000') && isnumeric(varargin{1})
+        tns = obj.start.ttns:int64(varargin{1}*1e9):varargin{2}.stop.ttns;
+        outObj = EpochTT2000(tns);
       end
     end
-    function res = toEpochUnix(obj)
-      s_tmp = spdfencodett2000(obj.epoch(1)); epoch0 = iso2epoch(s_tmp{:});
-      epoch = double(obj.epoch - obj.epoch(1))*1e-9 + epoch0;
-      if numel(epoch) == 1, res = EpochUnix(epoch); return; end
-      
-      % Check for leap seconds during the time interval of interest
-      lSecs = GenericTimeArray.leap_seconds();
-      yyyy = str2double(s_tmp{:}(1:4));
-      lSecs = lSecs(lSecs(:,1)>=yyyy,:); lSecs(:,4:6) = 0;
-      lSecsEpoch = [];
-      if ~isempty(lSecs), lSecsEpoch = toepoch(lSecs); end
-      if ~isempty(lSecsEpoch) && any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
-        % Found: convert via UTC string
-        res = EpochUnix(toUtc(obj));
-      else res = EpochUnix(epoch);
-      end
-		end
-		function out = epochUnix(obj)
-			out = irf_time(obj.epoch,'ttns>epoch');
-		end
-
   end
+	
+	methods (Static)
+		function output = from_ttns(input,index) % for consistency with other GenericTimeArray routines
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
+			end
+		end
+		function output = to_ttns(input,index)
+			if nargin == 1,
+				output = input;
+			else
+				output = input(index);
+			end
+		end
+	end
+	
 end

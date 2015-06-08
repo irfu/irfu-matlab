@@ -351,7 +351,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
     if isstruct(x), error('cannot plot spectra in COMP mode'), end
     % t_start_epoch is saved in figures user_data variable
     if isa(x{1},'TSeries')
-      ts = t_start_epoch(x{1}.time.toEpochUnix().epoch);
+      ts = t_start_epoch(x{1}.time.epochUnix);
       npl = size(x{1}.data,2);
     elseif isstruct(x{1})
       ts = t_start_epoch(x{1}.t); npl = size(x{1}.data,2);
@@ -375,7 +375,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             else marker_cur = marker;
             end
             if isa(x{jj},'TSeries'), 
-              time = x{jj}.time.toEpochUnix().epoch; data = x{jj}.data;
+              time = x{jj}.time.epochUnix; data = x{jj}.data;
             else time = x{jj}(:,1); data = x{jj}(:,2:end);
             end
             if size(data,2)>=ipl

@@ -13,7 +13,8 @@ classdef (Abstract) GenericTimeArray
 %     toEpochTT2000()
 % 
 %     Static:
-%     validate_utc_time_str()
+%     pad_utc()
+%     validate_utc()
 %     LeapSeconds()
   
 % ----------------------------------------------------------------------------
@@ -83,7 +84,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch <= objTmp.epoch;
     end
     
@@ -96,7 +97,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:ge:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch >= objTmp.epoch;
     end
     
@@ -109,7 +110,7 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:le:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
+      objTmp = convert_epoch(obj1,class(obj));
       res = obj.epoch < objTmp.epoch;
     end
     
@@ -122,8 +123,8 @@ classdef (Abstract) GenericTimeArray
         error('irf:GenericTimeArray:gt:badInputs',...
             'second argument must have length 1')
       end
-      objTmp = feval(['to' class(obj)],obj1);
-      res = obj.epoch > objTmp.epoch;
+      objTmp = convert_epoch(obj1,class(obj));
+			res = obj.epoch > objTmp.epoch;
     end
     
     function res = eq(obj,obj1)
@@ -133,14 +134,14 @@ classdef (Abstract) GenericTimeArray
             'inpus must be subclasses of GenericTimeArray')
       end
       len = obj.length(); len1 = obj1.length();
-      if len==0 && len1==0, res = true; return, end
-      
-      objTmp = feval(['to' class(obj)],obj1);
-      if len1==1,
-        res = obj.epoch == objTmp.epoch;
-      else
-        res = obj.epoch == objTmp.epoch; 
-      end
+			if len==0 && len1==0, res = true; return, end
+			
+			objTmp = convert_epoch(obj1,class(obj));
+			if len1==1,
+				res = obj.epoch == objTmp.epoch;
+			else
+				res = obj.epoch == objTmp.epoch;
+			end
     end
     
     function res = ne(obj,obj1)
@@ -193,8 +194,8 @@ classdef (Abstract) GenericTimeArray
 					out = feval(class(obj),tmpEpoch);
 					if numel(idx) > 1,
 						out = builtin('subsref',out,idx(2:end));
-          end
-          [varargout{1:nargout}] = out;
+					end
+					[varargout{1:nargout}] = out;
 					% No support for indexing using '{}'
 				case '{}'
 					error('irf:GenericTimeArray:subsref',...
@@ -244,29 +245,45 @@ classdef (Abstract) GenericTimeArray
           'MODE can be 0 (''and'', default) of 1 (''xor''')
       end
       className = class(obj);
-      lim = inp.(['to' className]);
+      lim = convert_epoch(inp,className);
       if nargout>1, [idxLim,res] = tlimPrivate(obj,lim,mode);
       else idxLim = tlimPrivate(obj,lim,mode);
       end
     end
     
-    function res = toEpochUnix(obj)
-      if isa(obj,'EpochUnix'), res = obj;
-      else res = EpochUnix(toUtc(obj));
-      end
-    end
-    function res = toEpochTT2000(obj)
-      if isa(obj,'EpochTT2000'), res = obj;
-      else res = EpochTT2000(toUtc(obj));
-      end
-    end
+		function res = convert_epoch(obj,className)
+			if isa(obj,className), 
+				res = obj;
+			else
+				res = feval(className,obj.ttns);
+			end
+		end
+		
+		function res = epochUnix(obj)
+			res = EpochUnix.from_ttns(obj.ttns);
+		end
+		function s = utc(obj,varargin)
+			% s = utc(obj,format)
+			s = GenericTimeArray.ttns2utc(obj.ttns,varargin{:});
+		end
+		function s = toUtc(obj,varargin)
+			s = obj.utc(varargin{:});
+		end
+
+    % Abstract time operation methods
+    to_ttns(epoch,index)   % static function to convert epoch to ttns
+    from_ttns(obj,index)   % static function to convert ttns to epoch
     
-    % Abstract methods
-    utc(obj)
-		%utc  convert to UTC time string
-    tts(obj,index)
-		ttns(obj,index)
-		epochUnix(obj)
+		function s = ttns(obj,varargin)
+			% s = ttns(obj,[index]) return index points
+			s = obj.to_ttns(obj.epoch,varargin{:});
+		end
+		function s = tts(obj,varargin)
+			% s = tts(obj,[index]) return index points
+			s = double(obj.ttns(varargin{:}))/1e9;
+		end
+
+		% Abstract operations
 		plus(obj,arg)
 		colon(obj,varargin)
 		
@@ -289,12 +306,12 @@ classdef (Abstract) GenericTimeArray
   end
   
   methods (Static)
-    function [ output_args ] = validate_utc_time_str( utc )
-      %verify_iso_time_str validate UTC string
+    function res = validate_utc( utc )
+      %VALIDATE_UTC validate UTC string
       %   validate UTC string : yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]'
       
       MAX_NUM_IDX = 29;
-      output_args = false;
+      res = false;
      
       if isempty(utc), return, end
       if ~ismatrix(utc), return, end
@@ -328,8 +345,82 @@ classdef (Abstract) GenericTimeArray
           any( utc(:,9)=='3' & ~(utc(:,10)=='0' | utc(:,10)=='1' ))
         return
       end
-      output_args = true;
+      res = true;
     end
+    function res = pad_utc( utc )
+      %Add missing Z and zeros to comply with yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]
+      MAX_NUM_IDX = 29; idxDotIDX_DOT = 20;
+      res = utc; lUtc = size(utc,2); flagAddZ = true;
+      if all(all(utc(:,end)=='Z')), lUtc = lUtc - 1; flagAddZ = false; end
+      if lUtc == MAX_NUM_IDX && ~flagAddZ, return, end
+      if lUtc == idxDotIDX_DOT-1
+        res(:,idxDotIDX_DOT) = '.'; lUtc = lUtc + 1; 
+      end
+      if lUtc < MAX_NUM_IDX, res(:,(lUtc+1):MAX_NUM_IDX) = '0'; end % Pad with zeros
+      res(:,MAX_NUM_IDX+1) = 'Z';
+    end
+    function res = validate_and_pad_utc(utc)
+      % UTC_VALIDATE  validate UTC string and pad with zeros
+      %
+      % utcNew = validate_and_pad_utc(utc)
+      %
+      %  Validates that string is compliand with the UTC format:
+      %  yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ] and pads with missing zeros and Z.
+      if ~GenericTimeArray.validate_utc(utc)
+        error('GenericTimeArray:validate_and_pad_utc',...
+          'UTC must be a string: yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]');
+      end
+      res = GenericTimeArray.pad_utc(utc);
+    end
+    function ttns = utc2ttns(utc,index)
+      % Convert UTC to TT nanoseconds 
+			if nargin == 2
+				utc = utc(index,:);
+			end
+			ttns = spdfparsett2000(GenericTimeArray.validate_and_pad_utc(utc));
+			if ttns==int64(-9223372036854775805)
+				error('GenericTimeArray:utc2ttns',...
+					'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
+			end
+		end
+		function utc = ttns2utc(ttns,format)
+      % Convert TT nanoseconds to UTC
+      if nargin<2, format = 2; end
+			utc =  char(spdfencodett2000(int64(ttns)));
+			if isnumeric(format)
+				switch format
+					case 0, utc = utc(:,1:26);
+					case 1, utc = utc(:,1:23);
+					case 2,
+					otherwise
+						error('irf:EpochUnix:toUtc:badInputs',...
+							'wrong format value')
+				end
+				utc(:,end+1)='Z';
+			elseif ischar(format)
+				fmt = format;
+				iyyyy = strfind(fmt,'yyyy');
+				imm   = strfind(fmt,'mm');
+				idd   = strfind(fmt,'dd');
+				iHH   = strfind(fmt,'HH');
+				iMM   = strfind(fmt,'MM');
+				iSS   = strfind(fmt,'SS');
+				immm  = strfind(fmt,'mmm');
+				iuuu  = strfind(fmt,'uuu');
+				innn  = strfind(fmt,'nnn');
+				tVec9 = irf_time(ttns,'ttns>vector9');
+				utc = repmat(fmt,size(ttns,1),1);
+				if iyyyy, utc(:,iyyyy:iyyyy+3)= num2str(tVec9(:,1),'%04u'); end
+				if imm,   utc(:,imm:imm+1)    = num2str(tVec9(:,2),'%02u'); end
+				if idd,   utc(:,idd:idd+1)    = num2str(tVec9(:,3),'%02u'); end
+				if iHH,   utc(:,iHH:iHH+1)    = num2str(tVec9(:,4),'%02u'); end
+				if iMM,   utc(:,iMM:iMM+1)    = num2str(tVec9(:,5),'%02u'); end
+				if iSS,   utc(:,iSS:iSS+1)    = num2str(tVec9(:,6),'%02u'); end
+				if immm,  utc(:,immm:immm+2)  = num2str(tVec9(:,7),'%03u'); end
+				if iuuu,  utc(:,iuuu:iuuu+2)  = num2str(tVec9(:,8),'%03u'); end
+				if innn,  utc(:,innn:innn+2)  = num2str(tVec9(:,9),'%03u'); end
+			end
+		end
     function res = leap_seconds()
       % Try to read CDFLeapSeconds.txt (from NASA_cdf_patch). If not found
       % revert to hard coded values.

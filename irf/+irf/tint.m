@@ -23,8 +23,8 @@ switch nargin
       if ~isvector(start), irf.log('critical',errStr), error(errStr), end
       ii = strfind(start(1,:),'/');
       if isempty(ii), irf.log('critical',errStr), error(errStr), end
-      t1 = irf.utc_validate_and_pad(start(:,1:ii(1)-1));
-      t2 = irf.utc_validate_and_pad(start(:,ii(1)+1:end));
+      t1 = GenericTimeArray.validate_and_pad_utc(start(:,1:ii(1)-1));
+      t2 = GenericTimeArray.validate_and_pad_utc(start(:,ii(1)+1:end));
       TintTT2000 = irf.time_array([t1; t2]);
     else
       if ~isvector(start)

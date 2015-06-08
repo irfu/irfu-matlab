@@ -114,7 +114,7 @@ for j=1:numel(h)
             if ~strcmp(lab(ii),' ')
                 ax = axis(h(j));
 								if isa(xlabels,'TSeries')
-									xlabels = [xlabels.t.epochUnix xlabels.data];
+									xlabels = [xlabels.time.epochUnix xlabels.data];
 								end
                 mm = irf_resamp( xlabels, xcoord(ii));
                 for jj = 1:length(mm)

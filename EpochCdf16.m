@@ -24,7 +24,7 @@ classdef EpochCdf16 < GenericTimeArray
 				end
 				obj.epoch = inp(:); % column vector
 			elseif isa(inp,'char')
-				if GenericTimeArray.validate_utc_time_str(inp)
+				if GenericTimeArray.validate_utc(inp)
 					epochTmp = iso2epoch(inp);
 					obj.epoch = EpochCdf.epoch2cdfepoch(epochTmp);
 				else

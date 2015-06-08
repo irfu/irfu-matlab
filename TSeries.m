@@ -286,9 +286,6 @@ classdef TSeries
     function value = get.time(obj)
       value = obj.t_;
     end
-    function value = t(obj)
-      value = obj.t_;
-    end
    
     function value = get.tensorBasis(obj)
       value = [obj.BASIS{obj.tensorBasis_}...
@@ -361,17 +358,17 @@ classdef TSeries
       %access R component
       y = getComponent(obj,'r'); if isempty(y), error('cannot get R'), end
     end
-%    function y = t(obj)
+    function y = theta(obj)
       %access T(theta) component
-%      y = getComponent(obj,'t'); if isempty(y), error('cannot get T'), end
-%    end
-    function y = p(obj)
-      %access P(phi) component
-      y = getComponent(obj,'p'); if isempty(y), error('cannot get P'), end
+      y = getComponent(obj,'t'); if isempty(y), error('cannot get THETA'), end
     end
-    function y = l(obj)
+    function y = phi(obj)
+      %access P(phi) component
+      y = getComponent(obj,'p'); if isempty(y), error('cannot get PHI'), end
+    end
+    function y = lambda(obj)
       %access L(lambda) component
-      y = getComponent(obj,'l'); if isempty(y), error('cannot get L'), end
+      y = getComponent(obj,'l'); if isempty(y), error('cannot get LAMBDA'), end
     end
     
     function obj = set.data(obj,value)
