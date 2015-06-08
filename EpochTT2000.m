@@ -22,7 +22,7 @@ classdef EpochTT2000 < GenericTimeArray
         end
         obj.epoch = inp(:); % column vector
       elseif isa(inp,'char')
-        if ~GenericTimeArray.validate_utc_time_str(inp)
+        if ~GenericTimeArray.validate_utc(inp)
           error('irf:EpochUnix:EpochUnix:badInputs',...
             'UTC string input (char) must be in the form yyyy-mm-ddThh:mm:ss.mmmuuunnnZ')
         end

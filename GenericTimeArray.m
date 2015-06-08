@@ -13,7 +13,8 @@ classdef (Abstract) GenericTimeArray
 %     toEpochTT2000()
 % 
 %     Static:
-%     validate_utc_time_str()
+%     pad_utc()
+%     validate_utc()
 %     LeapSeconds()
   
 % ----------------------------------------------------------------------------
@@ -305,12 +306,12 @@ classdef (Abstract) GenericTimeArray
   end
   
   methods (Static)
-    function [ output_args ] = validate_utc_time_str( utc )
-      %verify_iso_time_str validate UTC string
+    function res = validate_utc( utc )
+      %VALIDATE_UTC validate UTC string
       %   validate UTC string : yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]'
       
       MAX_NUM_IDX = 29;
-      output_args = false;
+      res = false;
      
       if isempty(utc), return, end
       if ~ismatrix(utc), return, end
@@ -344,7 +345,7 @@ classdef (Abstract) GenericTimeArray
           any( utc(:,9)=='3' & ~(utc(:,10)=='0' | utc(:,10)=='1' ))
         return
       end
-      output_args = true;
+      res = true;
     end
     function utcNew = pad_utc( utc )
       %Add missing Z and zeros to comply with yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]

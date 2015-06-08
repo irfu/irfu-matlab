@@ -13,7 +13,7 @@ function utcNew = utc_validate_and_pad(utc)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-if ~GenericTimeArray.validate_utc_time_str(utc)
+if ~GenericTimeArray.validate_utc(utc)
   errStr = 'UTC must be a string: yyyy-mm-ddThh:mm:ss.[mmmuuunnnZ]';
   irf.log('critical',errStr), error(errStr)
 end
