@@ -306,6 +306,10 @@ classdef TSeries
       %         'rlp>xyz' - Spherical latitude to cartesian XYZ
       %         'xyz>rpz' - Cartesian XYZ to cylindrical
       %         'rpz>xyz' - Cylidrical to cartesian XYZ
+      %         'xyz>rtp' - Cartesian XYZ to spherical colatitude
+      %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
+      %         'rtp>rlp' - Spherical colatitude to spherical latitude
+      %         'rlp>rtp' - Spherical latitude to colatitude
       y = [];
       switch lower(flag)
         case 'xyz>rlp'
@@ -320,6 +324,20 @@ classdef TSeries
         case 'rpz>xyz'
           [x, y, z] = pol2cart(obj.p.data, obj.r.data, obj.z.data);
           y = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rtp'
+          [p, l, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          t = pi/2 - l;
+          y = TSeries(obj.time, [r, t, p], 'vec_rtp');
+        case 'rtp>xyz'
+          l = pi/2 - obj.t.data;
+          [x, y, z] = sph2cart(obj.p.data, l, obj.r.data);
+          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'rtp>rlp'
+          l = pi/2 - obj.t.data;
+          y = TSeries(obj.time, [obj.r.data, l, obj.p.data], 'vec_rlp');
+        case 'rlp>rtp'
+          t = pi/2 - obj.l.data;
+          y = TSeries(obj.time, [obj.r.data, t, obj.p.data], 'vec_rtp');
         otherwise
           errStr='Incorrect usage or conversion not yet implemented!';
           error(errStr);
