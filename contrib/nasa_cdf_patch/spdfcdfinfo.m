@@ -162,7 +162,7 @@ info.Variables = {};
 info.GlobalAttributes = [];
 info.VariableAttributes = [];
 info.LibVersion = '';
-info.PatchVersion = '3.6.0.0';
+info.PatchVersion = '3.6.0.4';
 
 if (nargin == 0) || (length(strtrim(filename)) == 0)
     % Only for library info
