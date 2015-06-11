@@ -1,16 +1,9 @@
-function [phase_out,fits] = c_phase(t,phase_2)
-%C_PHASE  Find spacecraft phase for given time vector
+function res = c_phase(time,phase_2)
+%C_PHASE  compute spin phase from PHASE_2
 %
-% [phase_out,fits] = c_phase(t,phase_2)
+% PHA = C_PHASE(TIME,PHASE_2)
 %
-% Find spacecraft phase for give time vector t
-%
-% Input:
-%       t - column vector with time in isdat epoch
-%       phase_2 - column vector [time phase_2]
-% Output:
-%       phase_out - column vector [t phase]
-%       fits - structure providing details of linear fits
+% See also: MMS_DEFATT_PHASE
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -21,148 +14,107 @@ function [phase_out,fits] = c_phase(t,phase_2)
 
 narginchk(2,2)
 
-if size(t,1)>1 && size(t,2)>1, error('t must be a vector'), end
-if size(phase_2,1)<2, error('not enough points in phase_2'), end
+%% Constants
+SPIN_PERIOD_MAX = 4.3;
+SPIN_PERIOD_MIN = 3.6;
+SPIN_PERIOD_NOMINAL = 4; % rpm
+DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
+SPIN_GAP_MAX = 900; % max gap in phase we tolerate
+MAX_SPIN_PERIOD_CHANGE = SPIN_PERIOD_NOMINAL*0.001;
+ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
 
-MAX_SPIN_PERIOD = 4.3; % Sane values for Cluster
-MIN_SPIN_PERIOD = 3.6;
-MAX_ERR_PHA = 0.5;     %  Max error in phase [deg] we tolerate
-MAX_SPINS_EXTRAP = 100;% Max number of spins we extrapolate the phase
+%% Prepare
+verify_input();
 
-t=t(:); % t should be column vector
-tRef = t(1);
-phase_out = [];
+t0 = phaInp(1,1); tPhase_2 = phaInp(:,1) - t0; targetTime = time - t0;
+tPhase_2(tPhase_2<targetTime(1)-DT_MAX|tPhase_2>targetTime(end)+DT_MAX)=[];
 
-% Sanity check
-badt=find(phase_2(:,1)<iso2epoch('2000-01-01T00:00:00Z'));
-if ~isempty(badt)
-	irf_log('proc',['Bad time ignored ' epoch2iso(phase_2(badt(1),1))])
-	phase_2(badt,:) = [];
-	clear badt;
-end
-
-% Check for gaps
-pos = 1; idxS = {};
-while pos < size(phase_2,1)
-  % Search for gaps
-  idx = pos:size(phase_2,1);
-  ii = find( diff(phase_2(idx,1)) > MAX_SPIN_PERIOD );
-  if isempty(ii), idxS = [idxS {pos:size(phase_2,1)}]; break, end %#ok<AGROW>
-  irf_log('proc',...
-      ['Gap in phase at ' epoch2iso(phase_2(idx(ii(1)),1),1)])
-  if idx(ii(1))==pos
-    irf_log('proc','throwing away 1 bad point'), phase_2(1,:) = [];
-    continue
+%% Main loop
+tStart = targetTime(1); tStep = targetTime(end) - tStart; 
+phaseOut = zeros(size(targetTime))*NaN; 
+spinPeriodLast = []; iLastOkPoint = []; spinPeriod = [];
+while tStart<targetTime(end)
+  tStop = tStart + tStep;
+  iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX+2;
+  tPhaTmp = tPhase_2(iPhaTmp);
+  if length(tPhaTmp)<=1, tStart = tStop; continue; end
+  
+  if isempty(iLastOkPoint), iOutTmp = targetTime <= tStop;
+  else iOutTmp = targetTime<=tStop & targetTime>targetTime(iLastOkPoint);
   end
-  idxS = [idxS {pos:idx(ii(1))}]; pos = idx(ii(1))+1; %#ok<AGROW>
-end
-
-nChunks = length(idxS); fits = cell(nChunks,1); iPrevGoodChunk = 0;
-for iChunk=1:nChunks
-  idx = idxS{iChunk};
-  if length(idx)==2 && abs(diff(phase_2(idx,2)))==360
-    irf_log('proc',['Bad point at ' epoch2iso(phase_2(idx(1),1))])
-    continue
+  if ~any(iOutTmp), 
+    tStart = tStop; tStep = targetTime(end) - tStart; 
+    continue; 
   end
-  lFit = fit_spin(phase_2(idx,:)); fits{iChunk} = lFit;
-  if isempty(lFit.spinPeriod) || ...
-      lFit.errAngle>MAX_ERR_PHA || lFit.errAngle>MAX_ERR_PHA
-    irf_log('proc',...
-      ['Spin rate changes at ' irf_disp_iso_range(phase_2(idx([1 end]),1)')])
-    if ~isempty(lFit.errAngle)
+  
+  %XXX TODO: add handling of gaps
+  gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
+  if ~isempty(gaps), error('gaps'), end
+  
+  comp_spin_rate()
+  if ~flagSpinRateStable || ~isempty(spinPeriodLast) &&...
+      abs(spinPeriod-spinPeriodLast) > MAX_SPIN_PERIOD_CHANGE
+    if tStep > SPIN_PERIOD_MAX, tStep = tStep/2; continue % Reduce the time step
+    else
+      irf_log('proc','Do not know how to proceed')
+      error('Do not know how to proceed')
+    end  
+  else % All good
+    polyfit_phase()
+  end
+  iLastOkPoint = find(iOutTmp,1,'last'); 
+  tStart = tStop; tStep = targetTime(end) - tStart;
+end % Main loop
+res = [time phaseOut];
+
+%% Help functions
+  function comp_spin_rate()
+    flagSpinRateStable = 0;
+    while true
+      comp_spin_period()
+      comp_angle_error()
+      if median(angleError)<ERR_PHA_MAX, flagSpinRateStable = 1; return, end
       irf_log('proc',...
-        sprintf('Phase errors > %.1f deg. err=%.1f deg, meanErr=%.1f deg',...
-        MAX_ERR_PHA,lFit.errAngle,lFit.errAngleMean))
+        sprintf('Median(angleError): %.4f \n',median(angleError)))
+      find_outliers()
+      if isempty(iOut), return, end
+      tPhaTmp(iOut) = [];
+      if length(tPhaTmp)<2, return, end
     end
-    irf_log('proc','Using simple interpolation')
-    tt = t(t>=phase_2(idx(1),1) & t<=phase_2(idx(end),1));
-    if ~isempty(tt)
-      phase_out = [phase_out; tt interp1q(phase_2(idx,1),phase_2(idx,2),tt)]; %#ok<AGROW>
+    function find_outliers()
+      iOut = find(abs(angleError-median(angleError))>3*std(angleError));
+      irf_log('proc',sprintf('Found %d outliers [TOTAL]',length(iOut)))
+      iiIn = find(diff(diff(iOut))==0);
+      iOut = setdiff(iOut,iOut(unique([iiIn  iiIn+1 iiIn+2])));
+      irf_log('proc',...
+        sprintf('Found %d outliers [SINGLE and DOUBLE]',length(iOut)))
     end
-    continue
-  end
-  tStart = phase_2(idx(1),1);
-  if iPrevGoodChunk==0
-    tStart = tStart-MAX_SPINS_EXTRAP*lFit.spinPeriod;
-  else
-    % If the phase did not change, we extrapolate via the data gap
-    if abs(lFit.spinPeriod-fits{iPrevGoodChunk}.spinPeriod)/4*360<MAX_ERR_PHA && ...
-        abs(mod(polyval(lFit.phcCoef,phase_out(end,1)-tRef)*180/pi,360)-...
-        phase_out(end,2))<MAX_ERR_PHA
-      tStart = phase_2(idxS{iPrevGoodChunk}(end),1);
-    end
-  end
-  tEnd = phase_2(idx(end),1);
-  if iChunk==nChunks, tEnd = tEnd + MAX_SPINS_EXTRAP*lFit.spinPeriod; end 
-  tt = t(t>=tStart & t<tEnd);
-  if isempty(tt), continue, end
-  phase_out = [phase_out; tt mod(polyval(lFit.phcCoef,tt-tRef)*180/pi,360)];  %#ok<AGROW>
-  iPrevGoodChunk = iChunk;
-end
-
-% Sanity check
-if ~isempty(phase_out())
-  phase_unwrapped = unwrap(phase_out(:,2)/180*pi);
-  SpinRate = diff(phase_unwrapped)./diff(phase_out(:,1));
-  ii = find( diff(phase_out(:,1))< 0.95*2*pi/median(SpinRate) &...
-    (SpinRate<2*pi/MAX_SPIN_PERIOD | SpinRate>2*pi/MIN_SPIN_PERIOD) );
-  if ~isempty(ii)
-    ii_jump = find(diff(ii')>1); ii_jump = [1 ii_jump];
-    for i=1:length(ii_jump)
-      if i==length(ii_jump), kk = [ii(ii_jump(i)) ii(end)];
-      else kk = [ii(ii_jump(i)) ii(ii_jump(i+1))-1];
-      end
-      if kk(1,2)==0, kk(1,2)=1; end;
-      irf_log('proc',['Bad phase at ' irf_disp_iso_range(phase_out(kk,1)',1)])
-    end
-    phase_out(ii,:) = [];
-  end
-end
-
-n_out = length(t) - length(phase_out);
-if n_out>0, irf_log('proc',['throwing away ' num2str(n_out) ' points']), end
-
-  function res = fit_spin(phase)
-    % res = fit_spin(PHASE_2)
-    %
-    % Compute Cluster spin period from PHASE_2 using linear fit
-    res = struct('t',phase([1 end],1),'spinPeriod',[],...
-      'errAngle',[],'errAngleMean',[],'phcCoef',[],'tRef',tRef);   
-    ph = phase(:,2); tp = phase(:,1) - tRef;
-    
-    tTmp = (ceil(phase(1,1)*2):fix(phase(end,1)*2))'/2 - tRef; % new time with 0.5 sec step
-    while 1
-      tTmp(tTmp<tp(1)) = []; % Avoid NaNs
-      if isempty(tTmp), return, end
-      pTmp = interp1q(tp,ph,tTmp);
-      phc = unwrap(pTmp/180*pi); res.phcCoef = polyfit(tTmp,phc,1);
-      if isnan(res.phcCoef(1))
-        irf_log('proc','Cannot determine spin period!'), return
-      end
-      diffangle = mod(ph - polyval(res.phcCoef,tp)*180/pi,360);
-      diffangle = abs(diffangle);
-      diffangle = min([diffangle';360-diffangle']);
-      % Throw away erroneous points, we suppose these correspond to a single
-      % error in sun pulse
-      iJump = find(diffangle>5);
-      if ~isempty(iJump) && length(iJump)<10
-        if all(diff(iJump)==1),
-          irf_log('proc', sprintf('Throwing away %d erroneous points at %s',...
-            length(iJump),epoch2iso(tp(iJump(1))+tRef)))
-        else
-          for iOut=1:length(iJump)
-            irf_log('proc', sprintf('Throwing away 1 erroneous points at %s',...
-            epoch2iso(tp(iJump(iOut))+tRef)))
-          end
-        end
-        ph(iJump) = []; tp(iJump) = [];
-      else break % exit loop
+    function comp_spin_period()
+      dd = diff(tPhaTmp); med = median(dd);
+      dd(abs(dd-med)>0.01*med) = []; % remove outliers
+      spinPeriod = mean(dd);
+      if isnan(spinPeriod) || ...
+          spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
+        errS = 'Cannot determine spin period!';
+        irf.log('critical',errS), error(errS)
       end
     end
-    res.errAngleMean = mean(diffangle); res.errAngle = std(diffangle);
-    res.spinPeriod = 2*pi/res.phcCoef(1);
-  end % fit_spin
+    function comp_angle_error()
+      angleError = mod(360.0*(tPhaTmp-tPhaTmp(1))/spinPeriod,360);
+      angleError = abs(angleError);
+      angleError = min([angleError';360-angleError']);
+    end
+  end
+  function polyfit_phase()
+    phaseOut(iOutTmp) = ...
+      mod((targetTime(iOutTmp)-tPhaTmp(1))/spinPeriod,1)*360;
+    spinPeriodLast = spinPeriod;
+  end
+  function verify_input()
+    if size(time,1)>1 && size(time,2)>1, error('t must be a vector'), end
+    time = time(:);
+    if size(phase_2,1)<2, error('not enough points in phase_2'), end
+    phaInp = phase_2(phase_2(:,2)==0,:);
+    if isempty(phaInp), error('not enough points in phase_2'), end
+  end
 end
-
-
-
