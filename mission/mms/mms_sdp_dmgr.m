@@ -24,11 +24,11 @@ classdef mms_sdp_dmgr < handle
     spinfits = [];    % comp spinfits
   end
   properties (SetAccess = immutable)
-    CONST = [];
-    samplerate = [];
-    procId = [];
-    tmMode = [];
-    scId = [];
+    CONST = [];       % constants
+    samplerate = [];  % sampling rate
+    procId = [];      % process ID
+    tmMode = [];      % telemetry mode
+    scId = [];        % spacecraft ID
   end
   
   methods
