@@ -842,7 +842,12 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad ADC_OFF input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
+      deltaOff = DATAC.delta_off;
+      if mms_is_error(deltaOff)
+        errStr='Bad DELTA_OFF input, cannot proceed.';
+        irf.log('critical',errStr); error(errStr);
+      end
+ 
       sdpProbes = fieldnames(Adc_off); % default {'e12', 'e34'}
       Etmp = struct('e12',Dce.e12.data,'e34',Dce.e34.data);
       for iProbe=1:numel(sdpProbes)
@@ -854,7 +859,7 @@ classdef mms_sdp_dmgr < handle
       bitmask = uint16(bitor(Dce.e12.bitmask,Dce.e34.bitmask));
       Etmp.e12 = mask_bits(Etmp.e12, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
-      dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data);
+      dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
       % FIXME: apply DSL offsets here
       DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE Dce.e56.data],...
         'bitmask',bitmask);
@@ -1133,6 +1138,17 @@ classdef mms_sdp_dmgr < handle
         'sdev', Sdev, 'iter', Iter, 'nBad', NBad);
       
       res = DATAC.spinfits;
+    end
+    
+    function reset_prop(DATAC,propName,newVal)
+      if nargin<3, newVal = []; end
+      if isprop(DATAC,propName)
+        irf.log('warning',['Resetting :' propName])
+        DATAC.(propName) = newVal;
+      else
+        errS = ['No such property :' propName];
+        irf.log('critical',errS), error(errS)
+      end
     end
     
   end % public Methods
