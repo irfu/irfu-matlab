@@ -9,8 +9,9 @@ classdef (Abstract) GenericTimeArray
 %     start() first point of the time array
 %     stop() last point of the time array
 %     tlim() Returns index and records within specified time interval
-%     toEpochUnix()
-%     toEpochTT2000()
+%     epochUnix()
+%     tts()
+%     ttns()
 % 
 %     Static:
 %     pad_utc()

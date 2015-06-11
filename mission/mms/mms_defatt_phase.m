@@ -7,9 +7,9 @@ function res = mms_defatt_phase(defatt,time)
 
 %% Constants
 global MMS_CONST, if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
-if time(1) > EpochTT2000('2015-06-18T00:00:00.000000Z').epoch
+if time(1) > EpochTT('2015-06-18T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max;
-elseif time(1) > EpochTT2000('2015-01-01T00:00:00.000000Z').epoch
+elseif time(1) > EpochTT('2015-01-01T00:00:00.000000Z').epoch
   SPIN_RATE_MAX = MMS_CONST.Spinrate.max_comm; 
 else SPIN_RATE_MAX = MMS_CONST.Spinrate.max_deploy;
 end
@@ -45,7 +45,7 @@ while tStart<=targetTime(end)
   if ~any(iOutTmp), tStart = tStop; continue; end
   
   %XXX TODO: add handling of gaps
-  gaps = find(diff(tPhaTmp)>60/SPIN_RATE_MAX);
+  gaps = find(diff(tPhaTmp)>60/SPIN_RATE_MAX, 1);
   if ~isempty(gaps), error('gaps'), end
   
   comp_spin_rate()
@@ -60,7 +60,7 @@ while tStart<=targetTime(end)
   end
   iLastOkPoint = find(iOutTmp,1,'last'); tStep = TSTEP_MAX; tStart = tStop;
 end % Main loop
-res = TSeries(EpochTT2000(time),phaseOut);
+res = TSeries(EpochTT(time),phaseOut);
 
 %% Help functions
   function comp_spin_rate()

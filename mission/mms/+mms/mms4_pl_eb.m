@@ -4,8 +4,8 @@ tint = irf.tint('2015-05-15T00:40:00Z/2015-05-15T01:10:00Z');
 
 %% Load data
 load /data/mms/irfu/mmsR.mat
-epoTmp = EpochTT2000(R.time);
-gsmR1 = [epoTmp.toEpochUnix().epoch R.gsmR1];
+epoTmp = EpochTT(R.time);
+gsmR1 = [epoTmp.epochUnix R.gsmR1];
 
 %E1 = mms.db_get_ts('mms1_edp_comm_ql_dce2d','mms1_edp_dce_xyz_dsl',tint);
 %P1 = mms.db_get_ts('mms1_edp_comm_l2_scpot','mms1_edp_psp',tint);
@@ -23,9 +23,9 @@ fprintf('Data loaded\n');
 
 %% Plot
 % define Cluster colors
-%mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
+mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 % Official MMS colors
-mmsColors=[0 0 0; .8 .4 0 ; 0 0.6 0.5 ; 0.35 0.7 .9];
+%mmsColors=[0 0 0; .8 .4 0 ; 0 0.6 0.5 ; 0.35 0.7 .9];
 
 h = irf_plot(6,'newfigure');
 
@@ -53,8 +53,8 @@ hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{E1.y,E2.y,E3.y,E4.y},'comp')
 ylabel(hca,'Ey [mV/m]')
 
-irf_zoom(h,'x',[tint.start.toEpochUnix().epoch tint.stop.toEpochUnix().epoch])
+irf_zoom(h,'x',tint)
 irf_plot_axis_align(h)
 add_position(h(end),gsmR1)
 xlabel(h(end),'')
-title(h(1),tint.start.toUtc())
+title(h(1),tint.start.utc)

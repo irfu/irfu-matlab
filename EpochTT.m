@@ -1,10 +1,10 @@
-classdef EpochTT2000 < GenericTimeArray
-  %EpochTT2000 Class representing T2000 epoch, nanoseconds since 2000.
+classdef EpochTT < GenericTimeArray
+  %EpochTT Class representing TT epoch (CDF TT2000), nanoseconds since 2000.
   %
-	% EpochTT2000(t) - initialize class, where t can be:
-  %                   - vector of seconds (double)
-	%                   - vector of integer number (int64) of nanoseconds as TT2000
-	%                   - UTC string array
+	% EpochTT(t) - initialize class, where t can be:
+  %             - vector of seconds (double)
+	%             - vector of integer number (int64) of nanoseconds as TT2000
+	%             - UTC string array
 	
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -14,17 +14,17 @@ classdef EpochTT2000 < GenericTimeArray
 % ----------------------------------------------------------------------------
 
   methods
-    function obj = EpochTT2000(inp)
+    function obj = EpochTT(inp)
       if nargin==0, return, end
       if isa(inp,'double'),
         if min(size(inp))>1
-          error('irf:EpochTT2000:EpochTT:badInputs',...
+          error('irf:EpochTT:EpochTT:badInputs',...
             'input must be a column or row vector')
         end
         obj.epoch = int64(inp(:)*1e9); % column vector
       elseif isa(inp,'int64'),
         if min(size(inp))>1
-          error('irf:EpochTT2000:EpochTT2000:badInputs',...
+          error('irf:EpochTT:EpochTT:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
         end
         obj.epoch = inp(:); % column vector
@@ -35,10 +35,10 @@ classdef EpochTT2000 < GenericTimeArray
         end
 				obj.epoch = GenericTimeArray.utc2ttns(inp);
 			elseif isa(inp,'GenericTimeArray')
-				if isa(inp,'EpochTT2000'),
+				if isa(inp,'EpochTT'),
 					obj = inp;
 				else
-					obj = EpochTT2000(inp.ttns);
+					obj = EpochTT(inp.ttns);
 				end
       else
         error('irf:EpochUnix:EpochUnix:badInputs',...
@@ -59,12 +59,12 @@ classdef EpochTT2000 < GenericTimeArray
       end
     end
     function outObj = colon(obj,varargin)
-      if nargin == 2 && isa(varargin{1},'EpochTT2000')
+      if nargin == 2 && isa(varargin{1},'EpochTT')
         tns = obj.start.ttns:int64(1e9):varargin{1}.stop.ttns;
-        outObj = EpochTT2000(tns);
-      elseif nargin == 3 && isa(varargin{2},'EpochTT2000') && isnumeric(varargin{1})
+        outObj = EpochTT(tns);
+      elseif nargin == 3 && isa(varargin{2},'EpochTT') && isnumeric(varargin{1})
         tns = obj.start.ttns:int64(varargin{1}*1e9):varargin{2}.stop.ttns;
-        outObj = EpochTT2000(tns);
+        outObj = EpochTT(tns);
       end
     end
   end

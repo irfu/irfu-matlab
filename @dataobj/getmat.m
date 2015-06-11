@@ -37,8 +37,7 @@ if dim <=1
     plot_data = double(data.data)';
     if isfield(dep,'DEPEND_O'), % add time column as first column
       if strcmpi(dep.DEPEND_O.type,'tt2000')
-        epochUnix = toEpochUnix(EpochTT2000(dep.DEPEND_O.data));
-        timeLine = epochUnix.epoch;
+        timeLine = EpochTT(dep.DEPEND_O.data).epochUnix;
       else timeLine = dep.DEPEND_O.data;
       end
       res = [timeLine plot_data'];
@@ -72,8 +71,7 @@ else
     % Obtain time DELTA_PLUS and  DELTA_MINUS if given
     % Also do necessary tome conversion if needed 
     if strcmpi(dep.DEPEND_O.type,'tt2000')
-      epochUnix = toEpochUnix(EpochTT2000(dep.DEPEND_O.data));
-      timeLine = epochUnix.epoch; factor = 1e9;
+      timeLine = EpochTT(dep.DEPEND_O.data).epochUnix; factor = 1e9;
     else timeLine = dep.DEPEND_O.data; factor = 1;
     end
     timevar=getv(dobj,dobj.VariableAttributes.DEPEND_0{1,2});

@@ -109,13 +109,7 @@ if strcmpi(c,'x'),
 	elseif ischar(interval) % assume interval is specified in ISO format
 		interval = irf_time(interval,'utc>tint');
 	elseif isa(interval,'GenericTimeArray')
-		if length(interval) == 2,
-			interval = [interval.start.epochUnix interval.stop.epochUnix]; 
-		else
-			errStr = 'zooming interval in wrong format';
-			irf.log('critical',errStr);
-			error('irf_zoom:time_zoom:wrong_format',errStr);
-		end
+    interval = [interval.start.epochUnix interval.stop.epochUnix];
 	else
 		errStr = 'zooming interval in wrong format';
 		irf.log('critical',errStr);

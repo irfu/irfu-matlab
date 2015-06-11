@@ -31,8 +31,8 @@ irf.log('off')
 % showing exponentially growing wave and plot. It is good idead to get used 
 % to using axis handles (variable 'h' in example). 
 
-T   = EpochTT2000('2002-03-04T09:30:00Z'):.2...
-     :EpochTT2000('2002-03-04T10:30:00Z');      % define time line as EpochTT2000 object
+T   = EpochTT('2002-03-04T09:30:00Z'):.2...
+     :EpochTT('2002-03-04T10:30:00Z');      % define time line as EpochTT object
 t   = T.tts - T.tts(1);                     % define relative time in s from start
 x   = exp(0.001*(t)).*sin(2*pi*t/180);      % define function x(t)=exp(0.001(t-to))*sin(t-to)
 TS1 = irf.ts_scalar(T,x);                   % define clalar TSeries object

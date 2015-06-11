@@ -1,8 +1,8 @@
-function TaTT2000 = time_array(start,dt)
-%TIME_ARRAY  Factory of time arrays (EpochTT2000)
+function TaTT = time_array(start,dt)
+%TIME_ARRAY  Factory of time arrays (EpochTT)
 %
-% TaTT2000 = irf.time_array(start,dt)
-% TaTT2000 = irf.time_array(times)
+% TaTT = irf.time_array(start,dt)
+% TaTT = irf.time_array(times)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -14,24 +14,23 @@ function TaTT2000 = time_array(start,dt)
 narginchk(1,2)
 
 if isa(start,'GenericTimeArray')
-  Epoch0 = start.toEpochTT2000();
+  %
 elseif isa(start,'char')
   if nargin==2 && ~isvector(start) || ~ismatrix(start)
     errStr = 'START must be a string yyyy-mm-ddThh:mm:ss[.mmmuuunnnZ]';
     irf.log('critical', errStr), error(errStr)
   end
-  Epoch0 = EpochTT2000(start);
-elseif isa(start,'int64') && ...
+  %
+elseif (isa(start,'double') || isa(start,'int64')) && ...
     ((nargin==2 && isscalar(start)) || isvector(start))
-  Epoch0 = EpochTT2000(start);
-elseif isa(start,'double') && ...
-    ((nargin==2 && isscalar(start)) || isvector(start))
-  irf.log('warning','Treating input as UNIX epoch');
-  EpochTmp = EpochUnix(start);
-  Epoch0 = EpochTmp.toEpochTT2000();
+  %
+else
+  errStr = 'Unrecoglized input';
+  irf.log('critical', errStr), error(errStr)
 end
 
-if nargin == 1, TaTT2000 = Epoch0; return, end
+Epoch0 = EpochTT(start);
+if nargin == 1, TaTT = Epoch0; return, end
 
 if ~isvector(dt) || ~isnumeric(dt)
   errStr = 'DT must be a numeric vector';
@@ -39,8 +38,8 @@ if ~isvector(dt) || ~isnumeric(dt)
 end
 
 if isa(dt,'int64')
-  TaTT2000 = EpochTT2000(Epoch0.epoch + dt);
+  TaTT = EpochTT(Epoch0.epoch + dt);
 elseif isa(dt,'double')
-  TaTT2000 = EpochTT2000(Epoch0.epoch + int64(dt*1e9));
+  TaTT = EpochTT(Epoch0.epoch + int64(dt*1e9));
 end
   

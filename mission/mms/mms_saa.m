@@ -7,10 +7,10 @@ function res = mms_saa(defatt)
 %
 %  See also: MMS_LOAD_ANCILLARY
 
-tt2000 = EpochTT2000(defatt.time);
+tt = EpochTT(defatt.time);
 [x,y,z] = sph2cart(defatt.zra*pi/180,defatt.zdec*pi/180,1);
 out = irf.geocentric_coordinate_transformation(...
-  [tt2000.toEpochUnix().epoch x y z],'gei>gse');
+  [tt.epochUnix x y z],'gei>gse');
 
 saa = atand(out(:,4)./out(:,2));
-res = TSeries(tt2000,saa);
+res = TSeries(tt,saa);

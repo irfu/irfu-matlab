@@ -31,7 +31,7 @@ dbList = mms_local_file_db(dataPathRoot);
 % and stop time midnight the next day.
 tStart = [DayOfInterest,'T00:00:00.000000000Z'];
 tStop  = [DayOfInterest(1:8),num2str(DD+1,'%02i'),'T00:00:00.000000000Z'];
-tint = EpochTT2000([tStart; tStop]);
+tint = irf.tint(tStart,tStop);
 
 %% Identify and load all HK_10E files.
 SCid = {'mms1', 'mms2', 'mms3', 'mms4'};

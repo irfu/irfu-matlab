@@ -65,7 +65,7 @@ switch scId
 end
 if nargin == 1, return, end
 
-if isa(tInp,'GenericTimeArray'), t = tInp.toEpochTT2000().epoch;
+if isa(tInp,'GenericTimeArray'), t = EpochTT(tInp).epoch;
 elseif isa(tInp,'int64'), t = tInp;
 else
   errStr = 'T must be tt2000_ns (int64) or GenericTimeArray';
@@ -98,7 +98,7 @@ end
   function ns = get_tt(vec)
     % Convert date to tt2000_ns
     ttns = irf_time(vec,'vector6>ttns');
-    ns = EpochTT2000(ttns);
+    ns = EpochTT(ttns);
   end
 end
 

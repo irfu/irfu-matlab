@@ -59,8 +59,8 @@ spinfits = mms_sdp_datamanager('spinfits');
 delta_off = mms_sdp_datamanager('delta_off');
 dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
 
-epochE = EpochTT2000(dce.time).toEpochUnix().epoch;
-epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
+epochE = EpochTT(dce.time).epochUnix;
+epochS = EpochTT(spinfits.time).epochUnix;
 end
 
 %% Test QL - DMNGR
@@ -123,12 +123,13 @@ hca = irf_panel('V');
 irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
-irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
+irf_plot_ylabels_align(h), irf_zoom(h,'x',DceDSL.time)
 
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
   double(spinfits.sfit.e34(:,2:3));
-epochS = EpochTT2000(spinfits.time).toEpochUnix().epoch;
+epochS = EpochTT(spinfits.time).epochUnix;
+epochE = EpochTT(dce.time).epochUnix;
 
 figure(73), clf
 h = irf_plot(3);
@@ -200,4 +201,4 @@ hca = irf_panel('V');
 irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
-irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
+irf_plot_ylabels_align(h), irf_zoom(h,'x',DceDSL.time)

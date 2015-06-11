@@ -5,7 +5,7 @@ function TS = ts_vec_xy(time,data)
 %
 % Create TSeries object - 2D vector [X,Y]
 
-if ~isa(time,'GenericTimeArray'), epoch = EpochTT2000(time);
+if ~isa(time,'GenericTimeArray'), epoch = EpochTT(time);
 else epoch = time;
 end
 

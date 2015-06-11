@@ -28,11 +28,11 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
       
       % Plot
-      irf_plot([EpochTT2000(timeEpochTT200Req).toEpochUnix().epoch e12 e34])
+      irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34])
       
       % Check with despin
       dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data);
-      irf_plot([EpochTT2000(timeEpochTT200Req).toEpochUnix().epoch dE])
+      irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
       legend('Ex','Ey')
       
       % Compute spinfit for E12
@@ -125,11 +125,11 @@ classdef test_mms_spinfit < matlab.unittest.TestCase
       e34 = Ex*cos(phaseRad34) + Ey*sin(phaseRad34) + adcOff_34;
       
       % Plot
-      %irf_plot([EpochTT2000(timeEpochTT200Req).toEpochUnix().epoch e12 e34])
+      %irf_plot([EpochTT(timeEpochTT200Req).epochUnix e12 e34])
       
       % Check with despin
       %dE = mms_sdp_despin(e12-adcOff_12,e34-adcOff_34,phaseComputed.data);
-      %irf_plot([EpochTT2000(timeEpochTT200Req).toEpochUnix().epoch dE])
+      %irf_plot([EpochTT(timeEpochTT200Req).epochUnix dE])
       %legend('Ex','Ey')
       
       % Compute spinfit for E12

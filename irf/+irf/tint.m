@@ -1,10 +1,10 @@
-function TintTT2000 = tint(start,stop)
-%TINT  Factory of time intervals (EpochTT2000)
+function TintTT = tint(start,stop)
+%IRF.TINT  Factory of time intervals (EpochTT)
 %
-%  TintTT2000 = tint(start,stop)
-%  TintTT2000 = tint('utc/utc')
-%  TintTT2000 = tint(start, duration_sec_double)
-%  TintTT2000 = tint(start, duration_ns_int64)
+%  TintTT2000 = irf.tint(start,stop)
+%  TintTT2000 = irf.tint('utc/utc')
+%  TintTT2000 = irf.tint(start, duration_sec_double)
+%  TintTT2000 = irf.tint(start, duration_ns_int64)
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
@@ -25,13 +25,13 @@ switch nargin
       if isempty(ii), irf.log('critical',errStr), error(errStr), end
       t1 = GenericTimeArray.validate_and_pad_utc(start(:,1:ii(1)-1));
       t2 = GenericTimeArray.validate_and_pad_utc(start(:,ii(1)+1:end));
-      TintTT2000 = irf.time_array([t1; t2]);
+      TintTT = irf.time_array([t1; t2]);
     else
       if ~isvector(start)
         errStr = 'Expecting vector: [START STOP]';
         irf.log('critical',errStr), error(errStr)
       end
-      TintTT2000 = irf.time_array(start([1 end]));
+      TintTT = irf.time_array(start([1 end]));
     end
   case 2
     if ischar(start) && ischar(stop)
@@ -39,16 +39,16 @@ switch nargin
         errStr = 'Expecting UTC string: yyyy-mm-ddThh:mm:ss[.mmmuuunnnZ]';
         irf.log('critical',errStr), error(errStr)
       end
-      TintTT2000 = irf.time_array([start; stop]);
+      TintTT = irf.time_array([start; stop]);
     elseif (ischar(start)||isa(start,'GenericTimeArray')) && isnumeric(stop)
-      TintTT2000 = irf.time_array(start, [0 stop]);
+      TintTT = irf.time_array(start, [0 stop]);
     else
-      TintTT2000 = irf.time_array([start; stop]);
+      TintTT = irf.time_array([start; stop]);
     end
   otherwise % should not be here
 end
 
-if TintTT2000(2) <= TintTT2000(1),
+if TintTT(2) <= TintTT(1),
   errStr = 'TINT has negative or zero duration';
   irf.log('critical',errStr), error(errStr)
 end

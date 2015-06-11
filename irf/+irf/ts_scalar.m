@@ -5,7 +5,7 @@ function TS = ts_scalar(time,data)
 %
 % Create TSeries object - scalar
 
-if ~isa(time,'GenericTimeArray'), epoch = EpochTT2000(time);
+if ~isa(time,'GenericTimeArray'), epoch = EpochTT(time);
 else epoch = time;
 end
 

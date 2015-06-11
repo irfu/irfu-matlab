@@ -25,7 +25,7 @@ else irf.log('warning','fill value is character: discarding')
 end
 
 if strcmpi(data.DEPEND_0.type,'tt2000')
-  Time = EpochTT2000(data.DEPEND_0.data);
+  Time = EpochTT(data.DEPEND_0.data);
 else
   Time = EpochUnix(data.DEPEND_0.data);
 end

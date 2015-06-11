@@ -23,7 +23,7 @@ classdef EpochUnix < GenericTimeArray
 				obj.epoch = inp;
       elseif isa(inp,'int64'),
         if min(size(inp))>1
-          error('irf:EpochUnix:EpochTT2000:badInputs',...
+          error('irf:EpochUnix:EpochUnix:badInputs',...
             'int64 input (nanoseconds since 2000) must be a columt or row vector')
         end
         obj.epoch = EpochUnix.from_ttns(inp(:)); % column vector

@@ -98,7 +98,7 @@ classdef mms_local_file_db < mms_file_db
               if length(out) == 19, sss = [sss out(10:17) '.000000000Z']; % ie. predatt (time string end with "hh:mm:ss\n") add remaining .mmmuuunnnZ
               else sss = [sss out(10:21) '000000Z']; % defatt, depeph etc (time string end with "hh:mm:ss.mmm\n" add remaining uuunnnZ
               end
-              epoch = EpochTT2000(sss);
+              epoch = EpochTT(sss);
             end
           end % ADD_SS
         end % ADD2LIST
@@ -230,8 +230,8 @@ classdef mms_local_file_db < mms_file_db
           data = spdfcdfread([entry.path filesep entry.name],'Variables',...
             info.Variables(iVar,1),'CombineRecords',true,'KeepEpochAsIs',true);
           if isempty(data), entry = []; return, end
-          entry.start = EpochTT2000(data(1));
-          entry.stop = EpochTT2000(data(end));
+          entry.start = EpochTT(data(1));
+          entry.stop = EpochTT(data(end));
         end % ADD_SS
       end % ADD2LIST
     end % LIST_FILES

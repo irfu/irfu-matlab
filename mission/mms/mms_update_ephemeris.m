@@ -29,7 +29,7 @@ for mmsId = 1:4
     GeiR = irf_resamp([double(Gei.time-epoch0)*1e-9 Gei.(v)],...
       double(newTime-epoch0)*1e-9);
     
-    tTmp = GeiR(:,1)+EpochTT2000(epoch0).toEpochUnix().epoch;
+    tTmp = GeiR(:,1)+EpochTT(epoch0).epochUnix;
     gse = irf.geocentric_coordinate_transformation(...
       [tTmp GeiR(:,2:4)],'gei>gse');
     

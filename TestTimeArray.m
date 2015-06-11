@@ -9,7 +9,7 @@ classdef TestTimeArray < matlab.unittest.TestCase
 % ----------------------------------------------------------------------------
 
   properties (TestParameter)
-    class = {'EpochUnix','EpochTT2000','EpochCdf','EpochCdf16'};
+    class = {'EpochUnix','EpochTT','EpochCdf','EpochCdf16'};
     utc = {'1970-01-01T00:00:00.000000Z',...
       '1998-07-17T12:00:00.123456789Z',...
       '2002-03-04T11:59:59.999999999Z',...
@@ -29,8 +29,8 @@ classdef TestTimeArray < matlab.unittest.TestCase
       t = EpochUnix(ttns);
       testCase.verifyEqual(t.epoch, unixEpoch)
     end
-    function testEpochTT2000ConstructorFromUtc(testCase,utc,ttns)
-      t = EpochTT2000(utc);
+    function testEpochTTConstructorFromUtc(testCase,utc,ttns)
+      t = EpochTT(utc);
       testCase.verifyEqual(t.epoch, ttns)
     end
   end
