@@ -19,7 +19,7 @@ SPIN_PERIOD_MAX = 4.3;
 SPIN_PERIOD_MIN = 3.6;
 SPIN_PERIOD_NOMINAL = 4; % rpm
 DT_MAX = 2*SPIN_PERIOD_MAX; % allow extrapolation for max DT_MAX seconds
-SPIN_GAP_MAX = 300; % max gap in phase we tolerate
+SPIN_GAP_MAX = 900; % max gap in phase we tolerate
 MAX_SPIN_PERIOD_CHANGE = SPIN_PERIOD_NOMINAL*0.001;
 ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
 
@@ -35,7 +35,7 @@ phaseOut = zeros(size(targetTime))*NaN;
 spinPeriodLast = []; iLastOkPoint = []; spinPeriod = [];
 while tStart<targetTime(end)
   tStop = tStart + tStep;
-  iPhaTmp = tPhase_2>=tStart-DT_MAX & tPhase_2<tStop+DT_MAX;
+  iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX+2;
   tPhaTmp = tPhase_2(iPhaTmp);
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
   
@@ -69,24 +69,45 @@ res = [time phaseOut];
 
 %% Help functions
   function comp_spin_rate()
-    flagSpinRateStable = 1;
-    dd = diff(tPhaTmp); med = median(dd); 
-    dd(abs(dd-med)>0.01*med) = []; % remove outliers
-    spinPeriod = mean(dd);
-    if isnan(spinPeriod) || ...
-        spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
-      errS = 'Cannot determine spin period!';
-      irf.log('critical',errS), error(errS)
+    flagSpinRateStable = 0;
+    while true
+      comp_spin_period()
+      comp_angle_error()
+      if median(angleError)<ERR_PHA_MAX, flagSpinRateStable = 1; return, end
+      irf_log('proc',...
+        sprintf('Median(angleError): %.4f \n',median(angleError)))
+      find_outliers()
+      if isempty(iOut), return, end
+      tPhaTmp(iOut) = [];
+      if length(tPhaTmp)<2, return, end
     end
-    diffangle = mod(360.0*tPhaTmp/spinPeriod,360);
-    diffangle = abs(diffangle);
-    diffangle = min([diffangle';360-diffangle']);
-    if median(diffangle)>ERR_PHA_MAX, flagSpinRateStable = 0; 
-      fprintf('Median diff: %.4f \n',median(diffangle)), 
+    function find_outliers()
+      iOut = find(abs(angleError-median(angleError))>3*std(angleError));
+      irf_log('proc',sprintf('Found %d outliers [TOTAL]',length(iOut)))
+      iiIn = find(diff(diff(iOut))==0);
+      iOut = setdiff(iOut,iOut(unique([iiIn  iiIn+1 iiIn+2])));
+      irf_log('proc',...
+        sprintf('Found %d outliers [SINGLE and DOUBLE]',length(iOut)))
+    end
+    function comp_spin_period()
+      dd = diff(tPhaTmp); med = median(dd);
+      dd(abs(dd-med)>0.01*med) = []; % remove outliers
+      spinPeriod = mean(dd);
+      if isnan(spinPeriod) || ...
+          spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
+        errS = 'Cannot determine spin period!';
+        irf.log('critical',errS), error(errS)
+      end
+    end
+    function comp_angle_error()
+      angleError = mod(360.0*(tPhaTmp-tPhaTmp(1))/spinPeriod,360);
+      angleError = abs(angleError);
+      angleError = min([angleError';360-angleError']);
     end
   end
   function polyfit_phase()
-    phaseOut(iOutTmp) = mod(targetTime(iOutTmp)/spinPeriod,1)*360;
+    phaseOut(iOutTmp) = ...
+      mod((targetTime(iOutTmp)-tPhaTmp(1))/spinPeriod,1)*360;
     spinPeriodLast = spinPeriod;
   end
   function verify_input()
