@@ -246,7 +246,7 @@ if flag_subplot==0,  % One subplot
     
 elseif flag_subplot==1, % Separate subplot for each component
   if isstruct(x), error('cannot plot spectra in COMP mode'), end
-  if isa(x,'TSeries'), time = x.time.toEpochUnix().epoch; data = x.data;
+  if isa(x,'TSeries'), time = x.time.epochUnix; data = x.data;
   else time = x(:,1); data = x(:,2:end);
   end
   ts = t_start_epoch(time); npl = size(data,2);
@@ -267,7 +267,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
     if isempty(x), return, end
     
     %   t_start_epoch is saved in figures user_data variable
-    if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.toEpochUnix().epoch);
+    if isa(x{1},'TSeries'), ts = t_start_epoch(x{1}.time.epochUnix);
     elseif isstruct(x{1}), ts = t_start_epoch(x{1}.t);
     else ts = t_start_epoch(x{1}(:,1));
     end
@@ -280,7 +280,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
     for ipl=1:npl
         y = x{ipl};
         if isa(y,'TSeries')
-          time = y.time.toEpochUnix().epoch; data = y.data;
+          time = y.time.epochUnix; data = y.data;
         elseif isstruct(y), time = double(y.t); data = y(:,2:end);
         else time = double(y(:,1)); data = y(:,2:end);
         end
