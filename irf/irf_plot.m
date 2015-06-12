@@ -68,24 +68,12 @@ if isempty(x), % nothing to plot, first input parameter empty
 end
 
 % Check if single number argument, then use syntax IRF_PLOT(number)
-if isnumeric(x),    
-    if numel(x)==1, % only one number
-		if x>=1 && x<=20,
-			% check if there is 'newfigure' argument
-			if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
-				c=initialize_figure(x,'newfigure');
-			elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
-				c=initialize_figure(x,'reset');
-			else
-				c=initialize_figure(x);
-			end
-		else
-			disp('Only 1-20 number of subplots supported.;)');
-		end
-		if nargout==0, clear c; end % if no output required do not return anything
-        return
-    end
+if isnumeric(x) && numel(x)==1, % only one number
+  init_figure()
+  if nargout==0, clear c; end % if no output required do not return anything
+  return
 end
+
 if isempty(ax),
     inp_name=inputname(1);
 else
@@ -529,8 +517,21 @@ if nargout==0, clear c; end
       if isempty(args), break, end
     end
   end
-
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  function init_figure
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if x>=1 && x<=20,
+      % check if there is 'newfigure' argument
+      if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
+        c=initialize_figure(x,'newfigure');
+      elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
+        c=initialize_figure(x,'reset');
+      else c=initialize_figure(x);
+      end
+    else irf.log('warning','Max 20 subplots supported ;)');
+    end
+  end
+end % IRF_PLOT
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function t_st_e = t_start_epoch(t)
