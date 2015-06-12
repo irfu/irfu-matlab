@@ -63,24 +63,17 @@ function c=irf_plot(varargin)
 %% Check input 
 [ax,args,nargs] = axescheck(varargin{:});
 x=args{1};
-if isempty(x), % nothing to plot, first input parameter empty
-  return;
-end
+if isempty(x), irf.log('warning','nothing to plot'), return, end
 
 % Check if single number argument, then use syntax IRF_PLOT(number)
-if isnumeric(x) && numel(x)==1, % only one number
+if isnumeric(x) && numel(x)==1,
   init_figure()
   if nargout==0, clear c; end % if no output required do not return anything
   return
 end
 
-if isempty(ax),
-    inp_name=inputname(1);
-else
-    inp_name=inputname(2);
-end
-args=args(2:end);
-original_args=args;
+if isempty(ax), inp_name=inputname(1); else inp_name=inputname(2); end
+args=args(2:end); original_args=args;
 
 var_desc{1} = '';
 flag_subplot = 0;
