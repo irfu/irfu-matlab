@@ -427,7 +427,8 @@ classdef ui < handle
 			J = obj.Output.J;
 			biasCurrentA = obj.InputParameters.biasCurrent;
 			biasCurrentMicroA = 1e6*biasCurrentA;
-			%flag_add_bias_point_values=0; % default
+			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe);
+
 			plot(h,vecU, J.probe*1e6,'k');
 			set(h,'xlim',[min(vecU) max(vecU)]);
 			grid(h,'on');
@@ -444,7 +445,7 @@ classdef ui < handle
 				plot(h,vecU,J.plasma{ii}*1e6,'linewidth',.5,'color',clr(:,ii));
 				irf_legend(h,['plasma ' num2str(ii)],[0.98 0.08+ii*0.05],'color',clr(:,ii));
 			end
-			if biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe), % draw bias current line
+			if flagBias % draw bias current line
 				plot(h,[vecU(1) vecU(end)],biasCurrentMicroA.*[-1 -1],'k-.','linewidth',0.5);
 				text(vecU(1),-biasCurrentMicroA,'-bias','parent',h,'horizontalalignment','left','verticalalignment','bottom');
 			end
@@ -458,6 +459,9 @@ classdef ui < handle
 			dUdI = obj.Output.dUdI;
 			vecU = obj.InputParameters.vectorU;
 			J = obj.Output.J;
+			biasCurrentA = obj.InputParameters.biasCurrent;
+			biasCurrentMicroA = 1e6*biasCurrentA;
+			flagBias = biasCurrentMicroA ~= 0 && biasCurrentA>min(J.probe) && -biasCurrentA<max(J.probe);
 			probe = obj.ProbeList(obj.probeUsed);
 			Rmin = min(abs(dUdI)); % minimum resistance
 			fcr=1/2/pi/Rmin/probe.capacitance;
@@ -484,14 +488,18 @@ classdef ui < handle
 					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Probe: Ufloat=' num2str(Ufloat,3) ' V, Rfloat=' num2str(Rfloat,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
 			end
-			if 0%flag_add_bias_point_values,
-				Ubias=interp1(J_probe,Upot,-ud.probe.bias_current); % floating potential
-				ii=isfinite(Upot);
-				Rbias=interp1(Upot(ii),dUdI(ii),Ubias);
+			if flagBias,%flag_add_bias_point_values,
+				biasCurrentA = obj.InputParameters.biasCurrent;
+				Ubias=interp1(J.probe,vecU,-biasCurrentA); % floating potential
+				ii=isfinite(vecU);
+				Rbias=interp1(vecU(ii),dUdI(ii),Ubias);
 				fcr=1/2/pi/Rbias/probe.capacitance;
+				InfoTxt.probeBias =['Biased probe: U =' num2str(Ubias,3) 'V,' ...
+					' R = ' num2str(Rbias,3) ' Ohm,' ...
+					' C =' num2str(probe.capacitance*1e12,3) 'pF,' ...
+					' fcr=' num2str(fcr,3) 'Hz.'];
 				disp(['Rbias=' num2str(Rbias,3) ' Ohm, C=' num2str(probe.capacitance*1e12,3) 'pF, fcr=' num2str(fcr,3) 'Hz.']);
-				info_txt=[info_txt '\newline Probe: (without s/c) Ubias=' num2str(Ubias,3)  ', Rbias=' num2str(Rbias,3) 'Ohm, fcr=' num2str(fcr,3) 'Hz.'];
-				if ud.flag_use_sc,
+				if 0%ud.flag_use_sc,
 					Uscbias=interp1(J_probe,Usatsweep,-ud.probe.bias_current); % floating potential
 					ii=isfinite(Upot);
 					Rscbias=interp1(ud.U_sc(ii),ud.dUdI_sc(ii),Uscbias);
