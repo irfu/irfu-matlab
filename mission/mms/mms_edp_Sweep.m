@@ -615,7 +615,7 @@ classdef mms_edp_Sweep < handle
       biasRes1 = NaN(size(voltage1)); biasRes2 = biasRes1;
       for i=1:length(idxBias)
         if i == length(idxBias)
-          ii = tlim(Epoch, irf.tint(eBias.stop,sweepTime.stop));
+          ii = tlim(Epoch, irf.tint([eBias.stop.toUtc,'/',sweepTime.stop.toUtc]));
         else ii = tlim(Epoch, eBias(i+[0 1]));
         end
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
