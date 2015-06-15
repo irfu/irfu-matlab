@@ -35,7 +35,7 @@ T   = EpochTT('2002-03-04T09:30:00Z'):.2...
      :EpochTT('2002-03-04T10:30:00Z');      % define time line as EpochTT object
 t   = T.tts - T.tts(1);                     % define relative time in s from start
 x   = exp(0.001*(t)).*sin(2*pi*t/180);      % define function x(t)=exp(0.001(t-to))*sin(t-to)
-TS1 = irf.ts_scalar(T,x);                   % define clalar TSeries object
+TS1 = irf.ts_scalar(T,x);                   % define scalar TSeries object
 
 h   = irf_plot(1,'newfigure');			        % initialize figure
 irf_plot(h,TS1);						                % plot times series  
@@ -71,7 +71,7 @@ irf_zoom(h,'y');
 
 h=irf_plot({TS2,TS3},'comp');
 ylabel(h(1),'B_X');
-title(h(1),irf_time(TS2.time.tts(1),'tt>utc_yyyy-mm-dd'));
+title(h(1),TS2.time(1).utc('yyyy-mm-dd'));
 ylabel(h(2),'B_Y');
 irf_legend(h(1),{'B2','Bnew=B2*1.2+2 '},[0.02 0.98],'fontsize',20)
 

@@ -155,8 +155,9 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
      /usr/local/etc/rc.d/dbhIRFU.sh restart
      /usr/local/etc/rc.d/dbhWORLD.sh restart
 
-3.5 Get recent FRGM calibration files
+3.5 Get recent FGM calibration files
 =====================================
+As user Yuri:
 ssh db
 cd /data/cluster/cal/fgm
 scp -r yurik@xanthus.sp.ph.ic.ac.uk:/cluster/operations/calibration/tubs_mirror/2014 .
