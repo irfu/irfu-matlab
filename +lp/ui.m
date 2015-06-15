@@ -545,9 +545,9 @@ classdef ui < handle
 				return
 			else
 				obj.PlasmaList(1) = obj.PlasmaList(obj.plasmaUsed);
+				obj.PlasmaList(1).(idString) = vector;
 				obj.set_plasma_model('user defined');
 			end
-			obj.PlasmaList(obj.plasmaUsed).(idString) = vector;
 		end
 		function set_user_defined_if_probe_changes(obj,idString,vector)
 			if (obj.probeUsed ~= 1) ...
@@ -556,10 +556,10 @@ classdef ui < handle
 				return
 			else
 				obj.ProbeList(1) = obj.ProbeList(obj.probeUsed);
+				obj.ProbeList(1).(idString) = vector;
+				obj.update_probe_area_total_vs_sunlit;
 				obj.set_probe_type('user defined');
 			end
-			obj.ProbeList(obj.probeUsed).(idString) = vector;
-			obj.update_probe_area_total_vs_sunlit;
 		end
 		function set_user_defined_if_sc_changes(obj,idString,vector)
 			if (obj.spacecraftUsed ~= 1) ...
@@ -568,10 +568,10 @@ classdef ui < handle
 				return
 			else
 				obj.SpacecraftList(1) = obj.SpacecraftList(obj.spacecraftUsed);
+				obj.SpacecratList(1).(idString) = vector;
+				obj.update_sc_area_total_vs_sunlit;
 				obj.set_sc_model('user defined');
 			end
-			obj.SpacecratList(obj.spacecraftUsed).(idString) = vector;
-			obj.update_sc_area_total_vs_sunlit;
 		end
 	end
 	methods (Static)
