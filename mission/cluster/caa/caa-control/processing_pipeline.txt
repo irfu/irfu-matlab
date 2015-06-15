@@ -145,7 +145,7 @@ The ISDAT index files may need re-generation to avoid missing data intervals.
      mv indexmap indexmap.bak
 2. Re-run the ISDAT index generation.  This will take at least a few hours.  You'll eventually see output.
      ssh db
-     iscmd i db.irfu.se:9/Cluster/1/efw
+     iscmd i db.irfu.se:8/Cluster/1/efw
    (This will regenerate for all 4 sats, not just C1)
 3. Restart the ISDAT servers:
      ssh db
