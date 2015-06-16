@@ -785,7 +785,7 @@ end
       case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
       case MMS_CONST.TmMode.fast, dtNominal = 5;
       case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
-      case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0];
+      case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0, 8.0]; %8.0 in Marks file sent 2015/06/16.
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)
