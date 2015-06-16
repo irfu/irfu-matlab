@@ -63,6 +63,7 @@ MMS_CONST.TmMode.comm = 4; % Commissioning data.
 % Sample rates
 MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
 MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.comm_8 = 8; % Commissioning "Slow"
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase
