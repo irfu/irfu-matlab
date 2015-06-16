@@ -95,7 +95,9 @@ for i=1:nargin-1
           % Special case, Commissioning data, identify samplerate.
           irf.log('notice',...
             'Commissioning data, trying to identify samplerate from filename.');
-          if regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
+          if regexpi(fileIn, '_dc[ev]8_') % _dcv8_ or _dce8_
+            samplerate = MMS_CONST.Samplerate.comm_8;
+          elseif regexpi(fileIn, '_dc[ev]32_') % _dcv32_ or _dce32_
             samplerate = MMS_CONST.Samplerate.comm_32;
           elseif regexpi(fileIn, '_dc[ev]64_') % _dcv64_ or _dce64_
             samplerate = MMS_CONST.Samplerate.comm_64;
