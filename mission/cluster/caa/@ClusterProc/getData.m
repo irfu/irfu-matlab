@@ -2332,7 +2332,7 @@ elseif strcmp(quantity,'rawspec')
 	if ~n_ok, data = []; cd(old_pwd), return, end
 	
 	%Compute spin period
-	ph = c_phase(tpharef,pha); 
+	ph = c_phase(tpharef,pha); ph(isnan(ph(:,2)),:) = [];
 	if isempty(ph)
 		irf_log('proc','Phase is empty')
 		data = []; cd(old_pwd), return
