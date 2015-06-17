@@ -27,7 +27,7 @@ ERR_PHA_MAX = 0.5; % Error in phase (deg) from fitting
 verify_input();
 
 t0 = phaInp(1,1); tPhase_2 = phaInp(:,1) - t0; targetTime = time - t0;
-tPhase_2(tPhase_2<targetTime(1)-DT_MAX|tPhase_2>targetTime(end)+DT_MAX)=[];
+tPhase_2(tPhase_2<targetTime(1)-DT_MAX/2|tPhase_2>targetTime(end)+DT_MAX/2)=[];
 
 %% Main loop
 tStart = targetTime(1); tStep = targetTime(end) - tStart; 
@@ -35,7 +35,7 @@ phaseOut = zeros(size(targetTime))*NaN;
 spinPeriodLast = []; iLastOkPoint = []; spinPeriod = [];
 while tStart<targetTime(end)
   tStop = tStart + tStep;
-  iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX+2;
+  iPhaTmp = tPhase_2>=tStart-DT_MAX/2 & tPhase_2<tStop+DT_MAX/2;
   tPhaTmp = tPhase_2(iPhaTmp);
   if length(tPhaTmp)<=1, tStart = tStop; continue; end
   
@@ -50,7 +50,8 @@ while tStart<targetTime(end)
   %XXX TODO: add handling of gaps
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
   if ~isempty(gaps), error('gaps'), end
-  
+  irf.log('notice',sprintf('Processing %d points (%s -- %s)',...
+    length(tPhaTmp),epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   comp_spin_rate()
   if ~flagSpinRateStable || ~isempty(spinPeriodLast) &&...
       abs(spinPeriod-spinPeriodLast) > MAX_SPIN_PERIOD_CHANGE
@@ -73,16 +74,22 @@ res = [time phaseOut];
     while true
       comp_spin_period()
       comp_angle_error()
-      if median(angleError)<ERR_PHA_MAX, flagSpinRateStable = 1; return, end
+      medianAngErr = median(angleError); stdAngErr = std(angleError);
+      if stdAngErr>ERR_PHA_MAX, 
+        irf_log('proc',...
+          sprintf('Std(angleError): %.4f \n',stdAngErr))
+        return;
+      elseif medianAngErr<ERR_PHA_MAX, flagSpinRateStable = 1; return, 
+      end
       irf_log('proc',...
-        sprintf('Median(angleError): %.4f \n',median(angleError)))
+        sprintf('Median(angleError): %.4f \n',medianAngErr))
       find_outliers()
       if isempty(iOut), return, end
       tPhaTmp(iOut) = [];
       if length(tPhaTmp)<2, return, end
     end
     function find_outliers()
-      iOut = find(abs(angleError-median(angleError))>3*std(angleError));
+      iOut = find( abs(angleError-medianAngErr) > 3*stdAngErr );
       irf_log('proc',sprintf('Found %d outliers [TOTAL]',length(iOut)))
       iiIn = find(diff(diff(iOut))==0);
       iOut = setdiff(iOut,iOut(unique([iiIn  iiIn+1 iiIn+2])));
