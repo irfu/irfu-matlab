@@ -811,7 +811,7 @@ elseif strcmp(quantity,'a')
     % find errors
     iJump = find(abs(spinPeriod-median(spinPeriod))>5*std(spinPeriod));
     if length(iJump) < min(4,length( spinPeriod ))
-      if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'; end
+      if length(iJump)>1 && iJump(end)-iJump(1)==2, iJump=iJump(1)+(1:3)'-1; end
       for i = iJump'
         irf_log('proc',['removing erroneous point at ' epoch2iso(tt(i))])
       end
