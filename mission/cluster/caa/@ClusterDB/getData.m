@@ -826,15 +826,15 @@ elseif strcmp(quantity,'a')
     amat = repmat(refPhase,size(tt,1),1);
     tmat = reshape(tmat',numel(tmat),1);
     difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
-    if any(tmat>=start_time & tmat<=start_time+dt)
+    if sum(tmat>=start_time & tmat<=start_time+dt)>1 % at least 2 points
       amat = reshape(amat',numel(amat),1);
-      pha = [tmat amat]; %#ok<NASGU>
+      pha = [tmat amat];
+    else
+      irf_log('dsrc','did not suceed: too few data points returned')
     end
-    cd(currentDir)
   end
+  cd(currentDir)
   if isempty(pha) % read from isdat
-    irf_log('dsrc','did not suceed');
-    cd(currentDir), rmdir(tempDir,'s')
     irf_log('dsrc','Reading phase from ISDAT instead');
     % We ask for 2 sec more from each side
     % to avoid problems with interpolation.
