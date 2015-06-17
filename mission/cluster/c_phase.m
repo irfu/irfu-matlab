@@ -51,7 +51,7 @@ while tStart<targetTime(end)
   
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
   if ~isempty(gaps), error('gaps'), end
-  irf.log('notice',sprintf('Processing %d points (%s -- %s)',...
+  irf_log('proc',sprintf('Processing %d points (%s -- %s)',...
     length(tPhaTmp),epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   comp_spin_rate()
   if ~flagSpinRateStable || ~isempty(spinPeriodLast) &&...
@@ -63,7 +63,7 @@ while tStart<targetTime(end)
     end  
   else % All good
     polyfit_phase()
-    irf.log('notice',sprintf('Spin period %.2f sec (%s -- %s)',...
+    irf_log('proc',sprintf('Spin period %.2f sec (%s -- %s)',...
       spinPeriod,epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   end
   iLastOkPoint = find(iOutTmp,1,'last'); 
