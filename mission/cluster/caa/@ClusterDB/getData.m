@@ -789,7 +789,7 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 elseif strcmp(quantity,'a')
 	save_file = './mA.mat';
-	
+	pha = [];
   irf_log('dsrc','Trying to to read phase from CP_AUX_SPIN_TIME...');
   currentDir = pwd;	tempDir = sprintf('CAA_Download_%d',fix(rand*1e6));	
   mkdir(tempDir); cd(tempDir);
@@ -826,27 +826,28 @@ elseif strcmp(quantity,'a')
     amat = repmat(refPhase,size(tt,1),1);
     tmat = reshape(tmat',numel(tmat),1);
     difftmat = diff(tmat); ii = find(difftmat<0); tmat(ii) = tmat(ii+1);
-    amat = reshape(amat',numel(amat),1);
-    pha = [tmat amat]; %#ok<NASGU>
-    c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
+    if any(tmat>=start_time & tmat<=start_time+dt)
+      amat = reshape(amat',numel(amat),1);
+      pha = [tmat amat]; %#ok<NASGU>
+    end
     cd(currentDir)
-  else % read from isdat
+  end
+  if isempty(pha) % read from isdat
     irf_log('dsrc','did not suceed');
     cd(currentDir), rmdir(tempDir,'s')
     irf_log('dsrc','Reading phase from ISDAT instead');
-    n_ok = 0;
     % We ask for 2 sec more from each side
     % to avoid problems with interpolation.
     [t,data] = c_get_phase(cdb.db,start_time-2,dt+4,cl_id,'phase_2');
-    if ~isempty(data) && length(t)>1
-      c_eval('Atwo?=[t data];save_list=[save_list '' Atwo? ''];',cl_id);
-      n_ok = n_ok + 1;
-    else
-      c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
-      irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
-    end
+    if ~isempty(data) && length(t)>1, pha=[t data]; end
     clear t data
-    if ~n_ok, out_data = []; end
+  end
+  if ~isempty(pha)
+    c_eval('Atwo?=pha;save_list=[save_list '' Atwo? ''];',cl_id);
+  else
+    out_data = [];
+    c_eval('Atwo?=[];save_list=[save_list '' Atwo? ''];',cl_id);
+    irf_log('dsrc',irf_ssub('No/short data for Atwo?',cl_id))
   end
 	
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
