@@ -76,6 +76,9 @@ res = [time phaseOut];
     flagSpinRateStable = 0;
     while true
       comp_spin_period()
+      if isempty(spinPeriod)
+        irf_log('proc','Cannot determine spin period!'), return
+      end
       comp_angle_error()
       medianAngErr = median(angleError); stdAngErr = std(angleError);
       if stdAngErr>ERR_PHA_MAX, 
@@ -93,6 +96,7 @@ res = [time phaseOut];
     end
     function find_outliers()
       iOut = find( abs(angleError-medianAngErr) > 3*stdAngErr );
+      if isempty(iOut), return, end
       irf_log('proc',sprintf('Found %d outliers [TOTAL]',length(iOut)))
       iiIn = find(diff(diff(iOut))==0);
       iOut = setdiff(iOut,iOut(unique([iiIn  iiIn+1 iiIn+2])));
@@ -105,8 +109,7 @@ res = [time phaseOut];
       spinPeriod = mean(dd);
       if isnan(spinPeriod) || ...
           spinPeriod > SPIN_PERIOD_MAX || spinPeriod < SPIN_PERIOD_MIN
-        errS = 'Cannot determine spin period!';
-        irf.log('critical',errS), error(errS)
+        spinPeriod = [];
       end
     end
     function comp_angle_error()
