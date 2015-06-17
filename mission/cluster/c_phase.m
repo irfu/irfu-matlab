@@ -3,6 +3,8 @@ function res = c_phase(time,phase_2)
 %
 % PHA = C_PHASE(TIME,PHASE_2)
 %
+% NaNs are returned when phase cannot be computed
+%
 % See also: MMS_DEFATT_PHASE
 
 % ----------------------------------------------------------------------------
@@ -47,7 +49,6 @@ while tStart<targetTime(end)
     continue; 
   end
   
-  %XXX TODO: add handling of gaps
   gaps = find(diff(tPhaTmp)>SPIN_GAP_MAX, 1);
   if ~isempty(gaps), error('gaps'), end
   irf.log('notice',sprintf('Processing %d points (%s -- %s)',...
@@ -62,6 +63,8 @@ while tStart<targetTime(end)
     end  
   else % All good
     polyfit_phase()
+    irf.log('notice',sprintf('Spin period %.2f sec (%s -- %s)',...
+      spinPeriod,epoch2iso(tStart+t0), epoch2iso(tStop+t0)))
   end
   iLastOkPoint = find(iOutTmp,1,'last'); 
   tStart = tStop; tStep = targetTime(end) - tStart;
