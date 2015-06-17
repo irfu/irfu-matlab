@@ -4,7 +4,7 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 %  probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 %
 %  Compute probe-to-spacecraft potential averaged from several probes using
-%  the mean value of moving average filtered data over filterInterval (in
+%  the mean value of average filtered data over filterInterval (in
 %  seconds) to determine which probe(-s) are possibly bad. For each
 %  timestamp either all four, two or one probe(-s) are used.
 %  Each datapoint is given a corresponding bitmask where
@@ -22,7 +22,7 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 % ----------------------------------------------------------------------------
 
 % Default to 1 seconds interval (one nominal spin period is 20 seconds).
-if nargin==0, filterInterval = 1; end
+if nargin==0, filterInterval = 20; end
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 probe2sc_pot = MMS_CONST.Error; %#ok<NASGU>
@@ -50,13 +50,9 @@ switch procId
     dcv.v2.data = mask_bits(dcv.v2.data, dcv.v2.bitmask, sweepBit);
     dcv.v3.data = mask_bits(dcv.v3.data, dcv.v3.bitmask, sweepBit);
     dcv.v4.data = mask_bits(dcv.v4.data, dcv.v4.bitmask, sweepBit);
-    % Filter window size, default 1 s * Samplerate = 8 samples (slow),
-    % 32 samples (fast), and would be 8192 samples (brst).
+    % Filter window size.
     windowSize = samplerate*filterInterval;
-    % Create filter coefficients for moving average filter.
-    a = 1; b = (1/windowSize)*ones(1,windowSize);
-    % Apply moving average filter (a,b) on spin plane probes 1, 2, 3 & 4.
-    MAfilt = filter(b, a, [dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data], [], 1);
+
 %    % Ideally we would like to use irf_filt, but this use ellip (part of
 %    % Signal Processing Toolbox, which is not part of SDC installation).
 %    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
@@ -64,16 +60,36 @@ switch procId
 %       double([dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data])],...
 %       0,1/filterInterval,samplerate,filtOr);
 %     MAfilt(:,1) = [];
-    % For each timestamp get median value of the moving average.
-    MAmedian = median(MAfilt, 2);
-    % For each probe check if it is too far off from the median
-    absDiff = abs(MAfilt - repmat(MAmedian, [1 4]));
-    badBits = absDiff > MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN;
 
-    % DEBUG: FORCE SOME bad bits
-    %badBits(1:25,:)=round(rand(25,4));
-    %badBits(20,:)=1;
-    %badBits(22,:)=1;
+    MAfilt = NaN(size(dcv.v1.data,1),4);
+    % For each windowSize segment, calculate the mean value of each probe,
+    % excluding NaN values.
+    indStart = 1;  indEnd = min(windowSize,length(dcv.v1.data));
+    while indEnd<length(dcv.v1.data)
+      ind = indStart:indEnd;
+      MAfilt(ind, 1:4) = repmat(irf.nanmean([...
+        dcv.v1.data(ind), ...
+        dcv.v2.data(ind), ...
+        dcv.v3.data(ind), ...
+        dcv.v4.data(ind)], 1),[length(ind), 1]);
+      % Compute next segments start and stop ind.
+      indStart = indEnd+1;
+      indEnd = min(indStart+windowSize-1, length(dcv.v1.data));
+    end
+    % The last segment, or if a short data series then this first segment
+    % is the last segment.
+    ind = indStart:indEnd;
+    MAfilt(ind, 1:4) = repmat(irf.nanmean([...
+      dcv.v1.data(ind), ...
+      dcv.v2.data(ind), ...
+      dcv.v3.data(ind), ...
+      dcv.v4.data(ind)], 1),[length(ind), 1]);
+
+    % For each timestamp get median value of the averaged probes.
+    MAmedian = median(MAfilt, 2);
+    % For each probe check if its value is too far off from the median
+    absDiff = abs([dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data] - repmat(MAmedian, [1 4]));
+    badBits = absDiff > MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN;
 
     % Identify times with all four probes marked as bad
     ind_row = ismember(badBits, [1 1 1 1], 'rows');
@@ -85,17 +101,6 @@ switch procId
       badBits(ind_row,:) = badBitsSeg;
     end
 
-    % Identify times with three bad probes
-%    ind_row = ismember(badBits, [1 1 1 0; 1 1 0 1; 1 0 1 1; 0 1 1 1], 'rows');
-%    if( any(ind_row))
-%      irf.log('debug', 'Some timestamps show three probes as outliers. Using only the "best" probe.');
-%    end
-
-    % Identify times with two bad probes
-%    ind_row = ismember(badBits, [1 0 1 0; 0 1 0 1], 'rows');
-%    if( any(ind_row))
-%      irf.log('debug','Some timestamps show two (pair 12 or pair 34) as outliers. Using the other pair.');
-%    end
     ind_row = ismember(badBits, [1 0 0 1; 0 1 1 0], 'rows');
     if( any(ind_row))
       irf.log('warning','Some timestamps show two (not pairwise) probes as outliers. Using them anyhow...');
