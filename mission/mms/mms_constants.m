@@ -9,7 +9,10 @@ function MMS_CONST = mms_constants
 % When simply re-running a dataset, the Z value should be increased by one.
 
 MMS_CONST.Version.X = 0; % Major new Software version
-MMS_CONST.Version.Y = 0; % New Calibration version
+MMS_CONST.Version.Y = 1; % New Calibration version
+% Version Notes Y, for us. Not written to CDF files.
+% Y - 0, initial release
+% Y - 1, ADP shadow removal, use of irf_filt in scpot calculation.
 MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
 % Version.MODS - MODS cdf GlobalAttribute should contain a description of
 % all significant changes to the data set, essentially capturing a log of
@@ -63,6 +66,7 @@ MMS_CONST.TmMode.comm = 4; % Commissioning data.
 % Sample rates
 MMS_CONST.Samplerate.slow = 8; % Samples per second (dce & dcv), TM mode slow
 MMS_CONST.Samplerate.fast = 32; % TM mode fast
+MMS_CONST.Samplerate.comm_8 = 8; % Commissioning "Slow"
 MMS_CONST.Samplerate.comm_32 = 32; % Commissioning "I&T" phase
 MMS_CONST.Samplerate.comm_64 = 64; % Commissioning "Turn ON" phase
 MMS_CONST.Samplerate.comm_128 = 128; % Commissioning "Boom deployment" phase

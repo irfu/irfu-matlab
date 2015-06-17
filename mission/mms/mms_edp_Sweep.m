@@ -492,8 +492,8 @@ classdef mms_edp_Sweep < handle
             (voltage2(i2)-voltage2(i3))/(biasRes2(i2)-biasRes2(i3))) / 2 * 1000;
         end
       end
-      time = sweepTime.epochUnix(1) + (0:length(biasRes1)-1)' * ...
-        (sweepTime.epochUnix(2)-sweepTime.epochUnix(1)) / ...
+      time = sweepTime(1).epochUnix + (0:length(biasRes1)-1)' * ...
+        (sweepTime(2).epochUnix-sweepTime(1).epochUnix) / ...
         (length(biasRes1)-0);
       if doPhase
         time_ph = sweepTime.epoch(1) + int64(0:length(biasRes1)-1)' * ...
@@ -615,7 +615,7 @@ classdef mms_edp_Sweep < handle
       biasRes1 = NaN(size(voltage1)); biasRes2 = biasRes1;
       for i=1:length(idxBias)
         if i == length(idxBias)
-          ii = tlim(Epoch, irf.tint(eBias.stop,sweepTime.stop));
+          ii = tlim(Epoch, irf.tint([eBias.stop.toUtc,'/',sweepTime.stop.toUtc]));
         else ii = tlim(Epoch, eBias(i+[0 1]));
         end
         biasRes1(ii) = bias1(i);  biasRes2(ii) = bias2(i);
