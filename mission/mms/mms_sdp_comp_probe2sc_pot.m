@@ -21,8 +21,8 @@ function probe2sc_pot = mms_sdp_comp_probe2sc_pot(filterInterval)
 % this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
 % ----------------------------------------------------------------------------
 
-% Default to 20 seconds interval (one nominal spin period), if not specified.
-if nargin==0,  filterInterval = 20; end
+% Default to 1 seconds interval (one nominal spin period is 20 seconds).
+if nargin==0, filterInterval = 1; end
 
 global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
 probe2sc_pot = MMS_CONST.Error; %#ok<NASGU>
@@ -50,12 +50,20 @@ switch procId
     dcv.v2.data = mask_bits(dcv.v2.data, dcv.v2.bitmask, sweepBit);
     dcv.v3.data = mask_bits(dcv.v3.data, dcv.v3.bitmask, sweepBit);
     dcv.v4.data = mask_bits(dcv.v4.data, dcv.v4.bitmask, sweepBit);
+    % Filter window size, default 1 s * Samplerate = 8 samples (slow),
+    % 32 samples (fast), and would be 8192 samples (brst).
+    windowSize = samplerate*filterInterval;
+    % Create filter coefficients for moving average filter.
+    a = 1; b = (1/windowSize)*ones(1,windowSize);
     % Apply moving average filter (a,b) on spin plane probes 1, 2, 3 & 4.
-    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
-    MAfilt = irf_filt([epo...
-      double([dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data])],...
-      0,1/filterInterval,samplerate,filtOr);
-    MAfilt(:,1) = [];
+    MAfilt = filter(b, a, [dcv.v1.data, dcv.v2.data, dcv.v3.data, dcv.v4.data], [], 1);
+%    % Ideally we would like to use irf_filt, but this use ellip (part of
+%    % Signal Processing Toolbox, which is not part of SDC installation).
+%    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
+%     MAfilt = irf_filt([epo...
+%       double([dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data])],...
+%       0,1/filterInterval,samplerate,filtOr);
+%     MAfilt(:,1) = [];
     % For each timestamp get median value of the moving average.
     MAmedian = median(MAfilt, 2);
     % For each probe check if it is too far off from the median
