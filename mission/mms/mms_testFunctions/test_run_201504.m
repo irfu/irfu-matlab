@@ -19,8 +19,9 @@ MMS_CONST=mms_constants;
 %% Define time
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
-tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
+%tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
+tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
 mmsId = 'mms4'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
@@ -154,10 +155,15 @@ irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
 mms_sdc_sdp_proc('ql', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 mms_sdc_sdp_proc('scpot', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 
+%% L2Pre
+tt = irf_time(tint.start.utc,'utc>doy');
+DEFATT_File = [data_root filesep 'ancillary' filesep mmsId filesep 'defatt'...
+  filesep 'MMS' mmsId(end) '_DEFATT_' ...
+  sprintf('%d%d_%d%d',tt(1),tt(2)-1,tt(1),tt(2)) '.V00'];
 mms_sdc_sdp_proc('l2pre', DCE_File,  DCV_File, HK_10E_File, DEFATT_File);
 
-%%
-mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150405000000_v0.0.0.cdf')
+%% L2a
+mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150506120000_v0.1.0.cdf')
 
 %% Plot
 dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf');
