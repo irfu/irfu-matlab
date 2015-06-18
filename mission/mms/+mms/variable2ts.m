@@ -33,7 +33,7 @@ elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
 elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
 else
   % Special quirks for different instruments
-  if regexp(v.name,'^mms[1-4]_[d,a]fg_srvy_gsm_dmpa$') %AFG/DFGb1
+  if regexp(v.name,'^mms[1-4]_[d,a]fg_srvy(_gsm)?_dmpa$') %AFG/DFGb1
     data = data(:,1:3); % strip Btot
     varType = 'vec_xyz';
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
