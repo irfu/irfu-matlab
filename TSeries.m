@@ -474,7 +474,7 @@ classdef TSeries
       res = [];
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
-      teno = obj.tensorBasis_;
+      teno = obj.tensorOrder_;
       if length(comp)~=teno, return, end
       basis = obj.BASIS{teno};
       if ~any(basis==comp(1)), return
