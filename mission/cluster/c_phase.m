@@ -57,9 +57,7 @@ while tStart<targetTime(end)
   if ~flagSpinRateStable || ~isempty(spinPeriodLast) &&...
       abs(spinPeriod-spinPeriodLast) > MAX_SPIN_PERIOD_CHANGE
     if tStep > SPIN_PERIOD_MAX, tStep = tStep/2; continue % Reduce the time step
-    else
-      irf_log('proc','Do not know how to proceed')
-      error('Do not know how to proceed')
+    else irf_log('proc','Advancing to next data point')
     end  
   else % All good
     polyfit_phase()
