@@ -279,6 +279,28 @@ classdef TSeries
       end
     end
     
+    function [varargout] = subsref(obj,idx)
+      %SUBSREF handle indexing
+      switch idx(1).type
+        % Use the built-in subsref for dot notation
+        case '.'
+          [varargout{1:nargout}] = builtin('subsref',obj,idx);
+        case '()'
+          tmpEpoch = builtin('subsref',obj.time,idx(1));
+          obj.t_ = tmpEpoch;
+          idxTmp = repmat({':'}, ndims(obj.data), 1);
+          idxTmp(1) = idx(1).subs;
+          obj.data_ = obj.data_(idxTmp{:});
+          if numel(idx) > 1,
+            obj = builtin('subsref',obj,idx(2:end));
+          end
+          [varargout{1:nargout}] = obj;
+        case '{}'
+          error('irf:GenericTimeArray:subsref',...
+            'Not a supported subscripted reference')
+      end
+       end
+    
     function value = get.data(obj)
       value = obj.data_;
     end
@@ -294,77 +316,6 @@ classdef TSeries
     
     function value = get.tensorOrder(obj)
       value = obj.tensorOrder_;
-    end
-    
-    function Ts = abs(obj)
-      % Magnitude
-      if obj.tensorOrder~=1, error('Not yet implemented'); end
-      switch obj.BASIS{obj.tensorBasis_}
-        case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
-        case {'rtp','rlp','rp'}, data = abs(obj.r.data);
-        case 'rpz' % cylindrical
-          data = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
-        otherwise
-          error('Unknown representation'); % should not be here
-      end
-      Ts = obj; obj.data_ = data;
-      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
-      if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
-    end
-    
-    
-    function Ts = resample(obj,NewTime,varargin)
-      % Resample to a new timeline
-      %
-      % Ts = resample(obj,NewTime, [ARGS]
-      %
-      % Note: resample data type is double.
-      %
-      % See also: IRF_RESAMPLE
-      if ~isa(NewTime,'GenericTimeArray')
-        error('NewTime must be of GenericTimeArray type or derived from it')
-      end
-      if NewTime == obj.time, Ts = obj; return, end 
-      
-      if obj.tensorOrder~=1, error('Not yet implemented'); end
-      
-      % For non-cartesian bases, in order to do a proper inte/extrapolarion
-      % we first transform into cartesian basis, resample, and then
-      % transform back to teh original basis
-      basis = obj.BASIS{obj.tensorBasis_};
-      switch basis
-        case {'xy','xyz'}, resample_(obj); return 
-        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
-        case 'rp', resample_(obj.transform('xy'));
-        otherwise
-          error('Unknown representation'); % should not be here
-      end
-      Ts = Ts.transform(basis);
-      
-      function resample_(TsTmp)
-        tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
-        newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
-        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
-      end
-    end %RESAMPLE
-    
-    function Ts = transform(obj, newBasis)
-      % Tranform from one coordinate system to another and return new
-      % TimeSeries.
-      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
-      %         'xyz' - Spherical latitude to cartesian XYZ
-      %         'rpz' - Cartesian XYZ to cylindrical
-      %         'xyz' - Cylidrical to cartesian XYZ
-      %         'rtp' - Cartesian XYZ to spherical colatitude
-      %         'xyz' - Spherical colatitude to cartesian XYZ
-      %         'rlp' - Spherical colatitude to spherical latitude
-      %         'rtp' - Spherical latitude to colatitude
-      if ~ischar(newBasis) || min(size('adc'))>1
-        error('newBasis must be a string')
-      end
-      oldBasis = obj.BASIS{obj.tensorBasis_};
-      if strcmpi(newBasis,oldBasis), Ts = obj; return; end
-      Ts = obj.changeBasis([oldBasis '>' newBasis]);
     end
 
     %Components
@@ -421,11 +372,28 @@ classdef TSeries
       res = isempty(obj.t_);
     end
     
+    function Ts = abs(obj)
+      % Magnitude
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      switch obj.BASIS{obj.tensorBasis_}
+        case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
+        case {'rtp','rlp','rp'}, data = abs(obj.r.data);
+        case 'rpz' % cylindrical
+          data = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = obj; obj.data_ = data;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
+    end
+    
     function l = length(obj)
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
     end
+    
     function obj = plus(obj,inp)
       if isnumeric(inp) 
         if numel(inp) == 1
@@ -443,6 +411,7 @@ classdef TSeries
         error('Plus not defined');
       end
     end
+    
     function obj = minus(obj,inp)
       if isnumeric(inp) && ...
           ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
@@ -451,6 +420,7 @@ classdef TSeries
         error('Plus not defined');
       end
     end
+    
     function Ts = mtimes(obj,obj1)
       % Matrix multiplication
       if isa(obj1,'TSeries')
@@ -519,28 +489,41 @@ classdef TSeries
       end
     end
     
-    function [varargout] = subsref(obj,idx)
-      %SUBSREF handle indexing
-      switch idx(1).type
-        % Use the built-in subsref for dot notation
-        case '.'
-          [varargout{1:nargout}] = builtin('subsref',obj,idx);
-        case '()'
-          tmpEpoch = builtin('subsref',obj.time,idx(1));
-          obj.t_ = tmpEpoch;
-          idxTmp = repmat({':'}, ndims(obj.data), 1);
-          idxTmp(1) = idx(1).subs;
-          obj.data_ = obj.data_(idxTmp{:});
-          if numel(idx) > 1,
-            obj = builtin('subsref',obj,idx(2:end));
-          end
-          [varargout{1:nargout}] = obj;
-        case '{}'
-          error('irf:GenericTimeArray:subsref',...
-            'Not a supported subscripted reference')
+    function Ts = resample(obj,NewTime,varargin)
+      % Resample to a new timeline
+      %
+      % Ts = resample(obj,NewTime, [ARGS]
+      %
+      % Note: resample data type is double.
+      %
+      % See also: IRF_RESAMPLE
+      if ~isa(NewTime,'GenericTimeArray')
+        error('NewTime must be of GenericTimeArray type or derived from it')
       end
-    end
-
+      if NewTime == obj.time, Ts = obj; return, end 
+      
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      
+      % For non-cartesian bases, in order to do a proper inte/extrapolarion
+      % we first transform into cartesian basis, resample, and then
+      % transform back to teh original basis
+      basis = obj.BASIS{obj.tensorBasis_};
+      switch basis
+        case {'xy','xyz'}, resample_(obj); return 
+        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+        case 'rp', resample_(obj.transform('xy'));
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = Ts.transform(basis);
+      
+      function resample_(TsTmp)
+        tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
+        newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
+        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+      end
+    end %RESAMPLE
+    
     function obj = tlim(obj,tint)
       [idx,obj.t_] = obj.time.tlim(tint);
       nd = ndims(obj.data_);
@@ -553,6 +536,25 @@ classdef TSeries
         case 6, obj.data_ = obj.data_(idx,:,:,:,:,:,:);
         otherwise, error('should no be here')
       end
+    end
+    
+    function Ts = transform(obj, newBasis)
+      % Tranform from one coordinate system to another and return new
+      % TimeSeries.
+      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
+      %         'xyz' - Spherical latitude to cartesian XYZ
+      %         'rpz' - Cartesian XYZ to cylindrical
+      %         'xyz' - Cylidrical to cartesian XYZ
+      %         'rtp' - Cartesian XYZ to spherical colatitude
+      %         'xyz' - Spherical colatitude to cartesian XYZ
+      %         'rlp' - Spherical colatitude to spherical latitude
+      %         'rtp' - Spherical latitude to colatitude
+      if ~ischar(newBasis) || min(size('adc'))>1
+        error('newBasis must be a string')
+      end
+      oldBasis = obj.BASIS{obj.tensorBasis_};
+      if strcmpi(newBasis,oldBasis), Ts = obj; return; end
+      Ts = obj.changeBasis([oldBasis '>' newBasis]);
     end
   end
   
