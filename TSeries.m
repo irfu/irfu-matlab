@@ -296,6 +296,20 @@ classdef TSeries
       value = obj.tensorOrder_;
     end
     
+    function Ts = abs(obj)
+      % Magnitude
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      switch obj.BASIS{obj.tensorBasis_}
+        case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
+        case {'rtp','rlp','rp'}, data = abs(obj.r.data);
+        case 'rpz' % cylindrical
+          data = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = irf.ts_scalar(obj.time, data);
+    end
+    
     function y = tranform(obj, flag)
       % Tranform from one coordinate system to another and return new
       % TimeSeries.
