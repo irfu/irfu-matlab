@@ -24,7 +24,7 @@ classdef TSeries
   %
   %  ARGS MACROs:
   %      'vec_xyz','vec_rtp','vec_rlp','vec_rpz' - 3D vectors
-  %      'vec_xy','vec_rt'                       - 2D vectors
+  %      'vec_xy','vec_rp'                       - 2D vectors
   %
   %  Example:
   %
@@ -140,7 +140,7 @@ classdef TSeries
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
             obj.representation{2} = {x(5), x(6), x(7)};
             obj.fullDim_{2} = true;
-          case {'vec_xy','vec_rt'}
+          case {'vec_xy','vec_rp'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
                 'DATA has more than 2 dimentions (needed for 2D vec)')
@@ -310,48 +310,18 @@ classdef TSeries
       Ts = irf.ts_scalar(obj.time, data);
     end
     
-    function y = tranform(obj, flag)
+    function Ts = tranform(obj, flag)
       % Tranform from one coordinate system to another and return new
       % TimeSeries.
-      % flag: = 'xyz>rlp' - Cartesian XYZ to spherical latitude
-      %         'rlp>xyz' - Spherical latitude to cartesian XYZ
-      %         'xyz>rpz' - Cartesian XYZ to cylindrical
-      %         'rpz>xyz' - Cylidrical to cartesian XYZ
-      %         'xyz>rtp' - Cartesian XYZ to spherical colatitude
-      %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
-      %         'rtp>rlp' - Spherical colatitude to spherical latitude
-      %         'rlp>rtp' - Spherical latitude to colatitude
-      switch lower(flag)
-        case 'xyz>rlp'
-          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, lambda, phi], 'vec_rlp');
-        case 'rlp>xyz'
-          [x, y, z] = sph2cart(obj.phi.data, obj.lambda.data, obj.r.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'xyz>rpz'
-          [phi, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, phi, z], 'vec_rpz');
-        case 'rpz>xyz'
-          [x, y, z] = pol2cart(obj.phi.data, obj.r.data, obj.z.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'xyz>rtp'
-          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          theta = pi/2 - lambda;
-          y = TSeries(obj.time, [r, theta, phi], 'vec_rtp');
-        case 'rtp>xyz'
-          lambda = pi/2 - obj.theta.data;
-          [x, y, z] = sph2cart(obj.phi.data, lambda, obj.r.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'rtp>rlp'
-          lambda = pi/2 - obj.theta.data;
-          y = TSeries(obj.time, [obj.r.data, lambda, obj.phi.data], 'vec_rlp');
-        case 'rlp>rtp'
-          theta = pi/2 - obj.lambda.data;
-          y = TSeries(obj.time, [obj.r.data, theta, obj.phi.data], 'vec_rtp');
-        otherwise
-          errStr='Incorrect usage or conversion not yet implemented!';
-          error(errStr);
-      end
+      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
+      %         'xyz' - Spherical latitude to cartesian XYZ
+      %         'rpz' - Cartesian XYZ to cylindrical
+      %         'xyz' - Cylidrical to cartesian XYZ
+      %         'rtp' - Cartesian XYZ to spherical colatitude
+      %         'xyz' - Spherical colatitude to cartesian XYZ
+      %         'rlp' - Spherical colatitude to spherical latitude
+      %         'rtp' - Spherical latitude to colatitude
+      Ts = obj.changeBasis([obj.BASIS{obj.tensorBasis_} '>' flag]);
     end
 
     %Components
@@ -533,6 +503,55 @@ classdef TSeries
         elseif lRep>2 && rep{3}==c, res = 3;
         else res = [];
         end
+      end
+    end
+    
+    function Ts = changeBasis(obj, flag)
+      % Tranform from one coordinate system to another and return new
+      % TimeSeries.
+      % flag: = 'xyz>rlp' - Cartesian XYZ to spherical latitude
+      %         'rlp>xyz' - Spherical latitude to cartesian XYZ
+      %         'xyz>rpz' - Cartesian XYZ to cylindrical
+      %         'rpz>xyz' - Cylidrical to cartesian XYZ
+      %         'xyz>rtp' - Cartesian XYZ to spherical colatitude
+      %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
+      %         'rtp>rlp' - Spherical colatitude to spherical latitude
+      %         'rlp>rtp' - Spherical latitude to colatitude
+      switch lower(flag)
+        case 'xyz>rlp'
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          Ts = TSeries(obj.time, [r, lambda, phi], 'vec_rlp');
+        case 'rlp>xyz'
+          [x, y, z] = sph2cart(obj.phi.data, obj.lambda.data, obj.r.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rpz'
+          [phi, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
+          Ts = TSeries(obj.time, [r, phi, z], 'vec_rpz');
+        case 'rpz>xyz'
+          [x, y, z] = pol2cart(obj.phi.data, obj.r.data, obj.z.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rtp'
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          theta = pi/2 - lambda;
+          Ts = TSeries(obj.time, [r, theta, phi], 'vec_rtp');
+        case 'rtp>xyz'
+          lambda = pi/2 - obj.theta.data;
+          [x, y, z] = sph2cart(obj.phi.data, lambda, obj.r.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'rtp>rlp'
+          lambda = pi/2 - obj.theta.data;
+          Ts = TSeries(obj.time, [obj.r.data,lambda,obj.phi.data],'vec_rlp');
+        case 'rlp>rtp'
+          theta = pi/2 - obj.lambda.data;
+          Ts = TSeries(obj.time, [obj.r.data,theta,obj.phi.data],'vec_rtp');
+        case 'xy>rp'
+          [phi, r] = cart2pol(obj.x.data, obj.y.data);
+          Ts = TSeries(obj.time, [r, phi], 'vec_rp');
+        case 'rp>xy'
+          [x, y] = pol2cart(obj.phi.data, obj.r.data);
+          Ts = TSeries(obj.time, [x, y], 'vec_xy');
+        otherwise
+          errStr='Invalid transformation'; error(errStr);
       end
     end
   end
