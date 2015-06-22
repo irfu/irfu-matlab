@@ -307,8 +307,11 @@ classdef TSeries
         otherwise
           error('Unknown representation'); % should not be here
       end
-      Ts = irf.ts_scalar(obj.time, data);
+      Ts = obj; obj.data_ = data;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
+    
     
     function Ts = resample(obj,NewTime,varargin)
       % Resample to a new timeline
@@ -343,9 +346,9 @@ classdef TSeries
         newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
         Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
       end
-    end
+    end %RESAMPLE
     
-    function Ts = transform(obj, flag)
+    function Ts = transform(obj, newBasis)
       % Tranform from one coordinate system to another and return new
       % TimeSeries.
       % flag: = 'rlp' - Cartesian XYZ to spherical latitude
@@ -356,7 +359,12 @@ classdef TSeries
       %         'xyz' - Spherical colatitude to cartesian XYZ
       %         'rlp' - Spherical colatitude to spherical latitude
       %         'rtp' - Spherical latitude to colatitude
-      Ts = obj.changeBasis([obj.BASIS{obj.tensorBasis_} '>' flag]);
+      if ~ischar(newBasis) || min(size('adc'))>1
+        error('newBasis must be a string')
+      end
+      oldBasis = obj.BASIS{obj.tensorBasis_};
+      if strcmpi(newBasis,oldBasis), Ts = obj; return; end
+      Ts = obj.changeBasis([oldBasis '>' newBasis]);
     end
 
     %Components
@@ -443,13 +451,74 @@ classdef TSeries
         error('Plus not defined');
       end
     end
-    function obj = mtimes(obj,inp)
-      if isnumeric(inp) && numel(inp) == 1,
-        obj.data_ = obj.data_ * inp;
-      else
-        error('mtimes not defined');
+    function Ts = mtimes(obj,obj1)
+      % Matrix multiplication
+      if isa(obj1,'TSeries')
+        if obj.tensorOrder>1 || obj1.tensorOrder>1
+          error('Only scalars and vectors are supported'); 
+        end
+        if obj1.tensorOrder>obj.tensorOrder
+          Ts = mtimes(obj1,obj); return;
+        end
+        if obj.time~=obj1.time
+          warning('tseries:resampling','resamplig TSeries')
+          obj1 = obj1.resample(obj.time);
+        end
+        Ts = obj;
+        switch obj.tensorOrder
+          case 0, Ts.data_ = obj.data.*obj1.data; 
+          case 1
+            switch obj1.tensorOrder
+              case 0
+                Ts.data_ = obj.data.*repmat(obj1.data,1,size(obj.data,2));
+              case 1 % Scalar product
+                scalar_product()
+              otherwise
+                error('Not supported')
+            end
+          otherwise
+            error('Not supported')
+        end
+        update_name()
+        return
+      end
+      if ~isnumeric(obj1)
+        error('second argument must be numeric or TSeries')
+      end
+      if ~isscalar(obj1)
+        error('only scalars are supported')
+      end
+      Ts = obj; Ts.data = Ts.data*obj1;
+      
+      function scalar_product()
+        switch obj.BASIS{obj.tensorBasis_}
+          case {'xy','rp'}
+            d1 = obj.transform('xy').data;
+            d2 = obj1.transform('xy').data;
+            Ts.data_ = d1(:,1).*d2(:,1) + d1(:,2).*d2(:,2);
+          case {'xyz','rtp','rlp','rpz'}
+            d1 = obj.transform('xyz').data;
+            d2 = obj1.transform('xyz').data;
+            Ts.data_ = d1(:,1).*d2(:,1) + d1(:,2).*d2(:,2) + ...
+              d1(:,3).*d2(:,3);
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+        Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      end
+      
+      function update_name()
+        if isempty(obj.name) && isempty(obj1.name), return, end
+        if isempty(obj.name), s = 'untitled';
+        else s = obj.name;
+        end
+        if isempty(obj1.name), s1 = 'untitled';
+        else s1 = obj1.name;
+        end
+        Ts.name = sprintf('%s*%s',s,s1);
       end
     end
+    
     function [varargout] = subsref(obj,idx)
       %SUBSREF handle indexing
       switch idx(1).type
