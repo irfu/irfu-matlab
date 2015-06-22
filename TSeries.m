@@ -310,7 +310,34 @@ classdef TSeries
       Ts = irf.ts_scalar(obj.time, data);
     end
     
-    function Ts = tranform(obj, flag)
+    function Ts = resample(obj,NewTime,varargin)
+      if ~isa(NewTime,'GenericTimeArray')
+        error('NewTime must be of GenericTimeArray type or derived from it')
+      end
+      
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      
+      % For non-cartesian bases, in order to do a proper inte/extrapolarion
+      % we first transform into cartesian basis, resample, and then
+      % transform back to teh original basis
+      basis = obj.BASIS{obj.tensorBasis_};
+      switch basis
+        case {'xy','xyz'}, resample_(obj); return 
+        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+        case 'rp', resample_(obj.transform('xy'));
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = Ts.transform(basis);
+      
+      function resample_(TsTmp)
+        tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
+        newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
+        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+      end
+    end
+    
+    function Ts = transform(obj, flag)
       % Tranform from one coordinate system to another and return new
       % TimeSeries.
       % flag: = 'rlp' - Cartesian XYZ to spherical latitude
