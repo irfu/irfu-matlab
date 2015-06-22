@@ -110,7 +110,9 @@ elseif ischar(Ps)
 end
 
 % Table of MS offsets
-if t>=toepoch([2014 01 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0.4 ]; % Only C3 have a good curve
+if t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0.4 ]; % Only C3 have a good curve
+elseif t>=toepoch([2014 07 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0 ]; % Only C3 have a good curve
+elseif t>=toepoch([2014 01 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0.4 ]; % Only C3 have a good curve
 elseif t>=toepoch([2013 01 01 00 0 0]), Ddsi = [ 0.15  2.7  0.94  0.2 ]; % Only C3 have a good curve
 elseif t>=toepoch([2012 05 01 00 0 0]), Ddsi = [ 0.1  2.4  0.50  0.43 ];
 elseif t>=toepoch([2012 01 01 00 0 0]), Ddsi = [ 0.1  2.4  0.47  0.45 ];
