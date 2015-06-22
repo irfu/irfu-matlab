@@ -311,9 +311,17 @@ classdef TSeries
     end
     
     function Ts = resample(obj,NewTime,varargin)
+      % Resample to a new timeline
+      %
+      % Ts = resample(obj,NewTime, [ARGS]
+      %
+      % Note: resample data type is double.
+      %
+      % See also: IRF_RESAMPLE
       if ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of GenericTimeArray type or derived from it')
       end
+      if NewTime == obj.time, Ts = obj; return, end 
       
       if obj.tensorOrder~=1, error('Not yet implemented'); end
       
