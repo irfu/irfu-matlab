@@ -307,7 +307,6 @@ classdef TSeries
       %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
       %         'rtp>rlp' - Spherical colatitude to spherical latitude
       %         'rlp>rtp' - Spherical latitude to colatitude
-      y = [];
       switch lower(flag)
         case 'xyz>rlp'
           [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
