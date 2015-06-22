@@ -200,6 +200,11 @@ end
 % to determine number of spins between pulses.
 %
 
+% Newpulse, based on filtered period. (Period, ie "diff(pulse)" create an
+% underdetermined system when trying to solve for "pulse", therefor use the
+% first pulse as a fixed starting point).
+Newpulse = pulse(1);
+
 for i = 1:ngap+1
     nseg = segs(i+1)-segs(i)-1;  % number of periods in this segment
     if (nseg == 0), continue; end
@@ -282,10 +287,12 @@ for i = 1:ngap+1
     % and furter debug the mess that this incremental improvment would cause...
     % TODO (mabye) end   %%%%%%%%%%%%%%%%%%%%
     
-    % Calculate the average period between pulses.
-    period(segind) = period(segind) ./ round(nspins1);
+    % Store the new filtered period for this segment.
+    period(segind) = mperiod;
     period_flag(segind) = period_flag_seg;
-    
+    % Compute new pulses based on the filtered period. Adding previous
+    % pulse (pulse will have added psudo pulses if gap).
+    Newpulse(segind,1) = pulse(segind(1)-1) + int64(cumsum(mperiod));
 end
 
 %% Step 2b: It is not safe to apply the median smooth method across large
@@ -375,8 +382,8 @@ end
 
 % Transform to 'double'. It is possible to do this earlier but perhaps best
 % to keep int64 until all TT2000 specific calls are done (spdfbreakdowntt2000).
-pulse = double(pulse);
 epoch = double(epoch);
+pulse = double(Newpulse); % Use the new filtered pulses.
 
 %per = value_locate(pulse, epoch)
 per = interp1(pulse, 1:length(pulse), epoch, 'nearest');
