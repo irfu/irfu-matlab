@@ -214,7 +214,7 @@ for i = 1:ngap+1
     segvalid_iifsunper = valid_iifsunper(segind+1);
     segiifsunper = iifsunper(segind+1);
     
-    segind_pulse = 1:nseg+1 + segs(i) + 1; % Index, pulse data of segment.
+    segind_pulse = (1:nseg+1) + segs(i) + 1; % Index, pulse data of segment.
     segpulse = pulse(segind_pulse);
     
     % Median smooth the spin period data (this will reject periods that are
