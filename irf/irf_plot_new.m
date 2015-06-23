@@ -19,6 +19,7 @@ marker = '-';
 flag_plot_all_data=1;
 flag_colorbar=1;
 check_input_options()
+if ~iscell(x), x = {x}; end
 
 switch plot_type
   case '', plot_in_single_panel()
@@ -65,10 +66,9 @@ return % return from main function
     % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
     if ~ishold(hca), irf_zoom(hca,'y'); end % automatic zoom only if hold is not on
     %ylabel(hca,get_label());
+    irf_timeaxis(hca)
     c=h;
     %firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
-    
-    
   end
 
   function check_input_options()
