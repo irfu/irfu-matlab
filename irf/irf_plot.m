@@ -219,7 +219,8 @@ if flag_subplot==0,  % One subplot
     zoom_in_if_necessary(hca);
     % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
     if ~ishold(hca), irf_zoom(hca,'y'); end % automatic zoom only if hold is not on
-    ylabel(hca,get_label());
+    hyl = ylabel(hca,get_label());
+    if flagNolatex, set(hyl,'Interpreter', 'none'); end
     c=h;
     firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   else return % empty matrix or does not know what to do
@@ -306,7 +307,10 @@ elseif flag_subplot==2, % Separate subplot for each variable
             % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
             irf_zoom(c(ipl),'y');
             
-            if ~isempty(var_desc) && ~isempty(var_desc{ipl})
+            if isa(y,'TSeries')
+              lab = [y.name ' [' y.units ']' ]; 
+              ylabel(c(ipl),lab,'Interpreter','none'); clear lab
+            elseif ~isempty(var_desc) && ~isempty(var_desc{ipl})
                 for v = 1:length(var_desc{ipl}.size)
                     lab{v} = [var_desc{ipl}.labels{v} '[' ...
                         var_desc{ipl}.units{v} '] sc' var_desc{ipl}.cl_id];
@@ -415,11 +419,13 @@ if nargout==0, clear c; end
     end
   end
   function lab = get_label()
-    lab = '';
+    lab = ''; flagNolatex = false;
     
     switch flag_subplot
       case 0
-        if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
+        if isa(x,'TSeries')
+          lab = [x.name ' [' x.units ']' ]; flagNolatex = true;
+        elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
           lab = cell(1,length(var_desc{1}.size));
           for iVar = 1:length(var_desc{1}.size)
             lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
