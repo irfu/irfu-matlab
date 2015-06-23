@@ -18,7 +18,6 @@ ud.FIELDNAM         = v.FIELDNAM;
 if isfield(v,'SI_CONVERSION')
 ud.SI_CONVERSION    = v.SI_CONVERSION;
 end
-ud.UNITS            = v.UNITS;
 ud.VALIDMIN         = v.VALIDMIN;
 ud.VALIDMAX         = v.VALIDMAX;
 if isfield(v,'LABLAXIS'), ud.LABLAXIS = v.LABLAXIS; end
@@ -51,4 +50,5 @@ end
 if isfield(v,'FILLVAL'), data(data==v.FILLVAL) = NaN; end
 ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
 ts.name = v.name;
+ts.units = v.UNITS;
 ts.userData = ud;

@@ -95,6 +95,7 @@ classdef TSeries
   
   properties
     name = '';
+    units = '';
     userData = [];
   end
   
