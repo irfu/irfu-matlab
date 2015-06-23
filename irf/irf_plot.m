@@ -421,9 +421,9 @@ if nargout==0, clear c; end
       case 0
         if ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
           lab = cell(1,length(var_desc{1}.size));
-          for v = 1:length(var_desc{1}.size)
-            lab{v} = [var_desc{1}.labels{v} '[' var_desc{1}.units{v} ...
-              '] sc' var_desc{1}.cl_id];
+          for iVar = 1:length(var_desc{1}.size)
+            lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
+              var_desc{1}.units{iVar} '] sc' var_desc{1}.cl_id];
           end
         end
       case 1
