@@ -98,7 +98,12 @@ classdef mms_sdp_dmgr < handle
       % Make sure first argument is a dataobj class object,
       % otherwise a read cdf file.
       if isa(dataObj,'dataobj') % do nothing
-      elseif ischar(dataObj) && exist(dataObj, 'file')
+      elseif ischar(dataObj) 
+        if ~exist(dataObj, 'file')
+          errStr = ['File not found: ' dataObj];
+          irf.log('critical', errStr);
+          error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+        end
         % If it is not a read cdf file, is it an unread cdf file? Read it.
         irf.log('warning',['Loading ' param ' from file: ', dataObj]);
         dataObj = dataobj(dataObj);
