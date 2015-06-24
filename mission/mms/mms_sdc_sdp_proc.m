@@ -18,7 +18,7 @@ function mms_sdc_sdp_proc( procName, varargin)
 %         '/path/mms2_edp_fast_dce_20150410_v0.0.1.cdf, ...
 %         '/path/mm2_fields_hk_101_20150410_v0.0.2.cdf');
 %
-% 	See also MMS_SDC_SDP_INIT, MMS_SDC_SDP_BITMASKING.
+% 	See also MMS_SDC_SDP_INIT, MMS_SDP_DMGR.
 
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
