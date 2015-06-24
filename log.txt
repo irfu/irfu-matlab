@@ -1,3 +1,4 @@
+2015-06-24 v1.9.2 MMS bugfix phase & Quality calculated, Cluster MS offset updated and some other minor bug fixes.
 2015-06-17 v1.9.1 MMS bugfix Signal Processing Toolbox not installed at SDC, some other minor bug fixes.
 2015-06-16 v1.9.0 NASA CDF patch, new TSeries, MMS ADP shadow removal, classes of GenericTimeArray (EpochTT etc), minor bug fixes.
 2015-05-18 v1.8.2 Bug fix in MMS resample probe, some exteded support in irf_time, minor bug fixes.
