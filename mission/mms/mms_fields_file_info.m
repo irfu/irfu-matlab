@@ -13,7 +13,7 @@ if strcmpi(fileName(end-3:end),'.cdf'), fileName(end-3:end) = []; end
 pos = strfind(fileName,'_');
 if length(pos)<5
   irf.log('warning',...
-    'mms_sdp_load sci filename has too few parts seperated by underscore.');
+    ['Sci filename: ',fileName,' has too few parts seperated by underscore.']);
 end
 
 filenameData = [];

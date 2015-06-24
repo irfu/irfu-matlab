@@ -1,25 +1,26 @@
-function [ outFileName ] = mms_sdp_cdfwrite( HeaderInfo )
+function [ outFileName ] = mms_sdp_cdfwrite( HeaderInfo, Dmgr )
 % MMS_SDP_CDFWRITE writes the data to the corresponding CDF file.
 %
-%	filename_output = MMS_SDP_CDFWRITE( HeaderInfo)
+%	filename_output = MMS_SDP_CDFWRITE( HeaderInfo, Dmgr)
 %   will write an MMS CDF file containing the data stored to a temporary 
 %   output folder defined by ENVIR.DROPBOX_ROOT. HeaderInfo contains start 
-%   time as well as information about source files ("Parents").
+%   time as well as information about source files ("Parents"). Dmgr is a
+%   handle for data read into mms_sdp_dmgr.
 %
 %   Example:
-%   filename_output = mms_sdp_cdfwrite(HeaderInfo);
+%   filename_output = mms_sdp_cdfwrite(HeaderInfo, Dmgr);
 %
 %	Note 1: It is assumed that other SDC processing scripts will move the
 %   created output file to its final destination (from /ENIVR.DROPBOX_ROOT/
 %   to /path/as/defined/by/	SDC Developer Guide, v1.7).
 %
-% 	See also MMS_SDP_LOAD, MMS_SDC_SDP_INIT.
+% 	See also MMS_SDC_SDP_PROC, MMS_SDP_DMGR, MMS_SDC_SDP_INIT.
 
 % Verify that we have all information requried.
-narginchk(1,1);
+narginchk(2,2);
 
 global ENVIR;
-global MMS_CONST; if isempty(MMS_CONST), MMS_CONST = mms_constants(); end
+MMS_CONST = Dmgr.CONST;
 
 INST_NAME = 'edp'; % Electric double probe
 DCE_FILE = 'dce2d';
@@ -29,14 +30,14 @@ VOLTAGE_MAX = single(50); % Max voltage
 QUALITY_MAX = int16(4);  % Max value of quality.
 COMPRESS_LEVEL = 'gzip.6'; % Default compression level to be used for variables.
 
-procId = mms_sdp_datamanager('procId');
+procId = Dmgr.procId;
 if procId==MMS_CONST.Error
     errStr = 'mms_sdp_datamanager not properly initialized';
     irf.log('critical',errStr), error(errStr)
 end
 procName = MMS_CONST.SDCProcs{procId};
-scId = mms_sdp_datamanager('scId');
-tmMode = mms_sdp_datamanager('tmMode'); 
+scId = Dmgr.scId;
+tmMode = Dmgr.tmMode;
 tmModeStr = MMS_CONST.TmModes{tmMode};
 datasetPrefix = sprintf('mms%i_%s',scId,INST_NAME);
 
@@ -77,7 +78,7 @@ switch procId
     if(procId==MMS_CONST.SDCProc.l2a)
       % Replace GATTRIB.Parents with source cdf (l2pre) parents (ie only
       % official data products listed as parents not internal (FIELDS) file.
-      l2pre = mms_sdp_datamanager('l2pre');
+      l2pre = Dmgr.l2pre;
       if mms_is_error(l2pre)
         errStr='Cannot output ''l2pre''';
         irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
@@ -85,7 +86,7 @@ switch procId
       GATTRIB.Parents = l2pre.dataObj.GlobalAttributes.Parents;
     end
     
-    dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
+    dce_xyz_dsl = Dmgr.dce_xyz_dsl;
     if mms_is_error(dce_xyz_dsl)
       errStr='Cannot output ''dce_xyz_dsl''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
@@ -150,7 +151,7 @@ switch procId
       % Add Quality and Bitmask for QL or L2PRE
       VATTRIB.CATDESC  = [VATTRIB.CATDESC; {...
         name.bitmask, 'Status bitmask';...
-        name.quality, 'Quality indicator'}];
+        name.quality, 'Quality indicator (3 good), (2 ok data, use with some caution), (1 bad data, use with caution), (0 Really bad data or no data at all)'}];
       VATTRIB.DEPEND_0 = [VATTRIB.DEPEND_0; {...
         name.bitmask, name.epoch;...
         name.quality, name.epoch}];
@@ -186,22 +187,22 @@ switch procId
     % Verify output data exist. L2Pre outputs: DCE [e12, e34, e56], phase,
     % Spinfit [e12, e34] {sdev A B C}, bitmask of DCE [e12, e34, e56] and a
     % quality. (and corresponding epoch and labels).
-    dce = mms_sdp_datamanager('dce');
+    dce = Dmgr.dce;
     if mms_is_error(dce)
       errStr='Cannot output ''dce''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    phase = mms_sdp_datamanager('phase');
+    phase = Dmgr.phase;
     if mms_is_error(phase)
       errStr='Cannot output ''phase''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    spinfit = mms_sdp_datamanager('spinfits');
+    spinfit = Dmgr.spinfits;
     if mms_is_error(spinfit)
       errStr='Cannot output ''spinfits''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    adc_off = mms_sdp_datamanager('adc_off');
+    adc_off = Dmgr.adc_off;
     if mms_is_error(adc_off)
       errStr='Cannot output ''adc_off''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
@@ -253,7 +254,7 @@ switch procId
       name.dce,        'DC E field in SC probe pairs'; ...
       name.phase,      'Spacecraft phase (SC X = 0 deg) calculated from DEFATT';...
       name.bitmask,    'Status bitmask';...
-      name.quality,    'Quality indicator';...
+      name.quality,    'Quality indicator (3 good), (2 ok data, use with some caution), (1 bad data, use with caution), (0 Really bad data or no data at all)';...
       name.sfitsEpoch, 'Time tags, in TT2000'; ...
       name.label2,     'Label';...
       name.adc,        'ADC offsets to be removed from DC E';...
@@ -395,18 +396,18 @@ switch procId
     dataDesc = sprintf(...
       'MMS %i dual probe %s (%s), Spacecraft potential',...
       scId,procName,tmModeStr);
-    
-    dcv = mms_sdp_datamanager('dcv');
+
+    dcv = Dmgr.dcv;
     if mms_is_error(dcv)
       errStr='Cannot output ''dcv''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    probe2sc_pot = mms_sdp_datamanager('probe2sc_pot');
+    probe2sc_pot = Dmgr.probe2sc_pot;
     if mms_is_error(probe2sc_pot)
       errStr='Cannot output ''probe2sc_pot''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
     end
-    sc_pot = mms_sdp_datamanager('sc_pot');
+    sc_pot = Dmgr.sc_pot;
     if mms_is_error(sc_pot)
       errStr='Cannot output ''sc_pot''';
       irf.log('critical', errStr); error('MATLAB:MMS_SDP_CDFWRITE:OUT', errStr);
@@ -459,7 +460,7 @@ switch procId
       name.psp,     'Probe to spacecraft potential, averaged'; ...
       name.psp_p,   'Probe to spacecraft potential, individual probes'; ...
       name.bitmask, 'Status bitmask';...
-      name.quality, 'Quality indicator'};
+      name.quality, 'Quality indicator (3 good), (2 ok data, use with some caution), (1 bad data, use with caution), (0 Really bad data or no data at all)'};
     VATTRIB.DEPEND_0 = {name.scpot, name.epoch; ...
       name.psp,     name.epoch; ...
       name.psp_p,   name.epoch; ...
@@ -611,11 +612,11 @@ cd(oldDir);
 
   function write_file
    % write file with arguments obtained above, also include md5 checksum.
-   irf.log('notice',['Writing file DROPBOX_ROOT/',outFileName,'.cdf']);
    spdfcdfwrite(outFileName, outVars, 'Vardatatypes',varDatatype, ...
      'GlobalAttributes', GATTRIB, 'VariableAttributes', VATTRIB, ...
      'RecordBound', recBound, 'VarCompress', compressVars, ...
      'Checksum', 'md5');
+   irf.log('notice',['File written to DROPBOX_ROOT/',outFileName,'.cdf']);
   end
 
   function GATTRIB = getGlobalAttributes

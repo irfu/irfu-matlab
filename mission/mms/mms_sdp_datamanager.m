@@ -782,10 +782,10 @@ end
     flag = get_variable(dataObj,[varPrefix probe '_enable']);
     dtSampling = median(diff(flag.DEPEND_0.data));
     switch DATAC.tmMode
-      case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
-      case MMS_CONST.TmMode.fast, dtNominal = 5;
-      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
-      case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0, 8.0]; %8.0 in Marks file sent 2015/06/16.
+      case MMS_CONST.TmMode.slow, dtNominal = [8, 12, 16, 20, 160]; % seconds, (160 from old 1 Hz data)
+      case MMS_CONST.TmMode.fast, dtNominal = [2.0, 3.0, 4.0, 5.0];
+      case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391];
+      case MMS_CONST.TmMode.comm, dtNominal = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0 5.0, 8.0, 12.0, 16.0, 20.0];
       otherwise
         errS = 'Unrecognized tmMode';
         irf.log('critical',errS), error(errS)

@@ -1,13 +1,15 @@
-function c=irf_plot_new(varargin)
+function [hax,hl]=irf_plot_new(varargin)
+% [hax,hl]=irf_plot_new(varargin)
 
 %% Check input 
 [ax,args,nargs] = axescheck(varargin{:}); 
 x=args{1}; args=args(2:end); original_args=args;
 if isempty(x), eS='nothing to plot'; irf.log('critical','eS'),error(eS),end
 
+hl = [];
 % Check if single number argument, then use syntax IRF_PLOT(number)
 if isnumeric(x) && numel(x)==1, init_figure()
-  if nargout>0, c=cTmp; end, return
+  if nargout>0, hax=cTmp; end, return
 end
 
 % Default values that can be override by options
@@ -19,6 +21,7 @@ marker = '-';
 flag_plot_all_data=1;
 flag_colorbar=1;
 check_input_options()
+if ~iscell(x), x = {x}; end
 
 switch plot_type
   case '', plot_in_single_panel()
@@ -53,6 +56,7 @@ return % return from main function
     if flagHold, flagHolding = true; else flagHolding = false; end
     for iVar = 1:length(x)
       h = plot(hca, x{iVar}.time.epochUnix-ts-dt, x{iVar}.data, marker, args{:});
+      hl=[hl; h];
       if iVar == 1 && ~flagHold && length(x)>1
         hold(hca,'on'), flagHolding = true;
       end
@@ -65,10 +69,8 @@ return % return from main function
     % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
     if ~ishold(hca), irf_zoom(hca,'y'); end % automatic zoom only if hold is not on
     %ylabel(hca,get_label());
-    c=h;
-    %firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
-    
-    
+    irf_timeaxis(hca)
+    hax=hca;
   end
 
   function check_input_options()
@@ -78,7 +80,7 @@ return % return from main function
       l = 1;
       switch(lower(args{1}))
         case 'newfigure'
-          c=initialize_figure(x);
+          hax=initialize_figure(x);
         case 'subplot'
           plot_type = 'subplot';
         case 'comp'
@@ -138,10 +140,10 @@ return % return from main function
     if x>=1 && x<=20,
       % check if there is 'newfigure' argument
       if numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'newfigure')
-        c=initialize_figure(x,'newfigure');
+        hax=initialize_figure(x,'newfigure');
       elseif numel(args)>=2 && ischar(args{2}) && strcmpi(args{2},'reset')
-        c=initialize_figure(x,'reset');
-      else c=initialize_figure(x);
+        hax=initialize_figure(x,'reset');
+      else hax=initialize_figure(x);
       end
     else irf.log('warning','Max 20 subplots supported ;)');
     end

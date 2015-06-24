@@ -24,7 +24,7 @@ classdef TSeries
   %
   %  ARGS MACROs:
   %      'vec_xyz','vec_rtp','vec_rlp','vec_rpz' - 3D vectors
-  %      'vec_xy','vec_rt'                       - 2D vectors
+  %      'vec_xy','vec_rp'                       - 2D vectors
   %
   %  Example:
   %
@@ -95,6 +95,7 @@ classdef TSeries
   
   properties
     name = '';
+    units = '';
     userData = [];
   end
   
@@ -140,7 +141,7 @@ classdef TSeries
             obj.tensorBasis_ = iB; flagTensorBasisSet = true;
             obj.representation{2} = {x(5), x(6), x(7)};
             obj.fullDim_{2} = true;
-          case {'vec_xy','vec_rt'}
+          case {'vec_xy','vec_rp'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
               error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
                 'DATA has more than 2 dimentions (needed for 2D vec)')
@@ -279,6 +280,28 @@ classdef TSeries
       end
     end
     
+    function [varargout] = subsref(obj,idx)
+      %SUBSREF handle indexing
+      switch idx(1).type
+        % Use the built-in subsref for dot notation
+        case '.'
+          [varargout{1:nargout}] = builtin('subsref',obj,idx);
+        case '()'
+          tmpEpoch = builtin('subsref',obj.time,idx(1));
+          obj.t_ = tmpEpoch;
+          idxTmp = repmat({':'}, ndims(obj.data), 1);
+          idxTmp(1) = idx(1).subs;
+          obj.data_ = obj.data_(idxTmp{:});
+          if numel(idx) > 1,
+            obj = builtin('subsref',obj,idx(2:end));
+          end
+          [varargout{1:nargout}] = obj;
+        case '{}'
+          error('irf:GenericTimeArray:subsref',...
+            'Not a supported subscripted reference')
+      end
+       end
+    
     function value = get.data(obj)
       value = obj.data_;
     end
@@ -294,51 +317,6 @@ classdef TSeries
     
     function value = get.tensorOrder(obj)
       value = obj.tensorOrder_;
-    end
-    
-    function y = tranform(obj, flag)
-      % Tranform from one coordinate system to another and return new
-      % TimeSeries.
-      % flag: = 'xyz>rlp' - Cartesian XYZ to spherical latitude
-      %         'rlp>xyz' - Spherical latitude to cartesian XYZ
-      %         'xyz>rpz' - Cartesian XYZ to cylindrical
-      %         'rpz>xyz' - Cylidrical to cartesian XYZ
-      %         'xyz>rtp' - Cartesian XYZ to spherical colatitude
-      %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
-      %         'rtp>rlp' - Spherical colatitude to spherical latitude
-      %         'rlp>rtp' - Spherical latitude to colatitude
-      y = [];
-      switch lower(flag)
-        case 'xyz>rlp'
-          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, lambda, phi], 'vec_rlp');
-        case 'rlp>xyz'
-          [x, y, z] = sph2cart(obj.phi.data, obj.lambda.data, obj.r.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'xyz>rpz'
-          [phi, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
-          y = TSeries(obj.time, [r, phi, z], 'vec_rpz');
-        case 'rpz>xyz'
-          [x, y, z] = pol2cart(obj.phi.data, obj.r.data, obj.z.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'xyz>rtp'
-          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
-          theta = pi/2 - lambda;
-          y = TSeries(obj.time, [r, theta, phi], 'vec_rtp');
-        case 'rtp>xyz'
-          lambda = pi/2 - obj.theta.data;
-          [x, y, z] = sph2cart(obj.phi.data, lambda, obj.r.data);
-          y = TSeries(obj.time, [x, y, z], 'vec_xyz');
-        case 'rtp>rlp'
-          lambda = pi/2 - obj.theta.data;
-          y = TSeries(obj.time, [obj.r.data, lambda, obj.phi.data], 'vec_rlp');
-        case 'rlp>rtp'
-          theta = pi/2 - obj.lambda.data;
-          y = TSeries(obj.time, [obj.r.data, theta, obj.phi.data], 'vec_rtp');
-        otherwise
-          errStr='Incorrect usage or conversion not yet implemented!';
-          error(errStr);
-      end
     end
 
     %Components
@@ -395,11 +373,28 @@ classdef TSeries
       res = isempty(obj.t_);
     end
     
+    function Ts = abs(obj)
+      % Magnitude
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      switch obj.BASIS{obj.tensorBasis_}
+        case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
+        case {'rtp','rlp','rp'}, data = abs(obj.r.data);
+        case 'rpz' % cylindrical
+          data = sqrt(abs(obj.r.data).^2 + abs(obj.z.data).^2);
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = obj; obj.data_ = data;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
+    end
+    
     function l = length(obj)
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
     end
+    
     function obj = plus(obj,inp)
       if isnumeric(inp) 
         if numel(inp) == 1
@@ -417,6 +412,7 @@ classdef TSeries
         error('Plus not defined');
       end
     end
+    
     function obj = minus(obj,inp)
       if isnumeric(inp) && ...
           ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
@@ -425,35 +421,110 @@ classdef TSeries
         error('Plus not defined');
       end
     end
-    function obj = mtimes(obj,inp)
-      if isnumeric(inp) && numel(inp) == 1,
-        obj.data_ = obj.data_ * inp;
-      else
-        error('mtimes not defined');
+    
+    function Ts = mtimes(obj,obj1)
+      % Matrix multiplication
+      if isa(obj1,'TSeries')
+        if obj.tensorOrder>1 || obj1.tensorOrder>1
+          error('Only scalars and vectors are supported'); 
+        end
+        if obj1.tensorOrder>obj.tensorOrder
+          Ts = mtimes(obj1,obj); return;
+        end
+        if obj.time~=obj1.time
+          warning('tseries:resampling','resamplig TSeries')
+          obj1 = obj1.resample(obj.time);
+        end
+        Ts = obj;
+        switch obj.tensorOrder
+          case 0, Ts.data_ = obj.data.*obj1.data; 
+          case 1
+            switch obj1.tensorOrder
+              case 0
+                Ts.data_ = obj.data.*repmat(obj1.data,1,size(obj.data,2));
+              case 1 % Scalar product
+                scalar_product()
+              otherwise
+                error('Not supported')
+            end
+          otherwise
+            error('Not supported')
+        end
+        update_name()
+        return
+      end
+      if ~isnumeric(obj1)
+        error('second argument must be numeric or TSeries')
+      end
+      if ~isscalar(obj1)
+        error('only scalars are supported')
+      end
+      Ts = obj; Ts.data = Ts.data*obj1;
+      
+      function scalar_product()
+        switch obj.BASIS{obj.tensorBasis_}
+          case {'xy','rp'}
+            d1 = obj.transform('xy').data;
+            d2 = obj1.transform('xy').data;
+            Ts.data_ = d1(:,1).*d2(:,1) + d1(:,2).*d2(:,2);
+          case {'xyz','rtp','rlp','rpz'}
+            d1 = obj.transform('xyz').data;
+            d2 = obj1.transform('xyz').data;
+            Ts.data_ = d1(:,1).*d2(:,1) + d1(:,2).*d2(:,2) + ...
+              d1(:,3).*d2(:,3);
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+        Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      end
+      
+      function update_name()
+        if isempty(obj.name) && isempty(obj1.name), return, end
+        if isempty(obj.name), s = 'untitled';
+        else s = obj.name;
+        end
+        if isempty(obj1.name), s1 = 'untitled';
+        else s1 = obj1.name;
+        end
+        Ts.name = sprintf('%s*%s',s,s1);
       end
     end
-    function [varargout] = subsref(obj,idx)
-      %SUBSREF handle indexing
-      switch idx(1).type
-        % Use the built-in subsref for dot notation
-        case '.'
-          [varargout{1:nargout}] = builtin('subsref',obj,idx);
-        case '()'
-          tmpEpoch = builtin('subsref',obj.time,idx(1));
-          obj.t_ = tmpEpoch;
-          idxTmp = repmat({':'}, ndims(obj.data), 1);
-          idxTmp(1) = idx(1).subs;
-          obj.data_ = obj.data_(idxTmp{:});
-          if numel(idx) > 1,
-            obj = builtin('subsref',obj,idx(2:end));
-          end
-          [varargout{1:nargout}] = obj;
-        case '{}'
-          error('irf:GenericTimeArray:subsref',...
-            'Not a supported subscripted reference')
+    
+    function Ts = resample(obj,NewTime,varargin)
+      % Resample to a new timeline
+      %
+      % Ts = resample(obj,NewTime, [ARGS]
+      %
+      % Note: resample data type is double.
+      %
+      % See also: IRF_RESAMPLE
+      if ~isa(NewTime,'GenericTimeArray')
+        error('NewTime must be of GenericTimeArray type or derived from it')
       end
-    end
-
+      if NewTime == obj.time, Ts = obj; return, end 
+      
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      
+      % For non-cartesian bases, in order to do a proper inte/extrapolarion
+      % we first transform into cartesian basis, resample, and then
+      % transform back to teh original basis
+      basis = obj.BASIS{obj.tensorBasis_};
+      switch basis
+        case {'xy','xyz'}, resample_(obj); return 
+        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+        case 'rp', resample_(obj.transform('xy'));
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      Ts = Ts.transform(basis);
+      
+      function resample_(TsTmp)
+        tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
+        newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
+        Ts = TsTmp; Ts.t_ = NewTime; Ts.data_ = newData(:,2:end);
+      end
+    end %RESAMPLE
+    
     function obj = tlim(obj,tint)
       [idx,obj.t_] = obj.time.tlim(tint);
       nd = ndims(obj.data_);
@@ -467,6 +538,25 @@ classdef TSeries
         otherwise, error('should no be here')
       end
     end
+    
+    function Ts = transform(obj, newBasis)
+      % Tranform from one coordinate system to another and return new
+      % TimeSeries.
+      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
+      %         'xyz' - Spherical latitude to cartesian XYZ
+      %         'rpz' - Cartesian XYZ to cylindrical
+      %         'xyz' - Cylidrical to cartesian XYZ
+      %         'rtp' - Cartesian XYZ to spherical colatitude
+      %         'xyz' - Spherical colatitude to cartesian XYZ
+      %         'rlp' - Spherical colatitude to spherical latitude
+      %         'rtp' - Spherical latitude to colatitude
+      if ~ischar(newBasis) || min(size('adc'))>1
+        error('newBasis must be a string')
+      end
+      oldBasis = obj.BASIS{obj.tensorBasis_};
+      if strcmpi(newBasis,oldBasis), Ts = obj; return; end
+      Ts = obj.changeBasis([oldBasis '>' newBasis]);
+    end
   end
   
   methods (Access=protected)
@@ -474,9 +564,9 @@ classdef TSeries
       res = [];
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
-      teno = obj.tensorBasis_;
+      teno = obj.tensorOrder_;
       if length(comp)~=teno, return, end
-      basis = obj.BASIS{teno};
+      basis = obj.BASIS{obj.tensorBasis_};
       if ~any(basis==comp(1)), return
       elseif length(comp)==2 && ~any(obj.BASIS(obj.tensorBasis_)==comp(2))
         return
@@ -520,6 +610,55 @@ classdef TSeries
         elseif lRep>2 && rep{3}==c, res = 3;
         else res = [];
         end
+      end
+    end
+    
+    function Ts = changeBasis(obj, flag)
+      % Tranform from one coordinate system to another and return new
+      % TimeSeries.
+      % flag: = 'xyz>rlp' - Cartesian XYZ to spherical latitude
+      %         'rlp>xyz' - Spherical latitude to cartesian XYZ
+      %         'xyz>rpz' - Cartesian XYZ to cylindrical
+      %         'rpz>xyz' - Cylidrical to cartesian XYZ
+      %         'xyz>rtp' - Cartesian XYZ to spherical colatitude
+      %         'rtp>xyz' - Spherical colatitude to cartesian XYZ
+      %         'rtp>rlp' - Spherical colatitude to spherical latitude
+      %         'rlp>rtp' - Spherical latitude to colatitude
+      switch lower(flag)
+        case 'xyz>rlp'
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          Ts = TSeries(obj.time, [r, lambda, phi], 'vec_rlp');
+        case 'rlp>xyz'
+          [x, y, z] = sph2cart(obj.phi.data, obj.lambda.data, obj.r.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rpz'
+          [phi, r, z] = cart2pol(obj.x.data, obj.y.data, obj.z.data);
+          Ts = TSeries(obj.time, [r, phi, z], 'vec_rpz');
+        case 'rpz>xyz'
+          [x, y, z] = pol2cart(obj.phi.data, obj.r.data, obj.z.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'xyz>rtp'
+          [phi, lambda, r] = cart2sph(obj.x.data, obj.y.data, obj.z.data);
+          theta = pi/2 - lambda;
+          Ts = TSeries(obj.time, [r, theta, phi], 'vec_rtp');
+        case 'rtp>xyz'
+          lambda = pi/2 - obj.theta.data;
+          [x, y, z] = sph2cart(obj.phi.data, lambda, obj.r.data);
+          Ts = TSeries(obj.time, [x, y, z], 'vec_xyz');
+        case 'rtp>rlp'
+          lambda = pi/2 - obj.theta.data;
+          Ts = TSeries(obj.time, [obj.r.data,lambda,obj.phi.data],'vec_rlp');
+        case 'rlp>rtp'
+          theta = pi/2 - obj.lambda.data;
+          Ts = TSeries(obj.time, [obj.r.data,theta,obj.phi.data],'vec_rtp');
+        case 'xy>rp'
+          [phi, r] = cart2pol(obj.x.data, obj.y.data);
+          Ts = TSeries(obj.time, [r, phi], 'vec_rp');
+        case 'rp>xy'
+          [x, y] = pol2cart(obj.phi.data, obj.r.data);
+          Ts = TSeries(obj.time, [x, y], 'vec_xy');
+        otherwise
+          errStr='Invalid transformation'; error(errStr);
       end
     end
   end

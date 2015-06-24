@@ -18,7 +18,7 @@ function mms_sdc_sdp_proc( procName, varargin)
 %         '/path/mms2_edp_fast_dce_20150410_v0.0.1.cdf, ...
 %         '/path/mm2_fields_hk_101_20150410_v0.0.2.cdf');
 %
-% 	See also MMS_SDC_SDP_INIT, MMS_SDC_SDP_BITMASKING.
+% 	See also MMS_SDC_SDP_INIT, MMS_SDP_DMGR.
 
 % Store runTime when script was called.
 runTime = datestr(now,'yyyymmddHHMMSS'); % Use this time to ease for SDC to
@@ -113,12 +113,9 @@ for i=1:nargin-1
               MMS_CONST.Samplerate.(MMS_CONST.TmModes{1})]);
             samplerate = MMS_CONST.Samplerate.(MMS_CONST.TmModes{1});
           end
-          mms_sdp_datamanager('init',...
-            struct('scId',scId,'tmMode',tmMode,'procId',procId,...
-            'samplerate',samplerate));
+          Dmgr = mms_sdp_dmgr(scId, procId, tmMode, samplerate);
         else
-          mms_sdp_datamanager('init',...
-            struct('scId',scId,'tmMode',tmMode,'procId',procId))
+          Dmgr = mms_sdp_dmgr(scId, procId,tmMode);
         end
     else
         if ~strcmp(HeaderInfo.numberStr, fileIn(4))
@@ -255,12 +252,12 @@ switch procId
   case MMS_CONST.SDCProc.scpot
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
+      src_fileData = load_file(HK_10E_File,'hk_10e');
       update_header(src_fileData); % Update header with file info.
     end
     if(~isempty(HK_105_File))
       irf.log('notice', [procName ' proc using: ' HK_105_File]);
-      src_fileData = mms_sdp_load(HK_105_File,'hk_105');
+      src_fileData = load_file(HK_105_File,'hk_105');
       update_header(src_fileData); % Update header with file info.
     end
     if isempty(HK_101_File)
@@ -269,7 +266,7 @@ switch procId
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
-    src_fileData = mms_sdp_load(HK_101_File,'hk_101');
+    src_fileData = load_file(HK_101_File,'hk_101');
     update_header(src_fileData) % Update header with file info.
 
     if isempty(DCE_File)
@@ -278,28 +275,25 @@ switch procId
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = mms_sdp_load(DCE_File,'dce');
+    src_fileData = load_file(DCE_File,'dce');
     update_header(src_fileData); % Update header with file info.
     
     if ~isempty(DCV_File)
       % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      src_fileData = mms_sdp_load(DCV_File,'dcv');
+      src_fileData = load_file(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
-
-    % Write the output
-    filename_output = mms_sdp_cdfwrite(HeaderInfo);
     
   case {MMS_CONST.SDCProc.sitl, MMS_CONST.SDCProc.ql, MMS_CONST.SDCProc.l2pre}
     if(~isempty(HK_10E_File))
       irf.log('notice', [procName ' proc using: ' HK_10E_File]);
-      src_fileData = mms_sdp_load(HK_10E_File,'hk_10e');
+      src_fileData = load_file(HK_10E_File,'hk_10e');
       update_header(src_fileData) % Update header with file info.
     end
     if(~isempty(HK_105_File))
       irf.log('notice', [procName ' proc using: ' HK_105_File]);
-      src_fileData = mms_sdp_load(HK_105_File,'hk_105');
+      src_fileData = load_file(HK_105_File,'hk_105');
       update_header(src_fileData); % Update header with file info.
     end
     % Phase
@@ -311,8 +305,8 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' DEFATT_File]);
-      [dataTmp,src_fileData]=mms_load_ancillary(DEFATT_File,'defatt');
-      mms_sdp_datamanager('defatt',dataTmp);
+      [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File,'defatt');
+      Dmgr.set_param('defatt', dataTmp);
       update_header(src_fileData); % Update header with file info.
     else
       % HK101 file => phase
@@ -322,7 +316,7 @@ switch procId
         error('Matlab:MMS_SDC_SDP_PROC:Input', errStr)
       end
       irf.log('notice', [procName ' proc using: ' HK_101_File]);
-      src_fileData=mms_sdp_load(HK_101_File,'hk_101');
+      src_fileData = load_file(HK_101_File,'hk_101');
       update_header(src_fileData) % Update header with file info.
     end
 
@@ -332,19 +326,16 @@ switch procId
       error('Matlab:MMS_SDC_SDP_PROC:Input', errStr);
     end
     irf.log('notice', [procName ' proc using: ' DCE_File]);
-    src_fileData = mms_sdp_load(DCE_File,'dce');
+    src_fileData = load_file(DCE_File,'dce');
     update_header(src_fileData) % Update header with file info.
 
     if ~isempty(DCV_File)
       % Separate DCV file
       irf.log('notice', [procName ' proc using: ' DCV_File]);
-      src_fileData = mms_sdp_load(DCV_File,'dcv');
+      src_fileData = load_file(DCV_File,'dcv');
       update_header(src_fileData) % Update header with file info.
     end
     
-    % Write the output
-    filename_output = mms_sdp_cdfwrite(HeaderInfo);
-
   case {MMS_CONST.SDCProc.l2a}
     % L2A process with L2Pre file as input
     if isempty(L2Pre_File)
@@ -354,16 +345,17 @@ switch procId
     end
 
     irf.log('notice', [procName ' proc using: ' L2Pre_File]);
-    src_fileData = mms_sdp_load(L2Pre_File,'l2pre');
+    src_fileData = load_file(L2Pre_File,'l2pre');
     update_header(src_fileData) % Update header with file info.
-
-    % Write the output
-    filename_output = mms_sdp_cdfwrite(HeaderInfo);
 
   otherwise
     errStr = 'unrecognized procId';
     irf.log('critical', errStr); error(errStr)
+
 end
+
+% Write the output
+filename_output = mms_sdp_cdfwrite(HeaderInfo, Dmgr);
 
 %% Write out filename as empty logfile so it can be easily found by SDC
 % scripts.
@@ -372,6 +364,12 @@ if ~isempty(ENVIR.LOG_PATH_ROOT)
     HeaderInfo.numberStr, filesep, 'edp', filesep, filename_output, ...
     '_',runTime,'.log']);
 end
+
+  function [filenameData] = load_file(fullFilename, dataType)
+    [~, fileName, ~] = fileparts(fullFilename);
+    filenameData = mms_fields_file_info(fileName);
+    Dmgr.set_param(dataType, fullFilename);
+  end
 
   function init_matlab_path()
     irfPath = [irf('path') filesep];

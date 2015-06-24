@@ -16,12 +16,17 @@ setenv('DATA_PATH_ROOT', [outDir filesep 'out'])
 setenv('LOG_PATH_ROOT', [outDir filesep 'log'])
 MMS_CONST=mms_constants;
 
+load /data/mms/irfu/mmsR.mat
+epocRTmp = EpochTT(R.time);
+
 %% Define time
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
-tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
+%tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
-mmsId = 'mms4'; 
+%tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
+tint = irf.tint('2015-06-22T12:00:00Z/2015-06-22T17:59:59Z');
+mmsId = 'mms3'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
@@ -33,9 +38,11 @@ HK_105_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_10e'],tint); if length(li)>1, error('li>1'), end
 HK_10E_File = [li.path filesep li.name];
 DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
-  '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
+  '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.1.cdf'];
 DCV_File  = [prf '/edp/comm/l1b/dcv128/' yyyy '/' mo '/' mmsId ...
-  '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
+  '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.1.cdf'];
+
+gsmR = [epocRTmp.epochUnix R.(['gsmR' mmsId(end)])];
 
 %% Test QL - DATAMANAGER
 if 0
@@ -82,7 +89,7 @@ spinfits = Dmgr.spinfits;
 delta_off = Dmgr.delta_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
 
-%% Construct TSeries
+% Construct TSeries
 DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
 DceDSL = irf.ts_vec_xyz(dce_xyz_dsl.time,dce_xyz_dsl.data);
 Phase = irf.ts_scalar(dce_xyz_dsl.time,phase.data);
@@ -124,6 +131,7 @@ irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
 irf_plot_ylabels_align(h), irf_zoom(h,'x',DceDSL.time)
+add_position(h(end),gsmR), xlabel(h(end),'')
 
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
@@ -154,10 +162,15 @@ irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
 mms_sdc_sdp_proc('ql', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 mms_sdc_sdp_proc('scpot', DCE_File,  DCV_File, HK_10E_File, HK_101_File);
 
+%% L2Pre
+tt = irf_time(tint.start.utc,'utc>doy');
+DEFATT_File = [data_root filesep 'ancillary' filesep mmsId filesep 'defatt'...
+  filesep 'MMS' mmsId(end) '_DEFATT_' ...
+  sprintf('%d%d_%d%d',tt(1),tt(2)-1,tt(1),tt(2)) '.V00'];
 mms_sdc_sdp_proc('l2pre', DCE_File,  DCV_File, HK_10E_File, DEFATT_File);
 
-%%
-mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150405000000_v0.0.0.cdf')
+%% L2a
+mms_sdc_sdp_proc('l2a','out/mms4_edp_comm_l2pre_dce2d_20150506120000_v0.1.0.cdf')
 
 %% Plot
 dce2d=dataobj('out/mms4_edp_comm_l2pre_dce2d_20150405000000_v2.0.0.cdf');

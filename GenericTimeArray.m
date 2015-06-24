@@ -140,8 +140,10 @@ classdef (Abstract) GenericTimeArray
 			objTmp = convert_epoch(obj1,class(obj));
 			if len1==1,
 				res = obj.epoch == objTmp.epoch;
-			else
+      elseif len1==len
 				res = obj.epoch == objTmp.epoch;
+      else
+        res = false;
 			end
     end
     

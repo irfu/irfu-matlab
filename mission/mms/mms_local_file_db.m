@@ -8,6 +8,9 @@ classdef mms_local_file_db < mms_file_db
   
   methods
     function obj = mms_local_file_db(rootPath)
+      % Create local database for MMS data located in rootPath.
+      % Example
+      %   MMS_DB = MMS_LOCAL_FILE_DB('/data/mms');
       if nargin == 0, rootPath = pwd; end
       if (rootPath(end)==filesep), rootPath(end)=[]; end % path only, excluding last filesep
       
@@ -24,8 +27,8 @@ classdef mms_local_file_db < mms_file_db
       % List files from Database "obj", wich match "filePrefix" and cover
       % optional time period "tint".
       % Example:
-      %  DB = mms_local_file_db('/path/to/mms/root/');
-      %  fileList = list_files(DB, 'mms1_edp_comm_l1b_dce128');
+      %  MMS_DB = mms_local_file_db('/data/mms'); % init
+      %  fileList = list_files(MMS_DB, 'mms1_edp_comm_l1b_dce128');
       narginchk(2,3)
       fileList = [];
       if nargin==3 && ~isa(tint,'GenericTimeArray'),
@@ -156,17 +159,16 @@ classdef mms_local_file_db < mms_file_db
         fileDir = obj.dbRoot;
         for i=1:length(C), fileDir = [fileDir filesep C{i}]; end %#ok<AGROW>
         if exist(fileDir,'dir')~=7, return, end
-        listingY = dir(fileDir);
+        listingY = dir(fileDir); listingY(~[listingY.isdir]) = [];
         for iDir = 1:length(listingY)
           % Loop over years
-          if ~listingY(iDir).isdir, continue, end
           dNameY = listingY(iDir).name;
           if length(dNameY)~=4, continue, end
           yyyy = str2double(dNameY);
           if yyyy<2015 || yyyy > 2050, continue, end
           listingM = dir([fileDir filesep dNameY]);
+          listingM(~[listingM.isdir]) = [];
           for iDirMo = 1:length(listingM)
-            if ~listingM(iDirMo).isdir, continue, end
             dNameM = listingM(iDirMo).name;
             if length(dNameM)~=2, continue, end
             switch dNameM(1)

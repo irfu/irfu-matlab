@@ -10,28 +10,13 @@ function [y]=irf_abs(x,flag)
 %
 % If input is of type TSeries and flag==1 then the returned value y is a
 % scalar time series corresponding to abs(x).
-%
-% $Id$
 
 if isempty(x), y=[];return;end % empty output for empty input
 
-if isa(x,'TSeries')
-  % Time series
-  if nargin == 2 && x.tensorOrder==1 && flag == 1
-    if(regexp(x.tensorBasis,'xy')) % cartesian xy (2d) or xyz (3d)
-      data = sqrt( sum(abs(x.data).^2, 2) );
-      y = irf.ts_scalar(x.time, data);
-    elseif(regexp(x.tensorBasis,'r[tl]p')) % spherical, colatitude/latitude
-      data = abs(x.r.data);
-      y = irf.ts_scalar(x.time, data);
-    elseif(regexp(x.tensorBasis,'rpz')) % cylindrical
-      data = sqrt(abs(x.r.data).^2 + abs(x.z.data).^2);
-      y = irf.ts_scalar(x.time, data);
-    else
-      error('Not yet implemented!');
-    end
-  else
-    error('Not yet implemented!');
+if isa(x,'TSeries') % Time series
+  Ts = x.abs(); 
+  if nargin == 2 && flag == 1, y = Ts.data;
+  else y = Ts;
   end
 else
   lx = size(x,2); % the number of vector components
