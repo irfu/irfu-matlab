@@ -749,10 +749,10 @@ classdef mms_sdp_dmgr < handle
         flag = get_variable(dataObj,[vPfx probe '_enable']);
         dtSampling = median(diff(flag.DEPEND_0.data));
         switch DATAC.tmMode
-          case MMS_CONST.TmMode.slow, dtNominal = [20, 160]; % seconds
-          case MMS_CONST.TmMode.fast, dtNominal = 5;
-          case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391]; %0.0391 in Marks sample file sent 2015/05/06.
-          case MMS_CONST.TmMode.comm, dtNominal = [0.5, 1.25, 2.0, 2.5, 5.0];
+          case MMS_CONST.TmMode.slow, dtNominal = [8, 12, 16, 20, 160]; % seconds, (160 from old 1 Hz data)
+          case MMS_CONST.TmMode.fast, dtNominal = [2.0, 3.0, 4.0, 5.0];
+          case MMS_CONST.TmMode.brst, dtNominal = [0.625, 0.229, 0.0763, 0.0391];
+          case MMS_CONST.TmMode.comm, dtNominal = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0 5.0, 8.0, 12.0, 16.0, 20.0];
           otherwise
             errS = 'Unrecognized tmMode';
             irf.log('critical',errS), error(errS)
@@ -926,7 +926,6 @@ classdef mms_sdp_dmgr < handle
     function res = get.probe2sc_pot(DATAC)
       if ~isempty(DATAC.probe2sc_pot), res = DATAC.probe2sc_pot; return, end
       
-      MMS_CONST = DATAC.CONST;
       Dcv = DATAC.dcv;
       if isempty(Dcv)
         errStr='Bad DCV input, cannot proceed.';
@@ -939,93 +938,9 @@ classdef mms_sdp_dmgr < handle
         irf.log('critical',errStr); error(errStr);
       end
       
-      % Filter window size, default 20 s * Samplerate = 160 samples (slow),
-      % 640 samples (fast), 163'840 samples (brst).
-      filterInterval = 20;
-      windowSize = sampleRate*filterInterval;
-      % Create filter coefficients for moving average filter.
-      a = 1; b = (1/windowSize)*ones(1,windowSize);
-      % Blank sweeps
-      sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
-      Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
-      Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, sweepBit);
-      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
-      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
-      % Apply moving average filter (a,b) on spin plane probes 1, 2, 3 & 4.
-      MAfilt = filter(b, a, [Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], [], 1);
-      % For each timestamp get median value of the moving average.
-      MAmedian = median(MAfilt, 2);
-      % For each probe check if it is too far off from the median
-      absDiff = abs(MAfilt - repmat(MAmedian, [1 4]));
-      badBits = absDiff > MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN;
-      
-      % Identify times with all four probes marked as bad
-      ind_row = ismember(badBits, [1 1 1 1], 'rows');
-      if( any(ind_row))
-        irf.log('warning', 'Some timestamps show all four probes as outliers. Using the "best" (closest to median) probe.');
-        %absDiff = abs(MAfilt(ind_row,:)-repmat(MAmedian(ind_row), [1 4]));
-        minAbsDiff = min(absDiff(ind_row,:), [], 2);
-        badBitsSeg = absDiff(ind_row,:) > repmat(minAbsDiff, [1 4]);
-        badBits(ind_row,:) = badBitsSeg;
-      end
-      
-      % Identify times with two bad probes
-      ind_row = ismember(badBits, [1 0 0 1; 0 1 1 0], 'rows');
-      if( any(ind_row))
-        irf.log('warning','Some timestamps show two (not pairwise) probes as outliers. Using them anyhow...');
-        % FIXME: WHAT TO DO? Use the other two? Or only the "Best"?
-      end
-      
-      % Identify times with one bad probe, set the entire pair as bad.
-      ind_row = ismember(badBits, [1 0 0 0 ; 0 1 0 0], 'rows');
-      if( any(ind_row))
-        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (12) for those times.');
-        badBits(ind_row, 1:2) = 1;
-      end
-      ind_row = ismember(badBits, [0 0 1 0 ; 0 0 0 1], 'rows');
-      if( any(ind_row))
-        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (34) for those times.');
-        badBits(ind_row, 3:4) = 1;
-      end
-      
-      % Set all bad bits to NaN in data before calculating the averaged value
-      Dcv.v1.data(badBits(:,1)) = NaN;
-      Dcv.v2.data(badBits(:,2)) = NaN;
-      Dcv.v3.data(badBits(:,3)) = NaN;
-      Dcv.v4.data(badBits(:,4)) = NaN;
-      
-      % Compute average of all spin plane probes, ignoring data identified as
-      % bad (NaN).
-      avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);
-      
-      % Combine bitmask so that bit 0 = 0 (either four or two probes was
-      % used), bit 0 = 1 (either one probe or no probe (if no probe => NaN
-      % output in data). The other bits are a bitor comination of those
-      % probes that were used (i.e. bitmask = 2 (dec), would mean at least
-      % one probe that was used for that point in time had "bad bias").
-      % Update badBits due to blanking of sweep.
-      badBits(:,1) = isnan(Dcv.v1.data); badBits(:,2) = isnan(Dcv.v2.data);
-      badBits(:,3) = isnan(Dcv.v3.data); badBits(:,4) = isnan(Dcv.v4.data);
-      % Start with bit 0
-      bitmask = uint16(sum(badBits,2)>=3); % Three or more badBits on each row.
-      % Extract probe bitmask, excluding the lowest bit (signal off)
-      bits = intmax(class(bitmask)) - MMS_CONST.Bitmask.SIGNAL_OFF;
-      vBit = zeros(length(Dcv.v1.bitmask),4,'like',MMS_CONST.Bitmask.SIGNAL_OFF);
-      vBit(:,1) = bitand(Dcv.v1.bitmask, bits);
-      vBit(:,2) = bitand(Dcv.v2.bitmask, bits);
-      vBit(:,3) = bitand(Dcv.v3.bitmask, bits);
-      vBit(:,4) = bitand(Dcv.v4.bitmask, bits);
-      % Combine bitmasks with bitor of times when probe was used to derive
-      % mean. (I.e. not marked by badBits).
-      for ii=1:4
-        bitmask(~badBits(:,ii)) = ...
-          bitor(bitmask(~badBits(:,ii)), vBit(~badBits(:,ii),ii));
-      end
-      
-      DATAC.probe2sc_pot = struct('time',Dcv.time,'data',avPot,...
-        'bitmask',bitmask);
+      DATAC.probe2sc_pot = ...
+        mms_sdp_dmgr.comp_probe2sc_pot(Dcv,sampleRate,DATAC.CONST);
       res = DATAC.probe2sc_pot;
-      
     end
     
     function res = get.sc_pot(DATAC)
@@ -1152,6 +1067,123 @@ classdef mms_sdp_dmgr < handle
     end
     
   end % public Methods
+  methods (Static)
+    function probe2sc_pot = comp_probe2sc_pot(Dcv,sampleRate,MMS_CONST)
+      % Blank sweeps
+      sweepBit = MMS_CONST.Bitmask.SWEEP_DATA;
+      Dcv.v1.data = mask_bits(Dcv.v1.data, Dcv.v1.bitmask, sweepBit);
+      Dcv.v2.data = mask_bits(Dcv.v2.data, Dcv.v2.bitmask, sweepBit);
+      Dcv.v3.data = mask_bits(Dcv.v3.data, Dcv.v3.bitmask, sweepBit);
+      Dcv.v4.data = mask_bits(Dcv.v4.data, Dcv.v4.bitmask, sweepBit);
+      % Filter window size.
+      filterInterval = 20;
+      windowSize = sampleRate*filterInterval;
+      
+      %    % Ideally we would like to use irf_filt, but this use ellip (part of
+      %    % Signal Processing Toolbox, which is not part of SDC installation).
+      %    filtOr = 3; epo = double(dcv.time - dcv.time(1))*1e-9;
+      %     MAfilt = irf_filt([epo...
+      %       double([dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data])],...
+      %       0,1/filterInterval,samplerate,filtOr);
+      %     MAfilt(:,1) = [];
+      
+      MAfilt = NaN(size(Dcv.v1.data,1),4);
+      % For each windowSize segment, calculate the mean value of each probe,
+      % excluding NaN values.
+      indStart = 1;  indEnd = min(windowSize,length(Dcv.v1.data));
+      while indEnd<length(Dcv.v1.data)
+        ind = indStart:indEnd;
+        MAfilt(ind, 1:4) = repmat(irf.nanmean([...
+          Dcv.v1.data(ind), ...
+          Dcv.v2.data(ind), ...
+          Dcv.v3.data(ind), ...
+          Dcv.v4.data(ind)], 1),[length(ind), 1]);
+        % Compute next segments start and stop ind.
+        indStart = indEnd+1;
+        indEnd = min(indStart+windowSize-1, length(Dcv.v1.data));
+      end
+      % The last segment, or if a short data series then this first segment
+      % is the last segment.
+      ind = indStart:indEnd;
+      MAfilt(ind, 1:4) = repmat(irf.nanmean([...
+        Dcv.v1.data(ind), ...
+        Dcv.v2.data(ind), ...
+        Dcv.v3.data(ind), ...
+        Dcv.v4.data(ind)], 1),[length(ind), 1]);
+      
+      % For each timestamp get median value of the averaged probes.
+      MAmedian = median(MAfilt, 2);
+      % For each probe check if its value is too far off from the median
+      absDiff = abs([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data] - ...
+        repmat(MAmedian, [1 4]));
+      badBits = absDiff > MMS_CONST.Limit.DIFF_PROBE_TO_SCPOT_MEDIAN;
+      
+      % Identify times with all four probes marked as bad
+      ind_row = ismember(badBits, [1 1 1 1], 'rows');
+      if( any(ind_row))
+        irf.log('warning', ...
+          'All four probes are outliers: using the "best" (closest to median) probe.');
+        %absDiff = abs(MAfilt(ind_row,:)-repmat(MAmedian(ind_row), [1 4]));
+        minAbsDiff = min(absDiff(ind_row,:), [], 2);
+        badBitsSeg = absDiff(ind_row,:) > repmat(minAbsDiff, [1 4]);
+        badBits(ind_row,:) = badBitsSeg;
+      end
+      
+      ind_row = ismember(badBits, [1 0 0 1; 0 1 1 0], 'rows');
+      if( any(ind_row))
+        irf.log('warning',...
+          'Two (not pairwise) probes as outliers: using them anyhow.');
+        % FIXME: WHAT TO DO? Use the other two? Or only the "Best"?
+      end
+      
+      % Identify times with one bad probe, set the entire pair as bad.
+      ind_row = ismember(badBits, [1 0 0 0 ; 0 1 0 0], 'rows');
+      if( any(ind_row))
+        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (12) for those times.');
+        badBits(ind_row, 1:2) = 1;
+      end
+      ind_row = ismember(badBits, [0 0 1 0 ; 0 0 0 1], 'rows');
+      if( any(ind_row))
+        irf.log('notice','Some timestamps show one probe as outlier, removing this probe pair (34) for those times.');
+        badBits(ind_row, 3:4) = 1;
+      end
+      
+      % Set all bad bits to NaN in data before calculating the averaged value
+      Dcv.v1.data(badBits(:,1)) = NaN;
+      Dcv.v2.data(badBits(:,2)) = NaN;
+      Dcv.v3.data(badBits(:,3)) = NaN;
+      Dcv.v4.data(badBits(:,4)) = NaN;
+      
+      % Compute average of all spin plane probes, ignoring data identified as
+      % bad (NaN).
+      avPot = irf.nanmean([Dcv.v1.data, Dcv.v2.data, Dcv.v3.data, Dcv.v4.data], 2);
+      
+      % Combine bitmask so that bit 0 = 0 (either four or two probes was
+      % used), bit 0 = 1 (either one probe or no probe (if no probe => NaN
+      % output in data). The other bits are a bitor comination of those
+      % probes that were used (i.e. bitmask = 2 (dec), would mean at least
+      % one probe that was used for that point in time had "bad bias").
+      % Update badBits due to blanking of sweep.
+      badBits(:,1) = isnan(Dcv.v1.data); badBits(:,2) = isnan(Dcv.v2.data);
+      badBits(:,3) = isnan(Dcv.v3.data); badBits(:,4) = isnan(Dcv.v4.data);
+      % Start with bit 0
+      bitmask = uint16(sum(badBits,2)>=3); % Three or more badBits on each row.
+      % Extract probe bitmask, excluding the lowest bit (signal off)
+      bits = intmax(class(bitmask)) - MMS_CONST.Bitmask.SIGNAL_OFF;
+      vBit = zeros(length(Dcv.v1.bitmask),4,'like',MMS_CONST.Bitmask.SIGNAL_OFF);
+      vBit(:,1) = bitand(Dcv.v1.bitmask, bits);
+      vBit(:,2) = bitand(Dcv.v2.bitmask, bits);
+      vBit(:,3) = bitand(Dcv.v3.bitmask, bits);
+      vBit(:,4) = bitand(Dcv.v4.bitmask, bits);
+      % Combine bitmasks with bitor of times when probe was used to derive
+      % mean. (I.e. not marked by badBits).
+      for ii=1:4
+        bitmask(~badBits(:,ii)) = bitor(bitmask(~badBits(:,ii)), vBit(~badBits(:,ii),ii));
+      end
+      
+      probe2sc_pot = struct('time',Dcv.time,'data',avPot,'bitmask',bitmask);
+    end
+  end % static methods
   
 end
 

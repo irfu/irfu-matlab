@@ -18,7 +18,6 @@ ud.FIELDNAM         = v.FIELDNAM;
 if isfield(v,'SI_CONVERSION')
 ud.SI_CONVERSION    = v.SI_CONVERSION;
 end
-ud.UNITS            = v.UNITS;
 ud.VALIDMIN         = v.VALIDMIN;
 ud.VALIDMAX         = v.VALIDMAX;
 if isfield(v,'LABLAXIS'), ud.LABLAXIS = v.LABLAXIS; end
@@ -33,7 +32,7 @@ elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
 elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
 else
   % Special quirks for different instruments
-  if regexp(v.name,'^mms[1-4]_[d,a]fg_srvy_gsm_dmpa$') %AFG/DFGb1
+  if regexp(v.name,'^mms[1-4]_[d,a]fg_srvy(_gsm)?_dmpa$') %AFG/DFGb1
     data = data(:,1:3); % strip Btot
     varType = 'vec_xyz';
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
@@ -51,4 +50,5 @@ end
 if isfield(v,'FILLVAL'), data(data==v.FILLVAL) = NaN; end
 ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
 ts.name = v.name;
+ts.units = v.UNITS;
 ts.userData = ud;
