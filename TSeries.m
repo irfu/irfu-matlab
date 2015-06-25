@@ -384,7 +384,7 @@ classdef TSeries
         otherwise
           error('Unknown representation'); % should not be here
       end
-      Ts = obj; obj.data_ = data;
+      obj.data_ = data; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
