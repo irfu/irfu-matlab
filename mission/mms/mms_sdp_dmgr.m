@@ -695,6 +695,10 @@ classdef mms_sdp_dmgr < handle
             DATAC.(param).fileVersion.major, MMS_CONST.MinFileVer);
           irf.log('critical',err_str), error(err_str); %#ok<SPERR>
         end
+        if(dataObj.data.([vPfx param '_sensor']).nrec==0)
+          err_str='Empty sensor data. Possibly started processing too early..';
+          irf.log('critical',err_str); error(err_str);
+        end
         x = getdep(dataObj,[vPfx param '_sensor']);
         DATAC.(param).time = x.DEPEND_O.data;
         check_monoton_timeincrease(DATAC.(param).time, param);
