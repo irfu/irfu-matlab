@@ -389,6 +389,52 @@ classdef TSeries
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
     
+    function Ts = cross(obj,obj1)
+      % Matrix multiplication
+      if ~isa(obj,'TSeries') ||  ~isa(obj1,'TSeries')
+        error('Both imputs must be TSeries'); 
+      end 
+      if obj.tensorOrder~=1 || obj1.tensorOrder~=1
+        error('Only scalars and vectors are supported');
+      end
+        
+      if obj.time~=obj1.time
+        warning('tseries:resampling','resamplig TSeries')
+        obj1 = obj1.resample(obj.time);
+      end
+      Ts = obj;
+      vector_product()
+      update_name()
+    
+      function vector_product()
+        switch obj.BASIS{obj.tensorBasis_}
+          case {'xy','rp'}
+            Ts = obj.transform('xy'); d1 = Ts.data;
+            d2 = obj1.transform('xy').data;
+            Ts.data_ = d1(:,1).*d2(:,2) - d1(:,2).*d2(:,1);
+          case {'xyz','rtp','rlp','rpz'}
+            Ts = obj.transform('xyz'); d1 = Ts.data;
+            d2 = obj1.transform('xyz').data;
+            Ts.data_=[	d1(:,2).*d2(:,3)-d1(:,3).*d2(:,2), ...
+              - (d1(:,1).*d2(:,3)-d1(:,3).*d2(:,1)), ...
+              d1(:,1).*d2(:,2)-d1(:,2).*d2(:,1)];
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+      end
+      
+      function update_name()
+        if isempty(obj.name) && isempty(obj1.name), return, end
+        if isempty(obj.name), s = 'untitled';
+        else s = obj.name;
+        end
+        if isempty(obj1.name), s1 = 'untitled';
+        else s1 = obj1.name;
+        end
+        Ts.name = sprintf('cross(%s,%s)',s,s1);
+      end
+    end
+    
     function l = length(obj)
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
@@ -418,7 +464,7 @@ classdef TSeries
           ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
         obj.data_ = obj.data_ - inp;
       else
-        error('Plus not defined');
+        error('Minus not defined');
       end
     end
     
