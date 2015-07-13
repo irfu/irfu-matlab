@@ -507,7 +507,7 @@ classdef TSeries
           otherwise
             error('Not supported')
         end
-        update_name()
+        update_name_units()
         return
       end
       if ~isnumeric(obj1)
@@ -535,15 +535,22 @@ classdef TSeries
         Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       end
       
-      function update_name()
-        if isempty(obj.name) && isempty(obj1.name), return, end
-        if isempty(obj.name), s = 'untitled';
-        else s = obj.name;
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('%s*%s',s,s1);
         end
-        if isempty(obj1.name), s1 = 'untitled';
-        else s1 = obj1.name;
+        if ~isempty(obj.units) || ~isempty(obj1.units)
+          if isempty(obj.units), Ts.units = obj1.units;
+          elseif isempty(obj1.units), Ts.units = obj.units;
+          else Ts.units = [obj.units ' ' obj1.units];
+          end
         end
-        Ts.name = sprintf('%s*%s',s,s1);
       end
     end
     
