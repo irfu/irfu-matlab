@@ -648,7 +648,7 @@ classdef TSeries
             else args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
-          res = TSeries(args{:});
+          res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
         case 2
           error('not implemented')
         otherwise, error('should no be here')
