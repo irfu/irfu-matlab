@@ -469,6 +469,10 @@ classdef TSeries
     end
     
     function Ts = mtimes(obj,obj1)
+      if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
+        obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
+      end
+        
       % Matrix multiplication
       if isa(obj1,'TSeries')
         if obj.tensorOrder>1 || obj1.tensorOrder>1
