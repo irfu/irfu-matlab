@@ -23,6 +23,9 @@ classdef mms_db < handle
     
    function fileList = list_files(obj,filePrefix,tint)
      fileList =[];
+     if isempty(obj.databases)
+       irf.log('warning','No databases initialized'), return
+     end
      for iDb = 1:length(obj.databases)
        fileList = [fileList obj.databases(iDb).list_files(filePrefix,tint)]; %#ok<AGROW>
      end
