@@ -1,6 +1,6 @@
 function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 % LP.CURRENT calculate current to the probe
-% J=LP.CURRENT(Probe,vectorU,rSunAU,factorUV,Plasma,vSc)
+% J=LP.CURRENT(Probe,vectorU,rSunAU,factorUV,Plasma)
 %
 %   Calculates the total probe current to/from a Lanmuir probe
 %   consisting of cylinder/wire and sphere. Return current contributions:
@@ -13,15 +13,15 @@ function J=current(Probe,vectorU,rSunAU,factorUV,Plasma)
 %  probe.surface - 'themis','cassini' (one of flags in lp.photocurrent)
 %  probe.cross_section_area - in m2
 %  probe.total_area - in m2
-%  U_probe    - probe potential (can be vector or matrix)
-%  R_sun      - distance from sun in AU
-%  UV_factor  - default is 1
-%  plasma     - describes plasma components (structure)
-%    plasma.q - charge of species in e (the length of this vector corresponds to number of species)
-%    plasma.m - mass of species in proton masses (0 corresponds to e- mass)
-%    plasma.n - density of species [cc]
-%    plasma.T - temperature [eV]
-%    plasma.v - velocity of probe wrt. mmedia [m/s]
+%  vectorU    - probe potential (can be vector or matrix)
+%  rSunAU     - distance from sun in AU
+%  factorUV   - default is 1
+%  Plasma     - describes plasma components (structure)
+%    Plasma.q - charge of species in e (the length of this vector corresponds to number of species)
+%    Plasma.m - mass of species in proton masses (0 corresponds to e- mass)
+%    Plasma.n - density of species [cc]
+%    Plasma.T - temperature [eV]
+%    Plasma.v - velocity of probe wrt. mmedia [m/s]
 %
 % See also: LP.PHOTOCURRENT, LP.THERMAL_CURRENT
 
