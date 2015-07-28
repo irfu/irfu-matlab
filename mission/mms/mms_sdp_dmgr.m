@@ -147,7 +147,6 @@ classdef mms_sdp_dmgr < handle
           param = 'dcv';
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
-          chk_timeline()
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
@@ -883,12 +882,19 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad SPINFITS input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
-      Delta_p12_p34 = double(Spinfits.sfit.e12(:,2:3)) - ...
-        double(Spinfits.sfit.e34(:,2:3));
-      
-      DATAC.delta_off = ...
-        median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
+      % Index of times when both pairs have good spinfits, excluding data
+      % gaps and such...
+      ind = and( all( ~isnan( Spinfits.sfit.e12(:,2:3) ), 2), ...
+                 all( ~isnan( Spinfits.sfit.e34(:,2:3) ), 2) );
+      if(any(ind))
+        Delta_p12_p34 = double(Spinfits.sfit.e12(ind,2:3)) - ...
+          double(Spinfits.sfit.e34(ind,2:3));
+        DATAC.delta_off = ...
+          median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
+      else
+        DATAC.delta_off = MMS_CONST.Error;
+        irf.log('warning','Delta offset could not be computed.');
+      end
       res = DATAC.delta_off;
     end
     
