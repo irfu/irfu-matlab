@@ -292,7 +292,10 @@ for i = 1:ngap+1
     period_flag(segind) = period_flag_seg;
     % Compute new pulses based on the filtered period. Adding previous
     % pulse (pulse will have added psudo pulses if gap).
-    Newpulse(segind,1) = pulse(segind(1)-1) + int64(cumsum(mperiod));
+    len_np = length(Newpulse);
+    pulseSegm = pulse(segind(1)-1) + int64(cumsum(mperiod));
+    len_ps = length(pulseSegm);
+    Newpulse(len_np+1:len_np+len_ps,1) = pulseSegm;
 end
 
 %% Step 2b: It is not safe to apply the median smooth method across large
