@@ -384,9 +384,62 @@ classdef TSeries
         otherwise
           error('Unknown representation'); % should not be here
       end
-      Ts = obj; obj.data_ = data;
+      obj.data_ = data; Ts = obj;
       Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
+    end
+    
+    function Ts = cross(obj,obj1)
+      % Matrix multiplication
+      if ~isa(obj,'TSeries') ||  ~isa(obj1,'TSeries')
+        error('Both imputs must be TSeries'); 
+      end 
+      if obj.tensorOrder~=1 || obj1.tensorOrder~=1
+        error('Only scalars and vectors are supported');
+      end
+        
+      if obj.time~=obj1.time
+        warning('tseries:resampling','resamplig TSeries')
+        obj1 = obj1.resample(obj.time);
+      end
+      Ts = obj;
+      vector_product()
+      update_name_units()
+    
+      function vector_product()
+        switch obj.BASIS{obj.tensorBasis_}
+          case {'xy','rp'}
+            Ts = obj.transform('xy'); d1 = Ts.data;
+            d2 = obj1.transform('xy').data;
+            Ts.data_ = d1(:,1).*d2(:,2) - d1(:,2).*d2(:,1);
+          case {'xyz','rtp','rlp','rpz'}
+            Ts = obj.transform('xyz'); d1 = Ts.data;
+            d2 = obj1.transform('xyz').data;
+            Ts.data_=[	d1(:,2).*d2(:,3)-d1(:,3).*d2(:,2), ...
+              - (d1(:,1).*d2(:,3)-d1(:,3).*d2(:,1)), ...
+              d1(:,1).*d2(:,2)-d1(:,2).*d2(:,1)];
+          otherwise
+            error('Unknown representation'); % should not be here
+        end
+      end
+      
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('cross(%s,%s)',s,s1);
+        end
+        if ~isempty(obj.units) || ~isempty(obj1.units)
+          if isempty(obj.units), Ts.units = obj1.units;
+          elseif isempty(obj1.units), Ts.units = obj.units;
+          else Ts.units = [obj.units ' ' obj1.units];
+          end
+        end
+      end
     end
     
     function l = length(obj)
@@ -418,11 +471,15 @@ classdef TSeries
           ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
         obj.data_ = obj.data_ - inp;
       else
-        error('Plus not defined');
+        error('Minus not defined');
       end
     end
     
     function Ts = mtimes(obj,obj1)
+      if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
+        obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
+      end
+        
       % Matrix multiplication
       if isa(obj1,'TSeries')
         if obj.tensorOrder>1 || obj1.tensorOrder>1
@@ -450,7 +507,7 @@ classdef TSeries
           otherwise
             error('Not supported')
         end
-        update_name()
+        update_name_units()
         return
       end
       if ~isnumeric(obj1)
@@ -478,15 +535,22 @@ classdef TSeries
         Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       end
       
-      function update_name()
-        if isempty(obj.name) && isempty(obj1.name), return, end
-        if isempty(obj.name), s = 'untitled';
-        else s = obj.name;
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('%s*%s',s,s1);
         end
-        if isempty(obj1.name), s1 = 'untitled';
-        else s1 = obj1.name;
+        if ~isempty(obj.units) || ~isempty(obj1.units)
+          if isempty(obj.units), Ts.units = obj1.units;
+          elseif isempty(obj1.units), Ts.units = obj.units;
+          else Ts.units = [obj.units ' ' obj1.units];
+          end
         end
-        Ts.name = sprintf('%s*%s',s,s1);
       end
     end
     
@@ -598,7 +662,7 @@ classdef TSeries
             else args = [args {'repres',{}}]; %#ok<AGROW>
             end
           end
-          res = TSeries(args{:});
+          res = TSeries(args{:}); res.name = sprintf('%s_%s',obj.name,comp);
         case 2
           error('not implemented')
         otherwise, error('should no be here')

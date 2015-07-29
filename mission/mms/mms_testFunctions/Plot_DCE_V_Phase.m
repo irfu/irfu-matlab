@@ -69,7 +69,7 @@ ZPHASE = [irf_time(TTtime,'utc>epoch'), double(tmpData{1,4})];
 clear TTtime fileID formatSpec tmpData numHeaders headerGrep
 
 %% Read DCE file
-dataObj = dataobj(dceFile, 'KeepTT2000');
+dataObj = dataobj(dceFile);
 
 % [epoch, E12, E34] for irf_plot
 E1234 = [irf_time(dataObj.data.Epoch.data,'ttns>epoch'), ...
@@ -79,7 +79,7 @@ E1234 = [irf_time(dataObj.data.Epoch.data,'ttns>epoch'), ...
 clear dataObj
 
 %% Read DCV file
-dataObj = dataobj(dcvFile, 'KeepTT2000');
+dataObj = dataobj(dcvFile);
 
 % [epoch, V1, V2, V3, V4] for irf_plot
 V1234 = [irf_time(dataObj.data.Epoch.data,'ttns>epoch'), ...

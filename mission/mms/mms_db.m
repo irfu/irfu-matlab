@@ -23,6 +23,9 @@ classdef mms_db < handle
     
    function fileList = list_files(obj,filePrefix,tint)
      fileList =[];
+     if isempty(obj.databases)
+       irf.log('warning','No databases initialized'), return
+     end
      for iDb = 1:length(obj.databases)
        fileList = [fileList obj.databases(iDb).list_files(filePrefix,tint)]; %#ok<AGROW>
      end
@@ -93,7 +96,7 @@ classdef mms_db < handle
          irf.log('warning',sprintf('Discarded %d data points',nDuplicate))
        end
        [res.DEPEND_0.data,idxSort] = sort(res.DEPEND_0.data);
-       res.data = res.data(idxSort);
+       res.data = res.data(idxSort, :); % All columns.
        function res = comp_struct(s1,s2)
        % Compare structures
          narginchk(2,2), res = false;
@@ -108,7 +111,12 @@ classdef mms_db < handle
          
          for iField=1:length(fields1)
            f = fields1{iField};
-           if ~isempty(intersect(f,{'data','nrec','DEPEND_0'})), continue, end
+           % data, nrec and the GlobalAttributes Generation_date,
+           % Logical_file_id and Data_version will almost always differ
+           % between files.
+           ignoreFields = {'data','nrec','Generation_date',...
+             'Logical_file_id','Data_version'};
+           if ~isempty(intersect(f,ignoreFields)), continue, end
            if isnumeric(s1.(f)) || ischar(s1.(f))
              if ~all(all(all(s1.(f)==s2.(f)))), return, end
            elseif isstruct(s1.(f)), if ~comp_struct(s1.(f),s2.(f)), return, end
