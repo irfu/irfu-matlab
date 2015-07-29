@@ -52,6 +52,7 @@ else
     'repres',repres);
 end
 res.name = data.name;
+res.units = data.UNITS;
 ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
 ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
 ud = rmfield(ud,'variance');
