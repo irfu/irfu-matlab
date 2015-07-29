@@ -32,7 +32,7 @@ COMPRESS_LEVEL = 'gzip.6'; % Default compression level to be used for variables.
 
 procId = Dmgr.procId;
 if procId==MMS_CONST.Error
-    errStr = 'mms_sdp_datamanager not properly initialized';
+    errStr = 'mms_sdp_dmgr not properly initialized';
     irf.log('critical',errStr), error(errStr)
 end
 procName = MMS_CONST.SDCProcs{procId};
