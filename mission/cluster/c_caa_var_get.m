@@ -11,13 +11,13 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %		- using local.c_read()
 %		- streaming from CAA data base (if parameters 'mat' and 'tint' specified)
 %
-% C_CAA_VAR_GET(Dataobj,varName)  load from dataobject Dataobj. If Dataobj
+% C_CAA_VAR_GET(Dataobj,varName) load from dataobject Dataobj. If Dataobj
 %	is empty the output is the same as from C_CAA_VAR_GET(varName).
 %
 % Output variable types are defined in IRF.DATATYPES.
-%  caa=C_CAA_VAR_GET(varName)         returns VariableStruct
+%  caa=C_CAA_VAR_GET(varName)         returns VariableStruct (in future TSeries)
 %  caa=C_CAA_VAR_GET(varname,'caa')   returns VariableStruct
-%  caa=C_CAA_VAR_GET(varname,'ts')    returns TimeSeries object
+%  caa=C_CAA_VAR_GET(varname,'ts')    returns TSeries object
 %  var=C_CAA_VAR_GET(varname,'mat')   returns variableMat
 %  dobj=C_CAA_VAR_GET(varname,'dobj') returns DataObject
 %  unit=C_CAA_VAR_GET(varname,'unit') returns only units
@@ -27,8 +27,8 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 %  var=C_CAA_VAR_GET(varname,option,'file') force to read dataobject from
 %	file even if it is already in memory.
 %
-%  C_CAA_VAR_GET(varname,'tint',tint) get only the interval specified by
-%	tint (always reads from file in this case, good option for large files)
+%  C_CAA_VAR_GET(varname,'tint',tint) get data from the time interval
+%  specified by tint. If tint is empty get all the data.
 %
 %  C_CAA_VAR_GET(varname,'showdep') show dependencies of the variables
 %
@@ -125,20 +125,24 @@ while numel(args)
 			args(1)     = [];
 		case 'tint'                          % load specified time interval
 			if numel(args)>1
-				if isnumeric(args{2})
-					tint = args{2};
-				elseif ischar(args{2})
-					tint = irf_time(args{2},'utc>tint');
+				if isempty(args{2})
+					getAllData = true;
 				else
-					irf.log('critical','wrongArgType : tint must be numeric or iso')
-					error('tint must be numeric or iso');
+					if isnumeric(args{2})
+						tint = args{2};
+					elseif ischar(args{2})
+						tint = irf_time(args{2},'utc>tint');
+					else
+						irf.log('critical','wrongArgType : tint must be numeric or iso')
+						error('tint must be numeric or iso');
+					end
+					getAllData = false;
 				end
 				args(1:2)=[];
 			else
 				irf.log('critical','wrongArgType : tint value is missing')
 				error('tint value missing');
 			end
-			getAllData = false;
 		otherwise
 			irf.log('critical',['Unknown input parameter  ''' args{1} ''' !!!'])
 			error('unknown input parameter');
@@ -159,7 +163,7 @@ end
 
 if nargout, % initialize return variables to empty
 	res=cell(size(varNameList));
-	resdataobject=res;resmat=res;resunit=res;
+	resdataobject=res;resmat=res;resunit=res;rests=res;
 else
 	return;
 end
