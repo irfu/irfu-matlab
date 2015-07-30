@@ -455,10 +455,14 @@ classdef TSeries
         else
           sizeInp = size(inp);
           sizeObj = size(obj.data);
-          if numel(sizeInp) == numel(sizeObj) && ...
-              sizeInp(1) == 1 && ...
-              all(sizeInp(2:end) == sizeObj(2:end))
-            obj.data_ = obj.data_ + repmat(inp,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+          if isequal(sizeInp,sizeObj)
+						obj.data_ = obj.data_ + inp;
+					elseif numel(sizeInp) == numel(sizeObj) ...
+							&& sizeInp(1) == 1  ...
+							&& all(sizeInp(2:end) == sizeObj(2:end))
+						obj.data_ = obj.data_ + repmat(inp,[sizeObj(1) ones(1,numel(sizeInp)-1)]);
+					else
+						error('Plus not defined');
           end
         end
       else
