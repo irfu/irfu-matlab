@@ -358,7 +358,7 @@ classdef TSeries
     end
     
     function obj = set.time(obj,value)
-      if ~isa(t,'GenericTimeArray')
+      if ~isa(value,'GenericTimeArray')
         error('irf:GenericTimeArray:sett:badInputs',...
           'T must be of GenericTimeArray type or derived from it')
       end
