@@ -32,8 +32,11 @@ elseif  isnumeric(x),
 		if size(x,2)>3, column=[2 3 4];end
 	end
 	action='initialize';
-elseif isa(x,'TSeries') && x.tensorOrder == 1
-	
+elseif isa(x,'TSeries') && x.tensorOrder == 1 && size(x.data,2)==3
+	action='initialize';
+	xNew = double([x.time.epochUnix x.data]);
+	column = [2 3 4];
+	x = xNew;
 end
 
 switch action,
