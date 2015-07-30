@@ -1,19 +1,21 @@
-function f = irf_get_data( tint, parameter , database, format)
+function f = irf_get_data(varargin)
 %IRF_GET_DATA get data form different databases
 %
-% f=IRF_GET_DATA(tint,parameter,database) download parameters for specified time interval
-%       default f is column vector, first column time and parameters in next columns
+% f = IRF_GET_DATA(tint,parameter,database) download parameters for
+% specified time interval. Default format is f being column vector where
+% first column is time and parameters are in next columns. In future it
+% will change to TSeries being the default returned format.
 %       parameters - string, data names separated by comma (case does not matter).
 %
-% f=IRF_GET_DATA(parameter,database) checking if tint defined in calling environment and using that one 
-%       if tint not defined reading all data
+% f=IRF_GET_DATA(parameter,database) checking if tint defined in calling
+%   environment and using that one, if tint not defined reading all data.
 %
-% f=IRF_GET_DATA(parameter,database,format) get data in specified format (specific for databases)
+% f=IRF_GET_DATA(parameter,database,format) get data in specified format
+%    which can be specific for different databases.
 %
-% database:  'omni2'    - 1h resolution OMNI2 data (default), see also IRF_GET_DATA_OMNI
-%            'omni_min' - 1min resolution OMNI data
-%            'caa'      - Cluster Active Archive, see also C_CAA_VAR_GET
-%                         formats: 'caa','mat','units'
+% database:  'omni2'    - 1h resolution OMNI2 data (default), see IRF_GET_DATA_OMNI
+%            'omni_min' - 1min resolution OMNI data, see IRF_GET_DATA_OMNI
+%            'caa' or 'csa' - Cluster Science Archive, see C_CAA_VAR_GET
 %
 % Examples:
 %   tint=[irf_time([2006 01 01 1 1 0]) irf_time([2006 01 02 23 59 0])];
@@ -22,40 +24,22 @@ function f = irf_get_data( tint, parameter , database, format)
 
 % http://omniweb.gsfc.nasa.gov/html/ow_data.html
 nargs=nargin; % number of defined input arguments
-timeIntervalNotDefined = false;
-if ischar(tint), % tint not specified
-  timeIntervalNotDefined=true;
-  if nargin==2,
-    database=parameter;parameter=tint;
-  elseif nargin==3,
-    format=database;database=parameter;parameter=tint;
-  end
-  irf.log('notice',['Reading ' parameter ' from database: ' database '.']);
-  irf.log('notice','tint not defined, reading all data.');
-%   Possibility to be smart guessing tint (maybe not good idea, needs special flag?)   
-%	irf_log('fcal','Time interval not specified. Analyzing if tint exists.');
-%   if evalin('caller','exist(''tint'',''var'')'),
-%     irf_log('fcal','Using existing tint variable values.');
-%     timeIntervalNotDefined=false;
-%     tint=evalin('caller','tint');
-%     nargs=nargs+1;
-%   else
-%       irf_log('fcal','tint not defined, reading all data.');
-%   end
-end
 if nargs == 0,
   help irf_get_data;
   return;
+elseif nargs >= 2 && ischar(varargin{1}), % tint not specified
+  tint = [];
+	parameter=varargin{1};
+	database=varargin{2};
+	format=varargin{3:end};
+  irf.log('notice',['Reading ' parameter ' from database: ' database '.']);
+  irf.log('notice','tint not defined, reading all data.');
+elseif nargs >= 3 
+	tint = varargin{1};
+	parameter=varargin{2};
+	database=varargin{3};
+	format=varargin(4:end);
 end
-if ~exist('database','var'),
-  irf.log('critical','Database not defined.');
-  return;
-end
-if ~exist('format','var'),	% if format is not defined
-	 format=[];				% then default format is empty
-end
-
-if nargout==1, f=[];end % default return empty
 
 switch lower(database)
   case 'omni'
@@ -66,14 +50,7 @@ switch lower(database)
   case 'omni_min'
     f=irf_get_data_omni(tint,parameter,database);
   case 'caa'
-    if isempty(format),
-      format='mat'; % default value
-    end
-    if timeIntervalNotDefined,
-      f=c_caa_var_get(parameter,format);
-    else
-      f=c_caa_var_get(parameter,format,'tint',tint);
-    end
+		f=c_caa_var_get(parameter,format{:},'tint',tint);
   otherwise
       error(['Unknown database: ' database]);
 end
