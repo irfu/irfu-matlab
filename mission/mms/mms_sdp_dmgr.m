@@ -102,7 +102,7 @@ classdef mms_sdp_dmgr < handle
         if ~exist(dataObj, 'file')
           errStr = ['File not found: ' dataObj];
           irf.log('critical', errStr);
-          error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
         end
         % If it is not a read cdf file, is it an unread cdf file? Read it.
         irf.log('warning',['Loading ' param ' from file: ', dataObj]);
@@ -113,14 +113,14 @@ classdef mms_sdp_dmgr < handle
       else
         errStr = 'Unrecognized input argument';
         irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
         % Error, Warning or Notice for replacing the data variable?
         errStr = ['replacing existing variable (' param ') with new data'];
         irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       vPfx = sprintf('mms%d_edp_',DATAC.scId);
@@ -281,7 +281,7 @@ classdef mms_sdp_dmgr < handle
           % Not yet implemented.
           errStr = [' unknown parameter (' param ')'];
           irf.log('critical',errStr);
-          error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       function chk_latched_p()
@@ -669,14 +669,14 @@ classdef mms_sdp_dmgr < handle
         if(isfield(dataObj.data, [vPfx 'samplerate_' param]))
           if ~all(diff(dataObj.data.([vPfx 'samplerate_' param]).data)==0)
             err_str = ...
-              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+              'MMS_SDP_DMGR changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
           end
         elseif(isfield(dataObj.data,[vPfx 'samplerate_dce']))
           % Combined DCE & DCV file have only "[vPfx samplerate_dce]".
           if ~all(diff(dataObj.data.([vPfx 'samplerate_dce']).data)==0)
             err_str = ...
-              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+              'MMS_SDP_DMGR changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
           end
         else
@@ -807,7 +807,7 @@ classdef mms_sdp_dmgr < handle
           end
         else
           % TODO: implements some smart logic.
-          errS = 'MMS_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
+          errS = 'MMS_SDP_DMGR enabling/disabling probes not yet implemented.';
           irf.log('critical', errS); error(errS);
         end
       end
@@ -817,7 +817,7 @@ classdef mms_sdp_dmgr < handle
         if(any(diff(time)<=0))
           err_str = ['Time is NOT increasing for the datatype ', dataType];
           irf.log('critical', err_str);
-          error('MATLAB:MMS_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
+          error('MATLAB:MMS_SDP_DMGR:TIME:NONMONOTON', err_str);
         end
       end
     end
