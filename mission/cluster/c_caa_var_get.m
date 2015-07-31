@@ -311,6 +311,7 @@ elseif numel(varNameList) == 1 && ~returnOutputAsCellArray, % return variables a
 	resdataobject=resdataobject{1};
 	resmat=resmat{1};
 	resunit=resunit{1};
+	rests=rests{1};
 end
 if getMatOnly,
 	res=resmat; return
