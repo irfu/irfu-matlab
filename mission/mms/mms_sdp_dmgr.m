@@ -404,7 +404,9 @@ classdef mms_sdp_dmgr < handle
           % Get limit struct with primary fields 'ig', 'og' and 'dac',
           % subfields 'max' and 'min'.
           NomBias = MMS_CONST.Limit.NOM_BIAS;
-          
+          % New function based approach, time and S/C dependent.
+%          NomBias = mms_sdp_limit_bias(DATAC.scId);
+
           irf.log('notice','Checking for non nominal bias settings.');
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
@@ -427,9 +429,20 @@ classdef mms_sdp_dmgr < handle
                   double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)), ...
                   double(DATAC.dcv.time), 'previous', 'extrap');
                 
+                % Interpolate the limits to match the the DCE timestamps as
+                % well, using the previous limit.
+%                interp_Max = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+%                  double(NomBias.(hk10eParam{iiParam}).data(:,1)), double(DATAC.dce.time),...
+%                  'previous','extrap');
+%                interp_Min = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+%                  double(NomBias.(hk10eParam{iiParam}).data(:,2)), double(DATAC.dce.time),...
+%                  'previous','extrap');
+
                 % Locate Non Nominal values
                 indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
+%                indA = interp_Min >= interp_DCVa | interp_DCVa >= interp_Max;
                 indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
+%                indB = interp_Min >= interp_DCVb | interp_DCVb >= interp_Max;
                 indE = or(indA,indB); % Either senA or senB => senE non nominal.
                 
                 if(any(indE))
