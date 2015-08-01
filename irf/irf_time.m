@@ -186,6 +186,11 @@ switch lower(flag)
 			t_in(:,2).*24-12 t_in(:,1).*0 t_in(:,1).*0],'vector6>ttns');
 		
 	case 'cdfepoch>ttns'
+        sz = size(t_in);
+        if sz(2)>1
+            irf.log('warning','irf_time(cdfepoch>ttns: input is not column vector! output is column vector!');
+            t_in = t_in(:);
+        end
         ttBreak = spdfbreakdownepoch(t_in); % cdfepoch, not other "epoch"
         % Assume 0 microsec and 0 nanosec.
         t_out = spdfcomputett2000([ttBreak zeros(size(ttBreak,1),2)]);
