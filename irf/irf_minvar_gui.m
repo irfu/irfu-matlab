@@ -34,7 +34,7 @@ elseif  isnumeric(x),
 	action='initialize';
 elseif isa(x,'TSeries') && x.tensorOrder == 1 && size(x.data,2)==3
 	action='initialize';
-	xNew = double([x.time.epochUnix x.data]);
+	xNew = [x.time.epochUnix double(x.data)];
 	column = [2 3 4];
 	x = xNew;
 end
@@ -49,13 +49,15 @@ switch action,
 		end
 		
 		X=[time_vector x(:,column)];X=irf_abs(X);
-		figure;clf;irf_figmenu;
+		irf_plot(1,'newfigure');
 		h(1)=subplot(4,1,1);
 		set(h(1),'outerposition',[0 0.75 1 0.25]);
-		irf_plot(h(1),X);axis tight;
+		irf_plot(h(1),X);
+		axis(h(1),'tight');
+		set(get(h(1),'children'),'hittest','off'); % buttondownfcn always called in axis
+		set(h(1),    'buttondownfcn', {@click_ax});zoom off;
 		ud=get(gcf,'userdata');
 		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else ud.t0=0; end
-		set(h(1),    'buttondownfcn', {@click_ax});zoom off;
 		
 		ud.X=X;
 		ud.from = 1; % first click with mouse is 'from', second is 'to'
@@ -72,6 +74,7 @@ switch action,
 		h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
 		irf_plot(h(2),X);
 		axis(h(2),'tight');
+		set(get(h(2),'children'),'hittest','off'); % buttondownfcn always called in axis
 		set(h(2),'buttondownfcn', {@click_ax});
 		zoom(h(2),'off');
 		
