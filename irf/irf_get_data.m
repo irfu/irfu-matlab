@@ -31,7 +31,7 @@ elseif nargs >= 2 && ischar(varargin{1}), % tint not specified
   tint = [];
 	parameter=varargin{1};
 	database=varargin{2};
-	format=varargin{3:end};
+	format=varargin(3:end);
   irf.log('notice',['Reading ' parameter ' from database: ' database '.']);
   irf.log('notice','tint not defined, reading all data.');
 elseif nargs >= 3 
