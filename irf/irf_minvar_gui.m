@@ -164,7 +164,6 @@ switch action,
 			irf_timeaxis(ud.h(2),'date');
 			plot(ud.h(3),ud.Xminvar(:,4),ud.Xminvar(:,2));
 			xlabel(ud.h(3),'min');ylabel(ud.h(3),'max');
-			axis(ud.h(3),'tight');
 			axis(ud.h(3),'equal');
 			grid(ud.h(3),'on');
 			plot(ud.h(4),ud.Xminvar(:,3),ud.Xminvar(:,2));
