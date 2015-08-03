@@ -4,7 +4,11 @@ function out=geocentric_coordinate_transformation(inp,flag)
 %
 %	[out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(inp,'coord1>coord2')
 %		where coord1 and coord2 can be geo/gei/gse/gsm/sm/mag
-%		inp 1st column is time, 2-4th columns are x,y,z.
+%		inp can be matrix with 1st column is time, 2-4th columns are x,y,z.
+%   inp can be TSeries of vector data.
+%
+% [out]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(inp,'coord2')
+%   if inp is TSeries object coord1 is obtained from inp.userData.COORDINATE_SYSTEM
 %
 %	[T]=IRF.GEOCENTRIC_COORDINATE_TRANSFORMATION(t,'coord1>coord2')
 %		if only column vector with time given, return transformation matrix
@@ -18,18 +22,35 @@ function out=geocentric_coordinate_transformation(inp,flag)
 % Ref: Hapgood 1997 (corrected version of Hapgood 1992)
 % Planet. Space Sci.. Vol. 40, No. 5. pp. 71l-717, 1992
 
-		persistent dipoleDirectionGSE
+persistent dipoleDirectionGSE
+
+isInpTSeries = isa(inp,'TSeries');
 
 if strfind(flag,'>') % if input and output reference frames are the same return input
 	refSystIn  = flag(1:strfind(flag,'>')-1);
 	refSystOut = flag(strfind(flag,'>')+1:end);
-	if strcmpi(refSystIn,refSystOut),
-		out=inp;
-		return
-	end
+elseif isInpTSeries && isfield(inp.userData,'COORDINATE_SYSTEM')
+	refSystIn = lower(inp.userData.COORDINATE_SYSTEM);
+	ii = strfind(refSystIn,'>');
+	refSystIn(ii:end) = [];
+	refSystOut = lower(flag);
+	flag = [refSystIn '>' refSystOut];
 end
 
-t=inp(:,1);
+if strcmpi(refSystIn,refSystOut),
+	out=inp;
+	return
+end
+
+if isInpTSeries
+	t = inp.time.epochUnix;
+	inpTs = inp;
+	inp = double(inp.data);
+else
+	t=inp(:,1);
+	inp(:,1) = [];
+end
+
 timeVec       = irf_time(t,'vector');
 dayStartEpoch = irf_time([timeVec(:,[1 2 3]) timeVec(:,1)*[0 0 0]],'vector>epoch');
 mjdRefEpoch   = irf_time([1858 11 17 0 0 0],'vector>epoch');
@@ -76,20 +97,20 @@ switch lower(flag)
 	case 'gei>mag', tInd = [5 1];
 	
 	case 'dipoledirectiongse'
-		out = [inp(:,1) dipole_direction_gse];
+		out = [t dipole_direction_gse];
 		return
 	otherwise
 		irf.log('critical',['Transformation ''' flag ''' is unknown!']);
 		error('Fix transformation!');
 end
-if size(inp,2)>=4, % input is time and 3 components
-	out = [inp(:,1) mult(T(tInd),inp(:,2:4))];
-elseif size(inp,2)==1, % input is time, return only transformation matrix
+if size(inp,2)>=3, % input is time and 3 components
+	out = mult(T(tInd),inp(:,1:3));
+elseif size(inp,2)==0, % input is time, return only transformation matrix
 	out=T(tInd);
 end
-if size(inp,2) > 4, % more columns than 3 components
-	irf.log('warning','Input has more than 4 columns, replicating columns 5:end in output');
-	out(:,5:size(inp,2))=inp(:,5:end); % replicate last columns in output
+if size(inp,2) > 3, % more columns than 3 components
+	irf.log('warning','Input has more columns than 3 components! Replicating last columns in output');
+	out(:,4:size(inp,2))=inp(:,4:end); % replicate last columns in output
 end
 
 	function Tout=T(tInd)		
@@ -202,5 +223,16 @@ end
 		end
 		out = T;
 	end
+
+if isInpTSeries,
+	outData = out;
+	out = inpTs;
+	out.data = outData;
+	if isfield(out.userData,'COORDINATE_SYSTEM')
+		out.userData.COORDINATE_SYSTEM = upper(refSystOut);
+	end
+else
+	out = [t out];
+end
 
 end

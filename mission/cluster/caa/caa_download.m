@@ -168,9 +168,13 @@ if nargin>=1, % check if first argument is not caa zip or tar.gz file link
 		end
 		dataset=tint;
 		tint=[];
+	elseif isa(tint,'GenericTimeArray') && length(tint)>=2
+		tintEpochUnix = tint(1:2).epochUnix';
+		tint = tintEpochUnix;
 	elseif ~isnumeric(tint)
-		help caa_download;
-		return;
+		errStr = 'tint format not recognized';
+		irf.log('critical',errStr);
+		error('caa_download:tint:tint_not_defined',errStr);
 	end
 end
 if ~isempty(varargin), % check for additional flags
