@@ -64,6 +64,7 @@ classdef TSeries
 % ----------------------------------------------------------------------------
 
   properties (Access=protected)
+    coordinateSystem_ = '';
     data_
     t_ % GenericTimeArray
     fullDim_
@@ -74,6 +75,7 @@ classdef TSeries
   properties (Dependent = true)
     data
     time
+    coordinateSystem
   end
   
   properties (SetAccess = immutable,Dependent = true)
@@ -105,15 +107,15 @@ classdef TSeries
       
       if nargin<2, error('2 inputs required'), end
       if ~isa(t,'GenericTimeArray')
-        error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
-          'T must be of GenericTimeArray type or derived from it')
+        error('irf:TSeries:TSeries:badInputs',...
+          'T must be of TSeries type or derived from it')
       end
       if ~isnumeric(data)
-        error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+        error('irf:TSeries:TSeries:badInputs',...
           'DATA must be numeric')
       end
       if size(data,1) ~= t.length()
-        error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+        error('irf:TSeries:TSeries:badInputs',...
           'T and DATA must have the same number of records')
       end
       obj.data_ = data; obj.t_ = t;
@@ -130,10 +132,10 @@ classdef TSeries
         switch lower(x)
           case {'vec_xyz','vec_rtp','vec_rlp','vec_rpz'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'DATA has more than 2 dimentions (needed for 3D vec)')
             elseif size(obj.data_,2)~=3
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'size(DATA,2) must be 3 for 3D vec')
             end
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
@@ -143,10 +145,10 @@ classdef TSeries
             obj.fullDim_{2} = true;
           case {'vec_xy','vec_rp'}
             if ndims(obj.data_)>2, %#ok<ISMAT>
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'DATA has more than 2 dimentions (needed for 2D vec)')
             elseif size(obj.data_,2)~=2
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'size(DATA,2) must be 2 for 2D vec')
             end
             obj.tensorOrder_ = 1; flagTensorOrderSet = true;
@@ -155,12 +157,12 @@ classdef TSeries
             obj.representation{2} = {x(5), x(6)}; obj.fullDim_{2} = true;
           case {'to','tensororder'}
             if flagTensorOrderSet
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorOrder already set')
             end
             if ~isempty(args), y = args{1}; args(1) = [];
             else
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorOrder requires a second argument')
             end
             if ~isempty(intersect(y,(0:1:obj.MAX_TENSOR_ORDER)))
@@ -172,50 +174,50 @@ classdef TSeries
                   if size(obj.data_,i)<=3, found = true; break, end
                 end
                 if ~found,
-                  error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+                  error('irf:TSeries:TSeries:badInputs',...
                     'cannot construct tensor:all data dimensions have size<=3')
                 end
                 obj.tensorBasis_ = 1; % set default basis to XYZ
               end
             else
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorOrder must be 0<=tensorOrder<=%d',...
                 obj.MAX_TENSOR_ORDER)
             end
             
           case {'tb','basis','tensorbasis'}
             if flagTensorBasisSet
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorBasis already set')
             end
             if obj.tensorOrder_==0
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'cannot set tensorBasis for a scalar (tensorOrder=0)')
             end
             if ~isempty(args), y = args{1}; args(1) = [];
             else
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorBasis requires a second argument')
             end
             [~,iB] = intersect(obj.BASIS,y);
             if ~isempty(iB)
               obj.tensorBasis_ = iB; flagTensorBasisSet = true;
             else
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'tensorBais value not recognized')
             end
           case {'rep','repres','representation'}
             if isempty(obj.tensorOrder_),
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'Must specify TensorOrder first')
             end
             if iDim>ndims(data),
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'Representation already set for all DATA dimensions')
             end
             if ~isempty(args), y = args{1}; args(1) = [];
             else
-              error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+              error('irf:TSeries:TSeries:badInputs',...
                 'Representation requires a second argument')
             end
             if isempty(y) && iDim<ndims(data), iDim = iDim + 1;
@@ -225,12 +227,12 @@ classdef TSeries
                 obj.fullDim_{iDim}=ok; obj.representation{iDim} = y;
                 iDim = iDim + 1;
               else
-                error('irf:GenericTimeArray:GenericTimeArray:badInputs',msg)
+                error('irf:TSeries:TSeries:badInputs',msg)
               end
             end
           case 'depend'
           otherwise
-            error('irf:GenericTimeArray:GenericTimeArray:badInputs',...
+            error('irf:TSeries:TSeries:badInputs',...
               'Unknown parameter')
         end
       end
@@ -297,10 +299,14 @@ classdef TSeries
           end
           [varargout{1:nargout}] = obj;
         case '{}'
-          error('irf:GenericTimeArray:subsref',...
+          error('irf:TSeries:subsref',...
             'Not a supported subscripted reference')
       end
-       end
+    end
+    
+    function value = get.coordinateSystem(obj)
+      value = obj.coordinateSystem_;
+    end
     
     function value = get.data(obj)
       value = obj.data_;
@@ -349,21 +355,33 @@ classdef TSeries
       y = getComponent(obj,'l'); if isempty(y), error('cannot get LAMBDA'), end
     end
     
+    function obj = set.coordinateSystem(obj,value)
+      if obj.tensorOrder_ < 1, 
+        error('irf:TSeries:setcoordinateSystem:badInputs',...
+          'coordinateSystem can only be set for a tensor')
+      end
+      if ~ischar(value)
+        error('irf:TSeries:setcoordinateSystem:badInputs',...
+          'expecting string input')
+      end
+      obj.coordinateSystem_ = value;
+    end
+    
     function obj = set.data(obj,value)
       if all(size(value) == size(obj.data_)), obj.data_ = value;
       else
-        error('irf:GenericTimeArray:setdata:badInputs',...
+        error('irf:TSeries:setdata:badInputs',...
           'size of DATA cannot be changed')
       end
     end
     
     function obj = set.time(obj,value)
       if ~isa(value,'GenericTimeArray')
-        error('irf:GenericTimeArray:sett:badInputs',...
+        error('irf:TSeries:sett:badInputs',...
           'T must be of GenericTimeArray type or derived from it')
       end
       if value.length() ~= obj.length()
-        error('irf:GenericTimeArray:sett:badInputs',...
+        error('irf:TSeries:sett:badInputs',...
           'T must have the same number of records')
       end
       obj.t_ = value;
