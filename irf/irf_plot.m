@@ -3,6 +3,7 @@ function c=irf_plot(varargin)
 %
 % IRF_PLOT(X) plot data X
 %   X is one of:
+%      - TSeries object
 %      - matrix of data (1st column time in isdat epoch, other columns data)
 %      - cell array data, each of cells containing a matrix of data 
 %      - string defining variable (can be CAA variable)
@@ -424,7 +425,13 @@ if nargout==0, clear c; end
     switch flag_subplot
       case 0
         if isa(x,'TSeries')
-          lab = [x.name ' [' x.units ']' ]; flagNolatex = true;
+					if isfield(x.userData,'LABLAXIS')
+						lab = x.userData.LABLAXIS;
+					else
+						lab = x.name;
+					end
+          lab = [lab ' [' x.units ']' ]; 
+					flagNolatex = true;
         elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
           lab = cell(1,length(var_desc{1}.size));
           for iVar = 1:length(var_desc{1}.size)

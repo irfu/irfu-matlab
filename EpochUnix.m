@@ -75,7 +75,7 @@ classdef EpochUnix < GenericTimeArray
 			if ~isempty(lSecs), lSecsEpoch = toepoch(lSecs); end
 			if ~isempty(lSecsEpoch) && any( lSecsEpoch>=epoch(1)-1 & lSecsEpoch< epoch(end))
 				% Found: convert via UTC string
-				epoch = EpochUnix(toUtc(obj));
+				epoch = EpochUnix(GenericTimeArray.ttns2utc(ttns)).epoch;
 			end
 		end
 	end

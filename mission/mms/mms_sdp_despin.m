@@ -33,7 +33,7 @@ phase = phaseDeg*pi/180;
 phi_12 = MMS_CONST.Phaseshift.e12;
 phi_34 = MMS_CONST.Phaseshift.e34; % Angles when phase=0 (X BSC direction)
 
-if nargin==4
+if nargin==4 && ~mms_is_error(deltaOff)
   e12 = e12-abs(deltaOff)*cos(angle(deltaOff)-phase+phi_12);
 end
 

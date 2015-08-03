@@ -52,32 +52,6 @@ end
 
 gsmR = [epocRTmp.epochUnix R.(['gsmR' mmsId(end)])];
 
-%% Test QL - DATAMANAGER
-if 0
-irf.log('log_out','screen'), irf.log('notice')
-procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));
-tmMode=MMS_CONST.TmMode.comm; samplerate = MMS_CONST.Samplerate.comm_128;
-
-mms_sdp_datamanager('init',...
-  struct('scId',scId,'tmMode',tmMode,'procId',procId,...
-  'samplerate',samplerate));
-mms_sdp_load(HK_10E_File,'hk_10e');
-mms_sdp_load(HK_105_File,'hk_105');
-mms_sdp_load(HK_101_File,'hk_101');
-mms_sdp_load(DCE_File,'dce');
-if ~isempty(DCV_File), mms_sdp_load(DCV_File,'dcv'); end
-
-dce = mms_sdp_datamanager('dce');
-probe2sc_pot = mms_sdp_datamanager('probe2sc_pot');
-phase = mms_sdp_datamanager('phase');
-spinfits = mms_sdp_datamanager('spinfits');
-delta_off = mms_sdp_datamanager('delta_off');
-dce_xyz_dsl = mms_sdp_datamanager('dce_xyz_dsl');
-
-epochE = EpochTT(dce.time).epochUnix;
-epochS = EpochTT(spinfits.time).epochUnix;
-end
-
 %% Test QL - DMNGR
 irf.log('log_out','screen'), irf.log('notice')
 procId = MMS_CONST.SDCProc.ql; procName='QL'; scId=str2double(mmsId(end));

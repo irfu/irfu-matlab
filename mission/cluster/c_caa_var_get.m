@@ -17,6 +17,7 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 % Output variable types are defined in IRF.DATATYPES.
 %  caa=C_CAA_VAR_GET(varName)         returns VariableStruct
 %  caa=C_CAA_VAR_GET(varname,'caa')   returns VariableStruct
+%  caa=C_CAA_VAR_GET(varname,'ts')    returns TimeSeries object
 %  var=C_CAA_VAR_GET(varname,'mat')   returns variableMat
 %  dobj=C_CAA_VAR_GET(varname,'dobj') returns DataObject
 %  unit=C_CAA_VAR_GET(varname,'unit') returns only units
@@ -41,12 +42,14 @@ function [res,resdataobject,resmat,resunit] = c_caa_var_get(varargin)
 if nargin == 0, help c_caa_var_get;return;end
 getAllData = true;									% default read all data
 getCaa  = true;										% default return variable in caa form
+getTs   = false;
 getDobj = false; if nargout>1, getDobj = true;end	% whether to get dataobj
 getMat  = false; if nargout>2, getMat  = true;end	% whether to calculate mat variable
 getUnit = false; if nargout>3, getUnit = true;end	% whether to get the unit of variable
 getMatOnly  = false;
 getDobjOnly = false;
 getUnitOnly = false;
+getTsOnly   = false;
 getFromFile = false;	% reads data from file only if dataobj not in memory
 dobjSpecified = false;  % default dataobject is not given as input
 Dataobject = [];        % default dataobject is empty
@@ -103,6 +106,11 @@ while numel(args)
 		case 'mat' % return matlab format only
 			getMatOnly = true;
 			getMat     = true;
+			getCaa     = false;
+			args(1)    = [];
+		case 'ts' % return TimeSeries only
+			getTsOnly  = true;
+			getTs      = true;
 			getCaa     = false;
 			args(1)    = [];
 		case 'dobj' % return matlab format only
@@ -188,7 +196,7 @@ for iDataset = 1:numel(datasetNameUniqueList)
 			else
 				existDataobject = false;
 				irf.log('warning',[dataobjName ' could not be loaded!']);
-				if (getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
+				if (getTs || getMat || getCaa || getDobj) && ~getAllData && local.c_read('test')
 					testLocalCaaRepository = true;
 					irf.log('notice','will test if data are in local CAA data repository.');
 				end
@@ -241,6 +249,34 @@ for iDataset = 1:numel(datasetNameUniqueList)
 			end
 		end
 	end
+	if getTs % get variable in TimeSeries format
+		if existDataobject
+			rests(indVarNameList) = cellfun(@(x) get_ts(Dataobject,x),varTmpList,'uniformoutput',false);
+		else
+			if testLocalCaaRepository
+				ttt = local.c_read(varTmpList{1},tint,'ts');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in local repository!');
+				else
+					rests{indVarNameList(1)} = ttt;
+					for j=2:numel(varTmpList)
+						ttt = local.c_read(varTmpList{j},tint,'ts');
+						rests{indVarNameList(j)} = ttt;
+					end
+					isDataReturned = true;
+				end
+			end
+			if ~isDataReturned && testDataStreaming
+				ttt = c_caa_cef_var_get(varTmpList,'tint',tint,'stream','ts');
+				if isempty(ttt),
+					irf.log('warning','NO DATA in CAA to stream!');
+				else
+					rests(indVarNameList) = ttt;
+					isDataReturned = true;
+				end
+			end
+		end
+	end
 	if getUnit % save variable unit TODO: implement local.c_read and streaming
 		if existDataobject
 			resunit(indVarNameList) = cellfun(@(x) getunits(Dataobject,x),varTmpList,'uniformoutput',false);
@@ -274,6 +310,9 @@ elseif numel(varNameList) == 1 && ~returnOutputAsCellArray, % return variables a
 end
 if getMatOnly,
 	res=resmat; return
+end
+if getTsOnly,
+	res=rests; return
 end
 if getDobjOnly,
 	res=resdataobject; return

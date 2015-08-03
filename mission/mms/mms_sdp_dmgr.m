@@ -102,7 +102,7 @@ classdef mms_sdp_dmgr < handle
         if ~exist(dataObj, 'file')
           errStr = ['File not found: ' dataObj];
           irf.log('critical', errStr);
-          error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
         end
         % If it is not a read cdf file, is it an unread cdf file? Read it.
         irf.log('warning',['Loading ' param ' from file: ', dataObj]);
@@ -113,14 +113,14 @@ classdef mms_sdp_dmgr < handle
       else
         errStr = 'Unrecognized input argument';
         irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
         % Error, Warning or Notice for replacing the data variable?
         errStr = ['replacing existing variable (' param ') with new data'];
         irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       vPfx = sprintf('mms%d_edp_',DATAC.scId);
@@ -147,7 +147,6 @@ classdef mms_sdp_dmgr < handle
           param = 'dcv';
           sensors = {'v1','v2','v3','v4','v5','v6'};
           init_param()
-          chk_timeline()
           chk_latched_p()
           %apply_transfer_function()
           v_from_e_and_v()
@@ -282,7 +281,7 @@ classdef mms_sdp_dmgr < handle
           % Not yet implemented.
           errStr = [' unknown parameter (' param ')'];
           irf.log('critical',errStr);
-          error('MATLAB:MMS_SDP_DATAMANAGER:INPUT', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
       function chk_latched_p()
@@ -405,7 +404,9 @@ classdef mms_sdp_dmgr < handle
           % Get limit struct with primary fields 'ig', 'og' and 'dac',
           % subfields 'max' and 'min'.
           NomBias = MMS_CONST.Limit.NOM_BIAS;
-          
+          % New function based approach, time and S/C dependent.
+%          NomBias = mms_sdp_limit_bias(DATAC.scId);
+
           irf.log('notice','Checking for non nominal bias settings.');
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
@@ -428,9 +429,20 @@ classdef mms_sdp_dmgr < handle
                   double(DATAC.hk_10e.beb.(hk10eParam{iiParam}).(senB)), ...
                   double(DATAC.dcv.time), 'previous', 'extrap');
                 
+                % Interpolate the limits to match the the DCE timestamps as
+                % well, using the previous limit.
+%                interp_Max = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+%                  double(NomBias.(hk10eParam{iiParam}).data(:,1)), double(DATAC.dce.time),...
+%                  'previous','extrap');
+%                interp_Min = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+%                  double(NomBias.(hk10eParam{iiParam}).data(:,2)), double(DATAC.dce.time),...
+%                  'previous','extrap');
+
                 % Locate Non Nominal values
                 indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
+%                indA = interp_Min >= interp_DCVa | interp_DCVa >= interp_Max;
                 indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
+%                indB = interp_Min >= interp_DCVb | interp_DCVb >= interp_Max;
                 indE = or(indA,indB); % Either senA or senB => senE non nominal.
                 
                 if(any(indE))
@@ -670,14 +682,14 @@ classdef mms_sdp_dmgr < handle
         if(isfield(dataObj.data, [vPfx 'samplerate_' param]))
           if ~all(diff(dataObj.data.([vPfx 'samplerate_' param]).data)==0)
             err_str = ...
-              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+              'MMS_SDP_DMGR changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
           end
         elseif(isfield(dataObj.data,[vPfx 'samplerate_dce']))
           % Combined DCE & DCV file have only "[vPfx samplerate_dce]".
           if ~all(diff(dataObj.data.([vPfx 'samplerate_dce']).data)==0)
             err_str = ...
-              'MMS_SDP_DATAMANAGER changing sampling rate not yet implemented.';
+              'MMS_SDP_DMGR changing sampling rate not yet implemented.';
             irf.log('critical', err_str); error(err_str);
           end
         else
@@ -808,7 +820,7 @@ classdef mms_sdp_dmgr < handle
           end
         else
           % TODO: implements some smart logic.
-          errS = 'MMS_SDP_DATAMANAGER enabling/disabling probes not yet implemented.';
+          errS = 'MMS_SDP_DMGR enabling/disabling probes not yet implemented.';
           irf.log('critical', errS); error(errS);
         end
       end
@@ -818,7 +830,7 @@ classdef mms_sdp_dmgr < handle
         if(any(diff(time)<=0))
           err_str = ['Time is NOT increasing for the datatype ', dataType];
           irf.log('critical', err_str);
-          error('MATLAB:MMS_SDP_DATAMANAGER:TIME:NONMONOTON', err_str);
+          error('MATLAB:MMS_SDP_DMGR:TIME:NONMONOTON', err_str);
         end
       end
     end
@@ -883,12 +895,19 @@ classdef mms_sdp_dmgr < handle
         errStr='Bad SPINFITS input, cannot proceed.';
         irf.log('critical',errStr); error(errStr);
       end
-      
-      Delta_p12_p34 = double(Spinfits.sfit.e12(:,2:3)) - ...
-        double(Spinfits.sfit.e34(:,2:3));
-      
-      DATAC.delta_off = ...
-        median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
+      % Index of times when both pairs have good spinfits, excluding data
+      % gaps and such...
+      ind = and( all( ~isnan( Spinfits.sfit.e12(:,2:3) ), 2), ...
+                 all( ~isnan( Spinfits.sfit.e34(:,2:3) ), 2) );
+      if(any(ind))
+        Delta_p12_p34 = double(Spinfits.sfit.e12(ind,2:3)) - ...
+          double(Spinfits.sfit.e34(ind,2:3));
+        DATAC.delta_off = ...
+          median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
+      else
+        DATAC.delta_off = MMS_CONST.Error;
+        irf.log('warning','Delta offset could not be computed.');
+      end
       res = DATAC.delta_off;
     end
     
