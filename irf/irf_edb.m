@@ -17,6 +17,21 @@ function [ed,d]=irf_edb(e,b,angle_lim,flag)
 %
 % $Id$
 
+%temporary fix, convert TS series to older format, output unchanged
+if isa(e,'TSeries'), 
+    ttemp = e.time.epochUnix;
+    datatemp = double(e.data);
+    e = [ttemp, double(datatemp)];
+end
+
+if isa(b,'TSeries'), 
+    ttemp = b.time.epochUnix;
+    datatemp = double(b.data);
+    b = [ttemp, datatemp];
+end
+%end of temporary fix
+
+
 flag_method='E.B=0'; % default method for Ez calculation
 defaultValue = 0;
 if nargin==0, help irf_edb;return;end
