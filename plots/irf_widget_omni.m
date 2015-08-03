@@ -48,23 +48,7 @@ switch lower(action)
     initialize_figure(6); % default 5 subplots
     data=get(gcf,'userdata');
     if ~isfield(data,'t')
-      if evalin('caller','exist(''tint'') && isnumeric(''tint'')'),
-        time=irf_time(evalin('caller','tint(1)'),'vector');
-        dt=evalin('caller','tint(2)-tint(1)');
-      elseif exist('CAA','dir')
-        R=c_caa_var_get('sc_r_xyz_gse__C1_CP_AUX_POSGSE_1M','caa','mat');
-		if isempty (R)
-			R=irf_get_data('sc_r_xyz_gse__CL_SP_AUX','caa','mat');
-		end
-        if numel(R)==0,
-          time=irf_time([2010 12 31 01 01 01]);dt=24*3600; % 1 day interval
-        else
-          time=R(1,1);
-          dt=R(end,1)-R(1,1);
-        end
-      else
-        time=irf_time([2010 12 31 01 01 01]);dt=24*3600;
-      end
+			time=irf_time([2010 12 31 01 01 01]);dt=24*3600;
       data.t=time;
       data.dt=dt;
       set(gcf,'userdata',data);

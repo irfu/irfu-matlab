@@ -6,6 +6,7 @@ classdef (Abstract) GenericTimeArray
 %     end()
 %     isempty()
 %     length()
+%     size()
 %     start() first point of the time array
 %     stop() last point of the time array
 %     tlim() Returns index and records within specified time interval
@@ -61,6 +62,11 @@ classdef (Abstract) GenericTimeArray
       res = length(obj.epoch);
     end
     
+    function res = size(obj)
+      %SIZE size of the record's array.
+      res = size(obj.epoch);
+    end
+
     function res = minus(obj, obj1)
       %MINUS  time difference in seconds
 			% T2 - T1 returns time difference between T2 and T1 in seconds

@@ -32,8 +32,11 @@ elseif  isnumeric(x),
 		if size(x,2)>3, column=[2 3 4];end
 	end
 	action='initialize';
-elseif isa(x,'TSeries') && x.tensorOrder == 1
-	
+elseif isa(x,'TSeries') && x.tensorOrder == 1 && size(x.data,2)==3
+	action='initialize';
+	xNew = [x.time.epochUnix double(x.data)];
+	column = [2 3 4];
+	x = xNew;
 end
 
 switch action,
@@ -46,13 +49,14 @@ switch action,
 		end
 		
 		X=[time_vector x(:,column)];X=irf_abs(X);
-		figure;clf;irf_figmenu;
+		irf_plot(1,'newfigure');
 		h(1)=subplot(4,1,1);
 		set(h(1),'outerposition',[0 0.75 1 0.25]);
-		irf_plot(h(1),X);axis tight;
+		irf_plot(h(1),X);
+		axis(h(1),'tight');
+		zoom(h(1),'off');
 		ud=get(gcf,'userdata');
 		if isfield(ud,'t_start_epoch'), ud.t0=ud.t_start_epoch;else ud.t0=0; end
-		set(h(1),    'buttondownfcn', {@click_ax});zoom off;
 		
 		ud.X=X;
 		ud.from = 1; % first click with mouse is 'from', second is 'to'
@@ -64,12 +68,11 @@ switch action,
 		set(h(1),'layer','top');
 		grid(h(1),'on');
 		ax=axis(h(1));
-		ud.patch_mvar_intervals=patch([ud.tlim(1) ud.tlim(2) ud.tlim(2) ud.tlim(1)]-ud.t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','buttondownfcn', {@click_ax},'parent',h(1));
+		ud.patch_mvar_intervals=patch([ud.tlim(1) ud.tlim(2) ud.tlim(2) ud.tlim(1)]-ud.t0,[ax(3) ax(3) ax(4) ax(4)],[-1 -1 -1 -1],'y','parent',h(1));
 		
 		h(2)=subplot(4,1,2);set(h(2),'outerposition',[0 0.5 1 0.25]);
 		irf_plot(h(2),X);
 		axis(h(2),'tight');
-		set(h(2),'buttondownfcn', {@click_ax});
 		zoom(h(2),'off');
 		
 		h(3)=subplot(4,2,5);
@@ -118,6 +121,7 @@ switch action,
 		
 		irf_minvar_gui('from');
 		fix_legends;
+		fix_hittest(ud.h(1:2));
 		
 	case 'ax'
 		ud=get(gcf,'userdata');
@@ -161,7 +165,6 @@ switch action,
 			irf_timeaxis(ud.h(2),'date');
 			plot(ud.h(3),ud.Xminvar(:,4),ud.Xminvar(:,2));
 			xlabel(ud.h(3),'min');ylabel(ud.h(3),'max');
-			axis(ud.h(3),'tight');
 			axis(ud.h(3),'equal');
 			grid(ud.h(3),'on');
 			plot(ud.h(4),ud.Xminvar(:,3),ud.Xminvar(:,2));
@@ -187,6 +190,8 @@ switch action,
 		end
 		set(gcf,'userdata',ud);
 		fix_legends;
+		fix_hittest(ud.h(1:2));
+		
 	case 'mva'
 		ud=get(gcf,'userdata');
 		ud.tlim_mva=ud.tlim;
@@ -215,12 +220,7 @@ switch action,
 		set(gcf,'userdata',ud);
 		irf_minvar_gui('update_mva_axis');
 end
-
 ud=get(gcf,'userdata'); % assign ud that can be accessed because it is global
-
-	function click_ax(varargin)
-		irf_minvar_gui('ax');
-	end
 end
 
 
@@ -235,6 +235,22 @@ switch size(ud.X,2)-1, % how many components
 		legend(ud.h(1),'x','y','z','abs','Location','EastOutside');
 		legend(ud.h(2),'max','interm','min','abs','Location','EastOutside');
 end
+end
+
+function fix_hittest(h)
+% function call when marking with mouse
+set(h,    'buttondownfcn', {@click_ax});
+% fixes that buttondownfcn of axes is called instead of children
+hChildren = get(h,'children');
+if ~iscell(hChildren),
+	hChildren = {hChildren};
+end
+for iH = 1:numel(hChildren)
+	set(hChildren{iH},'hittest','off');
+end
+	function click_ax(varargin)
+		irf_minvar_gui('ax');
+	end
 end
 
 function setmethod(hObj,event) %#ok<INUSD>

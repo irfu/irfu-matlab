@@ -1,8 +1,18 @@
 function [out,dataobject]=c_read(varargin)
 % LOCAL.C_READ read local cluster aux information
-%	[out]=LOCAL.C_READ(variable,tint)
-%		read variable for given time interval tint in matlab format (matrix)
-%		tint - [tstart tend] or UTC format, see example
+%	[out]=LOCAL.C_READ(variableName,tint,[format])
+%		read variable variableName for a given time interval tint in a specified format.
+%   Default format is 'mat' but in future will be 'ts'.
+%   variableName can be a cell array of names in which case cell array of
+%   data is returned. 
+%		tint - [tstart tend] or UTC format or tint in GenericTimeArray
+%   
+%   Possible formats:
+%     'mat' - matlab array with the first column being (current default)
+%     'ts'  - TSeries object (default in future)
+%     'caa' - caa variable format
+%    'dobj' - return dataobject instead of variable
+%
 %	[var,dataobj]=LOCAL.C_READ(variable,tint,'caa')
 %		read variable in CAA format.
 %		var - variable, dataobj - dataobject
@@ -80,15 +90,15 @@ elseif nargin>=2,
 	tint=varargin{2};
 	if ischar(tint),
 		tint=irf_time(tint,'utc>tint');
+	elseif isa(tint,'GenericTimeArray') && length(tint)==2
+		tintTemp = tint.epochUnix;
+		tint = tintTemp;
 	end
 end
 if nargin ==3,
-	if ischar(varargin{3}) && any(strcmpi(varargin{3},'dobj'))
-		returnDataFormat = 'dobj';
-	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'caa'))
-		returnDataFormat = 'caa';
-	elseif ischar(varargin{3}) && any(strcmpi(varargin{3},'mat'))
-		returnDataFormat = 'mat';
+	if ischar(varargin{3}) ...
+			&& any(strcmpi(varargin{3},{'dobj','caa','mat','ts'}))
+		returnDataFormat = varargin{3};
 	else
 		irf.log('critical','output data format unknown');
 		out=[];
@@ -162,15 +172,15 @@ switch lower(varName)
 		if strfind(varName,'CIS'),specialCaseCis=1;end
 		varToRead={varName};
 		ok=read_data;
-		if ok && strcmpi(returnDataFormat,'mat'),
-            if numel(data)==2 && numel(size(data{2}))==2,
-                out=[data{1} double(data{2})];
-            elseif numel(data)==1,
-                out = data{1};
+		if ok && iscell(data) && numel(data) == 1
+			out = data{1};
+		elseif ok && strcmpi(returnDataFormat,'mat'),
+			if numel(data)==2 && numel(size(data{2}))==2,
+				out=[data{1} double(data{2})];
 			else
 				out=data;
-            end
-		  elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
+			end
+		elseif ok && (strcmpi(returnDataFormat,'dobj') || strcmpi(returnDataFormat,'caa')),
 			out = data;
 		end
 end
@@ -225,8 +235,8 @@ end
                     varToRead{iVar}=[varToRead{iVar}(1:54) '...' varToRead{iVar}(end-6:end)];
                 end
             end
-			switch lower(returnDataFormat)
-				case 'mat'
+			switch returnDataFormat
+				case {'mat','ts'}
 					irf.log('notice',['Reading: ' cdfFile]);
 					%% check if epoch16
 					cdfid=cdflib.open(cdfFile);
@@ -258,7 +268,7 @@ end
                         end
                         % read data
                         [tmpdata,~] = spdfcdfread(cdfFile,'ConvertEpochToDatenum',true,'CombineRecords',true,...
-							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name
+							'Variables', [{cdflib.getVarName(cdfid,0)},varToRead{:}]); % time and variable name TODO: get rid of conversion to datenum!
 						tmpdata=fix_order_of_array_dimensions(tmpdata);
 						if isnumeric(tmpdata), tmpdata={tmpdata}; end % make cell in case matrix returned
                         timeVector = irf_time(tmpdata{1},'date>epoch');
@@ -310,6 +320,20 @@ end
 				otherwise
 					error('unknown format');
 			end
+		end
+		if strcmp(returnDataFormat,'ts')
+			Time = EpochUnix(data{1});
+			dataTs = cell(numel(data)-1);
+			dobj = dataobj(cdfFile);
+			for iData = 1:numel(data)-1
+				varTs = get_ts(dobj,varToRead{iData});
+				nDataPoints = length(Time);
+				varTsAll = varTs(ones(1,nDataPoints));
+				varTsAll.time = Time;
+				varTsAll.data = data{iData+1};
+				dataTs{iData} = varTsAll;
+			end
+			data = dataTs;
 		end
 		if strcmp(returnDataFormat,'caa')
 			data=get(dataobject,varToRead{1}); % currently only 1 variable request implemented
