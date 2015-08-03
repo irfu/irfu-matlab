@@ -96,11 +96,11 @@ switch action,
 		set(gcf,'userdata',ud); % because c_pl_tx can also changed userdata)
 
 		h(1)=subplot(3,1,1);
-		c_pl_tx(h(1),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(h(1),'on');
+		irf_pl_tx(h(1),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(h(1),'on');
 		ylabel(h(1),var_label(ud.variable_str,ud.var_col));
 		
 		h(2)=subplot(3,1,2);
-		c_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
+		irf_pl_tx(h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);
 		ylabel(h(2),var_label(ud.variable_str,ud.var_col));
 		
 		ud=get(gcf,'userdata');
