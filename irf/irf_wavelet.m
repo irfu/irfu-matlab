@@ -1,4 +1,4 @@
-function specrec=irf_wavelet(varargin)
+function specrec=irf_wavelet_dg(varargin)
 %IRF_WAVELET  compute fast wavelet spectrogram
 %  Calculate wavevelet spectrogram based on fast FFT algorithm
 %  Written by A. Tjulin
@@ -11,6 +11,8 @@ function specrec=irf_wavelet(varargin)
 %       'f'  - vector [fmin fmax], calculate spectra between frequencies fmin and fmax
 %       'nf' - number of frequency bins
 %       'wavelet_width' - width of Morlet wavelet, default 5.36. (same as 'w')
+%       'returnpower' - set to 1 (default) to return the power, 0 for complex wavelet transform
+%       'cutedge' - set to 1 (default) to set points affected by edge effects to NaN, 0 to keep edge affect points
 %
 %	SPECREC is a structure:
 %		SPECREC.T - time
@@ -20,6 +22,8 @@ function specrec=irf_wavelet(varargin)
 % if no output specified, plot the spectrogram
 %
 % See also IRF_SPECTROGRAM
+
+% With modification by D. B. Graham
 
 %% Check the input
 if nargin == 0,
@@ -33,40 +37,65 @@ if numel(args)>0,
 else
     flag_have_options=0;
 end
+
 %% Default values
 % Fs
-if size(data,1)==1, % no time axis specified and row vector input
-    Fs=1;
-    t=1:numel(data);
-    t=t(:);
-else                % assume time axis is first column
-    if size(data,2) == 1 % no time axis specified, column vector input
+
+if isa(data,'TSeries')
+    irf.log('debug','TSeries data used');
+    %Temporary fix
+    %tlimit = irf.tint(data.time.start.utc,data.time.stop.utc);
+    timeint = data.time.stop-data.time.start;
+    Fs=numel(data.data(:,1))/timeint;
+    t = data.time.epochUnix;
+    data = data.data;
+else
+    irf.log('debug','Old format used');
+    if size(data,1)==1, % no time axis specified and row vector input
         Fs=1;
         t=1:numel(data);
         t=t(:);
-    else
-        Fs=1/(data(2,1)-data(1,1));
-        t=data(:,1);
-        data(:,1)=[];
+    else                % assume time axis is first column
+        if size(data,2) == 1 % no time axis specified, column vector input
+            Fs=1;
+            t=1:numel(data);
+            t=t(:);
+        else
+            Fs=1/(data(2,1)-data(1,1));
+            t=data(:,1);
+            data(:,1)=[];
+        end
     end
 end
+
 % f
 amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
 fmax=0.5*Fs/10^amin;
 amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax
 fmin=0.5*Fs/10^amax;
 % nf
-nf=100;
+nf=200;
 % wavelet_width
 wavelet_width=5.36;
 %% Check for NaNs
 inan=isnan(data);
 data(inan)=0;
+%Other
+returnpower = 1;
+cutedge = 1;
 
 %% Check the options
 while flag_have_options
     l = 2;
     switch(lower(args{1}))
+        case 'returnpower'
+            if numel(args)>1 && isnumeric(args{2})
+                returnpower = args{2};
+            end
+        case 'cutedge'
+            if numel(args)>1 && isnumeric(args{2})
+                cutedge = args{2};
+            end
         case 'Fs'
             if numel(args)>1 && isnumeric(args{2})
                 Fs = args{2};
@@ -150,19 +179,24 @@ for i=1:size(data,2), % go through all the datacolumns
     %% Get the wavelet transform by IFFT of the FFT
     
     W=ifft(Ww);
+    power = W;
     
     %% Calculate the power spectrum
-    
-    power=abs((2*pi)*conj(W).*W./newfreqmat);
+    if returnpower,
+        power=abs((2*pi)*conj(W).*W./newfreqmat);
+    end
     
     %% Remove data possibly influenced by edge effects
     
-    censur=floor(2*a);
-    power2=power;
-    for j=1:anumber;
-        power2(1:censur(j),j)=NaN;
-		power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
+    power2=power;   
+    if cutedge,
+        censur=floor(2*a);
+        for j=1:anumber;
+            power2(1:censur(j),j)=NaN;
+        	power2(numel(datacol)-censur(j):numel(datacol),j)=NaN;
+        end
     end
+    
     specrec.p{i}=power2;
 	
 	%% remove NaNs
