@@ -20,13 +20,15 @@ load /data/mms/irfu/mmsR.mat
 epocRTmp = EpochTT(R.time);
 
 %% Define time
+flagComm = true;
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
-tint = irf.tint('2015-06-22T12:00:00Z/2015-06-22T17:59:59Z');
-mmsId = 'mms3'; 
+tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
+%tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
+mmsId = 'mms2'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
@@ -37,10 +39,16 @@ li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, erro
 HK_105_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_10e'],tint); if length(li)>1, error('li>1'), end
 HK_10E_File = [li.path filesep li.name];
-DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
-  '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.1.cdf'];
-DCV_File  = [prf '/edp/comm/l1b/dcv128/' yyyy '/' mo '/' mmsId ...
-  '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.1.cdf'];
+if flagComm
+  DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
+    '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
+  DCV_File  = [prf '/edp/comm/l1b/dcv128/' yyyy '/' mo '/' mmsId ...
+    '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
+else
+  DCE_File  = [prf '/edp/fast/l1b/dce/' yyyy '/' mo '/' mmsId ...
+    '_edp_fast_l1b_dce_' yyyy mo day '_v1.1.0.cdf'];
+  DCV_File = [];
+end
 
 gsmR = [epocRTmp.epochUnix R.(['gsmR' mmsId(end)])];
 
@@ -57,7 +65,7 @@ mms_sdp_load(HK_10E_File,'hk_10e');
 mms_sdp_load(HK_105_File,'hk_105');
 mms_sdp_load(HK_101_File,'hk_101');
 mms_sdp_load(DCE_File,'dce');
-mms_sdp_load(DCV_File,'dcv');
+if ~isempty(DCV_File), mms_sdp_load(DCV_File,'dcv'); end
 
 dce = mms_sdp_datamanager('dce');
 probe2sc_pot = mms_sdp_datamanager('probe2sc_pot');
@@ -80,7 +88,7 @@ Dmgr.set_param('hk_10e',HK_10E_File);
 Dmgr.set_param('hk_105',HK_105_File);
 Dmgr.set_param('hk_101',HK_101_File);
 Dmgr.set_param('dce',DCE_File);
-Dmgr.set_param('dcv',DCV_File);
+if ~isempty(DCV_File),Dmgr.set_param('dcv',DCV_File); end
 % Process
 dce = Dmgr.dce;
 probe2sc_pot = Dmgr.probe2sc_pot;
@@ -130,8 +138,9 @@ hca = irf_panel('V');
 irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
-irf_plot_ylabels_align(h), irf_zoom(h,'x',DceDSL.time)
-add_position(h(end),gsmR), xlabel(h(end),'')
+%irf_plot_ylabels_align(h), 
+irf_zoom(h,'x',DceDSL.time)
+%add_position(h(end),gsmR), xlabel(h(end),'')
 
 %% Delta offsets
 Delta_p12_p34 = double(spinfits.sfit.e12(:,2:3)) - ...
@@ -155,7 +164,8 @@ hca = irf_panel('V');
 irf_plot(hca,[epochE double(probe2sc_pot.data)])
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
 
-irf_plot_ylabels_align(h), irf_zoom(h,'x',epochE([1 end])')
+%irf_plot_ylabels_align(h), 
+irf_zoom(h,'x',epochE([1 end])')
 
 
 %% Run
