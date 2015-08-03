@@ -169,7 +169,7 @@ if nargin>=1, % check if first argument is not caa zip or tar.gz file link
 		dataset=tint;
 		tint=[];
 	elseif isa(tint,'GenericTimeArray') && length(tint)>=2
-		tintEpochUnix = tint(1:2).epochUnix';
+		tintEpochUnix = [tint.start.epochUnix tint.stop.epochUnix];
 		tint = tintEpochUnix;
 	elseif ~isnumeric(tint)
 		errStr = 'tint format not recognized';
