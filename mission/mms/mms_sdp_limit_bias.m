@@ -33,30 +33,33 @@ ig.min(1) = 0;
 switch scId
   case 1
     % Define new limits for good bias setting on MMS 1
-    % Rationale for changing: ... Photo e-, bla bla bla
-    timeTmp(2,:) = [2015 04 13 00 00 00];
-       dac.max(2) = 27625; dac.min(2) = 25252;
+    % Rationale for changing:
+    % Bias changed to 28021TM on 2015/06/26T20 due to bad data, really bad data
+    % started around 2015/05/25T09
+    % Bias changed to 28417TM on 2015/07/23T15
+    timeTmp(2,:) = [2015 05 25 09 00 00];
+       dac.max(2) = 29000; dac.min(2) = 27625;
        og.max(2) = 32767;  og.min(2) = 0;
        ig.max(2) = 32767;  ig.min(2) = 0;
-    % Rational for changing: ... Photo e-, bla bla bla
-    timeTmp(3,:) = [2015 04 13 00 00 01];
-       dac.max(3) = 27625; dac.min(3) = 25252;
-       og.max(3) = 32767;  og.min(3) = 0;
-       ig.max(3) = 32767;  ig.min(3) = 0;
 
   case 2
     % Define new limits for good bias setting on MMS 2
-    % Rationale for changing: ... Photo e-, bla bla bla
-    timeTmp(2,:) = [2015 04 13 00 00 00];
-       dac.max(2) = 27625; dac.min(2) = 25252;
+    % Rationale for changing:
+    % Bias changed to 28812TM on 2015/06/25T03 due to bad data, really bad data
+    % started around 2015/05/18T18
+    % Bias changed to 29208TM on 2015/07/23T16:30
+    timeTmp(2,:) = [2015 05 18 18 00 00];
+       dac.max(2) = 30000; dac.min(2) = 28500;
        og.max(2) = 32767;  og.min(2) = 0;
        ig.max(2) = 32767;  ig.min(2) = 0;
 
   case 3
     % Define new limits for good bias setting on MMS 3
-    % Rationale for changing: ... Photo e-, bla bla bla
-    timeTmp(2,:) = [2015 04 13 00 00 00];
-       dac.max(2) = 27625; dac.min(2) = 25252;
+    % Rationale for changing:
+    % Bias changed to 28021TM on 2015/06/26T16 due to bad data, really bad data
+    % started around 2015/06/19T01
+    timeTmp(2,:) = [2015 06 19 01 00 00];
+       dac.max(2) = 28500; dac.min(2) = 27625;
        og.max(2) = 32767;  og.min(2) = 0;
        ig.max(2) = 32767;  ig.min(2) = 0;
 
@@ -108,6 +111,7 @@ limits.ig.name = 'OuterGuard bias limits ([max, min]) for good data.';
     % This can possibly detect a typo in the table above.
     if( any(bias.max>65535) || any(bias.min>65535) || ...
         any(bias.max<0) || any(bias.min<0) || ...
+        any(bias.max <= bias.min) || ...
         any(bias.max~=fix(bias.max)) || any(bias.min~=fix(bias.min)) )
       errStr = 'Invalid bias. Possibly a typo in the table of bias limits.';
       irf.log('critical',errStr); error(errStr);
