@@ -56,4 +56,8 @@ res.units = data.UNITS;
 ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
 ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
 ud = rmfield(ud,'variance');
+if isfield(ud,'COORDINATE_SYSTEM')
+  res.coordinateSystem = ud.COORDINATE_SYSTEM;
+  ud = rmfield(ud,'COORDINATE_SYSTEM');
+end
 res.userData = ud;
