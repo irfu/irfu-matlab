@@ -180,9 +180,9 @@ for j=1:length(column)
   for cl_id=sc_list_with_data
     if isempty(X.(fId)), continue, end
     if isa(X.(fId),'TSeries')
-      dataTmp = ...
-        [X.(fId).time.epochUnix-delta_t(cl_id) double(X.(fId).data(:,j))];
-    else dataTmp = [X.(fId)(:,1)-delta_t(cl_id), X.(fId)(:,j+1)];
+      dataTmp = [X.(fId).time.epochUnix-delta_t(cl_id) ...
+        double(X.(fId).data(:,column(j)))];
+    else dataTmp = [X.(fId)(:,1)-delta_t(cl_id), X.(fId)(:,column(j)+1)];
     end
     if isempty(line_style)
       hl = irf_plot(ax(j), dataTmp, 'color', cluster_colors{cl_id});
