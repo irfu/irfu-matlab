@@ -24,6 +24,19 @@ function [apar,aperp,alpha]=irf_dec_parperp(b0,a,flagspinplane)
 % Created by Yuri Khotyaintsev, 1997
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Begin temporary fix to convert TS format to older format
+if isa(b0,'TSeries'), 
+    ttemp = b0.time.epochUnix;
+    datatemp = double(b0.data);
+    b0 = [ttemp, double(datatemp)];
+end
+if isa(a,'TSeries'), 
+    ttemp = a.time.epochUnix;
+    datatemp = double(a.data);
+    a = [ttemp, datatemp];
+end
+% End of temporary fix
+
 if nargin<3 || flagspinplane==0
     btot = irf_abs(b0,1);
     
