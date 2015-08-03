@@ -27,7 +27,25 @@ function [out]=irf_convert_fac(inp,B0,r)
 %			or inp can be cell array of such vectors
 %    out= output in the same form as inp
 %
-% Note: all input parameters must be in the same coordinate system
+% Note: all input parameters must be in the same coordinate system 
+
+% Begin temporary fix to convert TS format to older format (Must include spacecraft position)
+if isa(inp,'TSeries'), 
+    ttemp = inp.time.epochUnix;
+    datatemp = double(inp.data);
+    inp = [ttemp, double(datatemp)];
+end
+if isa(B0,'TSeries'), 
+    ttemp = B0.time.epochUnix;
+    datatemp = double(B0.data);
+    B0 = [ttemp, datatemp];
+end
+if isa(r,'TSeries'), 
+    ttemp = r.time.epochUnix;
+    datatemp = double(r.data);
+    r = [ttemp, datatemp];
+end
+% End of temporary fix
 
 if nargin<3, r=[1 0 0];
 end

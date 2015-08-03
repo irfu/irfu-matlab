@@ -63,6 +63,34 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 % European Community's Seventh Framework Programme (FP7-SPACE-2011-1)
 % under grant agreement n. 284520.
 
+% Begin temporary fix to convert TS format to older format (Must include spacecraft position)
+if isa(e,'TSeries'), 
+    ttemp = e.time.epochUnix;
+    datatemp = double(e.data);
+    e = [ttemp, double(datatemp)];
+end
+if isa(dB,'TSeries'), 
+    ttemp = dB.time.epochUnix;
+    datatemp = double(dB.data);
+    dB = [ttemp, datatemp];
+end
+if isa(fullB,'TSeries'), 
+    ttemp = fullB.time.epochUnix;
+    datatemp = double(fullB.data);
+    fullB = [ttemp, datatemp];
+end
+if isa(B0,'TSeries'), 
+    ttemp = B0.time.epochUnix;
+    datatemp = double(B0.data);
+    B0 = [ttemp, datatemp];
+end
+if isa(xyz,'TSeries'), 
+    ttemp = xyz.time.epochUnix;
+    datatemp = double(xyz.data);
+    xyz = [ttemp, datatemp];
+end
+% End of temporary fix
+
 %% Check the input
 nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
