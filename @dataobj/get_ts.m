@@ -30,21 +30,44 @@ else
   Time = EpochUnix(data.DEPEND_0.data);
 end
 
-tensorOrder = length(data.variance(3:end));
-repres = [];
-switch tensorOrder
-  case 0 % scalar
-  case 1 % vector
-    if data.dim(1)==2,
-      repres = {'x','y'};
-    elseif data.dim(1)==3
-      repres = {'x','y','z'};
-    end
-  case 2 % tensor
-  otherwise
-    error('TensorOrder>2 not supported')
-end
+%userData
+ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
+ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
+ud = rmfield(ud,'variance'); ud = rmfield(ud,'UNITS');
 
+if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
+  tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');
+  if ischar(tensorOrder), tensorOrder = str2double(tensorOrder); end
+  switch tensorOrder
+    case 0 % scalar
+    case 1 % vector
+      if ~isfield(data,'REPRESENTATION_1')
+        error('Missing REPRESENTATION_1 for TENSOR_ORDER=1')
+      end
+      repres = cellstr(data.REPRESENTATION_1.data)';
+      ud = rmfield(ud,'REPRESENTATION_1');
+    case 2 % tensor
+      error('not implemented')
+    otherwise
+      error('TensorOrder>2 not supported')
+  end
+else % guessing for Non-CAA data
+  tensorOrder = length(data.variance(3:end));
+  repres = [];
+  switch tensorOrder
+    case 0 % scalar
+    case 1 % vector
+      if data.dim(1)==2,
+        repres = {'x','y'};
+      elseif data.dim(1)==3
+        repres = {'x','y','z'};
+      else tensorOrder = 0; % TENSOR_ORDER=0 can be ommitted in CAA files 
+      end
+    case 2 % tensor
+    otherwise
+      error('TensorOrder>2 not supported')
+  end
+end
 if isempty(repres)
   res = TSeries(Time,data.data,'TensorOrder',tensorOrder);
 else
@@ -53,9 +76,6 @@ else
 end
 res.name = data.name;
 res.units = data.UNITS;
-ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
-ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
-ud = rmfield(ud,'variance');
 if isfield(ud,'COORDINATE_SYSTEM')
   res.coordinateSystem = ud.COORDINATE_SYSTEM;
   ud = rmfield(ud,'COORDINATE_SYSTEM');
