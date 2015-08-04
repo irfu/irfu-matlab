@@ -34,6 +34,7 @@ else
 end
 if isInpTSeries 
 	refSystInVariable = lower(inp.coordinateSystem);
+	refSystInVariable = refSystInVariable(1:strfind(refSystInVariable,'>')-1);
 	if isempty(refSystInVariable) && isempty(refSystIn)
 		errStr = 'input reference frame undefined';
 		irf.log('critical',errStr);error(errStr);
