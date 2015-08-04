@@ -553,10 +553,14 @@ switch lower(action)
 		end
 	case 'new_time'
 		data=get(gcf,'userdata');
-		xx=inputdlg('Enter new time. [yyyy mm dd hh mm ss]','**',1,{mat2str(irf_time(data.t,'vector'))});
+		xx=inputdlg('New time. [yyyy mm dd hh mm ss] or ISO','**',1,{mat2str(irf_time(data.t,'vector'))});
 		if ~isempty(xx),
 			variable_str=xx{1};
-			data.t=irf_time(eval(variable_str));
+			if any(strfind(variable_str,'T'))
+				data.t = irf_time(variable_str,'iso>epoch');
+			else
+				data.t=irf_time(eval(variable_str));
+			end
 			set(gcf,'userdata',data);
 			c_pl_sc_conf_xyz('read_position');
 			c_pl_sc_conf_xyz(data.coord_label);
