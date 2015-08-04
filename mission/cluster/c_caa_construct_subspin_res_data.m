@@ -142,7 +142,7 @@ elseif any([strfind(variable_name,'PITCH_3DR') strfind(variable_name,'PITCH_3DX'
     enlabel=getfield(getv(dataobject,variable.DEPEND_3),'LABLAXIS');
     enlabel=[enlabel ' [' enunits ']'];
     phi=peace.dep_x{1}.data(1,:);nan_phi=isnan(phi);phi(nan_phi)=[];
-    theta=peace.dep_x{2}.data(1,:);
+    theta=peace.dep_x{2}.data';
     en=peace.dep_x{3}.data(1,:);nan_en=isnan(en);en(nan_en)=[];
     peace.data(:,:,:,nan_en)=[]; % remove NaN energy data
     peace.data(:,nan_phi,:,:)=[]; % remove NaN energy data
@@ -224,9 +224,9 @@ elseif any([strfind(variable_name,'CODIF_HS') strfind(variable_name,'CODIF_LS') 
     if isempty(variable)
         error('Cannot load the requested CAA variable')
     end
-    phivar=c_caa_var_get(variable.DEPEND_2);phi=phivar.data(1,:);
-    polarvar=c_caa_var_get(variable.DEPEND_1);polar=polarvar.data(1,:);
-    envar=c_caa_var_get(variable.DEPEND_3);en=envar.data(1,:);
+    phivar=c_caa_var_get(variable.DEPEND_2);phi=phivar.data';
+    polarvar=c_caa_var_get(variable.DEPEND_1);polar=polarvar.data';
+    envar=c_caa_var_get(variable.DEPEND_3);en=envar.data';
     enunits=getfield(getv(dataobject,variable.DEPEND_3),'UNITS');
     enlabel=enunits;
     % variable.data indices are in order 1) time 2) polar 3) azimuthal 4) energy
