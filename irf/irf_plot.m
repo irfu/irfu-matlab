@@ -115,10 +115,10 @@ if ischar(x), % Try to get variable labels etc.
       elseif strfind(var_names{ii},'__') % CAA variable
         caa_varname{ix}=var_names{ii};
         if flag_plot_all_data,
-          [tmp,caa_dataobject{ix},x{ix}]=evalin('caller',...
+          [~,caa_dataobject{ix},x{ix}]=evalin('caller',...
             ['c_caa_var_get(''' var_names{ii} ''')']);
         else
-          [tmp,caa_dataobject{ix},x{ix}]=...
+          [~,caa_dataobject{ix},x{ix}]=...
             c_caa_var_get(var_names{ii},'tint',tint);
         end
       else
@@ -220,8 +220,7 @@ if flag_subplot==0,  % One subplot
     zoom_in_if_necessary(hca);
     % Put YLimits so that no labels are at the end (disturbing in multipanel plots)
     if ~ishold(hca), irf_zoom(hca,'y'); end % automatic zoom only if hold is not on
-    hyl = ylabel(hca,get_label());
-    if flagNolatex, set(hyl,'Interpreter', 'none'); end
+    set_ylabel(hca,x);
     c=h;
     firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   else return % empty matrix or does not know what to do
@@ -242,7 +241,7 @@ elseif flag_subplot==1, % Separate subplot for each component
     grid(hca,'on');
     set(hca,'tag',tag); set(hca,'userdata',ud); % restore
     zoom_in_if_necessary(hca);
-    ylabel(hca,get_label())  
+    set_ylabel(hca,x);
   end
   firstTimeStamp = time(~isnan(time)); firstTimeStamp = firstTimeStamp(1);
   
@@ -309,8 +308,7 @@ elseif flag_subplot==2, % Separate subplot for each variable
             irf_zoom(c(ipl),'y');
             
             if isa(y,'TSeries')
-              lab = [y.name ' [' y.units ']' ]; 
-              ylabel(c(ipl),lab,'Interpreter','none'); clear lab
+              set_ylabel(c(ipl),y); 
             elseif ~isempty(var_desc) && ~isempty(var_desc{ipl})
                 for v = 1:length(var_desc{ipl}.size)
                     lab{v} = [var_desc{ipl}.labels{v} '[' ...
@@ -419,45 +417,44 @@ if nargout==0, clear c; end
     else marker_cur = marker;
     end
   end
-  function lab = get_label()
-    lab = ''; flagNolatex = false;
-    
+  function hLabel = set_ylabel(ax,inp)
     switch flag_subplot
-      case 0
-        if isa(x,'TSeries')
-					if isfield(x.userData,'LABLAXIS')
-						lab = x.userData.LABLAXIS;
+      case {0,2}
+        if isa(inp,'TSeries')
+					if isfield(inp.userData,'LABLAXIS')
+						lab = [inp.userData.LABLAXIS ' [' inp.units ']' ];
+						hLabel = ylabel(ax,lab);
 					else
-						lab = x.name;
+						hLabel = ylabel(ax,inp.name,'Interpreter','none');
 					end
-          lab = [lab ' [' x.units ']' ]; 
-					flagNolatex = true;
-        elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
-          lab = cell(1,length(var_desc{1}.size));
-          for iVar = 1:length(var_desc{1}.size)
-            lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
-              var_desc{1}.units{iVar} '] sc' var_desc{1}.cl_id];
-          end
+				elseif ~isempty(var_desc{1}) && isfield(var_desc{1},'size')
+					lab = cell(1,length(var_desc{1}.size));
+					for iVar = 1:length(var_desc{1}.size)
+						lab{iVar} = [var_desc{1}.labels{iVar} '[' ...
+							var_desc{1}.units{iVar} '] sc' var_desc{1}.cl_id];
+					end
+					hLabel = ylabel(ax,lab);
         end
-      case 1
-        if ~isempty(var_desc) && ~isempty(var_desc{1})
-          scu = cumsum(var_desc{1}.size);
-          isz = find( scu == min(scu(ipl<=scu)) );
-          sz = var_desc{1}.size(isz); % Size of a data vector
-          if sz == 1 % Scalar data
-            lab = [var_desc{1}.labels{isz} ' ['...
-              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
-          else % Vector data
-            % Vector component
-            if isz==1, comp = ipl;
-            else comp = ipl -scu(isz-1);
-            end
-            lab = [var_desc{1}.labels{isz} ...
-              '_{' var_desc{1}.col_labels{isz}{comp} '} ['...
-              var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
-          end
-        end
-      otherwise, error('not implemented')
+			case 1
+				if ~isempty(var_desc) && ~isempty(var_desc{1})
+					scu = cumsum(var_desc{1}.size);
+					isz = find( scu == min(scu(ipl<=scu)) );
+					sz = var_desc{1}.size(isz); % Size of a data vector
+					if sz == 1 % Scalar data
+						lab = [var_desc{1}.labels{isz} ' ['...
+							var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id];
+					else % Vector data
+						% Vector component
+						if isz==1, comp = ipl;
+						else comp = ipl -scu(isz-1);
+						end
+						lab = [var_desc{1}.labels{isz} ...
+							'_{' var_desc{1}.col_labels{isz}{comp} '} ['...
+							var_desc{1}.units{isz} '] sc' var_desc{1}.cl_id ];
+					end
+					hLabel = ylabel(ax,lab);
+				end
+			otherwise, error('not implemented')
     end
   end
   function check_input_options()
