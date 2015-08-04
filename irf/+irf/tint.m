@@ -42,6 +42,9 @@ switch nargin
       TintTT = irf.time_array([start; stop]);
     elseif (ischar(start)||isa(start,'GenericTimeArray')) && isnumeric(stop)
       TintTT = irf.time_array(start, [0 stop]);
+    elseif isa(start,'GenericTimeArray') ...
+			&& isa(stop,'GenericTimeArray'), 
+      TintTT = irf.tint([start.utc '/' stop.utc]);
     else
       TintTT = irf.time_array([start; stop]);
     end
