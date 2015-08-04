@@ -28,15 +28,16 @@ if (nargin ==3) && (flag == -1)
 else
 	estimateVxB = true;
 end
-if isa(v,'TSeries') && isa(b,'TSeries')
+if isa(v,'TSeries') || isa(b,'TSeries')
 	inputTSeries = true;
 elseif isnumeric(v) && isnumeric(b)
 	inputNumeric = true;
-elseif isnumeric(v) && size(v) == [1 3],
-	inputVConstant = true;
 else
 	errStr = 'irf_e_vxb: input neither TSeries or numeric.';
 	irf.log('critical',errStr);error(errStr);
+end
+if isnumeric(v) && all( size(v) == [1 3])
+	inputVConstant = true;
 end
 
 %% do calculation
@@ -81,7 +82,14 @@ if inputTSeries
 		res.name = 'Velocity';
 		res.userData.LABLAXIS = 'V';
 	elseif estimateVxB
-		res = cross(v,b)*(-1)*1e-3;
+		if inputVConstant
+			res = b;
+			res.data = cross(repmat(v,res.length, 1),b.data)*(-1)*1e-3;
+      v = [];
+			v.units = 'km/s';
+		else
+			res = cross(v,b)*(-1)*1e-3;
+		end
 		if (strcmp(v.units,'km/s') || strcmp(v.units,'km s^-1')) ...
 				&& strcmp (b.units,'nT')
 			res.units = 'mV/m';
