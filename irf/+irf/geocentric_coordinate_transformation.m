@@ -29,11 +29,22 @@ isInpTSeries = isa(inp,'TSeries');
 if strfind(flag,'>') % if input and output reference frames are the same return input
 	refSystIn  = flag(1:strfind(flag,'>')-1);
 	refSystOut = flag(strfind(flag,'>')+1:end);
-elseif isInpTSeries && isfield(inp.userData,'COORDINATE_SYSTEM')
-	refSystIn = lower(inp.userData.COORDINATE_SYSTEM);
-	ii = strfind(refSystIn,'>');
-	refSystIn(ii:end) = [];
+else
 	refSystOut = lower(flag);
+end
+if isInpTSeries 
+	refSystInVariable = lower(inp.coordinateSystem);
+	if isempty(refSystInVariable) && isempty(refSystIn)
+		errStr = 'input reference frame undefined';
+		irf.log('critical',errStr);error(errStr);
+	end
+	if ~isempty(refSystInVariable) && ~isempty(refSystIn) && ~strcmpi(refSystInVariable,refSystIn)
+		errStr = 'input reference frame as defined in variable and input flag differs';
+		irf.log('critical',errStr);error(errStr);
+	end
+	if isempty(refSystIn)
+		refSystIn = lower(refSystInVariable);
+	end
 	flag = [refSystIn '>' refSystOut];
 end
 
