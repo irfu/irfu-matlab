@@ -1,6 +1,6 @@
 function [vht,eht,dvht,p,cc]=irf_vht(e,b,flag)
 % [vht,eht,dvht,p,cc]=irf_vht(e,b,flag)
-%  estimate velocity of the deHoffman-Teller frame
+%  estimate velocity of the De Hoffmann-Teller frame
 %  from the velocity estimate the electric field eht=-vhtxb
 %
 % if flag==2 use version where E=(Ex,Ey,<Not used>) is assumed
@@ -8,9 +8,9 @@ function [vht,eht,dvht,p,cc]=irf_vht(e,b,flag)
 % Assumed units: e [mV/m] b[nT] vht [km/s]
 %
 % Output:
-%   vht - Hofmann Teller frame velocity [km/s]
-%   eht - Calculated -vht x b [mV/m]
-%  dvht - error of Hofmann Teller frame
+%   vht - De Hoffmann Teller frame velocity [km/s]
+%   eht = - vht x b [mV/m]
+%  dvht - error of De Hoffmann Teller frame
 %
 % See also IRF_VHT_PLOT
 
@@ -39,10 +39,10 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	if (nargin > 2) && (flag == 2), % assume only Ex and Ey
 		z=0; % put z component to 0 when using only Ex and Ey
 		K=[[p(6) 0 -p(3)];[0 p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
-		comm= 'Hofmann-Teller frame is calculated using 2 components of E=(Ex,Ey,0)';
+		comm= 'De Hoffmann-Teller frame is calculated using 2 components of E=(Ex,Ey,0)';
 	else
 		K=[[p(4)+p(6) -p(2) -p(3)];[-p(2) p(1)+p(6) -p(5)];[-p(3) -p(5) p(1)+p(4)]];
-		comm= 'Hofmann-Teller frame is calculated using all 3 components of E=(Ex,Ey,Ez)';
+		comm= 'De Hoffmann-Teller frame is calculated using all 3 components of E=(Ex,Ey,Ez)';
 	end
 	
 	ExB=cross(e,b);
