@@ -115,7 +115,7 @@ classdef mms_db < handle
            % Logical_file_id and Data_version will almost always differ
            % between files.
            ignoreFields = {'data','nrec','Generation_date',...
-             'Logical_file_id','Data_version'};
+             'Logical_file_id','Data_version','Parents'};
            if ~isempty(intersect(f,ignoreFields)), continue, end
            if isnumeric(s1.(f)) || ischar(s1.(f))
              if ~all(all(all(s1.(f)==s2.(f)))), return, end

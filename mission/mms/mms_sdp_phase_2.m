@@ -54,7 +54,7 @@ function [phase, flag, pulse, period, period_flag] = mms_sdp_phase_2(sps, epoch)
 % Example:
 %  [dcephase, dcephase_flag] = MMS_SDP_PHASE_2(DATAC.k_101, DATAC.dce.time);
 %
-% See also MMS_SDP_DATAMANAGER and MMS_SDP_COMP_PHASE.
+% See also MMS_SDP_DMGR.
 
 
 % Verify number of inputs and outputs

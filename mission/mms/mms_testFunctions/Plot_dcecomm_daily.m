@@ -41,9 +41,10 @@ set(groot, 'defaultAxesColorOrder', [0 0 0; 1 0 0; 0 0.5 0; 0 0 1]);
 % during 23.59:60.0->23.59.60.999999999Z).
 tint = irf.tint([DayOfInterest,'T00:00:00.000000000Z'],[DayOfInterest,'T23:59:59.999999999Z']);
 
-%% Identify and load all DCE_128 files.
 SCid = {'mms1', 'mms2', 'mms3', 'mms4'};
 
+%% Identify and load all comm files
+disp(['Start looking for data from ', DayOfInterest]);
 for ii=1:length(SCid)
   disp(['Loading and converting data from ',SCid{ii}]);
   % Combine DCE to one TSeries per day and sc
@@ -57,9 +58,49 @@ for ii=1:length(SCid)
   end
 end
 
+%% Identify and load all "slow", "fast" and "brst" mode files.
+tmMode = {'slow','fast','brst'};
+for ii=1:length(SCid)
+  dceComb = struct(SCid{ii},struct('time',[],'data',[]));
+  if(~isempty(dceTs.(SCid{ii})))
+    % Keep the previously read dceTs (from dcecomm files).
+    ind = ~isnan(dceTs.(SCid{ii}).data(:,1));
+    dceComb.(SCid{ii}).time = dceTs.(SCid{ii}).time.ttns(ind);
+    dceComb.(SCid{ii}).data = dceTs.(SCid{ii}).data(ind,:);
+% dceComb.(SCid{ii}).time = dceTs.(SCid{ii}).time.ttns;
+% dceComb.(SCid{ii}).data = dceTs.(SCid{ii}).data;
+  end
+  for jj=1:length(tmMode)
+    dceTsTmp.(tmMode{jj}).(SCid{ii}) = mms.db_get_ts([SCid{ii},'_edp_',tmMode{jj},'_l1b_dce'],...
+      [SCid{ii},'_edp_dce_sensor'], tint);
+    if(isempty(dceTsTmp.(tmMode{jj}).(SCid{ii})))
+      warning(['No ',SCid{ii},' ', tmMode{jj}, ' file was found for this day.']);
+      continue
+    end
+    % Combine the data and time series
+    dceComb.(SCid{ii}).time = [dceComb.(SCid{ii}).time; dceTsTmp.(tmMode{jj}).(SCid{ii}).time.ttns];
+    dceComb.(SCid{ii}).data = [dceComb.(SCid{ii}).data; dceTsTmp.(tmMode{jj}).(SCid{ii}).data];
+  end
+  % Sort by time
+  [~, idxSort] = sort(dceComb.(SCid{ii}).time);
+  dceComb.(SCid{ii}).time = dceComb.(SCid{ii}).time(idxSort);
+  dceComb.(SCid{ii}).data = dceComb.(SCid{ii}).data(idxSort,:);
+  % Remove duplicates
+  [~,idxUniq] = unique(dceComb.(SCid{ii}).time);
+  dceComb.(SCid{ii}).time = dceComb.(SCid{ii}).time(idxUniq);
+  dceComb.(SCid{ii}).data = dceComb.(SCid{ii}).data(idxUniq,:);
+  if(~isempty(dceComb.(SCid{ii}).time))
+    dceTs.(SCid{ii}) = TSeries(EpochTT(dceComb.(SCid{ii}).time),dceComb.(SCid{ii}).data);
+  else
+    % Fill with one empty data point.
+    dceTs.(SCid{ii}) = TSeries(EpochTT(tint.start),[0, 0, 0]);
+  end
+  dceTs.(SCid{ii}).units = 'mV/m';
+  dceTs.(SCid{ii}).name = upper(SCid{ii});
+end
+
+
 %% Plot All results.
-% Note this will currently fail if not at least one DCECOMM files was
-% identified for each s/c for the day of interest.
 disp('Plotting all data from all S/C.');
 toPlot = cell(1,length(SCid));
 for ii=1:length(SCid)

@@ -34,7 +34,7 @@ end
 ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
 ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
 ud = rmfield(ud,'variance'); ud = rmfield(ud,'UNITS');
-
+repres = [];
 if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');
   if ischar(tensorOrder), tensorOrder = str2double(tensorOrder); end
@@ -53,7 +53,7 @@ if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   end
 else % guessing for Non-CAA data
   tensorOrder = length(data.variance(3:end));
-  repres = [];
+  
   switch tensorOrder
     case 0 % scalar
     case 1 % vector
