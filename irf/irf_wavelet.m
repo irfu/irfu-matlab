@@ -1,4 +1,4 @@
-function specrec=irf_wavelet_dg(varargin)
+function specrec=irf_wavelet(varargin)
 %IRF_WAVELET  compute fast wavelet spectrogram
 %  Calculate wavevelet spectrogram based on fast FFT algorithm
 %  Written by A. Tjulin

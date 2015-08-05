@@ -45,6 +45,7 @@ function [result,b]=c_4_grad(r1,r2,r3,r4,b1,b2,b3,b4,option)
 
 %% Defaults
 idC = {'C1','C2','C3','C4'};
+doOutputTSeries = false;   % input is not TSeries
 %% Check input parameters
 if nargin~=9 && nargin~=8 && nargin~=3 && nargin~=2
 	disp('Wrong number of input parameters. See usage:');
@@ -82,6 +83,16 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 				errStr = 'ERROR: input not structures of type R.C1,R.C2,..';
 				irf.log('critical',errStr);
 				error(errStr);
+			else
+				if isa(R.(id),'TSeries')
+					doOutputTSeries = true;
+					R.(id) = [R.(id).time.epochUnix R.(id).data];
+				end
+				if isa(B.(id),'TSeries')
+					doOutputTSeries = true;
+					Bunits = B.(id).units;
+					B.(id) = [B.(id).time.epochUnix B.(id).data];
+				end
 			end
 		end		
 	else
@@ -242,5 +253,13 @@ end
 
 %% Prepare output
 if isTimeSpecified % add time if given
-	result = [tB result];
+	if doOutputTSeries
+		result = TSeries(EpochUnix(tB),result,'TensorOrder',1);
+		if nargout == 2,
+			b = TSeries(EpochUnix(tB),b,'TensorOrder',1);
+			result.units = Bunits;
+		end
+	else
+		result = [tB result];
+	end
 end
