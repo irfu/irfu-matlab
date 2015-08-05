@@ -88,7 +88,7 @@ elseif	nargs==4 % irf_spectrogram(t,Pxx,F,dt)
 	specrec.dt = dt;
 	specrec.df=[];
 elseif	nargin==5 % irf_spectrogram(t,Pxx,F,dt,df)
-	t=args{1};Pxx=args{2};F=args{3};dt=args{4};df=args{5};
+	t=args{1};Pxx=args{2};F=args{3};dt=args{4};dF=args{5};
     specrec.t = t;
 	if (size(Pxx,1) ~= length(t)) && (size(Pxx,2) == length(t)), Pxx = Pxx'; end
 	if iscell(Pxx),specrec.p = Pxx;
