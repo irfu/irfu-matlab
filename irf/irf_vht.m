@@ -62,15 +62,14 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	
 	if flag == 2,
 		ep=e(indData);
-		ep.data(:,3) = 0;
 		ehtp=eht(indData);
+		ep.data(:,3) = 0;
 		ehtp.data(:,3) = 0;
-		deltaE= ep - ehtp;
 	else
-		ep=e;
-		ehtp=eht;
-		deltaE=ep.data -ehtp.data;
+		ep=e(indData);
+		ehtp=eht(indData);
 	end
+	deltaE=ep.data -ehtp.data;
 	[p,s]=polyfit( ehtp.data,ep.data,1);
 	cc=corrcoef(ep.data,ehtp.data);
 	
@@ -81,7 +80,7 @@ if isa(e,'TSeries') && isa(b,'TSeries')
 	% Calculate error in velocity estimate
 	%
 	% 9.16 in ISSI book
-	DVHT=sum(irf_abs(deltaE(indData,:),1).^2)/length(indData);
+	DVHT=sum(irf_abs(deltaE,1).^2)/length(indData);
 	lambda=eig(K);
 	S=DVHT/(2*length(indData)-3)*inv(K);
 	dvht(1)=sqrt([1 0 0]*S*[1;0;0])*1e3;
