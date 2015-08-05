@@ -120,7 +120,7 @@ function out = order_data(in, ndata, sfreq, ts)
     % if data has less than 90% return NaN, else replace with mean (excl. NaN).
     m = irf.nanmean(out, 1, 0.9);
     for col=1:ncomp2
-      if(any(indNaN(:,col))), out(indNaN(:,col)) = m(col); end;
+      if(any(indNaN(:,col))), out(indNaN(:,col),col) = m(col); end;
     end
   end
 end
