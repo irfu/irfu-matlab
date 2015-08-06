@@ -49,6 +49,7 @@ switch action,
 		irf_pl_tx(hca,ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(hca,'on');
 		ylabel(ud.h(1),var_label(ud.variable_str,ud.var_col));
 		axis(hca,[xl(1) xl(2) 0 1]);
+        irf_legend(hca,{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
 		irf_zoom(hca,'y');irf_timeaxis(hca)
 		irf_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
 		ylabel(ud.h(2),var_label(ud.variable_str,ud.var_col));
@@ -106,7 +107,7 @@ switch action,
 		ud=get(gcf,'userdata');
 		
 		irf_legend(0,['c\_4\_v\_int() ' datestr(now)],[0.01 0.99],'fontsize',7); % add information to the plot
-		
+		irf_legend(h(1),{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
 		hh=h(1,1);  % use the first subplot to estimate available time interval
 		xl=get(hh,'XLim');
 		hc=get(hh,'Children');
