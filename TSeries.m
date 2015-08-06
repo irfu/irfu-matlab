@@ -470,6 +470,17 @@ classdef TSeries
     end
     
     function obj = plus(obj,inp)
+			% PLUS add constant to all data samples
+			%
+			% PLUS(TS,constant)
+			% TS + constant
+			%
+			% Constant can be also an object of the same size as each data
+			% sample.
+			%
+			% Examples:
+			%   TS2 = TS1 + 0.1;
+			%   TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
       if isnumeric(inp) 
         if numel(inp) == 1
           obj.data_ = obj.data_ + inp;
@@ -492,9 +503,8 @@ classdef TSeries
     end
     
     function obj = minus(obj,inp)
-      if isnumeric(inp) && ...
-          ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
-        obj.data_ = obj.data_ - inp;
+      if isnumeric(inp)
+        obj = obj + (-1*inp);
       else
         error('Minus not defined');
       end
