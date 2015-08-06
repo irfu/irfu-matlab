@@ -590,11 +590,12 @@ classdef TSeries
     end
     
     function Ts = resample(obj,NewTime,varargin)
-      % Resample to a new timeline
+      % RESAMPLE  Resample TSeries to a new timeline
       %
-      % Ts = resample(obj,NewTime, [ARGS]
-      %
-      % Note: resample data type is double.
+      % Ts = resample(obj,NewTime, [ARGS])
+      % 
+			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
+			% Resample data type is double.
       %
       % See also: IRF_RESAMPLE
       if ~isa(NewTime,'GenericTimeArray')
@@ -639,9 +640,12 @@ classdef TSeries
     end
     
     function Ts = transform(obj, newBasis)
-      % Tranform from one coordinate system to another and return new
-      % TimeSeries.
-      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
+      % TRANSFORM  transform vector TSeries to a new representation
+      % 
+			% TRANSFORM(TSeries,newBasis) where newBasis is character string.
+			%
+      % newBasis:
+			%         'rlp' - Cartesian XYZ to spherical latitude
       %         'xyz' - Spherical latitude to cartesian XYZ
       %         'rpz' - Cartesian XYZ to cylindrical
       %         'xyz' - Cylidrical to cartesian XYZ
