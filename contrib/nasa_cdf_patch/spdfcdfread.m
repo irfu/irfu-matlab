@@ -554,7 +554,7 @@ else
             if (args.CombineRecords)
               if (isequal(lower(info.Variables{p, 4}), 'epoch16'))
                 if (args.KeepEpochAsIs)
-                  data(p) = transpose(xdata);
+                  data{p} = transpose(xdata);
                 else
                   data{p} = xdata;
                 end
