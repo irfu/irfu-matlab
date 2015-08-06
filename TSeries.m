@@ -417,7 +417,7 @@ classdef TSeries
       end
         
       if obj.time~=obj1.time
-        warning('tseries:resampling','resamplig TSeries')
+        irf.log('warning','cross(T1,T2): resampling T2 TSeries')
         obj1 = obj1.resample(obj.time);
       end
       Ts = obj;
@@ -461,6 +461,9 @@ classdef TSeries
     end
     
     function l = length(obj)
+			% LENGTH - number of data points in time series
+			%
+			% LENGTH(TS) - number of data points in TS
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
