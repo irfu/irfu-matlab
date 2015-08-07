@@ -417,7 +417,7 @@ classdef TSeries
       end
         
       if obj.time~=obj1.time
-        warning('tseries:resampling','resamplig TSeries')
+        irf.log('warning','cross(T1,T2): resampling T2 TSeries')
         obj1 = obj1.resample(obj.time);
       end
       Ts = obj;
@@ -461,12 +461,26 @@ classdef TSeries
     end
     
     function l = length(obj)
+			% LENGTH - number of data points in time series
+			%
+			% LENGTH(TS) - number of data points in TS
       if isempty(obj.t_), l = 0;
       else l = obj.t_.length();
       end
     end
     
     function obj = plus(obj,inp)
+			% PLUS add constant to all data samples
+			%
+			% PLUS(TS,constant)
+			% TS + constant
+			%
+			% Constant can be also an object of the same size as each data
+			% sample.
+			%
+			% Examples:
+			%   TS2 = TS1 + 0.1;
+			%   TS2 = TS1 + [1 2 4];  % if TS1,TS2 are vector time series
       if isnumeric(inp) 
         if numel(inp) == 1
           obj.data_ = obj.data_ + inp;
@@ -489,9 +503,8 @@ classdef TSeries
     end
     
     function obj = minus(obj,inp)
-      if isnumeric(inp) && ...
-          ((numel(inp) == 1) || (size(inp,2) == size(obj.data_,2)))
-        obj.data_ = obj.data_ - inp;
+      if isnumeric(inp)
+        obj = obj + (-1*inp);
       else
         error('Minus not defined');
       end
@@ -577,11 +590,12 @@ classdef TSeries
     end
     
     function Ts = resample(obj,NewTime,varargin)
-      % Resample to a new timeline
+      % RESAMPLE  Resample TSeries to a new timeline
       %
-      % Ts = resample(obj,NewTime, [ARGS]
-      %
-      % Note: resample data type is double.
+      % Ts = resample(obj,NewTime, [ARGS])
+      % 
+			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
+			% Resample data type is double.
       %
       % See also: IRF_RESAMPLE
       if ~isa(NewTime,'GenericTimeArray')
@@ -626,9 +640,12 @@ classdef TSeries
     end
     
     function Ts = transform(obj, newBasis)
-      % Tranform from one coordinate system to another and return new
-      % TimeSeries.
-      % flag: = 'rlp' - Cartesian XYZ to spherical latitude
+      % TRANSFORM  transform vector TSeries to a new representation
+      % 
+			% TRANSFORM(TSeries,newBasis) where newBasis is character string.
+			%
+      % newBasis:
+			%         'rlp' - Cartesian XYZ to spherical latitude
       %         'xyz' - Spherical latitude to cartesian XYZ
       %         'rpz' - Cartesian XYZ to cylindrical
       %         'xyz' - Cylidrical to cartesian XYZ
