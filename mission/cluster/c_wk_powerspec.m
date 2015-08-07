@@ -132,8 +132,8 @@ c34x = zeros(N+1,numf);
 Powerav = zeros(N+1,numf);
 
 for m = [1:1:N+1]
-    c34x(m,:) = nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
-    Powerav(m,:) = nansum(Power([posav(m)-cav/2+1:posav(m)+cav/2],:));
+    c34x(m,:) = irf.nanmean(W1c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:).*conj(W2c.p{1,1}([posav(m)-cav/2+1:posav(m)+cav/2],:)));
+    Powerav(m,:) = irf.nansum(Power([posav(m)-cav/2+1:posav(m)+cav/2],:));
 end
 
 cross34x = W1c;
