@@ -392,7 +392,7 @@ pulse = double(Newpulse); % Use the new filtered pulses.
 per = interp1(pulse, 1:length(pulse), epoch, 'nearest');
 
 % Pre allocate output
-phase = epoch;
+phase = NaN(size(epoch));
 flag = int16(epoch);
 
 inrange = find( ~isnan(per) & per < length(pulse) );
@@ -451,7 +451,50 @@ if( ~isempty(inrange) )
         % phase in the interval 0-360 deg.
         phase(afterlast) = mod(phase(afterlast), 360);
     end
-
+else
+  log_str='No overlap between filtered sunpulses and requested time. Will try to use only extrapolation!';
+  irf.log('warning',log_str);
+  if(pulse(end)<epoch(1))
+    % Extrapolation after end
+    irf.log('warning','Extrapolation after last HK 101 pulse');
+    afterlast = 1:length(epoch);
+    % To calculate phase after last pulse, use spin period calculated
+    % between last and second to last pulses (which will actually be
+    % IIFSUNPER if there was a gap before the last pulse)
+    period0 = period(end);
+    flag(afterlast) = 10 + period_flag(end);
+    phase(afterlast) = (epoch(afterlast)-pulse(end))/period0*360;
+    warn = find(phase > 360*3);
+    if( ~isempty(warn) )
+      log_str='Warning: extrapolating more than 3 spin periods after last sun pulse.';
+      irf.log('warning', log_str);
+      flag(warn) = flag(warn) + 10;
+    end
+  elseif(pulse(1)<epoch(end))
+    % Extrapolation before beginning
+    irf.log('warning','Extrapolation before first HK 101 pulse');
+    beforefirst = 1:length(epoch);
+    % The first pulse will be a 'pseudo pulse', with period from 
+    % IIFSUNPER, if available. Otherwise, it will be the first pulse
+    % from the CDIP, with spin period calculated between first and 
+    % second pulses.
+    period0 = period(1);
+    period_flag0 = 10 + period_flag(1); % Add initial 10 to flag.
+    phase(beforefirst) = (epoch(beforefirst)-pulse(1))/period0*360;
+    flag(beforefirst) = period_flag0;
+    warn = find(phase < -360*3);
+    if( ~isempty(warn) )
+        log_str='Warning: extrapolating more than 3 spin periods before first sun pulse.';
+        irf.log('warning', log_str);
+        flag(warn) = flag(warn) + 10; % Add another 10 to flag (atleast 10 has already been added).
+    end
+    phase(beforefirst) = phase(beforefirst)+ceil(-min(phase/360))*360;
+  else
+    log_str='Something went wrong in phase calculation. Should not be here.';
+    irf.log('critical',log_str);
+    error('MMS_SDP_PHASE_2:NOOVERLAP',log_str);
+  end
+    
 end
 
 %% Step 3b)
