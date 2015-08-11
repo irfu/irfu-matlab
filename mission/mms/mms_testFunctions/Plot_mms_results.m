@@ -9,6 +9,11 @@ function Plot_mms_results(Day, varargin)
 %  Usage:
 %   Plot_mms_results('2015-05-12','bashRun',true,'plotUsc',false);
 %  to automatically generate plots for all but Usc.
+% Or use a struct:
+%  inArg = struct('bashRun', false, 'plotUsc', false, 'plotDSL', false, ...
+%            'plotSpect', true);
+%  Plot_mms_results('2015-05-12', inArg)
+%  
 %
 % Spectra (of DSL E-x & E-y for all MMS s/c) will cover one figure (if it's
 % to be plotted).
@@ -24,27 +29,7 @@ function Plot_mms_results(Day, varargin)
 % https://creativecommons.org/licenses/by-nc-sa/4.0/
 %
 
-% Process input arguments
-p = inputParser;
-% Default values
-default.BashRun = true; % Assume automated bashRun
-default.PlotUsc = true; % Assume Usc should be plotted.
-default.PlotDSL = true; % Assume DSL E-x & E-y should be plotted.
-default.PlotSpect = true; % Assume DSL E-x & E-y spectra should be plotted.
-validDay = @(x) assert(ischar(x) && ...
-  numel(sscanf(x,'%4d-%2d-%2d%s'))==3 && ...
-  length(x)==10, ...
-  'Format should be "YYYY-MM-DD".'); % Day must be correct format and char.
-% Input arguments, processed in this order of not given as explicit
-% arguments or specified in a struct.
-addRequired(p, 'Day', validDay);
-addOptional(p, 'bashRun', default.BashRun, @islogical);
-addOptional(p, 'plotUsc', default.PlotUsc, @islogical);
-addOptional(p, 'plotDSL', default.PlotDSL, @islogical);
-addOptional(p, 'plotSpect', default.PlotSpect, @islogical);
-
-parse(p, Day, varargin{:});
-
+p = verify_input(Day, varargin{:});
 
 
 nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
@@ -56,7 +41,7 @@ MMS_CONST = mms_constants();
 set(groot, 'defaultAxesColorOrder', [0 0 0; 1 0 0; 0 0.5 0; 0 0 1]);
 
 if(p.Results.bashRun)
-  outPath = [dataPathRoot,'irfu',filesep,'plots',filesep];
+  outPath = [dataPathRoot,'irfu',filesep,'plots',filesep,'results',filesep];
   if(~exist(outPath,'dir')), error('outpath does not exist'); end
 end
 
@@ -98,14 +83,15 @@ if(p.Results.plotSpect)
   %% Compute power spectra of DSL data
   % Comm 128 Hz
   for kk=1:length(SCid)
-    disp('Computing spectra for ',SCid{kk});
-    dslCommSpect.(SCid{kk}) = irf_powerfft(dslCommTs.(SCid{kk}), ...
+    disp(['Computing spectra DSL X for ',SCid{kk}]);
+    dslCommSpect.(SCid{kk}) = irf_powerfft(dslCommTs.(SCid{kk}).x, ...
       8192, ...
       MMS_CONST.Samplerate.comm_128);
     if(isempty(dslCommSpect.(SCid{kk})))
       % FIXME better..
       warning(['Empty spectra from DSL on ', SCid{kk}]);
     end
+    dslCommTs.(SCid{kk})=[]; % Empty to save memory.
   end
 
   % Or only DSL E X component
@@ -182,51 +168,72 @@ if(p.Results.plotUsc || p.Results.plotDSL)
   end
 
   if(p.Results.bashRun)
-    % Save plots
+    % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
+    for ii=0:3:21
+      tintZoom = {[str2double(Day(1:4)), str2double(Day(6:7)), str2double(Day(9:10)), ii, 00, 00], ...
+        [str2double(Day(1:4)),str2double(Day(6:7)),str2double(Day(9:10)),ii+3, 00, 00]};
+      for kk=1:3
+        irf_zoom(h(kk),'x',tintZoom);
+        if(kk~=3), irf_timeaxis(h(kk),'nolabels'); end
+      end
+      % Save segment
+      print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_Usc_and_DSLxy',...
+        outPath, Day, ii, ii+3) );
+    end
   end
 end % End of plot figure for Usc and/or DSL E-x & E-y
 
 
 
 if(p.Results.plotSpect)
+  clear dslCommTs
   % PLOT spectogram of DSL
   disp('Plotting DSL spectra');
 
-  yTicks = [0.05, 0.10, 0.15, 0.2, 0.4, 0.8, 1.0, 10];
+  %yTicks = [0.05, 0.10, 0.15, 0.2, 0.4, 0.8, 1.0, 10];
+  yTicks = [0.05, 1.0, 10];
   yLimits = [0, 12.5];
-  h = irf_plot(8, 'newfigure');
+  h = irf_plot(4, 'newfigure');
+  set(gcf,'position',[7   159   790   916]);
+  figure_start_epoch(tint.start.epochUnix);
 
-  h = irf_spectrogram(dslCommSpect.mms1); % FIXME plot to specific subplot (of h).
-  h(1).YScale = 'log';
-  h(1).YTick = yTicks;
-  h(1).YLim = yLimits;
-  ylabel(h(1),{'MMS1 DSL E-x','freq [Hz]'});
-  caxis(h(1),[-4 1]);
+  for kk=1:length(SCid)
+    % DSL E-X
+ 	hold(h(kk),'on')
+    % if both X & Y spectra was computed and is to be added into one
+    % subplot, then use:
+    % irf_spectrogram(h(kk), struct('f', dslCommSpect.(SCid{kk}).f, ...
+    %  't', dslCommSpect.(SCid{kk}).t, 'p', dslCommSpect.(SCid{kk}).p(1) + ...
+    %  dslCommSpect.(SCid{kk}).p(2)));
+    % Create spectrogram of only DSL X:
+    irf_spectrogram(h(kk), dslCommSpect.(SCid{kk}));
+ 	%grid(h(kk),'on')
+ 	h(kk).YScale = 'log';
+    h(kk).YTick = yTicks;
+    h(kk).YLim = yLimits;
+    ylabel(h(kk),{[upper(SCid{kk}),' DSL E-x'],'freq [Hz]'});
+    caxis(h(kk),[-4 1]);
+    hold(h(kk),'off')
+    if(kk==1), title(h(kk),['Plot created:',nowStr, ' Spectra of DSL X']); end
+    
+    dslCommSpect.(SCid{kk}) = []; % Clear to save memory
+  end
 
-  % if multiple components:
-  h(2).YScale = 'log';
-  h(2).YTick = yTicks;
-  h(2).YLim = yLimits;
-  ylabel(h(2),{'MMS1 DSL E-y','freq [Hz]'});
-  caxis(h(2),[-4 1]);
-
-  % FIXME, should perhaps not be plotted..
-  h(3).YScale = 'log';
-  h(3).YTick = yTicks;
-  h(3).YLim = yLimits;
-  ylabel(h(3),{'MMS1 BCS E-z','freq [Hz]'});
-  caxis(h(3),[-4 1]);
-
-  % fig = figure;
-  % h = irf_spectrogram(struct('f',dslCommSpect.mms1.f,'t',...
-  %   dslCommSpect.mms1.t,'p',dslCommSpect.mms1.p(2)));
-  % h(1).YScale = 'log';
-  % h(1).YTick = [.25, 0.5, 1, 10]; % Limits from Cluster, may need updating.
-  % h(1).YLim = [0, 12.5];
-  % ylabel(h(1),{'MMS1 DSL E-y power spectra','f [Hz]'});
+  clear dslCommSpect
 
   if(p.Results.bashRun)
-    % Save plots
+    % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
+    for ii=0:3:21
+      tintZoom = {[str2double(Day(1:4)), str2double(Day(6:7)), str2double(Day(9:10)), ii, 00, 00], ...
+        [str2double(Day(1:4)),str2double(Day(6:7)),str2double(Day(9:10)),ii+3, 00, 00]};
+      for kk=1:length(SCid)
+        irf_zoom(h(kk),'x',tintZoom);
+        if(kk~=4), irf_timeaxis(h(kk),'nolabels'); end
+      end
+      % Save segment
+      print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_DSLx_spectra',...
+        outPath, Day, ii, ii+3) );
+    end
   end
 end % End of plot figure with DSL spectra
 
@@ -266,13 +273,47 @@ function outTs = getDATA(dataID)
 
     % Return a struct with fields of time series for each sc.
     if(~isempty(TsCombined.(SCid{ii}).time))
-      outTs.(SCid{ii}) = TSeries(EpochTT(TsCombined.(SCid{ii}).time),TsCombined.(SCid{ii}).data);
+      outTs.(SCid{ii}) = TSeries(EpochTT(TsCombined.(SCid{ii}).time),TsCombined.(SCid{ii}).data,'vec_xyz');
     else
       % Fill with one NaN data point if no data was read at all for this sc.
       outTs.(SCid{ii}) = TSeries(EpochTT(tint.start), NaN(1,3), 'vec_xyz');
     end
     outTs.(SCid{ii}).name = upper(SCid{ii});
+    
+    clear TsCombined TsTmp % Clear to save memory
   end
 end
+
+  function p = verify_input(Day, tmpVarargin)
+    % Process input arguments
+    p = inputParser;
+    % Default values
+    default.BashRun = true; % Assume automated bashRun
+    default.PlotUsc = true; % Assume Usc should be plotted.
+    default.PlotDSL = true; % Assume DSL E-x & E-y should be plotted.
+    default.PlotSpect = true; % Assume DSL E-x & E-y spectra should be plotted.
+    validDay = @(x) assert(ischar(x) && ...
+      numel(sscanf(x,'%4d-%2d-%2d%s'))==3 && ...
+      length(x)==10, ...
+      'Format should be "YYYY-MM-DD".'); % Day must be correct format and char.
+    % Input arguments, processed in this order of not given as explicit
+    % arguments or specified in a struct.
+    addRequired(p, 'Day', validDay);
+    addOptional(p, 'bashRun', default.BashRun, @islogical);
+    addOptional(p, 'plotUsc', default.PlotUsc, @islogical);
+    addOptional(p, 'plotDSL', default.PlotDSL, @islogical);
+    addOptional(p, 'plotSpect', default.PlotSpect, @islogical);
+    parse(p, Day, tmpVarargin);
+  end
+
+  function t_start_epoch = figure_start_epoch(st)
+    ud = get(gcf,'userdata');
+    if isfield(ud,'t_start_epoch')
+      t_start_epoch = ud.t_start_epoch;
+    else
+      ud.t_start_epoch = st;
+      set(gcf,'userdata',ud);
+    end
+  end
 
 end
