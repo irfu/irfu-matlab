@@ -29,8 +29,6 @@ IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-mat
 # No need to edit after this line
 # add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
 export MATLABPATH=$IRFU_MATLAB:$IRFU_MATLAB/mission/mms
-# Add IRFU_MATLAB/contrib/nasa_cdf_patch_beta (where cdflib.so is located)
-export LD_LIBRARY_PATH=$IRFU_MATLAB/contrib/nasa_cdf_patch_beta:$LD_LIBRARY_PATH
 
 PROCESS_NAME=
 case "$0" in

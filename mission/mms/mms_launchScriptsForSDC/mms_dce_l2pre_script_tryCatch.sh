@@ -6,6 +6,7 @@
 # Updated: 2015/01/14, change comments to reflect change SDP->EDP and add new input argument HK 10E file.
 # Updated: 2015/03/20, automatically send mail to mms-ops@irfu.se if error occurs in Matlab.
 # Updated: 2015/04/14, add hk_105 as possible input argument.
+# Updated: 2015/08/11, allow for multiple HK files (to be used when processing files crossing midnight).
 #
 # Usage: place script in the same folder as has irfu-matlab as a subfolder, then run
 #  "./script.sh <mmsX_dce_filename> <mmsX_dcv_filename> <MMSX_DEFATT_filename> <mmsX_10e_filename> <mmsX_105_filename>", with the following
@@ -15,6 +16,9 @@
 #    <MMSX_***_DEFATT_filename.V01> = Filename of DEFATT data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_105_filename.cdf>    = Filename of HK 105 data to be processed for 'xyz'. Including path and extention.
 #    <mmsX_***_10e_filename.cdf>    = Filename of HK 10E data (with guard settings) to be processed for 'xyz'. Including path and extention.
+# if using multiple HK input files, separate these by a colon (:) without additional spaces,
+# ie. two HK 105 data files would be the following
+# <mmsX_***_105_filename.cdf>:<mmsX_***_105_filename2.cdf>
 #  output files created:
 #    <mmsX_***_xyz_yyyymmddHHMMSS_vX.Y.Z.cdf>         = File placed in $DROPBOX_ROOT
 #    <DATE_IRFU.log>                                  = Logfile of run, placed in $LOG_PATH_ROOT/mmsX/edp/.
@@ -34,8 +38,6 @@ IRFU_MATLAB=/mms/itfhome/mms-sdp/software/irfu-matlab # SDC location of irfu-mat
 # No need to edit after this line
 # add IRFU_MATLAB and IRFU_MATLAB/mission/mms to path used by Matlab.
 export MATLABPATH=$IRFU_MATLAB:$IRFU_MATLAB/mission/mms
-# Add IRFU_MATLAB/contrib/nasa_cdf_patch_beta (where cdflib.so is located)
-export LD_LIBRARY_PATH=$IRFU_MATLAB/contrib/nasa_cdf_patch_beta:$LD_LIBRARY_PATH
 
 PROCESS_NAME=
 case "$0" in

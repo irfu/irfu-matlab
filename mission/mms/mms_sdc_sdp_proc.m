@@ -35,6 +35,9 @@ init_matlab_path()
 HK_101_File = ''; % HK with sunpulse, etc.
 HK_105_File = ''; % HK with sweep status etc.
 HK_10E_File = ''; % HK with bias guard settings etc.
+HK_101_File2 = ''; % Second HK 101 file, when processing over midnight.
+HK_105_File2 = ''; % Same corresponding HK 105
+HK_10E_File2 = ''; % Same corresponding HK 10E
 ACE_File = '';
 DCV_File = '';
 DCE_File = '';
@@ -240,6 +243,21 @@ elseif(isempty(DCV_File) && procId~=MMS_CONST.SDCProc.l2a )
   irf.log('debug','It appears we are running with the dcv data combined into dce file.');
 end
 
+%% Split possible multiple HK files, separated by one single colon, ie ":"
+% This is useful when processing data covering midnight, but same filetype
+% should not be sent in multiple arguments.
+filePart = strsplit(HK_101_File,':');
+if(size(filePart,2)==2), HK_101_File2 = filePart{2}; end
+HK_101_File = filePart{1}; % If it was empty, this will still be empty.
+
+filePart = strsplit(HK_105_File,':');
+if(size(filePart,2)==2), HK_105_File2 = filePart{2}; end
+HK_105_File = filePart{1};
+
+filePart = strsplit(HK_10E_File,':');
+if(size(filePart,2)==2), HK_10E_File2 = filePart{2}; end
+HK_10E_File = filePart{1};
+
 
 %% Processing for SCPOT or QL or SITL.
 % Load and process identified files in the following order first any of the
@@ -255,9 +273,19 @@ switch procId
       src_fileData = load_file(HK_10E_File,'hk_10e');
       update_header(src_fileData); % Update header with file info.
     end
+    if(~isempty(HK_10E_File2))
+      irf.log('notice', [procName ' proc using: ' HK_10E_File2]);
+      src_fileData = load_file(HK_10E_File2,'hk_10e');
+      update_header(src_fileData); % Update header with file info.
+    end
     if(~isempty(HK_105_File))
       irf.log('notice', [procName ' proc using: ' HK_105_File]);
       src_fileData = load_file(HK_105_File,'hk_105');
+      update_header(src_fileData); % Update header with file info.
+    end
+    if(~isempty(HK_105_File2))
+      irf.log('notice', [procName ' proc using: ' HK_105_File2]);
+      src_fileData = load_file(HK_105_File2,'hk_105');
       update_header(src_fileData); % Update header with file info.
     end
     if isempty(HK_101_File)
@@ -268,6 +296,11 @@ switch procId
     irf.log('notice', [procName ' proc using: ' HK_101_File]);
     src_fileData = load_file(HK_101_File,'hk_101');
     update_header(src_fileData) % Update header with file info.
+    if(~isempty(HK_101_File2))
+      irf.log('notice', [procName ' proc using: ' HK_101_File2]);
+      src_fileData = load_file(HK_101_File2,'hk_101');
+      update_header(src_fileData) % Update header with file info.
+    end
 
     if isempty(DCE_File)
       errStr = ['missing required input for ' procName ': DCE_File'];
@@ -291,9 +324,19 @@ switch procId
       src_fileData = load_file(HK_10E_File,'hk_10e');
       update_header(src_fileData) % Update header with file info.
     end
+    if(~isempty(HK_10E_File2))
+      irf.log('notice', [procName ' proc using: ' HK_10E_File2]);
+      src_fileData = load_file(HK_10E_File2,'hk_10e');
+      update_header(src_fileData); % Update header with file info.
+    end
     if(~isempty(HK_105_File))
       irf.log('notice', [procName ' proc using: ' HK_105_File]);
       src_fileData = load_file(HK_105_File,'hk_105');
+      update_header(src_fileData); % Update header with file info.
+    end
+    if(~isempty(HK_105_File2))
+      irf.log('notice', [procName ' proc using: ' HK_105_File2]);
+      src_fileData = load_file(HK_105_File2,'hk_105');
       update_header(src_fileData); % Update header with file info.
     end
     % Phase
@@ -318,6 +361,11 @@ switch procId
       irf.log('notice', [procName ' proc using: ' HK_101_File]);
       src_fileData = load_file(HK_101_File,'hk_101');
       update_header(src_fileData) % Update header with file info.
+      if(~isempty(HK_101_File2))
+        irf.log('notice', [procName ' proc using: ' HK_101_File2]);
+        src_fileData = load_file(HK_101_File2,'hk_101');
+        update_header(src_fileData) % Update header with file info.
+      end
     end
 
     if isempty(DCE_File)

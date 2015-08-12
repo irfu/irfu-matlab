@@ -116,11 +116,17 @@ classdef mms_sdp_dmgr < handle
         error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
-      if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
+      if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        errStr = ['replacing existing variable (' param ') with new data'];
-        irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e'})))
+          % Only multiple HK files are allowed for now..
+          errStr = ['replacing existing variable (' param ') with new data'];
+          irf.log('critical', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
+        else
+          % Warn about multiple HK files of same type.
+          irf.log('warning',['Multiple files for (' param ' detected. Will try to sort them by time.']);
+        end
       end
       
       vPfx = sprintf('mms%d_edp_',DATAC.scId);
@@ -172,57 +178,132 @@ classdef mms_sdp_dmgr < handle
         case('hk_101')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_101_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'cmdexec']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Add sunpulse times (TT2000) of last recieved sunpulse.
-          DATAC.(param).sunpulse = dataObj.data.([vPfx 'sunpulse']).data;
-          % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
-          DATAC.(param).sunssps = dataObj.data.([vPfx 'sunssps']).data;
-          % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
-          DATAC.(param).iifsunper = dataObj.data.([vPfx 'iifsunper']).data;
+          %DATAC.(param) = []; % Why was this done? We begin with empty..
+          if(isempty(DATAC.(param)))
+            % first hk_101 file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'cmdexec']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Add sunpulse times (TT2000) of last recieved sunpulse.
+            DATAC.(param).sunpulse = dataObj.data.([vPfx 'sunpulse']).data;
+            % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
+            DATAC.(param).sunssps = dataObj.data.([vPfx 'sunssps']).data;
+            % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
+            DATAC.(param).iifsunper = dataObj.data.([vPfx 'iifsunper']).data;
+          else
+            % Second hk_101 file
+            DATAC.(param).dataObj2 = dataObj; % Store dataObj.
+            x = getdep(dataObj,[vPfx 'cmdexec']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            Comb_sunpulse = [DATAC.(param).sunpulse; dataObj.data.([vPfx 'sunpulse']).data];
+            Comb_sunssps = [DATAC.(param).sunssps; dataObj.data.([vPfx 'sunssps']).data];
+            Comb_iifsunper = [DATAC.(param).iifsunper; dataObj.data.([vPfx 'iifsunper']).data];
+            % Ensure sorted unique timestamps and store the resulting time,
+            % sunpulse, sunssps and iisunper.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            DATAC.(param).sunpulse = Comb_sunpulse(srt(usrt));
+            DATAC.(param).sunssps = Comb_sunssps(srt(usrt));
+            DATAC.(param).iifsunper = Comb_iifsunper(srt(usrt));
+          end
           
         case('hk_105')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_105_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'sweepstatus']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Add sweepstatus which indicates if any of the probes is sweeping
-          DATAC.(param).sweepstatus = dataObj.data.([vPfx 'sweepstatus']).data;
+          %DATAC.(param) = [];  % Why was this done? We begin with empty..
+          if(isempty(DATAC.(param)))
+            % first hk_105 file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'sweepstatus']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Add sweepstatus which indicates if any of the probes is sweeping
+            DATAC.(param).sweepstatus = dataObj.data.([vPfx 'sweepstatus']).data;
+          else
+            % second hk_105 file
+            DATAC.(param).dataObj2 = dataObj;
+            x = getdep(dataObj,[vPfx 'sweepstatus']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            Comb_sweepstatus = [DATAC.(param).sweepstatus; dataObj.data.([vPfx 'sweepstatus']).data];
+            % Ensure sorted unique timestamps and store the resulting time
+            % and sweepstatus.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            DATAC.(param).sweepstatus = Comb_sweepstatus(srt(usrt));
+          end
           
         case('hk_10e')
           % HK 10E, contains bias.
           vPfx = sprintf('mms%d_10e_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'seqcnt']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Go through each probe and store values for easy access,
-          % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+          %DATAC.(param) = [];  % Why was this done? We begin with empty..
           hk10eParam = {'dac','ig','og','stub'}; % DAC, InnerGuard, OuterGuard & Stub
-          for iParam=1:length(hk10eParam)
-            for jj=1:6
-              % stub only exist if probe is 5 or 6.
-              if( ~strcmp(hk10eParam{iParam},'stub') || ...
-                  (strcmp(hk10eParam{iParam},'stub') && jj>=5))
-                tmpStruct = getv(dataObj,...
-                  [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
-                if isempty(tmpStruct)
-                  errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
-                    hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
-                else
-                  DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
-                    tmpStruct.data;
+          if(isempty(DATAC.(param)))
+            % First hk_10e file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'seqcnt']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Go through each probe and store values for easy access,
+            % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+            for iParam=1:length(hk10eParam)
+              for jj=1:6
+                % stub only exist if probe is 5 or 6.
+                if( ~strcmp(hk10eParam{iParam},'stub') || ...
+                    (strcmp(hk10eParam{iParam},'stub') && jj>=5))
+                  tmpStruct = getv(dataObj,...
+                    [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+                  if isempty(tmpStruct)
+                    errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
+                      hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
+                  else
+                    DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+                      tmpStruct.data;
+                  end
                 end
-              end
-            end % for jj=1:6
-          end % for iParam=1:length(hk10eParam)
+              end % for jj=1:6
+            end % for iParam=1:length(hk10eParam)
+          else
+            % Second hk_10e file
+            DATAC.(param).dataObj2 = dataObj;
+            x = getdep(dataObj,[vPfx 'seqcnt']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            % Ensure sorted unique timestamps and store the resulting time
+            % and sweepstatus.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            % Go through each probe and store values for easy access,
+            % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+            for iParam=1:length(hk10eParam)
+              for jj=1:6
+                % stub only exist if probe is 5 or 6.
+                if( ~strcmp(hk10eParam{iParam},'stub') || ...
+                    (strcmp(hk10eParam{iParam},'stub') && jj>=5))
+                  tmpStruct = getv(dataObj,...
+                    [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+                  if isempty(tmpStruct)
+                    errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
+                      hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
+                  else
+                    % Combine and use the sorted unique indexes (based on
+                    % time)
+                    Comb_data = [DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)); tmpStruct.data];
+                    DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+                      Comb_data(srt(usrt));
+                  end
+                end
+              end % for jj=1:6
+            end % for iParam=1:length(hk10eParam)
+          end
           
         case('defatt')
           % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase' etc)
@@ -750,19 +831,19 @@ classdef mms_sdp_dmgr < handle
         end
       end
       
-      function res = are_probes_enabled
-        % Use FILLVAL of each sensor to determine if probes are enabled or not.
-        % Returns logical of size correspondig to sensor.
-        sensorData = dataObj.data.([vPfx param '_sensor']).data;
-        FILLVAL = getfillval(dataObj, [vPfx, param, '_sensor']);
-        if( ~ischar(FILLVAL) )
-          % Return 'true' for all data not equal to specified FILLVAL
-          res = (sensorData ~= FILLVAL);
-        else
-          errStr = 'Unable to get FILLVAL.';
-          irf.log('critical',errStr); error(errStr);
-        end
-      end
+%       function res = are_probes_enabled
+%         % Use FILLVAL of each sensor to determine if probes are enabled or not.
+%         % Returns logical of size correspondig to sensor.
+%         sensorData = dataObj.data.([vPfx param '_sensor']).data;
+%         FILLVAL = getfillval(dataObj, [vPfx, param, '_sensor']);
+%         if( ~ischar(FILLVAL) )
+%           % Return 'true' for all data not equal to specified FILLVAL
+%           res = (sensorData ~= FILLVAL);
+%         else
+%           errStr = 'Unable to get FILLVAL.';
+%           irf.log('critical',errStr); error(errStr);
+%         end
+%       end
       
       function res = resample_probe_enable(fields)
         % resample probe_enabled data to E-field cadense
