@@ -135,7 +135,6 @@ classdef mms_sdp_dmgr < handle
         case('dce')
           sensors = {'e12','e34','e56'};
           init_param()
-          apply_nom_amp_corr()
           
           % Since v1.0.0 DCE files contain also DCV data
           if ~isfield(dataObj.data, [vPfx, 'dcv_sensor']) || ...
@@ -160,6 +159,7 @@ classdef mms_sdp_dmgr < handle
           chk_sweep_on()
           chk_sdp_v_vals()
           sensors = {'e12','e34'};
+          apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           corr_adp_spikes()
           
         case('dcv')
@@ -173,6 +173,7 @@ classdef mms_sdp_dmgr < handle
           chk_sweep_on()
           chk_sdp_v_vals()
           sensors = {'e12','e34'};
+          apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           corr_adp_spikes()
           
         case('hk_101')
