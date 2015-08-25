@@ -589,35 +589,98 @@ classdef TSeries
       end
     end
     
+    function Ts = mrdivide(obj,obj1)
+      if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
+        obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
+      end
+        
+      % Division
+      if isa(obj1,'TSeries')
+        if obj.tensorOrder>1 || obj1.tensorOrder>1
+          error('Only scalars and vectors are supported'); 
+        end
+        if obj1.tensorOrder>obj.tensorOrder
+          Ts = mtimes(obj1,obj); return;
+        end
+        if obj.time~=obj1.time
+          warning('tseries:resampling','resamplig TSeries')
+          obj1 = obj1.resample(obj.time);
+        end
+        Ts = obj;
+        switch obj.tensorOrder
+          case 0, Ts.data_ = obj.data./obj1.data; 
+          case 1
+            switch obj1.tensorOrder
+              case 0
+                Ts.data_ = obj.data./repmat(obj1.data,1,size(obj.data,2));
+              otherwise
+                error('Not supported')
+            end
+          otherwise
+            error('Not supported')
+        end
+        update_name_units()
+        return
+      end
+      if ~isnumeric(obj1)
+        error('second argument must be numeric or TSeries')
+      end
+      if ~isscalar(obj1)
+        error('only scalars are supported')
+      end
+      Ts = obj; Ts.data = Ts.data*obj1;
+      
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('%s/(%s)',s,s1);
+        end
+        if ~isempty(obj.units) || ~isempty(obj1.units)
+          if isempty(obj.units), Ts.units = obj1.units;
+          elseif isempty(obj1.units), Ts.units = obj.units;
+          else Ts.units = [obj.units '/(' obj1.units ')'];
+          end
+        end
+      end
+    end
+    
     function Ts = resample(obj,NewTime,varargin)
       % RESAMPLE  Resample TSeries to a new timeline
       %
       % Ts = resample(obj,NewTime, [ARGS])
-      % 
-			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
-			% Resample data type is double.
+      %
+      % NewTime should be GeneralTimeArray (e.g. EpochTT.)
+      % Resample data type is double.
       %
       % See also: IRF_RESAMPLE
       if ~isa(NewTime,'GenericTimeArray')
         error('NewTime must be of GenericTimeArray type or derived from it')
       end
-      if NewTime == obj.time, Ts = obj; return, end 
+      if NewTime == obj.time, Ts = obj; return, end
       
-      if obj.tensorOrder~=1, error('Not yet implemented'); end
-      
-      % For non-cartesian bases, in order to do a proper inte/extrapolarion
-      % we first transform into cartesian basis, resample, and then
-      % transform back to teh original basis
-      basis = obj.BASIS{obj.tensorBasis_};
-      switch basis
-        case {'xy','xyz'}, resample_(obj); return 
-        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
-        case 'rp', resample_(obj.transform('xy'));
+      switch obj.tensorOrder
+        case 0, resample_(obj)
+        case 1
+          % For non-cartesian bases, in order to do a proper inte/extrapolarion
+          % we first transform into cartesian basis, resample, and then
+          % transform back to teh original basis
+          basis = obj.BASIS{obj.tensorBasis_};
+          switch basis
+            case {'xy','xyz'}, resample_(obj); return
+            case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+            case 'rp', resample_(obj.transform('xy'));
+            otherwise
+              error('Unknown representation'); % should not be here
+          end
+          Ts = Ts.transform(basis);
         otherwise
-          error('Unknown representation'); % should not be here
+          error('Not yet implemented')
       end
-      Ts = Ts.transform(basis);
-      
       function resample_(TsTmp)
         tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
         newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
