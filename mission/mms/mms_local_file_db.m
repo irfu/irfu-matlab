@@ -116,7 +116,8 @@ classdef mms_local_file_db < mms_file_db
           if year==TStart.year, moStart = TStart.month; end
           if year==TStop.year, moStop = TStop.month; end
           for mo = moStart:moStop
-            curDir = sprintf('%s%s%d%s%02d',fDir,filesep,year,filesep,mo);
+            moDir = sprintf('%s%s%d%s%02d',fDir,filesep,year,filesep,mo);
+            curDir = moDir;
             if (year==TStart.year && mo==TStart.month) || ...
                 (year==TStop.year && mo==TStop.month)
               dStart = 1; dStop = 31;
@@ -125,6 +126,9 @@ classdef mms_local_file_db < mms_file_db
               end
               if year==TStop.year && mo==TStop.month, dStop = TStop.day;end
               for day = dStart:dStop
+                if strcmpi(C{3},'brst')
+                  curDir = [moDir filesep sprintf('%02d',day)]; % BRST files are in daily subdirs
+                end
                 dPref = sprintf('%s_%d%02d%02d',filePrefix,year,mo,day);
                 listingD = dir([curDir filesep dPref '*.cdf']);
                 if isempty(listingD), continue, end
@@ -288,6 +292,7 @@ classdef mms_local_file_db < mms_file_db
         d =  C{end-1}; p = obj.dbRoot;
         for ix=1:(length(C)-2), p = [p filesep C{ix}]; end %#ok<AGROW>
         p = [p filesep d(1:4) filesep d(5:6)];
+        if strcmpi(C{3},'brst'), p = [p filesep d(7:8)]; end % BRST files are in daily subdirs
       else % ancillary
         p = [obj.dbRoot filesep 'ancillary' filesep C{1} filesep C{2}];
       end
