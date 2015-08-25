@@ -108,8 +108,8 @@ switch lower(flag_method)
     error('called with unknown input');
 end
 if flagTs
-  ed = irf.ts_vec_xyz(e.time,ed);
-  ed.units = e.units;
+  ed = irf.ts_vec_xyz(e.time,ed); ed.units = e.units;
+  d = irf.ts_scalar(e.time, d); d.units = 'deg';
 else
   if le > 2
     ed=[e(:,1) ed];
