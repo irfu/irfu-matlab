@@ -560,7 +560,7 @@ cd(oldDir);
     end
     scIdStr = sprintf('mms%d',scId);
     startTime =  HeaderInfo.startTime;
-    verStr = sprintf('%d.%d.',MMS_CONST.Version.X,MMS_CONST.Version.Y);
+    verStr = sprintf('%d.%d.',MMS_CONST.Version.(procName).X, MMS_CONST.Version.(procName).Y);
     fileName = [scIdStr '_' INST_NAME, '_' tmModeStr '_' subDir '_' ...
       suf '_' startTime '_v' ];
     

@@ -3,24 +3,6 @@ function MMS_CONST = mms_constants
 %
 %  MMS_CONST = mms_constants()
 
-% Version numbering, start with X, Y, Z = 0, 0, 0. When releasing new
-% software update values here and subsequent output files created will have
-% these numbers. 
-% When simply re-running a dataset, the Z value should be increased by one.
-
-MMS_CONST.Version.X = 0; % Major new Software version
-MMS_CONST.Version.Y = 1; % New Calibration version
-% Version Notes Y, for us. Not written to CDF files.
-% Y - 0, initial release
-% Y - 1, ADP shadow removal, use of irf_filt in scpot calculation.
-MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
-% Version.MODS - MODS cdf GlobalAttribute should contain a description of
-% all significant changes to the data set, essentially capturing a log of
-% high-level release notes. Can have as many entries as necessary and
-% should be updated if the "X" value of the version number changes.
-% Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
-MMS_CONST.Version.MODS = {'V.0. Initial release.'};
-
 
 MMS_CONST.MinFileVer = 0; % min version of l1b files accepted
 
@@ -101,26 +83,27 @@ MMS_CONST.Bitmask.ADP_SHADOW               =  uint16(32);      % Bit 6
 
 MMS_CONST.Error = -Inf; % Indicates error in computation
 
-% % DC V source bitmasks
-% %for 16 ks/s channels, up to 6 channels at the same time:
-% MMS_CONST.Source.SCM1 = 1;      % Bit 0x00 = SCM1  enable/disable
-% MMS_CONST.Source.SCM1 = 2;      % Bit 0x01 = SCM2  enable/disable
-% MMS_CONST.Source.SCM3 = 4;      % Bit 0x02 = SCM3  enable/disable
-% MMS_CONST.Source.V1 = 8;        % Bit 0x03 = V1    enable/disable
-% MMS_CONST.Source.V2 = 16;       % Bit 0x04 = V2    enable/disable
-% MMS_CONST.Source.V3 = 32;       % Bit 0x05 = V3    enable/disable
-% MMS_CONST.Source.V4 = 64;       % Bit 0x06 = V4    enable/disable
-% MMS_CONST.Source.V5 = 128;      % Bit 0x07 = V5    enable/disable
-% MMS_CONST.Source.V6 = 256;      % Bit 0x08 = V6    enable/disable
-% MMS_CONST.Source.E12DC = 512;   % Bit 0x09 = E12DC enable/disable
-% MMS_CONST.Source.E34DC = 1024;  % Bit 0x10 = E34DC enable/disable
-% MMS_CONST.Source.E56DC = 2048;  % Bit 0x11 = E56DC enable/disable
-% 
-% % DC E source bitmasks
-% %for 256 ks/s channels (ACE and High Speed Burst), up to 3 channels at 
-% %the same time:
-% MMS_CONST.Source.E12_AC = 1;    % Bit 0x00 = E12_AC enable/disable
-% MMS_CONST.Source.E34_AC = 2;    % Bit 0x01 = E34_AC enable/disable
-% MMS_CONST.Source.E56_AC = 4;    % Bit 0x02 = E56_AC enable/disable
-% MMS_CONST.Source.V1_AC = 8;     % Bit 0x03 = V1_AC  enable/disable
-% MMS_CONST.Source.V2_AC = 16:    % Bit 0x04 = V2_AC  enable/disable
+% Version numbering, start with X, Y, Z = 0, 0, 0. When releasing new
+% software (with significant changes) update values here and subsequent
+% output files created will have these numbers.
+% Major new Software version, X
+% New Calibration version, Y
+MMS_CONST.Version = struct(...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.sitl},  struct('X', 0, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.ql},    struct('X', 0, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.scpot}, struct('X', 0, 'Y', 2), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2pre}, struct('X', 0, 'Y', 1), ...
+  MMS_CONST.SDCProcs{MMS_CONST.SDCProc.l2a},   struct('X', 0, 'Y', 1));
+% Version Notes Y, for us. Not written to CDF files.
+% Y - 0, initial release
+% Y - 1, ADP shadow removal, use of irf_filt in scpot calculation.
+% Y - 2 (scpot), apply_nom_amp_corr to DCE after all DCV was calculated.
+MMS_CONST.Version.Z = 0; % File revision, increased by 1 for each re-run.
+% Version.MODS - MODS cdf GlobalAttribute should contain a description of
+% all significant changes to the data set, essentially capturing a log of
+% high-level release notes. Can have as many entries as necessary and
+% should be updated if the "X" value of the version number changes.
+% Each cell corresponds to one version, append like: mods=[mods; {'new text'}];
+MMS_CONST.Version.MODS = {'V.0. Initial release.'};
+
+end
