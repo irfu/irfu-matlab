@@ -316,6 +316,10 @@ classdef TSeries
       value = obj.t_;
     end
    
+    function value = basis(obj)
+      value = obj.BASIS{obj.tensorBasis_};
+    end
+    
     function value = get.tensorBasis(obj)
       value = [obj.BASIS{obj.tensorBasis_}...
         ' (' obj.BASIS_NAMES{obj.tensorBasis_} ')'];
@@ -392,9 +396,9 @@ classdef TSeries
     end
     
     function Ts = abs(obj)
-      % Magnitude
+      %ABS Magnitude
       if obj.tensorOrder~=1, error('Not yet implemented'); end
-      switch obj.BASIS{obj.tensorBasis_}
+      switch obj.basis
         case {'xy','xyz'}, data = sqrt( sum(abs(obj.data).^2, 2) ); 
         case {'rtp','rlp','rp'}, data = abs(obj.r.data);
         case 'rpz' % cylindrical
@@ -407,25 +411,38 @@ classdef TSeries
       if ~isempty(obj.name), Ts.name = sprintf('|%s|',obj.name); end
     end
     
+    function Ts = abs2(obj)
+      %ABS2 Magnitude squared
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      switch obj.basis
+        case {'xy','xyz'}, data = sum(abs(obj.data).^2, 2); 
+        case {'rtp','rlp','rp'}, data = abs(obj.r.data).^2;
+        case 'rpz' % cylindrical
+          data = abs(obj.r.data).^2 + abs(obj.z.data).^2;
+        otherwise
+          error('Unknown representation'); % should not be here
+      end
+      obj.data_ = data; Ts = obj;
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
+      if ~isempty(obj.name), Ts.name = sprintf('|%s|^2',obj.name); end
+      if ~isempty(obj.units), Ts.units = sprintf('(%s)^2',obj.units); end
+    end
+    
     function Ts = cross(obj,obj1)
-      % Matrix multiplication
+      %CROSS cross product
       if ~isa(obj,'TSeries') ||  ~isa(obj1,'TSeries')
         error('Both imputs must be TSeries'); 
-      end 
-      if obj.tensorOrder~=1 || obj1.tensorOrder~=1
+      elseif obj.tensorOrder~=1 || obj1.tensorOrder~=1
         error('Only scalars and vectors are supported');
-      end
-        
-      if obj.time~=obj1.time
-        irf.log('warning','cross(T1,T2): resampling T2 TSeries')
-        obj1 = obj1.resample(obj.time);
+      elseif obj.time~=obj1.time
+        error('Input TS objects have different timelines, use resample()')
       end
       Ts = obj;
       vector_product()
       update_name_units()
     
       function vector_product()
-        switch obj.BASIS{obj.tensorBasis_}
+        switch obj.basis
           case {'xy','rp'}
             Ts = obj.transform('xy'); d1 = Ts.data;
             d2 = obj1.transform('xy').data;
@@ -510,51 +527,48 @@ classdef TSeries
       end
     end
     
-    function Ts = mtimes(obj,obj1)
+    function Ts = dot(obj,obj1)
+      %DOT  Scalar product
+      %
+      %  TsOut = DOT(TsA,TsB)
+      %  TsOut = DOT(TsA,VECTOR), VECTOR is a constant vector
       if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
         obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
       end
         
-      % Matrix multiplication
       if isa(obj1,'TSeries')
-        if obj.tensorOrder>1 || obj1.tensorOrder>1
-          error('Only scalars and vectors are supported'); 
-        end
-        if obj1.tensorOrder>obj.tensorOrder
-          Ts = mtimes(obj1,obj); return;
-        end
-        if obj.time~=obj1.time
-          warning('tseries:resampling','resamplig TSeries')
-          obj1 = obj1.resample(obj.time);
+        if obj.tensorOrder~=1 || obj1.tensorOrder~=1
+          error('Only vectors are supported'); 
+        elseif obj.time~=obj1.time
+          error('Input TS objects have different timelines, use resample()')
         end
         Ts = obj;
-        switch obj.tensorOrder
-          case 0, Ts.data_ = obj.data.*obj1.data; 
-          case 1
-            switch obj1.tensorOrder
-              case 0
-                Ts.data_ = obj.data.*repmat(obj1.data,1,size(obj.data,2));
-              case 1 % Scalar product
-                scalar_product()
-              otherwise
-                error('Not supported')
-            end
-          otherwise
-            error('Not supported')
+        scalar_product()
+      else % constant vector, not TS
+        if ~isnumeric(obj1) || ~isvector(obj1)
+          error('Second argument must be a vector or TS')
         end
-        update_name_units()
-        return
+        switch  obj.basis
+          case 'xy'
+            if length(obj1) ~= 2
+              error('Second argument must be a 2D vector')
+            end
+            Ts.data_ = obj.data(:,1).*obj1(1) + obj.data(:,2)*obj1(2);
+          case 'xyz'
+            if length(obj1) ~= 3
+              error('Second argument must be a 3D vector')
+            end
+            Ts.data_ = obj.data(:,1).*obj1(1) + obj.data(:,2)*obj1(2) + ...
+              + obj.data(:,3)*obj1(3);
+          otherwise
+            error('Only Cartesian basis supported, use transform()'); % should not be here
+        end
       end
-      if ~isnumeric(obj1)
-        error('second argument must be numeric or TSeries')
-      end
-      if ~isscalar(obj1)
-        error('only scalars are supported')
-      end
-      Ts = obj; Ts.data = Ts.data*obj1;
+      update_name_units()
+      Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       
       function scalar_product()
-        switch obj.BASIS{obj.tensorBasis_}
+        switch obj.basis
           case {'xy','rp'}
             d1 = obj.transform('xy').data;
             d2 = obj1.transform('xy').data;
@@ -567,9 +581,46 @@ classdef TSeries
           otherwise
             error('Unknown representation'); % should not be here
         end
-        Ts.tensorOrder_=0; Ts.tensorBasis_ = ''; Ts.representation{2} = [];
       end
       
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('dot(%s,%s)',s,s1);
+        end
+        if isempty(obj.units), s = 'unknown';
+        else s = obj.units;
+        end
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+          else s1 = obj1.units;
+        end
+        Ts.units = sprintf('%s %s',s,s1);
+        Ts.userData = [];
+      end
+    end
+    
+    function Ts = times(obj,obj1)
+      %TIMES  by element multiplication
+      
+      if ~isa(obj1,'TSeries') || ~isa(obj,'TSeries')
+        error('TSeries inputs are expected')
+      elseif obj.tensorOrder~=obj1.tensorOrder
+        error('Inputs must have the same tensor order');
+      elseif obj.tensorBasis_ ~= obj1.tensorBasis_
+        error('Inputs must have the same tensor basis, use transform()');
+      elseif obj.time~=obj1.time
+        error('Input TS objects have different timelines, use resample()')
+      end
+      
+      Ts = obj;
+      Ts.data_ = obj.data.*obj1.data;
+      update_name_units()
+        
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
@@ -578,14 +629,84 @@ classdef TSeries
           if isempty(obj1.name), s1 = 'untitled';
           else s1 = obj1.name;
           end
-          Ts.name = sprintf('%s*%s',s,s1);
+          Ts.name = sprintf('%s * %s',s,s1);
         end
-        if ~isempty(obj.units) || ~isempty(obj1.units)
-          if isempty(obj.units), Ts.units = obj1.units;
-          elseif isempty(obj1.units), Ts.units = obj.units;
-          else Ts.units = [obj.units ' ' obj1.units];
+        if isempty(obj.units), s = 'unknown';
+        else s = obj.units;
+        end
+        if isempty(obj1.units), s1 = 'unknown';
+          else s1 = obj1.units;
+        end
+        Ts.units = sprintf('%s %s',s,s1);
+        Ts.userData = [];
+      end
+    end
+    
+    function Ts = mtimes(obj,obj1)
+      %MTIMES  multiply TS by scalar
+      if isa(obj1,'TSeries') && ~isa(obj,'TSeries')
+        obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
+      end
+        
+      % Multiplication by a scalar
+      if isa(obj1,'TSeries')
+        if obj.tensorOrder>0 && obj1.tensorOrder>0
+          error('One of TS inputs must be a scalar');
+        elseif obj.tensorOrder<obj1.tensorOrder
+          obj1Tmp = obj1; obj1 = obj; obj = obj1Tmp;
+        elseif obj.time~=obj1.time
+          error('Input TS objects have different timelines, use resample()')
+        end
+          
+        Ts = obj;
+        switch obj.tensorOrder
+          case 0
+            sz = size(obj.data,2); sz1 = size(obj1.data,2); 
+            if sz>1 && sz1>1 && sz~=sz1
+              error('Data dimensions do not match')
+            elseif sz==sz1
+              Ts.data_ = obj.data.*obj1.data;
+            else
+              if sz==1, d = obj.data; d1 = obj1.data;
+              else d1 = obj.data; d = obj1.data;
+              end
+              Ts.data_ = d.*repmat(d1,1,size(d,2));
+            end
+          otherwise
+            if size(obj1.data,2)>1,
+              error('TS1.data has more than one column')
+            end
+            Ts.data_ = obj.data.*repmat(obj1.data,1,size(obj.data,2));
+        end
+        update_name_units()
+        return
+      end
+      if ~isnumeric(obj1)
+        error('second argument must be numeric or TSeries')
+      elseif ~isscalar(obj1)
+        error('only scalars are supported')
+      end
+      Ts = obj; Ts.data = Ts.data*obj1;
+      update_name_units()
+      
+      function update_name_units()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
           end
+          if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('%s * %s',s,s1);
         end
+        if isempty(obj.units), s = 'unknown';
+        else s = obj.units;
+        end
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+          else s1 = obj1.units;
+        end
+        Ts.units = sprintf('%s %s',s,s1);
+        Ts.userData = [];
       end
     end
     
@@ -624,63 +745,67 @@ classdef TSeries
       end
       if ~isnumeric(obj1)
         error('second argument must be numeric or TSeries')
-      end
-      if ~isscalar(obj1)
+      elseif ~isscalar(obj1)
         error('only scalars are supported')
       end
-      Ts = obj; Ts.data = Ts.data*obj1;
+      Ts = obj; Ts.data = Ts.data/obj1;
       
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)
           if isempty(obj.name), s = 'untitled';
           else s = obj.name;
           end
-          if isempty(obj1.name), s1 = 'untitled';
+          if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
           else s1 = obj1.name;
           end
           Ts.name = sprintf('%s/(%s)',s,s1);
         end
-        if ~isempty(obj.units) || ~isempty(obj1.units)
-          if isempty(obj.units), Ts.units = obj1.units;
-          elseif isempty(obj1.units), Ts.units = obj.units;
-          else Ts.units = [obj.units '/(' obj1.units ')'];
-          end
+        if isempty(obj.units), s = 'unknown';
+        else s = obj.units;
         end
+        if ~isa(obj1,'TSeries') || isempty(obj1.units), s1 = 'unknown';
+          else s1 = obj1.units;
+        end
+        Ts.units = sprintf('%s/(%s)',s,s1);
+        Ts.userData = [];
       end
     end
     
     function Ts = resample(obj,NewTime,varargin)
       % RESAMPLE  Resample TSeries to a new timeline
       %
-      % Ts = resample(obj,NewTime, [ARGS])
+      % TsOut = RESAMPLE(Ts,NewTime, [ARGS])
+      % 
+			% NewTime should be GeneralTimeArray (e.g. EpochTT.)
+			% Resampled data type is double. 
+      % ARGS are given as input to irf_resamp()
       %
-      % NewTime should be GeneralTimeArray (e.g. EpochTT.)
-      % Resample data type is double.
+      % TsOut = RESAMPLE(Ts,Ts2, [ARGS])
       %
-      % See also: IRF_RESAMPLE
-      if ~isa(NewTime,'GenericTimeArray')
-        error('NewTime must be of GenericTimeArray type or derived from it')
+      % Resample Ts to timeline of Ts2
+      %
+      % See also: IRF_RESAMP
+      if ~isa(NewTime,'TSeries') && ~isa(NewTime,'GenericTimeArray')
+        error('NewTime must be of TSeries or GenericTimeArray type or derived from it')
       end
-      if NewTime == obj.time, Ts = obj; return, end
+      if isa(NewTime,'TSeries'), NewTime = NewTime.time; end
+      if NewTime == obj.time, Ts = obj; return, end 
       
-      switch obj.tensorOrder
-        case 0, resample_(obj)
-        case 1
-          % For non-cartesian bases, in order to do a proper inte/extrapolarion
-          % we first transform into cartesian basis, resample, and then
-          % transform back to teh original basis
-          basis = obj.BASIS{obj.tensorBasis_};
-          switch basis
-            case {'xy','xyz'}, resample_(obj); return
-            case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
-            case 'rp', resample_(obj.transform('xy'));
-            otherwise
-              error('Unknown representation'); % should not be here
-          end
-          Ts = Ts.transform(basis);
+      if obj.tensorOrder~=1, error('Not yet implemented'); end
+      
+      % For non-cartesian bases, in order to do a proper inte/extrapolarion
+      % we first transform into cartesian basis, resample, and then
+      % transform back to teh original basis
+      basis = obj.BASIS{obj.tensorBasis_};
+      switch basis
+        case {'xy','xyz'}, resample_(obj); return 
+        case {'rtp','rlp','rpz'}, resample_(obj.transform('xyz'));
+        case 'rp', resample_(obj.transform('xy'));
         otherwise
-          error('Not yet implemented')
+          error('Unknown representation'); % should not be here
       end
+      Ts = Ts.transform(basis);
+      
       function resample_(TsTmp)
         tData = TsTmp.time - TsTmp.time(1); data = double(TsTmp.data);
         newData = irf_resamp([tData data],NewTime-TsTmp.time(1),varargin{:});
@@ -689,6 +814,11 @@ classdef TSeries
     end %RESAMPLE
     
     function obj = tlim(obj,tint)
+      %TLIM  Returns data within specified time interval
+      %
+      % Ts1 = TLIM(Ts,Tint)
+      %
+      % See also: IRF_TLIM
       [idx,obj.t_] = obj.time.tlim(tint);
       nd = ndims(obj.data_);
       if nd>6, error('we cannot support more than 5 dimensions'), end % we cannot support more than 5 dimensions
@@ -703,11 +833,11 @@ classdef TSeries
     end
     
     function Ts = transform(obj, newBasis)
-      % TRANSFORM  transform vector TSeries to a new representation
+      % TRANSFORM  transform TSeries to a new basis
       % 
-			% TRANSFORM(TSeries,newBasis) where newBasis is character string.
+			% Ts1 = TRANSFORM(Ts,newBasis)
 			%
-      % newBasis:
+      % newBasis is string:
 			%         'rlp' - Cartesian XYZ to spherical latitude
       %         'xyz' - Spherical latitude to cartesian XYZ
       %         'rpz' - Cartesian XYZ to cylindrical
