@@ -39,6 +39,7 @@ else
     ud.LABL_PTR_1.dim(1) = 3;
     ud.VALIDMIN(4) = []; ud.VALIDMAX(4) = [];
     ud.SI_CONVERSION = '1.0e-9>T';
+  else varType = 'scalar';
   end
 end
 

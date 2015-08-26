@@ -26,9 +26,10 @@ flagComm = true;
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
 %tint = irf.tint('2015-04-20T18:00:00Z/2015-04-20T23:59:59Z');
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
-tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
+%tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
-mmsId = 'mms2'; 
+tint = irf.tint('2015-08-01T00:00:00Z/2015-08-01T17:59:59Z'); flagComm = false;
+mmsId = 'mms3'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
@@ -46,7 +47,7 @@ if flagComm
     '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
 else
   DCE_File  = [prf '/edp/fast/l1b/dce/' yyyy '/' mo '/' mmsId ...
-    '_edp_fast_l1b_dce_' yyyy mo day '_v1.1.0.cdf'];
+    '_edp_fast_l1b_dce_' yyyy mo day '_v1.1.1.cdf'];
   DCV_File = [];
 end
 
@@ -170,7 +171,7 @@ irf_plot_ylabels_align(h)
 title(h(1),'MMS4')
 
 %% Load B
-B = mms.db_get_ts([mmsId '_dfg_srvy_ql'],[mmsId '_dfg_srvy_gsm_dmpa'],tint);
+B = mms.db_get_ts([mmsId '_afg_srvy_ql'],[mmsId '_afg_srvy_dmpa'],tint);
 
 %% Plot with B
 
