@@ -976,7 +976,8 @@ classdef mms_sdp_dmgr < handle
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
       % FIXME: apply DSL offsets here
-      DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE Dce.e56.data],...
+      % Note, positve E56 correspond to minus DSL-Z direction.
+      DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE -Dce.e56.data],...
         'bitmask',bitmask);
       res = DATAC.dce_xyz_dsl;
     end
