@@ -243,8 +243,7 @@ classdef mms_sdp_dmgr < handle
         case('hk_10e')
           % HK 10E, contains bias.
           vPfx = sprintf('mms%d_10e_',DATAC.scId);
-          %DATAC.(param) = [];  % Why was this done? We begin with empty..
-          hk10eParam = {'dac','ig','og','stub'}; % DAC, InnerGuard, OuterGuard & Stub
+          hk10eParam = {'dac','ig','og'}; % DAC, InnerGuard & OuterGuard
           if(isempty(DATAC.(param)))
             % First hk_10e file
             DATAC.(param).dataObj = dataObj;
@@ -255,18 +254,27 @@ classdef mms_sdp_dmgr < handle
             % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
             for iParam=1:length(hk10eParam)
               for jj=1:6
-                % stub only exist if probe is 5 or 6.
-                if( ~strcmp(hk10eParam{iParam},'stub') || ...
-                    (strcmp(hk10eParam{iParam},'stub') && jj>=5))
-                  tmpStruct = getv(dataObj,...
-                    [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
-                  if isempty(tmpStruct)
-                    errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
-                      hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
-                  else
-                    DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
-                      tmpStruct.data;
+                tmpStruct = getv(dataObj,...
+                [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+                if isempty(tmpStruct)
+                  errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
+                    hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
+                else
+                  if(isinteger(tmpStruct.data) )
+                    irf.log('notice','Old HK 10E, converting to nA or V.');
+                    % Convert old format HK10E (ie "version < v0.3.0") to nA or V.
+                    switch hk10eParam{iParam}
+                      case 'dac'
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*25.28*10^-3; % nA
+                      case {'og', 'ig'}
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*317.5*10^-6; % V
+                      otherwise
+                          errS ='Something wrong with HK 10E file';
+                          irf.log('critical',errS); error(errS);
+                    end
                   end
+                  DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+                    tmpStruct.data;
                 end
               end % for jj=1:6
             end % for iParam=1:length(hk10eParam)
@@ -286,21 +294,30 @@ classdef mms_sdp_dmgr < handle
             % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
             for iParam=1:length(hk10eParam)
               for jj=1:6
-                % stub only exist if probe is 5 or 6.
-                if( ~strcmp(hk10eParam{iParam},'stub') || ...
-                    (strcmp(hk10eParam{iParam},'stub') && jj>=5))
-                  tmpStruct = getv(dataObj,...
-                    [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
-                  if isempty(tmpStruct)
-                    errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
-                      hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
-                  else
-                    % Combine and use the sorted unique indexes (based on
-                    % time)
-                    Comb_data = [DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)); tmpStruct.data];
-                    DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
-                      Comb_data(srt(usrt));
+                tmpStruct = getv(dataObj,...
+                  [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+                if isempty(tmpStruct)
+                  errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
+                    hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
+                else
+                  % Combine and use the sorted unique indexes (based on
+                  % time)
+                  if(isinteger(tmpStruct.data) )
+                    irf.log('notice','Old HK 10E, converting to nA or V.');
+                    % Convert old format HK10E (ie "version < v0.3.0") to nA or V.
+                    switch hk10eParam{iParam}
+                      case 'dac'
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*25.28*10^-3; % nA
+                      case {'og', 'ig'}
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*317.5*10^-6; % V
+                      otherwise
+                          errS ='Something wrong with HK 10E file';
+                          irf.log('critical',errS); error(errS);
+                    end
                   end
+                  Comb_data = [DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)); tmpStruct.data];
+                  DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+                    Comb_data(srt(usrt));
                 end
               end % for jj=1:6
             end % for iParam=1:length(hk10eParam)
@@ -484,17 +501,17 @@ classdef mms_sdp_dmgr < handle
         if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
           
           % Get limit struct with primary fields 'ig', 'og' and 'dac',
-          % subfields 'max' and 'min'.
-          NomBias = MMS_CONST.Limit.NOM_BIAS;
-          % New function based approach, time and S/C dependent.
-%          NomBias = mms_sdp_limit_bias(DATAC.scId);
+          % limits stored as TSeries with [max, min] limits and is s/c
+          % dependent.
+          NomBias = mms_sdp_limit_bias(DATAC.scId);
 
           irf.log('notice','Checking for non nominal bias settings.');
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
             senE = ['e' senA(2) senB(2)]; % E-field sensor
             
-            hk10eParam = {'ig','og','dac'}; % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
+            % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
+            hk10eParam = {'ig','og','dac'};
             for iiParam = 1:length(hk10eParam);
               
               % FIXME, proper test of existing fields?
@@ -513,22 +530,17 @@ classdef mms_sdp_dmgr < handle
                 
                 % Interpolate the limits to match the the DCE timestamps as
                 % well, using the previous limit.
-%                interp_Max = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
-%                  double(NomBias.(hk10eParam{iiParam}).data(:,1)), double(DATAC.dce.time),...
-%                  'previous','extrap');
-%                interp_Min = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
-%                  double(NomBias.(hk10eParam{iiParam}).data(:,2)), double(DATAC.dce.time),...
-%                  'previous','extrap');
+                interp_MaxMin = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+                  double(NomBias.(hk10eParam{iiParam}).data), double(DATAC.dce.time),...
+                  'previous','extrap');
 
                 % Locate Non Nominal values
-                indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
-%                indA = interp_Min >= interp_DCVa | interp_DCVa >= interp_Max;
-                indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
-%                indB = interp_Min >= interp_DCVb | interp_DCVb >= interp_Max;
+                indA = interp_MaxMin(:,2) >= interp_DCVa | interp_DCVa >= interp_MaxMin(:,1);
+                indB = interp_MaxMin(:,2) >= interp_DCVb | interp_DCVb >= interp_MaxMin(:,1);
                 indE = or(indA,indB); % Either senA or senB => senE non nominal.
                 
                 if(any(indE))
-                  irf.log('notice',['Non-nominal bias on ',...
+                  irf.log('notice',['Bad bias on ',...
                     senE,' from ',hk10eParam{iiParam}]);
                   
                   % Add bitmask values to SenA, SenB and SenE for these ind.
