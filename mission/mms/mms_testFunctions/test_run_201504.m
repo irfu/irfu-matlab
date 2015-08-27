@@ -20,7 +20,7 @@ load /data/mms/irfu/mmsR.mat
 epocRTmp = EpochTT(R.time);
 
 %% Define time
-flagComm = true;
+flagComm = 1;
 %tint = irf.tint('2015-04-16T00:00:00Z/2015-04-16T06:00:00Z');
 %tint = irf.tint('2015-04-16T18:00:00Z/2015-04-16T23:59:59Z');
 %tint = irf.tint('2015-05-15T00:00:00Z/2015-05-15T05:59:59Z');
@@ -28,8 +28,8 @@ flagComm = true;
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
 %tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
-tint = irf.tint('2015-08-01T00:00:00Z/2015-08-01T17:59:59Z'); flagComm = false;
-mmsId = 'mms3'; 
+tint = irf.tint('2015-08-01T00:00:00Z/2015-08-01T23:59:59Z'); flagComm = 3;
+mmsId = 'mms4'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
 mo = utc(6:7); yyyy=utc(1:4); day=utc(9:10); hh=utc(12:13); mm=utc(15:16);
@@ -40,14 +40,18 @@ li = mms.db_list_files([mmsId '_fields_hk_l1b_105'],tint); if length(li)>1, erro
 HK_105_File = [li.path filesep li.name];
 li = mms.db_list_files([mmsId '_fields_hk_l1b_10e'],tint); if length(li)>1, error('li>1'), end
 HK_10E_File = [li.path filesep li.name];
-if flagComm
+if flagComm==1
   DCE_File  = [prf '/edp/comm/l1b/dce128/' yyyy '/' mo '/' mmsId ...
     '_edp_comm_l1b_dce128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
   DCV_File  = [prf '/edp/comm/l1b/dcv128/' yyyy '/' mo '/' mmsId ...
     '_edp_comm_l1b_dcv128_' yyyy mo day hh mm '00_v0.8.0.cdf'];
+elseif flagComm==2
+  li = mms.db_list_files([mmsId '_edp_fast_l1b_dce'],tint); if length(li)>1, error('li>1'), end
+  DCE_File = [li.path filesep li.name];
+  DCV_File = [];
 else
-  DCE_File  = [prf '/edp/fast/l1b/dce/' yyyy '/' mo '/' mmsId ...
-    '_edp_fast_l1b_dce_' yyyy mo day '_v1.1.1.cdf'];
+  li = mms.db_list_files([mmsId '_edp_slow_l1b_dce'],tint); if length(li)>1, error('li>1'), end
+  DCE_File = [li.path filesep li.name];
   DCV_File = [];
 end
 
@@ -71,6 +75,7 @@ phase = Dmgr.phase;
 spinfits = Dmgr.spinfits;
 delta_off = Dmgr.delta_off;
 dce_xyz_dsl = Dmgr.dce_xyz_dsl;
+dcv = Dmgr.dcv;
 
 % Construct TSeries
 DceSL = irf.ts_vec_xy(dce_xyz_dsl.time,[dce.e12.data dce.e34.data]);
@@ -81,12 +86,13 @@ AdcOff34 = irf.ts_scalar(spinfits.time,spinfits.sfit.e34(:,1));
 Es12 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e12(:,2:3));
 Es34 = irf.ts_vec_xy(spinfits.time,spinfits.sfit.e34(:,2:3));
 P2scPot = irf.ts_scalar(probe2sc_pot.time,probe2sc_pot.data);
+Dcv = irf.ts_scalar(dcv.time,[dcv.v1.data dcv.v2.data dcv.v3.data dcv.v4.data]);
 
 %% Summary plot
 E_YLIM = 7;
 
 figure(71), clf
-h = irf_plot(4);
+h = irf_plot(5);
 
 hca = irf_panel('E');
 irf_plot(hca,DceSL)
@@ -112,6 +118,10 @@ ylabel(hca,'Ey DSL [mV/m]'), set(hca,'YLim',E_YLIM*[-1 1])
 hca = irf_panel('V');
 irf_plot(hca,P2scPot)
 ylabel(hca,'P2ScPot [V]'), set(hca,'YLim',[-14 0])
+
+hca = irf_panel('Vs');
+irf_plot(hca,Dcv)
+ylabel(hca,'PPot [V]'), set(hca,'YLim',[-14 0])
 
 %irf_plot_ylabels_align(h), 
 irf_zoom(h,'x',DceDSL.time)
