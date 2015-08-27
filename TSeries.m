@@ -98,6 +98,7 @@ classdef TSeries
   properties
     name = '';
     units = '';
+    siConversion = '';
     userData = [];
   end
   
