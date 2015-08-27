@@ -82,7 +82,9 @@ else
     'repres',repres);
 end
 res.name = data.name;
-res.units = data.UNITS;
+if isfield(data,'UNITS'), res.units = v.UNITS;
+else res.units = 'unitless';
+end
 if isfield(ud,'SI_CONVERSION'), 
   res.siConversion    = ud.SI_CONVERSION;  ud = rmfield(ud,'SI_CONVERSION');
 end

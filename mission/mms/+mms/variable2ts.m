@@ -13,7 +13,7 @@ end
 ud = [];
 ud.GlobalAttributes = v.GlobalAttributes;
 ud.CATDESC          = v.CATDESC;
-ud.DISPLAY_TYPE     = v.DISPLAY_TYPE;
+if isfield(v,'DISPLAY_TYPE'), ud.DISPLAY_TYPE     = v.DISPLAY_TYPE; end
 ud.FIELDNAM         = v.FIELDNAM;
 ud.VALIDMIN         = v.VALIDMIN;
 ud.VALIDMAX         = v.VALIDMAX;
@@ -48,7 +48,9 @@ end
 if isfield(v,'FILLVAL'), data(data==v.FILLVAL) = NaN; end
 ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
 ts.name = v.name;
-ts.units = v.UNITS;
+if isfield(v,'UNITS'), ts.units = v.UNITS;
+else ts.units = 'unitless';
+end
 if ~isempty(siConversion), ts.siConversion = siConversion;
 elseif isfield(v,'SI_CONVERSION'), ts.siConversion    = v.SI_CONVERSION;
 end
