@@ -118,7 +118,7 @@ classdef mms_sdp_dmgr < handle
       
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e'})))
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt'})))
           % Only multiple HK files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
@@ -331,8 +331,25 @@ classdef mms_sdp_dmgr < handle
           idxBad = diff(dataObj.time)==0; % Identify first duplicate
           fs = fields(dataObj);
           for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
-          DATAC.(param) = dataObj;
-          check_monoton_timeincrease(DATAC.(param).time);
+          if(isempty(DATAC.(param)))
+            % First defatt file
+            DATAC.(param) = dataObj;
+            check_monoton_timeincrease(DATAC.(param).time);
+          else
+            % Second defatt file
+            % Combine each field of the structs and run sort & unique on
+            % the time
+            combined = [DATAC.(param).time; dataObj.time];
+            [~, srt] = sort(combined);
+            [DATAC.(param).time, usrt] = unique(combined(srt));
+            for idxFs=1:length(fs)
+              if(~strcmp(fs{idxFs}, 'time'))
+                combined = [DATAC.(param).(fs{idxFs}); dataObj.(fs{idxFs})];
+                DATAC.(param).(fs{idxFs}) = combined(srt(usrt));
+              end
+            end
+            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defatt
+          end
           
         case('defeph')
           % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
