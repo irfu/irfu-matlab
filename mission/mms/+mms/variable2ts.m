@@ -13,11 +13,8 @@ end
 ud = [];
 ud.GlobalAttributes = v.GlobalAttributes;
 ud.CATDESC          = v.CATDESC;
-ud.DISPLAY_TYPE     = v.DISPLAY_TYPE;
+if isfield(v,'DISPLAY_TYPE'), ud.DISPLAY_TYPE     = v.DISPLAY_TYPE; end
 ud.FIELDNAM         = v.FIELDNAM;
-if isfield(v,'SI_CONVERSION')
-ud.SI_CONVERSION    = v.SI_CONVERSION;
-end
 ud.VALIDMIN         = v.VALIDMIN;
 ud.VALIDMAX         = v.VALIDMAX;
 if isfield(v,'LABLAXIS'), ud.LABLAXIS = v.LABLAXIS; end
@@ -26,7 +23,7 @@ elseif isfield(v,'LABL_PTR_2'), ud.LABL_PTR_2 = v.LABL_PTR_2;
 elseif isfield(v,'LABL_PTR_3'), ud.LABL_PTR_3 = v.LABL_PTR_3;
 end
 
-varType = ''; data = v.data; 
+data = v.data; siConversion = '';
 if v.dim(1)==3 && v.dim(2)==1, varType = 'vec_xyz';
 elseif v.dim(1)==2 && v.dim(2)==1, varType = 'vec_xy';
 elseif v.dim(1)==1 && v.dim(2)==1, varType = 'scalar';
@@ -38,18 +35,23 @@ else
     ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
     ud.LABL_PTR_1.dim(1) = 3;
     ud.VALIDMIN(4) = []; ud.VALIDMAX(4) = [];
-    ud.SI_CONVERSION = '1.0e-9>T';
+    siConversion = '1.0e-9>T';
   else varType = 'scalar';
   end
 end
 
 if isempty(varType)
-  errS = 'Unrecognized VAR: cannot converto to TSeries';
+  errS = 'Unrecognized VAR: cannot convert to TSeries';
   irf.log('critical', errS), error(errS)
 end
 
 if isfield(v,'FILLVAL'), data(data==v.FILLVAL) = NaN; end
 ts = feval(['irf.ts_' varType],v.DEPEND_0.data,data);
 ts.name = v.name;
-ts.units = v.UNITS;
+if isfield(v,'UNITS'), ts.units = v.UNITS;
+else ts.units = 'unitless';
+end
+if ~isempty(siConversion), ts.siConversion = siConversion;
+elseif isfield(v,'SI_CONVERSION'), ts.siConversion    = v.SI_CONVERSION;
+end
 ts.userData = ud;

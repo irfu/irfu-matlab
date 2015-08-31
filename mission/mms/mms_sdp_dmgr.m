@@ -1000,6 +1000,7 @@ classdef mms_sdp_dmgr < handle
         DATAC.delta_off = ...
           median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
       else
+        MMS_CONST = DATAC.CONST;
         DATAC.delta_off = MMS_CONST.Error;
         irf.log('warning','Delta offset could not be computed.');
       end

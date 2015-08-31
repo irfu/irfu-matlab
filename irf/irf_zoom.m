@@ -256,7 +256,7 @@ switch lower(yscale)
              ymax=ylims(1)+abs(ylims(1))/10;
             end
         else
-            dy=diffy/4; % 1st approx
+            dy=double(diffy)/4; % 1st approx
             dy10power=10^(floor(log10(dy)));
             dy1stcipher=floor(dy/dy10power);
             if dy1stcipher>5,
