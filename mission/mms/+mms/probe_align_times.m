@@ -1,16 +1,16 @@
-function [starttime1,endtime1,starttime3,endtime3] = mms_getprobefields(Exyz,Bxyz,SCpot,zphase) 
+function [starttime1,endtime1,starttime3,endtime3] = probe_align_times(varargin) 
 %
-% [starttime1,endtime1,starttime3,endtime3] = mms_getprobefields(Exyz,Bxyz,SCpot,zphase)
+% [starttime1,endtime1,starttime3,endtime3] = mms.probe_align_times(Exyz,Bxyz,SCpot,zphase,1)
 %
-% plot probe angles and fields data on MMS and print times when probes satisfy 
-% alignment conditions used in Graham et al., JGR, 2015. Used to identify
-% times when field-aligned waves can be characterized using interferomtry
-% techniques. Can view time delays between electric fields aligned with B.
+% Returns times when field-aligned electrostatic waves can be characterized using interferomtry
+% techniques. The same alignment conditions as Graham et al., JGR, 2015 are used. 
+% Optional figure produced showing E_FAC, probe fields, and probe potentials to view 
+% time delays between electric fields aligned with B.
 % Currently p5-p6 are not used in this routine; the analysis is the same as
-% the one using Cluster.
+% the one used for Cluster.
 % Written by D. B. Graham.
 %
-% Panels are: (a) B in DMPA Coordinates, (b) Magnitude of B in and out of
+% For the figure the panels are: (a) B in DMPA Coordinates, (b) Magnitude of B in and out of
 % the spin plane, (c) Angles between B and probes 1 and 3 in the spin
 % plane (angle between 0 and 90 degrees), (d) Spacecraft potential from
 % probes perpendicular to B, (e) E fields from p1-p4 and SC for probes
@@ -24,13 +24,31 @@ function [starttime1,endtime1,starttime3,endtime3] = mms_getprobefields(Exyz,Bxy
 %       zphase - Spacecraft phase (zphase). Obtained from ancillary_defatt.
 %       e.g. zphase = mms.db_get_variable('mms3_ancillary_defatt','zphase',tint);
 %            zphase = irf.ts_scalar(zphase.time, zphase.zphase);
+%       plotfig - Optional flag. Set to 1 to plot fields and potentials
+%       which satisfy alignment conditions. 
 %
 % Outputs: Start and end times of intervals which satisfy the probe
 % alignment conditions, for probe combinates p1-p2 and p3-p4. 
 % 
-%
 % Temporary fix for axial field direction is used before running this function: 
 % Exyz.data(:,3) = -Exyz.data(:,3);
+
+if (numel(varargin) < 4),
+    help mms.probe_align_times;
+    starttime1=NaN;starttime3=NaN;endtime1=NaN;endtime3=NaN;
+    return;
+end
+
+Exyz = varargin{1};
+Bxyz = varargin{2};
+SCpot = varargin{3};
+zphase = varargin{4};
+
+if (numel(varargin)==5);
+    plotfigure=varargin{5};
+else 
+    plotfigure = 0;
+end
 
 tlimit = irf.tint(SCpot.time.start.utc,SCpot.time.stop.utc);
 tlimitl = tlimit+[-10 10];
@@ -111,6 +129,8 @@ E4(idxB) = NaN;
 SCV12(idxB) = NaN;
 SCV34(idxB) = NaN;
 
+if plotfigure,
+    
 Bplane = TSeries(Bxyz.time,[sqrt(Bxyz.data(:,1).^2+Bxyz.data(:,2).^2) abs(Bxyz.data(:,3))]);
 thetas = TSeries(zphase.time,[thetap1b thetap3b]);
 Scpots1234 = TSeries(SCpot.time,[SCV12 SCV34]);
@@ -167,8 +187,10 @@ irf_plot_axis_align(7)
 irf_zoom(h,'x',tlimit);
 irf_timeaxis(h);
 
+end
+
 %set(gcf,'paperpositionmode','auto')
-%print('-dpng','-painters','-r600','ESWprobefields.png');
+%print('-dpng','-painters','-r600','ppfields.png');
 
 %Find and print times when the probes satisfy alignment conditions
 E1temp = isnan(E1)-[-1; isnan(E1(3:length(E1))); 1];
@@ -176,7 +198,7 @@ starttime1 = SCpot.time(find(E1temp == 1));
 endtime1 = SCpot.time(find(E1temp == -1));
 
 fprintf('Intervals when Probe 1 and 2 satisfy alignment conditions \n')
-for q = 1:length(starttime1(:,1))
+for q = 1:length(starttime1)
     fprintf(strcat('No.',num2str(q),' : ',starttime1(q).toUtc,'/',endtime1(q).toUtc,'\n'))
 end
 
@@ -185,7 +207,7 @@ starttime3 = SCpot.time(find(E3temp == 1),1);
 endtime3 = SCpot.time(find(E3temp == -1),1);
 
 fprintf('Intervals when Probe 3 and 4 satisfy alignment conditions \n')
-for q = 1:length(starttime3(:,1))
+for q = 1:length(starttime3)
     fprintf(strcat('No.',num2str(q),': ',starttime3(q).toUtc,'/',endtime3(q).toUtc,'\n'))
 end
 
