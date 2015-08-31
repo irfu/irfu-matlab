@@ -1,9 +1,9 @@
-function v=mms_v(t,coord_sys)
-%MMS_V   Calculate velocity from timing between 4 spacecraft
+function v=mms4_v(t,coord_sys)
+%MMS4_V   Calculate velocity from timing between 4 spacecraft
 % NOT VALID FOR Cluster! (use c_v instead)
 %
-% v =mms_v(t,[coord_sys]);
-% dt=mms_v(v,[coord_sys]);
+% v =mms4_v(t,[coord_sys]);
+% dt=mms4_v(v,[coord_sys]);
 %
 % Calculate velocity from timing between 4 spacecraft
 % or calculate timing from the velocity

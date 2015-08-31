@@ -1,12 +1,12 @@
 function out=mms4_v_gui(x1,x2,x3,x4,column)
-%mms4_V_GUI interactive discontinuity analyzer for MMS (for Cluster please use c_4_v_gui)
+%MMS4_V_GUI interactive discontinuity analyzer for MMS (for Cluster please use c_4_v_gui)
 %
-%  mms4_V_GUI(x1,x2,x3,x4,[column])	use interactive discontinuity analyzer 
+%  MMS4_V_GUI(x1,x2,x3,x4,[column])	use interactive discontinuity analyzer 
 %		on variables x1..x4 using column number 'column' 
 %    (default column is 2)
-%  H = mms4_V_GUI(..)				return axis handles
+%  H = MMS4_V_GUI(..)				return axis handles
 %
-% See also: mms4_V
+% See also: MMS4_V
 
 flag_first_call=0;
 if(nargin<=2 && ischar(x1)), % either action as parameter or string variable
@@ -177,7 +177,7 @@ switch action,
 		if max(abs(ud.dt))==0
 			vstr='0 * [0 0 0]';
 		else
-			v=mms_v(t,coord_sys(ud));
+			v=mms4_v(t,coord_sys(ud));
 			vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 		end
 		set(ud.v,'string',vstr);
@@ -202,7 +202,7 @@ switch action,
 		if max(abs(v))==0
 			dt=[0 0 0 0];
 		else
-			dt=mms_v([t v],coord_sys(ud));
+			dt=mms4_v([t v],coord_sys(ud));
 			ref_satellite_string=get(ud.ref_satellite,'string');
 			ref_satellite=str2double(ref_satellite_string);
 			if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end

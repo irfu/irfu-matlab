@@ -1,5 +1,5 @@
 function out=c_4_v_gui(x1,x2,x3,x4,column)
-%C_4_V_GUI interactive discontinuity analyzer for Cluster
+%C_4_V_GUI interactive discontinuity analyzer for Cluster (for MMS use mms4_v_gui)
 %
 %  C_4_V_GUI(x1,x2,x3,x4,column)	use interactive discontinuity analyzer 
 %		on variables x1..x4 using column number 'column'
