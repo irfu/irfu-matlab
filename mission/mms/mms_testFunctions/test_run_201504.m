@@ -28,7 +28,7 @@ flagComm = 1;
 %tint = irf.tint('2015-05-06T12:00:00Z/2015-05-06T17:59:59Z');
 %tint = irf.tint('2015-06-21T00:00:00Z/2015-06-21T05:59:59Z'); 
 %tint = irf.tint('2015-06-22T00:00:00Z/2015-06-22T23:59:59Z'); flagComm = false;
-tint = irf.tint('2015-08-01T00:00:00Z/2015-08-01T23:59:59Z'); flagComm = 3;
+tint = irf.tint('2015-08-15T13:00:00Z/2015-08-15T13:59:59Z'); flagComm = 2;
 mmsId = 'mms4'; 
 
 prf = [data_root filesep mmsId]; utc = tint.start.toUtc(); 
@@ -184,6 +184,7 @@ title(h(1),'MMS4')
 B = mms.db_get_ts([mmsId '_afg_srvy_ql'],[mmsId '_afg_srvy_dmpa'],tint);
 
 %% Plot with B
+E_YLIM = 7;
 
 figure(75), clf
 h = irf_plot(4,'newfigure');
@@ -191,7 +192,8 @@ h = irf_plot(4,'newfigure');
 hca = irf_panel('B');
 hTmp = irf_plot(hca,B);
 hTmp(1).Color=[0 0 0]; hTmp(2).Color=[0 0.5 0]; hTmp(3).Color=[1 0 0];
-%hTmp(4).Color=[.5 .5 .5];
+hold(hca,'on'), hTmp = irf_plot(hca,B.abs());
+hTmp.Color=[.5 .5 .5];
 set(hca,'ColorOrder',[[0 0 0];[0 0.5 0];[1 0 0];[.5 .5 .5]])
 irf_legend(hca,{'B_X','B_Y','B_Z','B'},[0.02 0.1])
 ylabel(hca,'B [nT]')
