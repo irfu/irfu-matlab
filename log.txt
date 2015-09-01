@@ -1,3 +1,5 @@
+2015-08-27 v1.9.5 MMS bugfix for Usc and QL, TSeries improvements, C4p3 failed, minor bug fixes.
+2015-08-12 v1.9.4 MMS multiple HK, 12th IGRF, caa_load fix, allow TSeries input in more functions, minor bug fixes.
 2015-07-29 v1.9.3 MMS allow for datagaps in processing for SITL, some minor update to TSeries and other bug fixes.
 2015-06-24 v1.9.2 MMS bugfix phase & Quality calculated, Cluster MS offset updated and some other minor bug fixes.
 2015-06-17 v1.9.1 MMS bugfix Signal Processing Toolbox not installed at SDC, some other minor bug fixes.

@@ -116,11 +116,17 @@ classdef mms_sdp_dmgr < handle
         error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
       end
       
-      if( isfield(DATAC, param) ) && ~isempty(DATAC.(param))
+      if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        errStr = ['replacing existing variable (' param ') with new data'];
-        irf.log('critical', errStr);
-        error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e'})))
+          % Only multiple HK files are allowed for now..
+          errStr = ['replacing existing variable (' param ') with new data'];
+          irf.log('critical', errStr);
+          error('MATLAB:MMS_SDP_DMGR:INPUT', errStr);
+        else
+          % Warn about multiple HK files of same type.
+          irf.log('warning',['Multiple files for (' param ' detected. Will try to sort them by time.']);
+        end
       end
       
       vPfx = sprintf('mms%d_edp_',DATAC.scId);
@@ -129,7 +135,6 @@ classdef mms_sdp_dmgr < handle
         case('dce')
           sensors = {'e12','e34','e56'};
           init_param()
-          apply_nom_amp_corr()
           
           % Since v1.0.0 DCE files contain also DCV data
           if ~isfield(dataObj.data, [vPfx, 'dcv_sensor']) || ...
@@ -154,6 +159,7 @@ classdef mms_sdp_dmgr < handle
           chk_sweep_on()
           chk_sdp_v_vals()
           sensors = {'e12','e34'};
+          apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           corr_adp_spikes()
           
         case('dcv')
@@ -167,62 +173,155 @@ classdef mms_sdp_dmgr < handle
           chk_sweep_on()
           chk_sdp_v_vals()
           sensors = {'e12','e34'};
+          apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
           corr_adp_spikes()
           
         case('hk_101')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_101_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'cmdexec']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Add sunpulse times (TT2000) of last recieved sunpulse.
-          DATAC.(param).sunpulse = dataObj.data.([vPfx 'sunpulse']).data;
-          % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
-          DATAC.(param).sunssps = dataObj.data.([vPfx 'sunssps']).data;
-          % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
-          DATAC.(param).iifsunper = dataObj.data.([vPfx 'iifsunper']).data;
+          %DATAC.(param) = []; % Why was this done? We begin with empty..
+          if(isempty(DATAC.(param)))
+            % first hk_101 file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'cmdexec']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Add sunpulse times (TT2000) of last recieved sunpulse.
+            DATAC.(param).sunpulse = dataObj.data.([vPfx 'sunpulse']).data;
+            % Add sunpulse indicator, real: 0, SC pseudo: 1, CIDP pseudo: 2.
+            DATAC.(param).sunssps = dataObj.data.([vPfx 'sunssps']).data;
+            % Add CIDP sun period (in microseconds, 0 if sun pulse not real.
+            DATAC.(param).iifsunper = dataObj.data.([vPfx 'iifsunper']).data;
+          else
+            % Second hk_101 file
+            DATAC.(param).dataObj2 = dataObj; % Store dataObj.
+            x = getdep(dataObj,[vPfx 'cmdexec']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            Comb_sunpulse = [DATAC.(param).sunpulse; dataObj.data.([vPfx 'sunpulse']).data];
+            Comb_sunssps = [DATAC.(param).sunssps; dataObj.data.([vPfx 'sunssps']).data];
+            Comb_iifsunper = [DATAC.(param).iifsunper; dataObj.data.([vPfx 'iifsunper']).data];
+            % Ensure sorted unique timestamps and store the resulting time,
+            % sunpulse, sunssps and iisunper.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            DATAC.(param).sunpulse = Comb_sunpulse(srt(usrt));
+            DATAC.(param).sunssps = Comb_sunssps(srt(usrt));
+            DATAC.(param).iifsunper = Comb_iifsunper(srt(usrt));
+          end
           
         case('hk_105')
           % HK 101, contains sunpulses.
           vPfx = sprintf('mms%d_105_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'sweepstatus']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Add sweepstatus which indicates if any of the probes is sweeping
-          DATAC.(param).sweepstatus = dataObj.data.([vPfx 'sweepstatus']).data;
+          %DATAC.(param) = [];  % Why was this done? We begin with empty..
+          if(isempty(DATAC.(param)))
+            % first hk_105 file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'sweepstatus']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Add sweepstatus which indicates if any of the probes is sweeping
+            DATAC.(param).sweepstatus = dataObj.data.([vPfx 'sweepstatus']).data;
+          else
+            % second hk_105 file
+            DATAC.(param).dataObj2 = dataObj;
+            x = getdep(dataObj,[vPfx 'sweepstatus']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            Comb_sweepstatus = [DATAC.(param).sweepstatus; dataObj.data.([vPfx 'sweepstatus']).data];
+            % Ensure sorted unique timestamps and store the resulting time
+            % and sweepstatus.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            DATAC.(param).sweepstatus = Comb_sweepstatus(srt(usrt));
+          end
           
         case('hk_10e')
           % HK 10E, contains bias.
           vPfx = sprintf('mms%d_10e_',DATAC.scId);
-          DATAC.(param) = [];
-          DATAC.(param).dataObj = dataObj;
-          x = getdep(dataObj,[vPfx 'seqcnt']);
-          DATAC.(param).time = x.DEPEND_O.data;
-          check_monoton_timeincrease(DATAC.(param).time, param);
-          % Go through each probe and store values for easy access,
-          % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
-          hk10eParam = {'dac','ig','og','stub'}; % DAC, InnerGuard, OuterGuard & Stub
-          for iParam=1:length(hk10eParam)
-            for jj=1:6
-              % stub only exist if probe is 5 or 6.
-              if( ~strcmp(hk10eParam{iParam},'stub') || ...
-                  (strcmp(hk10eParam{iParam},'stub') && jj>=5))
+          hk10eParam = {'dac','ig','og'}; % DAC, InnerGuard & OuterGuard
+          if(isempty(DATAC.(param)))
+            % First hk_10e file
+            DATAC.(param).dataObj = dataObj;
+            x = getdep(dataObj,[vPfx 'seqcnt']);
+            DATAC.(param).time = x.DEPEND_O.data;
+            check_monoton_timeincrease(DATAC.(param).time, param);
+            % Go through each probe and store values for easy access,
+            % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+            for iParam=1:length(hk10eParam)
+              for jj=1:6
+                tmpStruct = getv(dataObj,...
+                [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
+                if isempty(tmpStruct)
+                  errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
+                    hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
+                else
+                  if(isinteger(tmpStruct.data) )
+                    irf.log('notice','Old HK 10E, converting to nA or V.');
+                    % Convert old format HK10E (ie "version < v0.3.0") to nA or V.
+                    switch hk10eParam{iParam}
+                      case 'dac'
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*25.28*10^-3; % nA
+                      case {'og', 'ig'}
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*317.5*10^-6; % V
+                      otherwise
+                          errS ='Something wrong with HK 10E file';
+                          irf.log('critical',errS); error(errS);
+                    end
+                  end
+                  DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
+                    tmpStruct.data;
+                end
+              end % for jj=1:6
+            end % for iParam=1:length(hk10eParam)
+          else
+            % Second hk_10e file
+            DATAC.(param).dataObj2 = dataObj;
+            x = getdep(dataObj,[vPfx 'seqcnt']);
+            time2 = x.DEPEND_O.data;
+            check_monoton_timeincrease(time2, param);
+            % Combine
+            Comb_time = [DATAC.(param).time; time2];
+            % Ensure sorted unique timestamps and store the resulting time
+            % and sweepstatus.
+            [srt_time, srt] = sort(Comb_time);
+            [DATAC.(param).time, usrt] = unique(srt_time); 
+            % Go through each probe and store values for easy access,
+            % for instance probe 1 dac values as: "DATAC.hk_10e.beb.dac.v1".
+            for iParam=1:length(hk10eParam)
+              for jj=1:6
                 tmpStruct = getv(dataObj,...
                   [vPfx 'beb' num2str(jj,'%i') hk10eParam{iParam}]);
                 if isempty(tmpStruct)
                   errS = ['cannot get ' vPfx 'beb' num2str(jj,'%i') ...
                     hk10eParam{iParam}]; irf.log('warning',errS), warning(errS);
                 else
+                  % Combine and use the sorted unique indexes (based on
+                  % time)
+                  if(isinteger(tmpStruct.data) )
+                    irf.log('notice','Old HK 10E, converting to nA or V.');
+                    % Convert old format HK10E (ie "version < v0.3.0") to nA or V.
+                    switch hk10eParam{iParam}
+                      case 'dac'
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*25.28*10^-3; % nA
+                      case {'og', 'ig'}
+                        tmpStruct.data = (single(tmpStruct.data)-32768)*317.5*10^-6; % V
+                      otherwise
+                          errS ='Something wrong with HK 10E file';
+                          irf.log('critical',errS); error(errS);
+                    end
+                  end
+                  Comb_data = [DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)); tmpStruct.data];
                   DATAC.(param).beb.(hk10eParam{iParam}).(sprintf('v%i',jj)) = ...
-                    tmpStruct.data;
+                    Comb_data(srt(usrt));
                 end
-              end
-            end % for jj=1:6
-          end % for iParam=1:length(hk10eParam)
+              end % for jj=1:6
+            end % for iParam=1:length(hk10eParam)
+          end
           
         case('defatt')
           % DEFATT, contains Def Attitude (Struct with 'time' and 'zphase' etc)
@@ -402,17 +501,17 @@ classdef mms_sdp_dmgr < handle
         if(~isempty(DATAC.hk_10e))  % is a hk_10e file loaded?
           
           % Get limit struct with primary fields 'ig', 'og' and 'dac',
-          % subfields 'max' and 'min'.
-          NomBias = MMS_CONST.Limit.NOM_BIAS;
-          % New function based approach, time and S/C dependent.
-%          NomBias = mms_sdp_limit_bias(DATAC.scId);
+          % limits stored as TSeries with [max, min] limits and is s/c
+          % dependent.
+          NomBias = mms_sdp_limit_bias(DATAC.scId);
 
           irf.log('notice','Checking for non nominal bias settings.');
           for iSen = 1:2:numel(sensors)
             senA = sensors{iSen};  senB = sensors{iSen+1};
             senE = ['e' senA(2) senB(2)]; % E-field sensor
             
-            hk10eParam = {'ig','og','dac'}; % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
+            % InnerGuard, OuterGuard (bias voltages), DAC (tracking current)
+            hk10eParam = {'ig','og','dac'};
             for iiParam = 1:length(hk10eParam);
               
               % FIXME, proper test of existing fields?
@@ -431,22 +530,17 @@ classdef mms_sdp_dmgr < handle
                 
                 % Interpolate the limits to match the the DCE timestamps as
                 % well, using the previous limit.
-%                interp_Max = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
-%                  double(NomBias.(hk10eParam{iiParam}).data(:,1)), double(DATAC.dce.time),...
-%                  'previous','extrap');
-%                interp_Min = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
-%                  double(NomBias.(hk10eParam{iiParam}).data(:,2)), double(DATAC.dce.time),...
-%                  'previous','extrap');
+                interp_MaxMin = interp1(double(NomBias.(hk10eParam{iiParam}).time.epoch),...
+                  double(NomBias.(hk10eParam{iiParam}).data), double(DATAC.dce.time),...
+                  'previous','extrap');
 
                 % Locate Non Nominal values
-                indA = NomBias.(hk10eParam{iiParam}).min >= interp_DCVa | interp_DCVa >= NomBias.(hk10eParam{iiParam}).max;
-%                indA = interp_Min >= interp_DCVa | interp_DCVa >= interp_Max;
-                indB = NomBias.(hk10eParam{iiParam}).min >= interp_DCVb | interp_DCVb >= NomBias.(hk10eParam{iiParam}).max;
-%                indB = interp_Min >= interp_DCVb | interp_DCVb >= interp_Max;
+                indA = interp_MaxMin(:,2) >= interp_DCVa | interp_DCVa >= interp_MaxMin(:,1);
+                indB = interp_MaxMin(:,2) >= interp_DCVb | interp_DCVb >= interp_MaxMin(:,1);
                 indE = or(indA,indB); % Either senA or senB => senE non nominal.
                 
                 if(any(indE))
-                  irf.log('notice',['Non-nominal bias on ',...
+                  irf.log('notice',['Bad bias on ',...
                     senE,' from ',hk10eParam{iiParam}]);
                   
                   % Add bitmask values to SenA, SenB and SenE for these ind.
@@ -750,19 +844,19 @@ classdef mms_sdp_dmgr < handle
         end
       end
       
-      function res = are_probes_enabled
-        % Use FILLVAL of each sensor to determine if probes are enabled or not.
-        % Returns logical of size correspondig to sensor.
-        sensorData = dataObj.data.([vPfx param '_sensor']).data;
-        FILLVAL = getfillval(dataObj, [vPfx, param, '_sensor']);
-        if( ~ischar(FILLVAL) )
-          % Return 'true' for all data not equal to specified FILLVAL
-          res = (sensorData ~= FILLVAL);
-        else
-          errStr = 'Unable to get FILLVAL.';
-          irf.log('critical',errStr); error(errStr);
-        end
-      end
+%       function res = are_probes_enabled
+%         % Use FILLVAL of each sensor to determine if probes are enabled or not.
+%         % Returns logical of size correspondig to sensor.
+%         sensorData = dataObj.data.([vPfx param '_sensor']).data;
+%         FILLVAL = getfillval(dataObj, [vPfx, param, '_sensor']);
+%         if( ~ischar(FILLVAL) )
+%           % Return 'true' for all data not equal to specified FILLVAL
+%           res = (sensorData ~= FILLVAL);
+%         else
+%           errStr = 'Unable to get FILLVAL.';
+%           irf.log('critical',errStr); error(errStr);
+%         end
+%       end
       
       function res = resample_probe_enable(fields)
         % resample probe_enabled data to E-field cadense
@@ -882,7 +976,8 @@ classdef mms_sdp_dmgr < handle
       Etmp.e34 = mask_bits(Etmp.e34, bitmask, MMS_CONST.Bitmask.SWEEP_DATA);   
       dE = mms_sdp_despin(Etmp.e12, Etmp.e34, Phase.data, deltaOff);
       % FIXME: apply DSL offsets here
-      DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE Dce.e56.data],...
+      % Note, positve E56 correspond to minus DSL-Z direction.
+      DATAC.dce_xyz_dsl = struct('time',Dce.time,'data',[dE -Dce.e56.data],...
         'bitmask',bitmask);
       res = DATAC.dce_xyz_dsl;
     end
@@ -905,6 +1000,7 @@ classdef mms_sdp_dmgr < handle
         DATAC.delta_off = ...
           median(Delta_p12_p34(:,1)) + median(Delta_p12_p34(:,2))*1j;
       else
+        MMS_CONST = DATAC.CONST;
         DATAC.delta_off = MMS_CONST.Error;
         irf.log('warning','Delta offset could not be computed.');
       end

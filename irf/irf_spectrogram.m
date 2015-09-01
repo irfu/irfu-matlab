@@ -32,8 +32,8 @@ function [hout,hcb] = irf_spectrogram(varargin)
 % ----------------------------------------------------------------------------
 
 [h,args,nargs] = axescheck(varargin{:});
-if isempty(h),
-  h=gca;
+ if isempty(h),
+  fig = get(groot,'CurrentFigure'); h = get(fig,'Children');
 end
 
 %% Defaults
@@ -132,7 +132,7 @@ end
 % length(H) spectra
 for comp=1:min(length(h),ncomp)
 	
-	specrec.p{comp}(isnan(specrec.p{comp})) = NaN;
+	specrec.p{comp}(isnan(specrec.p{comp})) = NaN; % WHY is this done? NaN = NaN already.
 	
 	ud = get(gcf,'userdata');
 	ii = find(~isnan(specrec.t));

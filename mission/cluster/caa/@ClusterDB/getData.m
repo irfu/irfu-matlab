@@ -718,7 +718,10 @@ elseif strcmp(quantity,'p') || strcmp(quantity,'pburst')
         irf_log('dsrc',sprintf('p1 is BAD on sc%d',cl_id));
       end
     case 4
-      if start_time>=toepoch([2013 07 01 13 30 00]) % 2013 07 01 14 43 44
+      if start_time>=toepoch([2015 02 17 07 30 00]) % 2015-02-17 07:36:30
+        probe_list = 1:2;
+				irf_log('dsrc',sprintf('p3 & p4 are BAD on sc%d',cl_id));
+      elseif start_time>=toepoch([2013 07 01 13 30 00]) % 2013 07 01 14 43 44
         probe_list = 1:3;
 				irf_log('dsrc',sprintf('p4 is BAD on sc%d',cl_id));
       end

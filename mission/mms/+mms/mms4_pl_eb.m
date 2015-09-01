@@ -1,6 +1,6 @@
 %MMS.MMS4_PL_EB  Summary plot - E & B at 4 MS S/C
 
-tint = irf.tint('2015-05-15T00:40:00Z/2015-05-15T01:10:00Z');
+tint = irf.tint('2015-05-24T02:10:00Z/2015-05-24T02:30:00Z');
 
 %% Load data
 load /data/mms/irfu/mmsR.mat
@@ -27,7 +27,7 @@ mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 % Official MMS colors
 %mmsColors=[0 0 0; .8 .4 0 ; 0 0.6 0.5 ; 0.35 0.7 .9];
 
-h = irf_plot(6,'newfigure');
+h = irf_plot(7,'newfigure');
 
 hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{B1.x,B2.x,B3.x,B4.x},'comp')
@@ -41,9 +41,11 @@ hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{B1.z,B2.z,B3.z,B4.z},'comp')
 ylabel(hca,'Bz [nT]')
 
+if 1
 hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{P1,P2,P3,P4},'comp')
 ylabel(hca,'-ScPot [V]')
+end
 
 hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{E1.x,E2.x,E3.x,E4.x},'comp')
@@ -52,6 +54,11 @@ ylabel(hca,'Ex [mV/m]')
 hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
 irf_plot(hca,{E1.y,E2.y,E3.y,E4.y},'comp')
 ylabel(hca,'Ey [mV/m]')
+
+hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
+irf_plot(hca,{E1.z,E2.z,E3.z,E4.z},'comp')
+ylabel(hca,'Ez [mV/m]')
+
 
 irf_zoom(h,'x',tint)
 irf_plot_axis_align(h)

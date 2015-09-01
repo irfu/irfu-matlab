@@ -19,6 +19,13 @@ if isempty(data), % no such variable, return empty
 	res=[];
 	return;
 end
+
+% MMS special case. This is unly, but convenient.
+if isfield(data.GlobalAttributes,'Mission_group') && ...
+    strcmpi(data.GlobalAttributes.Mission_group,'mms')
+  res = mms.variable2ts(data); return
+end
+  
 fillv = getfillval(dobj,var_s);
 if ~ischar(fillv), data.data(data.data==fillv) = NaN;
 else irf.log('warning','fill value is character: discarding')
@@ -75,7 +82,12 @@ else
     'repres',repres);
 end
 res.name = data.name;
-res.units = data.UNITS;
+if isfield(data,'UNITS'), res.units = v.UNITS;
+else res.units = 'unitless';
+end
+if isfield(ud,'SI_CONVERSION'), 
+  res.siConversion    = ud.SI_CONVERSION;  ud = rmfield(ud,'SI_CONVERSION');
+end
 if isfield(ud,'COORDINATE_SYSTEM')
   res.coordinateSystem = ud.COORDINATE_SYSTEM;
   ud = rmfield(ud,'COORDINATE_SYSTEM');
