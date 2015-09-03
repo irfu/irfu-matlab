@@ -31,6 +31,10 @@ switch key
     localFileDb = mms_local_file_db(val);
     MMS_DB.add_db(localFileDb);
     datastore('mms_db','local_file_db_root',val);
+  case 'local_file_db_irfu'
+    localFileDb = mms_local_file_db(val);
+    MMS_DB.add_db(localFileDb);
+    datastore('mms_db','local_file_db_irfu_root',val);
   otherwise
     error('Unrecoglized KEY')
 end
