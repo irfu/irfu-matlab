@@ -54,13 +54,13 @@ if ~is_R_ok && exist('./mmsR.mat','file'),
     irf.log('warning','mms position loaded from current folder (./mmsR.dat)')
 end
 
-if ~is_R_ok && exist('./data/mms/irfu/mmsR.mat','file'),
-	load ./data/mms/irfu/mmsR.mat
-    load ./data/mms/irfu/mmsV.mat
+if ~is_R_ok && exist('/data/mms/irfu/mmsR.mat','file'),
+	load /data/mms/irfu/mmsR.mat
+    load /data/mms/irfu/mmsV.mat
     irf.log('warning','mms position loaded from local repository folder (./data/mms/irfu/mmsR.mat)')
 end
 
-if ~is_R_ok && exist('/mmsR.mat','file'),
+if ~is_R_ok && exist('mmsR.mat','file'),
 	load mmsR.mat
     load mmsV.mat
         irf.log('warning','mms position loaded from somewhere in the path (mmsR.mat)')
