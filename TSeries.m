@@ -520,11 +520,32 @@ classdef TSeries
       end
     end
     
-    function obj = minus(obj,inp)
-      if isnumeric(inp)
-        obj = obj + (-1*inp);
+    function Ts = minus(obj,obj1)
+      if isnumeric(obj1)
+        Ts = obj + (-1*obj1);
+      elseif isa(obj,'TSeries') && isa(obj1,'TSeries')
+        if obj.time~=obj1.time
+          error('Input TS objects have different timelines, use resample()')
+        elseif ~strcmpi(obj.units,obj1.units)
+          error('Input TS objects have different units')
+        end
+        Ts = obj;
+        Ts.data_ = obj.data - obj1.data;
+        update_name()
       else
         error('Minus not defined');
+      end
+      function update_name()
+        if ~isempty(obj.name) || ~isempty(obj1.name)
+          if isempty(obj.name), s = 'untitled';
+          else s = obj.name;
+          end
+          if ~isa(obj1,'TSeries') || isempty(obj1.name), s1 = 'untitled';
+          else s1 = obj1.name;
+          end
+          Ts.name = sprintf('%s-%s)',s,s1);
+        end
+        Ts.userData = [];
       end
     end
     
