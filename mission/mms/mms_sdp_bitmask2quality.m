@@ -24,7 +24,7 @@ end
 
 function quality = comp_quality(bitmask)
   % Assume Good data to begin with.
-  quality = 3*ones(size(bitmask));
+  quality = 3*ones(size(bitmask),'uint16');
   % Set quality to 1 (bad)
   bits_1 = MMS_CONST.Bitmask.BAD_BIAS + ...
     MMS_CONST.Bitmask.LOW_DENSITY_SATURATION + ...
