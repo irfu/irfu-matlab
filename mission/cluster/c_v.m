@@ -1,5 +1,6 @@
 function v=c_v(t,coord_sys)
 %C_V   Calculate velocity from timing between 4 spacecraft
+% NOT VALID FOR MMS! (use mms_v instead)
 %
 % v=c_v(t,[coord_sys]);
 % dt=c_v(v,[coord_sys]);

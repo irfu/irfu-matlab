@@ -1,28 +1,19 @@
-function out=c_4_v_gui(x1,x2,x3,x4,column)
-%C_4_V_GUI interactive discontinuity analyzer for Cluster (for MMS use mms4_v_gui)
+function out=mms4_v_gui(x1,x2,x3,x4,column)
+%MMS4_V_GUI interactive discontinuity analyzer for MMS (for Cluster please use c_4_v_gui)
 %
-%  C_4_V_GUI(x1,x2,x3,x4,column)	use interactive discontinuity analyzer 
-%		on variables x1..x4 using column number 'column'
-%  C_4_V_GUI('B?',column)			use variables B1,B2,B3,B4 from base workspace
-%  C_4_V_GUI('B?')					use column 2
-%  H = C_4_V_GUI(..)				return axis handles
+%  MMS4_V_GUI(x1,x2,x3,x4,[column])	use interactive discontinuity analyzer 
+%		on variables x1..x4 using column number 'column' 
+%    (default column is 2)
+%  H = MMS4_V_GUI(..)				return axis handles
 %
-% See also: C_4_V
+% See also: MMS4_V
 
 flag_first_call=0;
-
-if       (nargin<=2 && ischar(x1)), % either action as parameter or string variable
-	if strfind(x1,'?'),
-		figure;ud=[]; % intialize
-		ud.variable_str=x1;
-		if nargin == 1, ud.var_col=1;else ud.var_col=x2;end;
-		action='new_var';
-		flag_first_call=1;
-	else
-		action=x1;
-		ud=get(gcf,'userdata');
-	end
-elseif   (nargin ==4) || (nargin == 5),
+if(nargin<=2 && ischar(x1)), % either action as parameter or string variable
+	action=x1;
+	ud=get(gcf,'userdata');
+	
+elseif (nargin ==4) || (nargin == 5),
 	if nargin ==4, irf.log('notice','Using second column');column=2;end
 	if isempty(x1) &&  isempty(x2) && isempty(x3) && isempty(x4)
 		irf.log('warning','Empty input');
@@ -34,7 +25,8 @@ elseif   (nargin ==4) || (nargin == 5),
 	ud.variable_str=[inputname(1) '..' inputname(4)];
 	ud.var_col=column;
 	action='initialize';
-else      help c_4_v_gui
+else      help mms4_v_gui
+          return
 end
 
 irf.log('debug',['action=' action]);
@@ -42,30 +34,30 @@ switch action,
 	case {'c1','c2','c3','c4','c5','c6'}
 		ud.var_col=str2double(action(2:end));
 		set(gcf,'userdata',ud);
-		c_4_v_gui('update_var_col');
+		mms.mms4_v_gui('update_var_col');
 	case 'update_var_col'
 		hca=ud.h(1);
 		xl=get(ud.h(1),'XLim');
 		irf_pl_tx(hca,ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col);zoom(hca,'on');
 		ylabel(ud.h(1),var_label(ud.variable_str,ud.var_col));
 		axis(hca,[xl(1) xl(2) 0 1]);
-        irf_legend(hca,{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
+        irf_legend(hca,{'mms1','mms2','mms3','mms4'},[1, 1.1],'color','cluster');
 		irf_zoom(hca,'y');irf_timeaxis(hca)
 		irf_pl_tx(ud.h(2),ud.var1,ud.var2,ud.var3,ud.var4,ud.var_col,ud.dt);
 		ylabel(ud.h(2),var_label(ud.variable_str,ud.var_col));
-%		c_4_v_gui('dt');
+%		mms4_v_gui('dt');
 	case 'new_var_enter'
 		xx=inputdlg('Enter new variable mask. Examples: B? or R? or P?p1','**',1,{'B?'});
 		ud.variable_str=xx{1};
 		set(gcf,'userdata',ud);
-		c_4_v_gui('new_var');
+		mms.mms4_v_gui('new_var');
 	case 'new_var'
 		evalin('base',['if ~exist(''' irf_ssub(ud.variable_str,1) '''), c_load(''' ud.variable_str ''');end' ]);
 		c_eval('ud.var?=evalin(''base'',irf_ssub(ud.variable_str,?));');
 		if ud.var_col > size(ud.var1,2), ud.var_col=2;end % in case new variable has less columns
 		if flag_first_call,
 			set(gcf,'userdata',ud);
-			c_4_v_gui('initialize');
+			mms.mms4_v_gui('initialize');
 		else
 			if ishandle(ud.h(1)),
 				for j_col=2:size(ud.var1,2)
@@ -73,11 +65,11 @@ switch action,
 						if ishandle(ud.hcol(j_col)),
 							set(ud.hcol(j_col),'enable','on')
 						else
-							eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+							eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''mms.mms4_v_gui(''''c' num2str(j_col) ''''')'');'];
 							eval(eval_str);
 						end
 					else
-						eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+						eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''mms.mms4_v_gui(''''c' num2str(j_col) ''''')'');'];
 						eval(eval_str);
 					end
 					for jj_col=(size(ud.var1,2)+1):length(ud.hcol)
@@ -85,10 +77,10 @@ switch action,
 					end
 				end
 				set(gcf,'userdata',ud);
-				c_4_v_gui('update_var_col');
+				mms.mms4_v_gui('update_var_col');
 			else
 				set(gcf,'userdata',ud);
-				c_4_v_gui('initialize');
+				mms.mms4_v_gui('initialize');
 			end
 		end
 	case 'initialize'
@@ -107,7 +99,7 @@ switch action,
 		ud=get(gcf,'userdata');
 		
 		irf_legend(0,['c\_4\_v\_int() ' datestr(now)],[0.01 0.99],'fontsize',7); % add information to the plot
-		irf_legend(h(1),{'C1','C2','C3','C4'},[1, 1.1],'color','cluster');
+		irf_legend(h(1),{'mms1','mms2','mms3','mms4'},[1, 1.1],'color','cluster');
 		hh=h(1,1);  % use the first subplot to estimate available time interval
 		xl=get(hh,'XLim');
 		hc=get(hh,'Children');
@@ -126,7 +118,7 @@ switch action,
 		uicontrol('style', 'text', 'string', '[dt1 dt2 dt3 dt4] =','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.dt_input = uicontrol('style', 'edit', ...
 			'string', '[0 0 0 0]', ...
-			'callback', 'c_4_v_gui(''dt'')', ...
+			'callback', 'mms.mms4_v_gui(''dt'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 		ud.dt=[0 0 0 0]; % default values
 		
@@ -134,33 +126,33 @@ switch action,
 		uicontrol('style', 'text', 'string', '[vx vy vz] km/s =','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.v = uicontrol('style', 'edit', ...
 			'string', '0*[0 0 0]', ...
-			'callback', 'c_4_v_gui(''v'')', ...
+			'callback', 'mms.mms4_v_gui(''v'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.29 0.05]);
 		
 		xp=0.05;yp=0.15;
 		uicontrol('style', 'text', 'string', 'Low pass filter f/Fs = ','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.filter = uicontrol('style', 'edit', ...
 			'string', '1', ...
-			'callback', 'c_4_v_gui(''dt'')', ...
+			'callback', 'mms.mms4_v_gui(''dt'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
 		
 		xp=0.05;yp=0.10;
 		ud.coord_sys = uicontrol('style', 'checkbox', ...
 			'string', 'velocity in GSM', ...
-			'callback', 'c_4_v_gui(''dt'')', ...
+			'callback', 'mms.mms4_v_gui(''dt'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.3 0.05]);
 		
 		xp=0.05;yp=0.05;
 		uicontrol('style', 'text', 'string', 'Reference satellite ','units','normalized','position', [xp yp 0.15 0.03]);
 		ud.ref_satellite = uicontrol('style', 'edit', ...
 			'string', '1', ...
-			'callback', 'c_4_v_gui(''v'')', ...
+			'callback', 'mms.mms4_v_gui(''v'')', ...
 			'backgroundcolor','white','units','normalized','position', [xp+0.15 yp 0.1 0.05]);
 		
-		uimenu('label','Auto &YLim','accelerator','y','callback','c_4_v_gui(''autoY'')');
-		uimenu('label','&Distance','accelerator','d','callback','c_4_v_gui(''distance'')');
-		uimenu('label','Click&Times','accelerator','t','callback','c_4_v_gui(''click_times'')');
-		uimenu('label','New&Variable','accelerator','v','callback','c_4_v_gui(''new_var_enter'')');
+		uimenu('label','Auto &YLim','accelerator','y','callback','mms.mms4_v_gui(''autoY'')');
+		uimenu('label','&Distance','accelerator','d','callback','mms.mms4_v_gui(''distance'')');
+		uimenu('label','Click&Times','accelerator','t','callback','mms.mms4_v_gui(''click_times'')');
+		uimenu('label','New&Variable','accelerator','v','callback','mms.mms4_v_gui(''new_var_enter'')');
 		ud.columns=uimenu('label','&Columns','accelerator','c');
 		%uimenu(ud.columns,'label','1 (time)');
     nCol = 0;
@@ -169,7 +161,7 @@ switch action,
     end
 		for j_col=1:nCol
 			%    hcol(j_col)=uimenu(ud.columns,'label',num2str(j_col));
-			eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''c_4_v_gui(''''c' num2str(j_col) ''''')'');'];
+			eval_str=['ud.hcol(j_col)=uimenu(ud.columns,''label'',''' num2str(j_col) ''',''callback'',''mms.mms4_v_gui(''''c' num2str(j_col) ''''')'');'];
 			eval(eval_str);
 		end
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,7 +177,7 @@ switch action,
 		if max(abs(ud.dt))==0
 			vstr='0 * [0 0 0]';
 		else
-			v=c_v(t,coord_sys(ud));
+			v=mms.mms4_v(t,coord_sys(ud));
 			vstr=[num2str(norm(v),3) ' * [' num2str(v./norm(v),'%6.2f') ']'];
 		end
 		set(ud.v,'string',vstr);
@@ -210,7 +202,7 @@ switch action,
 		if max(abs(v))==0
 			dt=[0 0 0 0];
 		else
-			dt=c_v([t v],coord_sys(ud));
+			dt=mms.mms4_v([t v],coord_sys(ud));
 			ref_satellite_string=get(ud.ref_satellite,'string');
 			ref_satellite=str2double(ref_satellite_string);
 			if ref_satellite<1 || ref_satellite>4, ref_satellite=1;end
@@ -239,7 +231,7 @@ switch action,
 		zoom(ud.h(1),'off');
 		if (~isfield(ud,'ic') || isempty(ud.ic)), ud.ic=0;ud.dtv=[];end
 		if ud.ic==0,
-			set(gcf,'windowbuttondownfcn', 'c_4_v_gui(''click_times'')');
+			set(gcf,'windowbuttondownfcn', 'mms.mms4_v_gui(''click_times'')');
 			ud.ic=1;
 		else
 			p = get(ud.h(1), 'currentpoint');
@@ -256,7 +248,7 @@ switch action,
 			set(ud.dt_input,'string',tstr);
 			zoom(ud.h(1),'on');
 			set(gcf,'userdata',ud);
-			c_4_v_gui('dt');
+			mms.mms4_v_gui('dt');
 		end
 		set(gcf,'userdata',ud);
 	case 'distance'
@@ -330,8 +322,8 @@ end
 function coord_sys_label=coord_sys(ud)
 coord_sys_flag=get(ud.coord_sys,'value');
 if coord_sys_flag == 1
-	coord_sys_label='GSM';
+	coord_sys_label='gsm';
 else
-	coord_sys_label='GSE';
+	coord_sys_label='gse';
 end
 end
