@@ -158,8 +158,9 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_sweep_on()
           chk_sdp_v_vals()
-          sensors = {'e12','e34'};
+          sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
+          sensors = {'e12','e34'};
           corr_adp_spikes()
           
         case('dcv')
@@ -172,8 +173,9 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_sweep_on()
           chk_sdp_v_vals()
-          sensors = {'e12','e34'};
+          sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
+          sensors = {'e12','e34'};
           corr_adp_spikes()
           
         case('hk_101')
@@ -694,9 +696,9 @@ classdef mms_sdp_dmgr < handle
       end
       
       function apply_nom_amp_corr()
-        % Apply a nominal amplitude correction factor to DCE for p1..4
+        % Apply a nominal amplitude correction factor to DCE for p1..6
         % values after cleanup but before any major processing has occured.
-        
+        % p1..4 is also rescaled to correct boom length depending on time.
         Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
         if length(Blen)==1
           senDist = sensor_dist(Blen.len);
@@ -715,14 +717,18 @@ classdef mms_sdp_dmgr < handle
         end
         
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
-        for iSen = 1:min(numel(sensors),2)
+        for iSen = 1:numel(sensors)
           senE = sensors{iSen};
           nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
           logStr = sprintf(['Applying nominal amplitude correction factor, '...
-            '%.2f, to %s'], factor, senE);
+            '%.2f, to %s'], factor.(senE), senE);
           irf.log('notice',logStr);
-          distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
-          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor;
+          if(strcmp(senE,'e56'))
+            distF = 1; % Boom length rescaling for ADP. I.e. only nominal amplitude correction.
+          else
+            distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
+          end
+          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor.(senE);
         end
         
         function l = sensor_dist(len)
