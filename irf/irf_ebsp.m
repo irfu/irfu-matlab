@@ -46,6 +46,8 @@ function res = irf_ebsp(e,dB,fullB,B0,xyz,freq_int,varargin)
 %   'fullB=dB'     - dB contains DC field
 %   'nAv'          - number of wave periods to average (default=8)
 %   'facMatrix'    - specify rotation matrix to FAC system 
+%   'mwidthcoef'   - specify coefficient to multiple Morlet wavelet width by. 1
+%   corresponds to standard Morlet wavelet.
 % 
 %  Examples:
 %
@@ -95,6 +97,7 @@ end
 nWavePeriodToAverage = 8; % Number of wave periods to average
 angleBElevationMax = 15;  % Below which we cannot apply E*B=0
 facMatrix = []; % matrix for totation to FAC
+mwidthcoef = 1;
 
 wantPolarization = 0;
 if isempty(e), wantEE = 0;
@@ -115,6 +118,13 @@ while 1
   switch lower(args{1})
     case 'polarization'
       wantPolarization = 1;
+    case 'mwidthcoef'
+            if numel(args)>1 && isnumeric(args{2})
+                mwidthcoef = args{2}; l = 2;
+            else
+                error('parameter ''mwidthcoef'' without parameter value')
+            end
+        mwidthcoef = args{2};
     case 'noresamp'
       flag_no_resamp = 1;
     case 'fac'
@@ -280,8 +290,8 @@ end
 nd2=length(inTime)/2; nyq=1/2; freq=inSampling*(1:nd2)/(nd2)*nyq;
 w=[0,freq,-freq(end-1:-1:1)];% The frequencies corresponding to FFT
 
-Morlet_width=5.36;
-freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12); %to get proper overlap for Morlet
+Morlet_width=5.36*mwidthcoef;
+freq_number=ceil((log10(freq_int(2)) - log10(freq_int(1)))*12*mwidthcoef); %to get proper overlap for Morlet
 amin=log10(0.5*inSampling/freq_int(2));amax=log10(0.5*inSampling/freq_int(1));anumber=freq_number;
 %  amin=0.01; % The highest frequency to consider is 0.5*sampl/10^amin
 %  amax=2; % The lowest frequency to consider is 0.5*sampl/10^amax
