@@ -59,14 +59,24 @@ Exyz = Exyz.resample(SCpot);
 
 zphase = zphase.tlim(tlimitl);
 
+%Remove repeated zphase elements
+norepeat = ones(length(zphase.time),1);
+
 nph = length(zphase.data);
 for ii=[2:nph]
-    if(zphase.data(ii) < zphase.data(ii-1));
-        zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+    if(zphase.time(ii) > zphase.time(ii-1));
+        if(zphase.data(ii) < zphase.data(ii-1));
+            zphase.data(ii:end) = zphase.data(ii:end)+double(360.0);
+        end
+    else 
+        norepeat(ii) = 0;
     end
 end
 
-zphase = TSeries(zphase.time,zphase.data,'to',1);
+zphasetime = zphase.time(find(norepeat == 1));
+zphasedata = zphase.data(find(norepeat == 1));
+
+zphase = TSeries(zphasetime,zphasedata,'to',1);
 zphase = zphase.resample(SCpot);
 
 %Perform rotation on Exyz into field-aligned coordinates 
