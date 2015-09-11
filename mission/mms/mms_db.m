@@ -58,12 +58,12 @@ classdef mms_db < handle
        if isempty(res), res = struct('time',time,varName,data); return, end
        res.time = [res.time; time];
        res.(varName) = [res.(varName); data];
-       % check for overlapping time records
-       [~,idxUnique] = unique(res.time); 
-       idxDuplicate = setdiff(1:length(res.time), idxUnique);
-       res.time(idxDuplicate) = []; res.(varName)(idxDuplicate,:) = [];
+       % check for overlapping time records and remove duplicates
+       [~, idxSort] = sort(res.time);
+       [res.time, idxUniq] = unique(res.time(idxSort));
        irf.log('warning',...
-         sprintf('Discarded %d data points',length(idxDuplicate)))
+          sprintf('Discarded %d data points',length(idxSort)-length(idxUniq)))
+       res.(varName) = res.(varName)(idxSort(idxUniq),:);
      end
      
      function append_sci_var(sciData)
