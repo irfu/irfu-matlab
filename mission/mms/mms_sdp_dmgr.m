@@ -118,7 +118,7 @@ classdef mms_sdp_dmgr < handle
       
       if( ~isempty(DATAC.(param)) )
         % Error, Warning or Notice for replacing the data variable?
-        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e'})))
+        if(~any(strcmp(param,{'hk_101', 'hk_105', 'hk_10e', 'defatt'})))
           % Only multiple HK files are allowed for now..
           errStr = ['replacing existing variable (' param ') with new data'];
           irf.log('critical', errStr);
@@ -158,8 +158,9 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_sweep_on()
           chk_sdp_v_vals()
-          sensors = {'e12','e34'};
+          sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
+          sensors = {'e12','e34'};
           corr_adp_spikes()
           
         case('dcv')
@@ -172,8 +173,9 @@ classdef mms_sdp_dmgr < handle
           chk_bias_guard()
           chk_sweep_on()
           chk_sdp_v_vals()
-          sensors = {'e12','e34'};
+          sensors = {'e12','e34','e56'};
           apply_nom_amp_corr() % AFTER all V values was calculated but before most processing.
+          sensors = {'e12','e34'};
           corr_adp_spikes()
           
         case('hk_101')
@@ -331,8 +333,25 @@ classdef mms_sdp_dmgr < handle
           idxBad = diff(dataObj.time)==0; % Identify first duplicate
           fs = fields(dataObj);
           for idxFs=1:length(fs), dataObj.(fs{idxFs})(idxBad) = []; end
-          DATAC.(param) = dataObj;
-          check_monoton_timeincrease(DATAC.(param).time);
+          if(isempty(DATAC.(param)))
+            % First defatt file
+            DATAC.(param) = dataObj;
+            check_monoton_timeincrease(DATAC.(param).time);
+          else
+            % Second defatt file
+            % Combine each field of the structs and run sort & unique on
+            % the time
+            combined = [DATAC.(param).time; dataObj.time];
+            [~, srt] = sort(combined);
+            [DATAC.(param).time, usrt] = unique(combined(srt));
+            for idxFs=1:length(fs)
+              if(~strcmp(fs{idxFs}, 'time'))
+                combined = [DATAC.(param).(fs{idxFs}); dataObj.(fs{idxFs})];
+                DATAC.(param).(fs{idxFs}) = combined(srt(usrt));
+              end
+            end
+            check_monoton_timeincrease(DATAC.(param).time); % Verify combined defatt
+          end
           
         case('defeph')
           % DEFEPH, contains Def Ephemeris (Struct with 'time', 'Pos_X', 'Pos_Y'
@@ -677,9 +696,9 @@ classdef mms_sdp_dmgr < handle
       end
       
       function apply_nom_amp_corr()
-        % Apply a nominal amplitude correction factor to DCE for p1..4
+        % Apply a nominal amplitude correction factor to DCE for p1..6
         % values after cleanup but before any major processing has occured.
-        
+        % p1..4 is also rescaled to correct boom length depending on time.
         Blen = mms_sdp_boom_length(DATAC.scId,DATAC.dce.time);
         if length(Blen)==1
           senDist = sensor_dist(Blen.len);
@@ -698,14 +717,18 @@ classdef mms_sdp_dmgr < handle
         end
         
         factor = MMS_CONST.NominalAmpCorr; NOM_DIST = 120.0;
-        for iSen = 1:min(numel(sensors),2)
+        for iSen = 1:numel(sensors)
           senE = sensors{iSen};
           nSenA = str2double(senE(2)); nSenB = str2double(senE(3));
           logStr = sprintf(['Applying nominal amplitude correction factor, '...
-            '%.2f, to %s'], factor, senE);
+            '%.2f, to %s'], factor.(senE), senE);
           irf.log('notice',logStr);
-          distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
-          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor;
+          if(strcmp(senE,'e56'))
+            distF = 1; % Boom length rescaling for ADP. I.e. only nominal amplitude correction.
+          else
+            distF = NOM_DIST./(senDist(:,nSenA) + senDist(:,nSenB));
+          end
+          DATAC.dce.(senE).data = DATAC.dce.(senE).data .* distF * factor.(senE);
         end
         
         function l = sensor_dist(len)

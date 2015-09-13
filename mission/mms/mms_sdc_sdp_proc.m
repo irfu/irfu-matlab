@@ -42,6 +42,7 @@ ACE_File = '';
 DCV_File = '';
 DCE_File = '';
 DEFATT_File = ''; % Defatt file used for l2pre
+DEFATT_File2 = ''; % Second defatt file, when processing over defatt file crossing.
 L2Pre_File = ''; % L2Pre file (output from L2pre process is input in L2A?)
 HeaderInfo = [];
 
@@ -258,6 +259,9 @@ filePart = strsplit(HK_10E_File,':');
 if(size(filePart,2)==2), HK_10E_File2 = filePart{2}; end
 HK_10E_File = filePart{1};
 
+filePart = strsplit(DEFATT_File,':');
+if(size(filePart,2)==2), DEFATT_File2 = filePart{2}; end
+DEFATT_File = filePart{1};
 
 %% Processing for SCPOT or QL or SITL.
 % Load and process identified files in the following order first any of the
@@ -351,6 +355,13 @@ switch procId
       [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File,'defatt');
       Dmgr.set_param('defatt', dataTmp);
       update_header(src_fileData); % Update header with file info.
+      % Defatt file 2 => phase
+      if ~isempty(DEFATT_File2)
+        irf.log('notice', [procName ' proc using: ' DEFATT_File2]);
+        [dataTmp,src_fileData] = mms_load_ancillary(DEFATT_File2,'defatt');
+        Dmgr.set_param('defatt', dataTmp);
+        update_header(src_fileData); % Update header with file info.
+      end
     else
       % HK101 file => phase
       if isempty(HK_101_File)

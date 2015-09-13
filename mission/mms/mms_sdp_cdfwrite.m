@@ -215,8 +215,8 @@ switch procId
     dcedata = single([dce.e12.data, dce.e34.data, dce.e56.data]);
     adcdata = single([adc_off.(sdpPair{1}), adc_off.(sdpPair{2})]);
     % Bitmask, defined as CDF_UINT1 (uint8 in Matlab)
-    bitmask = [dce.e12.bitmask, dce.e34.bitmask, dce.e56.bitmask];
-    quality = mms_sdp_bitmask2quality('e',bitmask(:,1));
+    bitmask = [uint8(dce.e12.bitmask), uint8(dce.e34.bitmask), uint8(dce.e56.bitmask)];
+    quality = int16(mms_sdp_bitmask2quality('e',uint16(bitmask(:,1))));
 
     name.epoch   = [datasetPrefix '_dce_epoch'];
     name.dce     = [datasetPrefix '_dce_data'];
