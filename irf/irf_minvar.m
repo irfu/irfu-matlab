@@ -16,9 +16,18 @@ function [out,l,v]=irf_minvar(inp,flag)
 %                                      see Eq. 8.17 ISSI book
 %
 % See also IRF_MINVAR_GUI, IRF_MINVAR_NEST, IRF_MINVAR_NEST_GUI
+% Works with TSeries as input
 
 if nargin==1,
     flag='mvar'; % default is to do unconstrained minimum variance
+end
+
+rtrnTS = 0;
+isaTSeries = isa(inp,'TSeries');
+if isaTSeries,
+    inptemp = inp;
+    inp = inptemp.data;
+    rtrnTS = 1;
 end
 
 ooo=inp;
@@ -94,3 +103,4 @@ if nargout < 1,
 end
 
 if lx>3, ooo(:,[2 3 4])=out;out=ooo; end
+if rtrnTS, ooo = out; out=inptemp; out.data = ooo; end
