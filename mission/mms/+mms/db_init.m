@@ -6,6 +6,9 @@ function db_init(key, val)
 %  Example:
 %    mms.db_init('local_file_db','/data/mms')
 %    mms.db_init('local_file_db','/Users/yuri/Data/mms')
+%
+%    mms.db_init('local_file_db_irfu','/data/mms/irfu')
+%    Database with IRFU produced products
 
 global MMS_DB;
 if isempty(MMS_DB), MMS_DB = mms_db; end
@@ -20,6 +23,12 @@ if nargin==0
     localFileDb = mms_local_file_db(localFileDbRoot);
     MMS_DB.add_db(localFileDb);
     irf.log('notice','Initialized local_file_db')
+  end
+  localFileDbRoot = datastore('mms_db','local_file_db_irfu_root');
+  if ~isempty(localFileDbRoot)
+    localFileDb = mms_local_file_db(localFileDbRoot);
+    MMS_DB.add_db(localFileDb);
+    irf.log('notice','Initialized local_file_irfu_db')
   end
   return
 end
