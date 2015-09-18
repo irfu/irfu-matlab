@@ -10,7 +10,7 @@ ic = 3;
 
 tint = irf.tint('2015-08-28T12:53:15.00Z/2015-08-28T12:54:40.00Z');
 c_eval('Bxyz=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);',ic);
-c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tints);',ic);
+c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tint);',ic);
 
 %load brst mode interval locally
 %tmpDataObj = dataobj('data/mms3_edp_brst_ql_dce2d_20150828125314_v0.2.0.cdf');
