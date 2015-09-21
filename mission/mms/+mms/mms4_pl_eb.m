@@ -6,20 +6,22 @@ function h = mms4_pl_eb(Tint)
 %Tint = irf.tint('2015-05-24T02:10:00Z/2015-05-24T02:30:00Z');
 
 %% Load data
-load /data/mms/irfu/mmsR.mat
-epoTmp = EpochTT(R.time);
-gsmR1 = [epoTmp.epochUnix R.gsmR1];
-gsmR1(isnan(gsmR1(:,4)),:) = [];
+%load /data/mms/irfu/mmsR.mat
+%epoTmp = EpochTT(R.time);
+%gsmR1 = [epoTmp.epochUnix R.gsmR1];
+%gsmR1(isnan(gsmR1(:,4)),:) = [];
 
 for scId = 1:4
   fprintf('Loading MMS%d\n',scId);
   c_eval([...
     'E? = mms.db_get_ts(''mms?_edp_fast_ql_dce'',''mms?_edp_dce_xyz_dsl'',Tint);'...
     'P? = mms.db_get_ts(''mms?_edp_fast_l2_scpot'',''mms?_edp_psp'',Tint);'...
-    'B? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_gsm_dmpa'',Tint);'],...
+    'B? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_gsm_dmpa'',Tint);'...
+    'R? = mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_ql_pos_gse'',Tint);'],...
     scId)
 end
 fprintf('Data loaded\n');
+gseR1 = [R1.time.epochUnix double(R1.data(:,1:3))];
 
 %% Plot
 % define Cluster colors
@@ -62,7 +64,7 @@ ylabel(hca,'Ez [mV/m]')
 
 irf_zoom(h,'x',Tint)
 irf_plot_axis_align(h)
-add_position(h(end),gsmR1)
+add_position(h(end),gseR1)
 xlabel(h(end),'')
 title(h(1),Tint.start.utc)
 
