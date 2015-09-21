@@ -43,12 +43,6 @@ hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',3)
 ylabel(hca,'Bz [nT]')
 
-if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'-ScPot [V]')
-end
-
 hca = irf_panel('Ex'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',1)
 ylabel(hca,'Ex [mV/m]')
@@ -60,6 +54,12 @@ ylabel(hca,'Ey [mV/m]')
 hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',3)
 ylabel(hca,'Ez [mV/m]')
+
+if 1
+hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+irf_pl_tx(hca,'P?')
+ylabel(hca,'-ScPot [V]')
+end
 
 
 irf_zoom(h,'x',Tint)
@@ -87,12 +87,6 @@ hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',3)
 ylabel(hca,'Bz [nT]')
 
-if 1
-hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
-irf_pl_tx(hca,'P?')
-ylabel(hca,'-ScPot [V]')
-end
-
 hca = irf_panel('Vx'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'VExB?',1)
 ylabel(hca,'Vx [km/s]')
@@ -105,6 +99,11 @@ hca = irf_panel('Vz'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'VExB?',3)
 ylabel(hca,'Vz [km/s]')
 
+if 1
+hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
+irf_pl_tx(hca,'P?')
+ylabel(hca,'-ScPot [V]')
+end
 
 irf_zoom(h,'x',Tint)
 irf_plot_axis_align(h)
