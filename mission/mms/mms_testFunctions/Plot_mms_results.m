@@ -28,13 +28,15 @@ function Plot_mms_results(Day, varargin)
 % License: CreativeCommons BY-NC-SA 4.0
 % https://creativecommons.org/licenses/by-nc-sa/4.0/
 %
-
+tic;
 p = verify_input(Day, varargin{:});
 
+yyyy = str2double(Day(1:4)); % Store numerical value
+mm = str2double(Day(6:7)); dd = str2double(Day(9:10));
 
 nowStr = irf_time(now,'datenum>utc_yyyy-mm-dd');
 
-dataPathRoot = getenv('DATA_PATH_ROOT'); % Default to "/data/mms/"
+dataPathRoot = getenv('DATA_PATH_ROOT'); % Default to "/data/mms"
 mms.db_init('local_file_db',dataPathRoot);
 MMS_CONST = mms_constants();
 % Set default colors as used by Cluster.
@@ -76,55 +78,105 @@ end
 
 
 if(p.Results.plotSpect)
-  % Get only comm data (Almost exclusively 128 Hz data)
+  if(tint.start<EpochTT('2015-07-28T00:00:00')) % Last day when any Comm files existed
+    % Assume it is only Comm data
+%   % Get only comm data (Almost exclusively 128 Hz data)
   tmMode = {'comm'};
   dslCommTs = getDATA(2); % DSL data of only comm ("128Hz") as a struct of TSeries
-
-  %% Compute power spectra of DSL data
-  % Comm 128 Hz
+% 
+%   %% Compute power spectra of DSL data
+%   % Comm 128 Hz
   for kk=1:length(SCid)
-    disp(['Computing spectra DSL X for ',SCid{kk}]);
-    dslCommSpect.(SCid{kk}) = irf_powerfft(dslCommTs.(SCid{kk}).x, ...
+    disp(['Computing spectra for DSL xyz for ',SCid{kk}]);
+    dslComm128Spect.(SCid{kk}) = irf_powerfft(dslCommTs.(SCid{kk}), ...
       8192, ...
       MMS_CONST.Samplerate.comm_128);
-    if(isempty(dslCommSpect.(SCid{kk})))
+    if(isempty(dslComm128Spect.(SCid{kk})))
       % FIXME better..
       warning(['Empty spectra from DSL on ', SCid{kk}]);
     end
     dslCommTs.(SCid{kk})=[]; % Empty to save memory.
   end
 
-  % Or only DSL E X component
-  %dslCommSpect.(SCid{kk}) = irf_powerfft(dslCommTs.(SCid{kk}).x, ...
-  %  8192, ...
-  %  MMS_CONST.Samplerate.comm_128);
+  end
 
+  % Get fast (32Hz) or slow (8Hz) mode data, starting around 2015-07-15
+  tmMode = {'fast'};
+  dslFastTs = getDATA(2); % dsl data of only fast as a TSeries
 
-  % Get fast (32Hz) or slow (8Hz) mode data, starting around 2015-07-16
-  %tmMode = {'fast'};
-  %dslFastTs = getDATA(2); % dsl data of only fast as a TSeries
+  tmMode = {'slow'};
+  dslSlowTs = getDATA(2); % dsl data of only slow as a TSeries
 
-  %tmMode = {'slow'};
-  %dslSlowTs = getDATA(2); % dsl data of only slow as a TSeries
+  for kk=1:length(SCid)
+    disp(['Computing fast spectra for DSL xyz for ',SCid{kk}]);
+    dslFastSpect.(SCid{kk}) = irf_powerfft(dslFastTs.(SCid{kk}), ...
+      512, ...
+      MMS_CONST.Samplerate.fast);
+    if(isempty(dslFastSpect.(SCid{kk})))
+      % FIXME better..
+      warning(['Empty spectra from DSL on ', SCid{kk}]);
+    end
+    dslFastTs.(SCid{kk})=[]; % Empty to save memory.
 
-  %dslFastSpect = irf_powerfft(dslFastTs.data, ...
-  %  512, ...
-  %  MMS_CONST.Samplerate.fast);
-  %dslFastSpect = irf_powerfft(dslSlowTs.data, ...
-  %  512, ...
-  %  MMS_CONST.Samplerate.slow);
+    disp(['Computing slow spectra for DSL xyz for ',SCid{kk}]);
+    dslSlowSpect.(SCid{kk}) = irf_powerfft(dslSlowTs.(SCid{kk}), ...
+      128, ...
+      MMS_CONST.Samplerate.slow);
+    if(isempty(dslSlowSpect.(SCid{kk})))
+      % FIXME better..
+      warning(['Empty spectra from DSL on ', SCid{kk}]);
+    end
+    dslSlowTs.(SCid{kk})=[]; % Empty to save memory.
 
-  % FIXME:
   % Combine the various power spectra in some nice function so plots are
   % continuous...
+  % THIS WORKS but will slightly adjust times.
+    comb.(SCid{kk}) = struct('f',0:0.0625:15.9375);
+    newTime = tint.start:15.9688:tint.stop;
+    newTime = newTime.epochUnix;
+    comb.(SCid{kk}).t = newTime;
+    len_time = size(newTime,1);
+   % len_freq = size(dslFastSpect.(SCid{kk}).f,1) - size(dslSlowSpect.(SCid{kk}).f,1);
+    len_freq = 192; % = 256 - 64, size(Fast.f) - slow(Slow.f)
+    for ll=1:3 % 3 dimensions (DSL x, y, z)
+      comb.(SCid{kk}).p{1,ll} = NaN(len_time, 256);
+      if(~isempty(dslFastSpect.(SCid{kk})))
+        dslFastNew.p{1,ll} = (interp2((dslFastSpect.(SCid{kk}).t)',...
+          dslFastSpect.(SCid{kk}).f, (dslFastSpect.(SCid{kk}).p{1,ll})', ...
+          newTime', dslFastSpect.(SCid{kk}).f))';
+        indNotNaN = ~all(isnan(dslFastNew.p{1,ll}),2);
+        comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslFastNew.p{1,ll}(indNotNaN,:);
+      end
+      if(~isempty(dslSlowSpect.(SCid{kk})))
+        dslSlowNew.p{1,ll} = (interp2((dslSlowSpect.(SCid{kk}).t)',...
+          dslSlowSpect.(SCid{kk}).f, (dslSlowSpect.(SCid{kk}).p{1,ll})', ...
+          newTime', dslSlowSpect.(SCid{kk}).f))';
+        % Fill high frequencies (that only exist in Fast) with NaN in the slow spectra
+        dslSlowNew.p{1,ll} = [dslSlowNew.p{1,ll} NaN(len_time, len_freq)];
+        indNotNaN = ~all(isnan(dslSlowNew.p{1,ll}),2);
+        comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslSlowNew.p{1,ll}(indNotNaN,:);
+      end
+      if(tint.start<EpochTT('2015-07-28T00:00:00') && ~isempty(dslComm128Spect.(SCid{kk})))
+        dslCommNew.p{1,ll} = (interp2((dslComm128Spect.(SCid{kk}).t)',...
+          dslComm128Spect.(SCid{kk}).f, (dslComm128Spect.(SCid{kk}).p{1,ll})',...
+          newTime', (0:0.0625:15.9375)'))';
+        indNotNaN = ~all(isnan(dslCommNew.p{1,ll}),2);
+        comb.(SCid{kk}).p{1,ll}(indNotNaN,:) = dslCommNew.p{1,ll}(indNotNaN,:);
+      end
+    end
 
+    dslFastSpect.(SCid{kk}) = []; % Save some memory
+    dslComm128Spect.(SCid{kk}) = [];
+    dslSlowSpect.(SCid{kk}) = [];
+
+  end
+  dslCommSpect = comb;
+  clear comb newTime dslSlowTs dslFastTs dslSlowNew dslFastNew;
+  clear dslSlowSpect dslFastSpect dslComm128Spect;
+%  end
   % Restore tmModes
   tmMode = {'comm','fast','slow','brst'};
-
 end
-
-
-
 
 
 %% Plot data
@@ -140,45 +192,46 @@ if(p.Results.plotUsc || p.Results.plotDSL)
   if(p.Results.plotUsc)
     % PLOT USC
     disp('Plotting Usc');
-    % toPlot = cell(1,length(SCid));
-    % for i=1:length(SCid)
-    %  toPlot{1,i} = uscTs.(SCid{i});
-    % end
-    % h = irf_plot(toPlot,'comp'); % FIXME, plot only to subplot 1 (of h).
-    % title(h(1),['Plot created: ',nowStr,'. Usc from SDC files for all four s/c.']);
-    % legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4');
-    % ylabel(h(1),{'Spacecraft potential','[V]'});
+    toPlot = cell(1,length(SCid));
+    for i=1:length(SCid)
+      toPlot{1,i} = uscTs.(SCid{i});
+    end
+    irf_plot(h(1),toPlot,'comp');
+    title(h(1),['Plot created: ',nowStr,'. Usc and DSL X&Y.']);
+    legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4');
+    ylabel(h(1),{'Spacecraft potential','[V]'});
+    clear toPlot uscTs; % save some memory...
   end
 
   if(p.Results.plotDSL)
     % PLOT DSL E-X, E-Y
     disp('Plotting DSL');
-    toPlot = cell(1,length(SCid));
+    toPlot = cell(2,length(SCid));
     for i=1:length(SCid)
-      toPlot{1,i} = dslTs.(SCid{i});
+      toPlot{1,i} = dslTs.(SCid{i}).x;
+      toPlot{2,i} = dslTs.(SCid{i}).y;
     end
-    h = irf_plot(toPlot,'comp'); % FIXME, plot only DSL E-x & E-y in the
-    % subplot 2 and 3 (of h) created above just after beginning of plotUsc or
-    % plotDSL
-    %title(h(1),['Plot created: ',nowStr,'. DSL from SDC files for all four s/c.']);
+    irf_plot(h(2),toPlot(1,:),'comp');
+    irf_plot(h(3),toPlot(2,:),'comp');
+    % Zoom in
+    irf_zoom(h(2),'y',[-10 10])
+    irf_zoom(h(3),'y',[-10 10])
     legend(h(1), 'MMS1', 'MMS2', 'MMS3', 'MMS4');
-    ylabel(h(1),{'DSL E-x','[mV/m]'});
-    ylabel(h(2),{'DSL E-y','[mV/m]'});
-    %ylabel(h(3),{'BCS E-z','[mV/m]'});
+    ylabel(h(2),{'DSL E-x','[mV/m]'});
+    ylabel(h(3),{'DSL E-y','[mV/m]'});
+    clear toPlot dslTs; % save some memory..
   end
 
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
     for ii=0:3:21
-      tintZoom = {[str2double(Day(1:4)), str2double(Day(6:7)), str2double(Day(9:10)), ii, 00, 00], ...
-        [str2double(Day(1:4)),str2double(Day(6:7)),str2double(Day(9:10)),ii+3, 00, 00]};
-      for kk=1:3
-        irf_zoom(h(kk),'x',tintZoom);
-        if(kk~=3), irf_timeaxis(h(kk),'nolabels'); end
-      end
+      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
+        [yyyy, mm, dd, ii+3, 00, 00]};
+      irf_zoom(h,'x',tintZoom);
       % Save segment
       print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_Usc_and_DSLxy',...
         outPath, Day, ii, ii+3) );
+      toc;
     end
   end
 end % End of plot figure for Usc and/or DSL E-x & E-y
@@ -190,32 +243,30 @@ if(p.Results.plotSpect)
   % PLOT spectogram of DSL
   disp('Plotting DSL spectra');
 
-  %yTicks = [0.05, 0.10, 0.15, 0.2, 0.4, 0.8, 1.0, 10];
-  yTicks = [0.05, 1.0, 10];
+  yTicks = [0.1, 1.0, 10];
+  yTickLabel = {0.1; 1.0; 10};
   yLimits = [0, 12.5];
-  h = irf_plot(4, 'newfigure');
+  h = irf_plot(length(SCid), 'newfigure');
   set(gcf,'position',[7   159   790   916]);
   figure_start_epoch(tint.start.epochUnix);
 
   for kk=1:length(SCid)
     % DSL E-X
- 	hold(h(kk),'on')
+    hold(h(kk),'on')
     % if both X & Y spectra was computed and is to be added into one
     % subplot, then use:
-    % irf_spectrogram(h(kk), struct('f', dslCommSpect.(SCid{kk}).f, ...
-    %  't', dslCommSpect.(SCid{kk}).t, 'p', dslCommSpect.(SCid{kk}).p(1) + ...
-    %  dslCommSpect.(SCid{kk}).p(2)));
+    irf_spectrogram(h(kk), struct('f', dslCommSpect.(SCid{kk}).f, ...
+      't', dslCommSpect.(SCid{kk}).t, 'p', dslCommSpect.(SCid{kk}).p{1} + ...
+      dslCommSpect.(SCid{kk}).p{2}));
     % Create spectrogram of only DSL X:
-    irf_spectrogram(h(kk), dslCommSpect.(SCid{kk}));
- 	%grid(h(kk),'on')
- 	h(kk).YScale = 'log';
-    h(kk).YTick = yTicks;
+    %irf_spectrogram(h(kk), dslCommSpect.(SCid{kk}));
+    set(h(kk),'YTick',yTicks,'YScale','log', 'YTickLabel',yTickLabel);
     h(kk).YLim = yLimits;
-    ylabel(h(kk),{[upper(SCid{kk}),' DSL E-x'],'freq [Hz]'});
+    ylabel(h(kk),{upper(SCid{kk}),'freq [Hz]'});
     caxis(h(kk),[-4 1]);
     hold(h(kk),'off')
-    if(kk==1), title(h(kk),['Plot created:',nowStr, ' Spectra of DSL X']); end
-    
+    if(kk==1), title(h(kk),['Plot created: ',nowStr, ...
+        '. Combined pds(Ex_{dsl}) + pds(Ey_{dsl}).']); end
     dslCommSpect.(SCid{kk}) = []; % Clear to save memory
   end
 
@@ -224,15 +275,13 @@ if(p.Results.plotSpect)
   if(p.Results.bashRun)
     % Save plots in 3 hour segments, ie 00:00:00 to 03:00:00 and so on
     for ii=0:3:21
-      tintZoom = {[str2double(Day(1:4)), str2double(Day(6:7)), str2double(Day(9:10)), ii, 00, 00], ...
-        [str2double(Day(1:4)),str2double(Day(6:7)),str2double(Day(9:10)),ii+3, 00, 00]};
-      for kk=1:length(SCid)
-        irf_zoom(h(kk),'x',tintZoom);
-        if(kk~=4), irf_timeaxis(h(kk),'nolabels'); end
-      end
+      tintZoom = {[yyyy, mm, dd, ii, 00, 00], ...
+        [yyyy, mm, dd, ii+3, 00, 00]};
+      irf_zoom(h,'x',tintZoom);
       % Save segment
-      print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_DSLx_spectra',...
+      print(gcf, '-dpng', sprintf('%s%sT%02d0000_%02d0000_DSLxy_spectra',...
         outPath, Day, ii, ii+3) );
+      toc;
     end
   end
 end % End of plot figure with DSL spectra
@@ -273,7 +322,11 @@ function outTs = getDATA(dataID)
 
     % Return a struct with fields of time series for each sc.
     if(~isempty(TsCombined.(SCid{ii}).time))
-      outTs.(SCid{ii}) = TSeries(EpochTT(TsCombined.(SCid{ii}).time),TsCombined.(SCid{ii}).data,'vec_xyz');
+      if(size(TsCombined.(SCid{ii}).data,2)==3)
+        outTs.(SCid{ii}) = TSeries(EpochTT(TsCombined.(SCid{ii}).time),TsCombined.(SCid{ii}).data,'vec_xyz');
+      else
+        outTs.(SCid{ii}) = TSeries(EpochTT(TsCombined.(SCid{ii}).time),TsCombined.(SCid{ii}).data);
+      end
     else
       % Fill with one NaN data point if no data was read at all for this sc.
       outTs.(SCid{ii}) = TSeries(EpochTT(tint.start), NaN(1,3), 'vec_xyz');
