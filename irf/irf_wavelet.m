@@ -77,9 +77,6 @@ fmin=0.5*Fs/10^amax;
 nf=200;
 % wavelet_width
 wavelet_width=5.36;
-%% Check for NaNs
-inan=isnan(data);
-data(inan)=0;
 %Other
 returnpower = 1;
 cutedge = 1;
@@ -149,6 +146,9 @@ if size(data,1)/2 ~= floor(size(data,1)/2)
     t(end)=[];
 end
 
+%% Check for NaNs
+inan=isnan(data);
+data(inan)=0;
 %% Find the frequencies for an FFT of all data
 
 nd2=size(data,1)/2;

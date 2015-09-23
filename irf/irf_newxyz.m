@@ -8,8 +8,6 @@ function [out]=irf_newxyz(inp,x,y,z)
 % if x=0 -> x=yxz,z=xxy
 % if y=0 -> y=zxx,x=yxz
 % if z=0 -> z=xxy,y=zxx
-%
-% $Id$
 
 if x==0
  x=cross(y,z);
@@ -29,6 +27,22 @@ y=y/norm(y);
 z=z/norm(z);
 
 out=inp;
+if isa(inp,'TSeries')
+  % XXX: this must be moved to TSeries
+  % and here we should give an error
+  if inp.tensorOrder==0, error('Does not work on scalars'),
+  elseif inp.tensorOrder>1, error('Not implemented yet')
+  end
+  if strcmp(inp.tensorBasis(1:3),'xyz'),
+    out.data(:,1)=inp.data(:,1:3)*x';
+    out.data(:,2)=inp.data(:,1:3)*y';
+    out.data(:,3)=inp.data(:,1:3)*z';
+    out.coordinateSystem = 'new_xyz';
+  else error('Not implemented yet')
+  end
+  return
+end
+  
 if size(out,2)==3,
   out(:,1)=inp(:,1:3)*x';
   out(:,2)=inp(:,1:3)*y';

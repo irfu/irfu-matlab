@@ -25,6 +25,11 @@ c_eval('ii=find(diff(Pfast?.time.epochUnix)>100); if ~isempty(ii), Pfast?.data(i
 c_eval('ii=find(diff(Pslow1.time.epochUnix)>100); if ~isempty(ii), Pslow?.data(ii,:) = NaN; end')
 clear ii
 
+%% ASPOC 
+ c_eval('AI?=mms.db_get_ts(''mms?_aspoc_srvy_l2'',''mms?_asp_ionc'',Tint);')
+ % incorrect fillval setting
+ c_eval('AI?.data(AI?.data==min(AI?.data))=NaN;')
+ 
 %%
 if 0
 h = irf_plot(2);
