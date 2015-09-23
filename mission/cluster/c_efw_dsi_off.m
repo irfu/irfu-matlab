@@ -26,7 +26,9 @@ Damp = 1.1*ones(1,4);
 % i is for Ey +i send curve down
 
 % Table of SW/SH offsets
-if t>=toepoch([2014 08 01 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
+if t>=toepoch([2014 10 16 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
+elseif t>=toepoch([2014 10 11 00 00 0]), Ddsi = [ -0.11  2.67  1.22  0.37 ];
+elseif t>=toepoch([2014 08 01 00 00 0]), Ddsi = [ -0.11  3.67  1.22  0.37 ];
 elseif t>=toepoch([2014 01 01 00 00 0]), Ddsi = [ -0.11  2.67  1.22  0.37 ];
 elseif t>=toepoch([2013 01 01 00 00 0]), Ddsi = [ -0.13  2.19  0.97  0.43 ];
 elseif t>=toepoch([2012 03 03 00 00 0]), Ddsi = [ -0.28  1.28  0.7  0.11 ];
@@ -112,6 +114,8 @@ end
 
 % Table of MS offsets
 if t>=toepoch([2015 01 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0.4 ]; % Only C3 has a good curve
+elseif t>=toepoch([2014 10 16 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
+elseif t>=toepoch([2014 10 11 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0 ]; % Only C3 has a good curve
 elseif t>=toepoch([2014 08 01 00 0 0]), Ddsi = [ 0.18  3.7  0.71  0 ]; % Only C3 has a good curve
 elseif t>=toepoch([2014 07 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0 ]; % Only C3 has a good curve
 elseif t>=toepoch([2014 01 01 00 0 0]), Ddsi = [ 0.18  2.7  0.71  0.4 ]; % Only C3 has a good curve
