@@ -166,9 +166,9 @@ for jj=1:length(iStart)
 		case 'e',      varOmni2=35;varOmni1min=28;
 		case 'beta',   varOmni2=36;varOmni1min=29;
 		case 'ma',     varOmni2=37;varOmni1min=30;
-		case 'bsnx',   varOmni2=-1;varOmni1min=31;
-		case 'bsny',   varOmni2=-1;varOmni1min=32;
-		case 'bsnz',   varOmni2=-1;varOmni1min=33;
+		case 'bsnx',   varOmni2=-1;varOmni1min=34;
+		case 'bsny',   varOmni2=-1;varOmni1min=35;
+		case 'bsnz',   varOmni2=-1;varOmni1min=36;
 		case 'ms',     varOmni2=56;varOmni1min=45;
 		case 'ssn',    varOmni2=39;varOmni1min=-1;
 		case 'dst',    varOmni2=40;varOmni1min=-1;
