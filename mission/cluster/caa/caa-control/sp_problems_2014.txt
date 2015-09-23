@@ -1,0 +1,38 @@
+ Problems seen when looking through the summary plots for 2011
+=============================================================
+
+C2, Ex offset too low by 0.8 mV/m 8/1 - 8/20
+C1, C3, C4 offset jump at 8V 8/8 06:30--08:30, 8/30 22:30--23:30
+C4 strong saturation in BM1, 8/12 20:41--22:56, 8/31 02:48--05:31  
+
+1a) Processing bugs fixed
+========================
+
+
+1b) Plotting bugs fixed
+=======================
+
+
+1c) Data problems fixed
+=======================
+
+Increased C2 Ex offset by 1 mV/m since 8/1
+
+2a) Software bugs to be fixed
+=============================
+
+2b) Data problems to be fixed/investigated
+==========================================
+
+"long" shadow spikes on C4, to be checked by PAL.
+
+3) Major data problems
+======================
+
+4) Ignored
+==========
+
+
+5) Unclassified
+===============
+
