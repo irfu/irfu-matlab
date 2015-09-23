@@ -245,7 +245,7 @@ for i = 1:ngap+1
         log_str = ['Warning: no valid iifsunper values in segment ', num2str(i)];
         irf.log('warning', log_str);
     else
-        mperiod(use_iif) = double(segiifsunper(use_iif));
+%         mperiod(use_iif) = double(segiifsunper(use_iif));
     end
     
     % Number of spins between each pulse is time between pulse divided by
@@ -263,7 +263,7 @@ for i = 1:ngap+1
     if(n_spin_warn > 0)
         irf.log('warning','spin rate data may be changing too quickly to uniquely determine phase at: ');
         for mi = 1:min(9,n_spin_warn)
-            log_str = sprintf('%04i:%02i:%02i:%02i:%02i:%02i:%03i.%03i.%03iZ.',...
+            log_str = sprintf('%04i-%02i-%02iT%02i:%02i:%02i:%03i.%03i.%03iZ.',...
                 spdfbreakdowntt2000(segpulse(spin_warn(mi))));
             irf.log('warning', log_str);
         end
