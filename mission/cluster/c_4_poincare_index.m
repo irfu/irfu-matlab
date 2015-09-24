@@ -1,7 +1,7 @@
 function index=c_4_poincare_index(B1,B2,B3,B4)
 %C_4_POINCARE_INDEX    Calculates the Poincare index 
 %
-%  C_4_POINCARE_INDEX calculates the Poincar? index from B-fields
+%  C_4_POINCARE_INDEX calculates the Poincare index from B-fields
 %  measurements. If index is a nonzero number than there is uneven number
 %  of magnetic nulls within tetrahedron and if the index is zero then there
 %  is zero or even number of nulls inside the volume.

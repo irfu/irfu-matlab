@@ -7,7 +7,7 @@ function angle=solidangle(VecA,VecB,VecC)
 %   angle=irf.solidangle(VecA,VecB,VecC)
 %
 % Important: Time tags cannot be included in the input vectors 
-% See Also POINCARE_INDEX_3D
+% See Also C_4_POINCARE_INDEX
 %Reference: Råde & Westergren (2004), Mathematics Handbook for Science and
 %Engineering p.75 (Law of Cosine)
 
