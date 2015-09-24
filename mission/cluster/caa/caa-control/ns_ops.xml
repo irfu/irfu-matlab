@@ -6160,7 +6160,7 @@ plan="yes" sdesc ="TBD">
 <operation start="2013-07-01T14:43:44Z" dt="-1" c4="yes" plan="no" sdesc="no_p4">
 	<desc>Probe 4 effectively lost from this time.</desc>
 </operation>
-<operation start="2014-10-03T06:20:20Z" dt="-32916" c2="yes" plan="no" sdesc="bad_data">
+<operation start="2014-10-03T06:20:20Z" dt="32916" c2="yes" plan="no" sdesc="bad_data">
 	<desc>EFW reset with launch default values.</desc>
 </operation>
 <operation start="2014-11-03T20:58:17Z" dt="-1" c3="yes" plan="no" sdesc="no_p2">
