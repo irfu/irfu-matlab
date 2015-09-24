@@ -6162,6 +6162,7 @@ plan="yes" sdesc ="TBD">
 </operation>
 <operation start="2014-10-03T06:20:20Z" dt="32916" c2="yes" plan="no" sdesc="bad_data">
 	<desc>EFW reset with launch default values.</desc>
+	<res><link href="pal20140923.txt">Per-Arne 140923</link></res>
 </operation>
 <operation start="2014-11-03T20:58:17Z" dt="-1" c3="yes" plan="no" sdesc="no_p2">
 	<desc>Probe 2 effectively lost from this time.</desc>
