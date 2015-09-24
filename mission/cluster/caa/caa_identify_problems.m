@@ -363,14 +363,14 @@ clear ok problem_intervals msg
 if ~sc_potential
   % Mark saturation due to probe shadow for SAA=90 deg
   [ok, problem_intervals] = c_load('SAASADI?', spacecraft_id);
-  if data_level==3
-    qTmp = QUALITY_PROBE_SHADOW(3);
-    % Extend intervals for 2 sec at each side to catch the sfit time stamp
-    problem_intervals(:,[1 3 5 7]) = problem_intervals(:,[1 3 5 7]) - 2;
-    problem_intervals(:,[2 4 6 8]) = problem_intervals(:,[2 4 6 8]) + 2;
-  else qTmp = QUALITY_PROBE_SHADOW(1);
-  end
   if ok && ~isempty(problem_intervals)
+    if data_level==3
+      qTmp = QUALITY_PROBE_SHADOW(3);
+      % Extend intervals for 2 sec at each side to catch the sfit time stamp
+      problem_intervals(:,[1 3 5 7]) = problem_intervals(:,[1 3 5 7]) - 2;
+      problem_intervals(:,[2 4 6 8]) = problem_intervals(:,[2 4 6 8]) + 2;
+    else qTmp = QUALITY_PROBE_SHADOW(1);
+    end
     irf_log('proc', 'marking saturation due to probe shadow')
     allPairs = [12 34 32 42];
     for probe_id = probe_pair_list
