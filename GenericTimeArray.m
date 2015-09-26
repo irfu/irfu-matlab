@@ -394,7 +394,7 @@ classdef (Abstract) GenericTimeArray
 		end
 		function utc = ttns2utc(ttns,format)
       % Convert TT nanoseconds to UTC
-      if nargin<2, format = 2; end
+      if nargin<2 || isempty(format), format = 2; end
 			utc =  char(spdfencodett2000(int64(ttns)));
 			if isnumeric(format)
 				switch format
