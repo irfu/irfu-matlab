@@ -383,6 +383,9 @@ end
 if isnumeric(tint) && (size(tint,2)==2), % assume tint is 2 column epoch
 	tintUTC=irf_time(tint,'tint>utc_yyyy-mm-ddTHH:MM:SSZ');
 	specifiedTimeInterval = true;
+elseif isa(tint,'GenericTimeArray') && length(tint)==2
+	tintUTC=irf_time(tint,'tint>utc_yyyy-mm-ddTHH:MM:SSZ');
+	specifiedTimeInterval = true;
 elseif ischar(tint), % tint is in UTC format
 	tintUTC=tint;
 	specifiedTimeInterval = true;
