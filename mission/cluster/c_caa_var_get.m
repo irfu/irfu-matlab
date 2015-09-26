@@ -128,7 +128,10 @@ while numel(args)
 				if isempty(args{2})
 					getAllData = true;
 				else
-					if isnumeric(args{2})
+					if isa(args{2},'GenericTimeArray') && length(args{2})==2
+						tintTemp = args{2}.epochUnix;
+						tint = tintTemp(:)';
+					elseif isnumeric(args{2})
 						tint = args{2};
 					elseif ischar(args{2})
 						tint = irf_time(args{2},'utc>tint');
