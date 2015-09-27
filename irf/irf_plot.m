@@ -349,6 +349,9 @@ elseif flag_subplot==3,  % components of vectors in separate panels
         c=initialize_figure(npl);
     end
     for ipl=1:npl
+        hca = c(ipl);
+        tag=get(hca,'tag'); ud=get(hca,'userdata'); % keep tag/userdata during plotting
+      
         line_colors=get(c(ipl),'ColorOrder');
         for jj=1:size(x,2)
             use_color = 1;
@@ -373,7 +376,7 @@ elseif flag_subplot==3,  % components of vectors in separate panels
             end
         end
         grid(c(ipl),'on');
-        
+        set(hca,'tag',tag); set(hca,'userdata',ud); % restore
         % Put YLimits so that no labels are at the end (disturbing in
         % multipanel plots)
         set(c(ipl),'YLim',...
