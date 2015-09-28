@@ -7,13 +7,6 @@ function res = get_ts(dobj,var_s)
 %
 %  See also: TSeries
 
-% ----------------------------------------------------------------------------
-% "THE BEER-WARE LICENSE" (Revision 42):
-% <yuri@irfu.se> wrote this file.  As long as you retain this notice you
-% can do whatever you want with this stuff. If we meet some day, and you think
-% this stuff is worth it, you can buy me a beer in return.   Yuri Khotyaintsev
-% ----------------------------------------------------------------------------
-
 data = get_variable(dobj,var_s);
 if isempty(data), % no such variable, return empty
 	res=[];
@@ -38,9 +31,8 @@ else
 end
 
 %userData
-ud = data; ud = rmfield(ud,'DEPEND_0'); ud = rmfield(ud,'data');
-ud = rmfield(ud,'nrec'); ud = rmfield(ud,'dim'); ud = rmfield(ud,'name');
-ud = rmfield(ud,'variance'); ud = rmfield(ud,'UNITS');
+ud = data; 
+ud = rmfield(ud,{'DEPEND_0','data','nrec','dim','name','variance','UNITS'});
 repres = [];
 if isfield(data,'TENSOR_ORDER') % CAA data has TENSOR_ORDER>=1
   tensorOrder = data.TENSOR_ORDER; ud = rmfield(ud,'TENSOR_ORDER');
@@ -82,11 +74,12 @@ else
     'repres',repres);
 end
 res.name = data.name;
-if isfield(data,'UNITS'), res.units = v.UNITS;
+if isfield(data,'UNITS'), res.units = data.UNITS;
 else res.units = 'unitless';
 end
 if isfield(ud,'SI_CONVERSION'), 
-  res.siConversion    = ud.SI_CONVERSION;  ud = rmfield(ud,'SI_CONVERSION');
+  res.siConversion = ud.SI_CONVERSION;  
+	ud = rmfield(ud,'SI_CONVERSION');
 end
 if isfield(ud,'COORDINATE_SYSTEM')
   res.coordinateSystem = ud.COORDINATE_SYSTEM;
