@@ -112,7 +112,7 @@ for j=1:numel(h)
         remove_extra_xlabel_handles(h(j))
         for ii = 1:size(res{1},2)
             if ~strcmp(lab(ii),' ')
-                ax = axis(h(j));
+                ax = double(axis(h(j)));
 								if isa(xlabels,'TSeries')
 									xlabels = [xlabels.time.epochUnix xlabels.data];
 								end
