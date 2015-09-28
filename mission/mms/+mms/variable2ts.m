@@ -37,6 +37,12 @@ else
     ud.LABL_PTR_1.dim(1) = 3;
     ud.VALIDMIN(4) = []; ud.VALIDMAX(4) = [];
     siConversion = '1.0e-9>T';
+  elseif ~isempty(regexp(v.name,'^mms[1-4]_pos_gs(e|m)$', 'once'))
+    data = data(:,1:3); % strip Btot
+    varType = 'vec_xyz';
+    ud.LABL_PTR_1.data = ud.LABL_PTR_1.data(1:3,:);
+    ud.LABL_PTR_1.dim(1) = 3;
+    siConversion = '1.0e3>m';
   else varType = 'scalar';
   end
 end
