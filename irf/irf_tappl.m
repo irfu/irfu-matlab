@@ -12,4 +12,8 @@ function [z]=irf_tappl(x,s)
 Units=irf_units;
 
 z=x;
-z(:,2:end)=eval(['x(:,2:end)',s]);
+if isa(x,'TSeries')
+    z.data=eval(['x.data',s]);
+else
+    z(:,2:end)=eval(['x(:,2:end)',s]);
+end
