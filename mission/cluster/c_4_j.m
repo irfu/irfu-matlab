@@ -1,4 +1,4 @@
-function [j,divB,B,jxB,divTshear,divPb]=c_4_j2(r1,r2,r3,r4,b1,b2,b3,b4)
+function [j,divB,B,jxB,divTshear,divPb]=c_4_j(r1,r2,r3,r4,b1,b2,b3,b4)
 %C_4_J  Calculate current from using 4 spacecraft technique
 %  in addition one can obtain average magnetic field and jxB values
 %
