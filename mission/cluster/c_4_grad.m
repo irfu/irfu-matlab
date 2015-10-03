@@ -74,7 +74,16 @@ if nargin==2 || nargin==3, % input is in form 'R?' and 'B?'
 			id = idC{iC};
 			R.(id) = evalin('caller',irf_ssub(r1,iC));
 			B.(id) = evalin('caller',irf_ssub(r2,iC));
-		end
+            if isa(R.(id),'TSeries')
+				doOutputTSeries = true;
+				R.(id) = [R.(id).time.epochUnix double(R.(id).data)];
+            end
+			if isa(B.(id),'TSeries')
+				doOutputTSeries = true;
+				Bunits = B.(id).units;
+				B.(id) = [B.(id).time.epochUnix double(B.(id).data)];
+            end
+        end
 	elseif isstruct(r1) && isstruct(r2)
 		R=r1; B=r2;
 		for iC=1:4
@@ -254,9 +263,13 @@ end
 %% Prepare output
 if isTimeSpecified % add time if given
 	if doOutputTSeries
-		result = TSeries(EpochUnix(tB),result,'TensorOrder',1);
+        torder = 0;
+        if length(result(1,:))==3; torder = 1; end
+		result = TSeries(EpochUnix(tB),result,'TensorOrder',torder);
 		if nargout == 2,
-			b = TSeries(EpochUnix(tB),b,'TensorOrder',1);
+            torder = 0;
+            if length(b(1,:))==3; torder = 1; end
+			b = TSeries(EpochUnix(tB),b,'TensorOrder',torder);
 			result.units = Bunits;
 		end
 	else
