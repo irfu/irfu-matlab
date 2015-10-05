@@ -77,7 +77,9 @@ tmpfields(inan)= NaN;
 % Return data in the same format as input
 if isa(fielddata,'TSeries')
     bpfields = TSeries(tmptime,tmpfields,'to',fielddata.tensorOrder);
-    bpfields.coordinateSystem = fielddata.coordinateSystem;
+    if fielddata.tensorOrder == 1,
+        bpfields.coordinateSystem = fielddata.coordinateSystem;
+    end
     bpfields.name = fielddata.name;
     bpfields.units = fielddata.units;
     bpfields.userData = fielddata.userData;
