@@ -1,7 +1,7 @@
-function hout=mms_configuration(time)
-%MMS_CONFIGURATION   Plot the configuration of MMS in XYZ coordinates
+function hout=mms4_pl_conf(time)
+%MMS.MMS4_PL_CONF   Plot the configuration of MMS in XYZ coordinates
 %
-%   h = MMS_CONFIGURATION;
+%   h = MMS.MMS4_PL_CONF([time]);
 
 mms_marker={{'ks','markersize',12},{'rd','markersize',12},...
 	{'go','markersize',12,'color',[0 0.6 0]},{'bv','markersize',12}};
@@ -65,8 +65,8 @@ switch lower(action)
 		data.sc_list=sc_list;
 		c_eval('data.r.C?=[];data.R.C?=[];');
 		set(gcf,'userdata',data);
-		mms_configuration('read_position');
-		mms_configuration(plot_type);
+		mms.mms4_pl_conf('read_position');
+		mms.mms4_pl_conf(plot_type);
 	case 'read_position'
 		data=get(gcf,'userdata');
 		R=data.R;
@@ -90,9 +90,9 @@ switch lower(action)
 		data.r=data.R;
 		set(gcf,'userdata',data);
 		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
-			mms_configuration('lmn');
+			mms.mms4_pl_conf('lmn');
 		else
-			mms_configuration('plot');
+			mms.mms4_pl_conf('plot');
 		end
 	case 'gsm'
 		data=get(gcf,'userdata');
@@ -100,9 +100,9 @@ switch lower(action)
 		c_eval('data.r.C?=irf_gse2gsm(data.R.C?);',data.sc_list);
 		set(gcf,'userdata',data);
 		if strcmp(data.plot_type,'lmn'), % need to redraw lmn text
-			mms_configuration('lmn');
+			mms.mms4_pl_conf('lmn');
 		else
-			mms_configuration('plot');
+			mms.mms4_pl_conf('plot');
 		end	
 	case 'default'
 		data=get(gcf,'userdata');
@@ -125,7 +125,7 @@ switch lower(action)
 		data.showClusterDescription = true; % show cluster description
 		data.plot_type='default';
 		set(gcf,'userdata',data);
-		mms_configuration(data.coord_label);
+		mms.mms4_pl_conf(data.coord_label);
 	case 'compact'
 		data=get(gcf,'userdata');
 		clf;menus;
@@ -147,7 +147,7 @@ switch lower(action)
 		data.showClusterDescription = true; % show cluster description
 		data.plot_type='compact';
 		set(gcf,'userdata',data);
-		mms_configuration(data.coord_label);
+		mms.mms4_pl_conf(data.coord_label);
 	case 'config3d'
 		data=get(gcf,'userdata');
 		clf;menus;
@@ -164,9 +164,9 @@ switch lower(action)
 		data.plot_type='config3d';
 		data.showClusterDescription = false;
 		set(gcf,'userdata',data);
-		mms_configuration(data.coord_label);
+		mms.mms4_pl_conf(data.coord_label);
 	case 'lmn'
-		mms_configuration('compact');
+		mms.mms4_pl_conf('compact');
 		data=get(gcf,'userdata');
 		delete(data.h(21)); % remove secondary axis
 		delete(data.h(22));
@@ -176,7 +176,7 @@ switch lower(action)
 		hca=data.h(4);
 		cla(hca);hold(hca,'on');
 		% L vector
-		callbackStr='mms_configuration(''plot'')';
+		callbackStr='mms.mms4_pl_conf(''plot'')';
 		data.LMN_text_hndl=uicontrol('string',['LMN vectors in ' data.coord_label '. One of L/M/N can be zero.'],'style','text','units','normalized','Position',[0.5 0.25 .35 .05]);
 		uicontrol('string','L','style','text','units','normalized','Position',[0.5 0.2 .05 .04])
 		if isfield(data,'Lstr'), Lstr=data.Lstr;else Lstr='[1 0 0]';end
@@ -191,7 +191,7 @@ switch lower(action)
 		data.N_hndl=uicontrol('Style','edit','Units','normalized', ...
 			'Position',[0.55 0.1 .3 .05],'String',Nstr,'Callback',callbackStr);
 		set(gcf,'userdata',data);
-		mms_configuration('plot');
+		mms.mms4_pl_conf('plot');
 	case 'supercompact'
 		data=get(gcf,'userdata');
 		ss=get(0,'screensize');
@@ -209,7 +209,7 @@ switch lower(action)
 		data.showClusterDescription = false;
 		data.plot_type='supercompact';
 		set(gcf,'userdata',data);
-		mms_configuration(data.coord_label);
+		mms.mms4_pl_conf(data.coord_label);
 	case 'supercompact2'
 		data=get(gcf,'userdata');
 		ss=get(0,'screensize');
@@ -227,7 +227,7 @@ switch lower(action)
 		data.showClusterDescription = false;
 		data.plot_type='supercompact2';
 		set(gcf,'userdata',data);
-		mms_configuration(data.coord_label);
+		mms.mms4_pl_conf(data.coord_label);
 		
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		%%%%%%%%%% action plot %%%%%%%%%%%%%%%%%
@@ -450,7 +450,7 @@ switch lower(action)
 			text(.43,yy,'MMS3','parent',hca);
 			text(.63,yy,'MMS4','parent',hca);
 			axis(hca,'off');
-			ht=irf_legend(hca,['mms_configuration() ' datestr(now)],[0,0],'fontsize',8);
+			ht=irf_legend(hca,['mms.mms4_pl_conf() ' datestr(now)],[0,0],'fontsize',8);
 			set(ht,'interpreter','none');
 			htime=irf_legend(hca,['MMS configuration\newline ' irf_time(data.t,'utc_yyyy-mm-dd HH:MM:SS.mmm')],[0,.95]);
 			set(htime,'fontsize',12);
@@ -471,8 +471,8 @@ switch lower(action)
 			variable_str=xx{1};
 			data.t=irf_time(eval(variable_str));
 			set(gcf,'userdata',data);
-			mms_configuration('read_position');
-			mms_configuration(data.coord_label);
+			mms.mms4_pl_conf('read_position');
+			mms.mms4_pl_conf(data.coord_label);
 		end
 	case 'new_sc_list'
 		xx=inputdlg('Enter new sc_list. ex. [1 3 4]','**',1,{mat2str(sc_list)});
@@ -482,8 +482,8 @@ switch lower(action)
 			data=get(gcf,'userdata');
 			data.sc_list=sc_list;
 			set(gcf,'userdata',data);
-			mms_configuration('read_position');
-			mms_configuration(data.coord_label);
+			mms.mms4_pl_conf('read_position');
+			mms.mms4_pl_conf(data.coord_label);
 		end
 end
 if nargout,
@@ -587,16 +587,16 @@ end
 		% generate menus
 		if isempty(findobj(gcf,'type','uimenu','label','&Options'))
 			hcoordfigmenu=uimenu('Label','&Options');
-			uimenu(hcoordfigmenu,'Label','New time','Callback','mms_configuration(''new_time'')')
-			uimenu(hcoordfigmenu,'Label','&GSE','Callback','mms_configuration(''GSE'')','Accelerator','G')
-			uimenu(hcoordfigmenu,'Label','GS&M','Callback','mms_configuration(''GSM'')','Accelerator','M')
-			uimenu(hcoordfigmenu,'Label','normal','Callback','mms_configuration(''default'')')
-			uimenu(hcoordfigmenu,'Label','config3D','Callback','mms_configuration(''config3D'')')
-			uimenu(hcoordfigmenu,'Label','compact','Callback','mms_configuration(''compact'')')
-			uimenu(hcoordfigmenu,'Label','supercompact','Callback','mms_configuration(''supercompact'')')
-			uimenu(hcoordfigmenu,'Label','supercompact2','Callback','mms_configuration(''supercompact2'')')
-			uimenu(hcoordfigmenu,'Label','LMN','Callback','mms_configuration(''lmn'')')
-			uimenu(hcoordfigmenu,'Label','New sc_list','Callback','mms_configuration(''new_sc_list'')')
+			uimenu(hcoordfigmenu,'Label','New time','Callback','mms.mms4_pl_conf(''new_time'')')
+			uimenu(hcoordfigmenu,'Label','&GSE','Callback','mms.mms4_pl_conf(''GSE'')','Accelerator','G')
+			uimenu(hcoordfigmenu,'Label','GS&M','Callback','mms.mms4_pl_conf(''GSM'')','Accelerator','M')
+			uimenu(hcoordfigmenu,'Label','normal','Callback','mms.mms4_pl_conf(''default'')')
+			uimenu(hcoordfigmenu,'Label','config3D','Callback','mms.mms4_pl_conf(''config3D'')')
+			uimenu(hcoordfigmenu,'Label','compact','Callback','mms.mms4_pl_conf(''compact'')')
+			uimenu(hcoordfigmenu,'Label','supercompact','Callback','mms.mms4_pl_conf(''supercompact'')')
+			uimenu(hcoordfigmenu,'Label','supercompact2','Callback','mms.mms4_pl_conf(''supercompact2'')')
+			uimenu(hcoordfigmenu,'Label','LMN','Callback','mms.mms4_pl_conf(''lmn'')')
+			uimenu(hcoordfigmenu,'Label','New sc_list','Callback','mms.mms4_pl_conf(''new_sc_list'')')
 			user_data = get(gcf,'userdata');
 			user_data.coordfigmenu=1;
 			set(gcf,'userdata',user_data);
