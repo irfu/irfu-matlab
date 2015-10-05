@@ -13,7 +13,7 @@ flag_tag_defined=0;
 if nargin==1 && ischar(handles)
     tag=handles;
     if isempty(get(0,'CurrentFigure')), % there is no figure open
-        irf_plot(1);                    % create new figure with one panel
+        irf_new_figure(1);              % create new figure with one panel
     end
     ud=get(gcf,'userdata');
     if isfield(ud,'subplot_handles') && any(ishandle(ud.subplot_handles))
