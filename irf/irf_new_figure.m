@@ -39,10 +39,11 @@ switch lower(flag)
 end
 
 if isempty(hcf) 
-  if isempty(get(gcf,'children')) 
+  if isempty(get(0,'CurrentFigure')) || ~isempty(get(gcf,'children')) 
+    hcf = figure; flagReset = true;
+  else
     irf.log('notice','Using current empty figure (no reset)')
     hcf = gcf;
-  else hcf = figure; flagReset = true;
   end
 else
   if numel(hcf)>1 || ~isnumeric(hcf)
@@ -59,28 +60,19 @@ end
 if nSubplots>=1 && nSubplots<=20,
   nSubplots = floor(nSubplots);
   c = gobjects(1,nSubplots);
-  
   if flagReset
 		xSize = 11;
 		ySize = 5+5*sqrt(nSubplots);
 		xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 		set(hcf,'PaperPosition',[xLeft yTop xSize ySize])
-		un=get(0,'units');
+		un = get(0,'units');
 		set(0,'units','pixels');
-		sz=get(0,'screensize');
-		xx=min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
+		sz = get(0,'screensize');
+		xx = min(min(700,sz(3))/xSize,min(900,sz(4))/ySize); % figure at least 600 wide or 900 height but not outside screen
 		set(hcf,'Position',[10 10 xSize*xx ySize*xx])
 		set(0,'units',un);
 		clear xSize sLeft ySize yTop
-    % XXX not sure these need to go here
-    set(hcf,'color','white'); % white background for figures (default is grey)
-    %set(hcf,'renderer','zbuffer'); % opengl has problems on Mac (no log scale in spectrograms)
-    %set(hcf,'PaperUnits','centimeters');
-    %set(hcf,'defaultlinelinewidth',1.0);
-    %set(hcf,'defaultAxesFontSize',14);
-    %set(hcf,'defaultTextFontSize',14);
-    %set(hcf,'defaultAxesFontUnits','pixels');
-    %set(hcf,'defaultTextFontUnits','pixels');
+    % XXX not sure this belongs here
     set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
 	end
   clf;
@@ -96,7 +88,7 @@ if nSubplots>=1 && nSubplots<=20,
   end
   user_data = get(gcf,'userdata');
   user_data.subplot_handles = c;
-  user_data.current_panel=0;
+  user_data.current_panel = 0;
   set(hcf,'userdata',user_data);
   figure(hcf); % bring figure to front
 end
