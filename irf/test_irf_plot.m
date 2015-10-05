@@ -19,7 +19,7 @@ irf_plot(hca,TS2)
 %XXX TODO: must be using array H as input
 %h = irf_plot(2);
 %irf_plot(h,{TS1,TS2})
-irf_plot(h,{TS1,TS2})
+irf_plot({TS1,TS2})
 
 %%
 irf_plot({TS2,TS3},'comp')
