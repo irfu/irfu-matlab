@@ -1,71 +1,71 @@
 %-Abstract
 %
-%   CSPICE_GEOREC converts geodetic coordinates to rectangular 
+%   CSPICE_GEOREC converts geodetic coordinates to rectangular
 %   coordinates.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%       lon   a double precision scalar or 1xN array describing 
+%       lon   a double precision scalar or 1xN array describing
 %             the geodetic longitude measured in radians
 %
 %       lat   a double precision scalar or 1xN array describing
 %             the geodetic latitude measured in radians
 %
-%       alt   a double precision scalar or 1xN array describing 
+%       alt   a double precision scalar or 1xN array describing
 %             the altitude above the reference spheroid
-%   
-%       re    the scalar, double precision equatorial radius of 
+%
+%       re    the scalar, double precision equatorial radius of
 %             the body of interest
-% 
+%
 %       f     the scalar, double precision flattening coefficient
 %             of the body, a dimensionless value defined as:
-%   
+%
 %                    equatorial_radius - polar_radius
 %                    --------------------------------
 %                           equatorial_radius
-%   
+%
 %   the call:
-%   
+%
 %      rectan = cspice_georec( lon, lat, alt, re, f)
 %
 %   returns:
 %
-%      rectan   a double precision 3x1 array or double precision 
-%               3xN array containing the rectangular coordinates of the 
+%      rectan   a double precision 3x1 array or double precision
+%               3xN array containing the rectangular coordinates of the
 %               position or set of positions
 %
-%               'rectan' returns with the same units associated with 
+%               'rectan' returns with the same units associated with
 %               'alt' and 're'
 %
-%               'rectan' returns with the same vectorization measure 
+%               'rectan' returns with the same vectorization measure
 %                (N) as 'lon', 'lat', and 'alt'
 %
 %-Examples
@@ -186,7 +186,7 @@
 %
 %      Scalar:
 %        -2541.748162      4780.333036      3360.428190
-%       
+%
 %      Vector:
 %            0.000000         0.000000         0.000000
 %            1.000000         0.000000        -0.000000
@@ -218,14 +218,14 @@
 %-Index_Entries
 %
 %   geodetic to rectangular coordinates
-% 
+%
 %-&
 
 function [rectan] = cspice_georec( lon, lat, alt, re, f)
 
    switch nargin
       case 5
-      
+
          lon  = zzmice_dp(lon);
          lat  = zzmice_dp(lat);
          alt  = zzmice_dp(alt);
@@ -233,7 +233,7 @@ function [rectan] = cspice_georec( lon, lat, alt, re, f)
          f    = zzmice_dp(f);
 
       otherwise
-      
+
          error ( ['Usage: [_rectan(3)_] = ' ...
                   'cspice_georec( _lon_, _lat_, _alt_, re, f)'] )
 

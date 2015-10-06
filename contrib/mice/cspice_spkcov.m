@@ -2,60 +2,75 @@
 %
 %   CSPICE_SPKCOV returns the coverage window for a specified ephemeris
 %   object in a specified SPK file.
-% 
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      spk       the string scalar or NxM character array or N-vector of
-%                string cells of SPICE SPK file names.
+%      spk       tthe string name, or cell of strings, of SPICE CK files.
 %
-%      idcode    the integer scalar NAIF ID code of an object for which 
+%                [1,c] = size(spk), char = class(spk)
+%
+%                  or
+%
+%                [1,m] = size(spk), cell = class(spk)
+%
+%      idcode    the integer scalar NAIF ID code of an object for which
 %                ephemeris data are expected to exist in the specified SPK file.
 %
-%      size      an integer scalar defining the number of intervals for use
+%                [1,1] = size(idcode), int32 = class(idcode)
+%
+%      room      an integer scalar defining the number of intervals for use
 %                as a workspace by the routine. This value should equal at least
 %                the number of intervals corresponding to 'idcode' in 'spk'.
 %
-%      cover_i   an optional input describing a either an empty window or a 
-%                window array created from a previous cspice_spkcov call. 
-%                Inclusion of this window argument results in an output 
-%                window consisting of a union of the data retrieved from the 
+%                [1,1] = size(room), int32 = class(room)
+%
+%      cover_i   an optional input describing a either an empty window or a
+%                window array created from a previous cspice_spkcov call.
+%                Inclusion of this window argument results in an output
+%                window consisting of a union of the data retrieved from the
 %                'spk' kernels and the data in 'cover_i'.
+%
+%                [2m,1] = size(cover_i), double = class(cover_i)
+%
+%                   or
+%
+%                [0,0] = size(cover_i), double = class(cover_i)
 %
 %   the call:
 %
-%      cover = cspice_spkcov( spk, idcode, size, cover_i )
+%      cover = cspice_spkcov( spk, idcode, room, cover_i )
 %
 %         or
 %
-%      cover = cspice_spkcov( spk, idcode, size )
+%      cover = cspice_spkcov( spk, idcode, room )
 %
 %   returns:
 %
@@ -72,13 +87,19 @@
 %                           ...
 %                  window N = cover(2N-1,2N)
 %
-%              The interval endpoints contained in 'cover' are ephemeris 
-%              times, expressed as seconds past J2000 TDB. 
+%              The interval endpoints contained in 'cover' are ephemeris
+%              times, expressed as seconds past J2000 TDB.
 %
-%              'cover' returns an empty set if 'spk' lacks coverage for 
-%              'idcode'.  If 'cover_i' exists in the argument list, 'cover' 
-%              returns as a union of the coverage data found in 'spk' and 
+%              'cover' returns an empty set if 'spk' lacks coverage for
+%              'idcode'.  If 'cover_i' exists in the argument list, 'cover'
+%              returns as a union of the coverage data found in 'spk' and
 %              the data in 'cover_i'. 'cover' can overwrite 'cover_i'.
+%
+%              [2p,1] = size(cover), double = class(cover)
+%
+%                 or
+%
+%              [0,1] = size(cover), double = class(cover)
 %
 %-Examples
 %
@@ -86,15 +107,22 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%   Use a simple function to display the CK IDs found in a CK, or set of
+%   CKs, and the time coverage of the data corresponding to those IDs.
+%   This example calls both cspice_ckobj and cspice_ckcov. In practice,
+%   algorithms using cspice_spkobj will also use cspice_spkcov and
+%   vice-versa.
+%
 %   function spkcov_t(SPK)
 %
 %      MAXOBJ = 1000;
 %      WINSIZ = 1000;
-%      LSK    = '/kernels/gen/lsk/naif0008.tls';
+%      LSK    = 'naif0010.tls';
 %
 %      %
-%      % Load a leapseconds kernel for output time conversion.
-%      % cspice_spkcov does not require a leapseconds kernel.
+%      % Note, neither cspice_spkcov or cspice_spkobj requires this
+%      % kernel to function. We need the data for output time
+%      % conversion.
 %      %
 %      cspice_furnsh( LSK )
 %
@@ -109,7 +137,7 @@
 %      % each item in the set, and display the coverage.
 %      %
 %      for i=1:numel(ids)
-%   
+%
 %         %
 %         % Extract the coverage data for object 'ids(i)'.
 %         %
@@ -135,7 +163,7 @@
 %         % Loop from 1 to 'row' with step size 2.
 %         %
 %         for j=1:2:row
-%      
+%
 %            %
 %            % Convert the endpoints to TDB calendar format time strings
 %            % and display them. Pass the endpoints in an array,
@@ -153,7 +181,7 @@
 %         end
 %
 %      end
-%   
+%
 %      %
 %      % Empty the kernel pool.
 %      %
@@ -175,57 +203,57 @@
 %      Interval: 1
 %         Start: 2000 JAN 01 00:01:04.183 (TDB)
 %          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 2
 %      Interval: 1
 %         Start: 2000 JAN 01 00:01:04.183 (TDB)
 %          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 3
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 4
 %      Interval: 1
 %         Start: 2000 JAN 01 00:01:04.183 (TDB)
 %          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 5
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2050 JAN 01 00:01:04.183 (TDB)
-%   
+%
 %             ... continued ...
-%   
+%
 %      ========================================
 %      Coverage for object 501
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2023 NOV 03 00:00:00.000 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 502
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2023 NOV 03 00:00:00.000 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 503
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2023 NOV 03 00:00:00.000 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 504
 %      Interval: 1
 %         Start: 1973 NOV 01 00:00:00.000 (TDB)
 %          Stop: 2023 NOV 03 00:00:00.000 (TDB)
-%   
+%
 %      ========================================
 %      Coverage for object 599
 %      Interval: 1
@@ -248,7 +276,7 @@
 %      Interval: 1
 %         Start: 1990 APR 25 02:01:40.071 (TDB)
 %          Stop: 1995 DEC 31 17:42:03.755 (TDB)
-%      
+%
 %      Interval: 2
 %         Start: 2002 JAN 01 02:02:00.084 (TDB)
 %          Stop: 2006 DEC 29 09:36:39.732 (TDB)
@@ -264,19 +292,30 @@
 %
 %   MICE.REQ
 %   SPK.REQ
-%   CELLS.REQ 
+%   CELLS.REQ
 %   DAF.REQ
 %   TIME.REQ
 %   WINDOWS.REQ
 %
 %-Version
 %
+%   -Mice Version 1.2.0, 03-APR-2012, EDW (JPL)
+%
+%      Edits to Example code and comments. No change to Example code
+%      functionality.
+%
+%      Renamed the argument 'size' to 'room'. "size" is a Matlab function
+%      name and it's seriously dumb to use a function name word as an argument
+%      name.
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.1.0, 29-DEC-2008, EDW (JPL)
 %
-%      Edited description of 'size'; 'size' now defines the maximum 
+%      Edited description of 'size'; 'size' now defines the maximum
 %      number of intervals for the internal workspace window.
 %
-%      The 'cover_i' argument may now have the empty array value, [], 
+%      The 'cover_i' argument may now have the empty array value, [],
 %      on input.
 %
 %      Added range restriction on size.
@@ -286,31 +325,31 @@
 %   -Mice Version 1.0.0, 18-JUN-2007, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   get coverage window for spk object 
-% 
+%
+%   get coverage window for spk object
+%
 %-&
 
-function [cover] = cspice_spkcov( spk, idcode, size, cover_i )
+function [cover] = cspice_spkcov( spk, idcode, room, cover_i )
 
    switch nargin
       case 3
 
          spk    = zzmice_str(spk);
          idcode = zzmice_int(idcode);
-         size   = zzmice_int(size, [1, int32(inf)/2] );
+         room   = zzmice_int(room, [1, int32(inf)/2] );
 
       case 4
 
          spk    = zzmice_str(spk);
          idcode = zzmice_int(idcode);
-         size   = zzmice_int(size, [1, int32(inf)/2] );
+         room   = zzmice_int(room, [1, int32(inf)/2] );
          cover_i= zzmice_win(cover_i);
 
       otherwise
 
          error ( [ 'Usage: [cover] = cspice_spkcov( _`spk`_, ' ...
-                                     'idcode, size, [cover_i])' ] )
+                                     'idcode, room, [cover_i])' ] )
 
    end
 
@@ -323,7 +362,7 @@ if ( nargin == 3 )
    % Call the MEX library.
    %
    try
-      [cover] = mice('spkcov_c', spk, idcode, size );
+      [cover] = mice('spkcov_c', spk, idcode, room );
    catch
       rethrow(lasterror)
    end
@@ -334,7 +373,7 @@ else
    % Call the MEX library.
    %
    try
-      cover = mice('spkcov_c', spk, idcode, size );
+      cover = mice('spkcov_c', spk, idcode, room );
    catch
       rethrow(lasterror)
    end

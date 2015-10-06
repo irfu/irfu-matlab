@@ -1,9 +1,9 @@
 %-Abstract
 %
-%   CSPICE_ILLUM calculates the illumination angles at a specified 
+%   CSPICE_ILLUM calculates the illumination angles at a specified
 %   surface point of a target body.
 %
-%   Deprecated: This routine has been superseded by the routine 
+%   Deprecated: This routine has been superseded by the routine
 %   cspice_ilumin. This routine is supported for purposes of
 %   backward compatibility only.
 %
@@ -11,26 +11,26 @@
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -39,45 +39,45 @@
 %
 %      target   the scalar string name of the target body. 'target' is
 %               case-insensitive, and leading and trailing blanks in
-%               'target' are not significant. Optionally, you may supply 
-%               a string containing the integer ID code for the object. 
-%               For example both 'MOON' and '301' are legitimate strings 
+%               'target' are not significant. Optionally, you may supply
+%               a string containing the integer ID code for the object.
+%               For example both 'MOON' and '301' are legitimate strings
 %               that indicate the moon is the target body.
 %
-%               The target and observer define a state vector whose 
+%               The target and observer define a state vector whose
 %               position component points from the observer to the target.
-%      
+%
 %      et       the double precision scalar or 1xN array of epochs,
-%               specified in ephemeris seconds past J2000, at which the 
-%               apparent illumination angles at the specified surface 
-%               point on the target body, as seen from the observing 
-%               body, are to be computed. 
-%      
-%      abcorr   the aberration correction to be used in computing the 
-%               location and orientation of the target body and the location 
+%               specified in ephemeris seconds past J2000, at which the
+%               apparent illumination angles at the specified surface
+%               point on the target body, as seen from the observing
+%               body, are to be computed.
+%
+%      abcorr   the aberration correction to be used in computing the
+%               location and orientation of the target body and the location
 %               of the Sun.
 %
-%      obsrvr   the scalar string name of the observing body, typically a 
+%      obsrvr   the scalar string name of the observing body, typically a
 %               spacecraft, the earth, or a surface point on the earth. 'obsrvr'
 %               is case-insensitive, and leading and trailing blanks in 'obsrvr'
 %               are not significant. Optionally, you may supply a string
 %               containing the integer ID code for the object.  For example
-%               both "EARTH" and "399" are legitimate strings that indicate 
+%               both "EARTH" and "399" are legitimate strings that indicate
 %               the earth is the observer.
 %
 %      spoint   a double precision 3x1 or 3xN array representing a surface
-%               point or points on the target body, expressed in 
-%               rectangular body-fixed (body equator and prime meridian) 
-%               coordinates. Each 'spoint' element (spoint(:,i)) 
+%               point or points on the target body, expressed in
+%               rectangular body-fixed (body equator and prime meridian)
+%               coordinates. Each 'spoint' element (spoint(:,i))
 %               corresponds to the same element index in 'et' (et(i)) and need
 %               not be visible from the observer's location at time 'et'.
 %
 %               Note: The design of cspice_illum supposes the input 'spoint'
-%               originates as the output of another Mice routine. Still, in  
-%               the event the user requires an 'spoint' constant over a vector 
+%               originates as the output of another Mice routine. Still, in
+%               the event the user requires an 'spoint' constant over a vector
 %               of 'et', such as a constant station location at (x,y,z),
 %               construct 'spoint' with the MATLAB code:
-%                
+%
 %                  N            = numel(et);
 %                  spoint       = eye(3, N);
 %                  spoint(1,:)  = x;
@@ -91,25 +91,25 @@
 %
 %   returns:
 %
-%      phase    the double precision scalar or 1xN array of phase angles at  
+%      phase    the double precision scalar or 1xN array of phase angles at
 %               'spoint', as seen from 'obsrvr' at time 'et'.  This is the
-%               angle between the  'spoint'-'obsrvr' vector and the 
-%               'spoint'-sun vector. Units are radians.  The range of 
+%               angle between the  'spoint'-'obsrvr' vector and the
+%               'spoint'-sun vector. Units are radians.  The range of
 %               'phase' is [0, pi].
 %
 %      solar    the double precision, scalar or 1xN array of solar incidence
 %               angles at `spoint', as seen from 'obsrvr' at time 'et'.
-%               This is the angle between the surface normal vector at 
-%               'spoint' and the 'spoint'-sun vector.  Units are radians.  
+%               This is the angle between the surface normal vector at
+%               'spoint' and the 'spoint'-sun vector.  Units are radians.
 %               The range of 'solar' is [0, pi].
 %
 %      emissn   the double precision, scalar or 1xN array of emission angles
-%               at 'spoint', as seen from  'obsrvr' at time 'et'.  This is the 
-%               angle between the surface normal vector at 'spoint' and the  
-%               'spoint'-observer vector.  Units are radians.  The range of 
+%               at 'spoint', as seen from  'obsrvr' at time 'et'.  This is the
+%               angle between the surface normal vector at 'spoint' and the
+%               'spoint'-observer vector.  Units are radians.  The range of
 %               'emissn' is [0, pi].
 %
-%               'phase', 'solar', 'emissn' return with the same 
+%               'phase', 'solar', 'emissn' return with the same
 %               vectorization measure (N) as 'et'.
 %
 %-Examples
@@ -127,7 +127,7 @@
 %      CORRECT  = 'LT+S';
 %
 %      %
-%      % Assign the MGS SPK kernel path-name to a string variable. 
+%      % Assign the MGS SPK kernel path-name to a string variable.
 %      %
 %      MGS = '/kernels/MGS/spk/spk_m_030102-030403_021004.bsp';
 %
@@ -215,9 +215,9 @@
 %      Emission angle:     0.301783
 %      Solar angle   :   143.954297
 %      Phase angle   :   144.017336
-%      
+%
 %                   ...
-%      
+%
 %      UTC           : 2003 MAR 30 10:14:24.000
 %      Emission angle:       0.160300
 %      Solar angle   :     139.575312
@@ -238,10 +238,10 @@
 %   the CSPICE routine illum_c.
 %
 %   MICE.REQ
-%   KERNEL.REQ 
-%   NAIF_IDS.REQ 
-%   SPK.REQ 
-%   TIME.REQ 
+%   KERNEL.REQ
+%   NAIF_IDS.REQ
+%   SPK.REQ
+%   TIME.REQ
 %
 %-Version
 %
@@ -259,13 +259,13 @@
 %    -Mice Version 1.0.0, 15-DEC-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   DEPRECATED illumination angles 
+%
+%   DEPRECATED illumination angles
 %   DEPRECATED lighting angles
 %   DEPRECATED phase angle
 %   DEPRECATED emission angle
 %   DEPRECATED solar incidence angle
-% 
+%
 %-&
 
 function [phase, solar, emissn] = cspice_illum( target, et, abcorr, ...
@@ -281,7 +281,7 @@ function [phase, solar, emissn] = cspice_illum( target, et, abcorr, ...
          spoint = zzmice_dp(spoint);
 
       otherwise
-   
+
          error ( ['Usage: [_phase_, _solar_, _emissn_] = '           ...
                           'cspice_illum( `target`, _et_, `abcorr`, ' ...
                           '`obsrvr`, _spoint(3)_)'] )

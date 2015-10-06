@@ -7,34 +7,39 @@
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      a,   two double precision Mx1 arrays serving as the Mice 
-%      b    version of SPICE windows, containing zero or more intervals
+%      a   SPICE window containing zero or more intervals.
+%
+%          [2l,1] = size(a); double = class(a)
+%
+%      b   SPICE window containing zero or more intervals.
+%
+%          [2m,1] = size(b); double = class(b)
 %
 %   the call:
 %
@@ -42,9 +47,10 @@
 %
 %   returns:
 %
-%      c   the double precision window union (in the SPICE sense) 
-%          of 'a' and 'b'. The function output can overwrite either 
-%          'a' or 'b'.
+%      c   SPICE window resulting from the union (in the SPICE sense) of 'a'
+%          and 'b'. The function output can overwrite either 'a' or 'b'.
+%
+%          [2n,1] = size(c); double = class(c)
 %
 %-Examples
 %
@@ -52,8 +58,8 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
-%      SPK1 = '/kernels/gen/spk/de405_2000-2050.bsp';
-%      SPK2 = '/kernels/gen/spk/jup100.bsp';
+%      SPK1 = 'de405_2000-2050.bsp';
+%      SPK2 = 'jup100.bsp';
 %
 %      %
 %      % Retrieve the coverage for body 3 from SPK1
@@ -63,11 +69,11 @@
 %      fprintf( '   %16.8f\n', cov1)
 %
 %   MATLAB outputs:
-%      
+%
 %      cov1 =
 %          -43135.81608719
 %         1577880064.18391323
-%      
+%
 %      %
 %      % Retrieve the coverage for body 3 from SPK2
 %      %
@@ -76,7 +82,7 @@
 %      fprintf( '   %16.8f\n', cov2)
 %
 %   MATLAB outputs:
-%      
+%
 %      cov2 =
 %         -825768000.00000000
 %         752241600.00000000
@@ -102,7 +108,7 @@
 %      fprintf( '   %16.8f\n', cov1)
 %
 %   MATLAB outputs:
-%      
+%
 %      cov1 =
 %         -825768000.00000000
 %         1577880064.18391323
@@ -121,12 +127,16 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 08-NOV-2012, EDW (JPL), SCK (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.0, 26-JUN-2007, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   union two d.p. windows 
-% 
+%
+%   union two d.p. windows
+%
 %-&
 
 function [c] = cspice_wnunid( a, b )

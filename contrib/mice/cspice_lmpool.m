@@ -1,39 +1,39 @@
 %-Abstract
 %
-%   CSPICE_LMPOOL loads the variables contained in a text buffer 
+%   CSPICE_LMPOOL loads the variables contained in a text buffer
 %   into the kernel pool.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
-%   
+%
 %   Given:
-%   
-%      cvals   a scalar string (1xM array), NxM array of strings, or cell 
+%
+%      cvals   a scalar string (1xM array), NxM array of strings, or cell
 %              of N strings defining SPICE kernel variable assignments
 %              that could serve as a SPICE text kernel.
 %
@@ -63,7 +63,7 @@
 %      %
 %      % Create a kernel in a text buffer.
 %      %
-%      textbuf = {                                             ... 
+%      textbuf = {                                             ...
 %             'DELTET/DELTA_T_A = 32.184',                     ...
 %             'DELTET/K         = 1.657D-3',                   ...
 %             'DELTET/EB        = 1.671D-2',                   ...
@@ -92,7 +92,7 @@
 %             '                     31, @1997-JUL-1',          ...
 %             '                     32, @1999-JAN-1 )'         ...
 %                };
-% 
+%
 %      %
 %      % Load the kernel data into the kernel pool.
 %      %
@@ -110,7 +110,7 @@
 %      for i = 1:numel(lmpoolNames)
 %
 %         if ( found(i) )
-%      
+%
 %            fprintf( ['Found %s, with %i values assigned' ...
 %                      ' of data type %s.\n\n'],   ...
 %                      char(lmpoolNames(i)), n(i), type(i) )
@@ -119,31 +119,31 @@
 %
 %      end
 %
-%      % 
+%      %
 %      %  It's always good form to unload kernels after use,
 %      %  particularly in MATLAB due to data persistence.
-%      % 
+%      %
 %      cspice_kclear
 %
 %   MATLAB outputs:
 %
 %      Found DELTET/DELTA_T_A, with 1 values assigned of data type N.
-%      
+%
 %      Found DELTET/K, with 1 values assigned of data type N.
-%      
+%
 %      Found DELTET/EB, with 1 values assigned of data type N.
-%      
+%
 %      Found DELTET/M, with 2 values assigned of data type N.
-%      
+%
 %      Found DELTET/DELTA_AT, with 46 values assigned of data type N.
 %
 %-Particulars
 %
-%   This routine allows you to store a text kernel in an internal 
-%   array of your program and load this array into the kernel pool 
+%   This routine allows you to store a text kernel in an internal
+%   array of your program and load this array into the kernel pool
 %   without first storing its contents as a text kernel.
 %
-%   Kernel pool variable names are restricted to a length of 32 
+%   Kernel pool variable names are restricted to a length of 32
 %   characters or less.
 %
 %-Required Reading
@@ -165,8 +165,8 @@
 %
 %-Index_Entries
 %
-%   Load the kernel pool from an internal text buffer  
-% 
+%   Load the kernel pool from an internal text buffer
+%
 %-&
 
 function cspice_lmpool( cvals )
@@ -177,9 +177,9 @@ function cspice_lmpool( cvals )
          cvals = zzmice_str( cvals);
 
       otherwise
-      
+
          error ( 'Usage: cspice_lmpool( _`cvals`_ )' )
-         
+
    end
 
    %

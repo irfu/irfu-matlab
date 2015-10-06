@@ -34,19 +34,21 @@
 %
 %   Given:
 %
-%      s1   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           SPICE state(s);
+%      s1   a SPICE state(s);
 %
 %              s1 = (r1, dr1 ).
 %                         --
 %                         dt
 %
-%      s2   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           second SPICE state(s);
+%           [6,n] = size(s1); double = class(s1)
+%
+%      s2   a second SPICE state(s);
 %
 %              s2 = (r2, dr2 ).
 %                        --
 %                        dt
+%
+%           [6,n] = size(s2); double = class(s2)
 %
 %      An implicit assumption exists that 's1' and 's2' are specified
 %      in the same reference frame. If this is not the case, the numerical
@@ -58,8 +60,7 @@
 %
 %   returns:
 %
-%      ducrss   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} representing
-%               the unit vector(s) parallel to the cross product(s) of the
+%      ducrss   the unit vector(s) parallel to the cross product(s) of the
 %               position components of 's1' and 's2' and the derivative
 %               of the unit vector(s).
 %
@@ -76,6 +77,8 @@
 %
 %                  crss   = cspice_dvcrss( s1, s2 )
 %                  ducrss = cspice_dvhat( crss )
+%
+%               [6,n] = size(ducrss); double = class(ducrss)
 %
 %-Examples
 %
@@ -205,7 +208,7 @@
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 20-APR-2010, EDW (JPL)
+%   -Mice Version 1.0.0, 09-NOV-2012, EDW (JPL)
 %
 %-Index_Entries
 %

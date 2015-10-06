@@ -33,15 +33,17 @@
 %
 %   Given:
 %
-%      s1   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           SPICE state(s);
+%      s1   defining a SPICE state(s);
+%
+%           [6,n] = size(s1); double = class(s1)
 %
 %              s1 = (r1, dr1 ).
 %                         --
 %                         dt
 %
-%      s2   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           second SPICE state(s);
+%      s2   defining a second SPICE state(s);
+%
+%           [6,n] = size(s2); double = class(s2)
 %
 %              s2 = (r2, dr2 ).
 %                        --
@@ -57,8 +59,10 @@
 %
 %   returns:
 %
-%      dvsep   {SCALAR or 1xN ARRAY, DOUBLE PRECISION} time derivative(s)
-%              of the angular separation between 's1' and 's2'.
+%      dvsep   time derivative(s) of the angular separation between 's1' and
+%              's2'.
+%
+%              [1,n] = size(dvsep); double = class(dvsep)
 %
 %              'dvsep' returns with the same measure of vectorization (N)
 %              as 's1' and 's2'.
@@ -96,7 +100,7 @@
 %
 %      %
 %      % It's always good form to unload kernels after use,
-%      % particularly in IDL due to data persistence.
+%      % particularly in Matlab due to data persistence.
 %      %
 %      cspice_kclear
 %
@@ -207,7 +211,7 @@
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 10-APR-2010, EDW (JPL)
+%   -Mice Version 1.0.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
 %
 %-Index_Entries
 %

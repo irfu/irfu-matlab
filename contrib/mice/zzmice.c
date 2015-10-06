@@ -1,6 +1,6 @@
 /*
 
--Procedure zzmice ( Mice auxillary routines )
+-Procedure zzmice ( Mice auxiliary routines )
 
 -Abstract
 
@@ -10,26 +10,26 @@
 
    THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
    CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
    ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
    "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
    ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
    A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
    SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 
-   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
    KNOW OF THE POSSIBILITY.
 
-   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
    FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 
 
@@ -37,11 +37,9 @@
 
    None.
 
-
 -Keywords
 
    None.
-
 
 -Brief_I/O
 
@@ -89,9 +87,19 @@
 
 -Version
 
+   -Mice Version 1.2.0 30-OCT-2012 (EDW)
+
+      Added definitions and conditions for MiceFrinfo, MiceSFS,
+      MicePVN structures.
+
+      Structure MiceBodID renamed MiceNameID.
+
+      Structure MiceSurf renamed MiceNear.
+
    -Mice Version 1.1.0 15-DEC-2008 (EDW)
 
-      Added conditions for MicePlane, MiceEllipse, and MiceWnsumd
+      Added definitions and conditions for MicePlane, MiceEllipse,
+      and MiceWnsumd structures.
 
    -Mice Version 1.0.0 12-FEB-2008 (EDW)
 
@@ -113,48 +121,79 @@
 
 /*
 
-   Define structures used as Mice return types.
+   Define structures used as Mice return types. Current code limited to
+   twelve return fields.
 
-         MiceBodID:
+         MiceNameID:
             bodc2n_c
             bodn2c_c
             bods2c_c
-            
+            cnmfrm_c
+
+         MiceFrinfo:
+            frinfo_c
+
          MiceState:
             spkezr_c
 
-         MicePos
+         MicePos:
             spkpos_c
-            
-         MiceSub
+
+         MiceNear:
             subpt_c
             nearpt_c
-            
-         MiceSurf
+            npedln_c
+
+         MiceSurf:
             srfxpt_c
-           
+
          MicePlane:
-            
+            inedpl_c
+            inelpl_c
+            inrypl_c
+            nvc2pl_c
+            nvp2pl_c
+            pjelpl_c
+            pl2nvc_c
+            pl2nvp_c
+            pl2psv_c
+            psv2pl_c
+            vprjp_c
+            vprjpi_c
+
          MiceEllipse:
-            
-         MicePool
+            cgv2el_c
+            edlimb_c
+            el2cgv_c
+            inedpl_c
+            inelpl_c
+            npelpt_c
+            pjelpl_c
+
+         MicePool:
             dtpool_c
-           
-         MiceSub_PS
+
+         MiceSub_PS:
             subpnt_c
             subslr_c
-            
-         MiceSurf_PS
+
+         MiceSurf_PS:
             sincpt_c
-            
-         MiceIlum
+
+         MiceIlum:
             ilumin_c
-            
-         MiceWnsumd
+
+         MiceWnsumd:
             wnsumd_c
 
+         MiceSFS:
+            spksfs_c
+
+         MicePVN:
+            spkpvn_c
+
 */
-static struct structdata 
+static struct structdata
    {
    enum  MiceType    type;
    const char      * name;
@@ -163,18 +202,27 @@ static struct structdata
    enum  MiceType    fieldTypes[12];
    int               fieldSizes[12];
    }
-   structdata[] = 
+   structdata[] =
       {
-         { 
-           MiceBodID,
-           "MiceBodID",
+         {
+           MiceNameID,
+           "MiceNameID",
            3,
            {"code",  "name",   "found"    },
            {MiceInt, MiceChar, MiceBoolean},
            {1,       1,        1          }
          },
 
-         { 
+         {
+           MiceFrinfo,
+           "MiceFrinfo",
+           4,
+           {"center", "class", "class_ID", "found"    },
+           {MiceInt,  MiceInt, MiceInt,    MiceBoolean},
+           {1,        1,        1,         1          }
+         },
+
+         {
            MiceState,
            "MiceState",
            2,
@@ -183,96 +231,114 @@ static struct structdata
            {6,          1         }
          },
 
-         { 
+         {
            MicePos,
-           "MicePos", 
+           "MicePos",
            2,
            {"pos",      "lt"      },
            {MiceDouble, MiceDouble},
            {3,          1         }
          },
 
-         { 
-           MiceSub, 
-           "MiceSub", 
+         {
+           MiceNear,
+           "MiceNear",
            2,
            {"pos",      "alt"     },
            {MiceDouble, MiceDouble},
            {3,          1         }
          },
 
-         { 
-           MiceSurf, 
-           "MiceSurf", 
+         {
+           MiceSurf,
+           "MiceSurf",
            5,
            {"spoint",   "dist",     "trgepc",   "obspos",   "found"    },
            {MiceDouble, MiceDouble, MiceDouble, MiceDouble, MiceBoolean},
            {3,          1,          1,          3,          1          }
          },
 
-         { 
-           MicePlane , 
-           "MicePlane", 
+         {
+           MicePlane ,
+           "MicePlane",
            2,
            {"normal",   "constant"},
            {MiceDouble, MiceDouble},
-           {3,          1         } 
+           {3,          1         }
          },
 
-         { 
-           MiceEllipse, 
-           "MiceEllipse",  
+         {
+           MiceEllipse,
+           "MiceEllipse",
            3,
            {"center",   "semiMajor", "semiMinor"},
            {MiceDouble, MiceDouble,  MiceDouble },
            {3,          3,           3          }
          },
 
-         { 
-           MicePool  , 
-           "MicePool", 
+         {
+           MicePool  ,
+           "MicePool",
            3,
            {"n",        "type",   "found"    },
            {MiceDouble, MiceChar, MiceBoolean},
            {1,          1,        1          }
          },
 
-         { 
+         {
            MiceSub_PS ,
-           "MiceSub_PS", 
+           "MiceSub_PS",
            3,
            {"spoint",   "trgepc",    "srfvec"  },
            {MiceDouble, MiceDouble,  MiceDouble},
            {3,          1,           3         }
          },
 
-         { 
+         {
            MiceSurf_PS ,
-           "MiceSurf_PS", 
+           "MiceSurf_PS",
            4,
            {"spoint",   "trgepc",   "srfvec",   "found"    },
            {MiceDouble, MiceDouble, MiceDouble, MiceBoolean},
            {3,          1,          3,          1          }
          },
 
-         { 
+         {
            MiceIlum ,
-           "MiceIlum", 
+           "MiceIlum",
            5,
            {"trgepc",   "srfvec",   "phase",   "solar",     "emissn"  },
            {MiceDouble, MiceDouble, MiceDouble, MiceDouble, MiceDouble},
            {1,          3,          1,          1,          1         }
          },
 
-         { 
+         {
            MiceWnsumd,
-           "MiceWnsumd", 
+           "MiceWnsumd",
            5,
            {"meas",     "avg",      "stddev",   "shortest", "longest"},
            {MiceDouble, MiceDouble, MiceDouble, MiceInt,    MiceInt  },
            {1,          1,          1,          1,          1        }
-         }
-         
+         },
+
+         {
+           MiceSFS ,
+           "MiceSFS",
+           4,
+           {"handle", "descr",   "ident",   "found"    },
+           {MiceInt,  MiceDouble, MiceChar, MiceBoolean},
+           {1,        5,          1,        1          }
+         },
+
+         {
+           MicePVN,
+           "MicePVN",
+           3,
+           {"ref",    "state",    "center"},
+           {MiceInt,  MiceDouble, MiceInt },
+           {1,        6,          1       }
+         },
+
       };
 
 static int nStructdata = sizeof(structdata)/sizeof(structdata[0]);
@@ -280,7 +346,7 @@ static int nStructdata = sizeof(structdata)/sizeof(structdata[0]);
 
 /*
 
--Procedure check_arg_num  ( Check numebr of arguments in a Mice interface call )
+-Procedure check_arg_num  ( Check number of arguments in a Mice interface call )
 
 -Abstract
 
@@ -330,7 +396,7 @@ static int nStructdata = sizeof(structdata)/sizeof(structdata[0]);
 -Particulars
 
    The .m wrapper (should) check for improper argument lists from the user.
-   This function checks for improper argument lists implemented by the 
+   This function checks for improper argument lists implemented by the
    system designer.
 
 -Examples
@@ -369,24 +435,24 @@ void check_arg_num ( int x_nrhs, int x_nlhs, int nrhs, int nlhs )
    SpiceChar   message[128];
 
    /*
-   The expected right-hand rgument list count includes the called function
+   The expected right-hand argument list count includes the called function
    name at index 0. Add one to the Mice defined number of arguments to
    compensate.
    */
    if ( x_nrhs != (nrhs+1) )
       {
-      sprintf( message, 
-         "This routine requires %d input argument(s). %d inputs assigned", 
-         nrhs, 
+      sprintf( message,
+         "This routine requires %d input argument(s). %d inputs assigned",
+         nrhs,
          (x_nrhs-1) );
-      
+
       mexErrMsgTxt( message );
       }
    else if ( x_nlhs != nlhs )
       {
-      sprintf( message, 
+      sprintf( message,
          "This routine requires %d output argument(s). %d outputs assigned",
-          nlhs, 
+          nlhs,
           x_nlhs );
 
       mexErrMsgTxt( message );
@@ -396,14 +462,14 @@ void check_arg_num ( int x_nrhs, int x_nlhs, int nrhs, int nlhs )
 
 
 
-/* 
+/*
 
 -Procedure mice_fail (report SPICE errors)
 
 -Abstract
 
    Respond to SPICE errors by building the traceback string, passing that string
-   and the error message to MATLAB, then reset the SPICE error system. 
+   and the error message to MATLAB, then reset the SPICE error system.
    the zzerror() call performs all error subsystem calls.
 
 -Disclaimer
@@ -475,15 +541,15 @@ void check_arg_num ( int x_nrhs, int x_nlhs, int nrhs, int nlhs )
 */
 void mice_fail( long cnt )
    {
-   
+
    /*
    Count inputs from the interface routine, a C routine so keyed to
    the convention of zero based arrays. Add INDEX_BASE to the count
-   to compensate since the index count should refect a one base count.
+   to compensate since the index count should reflect a one base count.
    */
    mexErrMsgTxt( zzerror( cnt + INDEX_BASE) );
    }
-   
+
 
 
 /*
@@ -492,10 +558,10 @@ void mice_fail( long cnt )
  this routine assumes that the mxArray actually contains a struct!!!
  (not a double/char)
 */
-void struct_fields( enum   MiceType          type, 
-                           SpiceInt        * n    , 
+void struct_fields( enum   MiceType          type,
+                           SpiceInt        * n    ,
                     const  char          *** names,
-                    const  enum MiceType  ** types, 
+                    const  enum MiceType  ** types,
                     const  int            ** sizes)
    {
    int                     i;
@@ -620,7 +686,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
    /* for vectorizable functions */
    static struct           extra_dims extra;
 
-   /* 
+   /*
    Initialize  the 'extra' fields.
    */
    extra.count = 0;
@@ -640,7 +706,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
    */
    ii = 0;
 
-   /* 
+   /*
 
    INPUT - Loop over the list of input arguments.
 
@@ -658,7 +724,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
    for (i=1; i<nrhs; i++)
       {
 
-      /* 
+      /*
       Confirm the input has a known type.
       */
       if (mxGetClassID(prhs[i]) != mxDOUBLE_CLASS  &&
@@ -678,14 +744,14 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
 
 
-      /* 
+      /*
       Check the type of the input argument against the expected type.
       Signal an error for cases of type mismatch.
       */
 
       switch ( argcheck[ii].type )
          {
-         
+
          case MiceDouble:
          case MiceWin:
 
@@ -695,9 +761,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             if ( mxGetClassID(prhs[i]) != mxDOUBLE_CLASS )
                {
-               sprintf(msg, 
+               sprintf(msg,
                   "MICE(BADVAL): All elements of input argument (`%s') "
-                  "must have type double.", 
+                  "must have type double.",
                   argcheck[ii].name);
 
                mexErrMsgTxt(msg);
@@ -713,9 +779,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             if (  mxGetClassID(prhs[i]) != mxINT32_CLASS )
                {
-               sprintf(msg, 
+               sprintf(msg,
                   "MICE(BADARG): Input argument (`%s') "
-                  "must be an integer value.", 
+                  "must be an integer value.",
                   argcheck[ii].name);
 
                mexErrMsgTxt(msg);
@@ -732,11 +798,11 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             if (  mxGetClassID(prhs[i]) != mxINT32_CLASS )
                {
-               sprintf(msg, 
+               sprintf(msg,
                   "MICE(BADARG): Input argument (`%s') "
                   "must be an integer representation of a boolean value."
                   "Check the interface wrapper file for a logical to "
-                  "int conversion.", 
+                  "int conversion.",
                   argcheck[ii].name);
 
                mexErrMsgTxt(msg);
@@ -752,8 +818,8 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             if (mxGetClassID(prhs[i]) != mxCHAR_CLASS)
                {
-               sprintf(msg, 
-                  "MICE(BADARG): Input argument (`%s') must be alphabetic.", 
+               sprintf(msg,
+                  "MICE(BADARG): Input argument (`%s') must be alphabetic.",
                   argcheck[ii].name);
                mexErrMsgTxt(msg);
                }
@@ -769,9 +835,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             if ( mxGetClassID(prhs[i]) != mxSTRUCT_CLASS )
                {
-               sprintf(msg, 
+               sprintf(msg,
                   "MICE(BADVAL): All elements of input argument (`%s') "
-                  "must have type struct.", 
+                  "must have type struct.",
                   argcheck[ii].name);
 
                mexErrMsgTxt(msg);
@@ -782,14 +848,14 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          default:
 
             /*
-            Unkown argument type. This error indicates a mistake when coding a
+            Unknown argument type. This error indicates a mistake when coding a
             new argument type.
             */
-            sprintf( msg, 
+            sprintf( msg,
                      "MICE(BUG): Input argument (`%s') of unknown type."
                      "This occurs only if mice.h does not list a argument "
                      "type coded into one of the interface's ArgCheck "
-                     "assignment.", 
+                     "assignment.",
                      argcheck[ii].name);
 
             mexErrMsgTxt(msg);
@@ -799,14 +865,14 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
 
       /*
-      Determine input argument type, scalar or vector, from the size of 
+      Determine input argument type, scalar or vector, from the size of
       each input argument's dimension. All non vectorized matrices input
-      arguments must have dimension 2, regardles of whether the argument 
-      contains a scalar [1x1], a vectorized scalar N-row-vector [1xN], an 
-      N-column-vector [Nx1], or a string array [Nxlength_of_string] 
+      arguments must have dimension 2, regardless of whether the argument
+      contains a scalar [1x1], a vectorized scalar N-row-vector [1xN], an
+      N-column-vector [Nx1], or a string array [Nxlength_of_string]
       (a special case).
-   
-      Retrieve the dimensionality (number of degrees of freedom) of 
+
+      Retrieve the dimensionality (number of degrees of freedom) of
       the argument.
       */
       arg_dimension = mxGetNumberOfDimensions(prhs[i]);
@@ -816,27 +882,27 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
       */
       if ( arg_dimension != 2 && arg_dimension != 3 )
          {
-         sprintf(msg, 
+         sprintf(msg,
                 "MICE(BUG): Incorrect number of dimensions for input argument "
                 "(`%s'). Correct value either 2 or 3. Number of dimensions"
                 "of this argument: %ld. This indicates an interface bug. "
-                "Contact NAIF.", 
-                argcheck[ii].name, 
+                "Contact NAIF.",
+                argcheck[ii].name,
                 (long) arg_dimension);
 
          mexErrMsgTxt(msg);
          }
 
 
-      if ( argcheck[ii].min_dims != 0 && 
-           argcheck[ii].min_dims != 1 && 
+      if ( argcheck[ii].min_dims != 0 &&
+           argcheck[ii].min_dims != 1 &&
            argcheck[ii].min_dims != 2 )
          {
-         sprintf( msg, 
+         sprintf( msg,
                   "MICE(BUG): The min_dims value %d in argument `%s' not 0, "
                   "1, or 2. Check the argument specification in ArgCheck. "
-                  "This indicates an interface bug. Contact NAIF.", 
-                  argcheck[ii].min_dims, 
+                  "This indicates an interface bug. Contact NAIF.",
+                  argcheck[ii].min_dims,
                   argcheck[ii].name);
 
          mexErrMsgTxt(msg);
@@ -845,9 +911,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
 
       /*
-      Retrive the dimension size array. Dims has length arg_dimension,
+      Retrieve the dimension size array. Dims has length arg_dimension,
       each element of Dim containing the number of elements corresponding
-      to that degree of freedom. 
+      to that degree of freedom.
       */
       Dims     = mxGetDimensions(prhs[i]);
       num_elem = mxGetNumberOfElements(prhs[i]);
@@ -855,7 +921,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
       /*
       Does this variable argument consist of double precision or integer value?
       */
-      if ( mxGetClassID(prhs[i]) == mxDOUBLE_CLASS || 
+      if ( mxGetClassID(prhs[i]) == mxDOUBLE_CLASS ||
            mxGetClassID(prhs[i]) == mxINT32_CLASS )
          {
 
@@ -871,14 +937,14 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             }
          else
             {
-            if(    Dims[0] == 1 
-                && Dims[1]  > 1 
+            if(    Dims[0] == 1
+                && Dims[1]  > 1
                 && argcheck[ii].min_dims == 0 )
                {
                extra.vectorized[ii] = 1;
                }
 
-            if(     (Dims[0]               == argcheck[ii].dims[0]) 
+            if(     (Dims[0]               == argcheck[ii].dims[0])
                 &&  (argcheck[ii].min_dims == 1)
                 &&  (Dims[1]               >  1) )
                {
@@ -893,7 +959,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          */
          if ( argcheck[ii].is_vectorizable )
             {
-         
+
             vec_measure = 0;
 
             switch ( argcheck[ii].min_dims )
@@ -902,7 +968,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                case 1:
                   vec_measure = Dims[arg_dimension - 1];
                   break;
-                  
+
                case 2:
                   if( arg_dimension == 2 )
                      {
@@ -910,31 +976,31 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                      }
                   else
                      {
-                     vec_measure = Dims[arg_dimension - 1];                     
+                     vec_measure = Dims[arg_dimension - 1];
                      }
-                     
+
                   break;
-                  
+
                default:
-                  sprintf( msg, 
+                  sprintf( msg,
                      "MICE(BUG): The min_dims value %d in argument `%s' not 0, "
                      "1, or 2. Check the argument specification in ArgCheck. "
-                     "This indicates an interface bug. Contact NAIF.", 
-                     argcheck[ii].min_dims, 
+                     "This indicates an interface bug. Contact NAIF.",
+                     argcheck[ii].min_dims,
                      argcheck[ii].name);
 
                   mexErrMsgTxt(msg);
-                  break;               
+                  break;
                }
 
             /*
-            Store the required measure of vectorization for all vectorized 
+            Store the required measure of vectorization for all vectorized
             arguments.
             */
             if (extra.count == 0)
                {
                extra.first_vector_arg_index = ii;
-               extra.count                  = vec_measure;            
+               extra.count                  = vec_measure;
                }
             else if (extra.count != vec_measure)
                {
@@ -950,16 +1016,16 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
                mexErrMsgTxt(msg);
                }
-   
+
             }
 
 
          if (!argcheck[ii].is_vectorizable && extra.vectorized[ii])
             {
-            sprintf(msg, 
-               "Input argument (`%s') is not vectorizable.", 
+            sprintf(msg,
+               "Input argument (`%s') is not vectorizable.",
                argcheck[ii].name);
-               
+
             mexErrMsgTxt(msg);
             }
 
@@ -967,28 +1033,28 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          if ( argcheck[ii].is_vectorizable && extra.vectorized[ii] )
             {
             n = 2;
-            
+
             switch ( argcheck[ii].min_dims )
                {
                case 0:
                   extra.offset[ii] = 1;
                   break;
-               
+
                case 1:
                   extra.offset[ii] = argcheck[ii].dims[0];
                   break;
-               
+
                case 2:
-                  extra.offset[ii] = argcheck[ii].dims[0] 
+                  extra.offset[ii] = argcheck[ii].dims[0]
                                    * argcheck[ii].dims[1];
                   break;
-               
+
                default:
-                  sprintf( msg, 
+                  sprintf( msg,
                      "MICE(BUG): The min_dims value %d in argument `%s' not 0, "
                      "1, or 2. Check the argument specification in ArgCheck. "
-                     "This indicates an interface bug. Contact NAIF.", 
-                      argcheck[ii].min_dims, 
+                     "This indicates an interface bug. Contact NAIF.",
+                      argcheck[ii].min_dims,
                       argcheck[ii].name);
 
                   mexErrMsgTxt(msg);
@@ -1008,9 +1074,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
                   if ( Dims[0]!=1 || Dims[1]!=1 )
                      {
-                     sprintf(msg, 
+                     sprintf(msg,
                         "Input argument (`%s') must be a "
-                        "scalar (1x1) or a vectorized scalar (1xN).", 
+                        "scalar (1x1) or a vectorized scalar (1xN).",
                         argcheck[ii].name);
 
                      mexErrMsgTxt(msg);
@@ -1019,41 +1085,41 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   break;
 
                case 1:
-               
+
                   m = argcheck[ii].dims[0];
 
                   if ( m != 0 )
                      {
 
-                     /* 
-                     The vector length explicitly stated in ArgCheck. 
+                     /*
+                     The vector length explicitly stated in ArgCheck.
                      */
                      if ( Dims[0]!=m || Dims[1]!=1 )
                         {
-                        sprintf( msg, 
+                        sprintf( msg,
                            "MICE(BADARG): Input argument (`%s') must be "
-                           "an %ldx1 vector or a vectorized vector (%ldxN).", 
-                           argcheck[ii].name, 
-                           (long) m, 
+                           "an %ldx1 vector or a vectorized vector (%ldxN).",
+                           argcheck[ii].name,
+                           (long) m,
                            (long) m);
-   
+
                         mexErrMsgTxt(msg);
                         }
-                     
-                     } 
+
+                     }
                   else
                      {
-                  
-                     /* 
-                     Confirm the input as an Nx1 array. 
+
+                     /*
+                     Confirm the input as an Nx1 array.
                      */
                      if (Dims[1]!=1)
                         {
                         sprintf( msg,
                            "Input argument (`%s') must be an "
-                           "Nx1 array (column vector).", 
+                           "Nx1 array (column vector).",
                            argcheck[ii].name );
-                           
+
                         mexErrMsgTxt(msg);
                         }
 
@@ -1069,16 +1135,16 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   if (m !=0 && n !=0 )
                      {
 
-                     /* 
+                     /*
                      The ArgCheck block explicitly states array dimensions.
                      The input argument should have those dimensions.
                      */
                      if (Dims[0]!=m || Dims[1]!=n)
                         {
-                        sprintf( msg, 
+                        sprintf( msg,
                            "MICE(BADARG): Input argument (`%s') must "
-                           "be an %ldx%ld matrix.", 
-                           argcheck[ii].name, 
+                           "be an %ldx%ld matrix.",
+                           argcheck[ii].name,
                            (long) m,
                            (long) n);
 
@@ -1098,32 +1164,32 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                      */
                      if (Dims[0]!=m)
                         {
-                        sprintf( msg, 
-                           "Input argument (`%s') must be a %ldXN matrix.", 
-                           argcheck[ii].name, 
+                        sprintf( msg,
+                           "Input argument (`%s') must be a %ldXN matrix.",
+                           argcheck[ii].name,
                            (long) m);
 
                         mexErrMsgTxt(msg);
                         }
 
-                     /* 
-                     This block executes only for input non-vectrorized
+                     /*
+                     This block executes only for input non-vectorized
                      matrices with undefined column length. E.g. ckw01, ckw03
                      where inputs are (3,N) and (4,N). We uses the same check
-                     as with vectorized inputs to ensure the required 
+                     as with vectorized inputs to ensure the required
                      consistency in column length.
                      */
                      if (extra.count == 0)
                         {
                         extra.first_vector_arg_index = ii;
                         extra.count                  = Dims[1];
-                        } 
+                        }
                      else if (extra.count != Dims[1])
                         {
-                        sprintf( msg, 
+                        sprintf( msg,
                            "Input argument (`%s') must have "
-                           "same length as `%s'", 
-                           argcheck[ii].name, 
+                           "same length as `%s'",
+                           argcheck[ii].name,
                            argcheck[extra.first_vector_arg_index].name);
 
                         mexErrMsgTxt(msg);
@@ -1131,7 +1197,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
                      extra.vectorized[ii] = 1;
 
-                     } 
+                     }
                   else
                      {
 
@@ -1150,12 +1216,12 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   break;
 
                default:
-  
-                  sprintf( msg, 
+
+                  sprintf( msg,
                      "MICE(BUG): The min_dims value %d in argument `%s' not 0, "
                      "1, or 2. Check the argument specification in ArgCheck. "
-                     "This indicates an interface bug. Contact NAIF.", 
-                      argcheck[ii].min_dims, 
+                     "This indicates an interface bug. Contact NAIF.",
+                      argcheck[ii].min_dims,
                       argcheck[ii].name);
 
                   mexErrMsgTxt(msg);
@@ -1171,15 +1237,15 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
          /*
          Does this variable argument consist of string values?
-         
+
          Vectorized string: N x M
          */
          if (argcheck[ii].min_dims != 0)
             {
-            sprintf( msg, 
+            sprintf( msg,
                      "MICE(BUG): String input argument (`%s') "
                      "described with min_dims not zero. This "
-                     "indicates an interface bug. Contact NAIF", 
+                     "indicates an interface bug. Contact NAIF",
                      argcheck[ii].name);
 
             mexErrMsgTxt(msg);
@@ -1196,12 +1262,12 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             {
             extra.vectorized[ii] = 1;
             }
-         
+
          if (!argcheck[ii].is_vectorizable && extra.vectorized[ii])
             {
-            sprintf( msg, 
+            sprintf( msg,
                      "MICE(BADARG): Input argument (`%s') "
-                     "is not vectorizable.", 
+                     "is not vectorizable.",
                      argcheck[ii].name);
 
             mexErrMsgTxt(msg);
@@ -1210,21 +1276,21 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          if (argcheck[ii].is_vectorizable && extra.vectorized[ii])
             {
 
-            /* 
-            Store the size of the input vector for return to the 
+            /*
+            Store the size of the input vector for return to the
             interface call.
             */
             if (extra.count == 0)
                {
                extra.first_vector_arg_index = ii;
                extra.count                  = Dims[0];
-               } 
+               }
             else if (extra.count != Dims[0] )
                {
-               sprintf( msg, 
+               sprintf( msg,
                         "MICE(BADARG): Input argument (`%s') "
-                        "must have the same vectorization measure as `%s'", 
-                        argcheck[ii].name, 
+                        "must have the same vectorization measure as `%s'",
+                        argcheck[ii].name,
                         argcheck[extra.first_vector_arg_index].name);
 
                mexErrMsgTxt(msg);
@@ -1240,7 +1306,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
          /*
          Assume the variable as not vectorized till proven otherwise.
-         
+
          Vectorized structure: 1 x N
          */
          extra.vectorized[ii] = 0;
@@ -1249,12 +1315,12 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             {
             extra.vectorized[ii] = 1;
             }
-         
+
          if (!argcheck[ii].is_vectorizable && extra.vectorized[ii])
             {
-            sprintf( msg, 
+            sprintf( msg,
                      "MICE(BADARG): Input argument (`%s') "
-                     "is not vectorizable.", 
+                     "is not vectorizable.",
                      argcheck[ii].name);
 
             mexErrMsgTxt(msg);
@@ -1263,21 +1329,21 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          if (argcheck[ii].is_vectorizable && extra.vectorized[ii])
             {
 
-            /* 
-            Store the size of the input vector for return to the 
+            /*
+            Store the size of the input vector for return to the
             interface call.
             */
             if (extra.count == 0)
                {
                extra.first_vector_arg_index = ii;
                extra.count                  = Dims[1];
-               } 
+               }
             else if (extra.count != Dims[0] )
                {
-               sprintf( msg, 
+               sprintf( msg,
                         "MICE(BADARG): Input argument (`%s') "
-                        "must have the same vectorization measure as `%s'", 
-                        argcheck[ii].name, 
+                        "must have the same vectorization measure as `%s'",
+                        argcheck[ii].name,
                         argcheck[extra.first_vector_arg_index].name);
 
                mexErrMsgTxt(msg);
@@ -1293,7 +1359,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
          sprintf( msg,
                   "MICE(BADARG): Input argument (`%s') "
-                  "is not currently coded as an allowed inout type.", 
+                  "is not currently coded as an allowed input type.",
                   argcheck[ii].name);
 
          mexErrMsgTxt(msg);
@@ -1307,14 +1373,14 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
 
 
-   /* 
-   
+   /*
+
    OUTPUT
-   
+
    Check types, and allocate needed memory for output variables.
-   Retrive the dimension size array. Dims has length arg_dimension, 
+   Retrieve the dimension size array. Dims has length arg_dimension,
    each element of Dim containing the number of elements corresponding
-   to that degree of freedom. 
+   to that degree of freedom.
    */
    for ( i=0; i<nlhs; i++)
       {
@@ -1339,11 +1405,11 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
       extra.count describes the measure of vectorization (R).
       */
 
-      if ( argcheck[ii].min_dims != 0 && 
-           argcheck[ii].min_dims != 1 && 
+      if ( argcheck[ii].min_dims != 0 &&
+           argcheck[ii].min_dims != 1 &&
            argcheck[ii].min_dims != 2 )
          {
-         sprintf( msg, 
+         sprintf( msg,
                   "MICE(BUG): The min_dims value in argument `%s' not 0, "
                   "1, or 2. Check the argument specification in ArgCheck. "
                   "This indicates an interface bug. Contact NAIF.",
@@ -1352,17 +1418,20 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          mexErrMsgTxt(msg);
          }
 
-      is_a_struct = argcheck[ii].type == MiceBodID    ||
+      is_a_struct = argcheck[ii].type == MiceNameID   ||
                     argcheck[ii].type == MicePlane    ||
                     argcheck[ii].type == MiceEllipse  ||
                     argcheck[ii].type == MicePos      ||
-                    argcheck[ii].type == MiceSub      ||
+                    argcheck[ii].type == MiceNear     ||
                     argcheck[ii].type == MiceSurf     ||
                     argcheck[ii].type == MicePool     ||
                     argcheck[ii].type == MiceSub_PS   ||
                     argcheck[ii].type == MiceSurf_PS  ||
                     argcheck[ii].type == MiceIlum     ||
                     argcheck[ii].type == MiceWnsumd   ||
+                    argcheck[ii].type == MiceFrinfo   ||
+                    argcheck[ii].type == MiceSFS      ||
+                    argcheck[ii].type == MicePVN      ||
                     argcheck[ii].type == MiceState;
 
       if( argcheck[ii].type == MiceIgnore ||
@@ -1390,7 +1459,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                sizearray[1]     = extra.count;
 
                extra.offset[ii] = 1;
-               } 
+               }
             else if (argcheck[ii].min_dims == 1)
                {
                n                = 2;
@@ -1447,7 +1516,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             extra.vectorized[ii] = 0;
 
             }
-         
+
          /*
          Allocate output memory of the proper size and type for dps, ints,
          and bools.
@@ -1469,7 +1538,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             }
          else
             {
-            
+
             /*
             This should never signal.
             */
@@ -1481,16 +1550,16 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
       else if ( is_a_struct )
          {
-         
+
          if (argcheck[ii].is_vectorizable && vec_flag)
             {
-            
+
             n                = extra.count;
             extra.offset[ii] = 1;
-            
+
             }
          else
-            {            
+            {
             n = 1;
             }
 
@@ -1499,7 +1568,7 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          ftypes  = NULL;
          fsizes  = NULL;
 
-         struct_fields( argcheck[ii].type, 
+         struct_fields( argcheck[ii].type,
                                     &nfields, &fnames, &ftypes, &fsizes);
 
          /*
@@ -1511,7 +1580,9 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
             {
 
             /*
-            Create mxArrays for each of the fields.
+            Create mxArrays for each of the fields. Note, memory
+            allocation for each member of the struct (important to
+            know this).
             */
             for (k=0;k<nfields;k++)
                {
@@ -1534,10 +1605,10 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
                   {
                   sizearray[0] = 1;
                   sizearray[1] = DEFAULT_STR_LENGTH;
-                  
-                  mxSetField(plhs[i], 
-                             j, 
-                             fnames[k], 
+
+                  mxSetField(plhs[i],
+                             j,
+                             fnames[k],
                              mxCreateCharArray(2, sizearray));
                   }
 
@@ -1545,10 +1616,10 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
 
             }
 
-         } 
+         }
       else
          {
-         sprintf( msg, 
+         sprintf( msg,
                   "MICE(BUG): Return argument (`%s') of unknown type. "
                   "This indicates an interface bug. Contact NAIF.",
                   argcheck[ii].name);
@@ -1557,10 +1628,10 @@ struct extra_dims  * mice_checkargs(int                 nlhs,
          }
 
       /* Increment argcheck index. */
-      ii++; 
+      ii++;
       }
 
-   return &extra; 
+   return &extra;
    }
 
 

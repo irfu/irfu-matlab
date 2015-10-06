@@ -1,69 +1,93 @@
 %-Abstract
 %
 %   CSPICE_CKW03 adds a type 3 segment to a C-kernel.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      handle   scalar integer value of the file handle for 
-%               an open CK file returned from cspice_ckopn
-%               
-%      begtim   double precision scalar encoded SCLK segment
-%               begin time
-%               
-%      endtim   double precision scalar encoded SCLK segment 
-%               end time
-%               
-%      inst     the scalar integer NAIF instrument ID code
-%   
-%      ref      scalar string identifying the reference frame for the
-%               segment
-%               
-%      avflag   a boolean signifying if the segment will contain 
-%               angular velocity
-%               
-%      segid    a scalar string to identify the segment
-%      
-%      sclkdp   double precision Nx1 array containing the encoded
-%               SCLK times for the data
-%               
-%      quats    a double precision 4xN matrix of SPICE style quaternions
-%               representing instrument pointing
-%               
-%      avvs     a double precision 3xN  matrix of angular 
-%               velocity vectors in units of radians per second
-%               
-%      starts   a double precision Mx1 array containing the encoded 
-%               SCLK interval start times of each interpolation
-%               interval, the times must be strictly increasing and
-%               coincide with pointing data times
+%      handle   file handle for an open CK file, returned from cspice_ckopn.
+%
+%               [1,1] = size(handle); int32 = class(handle)
+%
+%      begtim   encoded SCLK segment begin time.
+%
+%               [1,1] = size(begtim); double = class(begtim)
+%
+%      endtim   encoded SCLK segment end time.
+%
+%               [1,1] = size(endtim); double = class(endtim)
+%
+%      inst     NAIF instrument ID code.
+%
+%               [1,1] = size(inst); int32 = class(inst)
+%
+%      ref      name of the reference frame for the segment.
+%
+%               [1,c1] = size(ref), char = class(ref)
+%
+%                  or
+%
+%               [1,1] = size(ref), cell = class(ref)
+%
+%      avflag   a boolean signifying if the segment will contain
+%               angular velocity.
+%
+%               [1,1] = size(avflag); logical = class(avflag)
+%
+%      segid    name to identify the segment.
+%
+%               [1,c2] = size(segid), char = class(segid)
+%
+%                  or
+%
+%               [1,1] = size(segid), cell = class(segid)
+%
+%      sclkdp   array containing the encoded SCLK times for the data.
+%
+%               [n,1] = size(endtim); double = class(endtim)
+%
+%      quats    array of SPICE style quaternions representing instrument
+%               pointing.
+%
+%               [4,n] = size(endtim); double = class(endtim)
+%
+%      avvs     array of angular velocity vectors in units of radians per
+%               second.
+%
+%               [3,n] = size(endtim); double = class(endtim)
+%
+%      starts   array containing the encoded SCLK interval start times of
+%               each interpolation interval, the times must be strictly
+%               increasing and coincide with pointing data times.
+%
+%               [m,1] = size(endtim); double = class(endtim)
 %
 %   the call:
 %
@@ -133,7 +157,7 @@
 %
 %      starts = [1:(MAXREC/2)]';
 %      starts = (starts-1)*2*SPACING;
-%   
+%
 %      %
 %      % Open a new CK, write the data, catch any errors.
 %      %
@@ -151,7 +175,7 @@
 %                       expavvs, ...
 %                       starts )
 %      catch
-%      
+%
 %         error( [ 'Failure: ' lasterr] )
 %      end
 %
@@ -172,17 +196,21 @@
 %
 %   MICE.REQ
 %   CK.REQ
-%   DAF.REQ 
-%   SCLK.REQ 
+%   DAF.REQ
+%   SCLK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 11-JUL-2012, EDW (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 19-MAY-2006, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   write ck type_3 pointing data segment 
-% 
+%
+%   write ck type_3 pointing data segment
+%
 %-&
 
 function cspice_ckw03( handle , ...

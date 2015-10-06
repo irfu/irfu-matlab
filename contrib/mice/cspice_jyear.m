@@ -1,48 +1,50 @@
 %-Abstract
 %
-%   CSPICE_JYEAR returns the double precision value for the
-%   number of seconds in a Julian year.
+%   CSPICE_JYEAR returns the value for the number of seconds in a
+%   Julian year.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
-%   
+%
 %   Given:
-%   
+%
 %      No input required.
-%   
+%
 %   the call:
 %
-%      double = cspice_jyear
+%      jyear = cspice_jyear
 %
 %   returns:
 %
-%      The number of seconds per Julian year as a double precision 
-%      scalar.
+%      jyear   the number of seconds per Julian year as a double precision
+%              scalar.
+%
+%              [1,1] = size(jyear); double = class(jyear)
 %
 %-Examples
 %
@@ -51,15 +53,15 @@
 %   and the machine specific arithmetic implementation.
 %
 %      >> jyear = cspice_jyear
-%      
+%
 %      jyear =
-%      
+%
 %          31557600
 %
 %      >> sprintf( 'JYEAR value: %11.3f', cspice_jyear )
-%      
+%
 %      ans =
-%      
+%
 %      JYEAR value: 31557600.000
 %
 %-Particulars
@@ -76,30 +78,34 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 11-JUN-2013, EDW (JPL)
+%
+%       I/O descriptions edits to conform to Mice documentation format.
+%
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
 %
 %   Number of seconds per julian year
-% 
+%
 %-&
 
-function [return_val] = cspice_jyear
+function [jyear] = cspice_jyear
 
    switch nargin
       case 0
          ;
       otherwise
 
-         error ( 'Usage: double = cspice_jyear' )
+         error ( 'Usage: [jyear] = cspice_jyear' )
 
    end
-   
+
    %
    % Call the MEX library.
    %
    try
-      [return_val] =  mice('jyear_c' );
+      [jyear] =  mice('jyear_c' );
    catch
       rethrow(lasterror)
    end
