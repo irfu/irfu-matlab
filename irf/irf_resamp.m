@@ -15,8 +15,6 @@ function out = irf_resamp(x,y,varargin)
 % max    - return max within each averaging window, rather than mean
 %
 % See also INTERP1
-%
-% $Id$
 
 % ----------------------------------------------------------------------------
 % "THE BEER-WARE LICENSE" (Revision 42):
