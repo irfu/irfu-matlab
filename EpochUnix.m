@@ -44,7 +44,27 @@ classdef EpochUnix < GenericTimeArray
 				error('irf:EpochUnix:EpochUnix:badInputs',...
 					'Expected inputs: double (seconds since 1970), int64 (nanoseconds since 2000), or char (yyyy-mm-ddThh:mm:ss.mmmuuunnnZ)')
 			end
-		end
+    end
+    function objOut = plus(obj,arg)
+      if isnumeric(arg)
+        if isa(arg,'double'), inp = arg;
+        elseif isa(arg,'int64'), inp = double(arg)*1e-9;
+        else
+          error('Input type not defined');
+        end
+        objOut = obj;
+        objOut.epoch = obj.epoch + inp(:);
+      end
+    end
+    function outObj = colon(obj,varargin)
+      if nargin == 2 && isa(varargin{1},'GenericTimeArray')
+        epoch = obj.start.epochUnix:1:varargin{1}.stop.epochUnix;
+      elseif nargin == 3 && isa(varargin{2},'GenericTimeArray') && isnumeric(varargin{1})
+        epoch = obj.start.epochUnix:double(varargin{1}):varargin{2}.stop.epochUnix;
+      else error('Invalid input(s)')
+      end
+      outObj = EpochUnix(epoch);
+    end
 	end
 	
 	methods (Static)

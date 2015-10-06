@@ -290,12 +290,12 @@ classdef (Abstract) GenericTimeArray
 		function s = tts(obj,varargin)
 			% s = tts(obj,[index]) return index points
 			s = double(obj.ttns(varargin{:}))/1e9;
-		end
-
-		% Abstract operations
-		plus(obj,arg)
+    end
+  end
+  
+  methods (Abstract)
+    plus(obj,arg)
 		colon(obj,varargin)
-		
   end
   
   methods (Access = private)
