@@ -40,9 +40,11 @@ end
 
 switch lower(action)
 	case 'initialize' % read in all data and open figure
-		if length(time)==1, % time given in epoch
+		if isa(time,'GenericTimeArray')
+      t = time.start.epochUnix;
+    elseif isnumeric(time) && length(time)==1, % time given in epoch
 			t=time;
-		elseif length(time)==6, % time given as vector
+		elseif isnumeric(time) && length(time)==6, % time given as vector
 			t=irf_time(time);
 		else
 			irf.log('critical','Wrong input format of time.');
@@ -72,14 +74,13 @@ switch lower(action)
 		R=data.R;
 %		tint = [data.t-120 data.t+120]; % interval to read position
 		if ~is_R_ok,     % try reading from disk mat files
-			load('/data/mms/irfu/mmsR.mat');
-			RR=R;clear R;
-			timeLine = irf_time(RR.time,'ttns>epoch');
+      t0 = EpochUnix(data.t);
+      RR = mms.get_data('R_gse',irf.tint(EpochTT(t0+(-120)),240));
+      timeLine = RR.time.epochUnix;
 			R.C1 = [timeLine RR.gseR1];
 			R.C2 = [timeLine RR.gseR2];
 			R.C3 = [timeLine RR.gseR3];
 			R.C4 = [timeLine RR.gseR4];
-			irf.log('notice','===>>> Reading R? from mR.mat file')
 		end
 		data.R=R;
 		set(gcf,'userdata',data);
