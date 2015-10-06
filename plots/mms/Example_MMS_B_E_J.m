@@ -4,26 +4,36 @@
 
 mms.db_init('local_file_db','/data/mms');
 
-% Select spacecraft number: 1--4
-ic = 1;
+tint = irf.tint('2015-10-01T06:30:00.00Z/2015-10-01T07:20:00.00Z');
 
-tint = irf.tint('2015-09-20T06:30:00.00Z/2015-09-20T08:00:00.00Z');
+ic = 1; %get density from this spacecraft
 
 c_eval('Bxyz?=mms.db_get_ts(''mms?_dfg_srvy_ql'',''mms?_dfg_srvy_dmpa'',tint);',[1:4]);
 c_eval('Bxyz? = Bxyz?.resample(Bxyz1);',[2:4]);
-c_eval('Exyz=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tint);',ic);
-Exyz.data(find(abs(Exyz.data) > 100)) = NaN; %Remove some questionable fields
+Bxyzav = (Bxyz1.data+Bxyz2.data+Bxyz3.data+Bxyz4.data)/4;
+Bxyzav = TSeries(Bxyz1.time,Bxyzav,'to',1);
+
+c_eval('Exyz?=mms.db_get_ts(''mms?_edp_fast_ql_dce2d'',''mms?_edp_dce_xyz_dsl'',tint);',[1:4]);
+c_eval('Exyz? = Exyz?.resample(Exyz1);',[2:4]);
+c_eval('Exyz?.data(find(abs(Exyz?.data) > 100)) = NaN;',[1:4]); %Remove some questionable fields
+Exyzav = (Exyz1.data+Exyz2.data+Exyz3.data+Exyz4.data)/4;
+Exyzav = TSeries(Exyz1.time,Exyzav,'to',1);
+
 c_eval('ne=mms.db_get_ts(''mms?_fpi_fast_sitl'',''mms?_fpi_DESnumberDensity'',tint);',ic);
 ne = TSeries(ne.time,ne.data,'to',1);
 ne = ne.resample(Bxyz1);
 
-load('~/MMS/irfu/mmsR.mat');
-time = EpochTT(R.time);
-c_eval('Rxyz? = TSeries(time,R.gseR?,''to'',1);',[1:4]);
-c_eval('Rxyz? = Rxyz?.tlim(tint);',[1:4]);
-c_eval('Rxyz? = Rxyz?.resample(Bxyz1);',[1:4]);
+%old data files 
+%load('/data/mms/irfu/mmsR.mat');
+%time = EpochTT(R.time);
+%c_eval('Rxyz? = TSeries(time,R.gseR?,''to'',1);',[1:4]);
+%c_eval('Rxyz? = Rxyz?.tlim(tint);',[1:4]);
+%c_eval('Rxyz? = Rxyz?.resample(Bxyz1);',[1:4]);
+%clear R;
 
-clear R;
+R  = mms.get_data('R_gse',tint);
+c_eval('Rxyz? = TSeries(R.time,R.gseR?,''to'',1);',[1:4]);
+c_eval('Rxyz? = Rxyz?.resample(Bxyz1);',[1:4]);
 
 % Assuming GSE and DMPA are the same coordinate system.
 [j,divB,B,jxB,divTshear,divPb] = c_4_j('Rxyz?','Bxyz?');
@@ -53,7 +63,7 @@ jfac = TSeries(j.time,[jperp jperp2 jpar],'to',1);
 h = irf_plot(7,'newfigure');
 
 hca = irf_panel('BMMS1');
-irf_plot(hca,Bxyz1);
+irf_plot(hca,Bxyzav);
 ylabel(hca,{'B_{DMPA}','(nT)'},'Interpreter','tex');
 irf_legend(hca,{'B_{x}','B_{y}','B_{z}'},[0.88 0.10])
 irf_legend(hca,'(a)',[0.99 0.98],'color','k')
@@ -79,7 +89,7 @@ irf_legend(hca,'(e)',[0.99 0.98],'color','k')
 set(hca,'yscale','log');
 
 hca = irf_panel('EMMS1');
-irf_plot(hca,Exyz);
+irf_plot(hca,Exyzav);
 ylabel(hca,{'E_{DSL}','(mV m^{-1})'},'Interpreter','tex');
 irf_legend(hca,{'E_{x}','E_{y}','E_{z}'},[0.88 0.10])
 irf_legend(hca,'(b)',[0.99 0.98],'color','k')
@@ -92,9 +102,9 @@ irf_plot(hca,jxB);
 ylabel(hca,{'J \times B/n_{e} q_{e}','(mV m^{-1})'},'Interpreter','tex');
 irf_legend(hca,'(f)',[0.99 0.98],'color','k')
 
-j = j.resample(Exyz);
-EdotJ = dot(Exyz.data,j.data,2)/1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
-EdotJ = TSeries(Exyz.time,EdotJ);
+j = j.resample(Exyzav);
+EdotJ = dot(Exyzav.data,j.data,2)/1000; %J (nA/m^2), E (mV/m), E.J (nW/m^3)
+EdotJ = TSeries(Exyzav.time,EdotJ);
 
 hca = irf_panel('jdotE');
 irf_plot(hca,EdotJ);
