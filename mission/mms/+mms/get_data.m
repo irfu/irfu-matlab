@@ -1,7 +1,16 @@
 function res = get_data(varStr, Tint, mmsId)
 %MMS.GET_DATA  Load a variable
 %
-%  res = MMS.GET_DATA(varStr, mmsId, Tint)
+%  res = MMS.GET_DATA(varStr, Tint, [mmsId])
+%
+%  varStr is one of:
+%  EPHEMERIS:
+%     R_gse, R_gsm, V_gse, V_gsm
+%
+% Example:
+%   Tint = irf.tint('2015-09-21T00:00:00Z/2015-09-21T17:00:00Z');
+%   V1 = mms.get_data('V_gse',Tint,1); % SC GSE velocity for MMS1
+%   R  = mms.get_data('R_gse',Tint);   % SC GSE position for all MMS SC
 
 res = [];
 
@@ -35,6 +44,7 @@ switch varStr
   case {'R_gse','R_gsm','V_gse','V_gsm'}
     vC = varStr(1); cS = varStr(3:5);
     
+    if 0 % XXX this files are WRONG!!!
     %Try to load common ephemeris file
     switch cS
       case 'gse', fSuf = '';
@@ -59,10 +69,15 @@ switch varStr
         return
       end
     end
-    if vC=='V', return, end
+    end
     
-    %Load position of MAG files
     if mmsId>0
+      res = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      if ~isempty(res), return, end
+      
+      % LAST RESORT: Load position of MAG files
+      if vC=='R'
       % Load from L2pre B
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],Tint);
@@ -71,6 +86,7 @@ switch varStr
       res = mms.db_get_ts(...
         ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_' cS],Tint);
       return
+      end
     end
     
     % Do resampling similar to mms_update_ephemeris
@@ -78,22 +94,29 @@ switch varStr
     TintTmp = EpochUnix([fix(TintTmp.start.epochUnix/60)*60 ...
       ceil(TintTmp.stop.epochUnix/60)*60]);
     TintTmp = EpochTT(TintTmp);
-    res.time = EpochTT((TintTmp.start.epoch:int64(60*1e9):TintTmp.stop.epoch)');
+    res.time = EpochTT((TintTmp.start.epoch:int64(30*1e9):TintTmp.stop.epoch)');
     for mmsId=1:4
       mmsIdS = num2str(mmsId);
-      % Load from L2pre B
-      dTmp = mms.db_get_ts(...
-        ['mms' mmsIdS '_dfg_srvy_l2pre'],['mms' mmsIdS '_pos_' cS],TintTmp);
+      dTmp = mms.db_get_ts(['mms' mmsIdS '_mec_srvy_l2_epht89d'],...
+        ['mms' mmsIdS '_mec_' lower(vC) '_' cS],Tint);
+      if isempty(dTmp) &&  vC=='V', continue, end
+      
       if isempty(dTmp)
-        % Load from QL B
-        dTmp = mms.db_get_ts(...
-          ['mms' mmsIdS '_dfg_srvy_ql'],['mms' mmsIdS '_ql_pos_gse' cS],TintTmp);
+        % LAST RESORT: Load position of MAG files
+        % Load from L2pre B
+        dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_l2pre'],...
+          ['mms' mmsIdS '_pos_' cS],TintTmp);
+        if isempty(dTmp)
+          % Load from QL B
+          dTmp = mms.db_get_ts(['mms' mmsIdS '_dfg_srvy_ql'],...
+            ['mms' mmsIdS '_ql_pos_gse' cS],TintTmp);
+        end
       end
       if isempty(dTmp), continue, end
       
       dTmp.data = double(dTmp.data);
-      dTmp = dTmp.resample(res.time,'spline'); 
-      res.([cS vC mmsIdS]) = dTmp.data; 
+      dTmpR = dTmp.resample(res.time,'spline'); 
+      res.([cS vC mmsIdS]) = dTmpR.data; 
     end 
   otherwise, error('should not be here')
 end
