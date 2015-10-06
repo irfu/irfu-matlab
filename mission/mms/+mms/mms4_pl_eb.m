@@ -35,9 +35,9 @@ mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 % Official MMS colors
 %mmsColors=[0 0 0; .8 .4 0 ; 0 0.6 0.5 ; 0.35 0.7 .9];
 
-h = irf_plot(4,'newfigure');
+h = irf_figure(8);
 
-if 0
+if 1
 hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'abs(B?)',1)
 ylabel(hca,'|B| [nT]')
@@ -64,7 +64,7 @@ hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',2)
 ylabel(hca,'Ey [mV/m]')
 
-if 0
+if 1
 hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',3)
 ylabel(hca,'Ez [mV/m]')
@@ -89,7 +89,7 @@ return
 %% B/V
 c_eval('if ~isempty(E?) && ~isempty(B?), EdB? = irf_edb(irf.ts_vec_xy(E?.time,E?.data(:,1:2)),B?); EdB?.units = ''mV/m''; VExB? = irf_e_vxb(EdB?,B?,-1); else VExB?=[]; end') 
 
-h = irf_plot(8,'newfigure');
+h = irf_figure(8);
 
 hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'abs(B?)',1)
