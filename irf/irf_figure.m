@@ -1,13 +1,15 @@
 function c=irf_figure(varargin)
-%IRF_FIGURE  Create a new figure
+%IRF_FIGURE  Create a new figure or reset existing figure
 %  
 %  H = IRF_FIGURE(NPANELS)
-%  Initialize new figure with NPANELS new panels
+%  Create new figure with NPANELS new panels
 %  Will use current figure, if empty.
 %
+%  H = IRF_FIGURE(FIGURE_NUMBER,NPANELS)
+%  Create new figure with FIGURE_NUMBER and NPANELS new panels 
+%
 %  H = IRF_FIGURE(HF,NPANELS)
-%  Initialize existing figure with handle HF with NPANELS new panels, 
-%  
+%  Initialize existing figure with handle HF with NPANELS new panels 
 %  
 %  H = IRF_FIGURE(HF,NPANELS,'reset')
 %  Initialize figure HF with NPANELS new panels
@@ -52,9 +54,6 @@ else
     error('HF must be a valid figure handle or figure number')
   end
   if ~ishghandle(hcf,'figure')
-    if flagReset
-      error('Expecting a valid figure handle HG for FLAG=reset')
-    end
     hcf = figure(hcf); flagReset = true;
   end
 end
