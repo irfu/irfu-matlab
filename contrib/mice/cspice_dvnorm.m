@@ -33,17 +33,18 @@
 %
 %   Given:
 %
-%      state   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION}, a 6-vector or 
-%              set of 6-vectors, the second three components of the vector(s)
-%              being the derivatives of the first three with respect to 
+%      state   6-vector(s), the second three components of the vector(s)
+%              being the derivatives of the first three with respect to
 %              some scalar.
 %
 %                 state =  ( x, dx )
 %                               --
 %                               ds
 %
-%              A common form for 'state' would contain position and 
+%              A common form for 'state' would contain position and
 %              velocity.
+%
+%              [6,n] = size(state); double = class(state)
 %
 %   the call:
 %
@@ -51,10 +52,9 @@
 %
 %   returns:
 %
-%      dvnorm   {SCALAR or 1xN ARRAY, DOUBLE PRECISION}, the value(s) of 
-%               d||x|| corresponding to 'state'.
-%               ------
-%                 ds
+%      dvnorm   the value(s) of d||x|| corresponding to 'state'.
+%                               ------
+%                               ds
 %
 %                                    1/2         2    2    2  1/2
 %               Where ||x|| = < x, x >    =  ( x1 + x2 + x3 )
@@ -64,13 +64,15 @@
 %                               ---  ---  ---
 %                               ds   ds   ds
 %
-%                     d||x||   < x, v >  
+%                     d||x||   < x, v >
 %                    ------ =   ------    =  < xhat, v >
 %                      ds             1/2
 %                              < x, x >
 %
 %             'dvnorm' returns with the same measure of vectorization (N)
 %             as 'state'.
+%
+%              [1,n] = size(dvnorm); double = class(dvnorm)
 %
 %-Examples
 %
@@ -86,7 +88,7 @@
 %      %       |  dx |
 %      %       |  -- |
 %      %       |  ds |
-%      % 
+%      %
 %      % where 'x' is a 3-vector (3x1 array).
 %      %
 %
@@ -96,7 +98,7 @@
 %      % anti-parallel.
 %      %
 %      mag = [ -4, 4, 12 ];
-%      
+%
 %      x   = [ 1, sqrt(2), sqrt(3 ) ]';
 %
 %      y   = [ [x * 10^mag(1);  x], ...
@@ -131,6 +133,10 @@
 %   MICE.REQ
 %
 %-Version
+%
+%   -Mice Version 1.0.1, 09-NOV-2012 (EDW)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
 %
 %   -Mice Version 1.0.0, 10-MAY-2010 (EDW)
 %

@@ -2,31 +2,31 @@
 %
 %   CSPICE_GFPOSC determines the time intervals for which a coordinate of
 %   an observer-target position vector satisfies a numerical constraint.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -38,7 +38,7 @@
 %      All parameters described here are declared in the header file
 %      SpiceGF.h. See that file for parameter values.
 %
-%      SPICE_GF_CNVTOL     
+%      SPICE_GF_CNVTOL
 %
 %               is the convergence tolerance used for finding endpoints of
 %               the intervals comprising the result window.
@@ -46,87 +46,87 @@
 %               for roots should terminate: when a root is bracketed
 %               within an interval of length SPICE_GF_CNVTOL, the root is
 %               considered to have been found.
-% 
-%               The accuracy, as opposed to precision, of roots found 
-%               by this routine depends on the accuracy of the input 
-%               data. In most cases, the accuracy of solutions will be 
+%
+%               The accuracy, as opposed to precision, of roots found
+%               by this routine depends on the accuracy of the input
+%               data. In most cases, the accuracy of solutions will be
 %               inferior to their precision.
 %
 %      Arguments-
 %
-%      target   the string scalar naming the target body.  Optionally, 
+%      target   the string scalar naming the target body.  Optionally,
 %               you may supply the integer ID code for the object as an
 %               integer string.  For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
-%   
+%
 %               The target and observer define a position vector
 %               that points from the observer to the target.
-%   
+%
 %      frame    the string scalar naming the reference frame in which to perform
 %               state look-ups and coordinate calculations.
-%               
+%
 %               The SPICE frame subsystem must recognize the 'frame' name.
-%   
+%
 %      abcorr   the string scalar indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and 
+%               to the state evaluations to account for one-way light time and
 %               stellar aberration.
-%   
-%               This routine accepts the same aberration corrections as does 
+%
+%               This routine accepts the same aberration corrections as does
 %               the routine spkezr_c. See the header of spkezr_c for a
 %               detailed description of the aberration correction options.
 %               For convenience, the options are listed below:
-%   
-%                  'NONE'     Apply no correction.   
-%   
+%
+%                  'NONE'     Apply no correction.
+%
 %                  'LT'       "Reception" case:  correct for
 %                             one-way light time using a Newtonian
 %                             formulation.
-%   
+%
 %                  'LT+S'     "Reception" case:  correct for
 %                             one-way light time and stellar
 %                             aberration using a Newtonian
 %                             formulation.
-%   
+%
 %                  'CN'       "Reception" case:  converged
 %                             Newtonian light time correction.
-%   
+%
 %                  'CN+S'     "Reception" case:  converged
 %                             Newtonian light time and stellar
 %                             aberration corrections.
-%   
+%
 %                  'XLT'      "Transmission" case:  correct for
 %                             one-way light time using a Newtonian
 %                             formulation.
-%   
+%
 %                  'XLT+S'    "Transmission" case:  correct for
 %                             one-way light time and stellar
 %                             aberration using a Newtonian
 %                             formulation.
-%   
+%
 %                  'XCN'      "Transmission" case:  converged
 %                             Newtonian light time correction.
-%   
+%
 %                  'XCN+S'    "Transmission" case:  converged
 %                             Newtonian light time and stellar
 %                             aberration corrections.
-%   
-%               The 'abcorr' string lacks sensitivity to case, and to embedded, 
+%
+%               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
-%   
+%
 %      obsrvr   the string scalar naming the observing body. Optionally, you
 %               may supply the ID code of the object as an integer
 %               string. For example, both 'EARTH' and '399' are
-%               legitimate strings to supply to indicate the 
+%               legitimate strings to supply to indicate the
 %               observer is earth.
-%               
+%
 %      crdsys   the string scalar naming the coordinate system for which the
 %               coordinate of interest is a member.
-%   
+%
 %      coord    the string scalar naming the coordinate of interest in 'crdsys'.
-%                               
+%
 %               The supported coordinate systems and coordinate names are:
-%   
+%
 %               Coordinate System (crdsys)    Coordinates (coord)      Range
 %
 %                 'RECTANGULAR'                  'X'
@@ -151,59 +151,59 @@
 %
 %                 'GEODETIC'                     'LONGITUDE'        (-Pi,Pi]
 %                                                'LATITUDE'         [-Pi/2,Pi/2]
-%                                                'ALTITUDE' 
+%                                                'ALTITUDE'
 %
 %                 'PLANETOGRAPHIC'               'LONGITUDE'        [0,2Pi)
 %                                                'LATITUDE'         [-Pi/2,Pi/2]
 %                                                'ALTITUDE'
 %
-%                  Limit searches for coordinate events in the GEODETIC and 
+%                  Limit searches for coordinate events in the GEODETIC and
 %                  PLANETOGRAPHIC coordinate systems to 'target' bodies with
 %                  axial symmetry in the equatorial plane, i.e. equality
 %                  of the body X and Y radii (oblate or prolate spheroids).
-%   
-%      relate   the string or character scalar describing the relational  
-%               operator used to define a constraint on the selected coordinate 
-%               of the observer-target vector. The result window found by this  
-%               routine indicates the time intervals where the constraint is 
+%
+%      relate   the string or character scalar describing the relational
+%               operator used to define a constraint on the selected coordinate
+%               of the observer-target vector. The result window found by this
+%               routine indicates the time intervals where the constraint is
 %               satisfied. Supported values of relate and corresponding meanings
 %               are shown below:
 %
 %                  '>'      Separation is greater than the reference
 %                           value refval.
-%   
+%
 %                  '='      Separation is equal to the reference
 %                           value refval.
-%   
+%
 %                  '<'      Separation is less than the reference
 %                           value refval.
-%   
+%
 %                  'ABSMAX'  Separation is at an absolute maximum.
-%   
+%
 %                  'ABSMIN'  Separation is at an absolute  minimum.
-%   
+%
 %                  'LOCMAX'  Separation is at a local maximum.
-%   
+%
 %                  'LOCMIN'  Separation is at a local minimum.
-%   
+%
 %               The caller may indicate that the region of interest
 %               is the set of time intervals where the quantity is
 %               within a specified measure of an absolute extremum.
 %               The argument 'adjust' (described below) is used to
 %               specify this measure.
-%   
+%
 %               Local extrema are considered to exist only in the
 %               interiors of the intervals comprising the confinement
 %               window:  a local extremum cannot exist at a boundary
 %               point of the confinement window.
-%   
-%               The 'relate' string lacks sensitivity to case, and to leading 
+%
+%               The 'relate' string lacks sensitivity to case, and to leading
 %               and trailing blanks.
 %
 %      refval   the double precision scalar reference value used together
 %               with relate argument to define an equality or inequality to
 %               satisfy by the selected coordinate of the observer-target
-%               vector. See the discussion of relate above for further 
+%               vector. See the discussion of relate above for further
 %               information.
 %
 %               The units of 'refval' correspond to the type as defined
@@ -212,7 +212,7 @@
 %
 %      adjust   a double precision scalar value used to modify searches for
 %               absolute extrema: when relate is set to ABSMAX or ABSMIN and
-%               adjust is set to a positive value, cspice_gfposc finds times 
+%               adjust is set to a positive value, cspice_gfposc finds times
 %               when the observer-target vector coordinate is within 'adjust'
 %               radians/kilometers of the specified extreme value.
 %
@@ -223,25 +223,25 @@
 %               For relate set to ABSMIN, the result window contains
 %               time intervals when the observer-target vector coordinate has
 %               values between ABSMIN and ABSMIN + adjust.
-%               
+%
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
 %      step     the double precision time step size to use in the search.
 %
 %               'step' must be short enough to for a search using this step
-%               size to locate the time intervals where coordinate 
+%               size to locate the time intervals where coordinate
 %               function of the observer-target vector is monotone increasing or
 %               decreasing. However, 'step' must not be *too* short, or
 %               the search will take an unreasonable amount of time.
 %
 %               For coordinates other than LONGITUDE and RIGHT ASCENSION,
 %               the step size must be shorter than the shortest interval,
-%               within the confinement window, over which the coordinate 
+%               within the confinement window, over which the coordinate
 %               is monotone increasing or decreasing.
-%      
-%               For LONGITUDE and RIGHT ASCENSION, the step size must 
-%               be shorter than the shortest interval, within the 
+%
+%               For LONGITUDE and RIGHT ASCENSION, the step size must
+%               be shorter than the shortest interval, within the
 %               confinement window, over which either the sin or cos
 %               of the coordinate is monotone increasing or decreasing.
 %
@@ -251,7 +251,7 @@
 %               See the discussion of the parameter SPICE_GF_CNVTOL for
 %               details.
 %
-%               'step' has units of TDB seconds. 
+%               'step' has units of TDB seconds.
 %
 %      nintvls  an integer scalar value specifying the number of intervals in
 %               the internal workspace array used by this routine. 'nintvls'
@@ -265,20 +265,20 @@
 %      cnfine   a double precision SPICE window that confines the time
 %               period over which the specified search is conducted.
 %               cnfine may consist of a single interval or a collection
-%               of intervals. 
+%               of intervals.
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
 %               for the desired solution. See the Particulars section
 %               below for further discussion.
-%              
-%               See the Examples section below for a code example 
+%
+%               See the Examples section below for a code example
 %               that shows how to create a confinement window.
 %
 %   the call:
 %
-%      result = cspice_gfposc( target, frame, abcorr, obsrvr,  ... 
-%                              crdsys, coord, relate, refval,  ... 
+%      result = cspice_gfposc( target, frame, abcorr, obsrvr,  ...
+%                              crdsys, coord, relate, refval,  ...
 %                              adjust, step,  nintvls, cnfine )
 %
 %   returns:
@@ -286,12 +286,12 @@
 %      result   the SPICE window of intervals, contained within the
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
-%               
+%
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
 %               interval of result will be a singleton: the left and
 %               right endpoints of each interval will be identical.
-% 
+%
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
 %
@@ -302,46 +302,46 @@
 %   and the machine specific arithmetic implementation.
 %
 %
-%   Example(1): 
-%   
-%      Find the time during 2007 for which the latitude of the 
+%   Example(1):
+%
+%      Find the time during 2007 for which the latitude of the
 %      Earth-Sun vector in IAU_EARTH frame has the maximum value,
 %      i.e. the latitude of the Tropic of Cancer.
 %
 %      MAXWIN  =  1000;
 %      TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
-% 
+%
 %      %
 %      % Load kernels.
-%      % 
+%      %
 %      cspice_furnsh( 'standard.tm' );
-%   
+%
 %      %
 %      % Store the time bounds of our search interval in
 %      % the cnfine confinement window.
 %      %
 %      et = cspice_str2et( { '2007 JAN 01', '2008 JAN 01'} );
-%   
+%
 %      cnfine = cspice_wninsd( et(1), et(2) );
 %
 %      %
-%      % The latitude varies relatively slowly, ~46 degrees during the 
+%      % The latitude varies relatively slowly, ~46 degrees during the
 %      % year. The extrema occur approximately every six months.
 %      % Search using a step size near half that value (180 days).
 %      % For this example use ninety days (in units of seconds).
-%      % 
+%      %
 %      step   = 90.*cspice_spd;
 %      adjust = 0.;
 %      refval = 0.;
 %
-%      %     
+%      %
 %      % Search for the date on which the 'crdsys' system
 %      % coordinate 'coord' satisfies the 'relate' constraint.
 %      %
-%      % 
+%      %
 %      % Perform this search using the geometric position
 %      % of the bodies; set the aberration correction to 'NONE'.
-%      % 
+%      %
 %      targ   = 'SUN';
 %      obsrvr = 'EARTH';
 %      frame  = 'IAU_EARTH';
@@ -351,7 +351,7 @@
 %      coord  = 'LATITUDE';
 %      nintvls= MAXWIN ;
 %
-% 
+%
 %      result = cspice_gfposc( targ, frame, abcorr, obsrvr,     ...
 %                              crdsys, coord, relate, refval,   ...
 %                             adjust, step, nintvls, cnfine );
@@ -363,7 +363,7 @@
 %      for i=1:numel(result)/2
 %
 %         [left, right] = cspice_wnfetd( result, i );
-%  
+%
 %         output = cspice_timout( [left,right], TIMFMT );
 %
 %         if( isequal( left, right) )
@@ -378,7 +378,7 @@
 %         end
 %
 %      end
-%     
+%
 %      %
 %      % It's always good form to unload kernels after use,
 %      % particularly in Matlab due to data persistence.
@@ -389,22 +389,22 @@
 %
 %      Event time: 2007-JUN-21 17:54:13.166910 (TDB)
 %
-%   Example(2): 
+%   Example(2):
 %
-%      A minor modification of the program listed in Example 1; find the 
+%      A minor modification of the program listed in Example 1; find the
 %      time during 2007 for which the latitude of the Earth-Sun vector
 %      in IAU_EARTH frame has the minimum value, i.e. the latitude of
 %      the Tropic of Capricorn.
-%   
+%
 %      Edit the example program, assign:
-% 
+%
 %         relate = 'ABSMIN'
-% 
+%
 %   MATLAB outputs:
 %
 %      Event time: 2007-DEC-22 06:04:32.630160 (TDB)
 %
-%   Example(3): 
+%   Example(3):
 %
 %      Find the time during 2007 for which the Z component of the
 %      Earth-Sun vector in IAU_EARTH frame has value 0, i.e. crosses
@@ -417,9 +417,9 @@
 %         relate = '='
 %         crdsys = 'RECTANGULAR'
 %         coord  = 'Z'
-%   
+%
 %   MATLAB outputs:
-%   
+%
 %      Event time: 2007-MAR-21 00:01:25.495120 (TDB)
 %      Event time: 2007-SEP-23 09:46:39.574124 (TDB)
 %
@@ -429,7 +429,7 @@
 %      to the apoapsis on the Moon's orbit around the Earth (note, the
 %      cspice_gfdist routine can also perform this search).
 %
-%      This search requires a change in the step size since the Moon's 
+%      This search requires a change in the step size since the Moon's
 %      orbit about the earth (earth-moon barycenter) has a twenty-eight
 %      day period. Use a step size something less than half that value.
 %      In this case, we use twelve days.
@@ -461,14 +461,14 @@
 %      Event time: 2007-DEC-06 16:54:31.225504 (TDB)
 %
 %   Example(5):
-%   
+%
 %      Find times between Jan 1, 2007 and Jan 1, 2008 when the latitude
 %      (elevation) of the observer-target vector between DSS 17 and the
-%      Moon, as observed in the DSS 17 topocentric (station) frame, 
+%      Moon, as observed in the DSS 17 topocentric (station) frame,
 %      exceeds 83 degrees.
 %
-%      This search uses a step size of four hours since the time 
-%      for all declination zero-to-max-to-zero passes within 
+%      This search uses a step size of four hours since the time
+%      for all declination zero-to-max-to-zero passes within
 %      the search window exceeds eight hours.
 %
 %      This search requires kernels not included in the standard.tm
@@ -477,7 +477,7 @@
 %         Kernel name                      Contents
 %         -----------                      --------
 %         earthstns_itrf93_050714.bsp      SPK for DSN Station Locations
-%         earth_topo_050714.tf             Topocentric DSN stations  
+%         earth_topo_050714.tf             Topocentric DSN stations
 %                                          frame definitions
 %         earth_000101_080120_071029.bpc   High precision earth PCK
 %
@@ -508,10 +508,10 @@
 %-Particulars
 %
 %   This routine provides a simple interface for conducting searches
-%   for observer-target vector coordinate value events. 
+%   for observer-target vector coordinate value events.
 %
 %   This routine determines a set of one or more time intervals
-%   within the confinement window when the selected coordinate of 
+%   within the confinement window when the selected coordinate of
 %   the observer-target vector satisfies a caller-specified
 %   constraint. The resulting set of intervals is returned as a SPICE
 %   window.
@@ -530,14 +530,18 @@
 %   decreasing. Each of these time periods is represented by a SPICE
 %   window. Having found these windows, all of the coordinate
 %   function's local extrema within the confinement window are known.
-%   Absolute extrema then can be found very easily. 
+%   Absolute extrema then can be found very easily.
 %
 %   Within any interval of these "monotone" windows, there will be at
 %   most one solution of any equality constraint. Since the boundary
-%   of the solution set for any inequality constraint is the set 
-%   of points where an equality constraint is met, the solutions of
-%   both equality and inequality constraints can be found easily
-%   once the monotone windows have been found.
+%   of the solution set for any inequality constraint is contained in
+%   the union of
+%
+%      - the set of points where an equality constraint is met
+%      - the boundary points of the confinement window
+%
+%   the solutions of both equality and inequality constraints can be
+%   found easily once the monotone windows have been found.
 %
 %   Step Size
 %   =========
@@ -549,7 +553,7 @@
 %   change of coordinate will be sampled. Starting at
 %   the left endpoint of an interval, samples will be taken at each
 %   step. If a change of sign is found, a root has been bracketed; at
-%   that point, the time at which the time derivative of the coordinate 
+%   that point, the time at which the time derivative of the coordinate
 %   is zero can be found by a refinement process, for example,
 %   using a binary search.
 %
@@ -567,7 +571,7 @@
 %   monotone windows yields a dramatic efficiency improvement over a
 %   state-based search that simply tests at each step whether the
 %   specified constraint is satisfied. The latter type of search can
-%   miss solution intervals if the step size is shorter than the
+%   miss solution intervals if the step size is longer than the
 %   shortest solution interval.
 %
 %   Having some knowledge of the relative geometry of the target and
@@ -603,6 +607,21 @@
 %   solutions found by this routine. In general the accuracy of input
 %   data will be the limiting factor.
 %
+%   The user may change the convergence tolerance from the default
+%   SPICE_GF_CNVTOL value by calling the routine cspice_gfstol, e.g.
+%
+%      cspice_gfstol( tolerance value in seconds )
+%
+%   Call cspice_gfstol prior to calling this routine. All subsequent
+%   searches will use the updated tolerance value.
+%
+%   Setting the tolerance tighter than SPICE_GF_CNVTOL is unlikely to be
+%   useful, since the results are unlikely to be more accurate.
+%   Making the tolerance looser will speed up searches somewhat,
+%   since a few convergence steps will be omitted. However, in most
+%   cases, the step size is likely to have a much greater affect on
+%   processing time than would the convergence tolerance.
+%
 %   The Confinement Window
 %   ======================
 %
@@ -615,7 +634,7 @@
 %
 %   Practical use of the coordinate search capability would likely
 %   consist of searches over multiple coordinate constraints to find
-%   time intervals that satisfies the constraints. An effective 
+%   time intervals that satisfies the constraints. An effective
 %   technique to accomplish such a search is to use the result
 %   window from one search as the confinement window of the next.
 %
@@ -642,8 +661,14 @@
 %   CK.REQ
 %   TIME.REQ
 %   WINDOWS.REQ
-%   
+%
 %-Version
+%
+%   -Mice Version 1.0.2, 05-SEP-2012, EDW (JPL)
+%
+%      Edit to comments to correct search description.
+%
+%      Header updated to describe use of cspice_gfstol.
 %
 %   -Mice Version 1.0.1, 10-JUN-2009, EDW (JPL)
 %
@@ -658,8 +683,8 @@
 %-&
 
 
-function [result] = cspice_gfposc( target, frame, abcorr, obsrvr,  ... 
-                                   crdsys, coord, relate, refval,  ... 
+function [result] = cspice_gfposc( target, frame, abcorr, obsrvr,  ...
+                                   crdsys, coord, relate, refval,  ...
                                    adjust, step,  nintvls, cnfine )
 
    switch nargin
@@ -678,12 +703,12 @@ function [result] = cspice_gfposc( target, frame, abcorr, obsrvr,  ...
          step    = zzmice_dp(step);
          nintvls = zzmice_int(nintvls, [1, int32(inf)/2] );
          cnfine  = zzmice_win(cnfine);
- 
+
       otherwise
 
          error ( [ 'Usage: [result] = cspice_gfposc( `target`, `frame`, '   ...
-                                      '`abcorr`, `obsrvr`, `crdsys`, '      ... 
-                                      '`coord`, `relate`, refval, adjust, ' ... 
+                                      '`abcorr`, `obsrvr`, `crdsys`, '      ...
+                                      '`coord`, `relate`, refval, adjust, ' ...
                                       'step, nintvls, cnfine )' ] )
 
    end
@@ -694,8 +719,8 @@ function [result] = cspice_gfposc( target, frame, abcorr, obsrvr,  ...
    %
    try
 
-      [result] = mice('gfposc_c', target, frame, abcorr,  obsrvr,  ... 
-                                  crdsys, coord, relate,  refval,  ... 
+      [result] = mice('gfposc_c', target, frame, abcorr,  obsrvr,  ...
+                                  crdsys, coord, relate,  refval,  ...
                                   adjust, step,  nintvls,          ...
                                   [zeros(6,1); cnfine] );
    catch

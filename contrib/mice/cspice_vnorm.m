@@ -34,8 +34,9 @@
 %
 %   Given:
 %
-%      v1   {3x1 ARRAY or 3xN ARRAY, DOUBLE PRECISION} an arbitrary array
-%           or set of arrays.
+%      v1   any arbitrary 3-vector(s).
+%
+%           [3,n] = size(v1); double = class(v1)
 %
 %   the call:
 %
@@ -43,11 +44,13 @@
 %
 %   returns:
 %
-%      vnorm  {SCALAR or 1xN ARRAY, DOUBLE PRECISION} the positive definite
-%             magnitude 'v1', calculated in a numerically stable way.
+%      vnorm   the positive definite magnitude(s) of 'v1', ||v1||, calculated
+%              in a numerically stable way.
 %
-%             'vnorm' returns with the same measure of vectorization (N)
-%             as 'v1'.
+%              [1,n] = size(vnorm); double = class(vnorm)
+%
+%              'vnorm' returns with the same measure of vectorization (N)
+%              as 'v1'.
 %
 %-Examples
 %
@@ -148,7 +151,7 @@
 %
 %   The magnitude calculation takes care to avoid overflow while computing
 %   the norm of the input vector 'v1'. The logic determines the component of
-%   'v1' whose magnitude is the largest. Calling this magnitude v1max, the 
+%   'v1' whose magnitude is the largest. Calling this magnitude v1max, the
 %   norm is computed using the formula
 %
 %       vnorm  =  v1max *  ||  (1/v1max) * v1  ||

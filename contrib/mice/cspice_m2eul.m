@@ -1,32 +1,32 @@
 %-Abstract
 %
-%   CSPICE_M2EUL factors a rotation matrix into a product of 
+%   CSPICE_M2EUL factors a rotation matrix into a product of
 %   three rotations about specified coordinate axes.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -59,9 +59,9 @@
 %
 %      angle3
 %      angle2
-%      angle1   the scalar or 1xN arrays of double precision 
+%      angle1   the scalar or 1xN arrays of double precision
 %               Euler angles measured where the angle satisfy
-%   
+%
 %                   r = [ angle3 ]     [ angle2 ]     [ angle1 ]
 %                                axis3           axis2          axis1
 %
@@ -89,18 +89,18 @@
 %                  uniquely determined, 'angle3' will always be set to
 %                  zero; 'angle1' is then uniquely determined.
 %
-%               'angle3', 'angle2', and 'angle1' return with the same 
+%               'angle3', 'angle2', and 'angle1' return with the same
 %               vectorization measure (N) as 'r'.
 %
 %      Note, the call sequence:
-%   
+%
 %         [angle3, angle2, angle1] = cspice_m2eul(r, axis3, axis2, axis1)
 %         r = cspice_eul2m(angle3, angle2, angle1, axis3, axis2, axis1)
-%   
+%
 %      preserves 'r' to round-off error.
-%   
+%
 %      Yet, the call sequence:
-%   
+%
 %         r = cspice_eul2m(angle3, angle2, angle1, axis3, axis2, axis1)
 %        [angle3, angle2, angle1] = cspice_m2eul(r, axis3, axis2, axis1)
 %
@@ -117,12 +117,12 @@
 %      Example(1):
 %
 %      %
-%      % Scalar example, conversion of instrument pointing from a matrix 
+%      % Scalar example, conversion of instrument pointing from a matrix
 %      % representation to Euler angles:
-%      % 
+%      %
 %      % Suppose we want to find camera pointing in 'alpha', 'delta', and
 %      % 'kappa', given the inertial-to-camera coordinate transformation
-%      % 
+%      %
 %      ticam = [                                                            ...
 %         [ 0.49127379678135830  0.50872620321864170  0.70699908539882417 ]
 %         [ -0.50872620321864193 -0.49127379678135802  0.70699908539882428]
@@ -231,7 +231,7 @@
 %-Index_Entries
 %
 %   matrix to euler angles
-% 
+%
 %-&
 
 function [angle3, angle2, angle1] = cspice_m2eul(r, axis3, axis2, axis1)

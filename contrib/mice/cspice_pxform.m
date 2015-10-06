@@ -1,47 +1,51 @@
 %-Abstract
 %
-%   CSPICE_PXFORM returns the matrix that transforms position 
+%   CSPICE_PXFORM returns the matrix that transforms position
 %   vectors from one specified frame to another at a specified epoch.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      from   the scalar string name of a reference frame in which
-%             a position is known.
-%             
-%      to     the scalar string name of a reference frame in which 
-%             it is desired to represent the position. 
-%      
-%      et     the double precision scalar or 1XN-vector of epochs in 
-%             ephemeris seconds past the epoch of J2000 (TDB) at which 
+%      from   the name of a reference frame in which a position is known.
+%
+%             [1,m] = size(from); char = class(from)
+%
+%      to     the name of a reference frame in which it is desired to represent
+%             the position.
+%
+%             [1,l] = size(to); char = class(to)
+%
+%      et     epoch in ephemeris seconds past the epoch of J2000 (TDB) at which
 %             the position transformation matrix should be evaluated.
+%
+%             [1,n] = size(et); double = class(et)
 %
 %   the call:
 %
@@ -49,11 +53,14 @@
 %
 %   returns:
 %
-%      rotate   a double precision 3x3 matrix or 3x3xN array that
-%               transforms  dates from the reference frame 'from' to
-%               frame 'to' at epoch 'et'
+%      rotate   operator(s) that transform position vector(s) from the
+%               reference frame 'from' to frame 'to' at epoch 'et'
 %
-%              'rotate' returns with the same vectorization measure (N)
+%               If [1,1] = size(et) then [3,3]   = size(rotate)
+%               If [1,n] = size(et) then [3,3,n] = size(rotate)
+%                                         double = class(rotate)
+%
+%               'rotate' returns with the same vectorization measure (N)
 %               as 'et'.
 %
 %-Examples
@@ -62,9 +69,43 @@
 %   platforms as the results depend on the SPICE kernels used as input
 %   and the machine specific arithmetic implementation.
 %
+%      Use the meta-kernel shown below to load the required SPICE
+%      kernels.
+%
+%         KPL/MK
+%
+%         File name: standard.tm
+%
+%         This meta-kernel is intended to support operation of SPICE
+%         example programs. The kernels shown here should not be
+%         assumed to contain adequate or correct versions of data
+%         required by SPICE-based user applications.
+%
+%         In order for an application to use this meta-kernel, the
+%         kernels referenced here must be present in the user's
+%         current working directory.
+%
+%         The names and contents of the kernels referenced
+%         by this meta-kernel are as follows:
+%
+%            File name                     Contents
+%            ---------                     --------
+%            de421.bsp                     Planetary ephemeris
+%            pck00009.tpc                  Planet orientation and
+%                                          radii
+%            naif0009.tls                  Leapseconds
+%
+%         \begindata
+%
+%            KERNELS_TO_LOAD = ( 'naif0009.tls'
+%                                'de421.bsp'
+%                                'pck00009.tpc' )
+%
+%         \begintext
+%
 %      %
 %      % Output the right ascension and declination of the earth's pole
-%      % in the J2000 frame approximately every month for the time 
+%      % in the J2000 frame approximately every month for the time
 %      % interval January 1, 1990 to January 1, 2010 (UTC).
 %      %
 %      %
@@ -74,14 +115,14 @@
 %
 %      %
 %      % Define the time bounds for the time interval,
-%      % 20 years,  convert to ephemeris time J2000.
+%      % 20 years, convert to ephemeris time J2000.
 %      %
 %      utc_bounds = strvcat( '1 Jan 1990', '1 Jan 2010' );
 %      et_bounds  = cspice_str2et( utc_bounds );
 %
 %      %
 %      % Step in units of a month. 20 years ~ 240 months.
-%      % 
+%      %
 %      step = (et_bounds(2) - et_bounds(1) ) / 240.;
 %
 %      %
@@ -107,7 +148,7 @@
 %      %
 %
 %      %
-%      % The last column in each matrix is the pole vector (z = (0,0,1)) 
+%      % The last column in each matrix is the pole vector (z = (0,0,1))
 %      % of the earth in IAU expressed in J2000.
 %      %
 %      % Recall, MATLAB uses 1 based indexing, so (:,3,:) represents.
@@ -122,7 +163,7 @@
 %
 %      %
 %      % Output the ephemeris time and the corresponding
-%      % angular values (in degrees). 'ra' and 'dec' return 
+%      % angular values (in degrees). 'ra' and 'dec' return
 %      % as double precision 240-vectors.
 %      %
 %      ra  = ra  * r2d;
@@ -180,12 +221,16 @@
 %
 %-Version
 %
+%   -Mice Version 1.0.1, 09-NOV-2012, EDW (JPL), SCK (JPL)
+%
+%      Edited I/O section to conform to NAIF standard for Mice documentation.
+%
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
+%
 %   Find a position transformation matrix
-% 
+%
 %-&
 
 function [rotate] = cspice_pxform(from, to, et)
@@ -199,7 +244,7 @@ function [rotate] = cspice_pxform(from, to, et)
 
       otherwise
 
-         error ( [ 'Usage: [_rotate(3,3)_] = ' ... 
+         error ( [ 'Usage: [_rotate(3,3)_] = ' ...
                    'cspice_pxform( `from`, `to`, _et_ )' ] )
 
    end

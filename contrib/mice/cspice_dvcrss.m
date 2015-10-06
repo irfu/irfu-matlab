@@ -33,19 +33,21 @@
 %
 %   Given:
 %
-%      s1   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           SPICE state(s);
+%      s1   a SPICE state(s);
 %
 %              s1 = (r1, dr1 ).
 %                         --
 %                         dt
 %
-%      s2   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} defining a
-%           second SPICE state(s);
+%           [6,n] = size(s1); double = class(s1)
+%
+%      s2   a second SPICE state(s);
 %
 %              s2 = (r2, dr2 ).
 %                        --
 %                        dt
+%
+%           [6,n] = size(s2); double = class(s2)
 %
 %      An implicit assumption exists that 's1' and 's2' are specified
 %      in the same reference frame. If this is not the case, the numerical
@@ -57,13 +59,14 @@
 %
 %   returns:
 %
-%      dvcrss   {6x1 ARRAY or 6xN ARRAY, DOUBLE PRECISION} representing
-%               the cross product(s) associated with the position components
+%      dvcrss   the cross product(s) associated with the position components
 %               of 's1' and 's2' and the derivative of the cross product(s)
 %               with respect to time.
 %
 %               'dvcrss' returns with the same measure of vectorization (N)
 %               as 's1' and 's2'
+%
+%               [6,n] = size(dvcrss); double = class(dvcrss)
 %
 %-Examples
 %
@@ -85,13 +88,13 @@
 %      % Load SPK, PCK, and LSK kernels, use a meta kernel for convenience.
 %      %
 %      cspice_furnsh( 'standard.tm' )
-%      
+%
 %      %
 %      % Define the earth body-fixed pole vector (z). The pole
 %      % has no velocity in the earth fixed frame "IAU_EARTH."
 %      %
 %      z_earth = [ 0, 0, 1, 0, 0, 0 ]';
-%      
+%
 %      %
 %      % Calculate the state transformation between IAU_EARTH and J2000
 %      % at an arbitrary epoch.
@@ -104,9 +107,9 @@
 %      % Transform the earth pole vector from the IAU_EARTH frame to J2000.
 %      %
 %      z_j2000 = trans * z_earth;
-%      
+%
 %      %
-%      % Calculate the apparent state of the sun from earth at the epoch 
+%      % Calculate the apparent state of the sun from earth at the epoch
 %      % 'et' in the J2000 frame.
 %      %
 %      target   = 'Sun';
@@ -120,7 +123,7 @@
 %      % 'x_new' defines the y axis of the derived frame.
 %      %
 %      x_new = cspice_dvhat( state )
-%      
+%
 %      %
 %      % Calculate the z direction in the new reference frame then
 %      % calculate the normal of the vector and derivative of
@@ -128,45 +131,45 @@
 %      %
 %      z_new = cspice_dvcrss( state, z_j2000 );
 %      z_new = cspice_dvhat( z_new )
-%      
+%
 %      %
-%      % As for z_new, calculate the y direction in the new reference 
+%      % As for z_new, calculate the y direction in the new reference
 %      % frame then calculate the normal of the vector and derivative
 %      % of the normal to determine they unit vector.
 %      %
 %      y_new = cspice_dvcrss( z_new, state );
 %      y_new = cspice_dvhat( y_new )
-% 
+%
 %      %
 %      % It's always good form to unload kernels after use,
 %      % particularly in Matlab due to data persistence.
 %      %
 %      cspice_kclear
-%      
+%
 %   MATLAB outputs:
 %
 %      x_new =
-%     
+%
 %           1.834466375917397e-01
 %          -9.019196633169827e-01
 %          -3.910092736476536e-01
 %           2.024497675152527e-07
 %           3.466010606102513e-08
 %           1.503314202237741e-08
-%     
-%     
+%
+%
 %      z_new =
-%     
+%
 %          -9.798625180410016e-01
 %          -1.996715075815909e-01
 %           8.572038510978363e-04
 %           4.453114222022677e-08
 %          -2.185310696303958e-07
 %          -3.614002123088436e-11
-%     
-%     
+%
+%
 %      y_new =
-%     
+%
 %           7.884654015638601e-02
 %          -3.829780802895584e-01
 %           9.203863390571874e-01
@@ -214,7 +217,7 @@
 %
 %-Version
 %
-%   -Mice Version 1.0.0, 20-APR-2010, EDW (JPL)
+%   -Mice Version 1.0.0, 09-NOV-2010, EDW (JPL)
 %
 %-Index_Entries
 %

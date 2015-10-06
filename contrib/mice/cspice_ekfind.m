@@ -1,31 +1,31 @@
 %-Abstract
 %
 %   CSPICE_EKFIND finds E-kernel data that satisfy a set of constraints.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -33,7 +33,7 @@
 %   Given:
 %
 %      query   a string scalar specifying the data to locate from data
-%              available in all loaded EK files. The general form of a 
+%              available in all loaded EK files. The general form of a
 %              query general form:
 %
 %                 SELECT   <column list>
@@ -49,7 +49,7 @@
 %
 %   returns:
 %
-%      nmrows   a scalar integer containing the number of rows matching 
+%      nmrows   a scalar integer containing the number of rows matching
 %               the query.
 %
 %      ok       a scalar boolean indicating whether the query parsed
@@ -74,7 +74,7 @@
 %      % Load the EK.
 %      %
 %      cspice_furnsh( EK )
-%   
+%
 %      %
 %      % Assume the file test_file.ek contains the table 'scalar_2',
 %      % and that "scalar_2' contains columns named:
@@ -104,11 +104,11 @@
 %      %
 %      % If no error occurred, 'nmrows' contains the number of rows matching
 %      % the constraints specified in the query string.
-%      %   
+%      %
 %      fprintf( 'Number of matching row: %d\n', nmrows )
 %
 %      %
-%      % Clear the kernel pool and database. Note, you don't normally 
+%      % Clear the kernel pool and database. Note, you don't normally
 %      % unload an EK after a query, rather at the end of a program.
 %      %
 %      cspice_kclear
@@ -133,6 +133,10 @@
 %   EK.REQ
 %
 %-Version
+%
+%   -Mice Version 1.2.0, 10-MAY-2011, EDW (JPL)
+%
+%      "logical" call replaced with "zzmice_logical."
 %
 %   -Mice Version 1.0.0, 10-APR-2010, EDW (JPL)
 %
@@ -167,7 +171,7 @@ function [ nmrows, ok, errmsg] = cspice_ekfind(query)
       % Convert the integer flags to MATLAB logicals for return to
       % the caller.
       %
-      ok = logical(ok);
+      ok = zzmice_logical(ok);
    catch
       rethrow(lasterror)
    end
