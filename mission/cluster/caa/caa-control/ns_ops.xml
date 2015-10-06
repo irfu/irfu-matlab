@@ -6162,7 +6162,7 @@ plan="yes" sdesc ="TBD">
 </operation>
 <operation start="2014-10-03T06:20:20Z" dt="32916" c2="yes" plan="no" sdesc="bad_data">
 	<desc>EFW reset with launch default values.</desc>
-	<res><link href="pal20140923.txt">Per-Arne 140923</link></res>
+	<res><link href="pal20150923.txt">Per-Arne 150923</link></res>
 </operation>
 <operation start="2014-10-07T21:03:00Z" dt="268620" c2="yes" plan="no" sdesc="bad_data">
 	<desc>DWP problem causing bad or no EFW telemetry.</desc>
@@ -6185,7 +6185,7 @@ plan="yes" sdesc ="TBD">
 	<res><link href="pal20150923_6.txt">Per-Arne 150923</link></res>
 </operation>
 <operation start="2014-11-01T15:05:20Z" dt="78788" c2="yes" plan="no" sdesc="bad_data">
-	<desc>Probes saturated, possibly due to low density.</desc>
+	<desc>Probes saturated, possibly due to low density, followed by DWP problem.</desc>
 	<res><link href="pal20150923_7.txt">Per-Arne 150923</link></res>
 </operation>
 <operation start="2014-11-03T20:58:17Z" dt="-1" c3="yes" plan="no" sdesc="no_p2">

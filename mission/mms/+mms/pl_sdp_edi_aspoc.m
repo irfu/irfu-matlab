@@ -43,9 +43,10 @@ hl = irf_plot(hca,{E1.y,Edi1.y},'comp');
 hl.Children(1).Marker = '.';
 end
 
-%% l2pre
+%% l2pre - fast
 c_eval(['tsTmp=mms.db_get_ts(''mms?_edp_fast_l2pre_dce2d'',''mms?_edp_dce_spinfit_e12'',Tint);Es12fast?=irf.ts_vec_xy(tsTmp.time,tsTmp.data(:,3:4));'...
   'tsTmp=mms.db_get_ts(''mms?_edp_fast_l2pre_dce2d'',''mms?_edp_dce_spinfit_e34'',Tint);Es34fast?=irf.ts_vec_xy(tsTmp.time,tsTmp.data(:,3:4));']);
+%% l2pre - slow
 c_eval(['tsTmp=mms.db_get_ts(''mms?_edp_slow_l2pre_dce2d'',''mms?_edp_dce_spinfit_e12'',Tint);Es12slow?=irf.ts_vec_xy(tsTmp.time,tsTmp.data(:,3:4));'...
   'tsTmp=mms.db_get_ts(''mms?_edp_slow_l2pre_dce2d'',''mms?_edp_dce_spinfit_e34'',Tint);Es34slow?=irf.ts_vec_xy(tsTmp.time,tsTmp.data(:,3:4));']);
 

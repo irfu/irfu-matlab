@@ -222,7 +222,7 @@ for in = iok
 	ind2 = find(d12 == max(d12(i1+180))) -1;
 	if abs(ind2-ind1-180)>5
 		if DEBUG
-			irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180))...
+			irf_log('proc',['wake displaced by ' num2str(abs(ind2-ind1-180)')...
 				' deg at ' epoch2iso(ts,1)])
 		end
 		wakedesc([in*2-1 in*2],:) = NaN;

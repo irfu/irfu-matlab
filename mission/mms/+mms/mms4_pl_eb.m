@@ -10,7 +10,7 @@ function h = mms4_pl_eb(Tint)
 %epoTmp = EpochTT(R.time);
 %gsmR1 = [epoTmp.epochUnix R.gsmR1];
 %gsmR1(isnan(gsmR1(:,4)),:) = [];
-
+tic
 for scId = 1:4
   fprintf('Loading MMS%d\n',scId);
   c_eval([...
@@ -27,18 +27,21 @@ elseif ~isempty(R1), gseR = [R3.time.epochUnix double(R3.data(:,1:3))];
 elseif ~isempty(R1), gseR = [R4.time.epochUnix double(R4.data(:,1:3))];
 else gseR = [];
 end
-
+toc
 %% Plot
+tic
 % define Cluster colors
 mmsColors=[0 0 0; 1 0 0 ; 0 0.5 0 ; 0 0 1];
 % Official MMS colors
 %mmsColors=[0 0 0; .8 .4 0 ; 0 0.6 0.5 ; 0.35 0.7 .9];
 
-h = irf_plot(8,'newfigure');
+h = irf_plot(4,'newfigure');
 
+if 0
 hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'abs(B?)',1)
 ylabel(hca,'|B| [nT]')
+irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
 
 hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',1)
@@ -47,6 +50,7 @@ ylabel(hca,'Bx [nT]')
 hca = irf_panel('By'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',2)
 ylabel(hca,'By [nT]')
+end
 
 hca = irf_panel('Bz'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',3)
@@ -60,9 +64,11 @@ hca = irf_panel('Ey'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',2)
 ylabel(hca,'Ey [mV/m]')
 
+if 0
 hca = irf_panel('Ez'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'E?',3)
 ylabel(hca,'Ez [mV/m]')
+end
 
 if 1
 hca = irf_panel('ScPot'); set(hca,'ColorOrder',mmsColors)
@@ -77,6 +83,7 @@ add_position(h(end),gseR)
 xlabel(h(end),'')
 title(h(1),Tint.start.utc)
 
+toc
 return
 
 %% B/V
@@ -87,6 +94,7 @@ h = irf_plot(8,'newfigure');
 hca = irf_panel('B'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'abs(B?)',1)
 ylabel(hca,'|B| [nT]')
+irf_legend(hca,{'mms1','mms2','mms3','mms4'},[0.98, 0.1],'color','cluster');
 
 hca = irf_panel('Bx'); set(hca,'ColorOrder',mmsColors)
 irf_pl_tx(hca,'B?',1)

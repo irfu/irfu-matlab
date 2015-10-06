@@ -2,7 +2,7 @@ function [hax,hl]=irf_plot_new(varargin)
 % [hax,hl]=irf_plot_new(varargin)
 
 %% Check input 
-[ax,args,nargs] = axescheck(varargin{:}); 
+[ax,args,nargs] = my_axescheck(varargin{:}); 
 x=args{1}; args=args(2:end); original_args=args;
 if isempty(x), eS='nothing to plot'; irf.log('critical','eS'),error(eS),end
 
@@ -12,7 +12,7 @@ if isnumeric(x) && numel(x)==1, init_figure()
   if nargout>0, hax=cTmp; end, return
 end
 
-% Default values that can be override by options
+% Default values that can be overriden by options
 dt = 0;
 flag_yy = 0;
 scaleyy = 1;
@@ -43,9 +43,9 @@ return % return from main function
   function plot_in_single_panel()
     if isempty(ax), % if empty axis use current axis GCA
       if isempty(get(0,'CurrentFigure')), % there is no figure open
-        irf_plot(1);
+        ax = irf_panel(randStr);
+      else ax = gca;
       end
-      ax=gca; 
     end
     hca = ax(1);
     ts = irf_plot_start_epoch(x{1}.time);
@@ -71,6 +71,14 @@ return % return from main function
     %ylabel(hca,get_label());
     irf_timeaxis(hca)
     hax=hca;
+    
+    function st = randStr
+      symbols = ['a':'z' 'A':'Z' '0':'9'];
+      MAX_ST_LENGTH = 10;
+      stLength = randi(MAX_ST_LENGTH);
+      nums = randi(numel(symbols),[1 stLength]);
+      st = symbols (nums);
+    end
   end
 
   function check_input_options()
@@ -149,4 +157,16 @@ return % return from main function
     end
   end
 
+end
+
+%% my_axescheck()
+function [ax,args,nargs] = my_axescheck(varargin)
+args = varargin;
+nargs = nargin;
+ax=[];
+if (nargs > 0) && all(ishghandle(args{1},'axes'))
+  ax = args{1};
+  args = args(2:end);
+  nargs = nargs-1;
+end
 end

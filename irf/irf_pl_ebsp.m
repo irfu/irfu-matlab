@@ -286,7 +286,7 @@ if nargout, out = h; end % Return here
     end
     units=irf_units; B = irf_abs(B); fc = [B(:,1) units.e*B(:,2)*1e-9/units.me/2/pi];
     mep = units.me/units.mp;
-    % F_ce, F_ce/2, F_cp, F_cHe, F, cO
+    %     F_ce, F_ce/2, F_ce/10   F_cH+,      F_cHe+,        F_cO+
     fc = [fc fc(:,2)/2 fc(:,2)/10 fc(:,2)*mep fc(:,2)*mep/4 fc(:,2)*mep/16];
     hold(hca,'on'), hp = irf_plot(hca,fc); hold(hca,'off')
     set(hp,'Color',[1 1 1],'LineWidth',2), 

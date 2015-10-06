@@ -709,7 +709,6 @@ classdef TSeries
         error('only scalars are supported')
       end
       Ts = obj; Ts.data = Ts.data*obj1;
-      update_name_units()
       
       function update_name_units()
         if ~isempty(obj.name) || ~isempty(obj1.name)

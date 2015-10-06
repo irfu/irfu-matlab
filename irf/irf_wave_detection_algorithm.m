@@ -1,7 +1,10 @@
 function h=irf_wave_detection_algorithm(tint,scId,varargin)    
-%function [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
- %   power_median_removed,waveFrequencies]=irf_wave_detection_algorithm(tint,varargin)    
-
+%IRF_WAVE_DETECTION_ALGORITHM  Find banded EMIC waves 
+%
+% [t,newfreq,powerCrossCov_SM_plot,hCyclFreq,heCyclFreq,oCyclFreq,...
+%     power_median_removed,waveFrequencies] = ...
+%     IRF_WAVE_DETECTION_ALGORITHM(tint,varargin)  
+%
 % IRF_WAVE_DETECTION_ALGORITHM duplicates the method of Bortnik et al. 2007
 % to detect EMIC waves
 %
