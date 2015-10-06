@@ -74,6 +74,7 @@ if nSubplots>=1 && nSubplots<=20,
 		set(0,'units',un);
 		clear xSize sLeft ySize yTop
     % XXX not sure this belongs here
+    set(hcf,'color','white');
     set(hcf,'defaultAxesColorOrder',[0 0 0;0 0 1;1 0 0;0.3 0.3 0.3;0 1 1 ;1 0 1; 1 1 0])
 	end
   clf;
