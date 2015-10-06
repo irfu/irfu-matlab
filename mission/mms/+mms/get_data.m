@@ -3,6 +3,8 @@ function res = get_data(varStr, Tint, mmsId)
 %
 %  res = MMS.GET_DATA(varStr, Tint, [mmsId])
 %
+%  mmsId=0 (DEFAULT) means 1:4
+%
 %  varStr is one of:
 %  EPHEMERIS:
 %     R_gse, R_gsm, V_gse, V_gsm
