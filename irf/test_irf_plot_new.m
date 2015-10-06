@@ -13,7 +13,7 @@ hca = irf_panel('panel A1');
 irf_plot_new(hca,TS1)
 
 %%
-h = irf_new_figure(2);
+h = irf_figure(2);
 hca = irf_panel('panel A2');
 irf_plot_new(hca,TS1)
 hca = irf_panel('panel B2');
@@ -29,7 +29,7 @@ irf_plot_new({TS2,TS3})
 irf_plot_new({TS2,TS3},'comp')
 
 %%
-h = irf_new_figure(2);
+h = irf_figure(2);
 hca = irf_panel('panel A');
 irf_plot_new(hca,{TS2.x,TS3.x},'comp')
 hca = irf_panel('panel B');

@@ -1,17 +1,19 @@
-function c=irf_new_figure(varargin)
-%IRF_NEW_FIGURE  
+function c=irf_figure(varargin)
+%IRF_FIGURE  Create a new figure
 %  
-%  H = IRF_NEW_FIGURE(NPANELS)
+%  H = IRF_FIGURE(NPANELS)
 %  Initialize new figure with NPANELS new panels
 %  Will use current figure, if empty.
 %
-%  H = IRF_NEW_FIGURE(HF,NPANELS)
+%  H = IRF_FIGURE(HF,NPANELS)
 %  Initialize existing figure with handle HF with NPANELS new panels, 
 %  
 %  
-%  H = IRF_NEW_FIGURE(HF,NPANELS,'reset')
+%  H = IRF_FIGURE(HF,NPANELS,'reset')
 %  Initialize figure HF with NPANELS new panels
 %  and reset it's size and other properties to default
+%
+% See also: irf_panel, irf_plot
 
 narginchk(1, 3)
 
