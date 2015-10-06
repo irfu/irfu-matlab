@@ -1,33 +1,33 @@
 %-Abstract
 %
-%   CSPICE_GFSEP determines the time intervals when the angular separation 
-%   between the position vectors of two target bodies relative to an 
+%   CSPICE_GFSEP determines the time intervals when the angular separation
+%   between the position vectors of two target bodies relative to an
 %   observer satisfies a numerical relationship.
-%   
+%
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
@@ -39,7 +39,7 @@
 %      All parameters described here are declared in the header file
 %      SpiceGF.h. See that file for parameter values.
 %
-%      SPICE_GF_CNVTOL     
+%      SPICE_GF_CNVTOL
 %
 %               is the convergence tolerance used for finding endpoints of
 %               the intervals comprising the result window.
@@ -47,10 +47,10 @@
 %               for roots should terminate: when a root is bracketed
 %               within an interval of length SPICE_GF_CNVTOL, the root is
 %               considered to have been found.
-% 
-%               The accuracy, as opposed to precision, of roots found 
-%               by this routine depends on the accuracy of the input 
-%               data. In most cases, the accuracy of solutions will be 
+%
+%               The accuracy, as opposed to precision, of roots found
+%               by this routine depends on the accuracy of the input
+%               data. In most cases, the accuracy of solutions will be
 %               inferior to their precision.
 %
 %      Arguments-
@@ -61,7 +61,7 @@
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
-%      shape1   the scalar string naming the geometric model used to represent 
+%      shape1   the scalar string naming the geometric model used to represent
 %               the shape of the 'targ1' body. Models supported by this routine:
 %
 %                  'SPHERE'        Treat the body as a sphere with radius
@@ -71,22 +71,22 @@
 %                  'POINT'         Treat the body as a point;
 %                                  radius has value zero.
 %
-%                  The 'shape1' string lacks sensitivity to case, leading 
+%                  The 'shape1' string lacks sensitivity to case, leading
 %                  and trailing blanks.
 %
 %      frame1   the scalar string naming the body-fixed reference frame
 %               corresponding to 'targ1'. cspice_gfsep does not currently use
 %               this argument's value, its use is reserved for future
-%               shape models. The value 'NULL' will suffice for 
+%               shape models. The value 'NULL' will suffice for
 %               "POINT" and "SPHERE" shaped bodies.
 %
-%      targ2    the scalar string naming the second body of interest. You can 
+%      targ2    the scalar string naming the second body of interest. You can
 %               also supply the integer ID code for the object as an
 %               integer string.  For example both 'MOON' and '301'
 %               are legitimate strings that indicate the moon is the
 %               target body.
 %
-%      shape2   the scalar string naming the geometric model used to represent 
+%      shape2   the scalar string naming the geometric model used to represent
 %               the shape of the 'targ2.' Models supported by this routine:
 %
 %                 'SPHERE'        Treat the body as a sphere with radius
@@ -96,30 +96,30 @@
 %                 'POINT'         Treat the body as a single point;
 %                                 radius has value zero.
 %
-%               The 'shape2' string lacks sensitivity to case, leading 
+%               The 'shape2' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      frame2   the scalar string naming the body-fixed reference frame
 %               corresponding to 'targ2'. cspice_gfsep does not currently use
 %               this argument's value, its use is reserved for future
-%               shape models. The value 'NULL' will suffice for 
+%               shape models. The value 'NULL' will suffice for
 %               "POINT" and "SPHERE" shaped bodies.
 %
 %      abcorr   the string scalar indicating the aberration corrections to apply
-%               to the state evaluations to account for one-way light time and 
+%               to the state evaluations to account for one-way light time and
 %               stellar aberration.
-%   
-%               This routine accepts the same aberration corrections as does 
+%
+%               This routine accepts the same aberration corrections as does
 %               the routine spkezr_c. See the header of spkezr_c for a
 %               detailed description of the aberration correction options.
 %               For convenience, the options are listed below:
 %
-%               This routine accepts the same aberration corrections as does 
+%               This routine accepts the same aberration corrections as does
 %               the SPICE routine SPKEZR. See the header of SPKEZR for a
 %               detailed description of the aberration correction options.
 %               For convenience, the options are listed below:
 %
-%                  'NONE'     Apply no correction.   
+%                  'NONE'     Apply no correction.
 %
 %                  'LT'       "Reception" case:  correct for
 %                             one-way light time using a Newtonian
@@ -153,7 +153,7 @@
 %                             Newtonian light time and stellar
 %                             aberration corrections.
 %
-%               The 'abcorr' string lacks sensitivity to case, and to embedded, 
+%               The 'abcorr' string lacks sensitivity to case, and to embedded,
 %               leading and trailing blanks.
 %
 %      obsrvr   the string scalar naming the observing body. Optionally, you
@@ -161,8 +161,8 @@
 %               string. For example, both 'EARTH' and '399' are
 %               legitimate strings to supply to indicate the
 %               observer is Earth.
-%               
-%      relate   the string identifying the relational operator used to 
+%
+%      relate   the string identifying the relational operator used to
 %               define a constraint on the angular separation. The result
 %               window found by this routine indicates the time intervals
 %               where the constraint is satisfied. Supported values of
@@ -198,11 +198,11 @@
 %
 %               Negative Angular Separation
 %
-%                  For those searches using a SPHERE shape identifier for 
-%                  either target body, the angular separation function 
+%                  For those searches using a SPHERE shape identifier for
+%                  either target body, the angular separation function
 %                  returns a negative value when the bodies overlap (occult).
 %
-%               The 'relate' string lacks sensitivity to case, leading 
+%               The 'relate' string lacks sensitivity to case, leading
 %               and trailing blanks.
 %
 %      refval   the double precision reference value used together with
@@ -216,7 +216,7 @@
 %      adjust   a double precision value used to modify searches for
 %               absolute extrema: when 'relate' is set to ABSMAX or ABSMIN and
 %               adjust is set to a positive value, cspice_gfsep finds times when
-%               the angular separation between the bodies is within adjust 
+%               the angular separation between the bodies is within adjust
 %               radians of the specified extreme value.
 %
 %               For relate set to ABSMAX, the result window contains
@@ -226,16 +226,16 @@
 %               For relate set to ABSMIN, the result window contains
 %               time intervals when the angular separation has
 %               values between ABSMIN and ABSMIN + 'adjust'.
-%             
+%
 %               'adjust' is not used for searches for local extrema,
 %               equality or inequality conditions.
 %
 %      step     the double precision time step size to use in the search.
 %
 %               'step' must be short enough to for a search using this step
-%               size to locate the time intervals where the 
-%               specified angular separation function is monotone 
-%               increasing or decreasing. However, 'step' must not be 
+%               size to locate the time intervals where the
+%               specified angular separation function is monotone
+%               increasing or decreasing. However, 'step' must not be
 %               *too* short, or the search will take an unreasonable
 %               amount of time.
 %
@@ -245,35 +245,35 @@
 %               See the discussion of the parameter SPICE_GF_CNVTOL for
 %               details.
 %
-%               'step' has units of TDB seconds. 
+%               'step' has units of TDB seconds.
 %
-%      nintvls  an integer scalar value specifying the number of intervals in 
+%      nintvls  an integer scalar value specifying the number of intervals in
 %               the internal workspace array used by this routine. 'nintvls'
 %               should be at least as large as the number of intervals
 %               within the search region on which the specified observer-target
 %               vector coordinate function is monotone increasing or decreasing.
 %               It does no harm to pick a value of 'nintvls' larger than the
-%               minimum required to execute the specified search, but if chosen 
+%               minimum required to execute the specified search, but if chosen
 %               too small, the search will fail.
 %
 %      cnfine   a double precision SPICE window that confines the time
 %               period over which the specified search is conducted.
 %               cnfine may consist of a single interval or a collection
-%               of intervals. 
+%               of intervals.
 %
 %               In some cases the confinement window can be used to
 %               greatly reduce the time period that must be searched
 %               for the desired solution. See the Particulars section
 %               below for further discussion.
-%              
-%               See the Examples section below for a code example 
+%
+%               See the Examples section below for a code example
 %               that shows how to create a confinement window.
 %
 %   the call:
 %
 %      result = cspice_gfsep( targ1,  shape1, frame1,          ...
-%                             targ2,  shape2, frame2,          ... 
-%                             abcorr, obsrvr, relate,  refval, ... 
+%                             targ2,  shape2, frame2,          ...
+%                             abcorr, obsrvr, relate,  refval, ...
 %                             adjust, step,   nintvls, cnfine )
 %
 %   returns:
@@ -281,12 +281,12 @@
 %      result   the SPICE window of intervals, contained within the
 %               confinement window 'cnfine', on which the specified
 %               constraint is satisfied.
-%               
+%
 %               If the search is for local extrema, or for absolute
 %               extrema with adjust set to zero, then normally each
 %               interval of result will be a singleton: the left and
 %               right endpoints of each interval will be identical.
-% 
+%
 %               If no times within the confinement window satisfy the
 %               constraint, 'result' will return with cardinality zero.
 %
@@ -297,26 +297,26 @@
 %   and the machine specific arithmetic implementation.
 %
 %      Determine the times of local maxima of the angular separation
-%      between the moon and sun as observed from earth from 
+%      between the moon and sun as observed from earth from
 %      Jan 1, 2007 to Jan 1 2008.
 %
 %      MAXWIN  =  1000;
 %      TIMFMT  = 'YYYY-MON-DD HR:MN:SC.###### (TDB) ::TDB ::RND';
-% 
+%
 %      %
 %      % Load kernels.
-%      % 
+%      %
 %      cspice_furnsh( 'standard.tm' );
-%   
+%
 %      %
 %      % Store the time bounds of our search interval in
 %      % the cnfine confinement window.
 %      %
 %      et = cspice_str2et( { '2007 JAN 01', '2008 JAN 01'} );
-%   
+%
 %      cnfine = cspice_wninsd( et(1), et(2) );
 %
-%      % 
+%      %
 %      % Search using a step size of 6 days (in units of seconds).
 %      %
 %      step   = 6.*cspice_spd;
@@ -327,13 +327,13 @@
 %      shape1 = 'SPHERE';
 %      frame1 = 'NULL';
 %      targ2  = 'SUN';
-%      shape2 = 'SPHERE';   
+%      shape2 = 'SPHERE';
 %      frame2 = 'NULL';
 %      abcorr = 'NONE';
 %      relate = 'LOCMAX';
 %      obsrvr = 'EARTH';
 %      nintvls = MAXWIN;
-% 
+%
 %      result = cspice_gfsep( targ1,  shape1, frame1, ...
 %                             targ2,  shape2, frame2, ...
 %                             abcorr, obsrvr, relate, ...
@@ -347,7 +347,7 @@
 %      for i=1:numel(result)/2
 %
 %         [left, right] = cspice_wnfetd( result, i );
-%  
+%
 %         output = cspice_timout( [left,right], TIMFMT );
 %
 %         if( isequal( left, right) )
@@ -362,7 +362,7 @@
 %         end
 %
 %      end
-%     
+%
 %      %
 %      % It's always good form to unload kernels after use,
 %      % particularly in Matlab due to data persistence.
@@ -388,7 +388,7 @@
 %-Particulars
 %
 %   This routine provides a simple interface for conducting searches
-%   for angular separation events. 
+%   for angular separation events.
 %
 %   This routine determines a set of one or more time intervals
 %   within the confinement window for which the angular separation
@@ -398,7 +398,7 @@
 %   Below we discuss in greater detail aspects of this routine's
 %   solution process that are relevant to correct and efficient
 %   use of this routine in user applications.
-%   
+%
 %   The Search Process
 %   ==================
 %
@@ -407,16 +407,20 @@
 %   periods, within the confinement window, over which the specified
 %   angular separation function is monotone increasing and monotone
 %   decreasing. Each of these time periods is represented by a SPICE window.
-%   Having found these windows, all of the angular separation function's 
+%   Having found these windows, all of the angular separation function's
 %   local extrema within the confinement window are known. Absolute extrema
 %   then can be found very easily.
 %
 %   Within any interval of these "monotone" windows, there will be at
 %   most one solution of any equality constraint. Since the boundary
-%   of the solution set for any inequality constraint is the set 
-%   of points where an equality constraint is met, the solutions of
-%   both equality and inequality constraints can be found easily
-%   once the monotone windows have been found.
+%   of the solution set for any inequality constraint is contained in
+%   the union of
+%
+%      - the set of points where an equality constraint is met
+%      - the boundary points of the confinement window
+%
+%   the solutions of both equality and inequality constraints can be
+%   found easily once the monotone windows have been found.
 %
 %   Step Size
 %   =========
@@ -425,12 +429,12 @@
 %   search process. Each interval of the confinement window is
 %   searched as follows: first, the input step size is used to
 %   determine the time separation at which the sign of the rate of
-%   change of angular separation (angular separation rate) will be 
-%   sampled. Starting at the left endpoint of an interval, samples 
-%   will be taken at each step. If a change of sign is found, a 
-%   root has been bracketed; at that point, the time at which the 
-%   angular separation rate is zero can be found by a refinement  
-%   process, for example, using a binary search. 
+%   change of angular separation (angular separation rate) will be
+%   sampled. Starting at the left endpoint of an interval, samples
+%   will be taken at each step. If a change of sign is found, a
+%   root has been bracketed; at that point, the time at which the
+%   angular separation rate is zero can be found by a refinement
+%   process, for example, using a binary search.
 %
 %   Note that the optimal choice of step size depends on the lengths
 %   of the intervals over which the distance function is monotone:
@@ -446,7 +450,7 @@
 %   monotone windows yields a dramatic efficiency improvement over a
 %   state-based search that simply tests at each step whether the
 %   specified constraint is satisfied. The latter type of search can
-%   miss solution intervals if the step size is shorter than the
+%   miss solution intervals if the step size is longer than the
 %   shortest solution interval.
 %
 %   Having some knowledge of the relative geometry of the target and
@@ -482,6 +486,21 @@
 %   solutions found by this routine. In general the accuracy of input
 %   data will be the limiting factor.
 %
+%   The user may change the convergence tolerance from the default
+%   SPICE_GF_CNVTOL value by calling the routine cspice_gfstol, e.g.
+%
+%      cspice_gfstol( tolerance value in seconds )
+%
+%   Call cspice_gfstol prior to calling this routine. All subsequent
+%   searches will use the updated tolerance value.
+%
+%   Setting the tolerance tighter than SPICE_GF_CNVTOL is unlikely to be
+%   useful, since the results are unlikely to be more accurate.
+%   Making the tolerance looser will speed up searches somewhat,
+%   since a few convergence steps will be omitted. However, in most
+%   cases, the step size is likely to have a much greater affect on
+%   processing time than would the convergence tolerance.
+%
 %   The Confinement Window
 %   ======================
 %
@@ -509,14 +528,20 @@
 %   CK.REQ
 %   TIME.REQ
 %   WINDOWS.REQ
-%   
+%
 %-Version
+%
+%   -Mice Version 1.0.1, 05-SEP-2012, EDW (JPL)
+%
+%      Edit to comments to correct search description.
+%
+%      Header updated to describe use of cspice_gfstol.
 %
 %    -Mice Version 1.0.1, 29-DEC-2009, EDW (JPL)
 %
-%     Edited argument descriptions. Removed mention of "ELLIPSOID"
-%     shape from 'shape1' and 'shape2' as that option is not yet 
-%     implemented.
+%      Edited argument descriptions. Removed mention of "ELLIPSOID"
+%      shape from 'shape1' and 'shape2' as that option is not yet
+%      implemented.
 %
 %   -Mice Version 1.0.0, 15-APR-2009, NJB EDW (JPL)
 %
@@ -527,8 +552,8 @@
 %-&
 
 function [result] = cspice_gfsep( targ1, shape1, frame1,          ...
-                                  targ2, shape2, frame2,          ... 
-                                  abcorr, obsrvr, relate, refval, ... 
+                                  targ2, shape2, frame2,          ...
+                                  abcorr, obsrvr, relate, refval, ...
                                   adjust, step, nintvls, cnfine )
 
    switch nargin
@@ -553,8 +578,8 @@ function [result] = cspice_gfsep( targ1, shape1, frame1,          ...
       otherwise
 
          error ( [ 'Usage: [result] = cspice_gfsep( `targ1`, `shape1`, ' ...
-                               '`frame1`, `targ2`, `shape2`, `frame2`, ' ... 
-                               '`abcorr`, `obsrvr`, `relate`, refval, '  ... 
+                               '`frame1`, `targ2`, `shape2`, `frame2`, ' ...
+                               '`abcorr`, `obsrvr`, `relate`, refval, '  ...
                                'adjust, step, nintvls, cnfine )' ] )
 
    end
@@ -566,8 +591,8 @@ function [result] = cspice_gfsep( targ1, shape1, frame1,          ...
    try
 
       [result] = mice('gfsep_c',  targ1, shape1, frame1,          ...
-                                  targ2, shape2, frame2,          ... 
-                                  abcorr, obsrvr, relate, refval, ... 
+                                  targ2, shape2, frame2,          ...
+                                  abcorr, obsrvr, relate, refval, ...
                                   adjust, step, nintvls,          ...
                                   [zeros(6,1); cnfine] );
    catch

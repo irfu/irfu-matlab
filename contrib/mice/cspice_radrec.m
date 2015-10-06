@@ -1,54 +1,54 @@
 %-Abstract
 %
-%   CSPICE_RADREC converts the right ascension, declination 
-%   coordinates of a location to rectangular (Cartesian) 
+%   CSPICE_RADREC converts the right ascension, declination
+%   coordinates of a location to rectangular (Cartesian)
 %   coordinates.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
-%   Given: 
+%   Given:
 %
-%      range   a double precision scalar or 1XN-vector describing 
+%      range   a double precision scalar or 1XN-vector describing
 %              distance of the point from the origin.
 %
-%      ra      a double precision scalar or 1XN-vector describing 
+%      ra      a double precision scalar or 1XN-vector describing
 %              right ascension of the input point:  the angular
 %              distance measured toward the east from the prime meridian
 %              to the meridian containing the input point. The direction
 %              of increasing right ascension is from the +X axis towards
 %              the +Y axis.
 %
-%              The range (i.e., the set of allowed values) of 
+%              The range (i.e., the set of allowed values) of
 %              `ra' is unrestricted.  Units are radians.
 %
-%      dec     a double precision scalar or 1XN-vector describing 
-%              declination of the point.  This is the angular 
+%      dec     a double precision scalar or 1XN-vector describing
+%              declination of the point.  This is the angular
 %              distance from the XY plane to the point.
 %
 %              The range of `dec' is unrestricted.  Units are radians.
@@ -60,7 +60,7 @@
 %   returns:
 %
 %      rectan   a double precision 3x1 array or double precision
-%               3xN array containing the rectangular coordinates of the 
+%               3xN array containing the rectangular coordinates of the
 %               position or set of positions
 %
 %               'rectan' returns with the same units associated with
@@ -82,8 +82,8 @@
 %
 %      %
 %      % Define a set of 15 right ascension-declination data sets
-%      % pairs (in degrees) for the earth's pole and the array of 
-%      % corresponding ephemeris times J2000 TDB. 
+%      % pairs (in degrees) for the earth's pole and the array of
+%      % corresponding ephemeris times J2000 TDB.
 %      %
 %      right_ascen = [ 180.003739,
 %                      180.003205,
@@ -117,24 +117,24 @@
 %                      89.997215,
 %                      89.996751 ];
 %
-%       et         = [ -18408539.52023917, 
-%                      -15778739.49107254, 
-%                      -13148939.46190590, 
-%                      -10519139.43273926, 
-%                      -7889339.40357262, 
-%                      -5259539.37440598, 
-%                      -2629739.34523934, 
-%                       60.68392730, 
-%                       2629860.71309394, 
-%                       5259660.74226063, 
-%                       7889460.77142727, 
-%                       10519260.80059391, 
-%                       13149060.82976055, 
-%                       15778860.85892719, 
+%       et         = [ -18408539.52023917,
+%                      -15778739.49107254,
+%                      -13148939.46190590,
+%                      -10519139.43273926,
+%                      -7889339.40357262,
+%                      -5259539.37440598,
+%                      -2629739.34523934,
+%                       60.68392730,
+%                       2629860.71309394,
+%                       5259660.74226063,
+%                       7889460.77142727,
+%                       10519260.80059391,
+%                       13149060.82976055,
+%                       15778860.85892719,
 %                       18408660.88809383 ];
 %
 %      %
-%      % Create a 1xN array of radii, the length of a 
+%      % Create a 1xN array of radii, the length of a
 %      % unit vector (1) the same size as the above arrays.
 %      %
 %      n_elements  = size(dec);
@@ -146,13 +146,13 @@
 %      %
 %      right_ascen = right_ascen * cspice_rpd;
 %      dec         = dec * cspice_rpd;
-%      
+%
 %      %
 %      % Convert the angular description of the unit vectors to
 %      % Cartesian.
 %      %
 %      pole        = cspice_radrec( rad, right_ascen', dec');
-%      
+%
 %      %
 %      % Retrieve the transformation matrix from frames J2000 to
 %      % IAU_EARTH.
@@ -160,7 +160,7 @@
 %      mat         = cspice_pxform( 'J2000', 'IAU_EARTH', et');
 %
 %      %
-%      % Rotate the 'pole' vector set into IAU_FRAME. All vectors 
+%      % Rotate the 'pole' vector set into IAU_FRAME. All vectors
 %      % should equal (to round-off) the z direction unit vector.
 %      %
 %
@@ -227,10 +227,10 @@
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   range ra and dec to rectangular coordinates 
-%   right_ascension and declination to rectangular 
-% 
+%
+%   range ra and dec to rectangular coordinates
+%   right_ascension and declination to rectangular
+%
 %-&
 
 function [rectan] = cspice_radrec( range, ra, dec)

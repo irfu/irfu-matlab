@@ -70,7 +70,7 @@
 
 -Particulars
 
-   This function exists only to wrap the two calls rquired to create a
+   This function exists only to wrap the two calls required to create a
    MATLAB scalar integer.
 
    Mice functionality depends on a number of routines provided with MATLAB by

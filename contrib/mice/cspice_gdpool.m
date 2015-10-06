@@ -7,41 +7,46 @@
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      name     the scalar string name of a pool variable associated 
-%               to double precision values.
+%      name     name of a pool variable associated to double precision values.
 %
-%      start    an integer value for the index indicating the 
-%               first component of the data vector assigned
-%               to 'name' for return (index 1 for all elements).
+%               [1,m] = size(name); char = class(name)
 %
-%      room     the scalar integer specifying the maximum number of components
-%               that can return for 'name'.
+%      start    value for the index indicating the first component of the data
+%               vector assigned to 'name' for return (index 1 for all
+%               elements).
+%
+%               [1,1] = size(start); int32 = class(start)
+%
+%      room     value specifying the maximum number of components that can
+%               return for 'name'.
+%
+%               [1,1] = size(room); int32 = class(room)
 %
 %   the call:
 %
@@ -49,16 +54,18 @@
 %
 %   returns:
 %
-%      values   a double precision array (NX1) of the values copied from
-%               the kernel pool data assigned to 'name' beginning at 
-%               index 'start'. 'values' returns empty if the variable 
-%               'name' does not exist in the kernel pool.
+%      values   the values copied from the kernel pool data assigned to 'name'
+%               beginning at index 'start'. 'values' returns empty if the
+%               variable 'name' does not exist in the kernel pool.
 %
-%      found    a scalar boolean indicating true if 'name' exists
-%               in the kernel pool and has numeric type, 
-%               false if it is not.
+%               [n,1] = size(values); double = class(values)
 %
-%      Note: 'values' has a size of 'room' or less (N<='room').
+%      found    the flag indicating true if 'name' exists in the kernel pool
+%               and has numeric type, false if it is not.
+%
+%               [1,1] = size(found); logical = class(found)
+%
+%               'values' has a size of 'room' or less (N<='room').
 %
 %-Examples
 %
@@ -68,7 +75,7 @@
 %
 %      %
 %      % Load a kernel containing the variable assignments:
-%      % 
+%      %
 %      %   CTEST_VAL = ('LARRY', 'MOE', 'CURLY' )
 %      %
 %      %   ITEST_VAL = ( 3141, 186, 282 )
@@ -76,10 +83,10 @@
 %      %   DTEST_VAL = ( 3.1415, 186. , 282.397 )
 %      %
 %      cspice_furnsh( 'pool_t.ker' )
-%   
+%
 %      %
-%      % Retrieve up-to 'ROOM' character entries for 
-%      % kernel pool variable named 'DTEST_VAL' to 
+%      % Retrieve up-to 'ROOM' character entries for
+%      % kernel pool variable named 'DTEST_VAL' to
 %      % the array named 'dvals'. The first index to return,
 %      % 'START', has value 1 (this returns all components).
 %      %
@@ -92,14 +99,14 @@
 %      % does not exist in the kernel pool.
 %      %
 %      [dvals, found] = cspice_gdpool( VAR, START, ROOM );
-%   
+%
 %      if ( found )
 %
 %         txt = sprintf( 'Found %s in the kernel pool', VAR );
 %         disp(txt)
 %
 %         n_elements = size( dvals, 1 );
-%         
+%
 %         %
 %         % Retrieve the number of elements returned in 'dvals' from the
 %         % second element returned from "size".
@@ -108,14 +115,14 @@
 %            txt = sprintf( '   Element %d of %s: %16.8f', n, VAR, dvals(n) );
 %            disp(txt)
 %         end
-%   
+%
 %      else
 %
 %         txt = sprintf( 'Failed to find %s in the kernel pool', VAR );
 %         disp(txt)
 %
 %      end
-%   
+%
 %      %
 %      % It's always good form to unload kernels after use,
 %      % particularly in MATLAB due to data persistence.
@@ -143,20 +150,26 @@
 %
 %-Version
 %
+%   -Mice Version 1.2.0, 12-MAR-2012, EDW (JPL), SCK (JPL)
+%
+%      "logical" call replaced with "zzmice_logical."
+%
+%      I/O descriptions edits to conform to Mice documentation format.
+%
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
 %
 %   RETURN the d.p. value of a pooled kernel variable
 %   RETURN the numeric value of a pooled kernel variable
-% 
+%
 %-&
 
 function [dvals, found] = cspice_gdpool( name, start, room )
 
    switch nargin
       case 3
-      
+
          name  = zzmice_str(name);
          start = zzmice_int(start);
          room  = zzmice_int(room);
@@ -178,7 +191,7 @@ function [dvals, found] = cspice_gdpool( name, start, room )
       % Convert the integer flags to MATLAB logicals for return to
       % the caller.
       %
-      found = logical(found);
+      found = zzmice_logical(found);
    catch
       rethrow(lasterror)
    end

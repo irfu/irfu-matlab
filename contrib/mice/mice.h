@@ -112,13 +112,20 @@
 
 -Version
 
-   -MICE Version 1.0.1 23-FEB-2009 (EDW)
+
+   -Mice Version 1.0.2 18-JUN-2012 (EDW)
+
+      Removed unused macro S_DBL_RET_ARGV.
+
+   -Mice Version 1.0.1 23-FEB-2009 (EDW)
 
       Added the *_OFF, *_IN, *_OUT, index aliases.
 
-   -MICE Version 1.0.0 31-JAN-2008 (EDW)
+   -Mice Version 1.0.0 31-JAN-2008 (EDW)
 
 -Index_Entries
+
+   MATLAB
 
 -&
 */
@@ -143,8 +150,6 @@ Variable's macros.
 #define       A_DBL_ARGV(x)          (SpiceDouble*)mxGetData(prhs[x])
 
 #define       A_DBL_RET_ARGV(x)      (SpiceDouble*)mxGetData(plhs[x])
-
-#define       S_DBL_RET_ARGV         mxCreateDoubleMatrix( 1, 1, mxREAL)
 
 #define       A_BOOL_RET_ARGV(x)     (SpiceBoolean*)mxGetData(plhs[x])
 

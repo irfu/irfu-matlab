@@ -1,54 +1,54 @@
 %-Abstract
 %
 %   CSPICE_RECSPH converts rectangular (Cartesian) coordinates to
-%   spherical coordinates. All coordinates are expressed as 
+%   spherical coordinates. All coordinates are expressed as
 %   double precision values.
 %
 %-Disclaimer
 %
 %   THIS SOFTWARE AND ANY RELATED MATERIALS WERE CREATED BY THE
 %   CALIFORNIA  INSTITUTE OF TECHNOLOGY (CALTECH) UNDER A U.S.
-%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE 
+%   GOVERNMENT CONTRACT WITH THE NATIONAL AERONAUTICS AND SPACE
 %   ADMINISTRATION (NASA). THE SOFTWARE IS TECHNOLOGY AND SOFTWARE
-%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED 
+%   PUBLICLY AVAILABLE UNDER U.S. EXPORT LAWS AND IS PROVIDED
 %   "AS-IS" TO THE RECIPIENT WITHOUT WARRANTY OF ANY KIND, INCLUDING
 %   ANY WARRANTIES OF PERFORMANCE OR MERCHANTABILITY OR FITNESS FOR
 %   A PARTICULAR USE OR PURPOSE (AS SET FORTH IN UNITED STATES UCC
-%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE 
+%   SECTIONS 2312-2313) OR FOR ANY PURPOSE WHATSOEVER, FOR THE
 %   SOFTWARE AND RELATED MATERIALS, HOWEVER USED.
 %
-%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY, 
-%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING, 
-%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF 
-%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY 
-%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR 
-%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL 
+%   IN NO EVENT SHALL CALTECH, ITS JET PROPULSION LABORATORY,
+%   OR NASA BE LIABLE FOR ANY DAMAGES AND/OR COSTS, INCLUDING,
+%   BUT NOT LIMITED TO, INCIDENTAL OR CONSEQUENTIAL DAMAGES OF
+%   ANY KIND, INCLUDING ECONOMIC DAMAGE OR INJURY TO PROPERTY
+%   AND LOST PROFITS, REGARDLESS OF WHETHER CALTECH, JPL, OR
+%   NASA BE ADVISED, HAVE REASON TO KNOW, OR, IN FACT, SHALL
 %   KNOW OF THE POSSIBILITY.
 %
-%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE 
-%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO 
-%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING 
+%   RECIPIENT BEARS ALL RISK RELATING TO QUALITY AND PERFORMANCE
+%   OF THE SOFTWARE AND ANY RELATED MATERIALS, AND AGREES TO
+%   INDEMNIFY CALTECH AND NASA FOR ALL THIRD-PARTY CLAIMS RESULTING
 %   FROM THE ACTIONS OF RECIPIENT IN THE USE OF THE SOFTWARE.
 %
 %-I/O
 %
 %   Given:
 %
-%      rectan   a double precision 3x1 array or double precision 
-%               3xN array containing the rectangular coordinates of the 
+%      rectan   a double precision 3x1 array or double precision
+%               3xN array containing the rectangular coordinates of the
 %               position or set of positions
 %
 %   the call:
-%   
+%
 %      [r, colat, lon] = cspice_recsph(rectan)
-%   
+%
 %   returns:
-%   
-%      r       a double precision scalar or double precision 1XN 
+%
+%      r       a double precision scalar or double precision 1XN
 %              array describing the distance of the position from origin
 %
-%      colat   a double precision scalar or double precision 1XN 
-%              array describing the angle between the point and the 
+%      colat   a double precision scalar or double precision 1XN
+%              array describing the angle between the point and the
 %              positive z-axis, measured in radians (also referred to
 %              as the polar angle)
 %
@@ -61,11 +61,11 @@
 %
 %              The positive Y-axis is at longitude PI/2 radians.
 %
-%              The argument 'r' returns with the same units associated 
+%              The argument 'r' returns with the same units associated
 %              with 'rectan'.
 %
 %              'r', 'colat', and 'lon' return with the same vectorization
-%              measure (N) as 'rectan'. 
+%              measure (N) as 'rectan'.
 %
 %-Examples
 %
@@ -79,7 +79,7 @@
 %      % Load an SPK, leapseconds, and PCK kernel set.
 %      %
 %      cspice_furnsh( 'standard.tm' )
-%      
+%
 %      %
 %      % Create a vector of scalar times.
 %      %
@@ -90,7 +90,7 @@
 %      % in the J2000 frame without aberration correction.
 %      %
 %      [pos, et] = cspice_spkpos( 'MOON', et, 'J2000', 'NONE', 'EARTH' );
-%   
+%
 %      %
 %      % Convert the array of position vectors 'pos' to spherical
 %      % coordinates.
@@ -111,7 +111,7 @@
 %   MATLAB outputs:
 %
 %      1.0e-14 *
-%   
+%
 %                     0  -0.03701547067225   0.63783453323816
 %      0.02182376758148   0.01641520435413  -0.01531271963894
 %     -0.01912147275010  -0.04855217028457   0.02039513446643
@@ -158,7 +158,7 @@
 %
 %   MATLAB outputs:
 %
-%        r        colat       lon          x         y           z   
+%        r        colat       lon          x         y           z
 %     --------   --------   --------   --------   --------   --------
 %       0.0000     0.0000     0.0000     0.0000     0.0000     0.0000
 %       1.0000    90.0000     0.0000     1.0000     0.0000     0.0000
@@ -171,7 +171,7 @@
 %       1.4142    45.0000     0.0000     1.0000     0.0000     1.0000
 %       1.4142    45.0000    90.0000     0.0000     1.0000     1.0000
 %       1.7321    54.7356    45.0000     1.0000     1.0000     1.0000
-%   
+%
 %-Particulars
 %
 %   None.
@@ -188,9 +188,9 @@
 %   -Mice Version 1.0.0, 22-NOV-2005, EDW (JPL)
 %
 %-Index_Entries
-% 
-%   rectangular to spherical coordinates 
-% 
+%
+%   rectangular to spherical coordinates
+%
 %-&
 
 function [r, colat, lon] = cspice_recsph(rectan)

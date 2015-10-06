@@ -1,6 +1,6 @@
 /*
 
--Procedure  mice (MATLAB to CSPICE interfaces)
+-Procedure  mice (MATLAB to CSPICE interfaces),
 
 -Abstract
 
@@ -43,7 +43,7 @@
 
 
 /*
-   Recall the mexopts.sh file contains any user defined include path 
+   Recall the mexopts.sh file contains any user defined include path
    declarations ( -I...path... ) required for the build.
 */
 #include <stdlib.h>
@@ -73,7 +73,7 @@
 
 #ifdef OCTAVE
 
-#define true 1
+#define true  1
 
 #define false 0
 
@@ -84,7 +84,7 @@
 
 -Brief_I/O
 
-   None. 
+   None.
 
 -Detailed_Input
 
@@ -103,6 +103,8 @@
 #define  Nx4           ConstSpiceDouble(*)[4]
 #define  Nx6           ConstSpiceDouble(*)[6]
 #define  HASHSIZE      1999
+#define  STR_LEN       255
+
 
 /*
 -Exceptions
@@ -118,9 +120,9 @@
    If you have any questions about this package, feature request, or
    find any problems, please contact:
 
-      Ed Wright, ed.wright@jpl.nasa.gov 
-      
-   1. The first input variable passes from MATLAB in prhs[1], not prhs[0]. 
+      Ed Wright, ed.wright@jpl.nasa.gov
+
+   1. The first input variable passes from MATLAB in prhs[1], not prhs[0].
    plhs[0] contains the name of the interface to execute. The first output
    variable returns to MATLAB in plhs[0].
 
@@ -151,20 +153,20 @@
 
       -mxCreateCharMatrixFromStrings returns:
 
-      A pointer to the created string mxArray, if successful. If unsuccessful 
+      A pointer to the created string mxArray, if successful. If unsuccessful
       in a stand-alone (non MEX-file) application,
       mxCreateCharMatrixFromStrings returns NULL. If unsuccessful in a
       MEX-file, the MEX-file terminates and control returns to the MATLAB
       prompt. Insufficient free heap space is the primary reason for
-      mxCreateCharArray to be unsuccessful. Another possible reason for 
+      mxCreateCharArray to be unsuccessful. Another possible reason for
       failure is that str contains fewer than m strings.
 
       -mxCreateDoubleScalar returns:
 
-      A pointer to the created mxArray, if successful. mxCreateDoubleScalar is 
-      unsuccessful if there is not enough free heap space to create the 
-      mxArray. If mxCreateDoubleScalar is unsuccessful in a MEX-file, the 
-      MEX-file prints an "Out of Memory" message, terminates, and control 
+      A pointer to the created mxArray, if successful. mxCreateDoubleScalar is
+      unsuccessful if there is not enough free heap space to create the
+      mxArray. If mxCreateDoubleScalar is unsuccessful in a MEX-file, the
+      MEX-file prints an "Out of Memory" message, terminates, and control
       returns to the MATLAB prompt. If mxCreateDoubleScalar is unsuccessful
       in a stand-alone (non MEX-file) application, mxCreateDoubleScalar returns
       NULL in C (0 in Fortran).
@@ -175,12 +177,12 @@
    double in a wrapper.
 
    3. The 4xN and 3xN arguments passed the CK writers do not require an
-   array transpose operation since the required form for these arrays in MATLAB 
+   array transpose operation since the required form for these arrays in MATLAB
    notation resolves to the correct form for passing to the CSPICE call, i.e.
    Nx4 and Nx3.
-   
-   4. Several interfaces use mxMalloc for dynamic memory allocation as this 
-   functionreturns to top level on error without the need to check for a failed 
+
+   4. Several interfaces use mxMalloc for dynamic memory allocation as this
+   function returns to top level on error without the need to check for a failed
    condition.
 
 -Examples
@@ -194,21 +196,123 @@
 -Literature_References
 
    Mathworks External Interfaces Reference:
-   
+
       http://www.mathworks.com/access/helpdesk/help/techdoc/matlab.html
 
 -Author_and_Institution
 
    E.D. Wright        (JPL)
    G. Chinn           (JPL)
+   S. C. Krening      (JPL)
 
 -Version
 
 */
 
-#define VERSION  "Mice 1.2.0 28-APR-2010 (EDW)"
+#define VERSION  "Mice 1.4.0 31-OCT-2012 (EDW)(SCK)"
 
 /*
+
+      Added interfaces:
+
+         cspice_cidfrm (mice_cidfrm)
+         cspice_cnmfrm (mice_cnmfrm)
+         cspice_dafac
+         cspice_dafbbs
+         cspice_dafbfs
+         cspice_dafcls
+         cspice_dafcs
+         cspice_dafdc
+         cspice_dafec
+         cspice_daffna
+         cspice_daffpa
+         cspice_dafgda
+         cspice_dafgn
+         cspice_dafgs
+         cspice_dafopr
+         cspice_dafopw
+         cspice_dafus
+         cspice_dcyldr
+         cspice_dgeodr
+         cspice_dlatdr
+         cspice_dpgrdr
+         cspice_drdcyl
+         cspice_drdgeo
+         cspice_drdlat
+         cspice_drdpgr
+         cspice_drdsph
+         cspice_dsphdr
+         cspice_dvpool
+         cspice_edlimb (mice_edlimb)
+         cspice_edterm
+         cspice_fovray
+         cspice_fovtrg
+         cspice_frame
+         cspice_frinfo (mice_frinfo)
+         cspice_frmnam
+         cspice_gfilum
+         cspice_gfpa
+         cspice_gfstol
+         cspice_inedpl
+         cspice_inelpl
+         cspice_inrypl
+         cspice_invort
+         cspice_namfrm
+         cspice_npedln (mice_npedln)
+         cspice_npelpt (mice_npelpt)
+         cspice_nplnpt (mice_nplnpt)
+         cspice_occult
+         cspice_phaseq
+         cspice_pjelpl (mice_pjelpl)
+         cspice_pl2nvc
+         cspice_pl2nvp
+         cspice_pl2psv
+         cspice_psv2pl
+         cspice_pxfrm2
+         cspice_spkcls
+         cspice_spkcpo (mice_spkcpo)
+         cspice_spkcpt (mice_spkcpt)
+         cspice_spkcvo (mice_spkcvo)
+         cspice_spkcvt (mice_spkcvt)
+         cspice_spkopn
+         cspice_spkpvn
+         cspice_spksfs
+         cspice_spkw08
+         cspice_surfpt (mice_surfpt)
+         cspice_timdef_get
+         cspice_timdef_set
+         cspice_vprjp
+         cspice_vprjpi
+         cspice_vproj
+         cspice_xfmsta
+
+      Structure MiceBodID renamed MiceNameID.
+
+      Structure MiceSurf renamed MiceNear.
+
+      Many, many code and comment cleanups.
+
+      Recoded cspice_gdpool, cspice_gipool, cspice_getfov to use mxAlloc
+      instead of mxCreateNumericArray, reducing memory usage and eliminating
+      possible memory leak.
+
+      Input boolean arguments pass from the Matlab layer as integers.
+      Those interface routines with boolean inputs had argcheck structs
+      tagging the arguments as MiceBoolean instead of MiceInt. Corrected.
+
+      Several memcpy calls replaced with the MOVED macro.
+
+   -Mice 1.3.0 12-JUL-2010 (EDW)
+
+      Added an mxDestroyArray call prior to each mxSetField call. This
+      eliminates a memory leak caused when returning scalar values in
+      structure members (dumb bug caused by designer who should be beaten
+      with a sack of soggy rutabagas).
+
+      Corrected dimension declaration of "ptarg[6]" to "ptarg[3]"
+      for spkpos_c interface.
+
+   -Mice 1.2.0 28-APR-2010 (EDW)
 
       Added interfaces:
 
@@ -230,31 +334,31 @@
          cspice_unitim
 
       Replaced use of *mxGetLogicals for logical arguments returned
-      in structure fields with the 
-      
-         mxSetField( ..., mxCreateLogicalScalar(...), ... ) 
-         
+      in structure fields with the
+
+         mxSetField( ..., mxCreateLogicalScalar(...), ... )
+
       construct.
 
       Added ifdef block to eliminate use of "matrix.h" for octave builds.
-      Need to eliminate "matrix.h" during octave builds first described by 
+      Need to eliminate "matrix.h" during octave builds first described by
       Peter Wolff.
 
-      Corrected failure to release allocated memory in cspice_sce2s and 
+      Corrected failure to release allocated memory in cspice_sce2s and
       cspice_scdecd after corresponding CSPICE call failures.
-      
+
       Hash size increased to 1999.
-      
+
       Corrected ArgCheck structure entry for boddef_c. Input variables
       were incorrectly marked as vectorized.
 
    -Mice 1.1.0 23-FEB-2009 (EDW)
 
-      Altered function of the 'size' argument' in cspice_spkcov and 
-      cspice_ckcov to represent the number of intervals for the workspace 
+      Altered function of the 'size' argument' in cspice_spkcov and
+      cspice_ckcov to represent the number of intervals for the workspace
       window rather than the number of values in the window.
 
-      All interfaces that add a scalar double precision value to a structure 
+      All interfaces that add a scalar double precision value to a structure
       use a mxSetField call.
 
       Added interfaces:
@@ -275,7 +379,7 @@
          cspice_wncard
          cspice_wnsumd (mice_wnsumd)
          cspice_wnvald
-         
+
       Corrected spelling error "carfinality."
 
    -Mice 1.0.0 14-FEB-2008 (EDW)
@@ -283,14 +387,14 @@
 -Index_Entries
 
    MATLAB
-   
+
 -&
 */
 
 
 /*
 
-Calculate/assign common values, size of the default string length. 
+Calculate/assign common values, size of the default string length.
 Note, find the DEFAULT_STR_LENGTH definitions in mice.h.
 
 */
@@ -304,17 +408,17 @@ SpiceInt m2 = HASHSIZE;
 
 
 
-/* 
-The hashtable routines implemented by Gilbert Chinn. 
+/*
+The hashtable routines implemented by Gilbert Chinn.
 */
 
-struct bucket 
+struct bucket
    {
    char           * key;
    void           (*binding)(int, mxArray*[], int, const mxArray*[]);
    struct bucket  * next;
    };
-   
+
 static struct bucket *table[HASHSIZE];
 
 
@@ -325,7 +429,7 @@ void hashtable_destroy()
    {
    int              i;
    struct bucket  * b;
-   
+
    for (i=0;i<HASHSIZE;++i)
       {
       while ( (b = table[i]) )
@@ -337,6 +441,8 @@ void hashtable_destroy()
       }
 
    }
+
+
 
 
 /*
@@ -359,18 +465,21 @@ void ( *hashtable_lookup(char *key) )(int, mxArray*[], int, const mxArray*[])
    }
 
 
+
+
 /*
 -Procedure Bucket
 */
-struct bucket *Bucket( char *key, 
-                       void (*binding)(int, mxArray*[], int, const mxArray*[]), 
+struct bucket *Bucket( char *key,
+                       void (*binding)(int, mxArray*[], int, const mxArray*[]),
                        struct bucket *next )
    {
    struct bucket *b = malloc(sizeof(struct bucket));
 
    if ( b == NULL )
       {
-      mexErrMsgTxt( "MICE(MALLOCFAILED): malloc failed in struct bucket." );
+      mexErrMsgTxt( "MICE(MALLOCFAILED): malloc failed in struct bucket. "
+                    "This is a fatal error. Please contact NAIF.");
       }
 
    b->key      = key;
@@ -380,10 +489,12 @@ struct bucket *Bucket( char *key,
    }
 
 
+
+
 /*
 -Procedure hashtable_insert
 */
-void hashtable_insert(char *key, 
+void hashtable_insert(char *key,
                       void (*binding)(int, mxArray*[], int, const mxArray*[]))
    {
    int index    = zzhash2_(key, &m2, strlen(key));
@@ -392,8 +503,9 @@ void hashtable_insert(char *key,
 
 
 
-/* 
-Block of wrapper function calls. All calls have the same form: 
+
+/*
+Block of wrapper function calls. All calls have the same form:
 
    cspice_name(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]);
 
@@ -406,11 +518,11 @@ Block of wrapper function calls. All calls have the same form:
 void cspice_mice(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            item  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            value [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            item  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            value [DEFAULT_STR_LENGTH+1];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "item",  MiceChar, 0, {0}, 0},
       { "value", MiceChar, 0, {0}, 0},
@@ -425,11 +537,13 @@ void cspice_mice(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    Decide what to return based on the value of 'item.'
 
-   __DATE__ contains the date string of the compilation
-   of the interface.
+      __DATE__, a compiler directive, the date string of the compilation
+      of the interface.
 
-   __TIME__ contains the time string of the compilation
-   of the interface.
+      __TIME__, a compiler directive, the time string of the compilation
+      of the interface.
+
+      VERSION, the string describing the version of Mice
 
    */
    if ( eqstr_c( "DATE", item ) )
@@ -477,7 +591,7 @@ void cspice_axisar(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble    xr[3][3];
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "axis",  MiceDouble, 1, {3},    0},
       { "angle", MiceDouble, 0, {0},    0},
@@ -496,8 +610,9 @@ void cspice_axisar(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    CHECK_CALL_FAILURE(SCALAR);
 
    xpose_c( xr, (SpiceDouble(*)[3])r );
-
    }
+
+
 
 
 /*
@@ -508,12 +623,14 @@ void cspice_b1900(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    check_arg_num( nrhs, nlhs, 0, 1 );
 
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( b1900_c() );
    }
+
+
 
 
 /*
@@ -524,12 +641,13 @@ void cspice_b1950(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    check_arg_num( nrhs, nlhs, 0, 1 );
 
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( b1950_c() );
    }
+
 
 
 
@@ -548,12 +666,12 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean         found;
 
    SpiceInt             i;
-   
+
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "code", MiceInt  , 0, {0}, 1},
-      { "name", MiceBodID, 0, {0}, 1},
+      { "code", MiceInt,    0, {0}, 1},
+      { "name", MiceNameID, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -562,7 +680,7 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    extra    = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   vec_code = A_INT_ARGV(1); 
+   vec_code = A_INT_ARGV(1);
    code     = *vec_code;
 
    if (extra->count>1)
@@ -576,9 +694,10 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          bodc2n_c( code, DEFAULT_STR_LENGTH, name, &found );
          CHECK_CALL_FAILURE(i);
 
+          mxDestroyArray( mxGetField( plhs[0], i, "name" ) );
           if ( found )
              {
-             mxSetField(plhs[0], i, "name", mxCreateString(name)   );
+             mxSetField( plhs[0], i, "name", mxCreateString(name)   );
              }
           else
              {
@@ -586,9 +705,11 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
              code = 0;
              }
 
+          mxDestroyArray( mxGetField( plhs[0], i, "code" ) );
           mxSetField( plhs[0], i, "code", zzmice_CreateIntScalar(code) );
 
-          mxSetField( plhs[0], i, "found", 
+          mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+          mxSetField( plhs[0], i, "found",
                             mxCreateLogicalScalar(found ? true: false));
          }
 
@@ -599,6 +720,7 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       bodc2n_c( code, DEFAULT_STR_LENGTH, name, &found );
       CHECK_CALL_FAILURE(SCALAR);
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "name" ) );
       if ( found )
          {
          mxSetField(plhs[0], 0, "name", mxCreateString(name)   );
@@ -609,13 +731,16 @@ void mice_bodc2n(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          code = 0;
          }
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "code" ) );
       mxSetField( plhs[0], 0,"code", zzmice_CreateIntScalar(code)  );
 
-      mxSetField( plhs[0], 0, "found", 
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
                   mxCreateLogicalScalar(found ? true: false));
       }
 
    }
+
 
 
 
@@ -633,12 +758,12 @@ void mice_bodc2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt           * vec_code;
 
    SpiceInt             i;
-   
+
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "code", MiceInt  , 0, {0}, 1},
-      { "name", MiceBodID, 0, {0}, 1},
+      { "code", MiceInt,   0, {0}, 1},
+      { "name", MiceNameID, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -647,7 +772,7 @@ void mice_bodc2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    extra    = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   vec_code = A_INT_ARGV(1); 
+   vec_code = A_INT_ARGV(1);
 
    if (extra->count>1)
       {
@@ -660,13 +785,16 @@ void mice_bodc2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          bodc2s_c( code, DEFAULT_STR_LENGTH, name );
          CHECK_CALL_FAILURE(i);
 
+         mxDestroyArray( mxGetField( plhs[0], i, "name" ) );
          mxSetField( plhs[0], i, "name", mxCreateString(name) );
 
+         mxDestroyArray( mxGetField( plhs[0], i, "code" ) );
          mxSetField( plhs[0], i, "code", zzmice_CreateIntScalar(code) );
 
          /*
          In this case, found should always return true.
          */
+         mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
          mxSetField( plhs[0], i, "found", mxCreateLogicalScalar(true) );
          }
 
@@ -679,17 +807,21 @@ void mice_bodc2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       bodc2s_c( code, DEFAULT_STR_LENGTH, name );
       CHECK_CALL_FAILURE(SCALAR);
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "name" ) );
       mxSetField( plhs[0], 0, "name", mxCreateString(name) );
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "code" ) );
       mxSetField( plhs[0], 0, "code", zzmice_CreateIntScalar(code) );
 
       /*
       In this case, found should always return true.
       */
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
       mxSetField( plhs[0], 0, "found", mxCreateLogicalScalar(true) );
       }
 
    }
+
 
 
 
@@ -705,7 +837,7 @@ void cspice_boddef(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             code;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "name", MiceChar, 0, {0}, 0},
       { "code", MiceInt,  0, {0}, 0},
@@ -715,25 +847,26 @@ void cspice_boddef(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   mxGetString(prhs[1], name, DEFAULT_STR_LENGTH); 
+   mxGetString(prhs[1], name, DEFAULT_STR_LENGTH);
    code = S_INT_ARGV(2);
 
-   boddef_c(name,code); 
+   boddef_c(name,code);
    CHECK_CALL_FAILURE(SCALAR);
 
    }
 
 
 
+
 /*
-   void              bodn2c_c( ConstSpiceChar     * name,
+   void              bodn2c_c ( ConstSpiceChar     * name,
                                 SpiceInt           * code,
                                 SpiceBoolean       * found );
 */
 void mice_bodn2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            name[DEFAULT_STR_LENGTH+1]; 
+
+   SpiceChar            name[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_name;
    SpiceInt             code;
    SpiceBoolean         found;
@@ -742,10 +875,10 @@ void mice_bodn2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "name", MiceChar,  0, {0}, 1},
-      { "code", MiceBodID, 0, {0}, 1},
+      { "code", MiceNameID, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -769,29 +902,32 @@ void mice_bodn2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             name[j] = (SpiceChar)mx_name[i + (extra->count*j)];
             }
-            
+
          name[extra->offset[0]] = '\0';
 
          bodn2c_c( name, &code, &found );
          CHECK_CALL_FAILURE(i);
 
+          mxDestroyArray( mxGetField( plhs[0], i, "name") );
           if ( found )
              {
-             mxSetField(plhs[0], i, "name" , mxCreateString(name) );
+             mxSetField( plhs[0], i, "name", mxCreateString(name) );
              }
           else
              {
-             mxSetField(plhs[0], i, "name" , mxCreateString("\0") );
+             mxSetField(plhs[0], i, "name",  mxCreateString("\0") );
              code = 0;
              }
 
+          mxDestroyArray( mxGetField( plhs[0], i, "code") );
           mxSetField( plhs[0], i,"code", zzmice_CreateIntScalar(code) );
 
-          mxSetField( plhs[0], i, "found", 
+          mxDestroyArray( mxGetField( plhs[0], i, "found") );
+          mxSetField( plhs[0], i, "found",
                       mxCreateLogicalScalar(found ? true: false));
          }
 
-      } 
+      }
    else
       {
       mxGetString(prhs[1], name, DEFAULT_STR_LENGTH);
@@ -799,19 +935,22 @@ void mice_bodn2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       bodn2c_c( name, &code, &found );
       CHECK_CALL_FAILURE(SCALAR);
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "name") );
       if ( found )
          {
-         mxSetField(plhs[0], 0, "name" , mxCreateString(name)   );
+         mxSetField(plhs[0], 0, "name",  mxCreateString(name)   );
          }
       else
          {
-         mxSetField(plhs[0], 0, "name" , mxCreateString("\0") );
+         mxSetField(plhs[0], 0, "name",  mxCreateString("\0") );
          code = 0;
          }
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "code") );
       mxSetField( plhs[0], 0,"code", zzmice_CreateIntScalar(code) );
 
-      mxSetField( plhs[0], 0, "found", 
+      mxDestroyArray( mxGetField( plhs[0], 0, "found") );
+      mxSetField( plhs[0], 0, "found",
                   mxCreateLogicalScalar(found ? true: false));
       }
 
@@ -827,8 +966,8 @@ void mice_bodn2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void mice_bods2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            name[DEFAULT_STR_LENGTH+1]; 
+
+   SpiceChar            name[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_name;
    SpiceInt             code;
    SpiceBoolean         found;
@@ -837,10 +976,10 @@ void mice_bods2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "name", MiceChar,  0, {0}, 1},
-      { "code", MiceBodID, 0, {0}, 1},
+      { "code", MiceNameID, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -864,29 +1003,32 @@ void mice_bods2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             name[j] = (SpiceChar)mx_name[i + (extra->count*j)];
             }
-            
+
          name[extra->offset[0]] = '\0';
 
          bods2c_c( name, &code, &found );
          CHECK_CALL_FAILURE(i);
 
+          mxDestroyArray( mxGetField( plhs[0], i, "name" ) );
           if ( found )
              {
-             mxSetField(plhs[0], i, "name" , mxCreateString(name)   );
+             mxSetField( plhs[0], i, "name", mxCreateString(name)   );
              }
           else
              {
-             mxSetField(plhs[0], i, "name" , mxCreateString("\0") );
+             mxSetField( plhs[0], i, "name", mxCreateString("\0") );
              code = 0;
              }
 
+          mxDestroyArray( mxGetField( plhs[0], i,"code" ) );
           mxSetField( plhs[0], i,"code", zzmice_CreateIntScalar(code) );
 
-          mxSetField( plhs[0], i, "found", 
+          mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+          mxSetField( plhs[0], i, "found",
                       mxCreateLogicalScalar(found ? true: false));
          }
 
-      } 
+      }
    else
       {
       mxGetString(prhs[1], name, DEFAULT_STR_LENGTH);
@@ -894,19 +1036,22 @@ void mice_bods2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       bods2c_c( name, &code, &found );
       CHECK_CALL_FAILURE(SCALAR);
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "name" ) );
       if ( found )
          {
-         mxSetField(plhs[0], 0, "name" , mxCreateString(name)   );
+         mxSetField(plhs[0], 0, "name", mxCreateString(name)   );
          }
       else
          {
-         mxSetField(plhs[0], 0, "name" , mxCreateString("\0") );
+         mxSetField( plhs[0], 0, "name",  mxCreateString("\0") );
          code = 0;
          }
 
+      mxDestroyArray( mxGetField( plhs[0], 0,"code" ) );
       mxSetField( plhs[0], 0,"code", zzmice_CreateIntScalar(code));
 
-      mxSetField( plhs[0], 0, "found", 
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
                   mxCreateLogicalScalar(found ? true: false));
       }
 
@@ -917,40 +1062,40 @@ void mice_bods2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
- void              bodvcd_c( SpiceInt           bodyid,
+ void              bodvcd_c ( SpiceInt           bodyid,
                               ConstSpiceChar     * item,
                               SpiceInt             maxn,
-                              SpiceInt           * dim ,
+                              SpiceInt           * dim,
                               SpiceDouble        * values );
 
- 
+
 */
 void cspice_bodvcd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceInt             bodyid; 
-   SpiceChar            item       [DEFAULT_STR_LENGTH+1]; 
+   SpiceInt             bodyid;
+   SpiceChar            item       [DEFAULT_STR_LENGTH+1];
    SpiceInt             maxn;
    SpiceInt             dim;
    SpiceDouble        * values;
    SpiceDouble          ret_values [MAXVAL];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "bodyid", MiceInt,    0, {0}, 0},
       { "item",   MiceChar,   0, {0}, 0},
       { "maxn",   MiceInt,    0, {0}, 0},
       { "values", MiceIgnore, 0, {0}, 0}
       };
-   
+
    check_arg_num( nrhs, nlhs, 3, 1 );
-   
+
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   bodyid = S_INT_ARGV(1); 
+   bodyid = S_INT_ARGV(1);
    mxGetString( prhs[2], item, DEFAULT_STR_LENGTH );
-   
+
    maxn = S_INT_ARGV(3);
 
    bodvcd_c( bodyid, item, maxn, &dim, ret_values);
@@ -962,9 +1107,9 @@ void cspice_bodvcd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    */
    plhs[0]  = mxCreateDoubleMatrix( dim, 1, mxREAL );
    values   = A_DBL_RET_ARGV(0);
-   
-   memcpy( values, ret_values, dim*sizeof(SpiceDouble) );
-   
+
+   MOVED( ret_values, dim, values );
+
    }
 
 
@@ -972,40 +1117,39 @@ void cspice_bodvcd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-
- void              bodvrd_c( ConstSpiceChar     * body,
+ void              bodvrd_c ( ConstSpiceChar     * body,
                               ConstSpiceChar     * item,
                               SpiceInt             maxn,
-                              SpiceInt           * dim ,
+                              SpiceInt           * dim,
                               SpiceDouble        * values );
- 
+
 */
 void cspice_bodvrd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            item       [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            body       [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            item       [DEFAULT_STR_LENGTH+1];
+   SpiceChar            body       [DEFAULT_STR_LENGTH+1];
    SpiceInt             maxn;
    SpiceInt             dim;
    SpiceDouble        * values;
    SpiceDouble          ret_values [MAXVAL];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "body",   MiceChar,   0, {0}, 0},
       { "item",   MiceChar,   0, {0}, 0},
       { "maxn",   MiceInt,    0, {0}, 0},
       { "values", MiceIgnore, 0, {0}, 0}
       };
-   
+
    check_arg_num( nrhs, nlhs, 3, 1 );
-   
+
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    mxGetString( prhs[1], body, DEFAULT_STR_LENGTH );
    mxGetString( prhs[2], item, DEFAULT_STR_LENGTH );
-   
+
    maxn = S_INT_ARGV(3);
 
    bodvrd_c(body, item, maxn, &dim, ret_values);
@@ -1018,9 +1162,10 @@ void cspice_bodvrd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    plhs[0]  = mxCreateDoubleMatrix( dim, 1, mxREAL );
    values   = A_DBL_RET_ARGV(0);
 
-   memcpy(  values, ret_values, dim*sizeof(SpiceDouble) );
-   
+   MOVED( ret_values, dim, values );
+
    }
+
 
 
 
@@ -1040,11 +1185,11 @@ void cspice_cgv2el(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceEllipse         ellipse;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "center",  MiceDouble,  1, {3}, 0},
       { "vec1",    MiceDouble,  1, {3}, 0},
-      { "vec2",    MiceDouble,  1, {3}, 0}, 
+      { "vec2",    MiceDouble,  1, {3}, 0},
       { "ellipse", MiceEllipse, 0, {0}, 0},
       };
 
@@ -1056,23 +1201,124 @@ void cspice_cgv2el(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec1   = A_DBL_ARGV(2);
    vec2   = A_DBL_ARGV(3);
 
-   cgv2el_c ( center, vec1, vec2,  &ellipse ); 
+   cgv2el_c ( center, vec1, vec2,  &ellipse );
    CHECK_CALL_FAILURE( SCALAR );
 
    memcpy( mxGetPr( mxGetField( plhs[0], 0,"center") ),
-           ellipse.center, 
+           ellipse.center,
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMajor") ), 
-           ellipse.semiMajor, 
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMajor") ),
+           ellipse.semiMajor,
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMinor") ), 
-           ellipse.semiMinor, 
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMinor") ),
+           ellipse.semiMinor,
            3*sizeof(SpiceDouble)
          );
+
+   }
+
+
+
+
+/*
+   void              cidfrm_c ( SpiceInt            cent,
+                                SpiceInt            lenout,
+                                SpiceInt          * frcode,
+                                SpiceChar         * frname,
+                                SpiceBoolean      * found  );
+*/
+void mice_cidfrm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             cent;
+   SpiceInt           * vec_cent;
+   SpiceChar            frname[DEFAULT_STR_LENGTH+1];
+   SpiceInt             frcode;
+   SpiceBoolean         found;
+
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "cent",   MiceInt,    0, {0}, 1},
+      { "cnmfrm", MiceNameID, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_cent = A_INT_ARGV(1);
+
+   if (extra->count>1)
+      {
+      for (i=0;i<extra->count;i++)
+         {
+
+         cent = *(vec_cent  + i*extra->offset[0]);
+
+         cidfrm_c ( cent,
+                    DEFAULT_STR_LENGTH,
+                    &frcode,
+                    frname,
+                    &found   );
+         CHECK_CALL_FAILURE(i);
+
+         mxDestroyArray( mxGetField( plhs[0], i, "frname" ) );
+         if ( found )
+            {
+            mxSetField( plhs[0], i, "name", mxCreateString(frname) );
+            }
+         else
+            {
+            mxSetField( plhs[0], i, "name", mxCreateString("\0") );
+            frcode = 0;
+            }
+
+         mxDestroyArray( mxGetField( plhs[0], i,"code" ) );
+         mxSetField( plhs[0], i,"code", zzmice_CreateIntScalar(frcode) );
+
+         mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+         mxSetField( plhs[0], i, "found",
+                          mxCreateLogicalScalar(found ? true: false));
+         }
+
+      }
+   else
+      {
+
+      cent = *vec_cent;
+
+      cidfrm_c ( cent,
+                 DEFAULT_STR_LENGTH,
+                 &frcode,
+                 frname,
+                 &found   );
+      CHECK_CALL_FAILURE(SCALAR);
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "name" ) );
+      if ( found )
+         {
+         mxSetField(plhs[0], 0, "name", mxCreateString(frname)   );
+         }
+      else
+         {
+         mxSetField( plhs[0], 0, "name",  mxCreateString("\0") );
+         frcode = 0;
+         }
+
+      mxDestroyArray( mxGetField( plhs[0], 0,"code" ) );
+      mxSetField( plhs[0], 0,"code", zzmice_CreateIntScalar(frcode));
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
+                  mxCreateLogicalScalar(found ? true: false));
+      }
 
    }
 
@@ -1088,7 +1334,7 @@ void cspice_ckcls(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             handle;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "handle", MiceInt, 0, {0}, 0},
       };
@@ -1106,6 +1352,7 @@ void cspice_ckcls(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              ckcov_c ( ConstSpiceChar    * ck,
                                SpiceInt            idcode,
@@ -1118,16 +1365,16 @@ void cspice_ckcls(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   SpiceChar           ck    [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar           level [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar           timsys[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           ck    [DEFAULT_STR_LENGTH+1];
+   SpiceChar           level [DEFAULT_STR_LENGTH+1];
+   SpiceChar           timsys[DEFAULT_STR_LENGTH+1];
    mxChar            * mx_ck;
-   
+
    SpiceInt            i;
    SpiceInt            j;
    int                 sizearray[2];
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
    SpiceInt            idcode;
 
@@ -1138,11 +1385,11 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean        needav;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "ck",     MiceChar,    0, {0}, 1},
       { "idcode", MiceInt,     0, {0}, 0},
-      { "needav", MiceBoolean, 0, {0}, 0},
+      { "needav", MiceInt, 0, {0}, 0},
       { "level",  MiceChar,    0, {0}, 0},
       { "tol",    MiceDouble,  0, {0}, 0},
       { "timsys", MiceChar,    0, {0}, 0},
@@ -1171,7 +1418,7 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    size = S_INT_ARGV(7) * 2;
 
    cover = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    ssized_( ( integer * ) &size, ( double * ) cover );
    scardd_( ( integer * ) &card, ( double * ) cover );
@@ -1180,7 +1427,7 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_ck = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -1206,6 +1453,11 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   ( ftnlen       ) strlen(ck),
                   ( ftnlen       ) strlen(level),
                   ( ftnlen       ) strlen(timsys)  );
+
+         /*
+         Check for a failure signal. Free the memory assigned to 'cover'
+         before signaling a Matlab error.
+         */
          if ( failed_c())
             {
             mxFree( cover );
@@ -1234,6 +1486,11 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                ( ftnlen       ) strlen(ck),
                ( ftnlen       ) strlen(level),
                ( ftnlen       ) strlen(timsys)  );
+
+      /*
+      Check for a failure signal. Free the memory assigned to 'cover'
+      before signaling a Matlab error.
+      */
       if ( failed_c())
          {
          mxFree( cover );
@@ -1268,14 +1525,15 @@ void cspice_ckcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   void              ckgp_c( SpiceInt            inst, 
-                              SpiceDouble         sclkdp, 
-                              SpiceDouble         tol, 
-                              ConstSpiceChar    * ref, 
-                              SpiceDouble         cmat[3][3], 
-                              SpiceDouble       * clkout,  
-                              SpiceBoolean      * found      ) 
+   void              ckgp_c( SpiceInt            inst,
+                              SpiceDouble         sclkdp,
+                              SpiceDouble         tol,
+                              ConstSpiceChar    * ref,
+                              SpiceDouble         cmat[3][3],
+                              SpiceDouble       * clkout,
+                              SpiceBoolean      * found      )
 */
 void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -1296,15 +1554,15 @@ void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "inst"  , MiceInt    , 0, {0}   , 0},
-      { "sclkdp", MiceDouble , 0, {0}   , 1},
-      { "tol"   , MiceDouble , 0, {0}   , 0},
-      { "ref"   , MiceChar   , 0, {0}   , 0},
-      { "cmat"  , MiceDouble , 2, {3, 3}, 1},
-      { "clkout", MiceDouble , 0, {0}   , 1},
-      { "found" , MiceBoolean, 0, {0}   , 1},
+      { "inst",   MiceInt,     0, {0},    0},
+      { "sclkdp", MiceDouble,  0, {0},    1},
+      { "tol",    MiceDouble,  0, {0},    0},
+      { "ref",    MiceChar,    0, {0},    0},
+      { "cmat",   MiceDouble,  2, {3, 3}, 1},
+      { "clkout", MiceDouble,  0, {0},    1},
+      { "found",  MiceBoolean, 0, {0},    1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 3);
@@ -1312,7 +1570,7 @@ void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    vec_sclkdp = A_DBL_ARGV(2);
-   inst       = S_INT_ARGV(1);   
+   inst       = S_INT_ARGV(1);
    sclkdp     = *(vec_sclkdp);
    tol        = S_DBL_ARGV(3);
 
@@ -1321,7 +1579,7 @@ void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_cmat   = A_DBL_RET_ARGV(0);
    vec_clkout = A_DBL_RET_ARGV(1);
    vec_found  = A_BOOL_RET_ARGV(2);
- 
+
    if (extra->count>1)
       {
       for (i=0;i<extra->count;i++)
@@ -1331,15 +1589,15 @@ void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          clkout =  (vec_clkout + i*extra->offset[5]);
          found  =  (vec_found  + i*extra->offset[6]);
 
-         ckgp_c(inst, sclkdp, tol, ref, 
+         ckgp_c(inst, sclkdp, tol, ref,
                 (SpiceDouble(*)[3])xr, clkout, found);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
 
          xpose_c( xr, (SpiceDouble(*)[3])cmat);
 
          }
-         
-      } 
+
+      }
    else
       {
       cmat   = vec_cmat;
@@ -1348,24 +1606,25 @@ void cspice_ckgp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       ckgp_c(inst, sclkdp, tol, ref, (SpiceDouble(*)[3])xr, clkout, found);
       CHECK_CALL_FAILURE(SCALAR);
-      
+
       xpose_c( xr, (SpiceDouble(*)[3])cmat);
-      
+
       }
 
    }
 
 
 
+
 /*
-   void              ckgpav_c( SpiceInt            inst, 
-                                SpiceDouble         sclkdp, 
-                                SpiceDouble         tol, 
-                                ConstSpiceChar    * ref, 
-                                SpiceDouble         cmat[3][3], 
+   void              ckgpav_c( SpiceInt            inst,
+                                SpiceDouble         sclkdp,
+                                SpiceDouble         tol,
+                                ConstSpiceChar    * ref,
+                                SpiceDouble         cmat[3][3],
                                 SpiceDouble         av[3],
-                                SpiceDouble       * clkout,  
-                                SpiceBoolean      * found      ) 
+                                SpiceDouble       * clkout,
+                                SpiceBoolean      * found      )
 */
 void cspice_ckgpav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -1388,23 +1647,23 @@ void cspice_ckgpav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "inst"  , MiceInt    , 0, {0},    0},
-      { "sclkdp", MiceDouble , 0, {0},    1},
-      { "tol"   , MiceDouble , 0, {0},    0},
-      { "ref"   , MiceChar   , 0, {0},    0},
-      { "cmat"  , MiceDouble , 2, {3, 3}, 1},
-      { "av"    , MiceDouble , 1, {3},    1},
-      { "clkout", MiceDouble , 0, {0},    1},
-      { "found" , MiceBoolean, 0, {0},    1},
+      { "inst",   MiceInt,     0, {0},    0},
+      { "sclkdp", MiceDouble,  0, {0},    1},
+      { "tol",    MiceDouble,  0, {0},    0},
+      { "ref",    MiceChar,    0, {0},    0},
+      { "cmat",   MiceDouble,  2, {3, 3}, 1},
+      { "av",     MiceDouble,  1, {3},    1},
+      { "clkout", MiceDouble,  0, {0},    1},
+      { "found",  MiceBoolean, 0, {0},    1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 4);
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   inst       = S_INT_ARGV(1);   
+   inst       = S_INT_ARGV(1);
    vec_sclkdp = A_DBL_ARGV(2);
    tol        = S_DBL_ARGV(3);
    mxGetString(prhs[4], ref, DEFAULT_STR_LENGTH);
@@ -1425,14 +1684,14 @@ void cspice_ckgpav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          clkout =  (vec_clkout + i*extra->offset[6]);
          found  =  (vec_found  + i*extra->offset[7]);
 
-         ckgpav_c(inst, sclkdp, tol, ref, 
+         ckgpav_c(inst, sclkdp, tol, ref,
                   (SpiceDouble(*)[3])xr, av, clkout, found);
          CHECK_CALL_FAILURE(i);
-         
+
          xpose_c( xr, (SpiceDouble(*)[3])cmat);
          }
-         
-      } 
+
+      }
    else
       {
 
@@ -1443,13 +1702,13 @@ void cspice_ckgpav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       clkout = vec_clkout;
       found  = vec_found;
 
-      ckgpav_c(inst, 
-               sclkdp, 
-               tol, 
-               ref, 
-               (SpiceDouble(*)[3])xr, 
-               av, 
-               clkout, 
+      ckgpav_c(inst,
+               sclkdp,
+               tol,
+               ref,
+               (SpiceDouble(*)[3])xr,
+               av,
+               clkout,
                found);
       CHECK_CALL_FAILURE(SCALAR);
 
@@ -1468,24 +1727,24 @@ void cspice_ckgpav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   SpiceChar           ck[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           ck[DEFAULT_STR_LENGTH+1];
    mxChar            * mx_ck;
-   
+
    SpiceInt            i;
    SpiceInt            j;
    int                 sizearray[2];
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
    SpiceInt          * ids_f;
    SpiceInt          * ids;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "ck"  , MiceChar  , 0, {0}, 1},
-      { "size", MiceInt   , 0, {0}, 0},
-      { "ids" , MiceIgnore, 0, {0}, 0},
+      { "ck",   MiceChar,   0, {0}, 1},
+      { "size", MiceInt,    0, {0}, 0},
+      { "ids",  MiceIgnore, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
@@ -1493,7 +1752,7 @@ void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    size = S_INT_ARGV(2);
-   ids  = (SpiceInt*)mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceInt)  ); 
+   ids  = (SpiceInt*)mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceInt)  );
 
    ssizei_( ( integer * ) &size, ( integer * ) ids   );
    scardi_( ( integer * ) &card, ( integer * ) ids   );
@@ -1502,7 +1761,7 @@ void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_ck = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -1521,6 +1780,11 @@ void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          ckobj_(  ( char        * ) ck,
                    ( integer    * ) (ids),
                    ( ftnlen       ) strlen(ck)   );
+
+         /*
+         Check for a failure signal. Free the memory assigned to 'ids'
+         before signaling a Matlab error.
+         */
          if ( failed_c())
             {
             mxFree( ids );
@@ -1542,6 +1806,11 @@ void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       ckobj_(  ( char        * ) ck,
                 ( integer    * ) (ids),
                 ( ftnlen       ) strlen(ck)   );
+
+      /*
+      Check for a failure signal. Free the memory assigned to 'ids'
+      before signaling a Matlab error.
+      */
       if ( failed_c())
          {
          mxFree( ids );
@@ -1581,26 +1850,25 @@ void cspice_ckobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_ckopn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            fname [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            ifname[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            fname [DEFAULT_STR_LENGTH+1];
+   SpiceChar            ifname[DEFAULT_STR_LENGTH+1];
    SpiceInt             ncomch;
    SpiceInt           * handle;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "fname" , MiceChar, 0, {0}, 0},
+      { "fname",  MiceChar, 0, {0}, 0},
       { "ifname", MiceChar, 0, {0}, 0},
-      { "ncomch", MiceInt , 0, {0}, 0},
-      { "handle", MiceInt , 0, {0}, 0},
+      { "ncomch", MiceInt,  0, {0}, 0},
+      { "handle", MiceInt,  0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1);
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-
-   mxGetString(prhs[1], fname , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[1], fname,  DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], ifname, DEFAULT_STR_LENGTH);
 
    ncomch = S_INT_ARGV(3);
@@ -1610,6 +1878,7 @@ void cspice_ckopn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    CHECK_CALL_FAILURE(SCALAR);
 
    }
+
 
 
 
@@ -1634,28 +1903,28 @@ void cspice_ckw01(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          begtime;
    SpiceDouble          endtime;
    SpiceInt             inst;
-   SpiceChar            ref   [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            ref   [DEFAULT_STR_LENGTH+1];
    SpiceBoolean         avflag;
-   SpiceChar            segid [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            segid [DEFAULT_STR_LENGTH+1];
    SpiceInt             sclkdp_size;
-   
+
    ConstSpiceDouble   * sclkdp;
    ConstSpiceDouble   * quats;
    ConstSpiceDouble   * avvs;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "handle" , MiceInt    , 0, { 0 },    0},
-      { "begtime", MiceDouble , 0, { 0 },    0},
-      { "endtime", MiceDouble , 0, { 0 },    0},
-      { "inst"   , MiceInt    , 0, { 0 },    0},
-      { "ref"    , MiceChar   , 0, { 0 },    0},
-      { "avflag" , MiceBoolean, 0, { 0 },    0},
-      { "segid"  , MiceChar   , 0, { 0 },    0},
-      { "sclkdp" , MiceDouble , 1, { 0 },    0},
-      { "quats"  , MiceDouble , 2, { 4, 0 }, 0},
-      { "avvs"   , MiceDouble , 2, { 3, 0 }, 0},
+      { "handle",  MiceInt,     0, { 0 },    0},
+      { "begtime", MiceDouble,  0, { 0 },    0},
+      { "endtime", MiceDouble,  0, { 0 },    0},
+      { "inst",    MiceInt,     0, { 0 },    0},
+      { "ref",     MiceChar,    0, { 0 },    0},
+      { "avflag",  MiceInt, 0, { 0 },    0},
+      { "segid",   MiceChar,    0, { 0 },    0},
+      { "sclkdp",  MiceDouble,  1, { 0 },    0},
+      { "quats",   MiceDouble,  2, { 4, 0 }, 0},
+      { "avvs",    MiceDouble,  2, { 3, 0 }, 0},
       };
 
    check_arg_num( nrhs, nlhs, 10, 0);
@@ -1709,6 +1978,7 @@ void cspice_ckw01(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              ckw02_c  ( SpiceInt            handle,
                                 SpiceDouble         begtim,
@@ -1730,10 +2000,10 @@ void cspice_ckw02(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          begtime;
    SpiceDouble          endtime;
    SpiceInt             inst;
-   SpiceChar            ref   [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            segid [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            ref   [DEFAULT_STR_LENGTH+1];
+   SpiceChar            segid [DEFAULT_STR_LENGTH+1];
    SpiceInt             start_size;
-   
+
    ConstSpiceDouble   * start;
    ConstSpiceDouble   * stop;
    ConstSpiceDouble   * quats;
@@ -1741,19 +2011,19 @@ void cspice_ckw02(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    ConstSpiceDouble   * rates;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "handle" , MiceInt    , 0, { 0 },    0},
-      { "begtime", MiceDouble , 0, { 0 },    0},
-      { "endtime", MiceDouble , 0, { 0 },    0},
-      { "inst"   , MiceInt    , 0, { 0 },    0},
-      { "ref"    , MiceChar   , 0, { 0 },    0},
-      { "segid"  , MiceChar   , 0, { 0 },    0},
-      { "start"  , MiceDouble , 1, { 0 },    0},
-      { "stop"   , MiceDouble , 1, { 0 },    0},
-      { "quats"  , MiceDouble , 2, { 4, 0 }, 0},
-      { "avvs"   , MiceDouble , 2, { 3, 0 }, 0},
-      { "rates"  , MiceDouble , 1, { 0 },    0},
+      { "handle",  MiceInt,     0, { 0 },    0},
+      { "begtime", MiceDouble,  0, { 0 },    0},
+      { "endtime", MiceDouble,  0, { 0 },    0},
+      { "inst",    MiceInt,     0, { 0 },    0},
+      { "ref",     MiceChar,    0, { 0 },    0},
+      { "segid",   MiceChar,    0, { 0 },    0},
+      { "start",   MiceDouble,  1, { 0 },    0},
+      { "stop",    MiceDouble,  1, { 0 },    0},
+      { "quats",   MiceDouble,  2, { 4, 0 }, 0},
+      { "avvs",    MiceDouble,  2, { 3, 0 }, 0},
+      { "rates",   MiceDouble,  1, { 0 },    0},
       };
 
    check_arg_num( nrhs, nlhs, 11, 0);
@@ -1800,14 +2070,14 @@ void cspice_ckw02(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    avvs    = (ConstSpiceDouble*)mxGetData(prhs[10]);
    rates   = (ConstSpiceDouble*)mxGetData(prhs[11]);
 
-   ckw02_c( handle, 
-            begtime, 
-            endtime, 
-            inst, 
+   ckw02_c( handle,
+            begtime,
+            endtime,
+            inst,
             ref,
-            segid , 
-            start_size, 
-            start , 
+            segid,
+            start_size,
+            start,
             stop,
             (Nx4)quats,
             (Nx3)avvs,
@@ -1842,31 +2112,31 @@ void cspice_ckw03(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          begtime;
    SpiceDouble          endtime;
    SpiceInt             inst;
-   SpiceChar            ref   [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            ref   [DEFAULT_STR_LENGTH+1];
    SpiceBoolean         avflag;
-   SpiceChar            segid [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            segid [DEFAULT_STR_LENGTH+1];
    SpiceInt             sclkdp_size;
    SpiceInt             nints;
-   
+
    ConstSpiceDouble   * sclkdp;
    ConstSpiceDouble   * quats;
    ConstSpiceDouble   * avvs;
    ConstSpiceDouble   * starts;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "handle" , MiceInt    , 0, { 0 },    0},
-      { "begtime", MiceDouble , 0, { 0 },    0},
-      { "endtime", MiceDouble , 0, { 0 },    0},
-      { "inst"   , MiceInt    , 0, { 0 },    0},
-      { "ref"    , MiceChar   , 0, { 0 },    0},
-      { "avflag" , MiceBoolean, 0, { 0 },    0},
-      { "segid"  , MiceChar   , 0, { 0 },    0},
-      { "sclkdp" , MiceDouble , 1, { 0 },    0},
-      { "quats"  , MiceDouble , 2, { 4, 0 }, 0},
-      { "avvs"   , MiceDouble , 2, { 3, 0 }, 0},
-      { "starts" , MiceDouble , 1, { 0 },    0},
+      { "handle",  MiceInt,     0, { 0 },    0},
+      { "begtime", MiceDouble,  0, { 0 },    0},
+      { "endtime", MiceDouble,  0, { 0 },    0},
+      { "inst",    MiceInt,     0, { 0 },    0},
+      { "ref",     MiceChar,    0, { 0 },    0},
+      { "avflag",  MiceInt, 0, { 0 },    0},
+      { "segid",   MiceChar,    0, { 0 },    0},
+      { "sclkdp",  MiceDouble,  1, { 0 },    0},
+      { "quats",   MiceDouble,  2, { 4, 0 }, 0},
+      { "avvs",    MiceDouble,  2, { 3, 0 }, 0},
+      { "starts",  MiceDouble,  1, { 0 },    0},
       };
 
    check_arg_num( nrhs, nlhs, 11, 0);
@@ -1888,7 +2158,7 @@ void cspice_ckw03(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                             "measure of vectorization as `sclkdp`" );
       }
 
-   
+
    handle  = S_INT_ARGV(1);
    begtime = S_DBL_ARGV(2);
    endtime = S_DBL_ARGV(3);
@@ -1925,6 +2195,7 @@ void cspice_ckw03(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble              clight_c( void )
 */
@@ -1932,10 +2203,10 @@ void cspice_clight(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( clight_c() );
    }
@@ -1944,18 +2215,131 @@ void cspice_clight(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   void              clpool_c( void ) 
+   void              clpool_c( void )
 */
 void cspice_clpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 0 );
 
-   /* 
+   /*
    Not much to do, make the call.
    */
    clpool_c();
    }
+
+
+
+
+/*
+   void              cnmfrm_c ( ConstSpiceChar    * cname,
+                                SpiceInt            lenout,
+                                SpiceInt          * frcode,
+                                SpiceChar         * frname,
+                                SpiceBoolean      * found   );
+*/
+void mice_cnmfrm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            cname[DEFAULT_STR_LENGTH+1];
+   SpiceChar            frname[DEFAULT_STR_LENGTH+1];
+   mxChar             * mx_cname;
+   SpiceInt             frcode;
+   SpiceBoolean         found;
+
+   SpiceInt             i;
+   SpiceInt             j;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "cname",  MiceChar,   0, {0}, 1},
+      { "cnmfrm", MiceNameID, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+
+   if (extra->count>1)
+      {
+      mx_cname = (mxChar *)mxGetChars(prhs[1]);
+
+      for (i=0;i<extra->count;i++)
+         {
+
+         /*
+         Extract the string data, character by character, into
+         CSPICE strings. The mx_str array stores the data in a column
+         major format, we need to extract the data by rows.
+         */
+         for ( j=0; j<extra->offset[0]; j++)
+            {
+            cname[j] = (SpiceChar)mx_cname[i + (extra->count*j)];
+            }
+
+         cname[extra->offset[0]] = '\0';
+
+         cnmfrm_c ( cname,
+                    DEFAULT_STR_LENGTH,
+                    &frcode,
+                    frname,
+                    &found   );
+         CHECK_CALL_FAILURE(i);
+
+          mxDestroyArray( mxGetField( plhs[0], i, "frname" ) );
+          if ( found )
+             {
+             mxSetField( plhs[0], i, "name", mxCreateString(frname) );
+             }
+          else
+             {
+             mxSetField( plhs[0], i, "name", mxCreateString("\0") );
+             frcode = 0;
+             }
+
+          mxDestroyArray( mxGetField( plhs[0], i,"code" ) );
+          mxSetField( plhs[0], i,"code", zzmice_CreateIntScalar(frcode) );
+
+          mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+          mxSetField( plhs[0], i, "found",
+                          mxCreateLogicalScalar(found ? true: false));
+         }
+
+      }
+   else
+      {
+      mxGetString(prhs[1], cname, DEFAULT_STR_LENGTH);
+
+      cnmfrm_c ( cname,
+                 DEFAULT_STR_LENGTH,
+                 &frcode,
+                 frname,
+                 &found   );
+      CHECK_CALL_FAILURE(SCALAR);
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "name" ) );
+      if ( found )
+         {
+         mxSetField(plhs[0], 0, "name", mxCreateString(frname)   );
+         }
+      else
+         {
+         mxSetField( plhs[0], 0, "name",  mxCreateString("\0") );
+         frcode = 0;
+         }
+
+      mxDestroyArray( mxGetField( plhs[0], 0,"code" ) );
+      mxSetField( plhs[0], 0,"code", zzmice_CreateIntScalar(frcode));
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
+                  mxCreateLogicalScalar(found ? true: false));
+      }
+
+   }
+
 
 
 
@@ -1977,10 +2361,10 @@ void cspice_conics(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "elts" , MiceDouble, 1, {8}, 1},
-      { "et"   , MiceDouble, 0, {0}, 1},
+      { "elts",  MiceDouble, 1, {8}, 1},
+      { "et",    MiceDouble, 0, {0}, 1},
       { "state", MiceDouble, 1, {6}, 1},
       };
 
@@ -2003,17 +2387,17 @@ void cspice_conics(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          state =  (vec_state + i*extra->offset[2]);
 
          conics_c(elts, et, state);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
-      
-      } 
+
+      }
    else
       {
 
       elts  =  vec_elts;
       et    = *vec_et;
       state =  vec_state;
-      
+
       conics_c(elts, et, state);
       CHECK_CALL_FAILURE(SCALAR);
       }
@@ -2032,33 +2416,33 @@ void cspice_conics(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_convrt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar           in[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar           out[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           in[DEFAULT_STR_LENGTH+1];
+   SpiceChar           out[DEFAULT_STR_LENGTH+1];
    SpiceDouble         x;
    SpiceDouble       * vec_x;
    SpiceDouble       * y;
    SpiceDouble       * vec_y;
-   
+
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "x" ,  MiceDouble, 0, {0}, 1},
-      { "in",  MiceChar  , 0, {0}, 0},
-      { "out", MiceChar  , 0, {0}, 0},
+      { "x",   MiceDouble, 0, {0}, 1},
+      { "in",  MiceChar,   0, {0}, 0},
+      { "out", MiceChar,   0, {0}, 0},
       { "y",   MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
-   
+
    extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    vec_x = A_DBL_ARGV(1);
-   
-   mxGetString(prhs[2], in , DEFAULT_STR_LENGTH);
+
+   mxGetString(prhs[2], in,  DEFAULT_STR_LENGTH);
    mxGetString(prhs[3], out, DEFAULT_STR_LENGTH);
- 
+
    vec_y = A_DBL_RET_ARGV(0);
 
    if (extra->count>1)
@@ -2097,7 +2481,7 @@ void cspice_convrt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 SpiceDouble    z,
                                 SpiceDouble *  radius,
                                 SpiceDouble *  lon,
-                                SpiceDouble *  lat ) 
+                                SpiceDouble *  lat )
 */
 void cspice_cyllat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -2117,15 +2501,15 @@ void cspice_cyllat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceInt             i;
 
-   struct extra_dims  * extra;   
-   struct argcheck ArgCheck[] = 
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
       {
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lonc"  , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lonc",   MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       { "radius", MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -2147,7 +2531,7 @@ void cspice_cyllat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          r      = *(vec_r      + i*extra->offset[0]);
@@ -2158,18 +2542,20 @@ void cspice_cyllat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          lat    =  (vec_lat    + i*extra->offset[5]);
 
          cyllat_c(r, lonc, z, radius, lon, lat);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
       cyllat_c(r, lonc, z, radius, lon, lat);
-      CHECK_CALL_FAILURE(SCALAR); ; 
+      CHECK_CALL_FAILURE(SCALAR); ;
       }
 
    }
+
+
 
 
 /*
@@ -2180,7 +2566,7 @@ void cspice_cyllat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_cylrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_r;
    SpiceDouble        * vec_lon;
    SpiceDouble        * vec_z;
@@ -2189,15 +2575,15 @@ void cspice_cylrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          lon;
    SpiceDouble          z;
    SpiceDouble        * rectan;
- 
+
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       { "rectan", MiceDouble, 1, {3}, 1},
       };
 
@@ -2217,27 +2603,29 @@ void cspice_cylrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          r      = *(vec_r      + i*extra->offset[0]);
          lon    = *(vec_lon    + i*extra->offset[1]);
          z      = *(vec_z      + i*extra->offset[2]);
          rectan =  (vec_rectan + i*extra->offset[3]);
-         
+
          cylrec_c(r, lon, z, rectan);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
       cylrec_c(r, lon, z, rectan);
-      CHECK_CALL_FAILURE(SCALAR); ; 
+      CHECK_CALL_FAILURE(SCALAR); ;
       }
 
    }
+
+
 
 
 /*
@@ -2267,14 +2655,14 @@ void cspice_cylsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lonc"  , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lonc",   MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       { "radius", MiceDouble, 0, {0}, 1},
-      { "colat" , MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
+      { "colat",  MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -2296,7 +2684,7 @@ void cspice_cylsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
 
@@ -2308,34 +2696,791 @@ void cspice_cylsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          lon    =  (vec_lon    + i*extra->offset[5]);
 
          cylsph_c(r, lonc, z, radius, colat, lon);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
       cylsph_c(r, lonc, z, radius, colat, lon);
       CHECK_CALL_FAILURE(SCALAR);
       }
-      
+
    }
 
 
 
+
 /*
-   SpiceDouble              dpr_c( void )
+   void              dafac_c  ( SpiceInt            handle,
+                                SpiceInt            n,
+                                SpiceInt            lenvals,
+                                const void        * buffer  );
 */
-void cspice_dpr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+void cspice_dafac(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+   SpiceInt             handle;
+   SpiceChar          * str;
+   SpiceChar         ** cvals = NULL;
+   SpiceInt             cvals_len;
+   SpiceInt             cvals_size;
+
+   mxChar             * mx_str;
+
+   SpiceInt             i;
+   SpiceInt             j;
+   SpiceInt             count;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt,  0, {0}, 0},
+      { "buffer", MiceChar, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 0);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+   mx_str = (mxChar *)mxGetChars(prhs[2]);
+
+   /*
+   The following logic differs slightly from other string input arguments.
+   A dafac_c input may consist of an array of strings, where the array
+   defines either a single string or an array or strings.
+
+   Recall, extra->count == 0 for scalar inputs. A scalar string requires
+   count as 1 (Is this a bug or design failure? EDW)
+
+   Equivalent to mxGetM(prhs[2]).
    */
-   plhs[0] = mxCreateDoubleScalar( dpr_c() );
+   if (extra->count>1)
+      {
+      count = extra->count;
+      }
+   else
+      {
+      count = 1;
+      }
+
+   cvals_len  = extra->offset[1] + 1;
+   cvals_size = count;
+   cvals      = alloc_SpiceString_C_array( cvals_len, cvals_size );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   str = mxCalloc(cvals_len, sizeof(char));
+
+   for ( i=0; i<count; i++)
+      {
+
+      /*
+      Extract the string data, character by character, into
+      CSPICE strings. The mx_str array stores the data in a column
+      major format, we need to extract the data by rows.
+      */
+      for ( j=0; j<cvals_len - 1; j++)
+         {
+         str[j] = (char)mx_str[i + (count*j)];
+         }
+
+      str[cvals_len - 1] = '\0';
+
+      strncpy( *cvals + i*cvals_len,
+               str,
+               cvals_len);
+      }
+
+   dafac_c ( handle, cvals_size, cvals_len, * cvals );
+   CHECK_CALL_FAILURE_MEM( 1, cvals );
+
+   /* Clean up temporary variables */
+   free_SpiceString_C_array ( 1, cvals );
+
+   /*
+   Confirm the code released all allocated memory.
+   */
+   MICE_ALLOC_CHECK;
+
+   }
+
+
+
+
+
+/*
+   void              dafbbs_c ( SpiceInt            handle )
+*/
+void cspice_dafbbs(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   dafbbs_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafbfs_c ( SpiceInt            handle )
+*/
+void cspice_dafbfs(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   dafbfs_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafcls_c ( SpiceInt            handle )
+*/
+void cspice_dafcls(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   dafcls_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafcs_c  ( SpiceInt            handle )
+*/
+void cspice_dafcs(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   dafcs_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafdc_c  ( SpiceInt            handle )
+*/
+void cspice_dafdc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   dafdc_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafec_c  ( SpiceInt            handle,
+                                SpiceInt            bufsiz,
+                                SpiceInt            lenout,
+                                SpiceInt          * n,
+                                void              * buffer,
+                                SpiceBoolean      * done    );
+*/
+void cspice_dafec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+   SpiceInt             bufsiz;
+   SpiceInt             lenout;
+   SpiceInt             n = 0;
+   SpiceChar         ** cvals;
+   SpiceChar         ** array;
+   SpiceBoolean         done = SPICETRUE;
+
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt,    0, {0}, 0},
+      { "bufsiz", MiceInt,    0, {0}, 0},
+      { "lenout", MiceInt,    0, {0}, 0},
+      { "buffer", MiceIgnore, 0, {0}, 0},
+      { "done",   MiceIgnore, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+   bufsiz = S_INT_ARGV(2);
+   lenout = S_INT_ARGV(3);
+
+   cvals  = (SpiceChar**)alloc_SpiceString_C_array( lenout, bufsiz );
+   array  = (SpiceChar**)alloc_SpiceString_Pointer_array(bufsiz);
+
+   CHECK_CALL_FAILURE_MEM1(SCALAR, 1, cvals, array);
+
+   dafec_c ( handle, bufsiz, lenout, &n, * cvals, &done );
+   CHECK_CALL_FAILURE_MEM1(SCALAR, 1, cvals, array);
+
+   if ( n > 0 )
+      {
+      for (i=0;i<n;i++)
+         {
+
+         /*
+         Copy the ith string pointer to the array of pointers for input
+         to the mx call.
+         */
+         array[i] = *cvals + i*lenout;
+         }
+
+      /*
+      I think this functions as a copy, creating needed memory to 'plhs'.
+      */
+      plhs[0] = mxCreateCharMatrixFromStrings( n, (const char **)array);
+      }
+   else
+      {
+      plhs[0] = mxCreateString( "\0" );
+      }
+
+   plhs[1] = zzmice_CreateIntScalar(done);
+
+   free_SpiceString_C_array( 1, cvals );
+   free_SpiceMemory( array );
+
+   /*
+   Confirm the code released all allocated memory.
+   */
+   MICE_ALLOC_CHECK;
+   }
+
+
+
+
+/*
+   void              daffna_c ( SpiceBoolean      * found )
+*/
+void cspice_daffna(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceBoolean       found;
+
+   check_arg_num( nrhs, nlhs, 0, 1 );
+
+   /*
+   Directly return the scalar value.
+   */
+   daffna_c ( &found );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   plhs[0] = mxCreateDoubleScalar( found );
+
+   }
+
+
+
+
+/*
+   void              daffpa_c ( SpiceBoolean      * found )
+*/
+void cspice_daffpa(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceBoolean       found;
+
+   check_arg_num( nrhs, nlhs, 0, 1 );
+
+   /*
+   Directly return the scalar value.
+   */
+   daffpa_c ( &found );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   plhs[0] = mxCreateDoubleScalar( found );
+
+   }
+
+
+
+
+/*
+   void              dafgda_c ( SpiceInt            handle,
+                                SpiceInt            begin,
+                                SpiceInt            end,
+                                SpiceDouble       * data );
+*/
+void cspice_dafgda(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+   SpiceInt             begin;
+   SpiceInt             end;
+   SpiceDouble        * data;
+
+   SpiceInt             size;
+   SpiceDouble        * dvals_ret;
+   int                  sizearray[2];
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt,     0, {0}, 0},
+      { "begin",  MiceInt,     0, {0}, 0},
+      { "end",    MiceInt,     0, {0}, 0},
+      { "data",   MiceIgnore,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+   begin  = S_INT_ARGV(2);
+   end    = S_INT_ARGV(3);
+   size   = end - begin + 1;
+
+   data = (SpiceDouble*)mxMalloc(size * sizeof(SpiceDouble) );
+   memset( data, 0, size * sizeof(SpiceDouble) );
+
+   dafgda_c( handle, begin, end, data);
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'data'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( data );
+
+      /*
+      The mice_fail call creates the error string then returns control
+      to the MATLAB interpreter.
+      */
+      mice_fail(SCALAR);
+      }
+
+   /*
+   Define the size and shape of the Matlab return argument.
+   */
+   sizearray[0] = 1;
+   sizearray[1] = size;
+
+   plhs[0]   = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   dvals_ret = A_DBL_RET_ARGV(0);
+
+   MOVED( data, size, dvals_ret );
+   mxFree( data );
+
+   }
+
+
+
+
+/*
+   void              dafgn_c  ( SpiceInt            lenout,
+                                SpiceChar         * name   )
+*/
+void cspice_dafgn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            name [DEFAULT_STR_LENGTH+1];
+
+   /*
+   Very simple interface. No need to allocate memory. Use
+   the default string length as 'lenout'.
+   */
+   check_arg_num( nrhs, nlhs, 0, 1 );
+
+   dafgn_c ( DEFAULT_STR_LENGTH, name);
+
+   plhs[0] = mxCreateString( name );
+   if ( plhs[0] == NULL )
+      {
+      mexErrMsgTxt( "MICE(BUG): mxCreateString failed in cspice_dafgn" );
+      }
+
+   }
+
+
+
+
+/*
+   void              dafgs_c  ( SpiceDouble         sum[] )
+
+   void              dafus_c  ( ConstSpiceDouble    sum [],
+                                SpiceInt            nd,
+                                SpiceInt            ni,
+                                SpiceDouble         dc  [],
+                                SpiceInt            ic  []  )
+*/
+void cspice_dafgs(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble          sum [MAXSUM];
+   SpiceInt             nd;
+   SpiceInt             ni;
+   SpiceDouble          dc  [MAXNDC];
+   SpiceInt             ic  [MAXNIC];
+
+   SpiceDouble        * dvals_ret;
+   SpiceInt           * ivals_ret;
+   int                  sizearray[2];
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "nd", MiceInt,     0, {0}, 0},
+      { "ni", MiceInt,     0, {0}, 0},
+      { "dc", MiceIgnore,  0, {0}, 0},
+      { "ic", MiceIgnore,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 2);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   nd   = S_INT_ARGV(1);
+   ni   = S_INT_ARGV(2);
+
+   /*
+   Let's not do anything fancy. Make the calls using explicitly
+   sized args.
+   */
+   dafgs_c( sum );
+   dafus_c( sum, nd, ni, dc, ic );
+
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Define the size and shape of the Matlab return argument. The
+   number of elements should not exceed MAXNDC. Enforce with the
+   conditional operator.
+   */
+   sizearray[0] = 1;
+   sizearray[1] = ( nd < MAXNDC ? nd: MAXNDC);
+
+   plhs[0]   = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   dvals_ret = A_DBL_RET_ARGV(0);
+
+   MOVED( dc, nd, dvals_ret );
+
+   /*
+   Define the size and shape of the Matlab return argument. The
+   number of elements should not exceed MAXNIC. Enforce with the
+   conditional operator.
+   */
+   sizearray[0] = 1;
+   sizearray[1] = ( ni < MAXNIC ? ni: MAXNIC);
+
+   plhs[1]   = mxCreateNumericArray( 2, sizearray, mxINT32_CLASS, mxREAL);
+   ivals_ret = A_INT_RET_ARGV(1);
+
+   MOVEI( ic, ni, ivals_ret );
+
+   }
+
+
+
+
+/*
+   void              dafopr_c ( ConstSpiceChar    * fname,
+                                SpiceInt          * handle  )
+*/
+void cspice_dafopr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            fname [DEFAULT_STR_LENGTH+1];
+   SpiceInt           * handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "fname",  MiceChar, 0, {0}, 0},
+      { "handle", MiceInt,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], fname,  DEFAULT_STR_LENGTH);
+
+   handle = A_INT_RET_ARGV(0);
+
+   dafopr_c( fname, handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafopw_c ( ConstSpiceChar    * fname,
+                                SpiceInt          * handle  )
+*/
+void cspice_dafopw(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            fname [DEFAULT_STR_LENGTH+1];
+   SpiceInt           * handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "fname",  MiceChar, 0, {0}, 0},
+      { "handle", MiceInt,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], fname,  DEFAULT_STR_LENGTH);
+
+   handle = A_INT_RET_ARGV(0);
+
+   dafopw_c( fname, handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              dafus_c  ( ConstSpiceDouble    sum [],
+                                SpiceInt            nd,
+                                SpiceInt            ni,
+                                SpiceDouble         dc  [],
+                                SpiceInt            ic  []  )
+*/
+void cspice_dafus(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * sum;
+   SpiceInt             nd;
+   SpiceInt             ni;
+   SpiceDouble          dc  [MAXNDC];
+   SpiceInt             ic  [MAXNIC];
+
+   SpiceDouble        * dvals_ret;
+   SpiceInt           * ivals_ret;
+   SpiceInt             sum_size;
+   int                  sizearray[2];
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "sum", MiceDouble, 1, {0}, 0},
+      { "nd",  MiceInt,    0, {0}, 0},
+      { "ni",  MiceInt,    0, {0}, 0},
+      { "dc",  MiceIgnore, 0, {0}, 0},
+      { "ic",  MiceIgnore, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 2);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   sum      = (SpiceDouble*)mxGetData(prhs[1]);
+   sum_size = mxGetNumberOfElements( prhs[1] );
+
+   /* Check dimensions of input arrays */
+   if ( sum_size > MAXSUM )
+      {
+      mexErrMsgTxt( "MICE(INVALIDSIZE): Size of summary array "
+                    "`sum` exceeds MAXSUM.");
+      }
+
+   nd   = S_INT_ARGV(2);
+   ni   = S_INT_ARGV(3);
+
+   /*
+   Let's not do anything fancy. Make the calls using explicitly
+   sized args.
+   */
+   dafus_c( sum, nd, ni, dc, ic );
+
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Define the size and shape of the Matlab return argument. The
+   number of elements should not exceed MAXNDC. Enforce with the
+   conditional operator.
+   */
+   sizearray[0] = 1;
+   sizearray[1] = ( nd < MAXNDC ? nd: MAXNDC);
+
+   plhs[0]   = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   dvals_ret = A_DBL_RET_ARGV(0);
+
+   MOVED( dc, nd, dvals_ret );
+
+   /*
+   Define the size and shape of the Matlab return argument. The
+   number of elements should not exceed MAXNIC. Enforce with the
+   conditional operator.
+   */
+   sizearray[0] = 1;
+   sizearray[1] = ( ni < MAXNIC ? ni: MAXNIC);
+
+   plhs[1]   = mxCreateNumericArray( 2, sizearray, mxINT32_CLASS, mxREAL);
+   ivals_ret = A_INT_RET_ARGV(1);
+
+   MOVEI( ic, ni, ivals_ret );
+
+   }
+
+   
+   
+   
+/*
+   void              dcyldr_c ( SpiceDouble         x,
+                                SpiceDouble         y,
+                                SpiceDouble         z,
+                                SpiceDouble         jacobi[3][3] )
+*/
+void cspice_dcyldr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_x;
+   SpiceDouble        * vec_y;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          x;
+   SpiceDouble          y;
+   SpiceDouble          z;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "x",      MiceDouble, 0, {0},    1},
+      { "y",      MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_x      = A_DBL_ARGV(1);
+   vec_y      = A_DBL_ARGV(2);
+   vec_z      = A_DBL_ARGV(3);
+   x          = *vec_x;
+   y          = *vec_y;
+   z          = *vec_z;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         x   = *(vec_x + i*extra->offset[0]);
+         y   = *(vec_y + i*extra->offset[1]);
+         z   = *(vec_z + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         dcyldr_c(x, y, z, (SpiceDouble(*)[3])xr);
+
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      dcyldr_c(x, y, z, (SpiceDouble(*)[3])xr);
+
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
    }
 
 
@@ -2344,24 +3489,24 @@ void cspice_dpr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*
    void              deltet_c( SpiceDouble      epoch,
                                ConstSpiceChar * eptype,
-                               SpiceDouble    * delta ) 
+                               SpiceDouble    * delta )
 */
 void cspice_deltet(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceDouble        * vec_epoch;
    SpiceDouble          epoch;
-   SpiceChar            eptype[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            eptype[DEFAULT_STR_LENGTH+1];
    SpiceDouble        * vec_delta;
    SpiceDouble        * delta;
-   
+
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "epoch",  MiceDouble, 0, {0}, 1},
-      { "eptype", MiceChar  , 0, {0}, 0},
+      { "eptype", MiceChar,   0, {0}, 0},
       { "delta",  MiceDouble, 0, {0}, 1},
       };
 
@@ -2376,7 +3521,7 @@ void cspice_deltet(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
 
@@ -2390,7 +3535,7 @@ void cspice_deltet(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    else
       {
-      
+
       epoch = *vec_epoch;
       delta = vec_delta;
 
@@ -2402,6 +3547,727 @@ void cspice_deltet(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              dgeodr_c ( SpiceDouble         x,
+                                SpiceDouble         y,
+                                SpiceDouble         z,
+                                SpiceDouble         re,
+                                SpiceDouble         f,
+                                SpiceDouble         jacobi[3][3] )
+*/
+void cspice_dgeodr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_x;
+   SpiceDouble        * vec_y;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          x;
+   SpiceDouble          y;
+   SpiceDouble          z;
+   SpiceDouble          re;
+   SpiceDouble          f;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "x",      MiceDouble, 0, {0},    1},
+      { "y",      MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "re",     MiceDouble, 0, {0},    0},
+      { "f",      MiceDouble, 0, {0},    0},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 5, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_x    = A_DBL_ARGV(1);
+   vec_y    = A_DBL_ARGV(2);
+   vec_z    = A_DBL_ARGV(3);
+   x        = *(vec_x);
+   y        = *(vec_y);
+   z        = *(vec_z);
+   re         = S_DBL_ARGV(4);
+   f          = S_DBL_ARGV(5);
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         x      = *(vec_x     + i*extra->offset[0]);
+         y      = *(vec_y     + i*extra->offset[1]);
+         z      = *(vec_z     + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[5]);
+
+         dgeodr_c(x, y, z, re, f, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      dgeodr_c(x, y, z, re, f, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              dlatdr_c ( SpiceDouble         x,
+                                SpiceDouble         y,
+                                SpiceDouble         z,
+                                SpiceDouble         jacobi[3][3] );
+*/
+void cspice_dlatdr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_x;
+   SpiceDouble        * vec_y;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          x;
+   SpiceDouble          y;
+   SpiceDouble          z;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "x",      MiceDouble, 0, {0},    1},
+      { "y",      MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_x      = A_DBL_ARGV(1);
+   vec_y      = A_DBL_ARGV(2);
+   vec_z      = A_DBL_ARGV(3);
+   x          = *vec_x;
+   y          = *vec_y;
+   z          = *vec_z;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         x      = *(vec_x + i*extra->offset[0]);
+         y      = *(vec_y + i*extra->offset[1]);
+         z      = *(vec_z + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         dlatdr_c(x, y, z, (SpiceDouble(*)[3])xr);
+
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      dlatdr_c(x, y, z, (SpiceDouble(*)[3])xr);
+
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              dpgrdr_c ( ConstSpiceChar    * body,
+                                SpiceDouble         x,
+                                SpiceDouble         y,
+                                SpiceDouble         z,
+                                SpiceDouble         re,
+                                SpiceDouble         f,
+                                SpiceDouble         jacobi[3][3] )
+*/
+void cspice_dpgrdr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            body       [DEFAULT_STR_LENGTH+1];
+   SpiceDouble        * vec_x;
+   SpiceDouble        * vec_y;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          x;
+   SpiceDouble          y;
+   SpiceDouble          z;
+   SpiceDouble          re;
+   SpiceDouble          f;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "body",   MiceChar,   0, {0},    0},
+      { "x",      MiceDouble, 0, {0},    1},
+      { "y",      MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "re",     MiceDouble, 0, {0},    0},
+      { "f",      MiceDouble, 0, {0},    0},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 6, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString( prhs[1], body, DEFAULT_STR_LENGTH );
+
+   vec_x      = A_DBL_ARGV(2);
+   vec_y      = A_DBL_ARGV(3);
+   vec_z      = A_DBL_ARGV(4);
+   re         = S_DBL_ARGV(5);
+   f          = S_DBL_ARGV(6);
+   vec_jacobi = A_DBL_RET_ARGV(0);
+
+   x          = *(vec_x);
+   y          = *(vec_y);
+   z          = *(vec_z);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         x    = *(vec_x     + i*extra->offset[1]);
+         y    = *(vec_y     + i*extra->offset[2]);
+         z    = *(vec_z     + i*extra->offset[3]);
+         jacobi = (vec_jacobi + i*extra->offset[6]);
+
+         dpgrdr_c( body, x, y, z, re, f, (SpiceDouble (*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      dpgrdr_c( body, x, y, z, re, f, (SpiceDouble (*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   SpiceDouble              dpr_c( void )
+*/
+void cspice_dpr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   check_arg_num( nrhs, nlhs, 0, 1 );
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
+   */
+   plhs[0] = mxCreateDoubleScalar( dpr_c() );
+   }
+
+
+
+
+/*
+   void              drdcyl_c ( SpiceDouble    r,
+                                SpiceDouble    lon,
+                                SpiceDouble    z,
+                                SpiceDouble    jacobi[3][3] )
+*/
+void cspice_drdcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_r;
+   SpiceDouble        * vec_lon;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          r;
+   SpiceDouble          lon;
+   SpiceDouble          z;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "r",      MiceDouble, 0, {0},    1},
+      { "lon",    MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_r   = A_DBL_ARGV(1);
+   vec_lon = A_DBL_ARGV(2);
+   vec_z   = A_DBL_ARGV(3);
+   r       = *vec_r;
+   lon     = *vec_lon;
+   z       = *vec_z;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         r      = *(vec_r     + i*extra->offset[0]);
+         lon    = *(vec_lon   + i*extra->offset[1]);
+         z      = *(vec_z     + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         drdcyl_c(r, lon, z, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      drdcyl_c(r, lon, z, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              drdgeo_c ( SpiceDouble         lon,
+                                SpiceDouble         lat,
+                                SpiceDouble         alt,
+                                SpiceDouble         re,
+                                SpiceDouble         f,
+                                SpiceDouble         jacobi[3][3] )
+*/
+void cspice_drdgeo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_lon;
+   SpiceDouble        * vec_lat;
+   SpiceDouble        * vec_alt;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          lon;
+   SpiceDouble          lat;
+   SpiceDouble          alt;
+   SpiceDouble          re;
+   SpiceDouble          f;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "lon",    MiceDouble, 0, {0},    1},
+      { "lat",    MiceDouble, 0, {0},    1},
+      { "alt",    MiceDouble, 0, {0},    1},
+      { "re",     MiceDouble, 0, {0},    0},
+      { "f",      MiceDouble, 0, {0},    0},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 5, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_lon    = A_DBL_ARGV(1);
+   vec_lat    = A_DBL_ARGV(2);
+   vec_alt    = A_DBL_ARGV(3);
+   lon        = *(vec_lon);
+   lat        = *(vec_lat);
+   alt        = *(vec_alt);
+   re         = S_DBL_ARGV(4);
+   f          = S_DBL_ARGV(5);
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         lon    = *(vec_lon     + i*extra->offset[0]);
+         lat    = *(vec_lat     + i*extra->offset[1]);
+         alt    = *(vec_alt     + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[5]);
+
+         drdgeo_c(lon, lat, alt, re, f, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      drdgeo_c(lon, lat, alt, re, f, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              drdlat_c ( SpiceDouble    r,
+                                SpiceDouble    lon,
+                                SpiceDouble    lat,
+                                SpiceDouble    jacobi[3][3] )
+*/
+void cspice_drdlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_r;
+   SpiceDouble        * vec_lon;
+   SpiceDouble        * vec_lat;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          r;
+   SpiceDouble          lon;
+   SpiceDouble          lat;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "r",      MiceDouble, 0, {0},    1},
+      { "lon",    MiceDouble, 0, {0},    1},
+      { "lat",    MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_r      = A_DBL_ARGV(1);
+   vec_lon    = A_DBL_ARGV(2);
+   vec_lat    = A_DBL_ARGV(3);
+   r          = *vec_r;
+   lon        = *vec_lon;
+   lat        = *vec_lat;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         r     = *(vec_r + i*extra->offset[0]);
+         lon   = *(vec_lon + i*extra->offset[1]);
+         lat   = *(vec_lat + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         drdlat_c(r, lon, lat, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      drdlat_c(r, lon, lat, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              drdpgr_c ( ConstSpiceChar    * body,
+                                SpiceDouble         lon,
+                                SpiceDouble         lat,
+                                SpiceDouble         alt,
+                                SpiceDouble         re,
+                                SpiceDouble         f,
+                                SpiceDouble         jacobi[3][3] )
+*/
+void cspice_drdpgr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            body       [DEFAULT_STR_LENGTH+1];
+   SpiceDouble        * vec_lon;
+   SpiceDouble        * vec_lat;
+   SpiceDouble        * vec_alt;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          lon;
+   SpiceDouble          lat;
+   SpiceDouble          alt;
+   SpiceDouble          re;
+   SpiceDouble          f;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "body",   MiceChar,   0, {0},    0},
+      { "lon",    MiceDouble, 0, {0},    1},
+      { "lat",    MiceDouble, 0, {0},    1},
+      { "alt",    MiceDouble, 0, {0},    1},
+      { "re",     MiceDouble, 0, {0},    0},
+      { "f",      MiceDouble, 0, {0},    0},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 6, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString( prhs[1], body, DEFAULT_STR_LENGTH );
+
+   vec_lon    = A_DBL_ARGV(2);
+   vec_lat    = A_DBL_ARGV(3);
+   vec_alt    = A_DBL_ARGV(4);
+   lon        = *(vec_lon);
+   lat        = *(vec_lat);
+   alt        = *(vec_alt);
+   re         = S_DBL_ARGV(5);
+   f          = S_DBL_ARGV(6);
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         lon    = *(vec_lon     + i*extra->offset[1]);
+         lat    = *(vec_lat     + i*extra->offset[2]);
+         alt    = *(vec_alt     + i*extra->offset[3]);
+         jacobi = (vec_jacobi + i*extra->offset[6]);
+
+         drdpgr_c( body, lon, lat, alt, re, f, (SpiceDouble (*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      drdpgr_c( body, lon, lat, alt, re, f, (SpiceDouble (*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              drdsph_c ( SpiceDouble    r,
+                                SpiceDouble    colat,
+                                SpiceDouble    lon,
+                                SpiceDouble    jacobi[3][3] )
+*/
+void cspice_drdsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_r;
+   SpiceDouble        * vec_colat;
+   SpiceDouble        * vec_lon;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          r;
+   SpiceDouble          colat;
+   SpiceDouble          lon;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "r",      MiceDouble, 0, {0},    1},
+      { "colat",  MiceDouble, 0, {0},    1},
+      { "lon",    MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_r      = A_DBL_ARGV(1);
+   vec_colat  = A_DBL_ARGV(2);
+   vec_lon    = A_DBL_ARGV(3);
+   r          = *vec_r;
+   colat      = *vec_colat;
+   lon        = *vec_lon;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         r      = *(vec_r     + i*extra->offset[0]);
+         colat  = *(vec_colat + i*extra->offset[1]);
+         lon    = *(vec_lon   + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         drdsph_c(r, colat, lon, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      drdsph_c(r, colat, lon, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
+/*
+   void              dsphdr_c ( SpiceDouble         x,
+                                SpiceDouble         y,
+                                SpiceDouble         z,
+                                SpiceDouble         jacobi[3][3] );
+*/
+void cspice_dsphdr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_x;
+   SpiceDouble        * vec_y;
+   SpiceDouble        * vec_z;
+   SpiceDouble        * vec_jacobi;
+   SpiceDouble          x;
+   SpiceDouble          y;
+   SpiceDouble          z;
+   SpiceDouble        * jacobi;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "x",      MiceDouble, 0, {0},    1},
+      { "y",      MiceDouble, 0, {0},    1},
+      { "z",      MiceDouble, 0, {0},    1},
+      { "jacobi", MiceDouble, 2, {3, 3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_x      = A_DBL_ARGV(1);
+   vec_y      = A_DBL_ARGV(2);
+   vec_z      = A_DBL_ARGV(3);
+   x          = *vec_x;
+   y          = *vec_y;
+   z          = *vec_z;
+   vec_jacobi = A_DBL_RET_ARGV(0);
+   jacobi     = vec_jacobi;
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         x   = *(vec_x + i*extra->offset[0]);
+         y   = *(vec_y + i*extra->offset[1]);
+         z   = *(vec_z + i*extra->offset[2]);
+         jacobi = (vec_jacobi + i*extra->offset[3]);
+
+         dsphdr_c(x, y, z, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+         }
+
+      }
+   else
+      {
+      dsphdr_c(x, y, z, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])jacobi );
+      }
+
+   }
+
+
+
+
 /*
    void              dtpool_c ( ConstSpiceChar      * name,
                                 SpiceBoolean        * found,
@@ -2410,7 +4276,7 @@ void cspice_deltet(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void mice_dtpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceChar               name[DEFAULT_STR_LENGTH+1];
    mxChar                * mx_name;
    SpiceBoolean            found;
@@ -2423,9 +4289,9 @@ void mice_dtpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar, 0, { 0 }, 1},
+      { "name",  MiceChar, 0, { 0 }, 1},
       { "value", MicePool, 0, { 0 }, 1},
       };
 
@@ -2454,30 +4320,33 @@ void mice_dtpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             name[j] = (SpiceChar)mx_name[i + (extra->count*j)];
             }
-            
+
          name[extra->offset[0]] = '\0';
 
          dtpool_c( name, &found, &n, &type);
          CHECK_CALL_FAILURE(i);
-         
+
          /* We return a string to MATLAB, so copy the char to a string. */
          type_buf[0] = type;
          type_buf[1] = '\0';
-      
+
          /*
          Cast the number of found items to a double value.
          */
          xn = (SpiceDouble) n;
-      
+
+         mxDestroyArray( mxGetField( plhs[0], i, "type" ) );
          mxSetField( plhs[0], i, "type", mxCreateString(type_buf)  );
 
+         mxDestroyArray( mxGetField( plhs[0], i, "n" ) );
          mxSetField( plhs[0], i, "n", mxCreateDoubleScalar(xn) );
 
-         mxSetField( plhs[0], i, "found", 
+         mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+         mxSetField( plhs[0], i, "found",
                      mxCreateLogicalScalar(found ? true: false));
          }
 
-      } 
+      }
    else
       {
       mxGetString(prhs[1], name, DEFAULT_STR_LENGTH);
@@ -2494,15 +4363,19 @@ void mice_dtpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       */
       xn = (SpiceDouble) n;
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "type" ) );
       mxSetField( plhs[0], 0, "type", mxCreateString(type_buf) );
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "n" ) );
       mxSetField( plhs[0], 0, "n", mxCreateDoubleScalar(xn) );
 
-      mxSetField( plhs[0], 0, "found", 
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
                   mxCreateLogicalScalar(found ? true: false));
       }
 
    }
+
 
 
 
@@ -2513,18 +4386,18 @@ void mice_dtpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_ducrss(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
    SpiceDouble        * vec_s2;
    SpiceDouble        * vec_vout;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * s2;
    SpiceDouble        * vout;
 
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "s1",     MiceDouble, 1, {6}, 1},
       { "s2",     MiceDouble, 1, {6}, 1},
@@ -2567,6 +4440,7 @@ void cspice_ducrss(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              dvcrss_c ( ConstSpiceDouble s1  [6],
                                 ConstSpiceDouble s2  [6],
@@ -2574,18 +4448,18 @@ void cspice_ducrss(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_dvcrss(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
    SpiceDouble        * vec_s2;
    SpiceDouble        * vec_vout;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * s2;
    SpiceDouble        * vout;
 
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "s1",     MiceDouble, 1, {6}, 1},
       { "s2",     MiceDouble, 1, {6}, 1},
@@ -2628,16 +4502,17 @@ void cspice_dvcrss(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   SpiceDouble       dvdot_c  ( ConstSpiceDouble      s1[6], 
+   SpiceDouble       dvdot_c  ( ConstSpiceDouble      s1[6],
                                 ConstSpiceDouble      s2[6] )
 */
 void cspice_dvdot(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
    SpiceDouble        * vec_s2;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * s2;
    SpiceDouble        * retval;
    SpiceDouble        * vec_retval;
@@ -2645,7 +4520,7 @@ void cspice_dvdot(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "s1",    MiceDouble, 1, {6}, 1},
       { "s2",    MiceDouble, 1, {6}, 1},
@@ -2688,8 +4563,9 @@ void cspice_dvdot(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   void              dvhat_c  ( ConstSpiceDouble      s1  [6], 
+   void              dvhat_c  ( ConstSpiceDouble      s1  [6],
                                 SpiceDouble           sout[6] )
 */
 void cspice_dvhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
@@ -2704,9 +4580,9 @@ void cspice_dvhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    struct extra_dims  * extra;
 
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "s1"  , MiceDouble, 1, {6}, 1},
+      { "s1",   MiceDouble, 1, {6}, 1},
       { "vout", MiceDouble, 1, {6}, 1},
       };
 
@@ -2729,7 +4605,7 @@ void cspice_dvhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          dvhat_c(s1, vout);
          CHECK_CALL_FAILURE(i);
          }
-         
+
       }
    else
       {
@@ -2745,21 +4621,22 @@ void cspice_dvhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble       dvnorm_c ( ConstSpiceDouble     state[6] )
 */
 void cspice_dvnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * vec_retval;
    SpiceDouble        * retval;
 
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "s1",     MiceDouble, 1, {6}, 1},
       { "dvnorm", MiceDouble, 0, {0}, 1},
@@ -2798,16 +4675,77 @@ void cspice_dvnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              dvpool_c ( ConstSpiceChar      * name );
+*/
+void cspice_dvpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar           name[DEFAULT_STR_LENGTH+1];
+   mxChar            * mx_name;
+
+   SpiceInt            i;
+   SpiceInt            j;
+
+   struct extra_dims * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "name", MiceChar, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   if (extra->count>1)
+      {
+
+      mx_name = (mxChar *)mxGetChars(prhs[1]);
+
+      for ( i=0; i<extra->count; i++)
+         {
+
+         /*
+         Extract the string data, character by character, into
+         CSPICE strings. The 'mx_name' array stores the data in a column
+         major format, we need to extract the data by rows.
+         */
+         for ( j=0; j<extra->offset[0]; j++)
+            {
+            name[j] = (char)mx_name[i + (extra->count*j)];
+            }
+
+         name[extra->offset[0]] = '\0';
+
+         dvpool_c(name);
+         CHECK_CALL_FAILURE(i);
+         }
+
+      }
+   else
+      {
+      mxGetString(prhs[1], name, DEFAULT_STR_LENGTH);
+
+      dvpool_c(name);
+      CHECK_CALL_FAILURE(SCALAR);
+      }
+
+   }
+
+
+
+
 /*
    SpiceDouble      dvsep_c   ( ConstSpiceDouble    s1[6],
                                 ConstSpiceDouble    s2[6] )
 */
 void cspice_dvsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
    SpiceDouble        * vec_s2;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * s2;
    SpiceDouble        * retval;
    SpiceDouble        * vec_retval;
@@ -2815,7 +4753,7 @@ void cspice_dvsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "s1",    MiceDouble, 1, {6}, 1},
       { "s2",    MiceDouble, 1, {6}, 1},
@@ -2858,6 +4796,164 @@ void cspice_dvsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              edlimb_c ( SpiceDouble           a,
+                                SpiceDouble           b,
+                                SpiceDouble           c,
+                                ConstSpiceDouble      viewpt[3],
+                                SpiceEllipse        * limb      );
+*/
+void mice_edlimb(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble          a;
+   SpiceDouble          b;
+   SpiceDouble          c;
+   SpiceDouble        * viewpt;
+   SpiceEllipse         limb;
+
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "a",      MiceDouble,  0, {0}, 0},
+      { "b",      MiceDouble,  0, {0}, 0},
+      { "c",      MiceDouble,  0, {0}, 0},
+      { "viewpt", MiceDouble,  1, {3}, 0},
+      { "limb",   MiceEllipse, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 4, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   a      = S_DBL_ARGV(1);
+   b      = S_DBL_ARGV(2);
+   c      = S_DBL_ARGV(3);
+   viewpt = A_DBL_ARGV(4);
+
+   edlimb_c ( a, b, c, viewpt, &limb );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"center") ),
+           limb.center,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMajor") ),
+           limb.semiMajor,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMinor") ),
+           limb.semiMinor,
+           3*sizeof(SpiceDouble)
+         );
+
+   }
+
+
+
+
+/*
+   void              edterm_c ( ConstSpiceChar      * trmtyp,
+                                ConstSpiceChar      * source,
+                                ConstSpiceChar      * target,
+                                SpiceDouble           et,
+                                ConstSpiceChar      * fixfrm,
+                                ConstSpiceChar      * abcorr,
+                                ConstSpiceChar      * obsrvr,
+                                SpiceInt              npts,
+                                SpiceDouble         * trgepc,
+                                SpiceDouble           obspos  [3],
+                                SpiceDouble           termpts [ ][3] );
+*/
+void cspice_edterm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar             trmtyp[DEFAULT_STR_LENGTH+1];
+   SpiceChar             source[DEFAULT_STR_LENGTH+1];
+   SpiceChar             target[DEFAULT_STR_LENGTH+1];
+   SpiceDouble           et;
+   SpiceChar             fixfrm[DEFAULT_STR_LENGTH+1];
+   SpiceChar             abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar             obsrvr[DEFAULT_STR_LENGTH+1];
+   SpiceInt              npts;
+   SpiceDouble           trgepc;
+   SpiceDouble         * obspos;
+   SpiceDouble         * termpts;
+
+   int                  sizearray[2];
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "trmtyp",  MiceChar,   0, {0}, 0},
+      { "source",  MiceChar,   0, {0}, 0},
+      { "target",  MiceChar,   0, {0}, 0},
+      { "et",      MiceDouble, 0, {0}, 0},
+      { "fixfrm",  MiceChar,   0, {0}, 0},
+      { "abcorr",  MiceChar,   0, {0}, 0},
+      { "obsrvr",  MiceChar,   0, {0}, 0},
+      { "npts",    MiceInt,    0, {0}, 0},
+      { "trgepc",  MiceIgnore, 0, {0}, 0},
+      { "obspos",  MiceDouble, 1, {3}, 0},
+      { "termpts", MiceIgnore, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 8, 3 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], trmtyp,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], source,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], target,  DEFAULT_STR_LENGTH);
+
+   et = S_DBL_ARGV(4);
+
+   mxGetString(prhs[5], fixfrm,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], abcorr,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[7], obsrvr,  DEFAULT_STR_LENGTH);
+
+   npts    = S_INT_ARGV(8);
+
+   obspos  = A_DBL_RET_ARGV(1);
+
+   /*
+   Allocate the memory for the output argument 'termpts'. Zero-out
+   'termpts'.
+   */
+   sizearray[0] = 3;
+   sizearray[1] = npts;
+
+   plhs[2] = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   termpts = A_DBL_RET_ARGV(2);
+
+   memset( termpts,  0, npts * 3 * sizeof(SpiceDouble) );
+
+   /*
+   Call the C wrapper.
+   */
+   edterm_c ( trmtyp,
+              source,
+              target,
+              et,
+              fixfrm,
+              abcorr,
+              obsrvr,
+              npts,
+              &trgepc,
+              obspos,
+              (SpiceDouble (*)[3])termpts);
+
+   plhs[0] = mxCreateDoubleScalar( trgepc );
+
+   }
+
+
+
+
 /*
    void              ekfind_c ( ConstSpiceChar    * query,
                                 SpiceInt            lenout,
@@ -2874,7 +4970,7 @@ void cspice_ekfind(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar           errmsg [DEFAULT_STR_LENGTH+1];
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "query",  MiceChar,    0, {0}, 0},
       { "nmrows", MiceInt,     0, {0}, 0},
@@ -2890,7 +4986,7 @@ void cspice_ekfind(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], query, DEFAULT_STR_LENGTH);
 
-   ekfind_c( query, 
+   ekfind_c( query,
              DEFAULT_STR_LENGTH,
              &nmrows,
              &error,
@@ -2903,20 +4999,21 @@ void cspice_ekfind(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    if ( error )
       {
       plhs[0] = zzmice_CreateIntScalar(0);
-      plhs[2] = mxCreateString( errmsg );      
+      plhs[2] = mxCreateString( errmsg );
       }
    else
       {
       plhs[0] = zzmice_CreateIntScalar(nmrows);
       plhs[2] = mxCreateString( "\0" );
       }
-   
+
    if ( plhs[2] == NULL )
       {
       mexErrMsgTxt( "MICE(BUG): mxCreateString failed in cspice_ekfind" );
       }
 
    }
+
 
 
 
@@ -2936,12 +5033,12 @@ void cspice_ekgc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt              row;
    SpiceInt              elment;
    SpiceInt              lenout;
-   SpiceChar             cdata [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar             cdata [DEFAULT_STR_LENGTH+1];
    SpiceBoolean          null;
    SpiceBoolean          found;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "selidx", MiceInt,    0, { 0 },    0},
       { "row",    MiceInt,    0, { 0 },    0},
@@ -2955,17 +5052,17 @@ void cspice_ekgc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    check_arg_num( nrhs, nlhs, 4, 3 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
- 
-   /* 
+
+   /*
    Retrieve the values of the input arguments. MATLAB uses a base 1 array
-   index convention, as is proper, C does not. Subtract one off the 'selidx',
-   'row', and 'elment' indices.
+   index convention, as is proper, C does not, which is weird. Subtract one
+   off the 'selidx', 'row', and 'elment' indices.
    */
    selidx = S_INT_ARGV(1) - 1;
    row    = S_INT_ARGV(2) - 1;
    elment = S_INT_ARGV(3) - 1;
    lenout = S_INT_ARGV(4);
-   
+
    ekgc_c( selidx, row, elment, lenout, cdata, &null, &found);
    CHECK_CALL_FAILURE(SCALAR);
 
@@ -2994,6 +5091,7 @@ void cspice_ekgc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              ekgd_c   ( SpiceInt            selidx,
                                 SpiceInt            row,
@@ -3013,7 +5111,7 @@ void cspice_ekgd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean          found;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "selidx", MiceInt,    0, { 0 },    0},
       { "row",    MiceInt,    0, { 0 },    0},
@@ -3026,16 +5124,16 @@ void cspice_ekgd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    check_arg_num( nrhs, nlhs, 3, 3 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
- 
-   /* 
+
+   /*
    Retrieve the values of the input arguments. MATLAB uses a base 1 array
-   index convention, as is proper, C does not. Subtract one off the 'selidx',
-   'row', and 'elment' indices.
+   index convention, as is proper, C does not, which is weird. Subtract one
+   off the 'selidx', 'row', and 'elment' indices.
    */
    selidx = S_INT_ARGV(1) - 1;
    row    = S_INT_ARGV(2) - 1;
    elment = S_INT_ARGV(3) - 1;
-   
+
    ekgd_c( selidx, row, elment, &ddata, &null, &found);
    CHECK_CALL_FAILURE(SCALAR);
 
@@ -3044,6 +5142,7 @@ void cspice_ekgd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    plhs[2] = zzmice_CreateIntScalar(found);
 
    }
+
 
 
 
@@ -3066,7 +5165,7 @@ void cspice_ekgi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean          found;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "selidx", MiceInt,    0, { 0 },    0},
       { "row",    MiceInt,    0, { 0 },    0},
@@ -3079,11 +5178,11 @@ void cspice_ekgi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    check_arg_num( nrhs, nlhs, 3, 3 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
- 
-   /* 
+
+   /*
    Retrieve the values of the input arguments. MATLAB uses a base 1 array
-   index convention, as is proper, C does not. Subtract one off the 'selidx',
-   'row', and 'elment' indices.
+   index convention, as is proper, C does not, which is weird. Subtract one
+   off the 'selidx', 'row', and 'elment' indices.
    */
    selidx = S_INT_ARGV(1) - 1;
    row    = S_INT_ARGV(2) - 1;
@@ -3114,7 +5213,7 @@ void cspice_eknelt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    struct extra_dims  * extra;
 
-   struct argcheck      ArgCheck[] =
+   struct argcheck ArgCheck[] =
       {
       { "selidx", MiceInt,    0, {0}, 0},
       { "row",    MiceInt,    0, {0}, 0},
@@ -3127,7 +5226,7 @@ void cspice_eknelt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off 'selidx' and 'row'.
+   C does not, which is weird. Subtract one off 'selidx' and 'row'.
    */
    selidx = S_INT_ARGV(1) - 1;
    row    = S_INT_ARGV(2) - 1;
@@ -3156,12 +5255,12 @@ void cspice_el2cgv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * sminor;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "ellipse", MiceEllipse, 0, {0}, 0},
       { "center",  MiceDouble,  1, {3}, 0},
       { "smajor",  MiceDouble,  1, {3}, 0},
-      { "sminor",  MiceDouble,  1, {3}, 0}, 
+      { "sminor",  MiceDouble,  1, {3}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 1, 3 );
@@ -3172,22 +5271,22 @@ void cspice_el2cgv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    smajor = A_DBL_RET_ARGV(1);
    sminor = A_DBL_RET_ARGV(2);
 
-   memcpy( ellipse.center, 
-           mxGetPr( mxGetField( prhs[1], 0,"center") ), 
+   memcpy( ellipse.center,
+           mxGetPr( mxGetField( prhs[1], 0,"center") ),
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( ellipse.semiMajor, 
-           mxGetPr( mxGetField( prhs[1], 0,"semiMajor") ), 
+   memcpy( ellipse.semiMajor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMajor") ),
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( ellipse.semiMinor, 
-           mxGetPr( mxGetField( prhs[1], 0,"semiMinor") ), 
+   memcpy( ellipse.semiMinor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMinor") ),
            3*sizeof(SpiceDouble)
          );
 
-   el2cgv_c ( &ellipse, center, smajor, sminor ); 
+   el2cgv_c ( &ellipse, center, smajor, sminor );
    CHECK_CALL_FAILURE( SCALAR );
 
    }
@@ -3203,23 +5302,23 @@ void cspice_el2cgv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_etcal(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar           string[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           string[DEFAULT_STR_LENGTH+1];
    SpiceChar        ** cval;
    SpiceChar        ** array;
    SpiceDouble         et;
    SpiceDouble       * vec_et;
-   
+
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "string", MiceChar  , 0, {0}, 1},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "string", MiceChar,   0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
-   
+
    memset( string, 0, default_str_size );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
@@ -3232,7 +5331,7 @@ void cspice_etcal(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                      extra->count );
       array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -3310,7 +5409,7 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceDouble          et;
    SpiceDouble        * vec_et;
-   SpiceInt             body; 
+   SpiceInt             body;
    SpiceDouble          lon;
    SpiceChar            type [DEFAULT_STR_LENGTH+1];
    SpiceInt           * hr;
@@ -3321,25 +5420,25 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt           * vec_sec;
    SpiceChar            time [DEFAULT_STR_LENGTH+1];
    SpiceChar            ampm [DEFAULT_STR_LENGTH+1];
-   SpiceChar        ** time_cval;
-   SpiceChar        ** time_array;
-   SpiceChar        ** ampm_cval;
-   SpiceChar        ** ampm_array;
+   SpiceChar         ** time_cval;
+   SpiceChar         ** time_array;
+   SpiceChar         ** ampm_cval;
+   SpiceChar         ** ampm_array;
 
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "et"  , MiceDouble, 0, {0}, 1},
-      { "body", MiceInt   , 0, {0}, 0},
-      { "lon" , MiceDouble, 0, {0}, 0},
-      { "type", MiceChar  , 0, {0}, 0},
-      { "hr"  , MiceInt   , 0, {0}, 1},
-      { "min" , MiceInt   , 0, {0}, 1},
-      { "sec" , MiceInt   , 0, {0}, 1},
-      { "time", MiceChar  , 0, {0}, 1},
-      { "ampm", MiceChar  , 0, {0}, 1},
+      { "et",   MiceDouble, 0, {0}, 1},
+      { "body", MiceInt,    0, {0}, 0},
+      { "lon",  MiceDouble, 0, {0}, 0},
+      { "type", MiceChar,   0, {0}, 0},
+      { "hr",   MiceInt,    0, {0}, 1},
+      { "min",  MiceInt,    0, {0}, 1},
+      { "sec",  MiceInt,    0, {0}, 1},
+      { "time", MiceChar,   0, {0}, 1},
+      { "ampm", MiceChar,   0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 5 );
@@ -3363,13 +5462,13 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      time_cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      time_cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                           extra->count );
       time_array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
       CHECK_CALL_FAILURE_MEM1(SCALAR, 1, time_cval, time_array);
 
-      ampm_cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      ampm_cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                           extra->count );
       ampm_array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -3390,20 +5489,26 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          time_array[i] = *time_cval + i*default_str_size;
          ampm_array[i] = *ampm_cval + i*default_str_size;
 
-         et2lst_c( et, 
-                  body, 
-                  lon, 
-                  type,  
-                  DEFAULT_STR_LENGTH,  
+         et2lst_c( et,
+                  body,
+                  lon,
+                  type,
                   DEFAULT_STR_LENGTH,
-                  hr, 
-                  min, 
-                  sec, 
-                  time_array[i], 
+                  DEFAULT_STR_LENGTH,
+                  hr,
+                  min,
+                  sec,
+                  time_array[i],
                   ampm_array[i] );
 
-         if ( failed_c()) 
-            { 
+
+         /*
+         Check for a failure signal. Free the memory assigned to 'time_cval',
+         'ampm_cval', 'time_array', and 'ampm_array'.
+         before signaling a Matlab error.
+         */
+         if ( failed_c())
+            {
             free_SpiceString_C_array( 1, time_cval );
             free_SpiceString_C_array( 1, ampm_cval );
 
@@ -3414,9 +5519,9 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             The mice_fail call creates the error string then returns control
             to the MATLAB interpreter.
             */
-            mice_fail(i); 
+            mice_fail(i);
             }
-         
+
          }
 
       /*
@@ -3439,30 +5544,30 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       min = vec_min;
       sec = vec_sec;
 
-      et2lst_c( et, 
-               body, 
-               lon, 
-               type,  
-               DEFAULT_STR_LENGTH,  
+      et2lst_c( et,
+               body,
+               lon,
+               type,
                DEFAULT_STR_LENGTH,
-               hr, 
-               min, 
-               sec, 
-               time, 
+               DEFAULT_STR_LENGTH,
+               hr,
+               min,
+               sec,
+               time,
                ampm );
       CHECK_CALL_FAILURE(SCALAR);
 
       plhs[3] = mxCreateString( time);
       if ( plhs[3] == NULL )
          {
-         mexErrMsgTxt( 
+         mexErrMsgTxt(
             "MICE(BUG): mxCreateString 'time' failed in cspice_et2lst" );
          }
 
       plhs[4] = mxCreateString( ampm );
       if ( plhs[4] == NULL )
          {
-         mexErrMsgTxt( 
+         mexErrMsgTxt(
             "MICE(BUG): mxCreateString 'ampm' failed in cspice_et2lst" );
          }
 
@@ -3487,35 +5592,35 @@ void cspice_et2lst(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_et2utc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar           format[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar           utcstr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           format[DEFAULT_STR_LENGTH+1];
+   SpiceChar           utcstr[DEFAULT_STR_LENGTH+1];
    SpiceChar        ** cval;
    SpiceChar        ** array;
    SpiceDouble         et;
    SpiceDouble       * vec_et;
-   SpiceInt            prec; 
-   
+   SpiceInt            prec;
+
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "format", MiceChar  , 0, {0}, 0},
-      { "prec"  , MiceInt   , 0, {0}, 0},
-      { "utcstr", MiceChar  , 0, {0}, 1},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "format", MiceChar,   0, {0}, 0},
+      { "prec",   MiceInt,    0, {0}, 0},
+      { "utcstr", MiceChar,   0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
-   
+
    memset( utcstr, 0, default_str_size );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    vec_et = A_DBL_ARGV(1);
-   
+
    mxGetString(prhs[2], format, DEFAULT_STR_LENGTH);
-      
+
    prec = S_INT_ARGV(3);
 
    if (extra->count>1)
@@ -3524,7 +5629,7 @@ void cspice_et2utc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                      extra->count );
       array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -3581,6 +5686,8 @@ void cspice_et2utc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              eul2m_c( SpiceDouble  angle3,
                               SpiceDouble  angle2,
@@ -3592,7 +5699,7 @@ void cspice_et2utc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_eul2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_angle3;
    SpiceDouble        * vec_angle2;
    SpiceDouble        * vec_angle1;
@@ -3609,15 +5716,15 @@ void cspice_eul2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "angle3", MiceDouble, 0, {0}   , 1},
-      { "angle2", MiceDouble, 0, {0}   , 1},
-      { "angle1", MiceDouble, 0, {0}   , 1},
-      { "axis3" , MiceInt   , 0, {0}   , 0},
-      { "axis2" , MiceInt   , 0, {0}   , 0},
-      { "axis1" , MiceInt   , 0, {0}   , 0},
-      { "r"     , MiceDouble, 2, {3, 3}, 1},
+      { "angle3", MiceDouble, 0, {0},    1},
+      { "angle2", MiceDouble, 0, {0},    1},
+      { "angle1", MiceDouble, 0, {0},    1},
+      { "axis3",  MiceInt,    0, {0},    0},
+      { "axis2",  MiceInt,    0, {0},    0},
+      { "axis1",  MiceInt,    0, {0},    0},
+      { "r",      MiceDouble, 2, {3, 3}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 6, 1 );
@@ -3679,6 +5786,7 @@ void cspice_eul2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              eul2xf_c ( ConstSpiceDouble    eulang[6],
                                 SpiceInt            axisa,
@@ -3695,8 +5803,8 @@ void cspice_eul2xf(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             axisa;
    SpiceInt             axisb;
    SpiceInt             axisc;
-   SpiceDouble        * eulang; 
-   SpiceDouble        * xform; 
+   SpiceDouble        * eulang;
+   SpiceDouble        * xform;
    SpiceDouble          xr[6][6];
 
    SpiceInt             i;
@@ -3704,11 +5812,11 @@ void cspice_eul2xf(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    struct extra_dims *extra;
    struct argcheck ArgCheck[] =
       {
-      { "eulang", MiceDouble, 1, {6}   , 1},
-      { "axisa" , MiceInt   , 0, {0}   , 0},
-      { "axisb" , MiceInt   , 0, {0}   , 0},
-      { "axisc" , MiceInt   , 0, {0}   , 0},
-      { "xform" , MiceDouble, 2, {6, 6}, 1},
+      { "eulang", MiceDouble, 1, {6},    1},
+      { "axisa",  MiceInt,    0, {0},    0},
+      { "axisb",  MiceInt,    0, {0},    0},
+      { "axisc",  MiceInt,    0, {0},    0},
+      { "xform",  MiceDouble, 2, {6, 6}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 1 );
@@ -3753,20 +5861,443 @@ void cspice_eul2xf(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   void furnsh_c( ConstSpiceChar  * file ) 
+   void fovray_c ( ConstSpiceChar   * inst,
+                   ConstSpiceDouble   raydir [3],
+                   ConstSpiceChar   * rframe,
+                   ConstSpiceChar   * abcorr,
+                   ConstSpiceChar   * observer,
+                   SpiceDouble      * et,
+                   SpiceBoolean     * visible  )
+*/
+void cspice_fovray(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+
+   SpiceChar        instrument   [DEFAULT_STR_LENGTH+1];
+   SpiceChar        ray_frame    [DEFAULT_STR_LENGTH+1];
+   SpiceChar        abcorr       [DEFAULT_STR_LENGTH+1];
+   SpiceChar        observer     [DEFAULT_STR_LENGTH+1];
+
+   SpiceDouble    * raydir;
+   SpiceDouble    * et;
+   SpiceDouble    * vec_et;
+   SpiceBoolean   * visible;
+   SpiceBoolean   * vec_visible;
+
+   SpiceInt         i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "instrument",   MiceChar,    0, {0}, 0},
+      { "raydir",       MiceDouble,  1, {3}, 0},
+      { "ray_frame",    MiceChar,    0, {0}, 0},
+      { "abcorr",       MiceChar,    0, {0}, 0},
+      { "observer",     MiceChar,    0, {0}, 0},
+      { "et",           MiceDouble,  0, {0}, 1},
+      { "visible",      MiceBoolean, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 6, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], instrument, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], ray_frame,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], abcorr,     DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], observer,   DEFAULT_STR_LENGTH);
+
+   raydir      = A_DBL_ARGV(2);
+   vec_et      = A_DBL_ARGV(6);
+   vec_visible = A_BOOL_RET_ARGV(0);
+
+   et      = (vec_et);
+   visible = (vec_visible);
+
+   /*
+   Check for vectorized arguments.
+   */
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         et      = (vec_et      + i*extra->offset[5]);
+         visible = (vec_visible + i*extra->offset[6]);
+
+         fovray_c ( instrument, raydir, ray_frame,
+                    abcorr, observer, et, visible );
+
+         CHECK_CALL_FAILURE(i);
+
+         }
+
+      }
+   else
+      {
+
+      fovray_c ( instrument, raydir, ray_frame,
+                 abcorr, observer, et, visible );
+
+      CHECK_CALL_FAILURE(SCALAR);
+
+      }
+
+   }
+
+
+
+
+/*
+   void fovtrg_c ( ConstSpiceChar   * inst,
+                   ConstSpiceChar   * target,
+                   ConstSpiceChar   * tshape,
+                   ConstSpiceChar   * tframe,
+                   ConstSpiceChar   * abcorr,
+                   ConstSpiceChar   * obsrvr,
+                   SpiceDouble      * et,
+                   SpiceBoolean     * visible  )
+*/
+void cspice_fovtrg(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+
+   SpiceChar        instrument   [DEFAULT_STR_LENGTH+1];
+   SpiceChar        target       [DEFAULT_STR_LENGTH+1];
+   SpiceChar        target_shape [DEFAULT_STR_LENGTH+1];
+   SpiceChar        target_frame [DEFAULT_STR_LENGTH+1];
+   SpiceChar        abcorr       [DEFAULT_STR_LENGTH+1];
+   SpiceChar        observer     [DEFAULT_STR_LENGTH+1];
+   SpiceDouble    * et;
+   SpiceDouble    * vec_et;
+   SpiceBoolean   * visible;
+   SpiceBoolean   * vec_visible;
+
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "instrument",   MiceChar,    0, {0}, 0},
+      { "target",       MiceChar,    0, {0}, 0},
+      { "target_shape", MiceChar,    0, {0}, 0},
+      { "target_frame", MiceChar,    0, {0}, 0},
+      { "abcorr",       MiceChar,    0, {0}, 0},
+      { "observer",     MiceChar,    0, {0}, 0},
+      { "et",           MiceDouble,  0, {0}, 1},
+      { "visible",      MiceBoolean, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 7, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], instrument,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], target,       DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], target_shape, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], target_frame, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], abcorr,       DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], observer,     DEFAULT_STR_LENGTH);
+
+   vec_et      = A_DBL_ARGV(7);
+   vec_visible = A_BOOL_RET_ARGV(0);
+
+   et      = (vec_et);
+   visible = (vec_visible);
+
+   /*
+   Check for vectorized arguments.
+   */
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         et      = (vec_et      + i*extra->offset[6]);
+         visible = (vec_visible + i*extra->offset[7]);
+
+         fovtrg_c ( instrument, target, target_shape, target_frame,
+                    abcorr, observer, et, visible );
+
+         CHECK_CALL_FAILURE(i);
+
+         }
+
+      }
+   else
+      {
+
+      fovtrg_c ( instrument, target, target_shape, target_frame,
+                 abcorr, observer, et, visible );
+
+      CHECK_CALL_FAILURE(SCALAR);
+
+      }
+
+   }
+
+
+
+
+/*
+   void              frame_c  ( SpiceDouble         x[3],
+                                SpiceDouble         y[3],
+                                SpiceDouble         z[3] );
+*/
+void cspice_frame(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+    /*
+    Note, the 'x' argument is a mutator. Mutators are a pain.
+    */
+
+   SpiceDouble        * vec;
+   SpiceDouble        * x;
+   SpiceDouble        * y;
+   SpiceDouble        * z;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "vec", MiceDouble, 1, {3}, 0},
+      { "x",   MiceDouble, 1, {3}, 0},
+      { "y",   MiceDouble, 1, {3}, 0},
+      { "z",   MiceDouble, 1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 3 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec  = A_DBL_ARGV(1);
+   x    = A_DBL_RET_ARGV(0);
+   y    = A_DBL_RET_ARGV(1);
+   z    = A_DBL_RET_ARGV(2);
+
+   /*
+   Copy the input 'x' (vec) to the mutatable 'x'.
+   */
+   MOVED( vec, 3, x );
+
+   frame_c  ( x, y, z );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+void mice_frinfo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             frcode;
+   SpiceInt           * vec_frcode;
+   SpiceInt             cent;
+   SpiceInt             clss;
+   SpiceInt             clssid;
+   SpiceBoolean         found;
+
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "frcode", MiceInt,    0, {0}, 1},
+      { "frinfo", MiceFrinfo, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_frcode = A_INT_ARGV(1);
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+
+         frcode = *(vec_frcode  + i*extra->offset[0]);
+
+         frinfo_c ( frcode,
+                    &cent,
+                    &clss,
+                    &clssid,
+                    &found );
+         CHECK_CALL_FAILURE(i);
+
+         if ( !found )
+            {
+            cent    = 0;
+            clss    = 0;
+            clssid  = 0;
+            }
+
+         mxDestroyArray( mxGetField( plhs[0], i, "center" ) );
+         mxSetField(plhs[0], i, "center",   zzmice_CreateIntScalar(cent) );
+
+         mxDestroyArray( mxGetField( plhs[0], i, "class" ) );
+         mxSetField(plhs[0], i, "class",    zzmice_CreateIntScalar(clss) );
+
+         mxDestroyArray( mxGetField( plhs[0], i, "class_ID" ) );
+         mxSetField(plhs[0], i, "class_ID", zzmice_CreateIntScalar(clssid) );
+
+         mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+         mxSetField( plhs[0], i, "found",
+                     mxCreateLogicalScalar(found ? true: false));
+         }
+
+      }
+   else
+      {
+
+      frcode     = *vec_frcode;
+
+      frinfo_c ( frcode,
+                 &cent,
+                 &clss,
+                 &clssid,
+                 &found );
+      CHECK_CALL_FAILURE(SCALAR);
+
+      if ( !found )
+         {
+         cent    = 0;
+         clss    = 0;
+         clssid  = 0;
+         }
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "center" ) );
+      mxSetField(plhs[0], 0, "center",   zzmice_CreateIntScalar(cent) );
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "class" ) );
+      mxSetField(plhs[0], 0, "class",    zzmice_CreateIntScalar(clss) );
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "class_ID" ) );
+      mxSetField(plhs[0], 0, "class_ID", zzmice_CreateIntScalar(clssid) );
+
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
+                  mxCreateLogicalScalar(found ? true: false));
+      }
+
+   }
+
+
+
+
+/*
+   void              frmnam_c ( SpiceInt            frcode,
+                                SpiceInt            lenout,
+                                SpiceChar         * frname  )
+*/
+void cspice_frmnam(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            frname [DEFAULT_STR_LENGTH+1];
+   SpiceInt             frcode;
+   SpiceInt           * vec_code;
+   SpiceInt             i;
+
+   SpiceChar        ** cval;
+   SpiceChar        ** array;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "frcode", MiceInt,  0, {0}, 1},
+      { "frname", MiceChar, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   memset( frname, 0, default_str_size );
+
+   extra    = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_code = A_INT_ARGV(1);
+
+   if (extra->count>1)
+      {
+
+      /*
+      Allocate needed memory for intermediate operations.
+      */
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
+                                                           extra->count);
+      array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
+
+      CHECK_CALL_FAILURE_MEM1(SCALAR, 1, cval, array);
+
+      for (i=0;i<extra->count;i++)
+         {
+
+         frcode = *(vec_code  + i*extra->offset[0]);
+
+         /*
+         Copy the ith string pointer to the array of pointers,
+         use this pointer for the call output.
+         */
+         array[i] = *cval + i*default_str_size;
+
+         frmnam_c(frcode, DEFAULT_STR_LENGTH, array[i] );
+         CHECK_CALL_FAILURE_MEM1(i, 1, cval, array);
+         }
+
+      /*
+      I think this functions as a copy, creating needed
+      memory for plhs.
+      */
+      plhs[0] = mxCreateCharMatrixFromStrings( extra->count,
+                                               (const char **)array);
+
+      free_SpiceString_C_array ( 1, cval );
+      free_SpiceMemory( array );
+
+      }
+   else
+      {
+
+      frcode   = *vec_code;
+
+      frmnam_c(frcode, DEFAULT_STR_LENGTH, frname );
+      CHECK_CALL_FAILURE(SCALAR);
+
+      plhs[0] = mxCreateString( frname );
+      if ( plhs[0] == NULL )
+         {
+         mexErrMsgTxt( "MICE(BUG): mxCreateString failed in cspice_fmrnam" );
+         }
+
+      }
+
+   /*
+   Confirm the code released all allocated memory.
+   */
+   MICE_ALLOC_CHECK;
+   }
+
+
+
+
+/*
+   void              furnsh_c ( ConstSpiceChar    * file );
 */
 void cspice_furnsh(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar           file[DEFAULT_STR_LENGTH+1]; 
+
+   SpiceChar           file[DEFAULT_STR_LENGTH+1];
    mxChar            * mx_file;
-   
+
    SpiceInt            i;
    SpiceInt            j;
-   
+
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "file", MiceChar, 0, {0}, 1},
       };
@@ -3779,7 +6310,7 @@ void cspice_furnsh(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_file = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -3794,7 +6325,7 @@ void cspice_furnsh(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             }
 
          file[extra->offset[0]] = '\0';
-            
+
          furnsh_c(file);
          CHECK_CALL_FAILURE(i);
          }
@@ -3812,6 +6343,7 @@ void cspice_furnsh(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              gcpool_c ( ConstSpiceChar    * name,
                                 SpiceInt            start,
@@ -3823,8 +6355,8 @@ void cspice_furnsh(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_gcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            name[MAXLEN+1]; 
+
+   SpiceChar            name[MAXLEN+1];
    SpiceInt             start;
    SpiceInt             room;
    SpiceInt             lenout;
@@ -3836,13 +6368,13 @@ void cspice_gcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt              i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name"  , MiceChar  , 0, {0}, 0},
-      { "start" , MiceInt   , 0, {0}, 0},
-      { "room"  , MiceInt   , 0, {0}, 0},
-      { "cvals" , MiceIgnore, 0, {0}, 0},
-      { "found" , MiceIgnore, 0, {0}, 0},
+      { "name",   MiceChar,   0, {0}, 0},
+      { "start",  MiceInt,    0, {0}, 0},
+      { "room",   MiceInt,    0, {0}, 0},
+      { "cvals",  MiceIgnore, 0, {0}, 0},
+      { "found",  MiceIgnore, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 3, 2 );
@@ -3853,7 +6385,7 @@ void cspice_gcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'start' index.
+   C does not, which is weird. Subtract one off the 'start' index.
    */
    start  = S_INT_ARGV(2) - 1;
    room   = S_INT_ARGV(3);
@@ -3902,6 +6434,7 @@ void cspice_gcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              gdpool_c ( ConstSpiceChar    * name,
                                 SpiceInt            start,
@@ -3912,23 +6445,23 @@ void cspice_gcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_gdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            name [MAXLEN+1]; 
+
+   SpiceChar            name [MAXLEN+1];
    SpiceInt             start;
    SpiceInt             room;
    SpiceInt             n = 0;
    SpiceDouble        * dvals;
    SpiceDouble        * dvals_ret;
    SpiceBoolean         found;
+
    int                  sizearray[2];
-   mxArray            * mx_arr;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar,    0, {0}, 0},
+      { "name",  MiceChar,    0, {0}, 0},
       { "start", MiceInt,     0, {0}, 0},
-      { "room" , MiceInt,     0, {0}, 0},
+      { "room",  MiceInt,     0, {0}, 0},
       { "dvals", MiceIgnore,  0, {0}, 0},
       { "found", MiceIgnore,  0, {0}, 0},
       };
@@ -3941,19 +6474,30 @@ void cspice_gdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'start' index.
+   C does not, which is weird. Subtract one off the 'start' index.
    */
    start  = S_INT_ARGV(2) - 1;
    room   = S_INT_ARGV(3);
 
-   sizearray[0] = 1;
-   sizearray[1] = room;
-
-   mx_arr = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
-   dvals  = (SpiceDouble*)mxGetData(mx_arr);
+   dvals  = (SpiceDouble*)mxMalloc(room * sizeof(SpiceDouble) );
+   memset( dvals,  0, room * sizeof(SpiceDouble) );
 
    gdpool_c(name, start, room, &n, dvals, &found);
-   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'dvals'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( dvals );
+
+      /*
+      The mice_fail call creates the error string then returns control
+      to the MATLAB interpreter.
+      */
+      mice_fail(SCALAR);
+      }
 
    if( found )
       {
@@ -3972,7 +6516,11 @@ void cspice_gdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    plhs[1] = zzmice_CreateIntScalar(found);
 
    MOVED( dvals, n, dvals_ret );
+   mxFree( dvals );
+
    }
+
+
 
 
 /*
@@ -4000,13 +6548,13 @@ void cspice_georec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "alt"   , MiceDouble, 0, {0}, 1},
-      { "re"    , MiceDouble, 0, {0}, 0},
-      { "f"     , MiceDouble, 0, {0}, 0},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "alt",    MiceDouble, 0, {0}, 1},
+      { "re",     MiceDouble, 0, {0}, 0},
+      { "f",      MiceDouble, 0, {0}, 0},
       { "rectan", MiceDouble, 1, {3}, 1},
       };
 
@@ -4028,10 +6576,10 @@ void cspice_georec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          lon    = *(vec_lon    + i*extra->offset[0]);
          lat    = *(vec_lat    + i*extra->offset[1]);
          alt    = *(vec_alt    + i*extra->offset[2]);
@@ -4041,15 +6589,17 @@ void cspice_georec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
-      
+
       georec_c(lon, lat, alt, re, f, rectan);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
+
 
 
 /*
@@ -4061,31 +6611,31 @@ void cspice_georec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 SpiceChar         * frame,
                                 SpiceDouble         bsight [3],
                                 SpiceInt          * n,
-                                SpiceDouble         bounds [][3] ); 
+                                SpiceDouble         bounds [][3] );
 */
 void cspice_getfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceInt             instid;
    SpiceInt             room;
-   SpiceChar            shape[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            frame[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            shape[DEFAULT_STR_LENGTH+1];
+   SpiceChar            frame[DEFAULT_STR_LENGTH+1];
    SpiceDouble        * bsight;
    SpiceInt             n = 0;
    SpiceDouble        * bounds;
    SpiceDouble        * bounds_ret;
+
    int                  sizearray[2];
-   mxArray            * mx_arr;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "instid"  , MiceInt   , 0, {0}, 0},
-      { "room"    , MiceInt   , 0, {0}, 0},
-      { "shape"   , MiceChar  , 0, {0}, 0},
-      { "frame"   , MiceChar  , 0, {0}, 0},
-      { "bsight"  , MiceDouble, 1, {3}, 0},
-      { "bounds"  , MiceIgnore, 0, {0}, 0},
+      { "instid",   MiceInt,    0, {0}, 0},
+      { "room",     MiceInt,    0, {0}, 0},
+      { "shape",    MiceChar,   0, {0}, 0},
+      { "frame",    MiceChar,   0, {0}, 0},
+      { "bsight",   MiceDouble, 1, {3}, 0},
+      { "bounds",   MiceIgnore, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 4 );
@@ -4097,14 +6647,11 @@ void cspice_getfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    bsight = A_DBL_RET_ARGV(2);
 
-   sizearray[0] = 3;
-   sizearray[1] = room;
+   bounds = (SpiceDouble*)mxMalloc( 3 * room * sizeof(SpiceDouble) );
+   memset( bounds,  0, 3 * room * sizeof(SpiceDouble) );
 
-   mx_arr = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
-   bounds = (SpiceDouble*)mxGetData(mx_arr);
-
-   getfov_c( instid, 
-             room, 
+   getfov_c( instid,
+             room,
              DEFAULT_STR_LENGTH,
              DEFAULT_STR_LENGTH,
              shape,
@@ -4113,7 +6660,20 @@ void cspice_getfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
              &n,
              (SpiceDouble(*)[3])bounds);
 
-   CHECK_CALL_FAILURE(SCALAR);
+   /*
+   Check for a failure signal. Free the memory assigned to 'bounds'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( bounds );
+
+      /*
+      The mice_fail call creates the error string then returns control
+      to the MATLAB interpreter.
+      */
+      mice_fail(SCALAR);
+      }
 
    if ( n > 0 )
       {
@@ -4128,7 +6688,7 @@ void cspice_getfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    else
       {
-      
+
       /*
       No variables found matching the template. Set 'frame' and 'shape' to
       nulls.
@@ -4150,9 +6710,10 @@ void cspice_getfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    Move the contents of 'bounds' to the return matrix 'bounds_ret'. On return
-   to MATLAB the matrix will have dimension 3xN. 
+   to MATLAB the matrix will have dimension 3xN.
    */
    MOVED( bounds, 3*n, bounds_ret );
+   mxFree( bounds );
 
    }
 
@@ -4199,7 +6760,7 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4209,7 +6770,7 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4217,7 +6778,7 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target",  MiceChar,   0, {0}, 0},
       { "abcorr",  MiceChar,   0, {0}, 0},
@@ -4227,7 +6788,7 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -4251,11 +6812,11 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[9] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -4264,12 +6825,12 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -4291,9 +6852,9 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      nintvls,
                      &cnfine_cell,
                      &result_cell );
-   
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -4320,6 +6881,199 @@ void cspice_gfdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxFree( result );
    }
+
+
+
+
+/*
+   void              gfilum_c ( ConstSpiceChar     * method,
+                                ConstSpiceChar     * angtyp,
+                                ConstSpiceChar     * target,
+                                ConstSpiceChar     * illum,
+                                ConstSpiceChar     * fixref,
+                                ConstSpiceChar     * abcorr,
+                                ConstSpiceChar     * obsrvr,
+                                ConstSpiceDouble     spoint [3],
+                                ConstSpiceChar     * relate,
+                                SpiceDouble          refval,
+                                SpiceDouble          adjust,
+                                SpiceDouble          step,
+                                SpiceInt             nintvls,
+                                SpiceCell          * cnfine,
+                                SpiceCell          * result     )
+*/
+void cspice_gfilum(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            method [DEFAULT_STR_LENGTH+1];
+   SpiceChar            angtyp [DEFAULT_STR_LENGTH+1];
+   SpiceChar            target [DEFAULT_STR_LENGTH+1];
+   SpiceChar            illum  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            fixref [DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr [DEFAULT_STR_LENGTH+1];
+   SpiceDouble        * spoint;
+   SpiceChar            relate [DEFAULT_STR_LENGTH+1];
+   SpiceDouble          refval;
+   SpiceDouble          adjust;
+   SpiceDouble          step;
+   SpiceInt             nintvls;
+   SpiceDouble        * cnfine;
+   SpiceInt             size;
+   SpiceDouble        * result;
+   SpiceDouble        * result_f;
+
+   int                  sizearray[2];
+
+   SpiceInt             cnfine_size;
+
+   /*
+   Initialize the 'cnfine_cell' and 'result_cell' cells
+   as double precision with zero size and zero cardinality.
+   */
+   SpiceCell           cnfine_cell = { SPICE_DP,
+                                       0,
+                                       0,
+                                       0,
+                                       SPICETRUE,
+                                       SPICEFALSE,
+                                       SPICEFALSE,
+                                       NULL,
+                                       NULL };
+
+   SpiceCell           result_cell = { SPICE_DP,
+                                       0,
+                                       0,
+                                       0,
+                                       SPICETRUE,
+                                       SPICEFALSE,
+                                       SPICEFALSE,
+                                       NULL,
+                                       NULL };
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "method",  MiceChar,   0, {0}, 0},
+      { "angtyp",  MiceChar,   0, {0}, 0},
+      { "target",  MiceChar,   0, {0}, 0},
+      { "illum",   MiceChar,   0, {0}, 0},
+      { "fixref",  MiceChar,   0, {0}, 0},
+      { "abcorr",  MiceChar,   0, {0}, 0},
+      { "obsrvr",  MiceChar,   0, {0}, 0},
+      { "spoint",  MiceDouble, 1, {3}, 0},
+      { "relate",  MiceChar,   0, {0}, 0},
+      { "refval",  MiceDouble, 0, {0}, 0},
+      { "adjust",  MiceDouble, 0, {0}, 0},
+      { "step",    MiceDouble, 0, {0}, 0},
+      { "nintvls", MiceInt,    0, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
+      { "result",  MiceIgnore, 0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 14, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], angtyp, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], target, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], illum,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], fixref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], abcorr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[7], obsrvr, DEFAULT_STR_LENGTH);
+
+   spoint = A_DBL_ARGV(8);
+
+   mxGetString(prhs[9], relate,  DEFAULT_STR_LENGTH);
+
+   refval  = S_DBL_ARGV(10);
+   adjust  = S_DBL_ARGV(11);
+   step    = S_DBL_ARGV(12);
+   nintvls = S_INT_ARGV(13);
+
+   cnfine = (SpiceDouble*)mxGetData(prhs[14]);
+
+   size = nintvls*2.;
+
+   /*
+   The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
+   */
+   cnfine_size = mxGetNumberOfElements( prhs[14] ) - SPICE_CELL_CTRLSZ;
+
+   /*
+   Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
+   window implementation has size equal to cardinality.
+   */
+   cnfine_cell.size = cnfine_size;
+   cnfine_cell.card = cnfine_size;
+   cnfine_cell.base = cnfine;
+   cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
+
+   /*
+   mxMalloc returns to top level on error.
+   */
+   result = (SpiceDouble*)
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
+
+   /*
+   Set the struct fields to initialize the 'result_cell' cell.
+   The cardinality remains zero as this assignment occurs prior
+   to use.
+   */
+   result_cell.size = size;
+   result_cell.base = result;
+   result_cell.data = &result[SPICE_CELL_CTRLSZ];
+
+   (void) gfilum_c ( method,
+                     angtyp,
+                     target,
+                     illum,
+                     fixref,
+                     abcorr,
+                     obsrvr,
+                     spoint,
+                     relate,
+                     refval,
+                     adjust,
+                     step,
+                     nintvls,
+                     &cnfine_cell,
+                     &result_cell  );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'result'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( result );
+      mice_fail(SCALAR);
+      }
+
+   /*
+   Create an output array CARDx1.
+   */
+   sizearray[0] = card_c( &result_cell );
+   sizearray[1] = 1;
+
+   plhs[0]  = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   result_f = A_DBL_RET_ARGV(0);
+
+   /*
+   Copy the data contents of 'result' to 'result_f'. The set of window data
+   starts at 'result' array index SPICE_CELL_CTRLSZ and contains 'sizearray[0]'
+   elements.
+   */
+   MOVED( result + SPICE_CELL_CTRLSZ, sizearray[0], result_f );
+
+   mxFree( result );
+   }
+
+
 
 
 /*
@@ -4366,7 +7120,7 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4376,7 +7130,7 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4384,7 +7138,7 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "occtyp",  MiceChar,   0, {0}, 0},
       { "front",   MiceChar,   0, {0}, 0},
@@ -4396,8 +7150,8 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "abcorr",  MiceChar,   0, {0}, 0},
       { "obsrvr",  MiceChar,   0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
-      { "size"  ,  MiceInt   , 0, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
+      { "size",    MiceInt,    0, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -4423,11 +7177,11 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[11] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -4436,12 +7190,12 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -4465,10 +7219,10 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      step,
                      &cnfine_cell,
                      &result_cell  );
-                     
-   
+
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -4496,6 +7250,175 @@ void cspice_gfoclt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    mxFree( result );
    }
 
+
+
+
+/*
+   void              gfpa_c ( ConstSpiceChar     * target,
+                              ConstSpiceChar     * illum,
+                              ConstSpiceChar     * abcorr,
+                              ConstSpiceChar     * obsrvr,
+                              ConstSpiceChar     * relate,
+                              SpiceDouble          refval,
+                              SpiceDouble          adjust,
+                              SpiceDouble          step,
+                              SpiceInt             nintvls,
+                              SpiceCell          * cnfine,
+                              SpiceCell          * result     )
+
+*/
+void cspice_gfpa(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            target [DEFAULT_STR_LENGTH+1];
+   SpiceChar            illum  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr [DEFAULT_STR_LENGTH+1];
+   SpiceChar            relate [DEFAULT_STR_LENGTH+1];
+   SpiceDouble          refval;
+   SpiceDouble          adjust;
+   SpiceDouble          step;
+   SpiceInt             nintvls;
+   SpiceDouble        * cnfine;
+   SpiceInt             size;
+   SpiceDouble        * result;
+   SpiceDouble        * result_f;
+
+   int                 sizearray[2];
+
+   SpiceInt            cnfine_size;
+
+   /*
+   Initialize the 'cnfine_cell' and 'result_cell' cells
+   as double precision with zero size and zero cardinality.
+   */
+   SpiceCell           cnfine_cell = { SPICE_DP,
+                                       0,
+                                       0,
+                                       0,
+                                       SPICETRUE,
+                                       SPICEFALSE,
+                                       SPICEFALSE,
+                                       NULL,
+                                       NULL };
+
+   SpiceCell           result_cell = { SPICE_DP,
+                                       0,
+                                       0,
+                                       0,
+                                       SPICETRUE,
+                                       SPICEFALSE,
+                                       SPICEFALSE,
+                                       NULL,
+                                       NULL };
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "target",  MiceChar,   0, {0}, 0},
+      { "illum",   MiceChar,   0, {0}, 0},
+      { "abcorr",  MiceChar,   0, {0}, 0},
+      { "obsrvr",  MiceChar,   0, {0}, 0},
+      { "relate",  MiceChar,   0, {0}, 0},
+      { "refval",  MiceDouble, 0, {0}, 0},
+      { "adjust",  MiceDouble, 0, {0}, 0},
+      { "step",    MiceDouble, 0, {0}, 0},
+      { "nintvls", MiceInt,    0, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
+      { "result",  MiceIgnore, 0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 10, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], target,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], illum,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], abcorr,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], obsrvr,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], relate,  DEFAULT_STR_LENGTH);
+
+   refval  = S_DBL_ARGV(6);
+   adjust  = S_DBL_ARGV(7);
+   step    = S_DBL_ARGV(8);
+   nintvls = S_INT_ARGV(9);
+
+   cnfine = (SpiceDouble*)mxGetData(prhs[10]);
+
+   size = nintvls*2.;
+
+   /*
+   The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
+   */
+   cnfine_size = mxGetNumberOfElements( prhs[10] ) - SPICE_CELL_CTRLSZ;
+
+   /*
+   Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
+   window implementation has size equal to cardinality.
+   */
+   cnfine_cell.size = cnfine_size;
+   cnfine_cell.card = cnfine_size;
+   cnfine_cell.base = cnfine;
+   cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
+
+   /*
+   mxMalloc returns to top level on error.
+   */
+   result = (SpiceDouble*)
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
+
+   /*
+   Set the struct fields to initialize the 'result_cell' cell.
+   The cardinality remains zero as this assignment occurs prior
+   to use.
+   */
+   result_cell.size = size;
+   result_cell.base = result;
+   result_cell.data = &result[SPICE_CELL_CTRLSZ];
+
+   (void) gfpa_c ( target,
+                   illum,
+                   abcorr,
+                   obsrvr,
+                   relate,
+                   refval,
+                   adjust,
+                   step,
+                   nintvls,
+                   &cnfine_cell,
+                   &result_cell );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'result'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( result );
+      mice_fail(SCALAR);
+      }
+
+   /*
+   Create an output array CARDx1.
+   */
+   sizearray[0] = card_c( &result_cell );
+   sizearray[1] = 1;
+
+   plhs[0]  = mxCreateNumericArray( 2, sizearray, mxDOUBLE_CLASS, mxREAL);
+   result_f = A_DBL_RET_ARGV(0);
+
+   /*
+   Copy the data contents of 'result' to 'result_f'. The set of window data
+   starts at 'result' array index SPICE_CELL_CTRLSZ and contains 'sizearray[0]'
+   elements.
+   */
+   MOVED( result + SPICE_CELL_CTRLSZ, sizearray[0], result_f );
+
+   mxFree( result );
+   }
 
 
 
@@ -4546,7 +7469,7 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4556,7 +7479,7 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4564,7 +7487,7 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target",  MiceChar,   0, {0}, 0},
       { "frame",   MiceChar,   0, {0}, 0},
@@ -4577,7 +7500,7 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -4604,11 +7527,11 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[12] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -4617,12 +7540,12 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -4647,10 +7570,10 @@ void cspice_gfposc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      nintvls,
                      &cnfine_cell,
                      &result_cell  );
-                     
-   
+
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -4716,7 +7639,7 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4726,7 +7649,7 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4734,7 +7657,7 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "inst",    MiceChar,   0, {0}, 0},
       { "raydir",  MiceDouble, 1, {3}, 0},
@@ -4742,8 +7665,8 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "abcorr",  MiceChar,   0, {0}, 0},
       { "obsrvr",  MiceChar,   0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
-      { "size"  ,  MiceInt   , 0, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
+      { "size",    MiceInt,    0, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -4767,11 +7690,11 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[7] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -4780,12 +7703,12 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -4805,9 +7728,9 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      step,
                      &cnfine_cell,
                      &result_cell  );
-   
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -4834,6 +7757,7 @@ void cspice_gfrfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxFree( result );
    }
+
 
 
 
@@ -4877,7 +7801,7 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4887,7 +7811,7 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -4895,7 +7819,7 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target",  MiceChar,   0, {0}, 0},
       { "abcorr",  MiceChar,   0, {0}, 0},
@@ -4905,7 +7829,7 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -4929,11 +7853,11 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[9] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -4942,12 +7866,12 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -4969,9 +7893,9 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                    nintvls,
                    &cnfine_cell,
                    &result_cell );
-   
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -4998,6 +7922,7 @@ void cspice_gfrr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxFree( result );
    }
+
 
 
 
@@ -5026,7 +7951,7 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar            shape1 [DEFAULT_STR_LENGTH+1];
    SpiceChar            frame1 [DEFAULT_STR_LENGTH+1];
    SpiceChar            targ2  [DEFAULT_STR_LENGTH+1];
-   SpiceChar            shape2 [DEFAULT_STR_LENGTH+1];  
+   SpiceChar            shape2 [DEFAULT_STR_LENGTH+1];
    SpiceChar            frame2 [DEFAULT_STR_LENGTH+1];
    SpiceChar            abcorr [DEFAULT_STR_LENGTH+1];
    SpiceChar            obsrvr [DEFAULT_STR_LENGTH+1];
@@ -5051,7 +7976,7 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5061,7 +7986,7 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5069,7 +7994,7 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "targ1",   MiceChar,   0, {0}, 0},
       { "shape1",  MiceChar,   0, {0}, 0},
@@ -5084,7 +8009,7 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -5113,11 +8038,11 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[14] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -5126,12 +8051,12 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -5158,9 +8083,9 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      nintvls,
                      &cnfine_cell,
                      &result_cell );
-   
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -5190,13 +8115,14 @@ void cspice_gfsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              gfsntc_c ( ConstSpiceChar     * target,
                                 ConstSpiceChar     * fixref,
                                 ConstSpiceChar     * method,
                                 ConstSpiceChar     * abcorr,
                                 ConstSpiceChar     * obsrvr,
-                                ConstSpiceChar     * dref, 
+                                ConstSpiceChar     * dref,
                                 ConstSpiceDouble     dvec   [3],
                                 ConstSpiceChar     * crdsys,
                                 ConstSpiceChar     * coord,
@@ -5215,8 +8141,8 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar            fixref [DEFAULT_STR_LENGTH+1];
    SpiceChar            method [DEFAULT_STR_LENGTH+1];
    SpiceChar            abcorr [DEFAULT_STR_LENGTH+1];
-   SpiceChar            obsrvr [DEFAULT_STR_LENGTH+1];   
-   SpiceChar            dref   [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            obsrvr [DEFAULT_STR_LENGTH+1];
+   SpiceChar            dref   [DEFAULT_STR_LENGTH+1];
    SpiceDouble        * dvec;
    SpiceChar            crdsys [DEFAULT_STR_LENGTH+1];
    SpiceChar            coord  [DEFAULT_STR_LENGTH+1];
@@ -5241,7 +8167,7 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5251,7 +8177,7 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5259,7 +8185,7 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target",  MiceChar,   0, {0}, 0},
       { "fixref",  MiceChar,   0, {0}, 0},
@@ -5275,7 +8201,7 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -5307,11 +8233,11 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[15] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -5320,12 +8246,12 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    /*
    Set the struct fields to initialize the 'result_cell' cell.
@@ -5352,9 +8278,9 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      nintvls,
                      &cnfine_cell,
                      &result_cell  );
-                     
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -5382,6 +8308,32 @@ void cspice_gfsntc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    mxFree( result );
    }
 
+
+
+
+/*
+   void              gfstol_c ( SpiceDouble         value );
+*/
+void cspice_gfstol(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble          value;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "value",  MiceDouble, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   value = S_DBL_ARGV(1);
+
+   (void) gfstol_c ( value );
+   CHECK_CALL_FAILURE(SCALAR);
+   }
 
 
 
@@ -5433,7 +8385,7 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5443,7 +8395,7 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5451,7 +8403,7 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target",  MiceChar,   0, {0}, 0},
       { "fixref",  MiceChar,   0, {0}, 0},
@@ -5465,7 +8417,7 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "adjust",  MiceDouble, 0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
       { "nintvls", MiceInt,    0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -5493,11 +8445,11 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[13] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -5506,12 +8458,12 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -5525,22 +8477,22 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    (void) gfsubc_c ( target,
                      fixref,
-                     method,  
-                     abcorr, 
+                     method,
+                     abcorr,
                      obsrvr,
-                     crdsys,  
+                     crdsys,
                      coord,
-                     relate,  
+                     relate,
                      refval,
-                     adjust,  
-                     step, 
+                     adjust,
+                     step,
                      nintvls,
                      &cnfine_cell,
                      &result_cell  );
-                     
-   
+
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -5580,7 +8532,7 @@ void cspice_gfsubc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 ConstSpiceChar     * obsrvr,
                                 SpiceDouble          step,
                                 SpiceCell          * cnfine,
-                                SpiceCell          * result  )     
+                                SpiceCell          * result  )
 */
 void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -5608,7 +8560,7 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           cnfine_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5618,7 +8570,7 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceCell           result_cell = { SPICE_DP,
                                        0,
                                        0,
-                                       0, 
+                                       0,
                                        SPICETRUE,
                                        SPICEFALSE,
                                        SPICEFALSE,
@@ -5626,7 +8578,7 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                        NULL };
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "inst",    MiceChar,   0, {0}, 0},
       { "target",  MiceChar,   0, {0}, 0},
@@ -5635,8 +8587,8 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "abcorr",  MiceChar,   0, {0}, 0},
       { "obsrvr",  MiceChar,   0, {0}, 0},
       { "step",    MiceDouble, 0, {0}, 0},
-      { "cnfine",  MiceWin   , 1, {0}, 0},
-      { "size"  ,  MiceInt   , 0, {0}, 0},
+      { "cnfine",  MiceWin,    1, {0}, 0},
+      { "size",    MiceInt,    0, {0}, 0},
       { "result",  MiceIgnore, 0, {0}, 0}
       };
 
@@ -5659,11 +8611,11 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'cnfine' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 
-   'cnfine' without the append size. 
+   zero elements appended to the arrays. Calculate the size of
+   'cnfine' without the append size.
    */
    cnfine_size = mxGetNumberOfElements( prhs[8] ) - SPICE_CELL_CTRLSZ;
-   
+
    /*
    Set the struct fields to fully describe the 'cnfine_cell' cell. A Mice
    window implementation has size equal to cardinality.
@@ -5672,12 +8624,12 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    cnfine_cell.card = cnfine_size;
    cnfine_cell.base = cnfine;
    cnfine_cell.data = &cnfine[SPICE_CELL_CTRLSZ];
-   
+
    /*
    mxMalloc returns to top level on error.
    */
    result = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
 
    /*
@@ -5698,9 +8650,9 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                      step,
                      &cnfine_cell,
                      &result_cell  );
-   
+
    /*
-   Check for a faliure signal. Free the memory assigned to 'result'
+   Check for a failure signal. Free the memory assigned to 'result'
    before signaling a Matlab error.
    */
    if ( failed_c())
@@ -5742,23 +8694,23 @@ void cspice_gftfov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_gipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            name[MAXLEN+1]; 
+
+   SpiceChar            name[MAXLEN+1];
    SpiceInt             start;
    SpiceInt             room;
    SpiceInt             n           = 0;
    SpiceInt           * ivals;
    SpiceInt           * ivals_ret;
    SpiceBoolean         found;
+
    int                  sizearray[2];
-   mxArray            * mx_arr;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar  , 0, {0}, 0},
-      { "start", MiceInt   , 0, {0}, 0},
-      { "room" , MiceInt   , 0, {0}, 0},
+      { "name",  MiceChar,   0, {0}, 0},
+      { "start", MiceInt,    0, {0}, 0},
+      { "room",  MiceInt,    0, {0}, 0},
       { "ivals", MiceIgnore, 0, {0}, 0},
       { "found", MiceIgnore, 0, {0}, 0},
       };
@@ -5771,20 +8723,31 @@ void cspice_gipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'start' index.
+   C does not, which is weird. Subtract one off the 'start' index.
    */
    start = S_INT_ARGV(2) - 1;
    room  = S_INT_ARGV(3);
-   
-   sizearray[0] = 1;
-   sizearray[1] = room;
 
-   mx_arr = mxCreateNumericArray( 2, sizearray, mxINT32_CLASS, mxREAL);
-   ivals  =  (SpiceInt*)mxGetData(mx_arr);
+   ivals  = (SpiceInt*)mxMalloc(room * sizeof(SpiceInt) );
+   memset( ivals,  0, room * sizeof(SpiceInt) );
 
    gipool_c(name, start, room, &n, ivals, &found);
-   CHECK_CALL_FAILURE(SCALAR);
-   
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'ivals'
+   before signaling a Matlab error.
+   */
+   if ( failed_c())
+      {
+      mxFree( ivals );
+
+      /*
+      The mice_fail call creates the error string then returns control
+      to the MATLAB interpreter.
+      */
+      mice_fail(SCALAR);
+      }
+
    if( found )
       {
       sizearray[0] = n;
@@ -5802,20 +8765,24 @@ void cspice_gipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    plhs[1] = zzmice_CreateIntScalar(found);
 
    MOVEI( ivals, n, ivals_ret );
+   mxFree( ivals );
+
    }
 
 
+
+
 /*
-   SpiceDouble halfpi_c( void ) 
+   SpiceDouble halfpi_c( void )
 */
 void cspice_halfpi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( halfpi_c() );
    }
@@ -5835,8 +8802,8 @@ void cspice_halfpi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_gnpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar             name[MAXLEN+1]; 
+
+   SpiceChar             name[MAXLEN+1];
    SpiceInt              start;
    SpiceInt              room;
    SpiceInt              lenout;
@@ -5848,13 +8815,13 @@ void cspice_gnpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt              i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name"  , MiceChar   , 0, {0}, 0},
-      { "start" , MiceInt    , 0, {0}, 0},
-      { "room"  , MiceInt    , 0, {0}, 0},
-      { "kvars" , MiceChar   , 0, {0}, 0},
-      { "found" , MiceBoolean, 0, {0}, 0},
+      { "name",   MiceChar,    0, {0}, 0},
+      { "start",  MiceInt,     0, {0}, 0},
+      { "room",   MiceInt,     0, {0}, 0},
+      { "kvars",  MiceChar,    0, {0}, 0},
+      { "found",  MiceBoolean, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 3, 2 );
@@ -5865,7 +8832,7 @@ void cspice_gnpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'start' index.
+   C does not, which is weird. Subtract one off the 'start' index.
    */
    start  = S_INT_ARGV(2) - 1;
    room   = S_INT_ARGV(3);
@@ -5908,13 +8875,11 @@ void cspice_gnpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
-
-
 /*
    void              illum_c  ( ConstSpiceChar    * target,
                                 SpiceDouble         et,
-                                ConstSpiceChar    * abcorr, 
-                                ConstSpiceChar    * obsrvr, 
+                                ConstSpiceChar    * abcorr,
+                                ConstSpiceChar    * obsrvr,
                                 ConstSpiceDouble    spoint [3],
                                 SpiceDouble       * phase,
                                 SpiceDouble       * solar,
@@ -5928,18 +8893,18 @@ void cspice_illum(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * vec_et;
    SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
    SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
-   SpiceDouble        * vec_spoint;
-   SpiceDouble        * vec_phase;
-   SpiceDouble        * vec_solar;
-   SpiceDouble        * vec_emissn;
    SpiceDouble        * spoint;
    SpiceDouble        * phase;
    SpiceDouble        * solar;
    SpiceDouble        * emissn;
+   SpiceDouble        * vec_spoint;
+   SpiceDouble        * vec_phase;
+   SpiceDouble        * vec_solar;
+   SpiceDouble        * vec_emissn;
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "target", MiceChar,   0, {0}, 0},
       { "et",     MiceDouble, 0, {0}, 1},
@@ -5961,7 +8926,7 @@ void cspice_illum(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[3], abcorr, DEFAULT_STR_LENGTH);
    mxGetString(prhs[4], obsrvr, DEFAULT_STR_LENGTH);
-   
+
    vec_spoint = A_DBL_ARGV(5);
    vec_phase  = A_DBL_RET_ARGV(0);
    vec_solar  = A_DBL_RET_ARGV(1);
@@ -5982,7 +8947,7 @@ void cspice_illum(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
@@ -5999,13 +8964,15 @@ void cspice_illum(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              ilumin_c ( ConstSpiceChar    * method,
                                 ConstSpiceChar    * target,
                                 SpiceDouble         et,
-                                ConstSpiceChar    * fixref, 
-                                ConstSpiceChar    * abcorr, 
-                                ConstSpiceChar    * obsrvr, 
+                                ConstSpiceChar    * fixref,
+                                ConstSpiceChar    * abcorr,
+                                ConstSpiceChar    * obsrvr,
                                 ConstSpiceDouble    spoint [3],
                                 SpiceDouble       * trgepc,
                                 SpiceDouble         srfvec [3],
@@ -6019,9 +8986,9 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
    SpiceChar            target[DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
-   SpiceChar            fixref[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            fixref[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
    SpiceDouble        * spoint;
    SpiceDouble          trgepc;
    SpiceDouble          srfvec[3];
@@ -6030,15 +8997,15 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          emissn;
 
    struct extra_dims  * extra;
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "method", MiceChar,   0, {0}, 0},
       { "target", MiceChar,   0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 0},
       { "fixref", MiceChar,   0, {0}, 0},
       { "abcorr", MiceChar,   0, {0}, 0},
       { "obsrvr", MiceChar,   0, {0}, 0},
-      { "spoint", MiceDouble, 1, {3}, 1},
+      { "spoint", MiceDouble, 1, {3}, 0},
       { "ilum",   MiceIlum,   0, {0}, 0}
       };
 
@@ -6048,7 +9015,7 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    et = S_DBL_ARGV(3);
 
    mxGetString(prhs[4], fixref, DEFAULT_STR_LENGTH);
@@ -6060,9 +9027,9 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    ilumin_c( method,
              target,
              et,
-             fixref, 
-             abcorr, 
-             obsrvr, 
+             fixref,
+             abcorr,
+             obsrvr,
              spoint,
              &trgepc,
              srfvec,
@@ -6072,16 +9039,20 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    CHECK_CALL_FAILURE(SCALAR);
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "trgepc" ) );
    mxSetField( plhs[0], 0, "trgepc",  mxCreateDoubleScalar(trgepc) );
 
-   memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ), 
-           srfvec, 
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ),
+           srfvec,
            3*sizeof(SpiceDouble));
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "phase" ) );
    mxSetField( plhs[0], 0, "phase", mxCreateDoubleScalar(phase) );
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "solar" ) );
    mxSetField( plhs[0], 0, "solar", mxCreateDoubleScalar(solar) );
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "emissn" ) );
    mxSetField( plhs[0], 0, "emissn", mxCreateDoubleScalar(emissn) );
 
    }
@@ -6090,101 +9061,347 @@ void mice_ilumin(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   SpiceDouble j1900_c( void )
+   void              inedpl_c ( SpiceDouble         a,
+                                SpiceDouble         b,
+                                SpiceDouble         c,
+                                ConstSpicePlane   * plane,
+                                SpiceEllipse      * ellipse,
+                                SpiceBoolean      * found    );
+*/
+void cspice_inedpl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble          a;
+   SpiceDouble          b;
+   SpiceDouble          c;
+   SpicePlane           plane;
+   SpiceEllipse         ellipse;
+   SpiceBoolean       * found;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "a",       MiceDouble,  0, {0}, 0},
+      { "b",       MiceDouble,  0, {0}, 0},
+      { "c",       MiceDouble,  0, {0}, 0},
+      { "plane",   MicePlane,   0, {0}, 0},
+      { "ellipse", MiceEllipse, 0, {0}, 0},
+      { "found",   MiceBoolean, 0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 4, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   a = S_DBL_ARGV(1);
+   b = S_DBL_ARGV(2);
+   c = S_DBL_ARGV(3);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[4], 0, "normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[4], 0,"constant") );
+
+   found  = A_BOOL_RET_ARGV(1);
+
+   inedpl_c ( a, b, c, &plane, &ellipse, found );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"center") ),
+           ellipse.center,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMajor") ),
+           ellipse.semiMajor,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMinor") ),
+           ellipse.semiMinor,
+           3*sizeof(SpiceDouble)
+         );
+
+   }
+
+
+
+
+/*
+   void              inelpl_c ( ConstSpiceEllipse * ellips,
+                                ConstSpicePlane   * plane,
+                                SpiceInt          * nxpts,
+                                SpiceDouble         xpt1[3],
+                                SpiceDouble         xpt2[3] );
+*/
+void cspice_inelpl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceEllipse         ellips;
+   SpicePlane           plane;
+   SpiceInt           * nxpts;
+   SpiceDouble        * xpt1;
+   SpiceDouble        * xpt2;
+
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "ellips", MiceEllipse, 0, {0}, 0},
+      { "plane",  MicePlane,   0, {0}, 0},
+      { "nxpts",  MiceInt,     0, {0}, 0},
+      { "xpt1",   MiceDouble,  1, {3}, 0},
+      { "xpt2",   MiceDouble,  1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 3 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /*
+   Assemble an ellipse structure from the input arguments.
+   */
+   memcpy( ellips.center,
+           mxGetPr( mxGetField( prhs[1], 0,"center") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( ellips.semiMajor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMajor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( ellips.semiMinor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMinor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[2], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[2], 0,"constant") );
+
+   nxpts = A_INT_RET_ARGV(0);
+   xpt1  = A_DBL_RET_ARGV(1);
+   xpt2  = A_DBL_RET_ARGV(2);
+
+   inelpl_c ( &ellips, &plane, nxpts, xpt1, xpt2 );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              inrypl_c ( ConstSpiceDouble    vertex [3],
+                                ConstSpiceDouble    dir    [3],
+                                ConstSpicePlane   * plane,
+                                SpiceInt          * nxpts,
+                                SpiceDouble         xpt    [3] );
+*/
+void cspice_inrypl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vertex;
+   SpiceDouble        * dir;
+   SpicePlane           plane;
+   SpiceInt           * nxpts;
+   SpiceDouble        * xpt;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "vertex", MiceDouble,  1, {3}, 0},
+      { "dir",    MiceDouble,  1, {3}, 0},
+      { "plane",  MicePlane,   0, {0}, 0},
+      { "nxpts",  MiceInt,     0, {0}, 0},
+      { "xpt1",   MiceDouble,  1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vertex = A_DBL_ARGV(1);
+   dir    = A_DBL_ARGV(2);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[3], 0, "normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[3], 0,"constant") );
+
+   nxpts = A_INT_RET_ARGV(0);
+   xpt   = A_DBL_RET_ARGV(1);
+
+   inrypl_c ( vertex, dir, &plane, nxpts, xpt );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void              invort_c ( ConstSpiceDouble    m  [3][3],
+                                SpiceDouble         mit[3][3] );
+*/
+void cspice_invort(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * m;
+   SpiceDouble        * mit;
+   SpiceDouble          xr[3][3];
+   SpiceDouble          yr[3][3];
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "m",    MiceDouble, 2, {3, 3}, 0},
+      { "mit",  MiceDouble, 2, {3, 3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   m    = A_DBL_ARGV(1);
+   mit  = A_DBL_RET_ARGV(0);
+
+   xpose_c( m, (SpiceDouble(*)[3])yr);
+
+   invort_c( yr, (SpiceDouble(*)[3])xr);
+   CHECK_CALL_FAILURE(SCALAR);
+
+   xpose_c( xr, (SpiceDouble(*)[3])mit);
+
+   }
+
+
+
+
+/*
+   SpiceDouble       j1900_c  ( void )
 */
 void cspice_j1900(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( j1900_c() );
    }
 
 
+
+
 /*
-   SpiceDouble j1950_c( void )
+   SpiceDouble       j1950_c  ( void )
 */
 void cspice_j1950(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( j1950_c() );
    }
 
 
+
+
 /*
-   SpiceDouble j2000_c( void )
+   SpiceDouble       j2000_c  ( void )
 */
 void cspice_j2000(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( j2000_c() );
-   
+
    }
 
 
+
+
 /*
-   SpiceDouble j2100_c( void )
+   SpiceDouble       j2100_c  ( void )
 */
 void cspice_j2100(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-      
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( j2100_c() );
    }
 
 
+
+
 /*
-   SpiceDouble jyear_c( void )
+   SpiceDouble       jyear_c  ( void )
 */
 void cspice_jyear(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-      
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( jyear_c() );
    }
 
 
 
+
 /*
-   void              kclear_c( void ) 
+   void              kclear_c( void )
 */
 void cspice_kclear(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 0 );
 
-   /* 
+   /*
    Not much to do, make the call.
    */
    kclear_c();
 
    }
+
 
 
 
@@ -6202,25 +9419,25 @@ void cspice_kclear(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_kdata(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceInt             which;
-   SpiceChar            kind  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            file  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            filtyp[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            source[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            kind  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            file  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            filtyp[DEFAULT_STR_LENGTH+1];
+   SpiceChar            source[DEFAULT_STR_LENGTH+1];
    SpiceInt           * handle;
    SpiceBoolean       * found;
 
    struct extra_dims  * extra;
-   struct argcheck      ArgCheck[] =
+   struct argcheck ArgCheck[] =
       {
-      { "which" , MiceInt    , 0, {0}, 0},
-      { "kind"  , MiceChar   , 0, {0}, 0},
-      { "file"  , MiceChar   , 0, {0}, 0},
-      { "filtyp", MiceChar   , 0, {0}, 0},
-      { "source", MiceChar   , 0, {0}, 0},
-      { "handle", MiceInt    , 0, {0}, 0},
-      { "found" , MiceBoolean, 0, {0}, 0}
+      { "which",  MiceInt,     0, {0}, 0},
+      { "kind",   MiceChar,    0, {0}, 0},
+      { "file",   MiceChar,    0, {0}, 0},
+      { "filtyp", MiceChar,    0, {0}, 0},
+      { "source", MiceChar,    0, {0}, 0},
+      { "handle", MiceInt,     0, {0}, 0},
+      { "found",  MiceBoolean, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 2, 5 );
@@ -6229,7 +9446,7 @@ void cspice_kdata(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'which' index.
+   C does not, which is weird. Subtract one off the 'which' index.
    */
    which = S_INT_ARGV(1) - 1;
    mxGetString(prhs[2], kind, DEFAULT_STR_LENGTH);
@@ -6238,14 +9455,14 @@ void cspice_kdata(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    found  = A_BOOL_RET_ARGV(4);
 
    kdata_c( which,
-            kind, 
-            DEFAULT_STR_LENGTH, 
+            kind,
             DEFAULT_STR_LENGTH,
             DEFAULT_STR_LENGTH,
-            file, 
-            filtyp, 
+            DEFAULT_STR_LENGTH,
+            file,
+            filtyp,
             source,
-            handle, 
+            handle,
             found);
 
    if( *found )
@@ -6258,22 +9475,22 @@ void cspice_kdata(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
       plhs[0] = mxCreateString( "\0" );
       plhs[1] = mxCreateString( "\0" );
-      plhs[2] = mxCreateString( "\0" );      
+      plhs[2] = mxCreateString( "\0" );
       }
 
    if ( plhs[0] == NULL )
       {
-      mexErrMsgTxt( 
+      mexErrMsgTxt(
          "MICE(BUG): mxCreateString failed in cspice_kdata: plhs[0]" );
       }
    if ( plhs[1] == NULL )
       {
-      mexErrMsgTxt( 
+      mexErrMsgTxt(
          "MICE(BUG): mxCreateString failed in cspice_kdata: plhs[1]" );
       }
    if ( plhs[2] == NULL )
       {
-      mexErrMsgTxt( 
+      mexErrMsgTxt(
          "MICE(BUG): mxCreateString failed in cspice_kdata: plhs[2]" );
       }
 
@@ -6295,37 +9512,37 @@ void cspice_kdata(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_kinfo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            file  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            filtyp[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            source[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            file  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            filtyp[DEFAULT_STR_LENGTH+1];
+   SpiceChar            source[DEFAULT_STR_LENGTH+1];
    SpiceInt           * handle;
    SpiceBoolean       * found;
 
    struct extra_dims  * extra;
-   struct argcheck      ArgCheck[] =
+   struct argcheck ArgCheck[] =
       {
-      { "file"  , MiceChar   , 0, {0}, 0},
-      { "filtyp", MiceChar   , 0, {0}, 0},
-      { "source", MiceChar   , 0, {0}, 0},
-      { "handle", MiceInt    , 0, {0}, 0},
-      { "found" , MiceBoolean, 0, {0}, 0}
+      { "file",   MiceChar,    0, {0}, 0},
+      { "filtyp", MiceChar,    0, {0}, 0},
+      { "source", MiceChar,    0, {0}, 0},
+      { "handle", MiceInt,     0, {0}, 0},
+      { "found",  MiceBoolean, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 1, 4 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
-  
+
    mxGetString(prhs[1], file, DEFAULT_STR_LENGTH);
 
    handle = A_INT_RET_ARGV(2);
    found  = A_BOOL_RET_ARGV(3);
 
-   kinfo_c( file, 
-            DEFAULT_STR_LENGTH, 
+   kinfo_c( file,
             DEFAULT_STR_LENGTH,
-            filtyp, 
+            DEFAULT_STR_LENGTH,
+            filtyp,
             source,
-            handle, 
+            handle,
             found);
 
    plhs[0] = mxCreateString( filtyp );
@@ -6358,17 +9575,16 @@ void cspice_ktotal(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt           * count;
 
    struct extra_dims  * extra;
-
-   struct argcheck      ArgCheck[] =
+   struct argcheck ArgCheck[] =
       {
-      { "kind" , MiceChar, 0, {0}, 0},
-      { "count", MiceInt , 0, {0}, 0},
+      { "kind",  MiceChar, 0, {0}, 0},
+      { "count", MiceInt,  0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
-  
+
    count = A_INT_RET_ARGV(0);
 
    mxGetString(prhs[1], kind, DEFAULT_STR_LENGTH);
@@ -6409,14 +9625,14 @@ void cspice_latcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "radius", MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lonc"  , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lonc",   MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -6446,10 +9662,10 @@ void cspice_latcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
-      
+
       radius = *(vec_radius);
       lon    = *(vec_lon);
       lat    = *(vec_lat);
@@ -6457,11 +9673,13 @@ void cspice_latcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       lonc   =  (vec_lonc);
       z      =  (vec_z);
 
-      latcyl_c(radius, lon, lat, r, lonc, z);   
+      latcyl_c(radius, lon, lat, r, lonc, z);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
+
 
 
 /*
@@ -6484,13 +9702,13 @@ void cspice_latrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceInt             i;
 
-   struct extra_dims  * extra;   
-   struct argcheck ArgCheck[] = 
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
       {
-      { "radius"   , MiceDouble, 0, {0}, 1},
+      { "radius",    MiceDouble, 0, {0}, 1},
       { "longitude", MiceDouble, 0, {0}, 1},
-      { "latitude" , MiceDouble, 0, {0}, 1},
-      { "rectan"   , MiceDouble, 1, {3}, 1},
+      { "latitude",  MiceDouble, 0, {0}, 1},
+      { "rectan",    MiceDouble, 1, {3}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
@@ -6516,7 +9734,7 @@ void cspice_latrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
       radius    = *(vec_radius);
@@ -6531,6 +9749,8 @@ void cspice_latrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              latsph_c( SpiceDouble    radius,
                                SpiceDouble    lon,
@@ -6541,7 +9761,7 @@ void cspice_latrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_latsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_radius;
    SpiceDouble        * vec_lon;
    SpiceDouble        * vec_lat;
@@ -6558,14 +9778,14 @@ void cspice_latsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "radius", MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "rho"   , MiceDouble, 0, {0}, 1},
-      { "colat" , MiceDouble, 0, {0}, 1},
-      { "lons"  , MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "rho",    MiceDouble, 0, {0}, 1},
+      { "colat",  MiceDouble, 0, {0}, 1},
+      { "lons",   MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -6575,7 +9795,7 @@ void cspice_latsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_radius = A_DBL_ARGV(ONE_IN  );
    vec_lon    = A_DBL_ARGV(TWO_IN  );
    vec_lat    = A_DBL_ARGV(THREE_IN);
-   
+
    vec_rho    = A_DBL_RET_ARGV(ONE_OUT  );
    vec_colat  = A_DBL_RET_ARGV(TWO_OUT  );
    vec_lons   = A_DBL_RET_ARGV(THREE_OUT);
@@ -6589,7 +9809,7 @@ void cspice_latsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          radius = *(vec_radius + i*extra->offset[ONE_OFF  ]);
@@ -6602,16 +9822,18 @@ void cspice_latsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          latsph_c(radius, lon, lat, rho, colat, lons);
          CHECK_CALL_FAILURE(i)
          }
-      
-      } 
+
+      }
    else
       {
-   
+
       latsph_c(radius, lon, lat, rho, colat, lons);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
+
 
 
 /*
@@ -6627,20 +9849,20 @@ void cspice_lmpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    MAXCHR and MAXLEN defined in cspice_params.h.
    */
-   SpiceChar            str [LINLEN + 1]; 
+   SpiceChar            str [LINLEN + 1];
    SpiceChar         ** cvals = NULL;
    SpiceInt             cvals_len;
    SpiceInt             cvals_size;
 
    mxChar             * mx_str;
-   
+
    SpiceInt             i;
    SpiceInt             j;
    SpiceInt             count;
 
    struct extra_dims  * extra;
 
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "cvals", MiceChar, 0, {0}, 1}
       };
@@ -6705,7 +9927,7 @@ void cspice_lmpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       str[cvals_len - 1] = '\0';
 
-      strncpy( *cvals + i*cvals_len, 
+      strncpy( *cvals + i*cvals_len,
                str,
                cvals_len);
       }
@@ -6724,21 +9946,22 @@ void cspice_lmpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void                ltime_c( SpiceDouble        etobs,
                                 SpiceInt           obs,
                                 ConstSpiceChar   * dir,
                                 SpiceInt           targ,
                                 SpiceDouble      * ettarg,
-                                SpiceDouble      * elapsd  ) 
+                                SpiceDouble      * elapsd  )
 */
 void cspice_ltime(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble      etobs;
    SpiceDouble    * vec_etobs;
    SpiceInt         obs;
-   SpiceChar        dir[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar        dir[DEFAULT_STR_LENGTH+1];
    SpiceInt         targ;
    SpiceDouble    * ettarg;
    SpiceDouble    * vec_ettarg;
@@ -6748,12 +9971,12 @@ void cspice_ltime(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt         i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "etobs" , MiceDouble, 0, {0}, 1},
-      { "obs"   , MiceInt   , 0, {0}, 0},
-      { "dir"   , MiceChar  , 0, {0}, 0},
-      { "targ"  , MiceInt   , 0, {0}, 0},
+      { "etobs",  MiceDouble, 0, {0}, 1},
+      { "obs",    MiceInt,    0, {0}, 0},
+      { "dir",    MiceChar,   0, {0}, 0},
+      { "targ",   MiceInt,    0, {0}, 0},
       { "ettarg", MiceDouble, 0, {0}, 1},
       { "elapsd", MiceDouble, 0, {0}, 1},
       };
@@ -6783,7 +10006,7 @@ void cspice_ltime(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
@@ -6830,12 +10053,12 @@ void cspice_m2eul(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt       i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "r",      MiceDouble, 2, {3, 3}, 1},
-      { "axis3" , MiceInt,    0, {0},    0},
-      { "axis2" , MiceInt,    0, {0},    0},
-      { "axis1" , MiceInt,    0, {0},    0},
+      { "axis3",  MiceInt,    0, {0},    0},
+      { "axis2",  MiceInt,    0, {0},    0},
+      { "axis1",  MiceInt,    0, {0},    0},
       { "angle3", MiceDouble, 0, {0},    1},
       { "angle2", MiceDouble, 0, {0},    1},
       { "angle1", MiceDouble, 0, {0},    1},
@@ -6891,6 +10114,7 @@ void cspice_m2eul(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              m2q_c    ( ConstSpiceDouble    r[3][3],
                                 SpiceDouble         q[4]     )
@@ -6907,10 +10131,10 @@ void cspice_m2q(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "r" , MiceDouble, 2, {3, 3}, 1},
-      { "q" , MiceDouble, 1, {4}   , 1},
+      { "r",  MiceDouble, 2, {3, 3}, 1},
+      { "q",  MiceDouble, 1, {4},    1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -6925,7 +10149,7 @@ void cspice_m2q(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       for (i=0;i<extra->count;i++)
          {
-         
+
          r = (vec_r + i*extra->offset[0]);
          q = (vec_q + i*extra->offset[1]);
 
@@ -6952,6 +10176,77 @@ void cspice_m2q(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              namfrm_c ( ConstSpiceChar    * frname,
+                                SpiceInt          * frcode );
+*/
+void cspice_namfrm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            str[DEFAULT_STR_LENGTH+1];
+   mxChar             * mx_str;
+   SpiceInt           * frcode;
+   SpiceInt           * vec_frcode;
+
+   SpiceInt             i;
+   SpiceInt             j;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "frname", MiceChar, 0, {0}, 1},
+      { "frcode", MiceInt,  0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_frcode = A_INT_RET_ARGV(0);
+
+   if (extra->count>1)
+      {
+
+      mx_str = (mxChar *)mxGetChars(prhs[1]);
+
+      for ( i=0; i<extra->count; i++)
+         {
+
+         /*
+         Extract the string data, character by character, into
+         CSPICE strings. The mx_str array stores the data in a column
+         major format, we need to extract the data by rows.
+         */
+         for ( j=0; j<extra->offset[0]; j++)
+            {
+            str[j] = (char)mx_str[i + (extra->count*j)];
+            }
+
+         str[extra->offset[0]] = '\0';
+         frcode                = (vec_frcode+i*extra->offset[1]);
+
+         namfrm_c(str, frcode);
+         CHECK_CALL_FAILURE(i);
+         }
+
+      }
+   else
+      {
+
+      mxGetString(prhs[1], str, DEFAULT_STR_LENGTH);
+
+      frcode = vec_frcode;
+
+      namfrm_c(str, frcode);
+      CHECK_CALL_FAILURE(SCALAR);
+      }
+
+   }
+
+
+
+
 /*
    void              nearpt_c ( ConstSpiceDouble    positn[3],
                                 SpiceDouble         a,
@@ -6962,7 +10257,7 @@ void cspice_m2q(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void mice_nearpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble  * vec_positn;
    SpiceDouble  * positn;
    SpiceDouble    a;
@@ -6974,13 +10269,13 @@ void mice_nearpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt       i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "positn", MiceDouble, 1, {3}, 1},
-      { "a"     , MiceDouble, 0, {0}, 0},
-      { "b"     , MiceDouble, 0, {0}, 0},
-      { "c"     , MiceDouble, 0, {0}, 0},
-      { "npoint", MiceSub   , 0, {0}, 1},
+      { "a",      MiceDouble, 0, {0}, 0},
+      { "b",      MiceDouble, 0, {0}, 0},
+      { "c",      MiceDouble, 0, {0}, 0},
+      { "npoint", MiceNear,    0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 1 );
@@ -6995,10 +10290,10 @@ void mice_nearpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          positn = (vec_positn + i*extra->offset[0]);
 
          nearpt_c(positn, a, b, c, npoint, &alt);
@@ -7008,20 +10303,21 @@ void mice_nearpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          Copy the position and altitude values into the ith structure
          element.
          */
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos" ) ), 
-                 npoint, 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos" ) ),
+                 npoint,
                  3*sizeof(SpiceDouble));
 
+         mxDestroyArray( mxGetField( plhs[0], i, "alt" ) );
          mxSetField( plhs[0], i, "alt", mxCreateDoubleScalar(alt) );
-      
+
          }
-         
-      } 
+
+      }
    else
       {
 
       positn = vec_positn;
-      
+
       nearpt_c(positn, a, b, c, npoint, &alt);
       CHECK_CALL_FAILURE(SCALAR);
 
@@ -7029,14 +10325,189 @@ void mice_nearpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       Copy the position and altitude values into the 0 structure element.
       */
       memcpy( mxGetPr( mxGetField(plhs[0],0,"pos" ) ),
-              npoint, 
+              npoint,
               3*sizeof(SpiceDouble));
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "alt" ) );
       mxSetField( plhs[0], 0, "alt", mxCreateDoubleScalar(alt) );
 
       }
 
    }
+
+
+
+
+/*
+   void              npedln_c ( SpiceDouble         a,
+                                SpiceDouble         b,
+                                SpiceDouble         c,
+                                ConstSpiceDouble    linept[3],
+                                ConstSpiceDouble    linedr[3],
+                                SpiceDouble         pnear[3],
+                                SpiceDouble       * dist      );
+*/
+void mice_npedln(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble    a;
+   SpiceDouble    b;
+   SpiceDouble    c;
+   SpiceDouble  * linept;
+   SpiceDouble  * linedr;
+   SpiceDouble    pnear[3];
+   SpiceDouble    dist;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "a",      MiceDouble, 0, {0}, 0},
+      { "b",      MiceDouble, 0, {0}, 0},
+      { "c",      MiceDouble, 0, {0}, 0},
+      { "linept", MiceDouble, 1, {3}, 0},
+      { "linedr", MiceDouble, 1, {3}, 0},
+      { "npoint", MiceNear,   0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 5, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   a = S_DBL_ARGV(1);
+   b = S_DBL_ARGV(2);
+   c = S_DBL_ARGV(3);
+
+   linept = A_DBL_ARGV(4);
+   linedr = A_DBL_ARGV(5);
+
+   npedln_c ( a, b, c, linept, linedr, pnear, &dist );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the position and altitude values into the 0 structure element.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"pos" ) ),
+           pnear,
+           3*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "alt" ) );
+   mxSetField( plhs[0], 0, "alt", mxCreateDoubleScalar(dist) );
+
+   }
+
+
+
+
+/*
+   void              npelpt_c ( ConstSpiceDouble    point[3],
+                                ConstSpiceEllipse * ellips,
+                                SpiceDouble         pnear[3],
+                                SpiceDouble       * dist      );
+*/
+void mice_npelpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble  * point;
+   SpiceEllipse   ellipse;
+
+   SpiceDouble    pnear[3];
+   SpiceDouble    dist;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "point",   MiceDouble,  1, {3}, 0},
+      { "ellipse", MiceEllipse, 0, {0}, 0},
+      { "npoint",  MiceNear,    0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   point = A_DBL_ARGV(1);
+
+   memcpy( ellipse.center,
+           mxGetPr( mxGetField( prhs[2], 0,"center") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( ellipse.semiMajor,
+           mxGetPr( mxGetField( prhs[2], 0,"semiMajor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( ellipse.semiMinor,
+           mxGetPr( mxGetField( prhs[2], 0,"semiMinor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   npelpt_c ( point, &ellipse, pnear, &dist);
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the position and altitude values into the 0 structure element.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0], 0,"pos" ) ),
+           pnear,
+           3*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "alt" ) );
+   mxSetField( plhs[0], 0, "alt", mxCreateDoubleScalar(dist) );
+
+   }
+
+
+
+
+/*
+   void              nplnpt_c ( ConstSpiceDouble    linpt  [3],
+                                ConstSpiceDouble    lindir [3],
+                                ConstSpiceDouble    point  [3],
+                                SpiceDouble         pnear  [3],
+                                SpiceDouble       * dist       );
+*/
+void mice_nplnpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble  * linpt;
+   SpiceDouble  * lindir;
+   SpiceDouble  * point;
+   SpiceDouble    pnear[3];
+   SpiceDouble    dist;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "linpt",  MiceDouble, 1, {3}, 0},
+      { "lindir", MiceDouble, 1, {3}, 0},
+      { "point",  MiceDouble, 1, {3}, 0},
+      { "npoint", MiceNear,   0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   linpt  = A_DBL_ARGV(1);
+   lindir = A_DBL_ARGV(2);
+   point  = A_DBL_ARGV(3);
+
+   nplnpt_c ( linpt, lindir, point, pnear, &dist );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the position and altitude values into the 0 structure element.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0], 0, "pos" ) ),
+           pnear,
+           3*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "alt" ) );
+   mxSetField( plhs[0], 0, "alt", mxCreateDoubleScalar(dist) );
+
+   }
+
 
 
 
@@ -7054,7 +10525,7 @@ void cspice_nvc2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpicePlane           plane;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "normal",   MiceDouble, 1, {3}, 0},
       { "constant", MiceDouble, 0, {0}, 0},
@@ -7072,12 +10543,12 @@ void cspice_nvc2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    CHECK_CALL_FAILURE( SCALAR );
 
    memcpy( mxGetPr( mxGetField( plhs[0], 0,"normal") ),
-           plane.normal, 
+           plane.normal,
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( mxGetPr( mxGetField( plhs[0], 0,"constant") ), 
-           &(plane.constant), 
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"constant") ),
+           &(plane.constant),
            sizeof(SpiceDouble)
          );
 
@@ -7100,7 +10571,7 @@ void cspice_nvp2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpicePlane           plane;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "normal", MiceDouble, 1, {3}, 0},
       { "point",  MiceDouble, 1, {3}, 0},
@@ -7118,12 +10589,12 @@ void cspice_nvp2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    CHECK_CALL_FAILURE( SCALAR );
 
    memcpy( mxGetPr( mxGetField( plhs[0], 0,"normal") ),
-           plane.normal, 
+           plane.normal,
            3*sizeof(SpiceDouble)
          );
 
-   memcpy( mxGetPr( mxGetField( plhs[0], 0,"constant") ), 
-           &(plane.constant), 
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"constant") ),
+           &(plane.constant),
            sizeof(SpiceDouble)
          );
 
@@ -7133,16 +10604,117 @@ void cspice_nvp2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
+   void occult_c ( ConstSpiceChar   * target1,
+                   ConstSpiceChar   * shape1,
+                   ConstSpiceChar   * frame1,
+                   ConstSpiceChar   * target2,
+                   ConstSpiceChar   * shape2,
+                   ConstSpiceChar   * frame2,
+                   ConstSpiceChar   * abcorr,
+                   ConstSpiceChar   * observer,
+                   SpiceDouble        time,
+                   SpiceInt         * occult_code )
+*/
+void cspice_occult(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            target1 [DEFAULT_STR_LENGTH+1];
+   SpiceChar            shape1  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            frame1  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            target2 [DEFAULT_STR_LENGTH+1];
+   SpiceChar            shape2  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            frame2  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            observer[DEFAULT_STR_LENGTH+1];
+
+   SpiceDouble        * time;
+   SpiceDouble        * vec_time;
+
+   SpiceInt             i;
+   SpiceInt           * occult_code;
+   SpiceInt           * vec_occult_code;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "target1",      MiceChar,   0, {0}, 0},
+      { "shape1",       MiceChar,   0, {0}, 0},
+      { "frame1",       MiceChar,   0, {0}, 0},
+      { "target2",      MiceChar,   0, {0}, 0},
+      { "shape2",       MiceChar,   0, {0}, 0},
+      { "frame2",       MiceChar,   0, {0}, 0},
+      { "abcorr",       MiceChar,   0, {0}, 0},
+      { "observer",     MiceChar,   0, {0}, 0},
+      { "time",         MiceDouble, 0, {0}, 1},
+      { "occult_code",  MiceInt,    0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 9, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], target1,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], shape1,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], frame1,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], target2,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], shape2,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], frame2,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[7], abcorr,   DEFAULT_STR_LENGTH);
+   mxGetString(prhs[8], observer, DEFAULT_STR_LENGTH);
+
+   vec_time  = A_DBL_ARGV(9);
+   vec_occult_code = A_INT_RET_ARGV(0);
+
+   time        = (vec_time);
+   occult_code = (vec_occult_code);
+
+   /*
+   Check for vectorized arguments.
+   */
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         time        = (vec_time         + i*extra->offset[8]);
+         occult_code = (vec_occult_code  + i*extra->offset[9]);
+
+         occult_c ( target1, shape1, frame1,
+                    target2, shape2, frame2,
+                    abcorr,  observer, *time, occult_code );
+
+         CHECK_CALL_FAILURE(i);
+
+         }
+
+      }
+   else
+      {
+
+      occult_c ( target1, shape1, frame1,
+                 target2, shape2, frame2,
+                 abcorr,  observer, *time, occult_code );
+
+      CHECK_CALL_FAILURE(SCALAR);
+
+      }
+
+   }
+
+
+
+
+/*
    void              oscelt_c ( ConstSpiceDouble    state[6],
-                                SpiceDouble         et      ,
-                                SpiceDouble         mu      ,
+                                SpiceDouble         et,
+                                SpiceDouble         mu,
                                 SpiceDouble         elts[8]  );
 */
 void cspice_oscelt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceDouble        * vec_state;
-   SpiceDouble        * vec_et;   
+   SpiceDouble        * vec_et;
    SpiceDouble        * vec_elts;
    SpiceDouble        * state;
    SpiceDouble          et;
@@ -7152,12 +10724,12 @@ void cspice_oscelt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "state", MiceDouble, 1, {6}, 1},
-      { "et"   , MiceDouble, 0, {0}, 1},
-      { "mu"   , MiceDouble, 0, {0}, 0},
-      { "elts" , MiceDouble, 1, {8}, 1},
+      { "et",    MiceDouble, 0, {0}, 1},
+      { "mu",    MiceDouble, 0, {0}, 0},
+      { "elts",  MiceDouble, 1, {8}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
@@ -7167,35 +10739,36 @@ void cspice_oscelt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_state = A_DBL_ARGV(1);
    vec_et    = A_DBL_ARGV(2);
    mu        = S_DBL_ARGV(3);
-   vec_elts  =  A_DBL_RET_ARGV(0);
+   vec_elts  = A_DBL_RET_ARGV(0);
 
    if (extra->count>1)
       {
 
       for (i=0;i<extra->count;i++)
          {
-      
+
          state =  (vec_state + i*extra->offset[0]);
          et    = *(vec_et    + i*extra->offset[1]);
          elts  =  (vec_elts  + i*extra->offset[3]);
 
          oscelt_c(state, et, mu, elts);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
-      
-      } 
+
+      }
    else
       {
-      
+
       state =  (vec_state);
       et    = *(vec_et);
       elts  =  (vec_elts);
-      
+
       oscelt_c(state, et, mu, elts);
-      CHECK_CALL_FAILURE(SCALAR); 
+      CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
 
 
 
@@ -7213,22 +10786,22 @@ void cspice_pcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    MAXCHR and MAXLEN defined in cspice_params.h.
    */
    SpiceChar            name[MAXLEN + 1];
-   SpiceChar            str [MAXCHR + 1]; 
+   SpiceChar            str [MAXCHR + 1];
    SpiceChar         ** cvals = NULL;
    SpiceInt             cvals_len;
    SpiceInt             cvals_size;
 
    mxChar             * mx_str;
-   
+
    SpiceInt             i;
    SpiceInt             j;
    SpiceInt             count;
 
    struct extra_dims  * extra;
 
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar, 0, {0}, 0},
+      { "name",  MiceChar, 0, {0}, 0},
       { "cvals", MiceChar, 0, {0}, 1}
       };
 
@@ -7291,7 +10864,7 @@ void cspice_pcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       str[cvals_len - 1] = '\0';
 
-      strncpy( *cvals + i*cvals_len, 
+      strncpy( *cvals + i*cvals_len,
                str,
                cvals_len);
       }
@@ -7310,6 +10883,7 @@ void cspice_pcpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              pdpool_c ( ConstSpiceChar    * name,
                                 SpiceInt            n,
@@ -7324,9 +10898,9 @@ void cspice_pdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             dvals_size;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar  , 0, {0}, 0},
+      { "name",  MiceChar,   0, {0}, 0},
       { "dvals", MiceDouble, 1, {0}, 0}
       };
 
@@ -7346,6 +10920,7 @@ void cspice_pdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              pgrrec_c ( ConstSpiceChar    * body,
                                 SpiceDouble         lon,
@@ -7358,7 +10933,7 @@ void cspice_pdpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_pgrrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            body       [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            body       [DEFAULT_STR_LENGTH+1];
    SpiceDouble        * vec_lon;
    SpiceDouble        * vec_lat;
    SpiceDouble        * vec_alt;
@@ -7373,14 +10948,14 @@ void cspice_pgrrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "body"  , MiceChar  , 0, {0}, 0},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "alt"   , MiceDouble, 0, {0}, 1},
-      { "re"    , MiceDouble, 0, {0}, 0},
-      { "f"     , MiceDouble, 0, {0}, 0},
+      { "body",   MiceChar,   0, {0}, 0},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "alt",    MiceDouble, 0, {0}, 1},
+      { "re",     MiceDouble, 0, {0}, 0},
+      { "f",      MiceDouble, 0, {0}, 0},
       { "rectan", MiceDouble, 1, {3}, 1},
       };
 
@@ -7403,10 +10978,10 @@ void cspice_pgrrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          lon    = *(vec_lon    + i*extra->offset[1]);
          lat    = *(vec_lat    + i*extra->offset[2]);
          alt    = *(vec_alt    + i*extra->offset[3]);
@@ -7416,11 +10991,85 @@ void cspice_pgrrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
-      
+
       pgrrec_c(body, lon, lat, alt, re, f, rectan);
+      CHECK_CALL_FAILURE(SCALAR);
+      }
+
+   }
+
+
+
+
+/*
+   SpiceDouble       phaseq_c ( SpiceDouble       et,
+                                ConstSpiceChar  * target,
+                                ConstSpiceChar  * illumn,
+                                ConstSpiceChar  * obsrvr,
+                                ConstSpiceChar  * abcorr );
+
+*/
+void cspice_phaseq(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble          et;
+   SpiceDouble        * vec_et;
+   SpiceChar            target[DEFAULT_STR_LENGTH+1];
+   SpiceChar            illumn[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceDouble        * retval;
+   SpiceDouble        * vec_retval;
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "target", MiceChar,   0, {0}, 0},
+      { "illumn", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "phase",  MiceDouble, 0, {0}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 5, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_et = A_DBL_ARGV(1);
+
+   mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], illumn, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], obsrvr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], abcorr, DEFAULT_STR_LENGTH);
+
+   vec_retval = A_DBL_RET_ARGV(0);
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+
+         et     = *(vec_et     + i*extra->offset[0]);
+         retval =  (vec_retval + i*extra->offset[5]);
+
+         *retval = phaseq_c ( et, target, illumn, obsrvr, abcorr );
+         CHECK_CALL_FAILURE(i);
+         }
+
+      }
+   else
+      {
+
+      et     = *vec_et;
+      retval = vec_retval;
+
+      *retval =  phaseq_c ( et, target, illumn, obsrvr, abcorr );
       CHECK_CALL_FAILURE(SCALAR);
       }
 
@@ -7432,7 +11081,7 @@ void cspice_pgrrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*
    void              pipool_c ( ConstSpiceChar    * name,
                                 SpiceInt            n,
-                                ConstSpiceInt     * ivals ); 
+                                ConstSpiceInt     * ivals );
 */
 void cspice_pipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -7443,10 +11092,10 @@ void cspice_pipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             ivals_size;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "name" , MiceChar, 0, {0}, 0},
-      { "ivals", MiceInt , 1, {0}, 0}
+      { "name",  MiceChar, 0, {0}, 0},
+      { "ivals", MiceInt,  1, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 2, 0);
@@ -7465,19 +11114,288 @@ void cspice_pipool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble       pi_c( void )
 */
 void cspice_pi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( pi_c() );
+   }
+
+
+
+
+/*
+   void              pjelpl_c ( ConstSpiceEllipse * elin,
+                                ConstSpicePlane   * plane,
+                                SpiceEllipse      * elout  );
+*/
+void mice_pjelpl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceEllipse   elin;
+   SpicePlane     plane;
+   SpiceEllipse   elout;
+
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "elin",  MiceEllipse, 0, {0}, 0},
+      { "plane", MicePlane,   0, {0}, 0},
+      { "elout", MiceEllipse, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+
+   /*
+   Assemble an ellipse structure from the input arguments.
+   */
+   memcpy( elin.center,
+           mxGetPr( mxGetField( prhs[1], 0,"center") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( elin.semiMajor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMajor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( elin.semiMinor,
+           mxGetPr( mxGetField( prhs[1], 0,"semiMinor") ),
+           3*sizeof(SpiceDouble)
+         );
+
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[2], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[2], 0,"constant") );
+
+
+   pjelpl_c ( &elin, &plane, &elout  );
+   CHECK_CALL_FAILURE(SCALAR);
+
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"center") ),
+           elout.center,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMajor") ),
+           elout.semiMajor,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"semiMinor") ),
+           elout.semiMinor,
+           3*sizeof(SpiceDouble)
+         );
+
+   }
+
+
+
+
+/*
+   void              pl2nvc_c ( ConstSpicePlane   * plane,
+                                SpiceDouble         normal[3],
+                                SpiceDouble       * constant  );
+*/
+void cspice_pl2nvc(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpicePlane           plane;
+   SpiceDouble        * normal;
+   SpiceDouble        * constant;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "plane",     MicePlane,  0, {0}, 0},
+      { "normal",    MiceDouble, 1, {3}, 0},
+      { "constant",  MiceDouble, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[1], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[1], 0,"constant") );
+
+   normal   = A_DBL_RET_ARGV(0);
+   constant = A_DBL_RET_ARGV(1);
+
+   pl2nvc_c ( &plane, normal, constant );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+/*
+   void              pl2nvp_c ( ConstSpicePlane   * plane,
+                                SpiceDouble         normal[3],
+                                SpiceDouble         point[3]  );
+*/
+void cspice_pl2nvp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpicePlane           plane;
+   SpiceDouble        * normal;
+   SpiceDouble        * point;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "plane",     MicePlane,  0, {0}, 0},
+      { "normal",    MiceDouble, 1, {3}, 0},
+      { "point",     MiceDouble, 1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[1], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[1], 0,"constant") );
+
+   normal = A_DBL_RET_ARGV(0);
+   point  = A_DBL_RET_ARGV(1);
+
+   pl2nvp_c ( &plane, normal, point );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+/*
+   void              pl2psv_c ( ConstSpicePlane   * plane,
+                                SpiceDouble         point[3],
+                                SpiceDouble         span1[3],
+                                SpiceDouble         span2[3]  );
+*/
+void cspice_pl2psv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpicePlane           plane;
+   SpiceDouble        * point;
+   SpiceDouble        * span1;
+   SpiceDouble        * span2;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "plane", MicePlane,  0, {0}, 0},
+      { "point", MiceDouble, 1, {3}, 0},
+      { "span1", MiceDouble, 1, {3}, 0},
+      { "span2", MiceDouble, 1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 3 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[1], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[1], 0,"constant") );
+
+   point = A_DBL_RET_ARGV(0);
+   span1 = A_DBL_RET_ARGV(1);
+   span2 = A_DBL_RET_ARGV(2);
+
+   pl2psv_c ( &plane, point, span1, span2 );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+/*
+   void              psv2pl_c ( ConstSpiceDouble    point[3],
+                                ConstSpiceDouble    span1[3],
+                                ConstSpiceDouble    span2[3],
+                                SpicePlane        * plane     );
+*/
+void cspice_psv2pl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * point;
+   SpiceDouble        * span1;
+   SpiceDouble        * span2;
+   SpicePlane           plane;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "point", MiceDouble, 1, {3}, 0},
+      { "span1", MiceDouble, 1, {3}, 0},
+      { "span2", MiceDouble, 1, {3}, 0},
+      { "plane", MicePlane,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   point = A_DBL_ARGV(1);
+   span1 = A_DBL_ARGV(2);
+   span2 = A_DBL_ARGV(3);
+
+   psv2pl_c ( point, span1, span2, &plane );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"normal") ),
+           plane.normal,
+           3*sizeof(SpiceDouble)
+         );
+
+   memcpy( mxGetPr( mxGetField( plhs[0], 0,"constant") ),
+           &(plane.constant),
+           sizeof(SpiceDouble)
+         );
+
    }
 
 
@@ -7503,26 +11421,26 @@ void cspice_pxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "from"  , MiceChar  , 0, {0}   , 0},
-      { "to"    , MiceChar  , 0, {0}   , 0},
-      { "et"    , MiceDouble, 0, {0}   , 1},
+      { "from",   MiceChar,   0, {0},    0},
+      { "to",     MiceChar,   0, {0},    0},
+      { "et",     MiceDouble, 0, {0},    1},
       { "rotate", MiceDouble, 2, {3, 3}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
-   
+
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
-   
+
    mxGetString(prhs[1], from, DEFAULT_STR_LENGTH);
-   mxGetString(prhs[2], to  , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], to,   DEFAULT_STR_LENGTH);
 
    vec_et     = A_DBL_ARGV(3);
    vec_rotate = A_DBL_RET_ARGV(0);
    et         = *(vec_et);
    rotate     =  (vec_rotate);
-   
+
    if (extra->count>1)
       {
 
@@ -7533,17 +11451,17 @@ void cspice_pxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          pxform_c(from, to, et, (SpiceDouble(*)[3])xr);
          CHECK_CALL_FAILURE(i);
-         
+
          xpose_c( xr, (SpiceDouble(*)[3])rotate );
          }
 
-      } 
+      }
    else
       {
-         
+
       pxform_c(from, to, et, (SpiceDouble(*)[3])xr);
       CHECK_CALL_FAILURE(SCALAR);
-         
+
       xpose_c( xr, (SpiceDouble(*)[3])rotate );
       }
 
@@ -7551,13 +11469,97 @@ void cspice_pxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   void        q2m_c( ConstSpiceDouble  q[4], 
-                      SpiceDouble       r[3][3] ) 
+   void              pxfrm2_c ( ConstSpiceChar    * from,
+                                ConstSpiceChar    * to,
+                                SpiceDouble         etfrom,
+                                SpiceDouble         etto,
+                                SpiceDouble         rotate[3][3] );
+ */
+void cspice_pxfrm2(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_etfrom;
+   SpiceDouble        * vec_etto;
+   SpiceDouble        * vec_rotate;
+   SpiceChar            from  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            to    [DEFAULT_STR_LENGTH+1];
+   SpiceDouble          etfrom;
+   SpiceDouble          etto;
+   SpiceDouble        * rotate;
+   SpiceDouble          xr[3][3];
+
+   SpiceInt             i;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+   /*                          dimension, shape, vectorized */
+      {
+      { "from",    MiceChar,   0, {0},    0},
+      { "to",      MiceChar,   0, {0},    0},
+      { "etfrom",  MiceDouble, 0, {0},    1},
+      { "etto",    MiceDouble, 0, {0},    1},
+      { "rotate",  MiceDouble, 2, {3, 3}, 1},
+      };
+
+   /* check_arg_num checks to see if the number of input and output
+      arguments specified by the user are correct. */
+
+   check_arg_num( nrhs, nlhs, 4, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /* extra-> offset corresponds to argcheck table from[0]*/
+
+   mxGetString(prhs[1], from, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], to,   DEFAULT_STR_LENGTH);
+
+    /* From function inputs.  Function is [0]*/
+   vec_etfrom   = A_DBL_ARGV(3);
+   vec_etto     = A_DBL_ARGV(4);
+   vec_rotate   = A_DBL_RET_ARGV(0);
+   etfrom       = *(vec_etfrom);
+   etto         = *(vec_etto);
+   rotate       =  (vec_rotate);
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         etfrom = *(vec_etfrom + i*extra->offset[2]);
+         etto   = *(vec_etto   + i*extra->offset[3]);
+         rotate =  (vec_rotate + i*extra->offset[4]);
+
+         pxfrm2_c(from, to, etfrom, etto, (SpiceDouble(*)[3])xr);
+         CHECK_CALL_FAILURE(i);
+
+         xpose_c( xr, (SpiceDouble(*)[3])rotate );
+         }
+
+      }
+   else
+      {
+
+      pxfrm2_c(from, to, etfrom, etto, (SpiceDouble(*)[3])xr);
+      CHECK_CALL_FAILURE(SCALAR);
+
+      xpose_c( xr, (SpiceDouble(*)[3])rotate );
+      }
+
+   }
+
+
+
+
+/*
+   void        q2m_c( ConstSpiceDouble  q[4],
+                      SpiceDouble       r[3][3] )
 */
 void cspice_q2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_q;
    SpiceDouble        * vec_r;
    SpiceDouble        * q;
@@ -7567,9 +11569,9 @@ void cspice_q2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "q", MiceDouble, 1, {4}   , 1},
+      { "q", MiceDouble, 1, {4},    1},
       { "r", MiceDouble, 2, {3, 3}, 1},
       };
 
@@ -7584,30 +11586,32 @@ void cspice_q2m(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          q =  (vec_q+i*extra->offset[0]);
          r =  (vec_r+i*extra->offset[1]);
-            
+
          q2m_c(q, (SpiceDouble(*)[3])xr);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
 
          xpose_c( xr, (SpiceDouble(*)[3])r );
          }
-         
-      } 
+
+      }
    else
       {
-      
+
       q2m_c(q, (SpiceDouble(*)[3])xr);
       CHECK_CALL_FAILURE(SCALAR);
-      
+
       xpose_c( xr, (SpiceDouble(*)[3])r );
       }
 
    }
+
+
 
 
 /*
@@ -7629,10 +11633,10 @@ void cspice_rav2xf(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt       i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "rot"  , MiceDouble, 2, {3,3}, 1},
-      { "av"   , MiceDouble, 1, {3}  , 1},
+      { "rot",   MiceDouble, 2, {3,3}, 1},
+      { "av",    MiceDouble, 1, {3},   1},
       { "xform", MiceDouble, 2, {6,6}, 1},
       };
 
@@ -7682,6 +11686,7 @@ void cspice_rav2xf(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              raxisa_c( ConstSpiceDouble     matrix[3][3],
                                SpiceDouble          axis  [3],
@@ -7697,11 +11702,11 @@ void cspice_raxisa(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble    xr[3][3];
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "r"    , MiceDouble, 2, {3, 3}, 0},
+      { "r",     MiceDouble, 2, {3, 3}, 0},
       { "axis",  MiceDouble, 1, {3},    0},
-      { "angle", MiceDouble, 0, {0}   , 0},
+      { "angle", MiceDouble, 0, {0},    0},
       };
 
    check_arg_num( nrhs, nlhs, 1, 2 );
@@ -7711,12 +11716,13 @@ void cspice_raxisa(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    matrix = A_DBL_ARGV(1);
    axis   = A_DBL_RET_ARGV(0);
    angle  = A_DBL_RET_ARGV(1);
-   
+
    xpose_c( matrix, (SpiceDouble(*)[3])xr );
    raxisa_c( xr, axis, angle );
    CHECK_CALL_FAILURE(SCALAR);
 
    }
+
 
 
 
@@ -7728,7 +11734,7 @@ void cspice_raxisa(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_radrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_range;
    SpiceDouble        * vec_ra;
    SpiceDouble        * vec_dec;
@@ -7741,12 +11747,12 @@ void cspice_radrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "range"  , MiceDouble, 0, {0}, 1},
-      { "ra"     , MiceDouble, 0, {0}, 1},
-      { "dec"    , MiceDouble, 0, {0}, 1},
-      { "rectan" , MiceDouble, 1, {3}, 1},
+      { "range",   MiceDouble, 0, {0}, 1},
+      { "ra",      MiceDouble, 0, {0}, 1},
+      { "dec",     MiceDouble, 0, {0}, 1},
+      { "rectan",  MiceDouble, 1, {3}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
@@ -7761,32 +11767,33 @@ void cspice_radrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    ra         = *(vec_ra);
    dec        = *(vec_dec);
    rectan     =  (vec_rectan);
-   
+
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          range  = *(vec_range  + i*extra->offset[0]);
          ra     = *(vec_ra     + i*extra->offset[1]);
          dec    = *(vec_dec    + i*extra->offset[2]);
          rectan =  (vec_rectan + i*extra->offset[3]);
-         
+
          radrec_c( range, ra, dec, rectan);
-         CHECK_CALL_FAILURE(i); 
-      
+         CHECK_CALL_FAILURE(i);
+
          }
-      
-      } 
+
+      }
    else
       {
-      
+
       radrec_c( range, ra, dec, rectan);
       CHECK_CALL_FAILURE(SCALAR);
-      
+
       }
-   
+
    }
+
 
 
 
@@ -7798,7 +11805,7 @@ void cspice_radrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_reccyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble       * vec_rectan;
    SpiceDouble       * vec_r;
    SpiceDouble       * vec_lon;
@@ -7811,12 +11818,12 @@ void cspice_reccyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "rectan", MiceDouble, 1, {3}, 1},
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 3 );
@@ -7834,30 +11841,32 @@ void cspice_reccyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          rectan =  (vec_rectan + i*extra->offset[0]);
          r      =  (vec_r      + i*extra->offset[1]);
          lon    =  (vec_lon    + i*extra->offset[2]);
          z      =  (vec_z      + i*extra->offset[3]);
 
          reccyl_c(rectan, r, lon, z);
-         CHECK_CALL_FAILURE(i); 
-         
+         CHECK_CALL_FAILURE(i);
+
          }
-         
-      } 
+
+      }
    else
       {
-      
+
       reccyl_c(rectan, r, lon, z);
-      CHECK_CALL_FAILURE(SCALAR); ; 
+      CHECK_CALL_FAILURE(SCALAR); ;
 
       }
 
    }
+
+
 
 
 /*
@@ -7885,14 +11894,14 @@ void cspice_recgeo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt        i;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "rectan", MiceDouble, 1, {3}, 1},
-      { "re"    , MiceDouble, 0, {0}, 0},
-      { "f"     , MiceDouble, 0, {0}, 0},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "alt"   , MiceDouble, 0, {0}, 1},
+      { "re",     MiceDouble, 0, {0}, 0},
+      { "f",      MiceDouble, 0, {0}, 0},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "alt",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -7922,7 +11931,7 @@ void cspice_recgeo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          }
 
-      } 
+      }
    else
       {
 
@@ -7932,11 +11941,13 @@ void cspice_recgeo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       alt    = vec_alt;
 
       recgeo_c(rectan, re, f, lon, lat, alt);
-      CHECK_CALL_FAILURE(SCALAR); ; 
-      
+      CHECK_CALL_FAILURE(SCALAR); ;
+
       }
 
    }
+
+
 
 
 /*
@@ -7960,12 +11971,12 @@ void cspice_reclat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "rectan"   , MiceDouble, 1, {3}, 1},
-      { "radius"   , MiceDouble, 0, {0}, 1},
+      { "rectan",    MiceDouble, 1, {3}, 1},
+      { "radius",    MiceDouble, 0, {0}, 1},
       { "longitude", MiceDouble, 0, {0}, 1},
-      { "latitude" , MiceDouble, 0, {0}, 1},
+      { "latitude",  MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 3 );
@@ -7979,19 +11990,19 @@ void cspice_reclat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
-   
+
          rectan    =  (vec_rectan    + i*extra->offset[0]);
          radius    =  (vec_radius    + i*extra->offset[1]);
          longitude =  (vec_longitude + i*extra->offset[2]);
          latitude  =  (vec_latitude  + i*extra->offset[3]);
-         
+
          reclat_c(rectan, radius, longitude, latitude);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
-         
+
       }
    else
       {
@@ -8009,6 +12020,7 @@ void cspice_reclat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              recpgr_c ( ConstSpiceChar    * body,
                                 SpiceDouble         rectan[3],
@@ -8016,12 +12028,12 @@ void cspice_reclat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 SpiceDouble         f,
                                 SpiceDouble       * lon,
                                 SpiceDouble       * lat,
-                                SpiceDouble       * alt       ); 
+                                SpiceDouble       * alt       );
 */
 void cspice_recpgr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            body       [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            body       [DEFAULT_STR_LENGTH+1];
    SpiceDouble        * vec_rectan;
    SpiceDouble        * vec_lon;
    SpiceDouble        * vec_lat;
@@ -8036,15 +12048,15 @@ void cspice_recpgr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "body"  , MiceChar  , 0, {0}, 0},
+      { "body",   MiceChar,   0, {0}, 0},
       { "rectan", MiceDouble, 1, {3}, 1},
-      { "re"    , MiceDouble, 0, {0}, 0},
-      { "f"     , MiceDouble, 0, {0}, 0},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "lat"   , MiceDouble, 0, {0}, 1},
-      { "alt"   , MiceDouble, 0, {0}, 1},
+      { "re",     MiceDouble, 0, {0}, 0},
+      { "f",      MiceDouble, 0, {0}, 0},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "lat",    MiceDouble, 0, {0}, 1},
+      { "alt",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 4, 3 );
@@ -8076,7 +12088,7 @@ void cspice_recpgr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          }
 
-      } 
+      }
    else
       {
 
@@ -8086,8 +12098,8 @@ void cspice_recpgr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       alt    = vec_alt;
 
       recpgr_c(body, rectan, re, f, lon, lat, alt);
-      CHECK_CALL_FAILURE(SCALAR); ; 
-      
+      CHECK_CALL_FAILURE(SCALAR); ;
+
       }
 
    }
@@ -8118,12 +12130,12 @@ void cspice_recrad(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    struct extra_dims  * extra;
 
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "rectan", MiceDouble, 1, {3}, 1},
-      { "range" , MiceDouble, 0, {0}, 1},
-      { "ra"    , MiceDouble, 0, {0}, 1},
-      { "dec"   , MiceDouble, 0, {0}, 1},
+      { "range",  MiceDouble, 0, {0}, 1},
+      { "ra",     MiceDouble, 0, {0}, 1},
+      { "dec",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 3 );
@@ -8141,7 +12153,7 @@ void cspice_recrad(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          rectan =  (vec_rectan + i*extra->offset[0]);
@@ -8150,18 +12162,20 @@ void cspice_recrad(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          dec    =  (vec_dec    + i*extra->offset[3]);
 
          recrad_c(rectan, range, ra, dec);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
-         
-      } 
+
+      }
    else
       {
-      
-      recrad_c(rectan, range, ra, dec);      
+
+      recrad_c(rectan, range, ra, dec);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
+
 
 
 /*
@@ -8185,12 +12199,12 @@ void cspice_recsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "rectan", MiceDouble, 1, {3}, 1},
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "colat" , MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "colat",  MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 3 );
@@ -8233,26 +12247,30 @@ void cspice_recsph(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    SpiceDouble rpd_c( void )
 */
 void cspice_rpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 1 );
 
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( rpd_c() );
    }
 
 
+
+
 /*
    void              rotate_c ( SpiceDouble         angle,
                                 SpiceInt            iaxis,
-                                SpiceDouble         mout[3][3] ); 
+                                SpiceDouble         mout[3][3] );
 */
 void cspice_rotate(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -8267,19 +12285,19 @@ void cspice_rotate(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt       i;
 
    struct extra_dims *extra;
-   
-   struct argcheck ArgCheck[] = 
+
+   struct argcheck ArgCheck[] =
       {
-      { "angle", MiceDouble, 0, {0}   , 1},
-      { "iaxis", MiceInt   , 0, {0}   , 0},
-      { "mout" , MiceDouble, 2, {3, 3}, 1},
+      { "angle", MiceDouble, 0, {0},    1},
+      { "iaxis", MiceInt,    0, {0},    0},
+      { "mout",  MiceDouble, 2, {3, 3}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
-   vec_angle = A_DBL_ARGV(1);   
+   vec_angle = A_DBL_ARGV(1);
    vec_mout  = A_DBL_RET_ARGV(0);
    iaxis     =  S_INT_ARGV(2);
 
@@ -8297,8 +12315,8 @@ void cspice_rotate(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          xpose_c( xr, (SpiceDouble(*)[3])mout);
          }
-         
-      } 
+
+      }
    else
       {
 
@@ -8314,11 +12332,13 @@ void cspice_rotate(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              rotmat_c ( ConstSpiceDouble    m1[3][3],
                                 SpiceDouble         angle,
                                 SpiceInt            iaxis,
-                                SpiceDouble         mout[3][3] ); 
+                                SpiceDouble         mout[3][3] );
 */
 void cspice_rotmat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -8331,12 +12351,12 @@ void cspice_rotmat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          yr[3][3];
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "m1"   , MiceDouble, 2, {3, 3}, 0},
-      { "angle", MiceDouble, 0, {0}   , 0},
-      { "iaxis", MiceInt   , 0, {0}   , 0},
-      { "mout" , MiceDouble, 2, {3, 3}, 0},
+      { "m1",    MiceDouble, 2, {3, 3}, 0},
+      { "angle", MiceDouble, 0, {0},    0},
+      { "iaxis", MiceInt,    0, {0},    0},
+      { "mout",  MiceDouble, 2, {3, 3}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
@@ -8356,6 +12376,7 @@ void cspice_rotmat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    xpose_c( xr, (SpiceDouble(*)[3])mout);
 
    }
+
 
 
 
@@ -8379,7 +12400,7 @@ void cspice_saelgv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       { "vec1",   MiceDouble,  1, {3}, 0},
       { "vec2",   MiceDouble,  1, {3}, 0},
       { "smajor", MiceDouble,  1, {3}, 0},
-      { "sminor", MiceDouble,  1, {3}, 0}, 
+      { "sminor", MiceDouble,  1, {3}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 2 );
@@ -8397,6 +12418,8 @@ void cspice_saelgv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              scdecd_c ( SpiceInt            sc,
                                 SpiceDouble         sclkdp,
@@ -8410,16 +12433,16 @@ void cspice_scdecd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble       * vec_sclkdp;
    SpiceChar        ** cval;
    SpiceChar        ** array;
-   SpiceChar           sclkch[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           sclkch[DEFAULT_STR_LENGTH+1];
 
    SpiceInt            i;
 
    struct extra_dims  * extra;
    struct argcheck ArgCheck[] =
       {
-      { "sc"    , MiceInt   , 0, {0}, 0},
+      { "sc",     MiceInt,    0, {0}, 0},
       { "sclkdp", MiceDouble, 0, {0}, 1},
-      { "sclkch", MiceChar  , 0, {0}, 1},
+      { "sclkch", MiceChar,   0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
@@ -8435,7 +12458,7 @@ void cspice_scdecd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                      extra->count );
       array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -8492,6 +12515,8 @@ void cspice_scdecd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void              sce2c_c  ( SpiceInt            sc,
                                 SpiceDouble         et,
@@ -8509,7 +12534,7 @@ void cspice_sce2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,    0, {0}, 0},
       { "et",     MiceDouble, 0, {0}, 1},
@@ -8538,7 +12563,7 @@ void cspice_sce2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          }
 
-      } 
+      }
    else
       {
 
@@ -8550,6 +12575,8 @@ void cspice_sce2c(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
    }
+
+
 
 
 /*
@@ -8566,12 +12593,12 @@ void cspice_sce2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble       * vec_et;
    SpiceChar        ** cval;
    SpiceChar        ** array;
-   SpiceChar           sclkch[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           sclkch[DEFAULT_STR_LENGTH+1];
 
    SpiceInt            i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,    0, {0}, 0},
       { "et",     MiceDouble, 0, {0}, 1},
@@ -8591,7 +12618,7 @@ void cspice_sce2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                      extra->count );
       array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -8624,7 +12651,7 @@ void cspice_sce2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       free_SpiceString_C_array ( 1, cval );
       free_SpiceMemory( array );
-      } 
+      }
    else
       {
 
@@ -8649,6 +12676,7 @@ void cspice_sce2s(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              scencd_c ( SpiceInt            sc,
                                 ConstSpiceChar    * sclkch,
@@ -8658,7 +12686,7 @@ void cspice_scencd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceInt             sc;
-   SpiceChar            sclkch[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            sclkch[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_sclkch;
    SpiceDouble        * sclkdp;
    SpiceDouble        * vec_sclkdp;
@@ -8667,7 +12695,7 @@ void cspice_scencd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,    0, {0}, 0},
       { "sclkch", MiceChar,   0, {0}, 1},
@@ -8698,20 +12726,20 @@ void cspice_scencd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             sclkch[j] = (char)mx_sclkch[i + (extra->count*j)];
             }
-            
+
          sclkch[extra->offset[1]] = '\0';
          sclkdp                   = (vec_sclkdp+i*extra->offset[2]);
 
          scencd_c(sc, sclkch, sclkdp);
          CHECK_CALL_FAILURE(i);
          }
-         
-      } 
+
+      }
    else
       {
-      
+
       mxGetString(prhs[2], sclkch, DEFAULT_STR_LENGTH);
-      
+
       sclkdp = vec_sclkdp;
 
       scencd_c(sc, sclkch, sclkdp);
@@ -8719,6 +12747,8 @@ void cspice_scencd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
    }
+
+
 
 
 /*
@@ -8730,16 +12760,16 @@ void cspice_scs2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceInt             sc;
-   SpiceChar            sclkch[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            sclkch[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_sclkch;
    SpiceDouble        * vec_et;
-   SpiceDouble        * et; 
+   SpiceDouble        * et;
 
    SpiceInt             i;
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,    0, {0}, 0},
       { "sclkch", MiceChar,   0, {0}, 1},
@@ -8770,7 +12800,7 @@ void cspice_scs2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             sclkch[j] = (char)mx_sclkch[i + (extra->count*j)];
             }
-            
+
          sclkch[extra->offset[1]] = '\0';
          et                       =  (vec_et+i*extra->offset[2]);
 
@@ -8778,7 +12808,7 @@ void cspice_scs2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
@@ -8793,10 +12823,12 @@ void cspice_scs2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
-   void sct2e_c( SpiceInt       sc, 
-                  SpiceDouble    sclkdp, 
-                  SpiceDouble  * et     ) 
+   void sct2e_c( SpiceInt       sc,
+                  SpiceDouble    sclkdp,
+                  SpiceDouble  * et     )
 */
 void cspice_sct2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -8810,7 +12842,7 @@ void cspice_sct2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,    0, {0}, 0},
       { "sclkdp", MiceDouble, 0, {0}, 1},
@@ -8827,11 +12859,11 @@ void cspice_sct2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-   
+
       for (i=0;i<extra->count;i++)
          {
 
-         sclkdp = *(vec_sclkdp + i*extra->offset[1]);  
+         sclkdp = *(vec_sclkdp + i*extra->offset[1]);
          et     =  (vec_et     + i*extra->offset[2]);
 
          sct2e_c(sc, sclkdp, et);
@@ -8839,7 +12871,7 @@ void cspice_sct2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          }
 
-      } 
+      }
    else
       {
 
@@ -8855,8 +12887,9 @@ void cspice_sct2e(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   
+
    void              sctiks_c ( SpiceInt            sc,
                                 ConstSpiceChar    * clkstr,
                                 SpiceDouble       * ticks   );
@@ -8865,7 +12898,7 @@ void cspice_sctiks(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceInt             sc;
-   SpiceChar            clkstr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            clkstr[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_clkstr;
    SpiceDouble        * ticks;
    SpiceDouble        * vec_ticks;
@@ -8874,7 +12907,7 @@ void cspice_sctiks(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sc",     MiceInt,   0, {0}, 0},
       { "clkstr", MiceChar,  0, {0}, 1},
@@ -8905,20 +12938,20 @@ void cspice_sctiks(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             clkstr[j] = (char)mx_clkstr[i + (extra->count*j)];
             }
-            
+
          clkstr[extra->offset[1]] = '\0';
          ticks                   = (vec_ticks+i*extra->offset[2]);
 
          sctiks_c(sc, clkstr, ticks);
          CHECK_CALL_FAILURE(i);
          }
-         
-      } 
+
+      }
    else
       {
-      
+
       mxGetString(prhs[2], clkstr, DEFAULT_STR_LENGTH);
-      
+
       ticks = vec_ticks;
 
       sctiks_c(sc, clkstr, ticks);
@@ -8929,20 +12962,23 @@ void cspice_sctiks(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble spd_c( void )
 */
 void cspice_spd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( spd_c() );
    }
+
+
 
 
 /*
@@ -8951,11 +12987,11 @@ void cspice_spd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                    SpiceDouble     slon,
                    SpiceDouble   * r,
                    SpiceDouble   * lon,
-                   SpiceDouble   * z ) 
+                   SpiceDouble   * z )
 */
 void cspice_sphcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble         * vec_radius;
    SpiceDouble         * vec_colat;
    SpiceDouble         * vec_slon;
@@ -8972,14 +13008,14 @@ void cspice_sphcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt              i;
 
    struct extra_dims   * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "radius", MiceDouble, 0, {0}, 1},
-      { "colat" , MiceDouble, 0, {0}, 1},
-      { "slon"  , MiceDouble, 0, {0}, 1},
-      { "r"     , MiceDouble, 0, {0}, 1},
-      { "lon"   , MiceDouble, 0, {0}, 1},
-      { "z"     , MiceDouble, 0, {0}, 1},
+      { "colat",  MiceDouble, 0, {0}, 1},
+      { "slon",   MiceDouble, 0, {0}, 1},
+      { "r",      MiceDouble, 0, {0}, 1},
+      { "lon",    MiceDouble, 0, {0}, 1},
+      { "z",      MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 3, 3 );
@@ -9001,7 +13037,7 @@ void cspice_sphcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          radius = *(vec_radius + i*extra->offset[0]);
@@ -9010,20 +13046,21 @@ void cspice_sphcyl(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          r      =  (vec_r      + i*extra->offset[3]);
          lon    =  (vec_lon    + i*extra->offset[4]);
          z      =  (vec_z      + i*extra->offset[5]);
-         
+
          sphcyl_c(radius, colat, slon, r, lon, z);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
-      
+
       sphcyl_c(radius, colat, slon, r, lon, z);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
 
 
 
@@ -9045,11 +13082,11 @@ void mice_sincpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
-   SpiceChar            target[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            fixref[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            dref  [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            target[DEFAULT_STR_LENGTH+1];
+   SpiceChar            fixref[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            dref  [DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
    SpiceDouble        * dvec;
    SpiceDouble          spoint[3];
@@ -9058,8 +13095,7 @@ void mice_sincpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean         found;
 
    struct extra_dims  * extra;
-
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "method", MiceChar,    0, {0}, 0},
       { "target", MiceChar,    0, {0}, 0},
@@ -9078,14 +13114,14 @@ void mice_sincpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    et = S_DBL_ARGV(3);
 
    mxGetString(prhs[4], fixref, DEFAULT_STR_LENGTH);
    mxGetString(prhs[5], abcorr, DEFAULT_STR_LENGTH);
    mxGetString(prhs[6], obsrvr, DEFAULT_STR_LENGTH);
    mxGetString(prhs[7], dref,   DEFAULT_STR_LENGTH);
-   
+
    dvec   = A_DBL_ARGV(8);
 
    sincpt_c (  method,
@@ -9103,17 +13139,19 @@ void mice_sincpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    CHECK_CALL_FAILURE(SCALAR);
 
-   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ), 
-              spoint, 
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ),
+              spoint,
               3*sizeof(SpiceDouble));
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "trgepc" ) );
    mxSetField( plhs[0], 0, "trgepc", mxCreateDoubleScalar(trgepc));
 
    memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ),
-              srfvec, 
+              srfvec,
               3*sizeof(SpiceDouble));
 
-   mxSetField( plhs[0], 0, "found", 
+   mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+   mxSetField( plhs[0], 0, "found",
                mxCreateLogicalScalar(found ? true: false));
 
    }
@@ -9122,16 +13160,16 @@ void mice_sincpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   void  sphlat_c( SpiceDouble     r, 
-                   SpiceDouble     colat, 
+   void  sphlat_c( SpiceDouble     r,
+                   SpiceDouble     colat,
                    SpiceDouble     lons,
                    SpiceDouble   * radius,
-                   SpiceDouble   * lon, 
-                   SpiceDouble   * lat ) 
+                   SpiceDouble   * lon,
+                   SpiceDouble   * lat )
 */
 void cspice_sphlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_r;
    SpiceDouble        * vec_colat;
    SpiceDouble        * vec_lons;
@@ -9148,7 +13186,7 @@ void cspice_sphlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "r",      MiceDouble, 0, {0}, 1},
       { "colat",  MiceDouble, 0, {0}, 1},
@@ -9177,7 +13215,7 @@ void cspice_sphlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-      
+
       for (i=0;i<extra->count;i++)
          {
          r      = *(vec_r      + i*extra->offset[0]);
@@ -9190,10 +13228,10 @@ void cspice_sphlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          sphlat_c(r, colat, lons, radius, lon, lat);
          CHECK_CALL_FAILURE(i);
          }
-      } 
+      }
    else
       {
-      
+
       sphlat_c(r, colat, lons, radius, lon, lat);
       CHECK_CALL_FAILURE(SCALAR);
       }
@@ -9201,15 +13239,17 @@ void cspice_sphlat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    void sphrec_c( SpiceDouble    r,
-                   SpiceDouble    colat, 
+                   SpiceDouble    colat,
                    SpiceDouble    lon,
-                   SpiceDouble    rectan[3] ) 
+                   SpiceDouble    rectan[3] )
 */
 void cspice_sphrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble    * vec_r;
    SpiceDouble    * vec_colat;
    SpiceDouble    * vec_lon;
@@ -9221,8 +13261,8 @@ void cspice_sphrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceInt         i;
 
-   struct extra_dims *extra;   
-   struct argcheck ArgCheck[] = 
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
       {
       { "r",      MiceDouble, 0, {0}, 1},
       { "colat",  MiceDouble, 0, {0}, 1},
@@ -9247,7 +13287,7 @@ void cspice_sphrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    if (extra->count>1)
       {
       for (i=0;i<extra->count;i++)
-         { 
+         {
          r      = *(vec_r      + i*extra->offset[0]);
          colat  = *(vec_colat  + i*extra->offset[1]);
          lon    = *(vec_lon    + i*extra->offset[2]);
@@ -9256,16 +13296,45 @@ void cspice_sphrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          sphrec_c(r, colat, lon, rectan);
          CHECK_CALL_FAILURE(i);
          }
-      
-      } 
+
+      }
    else
       {
-      
+
       sphrec_c(r, colat, lon, rectan);
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
+
+
+
+/*
+   void              spkcls_c ( SpiceInt            handle );
+*/
+void cspice_spkcls(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 0);
+
+   extra  = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+
+   spkcls_c( handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
 
 
 
@@ -9277,26 +13346,26 @@ void cspice_sphrec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   SpiceChar           spk[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           spk[DEFAULT_STR_LENGTH+1];
    mxChar            * mx_spk;
-   
+
    SpiceInt            i;
    SpiceInt            j;
    int                 sizearray[2];
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
    SpiceInt            idcode;
    SpiceDouble       * cover_f;
    SpiceDouble       * cover;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "spk"   , MiceChar  , 0, {0}, 1},
-      { "idcode", MiceInt   , 0, {0}, 0},
-      { "size"  , MiceInt   , 0, {0}, 0},
-      { "cover" , MiceIgnore, 0, {0}, 0},
+      { "spk",    MiceChar,   0, {0}, 1},
+      { "idcode", MiceInt,    0, {0}, 0},
+      { "size",   MiceInt,    0, {0}, 0},
+      { "cover",  MiceIgnore, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 3, 1 );
@@ -9313,7 +13382,7 @@ void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    size   = S_INT_ARGV(3) * 2;
 
    cover  = (SpiceDouble*)
-            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+            mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    ssized_( ( integer * ) &size, ( double * ) cover );
    scardd_( ( integer * ) &card, ( double * ) cover );
@@ -9322,7 +13391,7 @@ void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_spk = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -9342,6 +13411,11 @@ void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                   ( integer    * ) &idcode,
                   ( doublereal * ) (cover),
                   ( ftnlen       ) strlen(spk)   );
+
+         /*
+         Check for a failure signal. Free the memory assigned to 'cover'
+         before signaling a Matlab error.
+         */
          if ( failed_c())
             {
             mxFree( cover );
@@ -9364,6 +13438,11 @@ void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                 ( integer    * ) &idcode,
                 ( doublereal * ) (cover),
                 ( ftnlen       ) strlen(spk)   );
+
+      /*
+      Check for a failure signal. Free the memory assigned to 'cover'
+      before signaling a Matlab error.
+      */
       if ( failed_c())
          {
          mxFree( cover );
@@ -9400,6 +13479,346 @@ void cspice_spkcov(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
+   void              spkcpo_c ( ConstSpiceChar    * target,
+                                SpiceDouble         et,
+                                ConstSpiceChar    * outref,
+                                ConstSpiceChar    * refloc,
+                                ConstSpiceChar    * abcorr,
+                                ConstSpiceDouble    obspos [3],
+                                ConstSpiceChar    * obsctr,
+                                ConstSpiceChar    * obsref,
+                                SpiceDouble         state  [6],
+                                SpiceDouble       * lt          );
+*/
+void mice_spkcpo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar             target [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           et;
+   SpiceChar             outref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             refloc [DEFAULT_STR_LENGTH+1];
+   SpiceChar             abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceDouble         * obspos;
+   SpiceChar             obsctr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             obsref [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           state [6];
+   SpiceDouble           lt;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "target",   MiceChar,   0, { 0 },    0},
+      { "et",       MiceDouble, 0, { 0 },    0},
+      { "outref",   MiceChar,   0, { 0 },    0},
+      { "refloc",   MiceChar,   0, { 0 },    0},
+      { "abcorr",   MiceChar,   0, { 0 },    0},
+      { "obspos",   MiceDouble, 1, { 3 },    0},
+      { "obsctr",   MiceChar,   0, { 0 },    0},
+      { "obsref",   MiceChar,   0, { 0 },    0},
+      { "state",    MiceState,  0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 8, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], target, DEFAULT_STR_LENGTH);
+
+   et     = S_DBL_ARGV(2);
+
+   mxGetString(prhs[3], outref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], refloc, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], abcorr, DEFAULT_STR_LENGTH);
+
+   obspos = A_DBL_ARGV( 6 );
+
+   mxGetString(prhs[7], obsctr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[8], obsref, DEFAULT_STR_LENGTH);
+
+   (void) spkcpo_c ( target,
+                     et,
+                     outref,
+                     refloc,
+                     abcorr,
+                     obspos,
+                     obsctr,
+                     obsref,
+                     state,
+                     &lt );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the state vector and the lighttime value into the return structure.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ),
+           state,
+           6*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
+   mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
+   }
+
+
+
+
+/*
+   void              spkcpt_c ( ConstSpiceDouble       trgpos [3],
+                                ConstSpiceChar       * trgctr,
+                                ConstSpiceChar       * trgref,
+                                SpiceDouble            et,
+                                ConstSpiceChar       * outref,
+                                ConstSpiceChar       * evlref,
+                                ConstSpiceChar       * abcorr,
+                                ConstSpiceChar       * obsrvr,
+                                SpiceDouble          * state,
+                                SpiceDouble          * lt        )
+*/
+void mice_spkcpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble         * trgpos;
+   SpiceChar             trgctr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             trgref [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           et;
+   SpiceChar             outref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             evlref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             obsrvr [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           state [6];
+   SpiceDouble           lt;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "trgpos",   MiceDouble, 1, { 3 },    0},
+      { "trgctr",   MiceChar,   0, { 0 },    0},
+      { "trgref",   MiceChar,   0, { 0 },    0},
+      { "et",       MiceDouble, 0, { 0 },    0},
+      { "outref",   MiceChar,   0, { 0 },    0},
+      { "evlref",   MiceChar,   0, { 0 },    0},
+      { "abcorr",   MiceChar,   0, { 0 },    0},
+      { "obsrvr",   MiceChar,   0, { 0 },    0},
+      { "state",    MiceState,  0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 8, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   trgpos = A_DBL_ARGV( 1 );
+
+   mxGetString(prhs[2], trgctr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], trgref, DEFAULT_STR_LENGTH);
+
+   et     = S_DBL_ARGV(4);
+
+   mxGetString(prhs[5], outref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], evlref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[7], abcorr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[8], obsrvr, DEFAULT_STR_LENGTH);
+
+   (void) spkcpt_c ( trgpos,
+                     trgctr,
+                     trgref,
+                     et,
+                     outref,
+                     evlref,
+                     abcorr,
+                     obsrvr,
+                     state,
+                     &lt );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the state vector and the lighttime value into the return structure.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ),
+           state,
+           6*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
+   mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
+   }
+
+
+
+
+/*
+   void              spkcvo_c ( ConstSpiceChar    * target,
+                                SpiceDouble         et,
+                                ConstSpiceChar    * outref,
+                                ConstSpiceChar    * evlref,
+                                ConstSpiceChar    * abcorr,
+                                ConstSpiceDouble    obssta [6],
+                                SpiceDouble         obsepc,
+                                ConstSpiceChar    * obsctr,
+                                ConstSpiceChar    * obsref,
+                                SpiceDouble         state  [6],
+                                SpiceDouble       * lt         );
+*/
+void mice_spkcvo(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar             target [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           et;
+   SpiceChar             outref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             evlref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceDouble         * obssta;
+   SpiceDouble           obsepc;
+   SpiceChar             obsctr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             obsref [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           state [6];
+   SpiceDouble           lt;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "target",   MiceChar,   0, { 0 },    0},
+      { "et",       MiceDouble, 0, { 0 },    0},
+      { "outref",   MiceChar,   0, { 0 },    0},
+      { "evlref",   MiceChar,   0, { 0 },    0},
+      { "abcorr",   MiceChar,   0, { 0 },    0},
+      { "obssta",   MiceDouble, 1, { 6 },    0},
+      { "obsepc",   MiceDouble, 0, { 0 },    0},
+      { "obsctr",   MiceChar,   0, { 0 },    0},
+      { "obsref",   MiceChar,   0, { 0 },    0},
+      { "state",    MiceState,  0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 9, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], target, DEFAULT_STR_LENGTH);
+
+   et     = S_DBL_ARGV(2);
+
+   mxGetString(prhs[3], outref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], evlref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], abcorr, DEFAULT_STR_LENGTH);
+
+   obssta = A_DBL_ARGV(6);
+   obsepc = S_DBL_ARGV(7);
+
+   mxGetString(prhs[8], obsctr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[9], obsref, DEFAULT_STR_LENGTH);
+
+   (void) spkcvo_c ( target,
+                     et,
+                     outref,
+                     evlref,
+                     abcorr,
+                     obssta,
+                     obsepc,
+                     obsctr,
+                     obsref,
+                     state,
+                     &lt);
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the state vector and the lighttime value into the return structure.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ),
+           state,
+           6*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
+   mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
+   }
+
+
+
+
+/*
+   void              spkcvt_c ( ConstSpiceDouble       trgsta [6],
+                                SpiceDouble            trgepc,
+                                ConstSpiceChar       * trgctr,
+                                ConstSpiceChar       * trgref,
+                                SpiceDouble            et,
+                                ConstSpiceChar       * outref,
+                                ConstSpiceChar       * evlref,
+                                ConstSpiceChar       * abcorr,
+                                ConstSpiceChar       * obsrvr,
+                                SpiceDouble          * state,
+                                SpiceDouble          * lt        )
+*/
+void mice_spkcvt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble         * trgsta;
+   SpiceDouble           trgepc;
+   SpiceChar             trgctr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             trgref [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           et;
+   SpiceChar             outref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             evlref [DEFAULT_STR_LENGTH+1];
+   SpiceChar             abcorr [DEFAULT_STR_LENGTH+1];
+   SpiceChar             obsrvr [DEFAULT_STR_LENGTH+1];
+   SpiceDouble           state [6];
+   SpiceDouble           lt;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "trgsta",   MiceDouble, 1, { 6 },    0},
+      { "trgepc",   MiceDouble, 0, { 0 },    0},
+      { "trgctr",   MiceChar,   0, { 0 },    0},
+      { "trgref",   MiceChar,   0, { 0 },    0},
+      { "et",       MiceDouble, 0, { 0 },    0},
+      { "outref",   MiceChar,   0, { 0 },    0},
+      { "evlref",   MiceChar,   0, { 0 },    0},
+      { "abcorr",   MiceChar,   0, { 0 },    0},
+      { "obsrvr",   MiceChar,   0, { 0 },    0},
+      { "state",    MiceState,  0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 9, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   trgsta = A_DBL_ARGV(1);
+   trgepc = S_DBL_ARGV(2);
+
+   mxGetString(prhs[3], trgctr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], trgref, DEFAULT_STR_LENGTH);
+
+   et     = S_DBL_ARGV(5);
+
+   mxGetString(prhs[6], outref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[7], evlref, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[8], abcorr, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[9], obsrvr, DEFAULT_STR_LENGTH);
+
+   (void) spkcvt_c ( trgsta,
+                     trgepc,
+                     trgctr,
+                     trgref,
+                     et,
+                     outref,
+                     evlref,
+                     abcorr,
+                     obsrvr,
+                     state,
+                     &lt  );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   /*
+   Copy the state vector and the lighttime value into the return structure.
+   */
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ),
+           state,
+           6*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
+   mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
+   }
+
+
+
+
+/*
    void spkezr_c(  ConstSpiceChar     *targ,
                    SpiceDouble         et,
                    ConstSpiceChar     *ref,
@@ -9412,10 +13831,10 @@ void mice_spkezr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceDouble        * vec_et;
-   SpiceChar            targ  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            ref   [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            obs   [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            targ  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            ref   [DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obs   [DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
    SpiceDouble          starg[6];
    SpiceDouble          lt;
@@ -9423,14 +13842,14 @@ void mice_spkezr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "targ"  , MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "ref"   , MiceChar  , 0, {0}, 0},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obs"   , MiceChar  , 0, {0}, 0},
-      { "state" , MiceState , 0, {0}, 1},
+      { "targ",   MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "ref",    MiceChar,   0, {0}, 0},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obs",    MiceChar,   0, {0}, 0},
+      { "state",  MiceState,  0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 5, 1 );
@@ -9442,42 +13861,43 @@ void mice_spkezr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_et = A_DBL_ARGV(2);
    et     = *(vec_et);
 
-   mxGetString(prhs[3], ref   , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], ref,    DEFAULT_STR_LENGTH);
    mxGetString(prhs[4], abcorr, DEFAULT_STR_LENGTH);
-   mxGetString(prhs[5], obs   , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], obs,    DEFAULT_STR_LENGTH);
 
    /*
    Check for vectorized arguments.
    */
    if (extra->count>1)
       {
-      
+
       /*
-      Something input as a N-vector, extract the input values 
-      (vectorized or not) then execute the routine for each 
+      Something input as a N-vector, extract the input values
+      (vectorized or not) then execute the routine for each
       set of inputs.
       */
       for (i=0;i<extra->count;i++)
          {
 
          et = *(vec_et + i*extra->offset[1]);
-   
+
          spkezr_c(targ, et, ref, abcorr, obs, starg, &lt);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
 
          /*
          Copy the state and light time values into the ith structure
          element.
          */
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"state") ), 
-                 starg, 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"state") ),
+                 starg,
                  6*sizeof(SpiceDouble));
-         
+
+         mxDestroyArray( mxGetField( plhs[0], i, "lt" ) );
          mxSetField( plhs[0], i, "lt", mxCreateDoubleScalar(lt) );
 
          }
 
-      } 
+      }
    else
       {
 
@@ -9487,15 +13907,18 @@ void mice_spkezr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Copy the state vector and the lighttime value into the return structure.
       */
-      memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ), 
-              starg, 
+      memcpy( mxGetPr( mxGetField(plhs[0],0,"state") ),
+              starg,
               6*sizeof(SpiceDouble));
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
       mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
-      
+
       }
 
    }
+
+
 
 
 /*
@@ -9505,24 +13928,24 @@ void mice_spkezr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   SpiceChar           spk[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           spk[DEFAULT_STR_LENGTH+1];
    mxChar            * mx_spk;
-   
+
    SpiceInt            i;
    SpiceInt            j;
    int                 sizearray[2];
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
    SpiceInt          * ids_f;
    SpiceInt          * ids;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "spk" , MiceChar  , 0, {0}, 1},
-      { "size", MiceInt   , 0, {0}, 0},
-      { "ids" , MiceIgnore, 0, {0}, 0},
+      { "spk",  MiceChar,   0, {0}, 1},
+      { "size", MiceInt,    0, {0}, 0},
+      { "ids",  MiceIgnore, 0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
@@ -9530,7 +13953,7 @@ void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    size = S_INT_ARGV(2);
-   ids  = (SpiceInt*)mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceInt)  ); 
+   ids  = (SpiceInt*)mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceInt)  );
 
    ssizei_( ( integer * ) &size, ( integer * ) ids   );
    scardi_( ( integer * ) &card, ( integer * ) ids   );
@@ -9539,7 +13962,7 @@ void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_spk = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -9558,6 +13981,11 @@ void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          spkobj_(  ( char       * ) spk,
                    ( integer    * ) (ids),
                    ( ftnlen       ) strlen(spk)   );
+
+         /*
+         Check for a failure signal. Free the memory assigned to 'ids'
+         before signaling a Matlab error.
+         */
          if ( failed_c())
             {
             mxFree( ids );
@@ -9579,6 +14007,11 @@ void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       spkobj_(  ( char       * ) spk,
                 ( integer    * ) (ids),
                 ( ftnlen       ) strlen(spk)   );
+
+      /*
+      Check for a failure signal. Free the memory assigned to 'ids'
+      before signaling a Matlab error.
+      */
       if ( failed_c())
          {
          mxFree( ids );
@@ -9608,6 +14041,48 @@ void cspice_spkobj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              spkopn_c ( ConstSpiceChar    * name,
+                                ConstSpiceChar    * ifname,
+                                SpiceInt            ncomch,
+                                SpiceInt          * handle  );
+*/
+void cspice_spkopn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceChar            fname [DEFAULT_STR_LENGTH+1];
+   SpiceChar            ifname[DEFAULT_STR_LENGTH+1];
+   SpiceInt             ncomch;
+   SpiceInt           * handle;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "fname",  MiceChar, 0, {0}, 0},
+      { "ifname", MiceChar, 0, {0}, 0},
+      { "ncomch", MiceInt,  0, {0}, 0},
+      { "handle", MiceInt,  0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], fname,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], ifname, DEFAULT_STR_LENGTH);
+
+   ncomch = S_INT_ARGV(3);
+   handle = A_INT_RET_ARGV(0);
+
+   spkopn_c( fname, ifname, ncomch, handle );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
 /*
    void              spkpos_c ( ConstSpiceChar    * targ,
                                 SpiceDouble         et,
@@ -9621,25 +14096,25 @@ void mice_spkpos(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceDouble        * vec_et;
-   SpiceChar            targ  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            ref   [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            obs   [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            targ  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            ref   [DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obs   [DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
-   SpiceDouble          ptarg[6];
+   SpiceDouble          ptarg[3];
    SpiceDouble          lt;
 
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "targ"  , MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "ref"   , MiceChar  , 0, {0}, 0},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obs"   , MiceChar  , 0, {0}, 0},
-      { "ptarg" , MicePos   , 0, {0}, 1},
+      { "targ",   MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "ref",    MiceChar,   0, {0}, 0},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obs",    MiceChar,   0, {0}, 0},
+      { "ptarg",  MicePos,    0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 5, 1 );
@@ -9651,19 +14126,19 @@ void mice_spkpos(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_et = A_DBL_ARGV(2);
    et     = *(vec_et);
 
-   mxGetString(prhs[3], ref   , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], ref,    DEFAULT_STR_LENGTH);
    mxGetString(prhs[4], abcorr, DEFAULT_STR_LENGTH);
-   mxGetString(prhs[5], obs   , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[5], obs,    DEFAULT_STR_LENGTH);
 
    /*
    Check for vectorized arguments.
    */
    if (extra->count>1)
       {
-      
+
       /*
       Something input as a N-vector, extract the input values
-      (vectorized or not) then execute the routine for each 
+      (vectorized or not) then execute the routine for each
       set of inputs.
       */
       for (i=0;i<extra->count;i++)
@@ -9675,21 +14150,22 @@ void mice_spkpos(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          Call the routine for this iteration.
          */
          spkpos_c(targ, et, ref, abcorr, obs, ptarg, &lt);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
 
          /*
          Copy the position and light time values into the ith structure
          element.
          */
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos") ), 
-                 ptarg, 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos") ),
+                 ptarg,
                  3*sizeof(SpiceDouble));
 
+         mxDestroyArray( mxGetField( plhs[0], i, "lt" ) );
          mxSetField( plhs[0], i, "lt", mxCreateDoubleScalar(lt) );
 
          }
 
-      } 
+      }
    else
       {
 
@@ -9699,15 +14175,241 @@ void mice_spkpos(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Copy the position and the light time value into the return structure.
       */
-      memcpy( mxGetPr( mxGetField(plhs[0],0, "pos") ), 
-              ptarg, 
+      memcpy( mxGetPr( mxGetField(plhs[0],0, "pos") ),
+              ptarg,
               3*sizeof(SpiceDouble));
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "lt" ) );
       mxSetField( plhs[0], 0, "lt", mxCreateDoubleScalar(lt) );
 
       }
 
    }
+
+
+
+
+/*
+   void              spkpvn_c ( SpiceInt            handle,
+                                ConstSpiceDouble    descr [5],
+                                SpiceDouble         et,
+                                SpiceInt          * ref,
+                                SpiceDouble         state [6],
+                                SpiceInt          * center    );
+*/
+void mice_spkpvn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt               handle;
+   SpiceDouble          * descr;
+   SpiceDouble            et;
+   SpiceInt               ref;
+   SpiceDouble            state  [6];
+   SpiceInt               center;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle", MiceInt,    0, {0}, 0},
+      { "descr",  MiceDouble, 1, {5}, 0},
+      { "et",     MiceDouble, 0, {0}, 0},
+      { "spkpvn", MicePVN,    0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   handle = S_INT_ARGV(1);
+   descr  = A_DBL_ARGV(2);
+   et     = S_DBL_ARGV(3);
+
+   (void) spkpvn_c ( handle,
+                     descr,
+                     et,
+                     &ref,
+                     state,
+                     &center );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "ref" ) );
+   mxSetField( plhs[0], 0, "ref", zzmice_CreateIntScalar(ref) );
+
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"state" ) ),
+           state,
+           6*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "center" ) );
+   mxSetField( plhs[0], 0, "center", zzmice_CreateIntScalar(center) );
+
+   }
+
+
+
+
+/*
+   void              spksfs_c ( SpiceInt            body,
+                                SpiceDouble         et,
+                                SpiceInt            idlen,
+                                SpiceInt          * handle,
+                                SpiceDouble         descr [5],
+                                SpiceChar         * ident,
+                                SpiceBoolean      * found  );
+*/
+void mice_spksfs(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt              body;
+   SpiceDouble           et;
+   SpiceInt              idlen;
+   SpiceInt              handle;
+   SpiceDouble           descr [5];
+   SpiceChar             ident [SIDLEN+1];
+   SpiceBoolean          found;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "body",   MiceInt,    0, { 0 },    0},
+      { "et",     MiceDouble, 0, { 0 },    0},
+      { "spksfs", MiceSFS,    0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   body   = S_INT_ARGV(1);
+   et     = S_DBL_ARGV(2);
+
+   idlen  = SIDLEN;
+
+   (void) spksfs_c ( body,
+                     et,
+                     idlen,
+                     &handle,
+                     descr,
+                     ident,
+                     &found  );
+
+   /*
+   Test for a SPICE error signal. If found, display an error message to
+   the user then return to the IDL application.
+   */
+   CHECK_CALL_FAILURE( SCALAR );
+
+   /*
+   Copy the output values into the return structure.
+   */
+   mxDestroyArray( mxGetField( plhs[0], 0, "handle" ) );
+   mxSetField( plhs[0], 0, "handle", zzmice_CreateIntScalar(handle) );
+
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"descr") ),
+           descr,
+           5*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "ident" ) );
+   mxSetField( plhs[0], 0, "ident", mxCreateString(ident) );
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+   mxSetField( plhs[0], 0, "found", 
+               mxCreateLogicalScalar(found ? true: false));
+   }
+
+
+
+
+/*
+   void              spkw08_c ( SpiceInt             handle,
+                                SpiceInt             body,
+                                SpiceInt             center,
+                                ConstSpiceChar     * frame,
+                                SpiceDouble          first,
+                                SpiceDouble          last,
+                                ConstSpiceChar     * segid,
+                                SpiceInt             degree,
+                                SpiceInt             n,
+                                ConstSpiceDouble     states[][6],
+                                SpiceDouble          epoch1,
+                                SpiceDouble          step         );
+*/
+void cspice_spkw08(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceInt             handle;
+   SpiceInt             body;
+   SpiceInt             center;
+   SpiceChar            frame   [DEFAULT_STR_LENGTH+1];
+   SpiceDouble          first;
+   SpiceDouble          last;
+   SpiceChar            segid   [DEFAULT_STR_LENGTH+1];
+   SpiceInt             degree;
+   SpiceInt             n;
+   ConstSpiceDouble   * states;
+   SpiceDouble          epoch1;
+   SpiceDouble          step;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "handle",  MiceInt,    0, { 0 },    0},
+      { "body",    MiceInt,    0, { 0 },    0},
+      { "center",  MiceInt,    0, { 0 },    0},
+      { "frame",   MiceChar,   0, { 0 },    0},
+      { "first",   MiceDouble, 0, { 0 },    0},
+      { "last",    MiceDouble, 0, { 0 },    0},
+      { "segid",   MiceChar,   0, { 0 },    0},
+      { "degree",  MiceInt,    0, { 0 },    0},
+      { "states",  MiceDouble, 2, { 6, 0 }, 0},
+      { "epoch1",  MiceDouble, 0, { 0 },    0},
+      { "step",    MiceDouble, 0, { 0 },    0},
+      };
+
+   check_arg_num( nrhs, nlhs, 11, 0);
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /*
+   Number of state sets = number of elements in array divided by six;
+   we expect a 6xN array.
+   */
+   n = mxGetNumberOfElements( prhs[9]) / 6;
+
+   handle  = S_INT_ARGV(1);
+   body    = S_INT_ARGV(2);
+   center  = S_INT_ARGV(3);
+
+   mxGetString(prhs[4], frame, DEFAULT_STR_LENGTH);
+
+   first   = S_DBL_ARGV(5);
+   last    = S_DBL_ARGV(6);
+
+   mxGetString(prhs[7], segid, DEFAULT_STR_LENGTH);
+
+   degree  = S_INT_ARGV(8);
+
+   states  = (ConstSpiceDouble*)mxGetData(prhs[9]);
+
+   epoch1  = S_DBL_ARGV(10);
+   step    = S_DBL_ARGV(11);
+
+   spkw08_c ( handle,
+              body,
+              center,
+              frame,
+              first,
+              last,
+              segid,
+              degree,
+              n,
+              (Nx6)states,
+              epoch1,
+              step );
+
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
 
 
 
@@ -9730,10 +14432,10 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceDouble        * vec_et;
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
-   SpiceChar            target[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            dref  [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            target[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            dref  [DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
    SpiceDouble        * dvec;
    SpiceDouble          spoint[3];
@@ -9745,17 +14447,16 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "method", MiceChar  , 0, {0}, 0},
-      { "target", MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obsrvr", MiceChar  , 0, {0}, 0},
-      { "dref"  , MiceChar  , 0, {0}, 0},
-      { "dvec"  , MiceDouble, 1, {3}, 0},
-      { "surf"  , MiceSurf,   0, {0}, 1}
+      { "method", MiceChar,   0, {0}, 0},
+      { "target", MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
+      { "dref",   MiceChar,   0, {0}, 0},
+      { "dvec",   MiceDouble, 1, {3}, 0},
+      { "surf",   MiceSurf,   0, {0}, 1}
       };
 
    check_arg_num( nrhs, nlhs, 7, 1 );
@@ -9764,12 +14465,12 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    vec_et = A_DBL_ARGV(3);
 
    mxGetString(prhs[4], abcorr, DEFAULT_STR_LENGTH);
    mxGetString(prhs[5], obsrvr, DEFAULT_STR_LENGTH);
-   mxGetString(prhs[6], dref  , DEFAULT_STR_LENGTH);
+   mxGetString(prhs[6], dref,   DEFAULT_STR_LENGTH);
 
    dvec = A_DBL_ARGV(7);
 
@@ -9781,25 +14482,28 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
          et = *(vec_et + i*extra->offset[2]);
 
-         srfxpt_c( method, target,   et, 
+         srfxpt_c( method, target,   et,
                    abcorr, obsrvr, dref,
-                   dvec,   spoint, &dist, 
+                   dvec,   spoint, &dist,
                    &trgepc, obspos, &found );
          CHECK_CALL_FAILURE(i);
 
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"spoint" ) ), 
-                 spoint, 
-                 3*sizeof(SpiceDouble));
-                 
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"obspos" ) ), 
-                 obspos, 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"spoint" ) ),
+                 spoint,
                  3*sizeof(SpiceDouble));
 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"obspos" ) ),
+                 obspos,
+                 3*sizeof(SpiceDouble));
+
+         mxDestroyArray( mxGetField( plhs[0], i, "dist" ) );
          mxSetField( plhs[0], i, "dist", mxCreateDoubleScalar(dist) );
 
+         mxDestroyArray( mxGetField( plhs[0], i, "trgepc" ) );
          mxSetField( plhs[0], i, "trgepc", mxCreateDoubleScalar(trgepc) );
 
-         mxSetField( plhs[0], i, "found", 
+         mxDestroyArray( mxGetField( plhs[0], i, "found" ) );
+         mxSetField( plhs[0], i, "found",
                      mxCreateLogicalScalar(found ? true: false));
          }
 
@@ -9809,25 +14513,28 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       et = *vec_et;
 
-      srfxpt_c( method, target,     et, 
+      srfxpt_c( method, target,     et,
                 abcorr, obsrvr,   dref,
-                dvec,   spoint,  &dist, 
+                dvec,   spoint,  &dist,
                 &trgepc, obspos, &found );
       CHECK_CALL_FAILURE(SCALAR);
 
-      memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ), 
-              spoint, 
+      memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ),
+              spoint,
               3*sizeof(SpiceDouble));
 
-      memcpy( mxGetPr( mxGetField(plhs[0],0,"obspos" ) ), 
-              obspos, 
+      memcpy( mxGetPr( mxGetField(plhs[0],0,"obspos" ) ),
+              obspos,
               3*sizeof(SpiceDouble));
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "dist" ) );
       mxSetField( plhs[0], 0, "dist", mxCreateDoubleScalar(dist) );
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "trgepc" ) );
       mxSetField( plhs[0], 0, "trgepc", mxCreateDoubleScalar(trgepc) );
 
-      mxSetField( plhs[0], 0, "found", 
+      mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+      mxSetField( plhs[0], 0, "found",
                   mxCreateLogicalScalar(found ? true: false));
       }
 
@@ -9844,20 +14551,19 @@ void mice_srfxpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 void cspice_str2et(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            str[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            str[DEFAULT_STR_LENGTH+1];
    mxChar             * mx_str;
-   SpiceDouble        * et; 
+   SpiceDouble        * et;
    SpiceDouble        * vec_et;
 
    SpiceInt             i;
    SpiceInt             j;
 
    struct extra_dims  * extra;
-
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "str", MiceChar  , 0, {0}, 1},
-      { "et" , MiceDouble, 0, {0}, 1},
+      { "str", MiceChar,   0, {0}, 1},
+      { "et",  MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 1, 1 );
@@ -9870,7 +14576,7 @@ void cspice_str2et(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_str = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for ( i=0; i<extra->count; i++)
          {
 
@@ -9883,15 +14589,15 @@ void cspice_str2et(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             {
             str[j] = (char)mx_str[i + (extra->count*j)];
             }
-            
+
          str[extra->offset[0]] = '\0';
          et                    = (vec_et+i*extra->offset[1]);
 
          str2et_c(str, et);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
@@ -9919,22 +14625,22 @@ void cspice_str2et(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_stpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
-   SpiceChar            item  [DEFAULT_STR_LENGTH+1]; 
+
+   SpiceChar            item  [DEFAULT_STR_LENGTH+1];
    SpiceInt             nth;
-   SpiceChar            contin[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            stringx[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            contin[DEFAULT_STR_LENGTH+1];
+   SpiceChar            stringx[DEFAULT_STR_LENGTH+1];
    SpiceInt             size;
    SpiceBoolean       * found;
 
    struct extra_dims  * extra;
-   struct argcheck      ArgCheck[] =
+   struct argcheck ArgCheck[] =
       {
-      { "item"  , MiceChar   , 0, {0}, 0},
-      { "nth"   , MiceInt    , 0, {0}, 0},
-      { "contin", MiceChar   , 0, {0}, 0},
-      { "string", MiceChar   , 0, {0}, 0},
-      { "found" , MiceBoolean, 0, {0}, 0}
+      { "item",   MiceChar,    0, {0}, 0},
+      { "nth",    MiceInt,     0, {0}, 0},
+      { "contin", MiceChar,    0, {0}, 0},
+      { "string", MiceChar,    0, {0}, 0},
+      { "found",  MiceBoolean, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 3, 2);
@@ -9945,7 +14651,7 @@ void cspice_stpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    MATLAB uses a base 1 array index convention, as is proper,
-   C does not. Subtract one off the 'nth' index.
+   C does not, which is weird. Subtract one off the 'nth' index.
    */
    nth = S_INT_ARGV(2) - 1;
 
@@ -9966,19 +14672,20 @@ void cspice_stpool(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if ( plhs[0] == NULL )
       {
-      mexErrMsgTxt( 
+      mexErrMsgTxt(
          "MICE(BUG): mxCreateString failed in cspice_kdata: plhs[0]" );
       }
 
    if ( size > DEFAULT_STR_LENGTH )
       {
-      mexErrMsgTxt( 
+      mexErrMsgTxt(
          "MICE(BUG): The Mice interface truncated the string value "
          "corresponding to the kernel variable." );
       }
 
    CHECK_CALL_FAILURE(SCALAR);
    }
+
 
 
 
@@ -9999,23 +14706,23 @@ void mice_subpnt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
    SpiceChar            target[DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
-   SpiceChar            fixref[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            fixref[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
    SpiceDouble          spoint[3];
    SpiceDouble          trgepc;
    SpiceDouble          srfvec[3];
 
    struct extra_dims  * extra;
 
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "method", MiceChar  , 0, {0}, 0},
-      { "target", MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 0},
-      { "fixref", MiceChar  , 0, {0}, 0},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obsrvr", MiceChar  , 0, {0}, 0},
+      { "method", MiceChar,   0, {0}, 0},
+      { "target", MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 0},
+      { "fixref", MiceChar,   0, {0}, 0},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
       { "subpnt", MiceSub_PS, 0, {0}, 0}
       };
 
@@ -10025,7 +14732,7 @@ void mice_subpnt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    et = S_DBL_ARGV(3);
 
    mxGetString(prhs[4], fixref, DEFAULT_STR_LENGTH);
@@ -10044,14 +14751,15 @@ void mice_subpnt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    CHECK_CALL_FAILURE(SCALAR);
 
-   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ), 
-           spoint, 
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ),
+           spoint,
            3*sizeof(SpiceDouble));
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "trgepc" ) );
    mxSetField( plhs[0], 0, "trgepc", mxCreateDoubleScalar(trgepc) );
 
    memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ),
-           srfvec, 
+           srfvec,
            3*sizeof(SpiceDouble));
 
    }
@@ -10070,12 +14778,12 @@ void mice_subpnt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void mice_subpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_et;
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
-   SpiceChar            target[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            target[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
    SpiceDouble          spoint[3];
    SpiceDouble          alt;
@@ -10083,14 +14791,14 @@ void mice_subpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "method", MiceChar  , 0, {0}, 0},
-      { "target", MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obsrvr", MiceChar  , 0, {0}, 0},
-      { "spoint", MiceSub   , 0, {0}, 1},
+      { "method", MiceChar,   0, {0}, 0},
+      { "target", MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
+      { "spoint", MiceNear,    0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 5, 1 );
@@ -10099,7 +14807,7 @@ void mice_subpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    vec_et = A_DBL_ARGV(3);
    et     = *(vec_et);
 
@@ -10108,23 +14816,24 @@ void mice_subpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-   
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          et = *(vec_et + i*extra->offset[2]);
 
          subpt_c(method, target, et, abcorr, obsrvr, spoint, &alt);
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
 
          /*
-         Copy the position and altitude values into the ith 
+         Copy the position and altitude values into the ith
          structure element.
          */
-         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos" ) ), 
+         memcpy( mxGetPr( mxGetField(plhs[0],i,"pos" ) ),
                  spoint,
                  3*sizeof(SpiceDouble));
-                 
+
+         mxDestroyArray( mxGetField( plhs[0], i, "alt" ) );
          mxSetField( plhs[0], i, "alt", mxCreateDoubleScalar(alt) );
 
         }
@@ -10134,20 +14843,22 @@ void mice_subpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       subpt_c(method, target, et, abcorr, obsrvr, spoint, &alt);
-      CHECK_CALL_FAILURE(SCALAR); ; 
+      CHECK_CALL_FAILURE(SCALAR); ;
 
       /*
       Copy the position and altitude values into the 0 structure element.
       */
-      memcpy( mxGetPr( mxGetField(plhs[0],0,"pos" ) ), 
-              spoint, 
+      memcpy( mxGetPr( mxGetField(plhs[0],0,"pos" ) ),
+              spoint,
               3*sizeof(SpiceDouble));
 
+      mxDestroyArray( mxGetField( plhs[0], 0, "alt" ) );
       mxSetField( plhs[0], 0, "alt", mxCreateDoubleScalar(alt) );
 
       }
 
    }
+
 
 
 
@@ -10168,23 +14879,22 @@ void mice_subslr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
    SpiceChar            target[DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
-   SpiceChar            fixref[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            fixref[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
    SpiceDouble          spoint[3];
    SpiceDouble          trgepc;
    SpiceDouble          srfvec[3];
 
    struct extra_dims  * extra;
-
-   struct argcheck      ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "method", MiceChar  , 0, {0}, 0},
-      { "target", MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 0},
-      { "fixref", MiceChar  , 0, {0}, 0},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obsrvr", MiceChar  , 0, {0}, 0},
+      { "method", MiceChar,   0, {0}, 0},
+      { "target", MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 0},
+      { "fixref", MiceChar,   0, {0}, 0},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
       { "subslr", MiceSub_PS, 0, {0}, 0}
       };
 
@@ -10194,7 +14904,7 @@ void mice_subslr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    et = S_DBL_ARGV(3);
 
    mxGetString(prhs[4], fixref, DEFAULT_STR_LENGTH);
@@ -10213,14 +14923,15 @@ void mice_subslr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    CHECK_CALL_FAILURE(SCALAR);
 
-   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ), 
-           spoint, 
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ),
+           spoint,
            3*sizeof(SpiceDouble));
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "trgepc" ) );
    mxSetField( plhs[0], 0, "trgepc", mxCreateDoubleScalar(trgepc) );
 
-   memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ), 
-           srfvec, 
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"srfvec" ) ),
+           srfvec,
            3*sizeof(SpiceDouble));
 
    }
@@ -10239,26 +14950,26 @@ void mice_subslr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_subsol(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_et;
    SpiceDouble        * vec_spoint;
    SpiceChar            method[DEFAULT_STR_LENGTH+1];
-   SpiceChar            target[DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];    
-   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            target[DEFAULT_STR_LENGTH+1];
+   SpiceChar            abcorr[DEFAULT_STR_LENGTH+1];
+   SpiceChar            obsrvr[DEFAULT_STR_LENGTH+1];
    SpiceDouble          et;
    SpiceDouble        * spoint;
 
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "method", MiceChar  , 0, {0}, 0},
-      { "target", MiceChar  , 0, {0}, 0},
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "abcorr", MiceChar  , 0, {0}, 0},
-      { "obsrvr", MiceChar  , 0, {0}, 0},
+      { "method", MiceChar,   0, {0}, 0},
+      { "target", MiceChar,   0, {0}, 0},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "abcorr", MiceChar,   0, {0}, 0},
+      { "obsrvr", MiceChar,   0, {0}, 0},
       { "spoint", MiceDouble, 1, {3}, 1},
       };
 
@@ -10268,7 +14979,7 @@ void cspice_subsol(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], method, DEFAULT_STR_LENGTH);
    mxGetString(prhs[2], target, DEFAULT_STR_LENGTH);
-      
+
    vec_et = A_DBL_ARGV(3);
    et     = *(vec_et);
 
@@ -10279,25 +14990,25 @@ void cspice_subsol(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    if (extra->count>1)
       {
-   
+
       for (i=0;i<extra->count;i++)
          {
-         
+
          et     = *(vec_et     + i*extra->offset[2]);
          spoint =  (vec_spoint + i*extra->offset[5]);
 
          subsol_c(method, target, et, abcorr, obsrvr, spoint );
-         CHECK_CALL_FAILURE(i); 
+         CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
 
       spoint = vec_spoint;
 
       subsol_c(method, target, et, abcorr, obsrvr, spoint );
-      CHECK_CALL_FAILURE(SCALAR); ; 
+      CHECK_CALL_FAILURE(SCALAR); ;
       }
 
    }
@@ -10306,12 +15017,12 @@ void cspice_subsol(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   void              surfnm_c( SpiceDouble        a, 
-                               SpiceDouble        b, 
-                               SpiceDouble        c, 
-                               ConstSpiceDouble   point[3], 
-                               SpiceDouble        normal[3] ) 
-*/ 
+   void              surfnm_c( SpiceDouble        a,
+                               SpiceDouble        b,
+                               SpiceDouble        c,
+                               ConstSpiceDouble   point[3],
+                               SpiceDouble        normal[3] )
+*/
 void cspice_surfnm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
@@ -10324,14 +15035,14 @@ void cspice_surfnm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * normal;
 
    SpiceInt             i;
- 
+
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "a"     , MiceDouble, 0, {0}, 0},
-      { "b"     , MiceDouble, 0, {0}, 0},
-      { "c"     , MiceDouble, 0, {0}, 0},
-      { "point" , MiceDouble, 1, {3}, 1},
+      { "a",      MiceDouble, 0, {0}, 0},
+      { "b",      MiceDouble, 0, {0}, 0},
+      { "c",      MiceDouble, 0, {0}, 0},
+      { "point",  MiceDouble, 1, {3}, 1},
       { "normal", MiceDouble, 1, {3}, 1},
       };
 
@@ -10363,7 +15074,7 @@ void cspice_surfnm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    else
       {
-      
+
       surfnm_c(a, b, c, point, normal);
       CHECK_CALL_FAILURE(SCALAR);
       }
@@ -10372,11 +15083,76 @@ void cspice_surfnm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
- void               sxform_c( ConstSpiceChar  * from, 
-                               ConstSpiceChar  * to, 
-                               SpiceDouble       et, 
-                               SpiceDouble       xform[6][6] ) 
+   void               surfpt_c ( ConstSpiceDouble   positn[3],
+                                 ConstSpiceDouble   u[3],
+                                 SpiceDouble        a,
+                                 SpiceDouble        b,
+                                 SpiceDouble        c,
+                                 SpiceDouble        point[3],
+                                 SpiceBoolean     * found     )
+*/
+void mice_surfpt(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+   SpiceDouble        * positn;
+   SpiceDouble        * u;
+   SpiceDouble          a;
+   SpiceDouble          b;
+   SpiceDouble          c;
+   SpiceDouble          point[3];
+   SpiceBoolean         found;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "positn", MiceDouble,  1, {3}, 0},
+      { "u",      MiceDouble,  1, {3}, 0},
+      { "a",      MiceDouble,  0, {0}, 0},
+      { "b",      MiceDouble,  0, {0}, 0},
+      { "c",      MiceDouble,  0, {0}, 0},
+      { "surfpt", MiceSurf_PS, 0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 5, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   /* extra-> offset corresponds to argcheck table from[0]*/
+   positn  = A_DBL_ARGV(1);
+   u       = A_DBL_ARGV(2);
+   a       = S_DBL_ARGV(3);
+   b       = S_DBL_ARGV(4);
+   c       = S_DBL_ARGV(5);
+
+   surfpt_c ( positn,
+              u,
+              a,
+              b,
+              c,
+              point,
+              &found );
+
+   CHECK_CALL_FAILURE(SCALAR);
+
+   memcpy( mxGetPr( mxGetField(plhs[0],0,"spoint" ) ),
+           point,
+           3*sizeof(SpiceDouble));
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "found" ) );
+   mxSetField( plhs[0], 0, "found",
+               mxCreateLogicalScalar(found ? true: false));
+
+   }
+
+
+
+
+/*
+ void               sxform_c( ConstSpiceChar  * from,
+                               ConstSpiceChar  * to,
+                               SpiceDouble       et,
+                               SpiceDouble       xform[6][6] )
  */
 void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -10384,19 +15160,19 @@ void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * vec_et;
    SpiceDouble        * vec_xform;
    SpiceChar            from[DEFAULT_STR_LENGTH+1];
-   SpiceChar            to  [DEFAULT_STR_LENGTH+1];   
-   SpiceDouble          et; 
-   SpiceDouble        * xform; 
+   SpiceChar            to  [DEFAULT_STR_LENGTH+1];
+   SpiceDouble          et;
+   SpiceDouble        * xform;
    SpiceDouble          xr[6][6];
 
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "from" , MiceChar  , 0, {0}   , 0},
-      { "to"   , MiceChar  , 0, {0}   , 0},
-      { "et"   , MiceDouble, 0, {0}   , 1},
+      { "from",  MiceChar,   0, {0},    0},
+      { "to",    MiceChar,   0, {0},    0},
+      { "et",    MiceDouble, 0, {0},    1},
       { "xform", MiceDouble, 2, {6, 6}, 1},
       };
 
@@ -10405,8 +15181,8 @@ void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    mxGetString(prhs[1], from, DEFAULT_STR_LENGTH);
-   mxGetString(prhs[2], to  , DEFAULT_STR_LENGTH);
- 
+   mxGetString(prhs[2], to,   DEFAULT_STR_LENGTH);
+
    vec_et    = A_DBL_ARGV(3);
    vec_xform = A_DBL_RET_ARGV(0);
    et        = *vec_et;
@@ -10417,7 +15193,7 @@ void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       for (i=0;i<extra->count;i++)
          {
-         
+
          et    = *(vec_et    + i*extra->offset[2]);
          xform =  (vec_xform + i*extra->offset[3]);
 
@@ -10427,7 +15203,7 @@ void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          xpose6_c( xr, (SpiceDouble (*)[6])xform );
          }
 
-      } 
+      }
    else
       {
 
@@ -10440,8 +15216,85 @@ void cspice_sxform(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
-   void               timout_c( SpiceDouble       et,
+   void              timdef_c ( ConstSpiceChar    * action,
+                                ConstSpiceChar    * item,
+                                SpiceInt            lenout,
+                                SpiceChar         * value );
+*/
+void cspice_timdef_get(int nlhs, mxArray *plhs[], int nrhs,
+                                      const mxArray *prhs[])
+   {
+
+   SpiceChar           item  [DEFAULT_STR_LENGTH+1];
+   SpiceChar           value [DEFAULT_STR_LENGTH+1];
+
+   struct extra_dims * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "item",   MiceChar, 0, {0}, 0},
+      { "value",  MiceChar, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 1, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], item,  DEFAULT_STR_LENGTH);
+
+   timdef_c ( "GET", item, DEFAULT_STR_LENGTH, value );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   plhs[0] = mxCreateString( value );
+   if ( plhs[0] == NULL )
+      {
+      mexErrMsgTxt( "MICE(BUG): mxCreateString failed in cspice_timdef_get" );
+      }
+
+   }
+
+
+
+
+/*
+   void              timdef_c ( ConstSpiceChar    * action,
+                                ConstSpiceChar    * item,
+                                SpiceInt            lenout,
+                                SpiceChar         * value );
+*/
+void cspice_timdef_set(int nlhs, mxArray *plhs[], int nrhs,
+                                     const mxArray *prhs[])
+   {
+
+   SpiceChar           item  [DEFAULT_STR_LENGTH+1];
+   SpiceChar           value [DEFAULT_STR_LENGTH+1];
+
+   struct extra_dims * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "item",   MiceChar, 0, {0}, 0},
+      { "value",  MiceChar, 0, {0}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 0 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[1], item,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[2], value, DEFAULT_STR_LENGTH);
+
+   timdef_c ( "SET", item, DEFAULT_STR_LENGTH, value );
+   CHECK_CALL_FAILURE(SCALAR);
+
+   }
+
+
+
+
+/*
+   void               timout_c ( SpiceDouble       et,
                                  ConstSpiceChar  * pictur,
                                  SpiceInt          lenout,
                                  SpiceChar       * output )
@@ -10452,18 +15305,18 @@ void cspice_timout(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble       * vec_et;
    SpiceDouble         et;
    SpiceChar           pictur[DEFAULT_STR_LENGTH+1];
-   SpiceChar           output[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           output[DEFAULT_STR_LENGTH+1];
    SpiceChar        ** cval;
    SpiceChar        ** array;
 
    SpiceInt            i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "et"    , MiceDouble, 0, {0}, 1},
-      { "pictur", MiceChar  , 0, {0}, 0},
-      { "output", MiceChar  , 0, {0}, 1},
+      { "et",     MiceDouble, 0, {0}, 1},
+      { "pictur", MiceChar,   0, {0}, 0},
+      { "output", MiceChar,   0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
@@ -10481,7 +15334,7 @@ void cspice_timout(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       /*
       Allocate needed memory for intermediate operations.
       */
-      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH, 
+      cval  = (SpiceChar**)alloc_SpiceString_C_array(DEFAULT_STR_LENGTH,
                                                      extra->count );
       array = (SpiceChar**)alloc_SpiceString_Pointer_array(extra->count);
 
@@ -10511,7 +15364,7 @@ void cspice_timout(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
       free_SpiceString_C_array ( 1, cval );
       free_SpiceMemory( array );
-      } 
+      }
    else
       {
 
@@ -10536,18 +15389,19 @@ void cspice_timout(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    ConstSpiceChar  * tkvrsn_c ( ConstSpiceChar    * item );
 */
 void cspice_tkvrsn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar            item  [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            item  [DEFAULT_STR_LENGTH+1];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "item" , MiceChar, 0, {0}, 0},
+      { "item",  MiceChar, 0, {0}, 0},
       { "value", MiceChar, 0, {0}, 0},
       };
 
@@ -10567,8 +15421,9 @@ void cspice_tkvrsn(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
-   void              tpictr_c( ConstSpiceChar     * sample,
+   void              tpictr_c ( ConstSpiceChar     * sample,
                                 SpiceInt            lenpictur,
                                 SpiceInt            lenerror,
                                 SpiceChar         * pictur,
@@ -10579,12 +15434,12 @@ void cspice_tpictr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
    SpiceChar           sample[DEFAULT_STR_LENGTH+1];
-   SpiceChar           pictur[DEFAULT_STR_LENGTH+1]; 
+   SpiceChar           pictur[DEFAULT_STR_LENGTH+1];
    SpiceChar           error [DEFAULT_STR_LENGTH+1];
    SpiceBoolean        ok;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "sample", MiceChar,   0, {0}, 0},
       { "pictur", MiceIgnore, 0, {0}, 0},
@@ -10601,9 +15456,9 @@ void cspice_tpictr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    mxGetString(prhs[1], sample, DEFAULT_STR_LENGTH);
 
-   tpictr_c( sample, 
-             DEFAULT_STR_LENGTH, 
-             DEFAULT_STR_LENGTH, 
+   tpictr_c( sample,
+             DEFAULT_STR_LENGTH,
+             DEFAULT_STR_LENGTH,
              pictur,
              &ok,
              error );
@@ -10633,6 +15488,7 @@ void cspice_tpictr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void tsetyr_c ( SpiceInt year )
 */
@@ -10642,18 +15498,18 @@ void cspice_tsetyr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             year;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "year" , MiceInt, 0, {0}, 0},
+      { "year",  MiceInt, 0, {0}, 0},
       };
-   
+
    check_arg_num( nrhs, nlhs, 1, 0 );
 
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    year = S_INT_ARGV(1);
 
-   tsetyr_c ( year );         
+   tsetyr_c ( year );
    CHECK_CALL_FAILURE(SCALAR);
    }
 
@@ -10663,19 +15519,21 @@ void cspice_tsetyr(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   SpiceDouble twopi_c( void ) 
+   SpiceDouble twopi_c( void )
 */
 void cspice_twopi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    check_arg_num( nrhs, nlhs, 0, 1 );
 
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( twopi_c() );
    }
+
+
 
 
 /*
@@ -10683,11 +15541,11 @@ void cspice_twopi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                SpiceInt            indexa,
                                ConstSpiceDouble    plndef [3],
                                SpiceInt            indexp,
-                               SpiceDouble         mout   [3][3] ) 
+                               SpiceDouble         mout   [3][3] )
 */
 void cspice_twovec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * axdef;
    SpiceInt             indexa;
    SpiceDouble        * plndef;
@@ -10696,13 +15554,13 @@ void cspice_twovec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble          xr[3][3];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "axdef" , MiceDouble, 1, {3}   , 0},
-      { "indexa", MiceInt   , 0, {0}   , 0},
-      { "plndef", MiceDouble, 1, {3}   , 0},
-      { "indexp", MiceInt   , 0, {0}   , 0},
-      { "mout"  , MiceDouble, 2, {3, 3}, 0},
+      { "axdef",  MiceDouble, 1, {3},    0},
+      { "indexa", MiceInt,    0, {0},    0},
+      { "plndef", MiceDouble, 1, {3},    0},
+      { "indexp", MiceInt,    0, {0},    0},
+      { "mout",   MiceDouble, 2, {3, 3}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 4, 1 );
@@ -10723,17 +15581,19 @@ void cspice_twovec(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    SpiceDouble       tyear_c  ( void );
 */
 void cspice_tyear(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-      
+
    check_arg_num( nrhs, nlhs, 0, 1 );
-   
-   /* 
-   Directly return the scalar value. This simple case needs no 
-   error checks. 
+
+   /*
+   Directly return the scalar value. This simple case needs no
+   error checks.
    */
    plhs[0] = mxCreateDoubleScalar( tyear_c() );
    }
@@ -10742,19 +15602,19 @@ void cspice_tyear(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 /*
-   void              unload_c ( ConstSpiceChar   * file ); 
+   void              unload_c ( ConstSpiceChar   * file );
 */
 void cspice_unload(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
 
-   SpiceChar     file[DEFAULT_STR_LENGTH+1];    
+   SpiceChar     file[DEFAULT_STR_LENGTH+1];
    mxChar      * mx_file;
 
    SpiceInt      i;
    SpiceInt      j;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "file", MiceChar, 0, {0}, 1},
       };
@@ -10768,7 +15628,7 @@ void cspice_unload(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       mx_file = (mxChar *)mxGetChars(prhs[1]);
-      
+
       for (i=0;i<extra->count;i++)
          {
 
@@ -10778,12 +15638,12 @@ void cspice_unload(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
             }
 
          file[extra->offset[0]] = '\0';
-            
+
          unload_c(file);
          CHECK_CALL_FAILURE(i);
          }
-         
-      } 
+
+      }
    else
       {
 
@@ -10797,6 +15657,7 @@ void cspice_unload(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble       unitim_c ( SpiceDouble         epoch,
                                 ConstSpiceChar    * insys,
@@ -10807,19 +15668,19 @@ void cspice_unitim(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceDouble        * vec_epoch;
    SpiceDouble          epoch;
-   SpiceChar            insys  [DEFAULT_STR_LENGTH+1]; 
-   SpiceChar            outsys [DEFAULT_STR_LENGTH+1]; 
+   SpiceChar            insys  [DEFAULT_STR_LENGTH+1];
+   SpiceChar            outsys [DEFAULT_STR_LENGTH+1];
    SpiceDouble        * vec_retval;
    SpiceDouble        * retval;
 
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "epoch",  MiceDouble, 0, {0}, 1},
-      { "insys",  MiceChar  , 0, {0}, 0},
-      { "outsys", MiceChar  , 0, {0}, 0},
+      { "insys",  MiceChar,   0, {0}, 0},
+      { "outsys", MiceChar,   0, {0}, 0},
       { "retval", MiceDouble, 0, {0}, 1},
       };
 
@@ -10836,7 +15697,7 @@ void cspice_unitim(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
 
       vec_retval = A_DBL_RET_ARGV(0);
-      
+
       for (i=0;i<extra->count;i++)
          {
 
@@ -10850,7 +15711,7 @@ void cspice_unitim(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    else
       {
-      
+
       epoch = *vec_epoch;
 
       plhs[0] = mxCreateDoubleScalar( unitim_c ( epoch, insys, outsys ) );
@@ -10869,7 +15730,7 @@ void cspice_unitim(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_unorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   SpiceDouble        * v1; 
+   SpiceDouble        * v1;
    SpiceDouble        * vec_v1;
    SpiceDouble        * vout;
    SpiceDouble        * vec_vout;
@@ -10879,9 +15740,9 @@ void cspice_unorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "v1"  , MiceDouble, 1, {3}, 1},
+      { "v1",   MiceDouble, 1, {3}, 1},
       { "vout", MiceDouble, 1, {3}, 1},
       { "vmag", MiceDouble, 0, {0}, 1},
       };
@@ -10902,15 +15763,15 @@ void cspice_unorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       {
       for (i=0;i<extra->count;i++)
          {
- 
+
          v1   =  (vec_v1   + i*extra->offset[0]);
          vout =  (vec_vout + i*extra->offset[1]);
          vmag =  (vec_vmag + i*extra->offset[2]);
-   
+
          unorm_c(v1, vout, vmag);
          CHECK_CALL_FAILURE(i);
          }
-      
+
       }
    else
       {
@@ -10940,10 +15801,10 @@ void cspice_vdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "v1"   , MiceDouble, 1, {3}, 1},
-      { "v2"   , MiceDouble, 1, {3}, 1},
+      { "v1",    MiceDouble, 1, {3}, 1},
+      { "v2",    MiceDouble, 1, {3}, 1},
       { "vdist", MiceDouble, 0, {0}, 1},
       };
 
@@ -10954,7 +15815,7 @@ void cspice_vdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    vec_v1     = A_DBL_ARGV(1);
    vec_v2     = A_DBL_ARGV(2);
    vec_retval = A_DBL_RET_ARGV(0);
-   
+
    if (extra->count>1)
       {
 
@@ -10968,7 +15829,7 @@ void cspice_vdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
       v1     = vec_v1;
@@ -10980,6 +15841,8 @@ void cspice_vdist(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
    }
+
+
 
 
 /*
@@ -10998,9 +15861,9 @@ void cspice_vhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    struct extra_dims  * extra;
 
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "v1"  , MiceDouble, 1, {3}, 1},
+      { "v1",   MiceDouble, 1, {3}, 1},
       { "vout", MiceDouble, 1, {3}, 1},
       };
 
@@ -11023,7 +15886,7 @@ void cspice_vhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          vhat_c(v1, vout);
          CHECK_CALL_FAILURE(i);
          }
-         
+
       }
    else
       {
@@ -11039,6 +15902,7 @@ void cspice_vhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              vperp_c ( ConstSpiceDouble   a[3],
                                ConstSpiceDouble   b[3],
@@ -11047,18 +15911,18 @@ void cspice_vhat(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_vperp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_s1;
    SpiceDouble        * vec_s2;
    SpiceDouble        * vec_vout;
-   SpiceDouble        * s1; 
+   SpiceDouble        * s1;
    SpiceDouble        * s2;
    SpiceDouble        * vout;
 
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "a",     MiceDouble, 1, {3}, 1},
       { "b",     MiceDouble, 1, {3}, 1},
@@ -11101,21 +15965,22 @@ void cspice_vperp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble       vnorm_c   ( ConstSpiceDouble    v1[3] );
 */
 void cspice_vnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_v1;
-   SpiceDouble        * v1; 
+   SpiceDouble        * v1;
    SpiceDouble        * vec_retval;
    SpiceDouble        * retval;
 
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "v1",    MiceDouble, 1, {3}, 1},
       { "vnorm", MiceDouble, 0, {0}, 1},
@@ -11140,7 +16005,7 @@ void cspice_vnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
       v1     = vec_v1;
@@ -11154,6 +16019,176 @@ void cspice_vnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
+/*
+   void              vprjp_c  ( ConstSpiceDouble    vin   [3],
+                                ConstSpicePlane   * plane,
+                                SpiceDouble         vout  [3] );
+*/
+void cspice_vprjp(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vin;
+   SpicePlane           plane;
+   SpiceDouble        * vout;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "vin",   MiceDouble, 1, {3}, 0},
+      { "plane", MicePlane,  0, {0}, 0},
+      { "vout",  MiceDouble, 1, {3}, 0},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vin = A_DBL_ARGV(1);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( plane.normal,
+           mxGetPr( mxGetField( prhs[2], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   plane.constant = *mxGetPr( mxGetField( prhs[2], 0,"constant") );
+
+   vout = A_DBL_RET_ARGV(0);
+
+   (void)vprjp_c( vin, &plane, vout );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+/*
+   void              vprjpi_c ( ConstSpiceDouble    vin    [3],
+                                ConstSpicePlane   * projpl,
+                                ConstSpicePlane   * invpl,
+                                SpiceDouble         vout   [3],
+                                SpiceBoolean      * found       );
+*/
+void cspice_vprjpi(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vin;
+   SpicePlane           projpl;
+   SpicePlane           invpl;
+   SpiceDouble        * vout;
+   SpiceBoolean       * found;
+
+   struct extra_dims  * extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "vin",    MiceDouble,  1, {3}, 0},
+      { "projpl", MicePlane,   0, {0}, 0},
+      { "invpl",  MicePlane,   0, {0}, 0},
+      { "vout",   MiceDouble,  1, {3}, 0},
+      { "found",  MiceBoolean, 0, {0}, 0}
+      };
+
+   check_arg_num( nrhs, nlhs, 3, 2 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vin = A_DBL_ARGV(1);
+
+   /*
+   Assemble a plane structure from the input arguments.
+   */
+   memcpy( projpl.normal,
+           mxGetPr( mxGetField( prhs[2], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   projpl.constant = *mxGetPr( mxGetField( prhs[2], 0,"constant") );
+
+   memcpy( invpl.normal,
+           mxGetPr( mxGetField( prhs[3], 0,"normal") ),
+           3*sizeof(SpiceDouble)
+         );
+
+   invpl.constant = *mxGetPr( mxGetField( prhs[3], 0,"constant") );
+
+   vout   = A_DBL_RET_ARGV(0);
+   found  = A_BOOL_RET_ARGV(1);
+
+   (void)vprjpi_c( vin, &projpl, &invpl, vout, found );
+   CHECK_CALL_FAILURE( SCALAR );
+
+   }
+
+
+
+
+/*
+   void              vproj_c ( ConstSpiceDouble   a[3],
+                               ConstSpiceDouble   b[3],
+                               SpiceDouble        p[3] )
+
+*/
+void cspice_vproj(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble        * vec_s1;
+   SpiceDouble        * vec_s2;
+   SpiceDouble        * vec_vout;
+   SpiceDouble        * s1;
+   SpiceDouble        * s2;
+   SpiceDouble        * vout;
+
+   SpiceInt             i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "a",     MiceDouble, 1, {3}, 1},
+      { "b",     MiceDouble, 1, {3}, 1},
+      { "vproj", MiceDouble, 1, {3}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 2, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   vec_s1   = A_DBL_ARGV(1);
+   vec_s2   = A_DBL_ARGV(2);
+   vec_vout = A_DBL_RET_ARGV(0);
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+         s1   = (vec_s1   + i*extra->offset[0]);
+         s2   = (vec_s2   + i*extra->offset[1]);
+         vout = (vec_vout + i*extra->offset[2]);
+
+         vproj_c(s1, s2, vout);
+         CHECK_CALL_FAILURE(i);
+         }
+
+      }
+   else
+      {
+      s1   = vec_s1;
+      s2   = vec_s2;
+      vout = vec_vout;
+
+      vproj_c(s1, s2, vout);
+      CHECK_CALL_FAILURE(SCALAR);
+      }
+
+   }
+
+
+
+
 /*
    void              vrotv_c  ( ConstSpiceDouble    v    [3],
                                 ConstSpiceDouble    axis [3],
@@ -11162,16 +16197,16 @@ void cspice_vnorm(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 */
 void cspice_vrotv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * v;
    SpiceDouble        * axis;
    SpiceDouble          theta;
    SpiceDouble        * r;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "v"   ,  MiceDouble, 1, {3}, 0},
+      { "v",     MiceDouble, 1, {3}, 0},
       { "axis",  MiceDouble, 1, {3}, 0},
       { "theta", MiceDouble, 0, {0}, 0},
       { "r",     MiceDouble, 1, {3}, 0},
@@ -11193,16 +16228,17 @@ void cspice_vrotv(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceDouble       vsep_c   ( ConstSpiceDouble    v1[3],
                                 ConstSpiceDouble    v2[3] );
 */
 void cspice_vsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
-   
+
    SpiceDouble        * vec_v1;
    SpiceDouble        * vec_v2;
-   SpiceDouble        * v1; 
+   SpiceDouble        * v1;
    SpiceDouble        * v2;
    SpiceDouble        * retval;
    SpiceDouble        * vec_retval;
@@ -11210,17 +16246,17 @@ void cspice_vsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "v1"  , MiceDouble, 1, {3}, 1},
-      { "v2"  , MiceDouble, 1, {3}, 1},
+      { "v1",   MiceDouble, 1, {3}, 1},
+      { "v2",   MiceDouble, 1, {3}, 1},
       { "vsep", MiceDouble, 0, {0}, 1},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
-   
+
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
-   
+
    vec_v1     = A_DBL_ARGV(1);
    vec_v2     = A_DBL_ARGV(2);
    vec_retval = A_DBL_RET_ARGV(0);
@@ -11238,7 +16274,7 @@ void cspice_vsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          CHECK_CALL_FAILURE(i);
          }
 
-      } 
+      }
    else
       {
       v1     = vec_v1;
@@ -11250,6 +16286,7 @@ void cspice_vsep(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
 
    }
+
 
 
 
@@ -11266,7 +16303,7 @@ void cspice_wncard(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt            window_size;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "window", MiceWin,    1, {0}, 0},
       { "card",   MiceIgnore, 0, {0}, 0}
@@ -11277,18 +16314,18 @@ void cspice_wncard(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
 
    window = (SpiceDouble*)mxGetData(prhs[1]);
- 
+
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 'window' 
-   without the append size. 
+   zero elements appended to the arrays. Calculate the size of 'window'
+   without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
 
    /*
    The interface wrapper appended a 6x1 zeros array to
    'window' to provide a control segment. Use of the
-   SPICE window routines requires this operation. Add 
+   SPICE window routines requires this operation. Add
    size and cardinality values to this control segment.
    */
    ssized_( ( integer * ) &window_size, ( double * ) window );
@@ -11302,11 +16339,12 @@ void cspice_wncard(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wncomd_c ( SpiceDouble          left,
                                 SpiceDouble          right,
                                 SpiceCell          * window,
-                                SpiceCell          * result ); 
+                                SpiceCell          * result );
 */
 void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -11317,19 +16355,19 @@ void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * result;
    SpiceDouble        * result_f;
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            window_size;
    SpiceInt            size;
-   
+
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "left"    , MiceDouble, 0, {0}, 0},
-      { "right"   , MiceDouble, 0, {0}, 0},
-      { "window_i", MiceWin   , 1, {0}, 0},
-      { "result"  , MiceIgnore, 0, {0}, 0}
+      { "left",     MiceDouble, 0, {0}, 0},
+      { "right",    MiceDouble, 0, {0}, 0},
+      { "window_i", MiceWin,    1, {0}, 0},
+      { "result",   MiceIgnore, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 3, 1);
@@ -11343,22 +16381,22 @@ void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
    zero elements appended to the arrays. Calculate the size of
-   'window' without the append size. 
+   'window' without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[3] ) - SPICE_CELL_CTRLSZ;
 
    /*
    The interface wrapper appended a 6x1 zeros array to
    'a' and 'b' to provide a control segment. Use of the
-   SPICE window routines requires this operation. Add 
+   SPICE window routines requires this operation. Add
    size and cardinality values to this control segment.
    */
    ssized_( ( integer * ) &window_size, ( double * ) window );
    scardd_( ( integer * ) &window_size, ( double * ) window );
-   
- 
+
+
    /*
-   Allocate the memory for the return window, provide the needed room 
+   Allocate the memory for the return window, provide the needed room
    for the control segment.
 
    The maximum size of the output window 'return' equals no more than
@@ -11367,8 +16405,8 @@ void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    size = window_size + 2;
 
    result = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and cardinality for the 'return' before passing to CSPICE.
    */
@@ -11379,10 +16417,15 @@ void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
              (doublereal * ) &right,
              (doublereal * ) (window),
              (doublereal * ) (result) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'result'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( result );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -11417,7 +16460,7 @@ void cspice_wncomd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*
    void              wndifd_c ( SpiceCell          * a,
                                 SpiceCell          * b,
-                                SpiceCell          * c  ); 
+                                SpiceCell          * c  );
 */
 void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -11427,7 +16470,7 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * c;
    SpiceDouble        * c_f;
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
 
    SpiceInt            a_size;
@@ -11435,11 +16478,11 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "a"   , MiceWin   , 1, {0}, 0},
-      { "b"   , MiceWin   , 1, {0}, 0},
-      { "c"   , MiceIgnore, 0, {0}, 0}
+      { "a",    MiceWin,    1, {0}, 0},
+      { "b",    MiceWin,    1, {0}, 0},
+      { "c",    MiceIgnore, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 2, 1);
@@ -11452,7 +16495,7 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The size of array 'a' and 'b' includes an addition SPICE_CELL_CTRLSZ
    zero elements appended to the arrays. Calculate the size of 'a'
-   and 'b' without the append size. 
+   and 'b' without the append size.
    */
    a_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
    b_size = mxGetNumberOfElements( prhs[2] ) - SPICE_CELL_CTRLSZ;
@@ -11466,7 +16509,7 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The interface wrapper appended a 6x1 zeros array to
    'a' and 'b' to provide a control segment. Use of the
-   SPICE window routines requires this operation. Add 
+   SPICE window routines requires this operation. Add
    size and cardinality values to this control segment.
    */
    ssized_( ( integer * ) &a_size, ( double * ) a );
@@ -11476,14 +16519,19 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &b_size, ( double * ) b );
 
    c = (SpiceDouble*)
-        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    ssized_( ( integer * ) &size, ( double * ) c );
    scardd_( ( integer * ) &card, ( double * ) c );
 
    wndifd_(  (doublereal *) (a),
-             (doublereal *) (b), 
+             (doublereal *) (b),
              (doublereal *) (c));
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'c'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( c );
@@ -11516,6 +16564,7 @@ void cspice_wndifd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    SpiceBoolean      wnelmd_c ( SpiceDouble          point,
                                 SpiceCell          * window );
@@ -11530,10 +16579,10 @@ void cspice_wnelmd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean      * retval;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "point" , MiceDouble , 0, {0}, 0},
-      { "window", MiceWin    , 1, {0}, 0},
+      { "point",  MiceDouble,  0, {0}, 0},
+      { "window", MiceWin,     1, {0}, 0},
       { "retval", MiceBoolean, 0, {0}, 0},
       };
 
@@ -11547,8 +16596,8 @@ void cspice_wnelmd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 'window' 
-   without the append size. 
+   zero elements appended to the arrays. Calculate the size of 'window'
+   without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[2] ) - SPICE_CELL_CTRLSZ;
 
@@ -11568,10 +16617,11 @@ void cspice_wnelmd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wnexpd_c ( SpiceDouble          left,
                                 SpiceDouble          right,
-                                SpiceCell          * window ); 
+                                SpiceCell          * window );
 */
 void cspice_wnexpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -11586,11 +16636,11 @@ void cspice_wnexpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "left"    , MiceDouble, 0, {0}, 0},
-      { "right"   , MiceDouble, 0, {0}, 0},
-      { "window_i", MiceWin   , 1, {0}, 0},
+      { "left",     MiceDouble, 0, {0}, 0},
+      { "right",    MiceDouble, 0, {0}, 0},
+      { "window_i", MiceWin,    1, {0}, 0},
       { "window_f", MiceIgnore, 0, {0}, 0}
       };
 
@@ -11616,8 +16666,8 @@ void cspice_wnexpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    control segment.
    */
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and cardinality for the window before passing to CSPICE.
    */
@@ -11625,18 +16675,23 @@ void cspice_wnexpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &size, ( double * ) window );
 
    /*
-   Copy the window data from the input window to the work window. The 
-   window data should begin at 'window' element SPICE_CELL_CTRLSZ. 
+   Copy the window data from the input window to the work window. The
+   window data should begin at 'window' element SPICE_CELL_CTRLSZ.
    */
-   MOVED( window_i, size , window  + SPICE_CELL_CTRLSZ);
+   MOVED( window_i, size,  window  + SPICE_CELL_CTRLSZ);
 
    wnexpd_ ( (doublereal * )  &left,
              (doublereal * )  &right,
              (doublereal * )  (window) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -11665,6 +16720,7 @@ void cspice_wnexpd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wnextd_c ( SpiceChar            side,
                                 SpiceCell          * window );
@@ -11681,10 +16737,10 @@ void cspice_wnextd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "side"    , MiceChar  , 0, {0}, 0},
-      { "window_i", MiceWin   , 1, {0}, 0},
+      { "side",     MiceChar,   0, {0}, 0},
+      { "window_i", MiceWin,    1, {0}, 0},
       { "window_f", MiceIgnore, 0, {0}, 0}
       };
 
@@ -11709,8 +16765,8 @@ void cspice_wnextd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    control segment.
    */
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and cardinality for the window before passing to CSPICE.
    */
@@ -11718,18 +16774,23 @@ void cspice_wnextd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &size, ( double * ) window );
 
    /*
-   Copy the window data from the input window to the work window. The 
-   window data should begin at 'window' element SPICE_CELL_CTRLSZ. 
+   Copy the window data from the input window to the work window. The
+   window data should begin at 'window' element SPICE_CELL_CTRLSZ.
    */
-   MOVED( window_i, size , window  + SPICE_CELL_CTRLSZ);
+   MOVED( window_i, size,  window  + SPICE_CELL_CTRLSZ);
 
-   wnextd_ ( ( char       * ) &side,  
+   wnextd_ ( ( char       * ) &side,
              ( doublereal * ) window,
              ( ftnlen       ) 1 );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -11758,11 +16819,12 @@ void cspice_wnextd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wnfetd_c ( SpiceCell          * window,
                                 SpiceInt             n,
                                 SpiceDouble        * left,
-                                SpiceDouble        * right   ); 
+                                SpiceDouble        * right   );
 */
 void cspice_wnfetd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -11775,12 +16837,12 @@ void cspice_wnfetd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt            window_size;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "window", MiceWin    , 1, {0}, 0},
-      { "n"     , MiceInt    , 0, {0}, 0},
-      { "left"  , MiceDouble , 0, {0}, 0},
-      { "right" , MiceDouble , 0, {0}, 0},
+      { "window", MiceWin,     1, {0}, 0},
+      { "n",      MiceInt,     0, {0}, 0},
+      { "left",   MiceDouble,  0, {0}, 0},
+      { "right",  MiceDouble,  0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 2 );
@@ -11794,8 +16856,8 @@ void cspice_wnfetd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 'window' 
-   without the append size. 
+   zero elements appended to the arrays. Calculate the size of 'window'
+   without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
 
@@ -11807,13 +16869,14 @@ void cspice_wnfetd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    ssized_( ( integer * ) &window_size, ( double * ) window );
    scardd_( ( integer * ) &window_size, ( double * ) window );
 
-   wnfetd_ ( ( doublereal * ) window, 
+   wnfetd_ ( ( doublereal * ) window,
              ( integer    * ) &n,
              ( doublereal * ) left,
              ( doublereal * ) right );
    CHECK_CALL_FAILURE(SCALAR);
 
    }
+
 
 
 
@@ -11833,10 +16896,10 @@ void cspice_wnfild(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "sml"     , MiceDouble, 0, {0}, 0},
-      { "window_i", MiceWin   , 1, {0}, 0},
+      { "sml",      MiceDouble, 0, {0}, 0},
+      { "window_i", MiceWin,    1, {0}, 0},
       { "window_f", MiceIgnore, 0, {0}, 0}
       };
 
@@ -11861,8 +16924,8 @@ void cspice_wnfild(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    control segment.
    */
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and cardinality for the window before passing to CSPICE.
    */
@@ -11870,17 +16933,22 @@ void cspice_wnfild(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &size, ( double * ) window );
 
    /*
-   Copy the window data from the input window to the work window. The 
-   window data should begin at 'window' element SPICE_CELL_CTRLSZ. 
+   Copy the window data from the input window to the work window. The
+   window data should begin at 'window' element SPICE_CELL_CTRLSZ.
    */
-   MOVED( window_i, size , window  + SPICE_CELL_CTRLSZ);
+   MOVED( window_i, size,  window  + SPICE_CELL_CTRLSZ);
 
    wnfild_ ( (doublereal * )  &sml,
              (doublereal * )  (window) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -11926,10 +16994,10 @@ void cspice_wnfltd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "sml"     , MiceDouble, 0, {0}, 0},
-      { "window_i", MiceWin   , 1, {0}, 0},
+      { "sml",      MiceDouble, 0, {0}, 0},
+      { "window_i", MiceWin,    1, {0}, 0},
       { "window_f", MiceIgnore, 0, {0}, 0}
       };
 
@@ -11954,8 +17022,8 @@ void cspice_wnfltd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    control segment.
    */
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and cardinality for the window before passing to CSPICE.
    */
@@ -11963,17 +17031,22 @@ void cspice_wnfltd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &size, ( double * ) window );
 
    /*
-   Copy the window data from the input window to the work window. The 
-   window data should begin at 'window' element SPICE_CELL_CTRLSZ. 
+   Copy the window data from the input window to the work window. The
+   window data should begin at 'window' element SPICE_CELL_CTRLSZ.
    */
-   MOVED( window_i, size , window  + SPICE_CELL_CTRLSZ);
+   MOVED( window_i, size,  window  + SPICE_CELL_CTRLSZ);
 
    wnfltd_ ( (doublereal * )  &sml,
              (doublereal * )  (window) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -12006,7 +17079,7 @@ void cspice_wnfltd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 /*
    SpiceBoolean      wnincd_c ( SpiceDouble          left,
                                 SpiceDouble          right,
-                                SpiceCell          * window  ); 
+                                SpiceCell          * window  );
 */
 void cspice_wnincd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -12019,11 +17092,11 @@ void cspice_wnincd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceBoolean      * retval;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "left"  , MiceDouble , 0, {0}, 0},
-      { "right" , MiceDouble , 0, {0}, 0},
-      { "window", MiceWin    , 1, {0}, 0},
+      { "left",   MiceDouble,  0, {0}, 0},
+      { "right",  MiceDouble,  0, {0}, 0},
+      { "window", MiceWin,     1, {0}, 0},
       { "retval", MiceBoolean, 0, {0}, 0},
       };
 
@@ -12038,8 +17111,8 @@ void cspice_wnincd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 'window' 
-   without the append size. 
+   zero elements appended to the arrays. Calculate the size of 'window'
+   without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[3] ) - SPICE_CELL_CTRLSZ;
 
@@ -12052,7 +17125,7 @@ void cspice_wnincd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &window_size, ( double * ) window );
 
    *retval = wnincd_( (doublereal *) &left,
-                      (doublereal *) &right, 
+                      (doublereal *) &right,
                       (doublereal *) (window) );
    CHECK_CALL_FAILURE(SCALAR);
 
@@ -12071,8 +17144,8 @@ void cspice_wninsd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    SpiceDouble         left;
    SpiceDouble         right;
-   
-   SpiceInt            card;   
+
+   SpiceInt            card;
    SpiceInt            size;
 
    int                 sizearray[2];
@@ -12081,11 +17154,11 @@ void cspice_wninsd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * window_f;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "left"  , MiceDouble , 0, {0}, 0},
-      { "right" , MiceDouble , 0, {0}, 0},
-      { "window", MiceIgnore , 0, {0}, 0},
+      { "left",   MiceDouble,  0, {0}, 0},
+      { "right",  MiceDouble,  0, {0}, 0},
+      { "window", MiceIgnore,  0, {0}, 0},
       };
 
    check_arg_num( nrhs, nlhs, 2, 1 );
@@ -12100,16 +17173,21 @@ void cspice_wninsd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    */
    card   = 0;
    size   = 2;
-   
+
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    ssized_( ( integer * ) &size, ( double * ) window );
    scardd_( ( integer * ) &card, ( double * ) window );
- 
+
    wninsd_ ( (doublereal * )  &left,
              (doublereal * )  &right,
              (doublereal * )  (window) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
@@ -12142,10 +17220,11 @@ void cspice_wninsd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wnintd_c ( SpiceCell          * a,
                                 SpiceCell          * b,
-                                SpiceCell          * c  ); 
+                                SpiceCell          * c  );
 */
 void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -12155,7 +17234,7 @@ void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * c;
    SpiceDouble        * c_f;
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
 
    SpiceInt            a_size;
@@ -12163,11 +17242,11 @@ void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "a"   , MiceWin   , 1, {0}, 0},
-      { "b"   , MiceWin   , 1, {0}, 0},
-      { "c"   , MiceIgnore, 0, {0}, 0}
+      { "a",    MiceWin,    1, {0}, 0},
+      { "b",    MiceWin,    1, {0}, 0},
+      { "c",    MiceIgnore, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 2, 1);
@@ -12180,7 +17259,7 @@ void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The size of array 'a' and 'b' includes an addition SPICE_CELL_CTRLSZ
    zero elements appended to the arrays. Calculate the size of 'a'
-   and 'b' without the append size. 
+   and 'b' without the append size.
    */
    a_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
    b_size = mxGetNumberOfElements( prhs[2] ) - SPICE_CELL_CTRLSZ;
@@ -12204,14 +17283,19 @@ void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &b_size, ( double * ) b );
 
    c = (SpiceDouble*)
-        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
+        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
 
    ssized_( ( integer * ) &size, ( double * ) c );
    scardd_( ( integer * ) &card, ( double * ) c );
 
    wnintd_(  (doublereal *) (a),
-             (doublereal *) (b), 
+             (doublereal *) (b),
              (doublereal *) (c));
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'c'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( c );
@@ -12243,6 +17327,8 @@ void cspice_wnintd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    }
 
 
+
+
 /*
    SpiceBoolean      wnreld_c ( SpiceCell          * a,
                                 ConstSpiceChar     * op,
@@ -12252,19 +17338,19 @@ void cspice_wnreld(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
    SpiceDouble        * a;
    SpiceDouble        * b;
-   
-   SpiceChar            op[DEFAULT_STR_LENGTH+1]; 
+
+   SpiceChar            op[DEFAULT_STR_LENGTH+1];
 
    SpiceInt            a_size;
    SpiceInt            b_size;
    SpiceBoolean      * retval;
 
    struct extra_dims * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "a"     , MiceWin    , 1, {0}, 0},
-      { "op"    , MiceChar   , 0, {0}, 0},
-      { "b"     , MiceWin    , 1, {0}, 0},
+      { "a",      MiceWin,     1, {0}, 0},
+      { "op",     MiceChar,    0, {0}, 0},
+      { "b",      MiceWin,     1, {0}, 0},
       { "retval", MiceBoolean, 0, {0}, 0},
       };
 
@@ -12282,7 +17368,7 @@ void cspice_wnreld(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The size of array 'a' and 'b' includes an addition SPICE_CELL_CTRLSZ
    zero elements appended to the arrays. Calculate the size of 'a'
-   and 'b' without the append size. 
+   and 'b' without the append size.
    */
    a_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
    b_size = mxGetNumberOfElements( prhs[3] ) - SPICE_CELL_CTRLSZ;
@@ -12330,7 +17416,7 @@ void mice_wnsumd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt            window_size;
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "window", MiceWin,    1, {0}, 0},
       { "sumd",   MiceWnsumd, 0, {0}, 0},
@@ -12344,8 +17430,8 @@ void mice_wnsumd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
    /*
    The size of array 'window' includes an addition SPICE_CELL_CTRLSZ
-   zero elements appended to the arrays. Calculate the size of 'window' 
-   without the append size. 
+   zero elements appended to the arrays. Calculate the size of 'window'
+   without the append size.
    */
    window_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
 
@@ -12357,26 +17443,31 @@ void mice_wnsumd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    ssized_( ( integer * ) &window_size, ( double * ) window );
    scardd_( ( integer * ) &window_size, ( double * ) window );
 
-   wnsumd_ ( ( doublereal * ) window, 
+   wnsumd_ ( ( doublereal * ) window,
              ( doublereal * ) &meas,
-             ( doublereal * ) &avg, 
-             ( doublereal * ) &stddev, 
-             ( integer    * ) &shortest, 
+             ( doublereal * ) &avg,
+             ( doublereal * ) &stddev,
+             ( integer    * ) &shortest,
              ( integer    * ) &longest );
    CHECK_CALL_FAILURE(SCALAR);
 
    /*
    Copy the state vector and the lighttime value into the return structure.
    */
-   
+
+   mxDestroyArray( mxGetField( plhs[0], 0, "meas" ) );
    mxSetField( plhs[0], 0, "meas", mxCreateDoubleScalar(meas) );
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "avg" ) );
    mxSetField( plhs[0], 0, "avg", mxCreateDoubleScalar(avg) );
 
+   mxDestroyArray( mxGetField(plhs[0], 0, "stddev" ) );
    mxSetField( plhs[0], 0, "stddev", mxCreateDoubleScalar(stddev) );
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "shortest" ) );
    mxSetField( plhs[0], 0, "shortest", zzmice_CreateIntScalar(shortest) );
 
+   mxDestroyArray( mxGetField( plhs[0], 0, "longest" ) );
    mxSetField( plhs[0], 0, "longest", zzmice_CreateIntScalar(longest) );
 
    }
@@ -12384,11 +17475,10 @@ void mice_wnsumd(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
-
 /*
    void              wnunid_c ( SpiceCell          * a,
                                 SpiceCell          * b,
-                                SpiceCell          * c  ); 
+                                SpiceCell          * c  );
 */
 void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    {
@@ -12398,7 +17488,7 @@ void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * c;
    SpiceDouble        * c_f;
 
-   SpiceInt            card = 0;   
+   SpiceInt            card = 0;
    SpiceInt            size;
 
    SpiceInt            a_size;
@@ -12406,11 +17496,11 @@ void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "a"   , MiceWin   , 1, {0}, 0},
-      { "b"   , MiceWin   , 1, {0}, 0},
-      { "c"   , MiceIgnore, 0, {0}, 0}
+      { "a",    MiceWin,    1, {0}, 0},
+      { "b",    MiceWin,    1, {0}, 0},
+      { "c",    MiceIgnore, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 2, 1);
@@ -12423,7 +17513,7 @@ void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    /*
    The size of array 'a' and 'b' includes an addition SPICE_CELL_CTRLSZ
    zero elements appended to the arrays. Calculate the size of 'a'
-   and 'b' without the append size. 
+   and 'b' without the append size.
    */
    a_size = mxGetNumberOfElements( prhs[1] ) - SPICE_CELL_CTRLSZ;
    b_size = mxGetNumberOfElements( prhs[2] ) - SPICE_CELL_CTRLSZ;
@@ -12447,14 +17537,19 @@ void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &b_size, ( double * ) b );
 
    c = (SpiceDouble*)
-        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble) ); 
+        mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble) );
 
    ssized_( ( integer * ) &size, ( double * ) c );
    scardd_( ( integer * ) &card, ( double * ) c );
 
    wnunid_(  (doublereal *) (a),
-             (doublereal *) (b), 
+             (doublereal *) (b),
              (doublereal *) (c));
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'c'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( c );
@@ -12487,6 +17582,7 @@ void cspice_wnunid(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 
 
+
 /*
    void              wnvald_c ( SpiceInt             size,
                                 SpiceInt             n,
@@ -12500,14 +17596,14 @@ void cspice_wnvald(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceDouble        * window;
    SpiceDouble        * window_f;
 
-   SpiceInt            size;   
+   SpiceInt            size;
    int                 sizearray[2];
 
    struct extra_dims  * extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "window_i"   , MiceWin   , 1, {0}, 0},
-      { "window_f"   , MiceIgnore, 0, {0}, 0}
+      { "window_i",    MiceWin,    1, {0}, 0},
+      { "window_f",    MiceIgnore, 0, {0}, 0}
       };
 
    check_arg_num( nrhs, nlhs, 1, 1);
@@ -12530,8 +17626,8 @@ void cspice_wnvald(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    control segment.
    */
    window = (SpiceDouble*)
-             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  ); 
-  
+             mxMalloc( (size + SPICE_CELL_CTRLSZ)*sizeof(SpiceDouble)  );
+
    /*
    Set to size and carfinality for the window before passing to CSPICE.
    */
@@ -12539,18 +17635,23 @@ void cspice_wnvald(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    scardd_( ( integer * ) &size, ( double * ) window );
 
    /*
-   Copy the window data from the input window to the work window. The 
-   window data should begin at 'window' element SPICE_CELL_CTRLSZ. 
+   Copy the window data from the input window to the work window. The
+   window data should begin at 'window' element SPICE_CELL_CTRLSZ.
    */
    MOVED( window_i, size, window  + SPICE_CELL_CTRLSZ);
 
    wnvald_ ( (integer    * ) &size,
-             (integer    * ) &size, 
+             (integer    * ) &size,
              (doublereal * )  (window) );
+
+   /*
+   Check for a failure signal. Free the memory assigned to 'window'
+   before signaling a Matlab error.
+   */
    if ( failed_c())
       {
       mxFree( window );
-      
+
       /*
       The mice_fail call creates the error string then returns control
       to the MATLAB interpreter.
@@ -12598,21 +17699,21 @@ void cspice_xf2eul(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt             axisa;
    SpiceInt             axisb;
    SpiceInt             axisc;
-   SpiceDouble        * xform; 
-   SpiceDouble        * eulang; 
+   SpiceDouble        * xform;
+   SpiceDouble        * eulang;
    SpiceBoolean       * unique;
 
    SpiceInt             i;
    SpiceDouble          xr[6][6];
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
-      { "xform" , MiceDouble , 2, {6, 6}, 1},
-      { "axisa" , MiceInt    , 0, {0}   , 0},
-      { "axisb" , MiceInt    , 0, {0}   , 0},
-      { "axisc" , MiceInt    , 0, {0}   , 0},
-      { "eulang", MiceDouble , 1, {6}   , 1},
+      { "xform",  MiceDouble,  2, {6, 6}, 1},
+      { "axisa",  MiceInt,     0, {0},    0},
+      { "axisb",  MiceInt,     0, {0},    0},
+      { "axisc",  MiceInt,     0, {0},    0},
+      { "eulang", MiceDouble,  1, {6},    1},
       { "unique", MiceBoolean, 0, {0},    1}
       };
 
@@ -12636,7 +17737,7 @@ void cspice_xf2eul(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          xform  = (vec_xform  + i*extra->offset[0]);
          eulang = (vec_eulang + i*extra->offset[4]);
          unique = (vec_unique + i*extra->offset[5]);
- 
+
          xpose6_c( xform, (SpiceDouble(*)[6])xr );
 
          xf2eul_c( xr, axisa, axisb, axisc, eulang, unique );
@@ -12649,14 +17750,15 @@ void cspice_xf2eul(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       xform  = vec_xform;
       eulang = vec_eulang;
       unique = vec_unique;
- 
+
       xpose6_c( xform, (SpiceDouble(*)[6])xr );
-      
+
       xf2eul_c( xr, axisa, axisb, axisc, eulang, unique );
       CHECK_CALL_FAILURE(SCALAR);
       }
 
    }
+
 
 
 
@@ -12679,7 +17781,7 @@ void cspice_xf2rav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    SpiceInt       i;
 
    struct extra_dims *extra;
-   struct argcheck ArgCheck[] = 
+   struct argcheck ArgCheck[] =
       {
       { "xform", MiceDouble, 2, {6,6}, 1},
       { "rot",   MiceDouble, 2, {3,3}, 1},
@@ -12719,13 +17821,87 @@ void cspice_xf2rav(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       xform = (vec_xform);
       rot   = (vec_rot);
       av    = (vec_av);
- 
+
       xpose6_c( xform, (SpiceDouble(*)[6])xf );
 
       xf2rav_c( xf, (SpiceDouble(*)[3])xr, av );
       CHECK_CALL_FAILURE(SCALAR);
 
       xpose_c( xr, (SpiceDouble(*)[3])rot );
+      }
+
+   }
+
+
+
+
+/*
+   void xfmsta_c ( ConstSpiceDouble     input_state[6],
+                   ConstSpiceChar     * input_coord_sys,
+                   ConstSpiceChar     * output_coord_sys,
+                   ConstSpiceChar     * body,
+                   SpiceDouble          output_state[6]  )
+*/
+void cspice_xfmsta(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+   {
+
+   SpiceDouble    * vec_input_state;
+   SpiceDouble    * input_state;
+   SpiceChar        input_coord_sys  [DEFAULT_STR_LENGTH+1];
+   SpiceChar        output_coord_sys [DEFAULT_STR_LENGTH+1];
+   SpiceChar        body             [DEFAULT_STR_LENGTH+1];
+   SpiceDouble    * vec_output_state;
+   SpiceDouble    * output_state;
+
+   SpiceInt         i;
+
+   struct extra_dims *extra;
+   struct argcheck ArgCheck[] =
+      {
+      { "input_state",      MiceDouble, 1, {6}, 1},
+      { "input_coord_sys",  MiceChar,   0, {0}, 0},
+      { "output_coord_sys", MiceChar,   0, {0}, 0},
+      { "body",             MiceChar,   0, {0}, 0},
+      { "output_state",     MiceDouble, 1, {6}, 1},
+      };
+
+   check_arg_num( nrhs, nlhs, 4, 1 );
+
+   extra = mice_checkargs(nlhs,plhs,nrhs,prhs,ArgCheck);
+
+   mxGetString(prhs[2], input_coord_sys,  DEFAULT_STR_LENGTH);
+   mxGetString(prhs[3], output_coord_sys, DEFAULT_STR_LENGTH);
+   mxGetString(prhs[4], body,             DEFAULT_STR_LENGTH);
+
+   vec_input_state  = A_DBL_ARGV(1);
+   vec_output_state = A_DBL_RET_ARGV(0);
+
+   input_state      = (vec_input_state);
+   output_state     = (vec_output_state);
+
+   if (extra->count>1)
+      {
+
+      for (i=0;i<extra->count;i++)
+         {
+
+         input_state  = (vec_input_state   + i*extra->offset[0]);
+         output_state = (vec_output_state  + i*extra->offset[4]);
+
+         xfmsta_c( input_state, input_coord_sys, output_coord_sys, body,
+                   output_state );
+         CHECK_CALL_FAILURE(i);
+
+         }
+
+      }
+   else
+      {
+
+      xfmsta_c( input_state, input_coord_sys, output_coord_sys, body,
+                output_state );
+      CHECK_CALL_FAILURE(SCALAR);
+
       }
 
    }
@@ -12741,9 +17917,9 @@ void mice_cleanup()
    char                    msg[1024];
 
    hashtable_destroy();
-   
+
    /*
-   This error should never signal. If it does, an unknown error exists 
+   This error should never signal. If it does, an unknown error exists
    in the memory allocation routines - the computational equivalent
    of a warp core breach but with less noise.
    */
@@ -12754,18 +17930,19 @@ void mice_cleanup()
                  "MICE(BUG): Memory allocation count not zero at "
                  "mexAtExit. Value = %d. This indicates an unexpected "
                  "error. Contact NAIF."
-                 "\n\n", 
+                 "\n\n",
                  alloc_count()  );
       mexErrMsgTxt(msg);
       }
-   
+
    }
+
 
 
 
 /*
 
-   The routine called by MATLAB to access to external routines. 
+   The routine called by MATLAB to access to external routines.
 
 */
 
@@ -12785,7 +17962,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    */
    static int SIZE = sizeof(NPF)/sizeof(NPF[0]);
 
-   /* 
+   /*
    Initialize hash table first time through.
    */
    static SpiceBoolean   first = SPICETRUE;
@@ -12795,9 +17972,9 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    char                * function_name;
    integer               divisor = HASHSIZE;
 
-   void                (*function_reference)(int, 
-                                             mxArray*[], 
-                                             int, 
+   void                (*function_reference)(int,
+                                             mxArray*[],
+                                             int,
                                              const mxArray*[]);
 
    /*
@@ -12806,7 +17983,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    */
    if( nrhs == 0 )
       {
-      sprintf( erract_buf, 
+      sprintf( erract_buf,
             "MICE(BOGUSENTRY): Usage error. Do not call the Mice MEX "
             "library without arguments. Access Mice functions by "
             "calling the cspice_*.m or mice_*.m wrappers.");
@@ -12822,7 +17999,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       zzshsh_( &divisor );
 
       /*
-      Initialize hash table 
+      Initialize hash table
       */
       memset( table, 0, sizeof(table) );
 
@@ -12831,25 +18008,25 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
          hashtable_insert(NPF[i].name, NPF[i].pfunc);
          }
 
-      /* 
+      /*
       By default, CSPICE calls exit() when an error occurs. This response
-      causes the MATLAB application to exit (collapse).  
+      causes the MATLAB application to exit (collapse).
 
       All interface functions immediately execute the CHECK_CALL_FAILURE
       macro calling their CSPICE namesakes. This macro checks the failure_c
       state, making the needed calls to create a MATLAB error message
       if an error occurs.
-   
+
       Set the error status to RETURN and the error device to NULL.
       */
       zzerrorinit();
- 
+
       /*
       This block need execute only once. Set the 'first' flag to false.
       */
       first = SPICEFALSE;
 
-      /* 
+      /*
       Register the clean up routine, i.e. the routine executed when
       MATLAB terminates.
       */
@@ -12862,9 +18039,9 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    the first right hand value, prhs[0], for all interface calls
    is a pointer to the interface string name. mxGetN returns the number
    of columns in a MATLAB array; MATLAB defines a string as a 1XN
-   vector of characters, so mxGetN returns the length (not null teminated
+   vector of characters, so mxGetN returns the length (not null terminated
    length) of the string. When allocating memory for the string, allocate
-   N + 1 to accomodate the null terminator.
+   N + 1 to accommodate the null terminator.
    */
    n             = mxGetN(prhs[0]) + 1;
    function_name = mxCalloc( n, sizeof(char));
@@ -12880,7 +18057,7 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
    function_reference = hashtable_lookup(function_name);
 
    /*
-   ...if found, execute that function. If not found, signal an error 
+   ...if found, execute that function. If not found, signal an error
    to the user.
    */
    if (function_reference)
@@ -12889,8 +18066,8 @@ void mexFunction( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
       }
    else
       {
-      sprintf( erract_buf, 
-            "MICE(UNKNOWNCALL): Unknown CSPICE interface function call: %s\n", 
+      sprintf( erract_buf,
+            "MICE(UNKNOWNCALL): Unknown CSPICE interface function call: %s\n",
              function_name);
 
       mexErrMsgTxt( erract_buf );
