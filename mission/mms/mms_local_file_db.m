@@ -226,7 +226,12 @@ classdef mms_local_file_db < mms_file_db
            if isempty(vT{3}), return, end, ver.rev = vT{3};
         end
         function entry = add_ss(entry)
-          info = spdfcdfinfo([entry.path filesep entry.name]);
+          try
+            info = spdfcdfinfo([entry.path filesep entry.name]);
+          catch
+            errS = ['Cannot read: ' entry.path filesep entry.name];
+            irf.log('critical',errS), error(errS)
+          end
           isCdfEpochTT2000VariableArray=cellfun(@(x) strcmpi(x,'tt2000'), info.Variables(:,4));
           if ~any(isCdfEpochTT2000VariableArray)
             errS = ['no TT2000 vars in:' entry.path filesep entry.name]; 
