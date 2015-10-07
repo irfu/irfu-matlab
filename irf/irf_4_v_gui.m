@@ -207,7 +207,9 @@ uimenu('label','&Distance','accelerator','d','callback','irf_4_v_gui(''distance'
 uimenu('label','Click&Times','accelerator','t','callback','irf_4_v_gui(''click_times'')');
 uimenu('label','New&Variable','accelerator','v','callback','irf_4_v_gui(''new_var_enter'')');
 ud.columns=uimenu('label','&Columns','accelerator','c');
-ud.t_start_epoch = h(1).Parent.UserData.t_start_epoch;
+%ud.t_start_epoch = h(1).Parent.UserData.t_start_epoch;
+ figud = get(get(h(1),'Parent'),'UserData');
+ ud.t_start_epoch = figud.t_start_epoch;
 %uimenu(ud.column
 
 if isa(ud.var1,'TSeries'), nCol = size(ud.var1.data,2);
