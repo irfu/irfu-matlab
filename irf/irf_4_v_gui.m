@@ -54,7 +54,7 @@ else
         ud.var3 = varargin{3};
         ud.var4 = varargin{4};
         ud.variable_str = [inputname(1) '..' inputname(4)];
-        ud = set_col_and_sc(varargin{5:end});
+        ud = set_col_and_sc(ud,varargin{5:end});
         
     elseif(nargin>=8 && nargin<=10)
         ud.var1 = varargin{1};
@@ -67,7 +67,7 @@ else
         ud.pos2 = varargin{6};
         ud.pos3 = varargin{7};
         ud.pos4 = varargin{8};
-        ud = set_col_and_sc(varargin{9:end});
+        ud = set_col_and_sc(ud,varargin{9:end});
     
     else
         error('Unknown input type.')
